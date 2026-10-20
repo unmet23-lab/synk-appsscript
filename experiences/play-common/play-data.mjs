@@ -1,4 +1,5 @@
 import {normalizeGarage,emptyGarage,GARAGE_KEY} from '../korean-racing/garage-core.js';
+import {validateHangulProgress} from '../hangul-stage/progress-data.mjs';
 
 export const PLAY_SCOPE='synk-play';
 export const PLAY_WALLET_KEY=GARAGE_KEY;
@@ -8,7 +9,7 @@ export const PLAY_RECORD_KEYS=Object.freeze([
   'SYNK_SHIP_STARBOOK_V1','SYNK_LAB_PLAY_PROGRESS_V1','SYNK_RACING_TUTORIAL_V1',
   'synk.talk-rally.daily.v1','synk.order-rush.flow-mode','synk.windrun.best',
   'synk.blank-slice.v1','synk.entry-check.v1','synk.talk-rally.v1',
-  'synk.life-korean.progress.v1'
+  'synk.life-korean.progress.v1','synk.hangul-stage.v1'
 ]);
 export const isPlayRecordKey=key=>PLAY_RECORD_KEYS.includes(key)||typeof key==='string'&&/^SYNK_SHIP_STARBOOK_V1:kept:[a-f0-9]{32}$/.test(key);
 const fail=(code='INVALID_PLAY_STATE')=>{throw Object.assign(new Error(code),{code,status:code==='PLAY_DATA_TOO_LARGE'?413:400});};
@@ -32,7 +33,9 @@ export function validatePlayValue(key,value){
   if(!isPlayRecordKey(key)||typeof value!=='string')fail();
   if(key==='synk.order-rush.flow-mode'){if(!['auto','fixed'].includes(value))fail();return value;}
   if(bytes(value)>512*1024)fail('PLAY_DATA_TOO_LARGE');
-  let parsed;try{parsed=JSON.parse(value);}catch{fail();}safe(parsed);return value;
+  let parsed;try{parsed=JSON.parse(value);}catch{fail();}safe(parsed);
+  if(key==='synk.hangul-stage.v1')try{validateHangulProgress(parsed);}catch{fail();}
+  return value;
 }
 export function validatePlayRecords(records){
   if(!object(records)||Object.keys(records).length>1024)fail();

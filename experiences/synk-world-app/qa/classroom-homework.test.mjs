@@ -218,8 +218,10 @@ test('앱 셸이 부르는 과제 파일·자료는 개발 서버와 공개 빌�
  const server=read('experiences/synk-world-app/server.mjs'),build=read('tools/build-world-app-public.mjs'),shell=read('experiences/synk-world-app/app-shell.mjs');
  const served=server.match(/else if\(\[('\/world-bootstrap\.js'[^\]]*)\]\.includes\(pathname\)\)base=root;/),copied=build.match(/for\(const name of \[('world-bootstrap\.js'[^\]]*)\]\)copyFile\(path\.join\(root,'experiences\/synk-world-app',name\),name\);/);
  assert.ok(served&&copied,'목록 줄 모양이 바뀌었다');
- for(const name of ['classroom-homework.mjs','topik4-homework.json','topik4-homework-key.json']){assert.ok(served[1].includes(`'/${name}'`),'개발 서버 '+name);assert.ok(copied[1].includes(`'${name}'`),'공개 빌드 '+name);}
- for(const name of ['topik4-homework.json','topik4-homework-key.json'])assert.ok(shell.includes(`homeworkJson('${name}')`),'앱 셸이 '+name+'을 읽는다');
+ for(const name of ['classroom-homework.mjs','topik4-homework.json']){assert.ok(served[1].includes(`'/${name}'`),'개발 서버 '+name);assert.ok(copied[1].includes(`'${name}'`),'공개 빌드 '+name);}
+ assert.ok(shell.includes("homeworkJson('topik4-homework.json')"));
+ assert.ok(!served[1].includes('topik4-homework-key.json')&&!copied[1].includes('topik4-homework-key.json'),'정답은 정적 공개 경로에서 제외한다');
+ assert.ok(!shell.includes("homeworkJson('topik4-homework-key.json')"));assert.ok(shell.includes('loadKey:input=>account.readHomeworkKey(input)'));
  assert.match(shell,/<div id="world-classroom-lessons"><\/div><div id="world-classroom-homework"><\/div><div id="world-classroom-entry"><\/div>/,'우리 반 수업 바로 아래, 반 연결 위');
  // 계정 묶음은 새 통로를 담고 있다(node tools/build-world-account.mjs --check가 원천과 같은지 본다).
  const bundle=read('experiences/synk-world-app/world-account.bundle.mjs');for(const name of ['readHomework','submitHomework','supportsHomework','homeworkSubmission'])assert.ok(bundle.includes(name),name);

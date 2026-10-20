@@ -1,9 +1,23 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createBrowserTeacherBridge} from '../src/messenger-teacher.mjs';
+import {readFileSync} from 'node:fs';
 const response=body=>({ok:true,status:200,json:async()=>body});
 const deferred=()=>{let resolve;const promise=new Promise(r=>resolve=r);return {resolve,promise};};
-function fixture(t,fetcher){const listeners=new Map(),calls=[];const bridge=createBrowserTeacherBridge({fetcher:async(...args)=>{calls.push(args);return fetcher(...args);},pollMs:100000,windowObject:{document:{hidden:false},addEventListener:(key,value)=>listeners.set(key,value),removeEventListener:key=>listeners.delete(key)}});t.after(()=>bridge.dispose());return {bridge,calls};}
+function fixture(t,fetcher,makeBridge=createBrowserTeacherBridge){const listeners=new Map(),calls=[];const bridge=makeBridge({fetcher:async(...args)=>{calls.push(args);return fetcher(...args);},pollMs:100000,windowObject:{document:{hidden:false},addEventListener:(key,value)=>listeners.set(key,value),removeEventListener:key=>listeners.delete(key)}});t.after(()=>bridge.dispose());return {bridge,calls};}
+test('company generated teacher bridge forwards course and legacy homework operations and keeps learner routes forbidden',async t=>{
+ const source=readFileSync(new URL('../../../docs/마케팅/온라인마케팅지도/engagement/company/public/teaching-host.js',import.meta.url),'utf8');
+ const generated=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+ const p=fixture(t,url=>response(url.endsWith('status')?{configured:true,signedIn:true,account:{synk_user_id:'teacher-a'},sessionGeneration:1,csrfToken:'csrf'}:{ok:true}),generated.createBrowserTeacherBridge);
+ for(const operation of ['courseRead','courseAssign','courseFeedback','coursePlan','homework','homeworkSave','homeworkKey']){
+  const input={operation,classId:'my-class',...(['courseRead','homework','homeworkKey'].includes(operation)?{}:{body:{taskId:'synthetic'}})};
+  assert.equal((await p.bridge.accountRequest('classroom',input)).ok,true);
+  assert.equal(p.calls.at(-1)[0],'/api/teaching/request');assert.deepEqual(JSON.parse(p.calls.at(-1)[1].body),input);
+ }
+ const before=p.calls.length;
+ for(const operation of ['courseSubmit','courseGroupSharing','learningGet'])assert.equal((await p.bridge.accountRequest('classroom',{operation,classId:'my-class'})).error.code,'INVALID_REQUEST');
+ assert.equal(p.calls.length,before);
+});
 test('browser teacher sends CSRF only to fixed classroom routes and exposes no credentials',async t=>{
   const p=fixture(t,url=>response(url.endsWith('status')?{configured:true,signedIn:true,account:{synk_user_id:'teacher-a'},sessionGeneration:10,csrfToken:'csrf-only'}:{ok:true,mode:'account-linked',classes:[]}));
   const auth=await p.bridge.authStatus();assert.equal(Object.hasOwn(auth,'csrfToken'),false);assert.equal(Object.hasOwn(auth,'access_token'),false);
@@ -14,7 +28,7 @@ test('browser teacher sends CSRF only to fixed classroom routes and exposes no c
 
 test('teacher browser overview and care requests keep the fixed BFF while learner Town commands stay forbidden',async t=>{
   const p=fixture(t,url=>response(url.endsWith('status')?{configured:true,signedIn:true,account:{synk_user_id:'teacher-a'},sessionGeneration:1,csrfToken:'csrf'}:{ok:true}));
-  for(const operation of ['teacherOverview','care','careSave','homework','homeworkSave'])assert.equal((await p.bridge.accountRequest('classroom',{operation,...(operation==='teacherOverview'?{}:{classId:'a'})})).ok,true);
+  for(const operation of ['teacherOverview','care','careSave'])assert.equal((await p.bridge.accountRequest('classroom',{operation,...(operation==='teacherOverview'?{}:{classId:'a'})})).ok,true);
   const before=p.calls.length;for(const operation of ['townMembership','townSharing','townActivity','student','memoryGet'])assert.equal((await p.bridge.accountRequest('classroom',{operation,classId:'a'})).error.code,'INVALID_REQUEST');assert.equal(p.calls.length,before);
 });
 test('a pre-logout status reply cannot restore an old teacher or replace the final status',async t=>{

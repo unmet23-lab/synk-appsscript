@@ -1,3 +1,16 @@
+.course-writing .course-task{margin-block:24px;padding-block:24px;border-top:1px solid currentColor}
+.course-writing :is(form,fieldset,.course-feedback){display:grid;gap:12px;margin-block:16px}
+.course-writing label{display:block;line-height:1.7}
+.course-writing :is(textarea,select,input[type=number],input[type=datetime-local]){display:block;width:100%;box-sizing:border-box;font:inherit;padding:12px;border:1px solid currentColor;border-radius:8px;background:transparent;color:inherit}
+.course-writing pre{font:inherit;line-height:1.85;white-space:pre-wrap;overflow-wrap:anywhere}
+.course-writing details{padding:16px 0}
+.course-writing summary{cursor:pointer;font-weight:650}
+.course-writing button{min-height:44px}
+.course-material{line-height:1.85;overflow-wrap:anywhere;min-width:0}
+.course-material p{margin-block:10px}
+.course-material td{border:1px solid currentColor;padding:10px;vertical-align:top}
+.course-material .course-passage{padding-left:14px;border-left:2px solid currentColor}
+.course-writing input:is([type=checkbox],[type=radio]){display:inline-block;width:18px;vertical-align:middle;margin-right:8px}
 /* SYNK WORLD — 시그널 게임판 (2026-10-14)
  * 유호님 「synk world 앱 처음 시작부터 모든 컨텐츠 전부 프론트 및 리디자인 … 중국에서 만든 양산형 느낌 … 감각있는 디자인으로」.
  * 기준: 플랫폼 싱ㅋ 시그널(docs/디자인/플랫폼_시그널/README.md)과 PULSE 글자 2판(같은 손으로 만든 화면).

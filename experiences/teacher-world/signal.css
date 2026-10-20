@@ -1,3 +1,17 @@
+.course-writing .course-task{margin-block:28px;padding-block:24px;border-top:1px solid var(--sg-line-2)}
+.course-writing :is(form,fieldset,.course-feedback){display:grid;gap:12px;margin-block:16px}
+.course-writing label{display:block;line-height:1.7}
+.course-writing :is(textarea,select,input[type=number],input[type=datetime-local]){display:block;width:100%;box-sizing:border-box;font:inherit;padding:12px;border:1px solid var(--sg-line-2);border-radius:8px;background:var(--sg-paper);color:var(--sg-ink)}
+.course-writing pre{font:inherit;line-height:1.85;white-space:pre-wrap;overflow-wrap:anywhere}
+.course-writing details{padding:16px 0;border-bottom:1px solid var(--sg-line)}
+.course-writing summary{cursor:pointer;font-weight:650}
+.course-writing button{min-height:44px}
+.course-material{line-height:1.85;overflow-wrap:anywhere;min-width:0}
+.course-material p{margin-block:10px}
+.course-material td{border:1px solid var(--sg-line-2);padding:10px;vertical-align:top}
+.course-material .course-passage{padding-left:14px;border-left:2px solid var(--sg-line-2)}
+.course-writing input:is([type=checkbox],[type=radio]){display:inline-block;width:18px;vertical-align:middle;margin-right:8px}
+.course-writing>button{border:1px solid var(--sg-line-2);border-radius:999px;padding:8px 18px;background:var(--sg-paper);color:var(--sg-ink)}
 /* SYNK Workspace · 내 수업 — 싱ㅋ 시그널 (2026-10-10 Claude)
    워크스페이스와 같은 종이 판: 흰 바탕, 1px 선, 검은 알약 선택, 모노 라벨, 큰 한글 제목.
    교사 화면(index.html)에만 읽힌다. 학생 화면(student.html)의 펠트 부품은 그대로다.

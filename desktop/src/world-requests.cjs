@@ -22,6 +22,7 @@ const ROUTES=Object.freeze({
   classroom:['GET','classroom'],
   homework:['GET','synk-classroom/api/world/homework'],
   'homework/submit':['POST','synk-classroom/api/world/homework'],
+  'homework/key':['POST','synk-classroom/api/world/homework/key'],
 });
 const record=value=>!!value&&typeof value==='object'&&!Array.isArray(value)&&[Object.prototype,null].includes(Object.getPrototypeOf(value));
 const uuid=value=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
@@ -61,6 +62,7 @@ function validateBody(route,body){
     case 'homework/submit':keys(body,['classId','week','kind','requestId','expectedRevision','contentVersion','answers','retry'],['classId','week','kind','requestId','expectedRevision','contentVersion','answers']);
       if(!uuid(body.classId)||!Number.isInteger(body.week)||body.week<1||body.week>12||!['reading','writing'].includes(body.kind)||!uuid(body.requestId)||!revision(body.expectedRevision)
         ||typeof body.contentVersion!=='string'||!/^v1-[0-9a-f]{12}$/.test(body.contentVersion)||!homeworkAnswers(body.kind,body.week,body.answers)||body.retry!==undefined&&(body.kind!=='writing'||!homeworkRetry(body.week,body.retry)))invalid();break;
+    case 'homework/key':keys(body,['classId','week','kind']);if(!uuid(body.classId)||!Number.isInteger(body.week)||body.week<1||body.week>8||!['reading','writing'].includes(body.kind))invalid();break;
     case 'enrollment/preview':case 'enrollment/claim':keys(body,route.endsWith('claim')?['token','confirm']:['token']);if(typeof body.token!=='string'||!/^[A-Za-z0-9_-]{22,128}$/.test(body.token)||route.endsWith('claim')&&body.confirm!==true)invalid();break;
     default:invalid();
   }
@@ -69,9 +71,9 @@ function worldRequestSpec(params,product,clientKey){
   if(product!=='world'||clientKey!=='world')invalid();keys(params,['route','body','classId'],['route']);
   const {route,body,classId}=params;if(typeof route!=='string'||!Object.hasOwn(ROUTES,route))invalid();
   const [method,endpoint]=ROUTES[route];let path=endpoint;
-  if(classId!==undefined){if(!uuid(classId)||!['town/state','town/command','town/presence','town/sharing','homework/submit'].includes(route))invalid();path+='?classId='+encodeURIComponent(classId);}
-  if((route==='town/sharing'||route==='homework/submit')&&classId===undefined)invalid();
-  if(route==='homework/submit'&&body?.classId!==classId)invalid();
+  if(classId!==undefined){if(!uuid(classId)||!['town/state','town/command','town/presence','town/sharing','homework/submit','homework/key'].includes(route))invalid();path+='?classId='+encodeURIComponent(classId);}
+  if((route==='town/sharing'||route==='homework/submit'||route==='homework/key')&&classId===undefined)invalid();
+  if((route==='homework/submit'||route==='homework/key')&&body?.classId!==classId)invalid();
   if(method==='GET'){if(body!==undefined)invalid();return route==='classroom'?{path,contractVer:CLASSROOM_CONTRACT_VER}:{path};}
   validateBody(route,body);const encoded=JSON.stringify(copyJson(body));if(Buffer.byteLength(encoded)>524288)invalid();
   return {path,method,body:JSON.parse(encoded)};

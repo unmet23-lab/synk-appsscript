@@ -24,7 +24,7 @@ test('native WORLD reads 「우리 반 수업」 with the student contract versi
   assert.ok(web);assert.equal(send({route:'classroom'}).contractVer,web[1]);
   // The WORLD page shows the section only when main advertises this route (old apps do not).
   assert.ok(Object.isFrozen(WORLD_ROUTE_NAMES));
-  assert.deepEqual([...WORLD_ROUTE_NAMES],['bootstrap','play/start','play/complete','avatar/outfit','wardrobe/looks','town/entry','town/state','town/command','town/presence','town/sharing','enrollment/preview','enrollment/claim','classroom','homework','homework/submit']);
+  assert.deepEqual([...WORLD_ROUTE_NAMES],['bootstrap','play/start','play/complete','avatar/outfit','wardrobe/looks','town/entry','town/state','town/command','town/presence','town/sharing','enrollment/preview','enrollment/claim','classroom','homework','homework/submit','homework/key']);
 });
 test('native WORLD 「이번 주 과제」: a class-free read and a class-scoped submission with this week ids only',()=>{
   const version='v1-53795e0997f6',other='22222222-2222-4222-8222-222222222222';
@@ -51,4 +51,9 @@ test('native WORLD bounds nested JSON and rejects prototype pollution before tra
   const cycle={};cycle.self=cycle;assert.throws(()=>send({route:'town/command',body:{...body,payload:cycle}}),{code:'INVALID_REQUEST'});
   const deep={};let cur=deep;for(let i=0;i<25;i++)cur=cur.x={};assert.throws(()=>send({route:'town/command',body:{...body,payload:deep}}),{code:'INVALID_REQUEST'});
   assert.equal({}.polluted,undefined);
+});
+test('native homework keys bind a single class, week and kind without arbitrary payloads',()=>{
+ const body={classId:uuid,week:1,kind:'reading'};
+ assert.deepEqual(send({route:'homework/key',classId:uuid,body}),{path:'synk-classroom/api/world/homework/key?classId='+uuid,method:'POST',body});
+ for(const params of [{route:'homework/key',body},{route:'homework/key',classId:uuid,body:{...body,week:0}},{route:'homework/key',classId:uuid,body:{...body,week:9}},{route:'homework/key',classId:uuid,body:{...body,kind:'all'}},{route:'homework/key',classId:uuid,body:{...body,accountId:'other'}},{route:'homework/key',classId:uuid,body:{...body,classId:'22222222-2222-4222-8222-222222222222'}}])assert.throws(()=>send(params),{code:'INVALID_REQUEST'});
 });

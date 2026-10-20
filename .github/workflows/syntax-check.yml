@@ -72,6 +72,7 @@ jobs:
         run: |
           (cd experiences/synk-account && npm ci --ignore-scripts --no-audit --no-fund)
           npm run check:account-bundles
+          npm run check:topik4-course
       - name: node --check all .js files
         run: |
           set -e

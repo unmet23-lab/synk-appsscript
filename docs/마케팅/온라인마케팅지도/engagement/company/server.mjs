@@ -64,6 +64,7 @@ import { createSocialInboxRecovery } from './social-inbox-recovery.mjs';
 import { createSocialAiCopy } from './social-ai-copy.mjs';
 import { createSocialRecovery } from './social-recovery.mjs';
 import { createSocialTracking } from './social-tracking.mjs';
+import { createSocialInquiries } from './social-inquiries.mjs';
 import { createSocialWorkflowsService } from './social-workflows.mjs';
 import { createSocialReview } from './social-review.mjs';
 import { createSocialPublicRoutes } from './social-public-routes.mjs';
@@ -309,6 +310,7 @@ export function createCompanyApp(options={}) {
   const socialAi=createSocialAiCopy({store,clock,...options.socialAiOptions});
   const socialRecovery=createSocialRecovery({store,publishing:socialPublishing,marketing:socialMarketing,clock});
   const socialTracking=createSocialTracking({store,publishing:socialPublishing,clock,origin,...options.socialTrackingOptions});
+  const socialInquiries=createSocialInquiries({store,tracking:socialTracking,clock});
   const socialCapacity=createSocialCapacity({store,publishing:socialPublishing,provider:socialProvider,clock});
   const socialCopyInsights=createSocialVariantPerformanceService({store,publishing:socialPublishing,performance:postPerformance,tracking:socialTracking,validatePostInput:socialMarketing.validatePostInput,clock});
   const socialFollowups=createSocialFollowups({store,clock,origin,tasks:{options:user=>messenger.taskOptionsForCompanyUser(user.id),create:(user,input)=>messenger.createTaskForCompanyUser(user.id,input),get:(user,input)=>messenger.taskForCompanyUser(user.id,input),find:(user,input)=>messenger.findTaskForCompanyUser(user.id,input)}});
@@ -344,6 +346,7 @@ export function createCompanyApp(options={}) {
     socialExtrasRunning=true;
     socialExtras=Promise.resolve().then(async()=>{
       socialAi.prune();
+      socialInquiries.maintain();
       socialCapacity.prune();
       const jobs=[];
       if(!socialSourceRuntime.lastAttemptAt||Date.parse(clock())-Date.parse(socialSourceRuntime.lastAttemptAt)>=60000){
@@ -362,8 +365,8 @@ export function createCompanyApp(options={}) {
     return socialExtras;
   }
   const publicationLinks=createPublicationLinkCheckService({store,studio,publicationPackages,postPerformance,clock,...(options.publicationLinkProbe?{probe:options.publicationLinkProbe}:{})});
-  const socialRoutes=createSocialRoutes({store,publishing:socialPublishing,marketing:socialMarketing,provider:socialProvider,distribution:socialDistribution,inboxProvider:socialInboxProvider,inboxRecovery:socialInboxRecovery,replies:socialReplies,capacity:socialCapacity,copyInsights:socialCopyInsights,followups:socialFollowups,ai:socialAi,recovery:socialRecovery,tracking:socialTracking,workflows:socialWorkflows,review:socialReview,publicationLinks,signal:socialAbort.signal,session,origin,body,send,isStopped:()=>stopRequested,runtime:()=>({...socialRuntime,sources:{...socialSourceRuntime},inbox:{...socialInboxRuntime},health:{...socialHealthRuntime}}),onChange:notifySocialChanges});
-  const socialPublicRoutes=createSocialPublicRoutes({review:socialReview,tracking:socialTracking,body,send,origin,signal:socialAbort.signal,clientAddress,isStopped:()=>stopRequested,onReviewChange:notifySocialChanges});
+  const socialRoutes=createSocialRoutes({store,publishing:socialPublishing,marketing:socialMarketing,provider:socialProvider,distribution:socialDistribution,inboxProvider:socialInboxProvider,inboxRecovery:socialInboxRecovery,replies:socialReplies,capacity:socialCapacity,copyInsights:socialCopyInsights,followups:socialFollowups,ai:socialAi,recovery:socialRecovery,tracking:socialTracking,inquiries:socialInquiries,workflows:socialWorkflows,review:socialReview,publicationLinks,signal:socialAbort.signal,session,origin,body,send,isStopped:()=>stopRequested,runtime:()=>({...socialRuntime,sources:{...socialSourceRuntime},inbox:{...socialInboxRuntime},health:{...socialHealthRuntime}}),onChange:notifySocialChanges});
+  const socialPublicRoutes=createSocialPublicRoutes({review:socialReview,tracking:socialTracking,inquiries:socialInquiries,body,send,origin,signal:socialAbort.signal,clientAddress,isStopped:()=>stopRequested,onReviewChange:notifySocialChanges});
   const publicationLinkSchedule=options.publicationLinkSchedule??(workroomScheduleEnabled&&options.schedule!==false);
   // Validated with the other schedule options before opening data.
   const linksRuntime=runtimeJob('links',publicationLinkSchedule,60000),performanceRuntime=runtimeJob('performance',publicationPerformanceSchedule,60000);
@@ -1600,9 +1603,9 @@ export function createCompanyApp(options={}) {
     Object.assign(files,{'/teaching.js':['public/teaching.js','text/javascript; charset=utf-8'],'/teaching.css':['public/teaching.css','text/css; charset=utf-8'],'/teaching-host.js':['public/teaching-host.js','text/javascript; charset=utf-8'],'/teaching/host.js':['public/teaching-host.js','text/javascript; charset=utf-8']});
     if(path==='/teacher-world'&&['GET','HEAD'].includes(method)){res.writeHead(302,{Location:'/teacher-world/'});return res.end();}
     files['/teacher-world/']=['../../../../../experiences/teacher-world/index.html','text/html; charset=utf-8'];
-    for(const file of ['app.mjs','personalization-ui.mjs','style.css','personalization.css','signal.css','workspace-overview.css','workspace-overview.mjs','sharing-fence.mjs','homework-review.mjs','homework-review.css'])files['/teacher-world/'+file]=['../../../../../experiences/teacher-world/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
-    // 과제 첨삭(homework-review.mjs)이 읽는 TOPIK 4급 과제 문제·정답 자료. WORLD가 공개로 싣는 같은 파일이다(문서에서 변환).
-    for(const file of ['topik4-homework.json','topik4-homework-key.json'])files['/teacher-world/'+file]=['../../../../../experiences/synk-world-app/'+file,'application/json; charset=utf-8'];
+    for(const file of ['app.mjs','personalization-ui.mjs','course-writing-ui.mjs','style.css','personalization.css','signal.css','workspace-overview.css','workspace-overview.mjs','sharing-fence.mjs','homework-review.mjs','homework-review.css'])files['/teacher-world/'+file]=['../../../../../experiences/teacher-world/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
+    // Public practice material only. Answer keys require the authenticated teacher/student API.
+    files['/teacher-world/topik4-homework.json']=['../../../../../experiences/synk-world-app/topik4-homework.json','application/json; charset=utf-8'];
     const teacherAssets=['app-world.png','synk-logo.svg','sticker-book.webp','sticker-person.webp','SUIT-Variable.woff2','InterTight-700.woff2','DMMono-Medium.ttf','slab-cream-long.webp','slab-coral-long.webp','chip-blush-long.webp','thread-shift.webp','badge-cream.webp','badge-check.webp','wide-coral.webp','wide-butter.webp'];
     for(const file of teacherAssets){const type=file.endsWith('.woff2')?'font/woff2':file.endsWith('.ttf')?'font/ttf':file.endsWith('.svg')?'image/svg+xml':file.endsWith('.png')?'image/png':'image/webp';files['/teacher-world/assets/'+file]=['../../../../../experiences/teacher-world/assets/'+file,type];}
     // Existing teacher CSS has these fixed absolute image paths. No directory
@@ -1718,7 +1721,7 @@ export function createCompanyApp(options={}) {
         await listen(server,port,host);
         if(redirectServer)await listen(redirectServer,legacyPort,'127.0.0.1');
         if(channelCollectionEnabled&&options.schedule!==false&&!stopRequested){timer=setInterval(()=>scheduledTick().catch(()=>{}),60000);timer.unref();await scheduledTick();}
-        if(options.schedule!==false&&!stopRequested){const checkResearch=()=>Promise.resolve().then(()=>creativeResearchSync.tick(clock())).catch(()=>{});researchSyncTimer=setInterval(checkResearch,30000);researchSyncTimer.unref();void checkResearch();}
+        if(options.schedule!==false&&!stopRequested){const checkResearch=()=>Promise.resolve().then(()=>{socialInquiries.maintain();return creativeResearchSync.tick(clock());}).catch(()=>{});researchSyncTimer=setInterval(checkResearch,30000);researchSyncTimer.unref();void checkResearch();}
         // Registered-post observation follows the workroom opt-in while broad
         // background collection can remain paused.
         if(publicationPerformanceSchedule&&!stopRequested){publicationTimer=setInterval(collectPublicationPerformance,60000);publicationTimer.unref();void collectPublicationPerformance();}
@@ -1736,7 +1739,7 @@ export function createCompanyApp(options={}) {
     return startTask;
   }
   async function stop(){ready=false;stopRequested=true;clearInterval(timer);clearInterval(pushTimer);clearInterval(researchSyncTimer);clearInterval(publicationTimer);clearInterval(publicationInboxTimer);clearInterval(publicationLinkTimer);clearInterval(weeklySummaryTimer);clearInterval(automationHealthTimer);clearInterval(deliveryCheckTimer);clearInterval(socialTimer);socialAbort.abort();publicationAbort.abort();if(startTask)await startTask.catch(()=>{});await shutdown();}
-  return {server,store,socialPublishMedia,socialPublishing,socialMarketing,socialProvider,socialDistribution,socialInboxProvider,socialAi,socialRecovery,socialTracking,socialWorkflows,socialReview,socialReplies,socialCapacity,socialCopyInsights,socialFollowups,scanSocialPublishing,clientProjects,clientDelivery,messenger,deviceNotifications,dailyTrends,creativeResearch,creativeResearchSync,computerInterpretation,publicationPackages,publicationInbox,postPerformance,publicationLinks,weeklySummary,scanWeeklySummary,automationHealth,automationNotifications,scanAutomationHealth,scanAutomationHealthScheduled,scanDeliveryChecks,origin,host,port,importLegacy,scheduledTick,collectPublicationPerformance,scanPublicationInbox,scanPublicationLinks,report,enqueueCollection,waitForIdle:async()=>{await socialTick;await Promise.all([socialExtras,socialPublishMedia.waitForIdle(),socialPublishing.waitForIdle(),socialReplies.waitForIdle(),socialProvider.waitForHealthIdle?.(),socialReview.waitForIdle(),socialDistribution.waitForIdle(),socialAi.waitForIdle(),socialInboxProvider.waitForIdle(),queue,deliveryCheckTick,automationHealthTick,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.waitForIdle(),publicationInbox.waitForIdle(),postPerformance.waitForIdle(),publicationPackages.waitForIdle(),dailyTrends.waitForIdle(),creativeResearch.waitForIdle(),creativeResearchSync.waitForIdle(),computerInterpretation.waitForIdle()]);},start,stop};
+  return {server,store,socialPublishMedia,socialPublishing,socialMarketing,socialProvider,socialDistribution,socialInboxProvider,socialAi,socialRecovery,socialTracking,socialInquiries,socialWorkflows,socialReview,socialReplies,socialCapacity,socialCopyInsights,socialFollowups,scanSocialPublishing,clientProjects,clientDelivery,messenger,deviceNotifications,dailyTrends,creativeResearch,creativeResearchSync,computerInterpretation,publicationPackages,publicationInbox,postPerformance,publicationLinks,weeklySummary,scanWeeklySummary,automationHealth,automationNotifications,scanAutomationHealth,scanAutomationHealthScheduled,scanDeliveryChecks,origin,host,port,importLegacy,scheduledTick,collectPublicationPerformance,scanPublicationInbox,scanPublicationLinks,report,enqueueCollection,waitForIdle:async()=>{await socialTick;await Promise.all([socialExtras,socialPublishMedia.waitForIdle(),socialPublishing.waitForIdle(),socialReplies.waitForIdle(),socialProvider.waitForHealthIdle?.(),socialReview.waitForIdle(),socialDistribution.waitForIdle(),socialAi.waitForIdle(),socialInboxProvider.waitForIdle(),queue,deliveryCheckTick,automationHealthTick,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.waitForIdle(),publicationInbox.waitForIdle(),postPerformance.waitForIdle(),publicationPackages.waitForIdle(),dailyTrends.waitForIdle(),creativeResearch.waitForIdle(),creativeResearchSync.waitForIdle(),computerInterpretation.waitForIdle()]);},start,stop};
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   let app;

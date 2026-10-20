@@ -53,13 +53,16 @@ test('실물 기본 범위는 뿌리뿐 아니라 현재 공통 모듈·제품 �
   assert.ok(Object.values(r.셈).every(Number.isInteger));
 });
 
-test('삭제한 리포트는 실물 명부에 없고 현재 집단 산출 소비·참조는 0이다', (t) => {
+test('실물 명부는 온라인 반 교사 소비자 하나만 허용하고 학생 직접 참조는 없다', (t) => {
   환경비우기(t);
   const r = 검사({});
   assert.equal(r.종료코드, 0);
-  assert.equal(r.셈.등록소비자수, 0);
-  assert.equal(r.셈.참조수, 0);
+  assert.equal(r.셈.등록소비자수, 1);
+  assert.equal(r.셈.참조수, 1);
   assert.equal(r.셈.학생학부모참조수, 0);
+  const registered=JSON.parse(fs.readFileSync(path.join(저장소,'docs/_ops/prism_접점등록.json'),'utf8')).소비자;
+  assert.equal(registered[0].경로,'experiences/teacher-world/course-writing.mjs');
+  assert.equal(registered[0].갈래,'강사');
 });
 
 test('못 읽는 명부는 종료코드 2와 셈 null이다', (t) => {
@@ -71,7 +74,7 @@ test('못 읽는 명부는 종료코드 2와 셈 null이다', (t) => {
 
 test('환경변수로 저장소 밖 명부를 실제로 읽되 인자 경로 제한은 유지한다', (t) => {
   const f = 픽스처(t);
-  const 항목들 = [소비자('합성a.js'), 소비자('합성b.js', '학부모'), 소비자('합성c.js')];
+  const 항목들 = [소비자('합성a.js'), 소비자('합성b.js', '학부모'), 소비자('합성c.js'),소비자('experiences/teacher-world/course-writing.mjs','강사')];
   const 외부 = f.쓰기('외부명부.json', 명부내용(항목들));
   assert.ok(path.relative(저장소, 외부).startsWith('..'));
   process.env.SYNK_PRISM_명부 = 외부;

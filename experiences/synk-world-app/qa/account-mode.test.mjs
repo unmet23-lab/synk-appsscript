@@ -141,6 +141,22 @@ test('revoked game transport invalidates the account instead of falling back to 
  assert.equal(f.client.snapshot,null);assert.equal(f.account.identity().accountId,null);assert.equal(f.tab.getItem('synk.oauth.session.world'),null);assert.equal(target.SYNKPlayHost,undefined);
 });
 
+test('Hangul migration verifies its owner, keeps sharing disabled, and loses write authority at logout',async()=>{
+ const {emptyProgress,meet}=await import('../../hangul-stage/core.mjs'),f=gameFixture();
+ await assert.rejects(f.account.prepareHangulProgress({storage:f.cache,target:{}}),{code:'AUTH_REQUIRED'});
+ await f.client.restore();const port=await f.account.prepareHangulProgress({storage:f.cache,target:{}});
+ const raw=JSON.stringify(meet(emptyProgress(),['v-a'],'2026-10-20T00:00:00Z'));
+ assert.equal(port.read(),null);assert.equal(await port.importSnapshot(raw),'moved');assert.equal(f.state.records['synk.hangul-stage.v1'],raw);
+ assert.deepEqual(f.learningRequests,[]);await f.client.logout();
+ assert.throws(()=>port.read(),{code:'ACCOUNT_CHANGED'});await assert.rejects(port.importSnapshot(raw),{code:'ACCOUNT_CHANGED'});
+});
+
+test('revoked Hangul preparation invalidates account credentials and never returns an editable local fallback',async()=>{
+ const f=gameFixture({playError:Object.assign(Error('revoked'),{code:'SESSION_REVOKED'})});await f.client.restore();
+ await assert.rejects(f.account.prepareHangulProgress({storage:f.cache,target:{}}),{code:'SESSION_REVOKED'});
+ assert.equal(f.client.snapshot,null);assert.equal(f.account.identity().accountId,null);assert.equal(f.tab.getItem('synk.oauth.session.world'),null);
+});
+
 test('initial progress conflict returns a recovery handle without installing a game or learning host',async()=>{
  const f=gameFixture(),target={};await f.client.restore();f.state.records['synk.windrun.best']='77';f.setRevision(1);
  const id='initial-conflict';f.cache.setItem(`synk.play.account.v1:${A}:pending:${id}`,JSON.stringify({accountId:A,at:Date.now(),body:{id,action:'progress',changes:[{key:'synk.windrun.best',previous:null,value:'42'}]}}));

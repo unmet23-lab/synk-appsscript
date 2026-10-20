@@ -1,4 +1,5 @@
 import {randomUUID,createHash} from 'node:crypto';
+import {websiteInquiryView} from './social-inquiries.mjs';
 import {readFile,lstat,realpath} from 'node:fs/promises';
 import {resolve,dirname} from 'node:path';
 import {execFile} from 'node:child_process';
@@ -41,7 +42,7 @@ export function createSocialMarketingService({store,studio,publicationPackages,c
     for(const row of store.all('socialInbox')){
       if(!channels.has(row.channelId))channels.set(row.channelId,store.get('channels',row.channelId));const c=channels.get(row.channelId);
       if(!c||c.active===false||c.hidden===true||!canReadChannel(user,c))continue;
-      const {metaReplyProofIds,metaReplyCompleteAt,metaAccountReply,...publicRow}=row;items.push({...publicRow,...inboxReplyState(row,c),canEdit:canWriteChannel(user,c)});
+      const {metaReplyProofIds,metaReplyCompleteAt,metaAccountReply,...publicRow}=row;items.push({...websiteInquiryView(store,publicRow,clock),...inboxReplyState(row,c),canEdit:canWriteChannel(user,c)});
     }
     return items.sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt));
   }
@@ -51,17 +52,17 @@ export function createSocialMarketingService({store,studio,publicationPackages,c
     const c=channel(user,old?.channelId||input.channelId,true);
     if(old&&input.revision!==old.revision)throw fail('다른 사람이 문의를 먼저 수정했어요. 새로고침해 주세요.',409);
     if(old&&input.channelId&&input.channelId!==old.channelId)throw fail('문의가 들어온 계정은 바꿀 수 없어요.');
-    const imported=old?.source&&old.source!=='manual';
-    if(imported&&['text','author','url','kind','postId'].some(key=>input[key]!=null&&input[key]!==old[key]))throw fail('수집한 문의 원문은 바꿀 수 없어요. 담당자·처리 상태·답변 초안만 고쳐 주세요.');
+    const imported=old?.source&&old.source!=='manual',original=imported?websiteInquiryView(store,old,clock):old;
+    if(imported&&['text','author','url','kind','postId'].some(key=>input[key]!=null&&input[key]!==original[key]))throw fail('수집한 문의 원문은 바꿀 수 없어요. 담당자·처리 상태·답변 초안만 고쳐 주세요.');
     const assigneeId=clean(input.assigneeId??old?.assigneeId??user.id,100),assignee=store.get('users',assigneeId);
     if(!assignee?.active||!canWriteChannel(assignee,c))throw fail('이 계정을 담당할 수 있는 크루를 선택해 주세요.');
     const status=input.status??old?.status??'open';if(!['open','assigned','resolved'].includes(status))throw fail('문의 상태를 확인해 주세요.');
     const kind=input.kind??old?.kind??'comment';if(!['comment','message','mention'].includes(kind))throw fail('문의 종류를 확인해 주세요.');
-    const text=clean(input.text??old?.text,10000);if(!text)throw fail('문의 내용을 입력해 주세요.');
+    const text=clean(imported?old.text:input.text??old?.text,10000);if(!text)throw fail('문의 내용을 입력해 주세요.');
     const postId=clean(input.postId??old?.postId,100);
     if(postId&&!imported){const post=store.get('socialPosts',postId);if(!post?.variants?.some(v=>v.channelId===c.id)||!post.variants.every(v=>{const target=store.get('channels',v.channelId);return target&&target.active!==false&&!target.hidden&&canReadChannel(user,target);}))throw fail('접근 가능한 이 계정의 게시물을 연결해 주세요.');}
-    const row={...old,id:old?.id||randomUUID(),revision:(old?.revision||0)+1,channelId:c.id,postId,kind,author:clean(input.author??old?.author,120),text,url:href(input.url??old?.url),status,assigneeId,replyDraft:clean(input.replyDraft??old?.replyDraft,10000),source:old?.source||'manual',outboundSent:old?.outboundSent===true,createdBy:old?.createdBy||user.id,createdAt:old?.createdAt||clock(),updatedAt:clock()};
-    store.put('socialInbox',row.id,row);return {item:row};
+    const row={...old,id:old?.id||randomUUID(),revision:(old?.revision||0)+1,channelId:c.id,postId,kind,author:clean(imported?old.author:input.author??old?.author,120),text,url:href(input.url??old?.url),status,assigneeId,replyDraft:clean(input.replyDraft??old?.replyDraft,10000),source:old?.source||'manual',outboundSent:old?.outboundSent===true,createdBy:old?.createdBy||user.id,createdAt:old?.createdAt||clock(),updatedAt:clock()};
+    store.put('socialInbox',row.id,row);return {item:websiteInquiryView(store,row,clock)};
   }
   function clientReference(user,id){
     const stored=store.all('clientProjects').find(p=>p.versions?.some(v=>v.media?.id===id));

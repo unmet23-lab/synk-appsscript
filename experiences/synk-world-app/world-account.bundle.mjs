@@ -81,10 +81,10 @@ var require_account_client = __commonJS({
         guard();
         checkCancelled();
         if (!configured) throw fault("CONFIG", "\uACC4\uC815 \uC5F0\uACB0 \uC124\uC815\uC774 \uC544\uC9C1 \uC900\uBE44\uB418\uC9C0 \uC54A\uC558\uC5B4\uC694.");
-        const send = async (token2) => {
+        const send = async (token3) => {
           guard();
           checkCancelled();
-          if (!token2) throw fault("AUTH_REQUIRED", "\uB2E4\uC2DC \uB85C\uADF8\uC778\uD574 \uC8FC\uC138\uC694.");
+          if (!token3) throw fault("AUTH_REQUIRED", "\uB2E4\uC2DC \uB85C\uADF8\uC778\uD574 \uC8FC\uC138\uC694.");
           const abort = new AbortController();
           const cancel = () => abort.abort();
           if (signal?.aborted) cancel();
@@ -96,7 +96,7 @@ var require_account_client = __commonJS({
               signal: abort.signal,
               headers: {
                 apikey: anonKey,
-                Authorization: `Bearer ${token2}`,
+                Authorization: `Bearer ${token3}`,
                 "X-SYNK-Product": product,
                 "X-SYNK-Contract": "1",
                 "X-SYNK-App-Version": appVersion,
@@ -118,10 +118,10 @@ var require_account_client = __commonJS({
             signal?.removeEventListener("abort", cancel);
           }
         };
-        const token = getAccessToken();
-        let result = await send(token);
+        const token2 = getAccessToken();
+        let result = await send(token2);
         if (result.response.status === 401 && typeof refresh === "function") {
-          const renewed = await refresh(token);
+          const renewed = await refresh(token2);
           guard();
           if (renewed) result = await send(renewed);
         }
@@ -213,7 +213,7 @@ var require_world_learning_host = __commonJS({
     var OWNERS = "synk.world.run-owners.v1";
     var OWNER_GRACE_MS = 864e5;
     var identifier = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
-    var failure = (message, code) => Object.assign(new Error(message), { code });
+    var failure3 = (message, code) => Object.assign(new Error(message), { code });
     function createWorldLearningHost({ accountKey, revision, storage, transport, memoryTransport = null, personalMemory = null, guard, connected = true, onStatus = () => {
     }, engine = null, clock: clock2 = Date.now }) {
       if (!accountKey || !Number.isSafeInteger(revision) || typeof guard !== "function") throw new TypeError("Verified WORLD account required");
@@ -222,7 +222,7 @@ var require_world_learning_host = __commonJS({
       const coaches = /* @__PURE__ */ new Set(), memoryListeners = /* @__PURE__ */ new Set();
       const check2 = () => {
         guard();
-        if (closed || privacyBlocked) throw failure("WORLD account session ended", "MEMORY_SESSION_ENDED");
+        if (closed || privacyBlocked) throw failure3("WORLD account session ended", "MEMORY_SESSION_ENDED");
       };
       const shared = { getItem(key) {
         check2();
@@ -286,7 +286,7 @@ var require_world_learning_host = __commonJS({
         const groups = [];
         for (const event of args.events) {
           const runId = shared.getItem(ownerKey(event.id)) ?? null;
-          if (runId !== null && !identifier(runId)) throw failure("Unreadable WORLD run ownership", "STORAGE_ERROR");
+          if (runId !== null && !identifier(runId)) throw failure3("Unreadable WORLD run ownership", "STORAGE_ERROR");
           if (groups.length && groups.at(-1).runId === runId) groups.at(-1).events.push(event);
           else groups.push({ runId, events: [event] });
         }
@@ -296,7 +296,7 @@ var require_world_learning_host = __commonJS({
           check2();
           if (result?.ok === false || result?.revision !== revision) return result;
           const sent = new Set(group.events.map((event) => event.id));
-          if (!Array.isArray(result.accepted) || result.accepted.some((id) => !sent.has(id))) throw failure("Invalid WORLD run acknowledgement", "INVALID_RESPONSE");
+          if (!Array.isArray(result.accepted) || result.accepted.some((id) => !sent.has(id))) throw failure3("Invalid WORLD run acknowledgement", "INVALID_RESPONSE");
           accepted.push(...result.accepted);
         }
         return { ok: true, revision, accepted };
@@ -375,7 +375,7 @@ var require_world_learning_host = __commonJS({
         };
         const call = (method, args, closing = false) => {
           check2();
-          if (opened !== generation && !closing) throw failure("WORLD game run ended", "RUN_ENDED");
+          if (opened !== generation && !closing) throw failure3("WORLD game run ended", "RUN_ENDED");
           if (!context) return method(...args);
           const before = new Set(logIds());
           try {
@@ -393,7 +393,7 @@ var require_world_learning_host = __commonJS({
           // Each game sees the run's immutable task snapshot, without an account token.
           ["assignment", () => {
             check2();
-            if (opened !== generation) throw failure("WORLD game run ended", "RUN_ENDED");
+            if (opened !== generation) throw failure3("WORLD game run ended", "RUN_ENDED");
             return context?.target ? structuredClone(context.target) : null;
           }],
           ["disconnect", () => {
@@ -560,16 +560,16 @@ var require_strata = __commonJS({
         visited.add(id);
       }
       for (const id of ids.keys()) visit(id);
-      const tags = /* @__PURE__ */ new Set();
+      const tags2 = /* @__PURE__ */ new Set();
       if (new Set(data.tag_vocabulary).size !== data.tag_vocabulary.length || data.tag_vocabulary.some((tag) => !text2(tag))) fail2("invalid tag vocabulary");
       for (const link of data.links.tags) {
-        if (!data.tag_vocabulary.includes(link.tag) || tags.has(link.tag)) fail2("invalid or duplicate tag");
+        if (!data.tag_vocabulary.includes(link.tag) || tags2.has(link.tag)) fail2("invalid or duplicate tag");
         if (!["full", "none"].includes(link.fit) || (link.fit === "none" ? link.node !== null : !ids.has(link.node))) fail2("tag must be exactly mapped or explicitly missing");
         if (link.fit === "full" && ids.get(link.node).kind !== "skill") fail2("tag must reference a skill");
         confidence(link);
-        tags.add(link.tag);
+        tags2.add(link.tag);
       }
-      if (tags.size !== data.tag_vocabulary.length) fail2("incomplete tag partition");
+      if (tags2.size !== data.tag_vocabulary.length) fail2("incomplete tag partition");
       if (data.links.goals !== void 0) {
         if (!Array.isArray(data.links.goals)) fail2("invalid goal links");
         const goals = /* @__PURE__ */ new Set();
@@ -586,7 +586,7 @@ var require_strata = __commonJS({
       validateMap(input);
       const data = freeze(copy2(input));
       const nodes = new Map(data.nodes.map((node) => [node.id, node]));
-      const tags = new Map(data.links.tags.map((link) => [link.tag, link]));
+      const tags2 = new Map(data.links.tags.map((link) => [link.tag, link]));
       const goals = new Map((data.links.goals || []).map((link) => [link.goal, link]));
       function getNode(id) {
         return nodes.get(id) || null;
@@ -596,7 +596,7 @@ var require_strata = __commonJS({
         return freeze(link ? link.nodes.map(getNode) : []);
       }
       function forTag(tag) {
-        const link = tags.get(tag);
+        const link = tags2.get(tag);
         return freeze({
           status: !link ? "unknown" : link.fit === "full" ? "exact" : "missing",
           tag,
@@ -6523,7 +6523,7 @@ var require_trail = __commonJS({
         if (!value || typeof value !== "object" || Array.isArray(value) || ![Object.prototype, null].includes(Object.getPrototypeOf(value)) || Object.keys(value).length !== 2 || !Object.hasOwn(value, "selectedId") || !Object.hasOwn(value, "correctId") || !optionId(value.selectedId) || !optionId(value.correctId)) throw new TypeError("Trail: invalid choice IDs");
         return { selectedId: value.selectedId, correctId: value.correctId };
       }
-      const time2 = (value) => {
+      const time3 = (value) => {
         const n = Date.parse(value);
         if (typeof value !== "string" || !Number.isFinite(n)) throw new TypeError("Trail: invalid time");
         return n;
@@ -6541,16 +6541,16 @@ var require_trail = __commonJS({
         return value;
       };
       const scopeOf = (e) => vouched.get(e)?.scope ?? key(e.scope);
-      const atOf = (e) => vouched.get(e)?.at ?? time2(e.at);
-      const recordedOf = (e) => vouched.get(e)?.recordedAt ?? time2(e.recordedAt);
+      const atOf = (e) => vouched.get(e)?.at ?? time3(e.at);
+      const recordedOf = (e) => vouched.get(e)?.recordedAt ?? time3(e.recordedAt);
       const uniqueList = (values, valid, max) => Array.isArray(values) && values.length <= max && values.every(valid) && new Set(values).size === values.length;
       const tag = (v) => typeof v === "string" && v.trim() === v && v.length > 0 && v.length <= 120 && !/[\r\n]/.test(v);
       function validate(event) {
         if (!event || !TYPES.includes(event.type) || event.schema !== 1 || !id(event.id)) throw new TypeError("Trail: invalid practice event");
-        const fields = [...BASE, ...FIELDS[event.type]];
-        if (Object.keys(event).some((k) => !fields.includes(k) && !(OPTIONAL[event.type] || []).includes(k)) || fields.some((k) => !Object.hasOwn(event, k))) throw new TypeError("Trail: unexpected or missing practice field");
+        const fields2 = [...BASE, ...FIELDS[event.type]];
+        if (Object.keys(event).some((k) => !fields2.includes(k) && !(OPTIONAL[event.type] || []).includes(k)) || fields2.some((k) => !Object.hasOwn(event, k))) throw new TypeError("Trail: unexpected or missing practice field");
         key(event.scope);
-        if (time2(event.recordedAt) < time2(event.at)) throw new TypeError("Trail: recorded before occurrence");
+        if (time3(event.recordedAt) < time3(event.at)) throw new TypeError("Trail: recorded before occurrence");
         if (event.type === TYPES[0]) {
           if (![event.decisionId, event.taskId, event.taskVersion, event.itemKey].every(id) || !uniqueList(event.conceptIds, id, 32) || ![true, false, null].includes(event.firstExposure)) throw new TypeError("Trail: invalid presentation");
           if (event.measure != null) {
@@ -6583,14 +6583,14 @@ var require_trail = __commonJS({
         if (TYPES.includes(event?.type)) validate(event);
         else if (!event?.scope || ![event.scope.domain, event.scope.workspace, event.scope.subject].every((v) => typeof v === "string")) throw new TypeError("Trail: invalid log entry");
         freeze(event);
-        vouched.set(event, { scope: `${event.scope.domain}/${event.scope.workspace}/${event.scope.subject}`, at: time2(event.at), recordedAt: time2(event.recordedAt) });
+        vouched.set(event, { scope: `${event.scope.domain}/${event.scope.workspace}/${event.scope.subject}`, at: time3(event.at), recordedAt: time3(event.recordedAt) });
         return event;
       }
       function checkLink(events, event) {
         const attempts = { count: 0, latest: -Infinity };
         for (const earlier of events) if (earlier.type === TYPES[2] && earlier.presentationId === event.presentationId) {
           attempts.count += 1;
-          attempts.latest = Math.max(attempts.latest, time2(earlier.at));
+          attempts.latest = Math.max(attempts.latest, time3(earlier.at));
         }
         return linked(
           event,
@@ -6636,7 +6636,7 @@ var require_trail = __commonJS({
       const BITS = Object.freeze({ attempt: 1, answer: 2, help: 4 });
       const foldedBefore = (prior, traceKey, kind) => !!prior && Object.prototype.hasOwnProperty.call(prior.keys, traceKey) && (prior.keys[traceKey] & BITS[kind]) !== 0;
       function summarize(events, { scope, asOf, recordedAsOf = asOf, decisions = null, prior = null } = {}) {
-        const scopeId = key(scope), cutoff = time2(asOf), recordedCutoff = time2(recordedAsOf);
+        const scopeId = key(scope), cutoff = time3(asOf), recordedCutoff = time3(recordedAsOf);
         if (!Array.isArray(events)) throw new TypeError("Trail: log must be an array");
         if (decisions !== null && (!Array.isArray(decisions) || !decisions.every(id))) throw new TypeError("Trail: invalid decision filter");
         const reported = (decisionId) => decisions === null || decisions.includes(decisionId);
@@ -6870,11 +6870,11 @@ var require_trail = __commonJS({
       }
       function createPracticeOutcomeIndex(summary) {
         if (!summary || summary.version !== VERSION || !Array.isArray(summary.attempts)) throw new TypeError("Trail: use a practice summary");
-        const owner = key(summary.scope), cutoff = time2(summary.asOf), recordedCutoff = time2(summary.recordedAsOf ?? summary.asOf);
+        const owner = key(summary.scope), cutoff = time3(summary.asOf), recordedCutoff = time3(summary.recordedAsOf ?? summary.asOf);
         const attempts = /* @__PURE__ */ new Map();
         for (const item of summary.attempts) {
           if (!id(item.eventId) || !id(item.presentationId) || !id(item.decisionId) || !Array.isArray(item.conceptIds) || item.conceptIds.some((value) => !id(value)) || attempts.has(item.eventId)) throw new TypeError("Trail: invalid practice outcome evidence");
-          const at = time2(item.at), recordedAt = time2(item.recordedAt);
+          const at = time3(item.at), recordedAt = time3(item.recordedAt);
           if (recordedAt < at || at > cutoff || recordedAt > recordedCutoff) throw new TypeError("Trail: practice evidence outside summary");
           attempts.set(item.eventId, {
             eventId: item.eventId,
@@ -6888,7 +6888,7 @@ var require_trail = __commonJS({
         }
         return Object.freeze({ find(outcome, { targetLine, since, maxAgeMs } = {}) {
           if (!outcome || outcome.type !== "outcome.observed" || !id(outcome.id) || key(outcome.scope) !== owner || typeof targetLine !== "string" || !/^(need|due|trait):[a-zA-Z0-9_.:-]{1,120}$/.test(targetLine) || !Number.isFinite(maxAgeMs) || maxAgeMs < 0) throw new TypeError("Trail: invalid practice outcome query");
-          const start = time2(since), at = time2(outcome.at), recordedAt = time2(outcome.recordedAt);
+          const start = time3(since), at = time3(outcome.at), recordedAt = time3(outcome.recordedAt);
           if (at > cutoff || recordedAt > recordedCutoff || recordedAt < at || at < start || cutoff - at > maxAgeMs || outcome.measure !== "independent" || outcome.assisted !== false || outcome.targetLine !== targetLine) return null;
           const attempt = attempts.get(outcome.attemptId);
           const concept = targetLine.replace(/^(need|due):/, "").replace(/^(skill|node)\./, "");
@@ -6904,7 +6904,7 @@ var require_trail = __commonJS({
         for (const now of summary.attempts) {
           const concept = now.conceptIds[0];
           if (!now.independent || now.verdict !== "correct" || !concept || told.has(concept) || known.has(now.itemKey)) continue;
-          const before = earlier.filter((p) => p.verdict === "incorrect" && p.itemKey !== now.itemKey && p.conceptIds[0] === concept && Date.parse(p.at) < time2(now.at)).sort((a, b) => Date.parse(b.at) - Date.parse(a.at))[0];
+          const before = earlier.filter((p) => p.verdict === "incorrect" && p.itemKey !== now.itemKey && p.conceptIds[0] === concept && Date.parse(p.at) < time3(now.at)).sort((a, b) => Date.parse(b.at) - Date.parse(a.at))[0];
           if (!before) continue;
           told.add(concept);
           facts.push({
@@ -7490,9 +7490,9 @@ var require_engine = __commonJS({
             return existing ? copy2(existing) : record2({ type: "experience.completed", decisionId: decision.id, experienceId: decision.experienceId, variant: decision.selected.id });
           },
           feedback: (completionId, value) => record2({ type: "feedback.given", completionId, value }),
-          practice: (kind, fields) => {
-            if (!fields || typeof fields !== "object" || Array.isArray(fields) || typeof kind !== "string") throw new TypeError("Atlas: invalid practice fields");
-            return record2({ ...fields, type: kind.startsWith("practice.") ? kind : `practice.${kind}` });
+          practice: (kind, fields2) => {
+            if (!fields2 || typeof fields2 !== "object" || Array.isArray(fields2) || typeof kind !== "string") throw new TypeError("Atlas: invalid practice fields");
+            return record2({ ...fields2, type: kind.startsWith("practice.") ? kind : `practice.${kind}` });
           },
           outcome: (decisionId, result) => record2({
             type: "outcome.observed",
@@ -7648,14 +7648,14 @@ var require_vellum = __commonJS({
     }
     function learningReason({ status, label }) {
       if (typeof label !== "string") throw new TypeError("Vellum: invalid learning reason");
-      const topic = `${label}${particle(label, "\uC740", "\uB294")}`, object3 = `${label}${particle(label, "\uC744", "\uB97C")}`;
+      const topic = `${label}${particle(label, "\uC740", "\uB294")}`, object4 = `${label}${particle(label, "\uC744", "\uB97C")}`;
       const reasons = {
         unseen: `${topic} \uC544\uC9C1 \uAE30\uB85D\uC774 \uC801\uC5B4\uC694. \uC9E7\uAC8C \uD655\uC778\uD574 \uBD10\uC694.`,
-        checking: `${object3} \uC870\uAE08 \uB354 \uD655\uC778\uD574 \uBD10\uC694.`,
-        practice: `\uCD5C\uADFC \uB193\uCE5C ${object3} \uC870\uAE08 \uB354 \uC5F0\uC2B5\uD574 \uBD10\uC694.`,
-        supported: `${object3} \uB3C4\uC6C0\uACFC \uD568\uAED8 \uD574\uB0C8\uC5B4\uC694. \uC774\uC5B4\uC11C \uC0B4\uD3B4\uBD10\uC694.`,
-        "recent-independent": `${object3} \uCD5C\uADFC \uD63C\uC790 \uD574\uB0C8\uC5B4\uC694. \uAC00\uBCCD\uAC8C \uC774\uC5B4\uAC00\uC694.`,
-        review: `${object3} \uB2E4\uC2DC \uC0B4\uD3B4\uBCFC \uB54C\uC608\uC694.`
+        checking: `${object4} \uC870\uAE08 \uB354 \uD655\uC778\uD574 \uBD10\uC694.`,
+        practice: `\uCD5C\uADFC \uB193\uCE5C ${object4} \uC870\uAE08 \uB354 \uC5F0\uC2B5\uD574 \uBD10\uC694.`,
+        supported: `${object4} \uB3C4\uC6C0\uACFC \uD568\uAED8 \uD574\uB0C8\uC5B4\uC694. \uC774\uC5B4\uC11C \uC0B4\uD3B4\uBD10\uC694.`,
+        "recent-independent": `${object4} \uCD5C\uADFC \uD63C\uC790 \uD574\uB0C8\uC5B4\uC694. \uAC00\uBCCD\uAC8C \uC774\uC5B4\uAC00\uC694.`,
+        review: `${object4} \uB2E4\uC2DC \uC0B4\uD3B4\uBCFC \uB54C\uC608\uC694.`
       };
       if (!Object.hasOwn(reasons, status)) throw new TypeError("Vellum: invalid learning reason");
       return reasons[status];
@@ -7690,10 +7690,10 @@ var require_vellum = __commonJS({
       return source === "activity" ? "\uAC19\uC740 \uAE38\uC774\uC758 \uB450 \uAE30\uAC04\uC5D0 \uC571\uC744 \uC5F0 \uD69F\uC218\uC640 \uB0A0\uC9DC\uB97C \uBE44\uAD50\uD574\uC694. \uD65C\uB3D9 \uC644\uB8CC\uB098 \uAD00\uC2EC\uC758 \uAC15\uB3C4\uB97C \uB73B\uD558\uC9C0 \uC54A\uC544\uC694." : "\uAC19\uC740 \uAE38\uC774\uC758 \uB450 \uAE30\uAC04\uC5D0 \uB2F5\uD55C \uD69F\uC218\uB97C \uBE44\uAD50\uD574\uC694. \uD63C\uC790 \uC751\uB2F5\uC5D0\uB294 \uC624\uB2F5\uB3C4 \uD3EC\uD568\uD558\uBA70, \uC2E4\uB825 \uC131\uC7A5\uC774\uB098 \uD559\uC2B5 \uD6A8\uACFC\uB97C \uB73B\uD558\uC9C0 \uC54A\uC544\uC694.";
     }
     var memberDate = (value) => {
-      const time2 = typeof value === "string" ? Date.parse(value) : NaN;
-      if (!Number.isFinite(time2)) throw new TypeError("Vellum: invalid member evidence date");
-      const [year, month, day] = new Date(time2 + 9 * 36e5).toISOString().slice(0, 10).split("-").map(Number);
-      return `${year}\uB144 ${month}\uC6D4 ${day}\uC77C`;
+      const time3 = typeof value === "string" ? Date.parse(value) : NaN;
+      if (!Number.isFinite(time3)) throw new TypeError("Vellum: invalid member evidence date");
+      const [year, month, day2] = new Date(time3 + 9 * 36e5).toISOString().slice(0, 10).split("-").map(Number);
+      return `${year}\uB144 ${month}\uC6D4 ${day2}\uC77C`;
     };
     function memberUnderstandingLine({ kind, label, count = 0, activeDays = 0, state = "observed", selection = null, periodEnd = null } = {}) {
       if (typeof label !== "string" || !["observed", "agreed", "contextual", "disagreed", "declared", "empty", "disabled"].includes(state)) throw new TypeError("Vellum: invalid member understanding");
@@ -8012,8 +8012,8 @@ var require_learning_ledger = __commonJS({
       const base = previous || empty();
       const ledger = { ...base, keys: { ...base.keys }, cells: { ...base.cells }, content: { ...base.content } };
       if (!events.length) return ledger;
-      const time2 = (e) => Math.max(Date.parse(e.at), Date.parse(e.recordedAt));
-      const latest = log.reduce((max, e) => Math.max(max, time2(e)), -Infinity);
+      const time3 = (e) => Math.max(Date.parse(e.at), Date.parse(e.recordedAt));
+      const latest = log.reduce((max, e) => Math.max(max, time3(e)), -Infinity);
       const decisions = events.filter((e) => e.type === "decision.made").map((e) => e.id);
       const summary = Trail.summarize(log, { scope, asOf: new Date(latest).toISOString(), prior: previous, decisions });
       const presented = new Map(events.filter((e) => e.type === "practice.presented").map((e) => [e.id, e]));
@@ -8052,7 +8052,7 @@ var require_learning_ledger = __commonJS({
         table[key] = { ind: [...cell.ind].sort((x, y) => x[1] - y[1]).slice(-KEEP), helped: helped.sort((x, y) => helpedAt(x) - helpedAt(y)), unassessed: cell.unassessed };
       }
       ledger.counts = ledger.counts ? Temper.combine(ledger.counts, Temper.measure(summary)) : Temper.measure(summary);
-      ledger.cutoff = Math.max(ledger.cutoff ?? -Infinity, events.reduce((max, e) => Math.max(max, time2(e)), -Infinity));
+      ledger.cutoff = Math.max(ledger.cutoff ?? -Infinity, events.reduce((max, e) => Math.max(max, time3(e)), -Infinity));
       ledger.folded += events.length;
       if (local) ledger.local = true;
       return ledger;
@@ -8247,8 +8247,8 @@ var require_learning = __commonJS({
         ids.add(candidate.id);
         if (excludeIds.includes(candidate.id) || !audioAvailable && (candidate.audioRequired ?? candidate.modality === "listening")) continue;
         const responseFormat = candidate.responseFormat ?? "unknown";
-        const states = candidate.skillIds.map((id) => ({ ...skills.get(id).levels[candidate.difficulty].formats[responseFormat], skill: skills.get(id) }));
-        const focus = states.sort((a, b) => b.priority - a.priority)[0];
+        const states2 = candidate.skillIds.map((id) => ({ ...skills.get(id).levels[candidate.difficulty].formats[responseFormat], skill: skills.get(id) }));
+        const focus = states2.sort((a, b) => b.priority - a.priority)[0];
         const previous = /* @__PURE__ */ new Set([
           ...history2.task.get(candidate.id) || [],
           ...history2.item.get(candidate.itemKey) || [],
@@ -8415,7 +8415,7 @@ var require_learning_pages = __commonJS({
     "use strict";
     var PAGE_ITEMS = 128;
     var THRESHOLD = 1024;
-    var failure = () => Object.assign(new Error("Atlas: unreadable paged history"), { code: "STORAGE_ERROR" });
+    var failure3 = () => Object.assign(new Error("Atlas: unreadable paged history"), { code: "STORAGE_ERROR" });
     function encodePage(rows2) {
       const plain = JSON.stringify(rows2), strings = [], ids = /* @__PURE__ */ new Map();
       const intern = (value) => {
@@ -8432,27 +8432,27 @@ var require_learning_pages = __commonJS({
     function decodePage(text2) {
       const value = JSON.parse(text2);
       if (Array.isArray(value)) return value;
-      if (!value || value.codec !== 1 || Object.keys(value).some((k) => !["codec", "strings", "entries"].includes(k)) || !Array.isArray(value.strings) || !value.strings.every((s) => typeof s === "string") || !Array.isArray(value.entries)) throw failure();
+      if (!value || value.codec !== 1 || Object.keys(value).some((k) => !["codec", "strings", "entries"].includes(k)) || !Array.isArray(value.strings) || !value.strings.every((s) => typeof s === "string") || !Array.isArray(value.entries)) throw failure3();
       const string = (index) => {
-        if (!Number.isInteger(index) || index < 0 || index >= value.strings.length) throw failure();
+        if (!Number.isInteger(index) || index < 0 || index >= value.strings.length) throw failure3();
         return value.strings[index];
       };
       function unpack(entry, depth = 0) {
-        if (depth > 64) throw failure();
+        if (depth > 64) throw failure3();
         if (entry === null || typeof entry === "boolean" || typeof entry === "number") return entry;
-        if (!Array.isArray(entry)) throw failure();
+        if (!Array.isArray(entry)) throw failure3();
         if (entry[0] === 2 && entry.length === 2) return string(entry[1]);
         if (entry[0] === 0) return entry.slice(1).map((child) => unpack(child, depth + 1));
         if (entry[0] === 1 && entry.length % 2 === 1) {
           const out = {};
           for (let at = 1; at < entry.length; at += 2) {
             const name = string(entry[at]);
-            if (Object.hasOwn(out, name)) throw failure();
+            if (Object.hasOwn(out, name)) throw failure3();
             Object.defineProperty(out, name, { value: unpack(entry[at + 1], depth + 1), enumerable: true, configurable: true, writable: true });
           }
           return out;
         }
-        throw failure();
+        throw failure3();
       }
       return value.entries.map((entry) => unpack(entry));
     }
@@ -8468,18 +8468,18 @@ var require_learning_pages = __commonJS({
           decodedRaw = raw;
           return value;
         }
-        if (!manifest(value) || Object.keys(value).some((k) => !["paged", "version", "data", "arrays"].includes(k)) || Object.keys(value.arrays).some((k) => !arrays.includes(k))) throw failure();
+        if (!manifest(value) || Object.keys(value).some((k) => !["paged", "version", "data", "arrays"].includes(k)) || Object.keys(value.arrays).some((k) => !arrays.includes(k))) throw failure3();
         const data = { ...value.data }, seen = /* @__PURE__ */ new Set();
         for (const [name, pages] of Object.entries(value.arrays)) {
-          if (Object.hasOwn(data, name) || !Array.isArray(pages)) throw failure();
+          if (Object.hasOwn(data, name) || !Array.isArray(pages)) throw failure3();
           data[name] = [];
           for (const page of pages) {
-            if (!page || !validKey(page.key) || seen.has(page.key) || !Number.isInteger(page.count) || page.count < 1 || page.count > PAGE_ITEMS) throw failure();
+            if (!page || !validKey(page.key) || seen.has(page.key) || !Number.isInteger(page.count) || page.count < 1 || page.count > PAGE_ITEMS) throw failure3();
             seen.add(page.key);
             const text2 = storage.getItem(page.key);
-            if (typeof text2 !== "string") throw failure();
+            if (typeof text2 !== "string") throw failure3();
             const rows2 = decodePage(text2);
-            if (!Array.isArray(rows2) || rows2.length !== page.count) throw failure();
+            if (!Array.isArray(rows2) || rows2.length !== page.count) throw failure3();
             cache.set(page.key, text2);
             data[name].push(...rows2);
           }
@@ -8513,7 +8513,7 @@ var require_learning_pages = __commonJS({
         try {
           for (const name of arrays) {
             if (!Object.hasOwn(data, name)) continue;
-            if (!Array.isArray(data[name])) throw failure();
+            if (!Array.isArray(data[name])) throw failure3();
             delete next.data[name];
             next.arrays[name] = [];
             for (let at = 0; at < data[name].length; at += PAGE_ITEMS) {
@@ -8528,7 +8528,7 @@ var require_learning_pages = __commonJS({
               }
             }
           }
-          if (storage.getItem(key) !== expectedRaw) throw Object.assign(failure(), { message: "Atlas: history changed during persistence" });
+          if (storage.getItem(key) !== expectedRaw) throw Object.assign(failure3(), { message: "Atlas: history changed during persistence" });
           const raw = JSON.stringify(next);
           publishedRaw = raw;
           storage.setItem(key, raw);
@@ -8566,7 +8566,7 @@ var require_learning_sync = __commonJS({
       return entry && typeof entry === "object" && !Array.isArray(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key) => [key, entry[key]])) : entry;
     });
     var sameEvent = (a, b) => canonical(a) === canonical(b);
-    var failure = (code, message, extra = {}) => Object.assign(new Error(message), { code, ...extra });
+    var failure3 = (code, message, extra = {}) => Object.assign(new Error(message), { code, ...extra });
     var errorCode = (error2) => error2?.code || error2?.error?.code || error2?.body?.error?.code || "NETWORK_ERROR";
     var FATAL = /* @__PURE__ */ new Set([
       "REVISION_CONFLICT",
@@ -8644,15 +8644,15 @@ var require_learning_sync = __commonJS({
       };
       const readState = (raw) => {
         const stored = pages.decode(raw), v1 = stored?.version === 1;
-        if (!stored || ![1, 2].includes(stored.version) || stored.accountKey !== accountKey || !Number.isSafeInteger(stored.cursor) || stored.cursor < 0 || typeof stored.complete !== "boolean" || !Array.isArray(stored.acknowledged) || !stored.acknowledged.every(id) || !Array.isArray(stored.pending) || !stored.pending.every(v1 ? (e) => id(e?.id) : id) || !(stored.missing === void 0 || Array.isArray(stored.missing) && stored.missing.every(id)) || !(stored.recoveryCursor === void 0 || Number.isSafeInteger(stored.recoveryCursor) && stored.recoveryCursor >= 0 && stored.recoveryCursor <= stored.cursor)) throw failure("STORAGE_ERROR", "Atlas sync: unreadable outbox; preserved without replacement");
-        if (stored.revision !== revision) throw failure("REVISION_CONFLICT", "Atlas sync: a new consent revision requires a fresh account store");
+        if (!stored || ![1, 2].includes(stored.version) || stored.accountKey !== accountKey || !Number.isSafeInteger(stored.cursor) || stored.cursor < 0 || typeof stored.complete !== "boolean" || !Array.isArray(stored.acknowledged) || !stored.acknowledged.every(id) || !Array.isArray(stored.pending) || !stored.pending.every(v1 ? (e) => id(e?.id) : id) || !(stored.missing === void 0 || Array.isArray(stored.missing) && stored.missing.every(id)) || !(stored.recoveryCursor === void 0 || Number.isSafeInteger(stored.recoveryCursor) && stored.recoveryCursor >= 0 && stored.recoveryCursor <= stored.cursor)) throw failure3("STORAGE_ERROR", "Atlas sync: unreadable outbox; preserved without replacement");
+        if (stored.revision !== revision) throw failure3("REVISION_CONFLICT", "Atlas sync: a new consent revision requires a fresh account store");
         return { ...stored, version: 2, pending: v1 ? stored.pending.map((e) => e.id) : stored.pending, missing: stored.missing || [] };
       };
       const save = () => {
         try {
           const current = storage.getItem(key);
           if (current !== lastStoredRaw) {
-            if (current == null) throw failure("STORAGE_ERROR", "Atlas sync: outbox was removed by another context");
+            if (current == null) throw failure3("STORAGE_ERROR", "Atlas sync: outbox was removed by another context");
             const latest = readState(current), acknowledged = /* @__PURE__ */ new Set([...latest.acknowledged, ...state.acknowledged]);
             state = {
               ...state,
@@ -8671,7 +8671,7 @@ var require_learning_sync = __commonJS({
             storage.setItem(key, lastStoredRaw);
           }
         } catch {
-          throw failure("STORAGE_ERROR", "Atlas sync: the durable outbox could not be saved");
+          throw failure3("STORAGE_ERROR", "Atlas sync: the durable outbox could not be saved");
         }
       };
       try {
@@ -8682,12 +8682,12 @@ var require_learning_sync = __commonJS({
         }
         port.markComplete(whole());
       } catch (error2) {
-        block(error2?.code ? error2 : failure("STORAGE_ERROR", "Atlas sync: unreadable outbox; preserved without replacement"));
+        block(error2?.code ? error2 : failure3("STORAGE_ERROR", "Atlas sync: unreadable outbox; preserved without replacement"));
       }
       const collect = () => {
-        if (typeof port.partial === "function" && port.partial()) throw failure("HISTORY_FOLDED", "Atlas sync: this log summarised entries no server received; it cannot be sent");
+        if (typeof port.partial === "function" && port.partial()) throw failure3("HISTORY_FOLDED", "Atlas sync: this log summarised entries no server received; it cannot be sent");
         const local = port.events(), localIds = new Set(local.map((event) => event.id));
-        if (state.pending.some((eventId) => !localIds.has(eventId))) throw failure("STORAGE_ERROR", "Atlas sync: queued history does not match its account log");
+        if (state.pending.some((eventId) => !localIds.has(eventId))) throw failure3("STORAGE_ERROR", "Atlas sync: queued history does not match its account log");
         const folded = new Set(typeof port.dropped === "function" ? port.dropped() : []);
         const lost = state.acknowledged.filter((eventId) => !localIds.has(eventId) && !folded.has(eventId));
         if (lost.length) {
@@ -8715,7 +8715,7 @@ var require_learning_sync = __commonJS({
       const unsubscribe = port.subscribe((change) => {
         if (stopped || phase === "blocked" || change.kind === "import") return;
         if (change.kind === "storage-error") {
-          block(failure(change.code || "STORAGE_ERROR", "Atlas sync: local learning could not be saved"));
+          block(failure3(change.code || "STORAGE_ERROR", "Atlas sync: local learning could not be saved"));
           return;
         }
         try {
@@ -8733,11 +8733,11 @@ var require_learning_sync = __commonJS({
           block(error2);
         }
       }
-      const active = (token) => !stopped && token === generation;
-      const request = async (method, body, token) => {
+      const active = (token2) => !stopped && token2 === generation;
+      const request = async (method, body, token2) => {
         let last;
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
-          if (!active(token)) throw failure("STOPPED", "Atlas sync: stopped");
+          if (!active(token2)) throw failure3("STOPPED", "Atlas sync: stopped");
           const controller = new AbortController();
           controllers.add(controller);
           let deadline;
@@ -8746,19 +8746,19 @@ var require_learning_sync = __commonJS({
               Promise.resolve().then(() => transport[method]({ ...body, signal: controller.signal })),
               new Promise((_, reject) => {
                 deadline = setTimeout(() => {
-                  reject(failure("NETWORK_ERROR", "Atlas sync: request timed out"));
+                  reject(failure3("NETWORK_ERROR", "Atlas sync: request timed out"));
                   controller.abort();
                 }, timeoutMs);
-                controller.signal.addEventListener("abort", () => reject(failure("STOPPED", "Atlas sync: request cancelled")), { once: true });
+                controller.signal.addEventListener("abort", () => reject(failure3("STOPPED", "Atlas sync: request cancelled")), { once: true });
               })
             ]);
-            if (!active(token)) throw failure("STOPPED", "Atlas sync: stale request");
-            if (response?.ok === false) throw failure(response.error?.code || "INVALID_RESPONSE", response.error?.message || "Atlas sync: rejected", { revision: response.revision });
-            if (!response || response.revision !== revision) throw failure("REVISION_CONFLICT", "Atlas sync: server revision changed", { revision: response?.revision });
+            if (!active(token2)) throw failure3("STOPPED", "Atlas sync: stale request");
+            if (response?.ok === false) throw failure3(response.error?.code || "INVALID_RESPONSE", response.error?.message || "Atlas sync: rejected", { revision: response.revision });
+            if (!response || response.revision !== revision) throw failure3("REVISION_CONFLICT", "Atlas sync: server revision changed", { revision: response?.revision });
             return response;
           } catch (error2) {
             last = error2;
-            if (!active(token) || FATAL.has(errorCode(error2))) throw error2;
+            if (!active(token2) || FATAL.has(errorCode(error2))) throw error2;
           } finally {
             clearTimeout(deadline);
             controllers.delete(controller);
@@ -8767,16 +8767,16 @@ var require_learning_sync = __commonJS({
         }
         throw last;
       };
-      const pullPages = async (token) => {
+      const pullPages = async (token2) => {
         for (let page = 0; page < maxPages; page++) {
-          const before = state.cursor, response = await request("get", { after: before, revision }, token);
-          if (!Array.isArray(response.events) || !Number.isSafeInteger(response.cursor) || response.cursor < before || typeof response.hasMore !== "boolean" || response.hasMore && response.cursor <= before || response.events.length && response.cursor <= before) throw failure("INVALID_RESPONSE", "Atlas sync: invalid or stalled server cursor");
-          if (!active(token)) return;
+          const before = state.cursor, response = await request("get", { after: before, revision }, token2);
+          if (!Array.isArray(response.events) || !Number.isSafeInteger(response.cursor) || response.cursor < before || typeof response.hasMore !== "boolean" || response.hasMore && response.cursor <= before || response.events.length && response.cursor <= before) throw failure3("INVALID_RESPONSE", "Atlas sync: invalid or stalled server cursor");
+          if (!active(token2)) return;
           let result;
           try {
             result = port.importEvents(response.events);
           } catch (error2) {
-            throw failure(error2?.code || "INVALID_EVENTS", error2.message);
+            throw failure3(error2?.code || "INVALID_EVENTS", error2.message);
           }
           const skipped = new Set(result?.skipped || []), remote = new Set(state.acknowledged);
           for (const event of response.events) if (!skipped.has(event.id)) remote.add(event.id);
@@ -8794,19 +8794,19 @@ var require_learning_sync = __commonJS({
         }
         return false;
       };
-      const recover = async (token) => {
+      const recover = async (token2) => {
         let after = state.recoveryCursor || 0;
         for (let page = 0; page < maxPages && state.missing.length; page++) {
-          const response = await request("get", { after, revision }, token);
-          if (!Array.isArray(response.events) || !Number.isSafeInteger(response.cursor) || response.cursor < after || typeof response.hasMore !== "boolean" || response.hasMore && response.cursor <= after) throw failure("INVALID_RESPONSE", "Atlas sync: invalid or stalled server cursor");
-          if (!active(token)) return;
+          const response = await request("get", { after, revision }, token2);
+          if (!Array.isArray(response.events) || !Number.isSafeInteger(response.cursor) || response.cursor < after || typeof response.hasMore !== "boolean" || response.hasMore && response.cursor <= after) throw failure3("INVALID_RESPONSE", "Atlas sync: invalid or stalled server cursor");
+          if (!active(token2)) return;
           const wanted = new Set(state.missing), found = response.events.filter((event) => wanted.has(event.id));
           if (found.length) {
             let result;
             try {
               result = port.importEvents(found);
             } catch (error2) {
-              throw failure(error2?.code || "INVALID_EVENTS", error2.message);
+              throw failure3(error2?.code || "INVALID_EVENTS", error2.message);
             }
             const skipped = new Set(result?.skipped || []), back = new Set(found.map((event) => event.id));
             state.acknowledged = [.../* @__PURE__ */ new Set([...state.acknowledged, ...[...back].filter((eventId) => !skipped.has(eventId))])];
@@ -8824,18 +8824,18 @@ var require_learning_sync = __commonJS({
         }
         return !state.missing.length;
       };
-      const flushQueue = async (token) => {
+      const flushQueue = async (token2) => {
         let emptyAcks = 0;
         for (let batch = 0; batch < maxPages; batch++) {
           collect();
           if (!state.pending.length) return;
           const local = new Map(port.events().map((event) => [event.id, event]));
           const events = state.pending.slice(0, batchSize).map((eventId) => clone2(local.get(eventId))), sent = new Set(events.map((event) => event.id));
-          const response = await request("post", { revision, events }, token);
-          if (!Array.isArray(response.accepted) || new Set(response.accepted).size !== response.accepted.length || response.accepted.some((eventId) => !sent.has(eventId))) throw failure("INVALID_RESPONSE", "Atlas sync: acknowledgement contains an unsent event");
-          if (!active(token)) return;
+          const response = await request("post", { revision, events }, token2);
+          if (!Array.isArray(response.accepted) || new Set(response.accepted).size !== response.accepted.length || response.accepted.some((eventId) => !sent.has(eventId))) throw failure3("INVALID_RESPONSE", "Atlas sync: acknowledgement contains an unsent event");
+          if (!active(token2)) return;
           if (!response.accepted.length) {
-            if (++emptyAcks >= maxAttempts) throw failure("NETWORK_ERROR", "Atlas sync: no acknowledged progress");
+            if (++emptyAcks >= maxAttempts) throw failure3("NETWORK_ERROR", "Atlas sync: no acknowledged progress");
             await sleep(backoffMs[Math.min(emptyAcks - 1, backoffMs.length - 1)]);
             continue;
           }
@@ -8847,7 +8847,7 @@ var require_learning_sync = __commonJS({
           save();
           publish();
         }
-        throw failure("NETWORK_ERROR", "Atlas sync: batch limit reached; remaining events stay queued");
+        throw failure3("NETWORK_ERROR", "Atlas sync: batch limit reached; remaining events stay queued");
       };
       function run(pullOnly = false) {
         if (stopped || phase === "blocked") return Promise.resolve(status());
@@ -8856,7 +8856,7 @@ var require_learning_sync = __commonJS({
           return running;
         }
         flushRequested = !pullOnly;
-        const token = generation;
+        const token2 = generation;
         let continuation = false;
         phase = "syncing";
         code = null;
@@ -8864,24 +8864,24 @@ var require_learning_sync = __commonJS({
         publish();
         running = (async () => {
           try {
-            const pulled = await pullPages(token);
-            if (active(token) && !pulled) {
+            const pulled = await pullPages(token2);
+            if (active(token2) && !pulled) {
               continuation = true;
               return status();
             }
-            if (active(token) && state.missing.length && !await recover(token)) {
+            if (active(token2) && state.missing.length && !await recover(token2)) {
               continuation = true;
               return status();
             }
-            if (active(token) && flushRequested) await flushQueue(token);
-            if (active(token)) {
+            if (active(token2) && flushRequested) await flushQueue(token2);
+            if (active(token2)) {
               phase = "synced";
               code = null;
               message = null;
               publish();
             }
           } catch (error2) {
-            if (active(token)) {
+            if (active(token2)) {
               if (FATAL.has(errorCode(error2))) block(error2);
               else {
                 phase = "offline";
@@ -8892,7 +8892,7 @@ var require_learning_sync = __commonJS({
             }
           } finally {
             running = null;
-            if (continuation && active(token) && auto && started && !timer) {
+            if (continuation && active(token2) && auto && started && !timer) {
               const pullOnly2 = !flushRequested;
               timer = setTimeout(() => {
                 timer = null;
@@ -8914,7 +8914,7 @@ var require_learning_sync = __commonJS({
         retry: () => run(),
         status,
         invalidate(code2 = "STORAGE_ERROR") {
-          if (!stopped) block(failure(code2 === "HISTORY_CAPACITY" ? code2 : "STORAGE_ERROR", "Atlas sync: local learning could not be saved"));
+          if (!stopped) block(failure3(code2 === "HISTORY_CAPACITY" ? code2 : "STORAGE_ERROR", "Atlas sync: local learning could not be saved"));
           return status();
         },
         stop() {
@@ -8945,9 +8945,9 @@ var require_memory_sync = __commonJS({
     var ROUNDS = 50;
     var MAX_BYTES = 4096;
     var KINDS = Object.freeze(["presentation", "flow", "declined"]);
-    var object3 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
+    var object4 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
     var instant = (value) => typeof value === "string" && Number.isFinite(Date.parse(value));
-    var failure = (code, message) => Object.assign(new Error(message), { code });
+    var failure3 = (code, message) => Object.assign(new Error(message), { code });
     var errorCode = (error2) => error2?.code || error2?.error?.code || error2?.body?.error?.code || "NETWORK_ERROR";
     var FATAL = /* @__PURE__ */ new Set([
       "REVISION_CONFLICT",
@@ -8966,13 +8966,13 @@ var require_memory_sync = __commonJS({
       "ACCOUNT_UNAVAILABLE"
     ]);
     var keyOf = (entry) => `${entry.kind}\0${entry.key}`;
-    var canonical = (value) => JSON.stringify(value, (_key, part) => object3(part) ? Object.fromEntries(Object.keys(part).sort().map((key) => [key, part[key]])) : part);
+    var canonical = (value) => JSON.stringify(value, (_key, part) => object4(part) ? Object.fromEntries(Object.keys(part).sort().map((key) => [key, part[key]])) : part);
     var sameEntry = (a, b) => canonical(a) === canonical(b);
     function entriesOf(state) {
       const out = [];
-      if (object3(state?.presentation)) out.push({ kind: "presentation", key: "chosen", value: state.presentation.value ?? null, at: state.presentation.at });
-      for (const [key, memory] of Object.entries(object3(state?.flow) ? state.flow : {})) out.push({ kind: "flow", key, value: memory, at: memory?.at });
-      for (const [key, at] of Object.entries(object3(state?.declined) ? state.declined : {})) out.push({ kind: "declined", key, value: null, at });
+      if (object4(state?.presentation)) out.push({ kind: "presentation", key: "chosen", value: state.presentation.value ?? null, at: state.presentation.at });
+      for (const [key, memory] of Object.entries(object4(state?.flow) ? state.flow : {})) out.push({ kind: "flow", key, value: memory, at: memory?.at });
+      for (const [key, at] of Object.entries(object4(state?.declined) ? state.declined : {})) out.push({ kind: "declined", key, value: null, at });
       return out;
     }
     function stateOf(entries) {
@@ -8986,11 +8986,11 @@ var require_memory_sync = __commonJS({
     }
     function sendable(entry) {
       if (!KINDS.includes(entry.kind) || !ID.test(entry.key || "") || !instant(entry.at)) return false;
-      if (entry.kind === "presentation") return entry.key === "chosen" && (entry.value === null || object3(entry.value));
+      if (entry.kind === "presentation") return entry.key === "chosen" && (entry.value === null || object4(entry.value));
       if (entry.kind === "declined") return entry.value === null;
-      return object3(entry.value) && entry.value.content === entry.key && Date.parse(entry.value.at) === Date.parse(entry.at) && JSON.stringify(entry.value).length <= MAX_BYTES;
+      return object4(entry.value) && entry.value.content === entry.key && Date.parse(entry.value.at) === Date.parse(entry.at) && JSON.stringify(entry.value).length <= MAX_BYTES;
     }
-    var received = (entry) => object3(entry) && KINDS.includes(entry.kind) && ID.test(entry.key || "") && instant(entry.at) && (entry.kind === "flow" ? object3(entry.value) : entry.kind === "declined" ? entry.value === null : entry.value === null || object3(entry.value));
+    var received = (entry) => object4(entry) && KINDS.includes(entry.kind) && ID.test(entry.key || "") && instant(entry.at) && (entry.kind === "flow" ? object4(entry.value) : entry.kind === "declined" ? entry.value === null : entry.value === null || object4(entry.value));
     function createMemorySync({
       adapter,
       accountKey,
@@ -9014,7 +9014,7 @@ var require_memory_sync = __commonJS({
       const controllers = /* @__PURE__ */ new Set();
       const epoch = typeof port.epoch === "function" ? port.epoch() : void 0;
       const checkEpoch = () => {
-        if (typeof port.epoch === "function" && port.epoch() !== epoch) throw failure("MEMORY_SESSION_ENDED", "Atlas memory sync: local memory epoch changed");
+        if (typeof port.epoch === "function" && port.epoch() !== epoch) throw failure3("MEMORY_SESSION_ENDED", "Atlas memory sync: local memory epoch changed");
       };
       const newer = (at, than) => than == null || Date.parse(at) > Date.parse(than);
       const intents = () => durable ? port.pending() : [];
@@ -9037,10 +9037,10 @@ var require_memory_sync = __commonJS({
         } catch {
         }
       };
-      const active = (token) => !stopped && token === generation;
-      const call = async (method, body, token) => {
+      const active = (token2) => !stopped && token2 === generation;
+      const call = async (method, body, token2) => {
         checkEpoch();
-        if (!active(token)) throw failure("STOPPED", "Atlas memory sync: stopped");
+        if (!active(token2)) throw failure3("STOPPED", "Atlas memory sync: stopped");
         const controller = new AbortController();
         controllers.add(controller);
         let deadline;
@@ -9049,18 +9049,18 @@ var require_memory_sync = __commonJS({
             Promise.resolve().then(() => transport[method]({ ...body, signal: controller.signal })),
             new Promise((_, reject) => {
               deadline = setTimeout(() => {
-                reject(failure("NETWORK_ERROR", "Atlas memory sync: request timed out"));
+                reject(failure3("NETWORK_ERROR", "Atlas memory sync: request timed out"));
                 controller.abort();
               }, timeoutMs);
-              controller.signal.addEventListener("abort", () => reject(failure("STOPPED", "Atlas memory sync: request cancelled")), { once: true });
+              controller.signal.addEventListener("abort", () => reject(failure3("STOPPED", "Atlas memory sync: request cancelled")), { once: true });
             })
           ]);
-          if (!active(token)) throw failure("STOPPED", "Atlas memory sync: stale request");
+          if (!active(token2)) throw failure3("STOPPED", "Atlas memory sync: stale request");
           checkEpoch();
-          if (response?.ok === false) throw failure(response.error?.code || "INVALID_RESPONSE", response.error?.message || "Atlas memory sync: rejected");
-          if (!response || response.revision !== revision) throw failure("REVISION_CONFLICT", "Atlas memory sync: server revision changed");
-          if (!Array.isArray(response.entries) || !response.entries.every(received)) throw failure("INVALID_RESPONSE", "Atlas memory sync: invalid entries");
-          if (response.serverTime !== void 0 && !instant(response.serverTime)) throw failure("INVALID_RESPONSE", "Atlas memory sync: invalid server clock");
+          if (response?.ok === false) throw failure3(response.error?.code || "INVALID_RESPONSE", response.error?.message || "Atlas memory sync: rejected");
+          if (!response || response.revision !== revision) throw failure3("REVISION_CONFLICT", "Atlas memory sync: server revision changed");
+          if (!Array.isArray(response.entries) || !response.entries.every(received)) throw failure3("INVALID_RESPONSE", "Atlas memory sync: invalid entries");
+          if (response.serverTime !== void 0 && !instant(response.serverTime)) throw failure3("INVALID_RESPONSE", "Atlas memory sync: invalid server clock");
           if (response.serverTime !== void 0) serverTime = response.serverTime;
           return response;
         } finally {
@@ -9072,19 +9072,19 @@ var require_memory_sync = __commonJS({
         port.merge(stateOf(entries));
         for (const entry of entries) if (newer(entry.at, remote.get(keyOf(entry)))) remote.set(keyOf(entry), entry.at);
       };
-      async function cycle(token) {
+      async function cycle(token2) {
         checkEpoch();
         if (!pulled || intents().some((item) => !item.assignedAt)) {
-          accept((await call("get", { revision }, token)).entries);
+          accept((await call("get", { revision }, token2)).entries);
           pulled = true;
         }
         for (let round = 0; round < ROUNDS; round++) {
           const prepared = [];
           for (const item of intents().slice(0, BATCH)) {
-            if (!sendable(item.entry)) throw failure("INVALID_MEMORY", "Atlas memory sync: local intent is invalid");
+            if (!sendable(item.entry)) throw failure3("INVALID_MEMORY", "Atlas memory sync: local intent is invalid");
             const baseline = serverTime == null ? Date.parse(item.entry.at) : Date.parse(serverTime);
             const at = item.assignedAt || new Date(Math.max(baseline, (Date.parse(remote.get(keyOf(item.entry))) || 0) + 1)).toISOString();
-            if (!item.assignedAt && serverTime != null && Date.parse(at) > Date.parse(serverTime) + 864e5) throw failure("MEMORY_CLOCK_AHEAD", "Atlas memory sync: server memory is ahead of its clock");
+            if (!item.assignedAt && serverTime != null && Date.parse(at) > Date.parse(serverTime) + 864e5) throw failure3("MEMORY_CLOCK_AHEAD", "Atlas memory sync: server memory is ahead of its clock");
             const value = port.prepare(item.id, at);
             if (value) prepared.push(value);
           }
@@ -9092,20 +9092,20 @@ var require_memory_sync = __commonJS({
           for (const entry of all) if (!sendable(entry)) refused.set(keyOf(entry), entry.at);
           const batch = [...prepared.map((item) => item.entry), ...all.filter(sendable)].slice(0, BATCH);
           if (!batch.length) return;
-          const response = await call("post", { revision, entries: batch }, token);
-          if (!active(token)) return;
+          const response = await call("post", { revision, entries: batch }, token2);
+          if (!active(token2)) return;
           const returned = new Map(response.entries.map((entry) => [keyOf(entry), entry]));
-          if (returned.size !== response.entries.length || response.entries.some((entry) => !batch.some((sent) => keyOf(sent) === keyOf(entry)))) throw failure("INVALID_RESPONSE", "Atlas memory sync: invalid acknowledgement");
+          if (returned.size !== response.entries.length || response.entries.some((entry) => !batch.some((sent) => keyOf(sent) === keyOf(entry)))) throw failure3("INVALID_RESPONSE", "Atlas memory sync: invalid acknowledgement");
           for (const item of prepared) {
             const accepted = returned.get(keyOf(item.entry));
-            if (!accepted || Date.parse(accepted.at) < Date.parse(item.entry.at)) throw failure("INVALID_RESPONSE", "Atlas memory sync: missing acknowledgement");
-            if (Date.parse(accepted.at) === Date.parse(item.entry.at) && !sameEntry(accepted, item.entry)) throw failure("MEMORY_CONFLICT", "Atlas memory sync: another value has the same timestamp; local choice preserved");
+            if (!accepted || Date.parse(accepted.at) < Date.parse(item.entry.at)) throw failure3("INVALID_RESPONSE", "Atlas memory sync: missing acknowledgement");
+            if (Date.parse(accepted.at) === Date.parse(item.entry.at) && !sameEntry(accepted, item.entry)) throw failure3("MEMORY_CONFLICT", "Atlas memory sync: another value has the same timestamp; local choice preserved");
             port.acknowledge(item.id, accepted);
           }
           accept(response.entries);
           for (const entry of batch) if (newer(entry.at, remote.get(keyOf(entry)))) remote.set(keyOf(entry), entry.at);
         }
-        throw failure("NETWORK_ERROR", "Atlas memory sync: too many rounds; the rest waits for the next sync");
+        throw failure3("NETWORK_ERROR", "Atlas memory sync: too many rounds; the rest waits for the next sync");
       }
       function run({ pull = false } = {}) {
         if (stopped || phase === "blocked") return Promise.resolve(status());
@@ -9114,7 +9114,7 @@ var require_memory_sync = __commonJS({
           again = true;
           return running;
         }
-        const token = generation;
+        const token2 = generation;
         phase = "syncing";
         code = null;
         publish();
@@ -9122,15 +9122,15 @@ var require_memory_sync = __commonJS({
           try {
             do {
               again = false;
-              await cycle(token);
-            } while (again && active(token));
-            if (active(token)) {
+              await cycle(token2);
+            } while (again && active(token2));
+            if (active(token2)) {
               phase = failedLocalEdits.size ? "offline" : "synced";
               code = failedLocalEdits.size ? "STORAGE_ERROR" : null;
               publish();
             }
           } catch (error2) {
-            if (active(token)) {
+            if (active(token2)) {
               code = errorCode(error2);
               phase = code === "MEMORY_CONFLICT" ? "conflict" : FATAL.has(code) ? "blocked" : "offline";
               publish();
@@ -9408,7 +9408,7 @@ var require_flow = __commonJS({
       const logit = (p) => Math.log(p / (1 - p));
       const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
       const round = (value, digits) => Math.round(value * 10 ** digits) / 10 ** digits;
-      const time2 = (value) => {
+      const time3 = (value) => {
         const n = Date.parse(value);
         if (typeof value !== "string" || !Number.isFinite(n)) throw new TypeError("Flow: invalid time");
         return n;
@@ -9523,7 +9523,7 @@ var require_flow = __commonJS({
         if (condition !== null && !CONDITIONS.includes(condition)) fail2("invalid condition");
         if (!["adapted", "baseline"].includes(arm)) fail2("invalid arm");
         if (prior !== null && (typeof prior !== "object" || !within(prior.content, -20, 20))) fail2("invalid prior");
-        const startedAt = time2(now), remembered = validMemory(spec, memory);
+        const startedAt = time3(now), remembered = validMemory(spec, memory);
         let overall = spec.target + (mode === "easier" ? 0.1 : mode === "harder" ? -0.1 : 0) + (condition === "tired" ? 0.08 : 0);
         overall = clamp(overall, 0.55, 0.92);
         const aim = targets(spec, overall);
@@ -9539,7 +9539,7 @@ var require_flow = __commonJS({
           estimates.content.theta = prior.content;
           basis = "prior";
         }
-        const returning = !!remembered && startedAt - time2(remembered.at) > RETURN_AFTER;
+        const returning = !!remembered && startedAt - time3(remembered.at) > RETURN_AFTER;
         if (returning) for (const dimension of DIMENSIONS) estimates[dimension].reversals = Math.min(estimates[dimension].reversals, 1);
         const adaptive = arm === "adapted" && mode !== "fixed";
         const calm = condition === "tired";
@@ -9774,7 +9774,7 @@ var require_flow = __commonJS({
             content: spec.id,
             specVersion: spec.version,
             policy: VERSION,
-            at: new Date(time2(at)).toISOString(),
+            at: new Date(time3(at)).toISOString(),
             estimates: Object.fromEntries(DIMENSIONS.map((d) => [d, { theta: round(estimates[d].theta, 4), n: round(estimates[d].n, 2), reversals: estimates[d].reversals }])),
             indices: Object.fromEntries(spec.knobs.map((k) => [k.id, adaptive && !locked(k) ? clamp(indices[k.id] - (todayOnly[k.id] || 0), 0, k.values.length - 1) : reached[k.id]])),
             latencies: [...latencies]
@@ -9798,7 +9798,7 @@ var require_vellum_flow = __commonJS({
       const DAY = 864e5;
       const STUCK = Object.freeze({ afterMs: 4e4, misses: 2 });
       const within = (value, min, max) => typeof value === "number" && Number.isFinite(value) && value >= min && value <= max;
-      const time2 = (value) => {
+      const time3 = (value) => {
         const n = Date.parse(value);
         if (typeof value !== "string" || !Number.isFinite(n)) throw new TypeError("Vellum: invalid time");
         return n;
@@ -9817,7 +9817,7 @@ var require_vellum_flow = __commonJS({
         if (declared) return { offer: false, reason: "declared" };
         if (at >= last) return { offer: false, reason: "least-help" };
         if (streak < need && steady < need + 1) return { offer: false, reason: "not-yet" };
-        if (declinedAt !== null && time2(now) - time2(declinedAt) < quietDays * DAY) return { offer: false, reason: "declined-recently" };
+        if (declinedAt !== null && time3(now) - time3(declinedAt) < quietDays * DAY) return { offer: false, reason: "declined-recently" };
         return { offer: true, from: at, to: at + 1, reason: streak >= need ? "quiet-streak" : "steady-with-help" };
       }
       const WORDS = Object.freeze({
@@ -9881,8 +9881,8 @@ var require_game_flow = __commonJS({
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     };
     var SEEN = Object.freeze(["practice", "supported", "checking", "review"]);
-    var object3 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
-    var presentationOf = (value) => object3(value) && Object.keys(value).length > 0 && Object.entries(value).every(([key, choice]) => Object.hasOwn(Flow.PRESENTATION, key) && (choice === null || Flow.PRESENTATION[key].includes(choice)));
+    var object4 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
+    var presentationOf = (value) => object4(value) && Object.keys(value).length > 0 && Object.entries(value).every(([key, choice]) => Object.hasOwn(Flow.PRESENTATION, key) && (choice === null || Flow.PRESENTATION[key].includes(choice)));
     function createFlowPort({ storage, key, clock: clock2, epoch = () => null }) {
       const FLOW = `${key}.flow`, TODAY = `${key}.today`, PRESENT = `${key}.presentation`;
       const listeners = /* @__PURE__ */ new Set();
@@ -9921,8 +9921,8 @@ var require_game_flow = __commonJS({
       };
       const memories = (current = epoch(), strict = false) => {
         const value = read(FLOW, strict);
-        if (strict && value != null && (value.v !== 1 || !object3(value.contents) || !object3(value.declined))) throw storageError();
-        return value && value.v === 1 && (value.epoch ?? null) === current && object3(value.contents) && object3(value.declined) ? value : { v: 1, epoch: current, contents: {}, declined: {} };
+        if (strict && value != null && (value.v !== 1 || !object4(value.contents) || !object4(value.declined))) throw storageError();
+        return value && value.v === 1 && (value.epoch ?? null) === current && object4(value.contents) && object4(value.declined) ? value : { v: 1, epoch: current, contents: {}, declined: {} };
       };
       const update = (since, change, targetKind, key2) => {
         const current = epoch();
@@ -9942,12 +9942,12 @@ var require_game_flow = __commonJS({
       const copy2 = (value) => JSON.parse(JSON.stringify(value));
       const pendingKey = (kind, id) => `${kind}|${id}`;
       const intent = (entry) => ({ id: `${Date.now().toString(36)}-${++sequence}-${Math.random().toString(36).slice(2)}`, epoch: epoch(), entry: copy2(entry), assignedAt: null });
-      const currentIntent = (value) => value && value.epoch === epoch() && typeof value.id === "string" && object3(value.entry);
+      const currentIntent = (value) => value && value.epoch === epoch() && typeof value.id === "string" && object4(value.entry);
       const intents = () => {
         const present = read(PRESENT, true), all = memories(epoch(), true);
-        if (all.pending != null && !object3(all.pending)) throw storageError();
+        if (all.pending != null && !object4(all.pending)) throw storageError();
         const rows2 = [present?.pending, ...Object.values(all.pending || {})].filter((value) => value !== void 0);
-        if (rows2.some((value) => !object3(value) || typeof value.id !== "string" || !value.id || value.id.length > 120 || !object3(value.entry) || !["presentation", "flow", "declined"].includes(value.entry.kind) || typeof value.entry.key !== "string" || !(value.assignedAt === null || instant(value.assignedAt)))) throw storageError();
+        if (rows2.some((value) => !object4(value) || typeof value.id !== "string" || !value.id || value.id.length > 120 || !object4(value.entry) || !["presentation", "flow", "declined"].includes(value.entry.kind) || typeof value.entry.key !== "string" || !(value.assignedAt === null || instant(value.assignedAt)))) throw storageError();
         return rows2.filter(currentIntent).map(copy2);
       };
       const mutateIntent = (id, change) => {
@@ -9962,7 +9962,7 @@ var require_game_flow = __commonJS({
           return result;
         }
         const all = memories(epoch(), true);
-        for (const [slot, pending] of Object.entries(object3(all.pending) ? all.pending : {})) {
+        for (const [slot, pending] of Object.entries(object4(all.pending) ? all.pending : {})) {
           if (!currentIntent(pending) || pending.id !== id) continue;
           const result = change(pending, (entry) => {
             if (entry.kind === "flow") all.contents[entry.key] = copy2(entry.value);
@@ -10052,22 +10052,22 @@ var require_game_flow = __commonJS({
         // Takes another device's values where they are newer than this device's, entry by entry.
         // Subscribers hear it as 'import', so a synchroniser does not send it back.
         merge(remote) {
-          if (!object3(remote)) throw new TypeError("Atlas: invalid memory");
+          if (!object4(remote)) throw new TypeError("Atlas: invalid memory");
           let changed2 = false;
           const pending = new Set(intents().map((item) => pendingKey(item.entry.kind, item.entry.key)));
           const present = remote.presentation;
-          if (object3(present) && instant(present.at) && (present.value === null || presentationOf(present.value)) && later(present.at, chosen(true)?.at) && !pending.has("presentation|chosen")) {
+          if (object4(present) && instant(present.at) && (present.value === null || presentationOf(present.value)) && later(present.at, chosen(true)?.at) && !pending.has("presentation|chosen")) {
             saveRequired(PRESENT, { v: 1, presentation: present.value && { ...present.value }, at: present.at });
             changed2 = true;
           }
           const all = memories(epoch(), true);
           let touched = false;
-          for (const [id, memory] of Object.entries(object3(remote.flow) ? remote.flow : {})) {
-            if (!object3(memory) || memory.content !== id || !instant(memory.at) || !later(memory.at, all.contents[id]?.at) || pending.has(pendingKey("flow", id))) continue;
+          for (const [id, memory] of Object.entries(object4(remote.flow) ? remote.flow : {})) {
+            if (!object4(memory) || memory.content !== id || !instant(memory.at) || !later(memory.at, all.contents[id]?.at) || pending.has(pendingKey("flow", id))) continue;
             all.contents[id] = JSON.parse(JSON.stringify(memory));
             touched = true;
           }
-          for (const [id, at] of Object.entries(object3(remote.declined) ? remote.declined : {})) {
+          for (const [id, at] of Object.entries(object4(remote.declined) ? remote.declined : {})) {
             if (!instant(at) || !later(at, all.declined[id]) || pending.has(pendingKey("declined", id))) continue;
             all.declined[id] = at;
             touched = true;
@@ -10862,7 +10862,7 @@ var require_ask = __commonJS({
       const DAY = 864e5;
       const id = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
       const canonical = (value) => JSON.stringify(value, (_key, entry) => entry && typeof entry === "object" && !Array.isArray(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key) => [key, entry[key]])) : entry);
-      const time2 = (value) => {
+      const time3 = (value) => {
         const n = Date.parse(value);
         if (typeof value !== "string" || !Number.isFinite(n)) throw new TypeError("Ask: invalid time");
         return n;
@@ -10922,7 +10922,7 @@ var require_ask = __commonJS({
             result.push({ id: q.id, kind: q.kind ?? "setting", about, impact: 0, skippable: true, reason: "denied" });
             continue;
           }
-          if (Object.hasOwn(asked, q.id) && now !== null && time2(now) - time2(asked[q.id]) < quietDays * DAY) {
+          if (Object.hasOwn(asked, q.id) && now !== null && time3(now) - time3(asked[q.id]) < quietDays * DAY) {
             result.push({ id: q.id, kind: q.kind ?? "setting", about, impact: 0, skippable: true, reason: "asked-recently" });
             continue;
           }
@@ -11148,7 +11148,7 @@ function consumeCallback({ config, product, url, storage, now = Date.now() }) {
   if (!code) throw new Error("\uB85C\uADF8\uC778 \uCF54\uB4DC\uAC00 \uC5C6\uC5B4\uC694.");
   return { grant_type: "authorization_code", client_id: client.clientId, redirect_uri: client.redirectUri, code, code_verifier: pending.verifier };
 }
-async function tokenRequest(config, fields, fetcher = fetch) {
+async function tokenRequest(config, fields2, fetcher = fetch) {
   const abort = new AbortController(), timer = setTimeout(() => abort.abort(), 12e3);
   try {
     let response;
@@ -11157,7 +11157,7 @@ async function tokenRequest(config, fields, fetcher = fetch) {
         method: "POST",
         signal: abort.signal,
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams(fields),
+        body: new URLSearchParams(fields2),
         credentials: "omit",
         cache: "no-store"
       });
@@ -11359,6 +11359,512 @@ function createDesktopAccountClient({ bridge, product, guard }) {
       post: ({ revision, entries, signal }) => request("memoryPost", { revision, entries }, signal)
     })
   });
+}
+function createDesktopClassroomClient({ bridge, product, guard }) {
+  if (!["platform", "world"].includes(product) || typeof guard !== "function" || typeof bridge?.accountRequest !== "function") throw new TypeError("Trusted desktop classroom bridge required");
+  return async function request(operation, { classId, query, body } = {}, { signal } = {}) {
+    guard();
+    if (signal?.aborted) throw Object.assign(new Error("\uC694\uCCAD\uC744 \uCDE8\uC18C\uD588\uC5B4\uC694."), { code: "ABORTED" });
+    const result = await bridge.accountRequest("classroom", { operation, ...classId === void 0 ? {} : { classId }, ...query === void 0 ? {} : { query }, ...body === void 0 ? {} : { body } });
+    guard();
+    if (signal?.aborted) throw Object.assign(new Error("\uC694\uCCAD\uC744 \uCDE8\uC18C\uD588\uC5B4\uC694."), { code: "ABORTED" });
+    if (result?.ok !== true) throw Object.assign(new Error(result?.error?.message || "\uC218\uC5C5 \uC5F0\uACB0\uC744 \uD655\uC778\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694."), { code: result?.error?.code || "CLASSROOM_UNAVAILABLE", retryable: result?.error?.retryable === true, status: result?.error?.status, revision: result?.revision });
+    return result;
+  };
+}
+
+// experiences/synk-account/src/classroom-client.mjs
+var routes = Object.freeze({ coursePlan: ["/api/course/plan", "POST"], courseRead: ["/api/course"], courseAssign: ["/api/course/assign", "POST"], courseFeedback: ["/api/course/feedback", "POST"], courseSubmit: ["/api/course/submit", "POST"], courseGroupSharing: ["/api/course/group-sharing", "POST"], classes: ["/api/classes"], teacherOverview: ["/api/teacher/overview"], workspace: ["/api/workspace"], care: ["/api/teacher/care"], careSave: ["/api/teacher/care", "POST"], homework: ["/api/teacher/homework"], homeworkSave: ["/api/teacher/homework", "POST"], homeworkKey: ["/api/teacher/homework/key"], enrollmentInvite: ["/api/teacher/invites", "POST"], enrollmentPreview: ["/api/enrollment/preview", "POST"], enrollmentClaim: ["/api/enrollment/claim", "POST"], account: ["/api/world/account"], student: ["/api/student"], practice: ["/api/world/practice"], practiceSubmit: ["/api/world/practice", "POST"], submit: ["/api/submissions", "POST"], sharing: ["/api/world/sharing", "POST"], startRun: ["/api/world/runs/start", "POST"], stopRun: ["/api/world/runs/stop", "POST"], learningGet: ["/api/world/learning"], learningPost: ["/api/world/learning", "POST"], townRead: ["/api/world/town"], townCommand: ["/api/world/town/command", "POST"], townMembership: ["/api/world/town/membership"], townSharing: ["/api/world/town/sharing", "POST"], townActivity: ["/api/world/town/activity", "POST"], assignments: ["/api/assignments", "POST"], assignmentUpdate: ["/api/assignments/update", "POST"], assignmentCancel: ["/api/assignments/cancel", "POST"], observations: ["/api/observations", "POST"] });
+var failure = (code, message, status) => Object.assign(new Error(message), { code, status });
+function createClassroomTransport({ url, anonKey, getAccessToken, refresh, guard, product = "world", fetcher = fetch, timeoutMs = 12e3 }) {
+  const base = publicUrl(url);
+  if (!["platform", "world"].includes(product)) throw new TypeError("Invalid classroom product");
+  base.pathname = base.pathname.replace(/\/$/, "").replace(/\/functions\/v1(?:\/synk-(?:account|classroom))?$/, "") + "/functions/v1/synk-classroom";
+  base.search = "";
+  base.hash = "";
+  return async (operation, { classId, query = {}, body } = {}, { signal } = {}) => {
+    const route = Object.hasOwn(routes, operation) && routes[operation], unscoped = ["classes", "teacherOverview", "enrollmentPreview", "enrollmentClaim"].includes(operation);
+    if (!route || unscoped && classId !== void 0 || !unscoped && (typeof classId !== "string" || !classId)) throw new TypeError("Invalid classroom request");
+    const target = new URL(base);
+    target.pathname += route[0];
+    if (classId) target.searchParams.set("classId", classId);
+    for (const [key, value] of Object.entries(query)) {
+      if (operation !== "learningGet" || !["after", "revision"].includes(key)) throw new TypeError("Invalid classroom query");
+      target.searchParams.set(key, String(value));
+    }
+    if (body?.classId && body.classId !== classId) throw new TypeError("Class scope mismatch");
+    guard();
+    const controller = new AbortController(), abort = () => controller.abort();
+    if (signal?.aborted) abort();
+    else signal?.addEventListener("abort", abort, { once: true });
+    const timer = setTimeout(abort, timeoutMs);
+    try {
+      for (let attempt = 0; attempt < 2; attempt++) {
+        guard();
+        const token2 = await getAccessToken();
+        guard();
+        if (!token2) throw failure("AUTH_REQUIRED", "SYNK ID\uB85C \uB2E4\uC2DC \uB85C\uADF8\uC778\uD574 \uC8FC\uC138\uC694.", 401);
+        let response;
+        try {
+          response = await fetcher(target.href, { method: route[1] || "GET", credentials: "omit", cache: "no-store", signal: controller.signal, headers: { Authorization: `Bearer ${token2}`, apikey: anonKey, "X-SYNK-Product": product, "X-SYNK-Contract": "1", "X-SYNK-App-Version": "1.0.0", ...route[1] ? { "Content-Type": "application/json" } : {} }, ...route[1] ? { body: JSON.stringify(body || {}) } : {} });
+        } catch (error2) {
+          guard();
+          if (error2 instanceof TypeError || error2.name === "AbortError") throw failure("NETWORK_ERROR", "\uC218\uC5C5 \uC5F0\uACB0\uC744 \uAE30\uB2E4\uB9AC\uACE0 \uC788\uC5B4\uC694. \uC774 \uAE30\uAE30\uC758 \uD559\uC2B5 \uAE30\uB85D\uC740 \uC5F0\uACB0\uB418\uBA74 \uB2E4\uC2DC \uBCF4\uB0C5\uB2C8\uB2E4.");
+          throw error2;
+        }
+        guard();
+        if (response.status === 401 && attempt === 0 && refresh) {
+          await refresh();
+          guard();
+          continue;
+        }
+        let result;
+        try {
+          result = await response.json();
+        } catch {
+          throw failure("CLASSROOM_UNAVAILABLE", "\uC218\uC5C5 \uC5F0\uACB0 \uC11C\uBE44\uC2A4\uAC00 \uC544\uC9C1 \uC900\uBE44\uB418\uC9C0 \uC54A\uC558\uAC70\uB098 \uC751\uB2F5\uD558\uC9C0 \uC54A\uC544\uC694.", response.status);
+        }
+        guard();
+        if (!response.ok || result?.ok === false) throw failure(result?.error?.code || result?.code || "CLASSROOM_UNAVAILABLE", result?.error?.message || "\uC218\uC5C5 \uC5F0\uACB0\uC744 \uD655\uC778\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uB2E4\uC2DC \uBD88\uB7EC\uC640 \uC8FC\uC138\uC694.", response.status);
+        return result;
+      }
+    } catch (error2) {
+      guard();
+      if (error2.name === "AbortError") throw failure("NETWORK_ERROR", "\uC218\uC5C5 \uC751\uB2F5\uC744 \uD655\uC778\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uAC19\uC740 \uC694\uCCAD\uC73C\uB85C \uB2E4\uC2DC \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+      throw error2;
+    } finally {
+      clearTimeout(timer);
+      signal?.removeEventListener("abort", abort);
+    }
+  };
+}
+
+// experiences/teacher-world/course-writing-ui.mjs
+var esc = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+var tags = ["\uCCB4", "\uC870", "\uC5B4", "\uB0B1", "\uB9DE", "\uB744", "\uC5F0", "\uADFC", "\uBE60", "\uC790"];
+var time = (value) => Number.isFinite(Date.parse(value)) ? new Date(value).toLocaleString("ko-KR", { month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "\uC2DC\uAC04 \uD655\uC778 \uD544\uC694";
+function courseMaterial(value) {
+  const inline = (text2) => esc(text2).replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/&lt;u&gt;(.*?)&lt;\/u&gt;/g, "<u>$1</u>");
+  let table = false, result = "";
+  for (const line of String(value || "").split("\n")) {
+    if (/^\|/.test(line)) {
+      if (!table) {
+        result += '<div style="overflow-x:auto"><table>';
+        table = true;
+      }
+      if (/^\|[\s:|-]+\|$/.test(line)) continue;
+      result += "<tr>" + line.split("|").slice(1, -1).map((cell) => "<td>" + inline(cell.trim()) + "</td>").join("") + "</tr>";
+      continue;
+    }
+    if (table) {
+      result += "</table></div>";
+      table = false;
+    }
+    if (line.trim()) result += "<p" + (line.startsWith(">") ? ' class="course-passage"' : "") + ">" + inline(line.replace(/^>\s?/, "")) + "</p>";
+  }
+  if (table) result += "</table></div>";
+  return '<article class="course-material">' + result + "</article>";
+}
+var errors = { CLASSROOM_CAPACITY: "\uBC18\uC758 \uAE30\uB85D \uC800\uC7A5 \uACF5\uAC04\uC774 \uAC00\uB4DD \uCC3C\uC5B4\uC694. \uC785\uB825\uD55C \uAE00\uC740 \uC774 \uD654\uBA74\uC5D0 \uB0A8\uC544 \uC788\uC5B4\uC694. \uC120\uC0DD\uB2D8\uC774 \uC800\uC7A5 \uACF5\uAC04\uC744 \uD655\uC778\uD55C \uB4A4 \uB2E4\uC2DC \uC81C\uCD9C\uD574 \uC8FC\uC138\uC694.", REVISION_CONFLICT: "\uB2E4\uB978 \uAE30\uAE30\uC5D0\uC11C \uAE30\uB85D\uC774 \uBC14\uB00C\uC5C8\uC5B4\uC694. \uC0C8\uB85C\uACE0\uCE68 \uD6C4 \uB2E4\uC2DC \uD655\uC778\uD574 \uC8FC\uC138\uC694.", WAIT_FOR_FEEDBACK: "\uC120\uC0DD\uB2D8 \uCCA8\uC0AD\uC744 \uBC1B\uC740 \uB4A4 \uACE0\uCCD0 \uC368 \uC8FC\uC138\uC694.", READING_INCOMPLETE: "\uC77D\uAE30 \uB2E4\uC12F \uBB38\uD56D\uC758 \uB2F5\uC744 \uBAA8\uB450 \uACE8\uB77C \uC8FC\uC138\uC694.", SHARING_DISABLED: "\uD559\uC0DD\uC758 \uC218\uC5C5 \uAE30\uB85D \uACF5\uC720\uAC00 \uAEBC\uC84C\uC5B4\uC694.", LEARNING_DISABLED: "\uACC4\uC815\uC758 \uD559\uC2B5 \uAE30\uB85D\uACFC \uC774 \uBC18 \uACF5\uC720\uB97C \uBA3C\uC800 \uCF1C \uC8FC\uC138\uC694.", COURSE_ALREADY_ASSIGNED: "\uC774 \uC8FC \uACFC\uC81C\uAC00 \uC774\uBBF8 \uC788\uC5B4\uC694.", IDEMPOTENCY_CONFLICT: "\uCCAB \uC694\uCCAD\uACFC \uB0B4\uC6A9\uC774 \uB2EC\uB77C\uC84C\uC5B4\uC694. \uC0C8\uB85C\uACE0\uCE68\uD55C \uB4A4 \uD655\uC778\uD574 \uC8FC\uC138\uC694." };
+function mountCourseWriting({ root, request, guard = () => {
+}, makeId = () => crypto.randomUUID(), sharingMetadata = null }) {
+  let stopped = false, generation = 0, data = null, busy = false, pending = null, dirty = false, checkingGroups = false, suspended = false;
+  const fence = (next) => {
+    if (next?.role !== "teacher" || !sharingMetadata) return next;
+    const known = new Map(sharingMetadata.map((row) => [row.id, row])), learners = next.learners.filter((row) => {
+      const meta = known.get(row.id);
+      return meta && (meta.revision < row.sharingRevision || meta.revision === row.sharingRevision && meta.enabled && meta.connected && !meta.revoked);
+    });
+    return learners.length === next.learners.length ? next : { ...next, learners, groups: [] };
+  };
+  const applySharing = (latest) => {
+    if (stopped) return;
+    sharingMetadata = latest;
+    const next = fence(data);
+    if (next !== data) {
+      data = next;
+      paint();
+    }
+  };
+  const drafts = /* @__PURE__ */ new Map();
+  const formKey = (form) => form.hasAttribute("data-course-assign") ? "assign" : form.hasAttribute("data-course-submit") ? "submit:" + form.dataset.courseSubmit + ":" + form.dataset.sharingRevision : "feedback:" + form.dataset.courseFeedback + ":" + form.dataset.learner + ":" + form.dataset.sharingRevision + ":" + form.dataset.version;
+  const remember = (form) => {
+    const values = [...form.elements].filter((el) => el.name).map((el) => ({ name: el.name, type: el.type, value: el.value, checked: el.checked }));
+    values.baseFeedback = form.dataset.baseFeedback;
+    values.baseVersion = form.dataset.baseVersion;
+    drafts.set(formKey(form), values);
+    dirty = true;
+  };
+  const lockPending = (form) => {
+    if (pending?.key === formKey(form)) {
+      for (const el of form.elements) if (el.type !== "submit") el.disabled = true;
+    }
+  };
+  const doc2 = root.ownerDocument, heading = doc2.createElement("h3"), status = doc2.createElement("p"), body = doc2.createElement("div"), refresh = doc2.createElement("button");
+  root.classList.add("course-writing");
+  heading.textContent = "\uC774\uBC88 \uC8FC \uC77D\uAE30\uC640 \uC4F0\uAE30";
+  status.setAttribute("role", "status");
+  refresh.textContent = "\uACFC\uC81C \uC0C8\uB85C\uACE0\uCE68";
+  refresh.type = "button";
+  refresh.className = "quiet-button";
+  root.replaceChildren(heading, refresh, status, body);
+  const check2 = (version) => {
+    guard();
+    if (stopped || version !== generation) throw Object.assign(Error("ACCOUNT_CHANGED"), { code: "ACCOUNT_CHANGED" });
+  };
+  const feedback = (v) => v.feedback.map((f) => `<article class="course-feedback"><strong>\uCCA8\uC0AD ${f.revision} \xB7 ${esc(time(f.at))}</strong><p>\uC798\uB41C \uC810: ${esc(f.good)}</p><p>\uACE0\uCE60 \uD575\uC2EC: ${esc(f.focus)}</p><p>\uB2E4\uC2DC \uC368 \uBCFC \uACF3: ${esc(f.retry)}</p><p>${f.tags.map((t) => "\u3014" + esc(t) + "\u3015").join(" ")}</p></article>`).join("");
+  function history2(record2) {
+    return record2?.versions.map((v) => `<details ${v === record2.versions.at(-1) ? "open" : ""}><summary>${v.version === 1 ? "\uCC98\uC74C \uB0B8 \uAE00" : v.version + "\uBC88\uC9F8 \uC6D0\uACE0"} \xB7 ${esc(time(v.submittedAt))}${v.late ? " \xB7 \uB9C8\uAC10 \uB4A4 \uC81C\uCD9C" : ""}</summary><pre style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(v.text)}</pre>${v.reflection ? `<p>\uACE0\uCE5C \uC774\uC720: ${esc(v.reflection)}</p>` : ""}${feedback(v)}${v === record2.versions[0] ? `<details><summary>\uC77D\uAE30 \uACB0\uACFC \xB7 ${v.reading.filter((q) => q.correct).length}/5</summary>${v.reading.map((q) => `<p>${esc(q.id)} \xB7 \uB0B4 \uB2F5 ${q.chosen} \xB7 \uC815\uB2F5 ${q.answer}</p>${courseMaterial(q.explanation)}`).join("")}</details>` : ""}</details>`).join("") || "";
+  }
+  function studentTask(task) {
+    const historyRecords = data.records.filter((r) => r.taskId === task.id), record2 = historyRecords.find((r) => !r.readOnly), last = record2?.versions.at(-1);
+    return `<section class="course-task" data-task="${esc(task.id)}"><h4>${esc(task.material.title)}</h4><p>\uB9C8\uAC10 ${esc(time(task.dueAt))} \xB7 \uB2A6\uC5B4\uB3C4 \uC81C\uCD9C\uD560 \uC218 \uC788\uC5B4\uC694.</p><details><summary>\uC4F0\uAE30 \uACFC\uC81C \uC77D\uAE30</summary>${courseMaterial(task.material.prompt)}</details>${historyRecords.map((r) => (r.readOnly ? "<p>\uC774\uC804 \uC81C\uCD9C \uC774\uB825 \xB7 \uB098\uB9CC \uC77D\uAE30</p>" : "") + history2(r)).join("")}
+  ${record2 ? `<label><input type="checkbox" data-course-group="${esc(task.id)}" ${record2.groupConsent ? "checked" : ""}> \uB0B4 \uC6D0\uBB38\uC744 \uACF5\uC720\uD558\uC9C0 \uC54A\uACE0 \uCCA8\uC0AD \uAE30\uD638\uB97C \uC774 \uBC18 \uC218\uC5C5 \uC900\uBE44\uC758 \uC9D1\uACC4\uC5D0 \uC4F0\uAE30(\uC120\uD0DD\xB7\uC5B8\uC81C\uB4E0 \uB044\uAE30)</label>` : ""}
+  ${data.canSubmit && (!last || last.feedback.length) ? `<form data-course-submit="${esc(task.id)}" data-sharing-revision="${esc(data.sharing.revision)}" data-base-version="${last?.version || 0}">${!last ? task.material.reading.map((q) => `<fieldset><legend>${esc(q.id)} \xB7 ${esc(q.title)}</legend>${courseMaterial(q.prompt)}${[1, 2, 3, 4].map((n) => `<label><input type="radio" name="${esc(q.id)}" value="${n}" required> ${n}</label>`).join("")}</fieldset>`).join("") : ""}<label>${last ? "\uACE0\uCCD0 \uC4F4 \uAE00" : "\uB0B4\uAC00 \uC4F4 \uAE00"}<textarea name="text" required maxlength="12000" rows="10" style="width:100%">${esc(last?.text || "")}</textarea></label>${last ? '<label>\uBB34\uC5C7\uC744 \uC65C \uACE0\uCCE4\uB098\uC694?<textarea name="reflection" required maxlength="2000" rows="3"></textarea></label>' : ""}<p>\uC6D0\uBB38\uACFC \uC218\uC815 \uC774\uB825\uC744 \uB2F4\uB2F9 \uC120\uC0DD\uB2D8\uC5D0\uAC8C \uBCF4\uB0C5\uB2C8\uB2E4. \uAE00\uC744 \uC790\uB3D9 \uCC44\uC810\uD558\uAC70\uB098 \uAE09\uC218\uB85C \uBC14\uAFB8\uC9C0 \uC54A\uC544\uC694.</p><button type="submit" class="felt-button">${last ? "\uC218\uC815\uBCF8 \uC81C\uCD9C" : "\uC77D\uAE30\xB7\uC4F0\uAE30 \uC81C\uCD9C"}</button></form>` : last ? "<p>\uC120\uC0DD\uB2D8\uC758 \uCCA8\uC0AD\uC744 \uAE30\uB2E4\uB9AC\uACE0 \uC788\uC5B4\uC694.</p>" : "<p>\uACC4\uC815 \uC124\uC815\uC5D0\uC11C \uD559\uC2B5 \uAE30\uB85D \uC800\uC7A5\uACFC \uC774 \uBC18 \uC120\uC0DD\uB2D8 \uACF5\uC720\uB97C \uCF20 \uB4A4 \uC81C\uCD9C\uD560 \uC218 \uC788\uC5B4\uC694.</p>"}</section>`;
+  }
+  function groupMaterial(group) {
+    return `<h5>\uB2E4\uC74C \uC218\uC5C5 \uC900\uBE44</h5>${group?.cells?.length ? `<button type="button" class="quiet-button" data-course-plan="${esc(group.taskId)}">\uC774 \uC7AC\uB8CC\uB85C \uB2E4\uC74C \uC218\uC5C5 \uC900\uBE44</button>${group.plan ? `<p>\uC120\uD0DD\uD55C 10\uBD84 \uC218\uC5C5\uC548 \xB7 ${esc(time(group.plan.at))}</p><ol>${group.plan.materials.map((m) => `<li>${esc(m.activity)}</li>`).join("")}</ol><p>${esc(group.plan.note)}</p>` : ""}` : ""}${group?.status === "ready" ? `<p>\uC9D1\uACC4\uC5D0 \uB3D9\uC758\uD558\uACE0 \uCCA8\uC0AD\uBC1B\uC740 \uCCAB \uC6D0\uACE0 ${group.reviewed}\uBA85 / \uC9D1\uACC4 \uB3D9\uC758 ${group.eligible}\uBA85 \xB7 \uCCA8\uC0AD \uB300\uAE30 ${group.unreviewed}\uBA85</p><p>${esc(group.note)}</p>${group.cells.map((c) => `<p>\u3014${esc(c.tag)}\u3015 ${c.n}/${c.\uBD84\uBAA8} \xB7 ${esc(c.suggestion)}</p>`).join("") || "<p>\uB2E4\uC12F \uBA85 \uC774\uC0C1\uC5D0\uAC8C \uB098\uD0C0\uB09C \uAE30\uD638\uAC00 \uC544\uC9C1 \uC5C6\uC5B4\uC694.</p>"}` : "<p>\uC9D1\uACC4\uC5D0 \uB530\uB85C \uB3D9\uC758\uD558\uACE0 \uCCAB \uCCA8\uC0AD\uC774 \uB05D\uB09C \uD559\uC0DD \uB2E4\uC12F \uBA85\uBD80\uD130 \uACF5\uD1B5 \uAE30\uD638\uB97C \uBCF4\uC5EC\uC694. \uC6D0\uBB38\uC740 \uC9D1\uACC4\uC5D0 \uB123\uC9C0 \uC54A\uC544\uC694.</p>"}`;
+  }
+  function teacherTask(task) {
+    const group = data.groups.find((g) => g.taskId === task.id);
+    return `<section class="course-task"><h4>${esc(task.material.title)}</h4><p>\uB9C8\uAC10 ${esc(time(task.dueAt))}</p><details><summary>\uACFC\uC81C \uC6D0\uBB38</summary>${courseMaterial(task.material.prompt)}</details><section data-course-group-summary="${esc(task.id)}">${groupMaterial(group)}</section>
+   ${data.learners.map((l) => {
+      const r = l.records.find((r2) => r2.taskId === task.id), latest = r?.versions.at(-1), v = r?.versions.find((v2) => drafts.has("feedback:" + task.id + ":" + l.id + ":" + l.sharingRevision + ":" + v2.version)) || latest, f = v?.feedback.at(-1);
+      return `<details><summary>${esc(l.name)} \xB7 ${v ? v.feedback.length ? "\uCCA8\uC0AD \uBC18\uD658" : "\uCCA8\uC0AD \uB300\uAE30" : "\uC81C\uCD9C \uB300\uAE30"}</summary>${history2(r)}${r?.improvement ? `<p>\uAD50\uC0AC \uB8E8\uBE0C\uB9AD \uBCC0\uD654: \uB0B4\uC6A9 ${r.improvement.content}, \uAD6C\uC131 ${r.improvement.structure}, \uC5B8\uC5B4 ${r.improvement.language}. ${esc(r.improvement.note)}</p>` : ""}${v ? `${v !== latest ? `<p>\uC774\uC804 ${v.version}\uBC88\uC9F8 \uC6D0\uACE0\uC5D0 \uC4F0\uB358 \uCCA8\uC0AD\uC774\uC5D0\uC694. \uC0C8 ${latest.version}\uBC88\uC9F8 \uC6D0\uACE0\uC758 \uCCA8\uC0AD\uC740 \uC774 \uB0B4\uC6A9\uC744 \uBC18\uD658\uD55C \uB4A4 \uC5F4\uB824\uC694.</p>` : ""}<form data-course-feedback="${esc(task.id)}" data-learner="${esc(l.id)}" data-sharing-revision="${esc(l.sharingRevision)}" data-version="${v.version}" data-base-feedback="${f?.revision || 0}"><label>\uC798\uB41C \uC810<textarea name="good" required maxlength="1000">${esc(f?.good || "")}</textarea></label><label>\uACE0\uCE60 \uD575\uC2EC<textarea name="focus" required maxlength="1000">${esc(f?.focus || "")}</textarea></label><label>\uB2E4\uC2DC \uC368 \uBCFC \uACF3<textarea name="retry" required maxlength="1000">${esc(f?.retry || "")}</textarea></label><fieldset><legend>\uCCA8\uC0AD \uAE30\uD638(\uCD5C\uB300 \uB2E4\uC12F \uAC1C)</legend>${tags.map((t) => `<label><input type="checkbox" name="tag" value="${t}" ${f?.tags.includes(t) ? "checked" : ""}>\u3014${t}\u3015</label>`).join("")}</fieldset>${[["content", "\uB0B4\uC6A9"], ["structure", "\uAD6C\uC131"], ["language", "\uC5B8\uC5B4"]].map(([k, label]) => `<label>${label}(\uB0B4\uBD80 0~2)<select name="${k}">${[0, 1, 2].map((n) => `<option value="${n}" ${f?.rubric[k] === n ? "selected" : ""}>${n}</option>`).join("")}</select></label>`).join("")}<label>\uC774\uBC88 \uCCA8\uC0AD\uC5D0 \uC4F4 \uBD84<input name="minutes" type="number" min="0" max="240" value="0" required></label><p>\uC6D0\uBB38\uACFC \uCCA8\uC0AD \uC774\uB825\uC744 \uBCF4\uC874\uD569\uB2C8\uB2E4. \uC9C1\uC811 \uAC80\uD1A0\uD55C \uB0B4\uC6A9\uB9CC \uB3CC\uB824\uC8FC\uC138\uC694.</p><button class="felt-button" type="submit">${f ? "\uCCA8\uC0AD \uC218\uC815\uBCF8 \uBC18\uD658" : "\uCCA8\uC0AD \uB3CC\uB824\uC8FC\uAE30"}</button></form>` : ""}</details>`;
+    }).join("")}</section>`;
+  }
+  function paint() {
+    const open = [...body.querySelectorAll("details[open]")].map((el) => el.querySelector("summary")?.textContent), focused = doc2.activeElement, focusedForm = focused?.closest?.("form"), focus = focusedForm ? { key: formKey(focusedForm), name: focused.name, start: focused.selectionStart, end: focused.selectionEnd } : null;
+    body.innerHTML = `<p>${data.role === "teacher" ? "\uCC3D\uC791 \uC5F0\uC2B5 \uBB38\uD56D \xB7 \uAD50\uC6D0 \uAC80\uC218\uC640 \uC2E4\uC81C \uD559\uC0DD \uD6A8\uACFC \uAC80\uC99D\uC740 \uBCC4\uB3C4\uC785\uB2C8\uB2E4. \uACF5\uC2DD \uC810\uC218\xB7\uAE09\uC218 \uC608\uCE21\uC774 \uC544\uB2C8\uC5D0\uC694." : "\uC5F0\uC2B5\uC6A9 \uCC3D\uC791 \uBB38\uD56D\uC774\uC5D0\uC694. \uACF5\uC2DD \uC2DC\uD5D8 \uC810\uC218\uB85C \uD658\uC0B0\uD558\uC9C0 \uC54A\uC544\uC694."}</p>${data.role === "teacher" ? `<form data-course-assign><p>\uC774 \uBC18\uC5D0 \uCCAB \uC218\uC815 \uACFC\uC81C\uB97C \uBCF4\uB0B4\uBA74 \uAE30\uC874 \uC8FC\uCC28 \uACFC\uC81C\uB294 \uC774\uC804 \uC774\uB825\uC73C\uB85C \uB0A8\uC544\uC694. \uAE00\uACFC \uC774 \uAE30\uAE30\uC758 \uCD08\uC548\uC744 \uC790\uB3D9\uC73C\uB85C \uC62E\uAE30\uC9C0 \uC54A\uC544\uC694. \uC0C8 \uC81C\uCD9C\uC5D0\uB294 \uD559\uC0DD\uC758 \uD604\uC7AC \uD559\uC2B5 \uAE30\uB85D \uC800\uC7A5\uACFC \uC774 \uBC18 \uACF5\uC720\uAC00 \uD544\uC694\uD574\uC694. \uBCF4\uB0B8 \uC8FC\uCC28\uC640 \uB9C8\uAC10\uC740 \uC774 \uD654\uBA74\uC5D0\uC11C \uBC14\uAFC0 \uC218 \uC5C6\uC5B4\uC694. \uBCF4\uB0B4\uAE30 \uC804\uC5D0 \uC8FC\uCC28\uC640 \uB9C8\uAC10\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694.</p><label>\uC774\uBC88 \uC8FC<select name="week">${data.weeks.filter((w) => !data.tasks.some((t) => t.week === w.week)).map((w) => `<option value="${w.week}">${esc(w.title)}</option>`).join("")}</select></label><label>\uB9C8\uAC10<input type="datetime-local" name="dueAt" required></label><button type="submit" class="felt-button" ${data.tasks.length === 8 ? "disabled" : ""}>\uBC18\uC5D0 \uACFC\uC81C \uBCF4\uB0B4\uAE30</button></form>` : ""}${data.tasks.length ? data.tasks.map(data.role === "teacher" ? teacherTask : studentTask).join("") : "<p>\uC120\uC0DD\uB2D8\uC774 \uC8FC\uCC28\uC640 \uB9C8\uAC10\uC744 \uC815\uD558\uBA74 \uACFC\uC81C\uAC00 \uBCF4\uC5EC\uC694.</p>"}`;
+    const available = new Map([...body.querySelectorAll("form")].map((form) => [formKey(form), form]));
+    for (const [key, values] of drafts) {
+      const form = available.get(key);
+      if (!form) {
+        drafts.delete(key);
+        if (pending?.key === key) pending = null;
+        continue;
+      }
+      if (values.baseFeedback !== void 0) form.dataset.baseFeedback = values.baseFeedback;
+      if (values.baseVersion !== void 0) form.dataset.baseVersion = values.baseVersion;
+      for (const saved of values) for (const el of form.elements) if (el.name === saved.name && el.type === saved.type) {
+        if (["checkbox", "radio"].includes(el.type)) {
+          if (el.value === saved.value) el.checked = saved.checked;
+        } else el.value = saved.value;
+      }
+    }
+    dirty = drafts.size > 0;
+    for (const form of available.values()) lockPending(form);
+    for (const el of body.querySelectorAll("details")) if (open.includes(el.querySelector("summary")?.textContent)) el.open = true;
+    if (focus) {
+      const el = [...available.get(focus.key)?.elements || []].find((el2) => el2.name === focus.name);
+      if (el) {
+        el.focus({ preventScroll: true });
+        if (typeof focus.start === "number" && typeof el.setSelectionRange === "function") el.setSelectionRange(focus.start, focus.end);
+      }
+    }
+  }
+  async function reload({ discard = false } = {}) {
+    if (stopped || busy) return;
+    const version = ++generation;
+    busy = true;
+    refresh.disabled = true;
+    body.hidden = true;
+    status.textContent = "\uACFC\uC81C\uB97C \uD655\uC778\uD558\uACE0 \uC788\uC5B4\uC694.";
+    try {
+      guard();
+      const result = await request("/api/course");
+      check2(version);
+      data = fence(result);
+      if (discard) {
+        pending = null;
+        drafts.clear();
+      }
+      paint();
+      body.hidden = false;
+      suspended = false;
+      status.textContent = "\uCD5C\uC2E0 \uACFC\uC81C\uB97C \uBD88\uB7EC\uC654\uC5B4\uC694.";
+      return true;
+    } catch (error2) {
+      if (!stopped) {
+        data = null;
+        body.replaceChildren();
+        if (["FORBIDDEN", "ACCOUNT_CHANGED", "SESSION_CHANGED", "AUTH_REQUIRED", "SHARING_DISABLED", "LEARNING_DISABLED"].includes(error2.code)) {
+          pending = null;
+          drafts.clear();
+          dirty = false;
+        }
+        status.textContent = errors[error2.code] || "\uACFC\uC81C \uC5F0\uACB0\uC744 \uD655\uC778\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uB2E4\uC2DC \uBD88\uB7EC\uC640 \uC8FC\uC138\uC694.";
+      }
+      return false;
+    } finally {
+      if (!stopped) {
+        busy = false;
+        refresh.disabled = false;
+      }
+    }
+  }
+  async function send(route, payload, form) {
+    if (stopped || busy || suspended) return;
+    const version = generation, attempt = pending;
+    busy = true;
+    refresh.disabled = true;
+    form?.querySelectorAll("button,input,textarea,select").forEach((el) => el.disabled = true);
+    status.textContent = "\uC11C\uBC84\uC5D0 \uC800\uC7A5\uC744 \uD655\uC778\uD558\uACE0 \uC788\uC5B4\uC694.";
+    try {
+      guard();
+      await request(route, payload);
+      check2(version);
+      if (pending !== attempt) return;
+      drafts.delete(formKey(form));
+      pending = null;
+      busy = false;
+      const loaded = await reload();
+      status.textContent = loaded ? "\uC11C\uBC84\uC5D0 \uC800\uC7A5\uD588\uC5B4\uC694." : "\uC800\uC7A5\uC740 \uD655\uC778\uD588\uC9C0\uB9CC \uCD5C\uC2E0 \uACFC\uC81C\uB97C \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC5B4\uC694. \uACFC\uC81C \uC0C8\uB85C\uACE0\uCE68\uC73C\uB85C \uB2E4\uC2DC \uD655\uC778\uD574 \uC8FC\uC138\uC694.";
+    } catch (error2) {
+      if (!stopped && version === generation && pending === attempt) {
+        status.textContent = errors[error2.code] || "\uC751\uB2F5\uC744 \uD655\uC778\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC800\uC7A5 \uACB0\uACFC\uB97C \uD655\uC778\uD560 \uB54C\uAE4C\uC9C0 \uB0B4\uC6A9 \uC218\uC815\uC744 \uC7A0\uC2DC \uB9C9\uC558\uC5B4\uC694. \uAC19\uC740 \uC81C\uCD9C \uBC84\uD2BC\uC744 \uB20C\uB7EC \uD655\uC778\uD574 \uC8FC\uC138\uC694.";
+        if (error2.status >= 400 && error2.status < 500) pending = null;
+        if (["SHARING_DISABLED", "LEARNING_DISABLED", "FORBIDDEN", "ACCOUNT_CHANGED"].includes(error2.code)) {
+          data = null;
+          body.replaceChildren();
+          pending = null;
+          drafts.clear();
+          dirty = false;
+        }
+      }
+    } finally {
+      if (!stopped) {
+        busy = false;
+        refresh.disabled = false;
+        form?.querySelectorAll("button,input,textarea,select").forEach((el) => el.disabled = false);
+        if (form) lockPending(form);
+      }
+    }
+  }
+  async function refreshGroups() {
+    if (stopped || busy || checkingGroups || data?.role !== "teacher") return;
+    checkingGroups = true;
+    const version = generation;
+    try {
+      guard();
+      const next = await request("/api/course");
+      check2(version);
+      data = fence(next);
+      paint();
+      suspended = false;
+      body.hidden = false;
+      status.textContent = "\uCD5C\uC2E0 \uACFC\uC81C\uB97C \uBD88\uB7EC\uC654\uC5B4\uC694.";
+    } catch (error2) {
+      if (!stopped && version === generation) {
+        for (const region of body.querySelectorAll("[data-course-group-summary]")) region.textContent = "\uC218\uC5C5 \uC900\uBE44 \uC9D1\uACC4\uB97C \uB2E4\uC2DC \uD655\uC778\uD574 \uC8FC\uC138\uC694.";
+        if (["FORBIDDEN", "ACCOUNT_CHANGED", "SESSION_CHANGED", "AUTH_REQUIRED"].includes(error2.code)) {
+          data = null;
+          body.replaceChildren();
+          pending = null;
+          drafts.clear();
+          dirty = false;
+        }
+      }
+    } finally {
+      checkingGroups = false;
+    }
+  }
+  function submit(event) {
+    const form = event.target;
+    if (!root.contains(form) || !form.matches("form") || stopped) return;
+    event.preventDefault();
+    if (busy || suspended) return;
+    if (pending) {
+      if (pending.key !== formKey(form)) {
+        status.textContent = "\uC55E\uC11C \uB204\uB978 \uC81C\uCD9C \uBC84\uD2BC\uC73C\uB85C \uC800\uC7A5 \uACB0\uACFC\uB97C \uBA3C\uC800 \uD655\uC778\uD574 \uC8FC\uC138\uC694.";
+        return;
+      }
+      void send(pending.route, pending.payload, form);
+      return;
+    }
+    const values = new FormData(form), idempotencyKey = makeId();
+    let payload, route;
+    if (form.hasAttribute("data-course-assign")) {
+      route = "/api/course/assign";
+      payload = { week: Number(values.get("week")), dueAt: new Date(values.get("dueAt")).toISOString(), idempotencyKey };
+    } else if (form.hasAttribute("data-course-submit")) {
+      const taskId = form.dataset.courseSubmit, record2 = data.records.find((r) => r.taskId === taskId && !r.readOnly);
+      route = "/api/course/submit";
+      payload = { taskId, sharingRevision: data.sharing.revision, baseVersion: Number(form.dataset.baseVersion), text: values.get("text"), reflection: values.get("reflection") || "", reading: Object.fromEntries([...values].filter(([k]) => /^R\d-\d$/.test(k)).map(([k, v]) => [k, Number(v)])), idempotencyKey };
+    } else if (form.hasAttribute("data-course-feedback")) {
+      const taskId = form.dataset.courseFeedback, learnerId = form.dataset.learner, l = data.learners.find((l2) => l2.id === learnerId), v = l.records.find((r) => r.taskId === taskId).versions.find((v2) => v2.version === Number(form.dataset.version));
+      route = "/api/course/feedback";
+      payload = { taskId, learnerId, sharingRevision: l.sharingRevision, version: v.version, baseFeedback: Number(form.dataset.baseFeedback), good: values.get("good"), focus: values.get("focus"), retry: values.get("retry"), tags: values.getAll("tag"), rubric: Object.fromEntries(["content", "structure", "language"].map((k) => [k, Number(values.get(k))])), minutes: Number(values.get("minutes")), idempotencyKey };
+    } else return;
+    pending = { route, payload, key: formKey(form) };
+    void send(route, payload, form);
+  }
+  async function change(event) {
+    const input2 = event.target;
+    if (!input2.dataset.courseGroup || !data) return;
+    const r = data.records.find((r2) => r2.taskId === input2.dataset.courseGroup && !r2.readOnly);
+    if (!r) return;
+    if (busy || suspended || pending) {
+      input2.checked = r.groupConsent;
+      status.textContent = "\uC55E\uC11C \uB204\uB978 \uC81C\uCD9C \uBC84\uD2BC\uC73C\uB85C \uC800\uC7A5 \uACB0\uACFC\uB97C \uBA3C\uC800 \uD655\uC778\uD574 \uC8FC\uC138\uC694.";
+      return;
+    }
+    const version = generation, previous = r.groupConsent;
+    busy = true;
+    refresh.disabled = true;
+    input2.disabled = true;
+    try {
+      guard();
+      const result = await request("/api/course/group-sharing", { taskId: r.taskId, sharingRevision: data.sharing.revision, baseConsentRevision: r.consentRevision, enabled: input2.checked });
+      check2(version);
+      Object.assign(r, { groupConsent: result.record.groupConsent, consentRevision: result.record.consentRevision });
+      input2.checked = r.groupConsent;
+      status.textContent = "\uC9D1\uACC4 \uB3D9\uC758\uB97C \uC800\uC7A5\uD588\uC5B4\uC694.";
+    } catch (error2) {
+      if (!stopped && version === generation) {
+        input2.checked = previous;
+        status.textContent = "\uC9D1\uACC4 \uB3D9\uC758\uB97C \uC800\uC7A5\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uD604\uC7AC \uC124\uC815\uC744 \uD655\uC778\uD558\uACE0 \uC788\uC5B4\uC694.";
+        try {
+          guard();
+          const current = await request("/api/course");
+          check2(version);
+          const record2 = current.records.find((item) => item.taskId === r.taskId && !item.readOnly);
+          if (!record2) throw Error("CONSENT_UNAVAILABLE");
+          Object.assign(r, { groupConsent: record2.groupConsent, consentRevision: record2.consentRevision });
+          input2.checked = r.groupConsent;
+          status.textContent = "\uC11C\uBC84\uC5D0 \uC800\uC7A5\uB41C \uC9D1\uACC4 \uB3D9\uC758\uB97C \uB2E4\uC2DC \uD45C\uC2DC\uD588\uC5B4\uC694.";
+        } catch {
+          if (!stopped && version === generation) {
+            input2.indeterminate = true;
+            status.textContent = "\uC9D1\uACC4 \uB3D9\uC758\uB97C \uD655\uC778\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uACFC\uC81C\uB97C \uC0C8\uB85C\uACE0\uCE68\uD574 \uC8FC\uC138\uC694.";
+          }
+        }
+      }
+    } finally {
+      if (!stopped) {
+        busy = false;
+        refresh.disabled = false;
+        input2.disabled = input2.indeterminate;
+      }
+    }
+  }
+  function click(event) {
+    const button = event.target.closest("[data-course-plan]");
+    if (!button || busy || suspended || !data) return;
+    if (pending || dirty) {
+      status.textContent = "\uC791\uC131 \uC911\uC778 \uCCA8\uC0AD\uC744 \uBC18\uD658\uD558\uAC70\uB098 \uACFC\uC81C\uB97C \uC0C8\uB85C\uACE0\uCE68\uD55C \uB4A4 \uC218\uC5C5\uC548\uC744 \uACE8\uB77C \uC8FC\uC138\uC694.";
+      return;
+    }
+    const group = data.groups.find((g) => g.taskId === button.dataset.coursePlan);
+    void send("/api/course/plan", { taskId: group.taskId, signature: JSON.stringify([group.reviewed, group.eligible, group.cells.map((c) => [c.tag, c.n])]) }, button.closest(".course-task"));
+  }
+  const input = (event) => {
+    const form = event.target.closest("form");
+    if (form) remember(form);
+  };
+  refresh.onclick = () => {
+    if (!data) {
+      void reload();
+      return;
+    }
+    if (!dirty && !pending || doc2.defaultView?.confirm("\uC791\uC131 \uC911\uC778 \uAE00\uC744 \uB2EB\uACE0 \uC11C\uBC84\uC758 \uCD5C\uC2E0 \uACFC\uC81C\uB97C \uBD88\uB7EC\uC62C\uAE4C\uC694?")) void reload({ discard: true });
+  };
+  root.addEventListener("input", input);
+  root.addEventListener("submit", submit);
+  root.addEventListener("change", change);
+  root.addEventListener("click", click);
+  return { reload, refreshGroups, applySharing, suspend() {
+    suspended = true;
+    body.hidden = true;
+    status.textContent = "\uC5F0\uACB0\uC744 \uD655\uC778\uD558\uB294 \uB3D9\uC548 \uCCA8\uC0AD \uCD08\uC548\uC744 \uC7A0\uC2DC \uC228\uACBC\uC5B4\uC694. \uAD8C\uD55C\uC744 \uB2E4\uC2DC \uD655\uC778\uD558\uBA74 \uC774\uC5B4 \uC4F8 \uC218 \uC788\uC5B4\uC694.";
+  }, hasDraft: () => dirty || !!pending, dispose() {
+    stopped = true;
+    generation++;
+    data = null;
+    pending = null;
+    sharingMetadata = null;
+    drafts.clear();
+    root.removeEventListener("input", input);
+    root.removeEventListener("submit", submit);
+    root.removeEventListener("change", change);
+    root.removeEventListener("click", click);
+    root.replaceChildren();
+  } };
+}
+
+// experiences/synk-world-app/course-writing-entry.mjs
+function mountCourseWritingEntry({ container, transport, guard = () => {
+} }) {
+  const doc2 = container.ownerDocument, root = doc2.createElement("section"), label = doc2.createElement("label"), select = doc2.createElement("select"), body = doc2.createElement("div"), status = doc2.createElement("p");
+  root.className = "ws-class";
+  label.textContent = "\uACFC\uC81C\uB97C \uBCFC \uC218\uC5C5 ";
+  label.append(select);
+  root.append(label, status, body);
+  container.append(root);
+  let stopped = false, epoch = 0, view = null, classes = [], selected = "";
+  const check2 = (version2) => {
+    guard();
+    if (stopped || version2 !== epoch) throw Object.assign(Error("ACCOUNT_CHANGED"), { code: "ACCOUNT_CHANGED" });
+  };
+  const paths = { "/api/course": "courseRead", "/api/course/submit": "courseSubmit", "/api/course/group-sharing": "courseGroupSharing" };
+  function choose() {
+    if (view?.hasDraft() && !doc2.defaultView?.confirm("\uC791\uC131 \uC911\uC778 \uAE00\uC744 \uB2EB\uACE0 \uB2E4\uB978 \uBC18 \uACFC\uC81C\uB97C \uC5F4\uAE4C\uC694?")) {
+      select.value = selected;
+      return;
+    }
+    view?.dispose();
+    view = null;
+    const version2 = ++epoch, classId = select.value;
+    selected = classId;
+    if (!classes.some((c) => c.id === classId)) return;
+    view = mountCourseWriting({ root: body, guard: () => check2(version2), request: (path, payload) => {
+      check2(version2);
+      if (!paths[path]) throw Error("FORBIDDEN");
+      return transport(paths[path], { classId, ...payload === void 0 ? {} : { body: payload } }).then((r) => {
+        check2(version2);
+        return r;
+      });
+    } });
+    void view.reload();
+  }
+  select.onchange = choose;
+  const version = epoch;
+  void transport("classes").then(async (result) => {
+    check2(version);
+    const mine = result.classes.filter((c) => c.role === "learner");
+    const active = await Promise.all(mine.map(async (c) => {
+      try {
+        const view2 = await transport("courseRead", { classId: c.id });
+        check2(version);
+        return view2.tasks?.length ? c : null;
+      } catch (error2) {
+        if (["NOT_FOUND", "COURSE_UNAVAILABLE"].includes(error2.code)) return null;
+        throw error2;
+      }
+    }));
+    check2(version);
+    classes = active.filter(Boolean);
+    if (!classes.length) {
+      root.hidden = true;
+      return;
+    }
+    for (const row of classes) {
+      const option = doc2.createElement("option");
+      option.value = row.id;
+      option.textContent = row.name;
+      select.append(option);
+    }
+    choose();
+  }).catch((error2) => {
+    if (!stopped && error2.code !== "ACCOUNT_CHANGED") status.textContent = "\uACFC\uC81C \uC5F0\uACB0\uC744 \uD655\uC778\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uACC4\uC815\uC744 \uB2E4\uC2DC \uC5F4\uC5B4 \uC8FC\uC138\uC694.";
+  });
+  return { hasDraft: () => !!view?.hasDraft(), dispose() {
+    stopped = true;
+    epoch++;
+    view?.dispose();
+    view = null;
+    root.remove();
+  } };
 }
 
 // experiences/korean-racing/play-catalog.js
@@ -12505,10 +13011,10 @@ var emptyGarage = () => ({
   beginnerWishes: {}
 });
 var text = (value, max) => typeof value === "string" && value.length <= max ? value : "";
-function keepMission(day, m) {
+function keepMission(day2, m) {
   return {
     id: text(m.id, 240),
-    date: day,
+    date: day2,
     kind: m.kind,
     target: m.target,
     collection: m.collection === "words" ? "words" : "campaign",
@@ -12555,13 +13061,35 @@ function normalizeGarage(saved, mission = keepMission) {
     date: /^\d{4}-\d{2}-\d{2}$/.test(r?.date) ? r.date : "",
     coins: integer(r?.coins)
   }]));
-  result.dailyRaceCounts = Object.fromEntries(Object.entries(object(saved.dailyRaceCounts)).filter(([day]) => /^\d{4}-\d{2}-\d{2}$/.test(day)).map(([day, count]) => [day, integer(count, 0, 1e6)]));
-  for (const [day, m] of Object.entries(object(saved.missions))) {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(day) || !m || typeof m !== "object" || !["correction", "first-clear"].includes(m.kind) || !safeKey(m.target)) continue;
-    const kept = mission(day, m);
-    if (kept) result.missions[day] = kept;
+  result.dailyRaceCounts = Object.fromEntries(Object.entries(object(saved.dailyRaceCounts)).filter(([day2]) => /^\d{4}-\d{2}-\d{2}$/.test(day2)).map(([day2, count]) => [day2, integer(count, 0, 1e6)]));
+  for (const [day2, m] of Object.entries(object(saved.missions))) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(day2) || !m || typeof m !== "object" || !["correction", "first-clear"].includes(m.kind) || !safeKey(m.target)) continue;
+    const kept = mission(day2, m);
+    if (kept) result.missions[day2] = kept;
   }
   return result;
+}
+
+// experiences/hangul-stage/progress-data.mjs
+var object2 = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
+var integer2 = (v) => Number.isSafeInteger(v) && v >= 0;
+var token = (v) => typeof v === "string" && /^[a-z0-9_-]{1,80}$/i.test(v);
+var date = (v) => typeof v === "string" && v.length <= 40 && Number.isFinite(Date.parse(v));
+var day = (v) => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v);
+var fields = (v, allowed) => object2(v) && Object.keys(v).every((key) => allowed.includes(key));
+var states = /* @__PURE__ */ new Set(["unmet", "met", "learning", "mastered"]);
+var failure2 = () => {
+  throw Object.assign(Error("\uD55C\uAE00 \uC9C4\uB3C4\uC758 \uD310\uC774\uB098 \uB0B4\uC6A9\uC744 \uD655\uC778\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uAE30\uC874 \uAE30\uB85D\uC740 \uADF8\uB300\uB85C \uBCF4\uC874\uD588\uC5B4\uC694."), { code: "HANGUL_PROGRESS_UNREADABLE" });
+};
+function validateHangulProgress(value) {
+  if (!fields(value, ["v", "core", "letters", "pairs", "recent", "sessions", "difficulty", "trend", "amount", "skipped", "demoSeen", "wordStreak", "graduated"]) || value.v !== 1 || !["hangul-core-1", "hangul-core-2"].includes(value.core) || !object2(value.letters) || Object.keys(value.letters).length > 64 || !object2(value.pairs) || Object.keys(value.pairs).length > 4096 || ![1, 2, 3].includes(value.difficulty) || !Number.isSafeInteger(value.trend) || ![5, 10, 15].includes(value.amount) || typeof value.skipped !== "boolean" || !integer2(value.wordStreak) || !Array.isArray(value.recent) || value.recent.length > 20 || value.recent.some((v) => !fields(v, ["ok"]) || typeof v.ok !== "boolean") || !Array.isArray(value.sessions) || value.sessions.length > 60 || !Array.isArray(value.demoSeen) || value.demoSeen.length > 7 || value.demoSeen.some((v) => !["listen_pick", "see_pick", "build", "match", "pair", "teach", "build_final"].includes(v))) failure2();
+  for (const [id, letter] of Object.entries(value.letters)) {
+    if (!token(id) || !fields(letter, ["state", "best", "streak", "streakSessions", "step", "due", "lapses", "seen", "correct", "lastAt", "metAt"]) || !states.has(letter.state) || !states.has(letter.best) || !["streak", "step", "lapses", "seen", "correct"].every((k) => integer2(letter[k])) || letter.step > 5 || letter.correct > letter.seen || !Array.isArray(letter.streakSessions) || letter.streakSessions.length > 3 || letter.streakSessions.some((v) => typeof v !== "string" || v.length > 120) || ["due", "lastAt", "metAt"].some((k) => letter[k] !== null && !date(letter[k]))) failure2();
+  }
+  for (const [key, pair] of Object.entries(value.pairs)) if (key.split("|").length !== 2 || key.split("|").some((v) => !token(v)) || !fields(pair, ["wrong", "lastAt"]) || !integer2(pair.wrong) || !date(pair.lastAt)) failure2();
+  for (const session of value.sessions) if (!fields(session, ["day", "sessionNo", "total", "independent"]) || !day(session.day) || !["sessionNo", "total", "independent"].every((k) => integer2(session[k])) || session.independent > session.total) failure2();
+  if (value.graduated !== null && (!fields(value.graduated, ["at", "day"]) || !date(value.graduated.at) || !day(value.graduated.day))) failure2();
+  return value;
 }
 
 // experiences/play-common/play-data.mjs
@@ -12581,13 +13109,14 @@ var PLAY_RECORD_KEYS = Object.freeze([
   "synk.blank-slice.v1",
   "synk.entry-check.v1",
   "synk.talk-rally.v1",
-  "synk.life-korean.progress.v1"
+  "synk.life-korean.progress.v1",
+  "synk.hangul-stage.v1"
 ]);
 var isPlayRecordKey = (key) => PLAY_RECORD_KEYS.includes(key) || typeof key === "string" && /^SYNK_SHIP_STARBOOK_V1:kept:[a-f0-9]{32}$/.test(key);
 var fail = (code = "INVALID_PLAY_STATE") => {
   throw Object.assign(new Error(code), { code, status: code === "PLAY_DATA_TOO_LARGE" ? 413 : 400 });
 };
-var object2 = (x) => x !== null && typeof x === "object" && !Array.isArray(x) && [Object.prototype, null].includes(Object.getPrototypeOf(x));
+var object3 = (x) => x !== null && typeof x === "object" && !Array.isArray(x) && [Object.prototype, null].includes(Object.getPrototypeOf(x));
 var bytes = (x) => new TextEncoder().encode(x).length;
 function safe(value, depth = 0) {
   if (depth > 20) fail();
@@ -12605,7 +13134,7 @@ function safe(value, depth = 0) {
     for (const v of value) safe(v, depth + 1);
     return;
   }
-  if (!object2(value)) fail();
+  if (!object3(value)) fail();
   for (const [key, v] of Object.entries(value)) {
     if (key.length > 240 || ["__proto__", "prototype", "constructor"].includes(key) || /^(?:token|access_?token|refresh_?token|authorization|password|secret|bearer|roomCode|participantToken)$/i.test(key)) fail();
     safe(v, depth + 1);
@@ -12625,23 +13154,28 @@ function validatePlayValue(key, value) {
     fail();
   }
   safe(parsed);
+  if (key === "synk.hangul-stage.v1") try {
+    validateHangulProgress(parsed);
+  } catch {
+    fail();
+  }
   return value;
 }
 function validatePlayRecords(records) {
-  if (!object2(records) || Object.keys(records).length > 1024) fail();
+  if (!object3(records) || Object.keys(records).length > 1024) fail();
   const result = {};
   for (const [key, value] of Object.entries(records)) result[key] = validatePlayValue(key, value);
   if (bytes(JSON.stringify(result)) > PLAY_MAX_BYTES) fail("PLAY_DATA_TOO_LARGE");
   return result;
 }
 function validatePlayWallet(value) {
-  if (!object2(value)) fail();
+  if (!object3(value)) fail();
   safe(value);
   if (bytes(JSON.stringify(value)) > PLAY_MAX_BYTES) fail("PLAY_DATA_TOO_LARGE");
   return normalizeGarage(value);
 }
 function validatePlayState(value) {
-  if (!object2(value) || Object.keys(value).some((k) => !["wallet", "records", "imported"].includes(k))) fail();
+  if (!object3(value) || Object.keys(value).some((k) => !["wallet", "records", "imported"].includes(k))) fail();
   const state = { wallet: validatePlayWallet(value.wallet), records: validatePlayRecords(value.records), imported: value.imported === true };
   if (bytes(JSON.stringify(state)) > PLAY_MAX_BYTES) fail("PLAY_DATA_TOO_LARGE");
   return state;
@@ -13763,13 +14297,13 @@ var BROAD_GOALS = ["explore", "study", "work", "clarity", "expression", "prepare
 var supports = ["choose", "step", "independent"];
 var own = (value, key) => Object.prototype.hasOwnProperty.call(value || {}, key);
 var record = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
-var time = (value) => typeof value === "number" && Number.isFinite(value) && value >= 0;
+var time2 = (value) => typeof value === "number" && Number.isFinite(value) && value >= 0;
 var copy = (value) => JSON.parse(JSON.stringify(value));
 var knownLessons = new Map(LESSONS.map((lesson2) => [lesson2.id, lesson2]));
 var iso = (value) => new Date(value).toISOString();
 function clock(value) {
   const at = value instanceof Date ? value.getTime() : typeof value === "string" ? Date.parse(value) : value;
-  if (!time(at)) throw TypeError("WORLD learning plan needs a valid time");
+  if (!time2(at)) throw TypeError("WORLD learning plan needs a valid time");
   return at;
 }
 var PACK_SITUATIONS = {
@@ -13860,7 +14394,7 @@ function lessonCandidate(lesson2, index, settings) {
 function verifiedReviews(progress) {
   return Object.values(record(progress?.reviews) ? progress.reviews : {}).flatMap((review) => {
     const lesson2 = knownLessons.get(review?.lessonId), question2 = lesson2?.questions.find((q) => q.id === review.questionId && q.review.id === review.id);
-    if (!question2 || review.packId !== lesson2.packId || review.skillId !== question2.skillId || !time(review.dueAt) || !time(review.lastAt)) return [];
+    if (!question2 || review.packId !== lesson2.packId || review.skillId !== question2.skillId || !time2(review.dueAt) || !time2(review.lastAt)) return [];
     return [{ ...review, lesson: lesson2, question: question2 }];
   });
 }
@@ -13871,18 +14405,18 @@ function practiceNeed(review, progress, now) {
   if (answer && typeof answer.correct === "boolean" && typeof answer.helped === "boolean") observations.push({ at: answer.at, kind: answer.correct ? answer.helped ? "assisted" : "independent" : "retry" });
   const repeated = progress.activeReview?.answers?.[review.id];
   if (repeated && typeof repeated.correct === "boolean" && typeof repeated.helped === "boolean") observations.push({ at: repeated.at, kind: repeated.correct ? repeated.helped ? "assisted" : "independent" : "retry" });
-  for (const day of Object.values(progress.daily?.days || {})) {
-    const item = day?.items?.[review.questionId];
+  for (const day2 of Object.values(progress.daily?.days || {})) {
+    const item = day2?.items?.[review.questionId];
     if (item?.lessonId === review.lessonId && ["retry", "assisted", "independent"].includes(item.outcome)) observations.push({ at: item.observedAt, kind: item.outcome });
   }
-  const latest = observations.filter((value) => time(value.at) && value.at <= now).sort((a, b) => b.at - a.at)[0];
+  const latest = observations.filter((value) => time2(value.at) && value.at <= now).sort((a, b) => b.at - a.at)[0];
   if (!latest || latest.at < review.lastAt || !["retry", "assisted"].includes(latest.kind)) return null;
   return { kind: latest.kind, at: iso(latest.at), evidenceRefs: [`life.${review.lessonId}.${review.questionId}`] };
 }
 function buildWorldLearningCandidates({ progress = {}, settings = {}, now = Date.now(), openGames = null } = {}) {
   const at = clock(now), source = record(progress) ? progress : {}, candidates = [];
   PACKS.forEach((pack, index) => {
-    const next = pack.lessons.find((lesson2) => !time(source.lessons?.[lesson2.id]?.completedAt));
+    const next = pack.lessons.find((lesson2) => !time2(source.lessons?.[lesson2.id]?.completedAt));
     if (next) candidates.push(lessonCandidate(knownLessons.get(next.id), index, settings));
   });
   const reviews = verifiedReviews(source).filter((review) => review.dueAt <= at && review.lastAt <= at);
@@ -13977,12 +14511,12 @@ function resumeCandidates(progress, settings, now) {
   const result = [];
   const lesson2 = knownLessons.get(progress?.activeLessonId), saved = lesson2 && progress.lessons?.[lesson2.id];
   const answered = record(saved?.answers) && Object.keys(saved.answers).length > 0;
-  if (lesson2 && saved && answered && time(saved.startedAt) && saved.startedAt <= now) {
+  if (lesson2 && saved && answered && time2(saved.startedAt) && saved.startedAt <= now) {
     const index = PACKS.findIndex((pack) => pack.id === lesson2.packId);
     result.push({ ...lessonCandidate(lesson2, index, settings), id: `world.resume.lesson.${lesson2.id}`, resume: true, label: `${lesson2.title} \xB7 \uC774\uC5B4 \uD558\uAE30` });
   }
   const session = progress?.activeReview;
-  if (!session || !Array.isArray(session.ids) || !time(session.startedAt) || session.startedAt > now) return result;
+  if (!session || !Array.isArray(session.ids) || !time2(session.startedAt) || session.startedAt > now) return result;
   const pending = session.ids.filter((id) => !own(session.answers, id)), reviews = verifiedReviews(progress), first = reviews.find((review) => review.id === pending[0]);
   if (!first) return result;
   result.push({
@@ -14221,6 +14755,39 @@ async function createLifeProgressPort({ accountId: id, client, guard, storage: c
   }
 }
 
+// experiences/synk-world-app/hangul-progress-port.mjs
+var HANGUL_PROGRESS_KEY = "synk.hangul-stage.v1";
+async function createHangulProgressPort({ accountId, client, guard, storage = globalThis.localStorage, target = globalThis }) {
+  const host = createWorldPlayHost({ accountId, client, guard, storage, locks: target.navigator?.locks });
+  const records = host.storage();
+  try {
+    await host.ready();
+  } catch (error2) {
+    host.stop();
+    throw error2;
+  }
+  return Object.freeze({
+    accountId,
+    read() {
+      guard();
+      return records.getItem(HANGUL_PROGRESS_KEY);
+    },
+    status: host.status,
+    async importSnapshot(raw) {
+      guard();
+      const current = records.getItem(HANGUL_PROGRESS_KEY);
+      if (current !== null && !(current === raw && host.status().pending)) return "exists";
+      if (current === null) records.setItem(HANGUL_PROGRESS_KEY, raw);
+      await host.flush();
+      guard();
+      const status = host.status(), saved = host.snapshot().state.records[HANGUL_PROGRESS_KEY];
+      if (status.phase !== "synced" || status.pending || saved !== raw) throw Object.assign(Error("\uD55C\uAE00 \uC9C4\uB3C4 \uACC4\uC815 \uC800\uC7A5\uC744 \uD655\uC778\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694."), { code: "HANGUL_NOT_SAVED" });
+      return "moved";
+    },
+    dispose: host.stop
+  });
+}
+
 // experiences/synk-world-app/guest-trial.mjs
 var GUEST_TRIAL_GAMES = Object.freeze(["runner", "rhythm"]);
 var GUEST_TRIAL_KEY = "synk.world.guest-trial.v1";
@@ -14403,27 +14970,43 @@ function deviceHangulAnswer(storage) {
     return null;
   }
 }
-function planDeviceRecords({ storage = globalThis.localStorage, learning = null, accountAnswer = null } = {}) {
-  let device, answer, target, accountHas = false;
+function planDeviceRecords({ storage = globalThis.localStorage, learning = null, accountAnswer = null, hangulPort = null } = {}) {
+  let device, answer, target, accountHas = false, from = HANGUL_DEVICE_KEY;
   try {
     device = readHangul(storage, HANGUL_DEVICE_KEY);
     answer = deviceHangulAnswer(storage);
     target = hangulAccountKey(learning);
-    if (target) accountHas = storage.getItem(target) !== null;
+    if (hangulPort) {
+      if (target && readHangul(storage, target)) {
+        device = readHangul(storage, target);
+        from = target;
+      }
+      target = HANGUL_DEVICE_KEY;
+      accountHas = hangulPort.read() !== null;
+    } else if (target) accountHas = storage.getItem(target) !== null;
   } catch {
     return null;
   }
   if (device && !target) return null;
-  const hangul = device && !accountHas ? { from: HANGUL_DEVICE_KEY, to: target, summary: device } : null, moveAnswer = answer && !accountAnswer ? answer : null;
+  const hangul = device && !accountHas ? { from, to: target, summary: device, ...hangulPort ? { cloud: true } : {} } : null, moveAnswer = answer && !accountAnswer ? answer : null;
   if (!hangul && !moveAnswer) return null;
   return { hangul, answer: moveAnswer, kept: { hangul: !!device && accountHas, answer: !!answer && !!accountAnswer } };
 }
-async function applyDeviceRecords(plan, { storage = globalThis.localStorage, accountAnswer = () => null, setAccountAnswer }) {
+async function applyDeviceRecords(plan, { storage = globalThis.localStorage, accountAnswer = () => null, setAccountAnswer, hangulPort = null, guard = () => {
+} }) {
   const result = { hangul: null, answer: null, errors: [] };
   if (plan?.hangul) {
     try {
       const raw = storage.getItem(plan.hangul.from);
-      if (storage.getItem(plan.hangul.to) !== null) result.hangul = "exists";
+      guard();
+      if (plan.hangul.cloud) {
+        if (!hangulPort) throw Error("\uACC4\uC815 \uD55C\uAE00 \uC800\uC7A5 \uC5F0\uACB0\uC744 \uB2E4\uC2DC \uC5F4\uC5B4 \uC8FC\uC138\uC694.");
+        if (raw === null || !readHangul(storage, plan.hangul.from)) result.hangul = "gone";
+        else {
+          result.hangul = await hangulPort.importSnapshot(raw);
+          guard();
+        }
+      } else if (storage.getItem(plan.hangul.to) !== null) result.hangul = "exists";
       else if (raw === null || !readHangul(storage, plan.hangul.from)) result.hangul = "gone";
       else {
         storage.setItem(plan.hangul.to, raw);
@@ -14435,9 +15018,11 @@ async function applyDeviceRecords(plan, { storage = globalThis.localStorage, acc
   }
   if (plan?.answer) {
     try {
+      guard();
       if (accountAnswer()) result.answer = "exists";
       else {
         await setAccountAnswer(plan.answer.answer, { via: plan.answer.via });
+        guard();
         result.answer = "moved";
       }
     } catch (error2) {
@@ -14446,16 +15031,16 @@ async function applyDeviceRecords(plan, { storage = globalThis.localStorage, acc
   }
   return result;
 }
-function deviceRecordsDecision(storage, accountId) {
+function deviceRecordsDecision(storage, accountId, { cloud = false } = {}) {
   try {
     const value = JSON.parse(storage?.getItem(DEVICE_RECORDS_KEY) || "null"), accounts = recordObject(value) && value.version === 1 && recordObject(value.accounts) ? value.accounts : {};
     const entry = Object.hasOwn(accounts, accountId) ? accounts[accountId] : null;
-    return recordObject(entry) && ["moved", "kept"].includes(entry.decision) ? entry.decision : null;
+    return recordObject(entry) && ["moved", "kept"].includes(entry.decision) && (!cloud || entry.decision === "kept" || entry.cloud === true) ? entry.decision : null;
   } catch {
     return null;
   }
 }
-function saveDeviceRecordsDecision(storage, accountId, decision, at = Date.now()) {
+function saveDeviceRecordsDecision(storage, accountId, decision, at = Date.now(), { cloud = false } = {}) {
   if (!["moved", "kept"].includes(decision)) throw TypeError("Invalid device records decision");
   let accounts = {};
   try {
@@ -14464,7 +15049,7 @@ function saveDeviceRecordsDecision(storage, accountId, decision, at = Date.now()
   } catch {
   }
   try {
-    storage.setItem(DEVICE_RECORDS_KEY, JSON.stringify({ version: 1, accounts: { ...accounts, [accountId]: { decision, at } } }));
+    storage.setItem(DEVICE_RECORDS_KEY, JSON.stringify({ version: 1, accounts: { ...accounts, [accountId]: { decision, at, ...cloud ? { cloud: true } : {} } } }));
     return true;
   } catch {
     return false;
@@ -14518,7 +15103,7 @@ function describeDeviceRecords(plan, T = DEVICE_RECORDS_TEXT) {
   return { rows: rows2, notes };
 }
 function createDeviceRecordsOffer({ storage = globalThis.localStorage, learningStatus = () => null, accountAnswer = () => null, setAccountAnswer, present, close, toast = () => {
-}, head = "", now = Date.now, defer = (fn) => setTimeout(fn, 0), text: text2 = null }) {
+}, head = "", now = Date.now, defer = (fn) => setTimeout(fn, 0), text: text2 = null, hangulPort = () => null, accountOwner = null }) {
   const asked = /* @__PURE__ */ new Set();
   let current = null;
   function markup(plan) {
@@ -14531,17 +15116,19 @@ function createDeviceRecordsOffer({ storage = globalThis.localStorage, learningS
     job.resolve(value);
   }
   function offer({ owner } = {}) {
-    if (typeof owner !== "string" || !owner || owner === "guest" || asked.has(owner) || deviceRecordsDecision(storage, owner)) return null;
+    const port = hangulPort();
+    if (typeof owner !== "string" || !owner || owner === "guest" || asked.has(owner) || deviceRecordsDecision(storage, owner, { cloud: !!port })) return null;
+    if (port && port.accountId !== owner) return null;
     let plan = null;
     try {
-      plan = planDeviceRecords({ storage, learning: learningStatus(), accountAnswer: accountAnswer() });
+      plan = planDeviceRecords({ storage, learning: learningStatus(), accountAnswer: accountAnswer(), hangulPort: port });
     } catch {
       plan = null;
     }
     if (!plan) return null;
     asked.add(owner);
     return new Promise((resolve) => {
-      const job = { owner, plan, resolve, busy: false };
+      const job = { owner, plan, port, resolve, busy: false };
       current = job;
       present({ title: recordsText(text2).title, html: markup(plan), onClose: () => finish(job, "dismissed") });
     });
@@ -14566,15 +15153,18 @@ function createDeviceRecordsOffer({ storage = globalThis.localStorage, learningS
       return done(job, "kept", recordsText(text2).kept);
     }
     status(recordsText(text2).moving, true);
-    const result = await applyDeviceRecords(job.plan, { storage, accountAnswer, setAccountAnswer });
+    const guard = () => {
+      if (current !== job || hangulPort() !== job.port || accountOwner && accountOwner() !== job.owner) throw Error("\uACC4\uC815 \uC5F0\uACB0\uC774 \uBC14\uB00C\uC5C8\uC5B4\uC694.");
+    };
+    const result = await applyDeviceRecords(job.plan, { storage, accountAnswer, setAccountAnswer, hangulPort: job.port, guard });
     if (current !== job) return null;
     const moved = [result.hangul, result.answer].includes("moved");
-    if (result.errors.length && !moved) {
+    if (result.errors.length && (!moved || job.plan.hangul?.cloud)) {
       job.busy = false;
       status(recordsText(text2).failed, false);
       return null;
     }
-    saveDeviceRecordsDecision(storage, job.owner, "moved", now());
+    saveDeviceRecordsDecision(storage, job.owner, "moved", now(), { cloud: !!job.port });
     return done(job, "moved", result.errors.length || result.hangul === "exists" || result.answer === "exists" || !moved ? recordsText(text2).partly : recordsText(text2).moved);
   }
   return Object.freeze({ offer, choose, pending: () => current ? { owner: current.owner, plan: current.plan } : null });
@@ -16506,7 +17096,7 @@ var posLed = (tone) => `<i class="w-led${tone ? ` ${tone}` : ""}" aria-hidden="t
 var posFill = (value, max) => (Math.max(0, Math.min(1, max ? value / max : 0)) * 100).toFixed(1);
 function createPositionView({ t, has = () => true, formatDate = null } = {}) {
   if (typeof t !== "function") throw TypeError("WORLD position view needs the screen-language t()");
-  const day = (value) => {
+  const day2 = (value) => {
     const at = Date.parse(value);
     if (!Number.isFinite(at)) return "";
     return formatDate ? formatDate(at, { month: "short", day: "numeric" }) : new Date(at).toISOString().slice(5, 10);
@@ -16521,7 +17111,7 @@ function createPositionView({ t, has = () => true, formatDate = null } = {}) {
     if (!skill2.evidence.length && !skill2.folded) return `<p class="wpos-empty">${posEscape(t("position.evidence.none"))}</p>`;
     const rows2 = skill2.evidence.map((row) => {
       const excerpt = catalog?.(row.itemKey) || "", ok = row.verdict === "correct";
-      return `<li class="wpos-evidence" data-verdict="${posEscape(row.verdict)}" data-assisted="${row.assisted ? "true" : "false"}">${posLed(ok ? "ok" : "alert")}<span class="wpos-evidence-main"><strong>${posEscape(t(ok ? "position.evidence.correct" : "position.evidence.incorrect"))} \xB7 ${posEscape(t(row.assisted ? "position.evidence.assisted" : "position.evidence.alone"))}</strong><small>${posEscape(itemSource(row.itemKey, row.experienceId))}${excerpt ? ` \xB7 <span lang="ko">${posEscape(excerpt)}</span>` : ""}${row.difficulty ? ` \xB7 ${posEscape(t("position.evidence.level", { n: row.difficulty }))}` : ""}</small></span><time datetime="${posEscape(row.at)}">${posEscape(day(row.at))}</time></li>`;
+      return `<li class="wpos-evidence" data-verdict="${posEscape(row.verdict)}" data-assisted="${row.assisted ? "true" : "false"}">${posLed(ok ? "ok" : "alert")}<span class="wpos-evidence-main"><strong>${posEscape(t(ok ? "position.evidence.correct" : "position.evidence.incorrect"))} \xB7 ${posEscape(t(row.assisted ? "position.evidence.assisted" : "position.evidence.alone"))}</strong><small>${posEscape(itemSource(row.itemKey, row.experienceId))}${excerpt ? ` \xB7 <span lang="ko">${posEscape(excerpt)}</span>` : ""}${row.difficulty ? ` \xB7 ${posEscape(t("position.evidence.level", { n: row.difficulty }))}` : ""}</small></span><time datetime="${posEscape(row.at)}">${posEscape(day2(row.at))}</time></li>`;
     }).join("");
     return `${rows2 ? `<ul class="wpos-evidence-list">${rows2}</ul>` : ""}${skill2.folded ? `<p class="wpos-note">${posEscape(t("position.evidence.folded", { n: skill2.folded }))}</p>` : ""}`;
   }
@@ -16780,7 +17370,7 @@ function normalizeClassroomClasses(list) {
     sessions: (Array.isArray(c.sessions) ? c.sessions : []).filter((s) => classroomRecord(s) && typeof s.session_key === "string" && typeof s.title === "string").map((s) => ({ session_key: s.session_key, title: s.title, starts_at: classroomText(s.starts_at), ends_at: classroomText(s.ends_at), status: classroomText(s.status) || "", watch_url: classroomText(s.watch_url) }))
   }));
 }
-async function requestClassrooms({ url, publishableKey, token, renew = null, fetch: fetch2, guard = () => {
+async function requestClassrooms({ url, publishableKey, token: token2, renew = null, fetch: fetch2, guard = () => {
 } }) {
   for (let attempt = 0; ; attempt++) {
     guard();
@@ -16789,7 +17379,7 @@ async function requestClassrooms({ url, publishableKey, token, renew = null, fet
       credentials: "omit",
       cache: "no-store",
       redirect: "error",
-      headers: { apikey: publishableKey, Authorization: `Bearer ${token()}`, "X-Contract-Ver": CLASSROOM_CONTRACT_VER }
+      headers: { apikey: publishableKey, Authorization: `Bearer ${token2()}`, "X-Contract-Ver": CLASSROOM_CONTRACT_VER }
     });
     guard();
     const body = await response.json().catch(() => null);
@@ -16894,7 +17484,7 @@ function normalizeHomeworkClasses(list) {
       const k = `${s.week}:${s.kind}`;
       if (!unique.has(k) || unique.get(k).revision < s.revision) unique.set(k, s);
     }
-    return { classId: c.classId, name: homeworkText(c.name, 200) || "", course: c.course, startsOn: typeof c.startsOn === "string" && /^\d{4}-\d{2}-\d{2}$/.test(c.startsOn) ? c.startsOn : null, weeks, submissions: [...unique.values()] };
+    return { classId: c.classId, name: homeworkText(c.name, 200) || "", course: c.course, startsOn: typeof c.startsOn === "string" && /^\d{4}-\d{2}-\d{2}$/.test(c.startsOn) ? c.startsOn : null, weeks, ...c.workflow === "course" || c.readOnly === true ? { readOnly: true } : {}, submissions: [...unique.values()] };
   });
 }
 function homeworkReply(data, status) {
@@ -16936,7 +17526,7 @@ async function loadWorldConfig({ value = globalThis.__SYNK_WORLD_CONFIG__, base 
 // experiences/synk-world-app/world-account.mjs
 var changed = () => Object.assign(Error("\uACC4\uC815 \uC5F0\uACB0\uC774 \uBC14\uB00C\uC5C8\uC5B4\uC694."), { code: "ACCOUNT_CHANGED" });
 var authErrors = /* @__PURE__ */ new Set(["AUTH_REQUIRED", "AUTH_SESSION_MISSING", "SESSION_REVOKED", "UNAUTHORIZED", "ACCOUNT_UNAVAILABLE", "PRODUCT_FORBIDDEN", "PLATFORM_ACCOUNT_MISMATCH"]);
-var routes = /* @__PURE__ */ new Map([["bootstrap", "GET"], ["play/start", "POST"], ["play/complete", "POST"], ["avatar/outfit", "PUT"], ["wardrobe/looks", "PUT"], ["town/entry", "GET"], ["town/state", "GET"], ["town/sharing", "POST"], ["town/command", "POST"], ["town/presence", "POST"], ["enrollment/preview", "POST"], ["enrollment/claim", "POST"], ["homework", "GET"], ["homework/submit", "POST"]]);
+var routes2 = /* @__PURE__ */ new Map([["bootstrap", "GET"], ["play/start", "POST"], ["play/complete", "POST"], ["avatar/outfit", "PUT"], ["wardrobe/looks", "PUT"], ["town/entry", "GET"], ["town/state", "GET"], ["town/sharing", "POST"], ["town/command", "POST"], ["town/presence", "POST"], ["enrollment/preview", "POST"], ["enrollment/claim", "POST"], ["homework", "GET"], ["homework/submit", "POST"], ["homework/key", "POST"]]);
 function createWorldAccount({
   config: raw,
   storage = globalThis.sessionStorage,
@@ -16958,7 +17548,7 @@ function createWorldAccount({
   const binding = [config.supabaseUrl, config.accountApiUrl, config.clients.world.clientId, config.clients.world.redirectUri].join("|");
   const entry = createPlatformEntry({ clientKey: "world", getUrl, replaceUrl });
   let session = null, rawSession = null, owner = null, currentSessionId = null, currentAccount = null, epoch = 0, closed = false, refreshing = null, pendingExchange = null, townBinding = null, townStateRevision = -1, verifiedClient = null, gameHost = null, gameLaunch = 0, lifeHost = null, lifeLaunch = 0, verification = 0;
-  let nativeIdentity = null, nativeAccountId = null, nativeGeneration = -1, signedOutGeneration = -1, nativeEvents = 0, nativeReady = null, unsubscribe = null, nativeClassroom = false, nativeHomework = false;
+  let nativeIdentity = null, nativeAccountId = null, nativeGeneration = -1, signedOutGeneration = -1, nativeEvents = 0, nativeReady = null, unsubscribe = null, nativeClassroom = false, nativeHomework = false, hangulHost = null, hangulLaunch = 0;
   const controllers = /* @__PURE__ */ new Set();
   const guard = (expected) => {
     if (closed || expected !== epoch) throw changed();
@@ -16980,10 +17570,13 @@ function createWorldAccount({
     epoch++;
     gameLaunch++;
     lifeLaunch++;
+    hangulLaunch++;
     verification++;
     stopGames();
     lifeHost?.dispose();
     lifeHost = null;
+    hangulHost?.dispose();
+    hangulHost = null;
     session = null;
     owner = null;
     currentSessionId = null;
@@ -17296,8 +17889,56 @@ function createWorldAccount({
     lifeHost = port;
     return port;
   }
+  async function prepareHangulProgress({ storage: cache = globalThis.localStorage, target = globalThis } = {}) {
+    const expected = epoch, launch = ++hangulLaunch;
+    guard(expected);
+    if (!owner || !session) throw Object.assign(Error("SYNK ID\uB85C \uB85C\uADF8\uC778\uD574 \uC8FC\uC138\uC694."), { code: "AUTH_REQUIRED" });
+    hangulHost?.dispose();
+    hangulHost = null;
+    try {
+      await verify(expected);
+      guard(expected);
+    } catch (error2) {
+      if (expected === epoch && authErrors.has(error2.code)) {
+        clear();
+        forgetSession();
+      }
+      throw error2;
+    }
+    const id = owner, client = verifiedClient;
+    const check2 = () => {
+      guard(expected);
+      if (launch !== hangulLaunch || owner !== id) throw changed();
+    };
+    const wrap = (fn) => async (...args) => {
+      check2();
+      try {
+        const value = await fn(...args);
+        check2();
+        return value;
+      } catch (error2) {
+        if (expected === epoch && authErrors.has(error2.code)) {
+          clear();
+          forgetSession();
+        }
+        throw error2;
+      }
+    };
+    const port = await createHangulProgressPort({ accountId: id, storage: cache, target, guard: check2, client: {
+      load: wrap(() => client.play.load()),
+      mutate: wrap((body) => client.play.mutate(body))
+    } });
+    try {
+      check2();
+      hangulHost = port;
+      return port;
+    } catch (error2) {
+      port.dispose();
+      throw error2;
+    }
+  }
   async function request(path, options = {}) {
-    if (!routes.has(path) || (options.method || "GET") !== routes.get(path)) throw new TypeError("Unsupported WORLD request");
+    if (!routes2.has(path) || (options.method || "GET") !== routes2.get(path)) throw new TypeError("Unsupported WORLD request");
     const expected = epoch;
     guard(expected);
     if (!owner || !session) throw Object.assign(Error("SYNK ID\uB85C \uB85C\uADF8\uC778\uD574 \uC8FC\uC138\uC694."), { code: "AUTH_REQUIRED", status: 401 });
@@ -17331,31 +17972,31 @@ function createWorldAccount({
     if (native) {
       const body = options.body === void 0 ? void 0 : JSON.parse(options.body);
       if (body !== void 0 && (!body || typeof body !== "object" || Array.isArray(body))) throw new TypeError("Invalid WORLD request body");
-      const data = await bridge.accountRequest("worldRequest", { route: path, ...body === void 0 ? {} : { body }, ...path.startsWith("town/") && path !== "town/entry" && townBinding?.classId ? { classId: townBinding.classId } : {}, ...path === "homework/submit" ? { classId: body.classId } : {} });
+      const data = await bridge.accountRequest("worldRequest", { route: path, ...body === void 0 ? {} : { body }, ...path.startsWith("town/") && path !== "town/entry" && townBinding?.classId ? { classId: townBinding.classId } : {}, ...path === "homework/submit" || path === "homework/key" ? { classId: body.classId } : {} });
       return accept(data, data?.ok === true, data?.ok === true ? 200 : data?.error?.status || 503);
     }
-    const homework = path === "homework" || path === "homework/submit";
-    const endpoint = path === "town/sharing" || path.startsWith("enrollment/") || homework ? "synk-classroom" : path.startsWith("town/") ? "synk-town" : "synk-world-v1", suffix = path === "town/sharing" ? "api/world/town/sharing" : path.startsWith("enrollment/") ? `api/${path}` : homework ? "api/world/homework" : path.startsWith("town/") ? path.slice(5) : path;
+    const homework = path === "homework" || path.startsWith("homework/");
+    const endpoint = path === "town/sharing" || path.startsWith("enrollment/") || homework ? "synk-classroom" : path.startsWith("town/") ? "synk-town" : "synk-world-v1", suffix = path === "town/sharing" ? "api/world/town/sharing" : path.startsWith("enrollment/") ? `api/${path}` : homework ? "api/world/homework" + (path === "homework/key" ? "/key" : "") : path.startsWith("town/") ? path.slice(5) : path;
     const url = new URL(config.accountApiUrl);
     url.pathname = url.pathname.replace(/\/$/, "").replace(/\/functions\/v1(?:\/synk-(?:account|world-v1|town))?$/, "") + `/functions/v1/${endpoint}/${suffix}`;
     url.search = "";
     url.hash = "";
     if (path.startsWith("town/") && path !== "town/entry" && townBinding?.classId) url.searchParams.set("classId", townBinding.classId);
-    if (path === "homework/submit") url.searchParams.set("classId", JSON.parse(options.body).classId);
+    if (path === "homework/submit" || path === "homework/key") url.searchParams.set("classId", JSON.parse(options.body).classId);
     const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 12e3);
     controllers.add(controller);
     try {
       if (session.expires_at <= now() + 3e4) await renew(expected);
       guard(expected);
       for (let attempt = 0; attempt < 2; attempt++) {
-        const token = session.access_token;
+        const token2 = session.access_token;
         const response = await fetcher(url.href, {
           method: options.method || "GET",
           credentials: "omit",
           cache: "no-store",
           redirect: "error",
           signal: controller.signal,
-          headers: { apikey: config.supabasePublishableKey, Authorization: `Bearer ${token}`, "X-SYNK-Product": "world", "X-SYNK-Contract": "1", "X-SYNK-App-Version": "1.0.0", ...options.body ? { "Content-Type": "application/json" } : {} },
+          headers: { apikey: config.supabasePublishableKey, Authorization: `Bearer ${token2}`, "X-SYNK-Product": "world", "X-SYNK-Contract": "1", "X-SYNK-App-Version": "1.0.0", ...options.body ? { "Content-Type": "application/json" } : {} },
           ...options.body ? { body: options.body } : {}
         });
         guard(expected);
@@ -17413,6 +18054,22 @@ function createWorldAccount({
       throw error2;
     }
   }
+  async function readHomeworkKey({ classId, week, kind }) {
+    if (!/^[0-9a-f-]{36}$/i.test(classId || "") || !Number.isInteger(week) || week < 1 || week > 8 || !["reading", "writing"].includes(kind)) throw new TypeError("\uACFC\uC81C \uC815\uB2F5 \uC694\uCCAD\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+    const response = await request("homework/key", { method: "POST", body: JSON.stringify({ classId, week, kind }) }), data = await response.json();
+    if (!response.ok || data.ok !== true) throw Object.assign(Error("\uC81C\uCD9C\uD55C \uACFC\uC81C\uC758 \uC815\uB2F5\uC744 \uD655\uC778\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694."), { code: data.error?.code || "HOMEWORK_KEY_UNAVAILABLE", status: response.status });
+    return data.key;
+  }
+  async function courseRequest(operation, params = {}) {
+    if (!["classes", "courseRead", "courseSubmit", "courseGroupSharing"].includes(operation)) throw new TypeError("Unknown course operation");
+    const expected = epoch;
+    guard(expected);
+    if (!owner || !session) throw Object.assign(Error("SYNK ID\uB85C \uB85C\uADF8\uC778\uD574 \uC8FC\uC138\uC694."), { code: "AUTH_REQUIRED" });
+    const scoped = () => guard(expected), transport = native ? createDesktopClassroomClient({ bridge, product: "world", guard: scoped }) : createClassroomTransport({ url: config.accountApiUrl, anonKey: config.supabasePublishableKey, product: "world", getAccessToken: () => session?.access_token, refresh: () => renew(expected), guard: scoped, fetcher });
+    const value = await transport(operation, params);
+    scoped();
+    return value;
+  }
   async function submitHomework(input) {
     if (native && !nativeHomework) throw Object.assign(Error("PC \uC571\uC5D0\uC11C\uB294 \uC544\uC9C1 \uACFC\uC81C\uB97C \uB0BC \uC218 \uC5C6\uC5B4\uC694."), { code: "HOMEWORK_UNSUPPORTED" });
     const response = await request("homework/submit", { method: "POST", body: JSON.stringify(homeworkSubmission(input)) }), data = await response.json();
@@ -17457,10 +18114,13 @@ function createWorldAccount({
     logout,
     prepareGame,
     prepareLifeProgress,
+    prepareHangulProgress,
     topicAnswers,
     readClassrooms,
     readHomework,
     submitHomework,
+    readHomeworkKey,
+    courseRequest,
     get supportsClassroom() {
       return !native || nativeClassroom;
     },
@@ -17521,6 +18181,7 @@ export {
   createWorldAccount,
   createWorldLearningPlan,
   loadWorldConfig,
+  mountCourseWritingEntry,
   publicWorldConfig,
   export_worldLearning as worldLearning,
   worldPosition

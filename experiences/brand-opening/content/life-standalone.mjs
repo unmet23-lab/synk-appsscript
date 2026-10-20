@@ -15664,7 +15664,7 @@ var supportNames = () => ({ choose: [t2("goal.support.choose"), t2("goal.support
 var radios = (name, options, value) => (Array.isArray(options) ? options : Object.entries(options)).map(([id, label]) => `<label class="study-pill"><input type="radio" name="${name}" value="${id}" ${value === id ? "checked" : ""}><span>${label}</span></label>`).join("");
 var rows = (name, options, value) => Object.entries(options).map(([id, [label, note]]) => `<label class="study-option"><input type="radio" name="${name}" value="${id}" ${value === id ? "checked" : ""}><span><strong>${label}</strong><small>${note}</small></span></label>`).join("");
 function createWorldEducation({ home, getProgress, engine, createPlan, launchGame, startLesson, startReview, prepare = async () => {
-}, position = null, audioUrl = (path) => path, target = globalThis }) {
+}, position = null, audioUrl = (path) => path, readHangulProgress = null, target = globalThis }) {
   let stopped = false, coach = null, coachHost = null, current = null, refreshing = false;
   const owner = getProgress().owner;
   const empty2 = engine.engine.createGame({ gameId: "world-home-empty", storage: null, historyComplete: false }).summary();
@@ -15881,7 +15881,12 @@ function createWorldEducation({ home, getProgress, engine, createPlan, launchGam
   const PANEL = { type: "life-position", eyebrow: "MY POSITION", nav: "packs" };
   const panelNode = (selector) => target.document?.querySelector(`#panel-content ${selector}`) || null;
   const failed = (error2) => home.toast(tMessage2(error2?.message) || t2("position.failed"));
-  function hangulStage(coachNow) {
+  async function hangulStage(coachNow) {
+    if (readHangulProgress) {
+      const raw = await readHangulProgress();
+      check3();
+      return position.hangulStageProgress(raw ? JSON.parse(raw) : null, position.hangulLayer);
+    }
     if (owner !== "guest" && !coachNow) return null;
     try {
       const key = position.hangulProgressKey(target, coachNow);
@@ -15979,7 +15984,16 @@ function createWorldEducation({ home, getProgress, engine, createPlan, launchGam
     } catch {
       reading = null;
     }
-    const stage = hangulStage(coachNow);
+    let stage;
+    try {
+      stage = await hangulStage(coachNow);
+    } catch (error2) {
+      check3();
+      if (ticket === positionOpen) failed(error2);
+      return;
+    }
+    check3();
+    if (ticket !== positionOpen) return;
     if (position.showsHangulBoard({ reading, stage })) {
       showHangul(stage);
       return;

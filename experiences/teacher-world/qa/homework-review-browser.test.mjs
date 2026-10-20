@@ -42,6 +42,7 @@ function companyTeacherFiles(){
  const source=fs.readFileSync(path.join(root,COMPANY+'server.mjs'),'utf8'),files=new Map(),names=list=>[...list.matchAll(/'([^']+)'/g)].map(m=>m[1]);
  const type=file=>({'.mjs':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.html':'text/html; charset=utf-8','.woff2':'font/woff2','.ttf':'font/ttf','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp'})[path.extname(file)]||'application/octet-stream';
  for(const m of source.matchAll(/for\(const file of \[([^\]]*)\]\)files\['\/teacher-world\/'\+file\]=\['\.\.\/\.\.\/\.\.\/\.\.\/\.\.\/experiences\/([a-z-]+)\/'\+file/g))for(const file of names(m[1]))files.set('/teacher-world/'+file,{file:path.join(root,'experiences',m[2],file),type:type(file)});
+ for(const m of source.matchAll(/files\['(\/teacher-world\/[^']+)'\]=\['\.\.\/\.\.\/\.\.\/\.\.\/\.\.\/(experiences\/[^']+)'/g))files.set(m[1],{file:path.join(root,m[2]),type:type(m[2])});
  for(const file of names(/const teacherAssets=\[([^\]]*)\]/.exec(source)[1]))files.set('/teacher-world/assets/'+file,{file:path.join(root,'experiences/teacher-world/assets',file),type:type(file)});
  for(const file of names(/for\(const file of \[([^\]]*)\]\)files\['\/assets\/'\+file\]/.exec(source)[1]))files.set('/assets/'+file,{file:path.join(root,'experiences/teacher-world/assets',file),type:type(file)});
  files.set('/teacher-world/',{file:path.join(root,'experiences/teacher-world/index.html'),type:type('index.html')});
@@ -218,6 +219,8 @@ test('과제 첨삭: 계획 → 주별 목록 → 기호·판정·한마디 → 
  for(const v of VIEWPORTS){pages[v.tag]=await open(v,fixed);t.after(()=>pages[v.tag].context.close());}
  for(const v of VIEWPORTS){const s=pages[v.tag];check(`${v.tag} 계정 모드 메뉴에 「과제 첨삭」`,await s.frame.isVisible('#homework-nav'));await openHomework(s);await settle(s.frame,()=>!!document.querySelector('.hr-plan.is-form'));await shoot(s,'01-plan-none');}
  const desk=pages['1280'],phone=pages['390'];
+ check('정답은 인증된 교사 경로로 읽는다',await desk.page.evaluate(()=>window.qaRequests.some(r=>r.path==='/api/teacher/homework/key')));
+ check('정적 정답 파일은 공개하지 않는다',(await fetch(w.base+'/teacher-world/topik4-homework-key.json')).status===404);
  await desk.frame.fill('[data-hr-key="plan:start"]',START);await desk.frame.selectOption('[data-hr-key="plan:weeks"]','8');
  check('시작일을 고르면 1주차 열림·첫 마감을 미리 보인다',/1주차 3월 6일 \(토\) 열림 · 첫 마감 3월 10일 \(수\) 오후 11:00/.test(await desk.frame.textContent('.hr-plan-preview')));
  await desk.frame.click('[data-hr-key="plan:submit"]');await settle(desk.frame,()=>!!document.querySelector('.hr-weeks'));

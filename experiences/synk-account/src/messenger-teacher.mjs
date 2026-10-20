@@ -47,7 +47,7 @@ export function createBrowserTeacherBridge({fetcher=fetch,navigate=url=>location
     async authCancelSignIn(){requestEpoch++;pending=null;await post('cancel');return status();},
     async authSignOut(){requestEpoch++;pending=null;const result=await post('logout');update({configured:current.configured,signedIn:false,status:'signed-out'});csrf='';await status();return result;},
     async accountRequest(operation,params={}){
-      if(operation!=='classroom'||!['classes','teacherOverview','workspace','care','careSave','homework','homeworkSave','enrollmentInvite','assignments','assignmentUpdate','assignmentCancel','observations'].includes(params.operation))return {ok:false,error:{code:'INVALID_REQUEST',message:'지원하지 않는 수업 요청입니다.'}};
+      if(operation!=='classroom'||!['classes','teacherOverview','coursePlan','courseRead','courseAssign','courseFeedback','workspace','care','careSave','homework','homeworkSave','homeworkKey','enrollmentInvite','assignments','assignmentUpdate','assignmentCancel','observations'].includes(params.operation))return {ok:false,error:{code:'INVALID_REQUEST',message:'지원하지 않는 수업 요청입니다.'}};
       try{return await post('request',params);}catch(error){return {ok:false,error:{code:error.code||'CLASSROOM_UNAVAILABLE',message:error.message,status:error.status,retryable:error.retryable===true}};}
     },
     onAuthChanged(callback){listeners.add(callback);if(!timer)timer=setInterval(check,pollMs);return()=>{listeners.delete(callback);if(!listeners.size){clearInterval(timer);timer=null;}};},

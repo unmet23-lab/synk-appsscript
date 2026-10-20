@@ -2,7 +2,7 @@ import {WorldClient} from './world-client.mjs';
 import {mountEnrollment} from './enrollment.mjs';
 import {mountClassroomLessons} from './classroom-lessons.mjs';
 import {mountClassroomHomework} from './classroom-homework.mjs';
-import {createWorldAccount,loadWorldConfig,createLifeProgressPort,createLocalWorldLearningHost,worldLearning,createWorldLearningPlan,GUEST_TRIAL_GAMES,createGuestTrials,createGuestTrialPlayHost,createDeviceRecordsOffer,worldPosition} from './world-account.bundle.mjs';
+import {createWorldAccount,loadWorldConfig,createLifeProgressPort,createLocalWorldLearningHost,worldLearning,createWorldLearningPlan,GUEST_TRIAL_GAMES,createGuestTrials,createGuestTrialPlayHost,createDeviceRecordsOffer,worldPosition,mountCourseWritingEntry} from './world-account.bundle.mjs';
 import {createWorldEducation} from './world-learning-ui.mjs';
 import {PACKS,LESSONS} from './life-content.mjs';
 import {createLifeProgress} from './life-progress.mjs';
@@ -80,6 +80,12 @@ const EYEBROWS={'world-profile':'ACCOUNT','world-signin':'ACCOUNT','world-entry-
 function show(title,html,type='world',extra={}){gameLaunch++;if(type!=='world-game-conflict')gameRecovery=null;enrollmentView?.dispose();enrollmentView=null;classroomView?.dispose();classroomView=null;homeworkView?.dispose();homeworkView=null;if(screen==='game'&&type!=='game'){townSession?.dispose();townSession=null;delete window.SYNKWorldTownHost;}screen=type;home.showPanel(title,html,{type,eyebrow:EYEBROWS[type]||'SYNK WORLD',...extra});}
 // 안내 블록(LED 점 + 모노 라벨 + 제목 + 글). tone: ok·info·check·alert
 const notice=(label,tone,title,body)=>`<div class="world-notice" data-tone="${tone}" data-label="${label}"><strong>${title}</strong><span>${body}</span></div>`;
+// Ordinary navigation may discard an unsent manuscript only after the learner sees the consequence.
+// Identity/permission invalidation still disposes directly and never retains account-owned text.
+const confirmCourseExit=()=>!classroomView?.hasDraft?.()||window.confirm('아직 제출하지 않은 글이 있어요. 이 화면을 닫으면 작성 중인 글이 사라져요. 닫을까요?');
+document.addEventListener('click',event=>{if(!classroomView?.hasDraft?.())return;const target=event.target.closest?.('#panel-close,[data-view],[data-world],[data-action],[data-world-learning],.ws-me a');if((!target&&event.target.id!=='world-panel')||target?.dataset.world==='logout')return;if(!confirmCourseExit()){event.preventDefault();event.stopImmediatePropagation();}},true);
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&classroomView?.hasDraft?.()){event.preventDefault();event.stopImmediatePropagation();if(confirmCourseExit())close();}},true);
+document.addEventListener('cancel',event=>{if(event.target.id==='world-panel'&&!confirmCourseExit()){event.preventDefault();event.stopImmediatePropagation();}},true);
 function close(){gameLaunch++;enrollmentView?.dispose();enrollmentView=null;classroomView?.dispose();classroomView=null;homeworkView?.dispose();homeworkView=null;townSession?.dispose();townSession=null;delete window.SYNKWorldTownHost;screen='';home.closePanel();}
 function errorText(error){return {NETWORK_UNAVAILABLE:t('msg.network'),REVISION_CONFLICT:t('msg.outfitConflict'),STALE_RESPONSE:'',AUTH_REQUIRED:t('msg.authEnded'),RUN_EXPIRED:t('msg.runExpired'),BUSY:t('msg.busy')}[error.code]||t('msg.notYet');}
 
@@ -260,6 +266,10 @@ function mountLifeLearning(){
  const createPlan=options=>createWorldLearningPlan({...options,answers:topicAnswers&&topicAnswers.owner===lifeOwner?topicAnswers:null,openGames:operating&&!client.snapshot?guestGames():null});
  // 내 위치(10-19 결정): 짧은 진단 듣기 문항의 녹음은 게임 폴더(korean-runner·korean-rhythm)에서 부른다.
  education=createWorldEducation({home,getProgress:()=>lifeProgress,engine:worldLearning,createPlan,target:window,position:worldPosition,audioUrl:worldUrl,
+  readHangulProgress:operating&&lifeOwner!=='guest'?async()=>{
+   const port=await account.prepareHangulProgress({storage:localStorage,target:window});
+   try{return port.read();}finally{port.dispose();}
+  }:null,
   launchGame,startLesson:id=>lifeUI.start(id),startReview:(id,ids)=>lifeUI.reviewStart(id,ids),
   prepare:async()=>{if(operating&&client.snapshot&&!window.SYNKLearningHost)await account.prepareGame({target:window});}});
  home.connectEducation?.(education);window.__synkEducation=education;
@@ -318,11 +328,11 @@ const TUTOR_NAMES={mongle:'몽글',kkamong:'까몽',marin:'마린'};
 function profilePortrait(){const id=home.tutor?.()?.tutor;return profilePhoto(['mongle','kkamong','marin'].includes(id)?id:'default');}
 function profile(){if(!client.snapshot)return signIn();const tutorId=home.tutor?.()?.tutor,tutorName=TUTOR_NAMES[tutorId]?t(`tutor.name.${tutorId}`):null;show(t('account.meTitle'),`<div class="ws-me"><div class="ws-me-id"><span class="ws-me-portrait"><img src="${profilePortrait()}" alt=""></span><div><p class="ws-me-name">${tutorName?t('account.learningWith',{name:tutorName}):t('account.learningTogether')}</p><p class="ws-me-sub">${t('account.savedTo',{where:t(operating?'account.whereId':'account.whereTest')})}</p></div></div>${notice('SAVE',client.pending?'check':'ok',t(client.pending?'account.savePending':'account.saveOk'),t('account.revision',{revision:escape(client.snapshot.revision),kind:t(operating?'account.kindId':'account.kindTest')}))}${operating?`<section class="world-notice" data-tone="info" data-label="LEARNING"><strong>${t('account.learningRecords')}</strong>${account.preferences()?`<label><input type="checkbox" data-world-learning data-revision="${account.preferences().revision}" ${account.preferences().enabled?'checked':''}> ${t('account.learningSave')}</label><span>${t('account.learningNote')}</span>`:`<span>${t('account.learningElsewhere')}</span>`}<a class="felt-button" href="https://synk.im/account/client.html?product=world">${t('account.classSettings')} <span aria-hidden="true">→</span></a></section>`:''}<div id="world-classroom-lessons"></div><div id="world-classroom-homework"></div><div id="world-classroom-entry"></div><div class="world-actions"><button class="felt-button" data-world="wardrobe">${t('wardrobe.open')}</button><button class="quiet-button" data-world="logout">${t('account.logout')}</button></div></div>`,'world-profile');if(home.isMaru){const actions=$('#panel-content .ws-me>.world-actions');if(actions)actions.before(hanger);else $('#panel-content').append(hanger);renderHomeHanger(client.snapshot);}if(operating){const generation=client.generation,owner=client.snapshot.accountId,guard=()=>{account.assertActive();if(generation!==client.generation||client.snapshot?.accountId!==owner)throw Object.assign(Error('ACCOUNT_CHANGED'),{code:'ACCOUNT_CHANGED'});};
  // 「우리 반 수업」은 반 연결 바로 위: 연결하면 이 시트를 다시 그려 같은 자리에 수업이 이어진다. 시트가 열려 있는 동안만 30초마다 묻는다.
- if(account.supportsClassroom)classroomView=mountClassroomLessons({container:$('#world-classroom-lessons'),load:()=>account.readClassrooms(),guard});
- // 「이번 주 과제」는 수업 바로 아래: 문제·정답 자료(수업 자료 문서에서 변환한 JSON)는 이 칸이 열릴 때 읽고, 내기·첨삭은 계정 경로로만 오간다.
+ if(account.supportsClassroom){const lessons=mountClassroomLessons({container:$('#world-classroom-lessons'),load:()=>account.readClassrooms(),guard}),course=mountCourseWritingEntry({container:$('#world-classroom-lessons'),transport:account.courseRequest,guard});classroomView={hasDraft:()=>course.hasDraft(),dispose(){lessons.dispose();course.dispose();}};}
+ // 기존 주차 과제와 초안을 유지한다. 수정 과제를 시작한 반은 서버가 이전 이력 보기로 전환하고, 정답은 해당 제출 권한을 확인해 전달한다.
  if(account.supportsHomework)homeworkView=mountClassroomHomework({container:$('#world-classroom-homework'),load:()=>account.readHomework(),submit:input=>account.submitHomework(input),
-  loadContent:()=>homeworkJson('topik4-homework.json'),loadKey:()=>homeworkJson('topik4-homework-key.json'),owner,guard});
- enrollmentView=mountEnrollment({container:$('#world-classroom-entry'),request:account.enrollmentRequest,guard,onLinked:async()=>{townSession?.dispose();townSession=null;delete window.SYNKWorldTownHost;await account.restore();profile();}});}}
+  loadContent:()=>homeworkJson('topik4-homework.json'),loadKey:input=>account.readHomeworkKey(input),owner,guard});
+ enrollmentView=mountEnrollment({container:$('#world-classroom-entry'),request:account.enrollmentRequest,guard,beforeClaim:confirmCourseExit,onLinked:async()=>{townSession?.dispose();townSession=null;delete window.SYNKWorldTownHost;await account.restore();profile();}});}}
 async function wardrobe(){
  if(!client.snapshot)return signIn();
  show('옷장','<p class="panel-description" role="status">옷장을 여는 중이에요.</p>','world-wardrobe');
@@ -474,7 +484,8 @@ const deviceRecordsText=()=>({title:t('records.title'),lead:t('records.lead'),mo
  moving:t('records.moving'),failed:t('records.failed'),moved:t('records.moved'),partly:t('records.partly'),kept:t('records.kept'),hangulRow:t('records.hangulRow'),answerRow:t('records.answerRow'),
  answerNew:t('records.answerNew'),answerReads:t('records.answerReads'),graduated:t('records.graduated'),met:n=>t('records.met',{n}),metMastered:(n,m)=>t('records.metMastered',{n,m}),
  skipped:t('records.skipped'),started:t('records.started'),keptHangul:t('records.keptHangul'),keptAnswer:t('records.keptAnswer')});
-const deviceRecords=createDeviceRecordsOffer({storage:localStorage,learningStatus:()=>window.SYNKLearningHost?.status?.()||null,
+let hangulMigrationPort=null;
+const deviceRecords=createDeviceRecordsOffer({storage:localStorage,learningStatus:()=>window.SYNKLearningHost?.status?.()||null,hangulPort:()=>hangulMigrationPort,accountOwner:()=>client.snapshot?.accountId||'guest',
  accountAnswer:()=>accountLife().hangulReading(),setAccountAnswer:async(answer,options)=>{const life=accountLife();try{return await life.setHangulReading(answer,options);}finally{refreshLife();}},
  present:({title,html,onClose})=>{show(title,html,'world-device-records');home.attachPanelResource({dispose:onClose});},close,toast:message=>home.toast(message),head:accountPrint(),text:deviceRecordsText});
 commands['device-records']=button=>{const line=document.querySelector('[data-device-records-status]');return deviceRecords.choose(button.dataset.choice,{owner:client.snapshot?.accountId||'guest',
@@ -482,7 +493,17 @@ commands['device-records']=button=>{const line=document.querySelector('[data-dev
 entryGate=createWorldEntryGate({
  restore:async()=>{await initialRestoreReady;if(sessionTask)await sessionTask;else if(!sessionConfirmed)await restoreSession();},
  prepare:prepareWorldTutor,
- offer:identity=>deviceRecords.offer(identity),
+ offer:async identity=>{
+  hangulMigrationPort?.dispose();hangulMigrationPort=null;
+  if(operating&&identity.owner!=='guest'){
+   let port;
+   try{port=await account.prepareHangulProgress({storage:localStorage,target:window});}
+   catch{home.toast('한글 기록 옮기기는 계정 저장 연결을 확인한 뒤 다시 안내할게요.');return null;}
+   if(identity.owner!==(client.snapshot?.accountId||'guest')||identity.generation!==client.generation){port.dispose();return null;}
+   hangulMigrationPort=port;
+  }
+  return deviceRecords.offer(identity);
+ },
  read:()=>({owner:client.snapshot?.accountId||'guest',generation:client.generation,tutor:home.tutor?.().tutor||null}),
  choose:then=>home.ensureTutor?.(then),
  onState:state=>{home.setEntryState?.(state);home.setSceneActive?.(state.phase==='ready');},

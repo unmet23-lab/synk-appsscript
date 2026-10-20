@@ -33,39 +33,52 @@ export function deviceHangulAnswer(storage){
 
 // learning: 계정 학습 호스트의 status()(accountKey·revision), accountAnswer: 계정 생활 진도의 hangulReading()(없으면 null).
 // 옮길 것이 없으면 null. 손님 글자 진도가 있는데 계정 자리를 모르면 이번에는 묻지 않는다(다음 로그인 때 다시 본다).
-export function planDeviceRecords({storage=globalThis.localStorage,learning=null,accountAnswer=null}={}){
- let device,answer,target,accountHas=false;
- try{device=readHangul(storage,HANGUL_DEVICE_KEY);answer=deviceHangulAnswer(storage);target=hangulAccountKey(learning);if(target)accountHas=storage.getItem(target)!==null;}catch{return null;}
+export function planDeviceRecords({storage=globalThis.localStorage,learning=null,accountAnswer=null,hangulPort=null}={}){
+ let device,answer,target,accountHas=false,from=HANGUL_DEVICE_KEY;
+ try{device=readHangul(storage,HANGUL_DEVICE_KEY);answer=deviceHangulAnswer(storage);target=hangulAccountKey(learning);
+  if(hangulPort){
+   // Previous versions put account progress in an account-scoped local key.
+   // Offer that same owner's snapshot before a guest copy; neither is uploaded silently.
+   if(target&&readHangul(storage,target)){device=readHangul(storage,target);from=target;}
+   target=HANGUL_DEVICE_KEY;accountHas=hangulPort.read()!==null;
+  }else if(target)accountHas=storage.getItem(target)!==null;
+ }catch{return null;}
  if(device&&!target)return null;
- const hangul=device&&!accountHas?{from:HANGUL_DEVICE_KEY,to:target,summary:device}:null,moveAnswer=answer&&!accountAnswer?answer:null;
+ const hangul=device&&!accountHas?{from,to:target,summary:device,...(hangulPort?{cloud:true}:{})}:null,moveAnswer=answer&&!accountAnswer?answer:null;
  if(!hangul&&!moveAnswer)return null;
  return {hangul,answer:moveAnswer,kept:{hangul:!!device&&accountHas,answer:!!answer&&!!accountAnswer}};
 }
 // 옮기는 순간에 다시 본다: 그사이 계정에 기록이 생겼으면 합치지 않는다('exists'), 손님 기록이 사라졌으면 건너뛴다('gone').
-export async function applyDeviceRecords(plan,{storage=globalThis.localStorage,accountAnswer=()=>null,setAccountAnswer}){
+export async function applyDeviceRecords(plan,{storage=globalThis.localStorage,accountAnswer=()=>null,setAccountAnswer,hangulPort=null,guard=()=>{}}){
  const result={hangul:null,answer:null,errors:[]};
  if(plan?.hangul){
   try{
    const raw=storage.getItem(plan.hangul.from);
-   if(storage.getItem(plan.hangul.to)!==null)result.hangul='exists';
+   guard();
+   if(plan.hangul.cloud){
+    if(!hangulPort)throw Error('계정 한글 저장 연결을 다시 열어 주세요.');
+    if(raw===null||!readHangul(storage,plan.hangul.from))result.hangul='gone';
+    else{result.hangul=await hangulPort.importSnapshot(raw);guard();}
+   }
+   else if(storage.getItem(plan.hangul.to)!==null)result.hangul='exists';
    else if(raw===null||!readHangul(storage,plan.hangul.from))result.hangul='gone';
    else{storage.setItem(plan.hangul.to,raw);result.hangul='moved';}
   }catch(error){result.errors.push(error);}
  }
  if(plan?.answer){
-  try{if(accountAnswer())result.answer='exists';else{await setAccountAnswer(plan.answer.answer,{via:plan.answer.via});result.answer='moved';}}
+  try{guard();if(accountAnswer())result.answer='exists';else{await setAccountAnswer(plan.answer.answer,{via:plan.answer.via});guard();result.answer='moved';}}
   catch(error){result.errors.push(error);}
  }
  return result;
 }
-export function deviceRecordsDecision(storage,accountId){
+export function deviceRecordsDecision(storage,accountId,{cloud=false}={}){
  try{const value=JSON.parse(storage?.getItem(DEVICE_RECORDS_KEY)||'null'),accounts=recordObject(value)&&value.version===1&&recordObject(value.accounts)?value.accounts:{};
-  const entry=Object.hasOwn(accounts,accountId)?accounts[accountId]:null;return recordObject(entry)&&['moved','kept'].includes(entry.decision)?entry.decision:null;}catch{return null;}
+  const entry=Object.hasOwn(accounts,accountId)?accounts[accountId]:null;return recordObject(entry)&&['moved','kept'].includes(entry.decision)&&(!cloud||entry.decision==='kept'||entry.cloud===true)?entry.decision:null;}catch{return null;}
 }
-export function saveDeviceRecordsDecision(storage,accountId,decision,at=Date.now()){
+export function saveDeviceRecordsDecision(storage,accountId,decision,at=Date.now(),{cloud=false}={}){
  if(!['moved','kept'].includes(decision))throw TypeError('Invalid device records decision');
  let accounts={};try{const value=JSON.parse(storage.getItem(DEVICE_RECORDS_KEY)||'null');if(recordObject(value)&&value.version===1&&recordObject(value.accounts))accounts=value.accounts;}catch{}
- try{storage.setItem(DEVICE_RECORDS_KEY,JSON.stringify({version:1,accounts:{...accounts,[accountId]:{decision,at}}}));return true;}catch{return false;}
+ try{storage.setItem(DEVICE_RECORDS_KEY,JSON.stringify({version:1,accounts:{...accounts,[accountId]:{decision,at,...(cloud?{cloud:true}:{})}}}));return true;}catch{return false;}
 }
 
 export const DEVICE_RECORDS_TEXT=Object.freeze({
@@ -98,7 +111,7 @@ export function describeDeviceRecords(plan,T=DEVICE_RECORDS_TEXT){
 // 판의 단추(data-world="device-records" data-choice="move|keep")가 choose로 온다. 판을 닫으면 이번 화면에서는 다시 묻지 않는다.
 // 고른 뒤에는 관문이 이어지게 먼저 끝을 알리고 같은 차례에 판을 닫는다(이어지는 튜터 고르기 판을 닫지 않게). 알림은 그다음 판 위에 뜨게 미룬다.
 // text: 판 글을 고른 화면 언어로 넘기는 함수(DEVICE_RECORDS_TEXT와 같은 키, 열 때·알릴 때마다 다시 읽는다).
-export function createDeviceRecordsOffer({storage=globalThis.localStorage,learningStatus=()=>null,accountAnswer=()=>null,setAccountAnswer,present,close,toast=()=>{},head='',now=Date.now,defer=fn=>setTimeout(fn,0),text=null}){
+export function createDeviceRecordsOffer({storage=globalThis.localStorage,learningStatus=()=>null,accountAnswer=()=>null,setAccountAnswer,present,close,toast=()=>{},head='',now=Date.now,defer=fn=>setTimeout(fn,0),text=null,hangulPort=()=>null,accountOwner=null}){
  const asked=new Set();let current=null;
  function markup(plan){
   const T=recordsText(text),{rows,notes}=describeDeviceRecords(plan,T);
@@ -110,11 +123,13 @@ export function createDeviceRecordsOffer({storage=globalThis.localStorage,learni
  }
  function finish(job,value){if(current!==job)return;current=null;job.resolve(value);}
  function offer({owner}={}){
-  if(typeof owner!=='string'||!owner||owner==='guest'||asked.has(owner)||deviceRecordsDecision(storage,owner))return null;
-  let plan=null;try{plan=planDeviceRecords({storage,learning:learningStatus(),accountAnswer:accountAnswer()});}catch{plan=null;}
+  const port=hangulPort();
+  if(typeof owner!=='string'||!owner||owner==='guest'||asked.has(owner)||deviceRecordsDecision(storage,owner,{cloud:!!port}))return null;
+  if(port&&port.accountId!==owner)return null;
+  let plan=null;try{plan=planDeviceRecords({storage,learning:learningStatus(),accountAnswer:accountAnswer(),hangulPort:port});}catch{plan=null;}
   if(!plan)return null;
   asked.add(owner);
-  return new Promise(resolve=>{const job={owner,plan,resolve,busy:false};current=job;present({title:recordsText(text).title,html:markup(plan),onClose:()=>finish(job,'dismissed')});});
+  return new Promise(resolve=>{const job={owner,plan,port,resolve,busy:false};current=job;present({title:recordsText(text).title,html:markup(plan),onClose:()=>finish(job,'dismissed')});});
  }
  function done(job,value,message){finish(job,value);close();if(message)defer(()=>toast(message));return value;}
  async function choose(choice,{owner,status=()=>{}}={}){
@@ -124,11 +139,12 @@ export function createDeviceRecordsOffer({storage=globalThis.localStorage,learni
   job.busy=true;
   if(choice==='keep'){saveDeviceRecordsDecision(storage,job.owner,'kept',now());return done(job,'kept',recordsText(text).kept);}
   status(recordsText(text).moving,true);
-  const result=await applyDeviceRecords(job.plan,{storage,accountAnswer,setAccountAnswer});
+  const guard=()=>{if(current!==job||hangulPort()!==job.port||accountOwner&&accountOwner()!==job.owner)throw Error('계정 연결이 바뀌었어요.');};
+  const result=await applyDeviceRecords(job.plan,{storage,accountAnswer,setAccountAnswer,hangulPort:job.port,guard});
   if(current!==job)return null;
   const moved=[result.hangul,result.answer].includes('moved');
-  if(result.errors.length&&!moved){job.busy=false;status(recordsText(text).failed,false);return null;}
-  saveDeviceRecordsDecision(storage,job.owner,'moved',now());
+  if(result.errors.length&&(!moved||job.plan.hangul?.cloud)){job.busy=false;status(recordsText(text).failed,false);return null;}
+  saveDeviceRecordsDecision(storage,job.owner,'moved',now(),{cloud:!!job.port});
   return done(job,'moved',result.errors.length||result.hangul==='exists'||result.answer==='exists'||!moved?recordsText(text).partly:recordsText(text).moved);
  }
  return Object.freeze({offer,choose,pending:()=>current?{owner:current.owner,plan:current.plan}:null});

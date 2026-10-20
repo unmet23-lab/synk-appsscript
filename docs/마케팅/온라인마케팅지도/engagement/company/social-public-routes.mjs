@@ -1,14 +1,27 @@
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 
-export function createSocialPublicRoutes({review,tracking,body,send,origin,signal,clientAddress,isStopped=()=>false,onReviewChange=()=>{}}){
+export function createSocialPublicRoutes({review,tracking,inquiries,body,send,origin,signal,clientAddress,isStopped=()=>false,onReviewChange=()=>{}}){
   function assertRunning(){if(isStopped()||signal?.aborted)throw fail('지금은 잠시 요청을 받을 수 없어요. 잠시 후 다시 시도해 주세요.',503);}
   return async function handle(req,res,{url}){
-    const path=url.pathname,isReview=path.startsWith('/api/social-review/'),isTracking=path.startsWith('/social-track/'),short=path.match(/^\/s\/([A-Za-z0-9_-]{20,100})$/);
-    if(!isReview&&!isTracking&&!short)return false;
+    const path=url.pathname,isReview=path.startsWith('/api/social-review/'),isTracking=path.startsWith('/social-track/'),isInquiry=path.startsWith('/social-inquiry/'),short=path.match(/^\/s\/([A-Za-z0-9_-]{20,100})$/);
+    if(!isReview&&!isTracking&&!isInquiry&&!short)return false;
     assertRunning();
     if((short?url.searchParams.get('demo')==='1':url.search)||req.headers['x-synk-demo']==='1')throw fail('실제 기능 주소를 확인해 주세요.');
     const clientKey=clientAddress(req);
     if(short){if(!['GET','HEAD'].includes(req.method))throw fail('추적 링크 요청 방식을 확인해 주세요.',405);const result=tracking.click(short[1],{client:clientKey,method:req.method});res.writeHead(302,{'Location':result.location,'Cache-Control':'no-store','Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff'});res.end();return true;}
+    if(isInquiry){
+      if(!inquiries||!['/social-inquiry/status','/social-inquiry/submit','/social-inquiry/delete','/social-inquiry/receipt'].includes(path))throw fail('문의 접수 주소를 찾을 수 없어요.',404);
+      const requestOrigin=req.headers.origin;
+      if(!tracking.allowOrigin(requestOrigin))throw fail('SYNK 홈페이지에서 접수해 주세요.',403);
+      res.setHeader('Access-Control-Allow-Origin',requestOrigin);res.setHeader('Vary','Origin');
+      if(req.method==='OPTIONS'){res.writeHead(204,{'Access-Control-Allow-Methods':'GET, POST','Access-Control-Allow-Headers':'Content-Type','Access-Control-Max-Age':'600','Cache-Control':'no-store'});res.end();return true;}
+      if(path.endsWith('/status')){if(req.method!=='GET')throw fail('문의 안내 요청 방식을 확인해 주세요.',405);send(res,200,inquiries.status(requestOrigin));return true;}
+      if(req.method!=='POST'||!/^application\/json(?:;|$)/i.test(req.headers['content-type']||''))throw fail('문의 접수 요청 방식을 확인해 주세요.',415);
+      const input=await body(req,{maxBytes:16000,maxChars:6000});assertRunning();
+      const context={origin:requestOrigin,client:clientKey};
+      const result=path.endsWith('/submit')?inquiries.submit(input,context):path.endsWith('/receipt')?inquiries.lookup(input,context):inquiries.remove(input,context);
+      if(!path.endsWith('/receipt'))onReviewChange();send(res,200,result);return true;
+    }
     if(isReview){
       if(req.method!=='POST')throw fail('고객 검토는 검토 화면에서 요청해 주세요.',405);
       if(req.headers.origin!==origin)throw fail('고객 검토 화면에서 요청해 주세요.',403);

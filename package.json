@@ -12,6 +12,7 @@
     "check:atlas": "node tools/sync-atlas.js --all --check",
     "check:atlas:local": "node tools/sync-atlas.js --all --check --local",
     "check:account-bundles": "node tools/check-account-bundles.js",
+    "check:topik4-course": "node tools/build-topik4-course.mjs --check",
     "check:knowledge": "node tools/doc-graph.js --summary",
     "check:worktree": "node tools/worktree-hygiene.js",
     "check:storage": "node tools/git-storage-check.cjs --cached",

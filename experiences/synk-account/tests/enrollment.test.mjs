@@ -21,3 +21,23 @@ test('uncertain claim retains only the verified code for explicit receipt retry'
   let claims=0;const f=fixture(async action=>{if(action==='preview')return{invite:{className:'A반',learnerLabel:'학생'}};if(++claims===1)throw Error('network');return{linked:true};});
   f.input.value='a'.repeat(32);await f.submit();await f.confirm.listeners.click();assert.equal(f.input.value,'a'.repeat(32));assert.equal(f.confirm.hidden,false);await f.confirm.listeners.click();assert.equal(claims,2);assert.equal(f.input.value,'');
 });
+
+test('declining draft disposal blocks the server claim and preserves the verified invitation for retry',async()=>{
+  const calls=[],linked=[];let allow=false,prompts=0;
+  const f=fixture(async(action,body)=>{calls.push({action,body});return action==='preview'?{invite:{className:'A반',learnerLabel:'학생'}}:{linked:true,duplicate:true};},
+    {beforeClaim:()=>{prompts++;return allow;},onLinked:r=>linked.push(r)});
+  f.input.value='a'.repeat(32);await f.submit();assert.equal(prompts,0,'read-only preview does not discard drafts');
+  await f.confirm.listeners.click();
+  assert.equal(prompts,1);assert.deepEqual(calls.map(c=>c.action),['preview']);assert.equal(linked.length,0);
+  assert.equal(f.input.value,'a'.repeat(32));assert.equal(f.confirm.hidden,false);assert.equal(f.confirm.disabled,false);
+  allow=true;await f.confirm.listeners.click();
+  assert.equal(prompts,2);assert.deepEqual(calls.map(c=>c.action),['preview','claim']);assert.equal(linked[0].duplicate,true);
+});
+
+test('account invalidation while awaiting draft confirmation cannot send a stale claim',async()=>{
+  const calls=[];let finish;
+  const f=fixture(async action=>{calls.push(action);return{invite:{className:'A반',learnerLabel:'학생'}};},{beforeClaim:()=>new Promise(resolve=>finish=resolve)});
+  f.input.value='a'.repeat(32);await f.submit();const pending=f.confirm.listeners.click();
+  f.mount.dispose();finish(true);await pending;
+  assert.deepEqual(calls,['preview']);assert.equal(f.input.value,'');assert.equal(f.container.panel.removed,true);
+});

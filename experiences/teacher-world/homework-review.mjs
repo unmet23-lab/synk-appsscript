@@ -1,7 +1,7 @@
 // 내 수업 「과제 첨삭」(04): TOPIK II 4급 온라인 반의 반 계획 → 주별 낸 것 → 쓰기 첨삭(판정 · 기호 · 한마디 세 줄) → 학생에게 돌려주기.
 // · 통로는 synk-classroom의 교사 과제 경로 GET/POST /api/teacher/homework?classId=(서버 SYNK-talk lib/synk-classroom-homework.js)다.
 //   설계 docs/온라인반_TOPIK4급/과제_내기_설계.md, 첨삭 기준 docs/온라인반_TOPIK4급/첨삭기준.md §2~4.
-// · 문제·예시답은 WORLD와 같은 topik4-homework.json·-key.json(문서에서 변환)을 읽는다. 학생 글·이름·첨삭은 textContent로만 넣는다.
+// · 문제는 WORLD와 같은 topik4-homework.json, 예시답은 현재 담당 교사만 쓰는 인증 경로로 읽는다. 학생 글·이름·첨삭은 textContent로만 넣는다.
 // · 기호 자리는 학생 화면(synk-world-app/classroom-homework.mjs의 markSegments)과 같은 규칙으로 미리 보인다:
 //   문단(빈 줄로 나눔)마다, 그 문단에서 처음 나오는 겹치지 않는 자리. 그래서 교사가 고르는 글귀도 한 문단 안에서만 받는다.
 // · 임시 저장(returned:false)은 학생에게 보이지 않는다. 돌려준 첨삭은 고칠 수 있지만 다시 숨기지 않는다(서버 FEEDBACK_RETURNED).
@@ -212,7 +212,7 @@ const validData=(data,classId)=>!!data&&data.mode==='account-linked'&&(!classId|
 const startsOnValid=value=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(value||''))return false;const [y,m,d]=value.split('-').map(Number),date=new Date(Date.UTC(y,m-1,d));return date.getUTCFullYear()===y&&date.getUTCMonth()===m-1&&date.getUTCDate()===d&&y>=2026&&y<=2100;};
 const fetchJson=async name=>{const response=await fetch(new URL(name,import.meta.url),{cache:'no-cache'});if(!response.ok)throw Object.assign(Error('CONTENT_UNAVAILABLE'),{code:'CONTENT_UNAVAILABLE'});return response.json();};
 
-export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./topik4-homework.json'),loadKey=()=>fetchJson('./topik4-homework-key.json'),now=Date.now,confirmLeave=text=>root.ownerDocument.defaultView?.confirm?.(text)!==false,onCount=()=>{}}){
+export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./topik4-homework.json'),loadKey=()=>request('/api/teacher/homework/key').then(result=>result.key),now=Date.now,confirmLeave=text=>root.ownerDocument.defaultView?.confirm?.(text)!==false,onCount=()=>{}}){
  const doc=root.ownerDocument;
  const s={classId:null,phase:'idle',error:null,data:null,loadedAt:null,content:null,contentState:'idle',key:null,week:null,learnerId:null,editor:null,planOpen:false,planNotice:null,notice:null,busy:null,generation:0,selection:null,barPointer:0,stopped:false};
  const node=(tag,className,value)=>{const el=doc.createElement(tag);if(className)el.className=className;if(value!==undefined&&value!==null)el.textContent=value;return el;};
@@ -252,12 +252,12 @@ export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./t
   if(s.content)return;
   const content=await loadContent();if(content?.schema!=='synk.topik4-homework.v1'||!Array.isArray(content.weeks))throw Object.assign(Error('CONTENT_UNAVAILABLE'),{code:'CONTENT_UNAVAILABLE'});
   s.content=content;
-  // 정답·예시답은 공개 자료(WORLD도 읽는다)라 따로, 판이 같을 때만 쓴다. 없어도 첨삭은 쓸 수 있다.
+  // 정답·예시답은 현재 담당 교사 권한을 확인한 뒤, 자료 판이 같을 때만 쓴다. 없어도 첨삭은 쓸 수 있다.
   needKey();
  }
  function needKey(){
-  if(s.key||s.keyLoading||!s.content)return;s.keyLoading=true;
-  Promise.resolve().then(loadKey).then(key=>{if(!s.stopped&&key?.version===s.content.version){s.key=key;paint();}},()=>{}).finally(()=>{s.keyLoading=false;});
+  if(s.key||s.keyLoading||!s.content)return;s.keyLoading=true;const classId=s.classId,generation=s.generation;
+  Promise.resolve().then(loadKey).then(key=>{if(!s.stopped&&s.classId===classId&&s.generation===generation&&key?.version===s.content.version){s.key=key;paint();}},()=>{}).finally(()=>{s.keyLoading=false;});
  }
  async function load({quiet=false}={}){
   const gen=++s.generation,classId=s.classId;if(!classId)return;
@@ -274,7 +274,7 @@ export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./t
   }catch(error){
    if(s.stopped||gen!==s.generation||classId!==s.classId)return;
    const code=homeworkErrorCode(error);
-   if(['SESSION_CHANGED','ACCOUNT_CHANGED'].includes(code))return;
+   if(['SESSION_CHANGED','ACCOUNT_CHANGED','AUTH_REQUIRED','FORBIDDEN'].includes(code)){s.data=null;s.editor=null;s.key=null;s.phase='error';s.error=ERROR_TEXT.FORBIDDEN;paint();return;}
    if(code==='HOMEWORK_UNAVAILABLE'||code==='ROUTE_UNSUPPORTED'){s.phase=code==='ROUTE_UNSUPPORTED'?'unsupported':'unavailable';s.data=null;s.editor=null;}
    else if(code==='CONTENT_UNAVAILABLE'){s.phase='error';s.error=T.contentError;}
    else if(s.data){s.notice={tone:'alert',text:T.refreshError};}
@@ -412,6 +412,7 @@ export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./t
   return out;
  }
  function planView(){
+  if(s.data?.readOnly)return message('idle','이 반은 읽기·쓰기 수정 과제로 전환했어요. 이전 주차 글과 첨삭은 여기서 확인하고, 새 과제는 읽기·쓰기 첨삭에서 보냅니다.');
   const plan=s.data.plan,box=node('section','hr-plan');box.setAttribute('aria-label','반 과제 계획');
   if(plan&&!s.planOpen){
    const phase=homeworkWeek({startsOn:plan.startsOn,weeks:plan.weeks,now:clock(),schedule:schedule()}),line=node('div','hr-plan-line');
@@ -762,7 +763,7 @@ export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./t
   const where=placement(sel);s.selection=where.error?{error:where.error}:{...sel,earlier:where.earlier};renderBar();
  }
  doc.addEventListener('selectionchange',onSelection);
- function switchClass(classId){s.classId=classId;s.generation++;Object.assign(s,{phase:'idle',error:null,data:null,loadedAt:null,week:null,learnerId:null,editor:null,planOpen:false,planNotice:null,notice:null,selection:null,busy:null});}
+ function switchClass(classId){s.classId=classId;s.generation++;Object.assign(s,{phase:'idle',error:null,data:null,key:null,keyLoading:false,loadedAt:null,week:null,learnerId:null,editor:null,planOpen:false,planNotice:null,notice:null,selection:null,busy:null});}
  const stale=()=>s.phase==='ready'&&!s.busy&&!s.selection&&!dirty()&&clock()-(s.loadedAt||0)>120000;
 
  return Object.freeze({
@@ -782,7 +783,7 @@ export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./t
   },
   refresh:()=>load(),
   hasDraft:()=>dirty(),
-  reset(){s.generation++;Object.assign(s,{classId:null,phase:'idle',error:null,data:null,loadedAt:null,week:null,learnerId:null,editor:null,planOpen:false,planNotice:null,notice:null,selection:null,busy:null});root.replaceChildren();},
+  reset(){s.generation++;Object.assign(s,{classId:null,phase:'idle',error:null,data:null,key:null,keyLoading:false,loadedAt:null,week:null,learnerId:null,editor:null,planOpen:false,planNotice:null,notice:null,selection:null,busy:null});root.replaceChildren();},
   stop(){s.stopped=true;s.generation++;doc.removeEventListener('selectionchange',onSelection);root.replaceChildren();},
  });
 }

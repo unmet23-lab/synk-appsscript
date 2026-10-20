@@ -100,6 +100,17 @@ test('native account switch invalidates old game and life ports before new accou
  assert.equal(await f.client.restore(),true);assert.equal(f.client.snapshot.accountId,B);
 });
 
+test('native Hangul migration uses IPC progress and cannot follow a different signed-in owner',async t=>{
+ const {emptyProgress,meet}=await import('../../hangul-stage/core.mjs'),f=fixture();t.after(()=>f.account.stop());await f.client.restore();
+ const port=await f.account.prepareHangulProgress({storage:f.cache,target:{}});
+ const raw=JSON.stringify(meet(emptyProgress(),['v-a'],'2026-10-20T00:00:00Z'));
+ assert.equal(await port.importSnapshot(raw),'moved');assert.equal(f.states.get(A).state.records['synk.hangul-stage.v1'],raw);
+ assert.equal(f.calls.some(call=>/learning|memory/i.test(call.operation)),false);
+ f.emit(signed(B,2));assert.throws(()=>port.read(),{code:'ACCOUNT_CHANGED'});
+ await new Promise(resolve=>setImmediate(resolve));await f.client.restore();const other=await f.account.prepareHangulProgress({storage:f.cache,target:{}});
+ assert.equal(other.read(),null);
+});
+
 test('native refresh of the same session retains ports; stale generations cannot replace it',async t=>{
  const f=fixture();t.after(()=>f.account.stop());await f.client.restore();
  const target={},handle=await f.account.prepareGame({storage:f.cache,target}),play=target.SYNKPlayHost;

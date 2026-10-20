@@ -158,8 +158,12 @@ test('교사 화면·회사 워크스페이스가 과제 첨삭 파일과 교사
  assert.match(app,/import \{mountHomeworkReview\} from '\.\/homework-review\.mjs';/);assert.match(app,/\$\('homework-nav'\)\.hidden=!accountRequested/,'계정 모드에서만 메뉴를 연다');
  assert.match(app,/homework\.hasDraft\(\)/,'저장 안 한 첨삭이 있으면 다른 학생으로 넘어가기 전에 묻는다');
  const company='docs/마케팅/온라인마케팅지도/engagement/company/',server=read(company+'server.mjs'),docker=read(company+'Dockerfile'),ignore=read(company+'Dockerfile.dockerignore');
- for(const file of ['homework-review.mjs','homework-review.css'])assert.ok(server.includes(`'${file}'`)&&docker.includes('experiences/teacher-world/'+file)&&ignore.includes('!experiences/teacher-world/'+file),file);
- for(const file of ['topik4-homework.json','topik4-homework-key.json'])assert.ok(server.includes(`'${file}'`)&&docker.includes('experiences/synk-world-app/'+file)&&ignore.includes('!experiences/synk-world-app/'+file),file);
+ for(const file of ['course-writing-ui.mjs','homework-review.mjs','homework-review.css'])assert.ok(server.includes(`'${file}'`)&&docker.includes('experiences/teacher-world/'+file)&&ignore.includes('!experiences/teacher-world/'+file),file);
+ const contentFile='topik4-homework.json';assert.ok(server.includes('/teacher-world/'+contentFile)&&docker.includes('experiences/synk-world-app/'+contentFile)&&ignore.includes('!experiences/synk-world-app/'+contentFile));
+ const homeworkSource=read('experiences/teacher-world/homework-review.mjs');
+ assert.match(homeworkSource,/loadKey=\(\)=>request\('\/api\/teacher\/homework\/key'\)/);
+ assert.doesNotMatch(homeworkSource,/fetchJson\('\.\/topik4-homework-key\.json'\)/);
+ assert.ok(!docker.includes('experiences/synk-world-app/topik4-homework-key.json'),'teacher image contains no static answer key');
  for(const [file,pattern] of [['experiences/synk-account/src/classroom-client.mjs',/homework:\['\/api\/teacher\/homework'\],homeworkSave:\['\/api\/teacher\/homework','POST'\]/],[company+'teaching-service.mjs',/homework:\['\/api\/teacher\/homework'\],homeworkSave:\['\/api\/teacher\/homework','POST'\]/],
   ['experiences/synk-account/src/messenger-teacher.mjs',/'homework','homeworkSave'/],['desktop/src/classroom-requests.cjs',/homework:\['GET','teacher\/homework'\],homeworkSave:\['POST','teacher\/homework'\]/],['desktop/src/teacher-account.cjs',/'homework','homeworkSave'/]])assert.match(read(file),pattern,file);
  // app.mjs가 새 모듈을 바로 부르므로, 교사 화면을 내보내는 다른 서버(데모 4290·로컬 연결 4295·개발 허브 4280)도 같은 파일을 내보내야 화면이 뜬다.

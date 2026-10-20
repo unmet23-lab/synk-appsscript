@@ -55,10 +55,10 @@ test('teacher client is optional and may never reuse a messenger or customer OAu
 test('unconfigured teaching status and fixed browser assets preserve company login boundaries',async t=>{
   const f=await fixture(t,{enabled:false}),c=f.client(),status=await c.request('/api/teaching/status');assert.equal(status.data.configured,false);assert.equal(status.data.status,'unconfigured');assert.equal((await c.request('/api/teaching/start',{body:{}})).status,503);
   assert.equal((await c.request('/api/state')).status,401);assert.equal(f.app.store.all('users').length,0);
-  for(const path of ['/teacher-world/','/teacher-world/app.mjs','/teacher-world/homework-review.mjs','/teacher-world/homework-review.css','/teacher-world/topik4-homework.json','/teacher-world/topik4-homework-key.json','/teacher-world/assets/slab-cream-long.webp','/assets/wide-coral.webp'])assert.equal((await c.request(path)).status,200,path);
+  for(const path of ['/teacher-world/','/teacher-world/app.mjs','/teacher-world/homework-review.mjs','/teacher-world/homework-review.css','/teacher-world/topik4-homework.json','/teacher-world/assets/slab-cream-long.webp','/assets/wide-coral.webp'])assert.equal((await c.request(path)).status,200);
   const page=await c.request('/teacher-world/');assert.equal(page.headers.get('x-frame-options'),'SAMEORIGIN');assert.match(page.headers.get('content-security-policy'),/frame-ancestors 'self'/);
   const root=await c.request('/');assert.equal(root.headers.get('x-frame-options'),'DENY');assert.match(root.headers.get('content-security-policy'),/connect-src 'self'/);
-  for(const path of ['/teacher-world/model.mjs','/teacher-world/assets/sources.json','/teaching-service.mjs','/teacher-world/../data/company.sqlite'])assert.equal((await c.request(path)).status,404);
+  for(const path of ['/teacher-world/model.mjs','/teacher-world/topik4-homework-key.json','/teacher-world/assets/sources.json','/teaching-service.mjs','/teacher-world/../data/company.sqlite'])assert.equal((await c.request(path)).status,404);
 });
 test('PKCE, origin, CSRF, browser proof and one-use state protect a teacher-only login',async t=>{
   const f=await fixture(t),c=f.client();await c.request('/api/teaching/status');
@@ -82,7 +82,12 @@ test('teacher proxy only exposes assigned classes and rejects learner scopes and
   assert.equal((await send({operation:'workspace',classId:'teacher-class'})).data.mode,'account-linked');
   assert.equal((await send({operation:'teacherOverview'})).status,200);assert.equal((await send({operation:'teacherOverview',classId:'teacher-class'})).status,400);
   assert.equal((await send({operation:'care',classId:'teacher-class'})).status,200);assert.equal((await send({operation:'careSave',classId:'teacher-class',body:{title:'학생 케어'}})).status,200);
-  assert.equal((await send({operation:'homework',classId:'teacher-class'})).status,200);assert.equal((await send({operation:'homeworkSave',classId:'teacher-class',body:{action:'plan',course:'topik4-online',startsOn:'2027-03-06',weeks:8,revision:0}})).status,200);assert.deepEqual(f.calls.filter(call=>call.url.includes('/api/teacher/homework')).map(call=>[call.method,new URL(call.url).pathname,new URL(call.url).searchParams.get('classId')]),[['GET','/functions/v1/synk-classroom/api/teacher/homework','teacher-class'],['POST','/functions/v1/synk-classroom/api/teacher/homework','teacher-class']]);assert.equal((await send({operation:'homeworkSave',classId:'learner-class',body:{action:'plan'}})).status,403);
+  for(const [operation,path,method] of [['courseRead','/api/course','GET'],['courseAssign','/api/course/assign','POST'],['courseFeedback','/api/course/feedback','POST'],['coursePlan','/api/course/plan','POST'],['homework','/api/teacher/homework','GET'],['homeworkSave','/api/teacher/homework','POST'],['homeworkKey','/api/teacher/homework/key','GET']]){
+    assert.equal((await send({operation,classId:'teacher-class',...(method==='POST'?{body:{taskId:'synthetic-task'}}:{})})).status,200);
+    const last=f.calls.at(-1);assert.equal(new URL(last.url).pathname,'/functions/v1/synk-classroom'+path);assert.equal(last.method,method);assert.equal(new URL(last.url).searchParams.get('classId'),'teacher-class');
+    assert.equal((await send({operation,classId:'learner-class',...(method==='POST'?{body:{}}:{})})).status,403);
+  }
+  assert.equal((await send({operation:'courseSubmit',classId:'teacher-class',body:{}})).status,403);
   const result=await send({operation:'assignments',classId:'teacher-class',body:{title:'교사 과제'}});assert.equal(result.data.record.title,'교사 과제');
   assert.equal((await c.request('/api/teaching/request',{body:{operation:'classes'},csrf:'bad'})).status,403);
 });

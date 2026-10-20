@@ -18,19 +18,18 @@ consult.set('/consult/core/personalization.js', '../atlas/personalization.js');
 consult.set('/consult/core/interpretation.js', '../atlas/interpretation.js');
 consult.set('/consult/core/temper-outcomes.js', '../atlas/temper-outcomes.js');
 consult.set('/synk-account/src/core.mjs', 'synk-account/src/core.mjs');
-// 교사 화면 「과제 첨삭」(teacher-world/homework-review.mjs)이 계정 모드에서 읽는 TOPIK 4급 과제 자료(WORLD와 같은 파일)
+// Teacher practice material is public; answer keys use the authenticated classroom API.
 consult.set('/teacher-world/topik4-homework.json', 'synk-world-app/topik4-homework.json');
-consult.set('/teacher-world/topik4-homework-key.json', 'synk-world-app/topik4-homework-key.json');
 consult.set('/synk-town/engine/loom-motion.js','../tools/lib/loom-motion.js');
 consult.set('/synk-town/engine/loom-life.js','../tools/lib/loom-life.js');
 const classroomPublic={
-  'teacher-world':new Set(['index.html','style.css','app.mjs','personalization-ui.mjs','personalization.css','workspace-overview.mjs','workspace-overview.css','sharing-fence.mjs','homework-review.mjs','homework-review.css']),
+  'teacher-world':new Set(['index.html','style.css','signal.css','app.mjs','course-writing-ui.mjs','personalization-ui.mjs','personalization.css','workspace-overview.mjs','workspace-overview.css','sharing-fence.mjs','homework-review.mjs','homework-review.css']),
   'synk-town':new Set(['linked.html','app.mjs','style.css','linked-client.mjs','understanding.mjs','understanding-ui.mjs'])
 };
 const accountPublic = new Set(['index.html', 'client.html', 'teacher.html', 'teacher.css', 'preview.html', 'platform.html', 'platform.css', 'config.json', 'style.css',
   'wardrobe.css', 'dist/wardrobe-three.js',
   ...['mongle-basic.webp', 'marin-basic.webp', 'kkamong-base.webp', 'kkamong-scarf.webp', 'kkamong-headphones.webp', 'kkamong-apron.webp', 'kkamong-summer-deel.webp', 'kkamong-winter-deel.webp', 'felt-paper.webp', 'felt-night.webp', 'felt-lapis.webp', 'cushion-cream.webp', 'cushion-blush.webp'].map(name => `assets/wardrobe/${name}`),
-  'benefits.css', 'member-insight.css', ...['gift', 'insight', 'subscriptions', 'care', 'fortune'].map(id => `assets/member/benefit-${id}.webp`), 'assets/member/wide-lapis.webp', 'assets/member/wide-butter.webp',
+  'benefits.css', 'member-insight.css', 'assets/member/world-book.avif', ...['gift', 'insight', 'subscriptions', 'care', 'fortune'].map(id => `assets/member/benefit-${id}.webp`), 'assets/member/wide-lapis.webp', 'assets/member/wide-butter.webp',
   'platform.webmanifest', 'world.webmanifest', 'world-classroom.css', 'assets/app-platform.png', 'assets/app-world.png',
   'dist/app.js', 'dist/client.js', 'dist/teacher.js', 'dist/preview.js', 'dist/platform.js',
   'assets/SUIT-Variable.woff2', 'assets/InterTight-700.woff2', 'assets/scrapbook.css', 'assets/sticker-book.webp',

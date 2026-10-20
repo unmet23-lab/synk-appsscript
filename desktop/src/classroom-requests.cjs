@@ -1,13 +1,13 @@
 'use strict';
 // Main-process allowlist: callers provide an operation, never a URL or headers.
-const ROUTES=Object.freeze({
+const ROUTES=Object.freeze({coursePlan:['POST','course/plan'],courseRead:['GET','course'],courseAssign:['POST','course/assign'],courseFeedback:['POST','course/feedback'],courseSubmit:['POST','course/submit'],courseGroupSharing:['POST','course/group-sharing'],
   classes:['GET','classes'],workspace:['GET','workspace'],account:['GET','world/account'],
   student:['GET','student'],practice:['GET','world/practice'],practiceSubmit:['POST','world/practice'],
   submit:['POST','submissions'],sharing:['POST','world/sharing'],startRun:['POST','world/runs/start'],
   stopRun:['POST','world/runs/stop'],learningGet:['GET','world/learning'],learningPost:['POST','world/learning'],
   townRead:['GET','world/town'],townCommand:['POST','world/town/command'],assignments:['POST','assignments'],
   assignmentUpdate:['POST','assignments/update'],assignmentCancel:['POST','assignments/cancel'],observations:['POST','observations'],
-  teacherOverview:['GET','teacher/overview'],care:['GET','teacher/care'],careSave:['POST','teacher/care'],homework:['GET','teacher/homework'],homeworkSave:['POST','teacher/homework'],enrollmentInvite:['POST','teacher/invites'],enrollmentPreview:['POST','enrollment/preview'],enrollmentClaim:['POST','enrollment/claim'],
+  teacherOverview:['GET','teacher/overview'],care:['GET','teacher/care'],careSave:['POST','teacher/care'],homework:['GET','teacher/homework'],homeworkSave:['POST','teacher/homework'],homeworkKey:['GET','teacher/homework/key'],enrollmentInvite:['POST','teacher/invites'],enrollmentPreview:['POST','enrollment/preview'],enrollmentClaim:['POST','enrollment/claim'],
   townMembership:['GET','world/town/membership'],townSharing:['POST','world/town/sharing'],townActivity:['POST','world/town/activity'],
 });
 function invalid(){throw Object.assign(new Error('수업 요청 형식을 확인해 주세요.'),{code:'INVALID_REQUEST'});}

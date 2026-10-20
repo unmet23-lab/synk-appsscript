@@ -80,6 +80,7 @@ const server=http.createServer(async(req,res)=>{
   }
   if(!['GET','HEAD'].includes(req.method)){res.writeHead(405).end();return;}
   let pathname=decodeURIComponent(url.pathname),base=home;
+  if(pathname==='/topik4-homework-key.json'){res.writeHead(404).end();return;}
   // Reject alternate Windows separators before any prefix allowlist or path resolution.
   if(/[\\\0]/.test(pathname)||pathname.split('/').some(segment=>segment==='.'||segment==='..')){res.writeHead(403).end();return;}
   const first=pathname.split('/')[1];
@@ -91,7 +92,7 @@ const server=http.createServer(async(req,res)=>{
   else if(pathname==='/enrollment.mjs'){base=path.resolve(root,'../synk-account/src');}
   // Preview-only route (10-14 redesign worktree): the games import ../social-conversion.mjs (shared trial tracking, in progress elsewhere).
   else if(pathname==='/social-conversion.mjs'){base=path.resolve(root,'..');}
-  else if(['/world-bootstrap.js','/app-shell.mjs','/app-shell.css','/world-client.mjs','/world-town-client.mjs','/world-account.bundle.mjs','/life-ui.mjs','/life-story.mjs','/life-ui.css','/life-content.mjs','/life-progress.mjs','/world-learning-ui.mjs','/world-learning-profile.mjs','/world-learning-profile-core.mjs','/tutor-selection-sync.mjs','/display-language-sync.mjs','/life-content-lang.mjs','/cafe-activity.mjs','/cafe-ui.mjs','/classroom-lessons.mjs','/classroom-homework.mjs','/topik4-homework.json','/topik4-homework-key.json'].includes(pathname))base=root;
+  else if(['/world-bootstrap.js','/app-shell.mjs','/app-shell.css','/world-client.mjs','/world-town-client.mjs','/world-account.bundle.mjs','/life-ui.mjs','/life-story.mjs','/life-ui.css','/life-content.mjs','/life-progress.mjs','/world-learning-ui.mjs','/world-learning-profile.mjs','/world-learning-profile-core.mjs','/tutor-selection-sync.mjs','/display-language-sync.mjs','/life-content-lang.mjs','/cafe-activity.mjs','/cafe-ui.mjs','/classroom-lessons.mjs','/classroom-homework.mjs','/topik4-homework.json'].includes(pathname))base=root;
   else if(['/engine/loom-motion.js','/engine/loom-life.js'].includes(pathname)){base=path.resolve(root,'../../tools/lib');pathname='/'+path.basename(pathname);}
   else if(pathname.startsWith('/town/')){
    pathname=pathname.slice(5);base=town;

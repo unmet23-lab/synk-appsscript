@@ -1,6 +1,6 @@
 // The invitation identifies an existing roster entry, never a role or consent.
 // Keep it in this mounted view only; the account host owns authentication.
-export function mountEnrollment({container,request,guard=()=>{},onLinked=()=>{}}){
+export function mountEnrollment({container,request,guard=()=>{},beforeClaim=()=>true,onLinked=()=>{}}){
   const doc=container.ownerDocument;
   const node=(tag,text)=>{const el=doc.createElement(tag);if(text!==undefined)el.textContent=text;return el;};
   const panel=node('section');panel.className='sb-card classroom-enrollment';
@@ -31,7 +31,7 @@ export function mountEnrollment({container,request,guard=()=>{},onLinked=()=>{}}
   });
   confirmButton.addEventListener('click',async()=>{
     if(busy||disposed||!verifiedToken)return;const token=verifiedToken,version=++epoch;controls(true);status.textContent='';
-    try{current(version);const result=await request('claim',{token,confirm:true});current(version);
+    try{current(version);if(await beforeClaim()===false)return;current(version);const result=await request('claim',{token,confirm:true});current(version);
       if(result?.linked!==true)throw new Error('계정 연결 결과를 확인하지 못했어요.');
       input.value='';clearPreview();status.className='help';status.textContent='내 계정과 반을 연결했어요. 학습 기록과 TOWN 공유는 별도로 선택해 주세요.';
       await onLinked(result);current(version);

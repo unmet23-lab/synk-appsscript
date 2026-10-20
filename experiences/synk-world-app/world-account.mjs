@@ -1,13 +1,16 @@
 import {readConfig,beginOAuth,consumeCallback,tokenRequest} from '../synk-account/src/core.mjs';
 import {createPlatformEntry} from '../synk-account/src/platform-entry.mjs';
 import accountClient from '../synk-account/src/generated/account-client.cjs';
-import {createDesktopAccountClient} from '../synk-account/src/desktop-account.mjs';
+import {createDesktopAccountClient,createDesktopClassroomClient} from '../synk-account/src/desktop-account.mjs';
+import {createClassroomTransport} from '../synk-account/src/classroom-client.mjs';
+export {mountCourseWritingEntry} from './course-writing-entry.mjs';
 import {createWorldGameHost} from './world-game-host.mjs';
 export {createLocalWorldLearningHost} from './world-game-host.mjs';
 export {default as worldLearning} from '../../atlas/game-browser.js';
 export {createWorldLearningPlan} from './world-learning-plan.mjs';
 import {worldTopicAnswers} from './world-learning-plan.mjs';
 import {createLifeProgressPort} from './life-progress-port.mjs';
+import {createHangulProgressPort} from './hangul-progress-port.mjs';
 export {createLifeProgressPort} from './life-progress-port.mjs';
 export {GUEST_TRIAL_GAMES,createGuestTrials,createGuestTrialPlayHost} from './guest-trial.mjs';
 export {createDeviceRecordsOffer} from './device-records.mjs';
@@ -17,7 +20,7 @@ import {classroomEndpoint,classroomReply,requestClassrooms} from './classroom-cl
 import {homeworkReply,homeworkSubmission,homeworkUnavailable} from './homework-client.mjs';
 const changed=()=>Object.assign(Error('계정 연결이 바뀌었어요.'),{code:'ACCOUNT_CHANGED'});
 const authErrors=new Set(['AUTH_REQUIRED','AUTH_SESSION_MISSING','SESSION_REVOKED','UNAUTHORIZED','ACCOUNT_UNAVAILABLE','PRODUCT_FORBIDDEN','PLATFORM_ACCOUNT_MISMATCH']);
-const routes=new Map([['bootstrap','GET'],['play/start','POST'],['play/complete','POST'],['avatar/outfit','PUT'],['wardrobe/looks','PUT'],['town/entry','GET'],['town/state','GET'],['town/sharing','POST'],['town/command','POST'],['town/presence','POST'],['enrollment/preview','POST'],['enrollment/claim','POST'],['homework','GET'],['homework/submit','POST']]);
+const routes=new Map([['bootstrap','GET'],['play/start','POST'],['play/complete','POST'],['avatar/outfit','PUT'],['wardrobe/looks','PUT'],['town/entry','GET'],['town/state','GET'],['town/sharing','POST'],['town/command','POST'],['town/presence','POST'],['enrollment/preview','POST'],['enrollment/claim','POST'],['homework','GET'],['homework/submit','POST'],['homework/key','POST']]);
 
 // Credentials are owned by the WORLD entry. A game receives only scoped methods.
 export function createWorldAccount({config:raw,storage=globalThis.sessionStorage,fetcher=(...args)=>globalThis.fetch(...args),
@@ -28,14 +31,14 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
  const binding=[config.supabaseUrl,config.accountApiUrl,config.clients.world.clientId,config.clients.world.redirectUri].join('|');
  const entry=createPlatformEntry({clientKey:'world',getUrl,replaceUrl});
  let session=null,rawSession=null,owner=null,currentSessionId=null,currentAccount=null,epoch=0,closed=false,refreshing=null,pendingExchange=null,townBinding=null,townStateRevision=-1,verifiedClient=null,gameHost=null,gameLaunch=0,lifeHost=null,lifeLaunch=0,verification=0;
- let nativeIdentity=null,nativeAccountId=null,nativeGeneration=-1,signedOutGeneration=-1,nativeEvents=0,nativeReady=null,unsubscribe=null,nativeClassroom=false,nativeHomework=false;
+ let nativeIdentity=null,nativeAccountId=null,nativeGeneration=-1,signedOutGeneration=-1,nativeEvents=0,nativeReady=null,unsubscribe=null,nativeClassroom=false,nativeHomework=false,hangulHost=null,hangulLaunch=0;
  const controllers=new Set();
  const guard=expected=>{if(closed||expected!==epoch)throw changed();if(!native&&session&&storage.getItem(key)!==rawSession){clear();throw changed();}};
  const forgetSession=()=>{if(!native)storage.removeItem(key);};
  const clientFor=expected=>native?createDesktopAccountClient({bridge,product:'world',guard:()=>guard(expected)}):accountFactory({url:config.accountApiUrl,anonKey:config.supabasePublishableKey,product:'world',getAccessToken:()=>session?.access_token,refresh:()=>renew(expected),guard:()=>guard(expected),fetch:fetcher});
  const gameBinding=data=>JSON.stringify([data?.account?.synk_user_id,data?.account?.status,data?.learning?.enabled,data?.learning?.revision,data?.capabilities?.learningSync]);
  function stopGames(){gameHost?.dispose();gameHost=null;}
- function clear(){epoch++;gameLaunch++;lifeLaunch++;verification++;stopGames();lifeHost?.dispose();lifeHost=null;session=null;owner=null;currentSessionId=null;currentAccount=null;verifiedClient=null;townBinding=null;townStateRevision=-1;nativeIdentity=null;nativeAccountId=null;for(const c of controllers)c.abort();onInvalidate();}
+ function clear(){epoch++;gameLaunch++;lifeLaunch++;hangulLaunch++;verification++;stopGames();lifeHost?.dispose();lifeHost=null;hangulHost?.dispose();hangulHost=null;session=null;owner=null;currentSessionId=null;currentAccount=null;verifiedClient=null;townBinding=null;townStateRevision=-1;nativeIdentity=null;nativeAccountId=null;for(const c of controllers)c.abort();onInvalidate();}
  function nativeStatus(state){
   if(closed)return false;
   const generation=state?.sessionGeneration,id=state?.account?.synk_user_id;
@@ -161,6 +164,21 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
    onDispose:value=>{if(lifeHost===value)lifeHost=null;}});
   check();lifeHost=port;return port;
  }
+ async function prepareHangulProgress({storage:cache=globalThis.localStorage,target=globalThis}={}){
+  const expected=epoch,launch=++hangulLaunch;guard(expected);
+  if(!owner||!session)throw Object.assign(Error('SYNK ID로 로그인해 주세요.'),{code:'AUTH_REQUIRED'});
+  hangulHost?.dispose();hangulHost=null;
+  try{await verify(expected);guard(expected);}
+  catch(error){if(expected===epoch&&authErrors.has(error.code)){clear();forgetSession();}throw error;}
+  const id=owner,client=verifiedClient;
+  const check=()=>{guard(expected);if(launch!==hangulLaunch||owner!==id)throw changed();};
+  const wrap=fn=>async(...args)=>{check();try{const value=await fn(...args);check();return value;}catch(error){if(expected===epoch&&authErrors.has(error.code)){clear();forgetSession();}throw error;}};
+  const port=await createHangulProgressPort({accountId:id,storage:cache,target,guard:check,client:{
+   load:wrap(()=>client.play.load()),
+   mutate:wrap(body=>client.play.mutate(body)),
+  }});
+  try{check();hangulHost=port;return port;}catch(error){port.dispose();throw error;}
+ }
  async function request(path,options={}){
   if(!routes.has(path)||(options.method||'GET')!==routes.get(path))throw new TypeError('Unsupported WORLD request');
   const expected=epoch;guard(expected);if(!owner||!session)throw Object.assign(Error('SYNK ID로 로그인해 주세요.'),{code:'AUTH_REQUIRED',status:401});
@@ -179,13 +197,13 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   if(native){
    const body=options.body===undefined?undefined:JSON.parse(options.body);
    if(body!==undefined&&(!body||typeof body!=='object'||Array.isArray(body)))throw new TypeError('Invalid WORLD request body');
-   const data=await bridge.accountRequest('worldRequest',{route:path,...(body===undefined?{}:{body}),...(path.startsWith('town/')&&path!=='town/entry'&&townBinding?.classId?{classId:townBinding.classId}:{}),...(path==='homework/submit'?{classId:body.classId}:{})});
+   const data=await bridge.accountRequest('worldRequest',{route:path,...(body===undefined?{}:{body}),...(path.startsWith('town/')&&path!=='town/entry'&&townBinding?.classId?{classId:townBinding.classId}:{}),...(path==='homework/submit'||path==='homework/key'?{classId:body.classId}:{})});
    return accept(data,data?.ok===true,data?.ok===true?200:data?.error?.status||503);
   }
-  const homework=path==='homework'||path==='homework/submit';
-  const endpoint=path==='town/sharing'||path.startsWith('enrollment/')||homework?'synk-classroom':path.startsWith('town/')?'synk-town':'synk-world-v1',suffix=path==='town/sharing'?'api/world/town/sharing':path.startsWith('enrollment/')?`api/${path}`:homework?'api/world/homework':path.startsWith('town/')?path.slice(5):path;
+  const homework=path==='homework'||path.startsWith('homework/');
+  const endpoint=path==='town/sharing'||path.startsWith('enrollment/')||homework?'synk-classroom':path.startsWith('town/')?'synk-town':'synk-world-v1',suffix=path==='town/sharing'?'api/world/town/sharing':path.startsWith('enrollment/')?`api/${path}`:homework?'api/world/homework'+(path==='homework/key'?'/key':''):path.startsWith('town/')?path.slice(5):path;
   const url=new URL(config.accountApiUrl);url.pathname=url.pathname.replace(/\/$/,'').replace(/\/functions\/v1(?:\/synk-(?:account|world-v1|town))?$/,'')+`/functions/v1/${endpoint}/${suffix}`;url.search='';url.hash='';if(path.startsWith('town/')&&path!=='town/entry'&&townBinding?.classId)url.searchParams.set('classId',townBinding.classId);
-  if(path==='homework/submit')url.searchParams.set('classId',JSON.parse(options.body).classId);
+  if(path==='homework/submit'||path==='homework/key')url.searchParams.set('classId',JSON.parse(options.body).classId);
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);controllers.add(controller);
   try{
    if(session.expires_at<=now()+30000)await renew(expected);guard(expected);
@@ -218,6 +236,18 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   const response=await request('homework'),data=await response.json();
   try{return homeworkReply(data,response.status);}catch(error){if(homeworkUnavailable(error))return {classes:[],emptyReason:'UNAVAILABLE'};throw error;}
  }
+ async function readHomeworkKey({classId,week,kind}){
+  if(!/^[0-9a-f-]{36}$/i.test(classId||'')||!Number.isInteger(week)||week<1||week>8||!['reading','writing'].includes(kind))throw new TypeError('과제 정답 요청을 확인해 주세요.');
+  const response=await request('homework/key',{method:'POST',body:JSON.stringify({classId,week,kind})}),data=await response.json();
+  if(!response.ok||data.ok!==true)throw Object.assign(Error('제출한 과제의 정답을 확인하지 못했어요.'),{code:data.error?.code||'HOMEWORK_KEY_UNAVAILABLE',status:response.status});
+  return data.key;
+ }
+ async function courseRequest(operation,params={}){
+  if(!['classes','courseRead','courseSubmit','courseGroupSharing'].includes(operation))throw new TypeError('Unknown course operation');
+  const expected=epoch;guard(expected);if(!owner||!session)throw Object.assign(Error('SYNK ID로 로그인해 주세요.'),{code:'AUTH_REQUIRED'});
+  const scoped=()=>guard(expected),transport=native?createDesktopClassroomClient({bridge,product:'world',guard:scoped}):createClassroomTransport({url:config.accountApiUrl,anonKey:config.supabasePublishableKey,product:'world',getAccessToken:()=>session?.access_token,refresh:()=>renew(expected),guard:scoped,fetcher});
+  const value=await transport(operation,params);scoped();return value;
+ }
  async function submitHomework(input){
   if(native&&!nativeHomework)throw Object.assign(Error('PC 앱에서는 아직 과제를 낼 수 없어요.'),{code:'HOMEWORK_UNSUPPORTED'});
   const response=await request('homework/submit',{method:'POST',body:JSON.stringify(homeworkSubmission(input))}),data=await response.json();
@@ -235,7 +265,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
    const response=await revokeFetch(new URL('/auth/v1/logout?scope=local',config.supabaseUrl).href,{method:'POST',credentials:'omit',cache:'no-store',headers:{apikey:config.supabasePublishableKey,Authorization:`Bearer ${captured.access_token}`}});serverRevoked=response.ok&&serverRevoked;
   }catch{}finally{clearTimeout(timer);}return {serverRevoked};
  }
- return Object.freeze({mode:'account',restore,signIn,request,logout,prepareGame,prepareLifeProgress,topicAnswers,readClassrooms,readHomework,submitHomework,get supportsClassroom(){return !native||nativeClassroom;},get supportsHomework(){return !native||nativeHomework;},identity:()=>({accountId:owner,generation:epoch}),assertActive(){guard(epoch);if(!owner)throw changed();},
+ return Object.freeze({mode:'account',restore,signIn,request,logout,prepareGame,prepareLifeProgress,prepareHangulProgress,topicAnswers,readClassrooms,readHomework,submitHomework,readHomeworkKey,courseRequest,get supportsClassroom(){return !native||nativeClassroom;},get supportsHomework(){return !native||nativeHomework;},identity:()=>({accountId:owner,generation:epoch}),assertActive(){guard(epoch);if(!owner)throw changed();},
   preferences(){const learning=currentAccount?.learning;return learning&&typeof learning.enabled==='boolean'&&Number.isSafeInteger(learning.revision)?{enabled:learning.enabled,revision:learning.revision}:null;},
   async setLearning(enabled,expectedRevision){const expected=epoch;guard(expected);if(!owner||typeof enabled!=='boolean'||!Number.isSafeInteger(expectedRevision)||expectedRevision<0)throw new TypeError('Invalid account learning preference');
    const client=clientFor(expected);

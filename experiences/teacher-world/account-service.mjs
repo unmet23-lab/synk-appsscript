@@ -8,6 +8,7 @@ import Game from '../../atlas/game-learning.js';
 import Strata from '../../strata/index.js';
 import mapData from '../../strata/maps/topik-i.json' with {type:'json'};
 import {townWorkspace,townCommand} from './town-bridge.mjs';
+import {courseView,courseCommand} from './course-writing.mjs';
 const scope={domain:'LAB',workspace:'learning',subject:'device'},map=Strata.createMap(mapData);
 const clone=value=>structuredClone(value);
 const fail=(code,status=400)=>{throw Object.assign(new Error(code),{code,status});};
@@ -66,6 +67,8 @@ function readingEvents(l,result,now){
 }
 export function validateCanonical(previous,fresh){Atlas.createSession({scope,events:[...previous,...fresh]});}
 export async function handleClassroom({state:s,actor,route,method,payload={},query,now,io}){
+  if(route==='/api/course'&&method==='GET')return courseView(s,actor,now);
+  if(route.startsWith('/api/course/')&&method==='POST')return courseCommand(s,actor,route,payload,now);
   if(method==='GET'){
     if(route==='/api/workspace'){if(actor.role!=='teacher')fail('FORBIDDEN',403);return workspace(s,actor,now);}
     const l=requireLearner(s,actor,false);

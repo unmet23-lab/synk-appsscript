@@ -50,7 +50,7 @@ export function normalizeHomeworkClasses(list){
      feedback:s.kind==='writing'?normalizeHomeworkFeedback(s.week,s.feedback):null};}).filter(Boolean);
   // 같은 주·같은 갈래는 하나만(서버의 유일 제약과 같다). 겹치면 판이 높은 것.
   const unique=new Map();for(const s of submissions){const k=`${s.week}:${s.kind}`;if(!unique.has(k)||unique.get(k).revision<s.revision)unique.set(k,s);}
-  return {classId:c.classId,name:homeworkText(c.name,200)||'',course:c.course,startsOn:typeof c.startsOn==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(c.startsOn)?c.startsOn:null,weeks,submissions:[...unique.values()]};
+  return {classId:c.classId,name:homeworkText(c.name,200)||'',course:c.course,startsOn:typeof c.startsOn==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(c.startsOn)?c.startsOn:null,weeks,...(c.workflow==='course'||c.readOnly===true?{readOnly:true}:{}),submissions:[...unique.values()]};
  });
 }
 // 서버 답(웹 request()·PC 본체 모두 같은 봉투) → {classes, emptyReason, serverTime?}. 꼴이 틀리면 CONTRACT_VIOLATION.

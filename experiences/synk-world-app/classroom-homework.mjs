@@ -1,6 +1,6 @@
 // 내 계정 시트의 「이번 주 과제」(「우리 반 수업」 바로 아래). TOPIK 4급 온라인 반 학생이 그 주의 읽기(R)·쓰기(W) 숙제를 풀어 내고,
 // 선생님의 첨삭(기호 표시 + 한마디 세 줄, docs/온라인반_TOPIK4급/첨삭기준.md)을 같은 칸에서 돌려받는다.
-// · 문제는 topik4-homework.json(문서에서 변환, tools/build-topik4-homework.mjs), 정답·예시답은 낸 뒤에만 topik4-homework-key.json에서 읽는다.
+// · 문제는 topik4-homework.json에서 읽고, 정답·예시답은 인증된 서버가 해당 주의 제출·첨삭 반환을 확인한 뒤에만 보낸다.
 //   정답 파일은 공개 파일이고 원문 문서도 공개 저장소에 있어, 미리 보는 것을 막는 장치는 아니다(설계 §2).
 // · 주차는 반의 시작일(startsOn, 한국 날짜)부터 7일씩. 마감은 그 주 첫 수요일 23:00(한국 시간), 늦게 내도 받는다(첨삭기준 §6).
 //   주차·마감은 서버 시각(serverTime)으로 고친 시계로 본다(기기 시계가 틀린 폰도 같은 주를 보게).
@@ -163,20 +163,25 @@ export function mountClassroomHomework({container,load,submit,loadContent,loadKe
  const mergeClasses=list=>[...model.classes.map(c=>list.find(n=>n.classId===c.classId)||c),...list.filter(n=>!model.classes.some(c=>c.classId===n.classId))];
  // 낸 것보다 오래된 쓰던 답(다른 기기에서 고쳐 냈거나 응답이 끊긴 뒤 남은 것), 낸 읽기와 첨삭이 돌아온 쓰기의 쓰던 답은 지운다.
  function dropStaleDrafts(){
-  for(const c of model.classes)for(const s of c.submissions){
+  for(const c of model.classes.filter(c=>!c.readOnly))for(const s of c.submissions){
    const key=homeworkDraftKey(owner,c.classId,assignmentOf(s.kind,s.week)),draft=readDraft(storage,key);
    if(draft&&(s.kind==='reading'||s.feedback||olderThan(draft,s)))dropDraft(storage,key);
   }
  }
 
  // 정답·예시답은 낸 것이 있을 때만 읽는다(한 번, 실패하면 새로고침 때 다시).
+ const receivedKeys=new Set();
  function needKey(){
-  if(model.key||model.keyState==='loading'||typeof loadKey!=='function')return;
-  if(!model.classes.some(c=>c.submissions.some(s=>s.kind==='reading'||s.feedback)))return;
-  // 정답 자료는 계정과 무관한 공개 자료라 새로고침 세대와 묶지 않는다(읽는 중에 새로고침해도 결과를 그대로 쓴다).
-  model.keyState='loading';
-  Promise.resolve().then(()=>loadKey()).then(key=>{if(disposed)return;model.key=key&&key.version===model.content?.version?key:null;model.keyState=model.key?'ready':'error';paint();},
-   ()=>{if(disposed)return;model.keyState='error';paint();});
+  if(model.keyState==='loading'||typeof loadKey!=='function')return;
+  const allowed=model.classes.flatMap(c=>c.submissions.filter(s=>s.kind==='reading'||s.feedback).map(s=>({classId:c.classId,week:s.week,kind:s.kind}))).filter(row=>!receivedKeys.has(`${row.classId}:${row.week}:${row.kind}`));
+  if(!allowed.length)return;model.keyState='loading';
+  Promise.all(allowed.map(async row=>{guard();const key=await loadKey(row);guard();if(disposed)return;
+   if(!key||key.version!==model.content?.version)throw Error('HOMEWORK_KEY_VERSION');
+   model.key??={version:key.version,reading:{},writing:{}};
+   const prefix=(row.kind==='reading'?'R':'W')+row.week+'-';
+   Object.assign(model.key[row.kind],Object.fromEntries(Object.entries(key[row.kind]||{}).filter(([id])=>id.startsWith(prefix))));
+   receivedKeys.add(`${row.classId}:${row.week}:${row.kind}`);
+  })).then(()=>{if(!disposed){model.keyState='ready';paint();}},()=>{if(!disposed){model.keyState='error';paint();}});
  }
  function close(){generation++;root.hidden=true;model.phase='closed';}
 
@@ -188,7 +193,7 @@ export function mountClassroomHomework({container,load,submit,loadContent,loadKe
    return {sub,tone:'ok',text:done>=parts.length?T.returned:T.partly,action:T.feedback};
   }
   if(sub){
-   if(kind==='reading'){const right=model.key?readingOutcome(weekContent(week)?.reading.items||[],sub.answers,model.key).filter(o=>o.correct).length:null;
+   if(kind==='reading'){const right=receivedKeys.has(`${c.classId}:${week}:reading`)?readingOutcome(weekContent(week)?.reading.items||[],sub.answers,model.key).filter(o=>o.correct).length:null;
     return {sub,tone:'ok',text:[T.submitted,sub.late?T.late:null,right===null?null:`${Object.keys(sub.answers).length}문항 중 ${right}문항 맞힘`].filter(Boolean).join(' · '),action:T.result};}
    return {sub,tone:'info',text:sub.late?`${T.waiting} · ${T.late}`:T.waiting,action:T.view};
   }
@@ -202,10 +207,10 @@ export function mountClassroomHomework({container,load,submit,loadContent,loadKe
   const titleText=kind==='reading'?`${T.reading} ${content.reading.id} · ${content.reading.title.replace(/\(([^)]*)\)$/,(all,inner)=>inner.length>12?'':all)}`:`${T.writing} ${content.writing.id} · ${content.writing.title}`;
   const help=kind==='reading'?T.readingHelp:writingHelp(content.writing);
   textBox.append(meta(state.tone,state.text),node('strong','ws-hw-task-title',titleText),node('p','ws-hw-help',help));
-  headRow.append(textBox,button(open?T.close:state.action,'plain-button',`open:${key}`,()=>{model.open=open?null:key;paint();if(!open)el.querySelector('.ws-hw-panel')?.scrollIntoView?.({block:'nearest'});}));
+  headRow.append(textBox,button(open?T.close:c.readOnly?'기록 보기':state.action,'plain-button',`open:${key}`,()=>{model.open=open?null:key;paint();if(!open)el.querySelector('.ws-hw-panel')?.scrollIntoView?.({block:'nearest'});}));
   el.append(headRow);
   const notice=model.notice.get(key);if(notice)el.append(meta(notice.tone,notice.text,'ws-hw-notice'));
-  if(open){const panel=node('div','ws-hw-panel');panel.append(kind==='reading'?readingPanel(c,week,state):writingPanel(c,week,state));el.append(panel);}
+  if(open){const panel=node('div','ws-hw-panel');if(c.readOnly&&!state.sub){const saved=state.draft?.answers||{};panel.append(node('p','','이 기기에 남아 있는 초안이에요. 새 과제로 자동 전송하지 않아요.'));if(kind==='writing')for(const part of content.writing.parts)for(const field of part.fields)panel.append(answerView(field,saved[field.id]));else for(const [id,value] of Object.entries(saved))panel.append(node('p','',`${id} · ${value}`));}else panel.append(kind==='reading'?readingPanel(c,week,state):writingPanel(c,week,state));el.append(panel);}
   return el;
  }
  function writingHelp(w){
@@ -218,7 +223,7 @@ export function mountClassroomHomework({container,load,submit,loadContent,loadKe
  function readingPanel(c,week,state){
   const content=weekContent(week).reading,box=node('div','ws-hw-reading'),draftKey=homeworkDraftKey(owner,c.classId,content.id);
   const submitted=state.sub?.answers||null,answers=submitted||{...(readDraft(storage,draftKey)?.answers||{})};
-  const outcome=submitted&&model.key?readingOutcome(content.items,submitted,model.key):null;
+  const outcome=submitted&&receivedKeys.has(`${c.classId}:${week}:reading`)?readingOutcome(content.items,submitted,model.key):null;
   if(submitted){
    if(outcome){const right=outcome.filter(o=>o.correct).length;box.append(meta('ok',`${content.items.length}문항 중 ${right}문항을 맞혔어요.`,'ws-hw-summary'));}
    else box.append(meta(model.keyState==='error'?'alert':'idle',model.keyState==='error'?T.keyError:T.keyLoading,'ws-hw-summary'));
@@ -339,7 +344,7 @@ export function mountClassroomHomework({container,load,submit,loadContent,loadKe
   const note=changedNote(sub);if(note)box.append(note);
   for(const part of w.parts){const s=node('section','ws-hw-part');s.append(node('h5','',[part.number?`${part.number}번`:null,part.label].filter(Boolean).join(' · ')));for(const field of part.fields)s.append(answerView(field,sub.answers[field.id]));box.append(s);}
   const retry=retryView(sub);if(retry)box.append(retry);
-  box.append(button(T.resubmit,'plain-button ws-hw-again',`edit:${key}`,()=>{
+  if(!c.readOnly)box.append(button(T.resubmit,'plain-button ws-hw-again',`edit:${key}`,()=>{
    // 이 기기의 쓰던 글이 낸 글보다 오래됐으면(다른 기기에서 고쳐 냈으면) 낸 글에서 다시 시작한다.
    const draftKey=homeworkDraftKey(owner,c.classId,w.id),draft=readDraft(storage,draftKey);
    if(!draft||olderThan(draft,sub))writeDraft(storage,draftKey,{answers:structuredClone(sub.answers),retry:{...(sub.retry||{})}},clock());
@@ -402,6 +407,7 @@ export function mountClassroomHomework({container,load,submit,loadContent,loadKe
  const SEND_TEXT={REVISION_CONFLICT:T.conflict,ALREADY_SUBMITTED:T.conflict,IDEMPOTENCY_CONFLICT:T.conflict,HOMEWORK_LOCKED:T.locked,FORBIDDEN:T.noLearner,NO_LEARNER:T.noLearner,WEEK_NOT_OPEN:T.notOpen,HOMEWORK_NOT_PLANNED:T.unset};
  const RELOAD_ON=['REVISION_CONFLICT','ALREADY_SUBMITTED','IDEMPOTENCY_CONFLICT','HOMEWORK_LOCKED','WEEK_NOT_OPEN','HOMEWORK_NOT_PLANNED'];
  async function send_(c,week,kind,{answers,retry,expectedRevision}){
+  if(c.readOnly)return;
   const key=taskKey(c.classId,week,kind),assignment=assignmentOf(kind,week);
   if(model.busy)return;
   const sub=submissionOf(c,week,kind),signature=homeworkSignature({kind,answers,retry:kind==='writing'?retry:undefined,contentVersion:model.content.version});
@@ -426,6 +432,9 @@ export function mountClassroomHomework({container,load,submit,loadContent,loadKe
 
  // ── 그리기: 시트를 다시 그려도 누르던 단추·쓰던 칸으로 초점과 커서를 돌린다 ──
  function paint(){
+  const historyOnly=model.classes.length>0&&model.classes.every(c=>c.readOnly);
+  title.textContent=historyOnly?'이전 과제 이력':T.title;
+  root.querySelector('.ws-hw-lead').textContent=historyOnly?'이전에 낸 답과 이 기기에 남은 초안을 볼 수 있어요.':T.lead;
   if(disposed||model.phase==='closed')return;
   const focused=doc.activeElement,focusKey=focused&&root.contains(focused)?focused.dataset.homeworkKey:null;
   const caret=focusKey&&typeof focused.selectionStart==='number'?[focused.selectionStart,focused.selectionEnd]:null;
@@ -440,6 +449,11 @@ export function mountClassroomHomework({container,load,submit,loadContent,loadKe
  function room(c){
   const el=node('div','ws-hw-room');el.dataset.classId=c.classId;
   el.append(node('h4','ws-hw-name',c.name||model.content.title));
+  if(c.readOnly){
+   el.append(node('p','ws-hw-help','이전 과제 이력 · 새 제출은 읽기·쓰기 수정 과제에서 해요. 이전 답과 이 기기의 초안은 자동으로 옮기지 않아요.'));
+   for(let week=1;week<=Math.min(c.weeks,model.content.weeks.length);week++)for(const kind of ['reading','writing'])if(submissionOf(c,week,kind)||readDraft(storage,homeworkDraftKey(owner,c.classId,assignmentOf(kind,week))))el.append(task(c,week,kind,null));
+   return el;
+  }
   // 반 계획의 주 수가 자료보다 길어도 자료가 있는 주까지만 연다(자료 없는 주에서 칸이 멈추지 않게).
   const weeks=Math.min(c.weeks,model.content.weeks.length),info=homeworkWeek({startsOn:c.startsOn,weeks,now:clock(),schedule:model.content.schedule});
   if(info.phase==='unset'){el.append(meta('idle',T.unset,'ws-hw-help'));return el;}

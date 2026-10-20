@@ -13,7 +13,7 @@ const rows=(name,options,value)=>Object.entries(options).map(([id,[label,note]])
 // This controller owns no identity, grading, second event log, or server API.
 // position: 「내 위치」 묶음(world-position-kit.mjs의 worldPosition — 계정 묶음·생활 묶음이 넘긴다). 없으면 그 판을 열지 않는다.
 // audioUrl(path): 짧은 진단 듣기 문항의 녹음(게임 폴더 기준 경로, 예: korean-runner/assets/voice/…)을 이 화면에서 부를 주소로.
-export function createWorldEducation({home,getProgress,engine,createPlan,launchGame,startLesson,startReview,prepare=async()=>{},position=null,audioUrl=path=>path,target=globalThis}){
+export function createWorldEducation({home,getProgress,engine,createPlan,launchGame,startLesson,startReview,prepare=async()=>{},position=null,audioUrl=path=>path,readHangulProgress=null,target=globalThis}){
  let stopped=false,coach=null,coachHost=null,current=null,refreshing=false;
  const owner=getProgress().owner;
  const empty=engine.engine.createGame({gameId:'world-home-empty',storage:null,historyComplete:false}).summary();
@@ -128,7 +128,10 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  const failed=error=>home.toast(tMessage(error?.message)||t('position.failed'));
  // 한글 만나기가 진도를 두는 자리(hangul-stage/learning.mjs progressKey): 손님은 이 기기, 계정은 그 계정·학습 동의 판의 구역.
  // 계정인데 학습 호스트가 아직 없으면 자리를 모른다(null) — 손님 자리를 대신 읽지 않는다.
- function hangulStage(coachNow){
+ async function hangulStage(coachNow){
+  // Read the private account record afresh, independently of optional learning sharing.
+  // A failed account read must not fall back to an old device record or claim a new start.
+  if(readHangulProgress){const raw=await readHangulProgress();check();return position.hangulStageProgress(raw?JSON.parse(raw):null,position.hangulLayer);}
   if(owner!=='guest'&&!coachNow)return null;
   try{
    const key=position.hangulProgressKey(target,coachNow);if(!key)return null;
@@ -170,7 +173,9 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   check();if(ticket!==positionOpen)return;
   let coachNow=null;try{coachNow=readCoach();}catch{coachNow=null;}
   let reading=null;try{reading=getProgress().hangulReading?.()||null;}catch{reading=null;}
-  const stage=hangulStage(coachNow);
+  let stage;
+  try{stage=await hangulStage(coachNow);}catch(error){check();if(ticket===positionOpen)failed(error);return;}
+  check();if(ticket!==positionOpen)return;
   if(position.showsHangulBoard({reading,stage})){showHangul(stage);return;}
   showBoard(coachNow);
  }

@@ -34,7 +34,8 @@ node tools/build-hangul-stage.js [--check]    # 한글 층 지도와 학습 묶�
 
 - **Strata 한글 층:** [strata/hangul.json](../../strata/hangul.json)(글자·단원·헷갈리는 짝·닮은 모양)을 [tools/build-hangul-stage.js](../../tools/build-hangul-stage.js)가 [strata/maps/hangul.json](../../strata/maps/hangul.json)으로 만든다. 글자 49개(받침은 `role: final`, 이름 「받침 ㄴ」)는 `letter` 마디, 단원 순서는 `prerequisite`, 짝은 `contrasts_with`(소리·모양, `by_ear` — ㅐ/ㅔ·ㅒ/ㅖ·ㅚ/ㅙ/ㅞ와 받침 ㄷ·ㅅ·ㅈ끼리는 `false`)다. 지도 판은 `hangul-4-a2d24bbbec6c`(마디 51, 선행 215, 짝 58, 10-06 된소리·겹모음). 졸업 조건에 들지 않는 단원은 `core: false`(U8·U9). 능력은 `ko.hangul.sound`(듣기)·`ko.hangul.read`(읽기) 둘이다. 같은 도구가 이 지도와 기존 Atlas 게임 어댑터를 묶어 `atlas-learning.js`를 만든다([learning-entry.cjs](learning-entry.cjs)).
 - **기록:** 문항 하나 = 아틀라스 문항 하나(`present → delivery → help → answer`, [learning.mjs](learning.mjs)). 다른 게임과 같은 학습 기록(`synk.atlas.learning.v1.*`)에 남고, WORLD 계정 호스트 안에서 열면 그 계정 기록으로 동기화된다. 소리가 끝까지 난 뒤의 답만 소리 문항의 근거가 되고, 다시 듣기·천천히 듣기·시범은 도움으로 남는다. 짝 맞추기는 짝 하나가 문항 하나다. 짝 고르기·가르쳐 주기도 보기 고르기 문항(보기 둘이면 `binary-choice`)으로 남는다.
-- **글자 진도는 따로 둔다:** 아틀라스의 증거 규칙은 문항 묶음의 첫 시도를 세는데, 글자 익히기는 같은 글자를 되풀이하는 일이라 글자별 상태·다음 복습은 이 경험의 판단([core.mjs](core.mjs))으로 둔다. 혼자 열면 이 기기(`synk.hangul-stage.v1`), WORLD 안에서는 그 계정·학습 동의 판의 구역(`synk.account.{id}.r{revision}.hangul-stage.v1`, WORLD 저장소와 같은 접두)이다. 계정을 알 수 없으면 저장하지 않는다. 기기를 넘는 글자 진도 동기화는 아직 없다(아래 남은 일).
+- **글자 진도는 따로 둔다:** 아틀라스의 증거 규칙은 문항 묶음의 첫 시도를 세는데, 글자 익히기는 같은 글자를 되풀이하는 일이라 글자별 상태·다음 복습은 이 경험의 판단([core.mjs](core.mjs))으로 둔다. 혼자 열면 이 기기(`synk.hangul-stage.v1`), WORLD의 검증된 계정 안에서는 같은 키를 기존 `synk-play` 계정 저장소에 넣는다. [learning.mjs](learning.mjs)는 계정 복원을 기다린 뒤 읽으며, 새 기기의 같은 계정도 그 스냅샷을 받는다. 계정을 알 수 없거나 읽지 못한 기록이면 빈 기록으로 덮지 않는다. 학습 사건 공유 동의와 개인 진도 저장은 기존 WORLD 계약대로 구분한다.
+- **이전 기기 기록:** 손님 기록과 같은 계정의 옛 로컬 구역(`synk.account.{id}.r{revision}.hangul-stage.v1`)은 로그인 관문에서 사용자가 옮기기를 선택한 경우만 계정에 저장한다. 서버 확인 전에는 옮겼다고 표시하지 않으며 원본을 남긴다. 기존 계정 기록과 자동 합치지 않는다. 오프라인 전송 대기·중복 응답·두 세션 충돌·로그아웃은 기존 PlayHost 계약을 사용한다. 합성 검사는 [hangul-account-progress.test.mjs](../synk-world-app/qa/hangul-account-progress.test.mjs)에 있다.
 - 학습 계산 자체는 외부 AI를 호출하지 않는다. WORLD 계정 호스트의 기록 동기화에는 서버 통신이 있으므로 전체 운영 비용이 0이라는 뜻은 아니다.
 
 ## 소리
@@ -94,7 +95,7 @@ node tools/build-hangul-stage.js [--check]    # 한글 층 지도와 학습 묶�
 
 1. **WORLD 연결:** 학습 허브의 10-03 연결 뒤 현재 `synk-world-app/app-shell.mjs`의 게임 목록과 `server.mjs` 허용 목록에 `hangul-stage`가 연결돼 있다. `qa/account-browser.test.mjs`에도 같은 계정 호스트의 iframe 경로 검사가 있다. 옛 `account-view.mjs`에 단추를 추가하라는 과제는 반복하지 않는다. 공개·실기기 확인은 [WORLD 원문](../synk-world-app/README.md)의 해당 후속 기록을 따른다.
 2. 교사 과제(teacher-world 게임 목록)는 한글 능력이 `ko.<영역>.` 꼴이 아니어서 목록 시험(`catalog-labels.test.mjs`)과 함께 정한다.
-3. 기기를 넘는 글자 진도: 엔진 쪽 일 — 글자·음절을 Core의 내용 종류로 받고(`atlas/learning.js` CONTENT), 되풀이 연습을 세는 증거 규칙을 둔 뒤 진도를 공통 기록에서 계산한다.
+3. 계정 글자 진도 저장·복원은 위 `synk-play` 경로로 구현했다. 운영 DB·함수·웹 반영과 실제 로그인한 물리 두 기기의 복원은 별도 검증이 남아 있다. 합성 세션의 통과를 운영 반영으로 보지 않는다.
 4. 설계에서 남은 것: 낱말↔그림(구운 그림이 있는 낱말만)·따라 말하기(`echo`, 마이크)·글자 퀼트·첫 문장·고르는 놀이·들어오기 확인 열 문항·갇힘 지킴이. 격음·쌍자음·이중모음·노래/복습 장단은 위 날짜별 구현에 포함됐으므로 다시 미구현으로 세지 않는다.
 5. 기존 음성은 10-10 승인된 하나 713개와 진희·재영·범수 목록을 유지한다. 옛 혜리 392개 생성 과제는 완료 후 대체된 이력이다. 새 소리 추가는 실제 팩 차이와 승인 목록부터 확인한다. 도움 언어는 출시 나라·지원 언어가 정해진 뒤다.
 6. `atlas/`·`strata/`를 바꾸면 `tools/build-game-learning.js`와 함께 `tools/build-hangul-stage.js`도 다시 돌린다(이 묶음은 그 도구의 소비처 목록에 없다).

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
-// PC 계정 라이브러리 묶음(desktop/renderer/platform-continuity.mjs)과 계정 포털 생성물(experiences/synk-account/dist 등)이
+// PC 계정 라이브러리 묶음(desktop/renderer/platform-continuity.mjs), 계정 포털(experiences/synk-account/dist 등), 회사 교사 연결 묶음이
 // 지금 원천과 맞는지 본다. CI 「verify account library and portal bundles」 단계가 부른다.
 // 원천(experiences/synk-account/src, 회원 화면 renderer, atlas 회원 모듈, 그림·글꼴 원본)만 고치고 생성기를 안 돌리면 여기서 멈춘다.
 //
@@ -8,7 +8,7 @@
 // --talk-root를 주지 않으면 저장소에 있는 사본(src/generated/*.cjs, assets/wardrobe/*-basic.webp)으로 임시 Talk 폴더를 만들어 넘긴다 —
 // 그 다섯은 제자리 대조라 talk 쪽이 바뀐 것까지는 못 보고, 나머지(회원 활동 생성물·그림·글꼴·묶음 일곱·preview·manifest)는 다 본다.
 // 쓰기: node tools/check-account-bundles.js [--build] [--talk-root <SYNK-talk 폴더>]
-//   --build: 두 생성기로 먼저 다시 만든 뒤 대조한다(원천을 고친 커밋에 같이 올릴 생성물. talk 사본 다섯은 --talk-root 없이는 저장소 판 그대로).
+//   --build: 세 생성기로 먼저 다시 만든 뒤 대조한다(원천을 고친 커밋에 같이 올릴 생성물. talk 사본 다섯은 --talk-root 없이는 저장소 판 그대로).
 //   포털에는 experiences/synk-account의 의존성이 있어야 한다: (cd experiences/synk-account && npm ci --ignore-scripts --no-audit --no-fund)
 const fs = require('node:fs');
 const os = require('node:os');
@@ -54,6 +54,7 @@ try {
   if (build) {
     results.push(run('PC 계정 라이브러리 묶음 다시 만들기', 'desktop/tools/build-platform-continuity.cjs'));
     if (talk) results.push(run(`계정 포털 다시 만들기(${talkLabel})`, 'tools/build-synk-account.js', ['--talk-root', talk]));
+    if (portalReady) results.push(run('회사 교사 연결 묶음 다시 만들기', 'tools/build-messenger-teaching.cjs'));
   }
   results.push(run('PC 계정 라이브러리 묶음', 'desktop/tools/build-platform-continuity.cjs', ['--check']));
   if (talk) results.push(run(`계정 포털(${talkLabel})`, 'tools/build-synk-account.js', ['--check', '--talk-root', talk]));
@@ -61,6 +62,7 @@ try {
     console.log('FAIL 계정 포털 — experiences/synk-account 의존성이 없다: (cd experiences/synk-account && npm ci --ignore-scripts --no-audit --no-fund)');
     results.push(false);
   }
+  if (portalReady) results.push(run('회사 교사 연결 묶음', 'tools/build-messenger-teaching.cjs', ['--check']));
 } finally { if (talk && !talkRoot) fs.rmSync(talk, { recursive: true, force: true }); }
 if (results.includes(false)) {
   if (!build) console.log('→ 원천을 고친 커밋에서 생성물을 다시 만들어 같이 올린다: node tools/check-account-bundles.js --build (talk 사본까지 새로 받을 때만 --talk-root <SYNK-talk 작업본>)');

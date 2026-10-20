@@ -24,7 +24,7 @@ const secret=()=>randomBytes(32).toString('hex');
 const fail=(code,status=400,message=code)=>{throw Object.assign(new Error(message),{code,status});};
 const clean=(value,max=80)=>typeof value==='string'&&value.trim()&&value.trim().length<=max?value.trim():fail('INVALID_INPUT');
 const sameSecret=(a,b)=>typeof a==='string'&&a.length===b.length&&timingSafeEqual(Buffer.from(a),Buffer.from(b));
-const teacherFiles=new Set(['index.html','style.css','app.mjs','personalization-ui.mjs','personalization.css','signal.css','workspace-overview.mjs','workspace-overview.css','sharing-fence.mjs','homework-review.mjs','homework-review.css']);
+const teacherFiles=new Set(['index.html','style.css','app.mjs','personalization-ui.mjs','personalization.css','signal.css','workspace-overview.mjs','workspace-overview.css','sharing-fence.mjs','course-writing-ui.mjs','homework-review.mjs','homework-review.css']);
 const localWorldFiles=new Set(['local-world.html','world-classroom.css','dist/local-world.js']);
 const mime={'.html':'text/html; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp','.woff2':'font/woff2','.ttf':'font/ttf'};
 export function createLinkedState(){return {schemaVersion:1,mode:'local-linked',synthetic:false,nextId:1,

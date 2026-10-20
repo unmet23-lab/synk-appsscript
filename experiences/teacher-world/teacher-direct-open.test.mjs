@@ -4,10 +4,11 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import * as Overview from './workspace-overview.mjs';
 import {applySharingFence} from './sharing-fence.mjs';
+import {mountCourseWriting} from './course-writing-ui.mjs';
 
 // 교사 앱 주소(/teacher-world/)를 workspace.synk.im에서 직접 열면 회사 서버의 /api/workspace(업무 자료, 로그인 필요)를
 // 수업 자료로 읽어 「처리하지 못했어요. (401)」이 보였다. 이 파일은 그 안내 화면이 오류 대신 나오는지 본다.
-const source=fs.readFileSync(new URL('./app.mjs',import.meta.url),'utf8').replace("import {applySharingFence} from './sharing-fence.mjs';",'').replace("import {createPersonalizationUI} from './personalization-ui.mjs';",'').replace("import {mountHomeworkReview} from './homework-review.mjs';",'').replace(/^import \{[^\n]*\} from '\.\/workspace-overview\.mjs';\r?\n/m,'');
+const source=fs.readFileSync(new URL('./app.mjs',import.meta.url),'utf8').replace("import {mountHomeworkReview} from './homework-review.mjs';",'').replace("import {applySharingFence} from './sharing-fence.mjs';",'').replace("import {createPersonalizationUI} from './personalization-ui.mjs';",'').replace(/^import \{[^\n]*\} from '\.\/workspace-overview\.mjs';\r?\n/m,'');
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 const reply=(body,status=200)=>({ok:status<400,status,json:async()=>body});
 const COMPANY_HEALTH={ok:true,app:'synk-company',version:1,workspaceIntegration:true,ready:true};
@@ -22,7 +23,8 @@ function open({health,search=''}={}){
     mountHomeworkReview:()=>({show(){},peek(){},reset(){},hasDraft:()=>false,refresh(){}}),createPersonalizationUI:()=>({set(){},invalidate(){}}),
     fetch:url=>{requests.push(url);if(url==='/api/health')return Promise.resolve(reply(health));return new Promise(()=>{});}
   };
-  vm.createContext(context);vm.runInContext(source,context,{filename:'app.mjs'});
+  context.mountCourseWriting=mountCourseWriting;
+  vm.createContext(context);vm.runInContext(source.replace("import {mountCourseWriting} from './course-writing-ui.mjs';",''),context,{filename:'app.mjs'});
   return {element,requests};
 }
 

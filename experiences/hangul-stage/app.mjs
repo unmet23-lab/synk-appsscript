@@ -4,7 +4,7 @@
 import { createPack, compose, decompose } from './pack.mjs';
 import { josa } from './kit/josa.mjs';
 import { readProgress, planSession, answer, meet, finishSession, view, retryItem, canPlayMore, sessionsToday, letterOf, readableWords, graduationReady, graduate, SETTINGS } from './core.mjs';
-import { createCoach, isHosted, progressKey, createRecorder } from './learning.mjs';
+import { createCoach, isHosted, openProgressStorage, createRecorder } from './learning.mjs';
 import * as audio from './audio.mjs';
 import { SONGS, songById, cueAt, EXTRA_CONSONANTS, tileLetters, lettersIn } from './songs.mjs';
 import {hangulSupport} from '../brand-opening/game-tutor-support.mjs';
@@ -77,11 +77,23 @@ if (!L?.layer) { $('error').hidden = false; throw new Error('hangul-stage: learn
 const pack = createPack(L.layer);
 const coach = createCoach();
 const hosted = isHosted(coach);
-const KEY = progressKey(window, coach);
+// WORLD owns the authenticated game store. Wait for its account snapshot before
+// reading; a failed account read must never silently create a guest replacement.
+let progressPort;
+try{progressPort=await openProgressStorage(window,coach);}
+catch(error){$('error').hidden=false;throw error;}
+const accountProgress=progressPort.account,KEY=progressPort.key,progressStorage=progressPort.storage;
 const rec = createRecorder(coach);
 let progress = load(), saved = !!KEY;
-function load() { if (!KEY) return readProgress(null); try { return readProgress(JSON.parse(localStorage.getItem(KEY) || 'null')); } catch { return readProgress(null); } }
-function save() { if (!KEY) { saved = false; return; } try { localStorage.setItem(KEY, JSON.stringify(progress)); saved = true; } catch { saved = false; } }
+function load() { if (!KEY) return readProgress(null); try { return readProgress(JSON.parse(progressStorage.getItem(KEY) || 'null')); } catch(error) { if(accountProgress)throw error;return readProgress(null); } }
+function save() { if (!KEY) { saved = false; renderSaveStatus();return; } try { progressStorage.setItem(KEY, JSON.stringify(progress)); saved = true; } catch { saved = false; }renderSaveStatus(); }
+function renderSaveStatus(){
+ const status=progressPort.status(),line=$('save-note');
+ line.hidden=saved&&(!accountProgress||status?.phase==='synced'&&!status.pending&&!status.rejected);
+ line.textContent=!saved?tr(KEY?'saveNote.failed':'saveNote.none'):accountProgress?status?.message||tr('saveNote.failed'):'';
+}
+const stopProgressStatus=progressPort.subscribe(renderSaveStatus);
+window.addEventListener('pagehide',()=>{stopProgressStatus();void progressPort.flush?.()?.catch?.(()=>{});},{once:true});
 const glyph = id => pack.byId.get(id).glyph;
 const isFinal = id => pack.byId.get(id)?.role === 'final';
 const nameOf = id => (isFinal(id) ? tr('final', { glyph: glyph(id) }) : glyph(id));
@@ -152,8 +164,7 @@ function renderHome() {
     onclick: () => { progress = readProgress({ ...progress, amount: n }); save(); renderHome(); } }, tr('amount', { n }))));
   $('skip').hidden = progress.skipped || !!v.graduated;
   $('skipped-note').hidden = !progress.skipped;
-  $('save-note').hidden = saved;
-  $('save-note').textContent = tr(KEY ? 'saveNote.failed' : 'saveNote.none');
+  renderSaveStatus();
   $('effects').setAttribute('aria-pressed', String(audio.effectsEnabled()));
 }
 audio.onVoice(() => {

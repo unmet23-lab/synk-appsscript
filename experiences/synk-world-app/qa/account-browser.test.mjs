@@ -9,7 +9,7 @@ import {spawn} from 'node:child_process';
 import {createRequire} from 'node:module';
 import {fileURLToPath} from 'node:url';
 import {createAccountTownHost} from '../town-host.mjs';
-import {emptyPlayState} from '../../play-common/play-data.mjs';
+import {emptyPlayState,validatePlayChanges} from '../../play-common/play-data.mjs';
 import {awardMiniGame} from '../../korean-racing/garage-core.js';
 import {LESSONS} from '../life-content.mjs';
 const root=fileURLToPath(new URL('../../../',import.meta.url));
@@ -27,6 +27,7 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
  if(publicPayload)await new Promise(r=>server.listen(port,'127.0.0.1',r));
  let serverOutput='';server.stderr?.on('data',chunk=>serverOutput+=chunk);server.stdout?.on('data',chunk=>serverOutput+=chunk);
  const url=`http://127.0.0.1:${port}`,calls=[],errors=[],external=[],assetErrors=[];let browserServer,browser,page,output;
+ output=fs.mkdtempSync(path.join(directory,'evidence-'));console.log('QA evidence: '+output);
  t.signal.addEventListener('abort',()=>{browserServer?.process()?.kill('SIGKILL');server.kill?.('SIGKILL');server.closeAllConnections?.();server.close?.();},{once:true});
  async function waitServer(){for(let i=0;i<80;i++){if(server.exitCode!==undefined&&server.exitCode!==null)throw Error(serverOutput);try{const r=await fetch(url+'/health');if(r.ok)return await r.json();}catch{}await new Promise(r=>setTimeout(r,100));}throw Error('server start timeout '+serverOutput);}
  const town=createAccountTownHost({directory:path.join(directory,'fixture-town')}),binding={kind:'academy',classId:C,townId:C,learnerId:A,membershipRevision:1,sharing:{enabled:false,revision:1,blockedByLearningSharing:false}};
@@ -39,7 +40,7 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
   browserServer=await playwright.chromium.launchServer({channel:'chrome',headless:true,ignoreDefaultArgs:['--disable-back-forward-cache'],timeout:30000});browser=await playwright.chromium.connect(browserServer.wsEndpoint());
   const context=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});context.setDefaultTimeout(20000);
   // Only the isolated static server and the exact fixtures below may receive traffic.
-  await context.route('**/*',route=>{if(new URL(route.request().url()).origin===url)return route.continue();external.push(route.request().url());return route.abort('blockedbyclient');});
+  async function installFixture(context){await context.route('**/*',route=>{if(new URL(route.request().url()).origin===url)return route.continue();external.push(route.request().url());return route.abort('blockedbyclient');});
   await context.route('https://synk.im/account/client.html**',route=>route.fulfill({status:200,contentType:'text/html',body:'<!doctype html><title>fixture central account</title><p>Fixture central account entrance</p>'}));
   await context.addInitScript(()=>{if(window.top===window){globalThis.__qaWorldBoot=crypto.randomUUID();window.addEventListener('pageshow',event=>{if(event.persisted)sessionStorage.setItem('synk.qa.bfcache-persisted','1');});}if(window.top===window&&!sessionStorage.getItem('synk.oauth.session.world'))sessionStorage.setItem('synk.oauth.session.world',JSON.stringify({access_token:'synthetic-browser-token',refresh_token:null,expires_at:Date.now()+3600000}));});
   await context.route(new URL(runtimeConfig.accountApiUrl).origin+'/**',async route=>{
@@ -51,7 +52,7 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
     if(body?.action==='progress'&&conflictNext&&!conflictInjected){conflictInjected=true;playState.records['synk.windrun.best']='777';playRevision++;await route.fulfill({status:409,contentType:'application/json',body:JSON.stringify({ok:false,error:{code:'REVISION_CONFLICT',message:'다른 기기에서 진도가 바뀌었어요.'}}),headers:{'Access-Control-Allow-Origin':'*'}});return;}
     if(body){assert.equal(typeof body.id,'string');if(playCommands.has(body.id))data=playCommands.get(body.id);else{
      let result;
-     if(body.action==='progress'){for(const change of body.changes){assert.equal(playState.records[change.key]??null,change.previous);if(change.value===null)delete playState.records[change.key];else playState.records[change.key]=change.value;}}
+     if(body.action==='progress'){for(const change of validatePlayChanges(body.changes)){assert.equal(playState.records[change.key]??null,change.previous);if(change.value===null)delete playState.records[change.key];else playState.records[change.key]=change.value;}}
      else{assert.equal(body.action,'wallet');assert.equal(body.method,'awardMiniGame');result=awardMiniGame(playState.wallet,body.args[0]);playState.wallet=result.state;}
      data={ok:true,scope:'synk-play',accountId:A,revision:++playRevision,state:structuredClone(playState),...(result?{result}:{})};playCommands.set(body.id,data);
     }}else data={ok:true,scope:'synk-play',accountId:A,revision:playRevision,state:structuredClone(playState)};
@@ -85,9 +86,12 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
     assert.equal(req.method(),'GET');assert.equal(target.searchParams.get('resource'),'member-understanding');assert.equal(body,null);
     await route.fulfill({status:403,contentType:'application/json',body:JSON.stringify({ok:false,error:{code:'PRODUCT_FORBIDDEN'}}),headers:{'Access-Control-Allow-Origin':'*'}});return;
    }
+   else if(target.pathname.endsWith('/synk-classroom/api/classes')){assert.equal(req.method(),'GET');assert.equal(req.headers()['x-synk-product'],'world');assert.equal(req.headers()['x-synk-contract'],'1');data={ok:true,mode:'account-linked',classes:[],learnerId:null,staffId:null};}
    else if(!target.pathname.startsWith('/auth/v1/logout'))throw Error('Unexpected fixture endpoint '+target.pathname);
    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(data),headers:{'Access-Control-Allow-Origin':'*'}});
   });
+  }
+  await installFixture(context);
   page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400&&!r.url().startsWith(new URL(runtimeConfig.accountApiUrl).origin))assetErrors.push({url:r.url(),status:r.status()});});page.on('request',r=>{if(!r.url().startsWith(url)&&!r.url().startsWith(new URL(runtimeConfig.accountApiUrl).origin)&&!r.url().startsWith('https://synk.im/account/client.html')&&!r.url().startsWith('data:'))external.push(r.url());});
   await page.goto(url+'/world/?opening=off',{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.__synkWorld?.client.status==='ready');
   assert.equal(await page.evaluate(()=>window.__synkWorld.client.snapshot.accountId),A);assert.equal(await page.evaluate(()=>window.__synkHome.isMaru),true);
@@ -134,7 +138,7 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
   const frame=()=>page.frames().find(f=>f.url().includes('/town/day.html'));await page.waitForFunction(()=>document.querySelector('iframe')?.contentWindow?.SYNKTownDay?.metrics().connected);
   assert.equal(await frame().evaluate(()=>SYNKTownDay.metrics().worldLinked),true);assert.ok(calls.some(c=>c.path.endsWith('/synk-town/state')));assert.ok(calls.some(c=>c.path.endsWith('/synk-town/presence')&&c.classId===C));
   const exposed=await page.evaluate(()=>Object.keys(window.SYNKWorldTownHost));assert.deepEqual(exposed,['appearance','subscribe','refresh','request','dispose']);
-  output=path.join(root,'experiences/synk-world-app/qa/life-content-20261010',publicPayload?'account-static'+(path.basename(path.dirname(publicPayload)).match(/-r\d+$/)?.[0]||'-current'):'account-source');fs.mkdirSync(output,{recursive:true});await page.screenshot({path:path.join(output,'town-mobile.png')});
+  await page.screenshot({path:path.join(output,'town-mobile.png')});
   await page.evaluate(()=>window.__synkWorld.client.logout());assert.equal(await page.locator('iframe').count(),0);assert.equal(await page.evaluate(()=>window.__synkWorld.client.snapshot),null);assert.equal(await page.evaluate(()=>window.SYNKWorldTownHost),undefined);
   // Restore an actual verified browser account after sign-out, including a historical stale marker.
   await page.evaluate(()=>{sessionStorage.setItem('synk-world-v1-signed-out','1');sessionStorage.setItem('synk.oauth.session.world',JSON.stringify({access_token:'synthetic-fresh-login',refresh_token:null,expires_at:Date.now()+3600000}));});
@@ -154,7 +158,7 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
   // which opens the same summary.nextLesson (10-14 redesign).
   // Each owner (account or guest) chooses a tutor once; pass that gate when it appears.
   async function passLanguageStep(){await page.waitForFunction(()=>document.querySelector('[data-lang-picker]')||document.querySelector('dialog[open] [data-first-hangul]')||document.querySelector('.tutor-option')||document.querySelector('.world-shell')?.dataset.entry==='ready');if(await page.locator('[data-lang-picker]').count()){await page.locator('[data-lang-choice="ko"]').click();await page.locator('[data-lang-confirm]').click();await page.waitForFunction(()=>!document.querySelector('[data-lang-picker]'));}}
-  async function passHangulStep(){await page.waitForFunction(()=>document.querySelector('dialog[open] [data-first-hangul]')||document.querySelector('dialog[open] .tutor-option')||document.querySelector('.world-shell')?.dataset.entry==='ready');if(await page.locator('dialog[open] [data-first-hangul="reads"]').count()){await page.locator('dialog[open] [data-first-hangul="reads"]').click();await page.waitForFunction(()=>!document.querySelector('dialog[open] [data-first-hangul]'));}}
+  async function passHangulStep(target=page){await target.waitForFunction(()=>document.querySelector('[data-lang-picker]')||document.querySelector('dialog[open] [data-first-hangul]')||document.querySelector('dialog[open] .tutor-option')||document.querySelector('.world-shell')?.dataset.entry==='ready');if(await target.locator('[data-lang-picker]').count()){await target.locator('[data-lang-choice="ko"]').click();await target.locator('[data-lang-confirm]').click();}await target.waitForFunction(()=>document.querySelector('dialog[open] [data-first-hangul]')||document.querySelector('dialog[open] .tutor-option')||document.querySelector('.world-shell')?.dataset.entry==='ready');if(await target.locator('dialog[open] [data-first-hangul="reads"]').count()){await target.locator('dialog[open] [data-first-hangul="reads"]').click();await target.waitForFunction(()=>!document.querySelector('dialog[open] [data-first-hangul]'));}}
   async function passTutorGate(){await passHangulStep();await page.waitForFunction(()=>document.querySelector('dialog[open] .tutor-option')||document.querySelector('.world-shell')?.dataset.entry==='ready');if(await page.locator('dialog[open] .tutor-option[data-tutor-id="mongle"]').count()){await page.locator('.tutor-option[data-tutor-id="mongle"]').click();await page.locator('.tutor-primary').click();await page.locator('.tutor-primary[data-tutor-action="finish"]').click();await page.waitForFunction(()=>!document.querySelector('dialog[open] .tutor-option'));}}
   async function learnFromHome(){await passTutorGate();await page.locator('.world-nav [data-view="packs"]').click();const next=page.locator('.life-now [data-life-lesson]');await next.waitFor();await next.click();}
   await page.waitForFunction(()=>{try{return window.__synkWorld.life()?.owner==='11111111-1111-4111-8111-111111111111';}catch{return false;}});
@@ -228,11 +232,69 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
   }
   assert.ok(calls.some(c=>c.path.endsWith('/synk-learning')),'enabled consent uses official learning transport');
   assert.ok(playCommands.size>=5);assert.equal(conflictInjected,true);assert.equal(playState.wallet.gameStats.runner.rounds,1);assert.equal(playState.wallet.gameStats.rhythm.rounds,1);
+  await page.locator('.world-nav [data-view="packs"]').click();await page.locator('.life-row[data-view="position"]').click();
+  await page.locator('[data-position-board]').waitFor();assert.equal(await page.locator('[data-skill]').count(),15);
+  await page.locator('[data-position-diagnostic]').click();await page.locator('[data-position-run]').waitFor();
+  assert.equal(await page.locator('[data-position-choice]:disabled').count(),await page.locator('[data-position-choice]').count());
+  await page.locator('[data-position-listen]').click();await page.locator('[data-position-choice]:not([disabled])').first().waitFor();await page.locator('[data-position-choice]').first().click();
+  for(let i=0;i<14;i++)await page.locator('[data-position-skip]').click();
+  await page.locator('[data-position-done]').waitFor();await page.screenshot({path:path.join(output,'position-diagnostic-done.png')});
+  await page.locator('#panel-close').click();
+  // Progress belongs to the account; optional learning-event sharing is separate.
+  await page.locator('.profile-control[data-view="me"]').click();await page.locator('[data-world-learning]').uncheck();
+  await page.waitForFunction(()=>!document.querySelector('[data-world-learning]')?.checked&&!document.querySelector('[data-world-learning]')?.disabled);await page.locator('#panel-close').click();
+  const beforePrivateHangul=calls.length;
   await page.locator('.world-nav [data-view="play"]').click();await page.locator('[data-game="hangul"]').click();
   await page.waitForFunction(()=>document.querySelector('iframe')?.contentWindow?.document.querySelector('#start'));
-  const hangulFrame=page.frames().find(f=>f.url().includes('/hangul-stage/')),hangulHref=hangulFrame.url();assert.equal(new URL(hangulHref).origin,url);assert.equal(await page.evaluate(()=>SYNKLearningHost.status().accountKey),A);
+  const hangulFrame=page.frames().find(f=>f.url().includes('/hangul-stage/')),hangulHref=hangulFrame.url();assert.equal(new URL(hangulHref).origin,url);assert.equal(await page.evaluate(()=>SYNKLearningHost.status().accountKey),'local:'+A);assert.equal(await page.evaluate(()=>SYNKPlayHost.status().accountId),A);
+  if(await page.locator('dialog.tutor-practice[open] .practice-exit').count())await page.locator('dialog.tutor-practice[open] .practice-exit').click();
+  await hangulFrame.locator('#home').waitFor();await hangulFrame.getByRole('radio',{name:'5문제',exact:true}).click();
+  await hangulFrame.locator('#start').click();await hangulFrame.locator('#dock button').click();
+  await hangulFrame.locator('.meet').waitFor();await page.evaluate(()=>SYNKPlayHost.flush());
+  const hangulKey='synk.hangul-stage.v1',hangulSaved=playState.records[hangulKey];assert.ok(Object.keys(JSON.parse(hangulSaved).letters).length>0);assert.equal(JSON.parse(hangulSaved).amount,5);
+  assert.equal(calls.slice(beforePrivateHangul).some(c=>c.path.endsWith('/synk-learning')),false,'disabled learning sharing sends no events while private progress still saves');
+  await page.screenshot({path:path.join(output,'hangul-first-session.png')});
   await closeGamePanel();assert.equal(await page.locator('iframe').count(),0);
-  // Logging out closes both installed ports; the next game choice stays in the sign-in surface.
+  await page.waitForFunction(owner=>window.__synkWorld?.life()?.owner===owner,A);
+  await page.evaluate(()=>window.__synkLife.setHangulReading('new'));
+  await page.locator('.world-nav [data-view="packs"]').click();await page.locator('.life-row[data-view="position"]').click();
+  await page.locator('[data-position-board="hangul"]').waitFor();assert.match(await page.locator('[data-position-board]').innerText(),/만난 글자 1 \/ 49/);await page.locator('#panel-close').click();
+  let graduatedSaved;
+  // This is a second isolated browser context with empty local/session storage,
+  // not a claim about physical devices or the live account provider.
+  const otherContext=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});otherContext.setDefaultTimeout(20000);
+  try{
+   await installFixture(otherContext);const other=await otherContext.newPage();other.on('pageerror',e=>errors.push(e.message));
+   await other.goto(url+'/world/?opening=off',{waitUntil:'domcontentloaded'});await other.waitForFunction(()=>window.__synkWorld?.client.status==='ready');await passHangulStep(other);
+   await other.waitForFunction(()=>document.querySelector('.world-shell')?.dataset.entry==='ready');
+   assert.equal(await other.evaluate(()=>localStorage.getItem('synk.hangul-stage.v1')),null);
+   await other.locator('.world-nav [data-view="play"]').click();await other.locator('[data-game="hangul"]').click();
+   const frame=other.frameLocator('iframe.game-frame');await frame.locator('#home').waitFor();
+   if(await other.locator('dialog.tutor-practice[open] .practice-exit').count())await other.locator('dialog.tutor-practice[open] .practice-exit').click();
+   assert.equal(await frame.getByRole('radio',{name:'5문제',exact:true}).getAttribute('aria-checked'),'true');
+   assert.ok(await frame.locator('.tile.met').count()>0);assert.equal(await other.evaluate(()=>SYNKPlayHost.storage().getItem('synk.hangul-stage.v1')),hangulSaved);
+   await other.screenshot({path:path.join(output,'hangul-second-isolated-session.png')});
+   // Synthetic graduation input exercises the real Core shape and authenticated
+   // game write port. It is not evidence of a learner completing all 49 letters.
+   const game=other.frames().find(value=>value.url().includes('/hangul-stage/'));
+   graduatedSaved=await game.evaluate(async()=>{
+    const core=await import('./core.mjs'),learning=await import('./learning.mjs'),bound=await learning.openProgressStorage(window);
+    const saved=core.graduate(JSON.parse(bound.storage.getItem(bound.key)),new Date().toISOString());
+    const raw=JSON.stringify(saved);bound.storage.setItem(bound.key,raw);await bound.flush();return raw;
+   });
+   assert.equal(playState.records[hangulKey],graduatedSaved);
+   await other.locator('#panel-close').click();assert.equal(await other.locator('iframe').count(),0);
+   await other.waitForFunction(owner=>window.__synkWorld?.life()?.owner===owner,A);
+   await other.locator('.world-nav [data-view="packs"]').click();await other.locator('.life-row[data-view="position"]').click();
+   await other.locator('[data-position-board]:not([data-position-board="hangul"])').waitFor();
+   assert.equal(await other.locator('[data-skill]').count(),15);
+   await page.locator('.world-nav [data-view="packs"]').click();await page.locator('.life-row[data-view="position"]').click();
+   await page.locator('[data-position-board]:not([data-position-board="hangul"])').waitFor();
+   assert.equal(await page.locator('[data-skill]').count(),15);
+   await page.screenshot({path:path.join(output,'hangul-graduated-home-other-session.png')});await page.locator('#panel-close').click();
+  }finally{await otherContext.close();}
+  // Logging out closes account ports. The existing first-round guest trial
+  // must use its memory-only port and cannot touch the signed-out account.
   await page.evaluate(()=>window.__qaLifeBeforeLogout=window.__synkLife);
   await page.evaluate(()=>window.__synkWorld.client.logout());assert.equal(await page.evaluate(()=>!!window.SYNKPlayHost||!!window.SYNKLearningHost),false);
   await page.waitForFunction(()=>{try{return window.__synkWorld.life()?.owner==='guest';}catch{return false;}});
@@ -257,8 +319,9 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
   // The trial is used: the same game now opens sign-in with the reason.
   await page.locator('.world-nav [data-view="play"]').click();await page.locator('[data-game="runner"]').click();await page.locator('[data-world="account-login"]').waitFor();assert.equal(await page.locator('iframe').count(),0);assert.equal(page.url(),url+'/world/?opening=off');
   assert.match(await page.locator('#panel-content .ws-lead').textContent(),/바람길 체험 판을 마쳤어요/);
+  assert.equal(playState.records[hangulKey],graduatedSaved);
   assert.equal(fs.existsSync(path.join(directory,'must-not-create')),false);assert.deepEqual(errors,[]);assert.deepEqual(assetErrors,[]);assert.deepEqual(external,[]);
-  fs.writeFileSync(path.join(output,'report.json'),JSON.stringify(sanitized({ok:true,syntheticAccount:true,liveProviderCalls:false,actualBrowser:'Chromium/Edge',mode:'account',publicPayload,health,checks:['verified-account','explicit-learning-consent','enrollment-preview-before-claim','classroom-lessons-401-keeps-session','classroom-lessons-after-claim','bfcache-reverification','bfcache-during-entry-reverification','verified-town-sharing','town-logout-relogin','embedded-runner-and-rhythm','same-iframe-rotation','account-wallet-save','duplicate-reward-prevention','runner-progress-save','in-app-progress-conflict-recovery','hangul-return','logout-removes-game-hosts','guest-trial-once-then-sign-in','no-real-external-traffic','life-internal-player','life-official-progress-key','life-pause-reload','life-completion-home-next','life-story-rotation','life-logout-release','guest-life-after-logout'],lifeEvidence,actualBfcache,forcedBfcacheBranch:!actualBfcache,hangulHref,privateArtifacts:manifest?.privateArtifacts,conflictInjected,gameEntrances,calls,errors,assetErrors,external}),null,2));
+  fs.writeFileSync(path.join(output,'report.json'),JSON.stringify(sanitized({ok:true,syntheticAccount:true,liveProviderCalls:false,actualBrowser:'Chromium/Chrome',mode:'account',publicPayload,health,checks:['verified-account','explicit-learning-consent','enrollment-preview-before-claim','classroom-lessons-401-keeps-session','classroom-lessons-after-claim','bfcache-reverification','bfcache-during-entry-reverification','verified-town-sharing','town-logout-relogin','embedded-runner-and-rhythm','same-iframe-rotation','account-wallet-save','duplicate-reward-prevention','runner-progress-save','in-app-progress-conflict-recovery','position-15-domains','diagnostic-audio-before-answer','diagnostic-result-screen','hangul-ui-first-letter-save','hangul-second-isolated-context-restore','hangul-private-save-without-learning-sharing','hangul-graduation-home-after-close','hangul-graduation-home-other-context','hangul-return','logout-removes-game-hosts','guest-trial-once-then-sign-in','no-real-external-traffic','life-internal-player','life-official-progress-key','life-pause-reload','life-completion-home-next','life-story-rotation','life-logout-release','guest-life-after-logout'],lifeEvidence,hangulEvidence:{isolatedBrowserContexts:2,physicalDevices:false,syntheticGraduation:true,savedLetters:Object.keys(JSON.parse(hangulSaved).letters),learningShared:false},actualBfcache,forcedBfcacheBranch:!actualBfcache,hangulHref,privateArtifacts:manifest?.privateArtifacts,conflictInjected,gameEntrances,calls,errors,assetErrors,external}),null,2));
  }catch(error){console.error('ACCOUNT_BROWSER_FAILURE',error.stack,JSON.stringify(sanitized({errors,assetErrors,external,calls})));if(page){const state=await page.evaluate(()=>{let life;try{life={owner:window.__synkWorld?.life()?.owner};}catch(error){life={error:error.code||error.message};}return {screen:window.__synkWorld?.screen(),clientGeneration:window.__synkWorld?.client.generation,life,host:!!window.SYNKWorldTownHost,frame:document.querySelector('iframe')?.getAttribute('src'),body:document.body.innerText.slice(-800)};});console.error('PAGE_STATE',state);if(output){fs.writeFileSync(path.join(output,'failure-report.json'),JSON.stringify(sanitized({ok:false,publicPayload,syntheticAccount:true,liveProviderCalls:false,error:error.stack,state,lifeEvidence,errors,assetErrors,external}),null,2));await page.screenshot({path:path.join(output,'failure.png')}).catch(()=>{});}for(const f of page.frames().slice(1))console.error('FRAME_STATE',await f.evaluate(()=>({config:window.__SYNK_WORLD_TOWN__,metrics:window.SYNKTownDay?.metrics(),body:document.body.innerText.slice(-1800)})));}throw error;}finally{
   // Close the connect() client before the owning launchServer() listener.
   // Otherwise its live WebSocket can keep a successful Node test worker alive.

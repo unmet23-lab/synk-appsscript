@@ -305,6 +305,15 @@ test('tracking never converts unconnected verified event counts into zero',()=>{
   const f=fixture();f.run('socialWorkspaceState.data.tracking={links:[{id:"l",channelId:"ch",stats:{clicks:0,visits:null,siteEventsSeen:false,browserEvents:{signup:null},verifiedEvents:{trial_start:null,signup:null,inquiry:null}}}]}');const html=f.run('snswTrackingResults()');assert.match(html,/서버 확인<\/dt><dd>미확인/);assert.match(html,/링크 클릭<\/dt><dd>0/);assert.ok(!html.includes('서버 확인</dt><dd>0'));
 });
 
+test('inquiry configuration goes through the normal submit router and uses the current revision',async()=>{
+  const f=fixture();f.run('socialWorkspaceState.data.tracking={settings:{canConfigure:true,allowedOrigins:[]}};socialWorkspaceState.data.inquiries={canConfigure:true,revision:3,enabled:false,channelId:"ch"}');
+  assert.match(f.run('snswTrackingSettings()'),/홈페이지 문의 접수/);
+  f.context.form={dataset:{swForm:'inquiry-config'},values:{enabled:'on',channelId:'ch'}};
+  const work=f.run('snswSubmit(form)');
+  assert.equal(f.requests[0].body.revision,3);assert.equal(f.requests[0].body.channelId,'ch');assert.equal(f.requests[0].body.enabled,true);
+  f.requests[0].reject(new Error('synthetic stop'));await work;
+});
+
 test('tracking configuration uses the latest settings revision and shows the exact SDK endpoint',async()=>{
   const f=fixture();f.run('socialWorkspaceState.data.tracking={settings:{canConfigure:true,revision:7,sdkUrl:"https://workspace.test/social-tracking.js",verifiedEndpoint:"https://workspace.test/social-track/verified",allowedOrigins:[]}}');assert.match(f.run('snswTrackingSettings()'),/https:\/\/workspace.test\/social-tracking.js/);assert.match(f.run('snswTrackingSettings()'),/X-Synk-Signature/);f.context.form={dataset:{swForm:'tracking-config'},values:{enabled:'on',allowedOrigins:'https://synk.example'}};const work=f.run('snswTrackingSubmit(form)');assert.equal(f.requests[0].body.revision,7);f.requests[0].reject(new Error('synthetic stop'));await work;
 });

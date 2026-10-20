@@ -17,7 +17,8 @@
         <button class="nav-button active" data-view="students"><span class="nav-symbol">01</span>학생과 학습</button>
         <button class="nav-button" data-view="assignments"><span class="nav-symbol">02</span>보낸 과제<span id="assignment-count" class="count">0</span></button>
         <button class="nav-button" data-view="review"><span class="nav-symbol">03</span>수업 관찰</button>
-        <button class="nav-button" id="homework-nav" data-view="homework" hidden><span class="nav-symbol">04</span>과제 첨삭<span id="homework-count" class="count" hidden>0</span></button>
+        <button class="nav-button" id="homework-nav" data-view="homework" hidden><span class="nav-symbol">04</span>주차 과제 첨삭<span id="homework-count" class="count" hidden>0</span></button>
+        <button class="nav-button" data-view="writing" id="course-writing-nav" hidden><span class="nav-symbol">05</span>읽기·쓰기 첨삭</button>
       </nav>
       <div class="sidebar-bottom"><img src="./assets/sticker-book.webp" alt=""><p>한 명을 이해하면,<br>다음 수업이 달라져요.</p><span class="eyebrow">SYNK Workspace · 내 수업</span></div>
     </aside>
@@ -36,9 +37,10 @@
           <div class="learning-grid"><section class="roster-panel"><div class="table-label"><span>학생 / 다음 도움</span><span>기록 확인</span></div><div id="roster"></div></section><section id="student-detail" class="detail-panel" aria-label="학생 학습 상세"></section></div>
         </section>
         <section id="view-assignments" hidden><div class="section-title"><div><span class="eyebrow">02 / ASSIGNMENTS</span><h2>보낸 과제</h2></div><label class="search"><span>상태</span><select id="assignment-filter"><option value="all">전체</option><option value="assigned">진행 중</option><option value="submitted">제출 완료</option><option value="cancelled">취소</option></select></label></div><div id="assignments"></div></section>
-        <section id="view-homework" hidden><div class="section-title"><div><span class="eyebrow">04 / HOMEWORK</span><h2>과제 첨삭</h2></div></div><div id="homework-review" class="hr" data-state="idle"></div></section>
+        <section id="view-homework" hidden><div class="section-title"><div><span class="eyebrow">04 / HOMEWORK</span><h2>주차 과제 첨삭</h2></div></div><div id="homework-review" class="hr" data-state="idle"></div></section>
         <section id="view-review" hidden><div class="section-title"><div><span class="eyebrow">03 / TEACHER NOTES</span><h2>수업에서 발견한 것</h2></div></div><p class="subtle">선생님의 관찰은 학습 기록과 구분해 보관해요. 학생 상세에서 남길 수 있어요.</p><div id="observations"></div></section>
         <footer class="workspace-footer"><span>기존 Core · Strata의 학습 기준을 교사에게 연결합니다.</span><span>TOPIK 등급·성격을 자동 판정하지 않아요.</span></footer>
+        <section id="view-writing" hidden aria-label="온라인 반 과제와 첨삭"></section>
       </main>
     </div>
   </div>

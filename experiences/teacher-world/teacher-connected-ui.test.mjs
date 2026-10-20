@@ -4,15 +4,16 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import * as Overview from './workspace-overview.mjs';
 import {applySharingFence} from './sharing-fence.mjs';
+import {mountCourseWriting} from './course-writing-ui.mjs';
 
-const source=fs.readFileSync(new URL('./app.mjs',import.meta.url),'utf8').replace("import {applySharingFence} from './sharing-fence.mjs';",'').replace("import {createPersonalizationUI} from './personalization-ui.mjs';",'').replace("import {mountHomeworkReview} from './homework-review.mjs';",'').replace(/^import \{[^\n]*\} from '\.\/workspace-overview\.mjs';\r?\n/m,'');
+const source=fs.readFileSync(new URL('./app.mjs',import.meta.url),'utf8').replace("import {mountHomeworkReview} from './homework-review.mjs';",'').replace("import {applySharingFence} from './sharing-fence.mjs';",'').replace("import {createPersonalizationUI} from './personalization-ui.mjs';",'').replace(/^import \{[^\n]*\} from '\.\/workspace-overview\.mjs';\r?\n/m,'');
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 const reply=(body,status=200)=>({ok:status<400,status,json:async()=>body});
 const learner=(overrides={})=>({id:'learner-a',name:'연결 학생',goal:'안내문 읽기',skills:[{id:'ko.reading.detail',label:'세부 정보',status:'unseen',n:0,correct:0}],connectedAt:'2026-10-02T10:00:00Z',sharing:{enabled:true,revision:2},observations:[],...overrides});
 const workspace=(learners=[])=>({mode:'local-linked',synthetic:false,teacher:{id:'teacher-local'},classes:[{id:'class-local',name:'내 수업',learners}],content:[{id:'reading-detail',title:'도서관 읽기',assignable:true,modality:'reading'}],assignments:[],integration:{worldConnected:true,productionConnected:false}});
 
 // Run the real module while controlling the order of authentication and data responses.
-function fixture({hash='',storedToken='',mode='local-linked',account=false,homework=null}={}){
+function fixture({hash='',storedToken='',mode='local-linked',account=false,courseMount=mountCourseWriting,homework=null}={}){
   const nodes=new Map(),documentEvents=new Map(),requests=[],pending=[],storage=new Map();let cleanURL=null,poll;
   if(storedToken)storage.set('synk.teacher.local-linked.session',storedToken);
   function element(id){if(!nodes.has(id))nodes.set(id,{id,value:id==='assignment-filter'?'all':'',textContent:'',innerHTML:'',hidden:false,dataset:{},listeners:new Map(),addEventListener(name,fn){this.listeners.set(name,fn);},replaceChildren(){this.innerHTML='';this.textContent='';},close(){this.open=false;},showModal(){this.open=true;},querySelector(){return element(id+'-submit');},get elements(){return {instructions:element('assignment-instructions')};},reset(){for(const name of id==='assignment-form'?['assignment-title','assignment-due','assignment-instructions','content-select']:['note-text','note-skill'])element(name).value='';}});return nodes.get(id);}
@@ -24,10 +25,11 @@ function fixture({hash='',storedToken='',mode='local-linked',account=false,homew
     fetch:(url,options={})=>{requests.push({url,options});if(url==='/api/health')return Promise.resolve(reply({mode}));return new Promise((resolve,reject)=>pending.push({url,resolve,reject}));}
   };
   if(account){context.window.parent={location:{origin:context.location.origin},postMessage(){},SYNKClassroomHost:{mode:'account-linked',classId:'class-local',request:(url,payload)=>{requests.push({url,payload});return new Promise((resolve,reject)=>pending.push({url,resolve:response=>response.json().then(resolve),reject}));}}};context.document.fonts={ready:Promise.resolve()};}
-  vm.createContext(context);vm.runInContext(source,context,{filename:'app.mjs'});
+  context.mountCourseWriting=courseMount;
+  vm.createContext(context);vm.runInContext(source.replace("import {mountCourseWriting} from './course-writing-ui.mjs';",''),context,{filename:'app.mjs'});
   return {element,requests,storage,pending,view:()=>context.window.SYNKTeacherView,get cleanURL(){return cleanURL;},
     resolve(url,body,status=200){const at=pending.findIndex(row=>row.url===url);assert.notEqual(at,-1,`pending ${url}`);pending.splice(at,1)[0].resolve(reply(body,status));},
-    reject(url){const at=pending.findIndex(row=>row.url===url);assert.notEqual(at,-1);pending.splice(at,1)[0].reject(Error('network failure'));},
+    reject(url,error=Error('network failure')){const at=pending.findIndex(row=>row.url===url);assert.notEqual(at,-1);pending.splice(at,1)[0].reject(error);},
     click(id,dataset={}){return documentEvents.get('click')({target:{closest:()=>({id,dataset,disabled:false,classList:{contains:()=>false}})}});},
     poll(){assert.ok(poll,'poll callback registered');return poll();},
     submit(id){return element(id).listeners.get('submit')({preventDefault(){},submitter:{disabled:false}});}
@@ -158,6 +160,19 @@ test('account invite stays in the dialog through polling without browser storage
  assert.equal(f.element('student-invite-code').value,'b'.repeat(32));const polling=f.poll();f.resolve('/api/workspace',snapshot);await polling;
  assert.equal(f.element('student-invite-code').value,'b'.repeat(32));assert.equal(f.element('student-invite-dialog').open,true);assert.equal(f.storage.size,0);
 });
+
+for(const failure of ['network','503','forbidden','account-changed'])test('course draft lifecycle distinguishes '+failure,async()=>{
+ let mounted=0,disposed=0,suspended=0,refreshed=0;
+ const f=fixture({account:true,courseMount:()=>{mounted++;return {reload(){},refreshGroups(){refreshed++;},suspend(){suspended++;},dispose(){disposed++;}};}});
+ const snapshot={...workspace([learner()]),mode:'account-linked'};
+ f.resolve('/api/workspace',snapshot);await tick();await f.click('',{view:'writing'});assert.equal(mounted,1);
+ const polling=f.poll(),transient=['network','503'].includes(failure);
+ f.reject('/api/workspace',Object.assign(Error(failure),failure==='503'?{status:503}:failure==='forbidden'?{status:403,code:'FORBIDDEN'}:failure==='account-changed'?{code:'ACCOUNT_CHANGED'}:{}));await polling;
+ assert.equal(suspended,transient?1:0);assert.equal(disposed,transient?0:1);assert.equal(f.element('html').dataset.ready,'blocked');
+ const retry=f.element('retry').onclick();f.resolve('/api/workspace',snapshot);await retry;
+ assert.equal(mounted,transient?1:2);assert.equal(refreshed,transient?1:0);
+});
+
 // 계정 포털은 고른 학생의 공유가 바뀌면 이 답(true)을 보고서야 교사 화면을 다시 만들지 않는다. 걸러 낸 학생의 기록과
 // 그 학생의 공유에 묶인 작성 창은 바로 닫히고, 명부 기준인 과제 첨삭 초안은 그대로다.
 test('account frame fences a withdrawn learner in place for the portal: records and the bound note close, the homework review draft stays',async()=>{
@@ -182,4 +197,15 @@ test('a frame that has not read its class yet keeps the portal scope for the fir
  assert.equal(f.view().applySharing({classId:'class-local',learners:[meta('learner-a',3,false)]}),true);
  f.resolve('/api/workspace',{...workspace([learner({accountConnected:true})]),mode:'account-linked'});await tick();
  assert.match(f.element('student-detail').innerHTML,/학습 공유 안 함/);assert.doesNotMatch(f.element('student-detail').innerHTML,/세부 정보/);
+});
+test('portal sharing acknowledges the synchronous course fence while exposing unsent course feedback to navigation guards',async()=>{
+ const calls=[],course={reload(){},refreshGroups(){},applySharing(rows){calls.push(rows);},hasDraft:()=>true,dispose(){}};
+ let initial;
+ const f=fixture({account:true,courseMount:options=>{initial=options.sharingMetadata;return course;}}),meta=(revision,enabled)=>({id:'learner-a',revision,enabled,connected:true,revoked:false});
+ assert.equal(f.view().applySharing({classId:'class-local',learners:[meta(2,true)]}),true);
+ f.resolve('/api/workspace',{...workspace([learner({accountConnected:true})]),mode:'account-linked'});await tick();await f.click('',{view:'writing'});
+ assert.equal(initial[0].revision,2);assert.equal(f.view().hasDraft(),true);
+ assert.equal(f.view().applySharing({classId:'class-other',learners:[meta(3,false)]}),false);assert.equal(calls.length,0);
+ assert.equal(f.view().applySharing({classId:'class-local',learners:[meta(3,false)]}),true);
+ assert.equal(calls.length,1);assert.equal(calls[0][0].enabled,false);assert.equal(calls[0][0].revision,3);
 });

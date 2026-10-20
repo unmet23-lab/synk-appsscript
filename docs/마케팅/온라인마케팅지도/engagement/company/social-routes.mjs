@@ -6,7 +6,7 @@ const parameter=value=>{try{return value===undefined?undefined:decodeURIComponen
 // Requests that save nothing (previews, cost quotes, read-only insights, private recovery copies) do not tell every screen to refresh.
 const QUIET_PATHS=new Set(['/api/social/ai/quote','/api/social/insights/variants']);
 export function socialChangeNotifies(path){return !path.startsWith('/api/social/recovery/')&&!/[/-]preview$/.test(path)&&!QUIET_PATHS.has(path);}
-export function createSocialRoutes({store,publishing,marketing,provider,distribution,inboxProvider,inboxRecovery,replies,capacity,copyInsights,followups,ai,recovery,tracking,workflows,review,publicationLinks,signal,session,origin,body,send,isStopped=()=>false,onChange=()=>{},runtime=()=>({})}){
+export function createSocialRoutes({store,publishing,marketing,provider,distribution,inboxProvider,inboxRecovery,replies,capacity,copyInsights,followups,ai,recovery,tracking,inquiries,workflows,review,publicationLinks,signal,session,origin,body,send,isStopped=()=>false,onChange=()=>{},runtime=()=>({})}){
   return async function handle(req,res,{url,demoRequest=false}){
     const path=url.pathname;if(!path.startsWith('/api/social/'))return false;
     const auth=session(req);if(!auth)throw fail('먼저 로그인해 주세요.',401);
@@ -25,7 +25,7 @@ export function createSocialRoutes({store,publishing,marketing,provider,distribu
       if(path==='/api/social/workspace'){send(res,200,store.readScope(()=>{
         const filters=Object.fromEntries(url.searchParams),social=publishing.workspace(user,filters),paged=!!social.pagination,complete=paged?publishing.summary(user,filters):social,extra=marketing.workspace(user,complete,paged?{includeInsights:filters.section==='results',includeNotifications:false}:{});
         const jobs=social.jobs.map(job=>{let linkCheck=null;if(job.performanceEntryId&&publicationLinks)try{linkCheck=publicationLinks.get(user,{kind:'post',id:job.performanceEntryId}).check;}catch(error){if(![403,404,409].includes(error.status))throw error;}return {...job,linkCheck};});
-        const result={...social,...extra,jobs,...distribution?.workspace(user),provider:provider.settings(user),connectionHealth:provider.health?.(user),inboxProvider:inboxProvider?.settings(user),inboxHealth:replies?.health(user),replies:replies?.workspace(user),...(!paged||filters.section==='queue'?{capacity:capacity?.workspace(user,paged?{pageSize:50}:{})}:{}),followups:followups?.list(user),ai:ai?.state(user),recovery:recovery?.summary?recovery.summary(user):recovery?.list(user),tracking:tracking?.workspace(user),workflows:workflows?.workspace(user),runtime:runtime()};
+        const result={...social,...extra,jobs,...distribution?.workspace(user),provider:provider.settings(user),connectionHealth:provider.health?.(user),inboxProvider:inboxProvider?.settings(user),inboxHealth:replies?.health(user),replies:replies?.workspace(user),...(!paged||filters.section==='queue'?{capacity:capacity?.workspace(user,paged?{pageSize:50}:{})}:{}),followups:followups?.list(user),ai:ai?.state(user),recovery:recovery?.summary?recovery.summary(user):recovery?.list(user),tracking:tracking?.workspace(user),inquiries:inquiries?.settings(user),workflows:workflows?.workspace(user),runtime:runtime()};
         if(result.inboxProvider&&inboxRecovery){const recoveryByChannel=new Map(inboxRecovery.workspace(user).channels.map(row=>[row.channelId,row.recovery]));result.inboxProvider={...result.inboxProvider,channels:result.inboxProvider.channels.map(row=>({...row,recovery:recoveryByChannel.get(row.channelId)||null}))};}
         result.onboarding=socialOnboarding(paged?{...result,...publishing.summary(user)}:result,{origin});return result;
       }));return true;}
@@ -71,6 +71,8 @@ export function createSocialRoutes({store,publishing,marketing,provider,distribu
     else if(path==='/api/social/recovery/discard')result=recovery.discard(actor,input);
     else if(path==='/api/social/tracking/configure')result=tracking.configure(actor,input);
     else if(path==='/api/social/tracking/key')result=tracking.rotateKey(actor,input);
+    else if(path==='/api/social/inquiries/configure')result=inquiries.configure(actor,input);
+    else if((match=path.match(/^\/api\/social\/inquiries\/([^/]+)\/delete$/)))result=inquiries.removeByStaff(actor,parameter(match[1]));
     else if(path==='/api/social/tracking/links')result=tracking.createLink(actor,input);
     else if((match=path.match(/^\/api\/social\/tracking\/links\/([^/]+)$/)))result=tracking.updateLink(actor,parameter(match[1]),input);
     else if(path==='/api/social/templates/preview')result=await workflows.templatePreview(actor,input,{authorize,signal});

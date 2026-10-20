@@ -4,6 +4,7 @@
 // 글자별 진도(만남·익히는 중·익힘·다음 복습)는 이 경험의 판단이라 따로 둔다(core.mjs). 아틀라스의 증거 규칙은
 // 문항 묶음의 「첫 시도」를 세는데, 글자 익히기는 같은 글자를 되풀이하는 일이라서다.
 
+import {validateHangulProgress} from './progress-data.mjs';
 export const GAME_ID = 'hangul-stage';
 const FORMAT = { build: 'cup-compose', match: 'single-choice' };
 const CHOICE = new Set(['listen_pick', 'see_pick', 'pair', 'teach']); // 보기 고르기: 보기 둘이면 binary-choice
@@ -28,8 +29,9 @@ export function createCoach(win = globalThis.window) {
 export const isHosted = coach => !!coach && typeof coach.assignment === 'function';
 
 /**
- * 글자 진도를 둘 자리. 혼자 열면 이 기기, WORLD 안에서는 그 계정·학습 동의 판(revision)의 구역이다
- * (synk-account/src/core.mjs의 `synk.account.{id}.r{revision}.` 접두와 같은 이름). 계정을 알 수 없으면 저장하지 않는다.
+ * PlayHost가 없는 단독 화면·옛 학습 호스트의 로컬 자리다. 기존 기록을 옮길 때도 같은 이름을 찾는다.
+ * 현재 WORLD 계정 화면은 아래 openProgressStorage의 synk-play 계정 저장을 우선 사용한다.
+ * 계정·학습 동의 판(revision)의 구역을 알 수 없는 옛 호스트는 저장하지 않는다.
  */
 export function progressKey(win = globalThis.window, coach = null) {
   if (!isHosted(coach)) return 'synk.hangul-stage.v1';
@@ -39,6 +41,27 @@ export function progressKey(win = globalThis.window, coach = null) {
     if (s && /^[a-zA-Z0-9_.:-]{1,120}$/.test(String(s.accountKey)) && Number.isInteger(s.revision)) return `synk.account.${s.accountKey}.r${s.revision}.hangul-stage.v1`;
   } catch { /* 다른 출처: 계정 구역을 모르면 저장하지 않는다 */ }
   return null;
+}
+
+// WORLD already owns a verified, guarded game store. This product gets only its
+// one record; no credentials, automatic guest import, or second sync protocol.
+export async function openProgressStorage(win=globalThis.window,coach=null){
+ let host=null;
+ try{let scope=win;for(let depth=0;depth<6;depth++){
+  if(scope?.SYNKPlayHost){host=scope.SYNKPlayHost;break;}
+  if(!scope?.parent||scope.parent===scope)break;
+  if(scope.parent.location.origin!==scope.location.origin)break;scope=scope.parent;
+ }}catch{/* Cross-origin frames cannot borrow an account. */}
+ if(!host)return {account:false,key:progressKey(win,coach),storage:win.localStorage,status:()=>null,subscribe:()=>()=>{}};
+ await host.ready();const port=host.storage(),key='synk.hangul-stage.v1';
+ // An old host/server may not yet support this resource; fail before opening an
+ // editable blank progress screen, instead of writing over the account later.
+ const read=()=>{const raw=port.getItem(key);if(raw!==null)validateHangulProgress(JSON.parse(raw));return raw;};
+ read();
+ return Object.freeze({account:true,key,storage:Object.freeze({
+  getItem(name){if(name!==key)throw TypeError('Only Hangul progress is available');return read();},
+  setItem(name,value){if(name!==key)throw TypeError('Only Hangul progress is available');return port.setItem(name,value);}
+ }),status:host.status,subscribe:host.subscribe,flush:host.flush});
 }
 
 /** 문항 하나의 기록. 실패해도 경험을 멈추지 않는다. */
