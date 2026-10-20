@@ -2,7 +2,7 @@
   "version": "topik2-writing-practice-1",
   "note": "공개 WORLD의 TOPIK II 쓰기 51~54 연습 문항. 공식 PBT 형식을 따른 자체 창작이며 공식 기출을 옮기지 않았다. 자료의 기관·숫자는 모두 가상이다. 예시답은 좋은 답의 한 예이고 정답 하나가 아니다. 글자 수는 NFC 정규화 뒤 공백·문장부호를 넣고 줄바꿈을 뺀 Unicode 문자 수다(원고지 칸 수와 다를 수 있다). review.status가 passed인 문항만 화면에 나온다.",
   "basis": "PBT",
-  "contentHash": "6ccf371b07dced36",
+  "contentHash": "2221fe99b6f2a706",
   "items": [
     {
       "id": "w51-recycle",
@@ -24,7 +24,7 @@
         {"id": "b", "mark": "㉡", "model": "수거하지 않습니다", "accept": "그날은 가져가지 않는다는 내용(수거하지 않는다, 수거되지 않는다, 치우지 않는다)이면 된다. 뒤 문장 「다음 수거일까지 집에 보관해」와 이어져야 한다."}
       ],
       "watch": "「내놓으세요」처럼 「-아요」로 끝내 안내문의 「-습니다」 문체와 섞인다. 뒤 문장의 「보관해 주시기 바랍니다」까지 빈칸에 옮겨 쓴다.",
-      "review": {"status": "draft"}
+      "review": {"status":"held","at":"2026-10-20T21:59:25.314Z","report":"experiences/topik-items/review/reports/writing-68e2d27.md","by":[{"stage":"claude","model":"claude-opus-5-5","rubric":"topik-review-writing-r1","verdict":"fix"},{"stage":"argon","model":"gemini-4-argon-high","rubric":"topik-review-writing-r1","verdict":"pass"}],"notes":"과제 꼴, 예시답, 문체, 급이 모두 적절한 51번 안내문이다. ㉠ 인정 범위에서 요일 없는 답을 받는지 문구를 분명히 하고, 「그러니」를 다듬으면 쓸 수 있다. | 관리사무소 재활용 쓰레기 배출 요일 변경 안내문으로, 문맥 단서와 인정 범위가 잘 설계되어 통과(pass) 판정함."}
     },
     {
       "id": "w51-study",
@@ -46,7 +46,7 @@
         {"id": "b", "mark": "㉡", "model": "몇 명이 오는지 미리 알아야 해요", "accept": "올 사람의 수나 참석 여부를 미리 알아야(확인해야) 한다는 내용, 또는 인원에 맞춰 미리 예약해야 한다는 내용이면 된다. 뒤 문장 「못 오는 사람은 … 알려 주세요」와 이어져야 한다."}
       ],
       "watch": "친구들에게 보내는 글이라 「-아요」체다. 「알아야 합니다」처럼 「-습니다」로 바꾸면 글의 문체와 섞인다.",
-      "review": {"status": "draft"}
+      "review": {"status":"held","at":"2026-10-20T21:59:25.314Z","report":"experiences/topik-items/review/reports/writing-68e2d27.md","by":[{"stage":"claude","model":"claude-opus-5-5","rubric":"topik-review-writing-r1","verdict":"fix"},{"stage":"argon","model":"gemini-4-argon-high","rubric":"topik-review-writing-r1","verdict":"pass"}],"notes":"과제 꼴·예시답·인정 범위는 51번에 잘 맞는다. 다만 「-아요」체 글에서 「-습니다」 답을 어떻게 채점할지가 accept와 watch 사이에서 엇갈린다. 감점 기준을 분명히 적으면 쓸 수 있다. | 스터디 장소 변경 및 인원 확인 안내 글로, 앞뒤 문맥 단서가 명확하고 인정 범위가 적절하여 통과(pass) 판정함."}
     },
     {
       "id": "w51-repair",
@@ -69,7 +69,7 @@
         {"id": "b", "mark": "㉡", "model": "그 시간에 맞춰 집에서 기다리겠습니다", "accept": "그 시간에 집에 있겠다(문을 열어 드리겠다, 시간을 맞추겠다)는 내용이나, 「알려 주시면」에 호응하는 감사 표현(「감사하겠습니다」·「고맙겠습니다」)이면 된다. 「알려 주세요」처럼 앞의 부탁을 되풀이하면 인정하지 않는다."}
       ],
       "watch": "「기다릴게요」처럼 「-아요」로 끝내 편지의 「-습니다」 문체와 섞인다. 집주인께 쓰는 글이라 높임(「알려 주시면」, 「기다리겠습니다」)을 지킨다.",
-      "review": {"status": "draft"}
+      "review": {"status":"passed","at":"2026-10-20T21:59:25.314Z","report":"experiences/topik-items/review/reports/writing-68e2d27.md","by":[{"stage":"claude","model":"claude-opus-5-5","rubric":"topik-review-writing-r1","verdict":"pass"},{"stage":"argon","model":"gemini-4-argon-high","rubric":"topik-review-writing-r1","verdict":"pass"}]}
     },
     {
       "id": "w52-trees",
@@ -90,7 +90,7 @@
         {"id": "b", "mark": "㉡", "model": "거리에 나무를 많이 심고 있다", "accept": "나무를 심는다(늘린다)는 내용이다. 「이 때문에」로 앞 내용의 결과를 말하는 자리다."}
       ],
       "watch": "「심고 있어요」처럼 「-아요」로 끝낸다. ㉠에 이유가 아니라 「시원하다」만 다시 쓴다.",
-      "review": {"status": "draft"}
+      "review": {"status":"held","at":"2026-10-20T21:59:25.314Z","report":"experiences/topik-items/review/reports/writing-68e2d27.md","by":[{"stage":"claude","model":"claude-opus-5-5","rubric":"topik-review-writing-r1","verdict":"fix"},{"stage":"argon","model":"gemini-4-argon-high","rubric":"topik-review-writing-r1","verdict":"pass"}],"notes":"지문과 예시답은 52번형에 잘 맞는다. 다만 ㉠ 인정 범위에서 「-기 때문이다」가 필수인지 정해져 있지 않아 채점 시비 소지가 있다. ㉠ 예시답의 「열을 식히다」도 조금 어색하다. 인정 기준과 예시를 명시하면 쓸 수 있다. | 52번 설명문 과제에 적합한 문항으로, 인과 단서와 예시답·인정 범위가 모두 적절하여 통과(pass)로 판정함."}
     },
     {
       "id": "w52-crowd",
@@ -111,7 +111,7 @@
         {"id": "b", "mark": "㉡", "model": "다른 사람의 선택만 따르지 말고 스스로 꼼꼼히 따져 봐야 한다", "accept": "다른 사람의 선택을 무조건 따르지 말아야 한다는 내용이나, 스스로 정보를 확인하고(따져 보고) 결정해야 한다는 내용이면 된다. 앞 문장 「늘 좋은 것은 아니다」와 이어져야 한다."}
       ],
       "watch": "㉠을 「맛있기 때문이에요」처럼 「-아요」로 끝낸다. 「-는 것은」과 호응하지 않는 「맛있다」만 쓴다.",
-      "review": {"status": "draft"}
+      "review": {"status":"held","at":"2026-10-20T21:59:25.314Z","report":"experiences/topik-items/review/reports/writing-68e2d27.md","by":[{"stage":"claude","model":"claude-opus-5-5","rubric":"topik-review-writing-r1","verdict":"fix"},{"stage":"argon","model":"gemini-4-argon-high","rubric":"topik-review-writing-r1","verdict":"pass"}],"notes":"과제 꼴, 예시답, 급, 자연스러움 모두 양호한 52번형 문항이다. 다만 인정 범위의 맺음 조건이 좁아 '-기 위해서이다', '-기 때문일 것이다', '-는 것이 좋다' 같은 바른 답이 떨어질 수 있다. ㉡의 글말체 조건도 빠져 있으므로 accept 문구를 보완한 뒤 쓰면 된다. | 동조 심리와 합리적 의사결정을 주제로 한 52번 문항으로, 인과(㉠)와 역접 후 당위적 결론(㉡) 구조가 명확하여 예시답과 인정 범위 모두 적절함."}
     },
     {
       "id": "w52-card",
@@ -132,7 +132,7 @@
         {"id": "b", "mark": "㉡", "model": "카드보다 현금을 쓰는 것이 좋다", "accept": "현금을 쓰거나 쓴 돈을 바로 확인·기록하는 것처럼 돈을 쓴다는 느낌을 되살리는 방법이면 된다."}
       ],
       "watch": "「현금을 쓰세요」처럼 명령·「-아요」로 끝낸다. 설명문이라 「-다」체로 맺는다.",
-      "review": {"status": "draft"}
+      "review": {"status":"held","at":"2026-10-20T21:59:25.314Z","report":"experiences/topik-items/review/reports/writing-68e2d27.md","by":[{"stage":"claude","model":"claude-opus-5-5","rubric":"topik-review-writing-r1","verdict":"fix"},{"stage":"argon","model":"gemini-4-argon-high","rubric":"topik-review-writing-r1","verdict":"pass"}],"notes":"52번형으로 구조와 예시답은 바르다. 다만 ㉡ 인정 범위에 「카드 사용 줄이기」와 맺음 꼴을 명시해야 하고, 오해를 부르는 watch 문장을 고쳐야 내보낼 수 있다. | 현금과 카드 사용 시의 소비 심리를 비교한 52번 문항으로, 대조(㉠)와 해결 방법 제시(㉡)의 흐름이 분명하고 채점 기준이 적절함."}
     },
     {
       "id": "w53-resale",
@@ -168,7 +168,7 @@
       "check": "1,200 ÷ 300 = 4이므로 「네 배」가 맞다. 2020년부터 2024년까지 4년.",
       "points_to_cover": ["세 해의 이용자 수 변화", "늘어난 이유 두 가지", "2026년 전망"],
       "watch": "자료에 없는 원인(예: 환경 보호)을 더한다. 「네 배」를 「세 배」로 잘못 계산한다. 첫 줄에 제목을 쓴다.",
-      "review": {"status": "draft"}
+      "review": {"status":"passed","at":"2026-10-20T21:59:25.314Z","report":"experiences/topik-items/review/reports/writing-68e2d27.md","by":[{"stage":"claude","model":"claude-opus-5-5","rubric":"topik-review-writing-r1","verdict":"pass"},{"stage":"argon","model":"gemini-4-argon-high","rubric":"topik-review-writing-r1","verdict":"pass"}]}
     },
     {
       "id": "w53-study-ways",
@@ -202,7 +202,7 @@
       "check": "두 연령대의 합이 각각 100%(46+32+22, 53+29+18)다. 고를 수 있는 방법은 셋이라 동률이 없다.",
       "points_to_cover": ["조사 기관·대상 소개", "20~30대의 첫째·둘째 방법", "40대 이상의 첫째·둘째 방법(앱이 둘째)", "나이에 따른 차이 정리"],
       "watch": "두 연령대를 나란히 비교하지 않고 숫자만 늘어놓는다. 「46% 정도이다」처럼 자료의 숫자를 흐린다. 40대 이상에서 둘째인 앱(29%)을 가장 낮은 것처럼 쓴다. 자료에 없는 이유(예: 젊은 사람은 바쁘다)를 만든다.",
-      "review": {"status": "draft"}
+      "review": {"status":"passed","at":"2026-10-20T21:59:25.314Z","report":"experiences/topik-items/review/reports/writing-68e2d27.md","by":[{"stage":"claude","model":"claude-opus-5-5","rubric":"topik-review-writing-r1","verdict":"pass"},{"stage":"argon","model":"gemini-4-argon-high","rubric":"topik-review-writing-r1","verdict":"pass"}]}
     },
     {
       "id": "w54-translation",
@@ -227,7 +227,7 @@
       "modelLength": 645,
       "points_to_cover": ["번역 기술이 있어도 외국어를 배울 이유", "배울 때 어려운 점", "잘 배우기 위한 노력", "서론에서 주제를 자기 말로 소개, 결론이 앞과 이어짐"],
       "watch": "질문 셋 가운데 하나를 빠뜨린다. 서론에 문제의 문장을 거의 그대로 옮긴다. 「나는 ~라고 생각한다」만 되풀이하고 근거가 없다.",
-      "review": {"status": "draft"}
+      "review": {"status":"held","at":"2026-10-20T21:59:25.314Z","report":"experiences/topik-items/review/reports/writing-68e2d27.md","by":[{"stage":"claude","model":"claude-opus-5-5","rubric":"topik-review-writing-r1","verdict":"fix"},{"stage":"argon","model":"gemini-4-argon-high","rubric":"topik-review-writing-r1","verdict":"pass"}],"notes":"글자 수(645자)·문체·구성이 모두 바른 54번형 문항이다. 다만 질문 1이 '배워야 하는 이유'로 찬성을 전제해 한쪽 답을 유도하고 채점 시비 소지가 있다. 질문 1과 다룰 점을 중립으로 고치면 쓸 수 있다. | 번역 기술 발달 시대의 외국어 학습 필요성을 다룬 54번 논술 문항으로, 형식·분량(줄바꿈 제외 645자)·문체·맞춤법이 모두 적절하여 통과(pass) 판정함."}
     },
     {
       "id": "w54-shared-rules",
@@ -252,7 +252,7 @@
       "modelLength": 679,
       "points_to_cover": ["함께 사는 곳에 규칙이 필요한 이유", "규칙 때문에 생기는 문제", "모두가 지킬 규칙을 만드는 방법", "서론에서 주제를 자기 말로 소개, 결론이 앞과 이어짐"],
       "watch": "규칙이 필요하다는 말만 되풀이하고 문제·방법을 빠뜨린다. 결론에서 새 주장을 꺼낸다. 「너무」·「진짜」 같은 말하는 낱말을 쓴다.",
-      "review": {"status": "draft"}
+      "review": {"status":"passed","at":"2026-10-20T21:59:25.314Z","report":"experiences/topik-items/review/reports/writing-68e2d27.md","by":[{"stage":"claude","model":"claude-opus-5-5","rubric":"topik-review-writing-r1","verdict":"pass"},{"stage":"argon","model":"gemini-4-argon-high","rubric":"topik-review-writing-r1","verdict":"pass"}]}
     }
   ]
 }

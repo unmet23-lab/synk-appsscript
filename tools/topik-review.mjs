@@ -337,18 +337,25 @@ export function applyToWriting(packet, merged, { at = new Date().toISOString(), 
   const changed = [];
   for (const rel of [...new Set(units.map(unit => unit.file))]) {
     const file = path.join(root, rel), data = readJson(file);
+    let text = fs.readFileSync(file, 'utf8');
     for (const unit of units.filter(u => u.file === rel)) {
       const item = data.items.find(x => x.id === unit.id), m = merged[unit.ref];
       if (!item || !m || m.outcome === 'incomplete') continue;
       const { review, ...view } = item;
-      if (sha(JSON.stringify({ ...view, existing: false, section: 'writing' })).slice(0, 16) !== unit.hash) continue; // 검수 뒤 바뀐 문항
+      if (sha(JSON.stringify(view)).slice(0, 16) !== unit.hash) continue; // 검수 뒤 바뀐 문항(지문은 writingUnits와 같은 셈)
       item.review = { status: m.outcome === 'pass' ? 'passed' : 'held', at, report: `experiences/topik-items/review/reports/${packet.name}.md`,
         by: [{ stage: 'claude', model: CLAUDE_MODEL, rubric: WRITING_RUBRIC_ID, verdict: m.claude.verdict }, { stage: 'argon', model: ARGON.label, rubric: WRITING_RUBRIC_ID, verdict: m.argon.verdict },
           ...(m.judge ? [{ stage: 'adjudication', model: CLAUDE_MODEL, rubric: WRITING_RUBRIC_ID, verdict: m.judge.verdict }] : [])],
         ...(m.outcome === 'pass' ? {} : { notes: [m.claude.notes, m.argon.notes, m.judge?.reason].filter(Boolean).join(' | ').slice(0, 600) }) };
+      // 쓰기 세션 파일의 서식(문항마다 한 줄 review)을 지키려고 그 문항의 review 줄만 바꾼다.
+      const idAt = text.indexOf(`"id": "${item.id}"`), reviewAt = idAt < 0 ? -1 : text.indexOf('"review": ', idAt);
+      if (reviewAt < 0) throw new Error(`${rel}: ${item.id}의 review 줄을 못 찾았다`);
+      const lineEnd = text.indexOf('\n', reviewAt), close = text.lastIndexOf('}', lineEnd < 0 ? text.length : lineEnd);
+      text = text.slice(0, reviewAt) + '"review": ' + JSON.stringify(item.review) + text.slice(close + 1);
       changed.push(item.id);
     }
-    writeJson(file, data);
+    JSON.parse(text);
+    fs.writeFileSync(file, text);
   }
   if (rebuild && changed.length && fs.existsSync(path.join(root, 'tools/build-world-writing-items.mjs'))) {
     execFileSync(process.execPath, [path.join(root, 'tools/build-world-writing-items.mjs'), '--write'], { cwd: root, stdio: 'inherit' });
