@@ -6,6 +6,7 @@ import { TOTAL } from './day1/time';
 import { CoverV7 } from './v7/Cover';
 import { V7Film } from './v7/Film';
 import { TOTAL as TOTAL7 } from './v7/time';
+import { V8Film } from './v8/Film';
 
 export const RemotionRoot: React.FC = () => (
   <>
@@ -15,6 +16,8 @@ export const RemotionRoot: React.FC = () => (
     {/* v7(10-20 밤, 유호님 피드백 — 시청자가 따라 할 구조판) */}
     <Composition id="v7" component={V7Film} durationInFrames={TOTAL7} fps={30} width={1080} height={1920} defaultProps={{ bgm: true }} />
     <Composition id="v7-cover" component={CoverV7} durationInFrames={1} fps={30} width={1080} height={1920} />
+    {/* v8(10-20 밤, 유호님 「완전 ai 같고 부자연스러워」 → 모션조사_20261020.md 규칙으로 움직임만 새로) */}
+    <Composition id="v8" component={V8Film} durationInFrames={TOTAL7} fps={30} width={1080} height={1920} defaultProps={{ bgm: true }} />
     {/* 표지(S22처럼 따로 짠 한 장): npx remotion still src/index.ts cover out/cover.png */}
     <Composition id="cover" component={Cover} durationInFrames={1} fps={30} width={1080} height={1920} />
   </>
