@@ -385,6 +385,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 보호 장치가 워크트리 세션의 공용 작업본 경로 Write·Edit를 막는다. `.gitignore` 대상인 `.tmp`도 같다. junction으로 잇는 길은 워크트리를 지울 때 공용 쪽까지 지울 수 있어 쓰지 않는다(위 항목).
 - 고침: 원본은 워크트리 `.tmp/<이름>-src/<폴더>/`에서 쓰고, 옮기기 스크립트로 공용 `.tmp/<폴더>/`에 옮긴다 — 공용 쪽에 새로 만들거나 지난번 옮긴 바이트 그대로인 파일만 바꾸고(남이 고친 파일이면 멈춤), 옮긴 해시를 장부에 남긴다. 도구가 만드는 산출물은 node 실행이 공용 쪽에 직접 쓴다. 보고에 이 방식을 밝힌다. 참고 사본: `.tmp/company-voice-on-release-20261020/voice-env/worktree-sync.reference.cjs`.
 - 다시 확인: 옮기기 미리 보기가 바뀐 파일만 `new`·`update`로 보이고, 공용 쪽 파일을 손으로 바꾼 뒤 다시 돌리면 `SHARED_FILE_CHANGED_BY_SOMEONE_ELSE`로 멈춘다(10-20).
+- 10-20 덧붙임(이어받은 세션, Claude): 다른 워크트리에서 이어받아 참고 사본(`voice-env/worktree-sync.reference.cjs`·`sync-ledger.reference.json`)으로 옮기면, 참고 장부가 앞 세션의 마지막 옮기기보다 낡아 아무도 안 고친 README에서 `SHARED_FILE_CHANGED_BY_SOMEONE_ELSE`가 났다(장부 `46f8f52a…`, 공용 판 `7da881e9…`). 공용 파일을 사본으로 떠 온 직후 미리 보기에서 그 파일이 `same`이면 그 사본이 지금 공용 판이다 — 그때 해시를 적어 두고, 고친 뒤 멈추면 공용 파일이 그 해시 그대로인지 다시 본 다음 장부의 그 줄만 그 해시로 맞추고 옮긴다. 공용 해시가 달라졌으면 남이 고친 것이니 맞추지 않고 3방향으로 합친다.
 
 ### 로컬 master에서 뜬 앱 워크트리를 가지 맞추기로 origin에 맞추면 충돌한다 (2026-10-20 Claude)
 - 증상: 10-20 다른 세션이 띄운 워크트리(가지 `claude/optimistic-haslett-0421e3`)에서 `sync_with_base_branch`가 origin/master를 합치다 `AGENTS.md` 등 6파일 충돌로 멈췄다. 그 가지에는 내 커밋이 없었다.
