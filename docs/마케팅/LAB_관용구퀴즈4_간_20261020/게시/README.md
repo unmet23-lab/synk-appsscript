@@ -1,13 +1,13 @@
 # 관용구 퀴즈 #4 「간」 편 · 올릴 묶음(10-20)
 
-이 세션은 게시(올리기·예약·공개)를 하지 않는다. 조율 세션이 유호님 「올려」를 받은 뒤 한 곳씩 올린다. 글 정본은 [문안.json](문안.json), 화면 글 정본은 `../remotion/src/film/data.ts`·`../remotion/src/kids/i18n.ts`·`../remotion/src/kids/locales.ts`이고, 판별 글은 `node ../remotion/게시묶음_q4.mjs`로 다시 만든다. 영상(*.mp4)은 git 밖이다.
+예약 큐용 판·계정 키·시각은 [준비.json](준비.json)에 있다. 이 세션은 게시(올리기·예약·공개)를 하지 않는다. 조율 세션이 유호님 「올려」를 받은 뒤 한 곳씩 올린다. 글 정본은 [문안.json](문안.json), 화면 글 정본은 `../remotion/src/film/data.ts`·`../remotion/src/kids/i18n.ts`·`../remotion/src/kids/locales.ts`이고, 판별 글은 `node ../remotion/게시묶음_q4.mjs`로 다시 만든다. 영상(*.mp4)은 git 밖이다.
 
 | 폴더 | 계정 | 영상 | 글 | 게시 시각 제안(KST) |
 |---|---|---|---|---|
 | `01-youtube-en/` | YouTube @synkkorean 쇼츠 | `video.mp4` 36.0초 · 표지 `cover.png`(1.3초) · 휴대폰 미리 보기용 `upload_10MB.mp4` | `제목.txt` · `게시문안.txt`(제목·설명·고정 댓글) · `원고.json`(`tools/sns-발행.js`용) | 오늘 22:00(뉴욕 09:00 · 런던 14:00) |
 | `02-mn/` | 인스타 @synk.mn · 페북 SYNK(synkworld), Business Suite 릴스 하나로 교차 게시 | `video.mp4` 36.0초 · `cover.png` · `upload_10MB.mp4`(9.26MB) | `캡션_mn.txt` · `첫댓글_mn.txt`(학습 허브, 선택) · `원고.json` | 준비되는 대로 오늘 21:45(울란바토르 20:45). 몽골 저녁 20시는 이미 지나 가장 이른 시각으로 |
-| `03-xiaohongshu-cn/` | 샤오훙수 SYNK LAB | `video.mp4` · `cover.png` | `게시문안.txt`(제목 20자 안) | 오늘 22:00(베이징 21:00) |
-| `04-tiktok-mm/` | 틱톡 @synklab.mm | `video.mp4` · `cover.png` | `게시문안.txt` | 오늘 22:30(양곤 20:00) |
+| `03-xiaohongshu-cn/` | 샤오훙수 SYNK LAB | `video.mp4` 36.0초 · `cover.png` · `upload_10MB.mp4` | `게시문안.txt`(제목 20자 안) | 오늘 22:00(베이징 21:00) |
+| `04-tiktok-mm/` | 틱톡 @synklab.mm | `video.mp4` 36.0초 · `cover.png` · `upload_10MB.mp4` | `게시문안.txt` | 오늘 22:30(양곤 20:00) |
 
 ## 판마다 같은 설정
 
