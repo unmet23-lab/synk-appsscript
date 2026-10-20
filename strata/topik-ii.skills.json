@@ -1,0 +1,21 @@
+{
+  "version": "topik-ii-practice-1",
+  "note": "Authored practice taxonomy for TOPIK II (grades 3-6), 2026-10-20. Abilities, not exam item types: strata/topik-types.json maps each official type to these. Difficulty 1-3 means language complexity within TOPIK II items (writer's guide: 1 near grade 3, 2 near grade 4, 3 grades 5-6), never a learner's grade. No calibrated mastery or score conversion.",
+  "skills": [
+    ["ko2.listening.response", "listening", "듣고 알맞게 대답하기"],
+    ["ko2.listening.detail", "listening", "듣고 세부 내용 파악하기"],
+    ["ko2.listening.main", "listening", "듣고 중심 생각 파악하기"],
+    ["ko2.listening.inference", "listening", "듣고 상황 짐작하기"],
+    ["ko2.listening.attitude", "listening", "듣고 의도·태도 파악하기"],
+    ["ko2.reading.grammar", "reading", "문법 표현 읽기"],
+    ["ko2.reading.vocabulary", "reading", "어휘·관용 표현 읽기"],
+    ["ko2.reading.detail", "reading", "읽고 세부 내용 파악하기"],
+    ["ko2.reading.main", "reading", "읽고 중심 내용 파악하기"],
+    ["ko2.reading.context", "reading", "문맥으로 내용 짐작하기"],
+    ["ko2.reading.structure", "reading", "글의 흐름 파악하기"],
+    ["ko2.reading.attitude", "reading", "필자·인물의 태도와 심정 파악하기"],
+    ["ko2.writing.sentence", "writing", "문맥에 맞는 문장 쓰기"],
+    ["ko2.writing.description", "writing", "자료를 설명하는 글 쓰기"],
+    ["ko2.writing.argument", "writing", "주장하는 글 쓰기"]
+  ]
+}

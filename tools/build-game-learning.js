@@ -48,6 +48,17 @@ function output(destination, content) {
   console.log(`${check ? 'verified' : same ? 'unchanged' : 'built'} ${path.relative(root, destination)}`);
 }
 output(path.join(root, 'strata/maps/topik-i.json'), JSON.stringify(map, null, 2) + '\n');
+// TOPIK II (grades 3-6) is its own map: abilities only for now. Its ids (ko2.<domain>.<name>) never mix
+// with TOPIK I evidence, and games do not bundle it — WORLD's exam plan and the item bank read it directly.
+const taxonomy2 = read('strata/topik-ii.skills.json');
+const ref2 = { source: 'practice-taxonomy', selector: 'skills' };
+const map2 = { map_ver: `${taxonomy2.json.version}-${taxonomy2.sha.slice(0, 12)}`, subject: 'ko',
+  sources: { 'practice-taxonomy': { path: taxonomy2.rel, sha256: taxonomy2.sha } },
+  nodes: taxonomy2.json.skills.map(([id, domain, label_ko]) => ({ id, kind: 'skill', label_ko, domain, level: null,
+    difficulty: { authored: null, measured: null, n: 0 }, source_refs: [ref2] })),
+  edges: [], tag_vocabulary: [], links: { tags: [], goals: [] } };
+validateMap(map2);
+output(path.join(root, 'strata/maps/topik-ii.json'), JSON.stringify(map2, null, 2) + '\n');
 const esbuild = require(require.resolve('esbuild', { paths: [root, path.join(root, '영상')] }));
 const bundled = esbuild.buildSync({ absWorkingDir: root, entryPoints: ['atlas/game-browser.js'], bundle: true,
   write: false, platform: 'browser', format: 'iife', globalName: 'SynkLearning', target: ['es2022'], charset: 'utf8',

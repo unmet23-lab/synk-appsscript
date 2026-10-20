@@ -6,7 +6,9 @@ const SKILLS = [
   ['detail','detail','detail','detail','detail'],
   ['detail','detail','detail','detail','detail'],
   ['grammar','grammar','grammar','grammar','grammar'],
-  ['reason','main','vocabulary','sequence','reason'],
+  // c04 「두 문장을 이어요」: 그래서·하지만·또는·그리고 빈칸 — 앞뒤 문장의 관계를 읽는 이음말이라 조사·문형 읽기다
+  // (TOPIK I 읽기 55번형, strata/topik-types.json TI-R-55). 2026-10-20까지 이유·핵심·순서로 잘못 기록했다(WORLD 검수 #11).
+  ['grammar','grammar','grammar','grammar','grammar'],
   ['detail','detail','detail','detail','detail'],
   ['detail','detail','negation','detail','detail'],
   ['detail','negation','main','detail','detail'],

@@ -1,0 +1,288 @@
+{
+  "map_ver": "topik-ii-practice-1-47d0a0c19158",
+  "subject": "ko",
+  "sources": {
+    "practice-taxonomy": {
+      "path": "strata/topik-ii.skills.json",
+      "sha256": "47d0a0c1915834979d4eb07420214da084987699ae2e4c59057b1de4cfb1da8d"
+    }
+  },
+  "nodes": [
+    {
+      "id": "ko2.listening.response",
+      "kind": "skill",
+      "label_ko": "듣고 알맞게 대답하기",
+      "domain": "listening",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.listening.detail",
+      "kind": "skill",
+      "label_ko": "듣고 세부 내용 파악하기",
+      "domain": "listening",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.listening.main",
+      "kind": "skill",
+      "label_ko": "듣고 중심 생각 파악하기",
+      "domain": "listening",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.listening.inference",
+      "kind": "skill",
+      "label_ko": "듣고 상황 짐작하기",
+      "domain": "listening",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.listening.attitude",
+      "kind": "skill",
+      "label_ko": "듣고 의도·태도 파악하기",
+      "domain": "listening",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.reading.grammar",
+      "kind": "skill",
+      "label_ko": "문법 표현 읽기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.reading.vocabulary",
+      "kind": "skill",
+      "label_ko": "어휘·관용 표현 읽기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.reading.detail",
+      "kind": "skill",
+      "label_ko": "읽고 세부 내용 파악하기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.reading.main",
+      "kind": "skill",
+      "label_ko": "읽고 중심 내용 파악하기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.reading.context",
+      "kind": "skill",
+      "label_ko": "문맥으로 내용 짐작하기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.reading.structure",
+      "kind": "skill",
+      "label_ko": "글의 흐름 파악하기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.reading.attitude",
+      "kind": "skill",
+      "label_ko": "필자·인물의 태도와 심정 파악하기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.writing.sentence",
+      "kind": "skill",
+      "label_ko": "문맥에 맞는 문장 쓰기",
+      "domain": "writing",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.writing.description",
+      "kind": "skill",
+      "label_ko": "자료를 설명하는 글 쓰기",
+      "domain": "writing",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.writing.argument",
+      "kind": "skill",
+      "label_ko": "주장하는 글 쓰기",
+      "domain": "writing",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    }
+  ],
+  "edges": [],
+  "tag_vocabulary": [],
+  "links": {
+    "tags": [],
+    "goals": []
+  }
+}
