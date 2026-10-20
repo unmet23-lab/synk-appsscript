@@ -124,7 +124,9 @@ export async function prepare(name, { newFiles = null, existingSources = null, s
   let chosen = units;
   if (sample && units.length > sample) chosen = seededPick(units, sample, name);
   chosen.forEach((unit, index) => { unit.ref = `u${String(index + 1).padStart(3, '0')}`; });
-  const packet = { name, createdAt: new Date().toISOString(), rubric: { id: RUBRIC_ID, sha: rubric.sha }, units: chosen };
+  const writing = chosen.some(unit => unit.kind === 'writing') ? rubricText('writing') : null;
+  const packet = { name, createdAt: new Date().toISOString(), rubric: writing && chosen.every(unit => unit.kind === 'writing') ? { id: writing.id, sha: writing.sha }
+    : { id: RUBRIC_ID, sha: rubric.sha, ...(writing ? { writing: { id: writing.id, sha: writing.sha } } : {}) }, units: chosen };
   writeJson(path.join(dir, 'packet.json'), packet);
   return packet;
 }
