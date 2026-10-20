@@ -2,7 +2,7 @@
   "version": "topik2-writing-practice-1",
   "note": "공개 WORLD의 TOPIK II 쓰기 51~54 연습 문항. 공식 PBT 형식을 따른 자체 창작이며 공식 기출을 옮기지 않았다. 자료의 기관·숫자는 모두 가상이다. 예시답은 좋은 답의 한 예이고 정답 하나가 아니다. 글자 수는 NFC 정규화 뒤 공백·문장부호를 넣고 줄바꿈을 뺀 Unicode 문자 수다(원고지 칸 수와 다를 수 있다). review.status가 passed인 문항만 화면에 나온다.",
   "basis": "PBT",
-  "contentHash": "912ab9dee14c7d80",
+  "contentHash": "942f8862c9feab83",
   "items": [
     {
       "id": "w51-recycle",
@@ -24,7 +24,7 @@
         {"id": "b", "mark": "㉡", "model": "수거하지 않습니다", "accept": "그날은 가져가지 않는다는 내용(수거하지 않는다, 수거해 가지 않는다, 가져가지 않는다, 수거되지 않는다, 치우지 않는다)이면 된다. 뒤 문장 「다음 수거일까지 집에 보관해」와 이어져야 한다. 안내문이라 「-습니다」로 맺고, 「수거하지 않아요」처럼 「-아요」로 쓰면 뜻이 맞아도 「조금 고쳐 봐요」로 본다."}
       ],
       "watch": "「내놓으세요」처럼 「-아요」로 끝내 안내문의 「-습니다」 문체와 섞인다. 뒤 문장의 「보관해 주시기 바랍니다」까지 빈칸에 옮겨 쓴다.",
-      "review": {"status":"held","at":"2026-10-20T22:24:00.490Z","report":"experiences/topik-items/review/reports/writing-e929334.md","by":[{"stage":"claude","model":"claude-opus-5-5","rubric":"topik-review-writing-r1","verdict":"pass"},{"stage":"argon","model":"gemini-4-argon-high","rubric":"topik-review-writing-r1","verdict":"fix"}],"notes":"51번 실용문 꼴과 문체, 인정 범위가 모두 적절하다. 다른 바른 답도 의미 기준 인정 범위에 든다. 시간 표현에 사소한 다듬기 여지만 있어 통과로 판정한다. | ㉠ 예시답의 「수요일」이 본문에 전혀 나오지 않아 문맥으로 추론할 수 없고 안내문에서도 바뀐 요일이 빠지게 되므로, 본문에 요일을 명시하거나 예시답을 횟수 중심으로 수정해야 하며 ㉡ 인정 범위에 문체 기준을 보완해야 한다."}
+      "review": {"status":"passed","at":"2026-10-20T23:17:00.700Z","report":"experiences/topik-items/review/reports/writing-d97fd97.md","by":[{"stage":"claude","model":"claude-opus-5-5","rubric":"topik-review-writing-r2","verdict":"pass"},{"stage":"argon","model":"gemini-4-argon-high","rubric":"topik-review-writing-r2","verdict":"pass"}]}
     },
     {
       "id": "w51-study",
@@ -46,7 +46,7 @@
         {"id": "b", "mark": "㉡", "model": "몇 명이 오는지 미리 알아야 해요", "accept": "올 사람의 수나 참석 여부를 미리 알아야(확인해야) 한다는 내용, 또는 인원에 맞춰 미리 예약해야 한다는 내용이면 된다. 「올 사람은 미리 알려 주세요」처럼 참석을 확인하는 부탁도 뒤 문장 「못 오는 사람은 … 알려 주세요」와 이어지므로 된다. ㉠처럼 해요체로 맺고, 「-습니다」로 쓰면 내용은 인정하지만 「조금 고쳐 봐요」로 본다."}
       ],
       "watch": "친구들에게 보내는 글인데 「알아야 합니다」처럼 「-습니다」로 쓴다. 내용은 맞아도 글의 다른 문장처럼 「-아요」로 고쳐야 한다.",
-      "review": {"status":"held","at":"2026-10-20T22:24:00.490Z","report":"experiences/topik-items/review/reports/writing-e929334.md","by":[{"stage":"claude","model":"claude-opus-5-5","rubric":"topik-review-writing-r1","verdict":"fix"},{"stage":"argon","model":"gemini-4-argon-high","rubric":"topik-review-writing-r1","verdict":"fix"}],"notes":"문맥·예시답·인정 범위는 탄탄한 51번 해요체 실용문이다. 고칠 점은 두 가지다. 하나는 「세미나실은 … 준비해 주기 때문에」의 약간 어색한 주어이고, 다른 하나는 「-습니다」 답을 감점으로 볼지 오답으로 볼지 불분명한 채점 기준이다. 이 둘을 고치면 쓸 수 있다. | 본문과 예시답이 「-아요」체로 작성되어 있고 인정 범위에서 51번의 대표 격식 높임체(「-습니다」)를 오답 처리하고 있어 채점 시비 위험이 있으므로, 본문·예시답을 「-습니다」체로 통일하거나 「-습니다」체도 정답으로 인정하도록 수정해야 한다."}
+      "review": {"status":"held","at":"2026-10-20T23:17:00.700Z","report":"experiences/topik-items/review/reports/writing-d97fd97.md","by":[{"stage":"claude","model":"claude-opus-5-5","rubric":"topik-review-writing-r2","verdict":"fix"},{"stage":"argon","model":"gemini-4-argon-high","rubric":"topik-review-writing-r2","verdict":"pass"},{"stage":"adjudication","model":"claude-opus-5-5","rubric":"topik-review-writing-r2","verdict":"fix"}],"notes":"글·예시답·문체 처리는 좋다. 다만 ㉡ 인정 범위가 「-기 때문에」 뒤의 명령형 「올 사람은 미리 알려 주세요」를 받아 문법 오류를 통과시킨다. 이 부분을 빼고 watch에 경고를 더하면 쓸 수 있다. | 스터디 장소 변경과 사전 인원 확인을 안내하는 51번 해요체 실용문 문항으로, 지문 구성과 예시답, 인정 범위가 모두 적절하여 통과(pass) 판정함. | 검수자 A의 지적이 맞다. ㉡ 앞이 「-기 때문에」인데, 이 연결 어미 뒤에는 명령·청유가 올 수 없다(한국어 교육 문법의 기본 제약, 이 경우는 「-니까」를 써야 함). 그런데 현재 인정 범위는 「올 사람은 미리 알려 주세요」 같은 명령형 부탁을 바른 답으로 받는다. 그대로 나가면 문법 오류를 정답으로 가르치게 되고, 채점 기준도 흔들린다. 그 밖의 항목은 문제가 없다. 지문은 해요체 실용문으로 자연스럽고, 예시답 「문을 열지 않는대요」·「몇 명이 오는지 미리 알아야 해요」는 앞뒤 문맥과 문체에 맞는다. 「-습니다」 답을 다루는 방법도 인정 범위와 흔한 실수(watch)에 분명히 적혀 있다. 두 검수자가 낸 다른 답(카페를 쓸 수 없게 됐어요, 영업을 안 한대요, 이용할 수 없어요, 참석 인원을 미리 "}
     },
     {
       "id": "w51-repair",
@@ -111,7 +111,7 @@
         {"id": "b", "mark": "㉡", "model": "다른 사람의 선택만 따르지 말고 스스로 꼼꼼히 따져 봐야 한다", "accept": "다른 사람의 선택을 무조건 따르지 말아야 한다는 내용이나, 스스로 정보를 확인하고(따져 보고) 결정해야 한다는 내용이면 된다. 앞 문장 「늘 좋은 것은 아니다」와 이어져야 한다. 설명문이라 「-아야/-어야 한다」·「-는 것이 좋다」처럼 「-다」체로 맺는다."}
       ],
       "watch": "㉠을 「맛있기 때문이에요」처럼 「-아요」로 끝낸다(「맛있기 때문이다」로 고친다). 「-는 것은」과 호응하지 않게 「맛있다」·「맛있다고 생각한다」로만 끝낸다.",
-      "review": {"status":"held","at":"2026-10-20T22:24:00.490Z","report":"experiences/topik-items/review/reports/writing-e929334.md","by":[{"stage":"claude","model":"claude-opus-5-5","rubric":"topik-review-writing-r1","verdict":"fix"},{"stage":"argon","model":"gemini-4-argon-high","rubric":"topik-review-writing-r1","verdict":"pass"}],"notes":"과제 꼴, 예시답, 인정 범위가 대체로 잘 갖춰진 52번 문항이다. ㉠의 단정형 이유(「맛있기 때문이다」) 인정 여부를 accept와 watch에 밝혀 채점 흔들림만 막으면 쓸 수 있다. | 손님이 많은 식당을 고르는 심리와 주체적 판단의 필요성을 다룬 52번 문항으로, 문법적 호응 기준과 인정 범위가 명확하여 통과(pass) 판정함."}
+      "review": {"status":"passed","at":"2026-10-20T23:17:00.700Z","report":"experiences/topik-items/review/reports/writing-d97fd97.md","by":[{"stage":"claude","model":"claude-opus-5-5","rubric":"topik-review-writing-r2","verdict":"pass"},{"stage":"argon","model":"gemini-4-argon-high","rubric":"topik-review-writing-r2","verdict":"pass"}]}
     },
     {
       "id": "w52-card",
@@ -227,7 +227,7 @@
       "modelLength": 657,
       "points_to_cover": ["번역 기술이 발달하면서 달라진 외국어 공부에 대한 생각", "외국어를 배울 필요가 있는지에 대한 자기 입장과 이유(필요하다·필요하지 않다 어느 쪽이든 근거가 타당하면 된다)", "번역 기술을 바르게 활용하기 위한 노력", "서론에서 주제를 자기 말로 소개, 결론이 앞과 이어짐"],
       "watch": "질문 셋 가운데 하나를 빠뜨린다. 외국어를 배울 필요가 있는지 자기 입장을 밝히지 않는다(필요하다·필요하지 않다 어느 쪽이든 된다). 서론에 문제의 문장을 거의 그대로 옮긴다. 「나는 ~라고 생각한다」만 되풀이하고 근거가 없다.",
-      "review": {"status":"held","at":"2026-10-20T22:24:00.490Z","report":"experiences/topik-items/review/reports/writing-e929334.md","by":[{"stage":"claude","model":"claude-opus-5-5","rubric":"topik-review-writing-r1","verdict":"pass"},{"stage":"argon","model":"gemini-4-argon-high","rubric":"topik-review-writing-r1","verdict":"fix"}],"notes":"54번 형식, 분량(645자 확인), 질문 셋을 다룬 정도, 문체와 맞춤법이 모두 바릅니다. 공식 시험 문항과 뼈대가 같은 문항도 찾지 못해 통과합니다. 필요 없다는 입장을 인정한다는 채점 메모와 예시 글 한 구절 다듬기는 선택 사항입니다. | 54번 논제인 '번역 기술과 외국어 학습'에서 질문 1은 필요 여부(찬반)를 묻고 질문 2·3은 일반적인 외국어 공부의 어려움과 노력을 물어, 한쪽 입장을 강요하고 54번 논제 맥락에서 이탈하는 문제가 있다. 또한 prompt 말미의 '쓰라.'가 어색하므로 질문 셋과 예시 답안을 번역 기술 시대의 외국어 학습 논제에 맞게 일관되게 수정해야 한다."}
+      "review": {"status":"passed","at":"2026-10-20T23:17:00.700Z","report":"experiences/topik-items/review/reports/writing-d97fd97.md","by":[{"stage":"claude","model":"claude-opus-5-5","rubric":"topik-review-writing-r2","verdict":"pass"},{"stage":"argon","model":"gemini-4-argon-high","rubric":"topik-review-writing-r2","verdict":"pass"}]}
     },
     {
       "id": "w54-shared-rules",
