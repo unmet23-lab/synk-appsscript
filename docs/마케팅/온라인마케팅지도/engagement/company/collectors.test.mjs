@@ -94,7 +94,7 @@ test('YouTube configured cap and inaccessible videos are explicit partial covera
   assert.equal(result.channel.followers, null);
   assert.equal(result.channel.views, 0);
   assert.equal(playlistCalls, 1);
-  assert.ok(result.warnings.some(warning => warning.includes('수집 한도')));
+  assert.ok(result.warnings.some(warning => warning.includes('한 번에 모으는 한도')));
 });
 
 test('YouTube refuses mismatched owner OAuth before collecting any uploads', async () => {
@@ -443,7 +443,7 @@ test('an unprocessed or empty window report is empty, never zeros, and one rejec
 test('window reports need an owner Analytics grant: API keys, public readers and upload-only tokens make no request', async () => {
   for (const credentials of [{ apiKey: 'fixture' }, { accessToken: 'window-token', publicOnly: true }, { accessToken: 'window-token', scope: 'https://www.googleapis.com/auth/youtube.upload' }, { accessToken: 'window-token', scope: 'https://www.googleapis.com/auth/youtube.force-ssl' }]) {
     let calls = 0;
-    await assert.rejects(collectYoutubeWindows('https://youtube.com/@synk', credentials, { videos: windowVideos, fetchImpl: async () => { calls++; return ok({}); } }), error => error.code === 'AUTH_REQUIRED' && /Analytics/.test(error.message));
+    await assert.rejects(collectYoutubeWindows('https://youtube.com/@synk', credentials, { videos: windowVideos, fetchImpl: async () => { calls++; return ok({}); } }), error => error.code === 'AUTH_REQUIRED' && /YouTube 분석/.test(error.message));
     assert.equal(calls, 0);
   }
   await assert.rejects(collectYoutubeWindows('https://instagram.com/synk', { accessToken: 'window-token' }, { videos: windowVideos, fetchImpl: async () => ok({}) }), error => error.code === 'MANUAL_ONLY');

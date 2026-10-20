@@ -17,11 +17,11 @@ function fixture(){
 
 test('direct settings require account consent and opt-in without a Postiz credential form or a fabricated connection badge',()=>{
   const f=fixture(),html=f.run('snswSettings()');
-  assert.match(html,/Postiz 구독 없이/);
+  assert.match(html,/발행 서비스를 따로 쓰지 않고/);
   assert.match(html,/Instagram 사진·캐러셀·Reels/);
   assert.match(html,/Facebook 페이지 글·링크·사진/);
   assert.match(html,/YouTube MP4 동영상·쇼츠/);
-  assert.doesNotMatch(html,/name="apiKey"|name="baseUrl"|Postiz 연결 필요|Postiz 연결 확인됨/);
+  assert.doesNotMatch(html,/name="apiKey"|name="baseUrl"|발행 서비스 연결 전|발행 서비스 연결됨/);
   assert.match(f.run('snswAccounts()'),/자동 게시 꺼짐/);
   assert.match(f.run('snswDirectSettings()'),/켜진 계정 0개/);
   assert.doesNotMatch(f.run('snswHealthPanel()'),/연결 확인<\/span>|성공한 검사 시각 미확인/);
@@ -72,10 +72,10 @@ test('a channel-specific health check preserves the channel ID',async()=>{
 test('unknown direct publication hides the Postiz receipt form but keeps result actions and legacy mode',()=>{
   const f=fixture();f.run('socialWorkspaceState.data.posts=[{id:"p",title:"게시물",canPublish:true,variants:[]}];socialWorkspaceState.data.jobs=[{id:"j",postId:"p",channelId:"ig",status:"unknown"}]');
   const direct=f.run('snswJobCard(socialWorkspaceState.data.jobs[0])');
-  assert.doesNotMatch(direct,/Postiz 접수 ID|data-sw-form="provider-job"/);
+  assert.doesNotMatch(direct,/접수 번호|data-sw-form="provider-job"/);
   assert.match(direct,/결과 확인 필요/);
   f.run('socialWorkspaceState.data.provider={configured:true,integrations:[]}');
-  assert.match(f.run('snswJobCard(socialWorkspaceState.data.jobs[0])'),/Postiz 접수 ID/);
+  assert.match(f.run('snswJobCard(socialWorkspaceState.data.jobs[0])'),/접수 번호/);
 });
 
 test('publishing OAuth returns to account setup and clears only callback parameters',()=>{
@@ -101,6 +101,6 @@ test('the channel connection modal offers publishing permission separately from 
     vm.runInContext(modalSource+'\nconnectModal("ig");',context);
     assert.match(html,/channelId=ig&amp;publishing=1/);
     if(platform!=='youtube')assert.match(html,/channelId=ig&amp;comments=1/);
-    assert.match(html,/권한 동의만으로 예약 게시를 시작하지 않아요/);
+    assert.match(html,/권한만 연결해서는 예약 게시가 시작되지 않아요/);
   }
 });

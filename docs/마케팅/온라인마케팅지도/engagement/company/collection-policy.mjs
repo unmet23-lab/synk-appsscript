@@ -156,40 +156,40 @@ function healthItem(channel, ctx) {
     ownerIds: Array.isArray(channel.ownerIds) ? [...new Set(channel.ownerIds.filter(id => typeof id === 'string'))] : [],
   };
   const show = (status, label, reason, action = 'none') => ({ ...item, status, label, reason, action });
-  if (!active(channel)) return show('archived', '관리 중지', '채널 관리가 중지되어 자동 수집하지 않습니다.');
-  if (!supported(channel)) return show('unsupported', '자동 수집 미지원', '이 플랫폼은 현재 자동 수집 연결을 제공하지 않습니다.');
-  if (channel.collectionDisabled) return show('needs-connection', '연결 해제됨', '직접 연결을 해제한 채널입니다. 다시 연결해야 수집합니다.', 'connect');
+  if (!active(channel)) return show('archived', '보관됨', '보관한 채널이라 자동 수집하지 않아요.');
+  if (!supported(channel)) return show('unsupported', '자동 수집 안 됨', '이 플랫폼은 아직 자동 수집이 안 돼요.');
+  if (channel.collectionDisabled) return show('needs-connection', '연결 끊김', '연결을 끊은 채널이에요. 다시 연결해야 수집해요.', 'connect');
   const failed = currentFailure(channel);
-  if (failed && (channel.requiresReconnect || channel.failureKind === 'auth')) return show('needs-reconnect', '재연결 필요', '계정 또는 조회 권한을 확인하고 공식 로그인으로 다시 연결해 주세요.', 'connect');
-  if (!connected(channel)) return show('needs-connection', '연결 필요', '채널 주소가 등록되어 있습니다. 계정 조회 권한을 연결하면 실제 수집을 시작합니다.', 'connect');
-  if (BUSY.has(channel.status)) return show('collecting', '수집 진행 중', '현재 수집 대기 또는 실행 중입니다. 완료 결과를 기다려 주세요.', 'wait');
+  if (failed && (channel.requiresReconnect || channel.failureKind === 'auth')) return show('needs-reconnect', '다시 연결해야 함', '연결이 만료됐거나 권한이 모자라요. 「계정 연결」로 다시 연결해 주세요.', 'connect');
+  if (!connected(channel)) return show('needs-connection', '연결해야 함', '주소만 등록돼 있어요. 계정을 연결하면 수집을 시작해요.', 'connect');
+  if (BUSY.has(channel.status)) return show('collecting', '수집 중', '수집하고 있어요. 끝날 때까지 기다려 주세요.', 'wait');
 
   const collectedAt = timestamp(channel.lastCollectedAt);
   const collectedToday = collectedAt !== null && collectedAt <= ctx.time && kstDay(collectedAt) === ctx.day;
   if (!failed && collectedToday) {
     const partial = channel.status === 'partial' || channel.coverage?.status === 'partial' || channel.lastCollectionStatus === 'partial';
     return partial
-      ? show('partial', '오늘 일부 수집', '일부 콘텐츠나 지표가 제공되지 않았습니다. 채널별 수집 범위를 확인해 주세요.')
-      : show('success', '오늘 수집 완료', '오늘의 수집 기록이 저장되었습니다. 일부 플랫폼 지표는 반영 시점이 다를 수 있습니다.');
+      ? show('partial', '오늘 일부만 수집', '플랫폼이 일부 콘텐츠나 수치를 주지 않았어요. 채널 카드의 안내를 봐 주세요.')
+      : show('success', '오늘 수집 완료', '오늘 기록을 저장했어요. 플랫폼에 따라 늦게 반영되는 수치도 있어요.');
   }
   const retryAt = timestamp(channel.nextRetryAt);
   if (failed && retryAt !== null && ['transient', 'rate-limit'].includes(channel.failureKind)) {
-    if (!ctx.enabled) return show('paused', '자동 수집 꺼짐', '자동 수집을 켜면 예약된 재시도를 이어갑니다.', channel.failureKind === 'rate-limit' ? 'wait' : 'collect');
-    if (collectedToday) return show('failed', '추가 수집 실패', '오늘 저장된 기록은 남아 있습니다. 추가 수집 오류를 성장 감소로 해석하지 않습니다.', channel.failureKind === 'rate-limit' ? 'wait' : 'collect');
+    if (!ctx.enabled) return show('paused', '자동 수집 꺼짐', '자동 수집을 켜면 미뤄 둔 재시도를 이어 가요.', channel.failureKind === 'rate-limit' ? 'wait' : 'collect');
+    if (collectedToday) return show('failed', '추가 수집 실패', '오늘 저장한 기록은 남아 있어요. 이번 실패를 성장이 줄어든 것으로 보지 않아요.', channel.failureKind === 'rate-limit' ? 'wait' : 'collect');
     const reason = channel.failureKind === 'rate-limit'
-      ? '플랫폼 조회 한도로 최소 24시간 간격을 둡니다. 기록 누락은 성장 감소를 뜻하지 않습니다.'
-      : retryAt > ctx.time ? '일시적인 연결 오류로 자동 재시도를 기다립니다. 기록 누락은 성장 감소를 뜻하지 않습니다.' : '예약된 재시도 시각이 되었습니다. 다음 수집 점검에서 다시 요청합니다.';
-    return show('retry-scheduled', '재시도 예약', reason, 'wait');
+      ? '플랫폼 호출 한도에 걸려 적어도 24시간 뒤에 다시 해요. 빠진 기록은 성장이 줄었다는 뜻이 아니에요.'
+      : retryAt > ctx.time ? '잠깐 연결이 안 돼서 자동으로 다시 시도해요. 빠진 기록은 성장이 줄었다는 뜻이 아니에요.' : '다시 시도할 때가 됐어요. 다음 점검 때 수집해요.';
+    return show('retry-scheduled', '다시 시도 예정', reason, 'wait');
   }
   if (failed && (channel.failureKind === 'permanent' || (timestamp(channel.lastFailureAt) !== null && kstDay(timestamp(channel.lastFailureAt)) === ctx.day) || (timestamp(channel.lastAttemptAt) !== null && kstDay(timestamp(channel.lastAttemptAt)) === ctx.day) || channel.nextRetryAt)) {
     const reason = channel.failureKind === 'permanent'
-      ? '자동 재시도 대상이 아닌 오류입니다. 설정과 채널 상태를 확인한 뒤 다시 수집해 주세요.'
-      : '자동 재시도 한도가 끝났거나 예약을 확인할 수 없습니다. 미확인 기록을 성장 감소로 표시하지 않습니다.';
-    return show('failed', '수집 확인 필요', reason, channel.failureKind === 'rate-limit' ? 'wait' : 'collect');
+      ? '자동으로 다시 시도할 수 없는 오류예요. 연결과 채널 상태를 본 뒤 직접 수집해 주세요.'
+      : '자동 재시도가 끝났거나 다음 시도를 잡지 못했어요. 직접 수집해 주세요. 빠진 기록을 성장이 줄었다고 표시하지 않아요.';
+    return show('failed', '수집 실패', reason, channel.failureKind === 'rate-limit' ? 'wait' : 'collect');
   }
-  if (!ctx.enabled) return show('paused', '자동 수집 꺼짐', '자동 수집이 꺼져 있습니다. 필요할 때 직접 수집할 수 있습니다.', 'collect');
-  if (shouldCollect(channel, { at: ctx.at, enabled: ctx.enabled, hourKst: ctx.hourKst, connected: connected(channel) })) return show('overdue', '오늘 수집 대기', '예약 시각이 지났지만 오늘의 수집 기록이 없습니다. 다음 수집 점검에서 확인합니다.', 'collect');
-  return show('scheduled', '수집 시각 대기', '예약된 수집 시각을 기다립니다. 아직 수집하지 않은 기록은 미확인 상태입니다.', 'wait');
+  if (!ctx.enabled) return show('paused', '자동 수집 꺼짐', '자동 수집이 꺼져 있어요. 필요할 때 직접 수집해 주세요.', 'collect');
+  if (shouldCollect(channel, { at: ctx.at, enabled: ctx.enabled, hourKst: ctx.hourKst, connected: connected(channel) })) return show('overdue', '오늘 수집 전', '수집 시각이 지났는데 오늘 기록이 아직 없어요. 다음 점검 때 다시 봐요.', 'collect');
+  return show('scheduled', '수집 시각 전', '정해 둔 수집 시각을 기다리고 있어요. 그 전까지 오늘 수치는 비어 있어요.', 'wait');
 }
 
 /** Counts are disjoint result buckets; total/active/supported/connected are scopes. */

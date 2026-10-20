@@ -38,7 +38,7 @@ function generate(anchorDate){
     return {id,platform,displayName:labels[index],handle:`@demo_${index+1}`,canonicalUrl:`https://invalid.example/channels/${id}`,
       ownerIds:[person.id],owners:[{id:person.id,name:person.name}],teamId:person.teamId,teamName:person.teamName,active:true,
       connected:true,canEdit:false,canManageOwners:false,canConnect:false,status:index===5?'partial':'success',demo:true,
-      createdAt,lastCollectedAt:stamp(anchorDate),recentLastCollectedAt:stamp(anchorDate),warnings:['화면 확인용 가상 데이터입니다. 실제 플랫폼과 연결되지 않았습니다.'],
+      createdAt,lastCollectedAt:stamp(anchorDate),recentLastCollectedAt:stamp(anchorDate),warnings:['화면 확인용 가상 데이터예요. 실제 플랫폼과 연결되지 않았어요.'],
       coverage:{status:index===5?'partial':'complete'},connectionOwner:null,pendingHandoff:null};
   });
   const titles=[
@@ -170,7 +170,7 @@ export async function extendDemoHistory({directory}={}){
 export function createDemoService({directory}){
   const path=join(resolve(directory),filename);let cached,signature;
   function load(){
-    let info;try{info=statSync(path);}catch(error){if(error.code==='ENOENT')throw fail('아직 데모 데이터가 준비되지 않았습니다.',404);throw error;}
+    let info;try{info=statSync(path);}catch(error){if(error.code==='ENOENT')throw fail('아직 데모 데이터가 없어요.',404);throw error;}
     const next=info.mtimeMs+':'+info.size;
     if(!cached||signature!==next){cached=validate(JSON.parse(readFileSync(path,'utf8')));signature=next;}
     return cached;
@@ -212,7 +212,7 @@ export function createDemoService({directory}){
       const mine=selected.filter(channel=>channel.ownerIds.includes(person.id)),item=analyze(records(data,mine),catalog(mine),{start,end});
       return {id:person.id,name:person.name,active:true,teamId:person.teamId,channelCount:mine.length,metrics:item.metrics};
     });
-    return {...result,demo,groups:result.groups('channel'),memberGroups,memberGroupsBasis:'화면 비교를 위한 가상 크루의 담당 기록입니다.',overview:companyOverview(records(data,all),catalog(all),end),
+    return {...result,demo,groups:result.groups('channel'),memberGroups,memberGroupsBasis:'화면 비교용 가상 크루의 담당 기록이에요.',overview:companyOverview(records(data,all),catalog(all),end),
       scope:{...result.scope,ownerId,teamId:query.get('teamId')||(query.get('scope')==='team'?user.teamId:''),scope:query.get('scope')||'all'},
       definitions:{basis:'가상 누적값 차이 · 실제 성과 아님',missing:'—는 이 데모에서 미확인으로 설정한 값입니다.',history:'생성 시 고정된 예시이며 실제 플랫폼을 호출하지 않습니다.',members:'가상 크루별 담당 채널 집계입니다.'},
       _csv:()=> '\uFEFF"데이터 구분","가상 데이터 · 실제 성과 아님"\r\n'+analyticsCsv(result).replace(/^\uFEFF/,'')};

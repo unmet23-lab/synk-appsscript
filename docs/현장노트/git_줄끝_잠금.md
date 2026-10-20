@@ -73,6 +73,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 공용 문서를 쓰기 전후에 HEAD와 CR 개수를 견주고, 다르면 내용은 두고 줄끝만 HEAD 형식으로 되돌린다. 파이썬은 읽기·쓰기 모두 `newline=''`로 연다. 줄을 끼울 때는 `\n`으로 나누고 `\r`을 뗀 값으로 찾되, 넣는 줄은 이웃 줄의 `\r` 유무를 따른다. 남의 줄의 줄끝은 고치지 않는다.
 - 다시 확인: `tr -cd '\r' < <파일> | wc -c`와 `git show HEAD:<파일> | tr -cd '\r' | wc -c`가 같고, `git diff HEAD --stat -- <파일>`이 실제로 바꾼 줄 수와 같다.
 - 10-20 덧붙임(Claude): 워크트리(`core.autocrlf=false`)에서 Claude Edit 도구로 두 줄만 고친 LF 문서 `tools/company-messenger/API.md`가 통째로 CRLF가 돼 `git diff --stat`이 782줄이었다(Fable 검수가 짚음). 같은 파일 사본을 scratchpad에서 한 번·나란히 두 번 고쳐 봤지만 LF 그대로라 원인은 찾지 못했다. Edit 뒤에도 위 CR 개수 대조를 하고, 다르면 `tr -d '\r' < 파일 > 임시 && mv 임시 파일`(HEAD가 LF 전용일 때만)로 되돌린다. `tools/내커밋.js 커밋`은 줄끝을 바탕 판에 맞춰 올리지만, 다른 도구나 손으로 커밋하면 그대로 들어간다.
+- 10-21 덧붙임(Claude): 앱이 로컬 master에서 띄운 워크트리(`compassionate-sutherland-db3c5a`)는 `git ls-files --eol`에 `i/lf w/crlf`가 213개(따라가기 뒤에도 158개) 있었다. 그 워크트리의 `core.autocrlf`는 `false`(config.worktree)인데 시스템은 `true`라, 워크트리를 처음 풀 때 시스템 설정대로 CRLF로 쓰인 것으로 보인다(확인 안 함 — 따라가기로 새로 쓰인 파일은 LF였다). 크기·시각 캐시가 맞아 `git status`는 깨끗하다가 그 파일을 고치는 순간 `git diff --stat`이 통째로 잡힌다(회사 `server.mjs` 1,754줄·`social-workspace.js` 549줄). 고치기 전에 `git ls-files --eol -- <파일>`이 `w/crlf`면 내용은 두고 LF로 바꾼 뒤 고친다(`바로올리기.js`·`내커밋.js`는 바탕 판 줄끝으로 올리니 커밋은 괜찮다).
 
 ### CR 개수를 `grep -c $'\r'`로 세면 모든 줄이 나온다
 - 증상: LF뿐인 파일에서도 `grep -c $'\r' AGENTS.md`가 줄 수(21)를 그대로 낸다.

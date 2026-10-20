@@ -84,12 +84,12 @@ export function recordOwnershipChange(store, before, after, {actorId = null, at 
   const previous = ownership(before), next = ownership(after), effectiveAt = instant(at);
   if (before.id !== after.id) throw Object.assign(new Error('같은 채널의 담당 변경만 기록할 수 있습니다.'),{status:400});
   if (actorId !== null && (typeof actorId !== 'string' || !actorId.trim())) throw Object.assign(new Error('변경 담당자를 확인해 주세요.'),{status:400});
-  if (typeof reason !== 'string' || !reason.trim()) throw Object.assign(new Error('변경 사유를 입력해 주세요.'),{status:400});
+  if (typeof reason !== 'string' || !reason.trim()) throw Object.assign(new Error('바꾸는 이유를 적어 주세요.'),{status:400});
   if (sameOwnership(previous, next)) return null;
   const existing = channelEvents(store.all('ownershipEvents'), before.id), last = existing.at(-1);
   if (last) {
     if (Date.parse(effectiveAt) < Date.parse(last.effectiveAt)) throw Object.assign(new Error('마지막 담당 변경보다 이전 시각으로 변경할 수 없습니다.'),{status:400});
-    if (!sameOwnership(previous, {ownerIds:last.afterOwnerIds, teamId:last.afterTeamId ?? null})) throw Object.assign(new Error('담당 정보가 이미 변경됐습니다. 현재 정보를 다시 확인해 주세요.'),{status:400});
+    if (!sameOwnership(previous, {ownerIds:last.afterOwnerIds, teamId:last.afterTeamId ?? null})) throw Object.assign(new Error('그사이 담당자가 바뀌었어요. 새로고침한 뒤 다시 해 주세요.'),{status:400});
   } else seedOwnership(store, before, effectiveAt);
   const event = {id:randomUUID(), channelId:before.id,
     beforeOwnerIds:previous.ownerIds, afterOwnerIds:next.ownerIds, beforeTeamId:previous.teamId, afterTeamId:next.teamId,

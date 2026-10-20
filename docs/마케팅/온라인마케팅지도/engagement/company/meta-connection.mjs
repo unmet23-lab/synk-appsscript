@@ -109,7 +109,7 @@ export async function verifyMetaConnection({channel,credentials={},provider={},p
         if(media.data.length){const owned=await get(media.data[0].id,{fields:'id,owner'});if(owned.id!==media.data[0].id||owned.owner?.id!==identity.appScopedId)throw fail('META_MEDIA_OWNER_MISMATCH','게시물의 주인이 연결 계정과 달라요.',409);}
         capabilityVerification={method:'owned-media-read',testedAt:new Date(clock()).toISOString(),accountId:identity.id,appScopedId:identity.appScopedId,tokenSha256:digest(accessToken),mediaRead:true,commentsRead:false,replyPermissionInferred:false,replySendVerified:false};
       }else{
-      if(!Array.isArray(media.data)||!graphId(media.data[0]?.id))throw fail('META_COMMENT_PROOF_REQUIRED','계정은 확인했지만 댓글 권한을 확인할 게시물이 없어요. 댓글 권한 OAuth 연결로 연결해 주세요.',409);
+      if(!Array.isArray(media.data)||!graphId(media.data[0]?.id))throw fail('META_COMMENT_PROOF_REQUIRED','계정은 확인했지만 댓글 권한을 확인할 게시물이 없어요. 「계정 연결」 창의 「댓글 권한 연결」로 연결해 주세요.',409);
       const mediaId=media.data[0].id,owned=await get(mediaId,{fields:'id,owner'});
       if(owned.id!==mediaId||owned.owner?.id!==identity.appScopedId)throw fail('META_MEDIA_OWNER_MISMATCH','댓글 권한을 확인할 게시물의 주인이 실제 연결 계정과 달라요.',409);
       const comments=await get(mediaId+'/comments',{fields:'id',limit:1});

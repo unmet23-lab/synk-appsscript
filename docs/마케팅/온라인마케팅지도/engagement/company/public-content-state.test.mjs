@@ -174,7 +174,7 @@ test('benchmark dates use KST for instants while preserving date-only calendar v
     ['2026-09-27','2026.09.27'],['2024-02-29','2024.02.29'],
     ['2026-09-27T14:59:59Z','2026.09.27'],['2026-09-27T15:00:00Z','2026.09.28'],
     ['2026-12-31T15:00:00Z','2027.01.01'],['2026-09-27T00:00:00+14:00','2026.09.26'],
-    [null,'미확인'],['','미확인']
+    [null,'날짜 모름'],['','날짜 모름']
   ];
   for(const [value,expected] of cases){f.context.dateUnderTest=value;assert.equal(f.evaluate('bmDate(dateUnderTest)'),expected,String(value));}
 });

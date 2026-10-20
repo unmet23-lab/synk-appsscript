@@ -39,7 +39,7 @@ try{
  await page.locator('[data-action="metric-focus"][data-metric="views"]').click();assert.equal(await page.locator('[data-filter="platform"]').inputValue(),'','company metric clears stale analysis filters');
  await Promise.all([page.waitForResponse(r=>r.url().includes('/api/analytics')&&r.status()===200),page.locator('[data-filter="platform"]').selectOption('')]);
  await page.locator(`.row-date[data-date="${today()}"]:visible`).click();
- await page.getByRole('heading',{name:'콘텐츠별 상세',exact:true}).waitFor();
+ await page.getByRole('heading',{name:'콘텐츠별 수치',exact:true}).waitFor();
  assert.equal(await page.locator('.post-title:visible').count(),2);
  assert.match(await page.locator('.modal-body').innerText(),/\+40/);
  await mkdir(join(here,'verification'),{recursive:true});
@@ -48,7 +48,7 @@ try{
  for(const range of ['month','quarter','week']){await Promise.all([page.waitForResponse(r=>r.url().includes('/api/analytics')&&r.status()===200),page.locator(`[data-range="${range}"]`).click()]);}
  await page.locator('.nav-item[data-action="tab"][data-tab="overview"]').first().click();await page.locator('.metric-value').first().filter({hasText:'3,500'}).waitFor();
  assert.equal(await page.locator('.metric-card').count(),6);
- await page.locator('[data-chart-point]').last().focus();await page.keyboard.press('Enter');await page.getByRole('heading',{name:'콘텐츠별 상세',exact:true}).waitFor();assert.match(await page.locator('.modal-body').innerText(),/\+40/);await page.keyboard.press('Escape');
+ await page.locator('[data-chart-point]').last().focus();await page.keyboard.press('Enter');await page.getByRole('heading',{name:'콘텐츠별 수치',exact:true}).waitFor();assert.match(await page.locator('.modal-body').innerText(),/\+40/);await page.keyboard.press('Escape');
  await page.keyboard.press('Control+k');await page.locator('[data-command-search]').fill('검증용 유튜브');assert.equal(await page.locator('.command-item').count(),1);await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');await page.getByRole('heading',{name:'채널의 담당 이력',exact:true}).waitFor();await page.keyboard.press('Escape');
  await page.locator('.nav-item[data-action="tab"][data-tab="overview"]').first().click();await page.locator('.metric-value').first().filter({hasText:'3,500'}).waitFor();await page.locator('[data-action="platform-focus"][data-platform="youtube"]').click();assert.equal(await page.locator('[data-filter="platform"]').inputValue(),'youtube');
  await page.locator('.nav-item[data-action="tab"][data-tab="overview"]').first().click();await page.locator('.metric-value').first().filter({hasText:'3,500'}).waitFor();await page.getByRole('heading',{name:'우리 팀의 성장을 한눈에.',exact:true}).click();await page.evaluate(()=>window.scrollTo(0,0));
@@ -70,7 +70,7 @@ try{
  await staff.locator('[data-action="add-channel"]').first().click();await staff.locator('[name="urls"]').fill('https://youtube.com/@qastaff\nhttps://www.tiktok.com/@qastaff');await staff.locator('[data-form="add-channels"] button[type="submit"]').click();
  await staff.getByText('새 채널 2개 등록',{exact:false}).waitFor();
  await staff.locator('[data-action="registration-done"]').click();assert.equal(await staff.locator('.channel-card').count(),2);
- await staff.locator('[data-action="connect"]').first().click();await staff.getByText('관리자의 첫 연결 준비가 필요해요.',{exact:true}).waitFor();assert.equal(await staff.locator('[data-form="connection"]').count(),0);
+ await staff.locator('[data-action="connect"]').first().click();await staff.getByText('관리자가 먼저 연결을 준비해야 해요.',{exact:true}).waitFor();assert.equal(await staff.locator('[data-form="connection"]').count(),0);
  await page.reload();await page.locator('.nav-item[data-action="tab"][data-tab="members"]').click();
  await page.locator('[data-action="team-edit"]').first().click();await page.locator('[data-form="team"] [name="name"]').fill('검증 콘텐츠팀');await page.locator('[data-form="team"] button[type="submit"]').click();
  await page.locator('.team-card h3').filter({hasText:'검증 콘텐츠팀'}).waitFor();

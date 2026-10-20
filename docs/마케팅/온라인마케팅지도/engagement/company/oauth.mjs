@@ -34,7 +34,7 @@ export class OAuthError extends Error {
 
 function definition(platform) {
   const result = Object.hasOwn(DEFINITIONS, platform) ? DEFINITIONS[platform] : null;
-  if (!result) throw new OAuthError('unsupported_provider', '이 플랫폼의 계정 연결은 아직 지원하지 않습니다.');
+  if (!result) throw new OAuthError('unsupported_provider', '이 플랫폼은 아직 계정 연결이 안 돼요.');
   return result;
 }
 
@@ -71,7 +71,7 @@ function checkedRedirect(platform, value) {
   try { url = new URL(value); } catch { throw new OAuthError('invalid_redirect', '계정 연결 주소 설정을 확인해 주세요.'); }
   const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
   if (url.username || url.password || url.hash || (url.protocol !== 'https:' && !(url.protocol === 'http:' && loopback && !definition(platform).requiresHttps))) {
-    throw new OAuthError('https_required', '이 계정 연결에는 등록된 HTTPS 회사 주소가 필요합니다.');
+    throw new OAuthError('https_required', '계정을 연결하려면 회사 주소(https)가 먼저 등록돼 있어야 해요.');
   }
   return url.href;
 }
@@ -85,7 +85,7 @@ export function createAuthorization(platform, { clientId, redirectUri, state, ch
   // Requested scopes are still checked against the token response after OAuth.
   const requested=meta&&(comments||publishing)?[...(comments?commentScopes:[]),...(publishing?publishScopes:[])]:platform==='youtube'&&publishing?publishScopes:provider.scopes;
   const scopes=[...new Set([...requested,...(Array.isArray(existingGrantedScopes)?existingGrantedScopes.filter(scope=>allowed.has(scope)):[])])];
-  required(clientId, 'provider_not_configured', '관리자가 먼저 플랫폼 앱 연결을 설정해야 합니다.');
+  required(clientId, 'provider_not_configured', '관리자가 플랫폼 연결을 먼저 준비해야 해요.');
   required(state, 'invalid_state', '계정 연결 요청을 다시 시작해 주세요.');
   if (state.length < 16) throw new OAuthError('invalid_state', '계정 연결 요청을 다시 시작해 주세요.');
   const redirect = checkedRedirect(platform, redirectUri);
@@ -147,30 +147,30 @@ async function requestToken(platform, endpoint, values, { fetchImpl = fetch, met
     // Classify temporary HTTP failures before reading the body. Provider outages
     // often return HTML; parsing them must not turn an outage into expired auth.
     if (response.status === 429) {
-      throw Object.assign(new OAuthError('rate_limited', '플랫폼 인증 서버의 요청 한도에 도달했습니다. 예약된 재시도를 기다려 주세요.', 429), { retryable: true });
+      throw Object.assign(new OAuthError('rate_limited', '플랫폼 로그인 서버 호출 한도에 걸렸어요. 잠시 기다렸다가 다시 연결해 주세요.', 429), { retryable: true });
     }
     if (response.status >= 500 && response.status <= 599) {
-      throw Object.assign(new OAuthError('oauth_unavailable', '플랫폼 인증 서버가 일시적으로 응답하지 않습니다. 잠시 후 다시 시도합니다.', response.status), { retryable: true });
+      throw Object.assign(new OAuthError('oauth_unavailable', '플랫폼 로그인 서버가 잠깐 답하지 않아요. 잠시 뒤에 다시 연결해 주세요.', response.status), { retryable: true });
     }
     const payload = await response.json();
     const data = Array.isArray(payload?.data) ? payload.data[0] : payload;
     const providerError = payload?.error ?? data?.error;
     const providerCode = typeof providerError === 'string' ? providerError.toLowerCase() : typeof providerError?.code === 'string' ? providerError.code.toLowerCase() : '';
     if (['temporarily_unavailable', 'server_error'].includes(providerCode)) {
-      throw Object.assign(new OAuthError('oauth_unavailable', '플랫폼 인증 서버가 일시적으로 응답하지 않습니다. 잠시 후 다시 시도합니다.', 503), { retryable: true });
+      throw Object.assign(new OAuthError('oauth_unavailable', '플랫폼 로그인 서버가 잠깐 답하지 않아요. 잠시 뒤에 다시 연결해 주세요.', 503), { retryable: true });
     }
     if (['rate_limited', 'rate_limit_exceeded', 'too_many_requests'].includes(providerCode)) {
-      throw Object.assign(new OAuthError('rate_limited', '플랫폼 인증 서버의 요청 한도에 도달했습니다. 예약된 재시도를 기다려 주세요.', 429), { retryable: true });
+      throw Object.assign(new OAuthError('rate_limited', '플랫폼 로그인 서버 호출 한도에 걸렸어요. 잠시 기다렸다가 다시 연결해 주세요.', 429), { retryable: true });
     }
     if (!response.ok || payload?.error || !data || typeof data.access_token !== 'string' || !data.access_token) {
-      throw new OAuthError('token_exchange_failed', `${DEFINITIONS[platform].name} 연결을 완료하지 못했습니다. 앱 권한과 연결 설정을 확인한 뒤 다시 연결해 주세요.`, 502);
+      throw new OAuthError('token_exchange_failed', `${DEFINITIONS[platform].name} 연결을 끝내지 못했어요. 앱 권한과 연결 준비를 확인하고 다시 연결해 주세요.`, 502);
     }
     return data;
   } catch (error) {
     if (error instanceof OAuthError) throw error;
     // Never propagate fetch URLs, provider messages, response bodies or causes.
-    if (controller.signal.aborted) throw Object.assign(new OAuthError('oauth_timeout', '플랫폼 응답 시간이 초과됐습니다. 잠시 후 다시 연결해 주세요.', 504),{retryable:true});
-    throw Object.assign(new OAuthError('oauth_unavailable', '플랫폼 인증 서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.', 502),{retryable:true});
+    if (controller.signal.aborted) throw Object.assign(new OAuthError('oauth_timeout', '플랫폼이 제때 답하지 않았어요. 잠시 뒤에 다시 연결해 주세요.', 504),{retryable:true});
+    throw Object.assign(new OAuthError('oauth_unavailable', '플랫폼 로그인 서버에 닿지 못했어요. 잠시 뒤에 다시 해 주세요.', 502),{retryable:true});
   } finally {
     clearTimeout(timer);
   }
@@ -229,9 +229,9 @@ export async function verifyYouTubePublishingConnection({channel,credentials={},
 
 export async function exchangeCode(platform, { clientId, clientSecret, redirectUri, code, verifier, apiVersion } = {}, { fetchImpl = fetch } = {}) {
   definition(platform);
-  required(clientId, 'provider_not_configured', '플랫폼 앱 연결 설정이 필요합니다.');
-  required(clientSecret, 'provider_not_configured', '플랫폼 앱 연결 설정이 필요합니다.');
-  required(code, 'missing_code', '플랫폼의 연결 승인이 필요합니다.');
+  required(clientId, 'provider_not_configured', '관리자가 플랫폼 연결을 먼저 준비해야 해요.');
+  required(clientSecret, 'provider_not_configured', '관리자가 플랫폼 연결을 먼저 준비해야 해요.');
+  required(code, 'missing_code', '플랫폼에서 연결을 허락해 주세요.');
   const redirect = checkedRedirect(platform, redirectUri);
   const base = { client_id: clientId, client_secret: clientSecret, redirect_uri: redirect, code, grant_type: 'authorization_code' };
   if (platform === 'youtube') {
@@ -269,12 +269,12 @@ export async function refreshCredentials(platform, current, clientConfig = {}, {
   const refreshWindow = platform === 'instagram' ? 7 * DAY : 5 * 60_000;
   if (!clientConfig.force && Number.isFinite(expiration) && expiration > now + refreshWindow) return { ...current };
   if (platform === 'facebook') {
-    if (Number.isFinite(expiration) && expiration <= now) throw new OAuthError('reconnect_required', 'Facebook 연결이 만료됐습니다. 다시 연결해 주세요.', 401);
+    if (Number.isFinite(expiration) && expiration <= now) throw new OAuthError('reconnect_required', 'Facebook 연결이 만료됐어요. 다시 연결해 주세요.', 401);
     // Facebook has no refresh-token grant. A Page token may have no expiry.
     return { ...current };
   }
   if (platform === 'instagram') {
-    if (Number.isFinite(expiration) && expiration <= now) throw new OAuthError('reconnect_required', 'Instagram 연결이 만료됐습니다. 다시 연결해 주세요.', 401);
+    if (Number.isFinite(expiration) && expiration <= now) throw new OAuthError('reconnect_required', 'Instagram 연결이 만료됐어요. 다시 연결해 주세요.', 401);
     // A manually verified token has no invented issue date or expiry. The IG
     // refresh endpoint is only valid for proven long-lived Instagram Login tokens.
     if(current.refreshMode==='external-manual'||current.authType&&current.authType!=='instagram-login'||current.metaIdentityVersion===1&&current.longLived!==true)return {...current};
@@ -283,12 +283,12 @@ export async function refreshCredentials(platform, current, clientConfig = {}, {
     const data = await requestToken(platform, 'https://graph.instagram.com/refresh_access_token', { grant_type: 'ig_refresh_token', access_token: current.accessToken }, { fetchImpl, method: 'GET' });
     return renewed(data);
   }
-  required(current.refreshToken, 'reconnect_required', '자동 갱신 권한이 없습니다. 계정을 다시 연결해 주세요.');
+  required(current.refreshToken, 'reconnect_required', '연결을 자동으로 이어 갈 권한이 없어요. 계정을 다시 연결해 주세요.');
   const refreshExpiration = Date.parse(current.refreshExpiresAt || '');
-  if (Number.isFinite(refreshExpiration) && refreshExpiration <= now) throw new OAuthError('reconnect_required', '계정 연결이 만료됐습니다. 다시 연결해 주세요.', 401);
+  if (Number.isFinite(refreshExpiration) && refreshExpiration <= now) throw new OAuthError('reconnect_required', '계정 연결이 만료됐어요. 다시 연결해 주세요.', 401);
   const { clientId, clientSecret } = clientConfig;
-  required(clientId, 'provider_not_configured', '플랫폼 앱 연결 설정이 필요합니다.');
-  required(clientSecret, 'provider_not_configured', '플랫폼 앱 연결 설정이 필요합니다.');
+  required(clientId, 'provider_not_configured', '관리자가 플랫폼 연결을 먼저 준비해야 해요.');
+  required(clientSecret, 'provider_not_configured', '관리자가 플랫폼 연결을 먼저 준비해야 해요.');
   const values = { client_secret: clientSecret, grant_type: 'refresh_token', refresh_token: current.refreshToken };
   const endpoint = platform === 'youtube' ? 'https://oauth2.googleapis.com/token' : 'https://open.tiktokapis.com/v2/oauth/token/';
   values[platform === 'youtube' ? 'client_id' : 'client_key'] = clientId;

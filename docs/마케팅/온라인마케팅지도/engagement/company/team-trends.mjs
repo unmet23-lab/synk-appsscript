@@ -9,7 +9,7 @@ export function buildTeamTrends({teams, channels, records, ownTeamId, query, tod
   if (!definition) throw Object.assign(new Error('추이 지표를 확인해 주세요.'),{status:400});
   const end = query.get('end') || today;
   dateRange(end,end);
-  if (end > today) throw Object.assign(new Error('오늘 이후 날짜는 조회할 수 없습니다.'),{status:400});
+  if (end > today) throw Object.assign(new Error('오늘 뒤 날짜는 볼 수 없어요.'),{status:400});
   const activeTeams = teams.filter(team => team.active === true), teamIds = new Set(activeTeams.map(team => team.id));
   const accounts = channels.filter(channel => teamIds.has(channel.teamId)), channelIds = new Set(accounts.map(channel => channel.id));
   const posts = records.posts.filter(post => channelIds.has(post.channelId) && validDate(post.publishedDate) && post.publishedDate <= end);

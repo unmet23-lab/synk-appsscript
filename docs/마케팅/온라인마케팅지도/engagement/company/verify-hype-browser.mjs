@@ -41,7 +41,7 @@ try {
     await target.getByRole('heading', { name: '우리 팀의 성장을 한눈에.', exact: true }).waitFor();
   };
   await login(page, admin.email, 'hype-test-password');
-  await page.getByRole('heading', { name: '다음 주인공은 우리 팀에 있어요', exact: true }).waitFor();
+  await page.getByRole('heading', { name: '계정을 연결하면 하이라이트가 시작돼요', exact: true }).waitFor();
   assert.equal(await page.locator('.hype-card').count(), 0);
   assert.equal(app.store.all('hypeObservations').length, 0);
   mark('disconnected-empty-state-no-fabricated-performance');
@@ -88,12 +88,12 @@ try {
   assert.equal(feed.collection.connectedChannels, 2);
   mark('actual-hype-api-fixture-2.4x-verified');
   await page.locator(`[data-action="hype-evidence"][data-id="${expected.id}"]`).click();
-  await page.getByRole('heading', { name: '이 콘텐츠를 주목한 이유', exact: true }).waitFor();
+  await page.getByRole('heading', { name: '이 게시물을 고른 이유', exact: true }).waitFor();
   const evidence = await page.locator('.hype-detail').innerText();
   assert.match(evidence, /\+1,200/);
   assert.match(evidence, /30분 동안/);
   assert.match(evidence, /중앙값 500/);
-  const original = page.getByRole('link', { name: '게시물 보러 가기', exact: false });
+  const original = page.getByRole('link', { name: '게시물 열기', exact: false });
   assert.equal(await original.getAttribute('href'), 'https://www.youtube.com/watch?v=abcdefghijk');
   assert.equal(await original.getAttribute('target'), '_blank');
   assert.match(await original.getAttribute('rel'), /noopener/);

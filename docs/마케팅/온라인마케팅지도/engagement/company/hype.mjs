@@ -62,7 +62,7 @@ function ownersFor(observation,channel,users) {
 function common(post,channel,current,users) {
   const owners=ownersFor(current,channel,users);
   return {postId:post.id,channelId:channel.id,platform:channel.platform,postTitle:String(post.title||'제목 없는 콘텐츠'),url:safeUrl(post.url),thumbnailUrl:safeUrl(post.thumbnailUrl),publishedAt:post.publishedAt,channelName:String(channel.displayName||channel.handle||channel.platform||'채널'),owners,
-    attribution:owners.length?`${owners.map(owner=>owner.name).join(' · ')} 담당`:'담당 확인 필요'};
+    attribution:owners.length?`${owners.map(owner=>owner.name).join(' · ')} 담당`:'담당자 없음'};
 }
 
 function accelerationTitle(base,key) {
@@ -124,14 +124,14 @@ export function buildHypeFeed({channels=[],posts=[],observations=[],users=[],now
       const baseline=baselineSamples.map(sample=>sample.normalized);
       const baselineMedian=baseline.length>=HYPE_RULES.minBaselineCount?median(baseline):null;
       const ratio=baselineMedian>0&&change?change.normalized/baselineMedian:null;
-      const evidence={currentAt:new Date(current.time).toISOString(),currentValue:current[key],previousAt:change?new Date(previous.time).toISOString():null,previousValue:change?previous[key]:null,intervalMinutes:change?.minutes??null,normalizedWindowMinutes:HYPE_RULES.refreshMinutes,baselineCount:baseline.length,baselineMedian,baselineStartAt:baseline.length?new Date(Math.min(...baselineSamples.map(sample=>sample.previous.time))).toISOString():null,baselineEndAt:baseline.length?new Date(Math.max(...baselineSamples.map(sample=>sample.current.time))).toISOString():null,comparisonLabel:baselineMedian===null?'비교 이력 부족':`같은 채널 이전 ${baseline.length}개 관측 구간의 중앙값 · 30분 환산`,source:metricSource(current,key)||null,lagged:delayedMetric(current,key)};
+      const evidence={currentAt:new Date(current.time).toISOString(),currentValue:current[key],previousAt:change?new Date(previous.time).toISOString():null,previousValue:change?previous[key]:null,intervalMinutes:change?.minutes??null,normalizedWindowMinutes:HYPE_RULES.refreshMinutes,baselineCount:baseline.length,baselineMedian,baselineStartAt:baseline.length?new Date(Math.min(...baselineSamples.map(sample=>sample.previous.time))).toISOString():null,baselineEndAt:baseline.length?new Date(Math.max(...baselineSamples.map(sample=>sample.current.time))).toISOString():null,comparisonLabel:baselineMedian===null?'앞선 기록이 모자라요.':`같은 채널 앞선 기록 ${baseline.length}번의 중앙값과 30분 기준으로 견줬어요.`,source:metricSource(current,key)||null,lagged:delayedMetric(current,key)};
       if(change&&change.delta>=definition.minimum&&change.normalized>=definition.minimum&&ratio>=HYPE_RULES.minRatio) {
         const roundedRatio=Math.floor(ratio*10)/10;
-        possible.push({...base,id:`${post.id}:acceleration:${key}`,kind:'acceleration',title:accelerationTitle(base,key),summary:`${base.attribution} · 「${shortTitle(post.title)}」 ${formatted(change.minutes)}분 동안 ${definition.label} +${formatted(change.delta)}${definition.unit}. 같은 채널의 이전 관측 대비 ${formatted(roundedRatio)}배 속도예요.`,metric:key,metricLabel:definition.label,value:current[key],delta:change.delta,normalizedDelta:change.normalized,ratio,milestone:null,evidence,score:100+Math.min(ratio,20)*5+Math.log1p(change.normalized/definition.minimum)});
+        possible.push({...base,id:`${post.id}:acceleration:${key}`,kind:'acceleration',title:accelerationTitle(base,key),summary:`${base.attribution} · 「${shortTitle(post.title)}」 ${formatted(change.minutes)}분 동안 ${definition.label} +${formatted(change.delta)}${definition.unit}. 같은 채널 평소보다 ${formatted(roundedRatio)}배 빨라요.`,metric:key,metricLabel:definition.label,value:current[key],delta:change.delta,normalizedDelta:change.normalized,ratio,milestone:null,evidence,score:100+Math.min(ratio,20)*5+Math.log1p(change.normalized/definition.minimum)});
       } else {
         const milestone=definition.milestones.filter(value=>current[key]>=value).at(-1);
         if(!milestone)continue;
-        possible.push({...base,id:`${post.id}:milestone:${key}:${milestone}`,kind:'milestone',title:`${definition.label} ${formatted(milestone)}${definition.unit}의 기록, 함께 볼까요?`,summary:`${base.attribution} · 「${shortTitle(post.title)}」 누적 ${definition.label} ${formatted(current[key])}${definition.unit}가 확인됐어요.`,metric:key,metricLabel:definition.label,value:current[key],delta:change?.delta??null,normalizedDelta:change?.normalized??null,ratio:null,milestone,evidence:{...evidence,comparisonLabel:delayedMetric(current,key)?'플랫폼에서 지연 반영한 누적 수치 · 실시간 반응과 성장 속도 비교 아님':'최근 확인한 누적 수치 · 성장 속도 비교 아님'},score:Math.log10(milestone/definition.milestones[0]+1)});
+        possible.push({...base,id:`${post.id}:milestone:${key}:${milestone}`,kind:'milestone',title:`${definition.label} ${formatted(milestone)}${definition.unit}를 넘었어요`,summary:`${base.attribution} · 「${shortTitle(post.title)}」 누적 ${definition.label} ${formatted(current[key])}${definition.unit}예요.`,metric:key,metricLabel:definition.label,value:current[key],delta:change?.delta??null,normalizedDelta:change?.normalized??null,ratio:null,milestone,evidence:{...evidence,comparisonLabel:delayedMetric(current,key)?'플랫폼이 늦게 반영한 누적 수치예요. 지금 반응이나 빠르기를 비교한 게 아니에요.':'최근 확인한 누적 수치예요. 빠르기를 비교한 게 아니에요.'},score:Math.log10(milestone/definition.milestones[0]+1)});
       }
     }
     possible.sort((a,b)=>b.score-a.score||a.metric.localeCompare(b.metric));

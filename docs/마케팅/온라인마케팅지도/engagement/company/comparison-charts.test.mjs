@@ -16,7 +16,7 @@ test('signed bars share zero and scale while unknown and measured zero remain di
   const f=fixture();f.context.rows=[{id:'positive',label:'증가',value:100},{id:'negative',label:'감소',value:-50},{id:'zero',label:'변동 없음',value:0},{id:'unknown',label:'미확인',value:null}];
   const scale=f.run('comparisonScale(rows.map(row=>row.value))');assert.equal(scale.minimum,-50);assert.equal(scale.maximum,100);assert.ok(Math.abs(scale.zero-100/3)<1e-10);
   const html=f.run("horizontalComparisonChart({rows,metricLabel:'조회수',signed:true})");
-  assert.match(html,/x1="33\.3333"/);assert.match(html,/x="33\.3333" y="7" width="66\.6667"/);assert.match(html,/x="0\.0000" y="7" width="33\.3333"/);assert.match(html,/comparison-zero-value/);assert.match(html,/미확인 또는 비교 불가/);assert.match(html,/>\+100</);assert.match(html,/>-50</);assert.doesNotMatch(html,/style=/,'SVG presentation attributes respect the local-only style CSP');
+  assert.match(html,/x1="33\.3333"/);assert.match(html,/x="33\.3333" y="7" width="66\.6667"/);assert.match(html,/x="0\.0000" y="7" width="33\.3333"/);assert.match(html,/comparison-zero-value/);assert.match(html,/기록이 없거나 비교할 수 없음/);assert.match(html,/>\+100</);assert.match(html,/>-50</);assert.doesNotMatch(html,/style=/,'SVG presentation attributes respect the local-only style CSP');
 });
 
 test('null aggregate stays null and observed zero is preserved without counting dates repeatedly',()=>{
@@ -28,7 +28,7 @@ test('null aggregate stays null and observed zero is preserved without counting 
 
 test('all-team comparisons retain unassigned and retired channels even when a team cache exists',()=>{
   const f=fixture();f.context.report=report();f.context.teamOverview.result={teams:[{id:'a',name:'기획팀',memberCount:3,channelCount:1,metrics:{views:metric(120,20)}}]};
-  const rows=f.run("comparisonRows(report,'teams','views','period')");assert.equal(rows.length,3);assert.equal(rows.find(row=>row.id==='a').value,20);assert.match(rows.find(row=>row.id==='a').secondary,/크루 3명/);assert.equal(rows.find(row=>row.id==='').label,'팀 미배정');assert.equal(rows.find(row=>row.id==='').value,null);assert.match(rows.find(row=>row.id==='b').label,/운영 종료/);assert.equal(rows.find(row=>row.id==='b').action,null);
+  const rows=f.run("comparisonRows(report,'teams','views','period')");assert.equal(rows.length,3);assert.equal(rows.find(row=>row.id==='a').value,20);assert.match(rows.find(row=>row.id==='a').secondary,/크루 3명/);assert.equal(rows.find(row=>row.id==='').label,'팀 없음');assert.equal(rows.find(row=>row.id==='').value,null);assert.match(rows.find(row=>row.id==='b').label,/운영 멈춤/);assert.equal(rows.find(row=>row.id==='b').action,null);
 });
 
 test('scoped filters use report data rather than a broader team cache',()=>{
@@ -42,7 +42,7 @@ test('scoped filters use report data rather than a broader team cache',()=>{
 test('member comparisons exclude unassigned rows; content never invents account follower counts',()=>{
   const f=fixture();f.context.report=report();const members=f.run("comparisonRows(report,'members','views','period')");assert.equal(members.length,1);assert.equal(members[0].action,'member-filter');
   assert.equal(f.run("comparisonRows(report,'content','followers','latest')")[0].value,null);
-  f.state.comparisonGroup='content';f.state.metric='followers';assert.match(f.run('comparisonChartsSection(report)'),/계정 단위 지표/);
+  f.state.comparisonGroup='content';f.state.metric='followers';assert.match(f.run('comparisonChartsSection(report)'),/계정 수치라 콘텐츠마다 나눌 수 없어요/);
 });
 
 test('defaults follow scope, top ten can expand, and user supplied labels and attributes are escaped',()=>{
@@ -58,5 +58,5 @@ test('defaults follow scope, top ten can expand, and user supplied labels and at
 
 test('period graphs compare recorded deltas across equal date spans with metric-specific scales',()=>{
   const f=fixture();f.context.report=report();f.context.report.metrics.likes=metric(1000,2,8);const html=f.run('periodComparisonCharts(report)');
-  assert.match(html,/2026-09-23 — 2026-09-29/);assert.match(html,/2026-09-16 — 2026-09-22/);assert.match(html,/조회수 이번 \+10 회/);assert.match(html,/조회수 직전 -20 회/);assert.match(html,/좋아요 이번 \+2 개/);assert.match(html,/팔로워·구독자 이번 비교 불가/);assert.equal((html.match(/class="period-comparison-card/g)||[]).length,7);assert.doesNotMatch(html,/1000|1,000|style=/);assert.match(html,/지표 사이의 막대 길이/);
+  assert.match(html,/2026-09-23 — 2026-09-29/);assert.match(html,/2026-09-16 — 2026-09-22/);assert.match(html,/조회수 이번 \+10 회/);assert.match(html,/조회수 직전 -20 회/);assert.match(html,/좋아요 이번 \+2 개/);assert.match(html,/팔로워·구독자 이번 비교할 수 없음/);assert.equal((html.match(/class="period-comparison-card/g)||[]).length,7);assert.doesNotMatch(html,/1000|1,000|style=/);assert.match(html,/다른 지표끼리 막대 길이/);
 });

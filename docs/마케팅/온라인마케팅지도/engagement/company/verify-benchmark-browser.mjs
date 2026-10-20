@@ -54,7 +54,7 @@ try{
   };
   const adminSession=await openUser(admin,'benchmark-admin-password');page=adminSession.page;
   assert.equal(await page.locator('.bm-card').count(),0);
-  assert.match(await page.locator('.bm-empty').innerText(),/아직 등록된 조사 자료가 없습니다/);
+  assert.match(await page.locator('.bm-empty').innerText(),/아직 조사 자료가 없어요/);
   assert.equal(app.store.all('contentBenchmarkIssues').length,0);
   mark('empty-benchmarks-no-fabricated-records');
   const promptResponse=await adminSession.context.request.get(app.origin+'/api/content-benchmarks/research-prompt');

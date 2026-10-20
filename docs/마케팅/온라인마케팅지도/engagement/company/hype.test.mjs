@@ -115,7 +115,7 @@ test('duplicate timestamps cannot multiply baseline samples and conflicts become
 test('unknown historical ownership does not credit a current replacement owner',()=>{
   const rows=observations();rows.at(-1).ownership={ownerIds:[],known:false};
   const item=feed({channels:[channel('channel-a',{ownerIds:['min']})],observations:rows}).items[0];
-  assert.deepEqual(item.owners,[]);assert.equal(item.attribution,'담당 확인 필요');assert.doesNotMatch(item.summary,/민서|유호/);
+  assert.deepEqual(item.owners,[]);assert.equal(item.attribution,'담당자 없음');assert.doesNotMatch(item.summary,/민서|유호/);
   assert.match(item.title,/^이 콘텐츠,/);assert.doesNotMatch(item.title,/민서|유호/);
   rows.at(-1).ownership={ownerIds:['yuho'],known:true};
   assert.deepEqual(feed({channels:[channel('channel-a',{ownerIds:['min']})],observations:rows}).items[0].owners,[{id:'yuho',name:'유호'}]);
@@ -152,7 +152,7 @@ test('delayed Analytics batches remain lifetime records, never live acceleration
   assert.equal(item.kind,'milestone');assert.equal(item.metric,'shares');assert.equal(item.value,90);
   assert.equal(item.delta,null);assert.equal(item.normalizedDelta,null);assert.equal(item.ratio,null);
   assert.equal(item.evidence.lagged,true);assert.equal(item.evidence.source,'youtube-analytics-api-v2');
-  assert.match(item.evidence.comparisonLabel,/지연 반영/);assert.doesNotMatch(item.title,/이어지고|속도/);
+  assert.match(item.evidence.comparisonLabel,/늦게 반영/);assert.doesNotMatch(item.title,/이어지고|속도/);
   rows.at(-1).metricPeriods.shares.lagged=false;
   assert.equal(feed({observations:rows}).items[0].kind,'milestone','a new direct reading cannot use old delayed baselines');
 });

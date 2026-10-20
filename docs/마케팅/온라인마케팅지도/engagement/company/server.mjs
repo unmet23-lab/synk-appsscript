@@ -115,7 +115,7 @@ const recentFields=value=>Object.fromEntries(Object.entries(value).map(([key,val
 const usableToken=(platform,value,at)=>{const expires=Date.parse(value?.expiresAt||'');return Number.isFinite(expires)&&expires-Date.parse(at)>(platform==='instagram'?86400000:120000);};
 // 새 연결을 확인하면 전체·최근 수집의 지난 실패와 재시도 기록을 모두 지운다. 일부만 지우면 다시 연결해도 자동 수집이 멈춰 있다(10-20).
 const COLLECTION_RESET=Object.freeze({status:'ready',lastError:null,failureKind:null,failureCode:null,retryCount:0,nextRetryAt:null,requiresReconnect:false,lastFailureAt:null,lastAttemptAt:null,...recentFields({status:'ready',failureKind:null,failureCode:null,retryCount:0,nextRetryAt:null,requiresReconnect:false,lastFailureAt:null,lastAttemptAt:null,lastError:null})});
-const safeError=message=>String(message||'처리하지 못했습니다.').replace(/(?:Bearer\s+|access_token=|refresh_token=)[^\s&]+/gi,'[보호된 값]').slice(0,400);
+const safeError=message=>String(message||'처리하지 못했어요.').replace(/(?:Bearer\s+|access_token=|refresh_token=)[^\s&]+/gi,'[보호된 값]').slice(0,400);
 const httpError=(message,status=400)=>Object.assign(new Error(message),{status});
 // Why stored channel credentials must not be used right now; the code lets publishers show the reason instead of a generic failure.
 export function credentialHoldReason(live,channel,connectedBy){
@@ -466,16 +466,16 @@ export function createCompanyApp(options={}) {
   const assistant=createAssistantService({today:()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(clock())),performance:assistantPerformance,directory:(req,query)=>messenger.assistantDirectory(req,query),productivity:(req,kind,query)=>messenger.productivityOverview(req,kind,query),clientWorkday:user=>clientWorkflow.workspace(user),publicationWorkday:user=>readPublicationWorkday(user),weeklySummary:user=>readWeeklySummary(user),automationHealth:user=>readAutomationHealth(user)});
   const migrationAt=clock();
   store.transaction(()=>{for(const c of store.all('channels'))seedOwnership(store,c,migrationAt);});
-  for(const run of store.all('runs').filter(x=>['queued','running'].includes(x.status)))store.put('runs',run.id,{...run,status:'interrupted',finishedAt:now(),message:'서버가 다시 시작됐습니다. 수집을 다시 실행해 주세요.'});
-  for(const channel of store.all('channels').filter(x=>x.status==='collecting'))store.put('channels',channel.id,{...channel,...planFailure({code:'COLLECTION_INTERRUPTED',retryable:true},channel,clock()),status:'error',lastError:'서버 재시작으로 수집이 중단되어 자동 재시도를 예약했습니다.'});
-  for(const channel of store.all('channels').filter(x=>x.recentStatus==='collecting'))store.put('channels',channel.id,{...channel,...recentFields(planFailure({code:'COLLECTION_INTERRUPTED',retryable:true},recentPolicyChannel(channel),clock())),recentStatus:'error',recentLastError:'최근 게시물 수집이 중단되어 재시도를 예약했습니다.'});
+  for(const run of store.all('runs').filter(x=>['queued','running'].includes(x.status)))store.put('runs',run.id,{...run,status:'interrupted',finishedAt:now(),message:'서버가 다시 켜져 수집이 멈췄어요. 다시 수집해 주세요.'});
+  for(const channel of store.all('channels').filter(x=>x.status==='collecting'))store.put('channels',channel.id,{...channel,...planFailure({code:'COLLECTION_INTERRUPTED',retryable:true},channel,clock()),status:'error',lastError:'서버가 다시 켜져 수집이 멈췄어요. 자동으로 다시 시도해요.'});
+  for(const channel of store.all('channels').filter(x=>x.recentStatus==='collecting'))store.put('channels',channel.id,{...channel,...recentFields(planFailure({code:'COLLECTION_INTERRUPTED',retryable:true},recentPolicyChannel(channel),clock())),recentStatus:'error',recentLastError:'최근 게시물 수집이 멈춰서 다시 시도해요.'});
   function pending(c){const h=c.pendingHandoffId&&store.get('handoffs',c.pendingHandoffId);return h?.status==='awaiting-connection'?h:null;}
   function incoming(user,c){return !!pending(c)?.toOwnerIds.includes(user.id);}
   function visibleChannels(user) {return store.all('channels').filter(c=>canReadChannel(user,c)||incoming(user,c));}
-  function channelFor(user,id,mode='read') {const c=store.get('channels',id);const allowed=c&&(mode==='write'?canWriteChannel(user,c):mode==='connect'?(user.role!=='viewer'&&(canWriteChannel(user,c)||incoming(user,c))):canReadChannel(user,c)||incoming(user,c));if(!allowed)throw httpError('담당 채널을 찾을 수 없습니다.',404);return c;}
-  function admin(user) {if(user.role!=='admin')throw httpError('관리자만 변경할 수 있습니다.',403);}
+  function channelFor(user,id,mode='read') {const c=store.get('channels',id);const allowed=c&&(mode==='write'?canWriteChannel(user,c):mode==='connect'?(user.role!=='viewer'&&(canWriteChannel(user,c)||incoming(user,c))):canReadChannel(user,c)||incoming(user,c));if(!allowed)throw httpError('채널을 찾지 못했어요. 새로고침해 주세요.',404);return c;}
+  function admin(user) {if(user.role!=='admin')throw httpError('관리자만 바꿀 수 있어요.',403);}
   function audit(user,action,subject,details={}) {const id=randomUUID();store.put('audit',id,{id,userId:user.id,action,subject,...details,at:clock()});}
-  function teamFor(id){if(!id)return null;const team=store.get('teams',id);if(!team?.active)throw httpError('활성 팀을 선택해 주세요.');return team;}
+  function teamFor(id){if(!id)return null;const team=store.get('teams',id);if(!team?.active)throw httpError('운영 중인 팀을 골라 주세요.');return team;}
   function permissions(user){return {manageOrganization:user.role==='admin',manageTeam:['admin','manager'].includes(user.role),readOnly:user.role==='viewer'};}
   function connection(c) {return store.secret('channel:'+c.id);}
   function providerConfig(platform) {return {...store.secret('provider:'+platform),redirectUri:origin+`/api/oauth/${platform}/callback`};}
@@ -483,7 +483,7 @@ export function createCompanyApp(options={}) {
   function hasConnection(c) {return !c.collectionDisabled&&(!!connection(c)?.accessToken||(c.platform==='youtube'&&!!(connection(c)?.apiKey||providerConfig(c.platform).apiKey||publicYouTubeReader(c))));}
   function disconnectChannel(c){store.transaction(()=>{const handoff=pending(c);if(handoff)store.put('handoffs',handoff.id,{...handoff,status:'cancelled',cancelledAt:clock(),reasonClosed:'connection-disconnected'});store.deleteSecret('channel:'+c.id);const ids=new Set(store.all('posts').filter(p=>p.channelId===c.id).map(p=>p.id));for(const kind of ['snapshots','channelSnapshots','posts','hypeObservations'])for(const row of store.all(kind))if(row.source?.startsWith('api:')&&(row.channelId===c.id||ids.has(row.postId)))store.remove(kind,row.id);store.put('channels',c.id,{...c,pendingHandoffId:null,status:'not-connected',lastCollectedAt:null,recentStatus:'not-connected',recentLastCollectedAt:null,collectionDisabled:true,connectionVersion:(c.connectionVersion||0)+1});});}
   function namedUsers(ids){return ids.map(id=>({id,name:store.get('users',id)?.name||'이전 담당자'}));}
-  function safeChannel(c,user) {const connectedBy=connection(c)?.connectedBy;return {...c,owners:namedUsers(c.ownerIds),teamName:(c.teamId&&store.get('teams',c.teamId)?.name)||'팀 미지정',connected:hasConnection(c),canEdit:user?canWriteChannel(user,c):false,canManageOwners:user?canManageOwners(user,c):false,canConnect:user?user.role!=='viewer'&&(canWriteChannel(user,c)||incoming(user,c)):false,connectionOwner:connectedBy?namedUsers([connectedBy])[0]:null,pendingHandoff:pending(c)};}
+  function safeChannel(c,user) {const connectedBy=connection(c)?.connectedBy;return {...c,owners:namedUsers(c.ownerIds),teamName:(c.teamId&&store.get('teams',c.teamId)?.name)||'팀 없음',connected:hasConnection(c),canEdit:user?canWriteChannel(user,c):false,canManageOwners:user?canManageOwners(user,c):false,canConnect:user?user.role!=='viewer'&&(canWriteChannel(user,c)||incoming(user,c)):false,connectionOwner:connectedBy?namedUsers([connectedBy])[0]:null,pendingHandoff:pending(c)};}
   function scopeTeamId(user,query){return query.get('teamId')||(query.get('scope')==='team'?user.teamId:null)||null;}
   function scopedChannels(user,query){
     let channels=visibleChannels(user);const scope=query.get('scope'),teamId=scopeTeamId(user,query);
@@ -494,20 +494,20 @@ export function createCompanyApp(options={}) {
   }
   function completeHandoff(c,actor){const h=pending(c);if(!h)return c;const updated={...c,ownerIds:h.toOwnerIds,teamId:h.toTeamId||null,pendingHandoffId:null,connectionVersion:(c.connectionVersion||0)+1};recordOwnershipChange(store,c,updated,{actorId:actor.id,at:clock(),reason:h.reason||'담당자 인계'});store.put('channels',c.id,updated);store.put('handoffs',h.id,{...h,status:'completed',completedAt:clock(),completedBy:actor.id});return updated;}
   function changeOwners(user,c,input){
-    if(!canManageOwners(user,c))throw httpError('관리자 또는 이 채널의 팀장만 담당자를 배정할 수 있습니다.',403);
-    if(!Array.isArray(input.userIds)||!input.userIds.length||input.userIds.length>100)throw httpError('담당자를 한 명 이상 선택해 주세요.');
+    if(!canManageOwners(user,c))throw httpError('담당자는 관리자나 이 채널의 팀장만 정할 수 있어요.',403);
+    if(!Array.isArray(input.userIds)||!input.userIds.length||input.userIds.length>100)throw httpError('담당자를 한 명 이상 골라 주세요.');
     const ids=[...new Set(input.userIds)],people=ids.map(id=>store.get('users',id));
-    if(people.some(u=>!u?.active||u.role==='viewer'))throw httpError('활성 관리자·팀장·담당자를 선택해 주세요.');
-    if(user.role==='manager'&&people.some(u=>u.teamId!==user.teamId))throw httpError('같은 팀의 담당자만 배정할 수 있습니다.',403);
-    if(user.role!=='admin'&&input.teamId!==undefined&&input.teamId!==(c.teamId||null))throw httpError('소속 팀은 관리자만 변경할 수 있습니다.',403);
+    if(people.some(u=>!u?.active||u.role==='viewer'))throw httpError('이용 중인 관리자·팀장·실무자 가운데서 골라 주세요.');
+    if(user.role==='manager'&&people.some(u=>u.teamId!==user.teamId))throw httpError('같은 팀 크루만 담당자로 정할 수 있어요.',403);
+    if(user.role!=='admin'&&input.teamId!==undefined&&input.teamId!==(c.teamId||null))throw httpError('채널의 팀은 관리자만 바꿀 수 있어요.',403);
     const teamId=input.teamId===undefined?(c.teamId||null):(input.teamId||null);teamFor(teamId);
-    if(pending(c))throw httpError('진행 중인 인계를 완료하거나 취소한 뒤 다시 배정해 주세요.',409);
+    if(pending(c))throw httpError('담당자를 바꾸는 중이에요. 그 요청이 끝나거나 취소된 뒤 다시 정해 주세요.',409);
     if(teamId===(c.teamId||null)&&ids.length===c.ownerIds.length&&ids.every(id=>c.ownerIds.includes(id)))return {ok:true,requiresReconnect:false};
     const reason=text(input.reason,300)||'담당자 배정';const creds=connection(c);
     if(creds?.accessToken&&creds.connectedBy&&!ids.includes(creds.connectedBy)){
       const h={id:randomUUID(),channelId:c.id,fromOwnerIds:c.ownerIds,fromTeamId:c.teamId||null,toOwnerIds:ids,toTeamId:teamId,requestedBy:user.id,requestedAt:clock(),reason,status:'awaiting-connection'};
       store.transaction(()=>{store.put('handoffs',h.id,h);store.put('channels',c.id,{...c,pendingHandoffId:h.id});audit(user,'handoff-requested',c.id,{handoffId:h.id});});
-      return {ok:true,requiresReconnect:true,handoff:h,message:'기존 담당과 기록을 유지했습니다. 새 담당자가 계정 연결을 완료하면 인계가 확정됩니다.'};
+      return {ok:true,requiresReconnect:true,handoff:h,message:'지금 담당자와 기록은 그대로예요. 새 담당자가 계정을 연결하면 담당자가 바뀌어요.'};
     }
     store.transaction(()=>{const updated={...c,ownerIds:ids,teamId,status:c.status==='collecting'?(hasConnection(c)?'ready':'not-connected'):c.status,lastAttemptAt:c.status==='collecting'?null:c.lastAttemptAt,connectionVersion:(c.connectionVersion||0)+1};recordOwnershipChange(store,c,updated,{actorId:user.id,at:clock(),reason});store.put('channels',c.id,updated);audit(user,'owners',c.id,{beforeOwnerIds:c.ownerIds,afterOwnerIds:ids,beforeTeamId:c.teamId||null,afterTeamId:teamId});});
     return {ok:true,requiresReconnect:false};
@@ -555,7 +555,7 @@ export function createCompanyApp(options={}) {
   }
   function teamOverview(user,query){
     const end=query.get('end')||today(),start=query.get('start')||shiftDate(end,-29);
-    dateRange(start,end);if(end>today())throw httpError('오늘 이후 날짜는 조회할 수 없습니다.');
+    dateRange(start,end);if(end>today())throw httpError('오늘 뒤 날짜는 볼 수 없어요.');
     const teams=store.all('teams').filter(team=>team.active&&(user.role==='admin'||team.id===user.teamId));
     const groups=new Map(teams.map(team=>[team.id,{id:team.id,name:team.name,memberCount:0,channels:[],posts:[]} ]));
     if(!groups.size)return {start,end,teams:[]};
@@ -592,13 +592,13 @@ export function createCompanyApp(options={}) {
     return {all,ownerId,events,channels,catalog,data:selected.records,overviewData};
   }
   function contentLeaders(user,query){
-    const date=query.get('date')||query.get('end')||today();dateRange(date,date);if(date>today())throw httpError('오늘 이후 날짜는 조회할 수 없습니다.');
+    const date=query.get('date')||query.get('end')||today();dateRange(date,date);if(date>today())throw httpError('오늘 뒤 날짜는 볼 수 없어요.');
     const {data,catalog,events}=reportSource(user,query,date);
     return buildContentLeaders(data,catalog,{date,metric:query.get('metric')||'views',mode:query.get('mode')||'change',users:visibleMembers(store,user),ownershipEvents:events});
   }
   function report(user,query,day=false){
     const end=query.get('date')||query.get('end')||today();const start=day?end:query.get('start')||shiftDate(end,-29);
-    dateRange(start,end);if(end>today())throw httpError('오늘 이후 날짜는 조회할 수 없습니다.');
+    dateRange(start,end);if(end>today())throw httpError('오늘 뒤 날짜는 볼 수 없어요.');
     const {all,ownerId,events,catalog,data,overviewData}=reportSource(user,query,end,{overview:true}),result=analyze(data,catalog,{start,end});
     if(query.get('growth')==='1')result.growth=buildGrowthSummary(data,catalog,{asOf:end});
     if(query.get('history')==='1')result.history=buildGrowthHistory(data,catalog,{asOf:end,selectionStart:query.get('historyStart')||undefined,selectionEnd:query.get('historyEnd')||undefined});
@@ -606,19 +606,19 @@ export function createCompanyApp(options={}) {
     const users=visibleMembers(store,user);
     const memberGroups=users.map(u=>{const mine=recordsForOwner(data,catalog.channels,events,u.id,end);const item=analyze(mine.records,{channels:mine.channels},{start,end});return {id:u.id,name:u.name,active:u.active,teamId:u.teamId,channelCount:mine.channels.length,metrics:item.metrics};});
     const overviewCatalog={channels:all.map(c=>({...c,ready:true,brand:c.displayName,publicUrl:c.canonicalUrl}))};
-    return {...result,groups,memberGroups,memberGroupsBasis:'수집 당시 담당자 기록입니다. 이전 담당을 확인할 수 없는 기록과 담당 변경 경계의 비교 불가 수치는 크루별 증가량에 넣지 않습니다. 공동 담당은 중복될 수 있습니다.',overview:companyOverview(overviewData,overviewCatalog,end),_csv:()=>analyticsCsv(result),scope:{...result.scope,ownerId:ownerId||'',teamId:scopeTeamId(user,query)||'',scope:query.get('scope')||'all'},definitions:{basis:'수집 시점의 누적값 차이',missing:'—는 미확인 또는 제공되지 않는 지표입니다.',history:'등록 전 날짜별 실적은 누적값으로 복원하지 않습니다.',members:'관측 당시 담당자에 귀속하며 공동 담당은 크루별 합계에 중복될 수 있습니다. 회사 합계는 채널을 한 번만 셉니다.'}};
+    return {...result,groups,memberGroups,memberGroupsBasis:'수집할 때의 담당자로 셌어요. 예전 담당자를 알 수 없는 기록과 담당자가 바뀐 날을 건너는 증감은 크루별 증가량에서 뺐어요. 여럿이 맡은 채널은 사람마다 겹쳐 셀 수 있어요.',overview:companyOverview(overviewData,overviewCatalog,end),_csv:()=>analyticsCsv(result),scope:{...result.scope,ownerId:ownerId||'',teamId:scopeTeamId(user,query)||'',scope:query.get('scope')||'all'},definitions:{basis:'수집 시점의 누적값 차이',missing:'—는 미확인 또는 제공되지 않는 지표입니다.',history:'등록 전 날짜별 실적은 누적값으로 복원하지 않습니다.',members:'관측 당시 담당자에 귀속하며 공동 담당은 크루별 합계에 중복될 수 있습니다. 회사 합계는 채널을 한 번만 셉니다.'}};
   }
   function saveCollection(channel,result,runId,withinTransaction=false,mode='full'){
     const live=store.get('channels',channel.id);
-    if(!live?.active||(live.connectionVersion||0)!==(channel.connectionVersion||0))throw httpError('채널 연결이 변경되어 이번 수집 결과를 저장하지 않았습니다.');
+    if(!live?.active||(live.connectionVersion||0)!==(channel.connectionVersion||0))throw httpError('수집하는 사이 채널 연결이 바뀌어 이번 결과는 저장하지 않았어요.');
     const externalId=result.channel.externalId||channel.externalId;
     const duplicate=store.all('channels').find(c=>c.id!==channel.id&&c.platform===channel.platform&&externalId&&c.externalId===externalId);
-    if(duplicate)throw httpError('같은 계정이 다른 주소로 이미 등록되어 있습니다. 기존 채널의 담당자를 추가해 주세요.');
+    if(duplicate)throw httpError('같은 계정이 다른 주소로 이미 등록돼 있어요. 그 채널에 담당자를 더해 주세요.');
     const stamp=clock(),date=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(stamp));
     const validPosts=result.posts.filter(p=>{try{return !!p.externalId&&!!p.publishedAt&&!Number.isNaN(Date.parse(p.publishedAt))&&new URL(p.url).protocol==='https:';}catch{return false;}});
     if(validPosts.length!==result.posts.length){
       const omitted=result.posts.length-validPosts.length;
-      result={...result,posts:validPosts,coverage:{...result.coverage,status:'partial',inventoryComplete:false,omittedPosts:(result.coverage?.omittedPosts||0)+omitted},warnings:[...(result.warnings||[]),`주소 또는 게시일이 제공되지 않은 콘텐츠 ${omitted}개는 집계에서 제외했습니다.`]};
+      result={...result,posts:validPosts,coverage:{...result.coverage,status:'partial',inventoryComplete:false,omittedPosts:(result.coverage?.omittedPosts||0)+omitted},warnings:[...(result.warnings||[]),`주소나 게시일이 없는 콘텐츠 ${omitted}개는 집계에서 뺐어요.`]};
     }
     // Renew retention only for data confirmed in this collection. Expired grants do not extend old data.
     const expiresAt=channel.platform==='youtube'?new Date(Date.parse(stamp)+30*86400000).toISOString():null;
@@ -626,7 +626,7 @@ export function createCompanyApp(options={}) {
       const complete=result.coverage?.status==='complete';
       const successState={status:complete?'success':'partial',lastCollectedAt:stamp,lastSuccessAt:complete?stamp:live.lastSuccessAt,lastError:null,failureKind:null,failureCode:null,lastFailureAt:null,retryCount:0,nextRetryAt:null,requiresReconnect:false,coverage:result.coverage,warnings:result.warnings||[]};
       const recentState=recentFields({...successState,lastSuccessAt:complete?stamp:live.recentLastSuccessAt});
-      if(result.coverage?.collectionError)Object.assign(recentState,recentFields(planFailure(result.coverage.collectionError,recentPolicyChannel(live),stamp)),{recentStatus:'error',recentLastError:'일부 지표의 조회 권한 또는 호출 한도를 확인하고 재시도 일정을 따릅니다.'});
+      if(result.coverage?.collectionError)Object.assign(recentState,recentFields(planFailure(result.coverage.collectionError,recentPolicyChannel(live),stamp)),{recentStatus:'error',recentLastError:'일부 수치는 권한이나 호출 한도 때문에 못 받았어요. 권한을 확인하거나 다음 시도를 기다려 주세요.'});
       store.put('channels',channel.id,{...live,externalId,displayName:result.channel.displayName||live.displayName,...(mode==='full'?successState:{}),...recentState});
       const ownership=ownerAt(store.all('ownershipEvents'),live,stamp);
       const channelSnapshot={id:`${channel.id}:${date}`,channelId:channel.id,date,followers:count(result.channel.followers),views:count(result.channel.views),postCount:count(result.channel.metrics?.posts),collectedPostCount:result.posts.length,checkedAt:stamp,source:`api:${channel.platform}`,expiresAt,ownership};
@@ -652,7 +652,7 @@ export function createCompanyApp(options={}) {
       if(mode==='full'&&channel.platform==='youtube'&&result.coverage?.ownerAuthorized){for(const old of store.all('snapshots'))if(renewedPosts.has(old.postId)&&old.source==='api:youtube')store.put('snapshots',old.id,{...old,expiresAt});}
       if(mode==='full'&&channel.platform==='youtube'&&result.coverage?.ownerAuthorized)for(const old of store.all('channelSnapshots').filter(s=>s.channelId===channel.id&&s.source==='api:youtube'))store.put('channelSnapshots',old.id,{...old,expiresAt});
       if(mode==='full'&&result.coverage?.inventoryComplete===true){const seen=new Set(result.posts.map(p=>`${channel.id}:${p.externalId}`));for(const old of store.all('posts'))if(old.channelId===channel.id&&old.source?.startsWith('api:')&&!seen.has(old.id)&&!old.unavailableAt)store.put('posts',old.id,{...old,unavailableAt:stamp});}
-      const run=store.get('runs',runId);store.put('runs',runId,{...run,status:complete?'success':'partial',finishedAt:stamp,message:result.warnings?.join(' · ')||`${result.posts.length}개 콘텐츠 확인`,postCount:result.posts.length,coverage:result.coverage});
+      const run=store.get('runs',runId);store.put('runs',runId,{...run,status:complete?'success':'partial',finishedAt:stamp,message:result.warnings?.join(' · ')||`콘텐츠 ${result.posts.length}개를 확인했어요`,postCount:result.posts.length,coverage:result.coverage});
     };
     return withinTransaction?write():store.transaction(write);
   }
@@ -717,14 +717,14 @@ export function createCompanyApp(options={}) {
     credentialRefreshes.set(c.id,{binding,task});return task;
   }
   function enqueueCollection(user,c,{mode='full'}={}){
-    if(!c.active)throw httpError('보관된 채널은 수집하지 않습니다.');
+    if(!c.active)throw httpError('보관한 채널은 수집하지 않아요.');
     if(inflight.has(c.id))return {channelId:c.id,status:'already-running'};
-    if(!hasConnection(c))throw httpError('먼저 계정을 연결해 주세요. 관리자의 플랫폼 앱 설정이 필요할 수 있습니다.');
+    if(!hasConnection(c))throw httpError('먼저 계정을 연결해 주세요. 관리자가 플랫폼 연결을 먼저 준비해야 할 수도 있어요.');
     const id=randomUUID(),startedAt=clock();inflight.add(c.id);
-    store.put('runs',id,{id,channelId:c.id,channelName:c.displayName,status:'queued',startedAt,requestedBy:user.id,mode,message:mode==='recent'?'최근 7일 게시물 수집 대기':'전체 게시물 수집 대기',connectionVersion:c.connectionVersion||0});
+    store.put('runs',id,{id,channelId:c.id,channelName:c.displayName,status:'queued',startedAt,requestedBy:user.id,mode,message:mode==='recent'?'최근 7일 게시물을 곧 수집해요':'전체 게시물을 곧 수집해요',connectionVersion:c.connectionVersion||0});
     store.put('channels',c.id,{...c,...(mode==='recent'?{recentStatus:'collecting',recentLastAttemptAt:startedAt}:{status:'collecting',lastAttemptAt:startedAt})});
     queue=queue.then(async()=>{try{
-      const live=store.get('channels',c.id);if(!live?.active)throw httpError('수집 전에 채널이 보관됐습니다.');if(!hasConnection(live))throw httpError('수집 전에 채널 연결이 해제됐습니다.');if((live.connectionVersion||0)!==(c.connectionVersion||0))throw httpError('수집 전에 담당자 또는 연결이 변경됐습니다.');
+      const live=store.get('channels',c.id);if(!live?.active)throw httpError('수집하기 전에 채널이 보관됐어요.');if(!hasConnection(live))throw httpError('수집하기 전에 채널 연결이 끊겼어요.');if((live.connectionVersion||0)!==(c.connectionVersion||0))throw httpError('수집하기 전에 담당자나 연결이 바뀌었어요.');
       store.put('runs',id,{...store.get('runs',id),status:'running'});
       const at=clock(),result=await collector(live,await collectionCredentialsFor(live),mode==='recent'?{recentSince:new Date(Date.parse(at)-HYPE_RECENT_MS).toISOString(),now:at}:undefined);saveCollection(live,result,id,false,mode);
     }catch(error){const live=store.get('channels',c.id);
@@ -770,7 +770,7 @@ export function createCompanyApp(options={}) {
     return store.transaction(()=>{const mappings=new Map(),added=[],skipped=[];
       for(const row of map.queries.channels.rows){if(!((row.channelScope==='기존 운영'&&row.publishable)||row.channelScope==='확장 확보'))continue;
         try{const parsed=normalizeChannelUrl(row.publicUrl);let c=store.all('channels').find(x=>x.canonicalUrl===parsed.canonicalUrl);if(!c){const id=randomUUID();c={...parsed,id,displayName:[row.brand,row.country,row.handle].filter(Boolean).join(' · '),ownerIds:[user.id],active:true,status:'not-connected',createdAt:clock(),teamId:user.teamId||null,legacyId:row.id};store.put('channels',id,c);seedOwnership(store,c,clock());added.push(id);}mappings.set(row.id,c.id);
-        }catch{skipped.push({id:row.id,url:row.publicUrl,reason:'지원하는 채널 주소 형식이 아니므로 기존 기록장에 보존했습니다.'});}}
+        }catch{skipped.push({id:row.id,url:row.publicUrl,reason:'지원하지 않는 주소라 예전 기록장에 그대로 뒀어요.'});}}
       for(const p of legacy.posts){const channelId=mappings.get(p.channelId);if(!channelId)continue;const id='legacy:'+p.id;store.put('posts',id,{...p,id,channelId,source:'manual-import'});}
       for(const s of legacy.snapshots){const postId='legacy:'+s.postId;if(!store.get('posts',postId))continue;const id=`${postId}:${s.date}`;store.put('snapshots',id,{...s,id,postId,source:'manual-import'});}
       for(const s of legacy.channelSnapshots){const channelId=mappings.get(s.channelId);if(!channelId)continue;const id=`${channelId}:${s.date}`;store.put('channelSnapshots',id,{...s,id,channelId,source:'manual-import'});}
@@ -907,7 +907,7 @@ export function createCompanyApp(options={}) {
       throw httpError('고객 요청을 찾을 수 없습니다.',404);
     }
     const demoRequest=path==='/api/demo'||path.startsWith('/api/demo/')||req.headers['x-synk-demo']==='1'||url.searchParams.get('demo')==='1';
-    if(demoRequest&&!['GET','HEAD'].includes(method)&&path!=='/api/logout')throw httpError('데모 화면에서는 조회만 가능합니다. 실제 화면으로 돌아가 변경해 주세요.',403);
+    if(demoRequest&&!['GET','HEAD'].includes(method)&&path!=='/api/logout')throw httpError('데모 화면에서는 보기만 할 수 있어요. 바꾸려면 실제 화면으로 돌아가 주세요.',403);
     if(path.startsWith('/social-publish-media/')&&await socialPublishMedia.handle(req,res,{url,signal:socialAbort.signal}))return;
     if(await socialPublicRoutes(req,res,{url}))return;
     if(await customerRoutes(req,res,url))return;
@@ -1346,10 +1346,10 @@ export function createCompanyApp(options={}) {
       if(path==='/api/crew-profile')return send(res,200,crewProfiles.save(user,input));
       if(path==='/api/crew-profile/delete')return send(res,200,crewProfiles.remove(user,input));
       if(path==='/api/crew-work/evaluate')return send(res,200,crewProfiles.evaluate(user,input));
-      if(user.role==='viewer'&&!['/api/logout','/api/account/password'].includes(path))throw httpError('열람 계정은 기록을 변경하거나 수집할 수 없습니다.',403);
+      if(user.role==='viewer'&&!['/api/logout','/api/account/password'].includes(path))throw httpError('보기 전용 계정은 기록을 바꾸거나 수집할 수 없어요.',403);
       if(path==='/api/logout'){await deviceNotifications.revokeSession(auth.hash);const result=synkIdentity.logout(auth.hash);res.setHeader('Set-Cookie','synk_company_session=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0');return send(res,200,await result);}
       if(path==='/api/account/password'){
-        if(user.passwordHash&&!await passwordMatches(input.oldPassword,user.passwordHash))throw httpError('현재 비밀번호를 확인해 주세요.',403);
+        if(user.passwordHash&&!await passwordMatches(input.oldPassword,user.passwordHash))throw httpError('현재 비밀번호가 맞지 않아요.',403);
         const checkedHash=await passwordHashAsync(input.password),latest=session(req);
         if(!latest||latest.hash!==auth.hash||latest.user.id!==user.id||latest.user.passwordHash!==user.passwordHash||req.headers['x-csrf-token']!==latest.body.csrfToken)throw httpError('로그인 상태를 다시 확인해 주세요.',401);
         const changed={...latest.user,passwordHash:checkedHash};store.put('users',user.id,changed);store.revokeUser(user.id);return send(res,200,setSession(res,changed));
@@ -1429,19 +1429,19 @@ export function createCompanyApp(options={}) {
       const contentDraft=path.match(/^\/api\/content-drafts\/([^/]+)$/);
       if(contentDraft){const result=content.update(user,contentDraft[1],input);audit(user,'content-draft-updated',result.draft.id);return send(res,200,result);}
       if(path==='/api/teams'){
-        admin(user);const name=text(input.name,80);if(!name)throw httpError('팀 이름을 입력해 주세요.');if(store.all('teams').some(t=>t.active&&t.name.toLowerCase()===name.toLowerCase()))throw httpError('이미 있는 팀 이름입니다.');
+        admin(user);const name=text(input.name,80);if(!name)throw httpError('팀 이름을 적어 주세요.');if(store.all('teams').some(t=>t.active&&t.name.toLowerCase()===name.toLowerCase()))throw httpError('같은 이름의 팀이 이미 있어요.');
         const team={id:randomUUID(),name,active:true,createdAt:clock()};store.put('teams',team.id,team);audit(user,'team-created',team.id);return send(res,201,{team});
       }
       const teamRoute=path.match(/^\/api\/teams\/([^/]+)$/);
-      if(teamRoute){admin(user);const team=store.get('teams',teamRoute[1]);if(!team)throw httpError('팀을 찾을 수 없습니다.',404);const name=input.name===undefined?team.name:text(input.name,80);if(!name)throw httpError('팀 이름을 입력해 주세요.');if(store.all('teams').some(t=>t.id!==team.id&&t.active&&t.name.toLowerCase()===name.toLowerCase()))throw httpError('이미 있는 팀 이름입니다.');if(input.active===false&&(store.all('users').some(u=>u.teamId===team.id)||store.all('channels').some(c=>c.teamId===team.id)||store.all('handoffs').some(h=>h.status==='awaiting-connection'&&h.toTeamId===team.id)))throw httpError('소속 크루와 채널을 먼저 다른 팀으로 옮겨 주세요.');const updated={...team,name,active:input.active===undefined?team.active:input.active===true};store.put('teams',team.id,updated);audit(user,'team-updated',team.id,{before:team,after:updated});return send(res,200,{team:updated});}
+      if(teamRoute){admin(user);const team=store.get('teams',teamRoute[1]);if(!team)throw httpError('팀을 찾지 못했어요. 새로고침해 주세요.',404);const name=input.name===undefined?team.name:text(input.name,80);if(!name)throw httpError('팀 이름을 적어 주세요.');if(store.all('teams').some(t=>t.id!==team.id&&t.active&&t.name.toLowerCase()===name.toLowerCase()))throw httpError('같은 이름의 팀이 이미 있어요.');if(input.active===false&&(store.all('users').some(u=>u.teamId===team.id)||store.all('channels').some(c=>c.teamId===team.id)||store.all('handoffs').some(h=>h.status==='awaiting-connection'&&h.toTeamId===team.id)))throw httpError('이 팀에 크루나 채널이 남아 있어요. 먼저 다른 팀으로 옮겨 주세요.');const updated={...team,name,active:input.active===undefined?team.active:input.active===true};store.put('teams',team.id,updated);audit(user,'team-updated',team.id,{before:team,after:updated});return send(res,200,{team:updated});}
       const membership=path.match(/^\/api\/members\/([^/]+)\/assignment$/);
       if(membership){
         admin(user);const target=store.get('users',membership[1]),selfAdmin=target?.id===user.id&&target.role==='admin';
-        if(!target||target.role==='admin'&&!selfAdmin)throw httpError('다른 관리자의 소속과 역할은 변경할 수 없습니다.',403);
+        if(!target||target.role==='admin'&&!selfAdmin)throw httpError('다른 관리자의 팀과 역할은 바꿀 수 없어요.',403);
         const role=selfAdmin&&input.role===undefined?target.role:input.role,teamId=input.teamId||null;
-        if(selfAdmin&&role!=='admin')throw httpError('관리자는 본인의 소속 팀만 변경할 수 있습니다.',403);
-        if(!selfAdmin&&!['manager','member','viewer'].includes(role))throw httpError('크루 역할을 선택해 주세요.');
-        teamFor(teamId);if(role==='manager'&&!teamId)throw httpError('팀장에게 소속 팀을 지정해 주세요.');
+        if(selfAdmin&&role!=='admin')throw httpError('관리자는 자기 팀만 바꿀 수 있어요.',403);
+        if(!selfAdmin&&!['manager','member','viewer'].includes(role))throw httpError('역할을 골라 주세요.');
+        teamFor(teamId);if(role==='manager'&&!teamId)throw httpError('팀장은 팀을 꼭 골라야 해요.');
         const updated={...target,role,teamId};
         store.transaction(()=>{
           store.put('users',target.id,updated);
@@ -1452,40 +1452,40 @@ export function createCompanyApp(options={}) {
         });return send(res,200,{member:publicUser(updated)});
       }
       if(path==='/api/channels'){
-        const urls=Array.isArray(input.urls)?input.urls:String(input.urls||'').split(/[\n\r]+/).map(s=>s.trim()).filter(Boolean);if(!urls.length||urls.length>100)throw httpError('한 번에 주소 1~100개를 입력해 주세요. 추가 등록은 계속할 수 있습니다.');
-        const ownerId=['admin','manager'].includes(user.role)&&input.ownerId?input.ownerId:user.id;const owner=store.get('users',ownerId);if(!owner?.active||owner.role==='viewer')throw httpError('활성 담당 크루를 확인해 주세요.');if(user.role==='manager'&&owner.id!==user.id&&owner.teamId!==user.teamId)throw httpError('같은 팀의 담당자만 선택할 수 있습니다.',403);
+        const urls=Array.isArray(input.urls)?input.urls:String(input.urls||'').split(/[\n\r]+/).map(s=>s.trim()).filter(Boolean);if(!urls.length||urls.length>100)throw httpError('주소는 한 번에 1~100개까지 넣어 주세요. 나머지는 이어서 등록하면 돼요.');
+        const ownerId=['admin','manager'].includes(user.role)&&input.ownerId?input.ownerId:user.id;const owner=store.get('users',ownerId);if(!owner?.active||owner.role==='viewer')throw httpError('담당자는 이용 중인 크루 가운데서 골라 주세요.');if(user.role==='manager'&&owner.id!==user.id&&owner.teamId!==user.teamId)throw httpError('같은 팀 크루만 담당자로 고를 수 있어요.',403);
         const teamId=user.role==='admin'&&input.teamId!==undefined?(input.teamId||null):(owner.teamId||null);teamFor(teamId);
-        const result={added:[],existing:[],errors:[]};store.transaction(()=>{for(const raw of urls){try{const parsed=normalizeChannelUrl(raw),existing=store.all('channels').find(c=>c.canonicalUrl===parsed.canonicalUrl);if(existing){if(canReadChannel(user,existing))result.existing.push(safeChannel(existing,user));else result.errors.push({url:raw,error:'이미 회사에 등록된 채널입니다. 관리자에게 담당자 추가를 요청하세요.'});continue;}const c={...parsed,id:randomUUID(),displayName:parsed.label||parsed.handle||parsed.externalId||parsed.canonicalUrl,ownerIds:[ownerId],teamId,active:true,status:'not-connected',createdAt:clock()};store.put('channels',c.id,c);seedOwnership(store,c,clock());result.added.push(safeChannel(c,user));}catch(e){result.errors.push({url:text(raw,1000),error:safeError(e.message)});}}audit(user,'add-channels',String(result.added.length));});return send(res,201,result);
+        const result={added:[],existing:[],errors:[]};store.transaction(()=>{for(const raw of urls){try{const parsed=normalizeChannelUrl(raw),existing=store.all('channels').find(c=>c.canonicalUrl===parsed.canonicalUrl);if(existing){if(canReadChannel(user,existing))result.existing.push(safeChannel(existing,user));else result.errors.push({url:raw,error:'이미 회사에 등록된 채널이에요. 관리자에게 담당자로 넣어 달라고 해 주세요.'});continue;}const c={...parsed,id:randomUUID(),displayName:parsed.label||parsed.handle||parsed.externalId||parsed.canonicalUrl,ownerIds:[ownerId],teamId,active:true,status:'not-connected',createdAt:clock()};store.put('channels',c.id,c);seedOwnership(store,c,clock());result.added.push(safeChannel(c,user));}catch(e){result.errors.push({url:text(raw,1000),error:safeError(e.message)});}}audit(user,'add-channels',String(result.added.length));});return send(res,201,result);
       }
       const cancelHandoff=path.match(/^\/api\/channels\/([^/]+)\/handoff\/cancel$/);
-      if(cancelHandoff){const c=channelFor(user,cancelHandoff[1],'write');if(!canManageOwners(user,c))throw httpError('관리자 또는 팀장만 인계를 취소할 수 있습니다.',403);const h=pending(c);if(h)store.transaction(()=>{store.put('handoffs',h.id,{...h,status:'cancelled',cancelledAt:clock(),cancelledBy:user.id});store.put('channels',c.id,{...c,pendingHandoffId:null});audit(user,'handoff-cancelled',c.id);});return send(res,200,{ok:true});}
+      if(cancelHandoff){const c=channelFor(user,cancelHandoff[1],'write');if(!canManageOwners(user,c))throw httpError('담당자 바꾸기는 관리자나 팀장만 취소할 수 있어요.',403);const h=pending(c);if(h)store.transaction(()=>{store.put('handoffs',h.id,{...h,status:'cancelled',cancelledAt:clock(),cancelledBy:user.id});store.put('channels',c.id,{...c,pendingHandoffId:null});audit(user,'handoff-cancelled',c.id);});return send(res,200,{ok:true});}
       const cm=path.match(/^\/api\/channels\/([^/]+)\/(collect|connection|owners|archive|disconnect|details)$/);
       if(cm){const c=channelFor(user,cm[1],'write');if(cm[2]==='collect')return send(res,202,enqueueCollection(user,c));
         if(cm[2]==='owners')return send(res,200,changeOwners(user,c,input));
-        if(cm[2]==='details'){const updated={...c};for(const key of ['displayName','brand','country','language'])if(input[key]!==undefined)updated[key]=text(input[key],key==='displayName'?160:80);if(!updated.displayName)throw httpError('채널 이름을 입력해 주세요.');if(input.teamId!==undefined&&(input.teamId||null)!==(c.teamId||null)){admin(user);if(pending(c))throw httpError('진행 중인 인계를 먼저 완료해 주세요.');teamFor(input.teamId);updated.teamId=input.teamId||null;updated.connectionVersion=(c.connectionVersion||0)+1;if(c.status==='collecting'){updated.status=hasConnection(c)?'ready':'not-connected';updated.lastAttemptAt=null;}}store.transaction(()=>{recordOwnershipChange(store,c,updated,{actorId:user.id,at:clock(),reason:'채널 소속 팀 변경'});store.put('channels',c.id,updated);});}
+        if(cm[2]==='details'){const updated={...c};for(const key of ['displayName','brand','country','language'])if(input[key]!==undefined)updated[key]=text(input[key],key==='displayName'?160:80);if(!updated.displayName)throw httpError('채널 이름을 적어 주세요.');if(input.teamId!==undefined&&(input.teamId||null)!==(c.teamId||null)){admin(user);if(pending(c))throw httpError('담당자를 바꾸는 중이에요. 그 요청이 끝난 뒤에 해 주세요.');teamFor(input.teamId);updated.teamId=input.teamId||null;updated.connectionVersion=(c.connectionVersion||0)+1;if(c.status==='collecting'){updated.status=hasConnection(c)?'ready':'not-connected';updated.lastAttemptAt=null;}}store.transaction(()=>{recordOwnershipChange(store,c,updated,{actorId:user.id,at:clock(),reason:'채널 소속 팀 변경'});store.put('channels',c.id,updated);});}
         if(cm[2]==='archive'){store.put('channels',c.id,{...c,active:input.active===true});}
         if(cm[2]==='connection'){
           admin(user);
           if(['instagram','facebook'].includes(c.platform))await metaConnections.connect(user,c.id,input,{signal:socialAbort.signal,authorize:()=>{const current=session(req);if(!current||current.hash!==auth.hash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);return current.user;}});
-          else{const allowed=['apiKey','accessToken','accountId','apiVersion','refreshToken','authType'];const creds=Object.fromEntries(allowed.filter(k=>input[k]).map(k=>[k,text(input[k],16000)]));if(!creds.accessToken&&!creds.apiKey)throw httpError('연결 정보를 입력해 주세요.');store.setSecret('channel:'+c.id,{...creds,connectedBy:user.id,connectedAt:now()});store.put('channels',c.id,{...c,status:'ready',lastError:null,collectionDisabled:false,failureKind:null,failureCode:null,retryCount:0,nextRetryAt:null,requiresReconnect:false,lastFailureAt:null,lastAttemptAt:null,...recentFields({status:'ready',failureKind:null,failureCode:null,retryCount:0,nextRetryAt:null,requiresReconnect:false,lastFailureAt:null,lastAttemptAt:null,lastError:null}),connectionVersion:(c.connectionVersion||0)+1});}
+          else{const allowed=['apiKey','accessToken','accountId','apiVersion','refreshToken','authType'];const creds=Object.fromEntries(allowed.filter(k=>input[k]).map(k=>[k,text(input[k],16000)]));if(!creds.accessToken&&!creds.apiKey)throw httpError('토큰이나 키를 넣어 주세요.');store.setSecret('channel:'+c.id,{...creds,connectedBy:user.id,connectedAt:now()});store.put('channels',c.id,{...c,status:'ready',lastError:null,collectionDisabled:false,failureKind:null,failureCode:null,retryCount:0,nextRetryAt:null,requiresReconnect:false,lastFailureAt:null,lastAttemptAt:null,...recentFields({status:'ready',failureKind:null,failureCode:null,retryCount:0,nextRetryAt:null,requiresReconnect:false,lastFailureAt:null,lastAttemptAt:null,lastError:null}),connectionVersion:(c.connectionVersion||0)+1});}
         }
         if(cm[2]==='disconnect')disconnectChannel(c);
         audit(user,cm[2],c.id);return send(res,200,{ok:true});
       }
       if(path==='/api/collect'){const results=[];const q=new URLSearchParams();if(input.scope)q.set('scope',input.scope);if(input.teamId)q.set('teamId',input.teamId);for(const c of scopedChannels(user,q).filter(c=>canWriteChannel(user,c)&&c.active&&hasConnection(c)))results.push(enqueueCollection(user,c));return send(res,202,{runs:results});}
-      if(path==='/api/members/invite'){admin(user);const email=text(input.email,254).toLowerCase(),name=text(input.name,80),role=input.role||'member',teamId=input.teamId||null;if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||!name)throw httpError('크루의 이름과 이메일을 입력해 주세요.');if(!['manager','member','viewer'].includes(role))throw httpError('초대할 역할을 확인해 주세요.');teamFor(teamId);if(role==='manager'&&!teamId)throw httpError('팀장의 소속 팀을 선택해 주세요.');if(store.all('users').some(u=>u.email===email))throw httpError('이미 등록된 크루입니다.');const value=store.mint('invite',null,{email,name,role,teamId,invitedBy:user.id},3*24*60);audit(user,'invite',email,{role,teamId});return send(res,201,{inviteUrl:origin+'/#invite='+value,expiresInDays:3,delivery:'copy-link'});}
+      if(path==='/api/members/invite'){admin(user);const email=text(input.email,254).toLowerCase(),name=text(input.name,80),role=input.role||'member',teamId=input.teamId||null;if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||!name)throw httpError('크루의 이름과 이메일을 적어 주세요.');if(!['manager','member','viewer'].includes(role))throw httpError('초대할 역할을 골라 주세요.');teamFor(teamId);if(role==='manager'&&!teamId)throw httpError('팀장은 팀을 꼭 골라야 해요.');if(store.all('users').some(u=>u.email===email))throw httpError('이미 등록된 크루예요.');const value=store.mint('invite',null,{email,name,role,teamId,invitedBy:user.id},3*24*60);audit(user,'invite',email,{role,teamId});return send(res,201,{inviteUrl:origin+'/#invite='+value,expiresInDays:3,delivery:'copy-link'});}
       const member=path.match(/^\/api\/members\/([^/]+)\/status$/);
-      if(member){admin(user);const target=store.get('users',member[1]);if(!target||target.id===user.id||target.role==='admin')throw httpError('이 크루의 상태를 변경할 수 없습니다.');store.put('users',target.id,{...target,active:input.active===true});store.revokeUser(target.id);if(input.active!==true)for(const c of store.all('channels'))if(connection(c)?.connectedBy===target.id)disconnectChannel(c);audit(user,'member-status',target.id);return send(res,200,{ok:true});}
-      if(path==='/api/settings'){admin(user);const hour=Number(input.hourKst);if(!Number.isInteger(hour)||hour<0||hour>23)throw httpError('수집 시각은 0~23시로 선택해 주세요.');store.put('settings','company',{...store.get('settings','company'),hourKst:hour,enabled:input.enabled===true,companyName:text(input.companyName,80)||store.get('settings','company').companyName});return send(res,200,{ok:true});}
+      if(member){admin(user);const target=store.get('users',member[1]);if(!target||target.id===user.id||target.role==='admin')throw httpError('이 크루의 이용 상태는 바꿀 수 없어요.');store.put('users',target.id,{...target,active:input.active===true});store.revokeUser(target.id);if(input.active!==true)for(const c of store.all('channels'))if(connection(c)?.connectedBy===target.id)disconnectChannel(c);audit(user,'member-status',target.id);return send(res,200,{ok:true});}
+      if(path==='/api/settings'){admin(user);const hour=Number(input.hourKst);if(!Number.isInteger(hour)||hour<0||hour>23)throw httpError('수집 시각은 0~23시 가운데서 골라 주세요.');store.put('settings','company',{...store.get('settings','company'),hourKst:hour,enabled:input.enabled===true,companyName:text(input.companyName,80)||store.get('settings','company').companyName});return send(res,200,{ok:true});}
       if(path==='/api/settings/pulse-auto-reply'){const result=pulseAutoReply.configure(user,input);audit(user,'pulse-auto-reply-settings','pulse-auto-reply',{enabled:result.enabled,keyChanged:input?.apiKey!==undefined,dailyUsd:result.dailyUsd,monthlyUsd:result.monthlyUsd,perProjectDaily:result.perProjectDaily});return send(res,200,result);}
-      if(path==='/api/settings/provider'){admin(user);if(!['youtube','instagram','facebook','tiktok'].includes(input.platform))throw httpError('지원하지 않는 플랫폼입니다.');const cfg=store.secret('provider:'+input.platform)||{};for(const key of ['clientId','clientSecret','apiKey'])if(input[key])cfg[key]=text(input[key],16000);store.setSecret('provider:'+input.platform,cfg);audit(user,'provider-config',input.platform);return send(res,200,{ok:true});}
+      if(path==='/api/settings/provider'){admin(user);if(!['youtube','instagram','facebook','tiktok'].includes(input.platform))throw httpError('지원하지 않는 플랫폼이에요.');const cfg=store.secret('provider:'+input.platform)||{};for(const key of ['clientId','clientSecret','apiKey'])if(input[key])cfg[key]=text(input[key],16000);store.setSecret('provider:'+input.platform,cfg);audit(user,'provider-config',input.platform);return send(res,200,{ok:true});}
       if(path==='/api/import-legacy')return send(res,200,await importLegacy(user));
       throw httpError('요청을 찾을 수 없습니다.',404);
     }
     const oauth=path.match(/^\/api\/oauth\/(youtube|instagram|facebook|tiktok)\/(start|callback)$/);
-    if(method==='GET'&&oauth){if(!auth)throw httpError('로그인 후 계정을 연결해 주세요.',401);const platform=oauth[1];
+    if(method==='GET'&&oauth){if(!auth)throw httpError('로그인한 뒤 계정을 연결해 주세요.',401);const platform=oauth[1];
       if(oauth[2]==='start'){
-        const c=channelFor(user,url.searchParams.get('channelId'),'connect');if(c.platform!==platform)throw httpError('채널 플랫폼이 다릅니다.');const cfg=providerConfig(platform);if(!cfg.clientId||!cfg.clientSecret)throw httpError('관리자가 플랫폼 앱을 먼저 설정해야 합니다.');
+        const c=channelFor(user,url.searchParams.get('channelId'),'connect');if(c.platform!==platform)throw httpError('채널과 다른 플랫폼이에요.');const cfg=providerConfig(platform);if(!cfg.clientId||!cfg.clientSecret)throw httpError('관리자가 플랫폼 연결을 먼저 준비해야 해요.');
         const meta=['instagram','facebook'].includes(platform),publishing=['instagram','facebook','youtube'].includes(platform)&&url.searchParams.get('publishing')==='1';
         const previous=connection(c),existingGrantedScopes=previous?.permissionsVerifiedAt&&typeof previous.scope==='string'?previous.scope.split(/[ ,]+/):[],inbox=store.get('socialInboxConnections',c.id);
         const preserveComments=publishing&&meta&&(inbox?.enabled===true||hasVerifiedMetaComments(c,previous)||Boolean(previous?.permissionsVerifiedAt)&&metaCommentScopes(platform,previous.authType).every(scope=>existingGrantedScopes.includes(scope)));
@@ -1494,12 +1494,12 @@ export function createCompanyApp(options={}) {
         const state=store.mint('oauth',user.id,{channelId:c.id,sessionHash:hash(auth.raw),platform,comments,publishing,preserveComments,inboxBinding,connectionVersion:c.connectionVersion||0},10);
         const dest=createAuthorization(platform,{...cfg,state,comments,publishing,existingGrantedScopes});res.writeHead(302,{Location:dest,'Referrer-Policy':'no-referrer'});return res.end();
       }
-      const state=store.consume(url.searchParams.get('state'),'oauth');if(!state||state.userId!==user.id||state.body.platform!==platform||state.body.sessionHash!==hash(auth.raw))throw httpError('연결 확인이 만료됐습니다. 다시 계정 연결을 눌러 주세요.',403);
+      const state=store.consume(url.searchParams.get('state'),'oauth');if(!state||state.userId!==user.id||state.body.platform!==platform||state.body.sessionHash!==hash(auth.raw))throw httpError('연결 확인 시간이 지났어요. 「계정 연결」을 다시 눌러 주세요.',403);
       try{
-        if(url.searchParams.has('error'))throw httpError('계정 연결이 취소됐습니다.');
+        if(url.searchParams.has('error'))throw httpError('계정 연결을 취소했어요.');
         const c=channelFor(user,state.body.channelId,'connect');
-        const cfg=providerConfig(platform),cfgPin=JSON.stringify(cfg),comments=state.body.comments===true,publishing=state.body.publishing===true;if(state.body.connectionVersion!=null&&state.body.connectionVersion!==(c.connectionVersion||0))throw httpError('계정 연결이 변경됐습니다. 다시 연결해 주세요.',409);
-        const assertCurrent=()=>{const latest=session(req);if(!latest?.user?.active||latest.hash!==auth.hash)throw httpError('크루 로그인이 해제됐습니다.',401);const live=channelFor(latest.user,c.id,'connect');if(!live.active||(live.connectionVersion||0)!==(c.connectionVersion||0)||JSON.stringify(providerConfig(platform))!==cfgPin)throw httpError('계정 또는 앱 연결이 변경됐습니다. 다시 연결해 주세요.',409);if(state.body.inboxBinding){const inbox=store.get('socialInboxConnections',c.id),binding={enabled:inbox?.enabled===true,version:inbox?.version||null,connectionVersion:inbox?.connectionVersion??null};if(JSON.stringify(binding)!==JSON.stringify(state.body.inboxBinding))throw httpError('댓글 수집 설정이 변경됐습니다. 현재 설정을 확인하고 다시 연결해 주세요.',409);}if(stopRequested)throw httpError('서버가 종료 중입니다.',503);};
+        const cfg=providerConfig(platform),cfgPin=JSON.stringify(cfg),comments=state.body.comments===true,publishing=state.body.publishing===true;if(state.body.connectionVersion!=null&&state.body.connectionVersion!==(c.connectionVersion||0))throw httpError('그사이 계정 연결이 바뀌었어요. 다시 연결해 주세요.',409);
+        const assertCurrent=()=>{const latest=session(req);if(!latest?.user?.active||latest.hash!==auth.hash)throw httpError('로그인이 풀렸어요. 다시 로그인해 주세요.',401);const live=channelFor(latest.user,c.id,'connect');if(!live.active||(live.connectionVersion||0)!==(c.connectionVersion||0)||JSON.stringify(providerConfig(platform))!==cfgPin)throw httpError('그사이 계정이나 앱 연결이 바뀌었어요. 다시 연결해 주세요.',409);if(state.body.inboxBinding){const inbox=store.get('socialInboxConnections',c.id),binding={enabled:inbox?.enabled===true,version:inbox?.version||null,connectionVersion:inbox?.connectionVersion??null};if(JSON.stringify(binding)!==JSON.stringify(state.body.inboxBinding))throw httpError('그사이 댓글 수집 설정이 바뀌었어요. 설정을 보고 다시 연결해 주세요.',409);}if(stopRequested)throw httpError('서버가 종료 중입니다.',503);};
         assertCurrent();
         let creds=await exchangeCode(platform,{...cfg,code:url.searchParams.get('code')},{fetchImpl:options.oauthFetch});assertCurrent();
         let verified;
@@ -1508,13 +1508,13 @@ export function createCompanyApp(options={}) {
         const result=comments||publishing?null:await collector(c,{...cfg,...creds});assertCurrent();
         const externalId=verified?.identity.id||result.channel.externalId;
         const currentAuth=session(req),currentUser=currentAuth?.user;
-        if(!currentUser?.active||currentAuth.raw!==auth.raw||currentUser.id!==user.id)throw httpError('크루 로그인이 해제됐습니다.');
+        if(!currentUser?.active||currentAuth.raw!==auth.raw||currentUser.id!==user.id)throw httpError('로그인이 풀렸어요. 다시 로그인해 주세요.');
         channelFor(currentUser,c.id,'connect');let live=store.get('channels',c.id);
-        if(!live.active||(live.connectionVersion||0)!==(c.connectionVersion||0))throw httpError('채널이 변경됐습니다. 다시 연결해 주세요.');
-        if(store.all('channels').some(x=>x.id!==c.id&&x.platform===c.platform&&x.externalId&&x.externalId===externalId))throw httpError('이 계정은 이미 회사에 등록되어 있습니다. 기존 채널에 담당자를 추가해 주세요.');
+        if(!live.active||(live.connectionVersion||0)!==(c.connectionVersion||0))throw httpError('그사이 채널이 바뀌었어요. 다시 연결해 주세요.');
+        if(store.all('channels').some(x=>x.id!==c.id&&x.platform===c.platform&&x.externalId&&x.externalId===externalId))throw httpError('이 계정은 이미 회사의 다른 채널에 있어요. 그 채널에 담당자를 더해 주세요.');
         const h=pending(live);
         if(h&&h.toOwnerIds.includes(user.id)){
-          teamFor(h.toTeamId);if(h.toOwnerIds.some(id=>{const target=store.get('users',id);return !target?.active||target.role==='viewer';}))throw httpError('인계받을 담당자를 다시 확인해 주세요.');
+          teamFor(h.toTeamId);if(h.toOwnerIds.some(id=>{const target=store.get('users',id);return !target?.active||target.role==='viewer';}))throw httpError('새 담당자를 다시 골라 주세요.');
         }
         const runId=randomUUID();
         store.transaction(()=>{

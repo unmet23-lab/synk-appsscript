@@ -374,7 +374,7 @@ function shareWorkspaceView(){
   if(isViewer()||!workspaceViewNames[state.tab])return;
   // Share the permitted screen title/link only. Private drafts and assets never enter a message.
   const section=workspaceSection(),reportView=['overview','analysis','history'].includes(state.tab)&&section!=='channels';
-  const title=reportView?marketingScopeTitle()+(state.tab==='analysis'?' · 상세 분석':state.tab==='history'?' · 전체 추이':''):workspaceViewNames[state.tab]+(section==='channels'?' · 채널·수집 관리':state.tab==='content'&&cp.view==='examples'?' · 좋은 콘텐츠':'');
+  const title=reportView?marketingScopeTitle()+(state.tab==='analysis'?' · 상세 분석':state.tab==='history'?' · 전체 추이':''):workspaceViewNames[state.tab]+(section==='channels'?' · 채널과 수집':state.tab==='content'&&cp.view==='examples'?' · 좋은 콘텐츠':'');
   const url=new URL('/',location.origin);url.hash=new URLSearchParams({view:state.tab,...(section?{section}:{}),...(reportView&&section==='team'&&state.teamId?{teamId:state.teamId}:{})}).toString();
   prepareWorkspaceShare({title,url:url.pathname+url.hash,kind:reportView?'report':'screen'});
 }

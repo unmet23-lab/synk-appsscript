@@ -100,7 +100,7 @@ export class Store {
   createUser({email,name,role='member',password,teamId=null}) {
     email=String(email||'').trim().toLowerCase();name=String(name||'').trim();
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.length>254||!name||name.length>80)throw inputError('이름과 이메일을 확인해 주세요.');
-    if(this.all('users').some(u=>u.email===email))throw inputError('이미 등록된 이메일입니다.');
+    if(this.all('users').some(u=>u.email===email))throw inputError('이미 등록된 이메일이에요.');
     if(!['admin','manager','member','viewer'].includes(role))throw inputError('크루 역할을 확인해 주세요.');
     const id=randomUUID();
     return this.put('users',id,{id,email,name,role,teamId,active:true,passwordHash:password?passwordHash(password):null,createdAt:now()});

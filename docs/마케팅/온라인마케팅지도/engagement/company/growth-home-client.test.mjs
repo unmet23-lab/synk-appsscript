@@ -93,7 +93,7 @@ test('the initial home exposes four weekly figures and one history link while ex
   const f=fixture();await f.run('loadReport()');const html=f.run('overviewPage()');
   assert.equal((html.match(/data-action="report-view" data-view="history"/g)||[]).length,1);assert.match(html,/이번 주 누적 조회수/);assert.equal((html.match(/<article class="growth-stat/g)||[]).length,4);
   const extras=html.match(/<details class="growth-home-extras"[^>]*>/)?.[0];assert.ok(extras);assert.doesNotMatch(extras,/\bopen\b/);
-  assert.match(html,/<summary>콘텐츠와 운영 현황<\/summary>/);assert.ok(html.indexOf('data-extra="content"')>html.indexOf(extras));
+  assert.match(html,/<summary>콘텐츠와 수집 상태<\/summary>/);assert.ok(html.indexOf('data-extra="content"')>html.indexOf(extras));
   assert.doesNotMatch(html,/data-date=|data-filter=|data-comparison-filter=|data-action="add-channel"|\/api\/export\.csv|기간별 성과 비교|대상별 성과 비교/);
   f.state.user.role='viewer';f.state.data.channels=[];const empty=f.run('overviewPage()');assert.doesNotMatch(empty,/data-tab="channels"|data-tab="members"|채널 등록/);
 });

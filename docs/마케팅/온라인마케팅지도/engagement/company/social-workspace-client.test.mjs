@@ -51,7 +51,7 @@ test('expired material and changed receipt have distinct DM warnings',()=>{
 
 test('overview shows actual observed posts separately from Workspace publishing and preserves unknown',()=>{
  const f=fixture();f.context.initial.observed={published7d:12,channelsObserved:3,channelsTotal:34};f.run('socialWorkspaceState.data=initial');
- let html=f.run('snswOverview()');assert.match(html,/SNS 7일 게시/);assert.match(html,/<strong>12<\/strong>/);assert.match(html,/3\/34개 채널/);assert.match(html,/Workspace 7일 발행/);assert.match(html,/href="\/\?tab=overview&section=all"/);
+ let html=f.run('snswOverview()');assert.match(html,/SNS 7일 게시/);assert.match(html,/<strong>12<\/strong>/);assert.match(html,/3\/34개 채널/);assert.match(html,/워크스페이스 7일 발행/);assert.match(html,/href="\/\?tab=overview&section=all"/);
  f.run('socialWorkspaceState.data.observed.published7d=null');html=f.run('snswOverview()');assert.match(html,/<strong>—<\/strong>/);
 });
 
@@ -216,7 +216,7 @@ test('time zone conversion rejects impossible and ambiguous clock times',()=>{
   const f=fixture();assert.equal(f.run('snswInstant("2026-10-13T09:30","Asia/Seoul")'),'2026-10-13T00:30:00.000Z');assert.equal(f.run('snswInstant("2026-07-13T09:30","America/New_York")'),'2026-07-13T13:30:00.000Z');assert.throws(()=>f.run('snswInstant("2026-02-30T09:00")'),/날짜/);assert.throws(()=>f.run('snswInstant("2026-03-08T02:30","America/New_York")'),/없는 시각/);assert.throws(()=>f.run('snswInstant("2026-11-01T01:30","America/New_York")'),/두 번/);assert.match(f.run('snswZoneSelect("Australia/Sydney")'),/Australia\/Sydney" selected/);
 });
 test('CSV supports quoted commas and newlines and does not lose the common body',()=>{
-  const f=fixture();f.context.csv='title,body,channelIds\r\n"제목, 하나","첫 줄\n둘째 줄","ch|other"';const rows=f.run('snswCSV(csv)');assert.equal(rows.length,1);assert.equal(rows[0].title,'제목, 하나');assert.equal(rows[0].variants[0].text,'첫 줄\n둘째 줄');assert.equal(rows[0].variants.length,2);assert.throws(()=>f.run('snswCSV("title,title,channelIds\\nx,y,ch")'),/중복/);assert.throws(()=>f.run('snswCSV("title,channelIds\\nx,ch,extra")'),/열 개수/);
+  const f=fixture();f.context.csv='title,body,channelIds\r\n"제목, 하나","첫 줄\n둘째 줄","ch|other"';const rows=f.run('snswCSV(csv)');assert.equal(rows.length,1);assert.equal(rows[0].title,'제목, 하나');assert.equal(rows[0].variants[0].text,'첫 줄\n둘째 줄');assert.equal(rows[0].variants.length,2);assert.throws(()=>f.run('snswCSV("title,title,channelIds\\nx,y,ch")'),/겹치는 열 이름/);assert.throws(()=>f.run('snswCSV("title,channelIds\\nx,ch,extra")'),/열 개수/);
 });
 test('bulk import reuses its preview idempotency key after an uncertain failure',async()=>{
   const f=fixture();f.run('socialWorkspaceState.bulkText="title,body,channelIds\\n첫편,확정본문,ch";socialWorkspaceState.bulkPreview={rows:[{valid:true}],importKey:"stable"}');const a=f.run('snswAction("bulk-import","")');assert.equal(f.requests[0].body.importKey,'stable');f.requests[0].reject(new Error('네트워크 실패'));await a;const b=f.run('snswAction("bulk-import","")');assert.equal(f.requests[1].body.importKey,'stable');f.requests[1].reject(new Error('네트워크 실패'));await b;assert.equal(f.run('socialWorkspaceState.bulkPreview.importKey'),'stable');
