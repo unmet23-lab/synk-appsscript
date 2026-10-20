@@ -28,7 +28,7 @@ async function session(t,overrides={}){
 }
 
 test('teacher client rejects a WORLD bridge and handles ordinary browser without account access',async()=>{
-  const page={...dom(),locationHref:'http://localhost/synk-account/teacher.html'};await assert.rejects(startTeacherClient({...page,bridge:{authStatus(){},getEnvironment:async()=>({clientId:'world',authProduct:'world'})}}),/교사 로그인/);
+  const page={...dom(),locationHref:'http://localhost/synk-account/teacher.html'};await assert.rejects(startTeacherClient({...page,bridge:{authStatus(){},getEnvironment:async()=>({clientId:'world',authProduct:'world'})}}),/내 수업」에서 다시 열어/);
   await startTeacherClient({...page,bridge:null});assert.equal(page.documentObject.getElementById('setup').hidden,false);
 });
 test('new auth event wins over a delayed initial snapshot',async t=>{

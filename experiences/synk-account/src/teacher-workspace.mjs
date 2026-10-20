@@ -9,7 +9,7 @@ export function createTeacherWorkspace({root,transport,guard,notice,documentObje
   controls.className='teacher-class-controls';select.setAttribute('aria-label','담당 반');refresh.type='button';refresh.className='plain';status.className='small';mount.className='teacher-class-mount';
   label.append(select);controls.append(label,refresh);root.replaceChildren(controls,status,overviewRoot,mount);root.hidden=false;
   if(!documentObject.querySelector?.('link[data-teacher-overview-style]')){const style=make('link');style.rel='stylesheet';style.href=new URL('../teacher-world/workspace-overview.css',locationHref).href;style.setAttribute('data-teacher-overview-style','1');documentObject.head?.append(style);}
-  const active=()=>{guard();if(stopped)throw Object.assign(new Error('내 수업 연결이 끝났어요. 다시 열어 주세요.'),{code:'ACCOUNT_CHANGED'});};
+  const active=()=>{guard();if(stopped)throw Object.assign(new Error('내 수업 연결이 끊겼어요. 다시 열어 주세요.'),{code:'ACCOUNT_CHANGED'});};
   const current=version=>{active();if(version!==epoch)throw Object.assign(new Error('고른 반이 바뀌었어요.'),{code:'ACCOUNT_CHANGED'});};
   function clearFrame(){epoch++;frame?.remove();frame=null;if(windowObject.SYNKClassroomHost===host)delete windowObject.SYNKClassroomHost;delete windowObject.SYNKClassroomSelection;host=null;framePermissions=new Map();mount.replaceChildren();}
   const permission=row=>row&&({id:row.id,revision:row.sharing?.revision,enabled:row.sharing?.enabled,connected:row.accountConnected,revoked:row.revoked===true||row.accountConnectionStatus==='revoked',townRevision:row.activity?.town?.sharing?.revision,townEnabled:row.activity?.town?.sharing?.enabled});
@@ -46,7 +46,7 @@ export function createTeacherWorkspace({root,transport,guard,notice,documentObje
   windowObject.addEventListener('message',studentSelected);
   function renderOverview(){if(!overviewData?.classes?.length&&classes.length){overviewRoot.className='teacher-overview';overviewRoot.replaceChildren(make('p',online?'담당 '+classes.length+'개 반의 학생 기록을 불러오고 있어요.':'담당 '+classes.length+'개 반의 학생 기록을 불러오지 못했어요. 연결되면 다시 불러와 주세요.'));return;}overview.render(overviewData||{classes:[]},{selectedClassId:selected?.id,selectedLearnerId,unavailable:!online});}
   function picker(){
-    const empty=make('option',classes.length?'담당 반 전체 보기':'담당 반이 없어요');empty.value='';select.replaceChildren(empty);
+    const empty=make('option',classes.length?'전체 반 보기':'담당 반이 없어요');empty.value='';select.replaceChildren(empty);
     for(const row of classes){const option=make('option',row.name);option.value=row.id;select.append(option);}select.value=selected?.id||'';
   }
   function canLeave(){try{return !frame?.contentWindow?.SYNKTeacherView?.hasDraft?.()||windowObject.confirm?.('쓰던 과제·관찰·챙길 일이 닫혀요. 다른 학생으로 넘어갈까요?')===true;}catch{return false;}}
@@ -86,14 +86,14 @@ export function createTeacherWorkspace({root,transport,guard,notice,documentObje
     active();const version=++requestVersion,reconnecting=!online;let data,rows;
     try{
       const result=await transport('classes');active();if(version!==requestVersion)return;
-      if(result?.mode!=='account-linked'||!Array.isArray(result.classes)||result.classes.some(row=>typeof row.id!=='string'||!row.id||typeof row.name!=='string'||!['teacher','learner'].includes(row.role)))throw Object.assign(new Error('반 목록을 불러오지 못했어요. 다시 불러와 주세요.'),{code:'INVALID_CLASSROOM_RESPONSE'});
+      if(result?.mode!=='account-linked'||!Array.isArray(result.classes)||result.classes.some(row=>typeof row.id!=='string'||!row.id||typeof row.name!=='string'||!['teacher','learner'].includes(row.role)))throw Object.assign(new Error('반 목록을 불러오지 못했어요. 「반 목록 새로고침」을 눌러 주세요.'),{code:'INVALID_CLASSROOM_RESPONSE'});
       rows=result.classes.filter(row=>row.role==='teacher').sort(compareTeacherRows);const authorized=new Set(rows.map(row=>row.id));
       // A successful membership response is already revocation evidence, even
       // when the following aggregate request is offline or fails later.
       if(selected&&!authorized.has(selected.id)){clearFrame();selected=null;selectedLearnerId=null;}
       classes=rows;overviewData=restrictOverview(overviewData,authorized);picker();renderOverview();
       data=rows.length?await readOverview(rows):{mode:'account-linked',classes:[],care:[],assignments:[]};active();if(version!==requestVersion)return;
-      if(data?.mode!=='account-linked'||!Array.isArray(data.classes)||data.classes.some(row=>typeof row.id!=='string'||!row.id))throw Object.assign(new Error('담당 반 기록을 불러오지 못했어요. 다시 불러와 주세요.'),{code:'INVALID_CLASSROOM_RESPONSE'});
+      if(data?.mode!=='account-linked'||!Array.isArray(data.classes)||data.classes.some(row=>typeof row.id!=='string'||!row.id))throw Object.assign(new Error('담당 반 기록을 불러오지 못했어요. 「반 목록 새로고침」을 눌러 주세요.'),{code:'INVALID_CLASSROOM_RESPONSE'});
       online=true;
     }catch(error){
       active();if(version!==requestVersion)return;online=false;

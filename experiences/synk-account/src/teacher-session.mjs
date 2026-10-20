@@ -10,7 +10,7 @@ export async function startTeacherClient({bridge,documentObject=document,windowO
     $('setup').hidden=false;notice('싱크 워크스페이스의 「내 수업」에서 열면 SYNK ID로 로그인할 수 있어요.');return {stop(){}};
   }
   const env=await bridge.getEnvironment();
-  if(env.clientId!=='teacher'||env.authProduct!=='world')throw new Error('워크스페이스 「내 수업」의 교사 로그인으로 다시 열어 주세요.');
+  if(env.clientId!=='teacher'||env.authProduct!=='world')throw new Error('워크스페이스 「내 수업」에서 다시 열어 주세요.');
   let stopped=false,epoch=0,revision=0,action=0,identity=null,sessionGeneration=null,workspace=null,unsubscribe,exiting=false,logoutError=false;
   function clear(){epoch++;workspace?.stop();workspace=null;identity=null;sessionGeneration=null;$('teacher-workspace').replaceChildren();$('teacher-workspace').hidden=true;$('sign-out').hidden=true;$('teacher-intro').hidden=false;}
   const report=error=>{if(!stopped)notice(error.message||'로그인을 확인하지 못했어요. 다시 로그인해 주세요.',true);};
@@ -39,7 +39,7 @@ export async function startTeacherClient({bridge,documentObject=document,windowO
     // never restore another account's classroom or hide an unsuccessful logout.
     const version=++action;exiting=true;logoutError=false;clear();$('connect').hidden=true;$('sign-out').disabled=true;
     try{const result=await bridge.authSignOut();if(stopped||version!==action)return;const latest=await bridge.authStatus();if(stopped||version!==action)return;exiting=false;logoutError=!!latest.signedIn;await show(latest);
-      if(!latest.signedIn)notice(result.message||(!result.ok?'이 기기의 로그인을 지우지 못했어요. 다시 로그아웃해 주세요.':result.serverRevoked===false?'로그아웃했어요. 서버 쪽 로그아웃은 아직 확인하지 못했어요.':'로그아웃했어요.'),!result.ok||result.serverRevoked===false);
+      if(!latest.signedIn)notice(result.message||(!result.ok?'이 기기에서 로그아웃하지 못했어요. 다시 로그아웃해 주세요.':result.serverRevoked===false?'로그아웃했어요. 서버 쪽 로그아웃은 아직 확인하지 못했어요.':'로그아웃했어요.'),!result.ok||result.serverRevoked===false);
     }catch(error){if(!stopped&&version===action){exiting=false;logoutError=true;report(error);$('sign-out').hidden=false;$('connect').hidden=true;}}finally{if(!stopped)$('sign-out').disabled=false;}
   };
   unsubscribe=bridge.onAuthChanged(state=>{void show(state).catch(report);});

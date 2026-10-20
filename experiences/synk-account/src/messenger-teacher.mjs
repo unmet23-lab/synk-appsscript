@@ -7,7 +7,7 @@ export function createBrowserTeacherBridge({fetcher=fetch,navigate=url=>location
   const listeners=new Set();
   let current={configured:false,signedIn:false,status:'unconfigured',sessionGeneration:0};
   async function send(operation,body){
-    if(closed)throw new Error('내 수업 연결이 끝났어요. 다시 열어 주세요.');
+    if(closed)throw new Error('내 수업 연결이 끊겼어요. 다시 열어 주세요.');
     const response=await fetcher('/api/teaching/'+operation,{method:body===undefined?'GET':'POST',credentials:'same-origin',cache:'no-store',redirect:'error',headers:body===undefined?{}:{'Content-Type':'application/json','X-CSRF-Token':csrf},...(body===undefined?{}:{body:JSON.stringify(body)})});
     const result=await response.json();
     if(!response.ok||result?.ok===false)throw Object.assign(new Error(result?.error?.message||result?.error||'내 수업 연결을 확인하지 못했어요. 잠시 뒤 다시 해 주세요.'),{code:result?.error?.code||result?.code,status:response.status,retryable:response.status>=500});
