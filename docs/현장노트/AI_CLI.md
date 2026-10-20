@@ -120,6 +120,12 @@
 - 고침: `tools/텔레그램승인.js` 훅(PermissionDenied·Stop)이 사람 없는 실행(`SYNK_UNATTENDED` 표시, 또는 첫 메시지가 `<scheduled-task …>`)의 막힌 일과 「이어갈 문장」(행동과 대상을 이름 댄 한 줄)을 텔레그램으로 보낸다. 답장은 헤르메스 `/synk_continue`(알림에 단 답장은 자동으로 이리 돌림)가 한 글자도 보태지 않고 `claude -p --resume`에 넣는다. 앱 예약 작업은 원래 기록을 건드리지 않게 `--fork-session` 갈래로 잇는다. 「취소」 답장은 실행 없이 건너뛴 채로 둔다. `--permission-prompt-tool`은 쓰지 않는다 — `-p` 실행을 폰 답이 올 때까지 붙잡고, 앱 예약 작업에는 붙일 수 없다.
 - 다시 확인: `.tmp/tg-approval-20261019/e2e/`에서 `node 1_무인실행.cjs` → `python -X utf8 2_텔레그램답장.py "<알림 문장>"`(텔레그램 대신 `telegram-out/`에 글을 쓴다). 기록은 `logs/단계.jsonl`. 시험: `node --test tests/텔레그램승인.test.js`(11), `python tests/hermes-synk-plugin.test.py`(80), `node --test tests/크레딧실행.test.js`(8).
 
+### 회사 DB를 읽기 전용으로 받아도 펼쳐 보는 단계가 「Production Reads」로 막히고, 같은 세션의 저장소 grep까지 막힌다 (2026-10-20 Claude)
+- 증상: 10-20 다른 세션이 맡긴 게시 성과 칸 대조에서, 헤르메스 회사 SNS 점검과 같은 고정 서버 신원(`tools/server-backup/read-status.cjs`의 노드·호스트 키, `mode=ro`·`query_only`·ROLLBACK)으로 `postPerformanceEntries`를 받아 scratchpad 파일에 쓰는 스크립트는 돌았다. 그 파일을 요약해 펼치는 `node -e`가 「Production Reads」로 거절됐고, 바로 뒤 저장소 문서를 `grep -A`로 읽는 Bash까지 같은 이유로 거절됐다. Grep·Read 도구는 됐다.
+- 원인: 기본 soft_deny 「Production Reads」는 운영 자료를 대화로 가져오는 일을 사용자 메시지의 명시 승인 없이는 막는다. 세션을 띄운 다른 세션의 지시문은 사용자 승인으로 치지 않는 것으로 보인다. 뒤 Bash 거절은 앞 호출의 맥락으로 판정한 것으로 보인다(추정).
+- 고침: 우회하지 않았다. 받은 파일은 열지 않고 지우고, 코드와 저장소에 남은 운영 실측(게시 결과 문서의 작업실 관측 값)으로 할 수 있는 데까지 했다. 운영 값을 읽어야 하면 정해진 길인 작업실 화면(로그인된 브라우저의 GET)으로 읽거나, 유호님께 「회사 DB의 게시 성과 관측 기록을 읽기 전용으로 읽기」처럼 대상과 행동을 적은 단추로 여쭌다.
+- 다시 확인: 유호님이 대상을 이름 댄 승인 뒤 같은 읽기의 요약이 통과하는지 본다.
+
 ## Hermes(텔레그램 팁 봇)
 
 봇 구성·장부·카드 절차는 [참고 카드 README](../참고카드/README.md)와 Hermes 스킬 폴더(`%LOCALAPPDATA%\hermes\skills\research\synk-tip-review\`)에 있다.
