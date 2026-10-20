@@ -440,3 +440,58 @@ test('public prerequisite rows are checked together: every reachable row passes,
   for (const shas of [[f.base, other, f.head], [f.head, f.base]])
     assert.throws(() => verifyPrerequisites({ path: f.source, private: false }, rows(shas)), error => error.message === 'BUNDLE_PREREQUISITE_REMOTE_MISSING');
 });
+
+test('chain prerequisites take the earliest reaching earlier bundle from one graph, however many receipts and prerequisites (10-20)',
+  { skip: !crypt && 'local archive encryption module unavailable' }, async t => {
+  const f = fixture(t), remote = path.join(f.root, 'public.git');
+  f.git(['init', '--bare', remote], f.root); f.git(['remote', 'add', 'origin', remote]); f.git(['push', 'origin', 'main']);
+  // 고르기에는 커밋 모양만 쓰니 트리는 그대로 두고 커밋만 잇는다.
+  const commit = (from, name) => f.git(['commit-tree', from + '^{tree}', '-p', from, '-m', name]).toString().trim();
+  const keys = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 }), pub = path.join(f.root, 'public.pem');
+  fs.writeFileSync(pub, keys.publicKey.export({ type: 'spki', format: 'pem' }));
+  const identity = 'unmet23-lab/chain-fixture', cryptoTool = { PUB: () => pub, encryptStream: crypt.encryptStream };
+  const calls = [], dependencies = { github: { private: false, full_name: identity }, git(args, input) {
+    calls.push(args);
+    if (args[0] === 'remote' && args[1] === 'get-url') return Buffer.from('git@github.com:unmet23-lab/chain-fixture.git\n');
+    return f.git(args, f.source, input);
+  } };
+  const record = heads => ({ name: 'chain-fixture', path: f.source, repository: identity, private: false,
+    refs: Object.entries(heads).map(([name, sha]) => ({ sha, status: 'public-origin-unpublished', sourceRefs: ['refs/heads/' + name] })) });
+  const archive = async heads => {
+    calls.length = 0;
+    return { receipt: await preserveRecord(record(heads), f.root, cryptoTool, () => {}, dependencies), calls: [...calls] };
+  };
+  const made = [];
+  const verified = async heads => { const { receipt } = await archive(heads); made.push(receipt); await driveVerified(f.root, made); return receipt; };
+  // 앞 묶음 둘(R1 머리 c1, R2 머리 c2b·중간 c2a) 위에서 선행 커밋 둘을 묶어 git 호출을 잰다. 이 묶음은 Drive 검증 전이라 바탕이 아니다.
+  const c1 = commit(f.base, 'c1'), c2a = commit(f.base, 'c2a'), c2b = commit(c2a, 'c2b');
+  const R1 = await verified({ r1: c1 }), R2 = await verified({ r2: c2b });
+  const smallChain = [...made];
+  const small = await archive({ p1: commit(c1, 'p1'), p2: commit(c2a, 'p2') });
+  // 앞 묶음 다섯. R3·R4는 R1·R2의 커밋에서 이어져, c1·c2a에 닿는 묶음이 둘씩이다 — 만든 차례의 첫 것을 고른다.
+  const c3 = commit(c1, 'c3'), c4 = commit(c2a, 'c4'), c5a = commit(f.base, 'c5a'), c5b = commit(c5a, 'c5b');
+  const R3 = await verified({ r3: c3 }), R4 = await verified({ r4: c4 }), R5 = await verified({ r5: c5b });
+  const large = await archive({ n1: commit(c1, 'n1'), n2: commit(c2a, 'n2'), n3: commit(c3, 'n3'), n4: commit(c4, 'n4'),
+    n5: commit(c5a, 'n5'), n6: commit(f.base, 'n6') });
+  const chosen = receipt => Object.fromEntries(receipt.prerequisites.map(row => [row.sha, row.bundle || row.ref]));
+  const [m1, m2, m3, m4, m5] = [R1, R2, R3, R4, R5].map(receipt => receipt.manifestRelativePath);
+  assert.deepEqual(chosen(small.receipt), { [c1]: m1, [c2a]: m2 });
+  assert.deepEqual(chosen(large.receipt), { [c1]: m1, [c2a]: m2, [c3]: m3, [c4]: m4, [c5a]: m5, [f.base]: 'refs/heads/main' });
+  assert.deepEqual(large.receipt.chain, [m1, m2, m3, m4, m5]);
+  // 예전 방법 그대로(만든 차례로 영수증 하나씩, 그 머리들에서 닿는 첫 영수증)를 rev-list로 다시 구해 견준다.
+  const ancestors = new Map(), inOrder = list => [...list].sort((a, b) => String(a.finishedAt).localeCompare(String(b.finishedAt)));
+  const reaches = (receipt, sha) => {
+    if (!ancestors.has(receipt)) ancestors.set(receipt, new Set(f.git(['rev-list', ...receipt.heads.map(head => head.sha)]).toString().split(/\s+/).filter(Boolean)));
+    return ancestors.get(receipt).has(sha);
+  };
+  for (const [{ receipt }, chain] of [[small, smallChain], [large, made]])
+    for (const row of receipt.prerequisites.filter(row => row.bundle))
+      assert.equal(row.bundle, inOrder(chain).find(earlier => reaches(earlier, row.sha))?.manifestRelativePath, row.sha);
+  // 영수증 둘·선행 커밋 둘과 영수증 다섯·선행 커밋 여섯의 rev-list·cat-file 수가 같다. 예전에는 영수증마다 cat-file 한 번,
+  // 선행 커밋마다 원격 확인 rev-list 한 번과 영수증 차례 rev-list를 불러, 영수증 25개 실제 저장소에서 선행 커밋 둘에 75번이었다.
+  const tally = list => ({ revList: list.filter(args => args[0] === 'rev-list').length,
+    batchCheck: list.filter(args => args[0] === 'cat-file' && String(args[1]).startsWith('--batch-check')).length });
+  assert.deepEqual(tally(large.calls), tally(small.calls), JSON.stringify(large.calls.filter(args => args[0] !== 'remote')));
+  assert.equal(large.calls.filter(args => args[0] === 'rev-list' && args.includes('--parents')).length, 2);
+  assert.equal(large.calls.filter(args => args.includes('--max-count=1')).length, 0);
+});

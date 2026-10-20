@@ -186,12 +186,6 @@ function presentCommits(git, remoteRefs) {
   return git(['cat-file', '--batch-check=%(objectname) %(objecttype)'], Buffer.from(ids.join('\n') + '\n'))
     .toString().trim().split('\n').filter(line => line.endsWith(' commit')).map(line => line.split(' ')[0]);
 }
-// sha가 원격 끝(tips) 가운데 하나에서 닿는지 한 번에 본다: `rev-list <sha> ^<끝>…`이 비면 닿는다.
-function reachedBy(git, tips, sha) {
-  if (!tips.length) return false;
-  if (tips.includes(sha)) return true;
-  return !git(['rev-list', '--max-count=1', '--stdin'], Buffer.from([sha, ...tips.map(tip => '^' + tip)].join('\n') + '\n')).toString().trim();
-}
 // 여러 커밋이 모두 원격 끝(tips)에서 닿는지 한 번에 본다: `rev-list <커밋…> ^<끝>…`이 비면 모두 닿는다(닿지 않는 커밋은 자기가 나온다).
 function allReachedBy(git, tips, shas) {
   const wanted = [...new Set(shas)].filter(sha => !tips.includes(sha));
@@ -199,21 +193,32 @@ function allReachedBy(git, tips, shas) {
   if (!tips.length) return false;
   return !git(['rev-list', '--max-count=1', '--stdin'], Buffer.from([...wanted, ...tips.map(tip => '^' + tip)].join('\n') + '\n')).toString().trim();
 }
-// 원격 끝에서 닿는 커밋과 그 자식 목록. rev-list --parents 한 번으로 읽고, 같은 git·remoteRefs·tips로 부르는 동안 다시 쓴다.
-const reachGraphs = new WeakMap();
-function reachGraph(git, remoteRefs, tips) {
-  const cached = reachGraphs.get(remoteRefs);
-  if (cached && cached.git === git && cached.tips === tips) return cached;
-  const present = new Set(tips), children = new Map(), known = new Set();
-  const ordered = remoteRefs.filter(row => present.has(row.sha))
-    .sort((a, b) => Number(b.ref.startsWith('refs/heads/')) - Number(a.ref.startsWith('refs/heads/')));
-  if (present.size) for (const line of git(['rev-list', '--parents', '--stdin'], Buffer.from([...present].join('\n') + '\n')).toString().split('\n')) {
+// tips에서 닿는 커밋(known)과 그 자식 목록(children). rev-list --parents 한 번으로 읽는다.
+function parentGraph(git, tips) {
+  const children = new Map(), known = new Set();
+  if (tips.length) for (const line of git(['rev-list', '--parents', '--stdin'], Buffer.from(tips.join('\n') + '\n')).toString().split('\n')) {
     const [commit, ...parents] = line.trim().split(' ');
     if (!OID.test(commit)) continue;
     known.add(commit);
     for (const parent of parents) (children.get(parent) || children.set(parent, []).get(parent)).push(commit);
   }
-  const graph = { git, tips, ordered, children, known };
+  return { children, known };
+}
+// 그래프 안에서 sha와 그 후손 전부.
+function descendantsOf(graph, sha) {
+  const descendants = new Set([sha]);
+  for (const queue = [sha]; queue.length;) for (const child of graph.children.get(queue.pop()) || []) if (!descendants.has(child)) { descendants.add(child); queue.push(child); }
+  return descendants;
+}
+// 원격 끝에서 닿는 커밋과 그 자식 목록. 같은 git·remoteRefs·tips로 부르는 동안 다시 쓴다.
+const reachGraphs = new WeakMap();
+function reachGraph(git, remoteRefs, tips) {
+  const cached = reachGraphs.get(remoteRefs);
+  if (cached && cached.git === git && cached.tips === tips) return cached;
+  const present = new Set(tips);
+  const ordered = remoteRefs.filter(row => present.has(row.sha))
+    .sort((a, b) => Number(b.ref.startsWith('refs/heads/')) - Number(a.ref.startsWith('refs/heads/')));
+  const graph = { git, tips, ordered, ...parentGraph(git, [...present]) };
   reachGraphs.set(remoteRefs, graph);
   return graph;
 }
@@ -224,9 +229,17 @@ function reachGraph(git, remoteRefs, tips) {
 function reachingRef(git, remoteRefs, tips, sha) {
   const graph = reachGraph(git, remoteRefs, tips);
   if (!graph.known.has(sha)) return null;
-  const descendants = new Set([sha]);
-  for (const queue = [sha]; queue.length;) for (const child of graph.children.get(queue.pop()) || []) if (!descendants.has(child)) { descendants.add(child); queue.push(child); }
+  const descendants = descendantsOf(graph, sha);
   return graph.ordered.find(row => descendants.has(row.sha)) || null;
+}
+// 원격에서 닿지 않는 선행 커밋을 담은 앞 묶음(chain, 만든 차례) 가운데 가장 이른 것. graph는 앞 묶음 머리 전부로 만든 parentGraph다.
+// 예전에는 영수증마다 머리를 cat-file로 읽고, 선행 커밋마다 영수증을 차례로 하나씩 rev-list로 물었다. 영수증은 적용 실행(2시간)마다
+// 하나씩 늘어(10-20 밤 25개) 선행 커밋 20개 × 영수증 100개면 2,000번이 되고, CPU가 꽉 차 한 번에 약 1초면 24분 제한을 다시 넘는다.
+// 이제 선행 커밋의 후손에 머리가 든 첫 영수증을 고른다 — 고르는 영수증은 예전과 같다(10-20).
+function reachingBundle(graph, chain, sha) {
+  if (!graph.known.has(sha)) return null;
+  const descendants = descendantsOf(graph, sha);
+  return chain.find(receipt => receipt.heads.some(head => descendants.has(head.sha))) || null;
 }
 function verifyPrerequisites(record, receipt) {
   // 선행 커밋 행은 세 가지다. 비공개 원격에 refs/synk-backup/<sha>로 고정한 행, 공개 원격에는 쓰지 않으므로
@@ -462,7 +475,7 @@ async function preserveRecord(record, vault, cryptoTool, onProgress = () => {}, 
   const stageDir = path.join(vault, '.git-bundle-staging'); fs.mkdirSync(stageDir, { recursive: true });
   const staging = path.join(stageDir, crypto.randomUUID() + '.enc');
   const pinned = [];
-  let baseHeads = null;
+  let baseGraph = null;
   const createdAt = new Date().toISOString();
   const isolated = isolatedBundleRepository(record.path, heads, stageDir);
   let detail;
@@ -471,10 +484,11 @@ async function preserveRecord(record, vault, cryptoTool, onProgress = () => {}, 
     onHeader(inspector) {
       for (const sha of inspector.prerequisites) {
         // 원격에서 닿지 않는 선행 커밋은 앞 묶음에 든 것이다. 원격에 쓰지 않는다(비공개 원격이라도 — 그 커밋은 원격에 못 올린
-        // 내용 때문에 묶음으로 보존한 것일 수 있다). 그 커밋에 닿는 가장 이른 앞 묶음을 적는다.
-        if (bases.length && !reachedBy(git, remoteTips, sha)) {
-          baseHeads ||= new Map(chain.map(receipt => [receipt, chainHeads(git, [receipt])]));
-          const source = chain.find(receipt => reachedBy(git, baseHeads.get(receipt), sha));
+        // 내용 때문에 묶음으로 보존한 것일 수 있다). 그 커밋에 닿는 가장 이른 앞 묶음을 적는다. 원격 끝·앞 묶음 머리에서 닿는
+        // 그래프를 한 번씩만 읽으니, 선행 커밋·원격 ref·영수증이 늘어도 git 호출은 늘지 않는다(10-20).
+        if (bases.length && !reachGraph(git, remoteRefs, remoteTips).known.has(sha)) {
+          baseGraph ||= parentGraph(git, bases);
+          const source = reachingBundle(baseGraph, chain, sha);
           if (!source) throw new Error('BUNDLE_PREREQUISITE_CHAIN_MISSING');
           pinned.push({ sha, bundle: source.manifestRelativePath, verifiedAt: new Date().toISOString() });
           onProgress();
