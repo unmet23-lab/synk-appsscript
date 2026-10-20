@@ -431,3 +431,6 @@ docs/마케팅/LAB_관용구퀴즈3_20261019/판/판1_074138.png
 /videos/synk-brand-opening/**/*.png
 /videos/synk-brand-opening/**/*.wav
 /videos/synk-brand-opening/**/*.webp
+
+# Internal research remains local/private; existing public history needs separate removal.
+/docs/_ops/NEXT/
