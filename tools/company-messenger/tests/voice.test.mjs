@@ -927,6 +927,18 @@ test('HTTP invitation contract reuses the personal inbox without exposing media 
   assert.equal(caller.admission, undefined); assert.equal(JSON.stringify(caller).includes(accepted.admission.token), false);
 });
 
+test('HTTP call invitations wake company device notifications once per alert, never for retries or suppressed alerts', async t => {
+  const f = await httpInvitation(t); let wakes = 0;
+  f.integration.wakeDeviceNotifications = () => { wakes++; };
+  const requestId = randomUUID(), first = await f.invite({ requestId });
+  assert.equal(first.invitation.state, 'pending'); assert.equal(wakes, 1);
+  await f.invite({ requestId }, 200); assert.equal(wakes, 1);
+  const quiet = await httpInvitation(t); let suppressed = 0;
+  quiet.integration.wakeDeviceNotifications = () => { suppressed++; };
+  await quiet.api('bob', '/api/voice/preferences', 'PATCH', { revision: 0, doNotDisturb: true });
+  assert.equal((await quiet.invite()).invitation.state, 'unavailable'); assert.equal(suppressed, 0);
+});
+
 test('HTTP preferences require CSRF and stay personal; viewer preferences do not grant invite permission', async t => {
   const f = await httpInvitation(t);
   await f.api('bob', '/api/voice/preferences', 'PATCH', { revision: 0, doNotDisturb: true }, 403, { 'x-csrf-token': '' });

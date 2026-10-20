@@ -5,6 +5,10 @@ import { isIP } from 'node:net';
 
 const TTL_MS = 60 * 60 * 1000;
 const TOPIC = 'synk-company-notifications';
+// Call invitations live 45 seconds, and idle phones (Android Doze) may hold normal-urgency pushes longer than that.
+// A provider replaces a pending push with a newer one of the same topic, so a 45-second call wake-up must not share
+// the topic of a pending mention wake-up: either one replacing the other could lose it.
+const CALL_KIND = 'voice_invitation', CALL_TOPIC = 'synk-company-calls';
 const fail = (status, message) => Object.assign(new Error(message), { status });
 const sha256 = value => createHash('sha256').update(value).digest('hex');
 const iso = value => new Date(value).toISOString();
@@ -65,7 +69,7 @@ export function isPublicPushAddress(address) {
 
 /** No redirects, proxy environment, request body, cookies, or source text. */
 export function createPayloadlessPushSender({ lookup = dnsLookup, request = httpsRequest } = {}) {
-  return async ({ endpoint, publicKey, privateKey, subject, ttl, now, signal, authorize = () => true }) => {
+  return async ({ endpoint, publicKey, privateKey, subject, ttl, urgency = 'normal', topic = TOPIC, now, signal, authorize = () => true }) => {
     const url = new URL(validatePushEndpoint(endpoint));
     const deadline = signal ? AbortSignal.any([signal, AbortSignal.timeout(10000)]) : AbortSignal.timeout(10000);
     const bounded = promise => new Promise((resolve, reject) => {
@@ -84,7 +88,7 @@ export function createPayloadlessPushSender({ lookup = dnsLookup, request = http
     return new Promise((resolve, reject) => {
       const req = request(url, {
         method: 'POST', agent: false, signal: deadline,
-        headers: { Authorization: authorization, TTL: String(ttl), Urgency: 'normal', Topic: TOPIC, 'Content-Length': '0' },
+        headers: { Authorization: authorization, TTL: String(ttl), Urgency: urgency === 'high' ? 'high' : 'normal', Topic: topic === CALL_TOPIC ? CALL_TOPIC : TOPIC, 'Content-Length': '0' },
         // Pin the checked results to this connection to prevent DNS rebinding.
         lookup(_host, options, callback) { if (options?.all) callback(null, addresses); else callback(null, addresses[0].address, addresses[0].family); },
       }, res => {
@@ -113,7 +117,7 @@ export function createWebPushService({ db, enabled = false, publicKey = null, pr
   const run = (sql, ...args) => db.prepare(sql).run(...args);
   const transaction = action => { db.exec('BEGIN IMMEDIATE'); try { const value = action(); db.exec('COMMIT'); return value; } catch (error) { db.exec('ROLLBACK'); throw error; } };
   const controllers = new Map();
-  let stopped = false, running = null;
+  let stopped = false, running = null, again = false;
   const unavailable = () => Object.assign(fail(503, '기기 알림의 로그인 상태를 확인할 수 없습니다. 잠시 뒤 다시 시도해 주세요.'), { code: 'PUSH_IDENTITY_UNAVAILABLE' });
   const live = async (userId, sessionHash) => {
     if (stopped) return null;
@@ -218,6 +222,7 @@ export function createWebPushService({ db, enabled = false, publicKey = null, pr
     try { sources = await sourceList(subscription.user_id); } catch { return; }
     if (stopped) return;
     const visible = new Set(sources.filter(row => !row.readAt && row.unread !== false).map(row => row.id));
+    const callIds = new Set(sources.filter(row => row.kind === CALL_KIND).map(row => row.id));
     const current = one('SELECT * FROM web_push_subscriptions WHERE id=?', subscription.id);
     if (!usable(current) || current.session_hash !== subscription.session_hash || stopped) return;
     const selected = rows.filter(row => visible.has(row.notification_id) && row.expires_at > now());
@@ -231,7 +236,9 @@ export function createWebPushService({ db, enabled = false, publicKey = null, pr
       // One payloadless wake-up covers every claimed row. Keep it for the longest-lived row so a 45-second call
       // invitation in the same batch cannot shorten a mention's delivery window; rows still expire one by one.
       const ttl = Math.max(1, Math.floor((Math.max(...claimed.map(row => Date.parse(row.expires_at))) - Date.parse(now())) / 1000));
-      response = await send({ endpoint: current.endpoint, publicKey, privateKey, subject, ttl, now: now(), signal: controller.signal, authorize: async () => {
+      // Any call invitation makes the wake-up high urgency; only a batch of call invitations alone uses the call topic.
+      const call = claimed.some(row => callIds.has(row.notification_id)), callOnly = claimed.every(row => callIds.has(row.notification_id));
+      response = await send({ endpoint: current.endpoint, publicKey, privateKey, subject, ttl, urgency: call ? 'high' : 'normal', topic: callOnly ? CALL_TOPIC : TOPIC, now: now(), signal: controller.signal, authorize: async () => {
         if (stopped || controller.signal.aborted) throw unavailable();
         const active = await live(subscription.user_id, subscription.session_hash);
         if (active === null || stopped || controller.signal.aborted) throw unavailable();
@@ -282,8 +289,10 @@ export function createWebPushService({ db, enabled = false, publicKey = null, pr
     run("DELETE FROM web_push_queue WHERE expires_at<? AND state IN ('baseline','accepted','skipped','failed')", cutoff);
   }
   function tick() {
-    if (running) return running;
-    running = drain().finally(() => { running = null; });
+    // A source created during a pass may be read after that pass checked its subscription, and a 45-second call
+    // invitation cannot wait for the next timer. Every call during a pass shares the one pass that follows it.
+    if (running) { again = true; return running; }
+    running = (async () => { try { do { again = false; await drain(); } while (again && !stopped); } finally { running = null; } })();
     return running;
   }
   async function stop() { stopped = true; for (const controller of controllers.values()) controller.abort(); await running; }

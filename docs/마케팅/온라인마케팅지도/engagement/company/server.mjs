@@ -170,6 +170,8 @@ export function createCompanyApp(options={}) {
       read:(companyUserId,id)=>{const user=store.get('users',companyUserId);return id.startsWith('social:')?socialMarketing.readNotifications(user,socialPublishing.summary(user),id):id.startsWith('automation:')?automationNotifications.read(user,id):clientNotifications.read(user,id);},
       readAll:companyUserId=>{const user=store.get('users',companyUserId);clientNotifications.readAll(user);automationNotifications?.readAll(user);socialMarketing?.readNotifications(user,socialPublishing.summary(user));},
     },
+    // 통화 초대는 45초만 산다(10-20). 30초 주기를 기다리지 않고 PULSE 변경과 같은 깨우기로 기기 알림을 바로 한 번 보낸다. 기기 알림이 꺼져 있으면 아무것도 하지 않는다.
+    wakeDeviceNotifications:()=>notifyPulseDevices(),
     authenticate(req){const auth=session(req);if(!auth)return null;return {companyUserId:auth.user.id,role:auth.user.role,canWrite:auth.user.role!=='viewer',canManage:auth.user.role==='admin',csrfToken:auth.body.csrfToken,token:auth.hash,parentOrigin:origin};},
     resolveWorkspaceLink({companyUserId,recipientCompanyUserIds,workspaceLink,purpose}){
       const url=new URL(workspaceLink.url,origin),params=new URLSearchParams(url.hash?url.hash.slice(1):url.search),draftId=params.get('draftId');

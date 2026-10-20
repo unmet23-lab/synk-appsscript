@@ -4,15 +4,17 @@ import {mkdtemp,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,dirname,resolve} from 'node:path';
 import {request as httpRequest} from 'node:http';
+import {randomUUID} from 'node:crypto';
 import {createCompanyApp} from './server.mjs';
 import {hash} from './store.mjs';
 
 const endpoint='https://fcm.googleapis.com/fcm/send/SYNTHETIC-CAPABILITY';
-async function fixture(t,{enabled=true}={}){
+// 통화는 합성 LiveKit 대역으로만 켠다(실제 키·방 없음). 통화 시계는 회사 시계와 같게 둔다.
+async function fixture(t,{enabled=true,voice=null}={}){
   const directory=await mkdtemp(join(tmpdir(),'synk-device-http-'));
   let app,base,at=new Date().toISOString();const sent=[],users={},tokens={};
   async function start(){
-    app=createCompanyApp({dataDir:directory,port:0,allowTestHost:true,schedule:false,origin:'https://workspace.example.test',webPushEnabled:enabled,clock:()=>at,webPushSend:async value=>{sent.push(value);return {statusCode:201};}});
+    app=createCompanyApp({dataDir:directory,port:0,allowTestHost:true,schedule:false,origin:'https://workspace.example.test',webPushEnabled:enabled,clock:()=>at,webPushSend:async value=>{sent.push(value);return {statusCode:201};},...(voice?{messengerVoice:{enabled:true,e2eeRequired:false,automaticSweep:false,now:()=>Date.parse(at),...voice}}:{})});
     const address=await app.start();base='http://127.0.0.1:'+address.port;
   }
   await start();
@@ -87,6 +89,23 @@ test('actual customer support event reaches staff push once, stays unread, and l
   const logout=await f.request('/api/logout',{body:{}});assert.equal(logout.status,200);
   const row=f.app.store.db.prepare('SELECT enabled,endpoint FROM web_push_subscriptions').get();assert.equal(row.enabled,0);assert.equal(row.endpoint,null);
   await f.app.deviceNotifications.tick();assert.equal(f.sent.length,1);assert.equal((await f.request('/api/device-notifications')).status,401);
+});
+
+test('a call invitation wakes the invited device at once with high urgency inside the 45-second invitation',async t=>{
+  const media=new Map(),provider={serverUrl:'wss://fixture.livekit.cloud',async createRoom(){},
+    issueToken(room,identity){media.set(room,[...(media.get(room)||[]),{identity,sid:'PA_'+identity,state:'ACTIVE',tracks:[]}]);return {token:'synthetic-media-'+identity,expiresAt:new Date(Date.now()+60000).toISOString()};},
+    async listParticipants(room){return media.get(room)||[];},verifyWebhook(){throw Object.assign(new Error('invalid'),{status:401,publicMessage:'invalid'});},async removeParticipant(){}};
+  const f=await fixture(t,{voice:{provider}});assert.equal((await f.register('other')).status,201);f.advance();
+  const recipient=(await f.request('/messenger/api/bootstrap',{user:'other'})).data.user.id;
+  const room=(await f.request('/messenger/api/channels',{body:{name:'합성 통화방',category:'project',memberIds:[recipient]}})).data.channel;
+  assert.equal((await f.request('/messenger/api/channels/'+room.id+'/voice/join',{body:{requestId:randomUUID()}})).status,200);
+  const invited=await f.request('/messenger/api/channels/'+room.id+'/voice/invitations',{body:{requestId:randomUUID(),recipientId:recipient}});
+  assert.equal(invited.status,201);assert.equal(invited.data.invitation.state,'pending');
+  // 손으로 tick하지 않는다. 30초 주기도 이 시험 안에는 오지 않는다 — 초대가 스스로 깨운 전송만 기다린다.
+  for(let i=0;i<300&&!f.sent.length;i++)await new Promise(done=>setTimeout(done,10));
+  assert.equal(f.sent.length,1);assert.equal(f.sent[0].urgency,'high');assert.equal(f.sent[0].topic,'synk-company-calls');assert.equal(f.sent[0].ttl,45);
+  assert.doesNotMatch(JSON.stringify(f.sent),/합성 통화방|synthetic-media/);
+  await f.app.deviceNotifications.tick();assert.equal(f.sent.length,1);
 });
 
 test('deactivation or session expiry disables the linked device before any provider call',async t=>{

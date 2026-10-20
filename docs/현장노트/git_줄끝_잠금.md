@@ -66,6 +66,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 다른 도구가 작업본을 CRLF↔LF로 뒤집어 두었고, 「작업본 줄끝을 따르는」 스크립트가 그대로 이어 썼다. `sed -i`는 CRLF를 LF로, 파이썬 `open(p, 'w')`(text 모드)는 Windows에서 LF를 CRLF로 바꾼다. 한 파일 안에 CRLF 줄과 LF 줄이 섞여 있기도 하다(10-08 트랙 202줄 중 14줄 LF).
 - 고침: 공용 문서를 쓰기 전후에 HEAD와 CR 개수를 견주고, 다르면 내용은 두고 줄끝만 HEAD 형식으로 되돌린다. 파이썬은 읽기·쓰기 모두 `newline=''`로 연다. 줄을 끼울 때는 `\n`으로 나누고 `\r`을 뗀 값으로 찾되, 넣는 줄은 이웃 줄의 `\r` 유무를 따른다. 남의 줄의 줄끝은 고치지 않는다.
 - 다시 확인: `tr -cd '\r' < <파일> | wc -c`와 `git show HEAD:<파일> | tr -cd '\r' | wc -c`가 같고, `git diff HEAD --stat -- <파일>`이 실제로 바꾼 줄 수와 같다.
+- 10-20 덧붙임(Claude): 워크트리(`core.autocrlf=false`)에서 Claude Edit 도구로 두 줄만 고친 LF 문서 `tools/company-messenger/API.md`가 통째로 CRLF가 돼 `git diff --stat`이 782줄이었다(Fable 검수가 짚음). 같은 파일 사본을 scratchpad에서 한 번·나란히 두 번 고쳐 봤지만 LF 그대로라 원인은 찾지 못했다. Edit 뒤에도 위 CR 개수 대조를 하고, 다르면 `tr -d '\r' < 파일 > 임시 && mv 임시 파일`(HEAD가 LF 전용일 때만)로 되돌린다. `tools/내커밋.js 커밋`은 줄끝을 바탕 판에 맞춰 올리지만, 다른 도구나 손으로 커밋하면 그대로 들어간다.
 
 ### CR 개수를 `grep -c $'\r'`로 세면 모든 줄이 나온다
 - 증상: LF뿐인 파일에서도 `grep -c $'\r' AGENTS.md`가 줄 수(21)를 그대로 낸다.

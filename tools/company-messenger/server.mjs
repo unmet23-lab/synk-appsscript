@@ -785,6 +785,8 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
           const recipientId = requestId(body.recipientId, '초대할 동료'), check = voicePermissionCheck(req, auth, channelId);
           assert(voiceInvitationVisible(recipientId, channelId), 404, '이 대화방에서 초대할 동료를 찾을 수 없습니다.');
           const result = await voiceService.invite({ channelId, userId: user.id, recipientId, token: auth.token, requestId: body.requestId, check, recipientCheck: voiceRecipientCheck(channelId, recipientId) });
+          // The invitation lives 45 seconds: ask the company server to send device notifications now, not on its timer.
+          if (result.created && result.invitation.state === 'pending') integration?.wakeDeviceNotifications?.();
           return respond(result.created ? 201 : 200, result);
         }
         if (voiceChannel?.[2] === 'policy' && method === 'PATCH') {

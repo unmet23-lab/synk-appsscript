@@ -84,6 +84,32 @@ test('a call invitation batched with a mention keeps the mention delivery window
   assert.equal(f.db.prepare('SELECT expires_at FROM web_push_queue WHERE notification_id=?').get('voice:batched').expires_at, expiresAt);
 });
 
+test('call invitations make the wake-up high urgency and only call-only batches use the call topic', async t => {
+  const f = await fixture(t), call = () => ({ kind: 'voice_invitation', expiresAt: new Date(Date.parse(f.time) + 45000).toISOString() });
+  await f.register(); f.advance(1);
+  f.add('mention:alone'); await f.service.tick();
+  f.advance(1); f.add('voice:alone', 'u1', call()); await f.service.tick();
+  f.advance(1); f.add('mention:mixed'); f.add('voice:mixed', 'u1', call()); await f.service.tick();
+  assert.deepEqual(f.sent.map(row => [row.urgency, row.topic, row.ttl]), [
+    ['normal', 'synk-company-notifications', 3600], ['high', 'synk-company-calls', 45], ['high', 'synk-company-notifications', 3600],
+  ]);
+});
+
+test('a source created while a pass is sending gets one more pass instead of waiting for the next timer', async t => {
+  let release, entered;
+  const gate = new Promise(resolve => { release = resolve; }), began = new Promise(resolve => { entered = resolve; });
+  const f = await fixture(t, { send: async (request, sent) => { if (sent.length === 1) { entered(); await gate; } return { statusCode: 201 }; } });
+  await f.register(); f.advance(1); f.add('mention:first');
+  const first = f.service.tick(); await began;
+  // This pass has already read u1's sources, so only a following pass can find the invitation.
+  f.add('voice:during', 'u1', { kind: 'voice_invitation', expiresAt: new Date(Date.parse(f.time) + 45000).toISOString() });
+  assert.equal(f.service.tick(), first); assert.equal(f.service.tick(), first);
+  release(); await first;
+  assert.equal(f.sent.length, 2); assert.equal(f.sent[1].urgency, 'high'); assert.equal(f.sent[1].ttl, 45);
+  assert.equal(f.db.prepare("SELECT state FROM web_push_queue WHERE notification_id='voice:during'").get().state, 'accepted');
+  await f.service.tick(); assert.equal(f.sent.length, 2);
+});
+
 test('generated VAPID private scalars retain their required 32-byte width when leading zeros are omitted by crypto', t => {
   t.mock.method(ECDH.prototype, 'generateKeys', function() { this.setPrivateKey(Buffer.from([1])); return this.getPublicKey(); });
   const keys = generateVapidKeys();
@@ -131,6 +157,22 @@ test('sender pins public DNS, sends no payload, does not follow redirects and ch
   assert.equal(calls.length, 1, 'identity uncertainty after DNS must never begin a provider HTTP request');
   const privateDns = createPayloadlessPushSender({ lookup: async () => [{ address: '127.0.0.1', family: 4 }], request() { assert.fail('private destination contacted'); } });
   await assert.rejects(() => privateDns({ endpoint: endpoint(1), ...keys, subject: 'mailto:workspace@example.test', ttl: 100 }), status(400));
+});
+
+test('sender sends only the two known urgency and topic values', async () => {
+  const headers = [];
+  const sender = createPayloadlessPushSender({ lookup: async () => [{ address: '142.250.1.1', family: 4 }], request(url, options, callback) {
+    headers.push(options.headers); const req = new EventEmitter();
+    req.end = () => callback({ statusCode: 201, headers: {}, destroy() {} });
+    return req;
+  } });
+  const request = { endpoint: endpoint(1), ...generateVapidKeys(), subject: 'mailto:workspace@example.test', ttl: 45, now: '2026-10-08T01:00:00Z' };
+  await sender(request);
+  await sender({ ...request, urgency: 'high', topic: 'synk-company-calls' });
+  await sender({ ...request, urgency: 'very-low', topic: 'other\r\nInjected: 1' });
+  assert.deepEqual(headers.map(row => [row.Urgency, row.Topic]), [
+    ['normal', 'synk-company-notifications'], ['high', 'synk-company-calls'], ['normal', 'synk-company-notifications'],
+  ]);
 });
 
 test('Chromium staging sender keeps public DNS pinning, zero payload and redirect rejection', async () => {
