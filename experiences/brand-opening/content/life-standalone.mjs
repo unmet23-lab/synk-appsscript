@@ -14314,7 +14314,7 @@ var progressLine = (done, total) => `<span class="life-progress" aria-hidden="tr
 var meter = (done, total, label = `${done} / ${total}`) => `<span class="life-meter" aria-hidden="true"><span><i style="width:${percent(done, total)}%"></i></span><b>${label}</b></span>`;
 var expressionOf = (lesson2, q2) => lesson2?.expressions.find((e) => e.id === q2?.expressionId) || { korean: q2?.choices?.find((c) => c.id === q2.answerId)?.text || "", meaning: "" };
 function createLifeExperience({ home, getProgress, show = (title, html, options) => home.showPanel(title, html, options), asset, onSummary = () => {
-}, onNext = null, presentation = null }) {
+}, onNext = null, presentation = null, moreRows = null }) {
   const panel = document.querySelector("#world-panel"), content = document.querySelector("#panel-content");
   let lastPoint = null, justChose = false, barMemo = { key: "", value: -1 };
   content?.addEventListener("pointerdown", (event) => {
@@ -14632,6 +14632,10 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const rows2 = [`<button class="life-row" data-life-stories>${print("stories", "life-row-print")}<span class="life-row-copy"><strong>${t("life.stories")}</strong><small>${t("life.storiesCount", { n: episodes })}</small></span></button>`];
     if (now.kind === "lesson" && hasReviews) rows2.push(reviewRow(s));
     rows2.push(`<button class="life-row" data-view="position">${print(now.kind === "rest" ? "goals" : "complete", "life-row-print")}<span class="life-row-copy"><strong>${t("position.title")}</strong><small>${t("position.row")}</small></span></button>`);
+    if (typeof moreRows === "function") {
+      const extra = moreRows(print);
+      if (extra) rows2.push(extra);
+    }
     paint(t("life.learn"), `<div class="life-hub life-heading" tabindex="-1">${now.html}<section class="life-pack-section" aria-label="${t("life.packsSection")}"><div class="life-section-head"><p class="life-section-label">LIFE PACKS</p><small class="life-library-note">${s.completed ? t("life.lessonsDone", { done: s.completed, total: s.total }) : t("life.packsAndLessons", { packs: PACKS.length, lessons: LESSONS.length })}</small></div><div class="life-pack-grid">${PACKS.map((p, i) => packCard(p, i, now.kind === "lesson" ? now.packId : null)).join("")}</div></section><section class="life-rows" aria-label="${t("life.more")}"><p class="life-section-label">MORE</p>${rows2.join("")}</section></div>`);
   }
   function lessonRow(l, number, { nowId = null, className = "", lead = null, kicker = phaseName(l.type), labels = [t("life.state.done"), t("life.state.doing"), ""] } = {}) {
