@@ -1,0 +1,76 @@
+{
+ "voice": {
+  "name": "범수",
+  "id": "tc_5c3c52cb5827e00008dd7f3b"
+ },
+ "settings": {
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1018
+ },
+ "made": "2026-10-20T09:57:59.510Z",
+ "lines": [
+  {
+   "id": "a01",
+   "text": "진짜 라볶이 사진을, 빛이랑 배경만 AI로 다듬었어요.",
+   "dur": 3.454,
+   "syllablesPerSec": 5.79
+  },
+  {
+   "id": "b01",
+   "text": "메뉴판에 AI로 만든 음식 사진, 써도 될까요?",
+   "dur": 2.72,
+   "syllablesPerSec": 5.88
+  },
+  {
+   "id": "v02",
+   "text": "AI 사진을 메뉴판에 걸어도, 지금은 표시 의무가 없어요.",
+   "dur": 2.886,
+   "syllablesPerSec": 7.28
+  },
+  {
+   "id": "v03",
+   "text": "그런데 손님은 실제랑 다르면 속은 기분이 든대요.",
+   "dur": 3.21,
+   "syllablesPerSec": 6.23
+  },
+  {
+   "id": "v04",
+   "text": "그래서 만들지 말고, 진짜 사진을 다듬어요.",
+   "dur": 2.438,
+   "syllablesPerSec": 6.97
+  },
+  {
+   "id": "v05",
+   "text": "사진을 올리고 이렇게 쓰세요. 음식은 그대로, 빛, 색, 배경만.",
+   "dur": 3.74,
+   "syllablesPerSec": 6.15
+  },
+  {
+   "id": "v06",
+   "text": "얼핏 보면 배치 그대로, 가장자리만 깨끗해졌죠.",
+   "dur": 3.214,
+   "syllablesPerSec": 5.91
+  },
+  {
+   "id": "v07",
+   "text": "올리기 전엔 세 가지를 봐요. 양 같고, 재료 같고, 색은, 실제에 가깝게라고만 썼더니, 빨개졌네요.",
+   "dur": 5.846,
+   "syllablesPerSec": 6.33
+  },
+  {
+   "id": "v08",
+   "text": "한 줄 더. 색을 콕 집어 적으니, 똑같진 않아도 훨씬 가까워졌어요.",
+   "dur": 4.392,
+   "syllablesPerSec": 5.69
+  },
+  {
+   "id": "v09",
+   "text": "요청문은 글에 적어 뒀어요. AI 메뉴 사진, 표시해야 할까요?",
+   "dur": 3.482,
+   "syllablesPerSec": 6.32
+  }
+ ]
+}

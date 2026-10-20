@@ -1,0 +1,3 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. Landscape 3:2. Follow the Korean request below exactly — it is the whole request. No text, letters or logos in the image. After the image is generated, reply with one short line in Korean describing it.
+
+분식집 메뉴판에 쓸 라볶이 사진 만들어 줘. 최대한 맛있어 보이게.

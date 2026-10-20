@@ -1,0 +1,8 @@
+Use your image generation tool to edit the attached photo and create exactly ONE image. Do not write code, do not edit files, do not run shell commands. Keep the same 3:2 landscape framing as the attached photo. Follow the Korean request below exactly — it is the whole request. After the image is generated, reply with one short line in Korean saying what you changed.
+
+이 사진 속 음식은 그대로 두고, 빛·색·배경만 다듬어 주세요.
+· 음식의 양·재료·모양과 그릇은 바꾸지 마세요. 더하거나 빼지 마세요.
+· 창가 자연광처럼 부드럽고 밝게, 색은 실제에 가깝게.
+· 가장자리 잡동사니만 정리하고 구도는 그대로.
+· 없던 수증기·윤기·글자는 넣지 마세요.
+· 국물은 원본처럼 노란빛 도는 주황색 그대로, 더 빨갛게 하지 마세요.
