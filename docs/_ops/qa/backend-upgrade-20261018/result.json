@@ -1,6 +1,6 @@
 {
   "schema": "synk-backend-upgrade-20261018/v1",
-  "updatedAt": "2026-10-18T08:28:47.377Z",
+  "updatedAt": "2026-10-18T15:20:44.517997+00:00",
   "scope": [
     "classroom-and-personal-locks",
     "incremental-learning-and-complete-client-history",
@@ -9,31 +9,84 @@
   ],
   "edge": [
     {
-      "target": "production",
-      "slug": "synk-classroom",
-      "version": 4,
-      "verifyJwt": true,
+      "slug": "synk-account",
+      "version": 61,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": 1792333487860,
       "exact": true,
-      "sourceModules": 2,
-      "archiveSha256": "a943e31c642ff5476e2c672d77840a8b880dcc590cdfcd1acba8243319e43a4e"
+      "sourceModules": 17,
+      "archiveSha256": "7d6f61f937b433194b2d59eb6eab2f85677520d78bccfb2bcdfd7d830cdf5e1d"
     },
     {
-      "target": "production",
-      "slug": "synk-personal",
-      "version": 44,
-      "verifyJwt": true,
-      "exact": true,
-      "sourceModules": 2,
-      "archiveSha256": "64bc1c788b7f666e66ce12723a4f68dc89d4caeedefcec076cb0990e4e8208e6"
-    },
-    {
-      "target": "production",
       "slug": "synk-learning",
-      "version": 54,
-      "verifyJwt": true,
+      "version": 55,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": 1792333515415,
       "exact": true,
-      "sourceModules": 14,
-      "archiveSha256": "0a9b834bb7dd3115513c5ab8b2f9aafab3d5a3dcc047481c8d702af60f865fdc"
+      "sourceModules": 15,
+      "archiveSha256": "fa5d9a113275b37c95886f67092bbc73f73277e26d2f8ce417ead7c39f9d3075"
+    },
+    {
+      "slug": "synk-classroom",
+      "version": 7,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": 1792336552661,
+      "exact": true,
+      "sourceModules": 2,
+      "archiveSha256": "3d57272d8b004586341582688b8694b9c2fea243d81a99f3525dddf94279551c"
+    },
+    {
+      "slug": "synk-personal",
+      "version": 45,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": 1792333609147,
+      "exact": true,
+      "sourceModules": 2,
+      "archiveSha256": "132eed16ebf600285fb4a0af64b3535e4d4f65d0718d3924c7a17fcb52260cb3"
+    },
+    {
+      "slug": "synk-care",
+      "version": 32,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": 1792333634689,
+      "exact": true,
+      "sourceModules": 2,
+      "archiveSha256": "f7e190863d22580b16a572abbd8e009c403555229bd47186968a630e059a6a79"
+    },
+    {
+      "slug": "synk-care-push",
+      "version": 29,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": 1792333655336,
+      "exact": true,
+      "sourceModules": 2,
+      "archiveSha256": "6dca139614531aae52533f3fcfdf6996ce2d09cd959bebdbeb4ee233086ffec2"
+    },
+    {
+      "slug": "synk-world-v1",
+      "version": 5,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": 1792333688035,
+      "exact": true,
+      "sourceModules": 2,
+      "archiveSha256": "7e69bc4b4545e48d2355449e6f02c903c8ff7355afc02fb79e0bcf98f045cf4e"
+    },
+    {
+      "slug": "synk-town",
+      "version": 4,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": 1792333733089,
+      "exact": true,
+      "sourceModules": 2,
+      "archiveSha256": "931a25b384983c9d224a6a5cd91e388a8486b5695877e23023955dd3894a2902"
     }
   ],
   "lockRehearsal": {
@@ -491,7 +544,22 @@
         "sibling repository absent",
         "untracked historical design verification receipt absent"
       ],
-      "defaultBranch": "master"
+      "defaultBranch": "master",
+      "masterVerificationRun": {
+        "id": 39125006065,
+        "url": "https://github.com/unmet23-lab/synk-appsscript/actions/runs/39125006065",
+        "head": "983671a4b6fd7c9a218cee0bbec0d83e38a2100c",
+        "conclusion": "success",
+        "completedAt": "2026-10-18T11:56:05Z"
+      },
+      "localSharedIntegration": {
+        "tests": 22,
+        "pass": 22,
+        "fail": 0,
+        "skipped": 0,
+        "sharedGitStateUnchangedBySync": true,
+        "note": "Preserved the newer shared learning-pages source and existing portal regression; its fixture includes learning-pages in the shared working copy. Verified GitHub master uses its own canonical dependency list."
+      }
     },
     "ciSkipAudit": {
       "status": "all-ten-covered-in-github-ci",
@@ -677,7 +745,887 @@
         "fail": 0,
         "skipped": 0,
         "requiredSource": true
+      },
+      "localSharedVerification": {
+        "tests": 154,
+        "pass": 154,
+        "fail": 0,
+        "skipped": 0,
+        "log": ".tmp/github-ci-20261018/shared-skip-local.tap",
+        "talkSourceRequired": true,
+        "sharedHeadAndIndexUnchangedAtIntegration": true
+      },
+      "previousDefaultBranchVerification": {
+        "runId": 39127650001,
+        "commit": "71fb0573ff10f9846b1ca8261dd56ea62ccc648b",
+        "branch": "master",
+        "status": "success",
+        "url": "https://github.com/unmet23-lab/synk-appsscript/actions/runs/39127650001",
+        "linux": {
+          "tests": 1773,
+          "pass": 1767,
+          "fail": 0,
+          "skipped": 6
+        },
+        "windows": {
+          "tests": 4,
+          "pass": 4,
+          "fail": 0,
+          "skipped": 0
+        },
+        "logSha256": "881ac5fe7bd527bc001b1a28f1f3dcfa4c8a7e5ebf560d3446371f230f35ef4e"
+      }
+    },
+    "backendFollowupReview": {
+      "checkedAt": "2026-10-18T13:15:16.628Z",
+      "status": "production-deployed-and-verified",
+      "scope": [
+        "SYNK Auth/account",
+        "learning sync",
+        "classroom writes and read locks",
+        "personal media signing and CAS",
+        "backend release CI coverage"
+      ],
+      "productSourcesChanged": true,
+      "productionDataTouched": true,
+      "remoteRehearsalRun": true,
+      "findings": [
+        {
+          "id": "auth-body-transport",
+          "priority": "P1",
+          "file": "SYNK-talk/lib/synk-auth.js",
+          "line": 37,
+          "endLine": 40,
+          "title": "Auth response-body transport failure becomes a permanent authentication error",
+          "trigger": "Auth accepts the bearer and sends HTTP 200 headers; the response body connection then breaks.",
+          "observed": "401 AUTH_REQUIRED, retryable=false; the account client unnecessarily refreshes once. Source and both preserved runtime bundles reproduce it. Before-header disconnection correctly returns 503 AUTH_UNAVAILABLE.",
+          "evidence": ".tmp/backend-followup-review-20261018/auth-body-result.json",
+          "proposedRepair": "Separate Auth body consumption/network handling from JWT-claim parsing. Keep body transport/provider failures retryable 503 and preserve genuine invalid-identity 401 behavior.",
+          "fixed": true,
+          "fixedInCommit": "80d63fbfd7f3769d5bcb311ec8489cfa17411447"
+        },
+        {
+          "id": "classroom-history-cap",
+          "priority": "P1",
+          "file": "SYNK-talk/lib/synk-classroom-store.js",
+          "line": 148,
+          "title": "Classroom retains the 20000-event cap removed from general learning",
+          "trigger": "The same account has 20001 admitted canonical learning events.",
+          "observed": "General synk-learning accepts the 20001st event (200); classroom practice and assignment submission both return 409 HISTORY_CAPACITY. Both canonical source and preserved classroom runtime reproduce it; the rejected requests add no events.",
+          "evidence": [
+            ".tmp/backend-followup-review-20261018/classroom-cap-source.json",
+            ".tmp/backend-followup-review-20261018/classroom-cap-bundle.json"
+          ],
+          "proposedRepair": "Use bounded canonical validation lookups in classroom append while preserving sharing-revision, run-binding, idempotency and server-score guards; remove the inconsistent capacity fence.",
+          "fixed": true,
+          "fixedInCommit": "80d63fbfd7f3769d5bcb311ec8489cfa17411447"
+        }
+      ],
+      "improvements": [
+        {
+          "id": "release-branch-ci",
+          "priority": "P2",
+          "file": "SYNK-talk/.github/workflows/ci.yml",
+          "line": 31,
+          "title": "The backend deployment source branch has no automatic test receipt",
+          "observed": {
+            "releaseBranch": "refs/heads/codex/backend-upgrade-release-20261018",
+            "commit": "5fc86ac7651dda00fd9eb98744ea52f0b36337ee",
+            "runs": 0,
+            "checkRuns": 0,
+            "pullRequests": 0
+          },
+          "implication": "The default-branch Talk CI success and the appsscript cross-repository checks do not execute the deployed release branch backend changes.",
+          "proposedRepair": "Connect test-only verification to the backend release branch or its PR; keep manual Android build submission separate.",
+          "status": "implemented-and-verified",
+          "fixedInCommit": "80d63fbfd7f3769d5bcb311ec8489cfa17411447"
+        },
+        {
+          "id": "summary-full-history",
+          "status": "implemented-and-verified",
+          "file": "SYNK-talk/lib/synk-server.js",
+          "line": 108,
+          "title": "The account summary still replays full history while holding the account row lock",
+          "evidence": [
+            "lib/synk-server.js:100-110",
+            "lib/synk-store.js:40",
+            "lib/synk-store.js:212"
+          ],
+          "implication": "The removed global history cap permits continuing growth; summary reads still fetch the whole log. No production latency or failure is claimed.",
+          "proposedRepair": "Measure long-history summary cost, then consider an exact projection or revision/sequence cache that preserves complete-history exposure and exclusion rules.",
+          "fixedInCommit": "80d63fbfd7f3769d5bcb311ec8489cfa17411447"
+        }
+      ],
+      "verification": {
+        "existingTests": 100,
+        "existingPass": 100,
+        "existingFail": 0,
+        "existingSkipped": 0,
+        "syntheticAuthScenarios": 15,
+        "syntheticClassroomReproductions": 2,
+        "note": "Reproduction probes assert that the current defect exists; their pass is not a fix verification."
+      },
+      "sourceHashes": [
+        {
+          "repository": "SYNK-talk",
+          "path": "lib/synk-auth.js",
+          "sha256": "1a50820ff6f8ebdedd8685d5a06d18bc31b2fd1d547ac6f3e62063fbd6d69155"
+        },
+        {
+          "repository": "SYNK-talk",
+          "path": "lib/synk-server.js",
+          "sha256": "e41476b8ba2da3c98923f0ef48889c0ab65e9f5ab3caaa8279d01417ca7c837c"
+        },
+        {
+          "repository": "SYNK-talk",
+          "path": "lib/synk-store.js",
+          "sha256": "35b31100264006a378d5fb748942e519b24916b78c3feba2953fe2d5404899df"
+        },
+        {
+          "repository": "SYNK-talk",
+          "path": "lib/synk-account-client.js",
+          "sha256": "ae5532bd89c9ee4fce026926d8dc9c0506a72c10416fec1b0360baca6dbf99e3"
+        },
+        {
+          "repository": "SYNK-talk",
+          "path": "lib/synk-classroom-store.js",
+          "sha256": "4d39012a395c73551fe530a357a0c0b5bfe3859849364c48b29c013b5b6d02cf"
+        },
+        {
+          "repository": "SYNK-talk",
+          "path": "lib/synk-classroom-server.js",
+          "sha256": "38d75ed4925c0360afb0c542e4547eacfdea8b56f117e784890fcdb8ad36bc5c"
+        },
+        {
+          "repository": "SYNK-talk",
+          "path": "lib/synk-personal-server.js",
+          "sha256": "2d01bb187a5293046cf2ba15ee98b8a66d4166a608db66081a2a34237b96e98a"
+        },
+        {
+          "repository": "SYNK-talk",
+          "path": "lib/synk-personal-store.js",
+          "sha256": "6c9a8b85ff40fa07b848292bcb5baf23bda5ab6c9cc68b391ef10c8a18c9b6e0"
+        },
+        {
+          "repository": "SYNK-talk",
+          "path": "lib/synk-personal-media.js",
+          "sha256": "df24a19965a58b449a1d4be1741f59be0b9ddecc2b0799605ca283d2bd142464"
+        },
+        {
+          "repository": "SYNK-talk",
+          "path": "supabase/functions/_shared/synk-classroom-runtime.js",
+          "sha256": "0818358670a1f381317104459a2082c1a580764a01de93b7c657fffdd102072c"
+        },
+        {
+          "repository": "SYNK-talk",
+          "path": "supabase/functions/_shared/synk-personal-runtime.js",
+          "sha256": "9a1b9eaa62b890eea599f666fefbf6208e169549eb9e3a812d4ed40155b92230"
+        },
+        {
+          "repository": "SYNK-talk",
+          "path": ".github/workflows/ci.yml",
+          "sha256": "8d5654b2bb9de2c348992259f51d62a3961d69931632bbbfd984516c9a501df3"
+        }
+      ],
+      "limitations": [
+        "Focused review, not a complete repository audit",
+        "No live user data or remote mutation used",
+        "Physical second-device behavior, injected remote Storage delay, production summary timing, Apps Script engines and all company backend modules were not newly verified"
+      ],
+      "sourceHashesAt": "pre-fix review; current release bundle/source hashes are in tools/backend-runtime-manifest.json",
+      "implementation": {
+        "completedAt": "2026-10-18T13:45:52.381617+00:00",
+        "status": "implemented-release-ci-verified-not-production-deployed",
+        "release": {
+          "repository": "unmet23-lab/SYNK-talk",
+          "branch": "codex/backend-upgrade-release-20261018",
+          "baselineCommit": "5fc86ac7651dda00fd9eb98744ea52f0b36337ee",
+          "commit": "80d63fbfd7f3769d5bcb311ec8489cfa17411447",
+          "workingTreeClean": true
+        },
+        "auth": {
+          "status": "fixed",
+          "result": "Response body transport or invalid provider JSON -> 503 AUTH_UNAVAILABLE; genuine identity/JWT failure remains 401; transient response does not force token refresh",
+          "tests": 42,
+          "implementations": [
+            "source",
+            "classroom runtime",
+            "personal runtime",
+            "care runtime",
+            "care push runtime",
+            "world-v1 runtime",
+            "town runtime"
+          ]
+        },
+        "classroom": {
+          "status": "fixed",
+          "result": "Canonical incremental validation replaces full-history capacity check; existing run, revision, ownership, score and duplicate guards preserved",
+          "seededEvents": 20000,
+          "generalStatus": 200,
+          "practiceStatus": 200,
+          "submissionStatus": 200,
+          "finalEvents": 20025,
+          "sourceAndExactRuntimeVerified": true,
+          "idempotentRetry": true,
+          "orphanRejected": true
+        },
+        "summary": {
+          "status": "optimized-and-verified",
+          "result": "Cache immutable admitted raw events by Core owner/revision/sequence, read only appended tail, recompute canonical summary using current time outside SQL transaction; recheck session, owner, learning consent/status and user settings before reply",
+          "maxAccounts": 4,
+          "maxTotalBytes": 16777216,
+          "maxEntryBytes": 8388608,
+          "ttlMs": 60000,
+          "oversizeFallback": "valid response without caching",
+          "persistentNewStore": false,
+          "unchangedWarmHistoryRows": 0,
+          "syntheticLocal": {
+            "events": 20000,
+            "coldHistoryRows": 20000,
+            "warmHistoryRows": 0,
+            "coldMs": 212,
+            "warmMs": 90,
+            "summaryInsideSqlTransaction": false
+          },
+          "syntheticGitHub": {
+            "events": 20000,
+            "coldHistoryRows": 20000,
+            "warmHistoryRows": 0,
+            "coldMs": 912,
+            "warmMs": 412,
+            "summaryInsideSqlTransaction": false
+          },
+          "productionLatencyMeasured": false,
+          "exactTimeWindowsFutureExclusionAndSettingsVerified": true
+        },
+        "ci": {
+          "status": "success",
+          "workflow": ".github/workflows/backend-release.yml",
+          "trigger": "push codex/backend-* or workflow_dispatch",
+          "testOnly": true,
+          "permissions": {
+            "contents": "read"
+          },
+          "runId": 39132334591,
+          "commit": "80d63fbfd7f3769d5bcb311ec8489cfa17411447",
+          "url": "https://github.com/unmet23-lab/SYNK-talk/actions/runs/39132334591",
+          "files": 21,
+          "tests": 282,
+          "pass": 282,
+          "fail": 0,
+          "skipped": 0,
+          "nestedRuntimeTests": {
+            "tests": 64,
+            "fail": 0,
+            "skipped": 0,
+            "countedSeparatelyFromParent": true
+          },
+          "logSha256": "401dd15fa8a3987ead9ed1923cb1a1942520e328d598c1df3e9b300b1507a6f2",
+          "artifact": "backend-release-80d63fbfd7f3769d5bcb311ec8489cfa17411447"
+        },
+        "sharedIntegration": {
+          "status": "integrated-and-focused-verified",
+          "files": 25,
+          "otherWorkingChangesPreserved": true,
+          "headAndIndexUnchangedAtIntegration": true,
+          "changedFilesStillMatchIntegrationReceipt": true,
+          "focused": {
+            "files": 20,
+            "tests": 248,
+            "pass": 248,
+            "fail": 0,
+            "skipped": 0,
+            "logSha256": "6d8b82a237397280238efbd7ce48df5a9e19c926dbfeac983b55991221a958c8"
+          },
+          "completeRunner": {
+            "tests": 275,
+            "pass": 273,
+            "fail": 2,
+            "skipped": 0,
+            "logSha256": "630c16903000a75666994e94d495f79ad6a6929f135fef735f32ac95ac0d5d6e",
+            "unrelatedExistingFailure": "supabase/functions/auth/동봉.json references uncommitted lib/auth-password-change.js absent in shared HEAD; those paths were not changed by this task",
+            "deploymentCandidateAffected": false
+          },
+          "careWorkingAuthVariantPreserved": true,
+          "historicalVerification": "Initial integration before the authorized packaging repair; superseded by productionDeployment.sharedTests"
+        },
+        "productionDeploymentPerformed": true,
+        "productionDataTouched": true,
+        "externalAiOrApplicationBuildSubmitted": false,
+        "limitations": [
+          "Focused backend release suite, not a full repository audit",
+          "Production deployment, production latency and physical second-device tests not performed",
+          "Shared dirty working tree retains unrelated unfinished Auth packaging; deploy only the verified isolated release commit"
+        ],
+        "evidence": {
+          "releaseCiLog": ".tmp/backend-followup-review-20261018/release-ci-39132334591.log",
+          "sharedTestLog": ".tmp/backend-followup-review-20261018/backend-ci-shared-focused.tap",
+          "sharedAllTestLog": ".tmp/backend-followup-review-20261018/backend-ci-shared.tap",
+          "integration": ".tmp/backend-followup-review-20261018/followup-main-result.json",
+          "runtimeManifest": "SYNK-talk/tools/backend-runtime-manifest.json"
+        },
+        "productionDeployment": {
+          "status": "production-deployed-and-verified",
+          "completedAt": "2026-10-18T15:20:44.517997+00:00",
+          "sourceCommit": "fd85c7c9d9de9c633b87800c4423fb462fcb8c75",
+          "releaseBranch": "codex/backend-upgrade-release-20261018",
+          "packageRepair": {
+            "beforeHead": "ae0a96dd9d526edbffd2a4605255f8e049ac99c7",
+            "afterHead": "f8e3ba7f08bf437d30121a72cbc53022b778ce93",
+            "file": "lib/auth-password-change.js",
+            "sourceCommit": "80d63fbfd7f3769d5bcb311ec8489cfa17411447",
+            "workingBytesUnchanged": true,
+            "otherIndexEntriesUnchanged": true,
+            "onlyOnePathCommitted": true,
+            "newAuthBehaviorDeployed": false
+          },
+          "ci": {
+            "runId": 39138911220,
+            "url": "https://github.com/unmet23-lab/SYNK-talk/actions/runs/39138911220",
+            "tests": 284,
+            "pass": 284,
+            "fail": 0,
+            "skipped": 0,
+            "nestedRuntimeTests": 66
+          },
+          "sharedTests": {
+            "tests": 277,
+            "pass": 277,
+            "fail": 0,
+            "skipped": 0
+          },
+          "deployedAuthTests": {
+            "tests": 48,
+            "pass": 48,
+            "fail": 0,
+            "skipped": 0,
+            "method": "Actual downloaded deployed Auth modules exercised through loopback HTTP faults",
+            "liveProviderFaultInjected": false
+          },
+          "operatingHttp": {
+            "checks": [
+              "AUTHENTICATED_ACCOUNT",
+              "CONSENT_ACCEPTED",
+              "CLASSROOM_ACCOUNT",
+              "CLASSROOM_CONSENT",
+              "TEACHER_ASSIGNMENT_CREATED",
+              "GENERAL_WRITE_20001",
+              "CLASSROOM_PRACTICE_BEYOND_20000",
+              "CLASSROOM_SUBMISSION_BEYOND_20000",
+              "SUBMISSION_RETRY_IDEMPOTENT",
+              "TEACHER_ASSIGNMENT_BEYOND_20000",
+              "ORPHAN_EVENT_REJECTED",
+              "OWNED_HISTORY_COMPLETE",
+              "HISTORY_NOT_COPIED_INTO_BINDINGS",
+              "CLASSROOM_RECONSENT",
+              "RECONSENT_RESTORES_GRADED_HISTORY",
+              "SERVER_SCORED_HISTORY_CANNOT_BE_REPORTED_AS_CLIENT_EVIDENCE",
+              "FIRST_SUMMARY_EXACT",
+              "REPEATED_SUMMARY_EXACT",
+              "SUMMARY_OTHER_ACCOUNT_ISOLATED",
+              "RELOGIN_SUMMARY_RESTORED",
+              "PERSONAL_INITIAL_READ",
+              "PERSONAL_DOCUMENT_SAVED",
+              "PERSONAL_RELOGIN_RESTORED",
+              "CONSENT_REVOKED",
+              "REVOKED_CONSENT_HIDES_CACHED_PRACTICE",
+              "REVOKED_CONSENT_BLOCKS_CLASSROOM_WRITE",
+              "BOOT_SYNK_ACCOUNT",
+              "BOOT_SYNK_LEARNING",
+              "BOOT_SYNK_CLASSROOM",
+              "BOOT_SYNK_PERSONAL",
+              "BOOT_SYNK_CARE",
+              "BOOT_SYNK_CARE_PUSH",
+              "BOOT_SYNK_WORLD_V1",
+              "BOOT_SYNK_TOWN",
+              "OWNED_SESSION_LOGGED_OUT",
+              "REVOKED_AUTH_SESSION_DENIED"
+            ],
+            "measurements": [
+              {
+                "case": "world/account",
+                "status": 200,
+                "elapsedMs": 3322,
+                "unchangedClientTimeoutMs": 12000
+              },
+              {
+                "case": "world/sharing",
+                "status": 200,
+                "elapsedMs": 5408,
+                "unchangedClientTimeoutMs": 12000
+              },
+              {
+                "case": "assignments",
+                "status": 200,
+                "elapsedMs": 5660,
+                "unchangedClientTimeoutMs": 12000
+              },
+              {
+                "case": "world/practice",
+                "status": 200,
+                "elapsedMs": 8705,
+                "unchangedClientTimeoutMs": 12000
+              },
+              {
+                "case": "submissions",
+                "status": 200,
+                "elapsedMs": 7741,
+                "unchangedClientTimeoutMs": 12000
+              },
+              {
+                "case": "submissions",
+                "status": 200,
+                "elapsedMs": 6087,
+                "unchangedClientTimeoutMs": 12000
+              },
+              {
+                "case": "assignments",
+                "status": 200,
+                "elapsedMs": 5199,
+                "unchangedClientTimeoutMs": 12000
+              },
+              {
+                "case": "world/learning",
+                "status": 400,
+                "elapsedMs": 4946,
+                "unchangedClientTimeoutMs": 12000
+              },
+              {
+                "case": "world/sharing",
+                "status": 200,
+                "elapsedMs": 6898,
+                "unchangedClientTimeoutMs": 12000
+              },
+              {
+                "case": "world/sharing",
+                "status": 200,
+                "elapsedMs": 5323,
+                "unchangedClientTimeoutMs": 12000
+              },
+              {
+                "case": "workspace",
+                "status": 200,
+                "elapsedMs": 5957,
+                "unchangedClientTimeoutMs": 12000
+              },
+              {
+                "case": "world/learning",
+                "status": 403,
+                "elapsedMs": 4851,
+                "unchangedClientTimeoutMs": 12000
+              },
+              {
+                "case": "world/practice",
+                "status": 403,
+                "elapsedMs": 5600,
+                "unchangedClientTimeoutMs": 12000
+              }
+            ],
+            "cleanup": {
+              "complete": true
+            },
+            "limitations": {
+              "physicalDevices": false,
+              "paidAI": false,
+              "storageSigningDelayInjected": false
+            },
+            "unchangedClassroomClient": true,
+            "classroomClientTimeoutMs": 12000,
+            "historicalBindingRows": 24,
+            "restoredGradeCount": 3,
+            "seededEvents": 20000,
+            "finalOwnedEvents": 20025,
+            "summaryRequestMs": [
+              5069,
+              4065
+            ],
+            "remoteCacheHitProven": false,
+            "boots": [
+              {
+                "slug": "synk-account",
+                "status": 204
+              },
+              {
+                "slug": "synk-learning",
+                "status": 204
+              },
+              {
+                "slug": "synk-classroom",
+                "status": 204
+              },
+              {
+                "slug": "synk-personal",
+                "status": 204
+              },
+              {
+                "slug": "synk-care",
+                "status": 204
+              },
+              {
+                "slug": "synk-care-push",
+                "status": 204
+              },
+              {
+                "slug": "synk-world-v1",
+                "status": 204
+              },
+              {
+                "slug": "synk-town",
+                "status": 204
+              }
+            ],
+            "live": true,
+            "passed": 36
+          },
+          "canaryHttp": {
+            "checks": [
+              "AUTHENTICATED_ACCOUNT",
+              "CONSENT_ACCEPTED",
+              "CLASSROOM_ACCOUNT",
+              "CLASSROOM_CONSENT",
+              "TEACHER_ASSIGNMENT_CREATED",
+              "GENERAL_WRITE_20001",
+              "CLASSROOM_PRACTICE_BEYOND_20000",
+              "CLASSROOM_SUBMISSION_BEYOND_20000",
+              "SUBMISSION_RETRY_IDEMPOTENT",
+              "ORPHAN_EVENT_REJECTED",
+              "OWNED_HISTORY_COMPLETE",
+              "HISTORY_NOT_COPIED_INTO_BINDINGS",
+              "CLASSROOM_RECONSENT",
+              "RECONSENT_RESTORES_GRADED_HISTORY",
+              "SERVER_SCORED_HISTORY_CANNOT_BE_REPORTED_AS_CLIENT_EVIDENCE",
+              "FIRST_SUMMARY_EXACT",
+              "REPEATED_SUMMARY_EXACT",
+              "SUMMARY_OTHER_ACCOUNT_ISOLATED",
+              "RELOGIN_SUMMARY_RESTORED",
+              "CONSENT_REVOKED",
+              "REVOKED_CONSENT_HIDES_CACHED_PRACTICE",
+              "REVOKED_CONSENT_BLOCKS_CLASSROOM_WRITE",
+              "BOOT_SYNK_ACCOUNT",
+              "BOOT_SYNK_LEARNING",
+              "BOOT_SYNK_CLASSROOM",
+              "BOOT_SYNK_PERSONAL",
+              "OWNED_SESSION_LOGGED_OUT",
+              "REVOKED_AUTH_SESSION_DENIED"
+            ],
+            "measurements": [
+              {
+                "case": "world/account",
+                "status": 200,
+                "elapsedMs": 3337,
+                "unchangedClientTimeoutMs": 12000
+              },
+              {
+                "case": "world/sharing",
+                "status": 200,
+                "elapsedMs": 4919,
+                "unchangedClientTimeoutMs": 12000
+              },
+              {
+                "case": "assignments",
+                "status": 200,
+                "elapsedMs": 4169,
+                "unchangedClientTimeoutMs": 12000
+              },
+              {
+                "case": "world/practice",
+                "status": 200,
+                "elapsedMs": 7227,
+                "unchangedClientTimeoutMs": 12000
+              },
+              {
+                "case": "submissions",
+                "status": 200,
+                "elapsedMs": 6689,
+                "unchangedClientTimeoutMs": 12000
+              },
+              {
+                "case": "submissions",
+                "status": 200,
+                "elapsedMs": 5308,
+                "unchangedClientTimeoutMs": 12000
+              },
+              {
+                "case": "world/learning",
+                "status": 400,
+                "elapsedMs": 6389,
+                "unchangedClientTimeoutMs": 12000
+              },
+              {
+                "case": "world/sharing",
+                "status": 200,
+                "elapsedMs": 5700,
+                "unchangedClientTimeoutMs": 12000
+              },
+              {
+                "case": "world/sharing",
+                "status": 200,
+                "elapsedMs": 4327,
+                "unchangedClientTimeoutMs": 12000
+              },
+              {
+                "case": "workspace",
+                "status": 200,
+                "elapsedMs": 4847,
+                "unchangedClientTimeoutMs": 12000
+              },
+              {
+                "case": "world/learning",
+                "status": 403,
+                "elapsedMs": 5698,
+                "unchangedClientTimeoutMs": 12000
+              },
+              {
+                "case": "world/practice",
+                "status": 403,
+                "elapsedMs": 3406,
+                "unchangedClientTimeoutMs": 12000
+              }
+            ],
+            "cleanup": {
+              "complete": true
+            },
+            "limitations": {
+              "physicalDevices": false,
+              "paidAI": false,
+              "storageSigningDelayInjected": false
+            },
+            "unchangedClassroomClient": true,
+            "classroomClientTimeoutMs": 12000,
+            "historicalBindingRows": 24,
+            "restoredGradeCount": 3,
+            "seededEvents": 20000,
+            "finalOwnedEvents": 20025,
+            "summaryRequestMs": [
+              4974,
+              5189
+            ],
+            "remoteCacheHitProven": false,
+            "boots": [
+              {
+                "slug": "synk-account",
+                "status": 204
+              },
+              {
+                "slug": "synk-learning",
+                "status": 204
+              },
+              {
+                "slug": "synk-classroom",
+                "status": 204
+              },
+              {
+                "slug": "synk-personal",
+                "status": 204
+              }
+            ],
+            "live": true,
+            "passed": 28
+          },
+          "functions": [
+            {
+              "slug": "synk-account",
+              "version": 61,
+              "status": "ACTIVE",
+              "verify_jwt": true,
+              "updated_at": 1792333487860,
+              "exact": true,
+              "sourceModules": 17,
+              "archiveSha256": "7d6f61f937b433194b2d59eb6eab2f85677520d78bccfb2bcdfd7d830cdf5e1d"
+            },
+            {
+              "slug": "synk-learning",
+              "version": 55,
+              "status": "ACTIVE",
+              "verify_jwt": true,
+              "updated_at": 1792333515415,
+              "exact": true,
+              "sourceModules": 15,
+              "archiveSha256": "fa5d9a113275b37c95886f67092bbc73f73277e26d2f8ce417ead7c39f9d3075"
+            },
+            {
+              "slug": "synk-classroom",
+              "version": 7,
+              "status": "ACTIVE",
+              "verify_jwt": true,
+              "updated_at": 1792336552661,
+              "exact": true,
+              "sourceModules": 2,
+              "archiveSha256": "3d57272d8b004586341582688b8694b9c2fea243d81a99f3525dddf94279551c"
+            },
+            {
+              "slug": "synk-personal",
+              "version": 45,
+              "status": "ACTIVE",
+              "verify_jwt": true,
+              "updated_at": 1792333609147,
+              "exact": true,
+              "sourceModules": 2,
+              "archiveSha256": "132eed16ebf600285fb4a0af64b3535e4d4f65d0718d3924c7a17fcb52260cb3"
+            },
+            {
+              "slug": "synk-care",
+              "version": 32,
+              "status": "ACTIVE",
+              "verify_jwt": true,
+              "updated_at": 1792333634689,
+              "exact": true,
+              "sourceModules": 2,
+              "archiveSha256": "f7e190863d22580b16a572abbd8e009c403555229bd47186968a630e059a6a79"
+            },
+            {
+              "slug": "synk-care-push",
+              "version": 29,
+              "status": "ACTIVE",
+              "verify_jwt": true,
+              "updated_at": 1792333655336,
+              "exact": true,
+              "sourceModules": 2,
+              "archiveSha256": "6dca139614531aae52533f3fcfdf6996ce2d09cd959bebdbeb4ee233086ffec2"
+            },
+            {
+              "slug": "synk-world-v1",
+              "version": 5,
+              "status": "ACTIVE",
+              "verify_jwt": true,
+              "updated_at": 1792333688035,
+              "exact": true,
+              "sourceModules": 2,
+              "archiveSha256": "7e69bc4b4545e48d2355449e6f02c903c8ff7355afc02fb79e0bcf98f045cf4e"
+            },
+            {
+              "slug": "synk-town",
+              "version": 4,
+              "status": "ACTIVE",
+              "verify_jwt": true,
+              "updated_at": 1792333733089,
+              "exact": true,
+              "sourceModules": 2,
+              "archiveSha256": "931a25b384983c9d224a6a5cd91e388a8486b5695877e23023955dd3894a2902"
+            }
+          ],
+          "allSourceBytesExact": true,
+          "exactModules": 44,
+          "preservation": {
+            "at": "2026-10-18T15:20:42.939Z",
+            "target": "production",
+            "readOnly": true,
+            "history": {
+              "until": 292,
+              "events": 292,
+              "owners": 1,
+              "digest": "ad67a53ae49ae9416963eb83727c4a77"
+            },
+            "settings": {
+              "count": 43,
+              "digest": "93ca0b692f92c71297e4cb70c826fab7bb426698c39782136f40cc2cecedd2a3"
+            },
+            "originalHistoryUnchanged": true,
+            "allSecretSettingsUnchanged": true
+          },
+          "performanceRepair": {
+            "previousCommit": "12306b4a0e0bacd55c2001ad0a3c028737a1c8e7",
+            "beforeFirstPracticeMs": 80207,
+            "afterFirstPracticeMs": 8705,
+            "clientTimeoutMsUnchanged": 12000,
+            "historyCopiedIntoBindings": false,
+            "nativeBindingRowsAfterInitialWrites": 24,
+            "reason": "Read complete granted history directly; persist only explicit classroom bindings; preserve grading and full-precision server receipts on replay",
+            "timingsAreSyntheticSingleRuns": true
+          },
+          "cleanup": {
+            "complete": true,
+            "allTaskJournalsComplete": true,
+            "classTownDependenciesHandled": true,
+            "ownerGuardLocalCases": 7,
+            "retained": "Deleted Core tombstones and immutable audit records follow the existing lifecycle contract"
+          },
+          "evidence": {
+            "operatingHttp": ".tmp/backend-followup-deploy-20261018/production-live-probe-1792336729158.json",
+            "canaryHttp": ".tmp/backend-followup-deploy-20261018/rehearsal-live-probe-1792336422174.json",
+            "sourceProofs": ".tmp/backend-followup-deploy-20261018/receipt-preservation/",
+            "ciLog": ".tmp/backend-followup-deploy-20261018/receipt-preservation/release-ci-39138911220.log",
+            "sharedLog": ".tmp/backend-followup-deploy-20261018/receipt-preservation/shared-backend-all.tap",
+            "authLog": ".tmp/backend-followup-deploy-20261018/receipt-preservation/deployed-auth-transport.tap"
+          },
+          "limitations": [
+            "Controlled synthetic identities via actual operating HTTP APIs, not physical second-device or long-running production load validation",
+            "Live provider transport faults were not injected into the operating Auth service",
+            "An operating Edge cache hit or zero-row history read was not instrumented; those bounds are verified by SQL regression tests",
+            "Focused backend release checks, not a complete repository audit"
+          ],
+          "recordsCommit": "91fd184",
+          "recordsCi": {
+            "runId": 39140304430,
+            "commit": "91fd18483efddf73349f01d2d52b74640b50dbcd",
+            "status": "success",
+            "tests": 284,
+            "pass": 284,
+            "fail": 0,
+            "skipped": 0,
+            "url": "https://github.com/unmet23-lab/SYNK-talk/actions/runs/39140304430"
+          }
+        },
+        "productionDataTouchedScope": "Owned synthetic fixture rows only; original 292 admitted events preserved",
+        "remainingSharedPackagingFailures": 0
+      },
+      "reviewOnlyContext": {
+        "checkedAt": "2026-10-18T13:15:16.628Z",
+        "verificationAndLimitationsDescribe": "Pre-fix audit and reproduction; current deployment verification is below"
+      },
+      "productionDataTouchedScope": "Owned synthetic fixtures only; original 292 admitted events and 43 settings unchanged",
+      "verifiedAt": "2026-10-18T15:20:44.517997+00:00",
+      "currentVerification": {
+        "sourceCommit": "fd85c7c9d9de9c633b87800c4423fb462fcb8c75",
+        "recordsCommit": "91fd184",
+        "ci": 284,
+        "shared": 277,
+        "deployedAuth": 48,
+        "operatingHttp": 36,
+        "canaryHttp": 28,
+        "fail": 0,
+        "skipped": 0,
+        "cleanupComplete": true,
+        "recordsCi": {
+          "runId": 39140304430,
+          "commit": "91fd18483efddf73349f01d2d52b74640b50dbcd",
+          "status": "success",
+          "tests": 284,
+          "pass": 284,
+          "fail": 0,
+          "skipped": 0,
+          "url": "https://github.com/unmet23-lab/SYNK-talk/actions/runs/39140304430"
+        }
       }
     }
-  }
+  },
+  "edgeBeforeFollowupDeployment": [
+    {
+      "target": "production",
+      "slug": "synk-classroom",
+      "version": 4,
+      "verifyJwt": true,
+      "exact": true,
+      "sourceModules": 2,
+      "archiveSha256": "a943e31c642ff5476e2c672d77840a8b880dcc590cdfcd1acba8243319e43a4e"
+    },
+    {
+      "target": "production",
+      "slug": "synk-personal",
+      "version": 44,
+      "verifyJwt": true,
+      "exact": true,
+      "sourceModules": 2,
+      "archiveSha256": "64bc1c788b7f666e66ce12723a4f68dc89d4caeedefcec076cb0990e4e8208e6"
+    },
+    {
+      "target": "production",
+      "slug": "synk-learning",
+      "version": 54,
+      "verifyJwt": true,
+      "exact": true,
+      "sourceModules": 14,
+      "archiveSha256": "0a9b834bb7dd3115513c5ab8b2f9aafab3d5a3dcc047481c8d702af60f865fdc"
+    }
+  ]
 }

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-02",
+  "updatedAt": "2026-10-19",
   "labInternationalSetup": "온라인마케팅지도/youtube-setup-20260920.json",
   "labInternationalSocialSetup": "온라인마케팅지도/intl-social/execution-20260920.json",
   "profileRefresh": {
@@ -1017,6 +1017,50 @@
       "retiredUploadRecord": "docs/마케팅/전사새출발_20260914/구후보_폐기기록.md",
       "currentPreparation": "docs/마케팅/전사새출발_20260914/진행과검증.md",
       "remainingAction": "new-bio-saved-and-publicly-rechecked-2026-09-14; new-first-post-preparation-only-no-publication; 2026-09-14-account-connect-UI-has-no-synkshift-blog-target-only-unrelated-MY-place-reviews; no-connection-made; official-linking-imports-content-and-cannot-be-unlinked-not-a-simple-external-URL; reconsider-only-if-correct-blog-and-intended-import-are-confirmed"
+    },
+    "lab-id-tiktok": {
+      "brand": "LAB",
+      "platform": "tiktok",
+      "countryCode": "ID",
+      "locale": "id",
+      "handle": "@synklab.id",
+      "publicUrl": "https://www.tiktok.com/@synklab.id",
+      "loginAlias": "unmet29",
+      "loginVerifiedAt": "2026-10-19",
+      "publisher": "manual-only",
+      "connection": "web-owner-verified-workspace-read-api-connected-sandbox",
+      "creationVerified": true,
+      "registrationCompleted": true,
+      "profileStatus": "created-handle-and-owner-verified; public-name-and-bio-verified; avatar-not-uploaded; Workspace-brand-country-language-saved",
+      "publicProfileComplete": false,
+      "publicDisplayName": "SYNK LAB Indonesia",
+      "workspaceDisplayName": "SYNK LAB Indonesia",
+      "workspaceChannelId": "4c82692e-0530-4f37-8fdc-fd78b142551b",
+      "profileCopy": "../_ops/qa/sns-post-counting-20261018/tiktok-app.json",
+      "profileEvidence": "../_ops/qa/sns-post-counting-20261018/tiktok-app.json",
+      "setupEvidence": "../_ops/qa/sns-post-counting-20261018/tiktok-app.json",
+      "collectionConnection": {
+        "status": "connected-sandbox",
+        "scopes": [
+          "user.info.basic",
+          "user.info.profile",
+          "user.info.stats",
+          "video.list"
+        ],
+        "refreshTokenPresent": true,
+        "firstCollectedAt": "2026-10-18T15:05:52.390Z",
+        "officialObservationAt": "2026-10-19T00:07:09.594Z",
+        "publicPostCount": 0,
+        "storedPostCount": 0,
+        "inventoryComplete": true,
+        "naturalPeriodicExecutionVerified": true,
+        "postExpiryRefreshVerified": false,
+        "latestNaturalPeriodicCompletedAt": "2026-10-18T23:51:36.342Z",
+        "recentLastCollectedAt": "2026-10-18T23:51:36.342Z",
+        "nextCheckAt": "2026-10-19T00:21:36.342Z"
+      },
+      "publicBio": "Belajar bahasa Korea, langsung coba pakai! 🎮 synk.im/lab/",
+      "publicBioVerifiedAt": "2026-10-19T00:13:22.668Z"
     }
   }
 }

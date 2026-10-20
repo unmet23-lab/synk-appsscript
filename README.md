@@ -13,6 +13,9 @@ Google Apps Script 코드와 회사 작업 저장소다. Apps Script에는 `Code
 
 | 작업 | 사용 위치 |
 | --- | --- |
+| 작업 재개 | 운영 홈의 **작업 이어가기**에서 대상별 원문·미적용 참고카드·남은 일·Git 변경·최근 QA를 읽는다. 명령은 `npm run ops:resume -- "WORLD 앱"`. |
+| 영상 사전검사 | `npm run media:inspect -- --video "완성본.mp4" --out ".tmp/이번편검사"`에 필요하면 `--subtitle`, `--script`, `--transcript`를 더한다. 경고 시각·검토 클립·프레임·HTML을 남긴다. |
+| 확정본 인계 | [기존 완성본 등록](docs/마케팅/콘텐츠_제작방식_v2_20261002.md#final-content-handoff)에 `--inspection "검사.json 경로"`를 붙인다. 검사에 쓴 영상·자막·대본·받아쓰기 해시를 다시 대조하고 같은 전달은 재사용한다. 사용자가 확정한 결과만 기존 인박스로 넘긴다. |
 | 백업 감시 | Windows **SYNK 백업 상태 확인**이 15분마다·로그온 때 로컬 실행 기록을 확인한다. 기존 **SYNK 매일 백업**은 그대로이며, 상태는 운영 홈과 원본창고의 `backup-monitor.json`에서 읽는다. |
 | 만족 사례 보존 | 같은 확인 작업이 장부 변경 또는 24시간 경과 때 로컬 원본과 기존 보관 기록을 대조한다. 수동 실행은 `npm run check:preservation`, 결과는 `.tmp/preservation/latest.json`. OneDrive 지문 보류와 현재 원격 존재·실제 복원 미확인을 구분한다. |
 

@@ -2,7 +2,7 @@
 
 > 2026-10-09 07:27 KST 운영 반영 완료. 최신 기준·검수·실행 근거는 `../../beginner-games/qa/account-sync/coop-release/r4/`다. 1fa(444파일)→85b20c 회사 경로 전환과 협동 서비스 healthy·공개 HTTP/SSE 2연결 18수리/공동출발을 확인했다. 아래 e696 설명은 이전 계획 기록이다. canonical 스크립트는 적용한 r4와 동일하며 이미 적용된 현재 운영에 재실행하면 CURRENT_DRIFT로 멈추는 것이 정상이다.
 
-`prepare-company-route.py`는 이번 협동 API 한 경로를 위한 후보다. **기본 실행은 읽기 전용 계획이며 운영에 적용하지 않았다.** 기존 회사의 계정·DB·환경 파일을 읽어 복사하거나 수정하지 않는다. Docker Compose는 원래 운영 계약에 따라 기존 환경을 사용한다.
+아래는 운영 반영 전 e696 기준의 계획·검증 이력이다. 당시 `prepare-company-route.py`는 협동 API 한 경로를 위한 후보였으며 기본 실행은 읽기 전용 계획이었다. 이후 반영 결과는 [공통 운영 기록](../../beginner-games/qa/account-sync/README.md)을 따른다. 기존 회사의 계정·DB·환경 파일을 읽어 복사하거나 수정하지 않는다. Docker Compose는 원래 운영 계약에 따라 기존 환경을 사용한다.
 
 ## 고정 기준과 변경 경계
 
@@ -25,7 +25,7 @@ sudo python3 -B /opt/synk/spaceship/current/deploy/prepare-company-route.py
 
 ## 검수 완료 뒤 적용 계약
 
-공개 배포 권한과 공식 최종 검수가 완료되어야 한다. 협동 컨테이너가 내부 network의 `.4`에서 healthy인 상태를 먼저 확인한다. 적용은 위 계획의 실제 SHA를 명시해야 한다. 환경 파일은 기존 systemd가 전달하며 스크립트는 내용을 열거나 복사하지 않는다.
+아래는 당시 후보의 적용 계약이다. 새로운 운영 변경은 현재 요청의 배포 권한과 [AI 운영 원칙](../../../docs/AI_운영원칙.md)에 따라 검증하며, 과거의 고정 모델 최종 검수를 새 필수 관문으로 적용하지 않는다. 협동 컨테이너가 내부 network의 `.4`에서 healthy인 상태를 먼저 확인한다. 적용은 위 계획의 실제 SHA를 명시해야 한다. 환경 파일은 기존 systemd가 전달하며 스크립트는 내용을 열거나 복사하지 않는다.
 
 ```sh
 sudo systemd-run --unit=synk-spaceship-route-20261009 --wait --collect --pipe \

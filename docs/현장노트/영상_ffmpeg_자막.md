@@ -389,6 +389,13 @@
 - 고침: 돌리기 전후로 결제 페이지를 새로 열어 zeroGpu.current를 읽고 뺀다.
 - 다시 확인: 같은 읽기를 한 번 더 해 current가 줄었는지 본다.
 
+### 영상에 맞춘 효과음은 MMAudio를 따로 만든 venv에서 돌린다
+- 증상: 10-18 하린 광고 효과음(매미·얼음 「탁」·붓기·잔 「톡」)이 저장소에 없었다(사운드킷은 앱 소리, `SYNK-talk/assets/sfx`는 게임 소리). 다빈치 리졸브 21.1은 깔려 있지만 Fairlight Sound Library(폴리 500여 개, 약 1.5GB)는 따로 받는 패키지라 설치돼 있지 않았다(블랙매직 지원 페이지 등록 양식 뒤 내려받기).
+- 원인: MMAudio(`hkchengrex/MMAudio`)는 시스템 파이썬(3.14, torch 2.14 cu130)에 없는 패키지가 많고, torchaudio를 모듈 맨 위에서 부르며, CLIP(DFN5B)을 Hugging Face에서 그때 받는다.
+- 고침: `C:/SYNK-LoRA/tools/mmaudio/`에 `python -m venv --system-site-packages venv`(시스템 torch 공유) → `torchvision==0.29.1+cu130`(pytorch cu130 색인, `--no-deps`)·einops·colorlog·librosa·omegaconf·open_clip_torch·timm·torchdiffeq·pyloudnorm. 가중치는 `받기.sh`(`par_dl.py` 16연결, 10-18부터 전체 주소도 받음)로 large_44k_v2 4.1GB·synchformer·v1-44·DFN5B 3.9GB, BigVGAN 44k는 `HF_HUB_DISABLE_XET=1` 캐시. 실행 `소리만들기.py <작업.json> <출력>`이 torchaudio를 빈 모듈로 채우고 CLIP을 `local-dir:clip_dfn5b`로 읽는다. 구간 2~4.5초 한 개 13~65초(LoRA 학습과 GPU를 나눠 쓸 때), VRAM 최대 5.8GB. 검사는 `소리_살피기.py`(어택 시각·스펙트럼 중심)로 장면 사건과 맞는 시드를 고른다(매미는 중심 4~6kHz, 9kHz대는 쉬쉬거리는 잡음). 믹스 `synk-vendor/…/효과음/믹스.py` — 직접 짠 봉우리 제한기는 +1.6dBFS로 샜으니 ffmpeg `alimiter=limit=0.79`로 누르고 크기를 다시 재서 맞춘다(−14.1 LUFS · −1.6 dBTP).
+- 다시 확인: 최종 mp4를 `ebur128=peak=true`로 재고, 사건 소리(얼음 「탁」·잔 「톡」)의 어택이 컷 시각 ±0.1초 안인지 본다.
+- 10-19 텐센트 HunyuanVideo-Foley XL(`C:/SYNK-LoRA/tools/hunyuan-foley/`)도 같은 작업 JSON으로 돈다(`소리만들기.py`, 구간당 25~43초, VRAM 최대 11.4GB, 48kHz 모노, 글만 넣는 작업은 못 함). 깔 때 막힌 것: transformers 5판에는 코드가 쓰는 `find_pruneable_heads_and_indices`가 없어 **`transformers>=4.50,<5`**(4.57), 그러면 huggingface_hub가 0.36으로 내려가 diffusers 0.41이 `resolve_revision`을 못 찾으니 **`diffusers<0.36`**, 실행 파일이 pandas를 부른다. 보조 모델 SigLIP2·CLAP은 실행 중에 허브에서 받으려 해서 `enc/`에 직접 받고 `model_utils.py`의 경로를 로컬로 바꿨다. CLAP 저장소의 config.json은 전체 모델(`clap`)이라 `ClapTextModelWithProjection`이 `vocab_size` 없음으로 죽는다 → `config=ClapTextConfig.from_pretrained(경로)`를 넘긴다. GPU를 남이 쓰고 있으면 `GPU비면_돌리기.sh`(1분마다 보고 6GB 아래면 시작)로 걸어 둔다.
+
 ## 블렌더 장면·회색 미리보기
 
 > 판: Blender 5.2.2 LTS(워크벤치·EEVEE·Cycles, `-b --python`) · 10-18 한강2126 드론 동선 미리보기(`~/Videos/한강2126_새판_20261009/재촬영_v40/시험/블렌더_미리보기/`), 10-18 지유 광고 병 장면(`docs/마케팅/PULSE_포트폴리오_제작준비_20261012/video/jiyu-skincare-20261018/블렌더/`, Cycles CPU 미리보기)에서 실측 · Claude Code(Claude Opus 5.5)
