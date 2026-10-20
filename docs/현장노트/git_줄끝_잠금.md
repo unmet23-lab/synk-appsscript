@@ -424,3 +424,9 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: `GIT_INDEX_FILE`을 설정한 환경의 `git rev-parse --git-path index`는 공용 index가 아니라 해당 임시 index를 반환한다.
 - 고침: 원래 환경에서 `GIT_INDEX_FILE`만 제거하고 실제 worktree index 경로를 먼저 구했다. 그 파일의 앞뒤 SHA를 대조하며, 가드는 임시 index 환경에서만 실행했다.
 - 다시 확인: Talk 자동화 8개 경로의 가드를 재실행해 통과했고 실제 공용 index SHA가 유지됐다. `.tmp/business-automation-20261020/talk-index-guard-knsBgG/result.json`을 확인한다.
+
+### 누가 쓴 줄인지 `git blame`·Co-Authored-By로 가르면 통합·들여오기 커밋 때문에 틀린다 (2026-10-20 Claude)
+- 증상: Workspace 화면의 GPT 흔적을 셀 때 메신저 `voice.js`가 blame으로는 전부 GPT 커밋 `b7a5e24a5`(10-19 「Integrate publication performance and secure company voice」)였다. 실제로는 Claude 커밋 `5ba0721fb`가 만든 파일에 GPT가 7줄을 더한 것이었다. 반대로 10-02 「originals」 커밋(`59cabdb80`)은 Claude 트레일러가 붙었지만 git 밖에 있던 GPT 판을 들여온 것이라, 트레일러로 세면 GPT 글이 Claude 몫으로 잡혔다(메신저 `app.js` 보이는 글 747개 중 732개가 GPT 원문인데 blame 줄로는 43%).
+- 원인: blame은 첫 부모 이력만 따라간다. 다른 가지 내용을 부모 하나짜리 커밋으로 한 번에 들여오면 그 커밋이 작성자가 된다. 트레일러는 커밋한 세션만 알려 주고, 내용을 누가 썼는지는 모른다.
+- 고침: 줄(또는 보이는 문장)마다 `git log --all --follow --name-only -- <파일>`의 모든 판을 오래된 순으로 읽어 그 내용이 처음 나타난 커밋을 찾는다. 들여오기 커밋(「originals」·「기준선 사본」·「GPT 제작 보존」)은 메시지로 따로 갈라 둔다.
+- 다시 확인: `git log --all --format='%h %s' -- tools/company-messenger/public/voice.js`의 맨 아래가 `5ba0721fb`(Claude)인데 `git blame -w`는 모든 줄을 `b7a5e24a5`로 보인다.
