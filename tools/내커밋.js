@@ -24,6 +24,8 @@
  *   6. 곧바로 공용 인덱스의 그 경로만 새 HEAD에 맞춘다(git reset -q -- 경로). 못 맞추면 가지를 되돌린다.
  *   index.lock은 tools/git잠금.js로 가려 기다리고, 주인 없는 잠금만 한 번 치운다.
  *   공용 인덱스에 내 경로의 다른 스테이징이 있으면 아무것도 하지 않는다(남이 올려 둔 것일 수 있다).
+ *   꼬리 없는 공용 작업본(메인 작업본의 가지가 받아 둔 origin 같은 이름 가지의 조상)에서는 커밋하지 않고 멈춘다 — 로컬 master에
+ *   커밋을 쌓으면 꼬리가 다시 생긴다. 2026-10-20 꼬리를 정리한 뒤로는 공용 작업본도 tools/바로올리기.js로 커밋·push한다(같은 경로·조각).
  *
  * 올리기 — 작업본·공용 인덱스·로컬 가지는 건드리지 않는다(--합치기만 로컬 가지에 병합 커밋 하나를 더한다).
  *   미리 보기도 fetch로 refs/remotes/origin/master를 새로 하고, 다시 쌓은 blob·커밋 객체를 저장소에 쓴다(어느 가지도 가리키지 않는다).
@@ -203,6 +205,38 @@ function 글아닌경로(git, 경로들) {
 
 function 조상인가(git, 앞, 뒤) {
   return git.돌리기(['merge-base', '--is-ancestor', 앞, 뒤], { 허용: [0, 1] }).status === 0;
+}
+
+/**
+ * 꼬리 없는 공용 작업본이면 {가지, 원격}: 메인 작업본(연결 작업본이 아님)의 가지가 받아 둔 origin 같은 이름 가지의 조상이다.
+ * 받아 둔 origin 판이 낡았어도 조상이면 최신 origin의 조상이다. origin 추적 가지가 없으면 null.
+ */
+function 꼬리없는공용가지(git, 원격 = 'origin') {
+  let 가지 = '';
+  try { 가지 = git.글(['symbolic-ref', '-q', 'HEAD']); } catch (_) { return null; }
+  if (!가지.startsWith('refs/heads/')) return null;
+  const [gitdir, 공용gitdir] = git.글(['rev-parse', '--path-format=absolute', '--git-dir', '--git-common-dir']).split('\n');
+  if (path.resolve(gitdir) !== path.resolve(공용gitdir)) return null;
+  const 짧은 = 가지.slice('refs/heads/'.length);
+  const r = git.돌리기(['rev-parse', '-q', '--verify', `refs/remotes/${원격}/${짧은}^{commit}`], { 허용: [0, 1] });
+  const O = String(r.stdout).trim();
+  if (r.status !== 0 || !O) return null;
+  return 조상인가(git, 'HEAD', O) ? { 가지: 짧은, 원격: `${원격}/${짧은}` } : null;
+}
+
+/** 내커밋 커밋 인자와 같은 일을 하는 바로올리기 명령(안내 글). 조각은 고름을 다시 「id」·「id:줄」 꼴로 쓴다. */
+function 바로올리기안내(경로들, 조각, 옵션) {
+  const 따옴 = (s) => (/^[\w./가-힣=:,-]+$/.test(s) ? s : `"${String(s).replace(/(["\\$`])/g, '\\$1')}"`);
+  const 칸 = ['node', 'tools/바로올리기.js', ...경로들.filter((p) => !조각.has(p)).map(따옴)];
+  for (const [p, 고름] of 조각) {
+    const 값 = 고름 === '전부' ? '전부' : [...고름].flatMap(([id, 줄]) => (줄 === true ? [id] : [...줄].sort((a, b) => a - b).map((n) => `${id}:${n}`))).join(',');
+    칸.push('--조각', 따옴(`${p}=${값}`));
+  }
+  if (옵션.폴더) 칸.push('--폴더');
+  if (옵션.메시지파일) 칸.push('-F', 따옴(옵션.메시지파일));
+  else for (const m of [].concat(옵션.메시지 || [])) 칸.push('-m', 따옴(m));
+  if (!옵션.메시지파일 && ![].concat(옵션.메시지 || []).length) 칸.push('-m', '"…"');
+  return 칸.join(' ');
 }
 
 function git버전확인(git, 최소, 까닭) {
@@ -926,6 +960,14 @@ async function 커밋(옵션 = {}) {
     const 경로들 = [...new Set([...(옵션.경로들 || []).map((p) => 경로맞추기(저장소, p, 기준폴더)), ...조각.keys()])];
     if (!경로들.length) throw new 사용법오류('커밋할 경로를 준다');
     git버전확인(git, [2, 31], '--path-format=absolute');
+    const 꼬리없음 = 꼬리없는공용가지(git);
+    if (꼬리없음) {
+      return {
+        결과: '멈춤', 가지: `refs/heads/${꼬리없음.가지}`,
+        이유: `공용 작업본 ${꼬리없음.가지}가 ${꼬리없음.원격}의 조상이다(꼬리 없음, 2026-10-20 정리) — 로컬 ${꼬리없음.가지}에 커밋을 쌓으면 꼬리가 다시 생겨 커밋하지 않았다. `
+          + `커밋과 push를 한 번에 한다: ${바로올리기안내(경로들, 조각, 옵션)} (미리 보기를 보고 --실행을 붙인다. 조각 id는 이 도구와 같다)`,
+      };
+    }
     const [gitdir, 인덱스파일] = git.글(['rev-parse', '--path-format=absolute', '--git-dir', '--git-path', 'index']).split('\n');
     const 잠금 = `${path.resolve(인덱스파일)}.lock`;
     const c = {
@@ -1486,6 +1528,6 @@ module.exports = {
   _도구: {
     git도구, 저장소찾기, 경로맞추기, 기본환경, 잠깐, 별도인덱스, 날차이읽기, 블롭읽기, 블롭, 블롭쓰기, 글아닌경로, 조상인가, git버전확인,
     공용인덱스항목, 잠금기다리기, 공용인덱스맞추기, 줄바꿈채우기, 셈빼기, 셈더하기, 넘는줄, 글로, 바이트로, 보이게, 이진인가, 멈춤, 사용법오류,
-    트리항목들, 고름맞추기, 조각보기, 메시지만들기, 세판합치기, 남의스테이징,
+    트리항목들, 고름맞추기, 조각보기, 메시지만들기, 세판합치기, 남의스테이징, 꼬리없는공용가지, 바로올리기안내,
   },
 };

@@ -527,6 +527,44 @@ test('커밋: 저장 용량 검사에 걸리면 커밋하지 않는다', async (
   assert.equal(저장.인덱스지문(), 전인덱스);
 });
 
+test('커밋: 꼬리 없는 공용 작업본(master가 origin/master의 조상)에서는 커밋하지 않고 같은 경로·조각·메시지의 바로올리기를 안내한다', async (t) => {
+  const 트랙 = 'docs/_ops/트랙.md';
+  const 저장 = 새저장소(t, { 원격: true, 파일: { [트랙]: '# 트랙\n- t1\n', 'a.js': 'a\n' } });
+  저장.쓰기('a.js', 'a 고침\n');
+  저장.쓰기(트랙, '# 트랙\n- t1\n- 내 줄\n');
+  const 바탕 = 저장.머리(), 전인덱스 = 저장.인덱스지문(), 전상태 = 상태(저장);
+  const r = await 도구.커밋({ 저장소: 저장.작업본, 경로들: ['a.js'], 조각: [[트랙, '전부']], 메시지: ['feat: a 고침', '본문'], 실행: true });
+  assert.equal(r.결과, '멈춤', JSON.stringify(r));
+  assert.match(r.이유, /꼬리 없음/);
+  assert.ok(r.이유.includes(`node tools/바로올리기.js a.js --조각 ${트랙}=전부 -m "feat: a 고침" -m 본문`), r.이유);
+  assert.equal(저장.머리(), 바탕, 'master는 그대로');
+  assert.equal(저장.인덱스지문(), 전인덱스, '공용 인덱스도 그대로');
+  assert.deepEqual(상태(저장), 전상태);
+  const 미리 = await 도구.커밋({ 저장소: 저장.작업본, 경로들: ['a.js'], 메시지: 'a' });
+  assert.equal(미리.결과, '멈춤', '미리 보기도 멈춘다');
+
+  // 연결 작업본(워크트리)은 막지 않는다 — 그 가지에 쌓는다
+  const 워 = path.join(저장.뿌리, '워');
+  저장.git('worktree', 'add', '-q', '-b', 'wt', 워, 'master');
+  fs.writeFileSync(path.join(워, 'a.js'), 'a 워크트리\n');
+  const 워커밋 = await 도구.커밋({ 저장소: 워, 경로들: ['a.js'], 메시지: '워크트리에서', 실행: true });
+  assert.equal(워커밋.결과, '커밋함', JSON.stringify(워커밋));
+
+  // 꼬리가 있으면(정리 전처럼) 지금까지대로 커밋한다
+  저장.쓰기('남.txt', '남의 미푸시\n');
+  저장.git('add', '남.txt');
+  저장.git('commit', '-q', '-m', '남의 미푸시');
+  const 쌓음 = await 도구.커밋({ 저장소: 저장.작업본, 경로들: ['a.js'], 메시지: 'a 고침', 실행: true });
+  assert.equal(쌓음.결과, '커밋함', JSON.stringify(쌓음));
+
+  // 명령줄 출력에도 안내가 그대로 나온다
+  const 깨끗 = 새저장소(t, { 원격: true, 파일: { 'b.js': 'b\n' } });
+  깨끗.쓰기('b.js', 'b 고침\n');
+  const 명령 = spawnSync(process.execPath, [도구경로, '커밋', 'b.js', '-m', 'b 고침', '--실행'], { cwd: 깨끗.작업본, encoding: 'utf8' });
+  assert.equal(명령.status, 1);
+  assert.match(명령.stdout, /\[멈춤\].*node tools\/바로올리기\.js b\.js -m "b 고침"/);
+});
+
 // ── 올리기 ──────────────────────────────────────────────────────────────────
 
 const 공용글 = '# 공용\n\n## 가\n- a1\n\n## 나\n- b1\n';

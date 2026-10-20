@@ -1,12 +1,16 @@
 #!/usr/bin/env node
 'use strict';
 /**
- * 참고카드 커밋 — 공용 작업본에서 docs/참고카드/ 아래 바뀐 파일만 로컬 커밋한다. push는 하지 않는다.
+ * 참고카드 커밋 — 공용 작업본에서 docs/참고카드/ 아래 바뀐 파일만 커밋한다.
  *
  *   node tools/참고카드_커밋.js                    미리 보기(커밋할 파일만 보여 준다)
  *   node tools/참고카드_커밋.js --커밋             커밋한다
  *   node tools/참고카드_커밋.js --커밋 --메시지 "docs(참고카드): …"
  *   node tools/참고카드_커밋.js --커밋 --json      결과를 기계 판독용으로
+ *
+ * 꼬리 없는 작업본(HEAD가 받아 둔 origin 같은 이름 가지의 조상, 2026-10-20 공용 작업본 꼬리 정리 뒤)에서는 로컬 가지에 커밋을
+ * 쌓지 않는다 — 쌓으면 꼬리가 다시 생긴다. tools/바로올리기.js(docs/참고카드 --폴더)로 막 받은 origin 위에 카드만 커밋해 곧바로
+ * push하고 작업본을 따라가게 한다(결과 「커밋함」에 올림: true). 그 밖에는 아래처럼 로컬에만 커밋하고 push는 하지 않는다.
  *
  * 공용 작업본은 여러 세션이 같은 git 인덱스를 쓴다. 그래서
  *  1. 잠금이 풀리지 않거나, 병합·리베이스가 진행 중이거나, 공용 인덱스에 카드 변경이 올라가 있으면 아무것도 하지 않는다.
@@ -20,7 +24,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { execFileSync } = require('child_process');
+const { execFileSync, spawnSync } = require('child_process');
 const { 살피기 } = require('./git잠금.js');
 
 const 저장소 = path.resolve(__dirname, '..');
@@ -77,6 +81,42 @@ function 막힘이유() {
 function 기본메시지(파일) {
   const 카드 = 파일.filter(f => f.startsWith(`${경로}/카드/`)).length;
   return 카드 ? `docs(참고카드): 팁 적용안 카드 ${카드}장` : 'docs(참고카드): 목록 갱신';
+}
+
+/** HEAD가 받아 둔 origin 같은 이름 가지의 조상이면(꼬리 없음) 그 추적 가지, 아니면 null. */
+function 꼬리없는원격() {
+  let 가지 = '';
+  try { 가지 = git(['symbolic-ref', '-q', 'HEAD']).trim(); } catch (_) { return null; }
+  if (!가지.startsWith('refs/heads/')) return null;
+  const 추적 = `refs/remotes/origin/${가지.slice('refs/heads/'.length)}`;
+  try { git(['rev-parse', '-q', '--verify', `${추적}^{commit}`]); } catch (_) { return null; }
+  try { git(['merge-base', '--is-ancestor', 'HEAD', 추적]); return 추적; } catch (_) { return null; }
+}
+
+/** 꼬리 없는 작업본: 바로올리기로 카드만 커밋·push한다. 결과는 로컬 커밋 때와 같은 꼴(커밋함·커밋할 것 없음·멈춤·실패). */
+function 바로올리기로(메시지, 파일) {
+  const 글 = `${메시지 || 기본메시지(파일)}\n\n${파일.map(f => `- ${f}`).join('\n')}\n\n${서명}\n`;
+  const 글파일 = path.join(os.tmpdir(), `synk-cards-msg-${process.pid}-${Date.now()}.txt`);
+  fs.writeFileSync(글파일, 글);
+  try {
+    const r = spawnSync(process.execPath, [path.join(저장소, 'tools', '바로올리기.js'), 경로, '--폴더', '-F', 글파일, '--실행', '--json'],
+      { cwd: 저장소, encoding: 'utf8', windowsHide: true, maxBuffer: 64 * 1024 * 1024 });
+    let 결과;
+    try { 결과 = JSON.parse(r.stdout); } catch (_) {
+      return { 결과: '실패', 이유: `바로올리기 출력을 읽지 못했다(종료 ${r.status}) — ${String(r.stderr || r.stdout).trim().slice(0, 400)}` };
+    }
+    const 따라감 = 결과.따라가기 && 결과.따라가기.결과;
+    if (결과.결과 === '올림') {
+      return {
+        결과: '커밋함', 커밋: 결과.머리, 올림: true, 원격: 결과.원격, 파일: (결과.수 || []).map((x) => x.경로),
+        ...(따라감 && 따라감 !== '따라감' ? { 주의: `push는 됐다 — 작업본 따라가기: ${따라감}${결과.따라가기.이유 ? ` (${결과.따라가기.이유})` : ''}` } : {}),
+      };
+    }
+    if (결과.결과 === '올릴 것 없음') return { 결과: '커밋할 것 없음', 이유: 결과.이유 };
+    return { 결과: 결과.결과 === '멈춤' ? '멈춤' : '실패', 이유: `바로올리기: ${결과.이유 || 결과.결과}(카드는 작업본에 그대로)` };
+  } finally {
+    fs.rmSync(글파일, { force: true });
+  }
 }
 
 /** 한 번 시도. 결과: 커밋함 / 커밋할 것 없음 / 다시(HEAD가 움직임) / 실패 */
@@ -148,6 +188,15 @@ function main() {
     return;
   }
   if (!파일.length) { 출력({ 결과: '커밋할 것 없음' }); return; }
+  if (꼬리없는원격()) {
+    const 이유 = 막힘이유();
+    if (이유) { 출력({ 결과: '멈춤', 이유 }); process.exitCode = 2; return; }
+    const r = 바로올리기로(메시지, 파일);
+    출력(r);
+    if (r.결과 === '실패') process.exitCode = 1;
+    else if (r.결과 === '멈춤') process.exitCode = 2;
+    return;
+  }
   for (let 차례 = 1; 차례 <= 3; 차례++) {
     const 이유 = 막힘이유();
     if (이유) { 출력({ 결과: '멈춤', 이유 }); process.exitCode = 2; return; }

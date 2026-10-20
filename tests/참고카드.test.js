@@ -104,3 +104,51 @@ test('카드 커밋: 남의 스테이징·미커밋 수정은 그대로 두고 �
     fs.rmSync(뿌리, { recursive: true, force: true });
   }
 });
+
+test('카드 커밋: 꼬리 없는 작업본(HEAD가 origin/master의 조상)에서는 로컬에 쌓지 않고 바로올리기로 카드만 커밋·push한다', () => {
+  const 뿌리 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-cards-push-test-'));
+  const 작업본 = path.join(뿌리, '공용'), 원격 = path.join(뿌리, 'origin.git');
+  const git = (...args) => execFileSync('git', ['-c', 'core.quotepath=false', ...args], { cwd: 작업본, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
+  try {
+    fs.mkdirSync(path.join(작업본, 'tools'), { recursive: true });
+    for (const f of ['참고카드_커밋.js', '참고카드_목록.js', 'git잠금.js', '바로올리기.js', '내커밋.js', 'git-storage-check.cjs', 'git-storage-policy.json']) {
+      fs.copyFileSync(path.join(REPO, 'tools', f), path.join(작업본, 'tools', f));
+    }
+    fs.mkdirSync(path.join(작업본, 'docs', '참고카드', '카드'), { recursive: true });
+    fs.writeFileSync(path.join(작업본, 'docs', '참고카드', 'README.md'), '# 참고 카드\n');
+    fs.writeFileSync(path.join(작업본, '남.txt'), 'base\n');
+    git('init', '-q', '-b', 'master');
+    git('config', 'user.name', 'test');
+    git('config', 'user.email', 'test@example.com');
+    git('config', 'core.autocrlf', 'false');
+    git('add', '-A');
+    git('commit', '-q', '-m', 'base');
+    execFileSync('git', ['init', '-q', '--bare', '-b', 'master', 원격], { stdio: 'pipe' });
+    git('remote', 'add', 'origin', 원격);
+    git('push', '-q', 'origin', 'master');
+    git('fetch', '-q', 'origin');
+    const 처음 = git('rev-parse', 'HEAD').trim();
+
+    fs.appendFileSync(path.join(작업본, '남.txt'), 'peer unstaged\n');
+    fs.writeFileSync(path.join(작업본, 'docs', '참고카드', '카드', '2026-10-20_시험.md'), 카드글({ 제목: '시험', 대상: 'WORLD 앱', 언제: '지금' }));
+    fs.appendFileSync(path.join(작업본, 'docs', '참고카드', 'README.md'), '목록\n');
+
+    const 결과 = JSON.parse(execFileSync('node', [path.join(작업본, 'tools', '참고카드_커밋.js'), '--커밋', '--json'], { cwd: 작업본, encoding: 'utf8' }));
+    assert.strictEqual(결과.결과, '커밋함', JSON.stringify(결과));
+    assert.strictEqual(결과.올림, true);
+    assert.deepStrictEqual(결과.파일.sort(), ['docs/참고카드/README.md', 'docs/참고카드/카드/2026-10-20_시험.md']);
+    const 원격머리 = execFileSync('git', ['--git-dir', 원격, 'rev-parse', 'master'], { encoding: 'utf8' }).trim();
+    assert.strictEqual(원격머리, 결과.커밋, 'origin에 올라갔다');
+    assert.strictEqual(execFileSync('git', ['--git-dir', 원격, 'rev-parse', `${원격머리}~1`], { encoding: 'utf8' }).trim(), 처음, '부모는 처음 origin 머리');
+    assert.deepStrictEqual(execFileSync('git', ['-c', 'core.quotepath=false', '--git-dir', 원격, 'show', '--name-only', '--format=', 원격머리], { encoding: 'utf8' }).trim().split('\n').sort(), 결과.파일.sort(), '카드 폴더만');
+    assert.match(execFileSync('git', ['--git-dir', 원격, 'log', '-1', '--format=%B', 원격머리], { encoding: 'utf8' }), /Co-Authored-By: Claude/);
+    assert.strictEqual(git('rev-parse', 'HEAD').trim(), 결과.커밋, '작업본은 올린 커밋으로 따라갔다(꼬리 없음)');
+    assert.strictEqual(git('status', '--porcelain=v1', '--', 'docs/참고카드').trim(), '', '카드 경로는 새 HEAD와 같다');
+    assert.match(git('status', '--porcelain=v1', '--', '남.txt'), /^ M 남\.txt/, '남의 미커밋 수정은 그대로');
+
+    const 다시 = JSON.parse(execFileSync('node', [path.join(작업본, 'tools', '참고카드_커밋.js'), '--커밋', '--json'], { cwd: 작업본, encoding: 'utf8' }));
+    assert.strictEqual(다시.결과, '커밋할 것 없음');
+  } finally {
+    fs.rmSync(뿌리, { recursive: true, force: true, maxRetries: 5 });
+  }
+});
