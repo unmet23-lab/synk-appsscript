@@ -6,6 +6,25 @@
 
 영상 만드는 방법(장면을 한 번에 뽑기, 편집에서 덜어 내기, 톤)은 [만족 사례 장부](../마케팅/제작양식/만족사례_장부.md)가 정본이다. 편집 이음새는 S18, 모션그래픽은 S16·S17을 본다. 여기는 ffmpeg·렌더·목소리 도구가 오류 없이 틀린 결과를 낸 함정이다. 틀은 [README](README.md)를 따른다.
 
+## 먼저 볼 것
+
+> 도구를 쓰기 전에 여기와 목차만 읽고, 걸리는 절은 `rg -n "^###" docs/현장노트/영상_ffmpeg_자막.md`로 제목을 찾아 그 항목만 읽는다.
+
+- xfade 시간선을 컨테이너 길이로 잡으면 영상만 중간에 끊긴다 → 클립 길이는 영상 스트림(`ffprobe … v:0`)으로 잰다 ([자세히](#xfade-사슬에서-소리는-끝까지-가는데-영상만-중간에-끊긴다))
+- `-c copy`·`-shortest`로 자르면 끝 프레임이 빠지고 겹친다 → `trim`으로 다시 인코딩하고 길이는 `-t`로 준다 ([자세히](#-c-copy로-프레임-수를-맞춰-자르면-끝-몇-장이-빠지고-겹친다))
+- `ffmpeg -ss`로 뽑은 확인 프레임은 한두 장 밀린다 → `select=eq(n\,<번호>)`로 프레임 번호로 뽑는다 ([자세히](#ffmpeg--ss로-뽑은-확인-프레임이-한두-프레임-밀린다))
+- bt709 표시만 붙이면 붉은 기가 돌고, 다시 인코딩하며 붙이면 어두워진다 → 첫 인코딩부터 `scale=out_color_matrix=bt709` ([자세히](#다시-인코딩하며-bt709-표시를-붙이면-화면이-26단계-어두워지고-표시만-붙이면-붉은색이-뜬다))
+- 효과음·킥이 말머리에 겹치면 첫 자음이 묻힌다 → 그 박의 효과음을 빼고 말하는 동안 BGM을 −16~−24dB로 낮춘다 ([자세히](#효과음킥이-말머리에-겹치면-첫-자음이-묻힌다))
+- Typecast가 기호·낱말을 엉뚱하게 읽는다 → 받아쓰기로 확인하고 걸린 줄만 소리용 글을 따로 준다 ([자세히](#typecast가-기호낱말-하나를-엉뚱하게-읽는다))
+- Remotion은 합친 소리가 0dBFS를 넘으면 그 자리에서 잘라 낸다 → 모든 `volume`에 같은 마스터 값(0.8)을 곱한다 ([자세히](#remotion은-소리를-16비트로-더해-0-dbfs-넘는-표본을-그-자리에서-자른다))
+- 멈춘 렌더의 자식 프로세스가 살아남아 새 렌더와 겹친다 → 멈춘 뒤 `taskkill /PID <pid> /T /F`로 끝낸다 ([자세히](#멈춘-렌더-스크립트의-자식-프로세스가-살아남아-새-렌더와-겹친다))
+- GPU 작업 전에 `nvidia-smi`를 안 보면 남의 작업과 부딪친다 → 먼저 보고, 오래 잡혀 있으면 ZeroGPU로 돌린다 ([자세히](#노트북-gpu가-다른-작업에-오래-잡혀-있으면-기다리지-말고-zerogpu로-돌린다))
+- 남이 쓰는 ComfyUI 환경에 노드를 깔면 패키지 수십 개가 바뀐다 → `--no-deps --target`으로 따로 깔아 돌린다 ([자세히](#comfyui-노드-패키지를-남이-쓰는-comfyui-환경에-깔지-않고-따로-돌린다))
+
+## 목차
+
+[공용 도구 · 회차마다 복사하지 않는다(2026-10-19)](#공용-도구--회차마다-복사하지-않는다2026-10-19) · [ffmpeg 이음·자르기·음량](#ffmpeg-이음자르기음량) · [색 맞춤(LUT·bt709 표시)](#색-맞춤lutbt709-표시) · [렌더(HyperFrames·GSAP)](#렌더hyperframesgsap) · [렌더(Remotion·Playwright)](#렌더remotionplaywright) · [목소리·받아쓰기](#목소리받아쓰기) · [렌더 장비](#렌더-장비) · [로컬 AI 도구 깔기·돌리기](#로컬-ai-도구-깔기돌리기) · [영상 손보기(SAM 마스크·부분 보정·보간)](#영상-손보기sam-마스크부분-보정보간) · [지난 기록](지난기록/영상_ffmpeg_자막.md)
+
 ## 공용 도구 · 회차마다 복사하지 않는다(2026-10-19)
 
 아래 항목의 고침 가운데 반복되는 것은 공용 도구 넷에 들어 있다. 새 회차는 스크립트를 복사하지 말고 이것을 부른다(옛 회차 폴더의 사본은 기록으로 둔다). 쓰는 법은 각 파일 머리말.
@@ -60,6 +79,20 @@
 - 고침: 무음 채우기는 늘 길이를 못 박는다: `apad=whole_dur=15,atrim=0:15`. 바꾼 뒤 `capture_output` 모드로 세 번 모두 2.2~2.6초에 끝났다. 멈췄으면 그 ffmpeg만 끄고(부모 파이썬은 따라 끝난다) 남은 임시 PNG로 다시 돌린다.
 - 다시 확인: 출력 파일 크기가 몇 초마다 자라는지 본다. `ffprobe`가 「moov atom not found」면 덜 쓴 파일이다.
 
+### 줄마다 자른 내레이션에 `afade=t=out:st=0`을 걸어 소리가 통째로 빠졌다
+- 증상: 10-19 밤 화성 CF 가편집 1·2판을 「내레이션·자막만 들어 있다」며 보냈는데, 소리 트랙 최대값이 0.002(약 −90dB)로 사실상 무음이었다. 받아쓰기는 「한글자막 by …」, 「다음 영상에서 만나요」 같은 헛말만 냈다.
+- 원인: 줄 끝을 다듬으려고 `atrim … ,afade=t=out:st=0:d=0.001`을 걸었다. 페이드 아웃은 st부터 끝까지 0으로 두므로 줄마다 첫 1ms만 남았다.
+- 고침: 자른 줄의 길이를 재서 `afade=t=out:st=<길이-0.04>:d=0.04`로 끝만 줄인다(`hwaseong/가편집/만들기_CF.py`). 보내기 전에 소리 트랙을 두 가지로 확인한다 — 1초마다 RMS(내레이션 구간이 −20dB 안팎인지)와 faster-whisper `vad_filter=True` 받아쓰기. 받아쓰기가 「한글자막 by」류 헛말이면 목소리가 없는 것부터 의심한다.
+- 다시 확인: 렌더한 mp4에서 내레이션 줄 시각의 RMS와 받아쓰기 글이 대본과 맞는지.
+
+### 다빈치 리졸브 무료판(21.1)은 파이썬 스크립트로 조종할 수 없다
+- 증상: 10-19 「편집·소리·색을 다빈치에서 끝낼지, 스크립트로 할지」를 따지려고 보니 이 PC의 리졸브는 무료판 21.1(`Resolve.exe` 제품 이름 「DaVinci Resolve」, Studio 아님)이고 스크립트 안내 파일(Developer/Scripting README)도 없었다.
+- 원인: 블랙매직이 21.1 업데이트에서 「We have moved the ability to script in Python to the Studio version」으로 무료판의 파이썬 스크립트를 뺐다(Puget Systems 2026-09-10). 그 전에도 무료판은 바깥 프로그램에서 부르는 스크립트가 안 되고 프로그램 안 콘솔에서만 됐다(블랙매직 포럼 2018).
+- 고침: 편집 · 소리 · 색은 파이썬 + ffmpeg 스크립트로 한다(하린 `편집_Wan.py` · `믹스.py` · `엔드카드.py`, 지유 `본편_편집.py`, PULSE `색감.py`). 다빈치에서 손으로 다듬어야 할 때는 색감을 `.cube`로 내보내 쓴다(`색감.py 큐브`). 다빈치를 스크립트로 몰려면 Studio(영구 295달러)가 필요하다.
+- 다시 확인: `(Get-Item 'C:\Program Files\Blackmagic Design\DaVinci Resolve\Resolve.exe').VersionInfo.ProductName`이 「DaVinci Resolve Studio」면 스크립트 길이 열린다.
+
+## 색 맞춤(LUT·bt709 표시)
+
 ### `-color_primaries bt709 -color_trc bt709`를 줘도 원색·감마가 unknown으로 남는다
 - 증상: 10-19 지유 광고 v3b(파이썬에서 rgb24를 파이프로 넣고 `-vf noise=…` 뒤 libx264)에 `-colorspace bt709 -color_primaries bt709 -color_trc bt709`를 붙였는데, `ffprobe`가 `color_space=bt709`만 보여 주고 `color_primaries`·`color_transfer`는 unknown이었다.
 - 원인: 필터를 지난 프레임에 그 값이 없으면 libx264가 프레임 쪽 값을 따라 VUI의 원색·감마 칸을 비운다(추정).
@@ -102,17 +135,43 @@
 - 고침: 멈춘 뒤 `Get-CimInstance Win32_Process -Filter "Name='node.exe'"`에서 CommandLine에 `hyperframes`·`render`가 든 것을 찾아 `taskkill /PID <npx pid> /T /F`로 끝낸다(Git Bash에서는 `//PID … //T //F`). 내가 띄운 것만 시작 시각으로 가린다. 출력 폴더의 `.hf-transaction-*`와 그때 나온 mp4는 지우고 다시 굽는다. 6분 넘는 렌더는 check → snapshot 프레임 확인을 마친 뒤 시작한다. 셸 돌림은 `Get-CimInstance Win32_Process | ? CommandLine -match '<스크립트 이름>'`으로 sh.exe·bash.exe까지 찾아 끝낸다.
 - 다시 확인: 다시 굽기 전에 렌더 node 프로세스가 0개다. 셸 돌림이면 그 스크립트 이름이 든 프로세스도 0개다.
 
-### 앱 CSS를 Remotion에 그대로 넣으면 휴대폰 규칙과 vw가 영상 창 기준으로 풀린다
-- 증상: 10-17 AI 구독 계정판 CSS(`desktop/renderer/subscriptions.css`)를 영상에 넣었더니 휴대폰 폭 배치(`@media (max-width:760px)`)가 걸리지 않고, `clamp(…vw…)` 글자는 앱보다 커졌다. 같은 날 앱 CSS가 세 번 바뀌어 손으로 고친 사본은 금방 낡았다.
-- 원인: Remotion 페이지 창은 1080 폭이라 미디어 쿼리와 vw가 앱 창이 아니라 영상 창을 본다.
-- 고침: `docs/마케팅/synkbrief_AI구독계정판_20261017/remotion/scripts/board-css.mjs`가 앱 CSS에서 영상용 CSS를 만든다. 휴대폰 규칙은 `.member-subs.ms-phone` 아래로 옮기고, vw·vh는 앱 창 크기 변수(휴대폰 `--ms-vw:5.4px`, PC `12.8px`)로 바꾼다. 앱 CSS가 바뀌면 다시 돌린다. 앱이 CSS 애니메이션으로 하는 움직임(고리 그리기·숫자 굴림)은 같은 곡선·길이를 `useCurrentFrame()`으로 옮겨 쓴다(`src/v5/gauge.tsx`).
-- 다시 확인: `node scripts/board-css.mjs` 뒤 `grep -c "ms-phone" src/board.css`가 0보다 크고 `grep -nE "[0-9]v[wh]" src/board.css`가 빈다.
+### HyperFrames carve가 말 사이 음악까지 계속 누른다
+- 증상: 짧은 대사 9줄인 22초 편에서 0.5초부터 끝까지 음악이 약 −13dB로 눌려, 말 사이 구간이 목소리 없는 판보다 5dB 작았다(10-03).
+- 원인: carve의 전체 크기 맞춤 단계(fromCarve `gain`)가 일부러 천천히 돌아온다.
+- 고침: carve의 목소리 대역 칸(말을 따라 바로 돌아옴)은 두고 크기 맞춤 단계만 빼고, 말할 때만 −8dB · 말끝 0.15초 뒤부터 0.45초에 걸쳐 원래대로 · 1초보다 짧은 틈은 낮춘 채 두는 duck 단계를 직접 쓴다. 대사는 `data-start = 첫 말소리 시각 − 파일 앞 무음`으로 놓는다(carve는 `data-media-start`를 무시한다). 앞뒤 파일이 겹치면 트랙을 번갈아 둔다(같은 트랙에서 겹치면 `duplicate_audio_track` 경고). `@hyperframes/core`는 저장소에 깔지 않고 임시 폴더에 깔아 `--core`로 준다. 한 번에 하는 보기 스크립트는 `docs/마케팅/LAB_한글날_내이름한글로_20261002/음성/넣기.cjs`.
+- 다시 확인: 말 사이 구간의 크기를 목소리 없는 판과 구간별로 견준다(+0.5dB 안).
+
+## 렌더(Remotion·Playwright)
+
+### Remotion 박자표 같은 모듈 상수는 컴포지션 props로 못 바꾼다
+- 증상: 10-18 관용구 퀴즈 #2를 100 BPM으로 늦추려는데 박 길이 `B`·`T`·`TOTAL`이 `timeline.ts`의 모듈 상수라 컴포지션마다 다른 값을 줄 수 없었다(같은 번들에 120 BPM 판도 있음).
+- 원인: 모듈 상수는 번들 때 한 번 정해진다. defaultProps는 컴포넌트 안에서만 읽힌다.
+- 고침: `REMOTION_` 접두 환경 변수는 번들 안 `process.env`로 들어간다 — `export const B = process.env.REMOTION_TEMPO === '100' ? 18 : 15`, 렌더는 `REMOTION_TEMPO=100 npx remotion render …`. `Root.tsx`가 템포에 맞는 컴포지션만 등록하게 해 다른 템포 판을 잘못 뽑지 않게 했다. 숫자로 박은 프레임(15·30·96 등)은 박 단위로 바꿔 둔다. 음악 재배치본은 rubberband(`tempo=0.8333:pitchq=quality:transients=crisp:detector=percussive`)로 늘리면 박 자리가 그대로 1.2배가 된다.
+- 다시 확인: `REMOTION_TEMPO=100 npx remotion compositions src/index.ts`가 36.00초를, 변수 없이 30.00초를 보인다.
+
+### Remotion Node API(bundle·renderStill)는 REMOTION_ 환경 변수를 넘기지 않는다
+- 증상: 10-18 관용구 퀴즈 #2 나라별판에서 `@remotion/bundler`·`@remotion/renderer`로 번들을 한 번 만들어 정지컷을 찍자 `Could not find composition kids-quiz-v5b-th`가 났다. 목록에는 120 BPM 판만 있었다.
+- 원인: CLI는 `REMOTION_`으로 시작하는 환경 변수를 번들 안 `process.env`로 넘겨 주지만 Node API는 넘기지 않는다. `REMOTION_TEMPO=100`이 비어 Root가 100 BPM 판을 등록하지 않았다. 스크립트에서 `process.env`에 넣어도 같다.
+- 고침: `selectComposition`·`renderStill`·`renderMedia`에 `envVariables: { REMOTION_TEMPO: '100' }`를 직접 준다(`remotion/현지어_정지컷.mjs`·`현지어_렌더.mjs`). 한글 경로는 `fileURLToPath(import.meta.url)`로 바꿔야 `%EB…`로 남지 않는다.
+- 다시 확인: 같은 스크립트로 26개 채널 정지컷·영상이 모두 나왔고, 뉴질랜드판은 게시된 영어판과 끝 계정만 달랐다.
 
 ### Remotion은 소리를 16비트로 더해 0 dBFS 넘는 표본을 그 자리에서 자른다
 - 증상: 10-18 synkbrief 「AI 구독 계정판」에 나레이션(Typecast −17 LUFS, 1.0)을 얹고 배경음 0.16·효과음과 렌더했더니 잘린 표본이 47개(2.2·17.1·28.4초, 말 봉우리) 나왔다. 나레이션 없는 판은 0개였다. 렌더 뒤 리미터로 봉우리를 누르는 마감만으로는 이미 잘린 소리가 돌아오지 않는다.
 - 원인: Remotion은 트랙을 `amix=…:dropout_transition=0:normalize=0`으로 더해 `pcm_s16le`로 쓴다(`node_modules/@remotion/renderer/dist/create-ffmpeg-merge-filter.js`·`merge-audio-track.js`). 합이 1.0을 넘는 표본은 16비트로 바뀌며 잘린다.
 - 고침: 영상 안 모든 `volume`(배경음·나레이션·효과음)에 같은 MASTER 0.8(−1.9dB)을 곱했다 → 잘린 표본 0 · −16.9 LUFS · −1.5 dBFS. 크기는 마감에서 되올린다(+2.4dB, 리미터 0.89 → −14.6 LUFS · −1.0 dBFS). 휴대폰판(96k)은 마감본을 다시 누르면 봉우리가 −0.4까지 솟아 렌더 원본에서 리미터 0.84로 따로 뽑는다. 보기 `docs/마케팅/synkbrief_AI구독계정판_20261017/remotion/src/full/Film.tsx`(MASTER)·`scripts/finish.mjs`.
 - 다시 확인: 마감 전 렌더 소리를 16비트로 풀어(`ffmpeg -i x.mp4 -vn -f s16le -`) 절댓값 32700 넘는 표본을 numpy로 센다. 0이어야 한다.
+
+### Remotion 나레이션 믹스는 봉우리가 0dBFS를 넘는다
+- 증상: 10-17 −15.9 LUFS 나레이션 + BGM 0.5(말할 때 −9dB) + 키트 효과음 30개를 Remotion으로 렌더했더니 −13.0 LUFS · 봉우리 +0.1 dBFS였다.
+- 원인: Remotion은 트랙을 그대로 더하고 리미터가 없다. 효과음이 말과 겹치는 순간 넘친다.
+- 고침: 렌더 뒤 영상은 복사하고 소리만 `-af "volume=-1.5dB,alimiter=limit=0.84:attack=3:release=60:level=false"`로 다시 인코딩했다 → −14.5 LUFS · −1.4 dBFS. 보기 `docs/마케팅/yuhobuilds_노트북이사_20261017/remotion/렌더.mjs`. 10-19부터는 `node tools/음량마감.mjs <렌더.mp4>`가 재고·올리고·다시 재서 맞춘다.
+- 다시 확인: 최종 파일의 `ebur128=peak=true`가 −14.5±0.5 LUFS · −1 dBFS 아래.
+
+### 앱 CSS를 Remotion에 그대로 넣으면 휴대폰 규칙과 vw가 영상 창 기준으로 풀린다
+- 증상: 10-17 AI 구독 계정판 CSS(`desktop/renderer/subscriptions.css`)를 영상에 넣었더니 휴대폰 폭 배치(`@media (max-width:760px)`)가 걸리지 않고, `clamp(…vw…)` 글자는 앱보다 커졌다. 같은 날 앱 CSS가 세 번 바뀌어 손으로 고친 사본은 금방 낡았다.
+- 원인: Remotion 페이지 창은 1080 폭이라 미디어 쿼리와 vw가 앱 창이 아니라 영상 창을 본다.
+- 고침: `docs/마케팅/synkbrief_AI구독계정판_20261017/remotion/scripts/board-css.mjs`가 앱 CSS에서 영상용 CSS를 만든다. 휴대폰 규칙은 `.member-subs.ms-phone` 아래로 옮기고, vw·vh는 앱 창 크기 변수(휴대폰 `--ms-vw:5.4px`, PC `12.8px`)로 바꾼다. 앱 CSS가 바뀌면 다시 돌린다. 앱이 CSS 애니메이션으로 하는 움직임(고리 그리기·숫자 굴림)은 같은 곡선·길이를 `useCurrentFrame()`으로 옮겨 쓴다(`src/v5/gauge.tsx`).
+- 다시 확인: `node scripts/board-css.mjs` 뒤 `grep -c "ms-phone" src/board.css`가 0보다 크고 `grep -nE "[0-9]v[wh]" src/board.css`가 빈다.
 
 ### inline-flex로 묶은 글줄은 낱말 사이 빈칸이 사라진다
 - 증상: 10-18 영상용 한 줄 목록의 값 칸(`display:inline-flex` 안에 `주간 <b>62%</b> 남음`)이 「주간 62%남음」으로 찍혔다.
@@ -159,13 +218,6 @@
 - 다시 확인: 받아쓰기로 걸린 줄을 다시 본다. 비용은 Typecast 잔량을 한참 뒤에 다시 읽는다.
 - 10-17 더한 경우(synkbrief 「GPTs·젬」, 범수 1.12배): 짧은 외래어가 문장 머리에서 빨리 지나가면 묻힌다. 「그럼 젬은요?」는 받아쓰기(faster-whisper medium)에 「그럼 쟤는요?」, 「젬은 네.」는 「재문 내」로 나왔다. 앞에 맥락 낱말을 붙이고(「그럼, 제미나이 젬은요?」) 쉼표로 숨을 주면(「젬은, 네.」) 「재미나이잼은요」·「GEM은」으로 또렷해졌다. 「GPTs」는 「지피티즈」가 「GPTG」로 뭉개져 「지피티에스」로 읽혔다(받아쓰기 「GPTS」).
 
-### 새 노트북에는 Typecast 키 파일이 없다
-- 증상: 10-17 `docs/마케팅/synkbrief_GPTs젬_스킬전환_20261017/소리/나레이션.mjs`가 `~/SYNK_보안/타입캐스트.txt`를 못 찾았다(같은 경로를 `tools/미니게임_목소리.cjs`·`tools/한글단계_목소리.cjs`도 쓴다).
-- 원인: 노트북 옮기기(10-17)에서 `SYNK_보안` 폴더가 넘어오지 않았다.
-- 고침: 막다른 길 — 키는 비밀값이라 AI가 옛 노트북에서 찾아 옮기지 않는다. 유호님이 `C:/Users/q1212/SYNK_보안/타입캐스트.txt`에 넣으면 된다(옛 노트북은 10-31까지). 10-17 15:51에 키 파일이 들어와 지금은 된다(같은 날 16시 yuhobuilds 세션 공유 편 범수 굽기 성공). 10-17에는 PowerShell로 폴더와 빈 파일을 만들고(`New-Item`은 파일이 없을 때만) `Start-Process notepad.exe <파일>`로 메모장을 띄워 드렸더니, 유호님이 붙여 넣고 저장해서 바로 풀렸다(키 값은 읽지 않는다).
-- 다시 확인: PowerShell `Test-Path "$env:USERPROFILE\SYNK_보안\타입캐스트.txt"`, 그다음 `--시험`처럼 짧은 굽기가 지나가는지 본다.
-- 10-17 더한 것: LAB 관용구 퀴즈 `나레이션.cjs`의 원본 캐시(`Documents/synk-vendor/lab-topik-narration/raw/`)도 새 PC에 없어서, 첫 편에서 산 「Three!」「Nope!」 같은 줄도 다시 샀다(관용구 퀴즈 #2 v4 두 판 277자). 캐시 폴더는 굽기 때 새로 생긴다.
-
 ### 효과음·킥이 말머리에 겹치면 첫 자음이 묻힌다
 - 증상: 받아쓰기에서 「발이」가 「다리·파리」로 들렸다. 효과음 없는 같은 말은 정확했다(10-13, 장부 S17).
 - 원인: 효과음·음악 구간 첫 킥·베이스가 첫 자음을 가린다. BGM −12dB로는 부족했다.
@@ -183,24 +235,6 @@
 - 원인: 목소리마다 출력 크기가 크게 다르다.
 - 고침: 얹기 전에 LUFS를 재서 인사 −16, 대화 −23처럼 맞춘 사본을 쓴다. 원어민 대사는 `elevenlabs_v4`가 러·태·베트남어를 받아쓰기로 정확히 냈고, `qwen_audio_tts`는 일부 프리셋만 되며 태국어 남성에 여성 어미를 붙였다. 언어마다 whisper medium으로 언어 지정·자동 두 번 받아써 고른다.
 - 다시 확인: 얹은 사본의 `ebur128` 값.
-
-### HyperFrames carve가 말 사이 음악까지 계속 누른다
-- 증상: 짧은 대사 9줄인 22초 편에서 0.5초부터 끝까지 음악이 약 −13dB로 눌려, 말 사이 구간이 목소리 없는 판보다 5dB 작았다(10-03).
-- 원인: carve의 전체 크기 맞춤 단계(fromCarve `gain`)가 일부러 천천히 돌아온다.
-- 고침: carve의 목소리 대역 칸(말을 따라 바로 돌아옴)은 두고 크기 맞춤 단계만 빼고, 말할 때만 −8dB · 말끝 0.15초 뒤부터 0.45초에 걸쳐 원래대로 · 1초보다 짧은 틈은 낮춘 채 두는 duck 단계를 직접 쓴다. 대사는 `data-start = 첫 말소리 시각 − 파일 앞 무음`으로 놓는다(carve는 `data-media-start`를 무시한다). 앞뒤 파일이 겹치면 트랙을 번갈아 둔다(같은 트랙에서 겹치면 `duplicate_audio_track` 경고). `@hyperframes/core`는 저장소에 깔지 않고 임시 폴더에 깔아 `--core`로 준다. 한 번에 하는 보기 스크립트는 `docs/마케팅/LAB_한글날_내이름한글로_20261002/음성/넣기.cjs`.
-- 다시 확인: 말 사이 구간의 크기를 목소리 없는 판과 구간별로 견준다(+0.5dB 안).
-
-### Remotion 나레이션 믹스는 봉우리가 0dBFS를 넘는다
-- 증상: 10-17 −15.9 LUFS 나레이션 + BGM 0.5(말할 때 −9dB) + 키트 효과음 30개를 Remotion으로 렌더했더니 −13.0 LUFS · 봉우리 +0.1 dBFS였다.
-- 원인: Remotion은 트랙을 그대로 더하고 리미터가 없다. 효과음이 말과 겹치는 순간 넘친다.
-- 고침: 렌더 뒤 영상은 복사하고 소리만 `-af "volume=-1.5dB,alimiter=limit=0.84:attack=3:release=60:level=false"`로 다시 인코딩했다 → −14.5 LUFS · −1.4 dBFS. 보기 `docs/마케팅/yuhobuilds_노트북이사_20261017/remotion/렌더.mjs`. 10-19부터는 `node tools/음량마감.mjs <렌더.mp4>`가 재고·올리고·다시 재서 맞춘다.
-- 다시 확인: 최종 파일의 `ebur128=peak=true`가 −14.5±0.5 LUFS · −1 dBFS 아래.
-
-### Remotion 박자표 같은 모듈 상수는 컴포지션 props로 못 바꾼다
-- 증상: 10-18 관용구 퀴즈 #2를 100 BPM으로 늦추려는데 박 길이 `B`·`T`·`TOTAL`이 `timeline.ts`의 모듈 상수라 컴포지션마다 다른 값을 줄 수 없었다(같은 번들에 120 BPM 판도 있음).
-- 원인: 모듈 상수는 번들 때 한 번 정해진다. defaultProps는 컴포넌트 안에서만 읽힌다.
-- 고침: `REMOTION_` 접두 환경 변수는 번들 안 `process.env`로 들어간다 — `export const B = process.env.REMOTION_TEMPO === '100' ? 18 : 15`, 렌더는 `REMOTION_TEMPO=100 npx remotion render …`. `Root.tsx`가 템포에 맞는 컴포지션만 등록하게 해 다른 템포 판을 잘못 뽑지 않게 했다. 숫자로 박은 프레임(15·30·96 등)은 박 단위로 바꿔 둔다. 음악 재배치본은 rubberband(`tempo=0.8333:pitchq=quality:transients=crisp:detector=percussive`)로 늘리면 박 자리가 그대로 1.2배가 된다.
-- 다시 확인: `REMOTION_TEMPO=100 npx remotion compositions src/index.ts`가 36.00초를, 변수 없이 30.00초를 보인다.
 
 ## 렌더 장비
 
@@ -228,6 +262,32 @@
 - 고침: GPU 작업을 넣기 전에 `nvidia-smi --query-gpu=memory.used,memory.total --format=csv,noheader`와 `nvidia-smi --query-compute-apps=pid,used_memory --format=csv`, 세션 메시지로 다른 작업이 잡고 있는지 본다. 남은 메모리가 이번 작업에 모자라고(FLUX 약 12GB, SeedVR2 영상 23GB) 그 작업이 30분 넘게 이어지면 기다리지 말고 되는 것은 ZeroGPU로 돌린다: 블렌더 `cpuai/blender-render-studio`(`render_zerogpu.py`), FLUX 3 Klein `black-forest-labs/flux-3-image-klein`, Qwen-Image `hugging-apps/qwen-qwen-image-2-1-turbo`(`zerogpu_image_bench.py`), SeedVR2 그림 `Upsampler/seedvr2-3b`(`zerogpu_seedvr2_alt.py`), MiniMax H3 복제본 `q121235/h3-conditioner`·`h3-generator`(5초 한 편 할당량 233초, 부르는 법은 아래 「둘로 나뉜 ZeroGPU Space」 항목). SeedVR2 영상과 LoRA 학습은 ZeroGPU로 안 되니 기다린다. 유호님 얼굴·고객 자료는 남의 Space에 올리지 않는다. 하루 2,400초를 넘기면 선불 잔액에서 빠지니 넘기 전에 멈추고, 결과 보고에 ZeroGPU로 돌렸다고 적는다.
 - 다시 확인: 남은 할당량을 [결제 페이지 데이터](#zerogpu-남은-할당량은-결제-페이지-데이터에-초-단위로-있다)로 읽고, 돌린 뒤 줄어든 초가 GPU 초 × 크기 배수와 맞는지 본다.
 
+### 무거운 렌더를 이 PC에서 몇 시간 돌리기 전에 빌려 쓰는 길이 있다
+- 증상: 블렌더 450장을 옛 노트북에서 3시간 25분 돌려 PC가 렉이 났다(10-08, 새 노트북 수치는 위 항목). 허깅페이스 Jobs는 「Pre-paid credit balance is insufficient」 402로 거절됐다(10-08·10-14, 잔액 0).
+- 원인: Jobs는 선불 잔액에서 분 단위로 빠진다(10-11 공식 요금표: CPU Upgrade $0.03/h, T4 $0.40, L4 $0.80, RTX PRO 6000 $2.75, 시작·받기 4~6분도 값에 든다). 잔액 충전은 결제라 유호님 몫이다. 거절돼도 `-v` 폴더는 먼저 버킷에 올라간다.
+- 고침: 한 시간 넘는 렌더 전에 장비별 어림값을 보여 주고 잔액이 있는지 묻는다. 잔액이 0이면 유호님이 말하는 「구독 무료 GPU(30~40분)」인 ZeroGPU 길이 기본이다: Blender 짓기·내보내기는 이 PC에서 `render=0`으로(10초 안팎) → 카메라별 .blend → `docs/마케팅/한강2126_포트폴리오_20260930/blender/render_zerogpu.py`(결과 폴더가 고정이라 `--out`을 붙인 사본으로)로 장당 GPU 5초·왕복 30~40초. 남은 할당량 읽기는 [아래 항목](#zerogpu-남은-할당량은-결제-페이지-데이터에-초-단위로-있다). 남의 Space라 얼굴·고객 자료는 올리지 않는다. Jobs를 Git Bash에서 띄우면 `-v` 경로가 깨지니 PowerShell로 띄운다([윈도우 셸 노트](윈도우_셸.md#로-시작하는-인자가-윈도우-경로로-바뀐다)).
+- 다시 확인: Jobs는 L4 10장 시험으로 장당 시간을 먼저 잰다(장당 GPU 시간은 아직 어림값이다).
+
+### 남의 ZeroGPU Space를 복제하면 빌드가 spaces 판 충돌로 실패한다
+- 증상: 10-17 `Pepe104/MiniMax-H3-Turbo-Lora-UNCENSORED`·`multimodalart/qwen3vl-conditioner`를 비공개로 복제하자 둘 다 BUILD_ERROR, 「Cannot install spaces==0.51.1 and spaces==0.51.3」.
+- 원인: 빌더가 pip 줄에 자기 판 `spaces==0.51.3`을 덧붙이는데 원본 requirements.txt가 `spaces==0.51.1`로 묶여 있다. 원본은 예전에 빌드한 이미지로 돌아서 멀쩡하다.
+- 고침: 복제본 requirements.txt에서 `spaces==` 줄을 빼고 다시 올린다. 빌드·실행 기록은 `GET https://huggingface.co/api/spaces/<id>/logs/build`(실행은 `/logs/run`, 토큰 헤더, SSE).
+- 다시 확인: `HfApi().get_space_runtime(id).stage`가 RUNNING.
+
+### 둘로 나뉜 ZeroGPU Space를 둘 다 비공개로 두면 앞쪽이 뒤쪽을 못 부른다
+- 증상: MiniMax-H3 생성 Space는 조건 Space를 `gradio_client.Client(id, headers={"x-ip-token": …})`로 토큰 없이 부른다. 둘 다 비공개면 막힌다.
+- 원인: Space 안에는 토큰이 없다(Secrets에 HF_TOKEN을 넣어야 하고, 토큰 입력은 유호님 몫).
+- 고침: 생성 Space 복제본에 조건값 파일을 직접 받는 `generate_from_embeds` 입구를 더하고, 이 PC에서 조건 `/encode` → 생성 `/generate_from_embeds`를 차례로 부른다(`.tmp/h3-rehearsal-20261017/run_h3.py`). 로컬 로그인 토큰으로 부른 두 호출 모두 유호님 할당량에서 빠진다(조건 Space 기록 「the caller's own quota」).
+- 다시 확인: 조건 Space 실행 기록의 `[cond] /encode on …` 줄.
+
+### ZeroGPU 남은 할당량은 결제 페이지 데이터에 초 단위로 있다
+- 증상: 「남은 할당량은 API로 안 나온다」로 알고 있었다(10-14).
+- 원인: 크롬 로그인 `huggingface.co/settings/billing` 화면은 분 단위(0/40분)지만, 페이지 `data-props` 안 `"zeroGpu":{"current":<남은 초>,"base":2400,"resetsAt":…}`는 초 단위다. 차감은 예약 시간이 아니라 실제 GPU 초 × 크기 배수(xlarge 2배)다: 10-17 조건 7.5초 → 14.8초, 생성 109초 → 218.1초. 다 쓰면 선불 잔액에서 자동으로 빠진다(10분 $1). `resetsAt`은 첫 사용 24시간 뒤.
+- 고침: 돌리기 전후로 결제 페이지를 새로 열어 zeroGpu.current를 읽고 뺀다.
+- 다시 확인: 같은 읽기를 한 번 더 해 current가 줄었는지 본다.
+
+## 로컬 AI 도구 깔기·돌리기
+
 ### 큰 모델 내려받기가 0바이트에서 멈추거나 끊기면 조각이 지워진다
 - 증상: 10-18 다른 세션이 `hf download`·병렬 내려받기로 큰 모델을 받는 동안, 이쪽 `hf_hub_download`·`hf download`가 몇 분째 0바이트였다(xet). xet를 끄자 초당 6MB로 받았지만, 잠깐 주소를 못 찾자(`getaddrinfo failed`) 받던 5.5GB 조각이 사라졌다. 세 세션이 함께 받을 때 회선 전체가 초당 10MB 안팎이었다.
 - 원인: xet 내려받기가 같은 PC의 다른 xet·병렬 내려받기에 밀려 시작하지 못한 것으로 보인다(추정). 조각이 지워진 까닭은 모른다.
@@ -247,11 +307,7 @@
 - 고침: venv에 **`transformers==4.51.3`**(tokenizers 0.21)을 깐다. 그 뒤 같은 문장이 3.28초·5.44초로 정상이었다. 그 밖에 깔 때 막힌 것: Matcha-TTS 쪽이 `lightning`·`gdown`·`pyarrow`를 부른다. `pyworld`(학습용 음높이)는 3.14 휠이 없어 빈 모듈로 채운다. `modelscope`는 받기용이라 빈 모듈이다. torchaudio 2.11 CPU의 `load`는 torchcodec이 있어야 해서 soundfile로 바꿔 끼운다(`소리만들기.py`). 가중치는 `받기.sh`(잠금 폴더 + `par_dl.py`)로 받고, TensorRT용 onnx는 받지 않는다(약 7.4GB). 빠진 모듈은 `불러보기.py`가 설정 파일의 모듈을 모두 불러 한 번에 찍는다. GPU를 LoRA 학습이 쓰고 있으면 CPU로 돈다(짧은 소리 하나에 수 초).
 - 다시 확인: 굽기 전에 평범한 문장 하나(`작업_진단.json`)로 길이가 말 빠르기에 맞는지 본다. `[sigh]`만 넣으면 글이 한 토큰이라 최대 0.8초에서 잘리니 짧은 말 앞에 표시를 넣고 숨 부분만 오린다. 같은 날 `fishaudio/s1-mini`는 허깅페이스 이용 동의가 필요한 저장소였다(q121235 계정 미동의). 지금 fish-speech 코드는 S2-Pro(11GB, 동의 불필요, GPU 24GB 권장)·Drama 3(48GB 이상)를 쓴다.
 
-### 다빈치 리졸브 무료판(21.1)은 파이썬 스크립트로 조종할 수 없다
-- 증상: 10-19 「편집·소리·색을 다빈치에서 끝낼지, 스크립트로 할지」를 따지려고 보니 이 PC의 리졸브는 무료판 21.1(`Resolve.exe` 제품 이름 「DaVinci Resolve」, Studio 아님)이고 스크립트 안내 파일(Developer/Scripting README)도 없었다.
-- 원인: 블랙매직이 21.1 업데이트에서 「We have moved the ability to script in Python to the Studio version」으로 무료판의 파이썬 스크립트를 뺐다(Puget Systems 2026-09-10). 그 전에도 무료판은 바깥 프로그램에서 부르는 스크립트가 안 되고 프로그램 안 콘솔에서만 됐다(블랙매직 포럼 2018).
-- 고침: 편집 · 소리 · 색은 파이썬 + ffmpeg 스크립트로 한다(하린 `편집_Wan.py` · `믹스.py` · `엔드카드.py`, 지유 `본편_편집.py`, PULSE `색감.py`). 다빈치에서 손으로 다듬어야 할 때는 색감을 `.cube`로 내보내 쓴다(`색감.py 큐브`). 다빈치를 스크립트로 몰려면 Studio(영구 295달러)가 필요하다.
-- 다시 확인: `(Get-Item 'C:\Program Files\Blackmagic Design\DaVinci Resolve\Resolve.exe').VersionInfo.ProductName`이 「DaVinci Resolve Studio」면 스크립트 길이 열린다.
+## 영상 손보기(SAM 마스크·부분 보정·보간)
 
 ### SAM으로 얼굴만 따라가는 마스크를 만들 때 처리기가 torchvision을 찾고, 점 입력 단수가 틀리면 멈춘다
 - 증상: 10-19 하린 5b 「얼굴만 살짝 밝히기」 시험에서 transformers 5.20.1 `Sam2VideoProcessor`가 「Sam2ImageProcessor requires the Torchvision library」로 멈췄고, 고친 뒤에는 「Input points must be a nested list with 4 levels … Got 5」로 멈췄다.
@@ -259,51 +315,3 @@
 - 고침: `C:/SYNK-LoRA/tools/sam/`에 시스템 torch를 공유하는 venv + `transformers==5.20.1`(SAM 2 · SAM 3 영상 모델이 다 들어 있음) + `torchvision==0.29.1+cu130`(pytorch cu130 색인, `--no-deps`). 가중치는 `받기.ps1`(잠금 폴더 + `par_dl.py`)로 `sam2.1-hiera-large/`(0.9GB, Apache-2.0). 첫 프레임에 얼굴 점 셋(양성)과 머리카락 · 포니테일 · 옷 점 셋(음성)을 찍어 `마스크_만들기.py`로 48프레임을 따라가니 26초(모델 읽기 포함), 그래픽 메모리 최대 2.4GB(LoRA 학습 15GB와 같이 돎), 이웃 프레임 겹침 평균 0.992 · 최저 0.966이었다. 마스크는 얼굴 · 귀 · 목 · 쇄골 피부만 잡았다. 마스크 안 보정은 공용 색감 폴더의 `부분보정.py`(선형 빛 +0.25스톱, 경계 18px 흐림, 움직임을 맞춘 이웃 프레임 1:2:1 평균)로 얼굴 평균 +9.3/255, 마스크 밖 최대 0.16/255, 경계 빛무리 없음. 전후 영상 `전후_영상.py`(이름표는 PIL — ffmpeg drawtext의 한글 · 경로 이스케이프 함정을 피함).
 - 다시 확인: `잰값.json`의 「겹침_최저」가 낮으면 먼저 움직임 때문인지 본다(10-19 4a 잔은 0.48이었지만 한 프레임 12px 이동이었고, 움직임을 빼면 0.82~0.97). 움직임을 빼고도 0.8 아래면 점을 다시 찍거나 중간 프레임에 점을 더한다. SAM 3(`facebook/sam3`, 3.44GB)은 메타 수동 승인 저장소다. 10-19에 크롬(q121235 로그인)에서 신청했고, 양식의 직함은 고르는 칸이라 「Founder」가 없어 「Other」로 냈다. 승인 확인 · 받기는 `sam3_받기.ps1`(승인 전에는 HTTP 403만 찍음, 큰 파일은 인증이 필요해 `par_dl.py` 대신 `hf_hub_download`). 신청 당일(10-19 13:35) 승인돼 있었다. `hf_hub_download`는 Xet 방식이라 3.44GB를 파일이 아니라 프로세스 메모리에 쌓으며 받다가 끝에 한 번에 쓴다(`.incomplete`가 0MB로 보여도 멈춘 게 아니다 — 프로세스 메모리가 느는지 본다, 약 10분). SAM 3 영상은 `Sam3VideoProcessor.init_video_session(video=프레임, inference_device="cuda", processing_device="cpu", video_storage_device="cpu")` → `add_text_prompt(세션, "glass")` → `model.propagate_in_video_iterator(inference_session=세션)` → `postprocess_outputs(세션, 출력)["masks"]`(대상별 참거짓 마스크). 보정 영역으로 쓸 때의 한계는 색감 README 「부분 보정」. SAM 3로 찾고 SAM 2.1로 따라가는 자동 점(`--자동 잔|피부`)을 만들며 막힌 것 둘: ① 같은 글의 후보를 합치면 엉뚱한 것을 따라간다 — 4a 「glass」가 뒤 골목 분홍 간판(점수 0.54)까지 잡았고, 손가락을 뺀 잔보다 간판 안쪽이 더 깊어 양성 점이 간판에 찍혀 손 마스크와 겹침 0이었다 → 점수가 가장 높은 후보 하나만 쓴다(0.95, 겹침 0.979). ② SAM 3 사진 모드 마스크가 정수 배열로 와서 `~`가 비트 반전이 되어 「대상 밖 거리」가 어긋났고 음성 점이 화면 구석(0, 40)에 찍혔다 → `.astype(bool)`로 바꾼다.
 - 10-19 지유 시험(프레임 폴더 입력)에서 찾은 것: 증상 — 업스케일 PNG 폴더(`영상_H3/업/<컷>/<컷>`)를 원본으로 넘기자 `잰값.json`엔 `"장수": 48`이 적히지만 실제로는 폴더의 PNG를 모두 썼고, 같은 폴더에 프레임을 다시 만들어도 `마스크_준비`가 예전 마스크를 그대로 돌려줄 수 있다(코드를 읽다 찾음, 이번 컷은 폴더 처음부터 끝까지 써서 틀린 마스크를 입히진 않았다). 원인 — `마스크_만들기.load_frames`는 폴더면 `--시작` · `--장수`를 무시하고, 「원본_크기 · 원본_시각」은 영상 파일일 때만 적으며, `마스크_준비`는 폴더면 원본이 같다고 보고 장수만 맞으면 끝낸다. 고침 — 컷이 처음부터 끝까지 들어 있는 폴더만 넣고(지유 업스케일 폴더가 그렇다), 업스케일을 다시 하면 그 컷의 보관 폴더를 비운 뒤 다시 만든다. 10-19 고침: `마스크_만들기.py`가 폴더도 「원본_지문」(PNG 크기 합 · 가장 늦은 시각 · 장수)을 적고, `부분보정.마스크_준비`가 그 지문을 견준다(지문 없는 예전 폴더 기록은 한 번 다시 만듦, 다시 만든 뒤 `_raw` 캐시를 비움 — 같은 프로세스에서 예전 값을 읽던 것도 막음). 다시 확인 — `synk-vendor/…/색감/부분보정_시험/폴더지문_전후.py`처럼 임시 폴더의 PNG를 바꿔 다시 부르면 「새로_만듦」이 찍히고(고치기 전 판은 0초 만에 예전 마스크), 바꾼 것 없이 부르면 바로 돌아온다. 폴더를 넣을 땐 「프레임」이 그 컷의 장수와 같은지도 본다.
-
-### 무거운 렌더를 이 PC에서 몇 시간 돌리기 전에 빌려 쓰는 길이 있다
-- 증상: 블렌더 450장을 옛 노트북에서 3시간 25분 돌려 PC가 렉이 났다(10-08, 새 노트북 수치는 위 항목). 허깅페이스 Jobs는 「Pre-paid credit balance is insufficient」 402로 거절됐다(10-08·10-14, 잔액 0).
-- 원인: Jobs는 선불 잔액에서 분 단위로 빠진다(10-11 공식 요금표: CPU Upgrade $0.03/h, T4 $0.40, L4 $0.80, RTX PRO 6000 $2.75, 시작·받기 4~6분도 값에 든다). 잔액 충전은 결제라 유호님 몫이다. 거절돼도 `-v` 폴더는 먼저 버킷에 올라간다.
-- 고침: 한 시간 넘는 렌더 전에 장비별 어림값을 보여 주고 잔액이 있는지 묻는다. 잔액이 0이면 유호님이 말하는 「구독 무료 GPU(30~40분)」인 ZeroGPU 길이 기본이다: Blender 짓기·내보내기는 이 PC에서 `render=0`으로(10초 안팎) → 카메라별 .blend → `docs/마케팅/한강2126_포트폴리오_20260930/blender/render_zerogpu.py`(결과 폴더가 고정이라 `--out`을 붙인 사본으로)로 장당 GPU 5초·왕복 30~40초. 남은 할당량 읽기는 [아래 항목](#zerogpu-남은-할당량은-결제-페이지-데이터에-초-단위로-있다). 남의 Space라 얼굴·고객 자료는 올리지 않는다. Jobs를 Git Bash에서 띄우면 `-v` 경로가 깨지니 PowerShell로 띄운다([윈도우 셸 노트](윈도우_셸.md#로-시작하는-인자가-윈도우-경로로-바뀐다)).
-- 다시 확인: Jobs는 L4 10장 시험으로 장당 시간을 먼저 잰다(장당 GPU 시간은 아직 어림값이다).
-
-### Remotion Node API(bundle·renderStill)는 REMOTION_ 환경 변수를 넘기지 않는다
-- 증상: 10-18 관용구 퀴즈 #2 나라별판에서 `@remotion/bundler`·`@remotion/renderer`로 번들을 한 번 만들어 정지컷을 찍자 `Could not find composition kids-quiz-v5b-th`가 났다. 목록에는 120 BPM 판만 있었다.
-- 원인: CLI는 `REMOTION_`으로 시작하는 환경 변수를 번들 안 `process.env`로 넘겨 주지만 Node API는 넘기지 않는다. `REMOTION_TEMPO=100`이 비어 Root가 100 BPM 판을 등록하지 않았다. 스크립트에서 `process.env`에 넣어도 같다.
-- 고침: `selectComposition`·`renderStill`·`renderMedia`에 `envVariables: { REMOTION_TEMPO: '100' }`를 직접 준다(`remotion/현지어_정지컷.mjs`·`현지어_렌더.mjs`). 한글 경로는 `fileURLToPath(import.meta.url)`로 바꿔야 `%EB…`로 남지 않는다.
-- 다시 확인: 같은 스크립트로 26개 채널 정지컷·영상이 모두 나왔고, 뉴질랜드판은 게시된 영어판과 끝 계정만 달랐다.
-
-### 남의 ZeroGPU Space를 복제하면 빌드가 spaces 판 충돌로 실패한다
-- 증상: 10-17 `Pepe104/MiniMax-H3-Turbo-Lora-UNCENSORED`·`multimodalart/qwen3vl-conditioner`를 비공개로 복제하자 둘 다 BUILD_ERROR, 「Cannot install spaces==0.51.1 and spaces==0.51.3」.
-- 원인: 빌더가 pip 줄에 자기 판 `spaces==0.51.3`을 덧붙이는데 원본 requirements.txt가 `spaces==0.51.1`로 묶여 있다. 원본은 예전에 빌드한 이미지로 돌아서 멀쩡하다.
-- 고침: 복제본 requirements.txt에서 `spaces==` 줄을 빼고 다시 올린다. 빌드·실행 기록은 `GET https://huggingface.co/api/spaces/<id>/logs/build`(실행은 `/logs/run`, 토큰 헤더, SSE).
-- 다시 확인: `HfApi().get_space_runtime(id).stage`가 RUNNING.
-
-### 둘로 나뉜 ZeroGPU Space를 둘 다 비공개로 두면 앞쪽이 뒤쪽을 못 부른다
-- 증상: MiniMax-H3 생성 Space는 조건 Space를 `gradio_client.Client(id, headers={"x-ip-token": …})`로 토큰 없이 부른다. 둘 다 비공개면 막힌다.
-- 원인: Space 안에는 토큰이 없다(Secrets에 HF_TOKEN을 넣어야 하고, 토큰 입력은 유호님 몫).
-- 고침: 생성 Space 복제본에 조건값 파일을 직접 받는 `generate_from_embeds` 입구를 더하고, 이 PC에서 조건 `/encode` → 생성 `/generate_from_embeds`를 차례로 부른다(`.tmp/h3-rehearsal-20261017/run_h3.py`). 로컬 로그인 토큰으로 부른 두 호출 모두 유호님 할당량에서 빠진다(조건 Space 기록 「the caller's own quota」).
-- 다시 확인: 조건 Space 실행 기록의 `[cond] /encode on …` 줄.
-
-### ZeroGPU 남은 할당량은 결제 페이지 데이터에 초 단위로 있다
-- 증상: 「남은 할당량은 API로 안 나온다」로 알고 있었다(10-14).
-- 원인: 크롬 로그인 `huggingface.co/settings/billing` 화면은 분 단위(0/40분)지만, 페이지 `data-props` 안 `"zeroGpu":{"current":<남은 초>,"base":2400,"resetsAt":…}`는 초 단위다. 차감은 예약 시간이 아니라 실제 GPU 초 × 크기 배수(xlarge 2배)다: 10-17 조건 7.5초 → 14.8초, 생성 109초 → 218.1초. 다 쓰면 선불 잔액에서 자동으로 빠진다(10분 $1). `resetsAt`은 첫 사용 24시간 뒤.
-- 고침: 돌리기 전후로 결제 페이지를 새로 열어 zeroGpu.current를 읽고 뺀다.
-- 다시 확인: 같은 읽기를 한 번 더 해 current가 줄었는지 본다.
-### 사전검사 뒤 대본만 고치면 옛 대조 결과로 전달될 수 있다
-- 증상: 10-17 영상·자막은 그대로 두고 검사에 사용한 대본·받아쓰기를 고치거나 지워도 `완성본등록.mjs --inspection`이 통과했다. 대본만 제공해 대조 상대가 없어도 별도 안내가 없었다.
-- 원인: 전달 때 영상·자막 SHA256만 확인했고, 대본 대조는 상대 입력이 없으면 건너뛰었다.
-- 고침: 검사에 사용한 대본·받아쓰기의 원래 경로·존재·SHA256도 전달과 재사용 때 확인한다. 대조 상대 누락은 검토 안내, 제공된 빈 원문은 차단으로 남긴다. 영상만 기술 검사하는 사용은 유지한다.
-- 다시 확인: `node --test tests/영상사전검사.test.mjs tools/완성본등록.test.mjs docs/마케팅/온라인마케팅지도/engagement/company/publication-inbox.test.mjs` 34/34 통과. 수정·삭제된 원문 전달 차단, 원문 복원 후 같은 전달 재사용, CLI 경고 0·차단 2·실행 실패 1 확인. 실제 운영 인박스·게시에는 적용 실행하지 않았다.
-
-### 줄마다 자른 내레이션에 `afade=t=out:st=0`을 걸어 소리가 통째로 빠졌다
-- 증상: 10-19 밤 화성 CF 가편집 1·2판을 「내레이션·자막만 들어 있다」며 보냈는데, 소리 트랙 최대값이 0.002(약 −90dB)로 사실상 무음이었다. 받아쓰기는 「한글자막 by …」, 「다음 영상에서 만나요」 같은 헛말만 냈다.
-- 원인: 줄 끝을 다듬으려고 `atrim … ,afade=t=out:st=0:d=0.001`을 걸었다. 페이드 아웃은 st부터 끝까지 0으로 두므로 줄마다 첫 1ms만 남았다.
-- 고침: 자른 줄의 길이를 재서 `afade=t=out:st=<길이-0.04>:d=0.04`로 끝만 줄인다(`hwaseong/가편집/만들기_CF.py`). 보내기 전에 소리 트랙을 두 가지로 확인한다 — 1초마다 RMS(내레이션 구간이 −20dB 안팎인지)와 faster-whisper `vad_filter=True` 받아쓰기. 받아쓰기가 「한글자막 by」류 헛말이면 목소리가 없는 것부터 의심한다.
-- 다시 확인: 렌더한 mp4에서 내레이션 줄 시각의 RMS와 받아쓰기 글이 대본과 맞는지.
-
-### 사전검사 뒤 대본만 고치면 옛 대조 결과로 전달될 수 있다
-- 증상: 10-17 영상·자막은 그대로 두고 검사에 사용한 대본·받아쓰기를 고치거나 지워도 `완성본등록.mjs --inspection`이 통과했다. 대본만 제공해 대조 상대가 없어도 별도 안내가 없었다.
-- 원인: 전달 때 영상·자막 SHA256만 확인했고, 대본 대조는 상대 입력이 없으면 건너뛰었다.
-- 고침: 검사에 사용한 대본·받아쓰기의 원래 경로·존재·SHA256도 전달과 재사용 때 확인한다. 대조 상대 누락은 검토 안내, 제공된 빈 원문은 차단으로 남긴다. 영상만 기술 검사하는 사용은 유지한다.
-- 다시 확인: `node --test tests/영상사전검사.test.mjs tools/완성본등록.test.mjs docs/마케팅/온라인마케팅지도/engagement/company/publication-inbox.test.mjs` 34/34 통과. 수정·삭제된 원문 전달 차단, 원문 복원 후 같은 전달 재사용, CLI 경고 0·차단 2·실행 실패 1 확인. 실제 운영 인박스·게시에는 적용 실행하지 않았다.
-
