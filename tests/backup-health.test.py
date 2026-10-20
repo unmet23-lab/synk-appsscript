@@ -1,7 +1,9 @@
 """Backup alarms tested with synthetic receipts; no cloud writes or notifications."""
+import contextlib
 import ctypes
 import datetime as dt
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
@@ -66,6 +68,144 @@ class HealthTests(unittest.TestCase):
     def test_running_dead_process_is_not_healthy(self):
         with patch.object(lib,'process_alive',return_value=False):
             self.assertEqual(self.evaluate({'status':'running','pid':999,'startedAt':lib.stamp(self.now),'heartbeatAt':lib.stamp(self.now)})['status'], 'interrupted')
+
+    def ago(self, minutes): return self.now - dt.timedelta(minutes=minutes)
+
+    def running(self, heartbeat, start=None, pid=999):
+        return {'status': 'running', 'pid': pid, 'startedAt': lib.stamp(self.ago(start or heartbeat)), 'heartbeatAt': lib.stamp(self.ago(heartbeat))}
+
+    @contextlib.contextmanager
+    def live(self, started=180, alive=True):
+        # The run's process is alive and was created `started` minutes ago.
+        with patch.object(lib, 'process_alive', return_value=alive), \
+             patch.object(health, 'process_started', return_value=self.ago(started) if started is not None else None):
+            yield
+
+    def test_suspended_time_is_left_out_of_the_heartbeat_age(self):
+        # 10-20 12:01: the PC slept 46 minutes while the OneDrive run waited on one long call, then it wrote again.
+        receipt, slept = self.running(40), [(self.ago(38), self.ago(2))]
+        with self.live():
+            row = self.evaluate(receipt, suspended=slept)
+            self.assertEqual((row['status'], row['codes'], row['suspendedSinceHeartbeatSeconds']), ('running', [], 36 * 60))
+            # Without the record, or with no sleep in it, the wall clock judges as before.
+            for record in (None, []):
+                row = self.evaluate(receipt, suspended=record)
+                self.assertEqual((row['status'], row['codes']), ('interrupted', ['PROCESS_OR_HEARTBEAT_MISSING']))
+            self.assertNotIn('suspendedSinceHeartbeatSeconds', self.evaluate(receipt)); self.assertEqual(row['suspendedSinceHeartbeatSeconds'], 0)
+            # A sleep shorter than the gap, before the heartbeat, or after this check took its time (the PC slept during the
+            # check and the record was read on waking) does not hide a run that stopped writing.
+            for spans in ([(self.ago(30), self.ago(20))], [(self.ago(70), self.ago(41))], [(self.ago(-1), self.ago(-40))]):
+                self.assertEqual(self.evaluate(receipt, suspended=spans)['codes'], ['PROCESS_OR_HEARTBEAT_MISSING'])
+        with self.live(alive=False):
+            self.assertEqual(self.evaluate(receipt, suspended=slept)['codes'], ['PROCESS_OR_HEARTBEAT_MISSING'])
+
+    def test_suspended_time_is_left_out_of_the_run_length(self):
+        receipt = self.running(1, start=90)  # the fixture limit is one hour
+        with self.live():
+            self.assertEqual(self.evaluate(receipt, suspended=[(self.ago(80), self.ago(40))])['status'], 'running')
+            self.assertEqual(self.evaluate(receipt, suspended=[(self.ago(80), self.ago(65))])['codes'], ['RUN_OVERRUN'])
+            self.assertEqual(self.evaluate(receipt, suspended=[])['codes'], ['RUN_OVERRUN'])
+
+    def test_sleep_from_before_the_process_started_is_not_taken_off(self):
+        # A shutdown with fast startup also resumes from hibernation but ends every program; a later process with the
+        # dead run's id did not sleep through that gap. Without the process start time nothing is taken off.
+        receipt, slept = self.running(40), [(self.ago(38), self.ago(2))]
+        for started in (1, 37, None):
+            with self.subTest(started=started), self.live(started):
+                self.assertEqual(self.evaluate(receipt, suspended=slept)['codes'], ['PROCESS_OR_HEARTBEAT_MISSING'])
+        for started in (38, 45):
+            with self.subTest(started=started), self.live(started):
+                self.assertEqual(self.evaluate(receipt, suspended=slept)['status'], 'running')
+
+    def test_server_run_is_judged_by_its_own_rule_without_the_suspended_time(self):
+        # 백업상태.py says interrupted after 10 wall-clock minutes; it is asked again with the sleep moved out.
+        config = {'components': [{'id': 'server', 'receipt': 'backup-status.json', 'maxAgeHours': 36, 'maxRunHours': 6}]}
+        tasks = {'server': {'exists': True, 'enabled': True, 'result': 0}}
+        def server(heartbeat, spans):
+            lib.atomic_json(self.root / 'backup-status.json', self.running(heartbeat, start=60, pid=os.getpid()))
+            calls = []
+            summary = health.gather(self.root, lib, config, tasks, self.now, lambda: calls.append(1) or spans)
+            return summary['components'][0], calls
+        with self.live():
+            row, calls = server(20, [(self.ago(18), self.ago(3))])
+            self.assertEqual((row['status'], row['codes'], calls), ('running', [], [1]))
+            for spans in (None, [], [(self.ago(18), self.ago(12))]):  # 14 awake minutes are more than its 10
+                with self.subTest(spans=spans):
+                    self.assertEqual(server(20, spans)[0]['codes'], ['BACKUP_INTERRUPTED'])
+        with self.live(alive=False):
+            self.assertEqual(server(20, [(self.ago(18), self.ago(3))])[0]['codes'], ['BACKUP_INTERRUPTED'])
+        # The second answer may only clear the wall-clock interruption, never turn it into another state.
+        real, answers = lib.derive_status, iter([None, {'status': 'paused', 'issues': [{'code': 'BACKUP_STOPPED'}]}])
+        with self.live(), patch.object(lib, 'derive_status', side_effect=lambda *a, **k: next(answers) or real(*a, **k)):
+            self.assertEqual(server(20, [(self.ago(18), self.ago(3))])[0]['codes'], ['BACKUP_INTERRUPTED'])
+        # Nothing running: the System log is not read.
+        lib.atomic_json(self.root / 'backup-status.json', {'status': 'success', 'lastSuccessAt': lib.stamp(self.now)})
+        calls = []
+        health.gather(self.root, lib, config, tasks, self.now, lambda: calls.append(1))
+        self.assertEqual(calls, [])
+
+    def test_sleep_record_is_the_resume_spans_of_the_system_log(self):
+        def event(reason, old, new, computer='Guts'):
+            return ("<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System>"
+                    f"<Provider Name='Microsoft-Windows-Kernel-General'/><EventID>1</EventID><Computer>{computer}</Computer></System>"
+                    f"<EventData><Data Name='NewTime'>{new}</Data><Data Name='OldTime'>{old}</Data>"
+                    f"<Data Name='Reason'>{reason}</Data><Data Name='CmosTime'>{new}</Data></EventData></Event>")
+        out = ''.join([  # newest first, as /rd:true gives them; wevtutil writes the ANSI code page
+            event(2, '2026-10-20T07:28:55.8785610Z', '2026-10-20T08:13:00.5000000Z', '작업용-노트북'),
+            event(1, '2026-10-20T04:00:00.0000000Z', '2026-10-20T04:30:00.0000000Z'),  # set by a program
+            event(2, 'broken', '2026-10-20T04:10:00.5000000Z'),
+            event(2, '2026-10-20T03:10:00.0000000Z', '2026-10-20T03:50:00.0000000Z'),  # overlaps the next one
+            event(2, '2026-10-20T03:01:59.5301968Z', '2026-10-20T03:47:31.5000000Z'),
+            event(2, '2026-10-20T03:01:30.6355543Z', '2026-10-20T03:01:29.5000000Z'),  # just before that sleep
+        ]).encode('cp949')
+        seen = {}
+        def run(args, **kwargs):
+            seen.update(args=args, **kwargs)
+            return subprocess.CompletedProcess(args, 0, out, b'')
+        t = lambda value: dt.datetime.fromisoformat('2026-10-20T' + value + '+00:00')
+        self.assertEqual(health.suspensions(run), [(t('03:01:59.530196'), t('03:50:00')), (t('07:28:55.878561'), t('08:13:00.5'))])
+        self.assertEqual((seen['args'][:2], seen['args'][3], seen['timeout']), (['wevtutil.exe', 'qe'], '/q:' + health.SUSPEND_QUERY, 20))
+        self.assertEqual(health.suspensions(lambda *_, **__: subprocess.CompletedProcess([], 0, b'', b'')), [])
+        # A failed, slow or broken query is no record, so the wall clock judges.
+        def slow(*_, **__): raise subprocess.TimeoutExpired('wevtutil.exe', 20)
+        for result in (subprocess.CompletedProcess([], 15007, b'', b''), subprocess.CompletedProcess([], 0, b'<Event', b'')):
+            self.assertIsNone(health.suspensions(lambda *_, **__: result))
+        self.assertIsNone(health.suspensions(slow))
+
+    @unittest.skipUnless(os.name == 'nt', 'Windows System log and clocks')
+    def test_this_pc_gives_its_sleep_record_and_process_start(self):
+        now = dt.datetime.now(dt.timezone.utc)
+        spans = health.suspensions()
+        self.assertIsInstance(spans, list)  # None here would leave every run on the wall clock
+        self.assertTrue(all(a < b <= now + dt.timedelta(minutes=1) for a, b in spans))
+        self.assertEqual(spans, sorted(spans)); self.assertTrue(all(x[1] < y[0] for x, y in zip(spans, spans[1:])))
+        self.assertTrue(now - dt.timedelta(days=1) < health.process_started(os.getpid()) <= now)
+        self.assertIsNone(health.process_started(0)); self.assertGreaterEqual(health.suspended_seconds(), 0)
+
+    def main_once(self, attempts, asleep):
+        # main() with check() raising or returning as listed and the PC's suspended seconds as listed.
+        attempts, calls = list(attempts), []
+        def check(root, lib_, now):
+            calls.append(now); outcome = attempts.pop(0)
+            if isinstance(outcome, Exception): raise outcome
+            return outcome
+        with patch.object(health, 'load_legacy', return_value=lib), patch.object(health, 'check', side_effect=check), \
+             patch.object(health, 'suspended_seconds', side_effect=list(asleep)), \
+             patch.object(sys, 'argv', ['backup-health.py', '--root', str(self.root)]), contextlib.redirect_stdout(io.StringIO()):
+            code = health.main()
+        return code, len(calls), lib.read_json(self.root / 'backup-health.json')
+
+    def test_check_the_pc_slept_through_runs_once_more(self):
+        # 10-20 14:02: the check began while the PC was going to sleep and failed 4 seconds after it woke.
+        healthy = {'schemaVersion': 1, 'status': 'healthy', 'components': [], 'issues': []}
+        code, calls, written = self.main_once([RuntimeError('SCHEDULE_QUERY_FAILED'), healthy], [100.0, 291.0])
+        self.assertEqual((code, calls, written['status']), (0, 2, 'healthy'))
+        # Awake all along, failing again, or with no clock: the failure is reported as before.
+        for attempts, asleep in (([RuntimeError('X')], [100.0, 100.5]), ([RuntimeError('X'), RuntimeError('X')], [100.0, 291.0]),
+                                 ([RuntimeError('X')], [None, None])):
+            with self.subTest(asleep=asleep):
+                code, calls, written = self.main_once(attempts, asleep)
+                self.assertEqual((code, calls, written['issues']), (1, len(attempts), [{'component': 'monitor', 'code': 'MONITOR_FAILED'}]))
 
     def test_onedrive_normal_sync_pending_is_not_immediate_failure(self):
         task={'exists':True,'enabled':True,'result':2,'lastRunAt':lib.stamp(self.now)}

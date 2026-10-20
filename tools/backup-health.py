@@ -1,6 +1,8 @@
 """Four-store backup health, schedule checks and durable Windows notifications."""
 import argparse
+import ctypes
 import datetime as dt
+import functools
 import hashlib
 import importlib.util
 import json
@@ -10,6 +12,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import xml.etree.ElementTree as ET
 
 TOOLS = Path(__file__).resolve().parent
 DEFAULT_ROOT = TOOLS.parent.parent / 'SYNK_원본창고'
@@ -30,6 +33,15 @@ SPACE_GUARD = {'id': 'space', 'taskName': 'SYNK 공간 지킴이', 'receipt': '�
 # previously-backed-source-now-protected and every OneDrive run fails, so warn while it can still be split.
 # The guard continues the ledger in 내려놓은목록-002.jsonl, -003… at 4MiB; a part reaching this size means that stopped.
 SPACE_LEDGER_WARN_BYTES = 8 * 1024 * 1024
+# A suspended PC runs no backup, yet a running receipt's heartbeat and run ages are wall-clock times (10-20: five
+# sleeps, 46 minutes the longest). Each resume from sleep or hibernation sets the clock again from the hardware clock and
+# logs Kernel-General 1 with reason 2 at once: OldTime is when the clock stopped, NewTime when it was set again, and
+# nothing ran in between. Power-Troubleshooter 1 is not used: it is logged 5–25 s after the resume (the 14:02 check on
+# 10-20 ran before it), its span also covers the sleep entry and wake while programs still run, and it gave the hour
+# of sleep before the 10-17 hibernation as zero. The last 24 hours are read; older sleep stays in the ages (stricter).
+SUSPEND_QUERY = ("*[System[Provider[@Name='Microsoft-Windows-Kernel-General'] and EventID=1 and "
+                 "TimeCreated[timediff(@SystemTime) <= 86400000]]]")
+EVENT_DATA = '{http://schemas.microsoft.com/win/2004/08/events/event}Data'
 
 
 def load_legacy(root):
@@ -44,7 +56,84 @@ def safe_codes(receipt):
         if isinstance(x, dict) and re.fullmatch(r'[A-Z][A-Z0-9_]{0,99}', str(x.get('code', '')))))
 
 
-def evaluate(item, receipt, now, lib, task=None, installed_at=None, repair=None):
+def suspensions(run=subprocess.run):
+    """Merged (stopped, resumed) spans of the last 24 hours in which the PC was suspended; None when unreadable."""
+    try:
+        result = run(['wevtutil.exe', 'qe', 'System', '/q:' + SUSPEND_QUERY, '/f:xml', '/rd:true', '/c:500'],
+            capture_output=True, stdin=subprocess.DEVNULL, timeout=20, creationflags=0x08000000 if os.name == 'nt' else 0)
+        if result.returncode: return None
+        # wevtutil writes the ANSI code page (CP949 here); the times and reason read below are ASCII.
+        events = ET.fromstring('<events>' + result.stdout.decode('utf-8', 'replace') + '</events>')
+    except (OSError, subprocess.SubprocessError, ET.ParseError):
+        return None
+    spans = []
+    for event in events:
+        data = {x.get('Name'): x.text for x in event.iter(EVENT_DATA)}
+        if data.get('Reason') != '2': continue
+        try:
+            stopped, resumed = (dt.datetime.fromisoformat(data[x].replace('Z', '+00:00')) for x in ('OldTime', 'NewTime'))
+        except (KeyError, AttributeError, ValueError):
+            continue
+        # Reason 2 also comes just before a sleep, setting the clock back by a second or two.
+        if stopped.tzinfo and resumed.tzinfo and stopped < resumed: spans.append((stopped, resumed))
+    merged = []
+    for stopped, resumed in sorted(spans):
+        if merged and stopped <= merged[-1][1]: merged[-1] = (merged[-1][0], max(merged[-1][1], resumed))
+        else: merged.append((stopped, resumed))
+    return merged
+
+
+def process_started(pid):
+    """When the process with this id was created (UTC), or None."""
+    if os.name != 'nt' or not isinstance(pid, int) or pid < 1: return None
+    from ctypes import wintypes
+    k32 = ctypes.WinDLL('kernel32', use_last_error=True)
+    k32.OpenProcess.restype = wintypes.HANDLE
+    k32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+    k32.GetProcessTimes.argtypes = [wintypes.HANDLE] + [ctypes.POINTER(wintypes.FILETIME)] * 4
+    k32.CloseHandle.argtypes = [wintypes.HANDLE]
+    handle = k32.OpenProcess(0x1000, False, pid)
+    if not handle: return None
+    try:
+        times = [wintypes.FILETIME() for _ in range(4)]
+        if not k32.GetProcessTimes(handle, *map(ctypes.byref, times)): return None
+    finally:
+        k32.CloseHandle(handle)
+    ticks = (times[0].dwHighDateTime << 32) | times[0].dwLowDateTime
+    return dt.datetime(1601, 1, 1, tzinfo=dt.timezone.utc) + dt.timedelta(microseconds=ticks // 10)
+
+
+def paused(spans, pid):
+    """The suspended spans that began after this process started, so they stopped it too.
+
+    A shutdown with fast startup also resumes from hibernation, but ends every program: a later process that got the
+    same id must not have that gap taken off a dead run's ages."""
+    started = process_started(pid) if spans else None
+    return [x for x in spans if x[0] >= started] if started else []
+
+
+def awake(since, now, spans):
+    """The time from since to now minus the suspended spans inside it."""
+    span = now - since
+    for stopped, resumed in spans:
+        overlap = min(resumed, now) - max(stopped, since)
+        if overlap > dt.timedelta(): span -= overlap
+    return span
+
+
+def suspended_seconds():
+    """Seconds this PC has been suspended since it started (interrupt time with and without sleep), or None."""
+    if os.name != 'nt': return None
+    interrupt, unbiased = ctypes.c_ulonglong(), ctypes.c_ulonglong()
+    try:
+        ctypes.WinDLL('kernelbase').QueryInterruptTime(ctypes.byref(interrupt))
+        if not ctypes.WinDLL('kernel32').QueryUnbiasedInterruptTime(ctypes.byref(unbiased)): return None
+    except (OSError, AttributeError):
+        return None
+    return (interrupt.value - unbiased.value) / 1e7
+
+
+def evaluate(item, receipt, now, lib, task=None, installed_at=None, repair=None, suspended=None):
     receipt = receipt or {}
     state = receipt.get('status', 'unknown')
     checked = lib.instant(receipt.get('checkedAt') or receipt.get('finishedAt') or receipt.get('heartbeatAt'))
@@ -75,12 +164,16 @@ def evaluate(item, receipt, now, lib, task=None, installed_at=None, repair=None)
     if not receipt:
         state = 'pending' if installed_at and now - installed_at < dt.timedelta(hours=item['maxAgeHours']) else 'unknown'
         if state == 'unknown': codes.append('RECEIPT_MISSING')
+    slept = None
     if state == 'running':
         heartbeat = lib.instant(receipt.get('heartbeatAt') or receipt.get('checkedAt') or receipt.get('startedAt'))
         start = lib.instant(receipt.get('startedAt'))
-        if not lib.process_alive(receipt.get('pid')) or not heartbeat or now - heartbeat > dt.timedelta(minutes=15):
+        # Both ages leave out the time the PC was suspended while this run was alive; without the record, the wall clock.
+        spans = paused(suspended or [], receipt.get('pid'))
+        if suspended is not None and heartbeat: slept = round((now - heartbeat - awake(heartbeat, now, spans)).total_seconds())
+        if not lib.process_alive(receipt.get('pid')) or not heartbeat or awake(heartbeat, now, spans) > dt.timedelta(minutes=15):
             state = 'interrupted'; codes.append('PROCESS_OR_HEARTBEAT_MISSING')
-        elif not start or now - start > dt.timedelta(hours=item.get('maxRunHours', 6)):
+        elif not start or awake(start, now, spans) > dt.timedelta(hours=item.get('maxRunHours', 6)):
             state = 'interrupted'; codes.append('RUN_OVERRUN')
     if state in ('healthy', 'pending'):
         baseline = success or installed_at
@@ -105,12 +198,15 @@ def evaluate(item, receipt, now, lib, task=None, installed_at=None, repair=None)
             if schedule.get('state') != 'Running' and (not verified_at or not task_time or task_time > verified_at):
                 if state not in BAD: state = 'attention'
                 codes.append('SCHEDULE_LAST_RUN_FAILED')
-    return {'id': item['id'], 'label': LABELS[item['id']], 'status': state,
-            'checkedAt': lib.stamp(checked) if checked else None,
-            'lastSuccessAt': lib.stamp(success) if success else None, 'repaired': repaired,
-            'repairedAt': lib.stamp(repaired_at) if repaired_at else None,
-            'codes': sorted(set(codes)), 'task': task,
-            'scope': item.get('scope'), 'receiptPath': item['receipt']}
+    row = {'id': item['id'], 'label': LABELS[item['id']], 'status': state,
+           'checkedAt': lib.stamp(checked) if checked else None,
+           'lastSuccessAt': lib.stamp(success) if success else None, 'repaired': repaired,
+           'repairedAt': lib.stamp(repaired_at) if repaired_at else None,
+           'codes': sorted(set(codes)), 'task': task,
+           'scope': item.get('scope'), 'receiptPath': item['receipt']}
+    # Seconds of suspension left out of a running receipt's heartbeat age (absent when the record could not be read).
+    if slept is not None: row['suspendedSinceHeartbeatSeconds'] = slept
+    return row
 
 
 def ledger_parts(root, item=SPACE_GUARD):
@@ -204,7 +300,7 @@ def task_snapshot(config_path, extra=()):
     return {x['id']: x for x in values}
 
 
-def gather(root, lib, config, tasks, now):
+def gather(root, lib, config, tasks, now, sleep_record=lambda: None):
     components = []
     for item in config['components'] + config.get('additionalChecks', []):
         try:
@@ -213,16 +309,27 @@ def gather(root, lib, config, tasks, now):
                 owner = lib.read_json(root / '상태' / 'OneDrive' / 'run.lock') or {}
                 if owner.get('runId') == receipt.get('runId'):
                     receipt = dict(receipt, pid=owner.get('pid'))
+            running = (receipt or {}).get('status') == 'running'
+            suspended = sleep_record() if running else None  # read once, and only while a run is in progress
             repair = lib.read_json(root / 'backup-repair-status.json') if item['id'] == 'server' else None
             if item['id'] == 'server':
                 derived = lib.local_summary(root, now)
+                if running and suspended and derived['status'] == 'interrupted':
+                    # 백업상태.py judges a running run's heartbeat (10 minutes) and length on the wall clock. Ask it again
+                    # with the suspended time moved out of both; only its 'running' answer replaces the first one.
+                    spans, moved = paused(suspended, receipt.get('pid')), dict(receipt)
+                    for key in ('heartbeatAt', 'startedAt'):
+                        moment = lib.instant(receipt.get(key))
+                        if moment: moved[key] = lib.stamp(now - awake(moment, now, spans))
+                    again = lib.derive_status(moved, {}, now, alive=lib.process_alive)
+                    if again['status'] == 'running': derived = again
                 receipt = dict(receipt or {}, status=derived['status'], issues=derived['issues'])
             task = dict(tasks.get(item['id'], {'exists': False}))
             auxiliary = [x for x in config.get('auxiliaryTasks', []) if x.get('component') == item['id']]
             if auxiliary:
                 task['auxiliaryTasks'] = [tasks.get(x['id'], {'id':x['id'], 'exists':False}) for x in auxiliary]
             component = evaluate(item, receipt, now, lib, task,
-                lib.instant(item.get('installedAt') or config.get('installedAt')), repair)
+                lib.instant(item.get('installedAt') or config.get('installedAt')), repair, suspended)
         except (OSError, ValueError, TypeError, KeyError):
             component = {'id': item['id'], 'label': LABELS[item['id']], 'status': 'unknown',
                          'codes': ['RECEIPT_UNREADABLE'], 'lastSuccessAt': None}
@@ -306,6 +413,15 @@ def update_notifications(root, summary, lib, now, sender=deliver):
     return notification
 
 
+def check(root, lib, now):
+    lib.monitor(root, now)
+    config_path = root / 'backup-health-config.json'
+    config = lib.read_json(config_path)
+    if not config: raise RuntimeError('BACKUP_HEALTH_CONFIG_MISSING')
+    tasks = task_snapshot(config_path, (SPACE_GUARD,))
+    return gather(root, lib, config, tasks, now, functools.cache(suspensions))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path, default=DEFAULT_ROOT)
@@ -320,12 +436,16 @@ def main():
         print(json.dumps(result, ensure_ascii=False)); return 0 if result.get('accepted') else 1
     try:
         with lib.LocalLock(root / '.backup-health.lock'):
-            lib.monitor(root, now)
-            config_path = root / 'backup-health-config.json'
-            config = lib.read_json(config_path)
-            if not config: raise RuntimeError('BACKUP_HEALTH_CONFIG_MISSING')
-            tasks = task_snapshot(config_path, (SPACE_GUARD,))
-            summary = gather(root, lib, config, tasks, now)
+            asleep = suspended_seconds()
+            try:
+                summary = check(root, lib, now)
+            except Exception:
+                # A check the PC slept through can fail on its own timers: the 14:02 check on 10-20 started while the PC
+                # was going to sleep and sent 「백업 감시: 상태 확인 불가」 4 seconds after it woke. It runs once more.
+                later = suspended_seconds()
+                if asleep is None or later is None or later - asleep < 1: raise
+                now = lib.utcnow()
+                summary = check(root, lib, now)
             if args.notify: summary['notification'] = update_notifications(root, summary, lib, now)
             lib.atomic_json(root / 'backup-health.json', summary)
             if sys.stdout: print(json.dumps(summary, ensure_ascii=False))
