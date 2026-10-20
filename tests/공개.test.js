@@ -37,15 +37,15 @@ function 쓰기(폴더, 경로, 내용) {
   fs.writeFileSync(파일, 내용);
 }
 
-/** 공개 저장소 .github/site-check/check.mjs의 도구 이름 단계와 같은 꼴(낱말 목록만 바꾼다) */
-const 점검원문 = (낱말) => [
+/** 공개 저장소 .github/site-check/check.mjs의 도구 이름 단계와 같은 꼴(낱말·태그 목록만 바꾼다) */
+const 점검원문 = (낱말, 태그 = 'suno|\\budio\\b') => [
   '// 2. 도구 이름',
   '  const skipDir = /(^|\\/)(vendor|node_modules)\\//;',
   '  const skipPage = /^(en\\/)?(privacy|terms|data-deletion|brief)\\//;',
   '  const skipFile = /(^|\\/)knowledge-engine\\.js$/;',
   "  const listOf = b64 => new RegExp(Buffer.from(b64, 'base64').toString('utf8'), 'i');",
   `  const words = listOf('${Buffer.from(낱말).toString('base64')}');`,
-  `  const tagWords = listOf('${Buffer.from('suno|\\budio\\b').toString('base64')}');`,
+  `  const tagWords = listOf('${Buffer.from(태그).toString('base64')}');`,
   '    if (/\\.(html|js|mjs|css|json|txt|xml|md|svg|webmanifest)$/i.test(f)) {',
   '',
 ].join('\n');
@@ -329,6 +329,7 @@ test('도구 이름: 후보의 check.mjs 규칙·MP3 태그·그림 제작 표�
   const r = await 도구.올리기(공.옵션({ 원본: 로컬, 항목 }));
   assert.equal(r.결과, '걸림');
   assert.equal(r.규칙출처, '.github/site-check/check.mjs', '배포 점검 규칙을 후보의 check.mjs에서 읽는다');
+  assert.ok(r.알림.some((x) => x.검사 === '도구 이름' && /사본과 다르다/.test(x.이유)), 'check.mjs 목록이 도구 사본과 다르면 알린다');
   const 걸린 = (p) => r.걸림.filter((x) => x.경로 === p).map((x) => x.검사);
   assert.deepEqual(걸린('lab/index.html'), ['도구 이름'], '도구에 든 사본 목록에 없는 낱말도 check.mjs 목록으로 잡는다');
   assert.deepEqual(걸린('privacy/index.html'), [], '처리 위탁 업체를 적는 페이지는 점검처럼 뺀다');
@@ -390,6 +391,35 @@ test('AI 이름 한글·맨 GPT와 이 PC 경로: 10-19 공개본에서 샌 줄�
   const 허용 = 검사([['world/brand-opening/home-town.mjs', '// .tmp/world-firstrun-20261014 · 지피티\n']], { 허용: ['world/brand-opening/home-town.mjs'] });
   assert.deepEqual(허용.걸림, []);
   assert.deepEqual(허용.알림.map((x) => x.검사).sort(), ['AI 이름', '내부 경로'], '--허용은 사람이 본 AI 이름·이 PC 경로를 알림으로 넘긴다');
+});
+
+test('도구 사본 = 배포 점검 목록(10-20 판): 샌 꼴은 잡고 공개본의 낱말 조각은 넘긴다 · check.mjs와 같으면 조용하다 · WORLD 공개 빌드와 같은 목록', async (t) => {
+  const 사본 = 속.점검규칙읽기(null);
+  const 풀기 = (b64) => Buffer.from(b64, 'base64').toString('utf8');
+  const 낱말 = new RegExp(풀기(사본.낱말), 'i');
+  // 10-19 공개본 정리(e3909ee → de4f278)·10-20 음성 목록에서 실제로 샌 꼴
+  for (const 샌 of [
+    '몽글 그림은 GPT 이미지 2.5로 구워', '지피티로 만든 판', 'Codex로 구운 펠트 판', 'Seedance 2.5 720p', 'Kling 2.1', 'kling-v2-1',
+    '목소리만 떼어(Demucs)', '타입캐스트 하나', '힉스필드 카타나', '나노바나나', '나노 바나나 프로', 'Documents/synk-vendor/hangul-songs/',
+    '(격자 사진: .tmp/world-firstrun-20261014)', '.tmp\\x', '클로드가 다시 그림', '제미나이 젬', '(수노 노래)', '"provider": "typecast"',
+  ]) assert.match(샌, 낱말, 샌);
+  // 공개본(1c34773, 점검 범위 글 850개)에 있는 낱말 조각 — 받아쓰기 모델 어휘·한글 낱말 속·다른 경로
+  for (const 흔한 of [
+    '"chuckling": 32312, "Ġtackling": 344', '"Ġsparkling": 399, "inkling": 452', '사이클링 대회와 교수노조 회의', '가수노래',
+    'cache.tmp/x', 'a-.tmp/x', '<canvas class="hero-runway">', '쌍둥이자리 gemini', 'https://example.com/documents/guide.pdf',
+  ]) assert.doesNotMatch(흔한, 낱말, 흔한);
+
+  // 후보의 check.mjs 목록이 사본과 같으면 어긋남을 알리지 않는다
+  const 공 = 새공개본(t, { '.github/site-check/check.mjs': 점검원문(풀기(사본.낱말), 풀기(사본.태그)), 'a.txt': '하나\n' });
+  const r = await 도구.올리기(공.옵션({ 원본: 공.로컬('빌드', { 'a.txt': '둘\n' }), 항목: ['a.txt'] }));
+  assert.equal(r.규칙출처, '.github/site-check/check.mjs');
+  assert.ok(!r.알림.some((x) => /사본과 다르다/.test(x.이유)), '목록이 같으면 조용하다');
+
+  // WORLD 공개 빌드의 이름 검사(publicToolName)도 같은 두 목록이다
+  const 빌드 = fs.readFileSync(path.join(REPO, 'tools', 'build-world-app-public.mjs'), 'utf8');
+  const 함수 = /function publicToolName\(relative,bytes\)\{[\s\S]*?\n\}/.exec(빌드);
+  assert.ok(함수, 'publicToolName을 찾는다');
+  assert.deepEqual([...함수[0].matchAll(/\.match\(\/(.+?)\/i\)/g)].map((m) => m[1]), [풀기(사본.낱말), 풀기(사본.태그)]);
 });
 
 test('공개 경로·제작 자료·저장 용량: 밑줄 폴더·qa/·-original 그림·큰 파일은 막고 Jekyll 머리말은 알린다', async (t) => {

@@ -54,12 +54,13 @@ function publicAsset(relative,bytes){
  }
  return {relative,bytes};
 }
-// Match the public site's existing producer-name check before declaring a build usable.
+// Match the public site's producer-name check before declaring a build usable (synk-policy .github/site-check/check.mjs;
+// the same lists as tools/공개.js 점검규칙사본, which tests/공개.test.js compares with this function).
 function publicToolName(relative,bytes){
  if(/(^|\/)(vendor|node_modules)\//.test(relative)||/(^|\/)knowledge-engine\.js$/.test(relative))return null;
  if(/\.(html|js|mjs|css|json|txt|xml|md|svg|webmanifest)$/i.test(relative)){
   const text=bytes.toString('utf8').replace(/data:[^"')\s]+/g,'').replace(/[A-Za-z0-9+/=]{300,}/g,'');
-  return text.match(/suno|higgsfield|nano banana|midjourney|gpt[- ]image|edge[-_ ]tts|elevenlabs|typecast|gemini-[0-9][\w.-]*tts|ko-KR-[A-Za-z]+Neural|made with (suno|udio)/i)?.[0]||null;
+  return text.match(/suno|higgsfield|nano banana|midjourney|gpt[- ]image|edge[-_ ]tts|elevenlabs|typecast|gemini-[0-9][\w.-]*tts|ko-KR-[A-Za-z]+Neural|made with (suno|udio)|gpt[- ]?이미지|지피티|codex|seedance|\bkling|demucs|타입캐스트|힉스필드|나노 ?바나나|synk-vendor|(?<![\w.-])\.tmp[\\/]|(?<![가-힣])(?:클로드|제미나이|수노)/i)?.[0]||null;
  }
  if(/\.mp3$/i.test(relative)){
   const head=bytes.subarray(0,8192).toString('latin1');

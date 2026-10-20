@@ -25,7 +25,7 @@
  *      공개본 값으로 맞춘다(깨끗한 빌드의 토큰이 공개본과 달라서). 그대로 두는 것: 공개본 값에서 이미 바꿔 올린 토큰, 바뀌지 않은 파일의 토큰,
  *      .github/ 아래, 어느 파일도 부르지 않는 css·js·데이터 파일(지금 안 쓰는 옛 루트 app.js 등 — 알린다), 같은 이름의 파일이 여럿이라
  *      어느 것인지 모르는 참조(공개본 토큰 해시가 맞는 후보가 하나면 그것으로 본다 — 아니면 알린다).
- *   4. 검사: 배포 점검과 같은 도구 이름 규칙(후보의 .github/site-check/check.mjs에서 읽음) · 그림·영상의 생성 도구 표시(C2PA 등, --허용) ·
+ *   4. 검사: 배포 점검과 같은 도구 이름 규칙(후보의 .github/site-check/check.mjs에서 읽음, 도구 사본과 목록이 다르면 알림) · 그림·영상의 생성 도구 표시(C2PA 등, --허용) ·
  *      더한 줄의 AI 이름(영문·한글, --허용) · 더한 줄의 이 PC·작업 자리 경로(synk-vendor·Documents/ 등, --허용) ·
  *      저장 용량(GitHub 한도 100MiB, 경고 50MiB) · 공개 경로(밑줄 폴더·제작 자료·Jekyll 머리말) ·
  *      import 이름 엇갈림(공개 주소 캐시 10분, tools/lib/import엇갈림.js): 바뀌는 .js·.mjs와 그 모듈을 부르는 공개본 모듈의 정적
@@ -96,10 +96,13 @@ const 제작자료 = [
   [/(^|\/)(node_modules|\.tmp)\//, '개발 폴더'],
   [/\.(psd|blend1?|kra|xcf|aep|prproj)$/i, '편집 원본 파일'],
 ];
-/** 배포 점검(.github/site-check/check.mjs 「2. 도구 이름」) 규칙을 못 읽을 때 쓰는 사본(10-19 그대로). */
+/**
+ * 배포 점검(.github/site-check/check.mjs 「2. 도구 이름」) 규칙을 못 읽을 때 쓰는 사본(10-20 판: 한글 이름·영상·소리 도구·작업 PC 경로).
+ * WORLD 공개 빌드 tools/build-world-app-public.mjs `publicToolName`도 같은 목록이다(tests/공개.test.js가 둘을 견준다).
+ */
 const 점검규칙사본 = {
-  낱말: 'c3Vub3xoaWdnc2ZpZWxkfG5hbm8gYmFuYW5hfG1pZGpvdXJuZXl8Z3B0Wy0gXWltYWdlfGVkZ2VbLV8gXXR0c3xlbGV2ZW5sYWJzfGdlbWluaS1bMC05XVtcdy4tXSp0dHN8a28tS1ItW0EtWmEtel0rTmV1cmFsfG1hZGUgd2l0aCAoc3Vub3x1ZGlvKQ==',
-  태그: 'c3Vub3xcYnVkaW9cYnxnZW1pbml8ZWxldmVubGFic3xvcGVuYWl8ZWRnZVstXyBdP3R0cw==',
+  낱말: 'c3Vub3xoaWdnc2ZpZWxkfG5hbm8gYmFuYW5hfG1pZGpvdXJuZXl8Z3B0Wy0gXWltYWdlfGVkZ2VbLV8gXXR0c3xlbGV2ZW5sYWJzfHR5cGVjYXN0fGdlbWluaS1bMC05XVtcdy4tXSp0dHN8a28tS1ItW0EtWmEtel0rTmV1cmFsfG1hZGUgd2l0aCAoc3Vub3x1ZGlvKXxncHRbLSBdP+ydtOuvuOyngHzsp4DtlLzti7B8Y29kZXh8c2VlZGFuY2V8XGJrbGluZ3xkZW11Y3N87YOA7J6F7LqQ7Iqk7Yq4fO2eieyKpO2VhOuTnHzrgpjrhbggP+uwlOuCmOuCmHxzeW5rLXZlbmRvcnwoPzwhW1x3Li1dKVwudG1wW1xcL118KD88IVvqsIAt7Z6jXSkoPzrtgbTroZzrk5x87KCc66+464KY7J20fOyImOuFuCk=',
+  태그: 'c3Vub3xcYnVkaW9cYnxnZW1pbml8ZWxldmVubGFic3x0eXBlY2FzdHxvcGVuYWl8ZWRnZVstXyBdP3R0cw==',
   skipDir: /(^|\/)(vendor|node_modules)\//,
   skipPage: /^(en\/)?(privacy|terms|data-deletion|brief)\//,
   skipFile: /(^|\/)knowledge-engine\.js$/,
@@ -1001,6 +1004,9 @@ function 후보만들기(c) {
   })();
   const 규칙 = 점검규칙읽기(점검글);
   if (규칙.출처 !== '.github/site-check/check.mjs') 알림.push({ 검사: '도구 이름', 이유: '배포 점검 규칙(check.mjs)을 못 읽어 도구에 든 사본 규칙으로 봤다' });
+  else if (규칙.낱말 !== 점검규칙사본.낱말 || 규칙.태그 !== 점검규칙사본.태그) {
+    알림.push({ 검사: '도구 이름', 이유: '배포 점검 목록(check.mjs)이 도구에 든 사본과 다르다 — 이 도구의 점검규칙사본과 WORLD 공개 빌드 publicToolName을 check.mjs 목록에 맞춘다' });
+  }
   const 검사대상 = [...항목.values()].map((x) => ({ 경로: x.경로, 버퍼: x.버퍼, 공개버퍼: x.전 && x.버퍼 && !이진인가(x.버퍼) ? 블롭(git, 저장, x.전) : null }));
   const 검사 = 검사하기(검사대상, 규칙, 옵션);
   걸림.push(...검사.걸림);
