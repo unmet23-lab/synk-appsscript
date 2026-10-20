@@ -96,4 +96,4 @@
 
 ## 쓴 기록
 
-> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-03~10-17 Claude 메모에서 옮김(10-17 2차) · GPT(Codex) 10-17 Antigravity 인증 공유·구형 Gemini CLI 지원 종료, 10-18 Linux 독립 실행·timer 검증 추가 · GPT(Codex) 10-17 예약 시각 해석 확인 추가 · GPT(Codex) 10-18 Argon 예약·Docs·장애 알림 확인 · Claude Code(Claude Opus 5.5) 10-18 `claude -p` 크레딧 청구(Claude Code 2.1.302) · Claude Code 10-18 아르곤 실행 두 항목 · Claude Code(Claude Opus 5.5) 10-19 조사 예약 거절 실패 관찰·고침 · Claude Code 10-20 데스크톱 앱 계정과 로그인 파일 계정이 다른 것 추가
+> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-03~10-17 Claude 메모에서 옮김(10-17 2차) · GPT(Codex) 10-17 Antigravity 인증 공유·구형 Gemini CLI 지원 종료, 10-18 Linux 독립 실행·timer 검증 추가 · GPT(Codex) 10-17 예약 시각 해석 확인 추가 · GPT(Codex) 10-18 Argon 예약·Docs·장애 알림 확인 · Claude Code(Claude Opus 5.5) 10-18 `claude -p` 크레딧 청구(Claude Code 2.1.302) · Claude Code 10-18 아르곤 실행 두 항목 · Claude Code(Claude Opus 5.5) 10-19 조사 예약 거절 실패 관찰·고침 · Claude Code 10-20 데스크톱 앱 계정과 로그인 파일 계정이 다른 것 추가 · Claude Code 10-20 멈춘 세션 일괄 재개(/이어서) 함정 넷(다시 시도·Stop 표식·isRunning 순간값·우회 모드 최상위 세션의 다른 세션 글, Claude 데스크톱 2.42304.2.0·Claude Code 2.1.299) 추가

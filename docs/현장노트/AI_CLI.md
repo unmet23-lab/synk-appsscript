@@ -171,6 +171,30 @@
 - 고침: 이 알림만 보고 일이 끊겼다고 판단하거나 그 일을 다시 시작하지 않는다. `mcp__ccd_session_mgmt__list_events`로 그 세션의 마지막 메시지를 읽고(보관된 세션도 읽힌다), 거기 적힌 커밋이 origin에 들어갔는지 `git merge-base --is-ancestor <커밋> origin/master`로 확인한 뒤 유호님께 알린다.
 - 다시 확인: 다음에 띄운 세션이 스스로 보관하면, 부모 세션의 알림 문구와 `list_events` 마지막 메시지(보관 호출 뒤에 쓴 보고)를 대조한다.
 
+### 계정을 바꾸거나 앱을 껐다 켠 뒤 멈춘 세션은 「다시 시도」로 안 깨어나고, 앱의 다시 켜기 재개도 한도 끊김은 다루지 않는다 (2026-10-20 Claude)
+- 증상: 유호님 말씀 — 한도가 풀려 다시 시작할 때 「다시 시도」를 눌러도 안 돼서 멈춘 세션마다 「이어서 해」를 쳐야 했다. 10-16~20 대화 원문에서 한도 끊김이 359번, 그 뒤 사람이 처음 친 글은 「이어서 해」·「이어서해」 111번, 「다시 시도」 82번이었다.
+- 원인: 「다시 시도」가 안 듣는 이유는 확인하지 못했다. 앱의 다시 켜기 재개(`main.log` 「Relaunch auto-resume: ran — warmed N of M eligible (K marked); the rest resume when opened」)는 앱 종료로 끊긴 세션(기록 `interruptedByQuitAt`)만 다루고 그것도 일부만 바로 깨운다. 한도로 끝난 차례(원문 assistant `isApiErrorMessage`, 기록 `error`·`lastTurnCutShort`)는 대상이 아니다. 계정을 바꾸면 세션 프로세스가 모두 새로 떠서 백그라운드 작업·CI 대기 알림도 끊긴다.
+- 고침: `/이어서` 스킬(`.claude/skills/이어서/`)이 멈춘 세션을 골라 「이어서 해」를 한꺼번에 보낸다. 앱이 완료로 분류한 예약 실행은 바로 보관하고, 승인·고르기를 기다리는 세션과 Stop한 세션은 건드리지 않는다.
+- 다시 확인: 계정을 바꾼 뒤 `node .claude/skills/이어서/세션고르기.cjs --self <id> --busy <isRunning 목록>`의 「보냄」 수와 `main.log`의 warmed 수를 비교한다.
+
+### 원문의 「[Request interrupted by user]」만 보면 차례 중간에 보낸 글까지 Stop으로 본다 (2026-10-20 Claude)
+- 증상: Stop한 세션을 가려내려고 원문을 세다가, 이 세션 원문에도 같은 줄이 19:09·19:19에 세 번 찍힌 것을 봤다. 모두 유호님이 차례 도중 글을 보낸 바로 앞이었다.
+- 원인: 앱이 차례 도중 들어온 글을 넣으려고 도는 차례를 끊으면 CLI가 Stop과 같은 문구를 남긴다. 앱은 사람·다른 세션이 멈췄을 때만 세션 기록에 `lastTurnCutShort: true`를 적는다(app.asar `interruptSession`의 reason이 user·agent일 때). 10-20 19:22 앱 종료 때는 다른 세션 원문에 이 줄이 찍히지 않았다.
+- 고침: 원문 끝이 이 줄로 끝나고 뒤에 글·답이 없으며, 기록 `lastTurnCutShort`도 true일 때만 Stop으로 본다(`세션고르기.cjs` `끊김`).
+- 다시 확인: 차례 도중 글을 보낸 세션 원문에서 그 줄 뒤에 사용자 글이 이어지는지, Stop을 누른 세션 기록의 `lastTurnCutShort`가 true인지 본다.
+
+### `list_sessions`의 `isRunning: false`를 읽은 몇 초 뒤에 차례가 시작되기도 한다 (2026-10-20 Claude)
+- 증상: 일괄 재개 시험에서 `isRunning: false`로 읽은 두 세션이 「받은 글에 답하지 못하고 멈춤」으로 잡혔다. 다시 보니 원문 마지막 줄이 몇 초 전에 쓰인 상태 알림이었고, 바로 뒤에 답이 이어졌다. 목록을 읽는 사이에 차례가 시작된 것이다.
+- 원인: `isRunning`은 그 순간의 값이다. 곁 세션 쪽지·다른 세션의 메시지로 세션이 언제든 깨어난다.
+- 고침: 원문 끝이 차례 한가운데 모양이어도 마지막 줄이 90초 안에 쓰였으면 일하는 중으로 본다. 앱을 껐다 켜는 데만 1분 넘게 걸려서 진짜 끊긴 차례와 섞이지 않는다. `send_message` 결과가 queued면 그 세션이 이미 일을 시작한 것이니 다시 보내지 않는다.
+- 다시 확인: 같은 시각 `list_sessions`와 원문 끝(마지막 user·assistant 줄 시각)을 함께 읽어 엇갈린 세션이 있는지 본다.
+
+### 다른 세션이 보낸 글을 최상위·권한 우회 모드 세션이 받지 않을 때가 있다 — 「20초 안에 시작 신호 없음」 (2026-10-20 Claude)
+- 증상: /이어서 첫 실행에서 6개 가운데 2개(「ㅇㅇㅇㅇㅇㅇㅇㅇㅇ」, 예약 실행 「세션 공유 편 24시간 숫자 읽기」)가 `send_message` 결과 undelivered 「that session gave no sign of starting on it within 20s …」였다. 다시 보내도, `SendMessage`로 보내도 같았다. 앱 로그는 「peer input … drew no acknowledgement from the CLI in 45000ms — settled as undelivered」였고, 대화 원문에는 그 글이 없으며 세션 기록 `peerInbound`에 `written: true`로 남았다.
+- 원인: 확인하지 못했다. 10-17~20 앱 로그의 같은 실패 9건이 모두 최상위(곁 세션 아님)·`bypassPermissions` 세션이었다(작업 최적화 검토 4, ㅇㅇㅇ 3, 예약 실행 2). 같은 때 곁 세션(우회·자동 모드 모두)과 자동 모드 최상위 세션은 받았고, 보낸 쪽은 자동 모드였다. 도구 설명의 「권한 모드가 다른 세션은 그쪽 사용자 승인을 기다릴 수 있다」와 맞지만, 우회 모드 곁 세션은 받았으므로 확정하지 못했다.
+- 고침: 다시 보내지 않는다(같은 길이라 또 막힌다). /이어서 보고에 「전달 안 됨」으로 링크를 달아 유호님이 그 세션에 직접 치게 한다(`.claude/skills/이어서/SKILL.md` 4단계).
+- 다시 확인: `main*.log`에서 「drew no acknowledgement」를 모아 그 세션 기록의 `permissionMode`·`spawnedFrom`과 맞대 본다. 우회 모드 세션에서 /이어서를 돌려 같은 세션에 보내 보면 모드 차이 탓인지 가를 수 있다.
+
 ## Claude 서브에이전트
 
 ### 병렬 서브에이전트가 같은 scratchpad에 같은 이름의 보조 파일을 써서 남의 묶음 글을 읽는다 (2026-10-19 Claude)
