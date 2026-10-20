@@ -23,6 +23,15 @@
   - 설명은 화면 언어로, 한국어(인용·고친 문장)는 `lang="ko"` 칸에만 둔다. 실패·한도·꺼짐이면 규칙 점검만 보인다.
   - 통로: `world-account.mjs`의 `writingRequest`(경로 `writing`, 95초). PC 앱 본체는 이 경로를 아직 몰라 단추가 숨는다.
   - 설명 칸에 섞인 짧은 한국어(「-다」·「그래서」 같은 예시)는 화면이 `lang="ko"` 칸으로 감싼다.
+  - 운영 반영(10-21 유호님 승인, [결정](../../docs/_ops/결정.md))은 결제 수단 없는 조직의 새 키가 오면 그 키로 한다. 그때까지 꺼 두고 unmet23 조직 키는 쓰지 않는다. 순서는 talk [현장 노트](../../docs/현장노트/배포_공개.md#talk-함수supabase)를 따른다.
+    1. GPT 검수 결과를 본다(범위는 트랙 ③ 줄).
+    2. talk 가지 `claude/world-writing-20261020`을 talk master에 합친다. 배포 커밋이 `origin/master`를 품는지 `merge-base --is-ancestor`로 묶어 본다.
+    3. 리허설에 `node tools/원격배포.js supabase/functions/world-writing --적용` → `배포대조`·`--호출`로 꺼짐(`off`) 답을 본다.
+    4. 운영 비밀값을 다이제스트로 지금 값과 대조한 뒤 쓴다: `WORLD_WRITING_ANTHROPIC_API_KEYS`(새 키, 값은 출력하지 않음), `SYNK_AI_PRICES`에 Sonnet·Opus 5.5 단가가 있는지.
+    5. 운영에 `--적용 --운영 --차이확인 <값>`으로 배포한다.
+    6. 끝으로 `SYNK_WORLD_WRITING_ENABLED=true`를 켜고, 계정 상태 답의 `bankHash`가 공개 은행 지문(`912ab9dee14c7d80`부터)과 같은지 본다.
+
+    DB는 새로 바꿀 것이 없다. 횟수 원장 `engine.reserve_ai_usage`(c16)는 이름 규칙만 보므로 `world.writing.feedback`을 받는다.
 - **비용 파일럿(10-21, synk.yuh 크레딧 키, [결정](../../docs/_ops/결정.md)):** 합성 학생 글 22편을 서버와 같은 요청 몸통으로 보냈다. 모두 정상 피드백이었고 합계 $0.227이었다.
   - 1편당: 51·52 약 0.5센트, 53 약 1.3센트, 54 약 1.4센트(Opus 5.5면 약 2.7센트). 채점 기준 지시문은 캐시에서 읽혔고(1,683·1,945토큰), 응답은 2.5~20초 걸렸다.
   - 같은 54번 두 편에서 Sonnet과 Opus의 참고 범위가 거의 같아 기본은 Sonnet 5.5로 둔다.
