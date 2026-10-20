@@ -1,5 +1,13 @@
 # SYNK Workspace · 내 수업
 
+## TOPIK 4급 온라인 반 「과제 첨삭」 · 2026-10-20
+
+SYNK ID 수업 연결(계정 모드)에서 넷째 메뉴 「과제 첨삭」을 연다. 교사는 반 시작일을 정해 학생 WORLD의 「이번 주 과제」를 열고, 주별로 낸 읽기·쓰기를 보고, 학생 글 위에 기호를 붙이고 판정·한마디 세 줄을 써서 돌려준다. 모듈은 `homework-review.mjs`·`homework-review.css`, 통로는 synk-classroom 교사 과제 경로(`GET/POST /api/teacher/homework`)다. 동작과 통로는 [과제 내기 설계 3-2절](../../docs/온라인반_TOPIK4급/과제_내기_설계.md#teacher-screen)에 있다.
+
+- 시험: `node --test experiences/teacher-world/homework-review.test.mjs`(계산 11개). 브라우저 시험 `node --test experiences/teacher-world/qa/homework-review-browser.test.mjs`는 실제 Chrome·실제 synk-classroom 과제 서버(PGlite)로 390·1280을 본다(116항목). SYNK-talk 가지 `claude/class-homework-20261020`가 있을 때만 돈다.
+- 캡처는 `qa/homework-review-20261020/`(그림은 git 밖), 측정은 같은 폴더 `result.json`이다.
+- 운영 반영(synk-classroom 함수·DB, 회사 워크스페이스 릴리스)은 유호님 「진행해」 뒤다. 로컬 체험판(4290·4295)에는 이 메뉴가 없다.
+
 ## 현재 운영 연결 · 2026-10-10
 
 Workspace의 내 수업과 공통 수업·WORLD·TOWN·계정 API, 관련 DB·OAuth·기능 설정을 운영에 반영했다. [운영 적용과 최종 인수 기록](../../docs/_ops/qa/workspace-connect-20261009/README.md)에 공개 파일·서버 코드 대조와 합성 계정 경계 검증을 구분해 남겼다. 실제 교사 발급 → 학생 본인 연결 → 명시적 공유 → 학습·생활 활동 → 교사 확인의 실사용 인수는 별도다. 운영 반영을 실제 학생 효과나 모든 기기 검증으로 해석하지 않는다.

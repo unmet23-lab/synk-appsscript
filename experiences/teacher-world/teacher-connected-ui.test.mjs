@@ -5,7 +5,7 @@ import vm from 'node:vm';
 import * as Overview from './workspace-overview.mjs';
 import {applySharingFence} from './sharing-fence.mjs';
 
-const source=fs.readFileSync(new URL('./app.mjs',import.meta.url),'utf8').replace("import {applySharingFence} from './sharing-fence.mjs';",'').replace("import {createPersonalizationUI} from './personalization-ui.mjs';",'').replace(/^import \{[^\n]*\} from '\.\/workspace-overview\.mjs';\r?\n/m,'');
+const source=fs.readFileSync(new URL('./app.mjs',import.meta.url),'utf8').replace("import {applySharingFence} from './sharing-fence.mjs';",'').replace("import {createPersonalizationUI} from './personalization-ui.mjs';",'').replace("import {mountHomeworkReview} from './homework-review.mjs';",'').replace(/^import \{[^\n]*\} from '\.\/workspace-overview\.mjs';\r?\n/m,'');
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 const reply=(body,status=200)=>({ok:status<400,status,json:async()=>body});
 const learner=(overrides={})=>({id:'learner-a',name:'연결 학생',goal:'안내문 읽기',skills:[{id:'ko.reading.detail',label:'세부 정보',status:'unseen',n:0,correct:0}],connectedAt:'2026-10-02T10:00:00Z',sharing:{enabled:true,revision:2},observations:[],...overrides});
@@ -20,7 +20,7 @@ function fixture({hash='',storedToken='',mode='local-linked',account=false}={}){
     location:{href:'http://127.0.0.1:44001/'+(account?'?account=1':'')+hash,origin:'http://127.0.0.1:44001'},history:{replaceState(_state,_title,url){cleanURL=url;}},
     sessionStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value),removeItem:key=>storage.delete(key)},
     window:{addEventListener(){}},document:{getElementById:element,documentElement:element('html'),querySelector:selector=>selector==='dialog[open]'?[...nodes.values()].find(n=>n.open)||null:null,querySelectorAll:selector=>selector==='dialog[open]'?[...nodes.values()].filter(n=>n.open):[],addEventListener:(name,fn)=>documentEvents.set(name,fn)},
-    createPersonalizationUI:()=>({set(){},invalidate(){element('personalization-panel').hidden=true;}}),
+    mountHomeworkReview:()=>({show(){},reset(){},hasDraft:()=>false,refresh(){}}),createPersonalizationUI:()=>({set(){},invalidate(){element('personalization-panel').hidden=true;}}),
     fetch:(url,options={})=>{requests.push({url,options});if(url==='/api/health')return Promise.resolve(reply({mode}));return new Promise((resolve,reject)=>pending.push({url,resolve,reject}));}
   };
   if(account){context.window.parent={location:{origin:context.location.origin},postMessage(){},SYNKClassroomHost:{mode:'account-linked',request:(url,payload)=>{requests.push({url,payload});return new Promise((resolve,reject)=>pending.push({url,resolve:response=>response.json().then(resolve),reject}));}}};context.document.fonts={ready:Promise.resolve()};}

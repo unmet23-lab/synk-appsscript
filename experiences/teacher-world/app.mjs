@@ -1,6 +1,7 @@
 import {createPersonalizationUI} from './personalization-ui.mjs';
 import {learnerOverview,careDateValue,careDueAt,compareTeacherRows} from './workspace-overview.mjs';
 import {applySharingFence} from './sharing-fence.mjs';
+import {mountHomeworkReview} from './homework-review.mjs';
 const $=id=>document.getElementById(id);
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const labels={unseen:'기록이 더 필요해요',checking:'확인 중',practice:'추가 연습',review:'다시 확인',supported:'도움 받아 수행', 'recent-independent':'최근 독립 수행'};
@@ -12,6 +13,8 @@ const accountRequested=new URL(location.href).searchParams.get('account')==='1';
 let accountHost=null,parentSharingMetadata=null;
 const tokenStorage={get(){try{return sessionStorage.getItem(tokenKey)||'';}catch{return '';}},set(value){try{if(value)sessionStorage.setItem(tokenKey,value);else sessionStorage.removeItem(tokenKey);}catch{}}};
 const personalUI=createPersonalizationUI({role:'teacher',container:$('personalization-panel'),button:$('personalization-button'),onChange:load,onView:()=>{const template=personalUI.state?.assignmentTemplates?.find(t=>t.classId===classId&&t.learnerId===learnerId);if(template)openAssignment();else toast('선택한 학생의 추천은 이 과제 체험에서 아직 지원하지 않아요. 학생의 학습 근거를 먼저 확인해 주세요.');}});
+// 과제 첨삭(04)은 SYNK ID 수업 연결(계정 모드)에서만 연다. 교사 과제 경로는 synk-classroom에만 있다.
+const homework=mountHomeworkReview({root:$('homework-review'),request,onCount:n=>{$('homework-count').textContent=String(n);$('homework-count').hidden=!n;}});
 const classNow=()=>workspace?.classes.find(c=>c.id===classId);
 const learners=()=>classNow()?.learners||[];
 const studentNow=()=>learners().find(s=>s.id===learnerId);
@@ -52,7 +55,7 @@ async function request(path,payload){
 }
 function clearSession(message='교사 연결을 종료했어요.'){
   authEpoch++;revision++;teacherToken='';tokenStorage.set('');workspace=null;workspaceReady=false;accessEpoch++;clearDraft();classId=null;learnerId=null;clearInterval(pollTimer);pollTimer=null;personalUI.invalidate();
-  for(const id of ['summary','view-students','view-assignments','view-review','world-connections','personalization-button','teacher-logout','loading'])$(id).hidden=true;
+  for(const id of ['summary','view-students','view-assignments','view-review','view-homework','world-connections','personalization-button','teacher-logout','loading'])$(id).hidden=true;homework.reset();
   for(const id of ['roster','student-detail','assignments','observations','world-link-result','class-select'])$(id).replaceChildren();
   for(const dialog of document.querySelectorAll('dialog[open]'))dialog.close();
   $('world-link-result').hidden=true;$('teacher-key').value='';$('teacher-session').hidden=false;$('teacher-session-error').textContent=message;document.documentElement.dataset.ready='auth';
@@ -60,11 +63,12 @@ function clearSession(message='교사 연결을 종료했어요.'){
 // workspace.synk.im 주소로 직접 열면 이 서버의 /api/workspace는 회사 업무 자료라 로그인 없이는 401이다.
 // 수업은 「내 수업」 탭의 SYNK ID 연결 안에서만 열리므로, 오류 대신 그 탭으로 가는 길을 안내한다.
 function showWorkspaceEntry(){
-  for(const id of ['summary','view-students','view-assignments','view-review','world-connections','teacher-session','teacher-logout','personalization-button','mode-note','mode-badge','refresh'])$(id).hidden=true;
+  for(const id of ['summary','view-students','view-assignments','view-review','view-homework','homework-nav','world-connections','teacher-session','teacher-logout','personalization-button','mode-note','mode-badge','refresh'])$(id).hidden=true;
   $('loading').hidden=false;$('loading').innerHTML='<p>내 수업은 SYNK Workspace의 「내 수업」 탭에서 열려요.</p><p><a class="felt-button primary" id="open-workspace" href="/?tab=teaching" target="_top">내 수업 열기</a></p>';
   document.documentElement.dataset.ready='workspace-entry';
 }
 function setMode(){
+  $('homework-nav').hidden=!accountRequested;
   if(accountRequested){$('mode-badge').textContent='SYNK ID · 수업 연결';$('mode-note').textContent='서버가 확인한 담당 반의 공유된 학습 기록과 과제입니다. 학생의 공유 상태와 교사 권한을 요청할 때마다 확인해요.';for(const id of ['personalization-button','world-connections','teacher-logout','teacher-session'])$(id).hidden=true;return;}
   $('mode-badge').textContent=linked?'WORLD 연결 · 로컬 MVP':'예시 데이터 · 로컬 MVP';
   $('mode-note').textContent=linked?'학생이 동의한 WORLD 기록과 과제를 이 기기의 교사 공간에 연결해요. 정식 SYNK 로그인·다른 기기 동기화는 아직 제공하지 않아요.':'가상의 학생으로 과제 왕복을 체험하는 개발판이에요. 실제 SYNK ID·학생 계정과 연결되지 않았어요.';
@@ -105,7 +109,8 @@ async function openInvite(){
 }
 function suspendWorkspace(){
   workspaceReady=false;accessEpoch++;workspace=null;clearDraft();personalUI.invalidate();
-  for(const id of ['summary','view-students','view-assignments','view-review','world-connections'])$(id).hidden=true;
+  // 과제 첨삭 판은 숨기기만 한다(잠깐의 읽기 실패로 쓰던 첨삭을 잃지 않게). 비우는 것은 연결 종료(clearSession) 때다.
+  for(const id of ['summary','view-students','view-assignments','view-review','view-homework','world-connections'])$(id).hidden=true;
   for(const id of ['summary','roster','student-detail','assignments','observations','world-link-result','class-select'])$(id).replaceChildren();
   $('world-learner-name').value='';$('world-link-result').hidden=true;$('class-title').textContent='학생과 학습';$('assignment-count').textContent='0';document.documentElement.dataset.ready='blocked';
 }
@@ -138,13 +143,14 @@ async function start(){
   }catch(error){if(linked)clearSession(error.message);else{$('loading').textContent=error.message;document.documentElement.dataset.ready='error';}}
 }
 function render(){
-  const cls=classNow();if(!cls){$('summary').hidden=true;for(const name of ['students','assignments','review'])$('view-'+name).hidden=true;return;}
-  $('summary').hidden=false;const assignments=(workspace.assignments||[]).filter(a=>a.classId===classId);const active=assignments.filter(a=>a.status==='assigned');const submitted=assignments.filter(a=>['submitted','completed'].includes(a.status));const needs=learners().filter(s=>s.skills.some(k=>['practice','supported','review'].includes(k.status))).length;
+  const cls=classNow();if(!cls){$('summary').hidden=true;for(const name of ['students','assignments','review','homework'])$('view-'+name).hidden=true;return;}
+  if(view==='homework'&&!accountRequested)view='students';
+  $('summary').hidden=view==='homework';const assignments=(workspace.assignments||[]).filter(a=>a.classId===classId);const active=assignments.filter(a=>a.status==='assigned');const submitted=assignments.filter(a=>['submitted','completed'].includes(a.status));const needs=learners().filter(s=>s.skills.some(k=>['practice','supported','review'].includes(k.status))).length;
   $('summary').innerHTML=[[learners().length,'함께 배우는 학생'],[needs,'다음 도움 살펴보기'],[active.length,'진행 중인 과제'],[submitted.length,'제출된 과제']].map(([n,label])=>`<div class="summary-item"><strong>${n}</strong><span>${label}</span></div>`).join('');
   $('assignment-count').textContent=active.length;$('class-title').textContent=cls.name;
-  for(const name of ['students','assignments','review'])$('view-'+name).hidden=name!==view;
+  for(const name of ['students','assignments','review','homework'])$('view-'+name).hidden=name!==view;
   document.querySelectorAll('[data-view]').forEach(b=>{b.classList.toggle('active',b.dataset.view===view);b.setAttribute('aria-current',b.dataset.view===view?'page':'false');});
-  renderRoster();renderDetail();renderAssignments(assignments);renderObservations();
+  renderRoster();renderDetail();renderAssignments(assignments);renderObservations();if(view==='homework')homework.show(classId);
 }
 function renderRoster(){const query=$('student-search').value.trim().toLowerCase();const rows=learners().filter(s=>s.name.toLowerCase().includes(query));$('roster').innerHTML=rows.length?rows.map(s=>`<button class="student-row ${s.id===learnerId?'selected':''}" data-student="${escape(s.id)}" aria-pressed="${s.id===learnerId}"><span class="avatar">${escape(s.name.slice(0,1))}</span><span class="student-copy"><strong>${escape(s.name)}</strong><small>${escape(linked&&learnerOverview(s).sharing==='revoked'?'WORLD 연결 해제':linked&&!studentLinked(s)?'계정 연결 대기':linked&&!s.sharing?.enabled?'학습 공유 안 함':s.recommendation?.title||'먼저 학습 기록을 확인해요')}</small></span><span class="arrow">↗</span></button>`).join(''):`<p class="empty">${query?'검색한 학생이 없어요.':linked?'연결된 학생이 아직 없어요. 위에서 학생 이름을 입력하고 WORLD 연결 코드를 만들어 주세요.':'검색한 학생이 없어요.'}</p>`;}
 function renderDetail(){const s=studentNow();if(!s){$('student-detail').innerHTML=`<p class="empty">${linked?'학생이 연결에 동의한 뒤 이곳에서 학습 기록과 다음 과제를 살펴볼 수 있어요.':'학생을 선택해 주세요.'}</p>`;return;}const canSeeEvidence=!linked||(!s.revoked&&studentLinked(s)&&s.sharing?.enabled===true),rec=canSeeEvidence?s.recommendation:null;const skills=canSeeEvidence?s.skills.filter(k=>k.n||k.status!=='unseen'):[];const shown=skills.length?skills:canSeeEvidence?s.skills.slice(0,3):[];const selectedContent=workspace.content.find(c=>c.id===rec?.contentId);const canAssign=!linked||(workspaceReady&&!s.revoked&&studentLinked(s)&&s.sharing?.enabled===true);$('student-detail').innerHTML=`
@@ -211,7 +217,7 @@ $('note-form').addEventListener('submit',async event=>{event.preventDefault();if
     await request('/api/teacher/care',{...payload,idempotencyKey:retryKey('care',payload)});if(version!==accessEpoch)return;careAttempt=null;$('care-dialog').close();await load();toast(editingCare?'케어 할 일을 수정했어요.':'담당자와 기한을 정해 케어 할 일을 남겼어요.');
   }catch(error){if(version===accessEpoch&&error.code!=='SESSION_CHANGED')$('care-error').textContent=error.message;}finally{if(version===accessEpoch)button.disabled=false;}
  });
- window.SYNKTeacherView=Object.freeze({hasDraft:()=>['assignment-dialog','note-dialog','care-dialog','student-invite-dialog'].some(id=>$(id).open)});
+ window.SYNKTeacherView=Object.freeze({hasDraft:()=>['assignment-dialog','note-dialog','care-dialog','student-invite-dialog'].some(id=>$(id).open)||homework.hasDraft()});
  window.addEventListener('message',event=>{
   const data=event.data;
   if(!accountRequested||event.source!==window.parent||event.origin!==location.origin||data?.type!=='synk-teacher-sharing'||window.parent.SYNKClassroomHost!==accountHost||data.classId!==accountHost?.classId||!Array.isArray(data.learners)||data.learners.some(row=>typeof row?.id!=='string'||!Number.isSafeInteger(row.revision)||typeof row.enabled!=='boolean'||typeof row.connected!=='boolean'||typeof row.revoked!=='boolean'))return;

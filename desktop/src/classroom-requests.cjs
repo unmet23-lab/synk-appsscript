@@ -7,7 +7,7 @@ const ROUTES=Object.freeze({
   stopRun:['POST','world/runs/stop'],learningGet:['GET','world/learning'],learningPost:['POST','world/learning'],
   townRead:['GET','world/town'],townCommand:['POST','world/town/command'],assignments:['POST','assignments'],
   assignmentUpdate:['POST','assignments/update'],assignmentCancel:['POST','assignments/cancel'],observations:['POST','observations'],
-  teacherOverview:['GET','teacher/overview'],care:['GET','teacher/care'],careSave:['POST','teacher/care'],enrollmentInvite:['POST','teacher/invites'],enrollmentPreview:['POST','enrollment/preview'],enrollmentClaim:['POST','enrollment/claim'],
+  teacherOverview:['GET','teacher/overview'],care:['GET','teacher/care'],careSave:['POST','teacher/care'],homework:['GET','teacher/homework'],homeworkSave:['POST','teacher/homework'],enrollmentInvite:['POST','teacher/invites'],enrollmentPreview:['POST','enrollment/preview'],enrollmentClaim:['POST','enrollment/claim'],
   townMembership:['GET','world/town/membership'],townSharing:['POST','world/town/sharing'],townActivity:['POST','world/town/activity'],
 });
 function invalid(){throw Object.assign(new Error('수업 요청 형식을 확인해 주세요.'),{code:'INVALID_REQUEST'});}

@@ -14,7 +14,7 @@ test('browser teacher sends CSRF only to fixed classroom routes and exposes no c
 
 test('teacher browser overview and care requests keep the fixed BFF while learner Town commands stay forbidden',async t=>{
   const p=fixture(t,url=>response(url.endsWith('status')?{configured:true,signedIn:true,account:{synk_user_id:'teacher-a'},sessionGeneration:1,csrfToken:'csrf'}:{ok:true}));
-  for(const operation of ['teacherOverview','care','careSave'])assert.equal((await p.bridge.accountRequest('classroom',{operation,...(operation==='teacherOverview'?{}:{classId:'a'})})).ok,true);
+  for(const operation of ['teacherOverview','care','careSave','homework','homeworkSave'])assert.equal((await p.bridge.accountRequest('classroom',{operation,...(operation==='teacherOverview'?{}:{classId:'a'})})).ok,true);
   const before=p.calls.length;for(const operation of ['townMembership','townSharing','townActivity','student','memoryGet'])assert.equal((await p.bridge.accountRequest('classroom',{operation,classId:'a'})).error.code,'INVALID_REQUEST');assert.equal(p.calls.length,before);
 });
 test('a pre-logout status reply cannot restore an old teacher or replace the final status',async t=>{
