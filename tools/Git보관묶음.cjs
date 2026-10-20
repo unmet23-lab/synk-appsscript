@@ -321,6 +321,11 @@ async function archiveCoverage(record, vault, { git = gitReader(record.path), no
     }
     result.set(row.sha, cached.get(holder));
   }
+  // 사슬에 든 묶음도 Drive 검증 결과를 남긴다 — 앞 적용 실행이 만든 묶음이 그 뒤 검증을 마쳤으면 git-bundle-status.json의 그 항목이
+  // 「awaiting-drive-verification」으로 남지 않게 한다(recordDriveCoverage가 조합 해시로 맞춘다, 10-20 Fable 검수).
+  // 사슬에 든 묶음은 그 머리가 덮였으므로 위에서 「담은 묶음」으로 고른 것과 겹치지 않는다.
+  for (const receipt of chain) checked.push({ ...receipt, driveCoverage: { ok: true, code: 'GIT_ARCHIVE_DRIVE_VERIFIED',
+    account: '77yuhbs@gmail.com', checkedAt: evidenceAt, chain: true } });
   return { rows: result, checked, chain };
 }
 function recordDriveCoverage(vault, receipts) {

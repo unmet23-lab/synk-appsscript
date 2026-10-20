@@ -198,9 +198,21 @@ function readWorktreeHead(tree, memo) {
     return commit && /^[0-9a-f]{40,64}$/.test(commit) ? { commit, gitDir, commonDir } : null;
   } catch { return null; }
 }
-// origin에 합쳐진 작업트리 — HEAD가 본진의 origin ref(refs/remotes/origin/*)에서 닿는다. 그 작업트리의 커밋된 문서는 GitHub에 있으니
-// 바뀐 파일(git status)만 보존하면 된다(10-20). 본진마다 git 두 번(원격 끝 목록, rev-list 한 번)이다. 못 재면 그 본진의 작업트리는
-// 하나도 합쳐진 것으로 치지 않는다(예전처럼 모든 문서를 본다). tree.merged가 있으면(시험) 그 값을 쓴다.
+// origin에 합쳐진 작업트리 — HEAD가 본진의 origin 기본 가지(origin/HEAD, 없으면 origin/master·main)에서 닿는다. 그 작업트리의 커밋된
+// 문서는 GitHub에 있으니 바뀐 파일(git status)과 git이 무시하는 문서만 보존하면 된다(10-20). 다른 원격 추적 ref는 보지 않는다 — GitHub에서
+// 가지가 지워져도 로컬 추적 ref는 남아(prune 없음) 「GitHub에 있다」가 거짓이 될 수 있다(10-20 Fable 검수). master 이력은 다시 쓰지 않는다.
+// 본진마다 git 두 번(기본 가지 끝, rev-list 한 번)이다. 못 재면 그 본진의 작업트리는 하나도 합쳐진 것으로 치지 않는다(예전처럼 모든 문서를
+// 본다). tree.merged가 있으면(시험) 그 값을 쓴다.
+function originDefaultTip(primary) {
+  for (const ref of ['refs/remotes/origin/HEAD', 'refs/remotes/origin/master', 'refs/remotes/origin/main']) {
+    try {
+      const sha = execFileSync('git', ['--no-optional-locks', 'rev-parse', '--verify', '--quiet', ref + '^{commit}'],
+        { cwd: primary, encoding: 'utf8', windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+      if (/^[0-9a-f]{40,64}$/.test(sha)) return sha;
+    } catch { /* 다음 이름 */ }
+  }
+  return null;
+}
 function mergedWorktrees(trees, memo) {
   const merged = new Map(), byPrimary = new Map();
   for (const tree of trees) {
@@ -214,17 +226,28 @@ function mergedWorktrees(trees, memo) {
       const heads = new Map();
       for (const tree of group) { const head = worktreeHead(tree, memo); if (head) heads.set(tree.root, head.commit); }
       if (!heads.size) continue;
-      const tips = execFileSync('git', ['--no-optional-locks', 'for-each-ref', '--format=%(objectname)', 'refs/remotes/origin'],
-        { cwd: primary, encoding: 'utf8', windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 16 << 20 })
-        .split(/\s+/).filter(sha => /^[0-9a-f]{40,64}$/.test(sha));
-      if (!tips.length) continue;
-      const input = [...new Set(heads.values()), ...[...new Set(tips)].map(sha => '^' + sha)].join('\n') + '\n';
+      const tip = originDefaultTip(primary);
+      if (!tip) continue;
+      const input = [...new Set(heads.values()), '^' + tip].join('\n') + '\n';
       const local = new Set(execFileSync('git', ['--no-optional-locks', 'rev-list', '--stdin'],
         { cwd: primary, input, encoding: 'utf8', windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'], maxBuffer: 256 << 20 }).split(/\s+/).filter(Boolean));
       for (const [root, commit] of heads) if (!local.has(commit)) merged.set(root, commit);
     } catch { /* 이 본진의 작업트리는 모두 예전처럼 본다 */ }
   }
   return merged;
+}
+// 나열한 문서 가운데 git이 무시하는 것(추적 안 함) — git status에 안 잡히고 GitHub에도 없으니 합쳐진 작업트리에서도 보존한다
+// (예: .gitignore의 `캐러셀/오늘의후보.md`, 10-20 Fable 검수). check-ignore 한 번, 종료 1은 「없음」이다.
+function ignoredMarkdown(tree, list) {
+  if (!list.length) return [];
+  try {
+    const out = execFileSync('git', ['--no-optional-locks', 'check-ignore', '--stdin', '-z'],
+      { cwd: tree.root, input: list.join('\0') + '\0', encoding: 'utf8', windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'], maxBuffer: 32 << 20 });
+    return out.split('\0').filter(Boolean);
+  } catch (error) {
+    if (error.status === 1) return [];
+    throw error;
+  }
 }
 // git status 결과 가운데 보존할 문서(나열과 같은 규칙: 생성물·worktrees·자격증명 이름 폴더 아래는 뺀다, 지워진 파일은 뺀다).
 function markdownFromStatus(tree, list) {
@@ -319,7 +342,12 @@ function preserveWorktreeDocuments(root, vault, { dryRun = false, trees = worktr
         let status = trusted ? cache.memo('worktree-status:' + tree.root, keys.status) : null;
         if (status) reusedTrees++;
         else { status = statusPaths(tree); statusRuns++; gitTrees++; if (keys) cache.setMemo('worktree-status:' + tree.root, keys.status, status); }
-        sources = [...markdownFromStatus(tree, status), ...keepSources(tree, status)];
+        let ignored = trusted ? cache.memo('worktree-ignored:' + tree.root, keys.status) : null;
+        if (!ignored) {
+          ignored = ignoredMarkdown(tree, scan ? markdownFromScan(scan.md) : policy.workTextFiles(tree.root));
+          if (keys) cache.setMemo('worktree-ignored:' + tree.root, keys.status, ignored);
+        }
+        sources = [...markdownFromStatus(tree, status), ...ignored.filter(relative => fs.existsSync(path.join(tree.root, relative))), ...keepSources(tree, status)];
       } else if ((sources = trusted ? cache.memo('worktree-sources:' + tree.root, keys.sources) : null)) reusedTrees++;
       else {
         gitTrees++;

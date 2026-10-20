@@ -90,7 +90,7 @@ test('a worktree merged into origin keeps only its changed files; an unmerged on
   const git = (cwd, ...args) => execFileSync('git', ['-c', 'user.name=Backup Test', '-c', 'user.email=backup@example.invalid', ...args],
     { cwd, windowsHide: true, stdio: 'pipe' }).toString().trim();
   git(f.temp, 'init', '-q', '--bare', remote); git(f.root, 'init', '-q', '-b', 'main'); git(f.root, 'remote', 'add', 'origin', remote);
-  f.put(f.root, 'old.md', '# Old'); f.put(f.root, 'plan.md', '# Plan');
+  f.put(f.root, 'old.md', '# Old'); f.put(f.root, 'plan.md', '# Plan'); f.put(f.root, '.gitignore', 'scratch/\n');
   git(f.root, 'add', '.'); git(f.root, 'commit', '-qm', 'base'); git(f.root, 'push', '-q', 'origin', 'main');
   git(f.root, 'worktree', 'add', '-q', '--detach', merged);
   git(f.root, 'worktree', 'add', '-q', '-b', 'local-only', local);
@@ -98,14 +98,22 @@ test('a worktree merged into origin keeps only its changed files; an unmerged on
   // 본진의 old.md가 앞서 나가도, 합쳐진 작업트리의 커밋된 old.md는 GitHub에 있으니 보존하지 않는다.
   f.put(f.root, 'old.md', '# Newer main');
   f.put(merged, 'plan.md', '# Plan edited in the worktree'); f.put(merged, 'note.md', '# Untracked note'); f.put(merged, 'tool.js', 'module.exports = 2;');
+  // git이 무시하는 문서는 status에 안 잡히고 GitHub에도 없다 — 합쳐진 작업트리에서도 보존한다.
+  f.put(merged, 'scratch/candidates.md', '# Ignored but worth keeping');
+  // 지워진 원격 가지의 낡은 추적 ref(prune 없음)에서만 닿는 작업트리는 합쳐진 것이 아니다.
+  const stale = path.join(f.temp, 'stale-tree');
+  git(f.root, 'worktree', 'add', '-q', '-b', 'gone', stale); f.put(stale, 'gone.md', '# Only here'); git(stale, 'add', 'gone.md'); git(stale, 'commit', '-qm', 'gone');
+  git(f.root, 'update-ref', 'refs/remotes/origin/gone', git(stale, 'rev-parse', 'HEAD'));
   const head = git(merged, 'rev-parse', 'HEAD');
-  const trees = [{ repository: 'SYNK-appsscript', primary: f.root, root: merged }, { repository: 'SYNK-appsscript', primary: f.root, root: local }];
+  const trees = [{ repository: 'SYNK-appsscript', primary: f.root, root: merged }, { repository: 'SYNK-appsscript', primary: f.root, root: local },
+    { repository: 'SYNK-appsscript', primary: f.root, root: stale }];
   const report = backup.preserveWorktreeDocuments(f.root, vault, { trees });
   assert.equal(report.mergedOnOrigin, 1);
   const folder = path.join(vault, '작업문서_미통합_자동'), index = backup.readJson(path.join(folder, 'index.json'));
   assert.deepEqual(index.mergedOnOrigin, [{ repository: 'SYNK-appsscript', worktree: merged, head }]);
   const entries = index.manifests.flatMap(item => backup.readJson(path.join(folder, item.file)).entries);
-  assert.deepEqual(entries.filter(row => row.worktree === merged).map(row => row.relativePath).sort(), ['note.md', 'plan.md', 'tool.js']);
+  assert.deepEqual(entries.filter(row => row.worktree === merged).map(row => row.relativePath).sort(), ['note.md', 'plan.md', 'scratch/candidates.md', 'tool.js']);
+  assert.ok(entries.some(row => row.worktree === stale && row.relativePath === 'gone.md'), 'a worktree reachable only from a stale tracking ref is read in full');
   assert.deepEqual(entries.filter(row => row.worktree === local).map(row => row.relativePath).sort(), ['local.md', 'old.md', 'plan.md']);
   assert.equal(entries.find(row => row.worktree === local && row.relativePath === 'old.md').sameAsPrimary, false, 'the unmerged worktree is still compared in full');
   // 합쳐진 작업트리에 origin에 없는 커밋이 생기면 다시 전부 본다.

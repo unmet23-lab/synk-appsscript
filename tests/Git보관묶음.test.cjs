@@ -338,10 +338,14 @@ test('a Drive-verified bundle becomes the base: the next bundle holds only new o
   // 앞 묶음의 검증 기록은 있지만 새 묶음보다 이르다 — 전송 작업을 기다리는 상태(onlyArchiveTransferPending이 받는 코드)다.
   assert.equal(current.refs[0].fallback.code, 'GIT_ARCHIVE_DRIVE_VERIFICATION_NOT_CURRENT');
   await driveVerified(f.root, [first, second]);
+  // 앞 적용 실행이 남긴 묶음 상태(새 묶음은 검증 대기)가 검증을 마친 뒤의 확인 실행에서 성공으로 바뀐다.
+  const bundleStatus = path.join(f.root, 'git-bundle-status.json');
+  fs.writeFileSync(bundleStatus, JSON.stringify({ status: 'awaiting-drive-verification', bundles: [{ ...second, driveCoverage: { ok: false, code: 'GIT_ARCHIVE_AWAITING_DRIVE' } }] }));
   const after = record([[later, 'refs/heads/archive-source'], [f.head, 'refs/heads/copy']]);
   await reconcileEncryptedArchives({ repositories: [after] }, state, false);
   assert.deepEqual(after.refs.map(row => row.status), ['encrypted-drive-verified', 'encrypted-drive-verified']);
   assert.equal(after.status, 'success');
+  assert.equal(JSON.parse(fs.readFileSync(bundleStatus, 'utf8')).status, 'success');
   // 새 객체가 없으면 묶음을 만들지 않는다.
   const before = fs.readdirSync(path.join(f.root, 'Git-보관', 'public-fixture')).sort();
   const none = await preserveRecord(record([[later, 'refs/heads/archive-source'], [f.head, 'refs/heads/copy']]), f.root, cryptoTool, () => {}, dependencies);
