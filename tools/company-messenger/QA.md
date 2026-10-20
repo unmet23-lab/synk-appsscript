@@ -2,6 +2,11 @@
 
 ## 직원 음성 통화 백엔드 · 2026-10-17 로컬
 
+<a id="voice-production-enabled-20261020"></a>
+### 운영 통화 켜기 · 2026-10-20
+
+운영 메신저의 통화·화면 공유를 켰다(회사 HA 릴리스 15, `a77938e0…`). 운영 전용 LiveKit 프로젝트의 키를 값 없는 기술서 방식으로 두 노드 company.env에 넣었고, 배포 뒤 확인(이전 스키마 + 통화 표·색인 17개)·공개 CSP의 LiveKit·`microphone=(self)`·새 백업·격리 복원·HA armed까지 확인했다. 아래 두 기록(초대 알림 즉시 깨우기·묶음 쪼개기)은 아직 운영 전이다. 실제 통화와 물리 두 기기·다른 망 시험도 아직이다. [운영 기록](../../docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md#voice-enable-production-20261020)
+
 <a id="call-push-split-marker-20261020"></a>
 ### 통화 초대 기기 알림 — 묶음 쪼개기·통화 표시 · 2026-10-20 (master `e61915c30`·`86e639023`, 운영 전)
 
