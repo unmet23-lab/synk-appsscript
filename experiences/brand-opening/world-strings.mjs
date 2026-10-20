@@ -684,6 +684,7 @@ export default {
  'msg.reasonHistory':{ko:'기록을 모두 확인하기 전이라 기본 활동으로 시작해요.',en:'Your records aren’t all checked yet, so we’ll start with a basic activity.',mn:'Бүх мэдээллийг хараахан шалгаагүй тул үндсэн үйл ажиллагаагаар эхэлнэ.'},
  'msg.reasonNew':{ko:'아직 연습 기록이 적어요. 짧게 해 보며 맞춰 갈게요.',en:'You don’t have many practice records yet. We’ll adjust as you try short sessions.',mn:'Дасгалын мэдээлэл одоохондоо цөөн байна. Богино дасгал хийхийн хэрээр танд тааруулж өгнө.'},
  'msg.resumeReason':{ko:'하던 학습의 같은 자리에서 이어가요. 다른 활동을 골라도 지금 진도는 남아 있어요.',en:'You’ll continue right where you left off. Your progress stays even if you pick something else.',mn:'Зогссон хэсгээсээ шууд үргэлжлүүлнэ. Өөр зүйл сонгосон ч одоогийн явц тань хадгалагдана.'},
+ 'msg.hangulFirstReason':{ko:'한글부터 만나요. 소리를 듣고 글자를 고르며 읽는 법을 익혀요.',en:'Let’s meet Hangul first. Listen to the sounds, pick the letters, and learn how to read.',mn:'Эхлээд солонгос үсэгтэй танилцъя. Авиаг сонсоод үсгийг сонгож, уншиж сурцгаая.'},
  'msg.conditionsLabel':{ko:'학습 조건 바꾸기',en:'Change study conditions',mn:'Хичээлийн нөхцөл солих'},
  'msg.conditionsReason':{ko:'지금 조건에 맞는 활동이 없어요. 시간이나 도움 방식을 바꿀 수 있어요.',en:'Nothing fits your conditions right now. You can change the time or help style.',mn:'Одоогийн нөхцөлд тохирох үйл ажиллагаа алга. Цаг эсвэл тусламжийн хэлбэрээ сольж болно.'},
  'msg.startMyReview':{ko:'나의 복습 시작',en:'Start my review',mn:'Давтлагаа эхлэх'},

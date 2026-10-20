@@ -90,6 +90,19 @@ test('a learner who cannot read Hangul yet meets 한글 만나기 first, until f
  assert.notEqual(plan(life()).selected.gameId,'hangul');
 });
 
+// 홈은 이유 한 줄을 tMessage로 바꿔 보인다: 같은 한국어의 msg 줄이 표에 없으면 영어·몽골어 화면에 한국어로 남는다(10-20).
+test('the reasons WORLD writes itself (이어 하기 · 한글부터) are msg lines of the display-language table',async()=>{
+ const {default:STRINGS}=await import('../../brand-opening/world-strings.mjs');
+ const table=new Set(Object.entries(STRINGS).filter(([key])=>key.startsWith('msg.')).map(([,entry])=>entry.ko));
+ const f=life();f.progress.setHangulReading('new');
+ const first=plan(f,{settings:exam});
+ const q=lesson('greetings-expressions').questions[0];f.progress.startLesson(lesson('greetings-expressions'));
+ f.progress.recordAnswer({lessonId:'greetings-expressions',questionId:q.id,correct:true,choiceId:q.answerId});
+ const resumed=plan(f);
+ assert.deepEqual([first.reasons,resumed.reasons],[['progress.prerequisite'],['progress.resume']]);
+ for(const reason of [first.reason,resumed.reason])assert.ok(table.has(reason),reason);
+});
+
 test('a TOPIK learner whose 바람길 checks are all used gets the due life review instead of 바람길 every time',()=>{
  const f=life('runner-topik');
  let clock=START;
