@@ -55,7 +55,10 @@ test('문장 끝 꼴과 문장 나누기', ()=>{
  assert.deepEqual(['있습니다.','안녕하십니까?','찾아가십시오.','좋아요.','그렇죠?','증가했다.','어떻게 해야 할까?','증가함.','있음','고장 나서'].map(endingOf),
   ['formal','formal','formal','polite','polite','plain','plain','noun','noun','other']);
  assert.deepEqual(sentencesOf('수거하지 않습니다.그러니 보관하세요. 3.5%다.').map(s=>s.text),['수거하지 않습니다.','그러니 보관하세요.','3.5%다.']);
- assert.deepEqual(blankContext(by('w51-recycle'),'a'),{before:'지금은 화요일과 금요일에 내놓고 있지만 다음 달부터는',after:'',next:'그 대신 수거 시간은 저녁 6시부터 밤 10시까지로 늘어납니다.',endsSentence:true});
+ assert.deepEqual(sentencesOf('수요일에 내놓습니다.2026년부터 바뀝니다.').map(s=>s.text),['수요일에 내놓습니다.','2026년부터 바뀝니다.']);
+ // 같은 문장에 빈칸이 둘이면 다른 빈칸 자리를 띄어 앞뒤 어절이 붙지 않는다.
+ assert.equal(blankContext({passage:[['그는 ',{blank:'a'},'고 ',{blank:'b'},'.']],blanks:[{id:'a',mark:'㉠'},{id:'b',mark:'㉡'}]},'b').before,'그는  고');
+ assert.deepEqual(blankContext(by('w51-recycle'),'a'),{before:'지금은 화요일과 금요일 두 번 내놓고 있지만 다음 달부터는',after:'',next:'그 대신 수거 시간은 저녁 6시부터 밤 10시까지로 늘어납니다.',endsSentence:true});
 });
 
 const ids=result=>result.items.filter(i=>i.level==='check').map(i=>(i.blank?`${i.blank}:`:'')+i.id);

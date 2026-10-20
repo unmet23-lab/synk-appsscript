@@ -68,7 +68,9 @@
 .ww-check[data-fit=ok]::before{background:var(--w-led-ok)}
 .ww-check[data-fit=partial]::before{background:var(--w-led-check)}
 .ww-check[data-fit=retry]::before{background:var(--w-led-alert)}
-.ww-check>.ww-mark{grid-column:2;font-size:var(--t-help)}
+.ww-check>.ww-mark{grid-column:2;font-size:var(--t-help);line-height:1.6}
+.ww-check:has(>.ww-mark){grid-template-columns:auto auto 1fr}
+.ww-check:has(>.ww-mark)>div{grid-column:3}
 .ww-check>div{grid-column:2;display:grid;gap:4px;min-width:0}
 .ww-fit{font-weight:var(--wt-strong)}
 .ww-quotes{display:flex;flex-wrap:wrap;gap:6px;font-size:var(--t-help);line-height:1.6}

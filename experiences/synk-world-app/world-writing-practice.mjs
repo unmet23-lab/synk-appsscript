@@ -111,7 +111,7 @@ const uuid=()=>globalThis.crypto?.randomUUID?.()||'10000000-1000-4000-8000-10000
  * coach(): 이 활동의 Atlas 코치(없거나 TOPIK II 쓰기 항목을 모르면 null/예외 — 그때는 기기 기록만 남긴다).
  */
 export function createWritingPractice({show,home,getOwner=()=>'guest',storage=globalThis.localStorage,feedback=null,coach=null,now=Date.now,doc=globalThis.document,lang=currentLang,fetcher}={}){
- let bank=null,view={kind:'list'},owner=getOwner(),state=readStore(storage,owner),stage=null,ticker=null,offLang=null,shownAt=0,status=null,ai={},pids={},aiSeen={},results={},modelOpen={},stopped=false;
+ let openSeq=0,bank=null,view={kind:'list'},owner=getOwner(),state=readStore(storage,owner),stage=null,ticker=null,offLang=null,shownAt=0,status=null,ai={},pids={},aiSeen={},results={},modelOpen={},stopped=false;
  const timerOn=()=>{try{return storage?.getItem(TIMER_KEY)!=='off';}catch{return true;}};
  const save=()=>writeStore(storage,owner,state);
  const item=id=>bank?.open.find(i=>i.id===id)||null;
@@ -186,6 +186,7 @@ export function createWritingPractice({show,home,getOwner=()=>'guest',storage=gl
   const box=stage.querySelector('[data-ww-results]');if(box){box.innerHTML=checksHtml(it,result);box.querySelector('h3')?.setAttribute('tabindex','-1');box.querySelector('h3')?.focus();}
  }
  async function askFeedback(it){
+  if(ai[it.id]?.status==='sending')return;
   const answer=answerOf(it),empty=it.type<=52?!Object.values(answer).some(v=>String(v).trim()):!answer.trim();
   if(empty){ai[it.id]={status:'empty'};paintFeedback(it);return;}
   const expected=owner;ai[it.id]={status:'sending'};paintFeedback(it);
@@ -238,11 +239,11 @@ export function createWritingPractice({show,home,getOwner=()=>'guest',storage=gl
   return true;
  }
  async function open(route='writing'){
-  stopped=false;syncOwner();
+  stopped=false;syncOwner();const seq=++openSeq,current=()=>!stopped&&seq===openSeq;
   show(t('writing.title'),`<div class="ww" data-ww-stage><p class="ww-note" role="status">…</p></div>`);
   if(!mount())return;
-  try{bank=await loadWritingBank(fetcher);}catch{const root=doc.querySelector('#panel-content [data-ww-stage]');if(root)root.innerHTML=`<p class="ww-note" role="alert">${esc(t('writing.loadError'))}</p>`;return;}
-  if(feedback&&!status){try{status=await feedback.status();}catch{status={enabled:false};}}
+  try{const loaded=await loadWritingBank(fetcher);if(!current())return;bank=loaded;}catch{if(!current())return;const root=doc.querySelector('#panel-content [data-ww-stage]');if(root)root.innerHTML=`<p class="ww-note" role="alert">${esc(t('writing.loadError'))}</p>`;return;}
+  if(feedback&&!status){let next;try{next=await feedback.status();}catch{next={enabled:false};}if(!current())return;status=next;}
   const [,which]=String(route).split(':'),type=Number(which);
   if(which==='mock'&&TYPES.every(ty=>bank.open.some(i=>i.type===ty))){startMock();return;}
   if(TYPES.includes(type)){const pick=bank.open.find(i=>i.type===type&&!state.drafts[i.id]?.checkedAt)||bank.open.find(i=>i.type===type);if(pick){openTask(pick.id);return;}}

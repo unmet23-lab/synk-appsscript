@@ -139,6 +139,8 @@ test('계정 모드 WORLD의 「TOPIK II 쓰기 연습」: 목록·51·53·54·�
    await record(`${tag}-54`);
    assert.equal(measures[`${tag}-54`].columns,tag==='1280'?'side':'stack');
    // 하루 한도: 자동 피드백이 limit이면 안내만, 규칙 점검은 그대로
+   // 연타해도 요청은 하나다(보내는 중 가드).
+   {const before=calls.filter(c=>c.body?.action==='feedback').length;await page.locator('#panel-content [data-ww-text]').fill('공동 생활에는 규칙이 필요하다. 그래서 모두가 지켜야 한다.');await page.locator('#panel-content [data-ww-ai]').dblclick();await page.waitForSelector('#panel-content .ww-feedback .ww-cats');assert.equal(calls.filter(c=>c.body?.action==='feedback').length-before,1,'연타는 한 번');}
    feedbackMode='limit';await page.locator('#panel-content [data-ww-text]').fill('공동 생활에는 규칙이 필요하다.');await page.locator('#panel-content [data-ww-ai]').click();
    await page.waitForFunction(()=>/다 썼어요/.test(document.querySelector('#panel-content .ww-feedback')?.textContent||''));feedbackMode='ok';
    // 시간 숨기기는 기기에 남는다

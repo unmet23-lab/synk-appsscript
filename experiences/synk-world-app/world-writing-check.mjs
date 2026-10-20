@@ -27,7 +27,7 @@ export function sentencesOf(text){
  for(let i=0;i<value.length;i++){
   const ch=value[i];
   if(ch==='\n'){push(i);start=i+1;continue;}
-  if('.?!'.includes(ch)&&(i+1>=value.length||/[\s가-힣]/.test(value[i+1]))){let j=i+1;while(j<value.length&&CLOSERS.test(value[j])&&value[j]!=='\n')j++;push(j);start=j;i=j-1;}
+  if('.?!'.includes(ch)&&(i+1>=value.length||/[\s가-힣]/.test(value[i+1])||(/[가-힣]/.test(value[i-1]??'')&&/[0-9A-Za-z]/.test(value[i+1])))){let j=i+1;while(j<value.length&&CLOSERS.test(value[j])&&value[j]!=='\n')j++;push(j);start=j;i=j-1;}
  }
  push(value.length);
  return out;
@@ -121,7 +121,7 @@ const mergeSpans=spans=>spans.sort((a,b)=>a.start-b.start).reduce((out,s)=>{cons
 export function blankContext(item,blankId){
  for(const line of item.passage||[]){
   const index=line.findIndex(part=>typeof part==='object'&&part?.blank===blankId);if(index<0)continue;
-  const before=line.slice(0,index).map(p=>typeof p==='string'?p:'').join(''),after=line.slice(index+1).map(p=>typeof p==='string'?p:'').join('');
+  const before=line.slice(0,index).map(p=>typeof p==='string'?p:' ').join(''),after=line.slice(index+1).map(p=>typeof p==='string'?p:' ').join('');
   const sentenceStart=Math.max(before.lastIndexOf('. '),before.lastIndexOf('? '),before.lastIndexOf('! '));
   const lead=before.slice(sentenceStart+1).trim(),tailEnd=after.search(/[.?!](\s|$)/);
   return {before:lead,after:tailEnd<0?after.trim():after.slice(0,tailEnd).trim(),next:tailEnd<0?'':after.slice(tailEnd+1).trim().split(/(?<=[.?!])\s/)[0]||'',endsSentence:tailEnd===0};
