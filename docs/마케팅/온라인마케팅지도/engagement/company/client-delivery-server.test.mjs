@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtemp,rm,readdir,readFile} from 'node:fs/promises';
+import {mkdtemp,rm,readdir} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve,dirname} from 'node:path';
 import {request as httpRequest} from 'node:http';
@@ -80,5 +80,4 @@ test('client UI serves delivery assets and customer subtitle rendering does not 
   const f=await fixture(t);for(const path of ['/client-delivery.js','/client-delivery.css'])assert.equal((await f.request(path)).status,200);
   const previousLocation=globalThis.location;globalThis.location={origin:f.base};t.after(()=>{if(previousLocation===undefined)delete globalThis.location;else globalThis.location=previousLocation;});
   const html=mediaView({id:'subtitle',label:'자막',media:{mimeType:'application/x-subrip',url:'/pulse/api/media/00000000-0000-0000-0000-000000000000',fileName:'ko.srt'}});assert.match(html,/파일 받기/);assert.doesNotMatch(html,/아직 준비되지|<img|<video/);
-  const legacy=await readFile(new URL('./public/pulse-lounge.js',import.meta.url),'utf8');assert.match(legacy,/mimeType.startsWith\('image\/'\)/);
 });

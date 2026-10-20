@@ -797,7 +797,7 @@ export function createCompanyApp(options={}) {
         return send(res,200,result);
       }
       if(method==='POST'){
-        if(req.headers.origin!==origin)throw httpError('고객 라운지에서 요청해 주세요.',403);
+        if(req.headers.origin!==origin)throw httpError('PULSE 고객 화면에서 다시 시도해 주세요.',403);
         if(path==='/pulse/api/notifications/read'){if(url.search)throw httpError('고객 알림 주소를 확인해 주세요.');const input=await body(req,{maxBytes:150000,maxChars:100000});return send(res,200,pulseLive.customerRead(customerToken,req.headers['x-pulse-csrf'],input));}
         if(path==='/pulse/api/studio/media'){
           const csrf=req.headers['x-pulse-csrf'],revision=Number(req.headers['x-project-revision']);let upload;
@@ -847,6 +847,8 @@ export function createCompanyApp(options={}) {
     }
     if(path==='/messenger'){if(!['GET','HEAD'].includes(method))throw httpError('메신저 주소를 확인해 주세요.',405);res.writeHead(302,{Location:'/messenger/'});return res.end();}
     if(path==='/pulse-app'){if(!['GET','HEAD'].includes(method))throw httpError('PULSE 주소를 확인해 주세요.',405);res.writeHead(302,{Location:'/pulse-app/'+url.search});return res.end();}
+    // 옛 고객 라운지 주소는 PULSE 고객 앱으로 넘긴다(10-20). 쿼리는 그대로 옮기고, 초대가 든 #조각은 브라우저가 새 주소에 이어 붙인다. 고객 앱이 쓰는 /pulse/api/*는 위에서 따로 처리한다.
+    if(path==='/pulse'||path==='/pulse/'){if(!['GET','HEAD'].includes(method))throw httpError('PULSE 주소를 확인해 주세요.',405);res.writeHead(302,{Location:'/pulse-app/'+url.search,'Cache-Control':'no-store','Referrer-Policy':'no-referrer'});return res.end();}
     if(path.startsWith('/messenger/'))return await messenger.handler(req,res);
     if(method==='GET'&&path==='/api/health')return send(res,ready?200:503,{ok:ready,app:'synk-company',version:1,workspaceIntegration:true,ready});
     let auth=identityControl?rawSession(req):session(req),user=auth?.user;
@@ -1623,9 +1625,6 @@ export function createCompanyApp(options={}) {
     for(const file of ['client-delivery-archive.js','client-delivery-archive.css','client-completion-records.js','client-completion-records.css','client-projects.js','client-projects.css','client-search.js','client-search.css','client-reply-templates.js','client-reply-templates.css','client-rights.js','client-rights.css','client-startup.js','client-startup.css','client-progress-update.js','client-progress-update.css','client-materials.js','client-materials.css','client-project-screen-plan.js','client-project-screen.js','client-project-screen.css','client-project-news.js','client-project-news.css','client-drafts.js','client-drafts.css','client-delivery.js','client-delivery.css','client-delivery-check.js','client-delivery-check.css','client-closeout.js','client-closeout.css','client-kickoff.js','client-kickoff.css','client-changes.js','client-changes.css','client-scene-requests.js','client-scene-requests.css','client-schedule.js','client-schedule.css','brand-quality.js','brand-quality.css'])files['/'+file]=['public/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
     for(const file of ['client-material-usage.js','client-material-usage.css'])files['/'+file]=['public/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
     files['/client-desk.css']=['public/client-desk.css','text/css; charset=utf-8'];files['/client-desk-pulse.webp']=['public/client-desk-pulse.webp','image/webp'];for(const stage of ['received','planning','producing','review','delivered','archived'])files['/client-desk-stage-'+stage+'.webp']=['public/client-desk-stage-'+stage+'.webp','image/webp'];
-    files['/pulse/']=['public/pulse-lounge.html','text/html; charset=utf-8'];
-    files['/pulse/lounge.js']=['public/pulse-lounge.js','text/javascript; charset=utf-8'];
-    files['/pulse/lounge.css']=['public/client-projects.css','text/css; charset=utf-8'];
     files['/pulse-app/']=['public/pulse-app/index.html','text/html; charset=utf-8'];
     files['/pulse-app/index.html']=files['/pulse-app/'];
     for(const file of ['production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','app.mjs','views.mjs','casting-view.mjs','casting-catalog.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','push-sw.js','sw.js'])files['/pulse-app/'+file]=['public/pulse-app/'+file,'text/javascript; charset=utf-8'];

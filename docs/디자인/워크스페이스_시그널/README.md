@@ -218,7 +218,8 @@ node --test tools/company-messenger/tests/*.test.mjs
 |---|---|---|
 | Claude가 다시 만듦 | 로그인(3판) · 고객 관리(10·11판, `client-*.js`의 GPT 글은 파일당 0~5개) · SNS·마케팅 운영 9화면(12판·13차) · 메신저 통화(`voice.js`) | 그대로 둔다 |
 | 겉만 Claude | 메신저 대화·오늘 할 일·내 업무(`app.js` 보이는 글 747개 중 GPT 732) · 회사 `app.js`의 마케팅 분석·채널·설정·팀(381 중 337) · 트렌드·레퍼런스(`creative-research.js` 224/224) · 제작 데스크(`workroom.js`·`content.js`·`studio-board.js`·`studio-review.js` 444개 모두 GPT) · 교사 앱(`experiences/teacher-world`의 app.mjs 129/130·index.html 47/49·workspace-overview.mjs 31/31, 「Core · Strata」 같은 내부 엔진 이름이 보임) · PULSE 고객 앱(디자인은 10-13 시그널 판·10-17 밝은 구조 판으로 다시 그렸지만 글은 views 248/344·strategy-view 184/218·demo 133/133·app 86/108이 GPT) | 글·구조 다시 쓰기 |
-| GPT 판 그대로 | 제작 도구 8탭(아래) · 고객 상담 `/consultation/`(`customer-computer.*`, 펠트 스크랩북, 글 99/99 GPT) · 고객 SNS 검토 `/social-review`의 CSS · 옛 고객 라운지 `/pulse/`(`pulse-lounge.js`, 지금 쓰이는지 먼저 확인) | 다시 그리기 |
+| GPT 판 그대로 | 제작 도구 8탭(아래) · 고객 상담 `/consultation/`(`customer-computer.*`, 펠트 스크랩북, 글 99/99 GPT) · 고객 SNS 검토 `/social-review`의 CSS | 다시 그리기 |
+| 정리함 | 옛 고객 라운지 `/pulse/`(`pulse-lounge.*`) — 10-20 유호님 선택으로 PULSE 고객 앱 `/pulse-app/`으로 넘기고(302, 옛 초대 링크도 그대로 열림) 라운지 파일은 지웠다 | 운영 반영은 다음 회사 릴리스 |
 
 제작 도구 8탭은 틀(`maker-tools.js/.css`)만 9판이 덮었고 안은 GPT 판이다. 크림·파스텔 바탕과 펠트 질감 그림, 꾸미지 않은 기본 파일 선택 단추, 해요체에 섞인 「~합니다」 안내문, 내부 번호(「게시·운영 1~9번 … 10번은 이 상태 화면」)가 그대로 보인다.
 
@@ -234,7 +235,7 @@ node --test tools/company-messenger/tests/*.test.mjs
 
 서버 모듈이 내려 주는 글도 화면에 뜬다(예: 「직접 확인한 환경과 근거를 기록합니다…」는 `brand-quality-service.mjs`). 화면 파일만 고치면 이런 글이 남으니 같이 바꾸고, 서버 파일을 고치면 [백엔드 검수](../../AI_운영원칙.md)대로 GPT가 볼 범위를 남긴다. 작은 것: SNS의 「Postiz 접수 ID」·「원본 제작 ID」·「(큐 예약)」·「빈 슬롯」 약 25곳, 마케팅 부속 `benchmark.js`(사람·도구 이름이 든 안내)·`comparison-charts.js`. 해요체라 급하지 않은 GPT 글은 `teaching-host.js`·`teaching.js`·`synk-id.js`·`device-notifications.js`다.
 
-**순서(자주 보는 화면부터):** ① 메신저 오늘 할 일·내 업무 ② PULSE 고객 앱 글 ③ 제작 도구 8탭 다시 그리기와 글 ④ 고객 상담 `/consultation/`(synk.im 컴퓨터 추천의 시그널 판을 다시 쓸 수 있다. 옛 스크랩북 도구라 옮기기 전에 유호님께 여쭌다) ⑤ 회사 `app.js` 마케팅·설정 글(「이관」·OAuth 등) ⑥ 트렌드·레퍼런스 ⑦ 제작 데스크 글 ⑧ 교사 앱 글 ⑨ SNS에 남은 ID·큐·슬롯 ⑩ `/social-review`·`/pulse/`. 글은 [11판 원칙](검수_20261013_고객관리_기능.md)(상태는 두세 단어, 오류는 원인과 다음 행동 한 문장, 단추는 동사 하나, 해요체 하나)에 따라 옛→새 짝 맵으로 바꾸고, 다시 그리기는 뼈대부터 정적 시안 → Fable 검수 → 보여 드린 뒤 넓힌다.
+**순서(자주 보는 화면부터):** ① 메신저 오늘 할 일·내 업무 ② PULSE 고객 앱 글 ③ 제작 도구 8탭 다시 그리기와 글 ④ 고객 상담 `/consultation/`(synk.im 컴퓨터 추천의 시그널 판을 다시 쓸 수 있다. 옛 스크랩북 도구라 옮기기 전에 유호님께 여쭌다) ⑤ 회사 `app.js` 마케팅·설정 글(「이관」·OAuth 등) ⑥ 트렌드·레퍼런스 ⑦ 제작 데스크 글 ⑧ 교사 앱 글 ⑨ SNS에 남은 ID·큐·슬롯 ⑩ `/social-review`. 글은 [11판 원칙](검수_20261013_고객관리_기능.md)(상태는 두세 단어, 오류는 원인과 다음 행동 한 문장, 단추는 동사 하나, 해요체 하나)에 따라 옛→새 짝 맵으로 바꾸고, 다시 그리기는 뼈대부터 정적 시안 → Fable 검수 → 보여 드린 뒤 넓힌다.
 
 <a id="messenger-copy-20261020"></a>
 

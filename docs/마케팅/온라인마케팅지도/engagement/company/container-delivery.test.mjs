@@ -203,7 +203,9 @@ try{
   const adminLogin=await fetch(base+'/api/login',{method:'POST',headers:{Origin:app.origin,'Content-Type':'application/json'},body:JSON.stringify({email:admin.email,password:'packaging-fixture-password'})});
   const adminCookie=adminLogin.headers.get('set-cookie').split(';')[0];
   for(const path of ['/api/content-benchmarks/research-prompt','/api/content-benchmarks/template']){const r=await fetch(base+path,{headers:{Cookie:adminCookie}});check('admin source '+path,r.ok);}
-  for(const path of ['/client-projects.js','/client-projects.css','/client-delivery-archive.js','/client-delivery-archive.css','/client-material-usage.js','/client-material-usage.css','/client-rights.js','/automation-health.js','/brand-quality.js','/brand-quality.css','/pulse/','/pulse/lounge.js','/pulse/lounge.css']){const r=await fetch(base+path);check('brand experience packaged asset '+path,r.ok&&(await r.arrayBuffer()).byteLength>0);}
+  for(const path of ['/client-projects.js','/client-projects.css','/client-delivery-archive.js','/client-delivery-archive.css','/client-material-usage.js','/client-material-usage.css','/client-rights.js','/automation-health.js','/brand-quality.js','/brand-quality.css','/pulse-app/']){const r=await fetch(base+path);check('brand experience packaged asset '+path,r.ok&&(await r.arrayBuffer()).byteLength>0);}
+  const oldLounge=await fetch(base+'/pulse/',{redirect:'manual'});check('old customer lounge address forwards to the PULSE app',oldLounge.status===302&&oldLounge.headers.get('location')==='/pulse-app/');
+  check('retired lounge script is no longer served',(await fetch(base+'/pulse/lounge.js')).status===404);
   const brand=await fetch(base+'/api/brand-quality',{headers:{Cookie:cookie}}),brandData=await brand.json();
   check('packaged brand workspace includes approved source links and six checks',brand.ok&&brandData.sources.length===15&&brandData.checks.length===6);
   const jsonHeaders={Cookie:cookie,Origin:app.origin,'X-CSRF-Token':body.csrfToken,'Content-Type':'application/json'};
