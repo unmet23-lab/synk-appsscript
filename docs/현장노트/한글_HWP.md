@@ -2,7 +2,7 @@
 
 > 판: `tools/hwp읽기.py`(Python 3.14 · olefile 0.47, 한컴 없이 읽기) · hwplib 1.1.9(Maven Central, OpenJDK 17) · 한컴오피스 2024(COM `HWPFrame.HwpObject`, PowerShell `New-Object -ComObject`) · PyMuPDF
 > 마지막 확인: 2026-10-19 — **새 노트북에는 한컴오피스가 설치되어 있지 않고, 설치하지 않는다**(유호님은 HWP를 쓰지 않는다). 읽기는 「한컴 없이 읽기」, 고치기는 「한컴 없이 HWP 고치기」 절의 도구로 한다. 「설치·실행」·「양식 채우기」 절은 10-14 옛 노트북 실측이다.
-> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-14 Claude 메모에서 옮김(10-17 2차), 10-17 읽기 도구 더함, 10-19 HWP 고치기·쪽 수 어림 더함
+> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-14 Claude 메모에서 옮김(10-17 2차), 10-17 읽기 도구 더함, 10-19 HWP 고치기·쪽 수 어림·대리 문자 출력 고침 더함
 
 ## 한컴 없이 읽기
 
@@ -32,6 +32,12 @@
 - 고침: 한글로 열어 볼 수 없으니 바뀐 문단만 바꾼다. `.tmp/restart-hwp-20261019/patch_section.py <원본.hwp> <ops.tsv> <새.bin>`이 `BodyText/Section0` 레코드에서 고친 문단의 `PARA_TEXT`와 문단 머리 글자 수만 새로 쓰고 줄 배치 기록(`PARA_LINE_SEG`)을 뺀다(한글이 열 때 다시 잰다 — 10-14 HWPX에서 `linesegarray`를 지운 것과 같다). 새 문단은 옆 문단 레코드를 복제하고, 나머지 레코드는 바이트 그대로 둔다. 이 스트림을 `java/Repack.java`가 hwplib 안의 POIFS로 새 상자에 끼우고, 다른 스트림 12개는 원본 바이트를 옮긴다. 바꾸기 전 글이 원본과 한 글자라도 다르면 쓰지 않고 멈춘다. 표 캡션(「< 매출 실적 >」)은 `TABLE` 레코드 앞의 `LIST_HEADER`라 칸으로 세면 안 된다.
 - 다시 확인: `python -I -X utf8 .tmp/restart-hwp-20261019/cmp_streams.py <원본> <새 파일>`이 `BodyText/Section0` 말고 모두 「같음」인지, `java -cp .tmp/restart-hwp-20261019/lib/hwplib-1.1.9.jar .tmp/restart-hwp-20261019/java/ApplyV6.java --check <새 파일> <ops.tsv>`가 「어긋난 곳 없음」인지 본다(10-19 둘 다 통과).
 
+### 검사기가 고친 묶음마다 「첫 제목을 0번 찾음」을 낸다
+- 증상: 10-19 v7 원고로 만든 HWP를 `ApplyV6.java --check`로 보자 본문 묶음마다 「v6 첫 제목을 0번 찾음」이 나왔다. 같은 파일을 `tools/hwp읽기.py`로 읽으면 새 글이 제자리에 다 들어 있었다.
+- 원인: OpenJDK 17의 소스 파일 바로 실행(`java Foo.java`)은 `.java`를 이 PC 기본 문자셋(MS949)으로 읽어 컴파일한다. `ApplyV6.java` 안의 「 ◦ 」·한글 글자열이 깨져 제목 대조가 어긋난다(Java 18부터는 기본이 UTF-8). 파일 이름에 한글이 있는지와는 상관없었다(ASCII 이름 사본도 같았다).
+- 고침: `java -Dfile.encoding=UTF-8 -cp .tmp/restart-hwp-20261019/lib/hwplib-1.1.9.jar .tmp/restart-hwp-20261019/java/ApplyV6.java --check <새 파일> <ops.tsv>`로 돌린다. 화면 글이 깨지면 `-Dstdout.encoding=UTF-8`도 붙인다(이것만으로는 검사가 고쳐지지 않는다).
+- 다시 확인: 같은 `work/v7_1차.hwp`가 플래그 없이는 「0번 찾음」, `-Dfile.encoding=UTF-8`로는 「표 칸 61/61 · 본문 묶음 12/12 … 어긋난 곳 없음」이었다(10-19).
+
 ### 한컴 없이 쪽 수를 어림해야 한다
 - 증상: 10-19 BM 원고(v6, 글자 +16%)를 넣은 HWP가 쪽 한도(목차 빼고 15쪽)를 넘는지 볼 수 없다. 한컴도 HWP 렌더러도 없다.
 - 원인: 양식에 강제 쪽 나눔이 9곳 있어서, 늘어난 높이가 그 묶음 마지막 쪽 빈 곳보다 크면 쪽이 하나씩 는다. 3-3 끝과 문서 끝의 보이지 않는 빈 문단도 넘치면 빈 쪽을 만든다.
@@ -43,6 +49,12 @@
 - 원인: HWP 표 제목(캡션)은 `TABLE` 레코드 앞의 `LIST_HEADER`(+문단)에 들어 있는데, 읽기 도구가 그것까지 칸으로 셌다. 그 `LIST_HEADER`의 8바이트째 값(캡션 자리, 2 = 위)이 칸 주소 자리라서 「0행 2열」로 읽혔다. HWPX 쪽은 `<hp:caption>`을 건너뛰었다.
 - 고침: 10-19 도구를 고쳤다. 칸은 `TABLE` 레코드 뒤의 `LIST_HEADER`부터 세고, 표 제목은 두 형식 모두 `(표 제목) …` 한 줄로 적는다(위·왼쪽이면 「[표 …]」 바로 아래, 아래·오른쪽이면 마지막 행 뒤. HWP는 캡션 `LIST_HEADER` 8바이트째 값의 아래 두 비트 0 왼쪽·1 오른쪽·2 위·3 아래, HWPX는 `side` 속성). `--표없이`에서는 같은 자리에 글로 적는다.
 - 다시 확인: `.tmp/restart-hwp-20261019/work/v62.hwp`와 `out/v62.hwpx`를 읽어 `diff -w`로 견주면 그림 자리 한 줄(HWPX 쪽 `[[IMG1]]`·`[[IMG2]]`)만 다르고, 매출 표 머리 행이 `| 순번 | 목표시장(고객) | 제품·서비스 | …`로 시작하는지 본다(10-19 확인, `--표없이`도 같음).
+
+### 원문자 번호가 든 공고문에서 `tools/hwp읽기.py`가 출력하다 멈췄다
+- 증상: 10-19 한국문화관광연구원 공고문 HWP를 읽자 글을 다 뽑은 뒤 `UnicodeEncodeError: 'utf-8' codec can't encode characters … surrogates not allowed`로 멈췄다. `--out`으로 파일에 써도 같고, `-I`로 돌리면 `PYTHONIOENCODING`도 먹지 않는다.
+- 원인: HWP 본문은 UTF-16이라 BMP 밖 글자(이 공고문은 󰊱·󰊲 같은 사용자 정의 영역의 원문자 번호)가 대리 문자 두 개로 따로 들어온다. 파이썬 글에 짝이 갈라진 채 남아 UTF-8로 쓸 수 없었다.
+- 고침: 10-19 도구를 고쳤다. 쓰기 전에 `text.encode('utf-16', 'surrogatepass').decode('utf-16', 'replace')`로 짝은 한 글자로 합치고, 짝 없는 대리 문자만 �로 바꾼다.
+- 다시 확인: `python -I -X utf8 tools/hwp읽기.py .tmp/contests-20261019/forms/kcti_notice/kcti_공고문.hwp`가 끝까지 나오고 「󰊱 공모 개요」처럼 번호가 붙어 보이는지 본다(10-19 확인).
 
 ### 다른 스크립트에서 불러온 편집기가 돌아 보기용 PDF를 덮어썼다
 - 증상: 10-19 쪽 수 어림 스크립트(`estimate_pages.py`)가 `patch_section.py`의 함수를 `from patch_section import …`로 불러오자, 편집기의 `main()`이 어림 스크립트의 인자(`원본.hwp ops.tsv 미리보기.pdf`)로 돌아 재도전 제출 폴더(`~/Documents/메일정리/2026-10-14/재도전/`)의 보기용 `…_미리보기.pdf`를 본문 스트림 바이트(18,509바이트)로 덮어썼다. 이어서 PyMuPDF가 「no objects found」로 그 PDF를 못 열었다.
@@ -111,3 +123,9 @@
 - 원인: 양식의 장마다 강제 쪽 나눔(`pageBreak="1"`)이 있다. 표는 쪽 아래에 다 들어가지 않으면 통째로 다음 쪽으로 간다.
 - 고침: 쪽 수는 장(절) 단위로 맞추고, 큰 표는 쪽 위쪽에 오게 앞 글을 조절한다.
 - 다시 확인: PyMuPDF로 뽑은 쪽 그림에서 장마다 빈 아래쪽이 있는지 본다.
+
+### 표 칸을 처음 고친 판에서 `cmp_streams.py`가 LIST_HEADER 「들어옴·빠짐」을 낸다 — 헛경보 (2026-10-19 Claude)
+- 증상: 재도전 제출본(v9)에서 매출 실적 표 칸 두 개를 처음 고쳤더니 `cmp_streams.py`가 `들어옴 LIST_HEADER 14 / 빠짐 LIST_HEADER 14`를 냈다(앞 판들엔 없었음). `ApplyV6 --check`는 「어긋난 곳 없음」.
+- 원인: 고친 문단은 `patch_section.py`가 줄 배치 기록(PARA_LINE_SEG)을 빼서 레코드 수가 바뀌고, 비교가 레코드 차례로 정렬하다 같은 모양의 표 칸들(LIST_HEADER·PARA_HEADER·PARA_TEXT…)을 한 칸씩 밀어 짝지었다. 실제 칸 머리 기록은 바뀌지 않았다.
+- 고침: 표 칸이 의심되면 LIST_HEADER(태그 72) 바이트를 **집합으로** 원본과 대조한다 — 수와 집합이 같으면 표 구조는 그대로다. CTRL_HEADER(71)·TABLE(77) 수도 같이 본다.
+- 다시 확인: 10-19 v9 — LIST_HEADER 272 → 272·집합 같음, CTRL_HEADER 21 → 21, TABLE 16 → 16, `ApplyV6 --check` 표 칸 65/65.
