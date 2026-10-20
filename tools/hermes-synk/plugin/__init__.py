@@ -1668,7 +1668,7 @@ def _handle(ctx, action: str, *, query: str = "", engine: str = "", task: str = 
 
 SCHEMA = {
     "name": "synk_work",
-    "description": "등록된 사용자의 SYNK 개인 텔레그램에서 상태를 AI 없이 조회하거나, 명시적으로 맡긴 작업을 공식 Claude Code/Codex CLI에 전달한다. 기본 기획·화면·콘텐츠는 Claude, 백엔드·헤르메스는 Codex이며 사용자가 지정한 담당이 우선한다. 기존 팁 수집은 이 도구로 대체하지 않는다.",
+    "description": "등록된 사용자의 SYNK 개인 텔레그램에서 상태를 AI 없이 조회하거나, 명시적으로 맡긴 작업을 공식 Claude Code/Codex CLI에 전달한다. GPT를 당분간 쓰지 않는 동안(결정 10-19)은 백엔드·헤르메스를 포함해 기본 담당이 모두 Claude이고, Codex는 사용자가 직접 지정할 때만 쓴다. 기존 팁 수집은 이 도구로 대체하지 않는다.",
     "parameters": {"type": "object", "properties": {
         "action": {"type": "string", "enum": ["status", "overview", "tasks", "request", "release", "recover"]},
         "query": {"type": "string", "description": "상태 검색어 또는 정확한 synk- 작업 ID. 생략하면 전체/최근 작업."},
