@@ -12,6 +12,7 @@ TOPIK I·II 연습 문항(모두 자체 창작)과 그 AI 2중 검수 기록을 
 | `validate.mjs` | 검사기(node 전용) — 칸·자리·능력·급·해설 언어·세트·검수 계보 |
 | `review/existing-verdicts.json` | 기존 게임·진단 문항의 검수 판정(허용 목록, `verdict: "pass"`만 연습에 낸다) |
 | `review/rubric-r1.md` | 두 검수자가 함께 받는 검수 기준(판을 바꾸면 이름을 바꾼다) |
+| `review/rubric-writing-r2.md` | 쓰기 51~54 검수 기준(r1에 공식 말투·51번 문체 줄을 더함, 10-21) |
 | `audio/<문항 또는 세트>.mp3` | 듣기 대화 음성(64k 모노, 재생 횟수는 화면이 `audio.plays`대로) |
 
 ## 문항 한 개의 길

@@ -28,10 +28,10 @@ const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8').replace(/^﻿/
 const writeJson = (file, value) => { fs.mkdirSync(path.dirname(file), { recursive: true }); const tmp = `${file}.${process.pid}.tmp`;
   fs.writeFileSync(tmp, JSON.stringify(value, null, 2) + '\n'); fs.renameSync(tmp, file); };
 
-export const WRITING_RUBRIC_ID = 'topik-review-writing-r1';
+export const WRITING_RUBRIC_ID = 'topik-review-writing-r2';
 export function rubricText(kind = 'choice') {
   if (kind === 'writing') {
-    const text = fs.readFileSync(path.join(bankDir, 'review/rubric-writing-r1.md'), 'utf8').replace(/\r\n/g, '\n');
+    const text = fs.readFileSync(path.join(bankDir, 'review/rubric-writing-r2.md'), 'utf8').replace(/\r\n/g, '\n');
     return { text, sha: sha(text).slice(0, 16), id: WRITING_RUBRIC_ID };
   }
   const rubric = fs.readFileSync(path.join(bankDir, 'review/rubric-r1.md'), 'utf8').replace(/\r\n/g, '\n');
