@@ -178,7 +178,7 @@ test('worktree collection reports progress per tree and per file so a long scan 
   let calls = 0;
   backup.preserveWorktreeDocuments(f.root, vault, { trees: [{ repository: 'SYNK-appsscript', primary: f.root, root: tree, changedSources: [] }],
     onProgress: () => calls++ });
-  assert.equal(calls, 3, 'one call after listing the tree and one per candidate file');
+  assert.equal(calls, 4, 'one call once the tree list is built (10-20), one after listing the tree and one per candidate file');
 });
 
 test('long phases keep the running receipt heartbeat fresh so the monitor does not call the run interrupted (10-19)', t => {
@@ -694,4 +694,30 @@ test('a whole run still records its result when every receipt and provider renam
   assert.deepEqual(backup.readJson(providerLatest), healthy());
   assert.ok(attempts >= 9 && attempts % 3 === 0, 'the start receipt, provider report and final receipt each landed on the third try');
   assert.deepEqual(fs.readdirSync(f.stateDir).filter(name => name.endsWith('.tmp')), [], 'no temporary file is left behind');
+});
+
+test('the worktree listing runs in batches with a heartbeat after each, small while slow and growing while fast (10-20)', () => {
+  const trees = Array.from({ length: 30 }, (_, i) => ({ root: 'C:\\wt\\' + i }));
+  let now = 0;
+  const asked = [], beats = [];
+  // 처음 두 묶음은 작업트리 하나에 30초(부하 속), 그 뒤는 1초가 걸린다고 친다.
+  const runScan = roots => {
+    asked.push(roots.length);
+    now += roots.length * (asked.length <= 2 ? 30000 : 1000);
+    return roots.map(root => ({ root, fingerprint: 'a'.repeat(64), files: 1, md: [] }));
+  };
+  const scans = backup.scanWorktrees(trees, { runScan, clock: () => now, onProgress: () => beats.push(now) });
+  assert.deepEqual(asked, [4, 4, 4, 8, 10], 'slow batches stay at four trees, fast ones double');
+  assert.deepEqual(beats, [120000, 240000, 244000, 252000, 262000], 'a heartbeat chance after every batch');
+  assert.equal(scans.size, 30);
+  // 실패한 묶음과 오류 줄은 그 작업트리만 빠진다(빠진 작업트리는 예전처럼 걷고 git을 돌린다).
+  let call = 0;
+  const flaky = roots => {
+    call++;
+    if (call === 2) throw new Error('pwsh failed');
+    return roots.map(root => root === 'C:\\wt\\0' ? { root, error: 'UnauthorizedAccessException' } : { root, fingerprint: 'b'.repeat(64), files: 1, md: [] });
+  };
+  const partial = backup.scanWorktrees(trees.slice(0, 12), { runScan: flaky, clock: () => 0 });
+  assert.deepEqual([...partial.keys()], ['C:\\wt\\1', 'C:\\wt\\2', 'C:\\wt\\3']);
+  assert.equal(backup.scanWorktrees([], { runScan: () => { throw new Error('not called'); } }), null);
 });

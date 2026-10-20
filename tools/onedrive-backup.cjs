@@ -119,15 +119,31 @@ function ensureIdentities(file, group, cache) {
   }
   return writeChangedIndex(file, { files: identities }, { cache, tags: { ensured: wanted } });
 }
-// 모든 작업트리를 pwsh 한 번으로 나열한다(파일을 열지 않음). 실패하면 null을 돌려 예전처럼 작업트리마다 걷고 git을 돌린다.
-function scanWorktrees(trees) {
-  if (process.platform !== 'win32' || !trees.length) return null;
-  try {
-    const output = execFileSync('pwsh.exe', ['-NoProfile', '-NonInteractive', '-File', path.join(__dirname, 'onedrive-worktree-scan.ps1')],
-      { input: JSON.stringify({ roots: trees.map(tree => tree.root), skip: policy.GENERATED_DIRECTORY.source }), encoding: 'utf8', windowsHide: true, maxBuffer: 256 << 20 });
-    return new Map(JSON.parse(output.replace(/^\uFEFF/, '')).filter(scan => !scan.error && /^[a-f0-9]{64}$/.test(scan.fingerprint) && Array.isArray(scan.md))
-      .map(scan => [scan.root, scan]));
-  } catch { return null; }
+// 작업트리 나열(파일을 열지 않음)을 pwsh로 한다. 부르는 동안은 heartbeat를 쓸 수 없어, 부하 속에서 한 번에 다 넘기면
+// 영수증이 수십 분 멈췄다(10-20 12:01 실행은 나열만 47분, 통합 감시는 15분 멈춤을 실행 중단으로 본다). 그래서 묶음으로 나눠
+// 부르고 묶음마다 onProgress를 부른다. 빨리 끝난 묶음 뒤에는 묶음을 두 배로 키워 pwsh 시작 비용을 줄이고, 느리면 작게 되돌린다.
+// 실패한 묶음의 작업트리만 예전처럼 걷고 git을 돌린다(다른 묶음의 나열은 그대로 쓴다).
+const SCAN_BATCH_MIN = 4, SCAN_BATCH_MAX = 64, SCAN_FAST_MS = 20 * 1000;
+function runWorktreeScan(roots) {
+  const output = execFileSync('pwsh.exe', ['-NoProfile', '-NonInteractive', '-File', path.join(__dirname, 'onedrive-worktree-scan.ps1')],
+    { input: JSON.stringify({ roots, skip: policy.GENERATED_DIRECTORY.source }), encoding: 'utf8', windowsHide: true, maxBuffer: 256 << 20 });
+  return JSON.parse(output.replace(/^\uFEFF/, ''));
+}
+function scanWorktrees(trees, { onProgress = () => {}, runScan = runWorktreeScan, clock = Date.now } = {}) {
+  if ((runScan === runWorktreeScan && process.platform !== 'win32') || !trees.length) return null;
+  const scans = new Map();
+  let size = SCAN_BATCH_MIN;
+  for (let next = 0; next < trees.length;) {
+    const batch = trees.slice(next, next + size), started = clock();
+    next += batch.length;
+    let rows = [];
+    try { rows = runScan(batch.map(tree => tree.root)); } catch { rows = []; }
+    for (const scan of Array.isArray(rows) ? rows : [])
+      if (scan && !scan.error && /^[a-f0-9]{64}$/.test(scan.fingerprint) && Array.isArray(scan.md)) scans.set(scan.root, scan);
+    onProgress();
+    size = clock() - started < SCAN_FAST_MS ? Math.min(size * 2, SCAN_BATCH_MAX) : SCAN_BATCH_MIN;
+  }
+  return scans;
 }
 // 나열의 MD 중 workTextFiles가 들어가지 않는 폴더('worktrees', 자격증명 이름 폴더) 아래 것은 뺀다. 생성물 폴더는 나열이 이미 건너뛴다.
 function markdownFromScan(list) {
@@ -192,7 +208,9 @@ function preserveWorktreeDocuments(root, vault, { dryRun = false, trees = worktr
   const timings = { walkMs: 0, gitMs: 0 }, mainHeads = new Map(), gitState = new Map();
   let mark = Date.now(), gitTrees = 0, reusedTrees = 0, statusRuns = 0, diffRuns = 0;
   const lap = name => { const now = Date.now(); timings[name] = (timings[name] || 0) + now - mark; mark = now; };
-  const scans = cache ? scanWorktrees(trees) : null;
+  // 작업트리 목록(trees 기본값)을 만드는 데도 부하 속에서는 몇 분이 걸린다(10-20 13:30 실행). 나열 전에 한 번 진행을 알린다.
+  onProgress();
+  const scans = cache ? scanWorktrees(trees, { onProgress }) : null;
   lap('scanMs');
   const candidates = trees.flatMap(tree => {
     const scan = scans?.get(tree.root);
@@ -593,6 +611,7 @@ function run({ root = ROOT, destination = process.env.OneDrive, stateDir, dryRun
     } else {
       // 지난 실행이 읽어 확인한 파일의 stat·SHA·분류(onedrive-read-cache.cjs). 깨졌거나 규칙이 바뀌었으면 비어 있고 전부 읽는다.
       cache = readCache.open(path.join(stateDir, 'read-cache.json'), { fingerprint: policy.POLICY_FINGERPRINT, now: clock() });
+      beat(); // 기록(수십 MB)을 읽는 데도 부하 속에서는 오래 걸린다. 1분이 지났으면 heartbeat를 남긴다.
       state.worktrees = collectWorktrees(root, vault, { dryRun, onProgress: beat, cache });
       if (!dryRun) state.safeMarkdown = preserveSafeMarkdown(root, vault);
       if (!dryRun) state.recoveryIndex = policy.writeSafeRecoveryIndex(vault);
@@ -685,4 +704,4 @@ if (require.main === module) {
   }
   const result = run(options); console.log(JSON.stringify(result)); process.exitCode = result.exitCode;
 }
-module.exports = { worktrees, changedWorktreeSources, preserveWorktreeDocuments, classifyProvider, protectedPriorSources, protectedSourceInventory, encryptedProtectionCoverage, worktreePrimaryDrift, providerFocus, mergeProviderReport, providerStatus, run, readJson, writeJson };
+module.exports = { worktrees, changedWorktreeSources, preserveWorktreeDocuments, classifyProvider, protectedPriorSources, protectedSourceInventory, encryptedProtectionCoverage, worktreePrimaryDrift, providerFocus, mergeProviderReport, providerStatus, scanWorktrees, run, readJson, writeJson };
