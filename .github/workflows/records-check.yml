@@ -1,0 +1,96 @@
+name: records-check
+
+# 기록 전용 경로(트랙·결정·현장노트·_ops jsonl·월별 보관)만 바꾼 push의 검사(2026-10-20).
+# 무거운 검사(syntax-check.yml)는 이 경로만 바뀐 push를 건너뛰고, 여기서는 그 경로를 실제로 읽는 시험과 저장 용량 검사만 돈다.
+# 어느 시험이 이 경로를 읽는지는 무거운 검사가 돌 때마다 「읽기 대조」(tools/ci읽기대조.cjs)가 실제 읽기로 확인한다 —
+# 새 시험이 이 경로를 읽으면 그 단계가 아래 node --test 줄에 더하라고 멈춘다.
+on:
+  push:
+    paths:
+      - 'docs/_ops/트랙.md'
+      - 'docs/_ops/결정.md'
+      - 'docs/_ops/보관/**'
+      - 'docs/_ops/*.jsonl'
+      - 'docs/현장노트/**'
+      - '.github/workflows/records-check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: records-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  records:
+    if: ${{ github.event.repository.private == false || vars.SYNK_HOSTED_CI == 'on' || vars.SYNK_SELFHOSTED == 'on' }}
+    runs-on: ${{ (github.event.repository.private == false || vars.SYNK_HOSTED_CI == 'on') && 'ubuntu-latest' || fromJSON('["self-hosted","linux"]') }}
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: SYNK-appsscript
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          path: SYNK-appsscript
+          # syntax-check.yml과 같은 목록이다(읽기 대조가 같은지 본다).
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !*.[pP][nN][gG]
+            !*.[jJ][pP][gG]
+            !*.[jJ][pP][eE][gG]
+            !*.[wW][eE][bB][pP]
+            !*.[aA][vV][iI][fF]
+            !*.[sS][vV][gG]
+            !*.[wW][aA][vV]
+            !*.[mM][pP]3
+            !*.[mM]4[aA]
+            !*.[mM][pP]4
+            !*.[mM][oO][vV]
+            !*.[wW][eE][bB][mM]
+            !*.[oO][nN][nN][xX]
+            !*.[wW][aA][sS][mM]
+            !*.[pP][dD][fF]
+            !*.[hH][dD][rR]
+            !*.[gG][lL][bB]
+            !*.[bB][lL][eE][nN][dD]
+            /desktop/assets/*.png
+            /desktop/assets/launcher/*.webp
+            /experiences/synk-account/assets/**
+            /experiences/learning-hub/assets/**
+            /experiences/path-vr/assets/path-vr-felt-800.webp
+            /docs/_ops/코스튬_20261008/assets/**
+            /docs/디자인/SNS키트/assets/**
+            /docs/디자인/펠트부품/assets/**
+            /docs/디자인/플랫폼_시그널/웹그림/**
+            /docs/마케팅/맞춤도구/assets/**
+            /docs/캐릭터/정본_4K/*_본체.png
+            /docs/홍보물/계정별콘텐츠_20260909/**
+            /docs/홍보물/마케팅실행_20260909/브랜드킷/**
+            /docs/홍보물/브랜드소개_20260909/**
+            /docs/Loom_자산/라디오장면/**
+            /docs/라디오/DJ장면_20261019/구운판/**
+            /docs/라디오/무대/**
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      - name: check new Git storage payloads
+        env:
+          STORAGE_BEFORE: ${{ github.event.before }}
+          STORAGE_EVENT: ${{ github.event_name }}
+          STORAGE_DEFAULT: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          base="$STORAGE_BEFORE"
+          if [ "$STORAGE_EVENT" = "workflow_dispatch" ]; then
+            base=$(git rev-parse "$GITHUB_SHA^")
+          elif [ -z "$base" ] || [[ "$base" =~ ^0+$ ]]; then
+            base=$(git merge-base "origin/$STORAGE_DEFAULT" "$GITHUB_SHA")
+          fi
+          node tools/git-storage-check.cjs --base "$base" --head "$GITHUB_SHA" --allow-lazy-fetch
+      - name: run the tests that read record files
+        run: node --test --test-reporter=tap tests/결정정본.test.js tests/prism대장절.test.js tests/철학인용.test.js tests/몽골어출구.test.js

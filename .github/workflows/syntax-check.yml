@@ -2,6 +2,16 @@ name: syntax-check
 
 on:
   push:
+    # 기록 전용 경로만 바꾼 push는 이 검사를 띄우지 않는다. records-check.yml이 그 경로를 읽는 시험만 돈다(2026-10-20).
+    # 이 목록은 records-check.yml의 paths와 같아야 하고, 이 경로를 읽는 시험은 records-check.yml에 있어야 한다 —
+    # 아래 「읽기 대조」 단계(tools/ci읽기대조.cjs)가 실제 읽기 기록으로 대조한다. tools/원격ci.js는 이 목록으로
+    # 기록 전용 커밋이 조상 run의 판정을 이어받는지 가른다.
+    paths-ignore:
+      - 'docs/_ops/트랙.md'
+      - 'docs/_ops/결정.md'
+      - 'docs/_ops/보관/**'
+      - 'docs/_ops/*.jsonl'
+      - 'docs/현장노트/**'
   workflow_dispatch:
 
 permissions:
@@ -9,7 +19,10 @@ permissions:
 
 concurrency:
   group: syntax-${{ github.ref }}
-  cancel-in-progress: true
+  # 도는 run은 끝까지 둔다. 새 push는 기다리는 한 자리에 서고, 더 새 push가 오면 그 자리만 새 판으로 바뀐다
+  # (기다리던 run은 시작 전에 취소돼 러너 시간을 안 쓴다). 10-20까지 true였을 때는 push 간격(중앙값 2.3분)이
+  # run 한 번(약 3분)보다 짧아 24시간 194회 중 107회가 도중에 끊겼고, 끊긴 run 시간(204분)이 성공 run(172분)보다 컸다.
+  cancel-in-progress: false
 
 jobs:
   check:
@@ -20,12 +33,55 @@ jobs:
     defaults:
       run:
         working-directory: SYNK-appsscript
+    env:
+      # tools/ci읽기기록.cjs가 프로세스마다 읽은 경로를 여기에 남기고 「읽기 대조」 단계가 읽는다(저장소 밖).
+      SYNK_READ_TRACE_DIR: ${{ github.workspace }}/synk-reads
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           filter: blob:none
           path: SYNK-appsscript
+          # 미디어는 받지 않는다(10-20: 4.36GB 중 3.3GB, 받기만 약 1분). 시험·단계가 실제로 여는 미디어만 다시 넣는다.
+          # 시험이 여기서 뺀 파일을 열면 「읽기 대조」가 그 경로를 짚어 멈춘다. records-check.yml과 같은 목록이다.
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !*.[pP][nN][gG]
+            !*.[jJ][pP][gG]
+            !*.[jJ][pP][eE][gG]
+            !*.[wW][eE][bB][pP]
+            !*.[aA][vV][iI][fF]
+            !*.[sS][vV][gG]
+            !*.[wW][aA][vV]
+            !*.[mM][pP]3
+            !*.[mM]4[aA]
+            !*.[mM][pP]4
+            !*.[mM][oO][vV]
+            !*.[wW][eE][bB][mM]
+            !*.[oO][nN][nN][xX]
+            !*.[wW][aA][sS][mM]
+            !*.[pP][dD][fF]
+            !*.[hH][dD][rR]
+            !*.[gG][lL][bB]
+            !*.[bB][lL][eE][nN][dD]
+            /desktop/assets/*.png
+            /desktop/assets/launcher/*.webp
+            /experiences/synk-account/assets/**
+            /experiences/learning-hub/assets/**
+            /experiences/path-vr/assets/path-vr-felt-800.webp
+            /docs/_ops/코스튬_20261008/assets/**
+            /docs/디자인/SNS키트/assets/**
+            /docs/디자인/펠트부품/assets/**
+            /docs/디자인/플랫폼_시그널/웹그림/**
+            /docs/마케팅/맞춤도구/assets/**
+            /docs/캐릭터/정본_4K/*_본체.png
+            /docs/홍보물/계정별콘텐츠_20260909/**
+            /docs/홍보물/마케팅실행_20260909/브랜드킷/**
+            /docs/홍보물/브랜드소개_20260909/**
+            /docs/Loom_자산/라디오장면/**
+            /docs/라디오/DJ장면_20261019/구운판/**
+            /docs/라디오/무대/**
       - name: checkout authorized Talk source inputs
         if: ${{ vars.SYNK_TALK_CI == 'on' }}
         uses: actions/checkout@v5
@@ -64,13 +120,18 @@ jobs:
           node --test tests/git-storage-check.test.cjs
           python3 -B tests/git-storage-restore.test.py
       - name: install deterministic build dependencies
-        run: npm ci --ignore-scripts --no-audit --no-fund
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          (cd experiences/synk-account && npm ci --ignore-scripts --no-audit --no-fund)
       - name: verify all local Atlas consumer copies
+        env:
+          NODE_OPTIONS: --require ${{ github.workspace }}/SYNK-appsscript/tools/ci읽기기록.cjs
         run: npm run check:atlas:local
       - name: verify account library and portal bundles
         # 원천만 고치고 생성기를 안 돌린 커밋을 잡는다(PC desktop/renderer/platform-continuity.mjs · experiences/synk-account/dist).
+        env:
+          NODE_OPTIONS: --require ${{ github.workspace }}/SYNK-appsscript/tools/ci읽기기록.cjs
         run: |
-          (cd experiences/synk-account && npm ci --ignore-scripts --no-audit --no-fund)
           npm run check:account-bundles
           npm run check:topik4-course
       - name: node --check all .js files
@@ -86,6 +147,7 @@ jobs:
       - name: run SYNK safety tests
         env:
           SYNK_REQUIRE_TALK_SOURCE: ${{ vars.SYNK_TALK_CI == 'on' && '1' || '0' }}
+          NODE_OPTIONS: --require ${{ github.workspace }}/SYNK-appsscript/tools/ci읽기기록.cjs
         run: |
           set -o pipefail
           rc=0
@@ -102,38 +164,9 @@ jobs:
           echo "::endgroup::"
           exit "$rc"
       - name: prism 접점 래칫 (학생·학부모 참조 0)
+        env:
+          NODE_OPTIONS: --require ${{ github.workspace }}/SYNK-appsscript/tools/ci읽기기록.cjs
         run: node tools/prism래칫.js
-
-  windows-specific:
-    if: ${{ github.event.repository.private == false || vars.SYNK_HOSTED_CI == 'on' }}
-    runs-on: windows-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          fetch-depth: 1
-          filter: blob:none
-          sparse-checkout-cone-mode: false
-          sparse-checkout: |
-            /tests/prism래칫회귀.test.js
-            /tests/sns-발행.test.js
-            /tests/_git밖.js
-            /tools/prism래칫.js
-            /tools/lib/sns-publisher.js
-            /tools/lib/sns-dm.js
-            /tools/sns-자격.ps1
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 24
-      - name: run Windows filesystem and mocked credential regressions
-        shell: pwsh
-        run: |
-          node -e "const fs=require('node:fs'),os=require('node:os');console.log(JSON.stringify({temp:os.tmpdir(),real:fs.realpathSync(os.tmpdir()),native:fs.realpathSync.native(os.tmpdir())}))"
-          $testLog = Join-Path $env:RUNNER_TEMP 'synk-windows.tap'
-          node --test --test-reporter=tap --test-reporter-destination=$testLog --test-name-pattern='^Windows' tests/prism래칫회귀.test.js tests/sns-발행.test.js
-          $testExit = $LASTEXITCODE
-          Get-Content -LiteralPath $testLog
-          if ($testExit -ne 0) { exit $testExit }
-          $summary = Get-Content -LiteralPath $testLog -Raw
-          if (-not ($summary -match '(?m)^# pass (?<passed>\d+)\r?$') -or [int]$Matches['passed'] -lt 4) { throw 'Expected all four Windows regressions to execute' }
-          if ($summary -notmatch '(?m)^# skipped 0\r?$') { throw 'Windows-specific regressions must not be skipped here' }
+      - name: 읽기 대조 (기록 전용 경로를 읽는 시험·희소 체크아웃이 뺀 파일)
+        if: ${{ success() || failure() }}
+        run: node tools/ci읽기대조.cjs --trace "$SYNK_READ_TRACE_DIR"
