@@ -5,7 +5,8 @@ import { Img, staticFile, useCurrentFrame } from 'remotion';
 import { DIM, INK } from '../film/parts';
 import { EN, KO } from '../lib/fonts';
 import { IN_OUT, OUT, prog } from '../lib/motion';
-import { Headline, Shell, Swap, type Box } from '../full/kit';
+import { Shell, Swap, type Box } from '../full/kit';
+import { KHeadline } from './KHead';
 import { PROFILE } from '../day1/data';
 import { S, TOTAL, wd } from './time';
 
@@ -25,10 +26,10 @@ export const EndCard: React.FC = () => {
   const base = S.end + 6;
   return (
     <>
-      <Headline
+      <KHeadline
         lines={[
           [{ t: '팔로우하면', at: wd('fo', 0) }],
-          [{ t: '다음', at: wd('fo', 1) }, { t: '편도', at: wd('fo', 2), accent: wd('fo', 2) }, { t: '보여', at: wd('fo', 3) }, { t: '드릴게요', at: wd('fo', 4) }],
+          [{ t: '다음', at: wd('fo', 1) }, { t: '편도', at: wd('fo', 2), mark: wd('fo', 2) }, { t: '보여', at: wd('fo', 3) }, { t: '드릴게요', at: wd('fo', 4) }],
         ]}
         top={300}
       />

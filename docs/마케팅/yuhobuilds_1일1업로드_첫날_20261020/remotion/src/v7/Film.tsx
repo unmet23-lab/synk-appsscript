@@ -8,7 +8,8 @@ import { AbsoluteFill, Img, interpolate, Sequence, staticFile, useCurrentFrame }
 import { BUTTER, DIM, INK, STAGE } from '../film/parts';
 import { EN, KO, MONO } from '../lib/fonts';
 import { clamp, IN, IN_OUT, OUT, prog } from '../lib/motion';
-import { Headline, Shell, StripIn, StripOut, Swap, type Box, type HW } from '../full/kit';
+import { Shell, StripIn, StripOut, Swap, type Box } from '../full/kit';
+import { KHeadline, type Kind, type KW } from './KHead';
 import { Cap, CAP_SIZE, MeBubble, PanelTop, SessionList, TileGrid, TILE, UI_INK, UI_MUTED, RULE, ME_INK, childY, ROW_TOP } from '../day1/parts';
 import { SESSION_TITLE } from '../day1/data';
 import { EndCard, END_FOLLOW } from './End';
@@ -55,41 +56,48 @@ const CHECK = [
 ] as const;
 
 // ───────────── 머리글 ─────────────
-const h = (t: string, id: Spoken, i: number, accent?: boolean | number): HW => ({ t, at: wd(id, i), accent: accent === true ? wd(id, i) : typeof accent === 'number' ? accent : undefined });
+/** 키네틱 낱말: 말한 시각(at)에 팝, mark는 형광펜(말한 시각에). */
+const k = (t: string, id: Spoken, i: number, opt: { mark?: boolean | number; kind?: Kind; from?: number; to?: number } = {}): KW => ({
+  t,
+  at: wd(id, i),
+  mark: opt.mark === true ? wd(id, i) : typeof opt.mark === 'number' ? opt.mark : undefined,
+  kind: opt.kind,
+  from: opt.from,
+  to: opt.to,
+});
 
 const Heads: React.FC = () => {
   const f = useCurrentFrame();
-  const big = { fontSize: 78 };
   const show = (a: number, b: number) => f >= a && f < b;
   return (
     <>
-      {/* 0프레임부터 약속 세 줄(표지 노릇). 「"올려"」에 버터 */}
+      {/* 0프레임부터 약속 세 줄(표지 노릇). 「자동화」에 밑줄, 「"올려"」에 형광펜 + 위로 튐 */}
       {show(-1, VO.h2 + 4) ? (
-        <Headline
+        <KHeadline
           lines={[
-            [{ t: 'SNS', at: -12 }, { t: '업로드', at: -12 }, { t: '자동화,', at: -12 }],
+            [{ t: 'SNS', at: -12 }, { t: '업로드', at: -12 }, { t: '자동화,', at: -12, kind: 'under', mark: wd('h1', 2) }],
             [{ t: '사람이', at: -12 }, { t: '할', at: -12 }, { t: '일은', at: -12 }],
-            [{ t: '"올려"', at: -12, accent: wd('h1', 6) }, { t: '한', at: -12 }, { t: '마디', at: -12 }],
+            [{ t: '"올려"', at: -12, mark: wd('h1', 6), kind: 'up' }, { t: '한', at: -12 }, { t: '마디', at: -12 }],
           ]}
           out={VO.h2 - 10}
-          style={{ fontSize: 74 }}
+          size={74}
         />
       ) : null}
-      {show(VO.h2 - 4, wd('h2', 8) + 4) ? <Headline lines={[[h('첫날인', 'h2', 0), h('오늘', 'h2', 1)], [h('세', 'h2', 2, true), h('편', 'h2', 3, wd('h2', 2))]]} out={wd('h2', 8) - 10} style={big} /> : null}
-      {show(wd('h2', 8) - 4, VO.s1 + 4) ? <Headline lines={[[h('세', 'h2', 8), h('단계로,', 'h2', 9)], [h('끝엔', 'h2', 10), h('체크리스트', 'h2', 11, true)]]} out={VO.s1 - 10} style={big} /> : null}
-      {show(VO.s1 - 4, wd('s1', 8) + 4) ? <Headline lines={[[h('첫째,', 's1', 0), h('소재는', 's1', 1)], [h('월요일에', 's1', 2, true), h('한', 's1', 4), h('주', 's1', 5), h('치', 's1', 6)]]} out={wd('s1', 8) - 10} style={big} /> : null}
-      {show(wd('s1', 8) - 4, VO.s1b + 4) ? <Headline lines={[[h('트렌드,', 's1', 8), h('질문,', 's1', 9)], [h('달력,', 's1', 10), h('실화', 's1', 11, true)]]} out={VO.s1b - 10} style={big} /> : null}
-      {show(VO.s1b - 4, VO.s2 + 4) ? <Headline lines={[[h('예약이', 's1b', 0), h('텅', 's1b', 1), h('비어도,', 's1b', 2)], [h('만들', 's1b', 3), h('건', 's1b', 4), h('이', 's1b', 5), h('후보에서', 's1b', 6, true)]]} out={VO.s2 - 10} style={{ fontSize: 74 }} /> : null}
-      {show(VO.s2 - 4, wd('s2', 8) + 4) ? <Headline lines={[[h('둘째,', 's2', 0), h('제작은', 's2', 1), h('매일', 's2', 2)], [h('아침', 's2', 3), h('7시로', 's2', 4, true), h('걸어', 's2', 6), h('뒀어요', 's2', 7)]]} out={wd('s2', 8) - 10} style={{ fontSize: 74 }} /> : null}
-      {show(wd('s2', 8) - 4, VO.s2b + 4) ? <Headline lines={[[h('저는', 's2', 8)], [h('최종본만', 's2', 9, true), h('봐요', 's2', 10)]]} out={VO.s2b - 10} style={big} /> : null}
-      {show(VO.s2b - 4, wd('s2b', 6) + 4) ? <Headline lines={[[h('오늘은', 's2b', 0), h('셋', 's2b', 1), h('다', 's2b', 2)], [h('사용량', 's2b', 3), h('한도에', 's2b', 4, true), h('멈췄는데', 's2b', 5)]]} out={wd('s2b', 6) - 10} style={big} /> : null}
-      {show(wd('s2b', 6) - 4, VO.s3 + 4) ? <Headline lines={[[h('"이어서', 's2b', 6, true), h('해"로', 's2b', 7, wd('s2b', 6))], [h('다시', 's2b', 8), h('이었어요', 's2b', 9)]]} out={VO.s3 - 10} style={big} /> : null}
-      {show(VO.s3 - 4, wd('s3', 5) + 4) ? <Headline lines={[[h('셋째,', 's3', 0), h('게시는', 's3', 1)], [h('"올려"', 's3', 2, true), h('한', 's3', 3), h('마디', 's3', 4)]]} out={wd('s3', 5) - 10} style={big} /> : null}
-      {show(wd('s3', 5) - 4, VO.s3b + 4) ? <Headline lines={[[h('목표는', 's3', 5), h('4일', 's3', 6, true), h('치', 's3', 7, wd('s3', 6)), h('비축', 's3', 8, wd('s3', 6))], [h('오늘부터', 's3', 9), h('쌓아요', 's3', 10)]]} out={VO.s3b - 10} style={{ fontSize: 74 }} /> : null}
-      {show(VO.s3b - 4, wd('s3b', 8) + 4) ? <Headline lines={[[h('채널마다', 's3b', 0), h('화면이', 's3b', 2), h('달라서,', 's3b', 3)], [h('올리기는', 's3b', 4), h('한', 's3b', 5, true), h('창에서', 's3b', 6, wd('s3b', 5))]]} out={wd('s3b', 8) - 10} style={{ fontSize: 72 }} /> : null}
-      {show(wd('s3b', 8) - 4, VO.c1 + 4) ? <Headline lines={[[h('동시엔', 's3b', 8)], [h('엉켜요', 's3b', 9, true)]]} out={VO.c1 - 10} style={big} /> : null}
-      {show(VO.c1 - 4, VO.cta + 4) ? <Headline lines={[[h('정리하면', 'c1', 0)], [h('넷', 'c1', 1, true)]]} out={VO.cta - 10} style={big} /> : null}
-      {show(VO.cta - 4, S.end) ? <Headline lines={[[h('저장해', 'cta', 0, true), h('두고', 'cta', 1)], [h('하나씩', 'cta', 2), h('따라', 'cta', 3), h('해', 'cta', 4), h('보세요', 'cta', 5)]]} out={S.end - 10} style={big} /> : null}
+      {show(VO.h2 - 4, wd('h2', 8) + 4) ? <KHeadline lines={[[k('첫날인', 'h2', 0), k('오늘', 'h2', 1)], [k('3편', 'h2', 2, { mark: true, kind: 'count', from: 1, to: 3 })]]} out={wd('h2', 8) - 10} /> : null}
+      {show(wd('h2', 8) - 4, VO.s1 + 4) ? <KHeadline lines={[[k('세', 'h2', 8), k('단계로,', 'h2', 9)], [k('끝엔', 'h2', 10), k('체크리스트', 'h2', 11, { mark: true, kind: 'check' })]]} out={VO.s1 - 10} /> : null}
+      {show(VO.s1 - 4, wd('s1', 8) + 4) ? <KHeadline lines={[[k('첫째,', 's1', 0), k('소재는', 's1', 1)], [k('월요일에', 's1', 2, { mark: true }), k('한', 's1', 4), k('주', 's1', 5), k('치', 's1', 6)]]} out={wd('s1', 8) - 10} /> : null}
+      {show(wd('s1', 8) - 4, VO.s1b + 4) ? <KHeadline lines={[[k('트렌드,', 's1', 8), k('질문,', 's1', 9)], [k('달력,', 's1', 10), k('실화', 's1', 11, { mark: true })]]} out={VO.s1b - 10} /> : null}
+      {show(VO.s1b - 4, VO.s2 + 4) ? <KHeadline lines={[[k('예약이', 's1b', 0), k('텅', 's1b', 1, { kind: 'hollow' }), k('비어도,', 's1b', 2)], [k('만들', 's1b', 3), k('건', 's1b', 4), k('이', 's1b', 5), k('후보에서', 's1b', 6, { mark: true })]]} out={VO.s2 - 10} size={74} /> : null}
+      {show(VO.s2 - 4, wd('s2', 8) + 4) ? <KHeadline lines={[[k('둘째,', 's2', 0), k('제작은', 's2', 1), k('매일', 's2', 2)], [k('아침', 's2', 3), k('7시로', 's2', 4, { mark: true, kind: 'count', from: 1, to: 7 }), k('걸어', 's2', 6), k('뒀어요', 's2', 7)]]} out={wd('s2', 8) - 10} size={74} /> : null}
+      {show(wd('s2', 8) - 4, VO.s2b + 4) ? <KHeadline lines={[[k('저는', 's2', 8)], [k('최종본만', 's2', 9, { mark: true }), k('봐요', 's2', 10)]]} out={VO.s2b - 10} /> : null}
+      {show(VO.s2b - 4, wd('s2b', 6) + 4) ? <KHeadline lines={[[k('오늘은', 's2b', 0), k('셋', 's2b', 1), k('다', 's2b', 2)], [k('사용량', 's2b', 3), k('한도에', 's2b', 4), k('멈췄는데', 's2b', 5)]]} out={wd('s2b', 6) - 10} freezeAt={wd('s2b', 5)} /> : null}
+      {show(wd('s2b', 6) - 4, VO.s3 + 4) ? <KHeadline lines={[[k('"이어서', 's2b', 6, { mark: true, kind: 'up' }), k('해"로', 's2b', 7, { mark: wd('s2b', 6) })], [k('다시', 's2b', 8), k('이었어요', 's2b', 9)]]} out={VO.s3 - 10} /> : null}
+      {show(VO.s3 - 4, wd('s3', 5) + 4) ? <KHeadline lines={[[k('셋째,', 's3', 0), k('게시는', 's3', 1)], [k('"올려"', 's3', 2, { mark: true, kind: 'up' }), k('한', 's3', 3), k('마디', 's3', 4)]]} out={wd('s3', 5) - 10} /> : null}
+      {show(wd('s3', 5) - 4, VO.s3b + 4) ? <KHeadline lines={[[k('목표는', 's3', 5), k('4일', 's3', 6, { mark: true, kind: 'count', from: 1, to: 4 }), k('치', 's3', 7), k('비축', 's3', 8)], [k('오늘부터', 's3', 9), k('쌓아요', 's3', 10)]]} out={VO.s3b - 10} size={74} /> : null}
+      {show(VO.s3b - 4, wd('s3b', 8) + 4) ? <KHeadline lines={[[k('채널마다', 's3b', 0), k('화면이', 's3b', 2), k('달라서,', 's3b', 3)], [k('올리기는', 's3b', 4), k('한', 's3b', 5, { mark: true }), k('창에서', 's3b', 6, { mark: wd('s3b', 5) })]]} out={wd('s3b', 8) - 10} size={72} /> : null}
+      {show(wd('s3b', 8) - 4, VO.c1 + 4) ? <KHeadline lines={[[k('동시엔', 's3b', 8)], [k('엉켜요', 's3b', 9, { mark: true })]]} out={VO.c1 - 10} /> : null}
+      {show(VO.c1 - 4, VO.cta + 4) ? <KHeadline lines={[[k('정리하면', 'c1', 0)], [k('넷', 'c1', 1, { mark: true })]]} out={VO.cta - 10} /> : null}
+      {show(VO.cta - 4, S.end) ? <KHeadline lines={[[k('저장해', 'cta', 0, { mark: true, kind: 'save' }), k('두고', 'cta', 1)], [k('하나씩', 'cta', 2), k('따라', 'cta', 3), k('해', 'cta', 4), k('보세요', 'cta', 5)]]} out={S.end - 10} /> : null}
     </>
   );
 };
