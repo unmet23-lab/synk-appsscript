@@ -15,9 +15,9 @@ const PREFS=['brand','goal','audience','mood','mustHave','avoid','notes'];
 const object=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
 function keys(value,allowed){if(!object(value)||Object.keys(value).some(key=>!allowed.includes(key)))throw fail('제작 기획 입력 항목을 확인해 주세요.');}
 function text(value,max=3000,required=false){if(value===undefined&&!required)return '';if(typeof value!=='string'||value.length>max||/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(value))throw fail('입력 내용과 길이를 확인해 주세요.');const clean=value.trim();if(required&&!clean)throw fail('필수 내용을 입력해 주세요.');return clean;}
-function url(value){const raw=text(value,2000);if(!raw)return '';let parsed;try{parsed=new URL(raw);}catch{throw fail('HTTPS 자료 주소를 입력해 주세요.');}if(parsed.protocol!=='https:'||parsed.username||parsed.password)throw fail('HTTPS 자료 주소를 입력해 주세요.');return parsed.href;}
+function url(value){const raw=text(value,2000);if(!raw)return '';let parsed;try{parsed=new URL(raw);}catch{throw fail('https://로 시작하는 주소를 넣어 주세요.');}if(parsed.protocol!=='https:'||parsed.username||parsed.password)throw fail('https://로 시작하는 주소를 넣어 주세요.');return parsed.href;}
 function id(value){if(typeof value!=='string'||!UUID.test(value))throw fail('기획 항목을 확인해 주세요.');return value;}
-function capacity(list,max){if(list.length>=max)throw fail('이 프로젝트의 기획 기록 한도에 도달했습니다. 기존 기록을 보존하고 새 프로젝트로 이어가 주세요.',409);}
+function capacity(list,max){if(list.length>=max)throw fail('이 프로젝트의 기록이 가득 찼어요. 새 프로젝트로 이어 가 주세요.',409);}
 function empty(){return {schemaVersion:1,preferences:Object.fromEntries(PREFS.map(key=>[key,''])),strategy:emptyStrategy(),assets:[],references:[],concepts:[],scenes:[],selectedConcept:null,conceptSelections:[],sceneReviews:[],comments:[],history:[]};}
 export {empty as emptyPulseStudio};
 function studioOf(row){if(!row.studio)return empty();if(row.studio.schemaVersion!==1)throw fail('프로젝트 기획 버전을 확인해 주세요.',409);const studio=structuredClone(row.studio);studio.strategy=strategyOf(studio.strategy);return studio;}
@@ -28,7 +28,7 @@ function studioOf(row){if(!row.studio)return empty();if(row.studio.schemaVersion
 export function createPulseStudioService({store,clientProjects,clock=()=>new Date().toISOString()}){
   function customer(token){return clientProjects.session(token);}
   function customerWrite(token,csrf){const context=customer(token);if(typeof csrf!=='string'||context.auth.body.csrf!==csrf)throw fail('고객 화면을 다시 열어 주세요.',403);return context;}
-  function revision(row,value){if(!Number.isSafeInteger(value)||value!==row.revision)throw fail('프로젝트가 변경되었습니다. 새로 불러온 뒤 다시 저장해 주세요.',409);}
+  function revision(row,value){if(!Number.isSafeInteger(value)||value!==row.revision)throw fail('그사이 프로젝트가 바뀌었어요. 최신 내용을 불러온 뒤 다시 저장해 주세요.',409);}
   function actor(row,user){return user?{author:'staff',authorId:user.id,authorName:store.get('users',user.id)?.name||'담당자'}:{author:'customer',authorId:'customer',authorName:row.customerName};}
   function visibleAssetIds(studio){
     const ids=new Set(studio.assets.filter(asset=>asset.author==='customer').map(asset=>asset.id));
@@ -57,9 +57,9 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
   }
   function asset(studio,assetId,{image=false}={}){if(!assetId)return null;const found=studio.assets.find(value=>value.id===id(assetId));if(!found||image&&!found.mimeType.startsWith('image/'))throw fail(image?'프로젝트의 이미지 자료를 선택해 주세요.':'이 프로젝트의 자료를 선택해 주세요.',404);return found;}
   function pointer(studio,input,{image=false}={}){const found=asset(studio,input.assetId,{image});return {assetId:found?.id||null,imageUrl:image?url(input.imageUrl):undefined};}
-  function published(studio,type,targetId,targetRevision){const found=studio[type].find(value=>value.id===id(targetId));if(!found||found.visibility!=='customer')throw fail('공개된 기획 항목을 찾을 수 없습니다.',404);if(found.revision!==targetRevision)throw fail('기획 내용이 변경되었습니다. 최신 내용을 확인해 주세요.',409);return found;}
+  function published(studio,type,targetId,targetRevision){const found=studio[type].find(value=>value.id===id(targetId));if(!found||found.visibility!=='customer')throw fail('이 카드를 찾지 못했어요. 최신 내용을 불러와 주세요.',404);if(found.revision!==targetRevision)throw fail('카드 내용이 바뀌었어요. 최신 내용을 불러와 주세요.',409);return found;}
   function commit(row,studio,event,who){
-    if(Buffer.byteLength(JSON.stringify(studio),'utf8')>1500000)throw fail('기획 기록 한도에 도달했습니다. 기존 기록을 보존하고 새 프로젝트로 이어가 주세요.',409);
+    if(Buffer.byteLength(JSON.stringify(studio),'utf8')>1500000)throw fail('이 프로젝트의 기록이 가득 찼어요. 새 프로젝트로 이어 가 주세요.',409);
     const at=clock();clientProjects.commitWorkflow({...row,studio,revision:row.revision+1,updatedAt:at,history:[...row.history,{id:randomUUID(),action:event,actor:who.authorId,at}].slice(-300)});
   }
   function mutate(row,input,user=null){
@@ -70,26 +70,29 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
     if(!object(input)||!Object.hasOwn(fields,input.action)&&!extension)throw fail('기획 요청을 확인해 주세요.');keys(input,[...base,...(extension?extension.fields(input.action):fields[input.action])]);
     const action=input.action;
     if(extension){extension.apply({studio,row,input,staff:!!user,stamp});commit(row,studio,'PULSE 제작 '+action,who);return;}
-    if(['save_concept','save_scene','reorder_scenes'].includes(action)&&!user)throw fail('제작 담당자만 기획안을 편집할 수 있습니다.',403);
-    if(['select_concept','review_scene'].includes(action)&&user)throw fail('고객의 선택·확인은 고객 검토 화면에서만 기록합니다.',403);
+    if(['save_concept','save_scene','reorder_scenes'].includes(action)&&!user)throw fail('기획안은 담당자만 고칠 수 있어요.',403);
+    if(['select_concept','review_scene'].includes(action)&&user)throw fail('고객의 선택과 확인은 고객 화면에서만 남길 수 있어요.',403);
     if(['save_strategy','request_strategy_review','confirm_strategy'].includes(action)){
-      studio.strategy=applyStrategyAction(studio.strategy,input,stamp);
+      const next=applyStrategyAction(studio.strategy,input,stamp);
+      // 바뀐 칸이 없는 저장은 기록·버전·알림을 만들지 않는다.
+      if(action==='save_strategy'&&next===studio.strategy)return;
+      studio.strategy=next;
     }else if(action==='save_preferences'){
       keys(input.preferences,PREFS);studio.preferences=Object.fromEntries(PREFS.map(key=>[key,text(input.preferences[key],key==='notes'?3000:1500)]));
     }else if(action==='save_reference'){
-      const found=input.id?studio.references.find(value=>value.id===id(input.id)):null;if(input.id&&!found)throw fail('참고 자료를 찾을 수 없습니다.',404);
-      if(!['like','avoid','neutral'].includes(input.preference))throw fail('참고 자료의 선호를 선택해 주세요.');
-      const referenceAsset=asset(studio,input.assetId),referenceUrl=url(input.url);if(!referenceAsset&&!referenceUrl)throw fail('참고 자료 또는 HTTPS 주소를 추가해 주세요.');
+      const found=input.id?studio.references.find(value=>value.id===id(input.id)):null;if(input.id&&!found)throw fail('참고자료를 찾지 못했어요.',404);
+      if(!['like','avoid','neutral'].includes(input.preference))throw fail('이 자료가 좋은지, 피하고 싶은지 골라 주세요.');
+      const referenceAsset=asset(studio,input.assetId),referenceUrl=url(input.url);if(!referenceAsset&&!referenceUrl)throw fail('이미지를 올리거나 https://로 시작하는 주소를 넣어 주세요.');
       if(!user&&referenceAsset&&!visibleAssetIds(studio).has(referenceAsset.id))throw fail('공개된 프로젝트 자료를 선택해 주세요.',404);
-      if(found&&!user&&found.author!=='customer'&&(found.label!==text(input.label,160,true)||found.url!==referenceUrl||found.assetId!==(referenceAsset?.id||null)))throw fail('제작자가 올린 원본 자료는 변경할 수 없습니다. 선호와 이유를 남겨 주세요.',403);
+      if(found&&!user&&found.author!=='customer'&&(found.label!==text(input.label,160,true)||found.url!==referenceUrl||found.assetId!==(referenceAsset?.id||null)))throw fail('제작팀이 올린 자료는 바꿀 수 없어요. 어떤 쪽인지와 이유만 남겨 주세요.',403);
       if(!found)capacity(studio.references,60);
       const value={id:found?.id||randomUUID(),label:text(input.label,160,true),url:referenceUrl,assetId:referenceAsset?.id||null,preference:input.preference,reason:text(input.reason),...stamp,...(found?{author:found.author,authorId:found.authorId,authorName:found.authorName}:{}),updatedAt:at};
       if(found)studio.references[studio.references.indexOf(found)]=value;else studio.references.push(value);
     }else if(action==='remove_reference'){
-      const found=studio.references.find(value=>value.id===id(input.id));if(!found)throw fail('참고 자료를 찾을 수 없습니다.',404);if(!user&&found.author!=='customer')throw fail('제작자가 올린 참고 자료는 제작자에게 변경을 요청해 주세요.',403);studio.references=studio.references.filter(value=>value.id!==found.id);
+      const found=studio.references.find(value=>value.id===id(input.id));if(!found)throw fail('참고자료를 찾지 못했어요.',404);if(!user&&found.author!=='customer')throw fail('제작팀이 올린 자료를 지우거나 바꾸려면 담당자에게 말해 주세요.',403);studio.references=studio.references.filter(value=>value.id!==found.id);
     }else if(action==='save_concept'||action==='save_scene'){
       const isConcept=action==='save_concept',list=isConcept?studio.concepts:studio.scenes,found=input.id?list.find(value=>value.id===id(input.id)):null;
-      if(input.id&&!found)throw fail('기획 항목을 찾을 수 없습니다.',404);if(!['internal','customer'].includes(input.visibility))throw fail('기획 공개 범위를 선택해 주세요.');
+      if(input.id&&!found)throw fail('이 카드를 찾지 못했어요.',404);if(!['internal','customer'].includes(input.visibility))throw fail('기획 공개 범위를 선택해 주세요.');
       if(found){capacity(studio.history,200);studio.history.push({...found,type:isConcept?'concept':'scene'});}else capacity(list,isConcept?12:60);
       const value={id:found?.id||randomUUID(),title:text(input.title,160,true),description:text(input.description),...pointer(studio,input,{image:true}),visibility:input.visibility,revision:(found?.revision||0)+1,...stamp};
       if(isConcept)value.tagline=text(input.tagline,500);
@@ -99,17 +102,17 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
       if(!Array.isArray(input.ids)||input.ids.length!==studio.scenes.length||new Set(input.ids).size!==input.ids.length||input.ids.some(value=>!studio.scenes.some(scene=>scene.id===value)))throw fail('모든 장면을 한 번씩 포함해 주세요.');
       studio.scenes=input.ids.map(value=>studio.scenes.find(scene=>scene.id===value));
     }else if(action==='select_concept'){
-      const concept=published(studio,'concepts',input.conceptId,input.conceptRevision);if(!concept.assetId&&!concept.imageUrl)throw fail('대표 이미지가 준비된 콘셉트를 확인한 뒤 선택해 주세요.',409);capacity(studio.conceptSelections,120);
+      const concept=published(studio,'concepts',input.conceptId,input.conceptRevision);if(!concept.assetId&&!concept.imageUrl)throw fail('그림이 준비된 콘셉트만 고를 수 있어요.',409);capacity(studio.conceptSelections,120);
       studio.selectedConcept={id:randomUUID(),conceptId:concept.id,conceptRevision:concept.revision,title:concept.title,text:text(input.text),...stamp};studio.conceptSelections.push(studio.selectedConcept);
     }else if(action==='review_scene'){
-      const scene=published(studio,'scenes',input.sceneId,input.sceneRevision);if(!['confirmed','changes','comment'].includes(input.status))throw fail('장면 검토 상태를 확인해 주세요.');capacity(studio.sceneReviews,240);
+      const scene=published(studio,'scenes',input.sceneId,input.sceneRevision);if(!['confirmed','changes','comment'].includes(input.status))throw fail('장면 의견 종류를 골라 주세요.');capacity(studio.sceneReviews,240);
       const review={id:randomUUID(),sceneId:scene.id,sceneRevision:scene.revision,title:scene.title,status:input.status,text:text(input.text,3000,input.status!=='confirmed'),...stamp};studio.sceneReviews.push(review);
       const sceneRequestWorkflows=recordSceneReview({...row,studio},review,{...clientProjects.sceneRequestContext(row),at});if(sceneRequestWorkflows)row={...row,sceneRequestWorkflows};
     }else if(action==='comment'){
-      if(!['project','concept','scene'].includes(input.targetType))throw fail('의견을 남길 대상을 확인해 주세요.');
+      if(!['project','concept','scene'].includes(input.targetType))throw fail('의견을 남길 곳을 찾지 못했어요.');
       let target=null;if(input.targetType!=='project'){
         const list=input.targetType==='concept'?'concepts':'scenes';target=studio[list].find(value=>value.id===id(input.targetId));
-        if(!target||!user&&target.visibility!=='customer')throw fail('기획 항목을 찾을 수 없습니다.',404);if(target.revision!==input.targetRevision)throw fail('최신 기획 내용을 확인해 주세요.',409);
+        if(!target||!user&&target.visibility!=='customer')throw fail('이 카드를 찾지 못했어요.',404);if(target.revision!==input.targetRevision)throw fail('카드 내용이 바뀌었어요. 최신 내용을 불러와 주세요.',409);
       }else if(input.targetId!=null||input.targetRevision!=null)throw fail('프로젝트 의견에는 별도 장면을 지정하지 마세요.');
       capacity(studio.comments,200);studio.comments.push({id:randomUUID(),targetType:input.targetType,targetId:target?.id||null,targetRevision:target?.revision||null,visibility:target?.visibility==='internal'?'internal':'customer',text:text(input.text,3000,true),...stamp});
     }
@@ -122,8 +125,8 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
   function addAsset(row,metadata,user){const studio=studioOf(row);capacity(studio.assets,120);const who=actor(row,user);studio.assets.push({...metadata,...who,at:clock()});commit(row,studio,'PULSE 기획 자료 등록',who);}
   function customerUpload(token,csrf,value,metadata){return store.transaction(()=>{const row=assertCustomerUpload(token,csrf,value);addAsset(row,metadata);const result=customerState(token);return {...result,asset:result.project.studio.assets.find(asset=>asset.id===metadata.id)};});}
   function staffUpload(user,projectId,value,metadata){return store.transaction(()=>{const row=assertStaffUpload(user,projectId,value);addAsset(row,metadata,user);const result=staffState(user,projectId);return {...result,asset:result.project.studio.assets.find(asset=>asset.id===metadata.id)};});}
-  function customerMedia(token,assetId){const {row}=customer(token),studio=studioOf(row),found=studio.assets.find(value=>value.id===id(assetId));if(!found||!visibleAssetIds(studio).has(found.id))throw fail('자료를 찾을 수 없습니다.',404);return found;}
-  function staffMedia(user,projectId,assetId){const row=clientProjects.project(user,projectId),found=studioOf(row).assets.find(value=>value.id===id(assetId));if(!found)throw fail('자료를 찾을 수 없습니다.',404);return found;}
+  function customerMedia(token,assetId){const {row}=customer(token),studio=studioOf(row),found=studio.assets.find(value=>value.id===id(assetId));if(!found||!visibleAssetIds(studio).has(found.id))throw fail('자료를 찾지 못했어요.',404);return found;}
+  function staffMedia(user,projectId,assetId){const row=clientProjects.project(user,projectId),found=studioOf(row).assets.find(value=>value.id===id(assetId));if(!found)throw fail('자료를 찾지 못했어요.',404);return found;}
   function customerAction(token,csrf,input){
     if(['confirm_delivery','submit_kickoff_source'].includes(input?.action)){customerWrite(token,csrf);clientProjects.customerAction(token,csrf,input);return customerState(token);}
     return store.transaction(()=>{
@@ -135,5 +138,7 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
       clientProjects.customerAction(token,csrf,input);return customerState(token);
     });
   }
-  return {customerState,staffState,customerMutate,staffMutate,assertCustomerUpload,assertStaffUpload,customerUpload,staffUpload,customerMedia,staffMedia,customerAction};
+  // 서버 안에서만 부른다: 자동 안내가 읽는 고객 화면 사실(고객용 프로젝트 보기 + 고객에게 공개된 스튜디오).
+  function customerSnapshot(projectId){const row=store.get('clientProjects',projectId);if(!row)throw fail('그 프로젝트를 찾지 못했어요.',404);return {...clientProjects.customerSnapshot(projectId),studio:view(row)};}
+  return {customerState,staffState,customerMutate,staffMutate,assertCustomerUpload,assertStaffUpload,customerUpload,staffUpload,customerMedia,staffMedia,customerAction,customerSnapshot};
 }

@@ -81,6 +81,18 @@ test('YouTube MP4 uses the same approval and scheduler flow with explicit audien
   const f=await fixture(t,{platform:'youtube'});const connected=await f.connect();assert.equal(connected.status,200,JSON.stringify(connected.data));const {job}=await f.prepare({format:'video',media:[f.asset(true)],options:{privacy:'unlisted',madeForKids:false}});await f.app.scanSocialPublishing();const saved=f.app.store.get('socialPublishJobs',job.id);assert.equal(saved.status,'published',JSON.stringify(saved));assert.equal(saved.publicVerifiedAt,null);assert.equal(f.calls.filter(c=>c.path==='/upload/youtube/v3/videos'&&c.method==='POST').length,1);const view=JSON.stringify((await f.api(f.admin,'/api/social/workspace')).data);assert.ok(!view.includes('upload_id=fixture'));assert.equal(f.grants.length,0);
 });
 
+test('unlisted and private YouTube posts are not registered for public performance tracking; public posts are',async t=>{
+  for(const privacy of ['unlisted','private','public']){
+    const f=await fixture(t,{platform:'youtube'});await f.connect();
+    f.setHook(({path,init})=>path==='/youtube/v3/videos'&&(init.method||'GET')==='GET'?json({items:[{id:'abcdefghijk',snippet:{channelId:'UCabcdefghijklmnopqrstuv',title:'직접 발행 시험',description:'확정한 게시문',publishedAt:'2026-10-14T10:00:00.000Z'},status:{uploadStatus:'processed',privacyStatus:privacy,selfDeclaredMadeForKids:false},processingDetails:{processingStatus:'succeeded'}}]}):null);
+    const {job}=await f.prepare({format:'video',media:[f.asset(true)],options:{privacy,madeForKids:false}});await f.app.scanSocialPublishing();
+    const saved=f.app.store.get('socialPublishJobs',job.id),entries=f.app.store.all('postPerformanceEntries');
+    assert.equal(saved.status,'published',JSON.stringify(saved));assert.ok(saved.outcomeLinkedAt,privacy+' outcome link finishes without a retry');assert.equal(saved.outcomeError??null,null);
+    if(privacy==='public'){assert.equal(entries.length,1);assert.equal(saved.performanceEntryId,entries[0].id);}
+    else{assert.equal(entries.length,0,privacy+' videos expose no public statistics to observe');assert.equal(saved.performanceEntryId,null);}
+  }
+});
+
 test('an explicitly rescheduled unsent YouTube failure can publish through the real scheduler',async t=>{
   const f=await fixture(t,{platform:'youtube'});await f.connect();const {job}=await f.prepare({format:'video',media:[f.asset(true)],options:{privacy:'unlisted',madeForKids:false}});
   f.setHook(({path,init})=>path==='/upload/youtube/v3/videos'&&init.method==='POST'?json({},503):null);await f.app.scanSocialPublishing();assert.equal(f.app.store.get('socialPublishJobs',job.id).status,'failed');assert.equal(f.calls.filter(c=>c.method==='PUT').length,0);

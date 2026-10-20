@@ -10,7 +10,7 @@ const project={id,revision:9,title:'일정 시험',customerName:'합성 고객',
 const state=(patch={})=>({mode:'staff',canEdit:true,project:structuredClone(project),tab:'strategy',demo:false,...patch});
 
 test('staff summary distinguishes agreed date, remaining production days and internal estimate',()=>{
-  const html=scheduleView(state());assert.match(html,/제작 일정·확인 지연/);assert.match(html,/오늘 확인 3건/);assert.match(html,/합의한 납품일/);assert.match(html,/2026-10-19/);assert.match(html,/남은 제작일로 계산한 예상일/);assert.match(html,/2026-10-16/);assert.match(html,/4일/);assert.match(html,/평일만 기준/);assert.match(html,/고객과 합의한 납품일은 자동으로 바뀌지 않습니다/);
+  const html=scheduleView(state());assert.match(html,/제작 일정·늦어진 확인/);assert.match(html,/오늘 확인 3건/);assert.match(html,/합의한 납품일/);assert.match(html,/2026-10-19/);assert.match(html,/남은 제작일로 본 예상 마감일/);assert.match(html,/2026-10-16/);assert.match(html,/4일/);assert.match(html,/평일만 기준/);assert.match(html,/고객과 정한 납품일은 바뀌지 않아요/);
 });
 
 test('customer and demo modes render no internal schedule even if the staff report is accidentally present',()=>{
@@ -24,7 +24,7 @@ test('the summary is common to staff project tabs and leaves the surrounding pro
 });
 
 test('disabled plans show only a small authorized setup link, with no old internal dates or estimates',()=>{
-  const s=state();s.project.schedule.enabled=false;const html=scheduleView(s);assert.match(html,/제작 일정 점검 설정/);assert.doesNotMatch(html,/2026-10-16|2099-|PRIVATE|오늘 확인|4일/);
+  const s=state();s.project.schedule.enabled=false;const html=scheduleView(s);assert.match(html,/일정 지켜보기 켜기/);assert.doesNotMatch(html,/2026-10-16|2099-|PRIVATE|오늘 확인|4일/);
   s.project.schedule.canEdit=false;assert.equal(scheduleView(s),'');s.project.schedule.canEdit=true;s.project.stage='archived';assert.equal(scheduleView(s),'');
   assert.equal(scheduleView(state({project:{...project,schedule:null}})),'');
 });
@@ -44,8 +44,8 @@ test('displayed dates, risk text and calendar labels are escaped instead of beco
 });
 
 test('zero production days and zero due checks are shown accurately without inventing missing dates',()=>{
-  const s=state();Object.assign(s.project.schedule,{remainingWorkDays:0,pendingCount:0,agreedDueDate:'',estimatedFinishDate:''});const html=scheduleView(s);assert.match(html,/오늘 확인 0건/);assert.match(html,/>0일</);assert.match(html,/아직 미확정/);assert.match(html,/아직 계산 전/);
-  Object.assign(s.project.schedule,{remainingWorkDays:null,pendingCount:null});const missing=scheduleView(s);assert.match(missing,/아직 미입력/);assert.match(missing,/확인 상태 불러오기 필요/);assert.doesNotMatch(missing,/NaN|undefined|null|오늘 확인 0건/);
+  const s=state();Object.assign(s.project.schedule,{remainingWorkDays:0,pendingCount:0,agreedDueDate:'',estimatedFinishDate:''});const html=scheduleView(s);assert.match(html,/오늘 확인 0건/);assert.match(html,/>0일</);assert.match(html,/아직 없음/);assert.match(html,/아직 없음/);
+  Object.assign(s.project.schedule,{remainingWorkDays:null,pendingCount:null});const missing=scheduleView(s);assert.match(missing,/아직 없음/);assert.match(missing,/상태를 다시 불러와 주세요/);assert.doesNotMatch(missing,/NaN|undefined|null|오늘 확인 0건/);
 });
 
 test('archived schedules show a record label rather than a current action count',()=>{

@@ -54,6 +54,38 @@ test('three prior same-account same-format observations expose descriptive media
   assert.deepEqual(comparison,{sampleCount:3,median:100,deltaPercent:100,status:'ready'});assert.equal(card.status,'ready');assert.ok(card.limits.some(text=>text.includes('통계적 유의성')));assert.ok(card.limits.some(text=>text.includes('원인을 증명하지')));assert.equal(card.experiments[0].id,'new-example');assert.match(card.experiments[0].reason,/원인은 아직 확인하지/);
 });
 
+test('four prior same-account same-format observations add a nearest-rank quarter standing and the v2 next step',t=>{
+  const priors=(f,id='saves')=>{for(const [hours,value]of [[0,50],[24,100],[48,150],[72,200]])f.entry({hours,metrics:{[id]:value}});};
+  let f=fixture(t);priors(f);const top=f.entry({hours:96,metrics:{saves:300}}),topCard=f.card(top);
+  assert.deepEqual(topCard.facts[0].comparison.standing,{label:'top25',p25:50,p75:150,sampleCount:4});
+  assert.equal(topCard.experiments[0].id,'repeat-format');assert.match(topCard.experiments[0].reason,/^상위 25% 지표: 저장\(같은 계정·형식 이전 4편 기준\)\. 원인은 아직 확인하지 않았습니다\.$/);
+  assert.match(f.learning.plan(f.users.owner,top.id,{experimentId:'repeat-format'}).input.editorialNote,/선택 실험: 같은 형식으로 세 편 더 만들기/);
+  f=fixture(t);priors(f);const bottom=f.card(f.entry({hours:96,metrics:{saves:40}}));
+  assert.equal(bottom.facts[0].comparison.standing.label,'bottom25');assert.equal(bottom.experiments[0].id,'new-hook-elsewhere');assert.ok(!bottom.experiments.some(row=>row.id==='repeat-format'));
+  f=fixture(t);priors(f);const middle=f.card(f.entry({hours:96,metrics:{saves:120}}));
+  assert.equal(middle.facts[0].comparison.standing.label,'middle');assert.ok(!middle.experiments.some(row=>['repeat-format','new-hook-elsewhere'].includes(row.id)));
+  // 이전 4편 [50,100,150,200] 중 150은 세 번째다 — 75번째 백분위와 같아도 상위 25%가 아니다(10-20 가운데 순위). 가장 큰 값과 같으면 상위다.
+  f=fixture(t);priors(f);const atEdge=f.card(f.entry({hours:96,metrics:{saves:150}}));assert.equal(atEdge.facts[0].comparison.standing.label,'middle','a value equal to the 75th percentile is not by itself in the top quarter');
+  f=fixture(t);priors(f);assert.equal(f.card(f.entry({hours:96,metrics:{saves:200}})).facts[0].comparison.standing.label,'top25','tying the best prior post is');
+  f=fixture(t);priors(f,'views');const viewsOnly=f.card(f.entry({hours:96,metrics:{views:300}}));
+  assert.equal(viewsOnly.facts[0].comparison.standing.label,'top25','views still show where they stand');assert.ok(!viewsOnly.experiments.some(row=>['repeat-format','new-hook-elsewhere'].includes(row.id)),'v2 §6: views alone never pick the next step');
+});
+
+test('a next step names every prior sample size when its metrics were compared against different numbers of posts',t=>{
+  const f=fixture(t);for(const [hours,saves,shares]of [[0,50,null],[12,60,null],[24,100,10],[36,110,20],[48,150,30],[60,200,40]])f.entry({hours,metrics:{saves,shares}});
+  const card=f.card(f.entry({hours:96,metrics:{saves:300,shares:50}}));
+  assert.deepEqual(card.facts.map(fact=>[fact.id,fact.comparison.standing?.sampleCount]),[['shares',4],['saves',6]]);
+  assert.equal(card.experiments[0].id,'repeat-format');assert.match(card.experiments[0].reason,/^상위 25% 지표: 공유·저장\(같은 계정·형식 이전 4~6편 기준\)\. 원인은 아직 확인하지 않았습니다\.$/);
+});
+
+test('flat histories and mixed metrics never claim a quarter direction or a single verdict',t=>{
+  let f=fixture(t);for(const hours of [0,24,48,72])f.entry({hours,metrics:{views:100}});
+  assert.equal(f.card(f.entry({hours:96,metrics:{views:100}})).facts[0].comparison.standing.label,'middle','equal history has no spread');
+  f=fixture(t);for(const [hours,saves,completionRatePct]of [[0,50,10],[24,100,20],[48,150,30],[72,200,40]])f.entry({hours,metrics:{saves,completionRatePct}});
+  const mixed=f.card(f.entry({hours:96,metrics:{saves:300,completionRatePct:5}}));
+  assert.deepEqual(mixed.facts.map(fact=>fact.comparison.standing.label),['top25','bottom25']);assert.ok(!mixed.experiments.some(row=>['repeat-format','new-hook-elsewhere'].includes(row.id)));
+});
+
 test('external format observations join matching package samples without relaxing provenance filters',t=>{
   const f=fixture(t),external=({format='youtube-shorts',...options}={})=>{const row=f.entry({linked:null,format:null,source:'api:youtube',...options});f.change(row,raw=>{raw.origin='external';raw.publicationFormat=format;});return row;};
   external({hours:0,metrics:{views:50}});f.entry({hours:24,source:'api:youtube',metrics:{views:100}});external({hours:48,metrics:{views:150}});
@@ -150,9 +182,9 @@ test('repeated reads and planning preserve the database and survive restart with
   assert.deepEqual(f.learning.workspace(f.users.owner),first);assert.deepEqual(f.store.db.prepare('SELECT kind,id,body FROM documents ORDER BY kind,id').all(),before);await f.restart();assert.deepEqual(f.learning.workspace(f.users.owner),first);assert.deepEqual(f.learning.plan(f.users.owner,row.id,{experimentId:'observe-again'}),plan);assert.deepEqual(f.store.all('contentDrafts'),[]);assert.deepEqual(f.store.all('messengerTasks'),[]);
 });
 
-test('all ten metrics retain exact values, units, provenance and observation times within the planning limit',t=>{
+test('every metric retains exact values, units, provenance and observation times within the planning limit',t=>{
   const f=fixture(t),metrics=Object.fromEntries(POST_PERFORMANCE_METRICS.map(definition=>[definition.id,definition.unit==='percent'?0:definition.unit==='seconds'?23.25:999999])),row=f.entry({metrics});const card=f.card(row),planned=f.learning.plan(f.users.owner,row.id,{experimentId:'observe-again'});
-  assert.equal(card.facts.length,10);assert.equal(card.missing.length,0);for(const definition of POST_PERFORMANCE_METRICS){const fact=card.facts.find(item=>item.id===definition.id);assert.equal(fact.value,metrics[definition.id]);assert.equal(fact.unit,definition.unit);assert.ok(planned.input.editorialNote.includes(definition.label+':'));assert.ok(planned.input.editorialNote.includes(fact.observedAt));}assert.ok(planned.input.editorialNote.length<=3000);
+  assert.equal(POST_PERFORMANCE_METRICS.length,14);assert.equal(card.facts.length,POST_PERFORMANCE_METRICS.length);assert.equal(card.missing.length,0);for(const definition of POST_PERFORMANCE_METRICS){const fact=card.facts.find(item=>item.id===definition.id);assert.equal(fact.value,metrics[definition.id]);assert.equal(fact.unit,definition.unit);assert.ok(planned.input.editorialNote.includes(definition.label+':'));assert.ok(planned.input.editorialNote.includes(fact.observedAt));}assert.ok(planned.input.editorialNote.length<=3000);
 });
 
 test('invalid future metric timestamps remain unknown instead of borrowing another metric observation time',t=>{
@@ -169,4 +201,43 @@ test('learning handoff reaches the real generator without turning the producer e
   const f=fixture(t),row=f.entry({metrics:{views:0}}),handoff=f.learning.plan(f.users.owner,row.id,{experimentId:'observe-again'}),input={...handoff.input,seriesId:'synkbrief-use'},plan=generateContentIdeas(input),baseline=generateContentIdeas({seriesId:'synkbrief-use',topic:row.title});
   assert.deepEqual(plan.ideas,baseline.ideas);assert.deepEqual(plan.personalization,baseline.personalization);assert.deepEqual(plan.authenticity,baseline.authenticity);assert.equal(plan.input.editorialNote,handoff.input.editorialNote);assert.ok(plan.input.editorialNote.includes(handoff.experiment.measure));
   assert.doesNotMatch(JSON.stringify(plan.ideas),/조회: 0회|선택 실험:|같은 형식으로 한 편 더 관측하기/);assert.match(renderBriefMarkdown(plan),/## 이번 편 제작 실험/);
+});
+test('window values join a missed 72-hour card, compare only with the same window kind and can pick the next step',t=>{
+  const f=fixture(t),win=(row,id,value,extra={})=>f.change(row,raw=>{const point=raw.checkpoints.find(item=>item.hours===72);point.metrics[id]=value;point.metricProvenance={...point.metricProvenance,[id]:{source:'api:youtube-analytics-api-v2',kind:'window',timeZone:'America/Los_Angeles',days:3,startDate:'2026-09-30',endDate:'2026-10-02',observedAt:after(130),recordedAt:after(130),timing:'window',lagged:true,measurementWindowMissed:false,unit:'percent',...extra}};});
+  for(const [hours,value]of [[0,50],[24,60],[48,70],[72,80]])win(f.entry({hours,recorded:false}),'averageViewPct',value);
+  f.entry({hours:60,metrics:{averageViewPct:10},source:'api:youtube-analytics-api-v2'});
+  const row=f.entry({hours:96,recorded:false});win(row,'averageViewPct',95);
+  assert.equal(f.store.get('postPerformanceEntries',row.id).checkpoints.find(item=>item.hours===72).status,'missed');
+  const card=f.card(row),fact=card.facts.find(item=>item.id==='averageViewPct');
+  assert.equal(card.status,'ready');assert.equal(fact.value,95);assert.ok(card.missing.includes('구독 증가'));assert.ok(!card.missing.includes('평균 조회율'));assert.equal(fact.lagged,true);assert.deepEqual(fact.window,{startDate:'2026-09-30',endDate:'2026-10-02',timeZone:'America/Los_Angeles'});
+  assert.deepEqual(fact.comparison,{sampleCount:4,median:65,deltaPercent:46.2,status:'ready',standing:{label:'top25',p25:50,p75:70,sampleCount:4}},'a same-source snapshot value never joins the window sample');
+  assert.equal(card.experiments[0].id,'repeat-format');assert.match(card.experiments[0].reason,/평균 조회율/);
+  assert.ok(card.limits.some(text=>/^평균 조회율은 YouTube Analytics가 늦게 채우는 값이라 게시 5일 뒤 2026-09-30~2026-10-02\(태평양시\) 창으로 받았습니다/.test(text)));
+  assert.match(f.learning.plan(f.users.owner,row.id,{experimentId:'repeat-format'}).input.editorialNote,/평균 조회율: 95% \| 자동 관측 · YouTube \| 2026-09-30~2026-10-02\(태평양시\) 창 \| 관측 /);
+  win(row,'averageViewPct',95,{days:7});const other=f.card(row).facts.find(item=>item.id==='averageViewPct');assert.equal(other.comparison.status,'unavailable','another window definition never compares');assert.equal(other.window,undefined);
+});
+
+test('estimated reel retention is labelled in the card and plan, and Shorts stayed-to-watch counts as early retention',t=>{
+  let f=fixture(t);const reel=f.entry({channelId:'instagram',format:'instagram-reels',linked:f.pack({formats:['instagram-reels']}),metrics:{earlyRetention3sPct:61.8},source:'api:instagram-login-api'});
+  f.change(reel,raw=>{raw.checkpoints.find(item=>item.hours===72).metricProvenance.earlyRetention3sPct.estimated=true;});
+  const card=f.card(reel);assert.equal(card.facts[0].estimated,true);for(const label of ['본 비율','평균 조회율','구독 증가','구독 취소'])assert.ok(!card.missing.includes(label),'YouTube-only metrics are not missing on a reel: '+label);assert.ok(card.limits.some(text=>text.startsWith('3초 유지율은 플랫폼이 추정')));
+  assert.match(f.learning.plan(f.users.owner,reel.id,{experimentId:'observe-again'}).input.editorialNote,/3초 유지율: 61\.8% \| 자동 관측 · Instagram \| 추정 \| 관측 /);
+  f=fixture(t);for(const hours of [0,24,48])f.entry({hours,metrics:{stayedToWatchPct:70}});const shorts=f.card(f.entry({metrics:{stayedToWatchPct:40}}));
+  const opening=shorts.experiments.find(item=>item.id==='opening');assert.ok(opening,'v2 §6 early retention includes the Shorts stayed-to-watch share');assert.match(opening.measure,/^72시간 본 비율을 /);
+});
+
+test('ties in small whole-number metrics do not call the middle a top or bottom quarter',t=>{
+  // 10-20: 이전 공유 [5,10,10,10]에서 중앙값 10을 상위로, 저장 [0,0,1,1]에서 0을 하위로 불러 다음 할 일을 정했다. 가운데 순위로 잰다.
+  const standing=(priors,current,id='shares')=>{const f=fixture(t);priors.forEach((value,i)=>f.entry({hours:i*24,metrics:{[id]:value}}));return f.card(f.entry({hours:priors.length*24,metrics:{[id]:current}})).facts[0].comparison.standing.label;};
+  assert.equal(standing([5,10,10,10],10),'middle');
+  assert.equal(standing([0,0,1,1],0,'saves'),'middle');assert.equal(standing([0,0,1,1],1,'saves'),'middle');
+  assert.equal(standing([1,2,3,4],4),'top25');assert.equal(standing([1,2,3,4],1),'bottom25');assert.equal(standing([1,2,3,4],3),'middle');assert.equal(standing([1,2,3,4],2),'middle');
+});
+
+test('a post registered without a workspace package is called unlinked, not an unreadable original',t=>{
+  // 10-20: 집계 자동 등록으로 연결 없는 기록이 흔해진다. 「현재 열 수 없어」는 고장처럼 읽혀, 연결이 있는데 못 읽는 경우에만 쓴다.
+  const f=fixture(t),unlinked=f.entry({linked:null,format:null}),broken=f.entry();
+  f.change(broken,raw=>{raw.publicationPackageId='missing-package';});
+  assert.ok(f.card(unlinked).limits.some(text=>text.includes('작업실 게시 준비와 연결되지 않은 게시물')));assert.ok(!f.card(unlinked).limits.some(text=>text.includes('현재 열 수 없어')));
+  assert.ok(f.card(broken).limits.some(text=>text.includes('연결된 원본을 현재 열 수 없어')));
 });

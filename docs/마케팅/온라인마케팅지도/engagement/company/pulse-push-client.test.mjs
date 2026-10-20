@@ -56,6 +56,23 @@ test('background project refresh and live polling never claim foreground custome
   for(const path of ['/pulse/api/live','/pulse/api/events','/pulse/api/device-notifications','/api/client-projects'])assert.equal(foregroundProjectOptions(path,{},true).headers,undefined);
   assert.equal(foregroundProjectOptions('/pulse/api/studio',{body:{action:'save_preferences'}},true).headers,undefined);
 });
+test('the PC app window explains in-app notices instead of browser settings and offers no device switch',()=>{
+  const pc={secure:true,serviceWorker:true,pushManager:true,notification:true,permission:'denied',ios:false,standalone:false,desktopApp:true};
+  for(const env of [pc,{...pc,permission:'default'},{...pc,pushManager:false}]){
+    const note=deviceAvailability(env);
+    assert.match(note,/PC 앱/);assert.match(note,/앱 안 알림/);assert.match(note,/초대 링크/);
+    assert.doesNotMatch(note,/사이트 설정|주소창|이 브라우저/);
+  }
+  // The PC window note wins over every browser-specific case the same environment could also report.
+  for(const other of [{ios:true},{embedded:true},{pushManager:false},{permission:'granted'},{secure:false},{android:true}])assert.equal(deviceAvailability({...pc,...other}),deviceAvailability(pc));
+  const panel=liveView({mode:'customer',desktopApp:true,live:{open:true,deviceReady:false,deviceNote:deviceAvailability(pc),notifications:[]}});
+  assert.doesNotMatch(panel,/data-action="device-notifications"|기기 알림 켜기/);
+  assert.match(panel,/data-action="read-notifications"/);assert.match(panel,/data-action="logout"/);assert.match(panel,/PC 앱에서는/);
+  assert.match(liveView({mode:'customer',live:{open:true,deviceReady:false,notifications:[]}}),/data-action="device-notifications"/);
+  const remember=desktopApp=>liveView({mode:'customer',desktopApp,live:{open:true,deviceReady:false,notifications:[],rememberKnown:true,remembered:false}});
+  assert.match(remember(true),/이 PC 앱에서 30일 동안 초대 링크 없이 열 수 있어요/);assert.doesNotMatch(remember(true),/이 브라우저/);
+  assert.match(remember(false),/이 브라우저에서 30일 동안 초대 링크 없이 열 수 있어요/);
+});
 test('a lost registration response preserves the subscribed browser endpoint for server reconciliation',()=>{
   for(const error of [new DeviceTimeout('late response'),{status:0},{status:408},{status:500},{name:'AbortError'}])assert.equal(rejectedDeviceRegistration(error),false);
   for(const status of [400,401,403,404,409])assert.equal(rejectedDeviceRegistration({status}),true);

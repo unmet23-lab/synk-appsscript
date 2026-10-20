@@ -1,20 +1,116 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { collectChannel, PLATFORM_CAPABILITIES } from './collectors.mjs';
+import { collectChannel, collectYoutubeWindows, PLATFORM_CAPABILITIES } from './collectors.mjs';
 import { canReadChannel, canWriteChannel } from './organization.mjs';
 import { lookupPerformancePost } from './post-performance-lookup.mjs';
 
 const KIND = 'postPerformanceEntries', LOCKS = 'postPerformanceLocks';
 const HOUR = 3600000, WINDOW = 6 * HOUR, LEASE = 3 * 60000;
+// 자동 등록(10-20): 채널 집계가 찾은 공개 게시물 중 게시 24시간 안의 것만 올린다 — 지난 관측 시점은 복원하지 않는다.
+// 한 번에 20편까지, 공식 수집이 되는 네 플랫폼만. 형식은 집계가 받은 영상 길이·릴스 여부에서 온다.
+const AUTO_TRACK_WINDOW = 24 * HOUR, AUTO_TRACK_BATCH = 20, AUTO_TRACK_PLATFORMS = new Set(['youtube', 'instagram', 'facebook', 'tiktok']);
+const FORMAT_PLATFORM = Object.freeze({ 'youtube-shorts': 'youtube', 'youtube-video': 'youtube', 'instagram-reels': 'instagram' });
 export const POST_PERFORMANCE_METRICS = Object.freeze([
   { id: 'views', label: '조회', unit: 'count' }, { id: 'likes', label: '좋아요', unit: 'count' },
   { id: 'comments', label: '댓글', unit: 'count' }, { id: 'shares', label: '공유', unit: 'count' },
   { id: 'saves', label: '저장', unit: 'count' }, { id: 'reach', label: '도달', unit: 'count' },
-  { id: 'earlyRetention3sPct', label: '3초 유지율', unit: 'percent', max: 100, description: '재생을 시작한 시청 중 3초 지점까지 유지된 비율입니다. 다른 초 지점의 유지율은 넣지 않습니다.' },
+  { id: 'earlyRetention3sPct', label: '3초 유지율', unit: 'percent', max: 100, description: '재생을 시작한 시청 중 3초 지점까지 유지된 비율입니다. 다른 초 지점의 유지율은 넣지 않습니다. Instagram 릴스는 건너뛴 비율(추정)에서 계산해 받습니다.' },
+  { id: 'stayedToWatchPct', label: '본 비율', unit: 'percent', max: 100, platforms: ['youtube'], description: 'YouTube 쇼츠 분석의 「본 비율 대 넘긴 비율」 가운데 본 비율입니다. 공개 API가 없어 스튜디오에서 확인해 직접 입력합니다.' },
   { id: 'averageWatchSeconds', label: '평균 시청 시간', unit: 'seconds', description: '이 게시물의 평균 시청 시간을 초로 입력합니다. 총 시청 시간이 아닙니다.' },
+  { id: 'averageViewPct', label: '평균 조회율', unit: 'percent', platforms: ['youtube'], description: '영상 길이 대비 평균으로 본 비율입니다(YouTube 평균 조회율). 반복 재생 때문에 100%를 넘을 수 있고 완주율이 아닙니다.' },
   { id: 'completionRatePct', label: '완주율', unit: 'percent', max: 100, description: '재생 시작 대비 영상 끝까지 시청한 비율입니다.' },
   { id: 'toolVisits', label: '맞춤 도구 유입', unit: 'count', description: '이 게시물에 연결한 구분 가능한 링크에서 확인한 도구 유입 수입니다. 채널 전체 방문 수는 넣지 않습니다.' },
+  { id: 'subscribersGained', label: '구독 증가', unit: 'count', platforms: ['youtube'], description: '이 영상에서 생긴 구독 수입니다(YouTube Analytics).' },
+  { id: 'subscribersLost', label: '구독 취소', unit: 'count', platforms: ['youtube'], description: '이 영상에서 생긴 구독 취소 수입니다(YouTube Analytics).' },
 ]);
 const metricIds = POST_PERFORMANCE_METRICS.map(metric => metric.id);
+const definitionOf = key => POST_PERFORMANCE_METRICS.find(item => item.id === key);
+const capabilityOf = platform => PLATFORM_CAPABILITIES.find(item => item.id === platform);
+const validValue = (value, definition) => typeof value === 'number' && Number.isFinite(value) && value >= 0 && (definition.unit !== 'count' || Number.isSafeInteger(value)) && (definition.max === undefined || value <= definition.max);
+// Metrics an official screen shows but no API returns: the reason says so and the value is entered by hand.
+const NO_API = Object.freeze({
+  youtube: { stayedToWatchPct: 'API 없음 · YouTube 스튜디오의 쇼츠 「본 비율 대 넘긴 비율」을 보고 직접 입력합니다.', completionRatePct: 'API 없음 · 완주율은 YouTube API가 바로 주지 않아 직접 입력합니다.' },
+  instagram: { completionRatePct: 'API 없음 · 완주율은 Instagram API가 바로 주지 않아 직접 입력합니다.' },
+});
+// Lagged Analytics metrics have no value "at" a checkpoint time. The 72-hour point reads a fixed window instead:
+// the publication date in Pacific Time and the next two days, once, five days after publication (the last
+// day is then 48~72 hours old). It fills only metrics the checkpoint left empty and is never fetched again.
+const WINDOW_TIME_ZONE = 'America/Los_Angeles', WINDOW_DAYS = 3, WINDOW_DUE = 120 * HOUR, WINDOW_OPEN = 72 * HOUR, WINDOW_BATCH = 10;
+const pacificDate = value => new Intl.DateTimeFormat('en-CA', { timeZone: WINDOW_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(value));
+const addDays = (date, days) => new Date(Date.parse(`${date}T00:00:00.000Z`) + days * 24 * HOUR).toISOString().slice(0, 10);
+const withoutLease = ({ leaseToken, leaseUntil, ...rest }) => rest;
+function windowPlan(row, checkpoint) {
+  if (checkpoint?.hours !== 72) return null;
+  if (checkpoint.window) return checkpoint.window;
+  const metrics = capabilityOf(row.platform)?.laggedMetrics || [];
+  if (!metrics.length || !Number.isFinite(Date.parse(row.publishedAt))) return null;
+  const startDate = pacificDate(row.publishedAt);
+  // closesAt is set on the first attempt: a late registration still gets its window, with bounded retries.
+  return { kind: 'window', timeZone: WINDOW_TIME_ZONE, days: WINDOW_DAYS, startDate, endDate: addDays(startDate, WINDOW_DAYS - 1), metrics: [...metrics],
+    dueAt: new Date(Date.parse(row.publishedAt) + WINDOW_DUE).toISOString(), closesAt: null, status: 'pending', attempts: 0, nextAttemptAt: null, fetchedAt: null, lastErrorCode: null, message: null };
+}
+const windowEligible = (plan, at) => !!plan && ['pending', 'retry', 'collecting'].includes(plan.status) && plan.dueAt <= at && (!plan.nextAttemptAt || plan.nextAttemptAt <= at) && !(plan.status === 'collecting' && plan.leaseUntil > at);
+const windowDetail = meta => meta?.kind === 'window' && meta.timeZone === WINDOW_TIME_ZONE && meta.days === WINDOW_DAYS && /^\d{4}-\d{2}-\d{2}$/.test(meta.startDate || '') && meta.endDate === addDays(meta.startDate, WINDOW_DAYS - 1);
+const sameWindowKind = (a, b) => windowDetail(a) && windowDetail(b) && a.source === b.source && a.unit === b.unit;
+// Keep window-filled values when a checkpoint observation is rebuilt (late manual entry on an unrecorded point).
+function keepWindowValues(previous, next) {
+  const metrics = { ...next.metrics }, metricProvenance = { ...next.metricProvenance }, unavailableReasons = { ...next.unavailableReasons };
+  for (const [key, meta] of Object.entries(previous.metricProvenance || {})) {
+    if (meta?.kind !== 'window' || metrics[key] !== null && metrics[key] !== undefined || !validValue(previous.metrics?.[key], definitionOf(key) || {})) continue;
+    metrics[key] = previous.metrics[key]; metricProvenance[key] = meta; delete unavailableReasons[key];
+  }
+  return { ...next, metrics, metricProvenance, unavailableReasons };
+}
+// Automatic derivations from collectors (estimated reel retention, unit conversion) keep their raw value.
+function derivation(detail) {
+  if (!detail || typeof detail !== 'object') return {};
+  const result = {};
+  if (typeof detail.derivedFrom === 'string' && /^[a-z_]{1,60}$/.test(detail.derivedFrom)) result.derivedFrom = detail.derivedFrom;
+  if (typeof detail.rawValue === 'number' && Number.isFinite(detail.rawValue)) result.rawValue = detail.rawValue;
+  if (['percent', 'milliseconds', 'seconds'].includes(detail.rawUnit)) result.rawUnit = detail.rawUnit;
+  if (detail.estimated === true) result.estimated = true;
+  return result;
+}
+// Fill only empty metrics of the 72-hour point; values recorded at that time (or by hand) stay as they are.
+function applyWindow(checkpoint, plan, video, { at, source }) {
+  const values = {}, filled = [], kept = [];
+  for (const key of plan.metrics) {
+    const definition = definitionOf(key), value = video.metrics?.[key];
+    if (!definition || !validValue(value, definition)) continue;
+    if (checkpoint.metrics?.[key] !== null && checkpoint.metrics?.[key] !== undefined) { kept.push(key); continue; }
+    values[key] = value; filled.push(key);
+  }
+  const meta = { source, kind: 'window', timeZone: plan.timeZone, days: plan.days, startDate: plan.startDate, endDate: plan.endDate, observedAt: at, recordedAt: at, timing: 'window', lagged: true, measurementWindowMissed: false };
+  const unavailableReasons = { ...checkpoint.unavailableReasons };
+  for (const key of filled) delete unavailableReasons[key];
+  for (const key of plan.metrics) if (!filled.includes(key) && !kept.includes(key)) unavailableReasons[key] = `YouTube Analytics의 ${plan.startDate}~${plan.endDate}(태평양시) 창 조회에 이 지표 값이 없었습니다.`;
+  return { ...checkpoint, metrics: { ...checkpoint.metrics, ...values }, unavailableReasons,
+    metricProvenance: { ...checkpoint.metricProvenance, ...Object.fromEntries(filled.map(key => [key, { ...meta, unit: definitionOf(key).unit }])) },
+    window: { ...plan, status: 'recorded', fetchedAt: at, views: Number.isSafeInteger(video.views) ? video.views : null, filled, kept, nextAttemptAt: null, lastErrorCode: null,
+      message: kept.length ? `이미 기록된 ${topic(kept.map(key => definitionOf(key).label).join('·'))} 그대로 두고 빈 지표만 창 값으로 채웠습니다.` : '태평양시 게시일부터 사흘의 YouTube Analytics 값을 빈 지표에 채웠습니다.' } };
+}
+// Korean topic particle by the final consonant of the last syllable (「공유는」, 「평균 조회율은」).
+const topic = word => { const code = String(word).slice(-1).charCodeAt(0) - 0xac00; return word + (code >= 0 && code <= 11171 && code % 28 === 0 ? '는' : '은'); };
+// A window that Analytics answered but could not fill yet (not processed, rejected, transient) is tried again within
+// 72 hours of that first answer, then left to manual entry.
+function windowRetry(plan, at, { code, retryable = false, message }) {
+  const closesAt = plan.closesAt || new Date(Date.parse(at) + WINDOW_OPEN).toISOString();
+  if (at >= closesAt) return { ...plan, closesAt, status: 'unavailable', nextAttemptAt: null, lastErrorCode: code, message: `${message} 첫 확인부터 72시간이 지나 더 확인하지 않습니다. 공식 화면에서 확인한 값은 직접 입력할 수 있습니다.` };
+  const delay = retryable ? Math.min(15 * 2 ** Math.max(0, (plan.attempts || 1) - 1), 60) * 60000 : 6 * HOUR;
+  return { ...plan, closesAt, status: 'retry', nextAttemptAt: new Date(Math.min(Date.parse(at) + delay, Date.parse(closesAt))).toISOString(), lastErrorCode: code, message };
+}
+// A missing grant or connection waits for a reconnect without spending those 72 hours: the window is a recount of
+// fixed dates and means the same whenever it is read.
+const WINDOW_WAIT_CODES = new Set(['AUTH_REQUIRED', 'ACCOUNT_MISMATCH', 'MANUAL_ONLY', 'CONNECTION_REQUIRED', 'CONNECTION_CHANGED']);
+// 기다림에도 끝이 있다. 창 시작(게시 5일 뒤)부터 30일이 지나면 직접 입력으로 넘긴다 — 공개 읽기·API 키 연결은 권한이 없어 이 대기가
+// 끝나지 않는데, 집계 자동 등록으로 그런 유튜브 기록이 늘면 6시간마다 도는 대기가 기록 수만큼 쌓인다(10-20).
+const WINDOW_WAIT_LIMIT = 30 * 24 * HOUR;
+const windowWait = (plan, at, code, message) => Date.parse(at) >= Date.parse(plan.dueAt) + WINDOW_WAIT_LIMIT
+  ? { ...plan, status: 'unavailable', nextAttemptAt: null, lastErrorCode: code, message: '채널 연결·권한을 30일 동안 기다렸지만 창 지표를 받지 못해 더 확인하지 않습니다. 공식 화면에서 확인한 값은 직접 입력할 수 있습니다.' }
+  : { ...plan, status: 'retry', nextAttemptAt: new Date(Date.parse(at) + 6 * HOUR).toISOString(), lastErrorCode: code, message };
+const WINDOW_WAIT_MESSAGES = { AUTH_REQUIRED: 'YouTube Analytics 조회 권한이 없어 받지 못했습니다. 채널을 통계 권한까지 다시 연결하면 다음 확인 때 받습니다(그때까지 6시간마다 확인).', ACCOUNT_MISMATCH: '연결한 계정이 이 채널의 소유자로 확인되지 않아 받지 못했습니다. 채널 연결을 확인하면 다음 확인 때 받습니다.' };
+const youtubeVideoId = row => { try { const normalized = normalizePerformancePostUrl(row.url); return normalized.platform === 'youtube' ? normalized.externalId : null; } catch { return null; } };
+// 연결이 바뀐 것(재연결·토큰 갱신·담당 변경과 겹침)은 새 연결로 곧 다시 본다. 채널이 정말 멈췄으면 다음 회차의 확인이 사람 일로 넘긴다(10-20).
+const failureOf = caught => ({ code: ['RATE_LIMITED', 'AUTH_REQUIRED', 'TIMEOUT', 'NETWORK_ERROR', 'MANUAL_ONLY', 'CONNECTION_CHANGED', 'ACCOUNT_MISMATCH', 'CANCELLED'].includes(caught?.code) ? caught.code : 'COLLECTION_FAILED', retryable: caught?.retryable === true || caught?.code === 'CONNECTION_CHANGED' });
 const fail = (message, status = 400) => Object.assign(new Error(message), { status });
 const cleanText = (value, max = 200) => typeof value === 'string' ? value.trim().slice(0, max) : '';
 const emptyMetrics = () => Object.fromEntries(metricIds.map(key => [key, null]));
@@ -58,23 +154,30 @@ export function normalizePerformancePostUrl(input) {
   throw fail('지원하는 플랫폼의 게시물 주소를 입력해 주세요. 프로필·단축·공유 링크는 사용할 수 없습니다.');
 }
 
-function valuesAndReasons(values, platform, { manual = false, unavailable = [] } = {}) {
-  const supported = new Set(PLATFORM_CAPABILITIES.find(item => item.id === platform)?.metrics || []), metrics = {}, unavailableReasons = {};
+// transient: 이번 응답에 일시 오류(한도·시간 초과·연결)가 있었다. 그때 응답에 칸이 있는데 빈 지원 지표는 「제공하지 않음」이 아니라 「일시 오류로 못 받음」으로 남긴다(10-20).
+function valuesAndReasons(values, platform, { manual = false, unavailable = [], hours = null, transient = false } = {}) {
+  const capability = capabilityOf(platform), supported = new Set([...(capability?.metrics || []), ...(capability?.postMetrics || [])]), lagged = new Set(manual ? [] : capability?.laggedMetrics || []), metrics = {}, unavailableReasons = {};
   for (const key of metricIds) {
-    const value = values?.[key], definition = POST_PERFORMANCE_METRICS.find(item => item.id === key);
-    const valid = typeof value === 'number' && Number.isFinite(value) && value >= 0 && (definition.unit !== 'count' || Number.isSafeInteger(value)) && (definition.max === undefined || value <= definition.max);
-    if (manual && value !== undefined && value !== null && value !== '' && !valid) throw fail(definition.unit === 'percent' ? '비율은 0~100% 사이 숫자로 입력해 주세요.' : definition.unit === 'seconds' ? '시청 시간은 0 이상의 초 단위 숫자로 입력해 주세요.' : '성과 횟수는 0 이상의 정수로 입력해 주세요.');
-    metrics[key] = valid && (manual || supported.has(key)) ? value : null;
-    if (metrics[key] === null) unavailableReasons[key] = manual ? '직접 확인한 값이 입력되지 않았습니다.' : !supported.has(key) || unavailable.includes(key) ? '현재 플랫폼 연결에서 제공하지 않는 지표입니다.' : '이 게시물의 수치를 API 응답에서 확인하지 못했습니다.';
+    const value = values?.[key], definition = definitionOf(key);
+    const valid = validValue(value, definition);
+    if (manual && value !== undefined && value !== null && value !== '' && !valid) throw fail(definition.unit === 'percent' ? (definition.max === undefined ? '비율은 0 이상의 숫자로 입력해 주세요.' : '비율은 0~100% 사이 숫자로 입력해 주세요.') : definition.unit === 'seconds' ? '시청 시간은 0 이상의 초 단위 숫자로 입력해 주세요.' : '성과 횟수는 0 이상의 정수로 입력해 주세요.');
+    metrics[key] = valid && (manual || supported.has(key) && !lagged.has(key)) ? value : null;
+    if (metrics[key] === null) unavailableReasons[key] = manual ? '직접 확인한 값이 입력되지 않았습니다.'
+      : lagged.has(key) ? (hours === 72 ? '늦게 반영되는 YouTube Analytics 지표라 이 시각 값으로 기록하지 않습니다. 게시 5일 뒤 고정 창(태평양시 게시일부터 사흘) 값으로 채웁니다.' : '늦게 반영되는 YouTube Analytics 지표라 이 지점에는 기록하지 않습니다.')
+      : NO_API[platform]?.[key] || (transient && supported.has(key) && values?.[key] !== undefined ? '플랫폼의 일시 오류로 이 시점의 수치를 받지 못했습니다. 관측 기간 안에 다시 확인하지 못했습니다.' : !supported.has(key) || unavailable.includes(key) ? '현재 플랫폼 연결에서 제공하지 않는 지표입니다.' : '이 게시물의 수치를 API 응답에서 확인하지 못했습니다.');
   }
   return { metrics, unavailableReasons };
 }
+// 일시 오류로 지원 지표가 빈 관측은 관측 기간 안에서 이만큼까지 다시 확인한 뒤에 있는 값만 기록한다.
+const GAP_ATTEMPTS = 4, GAP_LAST_CHANCE = 30 * 60000;
 
-export function createPostPerformanceService({ store, clock = () => new Date().toISOString(), collector = collectChannel, fetchImpl = globalThis.fetch,
+export function createPostPerformanceService({ store, clock = () => new Date().toISOString(), collector = collectChannel, windowCollector = null, fetchImpl = globalThis.fetch,
   getCredentials = channel => ({ ...store.secret(`provider:${channel.platform}`), ...store.secret(`channel:${channel.id}`) }),
   isConnected = channel => !channel.collectionDisabled && !!(store.secret(`channel:${channel.id}`)?.accessToken || channel.platform === 'youtube' && (store.secret(`channel:${channel.id}`)?.apiKey || store.secret('provider:youtube')?.apiKey)),
+  autoTrack = false, collectTimeoutMs = 120000,
 } = {}) {
   if (!store) throw new Error('Post performance requires a store.');
+  const readWindows = windowCollector || ((channel, credentials, options) => collectYoutubeWindows(channel, credentials, { ...options, fetchImpl }));
   const activeJobs = new Set(), controllers = new Set();
   let stopped = false;
   const stamp = () => iso(clock(), '서버 시각');
@@ -150,33 +253,49 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
     const row = store.get(KIND, id); if (!row) throw fail('게시물 기록을 찾을 수 없습니다.', 404);
     channelFor(user, row.channelId, write); return row;
   }
-  function comparison(row, checkpoint, all) {
-    const prior = all.filter(other => other.id !== row.id && other.channelId === row.channelId && other.publishedAt < row.publishedAt)
-      .map(other => other.checkpoints.find(item => item.hours === checkpoint.hours))
-      .filter(item => item?.status === 'recorded' && item.observedAt && Date.parse(item.observedAt) <= Date.parse(item.closesAt));
+  // 같은 채널·같은 형식(쇼츠·일반 영상·릴스)의 이전 기록과만 견준다 — 학습 카드와 같은 조건이다(10-20: 쇼츠를 긴 영상 중앙값과 견줘 +9900%가 나왔다).
+  // ms는 한 조회 안에서 시각 문자열을 한 번만 해석하는 함수다(지표 × 이전 기록마다 다시 해석하면 기록이 늘수록 느려진다).
+  function comparison(row, checkpoint, all, ms = Date.parse) {
+    const format = row.publicationFormat || null;
+    const points = all.filter(other => other.id !== row.id && other.channelId === row.channelId && (other.publicationFormat || null) === format && other.publishedAt < row.publishedAt)
+      .map(other => other.checkpoints.find(item => item.hours === checkpoint.hours)).filter(Boolean);
+    const prior = points.filter(item => item.status === 'recorded' && item.observedAt && ms(item.observedAt) <= ms(item.closesAt));
     return Object.fromEntries(metricIds.map(key => {
-      const meta = checkpoint.metricProvenance?.[key], unit = POST_PERFORMANCE_METRICS.find(item => item.id === key).unit;
-      const currentValid = checkpoint.status === 'recorded' && meta && !meta.measurementWindowMissed;
-      const values = currentValid ? prior.filter(item => {
+      const meta = checkpoint.metricProvenance?.[key], unit = definitionOf(key).unit, windowed = meta?.kind === 'window';
+      // A window value is a platform recount of fixed dates: it is compared only with the same window kind and has no
+      // observation-delay rule, whatever happened to the snapshot at that point.
+      const currentValid = windowed ? windowDetail(meta) && meta.unit === unit : checkpoint.status === 'recorded' && meta && !meta.measurementWindowMissed;
+      const offset = currentValid && !windowed ? ms(meta.observedAt) - ms(checkpoint.dueAt) : null;
+      const values = currentValid ? (windowed ? points : prior).filter(item => {
         const previous = item.metricProvenance?.[key];
-        return previous && !previous.measurementWindowMissed && previous.unit === unit && previous.source === meta.source
-          && Math.abs((Date.parse(previous.observedAt) - Date.parse(item.dueAt)) - (Date.parse(meta.observedAt) - Date.parse(checkpoint.dueAt))) <= 15 * 60000;
+        if (windowed) return sameWindowKind(previous, meta);
+        return previous && previous.kind !== 'window' && !previous.measurementWindowMissed && previous.unit === unit && previous.source === meta.source
+          && Math.abs((ms(previous.observedAt) - ms(item.dueAt)) - offset) <= 15 * 60000;
       }).map(item => item.metrics?.[key]).filter(value => typeof value === 'number' && Number.isFinite(value)).sort((a, b) => a - b) : [];
       const middle = Math.floor(values.length / 2), median = values.length ? values.length % 2 ? values[middle] : (values[middle - 1] + values[middle]) / 2 : null;
       const value = currentValid ? checkpoint.metrics[key] : null;
       return [key, { sampleCount: values.length, median, delta: value !== null && value !== undefined && median !== null ? value - median : null, deltaPercent: value !== null && value !== undefined && median > 0 ? Math.round((value - median) / median * 1000) / 10 : null }];
     }));
   }
-  function view(user, row, all = store.all(KIND)) {
+  // The 72-hour point of a YouTube post always shows its window plan, stored or not yet attempted.
+  function publicCheckpoint(row, checkpoint) {
+    const safe = withoutLease(checkpoint), plan = windowPlan(row, checkpoint);
+    return plan ? { ...safe, window: withoutLease(plan) } : safe;
+  }
+  function view(user, row, all = store.all(KIND), ms = Date.parse) {
     const channel = channelFor(user, row.channelId), writable = canWriteChannel(currentUser(user), channel);
     return { ...structuredClone(row), channelName: channel.displayName || channel.handle || channel.id, canEdit: writable,
-      checkpoints: row.checkpoints.map(checkpoint => { const { leaseToken, leaseUntil, ...safe } = checkpoint; return { ...structuredClone(safe), comparison: comparison(row, checkpoint, all) }; }) };
+      checkpoints: row.checkpoints.map(checkpoint => ({ ...structuredClone(publicCheckpoint(row, checkpoint)), comparison: comparison(row, checkpoint, all, ms) })) };
   }
   function list(user) {
     user = currentUser(user); const all = store.all(KIND);
     const channels = store.all('channels').filter(channel => channel.active !== false && canReadChannel(user, channel));
     const readable = new Set(channels.map(channel => channel.id));
-    return { entries: all.filter(row => readable.has(row.channelId)).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)).map(row => view(user, row, all)),
+    // comparison()은 같은 채널의 이전 기록만 본다. 채널별로 미리 묶어 「전체 기록 × 전체 기록」 계산을 피한다.
+    const sameChannel = new Map(), parsed = new Map();
+    for (const row of all) { if (!sameChannel.has(row.channelId)) sameChannel.set(row.channelId, []); sameChannel.get(row.channelId).push(row); }
+    const ms = value => { let time = parsed.get(value); if (time === undefined) { time = Date.parse(value); parsed.set(value, time); } return time; };
+    return { entries: all.filter(row => readable.has(row.channelId)).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)).map(row => view(user, row, sameChannel.get(row.channelId), ms)),
       channels: channels.map(channel => ({ id: channel.id, platform: channel.platform, displayName: channel.displayName || channel.handle || channel.id, canEdit: canWriteChannel(user, channel), connected: isConnected(channel) })),
       canWrite: channels.some(channel => canWriteChannel(user, channel)), lookupAvailable: true, metricDefinitions: POST_PERFORMANCE_METRICS, checkpointHours: [24, 72], captureWindowHours: 6 };
   }
@@ -184,7 +303,7 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
   // its whole channel history (posts² work per call).
   function observations(user) {
     user = currentUser(user); const readable = new Set(store.all('channels').filter(channel => channel.active !== false && canReadChannel(user, channel)).map(channel => channel.id));
-    return { entries: store.all(KIND).filter(row => readable.has(row.channelId)).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)).map(row => ({ ...row, checkpoints: row.checkpoints.map(({ leaseToken, leaseUntil, ...safe }) => safe) })),
+    return { entries: store.all(KIND).filter(row => readable.has(row.channelId)).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)).map(row => ({ ...row, checkpoints: row.checkpoints.map(checkpoint => publicCheckpoint(row, checkpoint)) })),
       metricDefinitions: POST_PERFORMANCE_METRICS };
   }
   // Link checks need current source/permission only, not the full analytics
@@ -197,7 +316,7 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
     return { id: row.id, url: row.url, canEdit: canWriteChannel(user, channel) };
   }
   function register(user, input = {}) { return registerStored(user, input); }
-  function registerStored(user, input = {}, verified = false) {
+  function registerStored(user, input = {}, verified = false, auto = false) {
     const channel = channelFor(user, input.channelId, true), url = normalizePerformancePostUrl(input.url), at = stamp(), publishedAt = iso(input.publishedAt, '게시 시각');
     const publicationFormat=input.publicationFormat||null;
     if(publicationFormat&&!['youtube-shorts','youtube-video','instagram-reels'].includes(publicationFormat))throw fail('게시한 영상 형식을 확인해 주세요.');
@@ -208,6 +327,13 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
     const id = createHash('sha256').update(`${channel.id}\0${url.identity}`).digest('hex');
     const result = store.transaction(() => {
       const previous = store.get(KIND, id);
+      if(previous&&previous.origin==='auto'&&!auto){
+        // 집계가 먼저 자동 등록한 기록은 워크스페이스 게시·직접 등록이 이어받는다. 관측 기록은 그대로 두고 묶음·형식·등록자만
+        // 새 등록으로 바꾼다 — 영상 길이로 짐작한 형식은 게시 묶음이나 사람이 고른 형식에 진다.
+        const { origin: _auto, ...kept } = previous;
+        const adopted={...kept,publicationPackageId:cleanText(input.publicationPackageId,100)||null,publicationFormat:publicationFormat||previous.publicationFormat||null,...(verified&&!input.publicationPackageId?{origin:'external'}:{}),title:cleanText(input.title)||previous.title,createdBy:user.id,updatedAt:at};
+        store.put(KIND,id,adopted);return {row:adopted,existing:true,linked:true};
+      }
       if(previous){
         if(publicationFormat&&previous.publicationFormat&&previous.publicationFormat!==publicationFormat)throw fail('이미 다른 영상 형식으로 연결한 게시 주소입니다.',409);
         if(input.publicationPackageId&&previous.publicationPackageId&&previous.publicationPackageId!==input.publicationPackageId)throw fail('이미 다른 게시 묶음에 연결한 주소입니다.',409);
@@ -219,7 +345,7 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
       }
       if (store.all(KIND).filter(row => row.channelId === channel.id).length >= 2000) throw fail('이 채널의 성과 기록 한도에 도달했습니다.', 409);
       const row = { id, channelId: channel.id, platform: channel.platform, url: url.canonicalUrl, postIdentity: url.identity, title: cleanText(input.title), publicationPackageId: cleanText(input.publicationPackageId, 100) || null,
-        publicationFormat, ...(verified&&!input.publicationPackageId?{origin:'external'}:{}), publishedAt, active: true, createdAt: at, updatedAt: at, createdBy: user.id, checkpoints: [24, 72].map(hours => {
+        publicationFormat, ...(auto?{origin:'auto'}:verified&&!input.publicationPackageId?{origin:'external'}:{}), publishedAt, active: true, createdAt: at, updatedAt: at, createdBy: user.id, checkpoints: [24, 72].map(hours => {
           const dueAt = atPlus(publishedAt, hours * HOUR), closesAt = atPlus(dueAt, WINDOW), missed = at > closesAt;
           return { hours, dueAt, closesAt, status: missed ? 'missed' : 'pending', timing: missed ? 'missed' : null, observedAt: null, recordedAt: null, delayMinutes: null, recordingDelayMinutes: null,
             metrics: emptyMetrics(), unavailableReasons: Object.fromEntries(metricIds.map(key => [key, '아직 확인한 값이 없습니다. 실제 0과 구분합니다.'])), source: null, attempts: 0, nextAttemptAt: null, message: missed ? '등록 전에 관측 시간이 지나 과거 수치를 자동 복원할 수 없습니다.' : null };
@@ -228,14 +354,14 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
     });
     return { entry: view(user, result.row), existing: result.existing, ...(result.linked?{linked:true}:{}) };
   }
-  function observation(checkpoint, values, { observedAt, recordedAt, source, note = '', unavailable = [], platform, manual = false }) {
+  function observation(checkpoint, values, { observedAt, recordedAt, source, note = '', unavailable = [], platform, manual = false, details = null, transient = false }) {
     const delayMinutes = Math.max(0, Math.round((Date.parse(observedAt) - Date.parse(checkpoint.dueAt)) / 60000));
-    const normalized = valuesAndReasons(values, platform, { manual, unavailable }), timing = delayMinutes > 15 ? 'late' : 'on-time', measurementWindowMissed = Date.parse(observedAt) > Date.parse(checkpoint.closesAt);
-    const metricProvenance = Object.fromEntries(POST_PERFORMANCE_METRICS.filter(item => normalized.metrics[item.id] !== null).map(item => [item.id, { source, observedAt, recordedAt, unit: item.unit, timing, measurementWindowMissed }]));
-    return { ...checkpoint, ...normalized, metricProvenance, status: 'recorded', timing, observedAt, recordedAt,
+    const normalized = valuesAndReasons(values, platform, { manual, unavailable, hours: checkpoint.hours, transient }), timing = delayMinutes > 15 ? 'late' : 'on-time', measurementWindowMissed = Date.parse(observedAt) > Date.parse(checkpoint.closesAt);
+    const metricProvenance = Object.fromEntries(POST_PERFORMANCE_METRICS.filter(item => normalized.metrics[item.id] !== null).map(item => [item.id, { source, observedAt, recordedAt, unit: item.unit, timing, measurementWindowMissed, ...(manual ? {} : derivation(details?.[item.id])) }]));
+    return keepWindowValues(checkpoint, { ...checkpoint, ...normalized, metricProvenance, status: 'recorded', timing, observedAt, recordedAt,
       delayMinutes, recordingDelayMinutes: Math.max(0, Math.round((Date.parse(recordedAt) - Date.parse(checkpoint.dueAt)) / 60000)), source, note,
       nextAttemptAt: null, lastErrorCode: null, measurementWindowMissed,
-      message: manual ? '사용자가 직접 확인한 누적값입니다. 확인 시각과 서버 기록 시각을 구분합니다.' : '서버가 이 시각에 관측한 누적값입니다. 정확한 목표 시각의 과거 분석값은 아닙니다.' };
+      message: manual ? '사용자가 직접 확인한 누적값입니다. 확인 시각과 서버 기록 시각을 구분합니다.' : '서버가 이 시각에 관측한 누적값입니다. 정확한 목표 시각의 과거 분석값은 아닙니다.' });
   }
   function manualCheckpoint(user, id, hours, input = {}) {
     hours = Number(hours); if (![24, 72].includes(hours)) throw fail('24시간 또는 72시간 확인을 선택해 주세요.');
@@ -256,7 +382,11 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
         updated = { ...checkpoint, metrics: { ...checkpoint.metrics, ...supplement.metrics }, unavailableReasons,
           metricProvenance: { ...checkpoint.metricProvenance, ...supplemental.metricProvenance }, hasManualSupplement: true,
           supplements: [...(checkpoint.supplements || []), supplement], latestRecordedAt: at };
-      } else updated = observation(checkpoint, values.metrics, { observedAt, recordedAt: at, source: 'manual', note: cleanText(input.note, 1000), platform: row.platform, manual: true });
+      } else {
+        // Values a window report already filled count as recorded even while the snapshot itself is missing.
+        if (metricIds.some(key => values.metrics[key] !== null && checkpoint.metricProvenance?.[key]?.kind === 'window' && checkpoint.metrics?.[key] !== null && checkpoint.metrics?.[key] !== undefined)) throw fail('이미 기록한 지표는 덮어쓸 수 없습니다. 값이 없는 지표만 보완해 주세요.', 409);
+        updated = observation(checkpoint, values.metrics, { observedAt, recordedAt: at, source: 'manual', note: cleanText(input.note, 1000), platform: row.platform, manual: true });
+      }
       delete updated.leaseToken; delete updated.leaseUntil;
       const next = { ...row, updatedAt: at, checkpoints: row.checkpoints.map(item => item.hours === hours ? updated : item) };
       store.put(KIND, id, next); return next;
@@ -282,49 +412,111 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
     });
     return { entry: view(user, next) };
   }
+  // 크롬·앱에서 바로 올린 게시물도 워크스페이스 게시와 같은 24·72시간 관측을 받게 한다(10-20). 채널 집계가 이미 저장한
+  // 공개 게시물만 읽으므로 이 단계는 SNS를 부르지 않는다. 등록자는 첫 활성 관리자(서버 예약 수집과 같은 주체)다.
+  function discover() {
+    const summary = { registered: 0, skipped: 0 };
+    if (!autoTrack || stopped) return summary;
+    const actor = store.all('users').find(user => user.role === 'admin' && user.active !== false);
+    if (!actor) return summary;
+    const at = stamp(), now = Date.parse(at), since = now - AUTO_TRACK_WINDOW;
+    const channels = new Map(store.all('channels').filter(channel => channel.active !== false && channel.hidden !== true && AUTO_TRACK_PLATFORMS.has(channel.platform) && isConnected(channel)).map(channel => [channel.id, channel]));
+    if (!channels.size) return summary;
+    const known = new Set(store.all(KIND).map(row => row.id));
+    const fresh = store.all('posts').filter(post => {
+      const published = Date.parse(post.publishedAt);
+      return channels.has(post.channelId) && String(post.source || '').startsWith('api:') && !post.unavailableAt && !(post.expiresAt && Date.parse(post.expiresAt) <= now)
+        && Number.isFinite(published) && published > since && published <= now;
+    }).sort((a, b) => Date.parse(a.publishedAt) - Date.parse(b.publishedAt));
+    for (const post of fresh) {
+      if (summary.registered >= AUTO_TRACK_BATCH) break;
+      const channel = channels.get(post.channelId);
+      let url; try { url = normalizePerformancePostUrl(post.url); } catch { summary.skipped++; continue; }
+      // Facebook 피드 글은 워크스페이스 게시가 다른 주소 모양으로 등록할 수 있어 영상·릴스만 자동으로 올린다.
+      if (url.platform !== channel.platform || channel.platform === 'facebook' && !url.externalId.startsWith('video:')) { summary.skipped++; continue; }
+      if (known.has(createHash('sha256').update(`${channel.id}\0${url.identity}`).digest('hex'))) continue;
+      const format = FORMAT_PLATFORM[post.publicationFormat] === channel.platform ? post.publicationFormat : null;
+      try {
+        const { entry } = registerStored(actor, { channelId: channel.id, url: post.url, publishedAt: post.publishedAt, title: post.title, ...(format ? { publicationFormat: format } : {}) }, true, true);
+        known.add(entry.id); summary.registered++;
+      } catch { summary.skipped++; }
+    }
+    return summary;
+  }
   async function collectDueWork({ user = null, entryId = null, signal, authorize } = {}) {
     authorize?.();
     if (entryId) accessEntry(user, entryId, true);
+    // 서버 예약 회차에서만 새 게시물을 찾아 올린다. 사람이 누른 「지금 확인」은 고른 기록만 다룬다.
+    const discovered = !user && !entryId ? discover() : null;
     const requester = user ? currentUser(user) : null;
-    const summary = { checked: 0, recorded: 0, manualRequired: 0, missed: 0, retried: 0, skipped: 0 };
-    const initial = stamp(), candidateChannels = [...new Set(store.all(KIND).filter(row => row.active !== false && (!entryId || row.id === entryId) && (!requester || canWriteChannel(requester, store.get('channels', row.channelId))) && row.checkpoints.some(checkpoint => eligible(checkpoint, initial))).map(row => row.channelId))].slice(0, 20);
+    const summary = { checked: 0, recorded: 0, manualRequired: 0, missed: 0, retried: 0, skipped: 0, windowChecked: 0, windowRecorded: 0, windowRetried: 0, windowUnavailable: 0, autoRegistered: discovered?.registered || 0 };
+    const initial = stamp(), due = row => row.checkpoints.some(checkpoint => eligible(checkpoint, initial) || windowEligible(windowPlan(row, checkpoint), initial));
+    const candidateChannels = [...new Set(store.all(KIND).filter(row => row.active !== false && (!entryId || row.id === entryId) && (!requester || canWriteChannel(requester, store.get('channels', row.channelId))) && due(row)).map(row => row.channelId))].slice(0, 20);
     for (const channelId of candidateChannels) {
       if (signal?.aborted) break;
       authorize?.();
       const token = randomUUID(), claim = store.transaction(() => {
         const at = stamp(), lock = store.get(LOCKS, channelId); if (lock?.leaseUntil > at) return null;
-        const channel = store.get('channels', channelId), selected = [];
+        const channel = store.get('channels', channelId), selected = [], windows = [];
         if (requester) channelFor(requester, channelId, true);
         for (const row of store.all(KIND).filter(row => row.active !== false && row.channelId === channelId && (!entryId || row.id === entryId))) {
           let changed = false;
           const checkpoints = row.checkpoints.map(checkpoint => {
-            if (!eligible(checkpoint, at)) return checkpoint;
-            summary.checked++; changed = true;
-            if (at > checkpoint.closesAt) { summary.missed++; return { ...checkpoint, status: 'missed', timing: 'missed', nextAttemptAt: null, message: '관측 시간이 지나 해당 시점의 수치를 자동 복원할 수 없습니다.' }; }
-            const unavailable = !ownsAutomation(row, channel) ? '등록 담당자의 현재 권한을 확인해야 합니다. 현재 담당자가 직접 수치를 기록할 수 있습니다.' : availability(channel);
-            if (unavailable) { summary.manualRequired++; return { ...checkpoint, status: 'manual-required', nextAttemptAt: atPlus(at, HOUR), message: unavailable }; }
-            selected.push({ id: row.id, hours: checkpoint.hours });
-            return { ...checkpoint, status: 'collecting', attempts: checkpoint.attempts + 1, attemptedAt: at, leaseToken: token, leaseUntil: atPlus(at, LEASE), nextAttemptAt: null };
+            let next = checkpoint;
+            if (eligible(checkpoint, at)) {
+              summary.checked++; changed = true;
+              const unavailable = at > checkpoint.closesAt ? null : !ownsAutomation(row, channel) ? '등록 담당자의 현재 권한을 확인해야 합니다. 현재 담당자가 직접 수치를 기록할 수 있습니다.' : availability(channel);
+              if (at > checkpoint.closesAt) { summary.missed++; next = { ...checkpoint, status: 'missed', timing: 'missed', nextAttemptAt: null, message: '관측 시간이 지나 해당 시점의 수치를 자동 복원할 수 없습니다.' }; }
+              else if (unavailable) { summary.manualRequired++; next = { ...checkpoint, status: 'manual-required', nextAttemptAt: atPlus(at, HOUR), message: unavailable }; }
+              else {
+                selected.push({ id: row.id, hours: checkpoint.hours });
+                next = { ...checkpoint, status: 'collecting', attempts: checkpoint.attempts + 1, attemptedAt: at, leaseToken: token, leaseUntil: atPlus(at, LEASE), nextAttemptAt: null };
+              }
+            }
+            const plan = windowPlan(row, next);
+            if (windowEligible(plan, at) && windows.length < WINDOW_BATCH) {
+              summary.windowChecked++; changed = true;
+              const opened = withoutLease(plan), videoId = youtubeVideoId(row);
+              const unavailable = !videoId ? null : !ownsAutomation(row, channel) ? '등록 담당자의 현재 권한을 확인해야 합니다. 권한이 맞으면 다음 확인 때 받습니다.' : availability(channel);
+              if (opened.closesAt && at > opened.closesAt || !videoId) { summary.windowUnavailable++; next = { ...next, window: { ...opened, status: 'unavailable', nextAttemptAt: null, message: videoId ? '첫 확인부터 72시간이 지나 창 지표를 더 확인하지 않습니다. 공식 화면에서 확인한 값은 직접 입력할 수 있습니다.' : '게시 주소에서 영상 ID를 확인하지 못해 창 지표를 받지 않습니다.' } }; }
+              else if (unavailable) { const waited = windowWait(opened, at, 'CONNECTION_REQUIRED', unavailable); summary[waited.status === 'retry' ? 'windowRetried' : 'windowUnavailable']++; next = { ...next, window: waited }; }
+              else {
+                windows.push({ id: row.id, externalId: videoId, startDate: opened.startDate, endDate: opened.endDate });
+                next = { ...next, window: { ...opened, status: 'collecting', attempts: (opened.attempts || 0) + 1, attemptedAt: at, leaseToken: token, leaseUntil: atPlus(at, LEASE), nextAttemptAt: null } };
+              }
+            }
+            return next;
           });
           if (changed) store.put(KIND, row.id, { ...row, updatedAt: at, checkpoints });
         }
-        if (!selected.length) return null;
+        if (!selected.length && !windows.length) return null;
         store.put(LOCKS, channelId, { id: channelId, token, leaseUntil: atPlus(at, LEASE) });
-        return { channel, selected, version: channel.connectionVersion || 0, at };
+        return { channel, selected, windows, version: channel.connectionVersion || 0, at };
       });
       if (!claim) { summary.skipped++; continue; }
-      let result = null, error = null;
+      let result = null, error = null, windowResult = null, windowError = null, timeout = null;
       try {
         const credentials = await getCredentials(claim.channel), live = store.get('channels', channelId);
         authorize?.();
         if (live?.active === false || (live?.connectionVersion || 0) !== claim.version || availability(live)) throw Object.assign(new Error(), { code: 'CONNECTION_CHANGED' });
-        const oldest = Math.min(...claim.selected.map(item => Date.parse(store.get(KIND, item.id).publishedAt)));
-        const timeout = AbortSignal.timeout(120000), combined = signal ? AbortSignal.any([signal, timeout]) : timeout;
-        result = await collector(live, credentials, { signal: combined, recentSince: new Date(oldest - HOUR).toISOString(), now: stamp(), maxPosts: 100, maxPages: 3 });
-      } catch (caught) { error = { code: ['RATE_LIMITED', 'AUTH_REQUIRED', 'TIMEOUT', 'NETWORK_ERROR', 'MANUAL_ONLY', 'CONNECTION_CHANGED', 'ACCOUNT_MISMATCH', 'CANCELLED'].includes(caught?.code) ? caught.code : 'COLLECTION_FAILED', retryable: caught?.retryable === true }; }
+        timeout = AbortSignal.timeout(collectTimeoutMs); const combined = signal ? AbortSignal.any([signal, timeout]) : timeout;
+        if (claim.selected.length) {
+          try {
+            const oldest = Math.min(...claim.selected.map(item => Date.parse(store.get(KIND, item.id).publishedAt)));
+            result = await collector(live, credentials, { signal: combined, recentSince: new Date(oldest - HOUR).toISOString(), now: stamp(), maxPosts: 100, maxPages: 3 });
+          } catch (caught) { error = failureOf(caught); }
+        }
+        if (claim.windows.length) {
+          try { windowResult = await readWindows(live, credentials, { signal: combined, videos: claim.windows.map(({ externalId, startDate, endDate }) => ({ externalId, startDate, endDate })) }); }
+          catch (caught) { windowError = failureOf(caught); }
+        }
+      } catch (caught) { error = windowError = failureOf(caught); }
       let authorizationLost = false;
       try { authorize?.(); if (requester) channelFor(requester, channelId, true); } catch { authorizationLost = true; }
-      if (signal?.aborted) error = { code: 'CANCELLED', retryable: true };
+      // 자체 2분 제한이 끝난 것은 취소가 아니라 시간 초과다. 관측 기간 안에서 다시 확인한다(10-20: 재시도 없이 직접 입력으로 넘어갔다).
+      const timedOut = failure => failure?.code === 'CANCELLED' && !signal?.aborted && timeout?.aborted ? { code: 'TIMEOUT', retryable: true } : failure;
+      error = timedOut(error); windowError = timedOut(windowError);
+      if (signal?.aborted) error = windowError = { code: 'CANCELLED', retryable: true };
       store.transaction(() => {
         const at = stamp(), lock = store.get(LOCKS, channelId), live = store.get('channels', channelId);
         if (lock?.token !== token) { summary.skipped++; return; }
@@ -341,9 +533,21 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
             const post = result?.posts?.find(item => { try { return normalizePerformancePostUrl(item.url).identity === row.postIdentity; } catch { return false; } });
             const published = post?.publishedAt && Date.parse(post.publishedAt), mismatch = !!post && (!Number.isFinite(published) || Math.abs(published - Date.parse(row.publishedAt)) > 5 * 60000);
             const hasMetric = post && Object.values(valuesAndReasons(post.metrics, row.platform).metrics).some(value => value !== null);
-            if (!error && post && !mismatch && hasMetric) {
-              next = observation(checkpoint, post.metrics, { observedAt: at, recordedAt: at, source: `api:${cleanText(result.coverage?.source || row.platform, 80)}`, unavailable: result.coverage?.unavailableMetrics || [], platform: row.platform });
+            // 인사이트·Analytics의 일시 오류(한도·시간 초과·연결)로 지원 지표가 비었으면 바로 확정하지 않는다. 관측 기간 안에서 몇 번 더 본 뒤
+            // 마지막 기회에만 있는 값으로 기록한다(10-20: 일시 오류 한 번이 조회·도달·공유·저장 없이 기록을 끝냈다). 늦게 반영되는 지표(laggedMetrics)는
+            // 이 지점에 기록하지 않아 빈 칸으로 보지 않고, 응답에 칸이 없는 지표(릴스가 아닌 게시물의 릴스 지표)도 보지 않는다.
+            const capability = capabilityOf(row.platform), lagged = new Set(capability?.laggedMetrics || []);
+            const gapMetrics = new Set([...(capability?.metrics || []), ...(capability?.postMetrics || [])].filter(key => !lagged.has(key)));
+            const gap = !error && post && !mismatch && hasMetric && !!result.coverage?.collectionError && metricIds.some(key => gapMetrics.has(key) && post.metrics?.[key] === null);
+            const lastChance = checkpoint.attempts >= GAP_ATTEMPTS || Date.parse(at) + GAP_LAST_CHANCE >= Date.parse(checkpoint.closesAt);
+            if (!error && post && !mismatch && hasMetric && (!gap || lastChance)) {
+              next = observation(checkpoint, post.metrics, { observedAt: at, recordedAt: at, source: `api:${cleanText(result.coverage?.source || row.platform, 80)}`, unavailable: gap ? [] : result.coverage?.unavailableMetrics || [], platform: row.platform, details: post.metricDetails, transient: gap });
               next.providerPublishedAt = post.publishedAt; summary.recorded++;
+            } else if (gap) {
+              const delay = (checkpoint.attempts === 1 ? 5 : checkpoint.attempts === 2 ? 15 : 30) * 60000;
+              next = { ...checkpoint, status: 'retry', nextAttemptAt: new Date(Math.min(Date.parse(at) + delay, Date.parse(checkpoint.closesAt) - 10 * 60000)).toISOString(), lastErrorCode: String(result.coverage.collectionError.code || 'METRICS_PARTIAL').slice(0, 40),
+                message: '일부 지표를 플랫폼의 일시 오류로 받지 못했습니다. 관측 시간 안에 간격을 두고 다시 확인합니다.' };
+              summary.retried++;
             } else {
               const retryable = !mismatch && (!error || error.retryable), retry = retryable && at < checkpoint.closesAt;
               const delay = (checkpoint.attempts === 1 ? 5 : checkpoint.attempts === 2 ? 15 : 30) * 60000;
@@ -354,6 +558,25 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
           }
           delete next.leaseToken; delete next.leaseUntil;
           store.put(KIND, row.id, { ...row, updatedAt: at, checkpoints: row.checkpoints.map(item => item.hours === selected.hours ? next : item) });
+        }
+        for (const selected of claim.windows) {
+          const row = store.get(KIND, selected.id), checkpoint = row?.checkpoints.find(item => item.hours === 72), plan = checkpoint?.window;
+          if (!row || plan?.leaseToken !== token || plan.status !== 'collecting') continue;
+          const open = withoutLease(plan);
+          let next;
+          if (authorizationLost || row.active === false || connectionChanged || !ownsAutomation(row, live)) {
+            next = { ...checkpoint, window: windowWait(open, at, 'CONNECTION_CHANGED', '수집 중 연결 또는 담당 권한이 바뀌어 응답을 저장하지 않았습니다. 다음 확인 때 다시 받습니다.') };
+          } else {
+            const video = !windowError && windowResult?.videos?.find(item => item?.externalId === selected.externalId && item.startDate === open.startDate && item.endDate === open.endDate);
+            if (video?.status === 'ready') next = applyWindow(checkpoint, open, video, { at, source: `api:${cleanText(windowResult.source || 'youtube-analytics-api-v2', 80)}` });
+            else if (windowError && WINDOW_WAIT_CODES.has(windowError.code)) next = { ...checkpoint, window: windowWait(open, at, windowError.code, WINDOW_WAIT_MESSAGES[windowError.code] || '채널 연결을 확인해야 받을 수 있습니다. 다음 확인 때 다시 봅니다.') };
+            else if (windowError) next = { ...checkpoint, window: windowRetry(open, at, { code: windowError.code, retryable: windowError.retryable, message: 'YouTube Analytics 수치를 받지 못했습니다. 간격을 두고 다시 확인합니다.' }) };
+            else next = { ...checkpoint, window: windowRetry(open, at, video?.status === 'error'
+              ? { code: 'REPORT_REJECTED', message: 'YouTube Analytics가 이 영상의 창 조회를 받지 않았습니다.' }
+              : { code: 'WINDOW_NOT_READY', message: `YouTube Analytics에 ${open.startDate}~${open.endDate}(태평양시) 창의 조회가 아직 없습니다. 처리 지연일 수 있어 다시 확인합니다.` }) };
+          }
+          summary[next.window.status === 'recorded' ? 'windowRecorded' : next.window.status === 'retry' ? 'windowRetried' : 'windowUnavailable']++;
+          store.put(KIND, row.id, { ...row, updatedAt: at, checkpoints: row.checkpoints.map(item => item.hours === 72 ? next : item) });
         }
         store.remove(LOCKS, channelId);
       });

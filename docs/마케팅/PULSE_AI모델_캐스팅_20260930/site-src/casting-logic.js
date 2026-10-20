@@ -153,11 +153,23 @@
     return `${m.code} ${m.name} (${joinDot(m.gender, m.age || m.ageBand, m.concept, m.height && m.height + 'cm')})`;
   }
 
+  // 캐스팅북 코드: 「모델 코드.헤어 번호.목소리 번호」(번호는 0부터)를 ~로 잇는다. 공유 주소 #p- 뒤 글자다.
+  // 손님이 보내는 문의 글에는 넣지 않는다(10-19 유호님 「손님 입장에서 이걸 보면 잘 모르지 않을까」). 담당자가 PULSE 제작 설계의
+  // 「캐스팅북 문의로 채우기」에 문의 글을 붙여 넣으면 그 칸이 「1. F02 하린」·「헤어 2번 / 목소리 1번」 줄과 「진행하고 싶은 모델」 칸을 읽는다.
+  function castingCode(picks) {
+    return (picks || []).filter((p) => /^[A-Z]\d\d$/.test(String((p && p.code) || ''))).map((p) => `${p.code}.${Number(p.hair) || 0}.${Number(p.voice) || 0}`).join('~');
+  }
+
   // 문의용 글. format: 'kmong'(크몽 메시지) | 'order'(발주서 「장면·모델」 메모)
-  function inquiryText({ picks, models, brief, compare, taxonomy, format = 'kmong' }) {
+  // lead: 손님이 「누구로 진행할까요?」에서 고른 모델 코드. 고르면 그 모델이 「진행하고 싶은 모델」로 맨 위에 오고 나머지는
+  // 「함께 고민 중인 모델」이 된다. 담은 모델이 여럿인데 고르지 않았으면 「진행할 모델」을 상담에서 정하고 싶은 것에 넣는다.
+  function inquiryText({ picks, models, brief, compare, taxonomy, format = 'kmong', lead = '' }) {
     const byCode = (c) => models.find((m) => m.code === c);
-    const chosen = (picks || []).map((p) => ({ p, m: byCode(p.code) })).filter((x) => x.m);
+    const found = (picks || []).map((p) => ({ p, m: byCode(p.code) })).filter((x) => x.m);
+    const first = found.find((x) => x.m.code === lead);
+    const chosen = first ? [first, ...found.filter((x) => x !== first)] : found;
     const others = (compare || []).filter((c) => !chosen.some((x) => x.m.code === c)).map(byCode).filter(Boolean);
+    const undecided = !first && chosen.length > 1;
     const lines = [];
     const hairOf = (x) => x.m.hair[x.p.hair] ? `${x.p.hair + 1}번 ${x.m.hair[x.p.hair].label}` : '';
     const voiceOf = (x) => x.m.voices[x.p.voice] ? `${x.p.voice + 1}번 ${x.m.voices[x.p.voice].label}` : '';
@@ -171,7 +183,7 @@
     }
     if (format === 'order') {
       chosen.forEach((x, i) => {
-        lines.push(`[모델 ${i + 1}] ${modelLine(x.m)}`);
+        lines.push(`[${first ? (i ? '함께 고민 중인 모델' : '진행할 모델') : `모델 ${i + 1}`}] ${modelLine(x.m)}`);
         if (hairOf(x)) lines.push(`헤어: ${hairOf(x)}`);
         if (voiceOf(x)) lines.push(`목소리: ${voiceOf(x)}`);
         if (x.p.line) lines.push(`대사: ${x.p.line.replace(/\s+/g, ' ').trim()}`);
@@ -179,23 +191,28 @@
       });
       if (others.length) lines.push(`[함께 비교한 모델] ${others.map((m) => `${m.code} ${m.name}`).join(', ')}`);
       if (briefBits.length) lines.push(`[광고] ${briefBits.map(([, v]) => v).join(' · ')}`);
+      if (undecided) lines.push('[상담] 진행할 모델은 상담에서 정하고 싶어요');
       return lines.join('\n');
     }
     const blocks = [['안녕하세요. PULSE 모델 캐스팅북을 보고 문의드려요.']];
-    if (chosen.length) {
-      const b = ['[고른 모델]'];
-      chosen.forEach((x, i) => {
-        b.push(`${i + 1}. ${modelLine(x.m)}`);
+    const modelBlock = (title, list, start) => {
+      const b = [title];
+      list.forEach((x, i) => {
+        b.push(`${start + i}. ${modelLine(x.m)}`);
         const hv = [hairOf(x) && `헤어 ${hairOf(x)}`, voiceOf(x) && `목소리 ${voiceOf(x)}`].filter(Boolean).join(' / ');
         if (hv) b.push(`   ${hv}`);
         if (x.p.line) b.push(`   이 목소리로 들어 보고 싶은 문장: “${x.p.line.replace(/\s+/g, ' ').trim()}”`);
         if (x.p.memo) b.push(`   메모: ${x.p.memo.replace(/\s+/g, ' ').trim()}`);
       });
-      blocks.push(b);
-    }
+      return b;
+    };
+    if (first) {
+      blocks.push(modelBlock('[진행하고 싶은 모델]', [first], 1));
+      if (chosen.length > 1) blocks.push(modelBlock('[함께 고민 중인 모델]', chosen.slice(1), 2));
+    } else if (chosen.length) blocks.push(modelBlock('[고른 모델]', chosen, 1));
     if (others.length) blocks.push([`[함께 비교한 모델] ${others.map((m) => `${m.code} ${m.name}`).join(', ')}`]);
     if (briefBits.length) blocks.push(['[광고 내용]', ...briefBits.map(([k, v]) => `${k}: ${v}`)]);
-    blocks.push(['상담에서 함께 정하고 싶은 것: 사용 매체와 기간, 업종 전속 여부, 사진·영상 수량']);
+    blocks.push([`상담에서 함께 정하고 싶은 것: ${undecided ? '진행할 모델, ' : ''}사용 매체와 기간, 업종 전속 여부, 사진·영상 수량`]);
     return blocks.map((b) => b.join('\n')).join('\n\n');
   }
 
@@ -209,5 +226,5 @@
     return { min, max, value: v, count: peers.length, lowest: v === min, highest: v === max };
   }
 
-  return { findWords, tagModel, heightBand, filterModels, readBrief, briefIsEmpty, recommend, evidenceFor, josa, inquiryText, rankAmong };
+  return { findWords, tagModel, heightBand, filterModels, readBrief, briefIsEmpty, recommend, evidenceFor, josa, castingCode, inquiryText, rankAmong };
 });

@@ -217,6 +217,9 @@ test('upload is CSRF protected, validates file types and aborts on identity rese
 test('metrics preserve zero, unknown, source and measured time without summed platform reach',()=>{
   const f=fixture();f.context.records=[{title:'기록',channelId:'ch',publishedAt:'2026-10-13T00:00Z',url:'javascript:evil()',checkpoints:[{hours:24,status:'recorded',metrics:{views:0,reach:null},metricProvenance:{views:{source:'manual',observedAt:'2026-10-14T00:02Z',timing:'late'}},unavailableReasons:{reach:'플랫폼 미지원'}}]}];const html=f.run('snswPerformanceRecords(records)');assert.match(html,/<dd>0<\/dd>/);assert.match(html,/미확인/);assert.match(html,/manual/);assert.match(html,/늦은 관측/);assert.match(html,/플랫폼 미지원/);assert.ok(!html.includes('javascript:'));
 });
+test('a late window value is labelled instead of showing the internal timing code',()=>{
+  const f=fixture();f.context.records=[{title:'기록',channelId:'ch',publishedAt:'2026-10-13T00:00Z',url:'https://www.youtube.com/watch?v=abcdefghijk',checkpoints:[{hours:72,status:'missed',metrics:{shares:4},metricProvenance:{shares:{source:'api:youtube-analytics-api-v2',kind:'window',observedAt:'2026-10-18T00:02Z',timing:'window'}}}]}];const html=f.run('snswPerformanceRecords(records)');assert.match(html,/창 지표\(늦게 반영\)/);assert.ok(!/· window</.test(html));
+});
 test('campaign submit passes selected channels and current revision',async()=>{
   const f=fixture();f.run('socialWorkspaceState.data.campaigns=[{id:"c",revision:3,name:"캠페인",channelIds:["ch"]}]');f.context.form={dataset:{swForm:'campaign',id:'c'},values:{name:'캠페인',goal:'방문 유입',channelIds:['ch'],startAt:'2026-10-13',endAt:'2026-10-20'}};const pending=f.run('snswSubmit(form)');assert.equal(f.requests[0].body.revision,3);assert.deepEqual(Array.from(f.requests[0].body.channelIds),['ch']);f.requests[0].reject(new Error('검사용 실패'));await pending;assert.equal(f.run('socialWorkspaceState.forms["campaign:c"].goal'),'방문 유입');
 });

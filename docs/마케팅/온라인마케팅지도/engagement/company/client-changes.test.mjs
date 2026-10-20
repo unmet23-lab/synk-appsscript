@@ -57,13 +57,13 @@ test('structured field changes show meaningful before and after values and separ
 test('casting model and styling changes produce readable before and after summaries from the current catalog',()=>{
   let row=raw();row.studio.strategy.data.castingSelection={...row.studio.strategy.data.castingSelection,modelId:'M01',hair:'long-straight',makeup:'natural',jacket:'none',top:'shirt',bottom:'denim',voice:'A',earrings:'none',ring:'simple',notes:'흰 셔츠'};
   row=change(capture(row),{castingSelection:{...row.studio.strategy.data.castingSelection,modelId:'F01',hair:'bob',voice:'B',notes:'파란 셔츠'}});
-  const view=report(row),diff=view.changes.find(item=>item.id==='strategy:castingSelection');assert.equal(view.changes.length,1);assert.equal(diff.label,'모델·스타일 선택');assert.match(diff.before,/모델: 이안 \(M01\)/);assert.match(diff.after,/모델: 유나 \(F01\)/);assert.match(diff.before,/헤어: 긴 생머리/);assert.match(diff.after,/헤어: 단발/);assert.match(diff.before,/목소리: A · 차분한 중저음/);assert.match(diff.after,/목소리: B · 밝고 또렷한/);assert.match(diff.before,/자켓: 없음/);assert.match(diff.before,/상의: 셔츠/);assert.match(diff.before,/하의: 데님/);assert.match(diff.after,/기타·메모: 파란 셔츠/);assert.doesNotMatch(JSON.stringify(diff),/\[object Object\]/);assert.deepEqual(customerClientChanges(row).changes,[diff]);assert.equal(view.status,'pending');
+  const view=report(row),diff=view.changes.find(item=>item.id==='strategy:castingSelection');assert.equal(view.changes.length,1);assert.equal(diff.label,'모델·스타일 선택');assert.match(diff.before,/모델: 이안 \(M01\)/);assert.match(diff.after,/모델: 유나 \(F01\)/);assert.match(diff.before,/헤어: 긴 생머리/);assert.match(diff.after,/헤어: 단발/);assert.match(diff.before,/목소리: A · 부드럽고 차분한/);assert.match(diff.after,/목소리: B · 낮고 깊은/);assert.match(diff.before,/자켓: 없음/);assert.match(diff.before,/상의: 셔츠/);assert.match(diff.before,/하의: 데님/);assert.match(diff.after,/기타·메모: 파란 셔츠/);assert.doesNotMatch(JSON.stringify(diff),/\[object Object\]/);assert.deepEqual(customerClientChanges(row).changes,[diff]);assert.equal(view.status,'pending');
 });
 
 test('casting clearing and legacy absent defaults distinguish real selection changes from schema additions',()=>{
   let row=capture(raw());delete row.changeControl.baseline.strategy.castingSelection;assert.equal(report(row).changes.length,0);assert.equal(report(row).status,'clean');
-  row=change(row,{castingSelection:{...row.studio.strategy.data.castingSelection,modelId:'F04',hair:'wave'}});let diff=report(row).changes.find(item=>item.id==='strategy:castingSelection');assert.equal(diff.before,'미선택');assert.match(diff.after,/모델: 지유 \(F04\)/);assert.match(diff.after,/헤어: 웨이브/);
-  row=advance(reviewed(confirm(row)));row=change(row,{castingSelection:emptyStrategyData().castingSelection});diff=report(row).changes.find(item=>item.id==='strategy:castingSelection');assert.match(diff.before,/지유/);assert.equal(diff.after,'미선택');
+  row=change(row,{castingSelection:{...row.studio.strategy.data.castingSelection,modelId:'F04',hair:'wave'}});let diff=report(row).changes.find(item=>item.id==='strategy:castingSelection');assert.equal(diff.before,'고르지 않음');assert.match(diff.after,/모델: 지유 \(F04\)/);assert.match(diff.after,/헤어: 웨이브/);
+  row=advance(reviewed(confirm(row)));row=change(row,{castingSelection:emptyStrategyData().castingSelection});diff=report(row).changes.find(item=>item.id==='strategy:castingSelection');assert.match(diff.before,/지유/);assert.equal(diff.after,'고르지 않음');
 });
 
 test('legacy structured values use faithful JSON instead of object coercion in change summaries',()=>{
@@ -107,7 +107,8 @@ test('changing any scene after review invalidates old checks, including updated-
 test('source edits and strategy revisions invalidate checks but confirmation and unrelated messages do not',()=>{
   let row=raw();row.studio.assets=[{id:randomUUID(),fileName:'로고',author:'customer',diskName:'first.bin'}];row=reviewed(confirm(change(capture(row))));const key=report(row).changeKey;
   row.messages.push({text:'새 댓글'});row.internalNotes='새 내부 메모';assert.equal(report(row).changeKey,key);assert.equal(report(row).status,'reviewed');
-  row.studio.assets[0].diskName='second.bin';assert.notEqual(report(row).changeKey,key);assert.ok(report(row).impacts.every(item=>!item.checked));row=reviewed(row);row=change(row,{durationSeconds:60});assert.ok(report(row).impacts.every(item=>!item.checked));
+  row.studio.assets[0].diskName='second.bin';assert.notEqual(report(row).changeKey,key);assert.ok(report(row).impacts.every(item=>!item.checked));row=reviewed(row);row=change(row,{durationSeconds:45});assert.ok(report(row).impacts.every(item=>!item.checked));
+  const unchanged=reviewed(row);assert.equal(change(unchanged,{durationSeconds:45}).studio.strategy.revision,unchanged.studio.strategy.revision,'saving the same plan is not a new revision');assert.ok(report(change(unchanged,{durationSeconds:45})).impacts.some(item=>item.checked));
 });
 
 test('reverting every compared value returns to clean without artificial completion or baseline changes',()=>{

@@ -8,6 +8,8 @@ import {buildSceneRequests,customerSceneRequests,applySceneRequestAction} from '
 import {buildClientSchedule,applyClientScheduleAction} from './client-schedule.mjs';
 import {buildCustomerPreviewApproval} from './client-preview-approval.mjs';
 
+// 초대 링크는 만든 때부터 30일 동안 새 연결을 받는다(2026-10-19: 2~4주 제작 동안 고객이 새 링크 없이 돌아오게). 새 초대·접근 종료는 그대로 이전 연결을 끝낸다.
+export const INVITE_DAYS=30;
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const digest=value=>createHash('sha256').update(value).digest('hex');
 const stages=['received','planning','producing','review','delivered','archived'];
@@ -158,7 +160,7 @@ export function createClientProjectsService({store,clock=()=>new Date().toISOStr
       return storeRow({...append(row,disposition==='schedule'?'연락 결과 · 다음 연락 잡음':'연락 결과 · 끝',user.id),nextContactDate,followUpHistory:[...history,entry]});
     });
   }
-  function invite(user,id,input){const row=project(user,id,true);revision(row,input);const raw=randomBytes(32).toString('base64url'),updated=append(row,'초대 링크 새로 만듦',user.id);updated.inviteHash=digest(raw);updated.inviteRevision++;updated.inviteExpiresAt=new Date(Date.parse(clock())+7*86400000).toISOString();return {...storeRow(updated),invite:raw,expiresAt:updated.inviteExpiresAt};}
+  function invite(user,id,input){const row=project(user,id,true);revision(row,input);const raw=randomBytes(32).toString('base64url'),updated=append(row,'초대 링크 새로 만듦',user.id);updated.inviteHash=digest(raw);updated.inviteRevision++;updated.inviteExpiresAt=new Date(Date.parse(clock())+INVITE_DAYS*86400000).toISOString();return {...storeRow(updated),invite:raw,expiresAt:updated.inviteExpiresAt};}
   function revoke(user,id,input){const row=project(user,id,true);revision(row,input);return storeRow({...append(row,'초대 링크 닫음',user.id),inviteHash:null,inviteRevision:row.inviteRevision+1,inviteExpiresAt:null});}
   function open(raw){if(typeof raw!=='string'||!/^[A-Za-z0-9_-]{43}$/.test(raw))throw fail('초대 링크가 없거나 끝났어요.',401);const hashed=digest(raw),row=store.all('clientProjects').find(p=>p.inviteHash===hashed);if(!row||row.stage==='archived'||Date.parse(row.inviteExpiresAt)<=Date.parse(clock()))throw fail('초대 링크가 없거나 끝났어요.',401);const csrf=randomBytes(24).toString('base64url');const session=store.mint('pulse-session',null,{projectId:row.id,inviteRevision:row.inviteRevision,csrf},720);return {session,csrf,project:customerView(row)};}
   function session(raw){
@@ -177,5 +179,19 @@ export function createClientProjectsService({store,clock=()=>new Date().toISOStr
   function customerMedia(raw,mediaId){const {row}=session(raw);const media=row.versions.find(v=>v.media?.id===mediaId)?.media;if(!media)throw fail('파일을 찾지 못했어요.',404);return media;}
   function findImportedReceipt(user,receiptId){user=current(user,true);if(user.role!=='admin')throw fail('접수 가져오기는 관리자만 할 수 있어요.',403);const existing=store.all('clientProjects').find(p=>p.receiptId===receiptId);return existing?{project:staffView(existing),existing:true}:null;}
   function importReceipt(user,receipt){user=current(user,true);if(user.role!=='admin')throw fail('접수 가져오기는 관리자만 할 수 있어요.',403);return store.transaction(()=>{const existing=findImportedReceipt(user,receipt.id);if(existing)return existing;const result=save(user,{title:(receipt.subject||'PULSE 접수').slice(0,160),customerName:(receipt.contact||'고객 확인 필요').slice(0,100),contact:(receipt.responseContact||'').slice(0,300),summary:receipt.message||'',terms:'',nextStep:'접수 내용을 보고 일정과 범위를 고객과 정해요.',internalNotes:'고객이 쓴 접수 내용이에요. 일정과 요청은 아직 합의 전이에요.',dueDate:'',nextContactDate:'',stage:'received'});const row=store.get('clientProjects',result.project.id);row.receiptId=receipt.id;row.intake={receivedAt:receipt.receivedAt,requestedDeadline:receipt.deadline||'',notes:receipt.notes||'',reportText:receipt.reportText||'',files:receipt.files||[],source:'verified-local-intake'};return storeRow(row);});}
-  return {workspace,searchSources,save,project,subscribeChanges,commitWorkflow:storeRow,closeout,kickoff,changes,sceneRequests,sceneRequestContext,schedule,completeFollowUp,invite,revoke,open,read,session,devices,addVersion,message,resolveMessage,customerAction,mediaFor,customerMedia,findImportedReceipt,importReceipt};
+  // 서버 안에서만 부른다(HTTP 경로 없음): 자동 안내가 고객 화면과 같은 사실만 읽게 고객용 보기를 그대로 준다.
+  function customerSnapshot(id){const row=store.get('clientProjects',id);if(!row)throw fail('그 프로젝트를 찾지 못했어요.',404);return customerView(row);}
+  // 고객 문의(support) 하나에 자동 안내 한 개를 붙인다. 문의는 미해결로 두고(담당자 할 일에 그대로 남음), 담당자가 그사이 답했거나
+  // 같은 문의에 자동 안내가 이미 있거나 보관·처리된 문의면 쓰지 않는다.
+  function postAutoReply(id,input={}){return store.transaction(()=>{
+    const row=store.get('clientProjects',id);if(!row||row.stage==='archived')return {posted:false,reason:'project'};
+    const index=row.messages.findIndex(m=>m.id===input.messageId),target=row.messages[index];
+    if(!target||target.author!=='customer'||target.action!=='support'||target.resolved)return {posted:false,reason:'target'};
+    if(row.messages.slice(index+1).some(m=>m.author==='staff'&&m.visibility==='customer'&&(!m.automated||m.replyTo===target.id)))return {posted:false,reason:'answered'};
+    try{messageCapacity(row);}catch{return {posted:false,reason:'capacity'};}
+    const text=clean(input.text,3000,'자동 안내',true),message={id:randomUUID(),text,visibility:'customer',author:'staff',authorName:'자동 안내',automated:true,automatedKind:input.kind==='ai'?'ai':'fallback',replyTo:target.id,at:clock(),resolved:false};
+    const next=append(row,'자동 안내','pulse-auto-reply');next.history=[...next.history.slice(0,-1),{...next.history.at(-1),actorName:'자동 안내'}];
+    storeRow({...next,messages:[...row.messages,message]});return {posted:true,messageId:message.id};
+  });}
+  return {workspace,searchSources,save,project,subscribeChanges,commitWorkflow:storeRow,closeout,kickoff,changes,sceneRequests,sceneRequestContext,schedule,completeFollowUp,invite,revoke,open,read,session,devices,addVersion,message,resolveMessage,customerAction,mediaFor,customerMedia,findImportedReceipt,importReceipt,customerSnapshot,postAutoReply};
 }

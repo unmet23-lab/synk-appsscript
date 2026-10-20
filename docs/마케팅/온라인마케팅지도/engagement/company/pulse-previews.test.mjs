@@ -86,6 +86,6 @@ test('customer UI presents separate flow/test confirmations, recorded snapshots 
   try{const studio=fixture();saveSample(studio,{title:'<script>alert(1)</script>'});saveAnimatic(studio);confirm(studio);studio.scenes[0].revision++;
     const s={mode:'customer',project:{studio:{...studio,previews:previewsView(studio,row)}}};const samples=samplesPanel(s),animatic=animaticPanel(s);
     assert.match(samples,/&lt;script&gt;/);assert.doesNotMatch(samples,/<script>/);assert.match(samples,/원해요/);assert.match(samples,/피할래요/);assert.doesNotMatch(samples,/data-form="preview-sample"/);
-    assert.match(animatic,/data-id="flow"/);assert.match(animatic,/data-id="test"/);assert.match(animatic,/임시 음성·음악은 길이와 흐름/);assert.match(animatic,/당시 확인한 장면·파일·구간/);assert.match(animatic,/시안이 바뀌어 다시 확인/);assert.doesNotMatch(animatic,/비밀 대사|비밀 화면/);
+    assert.match(animatic,/data-id="flow"/);assert.match(animatic,/data-id="test"/);assert.match(animatic,/흐름을 보려고 넣은 임시 소리/);assert.match(animatic,/그때 확인한 장면·파일·구간/);assert.match(animatic,/내용이 바뀌어 다시 확인/);assert.doesNotMatch(animatic,/비밀 대사|비밀 화면/);
   }finally{if(previous===undefined)delete globalThis.location;else globalThis.location=previous;}
 });

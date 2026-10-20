@@ -36,7 +36,7 @@ async function fixture(t){
   return {get app(){return app;},request,create,invite,studio,customerStudio,async restart(){await app.stop();await start();}};
 }
 
-test('customer casting saves reach staff, persist after restart, invalidate confirmation and preserve reviewed history',async t=>{
+test('customer casting saves reach staff, persist after restart, keep the confirmed plan and preserve reviewed history',async t=>{
   const f=await fixture(t);const created=await f.create(),customer=await f.invite(created);let row=customer.project;
   assert.deepEqual(row.studio.strategy.data.castingSelection,emptyCastingSelection());
   let result=await f.customerStudio(customer,row,{action:'save_strategy',strategy:{...strategyDraft,castingSelection:selection}});
@@ -51,12 +51,15 @@ test('customer casting saves reach staff, persist after restart, invalidate conf
   const changed={...selection,modelId:'M02',voice:'C',hair:'short',earrings:'none',notes:'두 번째 선택'};
   result=await f.customerStudio(customer,row,{action:'save_strategy',strategy:{...strategyDraft,castingSelection:changed}});assert.equal(result.status,200,result.text);row=result.data.project;
   const strategy=row.studio.strategy;
-  assert.equal(strategy.revision,2);assert.equal(strategy.request,null);assert.equal(strategy.confirmation,null);assert.deepEqual(strategy.data.castingSelection,changed);
+  // A customer's own model or style change carries the confirmed plan to the new version.
+  assert.equal(strategy.revision,2);assert.equal(strategy.request.strategyRevision,2);assert.equal(strategy.confirmation.strategyRevision,2);assert.equal(strategy.confirmation.carriedFrom,1);assert.deepEqual(strategy.data.castingSelection,changed);
   assert.deepEqual(strategy.history[0].data.castingSelection,selection);assert.equal(strategy.history[0].confirmation.strategyRevision,1);
   staff=await f.request('/api/client-projects/'+row.id+'/studio');assert.equal(staff.status,200,staff.text);assert.deepEqual(staff.data.project.studio.strategy,strategy);
-  result=await f.studio(row,{action:'request_strategy_review'});assert.equal(result.status,200,result.text);row=result.data.project;
+  assert.equal((await f.studio(row,{action:'request_strategy_review'})).status,409);
   assert.equal((await f.customerStudio(customer,row,{action:'confirm_strategy',strategyRevision:1})).status,409);
-  result=await f.customerStudio(customer,row,{action:'confirm_strategy',strategyRevision:2});assert.equal(result.status,200,result.text);row=result.data.project;
+  assert.equal((await f.customerStudio(customer,row,{action:'confirm_strategy',strategyRevision:2})).status,409);
+  result=await f.customerStudio(customer,row,{action:'save_strategy',strategy:{...strategyDraft,castingSelection:changed}});assert.equal(result.status,200,result.text);
+  assert.equal(result.data.project.revision,row.revision,'an unchanged save writes nothing');assert.deepEqual(result.data.project.studio.strategy,strategy);row=result.data.project;
   const beforeInvalid=structuredClone(row);
   for(const castingSelection of [{...changed,modelId:'UNKNOWN'},{...changed,voice:'D'},{...changed,modelId:''},{...changed,privateUrl:'https://example.test/private'},{...changed,notes:{private:'hidden'}}]){
     result=await f.customerStudio(customer,row,{action:'save_strategy',strategy:{...strategyDraft,castingSelection}});assert.equal(result.status,400,result.text);

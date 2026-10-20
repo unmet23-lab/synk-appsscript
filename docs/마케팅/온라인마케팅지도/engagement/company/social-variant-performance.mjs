@@ -85,6 +85,7 @@ function observation(checkpoint,metric,publishedAt){
   const result={value:null,status:'missing',reason:checkpoint?.unavailableReasons?.[metric]||'아직 확인한 값이 없어요.',source:meta.source||checkpoint?.source||null,unit:meta.unit||definition?.unit||'count',timing:meta.timing||checkpoint?.timing||null,observedAt,recordedAt,ageMinutes,observationOffsetMinutes:ageMinutes===null?null:Math.floor((ageMinutes-checkpoint.hours*60)/15)*15};
   if(!finite(raw)){if(/제공하지|지원하지|미지원/.test(result.reason))result.status='unsupported';return result;}
   result.value=raw;
+  if(meta.kind==='window'){result.status='excluded';result.reason='게시 5일 뒤 받은 창 지표(늦게 반영)라 그 시각의 문구 비교에는 쓰지 않아요.';return result;}
   if(checkpoint?.status!=='recorded'||!meta.source||!meta.unit||!observedAt||!publishedAt||!meta.timing){result.status='excluded';result.reason='측정 출처·단위·실제 게시/관측 시각이 확인돼야 비교할 수 있어요.';return result;}
   if(meta.measurementWindowMissed||ageMinutes<checkpoint.hours*60||ageMinutes>checkpoint.hours*60+360){result.status='excluded';result.reason='정해진 관측 시간을 벗어나서 비교에서 뺐어요.';return result;}
   if(meta.unit!==definition.unit||definition.unit==='count'&&!Number.isSafeInteger(raw)||definition.max!==undefined&&raw>definition.max){result.status='excluded';result.reason='지표 단위나 값의 범위가 맞지 않아 비교에서 뺐어요.';return result;}

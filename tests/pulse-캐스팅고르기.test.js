@@ -156,6 +156,26 @@ test('설정 파일: 분류 id가 겹치지 않고, 모델별 자료가 명단�
   }
 });
 
+test('문의 글: 손님 글에는 코드 줄이 없고, 「누구로 진행할까요?」에서 고른 모델이 맨 위', () => {
+  const picks = [{ code: 'F02', hair: 1, voice: 0, memo: '' }, { code: 'F04', hair: 0, voice: 2, memo: '' }];
+  assert.equal(L.castingCode(picks), 'F02.1.0~F04.0.2', '공유 주소용 코드는 그대로');
+  const kmong = L.inquiryText({ picks, models, brief: null, compare: [], taxonomy: TAX, format: 'kmong', lead: 'F04' });
+  assert.doesNotMatch(kmong, /캐스팅북 코드|F02\.1\.0/, '손님이 보는 글에 기계 글이 없다');
+  assert.match(kmong, /\[진행하고 싶은 모델\]\n1\. F04 지유[^\n]*\n   헤어 1번 [^\n]*\/ 목소리 3번 [^\n]*\n\n\[함께 고민 중인 모델\]\n2\. F02 하린/);
+  assert.match(kmong, /상담에서 함께 정하고 싶은 것: 사용 매체와 기간/, '고른 모델이 있으면 「진행할 모델」은 상담 거리가 아니다');
+  const open = L.inquiryText({ picks, models, brief: null, compare: [], taxonomy: TAX, format: 'kmong' });
+  assert.match(open, /\[고른 모델\]\n1\. F02 하린[\s\S]*\n2\. F04 지유/);
+  assert.match(open, /상담에서 함께 정하고 싶은 것: 진행할 모델, 사용 매체와 기간/, '여럿을 담고 고르지 않았으면 상담에서 정한다');
+  const one = L.inquiryText({ picks: picks.slice(0, 1), models, brief: null, compare: [], taxonomy: TAX, format: 'kmong' });
+  assert.doesNotMatch(one, /진행할 모델,/, '한 명만 담았으면 상담 거리에 넣지 않는다');
+  const order = L.inquiryText({ picks, models, brief: null, compare: [], taxonomy: TAX, format: 'order', lead: 'F04' });
+  assert.deepEqual(order.split('\n').filter((x) => x.startsWith('[')), ['[진행할 모델] F04 지유 (여 · 20대 초반 · 상큼 · 166cm)', '[함께 고민 중인 모델] F02 하린 (여 · 20대 초반 · 상큼 · 165cm)']);
+  const orderOpen = L.inquiryText({ picks, models, brief: null, compare: [], taxonomy: TAX, format: 'order' });
+  assert.equal(orderOpen.split('\n').at(-1), '[상담] 진행할 모델은 상담에서 정하고 싶어요');
+  assert.match(L.inquiryText({ picks, models, brief: null, compare: [], taxonomy: TAX, lead: 'M01' }), /\[고른 모델\]/, '담지 않은 모델을 고르면 고르지 않은 것과 같다');
+  assert.equal(L.castingCode([{ code: 'F02', hair: '2', voice: undefined }, { code: '<x>', hair: 0, voice: 0 }, null]), 'F02.2.0');
+});
+
 test('문의 글: 들어 보고 싶은 문장이 모델마다 들어간다', () => {
   const picks = [{ code: 'M02', hair: 0, voice: 0, memo: '', line: '오늘 밤,\n한 잔의 깊이를' }];
   const kmong = L.inquiryText({ picks, models, brief: null, compare: [], taxonomy: TAX, format: 'kmong' });

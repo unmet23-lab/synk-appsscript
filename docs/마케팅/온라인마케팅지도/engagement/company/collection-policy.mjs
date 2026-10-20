@@ -14,14 +14,20 @@ const AUTH_CODES = new Set([
   'TOKEN_EXCHANGE_FAILED', 'INVALID_GRANT', 'INVALID_TOKEN', 'TOKEN_EXPIRED',
   'ACCESS_TOKEN_EXPIRED', 'REFRESH_TOKEN_EXPIRED', 'ACCESS_DENIED',
   'UNAUTHORIZED', 'INSUFFICIENT_SCOPE', 'SCOPE_NOT_AUTHORIZED', 'PERMISSION_DENIED',
+  // 연결한 사람의 회사 계정이 꺼지면 지금 담당자가 다시 연결해야 한다.
+  'CONNECTION_OWNER_INACTIVE',
 ]);
 const RATE_CODES = new Set(['RATE_LIMITED', 'RATE_LIMIT_EXCEEDED', 'TOO_MANY_REQUESTS', 'QUOTA_EXCEEDED', 'QUOTA_EXHAUSTED', 'DAILY_LIMIT_EXCEEDED']);
-const KNOWN_CODES = new Set([...AUTH_CODES, ...RATE_CODES,
-  'INVALID_CHANNEL_URL', 'INVALID_CONFIG', 'INVALID_API_TARGET', 'INVALID_RESPONSE',
-  'CHANNEL_NOT_FOUND', 'API_ERROR', 'CANCELLED', 'TIMEOUT', 'NETWORK_ERROR',
+// 다시 해도 되는 오류. 알 수 없는 오류·형식이 틀린 응답도 영구 오류로 굳히지 않고, 자동 재시도가 끝나면 다음 날 수집 시각에 다시 본다(10-20).
+const TRANSIENT_CODES = new Set(['TIMEOUT', 'NETWORK_ERROR', 'COLLECTION_INTERRUPTED', 'CONNECTION_CHANGED', 'INVALID_RESPONSE', 'UNKNOWN_ERROR', 'CANCELLED']);
+// 연결이 수집 도중 바뀌었으면 새 연결로 곧 다시 시도한다.
+const RETRY_CODES = new Set(['CONNECTION_CHANGED']);
+const KNOWN_CODES = new Set([...AUTH_CODES, ...RATE_CODES, ...TRANSIENT_CODES,
+  'INVALID_CHANNEL_URL', 'INVALID_CONFIG', 'INVALID_API_TARGET',
+  'CHANNEL_NOT_FOUND', 'API_ERROR',
   'UNSUPPORTED_PROVIDER', 'MANUAL_ONLY', 'INVALID_API_VERSION', 'INVALID_REDIRECT',
   'HTTPS_REQUIRED', 'INVALID_STATE', 'INVALID_PKCE', 'PROVIDER_NOT_CONFIGURED',
-  'MISSING_CODE', 'OAUTH_TIMEOUT', 'OAUTH_UNAVAILABLE', 'COLLECTION_INTERRUPTED', 'UNKNOWN_ERROR',
+  'MISSING_CODE', 'OAUTH_TIMEOUT', 'OAUTH_UNAVAILABLE',
 ]);
 
 const timestamp = value => typeof value === 'string' && value.trim() && Number.isFinite(Date.parse(value)) ? Date.parse(value) : null;
@@ -65,14 +71,15 @@ function currentFailure(channel) {
 export function planFailure(error, channel = {}, at = new Date().toISOString()) {
   const ctx = context({ at });
   const failureCode = safeCode(error);
-  const failureKind = AUTH_CODES.has(failureCode) ? 'auth' : RATE_CODES.has(failureCode) ? 'rate-limit' : error?.retryable === true ? 'transient' : 'permanent';
+  const retryable = error?.retryable === true || RETRY_CODES.has(failureCode);
+  const failureKind = AUTH_CODES.has(failureCode) ? 'auth' : RATE_CODES.has(failureCode) ? 'rate-limit' : retryable || TRANSIENT_CODES.has(failureCode) ? 'transient' : 'permanent';
   const previousFailure = timestamp(channel.lastFailureAt);
   const previousPending = timestamp(channel.nextRetryAt);
   const newDailyCycle = previousFailure !== null && kstDay(previousFailure) < ctx.day && previousPending === null;
   const prior = !currentFailure(channel) || newDailyCycle ? 0 : count(channel.retryCount);
   let retryCount = prior;
   let nextRetryAt = null;
-  if ((failureKind === 'transient' || failureKind === 'rate-limit') && error?.retryable === true && prior < RETRY_DELAYS.length) {
+  if ((failureKind === 'transient' || failureKind === 'rate-limit') && retryable && prior < RETRY_DELAYS.length) {
     const delay = failureKind === 'rate-limit' ? RATE_LIMIT_DELAY_MINUTES : RETRY_DELAYS[prior];
     retryCount = prior + 1;
     nextRetryAt = new Date(ctx.time + delay * MINUTE).toISOString();

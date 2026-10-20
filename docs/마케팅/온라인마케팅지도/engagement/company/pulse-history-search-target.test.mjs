@@ -5,7 +5,7 @@ import {readFileSync} from 'node:fs';
 import {projectView} from './public/pulse-app/views.mjs';
 
 const source=readFileSync(new URL('./public/pulse-app/app.mjs',import.meta.url),'utf8');
-const navigation=source.slice(source.indexOf('function readStaffHistoryTarget('),source.indexOf("async function start(invite='')"));
+const navigation=source.slice(source.indexOf('function readStaffHistoryTarget('),source.indexOf("async function start(invite=''"));
 const id=n=>'00000000-0000-4000-8000-'+String(n).padStart(12,'0');
 const projectId=id(1),sceneId=id(2),commentId=id(10),reviewId=id(20);
 const href=kind=>'?mode=staff&project='+projectId+'&tab=history&'+kind+'='+(kind==='comment'?commentId:reviewId);

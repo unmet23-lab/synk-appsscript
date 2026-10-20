@@ -24,7 +24,7 @@ test('old strategies receive an optional, independent casting selection without 
 });
 
 test('all prepared model, style and model-specific voice options normalize without loose coercion',()=>{
-  const enums={modelId:['','M01','F01','F02','F03','M02','F04','M03'],hair:['','original','short','bob','long-straight','wave','updo','custom'],makeup:['','natural','clean','glow','smoky','custom'],jacket:['','none','blazer','casual','leather','custom'],top:['','tshirt','shirt','knit','blouse','custom'],bottom:['','trousers','denim','skirt','custom'],voice:['','A','B','C'],earrings:['','none','stud','hoop','drop','custom'],ring:['','none','simple','layered','custom']};
+  const enums={modelId:['','M01','F01','F02','F03','M02','F04','M03'],hair:['','original','look-2','look-3','short','bob','long-straight','wave','updo','custom'],makeup:['','natural','clean','glow','smoky','custom'],jacket:['','none','blazer','casual','leather','custom'],top:['','tshirt','shirt','knit','blouse','custom'],bottom:['','trousers','denim','skirt','custom'],voice:['','A','B','C'],earrings:['','none','stud','hoop','drop','custom'],ring:['','none','simple','layered','custom']};
   for(const [key,values]of Object.entries(enums))for(const value of values){const input={modelId:'M01',[key]:value};assert.equal(normalizeCastingSelection(input)[key],value,key+': '+value);}
   assert.deepEqual(normalizeStrategyData({...data,castingSelection:selection}).castingSelection,selection);
   const normalized=normalizeCastingSelection({...selection,notes:'  요청\n사항\t확인  '});assert.equal(normalized.notes,'요청\n사항\t확인');
@@ -48,22 +48,36 @@ test('legacy clients preserve selections and explicit empty fields clear them',(
   const emptyObject=save(first,{...data,castingSelection:{}});assert.deepEqual(emptyObject.data.castingSelection,emptyCastingSelection());
 });
 
-test('casting changes require a new confirmation and retain the confirmed selection in version history',()=>{
+test('a customer casting change keeps the confirmed plan; staff casting changes and plan edits need a new confirmation',()=>{
   const confirmed=confirm(request(save(null,{...data,castingSelection:selection})));
   const changed={...selection,modelId:'M02',voice:'C',hair:'short'};
+  // The confirmation covers the message, evidence, action and requests, so a customer's own model or style choice carries it to the new version.
   const next=save(confirmed,{...data,castingSelection:changed},customer);
-  assert.equal(next.revision,2);assert.equal(next.request,null);assert.equal(next.confirmation,null);
+  assert.equal(next.revision,2);assert.deepEqual(next.data.castingSelection,changed);
+  assert.equal(next.request.strategyRevision,2);assert.equal(next.request.carriedFrom,1);
+  assert.equal(next.confirmation.strategyRevision,2);assert.equal(next.confirmation.carriedFrom,1);assert.equal(next.confirmation.at,confirmed.confirmation.at);
   assert.deepEqual(next.history[0].data.castingSelection,selection);assert.equal(next.history[0].confirmation.strategyRevision,1);
-  assert.throws(()=>confirm(request(next),1),error=>error.status===409);
-  const updated=confirm(request(next));assert.equal(updated.confirmation.strategyRevision,2);assert.deepEqual(updated.data.castingSelection,changed);
-  let rolling=updated;for(let i=0;i<24;i++)rolling=save(rolling,{...data,castingSelection:{...changed,notes:'선택 버전 '+i}});
+  assert.equal(confirmed.confirmation.strategyRevision,1,'the previous state is unchanged');assert.equal(strategyView(next).confirmation.carriedFrom,1);
+  const again=save(next,{...data,castingSelection:{...changed,notes:'다시 고름'}},customer);
+  assert.equal(again.confirmation.strategyRevision,3);assert.equal(again.confirmation.carriedFrom,1,'names the version the customer actually confirmed');
+  assert.throws(()=>confirm(again),error=>error.status===409);
+  assert.equal(save(next,{...data,castingSelection:changed},customer),next,'saving unchanged content keeps the version, request and confirmation');
+  // Staff casting edits and any plan edit go back to the customer for a new confirmation.
+  for(const edited of [save(next,{...data,castingSelection:{...changed,modelId:'F03',voice:''}}),save(next,{...data,primaryPromise:'바뀐 약속',castingSelection:{...changed,modelId:'F03',voice:''}},customer)]){
+    assert.equal(edited.revision,3);assert.equal(edited.request,null);assert.equal(edited.confirmation,null);
+    assert.equal(edited.history.at(-1).confirmation.strategyRevision,2);
+    assert.throws(()=>confirm(request(edited),2),error=>error.status===409);
+    const updated=confirm(request(edited));assert.equal(updated.confirmation.strategyRevision,3);assert.equal(Object.hasOwn(updated.confirmation,'carriedFrom'),false);
+  }
+  let rolling=next;for(let i=0;i<24;i++)rolling=save(rolling,{...data,castingSelection:{...changed,notes:'선택 버전 '+i}});
   assert.equal(rolling.history.length,20);assert.equal(rolling.history.at(-1).data.castingSelection.notes,'선택 버전 22');
 });
 
 test('public current and historical selections expose only validated strings and no nested extensions',()=>{
   const stored=save(null,{...data,castingSelection:selection});
   stored.data.castingSelection.privateExtension={assetUrl:'never-expose'};
-  const next=save(stored,{...data});
+  assert.equal(save(stored,{...data}),stored,'an unchanged legacy save keeps the stored version');
+  const next=save(stored,{...data,product:'수정 제품'});
   assert.deepEqual(next.data.castingSelection.privateExtension,{assetUrl:'never-expose'},'legacy saves preserve stored extensions internally');
   const view=strategyView(next);
   assert.deepEqual(view.data.castingSelection,selection);assert.deepEqual(view.history[0].data.castingSelection,selection);

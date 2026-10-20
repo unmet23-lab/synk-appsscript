@@ -155,6 +155,11 @@ test('the platform passes its dialog and cancels only a quit in progress when PU
   callback();assert.deepEqual(calls,[]);
   context.quittingRequested=true;callback();assert.equal(context.quittingRequested,false);assert.deepEqual(calls,['tray.cancelQuit','startupWindow.cancelQuit','update.cancelInstall','gate.cancelInstall']);
 });
+test('the window keeps the Electron user agent that the PULSE web app reads to recognize it',()=>{
+  // The web app (install.mjs installationEnvironment) finds this window by the `Electron/` token and then drops its
+  // install help and device-notification switch. Overriding the user agent here or app-wide would bring them back.
+  for(const file of ['pulse-app.cjs','main.cjs'])assert.doesNotMatch(fs.readFileSync(path.join(__dirname,'../src',file),'utf8'),/setUserAgent|userAgentFallback|userAgent\s*:|appendSwitch\(\s*['"`]user-agent/,file);
+});
 test('preload exposes only a zero-argument fixed PULSE operation',async()=>{
   let bridge;const calls=[];vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../src/preload.cjs'),'utf8'),{require:()=>({contextBridge:{exposeInMainWorld:(_name,value)=>{bridge=value;}},ipcRenderer:{invoke:async(...args)=>{calls.push(args);return {ok:true};}}})});
   await bridge.openPulseApp('https://evil.invalid/',{token:'SYNTHETIC'});assert.deepEqual(calls,[['synk:pulse-app-open']]);

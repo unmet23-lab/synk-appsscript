@@ -100,7 +100,7 @@ test('latest-version feedback blocks approval but a reviewed newer preview resol
   row=(await f.request('/api/client-projects/'+row.id+'/versions',{body:{revision:row.revision,kind:'preview',label:'v2',url:'https://example.test/v2'}})).data.project;
   const beforeApproval=f.app.store.get('clientProjects',row.id);
   const premature=await f.request('/pulse/api/action',{customer,body:{action:'approve',revision:row.revision,versionId:row.versions.at(-1).id}});
-  assert.equal(premature.status,409);assert.match(premature.data.error,/최신 수정본에 연결하고 검토/);
+  assert.equal(premature.status,409);assert.match(premature.data.error,/이번 수정본에 잘 들어갔는지/);
   assert.deepEqual(f.app.store.get('clientProjects',row.id),beforeApproval,'rejected early approval changes neither customer approval nor the unresolved request');
   row=(await f.request('/api/client-workflow',{body:{projectId:row.id,revision:row.revision,messageId:feedback.id,action:'submit_review',versionId:row.versions.at(-1).id}})).data.project;
   assert.equal(row.messages.find(message=>message.id===feedback.id).workflow.status,'waiting_customer');

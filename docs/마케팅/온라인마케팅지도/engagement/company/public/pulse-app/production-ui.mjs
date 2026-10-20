@@ -21,7 +21,7 @@ export function feedbackDraftChanged(project,entry){
 
 export function addProductionDraftReset(form){
   if(!form||form.querySelector('[data-action="reset-production-draft"]'))return;
-  const button=document.createElement('button');button.type='button';button.className='button quiet small-button';button.dataset.action='reset-production-draft';button.textContent='작성 내용 지우고 새 내용 보기';button.title='이 양식에 쓰던 내용만 지우고 저장된 최신 내용을 다시 보여 줘요.';form.append(button);
+  const button=document.createElement('button');button.type='button';button.className='button quiet small-button';button.dataset.action='reset-production-draft';button.textContent='쓰던 내용 지우고 새로 보기';button.title='이 양식에 쓰던 내용만 지우고 저장된 최신 내용을 다시 보여 줘요.';form.append(button);
 }
 
 // Keeps all production additions on the existing project, revision and draft lifecycle.
@@ -36,14 +36,14 @@ export function productionUI(ctx){
     try{
       if(type==='preview-upload'){
         const file=new FormData(form).get('file');
-        if(!file?.size)throw Error('함께 확인할 파일을 선택해 주세요.');
-        if(file.size>100*1024*1024)throw Error('파일은 100MiB 이하여야 해요.');
-        if(!['image/png','image/jpeg','video/mp4','video/webm','audio/mpeg','audio/wav','audio/x-wav'].includes(file.type))throw Error('PNG·JPEG·MP4·WebM·MP3·WAV 파일을 선택해 주세요.');
-        await mutate(async()=>{const stamp=projectStamp(),result=await request(s.mode==='staff'?staffPath('/studio/media'):'/pulse/api/studio/media',{...options(),file,headers:{'Content-Type':file.type,'X-File-Name':encodeURIComponent(file.name),'X-Project-Revision':String(s.project.revision)}});if(!current(stamp))throw Error('프로젝트가 바뀌었어요.');accept(result);return result;},{form,message:'자료를 올렸어요. 비교 샘플이나 움직이는 콘티에서 선택해 주세요.'});
+        if(!file?.size)throw Error('올릴 파일을 골라 주세요.');
+        if(file.size>100*1024*1024)throw Error('파일은 100MB까지 올릴 수 있어요.');
+        if(!['image/png','image/jpeg','video/mp4','video/webm','audio/mpeg','audio/wav','audio/x-wav'].includes(file.type))throw Error('PNG·JPEG·MP4·WebM·MP3·WAV 파일을 골라 주세요.');
+        await mutate(async()=>{const stamp=projectStamp(),result=await request(s.mode==='staff'?staffPath('/studio/media'):'/pulse/api/studio/media',{...options(),file,headers:{'Content-Type':file.type,'X-File-Name':encodeURIComponent(file.name),'X-Project-Revision':String(s.project.revision)}});if(!current(stamp))throw Error('프로젝트가 바뀌었어요.');accept(result);return result;},{form,message:'파일을 올렸어요. 비교 예시나 움직이는 콘티에서 골라 주세요.'});
       }else{
-        if(type==='round-submit'&&ctx.hasDraft?.('round-draft'))throw Error('작성 중인 수정 의견을 먼저 초안에 저장한 뒤 취합해 주세요.');
+        if(type==='round-submit'&&ctx.hasDraft?.('round-draft'))throw Error('쓰던 수정 의견을 먼저 초안에 넣은 뒤 보내 주세요.');
         const body=type.startsWith('round-')?feedbackRoundSubmission(form):type.startsWith('preview-')?previewSubmission(form):deliverableSubmission(form);
-        await save(body,form,type==='round-submit'?'취합한 수정 의견을 한 번에 전달했어요.':type==='round-draft'?'수정 의견 초안에 담았어요. 취합 후 제출해 주세요.':'저장한 내용을 함께 확인할 수 있어요.');
+        await save(body,form,type==='round-submit'?'모은 수정 의견을 보냈어요.':type==='round-draft'?'초안에 넣었어요. 다 모으면 한 번에 보내 주세요.':'저장했어요.');
       }
     }catch(error){notice(error.message);}
     return true;
@@ -55,9 +55,9 @@ export function productionUI(ctx){
       if(action==='deliverable-add'){const form=button.closest('form');addDeliverableRow(form);changed(form);}
       else if(action==='deliverable-remove'){const form=button.closest('form');removeDeliverableRow(button);changed(form);}
       else if(action==='deliverable-request'||action==='deliverable-confirm'){
-        if(ctx.hasDraft?.('deliverables'))throw Error('작성 중인 납품 규격을 먼저 저장한 뒤 확인해 주세요.');
-        await save({action:action==='deliverable-request'?'request_deliverable_review':'confirm_deliverables',deliverableRevision:Number(button.dataset.revision)},null,action==='deliverable-confirm'?'이 버전의 납품 규격을 확인했어요.':'납품 규격의 확인을 요청했어요.');
-      }else if(action==='round-remove-item')await save({action:'remove_feedback_draft_item',draftId:button.dataset.draftId,itemId:button.dataset.id},button.closest('form'),'수정 초안에서 항목을 뺐어요.');
+        if(ctx.hasDraft?.('deliverables'))throw Error('쓰던 납품 규격을 먼저 저장한 뒤 확인해 주세요.');
+        await save({action:action==='deliverable-request'?'request_deliverable_review':'confirm_deliverables',deliverableRevision:Number(button.dataset.revision)},null,action==='deliverable-confirm'?'납품 규격을 확인했어요.':'고객에게 납품 규격 확인을 요청했어요.');
+      }else if(action==='round-remove-item')await save({action:'remove_feedback_draft_item',draftId:button.dataset.draftId,itemId:button.dataset.id},button.closest('form'),'초안에서 뺐어요.');
       else if(action==='round-use-time'){
         const video=document.querySelector('#review-video'),form=button.closest('form')||document.querySelector('[data-form="round-draft"][data-item-id=""]'),field=form?.elements.seconds;
         if(video&&field){video.pause();field.value=String(Math.round(video.currentTime*10)/10);field.dispatchEvent(new Event('input',{bubbles:true}));form.elements.text?.focus();}

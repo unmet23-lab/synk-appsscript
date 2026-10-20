@@ -206,3 +206,9 @@ test('tracking-linked template proposals keep the exact record and explain repla
   assert.equal(proposal.post.body,a.job.snapshot.variant.text);assert.match(proposal.notice,/기록 당시 추적 링크가 그대로/);assert.match(proposal.notice,/추적 링크를 새로 만들어/);assert.equal(f.links.length,before);assert.equal(f.store.all('socialTemplates').length,0);
   const ordinary=f.seed({body:'외부 링크 https://other.test/'});assert.doesNotMatch(f.service.templatePreview(f.user,{jobId:ordinary.job.id}).notice,/추적 링크를 새로/);
 });
+
+test('late window values are excluded from copy comparison with their own reason',t=>{
+  const f=fixture(t),a=f.seed({value:0});f.seed({postId:a.post.id,value:10});f.seed({postId:a.post.id,value:20});const late=f.seed({postId:a.post.id,value:1000});Object.assign(late.cp.metricProvenance.views,{kind:'window',lagged:true});
+  const row=copies(f.service.comparison(f.user))[0];assert.equal(row.sampleCount,3);assert.equal(row.median,10);assert.equal(row.excludedCount,1);
+  assert.match(row.observations.find(item=>item.value===1000).reason,/창 지표/);
+});

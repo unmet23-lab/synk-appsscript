@@ -15,6 +15,10 @@ const SCOPES=['https://www.googleapis.com/auth/youtube.upload','https://www.goog
 const canonical=value=>JSON.stringify(value,(_key,item)=>item&&typeof item==='object'&&!Array.isArray(item)?Object.fromEntries(Object.keys(item).sort().map(key=>[key,item[key]])):item);
 const hash=value=>createHash('sha256').update(Buffer.isBuffer(value)||typeof value==='string'?value:canonical(value)).digest('hex');
 const fail=(code,message,status=409,extra={})=>Object.assign(new Error(message),{code,status,providerSafe:true,...extra});
+// 인증 갱신 실패를 일반 실패 문구로 덮지 않는다. 일시 오류면 기다렸다 다시, 아니면 다시 연결하라고 알린다(10-20).
+const credentialFailure=error=>error?.retryable===true?fail('CREDENTIAL_REFRESH_PENDING','YouTube 인증 갱신이 잠시 막혀 기다리고 있어요. 안내 시각 이후 다시 시도해 주세요. 업로드는 시작하지 않았어요.',503,{retryable:true,nextRetryAt:error.nextRetryAt||null}):['reconnect_required','token_exchange_failed','connection_required','invalid_grant'].includes(error?.code)?fail('AUTH_REQUIRED','YouTube 연결이 만료됐거나 자동 갱신 권한이 없어요. 계정 관리에서 다시 연결해 주세요. 업로드는 시작하지 않았어요.',409):error;
+// YouTube는 하루 할당량·요청 한도도 403으로 알린다. 이를 「재연결 필요」로 읽지 않는다(10-20).
+const QUOTA_REASONS=new Set(['quotaExceeded','rateLimitExceeded','userRateLimitExceeded','dailyLimitExceeded','uploadLimitExceeded']);
 const channelId=value=>typeof value==='string'&&/^UC[A-Za-z0-9_-]{22}$/.test(value);
 const videoId=value=>typeof value==='string'&&/^[A-Za-z0-9_-]{11}$/.test(value);
 const scopes=credentials=>new Set(String(credentials?.scope||'').split(/[ ,]+/).filter(Boolean));
@@ -73,7 +77,7 @@ export function createSocialDirectYouTube({store,fetchImpl=globalThis.fetch,cloc
   function reserve(channel){transaction(()=>{const key=PROVIDER+':'+channel.id,row=store.get(REQUESTS,key)||{},times=(row.times||[]).filter(value=>value>stamp()-3600000);if(times.length>=120||row.retryAt>stamp())throw fail('YOUTUBE_RATE_LIMIT','YouTube 연결 요청이 많아요. 잠시 후 다시 확인해 주세요.',429);store.put(REQUESTS,key,{provider:PROVIDER,channelId:channel.id,times:[...times,stamp()],retryAt:row.retryAt||null});});}
   async function session(channel,{signal,authorize=()=>{},enabled=true,expectedBinding}={}){
     const original=expectedBinding||binding(channel),checkBase=()=>{authorize();if(signal?.aborted)throw fail('PUBLISH_CANCELLED','YouTube 게시 준비가 중단됐어요.');if(binding(channel)!==original)throw fail('CONNECTION_CHANGED','YouTube 계정이나 자동 게시 설정이 바뀌었어요.');};
-    checkBase();let credentials;try{credentials=await(getCredentials?getCredentials(live(channel)):secret(channel));}catch(error){if(CREDENTIAL_CODES.has(error?.code))throw fail(error.code,String(error.message||'채널 연결을 확인해 주세요.').slice(0,300),409,{retryable:true});throw error;}checkBase();
+    checkBase();let credentials;try{credentials=await(getCredentials?getCredentials(live(channel)):secret(channel));}catch(error){if(CREDENTIAL_CODES.has(error?.code))throw fail(error.code,String(error.message||'채널 연결을 확인해 주세요.').slice(0,300),409,{retryable:true});throw credentialFailure(error);}checkBase();
     if(credentialFingerprint(credentials)!==credentialFingerprint(secret(channel)))throw fail('CONNECTION_CHANGED','저장한 YouTube 인증 정보가 바뀌었어요.');
     const problem=issue(live(channel),credentials,{enabled});if(problem)throw fail(problem[0],problem[1]);
     const credentialPin=credentialFingerprint(credentials),check=()=>{checkBase();if(credentialFingerprint(secret(channel))!==credentialPin)throw fail('CONNECTION_CHANGED','처리 중에 YouTube 인증 정보가 바뀌었어요.');};
@@ -84,6 +88,7 @@ export function createSocialDirectYouTube({store,fetchImpl=globalThis.fetch,cloc
     }
     async function json(response){
       let payload;try{if(Number(response.headers?.get?.('content-length')||0)>MAX_RESPONSE)throw Error();const raw=await response.text();if(Buffer.byteLength(raw)>MAX_RESPONSE)throw Error();payload=JSON.parse(raw);}catch{throw fail('YOUTUBE_INVALID_RESPONSE','YouTube 결과를 읽지 못했어요.',502);}
+      if(QUOTA_REASONS.has(payload?.error?.errors?.[0]?.reason)||response.status===429)throw fail('YOUTUBE_QUOTA','YouTube 하루 할당량이나 요청 한도에 걸렸어요. 한도가 풀린 뒤(한국 시간 오후 4~5시) 다시 시도해 주세요.',429,{retryable:true});
       if(response.status<200||response.status>=300||payload?.error)throw fail([401,403].includes(response.status)?'AUTH_REQUIRED':'YOUTUBE_REQUEST_REJECTED','YouTube가 요청을 완료하지 못했어요. 연결 권한과 할당량을 확인해 주세요.',409);
       return payload;
     }

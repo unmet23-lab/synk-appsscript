@@ -291,3 +291,37 @@ test('a deep-link target keeps its focus through later full repaints until the p
   f.run(select);await flush();f.run('pf.focusTarget.until=0');await repaint();assert.equal(f.run('pf.focusTarget'),null);assert.equal(doc.activeElement,null);
   f.run(select);f.context.makerTools.view='weekly';await flush();assert.equal(f.run('pf.focusTarget'),null);
 });
+test('a 72-hour window says when lagged metrics arrive, marks each window value as late and labels estimates',()=>{
+  const f=fixture();f.context.entry={...entry,checkpoints:[{hours:72,dueAt:'2026-10-13T00:00:00.000Z',status:'missed',metrics:{views:null,reach:null},unavailableReasons:{},window:{kind:'window',status:'pending',startDate:'2026-10-09',endDate:'2026-10-11',dueAt:'2026-10-15T00:00:00.000Z',metrics:['views','reach']}}]};
+  let html=f.run('pfEntryCard(entry,true)');assert.match(html,/data-pf-window-plan="pending"/);assert.match(html,/늦게 반영되는 지표\(조회·도달\)는 10\.09~10\.11 태평양시 창 값으로 빈칸만 채워요\. 게시 5일 뒤 /);
+  f.run('Object.assign(entry.checkpoints[0].window,{status:"recorded",fetchedAt:"2026-10-15T00:05:00.000Z",message:"빈 지표에 채웠습니다."});Object.assign(entry.checkpoints[0].metrics,{views:640,reach:3});entry.checkpoints[0].metricProvenance={views:{source:"api:youtube-analytics-api-v2",kind:"window",startDate:"2026-10-09",endDate:"2026-10-11",observedAt:"2026-10-15T00:05:00.000Z",timing:"window"},reach:{source:"api:instagram-login-api",observedAt:"2026-10-13T00:00:00.000Z",timing:"on-time",estimated:true}}');
+  html=f.run('pfEntryCard(entry,true)');assert.match(html,/data-pf-window-plan="recorded"/);assert.match(html,/빈 지표에 채웠습니다\./);assert.match(html,/<small data-pf-window>늦게 반영 · 10\.09~10\.11 태평양시 창 · [^<]+ 받음<\/small>/);assert.match(html,/<small>자동 수집 · [^<]+ · 추정<\/small>/);
+  f.run('entry.checkpoints[0].metricProvenance.views.startDate="<img src=x>";entry.checkpoints[0].window.startDate="<img src=x>";entry.checkpoints[0].window.status="<b>"');
+  html=f.run('pfEntryCard(entry,true)');assert.ok(!html.includes('<img'));assert.ok(!html.includes('<b>'));assert.match(html,/<small>자동 수집 · [^<]+ · 창 지표<\/small>/,'an unrecognized window falls back to the ordinary source line');assert.match(html,/고정 창 값으로/);
+  f.run('pf.data.performance.metricDefinitions=[{id:"views",label:"조회"},{id:"averageViewPct",label:"평균 조회율",unit:"percent",platforms:["youtube"]}];entry.platform="instagram";delete entry.checkpoints[0].window');html=f.run('pfEntryCard(entry,true)');assert.ok(!html.includes('평균 조회율'),'a YouTube-only metric is not offered on an Instagram post');
+  f.run('entry.platform="youtube"');assert.ok(f.run('pfEntryCard(entry,true)').includes('평균 조회율'));
+});
+
+test('auto-registered records are marked and both lists show twenty at a time, keeping a deep-linked record visible',()=>{
+  const f=fixture(),count=(html,attribute)=>(html.match(new RegExp(attribute+'="','g'))||[]).length,click=action=>f.handlers.get('click').forEach(handler=>handler({target:{closest:()=>({disabled:false,dataset:{pfAction:action}})}}));
+  f.context.many=Array.from({length:45},(_,i)=>({...entry,id:'entry-'+i,title:'기록 '+i,...(i===0?{origin:'auto'}:{})}));
+  f.run('pf.data.performance.entries=many;pf.data.learning={cards:many.map(row=>({entryId:row.id,title:row.title,status:"waiting",statusLabel:"72시간 관측 대기",summary:"",facts:[],limits:[],missing:[],experiments:[]})),generatedAt:"2026-10-20T00:00:00.000Z"}');
+  let html=f.run('pfPerformancePanel()');
+  assert.equal(count(html,'data-pf-entry'),20);assert.equal(count(html,'data-pf-learning-card'),20);
+  assert.ok(html.includes('이전 기록 20편 더 보기'));assert.ok(html.includes('45편 중 20편'));
+  assert.equal((html.match(/집계에서 자동 등록/g)||[]).length,1,'only the auto-registered record carries the mark');
+  click('entries-more');html=f.run('pfPerformancePanel()');assert.equal(count(html,'data-pf-entry'),40);assert.ok(html.includes('이전 기록 5편 더 보기'));
+  click('entries-more');html=f.run('pfPerformancePanel()');assert.equal(count(html,'data-pf-entry'),45);
+  click('learning-more');click('learning-more');html=f.run('pfPerformancePanel()');assert.equal(count(html,'data-pf-learning-card'),45);assert.ok(!html.includes('더 보기'));
+  // 자동화 상태의 문제 항목처럼 41번째 기록으로 바로 넘어오면 그 기록까지 펼친다.
+  f.run('pf.entryLimit=0;pf.target={action:"performance",entryId:"entry-40",checkpoint:"24h"}');html=f.run('pfPerformancePanel()');
+  assert.ok(html.includes('data-pf-entry="entry-40"'));assert.equal(count(html,'data-pf-entry'),41);
+});
+test('a link-access deep link past the first twenty records expands the list to that record and its link host',()=>{
+  // 자동화 상태의 「링크 접속」 문제 항목(publicationAction=link&entryId=…)도 그 기록까지 펼쳐야 초점을 맞출 링크 칸이 생긴다. 기록 id는 실제처럼 64자리 16진수.
+  const f=fixture(),count=html=>(html.match(/data-pf-entry="/g)||[]).length,hex=i=>i.toString(16).padStart(2,'0').repeat(32);
+  f.context.many=Array.from({length:45},(_,i)=>({...entry,id:hex(i),title:'기록 '+i}));f.context.target=hex(40);
+  f.run('pf.data.performance.entries=many;pf.entryLimit=0;pf.target={action:"link",entryId:target}');let html=f.run('pfPerformancePanel()');
+  assert.equal(count(html),41);assert.ok(html.includes('data-pf-link-host="post:'+hex(40)+'"'));
+  f.run('pf.target={action:"link",packageId:"package"}');html=f.run('pfPerformancePanel()');assert.equal(count(html),20,'a package link target does not expand the record list');
+});

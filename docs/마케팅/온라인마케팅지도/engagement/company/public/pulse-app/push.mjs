@@ -11,7 +11,10 @@ export function withDeviceDeadline(promise,{milliseconds=15000,message='기기 �
   });
 }
 
-export function deviceAvailability({secure,serviceWorker,pushManager,notification,permission,ios,android,embedded,standalone}){
+export function deviceAvailability({secure,serviceWorker,pushManager,notification,permission,ios,android,embedded,standalone,desktopApp}){
+  // The PC app window refuses every permission and cannot receive web push, so
+  // browser settings never help there. Its inbox updates while the window is open.
+  if(desktopApp)return 'PC 앱에서는 이 창이 열려 있는 동안 새 소식을 앱 안 알림으로 알려 드려요. 창을 닫아도 받으시려면 받은 초대 링크를 휴대폰이나 Chrome·Edge에서 열고 기기 알림을 켜 주세요.';
   if(ios&&!standalone)return 'iPhone·iPad는 iOS 16.4 이상에서 홈 화면에 추가한 PULSE를 열어 기기 알림을 켤 수 있어요. ‘앱 설치 · 알림’에서 순서를 확인해 주세요.';
   if(embedded)return '메신저 안 브라우저에서는 기기 알림을 켜기 어려울 수 있어요. 받은 초대 링크를 Chrome 또는 삼성 인터넷에서 열어 주세요. ‘앱 설치 · 알림’에서 방법을 확인할 수 있어요.';
   if(!secure||!serviceWorker||!pushManager||!notification){
@@ -31,6 +34,7 @@ export function deviceConnectionNote({mode,enabled,configured,connection}){
   if(!configured)return '기기 알림은 아직 준비 중이에요. 앱 안 알림은 계속 받을 수 있어요.';
   if(mode==='staff')return enabled?'앱을 닫아도 새 알림을 받을 수 있어요. 로그아웃하거나 로그인이 만료되면 멈춰요.':'원할 때 이 기기에서 켜 주세요. 잠금 화면에 고객 이름이나 의견 내용은 보이지 않아요.';
   const days=Math.max(1,Math.min(365,Number(connection?.renewalDays)||30));
+  if(!enabled&&connection?.remembered)return '이 기기는 기억돼 있어요. 기기 알림을 켜면 앱을 닫아도 새 소식을 받을 수 있어요.';
   if(!enabled)return `알림을 켜면 이 기기에 고객 연결을 기억해요. 마지막 이용 후 ${days}일 동안 다시 연결하거나 알림을 켤 필요가 없어요. 공용 기기에서는 켜지 마세요.`;
   if(!connection?.remembered)return '기존 기기 알림 연결을 새 방식으로 전환하고 있어요. 잠시 뒤 알림함을 다시 열어 주세요.';
   return `앱을 닫아도 알림을 받아요. 이 기기 연결은 마지막 이용 후 ${days}일 동안 이어지고, 다시 이용하면 자동으로 늘어나요. ‘연결 닫기’나 ‘기기 알림 끄기’를 누르면 기억한 연결도 풀려요.`;

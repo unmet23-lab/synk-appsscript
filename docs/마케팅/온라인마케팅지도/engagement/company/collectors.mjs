@@ -6,10 +6,13 @@ import {instagramIdentity} from './meta-connection.mjs';
  * An unavailable metric is null; an actual API value of zero remains zero.
  */
 
+// metrics are the channel collection metrics shown on the connection screen. postMetrics exist only for
+// post performance checkpoints. laggedMetrics come from daily YouTube Analytics reports that fill in days
+// later, so a checkpoint never records them as that moment's value (the 72-hour point uses a window report).
 export const PLATFORM_CAPABILITIES = Object.freeze([
-  { id: 'youtube', label: 'YouTube', mode: 'api-key', metrics: ['followers', 'views', 'likes', 'comments', 'shares'], requirements: '관리자 API 키로 공개 수치를 수집하거나 채널 소유자의 Google 계정을 연결합니다. 공유는 소유자 Analytics 권한이 추가로 필요합니다. 저장·도달은 제공하지 않습니다.', docsUrl: 'https://developers.google.com/youtube/v3/docs/channels/list' },
-  { id: 'instagram', label: 'Instagram', mode: 'oauth', metrics: ['followers', 'views', 'likes', 'comments', 'shares', 'saves', 'reach'], requirements: 'Instagram 프로페셔널 계정과 해당 계정의 공식 로그인 토큰, 인사이트 조회 권한이 필요합니다. 콘텐츠 종류별 지원 수치가 다릅니다.', docsUrl: 'https://developers.facebook.com/docs/instagram-platform/insights/' },
-  { id: 'facebook', label: 'Facebook', mode: 'oauth', metrics: ['followers', 'likes', 'comments', 'shares'], requirements: '관리 중인 Facebook 페이지의 페이지 액세스 토큰과 페이지 ID가 필요합니다. 개인 프로필은 지원하지 않습니다.', docsUrl: 'https://developers.facebook.com/docs/pages-api/' },
+  { id: 'youtube', label: 'YouTube', mode: 'api-key', metrics: ['followers', 'views', 'likes', 'comments', 'shares'], postMetrics: ['averageWatchSeconds', 'averageViewPct', 'subscribersGained', 'subscribersLost'], laggedMetrics: ['shares', 'averageWatchSeconds', 'averageViewPct', 'subscribersGained', 'subscribersLost'], requirements: '관리자 API 키로 공개 수치를 수집하거나 채널 소유자의 Google 계정을 연결합니다. 공유는 소유자 Analytics 권한이 추가로 필요합니다. 저장·도달은 제공하지 않습니다.', docsUrl: 'https://developers.google.com/youtube/v3/docs/channels/list' },
+  { id: 'instagram', label: 'Instagram', mode: 'oauth', metrics: ['followers', 'views', 'likes', 'comments', 'shares', 'saves', 'reach'], postMetrics: ['earlyRetention3sPct', 'averageWatchSeconds'], requirements: 'Instagram 프로페셔널 계정과 해당 계정의 공식 로그인 토큰, 인사이트 조회 권한이 필요합니다. 콘텐츠 종류별 지원 수치가 다릅니다.', docsUrl: 'https://developers.facebook.com/docs/instagram-platform/insights/' },
+  { id: 'facebook', label: 'Facebook', mode: 'oauth', metrics: ['followers', 'views', 'likes', 'comments', 'shares'], requirements: '관리 중인 Facebook 페이지의 페이지 액세스 토큰과 페이지 ID가 필요합니다. 개인 프로필은 지원하지 않습니다. 조회수는 영상·릴스에만 있습니다.', docsUrl: 'https://developers.facebook.com/docs/pages-api/' },
   { id: 'tiktok', label: 'TikTok', mode: 'oauth', metrics: ['followers', 'views', 'likes', 'comments', 'shares'], requirements: 'TikTok 승인 앱과 해당 계정의 user.info.basic, user.info.profile, user.info.stats, video.list 권한 토큰이 필요합니다.', docsUrl: 'https://developers.tiktok.com/doc/tiktok-api-v2-video-list/' },
   { id: 'threads', label: 'Threads', mode: 'manual', metrics: [], requirements: '주소 등록과 수동 기록을 지원합니다. 자동 수집 연결은 아직 제공하지 않습니다.', docsUrl: 'https://developers.facebook.com/docs/threads/' },
   { id: 'x', label: 'X', mode: 'manual', metrics: [], requirements: '주소 등록과 수동 기록을 지원합니다. 자동 수집 연결은 아직 제공하지 않습니다.', docsUrl: 'https://docs.x.com/x-api' },
@@ -82,6 +85,12 @@ const required = (credentials, key, description) => {
   if (!credentials || typeof credentials[key] !== 'string' || !credentials[key].trim()) throw new CollectorError('CONNECTION_REQUIRED', description);
   return credentials[key].trim();
 };
+// 게시 성과의 「같은 계정·형식」 비교에 쓰는 형식. 「게시 주소로 추가」의 판정(post-performance-lookup.mjs)과 같은 규칙이다.
+const youtubeFormat = duration => {
+  const match = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?$/.exec(typeof duration === 'string' ? duration : '');
+  const seconds = match ? Number(match[1] || 0) * 3600 + Number(match[2] || 0) * 60 + Number(match[3] || 0) : null;
+  return seconds !== null && seconds > 0 && seconds <= 180 ? 'youtube-shorts' : seconds !== null ? 'youtube-video' : null;
+};
 const limits = credentials => {
   const validate = (value, fallback) => value === undefined ? fallback : Number.isSafeInteger(Number(value)) && Number(value) > 0 ? Number(value) : null;
   const maxPosts = validate(credentials.maxPosts, 10000);
@@ -145,12 +154,15 @@ function recentResult(collected, recent) {
 const mismatch = () => new CollectorError('ACCOUNT_MISMATCH', '연결한 계정과 등록한 페이지 주소가 다릅니다. 해당 페이지의 연결 정보를 확인해 주세요.');
 const apiOrigins = new Set(['https://www.googleapis.com', 'https://youtubeanalytics.googleapis.com', 'https://graph.instagram.com', 'https://graph.facebook.com', 'https://open.tiktokapis.com']);
 
-function apiError(status, apiCode) {
+function apiError(status, apiCode, transient = false) {
   const codes = String(apiCode || '').toLowerCase();
-  if (status === 429 || ['4', '17', '32', '613'].includes(codes) || /quota|rate.limit|rate_limit|too_many/.test(codes)) return new CollectorError('RATE_LIMITED', '플랫폼의 조회 한도에 도달했습니다. 잠시 후 다시 수집해 주세요.', { retryable: true, status });
+  // YouTube는 한도를 403 + 이유(rateLimitExceeded·userRateLimitExceeded·dailyLimitExceeded·quotaExceeded)로, Meta는 4·17·32·613과
+  // 업무별 한도 800xx로 알린다. 이것을 인증 오류로 읽으면 「재연결 필요」로 자동 수집이 멈춘다(10-20).
+  if (status === 429 || ['4', '17', '32', '613'].includes(codes) || /^800\d\d$/.test(codes) || /quota|rate.?limit|too.?many|limit.?exceeded/.test(codes)) return new CollectorError('RATE_LIMITED', '플랫폼의 조회 한도에 도달했습니다. 잠시 후 다시 수집해 주세요.', { retryable: true, status });
   if (status === 401 || status === 403 || ['102', '190', '200'].includes(codes) || /access.token|access_token|unauthor|permission|oauth|scope/.test(codes)) return new CollectorError('AUTH_REQUIRED', '플랫폼 연결이 만료되었거나 필요한 조회 권한이 없습니다. 연결을 확인해 주세요.', { status });
   if (status === 404) return new CollectorError('CHANNEL_NOT_FOUND', '플랫폼에서 해당 채널 또는 콘텐츠를 찾을 수 없습니다.', { status });
-  return new CollectorError('API_ERROR', '플랫폼이 수집 요청을 처리하지 못했습니다. 연결 정보와 플랫폼 상태를 확인해 주세요.', { retryable: status >= 500, status });
+  // Meta는 일시 오류에 is_transient:true를 붙인다. 영구 오류로 굳히지 않고 재시도한다.
+  return new CollectorError('API_ERROR', '플랫폼이 수집 요청을 처리하지 못했습니다. 연결 정보와 플랫폼 상태를 확인해 주세요.', { retryable: status >= 500 || transient, status });
 }
 
 function makeRequester({ fetchImpl, signal }) {
@@ -167,9 +179,14 @@ function makeRequester({ fetchImpl, signal }) {
     try {
       const response = await fetchImpl(parsed.href, { ...options, redirect: 'error', signal: controller.signal });
       let data;
-      try { data = await response.json(); } catch { throw new CollectorError('INVALID_RESPONSE', '플랫폼의 응답 형식을 확인할 수 없습니다.', { retryable: response.status >= 500, status: response.status }); }
+      // 본문을 받다가 끊기거나 시간이 다 되면 일시 오류다. 형식이 틀린 본문도 다음 회차에 다시 읽는다(영구 오류로 굳히지 않음).
+      try { data = await response.json(); } catch {
+        if (signal?.aborted) throw new CollectorError('CANCELLED', '수집이 취소되었습니다.');
+        if (timedOut) throw new CollectorError('TIMEOUT', '플랫폼 응답 시간이 초과되었습니다. 잠시 후 다시 수집해 주세요.', { retryable: true });
+        throw new CollectorError('INVALID_RESPONSE', '플랫폼의 응답 형식을 확인할 수 없습니다.', { retryable: true, status: response.status });
+      }
       const code = data?.error?.errors?.[0]?.reason ?? data?.error?.code ?? data?.error_code;
-      if (!response.ok || (data?.error && code !== undefined && code !== 'ok' && code !== 0)) throw apiError(response.status, code);
+      if (!response.ok || (data?.error && code !== undefined && code !== 'ok' && code !== 0)) throw apiError(response.status, code, data?.error?.is_transient === true);
       return data;
     } catch (error) {
       if (error instanceof CollectorError) throw error;
@@ -198,6 +215,10 @@ function result(channel, posts, { warnings = [], partial = false, hasMore = fals
   } };
 }
 function capWarning(cap) { return `1회 수집 한도(콘텐츠 ${cap.maxPosts.toLocaleString('ko-KR')}개 또는 목록 ${cap.maxPages.toLocaleString('ko-KR')}페이지)에 도달하여 일부 콘텐츠만 수집했습니다.`; }
+
+// reports.query accepts these scopes. A token without a recorded scope is tried and the API decides.
+const ANALYTICS_SCOPES = ['youtube', 'youtube.readonly', 'youtubepartner', 'yt-analytics-monetary.readonly', 'yt-analytics.readonly'].map(scope => `https://www.googleapis.com/auth/${scope}`);
+const youtubeAnalyticsScope = credentials => !credentials.scope || String(credentials.scope).split(/[\s,]+/).some(scope => ANALYTICS_SCOPES.includes(scope));
 
 async function youtube(channel, credentials, request, recent) {
   const accessToken = typeof credentials.accessToken === 'string' ? credentials.accessToken.trim() : '';
@@ -249,7 +270,8 @@ async function youtube(channel, credentials, request, recent) {
   const allIds = [...ids];
   for (let offset = 0; offset < allIds.length; offset += 50) {
     const batch = allIds.slice(offset, offset + 50);
-    const videos = await api('videos', { part: 'snippet,statistics,status', id: batch.join(','), maxResults: 50 });
+    // contentDetails(영상 길이)는 같은 요청에 붙고 할당량을 더 쓰지 않는다.
+    const videos = await api('videos', { part: 'snippet,statistics,status,contentDetails', id: batch.join(','), maxResults: 50 });
     if (!Array.isArray(videos.items)) throw new CollectorError('INVALID_RESPONSE', 'YouTube 콘텐츠 수치를 확인할 수 없습니다.');
     const returned = new Set();
     for (const video of videos.items) {
@@ -259,7 +281,7 @@ async function youtube(channel, credentials, request, recent) {
       if(video.status?.privacyStatus&&video.status.privacyStatus!=='public')continue;
       if (video.snippet?.channelId && video.snippet.channelId !== item.id) { omitted++; continue; }
       if (!recentDate(video.snippet?.publishedAt, recent)) continue;
-      posts.push({ externalId: video.id, url: `https://www.youtube.com/watch?v=${video.id}`, title: text(video.snippet?.title), publishedAt: isoDate(video.snippet?.publishedAt), thumbnailUrl: safeUrl(video.snippet?.thumbnails?.medium?.url || video.snippet?.thumbnails?.default?.url), metrics: metrics({ views: video.statistics?.viewCount, likes: video.statistics?.likeCount, comments: video.statistics?.commentCount }) });
+      posts.push({ externalId: video.id, url: `https://www.youtube.com/watch?v=${video.id}`, title: text(video.snippet?.title), publishedAt: isoDate(video.snippet?.publishedAt), thumbnailUrl: safeUrl(video.snippet?.thumbnails?.medium?.url || video.snippet?.thumbnails?.default?.url), publicationFormat: youtubeFormat(video.contentDetails?.duration), metrics: metrics({ views: video.statistics?.viewCount, likes: video.statistics?.likeCount, comments: video.statistics?.commentCount }) });
     }
     omitted += batch.filter(id => !returned.has(id)).length;
   }
@@ -268,9 +290,8 @@ async function youtube(channel, credentials, request, recent) {
   const unavailable = ['saves', 'reach'];
   const metricPeriods = {};
   let analyticsPartial = false;
-  // reports.query accepts these scopes; channel ownership is verified above.
-  const analyticsScopes = ['youtube', 'youtube.readonly', 'youtubepartner', 'yt-analytics-monetary.readonly', 'yt-analytics.readonly'].map(scope => `https://www.googleapis.com/auth/${scope}`);
-  const analyticsAllowed = !credentials.scope || String(credentials.scope).split(/[\s,]+/).some(scope => analyticsScopes.includes(scope));
+  // Channel ownership is verified above.
+  const analyticsAllowed = youtubeAnalyticsScope(credentials);
   if (accessToken && !publicOnly && analyticsAllowed && posts.length) {
     const endDate = new Date().toISOString().slice(0, 10);
     try {
@@ -389,6 +410,18 @@ function insightValue(response, name) {
   return item?.values?.length === 1 ? number(item.values[0].value) : null;
 }
 
+// 3-second retention is 100 − Meta's estimated skip rate; average watch time is milliseconds turned into
+// seconds. The original metric, value and unit stay in metricDetails so a wrong unit can be recomputed.
+function reelMetrics(values) {
+  const skip = values.reels_skip_rate, watch = values.ig_reels_avg_watch_time;
+  const retention = skip !== null && skip <= 100 ? Math.round((100 - skip) * 100) / 100 : null;
+  const seconds = watch !== null ? Math.round(watch) / 1000 : null;
+  const details = {};
+  if (retention !== null) details.earlyRetention3sPct = { derivedFrom: 'reels_skip_rate', rawValue: skip, rawUnit: 'percent', estimated: true };
+  if (seconds !== null) details.averageWatchSeconds = { derivedFrom: 'ig_reels_avg_watch_time', rawValue: watch, rawUnit: 'milliseconds' };
+  return { metrics: { earlyRetention3sPct: retention, averageWatchSeconds: seconds }, details };
+}
+
 async function instagram(channel, credentials, request, recent) {
   const accessToken = required(credentials, 'accessToken', '해당 Instagram 프로페셔널 계정의 조회 권한을 연결해 주세요.');
   const direct = credentials.authType === 'instagram-login' || credentials.loginType === 'instagram';
@@ -408,14 +441,29 @@ async function instagram(channel, credentials, request, recent) {
   let haltInsights = !insightsAllowed;
   const posts = [];
   const metricNames = ['views', 'reach', 'shares', 'saved'];
+  // Reels only. reels_skip_rate is a percentage that Meta marks estimated and in development; the unit of
+  // ig_reels_avg_watch_time is not documented and is read as milliseconds (raw value kept in metricDetails).
+  const reelMetricNames = ['reels_skip_rate', 'ig_reels_avg_watch_time'];
+  let reelMetricsRejected = false;
   for (const media of list.entries) {
     if (!/^\d{1,50}$/.test(String(media.id))) { missingInsights++; continue; }
     const values = { views: null, reach: null, shares: null, saved: null };
+    const reel = media.media_product_type === 'REELS', reelValues = { reels_skip_rate: null, ig_reels_avg_watch_time: null };
     if (!haltInsights && (!recent || recent.insightsRequested < recent.maxInsights)) {
       try {
         if (recent) recent.insightsRequested++;
-        const combined = await api(`${media.id}/insights`, { metric: metricNames.join(',') });
+        const withReel = reel && !reelMetricsRejected;
+        let combined;
+        try { combined = await api(`${media.id}/insights`, { metric: [...metricNames, ...(withReel ? reelMetricNames : [])].join(',') }); }
+        catch (error) {
+          // An unsupported-query 400 may come from the reel-only metrics alone: ask once more for the basic
+          // metrics. Only when those alone are accepted are reel metrics skipped for the rest of this collection.
+          if (!withReel || error.code !== 'API_ERROR' || error.status !== 400) throw error;
+          combined = await api(`${media.id}/insights`, { metric: metricNames.join(',') });
+          reelMetricsRejected = true;
+        }
         for (const name of metricNames) values[name] = insightValue(combined, name);
+        if (withReel && !reelMetricsRejected) for (const name of reelMetricNames) reelValues[name] = insightValue(combined, name);
       } catch (error) {
         if (error.code === 'CANCELLED') throw error;
         optionalFailure(error, recent, true);
@@ -433,9 +481,16 @@ async function instagram(channel, credentials, request, recent) {
       }
     } else if (recent) recent.insightsSkipped++;
     if (metricNames.some(name => values[name] === null)) missingInsights++;
-    posts.push({ externalId: String(media.id), url: safeUrl(media.permalink), title: text(media.caption), publishedAt: isoDate(media.timestamp), thumbnailUrl: safeUrl(media.thumbnail_url), metrics: metrics({ views: values.views, likes: media.like_count, comments: media.comments_count, shares: values.shares, saves: values.saved, reach: values.reach }) });
+    const post = { externalId: String(media.id), url: safeUrl(media.permalink), title: text(media.caption), publishedAt: isoDate(media.timestamp), thumbnailUrl: safeUrl(media.thumbnail_url), publicationFormat: reel ? 'instagram-reels' : null, metrics: metrics({ views: values.views, likes: media.like_count, comments: media.comments_count, shares: values.shares, saves: values.saved, reach: values.reach }) };
+    if (reel) {
+      const extra = reelMetrics(reelValues);
+      Object.assign(post.metrics, extra.metrics);
+      if (Object.keys(extra.details).length) post.metricDetails = extra.details;
+    }
+    posts.push(post);
   }
   if (missingInsights) warnings.push(`콘텐츠 ${missingInsights}개는 일부 인사이트가 제공되지 않아 해당 수치를 미제공으로 표시했습니다.`);
+  if (reelMetricsRejected) warnings.push('플랫폼이 릴스 건너뛴 비율·평균 시청 시간 요청을 받지 않아 이번 수집에서는 두 지표를 확인하지 못했습니다.');
   if (haltInsights) warnings.push('인사이트 조회 권한·한도 또는 연결 오류가 발생하여 추가 인사이트 요청을 중단했습니다.');
   const unavailable = ['channel.views', ...METRIC_NAMES.filter(name => posts.length && posts.every(post => post.metrics[name] === null))];
   return result({ externalId: resolvedId, displayName: text(user.name) || user.username, followers: number(user.followers_count), views: null, metrics: { posts: number(user.media_count) } }, posts, { warnings, hasMore: list.hasMore, pages: list.pages, partial: missingInsights > 0, ownerAuthorized: true, source: direct ? 'instagram-login-api' : 'instagram-facebook-login-api', unavailable });
@@ -488,6 +543,59 @@ async function facebook(channel, credentials, request, recent) {
   const collected=result({ externalId: pageId, displayName: text(page.name) || channel.handle || pageId, followers: number(page.followers_count), views: null, metrics: { likes: number(page.fan_count) } }, posts, { warnings, partial:videosPartial,hasMore, pages, ownerAuthorized: true, source: 'facebook-pages-api', unavailable: ['saves', 'reach', 'channel.views',...(posts.some(p=>p.metrics.views!==null)?[]:['views'])] });
   if(videosPartial)collected.coverage.inventoryComplete=false;
   return collected;
+}
+
+/** Analytics report columns → post performance metric ids for the fixed-window report. */
+export const YOUTUBE_WINDOW_METRICS = Object.freeze({ averageViewDuration: 'averageWatchSeconds', averageViewPercentage: 'averageViewPct', shares: 'shares', subscribersGained: 'subscribersGained', subscribersLost: 'subscribersLost' });
+const WINDOW_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Read one fixed date window (Pacific Time dates, as YouTube Analytics reports) per owned video.
+ * A video without a report row, or with no views inside the window, is `empty`: the report is not
+ * processed yet or has nothing to say, and is never turned into zeros.
+ */
+export async function collectYoutubeWindows(input, credentials = {}, options = {}) {
+  const { fetchImpl = globalThis.fetch, signal, videos = [] } = options;
+  const channel = normalizeChannelUrl(typeof input === 'string' ? input : input?.canonicalUrl || input?.url);
+  if (input?.platform && input.platform !== channel.platform) throw mismatch();
+  if (channel.platform !== 'youtube') throw new CollectorError('MANUAL_ONLY', '창 지표는 YouTube Analytics에서만 받습니다.');
+  if (typeof fetchImpl !== 'function') throw new CollectorError('INVALID_CONFIG', '수집 연결을 시작할 수 없습니다.');
+  const accessToken = typeof credentials.accessToken === 'string' ? credentials.accessToken.trim() : '';
+  if (!accessToken || credentials.publicOnly === true || !youtubeAnalyticsScope(credentials)) throw new CollectorError('AUTH_REQUIRED', 'YouTube Analytics 수치는 채널 소유자의 Google 계정 연결과 Analytics 조회 권한이 있어야 받습니다.');
+  const wanted = (Array.isArray(videos) ? videos : []).filter(video => /^[A-Za-z\d_-]{11}$/.test(video?.externalId || '') && WINDOW_DATE.test(video.startDate || '') && WINDOW_DATE.test(video.endDate || '') && video.startDate <= video.endDate).slice(0, 50);
+  const fetchedAt = () => new Date().toISOString();
+  if (!wanted.length) return { source: 'youtube-analytics-api-v2', timeZone: 'America/Los_Angeles', fetchedAt: fetchedAt(), videos: [] };
+  const request = makeRequester({ fetchImpl, signal }), auth = { headers: { Authorization: `Bearer ${accessToken}` } };
+  const api = (path, params) => request(endpoint('https://www.googleapis.com', `/youtube/v3/${path}`, params), auth);
+  const found = await api('channels', { part: 'id', ...(channel.externalId ? { id: channel.externalId } : { forHandle: channel.handle }) });
+  const channelId = found.items?.[0]?.id;
+  if (!channelId) throw new CollectorError('CHANNEL_NOT_FOUND', 'YouTube에서 해당 채널을 찾을 수 없습니다.');
+  if (channel.externalId && channelId !== channel.externalId) throw mismatch();
+  const mine = await api('channels', { part: 'id', mine: true, maxResults: 50 });
+  if (!mine.items?.some(owned => owned.id === channelId) || (credentials.accountId && credentials.accountId !== channelId)) throw mismatch();
+  const columns = ['views', ...Object.keys(YOUTUBE_WINDOW_METRICS)], results = [];
+  let answered = 0, denied = null;
+  for (const video of wanted) {
+    const base = { externalId: video.externalId, startDate: video.startDate, endDate: video.endDate };
+    let report;
+    try { report = await request(endpoint('https://youtubeanalytics.googleapis.com', '/v2/reports', { ids: `channel==${channelId}`, startDate: video.startDate, endDate: video.endDate, metrics: columns.join(','), filters: `video==${video.externalId}` }), auth); }
+    catch (error) {
+      // A rejected query for one video does not stop the others; quota and network errors do. A denied query
+      // is that video's problem only if Analytics answers another video of this channel; otherwise it is the grant.
+      if (error.code === 'API_ERROR' && [400, 404].includes(error.status) || error.code === 'CHANNEL_NOT_FOUND') { results.push({ ...base, status: 'error', errorCode: error.code }); continue; }
+      if (error.code === 'AUTH_REQUIRED') { denied ||= error; results.push({ ...base, status: 'error', errorCode: 'AUTH_REQUIRED' }); continue; }
+      throw error;
+    }
+    answered++;
+    const headers = Array.isArray(report?.columnHeaders) ? report.columnHeaders.map(header => header?.name) : null;
+    if (!headers || (report.rows !== undefined && !Array.isArray(report.rows))) throw new CollectorError('INVALID_RESPONSE', 'YouTube Analytics 수치를 확인할 수 없습니다.');
+    const row = Array.isArray(report.rows?.[0]) ? report.rows[0] : null, value = name => row && headers.includes(name) ? number(row[headers.indexOf(name)]) : null;
+    const views = value('views');
+    if (!row || !views) { results.push({ ...base, status: 'empty', views }); continue; }
+    results.push({ ...base, status: 'ready', views, metrics: Object.fromEntries(Object.entries(YOUTUBE_WINDOW_METRICS).map(([name, key]) => [key, value(name)])) });
+  }
+  if (denied && !answered) throw denied;
+  return { source: 'youtube-analytics-api-v2', timeZone: 'America/Los_Angeles', fetchedAt: fetchedAt(), videos: results };
 }
 
 /**

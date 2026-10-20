@@ -27,6 +27,8 @@ const credentialBinding=c=>[c?.authType,c?.accountId,c?.appScopedId,c?.apiVersio
 const credentialFingerprint=c=>hash([credentialBinding(c),c?.accessToken,c?.scope,c?.expiresAt,c?.dataAccessExpiresAt,c?.permissionsVerifiedAt]);
 const result=(status,message,extra={})=>({provider:'meta-direct',status,message,retryable:false,definitive:status==='failed',publicVerified:false,...extra});
 const safeError=error=>error?.providerSafe||error?.code==='SOCIAL_REVIEW_REQUIRED'?{code:error.code,message:error.message,retryable:error.retryable===true,nextRetryAt:error.nextRetryAt||null}:{code:'META_PUBLISH_FAILED',message:'발행 준비를 완료하지 못했어요. 승인 원문과 계정 연결을 확인해 주세요.',retryable:false};
+// 인증 갱신 실패를 「승인 원문을 확인하라」는 일반 문구로 덮지 않는다. 일시 오류면 기다렸다 다시, 아니면 다시 연결하라고 알린다(10-20).
+export const credentialFailure=error=>error?.retryable===true?fail('CREDENTIAL_REFRESH_PENDING','SNS 인증 갱신이 잠시 막혀 기다리고 있어요. 안내 시각 이후 다시 시도해 주세요. 게시 요청은 보내지 않았어요.',503,{retryable:true,nextRetryAt:error.nextRetryAt||null}):['reconnect_required','token_exchange_failed','connection_required','invalid_grant'].includes(error?.code)?fail('AUTH_REQUIRED','SNS 연결이 만료됐거나 자동 갱신 권한이 없어요. 계정 관리에서 다시 연결해 주세요. 게시 요청은 보내지 않았어요.',409):error;
 
 // Rebuild a read at our own endpoint; never fetch paging.next or forward its token/fields.
 // Meta SDK Cursor uses after + next (api.py), and IGUser.get_media supports since/until.
@@ -138,7 +140,7 @@ export function createSocialDirectMeta({store,fetchImpl=globalThis.fetch,clock=(
   function reserve(channelId){transaction(()=>{const row=store.get(BUDGET,channelId)||{},times=(row.times||[]).filter(at=>at>stamp()-HOUR);if(times.length>=120||row.retryAt>stamp())throw fail('META_RATE_LIMIT','직접 발행 요청이 많아요. 잠시 후 다시 확인해 주세요.',429,{retryable:true,nextRetryAt:new Date(Math.max(row.retryAt||0,times[0]+HOUR||stamp()+MINUTE)).toISOString()});store.put(BUDGET,channelId,{times:[...times,stamp()],retryAt:row.retryAt||null});});}
   async function session(channel,{signal,authorize=()=>{},enabled=true,expectedBinding}={}){
     const original=binding(channel),check=()=>{authorize();if(signal?.aborted)throw fail('PUBLISH_CANCELLED','게시 준비가 중단됐어요.');if(binding(channel)!==(expectedBinding||original))throw fail('CONNECTION_CHANGED','발행 계정이나 연결 설정이 바뀌었어요. 다시 확인해 주세요.');};check();
-    let credentials;try{credentials=await(getCredentials?getCredentials(liveChannel(channel)):secret(channel));}catch(error){if(CREDENTIAL_CODES.has(error?.code))throw fail(error.code,String(error.message||'계정 연결을 확인해 주세요.').slice(0,300),409,{retryable:true});throw error;}check();
+    let credentials;try{credentials=await(getCredentials?getCredentials(liveChannel(channel)):secret(channel));}catch(error){if(CREDENTIAL_CODES.has(error?.code))throw fail(error.code,String(error.message||'계정 연결을 확인해 주세요.').slice(0,300),409,{retryable:true});throw credentialFailure(error);}check();
     if(credentialFingerprint(credentials)!==credentialFingerprint(secret(channel)))throw fail('CONNECTION_CHANGED','읽은 인증 정보와 저장된 연결이 달라졌어요.');
     const problem=issue(liveChannel(channel),credentials,{enabled});if(problem)throw fail(problem[0],problem[1]);
     const fingerprint=credentialFingerprint(credentials),version=credentials.apiVersion||'v26.0',direct=channel.platform==='instagram'&&credentials.authType==='instagram-login';
@@ -146,7 +148,9 @@ export function createSocialDirectMeta({store,fetchImpl=globalThis.fetch,clock=(
     const origin=direct?'https://graph.instagram.com':'https://graph.facebook.com';let token=credentials.accessToken;
     const assert=()=>{check();if(credentialFingerprint(secret(channel))!==fingerprint)throw fail('CONNECTION_CHANGED','처리 중에 SNS 인증 정보가 바뀌었어요.');};
     async function api(path,params={},method='GET',{final=false}={}){
-      assert();reserve(channel.id);const url=new URL('/'+version+'/'+path,origin),body=new URLSearchParams();for(const [key,value]of Object.entries(params))if(value!=null)(method==='GET'?url.searchParams:body).set(key,String(value));
+      // 보내기 전에 막힌 오류(연결 확인·자체 요청 한도)는 요청이 나가지 않았다는 표시를 붙인다.
+      try{assert();reserve(channel.id);}catch(error){throw Object.assign(error,{preSend:true});}
+      const url=new URL('/'+version+'/'+path,origin),body=new URLSearchParams();for(const [key,value]of Object.entries(params))if(value!=null)(method==='GET'?url.searchParams:body).set(key,String(value));
       const timeoutMs=metaRequestTimeout(method,params);let response,data;try{response=await fetchImpl(url.href,{method,redirect:'error',headers:{Authorization:'Bearer '+token,Accept:'application/json','Cache-Control':'no-store',...(method==='POST'?{'Content-Type':'application/x-www-form-urlencoded'}:{})},body:method==='POST'?body.toString():undefined,timeoutMs,signal:signal?AbortSignal.any([signal,AbortSignal.timeout(timeoutMs)]):AbortSignal.timeout(timeoutMs)});}catch{throw fail('META_NETWORK','Meta 응답을 받지 못했어요.',502,{uncertain:method==='POST',retryable:method==='GET'});}
       try{if(Number(response.headers?.get?.('content-length')||0)>MAX_RESPONSE)throw Error();const raw=await response.text();if(Buffer.byteLength(raw)>MAX_RESPONSE)throw Error();data=JSON.parse(raw);}catch{throw fail('META_INVALID_RESPONSE','Meta 결과를 읽지 못했어요.',502,{uncertain:method==='POST',retryable:method==='GET'});}
       const status=Number(response.status),code=Number(data?.error?.code);
@@ -261,7 +265,11 @@ export function createSocialDirectMeta({store,fetchImpl=globalThis.fetch,clock=(
     if(state.status_code!=='FINISHED')return view(update(id,{status:'processing',message:'Meta가 미디어를 처리하고 있어요. 완료된 뒤 승인과 권한을 다시 확인해 게시해요.',processingChecks:(row.processingChecks||0)+1}));
     await authorize(input,continuation);sessionValue.check();
     const claim=randomUUID(),won=transaction(()=>{const live=store.get(JOBS,id);if(live.status!=='processing'||live.containerId!==row.containerId||live.updatedAt!==row.updatedAt)return false;store.put(JOBS,id,{...live,status:'submitting',claimToken:claim,submittedAt:now(),updatedAt:now()});return true;});if(!won)return view(store.get(JOBS,id));
-    let response;try{response=await api(channel.externalId+'/media_publish',{creation_id:row.containerId},'POST',{final:true});}catch(error){throw Object.assign(error,{finalWrite:true});}
+    let response;try{response=await api(channel.externalId+'/media_publish',{creation_id:row.containerId},'POST',{final:true});}catch(error){
+      // 공개 게시 요청을 보내기 전에 막혔다(자체 요청 한도 등). 「전송 중」을 풀어 준비 파일 상태로 되돌리고 다음 확인에서 다시 보낸다(10-20: 아무것도 안 보냈는데 「전송 중」에 영구히 갇혔다).
+      if(error.preSend){transaction(()=>{const live=store.get(JOBS,id);if(live?.status==='submitting'&&live.claimToken===claim&&!live.providerId)store.put(JOBS,id,{...live,status:'processing',submittedAt:null,updatedAt:now()});});throw error;}
+      throw Object.assign(error,{finalWrite:true});
+    }
     if(!graphId(response.id))throw fail('SUBMISSION_ID_UNKNOWN','Meta가 게시물 ID를 알려주지 않았어요.',502,{uncertain:true});
     row=update(id,{status:'submitted',providerId:response.id,remoteKind:'instagram',message:'Instagram이 게시 요청을 접수했어요.',observedAt:now()},claim);
     return verifyPublished(row,channel,api);
@@ -290,7 +298,12 @@ export function createSocialDirectMeta({store,fetchImpl=globalThis.fetch,clock=(
         if(prepared.media.length>1){for(let n=0;n<urls.length;n++){await authorize(input,continuation);account.check();const created=await account.api(channel.externalId+'/media',{image_url:urls[n],is_carousel_item:true,...(prepared.media[n].alt||prepared.options.altText?{alt_text:prepared.media[n].alt||prepared.options.altText}:{})},'POST');if(!graphId(created.id))throw fail('CONTAINER_ID_MISSING','사진 준비 ID를 받지 못했어요. 공개 게시 요청은 보내지 않았어요.');childIds.push(created.id);update(id,{childIds:[...childIds]},initial.claimToken);}update(id,{status:'processing',childIds},initial.claimToken);}
         else{const params=prepared.reel?{media_type:'REELS',video_url:urls[0],caption:prepared.content,share_to_feed:prepared.options.shareToFeed!==false,...(prepared.options.thumbnailTimestamp!==undefined?{thumb_offset:prepared.options.thumbnailTimestamp}:{})}:{image_url:urls[0],caption:prepared.content,...(prepared.media[0]?.alt||prepared.options.altText?{alt_text:prepared.media[0]?.alt||prepared.options.altText}:{})};await authorize(input,continuation);account.check();const created=await account.api(channel.externalId+'/media',params,'POST');if(!graphId(created.id))throw fail('CONTAINER_ID_MISSING','사진·릴스 준비 ID를 받지 못했어요. 공개 게시 요청은 보내지 않았어요.');update(id,{status:'processing',containerId:created.id},initial.claimToken);}
         return await advance(input,{continuation});
-      }catch(error){return failure(id,error);}
+      }catch(error){
+        // 준비 파일을 이미 만든 뒤의 일시 오류·중단은 이어받기와 똑같이 「처리 중」으로 두고 다음 확인에서 이어 간다(10-20: 첫 실행에서만 확정 실패가 됐다).
+        const live=store.get(JOBS,id);
+        if(live?.status==='processing'&&(live.containerId||live.childIds?.length)&&(error?.retryable===true||error?.code==='PUBLISH_CANCELLED')){const safe=safeError(error);return view(update(id,{message:safe.message,errorCode:safe.code,nextRetryAt:safe.nextRetryAt||null}));}
+        return failure(id,error);
+      }
   }
   async function publish(input){
     if(!input?.channel?.id||!input.job?.id)throw fail('JOB_REQUIRED','승인한 예약 작업 정보가 필요해요.');
@@ -300,7 +313,10 @@ export function createSocialDirectMeta({store,fetchImpl=globalThis.fetch,clock=(
   async function status(input){
     if(!input?.channel?.id||!input.job?.id)return result('uncertain','발행 작업과 계정을 확인해 주세요.',{errorCode:'JOB_REQUIRED'});
     const id=ledgerId(input.channel,input.job);if(inFlight.has(id))return inFlight.get(id);
-    const work=(async()=>{const row=store.get(JOBS,id);if(!row)return result('uncertain','이 직접 발행의 전송 기록을 찾지 못했어요.',{errorCode:'SUBMISSION_NOT_FOUND'});
+    const work=(async()=>{let row=store.get(JOBS,id);if(!row)return result('uncertain','이 직접 발행의 전송 기록을 찾지 못했어요.',{errorCode:'SUBMISSION_NOT_FOUND'});
+      // 최종 게시 요청 도중 서버가 멈추면(장애 전환·재시작·메모리 부족) 「전송 중」이 남는다. 요청 제한 시간이 넉넉히 지났고 지금 실행 중이 아니면
+      // 결과 불명확으로 바꿔 기존 자동 대조를 태운다. 다시 보내지는 않는다(10-20: 게시됐어도 사람이 주소를 적을 때까지 그대로였다).
+      if(row.status==='submitting'&&!row.providerId&&Number.isFinite(Date.parse(row.submittedAt))&&stamp()-Date.parse(row.submittedAt)>LEASE)row=update(id,{status:'uncertain',errorCode:'SUBMISSION_RESULT_UNKNOWN',message:'게시 요청 중 실행이 멈춰 결과를 알 수 없어요. SNS 원문과 자동으로 대조해요. 확인 전까지 다시 보내지 않아요.',definitive:false,retryable:false});
       if(row.status==='uncertain'&&!row.providerId&&['SUBMISSION_RESULT_UNKNOWN','SUBMISSION_ID_UNKNOWN'].includes(row.errorCode)&&(row.autoChecks||0)<AUTO_CHECKS){const settled=await reconcileUncertain(row,input);if(settled)return settled;}
       if(['published','failed','uncertain','submitting'].includes(row.status))return view(row);
       const resumed={...input,post:input.job.snapshot?.post,variant:input.job.snapshot?.variant};

@@ -4,7 +4,7 @@
   "코드": "F06",
   "키": "없음(1차 가번호 — 캐스팅북 반영 때 붙음)",
   "이름": "은정(가칭)",
-  "틀": "M01_이안.json과 같은 기본 명세서에 「바뀌면_안되는_것」을 더한 1차 5명 판(로드맵 7절 4단계). 데이터셋·LoRA 칸은 학습 뒤에 더한다.",
+  "틀": "M01_이안.json과 같은 기본 명세서에 「바뀌면_안되는_것」을 더한 1차 5명 판(로드맵 7절 4단계). 데이터셋·LoRA 칸은 10-20 학습 뒤에 더했다.",
   "콘셉트": "「관리 잘한 40대」 · 클래식·우아·다정",
   "기준파일": {
     "대표사진": "C:/SYNK-LoRA/casting/wave1_20261019/F06_c1.jpg",
@@ -98,5 +98,69 @@
     "금지": "20대식 과장 리액션, 차가운 빛 무표정 클로즈업",
     "업종": "안티에이징·프리미엄 스킨케어, 건강기능식품, 중년 여성 패션, 클리닉, 주방 가전"
   },
-  "목소리": "아직 — 타입캐스트 후보 셋 → 톤 셋, 유호님 귀 확인 뒤(로드맵 7절 5단계)"
+  "데이터셋": {
+    "트리거": "pls_f06",
+    "v1": {
+      "폴더": "C:/SYNK-LoRA/datasets/F06_eunjeong/v1",
+      "장수": 14,
+      "스크립트": "C:/SYNK-LoRA/validation/_v2공통/make_v1.py (F06_eunjeong/captions_v1.json)"
+    },
+    "v2": {
+      "폴더": "C:/SYNK-LoRA/datasets/F06_eunjeong/v2",
+      "장수": 33,
+      "스크립트": "C:/SYNK-LoRA/validation/_v2공통/make_v2.py (F06_eunjeong/captions_v2.json)",
+      "새컷": "10-20 Gemini Ultra 나노바나나 2.1, 참조 4장, 19장",
+      "장면": "C:/SYNK-LoRA/validation/F06_eunjeong/shots_v2.json",
+      "한장표": "C:/SYNK-LoRA/validation/F06_eunjeong/v2_check/_새컷_한장.jpg"
+    },
+    "학습설정": "C:/SYNK-LoRA/validation/F06_eunjeong/job_config_v2.json",
+    "학습": "2026-10-20 18:18~22:02, 33장, 3,300스텝, 한 번에(재시작 없음)"
+  },
+  "LoRA": {
+    "v2": {
+      "트리거": "pls_f06",
+      "쓸_판": "C:/SYNK-LoRA/outputs/f06_eunjeong_v2/f06_eunjeong_v2.safetensors (마지막 3,300스텝)",
+      "예비": "C:/SYNK-LoRA/outputs/f06_eunjeong_v2/ 250스텝마다 저장(판끼리 비교는 안 함)",
+      "프롬프트_꼴": "pls_f06, a Korean woman in her mid-forties, <구도·표정·옷·배경·조명>",
+      "검증": "통과(2026-10-20, Fable 판정) — 학습에 없던 각도·조명 10장이 모두 은정으로 보인다(예 9·약함 1·아니오 0). 1차 다섯 명 중 가장 나이 많은 40대 중반인데 어려지지 않았다: 보이는 나이 40~50, 가운데 44~46, 30대로 읽히는 칸 없음, 50대로 늙은 칸 없음(위로 넘은 V05 46~50·V10 46~50은 찡그림+직사광·함박웃음으로 세트 화남·웃음 컷과 같은 나이). 지킬 특징은 눈가 잔주름 9칸(V08만 95px라 안 보임)·팔자 시작 8칸(V03 옆얼굴·V08 희미)에서 유지되고 아이돌형·모델형으로 바뀐 칸 없음. 눈 밑 살·옆으로 넘긴 웨이브 그대로, 진주 귀걸이는 안 적어도 10/10 나오고 V06·V09(3/4 근접)만 클러스터·드롭형으로 바뀜. 약한 칸: V05 아래에서 한낮(「squinting」이 세트 06 화남의 미간 주름·내린 눈썹으로 반쯤 새고 직사광이 주름을 세게 비춰 46~50). 전신 V08은 얼굴 95px에서도 은정으로 읽혀 경계 예(오버사이즈 코트로 어깨가 넓고 등신 6.8~6.9로 윗끝 넘음). 옆얼굴 +59°, 「front view」 +11°, 좌우 방향 V02 왼쪽·V03 오른쪽·V09 오른쪽 3/3(이안·민재와 같음). 파란 해 질 녘 무표정(V07)은 나이 든 인상·피곤한 인상 없음. 눈썹이 굵고 짙어지는 경향(V04·V06·V09). 창가 옆얼굴 땀방울(태준·민재 V03) 없음. 학습은 한 번에 3,300스텝(18:18~22:02, GPU 나눠 써 3시간 21분), 재시작 없음, 견본은 1,000스텝부터 은정 고정",
+      "검증표": "C:/SYNK-LoRA/validation/F06_eunjeong/v2_validate/verify_v2_10장.jpg",
+      "검증_작업": "C:/SYNK-LoRA/validation/F06_eunjeong/verify_v2_jobs.json",
+      "주의": "squinting·frown은 06 화남의 미간 주름·내린 눈썹이 반쯤 새고 직사광에서 46~50으로 보이니(V05) relaxed brow, soft eyes slightly narrowed, soft smile로 바꾸고 한낮 야외는 시드 2~3개. excited smile·laughing은 아랫니까지 보이는 큰 웃음(V10)으로 명세서 금지(과장 리액션)에 가까우니 warm smile showing her upper teeth 또는 soft closed-mouth smile로. 지시문엔 캡션과 같이 in her mid-forties를 늘 두고 young·youthful·flawless는 쓰지 않는다. 눈썹이 굵고 짙게 나오니(V04·V06·V09) soft thin natural eyebrows를 적고 클로즈업은 확인. 진주 귀걸이는 안 적어도 나오지만 3/4 근접 컷에선 클러스터·드롭형으로 바뀌니(V06·V09) small single pearl stud earrings를 적고 귀 확인, 귀걸이 없는 컷은 후보정. focused는 시선이 옆으로 가고 입이 벌어지니(V09) eyes on the laptop screen, lips closed 또는 looking at the camera, calm attentive expression으로. 차가운 빛은 명세서 금지와 겹치고 피부가 창백·입술이 어두워지니(V07·V09) soft warm light·slight smile, 촛불은 눈썹이 굵어지고 2~3살 위로 보이니(V06) soft eyes와 시드 2~3개. 전신은 얼굴 95px에서도 은정이나 입술이 어둡고 오버사이즈 코트에선 등신 6.8~6.9·어깨가 넓게 나오니(V08) petite 160 cm, average build, fitted coat, camera at waist height를 적고 등신을 재며 얼굴은 클로즈업 따로 → 얼굴 띠 → 2K 또는 img2img 0.6. 좌우 방향은 적은 대로 돌지만 45°는 17~20°에 그치니 three-quarter view, 45 degrees, far ear hidden으로 적고 각도를 잰다. front view는 +11° 돌고(V07) candid snapshot은 광각 꼴(V01)이라 head square to the camera·85mm portrait lens로. 입술은 어두운 빛에서 적갈색(V07·V08·V09)으로 쏠려 muted rose lips를 적는다"
+    }
+  },
+  "목소리": {
+    "엔진": "타입캐스트 ssfm-v30 · seed 1018",
+    "목소리": "미선(Miseon, tc_65a8c7e1915a6295614f775b)",
+    "대사": "피부는 결국 시간이 말해 주더라고요. 오래 써 온 만큼, 자신 있게 권해 드려요.",
+    "들리는_나이": 39.8,
+    "톤_셋": [
+      {
+        "번호": 1,
+        "느낌": "우아하고 다정한",
+        "감정": "normal",
+        "빠르기": 1,
+        "쓰임": "프리미엄 스킨케어"
+      },
+      {
+        "번호": 2,
+        "느낌": "차분하고 깊은",
+        "감정": "tonedown",
+        "빠르기": 0.95,
+        "쓰임": "클리닉·건강기능식품"
+      },
+      {
+        "번호": 3,
+        "느낌": "밝고 따뜻한",
+        "감정": "happy",
+        "빠르기": 1,
+        "쓰임": "주방 가전·중년 패션"
+      }
+    ],
+    "다른_후보": [
+      "인화(Inhwa, 들리는 나이 44.4)",
+      "지윤(Jiyoon, 들리는 나이 41.2)"
+    ],
+    "고른_방법": "타입캐스트 218개(10-18 젊은 성인 156 + 10-20 30~40대 62)를 같은 문장으로 굽고 들리는 나이·밝기·활기·무게감·호감을 재서 6명 → 자기 대사로 다시 재서 고름. 1기 다섯 명·해설 목소리·유호님이 뺀 목소리 제외(.tmp/voice-pick-wave1-20261020/README.md)",
+    "상태": "측정으로 고름(10-20) · 유호님 귀 확인 전 — 확인 페이지 https://claude.ai/artifact/XKC3GchCoJ9NsFPg9aVg9h"
+  }
 }

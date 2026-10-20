@@ -22,7 +22,7 @@ test('a long discussion stays after the video feedback and approval in reading o
 test('latest unapproved video has an immediate time-capture shortcut and a separate approval shortcut',()=>{
   const html=projectView(state());
   assert.match(html,/data-action="round-use-time" data-focus-comment="true">이 장면에 의견/);
-  assert.match(html,/data-action="review-approval" >승인 확인/);
+  assert.match(html,/data-action="review-approval" >승인하러 가기/);
   assert.match(html,/data-form="round-draft" data-id="new:latest"/);
   assert.match(html,/name="seconds" type="number"/);
   assert.ok(html.indexOf('aria-label="영상 확인 바로가기"')<html.indexOf('id="review-feedback"'));
@@ -41,19 +41,19 @@ test('pending feedback still blocks final approval while allowing the customer t
   const html=projectView(s);
   assert.match(html,/data-action="review-approval"/);
   assert.match(html,/data-action="approve" data-id="latest" disabled/);
-  assert.match(html,/담당자가 준비할 수정본을 기다려 주세요/);
+  assert.match(html,/수정본이 오면 그때 승인해 주세요/);
 });
 
 test('a draft tied to an old preview remains blocked after the mobile rearrangement',()=>{
   const html=projectView(state({versionId:'old',feedbackDraftVersion:'old',feedbackDraftAction:'feedback'}));
-  assert.match(html,/이 글은 이전 시안에 작성한 의견이에요/);
+  assert.match(html,/이 글은 이전 시안을 보며 쓴 의견이에요/);
   assert.match(html,/<button type="submit" class="button primary" data-mutate disabled>문의 보내기/);
 });
 
 test('staff review has neither customer quick action and retains the reply form',()=>{
   const html=projectView(state({mode:'staff',canEdit:true,user:{id:'owner'}}));
   assert.doesNotMatch(html,/data-focus-comment="true"|data-action="review-approval"/);
-  assert.match(html,/고객에게 답변 보내기/);
+  assert.match(html,/>답변 보내기</);
 });
 
 test('image previews cannot show a video time-capture shortcut',()=>{
@@ -70,7 +70,7 @@ test('mobile playback keeps native controls, inline playback and metadata-only p
 function approvedState(overrides={}){
   const s=state(overrides);
   s.project.versions.at(-1).approvedAt='2026-10-12T03:00:00Z';
-  s.project.nextStep='각 장면의 이미지와 문구를 확인해 주세요.';
+  s.project.nextStep='장면마다 그림과 문구를 보고 확인하거나 의견을 남겨 주세요.';
   s.project.studio.strategy={revision:2,data:{primaryPromise:'하나의 메시지',evidence1:'확인한 근거',desiredAction:'문의'},confirmation:{strategyRevision:2,current:true}};
   s.project.studio.scenes=[{id:'scene',title:'승인한 장면',revision:1,duration:5}];
   return s;
@@ -81,14 +81,14 @@ test('latest preview approval advances customer and staff guidance from storyboa
   const customer=nextBanner(approvedState()),staff=nextBanner(approvedState({mode:'staff',canEdit:true})),viewer=nextBanner(approvedState({mode:'staff',canEdit:false}));
   assert.match(customer,/시안 승인을 마쳤어요/);
   assert.match(customer,/최종 파일을 준비하고 있어요/);
-  assert.match(customer,/data-tab="review"[^>]*>승인한 시안 확인/);
+  assert.match(customer,/data-tab="review"[^>]*>승인한 시안 보기/);
   assert.match(staff,/승인한 시안으로 납품을 준비해요/);
-  assert.match(staff,/최종 파일과 사용 안내를 등록/);
+  assert.match(staff,/최종 파일과 사용 안내를 올리고/);
   assert.match(staff,/data-tab="review"[^>]*>최종 납품 준비/);
   assert.match(viewer,/최종 파일을 준비하고 있어요/);
-  assert.match(viewer,/data-tab="review"[^>]*>승인한 시안 확인/);
-  assert.doesNotMatch(viewer,/최종 파일과 사용 안내를 등록|최종 납품 준비/);
-  for(const banner of [customer,staff,viewer])assert.doesNotMatch(banner,/광고의 흐름을 먼저 맞춰요|각 장면의 이미지와 문구|data-tab="storyboard"/);
+  assert.match(viewer,/data-tab="review"[^>]*>승인한 시안 보기/);
+  assert.doesNotMatch(viewer,/최종 파일과 사용 안내를 올리고|최종 납품 준비/);
+  for(const banner of [customer,staff,viewer])assert.doesNotMatch(banner,/광고의 흐름을 먼저 맞춰요|장면마다 그림과 문구|data-tab="storyboard"/);
 });
 
 test('an older final never completes the latest approved preview or hides a new unapproved preview',()=>{
@@ -98,7 +98,7 @@ test('an older final never completes the latest approved preview or hides a new 
   assert.match(nextBanner(s),/최종 파일을 준비하고 있어요/);
   assert.doesNotMatch(nextBanner(s),/완성된 파일이 도착했어요/);
   s.project.versions.at(-1).approvedAt=null;
-  assert.match(nextBanner(s),/새 시안을 함께 확인해요/);
+  assert.match(nextBanner(s),/새 시안이 도착했어요/);
   assert.doesNotMatch(nextBanner(s),/완성된 파일이 도착했어요|시안 승인을 마쳤어요/);
 });
 
@@ -108,7 +108,7 @@ test('final delivery guidance requires the file linked to the latest approved pr
   s.project.stage='delivered';
   const banner=nextBanner(s);
   assert.match(banner,/완성된 파일이 도착했어요/);
-  assert.match(banner,/data-tab="history"[^>]*>납품 파일 확인/);
+  assert.match(banner,/data-tab="history"[^>]*>최종 파일 보기/);
   assert.doesNotMatch(banner,/최종 파일을 준비하고 있어요|광고의 흐름을 먼저 맞춰요/);
 });
 
@@ -123,7 +123,7 @@ test('current customer receipt changes the next banner to a record link without 
   assert.equal(s.project.closeout.closure,undefined,'the customer projection does not expose internal closure');
   const banner=nextBanner(s);
   assert.match(banner,/수령 확인을 마쳤어요/);
-  assert.match(banner,/data-tab="history"[^>]*>납품 파일·기록 다시 보기/);
+  assert.match(banner,/data-tab="history"[^>]*>파일·기록 보기/);
   assert.doesNotMatch(banner,/최종 파일과 사용 안내를 확인해 주세요|프로젝트 마감|프로젝트 완료/);
 });
 
@@ -140,7 +140,7 @@ test('a new final bundle or preview cannot inherit the old receipt banner',()=>{
   assert.match(nextBanner(s),/완성된 파일이 도착했어요/);assert.doesNotMatch(nextBanner(s),/수령 확인을 마쳤어요/);
   s.project.versions.push(video('new-preview','새 검토 시안'));
   s.project.closeout=customerClientCloseout(s.project);
-  assert.match(nextBanner(s),/새 시안을 함께 확인해요/);assert.doesNotMatch(nextBanner(s),/수령 확인을 마쳤어요|완성된 파일이 도착했어요/);
+  assert.match(nextBanner(s),/새 시안이 도착했어요/);assert.doesNotMatch(nextBanner(s),/수령 확인을 마쳤어요|완성된 파일이 도착했어요/);
 });
 
 test('strategy reconfirmation and kickoff readiness retain priority after preview approval',()=>{
@@ -152,5 +152,5 @@ test('strategy reconfirmation and kickoff readiness retain priority after previe
   s.project.versions.at(-1).approvedAt='2026-10-12T03:00:00Z';
   strategy.confirmation={strategyRevision:3,current:true};
   s.project.kickoff={enabled:true,status:'waiting'};
-  assert.match(nextBanner(s),/제작 시작 전 준비를 확인해요/);
+  assert.match(nextBanner(s),/제작 전에 준비할 자료가 있어요/);
 });

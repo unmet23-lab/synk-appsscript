@@ -6,6 +6,8 @@ const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const titles={customer_feedback:'고객이 시안을 고쳐 달래요',customer_support:'고객이 물어봤어요',customer_approval:'고객이 시안을 승인했어요',review_requested:'고친 시안 검토를 부탁했어요',changes_requested:'고친 시안에 더 고칠 게 있대요',review_accepted:'고친 시안 검토가 끝났어요',work_started:'고객 요청을 처리하기 시작했어요',work_completed:'고객 요청 처리를 끝냈어요',work_reopened:'고객 요청을 다시 열었어요',assigned:'고객 프로젝트 담당자가 됐어요',reviewer_assigned:'고객 프로젝트 검토자가 됐어요'};
 const unique=values=>[...new Set(values.filter(Boolean))];
 titles.customer_delivery_receipt='고객이 최종본을 받았대요';
+// 고객 문의에 자동 안내가 먼저 답한 알림(2026-10-19). 사람 답인 「제작팀이 답했어요」와 구별한다.
+titles.auto_reply='문의에 자동 안내가 왔어요';
 titles.customer_feedback_round='고객이 수정 의견을 모아 보냈어요';
 Object.assign(titles,{customer_preferences:'고객이 취향을 알려 줬어요',customer_reference:'고객이 참고 자료에 의견을 남겼어요',customer_strategy:'고객이 제작 설계를 썼어요',customer_strategy_confirmed:'고객이 제작 설계를 확인했어요',customer_concept:'고객이 콘셉트를 골랐어요',customer_scene:'고객이 장면을 보고 의견을 남겼어요',customer_comment:'고객이 기획에 의견을 남겼어요',preview_ready:'새 시안이 왔어요',final_ready:'최종본이 왔어요',staff_reply:'제작팀이 답했어요',strategy_ready:'제작 설계를 확인해 주세요',concept_ready:'콘셉트가 바뀌었어요',scene_ready:'장면 구성이 바뀌었어요',reference_ready:'참고 자료가 바뀌었어요'});
 const studioNewsBodies={customer_preferences:'고객이 남긴 취향을 PULSE에서 봐 주세요.',customer_reference:'고객이 참고 자료에 남긴 의견을 PULSE에서 봐 주세요.',customer_strategy:'고객이 쓴 제작 설계를 PULSE에서 봐 주세요.',customer_strategy_confirmed:'고객이 확인한 제작 설계를 PULSE에서 봐 주세요.',customer_concept:'고객이 고른 콘셉트를 PULSE에서 봐 주세요.',customer_scene:'고객이 장면에 남긴 의견을 PULSE에서 봐 주세요.',customer_comment:'고객이 기획에 남긴 의견을 PULSE에서 봐 주세요.'};
@@ -35,7 +37,7 @@ export function appendClientNotificationEvents(previous,row){
   const submittedRounds=new Set();
   for(const message of row.messages||[]){
     const old=older.get(message.id);
-    if(message.author==='staff'&&!old&&message.visibility==='customer')add('staff_reply',message.id,['customer'],{messageId:message.id,tab:'review'});
+    if(message.author==='staff'&&!old&&message.visibility==='customer')add(message.automated?'auto_reply':'staff_reply',message.id,['customer'],{messageId:message.id,tab:'review'});
     if(message.author==='customer'&&!old){
       const round=message.action==='feedback'&&message.feedbackRoundId&&feedbackRounds.get(message.feedbackRoundId);
       const anchor=round&&row.messages.find(item=>item.id===round.items?.[0]?.messageId&&item.author==='customer'&&item.action==='feedback'&&item.feedbackRoundId===round.id&&item.versionId===round.versionId);
@@ -95,7 +97,7 @@ export function appendClientNotificationEvents(previous,row){
       }
       if(action==='save_concept'||action==='save_scene'){
         const key=action==='save_concept'?'concepts':'scenes',old=new Map((before[key]||[]).map(card=>[card.id,card]));
-        for(const card of studio[key]||[])if(card.visibility==='customer'&&old.get(card.id)?.revision!==card.revision)add(key==='concepts'?'concept_ready':'scene_ready',card.id,['customer'],{tab:key==='concepts'?'concepts':'storyboard',...(key==='concepts'?{conceptId:card.id}:{sceneId:card.id})});
+        for(const card of studio[key]||[])if(card.visibility==='customer'&&old.get(card.id)?.revision!==card.revision)add(key==='concepts'?'concept_ready':'scene_ready',card.id,['customer'],{tab:key==='concepts'?'concepts':'storyboard',cardRevision:card.revision,...(key==='concepts'?{conceptId:card.id}:{sceneId:card.id})});
       }
       if(action==='save_reference')add('reference_ready',String(row.revision),['customer'],{tab:'direction'});
       if(action==='comment'){
@@ -180,4 +182,11 @@ export function createClientNotificationsService({store,clientProjects,clientWor
   return {list,unreadCount,read,readAll,projectNews,readProjectNews,close:()=>unsubscribe?.()};
 }
 
-export function clientNotificationTitle(type){return titles[type]||'프로젝트가 바뀌었어요';}
+// 콘셉트·장면 알림은 처음 올린 카드(cardRevision 1)와 고친 카드를 나눠 부른다. 옛 이벤트(cardRevision 없음)는 원래 제목.
+export function clientNotificationTitle(type,event=null){
+  if(event&&Number.isSafeInteger(event.cardRevision)){
+    if(type==='concept_ready')return event.cardRevision===1?'새 콘셉트가 도착했어요':'콘셉트가 바뀌었어요';
+    if(type==='scene_ready')return event.cardRevision===1?'새 장면이 도착했어요':'장면이 바뀌었어요';
+  }
+  return titles[type]||'프로젝트가 바뀌었어요';
+}

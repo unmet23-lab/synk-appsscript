@@ -293,6 +293,16 @@ b,strong{font-weight:600}
 .inq h2{font-size:24px;font-weight:650;letter-spacing:-.025em}
 .inq p{margin-top:10px;font-size:14px;color:var(--ink-2)}
 .inq .fmt{display:flex;gap:20px;margin-top:18px;font-size:15px}
+/* 누구로 진행할까요?(10-19): 고른 모델이 문의 글 맨 위 「진행하고 싶은 모델」이 된다 */
+.inq .lead{margin-top:24px}
+.inq .lead .sec-h{margin-bottom:10px}
+.inq .lead-opts{display:flex;flex-wrap:wrap;gap:8px}
+.inq .lead-opt{display:inline-flex;align-items:center;gap:10px;min-height:48px;padding:4px 16px 4px 4px;box-shadow:inset 0 0 0 1px var(--rule-2);font-size:14px;font-weight:550;color:var(--ink-2);transition:box-shadow .15s,color .15s}
+.inq .lead-opt img{width:40px;height:40px;object-fit:cover;object-position:50% 18%;background:var(--shade)}
+.inq .lead-opt.none{padding:0 16px}
+.inq .lead-opt:hover{color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink-3)}
+.inq .lead-opt[aria-pressed="true"]{color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.inq .lead .mt-help{margin-top:10px;font-size:13px;color:var(--ink-3)}
 .inq textarea{width:100%;min-height:240px;padding:16px;border:1px solid var(--rule-2);background:var(--shade);font-size:14px;line-height:1.6;resize:vertical}
 .inq .row{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
 .empty{padding-top:48px;padding-bottom:96px;display:grid;gap:14px;justify-items:start}

@@ -1,4 +1,5 @@
 import { readFile, stat } from 'node:fs/promises';
+import { respondStaticMedia } from './static-media.mjs';
 import { createHash } from 'node:crypto';
 import { promisify } from 'node:util';
 import { brotliCompress, gzip, constants } from 'node:zlib';
@@ -84,6 +85,11 @@ export function createStaticResponder({read=readFile,inspect=stat,maxBytes=16*10
     return entry.representations.get(encoding);
   }
   async function respond(req,res,{path,type,headers={},versioned=false,transformHTML=null}){
+    if(/^(?:video|audio)\//i.test(type)){
+      if(transformHTML)throw new TypeError('Only HTML may use a document transform');
+      if(!preferredEncoding(req.headers['accept-encoding'],false)){res.writeHead(406,{...headers,'Cache-Control':'no-store','Vary':'Accept-Encoding','Content-Length':'0'});res.end();return;}
+      return respondStaticMedia(req,res,{path,type,headers});
+    }
     const html=type.startsWith('text/html');let entry=await load(path);
     // HTML dependencies are checked on every request; the file's mtime alone is insufficient.
     if(transformHTML){if(!html)throw new TypeError('Only HTML may use a document transform');const raw=Buffer.from(await transformHTML(entry.raw));entry={raw,digest:createHash('sha256').update(raw).digest('base64url'),representations:new Map(),bytes:raw.length};}

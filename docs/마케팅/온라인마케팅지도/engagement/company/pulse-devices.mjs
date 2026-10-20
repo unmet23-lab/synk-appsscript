@@ -3,9 +3,10 @@ import {createHash} from 'node:crypto';
 const DAY=86400000;
 export const PULSE_DEVICE_DAYS=30;
 const digest=value=>createHash('sha256').update(value).digest('hex');
-const fail=()=>Object.assign(new Error('고객 연결이 종료됐습니다. 담당자에게 새 초대 링크를 요청해 주세요.'),{status:401});
+const fail=()=>Object.assign(new Error('연결이 끝났어요. 담당자에게 새 초대 링크를 요청해 주세요.'),{status:401});
 
-// A remembered device is created only by explicit push opt-in. The invitation's
+// A remembered device is created only by explicit customer consent: push opt-in or
+// 「이 기기 기억하기」(/pulse/api/remember-device, 2026-10-19). The invitation's
 // deadline admits NEW devices; its revision continues to revoke existing ones.
 export function createPulseDeviceService({store,clock=()=>new Date().toISOString()}){
   function current(hash){

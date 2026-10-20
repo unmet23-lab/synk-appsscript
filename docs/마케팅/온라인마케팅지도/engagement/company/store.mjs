@@ -80,6 +80,13 @@ export class Store {
   count(kind) { return this.#statement('SELECT COUNT(*) AS count FROM documents WHERE kind=?').get(kind).count; }
   createdBefore(kind,iso) { return this.#statement("SELECT id, json_extract(body,'$.createdAt') AS createdAt FROM documents WHERE kind=? AND json_extract(body,'$.createdAt')<?").all(kind,iso); }
   remove(kind,id) {if(id==null)return;this.#forget();this.#bump(kind);this.#statement('DELETE FROM documents WHERE kind=? AND id=?').run(kind,id);}
+  // 보관 기한 정리처럼 많은 행을 지울 때 전부 읽지 않고 SQLite가 고른다. condition은 코드에 적은 고정 SQL만 받는다(사용자 입력 금지).
+  removeWhere(kind,condition,...params) {this.#forget();this.#bump(kind);return Number(this.#statement(`DELETE FROM documents WHERE kind=? AND (${condition})`).run(kind,...params).changes);}
+  // field 값이 values 중 하나인 행을 orderField 내림차순으로 limit개만 읽는다(전체를 읽어 정렬하지 않음).
+  latestIn(kind,field,values,orderField,limit) {
+    for(const name of [field,orderField])if(!/^[A-Za-z][A-Za-z0-9]*$/.test(name))throw new Error('조회 항목 이름을 확인해 주세요.');
+    return this.#statement(`SELECT body FROM documents WHERE kind=? AND json_extract(body,'$.${field}') IN (SELECT value FROM json_each(?)) ORDER BY json_extract(body,'$.${orderField}') DESC LIMIT ?`).all(kind,JSON.stringify([...values].map(String)),limit).map(row=>JSON.parse(row.body));
+  }
   transaction(fn) {this.db.exec('BEGIN IMMEDIATE');try{const result=fn();this.db.exec('COMMIT');return result;}catch(e){this.#forget();this.db.exec('ROLLBACK');throw e;}}
   encrypt(value) {const iv=randomBytes(12),cipher=createCipheriv('aes-256-gcm',this.key,iv);const data=Buffer.concat([cipher.update(JSON.stringify(value)),cipher.final()]);return Buffer.concat([iv,cipher.getAuthTag(),data]).toString('base64');}
   decrypt(value) {const data=Buffer.from(value,'base64'),cipher=createDecipheriv('aes-256-gcm',this.key,data.subarray(0,12));cipher.setAuthTag(data.subarray(12,28));return JSON.parse(Buffer.concat([cipher.update(data.subarray(28)),cipher.final()]).toString());}

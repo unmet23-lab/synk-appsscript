@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PLATFORM_CAPABILITIES, CollectorError, normalizeChannelUrl, collectChannel } from './collectors.mjs';
+import { PLATFORM_CAPABILITIES, CollectorError, normalizeChannelUrl, collectChannel, collectYoutubeWindows } from './collectors.mjs';
 
 const CHANNEL_ID = 'UCabcdefghijklmnopqrstuv';
 const OTHER_CHANNEL = 'UCzyxwvutsrqponmlkjihgfe';
@@ -360,4 +360,124 @@ test('Meta rate limit halts optional insights without request storm or exposing 
   assert.equal(result.posts.length, 2);
   assert.equal(result.coverage.status, 'partial');
   assert.ok(!JSON.stringify(result).includes('FIXTURE_SECRET'));
+});
+
+test('Facebook post performance keeps video views; channel and post-only metric lists stay separate', () => {
+  const capability = id => PLATFORM_CAPABILITIES.find(platform => platform.id === id);
+  assert.ok(capability('facebook').metrics.includes('views'));
+  assert.deepEqual(capability('youtube').metrics, ['followers', 'views', 'likes', 'comments', 'shares'], 'the channel screen still lists only channel collection metrics');
+  assert.deepEqual(capability('youtube').laggedMetrics, ['shares', 'averageWatchSeconds', 'averageViewPct', 'subscribersGained', 'subscribersLost']);
+  assert.deepEqual(capability('instagram').postMetrics, ['earlyRetention3sPct', 'averageWatchSeconds']);
+});
+
+const reelFetch = (insights, seen = []) => async raw => {
+  const url = new URL(raw);
+  if (url.pathname.endsWith('/1234')) return ok({ id: '1234', username: 'synk' });
+  if (url.pathname.endsWith('/media')) return ok({ data: [{ id: '501', media_product_type: 'REELS', timestamp: '2026-10-18T07:00:00Z', permalink: 'https://www.instagram.com/reel/AAA111/' }, { id: '502', media_product_type: 'FEED', timestamp: '2026-10-18T08:00:00Z', permalink: 'https://www.instagram.com/p/BBB222/' }, { id: '503', media_product_type: 'REELS', timestamp: '2026-10-18T09:00:00Z', permalink: 'https://www.instagram.com/reel/CCC333/' }] });
+  const id = url.pathname.split('/').at(-2), metric = url.searchParams.get('metric'); seen.push([id, metric]);
+  return insights(id, metric.split(','));
+};
+
+test('Instagram reels add the estimated 3-second retention and millisecond watch time only for reels', async () => {
+  const seen = [], value = { views: 900, reach: 700, shares: 3, saved: 4, reels_skip_rate: 38.2, ig_reels_avg_watch_time: 7530 };
+  const result = await collectChannel('https://instagram.com/synk', { accessToken: 'fixture', accountId: '1234' }, { fetchImpl: reelFetch((id, names) => ok({ data: names.filter(name => !(id === '503' && name === 'reels_skip_rate')).map(name => ({ name, values: [{ value: value[name] }] })) }), seen) });
+  assert.deepEqual(seen.map(([id, metric]) => [id, metric.split(',').length]), [['501', 6], ['502', 4], ['503', 6]], 'feed posts never ask for reel-only metrics');
+  const [reel, feed, reelWithoutSkip] = result.posts;
+  assert.equal(reel.metrics.earlyRetention3sPct, 61.8); assert.equal(reel.metrics.averageWatchSeconds, 7.53);
+  assert.deepEqual(reel.metricDetails, { earlyRetention3sPct: { derivedFrom: 'reels_skip_rate', rawValue: 38.2, rawUnit: 'percent', estimated: true }, averageWatchSeconds: { derivedFrom: 'ig_reels_avg_watch_time', rawValue: 7530, rawUnit: 'milliseconds' } });
+  assert.deepEqual(feed.metrics, { views: 900, likes: null, comments: null, shares: 3, saves: 4, reach: 700 }); assert.equal(feed.metricDetails, undefined);
+  assert.equal(reelWithoutSkip.metrics.earlyRetention3sPct, null, 'an empty insight is unknown, not 100% retention');
+  assert.equal(reelWithoutSkip.metrics.averageWatchSeconds, 7.53); assert.deepEqual(Object.keys(reelWithoutSkip.metricDetails), ['averageWatchSeconds']);
+});
+
+test('a rejected reel-only metric query keeps the basic insights and stops asking for reel metrics in that collection', async () => {
+  const seen = [];
+  const result = await collectChannel('https://instagram.com/synk', { accessToken: 'fixture', accountId: '1234' }, { recentSince: '2026-10-18T00:00:00Z', now: '2026-10-19T00:00:00Z', fetchImpl: reelFetch((id, names) => names.includes('reels_skip_rate') ? fail(400, { error: { code: 100, message: 'FIXTURE_SECRET metric' } }) : ok({ data: names.map(name => ({ name, values: [{ value: 5 }] })) }), seen) });
+  assert.deepEqual(seen.map(([id, metric]) => [id, metric.split(',').length]), [['501', 6], ['501', 4], ['502', 4], ['503', 4]]);
+  assert.equal(result.posts[0].metrics.views, 5); assert.equal(result.posts[0].metrics.earlyRetention3sPct, null); assert.equal(result.posts[2].metrics.averageWatchSeconds, null);
+  assert.ok(result.warnings.some(warning => warning.includes('릴스 건너뛴 비율')));
+  assert.ok(!JSON.stringify(result).includes('FIXTURE_SECRET'));
+});
+
+test('an impossible reel skip rate is never turned into retention', async () => {
+  const result = await collectChannel('https://instagram.com/synk', { accessToken: 'fixture', accountId: '1234' }, { fetchImpl: reelFetch(() => ok({ data: [{ name: 'views', values: [{ value: 1 }] }, { name: 'reels_skip_rate', values: [{ value: 140 }] }] })) });
+  assert.equal(result.posts[0].metrics.earlyRetention3sPct, null); assert.equal(result.posts[0].metricDetails, undefined);
+});
+
+const windowFetch = (reports, calls = []) => async (raw, options) => {
+  const url = new URL(raw); calls.push(url);
+  assert.equal(options.headers.Authorization, 'Bearer window-token'); assert.equal(options.redirect, 'error');
+  if (url.origin === 'https://youtubeanalytics.googleapis.com') return reports(url);
+  if (url.pathname.endsWith('/channels')) return ok({ items: [{ id: CHANNEL_ID }] });
+  throw new Error('unexpected ' + url.pathname);
+};
+const windowVideos = [{ externalId: VIDEO_A, startDate: '2026-10-17', endDate: '2026-10-19' }, { externalId: VIDEO_B, startDate: '2026-10-18', endDate: '2026-10-20' }];
+const windowHeaders = ['views', 'averageViewDuration', 'averageViewPercentage', 'shares', 'subscribersGained', 'subscribersLost'].map(name => ({ name, columnType: 'METRIC', dataType: name === 'averageViewPercentage' ? 'FLOAT' : 'INTEGER' }));
+
+test('YouTube window reports read fixed Pacific dates per owned video and keep looping averages above 100%', async () => {
+  const calls = [];
+  const result = await collectYoutubeWindows(`https://youtube.com/channel/${CHANNEL_ID}`, { accessToken: 'window-token', accountId: CHANNEL_ID, scope: 'https://www.googleapis.com/auth/yt-analytics.readonly https://www.googleapis.com/auth/youtube.readonly' }, { videos: windowVideos, fetchImpl: windowFetch(url => {
+    assert.equal(url.searchParams.get('ids'), `channel==${CHANNEL_ID}`); assert.equal(url.searchParams.has('dimensions'), false);
+    assert.equal(url.searchParams.get('metrics'), 'views,averageViewDuration,averageViewPercentage,shares,subscribersGained,subscribersLost');
+    return url.searchParams.get('filters') === `video==${VIDEO_A}` ? ok({ kind: 'youtubeAnalytics#resultTable', columnHeaders: windowHeaders, rows: [[629, 24, 112.4, 7, 3, 0]] }) : ok({ kind: 'youtubeAnalytics#resultTable', columnHeaders: windowHeaders, rows: [[40, 11, 35.5, 0, 0, 1]] });
+  }, calls) });
+  assert.ok(calls.some(url => url.searchParams.get('mine') === 'true'), 'ownership is checked before any report');
+  assert.deepEqual(calls.filter(url => url.origin === 'https://youtubeanalytics.googleapis.com').map(url => [url.searchParams.get('startDate'), url.searchParams.get('endDate')]), [['2026-10-17', '2026-10-19'], ['2026-10-18', '2026-10-20']]);
+  assert.equal(result.source, 'youtube-analytics-api-v2'); assert.equal(result.timeZone, 'America/Los_Angeles');
+  assert.deepEqual(result.videos[0], { externalId: VIDEO_A, startDate: '2026-10-17', endDate: '2026-10-19', status: 'ready', views: 629, metrics: { averageWatchSeconds: 24, averageViewPct: 112.4, shares: 7, subscribersGained: 3, subscribersLost: 0 } });
+  assert.equal(result.videos[1].metrics.subscribersLost, 1); assert.ok(!JSON.stringify(result).includes('window-token'));
+});
+
+test('an unprocessed or empty window report is empty, never zeros, and one rejected video does not stop the others', async () => {
+  let call = 0;
+  const result = await collectYoutubeWindows(`https://youtube.com/channel/${CHANNEL_ID}`, { accessToken: 'window-token' }, { videos: [...windowVideos, { externalId: 'cdefghijklm', startDate: '2026-10-18', endDate: '2026-10-20' }], fetchImpl: windowFetch(() => {
+    call++;
+    if (call === 1) return ok({ kind: 'youtubeAnalytics#resultTable', columnHeaders: windowHeaders });
+    if (call === 2) return ok({ kind: 'youtubeAnalytics#resultTable', columnHeaders: windowHeaders, rows: [[0, 0, 0, 0, 0, 0]] });
+    return fail(400, { error: { code: 400, errors: [{ reason: 'badRequest' }], message: 'FIXTURE_SECRET' } });
+  }) });
+  assert.deepEqual(result.videos.map(video => [video.status, video.metrics]), [['empty', undefined], ['empty', undefined], ['error', undefined]]);
+  assert.equal(result.videos[1].views, 0); assert.ok(!JSON.stringify(result).includes('FIXTURE_SECRET'));
+});
+
+test('window reports need an owner Analytics grant: API keys, public readers and upload-only tokens make no request', async () => {
+  for (const credentials of [{ apiKey: 'fixture' }, { accessToken: 'window-token', publicOnly: true }, { accessToken: 'window-token', scope: 'https://www.googleapis.com/auth/youtube.upload' }, { accessToken: 'window-token', scope: 'https://www.googleapis.com/auth/youtube.force-ssl' }]) {
+    let calls = 0;
+    await assert.rejects(collectYoutubeWindows('https://youtube.com/@synk', credentials, { videos: windowVideos, fetchImpl: async () => { calls++; return ok({}); } }), error => error.code === 'AUTH_REQUIRED' && /Analytics/.test(error.message));
+    assert.equal(calls, 0);
+  }
+  await assert.rejects(collectYoutubeWindows('https://instagram.com/synk', { accessToken: 'window-token' }, { videos: windowVideos, fetchImpl: async () => ok({}) }), error => error.code === 'MANUAL_ONLY');
+});
+
+test('the actual insufficient-scope 403 from YouTube Analytics on every video is missing permission and leaks nothing', async () => {
+  // 10-20 LAB 채널(youtube.force-ssl 자격)에서 받은 응답 모양 그대로다.
+  const denied = { error: { code: 403, message: 'Request had insufficient authentication scopes. FIXTURE_SECRET', errors: [{ message: 'Insufficient Permission', domain: 'global', reason: 'insufficientPermissions' }], status: 'PERMISSION_DENIED' } };
+  let reports = 0;
+  await assert.rejects(collectYoutubeWindows(`https://youtube.com/channel/${CHANNEL_ID}`, { accessToken: 'window-token' }, { videos: windowVideos, fetchImpl: windowFetch(() => { reports++; return fail(403, denied); }) }), error => error.code === 'AUTH_REQUIRED' && error.status === 403 && !JSON.stringify(error).includes('FIXTURE_SECRET') && !String(error).includes('window-token'));
+  assert.equal(reports, 2, 'every video is asked before calling it a missing grant');
+});
+
+test('window reports refuse a token that does not own the registered channel and drop malformed requests before fetching', async () => {
+  await assert.rejects(collectYoutubeWindows(`https://youtube.com/channel/${CHANNEL_ID}`, { accessToken: 'window-token' }, { videos: windowVideos, fetchImpl: async raw => { const url = new URL(raw); return ok({ items: url.searchParams.has('mine') ? [{ id: OTHER_CHANNEL }] : [{ id: CHANNEL_ID }] }); } }), error => error.code === 'ACCOUNT_MISMATCH');
+  let calls = 0;
+  const result = await collectYoutubeWindows(`https://youtube.com/channel/${CHANNEL_ID}`, { accessToken: 'window-token' }, { videos: [{ externalId: 'bad id', startDate: '2026-10-17', endDate: '2026-10-19' }, { externalId: VIDEO_A, startDate: '2026-10-19', endDate: '2026-10-17' }, { externalId: VIDEO_B, startDate: '10/17', endDate: '2026-10-19' }], fetchImpl: async () => { calls++; return ok({}); } });
+  assert.deepEqual(result.videos, []); assert.equal(calls, 0);
+});
+
+test('a 403 for one video after Analytics answered another is that video\'s error, not a missing grant', async () => {
+  let call = 0;
+  const result = await collectYoutubeWindows(`https://youtube.com/channel/${CHANNEL_ID}`, { accessToken: 'window-token' }, { videos: [...windowVideos, { externalId: 'cdefghijklm', startDate: '2026-10-18', endDate: '2026-10-20' }], fetchImpl: windowFetch(() => {
+    call++;
+    return call === 2 ? fail(403, { error: { code: 403, errors: [{ reason: 'forbidden' }], message: 'FIXTURE_SECRET' } }) : ok({ kind: 'youtubeAnalytics#resultTable', columnHeaders: windowHeaders, rows: [[50, 10, 40, 1, 0, 0]] });
+  }) });
+  assert.deepEqual(result.videos.map(video => [video.status, video.errorCode]), [['ready', undefined], ['error', 'AUTH_REQUIRED'], ['ready', undefined]]);
+  assert.ok(!JSON.stringify(result).includes('FIXTURE_SECRET'));
+});
+
+test('a basic-metric 400 never turns off reel metrics for the rest of the collection', async () => {
+  const seen = [];
+  const result = await collectChannel('https://instagram.com/synk', { accessToken: 'fixture', accountId: '1234' }, { recentSince: '2026-10-18T00:00:00Z', now: '2026-10-19T00:00:00Z', fetchImpl: reelFetch((id, names) => id === '501' ? fail(400, { error: { code: 100 } }) : ok({ data: names.map(name => ({ name, values: [{ value: name === 'reels_skip_rate' ? 20 : 5 }] })) }), seen) });
+  assert.deepEqual(seen.map(([id, metric]) => [id, metric.split(',').length]), [['501', 6], ['501', 4], ['502', 4], ['503', 6]]);
+  assert.equal(result.posts[0].metrics.views, null); assert.equal(result.posts[2].metrics.earlyRetention3sPct, 80);
+  assert.ok(!result.warnings.some(warning => warning.includes('릴스 건너뛴 비율')));
 });

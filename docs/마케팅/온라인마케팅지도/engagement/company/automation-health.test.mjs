@@ -58,10 +58,14 @@ test('collector stale warning uses completed runs after each due time and dedupl
 test('collector stale warning covers absent or invalid success times only after a checkpoint is due',()=>{
   const f=fixture(),post=f.post({checkpoints:[{hours:24,status:'pending',dueAt:NOW,closesAt:FUTURE}]});f.state.runtime.performance.lastSuccessAt=null;
   const warning=()=>f.get().issues.find(row=>row.code==='post-performance-collector-stale');
-  assert.equal(warning(),undefined);f.state.at='2026-10-12T03:00:01.000Z';assert.equal(warning().since,NOW);
+  // 관측 시각 직후 첫 회차가 도는 동안은 유예한다(10-20: 정상이어도 「지연」이 떴다가 사라졌다). 10분이 지나도 완료 기록이 없으면 알린다.
+  assert.equal(warning(),undefined);f.state.at='2026-10-12T03:00:01.000Z';assert.equal(warning(),undefined,'grace while the first pass runs');
+  f.state.at='2026-10-12T03:10:01.000Z';assert.equal(warning().since,NOW);
   f.state.runtime.performance.lastSuccessAt=NOW;assert.equal(warning(),undefined,'a run completing at the due time is current');
   for(const at of ['not-a-time',FUTURE]){f.state.runtime.performance.lastSuccessAt=at;assert.ok(warning());}
-  post.checkpoints[0].status='missed';post.checkpoints[0].closesAt=NOW;assert.ok(warning(),'a missed window remains visible until the collector runs again');
+  // 닫힌 관측은 수집기가 닫은 것이다. 관측 기간 경과로 따로 보이고, 재시작 직후 수집기 지연으로 다시 세지 않는다.
+  post.checkpoints[0].status='missed';post.checkpoints[0].closesAt=NOW;assert.equal(warning(),undefined,'a missed window is not collector staleness');
+  assert.ok(f.get().issues.some(row=>row.id==='performance:window:'+post.id+':24'&&row.status==='missed'));
   post.checkpoints[0]={...post.checkpoints[0],status:'recorded',metrics:{views:0},recordedAt:NOW};assert.equal(warning(),undefined);assert.ok(f.get().observedIssueIds.includes('performance:collector-stale:current'));
 });
 
@@ -183,4 +187,16 @@ test('historical completed sources do not turn old global runner failures into p
 test('paused link scanning does not reissue historical HTTP failures or mark them resolved',()=>{
   const f=fixture(),pack=f.pack(f.production());f.state.checks['package:'+pack.id]={status:'error',canCheck:true,checkedAt:BEFORE,nextCheckAt:BEFORE};let result=f.get();const id='links:response:package:'+pack.id;assert.ok(result.issues.some(row=>row.id===id));
   f.state.runtime.links.enabled=false;result=f.get();assert.equal(result.issues.length,0);assert.equal(card(result,'links').status,'paused');assert.ok(!result.observedIssueIds.includes(id));
+});
+
+test('a stopped automatic check is handed to a person instead of promising another check',()=>{
+  // 10-20: 재시도하지 않을 실패(manual-required)에 「다시 확인합니다」를 보이고 직접 보완 할 일을 지웠다.
+  const f=fixture(),post=f.post({checkpoints:[{hours:24,status:'manual-required',dueAt:BEFORE,closesAt:'2026-10-12T08:00:00.000Z',nextAttemptAt:'2026-10-12T08:00:00.000Z',lastErrorCode:'CANCELLED',metrics:{views:null}}]});
+  let result=f.get();
+  assert.ok(!JSON.stringify(result.issues).includes('다시 확인합니다'));
+  assert.equal(result.manual.find(row=>row.id==='performance:metric:'+post.id+':24')?.statusLabel,'직접 수치 보완');
+  post.checkpoints[0].lastErrorCode='AUTH_REQUIRED';result=f.get();
+  assert.equal(result.issues.find(row=>row.id==='performance:connection:'+post.id+':24')?.status,'connection','a lost connection asks to reconnect');
+  post.checkpoints[0]={...post.checkpoints[0],status:'retry',lastErrorCode:'RATE_LIMITED',nextAttemptAt:'2026-10-12T03:30:00.000Z'};result=f.get();
+  assert.match(result.issues.find(row=>row.id==='performance:collection:'+post.id+':24').text,/다시 확인합니다/,'only a real retry says it will check again');
 });

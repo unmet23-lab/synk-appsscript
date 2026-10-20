@@ -28,7 +28,7 @@ test('approval guard errors are visible inside the open dialog, never duplicate,
   const f=mutationHarness(),drafts=JSON.stringify([...f.drafts]),reason='이전 시안의 수정 의견을 담당자가 최신 수정본에 연결하고 검토를 마친 뒤 승인할 수 있습니다. 담당자 확인을 기다려 주세요.';
   assert.equal(await f.reject(reason),false);assert.equal(f.dialog.open,true);assert.equal(f.dialog.children.length,1);
   const alert=f.dialog.children[0];assert.equal(alert.textContent,reason);assert.equal(alert.attributes.role,'alert');assert.equal(alert.tabIndex,-1);assert.equal(f.focused,alert);assert.equal(alert.scrolled,true);
-  assert.equal(JSON.stringify([...f.drafts]),drafts);assert.match(f.rendered.at(-1),/요청을 진행하지 못했어요/);assert.doesNotMatch(f.rendered.at(-1),/다른 변경 사항이 먼저 저장/);
+  assert.equal(JSON.stringify([...f.drafts]),drafts);assert.match(f.rendered.at(-1),/처리하지 못했어요/);assert.doesNotMatch(f.rendered.at(-1),/다른 변경 사항이 먼저 저장/);
   await f.reject('<img src=x onerror=alert(1)>');assert.equal(f.dialog.children.length,1);assert.equal(f.dialog.children[0].textContent,'<img src=x onerror=alert(1)>');assert.equal(f.dialog.children[0].innerHTML,undefined);
   f.sandbox.openDialog('approve');assert.equal(f.dialog.children.length,0);assert.equal(JSON.stringify([...f.drafts]),drafts);
   await f.reject(reason);assert.equal(await f.sandbox.mutate(async()=>({})),true);assert.equal(f.dialog.children.length,0);assert.equal(f.s.error,'');assert.equal(f.s.conflict,false);assert.equal(JSON.stringify([...f.drafts]),drafts);
@@ -37,7 +37,16 @@ test('approval guard errors are visible inside the open dialog, never duplicate,
 test('revision conflicts preserve every draft and the existing refresh action while showing the exact reason in the modal',async()=>{
   const f=mutationHarness(),drafts=JSON.stringify([...f.drafts]),reason='다른 창이나 고객이 내용을 변경했습니다. 새로 불러온 뒤 다시 저장해 주세요.';
   assert.equal(await f.reject(reason),false);assert.equal(f.s.conflict,true);assert.equal(f.s.error,reason);assert.equal(f.dialog.children[0].textContent,reason);
-  assert.match(f.rendered.at(-1),/최신 내용 불러오기 · 작성 내용 유지/);assert.equal(JSON.stringify([...f.drafts]),drafts);assert.equal(f.s.project.revision,2);
+  assert.match(f.rendered.at(-1),/role="alert"><strong>[^<]*<\/strong><div>[^<]*<\/div><button[^>]*data-action="refresh"[^>]*>최신 내용 불러오기<\/button><\/div>/);assert.equal(JSON.stringify([...f.drafts]),drafts);assert.equal(f.s.project.revision,2);
+});
+
+test('a save that went through but could not reload says so in the alert heading, and the next success clears it',async()=>{
+  const f=mutationHarness();
+  assert.equal(await f.sandbox.mutate(async()=>({}),{form:{},after:async()=>{throw Object.assign(new Error('reload failed'),{status:500});}}),false);
+  assert.equal(f.s.reloadFailed,true);assert.equal(f.s.conflict,false);assert.match(f.s.error,/^저장은 됐지만/);
+  assert.match(f.rendered.at(-1),/role="alert"><strong>화면을 새로 고치지 못했어요\.<\/strong>/);assert.doesNotMatch(f.rendered.at(-1),/저장하지 못했어요/);
+  assert.equal(await f.sandbox.mutate(async()=>({})),true);assert.equal(f.s.reloadFailed,false);assert.equal(f.s.error,'');
+  assert.equal(await f.reject('다른 창에서 바뀌었어요.'),false);assert.match(f.rendered.at(-1),/role="alert"><strong>처리하지 못했어요\.<\/strong>/);
 });
 
 
@@ -79,7 +88,7 @@ test('round submission blocks real edits but accepts a cleared new form, leaving
   const Original=globalThis.FormData;globalThis.FormData=class{constructor(form){return new Map(Object.entries(form.values));}};
   try{
     const p=project(),form={dataset:{form:'round-submit',id:'d',versionId:'v1'},values:{representativeName:'취합 담당자',confirmed:'yes'}};
-    const dirty=context({hasDraft:type=>type==='round-draft'&&feedbackDraftChanged(p,entry({text:'바뀐 의견'}))});await dirty.ui.submit(form);assert.equal(dirty.calls.length,0);assert.match(dirty.notices[0],/초안에 저장/);
+    const dirty=context({hasDraft:type=>type==='round-draft'&&feedbackDraftChanged(p,entry({text:'바뀐 의견'}))});await dirty.ui.submit(form);assert.equal(dirty.calls.length,0);assert.match(dirty.notices[0],/초안에 넣은 뒤/);
     const cleared=context({hasDraft:type=>type==='round-draft'&&feedbackDraftChanged(p,entry({text:''},{id:'new:v1',itemId:''}))});await cleared.ui.submit(form);assert.equal(cleared.calls[0].action,'submit_feedback_round');
     const other=context({hasDraft:type=>type==='deliverables'});await other.ui.click({dataset:{action:'deliverable-confirm',revision:'1'}});assert.equal(other.calls.length,0);assert.match(other.notices[0],/납품 규격/);
   }finally{globalThis.FormData=Original;}
@@ -87,7 +96,7 @@ test('round submission blocks real edits but accepts a cleared new form, leaving
 
 test('the reset control is explicit, form local and added only once',()=>{
   const original=globalThis.document,children=[];globalThis.document={createElement:()=>({dataset:{}})};
-  try{const form={querySelector:()=>children[0]||null,append:node=>children.push(node)};addProductionDraftReset(form);addProductionDraftReset(form);assert.equal(children.length,1);assert.equal(children[0].type,'button');assert.equal(children[0].dataset.action,'reset-production-draft');assert.match(children[0].textContent,/작성 내용 지우고/);}finally{globalThis.document=original;}
+  try{const form={querySelector:()=>children[0]||null,append:node=>children.push(node)};addProductionDraftReset(form);addProductionDraftReset(form);assert.equal(children.length,1);assert.equal(children[0].type,'button');assert.equal(children[0].dataset.action,'reset-production-draft');assert.match(children[0].textContent,/쓰던 내용 지우고/);}finally{globalThis.document=original;}
 });
 
 test('explicit stale-preview reset clears only that local draft and restores new binding and unchecked confirmation',async()=>{

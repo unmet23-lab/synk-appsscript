@@ -5,7 +5,7 @@ import {buildClientProjectGroups} from './client-project-groups.mjs';
 import {canWriteChannel} from './organization.mjs';
 import {clientRightsSourceVisible} from './client-rights-reminders.mjs';
 
-const MINUTE=60000,HOUR=60*MINUTE;
+const MINUTE=60000,HOUR=60*MINUTE,STALE_GRACE=10*MINUTE;
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const clean=(value,max=200)=>typeof value==='string'?value.replace(/[\u0000-\u001f\u007f]/g,' ').trim().slice(0,max):'';
 const instant=value=>typeof value==='string'&&Number.isFinite(Date.parse(value))?Date.parse(value):null;
@@ -100,7 +100,8 @@ export function createAutomationHealthService({store,studio,publicationPackages,
           // observation became due. Only include currently accessible automatic work.
           if(due!==null&&due<now&&closes!==null&&closes>=due&&rt.performance?.enabled===true&&rawChannel?.collectionDisabled!==true&&['api-key','oauth'].includes(platform?.mode)&&channel?.connected===true&&creator?.active&&canWriteChannel(creator,rawChannel)&&canWriteChannel(user,rawChannel)){
             observed('performance',['collector-stale'],'current');
-            if(['pending','retry','collecting','missed'].includes(checkpoint.status)&&(performanceSuccess===null||performanceSuccess<due||performanceSuccess>now)){
+            // 관측 시각 직후에는 첫 회차가 아직 도는 중이라 정상이어도 「지연」이 떴다가 사라졌다(10-20). 10분 유예하고, 이미 닫힌 관측(missed)은 세지 않는다.
+            if(['pending','retry','collecting'].includes(checkpoint.status)&&now-due>STALE_GRACE&&(performanceSuccess===null||performanceSuccess<due||performanceSuccess>now)){
               staleEntries.add(entry.id);staleDueAt.push(checkpoint.dueAt);
             }
           }
@@ -117,8 +118,11 @@ export function createAutomationHealthService({store,studio,publicationPackages,
           }
           if(['pending','retry','collecting'].includes(checkpoint.status)&&(instant(checkpoint.nextAttemptAt)===null||instant(checkpoint.nextAttemptAt)<=now))pending.performance++;
           if(checkpoint.status==='collecting'&&instant(checkpoint.attemptedAt)!==null&&now-instant(checkpoint.attemptedAt)<3*MINUTE){byId.performance.status='running';continue;}
-          if(checkpoint.status==='retry'||checkpoint.lastErrorCode){problem('performance','collection',id,{...data,status:'failed',text:instant(checkpoint.nextAttemptAt)>now?'자동 수집 응답을 기록하지 못했습니다. 기존 수집기가 예정된 시각에 다시 확인합니다.':'자동 수집 응답을 기록하지 못했습니다. 원문에서 수치와 연결 상태를 확인해 주세요.'});if(instant(checkpoint.nextAttemptAt)>now)future.push(checkpoint.nextAttemptAt);continue;}
-          if(checkpoint.status==='manual-required'){human('performance','metric',id,{...data,statusLabel:'직접 수치 보완',text:'자동으로 확인하지 못한 수치가 있습니다. 공식 화면에서 직접 확인하고 기록해 주세요.'});continue;}
+          // 「다시 확인합니다」는 수집기가 실제로 다시 볼 때(retry)만 쓴다. 자동 수집이 끝난 기록(manual-required)은 사람이 할 일로 남긴다(10-20: 다시 확인한다고 안내하고 할 일을 지웠다).
+          if(checkpoint.status==='retry'){problem('performance','collection',id,{...data,status:'failed',text:instant(checkpoint.nextAttemptAt)>now?'자동 수집 응답을 기록하지 못했습니다. 기존 수집기가 예정된 시각에 다시 확인합니다.':'자동 수집 응답을 기록하지 못했습니다. 원문에서 수치와 연결 상태를 확인해 주세요.'});if(instant(checkpoint.nextAttemptAt)>now)future.push(checkpoint.nextAttemptAt);continue;}
+          if(checkpoint.status==='manual-required'){
+            if(['AUTH_REQUIRED','ACCOUNT_MISMATCH','CONNECTION_CHANGED'].includes(checkpoint.lastErrorCode)){problem('performance','connection',id,{...data,status:'connection',text:'자동 수집이 채널 연결·권한 문제로 멈췄습니다. 채널 연결을 확인하고, 관측 기간이 끝나기 전에 공식 화면에서 확인한 수치를 직접 기록해 주세요.'});continue;}
+            human('performance','metric',id,{...data,statusLabel:'직접 수치 보완',text:checkpoint.lastErrorCode?'자동 수집을 마치지 못했습니다. 관측 기간이 끝나기 전에 공식 화면에서 확인한 수치를 직접 기록해 주세요.':'자동으로 확인하지 못한 수치가 있습니다. 공식 화면에서 직접 확인하고 기록해 주세요.'});continue;}
           const reference=checkpoint.status==='collecting'?checkpoint.attemptedAt||checkpoint.dueAt:checkpoint.nextAttemptAt||checkpoint.dueAt;
           if(instant(reference)!==null&&now-instant(reference)>15*MINUTE)problem('performance','late',id,{...data,status:'delayed',text:`${checkpoint.hours}시간 수치를 아직 기록하지 못했습니다. 관측 기간이 끝나기 전에 원문을 확인해 주세요.`});
           else byId.performance.status=rt.performance?.running?'running':'scheduled';

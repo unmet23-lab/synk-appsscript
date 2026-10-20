@@ -74,7 +74,7 @@ test('batch submission reuses the existing correction workflow through reviewer 
   row=await f.addPreview(row,'수정본 2');const corrected=row.versions.at(-1);
   async function blockedUntilAllReviewsReady(){
     const before=f.app.store.get('clientProjects',row.id),result=await f.approve(customer,row);
-    assert.equal(result.status,409,result.text);assert.match(result.data.error,/최신 수정본에 연결하고 검토/);
+    assert.equal(result.status,409,result.text);assert.match(result.data.error,/이번 수정본에 잘 들어갔는지/);
     const current=await f.request('/pulse/api/project',{customer}),approval=current.data.project.previewApproval;
     assert.equal(approval.versionId,corrected.id);assert.equal(approval.canApprove,false);assert.equal(approval.status,'team_review');assert.equal(approval.waitingFor,'team');
     assert.equal(approval.reason,result.data.error,'the disabled action explains the same authoritative reason as the API');
@@ -112,7 +112,7 @@ test('customer approval requires the exact latest correction link while resolved
   assert.equal(result.status,200,result.text);row=result.data.project;assert.equal(row.messages.find(message=>message.id===feedbackId).workflow.status,'waiting_customer');
   row=await f.addPreview(row,'수정본 3');
   const before=f.app.store.get('clientProjects',row.id),blocked=await f.approve(customer,row);
-  assert.equal(blocked.status,409,blocked.text);assert.match(blocked.data.error,/최신 수정본에 연결/);assert.deepEqual(f.app.store.get('clientProjects',row.id),before);
+  assert.equal(blocked.status,409,blocked.text);assert.match(blocked.data.error,/이번 수정본에 잘 들어갔는지/);assert.deepEqual(f.app.store.get('clientProjects',row.id),before);
   const current=(await f.request('/pulse/api/project',{customer})).data.project;
   assert.equal(current.previewApproval.versionId,row.versions.at(-1).id);assert.equal(current.previewApproval.canApprove,false);assert.equal(current.previewApproval.reason,blocked.data.error);
   result=await f.request('/api/client-workflow',{body:{projectId:row.id,revision:row.revision,messageId:feedbackId,action:'reopen'}});assert.equal(result.status,200,result.text);row=result.data.project;

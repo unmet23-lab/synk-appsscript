@@ -23,7 +23,7 @@
 
   /* ── 저장: 이 브라우저에만 남는 편의 기능. 막혀 있어도 화면은 그대로 쓴다 ── */
   const KEY = 'pulse-casting-v3';
-  const state = { pkg: [], sel: {}, ask: '', format: 'kmong', ...load() };
+  const state = { pkg: [], sel: {}, ask: '', format: 'kmong', lead: '', ...load() };
   state.pkg = state.pkg.filter(byCode);
   function load() {
     try {
@@ -38,7 +38,7 @@
     } catch { /* 저장이 막힌 브라우저 */ }
     return {};
   }
-  function save() { try { localStorage.setItem(KEY, JSON.stringify({ pkg: state.pkg, sel: state.sel, ask: state.ask, format: state.format })); } catch { /* 무시 */ } }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify({ pkg: state.pkg, sel: state.sel, ask: state.ask, format: state.format, lead: state.lead })); } catch { /* 무시 */ } }
   const selOf = (c) => ({ hair: 0, voice: 0, memo: '', ...(state.sel[c] || {}) });
   const inPkg = (c) => state.pkg.includes(c);
   function setSel(c, patch) { state.sel[c] = { ...selOf(c), ...patch }; save(); }
@@ -455,8 +455,8 @@
 
   /* ── 패키지 ───────────────────────────────────────────── */
   let pkgMode = 'cards', cmpShot = 'hero';
-  // 공유 주소: #p-F02.1.0~F04.0.2 (코드.헤어.목소리)
-  const shareCode = (items) => items.map((x) => `${x.code}.${x.hair}.${x.voice}`).join('~');
+  // 공유 주소: #p-F02.1.0~F04.0.2 (코드.헤어.목소리). 문의 글 끝의 「캐스팅북 코드」와 같은 번호라 PULSE 제작 화면에 그대로 옮겨진다.
+  const shareCode = (items) => L.castingCode(items);
   function readShare(s) {
     return String(s || '').split('~').map((t) => { const [code, h, v] = t.split('.'); const m = byCode(code); return m && { code, hair: Math.min(Number(h) || 0, m.hair.length - 1), voice: Math.min(Number(v) || 0, Math.max(0, m.voices.length - 1)), memo: '' }; }).filter(Boolean);
   }
@@ -512,8 +512,19 @@
         ${row('어울리는 업종', (m) => K(m.fits.join(' · ')))}
       </div></div>`;
   }
+  // 「누구로 진행할까요?」(10-19): 고른 모델이 문의 글 맨 위 「진행하고 싶은 모델」이 된다. 'none'은 상담에서 정하기,
+  // 아직 고르지 않았으면 한 명만 담았을 때 그 모델. 손님 글에 코드를 넣는 대신 손님이 직접 고르게 했다.
+  const leadOf = (items) => (state.lead === 'none' ? '' : items.some((x) => x.code === state.lead) ? state.lead : items.length === 1 ? items[0].code : '');
+  function leadHTML(items) {
+    if (!items.length) return '';
+    const lead = leadOf(items) || 'none';
+    const opt = (code, label, img) => `<button type="button" class="lead-opt${img ? '' : ' none'}" data-act="lead" data-code="${E(code)}" aria-pressed="${lead === code}">${img ? `<img src="${E(img)}" alt="" loading="lazy">` : ''}${E(label)}</button>`;
+    return `<div class="lead" role="group" aria-labelledby="lead-title"><span class="sec-h" id="lead-title">누구로 진행할까요?</span>
+        <div class="lead-opts">${items.map((x) => { const m = byCode(x.code); return opt(x.code, m.name, m.hero && m.hero.s); }).join('')}${opt('none', '상담에서 정할게요')}</div>
+        <p class="mt-help">고른 모델이 문의 글 맨 위에 「진행하고 싶은 모델」로 들어가요.</p></div>`;
+  }
   function inquiryOf(items) {
-    return L.inquiryText({ picks: items, models: D.models, brief: { product: state.ask, industry: '', moods: [], touched: !!state.ask.trim() }, compare: [], taxonomy: TAX, format: state.format });
+    return L.inquiryText({ picks: items, models: D.models, brief: { product: state.ask, industry: '', moods: [], touched: !!state.ask.trim() }, compare: [], taxonomy: TAX, format: state.format, lead: leadOf(items) });
   }
   const topLevel = (() => { try { return window.top === window.self && /^https?:/.test(location.protocol); } catch { return false; } })();
   const shareBase = topLevel ? `${location.origin}${location.pathname}${location.search}` : (D.shareBase || '');
@@ -553,7 +564,8 @@
   function inqHTML(items) {
     return `<section class="inq pad" id="inq" aria-labelledby="inq-title">
       <div><h2 id="inq-title">문의 글</h2>
-        <p>${items.length ? '담은 모델과 고른 헤어·목소리, 보드에 적은 광고 내용이 들어가요. 복사해서 붙여 넣기만 하면 돼요. 이 페이지에서 자동으로 보내지는 않아요.' : '아직 담은 모델이 없어요. 새 모델이 필요하거나 상담부터 받고 싶다면 이 글로 시작해 주세요.'}</p>
+        <p>${items.length ? '담은 모델과 고른 헤어·목소리, 보드에 적은 광고 내용이 들어가요. 이 글을 보내 주시면 제작을 시작할 때 같은 조합으로 준비해 드려요. 이 페이지에서 자동으로 보내지는 않으니 복사해서 붙여 넣어 주세요.' :'아직 담은 모델이 없어요. 새 모델이 필요하거나 상담부터 받고 싶다면 이 글로 시작해 주세요.'}</p>
+        ${leadHTML(items)}
         <div class="fmt" role="group" aria-label="글 모양"><button type="button" class="tg" data-act="format" data-v="kmong" aria-pressed="${state.format === 'kmong'}">크몽 메시지</button><button type="button" class="tg" data-act="format" data-v="order" aria-pressed="${state.format === 'order'}">발주서 메모</button></div>
       </div>
       <div><label class="sec-h" for="inq-text">보낼 글</label><textarea id="inq-text" readonly rows="10"></textarea>
@@ -796,7 +808,7 @@
       case 'ask-clear': state.ask = ''; save(); $('#q').value = ''; drawBoard(route === 'lineup' ? 'lineup' : 'board'); $('#q').focus(); break;
       case 'filters-clear': for (const k of Object.keys(filters)) filters[k] = ''; for (const s of $$('.filters select')) s.value = ''; drawBoard(route === 'lineup' ? 'lineup' : 'board'); break;
       case 'new-model': copy(newModelText(), '새 모델 문의 글을 복사했어요. 크몽 메시지에 붙여 넣어 주세요.'); break;
-      case 'ask-this': if (!inPkg(code)) { state.pkg.push(code); save(); } break;
+      case 'ask-this': if (!inPkg(code)) state.pkg.push(code); state.lead = code; save(); break;
       case 'tab': drawTab(byCode(curCode), v); try { history.replaceState(null, '', `#m-${curCode}-${v}`); } catch { /* 무시 */ } break;
       case 'strip': stepStrip(Number(t.dataset.d)); break;
       case 'strip-grid': { const s = $('#strip'); const on = s.classList.toggle('grid'); t.textContent = on ? '옆으로 넘겨 보기' : '한눈에 보기'; $$('.strip-nav .sq, #strip-count').forEach((x) => { x.hidden = on; }); break; }
@@ -815,6 +827,7 @@
       case 'to-inq': e.preventDefault(); $('#inq')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); break;
       case 'format': state.format = v; save(); for (const b of $$('[data-act="format"]')) b.setAttribute('aria-pressed', b === t); wireInq(view.dataset.shared ? readShare(view.dataset.shared) : myItems()); break;
       case 'copy-inq': copy($('#inq-text').value, '글을 복사했어요. 붙여 넣기만 하면 돼요.'); break;
+      case 'lead': { state.lead = code; save(); const items = view.dataset.shared ? readShare(view.dataset.shared) : myItems(), lead = leadOf(items) || 'none'; for (const b of $$('[data-act="lead"]')) b.setAttribute('aria-pressed', b.dataset.code === lead); wireInq(items); break; }
       case 'save-card': { const items = view.dataset.shared ? readShare(view.dataset.shared) : myItems(); const x = items.find((y) => y.code === code); const m = byCode(code); exportCanvas(() => drawCard(x), `PULSE_${m.code}_${m.name}_컴프카드`); break; }
       case 'save-sheet': { const items = view.dataset.shared ? readShare(view.dataset.shared) : myItems(); exportCanvas(() => drawSheet(items), `PULSE_모델패키지_${items.length}명`); break; }
       case 'ex-close': $('#export').close(); break;

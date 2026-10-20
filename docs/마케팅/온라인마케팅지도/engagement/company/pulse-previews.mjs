@@ -12,7 +12,7 @@ const FIELDS={
   preview_confirm_animatic:['signature','scope','note'],
 };
 const txt=(value,max=1500,required=false)=>{if(value==null&&!required)return '';if(typeof value!=='string'||value.length>max||/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(value))throw fail('입력 내용과 길이를 확인해 주세요.');value=value.trim();if(required&&!value)throw fail('필수 내용을 입력해 주세요.');return value;};
-const list=(value,max)=>{if(value.length>=max)throw fail('제작 확인 기록 한도에 도달했습니다. 기록을 보존하고 새 프로젝트에서 이어가 주세요.',409);};
+const list=(value,max)=>{if(value.length>=max)throw fail('이 프로젝트의 확인 기록이 가득 찼어요. 새 프로젝트로 이어 가 주세요.',409);};
 const state=studio=>studio.previews||{samples:[],sampleHistory:[],sampleChoices:[],animatic:null,animaticHistory:[],confirmations:[]};
 const publicScenes=studio=>(studio.scenes||[]).filter(scene=>scene.visibility==='customer');
 const author=value=>{const {authorId,...safe}=value;return safe;};
@@ -30,16 +30,16 @@ export function applyPreviewAction({studio,row,input,staff,stamp}){
   const fields=previewActions(input?.action);if(!fields)return false;
   if(Object.keys(input).some(key=>!['action','revision',...fields].includes(key)))throw fail('제작 확인 입력 항목을 확인해 주세요.');
   const writing=['preview_save_sample','preview_save_animatic'].includes(input.action);
-  if(writing&&!staff)throw fail('제작 담당자만 비교 예시와 시안을 준비할 수 있습니다.',403);
+  if(writing&&!staff)throw fail('비교 예시와 콘티는 담당자만 준비할 수 있어요.',403);
   if(!writing&&staff)throw fail('고객의 선택과 확인은 고객 화면에서 남겨 주세요.',403);
   const p=structuredClone(state(studio));
   if(input.action==='preview_save_sample'){
     const prior=input.id?p.samples.find(sample=>sample.id===input.id):null;
-    if(input.id&&!prior)throw fail('비교 예시를 찾을 수 없습니다.',404);
+    if(input.id&&!prior)throw fail('비교 예시를 찾지 못했어요.',404);
     if(!['internal','customer'].includes(input.visibility))throw fail('예시 공개 범위를 선택해 주세요.');
     if(!!input.referenceId===!!input.assetId)throw fail('기존 참고자료 또는 파일 중 하나를 선택해 주세요.');
     const reference=input.referenceId?(studio.references||[]).find(ref=>ref.id===input.referenceId):null;
-    if(input.referenceId&&!reference)throw fail('참고자료를 찾을 수 없습니다.',404);
+    if(input.referenceId&&!reference)throw fail('참고자료를 찾지 못했어요.',404);
     const sourceAsset=asset(studio,reference?.assetId||input.assetId);
     if(!sourceAsset&&!reference?.url)throw fail('볼 수 있는 참고자료를 선택해 주세요.');
     if(!input.aspects||typeof input.aspects!=='object'||Array.isArray(input.aspects)||Object.keys(input.aspects).some(key=>!ASPECTS.includes(key)))throw fail('예시의 비교 항목을 확인해 주세요.');
@@ -50,11 +50,11 @@ export function applyPreviewAction({studio,row,input,staff,stamp}){
     if(prior)p.samples[p.samples.indexOf(prior)]=sample;else p.samples.push(sample);
   }else if(input.action==='preview_choose_sample'){
     const sample=p.samples.find(value=>value.id===input.sampleId&&value.visibility==='customer');
-    if(!sample)throw fail('공개된 비교 예시를 찾을 수 없습니다.',404);
-    if(sample.revision!==input.sampleRevision)throw fail('비교 예시가 변경되었습니다. 최신 예시를 확인해 주세요.',409);
+    if(!sample)throw fail('비교 예시를 찾지 못했어요.',404);
+    if(sample.revision!==input.sampleRevision)throw fail('비교 예시가 바뀌었어요. 최신 내용을 불러와 주세요.',409);
     const chosen=values=>{if(!Array.isArray(values)||values.length>ASPECTS.length||new Set(values).size!==values.length||values.some(key=>!Object.hasOwn(sample.aspects,key)))throw fail('이 예시에 있는 비교 요소를 선택해 주세요.');return values;};
     const liked=chosen(input.liked),avoided=chosen(input.avoided),reason=txt(input.reason);
-    if(liked.some(key=>avoided.includes(key)))throw fail('같은 요소를 원하는 것과 피할 것으로 동시에 선택할 수 없습니다.');
+    if(liked.some(key=>avoided.includes(key)))throw fail('같은 요소를 「원해요」와 「피할래요」에 함께 고를 수 없어요.');
     if(!liked.length&&!avoided.length&&!reason)throw fail('원하는 요소, 피할 요소 또는 이유를 남겨 주세요.');
     list(p.sampleChoices,240);p.sampleChoices.push({id:randomUUID(),sampleId:sample.id,sampleRevision:sample.revision,title:sample.title,aspects:structuredClone(sample.aspects),liked,avoided,reason,...stamp});
   }else if(input.action==='preview_save_animatic'){
@@ -68,9 +68,9 @@ export function applyPreviewAction({studio,row,input,staff,stamp}){
   }else if(input.action==='preview_confirm_animatic'){
     if(p.animatic?.visibility!=='customer'||!publicScenes(studio).length)throw fail('공개된 전체 흐름 시안을 먼저 확인해 주세요.',404);
     const key=signature(studio,p.animatic);
-    if(input.signature!==key)throw fail('장면·순서·음성 또는 시험 영상이 변경되었습니다. 새 시안을 다시 확인해 주세요.',409);
+    if(input.signature!==key)throw fail('장면·순서·소리·시험 영상이 바뀌었어요. 바뀐 내용을 다시 확인해 주세요.',409);
     if(!['flow','test'].includes(input.scope)||input.scope==='test'&&!p.animatic.testClipAssetId)throw fail('확인할 전체 흐름 또는 실제 시험 장면을 선택해 주세요.');
-    if(p.confirmations.some(item=>item.signature===key&&item.scope===input.scope))throw fail('현재 시안에는 이미 고객 확인이 남아 있습니다.',409);
+    if(p.confirmations.some(item=>item.signature===key&&item.scope===input.scope))throw fail('이 내용은 이미 확인했어요.',409);
     const snapshot={scenes:publicScenes(studio).map(scene=>({id:scene.id,revision:scene.revision,title:scene.title,narration:scene.narration||'',screenText:scene.screenText||'',duration:scene.duration})),note:p.animatic.note,testNote:p.animatic.testNote,audioName:asset(studio,p.animatic.audioAssetId)?.fileName||'',testClipName:asset(studio,p.animatic.testClipAssetId)?.fileName||'',testClipStart:p.animatic.testClipStart,testClipDuration:p.animatic.testClipDuration};
     list(p.confirmations,160);p.confirmations.push({id:randomUUID(),signature:key,animaticRevision:p.animatic.revision,scope:input.scope,note:txt(input.note),snapshot,...stamp});
   }

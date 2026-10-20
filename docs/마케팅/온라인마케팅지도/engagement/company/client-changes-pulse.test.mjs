@@ -14,16 +14,16 @@ const state=(patch={})=>({mode:'customer',project:structuredClone(project),tab:'
 test('change comparison appears only for enabled projects on the strategy tab',()=>{
   assert.equal(changesView(state({project:{...project,changes:null}})),'');
   assert.equal(changesView(state({project:{...project,changes:{enabled:false}}})),'');
-  assert.match(projectView(state()),/확정 이후 달라진 내용/);
+  assert.match(projectView(state()),/확인한 뒤 바뀐 것/);
   assert.doesNotMatch(projectView(state({tab:'history'})),/changes-card/);
 });
 
 test('customer comparison shows the exact before and after but never internal impacts or metadata',()=>{
   const html=changesView(state());
   assert.match(html,/30초/);assert.match(html,/60초/);assert.match(html,/이전 문구/);assert.match(html,/새 문구/);
-  assert.match(html,/현재 제작 설계 확인 필요/);assert.match(html,/data-action="changes-strategy"/);
+  assert.match(html,/지금 제작 설계 확인 전/);assert.match(html,/data-action="changes-strategy"/);
   assert.doesNotMatch(html,/내부|private-|개별 금액|changes-scene|data-mutate|data-form|changes=1/);
-  const s=state();s.project.changes.currentStrategyConfirmed=true;assert.match(changesView(s),/현재 제작 설계 확인 완료/);
+  const s=state();s.project.changes.currentStrategyConfirmed=true;assert.match(changesView(s),/지금 제작 설계 확인함/);
 });
 
 test('diff values are escaped as plain content and empty values stay explicit',()=>{
@@ -38,7 +38,7 @@ test('staff impact summary stays read-only and links only to scenes present in t
 
 test('archived and unchanged comparisons preserve readable records without a new confirmation action',()=>{
   const s=state();s.project.stage='archived';s.project.changes.status='archived';s.project.changes.changes=[];
-  const html=changesView(s);assert.match(html,/보관된 프로젝트/);assert.match(html,/달라진 항목이 없습니다/);assert.doesNotMatch(html,/data-action="changes-strategy"|confirm-strategy|data-mutate/);
+  const html=changesView(s);assert.match(html,/보관된 프로젝트/);assert.match(html,/달라진 것이 없어요/);assert.doesNotMatch(html,/data-action="changes-strategy"|confirm-strategy|data-mutate/);
 });
 
 function fixture({url=`http://127.0.0.1:64046/pulse-app/?mode=staff&project=${projectId}&tab=storyboard&scene=${sceneId}`}={}){
@@ -66,14 +66,14 @@ test('authorized staff scene deeplink selects the correct tab and focuses the ex
 });
 
 test('an inaccessible project deeplink never issues an arbitrary project request',async()=>{
-  const f=fixture();f.run('s.workspace={projects:[]}');await f.run('openInitialStaffProject()');assert.equal(f.run('loads.length'),0);assert.equal(f.requests.length,0);assert.match(f.notices[0],/열람 권한/);assert.equal(f.run('pendingInitialScene'),'');
+  const f=fixture();f.run('s.workspace={projects:[]}');await f.run('openInitialStaffProject()');assert.equal(f.run('loads.length'),0);assert.equal(f.requests.length,0);assert.match(f.notices[0],/볼 권한/);assert.equal(f.run('pendingInitialScene'),'');
 });
 
 test('source deeplinks open reference, concept, video review and delivery history only for an accessible project',async()=>{
   for(const tab of ['direction','concepts','review','history']){
     const url=`http://127.0.0.1:64046/pulse-app/?mode=staff&project=${projectId}&tab=${tab}`;
     const f=fixture({url});await f.run('openInitialStaffProject()');assert.deepEqual(plain(f.run('loads')),[projectId]);assert.equal(f.run('s.tab'),tab);assert.equal(f.run('pendingInitialScene'),'');await f.run('openInitialStaffProject()');assert.equal(f.run('loads.length'),1);
-    const inaccessible=fixture({url});inaccessible.run('s.workspace={projects:[]}');await inaccessible.run('openInitialStaffProject()');assert.equal(inaccessible.run('loads.length'),0);assert.equal(inaccessible.run('s.tab'),'strategy');assert.match(inaccessible.notices[0],/열람 권한/);
+    const inaccessible=fixture({url});inaccessible.run('s.workspace={projects:[]}');await inaccessible.run('openInitialStaffProject()');assert.equal(inaccessible.run('loads.length'),0);assert.equal(inaccessible.run('s.tab'),'strategy');assert.match(inaccessible.notices[0],/볼 권한/);
   }
 });
 

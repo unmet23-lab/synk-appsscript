@@ -13,13 +13,13 @@ const state=(patch={})=>({mode:'customer',project:structuredClone(project),tab:'
 test('kickoff opt-in card is integrated on strategy and absent when disabled or unrelated',()=>{
   assert.equal(kickoffView(state({project:{...project,kickoff:{enabled:false}}})), '');
   assert.equal(kickoffView(state({project:{...project,kickoff:null}})), '');
-  assert.match(projectView(state()),/제작 시작 전 준비/);
+  assert.match(projectView(state()),/제작 전에 챙길 자료/);
   assert.doesNotMatch(projectView(state({tab:'history'})),/kickoff-card/);
 });
 
 test('customer sees received vs usable and separate requested, confirmed and readiness dates',()=>{
   const html=kickoffView(state());
-  for(const text of ['도착 · 담당자 확인 대기','사용 가능','준비 확인일','2026-10-13','희망 전달일','2026-10-20','확정 전달일','아직 미확정','기획 확인','자료 바꾸기','담당자가 새 자료'])assert.ok(html.includes(text),text);
+  for(const text of ['받았어요','쓸 수 있어요','자료 확인일','2026-10-13','희망 전달일','2026-10-20','정한 전달일','아직 정하지 않았어요','기획 확인','자료 바꾸기','담당자가 다시 확인'])assert.ok(html.includes(text),text);
   assert.match(html,/data-form="kickoff-source" data-id="logo" data-revision="7"/);
   assert.match(html,/data-action="kickoff-reference"/);assert.match(html,/data-action="kickoff-strategy"/);
 });
@@ -82,5 +82,5 @@ test('account or project transition ignores a late successful customer submissio
 
 test('staff deeplink selects only an accessible project and applies once',async()=>{
   const f=fixture({url:'http://127.0.0.1:64046/pulse-app/?mode=staff&project=p&tab=strategy'});f.run("s.mode='staff';s.user={id:'staff'};s.workspace={projects:[{id:'p'}]};loads=[];loadProject=async id=>{loads.push(id);};");await f.run('openInitialStaffProject()');await f.run('openInitialStaffProject()');assert.deepEqual(plain(f.run('loads')),['p']);assert.equal(f.run('s.tab'),'strategy');
-  const g=fixture({url:'http://127.0.0.1:64046/pulse-app/?mode=staff&project=private&tab=strategy'});g.run("s.mode='staff';s.user={id:'staff'};s.workspace={projects:[{id:'p'}]};loads=[];loadProject=async id=>{loads.push(id);};");await g.run('openInitialStaffProject()');assert.equal(g.run('loads.length'),0);assert.match(g.notices[0],/열람 권한/);
+  const g=fixture({url:'http://127.0.0.1:64046/pulse-app/?mode=staff&project=private&tab=strategy'});g.run("s.mode='staff';s.user={id:'staff'};s.workspace={projects:[{id:'p'}]};loads=[];loadProject=async id=>{loads.push(id);};");await g.run('openInitialStaffProject()');assert.equal(g.run('loads.length'),0);assert.match(g.notices[0],/볼 권한/);
 });

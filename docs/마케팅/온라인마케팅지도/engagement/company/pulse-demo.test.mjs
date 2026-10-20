@@ -20,7 +20,7 @@ test('seed uses fictional planning, local media and no pre-recorded customer cho
   const {demo}=setup(),p=project(demo),s=p.studio;
   assert.equal(demo.guide().action,'taste');assert.equal(p.stage,'planning');assert.equal(s.references.length,3);assert.equal(s.concepts.length,2);assert.equal(s.scenes.length,4);assert.equal(s.scenes.reduce((n,s)=>n+s.duration,0),15);
   assert.equal(s.strategy.data.aspectRatio,'16:9');assert.equal(s.strategy.request.strategyRevision,1);assert.equal(s.strategy.confirmation,null);assert.equal(s.selectedConcept,null);assert.equal(s.sceneReviews.length,0);assert.equal(p.versions.length,0);
-  assert.match(p.terms,/실제 발주/);assert.match(s.strategy.data.voice,/무음/);assert.equal(s.strategy.data.budgetProduction,null);assert.equal(s.strategy.data.budgetMedia,null);
+  assert.match(p.terms,/체험용 예시/);assert.match(s.strategy.data.voice,/무음/);assert.equal(s.strategy.data.budgetProduction,null);assert.equal(s.strategy.data.budgetMedia,null);
   assert.ok(s.assets.every(a=>a.url.startsWith('/pulse-app/demo-assets/')));
 });
 
@@ -30,7 +30,7 @@ test('full customer flow preserves time/version feedback and explicit approval b
   await action(demo,{action:'feedback',versionId:v1.id,seconds:12.4,text:'마지막 행동 문구를 더 크게 보여 주세요.'});
   let feedback=project(demo).messages.find(m=>m.action==='feedback');assert.equal(feedback.seconds,12.4);assert.equal(feedback.versionId,v1.id);assert.equal(feedback.resolved,false);
   await assert.rejects(action(demo,{action:'approve',versionId:v1.id}),{status:409});assert.equal(demo.guide().action,'publish_correction');demo.advance();
-  const v2=project(demo).versions.at(-1);assert.equal(v2.media.url,'/pulse-app/demo-assets/preview-v2.mp4');assert.notEqual(v1.id,v2.id);assert.equal(project(demo).messages.find(m=>m.id===feedback.id).resolved,false);assert.match(project(demo).messages.at(-1).text,/자동 반영한 결과는 아닙니다/);
+  const v2=project(demo).versions.at(-1);assert.equal(v2.media.url,'/pulse-app/demo-assets/preview-v2.mp4');assert.notEqual(v1.id,v2.id);assert.equal(project(demo).messages.find(m=>m.id===feedback.id).resolved,false);assert.match(project(demo).messages.at(-1).text,/미리 만든 수정본/);
   await assert.rejects(action(demo,{action:'approve',versionId:v1.id}),{status:409});await action(demo,{action:'approve',versionId:v2.id});
   feedback=project(demo).messages.find(m=>m.id===feedback.id);assert.equal(feedback.resolved,true);assert.ok(project(demo).versions.at(-1).approvedAt);assert.equal(demo.guide().action,'deliver');demo.advance();
   const final=project(demo).versions.at(-1);assert.equal(final.kind,'final');assert.equal(final.approvedPreviewId,v2.id);assert.equal(final.media.url,v2.media.url);assert.match(final.guide,/960×540/);assert.equal(project(demo).stage,'delivered');assert.equal(demo.guide().complete,true);
@@ -68,8 +68,8 @@ test('demo accepts message proof and action without extra values and keeps omitt
 test('prepared correction can be revisited after further feedback without claiming automatic edits',async()=>{
   const {demo}=setup();await throughScenes(demo);demo.advance();let v=project(demo).versions.at(-1);
   await action(demo,{action:'feedback',versionId:v.id,text:'더 크게',seconds:12});demo.advance();v=project(demo).versions.at(-1);
-  await action(demo,{action:'feedback',versionId:v.id,text:'색도 바꿔 주세요.',seconds:13});await assert.rejects(action(demo,{action:'approve',versionId:v.id}),{status:409});assert.match(demo.guide().description,/같은 개선 영상/);demo.advance();
-  const v3=project(demo).versions.at(-1);assert.notEqual(v.id,v3.id);assert.equal(v.media.url,v3.media.url);assert.match(v3.label,/같은 CTA 개선본 재확인/);await action(demo,{action:'approve',versionId:v3.id});assert.ok(project(demo).messages.filter(m=>m.action==='feedback').every(m=>m.resolved));demo.advance();assert.equal(demo.guide().complete,true);
+  await action(demo,{action:'feedback',versionId:v.id,text:'색도 바꿔 주세요.',seconds:13});await assert.rejects(action(demo,{action:'approve',versionId:v.id}),{status:409});assert.match(demo.guide().description,/같은 수정본이 나와요/);demo.advance();
+  const v3=project(demo).versions.at(-1);assert.notEqual(v.id,v3.id);assert.equal(v.media.url,v3.media.url);assert.match(v3.label,/같은 수정본 다시 보기/);await action(demo,{action:'approve',versionId:v3.id});assert.ok(project(demo).messages.filter(m=>m.action==='feedback').every(m=>m.resolved));demo.advance();assert.equal(demo.guide().complete,true);
 });
 
 test('reference opinion counts as taste while preserving prepared reference originals',async()=>{
@@ -99,7 +99,7 @@ test('storage-disabled and quota cases remain explicitly memory-only with no net
 });
 
 test('corrupt or manipulated local records never render server media or turn into real projects',()=>{
-  const store=storage();store.setItem(DEMO_STORAGE_KEY,'{invalid');let demo=createDemoSession({storage:store});assert.equal(demo.guide().action,'taste');demo.reset();assert.equal(JSON.parse(store.getItem(DEMO_STORAGE_KEY)).schema,1);
+  const store=storage();store.setItem(DEMO_STORAGE_KEY,'{invalid');let demo=createDemoSession({storage:store});assert.equal(demo.guide().action,'taste');demo.reset();assert.equal(JSON.parse(store.getItem(DEMO_STORAGE_KEY)).schema,2);
   for(const mutate of [s=>{s.project.id='real-project';},s=>{s.project.studio.assets[0].url='/api/client-media/secret';},s=>{s.project.studio.concepts[0].imageUrl='https://example.com/tracking.png';},s=>{s.project.studio.scenes=[null];},s=>{s.project.studio.strategy.data.channels='invalid';}]){const record=JSON.parse(store.getItem(DEMO_STORAGE_KEY));mutate(record);store.setItem(DEMO_STORAGE_KEY,JSON.stringify(record));demo=createDemoSession({storage:store});assert.equal(project(demo).id,'00000000-0000-4000-8000-000000000001');assert.equal(demo.guide().action,'taste');assert.equal(project(demo).studio.assets[0].url,'/pulse-app/demo-assets/reference-warm.png');demo.reset();}
 });
 

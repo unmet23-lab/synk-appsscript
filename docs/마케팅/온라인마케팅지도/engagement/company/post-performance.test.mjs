@@ -11,17 +11,18 @@ const BASE = '2026-10-10T00:00:00.000Z', ID = 'abcdefghijk', URL = `https://www.
 const atHours = hours => new Date(Date.parse(BASE) + hours * 3600000).toISOString();
 function fixture(t, options = {}) {
   const directory = mkdtempSync(join(tmpdir(), 'synk-post-performance-'));
-  let store = new Store(directory), at = BASE, calls = 0;
+  let store = new Store(directory), at = BASE, calls = 0, windowCalls = 0;
   const owner = { id: 'owner', name: 'Owner', active: true, role: 'member', teamId: 'a' }, other = { id: 'other', active: true, role: 'member', teamId: 'b' }, viewer = { id: 'viewer', active: true, role: 'viewer', teamId: 'a' };
   for (const user of [owner, other, viewer]) store.put('users', user.id, user);
   const channel = { id: 'channel', platform: 'youtube', canonicalUrl: 'https://www.youtube.com/@synk', handle: 'synk', displayName: 'SYNK', ownerIds: [owner.id], teamId: 'a', active: true, connectionVersion: 1 };
   store.put('channels', channel.id, channel); store.setSecret(`channel:${channel.id}`, { apiKey: 'synthetic-key' });
   const collector = async (...args) => { calls++; return options.collector ? options.collector(...args) : { posts: [{ url: URL, publishedAt: BASE, metrics: { views: 0, likes: 2 } }], coverage: { source: 'synthetic-official', unavailableMetrics: ['saves', 'reach'] } }; };
-  const make = extra => createPostPerformanceService({ store, clock: () => at, collector, ...extra });
+  const windowCollector = options.windowCollector && (async (...args) => { windowCalls++; return options.windowCollector(...args); });
+  const make = extra => createPostPerformanceService({ store, clock: () => at, collector, ...(windowCollector ? { windowCollector } : {}), ...extra });
   let service = make();
   t.after(() => { store.close(); assert.equal(dirname(resolve(directory)), resolve(tmpdir())); assert.ok(directory.startsWith(join(tmpdir(), 'synk-post-performance-'))); rmSync(directory, { recursive: true, force: true }); });
   return { get store() { return store; }, get service() { return service; }, owner, other, viewer, channel, make,
-    now: hours => { at = atHours(hours); }, calls: () => calls,
+    now: hours => { at = atHours(hours); }, calls: () => calls, windowCalls: () => windowCalls,
     register: input => service.register(owner, { channelId: channel.id, url: URL, publishedAt: BASE, ...input }).entry,
     restart: () => { store.close(); store = new Store(directory); service = make(); },
   };
@@ -292,4 +293,120 @@ test('observations carry the checkpoints without the comparison with every other
   assert.equal(seen.id, listed.id); assert.equal(seen.url, listed.url); assert.equal(seen.checkpoints.length, listed.checkpoints.length);
   assert.ok(seen.checkpoints.every(cp => cp.comparison === undefined && cp.leaseToken === undefined && cp.leaseUntil === undefined)); assert.ok(listed.checkpoints.every(cp => cp.comparison !== undefined));
   assert.deepEqual(seen.checkpoints.map(cp => cp.hours), listed.checkpoints.map(cp => cp.hours)); assert.deepEqual(f.service.observations(f.other).entries, []);
+});
+
+// BASE 2026-10-10T00:00Z는 태평양시 10-09 17:00이라 창은 10-09~10-11이다.
+const WINDOW = { startDate: '2026-10-09', endDate: '2026-10-11' };
+const readyWindow = metrics => async (_channel, _credentials, { videos }) => ({ source: 'youtube-analytics-api-v2', videos: videos.map(video => ({ ...video, status: 'ready', views: 640, metrics: typeof metrics === 'function' ? metrics(video) : metrics })) });
+
+test('lagged YouTube Analytics metrics are never recorded as a 24- or 72-hour snapshot value and say when they arrive', async t => {
+  const f = fixture(t, { collector: async () => ({ posts: [{ url: URL, publishedAt: BASE, metrics: { views: 9, shares: 5, averageWatchSeconds: 12, stayedToWatchPct: 70 } }], coverage: { source: 'youtube-data-api-v3', metricPeriods: { shares: { lagged: true } } } }) });
+  const entry = f.register(); f.now(24); await f.service.collectDue(); f.now(72); await f.service.collectDue();
+  const [day, three] = f.service.list(f.owner).entries[0].checkpoints;
+  assert.equal(day.metrics.views, 9); assert.equal(day.metrics.shares, null); assert.match(day.unavailableReasons.shares, /늦게 반영/); assert.doesNotMatch(day.unavailableReasons.shares, /5일/);
+  assert.equal(three.metrics.views, 9); assert.equal(three.metrics.shares, null); assert.match(three.unavailableReasons.shares, /게시 5일 뒤 고정 창/); assert.equal(three.metrics.averageWatchSeconds, null);
+  assert.equal(three.metrics.stayedToWatchPct, null, 'Shorts stayed-to-watch has no API and is never taken from a response'); assert.match(three.unavailableReasons.stayedToWatchPct, /^API 없음/);
+  assert.equal(three.window.kind, 'window'); assert.equal(three.window.startDate, WINDOW.startDate); assert.equal(three.window.endDate, WINDOW.endDate);
+  assert.equal(three.window.dueAt, atHours(120)); assert.equal(three.window.closesAt, null); assert.equal(three.window.status, 'pending'); assert.equal(day.window, undefined);
+  assert.equal(f.store.get('postPerformanceEntries', entry.id).checkpoints[1].window, undefined, 'reading a plan does not write one');
+  assert.equal(f.service.manualCheckpoint(f.owner, entry.id, 24, { metrics: { averageViewPct: 130 } }).entry.checkpoints[0].metrics.averageViewPct, 130, 'looping Shorts can pass 100%');
+  assert.throws(() => f.service.manualCheckpoint(f.owner, entry.id, 24, { metrics: { subscribersLost: -1 } }), { status: 400 });
+});
+
+test('the 72-hour window is read once five days after publication and fills only the empty metrics', async t => {
+  const reads = [];
+  const f = fixture(t, { windowCollector: async (...args) => { reads.push(args[2].videos); return readyWindow({ averageWatchSeconds: 31, averageViewPct: 112.5, shares: 4, subscribersGained: 2, subscribersLost: 0 })(...args); } });
+  const entry = f.register(); f.now(72); await f.service.collectDue(); f.now(73);
+  f.service.manualCheckpoint(f.owner, entry.id, 72, { measuredAt: atHours(73), metrics: { averageWatchSeconds: 20, stayedToWatchPct: 64 } });
+  f.now(119.9); await f.service.collectDue(); assert.equal(f.windowCalls(), 0);
+  f.now(120); const summary = await f.service.collectDue(); assert.equal(summary.windowRecorded, 1); assert.equal(f.calls(), 1, 'the window does not call the snapshot collector');
+  assert.deepEqual(reads, [[{ externalId: ID, ...WINDOW }]]);
+  const point = f.service.list(f.owner).entries[0].checkpoints[1];
+  assert.equal(point.status, 'recorded'); assert.equal(point.observedAt, atHours(72));
+  assert.equal(point.metrics.averageWatchSeconds, 20, 'a value recorded for the point is never replaced'); assert.equal(point.metricProvenance.averageWatchSeconds.source, 'manual');
+  assert.equal(point.metrics.averageViewPct, 112.5); assert.equal(point.metrics.shares, 4); assert.equal(point.metrics.subscribersLost, 0, 'an actual zero stays zero'); assert.equal(point.metrics.stayedToWatchPct, 64);
+  assert.deepEqual(point.metricProvenance.averageViewPct, { source: 'api:youtube-analytics-api-v2', kind: 'window', timeZone: 'America/Los_Angeles', days: 3, ...WINDOW, observedAt: atHours(120), recordedAt: atHours(120), timing: 'window', lagged: true, measurementWindowMissed: false, unit: 'percent' });
+  assert.equal(point.unavailableReasons.shares, undefined);
+  assert.equal(point.window.status, 'recorded'); assert.deepEqual(point.window.filled, ['shares', 'averageViewPct', 'subscribersGained', 'subscribersLost']); assert.deepEqual(point.window.kept, ['averageWatchSeconds']);
+  assert.equal(point.window.views, 640); assert.equal(point.window.fetchedAt, atHours(120)); assert.equal(point.window.leaseToken, undefined); assert.match(point.window.message, /평균 시청 시간은 그대로/);
+  f.now(200); await f.service.collectDue(); assert.equal(f.windowCalls(), 1, 'a recorded window is never fetched again');
+  f.restart(); assert.equal(f.service.list(f.owner).entries[0].checkpoints[1].metrics.averageViewPct, 112.5);
+});
+
+test('an unprocessed window is retried every six hours, never stored as zero, and closes 72 hours after its first attempt', async t => {
+  const f = fixture(t, { windowCollector: async (_channel, _credentials, { videos }) => ({ source: 'youtube-analytics-api-v2', videos: videos.map(video => ({ ...video, status: 'empty', views: 0 })) }) });
+  f.register(); f.now(130); const first = await f.service.collectDue();
+  assert.equal(first.windowRetried, 1); assert.equal(f.calls(), 0, 'missed snapshots are not fetched');
+  let point = f.service.list(f.owner).entries[0].checkpoints[1];
+  assert.equal(point.status, 'missed'); assert.equal(point.window.status, 'retry'); assert.equal(point.window.lastErrorCode, 'WINDOW_NOT_READY');
+  assert.equal(point.window.closesAt, atHours(202)); assert.equal(point.window.nextAttemptAt, atHours(136)); assert.match(point.window.message, /2026-10-09~2026-10-11/);
+  f.now(135.9); await f.service.collectDue(); assert.equal(f.windowCalls(), 1);
+  for (let hours = 136; hours <= 202; hours += 6) { f.now(hours); await f.service.collectDue(); }
+  point = f.service.list(f.owner).entries[0].checkpoints[1];
+  assert.equal(point.window.status, 'unavailable'); assert.equal(point.window.nextAttemptAt, null); assert.match(point.window.message, /72시간이 지나/);
+  assert.equal(f.windowCalls(), 13); f.now(400); await f.service.collectDue(); assert.equal(f.windowCalls(), 13);
+  assert.ok(Object.values(point.metrics).every(value => value === null), 'nothing is turned into zero');
+});
+
+test('missing Analytics permission keeps the window open for a reconnect without any request from API-key reads or provider text', async t => {
+  const f = fixture(t), entry = f.register(), noRequest = f.make({ fetchImpl: async () => { throw new Error('An API key connection must not request Analytics.'); } });
+  f.now(121); assert.equal((await noRequest.collectDue()).windowRetried, 1);
+  let point = noRequest.list(f.owner).entries[0].checkpoints[1];
+  assert.equal(point.window.lastErrorCode, 'AUTH_REQUIRED'); assert.match(point.window.message, /권한/); assert.equal(point.window.nextAttemptAt, atHours(127));
+  // 10-20 LAB 채널에서 받은 「권한 부족」 403 그대로.
+  const requests = [], channelId = 'UCabcdefghijklmnopqrstuv';
+  const denied = f.make({ fetchImpl: async raw => {
+    const url = new globalThis.URL(raw); requests.push(url.origin + url.pathname);
+    if (url.origin === 'https://youtubeanalytics.googleapis.com') return { ok: false, status: 403, json: async () => ({ error: { code: 403, message: 'Request had insufficient authentication scopes. secret-token', errors: [{ message: 'Insufficient Permission', domain: 'global', reason: 'insufficientPermissions' }], status: 'PERMISSION_DENIED' } }) };
+    return { ok: true, status: 200, json: async () => ({ items: [{ id: channelId }] }) };
+  } });
+  f.store.setSecret('channel:channel', { accessToken: 'secret-token' }); f.now(127); await denied.collectDue();
+  point = denied.list(f.owner).entries[0].checkpoints[1];
+  assert.deepEqual(requests, ['https://www.googleapis.com/youtube/v3/channels', 'https://www.googleapis.com/youtube/v3/channels', 'https://youtubeanalytics.googleapis.com/v2/reports']);
+  assert.equal(point.window.status, 'retry'); assert.equal(point.window.attempts, 2); assert.equal(point.window.lastErrorCode, 'AUTH_REQUIRED'); assert.equal(point.window.nextAttemptAt, atHours(133));
+  assert.doesNotMatch(JSON.stringify(f.store.get('postPerformanceEntries', entry.id)), /secret-token|insufficient/);
+  assert.equal(point.window.closesAt, null, 'a missing grant does not start the 72 hours'); assert.doesNotMatch(point.window.message, /72시간/);
+  for (let hours = 133; hours <= 409; hours += 6) { f.now(hours); await denied.collectDue(); }
+  point = denied.list(f.owner).entries[0].checkpoints[1]; assert.equal(point.window.lastErrorCode, 'AUTH_REQUIRED'); assert.equal(point.window.status, 'retry', 'still waiting for a reconnect after twelve days'); assert.equal(point.window.closesAt, null);
+  const reconnected = f.make({ windowCollector: readyWindow({ averageViewPct: 77.5, shares: 2 }) });
+  f.now(415); assert.equal((await reconnected.collectDue()).windowRecorded, 1);
+  point = reconnected.list(f.owner).entries[0].checkpoints[1]; assert.equal(point.window.status, 'recorded'); assert.equal(point.metrics.averageViewPct, 77.5);
+});
+
+test('a missed 72-hour snapshot still receives window values that later manual entries keep and that compare only with windows', async t => {
+  const f = fixture(t, { windowCollector: readyWindow(video => ({ averageViewPct: video.externalId === ID ? 80 : 95, shares: 1 })) });
+  f.register(); f.now(30); const second = f.register({ url: 'https://youtu.be/zzzzzzzzzzz', publishedAt: atHours(30) });
+  f.now(160); assert.equal((await f.service.collectDue()).windowRecorded, 2); assert.equal(f.windowCalls(), 1, 'one channel batch reads both windows');
+  const newer = f.service.list(f.owner).entries.find(entry => entry.id === second.id).checkpoints[1];
+  assert.equal(newer.status, 'missed'); assert.equal(newer.metrics.averageViewPct, 95);
+  assert.deepEqual(newer.comparison.averageViewPct, { sampleCount: 1, median: 80, delta: 15, deltaPercent: 18.8 }); assert.equal(newer.comparison.views.sampleCount, 0);
+  assert.throws(() => f.service.manualCheckpoint(f.owner, second.id, 72, { measuredAt: atHours(150), metrics: { averageViewPct: 90 } }), { status: 409 });
+  const manual = f.service.manualCheckpoint(f.owner, second.id, 72, { measuredAt: atHours(150), metrics: { views: 300 } }).entry.checkpoints[1];
+  assert.equal(manual.status, 'recorded'); assert.equal(manual.metrics.views, 300); assert.equal(manual.metricProvenance.views.measurementWindowMissed, true);
+  assert.equal(manual.metrics.averageViewPct, 95); assert.equal(manual.metricProvenance.averageViewPct.kind, 'window'); assert.equal(manual.window.status, 'recorded'); assert.equal(manual.comparison.averageViewPct.sampleCount, 1);
+});
+
+test('Instagram estimated retention keeps its raw source in provenance and Facebook video views are recorded', async t => {
+  const f = fixture(t, { collector: async channel => channel.platform === 'instagram'
+    ? { posts: [{ url: 'https://www.instagram.com/reel/ABC123/', publishedAt: BASE, metrics: { views: 900, earlyRetention3sPct: 61.8, averageWatchSeconds: 7.53 }, metricDetails: { earlyRetention3sPct: { derivedFrom: 'reels_skip_rate', rawValue: 38.2, rawUnit: 'percent', estimated: true, note: '<x>' }, averageWatchSeconds: { derivedFrom: 'ig_reels_avg_watch_time', rawValue: 7530, rawUnit: 'milliseconds' }, views: { derivedFrom: 'BAD NAME', rawUnit: 'parsecs' } } }], coverage: { source: 'instagram-login-api' } }
+    : { posts: [{ url: 'https://www.facebook.com/reel/123456/', publishedAt: BASE, metrics: { views: 120, likes: 3 } }], coverage: { source: 'facebook-pages-api' } } });
+  for (const [id, platform, canonicalUrl] of [['ig', 'instagram', 'https://www.instagram.com/synk/'], ['fb', 'facebook', 'https://www.facebook.com/synk']]) { f.store.put('channels', id, { ...f.channel, id, platform, canonicalUrl }); f.store.setSecret(`channel:${id}`, { accessToken: 'synthetic' }); }
+  const reel = f.service.register(f.owner, { channelId: 'ig', url: 'https://www.instagram.com/reel/ABC123/', publishedAt: BASE }).entry;
+  const video = f.service.register(f.owner, { channelId: 'fb', url: 'https://www.facebook.com/reel/123456/', publishedAt: BASE }).entry;
+  f.now(24); await f.service.collectDue();
+  const entries = f.service.list(f.owner).entries, ig = entries.find(entry => entry.id === reel.id).checkpoints[0], fb = entries.find(entry => entry.id === video.id).checkpoints[0];
+  assert.equal(ig.metrics.earlyRetention3sPct, 61.8); assert.equal(ig.metrics.averageWatchSeconds, 7.53);
+  assert.deepEqual(ig.metricProvenance.earlyRetention3sPct, { source: 'api:instagram-login-api', observedAt: atHours(24), recordedAt: atHours(24), unit: 'percent', timing: 'on-time', measurementWindowMissed: false, derivedFrom: 'reels_skip_rate', rawValue: 38.2, rawUnit: 'percent', estimated: true });
+  assert.equal(ig.metricProvenance.averageWatchSeconds.rawUnit, 'milliseconds'); assert.deepEqual(Object.keys(ig.metricProvenance.views).sort(), ['measurementWindowMissed', 'observedAt', 'recordedAt', 'source', 'timing', 'unit']);
+  assert.match(ig.unavailableReasons.completionRatePct, /^API 없음/); assert.equal(entries.find(entry => entry.id === reel.id).checkpoints[1].window, undefined, 'Instagram insights are snapshots, not lagged windows');
+  assert.equal(fb.metrics.views, 120, 'Facebook video views are no longer dropped'); assert.equal(fb.metrics.likes, 3);
+});
+
+test('an unconnected channel keeps its window waiting instead of closing it, and connecting it later still fills the point', async t => {
+  const f = fixture(t, { windowCollector: readyWindow({ shares: 3 }) }); f.register(); f.store.deleteSecret('channel:channel');
+  f.now(121); assert.equal((await f.service.collectDue()).windowRetried, 1); assert.equal(f.windowCalls(), 0);
+  let point = f.service.list(f.owner).entries[0].checkpoints[1];
+  assert.equal(point.window.lastErrorCode, 'CONNECTION_REQUIRED'); assert.equal(point.window.closesAt, null); assert.equal(point.window.nextAttemptAt, atHours(127));
+  f.store.setSecret('channel:channel', { apiKey: 'synthetic-key' }); f.now(500); await f.service.collectDue();
+  point = f.service.list(f.owner).entries[0].checkpoints[1]; assert.equal(point.window.status, 'recorded'); assert.equal(point.metrics.shares, 3); assert.equal(f.windowCalls(), 1);
 });

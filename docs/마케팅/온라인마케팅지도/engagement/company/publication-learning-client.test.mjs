@@ -25,6 +25,15 @@ test('learning cards preserve actual zero, observation provenance and insufficie
   f.run('card.facts[0].comparison={status:"ready",sampleCount:3,median:0,deltaPercent:null}');const zeroMedian=f.run('pfLearningCard(card)');assert.match(zeroMedian,/3편 중앙값 0/);assert.ok(!zeroMedian.includes('Infinity'));
 });
 
+test('a server quarter standing is shown next to the median and unknown standing values are never rendered',()=>{
+  const f=fixture();f.run('card.facts[0].comparison={status:"ready",sampleCount:4,median:100,deltaPercent:50,standing:{label:"top25",p25:50,p75:150,sampleCount:4}}');
+  let html=f.run('pfLearningCard(card)');assert.match(html,/이전 같은 계정·형식 4편 중앙값 100/);assert.match(html,/data-pf-standing="top25">상위 25% · 이전 4편 기준</);
+  f.run('card.facts[0].comparison.standing.label="bottom25"');assert.match(f.run('pfLearningCard(card)'),/하위 25% · 이전 4편 기준/);
+  f.run('card.facts[0].comparison.standing.label="<img src=x>"');html=f.run('pfLearningCard(card)');assert.ok(!html.includes('data-pf-standing'));assert.ok(!html.includes('<img'));
+  for(const label of ['constructor','toString','__proto__','hasOwnProperty']){f.run(`card.facts[0].comparison.standing.label=${JSON.stringify(label)}`);html=f.run('pfLearningCard(card)');assert.ok(!html.includes('data-pf-standing'),label);assert.ok(!/native code|\[object /.test(html),label);}
+  f.run('card.facts[0].comparison={status:"insufficient",sampleCount:2,median:null,deltaPercent:null,standing:{label:"top25",sampleCount:2}}');assert.ok(!f.run('pfLearningCard(card)').includes('data-pf-standing'),'standing needs a ready comparison');
+});
+
 test('all learning facts, source labels and experiment prose are escaped before insertion',()=>{
   const f=fixture(),bad='<img src=x onerror=alert(1)>';f.context.bad=bad;f.run('for(const key of ["title","channelName","summary","statusLabel"])card[key]=bad;card.missing=[bad];card.limits=[bad];card.source.title=bad;card.source.versionLabel=bad;card.facts[0].label=bad;card.facts[0].unit=bad;card.experiments=[{id:bad,title:bad,reason:bad,change:bad,measure:bad}]');const html=f.run('pfLearningCard(card)');assert.ok(!html.includes('<img'));assert.ok(html.includes('&lt;img'));assert.ok(!html.includes('onclick='));
 });
@@ -99,4 +108,11 @@ test('invalid experiment and entry identifiers cannot invoke the planner, and la
 
 test('new learning cards compensate an edited field inside the workroom scroll container',async()=>{
   const f=fixture(),main={scrollTop:700,scrollLeft:0,scrollHeight:2400,clientHeight:800,parentElement:null};let added=0,html=f.element.innerHTML;const editor={value:'유지할 근거',selectionStart:1,selectionEnd:3,closest:()=>true,parentElement:main,getBoundingClientRect:()=>({top:280+added-(main.scrollTop-700)})};f.context.document.activeElement=editor;Object.defineProperty(f.element,'innerHTML',{get:()=>html,set:value=>{html=value;added=68;}});const pending=f.run('pfLearningLoad()');f.requests[0].resolve({...learning,cards:[...learning.cards,{...card,entryId:'b'.repeat(64)}]});await pending;assert.equal(editor.getBoundingClientRect().top,280);assert.equal(main.scrollTop,768);assert.equal(f.context.document.activeElement,editor);assert.equal(editor.selectionStart,1);assert.equal(f.context.window.scrollY,100);
+});
+test('learning facts mark late window values and estimated metrics, and malformed window dates are never drawn',()=>{
+  const f=fixture();f.run('card.facts[0]={...card.facts[0],id:"averageViewPct",label:"평균 조회율",value:112.5,unit:"percent",source:"api:youtube-analytics-api-v2",lagged:true,window:{startDate:"2026-10-09",endDate:"2026-10-11",timeZone:"America/Los_Angeles"}}');
+  let html=f.run('pfLearningFact(card.facts[0])');assert.match(html,/<small data-pf-window>늦게 반영 · 10\.09~10\.11 태평양시 창<\/small>/);assert.ok(!html.includes('data-pf-estimated'));
+  f.run('card.facts[0].estimated=true;card.facts[0].window={startDate:"<img src=x>",endDate:"2026-10-11"}');html=f.run('pfLearningFact(card.facts[0])');
+  assert.match(html,/<small data-pf-estimated>추정 지표<\/small>/);assert.ok(!html.includes('data-pf-window'));assert.ok(!html.includes('<img'));
+  f.run('card.facts[0].value=null');assert.ok(!f.run('pfLearningFact(card.facts[0])').includes('data-pf-estimated'),'unknown values carry no marks');
 });
