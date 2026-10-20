@@ -98,8 +98,9 @@ export function createMemberSettings({ getIdentity, request, now = Date.now, tim
         // No entry back means the server left this one out: this device's clock is more than a day
         // ahead of the server's. Nothing was written.
         if (!kept || !instant(kept.at)) throw failure(instant(held.serverTime) ? 'failed' : 'DEVICE_CLOCK');
-        // The server keeps the newer entry. Another device's newer choice is shown, never overwritten.
-        if (Date.parse(kept.at) > Date.parse(at) && !same(known(kept.value), next)) throw failure('MEMORY_CONFLICT');
+        // The server also keeps the first entry when two writes have the same timestamp.
+        // A successful transport is not proof this choice was saved: confirm the value it kept.
+        if (!same(known(kept.value), next)) throw failure('MEMORY_CONFLICT');
       }
       if (token !== epoch) return read();
       editor = null; error = null; message = MESSAGES[outcome];

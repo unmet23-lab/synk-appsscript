@@ -117,6 +117,59 @@ test('a newer choice from another device wins and is reported, not overwritten',
   assert.deepEqual(f.held.get('presentation:chosen').value, { support: 'independent' });
 });
 
+test('simultaneous choices at the same millisecond report the losing write and keep its draft for a merged retry', async () => {
+  const { createMemberSettings } = await loaded;
+  const f = memory({ entries: [{ kind: 'presentation', key: 'chosen', value: { support: 'choose', textSize: 'large' }, at: later(SERVER, -1) }] });
+  let reads = 0, release;
+  const bothRead = new Promise(resolve => { release = resolve; });
+  const request = async (operation, params) => {
+    const result = await f.request(operation, params);
+    if (operation === 'memoryGet' && ++reads <= 2) {
+      if (reads === 2) release();
+      await bothRead;
+    }
+    return result;
+  };
+  const first = createMemberSettings({ getIdentity: f.getIdentity, request, now: device() });
+  const second = createMemberSettings({ getIdentity: f.getIdentity, request, now: device() });
+  first.begin({ field: 'support', value: 'step' });
+  second.begin({ field: 'explanation', value: 'detailed' });
+  const results = await Promise.all([first.save(context), second.save(context)]);
+  const writes = f.calls.filter(call => call.operation === 'memoryPost');
+  assert.equal(writes.length, 2);
+  assert.equal(writes[0].params.entries[0].at, writes[1].params.entries[0].at);
+  const winningValue = f.held.get('presentation:chosen').value;
+  const loser = results.findIndex(result => result.error === 'MEMORY_CONFLICT');
+  assert.notEqual(loser, -1, 'one transport succeeded without saving its choice');
+  assert.equal(results[1 - loser].error, null);
+  assert.equal(results[1 - loser].editor, null);
+  assert.ok(results[loser].editor, 'the unsaved choice is still editable');
+  assert.match(results[loser].message, /다른 곳에서 방금 바꿨어요/);
+  const retry = await [first, second][loser].save(context);
+  assert.equal(retry.error, null);
+  assert.deepEqual(f.held.get('presentation:chosen').value, { ...winningValue, support: 'step', explanation: 'detailed', textSize: 'large' });
+});
+
+test('an equal timestamp with the requested value is accepted, but a mismatching older reply is not', async () => {
+  const { createMemberSettings } = await loaded;
+  for (const [kept, expectedError] of [
+    [{ kind: 'presentation', key: 'chosen', value: { support: 'step' }, at: SERVER }, null],
+    [{ kind: 'presentation', key: 'chosen', value: { support: 'choose' }, at: later(SERVER, -1) }, 'MEMORY_CONFLICT'],
+  ]) {
+    const f = memory();
+    const settings = createMemberSettings({
+      getIdentity: f.getIdentity, now: device(),
+      request: (operation, params) => operation === 'memoryPost'
+        ? { ok: true, revision: params.revision, entries: [kept] }
+        : f.request(operation, params),
+    });
+    settings.begin({ field: 'support', value: 'step' });
+    const result = await settings.save(context);
+    assert.equal(result.error, expectedError);
+    assert.equal(result.editor !== null, expectedError !== null);
+  }
+});
+
 test('a refused policy closes editing for the session, and a summary without learning storage never sends', async () => {
   const { createMemberSettings } = await loaded;
   const f = memory({ failPost: 'FEATURE_DISABLED' }), settings = createMemberSettings({ getIdentity: f.getIdentity, request: f.request, now: device() });

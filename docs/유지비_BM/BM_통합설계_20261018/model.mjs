@@ -71,13 +71,44 @@ function labUnit(inp, sc, mix = passMixAt(inp)) {
   const keep = (1 - L.leakage) * sc.priceRealization;
   const regShare = 1 - L.lightShare;
   const tuitionPer = (regShare * pReg + L.lightShare * L.prices.light) * keep; // 학생 1명 평균 수강료
-  const premiumPer = regShare * L.premiumUptake * L.prices.premiumAddon * keep;
   const bookRev = L.textbook.enabled ? (L.textbook.booksPerYear / 12) * L.textbook.pricePerBook : 0;
   const bookCost = L.textbook.enabled ? (L.textbook.booksPerYear / 12) * L.textbook.costPerBook : 0;
   const seatEq = regShare + 0.5 * L.lightShare; // 라이트 과정은 격일이라 좌석 0.5개
   const avgPrepaid = mix.m1 * L.prepaidMonthsRemaining.m1 + mix.m3 * L.prepaidMonthsRemaining.m3 + mix.m6 * L.prepaidMonthsRemaining.m6 + mix.m12 * L.prepaidMonthsRemaining.m12;
-  return { pReg, tuitionPer, premiumPer, bookRev, bookCost, seatEq, avgPrepaid };
+  return { pReg, tuitionPer, bookRev, bookCost, seatEq, avgPrepaid };
 }
+
+// 월별 매출·손익분기·기관 협상표가 같은 회화 대상과 좌석 한도를 쓴다.
+function labSaturdaySeats(inp, stageKey, regularStudents, classSize, rooms = inp.lab.stages[stageKey].rooms) {
+  return stageKey === 'v23' ? Math.min(regularStudents * inp.lab.weekendShare, rooms * inp.lab.stages.v23.satSlotsPerRoom * classSize) : 0;
+}
+function labClasses(inp, stageKey, students, rooms = inp.lab.stages[stageKey].rooms) {
+  const regular = students * (1 - inp.lab.lightShare), seats = regular + students * inp.lab.lightShare * 0.5;
+  const size = avgClassSize(inp, stageKey, seats), saturday = labSaturdaySeats(inp, stageKey, regular, size, rooms);
+  const saturdayClasses = saturday > 0 ? Math.ceil(saturday / size - 1e-9) : 0;
+  const weekdayClasses = Math.max(2, Math.ceil((seats - saturday) / size - 1e-9));
+  return { size, saturday, saturdayClasses, weekdayClasses, classes: weekdayClasses + saturdayClasses };
+}
+function labPremium(inp, sc, stageKey, regularStudents, saturdayStudents = 0, priceMultiplier = 1) {
+  const L = inp.lab;
+  const cap = L.premiumSeats?.[stageKey] ?? inp.company.premiumClasses * 16;
+  const students = Math.min(Math.max(0, regularStudents - saturdayStudents) * L.premiumUptake, cap);
+  return students * L.prices.premiumAddon * (1 - L.leakage) * sc.priceRealization * priceMultiplier;
+}
+// 민감도에서 수업 시간을 줄이면 단계별 위성 좌석도 같은 비율로 줄인다(0반은 판매 0석).
+function setPremiumClasses(inp, classes) {
+  const previous = inp.company.premiumClasses;
+  if (inp.lab.premiumSeats) {
+    for (const stage of Object.keys(inp.lab.premiumSeats)) inp.lab.premiumSeats[stage] *= previous > 0 ? classes / previous : 0;
+  }
+  inp.company.premiumClasses = classes;
+}
+function labBaseBonus(inp, ratio) {
+  let each = 0;
+  for (const tier of inp.lab.incentives.baseBonus) if (ratio >= tier.atBep) each = tier.each;
+  return each;
+}
+const labFieldBonus = (inp, revenue) => Math.max(inp.lab.incentives.fieldBonusMin, inp.lab.incentives.fieldBonusRate * revenue);
 
 // SYNK반 기관 몫: shareTiers가 있으면 한계 계단(60명까지 30%, 61~100명 몫 25% …)의 평균 비율, 없으면 hostShare 하나
 function hostRateAt(H, s) {
@@ -115,11 +146,12 @@ function labStageFixed(inp, stageKey, opts = {}, mult = {}) {
     + st.foreignLevy.count * st.foreignLevy.mnt // 외국인 고용 부담금(사회보험 대상 아님)
     + (opts.extraFixedMNT || 0) // [페이블 5차] 나라 판 손익분기: 현지 책임자·회계·출장
     + (opts.demand === 'acq' ? (stageKey === 's2' || stageKey === 'v23' ? L.acquisition.adBudgetMNT[1].v : L.acquisition.adBudgetMNT[0].v) : 0); // 옛 수요 방식의 광고비(달 평균). 시장 방식은 광고비가 새 등록을 따라 움직여 손익분기에서 변동비로 센다
-  return { fixed, wages, avgUtil };
+  return { fixed, wages, avgUtil, headcountBase };
 }
 
 // 손익분기 학생 수: 달별 계산(run)과 같은 규칙으로 센다 — 반 수는 올림(최소 2반), 강사 기본 성과급(두 반에 한 명), 그달 물가 계단(mult).
-// 반 수가 올림이라 이익이 톱니 모양이므로, 0.1명씩 늘려 처음 흑자가 되는 학생 수를 찾는다 [아르곤 코드 검수 10-18]
+// 반 수가 올림이라 이익이 톱니 모양이므로, 0.1명씩 늘려 1배 보너스까지 지급한 뒤 흑자가 되는 학생 수를 찾는다.
+// 1배 도달 때 보너스가 오르는 규칙을 검색 비용에도 넣어, 기준을 넘자마자 다시 적자가 되는 자기참조를 피한다.
 // 가격·비용은 mult가 없으면 2027년 값, 기간권 비중은 자리 잡은 뒤 값
 function labBep(inp, sc, stageKey, opts = {}, mult = {}) {
   const L = inp.lab; const st = L.staff; const o = L.other;
@@ -128,28 +160,44 @@ function labBep(inp, sc, stageKey, opts = {}, mult = {}) {
   const p = mult.price || 1; const w = mult.wage || 1;
   const wkdClassCost = st.hoursPerClass * st.teacherHourly * si * w;
   const v23 = stageKey === 'v23' ? st.v23 : null;
-  const classCost = v23 ? ((1 - L.weekendShare) * wkdClassCost + L.weekendShare * v23.satClassCost * si * w) : wkdClassCost;
+  const satClassCost = v23 ? v23.satClassCost * si * w : 0;
   const dirTeach = v23 ? v23.directorTeachesClasses : st.directorTeachesClasses;
-  const { fixed } = labStageFixed(inp, stageKey, opts, mult);
-  const fixedAdj = fixed - dirTeach * classCost; // 원장이 맡는 반만큼은 강사비가 안 든다(4실 편제는 0반)
-  const revPer = (u.tuitionPer + u.premiumPer + u.bookRev) * p;
+  const { fixed, headcountBase } = labStageFixed(inp, stageKey, opts, mult);
+  const boundaryBonus = labBaseBonus(inp, 1);
+  const fixedAdj = fixed - dirTeach * wkdClassCost + (boundaryBonus - L.incentives.baseBonus[0].each) * headcountBase * si;
   const HS = L.hosted || {};
-  const hostFeePer = stageKey === 'host' && !HS.fixedPerRoomMNT ? hostRateAt(HS, 0) * (u.tuitionPer + u.premiumPer) * p : 0; // 기존 기관에 내는 공간 사용료(손익분기 근처는 첫 계단)
   const hostFloor = stageKey === 'host' && HS.floorPerRoomMNT ? HS.floorPerRoomMNT * (mult.hostRooms || L.stages.host.rooms) * (mult.rent || 1) : 0; // 최소 보장: 몫이 이보다 작으면 모자란 만큼 더 낸다
   const adPer = opts.demand === 'acq' ? 0 : (1 - sc.labRetention) * inp.market.paidShare * L.acquisition.cacMNT[sc.label]; // 시장 방식: 나가는 학생만큼 새로 데려오는 광고비(학생 1명·달)
-  const otherVar = o.topikFeeSupport / 12 + o.jacket / 24 + o.appAIperStudentKRW * inp.fx.mntPerKrw + u.bookCost + (o.paymentFee + o.reserve) * revPer + hostFeePer + adPer;
-  const classesAt = (n) => { const seats = n * u.seatEq; return Math.max(2, Math.ceil(seats / avgClassSize(inp, stageKey, seats) - 1e-9)); };
+  const studentVar = o.topikFeeSupport / 12 + o.jacket / 24 + o.appAIperStudentKRW * inp.fx.mntPerKrw + u.bookCost + adPer;
+  const revenueAt = (n) => {
+    const size = avgClassSize(inp, stageKey, n * u.seatEq);
+    const regular = n * (1 - L.lightShare);
+    const saturday = labSaturdaySeats(inp, stageKey, regular, size, mult.rooms || mult.hostRooms || L.stages[stageKey].rooms);
+    const tuition = n * u.tuitionPer * p;
+    const premium = labPremium(inp, sc, stageKey, regular, saturday, p);
+    const revenue = tuition + premium + n * u.bookRev * p;
+    const hostFee = stageKey === 'host' && !HS.fixedPerRoomMNT ? hostRateAt(HS, n) * (tuition + premium) : 0;
+    return { revenue, hostFee, variable: n * studentVar + (o.paymentFee + o.reserve) * revenue + hostFee };
+  };
+  const classesAt = (n) => labClasses(inp, stageKey, n, mult.rooms || mult.hostRooms || L.stages[stageKey].rooms);
+  const teachingAt = (n) => {
+    const c = classesAt(n);
+    const teacherBonus = Math.ceil(Math.max(0, c.weekdayClasses - dirTeach) / 2) * boundaryBonus * si;
+    return c.weekdayClasses * wkdClassCost + c.saturdayClasses * satClassCost + c.classes * o.cuPerClass + teacherBonus;
+  };
   const margin = (n) => {
-    const classes = classesAt(n);
-    const teacherBonus = Math.ceil(Math.max(0, classes - dirTeach) / 2) * L.incentives.baseBonus[0].each * si;
-    return n * (revPer - otherVar) - classes * (classCost + o.cuPerClass) - teacherBonus - fixedAdj - Math.max(0, hostFloor - n * hostFeePer);
+    const { revenue, hostFee, variable } = revenueAt(n);
+    const fieldBonusExtra = (labFieldBonus(inp, revenue) - L.incentives.fieldBonusMin) * si;
+    return revenue - variable - teachingAt(n) - fixedAdj - Math.max(0, hostFloor - hostFee) - fieldBonusExtra;
   };
   let n = null;
   for (let k = 1; k <= 20000; k += 1) { if (margin(k / 10) >= 0) { n = k / 10; break; } }
-  if (n === null) return { students: Infinity, fixedAdj, revPer, varPer: NaN, contrib: NaN };
+  if (n === null) return { students: Infinity, fixedAdj, revPer: NaN, varPer: NaN, contrib: NaN };
   const seats = n * u.seatEq; const size = avgClassSize(inp, stageKey, seats);
-  const varPer = otherVar + (u.seatEq * (classCost + o.cuPerClass)) / size; // 손익분기 지점의 학생당 변동비(반 비용은 평균 인원으로 나눔)
-  return { students: n, fixedAdj, revPer, varPer, contrib: revPer - varPer, classSize: size, classes: classesAt(n) };
+  const atBep = revenueAt(n);
+  const revPer = atBep.revenue / n;
+  const varPer = (atBep.variable + teachingAt(n) + Math.max(0, hostFloor - atBep.hostFee) + (labFieldBonus(inp, atBep.revenue) - L.incentives.fieldBonusMin) * si) / n;
+  return { students: n, fixedAdj, revPer, varPer, contrib: revPer - varPer, classSize: size, classes: classesAt(n).classes, boundaryBonusEach: boundaryBonus, marginAtBep: margin(n) };
 }
 
 // 정원: 쓸 수 있는 시간대 수 × 그 인원에서의 반 평균. 반 평균이 인원에 따라 늘어나므로 이분법
@@ -203,7 +251,7 @@ function run(inp, scName, opts = {}) {
   const fullCapexMNT = (key) => (key === 's2' ? L.stages.s1.capexMNT + L.stages.s2.capexMNT : L.stages[key].capexMNT) * (opts.capexMult || 1);
   const directCapexKRW = (key, rentMult) => toKRW(fullCapexMNT(key) + (L.stages[key].rentFixedMNT || L.stages[key].areaM2 * L.rentPerM2MNT) * rentMult * L.stages[key].depositMonths);
   const bepCache = {}; // 그달 단계·물가 계단별 손익분기(성과급 배수용)
-  const bepAt = (key, mult, k) => { const c = `${key}|${k}|${mult.hostRooms || ''}`; if (!(c in bepCache)) bepCache[c] = labBep(inp, sc, key, opts, mult).students; return bepCache[c]; };
+  const bepAt = (key, mult, k) => { const c = `${key}|${k}|${mult.rooms || mult.hostRooms || ''}`; if (!(c in bepCache)) bepCache[c] = labBep(inp, sc, key, opts, mult).students; return bepCache[c]; };
   let directNeedAt = null;
 
   const rows = [];
@@ -336,18 +384,18 @@ function run(inp, scName, opts = {}) {
     lab.organicNew = organicNew; lab.paidNew = paidNew; lab.adBudget = adBudget; lab.marketNew = marketNew; lab.waitlist = waitlist; lab.pool = mk.pool;
     lab.leadsNeeded = isOpen ? newStudents / L.acquisition.leadToStudent[scName] : 0; // 콘텐츠·광고를 합쳐 이만큼 문의가 와야 이 등록이 나온다
     const seatsNeeded = reg + 0.5 * light;
-    lab.classSize = isOpen ? avgClassSize(inp, stageKey, seatsNeeded) : 0;
+    const classPlan = isOpen ? labClasses(inp, stageKey, students, rooms) : null;
+    lab.classSize = classPlan?.size || 0;
     // 4실 직영: 주말반(토 90분 + 녹화)은 정규 학생의 weekendShare, 라이트 과정은 평일만. 토요일 반은 실마다 두 시간대
-    const satSeats = isOpen && stageKey === 'v23' ? Math.min(reg * L.weekendShare, rooms * S.satSlotsPerRoom * lab.classSize) : 0;
-    lab.satClasses = satSeats > 0 ? Math.ceil(satSeats / lab.classSize - 1e-9) : 0;
-    lab.classes = isOpen ? Math.max(2, Math.ceil((seatsNeeded - satSeats) / lab.classSize - 1e-9)) + lab.satClasses : 0;
+    const satSeats = classPlan?.saturday || 0;
+    lab.satClasses = classPlan?.saturdayClasses || 0;
+    lab.classes = classPlan?.classes || 0;
     if (isOpen && opts.labFill && stageKey === 'v23') { // [10-19 세 지표] 시간표의 반을 모두 열고(평일 16 + 토요일 8) 좌석의 labFill만 찬다(반 평균 약 12.8명)
       lab.satClasses = rooms * S.satSlotsPerRoom; lab.classes = rooms * (S.weekdaySlotsPerRoom + S.satSlotsPerRoom);
       lab.classSize = seatsNeeded / lab.classes;
     }
     lab.tuition = isOpen ? (reg * u.pReg + light * L.prices.light) * (1 - L.leakage) * sc.priceRealization * priceM : 0;
-    const premiumCap = (L.premiumSeats && L.premiumSeats[stageKey]) || C.premiumClasses * 16; // 유호님 회화: 4실은 위성 세 묶음 48석, 그 밖은 회화 반 2개 32석
-    lab.premium = isOpen ? Math.min((reg - satSeats) * L.premiumUptake, premiumCap) * L.prices.premiumAddon * (1 - L.leakage) * sc.priceRealization * priceM : 0; // 주말생에게 올액세스(회화 추가)는 안 판다
+    lab.premium = isOpen ? labPremium(inp, sc, stageKey, reg, satSeats, priceM) : 0; // 주말생에게 올액세스(회화 추가)는 안 판다
     lab.textbook = isOpen && L.textbook.enabled ? students * (L.textbook.booksPerYear / 12) * L.textbook.pricePerBook * priceM : 0;
     lab.topik = exOn(ex.topik) && ex.topik.months.includes(mo)
       ? (students * ex.topik.internalShare * ex.topik.internalPrice + ex.topik.external * sc.volume * ex.topik.externalPrice) * sc.priceRealization * priceM : 0;
@@ -410,12 +458,12 @@ function run(inp, scName, opts = {}) {
     // ── 인센티브(₮): 기본 성과급·현장 보너스는 늘 나가고, 이익 나눔·창립 보너스는 이익의 25% 안에서
     const I = L.incentives;
     const kInfl = (L.inflation?.steps || []).filter((s) => m >= s).length;
-    const bepNow = bepAt(stageKey, { ...multNow, hostRooms: stageKey === 'host' ? rooms : undefined }, kInfl); // 그달 물가로 다시 잰 손익분기 [아르곤 코드 검수 10-18]
+    const bepNow = bepAt(stageKey, { ...multNow, rooms, hostRooms: stageKey === 'host' ? rooms : undefined }, kInfl); // 그달 물가·교실 수로 다시 잰 손익분기
     const ratio = isOpen ? students / bepNow : 0;
     const headcount = isOpen ? Math.ceil(Math.max(0, teacherClasses - (lab.satClasses || 0)) / 2) + opsCount + (v23s ? 3 : 1) : 0; // [페이블 4차] 토요일 반은 평일 강사가 겹쳐 맡는다
-    let baseEach = 0; for (const b of I.baseBonus) if (ratio >= b.atBep) baseEach = b.each;
+    const baseEach = labBaseBonus(inp, ratio);
     const baseBonus = isOpen ? baseEach * headcount : 0;
-    const fieldBonus = isOpen ? Math.max(I.fieldBonusMin, I.fieldBonusRate * lab.revenue) : 0;
+    const fieldBonus = isOpen ? labFieldBonus(inp, lab.revenue) : 0;
     let rate = 0; for (const p of I.profitShare) if (ratio >= p.atBep) rate = p.rate;
     const profitAfterFixedBonus = op0 - (baseBonus + fieldBonus) * si;
     let pool = Math.max(0, profitAfterFixedBonus) * rate;
@@ -839,6 +887,9 @@ function unitEconomics(inp, scName, res, y = 2029) {
 }
 
 // ───────── 실행 ─────────
+export { labBep, labPremium, labSaturdaySeats, labClasses, setPremiumClasses, run };
+// import로 계산 규칙을 시험할 때 저장된 사업 문서를 덮어쓰지 않는다.
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
 // [10-19 유호님 「4실 기준」] 본 결과는 08-01 확정 4실 24반 직영이다. 모자라는 돈은 투자·차입으로 채운다고 보고(2절 「필요 자금」) 멈춤 규칙은 쓰지 않는다.
 // D안(첫해 기존 기관 안 SYNK반 → 현금 기준을 채우면 직영)과 A안(직영 교실 2개)은 비교로 둔다
 const MAIN = { labMode: 'full4', stopRule: false };
@@ -887,8 +938,8 @@ const sens = [
   ['SHIFT만 0원(PULSE·담당자는 그대로)', {}, (inp) => { const z = (a) => a.map((x) => ({ ...x, v: 0 })); inp.shift.entry.orders = z(inp.shift.entry.orders); inp.shift.deploy.everyMonths = z(inp.shift.deploy.everyMonths); inp.shift.voucher.perYear['기본'] = {}; inp.shift.digital.sales = 0; }],
   ['SHIFT 디지털 상품이 한 건도 안 팔림(따르는 사람이 아직 거의 없음)', {}, (inp) => { inp.shift.digital.sales = 0; }],
   ['WORLD 유료 시작을 2027-04 → 2027-10으로 늦춤(개발자 계정·결제·심사가 밀릴 때)', {}, (inp) => { inp.online.worldB2C.paidFrom = '2027-10'; }],
-  ['유호님 회화 0반(회화 추가를 팔지 않고 그 시간을 PULSE·SHIFT로)', {}, (inp) => { inp.company.premiumClasses = 0; }],
-  ['유호님 회화 0반 + 한국 담당자는 수요를 보고 뽑음', { leadPlanned: null }, (inp) => { inp.company.premiumClasses = 0; }],
+  ['유호님 회화 0반(회화 추가를 팔지 않고 그 시간을 PULSE·SHIFT로)', {}, (inp) => { setPremiumClasses(inp, 0); }],
+  ['유호님 회화 0반 + 한국 담당자는 수요를 보고 뽑음', { leadPlanned: null }, (inp) => { setPremiumClasses(inp, 0); }],
   ['2027-06 점검에 걸린 대응(담당자 미룸 + 생활비 150만원에 묶음)', { leadPlanned: null, freezePay: true }, null],
   ['PATH만 0원(유학 상품을 열지 않음)', {}, (inp) => { const P = inp.path; P.labToKorea['기본'] = 0; P.extShare['기본'] = [ { from: '2028-03', v: 0 } ]; P.externalPlansPerMonth = [ { from: '2027-10', v: 0 } ]; P.singles.perMonth = { 보수: 0, 기본: 0, 상방: 0 }; P.careerUptake['기본'] = [ { from: '2028-03', v: 0 } ]; P.online.share['기본'] = 0; P.univMarketingContracts['기본'] = []; P.camp.participants = { 보수: 0, 기본: 0, 상방: 0 }; P.travelAffiliateKRW.v = 0; P.koreaTripKRW = 0; }],
   ['PULSE 정기 묶음·전속 없이(입구 상품·프로젝트만)', {}, (inp) => { inp.pulse.adRetainer.clients = inp.pulse.adRetainer.clients.map((x) => ({ ...x, v: 0 })); }],
@@ -902,7 +953,7 @@ const sens = [
   ['수강료 부가세 비면제(10%)', { vatOnTuition: true }, null],
   ['정부 지원금 0원', { scOverride: { grantKRW: 0 } }, null],
   ['정부 지원금 0원 + 한국 담당자는 수요를 보고 뽑음', { scOverride: { grantKRW: 0 }, leadPlanned: null }, null],
-  ['유호님 회화 수업 2반 → 1반(그 시간을 PULSE·SHIFT로)', {}, (inp) => { inp.company.premiumClasses = 1; }],
+  ['유호님 회화 수업 2반 → 1반(그 시간을 PULSE·SHIFT로)', {}, (inp) => { setPremiumClasses(inp, 1); }],
   ['한국 담당자를 미리 뽑지 않음(수요가 월 600만원을 석 달 넘을 때)', { leadPlanned: null }, null],
   ['한국 법인 청년 감면 50%', {}, (inp) => { inp.company.krTaxRelief = 0.5; }],
   ['사회보험 0(옛 모델 가정)', {}, (inp) => { inp.lab.socialInsurance = 0; }],
@@ -961,12 +1012,14 @@ const dealCompare = dealShapes.map(([label, patch]) => {
 // 학생 수별로 기관이 받는 돈(₮/월, 2027년 값·자리 잡은 뒤 기간권 비중) — 협상 자리에서 보여 줄 표 [D안 업그레이드 4차 10-19]
 const hostIncomeTable = (() => {
   const u = labUnit(base, base.scenarios['기본']);
-  const per = u.tuitionPer + u.premiumPer; // 학생 1명 월 수강료 + 회화 추가(교재비는 빼고 나눈다)
   const H = base.lab.hosted;
   const cap2 = labCapacity(base, 'host', base.lab.stages.host.rooms * base.lab.stages.host.slotsPerRoom);
   const roomsFor = (n) => (n <= cap2 ? base.lab.stages.host.rooms : base.lab.stages.host.maxRooms);
-  return [40, 60, 80, 100, 120].map((n) => ({ students: n, perStudent: per, rooms: roomsFor(n), hours: roomsFor(n) * ROOM_HOURS,
-    tiers: hostRateAt(H, n) * per * n, flat30: 0.3 * per * n, flat35: 0.35 * per * n, flat40: 0.4 * per * n, fixed300: 3_000_000 * roomsFor(n) }));
+  return [40, 60, 80, 100, 120].map((n) => {
+    const revenue = n * u.tuitionPer + labPremium(base, base.scenarios['기본'], 'host', n * (1 - base.lab.lightShare));
+    return { students: n, perStudent: revenue / n, rooms: roomsFor(n), hours: roomsFor(n) * ROOM_HOURS,
+      tiers: hostRateAt(H, n) * revenue, flat30: 0.3 * revenue, flat35: 0.35 * revenue, flat40: 0.4 * revenue, fixed300: 3_000_000 * roomsFor(n) };
+  });
 })();
 
 const bepDetail = { v23: labBep(base, base.scenarios['기본'], 'v23'), host: labBep(base, base.scenarios['기본'], 'host'), host3: labBep(base, base.scenarios['기본'], 'host', {}, { hostRooms: 3 }), s1: labBep(base, base.scenarios['기본'], 's1'), s2: labBep(base, base.scenarios['기본'], 's2') };
@@ -1346,3 +1399,4 @@ writeFileSync(path.join(here, 'results.json'), JSON.stringify(out, null, 1));
 writeFileSync(path.join(here, 'results.md'), md);
 console.log(md);
 if (checks.length) { console.error('검산 실패:', checks.length); process.exitCode = 1; }
+}
