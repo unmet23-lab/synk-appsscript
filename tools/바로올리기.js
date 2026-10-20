@@ -44,7 +44,7 @@ const crypto = require('crypto');
 const 내커밋 = require('./내커밋.js');
 const 잠금도구 = require('./git잠금.js');
 
-const { 조각만들기, 고름읽기, 조각얹기, 줄끝맞추기, 줄잇기, 공용문서인가 } = 내커밋;
+const { 조각만들기, 고름읽기, 조각얹기, 줄끝맞추기, 줄잇기, 줄차이, 공용문서인가 } = 내커밋;
 const { 쌓기, 올릴판검사 } = 내커밋._시험;
 const {
   git도구, 저장소찾기, 경로맞추기, 잠깐, 별도인덱스, 날차이읽기, 블롭, 블롭쓰기, 글아닌경로, 조상인가, git버전확인,
@@ -315,7 +315,10 @@ function 따라가기계획(c, B, T, { 바탕들 = new Map() } = {}) {
     if (내sha === th.sha) { 고침항(th.sha, '이미 같음'); continue; }
     if (내sha === 바탕sha) { 고침항(th.sha, '새 판'); continue; }
     if (이진) { 걸림.push({ 경로: p, 이유: '바이너리 파일을 양쪽이 고쳤다' }); continue; }
-    const m = 세판합치기(git, c.저장, p, th.sha, 바탕sha, 내sha);
+    // 작업본이 B보다 새 origin 판 위에 다시 짜였으면(공용 작업본에서 세션이 최신 판에 제 줄을 얹은 경우) 그 판을 바탕으로 3방향
+    const 바탕 = 바탕들.has(p) ? 바탕sha : 가까운바탕(c, B, T, p, 바탕sha, 글로(W));
+    if (내sha === 바탕) { 고침항(th.sha, '새 판'); continue; }
+    const m = 세판합치기(git, c.저장, p, th.sha, 바탕, 내sha);
     if (m.문제) { 걸림.push({ 경로: p, 이유: m.문제 }); continue; }
     고침항(블롭쓰기(git, c.저장, m.버퍼), m.방법);
   }
@@ -337,6 +340,29 @@ function 짝없는커밋(git, 커밋들, T) {
   const 가장이른 = Math.min(...내것.map((x) => x.at));
   const 원격 = new Set(git(['log', '-z', '--format=%an%x1f%at%x1f%s', `--since=${가장이른 - 2 * 86400}`, T]).toString('utf8').split('\0').filter(Boolean));
   return 내것.filter((x) => !원격.has(x.키)).map((x) => x.h);
+}
+
+/**
+ * 고치던 파일의 3방향 바탕: B 판과 B..T 사이 origin 판들 가운데 작업본과 바뀐 줄 수가 가장 적은 판(같으면 B).
+ * 작업본이 B에서 고쳐 온 것이면 B가, 더 새 origin 판에 줄을 얹은 것이면 그 판이 고른다(옛 master맞추기의 「가장 가까운 이력 판」).
+ */
+function 가까운바탕(c, B, T, p, 바탕sha, W글) {
+  const 줄 = (글) => 글.replace(/\r\n/g, '\n').split('\n');
+  const W줄 = 줄(W글);
+  const 차이수 = (sha) => 줄차이(줄(글로(블롭(c.git, c.저장, sha))), W줄).filter((op) => op[0] !== '=').length;
+  let 최선 = 바탕sha, 최선수 = 차이수(바탕sha);
+  const 커밋들 = c.git.글(['rev-list', '--max-count=60', `${B}..${T}`, '--', p]).split('\n').filter(Boolean);
+  const 본 = new Set([바탕sha]);
+  for (const 커밋 of 커밋들) {
+    const r = c.git.돌리기(['rev-parse', '--verify', '-q', `${커밋}:${p}`], { 허용: null });
+    const sha = String(r.stdout).trim();
+    if (r.status !== 0 || !sha || 본.has(sha)) continue;
+    본.add(sha);
+    if (이진인가(블롭(c.git, c.저장, sha))) continue;
+    const n = 차이수(sha);
+    if (n < 최선수) { 최선 = sha; 최선수 = n; }
+  }
+  return 최선;
 }
 
 function 백업정리(폴더) {

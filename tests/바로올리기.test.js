@@ -469,6 +469,24 @@ test('워크트리: 조각으로 일부만 올리면 남은 내 고침은 올린
 
 // ── 공용 작업본에서 ──────────────────────────────────────────────────────────
 
+test('공용 작업본: 고치던 문서가 HEAD보다 새 origin 판 위에 다시 짜였으면 그 판을 바탕으로 3방향 — 그 뒤 origin 고침과 함께 따라간다', async (t) => {
+  const v0 = '# 트랙\n\n## 가\n- 가 항목 하나는 길게 써서 다른 줄과 헷갈리지 않게 한다\n\n## 나\n- 나 항목 하나는 길게 써서 다른 줄과 헷갈리지 않게 한다\n';
+  const 판 = 새판(t, { 파일: { 'docs/_ops/트랙.md': v0 } });
+  const B = 판.공용.머리();
+  const v1 = v0.replace('- 가 항목 하나는', '- 가 항목 둘은 origin이 새로 더한 줄이다\n- 가 항목 하나는');
+  판.남push({ 'docs/_ops/트랙.md': v1 });
+  // 공용 작업본의 세션이 최신(v1) 판 위에 제 줄을 얹어 둔다 — HEAD는 아직 v0
+  판.공용.쓰기('docs/_ops/트랙.md', `${v1}- 나 항목 셋은 공용 작업본 세션이 쓰는 중인 줄이다\n`);
+  const v2 = v1.replace('- 가 항목 둘은 origin이 새로 더한 줄이다', '- 가 항목 둘은 origin이 새로 더하고 다시 고친 줄이다');
+  const O = 판.남push({ 'docs/_ops/트랙.md': v2 });
+  assert.equal(판.공용.머리(), B);
+  const r = await 도구.따라가기({ 저장소: 판.공용.폴더, 실행: true });
+  assert.equal(r.결과, '따라감', JSON.stringify(r));
+  assert.equal(판.공용.머리(), O);
+  assert.equal(판.공용.읽기('docs/_ops/트랙.md'), `${v2}- 나 항목 셋은 공용 작업본 세션이 쓰는 중인 줄이다\n`, 'origin의 다시 고친 줄 + 세션의 새 줄');
+  assert.deepEqual(판.공용.상태(), [' M docs/_ops/트랙.md']);
+});
+
 test('공용 작업본: origin이 바꾼 경로에 남의 스테이징이 있으면 따라가지 않는다(남의 git add를 지우지 않게)', async (t) => {
   const 판 = 새판(t, { 파일: { 'a.txt': '1\n', 's.txt': 's1\ns2\ns3\n' } });
   const 워 = 판.워크트리('wt');
