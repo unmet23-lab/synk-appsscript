@@ -29,7 +29,7 @@ __pycache__/
 *.pyc
 tools/bench/_fixture_recordings/
 
-# 로컬 로그 — 계정 정보가 포함될 수 있으므로 공개하지 않는다.
+# 로컬 로그(옛 geminilm-drive 도구, 10-20 보관) — 계정 정보가 포함될 수 있으므로 공개하지 않는다.
 tools/geminilm-drive.log
 
 /error.log
