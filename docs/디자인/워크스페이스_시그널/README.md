@@ -206,6 +206,36 @@ node --test tools/company-messenger/tests/*.test.mjs
 
 **다음에 볼 것:** 달력 · 대기열의 같은 글 채널 묶기(계정마다 끌기 · 단추가 따로라 지금은 운영 현황만 묶음), 휴대폰 화면 안 메뉴 띠 끝의 잘린 글자 처리, 달력 주 보기의 빈 시간 칸 밀도. 운영 현황 썸네일이 겹쳐 보이는 것은 합성 자료가 같은 사진을 돌려쓴 탓이다.
 
+<a id="gpt-screens-left-20261020"></a>
+
+## 남은 GPT 화면 — 10-20 점검
+
+> 유호님 「workspace에 있는 기능들이 지금 전부 제대로 작동하고 있어? 전부 니가 프론트 맡아서 진행해준 버전 맞는지 체크해봐. gpt의 잔존 흔적들이 남아있을것같아」(10-20). 같은 날부터 GPT는 백엔드만 맡고 화면은 전부 Claude 몫이다([AI 운영 원칙](../../AI_운영원칙.md)).
+
+**셈 방법:** 화면 파일의 보이는 글(한글 6자 이상)마다 모든 가지에서 처음 들어온 커밋을 찾았다. 10-02 「originals」 커밋(`59cabdb80`)은 Claude 이름으로 들어왔지만 git 밖에 있던 GPT 판을 들여온 것이라 GPT로 셌다. 화면은 합성 계정 서버(`verify-workspace-fixture.mjs`)에서 메뉴 23개와 제작 도구 탭 8개를 1440px로 찍어 봤다(콘솔 오류·실패 요청 0). 운영 공개 파일은 master와 내용이 같다(대기 중인 SNS 합본 두 파일만 다름).
+
+| 구분 | 화면 | 할 일 |
+|---|---|---|
+| Claude가 다시 만듦 | 로그인(3판) · 고객 관리(10·11판, `client-*.js`의 GPT 글은 파일당 0~5개) · SNS·마케팅 운영 9화면(12판·13차) · 메신저 통화(`voice.js`) | 그대로 둔다 |
+| 겉만 Claude | 메신저 대화·오늘 할 일·내 업무(`app.js` 보이는 글 747개 중 GPT 732) · 회사 `app.js`의 마케팅 분석·채널·설정·팀(381 중 337) · 트렌드·레퍼런스(`creative-research.js` 224/224) · 제작 데스크(`workroom.js`·`content.js`·`studio-board.js`·`studio-review.js` 444개 모두 GPT) · 교사 앱(`experiences/teacher-world`의 app.mjs 129/130·index.html 47/49·workspace-overview.mjs 31/31, 「Core · Strata」 같은 내부 엔진 이름이 보임) · PULSE 고객 앱(디자인은 10-13 시그널 판·10-17 밝은 구조 판으로 다시 그렸지만 글은 views 248/344·strategy-view 184/218·demo 133/133·app 86/108이 GPT) | 글·구조 다시 쓰기 |
+| GPT 판 그대로 | 제작 도구 8탭(아래) · 고객 상담 `/consultation/`(`customer-computer.*`, 펠트 스크랩북, 글 99/99 GPT) · 고객 SNS 검토 `/social-review`의 CSS · 옛 고객 라운지 `/pulse/`(`pulse-lounge.js`, 지금 쓰이는지 먼저 확인) | 다시 그리기 |
+
+제작 도구 8탭은 틀(`maker-tools.js/.css`)만 9판이 덮었고 안은 GPT 판이다. 크림·파스텔 바탕과 펠트 질감 그림, 꾸미지 않은 기본 파일 선택 단추, 해요체에 섞인 「~합니다」 안내문, 내부 번호(「게시·운영 1~9번 … 10번은 이 상태 화면」)가 그대로 보인다.
+
+| 탭 | 파일 | GPT 글 |
+|---|---|---|
+| 게시 준비·성과 | `publication-flow.js/.css` · `publication-learning-plan.js` | 241/248 · 10/10 |
+| 주간 정리 | `weekly-summary.js/.css` | 33/33 |
+| 자동화 상태 | `automation-health.js/.css` | 54/57 |
+| 게시 전 점검 | `publish-check.js` · `publish-rules.js` | 43/44 · 16/16 |
+| 자막 검사 | `subtitle-lab.js/.css` | 68/68 |
+| 승인 제작 자료 | `creator-sources.js/.css` | 17/17 |
+| 브랜드 제작실 · 품질·운영 확인 | `brand-quality.js/.css` + 서버 `brand-quality-service.mjs` | 39/39 + 서버 글 |
+
+서버 모듈이 내려 주는 글도 화면에 뜬다(예: 「직접 확인한 환경과 근거를 기록합니다…」는 `brand-quality-service.mjs`). 화면 파일만 고치면 이런 글이 남으니 같이 바꾸고, 서버 파일을 고치면 [백엔드 검수](../../AI_운영원칙.md)대로 GPT가 볼 범위를 남긴다. 작은 것: SNS의 「Postiz 접수 ID」·「원본 제작 ID」·「(큐 예약)」·「빈 슬롯」 약 25곳, 마케팅 부속 `benchmark.js`(사람·도구 이름이 든 안내)·`comparison-charts.js`. 해요체라 급하지 않은 GPT 글은 `teaching-host.js`·`teaching.js`·`synk-id.js`·`device-notifications.js`다.
+
+**순서(자주 보는 화면부터):** ① 메신저 오늘 할 일·내 업무 ② PULSE 고객 앱 글 ③ 제작 도구 8탭 다시 그리기와 글 ④ 고객 상담 `/consultation/`(synk.im 컴퓨터 추천의 시그널 판을 다시 쓸 수 있다. 옛 스크랩북 도구라 옮기기 전에 유호님께 여쭌다) ⑤ 회사 `app.js` 마케팅·설정 글(「이관」·OAuth 등) ⑥ 트렌드·레퍼런스 ⑦ 제작 데스크 글 ⑧ 교사 앱 글 ⑨ SNS에 남은 ID·큐·슬롯 ⑩ `/social-review`·`/pulse/`. 글은 [11판 원칙](검수_20261013_고객관리_기능.md)(상태는 두세 단어, 오류는 원인과 다음 행동 한 문장, 단추는 동사 하나, 해요체 하나)에 따라 옛→새 짝 맵으로 바꾸고, 다시 그리기는 뼈대부터 정적 시안 → Fable 검수 → 보여 드린 뒤 넓힌다.
+
 ## 하지 않는 것
 
 - 스스로 움직이는 효과(자동 회전·흐르는 띠·자동 재생·움직이는 무지개). 움직임은 손을 올리거나 누를 때의 짧은 전환뿐이고 기기의 동작 줄이기 설정에서는 멈춘다.
