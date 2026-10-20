@@ -87,7 +87,7 @@ position, same background. Absolutely no mouth. ${스튜디오}`,
   /* ── 전 세트 재파생 — 유호 픽 08-15 「1.ㄴ」=㉡네이티브 판 확정 ──
    * ㉡ 본체가 ㉠보다 +3.8% 커서 표정·¾ 를 그 판에서 다시 파생시켜야 교대 때 안 튄다.
    * 좌¾ 는 굽지 않는다 — 「VIEWER'S LEFT」 지시도 우향으로 구워지는 실측이 있어(memory/
-   * mascot-felt-liveness ①) `python tools/컷미러.py 코랄_우34 → 코랄_좌34` 가 정본 통로다. */
+   * mascot-felt-liveness ①) `python tools/컷미러.py(10-20 보관) 코랄_우34 → 코랄_좌34` 가 정본 통로다. */
   {
     이름: '코랄_눈감음',
     비율: '1:1',

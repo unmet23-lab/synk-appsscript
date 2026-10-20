@@ -30,7 +30,7 @@ const 정책 = require(path.join(repo, 'tools', '모델정책.js'));
 const MODEL = process.env.SYNK_VEO_MODEL || 'veo-3.1-generate-001';
 const SECONDS = 8;
 const USD_PER_SEC = 0.40;   // 4K SKU 값(09-05 실측). 1080p·720p는 이보다 싸므로 «넉넉히 잡은 상한»이다
-const KRW = 1452;           // 무료 크레딧 $300 = ₩435,523 실측 환율(tools/홍보영상굽기.js)
+const KRW = 1452;           // 무료 크레딧 $300 = ₩435,523 실측 환율(tools/홍보영상굽기.js(10-20 보관))
 const RAW = path.join(here, 'video-raw');
 const LOG = path.join(here, '영상기록.json');
 

@@ -136,7 +136,7 @@ node experiences/entry-check/server.mjs        # http://127.0.0.1:5215/
 | 결과 | 안내 목소리 | 별 수에 맞는 한마디 |
 
 - **안내문 규칙은 소리로 읽지 않는다.** 읽기 연습 대상이라서다. 대사는 화면 글과 같다.
-- 엔진: Gemini 3.8 Flash TTS(Vertex 무료 크레딧 문, `--유료-api`). 저장소의 로컬 한국어 엔진(`tools/목소리굽기.js`, Qwen3-TTS Sohee)은 이 PC에 가상환경·모델이 없었고, 한국어 목소리가 하나뿐이라 손님 열두 명을 가를 수 없었다. 147줄·3,196자, 비용은 몇십 원 수준(정확한 청구는 Vertex 사용량 화면).
+- 엔진: Gemini 3.8 Flash TTS(Vertex 무료 크레딧 문, `--유료-api`). 저장소의 로컬 한국어 엔진(`tools/목소리굽기.js`(10-20 보관), Qwen3-TTS Sohee)은 이 PC에 가상환경·모델이 없었고, 한국어 목소리가 하나뿐이라 손님 열두 명을 가를 수 없었다. 147줄·3,196자, 비용은 몇십 원 수준(정확한 청구는 Vertex 사용량 화면).
 - 배역: 안내 Sulafat(따뜻한 그림책 낭독) · 곰 보리 Achird · 너구리 구리 Zubenelgenubi · 토끼 토순 할머니 Gacrux · 여우 우진 Iapetus · 다람쥐 다미(6살) Leda · 고슴도치 도치(9살) Laomedeia · 펭귄 콩이 Zephyr · 오리 오순 Callirrhoe · 수달 할아버지 Algenib · 사슴 나래 Despina · 판다 단비(15살) Autonoe · 양 솜이 Aoede. 손님 그림의 나이·옷차림에 맞췄다.
 - 숫자는 읽는 법이 갈려(65살 = 예순다섯 살, 3년 = 삼 년, 1층 = 일 층) 숫자가 든 줄은 `art-source/voice.mjs`의 `SPOKEN`에 읽을 글을 따로 적어야 굽힌다.
 - **확인**: 첫 시험에서 한 줄 지시(“…as X. Say only the Korean words after the colon: 대사”)는 9줄 중 5줄에서 **영어 지시문까지 소리로 읽었고** 1줄은 없는 말을 지어냈다. 연출 메모와 대본을 머리글(`### DIRECTOR'S NOTES` / `### TRANSCRIPT`)로 가르자 바로잡혔다. 구운 뒤에는 로컬 받아쓰기(faster-whisper large-v3-turbo, [`art-source/voice_check.py`](art-source/voice_check.py))로 글자 오차·영어 섞임·말 속도를 재고 걸린 줄은 다시 굽는다.
