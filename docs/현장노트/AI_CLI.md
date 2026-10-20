@@ -1,6 +1,6 @@
 # 현장 노트 · AI CLI·구독 통로
 
-> 판: Antigravity CLI `agy` 1.3.6(Windows winget)·1.4.0(Linux 별도 사용자) · Gemini API 무료 몫 · `tools/몽골어대조.js`·`tools/lib/제미나이구독호출.js` · Hermes Agent v0.22.2(`%LOCALAPPDATA%\hermes`, 텔레그램 팁 봇 게이트웨이) · Codex 세션 기록(`~/.codex/sessions`·`~/.codex/archived_sessions`)
+> 판: Antigravity CLI `agy` 1.4.2(Windows winget, 10-18 코드 검수 비교에서 확인)·1.4.0(Linux 별도 사용자) · Gemini API 무료 몫 · `tools/몽골어대조.js`·`tools/lib/제미나이구독호출.js` · Hermes Agent v0.22.2(`%LOCALAPPDATA%\hermes`, 텔레그램 팁 봇 게이트웨이) · Codex 세션 기록(`~/.codex/sessions`·`~/.codex/archived_sessions`)
 > 마지막 확인: 2026-10-19(조사 예약의 작업 파일 읽기·명령 거절 실패 — 원인 조회·고침·고친 뒤 첫 회차 complete), 2026-10-18(Linux 파일 인증 복원·실제 timer Argon 실행·계정별 모델 목록·headless 도구 권한, 기존 노트북 항목은10-17)
 > 쓴 AI: Claude Code·GPT(Codex) — 누가 언제 무엇을 더했는지는 [지난 기록](지난기록/AI_CLI.md#쓴-기록)에 있다.
 
@@ -19,6 +19,7 @@
 - 몽골어 검문은 `--파일 <경로> --구독` 순서로 → 거꾸로 두면 쓰는 법만 찍는다(이 PC는 무료 키가 없어 `--구독` 필수) ([자세히](#몽골어-검문에서---구독을---파일-앞에-두면-쓰는-법만-찍고-끝난다-2026-10-19))
 - 헤르메스 게이트웨이를 켠 뒤 깐 패키지는 게이트웨이가 못 쓴다 → `hermes gateway restart` 뒤 폰 대화로 확인한다 ([자세히](#게이트웨이를-켠-뒤에-깔린-패키지는-게이트웨이가-못-쓴다--claude로-바꾼-뒤-텔레그램-공유가-모두-실패했다-2026-10-19-claude))
 - 병렬 서브에이전트는 같은 scratchpad를 써서 보조 파일 이름이 겹친다 → 묶음마다 작업 폴더를 정해 주고 결과를 입력과 대조한다 ([자세히](#병렬-서브에이전트가-같은-scratchpad에-같은-이름의-보조-파일을-써서-남의-묶음-글을-읽는다-2026-10-19-claude))
+- 수백 KB 검수 자료를 한 번에 넘기면 `SUCCESS`여도 뒷부분이 잘려 0건이 된다 → 나눠 보내고 끝 표식을 확인한다 ([자세히](#큰-검수-자료를-한-번에-넘기면-아르곤이-뒷부분을-못-읽고-0건으로-끝날-수-있다))
 
 ## 목차
 
@@ -91,6 +92,18 @@
 - 원인: 원문에는 U+200D가 들어 있다(locales.ts·검문 파일 모두 `… dca 200d dbb …`). 모델이 받은 글에서 ZWJ를 못 보는 쪽이다.
 - 고침: ZWJ·ZWNJ 지적은 코드 포인트로 먼저 확인하고, 들어 있으면 그 지적만 오판으로 적고 넘어간다. 다른 지적은 그대로 고친다.
 - 다시 확인: `node -e`로 해당 낱말의 코드 포인트를 찍어 200d가 있는지 본다.
+
+### 큰 검수 자료를 한 번에 넘기면 아르곤이 뒷부분을 못 읽고 0건으로 끝날 수 있다
+- 증상: 10-18 공식 CLI 1.4.2에 실제 코드 묶음 745,066바이트를 stdin user event 하나로 전달했다. 응답은 SUCCESS였지만 coverage에 `<truncated 553485 bytes>`와 B·C 사례 미열람을 명시했다. 이 0건은 검수 통과가 아니다.
+- 원인: 큰 단일 입력의 전달·문맥 구성 중 잘림이 발생했다. 어느 내부 단계의 한도인지는 확정하지 않았으며 모델의 100만 토큰 창과 같은 한도로 보지 않는다.
+- 고침: 16,000바이트씩 47개 파일로 나누자 전부 읽었지만, 다음 문맥 압축에서 `Compaction failed`가 반복돼 그 실행도 제외했다. 최종 비교는 세 커밋을 네 기능 묶음으로 나눠 변경 전·후 코드와 필요한 보조 자료를 각각 69~168KB의 같은 stdin 입력으로 두 모델에 준다. 마지막 표식을 실제로 확인한 실행만 채점한다.
+- 다시 확인: `.tmp/review-compare-20261018/v3/manifest.json`·`run-audit.json`에서 두 모델의 입력 SHA·종료 표식·도구 사용 없음·완료 상태를 확인한다. `v2/`에는 47개 읽기 뒤의 압축 실패를 보존하며, 미열람·중단과 검수 결과 0건을 구분한다.
+
+### 아르곤 high로 계산 코드 검수를 보내면 답 없이 끝나고, medium은 몇 분 만에 끝난다
+- 증상: 10-18 BM 계산 모델 검수에서 `tools/lib/제미나이구독호출.js --model gemini-4-argon --thinking high`로 보낸 코드 묶음(88KB)이 45분 제한까지 답이 없어 `spawnSync agy ETIMEDOUT`으로 끝났다. 같은 시각 같은 크기(88KB)의 사업 문서 묶음은 high로 5분 만에 SUCCESS였다. 코드 묶음을 고친 판(94KB)으로 high와 medium을 함께 다시 보내자 medium은 약 4분 만에 SUCCESS(11,274자), high는 약 7분 뒤 `agy 상태 ERROR: The stream was interrupted`로 끝났다.
+- 원인: 확인하지 못했다. 코드가 많은 입력에서 high 사고가 길어지는 것과 같은 계정으로 두 실행을 함께 돌린 것 중 무엇이 원인인지 가르지 않았다.
+- 고침: 계산 코드 검수는 medium으로 먼저 보내고(결과표를 쓰는 출력 부분은 묶음에서 빼서 줄임), high는 시간 여유가 있을 때 따로 한 번만 보낸다. 제한 시간은 `--timeout`(ms)이 agy `--print-timeout`과 함께 정해지므로 답이 없을 때 끝까지 기다리게 된다.
+- 다시 확인: 같은 묶음을 high로 혼자 보냈을 때 끝나는지, 끝나는 데 몇 분 걸리는지 잰다. 기록은 세션 임시 폴더의 `argon_review_code2_medium.json`(SUCCESS)과 작업 출력의 오류 줄이다.
 
 ## Claude API
 
@@ -299,6 +312,12 @@
 - 원인: 내부 해석 차이의 원인은 미확정이다. 이 판에서 확인한 `COUNT=2` 일간 예약과 `COUNT=1`·`COUNT=3` 월간 예약의 `BYHOUR`는 UTC로, 기존 무기한 일간 예약의 `BYHOUR`는 한국 시각으로 반영됐다. RRULE 전체에 한 시간대를 가정하면 예약이 어긋난다.
 - 고침: 10-18 08:00·16:00 KST의 `COUNT=2` 일간 예약은 `BYHOUR=7,23`, 10-19 10:20·19:20·21:20 KST의 `COUNT=3` 월간 예약은 `BYHOUR=1,10,12`로 저장했다. 기존 무기한 일간 `synk-sns`는 `BYHOUR=16`을 유지하고, 10-18·22 16:00 KST의 일회성 월간 예약 두 개는 `BYHOUR=7`로 고쳤다. 모두 `ACTIVE`와 의도한 다음 명목 실행 시각을 확인했으며 실제 예약 실행은 아직 미검증이다.
 - 다시 확인: `~/.codex/sqlite/codex-dev.db`를 SQLite `mode=ro`로 열어 `automations.next_run_nominal_at`(Unix 밀리초)을 UTC+09:00으로 변환해 일정별 의도한 시각과 대조한다. 실제 실행은 `last_run_at`과 `automation_runs`를 따로 본다.
+
+### Windows의 하위 Codex 읽기 전용 실행이 파일 읽기도 정책으로 거절한다
+- 증상: 10-18 `codex exec --sandbox read-only`의 읽기 전용 `type`·`Get-Content`가 모두 `blocked by policy`였고 자료를 읽지 못했다. 최종 findings는 비었지만 coverage는 검수 미실시라고 밝혔다.
+- 원인: 해당 하위 CLI 실행의 셸 정책이 명령 실행을 거절했다. 샌드박스나 권한을 완화하지 않았으며 정책 내부의 정확한 이유는 미확정이다.
+- 고침: 권한을 바꾸지 않고 파일 접근이 필요 없는 stdin 전달을 쓴다. 최종 비교의 두 모델 모두 같은 네 묶음을 이 방식으로 받고, 접근 실패·큰 입력 잘림·압축 실패 실행은 점수에서 제외한다.
+- 다시 확인: 같은 비교의 `v2/runs/gpt/final.txt`·stderr와 `v3/run-audit.json`을 대조한다. 자료를 못 읽은 실행을 버그 0건으로 채점하지 않는다.
 
 ## Codex 세션 기록
 
