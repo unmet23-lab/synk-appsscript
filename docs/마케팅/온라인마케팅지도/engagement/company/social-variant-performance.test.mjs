@@ -26,7 +26,7 @@ function fixture(t){
     const id='job-'+(++counter),url='https://www.instagram.com/p/TEST'+counter+'/',observedAt=new Date(Date.parse(publishedAt)+hours*3600000+offsetMinutes*60000).toISOString();
     const snapshot={post:{...post,purpose,source:origin},variant:{channelId,format,publicationFormat:format,title:'게시 제목',text:body,media,options,selectedCopyId:copyId}};
     const job={id,postId:post.id,channelId,status:'published',publicationUrl:url,publishedAt,contentVersion:1,performanceEntryId:'metric-'+counter,snapshot};store.put('socialPublishJobs',id,job);
-    const cp={hours,status,source,timing:offsetMinutes>15?'late':'on-time',observedAt,recordedAt:observedAt,metrics:{[metric]:value,reach:null},unavailableReasons:{...(reason?{[metric]:reason}:{}),reach:'현재 플랫폼 연결에서 제공하지 않는 지표입니다.'},metricProvenance:value===null?{}:{[metric]:{source,unit,observedAt,recordedAt:observedAt,timing:offsetMinutes>15?'late':'on-time',measurementWindowMissed:false}}};
+    const cp={hours,status,source,timing:offsetMinutes>15?'late':'on-time',observedAt,recordedAt:observedAt,metrics:{[metric]:value,reach:null},unavailableReasons:{...(reason?{[metric]:reason}:{}),reach:'지금 연결로는 플랫폼이 제공하지 않는 숫자예요.'},metricProvenance:value===null?{}:{[metric]:{source,unit,observedAt,recordedAt:observedAt,timing:offsetMinutes>15?'late':'on-time',measurementWindowMissed:false}}};
     const entry={id:job.performanceEntryId,channelId,url,publishedAt,checkpoints:[cp]};entries.push(entry);return {post,job,entry,cp};
   }
   return {store,user,other,viewer,entries,links,publishing,service,workflows,seed,clock,setTime:value=>{time=value;},validatePostInput,denySource:()=>{forbiddenSource=true;}};
@@ -51,7 +51,7 @@ test('comparison conditions separate account, original, format, purpose, source 
 });
 
 test('zero, missing, unsupported and unusable provenance are not fabricated into equivalent values',t=>{
-  const f=fixture(t);f.seed({value:0});f.seed({value:null,reason:'직접 확인한 값이 입력되지 않았습니다.'});f.seed({value:null,reason:'현재 플랫폼 연결에서 제공하지 않는 지표입니다.'});const invalid=f.seed({value:10});delete invalid.cp.metricProvenance.views.source;
+  const f=fixture(t);f.seed({value:0});f.seed({value:null,reason:'직접 넣을 때 비워 둔 숫자예요.'});f.seed({value:null,reason:'지금 연결로는 플랫폼이 제공하지 않는 숫자예요.'});const invalid=f.seed({value:10});delete invalid.cp.metricProvenance.views.source;
   const rows=observations(f.service.comparison(f.user));assert.equal(rows.find(row=>row.status==='measured').value,0);assert.equal(rows.find(row=>row.status==='missing').value,null);assert.equal(rows.find(row=>row.status==='unsupported').value,null);assert.equal(rows.find(row=>row.status==='excluded').value,10);assert.equal(rows[0].denominator.impressions.value,null);assert.match(rows[0].denominator.note,/대체하거나/);
 });
 

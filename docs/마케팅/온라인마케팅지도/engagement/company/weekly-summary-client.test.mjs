@@ -4,22 +4,30 @@ import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 
 const source=readFileSync(new URL('./public/weekly-summary.js',import.meta.url),'utf8');
+// 제작 도구 공통 그리기 도우미(maker-tools.js 앞 절반)를 탭 파일보다 먼저 읽는다 — escape만 쓴다.
+const kit=readFileSync(new URL('./public/maker-tools.js',import.meta.url),'utf8'),kitHelpers=kit.slice(0,kit.indexOf('\n// ── 상태와 화면 바꾸기'));
 const report=(week='2026-10-05')=>({period:{startDate:week,endDate:week==='2026-10-05'?'2026-10-11':'2026-10-04',label:'10월 5일~10월 11일'},generatedAt:'2026-10-12T00:00:00Z',refreshedAt:'2026-10-12T01:00:00Z',sections:['completed','performance','attention','upcoming'].map(id=>({id,title:id,items:[],total:0,status:'empty'})),schedule:{enabled:true,latestWeek:'2026-10-05',oldestWeek:'2025-10-13'}});
 const marinSource=readFileSync(new URL('./public/marin-home.js',import.meta.url),'utf8');
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 function fixture(api=async()=>report()){
   const listeners={},links=[],timers=new Map();let now=Date.parse('2026-10-12T00:01:00Z'),timerId=0;
   const context=vm.createContext({state:{user:{id:'one',role:'member'},tab:'workroom'},wr:{view:'tools'},makerTools:{view:'weekly'},document:{hidden:false,addEventListener(type,fn){listeners[type]=fn;}},window:{scrollTo(){}},location:{origin:'https://workspace.test'},URL,URLSearchParams,queueMicrotask,setTimeout(fn){const id=++timerId;timers.set(id,fn);return id;},clearTimeout(id){timers.delete(id);},api,render(){},notify(){},escape:value=>String(value??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;'),Date:class extends Date{static now(){return now;}},cdReadTarget:value=>new URL(value).searchParams.get('project')==='owned-project',pfReadTarget:value=>new URL(value).searchParams.get('packageId')==='owned-package',workspaceLinkDestination:value=>new URL(value,'https://workspace.test').hash==='#view=content&section=plan&draftId=owned-plan',openClientWorkflowLink:value=>links.push(['client',value]),openPublicationWorkflowLink:value=>links.push(['publication',value]),navigateWorkspaceLink:value=>links.push(['content',value]),openWorkspaceDestination:value=>{const action=vm.runInContext('safeMarinAction',context)(value);if(!action)return false;links.push(['messenger',action]);return true;},selectWorkspaceView(){},makerToolsEnsure(){}});
+  vm.runInContext(kitHelpers,context);
   vm.runInContext(marinSource.slice(marinSource.indexOf('function safeMarinAction('),marinSource.indexOf('function resetMarinHome(')),context);
   vm.runInContext(source,context);
   return {context,listeners,links,timers,advance(ms){now+=ms;},run:code=>vm.runInContext(code,context),set(data){context.report=data;vm.runInContext('wksIdentity();weeklySummaryState.data=report;weeklySummaryState.week=report.period.startDate',context);}};
 }
+const publication='/?tab=workroom&section=tools&tool=publication';
 test('default load requests last completed week and is not repeated on render',async()=>{
   const calls=[],f=fixture(async path=>{calls.push(path);return report();});f.run('weeklySummaryEnsure()');await tick();f.run('weeklySummaryEnsure()');assert.deepEqual(calls,['/api/weekly-summary']);assert.equal(f.run('weeklySummaryState.week'),'2026-10-05');assert.match(f.run('weeklySummaryPanel()'),/value="2026-10-05"/);
 });
 test('week picker uses KST completed week boundaries and normalizes weekdays',async()=>{
   const calls=[],f=fixture(async path=>{calls.push(path);return report();});assert.equal(f.run('wksBounds().latest'),'2026-10-05');assert.equal(f.run('wksMonday("2026-10-11")'),'2026-10-05');await f.run('wksLoad("2026-10-09")');assert.deepEqual(calls,['/api/weekly-summary?week=2026-10-05']);
   assert.equal(f.run('wksMonday("2026-02-30")'),'');assert.equal(f.run('wksShift("2026-01-05",-7)'),'2025-12-29');
+});
+test('the week capsule names the selected week and only allows completed weeks inside the stored range',()=>{
+  const f=fixture();f.set(report());const html=f.run('weeklySummaryPanel()');assert.match(html,/<label class="wks-pick"><span aria-hidden="true">10월 5일~11일<\/span><input type="date" data-wks-week value="2026-10-05" min="2025-10-13" max="2026-10-05" aria-label="보는 주 바꾸기, 지금 10월 5일~11일"><\/label>/);assert.match(html,/data-wks-action="next" aria-label="다음 주" disabled/);assert.doesNotMatch(html,/data-wks-action="previous" aria-label="이전 주" disabled/);
+  for(const [start,end,text] of [['2026-09-28','2026-10-04','9월 28일~10월 4일'],['2025-12-29','2026-01-04','2025년 12월 29일~2026년 1월 4일'],['2026-10-05','','10월 5일부터']]){f.context.start=start;f.context.end=end;assert.equal(f.run('wksRange(start,end)'),text);}
 });
 test('future, unfinished, invalid and expired dates do not reach the API',async()=>{
   let calls=0;const f=fixture(async()=>{calls++;return report();});for(const value of ['2026-10-12','2026-11-01','2026-02-30','2020-01-01','bad'])await f.run(`wksLoad(${JSON.stringify(value)})`);assert.equal(calls,0);assert.match(f.run('weeklySummaryState.error'),/52/);
@@ -34,7 +42,7 @@ test('switching accounts clears records before rendering or a late request',asyn
   let resolve;const f=fixture(()=>new Promise(done=>resolve=done));f.set(report());const pending=f.run('wksLoad("2026-09-28")');f.run('state.user={id:"two"}');assert.doesNotMatch(f.run('weeklySummaryPanel()'),/집계/);resolve(report('2026-09-28'));await pending;assert.equal(f.run('weeklySummaryState.data'),null);assert.equal(f.run('weeklySummaryState.userId'),'two');
 });
 test('failed initial requests stay errors and do not retry forever',async()=>{
-  let calls=0;const f=fixture(async()=>{calls++;throw new Error('저장소 연결 실패');});f.run('weeklySummaryEnsure()');await tick();f.run('weeklySummaryEnsure()');assert.equal(calls,1);const html=f.run('weeklySummaryPanel()');assert.match(html,/저장소 연결 실패/);assert.match(html,/기록이 없는 상태와는 달라요/);assert.doesNotMatch(html,/현재 확인할 문제가 없어요/);
+  let calls=0;const f=fixture(async()=>{calls++;throw new Error('저장소 연결 실패');});f.run('weeklySummaryEnsure()');await tick();f.run('weeklySummaryEnsure()');assert.equal(calls,1);const html=f.run('weeklySummaryPanel()');assert.match(html,/저장소 연결 실패/);assert.match(html,/기록이 없다는 뜻은 아니에요/);assert.doesNotMatch(html,/지금 할 일이 없어요|이 주에 남긴 기록이 없어요|집계/);
 });
 test('refresh failures label cached records and authorization failures clear them',async()=>{
   let status=500;const f=fixture(async()=>{throw Object.assign(new Error('읽기 실패'),{status});});f.set(report());await f.run('wksLoad("2026-10-05")');assert.match(f.run('weeklySummaryPanel()'),/마지막으로 불러온 기록/);status=403;await f.run('wksLoad("2026-10-05")');assert.equal(f.run('weeklySummaryState.data'),null);
@@ -44,16 +52,19 @@ test('mismatched week or missing section responses are not treated as empty reco
   const wrong=fixture(async()=>report('2026-09-28'));await wrong.run('wksLoad("2026-10-05")');assert.equal(wrong.run('weeklySummaryState.data'),null);
 });
 test('section scope and partial/error/empty counts remain distinct',()=>{
-  const f=fixture(),data=report();data.sections[0].status='partial';data.sections[0].note='일부 원문을 불러오지 못했어요.';data.sections[2].status='unavailable';data.sections[2].note='문제 목록 조회 실패';f.set(data);const html=f.run('weeklySummaryPanel()');assert.match(html,/선택한 주의 기록/);assert.match(html,/지금 상태 기준/);assert.match(html,/건 · 일부 확인/);assert.match(html,/전체 여부를 확인할 수 없어요/);assert.match(html,/문제 목록 조회 실패/);assert.doesNotMatch(html,/현재 확인할 문제가 없어요/);
+  const f=fixture(),data=report();data.sections[0].status='partial';data.sections[0].note='일부 원문을 불러오지 못했어요.';data.sections[2].status='unavailable';data.sections[2].note='문제 목록 조회 실패';f.set(data);const html=f.run('weeklySummaryPanel()');
+  assert.match(html,/data-wks-section="completed"[\s\S]*?<span class="wks-scope">10월 5일~11일<\/span>/);assert.match(html,/data-wks-section="attention"[\s\S]*?<span class="mt-count">—<\/span>[\s\S]*?<span class="wks-scope">지금 기준<\/span>/);assert.match(html,/data-wks-section="upcoming"[\s\S]*?<span class="wks-scope">10월 12일~18일<\/span>/);
+  assert.match(html,/<small>건 · 일부만<\/small>/);assert.match(html,/다 모였는지 알 수 없어요/);assert.match(html,/일부 원문을 불러오지 못했어요\./);assert.match(html,/문제 목록 조회 실패/);assert.match(html,/이 구역을 불러오지 못했어요/);assert.doesNotMatch(html,/지금 할 일이 없어요/);
+  assert.ok(html.indexOf('data-wks-section="attention"')<html.indexOf('data-wks-section="completed"'),'a section that could not be read stays first instead of looking empty');
 });
 test('long sections show three records first and fold the remaining items without losing links',()=>{
-  const f=fixture(),data=report();data.sections[0].items=Array.from({length:5},(_,index)=>({id:String(index),title:'record '+index,href:'/?tab=messenger&panel=tasks'}));data.sections[0].total=5;f.set(data);const html=f.run('wksSection(weeklySummaryState.data.sections[0])');assert.match(html,/나머지 2건 보기/);assert.equal((html.slice(0,html.indexOf('<details')).match(/<li>/g)||[]).length,3);assert.equal((html.match(/data-wks-source=/g)||[]).length,5);assert.doesNotMatch(html,/<details[^>]* open/);
+  const f=fixture(),data=report();data.sections[0].items=Array.from({length:5},(_,index)=>({id:String(index),title:'record '+index,href:'/?tab=messenger&panel=tasks'}));data.sections[0].total=5;f.set(data);const html=f.run('wksSection(weeklySummaryState.data.sections[0])');assert.match(html,/나머지 2건 보기/);assert.equal((html.slice(0,html.indexOf('<details')).match(/<li[\s>]/g)||[]).length,3);assert.equal((html.match(/data-wks-source=/g)||[]).length,5);assert.doesNotMatch(html,/<details[^>]* open/);
 });
 test('completed records show completion time rather than their old due date',()=>{
-  const f=fixture();f.context.item={title:'completed task',occurredAt:'2026-10-06T00:00:00Z',dueDate:'2026-10-07'};assert.doesNotMatch(f.run('wksItem(item,"completed")'),/예정 2026-10-07/);assert.match(f.run('wksItem(item,"completed")'),/10[. ]+6/);assert.match(f.run('wksItem(item,"upcoming")'),/예정 2026-10-07/);
+  const f=fixture();f.context.item={title:'completed task',occurredAt:'2026-10-06T00:00:00Z',dueDate:'2026-10-07'};assert.doesNotMatch(f.run('wksItem(item,"completed")'),/10월 7일/);assert.match(f.run('wksItem(item,"completed")'),/10월 6일 09:00/);assert.match(f.run('wksItem(item,"upcoming")'),/10월 7일 \(수\) 예정/);
 });
 test('saved titles, notes, dates and HTML payloads are escaped',()=>{
-  const f=fixture(),data=report();data.period.label='<script>period</script>';data.sections[0].items=[{id:'one',title:'<img src=x onerror=alert(1)>',text:'<svg onload=alert(1)>',statusLabel:'<script>bad</script>',dueDate:'" onclick="bad',href:'javascript:alert(1)'}];data.sections[0].note='<script>note</script>';data.schedule.note='<img src=x>';f.set(data);const html=f.run('weeklySummaryPanel()');assert.doesNotMatch(html,/<script>|<img src=x|<svg onload|href="javascript:/);assert.match(html,/&lt;img/);
+  const f=fixture(),data=report();data.period.label='<script>period</script>';data.sections[0].items=[{id:'one',title:'<img src=x onerror=alert(1)>',text:'<svg onload=alert(1)>',statusLabel:'<script>bad</script>',dueDate:'" onclick="bad',href:'javascript:alert(1)'}];data.sections[0].note='<script>note</script>';data.schedule.note='<img src=x>';f.set(data);const html=f.run('weeklySummaryPanel()');assert.doesNotMatch(html,/<script>|<img src=x|<svg onload|href="javascript:|onclick="bad/);assert.match(html,/&lt;img/);
 });
 test('only supported local source links are accepted',()=>{
   const f=fixture();for(const href of ['javascript:alert(1)','//evil.test/','/\\evil.test/','https://workspace.test/?tab=messenger','/api/logout','/?tab=messenger&panel=admin','/?tab=messenger&messageId=one','/?tab=messenger&channelId=two&channelId=one','/?tab=workroom&section=tools&tool=brand','/?tab=content&draftId=unknown','/?tab=messenger&token=secret']){f.context.href=href;assert.equal(f.run('wksHref(href)'),'',href);}
@@ -63,7 +74,9 @@ test('source actions preserve the exact existing publication, client, plan and t
   const f=fixture();await f.run('wksOpenSource("/?tab=workroom&section=clients&project=owned-project")');await f.run('wksOpenSource("/?tab=workroom&section=tools&tool=publication&publicationAction=link&packageId=owned-package")');await f.run('wksOpenSource("/#view=content&section=plan&draftId=owned-plan")');await f.run('wksOpenSource("/?tab=messenger&channelId=channel-1&messageId=123&panel=tasks")');assert.deepEqual(f.links.map(link=>link[0]),['client','publication','content','messenger']);assert.equal(f.links[3][1].channelId,'channel-1');assert.equal(f.links[3][1].messageId,'123');
 });
 test('schedule disabled and schedule error states never claim active scheduling',()=>{
-  const f=fixture(),data=report();data.schedule.enabled=false;f.set(data);assert.match(f.run('weeklySummaryPanel()'),/예약 정리 꺼짐/);assert.doesNotMatch(f.run('weeklySummaryPanel()'),/매주 월요일 자동 정리/);data.schedule.enabled=true;data.schedule.status='error';f.set(data);assert.match(f.run('weeklySummaryPanel()'),/자동 정리 상태 확인 필요/);assert.match(f.run('weeklySummaryPanel()'),/예약 정리에 실패/);
+  const f=fixture(),data=report();data.schedule.enabled=false;data.schedule.note='서버가 켜져 있으면 매주 월요일에 지난주 정리를 준비해요.';f.set(data);let html=f.run('weeklySummaryPanel()');assert.match(html,/data-tone="off">예약 정리 꺼짐 · 열 때마다 지금 기록으로 모아요/);assert.doesNotMatch(html,/매주 월요일/);
+  data.schedule.enabled=true;data.schedule.status='error';f.set(data);html=f.run('weeklySummaryPanel()');assert.match(html,/data-tone="alert" role="status">자동 정리 실패 · 새로고침하면 지금 기록으로 다시 모아요/);assert.doesNotMatch(html,/매주 월요일 자동 정리/);
+  data.schedule.status='enabled';data.schedule.nextRunAt='2026-10-18T15:00:00Z';f.set(data);html=f.run('weeklySummaryPanel()');assert.match(html,/매주 월요일 자동 정리 · 다음 정리 10월 19일 \(월\) 00:00/);assert.match(html,/서버가 켜져 있으면 매주 월요일에 지난주 정리를 준비해요\./);
 });
 test('visible summaries refresh once per minute and hide or navigation cancels polling',async()=>{
   const calls=[],f=fixture(async path=>{calls.push(path);return report();});f.run('weeklySummaryEnsure()');await tick();assert.equal(f.timers.size,1);
@@ -84,7 +97,7 @@ test('reset cancels polling and rejects an already running automatic response',a
   const load=f.run('wksLoad("2026-10-05",{automatic:true})');f.run('state.user={id:"two"};weeklySummaryReset()');pending(report());await load;assert.equal(f.run('weeklySummaryState.data'),null);assert.equal(f.timers.size,0);
 });
 test('an expanded section stays open while the same week refreshes',async()=>{
-  const f=fixture(),data=report();data.sections[0].items=Array.from({length:4},(_,index)=>({id:String(index),title:'record '+index}));f.set(data);f.run('weeklySummaryState.expanded.completed=true');assert.match(f.run('weeklySummaryPanel()'),/<details class="wks-more" open>/);f.context.report=data;f.context.api=async()=>data;await f.run('wksLoad("2026-10-05",{automatic:true})');assert.match(f.run('weeklySummaryPanel()'),/<details class="wks-more" open>/);
+  const f=fixture(),data=report();data.sections[0].items=Array.from({length:4},(_,index)=>({id:String(index),title:'record '+index}));f.set(data);f.run('weeklySummaryState.expanded.completed=true');assert.match(f.run('weeklySummaryPanel()'),/<details class="mt-fold wks-more" open>/);f.context.report=data;f.context.api=async()=>data;await f.run('wksLoad("2026-10-05",{automatic:true})');assert.match(f.run('weeklySummaryPanel()'),/<details class="mt-fold wks-more" open>/);
 });
 test('automatic and refresh renders preserve the replaced main scroll container while explicit week navigation resets it',async()=>{
   let resolve,main={scrollTop:1641.5,scrollLeft:7.5},renders=0;const f=fixture(()=>new Promise(done=>resolve=done));f.set(report());f.context.document.getElementById=id=>id==='main'?main:null;f.context.render=()=>{renders++;main={scrollTop:0,scrollLeft:0};};
@@ -93,4 +106,54 @@ test('automatic and refresh renders preserve the replaced main scroll container 
 });
 test('menu entry, direct URL identity and reset are connected to the same weekly tool',()=>{
   const maker=readFileSync(new URL('./public/maker-tools.js',import.meta.url),'utf8'),workroom=readFileSync(new URL('./public/workroom.js',import.meta.url),'utf8'),index=readFileSync(new URL('./public/index.html',import.meta.url),'utf8');assert.match(maker,/\['weekly','주간 정리'/);assert.match(maker,/weeklySummaryEnsure\(\)/);assert.match(maker,/weeklySummaryReset\(\)/);assert.match(workroom,/\['weekly','publication','publish'/);assert.match(index,/src="\/weekly-summary.js"/);assert.match(index,/href="\/weekly-summary.css"/);
+});
+test('things to do now come first with the only black button, and an empty list leaves the board without it',()=>{
+  const f=fixture(),data=report();data.sections[2].items=[{id:'a',title:'첫날 편',statusLabel:'점검 남음',text:'게시 준비·성과에서 지금 상태를 보고 이어 가 주세요.',href:publication},{id:'b',title:'퀴즈 4편',statusLabel:'완성본 도착',href:publication}];data.sections[2].total=2;data.sections[2].status='ready';data.sections[0].items=[{id:'c',title:'세션 편',statusLabel:'게시 기록',occurredAt:'2026-10-09T07:15:00Z',text:'실제 게시 주소와 시각을 기록했어요.',href:publication}];data.sections[0].total=1;f.set(data);let html=f.run('weeklySummaryPanel()');
+  const order=['attention','completed','performance','upcoming'].map(id=>html.indexOf(`data-wks-section="${id}"`));assert.deepEqual([...order].sort((a,b)=>a-b),order);assert.match(html,/<span class="mt-num">01<\/span><h2>attention<\/h2>/);assert.match(html,/<span class="mt-num">04<\/span><h2>upcoming<\/h2>/);
+  assert.equal((html.match(/btn small primary/g)||[]).length,1);assert.match(html,/class="btn small primary" href="[^"]+" data-wks-source="[^"]+">게시 준비·성과 열기<\/a>/);assert.match(html,/<dt>끝낸 일<\/dt><dd>1<\/dd>/);assert.match(html,/<dt>지금 할 일<\/dt><dd>2<\/dd>/);assert.match(html,/게시 기록 · 10월 9일 16:15/);assert.doesNotMatch(html,/실제 게시 주소와 시각을 기록했어요/);assert.doesNotMatch(html,/\sstyle=/);
+  assert.deepEqual(JSON.parse(f.run('JSON.stringify(weeklySummaryNavCount())')),{value:2,tone:'',label:'지금 할 일'});
+  f.set(report());html=f.run('weeklySummaryPanel()');assert.doesNotMatch(html,/data-wks-section="attention"|btn small primary/);assert.match(html,/<span class="mt-num">01<\/span><h2>completed<\/h2>/);assert.match(html,/이 주에 남긴 기록이 없어요/);assert.match(html,/다음 주에 잡힌 일정이 없어요/);assert.equal(f.run('weeklySummaryNavCount()'),null);
+  f.run('state.user={id:"two"}');assert.equal(f.run('weeklySummaryNavCount()'),null);
+});
+test('content results stay in posting order with the server sentence and the next week groups by day',()=>{
+  const f=fixture(),data=report();data.sections[1].items=[{id:'p1',title:'세션 편',statusLabel:'72시간 기다리는 중',text:'아직 72시간 숫자를 읽을 시각이 안 됐어요.',occurredAt:'2026-10-10T07:30:00Z',href:publication},{id:'p2',title:'퀴즈 1편',statusLabel:'숫자 있음',text:'조회 168회 · 평균 시청 시간 10초',occurredAt:'2026-10-06T08:05:00Z'},{id:'p3',title:'시각 없는 편',statusLabel:'숫자 미확인'}];data.sections[1].total=3;data.sections[1].status='ready';data.sections[1].note='그 주에 게시한 콘텐츠의 72시간 숫자예요. 아직 못 받은 숫자는 0으로 치지 않아요.';
+  data.sections[3].items=[{id:'u1',title:'납품 확인',statusLabel:'수령 확인할 날',dueDate:'2026-10-14',text:'고객이 납품 파일을 받았는지 물어볼 날이에요.'},{id:'u2',title:'예약 게시',statusLabel:'게시 예약',dueDate:'2026-10-14'},{id:'u3',title:'실험 메모',statusLabel:'실험 메모 · 날짜 없음'}];data.sections[3].total=3;data.sections[3].status='ready';f.set(data);const html=f.run('weeklySummaryPanel()');
+  assert.ok(html.indexOf('세션 편')<html.indexOf('퀴즈 1편')&&html.indexOf('퀴즈 1편')<html.indexOf('시각 없는 편'));assert.match(html,/<time datetime="2026-10-10T07:30:00Z">10월 10일 16:30<\/time>/);assert.match(html,/<time>—<\/time><div><strong>시각 없는 편<\/strong>/);assert.match(html,/조회 168회 · 평균 시청 시간 10초/);assert.match(html,/아직 못 받은 숫자는 0으로 치지 않아요/);
+  assert.match(html,/<h3><b>10월 14일 \(수\)<\/b><\/h3><ul class="wks-rows">[\s\S]*납품 확인[\s\S]*예약 게시[\s\S]*?<\/ul><\/div><div class="mt-day"><h3><b>날짜 없음<\/b><\/h3>/);assert.doesNotMatch(html.slice(html.indexOf('data-wks-section="upcoming"')),/10월 14일 \(수\) 예정/);
+});
+test('keyboard week moves and refreshes come back to the same control after the load, or to the date field when that control is off',async()=>{
+  let resolve;const f=fixture(()=>new Promise(done=>resolve=done));f.set(report());const body={},focused=[];
+  const control=({action,week=false,disabled=false})=>({dataset:action?{wksAction:action}:{},disabled,matches:selector=>selector==='[data-wks-week]'&&week,focus(options){assert.equal(options.preventScroll,true);focused.push(action||'week');}});
+  f.context.document.body=body;f.context.render=()=>{f.context.document.activeElement=body;};
+  f.context.document.querySelector=selector=>{const loading=f.run('weeklySummaryState.loading');return selector==='[data-wks-action="refresh"]'?control({action:'refresh',disabled:loading}):selector==='[data-wks-action="next"]'?control({action:'next',disabled:true}):selector==='[data-wks-week]'?control({week:true,disabled:loading}):null;};
+  f.context.document.activeElement=control({action:'refresh'});const refresh=f.run('wksLoad("2026-10-05",{automatic:true})');
+  assert.deepEqual(focused,[]);assert.equal(f.run('weeklySummaryState.focus'),'action:refresh');resolve(report());await refresh;assert.deepEqual(focused,['refresh']);assert.equal(f.run('weeklySummaryState.focus'),'');
+  f.context.document.activeElement=control({action:'next'});const next=f.run('wksLoad("2026-10-05")');resolve(report());await next;assert.deepEqual(focused,['refresh','week'],'the next-week button is off on the newest week, so focus goes to the date field');
+  f.context.document.activeElement={dataset:{},matches:()=>false};f.run('weeklySummaryState.focus="action:refresh"');const elsewhere=f.run('wksLoad("2026-10-05",{automatic:true})');resolve(report());await elsewhere;assert.deepEqual(focused,['refresh','week'],'focus that moved somewhere else is left alone');
+});
+test('an automatic refresh keeps the records on screen and a failed load returns to the last loaded week',async()=>{
+  let resolve,reject;const f=fixture(()=>new Promise((done,fail)=>{resolve=done;reject=fail;})),data=report();data.schedule.nextRunAt='2026-10-11T15:00:00Z';data.sections[0].items=[{id:'a',title:'지난 기록'}];data.sections[0].total=1;f.set(data);
+  assert.equal(f.run('wksRefreshWeek()'),'');const roll=f.run('wksLoad(wksRefreshWeek(),{automatic:true})');assert.match(f.run('weeklySummaryPanel()'),/지난 기록/,'the Monday roll-over does not blank the screen while it loads');
+  reject(Object.assign(new Error('잠시 연결이 끊겼어요.'),{status:503}));await roll;let html=f.run('weeklySummaryPanel()');assert.match(html,/지난 기록/);assert.match(html,/아래는 마지막으로 불러온 기록이에요/);assert.equal(f.run('weeklySummaryState.week'),'2026-10-05');
+  const move=f.run('wksLoad("2026-09-28")');assert.equal(f.run('weeklySummaryState.data'),null,'an explicit move to another week does not show the old week under the new label');assert.match(f.run('weeklySummaryPanel()'),/기록을 모으고 있어요/);
+  reject(Object.assign(new Error('주간 기록을 불러오지 못했어요.'),{status:500}));await move;html=f.run('weeklySummaryPanel()');assert.equal(f.run('weeklySummaryState.week'),'2026-10-05');assert.match(html,/value="2026-10-05"/);assert.match(html,/지난 기록/);assert.match(html,/아래는 마지막으로 불러온 기록이에요/);
+  const denied=f.run('wksLoad("2026-09-28")');reject(Object.assign(new Error('먼저 로그인해 주세요.'),{status:401}));await denied;assert.equal(f.run('weeklySummaryState.data'),null,'a revoked session never brings records back');
+});
+test('a role or team change clears the weekly records and drops an answer meant for the old role',async()=>{
+  for(const change of ['state.user.role="viewer"','state.user.teamId="another"']){
+    const f=fixture(),data=report();data.sections[2].items=[{id:'x',title:'PRIVATE TASK'}];data.sections[2].total=1;f.set(data);assert.match(f.run('weeklySummaryPanel()'),/PRIVATE TASK/);
+    f.run(change);assert.equal(f.run('weeklySummaryNavCount()'),null);assert.doesNotMatch(f.run('weeklySummaryPanel()'),/PRIVATE TASK/);assert.equal(f.run('weeklySummaryState.data'),null);
+  }
+  let resolve;const f=fixture(()=>new Promise(done=>resolve=done));const pending=f.run('wksLoad()');f.run('state.user.role="viewer";wksIdentity()');resolve(report());await pending;assert.equal(f.run('weeklySummaryState.data'),null);
+});
+test('next week groups by day even out of order and folds by item count, repeating a split day inside the fold',()=>{
+  const f=fixture(),data=report(),row=(id,dueDate)=>({id,title:'일 '+id,statusLabel:'연락 예정',...(dueDate?{dueDate}:{})});
+  data.sections[3].items=[row('n1'),row('a1','2026-10-15'),row('b1','2026-10-14'),...Array.from({length:6},(_,i)=>row('b'+(i+2),'2026-10-14')),row('a2','2026-10-15')];data.sections[3].total=10;data.sections[3].status='ready';f.set(data);
+  const html=f.run('wksSection(weeklySummaryState.data.sections[3])'),before=html.slice(0,html.indexOf('<details')),fold=html.slice(html.indexOf('<details'));
+  assert.equal((before.match(/<li[\s>]/g)||[]).length,6);assert.equal((before.match(/10월 14일 \(수\)/g)||[]).length,1);assert.doesNotMatch(before,/10월 15일|날짜 없음/);assert.match(html,/나머지 4건 보기/);
+  assert.ok(fold.indexOf('10월 14일 (수)')<fold.indexOf('10월 15일 (목)')&&fold.indexOf('10월 15일 (목)')<fold.indexOf('날짜 없음'));assert.ok(fold.indexOf('일 a1')<fold.indexOf('일 a2'));assert.match(fold,/일 b7/);
+});
+test('identical server sentences on every task are shown once above the cards',()=>{
+  const f=fixture(),data=report(),same='게시 준비·성과에서 지금 상태를 보고 이어 가 주세요.';data.sections[2].items=[{id:'a',title:'첫날 편',statusLabel:'점검 남음',text:same,href:publication},{id:'b',title:'퀴즈 4편',statusLabel:'완성본 도착',text:same,href:publication}];data.sections[2].total=2;data.sections[2].status='ready';f.set(data);
+  const html=f.run('weeklySummaryPanel()');assert.equal(html.split(same).length-1,1);assert.match(html,/<p class="mt-note wks-shared">/);assert.doesNotMatch(html,/mt-job-body/);
 });

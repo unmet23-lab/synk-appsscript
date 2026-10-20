@@ -155,7 +155,7 @@ test('runtime scans distinguish invocation from outcome and return honest per-pr
   f.app.scanWeeklySummary();f.app.scanAutomationHealth();
   let weekly=card((await f.api('owner','/api/automation-health')).data,'weekly');
   assert.equal(weekly.lastAttemptAt,'2026-10-12T01:00:00.000Z');assert.equal(weekly.lastSuccessAt,weekly.lastAttemptAt);assert.ok(weekly.lastResultAt);
-  assert.match(weekly.lastSuccessLabel,/점검/);assert.equal(weekly.nextRunAt,'2026-10-12T01:01:00.000Z');
+  assert.match(weekly.lastSuccessLabel,/성공/);assert.equal(weekly.nextRunAt,'2026-10-12T01:01:00.000Z');
   for(const file of ['automation-health.js','automation-health.css']){const res=await fetch(f.base+'/'+file);assert.equal(res.status,200);assert.ok((await res.text()).length>100);}
   assert.equal(f.external(),0);
 });

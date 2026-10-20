@@ -12,7 +12,7 @@ function workspaceContextMenu(){
   const view=workspacePrimaryView(),link=(id,label,glyph,action='tab',attrs='',active=false)=>`<button type="button" class="nav-item ${active?'active':''}" data-action="${action}" ${attrs||`data-tab="${id}"`} aria-current="${active?'page':'false'}" ${typeof isDemoMode==='function'&&isDemoMode()&&action==='marketing-section'&&['content','channels'].includes(id)?'disabled title="실제 데이터 화면에서 사용할 수 있어요"':''}>${icon(glyph)}<span>${escape(label)}</span>${id==='messenger'?'<b class="messenger-unread nav-count" hidden></b>':''}</button>`;
   let title={home:'홈',workroom:'내 작업실',handbook:'회사 안내',marketing:'마케팅',messenger:'메신저',members:'팀·크루',settings:'설정'}[view]||'워크스페이스',items='',extra='';
   if(view==='workroom'){
-    items=[['desk','제작 데스크','bookmark'],['trends','트렌드·레퍼런스','chart'],['tools','제작 도구','check'],['clients','고객 관리','users'],['pages','내 관리 페이지','link']].map(([id,label,glyph])=>link(id,label,glyph,'workroom-view','',typeof wr!=='undefined'&&wr.view===id)).join('');
+    items=[['desk','제작 데스크','bookmark'],['trends','트렌드·레퍼런스','chart'],['tools','제작 도구','check'],['clients','고객 관리','users'],['pages','내 관리 페이지','link']].map(([id,label,glyph])=>link(id,label,glyph,'workroom-view','',typeof wr!=='undefined'&&wr.view===id)+(id==='tools'&&typeof wr!=='undefined'&&wr.view==='tools'&&typeof makerToolsSubnav==='function'?makerToolsSubnav():'')).join('');
     extra=link('tasks','내 할 일','calendar','marin-workroom-panel','data-panel="tasks"')+link('saved','저장한 메시지','bookmark','marin-workroom-panel','data-panel="saved"')+link('profile','내 업무 카드','users','marin-profile')+link('mine','내 성과','chart');
   }else if(view==='handbook'){
     const categories=typeof cg!=='undefined'?cg.data?.categories||[]:[];

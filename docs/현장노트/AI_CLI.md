@@ -234,6 +234,12 @@
 - 고침: 맡길 때 보조 파일 폴더를 묶음마다 정해 준다(예: `scratchpad\chunk3_work\`). 판정은 입력 파일의 그 id 본문으로만 하라고 적는다. 이미 돌고 있으면 SendMessage로 같은 내용을 보낸다(받는 쪽의 다음 도구 호출 때 전달된다).
 - 다시 확인: 병렬 프롬프트마다 작업 폴더가 다르게 적혀 있는지, 결과 id 집합이 입력 묶음 id 집합과 같은지 대조한다(`.tmp/contests-20261019/build_page.py`의 `chunk_ids`·`verd` 비교).
 
+### 곁 에이전트 넷을 동시에 돌리면 세션 한도에 금방 걸려 함께 멈춘다 — SendMessage로 이어진다 (2026-10-21 Claude)
+- 증상: 10-20 밤 제작 도구 8탭을 Opus 곁 에이전트 넷에게 나눠 맡기자 한 시간 안에 넷이 모두 「You've hit your session limit · resets …」(429)로 끝났다. 다음 한도 뒤 Fable 검수 에이전트도 시작 직후 같은 오류로 멈췄다.
+- 원인: 곁 에이전트의 사용량이 부모 세션과 같은 한도에서 빠진다. 동시에 돌리면 쓰는 양은 같아도 한도에 닿는 시각이 당겨진다.
+- 고침: 한도가 풀린 뒤 같은 에이전트에게 `SendMessage`로 「끊긴 자리부터 이어서」를 보낸다 — 지금까지의 맥락과 파일 변경이 남아 있어 새로 띄울 필요가 없다. 맡길 때 결과를 그때그때 파일에 남기게 하면(검수는 `review.md`에 덧붙이기) 끊겨도 잃는 것이 적다. 아르곤 검수는 Claude 한도와 따로라, Claude 쪽이 멈춘 동안 돌려 둘 수 있다.
+- 다시 확인: 멈춘 에이전트의 알림 끝의 「resets <시각>」 뒤에 SendMessage를 보내 「Resuming agent …」가 돌아오는지 본다.
+
 ## Hermes(텔레그램 팁 봇)
 
 봇 구성·장부·카드 절차는 [참고 카드 README](../참고카드/README.md)와 Hermes 스킬 폴더(`%LOCALAPPDATA%\hermes\skills\research\synk-tip-review\`)에 있다.

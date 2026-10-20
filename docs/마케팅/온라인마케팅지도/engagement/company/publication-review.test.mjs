@@ -30,7 +30,7 @@ function fixture(t){
 
 test('a review read projects version-bound existing checks without creating records or mutating the package',t=>{
   const f=fixture(t),p=f.pack(),before=f.store.db.prepare('SELECT kind,id,body FROM documents ORDER BY kind,id').all(),review=f.get(p);
-  assert.equal(review.packageId,p.row.id);assert.equal(review.productionId,p.production.id);assert.equal(review.versionId,p.version.id);assert.equal(review.isLatestVersion,true);assert.equal(review.revision,0);assert.equal(review.canEdit,true);assert.equal(review.summary.status,'pending');assert.equal(review.summary.pendingCount,5);assert.equal(review.summary.notApplicableCount,1);assert.equal(review.summary.automaticIssueCount,0);assert.equal(review.manual.find(item=>item.id==='link').locked,true);assert.match(review.manual.find(item=>item.id==='video').detail,/모든 채널 출력본/);assert.ok(review.automatic.some(item=>item.label.includes('YouTube Shorts')));
+  assert.equal(review.packageId,p.row.id);assert.equal(review.productionId,p.production.id);assert.equal(review.versionId,p.version.id);assert.equal(review.isLatestVersion,true);assert.equal(review.revision,0);assert.equal(review.canEdit,true);assert.equal(review.summary.status,'pending');assert.equal(review.summary.pendingCount,5);assert.equal(review.summary.notApplicableCount,1);assert.equal(review.summary.automaticIssueCount,0);assert.equal(review.manual.find(item=>item.id==='link').locked,true);assert.match(review.manual.find(item=>item.id==='video').detail,/채널마다 나온 영상을 모두/);assert.ok(review.automatic.some(item=>item.label.includes('YouTube Shorts')));
   assert.deepEqual(f.store.db.prepare('SELECT kind,id,body FROM documents ORDER BY kind,id').all(),before);assert.equal(f.store.all('publicationPackageReviews').length,0);
 });
 

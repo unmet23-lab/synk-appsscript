@@ -36,7 +36,7 @@ test('when the outage lasts, the last chance records what arrived and says why t
   const recorded=f.checkpoint(entry.id);
   assert.equal(recorded.status,'recorded','after a bounded number of tries');assert.equal(recorded.metrics.likes,5);assert.equal(recorded.metrics.views,null);
   assert.match(recorded.unavailableReasons.views,/일시 오류/,'not "the platform does not provide this"');
-  assert.match(recorded.unavailableReasons.subscribersGained,/제공하지 않는/,'metrics the platform never provides keep their reason');assert.match(recorded.unavailableReasons.completionRatePct,/API 없음/);
+  assert.match(recorded.unavailableReasons.subscribersGained,/제공하지 않는/,'metrics the platform never provides keep their reason');assert.match(recorded.unavailableReasons.completionRatePct,/API로 받을 수 없어요/);
   assert.doesNotMatch(recorded.unavailableReasons.earlyRetention3sPct,/일시 오류/,'a reel metric the response did not carry is not blamed on the outage');
 });
 

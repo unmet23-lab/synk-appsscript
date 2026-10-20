@@ -113,7 +113,7 @@ test('a caller cannot interrupt an in-progress generation, content read, or save
 
 test('viewers and signed-out users cannot prepare a plan, and identifiers are checked before a request',async()=>{
   for(const user of [null,{id:'A',role:'viewer'}]){const f=fixture();f.context.state.user=user;assert.equal(await f.open(),false);assert.equal(f.requests.length,0);}
-  const f=fixture();for(const code of ['openPublicationLearningPlan("../other","repeat")','openPublicationLearningPlan("'+entryId+'","../other")'])await assert.rejects(f.evaluate(code),/다시 확인/);assert.equal(f.requests.length,0);
+  const f=fixture();for(const code of ['openPublicationLearningPlan("../other","repeat")','openPublicationLearningPlan("'+entryId+'","../other")'])await assert.rejects(f.evaluate(code),/다시 골라/);assert.equal(f.requests.length,0);
 });
 
 test('current valid series stays selectable and no series or sharing scope is inferred from performance',async()=>{

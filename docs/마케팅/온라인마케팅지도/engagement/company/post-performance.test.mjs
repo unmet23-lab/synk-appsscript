@@ -305,7 +305,7 @@ test('lagged YouTube Analytics metrics are never recorded as a 24- or 72-hour sn
   const [day, three] = f.service.list(f.owner).entries[0].checkpoints;
   assert.equal(day.metrics.views, 9); assert.equal(day.metrics.shares, null); assert.match(day.unavailableReasons.shares, /늦게 반영/); assert.doesNotMatch(day.unavailableReasons.shares, /5일/);
   assert.equal(three.metrics.views, 9); assert.equal(three.metrics.shares, null); assert.match(three.unavailableReasons.shares, /게시 5일 뒤 고정 창/); assert.equal(three.metrics.averageWatchSeconds, null);
-  assert.equal(three.metrics.stayedToWatchPct, null, 'Shorts stayed-to-watch has no API and is never taken from a response'); assert.match(three.unavailableReasons.stayedToWatchPct, /^API 없음/);
+  assert.equal(three.metrics.stayedToWatchPct, null, 'Shorts stayed-to-watch has no API and is never taken from a response'); assert.match(three.unavailableReasons.stayedToWatchPct, /API로 받을 수 없어요/);
   assert.equal(three.window.kind, 'window'); assert.equal(three.window.startDate, WINDOW.startDate); assert.equal(three.window.endDate, WINDOW.endDate);
   assert.equal(three.window.dueAt, atHours(120)); assert.equal(three.window.closesAt, null); assert.equal(three.window.status, 'pending'); assert.equal(day.window, undefined);
   assert.equal(f.store.get('postPerformanceEntries', entry.id).checkpoints[1].window, undefined, 'reading a plan does not write one');
@@ -398,7 +398,7 @@ test('Instagram estimated retention keeps its raw source in provenance and Faceb
   assert.equal(ig.metrics.earlyRetention3sPct, 61.8); assert.equal(ig.metrics.averageWatchSeconds, 7.53);
   assert.deepEqual(ig.metricProvenance.earlyRetention3sPct, { source: 'api:instagram-login-api', observedAt: atHours(24), recordedAt: atHours(24), unit: 'percent', timing: 'on-time', measurementWindowMissed: false, derivedFrom: 'reels_skip_rate', rawValue: 38.2, rawUnit: 'percent', estimated: true });
   assert.equal(ig.metricProvenance.averageWatchSeconds.rawUnit, 'milliseconds'); assert.deepEqual(Object.keys(ig.metricProvenance.views).sort(), ['measurementWindowMissed', 'observedAt', 'recordedAt', 'source', 'timing', 'unit']);
-  assert.match(ig.unavailableReasons.completionRatePct, /^API 없음/); assert.equal(entries.find(entry => entry.id === reel.id).checkpoints[1].window, undefined, 'Instagram insights are snapshots, not lagged windows');
+  assert.match(ig.unavailableReasons.completionRatePct, /API로 받을 수 없어요/); assert.equal(entries.find(entry => entry.id === reel.id).checkpoints[1].window, undefined, 'Instagram insights are snapshots, not lagged windows');
   assert.equal(fb.metrics.views, 120, 'Facebook video views are no longer dropped'); assert.equal(fb.metrics.likes, 3);
 });
 

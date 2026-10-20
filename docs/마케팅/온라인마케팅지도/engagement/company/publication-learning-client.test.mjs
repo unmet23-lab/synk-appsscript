@@ -7,27 +7,29 @@ const entryId='a'.repeat(64),experimentId='opening-question';
 const card={entryId,title:'카페에서 다시 말해 주세요',channelName:'로컬 예시',platform:'youtube',format:{id:'youtube-shorts',label:'YouTube Shorts'},status:'limited',statusLabel:'비교 자료 부족',summary:'확인한 72시간 기록을 바탕으로 실험을 고를 수 있어요.',dueAt:'2026-10-11T00:00:00.000Z',observedAt:'2026-10-11T00:05:00.000Z',missing:['도달'],limits:['같은 조건 3편 이상부터 비교합니다.'],facts:[{id:'views',label:'조회',value:0,unit:'count',observedAt:'2026-10-11T00:05:00.000Z',source:'manual',comparison:{sampleCount:2,median:null,deltaPercent:null,status:'insufficient'}}],source:{available:true,packageId:'11111111-1111-4111-8111-111111111111',productionId:'22222222-2222-4222-8222-222222222222',versionId:'33333333-3333-4333-8333-333333333333',title:'카페 대화 원본',versionLabel:'완성본 v1'},experiments:[{id:experimentId,title:'도입 질문 바꾸기',reason:'같은 주제로 한 가지를 바꿔 비교해 봅니다.',change:'첫 문장을 질문으로 바꾸기',measure:'72시간 조회와 평균 시청 시간'}],canPlan:true};
 const learning={cards:[card],generatedAt:'2026-10-11T01:00:00.000Z'};
 const escape=value=>String(value??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+// 그리기 도우미(maker-tools.js 앞 절반)는 탭 파일보다 먼저 읽는다 — 탭의 클릭 처리기가 덮이지 않게.
+const kit=readFileSync(new URL('./public/maker-tools.js',import.meta.url),'utf8'),kitFront=kit.slice(0,kit.indexOf('\n// ── 상태와 화면 바꾸기'));
 function fixture(){
   const requests=[],plans=[],notices=[],timers=new Map(),handlers=new Map();let timerId=0,renders=0,writes=0,markup='';
   const evidence={open:true,dataset:{pfLearningEvidence:entryId}},time={textContent:''},status={textContent:''};
   const element={get innerHTML(){return markup;},set innerHTML(value){writes++;markup=value;},contains(node){return !!node?.insideLearning;},querySelector(selector){return selector==='[data-pf-learning-time]'?time:null;},querySelectorAll(selector){return selector==='[data-pf-learning-evidence]'?[evidence]:[];},focus(){context.document.activeElement=this;},nextElementSibling:null};
   const context=vm.createContext({console,URL,URLSearchParams,structuredClone,Date,Intl,escape,queueMicrotask,location:new URL('http://localhost:64046/?tab=workroom&section=tools&tool=publication'),state:{user:{id:'owner',role:'member'},tab:'workroom'},wr:{view:'tools'},makerTools:{view:'publication'},document:{visibilityState:'visible',activeElement:null,querySelector(selector){return selector==='[data-pf-learning]'?element:selector==='[data-pf-status]'?status:null;},addEventListener(type,callback){if(!handlers.has(type))handlers.set(type,[]);handlers.get(type).push(callback);}},window:{scrollX:0,scrollY:100,getSelection:()=>({isCollapsed:true}),getComputedStyle:()=>({overflowY:'auto'}),scrollTo(x,y){this.scrollX=x;this.scrollY=y;}},setTimeout(callback,delay){const id=++timerId;timers.set(id,{callback,delay});return id;},clearTimeout(id){timers.delete(id);},api(path,body){let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});requests.push({path,body,resolve,reject});return promise;},openPublicationLearningPlan(id,experiment){let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});plans.push({id,experiment,resolve,reject});return promise;},render(){renders++;},notify(){}});
-  vm.runInContext(readFileSync(new URL('./public/publication-flow.js',import.meta.url),'utf8'),context);const run=code=>vm.runInContext(code,context);
-  context.initial={learning,performance:{canWrite:true,channels:[],entries:[],metricDefinitions:[{id:'views',label:'조회'}]},studio:{productions:[]},packages:{packages:[]},catalog:{channels:[]}};context.card=structuredClone(card);context.entryId=entryId;context.experimentId=experimentId;
+  vm.runInContext(kitFront,context);vm.runInContext(readFileSync(new URL('./public/publication-flow.js',import.meta.url),'utf8'),context);const run=code=>vm.runInContext(code,context);
+  context.initial={learning,performance:{canWrite:true,channels:[],entries:[{id:entryId,title:card.title,channelId:'local',channelName:'로컬 예시',platform:'youtube',publishedAt:'2026-10-08T00:00:00.000Z',canEdit:true,checkpoints:[]}],metricDefinitions:[{id:'views',label:'조회'}]},studio:{productions:[]},packages:{packages:[]},catalog:{channels:[]}};context.card=structuredClone(card);context.entryId=entryId;context.experimentId=experimentId;
   run('pfIdentity();pf.data=structuredClone(initial);pf.view="performance";pf.attempted=true');element.innerHTML=run('pfLearningContents()');run('pf.learningPaint=pfLearningKey()');writes=0;
   context.notify=message=>notices.push(message);
   return {context,run,requests,plans,notices,timers,handlers,element,evidence,time,status,get writes(){return writes;},get renders(){return renders;},fire(type){for(const handler of handlers.get(type)||[])handler({});}};
 }
 
 test('learning cards preserve actual zero, observation provenance and insufficient comparison separately',()=>{
-  const f=fixture(),html=f.run('pfLearningContents()');assert.match(html,/<dd>0 개<\/dd>/);assert.match(html,/직접 확인/);assert.match(html,/비교 자료 부족 · 이전 같은 조건 2편/);assert.match(html,/미확인: 도달/);assert.match(html,/카페 대화 원본 · 완성본 v1/);assert.match(html,/data-pf-action="learning-plan"/);
+  const f=fixture(),html=f.run('pfLearningContents()');assert.match(html,/<dd>0<small>개<\/small><\/dd>/);assert.match(html,/직접 넣음/);assert.match(html,/비교할 편이 적어요\(같은 조건 2편\)/);assert.match(html,/아직 못 받은 숫자: 도달/);assert.match(html,/카페 대화 원본 · 완성본 v1/);assert.match(html,/data-pf-action="learning-plan"/);
   f.run('card.facts[0].value=null');assert.match(f.run('pfLearningCard(card)'),/<dd>미확인<\/dd>/);
   f.run('card.facts[0].comparison={status:"ready",sampleCount:3,median:0,deltaPercent:null}');const zeroMedian=f.run('pfLearningCard(card)');assert.match(zeroMedian,/3편 중앙값 0/);assert.ok(!zeroMedian.includes('Infinity'));
 });
 
 test('a server quarter standing is shown next to the median and unknown standing values are never rendered',()=>{
   const f=fixture();f.run('card.facts[0].comparison={status:"ready",sampleCount:4,median:100,deltaPercent:50,standing:{label:"top25",p25:50,p75:150,sampleCount:4}}');
-  let html=f.run('pfLearningCard(card)');assert.match(html,/이전 같은 계정·형식 4편 중앙값 100/);assert.match(html,/data-pf-standing="top25">상위 25% · 이전 4편 기준</);
+  let html=f.run('pfLearningCard(card)');assert.match(html,/같은 계정·형식 이전 4편 중앙값 100/);assert.match(html,/data-pf-standing="top25">상위 25% · 이전 4편 기준</);
   f.run('card.facts[0].comparison.standing.label="bottom25"');assert.match(f.run('pfLearningCard(card)'),/하위 25% · 이전 4편 기준/);
   f.run('card.facts[0].comparison.standing.label="<img src=x>"');html=f.run('pfLearningCard(card)');assert.ok(!html.includes('data-pf-standing'));assert.ok(!html.includes('<img'));
   for(const label of ['constructor','toString','__proto__','hasOwnProperty']){f.run(`card.facts[0].comparison.standing.label=${JSON.stringify(label)}`);html=f.run('pfLearningCard(card)');assert.ok(!html.includes('data-pf-standing'),label);assert.ok(!/native code|\[object /.test(html),label);}
@@ -39,7 +41,7 @@ test('all learning facts, source labels and experiment prose are escaped before 
 });
 
 test('legacy metrics without source provenance are never labelled automatic observations',()=>{
-  const f=fixture();f.run('card.facts[0].source="출처 미기록"');let html=f.run('pfLearningFact(card.facts[0])');assert.match(html,/출처 미기록/);assert.ok(!html.includes('자동 관측'));f.run('card.facts[0].source="api:youtube"');assert.match(f.run('pfLearningFact(card.facts[0])'),/자동 관측/);f.run('card.facts[0].source="<img src=x>"');html=f.run('pfLearningFact(card.facts[0])');assert.ok(!html.includes('<img'));assert.match(html,/&lt;img/);
+  const f=fixture();f.run('card.facts[0].source="출처 미기록"');let html=f.run('pfLearningFact(card.facts[0])');assert.match(html,/출처 미기록/);assert.ok(!html.includes('자동으로 읽음'));f.run('card.facts[0].source="api:youtube"');assert.match(f.run('pfLearningFact(card.facts[0])'),/자동으로 읽음/);f.run('card.facts[0].source="<img src=x>"');html=f.run('pfLearningFact(card.facts[0])');assert.ok(!html.includes('<img'));assert.match(html,/&lt;img/);
 });
 
 test('viewer, waiting, missing and non-plannable records never expose or invoke a plan action',async()=>{
@@ -82,19 +84,19 @@ test('a response arriving after hiding, navigation or account replacement cannot
 });
 
 test('permissions errors clear stale private learning even while the old card has focus or a selection',async()=>{
-  const f=fixture();f.context.document.activeElement={insideLearning:true,dataset:{pfAction:'learning-plan',entry:entryId,experiment:experimentId}};f.context.window.getSelection=()=>({isCollapsed:false,rangeCount:1,getRangeAt:()=>({intersectsNode:()=>true})});const pending=f.run('pfLearningLoad()');f.requests[0].reject(Object.assign(new Error('이 기록을 볼 권한이 없습니다.'),{status:403}));await pending;assert.equal(f.run('pf.data.learning'),null);assert.ok(!f.element.innerHTML.includes(card.title));assert.match(f.element.innerHTML,/볼 권한이 없습니다/);assert.ok(!f.element.innerHTML.includes('회고할 게시 기록이 아직 없어요'));
+  const f=fixture();f.context.document.activeElement={insideLearning:true,dataset:{pfAction:'learning-plan',entry:entryId,experiment:experimentId}};f.context.window.getSelection=()=>({isCollapsed:false,rangeCount:1,getRangeAt:()=>({intersectsNode:()=>true})});const pending=f.run('pfLearningLoad()');f.requests[0].reject(Object.assign(new Error('이 기록을 볼 권한이 없습니다.'),{status:403}));await pending;assert.equal(f.run('pf.data.learning'),null);assert.ok(!f.element.innerHTML.includes(card.title));assert.match(f.element.innerHTML,/볼 권한이 없습니다/);assert.ok(!f.element.innerHTML.includes('다음 편 실험 후보가 열려요'));
 });
 
 test('records filtered out by a permissions change disappear even while their previous content is selected',async()=>{
-  const f=fixture();f.context.document.activeElement={insideLearning:true,dataset:{pfAction:'learning-plan',entry:entryId,experiment:experimentId}};f.context.window.getSelection=()=>({isCollapsed:false,rangeCount:1,getRangeAt:()=>({intersectsNode:()=>true})});const pending=f.run('pfLearningLoad()');f.requests[0].resolve({...learning,cards:[]});await pending;assert.ok(!f.element.innerHTML.includes(card.title));assert.match(f.element.innerHTML,/회고할 게시 기록이 아직 없어요/);
+  const f=fixture();f.context.document.activeElement={insideLearning:true,dataset:{pfAction:'learning-plan',entry:entryId,experiment:experimentId}};f.context.window.getSelection=()=>({isCollapsed:false,rangeCount:1,getRangeAt:()=>({intersectsNode:()=>true})});const pending=f.run('pfLearningLoad()');f.requests[0].resolve({...learning,cards:[]});await pending;assert.ok(!f.element.innerHTML.includes(card.title));assert.match(f.element.innerHTML,/다음 편 실험 후보가 열려요/);
 });
 
 test('malformed or failed learning reads show a retryable error instead of a false empty state',async()=>{
-  const f=fixture(),malformed=f.run('pfLearningLoad()');f.requests[0].resolve({generatedAt:learning.generatedAt});await malformed;assert.match(f.element.innerHTML,/정보를 확인할 수 없어요/);assert.ok(!f.element.innerHTML.includes('회고할 게시 기록이 아직 없어요'));const retry=f.run('pfLearningLoad()');f.requests[1].resolve(learning);await retry;assert.equal(f.run('pf.learningError'),'');assert.match(f.element.innerHTML,/카페에서 다시 말해 주세요/);
+  const f=fixture(),malformed=f.run('pfLearningLoad()');f.requests[0].resolve({generatedAt:learning.generatedAt});await malformed;assert.match(f.element.innerHTML,/실험 정보를 읽지 못했어요/);assert.ok(!f.element.innerHTML.includes('다음 편 실험 후보가 열려요'));const retry=f.run('pfLearningLoad()');f.requests[1].resolve(learning);await retry;assert.equal(f.run('pf.learningError'),'');assert.match(f.element.innerHTML,/카페에서 다시 말해 주세요/);
 });
 
 test('manual metrics save schedules learning immediately without waiting on or changing the write result',async()=>{
-  const f=fixture();f.run('pf.data.performance.entries=[{id:entryId,canEdit:true,checkpoints:[{hours:72,metrics:{views:null}}]}];pf.manual[entryId+":72"]={metrics:{views:"0"},measuredAt:"2026-10-11T10:00",note:"확인"}');const save=f.run('pfSaveMetrics(entryId,72)');f.requests[0].resolve({entry:{id:entryId,canEdit:true,checkpoints:[{hours:72,metrics:{views:0}}]}});await save;assert.equal(f.run('pf.busy'),false);assert.equal(f.run('pf.manual[entryId+":72"]'),undefined);const timer=[...f.timers.values()].find(row=>row.delay===0);assert.ok(timer);timer.callback();assert.equal(f.requests[1].path,'/api/publication-learning');f.requests[1].resolve(learning);await new Promise(resolve=>setImmediate(resolve));assert.match(f.status.textContent,/확인한 숫자를 저장/);
+  const f=fixture();f.run('pf.data.performance.entries=[{id:entryId,canEdit:true,checkpoints:[{hours:72,metrics:{views:null}}]}];pf.manual[entryId+":72"]={metrics:{views:"0"},measuredAt:"2026-10-11T10:00",note:"확인"}');const save=f.run('pfSaveMetrics(entryId,72)');f.requests[0].resolve({entry:{id:entryId,canEdit:true,checkpoints:[{hours:72,metrics:{views:0}}]}});await save;assert.equal(f.run('pf.busy'),false);assert.equal(f.run('pf.manual[entryId+":72"]'),undefined);const timer=[...f.timers.values()].find(row=>row.delay===0);assert.ok(timer);timer.callback();assert.equal(f.requests[1].path,'/api/publication-learning');f.requests[1].resolve(learning);await new Promise(resolve=>setImmediate(resolve));assert.match(f.status.textContent,/본 숫자를 저장/);
 });
 
 test('plan actions invoke the existing planner once, retain drafts, and recover from failure',async()=>{
@@ -107,12 +109,25 @@ test('invalid experiment and entry identifiers cannot invoke the planner, and la
 });
 
 test('new learning cards compensate an edited field inside the workroom scroll container',async()=>{
-  const f=fixture(),main={scrollTop:700,scrollLeft:0,scrollHeight:2400,clientHeight:800,parentElement:null};let added=0,html=f.element.innerHTML;const editor={value:'유지할 근거',selectionStart:1,selectionEnd:3,closest:()=>true,parentElement:main,getBoundingClientRect:()=>({top:280+added-(main.scrollTop-700)})};f.context.document.activeElement=editor;Object.defineProperty(f.element,'innerHTML',{get:()=>html,set:value=>{html=value;added=68;}});const pending=f.run('pfLearningLoad()');f.requests[0].resolve({...learning,cards:[...learning.cards,{...card,entryId:'b'.repeat(64)}]});await pending;assert.equal(editor.getBoundingClientRect().top,280);assert.equal(main.scrollTop,768);assert.equal(f.context.document.activeElement,editor);assert.equal(editor.selectionStart,1);assert.equal(f.context.window.scrollY,100);
+  const f=fixture(),main={scrollTop:700,scrollLeft:0,scrollHeight:2400,clientHeight:800,parentElement:null};let added=0,html=f.element.innerHTML;const editor={value:'유지할 근거',selectionStart:1,selectionEnd:3,closest:()=>true,parentElement:main,getBoundingClientRect:()=>({top:280+added-(main.scrollTop-700)})};f.context.document.activeElement=editor;Object.defineProperty(f.element,'innerHTML',{get:()=>html,set:value=>{html=value;added=68;}});const pending=f.run('pfLearningLoad()');f.requests[0].resolve({...learning,cards:[{...card,experiments:[...card.experiments,{...card.experiments[0],id:'second-example',title:'두 번째 실험'}]}]});await pending;assert.equal(editor.getBoundingClientRect().top,280);assert.equal(main.scrollTop,768);assert.equal(f.context.document.activeElement,editor);assert.equal(editor.selectionStart,1);assert.equal(f.context.window.scrollY,100);
 });
 test('learning facts mark late window values and estimated metrics, and malformed window dates are never drawn',()=>{
   const f=fixture();f.run('card.facts[0]={...card.facts[0],id:"averageViewPct",label:"평균 조회율",value:112.5,unit:"percent",source:"api:youtube-analytics-api-v2",lagged:true,window:{startDate:"2026-10-09",endDate:"2026-10-11",timeZone:"America/Los_Angeles"}}');
-  let html=f.run('pfLearningFact(card.facts[0])');assert.match(html,/<small data-pf-window>늦게 반영 · 10\.09~10\.11 태평양시 창<\/small>/);assert.ok(!html.includes('data-pf-estimated'));
+  let html=f.run('pfLearningFact(card.facts[0])');assert.match(html,/<small data-pf-window>창 값 · 10\.09~10\.11 태평양시 창<\/small>/);assert.ok(!html.includes('data-pf-estimated'));
   f.run('card.facts[0].estimated=true;card.facts[0].window={startDate:"<img src=x>",endDate:"2026-10-11"}');html=f.run('pfLearningFact(card.facts[0])');
-  assert.match(html,/<small data-pf-estimated>추정 지표<\/small>/);assert.ok(!html.includes('data-pf-window'));assert.ok(!html.includes('<img'));
+  assert.match(html,/<small data-pf-estimated>추정 값<\/small>/);assert.ok(!html.includes('data-pf-window'));assert.ok(!html.includes('<img'));
   f.run('card.facts[0].value=null');assert.ok(!f.run('pfLearningFact(card.facts[0])').includes('data-pf-estimated'),'unknown values carry no marks');
+});
+// ── 「다시 읽기」는 단추에 초점이 남아도 결과를 그린다(배경 읽기는 초점·선택을 기다린다) ──
+test('pressing the refresh button repaints the learning section even though the button keeps focus',async()=>{
+  const f=fixture();f.context.document.activeElement={insideLearning:true,dataset:{pfAction:'learning-refresh'}};
+  for(const handler of f.handlers.get('click'))handler({target:{closest:()=>({disabled:false,dataset:{pfAction:'learning-refresh'}})}});
+  assert.equal(f.requests.length,1);f.requests[0].resolve({...learning,cards:[{...card,title:'새로 읽은 카드'}]});await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(f.writes,1);assert.match(f.element.innerHTML,/새로 읽은 카드/);
+});
+test('a failed refresh shows its error even though the button keeps focus',async()=>{
+  const f=fixture();f.context.document.activeElement={insideLearning:true,dataset:{pfAction:'learning-refresh'}};
+  for(const handler of f.handlers.get('click'))handler({target:{closest:()=>({disabled:false,dataset:{pfAction:'learning-refresh'}})}});
+  f.requests[0].reject(new Error('잠시 뒤 다시 읽어 주세요.'));await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(f.writes,1);assert.match(f.element.innerHTML,/잠시 뒤 다시 읽어 주세요/);
 });

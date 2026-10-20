@@ -1,4 +1,56 @@
-.bq-panel{color:#26344a;word-break:keep-all}.bq-panel h2{font-size:24px;line-height:1.4;margin:0 0 8px}.bq-panel h3{font-size:18px;line-height:1.5;margin:10px 0}.bq-panel p{line-height:1.7;overflow-wrap:anywhere}.bq-panel a{color:#315385;text-underline-offset:3px;overflow-wrap:anywhere}.bq-toolbar,.bq-card-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:16px 0}.bq-toolbar>span,.bq-meta,.bq-note{font-size:13px;color:#626774;line-height:1.7}.bq-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}.bq-card{border:1px solid #e4e5e9;border-radius:16px;padding:24px;background:#fff;min-width:0}.bq-card-top{display:flex;gap:12px;align-items:center;justify-content:space-between;font-size:12px;color:#676873}.bq-card-top>span:last-child{flex-shrink:0}.bq-tag{padding:8px 14px;border:1px solid #dec3b9;border-radius:10px;background:#f3d9cf url("/messenger/assets/felt-v2/texture-blush.webp") center/288px 288px repeat;color:#352825;font-weight:650;line-height:1.5}.bq-card p{font-size:14px;color:#535c6b;white-space:pre-wrap}.bq-card h3{overflow-wrap:anywhere}.bq-check-summary{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;margin:18px 0}.bq-check-summary b{display:inline-block;margin-left:4px}.bq-empty{text-align:center;max-width:540px;margin:36px auto;padding:24px 12px}.bq-empty img{display:block;object-fit:contain;margin:0 auto 20px}.bq-empty p{color:#626774;font-size:14px}.bq-editor{max-width:850px}.bq-editor>fieldset{border:0;padding:0;margin:20px 0}.bq-editor label{display:grid;gap:8px;font-size:14px;font-weight:600;margin:16px 0;min-width:0}.bq-editor input:not([type=checkbox]),.bq-editor select,.bq-editor textarea{font:inherit;font-weight:400;min-width:0;width:100%;box-sizing:border-box;background:#fff;color:#26344a;border:1px solid #cbd0db;border-radius:9px;padding:12px}.bq-editor input:focus-visible,.bq-editor select:focus-visible,.bq-editor textarea:focus-visible,.bq-panel button:focus-visible{outline:3px solid #426aae;outline-offset:3px}.bq-editor textarea{resize:vertical;line-height:1.65}.bq-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.bq-assets{border:1px solid #e1e4ea;border-radius:12px;padding:12px 16px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 20px;min-width:0;margin:20px 0}.bq-assets legend{font-size:14px;font-weight:700;padding:0 5px}.bq-assets label,.bq-editor .bq-inline{display:flex;align-items:flex-start;gap:10px;margin:6px 0;font-size:13px;line-height:1.6;font-weight:400}.bq-editor input[type=checkbox]{appearance:none;-webkit-appearance:none;width:23px;height:23px;flex:none;border:1px solid #b8aaa7;border-radius:5px;background:#fff;margin:0}.bq-editor input[type=checkbox]:checked{border-color:transparent;border-radius:0;background:url('/messenger/assets/felt-ui/badge-check.webp') center/contain no-repeat}.bq-version-entry{background:#fbfaf8;padding:20px;border-radius:12px;margin:24px 0}.bq-version-entry h4{margin:0;font-size:16px}.bq-version-entry>p{font-size:13px;color:#626774;margin:8px 0}.bq-checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 20px;margin:28px 0}.bq-check{min-width:0;border:1px solid #e1e4ea;border-radius:12px;padding:20px}.bq-check legend{font-size:16px;font-weight:700;padding:0 8px}.bq-check>p{font-size:13px;color:#626774;margin:4px 0}.bq-history{margin:28px 0;border-top:1px solid #e3e5e8;padding-top:18px}.bq-history summary{cursor:pointer;font-size:15px;font-weight:700}.bq-history article{padding:20px 0;border-bottom:1px solid #e3e5e8}.bq-history h4{margin:0 0 8px}.bq-history pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;font-size:14px;line-height:1.75;padding:16px;background:#f8f9fb;border-radius:10px}.bq-history article>.btn{margin-right:14px}.bq-panel button:active{transform:translateY(2px)}.bq-panel button:disabled{opacity:.65;cursor:wait}.bq-editor .bq-inline{margin:18px 0}.bq-editor fieldset:disabled{opacity:.82}
-@media(max-width:740px){.bq-grid,.bq-checks{grid-template-columns:minmax(0,1fr)}.bq-card{padding:20px}.bq-panel h2{font-size:21px}.bq-panel .maker-section-head{flex-wrap:wrap}}@media(max-width:460px){.bq-assets,.bq-two{grid-template-columns:minmax(0,1fr)}.bq-two{gap:0}.bq-version-entry{padding:16px}.bq-card{padding:20px}.bq-panel .btn{max-width:100%}.bq-toolbar{gap:8px}.bq-card-top{align-items:flex-start}.bq-check-summary{gap:12px}}
-
-.bq-editor input:not([type=checkbox]),.bq-editor select{min-height:44px}.bq-card-top{flex-wrap:wrap}.bq-card-top>span:last-child{flex-shrink:1}.bq-tag{max-width:100%;overflow-wrap:anywhere}.bq-panel button{max-width:100%;white-space:normal;line-height:1.5}.bq-panel button:active{transform:translateY(1px)}.bq-history summary{min-height:44px;display:list-item;padding:10px 0;box-sizing:border-box}.bq-history article>.btn{margin-block:6px}.bq-history a:focus-visible,.bq-panel summary:focus-visible{outline:3px solid #315b91;outline-offset:3px}.bq-assets{padding:18px 20px;gap:12px 20px}.bq-card-actions{margin-bottom:0}
+/* 브랜드 제작실 · 품질·운영 확인 — 시그널 13판 A 「목록 + 상세」 간소판(brand-quality.js). 공통 어휘는 maker-tools.css에 있고, 여기에는 이 두 탭에만 쓰는 규칙만 둔다.
+   이 파일은 signal.css보다 앞에 읽히므로 선택자를 :root .synk-workspace .mt 아래로 둔다. CSP style-src 'self' — 인라인 style을 쓰지 않는다. */
+:root .synk-workspace .mt:is([data-mt=brand],[data-mt=quality]) .mt-tile svg{width:16px;height:16px}
+:root .synk-workspace .mt:is([data-mt=brand],[data-mt=quality]) .mt-item[aria-current=true] .mt-led:is(:not([data-tone]),[data-tone=""]){background:rgba(255,255,255,.42)}
+:root .synk-workspace .mt:is([data-mt=brand],[data-mt=quality]) .mt-item[aria-current=true] .mt-led[data-tone=off]{box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.55)}
+:root .synk-workspace .mt .bq-title{display:block;margin-top:8px}
+:root .synk-workspace .mt .bq-title input{display:block;width:100%;min-height:0;margin:0;padding:2px 0 6px;border:0;border-bottom:1px solid transparent;border-radius:0;background:transparent;font:var(--w-display) 28px/1.2 var(--mt-sans);letter-spacing:-.035em;color:var(--mt-ink);box-shadow:none;outline:0}
+:root .synk-workspace .mt .bq-title input::placeholder{color:var(--mt-ink-4);font-weight:var(--w-title)}
+:root .synk-workspace .mt .bq-title input:hover:not(:disabled){border-bottom-color:var(--mt-line-2)}
+:root .synk-workspace .mt .bq-title input:focus{border-bottom-color:var(--mt-lapis)}
+:root .synk-workspace .mt .bq-target{margin-top:4px}
+:root .synk-workspace .mt .bq-leds{display:inline-flex;align-items:center;gap:3px;margin-right:2px}
+:root .synk-workspace .mt .bq-leds .mt-led{width:7px;height:7px;margin:0}
+:root .synk-workspace .mt .bq-leds .mt-led[data-tone=alert]{box-shadow:none}
+:root .synk-workspace .mt .bq-sources{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 20px}
+:root .synk-workspace .mt .bq-sources .mt-check{font-size:13.5px}
+:root .synk-workspace .mt .bq-entry{display:grid;gap:4px;margin:0 0 16px;padding:14px 16px 2px;border-radius:16px;background:var(--mt-paper-2)}
+:root .synk-workspace .mt .bq-entry h4{font-size:15px;line-height:1.4;font-weight:var(--w-title)}
+:root .synk-workspace .mt .bq-entry .mt-form-row{margin:8px 0 10px}
+:root .synk-workspace .mt .bq-entry>.mt-field{margin-bottom:14px}
+:root .synk-workspace .mt .bq-versions{border-top:1px solid var(--mt-line)}
+:root .synk-workspace .mt .bq-version{padding:14px 2px;border-bottom:1px solid var(--mt-line)}
+:root .synk-workspace .mt .bq-version-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
+:root .synk-workspace .mt .bq-version-head strong{font-size:15px;font-weight:var(--w-title)}
+:root .synk-workspace .mt .bq-version-head>span:not(.mt-actions){font-size:13px;color:var(--mt-ink-3)}
+:root .synk-workspace .mt .bq-version-head .mt-actions{margin-left:auto}
+:root .synk-workspace .mt .bq-version pre{margin:10px 0 0;padding:12px 14px;border-radius:12px;background:var(--mt-surface);font:var(--w-body) 13.5px/1.7 var(--mt-sans);color:var(--mt-ink-2);white-space:pre-wrap;overflow-wrap:anywhere}
+:root .synk-workspace .mt .bq-items{border-top:1px solid var(--mt-line)}
+:root .synk-workspace .mt .bq-item{border-bottom:1px solid var(--mt-line)}
+:root .synk-workspace .mt .bq-item>summary{display:grid;grid-template-columns:auto max-content max-content minmax(0,1fr) 14px;align-items:center;gap:10px;padding:12px 2px;list-style:none;font-size:14px;cursor:pointer}
+:root .synk-workspace .mt .bq-item>summary::-webkit-details-marker{display:none}
+:root .synk-workspace .mt .bq-item>summary::after{content:'';width:14px;height:14px;background:var(--mt-chev) center/14px no-repeat;opacity:.5;transform:rotate(90deg)}
+:root .synk-workspace .mt .bq-item[open]>summary::after{transform:rotate(-90deg)}
+:root .synk-workspace .mt .bq-item>summary strong{font-weight:var(--w-strong)}
+:root .synk-workspace .mt .bq-item>summary em{font-style:normal;font-size:13px;font-weight:var(--w-strong);color:var(--mt-ink-3);white-space:nowrap}
+:root .synk-workspace .mt .bq-item>summary em[data-tone=ok]{color:var(--mt-green-ink)}
+:root .synk-workspace .mt .bq-item>summary em[data-tone=alert]{color:var(--mt-coral-ink)}
+:root .synk-workspace .mt .bq-item>summary>span:not(.mt-led){min-width:0;font-size:13px;color:var(--mt-ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+:root .synk-workspace .mt .bq-item-body{display:grid;gap:12px;padding:0 2px 16px 20px}
+:root .synk-workspace .mt .bq-item-body .mt-form-row{margin:0}
+:root .synk-workspace .mt .bq-item-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 14px}
+:root .synk-workspace .mt .bq-foot{margin-top:14px}
+:root .synk-workspace .mt .bq-sheet .mt-form-row{align-items:flex-start}
+/* workroom.css의 .wr-workroom select{margin-top:8px}가 칸 안 셀렉트를 8px 내려 이름표와 어긋나게 한다. */
+:root .synk-workspace .mt .bq-sheet .mt-field select{margin:0}
+@container mt (max-width:700px){
+  :root .synk-workspace .mt .bq-title input{font-size:22px}
+  :root .synk-workspace .mt .bq-sources{grid-template-columns:minmax(0,1fr)}
+  :root .synk-workspace .mt .bq-item>summary{grid-template-columns:auto minmax(0,1fr) auto 14px;row-gap:4px}
+  :root .synk-workspace .mt .bq-item>summary>span:not(.mt-led){grid-column:2/-1;grid-row:2}
+  :root .synk-workspace .mt .bq-item-body{padding-left:0}
+  :root .synk-workspace .mt .bq-sheet>.mt-error{order:-3}
+  :root .synk-workspace .mt .bq-version-head .mt-actions{margin-left:0}
+  :root .synk-workspace .mt .bq-sheet .mt-facts[data-cols="3"]{grid-template-columns:repeat(3,minmax(0,1fr))}
+  :root .synk-workspace .mt .bq-sheet .mt-facts[data-cols="3"]>div:nth-child(3){border-top:0;border-left:1px solid var(--mt-line);padding-left:14px}
+}

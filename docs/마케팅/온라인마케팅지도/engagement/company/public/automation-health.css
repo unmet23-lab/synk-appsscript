@@ -1,11 +1,85 @@
-.ah-panel{min-width:0;color:#352f31}.ah-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:22px}.ah-heading>div{min-width:0}.ah-heading h2{font-size:25px;line-height:1.4;margin:6px 0 8px}.ah-heading p,.ah-section-note{margin:0;color:#756b69;font-size:13px;line-height:1.8}.ah-heading>.btn{flex:none;min-height:44px}.ah-snapshot{color:#756b69;font-size:12px;line-height:1.8;margin:12px 0}.ah-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0 24px}.ah-summary>div{padding:18px;border:1px solid #e5ddda;border-radius:12px;background:#fff}.ah-summary span{font-size:12px;color:#756b69;line-height:1.5}.ah-summary strong{display:block;font-size:28px;font-weight:650;margin-top:10px}.ah-summary small{font-size:12px;font-weight:400;color:#756b69;margin-left:7px}.ah-attention,.ah-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}.ah-attention>section,.ah-card{min-width:0;border:1px solid #e5ddda;border-radius:14px;padding:22px;background:#fff}.ah-attention header,.ah-card header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.ah-attention h3,.ah-all>h3{font-size:18px;line-height:1.5;margin:0 0 9px}.ah-attention header>span{font-size:13px;white-space:nowrap;background:#f5ece6;border-radius:8px;padding:5px 8px}.ah-items{list-style:none;margin:18px 0 0;padding:0}.ah-items>li{border-top:1px solid #eee6e1;padding:18px 0;min-width:0}.ah-items>li:last-child{padding-bottom:0}.ah-item-top{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:8px}.ah-item-top>span:not(.ah-badge){font-size:11px;color:#756b69;line-height:1.7}.ah-badge{display:inline-block;flex:none;max-width:100%;box-sizing:border-box;padding:4px 8px;border-radius:6px;font-size:11px;line-height:1.6;background:#f3f0ec;color:#655d55}.ah-badge[data-status=failed],.ah-badge[data-status=missed]{background:#fff0ec;color:#984433}.ah-badge[data-status=delayed],.ah-badge[data-status=connection],.ah-badge[data-status=partial],.ah-badge[data-status=manual]{background:#fff3df;color:#81571f}.ah-badge[data-status=running],.ah-badge[data-status=scheduled],.ah-badge[data-status=ready]{background:#edf2f7;color:#3a5577}.ah-items strong{display:block;font-size:14px;line-height:1.7}.ah-items p,.ah-card>p{color:#71645e;font-size:13px;line-height:1.8;white-space:pre-line;margin:8px 0}.ah-source{display:inline-flex;align-items:center;gap:8px;min-height:44px;max-width:100%;font-size:12px;font-weight:650;color:#76514b;text-decoration:none;margin-top:5px}.ah-source:hover{text-decoration:underline}.ah-source>span{font-size:16px}.ah-empty{color:#756b69;background:#faf8f5;padding:18px;border-radius:8px;font-size:13px;line-height:1.8;margin:18px 0 0}.ah-all{margin-top:30px}.ah-cards{margin-top:16px}.ah-card h4{font-size:16px;line-height:1.6;margin:6px 0 0}.ah-mode{font-size:11px;color:#7b6c66;line-height:1.7}.ah-times{margin:18px 0 0;border-top:1px solid #eee6e1;padding-top:12px;display:grid;gap:8px}.ah-times>div{display:grid;grid-template-columns:minmax(90px,.7fr) minmax(0,1fr);gap:10px;font-size:12px;line-height:1.7}.ah-times dt{color:#756b69}.ah-times dd{margin:0;color:#4f4844}.ah-card-counts{display:flex;gap:8px 14px;flex-wrap:wrap;color:#756b69;font-size:11px;margin-top:16px;line-height:1.7}.ah-warning,.ah-error{padding:15px 17px;border-radius:10px;font-size:13px;line-height:1.8;margin:18px 0}.ah-warning{background:#fff5e6;color:#81571f}.ah-error{border:1px solid #e1b7a9;background:#fff5f1;color:#9b4835}.ah-error>span{display:block;font-size:12px;margin-top:5px}.ah-loading{padding:35px 10px;text-align:center;color:#756b69;font-size:14px}.ah-footer{border-top:1px solid #e5ddda;margin-top:28px;padding-top:20px;font-size:12px;line-height:1.8;color:#756b69}.ah-panel :is(h2,h3,h4,p,strong,span,dt,dd,a,footer){overflow-wrap:anywhere}.ah-panel :is(button,a):focus-visible{outline:3px solid #315b91;outline-offset:3px}.ah-panel button:disabled{opacity:.5;cursor:default}.ah-desk-link{margin-top:18px;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;border:1px solid #e4d8d2;border-radius:12px;background:#faf6f0}.ah-desk-link h2{font-size:17px;margin:0 0 5px}.ah-desk-link p{font-size:13px;line-height:1.7;color:#756b69;margin:0}.ah-desk-link .btn{flex:none}
-@media(max-width:900px){.ah-card,.ah-attention>section{padding:18px}.ah-cards,.ah-attention{gap:14px}.ah-summary>div{padding:15px}}
-@media(max-width:620px){.ah-attention,.ah-cards{grid-template-columns:minmax(0,1fr)}.ah-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.ah-summary strong{font-size:25px}.ah-heading{gap:12px}.ah-heading h2{font-size:22px}.ah-heading>.btn{font-size:12px;padding:9px}.ah-desk-link{align-items:flex-start;flex-direction:column}.ah-card header{flex-wrap:wrap}.ah-times>div{grid-template-columns:minmax(86px,.7fr) minmax(0,1fr)}}
-.ah-more{border-top:1px solid #eee6e1;margin-top:16px;padding-top:10px}.ah-more>summary{cursor:pointer;color:#76514b;font-size:13px;font-weight:600;line-height:1.7;padding:12px 0;min-height:44px;box-sizing:border-box}.ah-more>summary:focus-visible{outline:3px solid #315b91;outline-offset:3px}.ah-more .ah-items{margin-top:0}
+/* 자동화 상태 — 제작 도구 B 「먼저 할 일 판」(13판, 2026-10-20). 공통 어휘는 maker-tools.css, 여기에는 이 탭에만 쓰는 규칙만.
+   signal.css가 뒤에 읽히므로 선택자는 :root .synk-workspace .mt .ah-panel 아래로 둔다. 인라인 style 없음(CSP). */
 
-.ah-card header{flex-wrap:wrap}.ah-card header>div{min-width:0;flex:1 1 150px}.ah-times>div>dd{min-width:0}.ah-card-counts>span{min-width:0;overflow-wrap:anywhere}
+/* 알림 줄 두 개(알림 · 일부만 확인)가 계기판 바로 아래 붙는다 */
+:root .synk-workspace .mt .ah-panel .ah-notices{display:grid;gap:6px;margin:-10px 0 22px}
+:root .synk-workspace .mt .ah-panel .ah-notices .mt-notice{margin:0}
 
-.ah-wait-count{color:#684f31}.ah-card .ah-count-note{font-size:11px;color:#756b69;margin:5px 0 0}
-.ah-project-item>.ah-project-date{display:block;margin-top:6px}
-.ah-project-section{margin:22px 0 26px;min-width:0}.ah-project-section>header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}.ah-project-section h3{font-size:18px;line-height:1.5;margin:0 0 9px}.ah-project-section>header>span{font-size:12px;color:#756b69}.ah-projects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:16px;align-items:start}.ah-project{min-width:0;border:1px solid #e5ddda;border-radius:14px;padding:20px;background:#fff;overflow-wrap:anywhere}.ah-project>header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.ah-project h4{margin:0;font-size:16px;line-height:1.7;min-width:0}.ah-project-counts{font-size:11px;line-height:1.8;color:#756b69;margin:8px 0}.ah-project-reason{margin:14px 0 0;padding:12px;background:#f8f4ee;border-radius:8px;color:#65544a;font-size:12px;line-height:1.8}.ah-project-reason>strong{display:block;margin-bottom:3px;color:#443a34}.ah-project-items{margin:0}.ah-project-items>.ah-project-item{border-top:0;padding:13px 0}.ah-project-items>.ah-project-item+.ah-project-item{border-top:1px solid #eee6e1}.ah-project-item>strong{margin-top:6px}.ah-project-date{font-size:11px;color:#756b69}.ah-project-related{margin-top:12px;border-top:1px solid #eee6e1}.ah-project-related>summary{min-height:44px;box-sizing:border-box;line-height:1.8;padding:12px 0}.ah-project-related h5{font-size:12px;color:#756b69;margin:10px 0 0;line-height:1.8}.ah-project-related>summary:focus-visible{outline:2px solid #986958;outline-offset:3px}@media(max-width:720px){.ah-projects{grid-template-columns:minmax(0,1fr)}.ah-project{padding:16px}}@media(max-width:380px){.ah-project>header{flex-wrap:wrap}.ah-project{padding:12px}}
-.ah-items>li.ah-stale,.ah-items>li.ah-stale:last-child{border-top:0;padding:18px;border-radius:10px;background:#fff5e6}.ah-items>li.ah-stale+li{border-top:0}.ah-stale .ah-badge{background:#fff}.ah-stale :is(strong,p){word-break:keep-all}@media(max-width:620px){.ah-items>li.ah-stale,.ah-items>li.ah-stale:last-child{padding:15px}}
+/* 01 조치할 문제 · 02 사람 차례 */
+:root .synk-workspace .mt .ah-panel .mt-job-meta>span[aria-hidden]{color:var(--mt-ink-4)}
+:root .synk-workspace .mt .ah-panel .mt-job-top .mt-badge{margin-top:1px}
+:root .synk-workspace .mt .ah-panel .mt-block>.mt-empty{padding:12px 2px 4px}
+:root .synk-workspace .mt .ah-panel .ah-rows>.mt-issue:last-child{border-bottom:0}
+:root .synk-workspace .mt .ah-panel .mt-issue>.mt-link{align-self:center}
+:root .synk-workspace .mt .ah-panel .mt-issue :is(strong,p){word-break:keep-all;overflow-wrap:anywhere}
+:root .synk-workspace .mt .ah-panel .ah-more{margin-top:10px}
+:root .synk-workspace .mt .ah-panel .ah-more>summary{font-size:13.5px}
+:root .synk-workspace .mt .ah-panel .ah-more[open]>.ah-more-body{padding-top:8px}
+:root .synk-workspace .mt .ah-panel .ah-more-body>.mt-job+.mt-job,:root .synk-workspace .mt .ah-panel .ah-more-body>.mt-job:first-child{margin-top:10px}
+:root .synk-workspace .mt .ah-panel .ah-more-body h4{margin:12px 2px 2px;font-size:12.5px;font-weight:var(--w-label);color:var(--mt-ink-3)}
+
+/* 프로젝트별 먼저 할 일(판 아래 전폭 — 표 위) */
+:root .synk-workspace .mt .ah-panel .ah-project{padding:12px 0 6px;border-top:1px solid var(--mt-line)}
+:root .synk-workspace .mt .ah-panel .ah-project:first-of-type{border-top:0;padding-top:4px}
+:root .synk-workspace .mt .ah-panel .ah-project-head{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}
+:root .synk-workspace .mt .ah-panel .ah-project-head h3{min-width:0;font-size:15.5px;line-height:1.4;font-weight:var(--w-title);letter-spacing:-.015em}
+:root .synk-workspace .mt .ah-panel .ah-project-reason{margin-top:3px;font-size:13.5px;line-height:1.55;color:var(--mt-ink-3)}
+:root .synk-workspace .mt .ah-panel .ah-project .ah-rows{margin-top:4px}
+
+/* 자동화 n개 — 머리줄 있는 한 줄 표(열 여섯은 늘 그대로, 좁으면 폭만 0으로 접는다) */
+:root .synk-workspace .mt .ah-panel .ah-table .ah-c-led{width:34px;padding-right:0}
+:root .synk-workspace .mt .ah-panel .ah-table .ah-c-name{width:24%}
+:root .synk-workspace .mt .ah-panel .ah-table .ah-c-when{width:118px;white-space:nowrap}
+:root .synk-workspace .mt .ah-panel .ah-table .ah-c-last{width:25%}
+:root .synk-workspace .mt .ah-panel .ah-table .ah-c-next{width:122px;white-space:nowrap}
+:root .synk-workspace .mt .ah-panel .ah-table td{vertical-align:top;overflow-wrap:anywhere}
+:root .synk-workspace .mt .ah-panel .ah-table :is(td,th).ah-c-name,:root .synk-workspace .mt .ah-panel .ah-table td.ah-c-last{word-break:keep-all}
+:root .synk-workspace .mt .ah-panel .ah-table td.ah-c-led .mt-led{margin-top:6px}
+:root .synk-workspace .mt .ah-panel .ah-table .mt-group-row th{padding-top:18px}
+:root .synk-workspace .mt .ah-panel .ah-table tbody:first-of-type .mt-group-row th{padding-top:12px}
+:root .synk-workspace .mt .ah-panel .ah-row{cursor:pointer}
+:root .synk-workspace .mt .ah-panel .ah-name{display:inline-flex;align-items:flex-start;gap:6px;max-width:100%;padding:0;border:0;background:none;font:var(--w-strong) 14.5px/1.4 var(--mt-sans);letter-spacing:-.01em;color:var(--mt-ink);text-align:left;cursor:pointer}
+:root .synk-workspace .mt .ah-panel .ah-name::after{content:'';flex:none;width:12px;height:12px;margin-top:4px;background:var(--mt-chev) center/12px no-repeat;opacity:.45;transform:rotate(90deg);transition:transform .15s}
+:root .synk-workspace .mt .ah-panel .ah-row.is-open .ah-name::after{transform:rotate(-90deg)}
+:root .synk-workspace .mt .ah-panel .ah-c-what>span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:13.5px;line-height:1.5;color:var(--mt-ink-3)}
+:root .synk-workspace .mt .ah-panel .ah-table :is(td.ah-c-when,td.ah-c-last,td.ah-c-next){font-size:13.5px;line-height:1.5;color:var(--mt-ink-2)}
+:root .synk-workspace .mt .ah-panel .ah-row.is-open>td{background:var(--mt-paper-2);border-bottom-color:transparent}
+
+/* 줄 펼침: 사실 4칸 + 하는 일 · 하지 않는 일 */
+:root .synk-workspace .mt .ah-panel .ah-detail>td{padding:2px 14px 18px 46px;background:var(--mt-paper-2)}
+:root .synk-workspace .mt .ah-panel .ah-table tbody tr.ah-detail:hover>td{background:var(--mt-paper-2)}
+:root .synk-workspace .mt .ah-panel .ah-detail .mt-facts{margin:0 0 8px;background:var(--mt-paper);border-radius:12px;border:1px solid var(--mt-line)}
+:root .synk-workspace .mt .ah-panel .ah-detail .mt-facts>div:first-child{padding-left:14px}
+:root .synk-workspace .mt .ah-panel .ah-detail .mt-facts dd{font-size:15px}
+:root .synk-workspace .mt .ah-panel .ah-what{margin:10px 0 8px}
+:root .synk-workspace .mt .ah-panel .ah-what h4{font-size:12.5px;font-weight:var(--w-label);color:var(--mt-ink-3)}
+:root .synk-workspace .mt .ah-panel .ah-what p{margin-top:3px;max-width:72ch;font-size:14px;line-height:1.6;color:var(--mt-ink-2)}
+
+/* 이상 없는 것 접기 — 접힌 줄은 같은 표 안 숨긴 묶음(#ah-folded), 표 아래 막대가 연다 */
+:root .synk-workspace .mt .ah-panel .ah-fold>summary>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+:root .synk-workspace .mt .ah-panel .ah-fold>summary>.ah-fold-open,:root .synk-workspace .mt .ah-panel .ah-fold[open]>summary>.ah-fold-closed{display:none}
+:root .synk-workspace .mt .ah-panel .ah-fold[open]>summary>.ah-fold-open{display:inline}
+:root .synk-workspace .mt .ah-panel .ah-foot{display:grid;gap:4px;margin-top:4px;padding-top:16px;border-top:1px solid var(--mt-line)}
+
+/* 좁을 때 열을 지우지 않고 폭 0으로 접는다(묶음 줄 · 펼침 줄 colspan과 열 수가 늘 같게) */
+@container mt (max-width:860px){
+  :root .synk-workspace .mt .ah-panel .ah-table :is(th,td).ah-x-md{width:0!important;max-width:0;padding:0!important;border-bottom-width:0;font-size:0!important;line-height:0!important;white-space:nowrap!important;overflow:hidden;visibility:hidden}
+  :root .synk-workspace .mt .ah-panel .ah-table :is(th,td).ah-x-md>*{display:none}
+  :root .synk-workspace .mt .ah-panel .ah-table .ah-c-name{width:34%}
+  :root .synk-workspace .mt .ah-panel .ah-table .ah-c-last{width:auto}
+}
+@container mt (max-width:700px){
+  /* 휴대폰 첫 화면 예산(Fable 6절): 뱃지는 제목 줄 오른쪽, 본문은 한 줄 → 첫 카드의 단추가 첫 화면에 든다 */
+  :root .synk-workspace .mt .ah-panel .mt-job-top{flex-direction:row;align-items:flex-start;gap:10px}
+  :root .synk-workspace .mt .ah-panel .ah-notices{margin:-6px 0 18px}
+  
+  :root .synk-workspace .mt .ah-panel .ah-table :is(th,td).ah-x-sm{width:0!important;max-width:0;padding:0!important;border-bottom-width:0;font-size:0!important;line-height:0!important;white-space:nowrap!important;overflow:hidden;visibility:hidden}
+  :root .synk-workspace .mt .ah-panel .ah-table :is(th,td).ah-x-sm>*{display:none}
+  :root .synk-workspace .mt .ah-panel .ah-table .ah-c-led{width:24px}
+  :root .synk-workspace .mt .ah-panel .ah-table .ah-c-name{width:48%}
+  :root .synk-workspace .mt .ah-panel .ah-detail>td{padding:2px 8px 16px}
+  :root .synk-workspace .mt .ah-panel .ah-detail .mt-facts>div:nth-child(odd){padding-left:12px}
+}
+:root .synk-workspace .mt .ah-inquiries .mt-issue{border-bottom:0}
+:root .synk-workspace .mt .ah-inquiries .mt-facts{margin:10px 0 0}
+:root .synk-workspace .mt .ah-inquiries .mt-note{margin-top:-4px}

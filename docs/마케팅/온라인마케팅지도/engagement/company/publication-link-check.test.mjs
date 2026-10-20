@@ -34,7 +34,7 @@ test('GET reads only saved targets with current permission, and absent resource 
 });
 
 test('a stored response preserves URL, HTTP evidence and server time across restart; cooldown is separate from staleness',async t=>{
-  const f=fixture(t),p=f.pack(),saved=(await f.service.check(f.users.owner,p.target)).check;assert.equal(saved.status,'reachable');assert.equal(saved.label,'HTTP 응답 확인');assert.equal(saved.checkedAt,BASE);assert.equal(saved.cooldownUntil,'2026-10-12T03:01:00.000Z');assert.equal(saved.nextCheckAt,'2026-10-12T09:00:00.000Z');assert.equal(saved.httpStatus,200);assert.equal(saved.finalUrl,RESOURCE);assert.equal(saved.revision,1);
+  const f=fixture(t),p=f.pack(),saved=(await f.service.check(f.users.owner,p.target)).check;assert.equal(saved.status,'reachable');assert.equal(saved.label,'접속됨');assert.equal(saved.checkedAt,BASE);assert.equal(saved.cooldownUntil,'2026-10-12T03:01:00.000Z');assert.equal(saved.nextCheckAt,'2026-10-12T09:00:00.000Z');assert.equal(saved.httpStatus,200);assert.equal(saved.finalUrl,RESOURCE);assert.equal(saved.revision,1);
   f.now(59999);assert.deepEqual((await f.service.check(f.users.owner,p.target)).check,saved);assert.equal(f.calls.length,1);await f.restart();assert.deepEqual(f.service.get(f.users.owner,p.target).check,saved);f.now(60000);assert.equal((await f.service.check(f.users.owner,p.target)).check.revision,2);assert.equal(f.calls.length,2);const row=f.store.all('publicationLinkChecks')[0];assert.equal(row.history.length,2);assert.equal(row.history[0].actorId,f.users.owner.id);assert.deepEqual(f.store.get('studioPublicationPackages',p.row.id),p.row);
 });
 

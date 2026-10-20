@@ -91,7 +91,7 @@ test('receipts deduplicate by source version before period filtering and do not 
 
 test('historical receipt stays completed while current reopened state is explicit',t=>{
   const f=fixture(t),s=f.source();f.studio.saveProduction(f.users.owner,{title:s.production.title,stage:'making',dueDate:'2026-10-13'},s.production.id);
-  const result=f.service.get(f.users.owner);assert.match(section(result,'completed').items[0].statusLabel,/현재 진행 중/);assert.equal(section(result,'upcoming').items[0].dueDate,'2026-10-13');
+  const result=f.service.get(f.users.owner);assert.match(section(result,'completed').items[0].statusLabel,/지금 다시 진행 중/);assert.equal(section(result,'upcoming').items[0].dueDate,'2026-10-13');
   assert.doesNotMatch(JSON.stringify(result),/PRIVATE-POST-BODY/);
 });
 
@@ -100,7 +100,7 @@ test('72h zero is a measured number while missing and not-yet-due measurements r
   f.performance.manualCheckpoint(f.users.owner,post.id,72,{measuredAt:'2026-10-08T01:00:00Z',metrics:{views:0,likes:2}});
   let rows=section(f.service.get(f.users.owner),'performance').items;assert.equal(rows.length,1);assert.match(rows[0].text,/조회 0회/);assert.match(rows[0].text,/좋아요 2회/);assert.doesNotMatch(rows[0].text,/댓글 0/);
   f.post({url:'https://www.youtube.com/watch?v=bcdefghijkl',publishedAt:'2026-10-06T01:00:00Z'});f.post({url:'https://www.youtube.com/watch?v=cdefghijklm',publishedAt:'2026-10-11T01:00:00Z'});
-  rows=section(f.service.get(f.users.owner),'performance').items;assert.equal(rows.filter(row=>row.statusLabel==='수치 미확인').length,1);assert.equal(rows.filter(row=>row.statusLabel==='72시간 관측 대기').length,1);
+  rows=section(f.service.get(f.users.owner),'performance').items;assert.equal(rows.filter(row=>row.statusLabel==='숫자 미확인').length,1);assert.equal(rows.filter(row=>row.statusLabel==='72시간 기다리는 중').length,1);
 });
 
 test('channel assignment is authoritative even for admin and old metadata cannot preserve access',t=>{
@@ -112,7 +112,7 @@ test('channel assignment is authoritative even for admin and old metadata cannot
 test('client followup and request history omit bodies and preserve reopened evidence',t=>{
   const f=fixture(t),p=f.project(),raw=f.store.get('clientProjects',p.id),messageId=randomUUID();
   f.store.put('clientProjects',p.id,{...raw,followUpHistory:[{id:'follow',at:IN_WEEK,note:'PRIVATE-CONTACT-NOTE',disposition:'schedule'}],messages:[{id:messageId,author:'customer',action:'support',text:'PRIVATE-REQUEST-BODY',at:IN_WEEK,resolved:false,resolvedAt:null,workflow:{status:'open',updatedAt:NOW,note:'PRIVATE-WORKFLOW-NOTE',history:[{action:'complete',at:IN_WEEK,note:'PRIVATE-OLD-NOTE'},{action:'reopen',at:NOW}]}}]});
-  const result=f.service.get(f.users.owner);assert.equal(section(result,'completed').total,2);assert.match(section(result,'completed').items.find(row=>row.kind==='client_resolved').statusLabel,/현재 진행 중/);assert.equal(section(result,'attention').total,1);assert.equal(section(result,'upcoming').total,2);
+  const result=f.service.get(f.users.owner);assert.equal(section(result,'completed').total,2);assert.match(section(result,'completed').items.find(row=>row.kind==='client_resolved').statusLabel,/지금 다시 진행 중/);assert.equal(section(result,'attention').total,1);assert.equal(section(result,'upcoming').total,2);
   assert.doesNotMatch(JSON.stringify(result),/PRIVATE-|inviteHash|customerName|"contact"/);
   for(const name of ['peer','manager','admin','viewer'])assert.equal(section(f.service.get(f.users[name]),'completed').total,0);
 });
@@ -126,13 +126,13 @@ test('next-week dates are inclusive and archived, delivered and unassigned work 
 
 test('stored experiment notes are linked without copying private text or guessing an execution date',t=>{
   const f=fixture(t),id=randomUUID();f.store.put('contentDrafts',id,{id,ownerId:f.users.owner.id,title:'다음 영상 실험',createdAt:IN_WEEK,status:'draft',input:{editorialNote:'PRIVATE-EXPERIMENT-TEXT'},plan:{ideas:[]}});
-  const result=f.service.get(f.users.owner),row=section(result,'upcoming').items[0];assert.equal(row.kind,'content_experiment');assert.equal(row.dueDate,undefined);assert.match(row.statusLabel,/날짜 미지정/);assert.match(row.href,/draftId=/);assert.doesNotMatch(JSON.stringify(result),/PRIVATE-/);
+  const result=f.service.get(f.users.owner),row=section(result,'upcoming').items[0];assert.equal(row.kind,'content_experiment');assert.equal(row.dueDate,undefined);assert.match(row.statusLabel,/날짜 없음/);assert.match(row.href,/draftId=/);assert.doesNotMatch(JSON.stringify(result),/PRIVATE-/);
   f.store.put('contentDrafts',id,{...f.store.get('contentDrafts',id),ownerId:f.users.other.id});assert.equal(section(f.service.get(f.users.owner),'upcoming').total,0);
 });
 
 test('source failures are partial rather than falsely empty, without exposing exception details',t=>{
   const f=fixture(t,{publicationWorkflow:{workspace(){throw new Error('SECRET-CONNECTION-STRING');}},taskSummary(){throw new Error('SECRET-CHAT-BODY');}});
-  const result=f.service.get(f.users.owner);for(const id of ['completed','attention','upcoming'])assert.equal(section(result,id).status,'partial');assert.doesNotMatch(JSON.stringify(result),/SECRET-/);assert.match(section(result,'attention').note,/일부 원문/);
+  const result=f.service.get(f.users.owner);for(const id of ['completed','attention','upcoming'])assert.equal(section(result,id).status,'partial');assert.doesNotMatch(JSON.stringify(result),/SECRET-/);assert.match(section(result,'attention').note,/일부 기록/);
 });
 
 test('messenger callback receives exact period and only whitelisted output is retained',t=>{

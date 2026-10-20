@@ -59,7 +59,7 @@ test('pending questions and planned contact keep closure blocked until existing 
 test('weekly records distinguish receipt and explicit closure from delivery, omit private content, and show reopening',async t=>{
   const f=await fixture(t);f.confirm();f.act('close',{confirmed:true});f.setTime('2026-10-12T00:00:00Z');let report=f.weekly.get(f.users.owner),completed=section(report,'completed');
   assert.equal(completed.filter(x=>x.kind==='client_delivery_receipt').length,1);assert.equal(completed.filter(x=>x.kind==='client_closeout').length,1);assert.equal(completed.find(x=>x.kind==='client_closeout').statusLabel,'프로젝트 마감');assert.doesNotMatch(JSON.stringify(report),/PRIVATE-INTERNAL|PRIVATE-CONTACT/);
-  f.save({nextContactDate:'2026-10-13'});report=f.weekly.get(f.users.owner);assert.match(section(report,'completed').find(x=>x.kind==='client_closeout').statusLabel,/현재 다시 확인/);
+  f.save({nextContactDate:'2026-10-13'});report=f.weekly.get(f.users.owner);assert.match(section(report,'completed').find(x=>x.kind==='client_closeout').statusLabel,/이전 마감 기록/);
   for(const user of [f.users.peer,f.users.other,f.users.manager,f.users.viewer])assert.equal(section(f.weekly.get(user),'completed').filter(x=>x.kind==='client_closeout').length,0);
 });
 

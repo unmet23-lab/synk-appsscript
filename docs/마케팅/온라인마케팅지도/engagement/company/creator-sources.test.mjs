@@ -70,6 +70,8 @@ test('repository manifest resolves every real file and font license without prod
 
 async function client(){
   const handlers={},context=createContext({state:{user:{id:'one'},tab:'workroom'},wr:{view:'tools'},document:{addEventListener(kind,fn){handlers[kind]=fn;},querySelector(){return null;}},escape:value=>String(value??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;'),icon:()=>'',render(){},modal(){},notify(){},api:async()=>({assets:[],guides:[]}),navigator:{clipboard:{writeText:async()=>{}}},URL,console});
+  // 화면 도우미(mtHead · mtBlock · mtBadge …)는 maker-tools.js 앞 절반. 머리 주석에도 같은 문구가 있어 줄 머리에서 찾는다.
+  const kit=await readFile(join(here,'public/maker-tools.js'),'utf8');runInContext(kit.slice(0,kit.indexOf('\n// ── 상태와 화면 바꾸기')),context);
   runInContext(await readFile(join(here,'public/creator-sources.js'),'utf8'),context);return {context,handlers,eval:code=>runInContext(code,context)};
 }
 
@@ -81,7 +83,7 @@ test('client loads sources only when the tools page is active and once per accou
 
 test('client discards a late previous account response and clears filters on reset',async()=>{
   const c=await client();let finish;c.context.api=()=>new Promise(resolve=>{finish=resolve;});const pending=c.eval('creatorSourcesEnsure()');c.context.state.user={id:'two'};c.eval('creatorSourcesReset()');finish({assets:[{title:'OLD ACCOUNT'}],guides:[]});await pending;assert.equal(c.eval('creatorSources.data'),null);
-  c.eval("creatorSources.category='font';creatorSources.query='old';creatorSources.limit=30;creatorSourcesReset()");assert.equal(c.eval('creatorSources.query'),'');assert.equal(c.eval('creatorSources.category'),'all');assert.equal(c.eval('creatorSources.limit'),6);
+  c.eval("creatorSources.category='font';creatorSources.query='old';creatorSourcesReset()");assert.equal(c.eval('creatorSources.query'),'');assert.equal(c.eval('creatorSources.category'),'all');assert.equal(c.eval('creatorSources.limit'),undefined);
 });
 
 test('client guards local download and preview links and escapes file metadata',async()=>{
@@ -91,6 +93,31 @@ test('client guards local download and preview links and escapes file metadata',
   const html=c.eval('creatorSourceCard(row)');assert.ok(!html.includes('<script>'));assert.ok(!html.includes('src="javascript:'));assert.ok(!html.includes('href="//evil'));assert.ok(html.includes('&lt;script&gt;'));
 });
 
+test('client panel shows every approved asset card with real kinds and folds usage details into the card',async()=>{
+  const c=await client(),logo=index=>({id:'logo-'+index,title:'로고 '+index,category:'logo',variant:'SNS 웹용',fileName:`logo-${index}.webp`,byteSize:2048,available:true,preview:'image',previewUrl:'/api/creator-sources/assets/logo-'+index,downloadUrl:'/api/creator-sources/assets/logo-'+index+'?download=1',usage:'로고는 비율을 지켜요.',sourcePath:'docs/디자인/SNS키트/README.md',assetPath:'docs/디자인/SNS키트/assets/logo-'+index+'.webp',updatedAt:'2026-10-20T12:21:41.000Z'});
+  const font={id:'suit-variable',title:'SUIT Variable',category:'font',variant:'한글 · 가변 웹 폰트',fileName:'SUIT-Variable.woff2',byteSize:624536,available:true,preview:'font',sample:'각자의 목표에 맞는 도움',sampleRole:'hangul',previewUrl:null,downloadUrl:'/api/creator-sources/assets/suit-variable?download=1',usage:'한글 본문은 500으로 써요.',sourcePath:'docs/브랜드_폰트_정본.md',license:{label:'SIL OFL 1.1',notice:'라이선스 원문을 같이 넘겨요.',url:'/api/creator-sources/assets/suit-license',downloadUrl:'/api/creator-sources/assets/suit-license?download=1'}};
+  const data={assets:[...Array.from({length:7},(_,index)=>logo(index)),font],guides:[{id:'pexels',title:'Pexels · 사진과 영상',url:'https://www.pexels.com/',licenseUrl:'https://www.pexels.com/license/',note:'조건'}],rightsTemplate:'자료 제목:'};
+  c.context.api=async()=>data;await c.eval('creatorSourcesEnsure()');const html=c.eval('creatorSourcesPanel()');
+  assert.match(html,/SYNK MAKER · SOURCES/);assert.match(html,/<dt>자료<\/dt><dd>8<\/dd>/);assert.match(html,/<dt>종류<\/dt><dd>2<\/dd>/);
+  // 8개 모두 한 번에 — 「먼저 6개 표시 · 자료 더 보기」와 종류 셀렉트는 없다. 종류 캡슐은 실제로 있는 종류만.
+  assert.equal((html.match(/data-creator-source-card="/g)||[]).length,8);assert.ok(!html.includes('더 보기'));assert.ok(!html.includes('<select'));
+  assert.deepEqual([...html.matchAll(/data-creator-source-category="([a-z]+)"/g)].map(match=>match[1]),['all','logo','font']);
+  assert.equal((html.match(/<a class="btn small" href="\/api\/creator-sources\/assets\/[a-z0-9-]+\?download=1" download>/g)||[]).length,8);
+  assert.match(html,/<details class="src-card-fold" id="creator-source-suit-variable" data-creator-source-card="suit-variable"><summary>/);assert.match(html,/SIL OFL 1\.1/);assert.match(html,/data-creator-source-action="copy-asset" data-id="suit-variable"/);
+  assert.ok(!/\sstyle=/.test(html));assert.ok(!html.includes('btn primary'));
+  const pick=id=>c.handlers.click({target:{closest:selector=>selector==='[data-creator-source-category]'?{dataset:{creatorSourceCategory:id}}:null}});
+  await pick('font');assert.equal(c.eval('creatorSources.category'),'font');assert.equal((c.eval('creatorSourcesResults()').match(/data-creator-source-card="/g)||[]).length,1);
+  await pick('unknown');assert.equal(c.eval('creatorSources.category'),'all');
+});
+
+test('client keeps opened asset cards open when search or kind redraws only the results',async()=>{
+  const c=await client();c.context.api=async()=>({assets:[{id:'suit-variable',title:'SUIT Variable',category:'font',available:true,preview:'font',sample:'가',downloadUrl:'/api/creator-sources/assets/suit-variable?download=1',usage:'한글 본문',sourcePath:'docs/브랜드_폰트_정본.md'}],guides:[]});await c.eval('creatorSourcesEnsure()');
+  const card={id:'creator-source-suit-variable',open:false},results={innerHTML:'',querySelectorAll:()=>[{id:card.id}]};
+  Object.assign(c.context.document,{querySelector:selector=>selector==='[data-creator-source-results]'?results:null,querySelectorAll:()=>[],getElementById:id=>id===card.id?card:null});
+  c.handlers.input({target:{value:'SU',matches:selector=>selector==='[data-creator-source-query]'}});
+  assert.match(results.innerHTML,/data-creator-source-card="suit-variable"/);assert.equal(card.open,true);
+  card.open=false;await c.handlers.click({target:{closest:selector=>selector==='[data-creator-source-category]'?{dataset:{creatorSourceCategory:'font'}}:null}});assert.equal(card.open,true);
+});
 test('client filters existing approved metadata without duplicating the materials vault',async()=>{
   const c=await client();c.context.assets=[{id:'1',title:'LAB',category:'logo',usage:'코랄'},{id:'2',title:'SUIT',category:'font',usage:'한글'}];c.eval('creatorSources.data={assets,guides:[]};creatorSources.category="font"');assert.equal(c.eval('creatorSourcesFiltered().length'),1);c.eval('creatorSources.category="all";creatorSources.query="코랄"');assert.equal(c.eval('creatorSourcesFiltered()[0].id'),'1');
   const script=await readFile(join(here,'public/creator-sources.js'),'utf8');assert.ok(!script.includes("api('/api/studio-materials"));assert.ok(!script.includes("api('/api/content-generate"));

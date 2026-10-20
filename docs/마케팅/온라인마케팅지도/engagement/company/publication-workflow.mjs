@@ -18,8 +18,8 @@ export function publicationWorkflowHref(action,source={}){
   else if(action==='review')query.set('packageId',source.packageId);
   else if(action==='publish'){query.set('packageId',source.packageId);if(FORMATS[source.publicationFormat])query.set('publicationFormat',source.publicationFormat);}
   else if(action==='performance'){query.set('entryId',source.entryId);query.set('checkpoint',source.checkpointHours+'h');}
-  else if(action==='link'){if(source.packageId)query.set('packageId',source.packageId);else if(source.entryId)query.set('entryId',source.entryId);else throw fail('확인할 링크 기록을 선택해 주세요.');}
-  else throw fail('게시 진행 단계를 확인해 주세요.');
+  else if(action==='link'){if(source.packageId)query.set('packageId',source.packageId);else if(source.entryId)query.set('entryId',source.entryId);else throw fail('확인할 링크를 골라 주세요.');}
+  else throw fail('알 수 없는 게시 단계예요.');
   return '/?'+query;
 }
 
@@ -39,7 +39,7 @@ export function createPublicationWorkflowService({store,studio,publicationInbox,
   }
   function workspace(user){
     user=current(user);if(user.role==='viewer')return {items:[]};
-    const at=instant(clock());if(at===null)throw fail('서버 시각을 확인해 주세요.',500);
+    const at=instant(clock());if(at===null)throw fail('서버 시계를 읽지 못했어요. 잠시 뒤 다시 해 주세요.',500);
     const items=[],packages=[],packageById=new Map(),sources=new Map();
     for(const row of store.all('studioPublicationPackages')){
       if(row.state!=='prepared')continue;
@@ -81,7 +81,7 @@ export function createPublicationWorkflowService({store,studio,publicationInbox,
         const delivered=available(()=>publicationInbox.readDraft(user,row.id));if(!delivered)continue;
         const missing=[...new Set(delivered.draft.channels||[])].filter(id=>FORMATS[id]&&!covered.get(key)?.has(id));
         if(!missing.length)continue;seenInbox.add(key);
-        items.push({id:`publication:prepare:${row.productionId}:${row.versionId}`,kind:'publication_prepare',group:'next',title:row.title||production.title,text:`확정본이 도착했습니다. 영상과 원고를 확인하고 ${missing.map(id=>FORMATS[id].label).join(' · ')} 게시 묶음을 준비해 주세요.`,href:publicationWorkflowHref('prepare',{inboxId:row.id}),status:'prepare',statusLabel:covered.has(key)?'남은 채널 묶음 준비':'완성본 확인',actionLabel:'영상 확인·게시 준비',createdAt:row.createdAt,updatedAt:row.updatedAt||row.createdAt,productionId:row.productionId,versionId:row.versionId,inboxId:row.id,channelFormats:missing});
+        items.push({id:`publication:prepare:${row.productionId}:${row.versionId}`,kind:'publication_prepare',group:'next',title:row.title||production.title,text:`완성본이 들어왔어요. 영상과 원고를 보고 ${missing.map(id=>FORMATS[id].label).join(' · ')} 게시 묶음을 만들어 주세요.`,href:publicationWorkflowHref('prepare',{inboxId:row.id}),status:'prepare',statusLabel:covered.has(key)?'남은 채널 묶음':'완성본 도착',actionLabel:'묶음 만들기',createdAt:row.createdAt,updatedAt:row.updatedAt||row.createdAt,productionId:row.productionId,versionId:row.versionId,inboxId:row.id,channelFormats:missing});
       }
     }
     // A replacement uploaded directly in the existing form has no inbox receipt.
@@ -93,7 +93,7 @@ export function createPublicationWorkflowService({store,studio,publicationInbox,
         const version=latestVideo(production);if(!version)continue;
         const row={productionId:production.id,versionId:version.id},key=pair(row);
         if(covered.has(key)||prepared.has(key)||!source(user,row))continue;
-        items.push({id:`publication:prepare:${production.id}:${version.id}`,kind:'publication_prepare',group:'next',title:production.title,text:'새 영상 버전이 등록됐습니다. 이 버전의 게시 묶음을 만들면 새 점검을 시작합니다. 이전 묶음의 확인 기록은 그대로 보관됩니다.',href:publicationWorkflowHref('prepare',row),status:'prepare',statusLabel:'새 버전 게시 준비',actionLabel:'새 버전 확인·게시 준비',createdAt:version.createdAt||production.updatedAt||production.createdAt,updatedAt:production.updatedAt||production.createdAt,productionId:production.id,versionId:version.id,channelFormats:[]});
+        items.push({id:`publication:prepare:${production.id}:${version.id}`,kind:'publication_prepare',group:'next',title:production.title,text:'새 영상 버전이 올라왔어요. 이 버전으로 게시 묶음을 만들면 점검을 새로 시작해요. 이전 묶음의 점검 기록은 그대로 남아요.',href:publicationWorkflowHref('prepare',row),status:'prepare',statusLabel:'새 버전 도착',actionLabel:'묶음 만들기',createdAt:version.createdAt||production.updatedAt||production.createdAt,updatedAt:production.updatedAt||production.createdAt,productionId:production.id,versionId:version.id,channelFormats:[]});
       }
     }
     // Legacy registrations must be repaired against their original package.
@@ -101,7 +101,7 @@ export function createPublicationWorkflowService({store,studio,publicationInbox,
     // Keep one action per record so several ambiguous posts can each be resolved.
     for(const {entry,linked,formats}of formatRepairs.values()){
       const production=sources.get(pair(linked));if(!ownProduction(user,production))continue;
-      items.push({id:`publication:format:${entry.id}`,kind:'publication_publish',group:'next',title:entry.title||linked.title||production.title,text:`${entry.channelName||'기존 게시물'}의 게시 형식을 확인해 주세요. 기존 주소 ${entry.url} 를 원래 묶음에 다시 연결하고 ${formats.map(id=>FORMATS[id].label).join(' 또는 ')} 중 실제 형식을 선택하면 성과와 게시 시각은 그대로 보존됩니다.`,href:publicationWorkflowHref('publish',{packageId:linked.id}),status:'format-required',statusLabel:'게시 형식 연결 확인',actionLabel:'기존 게시 형식 연결',createdAt:entry.createdAt,updatedAt:entry.updatedAt||entry.createdAt,productionId:linked.productionId,versionId:linked.versionId,packageId:linked.id,entryId:entry.id,publicationFormat:null,platform:entry.platform,channelFormats:[...formats]});
+      items.push({id:`publication:format:${entry.id}`,kind:'publication_publish',group:'next',title:entry.title||linked.title||production.title,text:`${entry.channelName||'기존 게시물'}의 게시 형식을 골라 주세요. 기존 주소 ${entry.url} 그대로 원래 묶음에 다시 잇고, ${formats.map(id=>FORMATS[id].label).join(' 또는 ')} 중 실제 형식을 고르면 숫자와 게시 시각은 바뀌지 않아요.`,href:publicationWorkflowHref('publish',{packageId:linked.id}),status:'format-required',statusLabel:'형식 고르기',actionLabel:'형식 고르기',createdAt:entry.createdAt,updatedAt:entry.updatedAt||entry.createdAt,productionId:linked.productionId,versionId:linked.versionId,packageId:linked.id,entryId:entry.id,publicationFormat:null,platform:entry.platform,channelFormats:[...formats]});
     }
     const shown=new Set();
     const linkIssues=new Map(),linkGroups=new Set();
@@ -116,7 +116,7 @@ export function createPublicationWorkflowService({store,studio,publicationInbox,
       const formats=(row.channels||[]).filter(format=>FORMATS[format]&&!completed.has(key+'|'+format)&&!ambiguous.has(key+'|'+format)&&!shown.has(key+'|'+format));
       if(linkIssues.has(row.id)){
         const check=linkIssues.get(row.id);for(const format of formats)shown.add(key+'|'+format);
-        items.push({id:`publication:link:package:${row.id}`,kind:'publication_link',group:'next',title:row.title||production.title,text:check.detail||'자료 링크의 오류 응답을 확인하고 원본을 수정하거나 다시 확인해 주세요.',href:publicationWorkflowHref('link',{packageId:row.id}),status:'link-error',statusLabel:'자료 링크 접속 오류',actionLabel:'링크 오류 확인',createdAt:row.createdAt,updatedAt:check.checkedAt||row.createdAt,productionId:row.productionId,versionId:row.versionId,packageId:row.id,channelFormats:formats});
+        items.push({id:`publication:link:package:${row.id}`,kind:'publication_link',group:'next',title:row.title||production.title,text:check.detail||'자료 링크에 접속하니 오류가 났어요. 주소가 맞는지 보고, 틀렸으면 고쳐 주세요.',href:publicationWorkflowHref('link',{packageId:row.id}),status:'link-error',statusLabel:'자료 링크 오류',actionLabel:'링크 보기',createdAt:row.createdAt,updatedAt:check.checkedAt||row.createdAt,productionId:row.productionId,versionId:row.versionId,packageId:row.id,channelFormats:formats});
         continue;
       }
       if(!formats.length)continue;
@@ -126,7 +126,7 @@ export function createPublicationWorkflowService({store,studio,publicationInbox,
         if(review.summary.status!=='complete'){
           for(const format of formats)shown.add(key+'|'+format);
           const needsWork=review.summary.status==='needs-work';
-          items.push({id:`publication:review:${row.id}`,kind:'publication_review',group:'next',title:row.title||production.title,text:`${formats.map(format=>FORMATS[format].label).join(' · ')} 묶음의 ${needsWork?'수정이 필요한 항목과 남은 점검':'남은 점검'}을 확인해 주세요. 직접 확인한 기록은 이 묶음에만 저장됩니다.`,href:publicationWorkflowHref('review',{packageId:row.id}),status:needsWork?'needs-work':'review',statusLabel:needsWork?'게시 전 수정 필요':'게시 전 점검',actionLabel:'남은 점검 확인',createdAt:row.createdAt,updatedAt:review.updatedAt||row.createdAt,productionId:row.productionId,versionId:row.versionId,packageId:row.id,channelFormats:formats});
+          items.push({id:`publication:review:${row.id}`,kind:'publication_review',group:'next',title:row.title||production.title,text:`${formats.map(format=>FORMATS[format].label).join(' · ')} 묶음에서 ${needsWork?'고칠 것을 고치고 남은 점검':'남은 점검'}을 해 주세요. 직접 본 기록은 이 묶음에만 남아요.`,href:publicationWorkflowHref('review',{packageId:row.id}),status:needsWork?'needs-work':'review',statusLabel:needsWork?'고칠 것 있음':'점검 남음',actionLabel:'점검하기',createdAt:row.createdAt,updatedAt:review.updatedAt||row.createdAt,productionId:row.productionId,versionId:row.versionId,packageId:row.id,channelFormats:formats});
           continue;
         }
       }
@@ -134,7 +134,7 @@ export function createPublicationWorkflowService({store,studio,publicationInbox,
         if(!FORMATS[format])continue;const identity=key+'|'+format;
         if(completed.has(identity)||ambiguous.has(identity)||shown.has(identity))continue;shown.add(identity);
         const label=FORMATS[format].label;
-        items.push({id:`publication:publish:${row.productionId}:${row.versionId}:${format}`,kind:'publication_publish',group:'next',title:row.title||production.title,text:`${label} 게시 묶음이 준비됐습니다. 파일을 확인한 뒤 실제 게시 주소를 기록해 주세요.`,href:publicationWorkflowHref('publish',{packageId:row.id,publicationFormat:format}),status:'publish',statusLabel:label+' 게시 주소 기록',actionLabel:'파일 받기·게시 주소 기록',createdAt:row.createdAt,updatedAt:row.createdAt,productionId:row.productionId,versionId:row.versionId,packageId:row.id,publicationFormat:format,platform:FORMATS[format].platform,channelFormats:[format]});
+        items.push({id:`publication:publish:${row.productionId}:${row.versionId}:${format}`,kind:'publication_publish',group:'next',title:row.title||production.title,text:`${label} 게시 묶음이 준비됐어요. 파일을 받아 올린 뒤 실제 게시 주소를 기록해 주세요.`,href:publicationWorkflowHref('publish',{packageId:row.id,publicationFormat:format}),status:'publish',statusLabel:label+' 게시 주소 기록',actionLabel:'주소 기록하기',createdAt:row.createdAt,updatedAt:row.createdAt,productionId:row.productionId,versionId:row.versionId,packageId:row.id,publicationFormat:format,platform:FORMATS[format].platform,channelFormats:[format]});
       }
     }
     const observations=new Set(),recorded=new Set(ownedEntries.flatMap(entry=>(entry.checkpoints||[]).filter(hasObservation).map(checkpoint=>observationKey(entry,checkpoint))));
@@ -142,7 +142,7 @@ export function createPublicationWorkflowService({store,studio,publicationInbox,
       if(entry.active===false)continue;
       if(publicationLinks){
         const check=available(()=>publicationLinks.get(user,{kind:'post',id:entry.id}))?.check;
-        if(check?.status==='error'&&check.canCheck)items.push({id:`publication:link:post:${entry.id}`,kind:'publication_link',group:'next',title:entry.title||entry.channelName||'게시한 콘텐츠',text:check.detail||'등록한 게시 주소의 오류 응답을 확인해 주세요.',href:publicationWorkflowHref('link',{entryId:entry.id}),status:'link-error',statusLabel:'게시 링크 접속 오류',actionLabel:'게시 링크 확인',createdAt:entry.createdAt,updatedAt:check.checkedAt||entry.updatedAt||entry.createdAt,entryId:entry.id,channelId:entry.channelId,platform:entry.platform});
+        if(check?.status==='error'&&check.canCheck)items.push({id:`publication:link:post:${entry.id}`,kind:'publication_link',group:'next',title:entry.title||entry.channelName||'게시한 콘텐츠',text:check.detail||'기록한 게시 주소에 접속하니 오류가 났어요. 게시물이 그대로 있는지 봐 주세요.',href:publicationWorkflowHref('link',{entryId:entry.id}),status:'link-error',statusLabel:'게시 링크 오류',actionLabel:'링크 보기',createdAt:entry.createdAt,updatedAt:check.checkedAt||entry.updatedAt||entry.createdAt,entryId:entry.id,channelId:entry.channelId,platform:entry.platform});
       }
       for(const checkpoint of entry.checkpoints||[]){
         if(![24,72].includes(checkpoint.hours))continue;
@@ -151,10 +151,10 @@ export function createPublicationWorkflowService({store,studio,publicationInbox,
         if(checkpoint.status==='collecting'&&(closes===null||closes>=at))continue;
         if(observations.has(identity))continue;observations.add(identity);
         const missed=checkpoint.status==='missed'||closes!==null&&at>closes;
-        const label=missed?'관측 시간 경과':checkpoint.status==='retry'?'자동 확인 재시도 중':checkpoint.status==='manual-required'?'직접 수치 보완':'성과 수치 확인';
-        const text=missed?`${checkpoint.hours}시간 관측 시간이 지났습니다. 당시 확인해 둔 수치가 있으면 확인 시각과 함께 기록하고, 현재 수치는 현재 확인 시각으로 남겨 주세요.`:checkpoint.status==='retry'?`${checkpoint.hours}시간 수치를 자동으로 다시 확인하고 있습니다. 플랫폼에서 직접 확인한 수치도 보완할 수 있습니다.`:`${checkpoint.hours}시간 확인 시각이 됐지만 기록한 수치가 없습니다. 공식 화면에서 직접 확인한 수치를 보완해 주세요.`;
+        const label=missed?'시각 지남':checkpoint.status==='retry'?'다시 읽을 예정':checkpoint.status==='manual-required'?'빠진 숫자 넣기':'숫자 확인';
+        const text=missed?`${checkpoint.hours}시간 숫자를 읽을 시각이 지났어요. 그때 봐 둔 숫자가 있으면 본 시각과 함께 넣고, 지금 숫자는 지금 시각으로 남겨 주세요.`:checkpoint.status==='retry'?`${checkpoint.hours}시간 숫자를 자동으로 다시 읽을 거예요. 채널에서 직접 본 숫자를 넣어도 돼요.`:`${checkpoint.hours}시간 숫자를 읽을 시각이 됐는데 아직 숫자가 없어요. 채널에서 직접 본 숫자를 넣어 주세요.`;
         const linked=packageById.get(entry.publicationPackageId);
-        items.push({id:`publication:performance:${entry.id}:${checkpoint.hours}`,kind:'publication_performance',group:'reply',title:entry.title||entry.channelName||'게시한 콘텐츠',text,href:publicationWorkflowHref('performance',{entryId:entry.id,checkpointHours:checkpoint.hours}),status:missed?'missed':checkpoint.status,statusLabel:label,actionLabel:'수치 보완',createdAt:checkpoint.dueAt,updatedAt:entry.updatedAt||entry.createdAt,entryId:entry.id,checkpointHours:checkpoint.hours,channelId:entry.channelId,channelName:entry.channelName,platform:entry.platform,productionId:linked?.productionId||null,versionId:linked?.versionId||null,packageId:linked?.id||null});
+        items.push({id:`publication:performance:${entry.id}:${checkpoint.hours}`,kind:'publication_performance',group:'reply',title:entry.title||entry.channelName||'게시한 콘텐츠',text,href:publicationWorkflowHref('performance',{entryId:entry.id,checkpointHours:checkpoint.hours}),status:missed?'missed':checkpoint.status,statusLabel:label,actionLabel:'숫자 넣기',createdAt:checkpoint.dueAt,updatedAt:entry.updatedAt||entry.createdAt,entryId:entry.id,checkpointHours:checkpoint.hours,channelId:entry.channelId,channelName:entry.channelName,platform:entry.platform,productionId:linked?.productionId||null,versionId:linked?.versionId||null,packageId:linked?.id||null});
       }
     }
     return {items:items.sort(newest)};

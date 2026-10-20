@@ -113,8 +113,8 @@ test('removing a version, media, package or archived production removes only its
 test('checkpoint timing projects due, failed, retry and missed work without starting collection',t=>{
   const f=fixture(t),entry=f.register();f.now(23.99);assert.equal(f.item().length,0);f.now(24);let item=f.item()[0];assert.equal(item.kind,'publication_performance');assert.equal(item.checkpointHours,24);assert.equal(item.group,'reply');
   const raw=f.store.get('postPerformanceEntries',entry.id),modify=status=>f.store.put('postPerformanceEntries',entry.id,{...raw,checkpoints:raw.checkpoints.map(c=>c.hours===24?{...c,status}:c)});
-  modify('manual-required');assert.equal(f.item()[0].statusLabel,'직접 수치 보완');modify('retry');assert.equal(f.item()[0].status,'retry');modify('collecting');assert.equal(f.item().length,0);
-  f.now(31);item=f.item()[0];assert.equal(item.status,'missed');assert.match(item.text,/현재 수치는 현재 확인 시각/);f.now(73);assert.deepEqual(f.item().map(x=>x.checkpointHours).sort(),[24,72]);assert.equal(f.store.get('postPerformanceEntries',entry.id).checkpoints[0].status,'collecting','projection never mutates collection state');
+  modify('manual-required');assert.equal(f.item()[0].statusLabel,'빠진 숫자 넣기');modify('retry');assert.equal(f.item()[0].status,'retry');modify('collecting');assert.equal(f.item().length,0);
+  f.now(31);item=f.item()[0];assert.equal(item.status,'missed');assert.match(item.text,/지금 숫자는 지금 시각/);f.now(73);assert.deepEqual(f.item().map(x=>x.checkpointHours).sort(),[24,72]);assert.equal(f.store.get('postPerformanceEntries',entry.id).checkpoints[0].status,'collecting','projection never mutates collection state');
 });
 
 test('zero is a completed observation and optional unavailable metrics do not cause endless work',t=>{

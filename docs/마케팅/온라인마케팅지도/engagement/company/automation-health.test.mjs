@@ -95,7 +95,7 @@ test('collecting leases do not hide a stuck collection; retry, connection and mi
 test('manual-only platform and manual confirmation are not automated failure',()=>{
   const f=fixture(),post=f.post({platform:'threads'});f.data.channels[0].platform='threads';f.state.performance.channels[0].connected=false;
   let result=f.get();assert.equal(result.issues.length,0);assert.equal(result.manual.length,1);assert.equal(card(result,'performance').status,'manual');
-  post.platform='youtube';f.data.channels[0].platform='youtube';f.state.performance.channels[0].connected=true;post.checkpoints[0].status='manual-required';result=f.get();assert.equal(result.issues.length,0);assert.equal(result.manual[0].statusLabel,'직접 수치 보완');
+  post.platform='youtube';f.data.channels[0].platform='youtube';f.state.performance.channels[0].connected=true;post.checkpoints[0].status='manual-required';result=f.get();assert.equal(result.issues.length,0);assert.equal(result.manual[0].statusLabel,'빠진 숫자 넣기');
 });
 
 test('intentional entry, channel and server pause does not raise missing collection alarms',()=>{
@@ -193,10 +193,10 @@ test('a stopped automatic check is handed to a person instead of promising anoth
   // 10-20: 재시도하지 않을 실패(manual-required)에 「다시 확인합니다」를 보이고 직접 보완 할 일을 지웠다.
   const f=fixture(),post=f.post({checkpoints:[{hours:24,status:'manual-required',dueAt:BEFORE,closesAt:'2026-10-12T08:00:00.000Z',nextAttemptAt:'2026-10-12T08:00:00.000Z',lastErrorCode:'CANCELLED',metrics:{views:null}}]});
   let result=f.get();
-  assert.ok(!JSON.stringify(result.issues).includes('다시 확인합니다'));
-  assert.equal(result.manual.find(row=>row.id==='performance:metric:'+post.id+':24')?.statusLabel,'직접 수치 보완');
+  assert.ok(!JSON.stringify(result.issues).includes('다시 읽어요'));
+  assert.equal(result.manual.find(row=>row.id==='performance:metric:'+post.id+':24')?.statusLabel,'빠진 숫자 넣기');
   post.checkpoints[0].lastErrorCode='AUTH_REQUIRED';result=f.get();
   assert.equal(result.issues.find(row=>row.id==='performance:connection:'+post.id+':24')?.status,'connection','a lost connection asks to reconnect');
   post.checkpoints[0]={...post.checkpoints[0],status:'retry',lastErrorCode:'RATE_LIMITED',nextAttemptAt:'2026-10-12T03:30:00.000Z'};result=f.get();
-  assert.match(result.issues.find(row=>row.id==='performance:collection:'+post.id+':24').text,/다시 확인합니다/,'only a real retry says it will check again');
+  assert.match(result.issues.find(row=>row.id==='performance:collection:'+post.id+':24').text,/다시 읽어요/,'only a real retry says it will check again');
 });

@@ -69,7 +69,7 @@ test('actual channel conversion preserves source, reuses vertical render, produc
   assert.throws(()=>f.service.get(f.outsider,pkg.id),error=>error.status===404);
   await assert.rejects(f.service.download(f.outsider,pkg.id),error=>error.status===404);
   const row=f.store.get('studioPublicationPackages',pkg.id),changed=await readFile(join(f.directory,'studio-media',row.outputs[0].diskName));changed[changed.length-1]^=1;await writeFile(join(f.directory,'studio-media',row.outputs[0].diskName),changed);
-  await assert.rejects(f.service.download(f.owner,pkg.id),/변경/);
+  await assert.rejects(f.service.download(f.owner,pkg.id),/바뀌었어요/);
 });
 
 test('original mode copies matching MP4 without FFmpeg, rejects incompatible target and overlong subtitles',needsFfmpeg,async t=>{
