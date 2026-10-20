@@ -192,13 +192,41 @@ function reachedBy(git, tips, sha) {
   if (tips.includes(sha)) return true;
   return !git(['rev-list', '--max-count=1', '--stdin'], Buffer.from([sha, ...tips.map(tip => '^' + tip)].join('\n') + '\n')).toString().trim();
 }
-// 공개 원격의 선행 커밋에 닿는 원격 ref 하나(가지 먼저). 복원할 때 그 공개 저장소를 받으면 선행 커밋이 따라온다.
+// 여러 커밋이 모두 원격 끝(tips)에서 닿는지 한 번에 본다: `rev-list <커밋…> ^<끝>…`이 비면 모두 닿는다(닿지 않는 커밋은 자기가 나온다).
+function allReachedBy(git, tips, shas) {
+  const wanted = [...new Set(shas)].filter(sha => !tips.includes(sha));
+  if (!wanted.length) return true;
+  if (!tips.length) return false;
+  return !git(['rev-list', '--max-count=1', '--stdin'], Buffer.from([...wanted, ...tips.map(tip => '^' + tip)].join('\n') + '\n')).toString().trim();
+}
+// 원격 끝에서 닿는 커밋과 그 자식 목록. rev-list --parents 한 번으로 읽고, 같은 git·remoteRefs·tips로 부르는 동안 다시 쓴다.
+const reachGraphs = new WeakMap();
+function reachGraph(git, remoteRefs, tips) {
+  const cached = reachGraphs.get(remoteRefs);
+  if (cached && cached.git === git && cached.tips === tips) return cached;
+  const present = new Set(tips), children = new Map(), known = new Set();
+  const ordered = remoteRefs.filter(row => present.has(row.sha))
+    .sort((a, b) => Number(b.ref.startsWith('refs/heads/')) - Number(a.ref.startsWith('refs/heads/')));
+  if (present.size) for (const line of git(['rev-list', '--parents', '--stdin'], Buffer.from([...present].join('\n') + '\n')).toString().split('\n')) {
+    const [commit, ...parents] = line.trim().split(' ');
+    if (!OID.test(commit)) continue;
+    known.add(commit);
+    for (const parent of parents) (children.get(parent) || children.set(parent, []).get(parent)).push(commit);
+  }
+  const graph = { git, tips, ordered, children, known };
+  reachGraphs.set(remoteRefs, graph);
+  return graph;
+}
+// 공개 원격의 선행 커밋에 닿는 원격 ref 하나(가지 먼저, 나머지는 ls-remote 차례). 복원할 때 그 공개 저장소를 받으면 선행 커밋이 따라온다.
+// 예전에는 선행 커밋마다 원격 ref를 하나씩 rev-list로 물어, 선행 커밋 49개·원격 끝 560개(가지 66·pull·synk-backup·태그)에서 1,702번을
+// 불렀다. CPU가 꽉 찬 10-20 19:30 회차는 한 번에 약 1초씩 걸려 24분 제한에 끊겼고, 동기 호출이 이어지는 동안 GitHub 영수증 heartbeat도
+// 멈췄다. 이제 위 그래프에서 선행 커밋의 후손을 모아 같은 차례의 첫 ref를 고른다 — 고르는 ref는 예전과 같다(10-20).
 function reachingRef(git, remoteRefs, tips, sha) {
-  if (!reachedBy(git, tips, sha)) return null;
-  const present = new Set(tips);
-  return remoteRefs.filter(row => present.has(row.sha))
-    .sort((a, b) => Number(b.ref.startsWith('refs/heads/')) - Number(a.ref.startsWith('refs/heads/')))
-    .find(row => reachedBy(git, [row.sha], sha)) || null;
+  const graph = reachGraph(git, remoteRefs, tips);
+  if (!graph.known.has(sha)) return null;
+  const descendants = new Set([sha]);
+  for (const queue = [sha]; queue.length;) for (const child of graph.children.get(queue.pop()) || []) if (!descendants.has(child)) { descendants.add(child); queue.push(child); }
+  return graph.ordered.find(row => descendants.has(row.sha)) || null;
 }
 function verifyPrerequisites(record, receipt) {
   // 선행 커밋 행은 세 가지다. 비공개 원격에 refs/synk-backup/<sha>로 고정한 행, 공개 원격에는 쓰지 않으므로
@@ -231,7 +259,7 @@ function verifyPrerequisites(record, receipt) {
   const published = receipt.prerequisites.filter(row => publicRow(row, row.sha));
   if (published.length) {
     const tips = presentCommits(git, parseRefs(git(['ls-remote', '--refs', 'origin'])));
-    if (published.some(required => !reachedBy(git, tips, required.sha))) throw new Error('BUNDLE_PREREQUISITE_REMOTE_MISSING');
+    if (!allReachedBy(git, tips, published.map(required => required.sha))) throw new Error('BUNDLE_PREREQUISITE_REMOTE_MISSING');
   }
 }
 async function verifyDriveCoverage(receipt, vault, { now = Date.now(), verification = null } = {}) {

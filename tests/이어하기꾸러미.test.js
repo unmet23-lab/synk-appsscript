@@ -303,6 +303,43 @@ test('검토한 오탐 값은 그 경로의 그 값에만 허용한다(10-19)', 
   }
 });
 
+test('검토한 긴 base64는 그 경로의 그 값만 내장 자료 검사에서 빼고, 다른 경로·바뀐 값·data 주소·비밀값은 그대로 막는다(10-20)', t => {
+  const crypto = require('node:crypto');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-encoded-review-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const tools = path.join(__dirname, '..', 'tools');
+  // 풀면 정규식 글인 긴 base64(공개.js 도구 이름 목록과 같은 꼴). 합성 값이라 실제 목록과 따로 잰다.
+  const encoded = Buffer.from(Array.from({ length: 48 }, (_, i) => 'word' + i).join('|')).toString('base64');
+  assert.ok(encoded.length > 256);
+  const listed = JSON.parse(fs.readFileSync(path.join(tools, 'github-backup-reviewed-literals.json'), 'utf8'));
+  listed.entries.push({ path: 'tools/sample.js', sha256: crypto.createHash('sha256').update(encoded).digest('hex'), kind: 'encoded-text', reason: 'Synthetic.' });
+  fs.writeFileSync(path.join(dir, 'github-backup-reviewed-literals.json'), JSON.stringify(listed));
+  fs.copyFileSync(path.join(tools, 'onedrive-reviewed-literals.json'), path.join(dir, 'onedrive-reviewed-literals.json'));
+  fs.copyFileSync(path.join(tools, '이어하기꾸러미.js'), path.join(dir, 'policy.js'));
+  const reviewed = require(path.join(dir, 'policy.js')).textPolicy;
+  const code = "const list = '" + encoded + "';\n";
+  const flipped = encoded.slice(0, 100) + (encoded[100] === 'A' ? 'B' : 'A') + encoded.slice(101);
+  assert.equal(textPolicy('tools/sample.js', Buffer.from(code)), 'embedded-media-or-base64', '검토 줄이 없으면 막는다');
+  assert.equal(reviewed('tools/sample.js', Buffer.from(code)), null);
+  assert.equal(reviewed('tools/sample.js', Buffer.from(code.replace(/\n/g, '\r\n'))), null, 'CRLF 사본도 같은 값이다');
+  const blocked = [
+    ['tools/other.js', code, '같은 값이라도 다른 경로'],
+    ['tools/sample.js', "const list = '" + flipped + "';\n", '한 글자 바뀐 값'],
+    ['tools/sample.js', code + "const blob = '" + ['data', 'application/octet-stream;base64,'].join(':') + encoded + "';\n", 'data 주소에 붙은 검토 값'],
+    ['tools/sample.js', code + "const more = '" + 'QUJD'.repeat(70) + "';\n", '검토 값 옆의 다른 긴 base64'],
+    ['tools/sample.js', code + "const png = '" + 'iVBORw0K' + "GgoAAAANSUhEUgAAAAEAAAAB';\n", '검토 값 옆의 그림 머리말'],
+  ];
+  for (const [name, body, why] of blocked) assert.equal(reviewed(name, Buffer.from(body)), 'embedded-media-or-base64', why);
+  assert.equal(reviewed('tools/sample.js', Buffer.from(code + "const api" + "Key = 'live-value-123456';\n")), 'secret-literal', '비밀값 검사는 원문 그대로');
+  // 창고 보존 사본은 색인이 그 경로를 가리킬 때만 넘긴다. 색인에 기댄 결과라 읽기 기록에 남기지 않는다.
+  const info = {}, preserved = '작업문서_미통합_자동/files/' + crypto.createHash('sha256').update(code).digest('hex') + '.js';
+  assert.equal(reviewed(preserved, Buffer.from(code), info), 'embedded-media-or-base64');
+  assert.equal(info.dependsOnIndex, true);
+  const plain = {};
+  assert.equal(reviewed('tools/other.js', Buffer.from("const list = '" + 'QUJD'.repeat(70) + "';\n"), plain), 'embedded-media-or-base64');
+  assert.equal(plain.dependsOnIndex, undefined, '검토 값이 아닌 긴 base64는 색인을 보지 않는다');
+});
+
 test('검토한 문서 예제 예외는 정확한 경로와 원문 SHA에만 적용한다', t => {
   const relative = '.agents/skills/higgsfield-websites/references/security.md';
   const source = path.resolve(__dirname, '..', relative);

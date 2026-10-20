@@ -1119,3 +1119,13 @@ test('작은 함수: 참조 풀기·토큰 값·점검 규칙 읽기·glob', () 
   const 읽음2 = 속.점검규칙읽기(바꾼순서.join('\n'));
   assert.equal(Buffer.from(읽음2.낱말, 'base64').toString(), 'a|b');
 });
+
+test('도구 사본(256자 넘는 base64)은 OneDrive 문서 백업 검토 목록에 그 값이 있어 평문 사본으로 남는다(10-20)', () => {
+  // 10-20 판 목록이 452자가 되자 OneDrive 문서 백업이 이 파일을 내장 자료로 막아 19:30부터 실행마다 실패했다.
+  const { textPolicy } = require(path.join(REPO, 'tools', '이어하기꾸러미.js'));
+  const 원문 = fs.readFileSync(path.join(REPO, 'tools', '공개.js'));
+  const 긴값 = (원문.toString('utf8').match(/[A-Za-z0-9+/]{256,}={0,2}/g) || []).map((값) => crypto.createHash('sha256').update(값).digest('hex'));
+  assert.equal(textPolicy('tools/공개.js', 원문), null,
+    '점검규칙사본을 바꿨으면 값을 풀어 도구 이름 정규식인지 보고 tools/github-backup-reviewed-literals.json에 ' +
+    '경로 tools/공개.js · 값 SHA-256 · kind encoded-text · 사유 한 줄을 더한다. 지금 긴 값 SHA: ' + 긴값.join(', '));
+});

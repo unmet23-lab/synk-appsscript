@@ -9,6 +9,8 @@ const { execFileSync } = require('node:child_process');
 const ROOT = path.resolve(__dirname, '..');
 const reviewedSourceLiterals = require('./github-backup-reviewed-literals.json').entries;
 const reviewedExactSources = require('./onedrive-reviewed-literals.json').entries;
+// 검토한 긴 base64(kind encoded-text): 풀면 글자인 값을 사람이 보고 경로·값 SHA로 올린 것. 내장 자료 검사에서만 뺀다(10-20).
+const reviewedEncodedTexts = reviewedSourceLiterals.filter(row => row.kind === 'encoded-text');
 let preservedReviewPaths;
 function originalReviewPaths(source, data) {
   const match = source.replace(/\\/g, '/').match(/^작업문서_미통합_자동\/(files\/([a-f0-9]{64})\.[a-z0-9]+)$/);
@@ -120,6 +122,21 @@ function documentExampleText(source, data, text) {
     (_, key, assignment, quote) => key + assignment + quote + 'example' + quote);
   return lines.join('\n');
 }
+// 256자 넘는 base64 줄기 가운데 검토 목록(kind encoded-text)에 경로·값 SHA가 둘 다 맞는 것만 자리표시로 바꾼다. 내장 자료 검사에만 쓰고
+// 비밀값 검사는 원문 그대로 본다. 자리표시는 base64 글자 32자라 data:…;base64, 뒤에 붙은 검토 값은 계속 막힌다. 공개.js의 배포 점검
+// 도구 이름 목록(풀면 정규식 글)이 452자가 되며 10-20 19:30부터 OneDrive 실행을 실패시켰다. 보존 사본은 값이 맞을 때만 창고 색인을 본다(10-20).
+function withoutReviewedEncodedText(source, data, normalized, info) {
+  const runs = reviewedEncodedTexts.length ? normalized.match(/[A-Za-z0-9+/]{256,}={0,2}/g) : null;
+  if (!runs) return normalized;
+  const digest = run => crypto.createHash('sha256').update(run).digest('hex');
+  const matching = new Set(runs.map(digest).filter(sha => reviewedEncodedTexts.some(row => row.sha256 === sha)));
+  if (!matching.size) return normalized;
+  const relative = source.replace(/\\/g, '/');
+  if (info && /^작업문서_미통합_자동\//.test(relative)) info.dependsOnIndex = true;
+  const paths = [relative, ...originalReviewPaths(source, data)];
+  const allowed = new Set(reviewedEncodedTexts.filter(row => matching.has(row.sha256) && paths.includes(row.path)).map(row => row.sha256));
+  return allowed.size ? normalized.replace(/[A-Za-z0-9+/]{256,}={0,2}/g, run => allowed.has(digest(run)) ? 'ReviewedEncodedTextPlaceholder00' : run) : normalized;
+}
 // 이름만으로 TypeScript와 MPEG-TS를 구분하지 않는다. 실제 바이트도 검사한다.
 // info를 주면 분류가 창고 색인(보존 사본의 원래 경로)에 기댔는지 info.dependsOnIndex로 알린다. 그런 결과는 읽기 기록에 남기지 않는다.
 function textPolicy(source, data, info) {
@@ -134,10 +151,11 @@ function textPolicy(source, data, info) {
   const normalized = documentExampleText(source, data, text).replace(/\\u([0-9a-f]{4})/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16))).replace(/\\\//g, '/');
   // 형식 이름만 적은 설명(`data:image/png`)이나 실행 중에 붙이는 값(`;base64,${…}`, `;base64,' + b64`)은 담긴 자료가 없다.
   // 쉼표 뒤에 실제 내용이 바로 이어질 때만 내장 자료로 본다(10-19).
-  if (/data:\s*(?:image|audio|video|font)\/[\w.+-]+(?:;[\w.+-]+(?:=[\w.+-]+)?)*\s*,\s*(?!\$\{)[^\s"'`)]/i.test(normalized) ||
-      /data:[^,\r\n]{0,160};base64\s*,\s*[A-Za-z0-9+/]{16}/i.test(normalized) ||
-      /[A-Za-z0-9+/]{256,}={0,2}/.test(normalized) ||
-      /(?:iVBORw0KGgo|\/9j\/|R0lGOD|UklGR|T2dnUw|SUQz|UEsDB|JVBERi0)[A-Za-z0-9+/=]{16,}/.test(normalized)) return 'embedded-media-or-base64';
+  const media = withoutReviewedEncodedText(source, data, normalized, info);
+  if (/data:\s*(?:image|audio|video|font)\/[\w.+-]+(?:;[\w.+-]+(?:=[\w.+-]+)?)*\s*,\s*(?!\$\{)[^\s"'`)]/i.test(media) ||
+      /data:[^,\r\n]{0,160};base64\s*,\s*[A-Za-z0-9+/]{16}/i.test(media) ||
+      /[A-Za-z0-9+/]{256,}={0,2}/.test(media) ||
+      /(?:iVBORw0KGgo|\/9j\/|R0lGOD|UklGR|T2dnUw|SUQz|UEsDB|JVBERi0)[A-Za-z0-9+/=]{16,}/.test(media)) return 'embedded-media-or-base64';
   if (/-----BEGIN (?:[A-Z ]+ )?PRIVATE KEY-----|\bAKIA[0-9A-Z]{16}\b|\bAIza[\w-]{30,}|\b(?:gh[pousr]_|github_pat_|xox[baprs]-|sk-(?:proj-)?)\w[\w-]{18,}|\beyJ[\w-]{12,}\.[\w-]{12,}\.[\w-]{12,}/.test(normalized)) return 'secret-signature';
   // 따옴표 안 상태 문구(API_KEY: ...)와 실제 키 대입을 구별한다. 접두사가 붙은 환경 키 이름도 검사한다.
   const literals = [...normalized.matchAll(/(?<![\w"'`])(["']?)(?:[A-Za-z_$][\w$-]*)?(?:password|passwd|api[_-]?key|client[_-]?secret|access[_-]?token|refresh[_-]?token|private[_-]?key|authorization)\1\s*[:=]\s*(["'])((?:\\.|(?!\2)[^\r\n])+)\2/gi)]
@@ -665,7 +683,7 @@ if (require.main === module) main();
 // 그대로일 때만 쓴다. 파일 전체가 아니라 그 함수·규칙의 실제 불러온 판으로 지문을 만든다. 범위·목록 규칙처럼 분류와 무관한
 // 수정에 기록 전체를 버리지 않고, 파일을 다시 읽는 사이 바뀌는 틈도 없다(10-19).
 const policyFingerprint = () => crypto.createHash('sha256').update(JSON.stringify([
-  [textPolicy, 금지인가, 문서인가, excludedPath, descriptiveMarkdown, documentExampleText, originalReviewPaths, payload].map(String),
+  [textPolicy, 금지인가, 문서인가, excludedPath, descriptiveMarkdown, documentExampleText, withoutReviewedEncodedText, originalReviewPaths, payload].map(String),
   [...forbidden, sourceCode, credentialName, excluded, generatedDirectory].map(String), MAX_TEXT_BYTES,
   reviewedDocumentExamples, reviewedSourceLiterals, reviewedExactSources])).digest('hex');
 const POLICY_FINGERPRINT = policyFingerprint();

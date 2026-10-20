@@ -616,6 +616,12 @@
       "path": "tests/hermes-synk-overview.test.cjs",
       "sha256": "eacb9ab8f6db03232e40f809d83464809bdfd41203c70051cc4b42e380732afa",
       "reason": "Synthetic private-* sentinel that the hermes overview test asserts is never shown in its output or caches."
+    },
+    {
+      "path": "tools/공개.js",
+      "sha256": "cac85f630fba0eb4112b0c287214b23d73b945ba6b2795a6391b17ca6269883e",
+      "kind": "encoded-text",
+      "reason": "Base64 copy of the public site deploy check's producer-name pattern (10-20 list, 452 characters). Decodes to 276 characters of plain regex text; no media, binary, or credential. Reviewed 2026-10-20."
     }
   ]
 }

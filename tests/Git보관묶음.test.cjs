@@ -383,3 +383,53 @@ test('prerequisite rows are checked by their kind, whatever the origin visibilit
   f.git(['push', 'origin', `${f.base}:${PREFIX}${f.base}`]);
   verifyPrerequisites({ path: f.source, private: false }, { requiredCommits: [f.base], prerequisites: [{ sha: f.base, ref: PREFIX + f.base }] });
 });
+
+test('public prerequisites take the first reaching remote ref (branches first, then ls-remote order) from one rev-list, however many remote refs (10-20)',
+  { skip: !crypt && 'local archive encryption module unavailable' }, async t => {
+  const f = fixture(t), remote = path.join(f.root, 'public.git');
+  f.git(['init', '--bare', remote], f.root); f.git(['remote', 'add', 'origin', remote]); f.git(['push', 'origin', 'main']);
+  const commit = (branch, from, name) => {
+    f.git(['switch', '-c', branch, from]); fs.writeFileSync(path.join(f.source, name), name + '\n');
+    f.git(['add', name]); f.git(['commit', '-m', name]); return f.git(['rev-parse', 'HEAD']).toString().trim();
+  };
+  // 공개 원격의 끝: 가지 둘, 가지·pull에서는 닿지 않고 고정 ref에서만 닿는 커밋 하나, base를 가리키는 pull 하나와 태그 여럿.
+  const a = commit('feat-a', f.base, 'a.txt'), b = commit('feat-b', f.base, 'b.txt'), pinned = commit('pinned-only', f.base, 'p.txt');
+  f.git(['push', 'origin', 'feat-a', 'feat-b', `${pinned}:${PREFIX}${pinned}`, `${f.base}:refs/pull/1/head`,
+    ...Array.from({ length: 30 }, (_, i) => `${f.base}:refs/tags/v${i}`)]);
+  // 미게시 가지 셋이 각각 그 끝에서 갈라진다 — 선행 커밋은 a·b·pinned.
+  const heads = { x: commit('x', a, 'x.txt'), y: commit('y', b, 'y.txt'), z: commit('z', pinned, 'z.txt') };
+  const keys = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 }), pub = path.join(f.root, 'public.pem');
+  fs.writeFileSync(pub, keys.publicKey.export({ type: 'spki', format: 'pem' }));
+  const record = { name: 'reach-fixture', path: f.source, repository: 'unmet23-lab/reach-fixture', private: false,
+    refs: Object.entries(heads).map(([name, sha]) => ({ sha, status: 'public-origin-unpublished', sourceRefs: ['refs/heads/' + name] })) };
+  const calls = [], dependencies = { github: { private: false, full_name: record.repository }, git(args, input) {
+    calls.push(args);
+    if (args[0] === 'remote' && args[1] === 'get-url') return Buffer.from('git@github.com:unmet23-lab/reach-fixture.git\n');
+    return f.git(args, f.source, input);
+  } };
+  const receipt = await preserveRecord(record, f.root, { PUB: () => pub, encryptStream: crypt.encryptStream }, () => {}, dependencies);
+  // 예전 방법 그대로(차례대로 ref 하나씩 물어 처음 닿는 것)를 merge-base로 다시 구해 견준다.
+  const ordered = f.git(['ls-remote', '--refs', 'origin']).toString().trim().split('\n').map(line => line.split('\t'))
+    .map(([sha, ref]) => ({ sha, ref })).sort((x, y) => Number(y.ref.startsWith('refs/heads/')) - Number(x.ref.startsWith('refs/heads/')));
+  const ancestor = (sha, tip) => { try { f.git(['merge-base', '--is-ancestor', sha, tip]); return true; } catch (_) { return false; } };
+  const expected = sha => ordered.find(row => row.sha === sha || ancestor(sha, row.sha))?.ref;
+  assert.deepEqual([...receipt.requiredCommits].sort(), [a, b, pinned].sort());
+  assert.deepEqual(Object.fromEntries(receipt.prerequisites.map(row => [row.sha, row.ref])),
+    Object.fromEntries([a, b, pinned].map(sha => [sha, expected(sha)])));
+  assert.deepEqual([expected(a), expected(b), expected(pinned)], ['refs/heads/feat-a', 'refs/heads/feat-b', PREFIX + pinned]);
+  // 원격 ref 35개를 하나씩 묻지 않는다: rev-list는 그래프를 읽는 한 번뿐이다(10-20 19:30 회차는 1,702번).
+  assert.deepEqual(calls.filter(args => args[0] === 'rev-list'), [['rev-list', '--parents', '--stdin']]);
+  assert.equal(calls.some(args => args[0] === 'push'), false);
+});
+
+test('public prerequisite rows are checked together: every reachable row passes, one local-only commit among them fails (10-20)', t => {
+  const f = fixture(t), remote = path.join(f.root, 'public.git');
+  f.git(['init', '--bare', remote], f.root); f.git(['remote', 'add', 'origin', remote]); f.git(['push', 'origin', 'main']);
+  f.git(['switch', '-c', 'other', f.base]); fs.writeFileSync(path.join(f.source, 'other.txt'), 'other\n');
+  f.git(['add', 'other.txt']); f.git(['commit', '-m', 'other']); f.git(['push', 'origin', 'other']);
+  const other = f.git(['rev-parse', 'HEAD']).toString().trim();
+  const rows = shas => ({ requiredCommits: shas, prerequisites: shas.map(sha => ({ sha, ref: 'refs/heads/main', public: true })) });
+  verifyPrerequisites({ path: f.source, private: false }, rows([f.base, other]));
+  for (const shas of [[f.base, other, f.head], [f.head, f.base]])
+    assert.throws(() => verifyPrerequisites({ path: f.source, private: false }, rows(shas)), error => error.message === 'BUNDLE_PREREQUISITE_REMOTE_MISSING');
+});
