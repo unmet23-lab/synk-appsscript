@@ -208,6 +208,7 @@
 - 원인: `docs/브랜드_폰트/SUIT/SUIT-SemiBold.otf`의 U+2192는 꺾쇠 모양이다. U+2702(✂)·U+2014(—)·U+203A(›)·U+25B8(▸)은 글자가 없다. ▶·↑·①~④·×·…·°는 있다.
 - 고침: 「크다」로 읽힐 수 있는 곳은 「35mm에서 24mm로」처럼 글로 쓰고, 빠진 기호는 글자로 바꾼다(「[나눔 A]」).
 - 다시 확인: `python -c "from fontTools.ttLib import TTFont; c=TTFont('docs/브랜드_폰트/SUIT/SUIT-SemiBold.otf').getBestCmap(); print([hex(x) for x in (0x2192,0x2702,0x2014) if x in c])"`가 `['0x2192']`.
+- 10-20 Remotion(yuhobuilds 첫날 편): DM Mono에는 →가 없어 `'DM Mono', 'SUIT', monospace`에서 SUIT의 꺾쇠로 나왔다(「17:35 질문 > 17:53 답」). 실제 출력 줄처럼 화살표를 글자 그대로 보여야 할 때는 글꼴 목록에서 Inter Tight를 SUIT 앞에 둔다(`'DM Mono', 'Inter Tight', monospace` → 제대로 된 →). 정지컷으로 확인.
 
 ## 목소리·받아쓰기
 
