@@ -4,7 +4,7 @@
   "코드": "F07",
   "키": "없음(1차 가번호 — 캐스팅북 반영 때 붙음)",
   "이름": "채원(가칭)",
-  "틀": "M01_이안.json과 같은 기본 명세서에 「바뀌면_안되는_것」을 더한 1차 5명 판(로드맵 7절 4단계). 데이터셋·LoRA 칸은 학습 뒤에 더한다.",
+  "틀": "M01_이안.json과 같은 기본 명세서에 「바뀌면_안되는_것」을 더한 1차 5명 판(로드맵 7절 4단계). 데이터셋·LoRA 칸은 10-21 학습 뒤에 더했다.",
   "콘셉트": "「운동하는 언니」 · 스포티·건강",
   "기준파일": {
     "대표사진": "C:/SYNK-LoRA/casting/wave1_20261019/F07_c1.jpg",
@@ -97,6 +97,36 @@
     "역할": "필라테스 강사·러너·헬스 회원·캠핑",
     "금지": "섹시, 전후 비교 연출",
     "업종": "운동복·레깅스, 다이어트·단백질, 필라테스·요가, 러닝·아웃도어, 선케어"
+  },
+  "데이터셋": {
+    "트리거": "pls_f07",
+    "v1": {
+      "폴더": "C:/SYNK-LoRA/datasets/F07_chaewon/v1",
+      "장수": 14,
+      "스크립트": "C:/SYNK-LoRA/validation/_v2공통/make_v1.py (F07_chaewon/captions_v1.json)"
+    },
+    "v2": {
+      "폴더": "C:/SYNK-LoRA/datasets/F07_chaewon/v2",
+      "장수": 33,
+      "스크립트": "C:/SYNK-LoRA/validation/_v2공통/make_v2.py (F07_chaewon/captions_v2.json)",
+      "새컷": "10-20 Gemini Ultra 나노바나나 2.1, 참조 4장, 19장",
+      "장면": "C:/SYNK-LoRA/validation/F07_chaewon/shots_v2.json",
+      "한장표": "C:/SYNK-LoRA/validation/F07_chaewon/v2_check/_새컷_한장.jpg"
+    },
+    "학습설정": "C:/SYNK-LoRA/validation/F07_chaewon/job_config_v2.json",
+    "학습": "2026-10-21 01:34~04:22, 33장, 3,300스텝, 한 번에(재시작 없음)"
+  },
+  "LoRA": {
+    "v2": {
+      "트리거": "pls_f07",
+      "쓸_판": "C:/SYNK-LoRA/outputs/f07_chaewon_v2/f07_chaewon_v2.safetensors (마지막 3,300스텝)",
+      "예비": "C:/SYNK-LoRA/outputs/f07_chaewon_v2/ 250스텝마다 저장(판끼리 비교는 안 함)",
+      "프롬프트_꼴": "pls_f07, a young Korean woman in her mid-twenties, <구도·표정·옷·배경·조명>",
+      "검증": "통과(2026-10-21, Fable 판정) — 학습에 없던 각도·조명 10장이 모두 채원으로 보인다(예 9·약함 1·아니오 0). 지킬 특징 둘은 지워지지 않았다: 코·광대 주근깨는 10칸 전부 보이고(흐린 평광 V04·얼굴 96px V08만 옅음) 오히려 플래시·직사광·형광등·무대 조명(V01·V05·V09·V10)에선 기준(20~30개)보다 촘촘한 쪽으로 기울며, 굵은 일자 눈썹은 10/10. 홑꺼풀 10/10(쌍꺼풀로 바뀐 칸 없음), 픽시컷 10/10(길어진 칸 없음), 그을린 피부는 V04만 밝아지고(ΔE 10) 표백된 칸 없음, 각진 턱 유지. 보이는 나이 24~30, 가운데 25~28로 범위(20~30) 안이고 얼굴이 아이돌형으로 바뀐 칸 없음(V07 무표정 코트 컷·V08 6.85등신은 분위기만 모델형). 약한 칸: V05 아래에서 한낮(「squinting」이 세트 06 화남의 내린 눈썹·미간 세로 주름으로 반쯤 새고 직사광에 27~30 — 입은 웃고 있어 아홉 모델 중 가장 약한 약함). 전신 V08은 얼굴 96px에서도 채원으로 읽혀 경계 예(등신 6.85·어깨/얼굴폭 2.36으로 허용 윗끝 넘음, 입술 어두움). 옆얼굴 +64°로 아홉 모델 중 가장 많이 돌았고 45°(V02 −23°)도 1차 확장 중 가장 많이 돎, 「front view」 −10°, 좌우 방향 V02 왼쪽·V03 오른쪽은 따르고 V09는 왼쪽(2/3). 파란 해 질 녘 무표정(V07)·맨얼굴 플래시(V01)에서 눈매·눈썹·턱 유지. 창가 옆얼굴 땀방울 없음, 촛불 V06 광대에 작은 알갱이 2~3개. 트리거 없는 「a young Korean woman」 견본이 500스텝부터 짧은 머리 여자로 샘(소연·은정과 다름). 학습은 한 번에 3,300스텝(01:34~04:22, 2.77 s/it), 재시작 없음, 견본은 1,000스텝부터 채원 고정",
+      "검증표": "C:/SYNK-LoRA/validation/F07_chaewon/v2_validate/verify_v2_10장.jpg",
+      "검증_작업": "C:/SYNK-LoRA/validation/F07_chaewon/verify_v2_jobs.json",
+      "주의": "주근깨는 안 적어도 10/10 나오고 플래시·직사광·형광등·무대 조명(V01·V05·V09·V10)에선 기준보다 촘촘·진하게 턱선까지 번지니 클로즈업은 light sun freckles across the nose and cheekbones를 적고 시드 2~3개에서 보통 밀도를 고르며 연속 컷은 후보정으로 농도를 맞춘다. 흐린 평광·밝은 배경에선 피부가 밝아지고 주근깨가 옅어지니(V04) sun-tanned warm skin, visible freckles를 적고 뺨을 확인. 촛불·따뜻한 결에선 주근깨가 점처럼 커지고 뺨에 땀방울·돌기 같은 알갱이가 생기니(V06) smooth matte skin, fine freckles와 후보정. squinting·frown은 06 화남의 내린 눈썹·미간 주름이 반쯤 새니(V05) relaxed brow, soft eyes slightly narrowed, soft smile로 바꾸고 한낮 야외는 시드 2~3개. focused는 노트북을 내려다보는 눈이 되니(V09) 눈이 보여야 하면 looking straight at the camera with a calm confident expression(학습 32 B15 꼴). 차가운 빛(V07·V09)은 피부 ΔE 13~15·입술 어두움이라 warm skin tone, muted rose-brown lips 후보정, V07 무표정은 화보 분위기로 기우니 생활형이 필요하면 slight smile·soft warm light. 전신은 얼굴 96px에서도 채원이나 등신 6.85·어깨/얼굴폭 2.36으로 기준(6.41)보다 길쭉하니(V08) 167 cm, healthy average build, about six and a half heads tall, camera at waist height를 적고 등신을 재며 얼굴은 클로즈업 따로 → 얼굴 띠 → 2K 또는 img2img 0.6. 좌우 방향은 대체로 따르나 소품 쪽을 보고(V09) 45°는 18~23°에 그치니 three-quarter view, 45 degrees, far ear hidden으로 적고 각도를 잰다. front view는 −10° 돌고(V07) candid snapshot은 광각 꼴(V01)이라 head square to the camera·85mm portrait lens로. 트리거 분리가 약해 트리거 없는 a young Korean woman도 짧은 머리 채원 꼴이 되니 한 장면에 다른 여자 모델 LoRA를 섞지 않고 채원 LoRA를 건 장면에 다른 여자를 세우지 않는다. 귀걸이·수염 같은 트리거 꾸밈은 없다"
+    }
   },
   "목소리": {
     "엔진": "타입캐스트 ssfm-v30 · seed 1018",

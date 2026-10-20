@@ -4,7 +4,7 @@
   "코드": "M05",
   "키": "없음(1차 가번호 — 캐스팅북 반영 때 붙음)",
   "이름": "준호(가칭)",
-  "틀": "M01_이안.json과 같은 기본 명세서에 「바뀌면_안되는_것」을 더한 1차 5명 판(로드맵 7절 4단계). 데이터셋·LoRA 칸은 학습 뒤에 더한다.",
+  "틀": "M01_이안.json과 같은 기본 명세서에 「바뀌면_안되는_것」을 더한 1차 5명 판(로드맵 7절 4단계). 데이터셋·LoRA 칸은 10-21 학습 뒤에 더했다.",
   "콘셉트": "「믿음직한 생활형」 · 편안·단정",
   "기준파일": {
     "대표사진": "C:/SYNK-LoRA/casting/wave1_20261019/M05_h1.jpg",
@@ -97,6 +97,36 @@
     "역할": "남편·아빠(아이 없이)·캠핑족·주말 요리·팀장",
     "금지": "섹시·수염·위스키(태준 자리)",
     "업종": "가전·주방, 캠핑·아웃도어, 패밀리 자동차, 면도기·그루밍, 건강보조, 육아용품(아빠)"
+  },
+  "데이터셋": {
+    "트리거": "pls_m05",
+    "v1": {
+      "폴더": "C:/SYNK-LoRA/datasets/M05_junho/v1",
+      "장수": 14,
+      "스크립트": "C:/SYNK-LoRA/validation/_v2공통/make_v1.py (M05_junho/captions_v1.json)"
+    },
+    "v2": {
+      "폴더": "C:/SYNK-LoRA/datasets/M05_junho/v2",
+      "장수": 33,
+      "스크립트": "C:/SYNK-LoRA/validation/_v2공통/make_v2.py (M05_junho/captions_v2.json)",
+      "새컷": "10-20 Gemini Ultra 나노바나나 2.1, 참조 4장, 19장",
+      "장면": "C:/SYNK-LoRA/validation/M05_junho/shots_v2.json",
+      "한장표": "C:/SYNK-LoRA/validation/M05_junho/v2_check/_새컷_한장.jpg"
+    },
+    "학습설정": "C:/SYNK-LoRA/validation/M05_junho/job_config_v2.json",
+    "학습": "2026-10-20 22:05~10-21 01:30, 33장, 3,300스텝, 한 번에(재시작 없음)"
+  },
+  "LoRA": {
+    "v2": {
+      "트리거": "pls_m05",
+      "쓸_판": "C:/SYNK-LoRA/outputs/m05_junho_v2/m05_junho_v2.safetensors (마지막 3,300스텝)",
+      "예비": "C:/SYNK-LoRA/outputs/m05_junho_v2/ 250스텝마다 저장(판끼리 비교는 안 함)",
+      "프롬프트_꼴": "pls_m05, a Korean man in his late thirties, <구도·표정·옷·배경·조명>",
+      "검증": "통과(2026-10-21, Fable 판정) — 학습에 없던 각도·조명 10장이 모두 준호로 보인다(예 8·약함 2·아니오 0). 단 면도한 턱인데 어두운·따뜻한 빛과 작은 얼굴 세 칸(V06 촛불·V08 전신·V09 형광등)에 수염 그림자가 생겼다(학습 33장 전부 면도·캡션에 수염 0회 — 바탕 모델 버릇이 LoRA를 뚫고 나온 것) → 지시문에 clean-shaven, smooth jaw를 늘 적고 턱을 확인하는 조건. 지킬 특징은 웃는 칸(V01·V04·V05·V10)마다 눈가 부채꼴 주름이 잡히고 넓은 이마는 9칸에서 보인다(V08만 머리선이 내려와 짧음). 보이는 나이 34~46, 가운데 38~40으로 유지되고 어려지거나 모델형으로 바뀐 칸 없음(가장 어린 V02 34~37도 생활형). 약한 칸: V06 촛불 돌아봄(눈이 가늘고 눈꺼풀이 무거워지고 눈썹이 굵어지며 턱·인중 수염 그림자·뺨 점 여럿, 41~46 — 태준 자리 분위기형으로 샘), V08 전신(얼굴 97px라 눈썹 굵고 눈 가늘어지고 콧수염·턱수염 그림자, 이마 짧아짐, 39~44 — 얼굴 다시 그리기로 고침). V09는 눈매·코·가르마는 준호인데 턱 수염 그림자·입 벌어짐으로 경계 예. 좌우 방향 V02 왼쪽·V03 오른쪽·V09 오른쪽 3/3, V09 +24°로 45° 칸 중 가장 많이 돌았고, 옆얼굴 +60°, front view −8°로 일곱 모델 중 가장 정면. squinting(V05)은 세트 06 화남으로 새지 않고 햇빛에 웃으며 찡그린 얼굴(40~44). 창가 옆얼굴(V03)은 뺨·관자놀이 피부가 비늘 결로 갈라짐(태준·민재 V03 땀방울과 같은 시드 103 버릇). 학습 25 독서 안경은 노트북 구도(V09)에도 안 샘. 학습은 한 번에 3,300스텝(10-20 22:05~10-21 01:30, 2시간 59분), 재시작 없음, 견본은 1,500스텝부터 준호 고정",
+      "검증표": "C:/SYNK-LoRA/validation/M05_junho/v2_validate/verify_v2_10장.jpg",
+      "검증_작업": "C:/SYNK-LoRA/validation/M05_junho/verify_v2_jobs.json",
+      "주의": "면도한 턱이 어두운·따뜻한 빛과 작은 얼굴에서 수염 그림자로 돌아오니(V06·V08·V09, V03 인중 옅게) 모든 지시문에 clean-shaven, smooth jaw를 적고 턱·인중을 2배로 확인, 연속 컷은 후보정 — 수염은 준호 금지 항목. 촛불·따뜻한 측광 어깨 너머 돌아봄은 눈이 가늘어지고 수염 그림자가 깔려 태준 자리 분위기형으로 새니(V06) 준호는 그 구도를 피하거나 warm friendly smile, soft kind eyes, clean-shaven으로 적고 시드 2~3개, 클로즈업은 img2img 0.6. 따뜻한 빛엔 뺨 점이 늘어 clear skin with only a few faint moles. 전신은 얼굴 97px에서 눈썹 굵고 눈 가늘어지고 이마 짧아지고 수염 그림자가 생기니(V08) 얼굴은 클로즈업 따로 → 얼굴 띠 → 2K 또는 img2img 0.6(몸은 6.88등신 보통 체형으로 기준 안, 다리 0.511은 걷는 자세). 지시문엔 캡션과 같이 in his late thirties를 두고 young·handsome은 쓰지 않는다. 창가 측광 옆얼굴은 뺨·관자놀이가 비늘 결로 갈라지니(V03) smooth clean skin을 적거나 시드를 바꾸고 뺨을 2배로 확인. 한낮 직사광 찡그림은 40~44로 보이니(V05) 젊어 보여야 하면 soft daylight, relaxed brow. 차가운 평광 무표정은 진지·피곤해 보이니(V07) 밝은 얼굴은 slight smile. focused는 시선이 카메라 밖(노트북 쪽)으로 가고 입이 벌어지니(V09) eyes on the laptop screen, lips closed 또는 looking at the camera, calm을 적고 형광등엔 warm skin tone. 좌우 방향은 적은 대로 돌고(3/3) 45°는 16~24°에 그치니 three-quarter view, 45 degrees, far ear hidden으로 적고 각도를 잰다. candid snapshot은 광각 꼴(V01)이라 85mm portrait lens로. 입술은 어두운 빛에서 적갈색(V06·V08·V09)으로 쏠려 muted rose lips를 적는다"
+    }
   },
   "목소리": {
     "엔진": "타입캐스트 ssfm-v30 · seed 1018",
