@@ -22,6 +22,47 @@ YouTube Data API에는 비공개 영상의 시청자 초대 ACL을 자동 관리
 
 운영자가 `videoPrivacy: "unlisted"`로 선택하면 초대 단계 없이 링크로 시청한다. 앱은 반별 수강권으로 입구를 제한하지만 YouTube 링크를 전달받은 외부인도 재생할 수 있으므로 수강생 전용 보호라고 표현하면 안 된다. 이 설정은 서버의 반 설정과 반드시 일치시킨다. 반·학생 정보가 드러나는 영상 제목은 사용하지 않는다.
 
+**TOPIK 4급 온라인 반은 일부공개로 한다**(10-20 유호님 결정, [결정 표](../../docs/_ops/결정.md)).
+- 원격 학생만 있는 반이라 화면에는 선생님과 자료만 나온다. 일부공개면 수업마다 하던 Studio 초대와 확인 SQL이 없어진다.
+- 설정은 [config.online.example.json](config.online.example.json)을 쓴다. 교실 하나(`online`), 반 하나, `videoPrivacy: "unlisted"`다. 서버의 반 설정 SQL([앱 운영 문서](../../../SYNK-talk/docs/수업영상_운영.md#반과-이용권-설정))도 `video_privacy`를 그 예제의 `'private'` 대신 `'unlisted'`로 넣는다.
+- 기수가 끝나면 아래 「기수 마치기」로 그 반 영상과 재생목록을 비공개로 돌린다.
+- 오프라인 교실처럼 학생 얼굴이 나오는 반은 비공개를 유지한다.
+
+<a id="close-cohort"></a>
+## 기수 마치기 — 일부공개 반을 비공개로 닫기
+
+`close-cohort`는 한 기수가 끝난 반의 영상을 비공개로 돌리고, worker가 그 반을 더 건드리지 않게 닫는다.
+
+```powershell
+# 1) 미리 보기: 바뀔 영상(제목과 함께)과 재생목록만 보여 주고 아무것도 바꾸지 않는다
+node tools/classroom-media/cli.js close-cohort CONFIG CLASS_ID --human
+# 2) 실행: 미리 보기를 확인한 뒤에만
+node tools/classroom-media/cli.js close-cohort CONFIG CLASS_ID --confirmed-cohort-ended --human
+```
+
+- **순서:** 마지막 수업의 복습 영상이 `ready`가 되고, 서버의 그 반 이용권이 끝난 뒤(`ends_at`이 지났거나 `revoked_at`) 실행한다. 이용권이 남아 있으면 학생 앱·WORLD에 링크는 보이는데 영상은 열리지 않는다.
+- **실행할 때:** 명령은 worker와 같은 잠금을 쓴다. `watch`가 돌고 있으면 잠깐 멈추거나, 잠금 오류가 나면 조금 뒤 다시 실행한다. 할당량은 바꿀 영상 V편에 약 50×V + 55유닛이다(8주 기수 8~16편이면 하루 한도 10,000 가운데 455~855).
+- **거절하는 때:**
+  - 그 반에 끝나지 않은 수업이 있다(예정·방송 중·처리 중, 동기화 일시정지). → `CLASS_HAS_UNFINISHED_SESSIONS`. 단, 예정 시각에서 12시간이 지났는데 열리지 않은(녹화도 없는) 라이브 수업은 「열리지 않은 수업」으로 보여 주고, 실행하면 작업 기록에 실패로 남긴다(서버로는 보내지 않는다). 실제로 열었던 수업이면 먼저 `once`로 상태를 맞춘다. 그 수업의 예정 방송이 비공개로 바뀌지 않았다고 나오면 Studio에서 그 예정 방송을 지운다.
+  - 아직 읽지 않은 녹화 완료 파일이 있다. → `CLASS_HAS_PENDING_RECORDING`. 버릴 파일이면 담당자가 확인한 뒤 inbox 밖 보관 폴더로 옮긴다.
+  - OBS가 그 반으로 녹화 중이다. → `OBS_RECORDING_IN_PROGRESS`
+  - 아직 끝나지 않은 수업이 그 반으로 준비(arm)돼 있다. → `CLASS_ARMED`. 녹화하지 않을 수업이면 담당자가 그 `active-*.json`을 보관 폴더로 옮긴다. 이미 끝난 수업의 준비 파일(방송만 하고 녹화하지 않은 날)은 실행할 때 `….closed.<시각>.json`으로 이름을 바꿔 OBS가 닫힌 반에 새 녹화를 붙이지 못하게 한다. OBS가 정상 완료 뒤 남기는 `….in-use.completed.<시각>.json`은 기록일 뿐이라 막지 않는다.
+- **바꾸는 것:**
+  - 대상은 worker가 기록한 그 반의 영상(완본으로 교체된 라이브 포함)과 반 재생목록에 든 영상(Studio에서 직접 넣은 것 포함)이다. 이 가운데 반의 공개설정과 같은 영상(온라인 반이면 일부공개)을 `private`로 바꾼다.
+  - 이미 비공개라도 예약 공개 시각(`publishAt`)이 걸린 영상은 그 예약을 푼다. 남겨 두면 그 시각에 공개된다.
+  - 다른 공개설정 칸(라이선스·퍼가기 허용·아동용 표시 등)은 그대로 둔다.
+  - 반 재생목록도 제목·설명을 그대로 둔 채 비공개로 돌린다.
+- **건드리지 않는 것:**
+  - 다른 채널의 영상, 다른 반 수업이 쓰는 영상, 이미 비공개(예약 없음)인 영상은 바꾸지 않는다.
+  - 재생목록에 참고 자료로 넣은 **공개 영상**도 바꾸지 않는다. 미리 보기에 「공개 영상 · 그대로」로 보이니, 필요하면 Studio에서 사람이 판단한다.
+  - 서버 DB와 이용권은 바꾸지 않는다. 영상을 지우지도 않는다.
+- **닫힌 반:**
+  - 작업 기록 폴더에 `class-closed-<CLASS_ID>.json`이 생기고, 그 반 작업에 닫은 시각이 적힌다.
+  - 그 반은 `once/watch`의 조회·동기화, `verify`에서 빠진다. `prepare/arm/seal`·`recover`·`retry-*`는 `CLASS_CLOSED`로 거절한다. inbox에 남은 그 반의 녹화 완료 파일은 읽지 않고 건너뛴다.
+  - 실행 중 끊겨도 표시는 먼저 남는다. `status --human`에 「닫는 중 · 남은 문제 N개」로 보이고, 같은 명령을 다시 실행하면 남은 것만 바꾼다.
+  - 끝났다고 보는 기준은 바꾼 뒤 YouTube를 다시 읽어 `private`이고 예약이 없는 것이다. 아니면 `VIDEO_STILL_NOT_PRIVATE`·`VIDEO_STILL_SCHEDULED`·`PLAYLIST_STILL_NOT_PRIVATE`를 남기고 종료 코드 1로 끝난다.
+- **새 기수:** 새 반 ID, 새 일부공개 재생목록, 새 이용권으로 시작한다. 닫힌 반을 다시 여는 명령은 두지 않았다. 다시 열어야 하면 담당자가 Studio와 작업 기록을 직접 확인한다.
+
 ## 최초 연결
 
 - [config.example.json](config.example.json)을 Git 밖에 복사한다. LAB channel ID는 2026-09-27 읽기 전용 확인된 `UCmZplYKuNHLPng4iL2AbLLg`다. `rooms`에는 교실별 `roomId`와 서로 다른 `streamId`, `classes`에는 실제 앱 class UUID와 반별 playlist ID를 넣는다. 예제의 `REPLACE_...` 값은 운영값이 아니다. 각 OBS에 그 교실의 스트림 키를 YouTube Studio에서 직접 설정한다. 코드는 스트림 키를 조회하거나 출력하지 않는다.

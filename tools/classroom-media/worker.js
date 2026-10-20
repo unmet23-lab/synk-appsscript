@@ -18,6 +18,14 @@ const MANUAL_SYNC_CONFLICTS = new Set([...SYNC_CONFLICTS].filter(code => code !=
 const read = file => JSON.parse(fs.readFileSync(file, 'utf8'));
 const key = session => crypto.createHash('sha256').update(`${session.classId}\n${session.sessionKey}`).digest('hex');
 const inside = (root, file) => { const rel = path.relative(root, file); return !rel.startsWith('..') && !path.isAbsolute(rel); };
+// A class whose cohort was closed (close-cohort) keeps its jobs for the record, but the
+// worker never polls, syncs, records or uploads for it again. classId is a validated UUID.
+const closedName = classId => `class-closed-${classId}.json`;
+const classClosed = (config, classId) => fs.existsSync(path.join(config.stateDir, closedName(classId)));
+// Writable video status fields kept when only the privacy changes. publishAt is left out on
+// purpose: a private video that keeps publishAt becomes public again at that time.
+const KEPT_VIDEO_STATUS = ['license', 'embeddable', 'publicStatsViewable', 'selfDeclaredMadeForKids', 'containsSyntheticMedia'];
+const pick = (value, fields) => Object.fromEntries(fields.filter(field => value?.[field] !== undefined).map(field => [field, value[field]]));
 
 function atomic(file, value) {
   fs.mkdirSync(path.dirname(file), { recursive: true, mode: 0o700 });
@@ -101,6 +109,7 @@ async function fingerprint(file, root) {
 // Call only from a recording-completed event / after the recorder has closed the file.
 async function seal(config, session, file, { fallback = false, replaceReplay = false, confirmedComplete = false } = {}) {
   const valid = validateSession(session, config);
+  if (classClosed(config, valid.classId)) throw new Error('CLASS_CLOSED');
   if (!valid.endsAt) throw new Error('RECORDING_END_TIME_REQUIRED');
   const stateFile = path.join(config.stateDir, `${key(valid)}.json`);
   const previousJob = fs.existsSync(stateFile) ? read(stateFile) : null;
@@ -210,6 +219,10 @@ class Worker {
   file(session) { return path.join(this.config.stateDir, `${key(session)}.json`); }
   save(job) { atomic(this.file(job), job); }
   cls(job) { const cls = this.config.classes.find(c => c.classId === job.classId); if (!cls) throw new ApiError('UNKNOWN_CLASS'); return cls; }
+  closedFile(classId) { return path.join(this.config.stateDir, closedName(classId)); }
+  isClosed(classId) { return classClosed(this.config, classId); }
+  assertOpen(classId) { if (this.isClosed(classId)) throw new ApiError('CLASS_CLOSED'); }
+  openJobs() { return this.jobs().filter(job => !this.isClosed(job.classId)); }
   stream(job) { return binding(job, this.config); }
   activeFile(session) { return path.join(this.config.stateDir, session.roomId ? `active-room-${session.roomId}.json` : `active-${session.classId}.json`); }
   assertRoomAvailable(session) {
@@ -224,6 +237,7 @@ class Worker {
   }
   armUnlocked(session) {
     const valid = validateSession(session, this.config);
+    this.assertOpen(valid.classId);
     this.assertRoomAvailable(valid);
     const existing = fs.existsSync(this.file(valid)) ? read(this.file(valid)) : null;
     if (existing?.recording || existing?.status === 'ready') throw new ApiError('SESSION_RECORDING_ALREADY_COMPLETED');
@@ -286,10 +300,13 @@ class Worker {
   async verify() {
     this.streamSnapshot.clear();
     await this.ensureIdentity(true);
-    for (const cls of this.config.classes) await this.verifyClass(cls, true);
+    // A closed cohort's playlist is private by design; checking it as unlisted would fail.
+    const open = this.config.classes.filter(cls => !this.isClosed(cls.classId));
+    const closed = this.config.classes.filter(cls => this.isClosed(cls.classId)).map(cls => cls.classId);
+    for (const cls of open) await this.verifyClass(cls, true);
     const streamChecks = [];
-    for (const streamId of new Set([...(this.config.rooms || []).map(r => r.streamId), ...this.config.classes.map(c => c.streamId).filter(Boolean)])) streamChecks.push({ streamId, ...await this.verifyStream(streamId, true) });
-    return { verifiedClasses: this.config.classes.length, verifiedRooms: this.config.rooms?.length || 0, streamChecks };
+    for (const streamId of new Set([...(this.config.rooms || []).map(r => r.streamId), ...open.map(c => c.streamId).filter(Boolean)])) streamChecks.push({ streamId, ...await this.verifyStream(streamId, true) });
+    return { verifiedClasses: open.length, verifiedRooms: this.config.rooms?.length || 0, streamChecks, ...(closed.length ? { closedClasses: closed } : {}) };
   }
   async sync(job, status, { playbackBlocked = false } = {}) {
     if (job.syncPaused) throw new ApiError('SYNC_MANUAL_REVIEW_REQUIRED');
@@ -361,6 +378,7 @@ class Worker {
     return this.locked(async () => {
       const valid = validateSession(session, this.config), cls = this.cls(valid);
       // These local checks must precede every external mutation, including create.
+      this.assertOpen(valid.classId);
       this.assertRoomAvailable(valid);
       let job = fs.existsSync(this.file(valid)) ? read(this.file(valid)) : { ...valid, streamId: this.stream(valid), source: 'live', status: 'scheduled' };
       sameRoom(job, valid, this.config);
@@ -425,7 +443,7 @@ class Worker {
   nextDelay() {
     // Check newly completed recordings at least once per status interval. While
     // upload chunks remain, continue after one second without polling live APIs.
-    const waits = this.jobs().map(job => Math.max(1000, this.dueAt(job) - this.now()));
+    const waits = this.openJobs().map(job => Math.max(1000, this.dueAt(job) - this.now()));
     return Math.min(this.pollInterval(), ...waits);
   }
   async ingest() {
@@ -433,6 +451,9 @@ class Worker {
     for (const filename of fs.readdirSync(this.config.inboxDir).filter(f => f.endsWith('.ready.json'))) {
       try {
         const manifest = read(path.join(this.config.inboxDir, filename));
+        // Completed-recording files stay in the inbox as evidence; a closed class's are skipped,
+        // even after the class was removed from config.
+        if (UUID.test(manifest?.classId || '') && this.isClosed(manifest.classId)) continue;
         const valid = validateSession(manifest, this.config);
         if (!valid.endsAt || !['recorder-closed', 'obs-recording-stopped'].includes(manifest.completion)) throw new ApiError('RECORDING_COMPLETION_REQUIRED');
         const old = fs.existsSync(this.file(valid)) ? read(this.file(valid)) : null;
@@ -563,8 +584,8 @@ class Worker {
   async once() {
     return this.locked(async () => {
       const failures = await this.ingest(), results = [];
-      const paused = this.jobs().filter(job => job.syncPaused).map(job => ({ sessionKey: job.sessionKey, error: job.syncPaused.code }));
-      const available = this.jobs().filter(job => this.dueAt(job) <= this.now());
+      const paused = this.openJobs().filter(job => job.syncPaused).map(job => ({ sessionKey: job.sessionKey, error: job.syncPaused.code }));
+      const available = this.openJobs().filter(job => this.dueAt(job) <= this.now());
       const activeLives = available.filter(job => job.source === 'live' && !['ready', 'failed'].includes(job.status));
       const remainder = available.filter(job => !activeLives.includes(job)).sort((a, b) => (a.lastAttemptAt || 0) - (b.lastAttemptAt || 0)).slice(0, 2);
       const batch = [...activeLives, ...remainder];
@@ -594,7 +615,7 @@ class Worker {
           failures.push({ sessionKey: job.sessionKey, error: job.lastError });
         }
       }));
-      const stopped = this.jobs().filter(job => job.syncPaused).map(job => ({ sessionKey: job.sessionKey, error: job.syncPaused.code }));
+      const stopped = this.openJobs().filter(job => job.syncPaused).map(job => ({ sessionKey: job.sessionKey, error: job.syncPaused.code }));
       return { results, failures, ...(stopped.length ? { paused: stopped } : {}) };
     });
   }
@@ -618,6 +639,7 @@ class Worker {
     if (!confirmedResolved) throw new ApiError('SYNC_REVIEW_CONFIRMATION_REQUIRED');
     return this.locked(async () => {
       const valid = validateSession(session, this.config);
+      this.assertOpen(valid.classId);
       if (!fs.existsSync(this.file(valid))) throw new ApiError('RECOVERY_JOB_REQUIRED');
       const job = read(this.file(valid)); sameRoom(job, valid, this.config);
       if (!job.syncPaused) throw new ApiError('SYNC_RETRY_NOT_APPLICABLE');
@@ -630,6 +652,7 @@ class Worker {
   async recover(session, videoId) {
     return this.locked(async () => {
       const valid = validateSession(session, this.config);
+      this.assertOpen(valid.classId);
       if (!VIDEO_ID.test(videoId || '') || !fs.existsSync(this.file(valid))) throw new ApiError('RECOVERY_JOB_REQUIRED');
       const job = read(this.file(valid));
       sameRoom(job, valid, this.config);
@@ -652,6 +675,7 @@ class Worker {
     if (!confirmedNoVideo) throw new ApiError('MANUAL_STUDIO_REVIEW_REQUIRED');
     return this.locked(async () => {
       const valid = validateSession(session, this.config);
+      this.assertOpen(valid.classId);
       const job = read(this.file(valid));
       sameRoom(job, valid, this.config);
       if (job.syncPaused) throw new ApiError('SYNC_MANUAL_REVIEW_REQUIRED');
@@ -660,6 +684,137 @@ class Worker {
       delete job.createPending; delete job.uploadUrl; delete job.uploadedBytes; delete job.nextAttemptAt;
       this.save(job);
       return { clearedPending: true, sessionKey: job.sessionKey };
+    });
+  }
+  closedClasses() {
+    return this.config.classes.filter(cls => this.isClosed(cls.classId)).map(cls => {
+      let marker = {}; try { marker = read(this.closedFile(cls.classId)); } catch {}
+      return { classId: cls.classId, displayName: cls.displayName || null, closedAt: marker.closedAt || null, failures: Array.isArray(marker.failures) ? marker.failures.length : 0 };
+    });
+  }
+  // End of a cohort: make the class's own videos (the class kind, e.g. unlisted) and any
+  // private video still scheduled to publish private, and the class playlist private, then
+  // stop the worker for that class. Preview by default; `confirmed` changes YouTube. Run after
+  // the cohort's app access has ended (ends_at or revoke on the server).
+  async closeCohort(classId, { confirmed = false } = {}) {
+    return this.locked(async () => {
+      const cls = UUID.test(classId || '') ? this.config.classes.find(c => c.classId === classId) : null;
+      if (!cls) throw new ApiError('UNKNOWN_CLASS');
+      const all = this.jobs(), jobs = all.filter(job => job.classId === classId);
+      // A live lesson prepared but never held (still scheduled 12 hours after its time, no
+      // recording) cannot finish by itself; closing records it as failed and not held.
+      const notHeld = job => job.source === 'live' && job.status === 'scheduled' && !job.recording && !job.syncPaused
+        && Date.parse(job.endsAt || job.startsAt) + 12 * 60 * 60 * 1000 < this.now();
+      const finished = job => ['ready', 'failed'].includes(job.status) || notHeld(job);
+      // Local checks first: an unfinished lesson, an unread recording or a live OBS arm must
+      // finish before the class's videos are hidden and the worker stops for the class.
+      if (jobs.some(job => job.syncPaused || !finished(job))) throw new ApiError('CLASS_HAS_UNFINISHED_SESSIONS');
+      const byKey = new Map(all.map(job => [key(job), job]));
+      for (const filename of fs.readdirSync(this.config.inboxDir).filter(f => f.endsWith('.ready.json'))) {
+        let manifest; try { manifest = read(path.join(this.config.inboxDir, filename)); } catch { continue; }
+        if (manifest?.classId !== classId) continue;
+        const job = byKey.get(key(manifest));
+        const consumed = job && (manifest.sha256 ? [job.recording?.sha256, job.supersededRecording?.sha256].includes(manifest.sha256)
+          : !manifest.fallback && !manifest.replaceReplay && !!job.recording);
+        if (!consumed) throw new ApiError('CLASS_HAS_PENDING_RECORDING');
+      }
+      // Only the live arm file and its in-use snapshot; OBS renames a finished snapshot to
+      // `.in-use.completed.<time>.json`, which room and class IDs (no dots) never match.
+      const staleArms = [];
+      for (const filename of fs.readdirSync(this.config.stateDir).filter(f => /^active-[A-Za-z0-9_-]+\.json(?:\.in-use)?$/.test(f))) {
+        let active; try { active = read(path.join(this.config.stateDir, filename)); } catch { continue; }
+        if (active?.classId !== classId) continue;
+        if (filename.endsWith('.in-use')) throw new ApiError('OBS_RECORDING_IN_PROGRESS');
+        // An arm left by a lesson that already ended (streamed without recording) is stale.
+        const armed = byKey.get(key(active));
+        if (!armed || !finished(armed)) throw new ApiError('CLASS_ARMED');
+        staleArms.push(filename);
+      }
+      await this.ensureIdentity(true);
+      const readPlaylist = async () => (await this.yt.request('playlists', { query: { part: 'snippet,status', id: cls.playlistId } })).items?.[0];
+      const playlist = await readPlaylist();
+      if (playlist?.snippet?.channelId !== this.config.expectedChannelId) throw new ApiError('PLAYLIST_NOT_OWNED');
+      // Every video of the class: what this worker recorded (and a live it replaced) plus what
+      // is in the class playlist (an operator may have added a video in Studio).
+      const origin = new Map();
+      for (const job of jobs) {
+        if (VIDEO_ID.test(job.videoId || '')) origin.set(job.videoId, 'job');
+        if (VIDEO_ID.test(job.replacedLiveVideoId || '') && !origin.has(job.replacedLiveVideoId)) origin.set(job.replacedLiveVideoId, 'replaced-live');
+      }
+      for (let page = 0, token; ; page++) {
+        if (page >= 100) throw new ApiError('PLAYLIST_TOO_LARGE');
+        const data = await this.yt.request('playlistItems', { query: { part: 'contentDetails', playlistId: cls.playlistId, maxResults: '50', ...(token ? { pageToken: token } : {}) } });
+        for (const item of data.items || []) {
+          const videoId = item.contentDetails?.videoId;
+          if (VIDEO_ID.test(videoId || '') && !origin.has(videoId)) origin.set(videoId, 'playlist');
+        }
+        token = data.nextPageToken;
+        if (!token) break;
+      }
+      const otherClass = new Set(all.filter(job => job.classId !== classId).flatMap(job => [job.videoId, job.replacedLiveVideoId]).filter(Boolean));
+      const readVideos = async list => {
+        const found = new Map();
+        for (let index = 0; index < list.length; index += 50) {
+          const data = await this.yt.request('videos', { query: { part: 'snippet,status', id: list.slice(index, index + 50).join(',') } });
+          for (const video of data.items || []) found.set(video.id, video);
+        }
+        return found;
+      };
+      const found = await readVideos([...origin.keys()]);
+      const videos = [...origin].map(([videoId, from]) => {
+        const video = found.get(videoId), privacy = video?.status?.privacyStatus || null;
+        // Never touch a video of another channel or one another class's lesson uses. A private
+        // video with publishAt is a scheduled publish and must lose the schedule. Only the
+        // class's own kind of video is hidden; a public reference video is left for a person.
+        const action = !video ? 'missing' : video.snippet?.channelId !== this.config.expectedChannelId ? 'not-owned'
+          : otherClass.has(videoId) ? 'other-class'
+            : privacy === 'private' ? (video.status?.publishAt ? 'unschedule' : 'already-private')
+              : privacy === cls.videoPrivacy ? 'make-private' : `left-${privacy || 'unknown'}`;
+        const title = typeof video?.snippet?.title === 'string' ? video.snippet.title.slice(0, 100) : null;
+        return { videoId, title, from, privacy, action, status: video?.status };
+      });
+      const plan = { classId, playlistId: cls.playlistId, sessions: jobs.length, notHeld: jobs.filter(notHeld).map(job => job.sessionKey), staleArms,
+        playlist: playlist.status?.privacyStatus === 'private' ? 'already-private' : 'make-private',
+        videos: videos.map(({ status, ...rest }) => rest) };
+      if (!confirmed) return { preview: true, ...plan };
+      const startedAt = new Date(this.now()).toISOString();
+      const marker = fs.existsSync(this.closedFile(classId)) ? read(this.closedFile(classId)) : { classId, playlistId: cls.playlistId, closingStartedAt: startedAt };
+      // Write the marker (and mark the jobs) before any change so an interrupted run never
+      // leaves the worker re-checking (and blocking) videos that are already private, and
+      // status shows the class as closed. Rerun the same command to finish.
+      atomic(this.closedFile(classId), { ...marker, lastRunAt: startedAt });
+      for (const job of jobs) {
+        const wasNotHeld = notHeld(job);
+        if (job.cohortClosedAt && !wasNotHeld) continue;
+        job.cohortClosedAt ||= startedAt;
+        if (wasNotHeld) { job.status = 'failed'; job.notHeld = true; }
+        this.save(job);
+      }
+      // A stale arm must not let OBS attach a new recording to the closed class.
+      for (const filename of staleArms) fs.renameSync(path.join(this.config.stateDir, filename), path.join(this.config.stateDir, `${filename}.closed.${this.now()}.json`));
+      const failures = [], targets = videos.filter(v => ['make-private', 'unschedule'].includes(v.action));
+      for (const video of targets) {
+        try { await this.yt.request('videos', { method: 'PUT', query: { part: 'status' }, body: { id: video.videoId, status: { ...pick(video.status, KEPT_VIDEO_STATUS), privacyStatus: 'private' } } }); }
+        catch (error) { failures.push({ videoId: video.videoId, error: safeCode(error) }); }
+      }
+      if (plan.playlist === 'make-private') {
+        // The snippet must be sent back as it was, or YouTube clears the playlist text.
+        try { await this.yt.request('playlists', { method: 'PUT', query: { part: 'snippet,status' }, body: { id: cls.playlistId, snippet: pick(playlist.snippet, ['title', 'description', 'defaultLanguage']), status: { ...pick(playlist.status, ['podcastStatus']), privacyStatus: 'private' } } }); }
+        catch (error) { failures.push({ playlistId: cls.playlistId, error: safeCode(error) }); }
+      }
+      // Done means YouTube now answers private with no publish schedule, not that the update returned.
+      const changed = targets.map(v => v.videoId), after = await readVideos(changed);
+      for (const videoId of changed) {
+        if (failures.some(f => f.videoId === videoId)) continue;
+        const status = after.get(videoId)?.status;
+        if (status?.privacyStatus !== 'private') failures.push({ videoId, error: 'VIDEO_STILL_NOT_PRIVATE' });
+        else if (status.publishAt) failures.push({ videoId, error: 'VIDEO_STILL_SCHEDULED' });
+      }
+      if ((await readPlaylist())?.status?.privacyStatus !== 'private' && !failures.some(f => f.playlistId)) failures.push({ playlistId: cls.playlistId, error: 'PLAYLIST_STILL_NOT_PRIVATE' });
+      const madePrivate = changed.filter(videoId => !failures.some(f => f.videoId === videoId));
+      atomic(this.closedFile(classId), { ...marker, lastRunAt: startedAt, ...(failures.length ? {} : { closedAt: marker.closedAt || startedAt }),
+        madePrivate: [...new Set([...(marker.madePrivate || []), ...madePrivate])], failures });
+      return { closed: !failures.length, ...plan, madePrivate, failures };
     });
   }
 }

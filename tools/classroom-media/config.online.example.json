@@ -1,0 +1,16 @@
+{
+  "expectedChannelId": "UCmZplYKuNHLPng4iL2AbLLg",
+  "credentialAccount": "lab-youtube",
+  "stateDir": "C:/SYNK-Classroom/online-state",
+  "inboxDir": "C:/SYNK-Classroom/online-completed",
+  "recordingsRoot": "D:/SYNK-Classroom/online-recordings",
+  "syncUrl": "https://YOUR_PROJECT.supabase.co/functions/v1/classroom-sync",
+  "anonKeyEnv": "SYNK_SUPABASE_ANON_KEY",
+  "pollIntervalMs": 60000,
+  "rooms": [
+    { "roomId": "online", "displayName": "온라인 반 송출", "streamId": "REPLACE_ONLINE_STREAM" }
+  ],
+  "classes": [
+    { "classId": "00000000-0000-4000-8000-000000000101", "displayName": "TOPIK 4급 온라인 1기", "playlistId": "REPLACE_ONLINE_PLAYLIST_COHORT_1", "videoPrivacy": "unlisted", "syncKeyEnv": "SYNK_CLASSROOM_ONLINE_1_KEY" }
+  ]
+}

@@ -971,3 +971,269 @@ test('prepare checks actual video end time even if broadcast lifecycle has not c
   assert.equal(fs.existsSync(fx.worker.activeFile(SESSION)), false);
   assert.equal(fx.calls.filter(call => call.method === 'POST').length, 0);
 });
+
+// close-cohort: a fake channel with the class playlist, the worker's own lessons and Studio-added videos.
+const OTHER_CLASS = '22222222-2222-4222-8222-222222222222';
+const owned = (privacyStatus, extra = {}) => ({ snippet: { channelId: CHANNEL, title: '수업' }, status: { privacyStatus, embeddable: false, license: 'youtube',
+  publicStatsViewable: true, selfDeclaredMadeForKids: false, madeForKids: false, uploadStatus: 'processed', ...extra } });
+function cohortFixture(t, { videos = {}, playlistVideos = [], failPut = new Set(), ignorePut = new Set() } = {}) {
+  const yt = { videos: new Map(Object.entries(videos)), playlist: { privacy: 'unlisted', title: '반 1 · 1기', description: '수업 복습' }, puts: [] };
+  const fx = fixture(t, { request: async (resource, options) => {
+    if (resource === 'playlists' && options.method === 'PUT') { yt.puts.push({ resource, ...options }); yt.playlist.privacy = options.body.status.privacyStatus; return { id: options.body.id }; }
+    if (resource === 'playlists') return { items: [{ id: 'playlist000001', snippet: { channelId: CHANNEL, title: yt.playlist.title, description: yt.playlist.description }, status: { privacyStatus: yt.playlist.privacy } }] };
+    if (resource === 'playlistItems' && options.query?.part === 'contentDetails') {
+      // Two items a page proves the command follows nextPageToken.
+      const start = Number(options.query.pageToken || 0), page = playlistVideos.slice(start, start + 2);
+      return { items: page.map(videoId => ({ contentDetails: { videoId } })), ...(start + 2 < playlistVideos.length ? { nextPageToken: String(start + 2) } : {}) };
+    }
+    if (resource === 'videos' && options.method === 'PUT') {
+      yt.puts.push({ resource, ...options });
+      if (failPut.has(options.body.id)) throw new ApiError('YOUTUBE_HTTP_500', 500);
+      if (!ignorePut.has(options.body.id)) yt.videos.get(options.body.id).status = { ...options.body.status, uploadStatus: 'processed' };
+      return { id: options.body.id };
+    }
+    if (resource === 'videos' && options.query?.part === 'snippet,status') return { items: options.query.id.split(',').filter(id => yt.videos.has(id)).map(id => ({ id, ...yt.videos.get(id) })) };
+  } });
+  return { ...fx, yt };
+}
+async function readyLesson(fx) { await fx.worker.prepare(SESSION); const job = fx.worker.jobs()[0]; job.status = 'ready'; fx.worker.save(job); return job; }
+
+test('close-cohort previews the class videos and playlist without changing YouTube or the worker', async t => {
+  const fx = cohortFixture(t, { videos: { [VIDEO]: owned('unlisted'), video000002: owned('unlisted'), video000003: owned('private') }, playlistVideos: [VIDEO, 'video000002', 'video000003'] });
+  await readyLesson(fx);
+  const preview = await fx.worker.closeCohort(SESSION.classId);
+  assert.equal(preview.preview, true);
+  assert.equal(preview.playlist, 'make-private');
+  assert.deepEqual(preview.videos.map(v => [v.videoId, v.action]), [[VIDEO, 'make-private'], ['video000002', 'make-private'], ['video000003', 'already-private']]);
+  assert.equal(fx.yt.puts.length, 0);
+  assert.equal(fx.worker.isClosed(SESSION.classId), false);
+  assert.equal(fx.worker.jobs()[0].cohortClosedAt, undefined);
+  await assert.rejects(fx.worker.closeCohort('not-a-class'), /UNKNOWN_CLASS/);
+});
+
+test('confirmed close-cohort makes class videos and playlist private, keeps the other status fields, and stops the worker for the class', async t => {
+  const fx = cohortFixture(t, { videos: { [VIDEO]: owned('unlisted'), video000002: owned('unlisted'), video000003: owned('private') }, playlistVideos: [VIDEO, 'video000002', 'video000003'] });
+  await readyLesson(fx);
+  const result = await fx.worker.closeCohort(SESSION.classId, { confirmed: true });
+  assert.equal(result.closed, true);
+  assert.deepEqual(result.failures, []);
+  assert.deepEqual(result.madePrivate, [VIDEO, 'video000002']);
+  const videoPuts = fx.yt.puts.filter(put => put.resource === 'videos');
+  assert.deepEqual(videoPuts.map(put => put.body.id), [VIDEO, 'video000002']);
+  for (const put of videoPuts) {
+    assert.equal(put.query.part, 'status');
+    // publishAt is dropped: a private video keeping it would become public again at that time.
+    assert.deepEqual(put.body.status, { license: 'youtube', embeddable: false, publicStatsViewable: true, selfDeclaredMadeForKids: false, privacyStatus: 'private' });
+  }
+  const playlistPut = fx.yt.puts.find(put => put.resource === 'playlists');
+  assert.equal(playlistPut.query.part, 'snippet,status');
+  assert.deepEqual(playlistPut.body, { id: 'playlist000001', snippet: { title: '반 1 · 1기', description: '수업 복습' }, status: { privacyStatus: 'private' } });
+  assert.equal(fx.worker.isClosed(SESSION.classId), true);
+  assert.ok(fx.worker.jobs()[0].cohortClosedAt);
+  assert.ok(JSON.parse(fs.readFileSync(fx.worker.closedFile(SESSION.classId), 'utf8')).closedAt);
+  // Days later the daily re-check would see private videos; a closed class is never polled, synced or blocked.
+  const syncs = fx.syncs.length; fx.calls.length = 0; fx.advance(2 * 24 * 60 * 60 * 1000);
+  assert.deepEqual(await fx.worker.once(), { results: [], failures: [] });
+  assert.equal(fx.syncs.length, syncs);
+  assert.equal(fx.calls.length, 0);
+  const next = { ...SESSION, sessionKey: 'next-lesson' };
+  await assert.rejects(fx.worker.prepare(next), /CLASS_CLOSED/);
+  await assert.rejects(fx.worker.arm(next), /CLASS_CLOSED/);
+  await assert.rejects(seal(fx.config, next, fx.recording), /CLASS_CLOSED/);
+  const verified = await fx.worker.verify();
+  assert.deepEqual([verified.verifiedClasses, verified.closedClasses], [0, [SESSION.classId]]);
+  fx.yt.puts.length = 0;
+  const again = await fx.worker.closeCohort(SESSION.classId, { confirmed: true });
+  assert.equal(again.closed, true);
+  assert.equal(fx.yt.puts.length, 0);
+});
+
+test('close-cohort refuses while a lesson, an unread recording, a paused sync or an armed OBS of the class is unfinished', async t => {
+  const fx = cohortFixture(t, { videos: { [VIDEO]: owned('unlisted') }, playlistVideos: [VIDEO] });
+  await fx.worker.prepare(SESSION);
+  await assert.rejects(fx.worker.closeCohort(SESSION.classId, { confirmed: true }), /CLASS_HAS_UNFINISHED_SESSIONS/);
+  const job = fx.worker.jobs()[0]; job.status = 'ready'; job.syncPaused = { code: 'STALE_STATE' }; fx.worker.save(job);
+  await assert.rejects(fx.worker.closeCohort(SESSION.classId, { confirmed: true }), /CLASS_HAS_UNFINISHED_SESSIONS/);
+  delete job.syncPaused; fx.worker.save(job);
+  const manifest = await seal(fx.config, { ...SESSION, sessionKey: 'second-lesson' }, fx.recording);
+  await assert.rejects(fx.worker.closeCohort(SESSION.classId, { confirmed: true }), /CLASS_HAS_PENDING_RECORDING/);
+  fs.unlinkSync(manifest);
+  await fx.worker.arm({ ...SESSION, sessionKey: 'third-lesson' });
+  await assert.rejects(fx.worker.closeCohort(SESSION.classId, { confirmed: true }), /CLASS_ARMED/);
+  assert.equal(fx.yt.puts.length, 0);
+  assert.equal(fx.worker.isClosed(SESSION.classId), false);
+});
+
+test('close-cohort never touches a video of another channel or one that another class lesson uses', async t => {
+  const fx = cohortFixture(t, { videos: { [VIDEO]: owned('unlisted'), video000004: { snippet: { channelId: `UC${'y'.repeat(22)}` }, status: { privacyStatus: 'unlisted' } }, video000005: owned('unlisted') },
+    playlistVideos: [VIDEO, 'video000004', 'video000005', 'video000006'] });
+  const config = { ...fx.config, classes: [...fx.config.classes, { classId: OTHER_CLASS, playlistId: 'playlist000002', streamId: 'stream002', videoPrivacy: 'unlisted', syncKeyEnv: 'CLASS_KEY' }] };
+  const worker = new Worker(config, fx.dependencies);
+  worker.save({ classId: OTHER_CLASS, sessionKey: 'other-lesson', title: '반 2 수업', startsAt: SESSION.startsAt, endsAt: SESSION.endsAt, source: 'upload', status: 'ready', videoId: 'video000005' });
+  const result = await worker.closeCohort(SESSION.classId, { confirmed: true });
+  assert.deepEqual(result.videos.map(v => [v.videoId, v.action]), [[VIDEO, 'make-private'], ['video000004', 'not-owned'], ['video000005', 'other-class'], ['video000006', 'missing']]);
+  assert.deepEqual(fx.yt.puts.filter(put => put.resource === 'videos').map(put => put.body.id), [VIDEO]);
+  assert.equal(result.closed, true);
+  assert.equal(worker.isClosed(OTHER_CLASS), false);
+});
+
+test('an interrupted close-cohort keeps the class closed, reports what YouTube still shows, and a rerun finishes', async t => {
+  const failPut = new Set(['video000002']), ignorePut = new Set(['video000003']);
+  const fx = cohortFixture(t, { videos: { [VIDEO]: owned('unlisted'), video000002: owned('unlisted'), video000003: owned('unlisted') }, playlistVideos: [VIDEO, 'video000002', 'video000003'], failPut, ignorePut });
+  const first = await fx.worker.closeCohort(SESSION.classId, { confirmed: true });
+  assert.equal(first.closed, false);
+  assert.deepEqual(first.failures, [{ videoId: 'video000002', error: 'YOUTUBE_HTTP_500' }, { videoId: 'video000003', error: 'VIDEO_STILL_NOT_PRIVATE' }]);
+  assert.equal(fx.worker.isClosed(SESSION.classId), true);
+  assert.equal(JSON.parse(fs.readFileSync(fx.worker.closedFile(SESSION.classId), 'utf8')).closedAt, undefined);
+  failPut.clear(); ignorePut.clear(); fx.yt.puts.length = 0;
+  const second = await fx.worker.closeCohort(SESSION.classId, { confirmed: true });
+  assert.equal(second.closed, true);
+  assert.deepEqual(fx.yt.puts.filter(put => put.resource === 'videos').map(put => put.body.id), ['video000002', 'video000003']);
+  const marker = JSON.parse(fs.readFileSync(fx.worker.closedFile(SESSION.classId), 'utf8'));
+  assert.ok(marker.closedAt);
+  assert.deepEqual(marker.madePrivate, [VIDEO, 'video000002', 'video000003']);
+});
+
+test('close-cohort ignores OBS completed snapshots, archives a stale arm, and refuses a recording in progress', async t => {
+  const fx = cohortFixture(t, { videos: { [VIDEO]: owned('unlisted') }, playlistVideos: [VIDEO] });
+  await fx.worker.prepare(SESSION, { arm: true });
+  const job = fx.worker.jobs()[0]; job.status = 'ready'; fx.worker.save(job);
+  const active = fx.worker.activeFile(SESSION);
+  fs.renameSync(active, `${active}.in-use`);
+  await assert.rejects(fx.worker.closeCohort(SESSION.classId), /OBS_RECORDING_IN_PROGRESS/);
+  // obs-completed.lua renames a finished snapshot; it is history, not an arm.
+  fs.renameSync(`${active}.in-use`, `${active}.in-use.completed.1760000000.json`);
+  assert.deepEqual((await fx.worker.closeCohort(SESSION.classId)).staleArms, []);
+  // The lesson was armed again but only streamed: the arm of a finished lesson is stale.
+  atomic(active, { ...SESSION, streamId: 'stream001', manifestName: 'unused' });
+  const closed = await fx.worker.closeCohort(SESSION.classId, { confirmed: true });
+  assert.deepEqual(closed.staleArms, [path.basename(active)]);
+  assert.equal(fs.existsSync(active), false);
+  assert.ok(fs.readdirSync(fx.config.stateDir).some(name => name.startsWith(`${path.basename(active)}.closed.`)));
+  assert.ok(fs.existsSync(`${active}.in-use.completed.1760000000.json`));
+});
+
+test('after closing, the class recordings left in the inbox are skipped instead of failing every tick', async t => {
+  const fx = cohortFixture(t, { videos: { [VIDEO]: owned('unlisted') }, playlistVideos: [VIDEO] });
+  await fx.worker.prepare(SESSION);
+  await seal(fx.config, SESSION, fx.recording);
+  fx.advance(); await fx.worker.once();
+  const job = fx.worker.jobs()[0];
+  assert.equal(job.backupOnly, true);
+  job.status = 'ready'; fx.worker.save(job);
+  assert.equal((await fx.worker.closeCohort(SESSION.classId, { confirmed: true })).closed, true);
+  fx.advance(2 * 24 * 60 * 60 * 1000);
+  assert.deepEqual(await fx.worker.once(), { results: [], failures: [] });
+  // Still skipped after the closed class is taken out of config.
+  const config = { ...fx.config, classes: [{ classId: OTHER_CLASS, playlistId: 'playlist000002', streamId: 'stream002', videoPrivacy: 'unlisted', syncKeyEnv: 'CLASS_KEY' }] };
+  assert.deepEqual(await new Worker(config, fx.dependencies).once(), { results: [], failures: [] });
+});
+
+test('close-cohort leaves a public reference video for a person and lifts a publish schedule from a private video', async t => {
+  const ignorePut = new Set();
+  const fx = cohortFixture(t, { videos: { [VIDEO]: owned('unlisted'), video000007: owned('public'), video000008: owned('private', { publishAt: '2027-01-01T00:00:00Z' }) },
+    playlistVideos: [VIDEO, 'video000007', 'video000008'], ignorePut });
+  const preview = await fx.worker.closeCohort(SESSION.classId);
+  assert.deepEqual(preview.videos.map(v => [v.videoId, v.from, v.action]), [[VIDEO, 'playlist', 'make-private'], ['video000007', 'playlist', 'left-public'], ['video000008', 'playlist', 'unschedule']]);
+  assert.equal(preview.videos[0].title, '수업');
+  ignorePut.add('video000008');
+  const first = await fx.worker.closeCohort(SESSION.classId, { confirmed: true });
+  assert.deepEqual(first.failures, [{ videoId: 'video000008', error: 'VIDEO_STILL_SCHEDULED' }]);
+  assert.deepEqual(fx.yt.puts.find(put => put.body.id === 'video000008').body.status, { license: 'youtube', embeddable: false, publicStatsViewable: true, selfDeclaredMadeForKids: false, privacyStatus: 'private' });
+  assert.equal(fx.yt.puts.some(put => put.body.id === 'video000007'), false);
+  ignorePut.clear();
+  assert.equal((await fx.worker.closeCohort(SESSION.classId, { confirmed: true })).closed, true);
+  assert.equal(fx.yt.videos.get('video000008').status.publishAt, undefined);
+  assert.equal(fx.yt.videos.get('video000007').status.privacyStatus, 'public');
+});
+
+test('close-cohort also hides a live video that a full recording replaced', async t => {
+  const fx = cohortFixture(t, { videos: { video000009: owned('unlisted'), video000010: owned('unlisted') }, playlistVideos: ['video000010'] });
+  fx.worker.save({ ...SESSION, streamId: 'stream001', source: 'upload', status: 'ready', videoId: 'video000010', replacedLiveVideoId: 'video000009' });
+  const preview = await fx.worker.closeCohort(SESSION.classId);
+  assert.deepEqual(preview.videos.map(v => [v.videoId, v.from, v.action]), [['video000010', 'job', 'make-private'], ['video000009', 'replaced-live', 'make-private']]);
+});
+
+test('a lesson prepared but never held is closed as not held instead of blocking the cohort forever', async t => {
+  const fx = cohortFixture(t, { videos: { [VIDEO]: owned('unlisted') }, playlistVideos: [] });
+  await fx.worker.prepare(SESSION);
+  await assert.rejects(fx.worker.closeCohort(SESSION.classId), /CLASS_HAS_UNFINISHED_SESSIONS/);
+  fx.advance(13 * 60 * 60 * 1000);
+  const preview = await fx.worker.closeCohort(SESSION.classId);
+  assert.deepEqual(preview.notHeld, [SESSION.sessionKey]);
+  assert.deepEqual(preview.videos.map(v => [v.videoId, v.action]), [[VIDEO, 'make-private']]);
+  await fx.worker.closeCohort(SESSION.classId, { confirmed: true });
+  const job = fx.worker.jobs()[0];
+  assert.deepEqual([job.status, job.notHeld, !!job.cohortClosedAt], ['failed', true, true]);
+});
+
+test('close-cohort refuses a class playlist that is missing or belongs to another channel', async t => {
+  for (const items of [[], [{ snippet: { channelId: `UC${'y'.repeat(22)}` }, status: { privacyStatus: 'unlisted' } }]]) {
+    const fx = fixture(t, { request: async resource => resource === 'playlists' ? { items } : undefined });
+    await assert.rejects(fx.worker.closeCohort(SESSION.classId), /PLAYLIST_NOT_OWNED/);
+  }
+});
+
+test('the CLI previews close-cohort unless the cohort-ended confirmation is given, fails on problems, and guides closed classes', async t => {
+  const { main } = require('../tools/classroom-media/cli');
+  const { statusText, errorGuidance, preflightText } = require('../tools/classroom-media/operator-guide');
+  const { checkLocal } = require('../tools/classroom-media/preflight');
+  const fx = fixture(t);
+  const configPath = path.join(fx.dir, 'config.json');
+  fs.writeFileSync(configPath, JSON.stringify(fx.config));
+  const video = { videoId: VIDEO, title: '3주차 화요일', from: 'job', action: 'make-private' };
+  const seen = [], out = [], original = Worker.prototype.closeCohort, write = process.stdout.write;
+  Worker.prototype.closeCohort = async function (classId, options) {
+    seen.push([classId, options.confirmed]);
+    return options.confirmed ? { closed: false, playlist: 'make-private', videos: [video], failures: [{ videoId: VIDEO, error: 'VIDEO_STILL_NOT_PRIVATE' }] }
+      : { preview: true, playlist: 'make-private', videos: [video], notHeld: [], staleArms: [], failures: [] };
+  };
+  process.stdout.write = chunk => { out.push(String(chunk)); return true; };
+  let exitCode;
+  try {
+    await main(['close-cohort', configPath, SESSION.classId, '--human']);
+    await main(['close-cohort', configPath, SESSION.classId, '--confirmed']);
+    assert.equal(process.exitCode, undefined);
+    await main(['close-cohort', configPath, SESSION.classId, '--confirmed-cohort-ended']);
+    exitCode = process.exitCode;
+    // status: a closed class and its job, in Korean and in JSON.
+    const job = { ...SESSION, streamId: 'stream001', source: 'live', status: 'ready', videoId: VIDEO, cohortClosedAt: '2027-05-01T00:00:00Z' };
+    fx.worker.save(job);
+    atomic(fx.worker.closedFile(SESSION.classId), { classId: SESSION.classId, closedAt: '2027-05-01T00:00:00Z', failures: [] });
+    await main(['status', configPath, '--human']);
+    await main(['status', configPath]);
+  } finally { Worker.prototype.closeCohort = original; process.stdout.write = write; process.exitCode = undefined; }
+  assert.deepEqual(seen, [[SESSION.classId, false], [SESSION.classId, false], [SESSION.classId, true]]);
+  assert.equal(exitCode, 1);
+  assert.match(out[0], /미리 보기 · 아직 아무것도 바꾸지 않았습니다/);
+  assert.match(out[0], /3주차 화요일 \(video000001\) — 비공개로 바꿀 예정/);
+  assert.match(out[3], /기수 닫음/);
+  assert.match(out[3], /기수 마침 · 자동 조회 멈춤/);
+  assert.equal(JSON.parse(out[4])[0].cohortClosedAt, '2027-05-01T00:00:00Z');
+  assert.match(statusText([], { closedClasses: [{ displayName: '온라인 1기', closedAt: null, failures: 2 }] }), /온라인 1기 — 닫는 중 · 남은 문제 2개/);
+  assert.match(errorGuidance('CLASS_CLOSED'), /close-cohort/);
+  assert.match(errorGuidance('CLASS_HAS_UNFINISHED_SESSIONS'), /status CONFIG --human/);
+  assert.match(errorGuidance('CLASS_ARMED'), /active-\*\.json/);
+  // Manual checks follow the class privacy: invites for a private class, the shared-link notice for an unlisted one.
+  const missing = { statSync: () => { throw Object.assign(new Error('missing'), { code: 'ENOENT' }); }, accessSync() {}, statfsSync: () => { throw new Error('missing'); } };
+  const manual = classes => checkLocal({ ...fx.config, classes }, { env: {}, fsImpl: missing });
+  const unlisted = manual([{ ...fx.config.classes[0], videoPrivacy: 'unlisted' }]), privateOnly = manual([{ ...fx.config.classes[0], videoPrivacy: 'private' }]);
+  assert.deepEqual(unlisted.manualChecksRequired.map(c => c.code).filter(code => code.startsWith('STUDENT_')), ['STUDENT_UNLISTED_VIDEO_NOTICE']);
+  assert.deepEqual(privateOnly.manualChecksRequired.map(c => c.code).filter(code => code.startsWith('STUDENT_')), ['STUDENT_PRIVATE_VIDEO_ACCESS']);
+  assert.doesNotMatch(preflightText(unlisted), /Google 계정 초대/);
+  assert.match(preflightText(unlisted), /일부공개 반은 초대가 필요 없습니다/);
+  assert.match(preflightText(privateOnly), /Google 계정 초대/);
+});
+
+test('the online-class example config is a valid unlisted single-room setup', t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-classroom-example-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  for (const name of ['config.example.json', 'config.online.example.json']) {
+    const example = JSON.parse(fs.readFileSync(path.join(__dirname, '../tools/classroom-media', name), 'utf8'));
+    const config = validateConfig({ ...example, stateDir: path.join(dir, name, 'state'), inboxDir: path.join(dir, name, 'inbox'), recordingsRoot: path.join(dir, name, 'recordings') });
+    if (name === 'config.online.example.json') {
+      assert.deepEqual(config.classes.map(cls => cls.videoPrivacy), ['unlisted']);
+      assert.deepEqual(config.rooms.map(room => room.roomId), ['online']);
+    } else assert.ok(config.classes.every(cls => cls.videoPrivacy === 'private'));
+  }
+});

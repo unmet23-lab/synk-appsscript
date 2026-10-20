@@ -72,6 +72,16 @@ function errorGuidance(code, { paused = false } = {}) {
     return '진행 중인 방송에는 완본 교체를 적용하지 마세요. 종료된 수업과 전체 녹화를 직접 확인한 뒤 replace-replay --confirmed-complete를 사용하세요. 기존 --fallback은 failed 상태 전용입니다. 새 영상의 비공개 초대와 앱 초대 확인이 다시 필요합니다.';
   if (code === 'PENDING_FALLBACK_REQUIRES_REVIEW')
     return '기존 fallback 요청을 먼저 확인하세요. 담당자가 해당 요청을 완료 폴더 밖에 보관한 뒤 완본 교체를 다시 접수하세요. 녹화 원본과 작업 state는 지우지 마세요.';
+  if (code === 'CLASS_CLOSED')
+    return '이 반은 close-cohort로 기수를 마쳐 닫았습니다. 닫은 반으로는 방송·녹화·업로드를 하지 않습니다. 새 기수는 새 반 ID·재생목록·이용권으로 config에 더해 준비하세요. 닫은 반의 영상을 다시 열어야 하면 담당자가 Studio에서 직접 확인하세요.';
+  if (['CLASS_HAS_UNFINISHED_SESSIONS', 'CLASS_HAS_PENDING_RECORDING'].includes(code))
+    return '이 반에 아직 끝나지 않은 수업·녹화가 있습니다. status CONFIG --human으로 확인하고 방송 종료·업로드·처리(완료 또는 실패)와 동기화 일시정지 해결이 끝난 뒤 close-cohort를 다시 실행하세요. 읽지 못한 녹화 완료 파일이 버릴 것이면 담당자가 확인한 뒤 inbox 밖 보관 폴더로 옮기세요. 녹화 원본과 작업 기록은 보존하세요.';
+  if (code === 'CLASS_ARMED')
+    return '이 반으로 준비된 녹화(arm)가 있는데 그 수업이 아직 끝나지 않았습니다. 그 수업을 녹화할 것이면 끝난 뒤, 하지 않을 것이면 담당자가 작업 기록 폴더의 그 active-*.json을 보관 폴더로 옮긴 뒤 close-cohort를 다시 실행하세요.';
+  if (['PLAYLIST_NOT_OWNED', 'PLAYLIST_TOO_LARGE'].includes(code))
+    return '반 재생목록이 이 채널의 것인지, config의 재생목록 ID가 맞는지 확인하세요. 확인 전에는 영상의 공개설정을 바꾸지 마세요.';
+  if (['VIDEO_STILL_NOT_PRIVATE', 'VIDEO_STILL_SCHEDULED', 'PLAYLIST_STILL_NOT_PRIVATE'].includes(code))
+    return '바꾼 뒤 다시 읽었을 때 아직 비공개가 아니거나 예약 공개가 남은 영상·재생목록이 있습니다. 같은 close-cohort 명령을 다시 실행하세요. 계속되면 Studio에서 그 영상의 공개설정과 예약을 직접 확인하세요.';
   if (['RECORDING_STILL_CHANGING', 'SEALED_RECORDING_CHANGED', 'EMPTY_RECORDING', 'RECORDING_READ_TRUNCATED', 'SESSION_RECORDING_CONFLICT', 'MANIFEST_ALREADY_EXISTS', 'RECORDING_COMPLETION_REQUIRED', 'RECORDING_END_TIME_REQUIRED', 'SESSION_RECORDING_ALREADY_COMPLETED'].includes(code))
     return '녹화가 종료되었는지, 파일과 수업 연결이 맞는지 확인하세요. 원본을 보존하고 처음·중간·끝을 재생한 뒤 담당자가 등록 기록을 확인해야 합니다. 확인 없이 원본을 덮어쓰거나 완료 파일을 재생성하지 마세요.';
   return '원인을 확인하지 못했습니다. 담당자에게 로컬 작업 기록 확인을 요청하고 녹화 원본을 보존하세요.';
@@ -117,15 +127,24 @@ function preflightText(result) {
     lines.push((check.ok === true ? '✓ ' : '확인 필요: ') + text);
   }
   lines.push('실제 확인 필요: OBS 교실 연결·완료 스크립트, 카메라 화면, 마이크 음량·잡음·동기, 종료된 녹화 파일의 전체 재생.');
-  lines.push('비공개 영상은 학생 Google 계정 초대와 앱의 초대 확인 후 실제 학생 계정 재생·미초대 계정 차단을 확인하세요.');
+  const manual = Array.isArray(result?.manualChecksRequired) ? result.manualChecksRequired.map(check => check?.code) : null;
+  if (!manual || manual.includes('STUDENT_PRIVATE_VIDEO_ACCESS')) lines.push('비공개 반은 학생 Google 계정 초대와 앱의 초대 확인 후 실제 학생 계정 재생·미초대 계정 차단을 확인하세요.');
+  if (manual?.includes('STUDENT_UNLISTED_VIDEO_NOTICE')) lines.push('일부공개 반은 초대가 필요 없습니다. 앱에서 수강생에게만 링크가 보이는지, 화면·제목에 학생 이름과 얼굴이 나오지 않는지 확인하세요. 기수가 끝나면 close-cohort로 닫습니다.');
   lines.push('이 결과는 로컬 설정 검사이며 실제 송출·학생 시청 완료를 뜻하지 않습니다.');
   return lines.join('\n');
 }
 
-function statusText(jobs, { now = Date.now() } = {}) {
-  if (!Array.isArray(jobs) || !jobs.length) return '저장된 수업 작업이 없습니다. 로컬 기록만으로 현재 송출 여부는 알 수 없습니다.';
+function statusText(jobs, { now = Date.now(), closedClasses = [], privacyByClass = {} } = {}) {
+  const closed = Array.isArray(closedClasses) ? closedClasses.filter(item => item && typeof item === 'object') : [];
+  if ((!Array.isArray(jobs) || !jobs.length) && !closed.length) return '저장된 수업 작업이 없습니다. 로컬 기록만으로 현재 송출 여부는 알 수 없습니다.';
+  if (!Array.isArray(jobs)) jobs = [];
   const clock = Number.isFinite(now) ? now : NaN;
   const lines = ['저장된 작업 상태 · 실시간 화면을 직접 확인한 결과는 아닙니다.'];
+  for (const item of closed) {
+    const name = clean(item.displayName) || clean(item.classId) || '반';
+    lines.push('', name + (item.closedAt ? ' — 기수 닫음 · ' + timeText(item.closedAt)
+      : ' — 닫는 중 · 남은 문제 ' + (Number.isInteger(item.failures) ? item.failures : 0) + '개 · 같은 close-cohort 명령을 다시 실행하세요'));
+  }
   jobs.forEach((job, index) => {
     const current = job && typeof job === 'object' ? job : {};
     const label = clean(current.title) || clean(current.displayName) || clean(current.sessionKey) || '수업 ' + (index + 1);
@@ -133,6 +152,11 @@ function statusText(jobs, { now = Date.now() } = {}) {
     const issues = Array.isArray(health.issues) ? health.issues : [];
     const healthy = health.streamStatus === 'active' && ['good', 'ok'].includes(health.healthStatus) && !issues.some(issue => issue?.severity === 'error');
     const paused = current.syncPaused && typeof current.syncPaused === 'object' ? current.syncPaused : null;
+    if (current.cohortClosedAt) {
+      lines.push('', label + ' — 기수 마침 · 자동 조회 멈춤 · 영상 공개설정은 위 반 줄에서 확인');
+      lines.push('닫은 시각: ' + timeText(current.cohortClosedAt));
+      return;
+    }
     let state;
     if (paused) state = '동기화 일시정지 · 담당자 확인 필요';
     else if (current.blockSyncError) state = '차단 요청 저장됨 · 서버 반영 미확인';
@@ -163,10 +187,36 @@ function statusText(jobs, { now = Date.now() } = {}) {
     if (!paused && Number.isFinite(next)) lines.push(next > clock
       ? 'worker 실행 중이면 다음 재시도 예정: ' + timeText(next)
       : '저장된 재시도 예정 시각이 지났습니다. worker 실행 여부와 최근 처리 결과를 확인하세요.');
-    if (current.status === 'ready' || current.replaceReplay) lines.push('비공개 영상의 학생 초대 완료는 이 기록으로 알 수 없습니다. 새 영상은 재초대와 앱 초대 확인 후 실제 학생 계정으로 재생하세요.');
+    if ((current.status === 'ready' || current.replaceReplay) && privacyByClass[current.classId] !== 'unlisted') lines.push('비공개 영상의 학생 초대 완료는 이 기록으로 알 수 없습니다. 새 영상은 재초대와 앱 초대 확인 후 실제 학생 계정으로 재생하세요.');
     if (current.status === 'ready') lines.push('처리 성공만으로 전체 수업 녹화가 보장되지는 않습니다. 원본과 영상의 처음·중간·끝을 확인하세요.');
   });
   return lines.join('\n');
 }
 
-module.exports = { preflightText, statusText, errorGuidance };
+const COHORT_ACTIONS = {
+  'make-private': ['비공개로 바꿀 예정', '비공개로 바꿈'], unschedule: ['예약 공개를 풀고 비공개로 둘 예정', '예약 공개를 풀고 비공개로 둠'],
+  'already-private': ['이미 비공개'], missing: ['YouTube에서 찾지 못함 · 그대로'], 'not-owned': ['다른 채널 영상 · 그대로'],
+  'other-class': ['다른 반 수업 영상 · 그대로'], 'left-public': ['공개 영상 · 그대로(필요하면 Studio에서 직접 판단)'],
+  'left-unlisted': ['일부공개 · 이 반 종류가 아니라 그대로'], 'left-unknown': ['공개설정을 알 수 없음 · 그대로'],
+};
+function closeCohortText(result) {
+  const preview = result?.preview === true;
+  const done = action => { const names = COHORT_ACTIONS[action] || ['확인 필요']; return preview ? names[0] : names[names.length - 1]; };
+  const lines = [preview ? '미리 보기 · 아직 아무것도 바꾸지 않았습니다.'
+    : result?.closed ? '기수를 닫았습니다. 반 영상과 재생목록이 비공개이고, worker는 이 반을 더 다루지 않습니다.'
+      : '닫는 중 문제가 남았습니다. 같은 close-cohort 명령을 다시 실행하세요. 이 반은 이미 worker에서 빠졌습니다.'];
+  lines.push('재생목록: ' + (result?.playlist === 'already-private' ? '이미 비공개' : preview ? '비공개로 바꿀 예정' : '비공개로 바꿈'));
+  for (const video of Array.isArray(result?.videos) ? result.videos : []) {
+    const where = video?.from === 'playlist' ? ' · 재생목록에서만 찾음' : video?.from === 'replaced-live' ? ' · 교체된 라이브' : '';
+    lines.push('- ' + (clean(video?.title) || '제목 없음') + ' (' + clean(video?.videoId) + ') — ' + done(video?.action) + where);
+  }
+  if (Array.isArray(result?.notHeld) && result.notHeld.length) lines.push('열리지 않은 수업(작업 기록에 실패로 남김): ' + result.notHeld.map(clean).join(', '));
+  if (Array.isArray(result?.staleArms) && result.staleArms.length) lines.push('지난 수업의 OBS 준비 파일 ' + result.staleArms.length + '개를 ' + (preview ? '보관 이름으로 바꿀 예정' : '보관 이름으로 바꿈'));
+  for (const failure of Array.isArray(result?.failures) ? result.failures : []) {
+    lines.push('문제: ' + (clean(failure?.videoId) || clean(failure?.playlistId) || '?') + ' — ' + errorGuidance(failure?.error));
+  }
+  if (preview) lines.push('바꾸려면 이 반의 앱 이용권이 끝난 것을 확인한 뒤 같은 명령에 --confirmed-cohort-ended를 붙여 다시 실행하세요.');
+  return lines.join('\n');
+}
+
+module.exports = { preflightText, statusText, errorGuidance, closeCohortText };

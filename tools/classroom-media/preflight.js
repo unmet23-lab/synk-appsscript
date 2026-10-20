@@ -10,6 +10,8 @@ const MANUAL_CHECKS = [
   { code: 'LOCAL_RECORDING_PLAYBACK', description: '시험 녹화를 종료한 뒤 보존된 파일의 영상과 소리를 끝까지 확인하세요.' },
   { code: 'STUDENT_PRIVATE_VIDEO_ACCESS', description: '비공개 영상의 학생 계정 초대와 실제 재생, 미초대 계정 차단을 확인하세요.' },
 ];
+// An unlisted class (the online class) needs no invites; its risk is a shared link.
+const UNLISTED_CHECK = { code: 'STUDENT_UNLISTED_VIDEO_NOTICE', description: '일부공개 반: 앱에서 수강생에게만 시청 링크가 보이는지, 화면·제목에 학생 이름과 얼굴이 나오지 않는지 확인하세요. 기수가 끝나면 close-cohort로 닫습니다.' };
 
 function placeholderCount(value) {
   if (typeof value === 'string') return PLACEHOLDER.test(value) ? 1 : 0;
@@ -78,7 +80,10 @@ function checkLocal(config, { env = process.env, minimumFreeBytes, fsImpl = fs }
     ok: checks.every(check => check.ok),
     scope: 'local-automatic-only',
     checks,
-    manualChecksRequired: MANUAL_CHECKS.map(check => ({ ...check })),
+    manualChecksRequired: [
+      ...MANUAL_CHECKS.filter(check => check.code !== 'STUDENT_PRIVATE_VIDEO_ACCESS' || config.classes.some(cls => cls.videoPrivacy === 'private')),
+      ...(config.classes.some(cls => cls.videoPrivacy === 'unlisted') ? [UNLISTED_CHECK] : []),
+    ].map(check => ({ ...check })),
   };
 }
 
