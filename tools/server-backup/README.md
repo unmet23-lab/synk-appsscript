@@ -31,7 +31,7 @@ node tools/server-backup/check-monitoring.cjs
 node tools/server-backup/install-absence-monitoring.cjs --check
 ```
 
-첫 명령은 원래 SSH 호스트 키와 인스턴스 ID를 확인하고 별도 `C:\Users\q1212\Documents\SYNK_원본창고\server-independent-status.json`을 갱신한다. PC의 기존 성공·실패 원장은 덮어쓰지 않는다. 서버의 `latest.json`은 현재 회차, `latest-success.json`은 실제 마지막 원격 성공, `ledger.json`은 버전별 원격 위치다. `native-client-check.json`과 `key-dependency-check.json`은 별도 보완 증거다.
+첫 명령은 원래 SSH 호스트 키와 인스턴스 ID를 확인하고 별도 `C:\Users\q1212\Documents\SYNK_원본창고\server-independent-status.json`을 갱신한다. 서버 주소는 공개 저장소에 두지 않는다(10-20) — 세 서버 모두 그때의 바깥 주소를 GCE에서 읽는다. 회사 두 대는 굽기 계정 Vertex 자격, 라디오는 배포 계정(`~/.clasprc.json`) 자격으로 읽는다. 라디오 프로젝트는 Vertex 자격으로 읽으면 403이다. PC의 기존 성공·실패 원장은 덮어쓰지 않는다. 서버의 `latest.json`은 현재 회차, `latest-success.json`은 실제 마지막 원격 성공, `ledger.json`은 버전별 원격 위치다. `native-client-check.json`과 `key-dependency-check.json`은 별도 보완 증거다.
 
 ## 암호화·무결성과 키 의존성
 

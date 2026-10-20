@@ -2,7 +2,7 @@
 
 > 판: Git for Windows 2.55 · 시스템 설정 `core.autocrlf=true` · 공용 `.git/config`에 `diff.autoRefreshIndex=false`(10-13)·`extensions.worktreeConfig=true` · 등록된 훅 없음
 > 마지막 확인: 2026-10-19(`tools/내커밋.js` 시험·워크트리 잠금 경로; 그 밖의 항목은 각 다시 확인 날짜 참조)
-> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-02~10-17 Claude 메모에서 옮김 · 클라우드 세션(리눅스) 10-17 더함 · Claude Code(Claude Opus 5.5) 10-18 결정 표 행 다시 쌓기 · Claude Code 10-19 공용 인덱스 reset 빠뜨림 재발 추가 · Claude Code 10-19 커밋·push 절차를 `tools/내커밋.js`로 옮김·워크트리 잠금 경로 추가 · GPT(Codex) 10-18 상태 출력 버퍼 한도 확인 · Claude Code 10-19 서버 복사 원본 단위의 EOF 빈 줄 추가 · Claude Code 10-19 통화 SDK 줄끝 항목 옮김(10-17 로컬 커밋 판)·워크트리가 같이 보는 origin/master 함정 · Claude Code 10-19 다시 쌓기를 파이프로 거른 함정 추가 · Claude Code 10-19 묵힌 커밋이 코드·생성 묶음에서 겹칠 때 다시 쌓기
+> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-02~10-17 Claude 메모에서 옮김 · 클라우드 세션(리눅스) 10-17 더함 · Claude Code(Claude Opus 5.5) 10-18 결정 표 행 다시 쌓기 · Claude Code 10-19 공용 인덱스 reset 빠뜨림 재발 추가 · Claude Code 10-19 커밋·push 절차를 `tools/내커밋.js`로 옮김·워크트리 잠금 경로 추가 · GPT(Codex) 10-18 상태 출력 버퍼 한도 확인 · Claude Code 10-19 서버 복사 원본 단위의 EOF 빈 줄 추가 · Claude Code 10-19 통화 SDK 줄끝 항목 옮김(10-17 로컬 커밋 판)·워크트리가 같이 보는 origin/master 함정 · Claude Code 10-19 다시 쌓기를 파이프로 거른 함정 추가 · Claude Code 10-19 묵힌 커밋이 코드·생성 묶음에서 겹칠 때 다시 쌓기 · Claude Code 10-20 비밀값 경보 API·로컬 master에서 뜬 워크트리 맞추기
 
 SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더·같은 git 인덱스를 함께 쓴다. 여기서 git을 쓸 때 남의 작업을 되돌리거나 내 커밋이 사라진 함정이다. 틀은 [README](README.md)를 따른다.
 
@@ -38,6 +38,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: `ssh-keygen`의 `.pub`에는 끝 주석이 있지만 GitHub API의 `key`는 알고리즘과 키 재료만 반환한다. 주석 차이는 키 불일치가 아니다.
 - 고침: 알고리즘·키 재료 두 필드를 대조하고 키 ID·제목·`read_only=true`를 별도로 확인한다. 개인키는 암호화된 Actions secret에 표준입력으로 등록하며 로그나 저장소에 넣지 않는다.
 - 다시 확인: Talk 전용 키 등록에서 키 재료·제목·읽기 권한 대조가 통과했다. API 응답의 주석 부재와 임시 개인키 파일 삭제도 확인했다. 실제 CI 결과는 [백엔드 검증 기록](../_ops/qa/backend-upgrade-20261018/result.json)의 `integration.ciSkipAudit`를 본다.
+
+### GitHub 비밀값 경보 API는 탐지한 값을 그대로 돌려준다 (2026-10-20 Claude)
+- 증상: `gh api repos/<저장소>/secret-scanning/alerts`와 `/alerts/<번호>` 응답에 `secret` 필드가 있고, 탐지된 토큰 원문이 들어 있다. 그대로 찍으면 대화·로그에 값이 남는다.
+- 원인: API가 경보 화면과 같은 정보를 준다. 위치(`/alerts/<번호>/locations`)에는 값이 없고 경로·줄·커밋만 있다.
+- 고침: 늘 `--jq`로 고른다 — 목록은 `number, secret_type, state, created_at, validity`, 위치는 `.details.path, .details.start_line, .details.commit_sha`. 진짜 키인지는 로컬 보관 값과 같은지 참·거짓만 대조한다(10-20 경보 1건: 지운 시험 파일의 탐지기 시험값, 이 PC 봇 토큰과 다름).
+- 다시 확인: 쓴 명령의 출력에 `secret` 키가 없다.
 
 ### `worktree --no-checkout` 뒤 희소 경로만 설정하면 인덱스가 비어 있다 (2026-10-18)
 - 증상: 새 공개 작업본에 sparse-checkout 경로를 설정했지만 `status`가 기존 파일 전체의 스테이징 삭제를 표시했다.
@@ -244,6 +250,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: `refs/remotes/origin/*`는 공용 `.git`에 하나만 있어 모든 워크트리가 같이 본다. 그사이 다른 세션이 fetch해서 origin/master는 앞으로 갔고 내 HEAD는 빨리감기한 판 그대로였다. 앞선 origin 판 위에 만든 파일은 HEAD와 견주면 남의 새 줄까지 내 변경으로 잡힌다.
 - 고침: 판을 만들 바탕은 `origin/master`가 아니라 고정한 커밋(HEAD)으로 준다. 만들기 직전에 `git rev-parse HEAD origin/master`가 같은지 보고 다르면 먼저 빨리감기한다. 이번에는 쓴 경로만 되돌리고 빨리감기한 뒤 바탕을 HEAD로 고정해 다시 만들었다.
 - 다시 확인: 만든 뒤 `git diff --numstat`의 경로별 줄 수가 넣은 양과 같다(10-19 이 파일 +13 → +7).
+
+### 로컬 master에서 뜬 앱 워크트리를 가지 맞추기로 origin에 맞추면 충돌한다 (2026-10-20 Claude)
+- 증상: 10-20 다른 세션이 띄운 워크트리(가지 `claude/optimistic-haslett-0421e3`)에서 `sync_with_base_branch`가 origin/master를 합치다 `AGENTS.md` 등 6파일 충돌로 멈췄다. 그 가지에는 내 커밋이 없었다.
+- 원인: 워크트리 가지가 공용 작업본의 로컬 master(`c87ad1989`)에서 떴다. 로컬 master에는 `내커밋.js 올리기`가 origin 위에 다시 쌓아 번호만 달라진 커밋이 366개 있었다. 같은 변경이 양쪽에 다른 번호로 있으니 3방향 병합이 부딪힌다.
+- 고침: `sync_with_base_branch`를 `abort: true`로 되돌린다. `git log origin/master..HEAD`의 커밋이 모두 로컬 master의 조상인지(`git merge-base --is-ancestor <커밋> master`) 보고, 작업본이 깨끗하고 보호 경로 차이가 없으면(`git diff --stat HEAD origin/master -- .claude .mcp.json`가 빔) `git reset --hard origin/master`로 가지만 옮긴다. 내 커밋이 있으면 이 길을 쓰지 않는다.
+- 다시 확인: `git rev-parse HEAD origin/master`가 같고 `git status --short`가 비어 있다.
 
 ### 작업본을 새 HEAD로 당길 때 남의 미커밋 수정이 옛 HEAD 위에 남는다
 - 증상: 남의 미커밋 파일을 「남겨 두기」만 하면 그 세션이 나중에 통째로 커밋할 때 우리 변경이 조용히 되돌아간다(10-03 talk 정리).
