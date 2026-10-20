@@ -38,10 +38,24 @@ SPACE_LEDGER_WARN_BYTES = 8 * 1024 * 1024
 # logs Kernel-General 1 with reason 2 at once: OldTime is when the clock stopped, NewTime when it was set again, and
 # nothing ran in between. Power-Troubleshooter 1 is not used: it is logged 5–25 s after the resume (the 14:02 check on
 # 10-20 ran before it), its span also covers the sleep entry and wake while programs still run, and it gave the hour
-# of sleep before the 10-17 hibernation as zero. The last 24 hours are read; older sleep stays in the ages (stricter).
+# of sleep before the 10-17 hibernation as zero. The last 9 days are read, past the longest age judged here (8 days,
+# the weekly archive check); older sleep stays in the ages (stricter). One day or 30 cost the same 0.1–0.3 s (10-20).
 SUSPEND_QUERY = ("*[System[Provider[@Name='Microsoft-Windows-Kernel-General'] and EventID=1 and "
-                 "TimeCreated[timediff(@SystemTime) <= 86400000]]]")
+                 "TimeCreated[timediff(@SystemTime) <= 777600000]]]")
 EVENT_DATA = '{http://schemas.microsoft.com/win/2004/08/events/event}Data'
+# The schedule query and the notification are short PowerShell runs. Started from this priority-7 task they would take
+# its below-normal CPU class, and with the CPU full (10-20 18:47 and 19:17: other sessions' find and git, Defender) the
+# query took 24–54 s against its 45 s limit and the notification up to 78 s against its 20 s, where the same runs at
+# normal CPU priority took 7–10 s and 1–5 s. Both start at normal CPU priority; I/O and memory priority stay the task's.
+HELPER_FLAGS = (0x08000000 | 0x00000020) if os.name == 'nt' else 0  # CREATE_NO_WINDOW, NORMAL_PRIORITY_CLASS
+# A schedule query that does not answer once is not yet a broken monitor: after the 18:47 timeout the 19:02 check
+# answered. Its failure is reported when the check before it, within two rounds, also failed.
+SCHEDULE_QUERY_CODES = {'SCHEDULE_QUERY_TIMEOUT', 'SCHEDULE_QUERY_FAILED', 'SCHEDULE_QUERY_UNREADABLE'}
+FAILURE_ROUNDS = dt.timedelta(minutes=40)
+
+
+class CheckError(RuntimeError):
+    """A check that could not finish. args[0] is the code kept in the summary; exception text is never kept."""
 
 
 def load_legacy(root):
@@ -121,6 +135,16 @@ def awake(since, now, spans):
     return span
 
 
+def overdue(since, now, limit, suspended):
+    """Whether more than limit has passed since `since` while the PC was awake.
+
+    `suspended` is the sleep record or a function that reads it; it is read only once the wall clock passes the limit.
+    Without the record the wall clock decides, as it did before."""
+    if now - since <= limit: return False
+    spans = suspended() if callable(suspended) else suspended
+    return spans is None or awake(since, now, spans) > limit
+
+
 def suspended_seconds():
     """Seconds this PC has been suspended since it started (interrupt time with and without sleep), or None."""
     if os.name != 'nt': return None
@@ -134,6 +158,8 @@ def suspended_seconds():
 
 
 def evaluate(item, receipt, now, lib, task=None, installed_at=None, repair=None, suspended=None):
+    # suspended: the sleep record (spans, or None when unreadable), or a function that reads it when an age needs it.
+    record = suspended if callable(suspended) else lambda: suspended
     receipt = receipt or {}
     state = receipt.get('status', 'unknown')
     checked = lib.instant(receipt.get('checkedAt') or receipt.get('finishedAt') or receipt.get('heartbeatAt'))
@@ -161,25 +187,31 @@ def evaluate(item, receipt, now, lib, task=None, installed_at=None, repair=None,
         success = success or checked
     elif state in ('first_run_pending',):
         state = 'pending'
+    max_age = dt.timedelta(hours=item['maxAgeHours'])
     if not receipt:
-        state = 'pending' if installed_at and now - installed_at < dt.timedelta(hours=item['maxAgeHours']) else 'unknown'
+        state = 'pending' if installed_at and not overdue(installed_at, now, max_age, record) else 'unknown'
         if state == 'unknown': codes.append('RECEIPT_MISSING')
     slept = None
     if state == 'running':
         heartbeat = lib.instant(receipt.get('heartbeatAt') or receipt.get('checkedAt') or receipt.get('startedAt'))
         start = lib.instant(receipt.get('startedAt'))
         # Both ages leave out the time the PC was suspended while this run was alive; without the record, the wall clock.
-        spans = paused(suspended or [], receipt.get('pid'))
-        if suspended is not None and heartbeat: slept = round((now - heartbeat - awake(heartbeat, now, spans)).total_seconds())
+        sleep = record()
+        spans = paused(sleep or [], receipt.get('pid'))
+        if sleep is not None and heartbeat: slept = round((now - heartbeat - awake(heartbeat, now, spans)).total_seconds())
         if not lib.process_alive(receipt.get('pid')) or not heartbeat or awake(heartbeat, now, spans) > dt.timedelta(minutes=15):
             state = 'interrupted'; codes.append('PROCESS_OR_HEARTBEAT_MISSING')
         elif not start or awake(start, now, spans) > dt.timedelta(hours=item.get('maxRunHours', 6)):
             state = 'interrupted'; codes.append('RUN_OVERRUN')
     if state in ('healthy', 'pending'):
+        # The age of the last success and the 6 hours after the 05:30 run count the time the PC was awake. Asleep it
+        # runs no backup, and on waking every task runs again: the 10-20 12:30 media run started 5.6 minutes after the
+        # 12:47 wake, the 30-minute OneDrive run at its next half hour. A schedule that does not run while the PC is
+        # awake is reported at the same moment as before, since that time has no sleep to leave out.
         baseline = success or installed_at
-        if baseline and now - baseline > dt.timedelta(hours=item['maxAgeHours']):
+        if baseline and overdue(baseline, now, max_age, record):
             state = 'missed'; codes.append('BACKUP_STALE')
-        if item['id'] == 'server' and success and now > lib.next_daily(success) + dt.timedelta(hours=6):
+        if item['id'] == 'server' and success and overdue(lib.next_daily(success), now, dt.timedelta(hours=6), record):
             state = 'missed'; codes.append('DAILY_RUN_MISSED')
     if state not in GOOD | BAD | {'pending', 'running', 'paused'}:
         state = 'unknown'; codes.append('STATE_UNKNOWN')
@@ -220,7 +252,7 @@ def ledger_parts(root, item=SPACE_GUARD):
     return [base.parent / n for n in names if pattern.fullmatch(n) and (base.parent / n).is_file()]
 
 
-def space_guard(root, lib, task, now, item=SPACE_GUARD):
+def space_guard(root, lib, task, now, item=SPACE_GUARD, suspended=None):
     # Not registered yet means waiting for the owner's go-ahead (10-19 「예약은 아직 등록하지 마」), not a failure.
     task = task or {'exists': False}
     try:
@@ -255,8 +287,10 @@ def space_guard(root, lib, task, now, item=SPACE_GUARD):
             # GB as Explorer counts it (1024³), the unit of the guard's 300GB floor and of its own notice (10-20).
             notes.append(f'남은 공간 {free / 1024 ** 3:.0f}GB(지킬 선 {floor / 1024 ** 3:.0f}GB)')
         # A scheduled run may hold the receipt for up to its 2-hour limit; wait for it before calling the guard stalled.
-        running = task.get('state') == 'Running' and last_run and now - last_run <= dt.timedelta(hours=item['maxRunHours'])
-        if not running and (not checked or now - checked > dt.timedelta(hours=item['maxStaleHours'])):
+        # Both ages count the time the PC was awake, as the backups' do.
+        running = task.get('state') == 'Running' and last_run and not overdue(
+            last_run, now, dt.timedelta(hours=item['maxRunHours']), suspended)
+        if not running and (not checked or overdue(checked, now, dt.timedelta(hours=item['maxStaleHours']), suspended)):
             state = 'attention'; codes.append('SPACE_GUARD_STALE')
             notes.append(f'{int((now - checked).total_seconds() // 3600)}시간째 점검 없음' if checked else '점검 시각 없음')
         # The task ran after the last receipt and failed (the check raised): report it without waiting for staleness.
@@ -292,15 +326,23 @@ def task_snapshot(config_path, extra=()):
     try:
         result = subprocess.run(['powershell.exe', '-NoLogo', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass',
             '-File', str(TOOLS / 'backup-task-status.ps1'), '-ConfigPath', str(query)],
-            capture_output=True, timeout=45, creationflags=0x08000000 if os.name == 'nt' else 0)
+            capture_output=True, timeout=45, creationflags=HELPER_FLAGS)
+    except subprocess.TimeoutExpired:
+        raise CheckError('SCHEDULE_QUERY_TIMEOUT') from None
+    except OSError:
+        raise CheckError('SCHEDULE_QUERY_FAILED') from None
     finally:
         if temp: os.unlink(temp)
-    if result.returncode: raise RuntimeError('SCHEDULE_QUERY_FAILED')
-    values = json.loads(result.stdout.decode('utf-8-sig'))
-    return {x['id']: x for x in values}
+    if result.returncode: raise CheckError('SCHEDULE_QUERY_FAILED')
+    try:
+        return {x['id']: x for x in json.loads(result.stdout.decode('utf-8-sig'))}
+    except (ValueError, TypeError, KeyError):
+        raise CheckError('SCHEDULE_QUERY_UNREADABLE') from None
 
 
 def gather(root, lib, config, tasks, now, sleep_record=lambda: None):
+    # The System log is read at most once, and only while a run is in progress or an age passes its limit.
+    sleep_record = functools.cache(sleep_record)
     components = []
     for item in config['components'] + config.get('additionalChecks', []):
         try:
@@ -310,32 +352,38 @@ def gather(root, lib, config, tasks, now, sleep_record=lambda: None):
                 if owner.get('runId') == receipt.get('runId'):
                     receipt = dict(receipt, pid=owner.get('pid'))
             running = (receipt or {}).get('status') == 'running'
-            suspended = sleep_record() if running else None  # read once, and only while a run is in progress
             repair = lib.read_json(root / 'backup-repair-status.json') if item['id'] == 'server' else None
             if item['id'] == 'server':
                 derived = lib.local_summary(root, now)
-                if running and suspended and derived['status'] == 'interrupted':
+                if running and derived['status'] == 'interrupted' and sleep_record():
                     # 백업상태.py judges a running run's heartbeat (10 minutes) and length on the wall clock. Ask it again
                     # with the suspended time moved out of both; only its 'running' answer replaces the first one.
-                    spans, moved = paused(suspended, receipt.get('pid')), dict(receipt)
+                    spans, moved = paused(sleep_record(), receipt.get('pid')), dict(receipt)
                     for key in ('heartbeatAt', 'startedAt'):
                         moment = lib.instant(receipt.get(key))
                         if moment: moved[key] = lib.stamp(now - awake(moment, now, spans))
                     again = lib.derive_status(moved, {}, now, alive=lib.process_alive)
                     if again['status'] == 'running': derived = again
+                elif derived['status'] == 'missed' and lib.instant(derived.get('nextExpectedAt')) and sleep_record():
+                    # It also counts the 6 hours after the 05:30 run on the wall clock. Ask it again at the moment as many
+                    # awake hours after that run as have passed; only a state the wall clock had turned into 'missed'
+                    # (success, or a first run still to come) replaces the first answer.
+                    due = lib.instant(derived['nextExpectedAt'])
+                    again = lib.local_summary(root, due + awake(due, now, sleep_record()))
+                    if again['status'] in ('success', 'first_run_pending'): derived = again
                 receipt = dict(receipt or {}, status=derived['status'], issues=derived['issues'])
             task = dict(tasks.get(item['id'], {'exists': False}))
             auxiliary = [x for x in config.get('auxiliaryTasks', []) if x.get('component') == item['id']]
             if auxiliary:
                 task['auxiliaryTasks'] = [tasks.get(x['id'], {'id':x['id'], 'exists':False}) for x in auxiliary]
             component = evaluate(item, receipt, now, lib, task,
-                lib.instant(item.get('installedAt') or config.get('installedAt')), repair, suspended)
+                lib.instant(item.get('installedAt') or config.get('installedAt')), repair, sleep_record)
         except (OSError, ValueError, TypeError, KeyError):
             component = {'id': item['id'], 'label': LABELS[item['id']], 'status': 'unknown',
                          'codes': ['RECEIPT_UNREADABLE'], 'lastSuccessAt': None}
         components.append(component)
     try:
-        components.append(space_guard(root, lib, tasks.get(SPACE_GUARD['id']), now))
+        components.append(space_guard(root, lib, tasks.get(SPACE_GUARD['id']), now, suspended=sleep_record))
     except (OSError, ValueError, TypeError, KeyError):
         components.append({'id': SPACE_GUARD['id'], 'label': LABELS[SPACE_GUARD['id']], 'status': 'unknown',
                            'codes': ['RECEIPT_UNREADABLE'], 'lastSuccessAt': None})
@@ -371,7 +419,7 @@ def deliver(root, event, lib):
     try:
         result = subprocess.run(['powershell.exe', '-NoLogo', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass',
             '-File', str(TOOLS / 'backup-notify.ps1'), '-EventPath', str(event_path)],
-            capture_output=True, timeout=20, creationflags=0x08000000 if os.name == 'nt' else 0)
+            capture_output=True, timeout=20, creationflags=HELPER_FLAGS)
         receipt = json.loads(result.stdout.decode('utf-8-sig'))
         if result.returncode: receipt['accepted'] = False
     except (OSError, ValueError, subprocess.TimeoutExpired):
@@ -382,6 +430,17 @@ def deliver(root, event, lib):
     return receipt
 
 
+def last_delivered(root, state, lib):
+    """The status of the last event that reached the owner, from its saved copy, or None."""
+    event_id = state.get('lastDeliveredEventId')
+    if not isinstance(event_id, str) or not re.fullmatch(r'[a-f0-9]{64}', event_id): return None
+    try:
+        event = lib.read_json(root / '상태' / '알림' / (event_id + '.json'))
+    except (OSError, ValueError):
+        return None
+    return event.get('status') if isinstance(event, dict) else None
+
+
 def update_notifications(root, summary, lib, now, sender=deliver):
     path = root / 'backup-notification-state.json'
     try:
@@ -389,6 +448,12 @@ def update_notifications(root, summary, lib, now, sender=deliver):
         if not isinstance(previous, dict): previous = {}
     except (OSError, ValueError):
         previous = {}
+    # hasUnresolved: the last notice that reached the owner told of a problem, so a recovery notice is owed. Until 10-20
+    # any failure set it, delivered or not: the 18:47 failure was never shown, was dropped once resolved, and still left
+    # a 「정상 복구」 due. A state from then is read again from the last notice delivered.
+    if previous.get('schemaVersion') != 2 and previous.get('hasUnresolved') and last_delivered(root, previous, lib) == 'healthy':
+        previous['hasUnresolved'] = False
+    previous['schemaVersion'] = 2
     event, digest, unresolved = choose_event(summary, previous, now, lib)
     pending = previous.get('pendingEvent')
     # A changed/recovered state supersedes an undelivered obsolete failure.
@@ -405,10 +470,10 @@ def update_notifications(root, summary, lib, now, sender=deliver):
         if notification.get('accepted'):
             previous['lastNotifiedAt'] = lib.stamp(now)
             previous['lastDeliveredEventId'] = pending['id']
+            previous['hasUnresolved'] = pending.get('status') != 'healthy'
             pending = None
-    recovered_and_delivered = summary['status'] == 'healthy' and notification.get('accepted') is True
-    previous.update(fingerprint=digest, hasUnresolved=unresolved or (previous.get('hasUnresolved', False) and not recovered_and_delivered),
-                    checkedAt=lib.stamp(now), pendingEvent=pending, delivery=notification)
+    previous.update(fingerprint=digest, hasUnresolved=bool(previous.get('hasUnresolved')), checkedAt=lib.stamp(now),
+                    pendingEvent=pending, delivery=notification)
     lib.atomic_json(path, previous)
     return notification
 
@@ -417,9 +482,19 @@ def check(root, lib, now):
     lib.monitor(root, now)
     config_path = root / 'backup-health-config.json'
     config = lib.read_json(config_path)
-    if not config: raise RuntimeError('BACKUP_HEALTH_CONFIG_MISSING')
+    if not config: raise CheckError('BACKUP_HEALTH_CONFIG_MISSING')
     tasks = task_snapshot(config_path, (SPACE_GUARD,))
-    return gather(root, lib, config, tasks, now, functools.cache(suspensions))
+    return gather(root, lib, config, tasks, now, suspensions)
+
+
+def failed_before(previous, now, lib):
+    """Whether the check before this one failed too, within two rounds. Without a readable result, it did."""
+    if not isinstance(previous, dict) or not isinstance(previous.get('components'), list): return True
+    attempt = previous.get('lastAttempt') if isinstance(previous.get('lastAttempt'), dict) else {}
+    failed_at = lib.instant(attempt.get('at'))
+    if not failed_at and any(isinstance(x, dict) and x.get('id') == 'monitor' for x in previous['components']):
+        failed_at = lib.instant(previous.get('checkedAt'))
+    return bool(failed_at) and now - failed_at <= FAILURE_ROUNDS
 
 
 def main():
@@ -452,10 +527,23 @@ def main():
             return 1 if summary['status'] == 'attention' or summary.get('notification', {}).get('accepted') is False else 0
     except BlockingIOError:
         return 0
-    except Exception:
-        summary = {'schemaVersion': 1, 'checkedAt': lib.stamp(now), 'status': 'attention',
-                   'components': [{'id': 'monitor', 'label': '백업 감시', 'status': 'unknown', 'codes': ['MONITOR_FAILED']}],
-                   'issues': [{'component': 'monitor', 'code': 'MONITOR_FAILED'}]}
+    except Exception as error:
+        code = error.args[0] if isinstance(error, CheckError) else None
+        try:
+            previous = lib.read_json(root / 'backup-health.json')
+        except (OSError, ValueError):
+            previous = None
+        if code in SCHEDULE_QUERY_CODES and not failed_before(previous, now, lib):
+            # The first one is not reported: the last result stays, with this attempt beside it, and the notification
+            # state is left as it was (a short gap must not drop an undelivered failure or reset its fingerprint).
+            record = dict(previous, lastAttempt={'at': lib.stamp(now), 'codes': ['MONITOR_FAILED', code]})
+            lib.atomic_json(root / 'backup-health.json', record)
+            if sys.stdout: print(json.dumps(record, ensure_ascii=False))
+            return 1
+        monitor = {'id': 'monitor', 'label': '백업 감시', 'status': 'unknown', 'codes': ['MONITOR_FAILED'] + ([code] if code else [])}
+        if not code: monitor['error'] = type(error).__name__  # the kind of failure, never its text
+        summary = {'schemaVersion': 1, 'checkedAt': lib.stamp(now), 'status': 'attention', 'components': [monitor],
+                   'issues': [{'component': 'monitor', 'code': x} for x in monitor['codes']]}
         if args.notify: summary['notification'] = update_notifications(root, summary, lib, now)
         lib.atomic_json(root / 'backup-health.json', summary)
         if sys.stdout: print(json.dumps(summary, ensure_ascii=False))

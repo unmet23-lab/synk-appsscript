@@ -7,6 +7,7 @@ import io
 import json
 import os
 from pathlib import Path
+import re
 import tempfile
 import time
 import unittest
@@ -105,6 +106,59 @@ class HealthTests(unittest.TestCase):
             self.assertEqual(self.evaluate(receipt, suspended=[(self.ago(80), self.ago(40))])['status'], 'running')
             self.assertEqual(self.evaluate(receipt, suspended=[(self.ago(80), self.ago(65))])['codes'], ['RUN_OVERRUN'])
             self.assertEqual(self.evaluate(receipt, suspended=[])['codes'], ['RUN_OVERRUN'])
+
+    def test_backup_age_counts_the_time_the_pc_was_awake(self):
+        # A lid closed overnight: OneDrive (2 hours) last succeeded 9 hours ago, 7 awake minutes of them, and the first
+        # check after waking must not report 「최신 백업 지연」 before its next half-hour run.
+        receipt, night, calls = {'status': 'success', 'lastSuccessAt': lib.stamp(self.ago(540))}, [(self.ago(538), self.ago(5))], []
+        record = lambda spans: lambda: calls.append(1) or spans
+        row = self.evaluate(receipt, suspended=record(night))
+        self.assertEqual((row['status'], row['codes'], calls), ('healthy', [], [1]))
+        # Without the record, with no sleep, with more than 2 awake hours, or with the sleep before the success: reported.
+        for spans in (None, [], [(self.ago(538), self.ago(180))], [(self.ago(600), self.ago(541))]):
+            with self.subTest(spans=spans):
+                self.assertEqual(self.evaluate(receipt, suspended=spans)['codes'], ['BACKUP_STALE'])
+        calls.clear()  # a fresh success never reads the System log
+        self.assertEqual((self.evaluate(self.ok, suspended=record(night))['status'], calls), ('healthy', []))
+        # A scope installed before the sleep waits as many awake hours for its first receipt.
+        self.assertEqual(self.evaluate(None, installed_at=self.ago(540), suspended=night)['status'], 'pending')
+        self.assertEqual(self.evaluate(None, installed_at=self.ago(540))['codes'], ['RECEIPT_MISSING'])
+
+    def kst(self, day, hour): return dt.datetime(2026, 10, day, hour, tzinfo=lib.KST)
+
+    def test_daily_run_counts_awake_hours_after_its_time(self):
+        # Asleep 04:00–12:00: the 05:30 run starts on waking, and 13:00 is one awake hour after its time (6 allowed).
+        self.item.update(id='server', maxAgeHours=36); self.now = self.kst(18, 13)
+        receipt = {'status': 'success', 'lastSuccessAt': lib.stamp(self.kst(17, 6))}
+        for spans, codes in (([(self.kst(18, 4), self.kst(18, 12))], []), (None, ['DAILY_RUN_MISSED']), ([], ['DAILY_RUN_MISSED']),
+                             ([(self.kst(18, 4), self.kst(18, 6))], ['DAILY_RUN_MISSED'])):  # awake since 06:00: 7 hours
+            with self.subTest(spans=spans):
+                self.assertEqual(self.evaluate(receipt, suspended=spans)['codes'], codes)
+
+    def test_server_missed_by_its_own_rule_is_asked_again_without_the_sleep(self):
+        # 백업상태.py says 'missed' 6 wall-clock hours after the 05:30 run; asked at the same awake time it is not.
+        config = {'components': [{'id': 'server', 'receipt': 'backup-status.json', 'maxAgeHours': 36, 'maxRunHours': 6}]}
+        tasks = {'server': {'exists': True, 'enabled': True, 'result': 0}}
+        lib.atomic_json(self.root / 'backup-status.json', {'status': 'success', 'lastSuccessAt': lib.stamp(self.kst(17, 6))})
+        real = lib.derive_status  # this PC's stop file and backup key left out
+        summary = lambda root, at=None: real(lib.read_json(Path(root) / 'backup-status.json'), {}, at)
+        def server(spans, answer=summary):
+            with patch.object(lib, 'local_summary', side_effect=answer):
+                return health.gather(self.root, lib, config, tasks, self.kst(18, 13), lambda: spans)['components'][0]
+        row = server([(self.kst(18, 4), self.kst(18, 12))])
+        self.assertEqual((row['status'], row['codes']), ('healthy', []))
+        for spans in (None, [], [(self.kst(18, 4), self.kst(18, 6))]):
+            with self.subTest(spans=spans):
+                self.assertEqual(server(spans)['codes'], ['BACKUP_MISSED'])
+        # The second answer may only clear the wall-clock 'missed', never turn it into another state.
+        answers = iter([None, {'status': 'running', 'issues': []}])
+        self.assertEqual(server([(self.kst(18, 4), self.kst(18, 12))], lambda root, at: next(answers) or summary(root, at))['codes'],
+                         ['BACKUP_MISSED'])
+
+    def test_sleep_record_reaches_past_the_longest_age_judged(self):
+        # The weekly archive check allows 8 days; sleep older than the record stays in the ages (stricter).
+        window = int(re.search(r'timediff\(@SystemTime\) <= (\d+)', health.SUSPEND_QUERY).group(1))
+        self.assertGreaterEqual(window, 8 * 24 * 3600 * 1000)
 
     def test_sleep_from_before_the_process_started_is_not_taken_off(self):
         # A shutdown with fast startup also resumes from hibernation but ends every program; a later process with the
@@ -207,6 +261,112 @@ class HealthTests(unittest.TestCase):
                 code, calls, written = self.main_once(attempts, asleep)
                 self.assertEqual((code, calls, written['issues']), (1, len(attempts), [{'component': 'monitor', 'code': 'MONITOR_FAILED'}]))
 
+    def notified_main(self, outcome, at, sent):
+        # main() --notify once at `at`, with check() raising or returning `outcome`; delivered titles go to `sent`.
+        real = health.update_notifications
+        def notify(root, summary, lib_, now):
+            return real(root, summary, lib_, now, lambda r, event, l: sent.append(event['title']) or {'accepted': True})
+        def check(*_):
+            if isinstance(outcome, Exception): raise outcome
+            return json.loads(json.dumps(outcome))
+        with patch.object(health, 'load_legacy', return_value=lib), patch.object(health, 'check', side_effect=check), \
+             patch.object(lib, 'utcnow', return_value=at), patch.object(health, 'suspended_seconds', return_value=5.0), \
+             patch.object(health, 'update_notifications', side_effect=notify), \
+             patch.object(sys, 'argv', ['backup-health.py', '--root', str(self.root), '--notify']), contextlib.redirect_stdout(io.StringIO()):
+            code = health.main()
+        return code, lib.read_json(self.root / 'backup-health.json')
+
+    def test_one_schedule_query_that_does_not_answer_waits_for_the_next_check(self):
+        # 10-20 18:47 and 19:17: with the CPU full the query passed its 45 s once; 19:02 answered again.
+        healthy = {'schemaVersion': 1, 'checkedAt': lib.stamp(self.now), 'status': 'healthy', 'issues': [],
+                   'components': [{'id': 'onedrive', 'label': 'OneDrive', 'status': 'healthy', 'codes': []}]}
+        timeout, sent, at = health.CheckError('SCHEDULE_QUERY_TIMEOUT'), [], lambda minutes: self.now + dt.timedelta(minutes=minutes)
+        self.notified_main(healthy, at(0), sent)
+        state = (self.root / 'backup-notification-state.json').read_bytes()
+        code, written = self.notified_main(timeout, at(15), sent)
+        # Not reported: the last result stays with this attempt beside it, and the notification state is untouched.
+        self.assertEqual((code, sent), (1, []))
+        self.assertEqual(written, dict(healthy, notification=written['notification'],
+                         lastAttempt={'at': lib.stamp(at(15)), 'codes': ['MONITOR_FAILED', 'SCHEDULE_QUERY_TIMEOUT']}))
+        self.assertEqual((self.root / 'backup-notification-state.json').read_bytes(), state)
+        # The check after it also fails: reported as before, now with the reason.
+        code, written = self.notified_main(timeout, at(30), sent)
+        self.assertEqual((code, sent), (1, ['SYNK 백업 확인 필요']))
+        self.assertEqual(written['components'][0]['codes'], ['MONITOR_FAILED', 'SCHEDULE_QUERY_TIMEOUT'])
+        self.assertEqual(written['issues'], [{'component': 'monitor', 'code': 'MONITOR_FAILED'},
+                                             {'component': 'monitor', 'code': 'SCHEDULE_QUERY_TIMEOUT'}])
+        code, written = self.notified_main(timeout, at(45), sent)  # still failing: kept as a failure, no second notice
+        self.assertEqual((written['checkedAt'], 'lastAttempt' in written, sent), (lib.stamp(at(45)), False, ['SYNK 백업 확인 필요']))
+        self.notified_main(healthy, at(60), sent)
+        self.assertEqual(sent, ['SYNK 백업 확인 필요', 'SYNK 백업 정상 복구'])
+        # Failing and answering in turn never reports; neither does a failure after the PC slept past two rounds.
+        for minutes, outcome in ((75, timeout), (90, healthy), (105, health.CheckError('SCHEDULE_QUERY_FAILED')),
+                                 (106 + 41, health.CheckError('SCHEDULE_QUERY_UNREADABLE'))):
+            self.assertEqual(self.notified_main(outcome, at(minutes), sent)[0], 1 if outcome is not healthy else 0)
+        self.assertEqual(len(sent), 2)
+
+    def test_a_monitor_without_a_previous_result_or_failing_otherwise_reports_at_once(self):
+        sent = []
+        code, written = self.notified_main(health.CheckError('SCHEDULE_QUERY_TIMEOUT'), self.now, sent)
+        self.assertEqual((code, sent, written['components'][0]['codes']), (1, ['SYNK 백업 확인 필요'], ['MONITOR_FAILED', 'SCHEDULE_QUERY_TIMEOUT']))
+        (self.root / 'backup-health.json').write_text('{broken', encoding='utf-8')
+        code, written = self.notified_main(health.CheckError('SCHEDULE_QUERY_TIMEOUT'), self.now + dt.timedelta(hours=3), sent)
+        self.assertEqual((code, written['checkedAt'], written['status'], 'lastAttempt' in written),
+                         (1, lib.stamp(self.now + dt.timedelta(hours=3)), 'attention', False))
+        healthy = {'schemaVersion': 1, 'status': 'healthy', 'components': [], 'issues': []}
+        for error, codes in ((health.CheckError('BACKUP_HEALTH_CONFIG_MISSING'), ['MONITOR_FAILED', 'BACKUP_HEALTH_CONFIG_MISSING']),
+                             (KeyError('SECRET=value'), ['MONITOR_FAILED'])):
+            with self.subTest(error=type(error).__name__):
+                self.notified_main(healthy, self.now, [])
+                code, written = self.notified_main(error, self.now + dt.timedelta(minutes=15), sent)
+                self.assertEqual((code, written['components'][0]['codes']), (1, codes))
+                self.assertNotIn('SECRET', json.dumps(written))
+        self.assertEqual(written['components'][0]['error'], 'KeyError')  # the kind of failure only
+
+    def test_schedule_query_keeps_a_code_for_why_it_did_not_answer(self):
+        config = self.root / 'backup-health-config.json'
+        config.write_text(json.dumps({'components': []}), encoding='utf-8')
+        def query(outcome):
+            seen = {}
+            def run(args, **kwargs):
+                seen.update(kwargs, path=Path(args[args.index('-ConfigPath') + 1]))
+                if isinstance(outcome, BaseException): raise outcome
+                return subprocess.CompletedProcess(args, *outcome)
+            with patch.object(health.subprocess, 'run', side_effect=run):
+                try:
+                    return health.task_snapshot(config, (health.SPACE_GUARD,)), seen
+                except health.CheckError as error:
+                    return error.args[0], seen
+                finally:
+                    self.assertFalse(seen['path'].exists())  # the temporary copy is gone either way
+        for outcome, expected in ((subprocess.TimeoutExpired('powershell.exe', 45), 'SCHEDULE_QUERY_TIMEOUT'),
+                                  (OSError('no powershell'), 'SCHEDULE_QUERY_FAILED'), ((1, b'', b'boom'), 'SCHEDULE_QUERY_FAILED'),
+                                  ((0, b'not json', b''), 'SCHEDULE_QUERY_UNREADABLE'), ((0, b'{"id": "space"}', b''), 'SCHEDULE_QUERY_UNREADABLE'),
+                                  ((0, b'[{"exists": false}]', b''), 'SCHEDULE_QUERY_UNREADABLE')):
+            with self.subTest(expected=expected, outcome=repr(outcome)[:40]):
+                self.assertEqual(query(outcome)[0], expected)
+        tasks, seen = query((0, json.dumps([{'id': 'space', 'exists': False}]).encode(), b''))
+        self.assertEqual((tasks, seen['timeout'], seen['creationflags']), ({'space': {'id': 'space', 'exists': False}}, 45, health.HELPER_FLAGS))
+        # The notification starts the same way.
+        with patch.object(health.subprocess, 'run', side_effect=lambda args, **kwargs: seen.update(kwargs) or
+                          subprocess.CompletedProcess(args, 0, b'{"accepted": true}', b'')):
+            health.deliver(self.root, {'id': 'a' * 64}, lib)
+        self.assertEqual((seen['timeout'], seen['creationflags']), (20, health.HELPER_FLAGS))
+
+    @unittest.skipUnless(os.name == 'nt', 'Windows priority classes')
+    def test_helper_processes_get_normal_cpu_priority_under_the_below_normal_task(self):
+        # The scheduled task runs at priority 7 (below normal); a child takes that class unless it asks for another.
+        child = ("import ctypes; k = ctypes.WinDLL('kernel32'); k.GetCurrentProcess.restype = ctypes.c_void_p; "
+                 "k.GetPriorityClass.argtypes = [ctypes.c_void_p]; print(k.GetPriorityClass(k.GetCurrentProcess()))")
+        parent = ("import subprocess, sys; print(subprocess.run([sys.executable, '-c', sys.argv[2]], capture_output=True, "
+                  "creationflags=int(sys.argv[1])).stdout.decode().strip())")
+        for flags, expected in ((health.HELPER_FLAGS, 0x20), (0x08000000, 0x4000)):
+            with self.subTest(flags=hex(flags)):
+                result = subprocess.run([sys.executable, '-c', parent, str(flags), child], capture_output=True, timeout=60,
+                                        creationflags=0x4000 | 0x08000000)
+                self.assertEqual(int(result.stdout.split()[-1]), expected)
+        self.assertTrue(health.HELPER_FLAGS & 0x08000000)  # still no console window every 15 minutes
+
     def test_onedrive_normal_sync_pending_is_not_immediate_failure(self):
         task={'exists':True,'enabled':True,'result':2,'lastRunAt':lib.stamp(self.now)}
         self.assertEqual(self.evaluate({'status':'pending'},task=task,installed_at=self.now)['status'],'pending')
@@ -297,8 +457,48 @@ class HealthTests(unittest.TestCase):
         calls=[];sender=lambda *_:calls.append(1) or {'accepted':True}
         health.update_notifications(self.root,pending,lib,self.now+dt.timedelta(minutes=1),sender)
         self.assertEqual(calls,[])
+        # The failure was never shown, so its recovery is not announced either (10-20 18:47).
         health.update_notifications(self.root,self.summary('healthy'),lib,self.now+dt.timedelta(minutes=2),sender)
-        self.assertEqual(len(calls),1)
+        self.assertEqual(calls,[])
+
+    def test_recovery_is_announced_only_after_a_failure_notice_was_shown(self):
+        def run(steps):
+            sent = []
+            for minute, (state, accepted) in enumerate(steps):
+                health.update_notifications(self.root, self.summary(state), lib, self.now + dt.timedelta(minutes=minute),
+                                            lambda root, event, _: sent.append(event['title']) or {'accepted': accepted})
+            return sent
+        shown = run([('failed', True), ('healthy', True)])
+        self.assertEqual(shown, ['SYNK 백업 확인 필요', 'SYNK 백업 정상 복구'])
+        (self.root / 'backup-notification-state.json').unlink()
+        # Shown once, then a changed failure that was not delivered: the owner still waits for the recovery.
+        self.assertEqual(run([('failed', True), ('attention', False), ('healthy', True)])[-1], 'SYNK 백업 정상 복구')
+        (self.root / 'backup-notification-state.json').unlink()
+        self.assertEqual(run([('failed', False), ('failed', False), ('healthy', True)]), ['SYNK 백업 확인 필요'] * 2)
+        state = lib.read_json(self.root / 'backup-notification-state.json')
+        self.assertEqual((state['hasUnresolved'], state['pendingEvent'], state['schemaVersion']), (False, None, 2))
+
+    def test_state_from_before_reads_the_last_delivered_notice(self):
+        # Until 10-20 any failure set hasUnresolved; the live state then had it after the undelivered 18:47 failure.
+        saved = {'healthy': 'a' * 64, 'attention': 'b' * 64}
+        for status, event_id in saved.items():
+            lib.atomic_json(self.root / '상태' / '알림' / (event_id + '.json'), {'id': event_id, 'status': status})
+        def recovery(event_id, **state):
+            lib.atomic_json(self.root / 'backup-notification-state.json', dict({'lastDeliveredEventId': event_id,
+                'fingerprint': 'old', 'hasUnresolved': True, 'pendingEvent': None}, **state))
+            sent = []
+            health.update_notifications(self.root, self.summary('healthy'), lib, self.now,
+                                        lambda root, event, _: sent.append(event['title']) or {'accepted': True})
+            return sent
+        self.assertEqual(recovery(saved['healthy']), [])
+        written = lib.read_json(self.root / 'backup-notification-state.json')
+        self.assertEqual((written['schemaVersion'], written['hasUnresolved']), (2, False))
+        self.assertEqual(recovery(saved['attention']), ['SYNK 백업 정상 복구'])
+        self.assertEqual(recovery('c' * 64), ['SYNK 백업 정상 복구'])  # no saved copy: as before
+        lib.atomic_json(self.root / '상태' / 'decoy.json', {'status': 'healthy'})
+        self.assertEqual(recovery('../decoy'), ['SYNK 백업 정상 복구'])  # only an event id names a saved notice
+        # Read once: a state already in the new form keeps its own answer.
+        self.assertEqual(recovery(saved['healthy'], schemaVersion=2), ['SYNK 백업 정상 복구'])
 
     def test_persistent_failure_reminder_daily_not_every_poll(self):
         calls=[];sender=lambda *_:calls.append(1) or {'accepted':True}
@@ -408,6 +608,24 @@ class SpaceGuardTests(unittest.TestCase):
         self.receipt(age=dt.timedelta(minutes=40))
         row = self.guard(result=1, lastRunAt=lib.stamp(self.now-dt.timedelta(minutes=10)))
         self.assertEqual((row['status'], row['codes']), ('attention', ['SCHEDULE_LAST_RUN_FAILED']))
+
+    def test_check_age_and_run_window_count_awake_hours(self):
+        # A night asleep is not a stalled guard; without the record the wall clock judges as before.
+        guard = lambda spans, **task: health.space_guard(self.root, lib, dict(self.task, **task), self.now, suspended=spans)
+        hours = lambda value: self.now - dt.timedelta(hours=value)
+        self.receipt(age=dt.timedelta(hours=9))
+        self.assertEqual(guard([(hours(8.8), hours(0.1))])['status'], 'healthy')
+        for spans in (None, [], [(hours(8), hours(4))]):
+            with self.subTest(spans=spans):
+                self.assertEqual(guard(spans)['codes'], ['SPACE_GUARD_STALE'])
+        # The whole check hands the guard the same record.
+        summary = health.gather(self.root, lib, {'components': []}, {'space': self.task}, self.now, lambda: [(hours(8.8), hours(0.1))])
+        self.assertEqual((summary['status'], summary['components'][0]['status']), ('healthy', 'healthy'))
+        # A run that slept an hour is still inside its 2-hour limit 2.5 wall-clock hours after it started.
+        self.receipt(age=dt.timedelta(hours=5))
+        run = dict(state='Running', lastRunAt=lib.stamp(hours(2.5)))
+        self.assertEqual(guard([(hours(2), hours(1))], **run)['status'], 'healthy')
+        self.assertEqual(guard(None, **run)['codes'], ['SPACE_GUARD_STALE'])
 
     def test_free_space_below_floor_is_reported_with_the_numbers(self):
         self.receipt('attention', free=285 * 1024**3)  # 10억 바이트로 나누면 306GB(지킬 선 322GB)로 보인다
