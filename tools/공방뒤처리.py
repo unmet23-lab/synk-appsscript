@@ -2,8 +2,8 @@
 
 무엇을 하나 (규격에 따라 갈린다):
   부품    — 배경을 걷는다. 🔴 09-07 부터 자르는 자는 `tools/AI누끼.py`(형태를 보고 가른다)가 기본이다.
-           옛 자 `tools/흰배경걷기.py` 는 색으로 갈라서 크림 양모를 크림·흰 바탕에서 파먹었다
-           (새벽 판 14/42 · 낮 판 7/28 이 뜯겼고, 말풍선·녹음맺음은 산산조각). `--옛자르기` 로만 남긴다.
+           옛 자 `tools/흰배경걷기.py`(10-20 보관)는 색으로 갈라서 크림 양모를 크림·흰 바탕에서 파먹었다
+           (새벽 판 14/42 · 낮 판 7/28 이 뜯겼고, 말풍선·녹음맺음은 산산조각). 그 자를 부르던 `--옛자르기` 는 10-20 에 걷었다.
            `--다시` 는 이미 avif 로 담긴 것도 원본(`쇠.png`)에서 다시 오린다 — 자가 바뀐 날 쓴다.
   천·장면 — 배경이 곧 그림이라 안 걷는다.
   🔴 «장면»이 09-05 저녁까지 부품 쪽에 서 있었다. 규격표는 장면을 「크림 바탕 위에 물건 하나,
@@ -34,7 +34,6 @@ import argparse
 import io
 import json
 import os
-import subprocess
 import sys
 
 try:
@@ -97,8 +96,6 @@ def main():
     ap.add_argument('--묶음', help='이 묶음만 다듬는다')
     ap.add_argument('--다시', action='store_true',
                     help='이미 avif/webp 로 담긴 것도 원본 «쇠.png» 에서 다시 오린다(자가 바뀐 날)')
-    ap.add_argument('--옛자르기', action='store_true',
-                    help='색으로 가르는 옛 자(흰배경걷기.py)를 쓴다 — 크림 물건에는 쓰지 않는다')
     ap.add_argument('--너비', type=int, default=0,
                     help='담을 때 긴 변 최대(px). 0(기본) 이면 «원본 크기 그대로» — AVIF 라 줄일 이유가 없다')
     ap.add_argument('--꼴', default='AVIF', choices=['AVIF', 'WEBP'],
@@ -143,7 +140,7 @@ def main():
     산것 = 실패 = 0
     # 🔑 AI 자는 모델을 «한 번만» 올린다(38초) — 장마다 띄우면 스물여덟 번이다. 부품이 하나도 없으면 안 올린다.
     AI자 = None
-    if not a.옛자르기 and any(규 not in 안걷는규격 for _, _, 규, _ in 할것):
+    if any(규 not in 안걷는규격 for _, _, 규, _ in 할것):
         sys.path.insert(0, os.path.join(ROOT, 'tools'))
         import AI누끼
         AI자 = AI누끼.세션()
@@ -163,20 +160,8 @@ def main():
                 #   글자를 얹을 자리가 없어진다. 어떤 임계로도 깔끔해지지 않는다 — 걷는 일 자체가 틀렸다.
                 im = Image.open(png).convert('RGB')
             else:
-                if AI자 is not None:
-                    # 형태로 가른다 — 크림 물건도 안 파먹는다(09-07 실측 28/28 온전).
-                    im = AI누끼.걷기(Image.open(png), AI자).convert('RGBA')
-                else:
-                    누끼 = png[:-4] + '_누끼.png'
-                    subprocess.run([sys.executable, os.path.join(ROOT, 'tools', '흰배경걷기.py'),
-                                    png, '--출력', 누끼, '--흰바닥', '0'],
-                                   capture_output=True, text=True, encoding='utf-8', errors='replace')
-                    if not os.path.exists(누끼):
-                        print(f'   🔴 배경을 못 걷었다 — {것["이름"]}')
-                        실패 += 1
-                        continue
-                    im = Image.open(누끼).convert('RGBA')
-                    os.remove(누끼)
+                # 형태로 가른다 — 크림 물건도 안 파먹는다(09-07 실측 28/28 온전).
+                im = AI누끼.걷기(Image.open(png), AI자).convert('RGBA')
             if a.너비:
                 im.thumbnail((a.너비, a.너비), Image.LANCZOS)
             if a.꼴 == 'AVIF':
