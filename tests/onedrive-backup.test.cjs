@@ -83,6 +83,37 @@ test('current worktree documents deduplicate by content and changed versions rem
   assert.equal(entries.find(x => x.relativePath === 'new.md').sameAsPrimary, false);
   assert.equal(fs.readdirSync(path.join(folder, 'files')).length, 3);
 });
+test('a worktree merged into origin keeps only its changed files; an unmerged one is still read in full (10-20)', t => {
+  const f = fixture(t), vault = path.join(f.temp, 'vault'), remote = path.join(f.temp, 'origin.git');
+  const merged = path.join(f.temp, 'merged-tree'), local = path.join(f.temp, 'local-tree');
+  const { execFileSync } = require('node:child_process');
+  const git = (cwd, ...args) => execFileSync('git', ['-c', 'user.name=Backup Test', '-c', 'user.email=backup@example.invalid', ...args],
+    { cwd, windowsHide: true, stdio: 'pipe' }).toString().trim();
+  git(f.temp, 'init', '-q', '--bare', remote); git(f.root, 'init', '-q', '-b', 'main'); git(f.root, 'remote', 'add', 'origin', remote);
+  f.put(f.root, 'old.md', '# Old'); f.put(f.root, 'plan.md', '# Plan');
+  git(f.root, 'add', '.'); git(f.root, 'commit', '-qm', 'base'); git(f.root, 'push', '-q', 'origin', 'main');
+  git(f.root, 'worktree', 'add', '-q', '--detach', merged);
+  git(f.root, 'worktree', 'add', '-q', '-b', 'local-only', local);
+  f.put(local, 'local.md', '# Local only'); git(local, 'add', 'local.md'); git(local, 'commit', '-qm', 'local');
+  // 본진의 old.md가 앞서 나가도, 합쳐진 작업트리의 커밋된 old.md는 GitHub에 있으니 보존하지 않는다.
+  f.put(f.root, 'old.md', '# Newer main');
+  f.put(merged, 'plan.md', '# Plan edited in the worktree'); f.put(merged, 'note.md', '# Untracked note'); f.put(merged, 'tool.js', 'module.exports = 2;');
+  const head = git(merged, 'rev-parse', 'HEAD');
+  const trees = [{ repository: 'SYNK-appsscript', primary: f.root, root: merged }, { repository: 'SYNK-appsscript', primary: f.root, root: local }];
+  const report = backup.preserveWorktreeDocuments(f.root, vault, { trees });
+  assert.equal(report.mergedOnOrigin, 1);
+  const folder = path.join(vault, '작업문서_미통합_자동'), index = backup.readJson(path.join(folder, 'index.json'));
+  assert.deepEqual(index.mergedOnOrigin, [{ repository: 'SYNK-appsscript', worktree: merged, head }]);
+  const entries = index.manifests.flatMap(item => backup.readJson(path.join(folder, item.file)).entries);
+  assert.deepEqual(entries.filter(row => row.worktree === merged).map(row => row.relativePath).sort(), ['note.md', 'plan.md', 'tool.js']);
+  assert.deepEqual(entries.filter(row => row.worktree === local).map(row => row.relativePath).sort(), ['local.md', 'old.md', 'plan.md']);
+  assert.equal(entries.find(row => row.worktree === local && row.relativePath === 'old.md').sameAsPrimary, false, 'the unmerged worktree is still compared in full');
+  // 합쳐진 작업트리에 origin에 없는 커밋이 생기면 다시 전부 본다.
+  git(merged, 'add', '.'); git(merged, 'commit', '-qm', 'not pushed');
+  const after = backup.preserveWorktreeDocuments(f.root, vault, { trees });
+  assert.equal(after.mergedOnOrigin, 0);
+  assert.ok(backup.readJson(path.join(folder, 'index.json')).mergedOnOrigin === undefined);
+});
 test('receipt avoids rewrites, but changed sources and damaged destinations are repaired', t => {
   const f = fixture(t); f.put(f.root, 'document.md', '# Version one');
   const rows = [{ brand: 'SYNK', source: 'document.md', target: 'document.md', kind: 'system' }];
@@ -511,15 +542,18 @@ test('provider status rereads changed, pending, old and rotating copies and carr
   const files = ['a', 'b', 'c', 'd', 'e'].map((name, i) => ({ source: path.join(f.root, name + '.md'), target: path.join(f.destination, 'SYNK', name + '.md'),
     expectedBytes: 10 + i, sha256: 'a'.repeat(64), targetModifiedMs: 1792395753196.5 + i, verifiedAt: '2026-10-19T00:00:00.000Z' }));
   backup.writeJson(manifestFile, { oneDriveRoot: f.destination, files });
-  const slotOf = file => readCache.slotOf(file.target, 12);
-  const pick = wanted => { for (let k = 0; k < 12; k++) { const now = Date.parse('2026-10-19T09:00:00Z') + k * readCache.SLOT_MS; if (wanted(Math.floor(now / readCache.SLOT_MS) % 12)) return now; } };
+  // 10-20부터 1/48 묶음(하루 한 바퀴)·24.5시간 — 상수를 그대로 따라간다.
+  const slots = backup.PROVIDER_SLOTS, tooOld = backup.PROVIDER_MAX_CARRY_MS + 3600000;
+  assert.equal(slots, 48); assert.equal(backup.PROVIDER_MAX_CARRY_MS, 24.5 * 3600000);
+  const slotOf = file => readCache.slotOf(file.target, slots);
+  const pick = wanted => { for (let k = 0; k < slots; k++) { const now = Date.parse('2026-10-19T09:00:00Z') + k * readCache.SLOT_MS; if (wanted(Math.floor(now / readCache.SLOT_MS) % slots)) return now; } };
   const now = pick(slot => files.every(file => slot !== slotOf(file)));
   const observedAt = new Date(now - 3600000).toISOString();
   const row = (file, extra = {}) => ({ target: file.target, expectedBytes: file.expectedBytes, exists: true, bytes: file.expectedBytes, sizeMatches: true,
     attributes: 32, modifiedAt: new Date(file.targetModifiedMs).toISOString(), modifiedMs: file.targetModifiedMs, storageProviderState: 2,
     stateName: 'IN_SYNC', syncTransferStatus: null, error: null, observedAt, ...extra });
   const previous = { startedAt: observedAt, files: [row(files[0]), row(files[1], { modifiedMs: 1 }), row(files[2], { stateName: 'PENDING_UPLOAD' }),
-    row(files[3], { observedAt: new Date(now - 7 * 3600000).toISOString() })] };
+    row(files[3], { observedAt: new Date(now - tooOld).toISOString() })] };
   const script = state => (input, out) => {
     const asked = backup.readJson(input).files;
     script.asked = asked.map(file => file.target);
@@ -547,9 +581,9 @@ test('provider status rereads changed, pending, old and rotating copies and carr
   runner = script('IN_SYNC');
   const turn = backup.providerStatus(manifestFile, output, { previous: fresh, now: rotating, runScript: runner });
   assert.ok(script.asked.includes(files[0].target)); assert.ok(turn.freshlyInspected >= 1);
-  // 6.5시간이 지나면 모두 다시 본다.
+  // 옮겨 둘 수 있는 시간(24.5시간)이 지나면 모두 다시 본다.
   runner = script('IN_SYNC');
-  backup.providerStatus(manifestFile, output, { previous: fresh, now: now + 7 * 3600000, runScript: runner });
+  backup.providerStatus(manifestFile, output, { previous: fresh, now: now + tooOld, runScript: runner });
   assert.equal(script.asked.length, 5);
 });
 
@@ -697,6 +731,61 @@ test('a worktree-level memo is reused only for the same input key and survives a
   cache = readCache.open(cacheFile, { fingerprint });
   assert.equal(cache.memo('worktree-sources:x', 'k1'), null); assert.equal(cache.dropped, 1);
   assert.equal(readCache.open(cacheFile, { fingerprint: '8'.repeat(64) }).memo('worktree-sources:x', 'k1'), null, 'another policy drops memos too');
+});
+
+test('the read cache appends only changed entries within a day, writes nothing when nothing changed, and rewrites in full once a day (10-20)', t => {
+  const f = fixture(t), cacheFile = path.join(f.stateDir, 'read-cache.json'), journal = path.join(f.stateDir, 'read-cache.journal.jsonl');
+  const fingerprint = '7'.repeat(64), day = Date.parse('2026-10-20T03:00:00Z');
+  const file = f.put(f.root, 'a.md', '# A'), other = f.put(f.root, 'b.md', '# B');
+  const stat = p => fs.statSync(p, { bigint: true }), sha = text => require('node:crypto').createHash('sha256').update(text).digest('hex');
+  // 처음: 기록 파일을 통째로 쓴다.
+  let cache = readCache.open(cacheFile, { fingerprint, now: day });
+  cache.remember(file, stat(file), stat(file), sha('# A'), 3, 'a.md', null);
+  assert.equal(cache.save().mode, 'full'); assert.equal(fs.existsSync(journal), false);
+  const baseBefore = fs.readFileSync(cacheFile, 'utf8');
+  // 같은 날 바뀐 것이 없으면 아무것도 안 쓴다(그날 이미 본 항목을 다시 봐도).
+  cache = readCache.open(cacheFile, { fingerprint, now: day + 60000 });
+  cache.lookup(file, stat(file), 'a.md');
+  assert.deepEqual(cache.save(), { saved: false, unchanged: true, mode: 'none' });
+  assert.equal(fs.readFileSync(cacheFile, 'utf8'), baseBefore); assert.equal(fs.existsSync(journal), false);
+  // 같은 날 새로 읽은 것은 덧붙이기만 한다. 다시 열면 그 줄까지 읽는다.
+  cache = readCache.open(cacheFile, { fingerprint, now: day + 120000 });
+  cache.remember(other, stat(other), stat(other), sha('# B'), 3, 'b.md', null);
+  cache.setMemo('worktree-status:x', 'k1', []);
+  const appended = cache.save();
+  assert.equal(appended.mode, 'journal'); assert.equal(appended.appended, 2);
+  assert.equal(fs.readFileSync(cacheFile, 'utf8'), baseBefore, 'the base is not rewritten for a small change');
+  cache = readCache.open(cacheFile, { fingerprint, now: day + 180000 });
+  assert.equal(cache.lookup(other, stat(other), 'b.md').sha256, sha('# B')); assert.deepEqual(cache.memo('worktree-status:x', 'k1'), []);
+  assert.equal(cache.summary().journalLines, 1);
+  // 쓰다 끊긴 끝줄과 다른 바탕 위에 쌓인 줄은 읽지 않는다.
+  fs.appendFileSync(journal, JSON.stringify({ base: '2026-01-01T00:00:00.000Z', policyFingerprint: fingerprint,
+    entries: { [path.resolve(other)]: [[...readCache.statKey(stat(other))], sha('stale'), 3, {}, {}, 1] } }) + '\n{"base":');
+  cache = readCache.open(cacheFile, { fingerprint, now: day + 240000 });
+  assert.equal(cache.lookup(other, stat(other), 'b.md').sha256, sha('# B')); assert.equal(cache.dropped, 1);
+  // 다음 날 처음 저장하면 통째로 다시 쓰고 덧붙인 줄을 비운다.
+  cache = readCache.open(cacheFile, { fingerprint, now: day + 86400000 });
+  cache.lookup(file, stat(file), 'a.md');
+  assert.equal(cache.save().mode, 'full'); assert.equal(fs.existsSync(journal), false);
+  cache = readCache.open(cacheFile, { fingerprint, now: day + 86400000 + 60000 });
+  assert.equal(cache.lookup(other, stat(other), 'b.md').sha256, sha('# B'), 'entries from the journal survive the full rewrite');
+});
+
+test('an unchanged copy list or exclusion list is not rewritten on the next run (10-20)', t => {
+  const f = fixture(t);
+  f.put(f.root, 'doc.md', '# Main');
+  const options = { ...f, getRows: () => [{ brand: 'SYNK', source: 'doc.md', target: 'doc.md', kind: 'system' }],
+    collectWorktrees: () => ({ documents: 0 }), checkProvider: healthy };
+  // 첫 회차 직후의 행은 「방금 써서 다시 읽어 확인」이고, 다음 회차부터 「앞 확인 + 지금 메타데이터」로 한 번 바뀐다.
+  assert.equal(backup.run(options).status, 'healthy'); assert.equal(backup.run(options).status, 'healthy');
+  const manifest = path.join(f.stateDir, 'copy-manifest.json'), before = fs.readFileSync(manifest, 'utf8');
+  const second = backup.run(options);
+  assert.equal(second.status, 'healthy');
+  assert.equal(fs.readFileSync(manifest, 'utf8'), before, 'same files: the copy list keeps its bytes');
+  assert.ok(second.stateFiles['copy-manifest'].unchangedAt); assert.ok(second.stateFiles['excluded-latest'].unchangedAt);
+  f.put(f.root, 'doc.md', '# Main, edited');
+  const third = backup.run(options);
+  assert.notEqual(fs.readFileSync(manifest, 'utf8'), before); assert.ok(third.stateFiles['copy-manifest'].writtenAt);
 });
 
 test('an unchanged worktree reuses its last git result and any file, index or head change runs git again (10-19)', { skip: process.platform !== 'win32' }, t => {

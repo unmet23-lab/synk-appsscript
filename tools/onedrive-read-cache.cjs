@@ -6,6 +6,10 @@
 // - 기록 파일이 깨졌거나 형식이 다르면 전체를 버리고 전부 읽는다. 항목 하나가 이상하면 그 항목만 버린다.
 // - 매 실행 1/48(30분 간격이면 하루 한 바퀴)은 stat가 같아도 다시 읽어 대조하고, 내용이 달랐으면 그 수를 남긴다.
 // - 이번 실행에서 실제로 읽은 결과는 같은 실행 안에서 다시 읽지 않는다.
+// - 저장은 바뀐 항목만(10-20): 기록 파일(read-cache.json, 4만~10만 항목·44MB)을 실행마다 통째로 다시 쓰던 것을, 바뀐 항목만
+//   옆의 read-cache.journal.jsonl에 한 줄로 덧붙인다. 그날 처음 저장할 때, 덧붙인 양이 기록 파일의 절반을 넘을 때, 기록을 새로
+//   시작할 때만 기록 파일을 통째로 다시 쓰고(3일 지난 항목도 그때 뺀다) 덧붙인 줄을 비운다. 덧붙인 줄마다 바탕 기록의 저장 시각을
+//   적어, 다른 바탕 위에 쌓인 줄(정리 도중 끊긴 경우)은 읽지 않는다. 바뀐 것이 없으면 아무것도 쓰지 않는다.
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
@@ -40,16 +44,21 @@ function validEntry(entry) {
 // 메모: 파일 하나가 아니라 여러 입력의 지문(key)으로 묶은 결과(예: 작업트리의 git 결과). [key, 문자열 목록, day]
 const validMemo = memo => Array.isArray(memo) && memo.length === 3 && typeof memo[0] === 'string' && memo[0].length <= 200 &&
   Array.isArray(memo[1]) && memo[1].every(item => typeof item === 'string' && item.length <= 2000) && Number.isSafeInteger(memo[2]) && memo[2] > 0;
+const journalOf = file => file.replace(/\.json$/i, '') + '.journal.jsonl';
+const JOURNAL_SHARE = 0.5; // 덧붙인 줄이 기록 파일의 이만큼을 넘으면 통째로 정리한다
 function open(file, { fingerprint, now = Date.now(), slots = SLOTS } = {}) {
   if (!isSha(fingerprint)) throw new Error('read-cache-fingerprint-required');
-  const today = Math.floor(now / 86400000), slot = currentSlot(now, slots);
+  const today = Math.floor(now / 86400000), slot = currentSlot(now, slots), journal = journalOf(file);
   let previous = new Map(), previousMemos = new Map(), status = 'loaded', dropped = 0;
+  let base = null, baseBytes = 0, journalBytes = 0, journalLines = 0;
   try {
-    const raw = JSON.parse(fs.readFileSync(file, 'utf8'));
+    const text = fs.readFileSync(file, 'utf8'), raw = JSON.parse(text);
+    baseBytes = Buffer.byteLength(text);
     if (!raw || raw.schemaVersion !== SCHEMA) status = 'schema-mismatch';
     else if (raw.policyFingerprint !== fingerprint) status = 'policy-changed';
     else if (!raw.entries || typeof raw.entries !== 'object' || Array.isArray(raw.entries)) status = 'invalid';
     else {
+      base = typeof raw.savedAt === 'string' ? raw.savedAt : null;
       for (const [key, entry] of Object.entries(raw.entries)) {
         if (path.isAbsolute(key) && validEntry(entry)) previous.set(key, entry); else dropped++;
       }
@@ -58,9 +67,27 @@ function open(file, { fingerprint, now = Date.now(), slots = SLOTS } = {}) {
       else if (raw.memos !== undefined) dropped++;
     }
   } catch (error) { status = error.code === 'ENOENT' ? 'missing' : 'unreadable'; }
-  if (status !== 'loaded') { previous = new Map(); previousMemos = new Map(); }
+  if (status !== 'loaded') { previous = new Map(); previousMemos = new Map(); base = null; }
+  // 이 바탕 위에 덧붙인 줄을 차례로 얹는다. 줄 하나가 깨졌으면(쓰다 끊긴 끝줄 등) 그 줄만 버린다.
+  if (base) {
+    let lines = [];
+    try { const text = fs.readFileSync(journal, 'utf8'); journalBytes = Buffer.byteLength(text); lines = text.split('\n'); }
+    catch (error) { if (error.code !== 'ENOENT') dropped++; }
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      let row;
+      try { row = JSON.parse(line); } catch { dropped++; continue; }
+      if (!row || row.base !== base || row.policyFingerprint !== fingerprint) continue;
+      journalLines++;
+      for (const [key, entry] of Object.entries(row.entries || {})) { if (path.isAbsolute(key) && validEntry(entry)) previous.set(key, entry); else dropped++; }
+      for (const [name, memo] of Object.entries(row.memos || {})) { if (validMemo(memo)) previousMemos.set(name, memo); else dropped++; }
+    }
+  }
   const current = new Map(), currentMemos = new Map(), verifiedThisRun = new Set();
+  // 마지막 저장 뒤 바뀐 항목(덧붙일 것). 그날 처음 본 항목의 날짜만 바뀐 것도 든다.
+  const changed = new Set(), changedMemos = new Set();
   const counts = { hits: 0, misses: 0, rechecked: 0, statInvisibleChanges: 0, remembered: 0, memoHits: 0, memoMisses: 0 };
+  const sameEntry = (a, b) => !!a && !!b && JSON.stringify(a) === JSON.stringify(b);
   const entryFor = (key, stat) => {
     const entry = current.get(key) || previous.get(key);
     return entry && sameStat(entry[0], stat) ? entry : null;
@@ -73,7 +100,7 @@ function open(file, { fingerprint, now = Date.now(), slots = SLOTS } = {}) {
       const usable = entry && (classifyPath === undefined || Object.prototype.hasOwnProperty.call(entry[3], classifyPath));
       if (!usable) { counts.misses++; return null; }
       if (!verifiedThisRun.has(key) && slotOf(key, slots) === slot) { counts.rechecked++; return null; }
-      if (!current.has(key)) current.set(key, [...entry.slice(0, 5), today]);
+      if (!current.has(key)) { current.set(key, [...entry.slice(0, 5), today]); if (entry[5] !== today) changed.add(key); }
       counts.hits++;
       const result = { sha256: entry[1], bytes: entry[2], tags: entry[4] };
       if (classifyPath !== undefined) result.reason = entry[3][classifyPath];
@@ -93,7 +120,9 @@ function open(file, { fingerprint, now = Date.now(), slots = SLOTS } = {}) {
         else reasons[classifyPath] = reason;
       }
       const nextTags = { ...(keep ? old[4] : {}), ...(tags || {}) };
-      current.set(key, [stat, sha256, bytes, reasons, nextTags, today]);
+      const next = [stat, sha256, bytes, reasons, nextTags, today];
+      if (!sameEntry(old, next)) changed.add(key);
+      current.set(key, next);
       verifiedThisRun.add(key);
       counts.remembered++;
       return true;
@@ -103,7 +132,7 @@ function open(file, { fingerprint, now = Date.now(), slots = SLOTS } = {}) {
       const key = keyOf(target), entry = entryFor(key, bigintStat(st));
       if (!entry || !entry[4][name]) { counts.misses++; return null; }
       if (!verifiedThisRun.has(key) && slotOf(key, slots) === slot) { counts.rechecked++; return null; }
-      if (!current.has(key)) current.set(key, [...entry.slice(0, 5), today]);
+      if (!current.has(key)) { current.set(key, [...entry.slice(0, 5), today]); if (entry[5] !== today) changed.add(key); }
       counts.hits++;
       return entry[4][name];
     },
@@ -112,30 +141,55 @@ function open(file, { fingerprint, now = Date.now(), slots = SLOTS } = {}) {
     memo(name, key) {
       const memo = currentMemos.get(name) || previousMemos.get(name);
       if (!memo || memo[0] !== key) { counts.memoMisses++; return null; }
-      if (!currentMemos.has(name)) currentMemos.set(name, [memo[0], memo[1], today]);
+      if (!currentMemos.has(name)) { currentMemos.set(name, [memo[0], memo[1], today]); if (memo[2] !== today) changedMemos.add(name); }
       counts.memoHits++;
       return [...memo[1]];
     },
     setMemo(name, key, value) {
       const memo = [key, [...value], today];
-      if (validMemo(memo)) currentMemos.set(name, memo);
-      return validMemo(memo);
+      if (!validMemo(memo)) return false;
+      if (!sameEntry(currentMemos.get(name) || previousMemos.get(name), memo)) changedMemos.add(name);
+      currentMemos.set(name, memo);
+      return true;
     },
-    summary() { return { status, entries: current.size, previousEntries: previous.size, memos: currentMemos.size, dropped, slot, slots, ...counts }; },
-    // 이번 실행에서 확인한 기록과, 최근 3일 안에 본 기록만 남긴다. 실행 중 분류 규칙이 바뀌었으면 저장하지 않는다.
+    summary() { return { status, entries: current.size, previousEntries: previous.size, memos: currentMemos.size, dropped, slot, slots,
+      journalLines, journalBytes, ...counts }; },
+    // 바뀐 항목만 덧붙이고, 정리할 때가 되면(그날 처음, 덧붙인 양이 많을 때, 기록을 새로 시작할 때) 최근 3일 안에 본 기록만 남겨 통째로 쓴다.
+    // 실행 중 분류 규칙이 바뀌었으면 저장하지 않는다.
     save(currentFingerprint = fingerprint) {
       if (currentFingerprint !== fingerprint) return { saved: false, reason: 'policy-changed-during-run' };
+      const baseDay = base ? Math.floor(Date.parse(base) / 86400000) : NaN;
+      const compact = !base || baseDay !== today || journalBytes > baseBytes * JOURNAL_SHARE;
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      if (!compact) {
+        if (!changed.size && !changedMemos.size) return { saved: false, unchanged: true, mode: 'none' };
+        const entries = {}, memos = {};
+        for (const key of changed) { const entry = current.get(key); if (entry) entries[key] = entry; }
+        for (const name of changedMemos) { const memo = currentMemos.get(name); if (memo) memos[name] = memo; }
+        const line = JSON.stringify({ base, policyFingerprint: fingerprint, savedAt: new Date(now).toISOString(), entries, memos }) + '\n';
+        fs.appendFileSync(journal, line);
+        journalBytes += Buffer.byteLength(line); journalLines++;
+        for (const [key, entry] of Object.entries(entries)) previous.set(key, entry);
+        for (const [name, memo] of Object.entries(memos)) previousMemos.set(name, memo);
+        changed.clear(); changedMemos.clear();
+        return { saved: true, mode: 'journal', appended: Object.keys(entries).length + Object.keys(memos).length, bytes: Buffer.byteLength(line) };
+      }
       const entries = {}, memos = {};
       for (const [key, entry] of previous) if (today - entry[5] <= KEEP_DAYS) entries[key] = entry;
       for (const [key, entry] of current) entries[key] = entry;
       for (const [name, memo] of previousMemos) if (today - memo[2] <= KEEP_DAYS) memos[name] = memo;
       for (const [name, memo] of currentMemos) memos[name] = memo;
-      fs.mkdirSync(path.dirname(file), { recursive: true });
+      const savedAt = new Date(now).toISOString(), text = JSON.stringify({ schemaVersion: SCHEMA, policyFingerprint: fingerprint, savedAt, entries, memos });
       const temp = file + '.' + process.pid + '.tmp';
-      fs.writeFileSync(temp, JSON.stringify({ schemaVersion: SCHEMA, policyFingerprint: fingerprint, savedAt: new Date(now).toISOString(), entries, memos }));
+      fs.writeFileSync(temp, text);
       // 백신·색인기가 여는 순간의 짧은 거절(EPERM·EACCES·EBUSY)은 GitHub백업.cjs의 replaceFile이 다시 한다.
       replaceFile(temp, file);
-      return { saved: true, entries: Object.keys(entries).length };
+      // 새 바탕을 쓴 뒤에 덧붙인 줄을 비운다. 그 사이 끊겨도 남은 줄은 바탕 시각이 달라 다음에 읽히지 않는다.
+      try { fs.unlinkSync(journal); } catch (error) { if (error.code !== 'ENOENT') throw error; }
+      base = savedAt; baseBytes = Buffer.byteLength(text); journalBytes = 0; journalLines = 0;
+      previous = new Map(Object.entries(entries)); previousMemos = new Map(Object.entries(memos));
+      changed.clear(); changedMemos.clear();
+      return { saved: true, mode: 'full', entries: Object.keys(entries).length, bytes: baseBytes };
     },
   };
   return cache;

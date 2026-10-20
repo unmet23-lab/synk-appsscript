@@ -168,7 +168,13 @@ function worktreeKeys(tree, scan, mainHead, memo) {
   const committed = mainHead + ' ' + status.commit;
   return { status: status.key, committed, sources: hash(JSON.stringify([status.key, committed, policy.POLICY_FINGERPRINT])) };
 }
-function worktreeStatusKey(tree, scan, memo) {
+// 작업트리의 HEAD 커밋을 .git 파일들에서 읽는다(git을 띄우지 않는다). 못 읽으면 null. 한 실행 안에서는 작업트리마다 한 번만 읽는다.
+function worktreeHead(tree, memo) {
+  const key = 'head:' + tree.root;
+  if (!memo.has(key)) memo.set(key, readWorktreeHead(tree, memo));
+  return memo.get(key);
+}
+function readWorktreeHead(tree, memo) {
   try {
     const dotGit = path.join(tree.root, '.git');
     const pointer = fs.readFileSync(dotGit, 'utf8').match(/^gitdir:\s*(.+?)\s*$/m);
@@ -189,7 +195,47 @@ function worktreeStatusKey(tree, scan, memo) {
         commit = memo.get(commonDir).get(ref[1]) || null;
       }
     }
-    if (!commit || !/^[0-9a-f]{40,64}$/.test(commit)) return null;
+    return commit && /^[0-9a-f]{40,64}$/.test(commit) ? { commit, gitDir, commonDir } : null;
+  } catch { return null; }
+}
+// origin에 합쳐진 작업트리 — HEAD가 본진의 origin ref(refs/remotes/origin/*)에서 닿는다. 그 작업트리의 커밋된 문서는 GitHub에 있으니
+// 바뀐 파일(git status)만 보존하면 된다(10-20). 본진마다 git 두 번(원격 끝 목록, rev-list 한 번)이다. 못 재면 그 본진의 작업트리는
+// 하나도 합쳐진 것으로 치지 않는다(예전처럼 모든 문서를 본다). tree.merged가 있으면(시험) 그 값을 쓴다.
+function mergedWorktrees(trees, memo) {
+  const merged = new Map(), byPrimary = new Map();
+  for (const tree of trees) {
+    if (tree.merged !== undefined) { if (tree.merged) merged.set(tree.root, tree.mergedHead || null); continue; }
+    if (tree.changedSources) continue; // 바뀐 원천을 미리 받은 작업트리(시험)는 예전처럼 본다
+    if (!byPrimary.has(tree.primary)) byPrimary.set(tree.primary, []);
+    byPrimary.get(tree.primary).push(tree);
+  }
+  for (const [primary, group] of byPrimary) {
+    try {
+      const heads = new Map();
+      for (const tree of group) { const head = worktreeHead(tree, memo); if (head) heads.set(tree.root, head.commit); }
+      if (!heads.size) continue;
+      const tips = execFileSync('git', ['--no-optional-locks', 'for-each-ref', '--format=%(objectname)', 'refs/remotes/origin'],
+        { cwd: primary, encoding: 'utf8', windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 16 << 20 })
+        .split(/\s+/).filter(sha => /^[0-9a-f]{40,64}$/.test(sha));
+      if (!tips.length) continue;
+      const input = [...new Set(heads.values()), ...[...new Set(tips)].map(sha => '^' + sha)].join('\n') + '\n';
+      const local = new Set(execFileSync('git', ['--no-optional-locks', 'rev-list', '--stdin'],
+        { cwd: primary, input, encoding: 'utf8', windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'], maxBuffer: 256 << 20 }).split(/\s+/).filter(Boolean));
+      for (const [root, commit] of heads) if (!local.has(commit)) merged.set(root, commit);
+    } catch { /* 이 본진의 작업트리는 모두 예전처럼 본다 */ }
+  }
+  return merged;
+}
+// git status 결과 가운데 보존할 문서(나열과 같은 규칙: 생성물·worktrees·자격증명 이름 폴더 아래는 뺀다, 지워진 파일은 뺀다).
+function markdownFromStatus(tree, list) {
+  return markdownFromScan(list.filter(relative => /\.md$/i.test(relative) &&
+    !relative.split('/').slice(0, -1).some(part => policy.GENERATED_DIRECTORY.test(part)) && fs.existsSync(path.join(tree.root, relative))));
+}
+function worktreeStatusKey(tree, scan, memo) {
+  try {
+    const head = worktreeHead(tree, memo);
+    if (!head) return null;
+    const { commit, gitDir, commonDir } = head;
     const home = require('node:os').homedir();
     const stats = [path.join(gitDir, 'index'), path.join(gitDir, 'config.worktree'), path.join(commonDir, 'config'), path.join(commonDir, 'info', 'exclude'),
       path.join(home, '.gitconfig'), path.join(home, '.config', 'git', 'ignore')].map(file => {
@@ -200,9 +246,11 @@ function worktreeStatusKey(tree, scan, memo) {
   } catch { return null; }
 }
 const WORKTREE_ENTRIES = Symbol('worktree-entries'), WORKTREE_TREES = Symbol('worktree-trees'), WORKTREE_REJECTED = Symbol('worktree-rejected');
+const WORKTREE_MERGED = Symbol('worktree-merged');
 // 작업트리 보존 색인(SHA별 원래 경로, 작업트리별 목록, 전체 색인, 제외 목록)을 쓰고 바뀐 파일의 창고 기준 경로를 돌려준다.
 // 수집 때 한 번 쓰고, 복사하는 사이 본진 원문이 바뀌어 작업트리 판을 따로 보존할 때 다시 쓴다(10-20).
-function writeWorktreeIndexes(destination, trees, entries, rejected, { cache = null } = {}) {
+// merged: origin에 합쳐져 바뀐 파일만 본 작업트리(작업트리 → HEAD). 색인에 남겨 나머지는 그 커밋으로 되살리게 한다.
+function writeWorktreeIndexes(destination, trees, entries, rejected, { cache = null, merged = new Map() } = {}) {
   const changed = [], relative = file => path.relative(path.dirname(destination), file).split(path.sep).join('/');
   const write = (file, content) => { if (writeChangedIndex(file, content, { cache })) changed.push(relative(file)); };
   // 현재 index가 다른 버전으로 바뀌어도 이미 보존한 SHA의 원래 경로를 잃지 않는다.
@@ -231,7 +279,10 @@ function writeWorktreeIndexes(destination, trees, entries, rejected, { cache = n
   write(path.join(destination, 'index.json'), { schemaVersion: 1, worktrees: trees.length,
     documents: markdown, sourceFiles: entries.length - markdown, sameAsPrimary: entries.filter(row => row.sameAsPrimary).length,
     uniquePreserved: new Set(entries.map(row => row.preservedFile).filter(Boolean)).size, manifests,
-    restore: 'sameAsPrimary이면 OneDrive 시스템/저장소/relativePath의 SHA를 확인한다. 아니면 preservedFile을 새 작업트리의 relativePath로 복사한다. 기존 원문은 덮지 않는다.' });
+    ...(merged.size ? { mergedOnOrigin: trees.filter(tree => merged.has(tree.root))
+      .map(tree => ({ repository: tree.repository, worktree: tree.root, head: merged.get(tree.root) })) } : {}),
+    restore: 'sameAsPrimary이면 OneDrive 시스템/저장소/relativePath의 SHA를 확인한다. 아니면 preservedFile을 새 작업트리의 relativePath로 복사한다. 기존 원문은 덮지 않는다.' +
+      (merged.size ? ' mergedOnOrigin의 작업트리는 바뀐 파일(git status)만 여기 있다 — 나머지는 그 head 커밋을 GitHub에서 받아 되살린다.' : '') });
   write(path.join(destination, 'excluded-protected-manifest.json'), { rejected });
   return changed;
 }
@@ -247,9 +298,13 @@ function preserveWorktreeDocuments(root, vault, { dryRun = false, trees = worktr
   onProgress();
   const scans = cache ? scanWorktrees(trees, { onProgress }) : null;
   lap('scanMs');
+  const merged = mergedWorktrees(trees, gitState);
+  lap('mergedMs');
   const candidates = trees.flatMap(tree => {
     const scan = scans?.get(tree.root);
-    const md = scan ? markdownFromScan(scan.md) : policy.workTextFiles(tree.root);
+    // origin에 합쳐진 작업트리는 모든 문서를 보지 않는다 — 커밋된 판은 GitHub에 있다. 아래에서 git status에 잡힌 것만 본다.
+    const isMerged = merged.has(tree.root);
+    const md = isMerged ? [] : scan ? markdownFromScan(scan.md) : policy.workTextFiles(tree.root);
     lap('walkMs');
     let sources = tree.changedSources;
     if (!sources) {
@@ -259,8 +314,13 @@ function preserveWorktreeDocuments(root, vault, { dryRun = false, trees = worktr
       // 작업트리 전체 지문·HEAD·색인·설정과 본진 HEAD·분류 규칙이 지난번과 같으면 지난번 결과를 쓴다. 작업트리가 그대로이고
       // 본진 HEAD만 움직였으면 트리 비교만 다시 한다. 하루 한 바퀴(1/48)는 git을 모두 다시 돌린다.
       const keys = scan ? worktreeKeys(tree, scan, mainHead, gitState) : null, trusted = keys && !cache.inSlot(tree.root);
-      sources = trusted ? cache.memo('worktree-sources:' + tree.root, keys.sources) : null;
-      if (sources) reusedTrees++;
+      if (isMerged) {
+        // 바뀐 파일(수정·추적 안 됨)만 — 문서는 나열과 같은 규칙으로, 소스는 keepSources로 고른다. 본진과의 트리 비교는 하지 않는다.
+        let status = trusted ? cache.memo('worktree-status:' + tree.root, keys.status) : null;
+        if (status) reusedTrees++;
+        else { status = statusPaths(tree); statusRuns++; gitTrees++; if (keys) cache.setMemo('worktree-status:' + tree.root, keys.status, status); }
+        sources = [...markdownFromStatus(tree, status), ...keepSources(tree, status)];
+      } else if ((sources = trusted ? cache.memo('worktree-sources:' + tree.root, keys.sources) : null)) reusedTrees++;
       else {
         gitTrees++;
         let status = trusted ? cache.memo('worktree-status:' + tree.root, keys.status) : null;
@@ -354,13 +414,15 @@ function preserveWorktreeDocuments(root, vault, { dryRun = false, trees = worktr
   }
   const report = { schemaVersion: 1, checkedAt: new Date().toISOString(), worktrees: trees.length,
     documents: entries.filter(row => /\.md$/i.test(row.relativePath)).length, sourceFiles,
-    sameAsPrimary, uniquePreserved: unique.size, preservedBytes, written, rejected: rejected.length, readFiles, gitTrees, reusedTrees, statusRuns, diffRuns, timings };
+    sameAsPrimary, uniquePreserved: unique.size, preservedBytes, written, rejected: rejected.length, readFiles, gitTrees, reusedTrees, statusRuns, diffRuns,
+    mergedOnOrigin: merged.size, timings };
   Object.defineProperty(report, WORKTREE_ENTRIES, { value: entries });
   Object.defineProperty(report, WORKTREE_TREES, { value: trees });
   Object.defineProperty(report, WORKTREE_REJECTED, { value: rejected });
+  Object.defineProperty(report, WORKTREE_MERGED, { value: merged });
   lap('filesMs');
   if (!dryRun) {
-    writeWorktreeIndexes(destination, trees, entries, rejected, { cache });
+    writeWorktreeIndexes(destination, trees, entries, rejected, { cache, merged });
     lap('indexMs');
   }
   return report;
@@ -409,7 +471,7 @@ function preserveDriftedWorktreeVersions(vault, report, drift, { cache = null } 
     }
     Object.assign(entry, { sameAsPrimary: false, preservedFile });
   }
-  const changed = writeWorktreeIndexes(destination, report[WORKTREE_TREES], entries, report[WORKTREE_REJECTED], { cache });
+  const changed = writeWorktreeIndexes(destination, report[WORKTREE_TREES], entries, report[WORKTREE_REJECTED], { cache, merged: report[WORKTREE_MERGED] });
   Object.assign(report, { sameAsPrimary: entries.filter(row => row.sameAsPrimary).length,
     uniquePreserved: new Set(entries.map(row => row.preservedFile).filter(Boolean)).size, written: report.written + written.length, driftRepaired: repaired });
   return [...new Set([...written, ...changed])];
@@ -421,8 +483,10 @@ function runProviderScript(manifest, output) {
 }
 // 공급자 상태(Windows 셸 속성)는 사본마다 수 ms~수십 ms라 2만6천 개를 매번 보면 부하 속에서 11분이 걸렸다(10-19).
 // 새로 보는 것: 바뀐 사본(크기·수정 시각이 직전 관찰과 다름), 직전에 IN_SYNC·크기 일치가 아니던 사본, 감시만 하는 사본,
-// 6.5시간보다 오래된 관찰, 그리고 30분마다 돌아가는 1/12 묶음(6시간에 전체 한 바퀴). 나머지는 직전 관찰을 관찰 시각과 함께 옮긴다.
-const PROVIDER_SLOTS = 12, PROVIDER_MAX_CARRY_MS = 6.5 * 60 * 60 * 1000;
+// 24.5시간보다 오래된 관찰, 그리고 30분마다 돌아가는 1/48 묶음(하루에 전체 한 바퀴). 나머지는 직전 관찰을 관찰 시각과 함께 옮긴다.
+// 10-20까지는 1/12(6시간 한 바퀴)라 실행마다 2,500개 안팎을 새로 봐 이 단계가 실행 시간의 40%(95초)였다. 매 실행 새로 쓰는 사본(수백 개)은
+// 그대로 그 실행에서 보므로, 공급자가 멈추면 다음 실행에서 바로 드러난다. 바뀌지 않은 사본의 되짚기만 하루 한 번으로 줄였다.
+const PROVIDER_SLOTS = 48, PROVIDER_MAX_CARRY_MS = 24.5 * 60 * 60 * 1000;
 const targetKey = target => path.resolve(target).toLowerCase();
 function providerFocus(manifest, previous, now = Date.now()) {
   const slot = Math.floor(now / readCache.SLOT_MS) % PROVIDER_SLOTS, reportStarted = Date.parse(previous?.startedAt);
@@ -659,6 +723,19 @@ function run({ root = ROOT, destination = process.env.OneDrive, stateDir, dryRun
     lastSuccessAt: previous.lastSuccessAt || null, copySucceededAt: previous.copySucceededAt || null,
     providerVerifiedAt: previous.providerVerifiedAt || null, destination, deletes: 0, directCloudCalls: 0,
     remoteChecksumVerified: false, note: 'Local SHA checks and Windows provider metadata; no independent remote checksum claim.' };
+  // 내용(시각 칸을 뺀 부분)이 지난 실행과 같으면 다시 쓰지 않는다(10-20) — 복사 목록(18.9MB)·제외 목록(3.8MB)을 실행마다 통째로
+  // 다시 쓰던 것. 같은지는 지난 영수증의 stateFiles(내용 지문·쓴 크기)와 지금 파일 크기로 본다. 다른 도구가 시각으로 신선함을 보는
+  // 파일(protected-sources.json — 보호소스보관이 3시간 안의 목록만 받는다)에는 쓰지 않는다.
+  const writeStateIfChanged = (file, value, content, name) => {
+    const digest = hash(JSON.stringify(content)), before = previous.stateFiles?.[name], stat = statOrNull(file);
+    if (before && before.sha256 === digest && stat && Number(stat.size) === before.bytes) {
+      (state.stateFiles ||= {})[name] = { ...before, unchangedAt: new Date().toISOString() };
+      return false;
+    }
+    writeJson(file, value);
+    (state.stateFiles ||= {})[name] = { sha256: digest, bytes: Number(fs.statSync(file).size), writtenAt: new Date().toISOString() };
+    return true;
+  };
   // 작업트리 수집·복사처럼 긴 단계 안에서도 1분마다 영수증 heartbeat를 남긴다.
   // 통합 감시는 실행 중 heartbeat가 15분 넘게 멈추면 실행 중단으로 본다(10-19, 부하 속 작업트리 수집 17분).
   let lastBeat = clock();
@@ -770,11 +847,11 @@ function run({ root = ROOT, destination = process.env.OneDrive, stateDir, dryRun
       }
       state.monitorOnlyFiles = extras.files.length;
       manifest = { schemaVersion: 1, copiedAt: new Date().toISOString(), oneDriveRoot: destination, files };
-      writeJson(manifestFile, manifest);
+      writeStateIfChanged(manifestFile, manifest, { oneDriveRoot: destination, files }, 'copy-manifest');
       state.copy = summary; state.copySucceededAt = manifest.copiedAt;
       state.worktreePrimaryDrift = worktreePrimaryDrift(root, vault, files, state.worktrees?.[WORKTREE_ENTRIES]);
       state.heartbeatAt = manifest.copiedAt;
-      writeJson(path.join(stateDir, 'excluded-latest.json'), { checkedAt: manifest.copiedAt, rejected: plan.rejected });
+      writeStateIfChanged(path.join(stateDir, 'excluded-latest.json'), { checkedAt: manifest.copiedAt, rejected: plan.rejected }, plan.rejected, 'excluded-latest');
       persistCache();
       writeJson(latestFile, state);
       if (result.skipped) throw new Error('source-classification-changed-during-copy');
@@ -821,4 +898,5 @@ if (require.main === module) {
   }
   const result = run(options); console.log(JSON.stringify(result)); process.exitCode = result.exitCode;
 }
-module.exports = { worktrees, changedWorktreeSources, preserveWorktreeDocuments, preserveDriftedWorktreeVersions, copyRetryingDrift, classifyProvider, protectedPriorSources, protectedSourceInventory, encryptedProtectionCoverage, worktreePrimaryDrift, providerFocus, mergeProviderReport, providerStatus, scanWorktrees, run, readJson, writeJson };
+module.exports = { worktrees, changedWorktreeSources, preserveWorktreeDocuments, preserveDriftedWorktreeVersions, copyRetryingDrift, classifyProvider, protectedPriorSources, protectedSourceInventory, encryptedProtectionCoverage, worktreePrimaryDrift, providerFocus, mergeProviderReport, providerStatus, scanWorktrees, run, readJson, writeJson,
+  PROVIDER_SLOTS, PROVIDER_MAX_CARRY_MS };
