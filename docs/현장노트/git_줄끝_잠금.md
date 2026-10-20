@@ -2,7 +2,7 @@
 
 > 판: Git for Windows 2.55 · 시스템 설정 `core.autocrlf=true` · 공용 `.git/config`에 `diff.autoRefreshIndex=false`(10-13)·`extensions.worktreeConfig=true` · 등록된 훅 없음
 > 마지막 확인: 2026-10-19(`tools/내커밋.js` 시험·워크트리 잠금 경로; 그 밖의 항목은 각 다시 확인 날짜 참조)
-> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-02~10-17 Claude 메모에서 옮김 · 클라우드 세션(리눅스) 10-17 더함 · Claude Code(Claude Opus 5.5) 10-18 결정 표 행 다시 쌓기 · Claude Code 10-19 공용 인덱스 reset 빠뜨림 재발 추가 · Claude Code 10-19 커밋·push 절차를 `tools/내커밋.js`로 옮김·워크트리 잠금 경로 추가 · GPT(Codex) 10-18 상태 출력 버퍼 한도 확인 · Claude Code 10-19 서버 복사 원본 단위의 EOF 빈 줄 추가 · Claude Code 10-19 통화 SDK 줄끝 항목 옮김(10-17 로컬 커밋 판)·워크트리가 같이 보는 origin/master 함정 · Claude Code 10-19 다시 쌓기를 파이프로 거른 함정 추가 · Claude Code 10-19 묵힌 커밋이 코드·생성 묶음에서 겹칠 때 다시 쌓기 · Claude Code 10-20 비밀값 경보 API·로컬 master에서 뜬 워크트리 맞추기
+> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-02~10-17 Claude 메모에서 옮김 · 클라우드 세션(리눅스) 10-17 더함 · Claude Code(Claude Opus 5.5) 10-18 결정 표 행 다시 쌓기 · Claude Code 10-19 공용 인덱스 reset 빠뜨림 재발 추가 · Claude Code 10-19 커밋·push 절차를 `tools/내커밋.js`로 옮김·워크트리 잠금 경로 추가 · GPT(Codex) 10-18 상태 출력 버퍼 한도 확인 · Claude Code 10-19 서버 복사 원본 단위의 EOF 빈 줄 추가 · Claude Code 10-19 통화 SDK 줄끝 항목 옮김(10-17 로컬 커밋 판)·워크트리가 같이 보는 origin/master 함정 · Claude Code 10-19 다시 쌓기를 파이프로 거른 함정 추가 · Claude Code 10-19 묵힌 커밋이 코드·생성 묶음에서 겹칠 때 다시 쌓기 · Claude Code 10-20 비밀값 경보 API·로컬 master에서 뜬 워크트리 맞추기 · Claude Code 10-20 자동 모드에서 워크트리 옮기기가 막힐 때 새 워크트리로
 
 SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더·같은 git 인덱스를 함께 쓴다. 여기서 git을 쓸 때 남의 작업을 되돌리거나 내 커밋이 사라진 함정이다. 틀은 [README](README.md)를 따른다.
 
@@ -384,6 +384,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 앱은 워크트리를 공용 작업본의 로컬 master에서 뜬다. 로컬 master는 남의 미푸시 커밋과, `올리기`로 origin에 다시 쌓기 전의 옛 번호 커밋을 품어 origin과 갈라져 있다. 같은 줄이 양쪽에 다른 번호로 있으니 공용 문서가 겹친다.
 - 고침: 이 가지에 내 커밋이 아직 없으면 맞추기를 그만두고(`sync_with_base_branch`의 `abort: true`) 가지를 origin/master로 옮긴다 — `git branch --contains <지금 머리>`에 `master`가 있어 옛 머리가 로컬 master에 그대로 남는지 먼저 보고 `git reset --hard origin/master`. 일하는 사이 origin이 내 경로(생성 묶음 포함)를 또 바꾸면, 옛 머리를 적어 두고 `git reset --hard origin/master` → `git restore --source=<옛 머리> --worktree -- <내 경로들>`(스테이징 없이 — `내커밋.js 커밋`은 공용 인덱스에 내 경로의 스테이징이 있으면 멈춘다) → 생성 묶음은 그 도구의 `--check`로 새 바탕 원천과 맞는지 보고 → `내커밋.js 커밋`으로 다시 쌓는다. 공용 문서의 내 줄은 새 판에 손으로 다시 넣는다.
 - 다시 확인: `git rev-list --count HEAD..origin/master`가 0이고, `git diff --stat <옛 머리> HEAD -- <내 경로들>`이 비어 있다(10-20: 코드 14경로 같음, 다른 차이는 그사이 들어온 남의 커밋 다섯 파일뿐).
+- 10-20 덧붙임(자동 모드에서 옮기기가 막힐 때, Claude): 내 위치 세션(`.claude/worktrees/magical-borg-0ea51c`, 로컬 master에서 떠 origin보다 366 앞·47 뒤, 작업본 깨끗)에서는 `git reset --hard origin/master`·`git switch -c <새 가지> origin/master`·`git config --worktree core.autocrlf false`가 모두 자동 모드 판정기에 「Irreversible Local Destruction」으로 거절됐다. 세션은 그 워크트리에 묶여 Edit·Write가 다른 워크트리 파일을 쓰지 않는다. 덮지 않고 새 워크트리를 더해 옮겼다 — `git -c core.autocrlf=false worktree add -b <가지> .claude/worktrees/<이름> origin/master`(한 번만 쓰는 `-c`라 공용 설정은 그대로, 꺼낸 파일은 LF) → `EnterWorktree`에 `path`로 세션을 옮긴다 → 그 워크트리에서 파일을 쓰는 git 명령(cherry-pick·rebase)에도 `-c core.autocrlf=false`. 워크트리로 격리된 세션의 Bash는 값이 실행 중에 정해지는 인자(`$VAR`·`for`, 파이프에 섞인 git)를 「안에 머무는지 확인할 수 없다」며 돌리지 않으니, 시험 파일 목록처럼 인자를 모으는 일은 노드 스크립트가 모아 `spawnSync`로 돌린다. 확인: 새 워크트리에서 `git ls-files --eol`의 `w/crlf` 28개가 모두 blob 자체가 CRLF(`i/crlf`)이고 `git rev-parse HEAD`가 그때의 origin/master(`a6060676f`)였다.
 
 ## 이력 훑기
 
