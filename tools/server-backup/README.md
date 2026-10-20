@@ -10,6 +10,8 @@
 | research / `synk-company-2` | synkbrief Doc, Argon 설정·인증·소스·예약·입력·조사 원문 백업과 교정 영수증 53개, 이 백업 장치 자체 | 같은 주기. 10-18 15:43 완료 3개, 다음 10-19 07:11:42 |
 | radio / `synk-radio-1` | 방송 서버의 설정·소스·synk crontab 129개, 이 백업 장치 자체 | 같은 주기. 10-18 15:42 완료 2개, 다음 10-19 07:10:13 |
 
+research의 Argon 수집(`argon-capture.py`)은 승인된 역할·문서 대응을 `tools/argon-schedules/configuration/docs.json`과 똑같이 품고 있다가 서버 대응이 다르면 `ARGON_DOC_MAPPING_CHANGED`로 멈춘다(백업 장치 로그에는 `COMMAND_FAILED`로만 보인다). Argon 역할을 더하거나 바꾸면 이 파일도 함께 고쳐 예비 노드 `/opt/synk-server-backup/`에 넣는다. 어긋남은 `backup.test.cjs`가 잡는다(10-20 월요일 스캔 셋 추가 뒤 실패 사례, [현장 노트](../../docs/현장노트/백업_업로드.md)).
+
 예약은 systemd `synk-server-backup.timer`의 `Persistent=true`로 설치됐다. 노트북·브라우저·로그인 세션이 없어도 서버에서 실행한다. 실행 잠금, 3시간 제한, CPU·메모리 제한이 있다. A/B의 별도 감시 타이머는 15분마다 실행하며 A가 Radio의 실제 원격 영수증까지 검사한다. 기존 PC 작업과 서로 다른 원격 폴더·영수증을 사용한다.
 
 회사 DR 사본은 GCS 전체 이력을 다시 내려받지 않는다. 기존 업로더의 성공 영수증에 기록된 generation·크기·MD5와 현재 로컬 묶음 SHA를 대조한 최신 완료 세트만 추가 보존한다. Supabase Storage는 10-18 실제 객체 0개이며, 앞으로 생성되는 객체는 DB 목록 전후 일치·HTTP ETag·크기·MD5를 검사한다. 필요한 옛 문서 9개의 별도 최초 보존은 [플랫폼 데이터 계약](../../docs/SYNK_플랫폼_계정과_연결_설계.md)과 기존 Workspace 백업 기록을 따른다. 서버 OAuth로 접근되지 않는 옛 문서를 정기 성공 범위로 표시하지 않는다.

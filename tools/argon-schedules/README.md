@@ -41,7 +41,7 @@
 | `alert-units/` | `/etc/systemd/system/`, OnFailure 처리·5분 재전송·수동 합성 시험 unit |
 | `production-dropins/50-failure-alert.conf` | 7개 운영 `synk-argon-ultra-ROLE.service.d/`, 공통 OnFailure 연결 |
 | `alert-policy.json` | 전용 Cloud Monitoring 정책 원문. 같은 이름·ID의 기존 정책을 먼저 조회하고 중복 생성하지 않음 |
-| `configuration/docs.json` | `/etc/synk-argon-77yuhbs/docs.json`, root 소유 0644; 승인된 7개 역할의 문서 ID(10-19 월요일 스캔 셋 추가). `docs-io.py`의 역할 목록과 정확히 같아야 하므로 둘은 함께 바꾼다 |
+| `configuration/docs.json` | `/etc/synk-argon-77yuhbs/docs.json`, root 소유 0644; 승인된 7개 역할의 문서 ID(10-19 월요일 스캔 셋 추가). `docs-io.py`의 역할 목록, 예비 노드 서버 백업의 `tools/server-backup/argon-capture.py`(`EXPECTED_DOCS`)와 정확히 같아야 하므로 셋은 함께 바꾸고 서버에도 함께 넣는다. 서버 백업 쪽 어긋남은 `node --test tools/server-backup/backup.test.cjs`가 잡는다(10-20 이 셋째를 빠뜨려 07:11 서버 백업이 실패했다). PC 매일 백업의 `Argon백업.js`는 이 파일을 직접 읽는다 |
 | `weekly-scan-prompts.py` | 월요일 스캔 세 역할의 지시문 생성기(저장소에서만 실행, LLM 호출 없음) |
 | `scan-read.cjs` | PC에서 월요일 스캔 결과를 읽는 도구(읽기 전용, SSH) |
 | `configuration/agy-settings.example.json` | 아래 복원 설명에 따라 별도 HOME의 `settings.json`에 반영하는 비밀값 없는 설정 예시 |

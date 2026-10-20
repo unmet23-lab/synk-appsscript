@@ -3,8 +3,10 @@ MODE=sys.argv[1]
 EXPECTED=sys.argv[2] if len(sys.argv)>2 else None
 import sys,os,json,pathlib,stat,pwd,hashlib,subprocess,datetime,tarfile,io
 H=pathlib.Path('/var/lib/synk-argon-77yuhbs')
-ROLES=('full','yt-tt','meta-brand','synkbrief')
-EXPECTED_DOCS={'full':'10LfWPhwWO1Lzk8V_HddA0a5vVNJ0NVQXZgNyUplcwvk','yt-tt':'1aYwO_1qBcUs5uzeeRoeePBRo_qkWSFBwjr4Xj-LUXmI','meta-brand':'1YTHEzSzgdm76sXUz5hEbwdTiOse575D3_malZz8LWwQ','synkbrief':'16boBqiExm-qjCof8SQsEEpF2-5ckmK27Bc2kxKiFYwM'}
+# Approved role->Doc mapping. It must equal tools/argon-schedules/configuration/docs.json
+# (backup.test.cjs checks it); an approved role change redeploys this file with docs.json.
+EXPECTED_DOCS={"full":"10LfWPhwWO1Lzk8V_HddA0a5vVNJ0NVQXZgNyUplcwvk","yt-tt":"1aYwO_1qBcUs5uzeeRoeePBRo_qkWSFBwjr4Xj-LUXmI","meta-brand":"1YTHEzSzgdm76sXUz5hEbwdTiOse575D3_malZz8LWwQ","synkbrief":"16boBqiExm-qjCof8SQsEEpF2-5ckmK27Bc2kxKiFYwM","scan-lab":"1BoDuzB3y8SeCZiPdNu85ycBCRsAWselzsrwe50pN_Ak","scan-ai":"1CZnqJ79Y0rhfrDLmuUwfWzKtwrIzcFLY6ZqfW0Xw8so","scan-platform":"1Z5AVMaA6sgllAE0RSHpN5zE_tN7XgrehHt1giwMTDmo"}
+ROLES=tuple(EXPECTED_DOCS)
 EXCLUDED=['logs and mutable work outputs','run.lock and all temporary/partial files','CLI conversations SQLite, generated brain and caches','gws token_cache and discovery cache','CLI binaries and re-downloadable dependencies','smoke/old repair prompts and readiness markers','alert delivery outbox (owned by independent live alert service)']
 def require(v,c):
  if not v:raise RuntimeError(c)
@@ -36,7 +38,10 @@ def selected(uid):
    if p.name.startswith('.') or p.name.endswith('.tmp.json'):continue
    add(p)
  for role in ROLES:add(H/'prompts'/(role+'.input.jsonl'))
- for role in ('full','yt-tt','meta-brand'):add(H/'prompts'/(role+'.prompt.txt'))
+ for role in ROLES:
+  # The first three human-readable prompts are required; later roles' copies are kept when present.
+  p=H/'prompts'/(role+'.prompt.txt')
+  if role in ('full','yt-tt','meta-brand') or p.exists():add(p)
  add(H/'work'/'yt-tt-format-repair-receipt-20261018.json')
  for relative in ('.config/gws-docs/client_secret.json','.config/gws-docs/credentials.enc','.config/gws-docs/.encryption_key','.gemini/antigravity-cli/antigravity-oauth-token','.gemini/antigravity-cli/settings.json','.gemini/antigravity-cli/jetski_state.pbtxt','.gemini/antigravity-cli/installation_id','.gemini/config/projects/default-cli-project.json'):
   add(H/relative)
@@ -72,7 +77,7 @@ def main():
  if MODE=='inspect':print(json.dumps(manifest));return
  require(manifest['sourceFingerprint']==EXPECTED,'ARGON_SOURCE_CHANGED_SINCE_INSPECT')
  writer=HashedWriter()
- members={'RESTORE.json':json.dumps({'schemaVersion':1,'steps':['Decrypt into a separate new directory and verify every manifest path, byte count and SHA256.','Do not overwrite an existing server. Install the official CLI/gws versions from the source guide.','Map owner synk-argon-ultra to its local service account; preserve private modes.','Restore files only with all four timers disabled and no active service.','Keep production-ready out of its live location until explicit reactivation and account/Docs checks.'],'excluded':EXCLUDED},sort_keys=True).encode(),'manifest.json':json.dumps(manifest,sort_keys=True).encode()}
+ members={'RESTORE.json':json.dumps({'schemaVersion':1,'steps':['Decrypt into a separate new directory and verify every manifest path, byte count and SHA256.','Do not overwrite an existing server. Install the official CLI/gws versions from the source guide.','Map owner synk-argon-ultra to its local service account; preserve private modes.','Restore files only with every synk-argon-ultra timer disabled and no active service.','Keep production-ready out of its live location until explicit reactivation and account/Docs checks.'],'excluded':EXCLUDED},sort_keys=True).encode(),'manifest.json':json.dumps(manifest,sort_keys=True).encode()}
  members.update({'snapshot/'+k:v for k,v in payload.items()})
  with tarfile.open(fileobj=writer,mode='w|',format=tarfile.USTAR_FORMAT) as archive:
   for name,body in sorted(members.items()):
