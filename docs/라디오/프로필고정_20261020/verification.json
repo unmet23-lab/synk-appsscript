@@ -1,0 +1,86 @@
+{
+  "requestedAction": "Deploy the headless chromium profile fix (origin 9c4f22499) to the radio server's 겹쳐송출.js only, restart radio-live and verify the public broadcast",
+  "approval": "유호님 10-20 in this side session: 「진행해, 겹쳐송출.js 합친 판으로 바꾸고 radio-live 다시 켜서 확인해줘」",
+  "target": "/opt/synk-radio/지면/bots/오버레이/겹쳐송출.js",
+  "serverBefore": {
+    "sha256": "7cfe3f8b460a41d10f6105fc24111ec6b4a14ab00a94cead277262df04681625",
+    "mtime": "2026-09-26T20:13:40Z",
+    "lineEndings": "CRLF",
+    "differsFromOrigin9c4f22499Parent": [
+      "장면차례 default '전자네온물가,시티팝노을휴양지,차분달빛호수' (origin: 추석보름달마당,전자네온물가,거울수면과문,반딧불노을들판)",
+      "no 보존장면 check (origin throws at start on an unknown scene)",
+      "결이름 map with citypop·calm·dream_sky·드림물결·드림들판 (origin: neon_water·거울수면과문·반딧불노을들판)"
+    ]
+  },
+  "deployed": {
+    "sha256": "4579bebff3f884e2ed7a5148544b3b3bdd14b7efd0f0b163de42c0fd77300386",
+    "rule": "server file + only the three 9c4f22499 hunks (os require, 크롬프로필 constant, rmSync before launch + --user-data-dir); server lines and CRLF kept",
+    "diffVsServer": "fix lines only",
+    "diffVsOrigin": "the three server-side differences only",
+    "nodeCheck": "ok on the server (node v24.22.0) before the rename"
+  },
+  "backupOnServer": "/opt/synk-radio/지면/bots/오버레이/겹쳐송출.js.before-profile-fix-20261020-7cfe3f8b460a",
+  "restartMethod": "sudo -n systemctl restart radio-live (unit file untouched), inside minutes 1:10-2:30 of the 5-minute guardian cycle, auto-rollback if no resume within 90 s",
+  "times": {
+    "replacedAt": "2026-10-20T12:22:01.636Z",
+    "restartedAt": "2026-10-20T12:22:05.014Z",
+    "firstFrameAt": "2026-10-20T12:22:20Z",
+    "resumedAt": "2026-10-20T12:22:22.469Z",
+    "finalCheckAt": "2026-10-20T12:27:51Z"
+  },
+  "service": {
+    "before": { "MainPID": 401, "NRestarts": 0, "startedAt": "2026-10-20T06:16:38Z" },
+    "after": { "MainPID": 11275, "NRestarts": 0, "ActiveState": "active", "SubState": "running", "startedAt": "2026-10-20T12:22:05Z" }
+  },
+  "chromium": {
+    "before": "no --user-data-dir (temporary scoped_dir profile under ~/.config/chromium-headless)",
+    "after": "--user-data-dir=/home/synk/.cache/synk-radio-chromium (90M, disk caches inside Default/)"
+  },
+  "scopedDirs": {
+    "newAfterRestart": 0,
+    "leftover": {
+      "/home/synk/.config/chromium-headless": "1 dir (scoped_dircA5KrI, 89M) from the previous chromium; SIGTERM on restart did not remove it",
+      "/home/synk/.cache/chromium-headless": "231 dirs, 306M: disk caches of old temporary profiles, not covered by the 10-20 cleanup"
+    },
+    "openFilesIntoOldDirs": 0
+  },
+  "protectedUnchanged": true,
+  "contentHashes": {
+    "/opt/synk-radio/지면/bots/오버레이/송출진척.js": "41cbe7c860f66452ef3c2fe89d78210fa2a21f4570558a54e791a7a9b86b6524",
+    "/opt/synk-radio/송출/조율.json": "a56af79fcdedb547186cb45bc1f42fd8722b12976405776735988328ea8e0d22",
+    "/opt/synk-radio/소리/playlist.txt": "1156ddd20e8d2568c49d36d2161ae2938ffaee7a5fcaf444efbb705530fa82a1",
+    "/opt/synk-radio/소리/now-playing.json": "18c50748c7d0eea0f0158076f9b21506b0d66deb4826ea92344b83afec1843ea",
+    "/opt/synk-radio/무대차례/목록.txt": "ab38464198936cfd5111ff6373c71865dbfad9ef96e563cf9f06da5b1f47ad3c",
+    "/opt/synk-radio/지면/bots/오버레이/전광판.html": "6396358a1b25603bf57be631bfebefd26da2c820935a3e259f02647e39579586",
+    "/opt/synk-radio/팩/playlist.txt": "e312277715f2fdfac1e0e85ef51dc09858299e1c31bd607ad2c89def4f863818"
+  },
+  "openedMedia": [
+    "/opt/synk-radio/소리/synk-radio-blok11-sourcecomplete-20261005.flac",
+    "/opt/synk-radio/무대차례/still-dusk-kite-20260919-3d54fb291a54.mp4"
+  ],
+  "output": {
+    "minuteReports": [
+      { "at": "12:23:19", "speed": "0.989x", "outTime": "00:00:52.834" },
+      { "at": "12:24:19", "speed": "0.995x", "outTime": "00:01:52.918" },
+      { "at": "12:25:19", "speed": "0.997x", "outTime": "00:02:53.081" },
+      { "at": "12:26:19", "speed": "0.997x", "outTime": "00:03:53.058" },
+      { "at": "12:27:19", "speed": "0.998x", "outTime": "00:04:53.168" }
+    ],
+    "layerFailures": 0,
+    "droppedFrames": 0,
+    "duplicatedFrames": 0,
+    "skippedBeats": 0,
+    "chromiumStderr": "dbus and GCM registration ERROR lines, same kinds as the 06:16 start of the previous file"
+  },
+  "youtube": {
+    "videoId": "aHASRkZDalc",
+    "before": { "at": "2026-10-20T12:11:03Z", "broadcastStatus": "live", "privacy": "public", "streamStatus": "active", "health": "good", "enableAutoStop": false },
+    "after": { "at": "2026-10-20T12:22:42Z", "sameBroadcast": true, "broadcastStatus": "live", "privacy": "public", "streamStatus": "active", "health": "good", "enableAutoStop": false, "boundToOurStream": true },
+    "guardianLog": "12:25:02 UTC 🟢 aHASRkZDalc running, no new broadcast"
+  },
+  "publicReception": {
+    "before": { "at": "2026-10-20T12:15:43Z", "seconds": 12.004717, "meanVolumeDb": -18.0, "maxVolumeDb": -4.4 },
+    "after": { "at": "2026-10-20T12:23:06Z", "seconds": 12.004717, "meanVolumeDb": -17.1, "maxVolumeDb": -3.5, "sampleRate": 44100, "channels": 2 }
+  },
+  "disk": "30G, 8.1G used (29%), 20G free"
+}
