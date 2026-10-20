@@ -260,22 +260,8 @@ function acquireLock(file) {
   }
   return null;
 }
-// 지금 ref 조합의 묶음이 아직 없을 때(새 브랜치 이름이 이미 묶은 커밋을 가리키는 경우 등) 마지막 적용 실행이 만든 묶음이
-// Drive 검증을 마쳤으면, 그 묶음의 머리와 같은 커밋은 보존된 것으로 본다(10-19).
-async function lastBundleCoverage(archive, repo, vault) {
-  let bundles = [];
-  try { bundles = JSON.parse(fs.readFileSync(path.join(vault, 'git-bundle-status.json'), 'utf8')).bundles || []; } catch (_) { return null; }
-  const entry = bundles.filter(row => row && row.repository === repo.repository && typeof row.manifestRelativePath === 'string')
-    .sort((a, b) => String(b.finishedAt).localeCompare(String(a.finishedAt)))[0];
-  if (!entry) return null;
-  try {
-    const receipt = await archive.receiptFromManifest(repo, vault, entry.manifestRelativePath);
-    if (!receipt) return null;
-    archive.verifyPrerequisites(repo, receipt);
-    const coverage = await archive.verifyDriveCoverage(receipt, vault);
-    return coverage.ok ? { receipt, coverage: { ...coverage, earlierSelection: true } } : null;
-  } catch (_) { return null; }
-}
+// 묶음 보존 확인은 Git보관묶음.archiveCoverage 하나가 한다(10-20): Drive 검증을 마친 묶음 사슬에서 닿는 머리는 보존된 것이다
+// (그 머리를 담은 묶음이든, 새 가지 이름이 이미 묶은 커밋을 가리키든 — 10-19의 「마지막 묶음 머리」 판정을 넓힌 것).
 async function reconcileEncryptedArchives(report, state, apply) {
   const archive = require('./Git보관묶음.cjs'), vault = path.dirname(state);
   const candidates = report.repositories.filter(repo => archive.archiveRefs(repo).length);
@@ -286,20 +272,18 @@ async function reconcileEncryptedArchives(report, state, apply) {
   try {
     if (apply) { atomicJson(state, report); await archive.main(['--vault', vault, '--state', state]); }
     for (const repo of candidates) {
-      let receipt, coverage;
+      let coverage;
       try {
-        receipt = await archive.existingReceipt(repo, vault);
-        if (receipt) { archive.verifyPrerequisites(repo, receipt); coverage = await archive.verifyDriveCoverage(receipt, vault); }
-        else coverage = { ok: false, code: 'GIT_ARCHIVE_NOT_CREATED' };
-      } catch (error) { coverage = { ok: false, code: /^[A-Z][A-Z0-9_]{2,80}$/.test(error.message) ? error.message : 'GIT_ARCHIVE_VERIFY_FAILED' }; }
-      if (receipt) checkedArchives.push({ ...receipt, driveCoverage: coverage });
-      const earlier = coverage.ok ? null : await lastBundleCoverage(archive, repo, vault);
+        coverage = await archive.archiveCoverage(repo, vault);
+        checkedArchives.push(...coverage.checked);
+      } catch (error) {
+        const code = /^[A-Z][A-Z0-9_]{2,80}$/.test(error.message) ? error.message : 'GIT_ARCHIVE_VERIFY_FAILED';
+        coverage = { rows: new Map(archive.archiveRefs(repo).map(row => [row.sha, { ok: false, code }])) };
+      }
       for (const row of archive.archiveRefs(repo)) {
-        if (coverage.ok && receipt.heads.some(head => head.sha === row.sha)) {
-          row.status = 'encrypted-drive-verified'; row.fallback = coverage;
-        } else if (earlier && earlier.receipt.heads.some(head => head.sha === row.sha)) {
-          row.status = 'encrypted-drive-verified'; row.fallback = earlier.coverage;
-        } else row.fallback = { ...coverage, ok: false };
+        const found = coverage.rows.get(row.sha) || { ok: false, code: 'GIT_ARCHIVE_NOT_CREATED' };
+        if (found.ok) { row.status = 'encrypted-drive-verified'; row.fallback = found; }
+        else row.fallback = { ...found, ok: false };
       }
       repo.status = repo.refs.some(row => ['blocked-by-content-policy', 'public-origin-unpublished', 'failed'].includes(row.status))
         ? 'attention' : repo.refs.some(row => row.status === 'ready') ? 'pending' : 'success';

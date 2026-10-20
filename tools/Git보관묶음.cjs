@@ -99,6 +99,86 @@ async function receiptFromManifest(record, vault, manifestRelative) {
     throw new Error('BUNDLE_EXISTING_RECEIPT_MISMATCH');
   return { ...prior, reused: true, manifestPath: manifestFile, filePath: file };
 }
+// 이 저장소의 앞선 묶음 영수증 전부(검증 여부와 상관없이, 형식이 맞는 것만). 영수증은 만든 뒤 바뀌지 않는다.
+function bundleReceipts(record, vault) {
+  const dir = path.join(vault, 'Git-보관', record.name);
+  let names = [];
+  try { names = fs.readdirSync(dir).filter(name => /^[0-9a-f]{64}\.manifest\.json$/.test(name)); } catch (_) { return []; }
+  const receipts = [];
+  for (const name of names) {
+    try {
+      const receipt = JSON.parse(fs.readFileSync(path.join(dir, name), 'utf8'));
+      const relative = record.name + '/' + name.replace(/\.manifest\.json$/, '.bundle.enc');
+      if (receipt.repository !== record.repository || receipt.relativePath !== relative ||
+          receipt.manifestRelativePath !== record.name + '/' + name || !Array.isArray(receipt.heads) || !receipt.heads.length ||
+          receipt.heads.some(head => !OID.test(String(head?.sha)) || typeof head.ref !== 'string') || !receipt.encrypted ||
+          (receipt.chain !== undefined && !Array.isArray(receipt.chain))) continue;
+      receipts.push({ ...receipt, manifestPath: path.join(dir, name), filePath: path.join(dir, relative.slice(record.name.length + 1)) });
+    } catch (_) { /* 깨진 영수증은 바탕으로 쓰지 않는다 */ }
+  }
+  return receipts.sort((a, b) => String(a.finishedAt).localeCompare(String(b.finishedAt)));
+}
+// Drive 검증을 마친 앞선 묶음(증분 묶음의 바탕). 영수증의 암호문 지문이 Drive 검증 기록의 지문과 같고, 그 묶음이 기대는
+// 앞 묶음(chain)도 모두 검증됐을 때만 바탕이 된다. 묶음 파일은 다시 읽지 않는다 — 복원에 쓰는 것은 Drive 사본이고 검증 기록이
+// 그 바이트(크기·MD5·SHA-256)를 확인했다. 영수증 파일은 작으니 다시 해시해 검증 기록과 맞춘다(10-20).
+// git·remoteRefs를 주면 그 묶음의 선행 커밋이 원격에 아직 있는지(공개 ref에서 닿는지, 고정 ref가 그대로인지)도 본다.
+async function verifiedBundles(record, vault, { now = Date.now(), verification = null, git = null, remoteRefs = null, remoteTips = null } = {}) {
+  const verificationPath = path.join(vault, '상태', 'Git-보관', 'verify-status.json');
+  let evidence = verification;
+  if (!evidence) { try { evidence = JSON.parse(fs.readFileSync(verificationPath, 'utf8')); } catch (_) { return []; } }
+  const at = Date.parse(evidence.checkedAt);
+  if (evidence.group !== 'Git-보관' || evidence.account !== '77yuhbs@gmail.com' || evidence.status !== 'success' ||
+      evidence.missing_or_bad !== 0 || evidence.historicalBad !== 0 || !Array.isArray(evidence.verifiedFiles) ||
+      !Number.isFinite(at) || at > now + 60000 || now - at > 36 * 3600000) return [];
+  const rows = new Map(evidence.verifiedFiles.map(row => [row.path, row]));
+  const remoteOk = (row, digest) => row && typeof row.id === 'string' && row.id && row.ownedByMe === true && row.trashed === false &&
+    row.bytes === digest.bytes && row.sha256 === digest.sha256 && row.md5 === digest.md5 && row.remoteMd5 === digest.md5 &&
+    (!row.remoteSha256 || row.remoteSha256 === digest.sha256);
+  const all = bundleReceipts(record, vault), byManifest = new Map(all.map(r => [r.manifestRelativePath, r])), memo = new Map();
+  let prerequisitesHold = () => true;
+  if (git && remoteRefs) {
+    const tips = remoteTips || presentCommits(git, remoteRefs), refs = new Map(remoteRefs.map(row => [row.ref, row.sha]));
+    const wanted = [...new Set(all.flatMap(receipt => (receipt.prerequisites || []).filter(row => row.public === true).map(row => row.sha)))].filter(sha => OID.test(sha));
+    const present = new Set(wanted.length ? git(['cat-file', '--batch-check=%(objectname) %(objecttype)'], Buffer.from(wanted.join('\n') + '\n'))
+      .toString().trim().split('\n').filter(line => line.endsWith(' commit')).map(line => line.split(' ')[0]) : []);
+    const unreachable = uncoveredShas(git, [...present], tips);
+    prerequisitesHold = receipt => (receipt.prerequisites || []).every(row => row.bundle ? (receipt.chain || []).includes(row.bundle)
+      : row.public === true ? present.has(row.sha) && !unreachable.has(row.sha) : refs.get(row.ref) === row.sha);
+  }
+  const localOk = receipt => { try { return fs.statSync(receipt.filePath).size === receipt.encrypted.bytes; } catch (_) { return false; } };
+  const check = async (receipt, depth = 0) => {
+    if (memo.has(receipt.manifestRelativePath)) return memo.get(receipt.manifestRelativePath);
+    memo.set(receipt.manifestRelativePath, false); // 순환·깊은 사슬은 바탕이 못 된다
+    let ok = depth < 4096 && Date.parse(receipt.finishedAt) <= at && remoteOk(rows.get(receipt.relativePath), receipt.encrypted) &&
+      localOk(receipt) && prerequisitesHold(receipt);
+    if (ok) ok = remoteOk(rows.get(receipt.manifestRelativePath), await fileDigest(receipt.manifestPath));
+    for (const dependency of ok ? receipt.chain || [] : []) {
+      const earlier = byManifest.get(dependency);
+      if (!earlier || !(await check(earlier, depth + 1))) { ok = false; break; }
+    }
+    memo.set(receipt.manifestRelativePath, ok);
+    return ok;
+  };
+  const verified = [];
+  for (const receipt of all) if (await check(receipt)) verified.push(receipt);
+  return verified;
+}
+// heads 가운데 tips에서 닿지 않는 커밋(= tips가 담지 않은 머리)을 한 번의 rev-list로 고른다.
+function uncoveredShas(git, shas, tips) {
+  const wanted = [...new Set(shas)];
+  if (!wanted.length) return new Set();
+  if (!tips.length) return new Set(wanted);
+  const reachable = new Set(git(['rev-list', '--stdin'], Buffer.from([...wanted, ...[...new Set(tips)].map(sha => '^' + sha)].join('\n') + '\n'))
+    .toString().split(/\s+/).filter(Boolean));
+  return new Set(wanted.filter(sha => reachable.has(sha)));
+}
+// 검증된 앞 묶음들의 머리 가운데 이 저장소에 있는 커밋(rev-list의 ^에 쓸 수 있는 것).
+function chainHeads(git, chain) {
+  const ids = [...new Set(chain.flatMap(receipt => receipt.heads.map(head => head.sha)).filter(sha => OID.test(sha)))];
+  if (!ids.length) return [];
+  return git(['cat-file', '--batch-check=%(objectname) %(objecttype)'], Buffer.from(ids.join('\n') + '\n'))
+    .toString().trim().split('\n').filter(line => line.endsWith(' commit')).map(line => line.split(' ')[0]);
+}
 // 원격 ref가 가리키는 커밋 가운데 이 저장소에 있는 것만 고른다(아직 받지 않은 끝은 뺀다).
 function presentCommits(git, remoteRefs) {
   const ids = [...new Set(remoteRefs.map(row => row.sha))];
@@ -121,15 +201,26 @@ function reachingRef(git, remoteRefs, tips, sha) {
     .find(row => reachedBy(git, [row.sha], sha)) || null;
 }
 function verifyPrerequisites(record, receipt) {
-  // 선행 커밋 행은 두 가지다. 비공개 원격에 refs/synk-backup/<sha>로 고정한 행과, 공개 원격에는 쓰지 않으므로
-  // 그 커밋에 닿는 공개 ref만 적은 행(public: true, 10-19). 저장소 공개 여부가 나중에 바뀌어도 행 종류대로 확인한다.
+  // 선행 커밋 행은 세 가지다. 비공개 원격에 refs/synk-backup/<sha>로 고정한 행, 공개 원격에는 쓰지 않으므로
+  // 그 커밋에 닿는 공개 ref만 적은 행(public: true, 10-19), 앞선 묶음(chain)에 든 커밋을 적은 행(bundle, 10-20 증분).
+  // 저장소 공개 여부가 나중에 바뀌어도 행 종류대로 확인한다.
   const pinnedRow = (row, sha) => row.sha === sha && row.ref === PREFIX + sha;
   const publicRow = (row, sha) => row.sha === sha && row.public === true && typeof row.ref === 'string' && row.ref.startsWith('refs/');
+  const chain = Array.isArray(receipt.chain) ? receipt.chain : [];
+  const bundleRow = (row, sha) => row.sha === sha && typeof row.bundle === 'string' && chain.includes(row.bundle);
   if (!Array.isArray(receipt.requiredCommits) || !Array.isArray(receipt.prerequisites) ||
       receipt.requiredCommits.length !== receipt.prerequisites.length ||
-      receipt.requiredCommits.some(sha => !OID.test(sha) || !receipt.prerequisites.some(row => pinnedRow(row, sha) || publicRow(row, sha))))
+      receipt.requiredCommits.some(sha => !OID.test(sha) || !receipt.prerequisites.some(row => pinnedRow(row, sha) || publicRow(row, sha) || bundleRow(row, sha))))
     throw new Error('BUNDLE_PREREQUISITE_RECEIPT_INVALID');
-  if (!receipt.prerequisites.length) return;
+  // 앞선 묶음의 영수증이 이 영수증 옆에 그대로 있어야 이어서 되살릴 수 있다.
+  if (chain.length && receipt.manifestPath) {
+    const vaultDir = path.dirname(path.dirname(receipt.manifestPath));
+    for (const relative of chain) {
+      if (typeof relative !== 'string' || relative.includes('..') || path.isAbsolute(relative) || relative.includes('\\') ||
+          !fs.existsSync(path.join(vaultDir, relative))) throw new Error('BUNDLE_CHAIN_RECEIPT_MISSING');
+    }
+  }
+  if (!receipt.prerequisites.some(row => !row.bundle)) return;
   const git = gitReader(record.path);
   const pinned = receipt.prerequisites.filter(row => pinnedRow(row, row.sha));
   if (pinned.length) {
@@ -171,6 +262,38 @@ async function verifyDriveCoverage(receipt, vault, { now = Date.now(), verificat
   }
   return { ok: true, code: 'GIT_ARCHIVE_DRIVE_VERIFIED', account: evidence.account,
     checkedAt: evidence.checkedAt, verificationPath, files: confirmed, manifestPath: receipt.manifestPath };
+}
+// 미게시 머리(archiveRefs)마다 Drive에 보존됐는지(10-20). Drive 검증을 마친 묶음 사슬에서 닿으면 보존된 것이다 — 그 머리를
+// 담은 묶음이든, 이름만 새로 붙은 가지가 가리키는 이미 묶은 커밋이든. 아니면 그 머리를 담은 가장 새 묶음의 Drive 상태를 낸다
+// (막 만들어 아직 올리지 않은 묶음은 GIT_ARCHIVE_AWAITING_DRIVE). 어느 묶음에도 없으면 GIT_ARCHIVE_NOT_CREATED.
+async function archiveCoverage(record, vault, { git = gitReader(record.path), now = Date.now(), verification = null } = {}) {
+  const remoteRefs = parseRefs(git(['ls-remote', '--refs', 'origin'])), remoteTips = presentCommits(git, remoteRefs);
+  const chain = await verifiedBundles(record, vault, { now, verification, git, remoteRefs, remoteTips });
+  const rows = archiveRefs(record), result = new Map(), checked = [], cached = new Map();
+  const notCovered = chain.length ? uncoveredShas(git, rows.map(row => row.sha), chainHeads(git, chain)) : new Set(rows.map(row => row.sha));
+  const evidenceAt = chain.length ? (verification || JSON.parse(fs.readFileSync(path.join(vault, '상태', 'Git-보관', 'verify-status.json'), 'utf8'))).checkedAt : null;
+  const holders = bundleReceipts(record, vault).reverse();
+  for (const row of rows) {
+    if (!notCovered.has(row.sha)) {
+      result.set(row.sha, { ok: true, code: 'GIT_ARCHIVE_DRIVE_VERIFIED', account: '77yuhbs@gmail.com', checkedAt: evidenceAt, chainBundles: chain.length });
+      continue;
+    }
+    const holder = holders.find(receipt => receipt.heads.some(head => head.sha === row.sha));
+    if (!holder) { result.set(row.sha, { ok: false, code: 'GIT_ARCHIVE_NOT_CREATED' }); continue; }
+    if (!cached.has(holder)) {
+      let coverage;
+      try {
+        verifyPrerequisites(record, holder);
+        coverage = await verifyDriveCoverage(holder, vault, { now, verification });
+        // Drive에는 있는데 사슬에 못 든 묶음 — 기대는 앞 묶음이나 선행 커밋이 확인되지 않았다.
+        if (coverage.ok) coverage = { ok: false, code: 'GIT_ARCHIVE_CHAIN_NOT_VERIFIED' };
+      } catch (error) { coverage = { ok: false, code: /^[A-Z][A-Z0-9_]{2,80}$/.test(error.message) ? error.message : 'GIT_ARCHIVE_VERIFY_FAILED' }; }
+      cached.set(holder, coverage);
+      checked.push({ ...holder, driveCoverage: coverage });
+    }
+    result.set(row.sha, cached.get(holder));
+  }
+  return { rows: result, checked, chain };
 }
 function recordDriveCoverage(vault, receipts) {
   const file = path.join(vault, 'git-bundle-status.json');
@@ -267,23 +390,46 @@ async function preserveRecord(record, vault, cryptoTool, onProgress = () => {}, 
   }
   if (typeof info.private !== 'boolean' || info.full_name.toLowerCase() !== identity.toLowerCase()) throw new Error('BUNDLE_ORIGIN_IDENTITY_INVALID');
   if (info.private !== record.private) throw new Error('BUNDLE_ORIGIN_VISIBILITY_CHANGED');
-  const { heads, sourceMappings, selectionHash, relative, file, manifestFile } = selection(record, vault);
-  if (!heads.length) return null;
+  const full = selection(record, vault);
+  if (!full.heads.length) return null;
   // 훑은 뒤 묶기 전에 다른 세션이 가지를 옮겨도(공용 master에는 1~2분마다 커밋이 쌓인다) 훑은 그 커밋을 묶는다.
   // 커밋이 원 저장소에 있는지만 보고, 아래에서 늘 그 커밋에 고정한 임시 bare 저장소로 묶는다. 옮겨 간 새 커밋은 다음 적용 실행이 묶는다(10-19).
-  for (const row of heads) git(['cat-file', '-e', row.sha + '^{commit}']);
+  for (const row of full.heads) git(['cat-file', '-e', row.sha + '^{commit}']);
   const prior = await existingReceipt(record, vault);
   if (prior) { verifyPrerequisites(record, prior); return prior; }
-  if (fs.existsSync(file)) throw new Error('BUNDLE_UNRECEIPTED_DESTINATION');
   const remoteRefs = parseRefs(git(['ls-remote', '--refs', 'origin']));
   // 원격에 이미 있는 커밋은 공개 여부와 상관없이 뺀다. 비공개 원격은 경계 커밋을 refs/synk-backup에 고정하고,
   // 공개 원격은 쓰지 않으므로 경계 커밋에 닿는 공개 ref만 적는다. 공개 원격도 전체 이력을 담으면 SYNK-appsscript는
   // 실행마다 6.9GB 묶음이 됐다(10-19). 공개 원격의 끝이 이 저장소에 하나도 없을 때만 예전처럼 전체 이력을 담는다.
-  const exclusions = presentCommits(git, remoteRefs);
-  if (info.private && !exclusions.length && remoteRefs.length) throw new Error('BUNDLE_REMOTE_PREREQUISITES_MISSING');
+  const remoteTips = presentCommits(git, remoteRefs);
+  if (info.private && !remoteTips.length && remoteRefs.length) throw new Error('BUNDLE_REMOTE_PREREQUISITES_MISSING');
+  // 증분(10-20): Drive 검증을 마친 앞 묶음들의 머리도 선행 조건으로 뺀다. 미게시 가지 약 100개(138MiB)가 2시간마다 새
+  // 묶음에 통째로 다시 들어가 10-19 뒤 23개·3.9GB가 쌓였다. 이제는 그 뒤에 생긴 객체만 묶고, 모두 앞 묶음에 들었으면 묶지 않는다.
+  const chain = await verifiedBundles(record, vault, { git, remoteRefs, remoteTips });
+  const bases = chainHeads(git, chain);
+  const uncovered = uncoveredShas(git, full.heads.map(head => head.sha), [...remoteTips, ...bases]);
+  const heads = full.heads.filter(head => uncovered.has(head.sha));
+  const coveredHeads = full.heads.filter(head => !uncovered.has(head.sha));
+  if (!heads.length) return { schemaVersion: 1, repository: identity, coveredOnly: true, checkedAt: new Date().toISOString(),
+    coveredHeads, chain: chain.map(receipt => receipt.manifestRelativePath) };
+  // 앞 묶음에 기대는 증분 묶음은 그 바탕까지 이름(조합 해시)에 넣는다 — 같은 머리라도 바탕이 다르면 다른 묶음이다.
+  const named = heads.length === full.heads.length && !bases.length ? full : (() => {
+    const selectionHash = crypto.createHash('sha256').update(JSON.stringify({ identity: full.identity, heads,
+      chain: chain.map(receipt => receipt.manifestRelativePath) })).digest('hex');
+    const relative = record.name + '/' + selectionHash + '.bundle.enc', file = path.join(vault, 'Git-보관', relative);
+    return { ...full, heads, selectionHash, relative, file, manifestFile: file.replace(/\.bundle\.enc$/, '.manifest.json') };
+  })();
+  const { sourceMappings, selectionHash, relative, file, manifestFile } = named;
+  if (named !== full && fs.existsSync(manifestFile)) {
+    const again = await receiptFromManifest(record, vault, relative.replace(/\.bundle\.enc$/, '.manifest.json'));
+    if (again) { verifyPrerequisites(record, again); return again; }
+  }
+  if (fs.existsSync(file)) throw new Error('BUNDLE_UNRECEIPTED_DESTINATION');
+  const exclusions = [...new Set([...remoteTips, ...bases])];
   const stageDir = path.join(vault, '.git-bundle-staging'); fs.mkdirSync(stageDir, { recursive: true });
   const staging = path.join(stageDir, crypto.randomUUID() + '.enc');
   const pinned = [];
+  let baseHeads = null;
   const createdAt = new Date().toISOString();
   const isolated = isolatedBundleRepository(record.path, heads, stageDir);
   let detail;
@@ -291,8 +437,18 @@ async function preserveRecord(record, vault, cryptoTool, onProgress = () => {}, 
     pubPem: fs.readFileSync(cryptoTool.PUB(), 'utf8'), encryptStream: cryptoTool.encryptStream,
     onHeader(inspector) {
       for (const sha of inspector.prerequisites) {
+        // 원격에서 닿지 않는 선행 커밋은 앞 묶음에 든 것이다. 원격에 쓰지 않는다(비공개 원격이라도 — 그 커밋은 원격에 못 올린
+        // 내용 때문에 묶음으로 보존한 것일 수 있다). 그 커밋에 닿는 가장 이른 앞 묶음을 적는다.
+        if (bases.length && !reachedBy(git, remoteTips, sha)) {
+          baseHeads ||= new Map(chain.map(receipt => [receipt, chainHeads(git, [receipt])]));
+          const source = chain.find(receipt => reachedBy(git, baseHeads.get(receipt), sha));
+          if (!source) throw new Error('BUNDLE_PREREQUISITE_CHAIN_MISSING');
+          pinned.push({ sha, bundle: source.manifestRelativePath, verifiedAt: new Date().toISOString() });
+          onProgress();
+          continue;
+        }
         if (!info.private) {
-          const reaching = reachingRef(git, remoteRefs, exclusions, sha);
+          const reaching = reachingRef(git, remoteRefs, remoteTips, sha);
           if (!reaching) throw new Error('BUNDLE_PREREQUISITE_REMOTE_MISSING');
           pinned.push({ sha, ref: reaching.ref, public: true, verifiedAt: new Date().toISOString() });
           onProgress();
@@ -314,17 +470,25 @@ async function preserveRecord(record, vault, cryptoTool, onProgress = () => {}, 
   fs.copyFileSync(staging, file, fs.constants.COPYFILE_EXCL);
   const copied = await fileDigest(file);
   if (copied.sha256 !== encrypted.sha256 || copied.bytes !== encrypted.bytes) throw new Error('BUNDLE_ENCRYPTED_COPY_MISMATCH');
+  // 되살릴 때 먼저 받을 앞 묶음: 선행 커밋을 담은 묶음과, 그 묶음이 기대는 묶음 전부(만든 차례).
+  const needed = new Set(pinned.filter(row => row.bundle).map(row => row.bundle));
+  for (const receipt of [...chain].reverse()) if (needed.has(receipt.manifestRelativePath)) for (const earlier of receipt.chain || []) needed.add(earlier);
+  const ordered = chain.map(receipt => receipt.manifestRelativePath).filter(relativePath => needed.has(relativePath));
+  const sourceMappingsHere = (sourceMappings || []).filter(row => heads.some(head => head.ref === row.bundleRef));
   const receipt = { schemaVersion: 1, repository: identity, selectionHash, createdAt,
     finishedAt: new Date().toISOString(), status: 'awaiting-drive-verification', group: 'Git-보관',
     relativePath: relative, manifestRelativePath: path.relative(path.join(vault, 'Git-보관'), manifestFile).replaceAll('\\', '/'),
-    encrypted, ...detail, ...(sourceMappings.length ? { sourceMappings } : {}), prerequisites: pinned,
+    encrypted, ...detail, ...(sourceMappingsHere.length ? { sourceMappings: sourceMappingsHere } : {}), prerequisites: pinned,
+    ...(ordered.length ? { chain: ordered } : {}), ...(coveredHeads.length ? { coveredHeads } : {}),
     ...(info.private ? {} : { originVisibility: 'public', selfContained: !pinned.length, remoteWrites: false }),
     restore: { encryptedWithExistingUserKey: true, noPlaintextFileWritten: true,
-      instruction: info.private
+      instruction: (ordered.length
+        ? 'Restore the bundles listed in chain first, in that order, each the same way (their manifests sit in this folder and on Drive); coveredHeads name refs whose commits are already inside those bundles. Then: '
+        : '') + (info.private
         ? 'Decrypt with the existing locked key and password. Fetch each prerequisite ref from the original private GitHub repository, then run git bundle verify and fetch this bundle in a separate clone.'
         : pinned.length
-          ? 'Decrypt with the existing locked key and password. Clone the public GitHub repository, which holds every prerequisite commit, then run git bundle verify and fetch this bundle in that clone.'
-          : 'Decrypt with the existing locked key and password. This public-origin archive has no prerequisites; verify and fetch it into a separate empty repository.' } };
+          ? 'Decrypt with the existing locked key and password. Clone the public GitHub repository, which holds every public prerequisite commit, then run git bundle verify and fetch this bundle in that clone.'
+          : 'Decrypt with the existing locked key and password. This public-origin archive has no prerequisites; verify and fetch it into a separate empty repository.') } };
   atomicJson(manifestFile, receipt);
   // Only this invocation's encrypted staging file is removed after two byte checks.
   if (path.dirname(staging) === stageDir && fs.existsSync(staging)) fs.unlinkSync(staging);
@@ -353,7 +517,10 @@ async function main(argv = process.argv.slice(2)) {
         const receipt = await preserveRecord(record, vault, cryptoTool, () => {
           status.checkedAt = status.heartbeatAt = new Date().toISOString(); atomicJson(destination, status);
         });
-        if (receipt) {
+        if (receipt?.coveredOnly) {
+          // 새 객체가 없다 — 모든 머리가 Drive 검증을 마친 앞 묶음에 들었다. 새 묶음을 만들지 않는다(10-20).
+          (status.covered ||= []).push({ repository: receipt.repository, heads: receipt.coveredHeads.length, chainBundles: receipt.chain.length });
+        } else if (receipt) {
           receipt.driveCoverage = await verifyDriveCoverage(receipt, vault);
           status.bundles.push(receipt);
         }
@@ -362,8 +529,9 @@ async function main(argv = process.argv.slice(2)) {
       status.checkedAt = status.finishedAt = new Date().toISOString();
       if (status.status === 'success') status.lastSuccessAt = status.finishedAt;
       atomicJson(destination, status);
-      console.log(JSON.stringify({ status: status.status, bundles: status.bundles.map(row => ({ repository: row.repository,
-        filePath: row.filePath, manifestPath: row.manifestPath, bytes: row.encrypted.bytes, sha256: row.encrypted.sha256, reused: row.reused || false })) }));
+      console.log(JSON.stringify({ status: status.status, covered: status.covered || [], bundles: status.bundles.map(row => ({ repository: row.repository,
+        filePath: row.filePath, manifestPath: row.manifestPath, bytes: row.encrypted.bytes, sha256: row.encrypted.sha256, reused: row.reused || false,
+        chain: (row.chain || []).length })) }));
       return 0;
     } catch (error) {
       status.status = 'failed'; status.code = 'GIT_ENCRYPTED_BUNDLE_FAILED'; status.finishedAt = new Date().toISOString();
@@ -377,4 +545,4 @@ async function main(argv = process.argv.slice(2)) {
 }
 if (require.main === module) main().then(code => { process.exitCode = code; }, () => { console.error('GIT_ENCRYPTED_BUNDLE_FAILED'); process.exitCode = 1; });
 module.exports = { BundleInspector, createBundle, preserveRecord, existingReceipt, receiptFromManifest, verifyPrerequisites, verifyDriveCoverage,
-  recordDriveCoverage, archiveRefs, fileDigest, selection, isolatedBundleRepository, main };
+  recordDriveCoverage, archiveRefs, fileDigest, selection, isolatedBundleRepository, bundleReceipts, verifiedBundles, archiveCoverage, main };

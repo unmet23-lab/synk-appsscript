@@ -211,7 +211,7 @@ test('a new branch name on a bundled commit stays covered by the last verified b
     { sha: later, status: 'public-origin-unpublished', sourceRefs: ['refs/heads/later-work'] }] };
   const report = { repositories: [current] }, state = path.join(f.root, 'github-backup-status.json');
   await reconcileEncryptedArchives(report, state, false);
-  assert.equal(current.refs[0].status, 'encrypted-drive-verified'); assert.equal(current.refs[0].fallback.earlierSelection, true);
+  assert.equal(current.refs[0].status, 'encrypted-drive-verified'); assert.equal(current.refs[0].fallback.chainBundles, 1);
   assert.equal(current.refs[1].fallback.code, 'GIT_ARCHIVE_NOT_CREATED'); assert.equal(current.status, 'attention');
   const strict = JSON.parse(JSON.stringify(report));
   deferNewSinceApply(strict, { heads: { 'public-fixture': [f.head, later] } });
@@ -278,6 +278,90 @@ test('a public origin with no refs yet still gets a self-contained bundle that r
   f.git(['init', '--bare', empty], f.root); f.git(['bundle', 'verify', restored], empty);
   f.git(['fetch', restored, 'refs/heads/archive-source:refs/heads/recovered'], empty);
   assert.equal(f.git(['rev-parse', 'recovered'], empty).toString().trim(), f.head);
+});
+
+// Drive 검증 기록(창고.py verify가 쓰는 꼴)을 주어진 묶음들로 만든다.
+async function driveVerified(vault, receipts) {
+  const verifiedFiles = [];
+  for (const receipt of receipts) for (const relative of [receipt.relativePath, receipt.manifestRelativePath]) {
+    const digest = await fileDigest(path.join(vault, 'Git-보관', relative));
+    verifiedFiles.push({ path: relative, id: 'synthetic-' + verifiedFiles.length, ...digest, ownedByMe: true, trashed: false,
+      remoteMd5: digest.md5, remoteSha256: digest.sha256 });
+  }
+  const file = path.join(vault, '상태', 'Git-보관', 'verify-status.json');
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify({ status: 'success', group: 'Git-보관', account: '77yuhbs@gmail.com',
+    checkedAt: new Date().toISOString(), missing_or_bad: 0, historicalBad: 0, verifiedFiles }));
+}
+test('a Drive-verified bundle becomes the base: the next bundle holds only new objects, names its chain, and restores after it (10-20)',
+  { skip: !crypt && 'local archive encryption module unavailable' }, async t => {
+  const f = fixture(t), keys = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 }), pub = path.join(f.root, 'public.pem');
+  fs.writeFileSync(pub, keys.publicKey.export({ type: 'spki', format: 'pem' }));
+  const remote = path.join(f.root, 'public.git');
+  f.git(['init', '--bare', remote], f.root); f.git(['remote', 'add', 'origin', remote]); f.git(['push', 'origin', 'main']);
+  const identity = 'unmet23-lab/public-fixture', cryptoTool = { PUB: () => pub, encryptStream: crypt.encryptStream };
+  const dependencies = { github: { private: false, full_name: identity }, git(args, input) {
+    if (args[0] === 'remote' && args[1] === 'get-url') return Buffer.from('git@github.com:unmet23-lab/public-fixture.git\n');
+    return f.git(args, f.source, input);
+  } };
+  const record = refs => ({ name: 'public-fixture', path: f.source, repository: identity, private: false,
+    refs: refs.map(([sha, ...sourceRefs]) => ({ sha, status: 'public-origin-unpublished', sourceRefs })) });
+  const first = await preserveRecord(record([[f.head, 'refs/heads/archive-source']]), f.root, cryptoTool, () => {}, dependencies);
+  assert.equal(first.chain, undefined, 'no verified base yet: the first bundle is self-sufficient over the public origin');
+  // Drive 검증을 마치기 전에는 바탕이 아니다 — 같은 머리면 그 영수증을 다시 쓴다.
+  assert.equal((await preserveRecord(record([[f.head, 'refs/heads/archive-source']]), f.root, cryptoTool, () => {}, dependencies)).reused, true);
+  await driveVerified(f.root, [first]);
+  fs.writeFileSync(path.join(f.source, 'later.md'), '# later\n'); f.git(['add', 'later.md']); f.git(['commit', '-m', 'later']);
+  const later = f.git(['rev-parse', 'HEAD']).toString().trim();
+  f.git(['branch', 'copy', f.head]);
+  const current = record([[later, 'refs/heads/archive-source'], [f.head, 'refs/heads/copy']]);
+  const second = await preserveRecord(current, f.root, cryptoTool, () => {}, dependencies);
+  assert.deepEqual(second.heads, [{ ref: 'refs/heads/archive-source', sha: later }]);
+  assert.deepEqual(second.coveredHeads, [{ ref: 'refs/heads/copy', sha: f.head }]);
+  assert.deepEqual(second.chain, [first.manifestRelativePath]);
+  assert.deepEqual(second.prerequisites.map(({ sha, bundle }) => ({ sha, bundle })), [{ sha: f.head, bundle: first.manifestRelativePath }]);
+  assert.ok(second.pack.bytes * 20 < first.pack.bytes, `incremental pack ${second.pack.bytes} vs base ${first.pack.bytes}`);
+  // 되살리기: 공개 저장소 → 앞 묶음 → 이 묶음. 앞 묶음 없이는 이 묶음을 받을 수 없다.
+  const one = path.join(f.root, 'first.bundle'), two = path.join(f.root, 'second.bundle'), publicClone = path.join(f.root, 'chain-clone.git');
+  await crypt.decryptFile(keys.privateKey, first.filePath, one); await crypt.decryptFile(keys.privateKey, second.filePath, two);
+  f.git(['clone', '--bare', remote, publicClone], f.root);
+  assert.throws(() => f.git(['bundle', 'verify', two], publicClone), 'the chain base is required first');
+  f.git(['fetch', one, 'refs/heads/archive-source:refs/heads/base'], publicClone);
+  f.git(['bundle', 'verify', two], publicClone);
+  f.git(['fetch', two, 'refs/heads/archive-source:refs/heads/recovered'], publicClone);
+  assert.equal(f.git(['rev-parse', 'recovered'], publicClone).toString().trim(), later);
+  assert.deepEqual(f.git(['show', 'recovered:history.bin'], publicClone), fs.readFileSync(path.join(f.source, 'history.bin')));
+  // 확인 실행: 앞 묶음에 든 머리(이름만 새 가지)는 보존됐고, 새 묶음의 머리는 Drive를 기다린다.
+  const report = { repositories: [current] }, state = path.join(f.root, 'github-backup-status.json');
+  await reconcileEncryptedArchives(report, state, false);
+  assert.equal(current.refs[1].status, 'encrypted-drive-verified');
+  // 앞 묶음의 검증 기록은 있지만 새 묶음보다 이르다 — 전송 작업을 기다리는 상태(onlyArchiveTransferPending이 받는 코드)다.
+  assert.equal(current.refs[0].fallback.code, 'GIT_ARCHIVE_DRIVE_VERIFICATION_NOT_CURRENT');
+  await driveVerified(f.root, [first, second]);
+  const after = record([[later, 'refs/heads/archive-source'], [f.head, 'refs/heads/copy']]);
+  await reconcileEncryptedArchives({ repositories: [after] }, state, false);
+  assert.deepEqual(after.refs.map(row => row.status), ['encrypted-drive-verified', 'encrypted-drive-verified']);
+  assert.equal(after.status, 'success');
+  // 새 객체가 없으면 묶음을 만들지 않는다.
+  const before = fs.readdirSync(path.join(f.root, 'Git-보관', 'public-fixture')).sort();
+  const none = await preserveRecord(record([[later, 'refs/heads/archive-source'], [f.head, 'refs/heads/copy']]), f.root, cryptoTool, () => {}, dependencies);
+  assert.equal(none.coveredOnly, true); assert.equal(none.coveredHeads.length, 2); assert.deepEqual(none.chain, [first.manifestRelativePath, second.manifestRelativePath]);
+  assert.deepEqual(fs.readdirSync(path.join(f.root, 'Git-보관', 'public-fixture')).sort(), before);
+  // 앞 묶음 영수증이 사라지면 그 사슬에 기대는 묶음도 보존 확인에서 빠진다.
+  fs.renameSync(first.manifestPath, first.manifestPath + '.moved');
+  const lost = record([[later, 'refs/heads/archive-source']]);
+  await reconcileEncryptedArchives({ repositories: [lost] }, state, false);
+  assert.notEqual(lost.refs[0].status, 'encrypted-drive-verified');
+  assert.equal(lost.refs[0].fallback.code, 'BUNDLE_CHAIN_RECEIPT_MISSING');
+});
+
+test('a chain prerequisite row must name a bundle listed in the chain (10-20)', t => {
+  const f = fixture(t), sha = f.base;
+  assert.throws(() => verifyPrerequisites({ path: f.source, private: false },
+    { requiredCommits: [sha], prerequisites: [{ sha, bundle: 'fixture/a.manifest.json' }], chain: [] }),
+  error => error.message === 'BUNDLE_PREREQUISITE_RECEIPT_INVALID');
+  verifyPrerequisites({ path: f.source, private: false },
+    { requiredCommits: [sha], prerequisites: [{ sha, bundle: 'fixture/a.manifest.json' }], chain: ['fixture/a.manifest.json'] });
 });
 
 test('prerequisite rows are checked by their kind, whatever the origin visibility is now (10-19)', t => {
