@@ -4,8 +4,8 @@
 
 | 폴더 | 계정 | 영상 | 글 | 게시 시각 제안(KST) |
 |---|---|---|---|---|
-| `01-youtube-en/` | YouTube @synkkorean 쇼츠 | `video.mp4` 36.0초 · 표지 `cover.png`(1.3초) | `제목.txt` · `게시문안.txt`(제목·설명·고정 댓글) · `원고.json`(`tools/sns-발행.js`용) | 오늘 22:00(뉴욕 09:00 · 런던 14:00) |
-| `02-mn/` | 인스타 @synk.mn · 페북 SYNK(synkworld), Business Suite 릴스 하나로 교차 게시 | `video.mp4` 36.0초 · `cover.png` | `캡션_mn.txt` · `첫댓글_mn.txt`(학습 허브, 선택) · `원고.json` | 준비되는 대로 오늘 21:45(울란바토르 20:45). 몽골 저녁 20시는 이미 지나 가장 이른 시각으로 |
+| `01-youtube-en/` | YouTube @synkkorean 쇼츠 | `video.mp4` 36.0초 · 표지 `cover.png`(1.3초) · 휴대폰 미리 보기용 `upload_10MB.mp4` | `제목.txt` · `게시문안.txt`(제목·설명·고정 댓글) · `원고.json`(`tools/sns-발행.js`용) | 오늘 22:00(뉴욕 09:00 · 런던 14:00) |
+| `02-mn/` | 인스타 @synk.mn · 페북 SYNK(synkworld), Business Suite 릴스 하나로 교차 게시 | `video.mp4` 36.0초 · `cover.png` · `upload_10MB.mp4`(9.26MB) | `캡션_mn.txt` · `첫댓글_mn.txt`(학습 허브, 선택) · `원고.json` | 준비되는 대로 오늘 21:45(울란바토르 20:45). 몽골 저녁 20시는 이미 지나 가장 이른 시각으로 |
 | `03-xiaohongshu-cn/` | 샤오훙수 SYNK LAB | `video.mp4` · `cover.png` | `게시문안.txt`(제목 20자 안) | 오늘 22:00(베이징 21:00) |
 | `04-tiktok-mm/` | 틱톡 @synklab.mm | `video.mp4` · `cover.png` | `게시문안.txt` | 오늘 22:30(양곤 20:00) |
 
@@ -18,6 +18,8 @@
 - 학습 허브 링크(synk.im/try/learning-hub/)는 10-20 18:3x에 공개를 확인했다(200, 「SYNK LAB PLAY · 한국어 놀이」, 게임 8개). 유튜브는 설명란·고정 댓글, 몽골은 첫 댓글(선택)에만 둔다.
 - 올리는 파일은 원본 `video.mp4`(H.264 약 11Mbps · BT.709 · −14.5 LUFS 안팎)다. 크롬 확장처럼 10MB 상한이 있는 길로만 올릴 수 있을 때는 `upload_10MB.mp4`(x264 2패스 9.4MB)를 쓴다 — 10-19 유호님 「10MB 판으로 제가 올리기」 예외와 같은 경우에만.
 - 핼러윈 편이라 10-29(이태원 참사 4주기)에는 다시 올리거나 끌어올리지 않는다(트렌드 스캔 10-19 §8).
+
+두 판 0초 화면 나란히: [0초_두판.png](0초_두판.png).
 
 ## 0초 화면 시험
 
