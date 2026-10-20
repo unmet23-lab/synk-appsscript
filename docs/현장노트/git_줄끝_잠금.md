@@ -131,6 +131,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 생성 사본(`collection.js`·`kit/` 등)은 가져오지 말고 정본 생성기(`node experiences/play-common/build-kit.mjs`, `build-collection.mjs`)로 다시 만든다.
 - 다시 확인: `git ls-files --eol experiences/word-magic/kit | grep -c 'i/crlf'`가 0이다.
 
+### 적용된 SQL의 체크섬이 CRLF 원문을 포함한 경우 (2026-10-18)
+- 증상: `SYNK-talk`의 `20261009150000_synkbrief_unattended_c16.sql`을 새 작업본에서 받으면 `checksum 불일치`로 DB 시험 준비가 멈췄다.
+- 원인: 운영에 적용된 원문·체크섬은 CRLF인데 저장소의 `* text=auto eol=lf`가 체크아웃 원문을 LF로 바꿨다. 내용이 같아도 이력 검사는 바이트를 비교한다.
+- 고침: 이 파일만 `.gitattributes`에 `-text`로 지정하고 기록된 체크섬과 일치하는 원래 CRLF 바이트를 복구했다. 기존 판번호·체크섬이나 공통 검사기를 느슨하게 바꾸지 않았다.
+- 다시 확인: 체크섬 `2ce40e198ae8cc6dfc78625596696f7f119af4982bcc38f45003337600cec6de` 일치와 새 세션 이력 시험을 포함한 store·queue·safety 66개가 통과했다. 다른 SQL 파일에 이 예외를 일괄 적용하지 않는다.
+
 ## index.lock
 
 ### 주인 없는 0바이트 `.git/index.lock`이 남는다
@@ -227,6 +233,18 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 공용 작업본의 전체 파일 목록이 Node 기본 maxBuffer를 넘었다. Git 변경이나 저장용량 부족을 뜻하지 않는다.
 - 고침: stdout을 증거 파일 descriptor로 직접 연결하고 종료 코드를 확인했다. 읽기 점검에는 `--no-optional-locks`를 붙였으며 reset·clean·stash는 쓰지 않았다.
 - 다시 확인: `.tmp/path-travel-account-public-20261018/finish.cjs` 재실행이 0으로 끝나고 `workspace-status-after.txt`와 성공 `result.json`을 남겼다.
+
+### 공용 문서에 덧붙인 줄이 다른 세션의 통째 다시 쓰기로 사라진다
+- 증상: 트랙 §1 항목 끝에 덧붙인 두 문장이 3시간 뒤 없다(파일은 CRLF 193줄 → LF 201줄로 바뀜).
+- 원인: 다른 세션이 자기 판(옛 HEAD 기준)으로 파일을 통째로 썼다.
+- 고침: 쓰기 직전 판을 바이트 그대로 읽어 그 줄 끝에만 끼우고(임시 파일 → 교체), 세션을 끝낼 때 `grep`으로 있는지 다시 본다.
+- 다시 확인: `grep -c '10-17 C안' docs/_ops/트랙.md`가 0이 아니다.
+
+### 공용 문서의 시험 숫자를 전체 치환하면 다른 작업 기록도 바뀐다
+- 증상: 통화 시험189→190 갱신에 문서 전체 replaceAll을 써서, 다른 PULSE의 Linux189/189와 장애189.973초 기록까지 바뀌었다. 마감 대조에서 발견했다.
+- 원인: 같은 숫자가 다른 항목의 시험·시간·해시에도 있다. 문서 전체 숫자 치환은 해당 작업 항목의 갱신이 아니다.
+- 고침: HEAD와 공용 인덱스의 해당 문맥을 대조해 다른 기록 세 곳을 원래 값으로 되돌렸다. 이후 항목 제목/문맥으로 범위를 고정하고 그 범위의 정확한 문자열만 바꾼다.
+- 다시 확인: 트랙의 다른 PULSE Linux189/189와 결정의 장애189.973초는 보존되고, 통화 항목/QA만190/190인지 함께 확인한다.
 
 ## 당기기·push
 
@@ -373,6 +391,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 연결 워크트리에서 범위 없이 쓴 값은 메인과 같이 쓰는 `.git/config`에 들어간다.
 - 고침: 워크트리는 `git -c core.autocrlf=false worktree add …`로 만들고, 계속 필요한 값은 `git -C <워크트리> config --worktree <키> <값>`으로 쓴다.
 - 다시 확인: 메인에서 `git config --show-origin --get-all core.autocrlf`가 시스템 gitconfig의 `true` 하나뿐이다.
+
+### 희소 작업본 바깥에 새 QA 파일을 쓰면 일반 git add가 거절한다 (2026-10-18)
+- 증상: 전용 작업본의 새 `qa/synkbrief-natural-20261018/result.json`이 `outside of your sparse-checkout definition`으로 스테이징되지 않았다.
+- 원인: 파일은 디스크에 있지만 새 QA 폴더가 기존 희소 경로에 포함되지 않았다. 같은 명령의 다른 파일은 먼저 스테이징될 수 있다.
+- 고침: 의도한 새 파일임을 확인하고 `git add --sparse -- <정확한 파일>`로 그 파일만 올린 뒤 전체 staged 목록을 확인했다.
+- 다시 확인: `786d358`에는 요청한 QA·장부·자료표 안내 3파일만 들어갔고 전용 작업본의 status는 비었다.
 
 ## 이력 훑기
 
