@@ -5,7 +5,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {checkWriting,checkCount,writingLength,endingOf,sentencesOf,blankContext} from '../world-writing-check.mjs';
 import {homeworkLength} from '../classroom-homework.mjs';
-import {bankHash,publicBank} from '../../../tools/build-world-writing-items.mjs';
+import {publicBank,servedHash} from '../../../tools/build-world-writing-items.mjs';
 import STRINGS from '../../brand-opening/world-strings.mjs';
 
 // 쓰기 연습(TOPIK II 51~54): 문항 은행·규칙 점검·화면 글·연결 목록. 화면 동작은 world-writing-browser.test.mjs.
@@ -18,7 +18,7 @@ const modelAnswer=item=>item.type<=52?Object.fromEntries(item.blanks.map(b=>[b.i
 
 test('문항 은행: 과제별 모양, 예시답 글자 수 검산, 판 지문, 검수 상태', ()=>{
  assert.equal(bank.basis,'PBT');
- assert.equal(bank.contentHash,bankHash(bank.items),'node tools/build-world-writing-items.mjs --write 뒤 --talk로 서버 사본도 다시 만든다');
+ assert.equal(bank.contentHash,servedHash(bank),'node tools/build-world-writing-items.mjs --write 뒤 --talk로 서버 사본도 다시 만든다');
  assert.equal(new Set(bank.items.map(i=>i.id)).size,bank.items.length);
  for(const type of [51,52,53,54])assert.ok(bank.items.filter(i=>i.type===type).length>=2,`${type}번 문항 2개 이상`);
  for(const item of bank.items){
@@ -61,16 +61,16 @@ test('문장 끝 꼴과 문장 나누기', ()=>{
  assert.deepEqual(sentencesOf('수요일에 내놓습니다.2026년부터 바뀝니다.').map(s=>s.text),['수요일에 내놓습니다.','2026년부터 바뀝니다.']);
  // 같은 문장에 빈칸이 둘이면 다른 빈칸 자리를 띄어 앞뒤 어절이 붙지 않는다.
  assert.equal(blankContext({passage:[['그는 ',{blank:'a'},'고 ',{blank:'b'},'.']],blanks:[{id:'a',mark:'㉠'},{id:'b',mark:'㉡'}]},'b').before,'그는  고');
- assert.deepEqual(blankContext(by('w51-recycle'),'a'),{before:'지금은 화요일과 금요일 두 번 내놓고 있지만 다음 달부터는',after:'',next:'일주일에 한 번으로 줄어드는 대신 수요일 수거 시간은 저녁 6시부터 밤 10시까지로 지금보다 길어집니다.',endsSentence:true});
+ assert.deepEqual(blankContext(by('w51-recycle'),'a'),{before:'지금은 화요일과 금요일 두 번 내놓고 있지만 다음 달부터는',after:'',next:'일주일에 한 번으로 줄어드는 대신 수요일에 내놓을 수 있는 시간은 저녁 6시부터 밤 10시까지로 지금보다 길어집니다.',endsSentence:true});
 });
 
 test('51·52: 문체·앞말 되풀이·한 문장 넘기기·뒤 문장 옮기기·끝맺음·말하는 낱말을 「확인해 보세요」로', ()=>{
  assert.deepEqual(ids(checkWriting(by('w51-recycle'),{a:'다음 달부터는 수요일에만 내놓으세요',b:'수거하지 않습니다. 따라서 다음 수거일까지 보관해 주세요.'})),
   ['a:beforeWords','a:style','b:oneSentence','b:nextSentence','b:style']);
  assert.deepEqual(ids(checkWriting(by('w51-repair'),{a:'보일러가 고장 나서',b:'기다릴게요'})),['a:unfinished','b:style']);
- assert.deepEqual(ids(checkWriting(by('w51-study'),{a:'이번 주에는 문을 닫습니다',b:'몇 명이 오는지 알아야 해요'})),['b:style']);
- // 「-아요」체 글(51번에 드물지만 규칙은 받는다)이면 「-습니다」 답을 짚는다.
- assert.deepEqual(ids(checkWriting({...by('w51-study'),style:'polite'},{a:'이번 주에는 문을 닫습니다',b:'몇 명이 오는지 알아야 해요'})),['a:style']);
+ assert.deepEqual(ids(checkWriting(by('w51-study'),{a:'이번 주에는 문을 닫습니다',b:'몇 명이 오는지 알아야 해요'})),['a:style']);
+ // 같은 글이 「-습니다」체라면 「-아요」 답을 짚는다.
+ assert.deepEqual(ids(checkWriting({...by('w51-study'),style:'formal'},{a:'이번 주에는 문을 닫습니다',b:'몇 명이 오는지 알아야 해요'})),['b:style']);
  assert.deepEqual(ids(checkWriting(by('w52-crowd'),{a:'맛있기 때문이에요',b:'진짜 스스로 생각해야 한다'})),['a:style','b:spoken']);
  // 비운 빈칸은 메모(note)일 뿐 확인할 곳으로 세지 않는다.
  const empty=checkWriting(by('w52-card'),{a:'',b:'현금을 쓰는 것이 좋다'});assert.equal(checkCount(empty),0);assert.equal(empty.items[0].id,'empty');
@@ -102,6 +102,12 @@ test('화면 글: 쓰기 키는 ko·en·mn을 모두 갖고, en·mn에는 한글
 });
 
 test('공개 사본: 통과한 문항만, 검수 기록은 원본에만 · 지문은 원본 그대로', ()=>{
+ // 판 지문은 나가는 통과 문항만으로 센다: 보류 문항 고침·검수 메모는 지문을 바꾸지 않고, 통과 문항 고침·새 통과는 바꾼다.
+ const edit=(id,fn)=>({...bank,items:bank.items.map(i=>i.id===id?fn(structuredClone(i)):i)});
+ const held=bank.items.find(i=>i.review?.status!=='passed'),passed=bank.items.find(i=>i.review?.status==='passed');
+ assert.equal(servedHash(edit(passed.id,i=>({...i,review:{...i.review,notes:'메모만'}}))),bank.contentHash);
+ assert.notEqual(servedHash(edit(passed.id,i=>({...i,watch:i.watch+' 고침'}))),bank.contentHash);
+ if(held){assert.equal(servedHash(edit(held.id,i=>({...i,watch:i.watch+' 고침'}))),bank.contentHash);assert.notEqual(servedHash(edit(held.id,i=>({...i,review:{status:'passed'}}))),bank.contentHash);}
  const pub=publicBank(bank);
  assert.equal(pub.contentHash,bank.contentHash);
  assert.deepEqual(pub.items.map(i=>i.id),bank.items.filter(i=>i.review?.status==='passed').map(i=>i.id));
