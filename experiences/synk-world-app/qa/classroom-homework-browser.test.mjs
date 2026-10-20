@@ -52,11 +52,13 @@ function pastSubmissions(){
      comment:{good:'두 해의 비율을 정확히 옮겼어요.',fix:'「요즘 물가가 많이 올랐기 때문이다」는 자료에 없는 내용이에요. 53번은 자료에 있는 것만 써요.〔자〕',retry:'「15% 증가했다」를 「15%포인트 증가했다」로 고쳐 한 문장으로 다시 써 보세요.'}}}}},
  ];
 }
-// SYNK-talk lib/synk-classroom-homework.js와 같은 규칙의 가짜 서버(주 열림·읽기 한 번·쓰기 판·늦음)
+// SYNK-talk lib/synk-classroom-homework.js와 같은 규칙의 가짜 서버(주 열림·읽기 한 번·쓰기 판·늦음·같은 요청 번호는 같은 내용일 때만 중복)
+// dropNextReply(): 다음 내기를 저장한 뒤 응답을 끊는다(학생 화면에는 연결 오류, 서버에는 저장됨).
 function createHomeworkServer(){
- let submissions=pastSubmissions(),mode='ok',hold=null,now=()=>Date.now();
+ let submissions=pastSubmissions(),mode='ok',hold=null,dropReply=false,now=()=>Date.now();
+ const print=body=>JSON.stringify([body.kind,body.answers,body.retry||{},body.contentVersion]);
  const view=()=>({ok:true,mode:'account-linked',accountId:A,classes:[{classId:C,name:'합성 · TOPIK 4급 온라인 1기',course:'topik4-online',startsOn:START,weeks:8,planRevision:1,submissions:structuredClone(submissions)}],emptyReason:null,serverTime:new Date(now()).toISOString()});
- return {reset(){submissions=pastSubmissions();},setMode(value){mode=value;},setClock(fn){now=fn;},hold(gate){hold=gate;},
+ return {reset(){submissions=pastSubmissions();dropReply=false;},setMode(value){mode=value;},setClock(fn){now=fn;},hold(gate){hold=gate;},dropNextReply(){dropReply=true;},
   get submissions(){return submissions;},
   async handle(method,query,body){
    if(hold&&method==='GET'){const gate=hold;hold=null;await gate.promise;}
@@ -67,14 +69,15 @@ function createHomeworkServer(){
    if(query.classId!==C||body.classId!==C)return {status:403,data:{ok:false,error:{code:'FORBIDDEN'}}};
    const window=homeworkWindow(START,body.week);if(now()<window.start)return {status:409,data:{ok:false,error:{code:'WEEK_NOT_OPEN'}}};
    const old=submissions.find(s=>s.week===body.week&&s.kind===body.kind),late=now()>window.due;
-   if(old?.requestId===body.requestId)return {status:200,data:{...view(),duplicate:true}};
+   if(old?.requestId===body.requestId)return old.print===print(body)?{status:200,data:{...view(),duplicate:true}}:{status:409,data:{ok:false,error:{code:'IDEMPOTENCY_CONFLICT'}}};
    if(old&&body.kind==='reading')return {status:409,data:{ok:false,error:{code:'ALREADY_SUBMITTED'}}};
    if(old?.feedback)return {status:409,data:{ok:false,error:{code:'HOMEWORK_LOCKED'}}};
    if((old?.revision||0)!==body.expectedRevision)return {status:409,data:{ok:false,error:{code:'REVISION_CONFLICT'},revision:old?.revision||0}};
-   const row={week:body.week,kind:body.kind,answers:body.answers,retry:body.retry||{},revision:(old?.revision||0)+1,submittedAt:new Date(now()).toISOString(),late,contentVersion:body.contentVersion,feedback:null,requestId:body.requestId};
+   const row={week:body.week,kind:body.kind,answers:body.answers,retry:body.retry||{},revision:(old?.revision||0)+1,submittedAt:new Date(now()).toISOString(),late,contentVersion:body.contentVersion,feedback:null,requestId:body.requestId,print:print(body)};
    submissions=[...submissions.filter(s=>s!==old),row];
-   const data=view();for(const c of data.classes)for(const s of c.submissions)delete s.requestId;
-   return {status:200,data:{...data,duplicate:false,submission:{week:row.week,kind:row.kind,revision:row.revision,late}}};
+   const data=view();for(const c of data.classes)for(const s of c.submissions){delete s.requestId;delete s.print;}
+   const drop=dropReply;dropReply=false;
+   return {status:200,data:{...data,duplicate:false,submission:{week:row.week,kind:row.kind,revision:row.revision,late}},drop};
   }};
 }
 
@@ -98,14 +101,14 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
   await context.addInitScript(()=>{if(window.top===window&&!sessionStorage.getItem('synk.oauth.session.world'))sessionStorage.setItem('synk.oauth.session.world',JSON.stringify({access_token:'synthetic-browser-token',refresh_token:null,expires_at:Date.now()+3600000}));});
   const cors={'Access-Control-Allow-Origin':'*'};
   await context.route(origin+'/**',async route=>{
-   const req=route.request(),target=new URL(req.url());let status=200,data={ok:true};
+   const req=route.request(),target=new URL(req.url());let status=200,data={ok:true},drop=false;
    try{
     if(req.method()==='OPTIONS'){await route.fulfill({status:204,headers:{...cors,'Access-Control-Allow-Headers':req.headers()['access-control-request-headers']||'*','Access-Control-Allow-Methods':'GET, POST, PUT'}});return;}
     const body=req.postDataJSON();
     if(target.pathname==='/functions/v1/synk-classroom/api/world/homework'){
      const h=await req.allHeaders(),query=Object.fromEntries(target.searchParams);
      homeworkCalls.push({method:req.method(),query,body,product:h['x-synk-product'],contract:h['x-synk-contract'],authorization:h.authorization,apikey:h.apikey,contentType:h['content-type']||null});
-     ({status,data}=await fake.handle(req.method(),query,body));
+     ({status,data,drop=false}=await fake.handle(req.method(),query,body));
     }
     else if(target.pathname==='/functions/v1/classroom')data={contract_ver:'c16',ok:true,classes:[{class_id:C,display_name:'합성 · TOPIK 4급 온라인 1기',video_privacy:'unlisted',playlist_url:null,meeting_url:null,sessions:[{session_key:'w3-sat',title:'3주차 토요일 · 쓰기 — 53번 조사 결과 비교',starts_at:iso(KST('2027-03-20T19:30:00')),ends_at:null,status:'ready',watch_url:'https://www.youtube.com/watch?v=w3SatReplay'}]}],empty_reason:null,server_time:new Date().toISOString()};
     else if(target.pathname.endsWith('/synk-account'))data=body?{ok:true,refreshRevoked:true}:{ok:true,account:{synk_user_id:A,status:'active'},learning:{enabled:false,revision:1},capabilities:{learningSync:true},sessions:[{id:C,current:true,revoked:false,product:'world'}]};
@@ -120,6 +123,7 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
     else if(target.pathname.startsWith('/auth/v1/logout'))data={};
     else{unexpected.push(target.pathname);status=404;data={ok:false,error:{code:'NOT_IN_FIXTURE'}};}
    }catch(error){unexpected.push('fixture-error '+target.pathname+' '+error.message);status=500;data={ok:false,error:{code:'FIXTURE_ERROR'}};}
+   if(drop){await route.abort('failed');return;}
    await route.fulfill({status,contentType:'application/json',body:JSON.stringify(data),headers:cors});
   });
   page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
@@ -248,7 +252,32 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
    await press(`send:${C}:4:writing`);await card.locator('.ws-hw-write .ws-hw-again').waitFor();
    assert.equal(posts().at(-1).body.expectedRevision,1);assert.equal(fake.submissions.find(s=>s.week===4&&s.kind==='writing').revision,2);
    checks[`${tag}-writing-resubmit`]=true;
-   await open(4,'writing');
+   // 응답이 끊긴 내기(서버에는 저장됨): 같은 글을 다시 내면 같은 요청 번호라 한 번만 저장된다. 고친 글은 새 번호로 내고,
+   // 서버가 한 판 앞서 있으면 판 겹침을 알린 뒤 다시 불러와, 이 기기에서 고친 글로 이어 낸다.
+   // 시계를 단계마다 몇 초씩 앞당겨 실제 차례(쓰던 글 저장 → 서버 낸 시각 → 그 뒤에 고친 글)를 만든다.
+   const writing4=()=>fake.submissions.find(s=>s.week===4&&s.kind==='writing'),area=card.locator('.ws-hw-write textarea[data-kind="text"]');
+   const noticeIs=prefix=>page.waitForFunction(prefix=>(document.querySelector('#world-classroom-homework .ws-hw-task[data-kind="writing"] .ws-hw-notice')?.textContent||'').startsWith(prefix),prefix);
+   const later=()=>setClock(new Date(clock.getTime()+5000));
+   await press(`edit:${C}:4:writing`);await area.fill(essay.replace('늘었다','많이 늘었다'));await later();fake.dropNextReply();await press(`send:${C}:4:writing`);await noticeIs('내지 못했어요. 쓴 글은');
+   const lostId=posts().at(-1).body.requestId;assert.equal(writing4().revision,3,'응답은 끊겼지만 서버에는 저장됐다');
+   await press(`send:${C}:4:writing`);await card.locator('.ws-hw-write .ws-hw-again').waitFor();
+   assert.equal(posts().at(-1).body.requestId,lostId,'같은 글은 같은 요청 번호');assert.equal(writing4().revision,3,'중복으로 받아 판이 그대로');
+   await later();await press(`edit:${C}:4:writing`);await area.fill(essay.replace('늘었다','아주 많이 늘었다'));await later();fake.dropNextReply();await press(`send:${C}:4:writing`);await noticeIs('내지 못했어요. 쓴 글은');
+   const secondId=posts().at(-1).body.requestId;assert.equal(writing4().revision,4);
+   const fixed=essay.replace('늘었다','아주 많이 늘었다고 한다');
+   await later();await area.fill(fixed);await press(`send:${C}:4:writing`);await noticeIs('먼저 낸 답이 이미 저장돼 있어요');
+   assert.notEqual(posts().at(-1).body.requestId,secondId,'고친 글은 새 요청 번호');assert.equal(posts().at(-1).body.expectedRevision,3);
+   await card.locator('.ws-hw-write .ws-hw-again').waitFor();await press(`edit:${C}:4:writing`);
+   assert.equal(await area.inputValue(),fixed,'낸 시각 뒤에 이 기기에서 고친 글은 남아 있다');
+   await press(`send:${C}:4:writing`);await card.locator('.ws-hw-write .ws-hw-again').waitFor();
+   assert.equal(posts().at(-1).body.expectedRevision,4);assert.equal(writing4().revision,5);assert.equal(writing4().answers['W4-1.1'],fixed);
+   // 고치지 않은 채 응답이 끊긴 글은 새로고침하면 쓰던 글을 지운다(서버에 같은 글이 있다).
+   await later();await press(`edit:${C}:4:writing`);await area.fill(fixed+' 끝');await later();fake.dropNextReply();await press(`send:${C}:4:writing`);await noticeIs('내지 못했어요. 쓴 글은');
+   await later();await press('refresh');await settle('ready');
+   assert.equal(await page.evaluate(key=>localStorage.getItem(key),`synk.world.homework.v1:${A}:${C}:W4`),null,'서버 낸 시각보다 오래된 쓰던 글은 지운다');
+   assert.equal(writing4().answers['W4-1.1'],fixed+' 끝');
+   checks[`${tag}-lost-reply`]=true;
+   // (새로고침으로 펼친 칸은 이미 닫혔다)
    // 5) 지난 과제: 3주차 쓰기 첨삭(학생 글 위 기호 표시 · 기호 목록 · 한마디 세 줄 · 예시답)
    await card.locator(`[data-homework-key="past:${C}:3"]`).click();await open(3,'writing');await card.locator('.ws-hw-feedback').waitFor();
    await card.locator('.ws-hw-feedback .ws-hw-model summary').click();

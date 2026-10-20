@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {createRequire} from 'node:module';
 import {fileURLToPath} from 'node:url';
-import {homeworkWindow,homeworkWeek,homeworkDate,homeworkLength,markSegments,readingOutcome,missingFields,homeworkDraftKey,HOMEWORK_TEXT} from '../classroom-homework.mjs';
+import {homeworkWindow,homeworkWeek,homeworkDate,homeworkLength,markSegments,markParagraphs,homeworkSignature,readingOutcome,missingFields,homeworkDraftKey,HOMEWORK_TEXT} from '../classroom-homework.mjs';
 import {normalizeHomeworkClasses,homeworkReply,homeworkUnavailable,homeworkSubmission,HOMEWORK_CODES,HOMEWORK_VERDICTS,HOMEWORK_COURSE} from '../homework-client.mjs';
 import {createWorldAccount} from '../world-account.mjs';
 import {homeworkLength as converterLength} from '../../../tools/build-topik4-homework.mjs';
@@ -40,6 +40,11 @@ test('주차·마감이 SYNK-talk 과제 서버와 같다',{skip:!talkRoot&&'과
  const server=require(path.join(talkRoot,'lib/synk-classroom-homework.js'));
  for(const startsOn of ['2027-03-06','2027-03-10','2026-12-05','2027-01-02'])for(let week=1;week<=8;week++)assert.deepEqual(homeworkWindow(startsOn,week),server.homeworkWindow(startsOn,week),`${startsOn} ${week}주`);
  assert.deepEqual([...HOMEWORK_CODES],[...server.CODES]);assert.deepEqual([...HOMEWORK_VERDICTS],[...server.VERDICTS]);assert.deepEqual(Object.keys(server.COURSES),[HOMEWORK_COURSE]);
+ // 서버가 품은 과정 상수(주 수·주마다 읽기 문항 수·마감 요일과 시각)는 자료와 같아야 한다 — 다르면 서버가 정상 제출을 거절한다.
+ const course=server.COURSES[HOMEWORK_COURSE],[h,m]=content.schedule.dueTime.split(':').map(Number);
+ assert.equal(course.weeks,content.weeks.length);assert.deepEqual(content.weeks.map(w=>w.reading.items.length),content.weeks.map(()=>course.readingItems));
+ assert.deepEqual(content.weeks.map(w=>w.reading.items.map(item=>item.id)),content.weeks.map((w,i)=>Array.from({length:course.readingItems},(_,n)=>`R${i+1}-${n+1}`)));
+ assert.deepEqual([course.dueWeekday,course.dueMinutes],[content.schedule.dueWeekday,h*60+m]);
 });
 test('글자 수는 수업 자료 검산·변환기와 같은 규칙이고, 기호·판정 이름은 첨삭 기준에서 옮긴 것과 같다',()=>{
  for(const sample of ['','가나다\n\n라마','é x',' ,. \r\n'])assert.equal(homeworkLength(sample),converterLength(sample));
@@ -54,6 +59,28 @@ test('첨삭 표시는 그 칸 글에서 처음 나오는 겹치지 않는 자�
  assert.deepEqual(segs.filter(s=>s.mark!==undefined).map(s=>[s.text,s.mark]),[['조사했습니다',0],['63%이',1]]);
  assert.deepEqual(markSegments('',[{quote:'x',code:'체'}]),[]);
  assert.deepEqual(markSegments('가가',[{quote:'가',code:'체'},{quote:'가',code:'조'}]).map(s=>s.mark),[0,1],'같은 글귀를 두 번 표시하면 다음 자리로');
+});
+test('표시 자리는 칸 글 전체에서 한 번 정하고 문단으로 나눠 그린다: 같은 글귀가 여러 문단에 있어도 한 번, CRLF 글, 글자 가운데서 끊긴 글귀',()=>{
+ const text='그래서 첫 문단이다.\n\n그래서 둘째 문단이다. 그래서 끝.',lines=['그래서 첫 문단이다.','그래서 둘째 문단이다. 그래서 끝.'];
+ const paragraphs=markParagraphs(text,[{quote:'그래서',code:'연'},{quote:'그래서',code:'체'}]);
+ assert.deepEqual(paragraphs.map(p=>p.map(s=>s.text).join('')),lines);
+ assert.deepEqual(paragraphs.flat().filter(s=>s.mark!==undefined).map(s=>[s.text,s.mark,s.end===true]),[['그래서',0,true],['그래서',1,true]],'표시 둘은 두 자리에만(문단마다 다시 그리지 않는다)');
+ const spanning=markParagraphs(text.replace(/\n/g,'\r\n'),[{quote:'문단이다.\r\n\r\n그래서',code:'연'}]);
+ assert.deepEqual(spanning.map(p=>p.map(s=>s.text).join('')),lines,'CRLF 글도 LF 글과 같은 문단');
+ assert.deepEqual(spanning.flat().filter(s=>s.mark!==undefined).map(s=>[s.text,s.end===true]),[['문단이다.',false],['그래서',true]],'문단을 넘는 표시는 마지막 조각에만 기호');
+ // 글귀 앞뒤 줄바꿈은 떼고 찾는다: 빈 줄에서 끝나는 글귀도 기호가 그 문단에 붙고, 문단 경계가 갈리지 않는다.
+ assert.deepEqual(markParagraphs('가나\n\n다라',[{quote:'나\n\n',code:'체'}]).map(p=>p.map(s=>[s.text,s.end===true])),[[['가',false],['나',true]],[['다라',false]]]);
+ assert.deepEqual(markParagraphs('가나\n\n다라',[{quote:'나\n',code:'체'}]).map(p=>p.map(s=>s.text).join('')),['가나','다라']);
+ // 👍🏽에서 👍만 고르면 피부색이 떨어지므로 그리지 않고 목록에만 둔다. 글자 전체를 고르면 그린다.
+ if(typeof Intl.Segmenter==='function')assert.deepEqual(markSegments('가👍🏽나',[{quote:'👍',code:'체'}]).map(s=>s.mark),[undefined]);
+ assert.deepEqual(markSegments('가👍🏽나',[{quote:'👍🏽',code:'체'}]).filter(s=>s.mark!==undefined).map(s=>s.text),['👍🏽']);
+});
+test('내기 요청 번호의 지문: 키 차례와 상관없이 같은 내용이면 같고, 글·표 칸이 다르면 다르다(같은 내용만 같은 번호로 다시 낸다)',()=>{
+ const base={kind:'writing',answers:{'W3-1.1':'가','W3-1.2':[['a','b']]},retry:{'W2-1':'다시'},contentVersion:'v1-000000000000'};
+ assert.equal(homeworkSignature(base),homeworkSignature({contentVersion:base.contentVersion,retry:{'W2-1':'다시'},answers:{'W3-1.2':[['a','b']],'W3-1.1':'가'},kind:'writing'}));
+ assert.notEqual(homeworkSignature(base),homeworkSignature({...base,answers:{...base.answers,'W3-1.1':'가 '}}));
+ assert.notEqual(homeworkSignature(base),homeworkSignature({...base,answers:{...base.answers,'W3-1.2':[['b','a']]}}),'표 칸 차례는 내용이다');
+ assert.notEqual(homeworkSignature(base),homeworkSignature({...base,retry:{}}));
 });
 test('읽기 결과와 빈 칸: 정답 자료가 없으면 맞음을 정하지 않고, 표는 모든 칸이 차야 낸다',()=>{
  const items=content.weeks[0].reading.items;
@@ -79,6 +106,8 @@ test('서버 답은 화면이 쓰는 꼴만 남긴다: 반·제출·첨삭의 �
  const [c]=normalizeHomeworkClasses([klass(),{...klass(),classId:'not-uuid'},{...klass(),course:'topik3'},null]);
  assert.deepEqual({...c,submissions:undefined},{classId:C,name:'합성 · TOPIK 4급 온라인 1기',course:'topik4-online',startsOn:START,weeks:8,submissions:undefined});
  assert.deepEqual(c.submissions.map(s=>`${s.week}:${s.kind}`),['3:reading','3:writing']);
+ const [odd]=normalizeHomeworkClasses([klass({submissions:[{week:3,kind:'reading',answers:{'R3-1':2},revision:1,submittedAt:'어제'}]})]);
+ assert.equal(odd.submissions[0].submittedAt,null,'읽을 수 없는 낸 시각은 null(화면은 이때 이 기기의 쓰던 글을 지우지 않는다)');
  const w=c.submissions[1];assert.deepEqual(w.retry,{'W2-1':'다시 쓴 문장'});assert.equal(w.late,true);
  assert.deepEqual(w.feedback,{returnedAt:'2027-03-25T09:00:00.000Z',parts:{'W3-1':{fields:{},marks:[{field:'W3-1.1',quote:'조사했습니다',code:'체'}],comment:{good:'두 해의 비율을 정확히 옮겼어요.',fix:'자료에 없는 내용이에요.〔자〕',retry:'한 문장으로 다시 써 보세요.'}}}});
  assert.equal(c.submissions[0].feedback,null,'읽기에는 첨삭이 없다');
@@ -90,6 +119,8 @@ test('서버 답은 화면이 쓰는 꼴만 남긴다: 반·제출·첨삭의 �
 test('봉투: 성공은 반 목록, 실패는 코드·상태, 과제 경로가 없는 옛 서버와 꺼진 반 기능은 「칸 없음」',()=>{
  assert.deepEqual(homeworkReply({ok:true,accountId:A,classes:[klass()],emptyReason:null}).classes.length,1);
  assert.deepEqual(homeworkReply({ok:true,classes:[],emptyReason:'NO_CLASS'}),{classes:[],emptyReason:'NO_CLASS'});
+ assert.equal(homeworkReply({ok:true,classes:[],emptyReason:null,serverTime:'2027-03-27T01:00:00.000Z'}).serverTime,'2027-03-27T01:00:00.000Z','서버 시각은 주차·마감 시계에 쓴다');
+ assert.equal('serverTime' in homeworkReply({ok:true,classes:[],serverTime:'어제'}),false,'읽을 수 없는 서버 시각은 버린다');
  assert.throws(()=>homeworkReply({ok:true,classes:{}},200),{code:'CONTRACT_VIOLATION'});
  assert.throws(()=>homeworkReply({ok:false,code:'REVISION_CONFLICT',error:{code:'REVISION_CONFLICT'},revision:2},409),{code:'REVISION_CONFLICT',status:409});
  assert.throws(()=>homeworkReply(null,502),{code:'HOMEWORK_UNAVAILABLE',status:502});

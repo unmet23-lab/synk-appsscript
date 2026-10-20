@@ -1,7 +1,9 @@
 // 내 계정 시트의 「이번 주 과제」(「우리 반 수업」 바로 아래). TOPIK 4급 온라인 반 학생이 그 주의 읽기(R)·쓰기(W) 숙제를 풀어 내고,
 // 선생님의 첨삭(기호 표시 + 한마디 세 줄, docs/온라인반_TOPIK4급/첨삭기준.md)을 같은 칸에서 돌려받는다.
 // · 문제는 topik4-homework.json(문서에서 변환, tools/build-topik4-homework.mjs), 정답·예시답은 낸 뒤에만 topik4-homework-key.json에서 읽는다.
+//   정답 파일은 공개 파일이고 원문 문서도 공개 저장소에 있어, 미리 보는 것을 막는 장치는 아니다(설계 §2).
 // · 주차는 반의 시작일(startsOn, 한국 날짜)부터 7일씩. 마감은 그 주 첫 수요일 23:00(한국 시간), 늦게 내도 받는다(첨삭기준 §6).
+//   주차·마감은 서버 시각(serverTime)으로 고친 시계로 본다(기기 시계가 틀린 폰도 같은 주를 보게).
 // · 쓰던 답은 이 기기(localStorage)에만 두고, 「내기」를 눌러야 계정에 저장돼 선생님이 본다. 서버·학생 글은 textContent로만 넣는다.
 // · 반이 없는 계정(대부분의 WORLD 계정)에는 칸을 보이지 않는다. 계정이 바뀌면 칸을 닫는다.
 export const HOMEWORK_TEXT=Object.freeze({
@@ -20,9 +22,12 @@ export const HOMEWORK_TEXT=Object.freeze({
  saved:'쓰는 글은 이 기기에 임시로 저장돼요. 「선생님께 내기」를 눌러야 선생님이 볼 수 있어요.',
  sending:'내는 중이에요.',sent:'냈어요. 선생님이 금요일까지 첨삭을 돌려줘요.',sentReading:'답을 냈어요. 정답과 근거를 확인해 보세요.',
  sendError:'내지 못했어요. 쓴 글은 이 기기에 그대로 있어요. 잠시 뒤 다시 내 주세요.',
- conflict:'다른 화면에서 먼저 낸 답이 있어요. 새로 불러온 내용을 확인해 주세요.',
+ conflict:'먼저 낸 답이 이미 저장돼 있어요. 새로 불러온 내용을 확인해 주세요.',
  noLearner:'이 계정은 아직 반 학생 명부에 없어요. 선생님께 반 연결을 확인해 주세요.',
+ notOpen:'이 주 과제는 아직 열리지 않았어요. 새로고침해 주세요.',
+ invalid:'내지 못했어요. 새로고침한 뒤 다시 내 주세요. 쓴 글은 이 기기에 그대로 있어요.',
  locked:'첨삭이 돌아온 글은 다시 낼 수 없어요. 다음 주 과제에서 「다시 써 볼 곳」을 써 주세요.',
+ changed:'이 과제를 낸 뒤 수업 자료가 고쳐졌어요. 지금 자료로 보여 줘요.',
  retryTitle:'지난주 다시 써 볼 곳',retryField:'다시 쓴 문장',retryMine:'다시 쓴 문장',
  marks:'기호 표시',pending:'이 문항 첨삭은 아직이에요.',model:'예시답 보기',criteria:'채점에서 보는 것',
  mine:'내가 쓴 글',past:'지난 과제',example:'예',
@@ -56,17 +61,35 @@ export function homeworkDate(ms,{time=true}={}){
 }
 
 // ── 첨삭 기호를 학생 글 위에: 같은 칸의 표시만, 글에서 처음 나오는(겹치지 않는) 자리. 못 찾은 표시는 목록에만 남는다. ──
+// 줄끝은 글자 수 세기처럼 LF로 맞추고, 글귀 앞뒤의 줄바꿈은 떼고 찾는다(문단 경계에 기호가 걸리지 않게).
+// 글귀가 글자(자소 묶음) 가운데서 시작하거나 끝나는 자리는 건너뛴다(👍🏽의 피부색이 떨어지지 않게).
+const homeworkPlain=value=>String(value??'').replace(/\r\n?/g,'\n').normalize('NFC');
+function homeworkEdges(source){
+ if(typeof Intl?.Segmenter!=='function')return null;
+ const edges=new Set([source.length]);for(const {index} of new Intl.Segmenter('ko',{granularity:'grapheme'}).segment(source))edges.add(index);return edges;
+}
 export function markSegments(text,marks){
- const source=String(text??'').normalize('NFC'),ranges=[];
+ const source=homeworkPlain(text),edges=homeworkEdges(source),ranges=[];
  marks.forEach((mark,index)=>{
-  const quote=String(mark.quote??'').normalize('NFC');if(!quote)return;
+  const quote=homeworkPlain(mark.quote).replace(/^\n+|\n+$/g,'');if(!quote)return;
   for(let from=0;;){const at=source.indexOf(quote,from);if(at<0)return;const end=at+quote.length;
-   if(ranges.some(r=>at<r.end&&end>r.start)){from=at+1;continue;}ranges.push({start:at,end,index});return;}
+   if(ranges.some(r=>at<r.end&&end>r.start)||edges&&!(edges.has(at)&&edges.has(end))){from=at+1;continue;}ranges.push({start:at,end,index});return;}
  });
  ranges.sort((a,b)=>a.start-b.start);const out=[];let pos=0;
  for(const r of ranges){if(r.start>pos)out.push({text:source.slice(pos,r.start)});out.push({text:source.slice(r.start,r.end),mark:r.index});pos=r.end;}
  if(pos<source.length)out.push({text:source.slice(pos)});
  return out;
+}
+// 문단마다 그릴 조각: 표시 자리는 칸 글 전체에서 한 번 정하고(같은 글귀가 여러 문단에 있어도 한 자리), 빈 줄에서 문단을 나눈다.
+// 문단을 넘는 표시는 마지막 조각(end)에만 기호를 단다.
+export function markParagraphs(text,marks){
+ const paragraphs=[[]];
+ for(const seg of markSegments(text,marks))seg.text.split(/\n{2,}/).forEach((piece,i,pieces)=>{
+  if(i)paragraphs.push([]);const end=i===pieces.length-1;
+  if(seg.mark===undefined){if(piece)paragraphs.at(-1).push({text:piece});}
+  else if(piece||end)paragraphs.at(-1).push({text:piece,mark:seg.mark,...(end?{end:true}:{})});
+ });
+ return paragraphs;
 }
 // ── 읽기 결과: 고른 번호와 정답(정답 자료가 있을 때만) ──
 export function readingOutcome(items,answers,key){
@@ -85,8 +108,10 @@ export function missingFields(fields,answers){
 // 쓰던 답: 계정·반·과제(R3·W3)마다 한 칸. 읽지 못하면 없는 것으로 본다.
 export const homeworkDraftKey=(owner,classId,assignment)=>`synk.world.homework.v1:${owner}:${classId}:${assignment}`;
 function readDraft(storage,key){try{const value=JSON.parse(storage?.getItem(key)||'null');return value&&value.v===1&&value.answers&&typeof value.answers==='object'?value:null;}catch{return null;}}
-function writeDraft(storage,key,value){try{storage?.setItem(key,JSON.stringify({v:1,...value,savedAt:Date.now()}));return true;}catch{return false;}}
+function writeDraft(storage,key,value,savedAt=Date.now()){try{storage?.setItem(key,JSON.stringify({v:1,...value,savedAt}));return true;}catch{return false;}}
 function dropDraft(storage,key){try{storage?.removeItem(key);}catch{}}
+// 내기 요청 번호를 다시 쓸지 정하는 지문: 키 차례와 상관없이 같은 내용이면 같은 글자열(서버의 같은 요청 판정과 같은 갈래·답·다시 쓴 줄·자료 판).
+export const homeworkSignature=value=>JSON.stringify(value,(name,v)=>v&&typeof v==='object'&&!Array.isArray(v)?Object.fromEntries(Object.entries(v).sort(([a],[b])=>a<b?-1:a>b?1:0)):v);
 
 export function mountClassroomHomework({container,load,submit,loadContent,loadKey,owner,storage=globalThis.localStorage,guard=()=>{},now=Date.now,randomId=()=>globalThis.crypto.randomUUID()}){
  const doc=container.ownerDocument;
@@ -122,12 +147,27 @@ export function mountClassroomHomework({container,load,submit,loadContent,loadKe
  root.append(head,node('p','ws-hw-lead',T.lead),status,alert,body,node('p','ws-hw-note',T.note));
  container.append(root);
 
- const model={phase:'loading',seen:false,classes:[],content:null,key:null,keyState:'idle',open:null,editing:new Set(),notice:new Map(),busy:null,requests:new Map()};
+ const model={phase:'loading',seen:false,classes:[],content:null,key:null,keyState:'idle',open:null,editing:new Set(),notice:new Map(),busy:null,requests:new Map(),skew:0};
  let disposed=false,generation=0;
  const assignmentOf=(kind,week)=>(kind==='reading'?'R':'W')+week;
  const taskKey=(classId,week,kind)=>`${classId}:${week}:${kind}`;
  const submissionOf=(c,week,kind)=>c.submissions.find(s=>s.week===week&&s.kind===kind)||null;
  const weekContent=week=>model.content?.weeks?.[week-1]||null;
+ // 서버 시계: 서버 답의 serverTime과 이 기기 시계의 차이를 받을 때마다 고친다(서버 시각은 요청을 보낸 때와 받은 때의 가운데로 본다).
+ const clock=()=>now()+model.skew;
+ const learnClock=(serverTime,sent)=>{const at=Date.parse(serverTime||'');if(Number.isFinite(at))model.skew=at-(Number.isFinite(sent)?(sent+now())/2:now());};
+ // 낸 시각을 모르면(꼴이 틀린 답) 이 기기의 쓰던 글을 남긴다.
+ const olderThan=(draft,sub)=>{const at=Date.parse(sub?.submittedAt||'');return Number.isFinite(at)&&draft.savedAt<at;};
+ const changedNote=sub=>sub?.contentVersion&&sub.contentVersion!==model.content.version?meta('idle',T.changed,'ws-hw-help'):null;
+ // 내기 답은 그 반 하나만 온다. 다른 반은 그대로 두고 그 반만 바꾼다.
+ const mergeClasses=list=>[...model.classes.map(c=>list.find(n=>n.classId===c.classId)||c),...list.filter(n=>!model.classes.some(c=>c.classId===n.classId))];
+ // 낸 것보다 오래된 쓰던 답(다른 기기에서 고쳐 냈거나 응답이 끊긴 뒤 남은 것), 낸 읽기와 첨삭이 돌아온 쓰기의 쓰던 답은 지운다.
+ function dropStaleDrafts(){
+  for(const c of model.classes)for(const s of c.submissions){
+   const key=homeworkDraftKey(owner,c.classId,assignmentOf(s.kind,s.week)),draft=readDraft(storage,key);
+   if(draft&&(s.kind==='reading'||s.feedback||olderThan(draft,s)))dropDraft(storage,key);
+  }
+ }
 
  // 정답·예시답은 낸 것이 있을 때만 읽는다(한 번, 실패하면 새로고침 때 다시).
  function needKey(){
@@ -142,7 +182,7 @@ export function mountClassroomHomework({container,load,submit,loadContent,loadKe
 
  // ── 한 과제 줄 ──
  function taskState(c,week,kind,window){
-  const sub=submissionOf(c,week,kind),draft=readDraft(storage,homeworkDraftKey(owner,c.classId,assignmentOf(kind,week))),overdue=window&&now()>window.due;
+  const sub=submissionOf(c,week,kind),draft=readDraft(storage,homeworkDraftKey(owner,c.classId,assignmentOf(kind,week))),overdue=window&&clock()>window.due;
   if(kind==='writing'&&sub?.feedback){
    const parts=weekContent(week)?.writing.parts||[],done=parts.filter(p=>sub.feedback.parts[p.key]).length;
    return {sub,tone:'ok',text:done>=parts.length?T.returned:T.partly,action:T.feedback};
@@ -182,6 +222,7 @@ export function mountClassroomHomework({container,load,submit,loadContent,loadKe
   if(submitted){
    if(outcome){const right=outcome.filter(o=>o.correct).length;box.append(meta('ok',`${content.items.length}문항 중 ${right}문항을 맞혔어요.`,'ws-hw-summary'));}
    else box.append(meta(model.keyState==='error'?'alert':'idle',model.keyState==='error'?T.keyError:T.keyLoading,'ws-hw-summary'));
+   const note=changedNote(state.sub);if(note)box.append(note);
   }
   const list=node('ol','ws-hw-items');
   content.items.forEach((item,index)=>{
@@ -196,7 +237,7 @@ export function mountClassroomHomework({container,load,submit,loadContent,loadKe
    if(submitted&&outcome)group.dataset.result='';
    item.options.forEach((option,i)=>{
     const n=i+1,chosen=answers[item.id]===n;
-    const b=button('', 'ws-hw-option',`option:${c.classId}:${item.id}:${n}`,()=>{if(submitted)return;answers[item.id]=n;writeDraft(storage,draftKey,{answers});paint();});
+    const b=button('', 'ws-hw-option',`option:${c.classId}:${item.id}:${n}`,()=>{if(submitted)return;answers[item.id]=n;writeDraft(storage,draftKey,{answers},clock());paint();});
     b.setAttribute('role','radio');b.setAttribute('aria-checked',String(chosen));b.append(node('span','ws-hw-mark',CIRCLED[i]),node('span','',option));
     if(submitted){b.disabled=true;const o=outcome?.[index];if(o&&o.answer===n)b.dataset.answer='true';if(chosen)b.dataset.chosen='true';}
     else if(chosen)b.dataset.chosen='true';
@@ -231,7 +272,7 @@ export function mountClassroomHomework({container,load,submit,loadContent,loadKe
   const box=node('div','ws-hw-write'),draft=readDraft(storage,draftKey);
   const answers=structuredClone(draft?.answers||state.sub?.answers||{}),retry={...(draft?.retry||state.sub?.retry||{})};
   // 「아직 비어 있는 칸」 안내는 다시 쓰기 시작하면 지운다(입력 중에는 칸을 다시 그리지 않으므로 그 줄만 뗀다).
-  const save=()=>{writeDraft(storage,draftKey,{answers,retry});if(model.notice.get(key)?.tone==='check'){model.notice.delete(key);root.querySelector(`.ws-hw-task[data-kind="writing"][data-week="${week}"]>.ws-hw-notice`)?.remove();}};
+  const save=()=>{writeDraft(storage,draftKey,{answers,retry},clock());if(model.notice.get(key)?.tone==='check'){model.notice.delete(key);root.querySelector(`.ws-hw-task[data-kind="writing"][data-week="${week}"]>.ws-hw-notice`)?.remove();}};
   if(w.intro)box.append(blocks(w.intro,'ws-hw-intro'));
   for(const part of w.parts){
    const section=node('section','ws-hw-part');section.dataset.part=part.key;
@@ -285,7 +326,7 @@ export function mountClassroomHomework({container,load,submit,loadContent,loadKe
  function answerView(field,value){
   if(field.kind==='grid'){const set=node('div','ws-hw-grid ws-hw-readonly');set.append(node('p','ws-hw-field-label',field.label));(Array.isArray(value)?value:[]).forEach((row,r)=>{const line=node('p','ws-hw-mine');line.textContent=`${/^\d+$/.test(field.rows[r]||'')?field.rows[r]+'.':field.rows[r]||''} ${row.join(' / ')}`.trim();set.append(line);});return set;}
   const box=node('div','ws-hw-answer');box.append(node('p','ws-hw-field-label',field.label));
-  for(const paragraph of String(value??'').split(/\n{2,}/))box.append(node('p','ws-hw-mine',paragraph));
+  for(const paragraph of homeworkPlain(value).split(/\n{2,}/))box.append(node('p','ws-hw-mine',paragraph));
   return box;
  }
  function retryView(sub){
@@ -295,10 +336,13 @@ export function mountClassroomHomework({container,load,submit,loadContent,loadKe
  function submittedView(c,week,sub){
   const w=weekContent(week).writing,box=node('div','ws-hw-write'),key=taskKey(c.classId,week,'writing');
   box.append(meta('info',[T.waiting,sub.submittedAt?homeworkDate(Date.parse(sub.submittedAt))+' 냄':null].filter(Boolean).join(' · '),'ws-hw-summary'));
+  const note=changedNote(sub);if(note)box.append(note);
   for(const part of w.parts){const s=node('section','ws-hw-part');s.append(node('h5','',[part.number?`${part.number}번`:null,part.label].filter(Boolean).join(' · ')));for(const field of part.fields)s.append(answerView(field,sub.answers[field.id]));box.append(s);}
   const retry=retryView(sub);if(retry)box.append(retry);
   box.append(button(T.resubmit,'plain-button ws-hw-again',`edit:${key}`,()=>{
-   const draftKey=homeworkDraftKey(owner,c.classId,w.id);if(!readDraft(storage,draftKey))writeDraft(storage,draftKey,{answers:structuredClone(sub.answers),retry:{...(sub.retry||{})}});
+   // 이 기기의 쓰던 글이 낸 글보다 오래됐으면(다른 기기에서 고쳐 냈으면) 낸 글에서 다시 시작한다.
+   const draftKey=homeworkDraftKey(owner,c.classId,w.id),draft=readDraft(storage,draftKey);
+   if(!draft||olderThan(draft,sub))writeDraft(storage,draftKey,{answers:structuredClone(sub.answers),retry:{...(sub.retry||{})}},clock());
    model.editing.add(key);model.notice.delete(key);paint();}));
   return box;
  }
@@ -306,6 +350,7 @@ export function mountClassroomHomework({container,load,submit,loadContent,loadKe
  function feedbackView(c,week,sub){
   const w=weekContent(week).writing,box=node('div','ws-hw-feedback'),codes=model.content.feedback.codes,[good,fix,retry]=model.content.feedback.comment;
   box.append(meta('ok',[T.returned,homeworkDate(Date.parse(sub.feedback.returnedAt))].join(' · '),'ws-hw-summary'));
+  const note=changedNote(sub);if(note)box.append(note);
   for(const part of w.parts){
    const s=node('section','ws-hw-part'),fb=sub.feedback.parts[part.key];s.dataset.part=part.key;
    s.append(node('h5','',[part.number?`${part.number}번`:null,part.label].filter(Boolean).join(' · ')));
@@ -314,11 +359,12 @@ export function mountClassroomHomework({container,load,submit,loadContent,loadKe
     const value=sub.answers[field.id],verdict=fb.fields?.[field.id],marks=(fb.marks||[]).filter(m=>m.field===field.id);
     if(field.kind==='text'){
      const essay=node('div','ws-hw-answer');essay.append(node('p','ws-hw-field-label',`${field.label} · ${homeworkLength(value)}자`));
-     for(const paragraph of String(value??'').split(/\n{2,}/)){
+     for(const paragraph of markParagraphs(value,marks)){
       const p=node('p','ws-hw-mine');
-      for(const seg of markSegments(paragraph,marks)){
+      for(const seg of paragraph){
        if(seg.mark===undefined){p.append(doc.createTextNode(seg.text));continue;}
-       const mark=marks[seg.mark],m=node('mark','',seg.text);m.dataset.code=mark.code;p.append(m,node('span','ws-hw-code',`〔${mark.code}〕`));
+       const mark=marks[seg.mark];if(seg.text){const m=node('mark','',seg.text);m.dataset.code=mark.code;p.append(m);}
+       if(seg.end)p.append(node('span','ws-hw-code',`〔${mark.code}〕`));
       }
       essay.append(p);
      }
@@ -351,26 +397,30 @@ export function mountClassroomHomework({container,load,submit,loadContent,loadKe
   return box;
  }
 
- // ── 내기: 같은 요청 번호로 다시 보내도 한 번만 저장된다. 성공하면 쓰던 답을 지운다. ──
+ // ── 내기: 같은 내용을 다시 보내면 같은 요청 번호라 한 번만 저장된다(응답이 끊긴 뒤 다시 눌러도 안전). 고친 내용은 새 번호로 낸다. 성공하면 쓰던 답을 지운다. ──
+ // 다시 눌러도 풀리지 않는 답(판 겹침·이미 냄·잠김·아직 안 열림·계획 없음)은 요청 번호를 버리고 조용히 다시 불러온다. 명부에서 빠진 계정(FORBIDDEN)은 칸을 그대로 두고 안내만 한다.
+ const SEND_TEXT={REVISION_CONFLICT:T.conflict,ALREADY_SUBMITTED:T.conflict,IDEMPOTENCY_CONFLICT:T.conflict,HOMEWORK_LOCKED:T.locked,FORBIDDEN:T.noLearner,NO_LEARNER:T.noLearner,WEEK_NOT_OPEN:T.notOpen,HOMEWORK_NOT_PLANNED:T.unset};
+ const RELOAD_ON=['REVISION_CONFLICT','ALREADY_SUBMITTED','IDEMPOTENCY_CONFLICT','HOMEWORK_LOCKED','WEEK_NOT_OPEN','HOMEWORK_NOT_PLANNED'];
  async function send_(c,week,kind,{answers,retry,expectedRevision}){
   const key=taskKey(c.classId,week,kind),assignment=assignmentOf(kind,week);
   if(model.busy)return;
-  const sub=submissionOf(c,week,kind);
+  const sub=submissionOf(c,week,kind),signature=homeworkSignature({kind,answers,retry:kind==='writing'?retry:undefined,contentVersion:model.content.version});
   model.busy=key;model.notice.set(key,{tone:'idle',text:T.sending});paint();
-  const requestId=model.requests.get(key)||randomId();model.requests.set(key,requestId);
+  const kept=model.requests.get(key),requestId=kept?.signature===signature?kept.id:randomId();model.requests.set(key,{id:requestId,signature});
   const ticket=generation;
   try{
-   guard();
+   guard();const sent=now();
    const result=await submit({classId:c.classId,week,kind,requestId,expectedRevision:expectedRevision??sub?.revision??0,contentVersion:model.content.version,answers,...(kind==='writing'?{retry}:{})});
    guard();if(disposed||ticket!==generation)return;
-   model.classes=result.classes;model.requests.delete(key);dropDraft(storage,homeworkDraftKey(owner,c.classId,assignment));model.editing.delete(key);
-   model.notice.set(key,{tone:'ok',text:kind==='reading'?T.sentReading:T.sent});model.open=key;needKey();
+   learnClock(result.serverTime,sent);model.classes=mergeClasses(result.classes);model.requests.delete(key);dropDraft(storage,homeworkDraftKey(owner,c.classId,assignment));model.editing.delete(key);
+   model.notice.set(key,{tone:'ok',text:kind==='reading'?T.sentReading:T.sent});model.open=key;dropStaleDrafts();needKey();
   }catch(error){
    if(error?.code==='ACCOUNT_CHANGED'){close();return;}
    if(disposed||ticket!==generation)return;
-   const text={REVISION_CONFLICT:T.conflict,ALREADY_SUBMITTED:T.conflict,NO_LEARNER:T.noLearner,HOMEWORK_LOCKED:T.locked}[error?.code]||T.sendError;
-   model.notice.set(key,{tone:'alert',text});
-   if(['REVISION_CONFLICT','ALREADY_SUBMITTED','HOMEWORK_LOCKED'].includes(error?.code)){model.requests.delete(key);model.editing.delete(key);void refresh({quiet:true});}
+   const code=error?.code,refused=error?.status>=400&&error?.status<500;
+   model.notice.set(key,{tone:'alert',text:SEND_TEXT[code]||(refused?T.invalid:T.sendError)});
+   if(RELOAD_ON.includes(code)){model.requests.delete(key);model.editing.delete(key);void refresh({quiet:true});}
+   else if(refused)model.requests.delete(key);
   }finally{if(model.busy===key)model.busy=null;if(!disposed)paint();}
  }
 
@@ -390,10 +440,11 @@ export function mountClassroomHomework({container,load,submit,loadContent,loadKe
  function room(c){
   const el=node('div','ws-hw-room');el.dataset.classId=c.classId;
   el.append(node('h4','ws-hw-name',c.name||model.content.title));
-  const info=homeworkWeek({startsOn:c.startsOn,weeks:c.weeks,now:now(),schedule:model.content.schedule});
+  // 반 계획의 주 수가 자료보다 길어도 자료가 있는 주까지만 연다(자료 없는 주에서 칸이 멈추지 않게).
+  const weeks=Math.min(c.weeks,model.content.weeks.length),info=homeworkWeek({startsOn:c.startsOn,weeks,now:clock(),schedule:model.content.schedule});
   if(info.phase==='unset'){el.append(meta('idle',T.unset,'ws-hw-help'));return el;}
   if(info.phase==='before'){el.append(meta('info',`첫 과제는 ${homeworkDate(info.start,{time:false})} 수업 뒤에 열려요.`,'ws-hw-when'));return el;}
-  if(info.phase==='done')el.append(meta('ok',`${c.weeks}주 과정을 마쳤어요. 지난 과제와 첨삭은 아래에서 다시 볼 수 있어요.`,'ws-hw-when'));
+  if(info.phase==='done')el.append(meta('ok',`${weeks}주 과정을 마쳤어요. 지난 과제와 첨삭은 아래에서 다시 볼 수 있어요.`,'ws-hw-when'));
   const current=info.phase==='active'?info.week:null;
   if(current)el.append(weekBlock(c,current,true));
   const past=[];for(let week=(current||info.opened+1)-1;week>=1;week--)past.push(week);
@@ -414,7 +465,7 @@ export function mountClassroomHomework({container,load,submit,loadContent,loadKe
  function weekBlock(c,week,current){
   const content=weekContent(week),window=homeworkWindow(c.startsOn,week,model.content.schedule),el=node('div','ws-hw-week');el.dataset.week=String(week);
   if(current){
-   const overdue=now()>window.due,done=['reading','writing'].every(kind=>submissionOf(c,week,kind));
+   const overdue=clock()>window.due,done=['reading','writing'].every(kind=>submissionOf(c,week,kind));
    el.append(meta(done?'ok':overdue?'check':'info',`${week}주차 · 마감 ${homeworkDate(window.due)}`,'ws-hw-when'));
    const lesson=node('dl','ws-hw-lesson');
    for(const [label,value] of [[T.lesson,content.lesson],[T.grammar,content.grammar],[T.listening,`공개 기출 ${content.listening} · ${T.listeningNote}`]]){lesson.append(node('dt','',label),node('dd','',value));}
@@ -428,12 +479,12 @@ export function mountClassroomHomework({container,load,submit,loadContent,loadKe
   const ticket=++generation;
   if(!quiet){model.phase='loading';paint();}
   try{
-   guard();
+   guard();const sent=now();
    const [result,content]=await Promise.all([load(),model.content?Promise.resolve(model.content):loadContent()]);
    guard();if(disposed||ticket!==generation)return;
    if(!content?.weeks?.length)throw Object.assign(Error('과제 자료'),{code:'HOMEWORK_CONTENT'});
-   model.content=content;model.classes=result.classes;model.phase=result.classes.length?'ready':'hidden';if(result.classes.length)model.seen=true;
-   needKey();
+   model.content=content;model.classes=result.classes;learnClock(result.serverTime,sent);model.phase=result.classes.length?'ready':'hidden';if(result.classes.length)model.seen=true;
+   dropStaleDrafts();needKey();
   }catch(error){
    if(error?.code==='ACCOUNT_CHANGED'){close();return;}
    if(disposed||ticket!==generation)return;
@@ -442,7 +493,7 @@ export function mountClassroomHomework({container,load,submit,loadContent,loadKe
    if(model.phase==='error')model.seen=true;
   }finally{if(!disposed&&ticket===generation)paint();}
  }
- function start(){if(disposed)return;model.notice.clear();model.open=null;model.editing.clear();if(model.keyState==='error')model.keyState='idle';void refresh();}
+ function start(){if(disposed)return;model.notice.clear();model.open=null;model.editing.clear();model.requests.clear();if(model.keyState==='error')model.keyState='idle';void refresh();}
  // 다른 탭·앱에서 돌아오면 조용히 다시 묻는다(쓰던 칸이 열려 있으면 그대로 둔다 — 쓰던 답은 기기에 있다).
  function onVisibility(){if(doc.visibilityState!=='hidden'&&model.phase==='ready'&&!model.busy&&!root.querySelector('.ws-hw-write textarea'))void refresh({quiet:true});}
  doc.addEventListener('visibilitychange',onVisibility);

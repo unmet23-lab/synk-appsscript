@@ -45,18 +45,21 @@ export function normalizeHomeworkClasses(list){
   const submissions=(Array.isArray(c.submissions)?c.submissions:[]).filter(s=>homeworkRecord(s)&&Number.isInteger(s.week)&&s.week>=1&&s.week<=weeks&&['reading','writing'].includes(s.kind)&&Number.isSafeInteger(s.revision)&&s.revision>=1)
    .map(s=>{const answers=normalizeHomeworkAnswers(s.kind,s.week,s.answers);if(!answers)return null;
     const retry=homeworkRecord(s.retry)?Object.fromEntries(Object.entries(s.retry).filter(([k,v])=>HOMEWORK_PART_ID.test(k)&&k[1]===String(s.week-1)&&homeworkText(v,600))):{};
-    return {week:s.week,kind:s.kind,answers,retry,revision:s.revision,submittedAt:homeworkText(s.submittedAt,40),late:s.late===true,contentVersion:homeworkText(s.contentVersion,40),
+    const submittedAt=homeworkText(s.submittedAt,40);
+    return {week:s.week,kind:s.kind,answers,retry,revision:s.revision,submittedAt:submittedAt&&Number.isFinite(Date.parse(submittedAt))?submittedAt:null,late:s.late===true,contentVersion:homeworkText(s.contentVersion,40),
      feedback:s.kind==='writing'?normalizeHomeworkFeedback(s.week,s.feedback):null};}).filter(Boolean);
   // 같은 주·같은 갈래는 하나만(서버의 유일 제약과 같다). 겹치면 판이 높은 것.
   const unique=new Map();for(const s of submissions){const k=`${s.week}:${s.kind}`;if(!unique.has(k)||unique.get(k).revision<s.revision)unique.set(k,s);}
   return {classId:c.classId,name:homeworkText(c.name,200)||'',course:c.course,startsOn:typeof c.startsOn==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(c.startsOn)?c.startsOn:null,weeks,submissions:[...unique.values()]};
  });
 }
-// 서버 답(웹 request()·PC 본체 모두 같은 봉투) → {classes, emptyReason}. 꼴이 틀리면 CONTRACT_VIOLATION.
+// 서버 답(웹 request()·PC 본체 모두 같은 봉투) → {classes, emptyReason, serverTime?}. 꼴이 틀리면 CONTRACT_VIOLATION.
+// serverTime은 화면이 주차·마감을 서버 시계로 보는 데만 쓴다(기기 시계가 틀린 폰).
 export function homeworkReply(data,status){
  if(!homeworkRecord(data)||data.ok!==true){const code=typeof data?.error?.code==='string'&&data.error.code?data.error.code:typeof data?.code==='string'&&data.code?data.code:'HOMEWORK_UNAVAILABLE';throw homeworkFailure(code,status??data?.error?.status);}
  if(!Array.isArray(data.classes))throw homeworkFailure('CONTRACT_VIOLATION',status);
- return {classes:normalizeHomeworkClasses(data.classes),emptyReason:typeof data.emptyReason==='string'?data.emptyReason:null};
+ const serverTime=homeworkText(data.serverTime,40);
+ return {classes:normalizeHomeworkClasses(data.classes),emptyReason:typeof data.emptyReason==='string'?data.emptyReason:null,...(serverTime&&Number.isFinite(Date.parse(serverTime))?{serverTime}:{})};
 }
 // 과제 경로가 아직 없는 서버(옛 synk-classroom: 반 없는 읽기 400 CLASS_REQUIRED, 모르는 경로 404, 표 없음 404 HOMEWORK_UNAVAILABLE)와
 // 꺼진 반 기능(403 CLASSROOM_UNAVAILABLE)은 「이 계정에는 과제 칸이 없다」로 본다. 5xx와 그 밖의 실패는 알린다(학생이 과제가 없다고 오해하지 않게).

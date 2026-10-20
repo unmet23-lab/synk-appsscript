@@ -16876,13 +16876,14 @@ function normalizeHomeworkClasses(list) {
       const answers = normalizeHomeworkAnswers(s.kind, s.week, s.answers);
       if (!answers) return null;
       const retry = homeworkRecord(s.retry) ? Object.fromEntries(Object.entries(s.retry).filter(([k, v]) => HOMEWORK_PART_ID.test(k) && k[1] === String(s.week - 1) && homeworkText(v, 600))) : {};
+      const submittedAt = homeworkText(s.submittedAt, 40);
       return {
         week: s.week,
         kind: s.kind,
         answers,
         retry,
         revision: s.revision,
-        submittedAt: homeworkText(s.submittedAt, 40),
+        submittedAt: submittedAt && Number.isFinite(Date.parse(submittedAt)) ? submittedAt : null,
         late: s.late === true,
         contentVersion: homeworkText(s.contentVersion, 40),
         feedback: s.kind === "writing" ? normalizeHomeworkFeedback(s.week, s.feedback) : null
@@ -16902,7 +16903,8 @@ function homeworkReply(data, status) {
     throw homeworkFailure(code, status ?? data?.error?.status);
   }
   if (!Array.isArray(data.classes)) throw homeworkFailure("CONTRACT_VIOLATION", status);
-  return { classes: normalizeHomeworkClasses(data.classes), emptyReason: typeof data.emptyReason === "string" ? data.emptyReason : null };
+  const serverTime = homeworkText(data.serverTime, 40);
+  return { classes: normalizeHomeworkClasses(data.classes), emptyReason: typeof data.emptyReason === "string" ? data.emptyReason : null, ...serverTime && Number.isFinite(Date.parse(serverTime)) ? { serverTime } : {} };
 }
 var homeworkUnavailable = (error2) => ["HOMEWORK_UNAVAILABLE", "HOMEWORK_UNSUPPORTED", "CLASS_REQUIRED", "NOT_FOUND", "CLASSROOM_UNAVAILABLE"].includes(error2?.code) && !(error2?.status >= 500);
 function homeworkSubmission({ classId, week, kind, requestId, expectedRevision, contentVersion, answers, retry }) {
