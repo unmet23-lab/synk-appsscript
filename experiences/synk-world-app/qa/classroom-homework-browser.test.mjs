@@ -26,13 +26,15 @@ const CLOCK={before:KST('2027-03-01T10:00:00'),week:KST('2027-03-29T10:00:00'),o
 const VIEWPORTS=[{tag:'390',size:{width:390,height:844}},{tag:'1280',size:{width:1280,height:800}}];
 const deferred=()=>{let resolve;const promise=new Promise(r=>resolve=r);return {promise,resolve};};
 const iso=date=>date.toISOString();
+// 1주 읽기는 지금 자료보다 앞선 판으로 냈다(1기 중 자료를 고친 경우): 정답은 지금 판으로 받고 「자료가 고쳐졌어요」를 함께 보인다.
+const OLD_VERSION='v1-000000000000';
 
 // ── 합성 학생이 1~3주에 낸 것과 돌아온 첨삭(첨삭기준.md의 기호·한마디 세 줄). 실제 학생 글이 아니다. ──
 const W3_ESSAY='한빛대학교 언어교육원에서 2022년과 2026년에 외국인 유학생 400명을 대상으로 아르바이트에 대해 조사했습니다. 조사 결과 아르바이트를 하는 유학생은 2022년 48%에서 2026년 63%로 15% 증가했다. 아르바이트를 하는 이유는 생활비 마련이 52%로 가장 많았고 한국어 연습이 27%, 경력 쌓기가 15%였다. 요즘 물가가 많이 올랐기 때문이다. 이처럼 아르바이트를 하는 유학생이 늘고 있다.';
 function pastSubmissions(){
  const at=t=>iso(KST(t));
  return [
-  {week:1,kind:'reading',answers:{'R1-1':3,'R1-2':1,'R1-3':4,'R1-4':2,'R1-5':2},retry:{},revision:1,submittedAt:at('2027-03-08T21:10:00'),late:false,contentVersion:content.version,feedback:null},
+  {week:1,kind:'reading',answers:{'R1-1':3,'R1-2':1,'R1-3':4,'R1-4':2,'R1-5':2},retry:{},revision:1,submittedAt:at('2027-03-08T21:10:00'),late:false,contentVersion:OLD_VERSION,feedback:null},
   {week:1,kind:'writing',answers:{'W1-1.1':'학생증을 가지고 사무실에 와서 택배를 찾아가세요.','W1-1.2':'일주일 안에 꼭 찾아가시기 바랍니다.','W1-2.1':'가족에게 급한 일이 생겨서 내일은 학교에 갈 수 없게 되었습니다.','W1-2.2':'편한 시간을 알려 주시면 그때 찾아가겠습니다.'},
    retry:{},revision:1,submittedAt:at('2027-03-09T22:40:00'),late:false,contentVersion:content.version,feedback:{returnedAt:at('2027-03-12T18:00:00'),parts:{
     'W1-1':{fields:{'W1-1.1':{verdict:'부분',reason:'뜻은 맞아요. 안내문이라 「-십시오」로 끝내요.'},'W1-1.2':{verdict:'인정',reason:'뒤 문장과 잘 이어져요.'}}},
@@ -55,17 +57,35 @@ function pastSubmissions(){
 // SYNK-talk lib/synk-classroom-homework.js와 같은 규칙의 가짜 서버(주 열림·읽기 한 번·쓰기 판·늦음·같은 요청 번호는 같은 내용일 때만 중복)
 // dropNextReply(): 다음 내기를 저장한 뒤 응답을 끊는다(학생 화면에는 연결 오류, 서버에는 저장됨).
 function createHomeworkServer(){
- let submissions=pastSubmissions(),mode='ok',hold=null,dropReply=false,now=()=>Date.now();
+ let submissions=pastSubmissions(),mode='ok',hold=null,dropReply=false,now=()=>Date.now(),keyMode='ok',keyGate=null;
  const print=body=>JSON.stringify([body.kind,body.answers,body.retry||{},body.contentVersion]);
- const view=()=>({ok:true,mode:'account-linked',accountId:A,classes:[{classId:C,name:'합성 · TOPIK 4급 온라인 1기',course:'topik4-online',startsOn:START,weeks:8,planRevision:1,submissions:structuredClone(submissions)}],emptyReason:null,serverTime:new Date(now()).toISOString()});
- return {reset(){submissions=pastSubmissions();dropReply=false;},setMode(value){mode=value;},setClock(fn){now=fn;},hold(gate){hold=gate;},dropNextReply(){dropReply=true;},
+ // read-only: 교사가 새 수정 과제를 시작해 이 반이 지난 과제 기록(서버 workflow 'course')으로 바뀐 때.
+ const view=()=>({ok:true,mode:'account-linked',accountId:A,classes:[{classId:C,name:'합성 · TOPIK 4급 온라인 1기',course:'topik4-online',startsOn:START,weeks:8,planRevision:1,...(mode==='read-only'?{workflow:'course'}:{}),submissions:structuredClone(submissions)}],emptyReason:null,serverTime:new Date(now()).toISOString()});
+ return {reset(){submissions=pastSubmissions();dropReply=false;keyMode='ok';keyGate=null;},setMode(value){mode=value;},setClock(fn){now=fn;},hold(gate){hold=gate;},dropNextReply(){dropReply=true;},
+  // 정답 경로: holdKeys(gate)는 풀릴 때까지 모든 정답 요청을 잡아 둔다. keyMode: ok | error(500) | other-version(자료를 막 고쳐 판이 다른 정답)
+  setKeyMode(value){keyMode=value;},holdKeys(gate){keyGate=gate;},
+  // 교사가 첨삭을 돌려준다(학생이 그 주 쓰기를 고쳐 쓰는 사이).
+  returnFeedback(week,parts){const s=submissions.find(x=>x.week===week&&x.kind==='writing');s.feedback={returnedAt:new Date(now()).toISOString(),parts};},
   get submissions(){return submissions;},
+  // SYNK-talk lib/synk-classroom-homework.js studentKey와 같은 규칙(bb8000c): 그 학생이 낸 주만, 쓰기는 첨삭이 돌아온 뒤에만, 낸 판이 달라도 지금 판의 정답.
+  async key(query,body){
+   if(keyGate)await keyGate.promise;
+   if(keyMode==='error')return {status:500,data:{ok:false,code:'SERVER_UNAVAILABLE',error:{code:'SERVER_UNAVAILABLE'}}};
+   if(query.classId!==C||body?.classId!==C)return {status:403,data:{ok:false,error:{code:'FORBIDDEN'}}};
+   const saved=submissions.find(s=>s.week===body.week&&s.kind===body.kind);
+   if(!saved||body.kind==='writing'&&!saved.feedback)return {status:403,data:{ok:false,error:{code:'HOMEWORK_KEY_LOCKED'}}};
+   const prefix=(body.kind==='reading'?'R':'W')+body.week+'-',key={version:keyMode==='other-version'?'v1-ffffffffffff':answerKey.version,reading:{},writing:{}};
+   key[body.kind]=Object.fromEntries(Object.entries(answerKey[body.kind]).filter(([id])=>id.startsWith(prefix)));
+   return {status:200,data:{ok:true,mode:'account-linked',accountId:A,key}};
+  },
   async handle(method,query,body){
    if(hold&&method==='GET'){const gate=hold;hold=null;await gate.promise;}
    if(mode==='error')return {status:500,data:{ok:false,code:'SERVER_UNAVAILABLE',message:'잠시 뒤 다시 시도해 주세요.',error:{code:'SERVER_UNAVAILABLE',message:'잠시 뒤 다시 시도해 주세요.'}}};
    if(mode==='old-server')return {status:400,data:{ok:false,code:'CLASS_REQUIRED',message:'CLASS_REQUIRED',error:{code:'CLASS_REQUIRED',message:'CLASS_REQUIRED'}}};
    if(mode==='no-class')return {status:200,data:{ok:true,mode:'account-linked',accountId:A,classes:[],emptyReason:'NO_CLASS',serverTime:new Date(now()).toISOString()}};
    if(method==='GET'){if(Object.keys(query).length)return {status:400,data:{ok:false,error:{code:'INVALID_QUERY'}}};return {status:200,data:view()};}
+   // 교사가 새 수정 과제를 시작해 이 반이 이력 보기로 바뀐 순간의 내기(서버 409 HOMEWORK_READ_ONLY).
+   if(mode==='read-only')return {status:409,data:{ok:false,error:{code:'HOMEWORK_READ_ONLY'}}};
    if(query.classId!==C||body.classId!==C)return {status:403,data:{ok:false,error:{code:'FORBIDDEN'}}};
    const window=homeworkWindow(START,body.week);if(now()<window.start)return {status:409,data:{ok:false,error:{code:'WEEK_NOT_OPEN'}}};
    const old=submissions.find(s=>s.week===body.week&&s.kind===body.kind),late=now()>window.due;
@@ -88,7 +108,7 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
  const server=spawn(process.execPath,[path.join(root,'experiences/synk-world-app/server.mjs')],{cwd:root,stdio:'pipe',env:{...process.env,SYNK_TALK_ROOT:talkRoot,SYNK_WORLD_PORT:String(port),
   SYNK_WORLD_MODE:'account',SYNK_WORLD_BASE_PATH:'/world/',SYNK_WORLD_ACCOUNT_CONFIG:path.join(directory,'config.json'),SYNK_WORLD_DATA_DIR:path.join(directory,'must-not-create')}});
  let serverOutput='';server.stderr.on('data',c=>serverOutput+=c);server.stdout.on('data',c=>serverOutput+=c);
- const url=`http://127.0.0.1:${port}`,origin=new URL(config.accountApiUrl).origin,homeworkCalls=[],unexpected=[],errors=[],external=[],shots=[],checks={},measures={};
+ const url=`http://127.0.0.1:${port}`,origin=new URL(config.accountApiUrl).origin,homeworkCalls=[],keyCalls=[],contentLoads=[],unexpected=[],errors=[],external=[],shots=[],checks={},measures={};
  const fake=createHomeworkServer();let browser,page,context,clock=CLOCK.week;fake.setClock(()=>clock.getTime());
  t.signal.addEventListener('abort',()=>{server.kill('SIGKILL');},{once:true});
  const playState=emptyPlayState(),played=new Map();let playRevision=0;
@@ -110,6 +130,13 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
      homeworkCalls.push({method:req.method(),query,body,product:h['x-synk-product'],contract:h['x-synk-contract'],authorization:h.authorization,apikey:h.apikey,contentType:h['content-type']||null});
      ({status,data,drop=false}=await fake.handle(req.method(),query,body));
     }
+    else if(target.pathname==='/functions/v1/synk-classroom/api/world/homework/key'){
+     const h=await req.allHeaders(),query=Object.fromEntries(target.searchParams);
+     keyCalls.push({method:req.method(),query,body,product:h['x-synk-product'],contract:h['x-synk-contract'],authorization:h.authorization,apikey:h.apikey});
+     ({status,data}=await fake.key(query,body));
+    }
+    // 「우리 반 수업」 아래 과정 쓰기 입구(course-writing-entry.mjs): 이 합성 계정에는 과정 과제가 없어 입구가 숨는다(account-browser.test.mjs와 같은 빈 답).
+    else if(target.pathname==='/functions/v1/synk-classroom/api/classes')data={ok:true,mode:'account-linked',classes:[],learnerId:null,staffId:null};
     else if(target.pathname==='/functions/v1/classroom')data={contract_ver:'c16',ok:true,classes:[{class_id:C,display_name:'합성 · TOPIK 4급 온라인 1기',video_privacy:'unlisted',playlist_url:null,meeting_url:null,sessions:[{session_key:'w3-sat',title:'3주차 토요일 · 쓰기 — 53번 조사 결과 비교',starts_at:iso(KST('2027-03-20T19:30:00')),ends_at:null,status:'ready',watch_url:'https://www.youtube.com/watch?v=w3SatReplay'}]}],empty_reason:null,server_time:new Date().toISOString()};
     else if(target.pathname.endsWith('/synk-account'))data=body?{ok:true,refreshRevoked:true}:{ok:true,account:{synk_user_id:A,status:'active'},learning:{enabled:false,revision:1},capabilities:{learningSync:true},sessions:[{id:C,current:true,revoked:false,product:'world'}]};
     else if(target.pathname.endsWith('/synk-play')){
@@ -127,6 +154,7 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
    await route.fulfill({status,contentType:'application/json',body:JSON.stringify(data),headers:cors});
   });
   page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
+  page.on('request',r=>{if(new URL(r.url()).pathname.endsWith('/topik4-homework.json'))contentLoads.push(r.url());});
   await page.goto(url+'/world/?opening=off',{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.__synkWorld?.client.status==='ready');
   assert.equal(await page.evaluate(()=>window.__synkWorld.client.snapshot.accountId),A);
   // 첫 실행: 언어 고르기 → 「한글을 읽을 수 있어요?」 → 튜터 고르기(classroom-lessons-browser.test.mjs와 같다)
@@ -189,6 +217,8 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
    await page.setViewportSize(size);await page.waitForTimeout(200);
    fake.reset();fake.setMode('ok');await setClock(CLOCK.week);
    await page.evaluate(()=>{for(const k of Object.keys(localStorage))if(k.startsWith('synk.world.homework.'))localStorage.removeItem(k);});
+   // 지난 주 정답 받기를 3)에서 읽기를 낼 때까지 잡아 둔다 — 받는 사이 새로 낸 주도 이어서 받는지 본다.
+   const keyGate=deferred();fake.holdKeys(keyGate);
    await openProfile();await settle('ready');
    // 1) 이번 주(4주차): 주차·마감, 이번 주 수업, 읽기·쓰기 줄(안 냄), 지난 과제 세 줄
    const due=homeworkDate(homeworkWindow(START,4).due);
@@ -215,7 +245,12 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
    // 3) 다섯 문항을 고르고 낸다 → 정답·근거(정답 자료는 낸 뒤에 읽는다)
    for(const [item,n] of [['R4-4',4],['R4-5',2]])await press(`option:${C}:${item}:${n}`);
    const beforePosts=posts().length;await press(`send:${C}:4:reading`);
+   await page.waitForFunction(()=>document.querySelector('#world-classroom-homework .ws-hw-task[data-kind="reading"] .ws-hw-notice')?.textContent==='답을 냈어요. 정답과 근거를 확인해 보세요.');
+   assert.equal(await card.locator('.ws-hw-reading .ws-hw-summary').textContent(),'정답을 불러오는 중이에요.','지난 주 정답을 받는 중에 낸 주');
+   keyGate.resolve();fake.holdKeys(null);
    await card.locator('.ws-hw-reading .ws-hw-judge').first().waitFor();
+   assert.ok(keyCalls.some(c=>c.body?.week===4&&c.body?.kind==='reading'),'받던 묶음이 끝나면 새로 낸 주의 정답을 이어서 받는다');
+   checks[`${tag}-key-after-batch`]=true;
    const sent=posts().at(-1);assert.equal(posts().length,beforePosts+1);
    assert.deepEqual({...sent.body,requestId:undefined},{classId:C,week:4,kind:'reading',requestId:undefined,expectedRevision:0,contentVersion:content.version,answers:{'R4-1':2,'R4-2':1,'R4-3':3,'R4-4':4,'R4-5':2}});
    assert.match(sent.body.requestId,/^[0-9a-f-]{36}$/);assert.deepEqual(sent.query,{classId:C});assert.equal(sent.contentType,'application/json');
@@ -232,7 +267,8 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
    checks[`${tag}-reading-submit`]=true;
    // 4) 쓰기 W4: 빈 칸이면 알려 주고, 글자 수를 세며, 지난주(W3) 「다시 써 볼 곳」을 함께 낸다
    await open(4,'reading');await open(4,'writing');await card.locator('.ws-hw-write textarea[data-kind="text"]').waitFor();
-   const retryBox=await card.locator('.ws-hw-write .ws-hw-retry').evaluate(n=>n.innerText);assert.match(retryBox,/지난주 다시 써 볼 곳 · W3-1/);assert.match(retryBox,/15%포인트 증가했다/);
+   const retryBox=await card.locator('.ws-hw-write .ws-hw-retry').evaluate(n=>n.innerText);assert.match(retryBox,/지난주 다시 써 볼 곳 · 53번 문제/);assert.match(retryBox,/15%포인트 증가했다/);
+   assert.doesNotMatch(await card.innerText(),/\b[RW]\d-\d\b/,'학생 화면에 내부 번호(W3-1)를 보이지 않는다');
    await press(`send:${C}:4:writing`);
    assert.equal(await card.locator('.ws-hw-task[data-kind="writing"] .ws-hw-notice').textContent(),'아직 비어 있는 칸이 있어요: 글');
    assert.equal(await page.evaluate(()=>document.activeElement?.dataset.homeworkKey),`field:${C}:4:writing:W4-1.1`);
@@ -277,6 +313,20 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
    assert.equal(await page.evaluate(key=>localStorage.getItem(key),`synk.world.homework.v1:${A}:${C}:W4`),null,'서버 낸 시각보다 오래된 쓰던 글은 지운다');
    assert.equal(writing4().answers['W4-1.1'],fixed+' 끝');
    checks[`${tag}-lost-reply`]=true;
+   // 고쳐 쓰는 사이 첨삭이 먼저 돌아오면(HOMEWORK_LOCKED) 고친 글이 사라지지 않고 첨삭 아래 「내지 못한 고친 글」로 남는다.
+   await open(4,'writing');await later();await press(`edit:${C}:4:writing`);
+   const rewrite=fixed+' 끝까지 다시 고쳤다.';await area.fill(rewrite);await later();
+   fake.returnFeedback(4,{'W4-1':{comment:{good:'자료의 변화를 차례대로 썼어요.'}}});
+   await press(`send:${C}:4:writing`);await noticeIs('첨삭이 먼저 돌아와서 고친 글은 낼 수 없어요.');
+   await task(4,'writing').locator('.ws-hw-feedback .ws-hw-kept').waitFor();
+   const kept=await task(4,'writing').evaluate(el=>({meta:el.querySelector('.ws-hw-meta')?.textContent,title:el.querySelector('.ws-hw-kept h5')?.textContent,text:el.querySelector('.ws-hw-kept .ws-hw-mine')?.textContent,lines:el.querySelectorAll('.ws-hw-kept .ws-hw-mine').length}));
+   assert.deepEqual(kept,{meta:'첨삭이 왔어요 · 내지 못한 고친 글이 있어요',title:'내지 못한 고친 글',text:rewrite,lines:1},'고친 글만 — 이미 낸 다시 쓴 문장은 되풀이하지 않는다');
+   assert.equal(JSON.parse(await page.evaluate(key=>localStorage.getItem(key),`synk.world.homework.v1:${A}:${C}:W4`)).answers['W4-1.1'],rewrite,'고쳐 쓰던 글은 이 기기에 남는다');
+   await record(tag,'kept');
+   await press(`draft-drop:${C}:4:writing`);await task(4,'writing').locator('.ws-hw-kept').waitFor({state:'detached'});
+   assert.equal(await page.evaluate(key=>localStorage.getItem(key),`synk.world.homework.v1:${A}:${C}:W4`),null,'「이 글 지우기」로만 지운다');
+   assert.equal(await task(4,'writing').locator('.ws-hw-meta').textContent(),'첨삭이 왔어요');
+   await open(4,'writing');checks[`${tag}-kept-rewrite`]=true;
    // (새로고침으로 펼친 칸은 이미 닫혔다)
    // 5) 지난 과제: 3주차 쓰기 첨삭(학생 글 위 기호 표시 · 기호 목록 · 한마디 세 줄 · 예시답)
    await card.locator(`[data-homework-key="past:${C}:3"]`).click();await open(3,'writing');await card.locator('.ws-hw-feedback').waitFor();
@@ -295,17 +345,49 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
    await card.locator(`[data-homework-key="past:${C}:2"]`).click();await open(2,'writing');await card.locator('.ws-hw-feedback').waitFor();
    const verdicts=await card.locator('.ws-hw-feedback').evaluate(el=>[...el.querySelectorAll('.ws-hw-verdict')].map(n=>n.dataset.verdict));
    assert.deepEqual(verdicts,['인정','인정','인정','인정','다시','부분']);
-   assert.match(await card.locator('.ws-hw-feedback').innerText(),/다시 쓴 문장\n+W1-2 · 편하신 시간을 알려 주시면 그 시간에 찾아뵙겠습니다\./);
+   assert.match(await card.locator('.ws-hw-feedback').innerText(),/다시 쓴 문장\n+51번 문제 2 · 편하신 시간을 알려 주시면 그 시간에 찾아뵙겠습니다\./);
    await record(tag,'feedback-blanks');
    await open(2,'writing');await card.locator(`[data-homework-key="past:${C}:2"]`).click();
+   // 1주 읽기는 지금 자료보다 앞선 판으로 냈다: 정답은 지금 판으로 받고(서버가 막지 않는다) 「자료가 고쳐졌어요」를 함께 보인다.
+   await card.locator(`[data-homework-key="past:${C}:1"]`).click();await open(1,'reading');await card.locator('.ws-hw-reading .ws-hw-judge').first().waitFor();
+   const changed=await card.locator('.ws-hw-reading').evaluate(el=>({judges:el.querySelectorAll('.ws-hw-judge').length,notes:[...el.querySelectorAll('.ws-hw-help')].map(n=>n.textContent)}));
+   assert.equal(changed.judges,5,'앞선 판으로 낸 읽기도 정답·근거를 본다');assert.ok(changed.notes.includes('이 과제를 낸 뒤 수업 자료가 고쳐졌어요. 지금 자료로 보여 줘요.'),JSON.stringify(changed.notes));
+   await open(1,'reading');await card.locator(`[data-homework-key="past:${C}:1"]`).click();
+   checks[`${tag}-old-version-key`]=true;
    // 7) 마감이 지난 뒤(목요일): 안 낸 과제는 「늦게 내도 괜찮아요」 — 4주 읽기·쓰기를 낸 상태라 5주차 전 날로 다시 연다
    fake.reset();await setClock(CLOCK.overdue);await openProfile();await settle('ready');
    assert.deepEqual(await card.evaluate(el=>[...el.querySelectorAll('.ws-hw-room>.ws-hw-week>.ws-hw-task .ws-hw-meta')].map(n=>[n.textContent,n.querySelector('.ws-led').dataset.tone])),
     [['마감이 지났어요 · 늦게 내도 괜찮아요','check'],['마감이 지났어요 · 늦게 내도 괜찮아요','check']]);
    await record(tag,'overdue');
+   // 교사가 새 수정 과제를 시작해 반이 이력 보기로 바뀐 순간에 내면(409 HOMEWORK_READ_ONLY) 사실대로 알리고 다시 불러온다.
+   fake.setMode('read-only');await open(4,'reading');
+   for(const [item,n] of [['R4-1',2],['R4-2',1],['R4-3',3],['R4-4',4],['R4-5',2]])await press(`option:${C}:${item}:${n}`);
+   const getsBeforeReadOnly=homeworkCalls.filter(c=>c.method==='GET').length;await press(`send:${C}:4:reading`);
+   await page.waitForFunction(()=>(document.querySelector('#world-classroom-homework .ws-hw-task[data-kind="reading"] .ws-hw-notice')?.textContent||'').startsWith('이 반에서는 지난 과제 기록만 볼 수 있어요.'));
+   for(let i=0;i<50&&homeworkCalls.filter(c=>c.method==='GET').length===getsBeforeReadOnly;i++)await page.waitForTimeout(100);
+   assert.ok(homeworkCalls.filter(c=>c.method==='GET').length>getsBeforeReadOnly,'지난 과제 기록으로 바뀐 반은 다시 불러온다');
+   // 다시 불러오면 칸이 「지난 과제 기록」이 되고, 내지 못한 읽기 답은 「이 기기에 남은 초안」으로 문항 차례·고른 번호를 보인다.
+   await page.waitForFunction(()=>document.querySelector('#world-classroom-homework .ws-hw h3')?.textContent==='지난 과제 기록');
+   const local=await card.locator('.ws-hw-task[data-kind="reading"][data-week="4"]').evaluate(el=>({title:el.querySelector('.ws-hw-kept h5')?.textContent,lines:[...el.querySelectorAll('.ws-hw-kept .ws-hw-mine')].map(n=>n.textContent)}));
+   assert.deepEqual(local,{title:'이 기기에 남은 초안',lines:['01 · ②','02 · ①','03 · ③','04 · ④','05 · ②']});
+   assert.doesNotMatch(await card.innerText(),/이력|수정 과제/,'어려운 말(이력)·내부 이름(수정 과제)을 쓰지 않는다');
+   await record(tag,'read-only');
+   fake.setMode('ok');await press('refresh');await settle('ready');checks[`${tag}-read-only-refused`]=true;
    await open(4,'writing');await card.locator('.ws-hw-write textarea[data-kind="text"]').fill(essay);await press(`send:${C}:4:writing`);await card.locator('.ws-hw-write .ws-hw-again').waitFor();
    assert.equal(fake.submissions.find(s=>s.week===4&&s.kind==='writing').late,true);assert.match(await task(4,'writing').locator('.ws-hw-meta').textContent(),/늦게 냈어요/);
    checks[`${tag}-late`]=true;
+   // 고치지 않은 채 다시 내다가 첨삭이 먼저 오면 남길 글이 없다 — 「남겨 두었어요」라고 하지 않는다.
+   const w4Key=`synk.world.homework.v1:${A}:${C}:W4`;
+   await press(`edit:${C}:4:writing`);fake.returnFeedback(4,{'W4-1':{comment:{good:'늦었지만 자료를 빠짐없이 옮겼어요.'}}});
+   await press(`send:${C}:4:writing`);await noticeIs('첨삭이 먼저 돌아와서 다시 낼 수 없어요.');
+   await task(4,'writing').locator('.ws-hw-feedback').waitFor();
+   assert.equal(await task(4,'writing').locator('.ws-hw-kept').count(),0);assert.equal(await page.evaluate(key=>localStorage.getItem(key),w4Key),null);
+   // 썼다가 다 지운 빈 초안(빈 칸·빈 다시 써 볼 곳)은 「내지 못한 고친 글」로 남기지 않고 지운다.
+   await page.evaluate(key=>localStorage.setItem(key,JSON.stringify({v:1,answers:{'W4-1.1':'  '},retry:{'W3-1':''},savedAt:Date.now()+600000})),w4Key);
+   await press('refresh');await settle('ready');
+   assert.equal(await page.evaluate(key=>localStorage.getItem(key),w4Key),null,'빈 초안은 지운다');
+   assert.equal(await task(4,'writing').locator('.ws-hw-meta').textContent(),'첨삭이 왔어요');
+   checks[`${tag}-locked-unchanged`]=true;
    // 8) 시작 전 · 9) 8주를 마친 뒤
    fake.reset();await setClock(CLOCK.before);await openProfile();await settle('ready');
    assert.equal(await card.locator('.ws-hw-when').textContent(),'첫 과제는 3월 6일 (토) 수업 뒤에 열려요.');assert.equal(await card.locator('.ws-hw-task').count(),0);
@@ -322,10 +404,36 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
    assert.equal(await card.locator('.ws-hw-status').textContent(),'과제를 불러오는 중이에요.');
    await record(tag,'loading');
    gate.resolve();await settle('ready');
+   // 정답 서버가 실패하면 쓰기 예시답 자리에도 사실대로 알리고, 새로고침으로 다시 받는다.
+   fake.setKeyMode('error');await openProfile();await settle('ready');
+   await card.locator(`[data-homework-key="past:${C}:3"]`).click();await open(3,'writing');
+   await page.waitForFunction(()=>[...document.querySelectorAll('#world-classroom-homework .ws-hw-feedback .ws-hw-help')].some(n=>n.textContent==='예시답을 불러오지 못했어요. 새로고침을 눌러 주세요.'));
+   assert.equal(await card.locator('.ws-hw-feedback .ws-hw-model').count(),0);
+   // 새로고침은 펼친 지난 주를 그대로 두고 연 칸만 닫는다.
+   fake.setKeyMode('ok');await press('refresh');await settle('ready');
+   await open(3,'writing');await card.locator('.ws-hw-feedback .ws-hw-model').waitFor();
+   await open(3,'writing');checks[`${tag}-key-error`]=true;
+   // 정답 판이 화면 자료 판과 다르면(자료를 막 고친 때) 자료를 한 번 새로 읽어 맞춰 보고, 그래도 다르면 「자료를 고치는 중」으로 알린다.
+   fake.setKeyMode('other-version');const loadsBefore=contentLoads.length;await openProfile();await settle('ready');
+   await card.locator(`[data-homework-key="past:${C}:3"]`).click();await open(3,'reading');
+   await page.waitForFunction(()=>(document.querySelector('#world-classroom-homework .ws-hw-reading .ws-hw-summary')?.textContent||'').startsWith('수업 자료를 고치는 중이라'));
+   assert.equal(contentLoads.length-loadsBefore,2,'열 때 한 번과 정답 판을 맞추려고 한 번');
+   await record(tag,'key-stale');
+   fake.setKeyMode('ok');await press('refresh');await settle('ready');
+   await open(3,'reading');await card.locator('.ws-hw-reading .ws-hw-judge').first().waitFor();
+   checks[`${tag}-key-stale`]=true;
+   // 다른 탭에서 돌아와 조용히 다시 묻다가 서버가 잠깐 실패해도 보던 화면을 그대로 둔다.
+   fake.setMode('error');const getsBefore=homeworkCalls.filter(c=>c.method==='GET').length;
+   await page.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));
+   for(let i=0;i<50&&homeworkCalls.filter(c=>c.method==='GET').length===getsBefore;i++)await page.waitForTimeout(100);
+   assert.ok(homeworkCalls.filter(c=>c.method==='GET').length>getsBefore,'돌아오면 조용히 다시 묻는다');await page.waitForTimeout(300);
+   assert.equal(await cardState(),'ready');assert.equal(await card.locator('.ws-hw-reading .ws-hw-judge').count(),5,'보던 정답 화면이 그대로');
+   fake.setMode('ok');await open(3,'reading');await card.locator(`[data-homework-key="past:${C}:3"]`).click();
+   checks[`${tag}-quiet-error-keeps`]=true;
    // 시트 맥락: 우리 반 수업 바로 아래의 이번 주 과제(그 크기 그대로의 화면 한 장)
    await card.evaluate(el=>el.scrollIntoView({block:'start'}));await page.waitForTimeout(150);const sheetFile=path.join(out,`${tag}-sheet.png`);await page.screenshot({path:sheetFile});shots.push(path.relative(out,sheetFile));
    // 12) 반이 없는 계정·과제 경로가 없는 옛 서버: 칸 자체가 없고 로그인은 그대로
-   for(const mode of ['no-class','old-server']){fake.setMode(mode);await openProfile();assert.equal(await cardState(),'hidden',mode);assert.equal(await page.evaluate(()=>window.__synkWorld.client.snapshot?.accountId),'11111111-1111-4111-8111-111111111111',mode);}
+   for(const mode of ['no-class','old-server']){fake.setMode(mode);const loads=contentLoads.length;await openProfile();assert.equal(await cardState(),'hidden',mode);assert.equal(contentLoads.length,loads,mode+': 반이 없으면 문제 자료를 읽지 않는다');assert.equal(await page.evaluate(()=>window.__synkWorld.client.snapshot?.accountId),'11111111-1111-4111-8111-111111111111',mode);}
    checks[`${tag}-hidden-without-class`]=true;fake.setMode('ok');
   }
   // 시트를 닫으면 칸이 사라진다.
@@ -335,6 +443,12 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
    assert.deepEqual({product:call.product,contract:call.contract,authorization:call.authorization,apikey:call.apikey},{product:'world',contract:'1',authorization:'Bearer synthetic-browser-token',apikey:'sb_publishable_browser_fixture'});
    if(call.method==='GET')assert.deepEqual(call.query,{});else assert.deepEqual(call.query,{classId:C});
   }
+  // 정답 요청: 같은 머리, POST · classId 쿼리 · 본문은 반·주·갈래만(계정 번호를 보내지 않는다)
+  assert.ok(keyCalls.length>0);
+  for(const call of keyCalls){
+   assert.deepEqual({method:call.method,product:call.product,contract:call.contract,authorization:call.authorization,apikey:call.apikey},{method:'POST',product:'world',contract:'1',authorization:'Bearer synthetic-browser-token',apikey:'sb_publishable_browser_fixture'});
+   assert.deepEqual(call.query,{classId:C});assert.deepEqual(Object.keys(call.body).sort(),['classId','kind','week']);
+  }
   for(const [key,m] of Object.entries(measures)){
    assert.ok(m.docOverflow<=0&&m.panelOverflow<=0,`${key} 가로 넘침 ${m.docOverflow}/${m.panelOverflow}`);assert.deepEqual(m.overflowing,[],key+' 칸 밖으로 나간 요소');assert.equal(m.tableOverflow,0,key+' 표 가로 넘침');
    assert.deepEqual(m.small,[],key+' 13px 밑 한글');assert.deepEqual(m.shortTargets,[],key+' 44px 밑 단추');assert.ok(m.whitePills<=1,`${key} 흰 알약 ${m.whitePills}개`);
@@ -343,7 +457,7 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
   assert.deepEqual(errors,[]);assert.deepEqual(unexpected,[]);assert.deepEqual(external,[]);assert.equal(fs.existsSync(path.join(directory,'must-not-create')),false);
   fs.writeFileSync(path.join(out,'result.json'),JSON.stringify({ok:true,date:new Date().toISOString(),syntheticAccount:true,syntheticClass:true,syntheticStudentText:true,liveProviderCalls:false,
    browser:'Edge headless (Playwright '+(()=>{try{return require('playwright/package.json').version;}catch{return '?';}})()+')',placement:'내 계정 시트 · 우리 반 수업 아래, 반 연결 위(#world-classroom-homework)',
-   clock:Object.fromEntries(Object.entries(CLOCK).map(([k,v])=>[k,v.toISOString()])),contentVersion:content.version,viewports:VIEWPORTS,checks,measures,shots,homeworkRequests:homeworkCalls.length,
+   clock:Object.fromEntries(Object.entries(CLOCK).map(([k,v])=>[k,v.toISOString()])),contentVersion:content.version,viewports:VIEWPORTS,checks,measures,shots,homeworkRequests:homeworkCalls.length,keyRequests:keyCalls.length,contentLoads:contentLoads.length,
    requestShape:{get:homeworkCalls.find(c=>c.method==='GET'),post:{...posts()[0],body:{...posts()[0].body,answers:'(합성)'}}},errors,unexpected,external},null,2)+'\n');
  }catch(error){
   if(page)await page.screenshot({path:path.join(out,'failure.png')}).catch(()=>{});

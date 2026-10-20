@@ -224,9 +224,9 @@ img.world-account-mascot{height:auto;padding:5px;border-radius:10px;background:#
 .ws-hw .ws-hw-send:disabled{opacity:.45;cursor:default}
 /* 쓰기 */
 .ws-hw-write,.ws-hw-feedback,.ws-hw-reading{display:grid;gap:14px;min-width:0}
-.ws-hw-part,.ws-hw-retry{display:grid;gap:10px;min-width:0;padding-top:14px;border-top:1px solid var(--w-line)}
+.ws-hw-part,.ws-hw-retry,.ws-hw-kept{display:grid;gap:10px;min-width:0;padding-top:14px;border-top:1px solid var(--w-line)}
 .ws-hw-write>.ws-hw-part:first-child,.ws-hw-feedback>.ws-hw-summary+.ws-hw-part{padding-top:8px}
-.ws-hw-part h5,.ws-hw-retry h5{font-size:var(--t-label);line-height:1.5;font-weight:var(--wt-strong);color:var(--w-ink-3)}
+.ws-hw-part h5,.ws-hw-retry h5,.ws-hw-kept h5{font-size:var(--t-label);line-height:1.5;font-weight:var(--wt-strong);color:var(--w-ink-3)}
 .ws-hw-field{display:grid;gap:6px;min-width:0}
 .ws-hw-field-label{font-size:var(--t-label);line-height:1.5;font-weight:var(--wt-strong);color:var(--w-ink-2);word-break:keep-all;overflow-wrap:anywhere}
 .ws-hw textarea{display:block;box-sizing:border-box;width:100%;min-width:0;min-height:52px;padding:12px 14px;border:0;border-radius:var(--w-r-sm);background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line-2);color:var(--w-ink);font:var(--wt-body) 16px/1.7 var(--w-sans);resize:vertical;field-sizing:content}
@@ -244,7 +244,7 @@ img.world-account-mascot{height:auto;padding:5px;border-radius:10px;background:#
 .ws-hw-answer{display:grid;gap:8px;min-width:0;padding:12px 14px;border-radius:var(--w-r-md);background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line)}
 .ws-hw-mine{font-size:16px;line-height:1.75;color:var(--w-ink);white-space:pre-wrap;text-wrap:pretty;word-break:keep-all;overflow-wrap:anywhere}
 .ws-hw-readonly{gap:6px}
-.ws-hw-again{justify-self:start;min-height:44px;padding:0 18px;font-size:14px}
+.ws-hw-again,.ws-hw-kept-drop{justify-self:start;min-height:44px;padding:0 18px;font-size:14px}
 /* 첨삭: 학생 글 위의 표시(노란 밑줄 · 잘 쓴 곳은 메도우) + 기호 · 기호 목록 · 한마디 세 줄 · 예시답 */
 .ws-hw-mine mark{padding:0 1px;border-radius:3px;background:rgba(245,196,69,.16);color:inherit;box-shadow:inset 0 -2px 0 var(--w-led-check)}
 .ws-hw-mine mark[data-code='+']{background:rgba(125,180,90,.16);box-shadow:inset 0 -2px 0 var(--w-led-ok)}
