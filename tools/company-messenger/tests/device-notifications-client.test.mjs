@@ -66,9 +66,17 @@ test('a call marker rings with its own tag and renotify while every lock-screen 
   for(const data of [null,{json:()=>({kind:'Call'})},{json:()=>({kind:['call']})},{json:()=>'call'},{json:()=>null},{json:()=>{throw new SyntaxError('not json');}}])await push(data);
   // Notification options are built in the worker's own realm; compare them as plain data.
   const shown=JSON.parse(JSON.stringify(f.shown.map(([title,options])=>({title,...options}))));
-  const fixed={title:'SYNK',body:'확인할 새 업무가 있어요',icon:'/messenger-icon.png',badge:'/messenger-icon.png'};
-  const call={...fixed,tag:'synk-call-invitations',renotify:true,vibrate:[300,150,300,150,300],data:{kind:'synk-call-invitations'}},work_={...fixed,tag:'synk-work-notifications',renotify:false,data:{kind:'synk-work-notifications'}};
+  // Each kind has one fixed text; the payload's own body, title, icon or tag never reach the screen (call text: 10-20).
+  const fixed={title:'SYNK',icon:'/messenger-icon.png',badge:'/messenger-icon.png'};
+  const call={...fixed,body:'통화 초대가 왔어요',tag:'synk-call-invitations',renotify:true,vibrate:[300,150,300,150,300],data:{kind:'synk-call-invitations'}},work_={...fixed,body:'확인할 새 업무가 있어요',tag:'synk-work-notifications',renotify:false,data:{kind:'synk-work-notifications'}};
   assert.deepEqual(shown,[call,call,work_,work_,work_,work_,work_,work_]);
+});
+test('device settings tell what each lock-screen notice says, including the call notice',async()=>{
+  const f=fixture();await f.api.open();
+  assert.ok(f.dialog.innerHTML.includes('잠금 화면에는 ‘확인할 새 업무가 있어요’만, 통화 초대는 ‘통화 초대가 왔어요’만 표시해요.'));
+  assert.ok(f.dialog.innerHTML.includes('누가 거는지, 고객 이름이나 대화 내용은 알림에 넣지 않아요.'));
+  // The texts the dialog promises are the worker's own texts.
+  for(const text of ['확인할 새 업무가 있어요','통화 초대가 왔어요'])assert.ok(workerSource.includes(`body:'${text}'`),text);
 });
 test('a device subscribed before the server kept keys sends the same subscription once, with no prompt or new subscription',async()=>{
   const f=fixture({existing:{callAlerts:false}});await f.ready;

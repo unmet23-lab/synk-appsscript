@@ -52,11 +52,10 @@ try {
   await deliver('not JSON', 'not json at all');
   await deliver('other kind', '{"kind":"Call"}');
 } finally { await browser.close(); server.close(); }
-const fixed = { title: 'SYNK', body: '확인할 새 업무가 있어요' };
-const work = { tag: 'synk-work-notifications', renotify: false, vibrate: [], ...fixed, data: { kind: 'synk-work-notifications' } };
-const call = { tag: 'synk-call-invitations', renotify: true, vibrate: [300, 150, 300, 150, 300], ...fixed, data: { kind: 'synk-call-invitations' } };
+const work = { tag: 'synk-work-notifications', renotify: false, vibrate: [], title: 'SYNK', body: '확인할 새 업무가 있어요', data: { kind: 'synk-work-notifications' } };
+const call = { tag: 'synk-call-invitations', renotify: true, vibrate: [300, 150, 300, 150, 300], title: 'SYNK', body: '통화 초대가 왔어요', data: { kind: 'synk-call-invitations' } };
 const byTag = list => [...list].sort((a, b) => a.tag.localeCompare(b.tag));
 console.log(JSON.stringify(steps, null, 2));
 assert.deepEqual(steps.map(step => byTag(step.notifications)), [[work], [call, work], [call], [work], [work]]);
 assert.doesNotMatch(JSON.stringify(steps), /PRIVATE|고객/);
-console.log('ok: empty push -> work notice; call marker -> its own renotify notice, beside a work notice too; text stays fixed');
+console.log('ok: empty push -> work notice; call marker -> its own renotify call notice, beside a work notice too; texts stay fixed');
