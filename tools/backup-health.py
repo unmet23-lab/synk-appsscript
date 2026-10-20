@@ -156,7 +156,8 @@ def space_guard(root, lib, task, now, item=SPACE_GUARD):
         if guard == 'attention': codes.append('DISK_FREE_BELOW_FLOOR')
         free, floor = receipt.get('freeAfter'), receipt.get('floor')
         if guard != 'ok' and isinstance(free, (int, float)) and isinstance(floor, (int, float)):
-            notes.append(f'남은 공간 {free / 1e9:.0f}GB(지킬 선 {floor / 1e9:.0f}GB)')
+            # GB as Explorer counts it (1024³), the unit of the guard's 300GB floor and of its own notice (10-20).
+            notes.append(f'남은 공간 {free / 1024 ** 3:.0f}GB(지킬 선 {floor / 1024 ** 3:.0f}GB)')
         # A scheduled run may hold the receipt for up to its 2-hour limit; wait for it before calling the guard stalled.
         running = task.get('state') == 'Running' and last_run and now - last_run <= dt.timedelta(hours=item['maxRunHours'])
         if not running and (not checked or now - checked > dt.timedelta(hours=item['maxStaleHours'])):

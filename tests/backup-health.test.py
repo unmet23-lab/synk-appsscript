@@ -199,9 +199,10 @@ class SpaceGuardTests(unittest.TestCase):
 
     def tearDown(self): self.temp.cleanup()
 
-    def receipt(self, status='ok', age=dt.timedelta(minutes=20), free=386 * 10**9):
+    def receipt(self, status='ok', age=dt.timedelta(minutes=20), free=386 * 1024**3):
+        # The guard counts GB as Explorer does (1024³) since 10-20, so its floor is 300 * 1024³ bytes.
         lib.atomic_json(self.root / health.SPACE_GUARD['receipt'], {'schemaVersion': 1, 'checkedAt': lib.stamp(self.now - age),
-            'status': status, 'freeBefore': free, 'freeAfter': free, 'floor': 300 * 10**9})
+            'status': status, 'freeBefore': free, 'freeAfter': free, 'floor': 300 * 1024**3})
 
     def guard(self, **task):
         return health.space_guard(self.root, lib, dict(self.task, **task), self.now)
@@ -211,7 +212,7 @@ class SpaceGuardTests(unittest.TestCase):
         row = self.guard()
         self.assertEqual((row['status'], row['codes']), ('healthy', []))
         self.assertEqual(row['lastSuccessAt'], lib.stamp(self.now - dt.timedelta(minutes=20)))
-        self.receipt('low', free=312 * 10**9)
+        self.receipt('low', free=312 * 1024**3)
         self.assertEqual(self.guard()['status'], 'healthy')
 
     def test_stalled_check_is_a_problem_unless_a_run_is_still_inside_its_limit(self):
@@ -226,7 +227,7 @@ class SpaceGuardTests(unittest.TestCase):
         self.assertEqual((row['status'], row['codes']), ('attention', ['SCHEDULE_LAST_RUN_FAILED']))
 
     def test_free_space_below_floor_is_reported_with_the_numbers(self):
-        self.receipt('attention', free=285 * 10**9)
+        self.receipt('attention', free=285 * 1024**3)  # 10억 바이트로 나누면 306GB(지킬 선 322GB)로 보인다
         row = self.guard()
         self.assertEqual((row['status'], row['codes']), ('attention', ['DISK_FREE_BELOW_FLOOR']))
         event, _, unresolved = health.choose_event({'status': 'attention', 'components': [row], 'issues': []}, {}, self.now, lib)
