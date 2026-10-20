@@ -34,7 +34,7 @@
  *   반영 순서: index.lock 기다림 → 바이트 백업(<git 폴더>/바로올리기/) → 고치는 파일을 B 판으로 → read-tree -m -u B T →
  *   가지 CAS(update-ref T B) → 3방향 결과 쓰기. 중간에 실패하면 백업으로 되돌린다.
  * 가볍게 — 워크트리에서만. git sparse-checkout(cone 아님)으로 docs/캐릭터·docs/홍보물·docs/라디오를 작업본에서 뺀다(약 2.1GB).
- *   extensions.worktreeConfig가 켜져 있어 그 워크트리에만 걸린다. 필요하면 `git sparse-checkout add /docs/캐릭터/정본_4K/` 또는 --되살림.
+ *   extensions.worktreeConfig가 켜져 있어 그 워크트리에만 걸린다. 필요한 폴더만 `가볍게 --되살림 docs/캐릭터/정본_4K --실행`, 전부는 `--되살림`.
  *
  * 함정과 고친 기록: docs/현장노트/git_줄끝_잠금.md. 시험: node --test tests/바로올리기.test.js
  */
@@ -625,10 +625,15 @@ async function 가볍게(옵션 = {}) {
     const 지금켜짐 = String(켜짐.stdout).trim() === 'true';
     if (옵션.되살림) {
       if (!지금켜짐) return { 결과: '되살림', 이유: '이미 전체 작업본이다' };
-      if (!옵션.실행) return { 결과: '미리 보기', 할일: 'git sparse-checkout disable — 뺀 폴더를 다시 꺼낸다' };
-      const r = git.돌리기(['sparse-checkout', 'disable'], { 허용: null });
+      // 폴더를 주면 그 폴더만 다시 꺼낸다. 무늬는 stdin으로 넘긴다 — Git Bash는 「/docs/…」 인자를 프로그램 폴더 경로로 바꾼다.
+      const 폴더들 = (옵션.폴더들 || []).map((p) => 경로맞추기(c.저장소, p, c.기준폴더).replace(/\/+$/, ''));
+      const 할일 = 폴더들.length ? `git sparse-checkout add — ${폴더들.join(' · ')}만 다시 꺼낸다` : 'git sparse-checkout disable — 뺀 폴더를 모두 다시 꺼낸다';
+      if (!옵션.실행) return { 결과: '미리 보기', 할일 };
+      const r = 폴더들.length
+        ? git.돌리기(['sparse-checkout', 'add', '--stdin'], { input: `${폴더들.map((p) => `/${p}/`).join('\n')}\n`, 허용: null })
+        : git.돌리기(['sparse-checkout', 'disable'], { 허용: null });
       if (r.status !== 0) throw new 멈춤(`되살리지 못했다 — ${String(r.stderr).trim()}`);
-      return { 결과: '되살림' };
+      return { 결과: '되살림', 할일 };
     }
     const 고침 = git(['--no-optional-locks', 'status', '--porcelain=v1', '-z', '--untracked-files=all', '--', ...가볍게뺄]).toString('utf8').split('\0').filter(Boolean);
     if (고침.length) return { 결과: '멈춤', 이유: `뺄 폴더에 아직 커밋하지 않은 파일이 ${고침.length}개 있다 — 먼저 올리거나 옮긴다`, 걸림: 고침.slice(0, 10) };
@@ -656,7 +661,7 @@ const 사용법 = `사용법
   node tools/바로올리기.js <경로…> -m "<메시지>" [--조각 <경로>=<조각,…|전부>] [--폴더] [--자세히] [--줄끝그대로] [--옛판아님] [--공용안따라감] [--실행] [--json]
   node tools/바로올리기.js --모두 -m "<메시지>" [--실행]      (워크트리) 바뀐 것을 모두
   node tools/바로올리기.js 따라가기 [--실행]                  push 없이 이 작업본을 origin 최신으로
-  node tools/바로올리기.js 가볍게 [--되살림] [--실행]          (워크트리) 큰 미디어 폴더를 빼고·되살린다
+  node tools/바로올리기.js 가볍게 [--되살림 [<폴더…>]] [--실행]  (워크트리) 큰 미디어 폴더를 빼고·되살린다(폴더를 주면 그 폴더만)
   기본은 미리 보기다. --실행을 붙여야 올리고 옮긴다. 검사는 모두 안에서 돌고 걸리면 아무것도 바꾸지 않는다.
   자세한 설명은 파일 머리.`;
 
@@ -692,7 +697,9 @@ function 인자읽기(argv) {
   }
   const 올리기만 = ['모두', '폴더', '자세히', '줄끝그대로', '옛판아님', '공용안따라감'].filter((k) => 옵션[k]);
   if (명령 !== '올리기') {
-    if (옵션.위치.length || 옵션.메시지.length || 옵션.메시지파일 || 옵션.조각.length || 올리기만.length) throw new 사용법오류(`${명령}은 경로·메시지·올리기 인자를 받지 않는다`);
+    const 폴더받음 = 명령 === '가볍게' && 옵션.되살림;   // 가볍게 --되살림 <폴더…>: 그 폴더만 다시 꺼낸다
+    if ((옵션.위치.length && !폴더받음) || 옵션.메시지.length || 옵션.메시지파일 || 옵션.조각.length || 올리기만.length) throw new 사용법오류(`${명령}은 경로·메시지·올리기 인자를 받지 않는다`);
+    옵션.폴더들 = 옵션.위치;
     if (명령 === '따라가기' && 옵션.되살림) throw new 사용법오류('--되살림은 가볍게에만 쓴다');
   } else {
     if (옵션.되살림) throw new 사용법오류('--되살림은 가볍게에만 쓴다');

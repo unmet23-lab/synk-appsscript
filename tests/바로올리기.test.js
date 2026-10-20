@@ -578,6 +578,12 @@ test('가볍게: 워크트리에서만 큰 미디어 폴더를 작업본에서 �
   assert.equal(올림.결과, '올림', JSON.stringify(올림));
   assert.equal(판.원격에있나('docs/캐릭터/정본_4K/까몽.png'), true, '뺀 폴더가 origin에서 지워지지 않는다');
   assert.deepEqual(워.상태(), []);
+  // 필요한 폴더만 다시 꺼낸다(무늬는 stdin으로 — Git Bash의 「/docs/…」 경로 바꾸기를 타지 않는다)
+  const 하나 = await 도구.가볍게({ 저장소: 워.폴더, 되살림: true, 폴더들: ['docs/홍보물'], 실행: true });
+  assert.equal(하나.결과, '되살림', JSON.stringify(하나));
+  assert.ok(워.있나('docs/홍보물/x.mp4'));
+  assert.equal(워.있나('docs/캐릭터/정본_4K/까몽.png'), false, '다른 뺀 폴더는 그대로 빠져 있다');
+  assert.deepEqual(워.상태(), []);
   const 되 = await 도구.가볍게({ 저장소: 워.폴더, 되살림: true, 실행: true });
   assert.equal(되.결과, '되살림', JSON.stringify(되));
   assert.ok(워.있나('docs/캐릭터/정본_4K/까몽.png'));
