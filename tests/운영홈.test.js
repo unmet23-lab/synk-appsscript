@@ -102,6 +102,64 @@ test('완료 표지가 담당자 뒤에 있어도 남은 일로 다시 등록하
   assert.deepEqual(items.map(item => item.text), ['다음 로고 확인']);
 });
 
+test('현행 트랙의 굵은 제목과 다음 할 일을 읽고 예제 코드와 하위 항목을 별도 요청으로 만들지 않는다', () => {
+  const source = '# 이어갈 작업\n## 1. 유호님 차례 — 한곳에 모음\n- **WORLD 실제 기기 확인:** 다음 확인\n  - 휴대폰에서 이어하기\n\n```md\n- **예제 항목:** 실행하면 안 됨\n```\n## 3. 앱·계정(WORLD)\n- **앱 연결:** 남은 동작\n## 완료한 작업\n- **지난 일:** 종료\n';
+  const items = trackItems(source);
+  assert.equal(items.length, 2);
+  assert.equal(items[0].owner, '유호');
+  assert.equal(items[0].title, 'WORLD 실제 기기 확인');
+  assert.equal(items[0].line, 3);
+  assert.match(items[0].text, /휴대폰에서 이어하기/);
+  assert.doesNotMatch(items[0].text, /예제 항목/);
+  assert.equal(items[1].owner, '작업');
+});
+
+test('작업 재개는 해당 대상의 미적용 카드와 현재 원문만 연결하고 카드 요청문을 실행하지 않는다', async t => {
+  const {root, put} = fixture(t);
+  put('docs/_ops/트랙.md', '# 이어갈 작업\n## 1. 유호님 차례\n- **WORLD 확인:** 실기기 확인 대기\n## 콘텐츠\n- **영상 인계:** 소리 확인\n');
+  put('experiences/synk-world-app/README.md', '# WORLD\n현재 원문입니다.');
+  const card = (title, target, status) => `---\n제목: ${title}\n대상: ${target}\n상태: ${status}\n언제: 그 작업 때\n공유일: 2026-10-17\n한줄: 이번에 참고할 경험\n---\n## 적용 요청문\n첫째 줄\n\n> 둘째 줄도 보존\n## 근거\n별도 근거\n`;
+  put('docs/참고카드/카드/새카드.md', card('현재 카드', 'WORLD 앱 · 싱크타운', '새로'));
+  put('docs/참고카드/카드/적용카드.md', card('이미 적용', 'WORLD 앱', '적용함 · 커밋 확인'));
+  put('docs/참고카드/카드/영상카드.md', card('영상 카드', 'SNS·영상', '새로'));
+  const port = await serve(t, root);
+  const r = await request(port, '/api/resume?target=world');
+  assert.equal(r.status, 200);
+  assert.deepEqual(r.body.cards.map(c=>c.title), ['현재 카드']);
+  assert.match(r.body.cards[0].request, /첫째 줄/);
+  assert.match(r.body.cards[0].request, /둘째 줄도 보존/);
+  assert.doesNotMatch(r.body.cards[0].request, /별도 근거/);
+  assert.equal(r.body.pending.length, 1);
+  assert.equal(r.body.pending[0].owner, '유호');
+  const document = await request(port, '/api/document?id='+r.body.cards[0].id);
+  assert.equal(document.status, 200);
+  assert.equal(document.body.title, '현재 카드');
+  assert.match(document.body.content, /둘째 줄도 보존/);
+  assert.equal((await request(port, '/api/resume?target=..%2Fprivate')).status, 400);
+  assert.equal(fs.readFileSync(path.join(root, 'experiences/synk-world-app/README.md'), 'utf8'), '# WORLD\n현재 원문입니다.');
+});
+
+test('작업 재개 Git 요약은 선택 경로의 실제 변경을 읽으며 다른 영역과 원격 조회를 섞지 않는다', t => {
+  const {root, put} = fixture(t);
+  const {execFileSync} = require('node:child_process');
+  const git = args => execFileSync('git', args, {cwd:root,stdio:'pipe',windowsHide:true});
+  put('experiences/synk-world-app/app.mjs', 'export const version = 1;\n');
+  put('unrelated.txt', 'untouched\n');
+  git(['init','-q']);git(['add','.']);
+  git(['-c','user.name=Test','-c','user.email=test@example.invalid','commit','-qm','Initial fixture']);
+  put('experiences/synk-world-app/app.mjs', 'export const version = 2;\nexport const extra = true;\n');
+  put('unrelated.txt', 'other work\n');
+  const {gitSnapshot} = require('../tools/operations-home/resume');
+  const result = gitSnapshot(root,['experiences/synk-world-app']);
+  assert.equal(result.available,true);
+  assert.equal(result.changeCount,1);
+  assert.equal(result.changes[0].file,'experiences/synk-world-app/app.mjs');
+  assert.equal(result.changes[0].added,2);
+  assert.equal(result.changes[0].removed,1);
+  assert.equal(result.commits.length,1);
+  assert.equal(result.upstream,null);
+});
+
 test('원문이 같은 길이와 수정시각으로 바뀌어도 내용과 revision이 바뀐다', t => {
   const {root, put} = fixture(t);
   const file = put('docs/원문.md', '# 원문\n첫번째 문장\n');
@@ -217,6 +275,8 @@ test('HTTP는 임의 파일·임의 자산·POST·외부 Host와 Origin을 거�
   assert.equal((await request(port, '/api/health', {headers: {host: 'attacker.example'}})).status, 403);
   assert.equal((await request(port, '/api/health', {headers: {host: '127.0.0.1.attacker.example'}})).status, 403);
   assert.equal((await request(port, '/api/health', {headers: {origin: 'https://attacker.example'}})).status, 403);
+  assert.equal((await request(port, '/app.js', {headers: {origin: 'http://127.0.0.1:'+port}})).status, 200);
+  assert.equal((await request(port, '/app.js', {headers: {origin: 'http://127.0.0.1:1'}})).status, 403);
   assert.equal(fs.readFileSync(path.join(root, 'private.md'), 'utf8'), 'NOT_REGISTERED_FIXTURE');
 });
 

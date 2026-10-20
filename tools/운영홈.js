@@ -9,6 +9,7 @@ const crypto = require('node:crypto');
 const {panels,documents} = require('./operations-home/sources');
 const {readClaude,companyRoots} = require('./operations-home/native-status');
 const {readAntigravity} = require('./operations-home/antigravity-status');
+const resume = require('./operations-home/resume');
 const UI = path.join(__dirname,'operations-home');
 const DEFAULT_ROOT = path.resolve(__dirname,'..');
 const clean = text => text.replace(/<!--[^]*?-->/g,'').replace(/^---\r?\n[^]*?\r?\n---\r?\n/,'');
@@ -37,13 +38,32 @@ function readDocument(root,definition){
   }catch(error){return {...definition,content:'',available:false,error: error.code==='ENOENT'?'원문 파일을 찾지 못했습니다':error.message};}
 }
 function trackItems(text){
-  let heading='',context=''; const result=[];
-  for(const line of text.split(/\r?\n/)){
-    const h=/^##\s+(.+)/.exec(line);if(h){heading=h[1];context='';}
-    if(line.startsWith('원문:'))context=line;
-    const m=/^-\s+\[([^\]]+)\]\s+(.+)/.exec(line);
-    if(m&&!/완료/.test(m[1]))result.push({owner:m[1],text:m[2],heading,context,panelIds:panels.filter(p=>new RegExp(p.match,'i').test(heading+' '+m[2])).map(p=>p.id)});
-  } return result;
+  let heading='',context='',fence=null,current=null; const result=[];
+  const lines=text.split(/\r?\n/);
+  for(let i=0;i<lines.length;i++){
+    const line=lines[i],f=/^\s*(`{3,}|~{3,})/.exec(line);
+    if(f){if(!fence)fence=f[1];else if(f[1][0]===fence[0]&&f[1].length>=fence.length)fence=null;continue;}if(fence)continue;
+    const h=/^##\s+(.+)/.exec(line);if(h){heading=h[1];context='';current=null;continue;}
+    if(line.startsWith('원문:')){context=line;current=null;continue;}
+    const legacy=/^-\s+\[([^\]]+)\]\s+(.+)/.exec(line),modern=/^-\s+\*\*(.+?)\*\*\s*(.*)/.exec(line);
+    if(legacy||modern){
+      current=null;
+      const owner=legacy?legacy[1]:/유호님 차례/.test(heading)?'유호':'작업';
+      if(/완료/.test(owner)||/^(?:\d+\.\s*)?완료(?:한|된|\s|$)/.test(heading))continue;
+      const body=legacy?legacy[2]:'**'+modern[1]+'** '+modern[2];
+      current={owner,text:body,title:modern?modern[1].replace(/[:：]\s*$/,''):legacy[2].slice(0,150),heading,context,line:i+1,panelIds:[]};result.push(current);
+    }else if(current&&/^\s+\S/.test(line)){current.text+='\n'+line;}
+    else if(/^#|^<\/?details|^<summary/.test(line))current=null;
+  }
+  for(const item of result)item.panelIds=panels.filter(p=>new RegExp(p.match,'i').test(item.heading+' '+item.text)).map(p=>p.id);
+  return result;
+}
+function definitions(root){return [...documents,...resume.documentSources,...resume.readCards(root).map(c=>({id:c.id,title:c.title,file:c.file}))].filter((d,i,all)=>all.findIndex(other=>other.id===d.id)===i);}
+function maintenance(root){
+  try{
+    const check=require('./보존점검.cjs');
+    return [check.readBackupSummary({backupRoot:path.join(path.dirname(root),'SYNK_원본창고')}),check.readPreservationSummary({reportPath:path.join(root,'.tmp','preservation','latest.json')})];
+  }catch{return [];}
 }
 function cacheDirectory(root){return path.join(os.tmpdir(),'synk-operations-home',crypto.createHash('sha256').update(path.resolve(root).toLowerCase()).digest('hex').slice(0,12));}
 function saveRuntime(root,payload){
@@ -72,10 +92,10 @@ function assets(root){
   return items;
 }
 function state(root){
-  const docs=documents.map(d=>readDocument(root,d));const byId=new Map(docs.map(d=>[d.id,d]));
+  const docs=definitions(root).map(d=>readDocument(root,d));const byId=new Map(docs.map(d=>[d.id,d]));
   const track=byId.get('track'),pending=trackItems(track.content);
   const revisions=docs.map(d=>d.id+':'+(d.revision||'missing')).join('|');
-  return {name:'SYNK 운영 홈',readAt:new Date().toISOString(),revision:crypto.createHash('sha256').update(revisions).digest('hex').slice(0,16),panels:panels.map(p=>({...p,sources:p.sources.map(s=>{const d=byId.get(s.id);return {id:d.id,title:d.title,file:d.file,section:d.section,available:d.available,modifiedAt:d.modifiedAt,revision:d.revision,error:d.error};}),pending:pending.filter(t=>t.panelIds.includes(p.id))})),documents:docs.map(({content,...d})=>d),pending,trackModifiedAt:track.modifiedAt,runtime:runtime(root),assets:assets(root).filter(a=>{try{return fs.statSync(inside(root,a.file)).isFile();}catch{return false;}}).map(a=>({id:a.id,name:a.name,url:'/asset/'+a.id,original:'/asset/'+a.id+'?original=1'}))};
+  return {name:'SYNK 운영 홈',readAt:new Date().toISOString(),revision:crypto.createHash('sha256').update(revisions).digest('hex').slice(0,16),panels:panels.map(p=>({...p,sources:p.sources.map(s=>{const d=byId.get(s.id);return {id:d.id,title:d.title,file:d.file,section:d.section,available:d.available,modifiedAt:d.modifiedAt,revision:d.revision,error:d.error};}),pending:pending.filter(t=>t.panelIds.includes(p.id))})),documents:docs.map(({content,...d})=>d),pending,resumeTargets:resume.targets.map(({id,label})=>({id,label})),maintenance:maintenance(root),trackModifiedAt:track.modifiedAt,runtime:runtime(root),assets:assets(root).filter(a=>{try{return fs.statSync(inside(root,a.file)).isFile();}catch{return false;}}).map(a=>({id:a.id,name:a.name,url:'/asset/'+a.id,original:'/asset/'+a.id+'?original=1'}))};
 }
 let sharp;try{sharp=require('sharp');}catch{try{sharp=require(path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/sharp'));}catch{}}
 const imageCache=new Map();
@@ -87,17 +107,23 @@ function createServer({root=DEFAULT_ROOT,port=8790}={}){
     const send=(code,body,type='application/json; charset=utf-8')=>{res.writeHead(code,{...headers,'content-type':type});res.end(typeof body==='string'||Buffer.isBuffer(body)?body:JSON.stringify(body));};
     if(!/^127\.0\.0\.1(?::\d+)?$/.test(req.headers.host||'')&&!/^localhost(?::\d+)?$/.test(req.headers.host||''))return send(403,{error:'로컬에서만 볼 수 있습니다'});
     if(req.method!=='GET')return send(405,{error:'읽기 전용입니다'});
-    if(req.headers.origin&&!['http://127.0.0.1:'+port,'http://localhost:'+port].includes(req.headers.origin))return send(403,{error:'외부 요청은 받지 않습니다'});
+    const boundPort=req.socket.localPort||port;
+    if(req.headers.origin&&!['http://127.0.0.1:'+boundPort,'http://localhost:'+boundPort].includes(req.headers.origin))return send(403,{error:'외부 요청은 받지 않습니다'});
     try{
       const url=new URL(req.url,'http://127.0.0.1');
       if(url.pathname==='/api/health')return send(200,{name:'SYNK 운영 홈',root,version:1});
       if(url.pathname==='/api/state'){const output=state(root);output.otherRuntimes=await Promise.all([readClaude(root),readAntigravity(root,{receiverPath:path.join(root,'tools/operations-home/antigravity-status.js')})]);return send(200,output);}
+      if(url.pathname==='/api/resume'){
+        const target=url.searchParams.get('target');if(!resume.targets.some(t=>t.id===target||t.label===target))return send(400,{error:'목록에서 작업 대상을 골라 주세요'});
+        const track=readDocument(root,documents.find(d=>d.id==='track'));
+        return send(200,resume.buildResume(root,target,{pending:trackItems(track.content),readDocument}));
+      }
       if(url.pathname==='/api/search'){
         const q=(url.searchParams.get('q')||'').slice(0,150).trim().toLowerCase();if(q.length<1)return send(200,[]);
-        const seen=new Set(),result=[];for(const def of documents){if(seen.has(def.file))continue;seen.add(def.file);const d=readDocument(root,{...def,section:undefined});const at=d.content.toLowerCase().indexOf(q);if(at>=0)result.push({id:d.id,title:d.title,file:d.file,snippet:d.content.slice(Math.max(0,at-70),at+180).replace(/[#*>`]/g,'').replace(/\s+/g,' ')});}return send(200,result);
+        const seen=new Set(),result=[];for(const def of definitions(root)){if(seen.has(def.file))continue;seen.add(def.file);const d=readDocument(root,{...def,section:undefined});const at=d.content.toLowerCase().indexOf(q);if(at>=0)result.push({id:d.id,title:d.title,file:d.file,snippet:d.content.slice(Math.max(0,at-70),at+180).replace(/[#*>`]/g,'').replace(/\s+/g,' ')});}return send(200,result);
       }
       if(url.pathname==='/api/document'){
-        const id=url.searchParams.get('id');const def=documents.find(d=>d.id===id);
+        const id=url.searchParams.get('id');const def=definitions(root).find(d=>d.id===id);
         if(!def)return send(404,{error:'연결된 원문이 아닙니다'});
         const d=readDocument(root,url.searchParams.get('full')==='1'?{...def,section:undefined}:def);return send(d.available?200:503,d);
       }
@@ -120,6 +146,7 @@ if(require.main===module){
   const args=process.argv.slice(2),value=flag=>args.includes(flag)?args[args.indexOf(flag)+1]:null;
   const root=path.resolve(value('--root')||DEFAULT_ROOT),port=Number(value('--port')||8790);
   if(args.includes('--record-runtime')){let input='';process.stdin.setEncoding('utf8');process.stdin.on('data',s=>{input+=s;if(input.length>100000)process.exit(2);});process.stdin.on('end',()=>{try{const r=saveRuntime(root,JSON.parse(input));console.log('작업 상태 '+r.tasks.length+'개 갱신');}catch(e){console.error(e.message);process.exitCode=1;}});}
+  else if(args.includes('--resume')){try{const track=readDocument(root,documents.find(d=>d.id==='track'));const r=resume.buildResume(root,value('--resume'),{pending:trackItems(track.content),readDocument});if(args.includes('--json'))console.log(JSON.stringify(r,null,2));else{console.log(r.target.label+' · 작업 재개\n'+r.coverage);console.log('\n원문\n'+r.documents.map(d=>'· '+d.file+(d.available?'':' (연결 확인 필요)')).join('\n'));console.log('\n미적용 참고카드 '+r.cards.length+'개\n'+r.cards.map(c=>'· '+c.title+' — '+c.file).join('\n'));console.log('\n남은 일 '+r.pending.length+'개\n'+r.pending.slice(0,8).map(p=>'· ['+p.owner+'] '+p.title+' (트랙 '+p.line+'행)').join('\n'));console.log('\n로컬 변경 '+r.git.changeCount+'개 · '+(r.git.head?.slice(0,12)||'Git 미확인'));console.log('\n최근 검증 '+r.qa.length+'개\n'+r.qa.map(q=>'· '+q.label+' · '+q.status+' · '+q.freshness.state+' · '+q.manifest).join('\n'));}}catch(e){console.error(e.message);process.exitCode=1;}}
   else if(args.includes('--check')){const s=state(root);console.log(JSON.stringify({panels:s.panels.length,documents:s.documents.length,unavailable:s.documents.filter(d=>!d.available),assets:s.assets.map(a=>a.id),pending:s.pending.length},null,2));}
   else{const server=createServer({root,port});server.on('error',e=>{console.error(e.code==='EADDRINUSE'?'운영 홈 포트가 이미 사용 중입니다':e.message);process.exitCode=1;});server.listen(port,'127.0.0.1',()=>console.log('SYNK 운영 홈 http://127.0.0.1:'+port));}
 }
