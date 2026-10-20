@@ -172,7 +172,7 @@ function openPanel(title,html,{type='',eyebrow='SYNK WORLD',nav='home'}={}){
  if(!panel.open)lastFocus=document.activeElement;disposePanelContent();
  panelKind=type;panel.className='world-panel panel-dialog';
  // 집중 화면(레슨·문제·카페·결과·이야기·게임·옷장·마을·보상)은 PC 가로 틀에서 가운데 최대 1120px(home.css .is-wide), 나머지 시트는 오른쪽 680px 패널.
- panel.classList.toggle('is-wide',/^(?:game|life-(?:lesson|question|cafe|cafe-complete|complete|review|review-complete|story)|wardrobe|world-(?:wardrobe|town|reward|hanger|hanger-list|game-[a-z-]+))$/.test(type));
+ panel.classList.toggle('is-wide',/^(?:game|life-(?:lesson|question|cafe|cafe-complete|complete|review|review-complete|story)|wardrobe|world-(?:wardrobe|town|reward|hanger|hanger-list|writing|game-[a-z-]+))$/.test(type));
  if(type==='game')panel.classList.add('game-panel');
  else if(type==='wardrobe'||type==='world-wardrobe')panel.classList.add('wardrobe-dialog');
  else if(/^[a-z][a-z0-9-]*$/i.test(type))panel.classList.add(`${type}-panel`);

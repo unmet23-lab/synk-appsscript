@@ -1,0 +1,93 @@
+/* ── 쓰기 연습(TOPIK II 51~54 · world-writing-practice.mjs) — 월드 시그널(docs/디자인/월드_시그널/README.md).
+ *    흰 알약은 한 화면에 하나(목록의 「이어 쓰기/51번부터 시작」, 문항의 「규칙 점검」). 보조 단추는 선 알약, 목록 줄은 1px 선.
+ *    문제지(한국어)는 한 단계 밝은 면, 답안 칸 16px(휴대폰 확대 방지), 라벨 13px. PC 넓은 판(1120px)에서는 문제지 | 답안 두 단. ── */
+#panel-content:has(>.ww){container-type:inline-size}
+.ww{display:grid;gap:14px;min-width:0;text-align:left;color:var(--w-ink)}
+.ww :is(h3,p,ul,table){margin:0}
+.ww-lead{font-size:var(--t-lead);line-height:1.6;font-weight:var(--wt-body);color:var(--w-ink-2);word-break:keep-all;text-wrap:pretty}
+.ww-note{font-size:var(--t-label);line-height:1.6;color:var(--w-ink-3);word-break:keep-all;text-wrap:pretty}
+.ww-primary{justify-self:start;margin:4px 0 6px}
+.ww-section-title{display:flex;align-items:baseline;gap:10px;font-size:var(--t-title-s);line-height:1.4;font-weight:var(--wt-title);letter-spacing:var(--track-title)}
+.ww-section-title small{font-size:var(--t-label);font-weight:var(--wt-label);font-variant-numeric:tabular-nums;color:var(--w-ink-3)}
+.ww-group{display:grid;min-width:0;padding-top:10px}
+.ww-group .ww-section-title{padding-bottom:6px;border-bottom:1px solid var(--w-line)}
+.ww-row{display:flex;align-items:center;gap:14px;width:100%;min-height:60px;padding:10px 4px;border:0;border-bottom:1px solid var(--w-line);background:none;color:var(--w-ink);font:inherit;text-align:left;cursor:pointer}
+.ww-row:focus-visible{outline:2px solid var(--w-ink);outline-offset:2px}
+.ww-row-copy{display:grid;gap:3px;flex:1;min-width:0}
+.ww-row-copy strong{font-size:var(--t-body);line-height:1.45;font-weight:var(--wt-strong);word-break:keep-all}
+.ww-row-copy small{font-size:var(--t-label);line-height:1.5;color:var(--w-ink-3)}
+.ww-row-go{flex-shrink:0;color:var(--w-ink-3)}
+/* 문항 화면 */
+.ww-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;min-width:0}
+.ww-bar .quiet-button{min-height:44px;padding:0 6px}
+.ww-type{flex:1;min-width:0;font-size:var(--t-label);line-height:1.5;font-weight:var(--wt-strong);color:var(--w-ink-2)}
+.ww-timer{font-family:var(--w-mono);font-size:var(--t-label);line-height:1.5;font-variant-numeric:tabular-nums;color:var(--w-ink-2)}
+.ww-timer[hidden]{display:none}
+/* 문제지: 바깥 상자 없이(카드 안 카드 금지) 지시문 + 한 단계 밝은 면의 지문·자료·논제. */
+.ww-question{display:grid;gap:12px;min-width:0}
+.ww-instruction{font-size:var(--t-lead);line-height:1.7;font-weight:var(--wt-strong);word-break:keep-all}
+.ww-points{font-weight:var(--wt-body);color:var(--w-ink-3)}
+.ww-box{display:grid;gap:8px;padding:14px 16px;border-radius:var(--w-r-sm);background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line-2);font-size:var(--t-lead);line-height:1.8;word-break:keep-all}
+.ww-heading{font-weight:var(--wt-strong)}
+.ww-gap{white-space:nowrap;font-weight:var(--wt-strong)}
+.ww-questions{display:grid;gap:4px;padding-left:1.1em}
+.ww-data{display:grid;gap:12px;min-width:0;padding:14px 16px;border-radius:var(--w-r-sm);background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line-2)}
+.ww-source{font-size:var(--t-help);line-height:1.6;color:var(--w-ink-2)}
+.ww-data table{width:100%;border-collapse:collapse;font-size:var(--t-help);line-height:1.5;font-variant-numeric:tabular-nums}
+.ww-data caption{padding-bottom:6px;text-align:left;font-weight:var(--wt-strong);color:var(--w-ink-2)}
+.ww-data :is(th,td){padding:8px 10px;border-bottom:1px solid var(--w-line);text-align:left}
+.ww-data td{text-align:right}
+.ww-data thead th{color:var(--w-ink-3);font-weight:var(--wt-label)}
+.ww-list-box{display:grid;gap:4px;font-size:var(--t-help);line-height:1.6}
+.ww-list-box ul{padding-left:1.1em}
+.ww-answer{display:grid;gap:10px;min-width:0}
+.ww-blank{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:6px 10px;min-width:0}
+.ww-mark{font-size:var(--t-title-s);line-height:1;font-weight:var(--wt-title)}
+.ww-blank input,.ww textarea{box-sizing:border-box;width:100%;min-width:0;padding:12px 14px;border:0;border-radius:var(--w-r-sm);background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line-2);color:var(--w-ink);font:var(--wt-body) 16px/1.7 var(--w-sans)}
+.ww-blank input{min-height:48px}
+.ww textarea{display:block;min-height:220px;resize:vertical}
+.ww-task[data-type="54"] textarea{min-height:360px}
+.ww-blank input:focus-visible,.ww textarea:focus-visible{outline:2px solid var(--w-ink);outline-offset:2px}
+.ww-blank .ww-counter{grid-column:2}
+.ww-text-label{font-size:var(--t-label);line-height:1.5;font-weight:var(--wt-strong);color:var(--w-ink-2)}
+.ww-counter{justify-self:end;font-size:var(--t-label);line-height:1.5;font-weight:var(--wt-label);font-variant-numeric:tabular-nums;color:var(--w-ink-3)}
+.ww-counter[data-tone=ok]{color:var(--w-ok-text)}
+.ww-counter[data-tone=check]{color:var(--w-check-text)}
+.ww-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.ww-actions .plain-button{min-height:48px;padding:0 18px;font-size:14px}
+.ww-actions .quiet-button{min-height:44px}
+.ww-actions [disabled]{opacity:.5;cursor:default}
+.ww-ai-notice{margin-top:-4px}
+/* 점검·피드백·예시답: 1px 선 목록. LED 점은 확인할 것(노랑)·메모(회색). */
+:is(.ww-results,.ww-feedback,.ww-model):not(:empty){display:grid;gap:10px;padding-top:14px;border-top:1px solid var(--w-line)}
+.ww-model[hidden]{display:none}
+.ww-checks,.ww-cats{display:grid;padding:0;list-style:none}
+.ww-check{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;padding:10px 0;border-bottom:1px solid var(--w-line);font-size:var(--t-help);line-height:1.6;word-break:keep-all}
+.ww-check::before{content:'';width:7px;height:7px;margin-top:8px;border-radius:50%;background:var(--w-led-idle,rgba(250,250,249,.3))}
+.ww-check[data-level=check]::before{background:var(--w-led-check);box-shadow:0 0 10px rgba(245,196,69,.45)}
+.ww-check[data-fit=ok]::before{background:var(--w-led-ok)}
+.ww-check[data-fit=partial]::before{background:var(--w-led-check)}
+.ww-check[data-fit=retry]::before{background:var(--w-led-alert)}
+.ww-check>.ww-mark{grid-column:2;font-size:var(--t-help)}
+.ww-check>div{grid-column:2;display:grid;gap:4px;min-width:0}
+.ww-fit{font-weight:var(--wt-strong)}
+.ww-quotes{display:flex;flex-wrap:wrap;gap:6px;font-size:var(--t-help);line-height:1.6}
+.ww-quotes mark{padding:1px 6px;border-radius:6px;background:var(--w-check-wash);color:var(--w-ink)}
+.ww-chip{padding:2px 8px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--w-line-2);font-size:var(--t-label)}
+.ww-expect{font-size:var(--t-help);line-height:1.6}
+.ww-expect small,.ww-cat small{margin-right:6px;font-size:var(--t-label);color:var(--w-ink-3)}
+.ww-none{font-size:var(--t-help);line-height:1.6;color:var(--w-ink-2)}
+.ww-cat{display:grid;gap:4px;padding:10px 0;border-bottom:1px solid var(--w-line);font-size:var(--t-help);line-height:1.6;word-break:keep-all}
+.ww-cat-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.ww-range{font-family:var(--w-mono);font-size:var(--t-help);font-variant-numeric:tabular-nums}
+.ww-model-label{font-size:var(--t-label);line-height:1.5;font-weight:var(--wt-strong);color:var(--w-ink-3)}
+.ww-model-text{display:grid;gap:8px;font-size:var(--t-lead);line-height:1.8;word-break:keep-all}
+.ww-model-blank{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;padding:8px 0;border-bottom:1px solid var(--w-line);font-size:var(--t-help);line-height:1.6}
+.ww-model-blank>div{display:grid;gap:4px}
+.ww-model ul,.ww-feedback ul:not(.ww-checks):not(.ww-cats){padding-left:1.1em;font-size:var(--t-help);line-height:1.6}
+@container (min-width:900px){
+ .ww-task{grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:28px;align-items:start}
+ .ww-task>:is(.ww-bar,.ww-actions,.ww-ai-notice,.ww-results,.ww-feedback,.ww-model){grid-column:1/-1}
+ .ww-task>.ww-question{grid-column:1;position:sticky;top:0}
+ .ww-task>.ww-answer{grid-column:2}
+}

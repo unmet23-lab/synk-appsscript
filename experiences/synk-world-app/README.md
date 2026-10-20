@@ -2,6 +2,31 @@
 
 > **검수 이미지 보관(2026-10-17):** 이 폴더의 과거 `qa/` 캡처는 [Git 자산 보관](../../docs/_ops/github-storage/README.md)의 파일별 해시와 Release ZIP으로 보존한다. 코드·검수 JSON·문서는 유지하며, 로컬 이미지도 삭제하지 않는다. 새 체크아웃에서 예전 이미지 링크를 볼 때는 저장소 루트에서 `python tools/git-storage-restore.py --path "experiences/synk-world-app/qa/<필요한 파일>"`로 해당 원본을 복원한다.
 
+<a id="writing-practice-20261020"></a>
+
+## 2026-10-20 쓰기 연습 · TOPIK II 51~54(로컬 · 문항 검수·서버 배포 전)
+
+10-20 결정 「TOPIK II 전부 공개」와 [TOPIK 맞춤 검수 최종 제안 §2-3](qa/topik-personalization-review-20261020/최종_제안.md)의 쓰기 항목이다. 배우기 판의 「내 위치」 줄 바로 아래 「TOPIK II 쓰기 연습」 한 줄로 들어간다.
+
+- **문항:** `world-writing-items.json` — 51·52 각 3개, 53·54 각 2개. 공식 PBT 형식을 따른 자체 창작이고 자료 숫자·기관은 가상이다. 예시답 글자 수와 판 지문(`contentHash`)은 `node tools/build-world-writing-items.mjs --check`와 시험이 맞춘다.
+  - `review.status`가 `passed`인 문항만 보인다. 열린 문항이 없으면 배우기 판의 줄도 없다. 지금 10개는 모두 `draft`(세션 ② AI 2중 검수 전)라 공개판에는 아무것도 바뀌지 않는다.
+- **쓰기:** 51·52는 ㉠㉡ 한 문장씩, 53은 200~300자, 54는 600~700자. 글자 수는 온라인 반 과제와 같은 규칙이다(NFC · 공백 포함 · 줄바꿈 뺌, 원고지 칸 수와 다를 수 있다).
+  - 시간: 문항마다 쓴 시간과 「50분 가운데 권장 n분」, 「50분 한 벌」은 51~54 한 문항씩 50분을 거꾸로 센다. 연습은 「시간 숨기기」로 끈다. IBT 타자 화면은 사양이 확인되지 않아 만들지 않았다(PBT 기준이라고 화면에 쓴다).
+  - 쓴 글은 이 기기(localStorage `synk.world.writing.v1:<계정>`)에만 남는다.
+- **규칙 점검(AI 없음):** `world-writing-check.mjs`. 감점 확정이 아니라 「확인해 보세요」 목록이다(3차 지적).
+  - 51·52: 빈칸 앞말 되풀이·뒤 말 넣기·한 문장 넘기기·뒤 문장 옮기기·글 문체와 다른 끝(51은 안내문·편지 「-습니다」 / 친구에게 「-아요」, 52는 「-다」)·끝맺지 않은 문장.
+  - 53·54: 분량(아주 적으면 0점일 수 있다는 안내)·제목·「-습니다/-아요」 종결·개조식·문제 문장 베끼기(어절 6개 이상)·53 자료 숫자·54 문단.
+  - 둘 다: 말할 때 쓰는 낱말(첨삭기준 §5-10)·잦은 맞춤법·띄어쓰기. 예시답 10편은 확인할 곳이 0개여야 한다(시험).
+- **자동 피드백(꺼짐):** 로그인한 웹 계정에만, 서버(SYNK-talk `world-writing` 함수)가 켜져 있고 문항 판이 같을 때만 단추가 나온다. 누르기 전 단추 아래에 「서버로 보내고 저장하지 않음 · 하루 n번」을 보인다.
+  - 51·52는 빈칸별 「문맥에 맞아요 · 조금 고쳐 봐요 · 다시 써 봐요」와 고친 문장, 53·54는 공식 세 범주의 A~F 참고 범위·잘된 점·고칠 점·빠진 내용·다시 써 볼 곳 하나. 점수·급수·합격은 없다.
+  - 설명은 화면 언어로, 한국어(인용·고친 문장)는 `lang="ko"` 칸에만 둔다. 실패·한도·꺼짐이면 규칙 점검만 보인다.
+  - 통로: `world-account.mjs`의 `writingRequest`(경로 `writing`, 95초). PC 앱 본체는 이 경로를 아직 몰라 단추가 숨는다.
+- **학습 기록:** 기기 기록에 출처(`rule-check`·`ai-reference`)와 함께 남기고, 계획 엔진(세션 ①)은 `readWritingSummary()`와 `WRITING_CANDIDATES`(skillId `ko2.writing.sentence`·`description`·`argument`)를 받는다. Trail에는 코치가 TOPIK II 쓰기 항목을 알 때만 `assessable:false` 시도로 남긴다(AI 판정을 혼자 해낸 성공으로 세지 않는다). 지금 WORLD 코치 지도는 TOPIK I이라 기기 기록만 남는다.
+- **확인:**
+  - `node --test experiences/synk-world-app/qa/world-writing.test.mjs` 8개: 문항 모양·글자 수·판 지문, 예시답 점검 0, 51~54 점검 사례, 세 언어 글, 연결 목록, 계획 후보
+  - `node --test experiences/synk-world-app/qa/world-writing-browser.test.mjs`(Edge, 합성 계정, 문항은 시험에서만 통과로 바꿈): 390·1280 목록·51·53·54·점검·자동 피드백(가짜 서버)·예시답·한도·시간 숨기기, 영어·몽골어에서 한국어가 `lang="ko"` 칸 밖에 0, 가로 넘침·13px 밑 한글·44px 밑 단추 0, 흰 알약 1개 이하. 측정은 `qa/world-writing-20261020/result.json`(측정·그림 모두 git 밖, 시험을 다시 돌리면 생긴다)
+  - 서버: SYNK-talk `node --test tests/world-writing.test.js` 13개
+
 <a id="classroom-homework-20261020"></a>
 
 ## 2026-10-20 이번 주 과제 · TOPIK 4급 온라인 반 내기·돌려받기(로컬 · 서버·공개 전)

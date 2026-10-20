@@ -20,7 +20,7 @@ import {classroomEndpoint,classroomReply,requestClassrooms} from './classroom-cl
 import {homeworkReply,homeworkSubmission,homeworkUnavailable} from './homework-client.mjs';
 const changed=()=>Object.assign(Error('계정 연결이 바뀌었어요.'),{code:'ACCOUNT_CHANGED'});
 const authErrors=new Set(['AUTH_REQUIRED','AUTH_SESSION_MISSING','SESSION_REVOKED','UNAUTHORIZED','ACCOUNT_UNAVAILABLE','PRODUCT_FORBIDDEN','PLATFORM_ACCOUNT_MISMATCH']);
-const routes=new Map([['bootstrap','GET'],['play/start','POST'],['play/complete','POST'],['avatar/outfit','PUT'],['wardrobe/looks','PUT'],['town/entry','GET'],['town/state','GET'],['town/sharing','POST'],['town/command','POST'],['town/presence','POST'],['enrollment/preview','POST'],['enrollment/claim','POST'],['homework','GET'],['homework/submit','POST'],['homework/key','POST']]);
+const routes=new Map([['bootstrap','GET'],['play/start','POST'],['play/complete','POST'],['avatar/outfit','PUT'],['wardrobe/looks','PUT'],['town/entry','GET'],['town/state','GET'],['town/sharing','POST'],['town/command','POST'],['town/presence','POST'],['enrollment/preview','POST'],['enrollment/claim','POST'],['homework','GET'],['homework/submit','POST'],['homework/key','POST'],['writing','POST']]);
 
 // Credentials are owned by the WORLD entry. A game receives only scoped methods.
 export function createWorldAccount({config:raw,storage=globalThis.sessionStorage,fetcher=(...args)=>globalThis.fetch(...args),
@@ -201,10 +201,11 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
    return accept(data,data?.ok===true,data?.ok===true?200:data?.error?.status||503);
   }
   const homework=path==='homework'||path.startsWith('homework/');
-  const endpoint=path==='town/sharing'||path.startsWith('enrollment/')||homework?'synk-classroom':path.startsWith('town/')?'synk-town':'synk-world-v1',suffix=path==='town/sharing'?'api/world/town/sharing':path.startsWith('enrollment/')?`api/${path}`:homework?'api/world/homework'+(path==='homework/key'?'/key':''):path.startsWith('town/')?path.slice(5):path;
+  const endpoint=path==='writing'?'world-writing':path==='town/sharing'||path.startsWith('enrollment/')||homework?'synk-classroom':path.startsWith('town/')?'synk-town':'synk-world-v1',suffix=path==='writing'?'feedback':path==='town/sharing'?'api/world/town/sharing':path.startsWith('enrollment/')?`api/${path}`:homework?'api/world/homework'+(path==='homework/key'?'/key':''):path.startsWith('town/')?path.slice(5):path;
   const url=new URL(config.accountApiUrl);url.pathname=url.pathname.replace(/\/$/,'').replace(/\/functions\/v1(?:\/synk-(?:account|world-v1|town))?$/,'')+`/functions/v1/${endpoint}/${suffix}`;url.search='';url.hash='';if(path.startsWith('town/')&&path!=='town/entry'&&townBinding?.classId)url.searchParams.set('classId',townBinding.classId);
   if(path==='homework/submit'||path==='homework/key')url.searchParams.set('classId',JSON.parse(options.body).classId);
-  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);controllers.add(controller);
+  // 쓰기 자동 피드백은 글 한 편을 만드는 데 수십 초가 걸린다(서버 쪽 상한 90초).
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),path==='writing'?95000:12000);controllers.add(controller);
   try{
    if(session.expires_at<=now()+30000)await renew(expected);guard(expected);
    for(let attempt=0;attempt<2;attempt++){
@@ -248,6 +249,14 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   const scoped=()=>guard(expected),transport=native?createDesktopClassroomClient({bridge,product:'world',guard:scoped}):createClassroomTransport({url:config.accountApiUrl,anonKey:config.supabasePublishableKey,product:'world',getAccessToken:()=>session?.access_token,refresh:()=>renew(expected),guard:scoped,fetcher});
   const value=await transport(operation,params);scoped();return value;
  }
+ // 「쓰기 연습」 자동 피드백(SYNK-talk world-writing 함수, TOPIK II 51~54). 웹만 — PC 앱 본체는 아직 이 경로를 모른다(칸이 숨는다).
+ // 응답은 다른 계정 요청처럼 accountId가 이 계정과 같아야 쓴다. 꺼짐·한도·실패는 200 + status로 온다.
+ async function writingRequest(payload){
+  if(native)throw Object.assign(Error('PC 앱에서는 아직 자동 피드백을 쓸 수 없어요.'),{code:'WRITING_UNSUPPORTED'});
+  const response=await request('writing',{method:'POST',body:JSON.stringify(payload)}),data=await response.json();
+  if(!response.ok)throw Object.assign(Error(data?.code||'WRITING_UNAVAILABLE'),{code:data?.code||'WRITING_UNAVAILABLE',status:response.status});
+  return data;
+ }
  async function submitHomework(input){
   if(native&&!nativeHomework)throw Object.assign(Error('PC 앱에서는 아직 과제를 낼 수 없어요.'),{code:'HOMEWORK_UNSUPPORTED'});
   const response=await request('homework/submit',{method:'POST',body:JSON.stringify(homeworkSubmission(input))}),data=await response.json();
@@ -265,7 +274,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
    const response=await revokeFetch(new URL('/auth/v1/logout?scope=local',config.supabaseUrl).href,{method:'POST',credentials:'omit',cache:'no-store',headers:{apikey:config.supabasePublishableKey,Authorization:`Bearer ${captured.access_token}`}});serverRevoked=response.ok&&serverRevoked;
   }catch{}finally{clearTimeout(timer);}return {serverRevoked};
  }
- return Object.freeze({mode:'account',restore,signIn,request,logout,prepareGame,prepareLifeProgress,prepareHangulProgress,topicAnswers,readClassrooms,readHomework,submitHomework,readHomeworkKey,courseRequest,get supportsClassroom(){return !native||nativeClassroom;},get supportsHomework(){return !native||nativeHomework;},identity:()=>({accountId:owner,generation:epoch}),assertActive(){guard(epoch);if(!owner)throw changed();},
+ return Object.freeze({mode:'account',restore,signIn,request,logout,prepareGame,prepareLifeProgress,prepareHangulProgress,topicAnswers,readClassrooms,readHomework,submitHomework,readHomeworkKey,courseRequest,writingRequest,get supportsWriting(){return !native;},get supportsClassroom(){return !native||nativeClassroom;},get supportsHomework(){return !native||nativeHomework;},identity:()=>({accountId:owner,generation:epoch}),assertActive(){guard(epoch);if(!owner)throw changed();},
   preferences(){const learning=currentAccount?.learning;return learning&&typeof learning.enabled==='boolean'&&Number.isSafeInteger(learning.revision)?{enabled:learning.enabled,revision:learning.revision}:null;},
   async setLearning(enabled,expectedRevision){const expected=epoch;guard(expected);if(!owner||typeof enabled!=='boolean'||!Number.isSafeInteger(expectedRevision)||expectedRevision<0)throw new TypeError('Invalid account learning preference');
    const client=clientFor(expected);
