@@ -1,0 +1,1950 @@
+{
+  "schema": "topik-item-1",
+  "batch": "ti-l-b",
+  "author": "claude-opus-5-5 · Claude Code 하위 에이전트 · 2026-10-20",
+  "items": [
+    {
+      "id": "ti-l-b-001",
+      "rev": 1,
+      "family": "ti-l-b-001",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "지난주에 인터넷에서 운동화를 샀어요. 그런데 아직 안 왔어요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그래요? 가게에 전화했어요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "네, 오늘 아침에 전화했어요. 내일 와요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "남자는 지난주에 운동화를 받았습니다.",
+        "남자는 어제 가게에 전화했습니다.",
+        "남자는 아직 운동화를 받지 못했습니다.",
+        "남자는 오늘 운동화를 받습니다."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "남자는 운동화가 「아직 안 왔어요」라고 했어요. 그래서 아직 운동화를 받지 못했어요. 운동화는 「내일 와요」라고 했으니까 오늘 받는다는 보기는 틀려요.",
+        "en": "The man says the sneakers 「아직 안 왔어요」 (haven't come yet), so he hasn't received them. He also says 「내일 와요」 (they'll come tomorrow), so \"he gets them today\" is wrong. He called the shop 「오늘 아침에」 (this morning), not yesterday.",
+        "mn": "Эрэгтэй пүүз нь 「아직 안 왔어요」 (одоо болтол ирээгүй) гэсэн. Тиймээс тэр пүүзээ хараахан аваагүй. 「내일 와요」 (маргааш ирнэ) гэсэн тул «өнөөдөр авна» гэсэн хариулт буруу. Тэр дэлгүүр лүү өчигдөр биш, 「오늘 아침에」 (өнөө өглөө) залгасан."
+      },
+      "choiceNotes": [
+        "「아직 안 왔어요」 — 지난주에 산 운동화가 아직 오지 않았어요.",
+        "「오늘 아침에 전화했어요」 — 어제가 아니라 오늘 아침에 전화했어요.",
+        "「아직 안 왔어요」와 같아요 — 운동화가 오지 않아서 아직 받지 못했어요.",
+        "「내일 와요」 — 운동화는 오늘이 아니라 내일 와요."
+      ],
+      "conceptIds": [
+        "G209",
+        "G313"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-001.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-002",
+      "rev": 1,
+      "family": "ti-l-b-002",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.sequence",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "아마라 씨 라면은 정말 맛있어요. 어떻게 끓여요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "저는 물을 먼저 끓여요. 그리고 라면을 넣고 마지막에 계란을 넣어요."
+        },
+        {
+          "speaker": "남자",
+          "text": "아, 저는 계란을 처음에 넣어요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "여자는 라면 다음에 계란을 넣습니다.",
+        "여자는 계란을 제일 먼저 넣습니다.",
+        "여자는 라면을 넣고 물을 끓입니다.",
+        "남자는 계란을 마지막에 넣습니다."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "여자는 「물을 먼저 끓여요. 그리고 라면을 넣고 마지막에 계란을 넣어요」라고 했어요. 순서는 물, 라면, 계란이에요. 계란을 처음에 넣는 사람은 여자가 아니라 남자예요.",
+        "en": "The woman's order is 「물을 먼저 끓여요」 (boil the water first), then the noodles, and 「마지막에 계란을 넣어요」 (the egg goes in last). So she adds the egg after the noodles. The one who puts the egg in 「처음에」 (at the start) is the man, not the woman.",
+        "mn": "Эмэгтэй эхлээд усаа буцалгаж (「물을 먼저 끓여요」), дараа нь гоймонгоо хийгээд, хамгийн сүүлд өндгөө хийдэг (「마지막에 계란을 넣어요」). Тиймээс тэр өндгийг гоймонгийн дараа хийнэ. Өндгөө эхэнд нь (「처음에」) хийдэг хүн бол эмэгтэй биш, эрэгтэй."
+      },
+      "choiceNotes": [
+        "「라면을 넣고 마지막에 계란을 넣어요」와 같아요.",
+        "「마지막에 계란을 넣어요」 — 계란은 제일 나중에 넣어요.",
+        "「물을 먼저 끓여요」 — 물을 끓이고 라면을 넣어요.",
+        "「저는 계란을 처음에 넣어요」 — 남자는 계란을 처음에 넣어요."
+      ],
+      "conceptIds": [
+        "G306"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-002.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-003",
+      "rev": 1,
+      "family": "ti-l-b-003",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.condition",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "선생님, 기숙사 문은 밤 몇 시에 닫아요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "열두 시에 닫아요. 열두 시 뒤에는 문을 안 열어요."
+        },
+        {
+          "speaker": "남자",
+          "text": "주말에도요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "네, 주말에도 같아요. 열두 시까지 꼭 들어오세요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "여자는 밤 열한 시에 기숙사 문을 닫습니다.",
+        "여자는 밤 열두 시 뒤에도 문을 엽니다.",
+        "여자는 주말에는 기숙사 문을 늦게 닫습니다.",
+        "여자는 토요일 밤 한 시에는 문을 열지 않습니다."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "여자는 「열두 시 뒤에는 문을 안 열어요」, 「주말에도 같아요」라고 했어요. 그러니까 토요일에도 밤 열두 시가 지나면 문을 열지 않아요. 주말에 문을 늦게 닫는다는 보기는 「주말에도 같아요」와 맞지 않아요.",
+        "en": "The woman says 「열두 시 뒤에는 문을 안 열어요」 (after twelve, the door isn't opened) and 「주말에도 같아요」 (it's the same on weekends). So at one o'clock on a Saturday night the door stays shut. Saying it closes later on weekends goes against 「주말에도 같아요」.",
+        "mn": "Эмэгтэй 「열두 시 뒤에는 문을 안 열어요」 (арван хоёр цагаас хойш хаалга онгойлгохгүй), 「주말에도 같아요」 (амралтын өдөр ч адилхан) гэсэн. Тиймээс бямба гарагийн шөнийн нэг цагт ч хаалга онгойхгүй. Амралтын өдөр хаалгаа оройтож хаадаг гэсэн хариулт 「주말에도 같아요」 гэсэн үгтэй зөрнө."
+      },
+      "choiceNotes": [
+        "「열두 시에 닫아요」 — 열한 시가 아니라 열두 시에 닫아요.",
+        "「열두 시 뒤에는 문을 안 열어요」와 반대예요.",
+        "「주말에도 같아요」 — 주말에도 열두 시에 닫아요.",
+        "밤 한 시는 열두 시 뒤이고 「주말에도 같아요」 — 토요일에도 문을 열지 않아요."
+      ],
+      "conceptIds": [
+        "S105"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-003.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-004",
+      "rev": 1,
+      "family": "ti-l-b-004",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.reason",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "요즘 왜 늦게까지 학교에 있어요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "다음 주에 한국어 말하기 대회가 있어요. 그래서 매일 저녁에 연습해요."
+        },
+        {
+          "speaker": "여자",
+          "text": "와, 그래요? 대회 날에 저도 가서 봐요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "남자는 이번 주에 말하기 대회가 있습니다.",
+        "남자는 대회 연습을 해서 늦게까지 학교에 있습니다.",
+        "여자는 다음 주에 말하기 대회에 나갑니다.",
+        "남자는 대회가 끝나서 늦게까지 학교에 있습니다."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "남자는 「다음 주에 … 말하기 대회가 있어요. 그래서 매일 저녁에 연습해요」라고 했어요. 대회 연습 때문에 늦게까지 학교에 있어요. 대회는 아직 하지 않았으니까 대회가 끝나서 늦게까지 있다는 보기는 틀려요.",
+        "en": "The man says 「다음 주에 … 말하기 대회가 있어요. 그래서 매일 저녁에 연습해요」 (there's a speech contest next week, so I practice every evening). That's why he stays at school late. The contest hasn't happened yet, so \"because the contest is over\" is wrong. The woman will only come to watch; she isn't in the contest.",
+        "mn": "Эрэгтэй 「다음 주에 … 말하기 대회가 있어요. 그래서 매일 저녁에 연습해요」 (ирэх долоо хоногт ярианы тэмцээн болно, тиймээс орой бүр бэлтгэл хийдэг) гэсэн. Тийм учраас сургууль дээрээ орой болтол үлддэг. Тэмцээн хараахан болоогүй тул «тэмцээн дууссан учраас» гэдэг нь буруу. Эмэгтэй зөвхөн үзэхээр очно, тэмцээнд оролцохгүй."
+      },
+      "choiceNotes": [
+        "「다음 주에 … 대회가 있어요」 — 이번 주가 아니라 다음 주예요.",
+        "「대회가 있어요. 그래서 매일 저녁에 연습해요」와 같아요 — 연습이 늦게까지 있는 까닭이에요.",
+        "「저도 가서 봐요」 — 여자는 대회를 보러 가요. 대회에 나가는 사람은 남자예요.",
+        "대회는 「다음 주에」 있어요 — 아직 끝나지 않았어요."
+      ],
+      "conceptIds": [
+        "G308"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-004.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-005",
+      "rev": 1,
+      "family": "ti-l-b-005",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "나디아 씨, 많이 드세요. 이 불고기는 제가 만들었어요."
+        },
+        {
+          "speaker": "여자",
+          "text": "고마워요. 그런데 저는 고기를 안 먹어요."
+        },
+        {
+          "speaker": "남자",
+          "text": "아, 그래요? 그럼 이 생선을 드세요."
+        },
+        {
+          "speaker": "여자",
+          "text": "네, 생선은 좋아요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "여자는 고기와 생선을 모두 먹지 않습니다.",
+        "남자는 가게에서 불고기를 사 왔습니다.",
+        "여자는 불고기를 먹지 않고 생선을 먹습니다.",
+        "여자는 생선을 먹지 않고 불고기를 먹습니다."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "여자는 「저는 고기를 안 먹어요」라고 했어요. 그래서 불고기는 먹지 않고, 「생선은 좋아요」라고 하면서 생선을 먹어요. 생선을 안 먹는다는 보기는 이 말과 맞지 않아요.",
+        "en": "The woman says 「저는 고기를 안 먹어요」 (I don't eat meat), so she skips the bulgogi. When the man offers fish, she says 「생선은 좋아요」 (fish is fine), so she eats the fish. Any choice saying she doesn't eat fish is wrong, and the man made the bulgogi himself (「제가 만들었어요」).",
+        "mn": "Эмэгтэй 「저는 고기를 안 먹어요」 (би мах иддэггүй) гэсэн тул пулгоги идэхгүй. Эрэгтэй загас санал болгоход 「생선은 좋아요」 (загас бол болно) гэсэн тул загас идэнэ. Загас иддэггүй гэсэн хариулт буруу. Пулгогийг эрэгтэй өөрөө хийсэн (「제가 만들었어요」)."
+      },
+      "choiceNotes": [
+        "「생선은 좋아요」 — 여자는 생선은 먹어요.",
+        "「이 불고기는 제가 만들었어요」 — 남자가 만들었어요.",
+        "「저는 고기를 안 먹어요」, 「생선은 좋아요」와 같아요.",
+        "「저는 고기를 안 먹어요」 — 불고기를 먹지 않아요."
+      ],
+      "conceptIds": [
+        "G209"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-005.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-006",
+      "rev": 1,
+      "family": "ti-l-b-006",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.sequence",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "유나 씨, 수업이 끝나고 바로 집에 가요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "아니요, 먼저 어머니 가게에 가서 일을 도와요. 그다음에 집에 가요."
+        },
+        {
+          "speaker": "남자",
+          "text": "매일 도와요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "아니요, 일주일에 두 번 도와요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "여자는 수업이 끝나고 바로 집에 갑니다.",
+        "여자는 집에 먼저 가고 어머니 가게에 갑니다.",
+        "여자는 매일 어머니 가게에서 일을 돕습니다.",
+        "여자는 어머니 일을 돕고 집에 갑니다."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "여자는 「먼저 어머니 가게에 가서 일을 도와요. 그다음에 집에 가요」라고 했어요. 가게가 먼저이고 집은 나중이에요. 「바로 집에 가요?」라는 물음에 「아니요」라고 했으니까 바로 집에 간다는 보기는 틀려요.",
+        "en": "The woman says 「먼저 어머니 가게에 가서 일을 도와요. 그다음에 집에 가요」 (first I go to my mother's shop and help, then I go home). So the shop comes first and home comes later. She answered 「아니요」 to 「바로 집에 가요?」 (do you go straight home?), and she helps 「일주일에 두 번」 (twice a week), not every day.",
+        "mn": "Эмэгтэй 「먼저 어머니 가게에 가서 일을 도와요. 그다음에 집에 가요」 (эхлээд ээжийнхээ дэлгүүрт очиж тусалдаг, дараа нь гэртээ харьдаг) гэсэн. Тиймээс дэлгүүр нь эхэнд, гэр нь дараа нь. 「바로 집에 가요?」 (шууд гэртээ харих уу?) гэхэд 「아니요」 гэж хариулсан. Тэр өдөр бүр биш, 「일주일에 두 번」 (долоо хоногт хоёр удаа) тусалдаг."
+      },
+      "choiceNotes": [
+        "「아니요, 먼저 어머니 가게에 가서…」 — 바로 집에 가지 않아요.",
+        "「그다음에 집에 가요」 — 가게가 먼저, 집이 나중이에요.",
+        "「일주일에 두 번 도와요」 — 매일이 아니에요.",
+        "「먼저 어머니 가게에 가서 일을 도와요. 그다음에 집에 가요」와 같아요."
+      ],
+      "conceptIds": [
+        "G308"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-006.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-007",
+      "rev": 1,
+      "family": "ti-l-b-007",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.condition",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "물 두 병하고 아이스크림 하나 주세요. 여기 카드요."
+        },
+        {
+          "speaker": "여자",
+          "text": "죄송해요. 여기는 현금만 받아요."
+        },
+        {
+          "speaker": "남자",
+          "text": "아, 지금 현금이 천 원 있어요. 그럼 물 한 병만 주세요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "남자는 아이스크림을 사지 않습니다.",
+        "남자는 카드로 물값을 냅니다.",
+        "남자는 물 두 병과 아이스크림을 삽니다.",
+        "남자는 지금 현금이 하나도 없습니다."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "여자는 「여기는 현금만 받아요」라고 했어요. 남자는 현금이 천 원 있어서 「물 한 병만 주세요」라고 했어요. 그래서 아이스크림은 사지 않아요.",
+        "en": "The woman says 「여기는 현금만 받아요」 (we only take cash here). The man has 천 원 (1,000 won) in cash, so he says 「물 한 병만 주세요」 (just one bottle of water, please). So he doesn't buy the ice cream, and he doesn't pay by card.",
+        "mn": "Эмэгтэй 「여기는 현금만 받아요」 (энд зөвхөн бэлэн мөнгө авдаг) гэсэн. Эрэгтэйд бэлнээр мянган вон байгаа тул 「물 한 병만 주세요」 (зөвхөн нэг лонх ус өгөөч) гэсэн. Тиймээс тэр зайрмаг авахгүй, картаар ч төлөхгүй."
+      },
+      "choiceNotes": [
+        "「물 한 병만 주세요」 — 물만 사고 아이스크림은 사지 않아요.",
+        "「여기는 현금만 받아요」 — 카드로 낼 수 없어요.",
+        "「물 한 병만 주세요」 — 물 한 병만 사요.",
+        "「지금 현금이 천 원 있어요」 — 현금이 천 원 있어요."
+      ],
+      "conceptIds": [
+        "S107"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-007.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-008",
+      "rev": 1,
+      "family": "ti-l-b-008",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.reason",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "하산 씨, 오늘은 택시를 타고 왔어요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "네, 저는 보통 지하철을 타요. 그런데 오늘은 가방이 너무 무거워서 택시를 탔어요."
+        },
+        {
+          "speaker": "여자",
+          "text": "가방에 뭐가 있어요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "책이 많이 있어요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "남자는 오늘 지하철을 타고 왔습니다.",
+        "남자는 책이 많아서 택시를 탔습니다.",
+        "남자는 보통 택시를 탑니다.",
+        "남자는 오늘 가방을 안 가지고 왔습니다."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "남자는 「가방이 너무 무거워서 택시를 탔어요」라고 했고, 가방에는 「책이 많이 있어요」라고 했어요. 책이 많아서 가방이 무거웠고, 그래서 택시를 탔어요. 남자는 「보통 지하철을 타요」라고 했으니까 보통 택시를 탄다는 보기는 틀려요.",
+        "en": "The man says 「가방이 너무 무거워서 택시를 탔어요」 (my bag was too heavy, so I took a taxi), and the bag is heavy because 「책이 많이 있어요」 (there are lots of books in it). The books are the reason. He says 「보통 지하철을 타요」 (I usually take the subway), so \"he usually takes a taxi\" is wrong.",
+        "mn": "Эрэгтэй 「가방이 너무 무거워서 택시를 탔어요」 (цүнх хэтэрхий хүнд байсан учраас такси суусан) гэсэн. Цүнхэнд нь 「책이 많이 있어요」 (олон ном байгаа). Тиймээс шалтгаан нь ном их байсан явдал. Тэр 「보통 지하철을 타요」 (ихэвчлэн метро суудаг) гэсэн тул «ихэвчлэн такси суудаг» гэсэн нь буруу."
+      },
+      "choiceNotes": [
+        "「오늘은 … 택시를 탔어요」 — 지하철이 아니라 택시를 탔어요.",
+        "「가방이 너무 무거워서」, 「책이 많이 있어요」와 같아요.",
+        "「저는 보통 지하철을 타요」 — 보통은 지하철을 타요.",
+        "「오늘은 가방이 너무 무거워서」 — 가방을 가지고 왔어요."
+      ],
+      "conceptIds": [
+        "G308"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-008.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-009",
+      "rev": 1,
+      "family": "ti-l-b-009",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "소희 씨, 토요일 공연 표를 샀어요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "아니요, 못 샀어요. 표가 하나도 없었어요."
+        },
+        {
+          "speaker": "남자",
+          "text": "저는 일요일 표가 두 장 있어요. 일요일에 같이 가요."
+        },
+        {
+          "speaker": "여자",
+          "text": "정말요? 좋아요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "여자는 토요일 공연 표를 샀습니다.",
+        "남자는 일요일 공연 표가 한 장 있습니다.",
+        "남자는 혼자 공연을 봅니다.",
+        "여자는 토요일 공연 표가 없습니다."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "여자는 「못 샀어요. 표가 하나도 없었어요」라고 했어요. 그래서 여자는 토요일 표가 없고, 남자의 일요일 표로 같이 가요. 남자는 표가 두 장 있으니까 혼자 보지 않아요.",
+        "en": "The woman says 「못 샀어요. 표가 하나도 없었어요」 (I couldn't buy one; there were no tickets left), so she has no Saturday ticket. She'll go on Sunday with the man, who has 「두 장」 (two tickets), so he isn't going alone.",
+        "mn": "Эмэгтэй 「못 샀어요. 표가 하나도 없었어요」 (авч чадаагүй, нэг ч тасалбар үлдээгүй байсан) гэсэн тул түүнд бямба гарагийн тасалбар байхгүй. Тэр эрэгтэйн ням гарагийн тасалбараар хамт явна. Эрэгтэйд 「두 장」 (хоёр тасалбар) байгаа тул ганцаараа үзэхгүй."
+      },
+      "choiceNotes": [
+        "「아니요, 못 샀어요」 — 여자는 표를 사지 못했어요.",
+        "「일요일 표가 두 장 있어요」 — 한 장이 아니라 두 장이에요.",
+        "「일요일에 같이 가요」 — 여자와 같이 봐요.",
+        "「못 샀어요. 표가 하나도 없었어요」 — 여자는 토요일 표가 없어요."
+      ],
+      "conceptIds": [
+        "G305"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-009.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-010",
+      "rev": 1,
+      "family": "ti-l-b-010",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.sequence",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "이 병은 어디에 버려요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "먼저 물로 깨끗이 씻으세요. 그다음에 저 파란색 통에 넣으세요."
+        },
+        {
+          "speaker": "남자",
+          "text": "노란색 통에는 뭘 넣어요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "노란색 통에는 종이를 넣어요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "남자는 병을 씻고 파란색 통에 넣습니다.",
+        "남자는 병을 통에 넣고 씻습니다.",
+        "남자는 병을 노란색 통에 넣습니다.",
+        "남자는 병을 씻지 않고 버립니다."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "여자는 「먼저 물로 깨끗이 씻으세요. 그다음에 저 파란색 통에 넣으세요」라고 했어요. 병은 씻고 나서 파란색 통에 넣어요. 노란색 통에는 종이를 넣으니까 병을 노란색 통에 넣는 보기는 틀려요.",
+        "en": "The woman says 「먼저 물로 깨끗이 씻으세요. 그다음에 저 파란색 통에 넣으세요」 (wash it clean with water first, then put it in that blue bin). So the bottle is washed before it goes in the blue bin. The yellow bin is for 「종이」 (paper), so the bottle doesn't go there.",
+        "mn": "Эмэгтэй 「먼저 물로 깨끗이 씻으세요. 그다음에 저 파란색 통에 넣으세요」 (эхлээд усаар цэвэрхэн угаагаад, дараа нь тэр цэнхэр саванд хий) гэсэн. Тиймээс лонхыг угаасны дараа цэнхэр саванд хийнэ. Шар саванд 「종이」 (цаас) хийдэг тул лонхыг тийш нь хийхгүй."
+      },
+      "choiceNotes": [
+        "「먼저 … 씻으세요. 그다음에 저 파란색 통에 넣으세요」와 같아요.",
+        "「먼저 물로 깨끗이 씻으세요」 — 씻는 것이 먼저예요.",
+        "「노란색 통에는 종이를 넣어요」 — 병은 파란색 통에 넣어요.",
+        "「먼저 물로 깨끗이 씻으세요」 — 병을 씻고 버려요."
+      ],
+      "conceptIds": [
+        "G306"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-010.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-011",
+      "rev": 1,
+      "family": "ti-l-b-011",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.condition",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "이 새 핸드폰을 사고 싶어요."
+        },
+        {
+          "speaker": "여자",
+          "text": "죄송해요. 그 핸드폰은 다음 주 금요일부터 팔아요."
+        },
+        {
+          "speaker": "남자",
+          "text": "아, 그래요? 그럼 금요일에 다시 와요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "남자는 오늘 가게에서 새 핸드폰을 삽니다.",
+        "남자는 다음 주 금요일 전에는 그 핸드폰을 못 삽니다.",
+        "여자는 이번 주 금요일부터 그 핸드폰을 팝니다.",
+        "남자는 다음 주 월요일에 가게에 다시 옵니다."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "여자는 「그 핸드폰은 다음 주 금요일부터 팔아요」라고 했어요. 그러니까 다음 주 금요일이 되기 전에는 그 핸드폰을 살 수 없어요. 그래서 남자는 「금요일에 다시 와요」라고 했어요.",
+        "en": "The woman says 「그 핸드폰은 다음 주 금요일부터 팔아요」 (we start selling that phone next Friday). So the man can't buy it before next Friday, and he says he'll come back then (「금요일에 다시 와요」). It isn't this Friday, and he isn't coming back on Monday.",
+        "mn": "Эмэгтэй 「그 핸드폰은 다음 주 금요일부터 팔아요」 (тэр утсыг ирэх долоо хоногийн баасан гарагаас зарж эхэлнэ) гэсэн. Тиймээс эрэгтэй ирэх баасан гарагаас өмнө тэр утсыг авч чадахгүй. Тэр баасан гарагт дахин ирнэ (「금요일에 다시 와요」) гэсэн; энэ долоо хоногийн баасан гараг биш, даваа гараг ч биш."
+      },
+      "choiceNotes": [
+        "「다음 주 금요일부터 팔아요」 — 오늘은 살 수 없어요.",
+        "「다음 주 금요일부터 팔아요」 — 그 전에는 못 사요.",
+        "「다음 주 금요일부터」 — 이번 주가 아니라 다음 주예요.",
+        "「그럼 금요일에 다시 와요」 — 월요일이 아니라 금요일이에요."
+      ],
+      "conceptIds": [
+        "S104"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-011.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-012",
+      "rev": 1,
+      "family": "ti-l-b-012",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.reason",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "카밀라 씨, 오늘 저녁에 김치찌개를 먹어요."
+        },
+        {
+          "speaker": "여자",
+          "text": "김치찌개는 너무 매워서 못 먹어요. 갈비는 어때요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "좋아요. 그럼 학교 앞 식당에 가요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "여자는 김치찌개를 잘 먹습니다.",
+        "남자는 갈비를 먹지 않습니다.",
+        "여자는 김치찌개가 매워서 갈비를 먹습니다.",
+        "남자는 회사 앞 식당에 갑니다."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "여자는 「김치찌개는 너무 매워서 못 먹어요. 갈비는 어때요?」라고 했어요. 김치찌개가 매워서 갈비를 먹어요. 남자도 「좋아요」라고 했으니까 남자가 갈비를 먹지 않는다는 보기는 틀려요.",
+        "en": "The woman says 「김치찌개는 너무 매워서 못 먹어요」 (kimchi stew is too spicy for me to eat) and suggests galbi (「갈비는 어때요?」). The spiciness is her reason for choosing galbi. The man answers 「좋아요」 (sounds good), so \"the man doesn't eat galbi\" is wrong. They go to a restaurant in front of the school, not the office.",
+        "mn": "Эмэгтэй 「김치찌개는 너무 매워서 못 먹어요」 (кимчи шөл хэтэрхий халуун ногоотой учраас идэж чадахгүй) гээд галби санал болгосон (「갈비는 어때요?」). Халуун ногоотой учраас галби сонгосон. Эрэгтэй 「좋아요」 (за, сайн байна) гэсэн тул «эрэгтэй галби идэхгүй» гэсэн нь буруу. Тэд компанийн биш, сургуулийн урд байгаа хоолны газар очно."
+      },
+      "choiceNotes": [
+        "「너무 매워서 못 먹어요」 — 여자는 김치찌개를 못 먹어요.",
+        "「좋아요. 그럼 학교 앞 식당에 가요」 — 남자도 갈비를 먹어요.",
+        "「김치찌개는 너무 매워서 못 먹어요. 갈비는 어때요?」와 같아요.",
+        "「학교 앞 식당에 가요」 — 회사 앞이 아니에요."
+      ],
+      "conceptIds": [
+        "G308"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-012.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-013",
+      "rev": 1,
+      "family": "ti-l-b-013",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "은서 씨, 내일 할아버지 댁에 차로 가요. 은서 씨도 운전해요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "아니요, 저는 운전을 못 해요. 미안해요."
+        },
+        {
+          "speaker": "남자",
+          "text": "괜찮아요. 그럼 운전은 제가 다 해요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "여자는 운전을 잘합니다.",
+        "남자는 내일 기차를 타고 할아버지 댁에 갑니다.",
+        "남자는 운전을 하지 못합니다.",
+        "남자는 내일 혼자 운전을 합니다."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "여자는 「저는 운전을 못 해요」라고 했어요. 그래서 남자가 「운전은 제가 다 해요」라고 했어요. 내일은 남자 혼자 운전해요.",
+        "en": "The woman says 「저는 운전을 못 해요」 (I can't drive). So the man says 「운전은 제가 다 해요」 (I'll do all the driving), which means he drives alone tomorrow. They're going 「차로」 (by car), not by train.",
+        "mn": "Эмэгтэй 「저는 운전을 못 해요」 (би машин барьж чаддаггүй) гэсэн. Тиймээс эрэгтэй 「운전은 제가 다 해요」 (бүх замдаа би машин барина) гэсэн, өөрөөр хэлбэл маргааш тэр ганцаараа машин барина. Тэд галт тэргээр биш, 「차로」 (машинаар) явна."
+      },
+      "choiceNotes": [
+        "「저는 운전을 못 해요」 — 여자는 운전을 하지 못해요.",
+        "「할아버지 댁에 차로 가요」 — 기차가 아니라 차로 가요.",
+        "「운전은 제가 다 해요」 — 남자는 운전을 해요.",
+        "여자가 운전을 못 해서 남자가 「운전은 제가 다 해요」라고 했어요."
+      ],
+      "conceptIds": [
+        "G305"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-013.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-014",
+      "rev": 1,
+      "family": "ti-l-b-014",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.sequence",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "먼저 핸드폰을 끄세요. 그리고 가방에 넣으세요."
+        },
+        {
+          "speaker": "남자",
+          "text": "선생님, 시험지는 언제 받아요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "핸드폰을 다 넣었어요? 그럼 지금 드려요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "남자는 시험지를 먼저 받고 핸드폰을 끕니다.",
+        "남자는 핸드폰을 켜고 시험지를 받습니다.",
+        "남자는 핸드폰을 가방에 넣고 시험지를 받습니다.",
+        "남자는 핸드폰을 가방에 넣지 않고 시험을 봅니다."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "여자는 「먼저 핸드폰을 끄세요. 그리고 가방에 넣으세요」라고 했어요. 그리고 핸드폰을 「다 넣었어요? 그럼 지금 드려요」라고 했어요. 그러니까 시험지는 핸드폰을 가방에 넣고 받아요.",
+        "en": "The teacher says 「먼저 핸드폰을 끄세요. 그리고 가방에 넣으세요」 (first turn off your phone, then put it in your bag). Once the phones are in, she says 「그럼 지금 드려요」 (then I'll hand it out now). So the test paper comes after the phone goes in the bag, not before.",
+        "mn": "Багш 「먼저 핸드폰을 끄세요. 그리고 가방에 넣으세요」 (эхлээд утсаа унтраагаад, цүнхэндээ хий) гэсэн. Утсаа хийж дууссаны дараа 「그럼 지금 드려요」 (тэгвэл одоо өгье) гэсэн. Тиймээс шалгалтын хуудсыг утсаа цүнхэндээ хийсний дараа авна, өмнө нь биш."
+      },
+      "choiceNotes": [
+        "「먼저 핸드폰을 끄세요」 — 핸드폰을 먼저 끄고 시험지는 나중에 받아요.",
+        "「핸드폰을 끄세요」 — 켜는 것이 아니라 꺼요.",
+        "「가방에 넣으세요」, 「다 넣었어요? 그럼 지금 드려요」와 같아요.",
+        "「가방에 넣으세요」 — 핸드폰을 가방에 넣어요."
+      ],
+      "conceptIds": [
+        "G306"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-014.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-015",
+      "rev": 1,
+      "family": "ti-l-b-015",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.condition",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "이 회사 식당 점심은 얼마예요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "회사 카드가 있으면 오천 원이에요. 카드가 없으면 칠천 원이에요."
+        },
+        {
+          "speaker": "여자",
+          "text": "저는 오늘 처음 왔어요. 아직 카드가 없어요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "여자는 오늘 점심값으로 칠천 원을 냅니다.",
+        "여자는 오늘 점심을 오천 원에 먹습니다.",
+        "여자는 회사 카드가 있습니다.",
+        "여자는 카드가 없어서 점심을 더 싸게 먹습니다."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "남자는 「카드가 없으면 칠천 원이에요」라고 했어요. 여자는 「아직 카드가 없어요」라고 했으니까 오늘 점심값은 칠천 원이에요. 오천 원은 카드가 있을 때의 값이에요.",
+        "en": "The man says 「카드가 없으면 칠천 원이에요」 (without a card, it's 7,000 won). The woman says 「아직 카드가 없어요」 (I don't have a card yet), so she pays 7,000 won today. 오천 원 (5,000 won) is the price only with a company card.",
+        "mn": "Эрэгтэй 「카드가 없으면 칠천 원이에요」 (карт байхгүй бол долоон мянган вон) гэсэн. Эмэгтэй 「아직 카드가 없어요」 (надад карт хараахан байхгүй) гэсэн тул өнөөдөр долоон мянган вон төлнө. Таван мянган вон бол зөвхөн компанийн карттай үеийн үнэ."
+      },
+      "choiceNotes": [
+        "「카드가 없으면 칠천 원이에요」, 「아직 카드가 없어요」와 같아요.",
+        "「회사 카드가 있으면 오천 원이에요」 — 여자는 카드가 없어서 오천 원이 아니에요.",
+        "「아직 카드가 없어요」 — 여자는 카드가 없어요.",
+        "카드가 없으면 칠천 원 — 더 싼 것이 아니라 더 비싸요."
+      ],
+      "conceptIds": [
+        "G401"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-015.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-016",
+      "rev": 1,
+      "family": "ti-l-b-016",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.reason",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "바야르 씨, 요즘 저녁에 춤을 배워요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "네, 일주일에 세 번 배워요. 제 아내가 춤을 아주 좋아해요."
+        },
+        {
+          "speaker": "여자",
+          "text": "아, 그래서 같이 배워요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "네. 그런데 저는 아직 잘 못 춰요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "남자는 아내와 같이 춤을 배우지 않습니다.",
+        "남자는 아내가 춤을 좋아해서 같이 배웁니다.",
+        "남자는 춤을 잘 춰서 아내에게 가르칩니다.",
+        "남자는 일주일에 한 번 저녁에 춤을 배웁니다."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "남자는 「제 아내가 춤을 아주 좋아해요」라고 했고, 「그래서 같이 배워요?」라는 물음에 「네」라고 했어요. 아내가 춤을 좋아해서 같이 배우는 거예요. 남자는 「아직 잘 못 춰요」라고 했으니까 아내에게 가르친다는 보기는 틀려요.",
+        "en": "The man says 「제 아내가 춤을 아주 좋아해요」 (my wife really loves dancing), and answers 「네」 (yes) to 「그래서 같이 배워요?」 (so you learn together?). His wife's love of dancing is the reason. He says 「아직 잘 못 춰요」 (I still can't dance well), so he isn't teaching his wife.",
+        "mn": "Эрэгтэй 「제 아내가 춤을 아주 좋아해요」 (эхнэр маань бүжиглэх их дуртай) гэсэн, 「그래서 같이 배워요?」 (тиймээс хамт сурдаг юм уу?) гэсэн асуултад 「네」 (тийм) гэж хариулсан. Эхнэр нь бүжигт дуртай нь шалтгаан. Тэр 「아직 잘 못 춰요」 (одоохондоо сайн бүжиглэж чадахгүй) гэсэн тул эхнэртээ заадаг гэсэн нь буруу."
+      },
+      "choiceNotes": [
+        "「그래서 같이 배워요?」에 「네」 — 아내와 같이 배워요.",
+        "「아내가 춤을 아주 좋아해요」, 「그래서 같이 배워요?」에 「네」와 같아요.",
+        "「저는 아직 잘 못 춰요」 — 춤을 잘 추지 못해요.",
+        "「일주일에 세 번 배워요」 — 한 번이 아니라 세 번이에요."
+      ],
+      "conceptIds": [
+        "G308"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-016.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-017",
+      "rev": 1,
+      "family": "ti-l-b-017",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "네, 미용실입니다."
+        },
+        {
+          "speaker": "남자",
+          "text": "내일 오후 세 시에 예약을 했어요. 그런데 그 시간에 못 가요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그럼 다섯 시는 어때요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "네, 좋아요. 다섯 시에 가요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "남자는 내일 세 시에 미용실에 갑니다.",
+        "남자는 미용실 예약을 하지 않았습니다.",
+        "남자는 예약 시간을 바꿉니다.",
+        "남자는 내일 미용실에 가지 않습니다."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "남자는 「… 세 시에 예약을 했어요. 그런데 그 시간에 못 가요」라고 했어요. 그래서 예약을 다섯 시로 바꿔요. 내일 미용실에 안 가는 것이 아니라 다섯 시에 가요.",
+        "en": "The man booked for three, but says 「그 시간에 못 가요」 (I can't go at that time). So he moves the booking to five (「다섯 시에 가요」). He's still going tomorrow, just at five, so \"he doesn't go to the salon tomorrow\" is wrong.",
+        "mn": "Эрэгтэй гурван цагт цаг захиалсан ч 「그 시간에 못 가요」 (тэр цагт очиж чадахгүй) гэсэн. Тиймээс захиалгаа таван цаг руу шилжүүлнэ (「다섯 시에 가요」). Маргааш үсчин рүү огт явахгүй биш, таван цагт очно."
+      },
+      "choiceNotes": [
+        "「그 시간에 못 가요」 — 세 시에는 가지 못해요.",
+        "「세 시에 예약을 했어요」 — 예약을 했어요.",
+        "세 시에 못 가서 「다섯 시에 가요」 — 예약 시간을 다섯 시로 바꿔요.",
+        "「다섯 시에 가요」 — 내일 다섯 시에 가요."
+      ],
+      "conceptIds": [
+        "G305"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-017.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-018",
+      "rev": 1,
+      "family": "ti-l-b-018",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.sequence",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "수빈 씨, 오늘 저녁에 뭐 해요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "고등학교 친구들하고 먼저 농구를 해요. 그다음에 같이 저녁을 먹어요."
+        },
+        {
+          "speaker": "남자",
+          "text": "와, 재미있겠어요. 저는 오늘 피곤해서 집에서 쉬어요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "여자는 친구들과 농구를 하고 저녁을 먹습니다.",
+        "여자는 저녁을 먹고 농구를 합니다.",
+        "여자는 회사 사람들과 농구를 합니다.",
+        "남자는 오늘 저녁에 농구를 합니다."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "여자는 「먼저 농구를 해요. 그다음에 같이 저녁을 먹어요」라고 했어요. 농구가 먼저이고 저녁은 나중이에요. 남자는 피곤해서 집에서 쉬니까 농구를 하지 않아요.",
+        "en": "The woman says 「먼저 농구를 해요. 그다음에 같이 저녁을 먹어요」 (first we play basketball, then we have dinner together). So basketball comes before dinner. She's with 「고등학교 친구들」 (high school friends), and the man is resting at home because he's tired.",
+        "mn": "Эмэгтэй 「먼저 농구를 해요. 그다음에 같이 저녁을 먹어요」 (эхлээд сагсан бөмбөг тоглоод, дараа нь хамт оройн хоол идэнэ) гэсэн. Тиймээс сагсан бөмбөг нь оройн хоолноос өмнө. Тэр ахлах сургуулийн найзуудтайгаа (「고등학교 친구들」) хамт байх бөгөөд эрэгтэй ядарсан учраас гэртээ амарна."
+      },
+      "choiceNotes": [
+        "「먼저 농구를 해요. 그다음에 같이 저녁을 먹어요」와 같아요.",
+        "「먼저 농구를 해요」 — 농구가 먼저예요.",
+        "「고등학교 친구들하고」 — 회사 사람들이 아니에요.",
+        "「저는 오늘 피곤해서 집에서 쉬어요」 — 남자는 집에서 쉬어요."
+      ],
+      "conceptIds": [
+        "G306"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-018.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-019",
+      "rev": 1,
+      "family": "ti-l-b-019",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.condition",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "이 공책 한 권에 얼마예요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "천오백 원이에요. 그런데 세 권을 사면 한 권을 더 드려요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그럼 세 권 주세요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "여자는 공책을 두 권 삽니다.",
+        "남자는 공책 한 권을 천 원에 팝니다.",
+        "남자는 손님이 두 권을 사면 한 권을 더 줍니다.",
+        "여자는 공책을 모두 네 권 받습니다."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "남자는 「세 권을 사면 한 권을 더 드려요」라고 했어요. 여자가 세 권을 사니까 한 권을 더 받아서 모두 네 권이에요. 두 권을 살 때는 더 주지 않아요.",
+        "en": "The man says 「세 권을 사면 한 권을 더 드려요」 (if you buy three, I'll give you one more). The woman buys three, so she gets four notebooks in all. The free one comes with three, not two, and one notebook costs 천오백 원 (1,500 won).",
+        "mn": "Эрэгтэй 「세 권을 사면 한 권을 더 드려요」 (гурвыг авбал нэгийг нэмж өгнө) гэсэн. Эмэгтэй гурвыг авах тул нэгийг нэмж аваад нийт дөрвөн дэвтэртэй болно. Нэмэлт дэвтрийг хоёр биш, гурвыг авахад л өгнө. Нэг дэвтэр мянга таван зуун вон."
+      },
+      "choiceNotes": [
+        "「그럼 세 권 주세요」 — 두 권이 아니라 세 권을 사요.",
+        "「천오백 원이에요」 — 천 원이 아니에요.",
+        "「세 권을 사면 한 권을 더 드려요」 — 두 권이 아니라 세 권이에요.",
+        "세 권을 사고 「한 권을 더」 받아서 모두 네 권이에요."
+      ],
+      "conceptIds": [
+        "G401"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-019.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-020",
+      "rev": 1,
+      "family": "ti-l-b-020",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.reason",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "지금 텔레비전에서 축구를 해요. 같이 봐요."
+        },
+        {
+          "speaker": "여자",
+          "text": "아기가 지금 자요. 소리를 작게 하세요."
+        },
+        {
+          "speaker": "남자",
+          "text": "아, 미안해요. 그럼 소리를 끄고 봐요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "남자는 텔레비전을 끄고 아기를 봅니다.",
+        "남자는 아기가 자서 텔레비전 소리를 끕니다.",
+        "여자는 아기가 울어서 텔레비전을 끕니다.",
+        "남자는 텔레비전에서 야구를 봅니다."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "여자는 「아기가 지금 자요. 소리를 작게 하세요」라고 했어요. 그래서 남자는 소리를 끄고 텔레비전을 봐요. 아기는 울지 않고 자니까 아기가 울어서 텔레비전을 끈다는 보기는 틀려요.",
+        "en": "The woman says 「아기가 지금 자요. 소리를 작게 하세요」 (the baby is sleeping now; turn the volume down). So because the baby is asleep, the man turns the sound off and keeps watching (「소리를 끄고 봐요」). The baby is sleeping, not crying, and it's soccer on TV, not baseball.",
+        "mn": "Эмэгтэй 「아기가 지금 자요. 소리를 작게 하세요」 (хүүхэд одоо унтаж байна, дууг нь багасга) гэсэн. Тиймээс хүүхэд унтаж байгаа учраас эрэгтэй дууг нь унтраагаад үргэлжлүүлэн үзнэ (「소리를 끄고 봐요」). Хүүхэд уйлаагүй, унтаж байгаа бөгөөд зурагтаар бейсбол биш, хөл бөмбөг гарч байна."
+      },
+      "choiceNotes": [
+        "「소리를 끄고 봐요」 — 텔레비전은 끄지 않고 소리만 꺼요.",
+        "「아기가 지금 자요」, 「소리를 끄고 봐요」와 같아요.",
+        "「아기가 지금 자요」 — 아기는 울지 않아요. 소리를 끄는 사람도 남자예요.",
+        "「텔레비전에서 축구를 해요」 — 야구가 아니라 축구예요."
+      ],
+      "conceptIds": [
+        "G308"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-020.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-021",
+      "rev": 1,
+      "family": "ti-l-b-021",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "도현 씨, 요즘도 아침에 신문을 읽어요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "아니요, 이번 달부터 신문을 안 읽어요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그럼 뉴스는 안 봐요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "아니요, 버스에서 핸드폰으로 봐요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "남자는 요즘도 아침에 신문을 읽습니다.",
+        "남자는 요즘 뉴스를 보지 않습니다.",
+        "남자는 지난달까지 신문을 읽었습니다.",
+        "남자는 집에서 텔레비전으로 뉴스를 봅니다."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "남자는 「요즘도 … 신문을 읽어요?」라는 물음에 「이번 달부터 신문을 안 읽어요」라고 했어요. 그러니까 지난달까지는 신문을 읽었어요. 뉴스는 「버스에서 핸드폰으로 봐요」라고 했으니까 뉴스를 보지 않는다는 보기는 틀려요.",
+        "en": "Asked 「요즘도 … 신문을 읽어요?」 (do you still read the newspaper?), the man says 「이번 달부터 신문을 안 읽어요」 (I stopped reading it this month). So he read it until last month. He still gets the news 「버스에서 핸드폰으로」 (on his phone on the bus), so \"he doesn't follow the news\" is wrong.",
+        "mn": "「요즘도 … 신문을 읽어요?」 (одоо ч сонин уншдаг уу?) гэхэд эрэгтэй 「이번 달부터 신문을 안 읽어요」 (энэ сараас сонин уншихаа больсон) гэсэн. Тиймээс тэр өнгөрсөн сар хүртэл сонин уншдаг байсан. Мэдээгээ 「버스에서 핸드폰으로」 (автобусанд утсаараа) үздэг тул «мэдээ үздэггүй» гэсэн нь буруу."
+      },
+      "choiceNotes": [
+        "「이번 달부터 신문을 안 읽어요」 — 요즘은 신문을 읽지 않아요.",
+        "「버스에서 핸드폰으로 봐요」 — 뉴스는 봐요.",
+        "「이번 달부터 신문을 안 읽어요」 — 그러니까 지난달까지는 읽었어요.",
+        "「버스에서 핸드폰으로 봐요」 — 집에서 텔레비전으로 보지 않아요."
+      ],
+      "conceptIds": [
+        "G209"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-021.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-022",
+      "rev": 1,
+      "family": "ti-l-b-022",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.sequence",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "루카 씨는 아침에 일어나서 제일 먼저 뭐 해요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "물을 한 잔 마셔요. 그다음에 샤워를 하고 아침을 먹어요."
+        },
+        {
+          "speaker": "여자",
+          "text": "저는 일어나서 먼저 운동을 해요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "남자는 샤워를 하고 물을 마십니다.",
+        "남자는 물을 마시고 샤워를 합니다.",
+        "남자는 아침을 먹고 샤워를 합니다.",
+        "여자는 일어나서 먼저 물을 마십니다."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "남자는 「물을 한 잔 마셔요. 그다음에 샤워를 하고 아침을 먹어요」라고 했어요. 순서는 물, 샤워, 아침이에요. 여자는 「일어나서 먼저 운동을 해요」라고 했으니까 물을 먼저 마시는 사람은 남자예요.",
+        "en": "The man says 「물을 한 잔 마셔요. 그다음에 샤워를 하고 아침을 먹어요」 (I drink a glass of water, then I shower and have breakfast). So his order is water, shower, breakfast. The woman says 「일어나서 먼저 운동을 해요」 (I exercise first after I get up), so the one who drinks water first is the man.",
+        "mn": "Эрэгтэй 「물을 한 잔 마셔요. 그다음에 샤워를 하고 아침을 먹어요」 (нэг аяга ус уугаад, дараа нь шүршүүрт ороод өглөөний хоолоо идэнэ) гэсэн. Түүний дараалал: ус, шүршүүр, өглөөний хоол. Эмэгтэй 「일어나서 먼저 운동을 해요」 (босоод эхлээд дасгал хийдэг) гэсэн тул усаа хамгийн түрүүнд уудаг нь эрэгтэй."
+      },
+      "choiceNotes": [
+        "「물을 한 잔 마셔요. 그다음에 샤워를 하고」 — 물이 먼저, 샤워가 나중이에요.",
+        "「물을 한 잔 마셔요. 그다음에 샤워를 하고」와 같아요.",
+        "「샤워를 하고 아침을 먹어요」 — 샤워가 먼저, 아침이 나중이에요.",
+        "「저는 일어나서 먼저 운동을 해요」 — 여자는 운동을 먼저 해요."
+      ],
+      "conceptIds": [
+        "G306"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-022.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-023",
+      "rev": 1,
+      "family": "ti-l-b-023",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.condition",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "저도 책 읽기 모임에 들어가고 싶어요. 언제 만나요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "금요일 저녁에만 만나요. 다른 날에는 안 만나요."
+        },
+        {
+          "speaker": "남자",
+          "text": "아, 저는 금요일 저녁에 수업이 있어요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "여자는 일주일에 한 번 모임 사람들을 만납니다.",
+        "여자는 수요일 저녁에도 모임 사람들을 만납니다.",
+        "남자는 금요일 저녁에 시간이 있습니다.",
+        "남자는 벌써 책 읽기 모임에 들어갔습니다."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "여자는 「금요일 저녁에만 만나요. 다른 날에는 안 만나요」라고 했어요. 그러니까 모임은 일주일에 한 번, 금요일 저녁에만 해요. 남자는 금요일 저녁에 「수업이 있어요」라고 했으니까 시간이 있다는 보기는 틀려요.",
+        "en": "The woman says 「금요일 저녁에만 만나요. 다른 날에는 안 만나요」 (we meet only on Friday evenings, not on other days). So the club meets once a week. The man has 「수업」 (a class) on Friday evenings, so \"he is free on Friday evening\" is wrong. He hasn't joined yet; he only wants to (「들어가고 싶어요」).",
+        "mn": "Эмэгтэй 「금요일 저녁에만 만나요. 다른 날에는 안 만나요」 (зөвхөн баасан гарагийн орой уулздаг, бусад өдөр уулздаггүй) гэсэн. Тиймээс клуб долоо хоногт нэг удаа уулздаг. Эрэгтэй баасан гарагийн орой хичээлтэй (「수업이 있어요」) тул «баасан гарагийн орой завтай» гэсэн нь буруу. Тэр клубт хараахан ороогүй, зөвхөн орохыг хүсч байна (「들어가고 싶어요」)."
+      },
+      "choiceNotes": [
+        "「금요일 저녁에만 만나요」 — 일주일에 한 번 만나요.",
+        "「다른 날에는 안 만나요」 — 수요일에는 만나지 않아요.",
+        "「금요일 저녁에 수업이 있어요」 — 그 시간에 수업이 있어요.",
+        "「들어가고 싶어요」 — 아직 들어가지 않았어요."
+      ],
+      "conceptIds": [
+        "S107"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-023.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-024",
+      "rev": 1,
+      "family": "ti-l-b-024",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.reason",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "요즘 저녁에 공원에서 자주 만나요."
+        },
+        {
+          "speaker": "남자",
+          "text": "네, 요즘 낮에는 너무 더워요. 그래서 저녁에 산책을 해요."
+        },
+        {
+          "speaker": "여자",
+          "text": "아, 저도 내일부터 같이 해요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "남자는 낮에 공원에서 산책을 합니다.",
+        "남자는 추워서 저녁에 산책을 합니다.",
+        "여자는 오늘부터 남자와 같이 산책을 합니다.",
+        "남자는 낮에 더워서 저녁에 산책을 합니다."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "남자는 「낮에는 너무 더워요. 그래서 저녁에 산책을 해요」라고 했어요. 낮이 더워서 저녁에 산책을 하는 거예요. 추워서가 아니라 더워서예요.",
+        "en": "The man says 「낮에는 너무 더워요. 그래서 저녁에 산책을 해요」 (it's too hot during the day, so I take walks in the evening). The heat is the reason, not the cold. The woman will join him from 「내일」 (tomorrow), not today.",
+        "mn": "Эрэгтэй 「낮에는 너무 더워요. 그래서 저녁에 산책을 해요」 (өдөр хэтэрхий халуун байна, тиймээс орой алхдаг) гэсэн. Шалтгаан нь хүйтэн биш, халуун. Эмэгтэй өнөөдрөөс биш, маргаашаас (「내일부터」) эхлэн хамт алхана."
+      },
+      "choiceNotes": [
+        "「저녁에 산책을 해요」 — 낮이 아니라 저녁에 해요.",
+        "「낮에는 너무 더워요」 — 추워서가 아니라 더워서예요.",
+        "「저도 내일부터 같이 해요」 — 오늘이 아니라 내일부터예요.",
+        "「낮에는 너무 더워요. 그래서 저녁에 산책을 해요」와 같아요."
+      ],
+      "conceptIds": [
+        "G308"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-024.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-025",
+      "rev": 1,
+      "family": "ti-l-b-025",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "지안 씨, 내일 회사에 와요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "아니요, 내일은 회사에 안 가요. 집에서 일해요."
+        },
+        {
+          "speaker": "남자",
+          "text": "그럼 내일 회의는 어떻게 해요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "컴퓨터로 해요. 오전 열 시에 시작해요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "여자는 내일 회사에서 일합니다.",
+        "여자는 내일 회사에 나가지 않습니다.",
+        "여자는 내일 일을 하지 않습니다.",
+        "여자는 내일 오후에 회의를 합니다."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "여자는 「내일은 회사에 안 가요. 집에서 일해요」라고 했어요. 일은 하지만 회사에는 가지 않아요. 회의는 「오전 열 시에」 컴퓨터로 하니까 오후는 틀려요.",
+        "en": "The woman says 「내일은 회사에 안 가요. 집에서 일해요」 (I'm not going to the office tomorrow; I'll work from home). She still works, just not at the office. The meeting is online 「오전 열 시에」 (at 10 a.m.), not in the afternoon.",
+        "mn": "Эмэгтэй 「내일은 회사에 안 가요. 집에서 일해요」 (маргааш ажил дээрээ очихгүй, гэрээсээ ажиллана) гэсэн. Ажиллана, гэхдээ оффис дээр биш. Хурал 「오전 열 시에」 (өглөөний арван цагт) компьютероор болно, үдээс хойш биш."
+      },
+      "choiceNotes": [
+        "「집에서 일해요」 — 회사가 아니라 집에서 일해요.",
+        "「내일은 회사에 안 가요」와 같아요.",
+        "「집에서 일해요」 — 일은 해요.",
+        "「오전 열 시에 시작해요」 — 오후가 아니에요."
+      ],
+      "conceptIds": [
+        "G209"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-025.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-026",
+      "rev": 1,
+      "family": "ti-l-b-026",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.sequence",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "내일 아침에 일찍 회사에 와요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "아니요, 먼저 아이하고 같이 학교에 가요. 그다음에 회사에 가요."
+        },
+        {
+          "speaker": "남자",
+          "text": "그럼 회의는 열 시에 해요."
+        },
+        {
+          "speaker": "여자",
+          "text": "네, 좋아요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "여자는 회사에 먼저 가고 아이 학교에 갑니다.",
+        "여자는 내일 아침에 일찍 회사에 갑니다.",
+        "여자는 아이와 학교에 먼저 갑니다.",
+        "남자는 내일 아홉 시에 회의를 합니다."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "여자는 「먼저 아이하고 같이 학교에 가요. 그다음에 회사에 가요」라고 했어요. 학교가 먼저이고 회사가 나중이에요. 「일찍 회사에 와요?」라는 물음에 「아니요」라고 했으니까 일찍 회사에 간다는 보기는 틀려요.",
+        "en": "The woman says 「먼저 아이하고 같이 학교에 가요. 그다음에 회사에 가요」 (first I go to school with my child, then I go to work). So school comes first. She answered 「아니요」 to 「일찍 회사에 와요?」 (are you coming to work early?), and the meeting is at 열 시 (ten), not nine.",
+        "mn": "Эмэгтэй 「먼저 아이하고 같이 학교에 가요. 그다음에 회사에 가요」 (эхлээд хүүхэдтэйгээ хамт сургууль руу очоод, дараа нь ажилдаа явна) гэсэн. Тиймээс сургууль эхэнд нь. 「일찍 회사에 와요?」 (ажилдаа эрт ирэх үү?) гэхэд 「아니요」 гэж хариулсан бөгөөд хурал есөн цагт биш, арван цагт болно."
+      },
+      "choiceNotes": [
+        "「먼저 아이하고 같이 학교에 가요」 — 학교가 먼저예요.",
+        "「아니요, 먼저 아이하고 같이 학교에 가요」 — 일찍 회사에 가지 않아요.",
+        "「먼저 아이하고 같이 학교에 가요. 그다음에 회사에 가요」와 같아요.",
+        "「회의는 열 시에 해요」 — 아홉 시가 아니에요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/ti-l-b-026.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-027",
+      "rev": 1,
+      "family": "ti-l-b-027",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.condition",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "제가 내일부터 삼 일 동안 집에 없어요. 우리 고양이 밥을 부탁해요."
+        },
+        {
+          "speaker": "남자",
+          "text": "네, 좋아요. 아침하고 저녁에 줘요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "아니요, 저녁에만 주세요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "남자는 아침과 저녁에 고양이 밥을 줍니다.",
+        "여자는 내일부터 일주일 동안 집에 없습니다.",
+        "여자는 남자의 고양이에게 밥을 줍니다.",
+        "남자는 저녁에 고양이에게 밥을 줍니다."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "남자가 「아침하고 저녁에 줘요?」라고 물었고, 여자는 「아니요, 저녁에만 주세요」라고 했어요. 그래서 남자는 저녁에만 고양이 밥을 줘요. 아침에는 주지 않아요.",
+        "en": "The man asks 「아침하고 저녁에 줘요?」 (morning and evening?), and the woman answers 「아니요, 저녁에만 주세요」 (no, only in the evening). So the man feeds the cat in the evening only. She'll be away 「삼 일 동안」 (for three days), not a week, and it's her cat, not his.",
+        "mn": "Эрэгтэй 「아침하고 저녁에 줘요?」 (өглөө, орой өгөх үү?) гэж асуухад эмэгтэй 「아니요, 저녁에만 주세요」 (үгүй, зөвхөн орой өгөөрэй) гэсэн. Тиймээс эрэгтэй муурыг зөвхөн орой хооллоно. Эмэгтэй долоо хоног биш, 「삼 일 동안」 (гурван өдөр) гэртээ байхгүй бөгөөд муур нь эрэгтэйнх биш, эмэгтэйнх."
+      },
+      "choiceNotes": [
+        "「저녁에만 주세요」 — 아침에는 주지 않아요.",
+        "「삼 일 동안 집에 없어요」 — 일주일이 아니에요.",
+        "「우리 고양이」 — 여자의 고양이이고, 밥은 남자가 줘요.",
+        "「저녁에만 주세요」와 같아요."
+      ],
+      "conceptIds": [
+        "S107"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-027.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-028",
+      "rev": 1,
+      "family": "ti-l-b-028",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "어제 밤 열 시 드라마를 봤어요? 정말 재미있었어요."
+        },
+        {
+          "speaker": "남자",
+          "text": "아니요, 못 봤어요. 너무 피곤해서 아홉 시에 잤어요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그럼 오늘 인터넷으로 보세요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "남자는 드라마를 못 보고 잤습니다.",
+        "여자는 어제 드라마를 보지 않았습니다.",
+        "남자는 어제 밤 열 시에 잤습니다.",
+        "남자는 어제 피곤하지 않았습니다."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "남자는 「못 봤어요. 너무 피곤해서 아홉 시에 잤어요」라고 했어요. 드라마는 열 시였으니까 남자는 드라마를 보지 못하고 잤어요. 여자는 「정말 재미있었어요」라고 했으니까 드라마를 봤어요.",
+        "en": "The man says 「못 봤어요. 너무 피곤해서 아홉 시에 잤어요」 (I couldn't watch it; I was so tired I went to bed at nine). The drama was on at ten, so he missed it and slept. The woman says 「정말 재미있었어요」 (it was really fun), so she did watch it.",
+        "mn": "Эрэгтэй 「못 봤어요. 너무 피곤해서 아홉 시에 잤어요」 (үзэж чадаагүй, их ядарсан болохоор есөн цагт унтсан) гэсэн. Олон ангит кино арван цагт гардаг тул тэр үзэж амжилгүй унтсан. Эмэгтэй 「정말 재미있었어요」 (үнэхээр сонирхолтой байсан) гэсэн тул тэр үзсэн."
+      },
+      "choiceNotes": [
+        "「못 봤어요. … 아홉 시에 잤어요」 — 드라마를 못 보고 잤어요.",
+        "「정말 재미있었어요」 — 여자는 드라마를 봤어요.",
+        "「아홉 시에 잤어요」 — 열 시가 아니라 아홉 시에 잤어요.",
+        "「너무 피곤해서」 — 남자는 아주 피곤했어요."
+      ],
+      "conceptIds": [
+        "G305"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-028.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-029",
+      "rev": 1,
+      "family": "ti-l-b-029",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.sequence",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "저는 스키가 처음이에요. 뭐부터 해요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "먼저 저기에서 한 시간 배우세요. 그리고 아래에서 조금 연습하세요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그다음에 위에서 타요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "네, 그다음에 위로 올라가세요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "여자는 전에 스키를 많이 탔습니다.",
+        "여자는 배우고 바로 위로 올라갑니다.",
+        "여자는 두 시간 동안 스키를 배웁니다.",
+        "여자는 아래에서 연습하고 위로 올라갑니다."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "남자는 「먼저 저기에서 한 시간 배우세요. 그리고 아래에서 조금 연습하세요」, 「그다음에 위로 올라가세요」라고 했어요. 순서는 배우기, 아래에서 연습하기, 위로 올라가기예요. 배우고 바로 위로 가는 것이 아니에요.",
+        "en": "The man's order is 「먼저 저기에서 한 시간 배우세요」 (first take a one-hour lesson over there), then 「아래에서 조금 연습하세요」 (practice a bit at the bottom), and 「그다음에 위로 올라가세요」 (after that, go up). So she practices at the bottom before going up, not right after the lesson.",
+        "mn": "Эрэгтэйн хэлсэн дараалал: 「먼저 저기에서 한 시간 배우세요」 (эхлээд тэнд нэг цаг хичээллэ), 「아래에서 조금 연습하세요」 (доор нь жаахан дасгал хий), 「그다음에 위로 올라가세요」 (тэгээд дээшээ гар). Тиймээс хичээлийн дараа шууд дээшээ гарахгүй, эхлээд доор нь дасгал хийнэ."
+      },
+      "choiceNotes": [
+        "「저는 스키가 처음이에요」 — 전에 스키를 타지 않았어요.",
+        "「아래에서 조금 연습하세요」 — 배우고 바로 올라가지 않아요.",
+        "「한 시간 배우세요」 — 두 시간이 아니에요.",
+        "「아래에서 조금 연습하세요」, 「그다음에 위로 올라가세요」와 같아요."
+      ],
+      "conceptIds": [
+        "G306"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-029.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-030",
+      "rev": 1,
+      "family": "ti-l-b-030",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.condition",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "이 약국은 토요일에도 문을 열어요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "네, 토요일에는 오후 한 시까지 열어요. 일요일에는 문을 안 열어요."
+        },
+        {
+          "speaker": "남자",
+          "text": "그럼 토요일 아침에 다시 와요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "여자는 토요일 오후 세 시까지 약국 문을 엽니다.",
+        "여자는 일요일에도 약국 문을 엽니다.",
+        "여자는 토요일에는 오후 한 시에 약국 문을 닫습니다.",
+        "남자는 일요일 아침에 약국에 옵니다."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "여자는 「토요일에는 오후 한 시까지 열어요」라고 했어요. 그러니까 토요일에는 한 시에 문을 닫아요. 일요일에는 문을 안 열어서 남자는 토요일 아침에 다시 와요.",
+        "en": "The woman says 「토요일에는 오후 한 시까지 열어요」 (on Saturdays we're open until 1 p.m.), so the pharmacy closes at one on Saturdays. It's closed on Sundays (「일요일에는 문을 안 열어요」), which is why the man will come back on Saturday morning.",
+        "mn": "Эмэгтэй 「토요일에는 오후 한 시까지 열어요」 (бямба гарагт үдээс хойш нэг цаг хүртэл ажилладаг) гэсэн. Тиймээс бямба гарагт нэг цагт хаадаг. Ням гарагт ажилладаггүй (「일요일에는 문을 안 열어요」) тул эрэгтэй бямба гарагийн өглөө дахин ирнэ."
+      },
+      "choiceNotes": [
+        "「오후 한 시까지 열어요」 — 세 시가 아니라 한 시까지예요.",
+        "「일요일에는 문을 안 열어요」와 반대예요.",
+        "「토요일에는 오후 한 시까지 열어요」와 같아요 — 한 시에 문을 닫아요.",
+        "「토요일 아침에 다시 와요」 — 일요일이 아니라 토요일이에요."
+      ],
+      "conceptIds": [
+        "S105"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-030.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-031",
+      "rev": 1,
+      "family": "ti-l-b-031",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.sequence",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "내일 아침에 검사를 받아요. 아침을 먹고 가요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "아니요, 검사가 끝나고 아침을 드세요."
+        },
+        {
+          "speaker": "여자",
+          "text": "검사는 몇 시에 시작해요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "아홉 시에 시작해요. 한 시간쯤 걸려요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "여자는 아침을 먹고 검사를 받습니다.",
+        "여자는 검사를 받고 아침을 먹습니다.",
+        "여자는 열 시에 검사를 시작합니다.",
+        "여자는 두 시간쯤 검사를 받습니다."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "남자는 「검사가 끝나고 아침을 드세요」라고 했어요. 그러니까 여자는 검사를 먼저 받고 아침은 나중에 먹어요. 「아침을 먹고 가요?」라는 물음에 「아니요」라고 했으니까 아침을 먼저 먹는 보기는 틀려요.",
+        "en": "The man says 「검사가 끝나고 아침을 드세요」 (have breakfast after the test is over). So she has the test first and eats afterwards. He answered 「아니요」 to 「아침을 먹고 가요?」 (should I eat breakfast before I go?), so eating first is wrong.",
+        "mn": "Эрэгтэй 「검사가 끝나고 아침을 드세요」 (шинжилгээ дууссаны дараа өглөөний хоолоо идээрэй) гэсэн. Тиймээс эмэгтэй эхлээд шинжилгээ өгөөд, дараа нь хооллоно. 「아침을 먹고 가요?」 (өглөөний хоолоо идээд очих уу?) гэхэд 「아니요」 гэж хариулсан тул эхлээд хооллоно гэсэн нь буруу."
+      },
+      "choiceNotes": [
+        "「아니요, 검사가 끝나고 아침을 드세요」 — 아침은 검사 뒤에 먹어요.",
+        "「검사가 끝나고 아침을 드세요」와 같아요.",
+        "「아홉 시에 시작해요」 — 열 시가 아니에요.",
+        "「한 시간쯤 걸려요」 — 두 시간이 아니에요."
+      ],
+      "conceptIds": [
+        "G306"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-031.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-b-032",
+      "rev": 1,
+      "family": "ti-l-b-032",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-17",
+      "targetGrade": 1,
+      "skillId": "ko.listening.condition",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "시험이 끝나면 같이 바다에 가요."
+        },
+        {
+          "speaker": "여자",
+          "text": "좋아요. 제 시험은 다음 주 금요일에 끝나요."
+        },
+        {
+          "speaker": "남자",
+          "text": "그럼 그다음 날 아침에 가요."
+        },
+        {
+          "speaker": "여자",
+          "text": "네, 좋아요."
+        }
+      ],
+      "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "여자는 다음 주 토요일에 바다에 갑니다.",
+        "남자는 다음 주 금요일 아침에 바다에 갑니다.",
+        "여자는 다음 주 월요일에 시험이 끝납니다.",
+        "남자는 혼자 바다에 갑니다."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "남자는 「시험이 끝나면 같이 바다에 가요」라고 했고, 여자는 시험이 「다음 주 금요일에 끝나요」라고 했어요. 그래서 두 사람은 「그다음 날」인 토요일에 바다에 가요. 금요일 아침에 간다는 보기는 틀려요.",
+        "en": "The man says 「시험이 끝나면 같이 바다에 가요」 (let's go to the sea together when the exams are over). Her exams 「다음 주 금요일에 끝나요」 (end next Friday), and they decide to go 「그다음 날 아침에」 (the next morning), which is Saturday. So they don't leave on Friday, and he isn't going alone.",
+        "mn": "Эрэгтэй 「시험이 끝나면 같이 바다에 가요」 (шалгалт дуусвал хамт далай руу явъя) гэсэн. Эмэгтэйн шалгалт 「다음 주 금요일에 끝나요」 (ирэх долоо хоногийн баасан гарагт дуусна), тэд 「그다음 날 아침에」 (дараагийн өдөр нь өглөө), өөрөөр хэлбэл бямба гарагт явахаар тохирсон. Тиймээс баасан гарагт явахгүй, эрэгтэй ганцаараа ч явахгүй."
+      },
+      "choiceNotes": [
+        "시험이 「금요일에 끝나요」, 그리고 「그다음 날」 가요 — 토요일에 가요.",
+        "「그다음 날 아침에 가요」 — 금요일이 아니라 토요일이에요.",
+        "「다음 주 금요일에 끝나요」 — 월요일이 아니에요.",
+        "「같이 바다에 가요」 — 여자와 같이 가요."
+      ],
+      "conceptIds": [
+        "G401"
+      ],
+      "audio": {
+        "file": "audio/ti-l-b-032.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    }
+  ]
+}

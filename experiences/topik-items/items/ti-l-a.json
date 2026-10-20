@@ -1,0 +1,1606 @@
+{
+  "schema": "topik-item-1",
+  "batch": "ti-l-a",
+  "author": "claude-opus-5-5 · Claude Code 하위 에이전트 · 2026-10-20",
+  "items": [
+    {
+      "id": "ti-l-a-001",
+      "rev": 1,
+      "family": "ti-l-a-001",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-01",
+      "targetGrade": 1,
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "고양이를 좋아해요?"
+        }
+      ],
+      "question": "듣고 물음에 맞는 대답을 고르십시오.",
+      "choices": [
+        "네, 고양이가 아니에요.",
+        "네, 고양이를 싫어해요.",
+        "아니요, 고양이를 좋아해요.",
+        "아니요, 고양이를 안 좋아해요."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "「고양이를 좋아해요?」는 좋아하는지 묻는 말이에요. 「아니요」로 대답하면 뒤에 「안 좋아해요」가 와야 맞아요. ②는 「네」라고 하고 「싫어해요」라고 해서 앞뒤가 맞지 않아요.",
+        "en": "「고양이를 좋아해요?」 asks whether you like cats. If you answer 「아니요」(no), it must be followed by 「안 좋아해요」(I don't like them). Choice ② starts with 「네」(yes) but then says 「싫어해요」(I dislike them), so the two parts contradict each other.",
+        "mn": "「고양이를 좋아해요?」(Та муурт дуртай юу?) гэж асууж байна. 「아니요」(үгүй) гэж хариулбал араас нь 「안 좋아해요」(дургүй) гэж үргэлжлэх ёстой. ② нь 「네」(тийм) гэчихээд 「싫어해요」(дургүй) гэж байгаа тул хоорондоо зөрчилдөж байна."
+      },
+      "choiceNotes": [
+        "「고양이가 아니에요」는 좋아하는지 묻는 말에 맞는 대답이 아니에요.",
+        "「네」(좋아해요)라고 하고 「싫어해요」라고 해서 앞뒤가 맞지 않아요.",
+        "「아니요」라고 하고 「좋아해요」라고 해서 앞뒤가 맞지 않아요.",
+        "「아니요」 뒤에 「안 좋아해요」가 와서 물음에 맞는 대답이에요."
+      ],
+      "conceptIds": [
+        "G209"
+      ],
+      "audio": {
+        "file": "audio/ti-l-a-001.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-a-002",
+      "rev": 1,
+      "family": "ti-l-a-002",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-01",
+      "targetGrade": 1,
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "이 노래를 알아요?"
+        }
+      ],
+      "question": "듣고 물음에 맞는 대답을 고르십시오.",
+      "choices": [
+        "네, 노래를 알아요.",
+        "네, 노래를 몰라요.",
+        "아니요, 노래가 좋아요.",
+        "아니요, 노래를 알아요."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "「이 노래를 알아요?」는 아는지 묻는 말이에요. 「네」로 대답하면 「알아요」가 이어져야 맞아요. ④는 「아니요」라고 하고 「알아요」라고 해서 앞뒤가 맞지 않아요.",
+        "en": "「이 노래를 알아요?」 asks whether you know this song. An answer starting with 「네」(yes) should go on with 「알아요」(I know it). Choice ④ says 「아니요」(no) but then 「알아요」(I know it), so it contradicts itself.",
+        "mn": "「이 노래를 알아요?」(Та энэ дууг мэдэх үү?) гэж асууж байна. 「네」(тийм) гэж хариулбал 「알아요」(мэднэ) гэж үргэлжлэх ёстой. ④ нь 「아니요」(үгүй) гэчихээд 「알아요」(мэднэ) гэж байгаа тул зөрчилтэй."
+      },
+      "choiceNotes": [
+        "「네」 뒤에 「알아요」가 와서 물음에 맞는 대답이에요.",
+        "「네」라고 하고 「몰라요」라고 해서 앞뒤가 맞지 않아요.",
+        "「노래가 좋아요」는 노래를 아는지 묻는 말에 대한 대답이 아니에요.",
+        "「아니요」라고 하고 「알아요」라고 해서 앞뒤가 맞지 않아요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/ti-l-a-002.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-a-003",
+      "rev": 1,
+      "family": "ti-l-a-003",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-01",
+      "targetGrade": 1,
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "내일 시험이 있어요?"
+        }
+      ],
+      "question": "듣고 물음에 맞는 대답을 고르십시오.",
+      "choices": [
+        "네, 시험이 없어요.",
+        "아니요, 시험이 어려워요.",
+        "네, 시험이 있어요.",
+        "아니요, 시험을 봐요."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "「내일 시험이 있어요?」는 시험이 있는지 묻는 말이에요. 「네」로 대답하면 「시험이 있어요」가 맞아요. ①은 「네」라고 하고 「없어요」라고 해서 앞뒤가 맞지 않아요.",
+        "en": "「내일 시험이 있어요?」 asks whether there is an exam tomorrow. After 「네」(yes), the matching answer is 「시험이 있어요」(I have an exam). Choice ① says 「네」 but then 「없어요」(there isn't one), so it contradicts itself.",
+        "mn": "「내일 시험이 있어요?」(Маргааш шалгалт байгаа юу?) гэж асууж байна. 「네」(тийм) гэвэл 「시험이 있어요」(шалгалт байгаа) гэх нь зөв. ① нь 「네」 гэчихээд 「없어요」(байхгүй) гэж байгаа тул зөрчилтэй."
+      },
+      "choiceNotes": [
+        "「네」라고 하고 「없어요」라고 해서 앞뒤가 맞지 않아요.",
+        "「시험이 어려워요」는 시험이 있는지 묻는 말에 대한 대답이 아니에요.",
+        "「네」 뒤에 「시험이 있어요」가 와서 물음에 맞아요.",
+        "「아니요」(없어요)라고 하고 「시험을 봐요」라고 해서 앞뒤가 맞지 않아요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/ti-l-a-003.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-a-004",
+      "rev": 1,
+      "family": "ti-l-a-004",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-01",
+      "targetGrade": 1,
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "언제 운전을 배웠어요?"
+        }
+      ],
+      "question": "듣고 물음에 맞는 대답을 고르십시오.",
+      "choices": [
+        "아버지한테 배웠어요.",
+        "작년 여름에 배웠어요.",
+        "집 근처에서 배웠어요.",
+        "한 달 동안 배웠어요."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "「언제」는 때를 묻는 말이에요. 그래서 「작년 여름에」처럼 때를 말하는 대답이 맞아요. ④ 「한 달 동안」은 언제가 아니라 얼마나 오래 배웠는지를 말해요.",
+        "en": "「언제」(when) asks about a time. So the answer that gives a time, 「작년 여름에」(last summer), is correct. Choice ④ 「한 달 동안」(for a month) tells how long, not when.",
+        "mn": "「언제」(хэзээ) нь цаг хугацааг асууж байна. Тиймээс 「작년 여름에」(өнгөрсөн зун) гэж цагийг хэлсэн хариулт зөв. ④ 「한 달 동안」(нэг сарын турш) нь хэзээ биш, хэр удаан сурсныг хэлж байна."
+      },
+      "choiceNotes": [
+        "「아버지한테」는 누구에게 배웠는지예요 — 「언제」에 대한 대답이 아니에요.",
+        "「작년 여름에」는 때를 말해서 「언제」에 맞는 대답이에요.",
+        "「집 근처에서」는 어디에서 배웠는지예요 — 때가 아니에요.",
+        "「한 달 동안」은 얼마나 오래 배웠는지예요 — 언제인지가 아니에요."
+      ],
+      "conceptIds": [
+        "G208"
+      ],
+      "audio": {
+        "file": "audio/ti-l-a-004.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-a-005",
+      "rev": 1,
+      "family": "ti-l-a-005",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-01",
+      "targetGrade": 1,
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "내일 어디에서 친구를 만나요?"
+        }
+      ],
+      "question": "듣고 물음에 맞는 대답을 고르십시오.",
+      "choices": [
+        "오후 세 시에 만나요.",
+        "고등학교 친구를 만나요.",
+        "일주일에 한 번 만나요.",
+        "백화점 앞에서 만나요."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "「어디에서」는 곳을 묻는 말이에요. 「백화점 앞에서」가 만나는 곳을 말해서 맞아요. ① 「오후 세 시에」는 곳이 아니라 때를 말해요.",
+        "en": "「어디에서」(where) asks about a place. 「백화점 앞에서」(in front of the department store) names the meeting place, so it is correct. Choice ① 「오후 세 시에」(at three in the afternoon) gives a time, not a place.",
+        "mn": "「어디에서」(хаана) нь газрыг асууж байна. 「백화점 앞에서」(их дэлгүүрийн урд) гэж уулзах газраа хэлсэн тул зөв. ① 「오후 세 시에」(өдрийн гурван цагт) нь газар биш, цагийг хэлж байна."
+      },
+      "choiceNotes": [
+        "「오후 세 시에」는 때예요 — 어디에서 만나는지 말하지 않아요.",
+        "「고등학교 친구를」은 누구를 만나는지예요 — 곳이 아니에요.",
+        "「일주일에 한 번」은 얼마나 자주 만나는지예요 — 곳이 아니에요.",
+        "「백화점 앞에서」가 만나는 곳을 말해서 「어디에서」에 맞아요."
+      ],
+      "conceptIds": [
+        "G207"
+      ],
+      "audio": {
+        "file": "audio/ti-l-a-005.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-a-006",
+      "rev": 1,
+      "family": "ti-l-a-006",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-01",
+      "targetGrade": 1,
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "이 수박은 얼마예요?"
+        }
+      ],
+      "question": "듣고 물음에 맞는 대답을 고르십시오.",
+      "choices": [
+        "두 개 주세요.",
+        "아주 달고 맛있어요.",
+        "만 오천 원이에요.",
+        "어제 시장에서 샀어요."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "「얼마예요?」는 값을 묻는 말이에요. 「만 오천 원이에요」가 값을 말해서 맞아요. ① 「두 개 주세요」는 물건을 사는 사람이 하는 말이라서 값을 묻는 말에 대한 대답이 아니에요.",
+        "en": "「얼마예요?」(How much is it?) asks the price. 「만 오천 원이에요」(It's fifteen thousand won) gives the price, so it is correct. Choice ① 「두 개 주세요」(Two, please) is what a buyer says, not an answer about the price.",
+        "mn": "「얼마예요?」(Хэд вэ?) нь үнийг асууж байна. 「만 오천 원이에요」(Арван таван мянган вон) гэж үнийг нь хэлсэн тул зөв. ① 「두 개 주세요」(Хоёрыг өгөөч) нь худалдан авагчийн хэлэх үг тул үнийн тухай хариулт биш."
+      },
+      "choiceNotes": [
+        "「두 개 주세요」는 사는 사람이 하는 말이에요 — 값을 말하지 않아요.",
+        "「달고 맛있어요」는 맛을 말해요 — 값이 아니에요.",
+        "「만 오천 원이에요」가 값을 말해서 「얼마예요?」에 맞아요.",
+        "「어제 시장에서 샀어요」는 언제, 어디에서 샀는지예요 — 값이 아니에요."
+      ],
+      "conceptIds": [
+        "G212"
+      ],
+      "audio": {
+        "file": "audio/ti-l-a-006.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-a-007",
+      "rev": 1,
+      "family": "ti-l-a-007",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-05",
+      "targetGrade": 1,
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "어제 약속을 잊어버려서 정말 미안해요."
+        }
+      ],
+      "question": "듣고 이어지는 말을 고르십시오.",
+      "choices": [
+        "괜찮아요.",
+        "고마워요.",
+        "반가워요.",
+        "축하해요."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "「약속을 잊어버려서 정말 미안해요」는 사과하는 말이에요. 사과를 들으면 「괜찮아요」라고 대답해요. 「고마워요」는 고마울 때 하는 말이라서 맞지 않아요.",
+        "en": "「약속을 잊어버려서 정말 미안해요」(I'm really sorry I forgot our appointment) is an apology. When someone apologizes, you answer 「괜찮아요」(It's okay). 「고마워요」(Thank you) is for when you feel grateful, so it does not fit.",
+        "mn": "「약속을 잊어버려서 정말 미안해요」(Уулзахаа мартчихсанд үнэхээр уучлаарай) нь уучлал гуйж буй үг. Хэн нэгэн уучлал гуйвал 「괜찮아요」(Зүгээр ээ) гэж хариулдаг. 「고마워요」(Баярлалаа) нь талархах үед хэлдэг үг тул тохирохгүй."
+      },
+      "choiceNotes": [
+        "사과하는 말 「미안해요」에는 「괜찮아요」라고 대답해요.",
+        "「고마워요」는 고마울 때 하는 말이에요 — 사과에 하는 대답이 아니에요.",
+        "「반가워요」는 만나서 기쁠 때 하는 인사예요 — 사과에 맞지 않아요.",
+        "「축하해요」는 좋은 일이 있을 때 하는 말이에요 — 약속을 잊은 일에 맞지 않아요."
+      ],
+      "conceptIds": [
+        "G308"
+      ],
+      "audio": {
+        "file": "audio/ti-l-a-007.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-a-008",
+      "rev": 1,
+      "family": "ti-l-a-008",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-05",
+      "targetGrade": 1,
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "음식이 정말 맛있었어요. 고마워요."
+        }
+      ],
+      "question": "듣고 이어지는 말을 고르십시오.",
+      "choices": [
+        "네, 잘 먹겠습니다.",
+        "아니에요, 또 같이 먹어요.",
+        "네, 맛있게 드세요.",
+        "네, 실례합니다."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "「음식이 정말 맛있었어요. 고마워요.」는 다 먹고 나서 고맙다고 하는 말이에요. 그래서 「아니에요, 또 같이 먹어요」가 이어져요. 「잘 먹겠습니다」와 「맛있게 드세요」는 먹기 전에 하는 말이에요.",
+        "en": "「음식이 정말 맛있었어요. 고마워요.」(The food was really delicious. Thank you.) is said after the meal is over. So 「아니에요, 또 같이 먹어요」(Not at all, let's eat together again) follows. 「잘 먹겠습니다」 and 「맛있게 드세요」 are said before eating.",
+        "mn": "「음식이 정말 맛있었어요. 고마워요.」(Хоол үнэхээр амттай байлаа. Баярлалаа.) нь хоолоо идэж дуусаад талархаж буй үг. Тиймээс 「아니에요, 또 같이 먹어요」(Зүгээр ээ, дахиад хамт идье) гэж үргэлжилнэ. 「잘 먹겠습니다」, 「맛있게 드세요」 хоёр нь хоол идэхийн өмнө хэлдэг үг."
+      },
+      "choiceNotes": [
+        "「잘 먹겠습니다」는 먹기 전에 하는 말이에요 — 「맛있었어요」는 이미 다 먹은 뒤예요.",
+        "고맙다는 말에 「아니에요」라고 하고 또 같이 먹자고 해서 자연스러워요.",
+        "「맛있게 드세요」는 먹기 전에 하는 말이에요 — 식사는 이미 끝났어요.",
+        "「실례합니다」는 말을 걸거나 들어갈 때 하는 말이에요 — 고맙다는 말에 맞지 않아요."
+      ],
+      "conceptIds": [
+        "G208"
+      ],
+      "audio": {
+        "file": "audio/ti-l-a-008.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-a-009",
+      "rev": 1,
+      "family": "ti-l-a-009",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-07",
+      "targetGrade": 1,
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "배가 아파요. 어제 저녁을 너무 많이 먹었어요."
+        },
+        {
+          "speaker": "남자",
+          "text": "이 약을 드세요. 하루에 두 번, 밥을 먹고 삼십 분 뒤에 드세요."
+        }
+      ],
+      "question": "여기는 어디입니까? 알맞은 것을 고르십시오.",
+      "choices": [
+        "식당",
+        "약국",
+        "서점",
+        "은행"
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "남자가 「이 약을 드세요. 하루에 두 번, 밥을 먹고 삼십 분 뒤에 드세요」라고 약을 주면서 먹는 법을 알려 줘요. 그래서 여기는 약국이에요. 「저녁」과 「밥」이 들리지만 여자는 밥을 먹으러 온 것이 아니라서 식당이 아니에요.",
+        "en": "The man gives medicine and explains how to take it: 「이 약을 드세요. 하루에 두 번, 밥을 먹고 삼십 분 뒤에 드세요」(Take this twice a day, thirty minutes after eating). So this is a pharmacy, 「약국」. You hear 「저녁」(dinner) and 「밥」(meal), but the woman did not come to eat, so it is not 「식당」(a restaurant).",
+        "mn": "Эрэгтэй 「이 약을 드세요. 하루에 두 번, 밥을 먹고 삼십 분 뒤에 드세요」(Энэ эмийг өдөрт хоёр удаа, хоол идсэнээс хойш гучин минутын дараа уугаарай) гэж эм өгөөд хэрхэн уухыг хэлж байна. Тиймээс энэ бол эмийн сан буюу 「약국」. 「저녁」(оройн хоол), 「밥」(хоол) гэдэг үг сонсогдож байгаа ч эмэгтэй хоол идэхээр ирээгүй тул 「식당」(хоолны газар) биш."
+      },
+      "choiceNotes": [
+        "「저녁」 「밥」이 나오지만 밥을 먹으러 온 곳이 아니에요 — 여자는 배가 아파서 약을 받아요.",
+        "「이 약을 드세요」 「하루에 두 번」 — 약을 주고 먹는 법을 알려 주는 곳이에요.",
+        "책 이야기가 아니에요 — 「배가 아파요」라는 말에 남자가 약을 줘요.",
+        "돈을 찾거나 바꾸는 이야기가 아니에요 — 약을 먹는 법을 말해요."
+      ],
+      "conceptIds": [
+        "G212"
+      ],
+      "audio": {
+        "file": "audio/ti-l-a-009.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-a-010",
+      "rev": 1,
+      "family": "ti-l-a-010",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-07",
+      "targetGrade": 1,
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "오늘 방 있어요? 두 사람이에요."
+        },
+        {
+          "speaker": "남자",
+          "text": "네, 칠 층에 방이 있어요. 여기 열쇠 받으세요."
+        },
+        {
+          "speaker": "여자",
+          "text": "아침은 어디에서 먹어요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "일 층 식당에서 드세요. 일곱 시부터 아홉 시까지예요."
+        }
+      ],
+      "question": "여기는 어디입니까? 알맞은 것을 고르십시오.",
+      "choices": [
+        "시장",
+        "식당",
+        "호텔",
+        "극장"
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "여자가 「오늘 방 있어요?」라고 묻고, 남자가 「칠 층에 방이 있어요. 여기 열쇠 받으세요」라고 해요. 잘 방을 받는 곳이라서 호텔이에요. 「일 층 식당에서 드세요」는 아침을 먹을 곳을 알려 주는 말이라서 지금 있는 곳은 식당이 아니에요.",
+        "en": "The woman asks 「오늘 방 있어요?」(Do you have a room tonight?), and the man says 「칠 층에 방이 있어요. 여기 열쇠 받으세요」(There's a room on the seventh floor. Here's your key). Getting a room to stay in means this is a hotel, 「호텔」. 「일 층 식당에서 드세요」(Eat at the restaurant on the first floor) only tells her where breakfast is, so they are not in 「식당」 now.",
+        "mn": "Эмэгтэй 「오늘 방 있어요?」(Өнөөдөр өрөө байна уу?) гэж асуухад эрэгтэй 「칠 층에 방이 있어요. 여기 열쇠 받으세요」(Долдугаар давхарт өрөө байна. Түлхүүрээ аваарай) гэж байна. Хонох өрөө авч байгаа газар учраас зочид буудал буюу 「호텔」. 「일 층 식당에서 드세요」(Нэгдүгээр давхрын хоолны газарт идээрэй) нь өглөөний хоолыг хаана идэхийг хэлж байгаа болохоос одоо тэд 「식당」-д байгаа биш."
+      },
+      "choiceNotes": [
+        "물건을 사고파는 이야기가 아니에요 — 방과 열쇠를 받아요.",
+        "「일 층 식당에서 드세요」는 아침 먹을 곳을 알려 주는 말이에요 — 지금은 방을 받는 곳에 있어요.",
+        "「방 있어요?」 「여기 열쇠 받으세요」 — 잘 방을 받는 곳이에요.",
+        "영화 이야기가 아니에요 — 방, 열쇠, 아침 시간을 말해요."
+      ],
+      "conceptIds": [
+        "G212"
+      ],
+      "audio": {
+        "file": "audio/ti-l-a-010.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-a-011",
+      "rev": 1,
+      "family": "ti-l-a-011",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-07",
+      "targetGrade": 1,
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "여권하고 비행기 표 주세요."
+        },
+        {
+          "speaker": "여자",
+          "text": "여기 있어요. 창문 옆 자리 있어요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "네, 있어요. 비행기는 열 시 반에 떠나요."
+        }
+      ],
+      "question": "여기는 어디입니까? 알맞은 것을 고르십시오.",
+      "choices": [
+        "공항",
+        "역",
+        "은행",
+        "학교"
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "남자가 「여권하고 비행기 표 주세요」라고 하고 「비행기는 열 시 반에 떠나요」라고 해요. 여권을 보여 주고 비행기를 타는 곳이라서 공항이에요. 「표」와 「자리」는 역에서도 쓰는 말이지만 「비행기」를 타니까 역이 아니에요.",
+        "en": "The man says 「여권하고 비행기 표 주세요」(Your passport and plane ticket, please) and 「비행기는 열 시 반에 떠나요」(The plane leaves at ten thirty). Showing a passport to board a plane happens at an airport, 「공항」. 「표」(ticket) and 「자리」(seat) are also used at a train station, but she is taking a 「비행기」(plane), so it is not 「역」.",
+        "mn": "Эрэгтэй 「여권하고 비행기 표 주세요」(Паспорт, онгоцны тасалбараа өгөөрэй), 「비행기는 열 시 반에 떠나요」(Онгоц арван цаг хагаст хөдөлнө) гэж байна. Паспортоо үзүүлээд онгоцонд суудаг газар бол нисэх онгоцны буудал буюу 「공항」. 「표」(тасалбар), 「자리」(суудал) гэдэг үгийг галт тэрэгний буудалд ч хэрэглэдэг ч 「비행기」(онгоц)-оор явах гэж байгаа тул 「역」 биш."
+      },
+      "choiceNotes": [
+        "「여권」 「비행기 표」 「비행기는 … 떠나요」 — 비행기를 타는 곳이에요.",
+        "「표」 「자리」는 역에서도 쓰지만 「비행기」를 타요 — 기차를 타는 역이 아니에요.",
+        "여권을 보여 주지만 돈을 바꾸지 않아요 — 비행기 표와 자리를 받아요.",
+        "공부하는 이야기가 아니에요 — 비행기 표와 자리 이야기예요."
+      ],
+      "conceptIds": [
+        "G212"
+      ],
+      "audio": {
+        "file": "audio/ti-l-a-011.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-a-012",
+      "rev": 1,
+      "family": "ti-l-a-012",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-07",
+      "targetGrade": 1,
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "이 버스가 시장에 가요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "아니요, 안 가요. 십오 번 버스를 타세요."
+        },
+        {
+          "speaker": "여자",
+          "text": "십오 번 버스는 자주 와요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "네, 자주 와요. 아, 저기 와요."
+        }
+      ],
+      "question": "여기는 어디입니까? 알맞은 것을 고르십시오.",
+      "choices": [
+        "시장",
+        "공항",
+        "서점",
+        "정류장"
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "여자가 「이 버스가 시장에 가요?」라고 묻고, 남자가 「십오 번 버스를 타세요」, 「아, 저기 와요」라고 해요. 버스를 기다렸다가 타는 곳이라서 정류장이에요. 「시장」은 여자가 가려는 곳이고 지금 있는 곳이 아니에요.",
+        "en": "The woman asks 「이 버스가 시장에 가요?」(Does this bus go to the market?), and the man says 「십오 번 버스를 타세요」(Take bus number fifteen) and 「아, 저기 와요」(Oh, here it comes). They are waiting for a bus, so this is a bus stop, 「정류장」. 「시장」(the market) is where she wants to go, not where she is now.",
+        "mn": "Эмэгтэй 「이 버스가 시장에 가요?」(Энэ автобус зах руу явах уу?) гэж асуухад эрэгтэй 「십오 번 버스를 타세요」(Арван тавдугаар автобусанд суугаарай), 「아, 저기 와요」(Аа, тэр ирж байна) гэж байна. Автобус хүлээгээд суудаг газар учраас автобусны буудал буюу 「정류장」. 「시장」(зах) бол эмэгтэйн очих гэж буй газар, одоо байгаа газар нь биш."
+      },
+      "choiceNotes": [
+        "「시장」은 여자가 가려는 곳이에요 — 지금은 버스를 기다리고 있어요.",
+        "비행기가 아니라 「십오 번 버스」를 타요 — 공항이 아니에요.",
+        "책 이야기가 아니에요 — 어느 버스를 타는지 말해요.",
+        "「이 버스가 … 가요?」 「저기 와요」 — 버스를 기다리는 곳이에요."
+      ],
+      "conceptIds": [
+        "G212"
+      ],
+      "audio": {
+        "file": "audio/ti-l-a-012.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-a-013",
+      "rev": 1,
+      "family": "ti-l-a-013",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-07",
+      "targetGrade": 1,
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "여러분, 책 이십 쪽을 보세요."
+        },
+        {
+          "speaker": "남자",
+          "text": "선생님, 저는 오늘 책을 안 가지고 왔어요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그럼 옆 친구하고 같이 보세요."
+        }
+      ],
+      "question": "여기는 어디입니까? 알맞은 것을 고르십시오.",
+      "choices": [
+        "서점",
+        "교실",
+        "은행",
+        "극장"
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "여자가 「여러분, 책 이십 쪽을 보세요」라고 하고, 남자가 여자를 「선생님」이라고 불러요. 선생님과 학생들이 수업을 하는 곳이라서 교실이에요. 「책」이 나오지만 책을 사는 이야기가 아니라서 서점이 아니에요.",
+        "en": "The woman says 「여러분, 책 이십 쪽을 보세요」(Everyone, look at page twenty of your book), and the man calls her 「선생님」(teacher). A teacher and students having a lesson means this is a classroom, 「교실」. You hear 「책」(book), but nobody is buying books, so it is not 「서점」(a bookstore).",
+        "mn": "Эмэгтэй 「여러분, 책 이십 쪽을 보세요」(Бүгдээрээ номынхоо хорьдугаар хуудсыг хараарай) гэхэд эрэгтэй түүнийг 「선생님」(багш аа) гэж дуудаж байна. Багш, сурагчид хичээл хийж байгаа газар учраас анги буюу 「교실」. 「책」(ном) гэдэг үг гарсан ч ном худалдаж авах тухай биш тул 「서점」(номын дэлгүүр) биш."
+      },
+      "choiceNotes": [
+        "「책」이 나오지만 책을 사지 않아요 — 선생님이 「이십 쪽을 보세요」라고 수업을 해요.",
+        "「여러분」 「선생님」 「옆 친구하고 같이 보세요」 — 수업을 하는 곳이에요.",
+        "돈 이야기가 아니에요 — 선생님과 학생이 책을 봐요.",
+        "영화가 아니라 책 이십 쪽을 봐요 — 극장이 아니에요."
+      ],
+      "conceptIds": [
+        "G211"
+      ],
+      "audio": {
+        "file": "audio/ti-l-a-013.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-a-014",
+      "rev": 1,
+      "family": "ti-l-a-014",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-07",
+      "targetGrade": 1,
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "미국 돈을 한국 돈으로 바꾸고 싶어요."
+        },
+        {
+          "speaker": "여자",
+          "text": "네, 얼마를 바꾸시겠어요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "이백 달러요. 여기 있어요."
+        }
+      ],
+      "question": "여기는 어디입니까? 알맞은 것을 고르십시오.",
+      "choices": [
+        "은행",
+        "가게",
+        "학교",
+        "약국"
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "남자가 「미국 돈을 한국 돈으로 바꾸고 싶어요」라고 하고 「이백 달러요」라고 해요. 돈을 다른 나라 돈으로 바꾸는 곳이라서 은행이에요. 가게에서도 돈을 내지만 돈을 바꿔 주지는 않아요.",
+        "en": "The man says 「미국 돈을 한국 돈으로 바꾸고 싶어요」(I'd like to change American money into Korean money) and 「이백 달러요」(Two hundred dollars). Changing money into another currency is done at a bank, 「은행」. You also pay money at 「가게」(a shop), but a shop does not change money.",
+        "mn": "Эрэгтэй 「미국 돈을 한국 돈으로 바꾸고 싶어요」(Америк мөнгөө Солонгос мөнгөөр солимоор байна), 「이백 달러요」(Хоёр зуун доллар) гэж байна. Мөнгийг өөр улсын мөнгөөр сольдог газар бол банк буюу 「은행」. 「가게」(дэлгүүр)-т ч мөнгө төлдөг ч мөнгө сольж өгдөггүй."
+      },
+      "choiceNotes": [
+        "「미국 돈을 한국 돈으로 바꾸고 싶어요」 — 돈을 바꾸는 곳이에요.",
+        "가게에서는 물건을 사요 — 남자는 물건을 사지 않고 돈을 바꿔요.",
+        "공부하는 이야기가 아니에요 — 「얼마를 바꾸시겠어요?」라고 물어요.",
+        "약 이야기가 아니에요 — 달러를 한국 돈으로 바꿔요."
+      ],
+      "conceptIds": [
+        "G301",
+        "G309"
+      ],
+      "audio": {
+        "file": "audio/ti-l-a-014.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-a-015",
+      "rev": 1,
+      "family": "ti-l-a-015",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-07",
+      "targetGrade": 1,
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "사람이 정말 많아요. 축구가 벌써 시작했어요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "네, 십 분 전에 시작했어요. 우리 학교 선수들은 빨간색 옷을 입었어요."
+        }
+      ],
+      "question": "여기는 어디입니까? 알맞은 것을 고르십시오.",
+      "choices": [
+        "교실",
+        "극장",
+        "운동장",
+        "수영장"
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "여자가 「축구가 벌써 시작했어요?」라고 묻고, 남자가 「우리 학교 선수들은 빨간색 옷을 입었어요」라고 해요. 많은 사람이 모여 축구 경기를 보는 곳이라서 운동장이에요. 「학교」가 나오지만 수업을 하는 것이 아니라서 교실이 아니에요.",
+        "en": "The woman asks 「축구가 벌써 시작했어요?」(Has the soccer game already started?), and the man says 「우리 학교 선수들은 빨간색 옷을 입었어요」(Our school's players are wearing red). Watching a soccer game with many people means this is a sports field, 「운동장」. You hear 「학교」(school), but there is no class going on, so it is not 「교실」.",
+        "mn": "Эмэгтэй 「축구가 벌써 시작했어요?」(Хөлбөмбөг аль хэдийн эхэлчихсэн үү?) гэж асуухад эрэгтэй 「우리 학교 선수들은 빨간색 옷을 입었어요」(Манай сургуулийн тамирчид улаан хувцастай) гэж байна. Олон хүн цугларч хөлбөмбөгийн тоглолт үзэж байгаа газар учраас спортын талбай буюу 「운동장」. 「학교」(сургууль) гэдэг үг гарсан ч хичээл орж байгаа биш тул 「교실」(анги) биш."
+      },
+      "choiceNotes": [
+        "「우리 학교」가 나오지만 수업이 아니라 축구를 봐요 — 교실이 아니에요.",
+        "사람이 많지만 영화가 아니라 「축구」를 봐요 — 극장이 아니에요.",
+        "「축구가 … 시작했어요?」 「선수들」 — 축구를 하는 곳이에요.",
+        "운동 이야기지만 수영이 아니라 「축구」예요 — 수영장이 아니에요."
+      ],
+      "conceptIds": [
+        "G208"
+      ],
+      "audio": {
+        "file": "audio/ti-l-a-015.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-a-016",
+      "rev": 1,
+      "family": "ti-l-a-016",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-07",
+      "targetGrade": 1,
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "실례지만, 여기는 제 자리예요. 저는 칠 번이에요."
+        },
+        {
+          "speaker": "남자",
+          "text": "아, 미안해요. 제 자리는 팔 번이에요."
+        },
+        {
+          "speaker": "여자",
+          "text": "괜찮아요. 영화가 곧 시작해요."
+        }
+      ],
+      "question": "여기는 어디입니까? 알맞은 것을 고르십시오.",
+      "choices": [
+        "은행",
+        "교실",
+        "호텔",
+        "극장"
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "여자가 「여기는 제 자리예요. 저는 칠 번이에요」라고 하고, 마지막에 「영화가 곧 시작해요」라고 해요. 번호가 있는 자리에 앉아서 영화를 보는 곳이라서 극장이에요. 「자리」는 교실에도 있지만 곧 영화가 시작하니까 교실이 아니에요.",
+        "en": "The woman says 「여기는 제 자리예요. 저는 칠 번이에요」(This is my seat. I'm number seven) and at the end 「영화가 곧 시작해요」(The movie starts soon). Sitting in numbered seats to watch a movie happens at a movie theater, 「극장」. Classrooms have seats too, but a movie is about to start, so it is not 「교실」.",
+        "mn": "Эмэгтэй 「여기는 제 자리예요. 저는 칠 번이에요」(Энэ миний суудал. Би долдугаар суудалтай) гээд, сүүлд нь 「영화가 곧 시작해요」(Кино удахгүй эхэлнэ) гэж байна. Дугаартай суудалд суугаад кино үздэг газар бол кино театр буюу 「극장」. Ангид ч суудал байдаг ч кино эхлэх гэж байгаа тул 「교실」 биш."
+      },
+      "choiceNotes": [
+        "돈 이야기가 아니에요 — 자리 번호와 영화 이야기를 해요.",
+        "「자리」는 교실에도 있지만 「영화가 곧 시작해요」 — 수업이 아니에요.",
+        "방이나 열쇠 이야기가 아니에요 — 「칠 번」 「팔 번」 자리 이야기예요.",
+        "「제 자리예요」 「영화가 곧 시작해요」 — 자리에 앉아 영화를 보는 곳이에요."
+      ],
+      "conceptIds": [
+        "G307"
+      ],
+      "audio": {
+        "file": "audio/ti-l-a-016.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-a-017",
+      "rev": 1,
+      "family": "ti-l-a-017",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-11",
+      "targetGrade": 1,
+      "skillId": "ko.listening.main",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "사진 속 이 사람은 누구예요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "우리 언니예요. 그리고 이 아이는 제 남동생이에요."
+        }
+      ],
+      "question": "무엇에 대해 말하고 있습니까? 알맞은 것을 고르십시오.",
+      "choices": [
+        "이름",
+        "나이",
+        "가족",
+        "주말"
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "남자가 「사진 속 이 사람은 누구예요?」라고 묻고, 여자가 「우리 언니예요」, 「이 아이는 제 남동생이에요」라고 대답해요. 언니와 남동생을 소개하니까 가족에 대한 이야기예요. 「누구예요?」라고 묻지만 이름이나 나이는 말하지 않아요.",
+        "en": "The man asks 「사진 속 이 사람은 누구예요?」(Who is this person in the photo?), and the woman answers 「우리 언니예요」(It's my older sister) and 「이 아이는 제 남동생이에요」(This child is my younger brother). She is introducing her sister and brother, so they are talking about 「가족」(family). He asks 「누구예요?」(who), but no names or ages are given.",
+        "mn": "Эрэгтэй 「사진 속 이 사람은 누구예요?」(Зурган дээрх энэ хүн хэн бэ?) гэж асуухад эмэгтэй 「우리 언니예요」(Миний эгч), 「이 아이는 제 남동생이에요」(Энэ хүүхэд миний эрэгтэй дүү) гэж хариулж байна. Эгч, дүүгээ танилцуулж байгаа тул 「가족」(гэр бүл)-ийн тухай яриа. 「누구예요?」(хэн бэ?) гэж асуусан ч нэр, насаа хэлээгүй."
+      },
+      "choiceNotes": [
+        "「누구예요?」에 이름이 아니라 「언니」 「남동생」이라고 대답해요.",
+        "「아이」가 나오지만 몇 살인지는 말하지 않아요.",
+        "「우리 언니」 「제 남동생」 — 가족을 소개하고 있어요.",
+        "주말에 무엇을 하는지가 아니라 사진 속 사람이 누구인지 말해요."
+      ],
+      "conceptIds": [
+        "G204"
+      ],
+      "audio": {
+        "file": "audio/ti-l-a-017.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-a-018",
+      "rev": 1,
+      "family": "ti-l-a-018",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-11",
+      "targetGrade": 1,
+      "skillId": "ko.listening.main",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "밖에 아직 비가 와요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "아니요, 비는 안 와요. 그런데 바람이 많이 불고 추워요."
+        }
+      ],
+      "question": "무엇에 대해 말하고 있습니까? 알맞은 것을 고르십시오.",
+      "choices": [
+        "여행",
+        "날씨",
+        "시간",
+        "운동"
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "남자가 「밖에 아직 비가 와요?」라고 묻고, 여자가 「비는 안 와요. 그런데 바람이 많이 불고 추워요」라고 대답해요. 비, 바람, 추위를 말하니까 날씨에 대한 이야기예요. 「아직」이 나오지만 몇 시인지 말하는 것이 아니라서 시간이 아니에요.",
+        "en": "The man asks 「밖에 아직 비가 와요?」(Is it still raining outside?), and the woman answers 「비는 안 와요. 그런데 바람이 많이 불고 추워요」(It isn't raining, but it's very windy and cold). Rain, wind and cold are all about 「날씨」(weather). You hear 「아직」(still), but nobody says what time it is, so it is not 「시간」(time).",
+        "mn": "Эрэгтэй 「밖에 아직 비가 와요?」(Гадаа бороо орсоор байна уу?) гэж асуухад эмэгтэй 「비는 안 와요. 그런데 바람이 많이 불고 추워요」(Бороо орохгүй байна. Гэхдээ салхи ихтэй, хүйтэн байна) гэж хариулж байна. Бороо, салхи, хүйтний тухай ярьж байгаа тул 「날씨」(цаг агаар)-ны тухай. 「아직」(одоо болтол) гэдэг үг гарсан ч хэдэн цаг болж байгааг хэлээгүй тул 「시간」(цаг хугацаа) биш."
+      },
+      "choiceNotes": [
+        "어디에 가는 이야기가 아니에요 — 지금 밖에 비가 오는지, 바람이 부는지 말해요.",
+        "「비」 「바람이 많이 불고 추워요」 — 날씨를 말하고 있어요.",
+        "「아직」이 나오지만 몇 시인지는 말하지 않아요.",
+        "운동하는 이야기가 아니에요 — 밖의 비와 바람을 말해요."
+      ],
+      "conceptIds": [
+        "G209"
+      ],
+      "audio": {
+        "file": "audio/ti-l-a-018.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-a-019",
+      "rev": 1,
+      "family": "ti-l-a-019",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-11",
+      "targetGrade": 1,
+      "skillId": "ko.listening.main",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "보통 저녁에 집에서 뭐 해요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "저는 그림을 그려요. 요즘은 꽃을 자주 그려요."
+        }
+      ],
+      "question": "무엇에 대해 말하고 있습니까? 알맞은 것을 고르십시오.",
+      "choices": [
+        "취미",
+        "음식",
+        "운동",
+        "쇼핑"
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "남자가 「보통 저녁에 집에서 뭐 해요?」라고 묻고, 여자가 「그림을 그려요. 요즘은 꽃을 자주 그려요」라고 대답해요. 시간이 있을 때 즐겨 하는 일을 말하니까 취미에 대한 이야기예요. 여기에서 「저녁」은 밥이 아니라 때를 말해서 음식 이야기가 아니에요.",
+        "en": "The man asks 「보통 저녁에 집에서 뭐 해요?」(What do you usually do at home in the evening?), and the woman answers 「그림을 그려요. 요즘은 꽃을 자주 그려요」(I draw. These days I often draw flowers). She is talking about what she enjoys in her free time, so the topic is 「취미」(hobby). Here 「저녁」 means evening, not dinner, so it is not about 「음식」(food).",
+        "mn": "Эрэгтэй 「보통 저녁에 집에서 뭐 해요?」(Ихэвчлэн орой гэртээ юу хийдэг вэ?) гэж асуухад эмэгтэй 「그림을 그려요. 요즘은 꽃을 자주 그려요」(Зураг зурдаг. Сүүлийн үед цэцэг их зурж байна) гэж хариулж байна. Чөлөөт цагаараа дуртай хийдэг зүйлээ ярьж байгаа тул 「취미」(хобби)-ны тухай. Энд 「저녁」 нь оройн хоол биш, орой гэсэн цагийг хэлж байгаа тул 「음식」(хоол)-ний тухай биш."
+      },
+      "choiceNotes": [
+        "「저녁에 집에서」 「그림을 그려요」 — 시간이 있을 때 하는 일, 취미를 말해요.",
+        "「저녁」은 여기에서 밥이 아니라 때예요 — 먹는 이야기가 아니에요.",
+        "몸을 움직이는 운동이 아니라 「그림을 그려요」라고 해요.",
+        "물건을 사는 이야기가 아니에요 — 집에서 그림을 그려요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/ti-l-a-019.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-a-020",
+      "rev": 1,
+      "family": "ti-l-a-020",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-11",
+      "targetGrade": 1,
+      "skillId": "ko.listening.main",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "할머니 댁에 어떻게 가요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "먼저 지하철을 타요. 그리고 역에서 이십 분쯤 걸어요."
+        }
+      ],
+      "question": "무엇에 대해 말하고 있습니까? 알맞은 것을 고르십시오.",
+      "choices": [
+        "주말",
+        "날씨",
+        "선물",
+        "교통"
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "여자가 「할머니 댁에 어떻게 가요?」라고 묻고, 남자가 「먼저 지하철을 타요. 그리고 역에서 이십 분쯤 걸어요」라고 대답해요. 무엇을 타고 어떻게 가는지 말하니까 교통에 대한 이야기예요. 할머니 댁에 가지만 선물 이야기는 하지 않아요.",
+        "en": "The woman asks 「할머니 댁에 어떻게 가요?」(How do you get to your grandmother's house?), and the man answers 「먼저 지하철을 타요. 그리고 역에서 이십 분쯤 걸어요」(First I take the subway, then I walk about twenty minutes from the station). They are talking about how to get there, so the topic is 「교통」(transportation). He is visiting his grandmother, but nothing is said about a gift, so it is not 「선물」.",
+        "mn": "Эмэгтэй 「할머니 댁에 어떻게 가요?」(Эмээгийнхээ гэрт яаж очдог вэ?) гэж асуухад эрэгтэй 「먼저 지하철을 타요. 그리고 역에서 이십 분쯤 걸어요」(Эхлээд метрогоор явна. Тэгээд буудлаас хорин минут орчим алхана) гэж хариулж байна. Юугаар, яаж очихоо ярьж байгаа тул 「교통」(тээвэр, унаа)-ны тухай. Эмээ дээрээ очих гэж байгаа ч бэлгийн тухай яриагүй тул 「선물」(бэлэг) биш."
+      },
+      "choiceNotes": [
+        "언제 가는지가 아니라 어떻게 가는지 말해요.",
+        "비나 바람 이야기가 아니에요 — 「지하철을 타요」 「걸어요」라고 해요.",
+        "할머니 댁에 가지만 무엇을 주는지는 말하지 않아요 — 가는 방법을 말해요.",
+        "「지하철을 타요」 「역에서 … 걸어요」 — 무엇을 타고 어떻게 가는지 말해요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/ti-l-a-020.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-a-021",
+      "rev": 1,
+      "family": "ti-l-a-021",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-11",
+      "targetGrade": 1,
+      "skillId": "ko.listening.main",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "불고기를 좋아해요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "네, 좋아해요. 그런데 냉면을 더 좋아해요."
+        },
+        {
+          "speaker": "여자",
+          "text": "저는 아직 냉면을 안 먹었어요. 맛있어요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "네, 시원하고 맛있어요. 여름에 꼭 드세요."
+        }
+      ],
+      "question": "무엇에 대해 말하고 있습니까? 알맞은 것을 고르십시오.",
+      "choices": [
+        "쇼핑",
+        "음식",
+        "날씨",
+        "약속"
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "두 사람이 「불고기」와 「냉면」을 말하고, 남자가 냉면이 「시원하고 맛있어요」라고 해요. 좋아하는 먹을 것을 이야기하니까 음식에 대한 이야기예요. 「시원하고」와 「여름」이 나오지만 냉면의 맛을 말하는 것이라서 날씨 이야기가 아니에요.",
+        "en": "The two talk about 「불고기」(bulgogi) and 「냉면」(cold noodles), and the man says the noodles are 「시원하고 맛있어요」(cool and delicious). They are talking about dishes they like, so the topic is 「음식」(food). You hear 「시원하고」(cool) and 「여름」(summer), but they describe the noodles, not the weather, so it is not 「날씨」.",
+        "mn": "Хоёулаа 「불고기」(пулгоги), 「냉면」(хүйтэн гоймон)-ий тухай ярьж, эрэгтэй хүйтэн гоймонг 「시원하고 맛있어요」(сэрүүхэн, амттай) гэж байна. Дуртай хоолныхоо тухай ярьж байгаа тул 「음식」(хоол)-ний тухай. 「시원하고」(сэрүүхэн), 「여름」(зун) гэдэг үг гарсан ч гоймонгийн амтыг хэлж байгаа болохоос 「날씨」(цаг агаар)-ны тухай биш."
+      },
+      "choiceNotes": [
+        "물건을 사는 이야기가 아니에요 — 불고기와 냉면을 좋아하는지 말해요.",
+        "「불고기」 「냉면」 「맛있어요」 — 좋아하는 음식을 말해요.",
+        "「시원하고」는 날씨가 아니라 냉면의 맛을 말해요.",
+        "「여름에 꼭 드세요」는 만날 날을 정하는 말이 아니에요 — 냉면을 먹어 보라는 말이에요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/ti-l-a-021.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-a-022",
+      "rev": 1,
+      "family": "ti-l-a-022",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-11",
+      "targetGrade": 1,
+      "skillId": "ko.listening.main",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "무슨 일을 하세요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "중학교에서 영어를 가르쳐요."
+        },
+        {
+          "speaker": "남자",
+          "text": "일이 힘들지 않아요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "조금 힘들어요. 그래도 아주 재미있어요."
+        }
+      ],
+      "question": "무엇에 대해 말하고 있습니까? 알맞은 것을 고르십시오.",
+      "choices": [
+        "고향",
+        "가족",
+        "직업",
+        "취미"
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "남자가 「무슨 일을 하세요?」라고 묻고, 여자가 「중학교에서 영어를 가르쳐요」라고 대답해요. 어떤 일을 하는지 말하니까 직업에 대한 이야기예요. 여자가 「재미있어요」라고 하지만 쉬는 시간에 하는 일이 아니라서 취미가 아니에요.",
+        "en": "The man asks 「무슨 일을 하세요?」(What do you do for work?), and the woman answers 「중학교에서 영어를 가르쳐요」(I teach English at a middle school). They are talking about her work, so the topic is 「직업」(job). She says 「재미있어요」(it's fun), but teaching is her work, not something she does in her free time, so it is not 「취미」(hobby).",
+        "mn": "Эрэгтэй 「무슨 일을 하세요?」(Та ямар ажил хийдэг вэ?) гэж асуухад эмэгтэй 「중학교에서 영어를 가르쳐요」(Дунд сургуульд англи хэл заадаг) гэж хариулж байна. Ямар ажил хийдгээ ярьж байгаа тул 「직업」(мэргэжил, ажил)-ийн тухай. Эмэгтэй 「재미있어요」(сонирхолтой) гэсэн ч энэ нь чөлөөт цагаараа хийдэг зүйл биш, ажил нь учраас 「취미」(хобби) биш."
+      },
+      "choiceNotes": [
+        "어디에서 왔는지는 말하지 않아요 — 「무슨 일을 하세요?」에 대답해요.",
+        "가족 이야기가 아니에요 — 여자가 학교에서 하는 일을 말해요.",
+        "「무슨 일을 하세요?」 「영어를 가르쳐요」 — 하는 일을 말해요.",
+        "「재미있어요」는 가르치는 일이 재미있다는 말이에요 — 쉬는 시간에 하는 일이 아니에요."
+      ],
+      "conceptIds": [
+        "S109"
+      ],
+      "audio": {
+        "file": "audio/ti-l-a-022.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-a-023",
+      "rev": 1,
+      "family": "ti-l-a-023",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-22",
+      "targetGrade": 1,
+      "skillId": "ko.listening.main",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "카페에 컵을 가지고 가요? 카페에도 컵이 있어요."
+        },
+        {
+          "speaker": "여자",
+          "text": "카페에서는 보통 종이컵을 줘요. 종이컵은 한 번 쓰고 버려요."
+        },
+        {
+          "speaker": "남자",
+          "text": "그래도 가방이 무겁지 않아요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "조금 무거워요. 그래도 자기 컵을 쓰는 것이 더 좋아요."
+        }
+      ],
+      "question": "듣고 여자의 중심 생각을 고르십시오.",
+      "choices": [
+        "가방이 무거우면 컵을 가지고 다니지 않는 것이 좋습니다.",
+        "카페에서 주는 종이컵을 쓰는 것이 좋습니다.",
+        "종이컵은 여러 번 쓸 수 있어서 좋습니다.",
+        "카페에 갈 때 자기 컵을 가지고 가는 것이 좋습니다."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "여자는 「종이컵은 한 번 쓰고 버려요」라고 하고, 가방이 조금 무거워도 「자기 컵을 쓰는 것이 더 좋아요」라고 말해요. 그래서 카페에 자기 컵을 가지고 가는 것이 좋다는 것이 중심 생각이에요. 가방이 무겁다는 말은 맞지만 여자는 「그래도」 컵을 가지고 다녀서 ①은 틀려요.",
+        "en": "The woman says 「종이컵은 한 번 쓰고 버려요」(Paper cups are used once and thrown away), and even though her bag is a little heavy, 「자기 컵을 쓰는 것이 더 좋아요」(It's better to use your own cup). Her main idea is that you should bring your own cup to a café. She admits the bag is heavy, but 「그래도」(even so) she carries the cup, so ① is wrong.",
+        "mn": "Эмэгтэй 「종이컵은 한 번 쓰고 버려요」(Цаасан аягыг нэг удаа хэрэглээд хаядаг) гэж хэлээд, цүнх нь жаахан хүнд байсан ч 「자기 컵을 쓰는 것이 더 좋아요」(Өөрийн аягаа хэрэглэх нь дээр) гэж байна. Тиймээс кафе руу өөрийн аягаа авч явах нь зөв гэдэг нь гол санаа. Цүнх хүнд гэдэг нь үнэн ч тэр 「그래도」(гэсэн ч) аягаа авч явдаг тул ① буруу."
+      },
+      "choiceNotes": [
+        "여자는 가방이 「조금 무거워요」라고 하지만 「그래도」 자기 컵을 쓰는 것이 좋다고 해요.",
+        "여자는 「종이컵은 한 번 쓰고 버려요」라고 하며 자기 컵이 더 좋다고 해요.",
+        "「종이컵은 한 번 쓰고 버려요」 — 여러 번 쓰지 않아요.",
+        "「자기 컵을 쓰는 것이 더 좋아요」 — 카페에 자기 컵을 가지고 가는 것이 여자의 생각이에요."
+      ],
+      "conceptIds": [
+        "G407"
+      ],
+      "audio": {
+        "file": "audio/ti-l-a-023.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-a-024",
+      "rev": 1,
+      "family": "ti-l-a-024",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-22",
+      "targetGrade": 1,
+      "skillId": "ko.listening.main",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "시계가 고장 났어요. 그래서 새 시계를 살 거예요."
+        },
+        {
+          "speaker": "여자",
+          "text": "먼저 시계 가게에 가서 물어보세요."
+        },
+        {
+          "speaker": "남자",
+          "text": "시계를 고치면 돈이 많이 들어요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그래도 새 시계보다 싸요. 고쳐서 쓰는 것이 좋아요."
+        }
+      ],
+      "question": "듣고 여자의 중심 생각을 고르십시오.",
+      "choices": [
+        "고장 난 시계는 고쳐서 쓰는 것이 좋습니다.",
+        "고장 난 시계는 새 시계로 바꾸는 것이 좋습니다.",
+        "시계를 고치면 새 시계보다 돈이 더 듭니다.",
+        "시계 가게에 묻지 말고 바로 새 시계를 사는 것이 좋습니다."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "남자는 새 시계를 사려고 하지만, 여자는 「먼저 시계 가게에 가서 물어보세요」라고 하고 「고쳐서 쓰는 것이 좋아요」라고 말해요. 고장 난 시계를 고쳐서 쓰는 것이 좋다는 것이 중심 생각이에요. 여자는 고치는 것이 「새 시계보다 싸요」라고 했으니까 ③은 틀려요.",
+        "en": "The man plans to buy a new watch, but the woman says 「먼저 시계 가게에 가서 물어보세요」(First go to a watch shop and ask) and 「고쳐서 쓰는 것이 좋아요」(It's good to fix it and keep using it). Her main idea is that a broken watch should be repaired and used. She says fixing it is 「새 시계보다 싸요」(cheaper than a new watch), so ③ is wrong.",
+        "mn": "Эрэгтэй шинэ цаг авах гэж байгаа ч эмэгтэй 「먼저 시계 가게에 가서 물어보세요」(Эхлээд цагны дэлгүүрт очоод асуугаарай), 「고쳐서 쓰는 것이 좋아요」(Засаад хэрэглэх нь дээр) гэж байна. Эвдэрсэн цагийг засаад хэрэглэх нь зөв гэдэг нь гол санаа. Тэр засвар нь 「새 시계보다 싸요」(шинэ цагнаас хямд) гэсэн тул ③ буруу."
+      },
+      "choiceNotes": [
+        "「고쳐서 쓰는 것이 좋아요」 — 여자의 생각이에요.",
+        "새 시계를 사려는 사람은 남자예요 — 여자는 고쳐서 쓰라고 해요.",
+        "여자는 고치는 것이 「새 시계보다 싸요」라고 했어요.",
+        "여자는 「먼저 시계 가게에 가서 물어보세요」라고 했어요."
+      ],
+      "conceptIds": [
+        "G407",
+        "G308"
+      ],
+      "audio": {
+        "file": "audio/ti-l-a-024.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-a-025",
+      "rev": 1,
+      "family": "ti-l-a-025",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-22",
+      "targetGrade": 1,
+      "skillId": "ko.listening.main",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "내일 아침에 운동화를 사러 갈 거예요."
+        },
+        {
+          "speaker": "여자",
+          "text": "신발은 오후에 사세요. 발이 아침보다 오후에 조금 더 커요."
+        },
+        {
+          "speaker": "남자",
+          "text": "정말요? 저는 몰랐어요."
+        },
+        {
+          "speaker": "여자",
+          "text": "아침에 사면 저녁에 신발이 작아요. 그래서 오후에 사는 것이 좋아요."
+        }
+      ],
+      "question": "듣고 여자의 중심 생각을 고르십시오.",
+      "choices": [
+        "운동화는 아침에 사는 것이 좋습니다.",
+        "아침에 산 신발은 저녁에 커서 불편합니다.",
+        "신발은 오후에 사는 것이 좋습니다.",
+        "발은 아침에 제일 커서 큰 신발을 사야 합니다."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "여자는 「신발은 오후에 사세요」라고 하고, 「발이 아침보다 오후에 조금 더 커요」라고 까닭을 말해요. 그래서 신발은 오후에 사는 것이 좋다는 것이 중심 생각이에요. 발이 더 큰 때는 아침이 아니라 오후라서 ④는 틀려요.",
+        "en": "The woman says 「신발은 오후에 사세요」(Buy shoes in the afternoon) and gives the reason: 「발이 아침보다 오후에 조금 더 커요」(Your feet are a little bigger in the afternoon than in the morning). Her main idea is that it is better to buy shoes in the afternoon. Feet are bigger in the afternoon, not in the morning, so ④ is wrong.",
+        "mn": "Эмэгтэй 「신발은 오후에 사세요」(Гутлаа үдээс хойш аваарай) гээд 「발이 아침보다 오후에 조금 더 커요」(Хөл өглөөнийхөөс үдээс хойш арай том болдог) гэж шалтгааныг нь хэлж байна. Тиймээс гутлыг үдээс хойш авах нь зөв гэдэг нь гол санаа. Хөл өглөө биш, үдээс хойш томордог тул ④ буруу."
+      },
+      "choiceNotes": [
+        "남자가 아침에 사러 간다고 하자 여자는 「신발은 오후에 사세요」라고 했어요.",
+        "여자는 아침에 사면 저녁에 신발이 「작아요」라고 했어요 — 커지는 것이 아니에요.",
+        "「신발은 오후에 사세요」 「오후에 사는 것이 좋아요」 — 여자의 생각이에요.",
+        "여자는 발이 「오후에 조금 더 커요」라고 했어요 — 아침이 아니에요."
+      ],
+      "conceptIds": [
+        "G401",
+        "G407"
+      ],
+      "audio": {
+        "file": "audio/ti-l-a-025.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-a-026",
+      "rev": 1,
+      "family": "ti-l-a-026",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-22",
+      "targetGrade": 1,
+      "skillId": "ko.listening.main",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "요즘 밤에 잠이 잘 안 와요. 커피도 안 마셔요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그럼 자기 전에 뭐 해요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "침대에서 핸드폰으로 영화를 한두 시간 봐요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그래서 잠이 안 와요. 자기 전에는 핸드폰을 보지 마세요."
+        }
+      ],
+      "question": "듣고 여자의 중심 생각을 고르십시오.",
+      "choices": [
+        "잠이 안 오는 것은 커피 때문입니다.",
+        "자기 전에는 핸드폰을 보지 않는 것이 좋습니다.",
+        "핸드폰으로 영화를 보면 잠이 잘 옵니다.",
+        "잠이 안 오면 침대에서 영화를 보는 것이 좋습니다."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "남자가 자기 전에 「침대에서 핸드폰으로 영화를 한두 시간 봐요」라고 하자, 여자는 「그래서 잠이 안 와요」, 「자기 전에는 핸드폰을 보지 마세요」라고 해요. 자기 전에 핸드폰을 보지 않는 것이 좋다는 것이 중심 생각이에요. 남자는 「커피도 안 마셔요」라고 했으니까 잠이 안 오는 까닭은 커피가 아니에요.",
+        "en": "When the man says that before bed he watches movies on his phone for an hour or two (「침대에서 핸드폰으로 영화를 한두 시간 봐요」), the woman says 「그래서 잠이 안 와요」(That's why you can't sleep) and 「자기 전에는 핸드폰을 보지 마세요」(Don't look at your phone before bed). Her main idea is that it is better not to use your phone before sleeping. The man says 「커피도 안 마셔요」(I don't drink coffee either), so coffee is not the reason.",
+        "mn": "Эрэгтэй унтахынхаа өмнө 「침대에서 핸드폰으로 영화를 한두 시간 봐요」(Орон дээрээ утсаараа нэг хоёр цаг кино үздэг) гэхэд эмэгтэй 「그래서 잠이 안 와요」(Тийм болохоор нойр хүрэхгүй байна), 「자기 전에는 핸드폰을 보지 마세요」(Унтахынхаа өмнө утсаа битгий хараарай) гэж байна. Унтахын өмнө утас харахгүй байх нь зөв гэдэг нь гол санаа. Эрэгтэй 「커피도 안 마셔요」(кофе ч уудаггүй) гэсэн тул нойр хүрэхгүй байгаа шалтгаан нь кофе биш."
+      },
+      "choiceNotes": [
+        "남자는 「커피도 안 마셔요」라고 했어요 — 여자는 핸드폰 때문이라고 해요.",
+        "「자기 전에는 핸드폰을 보지 마세요」 — 여자의 생각이에요.",
+        "여자는 핸드폰으로 영화를 봐서 「그래서 잠이 안 와요」라고 했어요.",
+        "침대에서 영화를 보는 것이 잠이 안 오는 까닭이라고 여자가 말했어요."
+      ],
+      "conceptIds": [
+        "S226",
+        "G406"
+      ],
+      "audio": {
+        "file": "audio/ti-l-a-026.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-a-027",
+      "rev": 1,
+      "family": "ti-l-a-027",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-22",
+      "targetGrade": 1,
+      "skillId": "ko.listening.main",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "다음 달에 처음으로 외국에 여행을 가요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그 나라 말을 조금 공부했어요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "아니요. 핸드폰이 있어서 괜찮아요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그래도 인사는 그 나라 말로 하세요. 그 나라 사람들이 아주 좋아해요."
+        }
+      ],
+      "question": "듣고 여자의 중심 생각을 고르십시오.",
+      "choices": [
+        "여행을 가는 나라의 말로 인사하는 것이 좋습니다.",
+        "외국 여행을 갈 때는 핸드폰만 있으면 됩니다.",
+        "외국에서는 한국어로 인사하는 것이 좋습니다.",
+        "외국 사람이 그 나라 말로 인사하면 사람들이 싫어합니다."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "여자는 「그래도 인사는 그 나라 말로 하세요. 그 나라 사람들이 아주 좋아해요」라고 말해요. 그래서 여행을 가는 나라의 말로 인사하는 것이 좋다는 것이 중심 생각이에요. 「핸드폰이 있어서 괜찮아요」는 남자의 생각이라서 ②는 틀려요.",
+        "en": "The woman says 「그래도 인사는 그 나라 말로 하세요. 그 나라 사람들이 아주 좋아해요」(Even so, say hello in that country's language. People there really like it). Her main idea is that it is good to greet people in the language of the country you visit. 「핸드폰이 있어서 괜찮아요」(It's fine because I have my phone) is the man's view, so ② is wrong.",
+        "mn": "Эмэгтэй 「그래도 인사는 그 나라 말로 하세요. 그 나라 사람들이 아주 좋아해요」(Гэсэн ч мэндчилгээгээ тэр орны хэлээр хэлээрэй. Тэр орны хүмүүст их таалагддаг) гэж байна. Тиймээс аялж очих орныхоо хэлээр мэндлэх нь зөв гэдэг нь гол санаа. 「핸드폰이 있어서 괜찮아요」(Утас байгаа болохоор зүгээр) гэдэг нь эрэгтэйн бодол тул ② буруу."
+      },
+      "choiceNotes": [
+        "「그래도 인사는 그 나라 말로 하세요」 — 여자의 생각이에요.",
+        "「핸드폰이 있어서 괜찮아요」는 남자의 말이에요 — 여자는 「그래도」 그 나라 말로 인사하라고 해요.",
+        "여자는 「그 나라 말로」 인사하라고 했어요 — 한국어가 아니에요.",
+        "여자는 「그 나라 사람들이 아주 좋아해요」라고 했어요."
+      ],
+      "conceptIds": [
+        "G309"
+      ],
+      "audio": {
+        "file": "audio/ti-l-a-027.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-l-a-028",
+      "rev": 1,
+      "family": "ti-l-a-028",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TI-L-22",
+      "targetGrade": 1,
+      "skillId": "ko.listening.main",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "저는 월요일부터 금요일까지 바빠서 주말에만 운동을 해요."
+        },
+        {
+          "speaker": "여자",
+          "text": "주말에 몇 시간 해요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "토요일에 세 시간쯤 해요. 그래서 일요일에는 몸이 아파요."
+        },
+        {
+          "speaker": "여자",
+          "text": "운동은 매일 조금씩 하는 것이 좋아요. 바쁘면 아침에 십 분만 하세요."
+        }
+      ],
+      "question": "듣고 여자의 중심 생각을 고르십시오.",
+      "choices": [
+        "운동은 주말에 한 번에 많이 하는 것이 좋습니다.",
+        "바쁜 날에는 운동을 쉬는 것이 좋습니다.",
+        "운동을 많이 해도 다음 날 몸이 아프지 않습니다.",
+        "운동은 매일 조금씩 하는 것이 좋습니다."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "여자는 「운동은 매일 조금씩 하는 것이 좋아요」라고 하고, 바쁘면 「아침에 십 분만 하세요」라고 말해요. 이것이 여자의 중심 생각이에요. 주말에만 많이 하는 것은 남자의 방법이고, 그래서 남자는 일요일에 「몸이 아파요」라고 했으니까 ①은 틀려요.",
+        "en": "The woman says 「운동은 매일 조금씩 하는 것이 좋아요」(It's good to exercise a little every day) and, if you are busy, 「아침에 십 분만 하세요」(just do ten minutes in the morning). That is her main idea. Exercising a lot only on weekends is the man's way, and he says it makes his body hurt on Sunday (「몸이 아파요」), so ① is wrong.",
+        "mn": "Эмэгтэй 「운동은 매일 조금씩 하는 것이 좋아요」(Дасгал хөдөлгөөнийг өдөр бүр бага багаар хийх нь зөв) гээд, завгүй бол 「아침에 십 분만 하세요」(өглөө арван минут л хийгээрэй) гэж байна. Энэ бол эмэгтэйн гол санаа. Зөвхөн амралтын өдөр их хийх нь эрэгтэйн арга бөгөөд тэр ням гарагт 「몸이 아파요」(бие өвддөг) гэсэн тул ① буруу."
+      },
+      "choiceNotes": [
+        "주말에만 많이 하는 것은 남자의 방법이에요 — 여자는 「매일 조금씩」이 좋다고 해요.",
+        "여자는 「바쁘면 아침에 십 분만 하세요」라고 했어요 — 쉬라고 하지 않아요.",
+        "남자는 토요일에 많이 해서 「일요일에는 몸이 아파요」라고 했어요.",
+        "「운동은 매일 조금씩 하는 것이 좋아요」 — 여자의 생각이에요."
+      ],
+      "conceptIds": [
+        "G407",
+        "G401"
+      ],
+      "audio": {
+        "file": "audio/ti-l-a-028.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    }
+  ]
+}

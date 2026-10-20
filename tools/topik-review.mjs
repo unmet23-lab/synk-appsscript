@@ -306,6 +306,7 @@ export function applyToItems(packet, merged, { at = new Date().toISOString(), di
   return changed;
 }
 export function applyToExisting(packet, merged, { at = new Date().toISOString(), dir = bankDir } = {}) {
+  if (!packet.units.some(unit => unit.kind === 'existing')) return null; // 기존 문항이 없는 묶음(쓰기만 등)은 허용 목록을 건드리지 않는다
   const file = path.join(dir, 'review/existing-verdicts.json'), doc = readJson(file);
   const rows = new Map((doc.items || []).map(row => [row.itemKey, row]));
   for (const unit of packet.units.filter(u => u.kind === 'existing')) {
@@ -420,7 +421,7 @@ async function main([command, name, ...argv]) {
   if (command === '반영') {
     const merged = readJson(path.join(dir, 'merged.json'));
     const changed = applyToItems(packet, merged), existing = applyToExisting(packet, merged), writing = applyToWriting(packet, merged);
-    console.log(`새 문항 반영 ${changed.length} · 기존 판정 목록 ${existing}줄 · 쓰기 ${writing.length}`);
+    console.log(`새 문항 반영 ${changed.length} · 기존 판정 목록 ${existing ?? '그대로'}줄 · 쓰기 ${writing.length}`);
     return 0;
   }
   if (command === '보고') {
