@@ -1,5 +1,4 @@
 import {MODELS, PORTFOLIO} from './pulse-data.mjs';
-import {mountPulseWorkflow} from './pulse-workflow.mjs';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fields={brand:'브랜드·제품',goal:'만들고 싶은 내용',channel:'사용할 곳·규격',deadline:'희망 일정',notes:'기타·메모'};
@@ -18,17 +17,17 @@ export function pulseRequestText(value){
     ...Object.entries(fields).flatMap(([key,label])=>[label+': '+(draft.brief[key].trim()||'미정')]),'',
     '모델·작업은 상담을 위한 후보입니다. 제작 범위·일정·사용 조건은 상담 후 확정합니다.'].join('\n');
 }
-export function mountPulseClient(root,{storage,getContext,getFavorite=()=>false,onFavorite=()=>{},onToast=()=>{},request}={}){
+// Project progress and approval live in the PULSE window (onOpenApp); this
+// view keeps only the brief drafts saved on this PC before that window existed.
+export function mountPulseClient(root,{storage,getContext,getFavorite=()=>false,onFavorite=()=>{},onToast=()=>{},onOpenApp=()=>{}}={}){
   let owner, draft=empty(),saved='',tab='models',gender='all',query='',onlyPicked=false,message='';
   let dialogReturn=null;
-  const workflow=mountPulseWorkflow(root,{request,getContext,onToast,onRender:()=>{if(tab==='progress')render();}});
   function context(){
     const current=getContext?.()||{};
     return current.status==='ready'&&current.owner&&current.owner!=='anonymous-local'?current.owner:
       current.status==='guest'?'anonymous-local':null;
   }
   function syncContext(){
-    workflow.syncContext();
     const next=context();if(next===owner)return;
     root.querySelector?.('dialog[open]')?.close();root.innerHTML='';
     owner=next;draft=empty();saved='';query='';onlyPicked=false;message='';
@@ -58,9 +57,9 @@ export function mountPulseClient(root,{storage,getContext,getFavorite=()=>false,
   function render(){
     syncContext();
     const focused=globalThis.document?.activeElement;const focusKey=focused?.getAttribute?.('data-pulse-pick-model')||focused?.getAttribute?.('data-pulse-pick-work');
-    root.innerHTML='<header class="pulse-heading '+(tab==='progress'?'pulse-heading-project':'')+'"><div><span class="pulse-meta">SYNK PULSE / CLIENT STUDIO</span><h1 tabindex="-1" id="pulse-title">'+(tab==='progress'?'제작의 다음 단계,<em> 함께 확인해요.</em>':'브랜드의 다음 장면,<br><em>여기서 시작해요.</em>')+'</h1>'+(tab==='progress'?'':'<p>사진에서 분위기를 고르고, 원하는 작업을 담아 보세요.</p>')+'</div><div class="pulse-heading-note"><button class="pulse-favorite" data-pulse-favorite aria-label="PULSE 즐겨찾기" aria-pressed="'+getFavorite()+'">'+(getFavorite()?'★':'☆')+'</button>'+(tab==='progress'?'':'<strong>'+String(MODELS.length).padStart(2,'0')+'</strong><span>모델 프로필<br>공개된 대표 이미지</span>')+'</div></header>'+
-      '<nav class="pulse-tabs" aria-label="PULSE 둘러보기">'+[['models','모델 캐스팅'],['portfolio','포트폴리오'],['brief','제작 요청 정리'],['progress','제작 진행·승인']].map(([id,label])=>'<button data-pulse-tab="'+id+'" aria-current="'+(tab===id?'page':'false')+'">'+label+(id==='brief'&&chosen()?'<span>'+chosen()+'</span>':'')+'</button>').join('')+'</nav>'+
-      (tab==='progress'?workflow.html():tab==='brief'?briefContent():'<div class="pulse-toolbar"><label class="pulse-search"><span class="sr-only">모델·작업 검색</span><input id="pulse-search" type="search" maxlength="100" placeholder="'+(tab==='models'?'이름이나 분위기로 찾아보기':'작업 검색')+'" value="'+esc(query)+'"></label>'+(tab==='models'?'<div class="pulse-filters" aria-label="모델 필터">'+[['all','전체'],['여','여성'],['남','남성']].map(([id,label])=>'<button data-pulse-gender="'+id+'" aria-pressed="'+(gender===id)+'">'+label+'</button>').join('')+'</div>':'')+'<button class="pulse-only" data-pulse-only aria-pressed="'+onlyPicked+'">✓ 담은 '+(tab==='models'?'모델':'작업')+'만</button></div><div class="pulse-results '+(tab==='models'?'pulse-models':'pulse-works')+'" id="pulse-results">'+results()+'</div>'+
+    root.innerHTML='<header class="pulse-heading"><div><span class="pulse-meta">SYNK PULSE / CLIENT STUDIO</span><h1 tabindex="-1" id="pulse-title">브랜드의 다음 장면,<br><em>여기서 시작해요.</em></h1><p>사진에서 분위기를 고르고, 원하는 작업을 담아 보세요.</p></div><div class="pulse-heading-note"><button class="pulse-favorite" data-pulse-favorite aria-label="PULSE 즐겨찾기" aria-pressed="'+getFavorite()+'">'+(getFavorite()?'★':'☆')+'</button><strong>'+String(MODELS.length).padStart(2,'0')+'</strong><span>모델 프로필<br>공개된 대표 이미지</span></div></header>'+
+      '<nav class="pulse-tabs" aria-label="PULSE 둘러보기">'+[['models','모델 캐스팅'],['portfolio','포트폴리오'],['brief','제작 요청 정리']].map(([id,label])=>'<button data-pulse-tab="'+id+'" aria-current="'+(tab===id?'page':'false')+'">'+label+(id==='brief'&&chosen()?'<span>'+chosen()+'</span>':'')+'</button>').join('')+'<button data-pulse-open-app>제작 진행·승인 <span>PULSE 창 ↗</span></button></nav>'+
+      (tab==='brief'?briefContent():'<div class="pulse-toolbar"><label class="pulse-search"><span class="sr-only">모델·작업 검색</span><input id="pulse-search" type="search" maxlength="100" placeholder="'+(tab==='models'?'이름이나 분위기로 찾아보기':'작업 검색')+'" value="'+esc(query)+'"></label>'+(tab==='models'?'<div class="pulse-filters" aria-label="모델 필터">'+[['all','전체'],['여','여성'],['남','남성']].map(([id,label])=>'<button data-pulse-gender="'+id+'" aria-pressed="'+(gender===id)+'">'+label+'</button>').join('')+'</div>':'')+'<button class="pulse-only" data-pulse-only aria-pressed="'+onlyPicked+'">✓ 담은 '+(tab==='models'?'모델':'작업')+'만</button></div><div class="pulse-results '+(tab==='models'?'pulse-models':'pulse-works')+'" id="pulse-results">'+results()+'</div>'+
       '<div class="pulse-next-bar"><p><strong>모델 '+draft.models.length+' · 참고 작업 '+draft.works.length+'</strong><span>고른 내용을 요청문으로 한 번에 정리하세요.</span></p><button class="pulse-button pulse-primary" data-pulse-tab="brief">선택한 내용으로 요청 준비 →</button></div>'+
       (tab==='portfolio'?'<p class="pulse-small pulse-portfolio-note">현재는 공개된 모델 이미지 작업을 소개합니다. 뮤직비디오와 기업 영상은 완성 후 추가됩니다.</p>':''))+
       '<dialog class="pulse-dialog" aria-label="모델·작업 상세"><button class="pulse-dialog-close" data-pulse-close aria-label="상세 닫기">×</button><div id="pulse-dialog-content"></div></dialog>';
@@ -85,7 +84,8 @@ export function mountPulseClient(root,{storage,getContext,getFavorite=()=>false,
     const button=event.target.closest?.('button');if(!button||!root.contains(button))return;
     const data=button.dataset;
     if('pulseFavorite' in data){onFavorite();render();}
-    else if(data.pulseTab){tab=data.pulseTab;query='';onlyPicked=false;render();if(tab==='progress')void workflow.enter();}
+    else if(data.pulseTab){tab=data.pulseTab;query='';onlyPicked=false;render();}
+    else if('pulseOpenApp' in data)onOpenApp();
     else if(data.pulseGender){gender=data.pulseGender;render();}
     else if('pulseOnly' in data){onlyPicked=!onlyPicked;render();}
     else if('pulseReset' in data){query='';gender='all';onlyPicked=false;render();}
@@ -110,6 +110,6 @@ export function mountPulseClient(root,{storage,getContext,getFavorite=()=>false,
       draft=empty();saved='';message='초안과 선택을 비웠어요.';render();
     }
   });
-  return {render,syncContext,openBrief(){tab=workflow.hasUnsavedChanges()?'progress':'brief';render();if(tab==='progress')workflow.focus();else root.querySelector('[data-pulse-field]')?.focus();},hasUnsavedChanges:()=>workflow.hasUnsavedChanges()||JSON.stringify(draft)!==(saved||JSON.stringify(empty())),discard(){workflow.discard();draft=empty();saved='';}};
+  return {render,syncContext,openBrief(){tab='brief';render();root.querySelector('[data-pulse-field]')?.focus();},hasUnsavedChanges:()=>JSON.stringify(draft)!==(saved||JSON.stringify(empty())),discard(){draft=empty();saved='';}};
 }
 

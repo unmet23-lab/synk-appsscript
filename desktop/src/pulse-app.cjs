@@ -1,7 +1,6 @@
 'use strict';
 const {createHash}=require('node:crypto');
 const path=require('node:path');
-const {scopeOf}=require('./pulse-requests.cjs');
 const {installDraftExitGuard}=require('./draft-exit.cjs');
 
 const PULSE_APP_ORIGIN='https://workspace.synk.im';
@@ -35,6 +34,14 @@ function pulseAppMediaTypes(value){const url=fixedUrl(value);if(!url||url.origin
 function pulseAppMediaAllowed(value){return !!pulseAppMediaTypes(value);}
 function pulseAppPublicPage(url){return url.origin===PULSE_APP_ORIGIN&&!url.hash&&(url.pathname===PULSE_LIBRARY?!url.search||LIBRARY_QUERY.test(url.search):PUBLIC_ASSET.test(url.pathname)&&!url.search);}
 function pulseAppExternalDestination(value){if(value===PULSE_STAFF_ENTRY)return value;const url=fixedUrl(value);return url&&(url.origin!==PULSE_APP_ORIGIN||pulseAppPublicPage(url))?url.href:null;}
+// The cookie jar follows the signed-in SYNK ID or a signed-out guest; a
+// restoring, failed or anonymous-local account opens nothing.
+function scopeOf(account){
+  const id=account?.account?.synk_user_id;
+  if(account?.signedIn===true&&account.status==='signed-in'&&typeof id==='string'&&/^[a-zA-Z0-9_.-]{1,120}$/.test(id)&&id!=='anonymous-local')return 'account:'+id;
+  if(account?.signedIn===false&&!account.error&&['signed-out','unconfigured'].includes(account.status))return 'guest';
+  return null;
+}
 function pulseAppPartition(scope){return 'persist:synk-pulse-app-'+createHash('sha256').update('pulse-app-v1\0'+scope).digest('hex').slice(0,40);}
 
 // A customer app gets its own account-scoped persisted cookie jar. Neither the
@@ -106,4 +113,4 @@ function createPulseApp({clientId,getAccount,BrowserWindow,session,dialog,openEx
   }
   return {open,syncContext,dispose(){disposed=true;++epoch;pending=null;closeWindow();activeSession=null;}};
 }
-module.exports={createPulseApp,pulseAppPartition,pulseAppNavigationAllowed,pulseAppResourceAllowed,pulseAppRequestAllowed,pulseAppMediaAllowed,pulseAppExternalDestination,PULSE_APP_ORIGIN,PULSE_APP_ENTRY,PULSE_STAFF_ENTRY,PULSE_DEMO_ENTRY};
+module.exports={createPulseApp,scopeOf,pulseAppPartition,pulseAppNavigationAllowed,pulseAppResourceAllowed,pulseAppRequestAllowed,pulseAppMediaAllowed,pulseAppExternalDestination,PULSE_APP_ORIGIN,PULSE_APP_ENTRY,PULSE_STAFF_ENTRY,PULSE_DEMO_ENTRY};

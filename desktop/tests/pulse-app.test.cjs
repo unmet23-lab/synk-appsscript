@@ -1,6 +1,6 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),{EventEmitter}=require('node:events'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
-const {createPulseApp,pulseAppPartition,pulseAppNavigationAllowed,pulseAppResourceAllowed,pulseAppRequestAllowed,pulseAppMediaAllowed,pulseAppExternalDestination,PULSE_APP_ORIGIN:ORIGIN,PULSE_APP_ENTRY:ENTRY,PULSE_STAFF_ENTRY:STAFF,PULSE_DEMO_ENTRY:DEMO}=require('../src/pulse-app.cjs');
+const {createPulseApp,scopeOf,pulseAppPartition,pulseAppNavigationAllowed,pulseAppResourceAllowed,pulseAppRequestAllowed,pulseAppMediaAllowed,pulseAppExternalDestination,PULSE_APP_ORIGIN:ORIGIN,PULSE_APP_ENTRY:ENTRY,PULSE_STAFF_ENTRY:STAFF,PULSE_DEMO_ENTRY:DEMO}=require('../src/pulse-app.cjs');
 const guest={signedIn:false,status:'signed-out'},member=id=>({signedIn:true,status:'signed-in',account:{synk_user_id:id},accessToken:'SYNTHETIC-PRIVATE-TOKEN'});
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 function fixture({state=member('synthetic-owner-a'),clientId='platform',load=()=>Promise.resolve(),sessions=new Map()}={}){
@@ -35,6 +35,11 @@ test('external HTTPS references allow only image/media from the PULSE origin, ne
   assert.equal(pulseAppRequestAllowed({url:ENTRY,resourceType:'subFrame'}),false);
   assert.equal(pulseAppRequestAllowed({url:ORIGIN+'/pulse/api/project',resourceType:'mainFrame'}),false);
   assert.equal(pulseAppRequestAllowed({url:DEMO,resourceType:'mainFrame'}),true);
+});
+test('the cookie jar scope is the signed-in SYNK ID or a signed-out guest, never a pending or failed account',()=>{
+  assert.equal(scopeOf(member('synthetic-owner-a')),'account:synthetic-owner-a');
+  for(const status of ['signed-out','unconfigured'])assert.equal(scopeOf({signedIn:false,status}),'guest',status);
+  for(const value of [undefined,null,{},{signedIn:false,status:'restoring'},{signedIn:false,status:'signed-out',error:{code:'NETWORK'}},{signedIn:true,status:'restoring',account:{synk_user_id:'synthetic-owner-a'}},member('anonymous-local'),member('../evil'),member(''),member('a'.repeat(121))])assert.equal(scopeOf(value),null,JSON.stringify(value));
 });
 test('persistent partition is deterministic per owner without exposing account IDs or tokens',()=>{
   assert.match(pulseAppPartition('account:synthetic-owner-a'),/^persist:synk-pulse-app-[a-f0-9]{40}$/);
@@ -153,4 +158,15 @@ test('the platform passes its dialog and cancels only a quit in progress when PU
 test('preload exposes only a zero-argument fixed PULSE operation',async()=>{
   let bridge;const calls=[];vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../src/preload.cjs'),'utf8'),{require:()=>({contextBridge:{exposeInMainWorld:(_name,value)=>{bridge=value;}},ipcRenderer:{invoke:async(...args)=>{calls.push(args);return {ok:true};}}})});
   await bridge.openPulseApp('https://evil.invalid/',{token:'SYNTHETIC'});assert.deepEqual(calls,[['synk:pulse-app-open']]);
+  assert.deepEqual(Object.keys(bridge).filter(key=>/pulse/i.test(key)),['openPulseApp']);
+});
+test('the PC app no longer opens the old customer lounge, which now redirects to the PULSE app',()=>{
+  // workspace.synk.im/pulse/ answers 302 → /pulse-app/; the platform's own invite
+  // broker and review window were removed with it. Only the customer API stays.
+  const files=['src/main.cjs','src/preload.cjs','src/pulse-app.cjs','renderer/launcher.mjs','renderer/pulse-client.mjs'];
+  const source=files.map(file=>fs.readFileSync(path.join(__dirname,'..',file),'utf8')).join('\n');
+  assert.doesNotMatch(source,/synk:pulse-request|pulseRequest\b|pulse-requests|pulse-workflow/);
+  for(const [found] of source.matchAll(/\/pulse\/[^'"`\s)]*/g))assert.match(found,/^\/pulse\/api\//,found);
+  for(const file of ['src/pulse-requests.cjs','renderer/pulse-workflow.mjs','renderer/pulse-workflow.css'])assert.equal(fs.existsSync(path.join(__dirname,'..',file)),false,file);
+  assert.doesNotMatch(fs.readFileSync(path.join(__dirname,'../renderer/index.html'),'utf8'),/pulse-workflow/);
 });

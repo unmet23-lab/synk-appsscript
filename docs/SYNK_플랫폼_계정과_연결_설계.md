@@ -1,5 +1,16 @@
 # SYNK 플랫폼 — 계정과 콘텐츠 연결 설계
 
+<a id="pulse-legacy-tab-removed-20261020"></a>
+## 2026-10-20 옛 PULSE 「제작 진행·승인」 탭을 걷고 PULSE 창으로 (다음 PC 판부터)
+
+회사 서버가 옛 고객 라운지 `workspace.synk.im/pulse/`를 PULSE 고객 앱 `/pulse-app/`으로 넘기면서(결정 10-20 「옛 고객 라운지 정리」), 그 라운지에 묶여 있던 PC 앱의 옛 진행 탭을 고치지 않고 걷었다(결정 10-20 「PC 앱 옛 진행 탭」). 아래 [2026-10-11 PULSE 후속](#pulse-workflow-tab-20261011) 절의 진행 탭·별도 격리 검토 창·main 메모리 세션은 이 판부터 없다.
+
+- **걷은 것**: 옛 화면(`pulseLegacyView`)의 「제작 진행·승인」 탭(`desktop/renderer/pulse-workflow.mjs`·`.css`), `/pulse/` 고정 「시안·파일 열기」 검토 창(`main.cjs` `openPulseReview`)과 그 세션·자원 규칙, 본체 중계 `desktop/src/pulse-requests.cjs`(IPC `synk:pulse-request`, 프리로드 `pulseRequest`). 계정 범위 `scopeOf`만 `pulse-app.cjs`로 옮겼다.
+- **그 자리**: 옛 화면 탭 줄 끝의 「제작 진행·승인 PULSE 창 ↗」 단추가 라이브러리의 PULSE 열기와 같은 길로 PULSE 창(`desktop/src/pulse-app.cjs`)을 연다. 초대 연결·진행·의견·승인·파일 받기는 PULSE 웹 앱이 하고, 그 앱은 담당자가 예전에 보낸 `…/pulse/#invite=` 링크도 붙여 넣으면 받는다.
+- **그대로 둔 것**: 옛 화면은 이 PC에 저장한 이전 요청 초안(모델 캐스팅·포트폴리오·제작 요청 정리)을 보는 곳으로 남는다. 저장 안 한 요청 초안이 있으면 창 닫기·업데이트 설치 때 「돌아가서 저장」이 지금처럼 「제작 요청 정리」로 데려온다.
+
+확인: `desktop/tests/pulse-app.test.cjs`·`renderer-auth.test.cjs`(desktop 시험 965개, 실행 위치에 없는 것을 읽는 2개 말고 통과), 실제 플랫폼 화면 + 실제 PULSE 창 점검 18/18(숨은 창, 합성 계정·합성 회사 서버, `.tmp/pulse-legacy-tab-20261020/`), 화면 검수 아르곤 0건·Fable 「그대로 진행」. 설치본에는 다음 PC 판부터 들어가고, 그 전까지 설치된 판의 「시안·파일 열기」는 서버 반영 뒤 열리지 않는다(PULSE 창에서 같은 일을 한다).
+
 <a id="pulse-window-boundaries-20261020"></a>
 ## 2026-10-20 PULSE 창의 남은 막힘 — 받기 단추·같은 출처 새 탭 링크·저장 안 한 글 (다음 PC 판부터)
 
@@ -443,7 +454,10 @@ PC는 백그라운드 업데이트 후 설치파일 75개·원천 142개를 대�
 
 이 기준은 후속 공개 작업의 요구사항이며 신규 결제·구독이나 미완성 기능의 일괄 배포 승인이 아니다. 기존 자료·계정·메모와 다른 작업의 변경을 보존한다.
 
+<a id="pulse-workflow-tab-20261011"></a>
 ## 2026-10-11 PULSE 후속 — 제작 진행·수정 의견·시안 승인
+
+> 2026-10-20부터 이 탭·검토 창·main 메모리 세션은 없다 — [옛 진행 탭을 걷고 PULSE 창으로](#pulse-legacy-tab-removed-20261020). 아래는 그때의 설계 기록이다.
 
 PULSE의 **제작 진행·승인** 탭은 기존 `workspace.synk.im/pulse/` 고객 라운지와 같은 프로젝트를 연결한다. Workspace 고객 관리에서 담당자가 프로젝트를 만들고 발급한 초대 링크로 접속하며, 현재 단계·합의 일정·다음 행동·시안과 최종 파일·고객 공개 의견을 표시한다. 의견은 최신 시안 버전과 선택한 장면 시간에 연결하고, 문의는 별도로 남긴다. 보내기와 명시적 승인 시 기존 서버에 저장된다.
 

@@ -30,7 +30,6 @@ const {createWindowPlacement}=require('./window-placement.cjs');
 const {createDraftRecovery}=require('./draft-recovery.cjs');
 const {createDraftRecoveryRequests}=require('./draft-recovery-ipc.cjs');
 const {copyDiagnostics}=require('./diagnostics-clipboard.cjs');
-const {createPulseRequests,PULSE_ORIGIN,PULSE_ENTRY}=require('./pulse-requests.cjs');
 const {createPulseApp}=require('./pulse-app.cjs');
 const {createPlatformUpdater}=require('./platform-update.cjs');
 const {createStartupUpdateGate}=require('./platform-startup-update.cjs');
@@ -65,13 +64,13 @@ app.setName(current.productName);
 app.setPath('userData',path.join(app.getPath('appData'),'SYNK Desktop',current.sessionScope+(smoke?'.smoke':'')));
 app.setPath('sessionData',path.join(app.getPath('userData'),'Session'));
 if(process.platform==='win32')app.setAppUserModelId(current.appId);
-let window,platformTray,desktopPreferences,careNotifications,windowPlacement,draftRecovery,draftRecoveryRequests,pulseRequests,pulseApp,platformUpdate,protocolRegistered=false,auth,installations,connectionRecovery,suiteFollower,teacherService,unbindTeacher,pendingTeachingView=false;
+let window,platformTray,desktopPreferences,careNotifications,windowPlacement,draftRecovery,draftRecoveryRequests,pulseApp,platformUpdate,protocolRegistered=false,auth,installations,connectionRecovery,suiteFollower,teacherService,unbindTeacher,pendingTeachingView=false;
 let startupGate,startupWindow,updateRecovery,suiteStore,suitePublisher,pendingDesktopAction,mainInitialized=false,mainWindowReady=false,quittingRequested=false;
 let startupAllowed=runtime.clientId!=='platform'||!packaged||smoke;
 let appLocationReady=process.platform!=='darwin'||!packaged||smoke;
 const appLocation=createMacApplicationLocationGate({app,dialog,platform:process.platform,packaged,smoke,productName:current.productName});
 const suiteBindingKey=authConfig?suiteKey(authConfig,runtime.mode):null;
-function publishAuthState(state){careNotifications?.syncAccount();pulseRequests?.syncContext(state);pulseApp?.syncContext(state);platformTray?.setShortcuts([]);if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
+function publishAuthState(state){careNotifications?.syncAccount();pulseApp?.syncContext(state);platformTray?.setShortcuts([]);if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
 function sendDesktop(channel,value){if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send(channel,value);}
 function desktopSnapshot(){const result=desktopPreferences?.snapshot()||{ok:false,code:'LAUNCHER_ONLY'};return {...result,capabilities:{...result.capabilities,tray:!!platformTray?.isActive(),encryptedDrafts:!!draftRecovery?.available()}};}
 let careConfiguration=Promise.resolve();
@@ -122,40 +121,6 @@ function subscriptionCall(operation){const service=subscriptions();if(!service)r
 // 타이머는 node:timers에서 가져와 unref한다(앱은 창이 살아 있는 동안 돌고, main.cjs를 setInterval 없는 VM에서 돌리는 시험도 붙잡지 않는다).
 const subscriptionBoardFile=()=>path.join(app.getPath('userData'),'AiSubscriptions','board.json');
 require('node:timers').setInterval(()=>{if(quittingRequested||runtime.clientId!=='platform'||smoke||accountStatus()?.signedIn!==true||(!aiSubscriptions&&!fs.existsSync(subscriptionBoardFile())))return;void Promise.resolve(subscriptions()?.autoTick()).catch(()=>{});},2*60*1000).unref?.();
-function pulseResourceAllowed(value){
-  try{const url=new URL(value);return url.origin===PULSE_ORIGIN&&!url.username&&!url.password&&(url.pathname.startsWith('/pulse/')||url.pathname.startsWith('/messenger/assets/')||['/wordmark.svg','/font.woff2'].includes(url.pathname));}catch{return false;}
-}
-function createPulseSession(partition){
-  // No persist: prefix: customer capabilities never enter the platform's
-  // SYNK ID/employee cookie jar or survive closing the desktop application.
-  const isolated=session.fromPartition(partition);
-  isolated.setPermissionRequestHandler((_contents,_permission,callback)=>callback(false));
-  isolated.setPermissionCheckHandler(()=>false);
-  isolated.webRequest.onBeforeRequest({urls:['http://*/*','https://*/*','ws://*/*','wss://*/*']},(details,callback)=>callback({cancel:!pulseResourceAllowed(details.url)}));
-  return isolated;
-}
-function openPulseReview({session:isolated,url}){
-  if(url!==PULSE_ENTRY)throw Error('Invalid PULSE entry');
-  const review=new BrowserWindow({width:1180,height:860,minWidth:720,minHeight:580,title:'SYNK PULSE · 프로젝트 라운지',parent:window,show:false,autoHideMenuBar:true,backgroundColor:'#ffffff',webPreferences:{session:isolated,sandbox:true,contextIsolation:true,nodeIntegration:false,nodeIntegrationInWorker:false,nodeIntegrationInSubFrames:false,webviewTag:false,webSecurity:true,allowRunningInsecureContent:false,experimentalFeatures:false,devTools:false}});
-  const contents=review.webContents,mediaUrl=value=>{try{const next=new URL(value);return next.origin===PULSE_ORIGIN&&!next.username&&!next.password&&/^\/pulse\/api\/media\/[a-f0-9-]{36}$/.test(next.pathname)&&!next.search&&!next.hash;}catch{return false;}};
-  const navigationAllowed=value=>value===PULSE_ENTRY;
-  const openReference=value=>{try{const next=new URL(value);if(mediaUrl(value)){contents.downloadURL(value);return;}if(next.protocol==='https:'&&!next.username&&!next.password&&next.origin!==PULSE_ORIGIN)void shell.openExternal(next.href).catch(()=>{});}catch{}};
-  contents.setWindowOpenHandler(({url:next})=>{openReference(next);return {action:'deny'};});
-  contents.on('will-attach-webview',event=>event.preventDefault());
-  contents.on('will-navigate',(event,next)=>{if(!navigationAllowed(next)){event.preventDefault();openReference(next);}});
-  contents.on('will-redirect',(event,next)=>{if(!navigationAllowed(next))event.preventDefault();});
-  const download=(event,item,source)=>{
-    const max=100*1024*1024;
-    if(source!==contents||!mediaUrl(item.getURL())||!['video/mp4','video/webm','image/png','image/jpeg'].includes(item.getMimeType())||item.getTotalBytes()>max){event.preventDefault();return;}
-    item.on('updated',()=>{if(item.getTotalBytes()>max||item.getReceivedBytes()>max)item.cancel();});
-    item.setSaveDialogOptions({title:'PULSE 프로젝트 파일 저장',defaultPath:path.join(app.getPath('downloads'),path.basename(item.getFilename()))});
-  };
-  isolated.on('will-download',download);
-  review.once('closed',()=>isolated.removeListener('will-download',download));
-  review.once('ready-to-show',()=>{review.show();review.focus();});
-  review.pulseReady=review.loadURL(url).catch(error=>{if(!review.isDestroyed())review.destroy();throw error;});
-  return review;
-}
 app.on('before-quit',()=>{quittingRequested=true;startupWindow?.prepareForQuit();});
 app.on('before-quit',()=>aiSubscriptions?.dispose());
 app.on('will-quit',event=>{
@@ -168,7 +133,7 @@ app.on('will-quit',event=>{
       else{quittingRequested=false;platformTray?.cancelQuit();startupWindow?.cancelQuit();if(startupGate?.isBlocking())startupWindow?.show();else if(!window||window.isDestroyed())createWindow();else{window.show();window.focus();}}
     });return;
   }
-  startupGate?.dispose();startupWindow?.dispose();platformUpdate?.dispose();pulseApp?.dispose();pulseRequests?.dispose();careNotifications?.dispose();desktopPreferences?.dispose();unbindTeacher?.();teacherService?.dispose();suiteFollower?.dispose();suitePublisher?.dispose();auth?.dispose();installations?.dispose();connectionRecovery?.dispose();
+  startupGate?.dispose();startupWindow?.dispose();platformUpdate?.dispose();pulseApp?.dispose();careNotifications?.dispose();desktopPreferences?.dispose();unbindTeacher?.();teacherService?.dispose();suiteFollower?.dispose();suitePublisher?.dispose();auth?.dispose();installations?.dispose();connectionRecovery?.dispose();
 });
 if(!app.requestSingleInstanceLock())app.quit();
 else {
@@ -244,7 +209,6 @@ function createWindow(){
     auth=createAuthService({config:authConfig,store,openExternal:url=>shell.openExternal(url),appVersion:app.getVersion(),onChange:state=>{suitePublisher?.publish(state);publishAuthState(suitePublisher?suitePublisher.project(state):state);}});
     if(suiteStore&&runtime.clientId!=='platform'){suiteFollower=createSuiteFollower({store:suiteStore,auth});void suiteFollower.start();}else if(suitePublisher)void suitePublisher.initialize(auth);else void auth.initialize();
   }
-  if(runtime.clientId==='platform'&&!pulseRequests)pulseRequests=createPulseRequests({clientId:runtime.clientId,getAccount:accountStatus,createSession:createPulseSession,createReviewWindow:openPulseReview});
   if(runtime.clientId==='platform'&&!careNotifications){
     careNotifications=createCareNotifications({directory:path.join(app.getPath('userData'),'CareNotifications'),safeStorage,getAccount:accountStatus,loadCare:()=>auth.accountRequest('careLoad',{}),shouldNotify:careReminderDue,Notification,icon:path.join(app.getAppPath(),'assets','platform.ico'),openCare:()=>shell.openExternal('https://synk.im/care/#synk-platform-account='+encodeURIComponent(accountStatus().account.synk_user_id)),enabled:!smoke,configFingerprint:authConfig?.fingerprint||'unconfigured',onChange:value=>sendDesktop('synk:care-notifications-changed',value)});
     careNotifications.start();
@@ -326,7 +290,6 @@ function createWindow(){
     'synk:window-state':windowState,'synk:window-action':action=>{if(!isPlatform)return {ok:false,code:'LAUNCHER_ONLY'};if(action==='minimize')window.minimize();else if(action==='toggle-maximize'){if(window.isMaximized())window.unmaximize();else window.maximize();}else if(action==='close')window.close();else return {ok:false,code:'INVALID_WINDOW_ACTION'};return {ok:true};},
     'synk:auth-status':accountStatus,'synk:auth-sign-in':async()=>{if(suitePublisher&&!suitePublisher.beginSignIn())return accountStatus();await auth.signIn();return accountStatus();},'synk:auth-sign-up':openAccountSignUp,'synk:auth-cancel':()=>auth.cancel(),'synk:auth-sign-out':signOutAccount,
     'synk:account-request':(operation,params)=>requireSuite(()=>auth.accountRequest(operation,params)),'synk:company-request':companyRequest,
-    'synk:pulse-request':(operation,params)=>isPlatform&&!smoke?requireSuite(()=>pulseRequests.request(operation,params)):{ok:false,error:{code:'PULSE_UNAVAILABLE',message:'현재 창에서는 프로젝트를 연결할 수 없어요.'}},
     'synk:pulse-app-open':()=>isPlatform&&!smoke?requireSuite(()=>pulseApp.open()):{ok:false,code:'PULSE_APP_UNAVAILABLE'},
     'synk:subscriptions-snapshot':options=>subscriptionCall(s=>s.snapshot({refreshTools:options?.refreshTools===true})),
     'synk:subscriptions-check':ids=>subscriptionCall(s=>s.check(Array.isArray(ids)?{ids:ids.filter(id=>typeof id==='string')}:{})),

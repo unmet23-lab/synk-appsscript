@@ -438,6 +438,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 의도한 새 파일임을 확인하고 `git add --sparse -- <정확한 파일>`로 그 파일만 올린 뒤 전체 staged 목록을 확인했다.
 - 다시 확인: `786d358`에는 요청한 QA·장부·자료표 안내 3파일만 들어갔고 전용 작업본의 status는 비었다.
 
+### 앱 바탕 맞추기가 보호 파일 차이로 거절되고 자동 모드는 옮기기도 막는다 — origin 희소 사본에서 올린다 (2026-10-20 Claude)
+- 증상: 워크트리 머리(`defdf7de7`)가 origin/master의 조상이고 작업본도 깨끗한데 `sync_with_base_branch`가 「Merging `master` would change sandbox-protected files … the app takes those only from an origin the user has confirmed; this repository's (…) was pinned before the app asked them」로 아무것도 합치지 않았다. 차이는 `.claude/skills/synk-content/references/` 문서 한 줄뿐이었다. 그 파일만 빼고 옮기려던 `git reset --soft origin/master` + `git restore --source=origin/master --staged --worktree -- . ':(exclude).claude/skills'`는 자동 모드 판정기가 「Irreversible Local Destruction」으로 거절했고, 그 뒤 몇 분은 읽기만 하는 Bash(`grep`, `git show … > 파일`)까지 같은 이유로 거절됐다(Read·Grep 도구는 됐다).
+- 원인: 앱은 보호 경로(`.claude/hooks`·`.claude/skills`·`.mcp.json` 등)를 사용자가 확인한 origin에서만 들여온다. 이 저장소의 origin 고정은 앱이 묻기 전에 된 것이라 확인이 없다. 옮기지 못한 채 바탕보다 뒤에 origin에 생긴 줄(트랙의 새 항목 등)을 고치면 `바로올리기.js`가 그 줄의 옛 판과 새 판이 함께 남는다며 멈춘다(`내커밋.js` `다른판줄`).
+- 고침: 보호 파일을 손으로 들여오지 않는다. 고칠 경로가 바탕과 origin에서 같으면 그대로 일한다. 바탕에 없는 origin 줄을 고쳐야 하면 scratchpad에 origin 희소 사본을 떠서 거기서 올린다 — `git worktree add --no-checkout --detach <사본> origin/master` → 희소 목록 파일(`/*`·`!/*/` + 고칠 폴더·문서, `.claude`는 넣지 않음)을 `git -C <사본> sparse-checkout set --no-cone --stdin < <목록>`(Git Bash에서 `/docs/…`를 인자로 주면 윈도우 경로로 바뀐다) → `git -C <사본> read-tree -m -u HEAD`(위 항목: 빈 인덱스 채우기) → 고친 파일을 옮겨 그 사본에서 시험과 `node tools/바로올리기.js <경로…> -m … --실행` → `git worktree remove <사본>`. 세션 작업본의 같은 수정은 올라간 커밋과 바이트가 같은지 대조해 둔다. 다음부터 맞추기가 되게 하려면 유호님이 앱 Help → Troubleshooting → Review Pinned Git Origins에서 origin을 한 번 확인한다(트랙 §1 「작은 확인 둘」).
+- 다시 확인: `sync_with_base_branch` 결과에 「pinned before the app asked them」이 없거나, 사본에서 `바로올리기.js` 미리 보기가 「작업본: 워크트리((분리된 HEAD))」·내 경로만·「검사 통과」를 보인다(10-20, 희소 사본 146MB).
+
 ## 이력 훑기
 
 ### 큰 blob을 거른 클론에서 `git log -S`·`--find-object`가 「could not fetch」로 끝난다

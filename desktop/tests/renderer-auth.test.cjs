@@ -310,6 +310,17 @@ test('hidden clients cannot return through search, direct selection or progress'
 });
 test('granted PULSE launches the independent window and keeps prior local drafts behind an explicit entry',async()=>{
   let called=0,opened=0;const f=await fixture({initialAuth:account('customer',['pulse']),initialClients:[{id:'pulse',canLaunch:true,installer:{canPrepare:true}}],bridgeOverrides:{launch:async()=>{called++;return {ok:true};},openPulseApp:async()=>{opened++;return {ok:true};}}});assert.equal(await f.ready,'true');assert.equal(f.element('primary-action').disabled,false);assert.equal(f.element('primary-action').dataset.action,'pulse-app');assert.doesNotMatch(f.element('download-list').innerHTML,/SYNK PULSE/);assert.equal(f.element('pulse-client').hidden,true);await f.click('primary-action');assert.equal(called,0);assert.equal(opened,1);assert.deepEqual(f.ids(),['pulse']);await f.action({pulseLegacy:'open'});assert.equal(f.element('pulse-client').hidden,false);assert.match(f.element('pulse-client').innerHTML,/모델 캐스팅/);assert.match(f.element('pulse-client').innerHTML,/포트폴리오/);
+  // Progress and approval moved to the PULSE window; the old lounge tab and its invite form are gone.
+  const legacy=f.element('pulse-client');assert.doesNotMatch(legacy.innerHTML,/data-pulse-tab="progress"|초대 링크|workspace\.synk\.im\/pulse\//);assert.match(legacy.innerHTML,/<button data-pulse-open-app>제작 진행·승인 <span>PULSE 창 ↗<\/span><\/button>/);
+  legacy.contains=()=>true;await legacy.handlers.get('click')({target:{closest:()=>({dataset:{pulseOpenApp:''}})}});await settleLibrary();assert.equal(opened,2);assert.equal(called,0);assert.match(f.element('toast').textContent,/PULSE를 별도 창으로 열었어요/);
+});
+test('an unsaved PULSE brief still brings the owner back to the local brief instead of closing',async()=>{
+  let closed=0;const f=await fixture({initialAuth:account('customer',['pulse']),bridgeOverrides:{windowAction:async action=>{if(action==='close')closed++;return {ok:true};}}});assert.equal(await f.ready,'true');
+  await f.action({pulseLegacy:'open'});const legacy=f.element('pulse-client');legacy.contains=()=>true;legacy.querySelector=()=>null;
+  await legacy.handlers.get('click')({target:{closest:()=>({dataset:{pulsePickModel:'F02'}})}});
+  await f.action({window:'close'});assert.equal(f.element('leave-dialog').open,true);
+  f.element('leave-dialog').returnValue='keep';await f.element('leave-dialog').handlers.get('close')();await settleLibrary();
+  assert.equal(closed,0);assert.equal(legacy.hidden,false);assert.match(legacy.innerHTML,/data-pulse-tab="brief" aria-current="page"/);assert.match(legacy.innerHTML,/F02 ·/);
 });
 test('PULSE sidebar opens separately without replacing the current app and failure leaves no launch record',async()=>{
   let called=0;const f=await fixture({initialAuth:account('customer',['world','pulse']),bridgeOverrides:{openPulseApp:async()=>{called++;return {ok:false,code:'PULSE_APP_OPEN_FAILED'};}}});assert.equal(await f.ready,'true');const before=f.element('breadcrumb-app').textContent;await f.action({app:'pulse'});await new Promise(resolve=>setImmediate(resolve));assert.equal(called,1);assert.equal(f.element('breadcrumb-app').textContent,before);assert.match(f.element('toast').textContent,/PULSE를 열지 못했어요/);assert.equal(f.element('pulse-client').hidden,true);assert.equal(f.storage.get(viewKey('customer')),null);

@@ -54,7 +54,6 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   authSignOut:()=>ipcRenderer.invoke('synk:auth-sign-out'),
   accountRequest:(operation,params={})=>ipcRenderer.invoke('synk:account-request',operation,params),
   companyRequest:(operation,params={})=>ipcRenderer.invoke('synk:company-request',operation,params),
-  pulseRequest:(operation,params={})=>ipcRenderer.invoke('synk:pulse-request',operation,params),
   openPulseApp:()=>ipcRenderer.invoke('synk:pulse-app-open'),
   subscriptions:Object.freeze({
     snapshot:(options={})=>ipcRenderer.invoke('synk:subscriptions-snapshot',{refreshTools:options?.refreshTools===true}),
