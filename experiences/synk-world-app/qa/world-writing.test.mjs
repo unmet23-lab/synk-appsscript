@@ -5,7 +5,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {checkWriting,checkCount,writingLength,endingOf,sentencesOf,blankContext} from '../world-writing-check.mjs';
 import {homeworkLength} from '../classroom-homework.mjs';
-import {bankHash} from '../../../tools/build-world-writing-items.mjs';
+import {bankHash,publicBank} from '../../../tools/build-world-writing-items.mjs';
 import STRINGS from '../../brand-opening/world-strings.mjs';
 
 // 쓰기 연습(TOPIK II 51~54): 문항 은행·규칙 점검·화면 글·연결 목록. 화면 동작은 world-writing-browser.test.mjs.
@@ -65,7 +65,7 @@ test('문장 끝 꼴과 문장 나누기', ()=>{
 });
 
 test('51·52: 문체·앞말 되풀이·한 문장 넘기기·뒤 문장 옮기기·끝맺음·말하는 낱말을 「확인해 보세요」로', ()=>{
- assert.deepEqual(ids(checkWriting(by('w51-recycle'),{a:'다음 달부터는 수요일에만 내놓으세요',b:'수거하지 않습니다. 그러니 다음 수거일까지 보관해 주세요.'})),
+ assert.deepEqual(ids(checkWriting(by('w51-recycle'),{a:'다음 달부터는 수요일에만 내놓으세요',b:'수거하지 않습니다. 따라서 다음 수거일까지 보관해 주세요.'})),
   ['a:beforeWords','a:style','b:oneSentence','b:nextSentence','b:style']);
  assert.deepEqual(ids(checkWriting(by('w51-repair'),{a:'보일러가 고장 나서',b:'기다릴게요'})),['a:unfinished','b:style']);
  assert.deepEqual(ids(checkWriting(by('w51-study'),{a:'이번 주에는 문을 닫습니다',b:'몇 명이 오는지 알아야 해요'})),['a:style']);
@@ -97,6 +97,15 @@ test('화면 글: 쓰기 키는 ko·en·mn을 모두 갖고, en·mn에는 한글
  // 화면 모듈이 부르는 점검 id는 규칙 점검이 내는 id와 같다.
  const source=read('experiences/synk-world-app/world-writing-check.mjs');
  for(const id of [...source.matchAll(/id:'([a-zA-Z]+)'/g)].map(m=>m[1]))assert.ok(STRINGS[`writing.check.${id}`]||id==='style'||id==='title',id);
+});
+
+test('공개 사본: 통과한 문항만, 검수 기록은 원본에만 · 지문은 원본 그대로', ()=>{
+ const pub=publicBank(bank);
+ assert.equal(pub.contentHash,bank.contentHash);
+ assert.deepEqual(pub.items.map(i=>i.id),bank.items.filter(i=>i.review?.status==='passed').map(i=>i.id));
+ for(const item of pub.items)assert.deepEqual(item.review,{status:'passed'});
+ assert.doesNotMatch(JSON.stringify(pub),/claude|gemini|argon|opus|sonnet|gpt|codex|reports\//i,'검수 모델·보고 경로는 공개 사본에 없다');
+ assert.match(read('tools/build-world-app-public.mjs'),/relative==='world-writing-items\.json'\)bytes=Buffer\.from\(JSON\.stringify\(publicBank\(/);
 });
 
 test('연결: 개발 서버·공개 빌드 목록, 앱 셸 명령·배우기 줄, 계정 통로, 계획 후보', async ()=>{

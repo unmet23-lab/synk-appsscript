@@ -5,6 +5,7 @@
 //   node tools/build-world-writing-items.mjs --write            JSON의 contentHash 줄을 지금 내용으로 고친다
 //   node tools/build-world-writing-items.mjs --talk <talk 폴더>  그 저장소의 lib/world-writing-items.js를 다시 쓴다
 // 화면은 contentHash를 그대로 보내고 서버는 자기 사본의 지문과 견준다. 다르면 자동 피드백 없이 규칙 점검만 보인다.
+// 공개 빌드(tools/build-world-app-public.mjs)는 publicBank()로 검수를 통과한 문항만, 검수 기록 없이 싣는다.
 import {createHash} from 'node:crypto';
 import {readFileSync,writeFileSync} from 'node:fs';
 import {dirname,join,resolve} from 'node:path';
@@ -15,6 +16,8 @@ export const BANK_FILE=join(root,'experiences/synk-world-app/world-writing-items
 const sorted=value=>Array.isArray(value)?value.map(sorted):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(key=>[key,sorted(value[key])])):value;
 export const bankHash=items=>createHash('sha256').update(JSON.stringify(sorted(items))).digest('hex').slice(0,16);
 export function readBank(file=BANK_FILE){const text=readFileSync(file,'utf8');return {text,bank:JSON.parse(text)};}
+// 공개 사본: 초안·보류 문항과 검수 기록(검수 모델·때·보고·메모)은 원본에만 둔다. contentHash는 원본 내용의 지문 그대로라 서버 사본과 맞는다.
+export const publicBank=bank=>({...bank,items:bank.items.filter(item=>item?.review?.status==='passed').map(item=>({...item,review:{status:'passed'}}))});
 export function talkModule(bank){
  const hash=bankHash(bank.items);
  return `'use strict';\n// 생성물 — SYNK-appsscript tools/build-world-writing-items.mjs가 experiences/synk-world-app/world-writing-items.json에서 만든다. 손으로 고치지 않는다.\n// 화면이 보낸 bank_hash가 BANK_HASH와 다르면 함수는 ITEM_CHANGED로 막는다(화면과 서버가 다른 문항을 보는 중).\nconst BANK_VERSION = ${JSON.stringify(bank.version)};\nconst BANK_HASH = ${JSON.stringify(hash)};\nconst ITEMS = Object.freeze(${JSON.stringify(bank.items)});\nmodule.exports = { BANK_VERSION, BANK_HASH, ITEMS };\n`;

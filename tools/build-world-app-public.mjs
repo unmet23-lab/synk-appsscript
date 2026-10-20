@@ -5,6 +5,7 @@ import {fileURLToPath} from 'node:url';
 import {publicWorldConfig} from '../experiences/synk-world-app/operating-mode.mjs';
 import {renderWorldDocument} from '../experiences/synk-world-app/document.mjs';
 import {DIAG_RACING_WORDS,racingWordAudio} from '../experiences/synk-world-app/world-diagnostic-racing.mjs';
+import {publicBank} from './build-world-writing-items.mjs';
 const root=fileURLToPath(new URL('../',import.meta.url));
 const args=process.argv.slice(2),arg=name=>{const i=args.indexOf(name);return i<0?null:args[i+1];};
 if(!arg('--config'))throw Error('Usage: build-world-app-public.mjs --config public-config.json [--out directory] [--base-path /world/] [--reuse payload-world-dir]');
@@ -53,6 +54,8 @@ function publicAsset(relative,bytes){
   bytes=Buffer.from(bytes.toString('utf8').replaceAll('SUNO_RECORDINGS','RECORDINGS').replaceAll('./suno-tracks.mjs','./recording-tracks.mjs'));
   if(relative==='korean-rhythm/suno-tracks.mjs')relative='korean-rhythm/recording-tracks.mjs';
  }
+ // Writing bank: passed items only, without review records (reviewer models, notes); contentHash stays the source hash.
+ if(relative==='world-writing-items.json')bytes=Buffer.from(JSON.stringify(publicBank(JSON.parse(bytes.toString('utf8'))))+'\n');
  return {relative,bytes};
 }
 // Match the public site's producer-name check before declaring a build usable (synk-policy .github/site-check/check.mjs;
