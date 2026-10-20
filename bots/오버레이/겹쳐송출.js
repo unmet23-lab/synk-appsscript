@@ -32,6 +32,7 @@
  */
 const http = require('http');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const { spawn, execFileSync } = require('child_process');
 const 송출진척 = require('./송출진척.js');
@@ -97,6 +98,10 @@ const 사건포트 = Number(값('--사건포트', '8790'));
 const 크롬포트 = Number(값('--크롬포트', '9222'));
 const 열쇠파일 = 값('--열쇠', '/opt/synk-radio/송출/.env');
 const 크롬 = 값('--크롬', '/usr/bin/chromium');
+/* 🔴 2026-10-20 실측 — 프로필 자리를 안 주면 크로미움이 띄울 때마다 임시 프로필(scoped_dir*, 90~117MB)을 새로 만든다.
+   멎음 지킴이처럼 정리할 틈 없이 끝나면 그 폴더가 남아, 09-16~10-20에 ~/.config/chromium-headless 에 217개·17GB가
+   쌓였다(디스크 30G 중 89%). 그래서 자리 하나를 띄울 때마다 비우고 다시 쓴다. */
+const 크롬프로필 = 값('--크롬프로필', path.join(os.homedir(), '.cache', 'synk-radio-chromium'));
 const 시늉파일 = 있나('--시늉') ? 값('--시늉', '/tmp/겹쳐맛보기.mp4') : null;
 const 시늉초 = Number(값('--시늉초', '20'));
 
@@ -129,7 +134,9 @@ function 지면서버세우기() {
 
 /* ── ② 크로미움 — 화면 없이 층 지면을 그린다 ─────────────────────────────────── */
 function 크롬띄우기(주소) {
-  const 옵션 = ['--headless=new', '--disable-gpu', '--hide-scrollbars', '--mute-audio',
+  try { fs.rmSync(크롬프로필, { recursive: true, force: true }); }
+  catch (e) { 말('지난 크로미움 프로필을 못 비웠다(그냥 간다):', e.message); }
+  const 옵션 = ['--headless=new', `--user-data-dir=${크롬프로필}`, '--disable-gpu', '--hide-scrollbars', '--mute-audio',
     '--disable-dev-shm-usage', '--disable-extensions', '--no-first-run',
     /* 🔴 09-06 실측 — 여기에 `--default-background-color=00000000` 을 «시작 옵션으로» 주면
        브라우저가 통째로 굳는다. 붙자마자 Page.enable 조차 답이 없다(8초 시한 전부 초과).
