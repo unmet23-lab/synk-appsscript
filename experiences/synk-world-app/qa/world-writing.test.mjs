@@ -61,7 +61,7 @@ test('문장 끝 꼴과 문장 나누기', ()=>{
  assert.deepEqual(sentencesOf('수요일에 내놓습니다.2026년부터 바뀝니다.').map(s=>s.text),['수요일에 내놓습니다.','2026년부터 바뀝니다.']);
  // 같은 문장에 빈칸이 둘이면 다른 빈칸 자리를 띄어 앞뒤 어절이 붙지 않는다.
  assert.equal(blankContext({passage:[['그는 ',{blank:'a'},'고 ',{blank:'b'},'.']],blanks:[{id:'a',mark:'㉠'},{id:'b',mark:'㉡'}]},'b').before,'그는  고');
- assert.deepEqual(blankContext(by('w51-recycle'),'a'),{before:'지금은 화요일과 금요일 두 번 내놓고 있지만 다음 달부터는',after:'',next:'그 대신 수거 시간은 저녁 6시부터 밤 10시까지로 늘어납니다.',endsSentence:true});
+ assert.deepEqual(blankContext(by('w51-recycle'),'a'),{before:'지금은 화요일과 금요일 두 번 내놓고 있지만 다음 달부터는',after:'',next:'일주일에 한 번으로 줄어드는 대신 수거 시간은 저녁 6시부터 밤 10시까지로 늘어납니다.',endsSentence:true});
 });
 
 test('51·52: 문체·앞말 되풀이·한 문장 넘기기·뒤 문장 옮기기·끝맺음·말하는 낱말을 「확인해 보세요」로', ()=>{
