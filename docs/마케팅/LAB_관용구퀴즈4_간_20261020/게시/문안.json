@@ -1,0 +1,31 @@
+{
+  "_설명": "관용구 퀴즈 #4 「간」 편 게시글 정본(10-20, 제작 방식 v2 §4-3 「정본 둘」의 하나). 화면 글 정본은 remotion/src/film/data.ts(한국어·영어)와 remotion/src/kids/i18n.ts(몽골어). 판마다 게시문안.txt는 이 파일에서 만든다(node remotion/게시묶음_q4.mjs). 학습 허브 링크는 10-20 18:3x 공개 확인(synk.im/try/learning-hub/, 200 · 「SYNK LAB PLAY · 한국어 놀이」 · 게임 8개).",
+  "_ko": {
+    "title": "무서운 한국어 사실: 한국 사람은 겁이 나면 간이 콩알만 해진대요 🫘",
+    "caption": "간 떨어지다 ≠ 「간이 떨어진다」 😱 한국어 관용구 3개를 3초 안에 맞혀 봐! 😂\n\n간 떨어지다 — 매우 놀라다\n간이 콩알만 해지다 — 매우 겁이 나다\n간이 크다 — 겁이 없다, 용감하다\n\n💡 몽골 사람들은 웃을 때 「간이 굳도록 웃는다」고 하는데, 한국 사람들은 무서울 때 「간이 콩알만 해진다」고 말한다!\n\n🔊 따라 말해 봐\n\n몇 개 맞혔어? 0/3 – 3/3으로 댓글에 써 줘 👇",
+    "comment": "🎮 한국어 듣기·읽기 놀이(영어·한국어 화면): synk.im/try/learning-hub/"
+  },
+  "en": {
+    "account": "YouTube @synkkorean",
+    "title": "Creepy Korean fact: scared Koreans say their liver shrinks to a bean 🫘 #learnkorean",
+    "description": "Creepy Korean fact 🫘 When Koreans get really scared, they say their liver shrinks to the size of a bean!\n\n간이 콩알만 해지다 — not “my liver shrinks to a bean”: super scared\n간 떨어지다 — not “my liver falls out”: totally startled\n간이 크다 — not “a big liver”: fearless\n\nSay it: 간이 콩알만 해졌어요 · 간 떨어질 뻔했어요 · 간이 크네요\n\nHow many did you get? Comment your score 0/3 – 3/3 👇\n\n🎮 Play Korean listening & reading mini games: https://synk.im/try/learning-hub/\n\nSYNK LAB · Korean idiom quiz #4 with Mongle.\n#learnkorean #koreanlanguage #studykorean #koreanidioms",
+    "pinned_comment": "🎮 New to Korean? Play our listening & reading mini games → https://synk.im/try/learning-hub/\nWhat's your score? 0/3 – 3/3 👇",
+    "alt": "Felt mascot Mongle hosts a Korean idiom quiz. A tiny felt liver sitting in a row of kidney beans, a felt liver falling with speed lines, and a huge smiling felt liver show the literal readings of 간이 콩알만 해지다, 간 떨어지다 and 간이 크다; a pair of eyes peeking out from under a blanket next to a broken vase, an orange cat leaping at a thunderclap, and a TV showing a spooky moon with popcorn and a medal show the real meanings."
+  },
+  "mn": {
+    "account": "Instagram @synk.mn · Facebook SYNK(synkworld) — Business Suite 릴스 하나로 교차 게시",
+    "caption": "간 떨어지다 ≠ элэг унах 😱 Солонгос хэлний 3 хэлц үгийг 3 секундэд таагаарай! 😂\n\n간 떨어지다 — маш их цочих\n간이 콩알만 해지다 — маш их айх\n간이 크다 — айдаггүй, зоригтой\n\n💡 Монголчууд инээхдээ «элгээ хөштөл инээдэг» бол солонгосчууд айхдаа «элэг нь буурцгийн чинээ болдог» гэж хэлдэг!\n\n🔊 Дагаж хэлээрэй: 간 떨어질 뻔했어요 · 간이 콩알만 해졌어요 · 간이 크네요\n\nХэдийг нь зөв таасан бэ? 0/3 – 3/3 гэж сэтгэгдэлд бичээрэй 👇\n\n#солонгосхэл #한국어 #learnkorean #mongolia",
+    "comment": "🎮 Солонгос хэлний сонсгол, уншлагын тоглоомууд (англи, солонгос хэлээр): synk.im/try/learning-hub/"
+  },
+  "zhs": {
+    "account": "샤오훙수 SYNK LAB(creator.rednote.com, 제목 20자 제한)",
+    "title": "3秒猜韩语惯用语：간 떨어지다",
+    "caption": "你能3秒猜出这3个韩语惯用语吗？😱\n\n간 떨어지다 — 不是“肝掉下来”，是吓了一大跳\n간이 콩알만 해지다 — 不是“肝缩成豆粒”，是吓坏了\n간이 크다 — 不是“肝很大”，是胆子大\n\n💡 中文说“胆子大”“吓破胆”，用的是胆；韩语用的却是肝！\n\n跟着说：간 떨어질 뻔했어요 · 간이 콩알만 해졌어요 · 간이 크네요\n\n你答对了几题？评论区告诉我分数 0/3 – 3/3 👇\n\nSYNK LAB · 和 Mongle 一起玩韩语惯用语挑战 #4\n#学韩语 #韩语 #韩语学习 #韩语入门",
+    "_ko": "[게시 제목] 3초 만에 맞히는 한국어 관용구: 간 떨어지다 / [게시글] 이 한국어 관용구 3개를 3초 안에 맞힐 수 있어? 😱 / 간 떨어지다 — 「간이 떨어진다」가 아니라 깜짝 놀랐다 / 간이 콩알만 해지다 — 「간이 콩알로 줄어든다」가 아니라 무서워 죽겠다 / 간이 크다 — 「간이 크다」가 아니라 겁이 없다(쓸개가 크다) / 💡 중국어는 「쓸개가 크다」「쓸개가 터지도록 놀라다」처럼 쓸개로 말하는데, 한국어는 간으로 말한다! / 따라 말해 봐 / 몇 개 맞혔어? 점수를 댓글로 알려 줘 / SYNK LAB · 몽글과 함께하는 한국어 관용구 퀴즈 #4"
+  },
+  "my": {
+    "account": "틱톡 @synklab.mm",
+    "caption": "ဒီကိုရီးယားဆိုရိုးစကား ၃ ခုကို ၃ စက္ကန့်အတွင်း ခန့်မှန်းနိုင်လား? 😱\n\n간 떨어지다 — “အသည်း ပြုတ်ကျတယ်” မဟုတ်ဘူး: အရမ်းလန့်သွားတယ်\n간이 콩알만 해지다 — “အသည်း ပဲစေ့လောက် ကျုံ့တယ်” မဟုတ်ဘူး: အရမ်းကြောက်တယ်\n간이 크다 — “အသည်းကြီးတယ်” မဟုတ်ဘူး: သတ္တိရှိတယ်\n\n💡 ကိုရီးယားလူတွေ အရမ်းကြောက်ရင် “အသည်းက ပဲစေ့လောက် ဖြစ်သွားတယ်” လို့ ပြောကြတယ်!\n\nလိုက်ပြောပါ: 간 떨어질 뻔했어요 · 간이 콩알만 해졌어요 · 간이 크네요\n\nဘယ်နှစ်ခု မှန်လဲ? ရမှတ်ကို ကွန်မန့်မှာ ရေးပါ 0/3 – 3/3 👇\n\nSYNK LAB · Mongle နဲ့ ကိုရီးယားဆိုရိုးစကား ပဟေဠိ #4\n#learnkorean #ကိုရီးယားစာ #koreanlanguage #EPSTOPIK",
+    "_ko": "[게시글] 이 한국어 관용구 3개를 3초 안에 맞힐 수 있어? 😱 / 간 떨어지다 — 「간이 떨어진다」가 아니라 깜짝 놀랐다 / 간이 콩알만 해지다 — 「간이 콩알만큼 줄어든다」가 아니라 아주 무섭다 / 간이 크다 — 「간이 크다」가 아니라 용기가 있다 / 💡 한국 사람들은 아주 무서우면 「간이 콩알만 해진다」고 말한다! / 따라 말해 봐 / 몇 개 맞혔어? 점수를 댓글로 써 줘 / SYNK LAB · 몽글과 함께하는 한국어 관용구 퀴즈 #4"
+  }
+}

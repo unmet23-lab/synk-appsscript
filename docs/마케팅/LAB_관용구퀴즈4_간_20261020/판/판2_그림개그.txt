@@ -1,0 +1,21 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — six needle-felted wool props for a kids' Korean idiom quiz about LIVER idioms (in Korean, a scared person's "liver shrinks", a startled person's "liver drops", a brave person "has a big liver"), one sheet.
+
+The attached reference photo only shows the felt craft look we want (wool texture, colors, lighting). Do not copy its objects.
+
+Recurring character in the top row: LIVER, a cute plush liver toy made of deep cherry-red wool (#A3263A-ish): a soft rounded two-lobed liver shape (a plump bigger lobe on the left, a smaller rounded lobe on the right, wider than tall), two small glossy black bead eyes, small pink felt cheeks, a tiny black felt mouth. No arms, no legs, no hands. The same LIVER design in cells 1–3; only its size, pose and face change.
+
+Layout: one landscape image, 3 columns × 2 rows, six cells of equal size. One object group per cell, centered, filling about 65–75% of the cell, with wide empty margins so no two cells touch. Seamless pure white background (#FFFFFF), flat even studio light, no floor, no cast shadows, no reflections, no border lines. Absolutely no text, letters, numbers, logos or symbols anywhere — not on screens, papers, medals or tags. Nothing in the image is white or cream except the background; every outer edge is a clear saturated color or charcoal.
+
+Top row = the funny WRONG literal readings:
+1. "LIVER SHRINKS TO A BEAN" — LIVER shrunk down to the exact size of a kidney bean, sitting in one neat row with three brown felt kidney beans: bean, bean, LIVER, bean — LIVER is no bigger than the beans. LIVER looks terrified: wide bead eyes, tiny wobbly mouth, two light-blue felt sweat drops beside it.
+2. "LIVER FALLS OUT" — LIVER tumbling down through the air upside-down at a slight angle with a shocked face (wide bead eyes, small round open mouth), three short light-blue felt speed lines right above it showing a fast fall, and a small round light-blue felt dust puff just below it where it is about to land.
+3. "BIG LIVER" — a HUGE LIVER filling most of the cell, puffed up proudly with a big confident closed-mouth grin and rosy cheeks, with one ordinary-size brown felt kidney bean on the ground right beside its lower right edge to show how enormous it is.
+
+Bottom row = the TRUE meanings:
+4. SUPER SCARED — a mustard-yellow knitted felt blanket heaped into a small mound, with two wide frightened black bead eyes peeking out from under its front edge and two light-blue felt sweat drops; next to it a sky-blue felt flower vase broken into three pieces with two pink felt tulips (green stems) spilled out.
+5. SUPER STARTLED — a dark grey felt storm cloud with a bright yellow felt lightning bolt striking down, and below it an orange tabby felt cat leaping straight up in surprise, fur puffed out, tail straight up, eyes wide (orange and ginger stripes only, no white fur anywhere).
+6. FEARLESS — a small retro teal felt TV set on a solid block base (no legs, no gaps) whose screen is dark navy showing a pale yellow full moon and a bare dark brown spooky tree (simple shapes), and in front of it a red-and-yellow striped felt popcorn bucket heaped with golden-yellow buttered popcorn (no white popcorn), plus a small gold felt medal with a red ribbon leaning against the bucket.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, cute and playful for children (nothing gory or realistic — LIVER is a soft toy), consistent soft lighting across all six cells, saturated but soft colors that will read well on a cobalt blue background. Keep each cell's pieces close together inside the cell but clearly separated from neighboring cells by white space.

@@ -1,7 +1,7 @@
 # 현장 노트 · 영상·소리(ffmpeg·자막·HyperFrames·TTS)
 
 > 판: ffmpeg 9.0(gyan.dev full) · HyperFrames 0.8.x(10-13 코드 읽음) · GSAP · faster-whisper(small·medium·large-v3-turbo, 이 PC CPU) · Vertex Gemini TTS · Typecast API
-> 마지막 확인: 2026-10-18(대부분 10-02~10-13 실측, Remotion 판 전환·경로 줄바꿈 10-18)
+> 마지막 확인: 2026-10-20(대부분 10-02~10-13 실측, Remotion 판 전환·경로 줄바꿈 10-18, 받아쓰기 말끝·CUDA 10-20)
 > 쓴 AI: Claude Code(Claude Opus 5.5) — Claude 메모에서 옮김
 
 영상 만드는 방법(장면을 한 번에 뽑기, 편집에서 덜어 내기, 톤)은 [만족 사례 장부](../마케팅/제작양식/만족사례_장부.md)가 정본이다. 편집 이음새는 S18, 모션그래픽은 S16·S17을 본다. 여기는 ffmpeg·렌더·목소리 도구가 오류 없이 틀린 결과를 낸 함정이다. 틀은 [README](README.md)를 따른다.
@@ -256,6 +256,20 @@
 - 고침: 말하는 동안 효과음을 낮추고, 관용구 제목처럼 중요한 줄은 0.3초 전부터 BGM을 −24dB로 내린다.
 - 다시 확인: 최종 믹스에서 줄마다 잘라 받아쓴다.
 - 10-17 다시(관용구 퀴즈 #2 v4, Claude): 영어 줄을 효과음과 같은 박에 놓자 깨끗한 원본은 맞는데 믹스에서만 「Heavy mouth?」→「Happy Mouse!」, 「Thin ears?」→「Then ears?」, 「Believes anything!」→「I don't believe anything!」로 들렸다. 효과음을 30%로 줄이는 것으로는 모자랐다. 나레이션판에서는 줄머리와 같은 박의 효과음(그림 「뽀잉」, 정답 뒤 반짝·몽글)을 아예 빼고, 오답·정답 줄의 BGM을 −8dB → 약 −16dB로 내리고, 정답 줄을 「딩」 뒤 0.2초로 늦추자 「Heavy mouth?」는 바로 들렸다. 남은 「Sold!→soul」 같은 한 낱말은 받아쓰기 쪽 한계로 보고 귀로 판단한다. 코드 `docs/마케팅/LAB_관용구퀴즈2_20261017/remotion/src/kids/KidsFilm.tsx`(voSkip·depth).
+
+- 10-20 다시(관용구 퀴즈 #4, Claude): 해요체 줄 「간이 콩알만 해졌어요」가 최종 믹스 받아쓰기(medium)에서 「해줬어요」로 들렸다. 줄 파일만 따로 받아쓰면 「해졌어요」로 맞았다. 그때 BGM은 한국어 줄 기본값 −12dB였다. 배울 문장인 해요체 줄(`_say`)도 오답·정답 줄처럼 −16dB로 내렸다(`docs/마케팅/LAB_관용구퀴즈4_간_20261020/remotion/src/kids/KidsFilm.tsx` depth).
+
+### 받아쓰기 낱말 끝이 한국어 해요체 말끝을 0.4초쯤 일찍 잡는다 (2026-10-20)
+- 증상: 10-20 관용구 퀴즈 #4에서 나레이션 줄 자리를 맞추려고 faster-whisper medium의 마지막 낱말 끝(`word_timestamps`)을 쟀다. 「간 떨어질 뻔했어요」는 1.28초로 나왔지만 파일 소리는 1.68초까지 났다(최고점 −32dB 기준). 영어 줄도 0.05~0.17초 일찍 잡혔다.
+- 원인: 받아쓰기 낱말 시각은 말끝의 늘어진 모음·숨을 낱말 밖으로 본다. 해요체 「~요」 끝이 길게 끌리면 차이가 더 커진다.
+- 고침: 다음 줄과 겹치는지 볼 말끝은 소리 에너지로 잰다. 10ms 창 RMS가 그 줄 최고점 −32dB 위에 있는 마지막 시각을 쓰고, 자르기(`cut`)는 그 값 + 0.06초로 둔다. 빠르기를 바꾸면 말끝 × (잰 빠르기 ÷ 새 빠르기)로 다시 셈한다. 보기 `docs/마케팅/LAB_관용구퀴즈4_간_20261020/remotion/대본_q4.mjs`(IDIOMS.en의 Speed·Cut).
+- 다시 확인: `node 나레이션.cjs --판 …`의 겹침 경고가 지난 승인판에도 있던 것만 남는다. 최종 믹스를 줄마다 잘라 받아쓴다.
+
+### faster-whisper를 `device='cuda'`로 부르면 cublas64_12.dll이 없다며 멈춘다 (2026-10-20)
+- 증상: 10-20 이 노트북(RTX 5090)에서 `WhisperModel('medium', device='cuda', compute_type='float16')`이 모델은 읽고, 첫 받아쓰기에서 `Library cublas64_12.dll is not found or cannot be loaded`로 멈췄다.
+- 원인: pip로 깐 faster-whisper(ctranslate2)는 CUDA 12 cuBLAS·cuDNN을 따로 찾는데 이 PC에는 그 DLL이 없다.
+- 고침: 지금은 `device='cpu', compute_type='int8'`로 돌린다. medium으로 짧은 줄 15개는 2분 남짓, 36초 믹스 한 편도 2분 안팎이다. GPU로 돌리려면 NVIDIA cuBLAS·cuDNN 12 휠을 깔아 경로를 잡아야 한다(아직 안 함).
+- 다시 확인: CPU 판으로 같은 줄을 받아써 글이 나오는지 본다.
 
 ### 받아쓰기 small 판정이 자르는 자리마다 흔들린다
 - 증상: 같은 믹스에서 faster-whisper small이 5번 중 2~3번만 맞다고 한다. 낱말 하나짜리는 받아쓰기 자체가 자주 틀린다(「코→cool」, 「너머/넘어」).
