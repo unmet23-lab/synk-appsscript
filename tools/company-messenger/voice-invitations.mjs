@@ -74,7 +74,7 @@ export function createVoiceInvitations({ db, now, fail, validateRequestId, avail
   }
   function owned(id, userId) {
     const row = one('SELECT * FROM voice_invitations WHERE id=?', id);
-    if (!row || ![row.sender_id, row.recipient_id].includes(userId) || !visible(userId, row.channel_id)) fail('VOICE_INVITATION_NOT_FOUND', 404, '통화 초대를 찾을 수 없습니다.');
+    if (!row || ![row.sender_id, row.recipient_id].includes(userId) || !visible(userId, row.channel_id)) fail('VOICE_INVITATION_NOT_FOUND', 404, '통화 초대를 찾지 못했어요. 필요하면 대화방에서 직접 참가해 주세요.');
     return row;
   }
   function rate(senderId, recipientId) {
@@ -84,7 +84,7 @@ export function createVoiceInvitations({ db, now, fail, validateRequestId, avail
         count('SELECT COUNT(*) n FROM voice_invitations WHERE sender_id=? AND created_at>?', senderId, stamp - 3600000) >= 30 ||
         count('SELECT COUNT(*) n FROM voice_invitations WHERE recipient_id=? AND created_at>?', recipientId, stamp - 300000) >= 10 ||
         one('SELECT 1 FROM voice_invitations WHERE ((sender_id=? AND recipient_id=?) OR (sender_id=? AND recipient_id=?)) AND created_at>?', senderId, recipientId, recipientId, senderId, stamp - 60000)) {
-      fail('VOICE_INVITATION_RATE_LIMIT', 429, '잠시 후 다시 통화 초대를 보내 주세요.');
+      fail('VOICE_INVITATION_RATE_LIMIT', 429, '초대를 너무 자주 보냈어요. 잠시 뒤 다시 불러 주세요.');
     }
   }
   return {
@@ -92,16 +92,16 @@ export function createVoiceInvitations({ db, now, fail, validateRequestId, avail
     updatePreferences(userId, input) {
       available();
       const allowed = ['revision', 'callNotifications', 'callSounds', 'doNotDisturb', 'doNotDisturbUntil'];
-      if (!input || Array.isArray(input) || Object.keys(input).length < 2 || Object.keys(input).some(field => !allowed.includes(field)) || !Number.isSafeInteger(input.revision)) fail('VOICE_PREFERENCES_INVALID', 400, '통화 알림 설정을 확인해 주세요.');
+      if (!input || Array.isArray(input) || Object.keys(input).length < 2 || Object.keys(input).some(field => !allowed.includes(field)) || !Number.isSafeInteger(input.revision)) fail('VOICE_PREFERENCES_INVALID', 400, '통화 알림 설정이 맞지 않아요. 설정을 다시 열어 주세요.');
       const prior = preference(userId);
-      if (input.revision !== prior.revision) fail('VOICE_PREFERENCES_CONFLICT', 409, '알림 설정이 변경되었습니다. 최신 설정을 다시 확인해 주세요.');
-      for (const field of ['callNotifications', 'callSounds', 'doNotDisturb']) if (Object.hasOwn(input, field) && typeof input[field] !== 'boolean') fail('VOICE_PREFERENCES_INVALID', 400, '통화 알림 설정을 확인해 주세요.');
-      if (Object.hasOwn(input, 'doNotDisturbUntil') && input.doNotDisturbUntil !== null && (!((input.doNotDisturb ?? prior.doNotDisturb) === true) || typeof input.doNotDisturbUntil !== 'string')) fail('VOICE_PREFERENCES_INVALID', 400, '방해 금지와 종료 시간을 함께 확인해 주세요.');
+      if (input.revision !== prior.revision) fail('VOICE_PREFERENCES_CONFLICT', 409, '그사이 알림 설정이 바뀌었어요. 설정을 다시 열어 확인해 주세요.');
+      for (const field of ['callNotifications', 'callSounds', 'doNotDisturb']) if (Object.hasOwn(input, field) && typeof input[field] !== 'boolean') fail('VOICE_PREFERENCES_INVALID', 400, '통화 알림 설정이 맞지 않아요. 설정을 다시 열어 주세요.');
+      if (Object.hasOwn(input, 'doNotDisturbUntil') && input.doNotDisturbUntil !== null && (!((input.doNotDisturb ?? prior.doNotDisturb) === true) || typeof input.doNotDisturbUntil !== 'string')) fail('VOICE_PREFERENCES_INVALID', 400, '방해 금지를 켜고 끝나는 시간을 함께 골라 주세요.');
       const next = { ...prior, ...input, revision: prior.revision + 1 };
       if (!next.doNotDisturb) next.doNotDisturbUntil = null;
       else if (Object.hasOwn(input, 'doNotDisturb') && !Object.hasOwn(input, 'doNotDisturbUntil')) next.doNotDisturbUntil = null;
       const until = next.doNotDisturbUntil == null ? null : Date.parse(next.doNotDisturbUntil);
-      if (next.doNotDisturbUntil !== null && (typeof next.doNotDisturbUntil !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/.test(next.doNotDisturbUntil) || !Number.isFinite(until) || until <= now() || until > now() + 7 * 86400000)) fail('VOICE_PREFERENCES_INVALID', 400, '방해 금지 종료는 시간대를 포함해 지금부터 7일 이내로 설정해 주세요.');
+      if (next.doNotDisturbUntil !== null && (typeof next.doNotDisturbUntil !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/.test(next.doNotDisturbUntil) || !Number.isFinite(until) || until <= now() || until > now() + 7 * 86400000)) fail('VOICE_PREFERENCES_INVALID', 400, '방해 금지는 지금부터 7일 안에서 끝나는 시간을 골라 주세요.');
       run('INSERT INTO voice_preferences VALUES(?,?,?,?,?,?) ON CONFLICT(user_id) DO UPDATE SET revision=excluded.revision,call_notifications=excluded.call_notifications,call_sounds=excluded.call_sounds,dnd=excluded.dnd,dnd_until=excluded.dnd_until', userId, next.revision, +next.callNotifications, +next.callSounds, +next.doNotDisturb, until);
       reconcile(); publish('voice_preferences', null, userId); return preference(userId);
     },
@@ -109,16 +109,16 @@ export function createVoiceInvitations({ db, now, fail, validateRequestId, avail
       available(); requestId = validateRequestId(requestId, '통화 초대');
       const prior = one('SELECT * FROM voice_invitations WHERE sender_id=? AND request_id=?', userId, requestId);
       if (prior) {
-        if (prior.channel_id !== channelId || prior.recipient_id !== recipientId || prior.sender_session !== key(token)) fail('VOICE_INVITATION_CONFLICT', 409, '이미 다른 초대에 사용한 요청입니다.');
+        if (prior.channel_id !== channelId || prior.recipient_id !== recipientId || prior.sender_session !== key(token)) fail('VOICE_INVITATION_CONFLICT', 409, '이미 다른 초대에 쓴 요청이에요. 새로고침한 뒤 다시 불러 주세요.');
         owned(prior.id, userId); reconcile(); return { created: false, invitation: shape(one('SELECT * FROM voice_invitations WHERE id=?', prior.id), userId) };
       }
-      if (userId === recipientId) fail('VOICE_INVITATION_INVALID', 400, '초대할 동료를 선택해 주세요.');
+      if (userId === recipientId) fail('VOICE_INVITATION_INVALID', 400, '나 말고 부를 동료를 골라 주세요.');
       const permission = check();
-      if (permission?.canRemain !== true || permission.canSpeak !== true) fail('VOICE_INVITATION_FORBIDDEN', 403, '통화에 참여한 발언자만 동료를 초대할 수 있습니다.');
+      if (permission?.canRemain !== true || permission.canSpeak !== true) fail('VOICE_INVITATION_FORBIDDEN', 403, '통화에서 말할 수 있는 사람만 동료를 부를 수 있어요.');
       // Membership checks precede rate/availability responses, including for admins.
-      if (!visible(recipientId, channelId)) fail('VOICE_INVITATION_NOT_FOUND', 404, '이 대화방에서 초대할 동료를 찾을 수 없습니다.');
+      if (!visible(recipientId, channelId)) fail('VOICE_INVITATION_NOT_FOUND', 404, '이 동료는 지금 이 대화방에 없어요. 다른 동료를 불러 주세요.');
       const sender = one("SELECT a.* FROM voice_admissions a JOIN voice_calls c ON c.id=a.call_id WHERE a.user_id=? AND a.session_key=? AND a.state='active' AND c.channel_id=? AND c.ended_at IS NULL", userId, key(token), channelId);
-      if (!sender) fail('VOICE_INVITATION_CALL_REQUIRED', 409, '먼저 이 대화방의 통화에 참여해 주세요.');
+      if (!sender) fail('VOICE_INVITATION_CALL_REQUIRED', 409, '동료를 부르려면 먼저 이 방 통화에 참가해 주세요.');
       rate(userId, recipientId);
       const id = randomUUID(), stamp = now();
       run("INSERT INTO voice_invitations(id,call_id,channel_id,sender_id,recipient_id,sender_admission_id,sender_session,request_id,state,created_at,expires_at,updated_at) VALUES(?,?,?,?,?,?,?,?,'pending',?,?,?)", id, sender.call_id, channelId, userId, recipientId, sender.id, key(token), requestId, stamp, stamp + INVITATION_TTL_MS, stamp);
@@ -137,25 +137,25 @@ export function createVoiceInvitations({ db, now, fail, validateRequestId, avail
     get(id, userId) { reconcile(); return shape(owned(id, userId), userId); },
     respond({ id, userId, action }) {
       available(); reconcile(); const row = owned(id, userId);
-      if (action === 'cancel' ? row.sender_id !== userId : row.recipient_id !== userId) fail('VOICE_INVITATION_NOT_FOUND', 404, '통화 초대를 찾을 수 없습니다.');
+      if (action === 'cancel' ? row.sender_id !== userId : row.recipient_id !== userId) fail('VOICE_INVITATION_NOT_FOUND', 404, '통화 초대를 찾지 못했어요. 필요하면 대화방에서 직접 참가해 주세요.');
       const state = action === 'cancel' ? 'cancelled' : 'rejected';
-      if (row.state !== state && !['pending', 'accepting'].includes(row.state)) fail('VOICE_INVITATION_ENDED', 409, '이미 처리되었거나 종료된 통화 초대입니다.');
+      if (row.state !== state && !['pending', 'accepting'].includes(row.state)) fail('VOICE_INVITATION_ENDED', 409, '이미 끝난 통화 초대예요.');
       finish(row, state); return { invitation: shape(one('SELECT * FROM voice_invitations WHERE id=?', id), userId) };
     },
     claim({ id, userId, token, requestId }) {
       available(); reconcile(); requestId = validateRequestId(requestId, '통화 수락'); const row = owned(id, userId);
-      if (row.recipient_id !== userId) fail('VOICE_INVITATION_NOT_FOUND', 404, '통화 초대를 찾을 수 없습니다.');
+      if (row.recipient_id !== userId) fail('VOICE_INVITATION_NOT_FOUND', 404, '통화 초대를 찾지 못했어요. 필요하면 대화방에서 직접 참가해 주세요.');
       if (row.state === 'accepted') {
-        if (row.accept_session !== key(token) || row.accept_request_id !== requestId) fail('VOICE_INVITATION_CLAIMED', 409, '다른 창이나 기기에서 이미 수락한 초대입니다.');
+        if (row.accept_session !== key(token) || row.accept_request_id !== requestId) fail('VOICE_INVITATION_CLAIMED', 409, '다른 창이나 기기에서 이미 수락한 초대예요.');
         return row;
       }
-      if (row.state !== 'pending') fail('VOICE_INVITATION_ENDED', 409, '이미 처리되었거나 종료된 통화 초대입니다.');
+      if (row.state !== 'pending') fail('VOICE_INVITATION_ENDED', 409, '이미 끝난 통화 초대예요.');
       run("UPDATE voice_invitations SET state='accepting',accept_session=?,accept_request_id=?,join_request_id=?,updated_at=? WHERE id=? AND state='pending'", key(token), requestId, randomUUID(), now(), id);
       return one('SELECT * FROM voice_invitations WHERE id=?', id);
     },
     guard(id) {
       reconcile(); const row = one('SELECT * FROM voice_invitations WHERE id=?', id);
-      if (!row || row.state !== 'accepting') fail('VOICE_INVITATION_ENDED', 409, '초대가 취소되었거나 더 이상 수락할 수 없습니다.');
+      if (!row || row.state !== 'accepting') fail('VOICE_INVITATION_ENDED', 409, '초대가 취소됐거나 수락할 시간이 지났어요.');
     },
     complete(id, admissionId) {
       this.guard(id);
@@ -175,7 +175,7 @@ export function createVoiceInvitations({ db, now, fail, validateRequestId, avail
     },
     read(userId, notificationId) {
       const row = owned(notificationId.slice('voice:'.length), userId);
-      if (row.recipient_id !== userId) fail('VOICE_INVITATION_NOT_FOUND', 404, '통화 초대를 찾을 수 없습니다.');
+      if (row.recipient_id !== userId) fail('VOICE_INVITATION_NOT_FOUND', 404, '통화 초대를 찾지 못했어요. 필요하면 대화방에서 직접 참가해 주세요.');
       run('UPDATE voice_invitations SET read_at=COALESCE(read_at,?) WHERE id=?', now(), row.id);
     },
     prune() { run("DELETE FROM voice_invitations WHERE state NOT IN ('pending','accepting') AND updated_at<?", now() - 30 * 86400000); },

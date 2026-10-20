@@ -26,7 +26,7 @@ export function createVoiceService({ db, assert, validateRequestId, publish, ena
     ...(!enabled ? { cleanupPending: Boolean(pending()) } : {}) });
   const defaultPolicy = () => ({ revision: 0, enabled: true, locked: false, maxParticipants: limits.maxConcurrentParticipants, memberCanSpeak: true, viewerCanJoin: false, screenShareEnabled: true, memberCanShare: true, screenAudioAllowed: false });
   if (!enabled && table('voice_invitations')) run("UPDATE voice_invitations SET state='cancelled',updated_at=? WHERE state IN ('pending','accepting')", now());
-  const unavailable = () => fail('VOICE_DISABLED', 503, '통화 기능이 아직 연결되지 않았습니다.');
+  const unavailable = () => fail('VOICE_DISABLED', 503, '아직 통화 기능이 꺼져 있어요. 관리자에게 켜 달라고 해 주세요.');
   if (!enabled && pending() && !provider) { try { provider = cleanupProvider?.(); } catch {} }
   if (!enabled && (!pending() || !provider)) {
     if (pending()) {
@@ -86,8 +86,8 @@ export function createVoiceService({ db, assert, validateRequestId, publish, ena
   const cleanupPending = () => Boolean(one("SELECT 1 FROM voice_admissions WHERE state='revoking'") || one('SELECT 1 FROM voice_orphans'));
   const sharing = createVoiceSharing({ db, now, fail, provider, validateRequestId, publish, invalidate, permissionFor: sharingPermission, encryptionReady: row => !e2eeRequired || encryption?.ready(row), fenceCredential: (row, result) => encryption.fenceCredential(row, result), meter: () => atomic(() => usageMeter.meterAll()) });
   encryption = createVoiceEncryption({ db, required: e2eeRequired, now, fail, provider, publish, invalidate, validate: () => validateActive(false), cleanupPending, fenceShares: sharing.fence });
-  function available() { if (closed) fail('VOICE_STOPPING', 503, '통화 서버가 종료 중입니다. 다시 연결해 주세요.'); }
-  function activeFeature() { available(); if (!enabled) fail('VOICE_DISABLED', 503, '통화 기능이 아직 연결되지 않았습니다.'); }
+  function available() { if (closed) fail('VOICE_STOPPING', 503, '통화 서버가 멈추는 중이에요. 잠시 뒤 다시 연결해 주세요.'); }
+  function activeFeature() { available(); if (!enabled) fail('VOICE_DISABLED', 503, '아직 통화 기능이 꺼져 있어요. 관리자에게 켜 달라고 해 주세요.'); }
   function owns(row, userId, token) { return row && row.user_id === userId && row.session_key === sessionKey(token); }
   function auditEvent(channelId, action, actorId = null, targetId = null, reason = null) {
     run('INSERT INTO voice_audit VALUES(?,?,?,?,?,?,?)', randomUUID(), channelId, actorId, targetId, action, reason, now());
@@ -99,7 +99,7 @@ export function createVoiceService({ db, assert, validateRequestId, publish, ena
   function access(check, joining = false) {
     const value = check?.();
     const result = value === true ? { canJoin: true, canRemain: true, canSpeak: true, canModerate: false } : value;
-    if (!result || result.canRemain !== true || (joining && result.canJoin !== true)) fail('VOICE_PERMISSION_DENIED', 403, '현재 대화방에서 통화에 참여할 수 없습니다.');
+    if (!result || result.canRemain !== true || (joining && result.canJoin !== true)) fail('VOICE_PERMISSION_DENIED', 403, '이 대화방에서는 통화에 참여할 수 없어요.');
     return result;
   }
   function sharingPermission(row) {
@@ -252,32 +252,32 @@ export function createVoiceService({ db, assert, validateRequestId, publish, ena
     // Encryption preparation and consent fences may have changed this row
     // since it was reserved. Return the same current state as current/SSE reads.
     row = one('SELECT * FROM voice_admissions WHERE id=?', row.id);
-    if (!row || row.state !== 'active') fail('VOICE_ENDED', 410, '통화 연결이 종료되었습니다. 새로 참가해 주세요.');
+    if (!row || row.state !== 'active') fail('VOICE_ENDED', 410, '통화 연결이 끝났어요. 다시 참가해 주세요.');
     const call = one('SELECT * FROM voice_calls WHERE id=?', row.call_id);
     const security = encryption.summary(call.id, row.id);
     const base = { ...rowState(row), room: call.room_name, identity: row.id, serverUrl: provider.serverUrl, canSpeak: Boolean(row.can_speak), encryption: security, share: sharing.current(row.id) };
     if (!encryption.ready(row) || !encryption.tokenReady(row)) return { ...channelState(call.channel_id), admission: { ...base, token: null, tokenExpiresAt: null } };
     const credential = provider.issueToken(call.room_name, row.id, limits.maxConcurrentParticipants, sharing.permissions(row));
-    assert(typeof credential.token === 'string' && credential.token.length > 0, 503, '통화 참가 정보를 만들지 못했습니다.');
+    assert(typeof credential.token === 'string' && credential.token.length > 0, 503, '통화 참가 정보를 만들지 못했어요. 잠시 뒤 다시 참가해 주세요.');
     run('UPDATE voice_admissions SET token_issued=1 WHERE id=?', row.id);
     encryption.tokenIssued(row);
     return { ...channelState(call.channel_id), admission: { ...base, token: credential.token, tokenExpiresAt: credential.expiresAt } };
   }
-  function requireNoPending() { if (pending() && (one("SELECT 1 FROM voice_admissions WHERE state='revoking'") || one('SELECT 1 FROM voice_orphans'))) fail('VOICE_CLEANUP_PENDING', 503, '이전 통화 연결을 정리하고 있습니다. 잠시 후 다시 시도해 주세요.'); }
-  function requireBudget() { if (usageMeter.snapshot().exhausted) fail('VOICE_USAGE_LIMIT', 409, '이번 달 통화 사용 한도에 도달했습니다. 관리자에게 확인해 주세요.'); }
+  function requireNoPending() { if (pending() && (one("SELECT 1 FROM voice_admissions WHERE state='revoking'") || one('SELECT 1 FROM voice_orphans'))) fail('VOICE_CLEANUP_PENDING', 503, '앞선 통화 연결을 정리하고 있어요. 잠시 뒤 다시 참가해 주세요.'); }
+  function requireBudget() { if (usageMeter.snapshot().exhausted) fail('VOICE_USAGE_LIMIT', 409, '이번 달 통화 사용 한도에 도달했어요. 관리자에게 한도를 봐 달라고 해 주세요.'); }
   async function joinUnlocked({ channelId, userId, token, requestId, check, client }) {
     encryption.assertClient(client);
     requestId = validateRequestId(requestId, '통화 참가');
     activeFeature(); await sweepUnlocked(); const permission = access(check, true), policy = policyFor(channelId);
-    if (!policy.enabled || policy.locked) fail('VOICE_PERMISSION_DENIED', 403, '이 대화방은 현재 새 통화 참가를 받지 않습니다.');
+    if (!policy.enabled || policy.locked) fail('VOICE_PERMISSION_DENIED', 403, '이 방은 지금 새 통화 참가를 받지 않아요.');
     requireNoPending(); requireBudget();
     let row = one('SELECT * FROM voice_admissions WHERE user_id=? AND request_id=?', userId, requestId);
-    if (row && (!owns(row, userId, token) || row.state !== 'active' || one('SELECT channel_id FROM voice_calls WHERE id=?', row.call_id).channel_id !== channelId)) fail('VOICE_REQUEST_ENDED', 409, '이 참가 요청은 종료되었거나 다른 통화에 사용되었습니다. 새로 참가해 주세요.');
+    if (row && (!owns(row, userId, token) || row.state !== 'active' || one('SELECT channel_id FROM voice_calls WHERE id=?', row.call_id).channel_id !== channelId)) fail('VOICE_REQUEST_ENDED', 409, '이 참가 요청은 끝났거나 다른 통화에 쓰였어요. 다시 참가해 주세요.');
     if (!row) {
-      if (one("SELECT 1 FROM voice_admissions WHERE user_id=? AND state='active'", userId)) fail('VOICE_ALREADY_JOINED', 409, '이미 다른 창이나 기기에서 통화 중입니다. 먼저 통화에서 나와 주세요.');
-      if (one("SELECT COUNT(*) n FROM voice_admissions WHERE state<>'ended'").n >= limits.maxConcurrentParticipants) fail('VOICE_CAPACITY', 409, '현재 전체 통화 참여 인원이 가득 찼습니다.');
+      if (one("SELECT 1 FROM voice_admissions WHERE user_id=? AND state='active'", userId)) fail('VOICE_ALREADY_JOINED', 409, '이미 다른 창이나 기기에서 통화 중이에요. 그 통화에서 나온 뒤 참가해 주세요.');
+      if (one("SELECT COUNT(*) n FROM voice_admissions WHERE state<>'ended'").n >= limits.maxConcurrentParticipants) fail('VOICE_CAPACITY', 409, '지금 전체 통화 인원이 가득 찼어요. 잠시 뒤 다시 참가해 주세요.');
       let call = one('SELECT * FROM voice_calls WHERE channel_id=? AND ended_at IS NULL', channelId);
-      if (call && one("SELECT COUNT(*) n FROM voice_admissions WHERE call_id=? AND state<>'ended'", call.id).n >= policy.maxParticipants) fail('VOICE_ROOM_CAPACITY', 409, '이 대화방의 통화 참여 인원이 가득 찼습니다.');
+      if (call && one("SELECT COUNT(*) n FROM voice_admissions WHERE call_id=? AND state<>'ended'", call.id).n >= policy.maxParticipants) fail('VOICE_ROOM_CAPACITY', 409, '이 방의 통화 인원이 가득 찼어요. 자리가 나면 다시 참가해 주세요.');
       atomic(() => {
         if (!call) {
           const id = randomUUID(); run('INSERT INTO voice_calls(id,channel_id,room_name,created_at) VALUES(?,?,?,?)', id, channelId, `synk-work-${id}`, now()); call = one('SELECT * FROM voice_calls WHERE id=?', id);
@@ -295,10 +295,10 @@ export function createVoiceService({ db, assert, validateRequestId, publish, ena
       const room = await provider.createRoom(call.room_name, limits.maxConcurrentParticipants);
       activeFeature(); const latest = access(check, true);
       await encryption.reconcile(); access(check, true);
-      if (one('SELECT state FROM voice_admissions WHERE id=?', row.id)?.state !== 'active') fail('VOICE_ENDED', 410, '통화 참가 준비가 종료되었습니다. 다시 참가해 주세요.');
+      if (one('SELECT state FROM voice_admissions WHERE id=?', row.id)?.state !== 'active') fail('VOICE_ENDED', 410, '통화 참가 준비가 중간에 끊겼어요. 다시 참가해 주세요.');
       atomic(() => usageMeter.meterAll()); requireBudget();
-      if (latest.canSpeak !== Boolean(row.can_speak)) fail('VOICE_PERMISSION_CHANGED', 409, '통화 권한이 변경되었습니다. 다시 참가해 주세요.');
-      if (now() >= row.lease_until || now() >= row.deadline_at && row.media_state !== 'connected' || now() >= row.joined_at + limits.maxSessionSeconds * 1000) fail('VOICE_REQUEST_EXPIRED', 409, '통화 참가 시간이 지났습니다. 새로 참가해 주세요.');
+      if (latest.canSpeak !== Boolean(row.can_speak)) fail('VOICE_PERMISSION_CHANGED', 409, '발언 권한이 바뀌었어요. 다시 참가해 주세요.');
+      if (now() >= row.lease_until || now() >= row.deadline_at && row.media_state !== 'connected' || now() >= row.joined_at + limits.maxSessionSeconds * 1000) fail('VOICE_REQUEST_EXPIRED', 409, '통화 참가 시간이 지났어요. 다시 참가해 주세요.');
       if (room?.sid) run('UPDATE voice_calls SET provider_room_sid=COALESCE(provider_room_sid,?) WHERE id=?', room.sid, call.id);
       const result = admissionResult(row); changed(call.id); return result;
     } catch (error) { invalidate(row, 'join_failed'); await sweepUnlocked(true); throw error; }
@@ -307,8 +307,8 @@ export function createVoiceService({ db, assert, validateRequestId, publish, ena
   function ownedActive(id, userId, token) {
     activeFeature();
     const row = one('SELECT * FROM voice_admissions WHERE id=?', id);
-    if (!owns(row, userId, token)) fail('VOICE_NOT_FOUND', 404, '통화 참가 정보를 찾을 수 없습니다.');
-    if (row.state !== 'active') fail('VOICE_ENDED', 410, '통화 연결이 종료되었습니다. 새로 참가해 주세요.');
+    if (!owns(row, userId, token)) fail('VOICE_NOT_FOUND', 404, '통화 참가 정보를 찾지 못했어요. 다시 참가해 주세요.');
+    if (row.state !== 'active') fail('VOICE_ENDED', 410, '통화 연결이 끝났어요. 다시 참가해 주세요.');
     access(checks.get(id)); return row;
   }
   function sweep() {
@@ -368,11 +368,11 @@ export function createVoiceService({ db, assert, validateRequestId, publish, ena
       const intent = { id, cancelled: false }; shareStarts.add(intent);
       return serialized(async () => {
         activeFeature(); await sweepUnlocked(); const row = ownedActive(id, userId, token);
-        if (intent.cancelled) { sharing.cancelStart(row, input); fail('VOICE_SHARE_CANCELLED', 409, '화면 공유 요청이 취소되었습니다.'); }
+        if (intent.cancelled) { sharing.cancelStart(row, input); fail('VOICE_SHARE_CANCELLED', 409, '화면 공유 요청이 취소됐어요.'); }
         requireNoPending(); requireBudget();
         try {
           const result = await sharing.start(row, input);
-          if (intent.cancelled) fail('VOICE_SHARE_CANCELLED', 409, '화면 공유 요청이 취소되었습니다.');
+          if (intent.cancelled) fail('VOICE_SHARE_CANCELLED', 409, '화면 공유 요청이 취소됐어요.');
           // Remote permission changes yield to logout/leave and consume real
           // lease time and usage. Check again before returning a broader JWT.
           atomic(() => usageMeter.meterAll()); validateActive(false); atomic(() => enforceBudget()); flushChanges();
@@ -408,14 +408,14 @@ export function createVoiceService({ db, assert, validateRequestId, publish, ena
     async leave({ id, userId, token }) {
       available();
       const leaving = one('SELECT * FROM voice_admissions WHERE id=?', id);
-      if (!owns(leaving, userId, token)) fail('VOICE_NOT_FOUND', 404, '통화 참가 정보를 찾을 수 없습니다.');
+      if (!owns(leaving, userId, token)) fail('VOICE_NOT_FOUND', 404, '통화 참가 정보를 찾지 못했어요. 다시 참가해 주세요.');
       invitations.cancelFromAdmission(id);
       // Consent ends immediately, even while a provider request owns the queue.
       // Persist the fence now so that request cannot return another credential.
       atomic(() => { usageMeter.meterAll(); invalidate(leaving, 'left'); }); flushChanges();
       return serialized(async () => {
         available(); const row = one('SELECT * FROM voice_admissions WHERE id=?', id);
-        if (!owns(row, userId, token)) fail('VOICE_NOT_FOUND', 404, '통화 참가 정보를 찾을 수 없습니다.');
+        if (!owns(row, userId, token)) fail('VOICE_NOT_FOUND', 404, '통화 참가 정보를 찾지 못했어요. 다시 참가해 주세요.');
         atomic(() => { usageMeter.meterAll(); invalidate(row, 'left'); }); await sweepUnlocked(true);
         return { ok: true, cleanupPending: one('SELECT state FROM voice_admissions WHERE id=?', id)?.state !== 'ended' };
       });
@@ -423,16 +423,16 @@ export function createVoiceService({ db, assert, validateRequestId, publish, ena
     updatePolicy({ channelId, actorId, input, check }) {
       return serialized(async () => {
         activeFeature(); const permission = check();
-        if (!permission?.canModerate) fail('VOICE_POLICY_FORBIDDEN', 403, '이 대화방의 통화 설정을 변경할 권한이 없습니다.');
+        if (!permission?.canModerate) fail('VOICE_POLICY_FORBIDDEN', 403, '이 방의 통화 설정은 방 관리자만 바꿀 수 있어요.');
         const allowed = ['revision', 'enabled', 'locked', 'maxParticipants', 'memberCanSpeak', 'viewerCanJoin', 'screenShareEnabled', 'memberCanShare', 'screenAudioAllowed'];
-        if (!input || Array.isArray(input) || Object.keys(input).some(key => !allowed.includes(key)) || !Number.isSafeInteger(input.revision) || Object.keys(input).length < 2) fail('VOICE_POLICY_INVALID', 400, '통화 설정 요청을 확인해 주세요.');
+        if (!input || Array.isArray(input) || Object.keys(input).some(key => !allowed.includes(key)) || !Number.isSafeInteger(input.revision) || Object.keys(input).length < 2) fail('VOICE_POLICY_INVALID', 400, '통화 설정 요청이 맞지 않아요. 설정을 다시 열어 주세요.');
         const prior = policyFor(channelId);
-        if (input.revision !== prior.revision) fail('VOICE_POLICY_CONFLICT', 409, '통화 설정이 변경되었습니다. 최신 설정을 다시 확인해 주세요.');
-        for (const key of ['enabled', 'locked', 'memberCanSpeak', 'viewerCanJoin', 'screenShareEnabled', 'memberCanShare', 'screenAudioAllowed']) if (Object.hasOwn(input, key) && typeof input[key] !== 'boolean') fail('VOICE_POLICY_INVALID', 400, '통화 설정 요청을 확인해 주세요.');
-        if (Object.hasOwn(input, 'maxParticipants') && (!Number.isSafeInteger(input.maxParticipants) || input.maxParticipants < 1 || input.maxParticipants > limits.maxConcurrentParticipants)) fail('VOICE_POLICY_INVALID', 400, '통화 참여 인원 설정을 확인해 주세요.');
+        if (input.revision !== prior.revision) fail('VOICE_POLICY_CONFLICT', 409, '그사이 통화 설정이 바뀌었어요. 설정을 다시 열어 확인해 주세요.');
+        for (const key of ['enabled', 'locked', 'memberCanSpeak', 'viewerCanJoin', 'screenShareEnabled', 'memberCanShare', 'screenAudioAllowed']) if (Object.hasOwn(input, key) && typeof input[key] !== 'boolean') fail('VOICE_POLICY_INVALID', 400, '통화 설정 요청이 맞지 않아요. 설정을 다시 열어 주세요.');
+        if (Object.hasOwn(input, 'maxParticipants') && (!Number.isSafeInteger(input.maxParticipants) || input.maxParticipants < 1 || input.maxParticipants > limits.maxConcurrentParticipants)) fail('VOICE_POLICY_INVALID', 400, '최대 인원을 다시 골라 주세요.');
         const next = { ...prior, ...input, revision: prior.revision + 1 };
         const call = one('SELECT id FROM voice_calls WHERE channel_id=? AND ended_at IS NULL', channelId);
-        if (call && one("SELECT COUNT(*) n FROM voice_admissions WHERE call_id=? AND state<>'ended'", call.id).n > next.maxParticipants) fail('VOICE_ROOM_OCCUPIED', 409, '현재 참가 인원보다 작게 설정할 수 없습니다.');
+        if (call && one("SELECT COUNT(*) n FROM voice_admissions WHERE call_id=? AND state<>'ended'", call.id).n > next.maxParticipants) fail('VOICE_ROOM_OCCUPIED', 409, '지금 참가한 인원보다 적게 정할 수 없어요.');
         atomic(() => {
           run('INSERT INTO voice_policies VALUES(?,?,?,?,?,?,?,?,?,?) ON CONFLICT(channel_id) DO UPDATE SET revision=excluded.revision,enabled=excluded.enabled,locked=excluded.locked,max_participants=excluded.max_participants,member_can_speak=excluded.member_can_speak,viewer_can_join=excluded.viewer_can_join,screen_share_enabled=excluded.screen_share_enabled,member_can_share=excluded.member_can_share,screen_audio_allowed=excluded.screen_audio_allowed', channelId, next.revision, +next.enabled, +next.locked, next.maxParticipants, +next.memberCanSpeak, +next.viewerCanJoin, +next.screenShareEnabled, +next.memberCanShare, +next.screenAudioAllowed);
           auditEvent(channelId, 'policy_changed', actorId, null, null);

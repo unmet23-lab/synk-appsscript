@@ -222,7 +222,7 @@ test('Drive quota/auth failures return an explicit error with no local success o
   const fx = await fixture(t);
   const owner = await fx.owner();
   await activate(owner.client, 'alpha');
-  for (const failure of [safeError(507, 'Google Drive 저장 공간이 부족합니다.'), safeError(503, 'Google Drive 인증을 다시 연결해 주세요.')]) {
+  for (const failure of [safeError(507, 'Google Drive 저장 공간이 모자라요. 공간을 비우거나 다른 Drive 계정을 골라 주세요.'), safeError(503, 'Google Drive 인증을 다시 연결해 주세요.')]) {
     fx.drive.uploadError = failure;
     const response = await owner.client.raw(`/api/channels/${owner.channel.id}/files`, { method: 'POST', headers: { 'X-File-Name': 'cannot-upload.txt', 'Content-Type': 'application/octet-stream' }, body: Buffer.from('must not survive locally') });
     assert.equal(response.ok, false);
@@ -350,7 +350,7 @@ test('a failed verified upload preserves its remote cleanup intent until Drive a
   const originalUpload = fx.drive.upload.bind(fx.drive);
   fx.drive.upload = async input => {
     const result = await originalUpload(input);
-    const error = safeError(502, 'Drive에 저장된 파일이 원본과 일치하지 않습니다.');
+    const error = safeError(502, 'Drive에 저장된 파일이 원본과 달라요. 파일을 다시 올려 주세요.');
     error.remoteCleanup = { fileId: input.fileId, connectionId: input.connectionId, remoteId: result.remoteId };
     throw error;
   };

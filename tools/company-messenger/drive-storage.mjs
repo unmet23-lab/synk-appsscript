@@ -31,12 +31,12 @@ export function createDriveStorage({dataDir,fetchImpl=fetch}){
   async function registry(){
     let text;
     try{text=await readFile(registryPath,'utf8');}
-    catch(error){if(error.code==='ENOENT')return {version:1,installationId:null,activeConnectionId:null,connections:[]};throw new DriveStorageError(503,'Drive 저장소 설정을 읽을 수 없습니다. 로컬 백업과 파일 권한을 확인해 주세요.');}
+    catch(error){if(error.code==='ENOENT')return {version:1,installationId:null,activeConnectionId:null,connections:[]};throw new DriveStorageError(503,'Drive 저장소 설정을 읽지 못했어요. 관리자가 설정 파일의 권한과 백업을 확인해야 해요.');}
     try{
       const result=JSON.parse(text);
       if(result.version!==1||!Array.isArray(result.connections)||typeof result.installationId!=='string')throw new Error();
       return result;
-    }catch{throw new DriveStorageError(503,'Drive 저장소 설정이 손상되었습니다. 설정 파일을 복구해 주세요.');}
+    }catch{throw new DriveStorageError(503,'Drive 저장소 설정 파일이 깨졌어요. 관리자가 백업에서 되살려야 해요.');}
   }
   async function save(value,{beforeCommit}={}){
     await mkdir(path.dirname(registryPath),{recursive:true});
@@ -46,7 +46,7 @@ export function createDriveStorage({dataDir,fetchImpl=fetch}){
   }
   function find(reg,id){
     const connection=reg.connections.find(c=>c.id===id);
-    fail(connection&&validId(connection.folderId),503,'이 파일을 저장한 Google 계정 연결을 찾을 수 없습니다. 이전 연결을 복구해 주세요.');
+    fail(connection&&validId(connection.folderId),503,'이 파일을 저장한 Google 계정 연결이 없어요. 관리자가 그 연결을 되살려야 해요.');
     return connection;
   }
   const keyFor=c=>createHash('sha256').update(`${c.id}:${c.credentials.client_id}:${c.credentials.refresh_token}`).digest('hex');
@@ -57,9 +57,9 @@ export function createDriveStorage({dataDir,fetchImpl=fetch}){
     const pending=(async()=>{
       let response;
       try{response=await fetchImpl(TOKEN,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:c.credentials.client_id,client_secret:c.credentials.client_secret,refresh_token:c.credentials.refresh_token,grant_type:'refresh_token'}),redirect:'error',signal:AbortSignal.timeout(30000)});}
-      catch{throw new DriveStorageError(503,'Google 인증 서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.');}
+      catch{throw new DriveStorageError(503,'Google 인증 서버에 연결하지 못했어요. 잠시 뒤 다시 해 주세요.');}
       const body=await response.json().catch(()=>({}));
-      fail(response.ok&&typeof body.access_token==='string',503,'Google 계정 인증이 만료되었거나 해제되었습니다. 이 계정을 다시 연결해 주세요.');
+      fail(response.ok&&typeof body.access_token==='string',503,'Google 계정 인증이 끝났거나 풀렸어요. 관리자가 이 계정을 다시 연결해야 해요.');
       tokens.set(key,{value:body.access_token,until:Date.now()+Number(body.expires_in||3600)*1000});
       return body.access_token;
     })();
@@ -76,7 +76,7 @@ export function createDriveStorage({dataDir,fetchImpl=fetch}){
       try{
         body=bodyFactory?bodyFactory():options.body;
         response=await fetchImpl(url,{...options,body,headers:{...options.headers,Authorization:`Bearer ${accessToken}`},redirect:'error',signal:signal?AbortSignal.any([signal,AbortSignal.timeout(timeoutMs)]):AbortSignal.timeout(timeoutMs),...(bodyFactory?{duplex:'half'}:{})});
-      }catch{signal?.throwIfAborted();throw new DriveStorageError(503,'Google Drive 요청의 완료 여부를 확인하지 못했습니다. 연결을 확인하고 다시 시도해 주세요.');}
+      }catch{signal?.throwIfAborted();throw new DriveStorageError(503,'Google Drive 요청이 끝났는지 알 수 없어요. 연결을 확인하고 다시 해 주세요.');}
       finally{if(bodyFactory&&body?.destroy)body.destroy();}
       signal?.throwIfAborted();
       if(response.status===401&&attempt===0){await response.arrayBuffer().catch(()=>{});tokens.delete(keyFor(c));continue;}
@@ -87,34 +87,34 @@ export function createDriveStorage({dataDir,fetchImpl=fetch}){
     if(response.ok)return response.json();
     const body=await response.json().catch(()=>({}));
     const reasons=(body.error?.errors||[]).map(e=>e.reason);
-    if(reasons.includes('storageQuotaExceeded'))throw new DriveStorageError(507,'Google Drive 저장 공간이 부족합니다. 공간을 확보하거나 다른 연결 계정을 선택해 주세요.');
-    if(response.status===429||reasons.some(r=>/rateLimit|dailyLimit/i.test(r)))throw new DriveStorageError(503,'Google Drive의 요청 한도에 도달했습니다. 잠시 후 다시 시도해 주세요.');
-    if(response.status===404)throw new DriveStorageError(404,'Google Drive에서 파일이나 전용 폴더를 찾을 수 없습니다.');
-    if(response.status===401||response.status===403)throw new DriveStorageError(503,'Google Drive 접근 권한을 확인할 수 없습니다. 연결 계정을 확인해 주세요.');
-    throw new DriveStorageError(503,'Google Drive가 요청을 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.');
+    if(reasons.includes('storageQuotaExceeded'))throw new DriveStorageError(507,'Google Drive 저장 공간이 모자라요. 공간을 비우거나 다른 Drive 계정을 골라 주세요.');
+    if(response.status===429||reasons.some(r=>/rateLimit|dailyLimit/i.test(r)))throw new DriveStorageError(503,'Google Drive 요청 한도에 걸렸어요. 잠시 뒤 다시 해 주세요.');
+    if(response.status===404)throw new DriveStorageError(404,'Google Drive에서 파일이나 전용 폴더를 찾지 못했어요. 관리자에게 알려 주세요.');
+    if(response.status===401||response.status===403)throw new DriveStorageError(503,'Google Drive 접근 권한이 없어요. 관리자가 연결 계정을 확인해야 해요.');
+    throw new DriveStorageError(503,'Google Drive가 요청을 끝내지 못했어요. 잠시 뒤 다시 해 주세요.');
   }
   async function account(c,{fresh=false,timeoutMs,signal}={}){
     signal?.throwIfAborted();
     const key=keyFor(c),cached=verified.get(key);
     if(!fresh&&cached&&cached.until>Date.now())return cached.result;
     const body=await checkedJson(await request(c,`${API}/about?fields=user(emailAddress,displayName),storageQuota`,{timeoutMs,signal}));signal?.throwIfAborted();
-    fail(body.user?.emailAddress?.toLowerCase()===c.email.toLowerCase(),409,'Google 인증 계정이 저장된 연결 계정과 다릅니다. 계정 연결을 다시 확인해 주세요.');
+    fail(body.user?.emailAddress?.toLowerCase()===c.email.toLowerCase(),409,'Google 인증 계정이 연결해 둔 계정과 달라요. 관리자가 계정을 다시 연결해야 해요.');
     const result={email:body.user.emailAddress,name:body.user.displayName||body.user.emailAddress,limitBytes:numeric(body.storageQuota?.limit),usedBytes:numeric(body.storageQuota?.usage),driveBytes:numeric(body.storageQuota?.usageInDrive),trashBytes:numeric(body.storageQuota?.usageInDriveTrash)};
     verified.set(key,{until:Date.now()+60000,result});
     return result;
   }
   async function folder(reg,c){
     const meta=await checkedJson(await request(c,`${API}/files/${encodeURIComponent(c.folderId)}?fields=${FILE_FIELDS}`));
-    fail(!meta.trashed&&meta.mimeType==='application/vnd.google-apps.folder'&&meta.appProperties?.synkMessengerSpaceId===reg.installationId,409,'메신저 전용 Drive 폴더가 이동되었거나 변경되었습니다. 저장소 연결을 확인해 주세요.');
+    fail(!meta.trashed&&meta.mimeType==='application/vnd.google-apps.folder'&&meta.appProperties?.synkMessengerSpaceId===reg.installationId,409,'메신저 전용 Drive 폴더가 옮겨졌거나 바뀌었어요. 관리자가 저장소 연결을 확인해야 해요.');
     return meta;
   }
   async function file(reg,c,remoteId,fileId,{missingOkay=false}={}){
-    fail(validId(remoteId)&&typeof fileId==='string',400,'Drive 파일 식별자가 올바르지 않습니다.');
+    fail(validId(remoteId)&&typeof fileId==='string',400,'Drive 파일 정보가 맞지 않아요. 관리자에게 알려 주세요.');
     await account(c);
     const response=await request(c,`${API}/files/${encodeURIComponent(remoteId)}?fields=${FILE_FIELDS}`);
     if(response.status===404&&missingOkay){await response.arrayBuffer().catch(()=>{});return null;}
     const meta=await checkedJson(response);
-    fail(meta.parents?.includes(c.folderId)&&meta.appProperties?.synkMessengerSpaceId===reg.installationId&&meta.appProperties?.synkMessengerFileId===fileId,409,'메신저가 만든 첨부파일인지 확인되지 않아 요청을 중단했습니다.');
+    fail(meta.parents?.includes(c.folderId)&&meta.appProperties?.synkMessengerSpaceId===reg.installationId&&meta.appProperties?.synkMessengerFileId===fileId,409,'메신저가 올린 첨부 파일인지 알 수 없어 멈췄어요. 관리자에게 알려 주세요.');
     return meta;
   }
   async function active(){const reg=await registry();if(!reg.activeConnectionId)return null;const c=find(reg,reg.activeConnectionId);return {id:c.id,email:c.email,folderId:c.folderId};}
@@ -124,7 +124,7 @@ export function createDriveStorage({dataDir,fetchImpl=fetch}){
     const result={provider:reg.activeConnectionId?'google-drive':'local',activeConnectionId:reg.activeConnectionId,connections:reg.connections.map(c=>({id:c.id,email:c.email,folderUrl:folderUrl(c.folderId),active:c.id===reg.activeConnectionId})),status:reg.activeConnectionId?'connected':'local',account:null,error:null,verifiedAt:null};
     if(!reg.activeConnectionId)return result;
     try{const c=find(reg,reg.activeConnectionId);result.account=await account(c,{fresh});await folder(reg,c);result.verifiedAt=new Date().toISOString();}
-    catch(error){result.status='error';result.error=error.publicMessage||'Google Drive 연결 상태를 확인하지 못했습니다.';}
+    catch(error){result.status='error';result.error=error.publicMessage||'Google Drive 연결 상태를 확인하지 못했어요. 잠시 뒤 상태를 새로고침해 주세요.';}
     return result;
   }
   async function trash({connectionId,remoteId,fileId}){
@@ -137,23 +137,23 @@ export function createDriveStorage({dataDir,fetchImpl=fetch}){
     const reg=await registry(),c=find(reg,connectionId);
     const a=await account(c);
     await folder(reg,c);
-    fail((await stat(localPath)).size===size&&size>0&&size<=104857600,400,'업로드할 임시 파일의 크기가 올바르지 않습니다.');
-    fail(/^[a-f0-9]{32}$/i.test(md5),400,'파일 검증값이 올바르지 않습니다.');
-    if(a.limitBytes!==null&&a.usedBytes!==null)fail(a.limitBytes-a.usedBytes>=size,507,'Google Drive 저장 공간이 부족합니다.');
+    fail((await stat(localPath)).size===size&&size>0&&size<=104857600,400,'올릴 파일의 크기가 맞지 않아요. 파일을 다시 올려 주세요.');
+    fail(/^[a-f0-9]{32}$/i.test(md5),400,'파일 확인 값이 맞지 않아요. 파일을 다시 올려 주세요.');
+    if(a.limitBytes!==null&&a.usedBytes!==null)fail(a.limitBytes-a.usedBytes>=size,507,'Google Drive 저장 공간이 모자라요. 공간을 비우거나 다른 Drive 계정을 골라 주세요.');
     const generated=await checkedJson(await request(c,`${API}/files/generateIds?count=1&space=drive&type=files`));
     const remoteId=generated.ids?.[0];
-    fail(validId(remoteId),503,'Google Drive 파일 위치를 준비하지 못했습니다.');
+    fail(validId(remoteId),503,'Google Drive에 파일 자리를 만들지 못했어요. 잠시 뒤 다시 올려 주세요.');
     try{
       const initiation=await request(c,`https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=${FILE_FIELDS}`,{method:'POST',headers:{'Content-Type':'application/json','X-Upload-Content-Type':'application/octet-stream','X-Upload-Content-Length':String(size)},body:JSON.stringify({id:remoteId,name,mimeType:'application/octet-stream',parents:[c.folderId],appProperties:{synkMessengerSpaceId:reg.installationId,synkMessengerFileId:fileId}})});
       if(!initiation.ok)await checkedJson(initiation);
       const location=initiation.headers.get('location');
       let session;
-      try{session=new URL(location);}catch{throw new DriveStorageError(503,'Google Drive 업로드 주소를 확인하지 못했습니다.');}
-      fail(session.protocol==='https:'&&session.hostname==='www.googleapis.com'&&session.pathname.startsWith('/upload/drive/'),503,'허용되지 않은 업로드 주소여서 전송을 중단했습니다.');
+      try{session=new URL(location);}catch{throw new DriveStorageError(503,'Google Drive 업로드 주소를 받지 못했어요. 잠시 뒤 다시 올려 주세요.');}
+      fail(session.protocol==='https:'&&session.hostname==='www.googleapis.com'&&session.pathname.startsWith('/upload/drive/'),503,'허용하지 않은 업로드 주소라 올리기를 멈췄어요. 관리자에게 알려 주세요.');
       const uploaded=await request(c,session.href,{method:'PUT',headers:{'Content-Type':'application/octet-stream','Content-Length':String(size)},bodyFactory:()=>createReadStream(localPath),timeoutMs:300000});
       await checkedJson(uploaded);
       const meta=await file(reg,c,remoteId,fileId);
-      fail(!meta.trashed&&Number(meta.size)===size&&meta.md5Checksum?.toLowerCase()===md5.toLowerCase(),502,'Drive에 저장된 파일이 원본과 일치하지 않습니다. 파일을 다시 올려 주세요.');
+      fail(!meta.trashed&&Number(meta.size)===size&&meta.md5Checksum?.toLowerCase()===md5.toLowerCase(),502,'Drive에 저장된 파일이 원본과 달라요. 파일을 다시 올려 주세요.');
       verified.delete(keyFor(c));
       return {remoteId,connectionId,md5:meta.md5Checksum};
     }catch(error){
@@ -166,49 +166,49 @@ export function createDriveStorage({dataDir,fetchImpl=fetch}){
   async function download({connectionId,remoteId,fileId,expectedSize,expectedMd5}){
     const reg=await registry(),c=find(reg,connectionId);
     const meta=await file(reg,c,remoteId,fileId);
-    fail(!meta.trashed,404,'이 파일은 Google Drive 휴지통에 있습니다.');
-    fail((expectedSize===undefined||Number(meta.size)===expectedSize)&&(!expectedMd5||meta.md5Checksum?.toLowerCase()===expectedMd5.toLowerCase()),409,'Drive에서 첨부파일 내용이 변경되었습니다. 원본을 확인한 뒤 다시 첨부해 주세요.');
+    fail(!meta.trashed,404,'이 파일은 Google Drive 휴지통에 있어요. 관리자가 되살리면 열 수 있어요.');
+    fail((expectedSize===undefined||Number(meta.size)===expectedSize)&&(!expectedMd5||meta.md5Checksum?.toLowerCase()===expectedMd5.toLowerCase()),409,'Drive에서 첨부 파일 내용이 바뀌었어요. 원본을 확인한 뒤 다시 첨부해 주세요.');
     const response=await request(c,`${API}/files/${encodeURIComponent(remoteId)}?alt=media`,{timeoutMs:300000});
     if(!response.ok)await checkedJson(response);
     return Readable.fromWeb(response.body);
   }
   async function readCreativeResearchDocument({documentId,connectionId,ifModifiedTime,signal}){
     signal?.throwIfAborted();
-    fail(validId(documentId)&&typeof connectionId==='string'&&connectionId.length>0,400,'전용 조사 문서와 저장 계정 식별자를 확인해 주세요.');
-    fail(ifModifiedTime===undefined||typeof ifModifiedTime==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/.test(ifModifiedTime)&&Number.isFinite(Date.parse(ifModifiedTime)),400,'이전 전용 조사 문서의 수정 시각을 확인해 주세요.');
+    fail(validId(documentId)&&typeof connectionId==='string'&&connectionId.length>0,400,'조사 문서나 저장 계정 정보가 맞지 않아요.');
+    fail(ifModifiedTime===undefined||typeof ifModifiedTime==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/.test(ifModifiedTime)&&Number.isFinite(Date.parse(ifModifiedTime)),400,'조사 문서의 지난 수정 시각이 맞지 않아요.');
     const reg=await registry(),c=find(reg,connectionId);await account(c,{fresh:true,timeoutMs:15000,signal});
     const meta=await checkedJson(await request(c,`${API}/files/${encodeURIComponent(documentId)}?fields=id,mimeType,trashed,appProperties,modifiedTime`,{timeoutMs:15000,signal}));signal?.throwIfAborted();
-    fail(meta.id===documentId&&!meta.trashed&&meta.mimeType==='application/vnd.google-apps.document'&&meta.appProperties?.synkCreativeResearchInbox==='v1',409,'지정한 파일이 전용 조사 문서인지 확인되지 않아 읽기를 중단했습니다.');
-    fail(typeof meta.modifiedTime==='string'&&Number.isFinite(Date.parse(meta.modifiedTime)),409,'전용 조사 문서의 수정 시각을 확인하지 못했습니다.');
+    fail(meta.id===documentId&&!meta.trashed&&meta.mimeType==='application/vnd.google-apps.document'&&meta.appProperties?.synkCreativeResearchInbox==='v1',409,'고른 파일이 전용 조사 문서인지 알 수 없어 읽지 않았어요.');
+    fail(typeof meta.modifiedTime==='string'&&Number.isFinite(Date.parse(meta.modifiedTime)),409,'전용 조사 문서의 수정 시각을 읽지 못했어요.');
     async function assertCurrentConnection(){
       signal?.throwIfAborted();
       const currentReg=await registry(),current=find(currentReg,connectionId);
       const sameIdentity=value=>currentReg.installationId===reg.installationId&&value.id===c.id&&value.folderId===c.folderId&&typeof value.email==='string'&&value.email.toLowerCase()===c.email.toLowerCase()&&value.credentials&&['client_id','client_secret','refresh_token'].every(key=>typeof value.credentials[key]==='string'&&value.credentials[key].length>0)&&value.credentials.client_id===c.credentials.client_id&&value.credentials.client_secret===c.credentials.client_secret;
-      fail(sameIdentity(current),409,'전용 조사 문서를 읽는 동안 저장 계정 연결이 변경되었습니다. 현재 연결로 다시 확인해 주세요.');
+      fail(sameIdentity(current),409,'조사 문서를 읽는 사이 저장 계정 연결이 바뀌었어요. 지금 연결로 다시 읽어 주세요.');
       signal?.throwIfAborted();if(keyFor(current)===keyFor(c))return;
       // A refresh-token rotation can keep the same account and document grant.
       // Verify those current credentials, then close the async verification gap
       // with a second registry read before allowing either result to escape.
       await account(current,{fresh:true,timeoutMs:15000,signal});
       const currentMeta=await checkedJson(await request(current,`${API}/files/${encodeURIComponent(documentId)}?fields=id,mimeType,trashed,appProperties,modifiedTime`,{timeoutMs:15000,signal}));signal?.throwIfAborted();
-      fail(currentMeta.id===documentId&&!currentMeta.trashed&&currentMeta.mimeType==='application/vnd.google-apps.document'&&currentMeta.appProperties?.synkCreativeResearchInbox==='v1'&&typeof currentMeta.modifiedTime==='string'&&Number.isFinite(Date.parse(currentMeta.modifiedTime))&&Date.parse(currentMeta.modifiedTime)===Date.parse(meta.modifiedTime),409,'현재 저장 계정의 전용 조사 문서 권한이나 내용이 변경되었습니다. 다시 확인해 주세요.');
+      fail(currentMeta.id===documentId&&!currentMeta.trashed&&currentMeta.mimeType==='application/vnd.google-apps.document'&&currentMeta.appProperties?.synkCreativeResearchInbox==='v1'&&typeof currentMeta.modifiedTime==='string'&&Number.isFinite(Date.parse(currentMeta.modifiedTime))&&Date.parse(currentMeta.modifiedTime)===Date.parse(meta.modifiedTime),409,'저장 계정의 조사 문서 권한이나 내용이 바뀌었어요. 다시 읽어 주세요.');
       const finalReg=await registry(),finalConnection=find(finalReg,connectionId);
       signal?.throwIfAborted();
-      fail(finalReg.installationId===reg.installationId&&sameIdentity(finalConnection)&&keyFor(finalConnection)===keyFor(current),409,'전용 조사 문서를 확인하는 동안 저장 계정 연결이 다시 변경되었습니다. 현재 연결로 다시 확인해 주세요.');
+      fail(finalReg.installationId===reg.installationId&&sameIdentity(finalConnection)&&keyFor(finalConnection)===keyFor(current),409,'조사 문서를 확인하는 사이 저장 계정 연결이 또 바뀌었어요. 지금 연결로 다시 읽어 주세요.');
     }
     if(ifModifiedTime!==undefined&&Date.parse(ifModifiedTime)===Date.parse(meta.modifiedTime)){await assertCurrentConnection();return {notModified:true,modifiedTime:meta.modifiedTime};}
     const response=await request(c,`${API}/files/${encodeURIComponent(documentId)}/export?mimeType=text%2Fplain`,{timeoutMs:15000,signal});
     if(!response.ok)await checkedJson(response);
     const limit=2*1024*1024;
-    if(!/^text\/plain\b/i.test(response.headers.get('content-type')||'')||Number(response.headers.get('content-length'))>limit){await response.body?.cancel().catch(()=>{});throw new DriveStorageError(422,'전용 조사 문서는 2MiB 이하의 텍스트로 읽을 수 있어야 합니다.');}
+    if(!/^text\/plain\b/i.test(response.headers.get('content-type')||'')||Number(response.headers.get('content-length'))>limit){await response.body?.cancel().catch(()=>{});throw new DriveStorageError(422,'전용 조사 문서는 2MiB 이하의 글이어야 읽을 수 있어요.');}
     let reader;
     try{
       const parts=[];let size=0;
-      if(response.body?.getReader){reader=response.body.getReader();for(;;){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>limit){await reader.cancel().catch(()=>{});throw new DriveStorageError(422,'전용 조사 문서가 2MiB를 넘습니다.');}parts.push(Buffer.from(value));}}
-      else{const text=await response.text();size=Buffer.byteLength(text);if(size>limit)throw new DriveStorageError(422,'전용 조사 문서가 2MiB를 넘습니다.');parts.push(Buffer.from(text));}
+      if(response.body?.getReader){reader=response.body.getReader();for(;;){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>limit){await reader.cancel().catch(()=>{});throw new DriveStorageError(422,'전용 조사 문서가 2MiB를 넘어요. 문서를 나눠 주세요.');}parts.push(Buffer.from(value));}}
+      else{const text=await response.text();size=Buffer.byteLength(text);if(size>limit)throw new DriveStorageError(422,'전용 조사 문서가 2MiB를 넘어요. 문서를 나눠 주세요.');parts.push(Buffer.from(text));}
       await assertCurrentConnection();
       return {text:Buffer.concat(parts).toString('utf8'),modifiedTime:meta.modifiedTime};
-    }catch(error){signal?.throwIfAborted();if(error instanceof DriveStorageError)throw error;throw new DriveStorageError(503,'전용 조사 문서를 끝까지 읽지 못했습니다. 다음 읽기에서 다시 확인해 주세요.');}
+    }catch(error){signal?.throwIfAborted();if(error instanceof DriveStorageError)throw error;throw new DriveStorageError(503,'전용 조사 문서를 끝까지 읽지 못했어요. 다음 읽기에서 다시 확인해 주세요.');}
     finally{reader?.releaseLock();}
   }
   async function setActive(connectionId,{beforeCommit}={}){

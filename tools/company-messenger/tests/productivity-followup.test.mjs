@@ -12,9 +12,9 @@ async function fixture(t, { backgroundJobsEnabled = true, workNotificationsEnabl
   const events = [];
   const check = (condition, status, message) => { if (!condition) throw Object.assign(new Error(message), { status }); };
   const members = () => db.prepare('SELECT * FROM users WHERE active=1').all().map(row => ({ id: row.id, name: row.name, role: row.role, companyRole: row.role }));
-  const requireChannel = (userId, channelId) => { const channel = db.prepare('SELECT c.* FROM channels c JOIN memberships m ON m.channel_id=c.id WHERE m.user_id=? AND c.id=? AND c.deleted_at IS NULL').get(userId, channelId); check(channel && members().some(user => user.id === userId), 404, '대화방을 찾을 수 없습니다.'); return channel; };
+  const requireChannel = (userId, channelId) => { const channel = db.prepare('SELECT c.* FROM channels c JOIN memberships m ON m.channel_id=c.id WHERE m.user_id=? AND c.id=? AND c.deleted_at IS NULL').get(userId, channelId); check(channel && members().some(user => user.id === userId), 404, '대화방을 찾지 못했어요. 대화 목록을 새로 불러와 주세요.'); return channel; };
   const requirePosting = (userId, channelId) => { const channel = requireChannel(userId, channelId); check(members().find(user => user.id === userId)?.role !== 'viewer', 403, '작성 권한이 없습니다.'); return channel; };
-  const requireMessage = (id, userId) => { const message = db.prepare('SELECT * FROM messages WHERE id=?').get(id); check(message, 404, '메시지를 찾을 수 없습니다.'); requireChannel(userId, message.channel_id); return message; };
+  const requireMessage = (id, userId) => { const message = db.prepare('SELECT * FROM messages WHERE id=?').get(id); check(message, 404, '메시지를 찾지 못했어요. 대화를 새로 불러와 주세요.'); requireChannel(userId, message.channel_id); return message; };
   function open() {
     db = new DatabaseSync(join(directory, 'fixture.sqlite')); db.exec('PRAGMA foreign_keys=ON');
     db.exec(`CREATE TABLE IF NOT EXISTS users(id TEXT PRIMARY KEY,name TEXT,role TEXT,active INTEGER NOT NULL DEFAULT 1);

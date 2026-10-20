@@ -187,9 +187,9 @@ test('company share authorization errors explain recovery without exposing exter
     for (const [path, method] of [[`/api/channels/${channel.id}/messages`, 'POST'], [`/api/messages/${message.id}`, 'PATCH']]) {
       const response = await request(path, method, { ...input, body: '허용되지 않은 수정' }), value = await response.json();
       assert.equal(response.status, status); assert.doesNotMatch(value.error, /secret-token|private-title|upstream/);
-      if (status === 403) assert.match(value.error, /다른 크루나 대화방을 선택/);
-      if (status === 404) assert.match(value.error, /기획을 다시 확인/);
-      if (status === 500) assert.match(value.error, /처리 중 오류/);
+      if (status === 403) assert.match(value.error, /크루나 다른 대화방을 골라/);
+      if (status === 404) assert.match(value.error, /기획을 다시 열어/);
+      if (status === 500) assert.match(value.error, /처리하지 못했어요/);
     }
   }
   assert.equal(app.db.prepare('SELECT COUNT(*) AS n FROM messages').get().n, 1);

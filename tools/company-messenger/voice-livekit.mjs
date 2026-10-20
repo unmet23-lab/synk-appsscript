@@ -4,7 +4,7 @@ import { voiceLimits } from './voice-usage.mjs';
 const PARTICIPANT_ABSENT = Symbol('livekit-participant-absent');
 
 function unavailable() {
-  return Object.assign(new Error('통화 서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.'), { status: 503, code: 'VOICE_PROVIDER_UNAVAILABLE', publicMessage: '통화 서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.' });
+  return Object.assign(new Error('통화 서버에 연결하지 못했어요. 잠시 뒤 다시 참가해 주세요.'), { status: 503, code: 'VOICE_PROVIDER_UNAVAILABLE', publicMessage: '통화 서버에 연결하지 못했어요. 잠시 뒤 다시 참가해 주세요.' });
 }
 
 function mediaGrants({ canSpeak = true, canShare = false, shareAudio = false, paused = false } = {}) {

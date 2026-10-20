@@ -17,7 +17,7 @@ export function createDirectTaskService({ db, assert, textField, validateRequest
     return { date, channels };
   }
   function create(userId, input) {
-    assert(input && typeof input === 'object' && !Array.isArray(input) && Object.keys(input).every(key => fields.has(key)), 400, '등록할 업무 항목을 확인해 주세요.');
+    assert(input && typeof input === 'object' && !Array.isArray(input) && Object.keys(input).every(key => fields.has(key)), 400, '업무 등록 정보가 맞지 않아요. 새로고침한 뒤 다시 등록해 주세요.');
     const channelId = textField(input.channelId, '업무를 남길 대화방', 200, 1);
     const channel = requirePosting(userId, channelId);
     const requestId = validateRequestId(input.requestId, '업무 등록');
@@ -30,10 +30,10 @@ export function createDirectTaskService({ db, assert, textField, validateRequest
       // different room, while ordinary message UUIDs remain independent.
       const prior = one('SELECT * FROM message_send_requests WHERE user_id=? AND request_id=?', userId, receiptId);
       if (prior) {
-        assert(prior.payload_hash === fingerprint, 409, '같은 등록 식별자로 다른 업무를 등록할 수 없습니다.');
+        assert(prior.payload_hash === fingerprint, 409, '다른 업무와 등록 정보가 겹쳐 등록하지 않았어요. 새로고침한 뒤 다시 등록해 주세요.');
         const message = prior.state === 'sent' && prior.message_id && one('SELECT * FROM messages WHERE id=?', prior.message_id);
         const task = message && collaboration.productivity.getTask(String(message.id), userId);
-        assert(message && task, 410, '이 등록의 원래 업무가 삭제되었거나 취소되었습니다. 새 업무로 등록해 주세요.');
+        assert(message && task, 410, '처음 등록한 업무가 지워졌거나 취소됐어요. 새 업무로 등록해 주세요.');
         return { message: messageShape(message, userId), task, created: false };
       }
       const extras = collaboration.prepareMessage({}, channel, userId);

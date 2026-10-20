@@ -29,7 +29,7 @@ export function createVoiceSharing({ db, now, fail, provider, validateRequestId,
   }
   function complete(row) { meter(); run("UPDATE voice_shares SET state='ended',ended_at=? WHERE id=?", now(), row.id); }
   function startRequest(input) {
-    if (!input || Object.keys(input).sort().join(',') !== 'requestId,withAudio' || typeof input.withAudio !== 'boolean') fail('VOICE_SHARE_INVALID', 400, '화면 공유 요청과 화면 소리 선택을 확인해 주세요.');
+    if (!input || Object.keys(input).sort().join(',') !== 'requestId,withAudio' || typeof input.withAudio !== 'boolean') fail('VOICE_SHARE_INVALID', 400, '화면 공유 요청이 맞지 않아요. 다시 공유해 주세요.');
     return validateRequestId(input.requestId, '화면 공유');
   }
   async function reconcile() {
@@ -74,12 +74,12 @@ export function createVoiceSharing({ db, now, fail, provider, validateRequestId,
     },
     async start(admission, input) {
       const requestId = startRequest(input), permission = permissionFor(admission);
-      if (!permission.canShare || input.withAudio && !permission.canShareAudio) fail('VOICE_SHARE_FORBIDDEN', 403, '이 통화에서 화면이나 화면 소리를 공유할 권한이 없습니다.');
-      if (!encryptionReady(admission)) fail('VOICE_E2EE_PENDING', 409, '암호화 통화 준비를 먼저 완료해 주세요.');
+      if (!permission.canShare || input.withAudio && !permission.canShareAudio) fail('VOICE_SHARE_FORBIDDEN', 403, '이 통화에서는 화면이나 화면 소리를 공유할 수 없어요.');
+      if (!encryptionReady(admission)) fail('VOICE_E2EE_PENDING', 409, '암호화 준비가 끝난 뒤 화면을 공유해 주세요.');
       let row = one('SELECT * FROM voice_shares WHERE admission_id=? AND request_id=?', admission.id, requestId);
-      if (row && (row.state === 'ended' || row.state === 'stopping' || Boolean(row.with_audio) !== input.withAudio)) fail('VOICE_SHARE_REQUEST_ENDED', 409, '이미 종료되었거나 다른 화면 공유 요청입니다.');
+      if (row && (row.state === 'ended' || row.state === 'stopping' || Boolean(row.with_audio) !== input.withAudio)) fail('VOICE_SHARE_REQUEST_ENDED', 409, '이미 끝났거나 다른 화면 공유 요청이에요. 다시 공유해 주세요.');
       if (row) return { share: shape(row) };
-      if (one("SELECT 1 FROM voice_shares WHERE state<>'ended'")) fail('VOICE_SHARE_CAPACITY', 409, '현재 다른 화면 공유가 진행 중이거나 정리 중입니다.');
+      if (one("SELECT 1 FROM voice_shares WHERE state<>'ended'")) fail('VOICE_SHARE_CAPACITY', 409, '다른 사람이 화면을 공유하고 있거나 정리하는 중이에요. 끝난 뒤 다시 공유해 주세요.');
       if (admission.media_state !== 'connected') fail('VOICE_SHARE_NOT_CONNECTED', 409, '음성 통화가 연결된 뒤 화면을 공유해 주세요.');
       meter(); const id = randomUUID();
       run("INSERT INTO voice_shares(id,admission_id,request_id,with_audio,state,created_at,deadline_at) VALUES(?,?,?,?,'starting',?,?)", id, admission.id, requestId, +input.withAudio, now(), now() + 45000);
@@ -87,7 +87,7 @@ export function createVoiceSharing({ db, now, fail, provider, validateRequestId,
       try {
         await provider.updatePermissions(callFor(admission).room_name, admission.id, permissions(admission));
         const latest = permissionFor(admission);
-        if (!latest.canShare || input.withAudio && !latest.canShareAudio || !encryptionReady(admission) || current(admission.id)?.state === 'stopping') fail('VOICE_SHARE_CANCELLED', 409, '화면 공유 요청이 취소되었거나 권한이 변경되었습니다.');
+        if (!latest.canShare || input.withAudio && !latest.canShareAudio || !encryptionReady(admission) || current(admission.id)?.state === 'stopping') fail('VOICE_SHARE_CANCELLED', 409, '화면 공유 요청이 취소됐거나 권한이 바뀌었어요.');
         changed(admission); return { share: shape(row) };
       } catch (error) { stop(admission); await reconcile(); throw error; }
     },

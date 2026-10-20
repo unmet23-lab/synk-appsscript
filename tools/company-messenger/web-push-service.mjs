@@ -73,14 +73,14 @@ function encryptionKeys(value) {
 }
 
 export function validatePushEndpoint(value) {
-  check(typeof value === 'string' && value.length <= 4096 && !/[\s\x00-\x1f\\]/.test(value), 400, '이 브라우저의 알림 주소를 확인해 주세요.');
-  let url; try { url = new URL(value); } catch { throw fail(400, '이 브라우저의 알림 주소를 확인해 주세요.'); }
+  check(typeof value === 'string' && value.length <= 4096 && !/[\s\x00-\x1f\\]/.test(value), 400, '이 브라우저의 알림 주소가 맞지 않아요. 알림을 껐다가 다시 켜 주세요.');
+  let url; try { url = new URL(value); } catch { throw fail(400, '이 브라우저의 알림 주소가 맞지 않아요. 알림을 껐다가 다시 켜 주세요.'); }
   const host = url.hostname;
   // Chromium's kPushMessagingStagingGcmEndpoint uses this exact host and path.
   // Keep compatibility scoped to the capability route, not arbitrary Google URLs.
   const chromiumStaging = host === 'jmt17.google.com' && /^\/fcm\/send\/[^/]+$/.test(url.pathname);
   const trusted = chromiumStaging || ['fcm.googleapis.com', 'updates.push.services.mozilla.com', 'push.services.mozilla.com'].includes(host) || /^(?:[a-z0-9-]+\.)+push\.apple\.com$/.test(host) || /^(?:[a-z0-9-]+\.)+notify\.windows\.com$/.test(host);
-  check(url.protocol === 'https:' && !url.username && !url.password && !url.hash && (!url.port || url.port === '443') && trusted && url.pathname !== '/', 400, '지원하는 브라우저의 알림 주소만 등록할 수 있습니다.');
+  check(url.protocol === 'https:' && !url.username && !url.password && !url.hash && (!url.port || url.port === '443') && trusted && url.pathname !== '/', 400, '지원하는 브라우저의 알림만 켤 수 있어요. 최신 Chrome·Edge·Safari·Firefox에서 켜 주세요.');
   // The capability URL is opaque: preserve its original path and query bytes.
   return url.href;
 }
@@ -153,7 +153,7 @@ export function createWebPushService({ db, enabled = false, publicKey = null, pr
   const transaction = action => { db.exec('BEGIN IMMEDIATE'); try { const value = action(); db.exec('COMMIT'); return value; } catch (error) { db.exec('ROLLBACK'); throw error; } };
   const controllers = new Map();
   let stopped = false, running = null, again = false;
-  const unavailable = () => Object.assign(fail(503, '기기 알림의 로그인 상태를 확인할 수 없습니다. 잠시 뒤 다시 시도해 주세요.'), { code: 'PUSH_IDENTITY_UNAVAILABLE' });
+  const unavailable = () => Object.assign(fail(503, '기기 알림의 로그인 상태를 알 수 없어요. 잠시 뒤 다시 해 주세요.'), { code: 'PUSH_IDENTITY_UNAVAILABLE' });
   const live = async (userId, sessionHash) => {
     if (stopped) return null;
     try { const value = await currentSession(userId, sessionHash); return stopped ? null : value === true || value === false ? value : null; }
@@ -162,7 +162,7 @@ export function createWebPushService({ db, enabled = false, publicKey = null, pr
   const requireLive = async (userId, sessionHash) => {
     const active = await live(userId, sessionHash);
     if (active === null || stopped) throw unavailable();
-    check(active, 401, '로그인 상태를 다시 확인해 주세요.');
+    check(active, 401, '로그인 상태가 바뀌었어요. 다시 로그인한 뒤 켜 주세요.');
   };
   const sourceList = async userId => {
     const rows = await notificationsForUser(userId);
@@ -192,16 +192,16 @@ export function createWebPushService({ db, enabled = false, publicKey = null, pr
     return { configured, publicKey: configured ? publicKey : null, subscriptions, defaultEnabled: false };
   }
   async function register(userId, sessionHash, input) {
-    check(configured && !stopped, 503, '기기 알림 서버가 아직 준비되지 않았습니다.');
-    check(typeof userId === 'string' && userId && typeof sessionHash === 'string' && sessionHash, 401, '로그인 상태를 다시 확인해 주세요.');
+    check(configured && !stopped, 503, '기기 알림 서버가 아직 준비되지 않았어요. 잠시 뒤 다시 켜 주세요.');
+    check(typeof userId === 'string' && userId && typeof sessionHash === 'string' && sessionHash, 401, '로그인 상태가 바뀌었어요. 다시 로그인한 뒤 켜 주세요.');
     await requireLive(userId, sessionHash);
-    check(input && typeof input === 'object' && !Array.isArray(input) && input.subscription && typeof input.subscription === 'object', 400, '브라우저의 알림 연결을 확인해 주세요.');
+    check(input && typeof input === 'object' && !Array.isArray(input) && input.subscription && typeof input.subscription === 'object', 400, '브라우저의 알림 연결 정보가 없어요. 알림을 껐다가 다시 켜 주세요.');
     const endpoint = validatePushEndpoint(input.subscription.endpoint), endpointHash = sha256(endpoint), keys = encryptionKeys(input.subscription.keys);
     // A key top-up only adds keys to this login's switched-on row. It never creates, revives or takes over a device:
     // the row may have been switched off or removed between the page's check and this request.
     const keysOnly = input.keysOnly === true;
     const label = input.label === undefined ? '이 기기' : input.label;
-    check(typeof label === 'string' && label.trim().length >= 1 && label.length <= 80 && !/[\x00-\x1f]/.test(label), 400, '기기 이름은 1~80자로 입력해 주세요.');
+    check(typeof label === 'string' && label.trim().length >= 1 && label.length <= 80 && !/[\x00-\x1f]/.test(label), 400, '기기 이름은 1~80자로 적어 주세요.');
     const sources = await sourceList(userId);
     await requireLive(userId, sessionHash);
     if (stopped) throw unavailable();
@@ -214,8 +214,8 @@ export function createWebPushService({ db, enabled = false, publicKey = null, pr
         else if (keys) run('UPDATE web_push_subscriptions SET p256dh=?,auth_secret=? WHERE id=?', keys.p256dh, keys.auth, existing.id);
         return one('SELECT * FROM web_push_subscriptions WHERE id=?', existing.id);
       }
-      check(!keysOnly, 404, '기기 알림을 찾을 수 없습니다.');
-      check(one('SELECT count(*) AS count FROM web_push_subscriptions WHERE user_id=? AND enabled=1 AND endpoint_hash<>?', userId, endpointHash).count < 10, 409, '알림을 받을 기기는 최대 10개까지 등록할 수 있습니다.');
+      check(!keysOnly, 404, '이 기기의 알림을 찾지 못했어요. 목록을 새로 불러와 주세요.');
+      check(one('SELECT count(*) AS count FROM web_push_subscriptions WHERE user_id=? AND enabled=1 AND endpoint_hash<>?', userId, endpointHash).count < 10, 409, '알림 받을 기기는 10개까지 등록할 수 있어요. 안 쓰는 기기를 지운 뒤 다시 켜 주세요.');
       if (existing) { controllers.get(existing.id)?.abort(); run('DELETE FROM web_push_queue WHERE subscription_id=?', existing.id); run('DELETE FROM web_push_subscriptions WHERE id=?', existing.id); }
       const id = randomUUID();
       run('INSERT INTO web_push_subscriptions(id,user_id,session_hash,endpoint_hash,endpoint,label,created_at,enabled,public_key,p256dh,auth_secret) VALUES(?,?,?,?,?,?,?,1,?,?,?)', id, userId, sessionHash, endpointHash, endpoint, label.trim(), at, publicKey, keys?.p256dh ?? null, keys?.auth ?? null);
@@ -226,7 +226,7 @@ export function createWebPushService({ db, enabled = false, publicKey = null, pr
     return { subscription: metadata(row, sessionHash, true) };
   }
   async function remove(userId, id) {
-    check(one('SELECT 1 FROM web_push_subscriptions WHERE user_id=? AND id=?', userId, id), 404, '기기 알림을 찾을 수 없습니다.');
+    check(one('SELECT 1 FROM web_push_subscriptions WHERE user_id=? AND id=?', userId, id), 404, '이 기기의 알림을 찾지 못했어요. 목록을 새로 불러와 주세요.');
     controllers.get(id)?.abort();
     transaction(() => { run('DELETE FROM web_push_queue WHERE subscription_id=?', id); run('DELETE FROM web_push_subscriptions WHERE user_id=? AND id=?', userId, id); });
     return { ok: true };

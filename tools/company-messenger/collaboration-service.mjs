@@ -34,7 +34,7 @@ export function createCollaborationService({ db, assert, textField, now, transac
   function mode(userId, channelId) { return one('SELECT mode FROM channel_notifications WHERE user_id=? AND channel_id=?', userId, channelId)?.mode || 'mentions'; }
   function pagination(query) {
     const offset = Number(query.get('offset') ?? 0), limit = Number(query.get('limit') ?? 50);
-    assert(Number.isSafeInteger(offset) && offset >= 0 && Number.isInteger(limit) && limit >= 1 && limit <= 100, 400, '목록 위치와 개수를 확인해 주세요.');
+    assert(Number.isSafeInteger(offset) && offset >= 0 && Number.isInteger(limit) && limit >= 1 && limit <= 100, 400, '목록을 불러오지 못했어요. 다시 불러와 주세요.');
     return { offset, limit };
   }
   function paged(rows, query, key, shape = value => value) {
@@ -42,29 +42,29 @@ export function createCollaborationService({ db, assert, textField, now, transac
     return { [key]: rows.slice(offset, offset + limit).map(shape), hasMore, nextOffset: hasMore ? offset + limit : null };
   }
   function kstDate(value, label) {
-    assert(typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(Date.parse(`${value}T00:00:00Z`)) && new Date(`${value}T00:00:00Z`).toISOString().slice(0, 10) === value, 400, `${label}은 YYYY-MM-DD 날짜로 입력해 주세요.`);
+    assert(typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(Date.parse(`${value}T00:00:00Z`)) && new Date(`${value}T00:00:00Z`).toISOString().slice(0, 10) === value, 400, `‘${label}’ 칸에 2026-10-20처럼 날짜를 넣어 주세요.`);
     return value;
   }
   function workspaceLink(value, requestOrigin) {
     if (value === null || value === undefined) return null;
-    assert(value && typeof value === 'object' && !Array.isArray(value), 400, '공유할 화면 링크를 확인해 주세요.');
+    assert(value && typeof value === 'object' && !Array.isArray(value), 400, '공유할 화면 링크가 맞지 않아요. 회사 화면에서 다시 공유해 주세요.');
     const title = textField(value.title, '화면 제목', 160, 1);
-    assert(typeof value.url === 'string' && value.url.length <= 2000, 400, '공유할 화면 주소를 확인해 주세요.');
+    assert(typeof value.url === 'string' && value.url.length <= 2000, 400, '공유할 화면 주소가 맞지 않아요. 회사 화면에서 다시 공유해 주세요.');
     let url;
-    try { url = new URL(value.url, requestOrigin); } catch { assert(false, 400, '공유할 화면 주소를 확인해 주세요.'); }
-    assert(url.origin === requestOrigin && url.pathname === '/' && !url.username && !url.password, 400, '회사 화면의 링크만 공유할 수 있습니다.');
+    try { url = new URL(value.url, requestOrigin); } catch { assert(false, 400, '공유할 화면 주소가 맞지 않아요. 회사 화면에서 다시 공유해 주세요.'); }
+    assert(url.origin === requestOrigin && url.pathname === '/' && !url.username && !url.password, 400, '회사 화면의 링크만 공유할 수 있어요.');
     const old = new URLSearchParams(url.hash.slice(1));
-    assert(!url.hash || old.has('view'), 400, '공유할 화면 주소를 확인해 주세요.');
-    assert(!url.hash || !url.search, 400, '공유할 화면 주소를 확인해 주세요.');
+    assert(!url.hash || old.has('view'), 400, '공유할 화면 주소가 맞지 않아요. 회사 화면에서 다시 공유해 주세요.');
+    assert(!url.hash || !url.search, 400, '공유할 화면 주소가 맞지 않아요. 회사 화면에서 다시 공유해 주세요.');
     const params = url.hash ? old : url.searchParams;
     const allowed = url.hash ? ['view', 'section', 'teamId', 'draftId'] : ['tab', 'section', 'teamId', 'draftId'];
-    assert([...params.keys()].every(key => allowed.includes(key) && params.getAll(key).length === 1), 400, '공유 링크에 허용하지 않는 정보가 포함되어 있습니다.');
+    assert([...params.keys()].every(key => allowed.includes(key) && params.getAll(key).length === 1), 400, '공유 링크에 넣을 수 없는 정보가 있어요. 회사 화면에서 다시 공유해 주세요.');
     const view = params.get(url.hash ? 'view' : 'tab');
-    assert(['marketing', 'overview', 'analysis', 'history', 'content', 'channels', 'studio'].includes(view), 400, '공유할 수 있는 회사 화면을 선택해 주세요.');
+    assert(['marketing', 'overview', 'analysis', 'history', 'content', 'channels', 'studio'].includes(view), 400, '이 화면은 공유할 수 없어요. 공유할 수 있는 회사 화면을 골라 주세요.');
     const section = params.get('section'), teamId = params.get('teamId'), draftId = params.get('draftId');
-    assert(!section || ['mine', 'team', 'all', 'summary', 'channels', 'library', 'plan', 'examples'].includes(section), 400, '공유할 화면의 구분을 확인해 주세요.');
-    assert(!teamId || (section === 'team' && /^[a-zA-Z0-9_-]{1,100}$/.test(teamId)), 400, '공유할 팀 식별자를 확인해 주세요.');
-    assert(!draftId || (view === 'content' && section === 'plan' && /^[a-zA-Z0-9_-]{1,100}$/.test(draftId)), 400, '공유할 기획 식별자를 확인해 주세요.');
+    assert(!section || ['mine', 'team', 'all', 'summary', 'channels', 'library', 'plan', 'examples'].includes(section), 400, '공유할 화면의 구역이 맞지 않아요. 회사 화면에서 다시 공유해 주세요.');
+    assert(!teamId || (section === 'team' && /^[a-zA-Z0-9_-]{1,100}$/.test(teamId)), 400, '공유할 팀 정보가 맞지 않아요. 회사 화면에서 다시 공유해 주세요.');
+    assert(!draftId || (view === 'content' && section === 'plan' && /^[a-zA-Z0-9_-]{1,100}$/.test(draftId)), 400, '공유할 기획 정보가 맞지 않아요. 회사 화면에서 다시 공유해 주세요.');
     // Relative canonical links preserve company access checks and survive host/port changes.
     const normalized = new URLSearchParams({ view, ...(section ? { section } : {}), ...(teamId ? { teamId } : {}), ...(draftId ? { draftId } : {}) });
     return { title, url: `/#${normalized}`, kind: draftId ? 'content-review' : ['overview', 'analysis', 'history'].includes(view) ? 'report' : 'screen' };
@@ -72,12 +72,12 @@ export function createCollaborationService({ db, assert, textField, now, transac
   function prepareMessage(body, channel, userId, prior = null, requestOrigin = origin?.()) {
     const allowed = new Set(channelMembers(channel.id).map(user => user.id));
     const ids = body.mentionIds === undefined ? (prior ? all('SELECT user_id FROM message_mentions WHERE message_id=?', prior.id).map(row => row.user_id).filter(id => allowed.has(id)) : []) : body.mentionIds;
-    assert(Array.isArray(ids) && ids.length <= 30 && ids.every(id => typeof id === 'string') && new Set(ids).size === ids.length, 400, '멘션할 크루를 최대 30명까지 선택해 주세요.');
-    assert(ids.every(id => allowed.has(id)), 404, '이 대화방에서 멘션할 크루를 찾을 수 없습니다.');
+    assert(Array.isArray(ids) && ids.length <= 30 && ids.every(id => typeof id === 'string') && new Set(ids).size === ids.length, 400, '멘션은 한 번에 30명까지 할 수 있어요.');
+    assert(ids.every(id => allowed.has(id)), 404, '멘션한 크루가 이 대화방에 없어요. 멘션을 다시 골라 주세요.');
     let link = body.workspaceLink === undefined ? (prior?.workspace_link ? JSON.parse(prior.workspace_link) : null) : workspaceLink(body.workspaceLink, requestOrigin);
     if (link) link = resolveLink({ userId, channelId: channel.id, workspaceLink: link });
     const ackRequired = body.ackRequired === undefined ? (prior ? Boolean(prior.ack_required) : channel.system_key === 'announcements') : body.ackRequired;
-    assert(typeof ackRequired === 'boolean' && (!ackRequired || channel.system_key === 'announcements'), 400, '확인 요청은 공지에서만 사용할 수 있습니다.');
+    assert(typeof ackRequired === 'boolean' && (!ackRequired || channel.system_key === 'announcements'), 400, '확인 요청은 공지에서만 쓸 수 있어요.');
     return { mentionIds: ids, workspaceLink: link, ackRequired };
   }
   function applyMessage(messageId, data, { edit = false } = {}) {
@@ -167,7 +167,7 @@ export function createCollaborationService({ db, assert, textField, now, transac
     if (match && ['GET', 'PATCH'].includes(method)) {
       const body = method === 'PATCH' ? await readBody() : null;
       requireChannel(user.id, match[1]);
-      if (body) { assert(['all', 'mentions', 'mute'].includes(body.mode), 400, '알림 설정을 확인해 주세요.'); run('INSERT INTO channel_notifications VALUES(?,?,?) ON CONFLICT(channel_id,user_id) DO UPDATE SET mode=excluded.mode', match[1], user.id, body.mode); publish('notification', match[1], user.id); }
+      if (body) { assert(['all', 'mentions', 'mute'].includes(body.mode), 400, '알림 설정을 다시 골라 주세요.'); run('INSERT INTO channel_notifications VALUES(?,?,?) ON CONFLICT(channel_id,user_id) DO UPDATE SET mode=excluded.mode', match[1], user.id, body.mode); publish('notification', match[1], user.id); }
       respond(200, { mode: mode(user.id, match[1]) }); return true;
     }
     if (p === '/api/notifications' && method === 'GET') {
@@ -180,10 +180,10 @@ export function createCollaborationService({ db, assert, textField, now, transac
       await readBody();
       let notificationId = null;
       if (p !== '/api/notifications/read-all') {
-        try { notificationId = decodeURIComponent(match[1]); } catch { assert(false, 400, '알림 주소를 확인해 주세요.'); }
+        try { notificationId = decodeURIComponent(match[1]); } catch { assert(false, 400, '알림 주소가 맞지 않아요. 알림 목록을 새로 불러와 주세요.'); }
       }
       const rows = visibleNotifications(user.id);
-      if (p !== '/api/notifications/read-all') assert(rows.some(row => row.id === notificationId), 404, '알림을 찾을 수 없습니다.');
+      if (p !== '/api/notifications/read-all') assert(rows.some(row => row.id === notificationId), 404, '알림을 찾지 못했어요. 알림 목록을 새로 불러와 주세요.');
       const selected = rows.filter(row => p === '/api/notifications/read-all' || row.id === notificationId);
       transaction(() => { for (const row of selected) {
         if (row._source === 'message') run('UPDATE notifications SET read_at=COALESCE(read_at,?) WHERE id=? AND user_id=?', now(), row.id, user.id);
@@ -205,7 +205,7 @@ export function createCollaborationService({ db, assert, textField, now, transac
       const body = ['POST', 'PATCH', 'PUT'].includes(method) ? await readBody() : {};
       const message = requireMessage(match[1], user.id), channel = requireChannel(user.id, message.channel_id);
       if (action === 'ack' || action === 'acks') {
-        assert(channel.system_key === 'announcements' && message.ack_required, 400, '확인을 요청한 공지가 아닙니다.');
+        assert(channel.system_key === 'announcements' && message.ack_required, 400, '확인 요청이 없는 공지예요.');
         if (action === 'ack') { run('INSERT OR IGNORE INTO announcement_acks VALUES(?,?,?)', message.id, user.id, now()); publish('message', channel.id); respond(200, { acknowledged: true, message: messageShape(requireMessage(match[1], user.id), user.id) }); }
         else {
           const people = channelMembers(channel.id), entries = all('SELECT * FROM announcement_acks WHERE message_id=?', message.id);
@@ -217,7 +217,7 @@ export function createCollaborationService({ db, assert, textField, now, transac
         publish('message', channel.id, user.id); respond(200, { saved: method === 'POST' });
       } else if (action === 'reminder') {
         if (method === 'PUT' && !workNotificationsEnabled) {
-          const message = '현재 업무 알림이 중지되어 있어 예약할 수 없습니다. 회사 관리자에게 문의해 주세요.';
+          const message = '회사 업무 알림이 꺼져 있어 예약할 수 없어요. 관리자에게 켜 달라고 해 주세요.';
           throw Object.assign(new Error(message), { status: 503, publicMessage: message, code: 'SYNK_WORK_NOTIFICATIONS_PAUSED' });
         }
         const existing = one('SELECT * FROM message_reminders WHERE message_id=? AND user_id=?', message.id, user.id);
@@ -225,10 +225,10 @@ export function createCollaborationService({ db, assert, textField, now, transac
           transaction(() => { if (existing) run('DELETE FROM notifications WHERE user_id=? AND dedupe_key=?', user.id, `reminder:${existing.id}`); run('DELETE FROM message_reminders WHERE message_id=? AND user_id=?', message.id, user.id); });
           publish('notification', channel.id, user.id); respond(200, { reminder: null });
         } else {
-          assert(typeof body.remindAt === 'string' && /^\d{4}-\d{2}-\d{2}T.*(?:Z|[+-]\d{2}:\d{2})$/.test(body.remindAt), 400, '리마인더 시간을 시간대가 포함된 날짜로 입력해 주세요.');
-          kstDate(body.remindAt.slice(0, 10), '리마인더 날짜');
+          assert(typeof body.remindAt === 'string' && /^\d{4}-\d{2}-\d{2}T.*(?:Z|[+-]\d{2}:\d{2})$/.test(body.remindAt), 400, '다시 볼 시간을 읽지 못했어요. 시간을 새로 골라 주세요.');
+          kstDate(body.remindAt.slice(0, 10), '다시 볼 날짜');
           const stamp = Date.parse(body.remindAt);
-          assert(Number.isFinite(stamp) && stamp > Date.parse(now()) && stamp <= Date.parse(now()) + 5 * 366 * 86400000, 400, '리마인더는 현재 이후 5년 이내로 설정해 주세요.');
+          assert(Number.isFinite(stamp) && stamp > Date.parse(now()) && stamp <= Date.parse(now()) + 5 * 366 * 86400000, 400, '다시 볼 시간은 지금 이후 5년 안으로 골라 주세요.');
           transaction(() => { if (existing) { run('DELETE FROM notifications WHERE user_id=? AND dedupe_key=?', user.id, `reminder:${existing.id}`); run('DELETE FROM message_reminders WHERE id=?', existing.id); } run('INSERT INTO message_reminders(id,message_id,user_id,remind_at,created_at) VALUES(?,?,?,?,?)', randomUUID(), message.id, user.id, new Date(stamp).toISOString(), now()); });
           publish('message', channel.id, user.id); respond(200, { reminder: reminderShape(one('SELECT * FROM message_reminders WHERE message_id=? AND user_id=?', message.id, user.id)) });
         }
@@ -243,14 +243,14 @@ export function createCollaborationService({ db, assert, textField, now, transac
       respond(200, paged(rows, url.searchParams, 'messages', row => messageShape(row, user.id))); return true;
     }
     if (method === 'GET' && p === '/api/reminders') {
-      deliverReminders(); const status = url.searchParams.get('status') || 'all'; assert(['all', 'pending', 'due'].includes(status), 400, '리마인더 상태를 확인해 주세요.');
+      deliverReminders(); const status = url.searchParams.get('status') || 'all'; assert(['all', 'pending', 'due'].includes(status), 400, '다시 볼 목록을 불러오지 못했어요. 새로고침해 주세요.');
       const rows = all('SELECT r.*,m.channel_id FROM message_reminders r JOIN messages m ON m.id=r.message_id WHERE r.user_id=? ORDER BY r.remind_at,r.id', user.id).filter(row => accessible(user.id, row.channel_id) && (status === 'all' || (status === 'pending' ? !row.delivered_at : row.delivered_at)));
       respond(200, paged(rows, url.searchParams, 'reminders', row => ({ ...reminderShape(row), message: messageShape(requireMessage(String(row.message_id), user.id), user.id) }))); return true;
     }
     if (method === 'GET' && p === '/api/tasks') {
       const scope = url.searchParams.get('scope') || 'mine', channelId = url.searchParams.get('channelId'), status = url.searchParams.get('status') || 'all';
-      assert(['mine', 'channel', 'all'].includes(scope) && ['all', 'todo', 'doing', 'done'].includes(status), 400, '업무 검색 범위를 확인해 주세요.');
-      if (scope === 'channel') assert(channelId, 400, '업무를 볼 대화방을 선택해 주세요.'); if (channelId) requireChannel(user.id, channelId);
+      assert(['mine', 'channel', 'all'].includes(scope) && ['all', 'todo', 'doing', 'done'].includes(status), 400, '할 일 목록 조건을 다시 골라 주세요.');
+      if (scope === 'channel') assert(channelId, 400, '할 일을 볼 대화방을 골라 주세요.'); if (channelId) requireChannel(user.id, channelId);
       const rows = all('SELECT t.*,m.channel_id FROM message_tasks t JOIN messages m ON m.id=t.message_id ORDER BY CASE WHEN t.due_date IS NULL THEN 1 ELSE 0 END,t.due_date,t.created_at DESC').filter(row => accessible(user.id, row.channel_id) && (scope !== 'mine' || row.assignee_id === user.id) && (!channelId || row.channel_id === channelId) && (status === 'all' || row.status === status));
       respond(200, paged(rows, url.searchParams, 'tasks', row => ({ ...taskShape(row, user.id), message: messageShape(requireMessage(String(row.message_id), user.id), user.id) }))); return true;
     }
@@ -258,9 +258,9 @@ export function createCollaborationService({ db, assert, textField, now, transac
       const q = textField(url.searchParams.get('q') ?? '', '검색어', 200), channelId = url.searchParams.get('channelId'), authorId = url.searchParams.get('authorId'), from = url.searchParams.get('from'), to = url.searchParams.get('to'), fileType = url.searchParams.get('fileType') || 'all';
       const { offset, limit } = pagination(url.searchParams);
       if (channelId) requireChannel(user.id, channelId);
-      if (from) kstDate(from, '시작일'); if (to) kstDate(to, '종료일'); assert(!from || !to || from <= to, 400, '검색 기간을 확인해 주세요.');
-      assert(!authorId || (typeof authorId === 'string' && authorId.length <= 100), 400, '작성자를 확인해 주세요.');
-      assert(['all', 'any', 'image', 'video', 'audio', 'document', 'archive', 'other'].includes(fileType), 400, '첨부 파일 종류를 확인해 주세요.');
+      if (from) kstDate(from, '시작 날짜'); if (to) kstDate(to, '끝 날짜'); assert(!from || !to || from <= to, 400, '끝 날짜를 시작 날짜보다 뒤로 골라 주세요.');
+      assert(!authorId || (typeof authorId === 'string' && authorId.length <= 100), 400, '작성자를 다시 골라 주세요.');
+      assert(['all', 'any', 'image', 'video', 'audio', 'document', 'archive', 'other'].includes(fileType), 400, '파일 종류를 다시 골라 주세요.');
       const escaped = `%${q.replace(/[\\%_]/g, '\\$&')}%`;
       const rows = all(`SELECT m.* FROM messages m JOIN memberships c ON c.channel_id=m.channel_id AND c.user_id=? JOIN channels r ON r.id=m.channel_id WHERE r.deleted_at IS NULL AND (r.scope<>'team' OR ?=1) AND m.body LIKE ? ESCAPE '\\' AND (? IS NULL OR m.channel_id=?) AND (? IS NULL OR m.user_id=?) AND (? IS NULL OR m.created_at>=?) AND (? IS NULL OR m.created_at<?) AND (?='all' OR EXISTS(SELECT 1 FROM files f WHERE f.message_id=m.id AND (?='any' OR (${fileTypeSql})=?))) ORDER BY m.id DESC LIMIT ? OFFSET ?`, user.id, integrated ? 1 : 0, escaped, channelId, channelId, authorId, authorId, from, from ? new Date(`${from}T00:00:00+09:00`).toISOString() : null, to, to ? new Date(Date.parse(`${to}T00:00:00+09:00`) + 86400000).toISOString() : null, fileType, fileType, fileType, limit + 1, offset);
       respond(200, { messages: rows.slice(0, limit).map(row => messageShape(row, user.id)), hasMore: rows.length > limit, nextOffset: rows.length > limit ? offset + limit : null }); return true;

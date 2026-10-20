@@ -17,7 +17,7 @@ function fixture(t) {
   const members = () => db.prepare('SELECT * FROM users WHERE active=1').all().map(row => ({ id: row.id, name: row.name, role: row.role, companyRole: row.role }));
   const requireChannel = (userId, channelId) => {
     const channel = db.prepare('SELECT c.* FROM channels c JOIN memberships m ON m.channel_id=c.id WHERE m.user_id=? AND c.id=? AND c.deleted_at IS NULL').get(userId, channelId);
-    check(channel && members().some(user => user.id === userId), 404, '대화방을 찾을 수 없습니다.');
+    check(channel && members().some(user => user.id === userId), 404, '대화방을 찾지 못했어요. 대화 목록을 새로 불러와 주세요.');
     return channel;
   };
   const requirePosting = (userId, channelId) => {
@@ -27,7 +27,7 @@ function fixture(t) {
   };
   const requireMessage = (id, userId) => {
     const message = db.prepare('SELECT * FROM messages WHERE id=?').get(id);
-    check(message, 404, '메시지를 찾을 수 없습니다.');
+    check(message, 404, '메시지를 찾지 못했어요. 대화를 새로 불러와 주세요.');
     requireChannel(userId, message.channel_id);
     return message;
   };

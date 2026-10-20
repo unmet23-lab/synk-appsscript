@@ -91,22 +91,22 @@ export function createVoiceEncryption({ db, required, now, fail, provider, publi
     tokenReady(row) { return now() >= (pausedCredentials.get(row.id) || 0); },
     tokenIssued(row) { pausedCredentials.delete(row.id); },
     keyFor(row) {
-      if (!required) fail('VOICE_E2EE_DISABLED', 409, '이 통화는 암호화 키를 사용하지 않습니다.');
+      if (!required) fail('VOICE_E2EE_DISABLED', 409, '이 통화는 암호화 키를 쓰지 않아요.');
       const round = rounds.get(row.call_id);
-      if (!round?.key || !['awaiting_acks', 'ready'].includes(round.status) || cleanupPending() || signature(active(row.call_id)) !== round.signature) fail('VOICE_E2EE_PENDING', 409, '통화의 암호화 키를 교체하고 있습니다. 잠시 후 다시 확인해 주세요.');
+      if (!round?.key || !['awaiting_acks', 'ready'].includes(round.status) || cleanupPending() || signature(active(row.call_id)) !== round.signature) fail('VOICE_E2EE_PENDING', 409, '통화 암호화 키를 바꾸는 중이에요. 잠시 뒤 다시 해 주세요.');
       if (!round.challenges.has(row.id)) round.challenges.set(row.id, randomBytes(32).toString('base64url'));
       return { ...summary(row.call_id, row.id), callId: row.call_id, admissionId: row.id, key: round.key.toString('base64url'), challenge: round.challenges.get(row.id),
         proofContext: `${E2EE_PROTOCOL}|${row.call_id}|${round.epoch}|${row.id}|${round.challenges.get(row.id)}` };
     },
     acknowledge(row, input) {
       const round = rounds.get(row.call_id);
-      if (!required || !round?.key || !['awaiting_acks', 'ready'].includes(round.status) || cleanupPending() || signature(active(row.call_id)) !== round.signature) fail('VOICE_E2EE_PENDING', 409, '통화의 암호화 준비 상태를 다시 확인해 주세요.');
+      if (!required || !round?.key || !['awaiting_acks', 'ready'].includes(round.status) || cleanupPending() || signature(active(row.call_id)) !== round.signature) fail('VOICE_E2EE_PENDING', 409, '암호화 준비가 바뀌었어요. 잠시 뒤 다시 해 주세요.');
       if (!input || Object.keys(input).sort().join(',') !== 'epoch,proof,sdkEnabled,workerReset' || input.epoch !== round.epoch || input.sdkEnabled !== true || input.workerReset !== true || typeof input.proof !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(input.proof) || !round.challenges.has(row.id)) fail('VOICE_E2EE_ACK_INVALID', 409, '현재 암호화 키로 SDK를 새로 준비해 주세요.');
       const context = `${E2EE_PROTOCOL}|${row.call_id}|${round.epoch}|${row.id}|${round.challenges.get(row.id)}`;
       // The SDK receives the base64url string as its shared-key passphrase.
       const expected = createHmac('sha256', round.key.toString('base64url')).update(context).digest();
       const proof = Buffer.from(input.proof, 'base64url');
-      if (proof.length !== expected.length || !timingSafeEqual(proof, expected)) fail('VOICE_E2EE_ACK_INVALID', 409, '암호화 키 확인에 실패했습니다. 현재 키를 다시 준비해 주세요.');
+      if (proof.length !== expected.length || !timingSafeEqual(proof, expected)) fail('VOICE_E2EE_ACK_INVALID', 409, '암호화 키 확인에 실패했어요. 지금 키로 다시 준비해 주세요.');
       round.acks.add(row.id);
       if (active(row.call_id).every(member => round.acks.has(member.id)) && round.status !== 'ready') {
         round.status = 'ready';

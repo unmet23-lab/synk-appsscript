@@ -21,6 +21,9 @@ const FILE_LIMIT = 100 * 1024 * 1024;
 const SESSION_MS = 7 * 86400000;
 const EMOJI = new Set(['👍', '❤️', '✅', '👀', '🎉']);
 const CHANNEL_CATEGORIES = new Set(['generic', 'team', 'project']);
+// Team rooms always carry this default (no one can edit it). Rooms made before 2026-10-20 stored the older wording.
+const TEAM_CHANNEL_DESCRIPTION = '우리 팀 크루만 보는 대화방';
+const LEGACY_TEAM_CHANNEL_DESCRIPTION = '현재 이 팀에 소속된 구성원만 참여하는 대화입니다.';
 const FILE_EXTENSIONS = {
   image: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp', 'tif', 'tiff', 'heic', 'avif'],
   video: ['mp4', 'mov', 'webm', 'mkv', 'avi', 'm4v', 'mpeg', 'mpg'],
@@ -43,7 +46,7 @@ class AppError extends Error {
 }
 function assert(test, status, message) { if (!test) throw new AppError(status, message); }
 function requestId(value, label) {
-  assert(typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value), 400, `${label} 식별자를 확인해 주세요.`);
+  assert(typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value), 400, `${label} 정보를 읽지 못했어요. 새로고침한 뒤 다시 해 주세요.`);
   return value.toLowerCase();
 }
 function recoveryError(code, message, details = {}) { return Object.assign(new AppError(409, message), { code, ...details }); }
@@ -53,16 +56,16 @@ function canonical(value) {
   return value;
 }
 function textField(value, label, max, min = 0) {
-  assert(typeof value === 'string', 400, `${label}을(를) 입력해 주세요.`);
+  assert(typeof value === 'string', 400, `‘${label}’ 칸을 채워 주세요.`);
   const text = value.trim();
-  assert(text.length >= min && text.length <= max, 400, `${label}은(는) ${min}~${max}자여야 합니다.`);
+  assert(text.length >= min && text.length <= max, 400, `‘${label}’ 칸에는 ${min ? `${min}~${max}자를 적어 주세요` : `${max}자까지 적을 수 있어요`}.`);
   return text;
 }
 function accountInput(body) {
   const name = textField(body.name, '이름', 40, 1);
   const username = textField(body.username, '아이디', 32, 3).toLowerCase();
-  assert(/^[a-z0-9_.-]{3,32}$/.test(username), 400, '아이디는 영문, 숫자, 점, 밑줄, 하이픈으로 입력해 주세요.');
-  assert(typeof body.password === 'string' && body.password.length >= 10 && body.password.length <= 128, 400, '비밀번호는 10~128자여야 합니다.');
+  assert(/^[a-z0-9_.-]{3,32}$/.test(username), 400, '아이디는 영문·숫자·점·밑줄·하이픈으로만 적어 주세요.');
+  assert(typeof body.password === 'string' && body.password.length >= 10 && body.password.length <= 128, 400, '비밀번호는 10~128자로 정해 주세요.');
   return { name, username, password: body.password };
 }
 async function passwordHash(password) {
@@ -78,30 +81,30 @@ async function passwordMatches(password, encoded) {
 async function jsonBody(req) {
   if (Number(req.headers['content-length']) > 65536) {
     req.resume();
-    throw new AppError(413, '요청이 너무 큽니다.');
+    throw new AppError(413, '보낸 내용이 너무 커요. 줄여서 다시 보내 주세요.');
   }
   const parts = []; let size = 0;
   for await (const chunk of req) {
     size += chunk.length;
     if (size <= 65536) parts.push(chunk);
   }
-  assert(size <= 65536, 413, '요청이 너무 큽니다.');
+  assert(size <= 65536, 413, '보낸 내용이 너무 커요. 줄여서 다시 보내 주세요.');
   try {
     const body = JSON.parse(Buffer.concat(parts).toString('utf8') || '{}');
-    assert(body && typeof body === 'object' && !Array.isArray(body), 400, '올바른 요청 형식이 아닙니다.');
+    assert(body && typeof body === 'object' && !Array.isArray(body), 400, '요청 형식이 맞지 않아요. 새로고침한 뒤 다시 해 주세요.');
     return body;
   } catch (error) {
     if (error instanceof AppError) throw error;
-    throw new AppError(400, '요청 내용을 읽을 수 없습니다.');
+    throw new AppError(400, '요청 내용을 읽지 못했어요. 새로고침한 뒤 다시 해 주세요.');
   }
 }
 
 async function voiceWebhookBody(req) {
   assert((req.headers['content-type'] || '').split(';')[0].trim().toLowerCase() === 'application/webhook+json', 415, '통화 이벤트 형식을 확인해 주세요.');
-  if (Number(req.headers['content-length']) > 65536) { req.resume(); throw new AppError(413, '요청이 너무 큽니다.'); }
+  if (Number(req.headers['content-length']) > 65536) { req.resume(); throw new AppError(413, '보낸 내용이 너무 커요. 줄여서 다시 보내 주세요.'); }
   const parts = []; let size = 0;
   for await (const chunk of req) { size += chunk.length; if (size <= 65536) parts.push(chunk); }
-  assert(size <= 65536, 413, '요청이 너무 큽니다.');
+  assert(size <= 65536, 413, '보낸 내용이 너무 커요. 줄여서 다시 보내 주세요.');
   return Buffer.concat(parts);
 }
 
@@ -164,6 +167,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
   if (!existingChannelColumns.has('deleted_by')) db.exec('ALTER TABLE channels ADD COLUMN deleted_by TEXT REFERENCES users(id)');
   if (!existingChannelColumns.has('archived_by_leave')) db.exec('ALTER TABLE channels ADD COLUMN archived_by_leave TEXT REFERENCES users(id)');
   if (!existingChannelColumns.has('lifecycle_version')) db.exec('ALTER TABLE channels ADD COLUMN lifecycle_version INTEGER NOT NULL DEFAULT 0');
+  db.prepare("UPDATE channels SET description=? WHERE scope='team' AND description=?").run(TEAM_CHANNEL_DESCRIPTION, LEGACY_TEAM_CHANNEL_DESCRIPTION);
   db.exec('CREATE UNIQUE INDEX IF NOT EXISTS channels_company_team ON channels(team_id) WHERE team_id IS NOT NULL');
   db.exec('CREATE UNIQUE INDEX IF NOT EXISTS channels_system_key ON channels(system_key) WHERE system_key IS NOT NULL');
   const existingMessageColumns = new Set(db.prepare('PRAGMA table_info(messages)').all().map(column => column.name));
@@ -215,9 +219,9 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
   function voiceRecipientCheck(channelId, userId) {
     const original = requireChannel(userId, channelId), lifecycle = original.lifecycle_version, departure = departureVersion(channelId, userId), access = bridge?.accessKey(userId);
     return () => {
-      assert(voiceInvitationVisible(userId, channelId), 404, '초대할 동료를 찾을 수 없습니다.');
+      assert(voiceInvitationVisible(userId, channelId), 404, '이 동료는 지금 이 대화방에 없어요. 다른 동료를 불러 주세요.');
       const channel = requireChannel(userId, channelId);
-      assert(channel.lifecycle_version === lifecycle && departureVersion(channelId, userId) === departure && bridge?.accessKey(userId) === access, 409, '대화방 참여 상태가 변경되었습니다.');
+      assert(channel.lifecycle_version === lifecycle && departureVersion(channelId, userId) === departure && bridge?.accessKey(userId) === access, 409, '동료의 대화방 참여가 바뀌었어요. 다시 불러 주세요.');
       const user = one('SELECT * FROM users WHERE id=?', userId);
       const companyUser = integration?.listUsers().find(row => row.id === bridge.companyUserId(userId) && row.active !== false);
       const identity = companyUser ? { role: companyUser.role, canWrite: companyUser.canWrite ?? companyUser.role !== 'viewer', canManage: companyUser.role === 'admin' } : null;
@@ -244,7 +248,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
   }
   function voicePermissionCheck(req, auth, channelId) {
     const original = requireChannel(auth.user.id, channelId);
-    assert(original.kind !== 'self' && !original.system_key, 400, '개인 대화나 팀·프로젝트 대화방에서 통화를 시작해 주세요.');
+    assert(original.kind !== 'self' && !original.system_key, 400, '이 대화방에서는 통화할 수 없어요. 개인 대화나 팀·프로젝트 대화방에서 시작해 주세요.');
     const lifecycle = original.lifecycle_version, departure = departureVersion(channelId, auth.user.id);
     const access = bridge?.accessKey(auth.user.id), role = auth.identity?.role;
     // Keep only the cookie needed to re-check the original session, never a
@@ -252,10 +256,10 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
     const probe = { headers: { cookie: req.headers.cookie } };
     return () => {
       const latest = session(probe);
-      assert(latest && latest.token === auth.token && latest.user.id === auth.user.id, 401, '회사 계정으로 다시 로그인해 주세요.');
-      assert(latest.identity?.role === role && bridge?.accessKey(auth.user.id) === access, 403, '통화 권한이나 소속 팀이 변경되었습니다.');
+      assert(latest && latest.token === auth.token && latest.user.id === auth.user.id, 401, '로그인 상태가 바뀌었어요. 회사 계정으로 다시 로그인해 주세요.');
+      assert(latest.identity?.role === role && bridge?.accessKey(auth.user.id) === access, 403, '통화 권한이나 소속 팀이 바뀌었어요. 다시 참가해 주세요.');
       const channel = requireChannel(latest.user.id, channelId);
-      assert(channel.lifecycle_version === lifecycle && departureVersion(channelId, latest.user.id) === departure, 409, '대화방 참여 상태가 변경되었습니다. 다시 참가해 주세요.');
+      assert(channel.lifecycle_version === lifecycle && departureVersion(channelId, latest.user.id) === departure, 409, '대화방 참여가 바뀌었어요. 다시 참가해 주세요.');
       return voicePermissions(latest, channel);
     };
   }
@@ -265,12 +269,12 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
       const memberIds = members().filter(member => recipientIds ? recipientIds.includes(member.id) : one('SELECT 1 FROM memberships WHERE channel_id=? AND user_id=?', channelId, member.id)).map(member => bridge.companyUserId(member.id)).filter(Boolean);
       try { return integration.resolveWorkspaceLink({ companyUserId: bridge.companyUserId(userId), recipientCompanyUserIds: memberIds, workspaceLink, purpose }); }
       catch (error) {
-        if (error?.status === 403) throw new AppError(403, '이 대화의 참여자에게 공유할 권한이 없습니다. 기획을 볼 수 있는 다른 크루나 대화방을 선택해 주세요.');
-        if (error?.status === 404) throw new AppError(404, '공유할 기획을 찾을 수 없거나 열람 권한이 변경되었습니다. 회사 화면에서 기획을 다시 확인해 주세요.');
+        if (error?.status === 403) throw new AppError(403, '이 대화방에 기획을 볼 수 없는 크루가 있어요. 기획을 볼 수 있는 크루나 다른 대화방을 골라 주세요.');
+        if (error?.status === 404) throw new AppError(404, '공유할 기획이 없거나 볼 권한이 바뀌었어요. 회사 화면에서 기획을 다시 열어 주세요.');
         throw error;
       }
     }
-    assert(!workspaceLink.url.includes('draftId='), 403, '이 기획의 공유 권한을 확인할 수 없습니다. 회사 화면에서 공유해 주세요.');
+    assert(!workspaceLink.url.includes('draftId='), 403, '여기서는 기획 공유 권한을 알 수 없어요. 회사 화면에서 공유해 주세요.');
     return workspaceLink;
   }
 
@@ -310,7 +314,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
       const entry = !prior || prior.until < stamp ? { count: 0, until: stamp + 15 * 60000 } : prior;
       entry.count++;
       authAttempts.set(key, entry);
-      assert(entry.count <= limit, 429, '시도가 너무 많습니다. 15분 후 다시 시도해 주세요.');
+      assert(entry.count <= limit, 429, '시도가 너무 많아요. 15분 뒤 다시 해 주세요.');
     }
     if (authAttempts.size > 1000) for (const [k, v] of authAttempts) if (v.until < stamp) authAttempts.delete(k);
   }
@@ -338,7 +342,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
   }
   function requireChannel(userId, channelId) {
     const channel = one('SELECT c.* FROM channels c JOIN memberships m ON m.channel_id=c.id WHERE c.id=? AND m.user_id=?', channelId, userId);
-    assert(channel && !channel.deleted_at && (channel.scope !== 'team' || bridge?.inTeam(channel.team_id, userId)), 404, '대화방을 찾을 수 없습니다.');
+    assert(channel && !channel.deleted_at && (channel.scope !== 'team' || bridge?.inTeam(channel.team_id, userId)), 404, '대화방을 찾지 못했어요. 대화 목록을 새로 불러와 주세요.');
     return channel;
   }
   function canPostInChannel(channel, userId) {
@@ -348,7 +352,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
   }
   function requirePosting(userId, channelId) {
     const channel = requireChannel(userId, channelId);
-    assert(canPostInChannel(channel, userId), 403, channel.system_key === 'announcements' ? '공지는 관리자만 작성하거나 파일을 올릴 수 있습니다. 읽기와 반응은 사용할 수 있습니다.' : '이 대화방에 메시지나 파일을 올릴 수 없습니다.');
+    assert(canPostInChannel(channel, userId), 403, channel.system_key === 'announcements' ? '공지는 관리자만 쓰거나 파일을 올릴 수 있어요. 읽기와 반응은 누구나 할 수 있어요.' : '이 대화방에는 메시지나 파일을 올릴 수 없어요.');
     return channel;
   }
   function selectedProject(channel) { return channel.kind === 'channel' && channel.scope === 'private' && channel.category === 'project'; }
@@ -369,10 +373,10 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
     return managedProject(channel, userId);
   }
   function selectedMemberIds(value) {
-    assert(Array.isArray(value) && value.length <= 500 && value.every(id => typeof id === 'string'), 400, '참여할 크루를 목록에서 선택해 주세요.');
+    assert(Array.isArray(value) && value.length <= 500 && value.every(id => typeof id === 'string'), 400, '들어올 크루를 목록에서 골라 주세요.');
     const activeIds = new Set(members().map(member => member.id));
     const ids = [...new Set(value)];
-    assert(ids.every(id => activeIds.has(id)), 400, '현재 참여할 수 없는 크루가 포함되어 있습니다. 크루 목록을 새로고침해 주세요.');
+    assert(ids.every(id => activeIds.has(id)), 400, '고른 크루 가운데 지금 들어올 수 없는 사람이 있어요. 크루 목록을 새로 불러와 주세요.');
     return ids;
   }
   function channelMembers(channelId) { return members().filter(member => one('SELECT 1 FROM memberships WHERE channel_id=? AND user_id=?', channelId, member.id)); }
@@ -380,7 +384,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
     for (const row of all('SELECT workspace_link FROM messages WHERE channel_id=? AND workspace_link IS NOT NULL', channel.id)) {
       try { resolveWorkspaceLink({ userId, channelId: channel.id, recipientIds, workspaceLink: JSON.parse(row.workspace_link), purpose }); }
       catch (error) {
-        if (error.status === 403 || error.status === 404) throw new AppError(error.status, '이 대화방에 공유된 기획을 볼 권한이 없는 크루가 포함되어 있거나 기획의 열람 권한이 변경되었습니다. 기획 권한을 확인하거나 새로운 대화방을 이용해 주세요.');
+        if (error.status === 403 || error.status === 404) throw new AppError(error.status, '이 대화방에 공유한 기획을 볼 수 없는 크루가 있어요. 기획 볼 권한을 먼저 주거나 새 대화방을 만들어 주세요.');
         throw error;
       }
     }
@@ -434,7 +438,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
     }
   }
   function createUser(input, password, role) {
-    assert(!one('SELECT id FROM users WHERE username=?', input.username), 409, '이미 사용 중인 아이디입니다.');
+    assert(!one('SELECT id FROM users WHERE username=?', input.username), 409, '이미 쓰고 있는 아이디예요. 다른 아이디를 정해 주세요.');
     const id = randomUUID();
     run('INSERT INTO users(id,username,name,role,password,created_at) VALUES(?,?,?,?,?,?)', id, input.username, input.name, role, password, now());
     run("INSERT INTO memberships(channel_id,user_id) SELECT id,? FROM channels WHERE kind='channel' AND scope='public' AND deleted_at IS NULL AND NOT EXISTS(SELECT 1 FROM channel_departures d WHERE d.channel_id=channels.id AND d.user_id=? AND d.rejoined_at IS NULL)", id, id);
@@ -451,7 +455,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
   }
   function requireMessage(id, userId) {
     const m = /^\d+$/.test(id) ? one('SELECT * FROM messages WHERE id=?', id) : null;
-    assert(m, 404, '메시지를 찾을 수 없습니다.');
+    assert(m, 404, '메시지를 찾지 못했어요. 대화를 새로 불러와 주세요.');
     requireChannel(userId, m.channel_id);
     return m;
   }
@@ -507,19 +511,19 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
   }
   function guardRequest(req) {
     if (integration) {
-      if (req.headers.origin) assert(req.headers.origin === integration.origin, 403, '회사 프로그램 화면에서 요청해 주세요.');
-      assert(req.headers['sec-fetch-site'] !== 'cross-site', 403, '다른 사이트에서 보낸 요청은 허용되지 않습니다.');
+      if (req.headers.origin) assert(req.headers.origin === integration.origin, 403, '회사 화면 밖에서 온 요청이에요. 회사 화면에서 다시 열어 주세요.');
+      assert(req.headers['sec-fetch-site'] !== 'cross-site', 403, '다른 사이트에서 온 요청은 받지 않아요.');
       return;
     }
     const allowedHosts = new Set([`127.0.0.1:${listeningPort}`, `localhost:${listeningPort}`, `[::1]:${listeningPort}`]);
-    assert(allowedHosts.has(req.headers.host), 403, '허용되지 않은 접속 주소입니다.');
-    if (req.headers.origin) assert(req.headers.origin === `http://${req.headers.host}`, 403, '다른 사이트에서 보낸 요청은 허용되지 않습니다.');
-    assert(req.headers['sec-fetch-site'] !== 'cross-site', 403, '다른 사이트에서 보낸 요청은 허용되지 않습니다.');
+    assert(allowedHosts.has(req.headers.host), 403, '이 주소로는 열 수 없어요. 이 컴퓨터의 메신저 주소로 열어 주세요.');
+    if (req.headers.origin) assert(req.headers.origin === `http://${req.headers.host}`, 403, '다른 사이트에서 온 요청은 받지 않아요.');
+    assert(req.headers['sec-fetch-site'] !== 'cross-site', 403, '다른 사이트에서 온 요청은 받지 않아요.');
   }
   function sentRequestResult(receipt, userId) {
-    if (receipt.state === 'cancelled') throw recoveryError('MESSAGE_CANCELLED', '취소한 전송입니다. 같은 식별자로 다시 보내지 않습니다.');
+    if (receipt.state === 'cancelled') throw recoveryError('MESSAGE_CANCELLED', '보내기를 취소한 메시지라 보내지 않았어요. 필요하면 새로 보내 주세요.');
     const message = receipt.message_id && one('SELECT * FROM messages WHERE id=?', receipt.message_id);
-    if (!message) throw recoveryError('MESSAGE_DELETED', '이미 전송된 메시지가 삭제되었습니다. 다시 전송하지 않습니다.');
+    if (!message) throw recoveryError('MESSAGE_DELETED', '이미 보낸 뒤 지운 메시지라 다시 보내지 않았어요.');
     if (message.workspace_link) {
       try { resolveWorkspaceLink({ userId, channelId: message.channel_id, workspaceLink: JSON.parse(message.workspace_link) }); }
       catch (error) {
@@ -532,15 +536,15 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
     return { status: 'sent', message: messageShape(message, userId) };
   }
   function uploadedRequestFile(receipt, key) {
-    if (receipt.state === 'cancelled') throw recoveryError('UPLOAD_CANCELLED', '취소한 파일 전송입니다. 같은 식별자로 다시 올리지 않습니다.');
+    if (receipt.state === 'cancelled') throw recoveryError('UPLOAD_CANCELLED', '올리기를 취소한 파일이라 올리지 않았어요. 필요하면 다시 골라 주세요.');
     if (receipt.state === 'pending') {
       const active = activeUploadRequests.has(key);
-      throw recoveryError(active ? 'UPLOAD_IN_PROGRESS' : 'UPLOAD_UNCERTAIN', active ? '파일 저장이 진행 중입니다. 잠시 후 전송 결과를 확인해 주세요.' : '이전 파일 저장 결과를 확인할 수 없어 중복 업로드를 중단했습니다.', { recoveryStatus: active ? 'pending' : 'uncertain', retryable: false });
+      throw recoveryError(active ? 'UPLOAD_IN_PROGRESS' : 'UPLOAD_UNCERTAIN', active ? '파일을 아직 저장하고 있어요. 잠시 뒤 다시 확인해 주세요.' : '앞서 올린 결과를 알 수 없어 또 올리지 않았어요. 첨부를 빼고 다시 골라 주세요.', { recoveryStatus: active ? 'pending' : 'uncertain', retryable: false });
     }
     if (receipt.state !== 'complete') return null;
     const file = receipt.file_id && one('SELECT * FROM files WHERE id=?', receipt.file_id);
-    if (!file) throw recoveryError('UPLOAD_DELETED', '이미 삭제한 첨부파일입니다. 다시 올리지 않습니다.');
-    if (file.message_id !== null) throw recoveryError('UPLOAD_CONSUMED', '이미 메시지에 첨부한 파일입니다. 해당 메시지의 전송 결과를 확인해 주세요.');
+    if (!file) throw recoveryError('UPLOAD_DELETED', '이미 지운 첨부 파일이라 다시 올리지 않았어요.');
+    if (file.message_id !== null) throw recoveryError('UPLOAD_CONSUMED', '이미 메시지에 첨부한 파일이에요. 그 메시지가 보내졌는지 확인해 주세요.');
     return file;
   }
   async function upload(req, res, user, channelId, revalidate = () => {}) {
@@ -549,22 +553,22 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
     const uploadId = req.headers['x-upload-id'] === undefined ? null : requestId(req.headers['x-upload-id'], '파일 전송');
     const validateUpload = () => {
       revalidate();
-      assert(requirePosting(user.id, channelId).lifecycle_version === lifecycleVersion, 409, '대화방이 삭제 또는 복원되어 업로드가 취소되었습니다. 다시 파일을 선택해 주세요.');
-      assert(departureVersion(channelId, user.id) === membershipVersion, 409, '프로젝트 참여 상태가 변경되어 업로드가 취소되었습니다. 다시 파일을 선택해 주세요.');
-      if (uploadId && one('SELECT state FROM file_upload_requests WHERE user_id=? AND channel_id=? AND request_id=?', user.id, channelId, uploadId)?.state === 'cancelled') throw recoveryError('UPLOAD_CANCELLED', '취소한 파일 전송입니다. 같은 식별자로 다시 올리지 않습니다.');
+      assert(requirePosting(user.id, channelId).lifecycle_version === lifecycleVersion, 409, '올리는 사이 대화방이 삭제되거나 복원돼 업로드를 멈췄어요. 파일을 다시 골라 주세요.');
+      assert(departureVersion(channelId, user.id) === membershipVersion, 409, '올리는 사이 프로젝트 참여가 바뀌어 업로드를 멈췄어요. 파일을 다시 골라 주세요.');
+      if (uploadId && one('SELECT state FROM file_upload_requests WHERE user_id=? AND channel_id=? AND request_id=?', user.id, channelId, uploadId)?.state === 'cancelled') throw recoveryError('UPLOAD_CANCELLED', '올리기를 취소한 파일이라 올리지 않았어요. 필요하면 다시 골라 주세요.');
     };
     const uploadKey = JSON.stringify([user.id, channelId, uploadId]);
     // Capture storage once, preserving the existing account-switch semantics.
     const activeConnection = await drive.active();
     validateUpload();
     let original;
-    try { original = decodeURIComponent(req.headers['x-file-name'] || ''); } catch { throw new AppError(400, '파일 이름을 읽을 수 없습니다.'); }
+    try { original = decodeURIComponent(req.headers['x-file-name'] || ''); } catch { throw new AppError(400, '파일 이름을 읽지 못했어요. 이름을 바꾼 뒤 다시 올려 주세요.'); }
     original = original.replace(/[\\/\u0000-\u001f\u007f]/g, '_').trim();
-    assert(original && original.length <= 240, 400, '파일 이름은 1~240자여야 합니다.');
+    assert(original && original.length <= 240, 400, '파일 이름을 1~240자로 바꾼 뒤 다시 올려 주세요.');
     const contentLength = req.headers['content-length'];
     if (contentLength) {
-      assert(Number(contentLength) > 0, 400, '빈 파일은 올릴 수 없습니다.');
-      if (Number(contentLength) > FILE_LIMIT) { req.resume(); throw new AppError(413, '파일은 하나당 100MB까지 올릴 수 있습니다.'); }
+      assert(Number(contentLength) > 0, 400, '빈 파일은 올릴 수 없어요. 내용이 있는 파일을 골라 주세요.');
+      if (Number(contentLength) > FILE_LIMIT) { req.resume(); throw new AppError(413, '파일은 하나에 100MB까지 올릴 수 있어요.'); }
     }
     const id = randomUUID(); const diskName = `${id}.bin`; const diskPath = path.join(uploadDir, diskName);
     let handle; let size = 0; let saved = false; let remote = null; let claimed = false;
@@ -586,16 +590,16 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
       }
       await handle.sync();
       await handle.close(); handle = null;
-      assert(size <= FILE_LIMIT, 413, '파일은 하나당 100MB까지 올릴 수 있습니다.');
-      assert(size > 0, 400, '빈 파일은 올릴 수 없습니다.');
-      assert(!res.destroyed, 499, '파일 업로드가 취소되었습니다.');
+      assert(size <= FILE_LIMIT, 413, '파일은 하나에 100MB까지 올릴 수 있어요.');
+      assert(size > 0, 400, '빈 파일은 올릴 수 없어요. 내용이 있는 파일을 골라 주세요.');
+      assert(!res.destroyed, 499, '파일 올리기가 취소됐어요.');
       validateUpload();
       const md5 = digest.digest('hex');
       if (uploadId) {
         const fingerprint = hash(JSON.stringify([original, size, payloadDigest.digest('hex')]));
         const existing = transaction(() => {
           const prior = one('SELECT * FROM file_upload_requests WHERE user_id=? AND channel_id=? AND request_id=?', user.id, channelId, uploadId);
-          if (prior && prior.payload_hash !== fingerprint) throw recoveryError('UPLOAD_REQUEST_CONFLICT', '같은 전송 식별자로 다른 파일을 올릴 수 없습니다.');
+          if (prior && prior.payload_hash !== fingerprint) throw recoveryError('UPLOAD_REQUEST_CONFLICT', '다른 파일과 전송 정보가 겹쳐 올리지 않았어요. 첨부를 빼고 다시 골라 주세요.');
           const complete = prior && uploadedRequestFile(prior, uploadKey);
           if (complete) return complete;
           if (prior) run("UPDATE file_upload_requests SET state='pending' WHERE user_id=? AND channel_id=? AND request_id=?", user.id, channelId, uploadId);
@@ -608,12 +612,12 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
       }
       if (activeConnection) {
         remote = await drive.upload({ connectionId: activeConnection.id, localPath: diskPath, name: original, size, md5, fileId: id });
-        assert(remote?.connectionId === activeConnection.id && typeof remote.remoteId === 'string' && remote.remoteId && typeof remote.md5 === 'string' && remote.md5.toLowerCase() === md5, 502, 'Drive에 저장된 파일을 검증하지 못했습니다. 다시 시도해 주세요.');
+        assert(remote?.connectionId === activeConnection.id && typeof remote.remoteId === 'string' && remote.remoteId && typeof remote.md5 === 'string' && remote.md5.toLowerCase() === md5, 502, 'Drive에 저장된 파일을 확인하지 못했어요. 다시 올려 주세요.');
         // Survives a failed SQLite insert or a crash before the file record is committed.
         enqueueDriveDeletion({ fileId: id, connectionId: activeConnection.id, remoteId: remote.remoteId });
       }
       // A completed keyed upload remains discoverable even when only the response was lost.
-      if (!uploadId) assert(!res.destroyed, 499, '파일 업로드가 취소되었습니다.');
+      if (!uploadId) assert(!res.destroyed, 499, '파일 올리기가 취소됐어요.');
       validateUpload();
       // MIME intentionally inert. Any extension may be downloaded, never executed or rendered inline.
       transaction(() => {
@@ -651,7 +655,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
       guardRequest(req);
       const url = new URL(req.url, `http://${req.headers.host}`);
       if (basePath) {
-        assert(url.pathname.startsWith(`${basePath}/`), 404, '메신저 주소를 확인해 주세요.');
+        assert(url.pathname.startsWith(`${basePath}/`), 404, '메신저 주소가 맞지 않아요. 회사 화면에서 메신저를 다시 열어 주세요.');
         url.pathname = url.pathname.slice(basePath.length);
       }
       const p = url.pathname; const method = req.method;
@@ -673,12 +677,12 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
       const revalidate = () => {
         if (!integration) return;
         const latest = session(req);
-        assert(latest && latest.token === originalToken, 401, '회사 계정으로 다시 로그인해 주세요.');
-        assert(latest.identity.role === originalRole, 401, '회사 계정의 권한이 변경되었습니다. 다시 로그인해 주세요.');
-        assert(bridge.accessKey(latest.user.id) === originalAccess, 401, '소속 팀이 변경되었습니다. 대화 목록을 새로고침해 주세요.');
+        assert(latest && latest.token === originalToken, 401, '로그인 상태가 바뀌었어요. 회사 계정으로 다시 로그인해 주세요.');
+        assert(latest.identity.role === originalRole, 401, '회사 계정의 권한이 바뀌었어요. 다시 로그인해 주세요.');
+        assert(bridge.accessKey(latest.user.id) === originalAccess, 401, '소속 팀이 바뀌었어요. 대화 목록을 새로 불러와 주세요.');
         if (mutation) {
-          assert(req.headers.origin === integration.origin && req.headers['x-csrf-token'] === latest.identity.csrfToken, 403, '로그인 상태를 다시 확인해 주세요.');
-          assert(latest.identity.canWrite || readMarker || personalMutation, 403, '열람 계정은 메시지나 파일을 변경할 수 없습니다.');
+          assert(req.headers.origin === integration.origin && req.headers['x-csrf-token'] === latest.identity.csrfToken, 403, '로그인 정보가 바뀌었어요. 새로고침한 뒤 다시 해 주세요.');
+          assert(latest.identity.canWrite || readMarker || personalMutation, 403, '보기 전용 계정이라 메시지나 파일을 바꿀 수 없어요.');
         }
         auth = latest; user = latest.user;
       };
@@ -691,14 +695,14 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
       }
       if (method === 'GET' && p === '/api/bootstrap') return respond(200, await bootstrap(user, auth?.identity));
       if (method === 'POST' && p === '/api/setup') {
-        assert(!hasSetup(), 409, '이미 초기 설정이 끝났습니다. 로그인해 주세요.');
+        assert(!hasSetup(), 409, '이미 처음 설정을 마쳤어요. 로그인해 주세요.');
         rateLimit(req, 'setup');
         const body = await readBody();
         const input = accountInput(body);
         const name = textField(body.workspaceName, '워크스페이스 이름', 60, 1);
         const password = await passwordHash(input.password);
         const created = transaction(() => {
-          assert(!hasSetup(), 409, '이미 초기 설정이 끝났습니다. 로그인해 주세요.');
+          assert(!hasSetup(), 409, '이미 처음 설정을 마쳤어요. 로그인해 주세요.');
           run("INSERT INTO settings(key,value) VALUES('workspace_name',?)", name);
           const owner = createUser(input, password, 'owner');
           ensureSystemChannels([owner.id]);
@@ -713,7 +717,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
         rateLimit(req, `login:${body.username.trim().toLowerCase()}`);
         const found = one('SELECT * FROM users WHERE username=?', body.username.trim());
         const encoded = found?.password || `${'0'.repeat(32)}:${'0'.repeat(128)}`;
-        assert(await passwordMatches(body.password, encoded) && found, 401, '아이디 또는 비밀번호가 올바르지 않습니다.');
+        assert(await passwordMatches(body.password, encoded) && found, 401, '아이디나 비밀번호가 맞지 않아요. 다시 확인해 주세요.');
         issueSession(res, found.id);
         return respond(200, await bootstrap(found));
       }
@@ -725,7 +729,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
         const password = await passwordHash(input.password);
         const created = transaction(() => {
           const invitation = one('SELECT * FROM invites WHERE code_hash=?', hash(code));
-          assert(invitation && !invitation.used_at && !invitation.revoked_at && invitation.expires_at > now(), 400, '사용할 수 없는 초대 코드입니다. 관리자에게 새 코드를 요청해 주세요.');
+          assert(invitation && !invitation.used_at && !invitation.revoked_at && invitation.expires_at > now(), 400, '쓸 수 없는 초대 코드예요. 관리자에게 새 코드를 받아 주세요.');
           const member = createUser(input, password, 'member');
           run('UPDATE invites SET used_at=? WHERE id=?', now(), invitation.id);
           return member;
@@ -735,7 +739,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
         return respond(201, await bootstrap(created));
       }
       if (p.startsWith('/api/')) {
-        assert(user, 401, '로그인이 필요합니다.');
+        assert(user, 401, '로그인이 필요해요. 다시 로그인해 주세요.');
         if (method === 'GET' && p === '/api/voice') return respond(200, voiceService.capabilities());
         if (method === 'GET' && p === '/api/voice/current') {
           await voiceService.sweep(); revalidate(); const result = voiceService.current(user.id, auth.token);
@@ -743,7 +747,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
           return respond(200, result);
         }
         if (method === 'GET' && p === '/api/voice/usage') {
-          assert(auth.identity ? auth.identity.role === 'admin' && auth.identity.canManage && auth.identity.canWrite : user.role === 'owner', 403, '관리자만 전체 통화 사용량을 확인할 수 있습니다.');
+          assert(auth.identity ? auth.identity.role === 'admin' && auth.identity.canManage && auth.identity.canWrite : user.role === 'owner', 403, '전체 통화 사용량은 관리자만 볼 수 있어요.');
           return respond(200, await voiceService.usage());
         }
         if (p === '/api/voice/preferences' && ['GET', 'PATCH'].includes(method)) {
@@ -756,12 +760,12 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
         if (voiceInvitation && method === 'POST' && voiceInvitation[2]) {
           const body = await readBody(), id = requestId(voiceInvitation[1], '통화 초대');
           if (voiceInvitation[2] === 'accept') {
-            assert(Object.keys(body).every(key => ['requestId', 'client'].includes(key)) && Object.hasOwn(body, 'requestId'), 400, '통화 수락 요청을 확인해 주세요.');
+            assert(Object.keys(body).every(key => ['requestId', 'client'].includes(key)) && Object.hasOwn(body, 'requestId'), 400, '통화 수락 요청이 맞지 않아요. 새로고침한 뒤 다시 수락해 주세요.');
             const invitation = voiceService.invitation(id, user.id), check = voicePermissionCheck(req, auth, invitation.channelId);
             const result = await voiceService.acceptInvitation({ id, userId: user.id, token: auth.token, requestId: body.requestId, client: body.client, check });
             revalidate(); check(); return respond(200, { ...result, permissions: publicVoicePermissions(auth, requireChannel(user.id, invitation.channelId)) });
           }
-          assert(Object.keys(body).length === 0, 400, '통화 초대 응답을 확인해 주세요.');
+          assert(Object.keys(body).length === 0, 400, '통화 초대 응답이 맞지 않아요. 새로고침한 뒤 다시 해 주세요.');
           return respond(200, voiceService.respondInvitation({ id, userId: user.id, action: voiceInvitation[2] }));
         }
         const voiceChannel = /^\/api\/channels\/([^/]+)\/voice(?:\/(join|policy|audit|invitations))?$/.exec(p);
@@ -772,7 +776,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
         }
         if (voiceChannel?.[2] === 'join' && method === 'POST') {
           const body = await readBody();
-          assert(Object.keys(body).every(key => ['requestId', 'client'].includes(key)) && Object.hasOwn(body, 'requestId'), 400, '통화 참가 요청을 확인해 주세요.');
+          assert(Object.keys(body).every(key => ['requestId', 'client'].includes(key)) && Object.hasOwn(body, 'requestId'), 400, '통화 참가 요청이 맞지 않아요. 새로고침한 뒤 다시 참가해 주세요.');
           const check = voicePermissionCheck(req, auth, voiceChannel[1]);
           rateLimit(req, `voice:${user.id}`);
           const result = await voiceService.join({ channelId: voiceChannel[1], userId: user.id, token: auth.token, requestId: body.requestId, client: body.client, check });
@@ -781,9 +785,9 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
         }
         if (voiceChannel?.[2] === 'invitations' && method === 'POST') {
           const body = await readBody(), channelId = voiceChannel[1];
-          assert(Object.keys(body).length === 2 && Object.hasOwn(body, 'requestId') && Object.hasOwn(body, 'recipientId'), 400, '초대할 동료와 요청 식별자를 확인해 주세요.');
+          assert(Object.keys(body).length === 2 && Object.hasOwn(body, 'requestId') && Object.hasOwn(body, 'recipientId'), 400, '부를 동료 정보가 맞지 않아요. 새로고침한 뒤 다시 불러 주세요.');
           const recipientId = requestId(body.recipientId, '초대할 동료'), check = voicePermissionCheck(req, auth, channelId);
-          assert(voiceInvitationVisible(recipientId, channelId), 404, '이 대화방에서 초대할 동료를 찾을 수 없습니다.');
+          assert(voiceInvitationVisible(recipientId, channelId), 404, '이 동료는 지금 이 대화방에 없어요. 다른 동료를 불러 주세요.');
           const result = await voiceService.invite({ channelId, userId: user.id, recipientId, token: auth.token, requestId: body.requestId, check, recipientCheck: voiceRecipientCheck(channelId, recipientId) });
           // The invitation lives 45 seconds: ask the company server to send device notifications now, not on its timer.
           if (result.created && result.invitation.state === 'pending') integration?.wakeDeviceNotifications?.();
@@ -796,32 +800,32 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
           revalidate(); return respond(200, voiceState(auth, channelId));
         }
         if (voiceChannel?.[2] === 'audit' && method === 'GET') {
-          assert(publicVoicePermissions(auth, requireChannel(user.id, voiceChannel[1])).canModerate, 403, '이 대화방의 통화 관리 기록을 확인할 권한이 없습니다.');
+          assert(publicVoicePermissions(auth, requireChannel(user.id, voiceChannel[1])).canModerate, 403, '이 대화방의 통화 기록은 방 관리자만 볼 수 있어요.');
           return respond(200, { items: voiceService.audit(voiceChannel[1]) });
         }
         const voiceMedia = /^\/api\/voice\/([^/]+)\/(encryption\/(key|ack)|share\/(start|stop))$/.exec(p);
         if (voiceMedia && method === 'POST') {
           if (voiceMedia[2].startsWith('encryption/') && integration) {
             const keyOrigin = new URL(integration.origin);
-            assert(keyOrigin.protocol === 'https:' || keyOrigin.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(keyOrigin.hostname), 403, '암호화 키는 HTTPS 워크스페이스에서만 받을 수 있습니다.');
+            assert(keyOrigin.protocol === 'https:' || keyOrigin.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(keyOrigin.hostname), 403, '암호화 키는 보안 연결(HTTPS)에서만 받을 수 있어요.');
           }
           const body = await readBody(), id = requestId(voiceMedia[1], '통화 참가'), input = { id, userId: user.id, token: auth.token };
           if (voiceMedia[2] === 'encryption/key') {
-            assert(Object.keys(body).length === 0, 400, '암호화 키 요청을 확인해 주세요.');
+            assert(Object.keys(body).length === 0, 400, '암호화 키 요청이 맞지 않아요. 새로고침한 뒤 다시 참가해 주세요.');
             return respond(200, await voiceService.encryptionKey(input));
           }
           if (voiceMedia[2] === 'encryption/ack') return respond(200, await voiceService.acknowledgeEncryption({ ...input, input: body }));
           if (voiceMedia[2] === 'share/start') return respond(200, await voiceService.startShare({ ...input, input: body }));
-          assert(Object.keys(body).length === 0, 400, '화면 공유 종료 요청을 확인해 주세요.');
+          assert(Object.keys(body).length === 0, 400, '화면 공유 끝내기 요청이 맞지 않아요. 새로고침한 뒤 다시 해 주세요.');
           return respond(200, await voiceService.stopShare(input));
         }
         const voiceAdmission = /^\/api\/voice\/([^/]+)\/(heartbeat|leave|resume|usage)$/.exec(p);
         if (voiceAdmission && method === 'POST') {
-          assert(voiceService.capabilities().enabled, 503, '통화 기능이 아직 연결되지 않았습니다.');
+          assert(voiceService.capabilities().enabled, 503, '아직 통화 기능이 꺼져 있어요. 관리자에게 켜 달라고 해 주세요.');
           const body = await readBody();
           const id = requestId(voiceAdmission[1], '통화 참가');
           if (voiceAdmission[2] === 'usage') return respond(200, await voiceService.reportUsage({ id, userId: user.id, token: auth.token, input: body }));
-          assert(Object.keys(body).length === 0, 400, '통화 연결 요청을 확인해 주세요.');
+          assert(Object.keys(body).length === 0, 400, '통화 연결 요청이 맞지 않아요. 새로고침한 뒤 다시 연결해 주세요.');
           const result = await voiceService[voiceAdmission[2]]({ id, userId: user.id, token: auth.token });
           if (voiceAdmission[2] === 'resume') { revalidate(); result.permissions = publicVoicePermissions(auth, requireChannel(user.id, result.call.channelId)); }
           return respond(200, result);
@@ -843,7 +847,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
         if (method === 'GET' && p === '/api/members') return respond(200, { members: members() });
         if (method === 'GET' && p === '/api/directory') return respond(200, { members: members(), teams: bridge?.teamsFor(user.id) || [] });
         if (p === '/api/invites' || p.startsWith('/api/invites/')) {
-          assert(user.role === 'owner', 403, '관리자만 초대 코드를 관리할 수 있습니다.');
+          assert(user.role === 'owner', 403, '초대 코드는 관리자만 만들고 취소할 수 있어요.');
           if (method === 'POST' && p === '/api/invites') {
             const code = `${randomBytes(4).toString('hex')}-${randomBytes(4).toString('hex')}`.toUpperCase();
             const expiresAt = new Date(Date.now() + SESSION_MS).toISOString();
@@ -852,7 +856,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
           }
           if (method === 'GET' && p === '/api/invites') return respond(200, { invites: all('SELECT id,created_at AS createdAt,expires_at AS expiresAt,used_at AS usedAt,revoked_at AS revokedAt FROM invites ORDER BY created_at DESC') });
           if (method === 'DELETE' && /^\/api\/invites\/[^/]+$/.test(p)) {
-            assert(run('UPDATE invites SET revoked_at=? WHERE id=? AND used_at IS NULL AND revoked_at IS NULL', now(), p.split('/')[3]).changes, 404, '취소할 수 있는 초대 코드를 찾을 수 없습니다.');
+            assert(run('UPDATE invites SET revoked_at=? WHERE id=? AND used_at IS NULL AND revoked_at IS NULL', now(), p.split('/')[3]).changes, 404, '취소할 초대 코드가 없어요. 목록을 새로 불러와 주세요.');
             return respond(200, { ok: true });
           }
         }
@@ -868,7 +872,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
           // Repeating one's own completed departure is safe, without exposing a room to outsiders.
           if (!one('SELECT 1 FROM memberships WHERE channel_id=? AND user_id=?', channelId, user.id) && one('SELECT 1 FROM channel_departures WHERE channel_id=? AND user_id=? AND rejoined_at IS NULL', channelId, user.id)) return respond(200, { ok: true, newManagerId: null, archived: one('SELECT archived_by_leave FROM channels WHERE id=?', channelId)?.archived_by_leave === user.id });
           const channel = requireChannel(user.id, channelId);
-          assert(projectChannel(channel), 403, '나가기는 프로젝트 대화방에서만 사용할 수 있습니다.');
+          assert(projectChannel(channel), 403, '프로젝트 대화방에서만 나갈 수 있어요.');
           const result = transaction(() => {
             run('INSERT INTO channel_departures(channel_id,user_id,left_at) VALUES(?,?,?) ON CONFLICT(channel_id,user_id) DO UPDATE SET left_at=excluded.left_at,rejoined_at=NULL,revision=channel_departures.revision+1', channelId, user.id, now());
             run('DELETE FROM memberships WHERE channel_id=? AND user_id=?', channelId, user.id);
@@ -887,8 +891,8 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
         if (projectLifecycle && ((method === 'DELETE' && !projectLifecycle[2]) || (method === 'POST' && projectLifecycle[2]))) {
           if (method === 'POST') await readBody();
           const channel = one('SELECT c.* FROM channels c WHERE c.id=? AND (EXISTS(SELECT 1 FROM memberships m WHERE m.channel_id=c.id AND m.user_id=?) OR (?=1 AND c.archived_by_leave=?))', projectLifecycle[1], user.id, method === 'POST' ? 1 : 0, user.id);
-          assert(channel, 404, '대화방을 찾을 수 없습니다.');
-          assert(method === 'POST' ? canRestoreProject(channel, user.id) : managedProject(channel, user.id), 403, '참여 중인 프로젝트의 생성자나 관리자만 대화방을 삭제하거나 복원할 수 있습니다.');
+          assert(channel, 404, '대화방을 찾지 못했어요. 대화 목록을 새로 불러와 주세요.');
+          assert(method === 'POST' ? canRestoreProject(channel, user.id) : managedProject(channel, user.id), 403, '대화방 삭제와 복원은 이 방을 만든 크루나 관리자만 할 수 있어요.');
           if (method === 'DELETE') {
             if (!channel.deleted_at) {
               run('UPDATE channels SET deleted_at=?,deleted_by=?,lifecycle_version=lifecycle_version+1 WHERE id=? AND deleted_at IS NULL', now(), user.id, channel.id);
@@ -921,24 +925,24 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
         if (method === 'POST' && teamChannel) {
           await readBody();
           const teamId = teamChannel[1];
-          assert(bridge?.inTeam(teamId, user.id), 404, '참여할 수 있는 회사 팀을 찾을 수 없습니다.');
+          assert(bridge?.inTeam(teamId, user.id), 404, '들어갈 수 있는 팀을 찾지 못했어요. 대화 목록을 새로 불러와 주세요.');
           const team = bridge.teamsFor(user.id).find(team => team.id === teamId);
           const existing = one("SELECT * FROM channels WHERE scope='team' AND team_id=?", teamId);
-          const channel = existing || transaction(() => createChannel(team.name, '현재 이 팀에 소속된 구성원만 참여하는 대화입니다.', 'channel', bridge.teamMembers(teamId), null, 'team', user.id, teamId));
+          const channel = existing || transaction(() => createChannel(team.name, TEAM_CHANNEL_DESCRIPTION, 'channel', bridge.teamMembers(teamId), null, 'team', user.id, teamId));
           if (!existing) publish('channel', channel.id);
           return respond(existing ? 200 : 201, { channel: channelShape(channel, user.id) });
         }
         if (method === 'POST' && p === '/api/channels') {
           const body = await readBody();
-          assert(body.systemKey === undefined, 400, '기본 대화방 표시는 직접 지정할 수 없습니다.');
-          assert(body.teamId === undefined, 400, '팀 전용 대화는 회사 팀 목록에서 열어 주세요.');
-          const name = textField(body.name, '채널 이름', 40, 1);
+          assert(body.systemKey === undefined, 400, '기본 대화방은 직접 만들 수 없어요.');
+          assert(body.teamId === undefined, 400, '팀 대화방은 대화 목록에서 우리 팀을 눌러 열어 주세요.');
+          const name = textField(body.name, '대화방 이름', 40, 1);
           const description = textField(body.description ?? '', '설명', 200);
           const category = body.category ?? 'generic';
-          assert(CHANNEL_CATEGORIES.has(category), 400, '일반·팀·프로젝트 중 대화방 분류를 선택해 주세요.');
+          assert(CHANNEL_CATEGORIES.has(category), 400, '대화방 종류를 일반·팀·프로젝트 가운데에서 골라 주세요.');
           const scope = body.scope ?? (category === 'project' ? 'private' : 'public');
-          assert(scope === 'public' || (scope === 'private' && category === 'project'), 400, '선택한 크루만 참여하는 대화방은 프로젝트로 만들어 주세요.');
-          assert(scope === 'private' || body.memberIds === undefined, 400, '전체 공개 대화방에는 이미 모든 크루가 참여합니다. 크루를 선택하려면 프로젝트 참여 범위를 선택해 주세요.');
+          assert(scope === 'public' || (scope === 'private' && category === 'project'), 400, '고른 크루만 들어오는 대화방은 프로젝트로 만들어 주세요.');
+          assert(scope === 'private' || body.memberIds === undefined, 400, '공개 대화방에는 모든 크루가 저절로 들어와요. 크루를 고르려면 프로젝트를 ‘고른 크루만 참여’로 만들어 주세요.');
           const memberIds = scope === 'private' ? [...new Set([user.id, ...selectedMemberIds(body.memberIds ?? [])])] : members().map(m => m.id);
           const channel = transaction(() => createChannel(name, description, 'channel', memberIds, null, category, user.id, null, scope));
           publish('channel', channel.id);
@@ -950,12 +954,12 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
           const body = method === 'POST' ? await readBody() : null;
           const channel = requireChannel(user.id, participants[1]);
           if (method === 'GET') return respond(200, { channel: channelShape(channel, user.id), members: channelMembers(channel.id) });
-          assert(channel.scope !== 'public' || projectChannel(channel), 409, '이 대화방에는 이미 모든 크루가 참여하고 있습니다. 선택한 크루만 초대하려면 새로운 프로젝트 대화방을 만들어 주세요.');
-          assert(projectChannel(channel) && canManageChannel(channel, user.id), 403, '이 프로젝트에 참여 중인 대화방 생성자나 관리자만 크루를 초대할 수 있습니다.');
+          assert(channel.scope !== 'public' || projectChannel(channel), 409, '이 대화방에는 이미 모든 크루가 들어와 있어요. 고른 크루만 초대하려면 새 프로젝트 대화방을 만들어 주세요.');
+          assert(projectChannel(channel) && canManageChannel(channel, user.id), 403, '크루 초대는 이 방을 만든 크루나 관리자만 할 수 있어요.');
           const ids = selectedMemberIds(body.memberIds);
           const currentIds = channelMembers(channel.id).map(member => member.id);
           const addedIds = ids.filter(id => !currentIds.includes(id));
-          if (channel.scope === 'public') assert(addedIds.length && addedIds.every(id => one('SELECT 1 FROM channel_departures WHERE channel_id=? AND user_id=? AND rejoined_at IS NULL', channel.id, id)), 409, '이 대화방에는 이미 모든 크루가 참여하고 있습니다. 나간 크루만 다시 초대할 수 있습니다.');
+          if (channel.scope === 'public') assert(addedIds.length && addedIds.every(id => one('SELECT 1 FROM channel_departures WHERE channel_id=? AND user_id=? AND rejoined_at IS NULL', channel.id, id)), 409, '이 대화방에는 이미 모든 크루가 들어와 있어요. 나간 크루만 다시 초대할 수 있어요.');
           if (addedIds.length) transaction(() => {
             verifyProjectHistoryAudience(channel, user.id, [...currentIds, ...addedIds]);
             for (const id of addedIds) {
@@ -969,21 +973,21 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
         if (method === 'PATCH' && /^\/api\/channels\/[^/]+$/.test(p)) {
           const body = await readBody();
           const channel = requireChannel(user.id, p.split('/')[3]);
-          assert(!channel.system_key && body.systemKey === undefined, 403, '기본 대화방의 이름과 설정은 변경할 수 없습니다.');
-          assert(canManageChannel(channel, user.id), 403, '대화방에 참여 중인 생성자나 관리자만 대화방 정보를 변경할 수 있습니다.');
-          assert((body.scope === undefined || body.scope === channel.scope) && body.teamId === undefined && body.memberIds === undefined, 400, '기존 대화방의 참여 범위는 변경할 수 없습니다. 크루 추가는 초대 메뉴를 이용해 주세요.');
-          const name = body.name === undefined ? channel.name : textField(body.name, '채널 이름', 40, 1);
+          assert(!channel.system_key && body.systemKey === undefined, 403, '기본 대화방의 이름과 설정은 바꿀 수 없어요.');
+          assert(canManageChannel(channel, user.id), 403, '대화방 정보는 이 방을 만든 크루나 관리자만 바꿀 수 있어요.');
+          assert((body.scope === undefined || body.scope === channel.scope) && body.teamId === undefined && body.memberIds === undefined, 400, '만든 대화방의 참여 범위는 바꿀 수 없어요. 크루를 더하려면 ‘크루 초대’를 써 주세요.');
+          const name = body.name === undefined ? channel.name : textField(body.name, '대화방 이름', 40, 1);
           const description = body.description === undefined ? channel.description : textField(body.description, '설명', 200);
           const category = body.category === undefined ? channel.category : body.category;
-          assert(CHANNEL_CATEGORIES.has(category), 400, '일반·팀·프로젝트 중 대화방 분류를 선택해 주세요.');
-          assert(!selectedProject(channel) || category === 'project', 400, '선택한 크루만 참여하는 프로젝트의 분류는 변경할 수 없습니다.');
+          assert(CHANNEL_CATEGORIES.has(category), 400, '대화방 종류를 일반·팀·프로젝트 가운데에서 골라 주세요.');
+          assert(!selectedProject(channel) || category === 'project', 400, '고른 크루만 들어오는 프로젝트는 종류를 바꿀 수 없어요.');
           run('UPDATE channels SET name=?,description=?,category=? WHERE id=?', name, description, category, channel.id);
           publish('channel', channel.id);
           return respond(200, { channel: channelShape(one('SELECT * FROM channels WHERE id=?', channel.id), user.id) });
         }
         if (method === 'POST' && p === '/api/dms') {
           const body = await readBody();
-          assert(typeof body.userId === 'string' && members().some(member => member.id === body.userId), 404, '구성원을 찾을 수 없습니다.');
+          assert(typeof body.userId === 'string' && members().some(member => member.id === body.userId), 404, '이 크루를 찾지 못했어요. 크루 목록을 새로 불러와 주세요.');
           if (body.userId === user.id) {
             const self = one('SELECT * FROM channels WHERE pair_key=?', `self:${user.id}`);
             return respond(200, { channel: channelShape(self, user.id) });
@@ -1003,7 +1007,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
             const file = transaction(() => {
               const existing = one('SELECT * FROM file_upload_requests WHERE user_id=? AND channel_id=? AND request_id=?', user.id, channelId, id);
               const savedFile = existing?.file_id && one('SELECT * FROM files WHERE id=?', existing.file_id);
-              if (savedFile && savedFile.message_id !== null) throw recoveryError('UPLOAD_CONSUMED', '이미 메시지에 첨부한 파일은 전송 취소로 삭제할 수 없습니다.');
+              if (savedFile && savedFile.message_id !== null) throw recoveryError('UPLOAD_CONSUMED', '이미 메시지에 첨부한 파일이라 보내기 취소로 지울 수 없어요.');
               if (savedFile) { recordFileCancellation(savedFile, user.id); queueFileDeletion(savedFile); run('DELETE FROM files WHERE id=?', savedFile.id); }
               // Pending means no file record was committed. Stop future commits and leave
               // any remote-cleanup outbox intact; cancellation does not promise Drive deletion.
@@ -1022,10 +1026,10 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
             return { state: 'cancelled' };
           }) : one(`SELECT * FROM ${action === 'messages' ? 'message_send_requests' : 'file_upload_requests'} WHERE user_id=? AND channel_id=? AND request_id=?`, user.id, channelId, id);
           if (method === 'DELETE' && receipt.state === 'cancelled') return respond(200, { status: 'cancelled' });
-          assert(receipt, 404, '저장된 전송 결과가 없습니다. 같은 내용으로 다시 시도할 수 있습니다.');
+          assert(receipt, 404, '보낸 기록이 없어요. 같은 내용으로 다시 보내 주세요.');
           if (action === 'messages') return respond(200, sentRequestResult(receipt, user.id));
           const file = uploadedRequestFile(receipt, JSON.stringify([user.id, channelId, id]));
-          if (!file) throw Object.assign(new AppError(404, '파일 저장이 완료되지 않았습니다. 같은 파일로 다시 시도해 주세요.'), { code: 'UPLOAD_NOT_COMPLETE' });
+          if (!file) throw Object.assign(new AppError(404, '파일 저장이 끝나지 않았어요. 같은 파일을 다시 올려 주세요.'), { code: 'UPLOAD_NOT_COMPLETE' });
           return respond(200, { status: 'uploaded', file: fileShape(file) });
         }
         match = p.match(/^\/api\/channels\/([^/]+)\/(messages|read|files|pins)$/);
@@ -1039,10 +1043,10 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
           if (action === 'messages' && method === 'GET') {
             const requested = url.searchParams.get('limit');
             const limit = requested === null ? 50 : Number(requested);
-            assert(Number.isInteger(limit) && limit >= 1 && limit <= 100, 400, '한 번에 1~100개 메시지를 읽을 수 있습니다.');
+            assert(Number.isInteger(limit) && limit >= 1 && limit <= 100, 400, '메시지는 한 번에 1~100개까지 불러올 수 있어요.');
             const before = url.searchParams.get('before');
             if (before !== null) {
-              assert(/^\d+$/.test(before) && one('SELECT 1 FROM messages WHERE id=? AND channel_id=?', before, channelId), 400, '이전 메시지 위치가 올바르지 않습니다.');
+              assert(/^\d+$/.test(before) && one('SELECT 1 FROM messages WHERE id=? AND channel_id=?', before, channelId), 400, '이전 메시지 위치를 찾지 못했어요. 대화를 새로 불러와 주세요.');
             }
             const rows = all('SELECT * FROM messages WHERE channel_id=? AND id<? ORDER BY id DESC LIMIT ?', channelId, before ? Number(before) : Number.MAX_SAFE_INTEGER, limit + 1);
             return respond(200, { messages: rows.slice(0, limit).reverse().map(m => messageShape(m, user.id)), hasMore: rows.length > limit });
@@ -1052,7 +1056,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
             requireChannel(user.id, channelId);
             let lastRead = one('SELECT COALESCE(MAX(id),0) AS id FROM messages WHERE channel_id=?', channelId).id;
             if (body.messageId !== undefined) {
-              assert(typeof body.messageId === 'string' && /^[1-9]\d*$/.test(body.messageId) && Number.isSafeInteger(Number(body.messageId)) && one('SELECT 1 FROM messages WHERE id=? AND channel_id=?', body.messageId, channelId), 400, '화면에서 읽은 메시지 위치를 확인해 주세요.');
+              assert(typeof body.messageId === 'string' && /^[1-9]\d*$/.test(body.messageId) && Number.isSafeInteger(Number(body.messageId)) && one('SELECT 1 FROM messages WHERE id=? AND channel_id=?', body.messageId, channelId), 400, '읽은 메시지 위치를 찾지 못했어요. 대화를 새로 불러와 주세요.');
               lastRead = Number(body.messageId);
             }
             run('UPDATE memberships SET last_read=MAX(last_read,?) WHERE channel_id=? AND user_id=?', lastRead, channelId, user.id);
@@ -1066,12 +1070,12 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
             const channel = requirePosting(user.id, channelId);
             const content = textField(body.body ?? '', '메시지', 8000);
             const fileIds = body.fileIds ?? [];
-            assert(Array.isArray(fileIds) && fileIds.length <= 5 && fileIds.every(id => typeof id === 'string') && new Set(fileIds).size === fileIds.length, 400, '파일은 메시지당 최대 5개까지 첨부할 수 있습니다.');
+            assert(Array.isArray(fileIds) && fileIds.length <= 5 && fileIds.every(id => typeof id === 'string') && new Set(fileIds).size === fileIds.length, 400, '파일은 메시지 하나에 5개까지 첨부할 수 있어요.');
             const mentionIds = body.mentionIds ?? [];
-            assert(Array.isArray(mentionIds) && mentionIds.length <= 30 && mentionIds.every(id => typeof id === 'string') && new Set(mentionIds).size === mentionIds.length, 400, '멘션할 크루를 최대 30명까지 선택해 주세요.');
+            assert(Array.isArray(mentionIds) && mentionIds.length <= 30 && mentionIds.every(id => typeof id === 'string') && new Set(mentionIds).size === mentionIds.length, 400, '멘션은 한 번에 30명까지 할 수 있어요.');
             const replyToId = body.replyToId ?? null;
             if (replyToId !== null) {
-              assert(typeof replyToId === 'string' && /^[1-9]\d*$/.test(replyToId) && Number.isSafeInteger(Number(replyToId)), 400, '답글을 달 메시지를 확인해 주세요.');
+              assert(typeof replyToId === 'string' && /^[1-9]\d*$/.test(replyToId) && Number.isSafeInteger(Number(replyToId)), 400, '답글을 달 메시지를 찾지 못했어요. 대화를 새로 불러와 주세요.');
             }
             const clientMessageId = body.clientMessageId === undefined ? null : requestId(body.clientMessageId, '메시지 전송');
             const fingerprint = clientMessageId ? hash(JSON.stringify(canonical({ content, fileIds: [...fileIds].sort(), replyToId, mentionIds: [...mentionIds].sort(), workspaceLink: body.workspaceLink ?? null, ackRequired: body.ackRequired ?? (channel.system_key === 'announcements') }))) : null;
@@ -1079,15 +1083,15 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
             // original message are committed together; a deleted original retains a tombstone.
             const prior = clientMessageId && one('SELECT * FROM message_send_requests WHERE user_id=? AND channel_id=? AND request_id=?', user.id, channelId, clientMessageId);
             if (prior) {
-              if (prior.state === 'cancelled') throw recoveryError('MESSAGE_CANCELLED', '취소한 전송입니다. 같은 식별자로 다시 보내지 않습니다.');
-              if (prior.payload_hash !== fingerprint) throw recoveryError('MESSAGE_REQUEST_CONFLICT', '같은 전송 식별자로 다른 메시지를 보낼 수 없습니다.');
+              if (prior.state === 'cancelled') throw recoveryError('MESSAGE_CANCELLED', '보내기를 취소한 메시지라 보내지 않았어요. 필요하면 새로 보내 주세요.');
+              if (prior.payload_hash !== fingerprint) throw recoveryError('MESSAGE_REQUEST_CONFLICT', '다른 메시지와 전송 정보가 겹쳐 보내지 않았어요. 새로고침한 뒤 다시 보내 주세요.');
               return respond(200, { ...sentRequestResult(prior, user.id), replayed: true });
             }
             const extras = collaboration.prepareMessage(body, channel, user.id, null, integration?.origin || `http://${req.headers.host}`);
-            assert(content || fileIds.length || extras.workspaceLink, 400, '메시지를 입력하거나 파일 또는 화면 링크를 첨부해 주세요.');
-            if (replyToId !== null) assert(one('SELECT id FROM messages WHERE id=? AND channel_id=?', replyToId, channelId), 404, '이 대화방에서 답글을 달 메시지를 찾을 수 없습니다.');
+            assert(content || fileIds.length || extras.workspaceLink, 400, '메시지를 쓰거나 파일·화면 링크를 첨부해 주세요.');
+            if (replyToId !== null) assert(one('SELECT id FROM messages WHERE id=? AND channel_id=?', replyToId, channelId), 404, '답글을 달 메시지가 이 대화방에 없어요. 대화를 새로 불러와 주세요.');
             const created = transaction(() => {
-              for (const id of fileIds) assert(one('SELECT 1 FROM files WHERE id=? AND channel_id=? AND uploader_id=? AND message_id IS NULL', id, channelId, user.id), 400, '첨부할 수 없는 파일이 있습니다. 파일을 다시 올려 주세요.');
+              for (const id of fileIds) assert(one('SELECT 1 FROM files WHERE id=? AND channel_id=? AND uploader_id=? AND message_id IS NULL', id, channelId, user.id), 400, '첨부할 수 없는 파일이 있어요. 첨부를 빼고 다시 올려 주세요.');
               const id = Number(run('INSERT INTO messages(channel_id,user_id,body,created_at,reply_to_id) VALUES(?,?,?,?,?)', channelId, user.id, content, now(), replyToId === null ? null : Number(replyToId)).lastInsertRowid);
               for (const fileId of fileIds) run('UPDATE files SET message_id=? WHERE id=?', id, fileId);
               collaboration.applyMessage(id, extras);
@@ -1106,8 +1110,8 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
           if (method === 'GET' && match[2] === '/replies') {
             const limit = Number(url.searchParams.get('limit') ?? 50);
             const before = url.searchParams.get('before');
-            assert(Number.isInteger(limit) && limit >= 1 && limit <= 100, 400, '한 번에 1~100개 답글을 읽을 수 있습니다.');
-            if (before !== null) assert(/^[1-9]\d*$/.test(before) && one('SELECT 1 FROM messages WHERE id=? AND channel_id=? AND reply_to_id=?', before, message.channel_id, message.id), 400, '이전 답글 위치가 올바르지 않습니다.');
+            assert(Number.isInteger(limit) && limit >= 1 && limit <= 100, 400, '답글은 한 번에 1~100개까지 불러올 수 있어요.');
+            if (before !== null) assert(/^[1-9]\d*$/.test(before) && one('SELECT 1 FROM messages WHERE id=? AND channel_id=? AND reply_to_id=?', before, message.channel_id, message.id), 400, '이전 답글 위치를 찾지 못했어요. 답글을 새로 불러와 주세요.');
             const rows = all('SELECT * FROM messages WHERE reply_to_id=? AND channel_id=? AND id<? ORDER BY id DESC LIMIT ?', message.id, message.channel_id, before ? Number(before) : Number.MAX_SAFE_INTEGER, limit + 1);
             return respond(200, { parent: messageShape(message, user.id), messages: rows.slice(0, limit).reverse().map(reply => messageShape(reply, user.id)), hasMore: rows.length > limit });
           }
@@ -1116,7 +1120,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
             message = requireMessage(match[1], user.id);
             requirePosting(user.id, message.channel_id);
             if (method === 'POST') {
-              assert(one('SELECT 1 FROM message_pins WHERE message_id=?', message.id) || one('SELECT COUNT(*) AS n FROM message_pins p JOIN messages m ON m.id=p.message_id WHERE m.channel_id=?', message.channel_id).n < 50, 409, '대화방마다 중요한 메시지를 최대 50개까지 고정할 수 있습니다.');
+              assert(one('SELECT 1 FROM message_pins WHERE message_id=?', message.id) || one('SELECT COUNT(*) AS n FROM message_pins p JOIN messages m ON m.id=p.message_id WHERE m.channel_id=?', message.channel_id).n < 50, 409, '고정 메시지는 대화방마다 50개까지예요. 다른 고정을 풀고 다시 해 주세요.');
               run('INSERT OR IGNORE INTO message_pins(message_id,user_id,created_at) VALUES(?,?,?)', message.id, user.id, now());
             } else run('DELETE FROM message_pins WHERE message_id=?', message.id);
             publish('message', message.channel_id);
@@ -1125,7 +1129,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
           if (method === 'POST' && match[2] === '/reactions') {
             const body = await readBody();
             message = requireMessage(match[1], user.id);
-            assert(EMOJI.has(body.emoji), 400, '지원하지 않는 반응입니다.');
+            assert(EMOJI.has(body.emoji), 400, '쓸 수 없는 반응이에요.');
             transaction(() => {
               const removed = run('DELETE FROM reactions WHERE message_id=? AND user_id=? AND emoji=?', message.id, user.id, body.emoji);
               if (!removed.changes) run('INSERT INTO reactions(message_id,user_id,emoji) VALUES(?,?,?)', message.id, user.id, body.emoji);
@@ -1134,14 +1138,14 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
             return respond(200, { message: messageShape(message, user.id) });
           }
           if (method === 'PATCH' && !match[2]) {
-            assert(message.user_id === user.id, 403, '내가 쓴 메시지만 수정할 수 있습니다.');
+            assert(message.user_id === user.id, 403, '내가 쓴 메시지만 고칠 수 있어요.');
             const body = await readBody();
             message = requireMessage(match[1], user.id);
             const channel = requirePosting(user.id, message.channel_id);
             collaboration.productivity.assertMessageMutable(message.id);
             const content = textField(body.body, '메시지', 8000);
             const extras = collaboration.prepareMessage(body, channel, user.id, message, integration?.origin || `http://${req.headers.host}`);
-            assert(content || extras.workspaceLink || one('SELECT id FROM files WHERE message_id=? LIMIT 1', message.id), 400, '빈 메시지로 수정할 수 없습니다.');
+            assert(content || extras.workspaceLink || one('SELECT id FROM files WHERE message_id=? LIMIT 1', message.id), 400, '빈 메시지로는 고칠 수 없어요. 내용을 적어 주세요.');
             transaction(() => { run('UPDATE messages SET body=?,edited_at=? WHERE id=?', content, now(), message.id); collaboration.applyMessage(message.id, extras, { edit: true }); });
             collaboration.notifyMessage(one('SELECT * FROM messages WHERE id=?', message.id), { edit: true });
             publish('message', message.channel_id);
@@ -1149,7 +1153,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
           }
           if (method === 'DELETE' && !match[2]) {
             const channel = requireChannel(user.id, message.channel_id);
-            assert(message.user_id === user.id || (user.role === 'owner' && channel.kind === 'channel'), 403, '이 메시지를 삭제할 수 없습니다.');
+            assert(message.user_id === user.id || (user.role === 'owner' && channel.kind === 'channel'), 403, '내가 쓴 메시지만 삭제할 수 있어요.');
             collaboration.productivity.assertMessageMutable(message.id);
             const files = all('SELECT * FROM files WHERE message_id=?', message.id);
             transaction(() => {
@@ -1170,9 +1174,9 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
           const uploaderId = url.searchParams.get('uploaderId') || null;
           const offset = Number(url.searchParams.get('offset') ?? 0);
           const limit = Number(url.searchParams.get('limit') ?? 200);
-          assert(type === 'all' || type === 'other' || Object.hasOwn(FILE_EXTENSIONS, type), 400, '파일 종류를 확인해 주세요.');
-          assert(uploaderId === null || uploaderId.length <= 100, 400, '파일을 올린 사람을 확인해 주세요.');
-          assert(Number.isSafeInteger(offset) && offset >= 0 && Number.isInteger(limit) && limit >= 1 && limit <= 200, 400, '파일 목록 위치와 개수를 확인해 주세요.');
+          assert(type === 'all' || type === 'other' || Object.hasOwn(FILE_EXTENSIONS, type), 400, '파일 종류를 다시 골라 주세요.');
+          assert(uploaderId === null || uploaderId.length <= 100, 400, '파일을 올린 사람을 다시 골라 주세요.');
+          assert(Number.isSafeInteger(offset) && offset >= 0 && Number.isInteger(limit) && limit >= 1 && limit <= 200, 400, '파일 목록을 불러오지 못했어요. 다시 불러와 주세요.');
           const escaped = `%${query.replace(/[\\%_]/g, '\\$&')}%`;
           const rows = all(`SELECT f.* FROM files f JOIN memberships c ON c.channel_id=f.channel_id AND c.user_id=? JOIN channels r ON r.id=f.channel_id WHERE r.deleted_at IS NULL AND (r.scope<>'team' OR ?=1) AND f.message_id IS NOT NULL AND (? IS NULL OR f.channel_id=?) AND f.name LIKE ? ESCAPE '\\' AND (? IS NULL OR f.uploader_id=?) AND (?='all' OR (${FILE_TYPE_SQL})=?) ORDER BY f.created_at DESC,f.id DESC LIMIT ? OFFSET ?`, user.id, bridge ? 1 : 0, channelId, channelId, escaped, uploaderId, uploaderId, type, type, limit + 1, offset);
           return respond(200, { files: rows.slice(0, limit).map(fileShape), hasMore: rows.length > limit, nextOffset: rows.length > limit ? offset + limit : null });
@@ -1184,16 +1188,16 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
             const receipt = one('SELECT channel_id FROM file_deletion_receipts WHERE user_id=? AND file_id=?', user.id, match[1]);
             if (receipt) {
               requireChannel(user.id, receipt.channel_id);
-              throw Object.assign(new AppError(404, '이미 취소한 첨부파일입니다.'), { code: 'UPLOAD_DELETED' });
+              throw Object.assign(new AppError(404, '이미 취소한 첨부 파일이에요.'), { code: 'UPLOAD_DELETED' });
             }
           }
-          assert(f, 404, '파일을 찾을 수 없습니다.');
+          assert(f, 404, '파일을 찾지 못했어요. 목록을 새로 불러와 주세요.');
           const lifecycleVersion = requireChannel(user.id, f.channel_id).lifecycle_version;
           const membershipVersion = departureVersion(f.channel_id, user.id);
-          assert(f.message_id !== null || f.uploader_id === user.id, 404, '파일을 찾을 수 없습니다.');
+          assert(f.message_id !== null || f.uploader_id === user.id, 404, '파일을 찾지 못했어요. 목록을 새로 불러와 주세요.');
           if (method === 'DELETE') {
-            assert(f.uploader_id === user.id, 403, '아직 전송하지 않은 내 파일만 취소할 수 있습니다.');
-            if (f.message_id !== null) throw recoveryError('UPLOAD_CONSUMED', '이미 전송된 첨부파일은 대화에 그대로 남겨 둡니다.');
+            assert(f.uploader_id === user.id, 403, '보내기 전인 내 파일만 첨부를 뺄 수 있어요.');
+            if (f.message_id !== null) throw recoveryError('UPLOAD_CONSUMED', '이미 보낸 파일은 대화에 그대로 남아요.');
             transaction(() => { recordFileCancellation(f, user.id); queueFileDeletion(f); run('DELETE FROM files WHERE id=?', f.id); });
             if (f.storage_provider === 'local') await removeDiskFile(f.disk_name);
             await retryDriveDeletions();
@@ -1206,13 +1210,13 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
             } else {
               const filePath = path.join(uploadDir, f.disk_name);
               let handle;
-              try { handle = await open(filePath, 'r'); } catch { throw new AppError(404, '저장된 파일을 찾을 수 없습니다.'); }
+              try { handle = await open(filePath, 'r'); } catch { throw new AppError(404, '저장된 파일을 찾지 못했어요. 관리자에게 알려 주세요.'); }
               stream = handle.createReadStream();
             }
             try {
               revalidate();
-              assert(requireChannel(user.id, f.channel_id).lifecycle_version === lifecycleVersion, 409, '대화방이 삭제 또는 복원되었습니다. 파일을 다시 열어 주세요.');
-              assert(departureVersion(f.channel_id, user.id) === membershipVersion, 409, '프로젝트 참여 상태가 변경되었습니다. 파일을 다시 열어 주세요.');
+              assert(requireChannel(user.id, f.channel_id).lifecycle_version === lifecycleVersion, 409, '그사이 대화방이 삭제되거나 복원됐어요. 파일을 다시 열어 주세요.');
+              assert(departureVersion(f.channel_id, user.id) === membershipVersion, 409, '그사이 프로젝트 참여가 바뀌었어요. 파일을 다시 열어 주세요.');
             } catch (error) { stream.destroy(); throw error; }
             const download = { channelId: f.channel_id, userId: user.id, stream, res };
             activeDownloads.add(download);
@@ -1222,13 +1226,13 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
           }
         }
         if (method === 'GET' && p === '/api/storage/drive') {
-          assert(user.role === 'owner', 403, '관리자만 Drive 연결 정보를 확인할 수 있습니다.');
+          assert(user.role === 'owner', 403, 'Drive 연결 정보는 관리자만 볼 수 있어요.');
           return respond(200, await driveStatus({ fresh: true }));
         }
         if (method === 'POST' && p === '/api/storage/drive/active') {
-          assert(user.role === 'owner', 403, '관리자만 파일 저장 위치를 변경할 수 있습니다.');
+          assert(user.role === 'owner', 403, '파일 저장 위치는 관리자만 바꿀 수 있어요.');
           const body = await readBody();
-          assert(body.connectionId === null || (typeof body.connectionId === 'string' && body.connectionId.length > 0 && body.connectionId.length <= 200), 400, '등록된 Drive 연결을 선택해 주세요.');
+          assert(body.connectionId === null || (typeof body.connectionId === 'string' && body.connectionId.length > 0 && body.connectionId.length <= 200), 400, '등록한 Drive 계정을 골라 주세요.');
           const status = await drive.setActive(body.connectionId, { beforeCommit: revalidate });
           publish('storage');
           return respond(200, { ...status, pendingDeletions: pendingDeletions() });
@@ -1255,18 +1259,18 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
           res.on('close', () => { clearInterval(heartbeat); subscribers.delete(client); });
           return;
         }
-        throw new AppError(404, '요청한 기능을 찾을 수 없습니다.');
+        throw new AppError(404, '요청한 기능을 찾지 못했어요. 새로고침한 뒤 다시 해 주세요.');
       }
-      assert(method === 'GET' || method === 'HEAD', 405, '허용되지 않은 요청 방식입니다.');
+      assert(method === 'GET' || method === 'HEAD', 405, '이 방식의 요청은 받지 않아요.');
       let relative;
-      try { relative = decodeURIComponent(p); } catch { throw new AppError(400, '올바르지 않은 주소입니다.'); }
-      assert(!relative.includes('\0') && !relative.includes('\\'), 404, '파일을 찾을 수 없습니다.');
+      try { relative = decodeURIComponent(p); } catch { throw new AppError(400, '주소가 맞지 않아요.'); }
+      assert(!relative.includes('\0') && !relative.includes('\\'), 404, '파일을 찾지 못했어요. 목록을 새로 불러와 주세요.');
       const publicDir = path.join(ROOT, 'public');
       const staticPath = path.resolve(publicDir, `.${relative === '/' ? '/index.html' : relative}`);
-      assert(staticPath.startsWith(`${publicDir}${path.sep}`), 404, '파일을 찾을 수 없습니다.');
+      assert(staticPath.startsWith(`${publicDir}${path.sep}`), 404, '파일을 찾지 못했어요. 목록을 새로 불러와 주세요.');
       let info;
-      try { info = await stat(staticPath); } catch { throw new AppError(404, '파일을 찾을 수 없습니다.'); }
-      assert(info.isFile(), 404, '파일을 찾을 수 없습니다.');
+      try { info = await stat(staticPath); } catch { throw new AppError(404, '파일을 찾지 못했어요. 목록을 새로 불러와 주세요.'); }
+      assert(info.isFile(), 404, '파일을 찾지 못했어요. 목록을 새로 불러와 주세요.');
       if (respondPublicStatic && ['.js', '.css'].includes(path.extname(staticPath))) {
         return await respondPublicStatic(req, res, { path: staticPath, type: MIME[path.extname(staticPath)], versioned: versionedMessengerAssets.has(relative) });
       }
@@ -1293,7 +1297,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
       if (res.headersSent) { if (!res.writableEnded) res.end(); return; }
       if (!(error instanceof AppError) && !error.publicMessage) console.error('[messenger] Request failed:', error.code || error.name);
       const status = Number.isInteger(error.status) && error.status >= 400 && error.status <= 599 ? error.status : 500;
-      json(res, status, { error: error instanceof AppError ? error.message : typeof error.publicMessage === 'string' ? error.publicMessage : '처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.', ...(error.code === 'SYNK_WORK_NOTIFICATIONS_PAUSED' || /^(MESSAGE_|UPLOAD_|VOICE_)/.test(error.code || '') ? { code: error.code } : {}), ...(error.recoveryStatus ? { status: error.recoveryStatus, retryable: error.retryable } : {}) });
+      json(res, status, { error: error instanceof AppError ? error.message : typeof error.publicMessage === 'string' ? error.publicMessage : '처리하지 못했어요. 잠시 뒤 다시 해 주세요.', ...(error.code === 'SYNK_WORK_NOTIFICATIONS_PAUSED' || /^(MESSAGE_|UPLOAD_|VOICE_)/.test(error.code || '') ? { code: error.code } : {}), ...(error.recoveryStatus ? { status: error.recoveryStatus, retryable: error.retryable } : {}) });
     }
   };
   const server = http.createServer(handler);
@@ -1325,7 +1329,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
       assert(bridge, 403, '회사 작업실에서 확인해 주세요.');
       syncDirectory();
       const member = members().find(row => bridge.companyUserId(row.id) === companyUserId);
-      assert(member, 403, '현재 회사 계정의 업무를 확인할 수 없습니다.');
+      assert(member, 403, '이 계정의 업무를 불러오지 못했어요. 새로고침한 뒤 다시 해 주세요.');
       const options = directTasks.options(member.id);
       return {...options, channels: options.channels.map(channel => ({...channel,
         companyUserIds: channel.memberIds.map(id => bridge.companyUserId(id) || null),
@@ -1336,30 +1340,30 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
       assert(bridge, 403, '회사 작업실에서 확인해 주세요.');
       syncDirectory();
       const member = members().find(row => bridge.companyUserId(row.id) === companyUserId);
-      assert(member, 403, '현재 회사 계정의 업무를 확인할 수 없습니다.');
+      assert(member, 403, '이 계정의 업무를 불러오지 못했어요. 새로고침한 뒤 다시 해 주세요.');
       return directTasks.create(member.id, input);
     },
     findTaskForCompanyUser(companyUserId, {requestId: registrationId}) {
       assert(bridge, 403, '회사 작업실에서 확인해 주세요.');
       syncDirectory();
       const member = members().find(row => bridge.companyUserId(row.id) === companyUserId);
-      assert(member, 403, '현재 회사 계정의 업무를 확인할 수 없습니다.');
+      assert(member, 403, '이 계정의 업무를 불러오지 못했어요. 새로고침한 뒤 다시 해 주세요.');
       const receipt = one('SELECT state,message_id FROM message_send_requests WHERE user_id=? AND request_id=?', member.id, 'direct-task:' + requestId(registrationId, '업무 등록'));
       if(!receipt)return null;
-      assert(receipt.state === 'sent' && receipt.message_id, 409, '업무 등록 결과를 확인하고 있습니다.');
+      assert(receipt.state === 'sent' && receipt.message_id, 409, '업무 등록 결과를 아직 확인하고 있어요. 잠시 뒤 다시 확인해 주세요.');
       const message = requireMessage(String(receipt.message_id), member.id);
       const task = collaboration.productivity.getTask(String(message.id), member.id);
-      assert(task, 404, '후속 업무를 찾을 수 없습니다.');
+      assert(task, 404, '후속 업무를 찾지 못했어요. 목록을 새로 불러와 주세요.');
       return {task: {...task, assignee: task.assignee ? {...task.assignee, companyUserId: bridge.companyUserId(task.assignee.id) || null} : null}, message: {id: String(message.id), channelId: message.channel_id}, created: false};
     },
     taskForCompanyUser(companyUserId, {messageId}) {
       assert(bridge, 403, '회사 작업실에서 확인해 주세요.');
       syncDirectory();
       const member = members().find(row => bridge.companyUserId(row.id) === companyUserId);
-      assert(member, 403, '현재 회사 계정의 업무를 확인할 수 없습니다.');
+      assert(member, 403, '이 계정의 업무를 불러오지 못했어요. 새로고침한 뒤 다시 해 주세요.');
       const message = requireMessage(String(messageId), member.id);
       const task = collaboration.productivity.getTask(String(message.id), member.id);
-      assert(task, 404, '후속 업무를 찾을 수 없습니다.');
+      assert(task, 404, '후속 업무를 찾지 못했어요. 목록을 새로 불러와 주세요.');
       return {task: {...task, assignee: task.assignee ? {...task.assignee, companyUserId: bridge.companyUserId(task.assignee.id) || null} : null}, message: {id: String(message.id), channelId: message.channel_id}};
     },
     notificationsForCompanyUser(companyUserId) {
@@ -1378,13 +1382,13 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
       assert(bridge, 403, '회사 작업실에서 확인해 주세요.');
       syncDirectory();
       const member = members().find(row => bridge.companyUserId(row.id) === companyUserId);
-      assert(member, 403, '현재 회사 계정의 업무를 확인할 수 없습니다.');
+      assert(member, 403, '이 계정의 업무를 불러오지 못했어요. 새로고침한 뒤 다시 해 주세요.');
       return collaboration.productivity.weeklySummary(member.id, period);
     },
     productivityOverview(req, kind, query = {}) {
       const auth = session(req); assert(auth, 401, '회사 계정으로 로그인해 주세요.');
       const service = collaboration.productivity;
-      assert(['workday', 'catchUp', 'decisions'].includes(kind), 400, '확인할 업무 범위를 선택해 주세요.');
+      assert(['workday', 'catchUp', 'decisions'].includes(kind), 400, '볼 업무 범위를 골라 주세요.');
       return service[kind](auth.user.id, kind === 'decisions' ? new URLSearchParams(query) : query);
     },
     assistantDirectory(req, { include, query = '', completed = false } = {}) {
