@@ -1,0 +1,26 @@
+{
+  "설명": "10-20 유호님 「먼저 lab이랑 brief는 지금 올려줘」·「올려」 뒤 조율 세션이 지금 공개로 올렸다. 시각은 KST(약).",
+  "판": [
+    {
+      "계정": "synkbrief-instagram",
+      "상태": "게시됨",
+      "시각": "2026-10-20T22:44+09:00",
+      "주소": "https://www.instagram.com/p/Det8fIUNiYe/",
+      "방법": "인스타 웹 만들기 A판(food-a_upload.mp4 v4), 자르기 원본, 캡션 819자, AI 레이블 켬, 페이스북 공유 끔. 인스타 웹은 댓글 고정이 안 돼 고정 댓글은 생략"
+    },
+    {
+      "계정": "synkbrief-youtube",
+      "상태": "게시됨",
+      "시각": "2026-10-20T22:55+09:00",
+      "주소": "https://youtube.com/shorts/ObTM_nfFASg",
+      "방법": "스튜디오(SYNK 브리핑) B판(food-b_upload.mp4 v4), 아동용 아님·AI 사용 예·한국어·공개. 끝 화면 약속대로 요청문 전문 댓글을 달고 고정(@synkbrief님이 고정함)"
+    },
+    {
+      "계정": "shift-naverblog",
+      "상태": "보류",
+      "시각": null,
+      "주소": null,
+      "방법": "Claude in Chrome이 blog.naver.com을 「safety restrictions」로 막아 올리지 못함. 원고·그림은 블로그/에 그대로 — 유호님이 직접 올리거나 크롬 확장 사이트 허용 뒤 조율"
+    }
+  ]
+}

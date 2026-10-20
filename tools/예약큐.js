@@ -58,10 +58,11 @@ function collect() {
       if (!plates.length) continue;
       const states = plates.map((p) => done.get(p.계정));
       const filled = states.filter((s) => DONE.has(s)).length;
+      const held = states.filter((s) => s === '보류').length;
       items.push({
         brand, folder: dir.name, title: prep.제목 || dir.name, slot: slotOf(prep),
         kind: prep.성격 || null, deadline: prep.시한 || null,
-        state: filled === plates.length ? '채움' : filled ? '일부' : '승인 대기',
+        state: filled === plates.length ? '채움' : filled ? '일부' : held === plates.length ? '보류' : '승인 대기',
         failed: states.filter((s) => s === '실패').length,
       });
     }
@@ -87,8 +88,9 @@ function main() {
     report.brands[brand] = { reserve, byDay, late };
   }
   if (process.argv.includes('--json')) { console.log(JSON.stringify(report, null, 2)); return; }
-  const mark = (list) => (!list.length ? '·' : list.some((x) => x.state === '채움') ? '●' : list.some((x) => x.state === '일부') ? '◐' : '○');
-  console.log(`예약 큐 · 오늘 ${today} · ● 채움  ◐ 일부  ○ 승인 대기  · 빔`);
+  const mark = (list) => (!list.length ? '·' : list.some((x) => x.state === '채움') ? '●' : list.some((x) => x.state === '일부') ? '◐'
+    : list.every((x) => x.state === '보류') ? '×' : '○');
+  console.log(`예약 큐 · 오늘 ${today} · ● 채움  ◐ 일부  ○ 승인 대기  × 보류(게시결과 「보류」)  · 빔`);
   console.log('브랜드'.padEnd(12) + range.map((d) => d.slice(5)).join('  ') + '  비축');
   for (const brand of BRANDS) {
     const b = report.brands[brand];
