@@ -14,6 +14,12 @@
 - 고침: 10-17부터는 저절로 넘어간다. 무료 문이 429(몫 상한)를 내면 `tools/lib/제미나이호출.js`의 구독대체가 같은 모델·사고 수준으로 Google AI 구독(agy, `tools/lib/제미나이구독호출.js`, 지금 Ultra 계정)을 한 번 부른다. 하루 몫이면 재시도 없이 바로, 분당 몫이면 5·15초 재시도 뒤 넘긴다. 장부 `문`은 `글→구독`, 화면은 「무료 몫 상한 → 구독 문으로 넘김」. 처음부터 구독으로 가려면 `--구독`, 넘기지 않으려면 `--대체없음`. 대량 도구(검수표검문·몽골어출구 `--태우기`·검문커버리지)는 기본이 `--대체없음`이고 `--구독대체`를 줘야 넘긴다. CI·끄기 변수 `SYNK_GEMINI_NO_SUBSCRIPTION_FALLBACK=1`·유료 「돈」 문에서는 넘기지 않는다. 유료(`--돈 --유료-api`)는 어림값을 알리고 승인을 받은 뒤에만 쓴다.
 - 다시 확인: `node --test tests/제미나이구독대체.test.js`(10-17 6/6). 실제 넘김은 429를 흉내 낸 호출로 확인했다(10-17 agy 77yuhbs · gemini-3.8-flash-high · 40초).
 
+### 몽골어 검문 묶음이 모두 「--effort is not supported for model "gemini-4-argon-high"」 실행 오류로 끝난다 (2026-10-20 Claude)
+- 증상: 10-20 15:35쯤 `tools/몽골어대조.js --파일 … --구독` 세 묶음이 판정 없이 종료 1(8~56초)로 끝났다. 오류는 「실행 오류: 구독 통로 실패(종료 2) — … agy 종료 1: error: invalid model selection (--model "gemini-4-argon-high" --effort "high"): --effort is not supported for model "gemini-4-argon-high"」. 10분 전 같은 도구·같은 계정 호출은 문법 층까지 돌았다.
+- 원인: 확실하지 않다. agy(WinGet 1.4.3, 실행 파일은 13:39 그대로)는 부를 때 모델 목록을 서버에서 받는다(`agy models`의 「Fetching available models...」). 그때 받은 모델 설정이 잠깐 아르곤 이름 + `--effort` 조합을 거절한 것으로 보인다 — 6분 뒤에는 같은 조합이 됐다.
+- 고침: 도구(`tools/lib/제미나이구독호출.js`, `--model gemini-4-argon-high --effort high`)는 그대로 두고 몇 분 뒤 같은 묶음을 다시 돌렸다. 실행 오류(종료 1)는 판정이 아니므로 검문 기록에 「어색」·「정상」으로 적지 않는다. 계속 거절되면 이름에 수준이 이미 들어 있으니 `--effort`를 빼는 쪽부터 agy 도움말로 본다.
+- 다시 확인: 빈 임시 폴더에서 `agy --input-format stream-json --output-format stream-json --model gemini-4-argon-high --effort high --print-timeout 90s --sandbox --disable-slash-commands`에 `{"event":"user","message":{"content":"…"}}` 한 줄을 보내 종료 0·결과 SUCCESS인지(10-20 15:43: 14초 성공, `--effort` 없이 16초, flash-high 10초).
+
 ### 새 노트북에 Gemini 무료 키 파일이 없다
 - 증상: `node evals/돌리기.js --자체점검`의 문 프로브가 「키없음 — 글 API 키 파일이 없다: C:/Users/q1212/SYNK_보안/제미나이_무료.txt」로 멈춘다(10-17).
 - 원인: 노트북을 옮길 때 `SYNK_보안`에 무료 키 파일이 따라오지 않았다(10-17에는 타입캐스트·클로드 키만 있었다).

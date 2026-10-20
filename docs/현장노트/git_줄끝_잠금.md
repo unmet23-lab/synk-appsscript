@@ -250,6 +250,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: `--실행` 전에 미리 보기의 조각 안 줄을 모두 읽고, 남의 줄이 섞였으면 `<id>:<줄>-<줄>`로 내 줄만 고른다. 줄을 골라도 자리가 틀어지는 조각(옮겨진 블록과 맞춰진 경우)은 위 손 절차로 HEAD 판에 내 줄만 넣는다(`.tmp/hermes-telegram-claude-20261019/commit-note.cjs`). 이미 커밋했어도 push 전이고 그 커밋이 맨 끝이면, `git update-ref refs/heads/master <부모> <내 커밋>`(CAS)으로 되돌리고 `git reset -q <부모> -- <그 경로들>`로 공용 인덱스만 맞춘 뒤 다시 커밋한다.
 - 다시 확인: 커밋 뒤 `git show <커밋> -- <공용 문서>`의 +/− 줄이 모두 내 것인지 본다. 올린 뒤에는 origin 판에 남의 미커밋 줄이 없는지 `git show origin/master:<경로>`에서 찾아본다(10-19 `366bd32bd`·`271b3acfb`). 남이 블록을 옮긴 파일은 손 절차로 커밋한 뒤에도 `git diff`에 내 줄이 같은 내용의 −/+ 짝으로 남는다(자리만 다름) — 빠진 줄로 보고 다시 커밋하지 않는다. 내 파일 그대로 + 공용 문서 여럿에 내 줄만 한 커밋으로 넣은 판은 `.tmp/hermes-dependency-drift-20261019/commit.cjs`(10-19 `aa87e543a`).
 
+### qa 실행 폴더에 일부러 남기는 기록을 경로로 주면 `내커밋.js 커밋`이 「ignored」로 멈춘다 (2026-10-20 Claude)
+- 증상: 10-20 몽골어 검문 기록(`experiences/brand-opening/qa/mn-check-20261020-vellum/*.txt`·`*.json`)이 `git status`에 보이지 않았고, `node tools/내커밋.js 커밋 <그 경로>`가 「[멈춤] 경로를 올리지 못했다 — The following paths are ignored by one of your .gitignore files」로 멈췄다(아무것도 바뀌지 않음).
+- 원인: 10-20 `.gitignore`의 qa 실행 결과 규칙(`**/qa/*/**/*.txt`·`*.json` 등, 유호님 승인 — 「결과를 일부러 남길 때는 git add -f」)이 qa 아래 실행 폴더의 새 결과 파일을 가린다. 도구는 통째 경로를 `git add -A`로 올리고 `-f`가 없다. 이미 추적 중인 파일(10-20 `mn-check-20261020-position/` 등)은 그대로 추적된다.
+- 고침: 일부러 남기는 기록은 `--조각 <경로>=<id>`로 준다. 조각 길은 `update-index --cacheinfo`라 무시 규칙을 지난다. 새 파일의 id는 위 「새 파일의 내 줄만 올릴 때」처럼 `require('./tools/내커밋.js').조각만들기('', fs.readFileSync(<경로>).toString('latin1')).묶음[0].id`로 구한다. 커밋 뒤에는 추적 파일이라 다음 커밋부터 경로로 줘도 된다.
+- 다시 확인: `git check-ignore -v <경로>`가 `.gitignore`의 `**/qa/*/**/*.txt` 줄을 찍고, 조각으로 커밋한 뒤 `git ls-files <경로>`에 나온다.
+
 ## 당기기·push
 
 ### 워크트리끼리 같이 보는 `origin/master`로 판을 만들면 남의 새 줄이 내 변경에 섞인다 (2026-10-19)
