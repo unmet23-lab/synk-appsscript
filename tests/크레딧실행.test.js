@@ -73,8 +73,12 @@ test('할 일이 없으면 claude를 띄우지 않는다(비용 0)', async () =>
   } finally { t.지우기(); }
 });
 
+// 갱신일은 오늘 기준으로 잡는다. 키는 「갱신일이 가장 가까운 것부터」 쓰므로 20·25일로 박아 두면
+// 매달 20일부터 24일까지는 B가 먼저 골라져 이 시험이 날짜 따라 빨개졌다(10-20 master CI).
+const 며칠뒤일 = (n) => new Date(Date.now() + n * 864e5).getDate();
+
 test('첫 턴에 크레딧 부족이면 그 키를 표시하고 다음 키로 같은 요청을 다시 보낸다(키·전용 설정 폴더는 자식 환경에만)', async () => {
-  const t = 방만들기([['A', 20, 'sk-ant-test-aaaa'], ['B', 25, 'sk-ant-test-bbbb']]);
+  const t = 방만들기([['A', 며칠뒤일(1), 'sk-ant-test-aaaa'], ['B', 며칠뒤일(5), 'sk-ant-test-bbbb']]);
   try {
     const { 작업, 받은 } = 가짜작업();
     const 알림 = [];
