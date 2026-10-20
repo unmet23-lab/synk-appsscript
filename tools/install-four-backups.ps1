@@ -14,7 +14,8 @@ $node = (Get-Command node -ErrorAction Stop).Source
 $configFile = Join-Path $root 'backup-health-config.json'
 $components = @(
     # 10-19 유호님 결정: 무거운 렌더·학습과 겹치면 24분을 넘겨 끊겨서 55분(예약 제한 56분)으로 늘림. 겹치는 30분 실행은 IgnoreNew로 건너뜀.
-    @{ id='onedrive'; taskName='SYNK OneDrive 문서 백업'; receipt='상태/OneDrive/latest.json'; maxAgeHours=2; maxRunHours=0.9167; intervalMinutes=30; scope='안전한 MD·소스와 복원 입구'; command=@($node,(Join-Path $PSScriptRoot 'onedrive-backup.cjs')); workingDirectory=$repo },
+    # 10-20 유호님 결정: 예약 우선순위 7(CPU 보통 아래·I/O 낮음·메모리 2)에서는 CPU가 꽉 찬 동안 같은 일이 중앙값 1.5배·평균 4.2배(나쁠 때 12~19배) 느려 5(보통)로 올림. 나머지 백업은 7 그대로.
+    @{ id='onedrive'; taskName='SYNK OneDrive 문서 백업'; receipt='상태/OneDrive/latest.json'; maxAgeHours=2; maxRunHours=0.9167; intervalMinutes=30; taskPriority=5; scope='안전한 MD·소스와 복원 입구'; command=@($node,(Join-Path $PSScriptRoot 'onedrive-backup.cjs')); workingDirectory=$repo },
     @{ id='github'; taskName='SYNK GitHub 커밋 백업'; receipt='github-backup-status.json'; maxAgeHours=6; maxRunHours=0.4; intervalMinutes=120; scope='비공개 커밋의 전용 ref, 공개 미게시 이력의 암호화 보존'; command=@($node,(Join-Path $PSScriptRoot 'GitHub백업.cjs'),'--apply'); workingDirectory=$repo },
     @{ id='server'; taskName=$dailyName; receipt='backup-status.json'; maxAgeHours=36; maxRunHours=6; dailyTime='05:30'; scope='서버·DB 암호화 사본'; command=@($python,'-X','utf8','-B',(Join-Path $root '매일백업.py')); workingDirectory=$root },
     @{ id='media'; taskName='SYNK 미디어 원본 백업'; receipt='media-backup-status.json'; maxAgeHours=36; maxRunHours=12; dailyTime='12:30'; scope='77yuhbs 20TB, 변경된 원본 새 버전 보존'; command=@($python,'-X','utf8','-B',(Join-Path $root '원본백업.py')); workingDirectory=$root },
@@ -59,7 +60,7 @@ foreach ($item in $components + $auxiliaryTasks) {
     } else {
         $triggers = @()
     }
-    $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -MultipleInstances IgnoreNew -ExecutionTimeLimit (New-TimeSpan -Minutes ($item.maxRunHours*60+1)) -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -RestartCount 2 -RestartInterval (New-TimeSpan -Minutes 30)
+    $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -MultipleInstances IgnoreNew -ExecutionTimeLimit (New-TimeSpan -Minutes ($item.maxRunHours*60+1)) -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -RestartCount 2 -RestartInterval (New-TimeSpan -Minutes 30) -Priority $(if ($item.taskPriority) { $item.taskPriority } else { 7 })
     $registration = @{ TaskName=$item.taskName; Action=$action; Settings=$settings; Principal=$principal; Description=$item.scope; Force=$true }
     if ($triggers.Count) { $registration.Trigger=$triggers }
     Register-ScheduledTask @registration | Out-Null

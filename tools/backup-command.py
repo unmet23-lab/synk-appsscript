@@ -1,12 +1,14 @@
 """Run a configured backup without a console window; preserve the child's exit status.
 
-The run limit counts from this wrapper's own start, which is the scheduled start. Under load the interpreter alone
-took one to two minutes to start (10-20), so a limit counted from the child's start fell after the Task Scheduler
-limit one minute later. On Windows the child runs in a job object: at the limit the whole job (the backup and its
-git/pwsh children) ends at once without starting a new process, and if Task Scheduler ends this wrapper first,
-closing the job still ends the backup. Before, the 10-20 12:00 OneDrive run outlived its 55-minute limit
-(59.6 minutes): ending it needed taskkill.exe, which itself took seconds to start at this priority under load,
-and a slow taskkill raised an uncaught TimeoutExpired that ended only the wrapper.
+The run limit counts from this wrapper's own start, which is the scheduled start: under load the interpreter alone can
+take tens of seconds to start, and a limit counted from the child's start could fall after the Task Scheduler limit one
+minute later. On Windows the child runs in a job object, so at the limit the whole job (the backup and its git/pwsh
+children) ends at once without starting a new process. Before (10-20), ending it needed taskkill.exe, which itself took
+seconds to start at this priority under load; a taskkill slower than 20 seconds raised an uncaught TimeoutExpired that
+ended only this wrapper and left the backup running. The wait does not count time the PC spends asleep (Windows 8+),
+so a run that was suspended by a closed lid is not cut short. The job does not end the backup when this wrapper is ended
+from outside: whether Task Scheduler's own limit counts sleep is not known here, and a run stretched by sleep should
+finish rather than be killed (10-20 12:01 run: 59.6 minutes on the clock, 46.4 of them asleep).
 Each start and end is one line in 상태/예약실행/<id>.jsonl next to the config (Task Scheduler history is off).
 """
 import argparse
@@ -39,36 +41,19 @@ def started_seconds_ago():
 
 
 class Job:
-    """A Windows job object that ends every process in it when terminated or when its last handle closes."""
+    """A Windows job object holding the backup and everything it starts, so the limit can end them all at once."""
 
     def __init__(self):
         from ctypes import wintypes
         k32 = self.k32 = ctypes.WinDLL('kernel32', use_last_error=True)
         k32.CreateJobObjectW.restype = wintypes.HANDLE
         k32.CreateJobObjectW.argtypes = [ctypes.c_void_p, wintypes.LPCWSTR]
-        k32.SetInformationJobObject.argtypes = [wintypes.HANDLE, ctypes.c_int, ctypes.c_void_p, wintypes.DWORD]
         k32.AssignProcessToJobObject.argtypes = [wintypes.HANDLE, wintypes.HANDLE]
         k32.TerminateJobObject.argtypes = [wintypes.HANDLE, wintypes.UINT]
-        k32.CloseHandle.argtypes = [wintypes.HANDLE]
         self.ntdll = ctypes.WinDLL('ntdll')
         self.ntdll.NtResumeProcess.argtypes = [wintypes.HANDLE]
-
-        class Basic(ctypes.Structure):
-            _fields_ = [('PerProcessUserTimeLimit', ctypes.c_int64), ('PerJobUserTimeLimit', ctypes.c_int64),
-                        ('LimitFlags', wintypes.DWORD), ('MinimumWorkingSetSize', ctypes.c_size_t),
-                        ('MaximumWorkingSetSize', ctypes.c_size_t), ('ActiveProcessLimit', wintypes.DWORD),
-                        ('Affinity', ctypes.c_size_t), ('PriorityClass', wintypes.DWORD), ('SchedulingClass', wintypes.DWORD)]
-
-        class Extended(ctypes.Structure):
-            _fields_ = [('BasicLimitInformation', Basic), ('IoInfo', ctypes.c_uint64 * 6), ('ProcessMemoryLimit', ctypes.c_size_t),
-                        ('JobMemoryLimit', ctypes.c_size_t), ('PeakProcessMemoryUsed', ctypes.c_size_t), ('PeakJobMemoryUsed', ctypes.c_size_t)]
         self.handle = k32.CreateJobObjectW(None, None)
         if not self.handle: raise ctypes.WinError(ctypes.get_last_error())
-        limits = Extended()
-        limits.BasicLimitInformation.LimitFlags = 0x2000  # JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
-        if not k32.SetInformationJobObject(self.handle, 9, ctypes.byref(limits), ctypes.sizeof(limits)):  # extended limits
-            error = ctypes.get_last_error(); k32.CloseHandle(self.handle)
-            raise ctypes.WinError(error)
 
     def start(self, process):
         """Put a process created suspended into the job, then let it run. Its later children join the job too."""

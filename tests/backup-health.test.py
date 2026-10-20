@@ -202,7 +202,8 @@ class HealthTests(unittest.TestCase):
 
     @unittest.skipUnless(os.name=='nt','Windows job object')
     def test_scheduled_command_limit_ends_the_whole_backup_tree_with_124(self):
-        # 10-20 12:00: the 55-minute limit left the OneDrive run going for 59.6 minutes. The limit ends the child and its children.
+        # 10-20: under load taskkill.exe started too slowly, its 20-second timeout escaped and only the wrapper ended.
+        # The limit ends the child and its children through the job, without starting a new process.
         marker=self.root/'pids.txt'; started=time.monotonic()
         result=subprocess.run([sys.executable,str(REPO/'tools'/'backup-command.py'),'--config',str(self.tree_config(marker,4/3600)),'--id','fixture'],
             capture_output=True,timeout=60)
@@ -212,20 +213,6 @@ class HealthTests(unittest.TestCase):
         trace=[json.loads(line) for line in (self.root/'상태'/'예약실행'/'fixture.jsonl').read_text(encoding='utf-8').splitlines()]
         self.assertEqual([x['event'] for x in trace],['start','stopped','end']); self.assertTrue(trace[0]['job'])
         self.assertEqual((trace[-1]['exitCode'],trace[-1]['reason']),(124,'limit'))
-
-    @unittest.skipUnless(os.name=='nt','Windows job object')
-    def test_ending_the_scheduled_wrapper_also_ends_the_backup(self):
-        # Task Scheduler's own limit ends only the process it started. The backup must not outlive it as an orphan.
-        marker=self.root/'pids.txt'
-        wrapper=subprocess.Popen([sys.executable,str(REPO/'tools'/'backup-command.py'),'--config',str(self.tree_config(marker,1)),'--id','fixture'])
-        try:
-            self.assertTrue(wait_until(marker.exists,30)); time.sleep(0.5)
-            pids=list(map(int,marker.read_text().split()))
-            self.assertTrue(all(map(alive,pids)))
-            wrapper.kill(); wrapper.wait(timeout=10)
-            self.assertTrue(wait_until(lambda: not any(map(alive,pids)),10))
-        finally:
-            if wrapper.poll() is None: wrapper.kill()
 
 
 def alive(pid):
