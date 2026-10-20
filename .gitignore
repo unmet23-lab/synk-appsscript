@@ -24,10 +24,9 @@ secrets/
 # 별도 Git 저장소인 외부 벤치마크를 실수로 함께 커밋하지 않는다.
 ARC-AGI-3-Agents/
 
-# Python 캐시와 실행 때 만드는 벤치마크 픽스처
+# Python 캐시
 __pycache__/
 *.pyc
-tools/bench/_fixture_recordings/
 
 # 로컬 로그(옛 geminilm-drive 도구, 10-20 보관) — 계정 정보가 포함될 수 있으므로 공개하지 않는다.
 tools/geminilm-drive.log

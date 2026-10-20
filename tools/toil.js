@@ -97,7 +97,7 @@ function add(ver, spec, date) {
     // 한 버전이 여러 손일을 없앨 수 있다. 막지 않고 알리기만 한다 — 기록 유실이 중복보다 나쁘다.
     console.error(`⚠ ${ver} 행이 이미 있다 — 같은 버전에 한 줄 더 추가한다.`);
   }
-  // '|'는 표를 깨뜨린다. 삼키지 말고 치환해 장부가 파싱 불가가 되는 것을 막는다(friction.js와 같은 처리).
+  // '|'는 표를 깨뜨린다. 삼키지 말고 치환해 장부가 파싱 불가가 되는 것을 막는다(friction.js(10-20 보관)와 같은 처리).
   const safe = (s) => String(s).replace(/\|/g, '/').replace(/\n/g, ' ').trim();
   const row = `| ${ver} | ${date || today()} | ${safe(toil)} | ${safe(cadence)} | ${safe(device)} |`;
   fs.writeFileSync(ledgerPath(), insertRow(lines, row).join('\n'), 'utf8');

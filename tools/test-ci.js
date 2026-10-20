@@ -94,7 +94,7 @@ function snapshot(앞판 = null, 루트 = ROOT) {
       /* 🔴 `worktrees` — `.claude/worktrees/` 밑은 **이 체크아웃의 파일이 아니다**(다른 가지의 사본).
        *   [08-26 실측] 안 빼면 스냅샷이 614개를 세고 그중 21개가 워크트리 사본이었다 —
        *   CLAUDE.md·Code.js·엔진_*.js 가 «두 벌»로 잡혀 「안 바뀐 파일이 바뀌었다」로 뜬다.
-       *   (`tools/인용검사.js:241` 이 이미 쓰는 규칙과 같다.) */
+       *   (`tools/인용검사.js(10-20 보관):241` 이 이미 쓰는 규칙과 같다.) */
       if (e.name === 'node_modules' || e.name === '.git' || e.name === 'state' || e.name === 'worktrees') continue;
       const p = path.join(dir, e.name);
       if (e.isDirectory()) { if (depth > 0) walk(p, depth - 1); continue; }

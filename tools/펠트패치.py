@@ -58,7 +58,7 @@ sys.path.insert(0, os.path.join(뿌리, 'tools'))
 import 펠트색갈이 as 색갈이  # noqa: E402
 
 # 회귀는 «픽스처 위에서» 탐지력을 못박아야 한다 — 실저장소만 검사하면 버그가 아직 있기를
-# 요구하게 되고(맹점 ②), 정본 사진이 바뀌는 날 탐지기까지 같이 죽는다. friction.js 와 같은 문법.
+# 요구하게 되고(맹점 ②), 정본 사진이 바뀌는 날 탐지기까지 같이 죽는다. friction.js(10-20 보관) 와 같은 문법.
 사진뿌리 = os.environ.get('SYNK_FELT_ROOT', 뿌리)
 토큰경로 = os.environ.get('SYNK_FELT_TOKEN', os.path.join(뿌리, 'docs', '디자인_토큰.json'))
 라이브러리 = os.environ.get('SYNK_FELT_LIB', os.path.join(뿌리, 'docs', '캐릭터', '펠트패치_0815'))
