@@ -22,7 +22,7 @@
     },
     {
       "from": 28.8,
-      "to": 35.9
+      "to": 33.25
     }
   ],
   "versions": {
@@ -296,7 +296,7 @@
         },
         {
           "id": "end_comment",
-          "at": 31.02,
+          "at": 30.8,
           "lang": "en",
           "text": "Drop your score below!",
           "prev": "How many did you get?",
@@ -304,17 +304,8 @@
           "cut": 1.35
         },
         {
-          "id": "end_next",
-          "at": 32.68,
-          "lang": "en",
-          "text": "See you next round!",
-          "prev": "Drop your score below!",
-          "next": "Fighting!",
-          "cut": 0.93
-        },
-        {
           "id": "end_fighting",
-          "at": 34.42,
+          "at": 32.42,
           "lang": "ko",
           "text": "화이팅!",
           "tempo": 1.05,
@@ -525,21 +516,14 @@
         },
         {
           "id": "end_comment",
-          "at": 31.02,
+          "at": 30.2,
           "lang": "ko",
           "text": "댓글로 알려 주세요!",
           "emotion": "happy"
         },
         {
-          "id": "end_next",
-          "at": 32.68,
-          "lang": "ko",
-          "text": "다음 판에서 만나요!",
-          "emotion": "happy"
-        },
-        {
           "id": "end_fighting",
-          "at": 34.42,
+          "at": 32.42,
           "lang": "ko",
           "text": "화이팅!",
           "tempo": 1.05,

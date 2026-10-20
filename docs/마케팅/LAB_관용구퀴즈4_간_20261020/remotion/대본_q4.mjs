@@ -11,7 +11,7 @@ const script = JSON.parse(fs.readFileSync(FILE, 'utf8'));
 const Q = 9.6; // 문제 하나 = 16박 × 0.6초
 
 // 100 BPM 구간(겹침 점검용). 옛 값은 120 BPM(8초 문제) 기준이었다.
-script.limits = [{ from: 0, to: 9.5 }, { from: 9.6, to: 19.1 }, { from: 19.2, to: 28.7 }, { from: 28.8, to: 35.9 }];
+script.limits = [{ from: 0, to: 9.5 }, { from: 9.6, to: 19.1 }, { from: 19.2, to: 28.7 }, { from: 28.8, to: 33.25 }]; // 끝 4.5초(10-20 마감 점검)
 
 // 영어판 자리·빠르기·자르기(en)는 첫 굽기 소리 에너지로 잰 말끝(최고점 −32dB)에 맞췄다 — 다음 줄 시작 전에 끝나게(10-20).
 //   cut = 말끝 × (잰 빠르기 ÷ 새 빠르기) + 0.06초. 「A bean-sized liver?」는 1.4초라 도장(1.8초)·Nope(2.36초) 사이에 안 들어가 「Liver shrinks?」로 줄였다.
@@ -75,17 +75,16 @@ const koQuestion = (n, key) => {
   ];
 };
 
+// 끝 4.5초(10-20 마감 점검): 점수 묻기 → 댓글 부탁 → 화이팅. 「See you next round!」·「다음 판에서 만나요!」 줄은 뺐다(화면 글은 화이팅 카드에 남음).
 const END_EN = [
   { id: 'end_score', at: 28.86, lang: 'en', text: 'Okay! How many did you get?', prev: 'That was the last question of a fun Korean idiom quiz.', next: 'Drop your score below!' },
-  { id: 'end_comment', at: 31.02, lang: 'en', text: 'Drop your score below!', prev: 'How many did you get?', next: 'See you next round!' },
-  { id: 'end_next', at: 32.68, lang: 'en', text: 'See you next round!', prev: 'Drop your score below!', next: 'Fighting!' },
-  { id: 'end_fighting', at: 34.42, lang: 'ko', text: '화이팅!', tempo: 1.05, emotion: 'happy', intensity: 1.2 },
+  { id: 'end_comment', at: 30.8, lang: 'en', text: 'Drop your score below!', prev: 'How many did you get?', next: 'See you next round!' },
+  { id: 'end_fighting', at: 32.42, lang: 'ko', text: '화이팅!', tempo: 1.05, emotion: 'happy', intensity: 1.2 },
 ];
 const END_KO = [
   { id: 'end_score', at: 28.86, lang: 'ko', text: '몇 개 맞혔어요?', emotion: 'happy' },
-  { id: 'end_comment', at: 31.02, lang: 'ko', text: '댓글로 알려 주세요!', emotion: 'happy' },
-  { id: 'end_next', at: 32.68, lang: 'ko', text: '다음 판에서 만나요!', emotion: 'happy' },
-  { id: 'end_fighting', at: 34.42, lang: 'ko', text: '화이팅!', tempo: 1.05, emotion: 'happy', intensity: 1.2 },
+  { id: 'end_comment', at: 30.2, lang: 'ko', text: '댓글로 알려 주세요!', emotion: 'happy' },
+  { id: 'end_fighting', at: 32.42, lang: 'ko', text: '화이팅!', tempo: 1.05, emotion: 'happy', intensity: 1.2 },
 ];
 
 const DEFAULTS = { tempo: 1.15, emotion: 'smart' }; // 퀴즈 #2 v5b·v5b_mn과 같다(같은 요청 → 캐시)

@@ -97,7 +97,7 @@ const hitsFor = (sayAt: number, tease: boolean): Hit[] => [
   ...E.recap.map((t) => ({ at: END_START + t, src: sfx('sparkle'), v: 0.75 })),
   { at: END_START + E.recap[2] + 1, src: sfx('achieve'), v: 0.7 },
   { at: END_START + KE.comment, src: sfx('pop'), v: 0.6 },
-  { at: END_START + KE.cheer + 14, src: sfx('mongle_muum'), v: 0.6 },
+  { at: END_START + KE.cheer + 3, src: sfx('mongle_muum'), v: 0.6 },
   { at: END_START + E.logo, src: sfx('boom'), v: 0.3 },
 ];
 
@@ -127,7 +127,8 @@ const Sound: React.FC<{ vo: KidsNarration; bgm: string; sayAt: number; tease: bo
   const tickScale = vo === 'none' ? 1 : 0.5; // 나레이션이 셋·둘·하나를 같이 외친다
   return (
     <>
-      <Audio src={staticFile(bgm)} volume={(fr) => 0.6 * mix * duck(fr)} />
+      {/* 10-20 퀴즈 #4: 끝을 4.5초로 줄여 음악이 곡 끝 전에 잘리므로 마지막 0.6초에 줄여 닫는다 */}
+      <Audio src={staticFile(bgm)} volume={(fr) => 0.6 * mix * duck(fr) * interpolate(fr, [TOTAL - 18, TOTAL - 1], [1, 0], clamp)} />
       {hitsFor(sayAt, tease).filter((h) => vo === 'none' || !h.voSkip).map((h, i) => (
         <Sequence key={i} from={h.at} durationInFrames={Math.max(1, Math.min(2 * fps, TOTAL - h.at))} layout="none">
           <Audio src={h.src} volume={mix * (h.src.includes('tick') ? h.v * tickScale : h.v) * (underVoice(h.at) ? 0.3 : 1)} />

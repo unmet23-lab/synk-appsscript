@@ -1,11 +1,11 @@
 // 키즈판 끝: STAGE CLEAR! → 별 셋 + 복습(관용구·뜻) → 점수 댓글 → 연재 이름 + 화이팅 + 진행자 몽글 + 로고.
-// 댓글 화면은 나레이션 「Drop your score below!」(끝 54프레임)부터 「See you next round!」(97프레임) 앞까지 보인다.
+// 10-20 퀴즈 #4 마감 점검: 끝 전체 4.5초(100 BPM). 점수 댓글은 1.2초부터 화이팅 카드 앞(약 3.5초)까지, 화이팅 카드는 마지막 약 0.9초에 한꺼번에(조금씩 어긋나게) 뜬다.
 import React from 'react';
 import { AbsoluteFill, Img, spring, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
 import { Burst, ramp } from '../lib/anim';
 import { EN, MONO } from '../lib/fonts';
 import { QUESTIONS } from '../film/data';
-import { B, E } from '../film/timeline';
+import { E } from '../film/timeline';
 import { HOST_END } from './art';
 import { hostBreath } from './motion';
 import { END_START } from '../film/timeline';
@@ -14,7 +14,7 @@ import { Star } from './Cartoon';
 import { K, panel, textSpan, toon } from './theme';
 
 /** 키즈판 끝 구간의 자리(끝 시작에서 프레임). 별 셋(E.recap)과 로고(E.logo)는 프리미엄판과 같다. */
-export const KE = { comment: Math.round((10 / 3) * B), cheer: Math.round(6.4 * B) } as const; // 120 BPM에서 50·96프레임 — 템포가 바뀌면 박 단위로 같이 늘어난다
+export const KE = { comment: E.comment, cheer: E.cheer } as const; // 박 단위라 템포가 바뀌면 같이 늘어난다
 
 const pop = (f: number, at: number, fps: number) => spring({ frame: f - at, fps, config: { damping: 10, stiffness: 190, mass: 0.6 } });
 const settle = (f: number, at: number, fps: number, len = 10) => spring({ frame: f - at, fps, config: { damping: 200 }, durationInFrames: len });
@@ -24,7 +24,7 @@ export const KidsEnd: React.FC<{ lang?: KidsLang; motion?: boolean; order?: numb
   const recap = kidsRecap(lang);
   const f = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const swap = ramp(f, KE.cheer - 4, 8);
+  const swap = ramp(f, KE.cheer - 4, 6);
 
   return (
     <AbsoluteFill>
@@ -61,13 +61,13 @@ export const KidsEnd: React.FC<{ lang?: KidsLang; motion?: boolean; order?: numb
       {/* 2부: 연재 이름 + 화이팅 + 진행자 몽글 + 로고 */}
       <AbsoluteFill style={{ opacity: swap }}>
         <div style={{ position: 'absolute', left: 0, right: 0, top: 420, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-          <div style={{ ...panel(999, 8, K.coral), padding: '8px 30px', scale: `${pop(f, KE.cheer, fps)}` }}>
+          <div style={{ ...panel(999, 8, K.coral), padding: '8px 30px', scale: `${pop(f, KE.cheer - 4, fps)}` }}>
             <span style={{ font: `${ui.monoFallback ? 700 : 500} 34px ${ui.monoFallback ? EN : MONO}`, color: K.white, letterSpacing: '0.06em' }}>{ui.exam}</span>
           </div>
-          <div style={{ marginTop: 18, scale: `${pop(f, KE.cheer + 4, fps)}`, rotate: '-4deg' }}>
+          <div style={{ marginTop: 18, scale: `${pop(f, KE.cheer - 3, fps)}`, rotate: '-4deg' }}>
             <span style={toon(190, { color: K.butter })}>화이팅!</span>
           </div>
-          <div style={{ marginTop: 6, scale: `${pop(f, KE.cheer + 10, fps)}` }}>
+          <div style={{ marginTop: 6, scale: `${pop(f, KE.cheer - 1, fps)}` }}>
             <span style={toon(70, { font: 'en' })}>{ui.gotThis}</span>
           </div>
         </div>
@@ -80,12 +80,12 @@ export const KidsEnd: React.FC<{ lang?: KidsLang; motion?: boolean; order?: numb
             top: 880,
             width: 440,
             height: 'auto',
-            opacity: settle(f, KE.cheer + 14, fps) > 0.01 ? 1 : 0,
-            scale: `${0.7 + 0.3 * settle(f, KE.cheer + 14, fps)}`,
+            opacity: settle(f, KE.cheer - 4, fps, 8) > 0.01 ? 1 : 0,
+            scale: `${0.7 + 0.3 * settle(f, KE.cheer - 4, fps, 8)}`,
             transformOrigin: '50% 100%',
             filter: 'drop-shadow(0 14px 0 rgba(27,42,90,0.35))',
             // v2: 자리 잡은 뒤(10프레임)부터 숨쉬기
-            ...(motion && f >= KE.cheer + 24 ? { transform: hostBreath(f, END_START).transform } : {}),
+            ...(motion && f >= KE.cheer + 12 ? { transform: hostBreath(f, END_START).transform } : {}),
           }}
         />
         <div style={{ position: 'absolute', left: 0, right: 0, top: 1360, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 22, opacity: ramp(f, E.logo, 8), translate: `0 ${(1 - ramp(f, E.logo, 10)) * 30}px` }}>

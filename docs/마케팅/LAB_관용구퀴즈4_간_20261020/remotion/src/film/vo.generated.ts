@@ -199,21 +199,14 @@ export const VO = {
   },
   {
    "id": "end_comment",
-   "at": 31.02,
+   "at": 30.8,
    "dur": 1.35,
    "text": "Drop your score below!",
    "src": "vo/q4en/end_comment.wav"
   },
   {
-   "id": "end_next",
-   "at": 32.68,
-   "dur": 0.93,
-   "text": "See you next round!",
-   "src": "vo/q4en/end_next.wav"
-  },
-  {
    "id": "end_fighting",
-   "at": 34.42,
+   "at": 32.42,
    "dur": 0.6,
    "text": "화이팅!",
    "src": "vo/q4en/end_fighting.wav"
@@ -397,21 +390,14 @@ export const VO = {
   },
   {
    "id": "end_comment",
-   "at": 31.02,
+   "at": 30.2,
    "dur": 1.436,
    "text": "댓글로 알려 주세요!",
    "src": "vo/q4ko/end_comment.wav"
   },
   {
-   "id": "end_next",
-   "at": 32.68,
-   "dur": 1.209,
-   "text": "다음 판에서 만나요!",
-   "src": "vo/q4ko/end_next.wav"
-  },
-  {
    "id": "end_fighting",
-   "at": 34.42,
+   "at": 32.42,
    "dur": 0.733,
    "text": "화이팅!",
    "src": "vo/q4ko/end_fighting.wav"

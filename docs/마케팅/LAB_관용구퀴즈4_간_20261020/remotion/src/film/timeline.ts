@@ -6,7 +6,8 @@ export const FPS = 30;
 export const TEMPO = process.env.REMOTION_TEMPO === '100' ? 100 : 120;
 export const B = TEMPO === 100 ? 18 : 15;
 export const Q_LEN = 16 * B; // 240 = 8초
-export const END_LEN = 12 * B; // 180 = 6초
+// 10-20 퀴즈 #4 마감 점검(조율 세션 · 유호님 「마감 체크 한번만 해줘」): 끝 8초가 길어 완주율을 깎는다 → 7.5박(100 BPM 4.5초). 별 셋·점수 댓글은 살리고 화이팅 카드는 1초 안쪽으로.
+export const END_LEN = Math.round(7.5 * B); // 100 BPM 135 = 4.5초
 export const Q_COUNT = 3;
 export const TOTAL = Q_COUNT * Q_LEN + END_LEN; // 900 = 30초
 
@@ -17,7 +18,7 @@ export const T = {
   guess: 2 * B, // 30: 글자 그대로 읽은 오답
   strike: 3 * B, // 45: 줄 긋기 + Nope
   card: 4 * B, // 60: 카드가 올라오며 제목을 품는다
-  options: [4 * B + 4, 4 * B + 8, 4 * B + 12], // 64·68·72: 보기 셋, 4프레임 간격
+  options: [4 * B - 3, 4 * B, 4 * B + 3], // 보기 셋, 3프레임 간격 — 판이 커지기 시작할 때(T.card − 2) 첫 보기도 이미 커지는 중(10-20: 빈 흰 판이 6프레임 비쳤다)
   count: [5 * B, 6 * B, 7 * B], // 75·90·105: 3·2·1 (음악이 멈춘 두 박 + 쌓는 한 박)
   reveal: 8 * B, // 120: 다운비트에 정답(음악이 다시 터짐)
   art: 8 * B + 8, // 128: 보기가 접히고 그림이 그려진다
@@ -32,10 +33,10 @@ export const END_START = Q_COUNT * Q_LEN; // 720
 
 /** 끝 장면 안 사건(끝 시작 기준). */
 export const E = {
-  recap: [1 * B, 2 * B, 3 * B], // 15·30·45
-  comment: 4 * B, // 60
-  cheer: 6 * B, // 90
-  logo: 8 * B, // 120
+  recap: [Math.round(0.5 * B), B, Math.round(1.5 * B)], // 별 셋 0.3·0.6·0.9초(100 BPM)
+  comment: 2 * B, // 점수 댓글 1.2초
+  cheer: 6 * B, // 화이팅 카드 3.6초(끝 4.5초까지 약 0.9초)
+  logo: Math.round(6.2 * B), // 로고·계정 3.7초
 } as const;
 
 /** 장면이 바뀌는 프레임(다음 장면 시작). 빛 번짐·모션블러·음악 이음매가 여기에 걸린다. */
