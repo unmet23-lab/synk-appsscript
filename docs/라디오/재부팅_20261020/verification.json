@@ -1,0 +1,84 @@
+{
+  "requestedAction": "Reboot the radio server into the kernel security update installed on 10-19",
+  "precheck": {
+    "checkedAt": "2026-10-20T06:07:09Z",
+    "unit": "radio-live.service enabled, WantedBy=multi-user.target, After/Wants=network-online.target, Restart=always RestartSec=5",
+    "otherUnits": "radio-stream.service and radio-bot.service disabled (radio-stream failed since 09-06, inactive after boot)",
+    "youtube": {
+      "videoId": "aHASRkZDalc",
+      "broadcastStatus": "live",
+      "privacy": "public",
+      "enableAutoStop": false,
+      "actualStartTime": "2026-10-05T12:29:38Z",
+      "automaticRestartsSurvivedSince1013": 7
+    },
+    "guardian": "synk crontab every 5 min (방송지킴이.js); state shows one broadcast created on 10-05, none since",
+    "concurrentViewers": 0,
+    "startupScript": "GCE metadata startup-script reruns apt-get install ffmpeg curl ca-certificates nodejs on every boot; nodejs 24.20.0 -> 24.22.0 was upgraded before the reboot so the boot installed nothing",
+    "grubDefault": "6.1.0-54-cloud-amd64",
+    "disk": "30G, 90% used, 3.0G free"
+  },
+  "kernelBefore": "6.1.0-52-cloud-amd64",
+  "kernelAfter": "6.1.0-54-cloud-amd64",
+  "rebootCommandAt": "2026-10-20T06:15:54.672Z",
+  "bootAt": "2026-10-20T06:16:20Z",
+  "serviceStartedAt": "2026-10-20T06:16:38Z",
+  "sshBackAt": "2026-10-20T06:16:54.030Z",
+  "finalCheckAt": "2026-10-20T06:29:12Z",
+  "rebootRequired": false,
+  "failedUnits": [],
+  "node": "v24.22.0",
+  "startupScriptInstalled": 0,
+  "service": {
+    "MainPID": 401,
+    "ActiveState": "active",
+    "SubState": "running",
+    "NRestarts": 0
+  },
+  "contentUnchanged": true,
+  "contentHashes": {
+    "/opt/synk-radio/소리/playlist.txt": "1156ddd20e8d2568c49d36d2161ae2938ffaee7a5fcaf444efbb705530fa82a1",
+    "/opt/synk-radio/소리/now-playing.json": "18c50748c7d0eea0f0158076f9b21506b0d66deb4826ea92344b83afec1843ea",
+    "/opt/synk-radio/무대차례/목록.txt": "ab38464198936cfd5111ff6373c71865dbfad9ef96e563cf9f06da5b1f47ad3c",
+    "/opt/synk-radio/송출/조율.json": "a56af79fcdedb547186cb45bc1f42fd8722b12976405776735988328ea8e0d22",
+    "/opt/synk-radio/지면/bots/오버레이/전광판.html": "6396358a1b25603bf57be631bfebefd26da2c820935a3e259f02647e39579586",
+    "/opt/synk-radio/팩/playlist.txt": "e312277715f2fdfac1e0e85ef51dc09858299e1c31bd607ad2c89def4f863818"
+  },
+  "openedMedia": [
+    "/opt/synk-radio/소리/synk-radio-blok11-sourcecomplete-20261005.flac",
+    "/opt/synk-radio/무대차례/still-dusk-kite-20260919-3d54fb291a54.mp4"
+  ],
+  "output": {
+    "speed": "0.999x",
+    "layerFailures": 0,
+    "droppedFrames": 0,
+    "duplicatedFrames": 0,
+    "skippedBeats": 5,
+    "skippedBeatsNote": "all 5 in the first minute after start; still 5 at 06:29",
+    "trackAt0626": "5/22 파도 소리"
+  },
+  "youtube": {
+    "videoId": "aHASRkZDalc",
+    "sameBroadcast": true,
+    "broadcastStatus": "live",
+    "privacy": "public",
+    "streamStatus": "active",
+    "health": "good",
+    "enableAutoStop": false,
+    "actualStartTime": "2026-10-05T12:29:38Z",
+    "verifiedAt": "2026-10-20T06:26:29.649Z",
+    "guardianLog": "06:20 and 06:25 UTC: aHASRkZDalc running, no new broadcast",
+    "publicAudioSeconds": 12.004717,
+    "meanVolumeDb": -16.0,
+    "maxVolumeDb": -1.8,
+    "sampleRate": 44100,
+    "channels": 2,
+    "captureWarnings": "",
+    "beforeReboot": {
+      "publicAudioSeconds": 12.004717,
+      "meanVolumeDb": -14.7,
+      "maxVolumeDb": -1.9
+    },
+    "captureEvidence": ".tmp/radio-reboot-20261020/"
+  }
+}
