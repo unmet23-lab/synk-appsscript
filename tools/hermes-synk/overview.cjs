@@ -9,6 +9,7 @@ const { createHash, randomUUID } = require('node:crypto');
 const { execFile } = require('node:child_process');
 const { promisify } = require('node:util');
 const status = require('./status.cjs');
+const { awakeSince } = require('./monitor.cjs');
 const runFile = promisify(execFile);
 const ROOT = path.resolve(__dirname, '../..');
 const LEDGER_CACHE = 'runtime/synk-overview/ledger-cache.json';
@@ -32,6 +33,10 @@ const backupHealthDefault = () => process.env.SYNK_BACKUP_HEALTH || path.join(os
 // 바빠서 재시작을 30분 넘게 미룬 어긋남만 판단으로 올린다. 15분 넘게 새 기록이 없으면 절전·일시 중지일 수 있어 사건을 내지 않는다.
 const GATEWAY_RECOVERY_STATUS = 'synk-gateway-recovery-status.json';
 const GATEWAY_RECOVERY_STALE_MS = 15 * 60_000;
+// 복구 작업 자체가 멈춘 것(작업 꺼짐·스크립트 오류)은 감시(monitor.cjs)가 끊김 없이 30분 넘게 도는 동안 이 기록이 한 번도
+// 새로 쓰이지 않았을 때만 본다. os.uptime은 절전 시간까지 세어 절전과 멈춤을 가르지 못하므로, 감시 회차가 이어진 시간을 깨어 있던 증거로 쓴다.
+const MONITOR_STATE = 'runtime/synk-automation/state.json';
+const GATEWAY_RECOVERY_SILENT_MS = 30 * 60_000;
 const GATEWAY_RECOVERY_LABEL = Object.freeze({ ok: '이상 없음', starting: '게이트웨이를 켜는 중', startFailed: '게이트웨이 켜기 실패 · 다음 점검에서 다시 켭니다',
   waiting: '새로 깔린 패키지를 반영하는 중', restarting: '다시 켜는 중', restartFailed: '다시 켜기 실패 · 다음 점검에서 다시 봅니다', recorded: '점검 기록 있음' });
 const MAX_TASKS = 300;
@@ -406,12 +411,22 @@ function backupSnapshot({ hermesHome, now, backupHealthFile, uptimeSeconds, pers
 }
 
 function gatewayRecoverySnapshot({ hermesHome, now }) {
-  let raw;
-  try { raw = readJson(hermesHome, GATEWAY_RECOVERY_STATUS, 4_000); } catch { return { available: false }; }
+  // 감시 상태를 못 읽으면 깨어 있던 시간을 지금부터 센다. 그래서 멈춤으로 단정하지 않는다.
+  let monitor = null;
+  try { monitor = readJson(hermesHome, MONITOR_STATE, 8_000_000); } catch {}
+  const awakeFor = now.getTime() - Date.parse(awakeSince(monitor, now));
+  // 마지막으로 쓰인 시각은 파일 수정 시각으로도 본다. 내용을 잠깐 못 읽었거나 형식이 달라도 방금 쓰였으면 멈춘 것이 아니다.
+  let writtenAt = null;
+  try { writtenAt = fs.statSync(status.safePath(hermesHome, GATEWAY_RECOVERY_STATUS)).mtime.toISOString(); } catch {}
+  let raw = null;
+  try { raw = readJson(hermesHome, GATEWAY_RECOVERY_STATUS, 4_000); } catch {}
   const checkedAt = iso(raw?.checkedAt);
-  if (raw?.schemaVersion !== 1 || !checkedAt || !Number.isSafeInteger(raw.code)) return { available: false };
+  const valid = raw?.schemaVersion === 1 && !!checkedAt && Number.isSafeInteger(raw.code);
+  const lastWrittenAt = [valid ? checkedAt : null, writtenAt].filter(Boolean).sort().pop() || null;
+  const stopped = awakeFor >= GATEWAY_RECOVERY_SILENT_MS && (!lastWrittenAt || now.getTime() - Date.parse(lastWrittenAt) >= GATEWAY_RECOVERY_SILENT_MS);
+  if (!valid) return { available: false, lastWrittenAt, stopped };
   const age = now.getTime() - Date.parse(checkedAt);
-  return { available: true, checkedAt, stale: age > GATEWAY_RECOVERY_STALE_MS || age < -60_000, code: raw.code, drift: raw.drift === true,
+  return { available: true, checkedAt, lastWrittenAt, stale: age > GATEWAY_RECOVERY_STALE_MS || age < -60_000, stopped, code: raw.code, drift: raw.drift === true,
     selected: /^[a-f0-9]{32}$/.test(raw.selected || '') ? raw.selected : null, since: iso(raw.since) };
 }
 
@@ -592,6 +607,17 @@ function gatewayRecoveryEvents(gateway) {
     `${GATEWAY_RECOVERY_LABEL[state || 'recorded']} · 마지막 점검 ${formatTime(gateway.checkedAt)}`, content), false, incident)];
 }
 
+// 복구 작업 자체는 어긋남 알림과 따로 판단한다. 멈춘 것이 드러나면 한 번 알리고, 새 기록이 다시 쓰이면 풀린 것으로 본다.
+// 절전에서 깬 직후처럼 아직 가를 수 없을 때는 사건을 빼서 이전 판단을 그대로 둔다.
+function gatewayRecoveryTaskEvents(gateway) {
+  if (gateway?.stopped) return [attention(event('gateway-recovery-task', 'gateway', 'warning', '헤르메스 복구 작업이 멈춤',
+    `PC가 깨어 있는 동안 30분 넘게 복구 점검 기록이 새로 쓰이지 않았습니다 · 예약 작업이 꺼졌거나 점검 스크립트가 오류로 멈췄을 수 있습니다 · 그동안 게이트웨이가 꺼지면 자동으로 다시 켜지지 않습니다 · PC에서 Windows 예약 「SYNK_Hermes_Gateway_Recovery」를 확인해 주세요 · ${gateway.lastWrittenAt ? '마지막 점검 ' + formatTime(gateway.lastWrittenAt) : '점검 기록 없음'}`,
+    { stopped: true }), true, { id: 'gateway-recovery-task', stopped: true })];
+  if (!gateway?.available || gateway.stale) return [];
+  return [attention(event('gateway-recovery-task', 'gateway', 'info', '헤르메스 복구 작업', `2분마다 점검 중 · 마지막 점검 ${formatTime(gateway.checkedAt)}`,
+    { stopped: false }), false, { id: 'gateway-recovery-task', stopped: false })];
+}
+
 function snsEvents(sns, now) {
   if (!sns) return [];
   const rows = [];
@@ -708,7 +734,7 @@ function buildEvents({ track, tips, ledger, tasks, research, runtimes, now, back
   }
   for (const runtime of runtimes) events.push(event('runtime-' + runtime.source, 'runtime', 'info', runtime.source + ' 작업 조회', runtime.note,
     { connected: runtime.connected, stale: runtime.stale }));
-  events.push(...backupEvents(backup), ...snsEvents(sns, now), ...gatewayRecoveryEvents(gateway));
+  events.push(...backupEvents(backup), ...snsEvents(sns, now), ...gatewayRecoveryEvents(gateway), ...gatewayRecoveryTaskEvents(gateway));
   return events.sort((a, b) => a.id.localeCompare(b.id));
 }
 
@@ -746,9 +772,9 @@ function formatOverview(report) {
     lines.push(`- SNS 연결 ${sns.connections.length}개·댓글 수집 ${sns.inbox.length}개${broken ? ' · 확인 필요 ' + broken + '건' : ' · 이상 없음'} · 조회 ${formatTime(sns.checkedAt)}${sns.stale ? ' · 오래됨' : ''}`);
   } else if (sns) lines.push('- SNS 연결 상태 미확인(회사 서버 조회 전)');
   const gateway = snapshot.gateway;
-  if (gateway?.available) {
+  if (gateway?.available || gateway?.stopped) {
     const row = events.find(item => item.id === 'gateway-recovery');
-    lines.push(`- 헤르메스 게이트웨이 복구 점검 · ${gateway.stale ? '기록이 오래됨(절전·일시 중지일 수 있음)' : row?.needs_attention ? '확인 필요' : '확인할 문제 없음'} · 기록 ${formatTime(gateway.checkedAt)}`);
+    lines.push(`- 헤르메스 게이트웨이 복구 점검 · ${gateway.stopped ? '복구 작업이 멈춤 · 확인 필요' : gateway.stale ? '기록이 오래됨(절전·일시 중지일 수 있음)' : row?.needs_attention ? '확인 필요' : '확인할 문제 없음'} · 기록 ${formatTime(gateway.checkedAt || gateway.lastWrittenAt)}`);
   }
   lines.push(`- 트랙 ${snapshot.track.items.length}개 기록${snapshot.track.complete ? '' : ' · 일부 미확인'} · 문서 날짜로 마감을 추정하지 않습니다.`);
   for (const row of events.filter(item => item.kind === 'coverage' && item.severity !== 'info').slice(0, 3)) lines.push('- ' + row.title);
@@ -807,4 +833,5 @@ if (require.main === module) main().catch(() => { process.stderr.write('SYNK 오
 
 module.exports = { readOverview, formatOverview, sanitizeLedger, ledgerSnapshot, readLedgerCache, readTaskRecords, readArgonRecords, researchSnapshot, sanitizeArgon, refreshArgon, reconcileTips, buildEvents,
   readBackupHealth, backupSnapshot, sanitizeSns, refreshSns, snsSnapshot, gatewayRecoverySnapshot,
-  LEDGER_TTL_MS, LEDGER_CACHE, ARGON_TTL_MS, ARGON_CACHE, SNS_CACHE, SNS_REFRESH_MS, SNS_STALE_MS, BACKUP_CACHE, GATEWAY_RECOVERY_STATUS, GATEWAY_RECOVERY_STALE_MS };
+  LEDGER_TTL_MS, LEDGER_CACHE, ARGON_TTL_MS, ARGON_CACHE, SNS_CACHE, SNS_REFRESH_MS, SNS_STALE_MS, BACKUP_CACHE, GATEWAY_RECOVERY_STATUS, GATEWAY_RECOVERY_STALE_MS,
+  MONITOR_STATE, GATEWAY_RECOVERY_SILENT_MS };

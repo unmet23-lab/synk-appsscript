@@ -5,6 +5,14 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const POLICY = 'attention_only_v1';
 const hash = x => crypto.createHash('sha256').update(typeof x === 'string' ? x : JSON.stringify(x)).digest('hex');
+// Unbroken polls prove the PC stayed awake. Hermes runs this every 5 minutes (about 6 in practice), so one
+// missed poll still fits; a gap over 15 minutes means sleep, shutdown or a gateway outage and the streak starts again.
+const AWAKE_GAP_MS = 15 * 60000;
+function awakeSince(previous, now) {
+  const time = value => typeof value === 'string' ? Date.parse(value) : NaN;
+  const last = time(previous?.checkedAt), since = time(previous?.awakeSince), gap = now.getTime() - last;
+  return gap >= 0 && gap <= AWAKE_GAP_MS && since <= last ? new Date(since).toISOString() : now.toISOString();
+}
 function kst(date) {
   const text = new Date(new Date(date).getTime() + 9 * 3600000).toISOString();
   return {day: text.slice(0, 10), hour: Number(text.slice(11, 13))};
@@ -58,6 +66,7 @@ function plan(previous, overview, now = new Date()) {
   }
   const notifications = [];
   if (urgent.length) notifications.push(attentionNotification(urgent));
+  state.awakeSince = awakeSince(previous, now);
   state.checkedAt = now.toISOString();
   // Bound old observations and accumulated change summaries, without interpreting deletion.
   state.observed = Object.fromEntries(Object.entries(state.observed).slice(-2500));
@@ -161,7 +170,7 @@ async function collect({home, root, now = new Date(), readOverview, initial = fa
     return {first:result.first,checkedAt:now.toISOString(),policy:POLICY,notifications,coverage:overview.coverage};
   } finally {release();}
 }
-module.exports={plan,collect,kst,clean,writeJSON,readJSON,attentionDraft,suppressDraft,attentionNotification,POLICY};
+module.exports={plan,collect,kst,clean,writeJSON,readJSON,attentionDraft,suppressDraft,attentionNotification,awakeSince,AWAKE_GAP_MS,POLICY};
 if(require.main===module) {
   const home=process.env.HERMES_HOME || path.join(process.env.LOCALAPPDATA,'hermes');
   const {readOverview}=require('./overview.cjs');

@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const os=require('node:os');
 const path=require('node:path');
-const {plan,collect,kst,clean,POLICY}=require('../tools/hermes-synk/monitor.cjs');
+const {plan,collect,kst,clean,awakeSince,POLICY}=require('../tools/hermes-synk/monitor.cjs');
 const event=(fingerprint='a',extra={})=>({id:'task:one',kind:'task',severity:'info',needs_attention:false,title:'작업 응답',detail:'검증 대기',fingerprint,...extra});
 const at=x=>new Date(x);
 test('first observation is a silent baseline; same content and changed clocks stay quiet',()=>{
@@ -113,6 +113,30 @@ test('same decision stays quiet when record timestamps change and may alert agai
   const resolved=plan(c.state,{events:[event('resolved')]},at('2026-10-18T07:15:00Z'));
   const recur=plan(resolved.state,{events:[failure]},at('2026-10-18T07:20:00Z'));
   assert.equal(recur.notifications.length,1);
+});
+
+test('the awake streak survives regular polls and restarts after sleep, a backwards clock or a legacy state',()=>{
+  const a=plan(null,{events:[]},at('2026-10-18T07:00:00Z'));
+  assert.equal(a.state.awakeSince,'2026-10-18T07:00:00.000Z');
+  const b=plan(a.state,{events:[]},at('2026-10-18T07:06:00Z'));
+  const c=plan(b.state,{events:[]},at('2026-10-18T07:21:00Z'));
+  assert.equal(c.state.awakeSince,'2026-10-18T07:00:00.000Z','one missed poll (a fifteen-minute gap) still counts as awake');
+  assert.equal(plan(c.state,{events:[]},at('2026-10-18T07:36:01Z')).state.awakeSince,'2026-10-18T07:36:01.000Z','a longer gap is sleep or shutdown');
+  assert.equal(plan(c.state,{events:[]},at('2026-10-18T07:10:00Z')).state.awakeSince,'2026-10-18T07:10:00.000Z','a clock moved backwards');
+  const {awakeSince:_,...legacy}=c.state;
+  assert.equal(plan(legacy,{events:[]},at('2026-10-18T07:25:00Z')).state.awakeSince,'2026-10-18T07:25:00.000Z','a state from before this field');
+  assert.equal(awakeSince({checkedAt:'2026-10-18T07:16:00Z',awakeSince:'2026-10-18T07:20:00Z'},at('2026-10-18T07:22:00Z')),'2026-10-18T07:22:00.000Z','a streak cannot start after its last poll');
+  assert.equal(awakeSince({checkedAt:123,awakeSince:0},at('2026-10-18T07:20:00Z')),'2026-10-18T07:20:00.000Z');
+});
+
+test('the collector persists the awake streak with its cursor',async t=>{
+  const home=fs.mkdtempSync(path.join(os.tmpdir(),'synk-monitor-awake-'));
+  t.after(()=>fs.rmSync(home,{recursive:true,force:true}));
+  const reader=async()=>({events:[]});
+  await collect({home,root:home,now:at('2026-10-18T07:00:00Z'),readOverview:reader});
+  await collect({home,root:home,now:at('2026-10-18T07:06:00Z'),readOverview:reader});
+  const state=JSON.parse(fs.readFileSync(path.join(home,'runtime/synk-automation/state.json'),'utf8'));
+  assert.deepEqual([state.awakeSince,state.checkedAt],['2026-10-18T07:00:00.000Z','2026-10-18T07:06:00.000Z']);
 });
 
 test('a recurring decision receives a new outbox identity after the previous incident was claimed',async()=>{

@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const status = require('../tools/hermes-synk/status.cjs');
-const { readOverview, readTaskRecords, LEDGER_CACHE, LEDGER_TTL_MS, ARGON_CACHE, SNS_CACHE, BACKUP_CACHE, GATEWAY_RECOVERY_STATUS } = require('../tools/hermes-synk/overview.cjs');
+const { readOverview, readTaskRecords, LEDGER_CACHE, LEDGER_TTL_MS, ARGON_CACHE, SNS_CACHE, BACKUP_CACHE, GATEWAY_RECOVERY_STATUS, MONITOR_STATE } = require('../tools/hermes-synk/overview.cjs');
 const { plan } = require('../tools/hermes-synk/monitor.cjs');
 const NOW = new Date('2026-10-18T08:00:00Z');
 const ID = 'synk-123456abcdef';
@@ -608,6 +608,117 @@ test('헤르메스 복구는 재시작 뒤에도 그대로이거나 30분 넘게
   record(90, { ...drift, code: 4 });
   result = await step(result.state, 91);
   assert.equal(result.notifications.length, 1, '풀린 뒤 다시 생기면 새로 알린다');
+});
+
+test('헤르메스 복구 작업 자체가 멈추면 감시가 끊김 없이 30분 넘게 돈 뒤 한 번 알리고, 절전에서 깬 직후에는 판단을 바꾸지 않는다', async t => {
+  const f = fixture(t);
+  const GENERATION = 'e3240b89a48f4632a4a798146f6a9034';
+  const at = minutes => new Date(NOW.getTime() + minutes * 60_000);
+  // 복구 작업처럼 기록을 쓰고, 파일 수정 시각도 그 점검 시각에 맞춘다.
+  const record = (minutes, extra) => {
+    write(f.home, GATEWAY_RECOVERY_STATUS,
+      { schemaVersion: 1, checkedAt: at(minutes).toISOString().replace('.000', ''), code: 0, drift: false, selected: null, since: null, ...extra });
+    fs.utimesSync(path.join(f.home, GATEWAY_RECOVERY_STATUS), at(minutes), at(minutes));
+  };
+  const drift = { drift: true, code: 4, selected: GENERATION, since: '2026-10-18T07:50:00Z' };
+  const task = report => report.events.find(item => item.id === 'gateway-recovery-task');
+  // 감시처럼 6분마다 판단하고 그 상태를 state.json에 남긴다(collect가 하는 일과 같다).
+  let state = null;
+  let report = null;
+  const poll = async (from, to = from) => {
+    const sent = [];
+    for (let minutes = from; minutes <= to; minutes += 6) {
+      report = await readOverview({ ...f.options, now: at(minutes) });
+      const result = plan(state, report, at(minutes));
+      state = result.state;
+      write(f.home, MONITOR_STATE, state);
+      sent.push(...result.notifications);
+    }
+    return sent;
+  };
+
+  record(0, {});
+  await poll(0);
+  assert.equal(task(report).needs_attention, false);
+  record(5, drift);
+  let sent = await poll(6);
+  assert.equal(sent.length, 1);
+  assert.match(sent[0].text, /재시작 뒤에도 새 패키지를 못 씀/);
+
+  // 10분 점검을 끝으로 작업이 꺼졌다. 15분이 지나면 어긋남 판단은 그대로 두고, 30분이 되기 전에는 아무것도 보내지 않는다.
+  record(10, drift);
+  assert.deepEqual(await poll(12, 36), []);
+  assert.equal(task(report), undefined, '30분이 되기 전에는 멈춤으로 단정하지 않는다');
+  assert.match(report.text, /기록이 오래됨/);
+  sent = await poll(42);
+  assert.equal(sent.length, 1, '감시가 끊김 없이 42분 도는 동안 32분째 새 기록이 없다');
+  assert.match(sent[0].text, /헤르메스 복구 작업이 멈춤/);
+  assert.match(sent[0].text, /마지막 점검 2026-10-18 17:10 KST/, '알림 글이 잘리지 않는다');
+  assert.ok(!sent[0].text.includes(GENERATION.slice(0, 8)) && !/코드|code/i.test(sent[0].text), '종료 코드·세대 번호는 글에 보이지 않는다');
+  assert.match(report.text, /헤르메스 게이트웨이 복구 점검 · 복구 작업이 멈춤 · 확인 필요/);
+  assert.deepEqual(await poll(48), [], '같은 멈춤을 다시 보내지 않는다');
+
+  // 48분 회차 뒤 절전, 140분에 깼다. 깬 뒤 30분은 멈춤을 가를 수 없어 사건을 빼고, 다시 드러나도 같은 사건이다.
+  assert.deepEqual(await poll(140, 164), []);
+  assert.equal(task(report), undefined, '절전에서 깬 직후에는 판단을 바꾸지 않는다');
+  assert.deepEqual(await poll(170), [], '절전 전에 알린 멈춤을 다시 보내지 않는다');
+  assert.equal(task(report).needs_attention, true);
+
+  // 작업을 다시 켰다. 어긋남은 그대로라도 이미 알린 사건이라 다시 보내지 않고, 멈춤은 풀린다.
+  record(172, drift);
+  assert.deepEqual(await poll(176), []);
+  assert.equal(task(report).needs_attention, false);
+  assert.match(report.text, /헤르메스 게이트웨이 복구 점검 · 확인 필요/);
+  record(178, drift);
+  sent = await poll(182, 212);
+  assert.equal(sent.length, 1, '풀린 뒤 다시 멈추면 새로 알린다');
+  assert.match(sent[0].text, /헤르메스 복구 작업이 멈춤/);
+});
+
+test('헤르메스 복구 기록이 없거나 못 읽거나 PC를 켠 직후에도 감시가 끊김 없이 30분 돈 뒤에만 멈춤으로 본다', async t => {
+  const f = fixture(t);
+  const at = minutes => new Date(NOW.getTime() + minutes * 60_000);
+  const look = minutes => readOverview({ ...f.options, now: at(minutes) });
+  const file = path.join(f.home, GATEWAY_RECOVERY_STATUS);
+  // 어제 끈 PC: 감시 상태와 복구 기록이 모두 하루 묵었다. 켠 뒤 첫 조회는 깨어 있던 시간을 새로 센다.
+  write(f.home, MONITOR_STATE, { checkedAt: at(-24 * 60).toISOString(), awakeSince: at(-30 * 60).toISOString() });
+  write(f.home, GATEWAY_RECOVERY_STATUS, { schemaVersion: 1, checkedAt: at(-24 * 60).toISOString(), code: 0, drift: false, selected: null, since: null });
+  fs.utimesSync(file, at(-24 * 60), at(-24 * 60));
+  const boot = await look(1);
+  assert.equal(boot.snapshot.gateway.stopped, false);
+  assert.equal(boot.events.find(item => item.id === 'gateway-recovery-task'), undefined);
+  assert.match(boot.text, /기록이 오래됨/);
+
+  // 기록이 한 번도 없는 채로 감시가 6분마다 돈다. 30분째 회차에서 처음 멈춤으로 본다.
+  fs.rmSync(file);
+  fs.rmSync(path.join(f.home, MONITOR_STATE));
+  let state = null;
+  const stopped = [];
+  for (let minutes = 0; minutes <= 30; minutes += 6) {
+    const report = await look(minutes);
+    stopped.push(report.snapshot.gateway.stopped);
+    state = plan(state, report, at(minutes)).state;
+    write(f.home, MONITOR_STATE, state);
+    if (minutes < 30) assert.doesNotMatch(report.text, /게이트웨이/);
+    else {
+      assert.equal(report.events.find(item => item.id === 'gateway-recovery-task').needs_attention, true);
+      assert.match(report.events.find(item => item.id === 'gateway-recovery-task').detail, /점검 기록 없음/);
+      assert.match(report.text, /헤르메스 게이트웨이 복구 점검 · 복구 작업이 멈춤 · 확인 필요 · 기록 미확인/);
+    }
+  }
+  assert.deepEqual(stopped, [false, false, false, false, false, true]);
+
+  // 내용을 못 읽는 기록(형식이 다르거나 읽는 순간 막힘)은 파일이 쓰인 시각으로 본다. 방금 쓰였으면 작업은 돌고 있다.
+  fs.writeFileSync(file, '{"schemaVersion":2');
+  fs.utimesSync(file, at(34), at(34));
+  const unreadable = await look(36);
+  assert.equal(unreadable.snapshot.gateway.stopped, false, '한 번 못 읽었다고 멈춤으로 보지 않는다');
+  assert.equal(unreadable.events.find(item => item.id === 'gateway-recovery-task'), undefined, '못 읽은 기록으로는 판단을 바꾸지 않는다');
+  fs.utimesSync(file, at(0), at(0));
+  const silent = await look(36);
+  assert.equal(silent.snapshot.gateway.stopped, true);
+  assert.match(silent.events.find(item => item.id === 'gateway-recovery-task').detail, /마지막 점검 2026-10-18 17:00 KST/);
+  assert.match(silent.text, /복구 작업이 멈춤 · 확인 필요 · 기록 2026-10-18 17:00 KST/);
 });
 
 test('SNS 연결은 세 시간에 한 번만 읽고 코드·시각만 보관하며 끊김·지연·장기 미조회를 판단으로 올린다', async t => {
