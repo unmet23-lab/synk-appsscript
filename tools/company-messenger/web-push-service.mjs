@@ -197,6 +197,9 @@ export function createWebPushService({ db, enabled = false, publicKey = null, pr
     await requireLive(userId, sessionHash);
     check(input && typeof input === 'object' && !Array.isArray(input) && input.subscription && typeof input.subscription === 'object', 400, '브라우저의 알림 연결을 확인해 주세요.');
     const endpoint = validatePushEndpoint(input.subscription.endpoint), endpointHash = sha256(endpoint), keys = encryptionKeys(input.subscription.keys);
+    // A key top-up only adds keys to this login's switched-on row. It never creates, revives or takes over a device:
+    // the row may have been switched off or removed between the page's check and this request.
+    const keysOnly = input.keysOnly === true;
     const label = input.label === undefined ? '이 기기' : input.label;
     check(typeof label === 'string' && label.trim().length >= 1 && label.length <= 80 && !/[\x00-\x1f]/.test(label), 400, '기기 이름은 1~80자로 입력해 주세요.');
     const sources = await sourceList(userId);
@@ -207,9 +210,11 @@ export function createWebPushService({ db, enabled = false, publicKey = null, pr
       const existing = one('SELECT * FROM web_push_subscriptions WHERE endpoint_hash=?', endpointHash);
       if (existing && existing.user_id === userId && existing.session_hash === sessionHash && usable(existing)) {
         // The same subscription sent again also brings keys to a device registered before they were stored.
-        run('UPDATE web_push_subscriptions SET label=?,p256dh=COALESCE(?,p256dh),auth_secret=COALESCE(?,auth_secret) WHERE id=?', label.trim(), keys?.p256dh ?? null, keys?.auth ?? null, existing.id);
+        if (!keysOnly) run('UPDATE web_push_subscriptions SET label=?,p256dh=COALESCE(?,p256dh),auth_secret=COALESCE(?,auth_secret) WHERE id=?', label.trim(), keys?.p256dh ?? null, keys?.auth ?? null, existing.id);
+        else if (keys) run('UPDATE web_push_subscriptions SET p256dh=?,auth_secret=? WHERE id=?', keys.p256dh, keys.auth, existing.id);
         return one('SELECT * FROM web_push_subscriptions WHERE id=?', existing.id);
       }
+      check(!keysOnly, 404, '기기 알림을 찾을 수 없습니다.');
       check(one('SELECT count(*) AS count FROM web_push_subscriptions WHERE user_id=? AND enabled=1 AND endpoint_hash<>?', userId, endpointHash).count < 10, 409, '알림을 받을 기기는 최대 10개까지 등록할 수 있습니다.');
       if (existing) { controllers.get(existing.id)?.abort(); run('DELETE FROM web_push_queue WHERE subscription_id=?', existing.id); run('DELETE FROM web_push_subscriptions WHERE id=?', existing.id); }
       const id = randomUUID();

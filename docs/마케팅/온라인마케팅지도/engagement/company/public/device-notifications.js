@@ -24,7 +24,8 @@
     try{
       const local=await localSubscription();if(!local.subscription)return;
       const server=await json(API,stamp),row=server.subscriptions?.find(item=>item.endpointHash===local.hash);
-      if(row?.enabled&&row.currentSession&&row.callAlerts===false)await json(API,stamp,{method:'POST',body:{subscription:local.subscription.toJSON(),label:row.label}});
+      // keysOnly: the server only adds keys to this login's switched-on row, so a row removed meanwhile stays removed.
+      if(row?.enabled&&row.currentSession&&row.callAlerts===false)await json(API,stamp,{method:'POST',body:{subscription:local.subscription.toJSON(),label:row.label,keysOnly:true}});
     }catch{}
   }
   function support(){

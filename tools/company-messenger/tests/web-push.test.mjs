@@ -242,6 +242,26 @@ test('registration keeps only usable browser keys, a repeat registration brings 
   await f.service.revokeSession('s1'); assert.deepEqual(stored(), { p256dh: null, auth_secret: null });
 });
 
+test('a key top-up only adds keys to the same login switched-on row; it never creates, revives or takes over a device', async t => {
+  let held = null;
+  const f = await fixture(t, { service: { currentSession: async (id, hash) => { if (held) { const gate = held; held = null; await gate.promise; } return f.sessions.has(`${id}:${hash}`); } } });
+  const device = browserKeys(), rows = () => f.db.prepare('SELECT id,session_hash,label,enabled,p256dh FROM web_push_subscriptions').all().map(row => ({ ...row }));
+  const topUp = (sessionHash = 's1') => f.service.register('u1', sessionHash, { subscription: { endpoint: endpoint(1), keys: device.keys }, label: '다른 이름', keysOnly: true });
+  const { subscription } = await f.register();
+  assert.equal((await topUp()).subscription.callAlerts, true);
+  assert.deepEqual(rows(), [{ id: subscription.id, session_hash: 's1', label: '시험 기기', enabled: 1, p256dh: device.keys.p256dh }]);
+  // Another login of the same person cannot take the device over through a top-up.
+  await assert.rejects(() => topUp('s2'), status(404)); assert.equal(rows()[0].session_hash, 's1');
+  // A switched-off or removed device stays that way.
+  await f.service.revokeSession('s1'); await assert.rejects(() => topUp(), status(404)); assert.equal(rows()[0].enabled, 0);
+  await f.service.remove('u1', subscription.id); await assert.rejects(() => topUp(), status(404)); assert.deepEqual(rows(), []);
+  // The page's check and its top-up are two requests; a removal while the top-up still waits on its session check wins.
+  const again = (await f.register()).subscription;
+  let release; held = { promise: new Promise(resolve => { release = resolve; }) };
+  const pending = topUp(); await f.service.remove('u1', again.id); release();
+  await assert.rejects(() => pending, status(404)); assert.deepEqual(rows(), []);
+});
+
 test('a database from before the key columns gains them and its device keeps empty-body call wake-ups', async t => {
   const f = await fixture(t, { prepare(db, keys, at) {
     if (db.prepare("SELECT 1 FROM sqlite_master WHERE name='web_push_subscriptions'").get()) return;

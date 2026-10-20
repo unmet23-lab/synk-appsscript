@@ -74,16 +74,21 @@ test('a device subscribed before the server kept keys sends the same subscriptio
   const f=fixture({existing:{callAlerts:false}});await f.ready;
   const posts=f.calls.filter(call=>call.options.method==='POST');assert.equal(posts.length,1);
   assert.equal(posts[0].path,'/api/device-notifications');assert.equal(posts[0].options.headers['X-CSRF-Token'],'csrf1');
-  assert.deepEqual(JSON.parse(posts[0].options.body),{subscription:{endpoint:'https://push.example.test/fake-only',keys:{p256dh:'fake-public-key',auth:'fake-auth-key'}},label:'회사 폰'});
+  // keysOnly: the server adds keys to this login's switched-on row and creates nothing if it is gone meanwhile.
+  assert.deepEqual(JSON.parse(posts[0].options.body),{subscription:{endpoint:'https://push.example.test/fake-only',keys:{p256dh:'fake-public-key',auth:'fake-auth-key'}},label:'회사 폰',keysOnly:true});
   assert.equal(f.registers,0);assert.equal(f.subscribes,0);assert.equal(f.prompts,0);assert.equal(f.unsubscribes,0);
+  // The same identity arriving again (the page re-assigns it often) sends nothing more.
+  const before=f.calls.length;assert.equal(f.api.syncIdentity({userId:'u1',csrf:'csrf1',generation:1}),undefined);await new Promise(resolve=>setTimeout(resolve,20));assert.equal(f.calls.length,before);
 });
-test('devices with keys, another login, a removed row or an older server send nothing; unsubscribed browsers ask nothing',async()=>{
-  for(const existing of [{callAlerts:true},{callAlerts:false,currentSession:false},{callAlerts:false,enabled:false},{}]){
+test('devices with keys, another login, a switched-off or unlisted row or an older server send nothing; unsubscribed browsers ask nothing',async()=>{
+  for(const existing of [{callAlerts:true},{callAlerts:false,currentSession:false},{callAlerts:false,enabled:false},{callAlerts:false,endpointHash:'another-browser'},{}]){
     const f=fixture({existing});await f.ready;
     assert.equal(f.calls.filter(call=>call.options.method==='POST').length,0,JSON.stringify(existing));assert.equal(f.calls.filter(call=>call.path==='/api/device-notifications').length,1);
   }
   const none=fixture();await none.ready;assert.deepEqual(none.calls,[]);
-  // A login change while the check runs drops it before anything is sent for the old account.
+  // A login change before the check, or while its GET is still out, drops it before anything is sent for the old account.
   const switching=fixture({existing:{callAlerts:false}});switching.api.syncIdentity({userId:null,csrf:'',generation:2});await switching.ready;
   assert.deepEqual(switching.calls,[]);
+  const midway=fixture({existing:{callAlerts:false}});midway.context.intercept=async(path,options)=>{if(path==='/api/device-notifications'&&options.method==='GET')midway.api.syncIdentity({userId:null,csrf:'',generation:2});return null;};
+  await midway.ready;assert.deepEqual(midway.calls.map(call=>call.options.method),['GET']);
 });
