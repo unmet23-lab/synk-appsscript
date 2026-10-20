@@ -73,16 +73,17 @@ test('할 일이 없으면 claude를 띄우지 않는다(비용 0)', async () =>
   } finally { t.지우기(); }
 });
 
-// 갱신일은 오늘 기준으로 잡는다. 키는 「갱신일이 가장 가까운 것부터」 쓰므로 20·25일로 박아 두면
-// 매달 20일부터 24일까지는 B가 먼저 골라져 이 시험이 날짜 따라 빨개졌다(10-20 master CI).
-const 며칠뒤일 = (n) => new Date(Date.now() + n * 864e5).getDate();
+// 키는 「다음 갱신일이 가장 가까운 것부터」 쓴다. 실제 시계로 돌리면 갱신일 20·25일인 A·B의 순서가 매달 20~24일에 뒤집혀
+// 이 시험이 날짜 따라 빨개졌다(10-20 master CI) — 기준 시각을 고정해 넘긴다(tests/클로드키.test.js와 같은 방식).
+// 지난 날로 잡아 실제 시계로 센 값과 우연히 겹치지 않게 한다(주입이 빠지면 풀림·기록 시각 단언이 늘 깨진다).
+const 지금 = new Date(2025, 2, 10, 12, 0, 0); // 2025년 3월 10일 정오(이 PC 시간대) — A(20일)가 B(25일)보다 먼저 갱신된다
 
 test('첫 턴에 크레딧 부족이면 그 키를 표시하고 다음 키로 같은 요청을 다시 보낸다(키·전용 설정 폴더는 자식 환경에만)', async () => {
-  const t = 방만들기([['A', 며칠뒤일(1), 'sk-ant-test-aaaa'], ['B', 며칠뒤일(5), 'sk-ant-test-bbbb']]);
+  const t = 방만들기([['A', 20, 'sk-ant-test-aaaa'], ['B', 25, 'sk-ant-test-bbbb']]);
   try {
     const { 작업, 받은 } = 가짜작업();
     const 알림 = [];
-    const r = await 실행기.작업돌리기('시험작업', { ...t.실행옵션, 작업, 방: path.join(t.방, 'out'), fetch: 확인200, 알림: (s) => 알림.push(s) });
+    const r = await 실행기.작업돌리기('시험작업', { ...t.실행옵션, 작업, 방: path.join(t.방, 'out'), fetch: 확인200, 알림: (s) => 알림.push(s), 지금 });
     assert.equal(r.상태, '끝'); assert.equal(r.경로, '크레딧'); assert.equal(r.키이름, 'B'); assert.equal(r.비용, 0.42);
     const 실행 = t.실행들();
     assert.deepEqual(실행.map((x) => x.key), ['aaaa', 'bbbb']);
@@ -90,9 +91,11 @@ test('첫 턴에 크레딧 부족이면 그 키를 표시하고 다음 키로 �
     assert.ok(실행.every((x) => x.unattended === 'credit-job:시험작업'), '사람 없는 실행 표시(텔레그램 승인 훅이 읽는다)');
     assert.equal(실행[1].input, '합성 지시문');
     assert.equal(받은.사후[0].경로, '크레딧');
-    assert.equal(JSON.parse(fs.readFileSync(path.join(t.방, '상태.json'), 'utf8')).A.상태, '소진');
+    const 상태 = JSON.parse(fs.readFileSync(path.join(t.방, '상태.json'), 'utf8'));
+    assert.equal(상태.A.상태, '소진');
+    assert.equal(+new Date(상태.A.풀림), +new Date(2025, 2, 20), '소진 풀림도 넘긴 기준 시각으로 센다(다음 갱신일 0시)');
     const 줄 = t.기록().filter((x) => x.용도 === '시험작업');
-    assert.deepEqual(줄.map((x) => [x.키이름, x.경로, x.추정USD]), [['B', '크레딧', 0.42]]);
+    assert.deepEqual(줄.map((x) => [x.키이름, x.경로, x.추정USD, x.시각]), [['B', '크레딧', 0.42, 지금.toISOString()]]);
     for (const 파일 of fs.readdirSync(path.join(t.방, 'out'))) {
       if (파일.endsWith('.json')) assert.equal(fs.readFileSync(path.join(t.방, 'out', 파일), 'utf8').includes('sk-ant-test'), false);
     }
@@ -141,12 +144,13 @@ test('중계: 헤르메스 인자를 그대로 넘기고, 키가 없으면 --bar
     assert.match(줄[0], /경로=크레딧\(B\)/);
     assert.deepEqual(t.실행들()[0].args, ['-p', '--output-format', 'json', '--permission-mode', 'auto']);
     assert.equal(t.실행들()[0].key, 'bbbb');
-    const 코드2 = await 실행기.중계(['-p', '--bare'], { ...t.실행옵션, fetch: 확인소진, 입력: '요청', 통과: false, 알림줄: (s) => 줄.push(s) });
+    const 코드2 = await 실행기.중계(['-p', '--bare'], { ...t.실행옵션, fetch: 확인소진, 입력: '요청', 통과: false, 알림줄: (s) => 줄.push(s), 지금 });
     assert.equal(코드2, 0);
     assert.match(줄[1], /경로=구독/);
     assert.deepEqual(t.실행들()[1].args, ['-p']);
     assert.equal(t.실행들()[1].key, '');
     assert.deepEqual(t.기록().filter((x) => x.용도 === '중계').map((x) => x.경로), ['크레딧', '구독']);
+    assert.equal(+new Date(JSON.parse(fs.readFileSync(path.join(t.방, '상태.json'), 'utf8')).B.풀림), +new Date(2025, 2, 25), '중계도 넘긴 기준 시각으로 소진을 표시한다');
   } finally { t.지우기(); }
 });
 
