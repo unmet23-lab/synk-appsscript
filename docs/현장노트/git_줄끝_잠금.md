@@ -149,6 +149,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 바이트로 읽어(`open(p,'rb')`) CRLF였는지 기억하고, LF로 맞춰 바꾼 뒤 원래 줄끝으로 되돌려 쓴다(보기 `.tmp/pulse-client-fix-20261019/eolpatch.py`). 이미 바뀐 파일은 기준 파일의 줄끝을 따라 다시 맞춘다(`eol-follow-base.py`).
 - 다시 확인: 바꾼 파일마다 CR 수가 LF 수와 같거나(CRLF 파일) 0이고(LF 파일), 기준과의 diff에 바꾼 줄만 나온다.
 
+### 운영 후보 사본에 커밋 차이를 `git merge-file`로 얹으면 CRLF로 든 파일이 통째로 충돌한다 (2026-10-21 Claude)
+- 증상: 10-21 다음 PULSE 릴리스 흉내(`.tmp/pulse-pc-demo-copy-20261021/candidate-check.cjs`)에서 이력 18 후보(manifest `413c8dfb…`)와 17판 후보(`df9ec75f…`) 사본에 PULSE 글 다시 쓰기 커밋 둘을 경로마다 `git merge-file -p <후보> <바탕> <내 판>`으로 얹자 8파일(회사 `client-changes.mjs`·`pulse-devices.mjs`·`pulse-studio.mjs`·`public/pulse-app/strategy-view.mjs`·`deliverables-view.mjs`와 시험 셋)이 파일마다 한 덩어리로 충돌했다.
+- 원인: 그 8파일은 후보(운영) 바이트가 모든 줄 CRLF이고 git 판(바탕·내 판)은 LF다. `git diff --no-index --ignore-cr-at-eol`로 보면 내용 차이가 없다.
+- 고침: 후보 바이트를 LF로 바꿔 3방향으로 얹고 결과를 후보 줄끝으로 되돌린다(같은 스크립트의 `merge`). 그러자 66경로가 모두 바탕 그대로 얹히고 선택 시험 145파일 2,034/2,034가 돌았다. 릴리스 묶음 도구가 이 줄끝을 어떻게 다루는지는 보지 않았다.
+- 다시 확인: 얹기 전에 후보 파일의 CR 수가 줄 수와 같은지(모든 줄 CRLF) 세고, 줄끝만 다르면 `--ignore-cr-at-eol` diff가 빈다.
+
 ## index.lock
 
 ### 주인 없는 0바이트 `.git/index.lock`이 남는다
