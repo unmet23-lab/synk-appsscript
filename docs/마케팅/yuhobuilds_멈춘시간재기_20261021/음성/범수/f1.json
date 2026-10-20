@@ -1,0 +1,67 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "f1",
+ "text": "고친 건 셋. 하나, 멈춘 사진은 천천히 당기기.",
+ "dur": 2.714,
+ "words": [
+  {
+   "text": "고친",
+   "start": 0.02,
+   "end": 0.21
+  },
+  {
+   "text": "건",
+   "start": 0.269,
+   "end": 0.345
+  },
+  {
+   "text": "셋.",
+   "start": 0.402,
+   "end": 0.573
+  },
+  {
+   "text": "하나,",
+   "start": 0.86,
+   "end": 1.031
+  },
+  {
+   "text": "멈춘",
+   "start": 1.261,
+   "end": 1.529
+  },
+  {
+   "text": "사진은",
+   "start": 1.586,
+   "end": 1.871
+  },
+  {
+   "text": "천천히",
+   "start": 1.948,
+   "end": 2.215
+  },
+  {
+   "text": "당기기.",
+   "start": 2.272,
+   "end": 2.714
+  }
+ ],
+ "source": {
+  "key": "4629dce69487568d2634f3d230fd4ea0",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

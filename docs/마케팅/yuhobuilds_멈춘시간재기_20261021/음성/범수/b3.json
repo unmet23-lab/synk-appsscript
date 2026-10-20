@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b3",
+ "text": "만들 땐 몰랐어요. 목소리가 계속 나오니까요.",
+ "dur": 2.367,
+ "words": [
+  {
+   "text": "만들",
+   "start": 0.02,
+   "end": 0.248
+  },
+  {
+   "text": "땐",
+   "start": 0.29,
+   "end": 0.376
+  },
+  {
+   "text": "몰랐어요.",
+   "start": 0.419,
+   "end": 0.847
+  },
+  {
+   "text": "목소리가",
+   "start": 1.16,
+   "end": 1.489
+  },
+  {
+   "text": "계속",
+   "start": 1.545,
+   "end": 1.759
+  },
+  {
+   "text": "나오니까요.",
+   "start": 1.802,
+   "end": 2.367
+  }
+ ],
+ "source": {
+  "key": "5667c71f2bcee6b166e9bb1b5d0a91b5",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

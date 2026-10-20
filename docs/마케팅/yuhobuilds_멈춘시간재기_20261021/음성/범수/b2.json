@@ -1,0 +1,112 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b2",
+ "text": "제 기준은 둘이에요. 멈춘 시간은 전체의 십오 퍼센트 아래, 일 점 오 초 넘게 멈춘 곳은 없게.",
+ "dur": 4.95,
+ "words": [
+  {
+   "text": "제",
+   "start": 0.02,
+   "end": 0.094
+  },
+  {
+   "text": "기준은",
+   "start": 0.152,
+   "end": 0.403
+  },
+  {
+   "text": "둘이에요.",
+   "start": 0.447,
+   "end": 0.844
+  },
+  {
+   "text": "멈춘",
+   "start": 1.255,
+   "end": 1.534
+  },
+  {
+   "text": "시간은",
+   "start": 1.579,
+   "end": 1.873
+  },
+  {
+   "text": "전체의",
+   "start": 1.917,
+   "end": 2.226
+  },
+  {
+   "text": "십오",
+   "start": 2.285,
+   "end": 2.431
+  },
+  {
+   "text": "퍼센트",
+   "start": 2.476,
+   "end": 2.77
+  },
+  {
+   "text": "아래,",
+   "start": 2.829,
+   "end": 2.961
+  },
+  {
+   "text": "일",
+   "start": 3.372,
+   "end": 3.431
+  },
+  {
+   "text": "점",
+   "start": 3.49,
+   "end": 3.608
+  },
+  {
+   "text": "오",
+   "start": 3.652,
+   "end": 3.667
+  },
+  {
+   "text": "초",
+   "start": 3.71,
+   "end": 3.785
+  },
+  {
+   "text": "넘게",
+   "start": 3.829,
+   "end": 4.049
+  },
+  {
+   "text": "멈춘",
+   "start": 4.093,
+   "end": 4.343
+  },
+  {
+   "text": "곳은",
+   "start": 4.388,
+   "end": 4.549
+  },
+  {
+   "text": "없게.",
+   "start": 4.593,
+   "end": 4.95
+  }
+ ],
+ "source": {
+  "key": "b4e2481424258be76aea5b4683c7c42e",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

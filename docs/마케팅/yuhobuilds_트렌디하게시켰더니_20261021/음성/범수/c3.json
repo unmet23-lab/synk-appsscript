@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "c3",
+ "text": "셋, 장면은 컷으로 바꾸고.",
+ "dur": 1.764,
+ "words": [
+  {
+   "text": "셋,",
+   "start": 0.02,
+   "end": 0.213
+  },
+  {
+   "text": "장면은",
+   "start": 0.502,
+   "end": 0.869
+  },
+  {
+   "text": "컷으로",
+   "start": 0.927,
+   "end": 1.177
+  },
+  {
+   "text": "바꾸고.",
+   "start": 1.235,
+   "end": 1.764
+  }
+ ],
+ "source": {
+  "key": "5faaa4cf7e8c7e0bd064003756bd19a8",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

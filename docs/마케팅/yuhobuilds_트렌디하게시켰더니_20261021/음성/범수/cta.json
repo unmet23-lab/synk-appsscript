@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "cta",
+ "text": "저장해 두고 그대로 붙여 보세요.",
+ "dur": 1.64,
+ "words": [
+  {
+   "text": "저장해",
+   "start": 0.06,
+   "end": 0.357
+  },
+  {
+   "text": "두고",
+   "start": 0.4,
+   "end": 0.57
+  },
+  {
+   "text": "그대로",
+   "start": 0.711,
+   "end": 0.952
+  },
+  {
+   "text": "붙여",
+   "start": 0.995,
+   "end": 1.193
+  },
+  {
+   "text": "보세요.",
+   "start": 1.236,
+   "end": 1.64
+  }
+ ],
+ "source": {
+  "key": "b1c3224889a76072143d4decdfb8e56f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

@@ -1,0 +1,38 @@
+{
+  "file": "docs/마케팅/synkbrief_AI음식사진_20261020/remotion/out/food-a-v3-phone.mp4",
+  "length": 42,
+  "still": 24,
+  "ratio": 0.5714285714285714,
+  "longest": 6,
+  "runs": [
+    {
+      "start": 5,
+      "end": 7
+    },
+    {
+      "start": 9,
+      "end": 11
+    },
+    {
+      "start": 15.5,
+      "end": 19
+    },
+    {
+      "start": 20.5,
+      "end": 23
+    },
+    {
+      "start": 24.5,
+      "end": 30.5
+    },
+    {
+      "start": 32.5,
+      "end": 35.5
+    },
+    {
+      "start": 40,
+      "end": 42
+    }
+  ],
+  "pass": false
+}

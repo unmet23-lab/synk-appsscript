@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "f3",
+ "text": "셋, 장면 사이 빈 화면은 없애기.",
+ "dur": 1.858,
+ "words": [
+  {
+   "text": "셋,",
+   "start": 0.02,
+   "end": 0.231
+  },
+  {
+   "text": "장면",
+   "start": 0.429,
+   "end": 0.702
+  },
+  {
+   "text": "사이",
+   "start": 0.748,
+   "end": 0.884
+  },
+  {
+   "text": "빈",
+   "start": 0.945,
+   "end": 1.05
+  },
+  {
+   "text": "화면은",
+   "start": 1.111,
+   "end": 1.369
+  },
+  {
+   "text": "없애기.",
+   "start": 1.414,
+   "end": 1.858
+  }
+ ],
+ "source": {
+  "key": "54a6bd62c1c4a80184ef4721383f0b72",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

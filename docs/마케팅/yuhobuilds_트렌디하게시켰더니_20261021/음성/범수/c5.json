@@ -1,0 +1,62 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "c5",
+ "text": "다섯, 튕김, 흐림, 형광펜, 숫자 세기는 빼고.",
+ "dur": 3.234,
+ "words": [
+  {
+   "text": "다섯,",
+   "start": 0.02,
+   "end": 0.289
+  },
+  {
+   "text": "튕김,",
+   "start": 0.48,
+   "end": 0.845
+  },
+  {
+   "text": "흐림,",
+   "start": 0.96,
+   "end": 1.209
+  },
+  {
+   "text": "형광펜,",
+   "start": 1.439,
+   "end": 1.937
+  },
+  {
+   "text": "숫자",
+   "start": 2.206,
+   "end": 2.416
+  },
+  {
+   "text": "세기는",
+   "start": 2.474,
+   "end": 2.762
+  },
+  {
+   "text": "빼고.",
+   "start": 2.819,
+   "end": 3.234
+  }
+ ],
+ "source": {
+  "key": "234501c0ef322b3786c364a26b135146",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

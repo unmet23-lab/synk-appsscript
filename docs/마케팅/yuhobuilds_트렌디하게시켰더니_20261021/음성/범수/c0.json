@@ -1,0 +1,62 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "c0",
+ "text": "에이아이한테 시킬 땐, 이 다섯 줄을 붙이세요.",
+ "dur": 2.459,
+ "words": [
+  {
+   "text": "에이아이한테",
+   "start": 0.02,
+   "end": 0.481
+  },
+  {
+   "text": "시킬",
+   "start": 0.538,
+   "end": 0.73
+  },
+  {
+   "text": "땐,",
+   "start": 0.788,
+   "end": 1.037
+  },
+  {
+   "text": "이",
+   "start": 1.401,
+   "end": 1.421
+  },
+  {
+   "text": "다섯",
+   "start": 1.497,
+   "end": 1.69
+  },
+  {
+   "text": "줄을",
+   "start": 1.747,
+   "end": 1.881
+  },
+  {
+   "text": "붙이세요.",
+   "start": 1.938,
+   "end": 2.459
+  }
+ ],
+ "source": {
+  "key": "f991712d132d8577c83da4ba4747bb5c",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

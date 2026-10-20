@@ -1,0 +1,87 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b1",
+ "text": "마감 점검을 에이아이한테 맡겼더니, 영 점 오 초마다 화면이 얼마나 바뀌는지 쟀어요.",
+ "dur": 4.301,
+ "words": [
+  {
+   "text": "마감",
+   "start": 0.02,
+   "end": 0.248
+  },
+  {
+   "text": "점검을",
+   "start": 0.288,
+   "end": 0.608
+  },
+  {
+   "text": "에이아이한테",
+   "start": 0.661,
+   "end": 1.102
+  },
+  {
+   "text": "맡겼더니,",
+   "start": 1.142,
+   "end": 1.556
+  },
+  {
+   "text": "영",
+   "start": 2.13,
+   "end": 2.251
+  },
+  {
+   "text": "점",
+   "start": 2.291,
+   "end": 2.398
+  },
+  {
+   "text": "오",
+   "start": 2.438,
+   "end": 2.451
+  },
+  {
+   "text": "초마다",
+   "start": 2.505,
+   "end": 2.786
+  },
+  {
+   "text": "화면이",
+   "start": 2.839,
+   "end": 3.066
+  },
+  {
+   "text": "얼마나",
+   "start": 3.132,
+   "end": 3.373
+  },
+  {
+   "text": "바뀌는지",
+   "start": 3.413,
+   "end": 3.761
+  },
+  {
+   "text": "쟀어요.",
+   "start": 3.801,
+   "end": 4.301
+  }
+ ],
+ "source": {
+  "key": "1e657cd4b9e8bfff939c2fdc22d52680",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

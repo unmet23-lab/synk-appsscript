@@ -1,0 +1,156 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1017,
+  "lufs": -17
+ },
+ "made": "2026-10-20T22:40:45.628Z",
+ "lines": [
+  {
+   "id": "h1",
+   "text": "에이아이한테 \"트렌디하게\" 시켰더니, 더 에이아이 같아졌어요.",
+   "dur": 2.967,
+   "syllablesPerSec": 8.43,
+   "src": "h1.wav",
+   "key": "cc004893f98722e8aa0e7de1a3188e93",
+   "words": 6
+  },
+  {
+   "id": "h2",
+   "text": "에이아이 티 안 나게 시키는 다섯 줄, 끝에 드릴게요.",
+   "dur": 2.482,
+   "syllablesPerSec": 8.06,
+   "src": "h2.wav",
+   "key": "750fa766e8920aed6b2558b8aa582151",
+   "words": 9
+  },
+  {
+   "id": "b1",
+   "text": "낱말마다 튀고, 형광펜 긋고, 숫자 세고. 효과를 전부 넣었더라고요.",
+   "dur": 4.08,
+   "syllablesPerSec": 6.37,
+   "src": "b1.wav",
+   "key": "47d82d0c1aece363bfe0c03e91861bf9",
+   "words": 9
+  },
+  {
+   "id": "b2",
+   "text": "모션 디자이너들 말로는, 모든 낱말이 움직이면 중요한 낱말이 없어진대요.",
+   "dur": 3.959,
+   "syllablesPerSec": 7.58,
+   "src": "b2.wav",
+   "key": "8f8ba8de88f57331c3d066fe0bcaa385",
+   "words": 9
+  },
+  {
+   "id": "b3",
+   "text": "조회 천오백만 회 노션 영상까지, 많이 본 영상들은 반대였어요.",
+   "dur": 3.522,
+   "syllablesPerSec": 7.1,
+   "src": "b3.wav",
+   "key": "d37f3abc933db050ecc63941e4d4f381",
+   "words": 9
+  },
+  {
+   "id": "b4",
+   "text": "글자는 가만히 두고, 움직이는 건 화면 속 입력과 카메라예요.",
+   "dur": 3.099,
+   "syllablesPerSec": 7.74,
+   "src": "b4.wav",
+   "key": "9df380eac54d243dcd877e23bd26e7df",
+   "words": 9
+  },
+  {
+   "id": "b5",
+   "text": "에이아이는 트렌디를 더하기로 알아들었는데, 답은 빼기였어요.",
+   "dur": 3.292,
+   "syllablesPerSec": 7.9,
+   "src": "b5.wav",
+   "key": "e4a70b37dbf3fe6f3a2ead12ed6e3875",
+   "words": 6
+  },
+  {
+   "id": "c0",
+   "text": "에이아이한테 시킬 땐, 이 다섯 줄을 붙이세요.",
+   "dur": 2.459,
+   "syllablesPerSec": 7.32,
+   "src": "c0.wav",
+   "key": "f991712d132d8577c83da4ba4747bb5c",
+   "words": 7
+  },
+  {
+   "id": "c1",
+   "text": "하나, 글자는 줄 단위로만.",
+   "dur": 1.71,
+   "syllablesPerSec": 5.85,
+   "src": "c1.wav",
+   "key": "db420ef3af06e0ada801cbbd6eeb5338",
+   "words": 4
+  },
+  {
+   "id": "c2",
+   "text": "둘, 강조색은 한 화면에 한 곳.",
+   "dur": 2.396,
+   "syllablesPerSec": 4.59,
+   "src": "c2.wav",
+   "key": "bad89a5f1878e15bf7251368019f10a3",
+   "words": 6
+  },
+  {
+   "id": "c3",
+   "text": "셋, 장면은 컷으로 바꾸고.",
+   "dur": 1.764,
+   "syllablesPerSec": 5.67,
+   "src": "c3.wav",
+   "key": "5faaa4cf7e8c7e0bd064003756bd19a8",
+   "words": 4
+  },
+  {
+   "id": "c4",
+   "text": "넷, 움직임은 클릭, 입력, 화면 확대가 맡게.",
+   "dur": 2.949,
+   "syllablesPerSec": 5.43,
+   "src": "c4.wav",
+   "key": "e9fa05ec82b21b096595d5f362176f3e",
+   "words": 7
+  },
+  {
+   "id": "c5",
+   "text": "다섯, 튕김, 흐림, 형광펜, 숫자 세기는 빼고.",
+   "dur": 3.234,
+   "syllablesPerSec": 4.95,
+   "src": "c5.wav",
+   "key": "234501c0ef322b3786c364a26b135146",
+   "words": 7
+  },
+  {
+   "id": "cta",
+   "text": "저장해 두고 그대로 붙여 보세요.",
+   "dur": 1.64,
+   "syllablesPerSec": 7.93,
+   "src": "cta.wav",
+   "key": "b1c3224889a76072143d4decdfb8e56f",
+   "words": 5
+  },
+  {
+   "id": "fo",
+   "text": "팔로우하면 다음 편도 보여 드릴게요.",
+   "dur": 2.093,
+   "syllablesPerSec": 7.17,
+   "src": "fo.wav",
+   "key": "e5e603a6e35f2a6e66831f682daa78bf",
+   "words": 5
+  }
+ ]
+}

@@ -1,0 +1,72 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b4",
+ "text": "글자는 가만히 두고, 움직이는 건 화면 속 입력과 카메라예요.",
+ "dur": 3.099,
+ "words": [
+  {
+   "text": "글자는",
+   "start": 0.02,
+   "end": 0.355
+  },
+  {
+   "text": "가만히",
+   "start": 0.399,
+   "end": 0.662
+  },
+  {
+   "text": "두고,",
+   "start": 0.706,
+   "end": 0.867
+  },
+  {
+   "text": "움직이는",
+   "start": 1.29,
+   "end": 1.655
+  },
+  {
+   "text": "건",
+   "start": 1.699,
+   "end": 1.771
+  },
+  {
+   "text": "화면",
+   "start": 1.83,
+   "end": 2.006
+  },
+  {
+   "text": "속",
+   "start": 2.05,
+   "end": 2.137
+  },
+  {
+   "text": "입력과",
+   "start": 2.181,
+   "end": 2.443
+  },
+  {
+   "text": "카메라예요.",
+   "start": 2.502,
+   "end": 3.099
+  }
+ ],
+ "source": {
+  "key": "9df380eac54d243dcd877e23bd26e7df",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

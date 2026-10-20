@@ -1,0 +1,67 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "cta",
+ "text": "저장해 두고, 올리기 전에 한 번 재 보세요.",
+ "dur": 2.087,
+ "words": [
+  {
+   "text": "저장해",
+   "start": 0.02,
+   "end": 0.34
+  },
+  {
+   "text": "두고,",
+   "start": 0.382,
+   "end": 0.549
+  },
+  {
+   "text": "올리기",
+   "start": 0.882,
+   "end": 1.118
+  },
+  {
+   "text": "전에",
+   "start": 1.16,
+   "end": 1.313
+  },
+  {
+   "text": "한",
+   "start": 1.354,
+   "end": 1.424
+  },
+  {
+   "text": "번",
+   "start": 1.466,
+   "end": 1.55
+  },
+  {
+   "text": "재",
+   "start": 1.59,
+   "end": 1.66
+  },
+  {
+   "text": "보세요.",
+   "start": 1.702,
+   "end": 2.087
+  }
+ ],
+ "source": {
+  "key": "98b9ed22518a1438cd9feb20d351aa23",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

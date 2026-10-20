@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "c2",
+ "text": "둘, 강조색은 한 화면에 한 곳.",
+ "dur": 2.396,
+ "words": [
+  {
+   "text": "둘,",
+   "start": 0.04,
+   "end": 0.212
+  },
+  {
+   "text": "강조색은",
+   "start": 1.13,
+   "end": 1.589
+  },
+  {
+   "text": "한",
+   "start": 1.646,
+   "end": 1.703
+  },
+  {
+   "text": "화면에",
+   "start": 1.761,
+   "end": 1.99
+  },
+  {
+   "text": "한",
+   "start": 2.048,
+   "end": 2.143
+  },
+  {
+   "text": "곳.",
+   "start": 2.2,
+   "end": 2.396
+  }
+ ],
+ "source": {
+  "key": "bad89a5f1878e15bf7251368019f10a3",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

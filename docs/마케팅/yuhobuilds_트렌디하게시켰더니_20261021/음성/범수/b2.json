@@ -1,0 +1,72 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b2",
+ "text": "모션 디자이너들 말로는, 모든 낱말이 움직이면 중요한 낱말이 없어진대요.",
+ "dur": 3.959,
+ "words": [
+  {
+   "text": "모션",
+   "start": 0.01,
+   "end": 0.23
+  },
+  {
+   "text": "디자이너들",
+   "start": 0.275,
+   "end": 0.685
+  },
+  {
+   "text": "말로는,",
+   "start": 0.729,
+   "end": 1.067
+  },
+  {
+   "text": "모든",
+   "start": 1.566,
+   "end": 1.772
+  },
+  {
+   "text": "낱말이",
+   "start": 1.816,
+   "end": 2.123
+  },
+  {
+   "text": "움직이면",
+   "start": 2.182,
+   "end": 2.593
+  },
+  {
+   "text": "중요한",
+   "start": 2.638,
+   "end": 2.931
+  },
+  {
+   "text": "낱말이",
+   "start": 2.975,
+   "end": 3.24
+  },
+  {
+   "text": "없어진대요.",
+   "start": 3.283,
+   "end": 3.959
+  }
+ ],
+ "source": {
+  "key": "8f8ba8de88f57331c3d066fe0bcaa385",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

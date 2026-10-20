@@ -1,0 +1,72 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b3",
+ "text": "조회 천오백만 회 노션 영상까지, 많이 본 영상들은 반대였어요.",
+ "dur": 3.522,
+ "words": [
+  {
+   "text": "조회",
+   "start": 0.02,
+   "end": 0.208
+  },
+  {
+   "text": "천오백만",
+   "start": 0.314,
+   "end": 0.756
+  },
+  {
+   "text": "회",
+   "start": 0.81,
+   "end": 0.864
+  },
+  {
+   "text": "노션",
+   "start": 0.904,
+   "end": 1.118
+  },
+  {
+   "text": "영상까지,",
+   "start": 1.171,
+   "end": 1.613
+  },
+  {
+   "text": "많이",
+   "start": 2.001,
+   "end": 2.175
+  },
+  {
+   "text": "본",
+   "start": 2.215,
+   "end": 2.323
+  },
+  {
+   "text": "영상들은",
+   "start": 2.363,
+   "end": 2.737
+  },
+  {
+   "text": "반대였어요.",
+   "start": 2.777,
+   "end": 3.522
+  }
+ ],
+ "source": {
+  "key": "d37f3abc933db050ecc63941e4d4f381",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

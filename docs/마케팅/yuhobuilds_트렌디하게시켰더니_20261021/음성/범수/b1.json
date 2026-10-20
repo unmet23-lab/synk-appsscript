@@ -1,0 +1,72 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b1",
+ "text": "낱말마다 튀고, 형광펜 긋고, 숫자 세고. 효과를 전부 넣었더라고요.",
+ "dur": 4.08,
+ "words": [
+  {
+   "text": "낱말마다",
+   "start": 0.02,
+   "end": 0.43
+  },
+  {
+   "text": "튀고,",
+   "start": 0.493,
+   "end": 0.699
+  },
+  {
+   "text": "형광펜",
+   "start": 0.968,
+   "end": 1.362
+  },
+  {
+   "text": "긋고,",
+   "start": 1.41,
+   "end": 1.614
+  },
+  {
+   "text": "숫자",
+   "start": 1.93,
+   "end": 2.135
+  },
+  {
+   "text": "세고.",
+   "start": 2.183,
+   "end": 2.404
+  },
+  {
+   "text": "효과를",
+   "start": 2.814,
+   "end": 3.146
+  },
+  {
+   "text": "전부",
+   "start": 3.192,
+   "end": 3.367
+  },
+  {
+   "text": "넣었더라고요.",
+   "start": 3.413,
+   "end": 4.08
+  }
+ ],
+ "source": {
+  "key": "47d82d0c1aece363bfe0c03e91861bf9",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

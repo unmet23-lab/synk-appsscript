@@ -1,0 +1,129 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1017,
+  "lufs": -17
+ },
+ "made": "2026-10-20T22:59:43.705Z",
+ "lines": [
+  {
+   "id": "h1",
+   "text": "사십이 초 쇼츠를 재 보니, 이십사 초가 멈춰 있었어요.",
+   "dur": 3.141,
+   "syllablesPerSec": 6.69,
+   "src": "h1.wav",
+   "key": "4c1e2c5fc03d4e45df850cbb8d624e01",
+   "words": 9
+  },
+  {
+   "id": "h2",
+   "text": "내 영상 멈춘 시간 재는 법이랑 고치는 세 가지, 다 드릴게요.",
+   "dur": 3.051,
+   "syllablesPerSec": 7.54,
+   "src": "h2.wav",
+   "key": "5d520bfa00222288633221c6e555fa74",
+   "words": 11
+  },
+  {
+   "id": "b1",
+   "text": "마감 점검을 에이아이한테 맡겼더니, 영 점 오 초마다 화면이 얼마나 바뀌는지 쟀어요.",
+   "dur": 4.301,
+   "syllablesPerSec": 7.91,
+   "src": "b1.wav",
+   "key": "1e657cd4b9e8bfff939c2fdc22d52680",
+   "words": 12
+  },
+  {
+   "id": "b2",
+   "text": "제 기준은 둘이에요. 멈춘 시간은 전체의 십오 퍼센트 아래, 일 점 오 초 넘게 멈춘 곳은 없게.",
+   "dur": 4.95,
+   "syllablesPerSec": 7.07,
+   "src": "b2.wav",
+   "key": "b4e2481424258be76aea5b4683c7c42e",
+   "words": 17
+  },
+  {
+   "id": "b3",
+   "text": "만들 땐 몰랐어요. 목소리가 계속 나오니까요.",
+   "dur": 2.367,
+   "syllablesPerSec": 7.6,
+   "src": "b3.wav",
+   "key": "5667c71f2bcee6b166e9bb1b5d0a91b5",
+   "words": 6
+  },
+  {
+   "id": "f1",
+   "text": "고친 건 셋. 하나, 멈춘 사진은 천천히 당기기.",
+   "dur": 2.714,
+   "syllablesPerSec": 6.26,
+   "src": "f1.wav",
+   "key": "4629dce69487568d2634f3d230fd4ea0",
+   "words": 8
+  },
+  {
+   "id": "f2",
+   "text": "둘, 말하는 낱말마다 화면 한 곳이 바뀌게.",
+   "dur": 2.524,
+   "syllablesPerSec": 6.34,
+   "src": "f2.wav",
+   "key": "9bb103f3ffbc771299ba07a2d825c3b2",
+   "words": 7
+  },
+  {
+   "id": "f3",
+   "text": "셋, 장면 사이 빈 화면은 없애기.",
+   "dur": 1.858,
+   "syllablesPerSec": 6.46,
+   "src": "f3.wav",
+   "key": "54a6bd62c1c4a80184ef4721383f0b72",
+   "words": 6
+  },
+  {
+   "id": "b5",
+   "text": "같은 말, 같은 길이인데 멈춘 시간이 이십사 초에서 이 초가 됐어요.",
+   "dur": 3.831,
+   "syllablesPerSec": 6.79,
+   "src": "b5.wav",
+   "key": "c80f81904d5f0ba7b5e5656984d194fa",
+   "words": 11
+  },
+  {
+   "id": "c0",
+   "text": "재는 건 영상 파일을 열 수 있는 에이아이한테 이렇게 시키면 돼요.",
+   "dur": 3.126,
+   "syllablesPerSec": 8.32,
+   "src": "c0.wav",
+   "key": "2e09c1d3709c9632e7ac6d08da7d92fd",
+   "words": 11
+  },
+  {
+   "id": "cta",
+   "text": "저장해 두고, 올리기 전에 한 번 재 보세요.",
+   "dur": 2.087,
+   "syllablesPerSec": 7.67,
+   "src": "cta.wav",
+   "key": "98b9ed22518a1438cd9feb20d351aa23",
+   "words": 8
+  },
+  {
+   "id": "fo",
+   "text": "팔로우하면 다음 편도 보여 드릴게요.",
+   "dur": 2.093,
+   "syllablesPerSec": 7.17,
+   "src": "fo.wav",
+   "key": "e5e603a6e35f2a6e66831f682daa78bf",
+   "words": 5
+  }
+ ]
+}

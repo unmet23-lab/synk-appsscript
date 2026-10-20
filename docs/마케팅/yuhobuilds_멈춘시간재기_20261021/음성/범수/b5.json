@@ -1,0 +1,82 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b5",
+ "text": "같은 말, 같은 길이인데 멈춘 시간이 이십사 초에서 이 초가 됐어요.",
+ "dur": 3.831,
+ "words": [
+  {
+   "text": "같은",
+   "start": 0.06,
+   "end": 0.348
+  },
+  {
+   "text": "말,",
+   "start": 0.405,
+   "end": 0.539
+  },
+  {
+   "text": "같은",
+   "start": 0.711,
+   "end": 0.999
+  },
+  {
+   "text": "길이인데",
+   "start": 1.056,
+   "end": 1.363
+  },
+  {
+   "text": "멈춘",
+   "start": 1.42,
+   "end": 1.689
+  },
+  {
+   "text": "시간이",
+   "start": 1.746,
+   "end": 2.033
+  },
+  {
+   "text": "이십사",
+   "start": 2.416,
+   "end": 2.723
+  },
+  {
+   "text": "초에서",
+   "start": 2.78,
+   "end": 3.049
+  },
+  {
+   "text": "이",
+   "start": 3.125,
+   "end": 3.144
+  },
+  {
+   "text": "초가",
+   "start": 3.221,
+   "end": 3.354
+  },
+  {
+   "text": "됐어요.",
+   "start": 3.412,
+   "end": 3.831
+  }
+ ],
+ "source": {
+  "key": "c80f81904d5f0ba7b5e5656984d194fa",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

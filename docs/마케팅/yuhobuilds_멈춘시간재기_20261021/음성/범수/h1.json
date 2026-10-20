@@ -1,0 +1,72 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h1",
+ "text": "사십이 초 쇼츠를 재 보니, 이십사 초가 멈춰 있었어요.",
+ "dur": 3.141,
+ "words": [
+  {
+   "text": "사십이",
+   "start": 0.02,
+   "end": 0.365
+  },
+  {
+   "text": "초",
+   "start": 0.422,
+   "end": 0.479
+  },
+  {
+   "text": "쇼츠를",
+   "start": 0.536,
+   "end": 0.843
+  },
+  {
+   "text": "재",
+   "start": 0.9,
+   "end": 0.957
+  },
+  {
+   "text": "보니,",
+   "start": 1.014,
+   "end": 1.206
+  },
+  {
+   "text": "이십사",
+   "start": 1.76,
+   "end": 2.047
+  },
+  {
+   "text": "초가",
+   "start": 2.105,
+   "end": 2.276
+  },
+  {
+   "text": "멈춰",
+   "start": 2.333,
+   "end": 2.506
+  },
+  {
+   "text": "있었어요.",
+   "start": 2.582,
+   "end": 3.141
+  }
+ ],
+ "source": {
+  "key": "4c1e2c5fc03d4e45df850cbb8d624e01",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

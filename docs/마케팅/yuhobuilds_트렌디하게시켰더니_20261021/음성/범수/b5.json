@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b5",
+ "text": "에이아이는 트렌디를 더하기로 알아들었는데, 답은 빼기였어요.",
+ "dur": 3.292,
+ "words": [
+  {
+   "text": "에이아이는",
+   "start": 0.02,
+   "end": 0.423
+  },
+  {
+   "text": "트렌디를",
+   "start": 0.467,
+   "end": 0.841
+  },
+  {
+   "text": "더하기로",
+   "start": 0.885,
+   "end": 1.202
+  },
+  {
+   "text": "알아들었는데,",
+   "start": 1.259,
+   "end": 1.822
+  },
+  {
+   "text": "답은",
+   "start": 2.225,
+   "end": 2.441
+  },
+  {
+   "text": "빼기였어요.",
+   "start": 2.485,
+   "end": 3.292
+  }
+ ],
+ "source": {
+  "key": "e4a70b37dbf3fe6f3a2ead12ed6e3875",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

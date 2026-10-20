@@ -1,0 +1,62 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "c4",
+ "text": "넷, 움직임은 클릭, 입력, 화면 확대가 맡게.",
+ "dur": 2.949,
+ "words": [
+  {
+   "text": "넷,",
+   "start": 0.01,
+   "end": 0.182
+  },
+  {
+   "text": "움직임은",
+   "start": 0.488,
+   "end": 0.851
+  },
+  {
+   "text": "클릭,",
+   "start": 0.927,
+   "end": 1.252
+  },
+  {
+   "text": "입력,",
+   "start": 1.5,
+   "end": 1.787
+  },
+  {
+   "text": "화면",
+   "start": 1.997,
+   "end": 2.207
+  },
+  {
+   "text": "확대가",
+   "start": 2.264,
+   "end": 2.513
+  },
+  {
+   "text": "맡게.",
+   "start": 2.57,
+   "end": 2.949
+  }
+ ],
+ "source": {
+  "key": "e9fa05ec82b21b096595d5f362176f3e",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

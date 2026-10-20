@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "c1",
+ "text": "하나, 글자는 줄 단위로만.",
+ "dur": 1.71,
+ "words": [
+  {
+   "text": "하나,",
+   "start": 0.01,
+   "end": 0.182
+  },
+  {
+   "text": "글자는",
+   "start": 0.565,
+   "end": 0.93
+  },
+  {
+   "text": "줄",
+   "start": 1.006,
+   "end": 1.063
+  },
+  {
+   "text": "단위로만.",
+   "start": 1.121,
+   "end": 1.71
+  }
+ ],
+ "source": {
+  "key": "db420ef3af06e0ada801cbbd6eeb5338",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

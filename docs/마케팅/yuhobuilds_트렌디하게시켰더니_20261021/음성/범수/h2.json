@@ -1,0 +1,72 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h2",
+ "text": "에이아이 티 안 나게 시키는 다섯 줄, 끝에 드릴게요.",
+ "dur": 2.482,
+ "words": [
+  {
+   "text": "에이아이",
+   "start": 0.01,
+   "end": 0.264
+  },
+  {
+   "text": "티",
+   "start": 0.32,
+   "end": 0.405
+  },
+  {
+   "text": "안",
+   "start": 0.461,
+   "end": 0.518
+  },
+  {
+   "text": "나게",
+   "start": 0.56,
+   "end": 0.715
+  },
+  {
+   "text": "시키는",
+   "start": 0.758,
+   "end": 0.997
+  },
+  {
+   "text": "다섯",
+   "start": 1.039,
+   "end": 1.237
+  },
+  {
+   "text": "줄,",
+   "start": 1.279,
+   "end": 1.42
+  },
+  {
+   "text": "끝에",
+   "start": 1.631,
+   "end": 1.857
+  },
+  {
+   "text": "드릴게요.",
+   "start": 1.899,
+   "end": 2.482
+  }
+ ],
+ "source": {
+  "key": "750fa766e8920aed6b2558b8aa582151",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

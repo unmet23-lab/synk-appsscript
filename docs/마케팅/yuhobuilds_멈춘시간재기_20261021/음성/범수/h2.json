@@ -1,0 +1,82 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h2",
+ "text": "내 영상 멈춘 시간 재는 법이랑 고치는 세 가지, 다 드릴게요.",
+ "dur": 3.051,
+ "words": [
+  {
+   "text": "내",
+   "start": 0.02,
+   "end": 0.085
+  },
+  {
+   "text": "영상",
+   "start": 0.15,
+   "end": 0.382
+  },
+  {
+   "text": "멈춘",
+   "start": 0.421,
+   "end": 0.667
+  },
+  {
+   "text": "시간",
+   "start": 0.705,
+   "end": 0.873
+  },
+  {
+   "text": "재는",
+   "start": 0.912,
+   "end": 1.106
+  },
+  {
+   "text": "법이랑",
+   "start": 1.145,
+   "end": 1.469
+  },
+  {
+   "text": "고치는",
+   "start": 1.52,
+   "end": 1.805
+  },
+  {
+   "text": "세",
+   "start": 1.843,
+   "end": 1.908
+  },
+  {
+   "text": "가지,",
+   "start": 1.972,
+   "end": 2.153
+  },
+  {
+   "text": "다",
+   "start": 2.451,
+   "end": 2.503
+  },
+  {
+   "text": "드릴게요.",
+   "start": 2.554,
+   "end": 3.051
+  }
+ ],
+ "source": {
+  "key": "5d520bfa00222288633221c6e555fa74",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}
