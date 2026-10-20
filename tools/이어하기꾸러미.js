@@ -62,9 +62,11 @@ function excludedPath(source) {
   // QA의 원문·미디어 폴더의 콘티는 포함한다. worktree는 별도 중복 대조 보존 대상이다.
   return parts.slice(0, -1).some(part => generatedDirectory.test(part) || part === 'worktrees');
 }
-function workTextFiles(root, accept = source => /\.md$/i.test(source)) {
+// onProgress: 폴더마다 부른다. 부하 속에서는 큰 폴더 걷기만 몇 분이 걸려, 그동안 OneDrive 영수증 heartbeat를 남기게 한다(10-20).
+function workTextFiles(root, accept = source => /\.md$/i.test(source), onProgress = () => {}) {
   const files = [];
   const walk = (dir, rel = '') => {
+    onProgress();
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       if (entry.isSymbolicLink()) continue;
       const source = path.posix.join(rel, entry.name);
@@ -77,11 +79,12 @@ function workTextFiles(root, accept = source => /\.md$/i.test(source)) {
   walk(root);
   return files;
 }
-function creationSources(root) {
+function creationSources(root, onProgress = () => {}) {
   const files = [];
   const excludedCreation = /^(?:models|hf-cache)(?:\/|$)|^tools\/(?:ai-toolkit|ComfyUI|seedvr2-extra)(?:\/|$)/i;
   const runtimeFile = /(?:^|\/)(?:logs?(?:\.[^/]+)?|pid(?:\.[^/]+)?|job_id[^/]*\.txt|\.aitk_size\.json)$/i;
   const walk = (dir, rel = '') => {
+    onProgress();
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       if (entry.isSymbolicLink()) continue;
       const source = path.posix.join(rel, entry.name);
@@ -239,7 +242,7 @@ function within(root, rel) {
   if (!target.startsWith(path.resolve(root) + path.sep)) throw new Error('자료 경로 범위 오류');
   return target;
 }
-function 목록(root = ROOT) {
+function 목록(root = ROOT, { onProgress = () => {} } = {}) {
   const rows = new Map();
   function add(brand, source, target, googleOnly = !문서인가(source)) {
     if (금지인가(source) || excludedPath(source)) return;
@@ -252,6 +255,7 @@ function 목록(root = ROOT) {
   }
   function folder(brand, source, target, test = () => true) {
     const walk = (dir, rel = '') => {
+      onProgress();
       for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
         if (entry.isSymbolicLink()) continue;
         const tail = path.posix.join(rel, entry.name);
@@ -292,7 +296,7 @@ function 목록(root = ROOT) {
     p => !p.startsWith('transfer/') && /\.(?:md|json|jsonl)$/.test(p));
   for (const stage of ['GPT_표정_누끼_틀_avif', 'GPT_누끼_틀_avif'])
     folder('SYNK', 'docs/Loom_자산/옷/' + stage, '확정 자산/마스코트 의상/' + stage, p => /\.(png|avif)$/.test(p));
-  const system = 시스템목록(root);
+  const system = 시스템목록(root, { onProgress });
   return Object.assign([...rows.values(), ...system], { scopes: system.scopes });
 }
 const sourceScopeCache = new Map();
@@ -423,9 +427,10 @@ function rowRoot(root, row) {
   if (row.kind !== 'system' || !scope) throw new Error('허용하지 않는 시스템 범위');
   return scope.root;
 }
-function 시스템목록(root = ROOT) {
+function 시스템목록(root = ROOT, { onProgress = () => {} } = {}) {
   const rows = [], scopes = systemScopes(root), linked = linkPaths(scopes.map(scope => scope.root));
   for (const scope of scopes) {
+    onProgress();
     if (!fs.existsSync(scope.root) || linked(scope.root)) { scope.status = 'missing-or-linked'; continue; }
     let sources;
     if (scope.mode === 'vault' || scope.mode === 'restore-tools') {
@@ -436,18 +441,18 @@ function 시스템목록(root = ROOT) {
         // 10MiB 한도 전에 4MiB마다 내려놓은목록-002.jsonl, -003…으로 이어 쓰므로 조각도 모두 담는다.
         (scope.mode === 'vault' && /^상태\/공간지킴이\/(?:내려놓은목록(?:-[0-9]{3,})?\.jsonl|latest\.json|[^/]+_Drive에없음\.json)$/i.test(source)) ||
         (scope.mode === 'vault' && /^(?:상태\/.*\/(?:upload-dirs\.json|upload-done\.jsonl|같은파일\.json|목록\.json)|복원검증_[^/]+\/.*\.(?:json|jsonl|txt)|OneDrive_이관_\d{8}\/복원목록\.json|작업문서_미통합_(?:\d{8}|자동)\/(?:index|excluded-protected-manifest)\.json|작업문서_미통합_자동\/manifests\/[a-f0-9]+-\d+\.json|작업문서_미통합_자동\/sources\/[a-f0-9]{2}\.json|문서_안전사본_20261018\/(?:원본복원목록|변환manifest)\.json|backup-monitor-config\.json|(?:서버백업|talk-백업|헤르메스-백업|라디오-백업)\/(?:_받은목록\.jsonl|_목록사본\/[^/]+\.jsonl))$/i.test(source)) ||
-        (scope.mode === 'restore-tools' && /^(?:복원목록(?:_최소)?\.json|(?:media-)?upload-(?:dirs\.json|done\.jsonl)|backup-manifest\.json)$/i.test(source))));
+        (scope.mode === 'restore-tools' && /^(?:복원목록(?:_최소)?\.json|(?:media-)?upload-(?:dirs\.json|done\.jsonl)|backup-manifest\.json)$/i.test(source)), onProgress));
     } else if (scope.mode === 'markdown') {
-      sources = workTextFiles(scope.root);
+      sources = workTextFiles(scope.root, undefined, onProgress);
     } else if (scope.mode === 'creation-source') {
-      sources = creationSources(scope.root);
+      sources = creationSources(scope.root, onProgress);
     } else {
       const top = execFileSync('git', ['rev-parse', '--show-toplevel'], { cwd: scope.root, encoding: 'utf8' }).trim();
       if (fs.realpathSync(top) !== fs.realpathSync(scope.root)) throw new Error('시스템 저장소 경계 불일치');
       sources = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z'],
         { cwd: scope.root, maxBuffer: 32 << 20 }).toString('utf8').split('\0').filter(Boolean);
       // Git 무시 규칙은 대용량 자산용일 수 있다. 그 안의 작업 MD는 별도로 보존한다.
-      sources.push(...workTextFiles(scope.root));
+      sources.push(...workTextFiles(scope.root, undefined, onProgress));
     }
     scope.status = 'available';
     for (const source of new Set(sources)) rows.push({ brand: 'SYNK', source, sourceScope: scope.name,
@@ -456,11 +461,12 @@ function 시스템목록(root = ROOT) {
   return Object.assign(rows, { scopes });
 }
 // cache: 읽기 기록(onedrive-read-cache.cjs). stat가 지난번에 읽어 분류한 그대로인 파일은 다시 읽지 않고 그 분류를 쓴다.
-function oneDrivePlan(root, rows, { cache = null } = {}) {
+function oneDrivePlan(root, rows, { cache = null, onProgress = () => {} } = {}) {
   const selected = [], rejected = [];
   const candidates = rows.filter(row => !금지인가(row.source) && !excludedPath(row.source) && 문서인가(row.source));
   const linked = linkPaths(candidates.map(row => within(rowRoot(root, row), row.source)));
   for (const row of rows) {
+    onProgress();
     let reason = 금지인가(row.source) ? 'credential-path' :
       excludedPath(row.source) ? 'generated-or-excluded-path' :
       !문서인가(row.source) ? 'non-text-extension' : row.googleOnly ? 'google-only' : null;
@@ -663,4 +669,4 @@ const policyFingerprint = () => crypto.createHash('sha256').update(JSON.stringif
   [...forbidden, sourceCode, credentialName, excluded, generatedDirectory].map(String), MAX_TEXT_BYTES,
   reviewedDocumentExamples, reviewedSourceLiterals, reviewedExactSources])).digest('hex');
 const POLICY_FINGERPRINT = policyFingerprint();
-module.exports = { 금지인가, 문서인가, within, 목록, 시스템목록, systemScopes, writeSafeRecoveryIndex, workTextFiles, creationSources, excludedPath, oneDrivePlan, textPolicy, linkPaths, cloudDestinationAllows, copy, payload, MAX_TEXT_BYTES, POLICY_FINGERPRINT, policyFingerprint, GENERATED_DIRECTORY: generatedDirectory };
+module.exports = { 금지인가, 문서인가, within, rowRoot, 목록, 시스템목록, systemScopes, writeSafeRecoveryIndex, workTextFiles, creationSources, excludedPath, oneDrivePlan, textPolicy, linkPaths, cloudDestinationAllows, copy, payload, MAX_TEXT_BYTES, POLICY_FINGERPRINT, policyFingerprint, GENERATED_DIRECTORY: generatedDirectory };

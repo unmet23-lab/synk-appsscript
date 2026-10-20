@@ -119,37 +119,47 @@ test('dry run writes no backups or receipt and invalid root fails explicitly', t
   assert.equal(failed.status, 'failed'); assert.equal(failed.error, 'configured-onedrive-root-missing');
 });
 
-test('source changes during a copy retain safe failure paths and require a fresh verified retry', t => {
+test('a source changing during its copy is copied again in the same run; only one that keeps changing fails safely (10-20)', t => {
   const f = fixture(t), source = f.put(f.root, 'source.js', 'module.exports = 1;');
   const target = path.join(f.destination, 'SYNK/source.js');
   const options = { ...f, getRows: () => [{ brand: 'SYNK', source: 'source.js', target: 'source.js', kind: 'system' }],
-    collectWorktrees: () => ({}), checkProvider: healthy };
+    collectWorktrees: () => ({}), checkProvider: healthy, driftWaitMs: 0 };
   const first = backup.run(options);
   assert.equal(first.status, 'healthy');
   const originalManifest = fs.readFileSync(path.join(f.stateDir, 'copy-manifest.json'));
-  f.put(f.root, 'source.js', 'module.exports = 2;');
+  // 사본을 다시 읽는 순간(복사 확인) 다른 세션이 원본을 고친 것처럼 만든다. limit번까지만 고친다.
   const originalRead = fs.readFileSync;
-  let changed = false;
+  let edits = 0, limit = 1;
   const mocked = t.mock.method(fs, 'readFileSync', function (file, ...args) {
     const data = originalRead.call(this, file, ...args);
-    if (!changed && typeof file === 'string' && path.resolve(file) === path.resolve(target)) {
-      changed = true;
-      fs.writeFileSync(source, 'module.exports = 333;');
-    }
+    if (edits < limit && typeof file === 'string' && path.resolve(file) === path.resolve(target))
+      fs.writeFileSync(source, 'module.exports = ' + 10 ** (2 + ++edits) + ';'); // 길이가 늘어 시각 해상도와 무관하게 바뀜이 보인다
     return data;
   });
+  // 한 번 바뀐 원본은 그 파일만 다시 복사해 같은 실행이 성공한다(10-20 13:30 실행은 이것 하나로 실패했다).
+  f.put(f.root, 'source.js', 'module.exports = 2;');
+  const healed = backup.run(options);
+  assert.equal(edits, 1);
+  assert.equal(healed.status, 'healthy'); assert.equal(healed.sourceDrift, undefined); assert.equal(healed.copy.driftRetried, 1);
+  assert.equal(fs.readFileSync(target, 'utf8'), 'module.exports = 1000;');
+  assert.deepEqual(backup.readJson(path.join(f.stateDir, 'copy-manifest.json')).files.map(file => file.sha256), [require('node:crypto').createHash('sha256').update('module.exports = 1000;').digest('hex')]);
+  const healedManifest = fs.readFileSync(path.join(f.stateDir, 'copy-manifest.json'));
+  // 다시 복사할 때마다 또 바뀌는 원본은 예전처럼 실패로 남고, 사본 목록·마지막 성공은 그대로다.
+  edits = 0; limit = Infinity;
+  f.put(f.root, 'source.js', 'module.exports = 2;');
   const failed = backup.run({ ...options, checkProvider: () => { throw new Error('unverified-copy-reached-provider'); } });
   mocked.mock.restore();
-  assert.equal(changed, true);
+  assert.equal(edits, 3, 'the first copy and two more tries');
   assert.equal(failed.status, 'failed');
   assert.equal(failed.error, 'source-changed-during-copy');
   assert.deepEqual(failed.sourceDrift, [{ source, reason: 'source-changed-during-copy' }]);
   assert.deepEqual(backup.readJson(path.join(f.stateDir, 'latest.json')).sourceDrift, failed.sourceDrift);
-  assert.equal(failed.lastSuccessAt, first.lastSuccessAt);
-  assert.ok(originalManifest.equals(fs.readFileSync(path.join(f.stateDir, 'copy-manifest.json'))));
+  assert.equal(failed.lastSuccessAt, healed.lastSuccessAt);
+  assert.ok(healedManifest.equals(fs.readFileSync(path.join(f.stateDir, 'copy-manifest.json'))));
+  assert.ok(!originalManifest.equals(healedManifest));
   const retried = backup.run(options);
   assert.equal(retried.status, 'healthy');
-  assert.equal(fs.readFileSync(target, 'utf8'), 'module.exports = 333;');
+  assert.equal(fs.readFileSync(target, 'utf8'), 'module.exports = 100000;');
   assert.equal(retried.sourceDrift, undefined);
 });
 
@@ -310,23 +320,51 @@ test('API contract safe Markdown preserves each worktree version and never chang
   assert.equal(preserveSafeMarkdown(f.root, vault).written, 0);
 });
 
-test('a main document changing after worktree deduplication cannot produce false restore proof', t => {
-  const f = fixture(t), tree = path.join(f.temp, 'worktree');
+test('a main document changing after worktree deduplication keeps the worktree version in the same run, never a false restore proof (10-20)', t => {
+  const f = fixture(t), tree = path.join(f.temp, 'worktree'), vault = path.join(f.temp, 'SYNK_원본창고');
+  const preserved = path.join(vault, '작업문서_미통합_자동'), copied = path.join(f.destination, 'SYNK/시스템/SYNK_원본창고/작업문서_미통합_자동');
   f.put(f.root, 'same.md', '# Old'); f.put(tree, 'same.md', '# Old');
-  const options = { ...f, checkProvider: healthy,
-    collectWorktrees: (root, vault) => backup.preserveWorktreeDocuments(root, vault, { trees: [
+  let afterCollection = false, worktreeEdit = null;
+  const options = { ...f, checkProvider: healthy, driftWaitMs: 0,
+    collectWorktrees: (root, vaultDir) => backup.preserveWorktreeDocuments(root, vaultDir, { trees: [
       { repository: 'SYNK-appsscript', primary: root, root: tree, changedSources: [] } ] }),
-    getRows: () => { f.put(f.root, 'same.md', '# New'); return [ { brand: 'SYNK', source: 'same.md', target: 'same.md', kind: 'system' } ]; } };
+    // 수집과 복사 사이에 다른 세션이 본진 문서를 고친다(10-20 14:30·15:00 실행이 이것으로 실패했다).
+    getRows: () => { afterCollection = true; f.put(f.root, 'same.md', '# New'); if (worktreeEdit) f.put(tree, 'same.md', worktreeEdit);
+      return [ { brand: 'SYNK', source: 'same.md', target: 'same.md', kind: 'system' } ]; } };
   const first = backup.run(options);
-  assert.equal(first.status, 'failed'); assert.equal(first.error, 'worktree-primary-source-changed-during-copy');
-  assert.equal(first.worktreePrimaryDrift.length, 1); assert.equal(first.lastSuccessAt, null);
+  assert.equal(first.status, 'healthy'); assert.deepEqual(first.worktreePrimaryDrift, []); assert.equal(first.worktrees.driftRepaired, 1);
+  // 작업트리의 옛 판은 창고에 따로 보존되고, 그 파일과 다시 쓴 색인이 같은 실행에서 OneDrive에도 복사된다.
+  const old = fs.readdirSync(path.join(preserved, 'files')).find(file => fs.readFileSync(path.join(preserved, 'files', file), 'utf8') === '# Old');
+  assert.ok(old);
+  assert.equal(fs.readFileSync(path.join(copied, 'files', old), 'utf8'), '# Old');
+  const index = backup.readJson(path.join(preserved, 'index.json'));
+  assert.equal(index.sameAsPrimary, 0); assert.equal(index.uniquePreserved, 1);
+  assert.equal(fs.readFileSync(path.join(copied, 'index.json'), 'utf8'), fs.readFileSync(path.join(preserved, 'index.json'), 'utf8'));
+  const shard = backup.readJson(path.join(preserved, index.manifests[0].file));
+  assert.deepEqual(shard.entries.map(entry => [entry.relativePath, entry.sameAsPrimary, entry.preservedFile]), [['same.md', false, 'files/' + old]]);
+  assert.ok(backup.readJson(path.join(f.stateDir, 'copy-manifest.json')).files.some(file => file.target === path.join(copied, 'files', old)));
+  // 확인 전용 실행도 OneDrive 사본 목록과 창고 색인을 대조해 같은 결론이다.
   const checkOnly = backup.run({ ...options, checkOnly: true });
-  assert.equal(checkOnly.status, 'failed'); assert.equal(checkOnly.error, first.error);
-  assert.equal(checkOnly.worktreePrimaryDrift.length, 1); assert.equal(checkOnly.lastSuccessAt, null);
-  const second = backup.run(options);
-  assert.equal(second.status, 'healthy'); assert.deepEqual(second.worktreePrimaryDrift, []);
-  const preserved = path.join(f.temp, 'SYNK_원본창고/작업문서_미통합_자동/files');
-  assert.ok(fs.readdirSync(preserved).some(file => fs.readFileSync(path.join(preserved, file), 'utf8') === '# Old'));
+  assert.equal(checkOnly.status, 'healthy'); assert.deepEqual(checkOnly.worktreePrimaryDrift, []);
+  // 작업트리 판도 본진과 똑같이 바뀌었으면 따로 보존하지 않고 SHA만 고친다.
+  f.put(f.root, 'same.md', '# Old 2'); f.put(tree, 'same.md', '# Old 2'); worktreeEdit = '# New';
+  const both = backup.run(options);
+  assert.equal(both.status, 'healthy'); assert.equal(both.worktrees.driftRepaired, 1);
+  assert.equal(backup.readJson(path.join(preserved, 'index.json')).sameAsPrimary, 1);
+  assert.equal(fs.readdirSync(path.join(preserved, 'files')).length, 1, 'nothing new preserved');
+  // 다시 읽는 사이에도 작업트리 판이 바뀌면 예전처럼 실패로 남는다.
+  worktreeEdit = null; f.put(f.root, 'same.md', '# Old 3'); f.put(tree, 'same.md', '# Old 3');
+  const originalRead = fs.readFileSync;
+  const mocked = t.mock.method(fs, 'readFileSync', function (file, ...args) {
+    const data = originalRead.call(this, file, ...args);
+    if (afterCollection && typeof file === 'string' && path.resolve(file) === path.resolve(tree, 'same.md')) fs.writeFileSync(file, '# Still changing ' + 'x'.repeat(++grow));
+    return data;
+  });
+  let grow = 0; afterCollection = false;
+  const moving = backup.run(options);
+  mocked.mock.restore();
+  assert.equal(moving.status, 'failed'); assert.equal(moving.error, 'worktree-primary-source-changed-during-copy');
+  assert.equal(moving.worktreePrimaryDrift.length, 1); assert.equal(moving.lastSuccessAt, both.lastSuccessAt);
 });
 
 // --- 10-19 실행 비용 줄이기: 읽기 기록, 폴더 단위 링크 확인, 공급자 상태 초점 ---
@@ -575,6 +613,53 @@ test('copies still uploading are looked at again for a bounded time, and only th
   round = 0; sleeps.length = 0;
   const late = backup.providerStatus(manifestFile, output, { now, runScript, clock, sleep, settleUntil: now - 1 });
   assert.equal(late.settleRounds, 0); assert.deepEqual(sleeps, []); assert.equal(backup.classifyProvider(late), 'pending');
+});
+
+test('provider status is read in batches with progress after each, growing while fast and shrinking while slow (10-20)', t => {
+  const f = fixture(t), manifestFile = path.join(f.stateDir, 'copy-manifest.json'), output = path.join(f.stateDir, 'provider-batches.json');
+  const files = Array.from({ length: 1200 }, (_, i) => ({ source: path.join(f.root, 'f' + i + '.md'), target: path.join(f.destination, 'SYNK', 'f' + i + '.md'),
+    expectedBytes: 3, sha256: 'a'.repeat(64), targetModifiedMs: 1792395753196 + i, verifiedAt: '2026-10-20T00:00:00.000Z' }));
+  backup.writeJson(manifestFile, { oneDriveRoot: f.destination, files });
+  const modified = new Map(files.map(file => [file.target, file.targetModifiedMs]));
+  let now = Date.parse('2026-10-20T06:00:00Z');
+  const sizes = [], beats = [];
+  // 두 번째 묶음만 5분이 걸린다(부하). 나머지는 10초.
+  const runScript = input => {
+    const wanted = backup.readJson(input).files;
+    sizes.push(wanted.length);
+    now += sizes.length === 2 ? 5 * 60 * 1000 : 10 * 1000;
+    return { startedAt: new Date(now).toISOString(), oneDriveRoot: f.destination, files: wanted.map(file => ({ target: file.target, expectedBytes: file.expectedBytes,
+      exists: true, bytes: file.expectedBytes, sizeMatches: true, modifiedAt: new Date(modified.get(file.target)).toISOString(), stateName: 'IN_SYNC', error: null })) };
+  };
+  const report = backup.providerStatus(manifestFile, output, { now, runScript, clock: () => now, onProgress: () => beats.push(sizes.length) });
+  assert.deepEqual(sizes, [250, 500, 250, 200], 'doubles after a fast batch, halves after a slow one');
+  assert.deepEqual(beats, [1, 2, 3, 4], 'progress after every batch');
+  assert.equal(report.inspected, 1200); assert.equal(report.freshlyInspected, 1200);
+  assert.equal(new Set(report.files.map(row => row.target)).size, 1200);
+  assert.equal(backup.classifyProvider(report), 'healthy');
+  assert.deepEqual(fs.readdirSync(f.stateDir).sort(), ['copy-manifest.json', 'provider-batches.json'], 'no batch input or raw output is left behind');
+});
+
+test('listing and classification report progress so a slow walk still refreshes the run heartbeat (10-20)', t => {
+  const f = fixture(t);
+  for (let i = 0; i < 5; i++) f.put(f.root, 'docs/d' + i + '/a.md', '# a');
+  let walked = 0, planned = 0;
+  const found = policy.workTextFiles(f.root, undefined, () => walked++);
+  assert.equal(found.length, 5); assert.equal(walked, 7, 'root, docs and each of the five folders');
+  policy.oneDrivePlan(f.root, found.map(source => ({ brand: 'SYNK', source, target: source, kind: 'system' })), { onProgress: () => planned++ });
+  assert.equal(planned, 5);
+  // 실행은 목록·분류에 heartbeat를 넘긴다. 목록 안의 진행만으로도 영수증이 다시 쓰인다.
+  let now = Date.now(), seen = null;
+  const latest = () => backup.readJson(path.join(f.stateDir, 'latest.json'));
+  const result = backup.run({ ...f, clock: () => (now += 61 * 1000), heartbeatEveryMs: 60 * 1000, checkProvider: healthy, collectWorktrees: () => ({}),
+    getRows: (root, options) => {
+      const before = latest().heartbeatAt;
+      options.onProgress();
+      seen = [before, latest().heartbeatAt];
+      return found.map(source => ({ brand: 'SYNK', source, target: source, kind: 'system' }));
+    } });
+  assert.equal(result.status, 'healthy');
+  assert.ok(seen && seen[1] > seen[0], 'a progress call inside the listing refreshed the receipt');
 });
 
 test('the read-cache fingerprint follows the classification code, not unrelated edits in the same file (10-19)', t => {

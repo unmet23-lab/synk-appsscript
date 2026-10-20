@@ -1,9 +1,12 @@
 """Backup alarms tested with synthetic receipts; no cloud writes or notifications."""
+import ctypes
 import datetime as dt
 import importlib.util
 import json
+import os
 from pathlib import Path
 import tempfile
+import time
 import unittest
 import subprocess
 import sys
@@ -188,6 +191,59 @@ class HealthTests(unittest.TestCase):
         result=subprocess.run([sys.executable,str(REPO/'tools'/'backup-command.py'),'--config',str(config),'--id','fixture'],
             capture_output=True,timeout=10)
         self.assertEqual(result.returncode,7)
+
+    def tree_config(self, marker, hours):
+        # The child starts a grandchild (as node starts git or pwsh); both would sleep far past the limit.
+        child=[sys.executable,'-c','import os, subprocess, sys, time; g=subprocess.Popen([sys.executable,"-c","import time; time.sleep(120)"]); '
+               f'open({str(marker)!r},"w").write(str(os.getpid())+" "+str(g.pid)); time.sleep(120)']
+        config=self.root/'config.json'
+        config.write_text(json.dumps({'components':[{'id':'fixture','command':child,'workingDirectory':str(self.root),'maxRunHours':hours}]}),encoding='utf-8')
+        return config
+
+    @unittest.skipUnless(os.name=='nt','Windows job object')
+    def test_scheduled_command_limit_ends_the_whole_backup_tree_with_124(self):
+        # 10-20 12:00: the 55-minute limit left the OneDrive run going for 59.6 minutes. The limit ends the child and its children.
+        marker=self.root/'pids.txt'; started=time.monotonic()
+        result=subprocess.run([sys.executable,str(REPO/'tools'/'backup-command.py'),'--config',str(self.tree_config(marker,4/3600)),'--id','fixture'],
+            capture_output=True,timeout=60)
+        self.assertEqual(result.returncode,124); self.assertLess(time.monotonic()-started,30)
+        pids=list(map(int,marker.read_text().split()))
+        self.assertTrue(wait_until(lambda: not any(map(alive,pids)),10))
+        trace=[json.loads(line) for line in (self.root/'상태'/'예약실행'/'fixture.jsonl').read_text(encoding='utf-8').splitlines()]
+        self.assertEqual([x['event'] for x in trace],['start','stopped','end']); self.assertTrue(trace[0]['job'])
+        self.assertEqual((trace[-1]['exitCode'],trace[-1]['reason']),(124,'limit'))
+
+    @unittest.skipUnless(os.name=='nt','Windows job object')
+    def test_ending_the_scheduled_wrapper_also_ends_the_backup(self):
+        # Task Scheduler's own limit ends only the process it started. The backup must not outlive it as an orphan.
+        marker=self.root/'pids.txt'
+        wrapper=subprocess.Popen([sys.executable,str(REPO/'tools'/'backup-command.py'),'--config',str(self.tree_config(marker,1)),'--id','fixture'])
+        try:
+            self.assertTrue(wait_until(marker.exists,30)); time.sleep(0.5)
+            pids=list(map(int,marker.read_text().split()))
+            self.assertTrue(all(map(alive,pids)))
+            wrapper.kill(); wrapper.wait(timeout=10)
+            self.assertTrue(wait_until(lambda: not any(map(alive,pids)),10))
+        finally:
+            if wrapper.poll() is None: wrapper.kill()
+
+
+def alive(pid):
+    k32=ctypes.WinDLL('kernel32'); k32.OpenProcess.restype=ctypes.c_void_p
+    k32.GetExitCodeProcess.argtypes=[ctypes.c_void_p,ctypes.POINTER(ctypes.c_ulong)]; k32.CloseHandle.argtypes=[ctypes.c_void_p]
+    handle=k32.OpenProcess(0x1000,False,pid)
+    if not handle: return False
+    try:
+        code=ctypes.c_ulong(); return bool(k32.GetExitCodeProcess(handle,ctypes.byref(code))) and code.value==259
+    finally: k32.CloseHandle(handle)
+
+
+def wait_until(test, seconds):
+    end=time.monotonic()+seconds
+    while time.monotonic()<end:
+        if test(): return True
+        time.sleep(0.2)
+    return test()
 
 
 class SpaceGuardTests(unittest.TestCase):

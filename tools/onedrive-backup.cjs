@@ -199,7 +199,42 @@ function worktreeStatusKey(tree, scan, memo) {
     return { commit, key: hash(JSON.stringify([scan.fingerprint, scan.files, commit, stats])) };
   } catch { return null; }
 }
-const WORKTREE_ENTRIES = Symbol('worktree-entries');
+const WORKTREE_ENTRIES = Symbol('worktree-entries'), WORKTREE_TREES = Symbol('worktree-trees'), WORKTREE_REJECTED = Symbol('worktree-rejected');
+// 작업트리 보존 색인(SHA별 원래 경로, 작업트리별 목록, 전체 색인, 제외 목록)을 쓰고 바뀐 파일의 창고 기준 경로를 돌려준다.
+// 수집 때 한 번 쓰고, 복사하는 사이 본진 원문이 바뀌어 작업트리 판을 따로 보존할 때 다시 쓴다(10-20).
+function writeWorktreeIndexes(destination, trees, entries, rejected, { cache = null } = {}) {
+  const changed = [], relative = file => path.relative(path.dirname(destination), file).split(path.sep).join('/');
+  const write = (file, content) => { if (writeChangedIndex(file, content, { cache })) changed.push(relative(file)); };
+  // 현재 index가 다른 버전으로 바뀌어도 이미 보존한 SHA의 원래 경로를 잃지 않는다.
+  // 작은 SHA 접두사별 파일로 나눠 전체 목록의 매회 재쓰기와 10MiB 초과를 피한다.
+  const identityGroups = new Map();
+  for (const entry of entries.filter(row => row.preservedFile)) {
+    const prefix = entry.sha256.slice(0, 2);
+    if (!identityGroups.has(prefix)) identityGroups.set(prefix, []);
+    identityGroups.get(prefix).push(entry);
+  }
+  for (const [prefix, group] of identityGroups) {
+    const file = path.join(destination, 'sources', prefix + '.json');
+    if (ensureIdentities(file, group, cache)) changed.push(relative(file));
+  }
+  // 전체 작업트리 목록이 10MiB를 넘어서도 복원 경로가 필터에서 빠지지 않게 나눈다.
+  const manifests = [];
+  for (const tree of trees) {
+    const treeEntries = entries.filter(entry => entry.worktree === tree.root);
+    for (let offset = 0; offset < treeEntries.length; offset += 500) {
+      const file = 'manifests/' + hash(tree.root).slice(0, 20) + '-' + (offset / 500) + '.json';
+      write(path.join(destination, file), { repository: tree.repository, worktree: tree.root, entries: treeEntries.slice(offset, offset + 500) });
+      manifests.push({ file, repository: tree.repository, worktree: tree.root, documents: Math.min(500, treeEntries.length - offset) });
+    }
+  }
+  const markdown = entries.filter(row => /\.md$/i.test(row.relativePath)).length;
+  write(path.join(destination, 'index.json'), { schemaVersion: 1, worktrees: trees.length,
+    documents: markdown, sourceFiles: entries.length - markdown, sameAsPrimary: entries.filter(row => row.sameAsPrimary).length,
+    uniquePreserved: new Set(entries.map(row => row.preservedFile).filter(Boolean)).size, manifests,
+    restore: 'sameAsPrimary이면 OneDrive 시스템/저장소/relativePath의 SHA를 확인한다. 아니면 preservedFile을 새 작업트리의 relativePath로 복사한다. 기존 원문은 덮지 않는다.' });
+  write(path.join(destination, 'excluded-protected-manifest.json'), { rejected });
+  return changed;
+}
 // onProgress: 오래 걸리는 단계 안에서도 실행 영수증의 heartbeat를 남기게 한다(통합 감시는 15분 넘게 멈춘 heartbeat를 실행 중단으로 본다, 10-19).
 // cache: 읽기 기록(onedrive-read-cache.cjs). 없으면 예전처럼 모든 문서를 읽는다.
 function preserveWorktreeDocuments(root, vault, { dryRun = false, trees = worktrees(root), onProgress = () => {}, cache = null } = {}) {
@@ -321,34 +356,63 @@ function preserveWorktreeDocuments(root, vault, { dryRun = false, trees = worktr
     documents: entries.filter(row => /\.md$/i.test(row.relativePath)).length, sourceFiles,
     sameAsPrimary, uniquePreserved: unique.size, preservedBytes, written, rejected: rejected.length, readFiles, gitTrees, reusedTrees, statusRuns, diffRuns, timings };
   Object.defineProperty(report, WORKTREE_ENTRIES, { value: entries });
+  Object.defineProperty(report, WORKTREE_TREES, { value: trees });
+  Object.defineProperty(report, WORKTREE_REJECTED, { value: rejected });
   lap('filesMs');
   if (!dryRun) {
-    // 현재 index가 다른 버전으로 바뀌어도 이미 보존한 SHA의 원래 경로를 잃지 않는다.
-    // 작은 SHA 접두사별 파일로 나눠 전체 목록의 매회 재쓰기와 10MiB 초과를 피한다.
-    const identityGroups = new Map();
-    for (const entry of entries.filter(row => row.preservedFile)) {
-      const prefix = entry.sha256.slice(0, 2);
-      if (!identityGroups.has(prefix)) identityGroups.set(prefix, []);
-      identityGroups.get(prefix).push(entry);
-    }
-    for (const [prefix, group] of identityGroups) ensureIdentities(path.join(destination, 'sources', prefix + '.json'), group, cache);
-    // 전체 작업트리 목록이 10MiB를 넘어서도 복원 경로가 필터에서 빠지지 않게 나눈다.
-    const manifests = [];
-    for (const tree of trees) {
-      const treeEntries = entries.filter(entry => entry.worktree === tree.root);
-      for (let offset = 0; offset < treeEntries.length; offset += 500) {
-        const file = 'manifests/' + hash(tree.root).slice(0, 20) + '-' + (offset / 500) + '.json';
-        writeChangedIndex(path.join(destination, file), { repository: tree.repository, worktree: tree.root, entries: treeEntries.slice(offset, offset + 500) }, { cache });
-        manifests.push({ file, repository: tree.repository, worktree: tree.root, documents: Math.min(500, treeEntries.length - offset) });
-      }
-    }
-    writeChangedIndex(path.join(destination, 'index.json'), { schemaVersion: 1, worktrees: trees.length,
-      documents: report.documents, sourceFiles, sameAsPrimary, uniquePreserved: unique.size, manifests,
-      restore: 'sameAsPrimary이면 OneDrive 시스템/저장소/relativePath의 SHA를 확인한다. 아니면 preservedFile을 새 작업트리의 relativePath로 복사한다. 기존 원문은 덮지 않는다.' }, { cache });
-    writeChangedIndex(path.join(destination, 'excluded-protected-manifest.json'), { rejected }, { cache });
+    writeWorktreeIndexes(destination, trees, entries, rejected, { cache });
     lap('indexMs');
   }
   return report;
+}
+// 수집 뒤 복사하기 전에 본진 원문이 바뀌면, 수집 때 「본진과 같다」고 적은 작업트리 판은 OneDrive 어디에도 없게 된다.
+// 부하 속 긴 실행에서는 그 사이 다른 세션이 문서를 고쳐 실행 전체가 실패했다(10-20 14:30 실행, 27.7분). 그 작업트리 파일을
+// 지금 다시 읽어, OneDrive에 복사된 본진 판과 같으면 SHA만 고치고 다르면 따로 보존한 뒤 색인을 다시 쓴다. 다시 쓴 창고 파일의
+// 창고 기준 경로를 돌려준다. 다시 읽는 사이에도 바뀌는 파일은 그대로 두어 뒤의 대조가 예전처럼 실패로 잡는다.
+function preserveDriftedWorktreeVersions(vault, report, drift, { cache = null } = {}) {
+  const destination = path.join(vault, '작업문서_미통합_자동'), entries = report[WORKTREE_ENTRIES], written = [];
+  let repaired = 0;
+  for (const item of drift) {
+    const entry = entries.find(row => row.sameAsPrimary && row.worktree === item.worktree && row.relativePath === item.relativePath);
+    if (!entry) continue;
+    const source = path.join(entry.worktree, entry.relativePath);
+    let before, data, after;
+    try { before = fs.statSync(source, { bigint: true }); data = fs.readFileSync(source); after = fs.statSync(source, { bigint: true }); }
+    catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+      entries.splice(entries.indexOf(entry), 1); repaired++; continue; // 작업트리에서도 지워진 판은 보존할 것이 없다.
+    }
+    if (!sameContentStat(before, after)) continue;
+    const info = {}, reason = policy.textPolicy(entry.relativePath, data, info), sha256 = hash(data);
+    if (cache) cache.remember(source, before, after, sha256, data.length, entry.relativePath, reason, info);
+    if (reason) {
+      entries.splice(entries.indexOf(entry), 1); repaired++;
+      report[WORKTREE_REJECTED].push({ repository: entry.repository, worktree: entry.worktree, relativePath: entry.relativePath, reason });
+      continue;
+    }
+    Object.assign(entry, { sha256, bytes: data.length });
+    repaired++;
+    if (item.copiedSha256.includes(sha256)) continue; // 작업트리 판이 OneDrive에 복사된 본진 판과 같다.
+    const preservedFile = 'files/' + sha256 + (path.extname(entry.relativePath).toLowerCase() || '.txt');
+    const target = path.join(destination, preservedFile), existing = statOrNull(target);
+    if (existing) {
+      if (existing.isSymbolicLink()) throw new Error('preserved-worktree-is-link');
+      if (hash(fs.readFileSync(target)) !== sha256) throw new Error('preserved-worktree-hash-mismatch');
+    } else {
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      fs.writeFileSync(target, data, { flag: 'wx' });
+      const check = fs.readFileSync(target);
+      if (hash(check) !== sha256) throw new Error('preserved-worktree-write-mismatch');
+      const writtenStat = statOrNull(target);
+      if (cache && writtenStat) cache.remember(target, writtenStat, writtenStat, sha256, check.length);
+      written.push('작업문서_미통합_자동/' + preservedFile);
+    }
+    Object.assign(entry, { sameAsPrimary: false, preservedFile });
+  }
+  const changed = writeWorktreeIndexes(destination, report[WORKTREE_TREES], entries, report[WORKTREE_REJECTED], { cache });
+  Object.assign(report, { sameAsPrimary: entries.filter(row => row.sameAsPrimary).length,
+    uniquePreserved: new Set(entries.map(row => row.preservedFile).filter(Boolean)).size, written: report.written + written.length, driftRepaired: repaired });
+  return [...new Set([...written, ...changed])];
 }
 function runProviderScript(manifest, output) {
   execFileSync('pwsh.exe', ['-NoProfile', '-NonInteractive', '-File', path.join(__dirname, 'onedrive-provider-status.ps1'),
@@ -409,18 +473,36 @@ function mergeProviderReport(manifestFile, manifest, focus, fresh, now = Date.no
 // 오류·경고·제외·없음은 기다리지 않는다. 기한까지 남으면 그대로 pending으로 남긴다.
 const SETTLING_STATES = new Set(['PENDING_UPLOAD', 'PENDING_UNSPECIFIED', 'TRANSFERRING']);
 const sleepSync = ms => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+// 공급자 확인 pwsh를 부르는 동안은 heartbeat를 쓸 수 없다. 부하 속에서는 사본 하나에 0.24초가 걸려 2,712개를 한 번에 보는 동안
+// 영수증이 10.9분 멈췄다(10-20 14:30 실행, 통합 감시는 15분 멈춤을 실행 중단으로 본다). 묶음으로 나눠 보고 묶음마다 onProgress를
+// 부른다. 1분 안에 끝난 묶음 뒤에는 두 배로 키우고(pwsh 시작 비용), 4분을 넘긴 묶음 뒤에는 반으로 줄인다.
+const PROVIDER_BATCH_MIN = 250, PROVIDER_BATCH_MAX = 8000, PROVIDER_FAST_MS = 60 * 1000, PROVIDER_SLOW_MS = 4 * 60 * 1000;
 function providerStatus(manifestFile, output, { previous = null, now = Date.now(), runScript = runProviderScript,
-  settleUntil = 0, settleEveryMs = 20 * 1000, sleep = sleepSync, clock = Date.now } = {}) {
+  settleUntil = 0, settleEveryMs = 20 * 1000, sleep = sleepSync, clock = Date.now, onProgress = () => {} } = {}) {
   const manifest = readJson(manifestFile), focus = providerFocus(manifest, previous, now);
   let fresh = null;
   if (focus.inspect.length) {
     const input = output.replace(/\.json$/, '') + '.input.json', raw = output.replace(/\.json$/, '') + '.fresh.json';
-    const inspect = files => {
+    const inspectBatch = files => {
       writeJson(input, { oneDriveRoot: manifest.oneDriveRoot, files: files.map(file => ({ target: file.target, expectedBytes: file.expectedBytes })) });
       try {
         const report = runScript(input, raw);
         return { ...report, files: (report?.files || []).map(row => ({ ...row, observedAt: row.observedAt || report.startedAt })) };
       } finally { for (const file of [input, raw]) try { fs.unlinkSync(file); } catch (error) { if (error.code !== 'ENOENT') throw error; } }
+    };
+    let size = PROVIDER_BATCH_MIN;
+    const inspect = files => {
+      let report = null;
+      for (let next = 0; next < files.length;) {
+        const batch = files.slice(next, next + size), started = clock();
+        next += batch.length;
+        const part = inspectBatch(batch);
+        report = report ? { ...report, files: [...report.files, ...part.files] } : part;
+        onProgress();
+        const took = clock() - started;
+        size = took < PROVIDER_FAST_MS ? Math.min(size * 2, PROVIDER_BATCH_MAX) : took > PROVIDER_SLOW_MS ? Math.max(PROVIDER_BATCH_MIN, size >> 1) : size;
+      }
+      return report;
     };
     fresh = { ...inspect(focus.inspect), settleRounds: 0 };
     for (;;) {
@@ -541,14 +623,32 @@ function worktreePrimaryDrift(root, vault, files, entries = null) {
     for (const entry of content.entries.filter(row => row.sameAsPrimary)) {
       const source = roots.has(entry.repository) ? path.resolve(roots.get(entry.repository), entry.relativePath).toLowerCase() : '';
       if (!copied.get(source)?.has(entry.sha256)) mismatches.push({ repository: entry.repository,
-        worktree: entry.worktree, relativePath: entry.relativePath, expectedSha256: entry.sha256 });
+        worktree: entry.worktree, relativePath: entry.relativePath, expectedSha256: entry.sha256, copiedSha256: [...(copied.get(source) || [])] });
     }
   }
   return mismatches;
 }
+// 복사하는 동안 다른 세션이 고친 원본은 그 파일만 조금 뒤 다시 복사한다. 부하 속 긴 실행에서는 이것 하나로 실행 전체가
+// 실패했다(10-20 13:30 실행, 11.7분). 다시 해도 계속 바뀌는 원본만 예전처럼 sourceDrift로 남아 실행을 실패로 둔다.
+const COPY_DRIFT_RETRIES = 2, COPY_DRIFT_WAIT_MS = 2000;
+function copyRetryingDrift(root, destination, rows, options, { retries = COPY_DRIFT_RETRIES, waitMs = COPY_DRIFT_WAIT_MS, sleep = sleepSync } = {}) {
+  const key = file => path.resolve(file).toLowerCase();
+  const result = policy.copy(root, destination, rows, options);
+  for (let attempt = 0; attempt < retries && result.sourceDrift.length; attempt++) {
+    const drifted = new Set(result.sourceDrift.map(row => key(row.source)));
+    const again = rows.filter(row => drifted.has(key(policy.within(policy.rowRoot(root, row), row.source))));
+    sleep(waitMs);
+    const retry = policy.copy(root, destination, again, options);
+    Object.assign(result, { files: [...result.files.filter(file => !drifted.has(key(file.source))), ...retry.files],
+      rejected: [...result.rejected, ...retry.rejected], skipped: result.skipped + retry.skipped, written: result.written + retry.written,
+      unchanged: result.unchanged + retry.unchanged, sourceDrift: retry.sourceDrift, driftRetried: (result.driftRetried || 0) + again.length });
+    if (retry.disappeared) result.disappeared = (result.disappeared || 0) + retry.disappeared;
+  }
+  return result;
+}
 function run({ root = ROOT, destination = process.env.OneDrive, stateDir, dryRun = false,
   checkOnly = false, collectWorktrees = preserveWorktreeDocuments, getRows = policy.목록, checkProvider = providerStatus,
-  heartbeatEveryMs = 60 * 1000, clock = Date.now } = {}) {
+  heartbeatEveryMs = 60 * 1000, clock = Date.now, driftWaitMs = COPY_DRIFT_WAIT_MS } = {}) {
   const vault = path.resolve(root, '../SYNK_원본창고');
   stateDir ||= path.join(vault, '상태/OneDrive');
   const latestFile = path.join(stateDir, 'latest.json'), manifestFile = path.join(stateDir, 'copy-manifest.json');
@@ -618,9 +718,10 @@ function run({ root = ROOT, destination = process.env.OneDrive, stateDir, dryRun
       stage('worktrees');
       persistCache(false);
       beat(true);
-      const rows = getRows(root);
+      // 목록·분류도 부하 속에서는 각각 몇 분이 걸린다(10-20 14:30 실행 4.1분·1.3분). 그 안에서도 heartbeat를 남긴다.
+      const rows = getRows(root, { onProgress: beat });
       stage('listRows');
-      const plan = policy.oneDrivePlan(root, rows, { cache });
+      const plan = policy.oneDrivePlan(root, rows, { cache, onProgress: beat });
       stage('plan');
       state.scopes = rows.scopes || [];
       if (state.scopes.some(scope => scope.status !== 'available')) throw new Error('required-source-scope-missing');
@@ -636,11 +737,27 @@ function run({ root = ROOT, destination = process.env.OneDrive, stateDir, dryRun
       persistCache(false);
       beat(true);
       // 방금 만든 목록을 복사 안에서 다시 만들지 않는다. 복사 직전 다시 보는 것(링크·stat·바뀐 원본의 재분류)은 그대로다.
-      const result = policy.copy(root, destination, plan.selected, { recordFiles: true, previousFiles: previousManifest.files, onProgress: beat, cache, prePlanned: true });
+      const result = copyRetryingDrift(root, destination, plan.selected, { recordFiles: true, previousFiles: previousManifest.files, onProgress: beat, cache, prePlanned: true }, { waitMs: driftWaitMs });
       stage('copy');
       if (result.sourceDrift.length) {
         state.sourceDrift = result.sourceDrift.map(({ source, reason }) => ({ source, reason }));
         throw new Error('source-changed-during-copy');
+      }
+      // 복사하는 사이 본진 원문이 바뀐 작업트리 판을 따로 보존하고, 그래서 다시 쓴 창고 파일만 한 번 더 복사한다(10-20).
+      const entries = state.worktrees?.[WORKTREE_ENTRIES], drift = entries ? worktreePrimaryDrift(root, vault, result.files, entries) : [];
+      if (drift.length) {
+        const changed = preserveDriftedWorktreeVersions(vault, state.worktrees, drift, { cache });
+        const again = copyRetryingDrift(root, destination, changed.map(source => ({ brand: 'SYNK', source, sourceScope: 'SYNK_원본창고',
+          target: '시스템/SYNK_원본창고/' + source, kind: 'system', oneDriveOnly: true })), { recordFiles: true, previousFiles: previousManifest.files, onProgress: beat, cache }, { waitMs: driftWaitMs });
+        if (again.sourceDrift.length) {
+          state.sourceDrift = again.sourceDrift.map(({ source, reason }) => ({ source, reason }));
+          throw new Error('source-changed-during-copy');
+        }
+        const replaced = new Set(again.files.map(file => path.resolve(file.target).toLowerCase()));
+        Object.assign(result, { files: [...result.files.filter(file => !replaced.has(path.resolve(file.target).toLowerCase())), ...again.files],
+          rejected: [...result.rejected, ...again.rejected], skipped: result.skipped + again.skipped, written: result.written + again.written,
+          unchanged: result.unchanged + again.unchanged, worktreeDriftCopied: again.files.length });
+        stage('worktreeDrift');
       }
       const { files, rejected, sourceDrift, ...summary } = result;
       // 이미 별도로 검증한 잠긴 복구열쇠·안전 HTML은 바꾸지 않고 존재/동기화만 감시한다.
@@ -665,7 +782,7 @@ function run({ root = ROOT, destination = process.env.OneDrive, stateDir, dryRun
     const providerFile = path.join(stateDir, 'provider-' + runId + '.json');
     const providerLatest = path.join(stateDir, 'provider-latest.json');
     // 방금 쓴 사본이 올라가기를 실행 시작 뒤 8분까지 기다릴 수 있다(예약 실행이 10분 안에 끝나게).
-    const provider = checkProvider(manifestFile, providerFile, { previous: readJson(providerLatest, null), now: clock(), settleUntil: runStarted + 8 * 60 * 1000 });
+    const provider = checkProvider(manifestFile, providerFile, { previous: readJson(providerLatest, null), now: clock(), settleUntil: runStarted + 8 * 60 * 1000, onProgress: beat });
     if (fs.existsSync(providerFile)) replaceFile(providerFile, providerLatest);
     stage('provider');
     state.status = classifyProvider(provider);
@@ -704,4 +821,4 @@ if (require.main === module) {
   }
   const result = run(options); console.log(JSON.stringify(result)); process.exitCode = result.exitCode;
 }
-module.exports = { worktrees, changedWorktreeSources, preserveWorktreeDocuments, classifyProvider, protectedPriorSources, protectedSourceInventory, encryptedProtectionCoverage, worktreePrimaryDrift, providerFocus, mergeProviderReport, providerStatus, scanWorktrees, run, readJson, writeJson };
+module.exports = { worktrees, changedWorktreeSources, preserveWorktreeDocuments, preserveDriftedWorktreeVersions, copyRetryingDrift, classifyProvider, protectedPriorSources, protectedSourceInventory, encryptedProtectionCoverage, worktreePrimaryDrift, providerFocus, mergeProviderReport, providerStatus, scanWorktrees, run, readJson, writeJson };
