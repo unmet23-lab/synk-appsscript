@@ -15,6 +15,7 @@ const { execFileSync } = require('node:child_process');
 const REPO = path.resolve(__dirname, '..');
 const 도구 = require(path.join(REPO, 'tools', '공개.js'));
 const 속 = 도구._시험;
+const 엇 = require(path.join(REPO, 'tools', 'lib', 'import엇갈림.js'));
 
 // 시험 git은 이 PC·CI의 시스템·전역 설정을 읽지 않는다. curl은 프록시를 타지 않는다.
 for (const k of Object.keys(process.env)) if (/^GIT_/.test(k)) delete process.env[k];
@@ -406,6 +407,281 @@ test('공개 경로·제작 자료·저장 용량: 밑줄 폴더·qa/·-original
   assert.ok(!알린.includes('notes/README.md:공개 경로'), '머리말 없는 .md는 그대로 나가니 알리지 않는다');
   const 허용 = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['art/mongle-original.png'], 허용: ['art/mongle-original.png'] }));
   assert.equal(허용.결과, '미리 보기');
+});
+
+// ── import 이름 엇갈림(공개 주소 캐시 10분) ─────────────────────────────────
+
+/** 짝을 한 줄 글로: 「① 부르는 → 대상: 이름,…」(옛 판은 (옛), 모듈째 없으면 (모듈)) */
+const 짝글들 = (e) => e.짝.map((x) => `${x.종류} ${x.부르는}${x.판 === '옛' ? '(옛)' : ''} → ${x.대상}: ${[...x.이름, ...(x.모듈없음 ? ['(모듈)'] : [])].join(',')}`);
+
+test('import 이름 읽기: 주석·문자열·틀 글·정규식은 걷어 내고 정적 import·export 꼴을 모두 읽는다', () => {
+  const r = 엇.모듈읽기([
+    "import a, { b as c, 'd e' as f } from './x.mjs';",
+    "import { default as g } from './g.mjs'",
+    'import * as ns from "../y.mjs"',
+    "import './side.mjs';",
+    "import h, * as ns2 from '/world/z.mjs?v=abc';",
+    '// import { 주석 } from "./주석.mjs";',
+    '/* export const 막힘 = 1;',
+    '   import { 막힘 } from "./막힘.mjs"; */',
+    "const 글 = \"import { 글속 } from './글속.mjs'\";",
+    'const 틀 = `export const 틀속 = ${"}"} import { 틀속 } from \'./틀속.mjs\'`;',
+    "const 식 = /import { 식속 } from '.\\/식속.mjs'/g, 몫 = 4 / 2 / 1;",
+    "if (식.test(글)) /'/.exec(글);",
+    'const 반 = 글.length / 2; const 따옴 = "\'";',
+    "obj.import('./dyn.mjs'); import('./dyn2.mjs'); const m = import.meta.url;",
+    'export default function () {}',
+    'export const k1 = 1, k2 = (a, b) => { return a / b }, { k3, k4: k5, ...k6 } = obj, [k7, , k8 = 2] = arr',
+    'export let k9',
+    'export async function k10() {}',
+    'export function* k11() {}',
+    'export class K12 extends Base {}',
+    'export { k13, k14 as k15, k16 as "글 이름" };',
+    "export { r1, r2 as r3 } from './re.mjs';",
+    "export * from './star.mjs';",
+    "export * as ns3 from './star2.mjs';",
+    'const 객체 = { import: 1, export: 2 }; class Q { export() {} }',
+  ].join('\n'));
+  assert.equal(r.문제, null);
+  assert.deepEqual(r.가져옴, [
+    { 지정자: './x.mjs', 이름: ['default', 'b', 'd e'] },
+    { 지정자: './g.mjs', 이름: ['default'] },
+    { 지정자: '../y.mjs', 이름: [] },
+    { 지정자: './side.mjs', 이름: [] },
+    { 지정자: '/world/z.mjs?v=abc', 이름: ['default'] },
+    { 지정자: './re.mjs', 이름: ['r1', 'r2'] },
+    { 지정자: './star.mjs', 이름: [] },
+    { 지정자: './star2.mjs', 이름: [] },
+  ], '주석·문자열·틀 글·정규식 속 import와 동적 import()·import.meta·속성 이름은 빼고');
+  assert.deepEqual([...r.내보냄].sort(), ['K12', 'default', 'k1', 'k10', 'k11', 'k13', 'k15', 'k2', 'k3', 'k5', 'k6', 'k7', 'k8', 'k9', 'ns3', 'r1', 'r3', '글 이름'].sort());
+  assert.deepEqual(r.모두다시, ['./star.mjs']);
+  // esbuild 묶음 끝의 export {…}(world-account.bundle.mjs 꼴)
+  const 묶음 = 엇.모듈읽기('var x = 1;\nvar export_worldLearning = import_game.default;\nexport {\n  createWorldAccount,\n  export_worldLearning as worldLearning\n};\n');
+  assert.deepEqual([...묶음.내보냄], ['createWorldAccount', 'worldLearning']);
+  const 별 = 엇.모듈읽기("export * from './a.mjs';\nexport const b = 1;\n");
+  assert.deepEqual([엇.내보내나(별, 'b'), 엇.내보내나(별, 'c'), 엇.내보내나(별, 'default')], [true, '모름', false], 'export *는 default를 넘기지 않는다');
+  const 호스트 = new Set(['synk.im']);
+  assert.deepEqual(엇.지정자풀기('world/a/b.mjs', './x.mjs', 호스트), { 경로: 'world/a/x.mjs', 쿼리: '' });
+  assert.deepEqual(엇.지정자풀기('world/a/b.mjs', '../y.mjs?v=1#h', 호스트), { 경로: 'world/y.mjs', 쿼리: '?v=1#h' });
+  assert.deepEqual(엇.지정자풀기('world/a/b.mjs', '/world/z.mjs', 호스트), { 경로: 'world/z.mjs', 쿼리: '' });
+  assert.deepEqual(엇.지정자풀기('a.mjs', 'https://synk.im/world/q.mjs', 호스트), { 경로: 'world/q.mjs', 쿼리: '' });
+  for (const 바깥 of ['https://cdn.example.com/x.mjs', 'three', 'data:text/javascript,1', '../../x.mjs']) assert.equal(엇.지정자풀기('world/b.mjs', 바깥, 호스트), null, 바깥);
+  // 검수(10-20 Fable)로 더한 꼴: case·default·라벨 블록과 export default 뒤의 정규식, 역슬래시 + CRLF 줄 이음 글, \u로 쓴 이름
+  const 역 = String.fromCharCode(92);
+  const 꼴 = 엇.모듈읽기([
+    "switch (x) { case 1: { y(); } /['\"]/.test(z); default: { w(); } /['\"]/.test(z); }",
+    "outer: { break outer; } /['\"]/.exec(z);",
+    'const 삼항 = a ? { b: 1 } : { c: 2 }, 몫2 = 6 / 3 / 2;',
+    'export const 하나 = 1;',
+    "export default /['\"]/;",
+    'export const 둘 = 2;',
+    `const 이음 = 'abc${역}${String.fromCharCode(13, 10)}def'; export const 같은줄 = 3;`,
+    `export const ${역}uD55C = 4, ${역}u{AE00} = 5;`,
+  ].join('\n'));
+  assert.equal(꼴.문제, null);
+  assert.deepEqual([...꼴.내보냄].sort(), ['default', '같은줄', '글', '둘', '하나', '한'].sort());
+});
+
+test('import 이름 세기: ①·②·③ 가르기 · 이미 깨져 있던 짝·export *·지운 모듈·새 파일·처음 쓰는 ?v= 주소 · 1단계는 엇갈림을 푸는 최소', () => {
+  /** 옛 = 공개본 {경로: 글}, 바꿈 = {경로: 새 글 | null(지움)} */
+  const 세보기 = (옛, 바꿈, 덧 = {}) => {
+    const 후 = { ...옛 };
+    for (const [p, v] of Object.entries(바꿈)) if (v === null) delete 후[p]; else 후[p] = v;
+    return 엇.세기({
+      바뀐: Object.keys(바꿈).map((p) => [p, 바꿈[p] === null ? '지움' : p in 옛 ? '바꿈' : '새']),
+      옛판: (p) => 옛[p] ?? null, 새판: (p) => 후[p] ?? null, 모든경로: [...new Set([...Object.keys(옛), ...Object.keys(후)])], ...덧,
+    });
+  };
+  // ① 새 이름(공개본에서도 없던 이름 broken은 세지 않는다) → 1단계는 새 이름을 내보내는 쪽
+  const 하나 = 세보기(
+    { 'w/shell.mjs': "import { a, broken } from './lib.mjs';", 'w/lib.mjs': 'export const a = 1;' },
+    { 'w/shell.mjs': "import { a, b, broken } from './lib.mjs';", 'w/lib.mjs': 'export const a = 1, b = 2;' },
+  );
+  assert.deepEqual(짝글들(하나), ['① w/shell.mjs → w/lib.mjs: b']);
+  assert.deepEqual(하나.나눔, { '1단계': ['w/lib.mjs'], 남는: [] });
+
+  // ② 옛 판만 부르던 이름을 없앰 → 1단계는 그 이름을 그만 부르는 쪽. 새 판도 계속 부르면 ③이고 나누지 않는다(사람이 넘긴 ③은 빼고).
+  const 옛둘 = { 'w/a.mjs': "import { x, y } from './t.mjs';", 'w/t.mjs': 'export const x = 1, y = 2;', 'w/c.mjs': "import { x } from './t.mjs';" };
+  const 바꿈둘 = { 'w/a.mjs': "import { y } from './t.mjs';", 'w/t.mjs': 'export const y = 2;', 'w/c.mjs': "import { x } from './t.mjs';\nexport const z = 1;" };
+  const 둘 = 세보기(옛둘, 바꿈둘);
+  assert.deepEqual(짝글들(둘), ['② w/a.mjs(옛) → w/t.mjs: x', '③ w/c.mjs → w/t.mjs: x']);
+  assert.equal(둘.나눔, null);
+  assert.deepEqual(세보기(옛둘, 바꿈둘, { 넘김: new Set(['w/c.mjs']) }).나눔['1단계'], ['w/a.mjs']);
+  assert.equal(세보기(옛둘, 바꿈둘, { 넘김: new Set(['w/t.mjs']) }).나눔, null, '넘김은 부르는 쪽 경로로만 받는다');
+  const 안씀 = 세보기(옛둘, 바꿈둘, { 쓰이나: (p) => p !== 'w/c.mjs' });
+  assert.deepEqual([안씀.짝.find((x) => x.종류 === '③').안쓰임, 안씀.나눔['1단계']], [true, ['w/a.mjs']], '아무도 안 부르는 모듈의 ③은 나눔을 막지 않는다');
+  assert.deepEqual(세보기(옛둘, { ...바꿈둘, 'w/c.mjs': 'export const z = 1;' }).나눔, { '1단계': ['w/a.mjs', 'w/c.mjs'], 남는: [] });
+
+  // 지운 모듈: 바뀐 모듈의 옛 판만 부르면 ②, 안 바뀌는 모듈이 부르면 ③
+  const 셋 = 세보기(
+    { 'w/u.mjs': "import { x } from './del.mjs';", 'w/m.mjs': "import { x } from './del.mjs';", 'w/del.mjs': 'export const x = 1;' },
+    { 'w/del.mjs': null, 'w/m.mjs': 'export const m = 1;' },
+  );
+  assert.deepEqual(짝글들(셋), ['② w/m.mjs(옛) → w/del.mjs: (모듈)', '③ w/u.mjs → w/del.mjs: (모듈)']);
+
+  // export *: 모르는 이름은 세지 않고(알 수 없음), default는 export *로 넘어오지 않아 ③
+  const 넷 = 세보기(
+    { 'w/re.mjs': "export * from './lib.mjs';", 'w/lib.mjs': 'export const a = 1;', 'w/user.mjs': "import { a } from './re.mjs';" },
+    { 'w/user.mjs': "import { a, maybe } from './re.mjs';\nimport d from './re.mjs';" },
+  );
+  assert.deepEqual(짝글들(넷), ['③ w/user.mjs → w/re.mjs: default']);
+  assert.deepEqual(넷.알수없음, [{ 부르는: 'w/user.mjs', 대상: 'w/re.mjs', 이름: 'maybe' }]);
+
+  // 새 파일로 가는 import는 ①이 아니다(캐시에 옛 판이 없다). 새 파일에 없는 이름은 ③
+  assert.deepEqual(짝글들(세보기({ 'w/app.mjs': 'export const z = 1;' }, { 'w/app.mjs': "import { n } from './new.mjs';\nexport const z = 1;", 'w/new.mjs': 'export const n = 1;' })), []);
+  assert.deepEqual(짝글들(세보기({ 'w/app.mjs': '' }, { 'w/app.mjs': "import { n, typo } from './new.mjs';", 'w/new.mjs': 'export const n = 1;' })), ['③ w/app.mjs → w/new.mjs: typo']);
+
+  // ?v=: 공개본이 그 모듈을 부르던 값과 다르면 처음 쓰는 주소라 ①에서 뺀다
+  const 옛여섯 = { 'w/v.mjs': "import { s } from './s.mjs?v=1111';", 'w/s.mjs': 'export const s = 1;' };
+  const 바꿈여섯 = (값) => ({ 'w/v.mjs': `import { s, s2 } from './s.mjs?v=${값}';`, 'w/s.mjs': 'export const s = 1, s2 = 2;' });
+  const 옛토큰들 = () => new Set(['1111']);
+  const 새주소 = 세보기(옛여섯, 바꿈여섯('2222'), { 옛토큰들 });
+  assert.deepEqual([짝글들(새주소), 새주소.새주소], [[], 1]);
+  assert.deepEqual(짝글들(세보기(옛여섯, 바꿈여섯('1111'), { 옛토큰들 })), ['① w/v.mjs → w/s.mjs: s2'], '공개본과 같은 주소는 캐시를 탄다');
+  assert.deepEqual(짝글들(세보기(옛여섯, 바꿈여섯('2222'))), ['① w/v.mjs → w/s.mjs: s2'], '공개본 값을 모르면 ?v= 주소도 캐시를 탈 수 있다고 본다');
+
+  // 새 이름을 부르면서 남이 쓰던 이름도 없애면 나눠도 안 풀린다(남는 짝)
+  const 막힘 = 세보기({ 'w/p.mjs': "import { y } from './t.mjs';", 'w/t.mjs': 'export const y = 1;' }, { 'w/p.mjs': "import { x } from './t.mjs';", 'w/t.mjs': 'export const x = 1;' });
+  assert.deepEqual(짝글들(막힘), ['① w/p.mjs → w/t.mjs: x', '② w/p.mjs(옛) → w/t.mjs: y']);
+  assert.deepEqual([막힘.나눔['1단계'], 막힘.나눔.남는.length], [[], 2]);
+});
+
+test('import 이름 엇갈림: 세 짝을 세고 ③은 걸림(--허용이면 알림), ①·②는 1단계를 --만 명령으로 보이며 1단계를 올린 뒤에는 0이다', async (t) => {
+  const 묶음 = (이름들) => `function createWorldAccount() {}\nfunction loadWorldConfig() {}\nfunction createGuestTrials() {}\nexport {\n${이름들.map((x) => `  ${x}`).join(',\n')}\n};\n`;
+  const 셸 = (이름들) => `import {${이름들.join(',')}} from './world-account.bundle.mjs';\nimport {restoreTutorSelection} from './tutor-selection-sync.mjs';\nimport './report-view.mjs';\nimport './town.mjs';\nimport './foo.mjs';\n`;
+  const 셸1 = 셸(['createWorldAccount']);
+  const 공 = 새공개본(t, {
+    'world/index.html': `<script type="module" src="/world/app-shell.mjs?v=${sha12(글(셸1))}"></script>\n`,
+    'world/app-shell.mjs': 셸1,
+    'world/world-account.bundle.mjs': 묶음(['createWorldAccount', 'loadWorldConfig']),
+    'world/tutor-selection-sync.mjs': 'export function restoreTutorSelection(a) { return a; }\n',
+    'world/town.mjs': "import {loadWorldConfig} from './world-account.bundle.mjs';\n",
+    // 아무 파일도 부르지 않는 옛 모듈(루트 app.js 꼴) — 그 ③은 알림만
+    'world/old-root.mjs': "import {loadWorldConfig} from './world-account.bundle.mjs';\n",
+    'world/badges.mjs': 'export function legacyBadge() {}\nexport function badge() {}\n',
+    'world/old-panel.mjs': "import {legacyBadge} from './badges.mjs';\nexport const panel = 1;\n",
+    'world/legacy-util.mjs': 'export const util = 1;\n',
+    'world/foo.mjs': "import {util} from './legacy-util.mjs';\n",
+    'world/report.mjs': 'export const scoreRun = 1;\n',
+    'world/report-view.mjs': "import { scoreRun } from './report.mjs?v=runner-20261014';\n",
+  });
+  // 손님 체험(10-19) 꼴: 새 셸이 묶음의 새 이름을 부르고, 배지에서 옛 이름을 빼며 패널은 그 이름을 그만 부른다
+  const 빌드 = (덧) => 공.로컬(`빌드-${crypto.randomBytes(3).toString('hex')}`, {
+    'world/app-shell.mjs': 셸(['createWorldAccount', 'createGuestTrials']),
+    'world/world-account.bundle.mjs': 묶음(['createGuestTrials', 'createWorldAccount', 'loadWorldConfig']),
+    'world/tutor-selection-sync.mjs': 'export function restoreTutorSelection(a, b = {}) { return [a, b]; }\n',
+    'world/badges.mjs': 'export function badge() {}\n',
+    'world/old-panel.mjs': "import {badge} from './badges.mjs';\nexport const panel = 2;\n",
+    'world/report.mjs': 'export const scoreRun = 1, newStat = 2;\n',
+    'world/report-view.mjs': "import { scoreRun, newStat } from './report.mjs?v=runner-20261014';\n",
+    // 새 파일은 도구가 ?v=를 갈지 않는다 — 공개본과 같은 주소라 캐시의 옛 report.mjs를 받을 수 있다(①)
+    'world/report-card.mjs': "import { newStat } from './report.mjs?v=runner-20261014';\n",
+    ...덧,
+  });
+  const 항목 = ['world/app-shell.mjs', 'world/world-account.bundle.mjs', 'world/tutor-selection-sync.mjs', 'world/badges.mjs', 'world/old-panel.mjs', 'world/report.mjs', 'world/report-view.mjs', 'world/report-card.mjs'];
+
+  // ③: 안 바뀌는 town.mjs가 부르는 이름을 묶음에서 빼고, foo.mjs가 부르는 모듈을 지운다 → 걸림(아무도 안 부르는 old-root.mjs는 알림)
+  const 나쁜 = 빌드({ 'world/world-account.bundle.mjs': 묶음(['createGuestTrials', 'createWorldAccount']) });
+  const 걸린 = await 도구.올리기(공.옵션({ 원본: 나쁜, 항목, 지움: ['world/legacy-util.mjs'] }));
+  assert.equal(걸린.결과, '걸림');
+  assert.deepEqual(걸린.엇갈림.셈, { '①': 2, '②': 1, '③': 3 });
+  assert.deepEqual(짝글들(걸린.엇갈림).filter((x) => x.startsWith('③')), [
+    '③ world/foo.mjs → world/legacy-util.mjs: (모듈)',
+    '③ world/old-root.mjs → world/world-account.bundle.mjs: loadWorldConfig',
+    '③ world/town.mjs → world/world-account.bundle.mjs: loadWorldConfig',
+  ]);
+  const import걸림 = 걸린.걸림.filter((x) => x.검사 === 'import 이름');
+  assert.deepEqual(import걸림.map((x) => x.경로), ['world/foo.mjs', 'world/town.mjs']);
+  assert.match(import걸림[1].이유, /--허용 world\/town\.mjs$/);
+  assert.ok(걸린.알림.some((x) => x.경로 === 'world/old-root.mjs' && /안 쓰는 옛 모듈/.test(x.이유)));
+  assert.equal(걸린.엇갈림.나눔, null);
+  const 대상허용 = await 도구.올리기(공.옵션({ 원본: 나쁜, 항목, 지움: ['world/legacy-util.mjs'], 허용: ['world/world-account.bundle.mjs', 'world/legacy-util.mjs'] }));
+  assert.equal(대상허용.결과, '걸림', '③은 부르는 쪽 경로로만 넘긴다(대상 경로 허용은 그 파일의 다른 검사까지 끄므로)');
+  const 넘김 = await 도구.올리기(공.옵션({ 원본: 나쁜, 항목, 지움: ['world/legacy-util.mjs'], 허용: ['world/town.mjs', 'world/foo.mjs'] }));
+  assert.equal(넘김.결과, '미리 보기', '사람이 본 ③은 --허용으로 넘긴다');
+  assert.equal(넘김.알림.filter((x) => x.검사 === 'import 이름' && /--허용으로 넘김/.test(x.이유)).length, 2);
+
+  // ①·②만: 1단계 = 새 이름을 내보내는 묶음·report + 옛 이름을 그만 부르는 패널. report-view는 도구가 갈아 끼운 ?v= 새 주소로 불러
+  // ①이 아니고, 새 파일 report-card는 공개본과 같은 주소로 불러 ①이다.
+  // 이 미리 보기는 명령줄 --json으로 받는다(결과가 JSON에도 그대로 들어간다).
+  const 좋은 = 빌드({});
+  const argv = ['올리기', '--원본', 좋은, ...항목];
+  const 찍힘 = [];
+  const 원래 = console.log;
+  console.log = (s) => 찍힘.push(String(s));
+  try {
+    assert.equal(await 도구.main([...argv, '--사본', 공.사본, '--원격주소', 공.원격주소, '--json']), 0);
+  } finally {
+    console.log = 원래;
+  }
+  const r = JSON.parse(찍힘.join('\n'));
+  assert.equal(r.결과, '미리 보기', JSON.stringify(r.걸림));
+  assert.deepEqual(짝글들(r.엇갈림), [
+    '① world/app-shell.mjs → world/world-account.bundle.mjs: createGuestTrials',
+    '① world/report-card.mjs → world/report.mjs: newStat',
+    '② world/old-panel.mjs(옛) → world/badges.mjs: legacyBadge',
+  ]);
+  assert.equal(r.엇갈림.새주소, 1);
+  assert.deepEqual(r.엇갈림.나눔['1단계'], ['world/old-panel.mjs', 'world/report.mjs', 'world/world-account.bundle.mjs']);
+  assert.ok(['world/app-shell.mjs', 'world/badges.mjs', 'world/index.html', 'world/report-card.mjs'].every((p) => r.엇갈림.나눔['2단계'].includes(p)));
+  const 글줄 = 속.올리기글(r, argv);
+  assert.match(글줄, /import 이름\(캐시 10분\) — ① 2짝 · ② 1짝 · ③ 0짝/);
+  assert.match(글줄, /--만 world\/old-panel\.mjs --만 world\/report\.mjs --만 world\/world-account\.bundle\.mjs\n/);
+  assert.match(글줄, /한 번에 올리려면\(위 import ①·② 엇갈림을 알고도/);
+  // 1단계 명령은 미리 보기다 — 받은 명령의 --실행·--계획·메시지는 빼고, 미리 보기가 아닌 결과에는 나눔을 안 보인다
+  const 실행글 = 속.올리기글(r, [...argv, '-m', '한 번에', '--실행', '--계획', '0123456789ab', '--json']);
+  const 단계줄 = 실행글.split('\n').find((l) => l.includes('--만 world/old-panel.mjs'));
+  assert.ok(단계줄 && !/--실행|--계획|-m |--json/.test(단계줄), 단계줄);
+  assert.doesNotMatch(속.올리기글({ ...r, 결과: '올림', 커밋: '0'.repeat(40) }, argv), /나눠 올린다/);
+
+  // 1단계(--만)는 엇갈림 0(report를 부르는 report-view는 ?v=만 따라 바뀐다) — 올리고 나면 원래 명령의 남은 2단계도 0
+  const 일 = await 도구.올리기(공.옵션({ 원본: 좋은, 항목, 만: r.엇갈림.나눔['1단계'] }));
+  assert.deepEqual(종류들(일), { 'world/old-panel.mjs': '바꿈', 'world/report.mjs': '바꿈', 'world/report-view.mjs': '토큰', 'world/world-account.bundle.mjs': '바꿈' });
+  assert.deepEqual(일.엇갈림.셈, { '①': 0, '②': 0, '③': 0 });
+  await assert.rejects(도구.올리기(공.옵션({ 원본: 좋은, 항목, 만: ['world/town.mjs'] })), /--만 world\/town\.mjs/);
+  const 올림 = await 도구.올리기(공.옵션({ 원본: 좋은, 항목, 만: r.엇갈림.나눔['1단계'], 실행: true, 계획: 일.계획, 메시지: '1단계', 기다림: 0.01, 간격: 0.1 }));
+  assert.match(올림.결과, /^올림/);
+  const 이 = await 도구.올리기(공.옵션({ 원본: 좋은, 항목 }));
+  assert.deepEqual([이.엇갈림.셈, 이.엇갈림.나눔], [{ '①': 0, '②': 0, '③': 0 }, null], '1단계가 공개본에 있으면 2단계는 엇갈림이 없다');
+  assert.ok(!이.항목.some((x) => x.경로 === 'world/world-account.bundle.mjs'));
+});
+
+test('import 이름 엇갈림 0: 10-20 화면 언어 1판처럼 새 모듈을 더하고 묶음 내보내기만 늘리면 한 번에 올린다(주석·글 속 import는 세지 않는다)', async (t) => {
+  const 묶음 = (덧 = '') => `function createWorldAccount() {}\nfunction loadWorldConfig() {}\n${덧}var export_worldLearning = 1;\nexport {\n  ${덧 ? 'createDeviceRecordsOffer,\n  ' : ''}createWorldAccount,\n  loadWorldConfig,\n  export_worldLearning as worldLearning\n};\n`;
+  const 공 = 새공개본(t, {
+    'world/index.html': '<script type="module" src="./app-shell.mjs?v=1a2b3c4d5e6f"></script>\n',
+    'world/app-shell.mjs': "import {createWorldAccount, loadWorldConfig} from './world-account.bundle.mjs';\nimport {createLifeExperience} from './life-ui.mjs';\n",
+    'world/world-account.bundle.mjs': 묶음(),
+    'world/life-ui.mjs': "import {PACKS} from './life-content.mjs';\nexport function createLifeExperience() { return PACKS; }\n",
+    'world/life-content.mjs': 'export const PACKS = [], LESSONS = [];\n',
+    'world/hangul-stage/app.mjs': "import * as audio from './audio.mjs';\nimport { SONGS } from './songs.mjs';\n",
+    'world/hangul-stage/audio.mjs': 'export function play() {}\n',
+    'world/hangul-stage/songs.mjs': 'export const SONGS = [];\n',
+  });
+  const 로컬 = 공.로컬('빌드', {
+    'world/brand-opening/world-strings.mjs': 'export default { ko: {}, en: {}, mn: {} };\n',
+    'world/brand-opening/world-lang.mjs': "import STRINGS from './world-strings.mjs';\nexport const LANGS = ['ko', 'en', 'mn'];\nexport function t(k) { return STRINGS.ko[k] ?? k; }\nexport const tMessage = (k) => t(k);\n",
+    'world/app-shell.mjs': [
+      "import {createWorldAccount, loadWorldConfig, worldLearning} from './world-account.bundle.mjs';",
+      "import {createLifeExperience} from './life-ui.mjs';",
+      "import {t} from './brand-opening/world-lang.mjs';",
+      "// import {ghost} from './world-account.bundle.mjs'; — 주석 속 import는 부르는 것이 아니다",
+      "const 안내 = \"import {ghost2} from './world-account.bundle.mjs'\";",
+      '',
+    ].join('\n'),
+    'world/world-account.bundle.mjs': 묶음('function createDeviceRecordsOffer() {}\n'),
+    'world/life-ui.mjs': "import {PACKS, LESSONS} from './life-content.mjs';\nimport {t as tr, tMessage} from './brand-opening/world-lang.mjs';\nexport function createLifeExperience() { return [PACKS, LESSONS, tr, tMessage]; }\n",
+    'world/hangul-stage/lang.mjs': "export { t, LANGS } from '../brand-opening/world-lang.mjs';\nexport const currentLang = () => 'ko';\n",
+    'world/hangul-stage/app.mjs': "import * as audio from './audio.mjs';\nimport { SONGS } from './songs.mjs';\nimport { t as tr, currentLang } from './lang.mjs';\n",
+  });
+  const 항목 = ['world/brand-opening/world-strings.mjs', 'world/brand-opening/world-lang.mjs', 'world/app-shell.mjs', 'world/world-account.bundle.mjs', 'world/life-ui.mjs', 'world/hangul-stage/lang.mjs', 'world/hangul-stage/app.mjs'];
+  const r = await 도구.올리기(공.옵션({ 원본: 로컬, 항목 }));
+  assert.equal(r.결과, '미리 보기', JSON.stringify(r.걸림));
+  assert.deepEqual([r.엇갈림.셈, r.엇갈림.짝, r.엇갈림.나눔, r.엇갈림.모듈.바뀐], [{ '①': 0, '②': 0, '③': 0 }, [], null, 7]);
+  const 글줄 = 속.올리기글(r, ['올리기']);
+  assert.match(글줄, /import 이름\(캐시 10분\) — ① 0짝 · ② 0짝 · ③ 0짝 · 바뀐 모듈 7개/);
+  assert.match(글줄, /\n올리려면\(유호님이 이 계획을 승인한 뒤에만\):/);
+  assert.doesNotMatch(글줄, /나눠 올린다/);
 });
 
 // ── 실행 ────────────────────────────────────────────────────────────────────

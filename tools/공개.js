@@ -10,7 +10,8 @@
  *
  *   항목: <공개경로>=<로컬 파일·폴더> · 또는 --원본 <폴더> 아래의 <경로>(그 경로가 공개 경로다. --공개폴더 <앞>으로 앞을 붙인다)
  *   --지움 <공개경로>(폴더는 끝에 /) · --기준 <공개 커밋> · --기준폴더 <폴더> · --전부 · --줄끝도 · --토큰 <값> · --토큰안함
- *   --허용 <공개경로>(AI 이름·제작 자료 검사만 사람이 보고 넘긴다) · --후보폴더 <폴더> · --위에 <커밋>(미리 보기 전용, 지난 공개 재현)
+ *   --허용 <공개경로>(AI 이름·제작 자료 검사와 그 경로가 부르는 import ③만 사람이 보고 넘긴다) · --후보폴더 <폴더> · --위에 <커밋>(미리 보기 전용, 지난 공개 재현)
+ *   --만 <공개경로>(항목 가운데 그 경로만 올리고 지운다 — import 엇갈림을 두 번에 나눠 올릴 때 1단계)
  *   공통: --json · --사본 <bare 폴더> · --새사본 · --원격주소 <url> · --주소 <사이트> · --기다림 <분> · --점검기다림 <분> · --간격 <초>
  *
  * 올리기
@@ -26,7 +27,11 @@
  *      어느 것인지 모르는 참조(공개본 토큰 해시가 맞는 후보가 하나면 그것으로 본다 — 아니면 알린다).
  *   4. 검사: 배포 점검과 같은 도구 이름 규칙(후보의 .github/site-check/check.mjs에서 읽음) · 그림·영상의 생성 도구 표시(C2PA 등, --허용) ·
  *      더한 줄의 AI 이름(영문·한글, --허용) · 더한 줄의 이 PC·작업 자리 경로(synk-vendor·Documents/ 등, --허용) ·
- *      저장 용량(GitHub 한도 100MiB, 경고 50MiB) · 공개 경로(밑줄 폴더·제작 자료·Jekyll 머리말).
+ *      저장 용량(GitHub 한도 100MiB, 경고 50MiB) · 공개 경로(밑줄 폴더·제작 자료·Jekyll 머리말) ·
+ *      import 이름 엇갈림(공개 주소 캐시 10분, tools/lib/import엇갈림.js): 바뀌는 .js·.mjs와 그 모듈을 부르는 공개본 모듈의 정적
+ *      import·export를 견줘 ① 새 판 → 바뀐 모듈의 옛 판에 없는 이름 ② 바뀐 모듈의 옛 판 → 새 판에서 없어진 이름 ③ 새 판끼리 안 맞음을
+ *      센다. ③은 걸림(부르는 쪽 --허용 · 아무 파일도 부르지 않는 옛 모듈이면 알림), ①·②는 「두 번에 나눠 올리기」를 보이고
+ *      1단계(옛 화면과도 맞는 쪽)를 --만 명령으로 준다.
  *   5. --실행 --계획 <해시>: 계획 해시(경로마다 공개본 판 → 새 판)가 미리 보기와 같을 때만 별도 인덱스 → commit-tree → fetch 재확인 →
  *      push(강제 없음). 그사이 origin/main이 움직였으면 새 판 위에 다시 만들고, 계획이 바뀌면(남이 내 경로를 고침) 멈춘다(세 번까지).
  *   6. push 뒤 확인을 한다.
@@ -45,6 +50,7 @@ const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
 const { spawnSync, spawn } = require('child_process');
+const 엇갈림 = require('./lib/import엇갈림.js');
 
 const 기본원격 = 'git@github.com:unmet23-lab/synk-policy.git';
 const 기본저장소이름 = 'unmet23-lab/synk-policy';
@@ -690,6 +696,73 @@ function 대조할경로(p, 버퍼) {
   return null;
 }
 
+const 모듈파일 = (p) => /\.m?js$/i.test(p) && !p.startsWith('.github/') && !/(^|\/)node_modules\//.test(p);
+
+/** 짝 한 줄: 부르는 → 대상: 이름들 */
+const 짝글 = (x) => `${x.부르는}${x.판 === '옛' ? '(옛 판)' : ''} → ${x.대상}: ${[...x.이름, ...(x.모듈없음 ? [x.종류 === '②' ? '(지운 모듈)' : '(없는 모듈)'] : [])].join(', ')}`;
+
+/**
+ * import 이름 엇갈림(공개 주소 캐시 10분) — 바뀌는 .js·.mjs와 그 모듈을 부르는 공개본 모듈을 lib/import엇갈림.js로 센다.
+ * ③은 걸림 — 부르는 쪽 경로를 --허용하면 알림, 아무 파일도 부르지 않는 모듈(루트 app.js 같은 옛 파일)이 부르면 알림.
+ * 세지 못하면(오류) ③이 숨을 수 있어 걸림. ①·②는 미리 보기 글에서 나눔을 보인다. 1단계는 --만으로 고를 수 있는 새·바꿈만.
+ * 반환 {결과, 걸림, 알림} · 바뀌는 모듈이 없으면 null
+ */
+function 엇갈림보기({ git, 저장, 옵션, 공개트리, 항목, 공개판, 지금판, 호스트들, 있나, 꼬리들, 부르는가 }) {
+  const 바뀐 = [...항목.values()].filter((x) => 모듈파일(x.경로)).map((x) => [x.경로, x.종류]);
+  if (!바뀐.length) return null;
+  const 모든 = [...new Set([...공개트리.keys(), ...항목.keys()])].filter(모듈파일);
+  블롭읽기(git, 저장, 모든.filter((p) => 공개트리.has(p)).map((p) => 공개트리.get(p).oid));
+  // 공개본이 그 모듈을 ?v=로 부르던 값 — ① 가운데 처음 쓰는 주소(캐시에 없다)를 가린다. 처음 물을 때 공개본 글 파일을 한 번에 받는다.
+  let 공개글 = null;
+  const 옛토큰 = new Map();
+  const 옛토큰들 = (T) => {
+    if (옛토큰.has(T)) return 옛토큰.get(T);
+    if (!공개글) {
+      공개글 = [...공개트리.keys()].filter((p) => 토큰파일.test(p) && !p.startsWith('.github/'));
+      블롭읽기(git, 저장, 공개글.map((p) => 공개트리.get(p).oid));
+    }
+    const 이름 = Buffer.from(path.posix.basename(T), 'utf8').toString('latin1');
+    const 값 = new Set();
+    for (const G of 공개글) {
+      const b = 공개판(G);
+      if (!b || 이진인가(b)) continue;
+      const 글 = b.toString('latin1');
+      if (!글.includes('?v=') || !글.includes(이름)) continue;
+      for (const m of 글.matchAll(토큰찾기)) {
+        const r = 참조풀기(G, Buffer.from(m[1], 'latin1').toString('utf8'), 있나, 꼬리들, 호스트들);
+        if (r && (r.경로 === T || (r.모호 && r.모호.includes(T)))) 값.add(m[2]);
+      }
+    }
+    옛토큰.set(T, 값);
+    return 값;
+  };
+  const 허용 = new Set((옵션.허용 || []).map((p) => 공개경로(p)));
+  let 결과;
+  try {
+    결과 = 엇갈림.세기({ 바뀐, 옛판: 공개판, 새판: 지금판, 모든경로: 모든, 호스트들, 옛토큰들, 넘김: 허용, 쓰이나: 부르는가 });
+  } catch (e) {
+    const 이유 = `import 이름 엇갈림을 세지 못했다 — ${e.message} (③이 숨어 있을 수 있어 올리지 않는다 · 도구를 고친다)`;
+    return { 결과: { 오류: e.message }, 걸림: [{ 검사: 'import 이름', 이유 }], 알림: [] };
+  }
+  const 걸림 = [], 알림 = [];
+  for (const x of 결과.짝) {
+    if (x.종류 !== '③') continue;
+    const 항 = { 경로: x.부르는, 검사: 'import 이름', 이유: `③ ${짝글(x)} — 새 판에 없는 것을 부른다(캐시와 상관없이 깨진다)` };
+    if (x.안쓰임) 알림.push({ ...항, 이유: `${항.이유} — 이 모듈을 부르는 파일이 없어(안 쓰는 옛 모듈) 알림만 한다. 동적으로 불러 쓰면 깨진다` });
+    else if (허용.has(x.부르는)) 알림.push({ ...항, 이유: `${항.이유} — --허용으로 넘김` });
+    else 걸림.push({ ...항, 이유: `${항.이유} · 사람이 보고 넘기려면 --허용 ${x.부르는}` });
+  }
+  const 판이름 = { 옛: '공개본 판', 새: '후보 판', 같음: '모듈' };
+  for (const x of 결과.못읽음.slice(0, 10)) 알림.push({ 경로: x.경로, 검사: 'import 이름', 이유: `${판이름[x.판]}을 끝까지 읽지 못했다(${x.이유}) — 이 모듈의 짝은 빠졌을 수 있다` });
+  if (결과.못읽음.length > 10) 알림.push({ 검사: 'import 이름', 이유: `끝까지 읽지 못한 모듈이 ${결과.못읽음.length - 10}개 더 있다(--json의 엇갈림.못읽음)` });
+  if (결과.나눔) {
+    const 먼저 = 결과.나눔['1단계'].filter((p) => ['새', '바꿈'].includes(항목.get(p).종류));
+    결과.나눔 = { '1단계': 먼저, '2단계': [...항목.keys()].filter((p) => !먼저.includes(p)).sort(), 남는: 결과.나눔.남는 };
+  }
+  if (결과.짝.length > 200) Object.assign(결과, { 짝더: 결과.짝.length - 200, 짝: 결과.짝.slice(0, 200) });
+  return { 결과, 걸림, 알림 };
+}
+
 // ── 계획 ────────────────────────────────────────────────────────────────────
 
 function 계획해시(항목들) {
@@ -725,6 +798,8 @@ function 후보만들기(c) {
   const 더하기 = (x) => 항목.set(x.경로, x);
   // 기준 없이 폴더를 주면 목록만 보이고 멈춘다(남이 공개본을 직접 고친 파일을 덮지 않게)
   const 폴더멈춤 = Boolean(입력.폴더.length && !기준 && !옵션.전부);
+  // --만: 항목(올릴·지울) 가운데 그 경로만 — import 엇갈림을 나눠 올리는 1단계. 기준폴더의 지울 것은 고르기 전 목록으로 가린다.
+  const 만 = 옵션.만 && 옵션.만.length ? new Set(옵션.만.map((p) => 공개경로(p))) : null;
 
   // 1) 내 파일
   const 내것 = new Map();
@@ -739,7 +814,7 @@ function 후보만들기(c) {
   // 2) 글 파일의 공개본·기준 판을 한 번에 받는다(그림·영상은 blob id로만 견준다)
   const 필요 = [];
   for (const [p, m] of 내것) {
-    if (이진인가(m.버퍼)) continue;
+    if (이진인가(m.버퍼) || (만 && !만.has(p))) continue;
     const 공 = 공개트리.get(p);
     if (공 && 공.oid !== m.oid) 필요.push(공.oid);
     if (기준 && 기준.종류 === '커밋') { const b = 기준.판(p); if (b && b !== m.oid) 필요.push(b); }
@@ -748,6 +823,7 @@ function 후보만들기(c) {
 
   // 3) 경로마다 고른다
   for (const [p, m] of 내것) {
+    if (만 && !만.has(p)) continue;
     const 공 = 공개트리.get(p) || null;
     const 공oid = 공 ? 공.oid : null;
     const 모드 = 공 ? 공.모드 : '100644';
@@ -805,7 +881,9 @@ function 후보만들기(c) {
   if (기준 && 기준.종류 === '폴더') {
     for (const 폴더 of 입력.폴더) for (const p of 기준.아래(폴더.공개)) if (!내것.has(p) && !지울것.has(p)) 지울것.set(p, false);
   }
+  if (만) for (const p of 만) if (!내것.has(p) && !지울것.has(p)) throw new 사용법오류(`--만 ${p}: 이번 항목에 올리거나 지울 경로가 아니다`);
   for (const [p, 직접] of 지울것) {
+    if (만 && !만.has(p)) continue;
     const 공 = 공개트리.get(p) || null;
     if (!공) { if (직접) 건너뜀.push({ 경로: p, 이유: '이미 공개본에 없다' }); continue; }
     let 덧 = '';
@@ -824,7 +902,7 @@ function 후보만들기(c) {
   }
 
   // 5) 기준 없이 폴더: 공개본에만 있는 파일은 알리기만(지우지 않는다)
-  if (!기준) {
+  if (!기준 && !만) {
     for (const 폴더 of 입력.폴더) {
       const 남는 = [...공개트리.keys()].filter((p) => p.startsWith(폴더.공개) && !내것.has(p) && !지울것.has(p));
       if (남는.length) 알림.push({ 경로: 폴더.공개, 검사: '입력', 이유: `공개본에만 있는 파일 ${남는.length}개는 그대로 둔다(지우려면 --지움)`, 예: 남는.slice(0, 5) });
@@ -845,36 +923,44 @@ function 후보만들기(c) {
   const 있나 = (p) => 풀경로.has(p);
   const 공개판 = (p) => (공개트리.has(p) ? 블롭(git, 저장, 공개트리.get(p).oid) : null);
   const 지금판 = (p) => (항목.has(p) ? 항목.get(p).버퍼 : 공개판(p));
+  // 공개 글 파일(토큰을 고치고 「누가 부르나」를 찾는 범위) — 처음 쓸 때 공개본 판을 한 번에 받는다
+  const 훑을 = [...있는경로].filter((p) => 토큰파일.test(p) && !p.startsWith('.github/') && !/(^|\/)node_modules\//.test(p));
+  let 훑을받음 = false;
+  const 훑을받기 = () => {
+    if (훑을받음) return;
+    훑을받음 = true;
+    블롭읽기(git, 저장, 훑을.filter((p) => !항목.has(p)).map((p) => 공개트리.get(p).oid));
+  };
+  // F를 부르는 파일이 하나라도 있나(?v= 갱신·import ③에서 쓴다): 공개 글 파일에서 따옴표·괄호·= 뒤에 F의 이름으로 끝나는 참조를
+  // 찾아 풀어 본다(주석 속 낱말 「app.js and sites.js」는 참조가 아니다 — 10-19 site-bar.js)
+  const 부름 = new Map();
+  const 부르는가 = (F) => {
+    if (부름.has(F)) return 부름.get(F);
+    훑을받기();
+    const 이름 = Buffer.from(path.posix.basename(F), 'utf8').toString('latin1');
+    const 이름식 = 이름.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const 식 = new RegExp('(?<=["\'`(=])([^\\s"\'`()<>?#={}[\\]\\\\,;|]*' + 이름식 + ')(?=[?#"\'`)\\s>]|$)', 'g');
+    let 답 = false;
+    for (const G of 훑을) {
+      if (G === F) continue;
+      const b = 지금판(G);
+      if (!b || 이진인가(b)) continue;
+      const 글 = b.toString('latin1');
+      if (!글.includes(이름)) continue;
+      for (const m of 글.matchAll(식)) {
+        const r = 참조풀기(G, Buffer.from(m[1], 'latin1').toString('utf8'), 있나, 꼬리들, 호스트들);
+        if (r && (r.경로 === F || (r.모호 && r.모호.includes(F)))) { 답 = true; break; }
+      }
+      if (답) break;
+    }
+    부름.set(F, 답);
+    return 답;
+  };
   const 토큰기록 = [];
   if (토큰다룸 && 항목.size) {
-    const 훑을 = [...있는경로].filter((p) => 토큰파일.test(p) && !p.startsWith('.github/') && !/(^|\/)node_modules\//.test(p));
-    블롭읽기(git, 저장, 훑을.filter((p) => !항목.has(p)).map((p) => 공개트리.get(p).oid));
+    훑을받기();
     const 처음바뀜 = new Map([...항목.values()].filter((x) => x.후).map((x) => [x.경로, x.버퍼]));
     const 지움 = new Set([...항목.values()].filter((x) => !x.후).map((x) => x.경로));
-    // F를 부르는 파일이 하나라도 있나: 공개 글 파일에서 따옴표·괄호·= 뒤에 F의 이름으로 끝나는 참조를 찾아 풀어 본다
-    // (주석 속 낱말 「app.js and sites.js」는 참조가 아니다 — 10-19 site-bar.js)
-    const 부름 = new Map();
-    const 부르는가 = (F) => {
-      if (부름.has(F)) return 부름.get(F);
-      const 이름 = Buffer.from(path.posix.basename(F), 'utf8').toString('latin1');
-      const 이름식 = 이름.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const 식 = new RegExp('(?<=["\'`(=])([^\\s"\'`()<>?#={}[\\]\\\\,;|]*' + 이름식 + ')(?=[?#"\'`)\\s>]|$)', 'g');
-      let 답 = false;
-      for (const G of 훑을) {
-        if (G === F) continue;
-        const b = 지금판(G);
-        if (!b || 이진인가(b)) continue;
-        const 글 = b.toString('latin1');
-        if (!글.includes(이름)) continue;
-        for (const m of 글.matchAll(식)) {
-          const r = 참조풀기(G, Buffer.from(m[1], 'latin1').toString('utf8'), 있나, 꼬리들, 호스트들);
-          if (r && (r.경로 === F || (r.모호 && r.모호.includes(F)))) { 답 = true; break; }
-        }
-        if (답) break;
-      }
-      부름.set(F, 답);
-      return 답;
-    };
     const 받아두기 = (경로들) => 블롭읽기(git, 저장, 경로들.map((p) => 공개트리.get(p)).filter(Boolean).map((v) => v.oid));
     const 고침 = 토큰고치기({ 훑을, 원래: 지금판, 공개: 공개판, 처음바뀜, 지움, 있나, 꼬리들, 호스트들, 정한값: 옵션.토큰, 부르는가, 받아두기 });
     for (const [F, v] of 고침) {
@@ -920,7 +1006,11 @@ function 후보만들기(c) {
   걸림.push(...검사.걸림);
   알림.push(...검사.알림);
 
-  // 8) 기준 없이 덮는 파일을 하루 안에 남이 고쳤으면 알린다(그 판에서 만든 파일이 아니면 --기준으로 3방향)
+  // 8) import 이름 엇갈림(공개 주소 캐시 10분) — 바뀌는 .js·.mjs가 있을 때만
+  const 이름엇갈림 = 엇갈림보기({ git, 저장, 옵션, 공개트리, 항목, 공개판, 지금판, 호스트들, 있나, 꼬리들, 부르는가 });
+  if (이름엇갈림) { 걸림.push(...이름엇갈림.걸림); 알림.push(...이름엇갈림.알림); }
+
+  // 9) 기준 없이 덮는 파일을 하루 안에 남이 고쳤으면 알린다(그 판에서 만든 파일이 아니면 --기준으로 3방향)
   if (!기준) {
     // 「새」도 본다: 하루 안에 남이 지운 파일을 기준 없이 다시 올리는 것일 수 있다
     const 덮을 = [...항목.values()].filter((x) => x.종류 === '바꿈' || x.종류 === '새').map((x) => x.경로);
@@ -944,6 +1034,7 @@ function 후보만들기(c) {
   const 목록들 = [...항목.values()].sort((a, b) => (a.경로 < b.경로 ? -1 : 1));
   return {
     위, 항목: 목록들, 건너뜀, 걸림, 알림, 토큰: 토큰기록, 검사: 검사.요약, 규칙출처: 규칙.출처,
+    엇갈림: 이름엇갈림 ? 이름엇갈림.결과 : null,
     기준: 기준 ? (기준.종류 === '커밋' ? { 커밋: 기준.커밋 } : { 폴더: 기준.폴더 }) : null,
     폴더멈춤, 계획: 계획해시(목록들), 저장,
   };
@@ -1358,7 +1449,7 @@ async function 채우기(옵션 = {}) {
 
 const 사용법 = `사용법
   node tools/공개.js 올리기 <항목…> [--원본 <폴더>] [--공개폴더 <앞>] [--지움 <공개경로>] [--기준 <커밋> | --기준폴더 <폴더>]
-                          [--전부] [--줄끝도] [--토큰 <값> | --토큰안함] [--허용 <공개경로>] [--후보폴더 <폴더>] [--위에 <커밋>] [--json]
+                          [--전부] [--줄끝도] [--토큰 <값> | --토큰안함] [--허용 <공개경로>] [--만 <공개경로>] [--후보폴더 <폴더>] [--위에 <커밋>] [--json]
   node tools/공개.js 올리기 <항목…> -m "<메시지>" --실행 --계획 <해시> [--재실행] [--기다림 <분>] [--점검기다림 <분>]
   node tools/공개.js 확인 <커밋> [--부터 <커밋>] [--재실행] [--기다림 <분>] [--점검기다림 <분>] [--점검안함] [--json]
   node tools/공개.js 채우기 [<공개경로 glob>…] [--json]
@@ -1370,7 +1461,7 @@ function 인자읽기(argv) {
   const [명령, ...나머지] = argv;
   if (!명령 || ['--help', '-h', '도움말'].includes(명령)) return { 도움말: true };
   if (!['올리기', '확인', '채우기'].includes(명령)) throw new 사용법오류(`모르는 명령: ${명령} (올리기 · 확인 · 채우기)`);
-  const 옵션 = { 명령, 항목: [], 지움: [], 허용: [], 메시지: '', 실행: false, json: false };
+  const 옵션 = { 명령, 항목: [], 지움: [], 허용: [], 만: [], 메시지: '', 실행: false, json: false };
   const 메시지 = [];
   for (let i = 0; i < 나머지.length; i++) {
     const a = 나머지[i];
@@ -1387,6 +1478,7 @@ function 인자읽기(argv) {
     else if (a === '--기준') 옵션.기준 = 값();
     else if (a === '--기준폴더') 옵션.기준폴더 = 값();
     else if (a === '--허용') 옵션.허용.push(값());
+    else if (a === '--만') 옵션.만.push(값());
     else if (a === '--토큰') 옵션.토큰 = 값();
     else if (a === '--후보폴더') 옵션.후보폴더 = 값();
     else if (a === '--위에') 옵션.위에 = 값();
@@ -1461,6 +1553,7 @@ function 올리기글(r, argv) {
     const s = r.검사;
     줄.push(`검사 — 도구 이름(${r.규칙출처}) 글 ${s.글}·MP3 ${s.mp3} · 제작 표시 미디어 ${s.미디어} · AI 이름 더한 줄 ${s.더한줄} · 이 PC 경로 더한 줄 ${s.경로줄} · 저장 용량 새 blob ${s.새blob}개 ${바이트글(s.새바이트)}`);
   }
+  if (r.엇갈림) 줄.push(...엇갈림글(r.엇갈림, argv, r.결과));
   for (const x of r.걸림 || []) 줄.push(`  걸림 [${x.검사}] ${x.경로 || ''} — ${x.이유}`);
   for (const x of r.알림 || []) {
     줄.push(`  알림 [${x.검사}] ${x.경로 || ''} — ${x.이유}`);
@@ -1472,12 +1565,68 @@ function 올리기글(r, argv) {
   } else if (r.결과 === '미리 보기') {
     const 남길 = (argv || []).filter((a, i, all) => a !== '--json' && !(i > 0 && all[i - 1] === '--후보폴더') && a !== '--후보폴더');
     const 메시지없음 = !남길.includes('-m') && !남길.includes('-F') && !남길.includes('--메시지') && !남길.includes('--메시지파일');
-    줄.push('올리려면(유호님이 이 계획을 승인한 뒤에만):');
+    const 엇갈림있음 = r.엇갈림 && r.엇갈림.셈 && (r.엇갈림.셈['①'] || r.엇갈림.셈['②']);
+    줄.push(엇갈림있음 ? '한 번에 올리려면(위 import ①·② 엇갈림을 알고도 — 유호님이 이 계획을 승인한 뒤에만):' : '올리려면(유호님이 이 계획을 승인한 뒤에만):');
     줄.push(`  node tools/공개.js ${남길.map(인용).join(' ')}${메시지없음 ? ' -m "<메시지>"' : ''} --실행 --계획 ${r.계획}`);
   }
   if (r.확인) 줄.push(...확인글(r.확인));
   if (r.주의) 줄.push(`주의: ${r.주의}`);
   return 줄.join('\n');
+}
+
+/**
+ * 1단계 미리 보기 명령: 받은 명령에 --만 <경로>…를 붙인다(-- 뒤 항목 앞에). 받은 --만·실행·계획·메시지·기다림 인자는 뺀다.
+ * 명령줄이 없으면 붙일 인자만.
+ */
+function 단계명령(argv, 경로들) {
+  const 덧 = 경로들.flatMap((p) => ['--만', p]);
+  if (!argv || !argv.length) return `(같은 명령에) ${덧.map(인용).join(' ')}`;
+  const 값뺄 = new Set(['--만', '--후보폴더', '--계획', '-m', '--메시지', '-F', '--메시지파일', '--기다림', '--점검기다림', '--간격']);
+  const 그냥뺄 = new Set(['--json', '--실행', '--재실행', '--점검안함']);
+  const 남길 = [];
+  for (let i = 0; i < argv.length; i++) {
+    if (argv[i] === '--') { 남길.push(...argv.slice(i)); break; }
+    if (값뺄.has(argv[i])) i++;
+    else if (!그냥뺄.has(argv[i])) 남길.push(argv[i]);
+  }
+  const k = 남길.indexOf('--');
+  const 명령 = k < 0 ? [...남길, ...덧] : [...남길.slice(0, k), ...덧, ...남길.slice(k)];
+  return `node tools/공개.js ${명령.map(인용).join(' ')}`;
+}
+
+/** import 이름 엇갈림 줄: 세 짝 수, ①·②·알 수 없음의 예, 미리 보기면 나눔(1단계 --만 명령) */
+function 엇갈림글(e, argv, 결과) {
+  if (e.오류) return [`import 이름 — 세지 못했다: ${e.오류}`];
+  const s = e.셈;
+  const 덧 = [
+    e.새주소 ? `처음 쓰는 ?v= 주소라 ①에서 뺀 이름 ${e.새주소}개` : '',
+    e.알수없음.length ? `export * 때문에 모르는 이름 ${e.알수없음.length}개` : '',
+  ].filter(Boolean);
+  const 줄 = [`import 이름(캐시 10분) — ① ${s['①']}짝 · ② ${s['②']}짝 · ③ ${s['③']}짝 · 바뀐 모듈 ${e.모듈.바뀐}개 · 읽은 모듈 ${e.모듈.읽음}개${덧.length ? ` · ${덧.join(' · ')}` : ''}`];
+  const 보기 = (종류, 설명) => {
+    const 짝 = e.짝.filter((x) => x.종류 === 종류);
+    if (!짝.length) return;
+    줄.push(`  ${종류} ${설명}`);
+    for (const x of 짝.slice(0, 5)) 줄.push(`    ${짝글(x)}`);
+    if (짝.length > 5) 줄.push(`    … 외 ${짝.length - 5}짝`);
+  };
+  보기('①', '새 판이 바뀐 모듈의 옛 판에 없는 이름을 부른다 — 옛 판이 캐시에 남은 사람은 10분 동안 깨진다');
+  보기('②', '바뀐 모듈의 옛 판이 새 판에서 없어진 이름을 부른다 — 옛 판이 캐시에 남은 사람은 10분 동안 깨진다');
+  if (s['③']) 줄.push('  ③ 새 판끼리 안 맞는다 — 아래 걸림·알림(캐시와 상관없이 깨진다)');
+  if (e.알수없음.length) {
+    const 예 = e.알수없음.slice(0, 3).map((x) => `${x.부르는} → ${x.대상}: ${x.이름}`).join(' · ');
+    줄.push(`  알 수 없음(export * 너머라 세지 않았다 — 손으로 본다): ${예}${e.알수없음.length > 3 ? ' …' : ''}`);
+  }
+  if (e.나눔 && 결과 === '미리 보기') {
+    const 먼저 = e.나눔['1단계'];
+    if (!먼저.length) 줄.push('  옛 화면과도 맞는 모듈이 없어 나눠 올릴 수 없다 — 없애는 이름을 한동안 남긴 판을 먼저 올린다');
+    else {
+      줄.push(`  두 번에 나눠 올린다 — 1단계(옛 화면과도 맞는 쪽) ${먼저.length}개: ${먼저.join(', ')}`);
+      if (!(argv || []).includes('--위에')) 줄.push(`    ${단계명령(argv, 먼저)}`);
+      줄.push(`  2단계(나머지 ${e.나눔['2단계'].length}개): 1단계 바이트 대조가 같아진 때부터 10분 뒤 --만 없이 다시 미리 보기${e.나눔.남는.length ? ` — 2단계에도 엇갈림 ${e.나눔.남는.length}짝이 남아 그때 다음 나눔이 나온다` : ''}`);
+    }
+  }
+  return 줄;
 }
 
 function 확인글(c) {
