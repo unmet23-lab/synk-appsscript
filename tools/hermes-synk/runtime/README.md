@@ -25,7 +25,9 @@ Get-ScheduledTaskInfo -TaskName SYNK_Hermes_Gateway_Recovery
 
 게이트웨이가 떠 있어도 켤 때 올린 의존성 세대가 Hermes가 지금 고른 세대(`installs\<id>\facts.json`)와 다르면, 그 뒤에 깔린 패키지를 못 써서 해당 대화가 모두 실패한다(10-19 Claude 전환 뒤 anthropic). 이때 처음 본 확인에서는 `%LOCALAPPDATA%\hermes\synk-gateway-recovery.json`에 적기만 하고, 다음 확인에서 Hermes가 쉬는 중(`gateway_state.json`의 active_agents 0·`processes.json` 빈 목록이거나 아직 없음·도구 자식 프로세스 없음)이면 공식 `hermes gateway restart`를 한 번 부른다. 공식 restart는 처리 중인 대화를 기다리지 않으므로(Windows는 30초 뒤 강제 종료) 바쁘면 다음 확인으로 미루고, 같은 세대에는 두 번 부르지 않는다. 종료 코드: `-ReadOnly`에서 어긋남 5, 30분 넘게 바빠 아직 미룸 6, 이미 한 번 다시 켰는데도 어긋남 4, 재시작이 아직 안 끝남 3, 재시작 실패 1. 시험은 `node --test tests/hermes-synk-recovery.test.cjs`.
 
-아직 확인 못 한 것(10-19 Fable 검수): ① 이 작업이 직접 띄우거나 다시 켠 게이트웨이가 작업 스케줄러 쪽에 묶이지 않는지 — 지금까지 게이트웨이는 터미널·시작프로그램으로만 떴다. 작업이 실제로 start/restart를 한 뒤 `Get-ScheduledTask SYNK_Hermes_Gateway_Recovery`의 State가 Ready로 돌아오고 `Get-ScheduledTaskInfo`의 LastRunTime이 2분마다 나아가는지 본다. ② 채팅 사이에 시작한 LLM 예약 작업은 active_agents에 안 잡혀, 그 사이 어긋남 재시작이 겹치면 끊긴다(지금 Hermes 예약은 AI 없는 스크립트 하나뿐). ③ `hermes update`가 게이트웨이를 멈춘 동안 이 작업의 `gateway start`가 옛 트리로 띄울 수 있는지(기존 경로).
+이 작업이 띄운 게이트웨이와 작업 스케줄러 Job(10-20 확인): 이 작업이 `gateway start`·`restart`로 띄운 게이트웨이는 작업 스케줄러 Job에 남는다. `gateway-exit-diag.log`에 `breakaway: true`로 찍혀도 마찬가지다. 그래도 탈이 없어서 띄우는 방식은 그대로 둔다. 이 Job은 제한이 없는 Job(LimitFlags 0x0)이고, 같은 사용자의 다른 예약 작업 프로세스도 들어 있었다. 같은 설정의 일회용 작업으로 시험했다. 진짜 게이트웨이 대신 hermes.exe와 같은 실행기·`_spawn_detached`와 같은 플래그로 띄운 대역 자식을 썼다. 작업은 스크립트가 끝나고 1~2초 뒤 Ready로 돌아왔다. 실행 중에 작업을 끝내도, 끝난 실행에 종료를 보내도, 작업을 지워도 Job 안의 자식은 살아 있었다. 원리와 다시 확인하는 법은 [현장노트](../../../docs/현장노트/AI_CLI.md)의 「작업 스케줄러에서 띄운 게이트웨이는 `breakaway: true`여도 작업 Job에 남는다」에 있다.
+
+아직 확인 못 한 것(10-19·10-20 Fable 검수): ① 채팅 사이에 시작한 LLM 예약 작업은 active_agents에 안 잡혀, 그 사이 어긋남 재시작이 겹치면 끊긴다(지금 Hermes 예약은 AI 없는 스크립트 하나뿐). ② `hermes update`가 게이트웨이를 멈춘 동안 이 작업의 `gateway start`가 옛 트리로 띄울 수 있는지(기존 경로). ③ 작업 환경(작업 스케줄러가 만든 환경 변수·PATH)에서 진짜 게이트웨이가 켜져 텔레그램까지 도는지 — 10-20 기준으로 이 작업이 게이트웨이를 실제로 띄운 적은 아직 없다.
 
 작업은 Windows에 들어 있는 Windows PowerShell 5.1(`%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe`)로 돈다. 10-18 설치 때는 Codex 앱 셸의 `pwsh.exe`가 잡혀 작업이 그 앱 런타임에 묶였고, 10-19에 바꿨다(GPT를 끊어도 돌게).
 
