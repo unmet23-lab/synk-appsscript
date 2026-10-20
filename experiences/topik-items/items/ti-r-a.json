@@ -1,0 +1,1513 @@
+{
+  "schema": "topik-item-1",
+  "batch": "ti-r-a",
+  "author": "claude-opus-5-5 · Claude Code 하위 에이전트 · 2026-10-20",
+  "items": [
+    {
+      "id": "ti-r-a-001",
+      "rev": 1,
+      "family": "ti-r-a-001",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-31",
+      "targetGrade": 1,
+      "skillId": "ko.reading.main",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "저는 봄을 제일 좋아해요. 친구 사라 씨는 가을을 좋아해요.",
+      "script": null,
+      "question": "무엇에 대한 내용입니까? 알맞은 것을 고르십시오.",
+      "choices": [
+        "요일",
+        "계절",
+        "날짜",
+        "이름"
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "「봄」과 「가을」은 계절이에요. 두 문장 모두 누가 어느 계절을 좋아하는지 말하니까 「계절」에 대한 내용이에요. 「사라」라는 이름이 나오지만 글은 이름에 대한 내용이 아니에요.",
+        "en": "「봄」(spring) and 「가을」(autumn) are both seasons. Both sentences say who likes which season, so the answer is 「계절」(season). The name 「사라」 appears, but the text is not about names.",
+        "mn": "「봄」(хавар), 「가을」(намар) хоёулаа улирал. Хоёр өгүүлбэр хоёулаа хэн аль улиралд дуртайг хэлж байгаа тул хариулт нь 「계절」(улирал). 「사라」 гэдэг нэр гарч байгаа ч бичвэр нэрийн тухай биш."
+      },
+      "choiceNotes": [
+        "「월요일」「화요일」 같은 요일 말은 없어요 — 「봄」「가을」은 요일이 아니에요.",
+        "「봄」「가을」은 계절이에요 — 두 사람이 좋아하는 계절을 말하는 글이에요.",
+        "날짜는 「몇 월 며칠」이에요 — 글에는 날짜가 아니라 계절이 나와요.",
+        "「사라」는 이름이지만 글이 말하는 것은 좋아하는 계절이에요."
+      ],
+      "conceptIds": [],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-002",
+      "rev": 1,
+      "family": "ti-r-a-002",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-31",
+      "targetGrade": 1,
+      "skillId": "ko.reading.main",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "이 우산은 7,000원이에요. 저 우산은 12,000원이에요.",
+      "script": null,
+      "question": "무엇에 대한 내용입니까? 알맞은 것을 고르십시오.",
+      "choices": [
+        "날씨",
+        "시간",
+        "값",
+        "나이"
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "「7,000원」「12,000원」은 우산이 얼마인지 말해요. 그래서 「값」에 대한 내용이에요. 「우산」을 보고 「날씨」를 고르기 쉽지만 글에는 비나 날씨 이야기가 없어요.",
+        "en": "「7,000원」 and 「12,000원」 tell how much each umbrella costs, so the text is about 「값」(price). Seeing 「우산」(umbrella) may tempt you to pick 「날씨」(weather), but the text says nothing about rain or the weather.",
+        "mn": "「7,000원」, 「12,000원」 нь шүхэр тус бүр ямар үнэтэйг хэлж байна. Тиймээс хариулт нь 「값」(үнэ). 「우산」(шүхэр) гэдэг үгнээс болж 「날씨」(цаг агаар) гэсэн хариултыг сонгох амархан ч бичвэрт бороо, цаг агаарын тухай юу ч алга."
+      },
+      "choiceNotes": [
+        "「우산」이 나오지만 비나 날씨 이야기는 없어요 — 우산이 얼마인지 말해요.",
+        "숫자 뒤에 「시」가 아니라 「원」이 있어요 — 시간이 아니에요.",
+        "두 우산이 각각 얼마인지 말해요 — 값에 대한 글이에요.",
+        "숫자 뒤에 「살」이 아니라 「원」이 있어요 — 나이가 아니에요."
+      ],
+      "conceptIds": [],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-003",
+      "rev": 1,
+      "family": "ti-r-a-003",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-31",
+      "targetGrade": 1,
+      "skillId": "ko.reading.main",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "바트 씨는 몽골에서 왔어요. 응우옌 씨는 베트남에서 왔어요.",
+      "script": null,
+      "question": "무엇에 대한 내용입니까? 알맞은 것을 고르십시오.",
+      "choices": [
+        "이름",
+        "나이",
+        "주소",
+        "나라"
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "「몽골」과 「베트남」은 나라예요. 두 문장은 두 사람이 어느 나라에서 왔는지 말하니까 「나라」에 대한 내용이에요. 「바트」「응우옌」은 이름이지만 글은 이름이 아니라 온 나라를 말해요.",
+        "en": "「몽골」(Mongolia) and 「베트남」(Vietnam) are countries. The two sentences say which country each person came from, so the answer is 「나라」(country). 「바트」 and 「응우옌」 are names, but the text tells where they came from, not what their names are.",
+        "mn": "「몽골」(Монгол), 「베트남」(Вьетнам) бол улс. Хоёр өгүүлбэр хоёр хүн аль улсаас ирснийг хэлж байгаа тул хариулт нь 「나라」(улс). 「바트」, 「응우옌」 нь нэр боловч бичвэр нэрийн тухай биш, хаанаас ирснийг хэлж байна."
+      },
+      "choiceNotes": [
+        "「바트」「응우옌」은 이름이지만 글은 두 사람이 어디에서 왔는지 말해요.",
+        "「몇 살」 같은 나이 말은 없어요 — 나이가 아니에요.",
+        "「에서 왔어요」는 사는 집 주소가 아니라 온 나라를 말해요.",
+        "「몽골」「베트남」은 나라예요 — 두 사람이 온 나라를 말하는 글이에요."
+      ],
+      "conceptIds": [],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-004",
+      "rev": 1,
+      "family": "ti-r-a-004",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-40",
+      "targetGrade": 1,
+      "skillId": "ko.reading.condition",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "〈우리 학교 버스〉\n• 아침 7시 50분에 역 앞에서 떠납니다.\n• 우리 학교 학생만 탑니다.\n• 학생증을 꼭 가지고 타세요.\n• 돈은 내지 않습니다.",
+      "script": null,
+      "question": "다음을 읽고 맞지 않는 것을 고르십시오.",
+      "choices": [
+        "다른 학교 학생도 이 버스를 탑니다.",
+        "버스는 아침에 역 앞에서 떠납니다.",
+        "학생들은 학생증을 가지고 버스를 탑니다.",
+        "학생들은 버스에서 돈을 내지 않습니다."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "안내에 「우리 학교 학생만 탑니다」라고 했어요. 「만」이 있으니까 다른 학교 학생은 이 버스를 탈 수 없어요. 나머지 셋은 「역 앞에서 떠납니다」「학생증을 꼭 가지고 타세요」「돈은 내지 않습니다」와 같아요.",
+        "en": "The notice says 「우리 학교 학생만 탑니다」(only students of our school ride). Because of 「만」(only), students from other schools cannot take this bus, so that statement does not match. The other three match 「역 앞에서 떠납니다」, 「학생증을 꼭 가지고 타세요」 and 「돈은 내지 않습니다」.",
+        "mn": "Мэдэгдэлд 「우리 학교 학생만 탑니다」(зөвхөн манай сургуулийн сурагчид сууна) гэжээ. 「만」(зөвхөн) гэдэг үгээс болж өөр сургуулийн сурагч энэ автобусанд сууж болохгүй, тиймээс тэр өгүүлбэр таарахгүй. Бусад гурав нь мэдэгдэлд бичсэн зүйлтэй таарна."
+      },
+      "choiceNotes": [
+        "「우리 학교 학생만 탑니다」 — 「만」이 있으니까 다른 학교 학생은 못 타요. 그래서 맞지 않아요.",
+        "「아침 7시 50분에 역 앞에서 떠납니다」와 같아요.",
+        "「학생증을 꼭 가지고 타세요」와 같아요.",
+        "「돈은 내지 않습니다」와 같아요."
+      ],
+      "conceptIds": [
+        "S107"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-005",
+      "rev": 1,
+      "family": "ti-r-a-005",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-40",
+      "targetGrade": 1,
+      "skillId": "ko.reading.condition",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "〈솔빛 빵집〉\n• 오전 8시~오후 9시\n• 일요일은 쉽니다.\n• 저녁 8시부터 모든 빵이 1,000원!",
+      "script": null,
+      "question": "다음을 읽고 맞지 않는 것을 고르십시오.",
+      "choices": [
+        "저녁 8시 30분에는 빵이 1,000원입니다.",
+        "일요일에는 빵집이 문을 열지 않습니다.",
+        "아침에도 모든 빵이 1,000원입니다.",
+        "빵집은 오후 9시에 문을 닫습니다."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "광고에 「저녁 8시부터 모든 빵이 1,000원」이라고 했어요. 그러니까 빵이 1,000원인 때는 저녁 8시부터 문을 닫는 9시까지이고, 아침에는 1,000원이 아니에요. 「저녁 8시 30분」은 8시 뒤라서 그 보기는 맞아요.",
+        "en": "The ad says 「저녁 8시부터 모든 빵이 1,000원」(from 8 p.m., all bread is 1,000 won). So the 1,000-won price runs from 8 p.m. until closing at 9, not in the morning. 「저녁 8시 30분」(8:30 p.m.) is after 8, so that statement is true.",
+        "mn": "Зарад 「저녁 8시부터 모든 빵이 1,000원」(оройн 8 цагаас эхлэн бүх талх 1,000 вон) гэжээ. Тэгэхээр 1,000 воны үнэ оройн 8-аас хаах 9 цаг хүртэл үйлчилнэ, өглөө биш. 「저녁 8시 30분」(оройн 8:30) нь 8 цагаас хойш тул тэр өгүүлбэр үнэн."
+      },
+      "choiceNotes": [
+        "「저녁 8시부터」 1,000원이니까 8시 30분에는 1,000원이에요 — 맞아요.",
+        "「일요일은 쉽니다」와 같아요.",
+        "1,000원은 「저녁 8시부터」예요 — 아침에는 1,000원이 아니에요. 그래서 맞지 않아요.",
+        "「오전 8시~오후 9시」 — 오후 9시에 문을 닫아요."
+      ],
+      "conceptIds": [
+        "S104"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-006",
+      "rev": 1,
+      "family": "ti-r-a-006",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-40",
+      "targetGrade": 1,
+      "skillId": "ko.reading.condition",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "민수 씨, 토요일 등산 이야기예요.\n아침 7시에 우리 집 앞에서 만나요.\n비가 오면 일요일에 가요.\n물하고 김밥은 제가 가지고 가요.\n- 지영",
+      "script": null,
+      "question": "다음을 읽고 맞지 않는 것을 고르십시오.",
+      "choices": [
+        "두 사람은 아침 7시에 만납니다.",
+        "두 사람은 지영 씨 집 앞에서 만납니다.",
+        "지영 씨가 물하고 김밥을 가지고 갑니다.",
+        "비가 오면 토요일에 등산을 갑니다."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "문자에 「비가 오면 일요일에 가요」라고 했어요. 비가 오면 토요일이 아니라 일요일에 등산을 가요. 「우리 집 앞」은 문자를 쓴 지영 씨의 집 앞이니까 그 보기는 맞아요.",
+        "en": "The message says 「비가 오면 일요일에 가요」(if it rains, we'll go on Sunday). So if it rains, they go hiking on Sunday, not Saturday. 「우리 집 앞」(in front of my house) means 지영's house, because 지영 wrote the message, so that statement is true.",
+        "mn": "Мессежид 「비가 오면 일요일에 가요」(бороо орвол ням гарагт явна) гэжээ. Бороо орвол бямба биш, ням гарагт ууланд гарна. 「우리 집 앞」(манай гэрийн урд) гэдэг нь мессеж бичсэн 지영-ийн гэрийн урд тул тэр өгүүлбэр зөв."
+      },
+      "choiceNotes": [
+        "「아침 7시에 … 만나요」와 같아요.",
+        "「우리 집 앞」은 문자를 쓴 지영 씨의 집 앞이에요 — 맞아요.",
+        "「물하고 김밥은 제가 가지고 가요」 — 「제가」는 지영 씨예요.",
+        "「비가 오면 일요일에 가요」 — 비가 오면 토요일이 아니라 일요일에 가요. 그래서 맞지 않아요."
+      ],
+      "conceptIds": [
+        "G401"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-007",
+      "rev": 1,
+      "family": "ti-r-a-007",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-40",
+      "targetGrade": 1,
+      "skillId": "ko.reading.condition",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "〈하늘 박물관〉\n• 화요일~일요일 오전 10시~오후 6시\n• 금요일만 밤 9시까지 문을 엽니다.\n• 월요일은 쉽니다.\n• 어른 3,000원, 어린이 1,000원",
+      "script": null,
+      "question": "다음을 읽고 맞지 않는 것을 고르십시오.",
+      "choices": [
+        "월요일에는 박물관이 문을 닫습니다.",
+        "목요일에도 밤 9시까지 문을 엽니다.",
+        "어린이는 1,000원을 냅니다.",
+        "토요일에는 오후 6시에 문을 닫습니다."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "「금요일만 밤 9시까지 문을 엽니다」라고 했어요. 「만」이 있으니까 밤 9시까지 여는 날은 금요일 하루이고, 목요일과 토요일은 오후 6시에 닫아요. 그래서 목요일 보기가 맞지 않아요.",
+        "en": "The notice says 「금요일만 밤 9시까지 문을 엽니다」(only on Fridays is it open until 9 p.m.). Because of 「만」(only), Friday is the only late day; on Thursday and Saturday it closes at 6 p.m. So the Thursday statement does not match.",
+        "mn": "Мэдэгдэлд 「금요일만 밤 9시까지 문을 엽니다」(зөвхөн баасан гарагт оройн 9 цаг хүртэл ажиллана) гэжээ. 「만」(зөвхөн) байгаа тул орой 9 хүртэл ажилладаг өдөр нь ганцхан баасан гараг, пүрэв ба бямба гарагт оройн 6 цагт хаана. Тиймээс пүрэв гарагийн тухай өгүүлбэр таарахгүй."
+      },
+      "choiceNotes": [
+        "「월요일은 쉽니다」 — 월요일에는 문을 닫아요.",
+        "「금요일만 밤 9시까지」 — 밤 9시까지 여는 날은 금요일뿐이에요. 목요일은 오후 6시에 닫아요. 그래서 맞지 않아요.",
+        "「어린이 1,000원」과 같아요.",
+        "금요일이 아닌 날은 「오후 6시」까지 열어요 — 토요일은 6시에 닫아요."
+      ],
+      "conceptIds": [
+        "S107"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-008",
+      "rev": 1,
+      "family": "ti-r-a-008",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-40",
+      "targetGrade": 1,
+      "skillId": "ko.reading.condition",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "〈별빛 도서관 책 빌리기〉\n• 한 사람이 다섯 권까지 빌립니다.\n• 2주일 동안 빌립니다.\n• 도서관 카드를 가지고 오세요.\n• 사전은 빌리지 못합니다.",
+      "script": null,
+      "question": "다음을 읽고 맞지 않는 것을 고르십시오.",
+      "choices": [
+        "한 사람이 여섯 권을 빌립니다.",
+        "책은 2주일 동안 빌립니다.",
+        "도서관 카드를 가지고 갑니다.",
+        "사전은 집에 가지고 가지 못합니다."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "「한 사람이 다섯 권까지 빌립니다」라고 했어요. 「까지」는 가장 많은 수를 말하니까 한 사람이 여섯 권은 빌리지 못해요. 사전은 「빌리지 못합니다」라서 집에 가지고 가지 못한다는 보기는 맞아요.",
+        "en": "The notice says 「한 사람이 다섯 권까지 빌립니다」(one person can borrow up to five books). 「까지」 marks the maximum, so one person cannot borrow six. Dictionaries 「빌리지 못합니다」(cannot be borrowed), so the statement that you can't take them home is true.",
+        "mn": "Мэдэгдэлд 「한 사람이 다섯 권까지 빌립니다」(нэг хүн таван ном хүртэл зээлнэ) гэжээ. 「까지」 нь хамгийн их тоог заадаг тул нэг хүн зургаан ном зээлж чадахгүй. Толь бичгийг 「빌리지 못합니다」(зээлэх боломжгүй) гэсэн тул гэртээ авч явж болохгүй гэсэн өгүүлбэр зөв."
+      },
+      "choiceNotes": [
+        "「다섯 권까지」 — 한 사람이 다섯 권보다 많이 빌리지 못해요. 그래서 맞지 않아요.",
+        "「2주일 동안 빌립니다」와 같아요.",
+        "「도서관 카드를 가지고 오세요」와 같아요.",
+        "「사전은 빌리지 못합니다」 — 빌리지 못하니까 집에 가지고 가지 못해요."
+      ],
+      "conceptIds": [
+        "S105"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-009",
+      "rev": 1,
+      "family": "ti-r-a-009",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-40",
+      "targetGrade": 1,
+      "skillId": "ko.reading.condition",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "〈하나 사진 학원〉\n사진 교실 학생을 찾습니다.\n• 수업: 11월, 매주 토요일 오전 10시\n• 신청: 10월 31일까지, 1층 사무실에서\n• 한 달 20,000원",
+      "script": null,
+      "question": "다음을 읽고 맞지 않는 것을 고르십시오.",
+      "choices": [
+        "토요일 오전에 수업을 합니다.",
+        "신청은 1층 사무실에서 합니다.",
+        "한 달에 20,000원을 냅니다.",
+        "11월에도 신청을 받습니다."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "「신청: 10월 31일까지」라고 했어요. 신청은 10월 31일에 끝나요. 수업은 11월에 하지만 11월에는 신청을 받지 않아요.",
+        "en": "The ad says 「신청: 10월 31일까지」(apply by October 31). Applications close on October 31. The classes are in November, but applications are not taken in November.",
+        "mn": "Зарад 「신청: 10월 31일까지」(10-р сарын 31 хүртэл бүртгүүлнэ) гэжээ. Бүртгэл 10-р сарын 31-нд дуусна. Хичээл 11-р сард орох ч 11-р сард бүртгэл авахгүй."
+      },
+      "choiceNotes": [
+        "「매주 토요일 오전 10시」와 같아요.",
+        "「1층 사무실에서」 신청해요 — 맞아요.",
+        "「한 달 20,000원」과 같아요.",
+        "「10월 31일까지」 신청해요 — 11월에는 신청을 받지 않아요. 그래서 맞지 않아요."
+      ],
+      "conceptIds": [
+        "S105"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-010",
+      "rev": 1,
+      "family": "ti-r-a-010",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-40",
+      "targetGrade": 1,
+      "skillId": "ko.reading.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "〈초록 식당〉\n점심 시간이 바뀌었습니다.\n• 전: 오전 11시 30분~오후 2시\n• 지금: 낮 12시~오후 3시\n• 토요일 저녁에는 문을 열지 않습니다.",
+      "script": null,
+      "question": "다음을 읽고 맞지 않는 것을 고르십시오.",
+      "choices": [
+        "점심 시간은 오후 3시에 끝납니다.",
+        "점심 시간이 전과 다릅니다.",
+        "지금 점심 시간은 11시 30분에 시작합니다.",
+        "토요일 저녁에는 이 식당이 문을 닫습니다."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "「점심 시간이 바뀌었습니다」라고 했고, 지금은 「낮 12시~오후 3시」예요. 「11시 30분」은 바뀌기 전의 시간이에요. 「전」과 「지금」을 나누어 읽어야 해요.",
+        "en": "The notice says 「점심 시간이 바뀌었습니다」(lunch hours have changed), and now they are 「낮 12시~오후 3시」(12 noon to 3 p.m.). 「11시 30분」 was the old starting time. Read 「전」(before) and 「지금」(now) separately.",
+        "mn": "Мэдэгдэлд 「점심 시간이 바뀌었습니다」(үдийн хоолны цаг өөрчлөгдсөн) гээд одоо 「낮 12시~오후 3시」(өдрийн 12-оос 15 цаг) гэжээ. 「11시 30분」 бол өөрчлөгдөхөөс өмнөх эхлэх цаг. 「전」(өмнө), 「지금」(одоо) хоёрыг ялгаж уншаарай."
+      },
+      "choiceNotes": [
+        "지금 점심 시간은 「낮 12시~오후 3시」예요 — 3시에 끝나요.",
+        "「점심 시간이 바뀌었습니다」와 같아요.",
+        "11시 30분은 바뀌기 전 시간이에요. 지금은 「낮 12시」에 시작해요. 그래서 맞지 않아요.",
+        "「토요일 저녁에는 문을 열지 않습니다」와 같아요."
+      ],
+      "conceptIds": [],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-011",
+      "rev": 1,
+      "family": "ti-r-a-011",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-40",
+      "targetGrade": 1,
+      "skillId": "ko.reading.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "유진 씨,\n저는 오늘 친구 집에서 자요.\n그래서 내일 아침에 같이 학교에 못 가요. 미안해요.\n냉장고에 사과가 있어요. 우유는 없어요.\n- 리나",
+      "script": null,
+      "question": "다음을 읽고 맞지 않는 것을 고르십시오.",
+      "choices": [
+        "리나 씨는 오늘 친구 집에서 잡니다.",
+        "두 사람은 내일 아침에 같이 학교에 갑니다.",
+        "냉장고에 사과가 있습니다.",
+        "냉장고에 우유가 없습니다."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "메모에 「그래서 내일 아침에 같이 학교에 못 가요」라고 했어요. 리나 씨는 오늘 친구 집에서 자니까 두 사람은 내일 아침에 같이 학교에 가지 않아요. 「우유는 없어요」도 부정이지만 그 보기는 메모와 같아요.",
+        "en": "The memo says 「그래서 내일 아침에 같이 학교에 못 가요」(so I can't go to school with you tomorrow morning). 리나 is sleeping at a friend's house tonight, so the two won't go to school together tomorrow. 「우유는 없어요」(there's no milk) is negative too, but that statement matches the memo.",
+        "mn": "Тэмдэглэлд 「그래서 내일 아침에 같이 학교에 못 가요」(тиймээс маргааш өглөө хамт сургууль руу явж чадахгүй) гэжээ. 리나 өнөө орой найзынхаа гэрт унтах тул маргааш өглөө хоёулаа хамт сургууль руу явахгүй. 「우유는 없어요」(сүү байхгүй) мөн үгүйсгэл боловч тэр өгүүлбэр тэмдэглэлтэй таарна."
+      },
+      "choiceNotes": [
+        "「저는 오늘 친구 집에서 자요」 — 「저」는 메모를 쓴 리나 씨예요.",
+        "「내일 아침에 같이 학교에 못 가요」 — 같이 가지 않아요. 그래서 맞지 않아요.",
+        "「냉장고에 사과가 있어요」와 같아요.",
+        "「우유는 없어요」와 같아요."
+      ],
+      "conceptIds": [
+        "G305"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-012",
+      "rev": 1,
+      "family": "ti-r-a-012",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-40",
+      "targetGrade": 1,
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "〈기차표〉\n10월 24일 (토)\n서울 09:30 → 부산 12:10\n5호차 14번\n어른 1명",
+      "script": null,
+      "question": "다음을 읽고 맞지 않는 것을 고르십시오.",
+      "choices": [
+        "기차는 12시 10분에 서울에서 떠납니다.",
+        "토요일에 기차를 탑니다.",
+        "서울에서 부산으로 갑니다.",
+        "어른 한 명이 탑니다."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "표에 「서울 09:30 → 부산 12:10」이라고 했어요. 기차는 서울에서 9시 30분에 떠나고 부산에 12시 10분에 도착해요. 12시 10분은 떠나는 시간이 아니라 도착하는 시간이에요.",
+        "en": "The ticket shows 「서울 09:30 → 부산 12:10」. The train leaves Seoul at 9:30 and arrives in Busan at 12:10, so 12:10 is the arrival time, not the departure time.",
+        "mn": "Тасалбар дээр 「서울 09:30 → 부산 12:10」 гэж байна. Галт тэрэг Сөүлээс 9:30-д хөдөлж, Пусанд 12:10-д хүрнэ. 12:10 бол хөдлөх биш, хүрэх цаг."
+      },
+      "choiceNotes": [
+        "「서울 09:30 → 부산 12:10」 — 서울에서 9시 30분에 떠나요. 12시 10분은 부산에 도착하는 시간이에요. 그래서 맞지 않아요.",
+        "「10월 24일 (토)」 — 토요일이에요.",
+        "「서울 → 부산」 — 서울에서 부산으로 가요.",
+        "「어른 1명」과 같아요."
+      ],
+      "conceptIds": [
+        "G212"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-013",
+      "rev": 1,
+      "family": "ti-r-a-013",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-40",
+      "targetGrade": 1,
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "준호 씨, 이번 금요일이 제 생일이에요.\n저녁 7시에 우리 집에서 파티를 해요.\n우리 집은 학교 옆 아파트 3층이에요.\n꼭 오세요!\n- 마이클",
+      "script": null,
+      "question": "다음을 읽고 맞지 않는 것을 고르십시오.",
+      "choices": [
+        "마이클 씨의 생일은 금요일입니다.",
+        "파티는 저녁 7시에 시작합니다.",
+        "파티는 학교에서 합니다.",
+        "마이클 씨의 집은 아파트 3층입니다."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "문자에 「우리 집에서 파티를 해요」라고 했어요. 「학교」는 마이클 씨 집이 어디에 있는지 말할 때 나와요. 파티는 학교가 아니라 학교 옆 아파트, 마이클 씨 집에서 해요.",
+        "en": "The message says 「우리 집에서 파티를 해요」(we're having the party at my place). 「학교」(school) only appears to tell where the apartment is: next to the school. The party is at 마이클's home, not at the school.",
+        "mn": "Мессежид 「우리 집에서 파티를 해요」(манай гэрт үдэшлэг хийнэ) гэжээ. 「학교」(сургууль) гэдэг үг зөвхөн гэр нь хаана байгааг хэлэхэд гарсан — сургуулийн хажуугийн орон сууц. Үдэшлэг сургууль дээр биш, 마이클-ийн гэрт болно."
+      },
+      "choiceNotes": [
+        "「이번 금요일이 제 생일이에요」와 같아요.",
+        "「저녁 7시에 … 파티를 해요」와 같아요.",
+        "「우리 집에서 파티를 해요」 — 학교가 아니라 마이클 씨 집이에요. 학교는 집 옆에 있어요. 그래서 맞지 않아요.",
+        "「우리 집은 학교 옆 아파트 3층이에요」와 같아요."
+      ],
+      "conceptIds": [
+        "G207"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-014",
+      "rev": 1,
+      "family": "ti-r-a-014",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-43",
+      "targetGrade": 1,
+      "skillId": "ko.reading.reason",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "저는 오늘 늦게 일어났어요. 그래서 아침을 못 먹었어요. 배가 고파서 점심을 11시에 먹었어요.",
+      "script": null,
+      "question": "다음의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "일찍 일어나서 아침을 먹었습니다.",
+        "늦게 일어나서 아침을 못 먹었습니다.",
+        "배가 안 고파서 점심을 늦게 먹었습니다.",
+        "아침을 먹고 11시에 점심을 먹었습니다."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "「늦게 일어났어요. 그래서 아침을 못 먹었어요」라고 했어요. 늦게 일어난 것이 아침을 못 먹은 까닭이에요. 점심은 「배가 고파서」 11시에 먹었으니까 「배가 안 고파서」는 틀려요.",
+        "en": "The text says 「늦게 일어났어요. 그래서 아침을 못 먹었어요」(I got up late, so I couldn't eat breakfast). Getting up late is the reason for missing breakfast. Lunch was at 11 「배가 고파서」(because I was hungry), so 「배가 안 고파서」(because I wasn't hungry) is wrong.",
+        "mn": "Бичвэрт 「늦게 일어났어요. 그래서 아침을 못 먹었어요」(орой босоод өглөөний цайгаа ууж чадсангүй) гэжээ. Орой боссон нь өглөөний цай уугаагүйн шалтгаан. Үдийн хоолыг 「배가 고파서」(өлссөн учраас) 11 цагт идсэн тул 「배가 안 고파서」(өлсөөгүй учраас) гэсэн нь буруу."
+      },
+      "choiceNotes": [
+        "「늦게 일어났어요」「아침을 못 먹었어요」와 반대예요.",
+        "「늦게 일어났어요. 그래서 아침을 못 먹었어요」와 같아요.",
+        "「배가 고파서 점심을 11시에 먹었어요」 — 배가 고팠고, 점심을 일찍 먹었어요.",
+        "「아침을 못 먹었어요」 — 아침을 먹지 않았어요."
+      ],
+      "conceptIds": [
+        "G308"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-015",
+      "rev": 1,
+      "family": "ti-r-a-015",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-43",
+      "targetGrade": 1,
+      "skillId": "ko.reading.reason",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "우리 집에는 강아지가 있어요. 강아지가 밖을 좋아해서 저는 매일 저녁 공원에 가요. 공원에서 강아지와 같이 걸어요.",
+      "script": null,
+      "question": "다음의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "강아지가 집을 좋아해서 밖에 안 나갑니다.",
+        "저는 주말에만 공원에 갑니다.",
+        "공원에서 혼자 걷습니다.",
+        "강아지가 밖을 좋아해서 매일 공원에 갑니다."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "「강아지가 밖을 좋아해서 저는 매일 저녁 공원에 가요」라고 했어요. 공원에 가는 까닭은 강아지가 밖을 좋아하기 때문이에요. 공원에는 「매일」 가니까 「주말에만」은 틀려요.",
+        "en": "The text says 「강아지가 밖을 좋아해서 저는 매일 저녁 공원에 가요」(my dog likes being outside, so I go to the park every evening). The dog liking the outdoors is the reason. The writer goes 「매일」(every day), so 「주말에만」(only on weekends) is wrong.",
+        "mn": "Бичвэрт 「강아지가 밖을 좋아해서 저는 매일 저녁 공원에 가요」(гөлөг маань гадаа байх дуртай болохоор би орой бүр цэцэрлэгт хүрээлэнд очдог) гэжээ. Шалтгаан нь гөлөг гадаа дуртай. 「매일」(өдөр бүр) очдог тул 「주말에만」(зөвхөн амралтын өдөр) гэсэн нь буруу."
+      },
+      "choiceNotes": [
+        "「강아지가 밖을 좋아해서」 매일 공원에 가요 — 집을 좋아하지 않아요.",
+        "공원에는 「매일 저녁」 가요 — 주말에만 가지 않아요.",
+        "「강아지와 같이 걸어요」 — 혼자 걷지 않아요.",
+        "「강아지가 밖을 좋아해서 저는 매일 저녁 공원에 가요」와 같아요."
+      ],
+      "conceptIds": [
+        "G308"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-016",
+      "rev": 1,
+      "family": "ti-r-a-016",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-43",
+      "targetGrade": 1,
+      "skillId": "ko.reading.reason",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "오늘 1시에 친구와 약속이 있었어요. 그런데 길에 차가 많아서 20분 늦었어요. 친구에게 정말 미안했어요.",
+      "script": null,
+      "question": "다음의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "길에 차가 많아서 약속에 늦었습니다.",
+        "친구가 20분 늦게 왔습니다.",
+        "길에 차가 없어서 일찍 왔습니다.",
+        "약속 시간은 2시였습니다."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "「길에 차가 많아서 20분 늦었어요」라고 했어요. 늦은 사람은 글을 쓴 사람이고, 까닭은 길에 차가 많았기 때문이에요. 그래서 「친구에게 정말 미안했어요」 — 친구가 늦은 것이 아니에요.",
+        "en": "The text says 「길에 차가 많아서 20분 늦었어요」(there were a lot of cars on the road, so I was 20 minutes late). The writer was the one who was late, because of the traffic. That is why the writer felt sorry toward the friend; the friend was not late.",
+        "mn": "Бичвэрт 「길에 차가 많아서 20분 늦었어요」(замд машин их байсан болохоор 20 минут хоцорсон) гэжээ. Хоцорсон нь бичсэн хүн өөрөө, шалтгаан нь замд машин их байсан. Тийм учраас найздаа их эвгүй санасан — найз нь хоцроогүй."
+      },
+      "choiceNotes": [
+        "「길에 차가 많아서 20분 늦었어요」와 같아요.",
+        "늦은 사람은 친구가 아니라 글을 쓴 「저」예요 — 그래서 「친구에게 정말 미안했어요」.",
+        "「길에 차가 많아서」 「늦었어요」 — 차가 많았고, 늦었어요.",
+        "약속은 「1시」였어요."
+      ],
+      "conceptIds": [
+        "G308"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-017",
+      "rev": 1,
+      "family": "ti-r-a-017",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-43",
+      "targetGrade": 1,
+      "skillId": "ko.reading.reason",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "저는 음악을 아주 좋아해요. 그래서 지난달부터 피아노를 배워요. 주말에는 집에서 피아노를 쳐요.",
+      "script": null,
+      "question": "다음의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "음악을 싫어해서 피아노를 안 배웁니다.",
+        "다음 달부터 피아노를 배웁니다.",
+        "음악을 좋아해서 피아노를 배웁니다.",
+        "주말에는 학교에서 피아노를 칩니다."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "「음악을 아주 좋아해요. 그래서 지난달부터 피아노를 배워요」라고 했어요. 음악을 좋아하는 것이 피아노를 배우는 까닭이에요. 피아노는 「지난달부터」 배우니까 「다음 달부터」는 틀려요.",
+        "en": "The text says 「음악을 아주 좋아해요. 그래서 지난달부터 피아노를 배워요」(I really like music, so I've been learning piano since last month). Liking music is the reason. The lessons began 「지난달부터」(since last month), so 「다음 달부터」(from next month) is wrong.",
+        "mn": "Бичвэрт 「음악을 아주 좋아해요. 그래서 지난달부터 피아노를 배워요」(хөгжимд их дуртай, тиймээс өнгөрсөн сараас төгөлдөр хуур сурч байна) гэжээ. Хөгжимд дуртай нь шалтгаан. 「지난달부터」(өнгөрсөн сараас) сурч эхэлсэн тул 「다음 달부터」(ирэх сараас) гэсэн нь буруу."
+      },
+      "choiceNotes": [
+        "「음악을 아주 좋아해요」「피아노를 배워요」와 반대예요.",
+        "피아노는 「지난달부터」 배워요 — 다음 달이 아니에요.",
+        "「음악을 아주 좋아해요. 그래서 … 피아노를 배워요」와 같아요.",
+        "주말에는 「집에서」 피아노를 쳐요."
+      ],
+      "conceptIds": [
+        "G308"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-018",
+      "rev": 1,
+      "family": "ti-r-a-018",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-43",
+      "targetGrade": 1,
+      "skillId": "ko.reading.reason",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "우리 집 근처에 슈퍼마켓과 시장이 있어요. 시장 과일이 싸고 맛있어서 저는 시장에 자주 가요. 슈퍼마켓에는 가끔 가요.",
+      "script": null,
+      "question": "다음의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "슈퍼마켓 과일이 맛있어서 슈퍼마켓에 자주 갑니다.",
+        "우리 집 근처에는 시장이 없습니다.",
+        "시장 과일은 비싸고 맛이 없습니다.",
+        "시장 과일이 싸고 맛있어서 시장에 자주 갑니다."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "「시장 과일이 싸고 맛있어서 저는 시장에 자주 가요」라고 했어요. 시장에 자주 가는 까닭은 과일이 싸고 맛있기 때문이에요. 슈퍼마켓에는 「가끔」 가니까 슈퍼마켓에 자주 간다는 보기는 틀려요.",
+        "en": "The text says 「시장 과일이 싸고 맛있어서 저는 시장에 자주 가요」(market fruit is cheap and tasty, so I often go to the market). That is why the writer goes there often. The writer goes to the supermarket only 「가끔」(sometimes), so the supermarket statement is wrong.",
+        "mn": "Бичвэрт 「시장 과일이 싸고 맛있어서 저는 시장에 자주 가요」(захын жимс хямд бас амттай болохоор би зах руу байнга явдаг) гэжээ. Зах руу байнга явдаг шалтгаан нь тэр. Супермаркет руу 「가끔」(хааяа) л явдаг тул супермаркетийн тухай өгүүлбэр буруу."
+      },
+      "choiceNotes": [
+        "슈퍼마켓에는 「가끔」 가요 — 자주 가는 곳은 시장이에요.",
+        "「우리 집 근처에 슈퍼마켓과 시장이 있어요」 — 시장이 있어요.",
+        "「시장 과일이 싸고 맛있어서」 — 비싸지 않고 맛있어요.",
+        "「시장 과일이 싸고 맛있어서 저는 시장에 자주 가요」와 같아요."
+      ],
+      "conceptIds": [
+        "G308"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-019",
+      "rev": 1,
+      "family": "ti-r-a-019",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-43",
+      "targetGrade": 1,
+      "skillId": "ko.reading.reason",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "어제는 날씨가 아주 더웠어요. 그래서 친구하고 아이스크림을 먹었어요. 저녁에는 비가 와서 시원했어요.",
+      "script": null,
+      "question": "다음의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "비가 와서 아이스크림을 먹었습니다.",
+        "더워서 친구하고 아이스크림을 먹었습니다.",
+        "어제 저녁에는 아주 더웠습니다.",
+        "혼자 아이스크림을 먹었습니다."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "「날씨가 아주 더웠어요. 그래서 친구하고 아이스크림을 먹었어요」라고 했어요. 아이스크림을 먹은 까닭은 더위예요. 비는 저녁에 왔고, 비가 와서 「시원했어요」.",
+        "en": "The text says 「날씨가 아주 더웠어요. 그래서 친구하고 아이스크림을 먹었어요」(it was very hot, so I had ice cream with a friend). The heat is the reason. The rain came in the evening and made it 「시원했어요」(cool); it was not the reason for the ice cream.",
+        "mn": "Бичвэрт 「날씨가 아주 더웠어요. 그래서 친구하고 아이스크림을 먹었어요」(цаг агаар их халуун байсан, тиймээс найзтайгаа зайрмаг идсэн) гэжээ. Зайрмаг идсэн шалтгаан нь халуун. Бороо орой орж, 「시원했어요」(сэрүүхэн болсон) — зайрмагны шалтгаан биш."
+      },
+      "choiceNotes": [
+        "아이스크림을 먹은 까닭은 비가 아니라 더위예요 — 「더웠어요. 그래서 … 아이스크림을 먹었어요」.",
+        "「날씨가 아주 더웠어요. 그래서 친구하고 아이스크림을 먹었어요」와 같아요.",
+        "「저녁에는 비가 와서 시원했어요」 — 저녁에는 덥지 않았어요.",
+        "「친구하고」 먹었어요 — 혼자가 아니에요."
+      ],
+      "conceptIds": [
+        "G308"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-020",
+      "rev": 1,
+      "family": "ti-r-a-020",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-43",
+      "targetGrade": 1,
+      "skillId": "ko.reading.sequence",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "저는 회사 일이 끝나고 수영장에 가요. 수영을 하고 집에 와서 저녁을 먹어요. 저녁을 먹고 책을 읽어요.",
+      "script": null,
+      "question": "다음의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "수영을 하고 집에서 저녁을 먹습니다.",
+        "저녁을 먹고 수영장에 갑니다.",
+        "아침에 수영을 하고 회사에 갑니다.",
+        "책을 읽고 저녁을 먹습니다."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "순서는 「회사 일 → 수영 → 집에서 저녁 → 책」이에요. 「수영을 하고 집에 와서 저녁을 먹어요」라고 했으니까 수영이 저녁보다 먼저예요. 책은 「저녁을 먹고」 읽어요.",
+        "en": "The order is: work → swimming → dinner at home → reading. 「수영을 하고 집에 와서 저녁을 먹어요」(I swim, then come home and eat dinner) shows swimming comes before dinner. Reading comes 「저녁을 먹고」(after dinner).",
+        "mn": "Дараалал нь: ажил → усанд сэлэх → гэртээ оройн хоол → ном. 「수영을 하고 집에 와서 저녁을 먹어요」(усанд сэлээд гэртээ ирж оройн хоол иднэ) гэснээс сэлэлт оройн хоолноос өмнө гэдэг нь харагдана. Номыг 「저녁을 먹고」(оройн хоолны дараа) уншдаг."
+      },
+      "choiceNotes": [
+        "「수영을 하고 집에 와서 저녁을 먹어요」와 같아요.",
+        "수영이 먼저예요 — 「수영을 하고 … 저녁을 먹어요」.",
+        "수영장에는 「회사 일이 끝나고」 가요 — 아침이 아니에요.",
+        "「저녁을 먹고 책을 읽어요」 — 저녁이 먼저예요."
+      ],
+      "conceptIds": [
+        "G306"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-021",
+      "rev": 1,
+      "family": "ti-r-a-021",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-43",
+      "targetGrade": 1,
+      "skillId": "ko.reading.sequence",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "어제 대학교 친구의 결혼식에 갔어요. 먼저 결혼식을 보고 친구와 같이 사진을 찍었어요. 그다음에 식당에서 점심을 먹었어요.",
+      "script": null,
+      "question": "다음의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "점심을 먹고 결혼식을 봤습니다.",
+        "결혼식 전에 친구와 사진을 찍었습니다.",
+        "결혼식을 보고 친구와 사진을 찍었습니다.",
+        "결혼식이 끝나고 저녁을 먹었습니다."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "「먼저 결혼식을 보고 친구와 같이 사진을 찍었어요. 그다음에 식당에서 점심을 먹었어요」라고 했어요. 순서는 「결혼식 → 사진 → 점심」이에요. 사진은 결혼식 전이 아니라 결혼식을 보고 찍었어요.",
+        "en": "The text says 「먼저 결혼식을 보고 친구와 같이 사진을 찍었어요. 그다음에 식당에서 점심을 먹었어요」(first I watched the wedding and took photos with my friend; after that I had lunch at a restaurant). The order is wedding → photos → lunch. The photos were taken after the ceremony, not before.",
+        "mn": "Бичвэрт 「먼저 결혼식을 보고 친구와 같이 사진을 찍었어요. 그다음에 식당에서 점심을 먹었어요」(эхлээд хуримын ёслолыг үзээд найзтайгаа зураг авахуулсан, дараа нь хоолны газарт үдийн хоол идсэн) гэжээ. Дараалал нь: хурим → зураг → үдийн хоол. Зургийг хуримын өмнө биш, ёслолыг үзсэний дараа авахуулсан."
+      },
+      "choiceNotes": [
+        "「먼저 결혼식을 보고」 — 결혼식이 점심보다 먼저예요.",
+        "사진은 「결혼식을 보고」 찍었어요 — 결혼식 뒤예요.",
+        "「먼저 결혼식을 보고 친구와 같이 사진을 찍었어요」와 같아요.",
+        "식당에서 먹은 것은 「점심」이에요 — 저녁이 아니에요."
+      ],
+      "conceptIds": [
+        "G306"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-022",
+      "rev": 1,
+      "family": "ti-r-a-022",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-43",
+      "targetGrade": 1,
+      "skillId": "ko.reading.sequence",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "오늘 오후에 먼저 우체국에 가서 고향 친구에게 편지를 보냈어요. 그다음에 은행에 가서 돈을 찾았어요. 은행에서 나와서 집에 왔어요.",
+      "script": null,
+      "question": "다음의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "은행에서 돈을 찾고 우체국에 갔습니다.",
+        "우체국에서 편지를 보내고 은행에 갔습니다.",
+        "오늘 오전에 우체국에 가서 편지를 보냈습니다.",
+        "은행에 가서 고향 친구에게 편지를 보냈습니다."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "「먼저 우체국에 가서 … 편지를 보냈어요. 그다음에 은행에 가서 돈을 찾았어요」라고 했어요. 순서는 「우체국 → 은행 → 집」이에요. 「먼저」와 「그다음에」를 보면 순서를 알 수 있어요.",
+        "en": "The text says 「먼저 우체국에 가서 … 편지를 보냈어요. 그다음에 은행에 가서 돈을 찾았어요」(first I went to the post office and sent a letter; after that I went to the bank and took out money). The order is post office → bank → home. The words 「먼저」(first) and 「그다음에」(after that) show the order.",
+        "mn": "Бичвэрт 「먼저 우체국에 가서 … 편지를 보냈어요. 그다음에 은행에 가서 돈을 찾았어요」(эхлээд шуудан дээр очиж захиа илгээсэн, дараа нь банкинд очиж мөнгө авсан) гэжээ. Дараалал нь: шуудан → банк → гэр. 「먼저」(эхлээд), 「그다음에」(дараа нь) гэсэн үгнээс дарааллыг мэдэж болно."
+      },
+      "choiceNotes": [
+        "「먼저 우체국에 가서」 — 우체국이 먼저이고, 은행은 「그다음에」 갔어요.",
+        "「먼저 우체국에 가서 … 편지를 보냈어요. 그다음에 은행에 가서」와 같아요.",
+        "우체국에는 「오늘 오후에」 갔어요 — 오전이 아니에요.",
+        "편지는 「우체국에 가서」 보냈어요 — 은행에서는 돈을 찾았어요."
+      ],
+      "conceptIds": [
+        "G308"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-023",
+      "rev": 1,
+      "family": "ti-r-a-023",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-43",
+      "targetGrade": 1,
+      "skillId": "ko.reading.sequence",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "지난주에 부모님과 제주도에 갔어요. 첫날에는 바다를 구경했어요. 다음 날에는 자전거를 탔어요. 셋째 날에 비행기를 타고 집에 왔어요.",
+      "script": null,
+      "question": "다음의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "자전거를 타고 다음 날에 바다를 구경했습니다.",
+        "첫날에 비행기를 타고 집에 왔습니다.",
+        "혼자 제주도에 가서 바다를 구경했습니다.",
+        "바다를 구경하고 다음 날에 자전거를 탔습니다."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "「첫날에는 바다를 구경했어요. 다음 날에는 자전거를 탔어요」라고 했어요. 순서는 「바다 → 자전거 → 비행기로 집에」예요. 자전거를 먼저 탄 것처럼 쓴 보기는 순서가 반대예요.",
+        "en": "The text says 「첫날에는 바다를 구경했어요. 다음 날에는 자전거를 탔어요」(on the first day we went to see the sea; the next day we rode bikes). The order is sea → bikes → flying home. The choice that puts the bike ride first has the order reversed.",
+        "mn": "Бичвэрт 「첫날에는 바다를 구경했어요. 다음 날에는 자전거를 탔어요」(эхний өдөр далай үзсэн, дараагийн өдөр дугуй унасан) гэжээ. Дараалал нь: далай → дугуй → онгоцоор гэртээ. Дугуйг түрүүлж унасан мэтээр бичсэн сонголт дарааллыг эсрэгээр нь хэлжээ."
+      },
+      "choiceNotes": [
+        "「첫날에는 바다를 구경했어요. 다음 날에는 자전거를 탔어요」 — 바다가 먼저예요.",
+        "비행기는 「셋째 날에」 탔어요 — 첫날이 아니에요.",
+        "「부모님과 제주도에 갔어요」 — 혼자가 아니에요.",
+        "「첫날에는 바다를 구경했어요. 다음 날에는 자전거를 탔어요」와 같아요."
+      ],
+      "conceptIds": [
+        "G306"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-024",
+      "rev": 1,
+      "family": "ti-r-a-024",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-43",
+      "targetGrade": 1,
+      "skillId": "ko.reading.sequence",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "토요일 아침에 집 청소를 했어요. 먼저 창문을 열고 방을 청소했어요. 청소가 끝나고 꽃에 물을 줬어요.",
+      "script": null,
+      "question": "다음의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "창문을 열고 방을 청소했습니다.",
+        "꽃에 물을 주고 방을 청소했습니다.",
+        "방을 청소하고 창문을 열었습니다.",
+        "일요일 아침에 방을 청소했습니다."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "「먼저 창문을 열고 방을 청소했어요. 청소가 끝나고 꽃에 물을 줬어요」라고 했어요. 순서는 「창문 → 청소 → 꽃에 물」이에요. 꽃에 물을 준 것은 청소가 끝난 뒤예요.",
+        "en": "The text says 「먼저 창문을 열고 방을 청소했어요. 청소가 끝나고 꽃에 물을 줬어요」(first I opened the window and cleaned the room; when the cleaning was done, I watered the flowers). The order is window → cleaning → watering. The flowers were watered after the cleaning.",
+        "mn": "Бичвэрт 「먼저 창문을 열고 방을 청소했어요. 청소가 끝나고 꽃에 물을 줬어요」(эхлээд цонхоо онгойлгоод өрөөгөө цэвэрлэсэн, цэвэрлэгээ дуусаад цэцэгтээ ус өгсөн) гэжээ. Дараалал нь: цонх → цэвэрлэгээ → цэцэгт ус. Цэцэгт ус өгсөн нь цэвэрлэгээ дууссаны дараа."
+      },
+      "choiceNotes": [
+        "「먼저 창문을 열고 방을 청소했어요」와 같아요.",
+        "「청소가 끝나고 꽃에 물을 줬어요」 — 물은 청소 뒤에 줬어요.",
+        "「먼저 창문을 열고」 — 창문을 먼저 열었어요.",
+        "청소는 「토요일 아침에」 했어요 — 일요일이 아니에요."
+      ],
+      "conceptIds": [
+        "G306"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-025",
+      "rev": 1,
+      "family": "ti-r-a-025",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-43",
+      "targetGrade": 1,
+      "skillId": "ko.reading.sequence",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "우리 딸은 오늘 학교에서 먼저 노래를 배웠어요. 그다음에 그림을 그렸어요. 점심을 먹고 친구들과 밖에서 놀았어요.",
+      "script": null,
+      "question": "다음의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "딸은 그림을 그리고 노래를 배웠습니다.",
+        "딸은 점심을 먹고 그림을 그렸습니다.",
+        "딸은 노래를 배우고 그림을 그렸습니다.",
+        "딸은 점심을 먹고 교실에서 놀았습니다."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "「먼저 노래를 배웠어요. 그다음에 그림을 그렸어요」라고 했어요. 순서는 「노래 → 그림 → 점심 → 밖에서 놀기」예요. 점심을 먹고 한 일은 그림이 아니라 「밖에서 놀았어요」예요.",
+        "en": "The text says 「먼저 노래를 배웠어요. 그다음에 그림을 그렸어요」(first she learned a song; then she drew pictures). The order is song → drawing → lunch → playing outside. After lunch she 「밖에서 놀았어요」(played outside); she did not draw then.",
+        "mn": "Бичвэрт 「먼저 노래를 배웠어요. 그다음에 그림을 그렸어요」(эхлээд дуу сурсан, дараа нь зураг зурсан) гэжээ. Дараалал нь: дуу → зураг → үдийн хоол → гадаа тоглох. Үдийн хоолны дараа зураг зураагүй, 「밖에서 놀았어요」(гадаа тоглосон)."
+      },
+      "choiceNotes": [
+        "「먼저 노래를 배웠어요. 그다음에 그림을 그렸어요」 — 노래가 먼저예요.",
+        "그림은 점심 전에 그렸어요 — 점심을 먹고 한 일은 「밖에서 놀았어요」예요.",
+        "「먼저 노래를 배웠어요. 그다음에 그림을 그렸어요」와 같아요.",
+        "점심을 먹고 「밖에서」 놀았어요 — 교실이 아니에요."
+      ],
+      "conceptIds": [
+        "G306"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-026",
+      "rev": 1,
+      "family": "ti-r-a-026",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-43",
+      "targetGrade": 1,
+      "skillId": "ko.reading.condition",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "우리 집에서는 숙제를 다 하면 게임을 해요. 숙제를 안 하면 게임을 못 해요. 오늘 저는 숙제를 다 했어요. 그래서 지금 형하고 게임을 해요.",
+      "script": null,
+      "question": "다음의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "숙제를 안 하면 게임을 합니다.",
+        "오늘 저는 숙제를 안 했습니다.",
+        "지금 저는 혼자 게임을 합니다.",
+        "숙제를 끝내면 게임을 합니다."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "「숙제를 다 하면 게임을 해요. 숙제를 안 하면 게임을 못 해요」라고 했어요. 게임을 하는 조건은 숙제를 다 하는 거예요. 「다 하다」를 「끝내다」로 바꾼 보기가 맞고, 「안 하면 게임을 합니다」는 글과 반대예요.",
+        "en": "The text says 「숙제를 다 하면 게임을 해요. 숙제를 안 하면 게임을 못 해요」(if I finish my homework, I play games; if I don't do it, I can't). Finishing homework is the condition for playing, so 「끝내면」(if I finish) matches; 「안 하면 게임을 합니다」(if I don't do it, I play) is the opposite of the text.",
+        "mn": "Бичвэрт 「숙제를 다 하면 게임을 해요. 숙제를 안 하면 게임을 못 해요」(гэрийн даалгавраа бүгдийг нь хийвэл тоглоом тоглоно, хийхгүй бол тоглож чадахгүй) гэжээ. Тоглох нөхцөл нь даалгавраа дуусгах. Тиймээс 「끝내면」(дуусгавал) гэсэн сонголт таарна, 「안 하면 게임을 합니다」(хийхгүй бол тоглоно) гэсэн нь бичвэрийн эсрэг."
+      },
+      "choiceNotes": [
+        "「숙제를 안 하면 게임을 못 해요」와 반대예요.",
+        "「오늘 저는 숙제를 다 했어요」 — 숙제를 했어요.",
+        "「지금 형하고 게임을 해요」 — 혼자가 아니에요.",
+        "「숙제를 다 하면 게임을 해요」와 같아요 — 「다 하다」는 「끝내다」예요."
+      ],
+      "conceptIds": [
+        "G401"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-027",
+      "rev": 1,
+      "family": "ti-r-a-027",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-43",
+      "targetGrade": 1,
+      "skillId": "ko.reading.condition",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "저는 커피를 좋아해요. 그런데 커피는 토요일에만 마셔요. 다른 날에는 우유를 마셔요.",
+      "script": null,
+      "question": "다음의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "월요일에는 커피를 마시지 않습니다.",
+        "일요일에도 커피를 마십니다.",
+        "저는 커피를 싫어합니다.",
+        "토요일에는 우유만 마십니다."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "「커피는 토요일에만 마셔요. 다른 날에는 우유를 마셔요」라고 했어요. 「만」이 있으니까 커피를 마시는 날은 토요일 하루예요. 월요일과 일요일은 「다른 날」이라서 커피를 마시지 않아요.",
+        "en": "The text says 「커피는 토요일에만 마셔요. 다른 날에는 우유를 마셔요」(I drink coffee only on Saturdays; on other days I drink milk). Because of 「만」(only), Saturday is the only coffee day, so on Monday and Sunday the writer does not drink coffee.",
+        "mn": "Бичвэрт 「커피는 토요일에만 마셔요. 다른 날에는 우유를 마셔요」(кофег зөвхөн бямба гарагт уудаг, бусад өдөр сүү уудаг) гэжээ. 「만」(зөвхөн) байгаа тул кофе уудаг өдөр ганцхан бямба. Даваа, ням гараг бусад өдөрт ордог тул тэр өдрүүдэд кофе уухгүй."
+      },
+      "choiceNotes": [
+        "「토요일에만」 커피를 마시고 「다른 날에는 우유를」 마셔요 — 월요일에는 커피를 안 마셔요.",
+        "커피는 「토요일에만」 마셔요 — 일요일은 「다른 날」이에요.",
+        "「저는 커피를 좋아해요」와 반대예요.",
+        "토요일에는 커피를 마셔요 — 우유는 「다른 날에」 마셔요."
+      ],
+      "conceptIds": [
+        "S107"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-028",
+      "rev": 1,
+      "family": "ti-r-a-028",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-43",
+      "targetGrade": 1,
+      "skillId": "ko.reading.condition",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "언니는 지금 미국에 있어요. 다음 주 금요일까지 미국에서 영어를 배워요. 그리고 토요일에 한국에 와요.",
+      "script": null,
+      "question": "다음의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "언니는 다음 주 금요일에 한국에 옵니다.",
+        "언니는 다음 주 목요일에도 미국에 있습니다.",
+        "언니는 미국에서 한국어를 배웁니다.",
+        "언니는 지금 한국에 있습니다."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "「다음 주 금요일까지 미국에서 영어를 배워요」라고 했어요. 「까지」는 금요일이 마지막 날이라는 뜻이니까 목요일에도 언니는 미국에 있어요. 한국에는 금요일이 아니라 「토요일에」 와요.",
+        "en": "The text says 「다음 주 금요일까지 미국에서 영어를 배워요」(she is learning English in America until next Friday). 「까지」(until) makes Friday the last day, so she is still in America on Thursday. She comes to Korea on 「토요일」(Saturday), not Friday.",
+        "mn": "Бичвэрт 「다음 주 금요일까지 미국에서 영어를 배워요」(ирэх долоо хоногийн баасан гараг хүртэл Америкт англи хэл сурна) гэжээ. 「까지」(хүртэл) нь баасан гараг сүүлийн өдөр гэсэн үг тул пүрэв гарагт эгч маань Америкт байна. Солонгост баасан биш, 「토요일」(бямба) гарагт ирнэ."
+      },
+      "choiceNotes": [
+        "「토요일에 한국에 와요」 — 금요일까지는 미국에 있어요.",
+        "「다음 주 금요일까지 미국에서」 배우니까 목요일에도 미국에 있어요.",
+        "언니는 미국에서 「영어를」 배워요.",
+        "「언니는 지금 미국에 있어요」와 반대예요."
+      ],
+      "conceptIds": [
+        "S105"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-029",
+      "rev": 1,
+      "family": "ti-r-a-029",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-43",
+      "targetGrade": 1,
+      "skillId": "ko.reading.condition",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "저는 보통 화요일에 극장에 가요. 화요일에 영화를 보면 표가 5,000원이에요. 다른 날에는 9,000원이에요.",
+      "script": null,
+      "question": "다음의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "화요일에는 영화표가 9,000원입니다.",
+        "다른 날에는 영화표가 5,000원입니다.",
+        "토요일에는 영화표가 9,000원입니다.",
+        "저는 보통 토요일에 극장에 갑니다."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "「화요일에 영화를 보면 표가 5,000원이에요. 다른 날에는 9,000원이에요」라고 했어요. 표가 5,000원인 조건은 화요일이에요. 토요일은 「다른 날」이니까 9,000원이에요.",
+        "en": "The text says 「화요일에 영화를 보면 표가 5,000원이에요. 다른 날에는 9,000원이에요」(if you see a movie on Tuesday, a ticket is 5,000 won; on other days it is 9,000 won). The 5,000-won price applies only on Tuesdays, so on Saturday a ticket is 9,000 won.",
+        "mn": "Бичвэрт 「화요일에 영화를 보면 표가 5,000원이에요. 다른 날에는 9,000원이에요」(мягмар гарагт кино үзвэл тасалбар 5,000 вон, бусад өдөр 9,000 вон) гэжээ. 5,000 воны үнэ зөвхөн мягмар гарагт. Бямба гараг бусад өдөрт ордог тул 9,000 вон."
+      },
+      "choiceNotes": [
+        "「화요일에 영화를 보면 표가 5,000원이에요」 — 화요일은 5,000원이에요.",
+        "「다른 날에는 9,000원이에요」 — 5,000원은 화요일뿐이에요.",
+        "토요일은 화요일이 아닌 「다른 날」이라서 9,000원이에요.",
+        "「저는 보통 화요일에 극장에 가요」 — 토요일이 아니에요."
+      ],
+      "conceptIds": [
+        "G401"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-030",
+      "rev": 1,
+      "family": "ti-r-a-030",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-43",
+      "targetGrade": 1,
+      "skillId": "ko.reading.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "어제 저는 핸드폰을 안 가지고 회사에 갔어요. 그래서 회사에서 친구에게 전화를 못 했어요. 저녁에 집에 와서 친구에게 전화했어요.",
+      "script": null,
+      "question": "다음의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "어제 핸드폰을 가지고 회사에 갔습니다.",
+        "회사에서 친구에게 전화를 했습니다.",
+        "어제 저녁에 친구에게 전화하지 않았습니다.",
+        "회사에서는 친구에게 전화하지 못했습니다."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "「핸드폰을 안 가지고 회사에 갔어요. 그래서 회사에서 친구에게 전화를 못 했어요」라고 했어요. 회사에서는 전화를 못 했고, 「저녁에 집에 와서」 전화했어요. 「안」과 「못」이 무엇을 부정하는지 잘 보세요.",
+        "en": "The text says 「핸드폰을 안 가지고 회사에 갔어요. 그래서 회사에서 친구에게 전화를 못 했어요」(I went to work without my phone, so I couldn't call my friend from work). The writer couldn't call at work but did call 「저녁에 집에 와서」(after getting home in the evening). Check what 「안」 and 「못」 negate.",
+        "mn": "Бичвэрт 「핸드폰을 안 가지고 회사에 갔어요. 그래서 회사에서 친구에게 전화를 못 했어요」(утсаа авалгүй ажилдаа очсон тул ажил дээрээс найз руугаа залгаж чадаагүй) гэжээ. Ажил дээрээ залгаж чадаагүй ч 「저녁에 집에 와서」(орой гэртээ ирээд) залгасан. 「안」, 「못」 юуг үгүйсгэж байгааг сайн хараарай."
+      },
+      "choiceNotes": [
+        "「핸드폰을 안 가지고 회사에 갔어요」와 반대예요.",
+        "「회사에서 친구에게 전화를 못 했어요」와 반대예요.",
+        "「저녁에 집에 와서 친구에게 전화했어요」 — 저녁에는 전화했어요.",
+        "「그래서 회사에서 친구에게 전화를 못 했어요」와 같아요."
+      ],
+      "conceptIds": [
+        "G209",
+        "G305"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-031",
+      "rev": 1,
+      "family": "ti-r-a-031",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-43",
+      "targetGrade": 1,
+      "skillId": "ko.reading.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "제 아들은 다섯 살이에요. 아들은 아직 한글을 못 읽어요. 그래서 매일 밤 제가 책을 읽고 아들은 들어요.",
+      "script": null,
+      "question": "다음의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "아들은 한글을 아직 읽지 못합니다.",
+        "아들은 벌써 한글을 잘 읽습니다.",
+        "매일 밤 아들이 책을 읽고 제가 듣습니다.",
+        "제 아들은 여섯 살입니다."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "「아들은 아직 한글을 못 읽어요」라고 했어요. 「못 읽어요」와 「읽지 못합니다」는 같은 뜻이에요. 그래서 밤에 책을 읽는 사람은 아들이 아니라 「제가」, 곧 글을 쓴 사람이에요.",
+        "en": "The text says 「아들은 아직 한글을 못 읽어요」(my son can't read Hangul yet). 「못 읽어요」 and 「읽지 못합니다」 mean the same. That is why the person who reads the books at night is 「제가」(I, the parent), not the son.",
+        "mn": "Бичвэрт 「아들은 아직 한글을 못 읽어요」(хүү маань солонгос үсэг хараахан уншиж чадахгүй) гэжээ. 「못 읽어요」, 「읽지 못합니다」 хоёр ижил утгатай. Тиймээс орой ном уншдаг нь хүү биш, 「제가」(би), өөрөөр хэлбэл бичсэн хүн."
+      },
+      "choiceNotes": [
+        "「아들은 아직 한글을 못 읽어요」와 같아요 — 「못 읽어요」는 「읽지 못합니다」예요.",
+        "「아직 한글을 못 읽어요」와 반대예요.",
+        "「제가 책을 읽고 아들은 들어요」 — 책을 읽는 사람은 「저」예요.",
+        "「제 아들은 다섯 살이에요」 — 여섯 살이 아니에요."
+      ],
+      "conceptIds": [
+        "G305",
+        "G313"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-032",
+      "rev": 1,
+      "family": "ti-r-a-032",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-43",
+      "targetGrade": 1,
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "저는 주말에 꽃집에서 일해요. 토요일에는 오후 1시부터 6시까지 일해요. 일요일에는 오전에만 일해요.",
+      "script": null,
+      "question": "다음의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "저는 주말에 빵집에서 일합니다.",
+        "토요일에는 오후 6시에 일이 끝납니다.",
+        "토요일에는 오전에 일을 시작합니다.",
+        "일요일에는 오후에 일합니다."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "「토요일에는 오후 1시부터 6시까지 일해요」라고 했어요. 토요일 일은 오후 1시에 시작해서 6시에 끝나요. 일요일은 「오전에만」 일하니까 오후에는 일하지 않아요.",
+        "en": "The text says 「토요일에는 오후 1시부터 6시까지 일해요」(on Saturdays I work from 1 to 6 p.m.), so Saturday work ends at 6. On Sundays the writer works 「오전에만」(only in the morning), not in the afternoon.",
+        "mn": "Бичвэрт 「토요일에는 오후 1시부터 6시까지 일해요」(бямба гарагт өдрийн 1-ээс 6 цаг хүртэл ажилладаг) гэжээ. Тэгэхээр бямба гарагийн ажил 6 цагт дуусна. Ням гарагт 「오전에만」(зөвхөн үдээс өмнө) ажилладаг тул үдээс хойш ажиллахгүй."
+      },
+      "choiceNotes": [
+        "일하는 곳은 「꽃집」이에요 — 빵집이 아니에요.",
+        "「토요일에는 오후 1시부터 6시까지 일해요」 — 6시에 끝나요.",
+        "토요일에는 「오후 1시부터」 일해요 — 오전이 아니에요.",
+        "「일요일에는 오전에만 일해요」 — 오후에는 일하지 않아요."
+      ],
+      "conceptIds": [
+        "G212"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-033",
+      "rev": 1,
+      "family": "ti-r-a-033",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-43",
+      "targetGrade": 1,
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "우리 집은 지하철역에서 걸어서 5분이에요. 방이 두 개 있고 창문이 커요. 집 앞에 공원이 있어요.",
+      "script": null,
+      "question": "다음의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "우리 집은 지하철역에서 걸어서 15분입니다.",
+        "우리 집에는 방이 하나 있습니다.",
+        "우리 집 뒤에 공원이 있습니다.",
+        "우리 집은 창문이 큽니다."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "「방이 두 개 있고 창문이 커요」라고 했어요. 그래서 「창문이 큽니다」가 맞아요. 역에서 「5분」, 방 「두 개」, 공원은 집 「앞」 — 숫자와 자리를 하나씩 맞춰 보세요.",
+        "en": "The text says 「방이 두 개 있고 창문이 커요」(there are two rooms and the windows are big), so 「창문이 큽니다」 matches. Check each detail: 「5분」(5 minutes) from the station, 「두 개」(two) rooms, and the park 「앞」(in front of) the house.",
+        "mn": "Бичвэрт 「방이 두 개 있고 창문이 커요」(хоёр өрөөтэй, цонх нь том) гэжээ. Тиймээс 「창문이 큽니다」 таарна. Буудлаас 「5분」(5 минут), өрөө 「두 개」(хоёр), цэцэрлэгт хүрээлэн гэрийн 「앞」(урд) — тоо, байршлыг нэг бүрчлэн тулгаж үзээрэй."
+      },
+      "choiceNotes": [
+        "「지하철역에서 걸어서 5분이에요」 — 15분이 아니에요.",
+        "「방이 두 개 있고」 — 방은 두 개예요.",
+        "「집 앞에 공원이 있어요」 — 뒤가 아니라 앞이에요.",
+        "「창문이 커요」와 같아요."
+      ],
+      "conceptIds": [
+        "G212"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-034",
+      "rev": 1,
+      "family": "ti-r-a-034",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-46",
+      "targetGrade": 1,
+      "skillId": "ko.reading.main",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "저는 6개월 전에 한국어 공부를 시작했어요. 책으로 공부를 많이 했어요. 그런데 아직 한국 사람과 이야기를 많이 못 했어요. 이제 한국 친구를 만나서 이야기를 많이 하고 싶어요.",
+      "script": null,
+      "question": "다음을 읽고 중심 생각을 고르십시오.",
+      "choices": [
+        "한국 친구와 이야기를 많이 하고 싶습니다.",
+        "앞으로도 책으로만 공부하고 싶습니다.",
+        "한국 사람과 이야기를 많이 해서 좋습니다.",
+        "이제 한국어 공부를 시작하고 싶습니다."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "글쓴이는 책으로 공부를 많이 했지만 「아직 한국 사람과 이야기를 많이 못 했어요」. 그래서 「이제 한국 친구를 만나서 이야기를 많이 하고 싶어요」라고 했어요. 이 마지막 문장이 중심 생각이고, 이야기를 이미 많이 했다는 보기는 글과 반대예요.",
+        "en": "The writer has studied a lot with books but 「아직 한국 사람과 이야기를 많이 못 했어요」(hasn't talked much with Korean people yet). So they say 「이제 한국 친구를 만나서 이야기를 많이 하고 싶어요」(now I want to meet Korean friends and talk a lot). That last sentence is the main idea; the choice saying they already talk a lot contradicts the text.",
+        "mn": "Бичсэн хүн номоор их суралцсан ч 「아직 한국 사람과 이야기를 많이 못 했어요」(солонгос хүнтэй хараахан их ярилцаж чадаагүй). Тиймээс 「이제 한국 친구를 만나서 이야기를 많이 하고 싶어요」(одоо солонгос найзтай уулзаж их ярилцмаар байна) гэжээ. Энэ сүүлийн өгүүлбэр гол санаа бөгөөд аль хэдийн их ярилцсан гэсэн сонголт бичвэрийн эсрэг."
+      },
+      "choiceNotes": [
+        "마지막 문장 「이제 한국 친구를 만나서 이야기를 많이 하고 싶어요」가 글쓴이의 생각이에요.",
+        "책으로는 공부를 많이 했고, 「이제」는 이야기를 하고 싶어요 — 책으로만 공부하고 싶지 않아요.",
+        "「아직 한국 사람과 이야기를 많이 못 했어요」와 반대예요.",
+        "「6개월 전에 한국어 공부를 시작했어요」 — 공부는 벌써 시작했어요."
+      ],
+      "conceptIds": [
+        "G301"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-035",
+      "rev": 1,
+      "family": "ti-r-a-035",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-46",
+      "targetGrade": 1,
+      "skillId": "ko.reading.main",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "우리 옆집에는 할머니가 사세요. 할머니는 저에게 자주 김치를 주세요. 할머니 김치는 정말 맛있어요. 그래서 저도 이번 주말에 할머니에게 케이크를 사서 드리고 싶어요.",
+      "script": null,
+      "question": "다음을 읽고 중심 생각을 고르십시오.",
+      "choices": [
+        "할머니 김치는 맛이 없습니다.",
+        "주말에는 할머니를 만나고 싶지 않습니다.",
+        "저도 할머니에게 케이크를 선물하고 싶습니다.",
+        "할머니에게 케이크를 받고 싶습니다."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "할머니가 「저에게 자주 김치를 주세요」, 그래서 글쓴이는 「저도 이번 주말에 할머니에게 케이크를 사서 드리고 싶어요」라고 했어요. 할머니에게 선물을 하고 싶은 마음이 중심 생각이에요. 케이크를 받는 사람은 글쓴이가 아니라 할머니예요.",
+        "en": "The grandmother 「저에게 자주 김치를 주세요」(often gives me kimchi), so the writer says 「저도 이번 주말에 할머니에게 케이크를 사서 드리고 싶어요」(this weekend I want to buy her a cake too). Wanting to give her a gift is the main idea. The cake goes to the grandmother, not to the writer.",
+        "mn": "Эмээ 「저에게 자주 김치를 주세요」(надад байнга кимчи өгдөг) тул бичсэн хүн 「저도 이번 주말에 할머니에게 케이크를 사서 드리고 싶어요」(би ч бас энэ амралтын өдөр эмээд бялуу авч өгмөөр байна) гэжээ. Эмээд бэлэг өгөх хүсэл нь гол санаа. Бялууг бичсэн хүн биш, эмээ авна."
+      },
+      "choiceNotes": [
+        "「할머니 김치는 정말 맛있어요」와 반대예요.",
+        "「이번 주말에 할머니에게 케이크를 사서 드리고 싶어요」 — 주말에 할머니를 만나고 싶어요.",
+        "「저도 … 할머니에게 케이크를 사서 드리고 싶어요」가 글쓴이의 생각이에요.",
+        "케이크는 할머니가 주는 것이 아니라 「제가」 「드리고 싶어요」."
+      ],
+      "conceptIds": [
+        "G301"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "ti-r-a-036",
+      "rev": 1,
+      "family": "ti-r-a-036",
+      "exam": "topik-i",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TI-R-46",
+      "targetGrade": 1,
+      "skillId": "ko.reading.main",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "우리 아버지는 회사 일이 많아서 매일 밤늦게 집에 오세요. 그래서 우리 가족은 저녁을 같이 못 먹어요. 저는 이번 주말에 가족과 같이 저녁을 먹고 싶어요.",
+      "script": null,
+      "question": "다음을 읽고 중심 생각을 고르십시오.",
+      "choices": [
+        "아버지가 매일 일찍 오셔서 좋습니다.",
+        "주말에 가족과 같이 저녁을 먹고 싶습니다.",
+        "가족과 매일 저녁을 같이 먹어서 좋습니다.",
+        "주말에는 혼자 저녁을 먹고 싶습니다."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "아버지가 늦게 오셔서 「우리 가족은 저녁을 같이 못 먹어요」. 그래서 글쓴이는 「이번 주말에 가족과 같이 저녁을 먹고 싶어요」라고 했어요. 이 바람이 중심 생각이고, 매일 같이 먹는다는 보기는 글과 반대예요.",
+        "en": "Because the father comes home late, 「우리 가족은 저녁을 같이 못 먹어요」(our family can't eat dinner together). So the writer says 「이번 주말에 가족과 같이 저녁을 먹고 싶어요」(this weekend I want to have dinner with my family). That wish is the main idea; the choice saying they eat together every day contradicts the text.",
+        "mn": "Аав орой ирдэг тул 「우리 가족은 저녁을 같이 못 먹어요」(манай гэр бүл оройн хоолоо хамт идэж чаддаггүй). Тиймээс бичсэн хүн 「이번 주말에 가족과 같이 저녁을 먹고 싶어요」(энэ амралтын өдөр гэр бүлтэйгээ хамт оройн хоол идмээр байна) гэжээ. Энэ хүсэл нь гол санаа бөгөөд өдөр бүр хамт иддэг гэсэн сонголт бичвэрийн эсрэг."
+      },
+      "choiceNotes": [
+        "「매일 밤늦게 집에 오세요」와 반대예요.",
+        "「이번 주말에 가족과 같이 저녁을 먹고 싶어요」가 글쓴이의 생각이에요.",
+        "「우리 가족은 저녁을 같이 못 먹어요」와 반대예요.",
+        "주말에는 「가족과 같이」 먹고 싶어요 — 혼자가 아니에요."
+      ],
+      "conceptIds": [
+        "G301"
+      ],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    }
+  ]
+}
