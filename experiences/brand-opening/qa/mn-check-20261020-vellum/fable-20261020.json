@@ -1,0 +1,24 @@
+{
+ "createdAt": "2026-10-20",
+ "layer": "Fable 교정(세 겹 확인의 둘째 겹, 결정 표 10-19 「현지어판 확인」)",
+ "input": "world-strings의 새 줄 11개(msg.vellum.* 7 · position.skill.ko.hangul.* 2 · msg.reasonInterest · msg.reasonInterestNamed)의 키 · 한국어 · 영어 · 몽골어와 이름을 넣은 실물 문장(vellum-01·02), 맞춰 볼 승인 줄(position.skill.* · position.status.* · position.cell.* · msg.reason* · msg.resumeReason · msg.hangulFirstReason). 아르곤 첫 검문(vellum-01·02) 뒤에 보냄.",
+ "reviewed": 22,
+ "flagged": 3,
+ "summary": {
+  "반영": 1,
+  "고쳐 반영": 1,
+  "그대로 둠": 1
+ },
+ "items": [
+  {"key": "msg.vellum.practice", "lang": "mn", "level": "should", "now": "«{skill}» чадварт саяхан алдсан зүйл байна. Бага зэрэг нэмж давтъя.", "suggest": "«{skill}» чадварт саяхан алдсан хэсгээ бага зэрэг нэмж давтъя.", "why": "한 문장인 원문을 둘로 나눠 「алдсан зүйл байна(놓친 것이 있다)」가 홀로 선 판정문처럼 들리고 зүйл은 잃어버린 물건으로도 읽힌다. 승인된 reasonRetry 「Өмнө нь алдсан хэсгээ дахин давтъя」 꼴로 묶으면 권유가 주절이 된다.", "decision": "반영"},
+  {"key": "msg.reasonInterestNamed", "lang": "mn", "level": "could", "now": "Илүү сурмаар байна гэж хэлсэн «{label}» тань энэ дасгалд багтсан.", "suggest": "Таны илүү сурмаар байна гэж хэлсэн «{label}» сэдвийн дасгал.", "why": "«{label}» 바로 뒤의 тань가 한국어 낱말에 걸려 어색하고 10번과 뜻이 같아진다. 머리명사 сэдэв가 속격을 받으면 이름에 아무것도 닿지 않는다.", "decision": "고쳐 반영 — 머리명사 сэдэв를 받고, 아르곤이 짚은 「илүү сурмаар」·인용절 머리명사 꼴을 피해 「Энэ бол таны илүү гүнзгий сурахыг хүссэн «{label}» сэдвийн дасгал.」"},
+  {"key": "msg.reasonInterestNamed", "lang": "en", "level": "could", "now": "This practice is about ‘{label}’, which you said you want to learn more about.", "suggest": "This is the ‘{label}’ practice you said you want to learn more about.", "why": "원문 꼴 그대로이고 about…about 겹침이 사라진다. 지금 글도 틀리지는 않는다.", "decision": "그대로 둠 — 제안 꼴은 관계절이 ‘practice’를 꾸며 「연습을 더 배우고 싶다」로 읽힌다. 원문은 ‘{label}’을 더 배우고 싶다는 뜻."}
+ ],
+ "argonDriven": [
+  {"key": "msg.vellum.supported", "from": "«{skill}» чадварыг тусламжтайгаар хийж чадсан. Үргэлжлүүлэн харцгаая.", "to": "«{skill}» чадварын асуултад тусламжтайгаар зөв хариулсан. Үргэлжлүүлэн харцгаая.", "why": "Fable 첫 교정은 그대로였으나 아르곤 문법 층이 「чадварыг хийх(능력을 하다)」 호응과 чадвар/чадсан 겹침을 짚었다(vellum-01·02). 승인 줄 position.status.recent-independent 「шинэ асуултад өөрөө зөв хариулсан」 꼴로."},
+  {"key": "msg.vellum.recent-independent", "from": "«{skill}» чадварыг саяхан өөрөө хийж чадсан. Хөнгөн хэмнэлээр үргэлжлүүлье.", "to": "«{skill}» чадварын асуултад саяхан өөрөө зөв хариулсан. Хөнгөн хэмнэлээр үргэлжлүүлье.", "why": "supported와 같은 이유."},
+  {"key": "msg.reasonInterest", "from": "Илүү сурмаар байна гэж хэлсэн зүйл тань энэ дасгалд багтсан.", "to": "Энэ дасгалд таны илүү гүнзгий сурахыг хүссэн сэдэв орсон.", "why": "Fable 첫 교정은 그대로였으나 아르곤이 「илүү сурмаар」(부사를 동사에 바로 붙임)와 인용절이 머리명사를 꾸미는 꼴을 두 번(named-01·recheck2-01) 짚었다. 이름 줄과 짝을 맞춰 сэдэв가 관형절 동사의 목적어가 되게 했다."}
+ ],
+ "recheck": "고친 다섯 줄(practice · supported · recent-independent · reasonInterest · reasonInterestNamed)을 Fable이 다시 봤다 — 다섯 줄 모두 그대로(«…» чадварын асуулт는 승인 줄의 항목↔문항 관계와 같고, хүссэн은 사용자가 스스로 밝힌 바람을 가리키는 UI 관용이라 「알려 준」을 받는다). 아르곤 재검문 recheck-01·recheck3-01·named3-01과 마지막 final-01·final-02·final-named-01 모두 문법 정상·맞춤법 의심 0.",
+ "notes": "용어는 승인 줄과 일관된다(항목=чадвар, 기록=мэдээлэл, 확인=шалгах, 연습=давтах, 도움을 받아=тусламжтайгаар, 혼자=өөрөө, 최근=саяхан, 청유 -цгаая/-ъя/-ье). 격 어미는 모두 «이름» 뒤의 чадвар·сэдэв가 받고 이름에 붙는 것은 없다. 능력을 판정하는 말은 없다. 영어는 바깥 작은따옴표·안쪽 “not” 겹따옴표 중첩이 바르고 reasonNew·reasonAssisted·status 줄과 같은 결이다. 「내 성향」의 「더 배우고 싶어요」 단추는 한국어만 있어 맞출 몽골어 단추 글은 없다 — 그 화면을 현지어로 만들 때 관심 이유와 말을 맞춘다."
+}

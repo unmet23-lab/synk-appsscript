@@ -3,6 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
+import {createRequire} from 'node:module';
 
 const memory=()=>{const data=new Map();return {data,getItem:k=>data.has(k)?data.get(k):null,setItem:(k,v)=>data.set(k,String(v)),removeItem:k=>data.delete(k)};};
 // 모듈을 부르기 전에 브라우저 전역을 흉내 낸다(언어는 고르기 전이라 한국어).
@@ -53,6 +54,65 @@ test('다른 모듈의 한국어 상태 문장은 표에 있으면 바뀌고, �
  assert.equal(tMessage('표에 없는 상태 문장이에요.','en'),'표에 없는 상태 문장이에요.');
  assert.ok(missingStrings().some(item=>item.key.startsWith('msg:표에 없는')&&item.lang==='en'));
  assert.equal(tMessage('Already English','mn'),'Already English');
+});
+
+// Atlas Vellum의 추천 이유(10-20): 항목 이름이 든 문장을 msg.vellum.* 틀로 맞춘다. 한국어는 atlas/vellum.js가 실제로 만드는 문장이다.
+const require=createRequire(import.meta.url);
+const {learningReason,activityReason}=require('../../../atlas/vellum.js');
+const STATUSES=['unseen','checking','practice','supported','recent-independent','review'];
+const strataSkills=()=>['topik-i','hangul'].flatMap(name=>JSON.parse(read(`../../../strata/maps/${name}.json`)).nodes.filter(node=>node.kind==='skill'));
+
+test('항목 이름 줄은 Strata 이름과 같다(TOPIK I 15 · 한글 만나기 2)',()=>{
+ const skills=strataSkills();
+ assert.equal(skills.length,17);
+ for(const skill of skills)assert.equal(STRINGS[`position.skill.${skill.id}`]?.ko,skill.label_ko,skill.id);
+});
+
+test('Vellum 추천 이유는 여섯 꼴 × 17 항목 × 고른 목표 줄 있음·없음 모두 영어·몽골어로 바뀐다',()=>{
+ const before=missingStrings().length;let count=0;
+ for(const skill of strataSkills())for(const status of STATUSES)for(const goal of [false,true]){
+  if(goal&&status==='unseen')continue; // activityReason은 처음 보는 항목에 이름을 붙이지 않는다.
+  const ko=goal?activityReason({reasons:[`practice.${status}`,'goal.declared'],state:status,label:skill.label_ko}):learningReason({status,label:skill.label_ko});
+  assert.equal(tMessage(ko,'ko'),ko);
+  for(const code of ['en','mn']){
+   const want=t(`msg.vellum.${status}`,{skill:t(`position.skill.${skill.id}`,undefined,code)},code)+(goal?` ${t('msg.vellum.goal',undefined,code)}`:'');
+   const got=tMessage(ko,code);
+   assert.equal(got,want,`${code}: ${ko}`);assert.doesNotMatch(got,HANGUL,ko);count++;
+  }
+ }
+ assert.equal(count,17*11*2);
+ assert.equal(missingStrings().length,before,'바뀐 문장은 빠진 말로 남지 않는다');
+ assert.equal(tMessage(learningReason({status:'checking',label:'듣고 세부 정보 찾기'}),'en'),'Let’s check ‘Listening for details’ a little more.');
+ assert.equal(tMessage(learningReason({status:'review',label:'소리 듣고 글자 찾기'}),'mn'),'«Авиаг сонсоод үсгийг олох» чадварыг дахин харах цаг боллоо.');
+});
+
+test('조사는 이름 끝 받침을 따르고, 맞지 않는 조사·모르는 이름·틀 밖 문장은 그대로 두고 기록한다',async()=>{
+ // 지금 항목 이름은 모두 받침 없이 끝나(…기) 받침 있는 이름은 시험용 줄로 잰다. 새 모듈 판이라 표를 새로 읽는다.
+ STRINGS['position.skill.qa.final']={ko:'낱말 소리 익힘',en:'QA final',mn:'QA эцэс'};
+ try{
+  const fresh=await import('../world-lang.mjs?qa=josa');
+  assert.equal(fresh.tMessage(learningReason({status:'checking',label:'낱말 소리 익힘'}),'en'),'Let’s check ‘QA final’ a little more.');
+  assert.equal(fresh.tMessage(learningReason({status:'unseen',label:'낱말 소리 익힘'}),'en'),'You don’t have many records for ‘QA final’ yet. Let’s check it quickly.');
+  assert.match(learningReason({status:'checking',label:'낱말 소리 익힘'}),/익힘을 /);
+  for(const text of ['낱말 소리 익힘를 조금 더 확인해 봐요.','듣고 세부 정보 찾기을 조금 더 확인해 봐요.','듣고 세부 정보 찾기은 아직 기록이 적어요. 짧게 확인해 봐요.',
+   '조사 — 은/는·이/가를 조금 더 확인해 봐요.','모르는 문장이에요. 고른 목표와 이어지는 활동이에요.','{skill}을(를) 조금 더 확인해 봐요.']){
+   assert.equal(fresh.tMessage(text,'en'),text);assert.equal(fresh.tMessage(text,'mn'),text);
+   if(HANGUL.test(text))assert.ok(fresh.missingStrings().some(item=>item.key===`msg:${text.slice(0,60)}`&&item.lang==='mn'),text);
+  }
+ }finally{delete STRINGS['position.skill.qa.final'];}
+});
+
+test('관심 이유(world-learning-plan.mjs)도 영어·몽골어로 바뀌고 {label}의 학습 내용은 한국어 그대로다',async()=>{
+ const {createWorldLearningPlan}=await import('../../synk-world-app/world-learning-plan.mjs');
+ const {recommendActivities}=require('../../../atlas/learning.js');
+ const now=Date.parse('2026-10-19T03:00:00.000Z'),plan=fields=>createWorldLearningPlan({settings:{reasons:['travel']},now,recommendActivities,...fields});
+ const wanted=plan({answers:{interested:['sit-travel-transport'],notNow:[]}});
+ const named=plan({answers:{interested:['sit-travel-transport'],notNow:[]},summary:{skills:[],evidenceComplete:false,asOf:new Date(now).toISOString(),
+  concepts:[{id:'sit-travel-transport',kind:'word',label:'교통',status:'checking'}]}});
+ assert.equal(tMessage(wanted.reason,'en'),'This practice includes something you said you want to learn more about.');
+ assert.equal(tMessage(wanted.reason,'mn'),STRINGS['msg.reasonInterest'].mn);
+ assert.equal(tMessage(named.reason,'en'),'This practice is about ‘교통’, which you said you want to learn more about.');
+ assert.equal(tMessage(named.reason,'mn'),'Энэ бол таны илүү гүнзгий сурахыг хүссэн «교통» сэдвийн дасгал.');
 });
 
 test('기기 언어는 미리 고르기에만 쓰고, 모르는 언어를 영어로 간주하지 않는다',()=>{

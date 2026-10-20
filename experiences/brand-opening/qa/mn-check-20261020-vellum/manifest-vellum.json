@@ -1,0 +1,123 @@
+{
+ "createdAt": "2026-10-20T06:07:00.641Z",
+ "pairs": 13,
+ "budget": 900,
+ "batches": [
+  {
+   "file": "vellum-01.txt",
+   "mnChars": 489,
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "msg.vellum.unseen",
+     "example": "{skill}=듣고 세부 정보 찾기",
+     "ko": "듣고 세부 정보 찾기는 아직 기록이 적어요. 짧게 확인해 봐요.",
+     "mn": "«Сонсоод нарийн мэдээллийг олох» чадварын мэдээлэл одоохондоо цөөн байна. Товчхон шалгацгаая."
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "msg.vellum.checking",
+     "example": "{skill}=낱말 듣기",
+     "ko": "낱말 듣기를 조금 더 확인해 봐요.",
+     "mn": "«Үг сонсох» чадварыг бага зэрэг нэмж шалгацгаая."
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "msg.vellum.practice",
+     "example": "{skill}=듣고 이유 이해하기",
+     "ko": "최근 놓친 듣고 이유 이해하기를 조금 더 연습해 봐요.",
+     "mn": "«Сонсоод шалтгааныг ойлгох» чадварт саяхан алдсан зүйл байна. Бага зэрэг нэмж давтъя."
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "msg.vellum.supported",
+     "example": "{skill}=조사·문형 읽기",
+     "ko": "조사·문형 읽기를 도움과 함께 해냈어요. 이어서 살펴봐요.",
+     "mn": "«Туслах үг, өгүүлбэрийн загварыг ойлгож унших» чадварыг тусламжтайгаар хийж чадсан. Үргэлжлүүлэн харцгаая."
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "msg.vellum.recent-independent",
+     "example": "{skill}=읽고 핵심 이해하기",
+     "ko": "읽고 핵심 이해하기를 최근 혼자 해냈어요. 가볍게 이어가요.",
+     "mn": "«Уншаад гол санааг ойлгох» чадварыг саяхан өөрөө хийж чадсан. Хөнгөн хэмнэлээр үргэлжлүүлье."
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "msg.vellum.review",
+     "example": "{skill}=듣고 순서 이해하기",
+     "ko": "듣고 순서 이해하기를 다시 살펴볼 때예요.",
+     "mn": "«Сонсоод дарааллыг ойлгох» чадварыг дахин харах цаг боллоо."
+    }
+   ]
+  },
+  {
+   "file": "vellum-02.txt",
+   "mnChars": 441,
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "msg.vellum.goal",
+     "example": "msg.vellum.checking + msg.vellum.goal, {skill}=낱말 뜻 읽기",
+     "ko": "낱말 뜻 읽기를 조금 더 확인해 봐요. 고른 목표와 이어지는 활동이에요.",
+     "mn": "«Үгийн утгыг ойлгож унших» чадварыг бага зэрэг нэмж шалгацгаая. Энэ нь таны сонгосон зорилготой холбогдоно."
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "position.skill.ko.hangul.sound",
+     "example": "항목 이름",
+     "ko": "소리 듣고 글자 찾기",
+     "mn": "Авиаг сонсоод үсгийг олох"
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "position.skill.ko.hangul.read",
+     "example": "항목 이름",
+     "ko": "글자 보고 소리 알기",
+     "mn": "Үсгийг хараад авиаг нь мэдэх"
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "msg.vellum.checking",
+     "example": "{skill}=소리 듣고 글자 찾기",
+     "ko": "소리 듣고 글자 찾기를 조금 더 확인해 봐요.",
+     "mn": "«Авиаг сонсоод үсгийг олох» чадварыг бага зэрэг нэмж шалгацгаая."
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "msg.vellum.supported",
+     "example": "{skill}=글자 보고 소리 알기",
+     "ko": "글자 보고 소리 알기를 도움과 함께 해냈어요. 이어서 살펴봐요.",
+     "mn": "«Үсгийг хараад авиаг нь мэдэх» чадварыг тусламжтайгаар хийж чадсан. Үргэлжлүүлэн харцгаая."
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "msg.reasonInterest",
+     "example": "고정 문장",
+     "ko": "더 배우고 싶다고 알려 준 내용이 들어 있는 연습이에요.",
+     "mn": "Илүү сурмаар байна гэж хэлсэн зүйл тань энэ дасгалд багтсан."
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "msg.reasonInterestNamed",
+     "example": "{label}=교통(학습 내용, 한국어 그대로)",
+     "ko": "더 배우고 싶다고 알려 준 ‘교통’ 연습이에요.",
+     "mn": "Илүү сурмаар байна гэж хэлсэн «교통» тань энэ дасгалд багтсан."
+    }
+   ]
+  }
+ ]
+}

@@ -2,6 +2,7 @@
 // 이 표에 있는 글이 1판 범위다(첫 화면·언어 고르기·튜터 고르기·목표 창·계정 연결과 로그인·설정·오류와 상태·아래 메뉴와 배우기·놀이 시트·첫 레슨들의 화면 글).
 // 학습 내용(표현·보기·이야기 대사·포스터의 큰 한글)과 튜터 대사는 여기 두지 않는다. 한글 만나기 글은 hangul-stage/lang.mjs, 인사 팩 문제는 synk-world-app/life-content-lang.mjs.
 // {name}은 값 자리, 영어 {one,other}는 vars.n으로 고른다. msg.로 시작하는 줄은 다른 모듈이 던진 한국어 문장을 화면에서 바꿔 보일 때(tMessage) 쓴다.
+// 값 자리가 있는 msg 줄은 이름이 든 문장의 틀이다(msg.vellum.* 등 — 맞추는 규칙은 world-lang.mjs tMessage).
 // 몽골어는 tools/몽골어대조.js로 검문한다. 검문 결과는 world-strings-check.json에 줄마다 남는다.
 export default {
  // ── 첫 실행 · 「한글을 읽을 수 있어요?」(first-run.mjs) ──
@@ -390,6 +391,9 @@ export default {
  'position.skill.ko.reading.reason':{ko:'읽고 이유 이해하기',en:'Reading for reasons',mn:'Уншаад шалтгааныг ойлгох'},
  'position.skill.ko.reading.condition':{ko:'읽고 조건 이해하기',en:'Reading for conditions',mn:'Уншаад нөхцөлийг ойлгох'},
  'position.skill.ko.reading.main':{ko:'읽고 핵심 이해하기',en:'Reading for the main point',mn:'Уншаад гол санааг ойлгох'},
+ // 한글 만나기의 두 항목(strata/hangul.json). 항목 지도에는 없고, 추천 이유 문장(msg.vellum.*)의 이름으로 쓴다.
+ 'position.skill.ko.hangul.sound':{ko:'소리 듣고 글자 찾기',en:'Finding letters by sound',mn:'Авиаг сонсоод үсгийг олох'},
+ 'position.skill.ko.hangul.read':{ko:'글자 보고 소리 알기',en:'Sounding out letters',mn:'Үсгийг хараад авиаг нь мэдэх'},
  'position.status.recent-independent':{ko:'최근 처음 보는 문제를 혼자 풀었어요.',en:'You recently answered new questions on your own.',mn:'Саяхан шинэ асуултад өөрөө зөв хариулсан.'},
  'position.status.practice':{ko:'혼자 푼 새 문제에서 여러 번 틀렸어요. 다시 연습할 부분이에요.',en:'You missed several new questions you tried on your own. This one’s worth practicing again.',mn:'Өөрөө хариулсан шинэ асуултуудаас хэд хэдийг нь алдсан. Дахин дасгал хийх хэсэг байна.'},
  'position.status.checking':{ko:'새 문제로 확인하는 중이에요. 몇 번 더 혼자 풀면 칸이 정해져요.',en:'Still checking with new questions. A few more answers on your own will settle it.',mn:'Шинэ асуултаар шалгаж байна. Дахиад хэдэн удаа өөрөө хариулбал аль ангилалд орох нь тодорхой болно.'},
@@ -770,7 +774,7 @@ export default {
  'msg.profileConflict':{ko:'다른 곳에서 맞춤 설정이 바뀌었어요. 최신 설정을 확인한 뒤 다시 선택해 주세요.',en:'Your personal settings changed somewhere else. Check the latest settings and choose again.',mn:'Хувийн тохиргоо өөр газар өөрчлөгдсөн. Сүүлийн тохиргоогоо шалгаад дахин сонгоно уу.'},
  'msg.learningChanged':{ko:'학습 연결이 바뀌었어요.',en:'Your learning connection changed.',mn:'Сургалтын холболт өөрчлөгдсөн.'},
  'msg.reopenSettings':{ko:'설정을 다시 열어 주세요.',en:'Please open the settings again.',mn:'Тохиргоог дахин нээнэ үү.'},
- // Atlas(atlas/vellum.js activityReason)가 추천 이유로 보내는 고정 문장. 능력 이름이 들어가는 문장은 2판이다.
+ // Atlas(atlas/vellum.js activityReason)가 추천 이유로 보내는 고정 문장. 항목 이름이 든 문장은 아래 msg.vellum.* 틀이 받는다.
  'msg.reasonSpent':{ko:'이 활동의 새 문항은 모두 만났어요. 다시 해도 좋지만 연습 기록은 새 문항으로만 바뀌어요.',en:'You’ve seen every new question in this activity. You can play again, but only new questions update your practice record.',mn:'Энэ дасгалын бүх шинэ асуултыг аль хэдийн хийсэн. Дахин хийж болох ч дасгалын мэдээлэл зөвхөн шинэ асуултаар шинэчлэгдэнэ.'},
  'msg.reasonSpentGoal':{ko:'이 활동의 새 문항은 모두 만났어요. 다시 해도 좋지만 연습 기록은 새 문항으로만 바뀌어요. 고른 목표와 이어지는 활동이에요.',en:'You’ve seen every new question in this activity. You can play again, but only new questions update your practice record. It connects to the goal you chose.',mn:'Энэ дасгалын бүх шинэ асуултыг аль хэдийн хийсэн. Дахин хийж болох ч дасгалын мэдээлэл зөвхөн шинэ асуултаар шинэчлэгдэнэ. Энэ нь таны сонгосон зорилготой холбогдоно.'},
  'msg.reasonNone':{ko:'지금 조건에 맞는 활동이 없어요. 시간이나 소리 설정을 바꿔 볼 수 있어요.',en:'Nothing fits your conditions right now. You can change the time or sound settings.',mn:'Одоогийн нөхцөлд тохирох үйл ажиллагаа алга. Цаг эсвэл дууны тохиргоогоо сольж болно.'},
@@ -784,6 +788,19 @@ export default {
  'msg.reasonNew':{ko:'아직 연습 기록이 적어요. 짧게 해 보며 맞춰 갈게요.',en:'You don’t have many practice records yet. We’ll adjust as you try short sessions.',mn:'Дасгалын мэдээлэл одоохондоо цөөн байна. Богино дасгал хийхийн хэрээр танд тааруулж өгнө.'},
  'msg.resumeReason':{ko:'하던 학습의 같은 자리에서 이어가요. 다른 활동을 골라도 지금 진도는 남아 있어요.',en:'You’ll continue right where you left off. Your progress stays even if you pick something else.',mn:'Зогссон хэсгээсээ шууд үргэлжлүүлнэ. Өөр зүйл сонгосон ч одоогийн явц тань хадгалагдана.'},
  'msg.hangulFirstReason':{ko:'한글부터 만나요. 소리를 듣고 글자를 고르며 읽는 법을 익혀요.',en:'Let’s meet Hangul first. Listen to the sounds, pick the letters, and learn how to read.',mn:'Эхлээд солонгос үсэгтэй танилцъя. Авиаг сонсоод үсгийг сонгож, уншиж сурцгаая.'},
+ // 항목 이름이 든 추천 이유(atlas/vellum.js learningReason, 10-20) — tMessage가 틀로 맞춘다. ko는 Vellum 문장의 꼴이고
+ // {skill}은 position.skill.* 이름, 은(는)·을(를)은 이름 끝 받침에 따라 한쪽만 나온다. 영어·몽골어는 이름을 따옴표 안에 두어
+ // 몽골어 격 어미가 이름에 붙지 않게 한다(뒤의 чадвар가 격을 받는다). 끝에 붙는 「고른 목표」 한 줄은 위 …Goal 줄과 같은 말이다.
+ 'msg.vellum.unseen':{ko:'{skill}은(는) 아직 기록이 적어요. 짧게 확인해 봐요.',en:'You don’t have many records for ‘{skill}’ yet. Let’s check it quickly.',mn:'«{skill}» чадварын мэдээлэл одоохондоо цөөн байна. Товчхон шалгацгаая.'},
+ 'msg.vellum.checking':{ko:'{skill}을(를) 조금 더 확인해 봐요.',en:'Let’s check ‘{skill}’ a little more.',mn:'«{skill}» чадварыг бага зэрэг нэмж шалгацгаая.'},
+ 'msg.vellum.practice':{ko:'최근 놓친 {skill}을(를) 조금 더 연습해 봐요.',en:'Let’s practice ‘{skill}’ a little more, since you missed some recently.',mn:'«{skill}» чадварт саяхан алдсан хэсгээ бага зэрэг нэмж давтъя.'},
+ 'msg.vellum.supported':{ko:'{skill}을(를) 도움과 함께 해냈어요. 이어서 살펴봐요.',en:'You did ‘{skill}’ with help. Let’s keep working on it.',mn:'«{skill}» чадварын асуултад тусламжтайгаар зөв хариулсан. Үргэлжлүүлэн харцгаая.'},
+ 'msg.vellum.recent-independent':{ko:'{skill}을(를) 최근 혼자 해냈어요. 가볍게 이어가요.',en:'You recently did ‘{skill}’ on your own. Let’s keep going at an easy pace.',mn:'«{skill}» чадварын асуултад саяхан өөрөө зөв хариулсан. Хөнгөн хэмнэлээр үргэлжлүүлье.'},
+ 'msg.vellum.review':{ko:'{skill}을(를) 다시 살펴볼 때예요.',en:'It’s time to look at ‘{skill}’ again.',mn:'«{skill}» чадварыг дахин харах цаг боллоо.'},
+ 'msg.vellum.goal':{ko:'고른 목표와 이어지는 활동이에요.',en:'It connects to the goal you chose.',mn:'Энэ нь таны сонгосон зорилготой холбогдоно.'},
+ // 「내 성향」에서 더 배우고 싶다고 답한 주제가 연습을 앞으로 올렸을 때(world-learning-plan.mjs). {label}은 학습 내용(낱말·문형)이라 한국어 그대로다.
+ 'msg.reasonInterest':{ko:'더 배우고 싶다고 알려 준 내용이 들어 있는 연습이에요.',en:'This practice includes something you said you want to learn more about.',mn:'Энэ дасгалд таны илүү гүнзгий сурахыг хүссэн сэдэв орсон.'},
+ 'msg.reasonInterestNamed':{ko:'더 배우고 싶다고 알려 준 ‘{label}’ 연습이에요.',en:'This practice is about ‘{label}’, which you said you want to learn more about.',mn:'Энэ бол таны илүү гүнзгий сурахыг хүссэн «{label}» сэдвийн дасгал.'},
  'msg.conditionsLabel':{ko:'학습 조건 바꾸기',en:'Change study conditions',mn:'Хичээлийн нөхцөл солих'},
  'msg.conditionsReason':{ko:'지금 조건에 맞는 활동이 없어요. 시간이나 도움 방식을 바꿀 수 있어요.',en:'Nothing fits your conditions right now. You can change the time or help style.',mn:'Одоогийн нөхцөлд тохирох үйл ажиллагаа алга. Цаг эсвэл тусламжийн хэлбэрээ сольж болно.'},
  'msg.startMyReview':{ko:'나의 복습 시작',en:'Start my review',mn:'Давтлагаа эхлэх'},

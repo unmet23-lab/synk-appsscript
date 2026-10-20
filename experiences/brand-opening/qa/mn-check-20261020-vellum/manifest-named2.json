@@ -1,0 +1,21 @@
+{
+ "createdAt": "2026-10-20T06:29:58.262Z",
+ "pairs": 1,
+ "budget": 900,
+ "batches": [
+  {
+   "file": "named2-01.txt",
+   "mnChars": 62,
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "msg.reasonInterestNamed",
+     "example": "{label}=교통(학습 내용, 한국어 그대로)",
+     "ko": "더 배우고 싶다고 알려 준 ‘교통’ 연습이에요.",
+     "mn": "Таны илүү ихийг сурмаар байна гэж хэлсэн «교통» сэдвийн дасгал."
+    }
+   ]
+  }
+ ]
+}

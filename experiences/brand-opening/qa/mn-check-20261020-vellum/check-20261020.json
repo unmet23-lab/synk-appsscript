@@ -1,0 +1,316 @@
+{
+ "createdAt": "2026-10-20",
+ "source": "atlas/vellum.js learningReason(항목 이름이 든 여섯 꼴)·activityReason의 「고른 목표」 꼬리, experiences/synk-world-app/world-learning-plan.mjs 관심 이유 둘, strata/hangul.json 한글 만나기 두 항목 이름 — world-lang.mjs tMessage가 msg 틀로 맞춰 영어·몽골어로 보인다",
+ "tool": "node tools/몽골어대조.js --파일 <묶음> --구독 (문법 gemini-4-argon high · 직역 역번역 gemini-3.8-flash high · 맞춤법 spellcheck.mn). 틀은 이름을 넣은 실물 문장으로 잰다(manifest-*.json에 줄마다 키·예시).",
+ "history": "vellum-01·02 첫 검문(어색 — чадварыг хийх 호응, «교통» тань) → recheck-01(고친 셋 + 한글 이름 실물 + 관심 줄, 정상)·named-01(어색) → recheck2·named2(관심 줄 둘, 어색 — илүү сурмаар·인용절 머리명사) → recheck3·named3(정상) → final-01·02·final-named-01(고친 표 전체, 셋 다 정상·의심 0). 그 사이 15:35쯤 한 번 agy가 「--effort is not supported for model gemini-4-argon-high」로 묶음 셋을 판정 없이 끝냈고(실행 오류, 현장노트 AI_CLI) 몇 분 뒤 같은 묶음을 다시 쟀다.",
+ "lines": [
+  {
+   "key": "position.skill.ko.hangul.sound",
+   "ko": "소리 듣고 글자 찾기",
+   "en": "Finding letters by sound",
+   "mn": "Авиаг сонсоод үсгийг олох",
+   "mnHash": "9cc6a978db",
+   "example": {
+    "ko": "소리 듣고 글자 찾기",
+    "mn": "Авиаг сонсоод үсгийг олох"
+   },
+   "layers": {
+    "argon": {
+     "batch": "mn-check-20261020-vellum/final-02.txt",
+     "grammar": "정상",
+     "spelling": "의심 0",
+     "backTranslation": "소리를 듣고 글자를 찾기",
+     "ledger": "docs/_ops/몽골어검문.jsonl 대상지문 f2b0a65e4a75"
+    },
+    "opus": {
+     "verdict": "뜻 같음",
+     "note": "「소리를 듣고 글자를 찾기」, 뜻 같음."
+    },
+    "fable": {
+     "verdict": "그대로",
+     "note": "첫 교정에서 그대로."
+    }
+   }
+  },
+  {
+   "key": "position.skill.ko.hangul.read",
+   "ko": "글자 보고 소리 알기",
+   "en": "Sounding out letters",
+   "mn": "Үсгийг хараад авиаг нь мэдэх",
+   "mnHash": "0ff7de7b39",
+   "example": {
+    "ko": "글자 보고 소리 알기",
+    "mn": "Үсгийг хараад авиаг нь мэдэх"
+   },
+   "layers": {
+    "argon": {
+     "batch": "mn-check-20261020-vellum/final-02.txt",
+     "grammar": "정상",
+     "spelling": "의심 0",
+     "backTranslation": "글자를 보고 그 소리를 알기",
+     "ledger": "docs/_ops/몽골어검문.jsonl 대상지문 f2b0a65e4a75"
+    },
+    "opus": {
+     "verdict": "뜻 같음",
+     "note": "「글자를 보고 그 소리를 알기」, 뜻 같음."
+    },
+    "fable": {
+     "verdict": "그대로",
+     "note": "첫 교정에서 그대로."
+    }
+   }
+  },
+  {
+   "key": "msg.vellum.unseen",
+   "ko": "{skill}은(는) 아직 기록이 적어요. 짧게 확인해 봐요.",
+   "en": "You don’t have many records for ‘{skill}’ yet. Let’s check it quickly.",
+   "mn": "«{skill}» чадварын мэдээлэл одоохондоо цөөн байна. Товчхон шалгацгаая.",
+   "mnHash": "d9e99fd4ad",
+   "example": {
+    "ko": "듣고 세부 정보 찾기는 아직 기록이 적어요. 짧게 확인해 봐요.",
+    "mn": "«Сонсоод нарийн мэдээллийг олох» чадварын мэдээлэл одоохондоо цөөн байна. Товчхон шалгацгаая."
+   },
+   "layers": {
+    "argon": {
+     "batch": "mn-check-20261020-vellum/final-01.txt",
+     "grammar": "정상",
+     "spelling": "의심 0",
+     "backTranslation": "«듣고 세부 정보를 찾기» 능력의 정보가 지금으로서는 적다. 간단하게 확인하자.",
+     "ledger": "docs/_ops/몽골어검문.jsonl 대상지문 bf532c67ec81"
+    },
+    "opus": {
+     "verdict": "뜻 같음",
+     "note": "「기록이 적어요」→ мэдээлэл цөөн(정보가 적다), 「짧게 확인해 봐요」→ 간단하게 확인하자. 뜻 같음."
+    },
+    "fable": {
+     "verdict": "그대로",
+     "note": "첫 교정에서 그대로."
+    }
+   }
+  },
+  {
+   "key": "msg.vellum.checking",
+   "ko": "{skill}을(를) 조금 더 확인해 봐요.",
+   "en": "Let’s check ‘{skill}’ a little more.",
+   "mn": "«{skill}» чадварыг бага зэрэг нэмж шалгацгаая.",
+   "mnHash": "e8c874f819",
+   "example": {
+    "ko": "낱말 듣기를 조금 더 확인해 봐요.",
+    "mn": "«Үг сонсох» чадварыг бага зэрэг нэмж шалгацгаая."
+   },
+   "layers": {
+    "argon": {
+     "batch": "mn-check-20261020-vellum/final-01.txt",
+     "grammar": "정상",
+     "spelling": "의심 0",
+     "backTranslation": "«단어 듣기» 능력을 조금 더하여 확인하자.",
+     "ledger": "docs/_ops/몽골어검문.jsonl 대상지문 bf532c67ec81"
+    },
+    "opus": {
+     "verdict": "뜻 같음",
+     "note": "「조금 더 확인해 봐요」→ 조금 더하여 확인하자. 뜻 같음(한글 항목 이름 실물도 같음)."
+    },
+    "fable": {
+     "verdict": "그대로",
+     "note": "첫 교정에서 그대로."
+    }
+   }
+  },
+  {
+   "key": "msg.vellum.practice",
+   "ko": "최근 놓친 {skill}을(를) 조금 더 연습해 봐요.",
+   "en": "Let’s practice ‘{skill}’ a little more, since you missed some recently.",
+   "mn": "«{skill}» чадварт саяхан алдсан хэсгээ бага зэрэг нэмж давтъя.",
+   "mnHash": "7d50764c16",
+   "example": {
+    "ko": "최근 놓친 듣고 이유 이해하기를 조금 더 연습해 봐요.",
+    "mn": "«Сонсоод шалтгааныг ойлгох» чадварт саяхан алдсан хэсгээ бага зэрэг нэмж давтъя."
+   },
+   "layers": {
+    "argon": {
+     "batch": "mn-check-20261020-vellum/final-01.txt",
+     "grammar": "정상",
+     "spelling": "의심 0",
+     "backTranslation": "«듣고 원인을 이해하기» 능력에 방금 틀린 부분을 조금 더하여 복습하자.",
+     "ledger": "docs/_ops/몽골어검문.jsonl 대상지문 bf532c67ec81"
+    },
+    "opus": {
+     "verdict": "뜻 같음",
+     "note": "「최근 놓친 …을 조금 더 연습해 봐요」→ 「… 능력에 방금 틀린 부분을 조금 더 복습하자」. 놓친 것이 수식어로 들어가 권유가 주절, 뜻 같음."
+    },
+    "fable": {
+     "verdict": "고쳐 반영",
+     "note": "고침(should) → 반영: 「… чадварт саяхан алдсан зүйл байна. Бага зэрэг нэмж давтъя.」가 홀로 선 판정문처럼 들려 reasonRetry 꼴 「…чадварт саяхан алдсан хэсгээ бага зэрэг нэмж давтъя」로."
+    }
+   }
+  },
+  {
+   "key": "msg.vellum.supported",
+   "ko": "{skill}을(를) 도움과 함께 해냈어요. 이어서 살펴봐요.",
+   "en": "You did ‘{skill}’ with help. Let’s keep working on it.",
+   "mn": "«{skill}» чадварын асуултад тусламжтайгаар зөв хариулсан. Үргэлжлүүлэн харцгаая.",
+   "mnHash": "fc8a9ca7ad",
+   "example": {
+    "ko": "조사·문형 읽기를 도움과 함께 해냈어요. 이어서 살펴봐요.",
+    "mn": "«Туслах үг, өгүүлбэрийн загварыг ойлгож унших» чадварын асуултад тусламжтайгаар зөв хариулсан. Үргэлжлүүлэн харцгаая."
+   },
+   "layers": {
+    "argon": {
+     "batch": "mn-check-20261020-vellum/final-01.txt",
+     "grammar": "정상",
+     "spelling": "의심 0",
+     "backTranslation": "«보조 단어, 문장 패턴을 이해하고 읽기» 능력의 질문에 도움으로 올바르게 답했다. 계속해서 보자.",
+     "ledger": "docs/_ops/몽골어검문.jsonl 대상지문 bf532c67ec81"
+    },
+    "opus": {
+     "verdict": "뜻 같음",
+     "note": "「도움과 함께 해냈어요」→ 「… 능력의 질문에 도움으로 올바르게 답했다」. 해냈다=문항에 바르게 답함, 뜻 같음. 「이어서 살펴봐요」→ 계속해서 보자."
+    },
+    "fable": {
+     "verdict": "재검토 그대로",
+     "note": "첫 교정은 그대로였으나 아르곤 문법 층이 「чадварыг … хийж чадсан」(능력을 하다·чадвар/чадсан 겹침)을 짚어 「…чадварын асуултад тусламжтайгаар зөв хариулсан」으로 고침 → Fable 재검토 그대로."
+    }
+   }
+  },
+  {
+   "key": "msg.vellum.recent-independent",
+   "ko": "{skill}을(를) 최근 혼자 해냈어요. 가볍게 이어가요.",
+   "en": "You recently did ‘{skill}’ on your own. Let’s keep going at an easy pace.",
+   "mn": "«{skill}» чадварын асуултад саяхан өөрөө зөв хариулсан. Хөнгөн хэмнэлээр үргэлжлүүлье.",
+   "mnHash": "bf0b45694e",
+   "example": {
+    "ko": "읽고 핵심 이해하기를 최근 혼자 해냈어요. 가볍게 이어가요.",
+    "mn": "«Уншаад гол санааг ойлгох» чадварын асуултад саяхан өөрөө зөв хариулсан. Хөнгөн хэмнэлээр үргэлжлүүлье."
+   },
+   "layers": {
+    "argon": {
+     "batch": "mn-check-20261020-vellum/final-01.txt",
+     "grammar": "정상",
+     "spelling": "의심 0",
+     "backTranslation": "«읽고 중심 생각을 이해하기» 능력의 질문에 방금 스스로 올바르게 답했다. 가벼운 리듬으로 계속하자.",
+     "ledger": "docs/_ops/몽골어검문.jsonl 대상지문 bf532c67ec81"
+    },
+    "opus": {
+     "verdict": "뜻 같음",
+     "note": "「최근 혼자 해냈어요」→ 「질문에 방금 스스로 올바르게 답했다」, 「가볍게 이어가요」→ 가벼운 리듬으로 계속하자. 뜻 같음."
+    },
+    "fable": {
+     "verdict": "재검토 그대로",
+     "note": "supported와 같은 이유로 「…чадварын асуултад саяхан өөрөө зөв хариулсан」 → Fable 재검토 그대로."
+    }
+   }
+  },
+  {
+   "key": "msg.vellum.review",
+   "ko": "{skill}을(를) 다시 살펴볼 때예요.",
+   "en": "It’s time to look at ‘{skill}’ again.",
+   "mn": "«{skill}» чадварыг дахин харах цаг боллоо.",
+   "mnHash": "a1fb8761d0",
+   "example": {
+    "ko": "듣고 순서 이해하기를 다시 살펴볼 때예요.",
+    "mn": "«Сонсоод дарааллыг ойлгох» чадварыг дахин харах цаг боллоо."
+   },
+   "layers": {
+    "argon": {
+     "batch": "mn-check-20261020-vellum/final-01.txt",
+     "grammar": "정상",
+     "spelling": "의심 0",
+     "backTranslation": "«듣고 순서를 이해하기» 능력을 다시 볼 시간이 되었다.",
+     "ledger": "docs/_ops/몽골어검문.jsonl 대상지문 bf532c67ec81"
+    },
+    "opus": {
+     "verdict": "뜻 같음",
+     "note": "「다시 살펴볼 때예요」→ 다시 볼 시간이 되었다. 뜻 같음."
+    },
+    "fable": {
+     "verdict": "그대로",
+     "note": "첫 교정에서 그대로."
+    }
+   }
+  },
+  {
+   "key": "msg.vellum.goal",
+   "ko": "고른 목표와 이어지는 활동이에요.",
+   "en": "It connects to the goal you chose.",
+   "mn": "Энэ нь таны сонгосон зорилготой холбогдоно.",
+   "mnHash": "c553c437c5",
+   "example": {
+    "ko": "낱말 뜻 읽기를 조금 더 확인해 봐요. 고른 목표와 이어지는 활동이에요.",
+    "mn": "«Үгийн утгыг ойлгож унших» чадварыг бага зэрэг нэмж шалгацгаая. Энэ нь таны сонгосон зорилготой холбогдоно."
+   },
+   "layers": {
+    "argon": {
+     "batch": "mn-check-20261020-vellum/final-02.txt",
+     "grammar": "정상",
+     "spelling": "의심 0",
+     "backTranslation": "«단어의 의미를 이해하고 읽기» 능력을 조금 더하여 확인해 봅시다. 이것은 당신이 선택한 목표와 연결됩니다.",
+     "ledger": "docs/_ops/몽골어검문.jsonl 대상지문 f2b0a65e4a75"
+    },
+    "opus": {
+     "verdict": "뜻 같음",
+     "note": "승인된 …Goal 줄의 끝 문장과 같은 글. 「이것은 당신이 선택한 목표와 연결됩니다」, 뜻 같음."
+    },
+    "fable": {
+     "verdict": "그대로",
+     "note": "첫 교정에서 그대로."
+    }
+   }
+  },
+  {
+   "key": "msg.reasonInterest",
+   "ko": "더 배우고 싶다고 알려 준 내용이 들어 있는 연습이에요.",
+   "en": "This practice includes something you said you want to learn more about.",
+   "mn": "Энэ дасгалд таны илүү гүнзгий сурахыг хүссэн сэдэв орсон.",
+   "mnHash": "f807a5884f",
+   "example": {
+    "ko": "더 배우고 싶다고 알려 준 내용이 들어 있는 연습이에요.",
+    "mn": "Энэ дасгалд таны илүү гүнзгий сурахыг хүссэн сэдэв орсон."
+   },
+   "layers": {
+    "argon": {
+     "batch": "mn-check-20261020-vellum/final-02.txt",
+     "grammar": "정상",
+     "spelling": "의심 0",
+     "backTranslation": "이 연습에 당신이 더 깊이 배우기를 원했던 주제가 들어갔다.",
+     "ledger": "docs/_ops/몽골어검문.jsonl 대상지문 f2b0a65e4a75"
+    },
+    "opus": {
+     "verdict": "뜻 같음",
+     "note": "「이 연습에 당신이 더 깊이 배우기를 원했던 주제가 들어갔다」. 「알려 준」이 「원했던」으로 옮겨지지만 「내 성향」에서 스스로 밝힌 바람이라 뜻 범위 안(Fable 같은 판단), 「더 깊이」는 이미 연습한 주제를 더 배우고 싶다는 뜻 안."
+    },
+    "fable": {
+     "verdict": "재검토 그대로",
+     "note": "첫 교정 그대로였으나 아르곤이 「илүү сурмаар」(부사를 동사에 바로 붙임)·인용절과 머리명사의 격 관계를 두 번 짚어 「Энэ дасгалд таны илүү гүнзгий сурахыг хүссэн сэдэв орсон」으로 고침 → Fable 재검토 그대로."
+    }
+   }
+  },
+  {
+   "key": "msg.reasonInterestNamed",
+   "ko": "더 배우고 싶다고 알려 준 ‘{label}’ 연습이에요.",
+   "en": "This practice is about ‘{label}’, which you said you want to learn more about.",
+   "mn": "Энэ бол таны илүү гүнзгий сурахыг хүссэн «{label}» сэдвийн дасгал.",
+   "mnHash": "bbeff9e94f",
+   "example": {
+    "ko": "더 배우고 싶다고 알려 준 ‘교통’ 연습이에요.",
+    "mn": "Энэ бол таны илүү гүнзгий сурахыг хүссэн «교통» сэдвийн дасгал."
+   },
+   "layers": {
+    "argon": {
+     "batch": "mn-check-20261020-vellum/final-named-01.txt",
+     "grammar": "정상",
+     "spelling": "의심 0",
+     "backTranslation": "이것은 당신의 더 깊이 배우기를 원했던 «교통» 주제의 연습이다.",
+     "ledger": "docs/_ops/몽골어검문.jsonl 대상지문 567c4b3d8d8d"
+    },
+    "opus": {
+     "verdict": "뜻 같음",
+     "note": "「이것은 당신이 더 깊이 배우기를 원했던 «교통» 주제의 연습이다」. 원문 「‘교통’ 연습이에요」와 같은 판단문, 뜻 같음. {label}은 학습 내용이라 한국어 그대로."
+    },
+    "fable": {
+     "verdict": "고쳐 반영",
+     "note": "고침(could, 머리명사 сэдэв) → 아르곤 지적과 함께 「Энэ бол таны илүү гүнзгий сурахыг хүссэн «{label}» сэдвийн дасгал」로 고쳐 반영 → Fable 재검토 그대로. 영어 제안(could)은 관계절이 연습을 꾸미게 돼 뜻이 달라져 그대로 둠."
+    }
+   }
+  }
+ ]
+}

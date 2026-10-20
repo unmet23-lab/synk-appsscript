@@ -63,11 +63,53 @@ export function t(key,vars,lang=currentLang()){
 }
 // 다른 모듈(진도·계정·튜터 저장)이 한국어로 만든 상태·오류 문장을 화면에 보일 때 바꾼다. 표의 msg.* 줄과 글자가 같아야 하고,
 // 모르는 문장은 그대로(한국어) 보이며 빠진 말로 남는다. 한국어 화면에서는 아무것도 바꾸지 않는다.
-let messageIndex=null;
+// 값 자리가 있는 msg 줄은 틀이다(Atlas Vellum의 추천 이유처럼 이름이 든 문장, 10-20). {skill}은 표의 position.skill.* 한국어
+// (= Strata 항목 이름)일 때만 받아 그 언어 이름으로 바꾸고, 바로 뒤 은(는)·을(를)은 이름 끝 받침에 맞는 쪽만 받는다
+// (atlas/vellum.js particle과 같은 규칙). {label}은 학습 내용(낱말·문형)이라 그대로 옮긴다. 틀 뒤에 「고른 목표」 한 줄
+// (msg.vellum.goal)이 붙은 문장도 받는다. 틀에 맞지 않거나 모르는 이름이면 문장 전체를 그대로 두고 빠진 말로 남긴다.
+const SKILL_PREFIX='position.skill.',GOAL_KEY='msg.vellum.goal',PARTICLES={'은(는)':['은','는'],'을(를)':['을','를']};
+let messageIndex=null,templates=null,skillNames=null;
+function particle(label,[withFinal,without]){
+ for(let i=label.length-1;i>=0;i--){const code=label.charCodeAt(i);if(code>=0xAC00&&code<=0xD7A3)return (code-0xAC00)%28?withFinal:without;}
+ return without;
+}
+function messageTables(){
+ if(messageIndex)return;
+ messageIndex=new Map();templates=[];skillNames=new Map();
+ for(const [key,entry]of Object.entries(STRINGS)){
+  if(key.startsWith(SKILL_PREFIX)&&!skillNames.has(entry.ko))skillNames.set(entry.ko,key);
+  if(!key.startsWith('msg.'))continue;
+  if(!/\{\w+\}/.test(entry.ko)){if(!messageIndex.has(entry.ko))messageIndex.set(entry.ko,key);continue;}
+  const slots=[],source=entry.ko.split(/(\{\w+\}(?:은\(는\)|을\(를\))?)/).map((part,i)=>{
+   if(i%2===0)return part.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+   const [,name,pair]=part.match(/^\{(\w+)\}(.*)$/),particles=PARTICLES[pair]||null;slots.push({name,particles});
+   return particles?`(.+?)(${particles.join('|')})`:'(.+?)';
+  }).join('');
+  templates.push({key,slots,pattern:new RegExp(`^${source}$`)});
+ }
+}
+function fromTemplate(text,lang){
+ for(const {key,slots,pattern}of templates){
+  const match=pattern.exec(text);if(!match)continue;
+  const vars={};let group=1,known=true;
+  for(const {name,particles}of slots){
+   const value=match[group++],after=particles?match[group++]:null;
+   if(name!=='skill'){vars[name]=value;continue;}
+   const id=skillNames.get(value);
+   if(!id||particles&&after!==particle(value,particles)){known=false;break;}
+   vars.skill=t(id,undefined,lang);
+  }
+  if(known)return t(key,vars,lang);
+ }
+ return null;
+}
 export function tMessage(text,lang=currentLang()){
  if(typeof text!=='string'||!text||lang==='ko')return text;
- if(!messageIndex){messageIndex=new Map();for(const [key,entry]of Object.entries(STRINGS))if(key.startsWith('msg.')&&!messageIndex.has(entry.ko))messageIndex.set(entry.ko,key);}
+ messageTables();
  const key=messageIndex.get(text);if(key)return t(key,undefined,lang);
+ const found=fromTemplate(text,lang);if(found!=null)return found;
+ const goal=STRINGS[GOAL_KEY]?.ko;
+ if(goal&&text.endsWith(` ${goal}`)){const head=fromTemplate(text.slice(0,-goal.length-1),lang);if(head!=null)return `${head} ${t(GOAL_KEY,undefined,lang)}`;}
  if(/[가-힣]/.test(text))note(`msg:${text.slice(0,60)}`,lang);
  return text;
 }
