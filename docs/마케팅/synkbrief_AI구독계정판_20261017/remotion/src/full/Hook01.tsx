@@ -13,7 +13,8 @@ const BW = 500;
 const SCALE = (L.W - L.X - L.R) / BW;
 const TOTAL = snapshot.rows.length;
 // 포스터 그림·제목은 03 장면의 몫이라 여기서는 감추고, 포스터 아래 줄(상태 한 줄 + 단추 둘)과 01 목록만 둔다.
-const CSS = `.sc-hook .ms-back,.sc-hook .ms-hero-top,.sc-hook .ms-hero-title,.sc-hook .ms-object,.sc-hook .ms-section-heading,.sc-hook .ms-section+.ms-section,.sc-hook .ms-foot{display:none!important}
+// Typecast 줄도 감춘다 — 키 끝 네 글자가 02로 밀어 올리는 넘김(107~113프레임)에 흐린 채 스쳤다(Fable 10-19 P2-3, 05·09와 같은 규칙).
+const CSS = `.sc-hook .ms-back,.sc-hook .ms-hero-top,.sc-hook .ms-hero-title,.sc-hook .ms-object,.sc-hook .ms-section-heading,.sc-hook .ms-section+.ms-section,.sc-hook .ms-foot,.sc-hook .ms-s-typecast{display:none!important}
 .sc-hook .ms-hero.has-art{min-height:0;padding:14px 16px 16px;border-radius:16px}
 .sc-hook .ms-hero-note{border-top:0;padding-top:0}
 .sc-hook .ms-section{margin-top:12px}`;
