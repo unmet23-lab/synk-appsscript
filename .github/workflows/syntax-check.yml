@@ -67,6 +67,11 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: verify all local Atlas consumer copies
         run: npm run check:atlas:local
+      - name: verify account library and portal bundles
+        # 원천만 고치고 생성기를 안 돌린 커밋을 잡는다(PC desktop/renderer/platform-continuity.mjs · experiences/synk-account/dist).
+        run: |
+          (cd experiences/synk-account && npm ci --ignore-scripts --no-audit --no-fund)
+          npm run check:account-bundles
       - name: node --check all .js files
         run: |
           set -e
