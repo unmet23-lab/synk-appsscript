@@ -18,8 +18,8 @@ test('class and student rosters have stable Korean numeric order with an ID tie 
 test('unconnected, unshared, no-record and missing activity integration stay separate and cannot become weaknesses',()=>{
   const unconnected=learnerOverview(learner('a',{accountConnected:false,connectedAt:null,revoked:true}));assert.equal(unconnected.sharing,'unconnected');assert.equal(unconnected.practice.length,0);
   const unshared=learnerOverview(learner('b',{connectedAt:null,sharing:{enabled:false,revision:2}}));assert.equal(unshared.sharing,'unshared');assert.equal(unshared.worldText,'학습 공유 안 함');assert.equal(unshared.practice.length,0);
-  const absent=learnerOverview(learner('c'));assert.equal(absent.worldText,'활동 요약 미연결');assert.equal(absent.townText,'생활 활동 연결 준비 중');
-  const empty=learnerOverview(learner('d',{skills:[],activity:{world:{status:'no-record'},town:{status:'no-record'}}}));assert.equal(empty.worldText,'활동 기록 없음');assert.equal(empty.practice.length,0);assert.equal(empty.guidance,'학습 근거 없음');
+  const absent=learnerOverview(learner('c'));assert.equal(absent.worldText,'활동 요약 준비 중');assert.equal(absent.townText,'생활 기록 준비 중');
+  const empty=learnerOverview(learner('d',{skills:[],activity:{world:{status:'no-record'},town:{status:'no-record'}}}));assert.equal(empty.worldText,'활동 기록 없음');assert.equal(empty.practice.length,0);assert.equal(empty.guidance,'문항 기록 없음');
   const unknown=learnerOverview({id:'e',skills:[practice]});assert.equal(unknown.sharing,'unknown');assert.equal(unknown.practice.length,0);
 });
 test('Town activity and helped or insufficient samples do not increase language weakness counts',()=>{

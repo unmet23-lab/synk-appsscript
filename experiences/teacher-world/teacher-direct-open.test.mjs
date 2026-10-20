@@ -40,7 +40,7 @@ test('opened directly on the workspace host it guides to 내 수업 instead of s
 test('the guide hides every classroom control and the demo or connection labels',async()=>{
   const f=open({health:COMPANY_HEALTH});await tick();
   for(const id of ['summary','view-students','view-assignments','view-review','world-connections','teacher-session','teacher-logout','personalization-button','mode-note','mode-badge','refresh'])assert.equal(f.element(id).hidden,true,id);
-  assert.equal(f.element('mode-badge').textContent,'','the 예시 데이터 · 로컬 MVP badge is never written');
+  assert.equal(f.element('mode-badge').textContent,'','the 예시 자료 · 이 기기 badge is never written');
 });
 
 test('the guide link only goes to the same-origin 내 수업 tab',async()=>{
@@ -52,7 +52,7 @@ test('the guide link only goes to the same-origin 내 수업 tab',async()=>{
 test('the local classroom server and the SYNK ID classroom frame keep their own flows',async()=>{
   const local=open({health:{mode:'preview'}});await tick();
   assert.deepEqual(local.requests,['/api/health','/api/workspace']);assert.notEqual(local.element('html').dataset.ready,'workspace-entry');
-  assert.equal(local.element('mode-badge').textContent,'예시 데이터 · 로컬 MVP');
+  assert.equal(local.element('mode-badge').textContent,'예시 자료 · 이 기기');
   // ?account=1 is the real classroom frame: it never reads /api/health and never shows the guide.
   const frame=open({health:COMPANY_HEALTH,search:'?account=1'});await tick();
   assert.equal(frame.requests.includes('/api/health'),false);assert.notEqual(frame.element('html').dataset.ready,'workspace-entry');

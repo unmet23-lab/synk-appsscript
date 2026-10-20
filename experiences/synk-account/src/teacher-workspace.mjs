@@ -5,12 +5,12 @@ import {createTeacherOverview,compareTeacherRows} from '../../teacher-world/work
 export function createTeacherWorkspace({root,transport,guard,notice,documentObject=document,windowObject=window,locationHref=location.href,pollMs=15000}){
   let stopped=false,epoch=0,requestVersion=0,selected=null,selectedLearnerId=null,frame=null,host=null,timer=null,classes=[],online=true,overviewData=null,framePermissions=new Map();
   const make=(tag,text)=>{const element=documentObject.createElement(tag);if(text)element.textContent=text;return element;};
-  const controls=make('div'),label=make('label','담당 수업'),select=make('select'),refresh=make('button','수업 소속 다시 확인'),status=make('p'),overviewRoot=make('section'),mount=make('div');
-  controls.className='teacher-class-controls';select.setAttribute('aria-label','담당 수업');refresh.type='button';refresh.className='plain';status.className='small';mount.className='teacher-class-mount';
+  const controls=make('div'),label=make('label','담당 반'),select=make('select'),refresh=make('button','반 목록 새로고침'),status=make('p'),overviewRoot=make('section'),mount=make('div');
+  controls.className='teacher-class-controls';select.setAttribute('aria-label','담당 반');refresh.type='button';refresh.className='plain';status.className='small';mount.className='teacher-class-mount';
   label.append(select);controls.append(label,refresh);root.replaceChildren(controls,status,overviewRoot,mount);root.hidden=false;
   if(!documentObject.querySelector?.('link[data-teacher-overview-style]')){const style=make('link');style.rel='stylesheet';style.href=new URL('../teacher-world/workspace-overview.css',locationHref).href;style.setAttribute('data-teacher-overview-style','1');documentObject.head?.append(style);}
-  const active=()=>{guard();if(stopped)throw Object.assign(new Error('워크스페이스의 수업 연결이 끝났어요.'),{code:'ACCOUNT_CHANGED'});};
-  const current=version=>{active();if(version!==epoch)throw Object.assign(new Error('담당 수업이 바뀌었어요.'),{code:'ACCOUNT_CHANGED'});};
+  const active=()=>{guard();if(stopped)throw Object.assign(new Error('내 수업 연결이 끝났어요. 다시 열어 주세요.'),{code:'ACCOUNT_CHANGED'});};
+  const current=version=>{active();if(version!==epoch)throw Object.assign(new Error('고른 반이 바뀌었어요.'),{code:'ACCOUNT_CHANGED'});};
   function clearFrame(){epoch++;frame?.remove();frame=null;if(windowObject.SYNKClassroomHost===host)delete windowObject.SYNKClassroomHost;delete windowObject.SYNKClassroomSelection;host=null;framePermissions=new Map();mount.replaceChildren();}
   const permission=row=>row&&({id:row.id,revision:row.sharing?.revision,enabled:row.sharing?.enabled,connected:row.accountConnected,revoked:row.revoked===true||row.accountConnectionStatus==='revoked',townRevision:row.activity?.town?.sharing?.revision,townEnabled:row.activity?.town?.sharing?.enabled});
   const knownLearner=id=>overviewData?.classes?.find(row=>row.id===selected?.id)?.learners?.find(row=>row.id===id);
@@ -21,7 +21,7 @@ export function createTeacherWorkspace({root,transport,guard,notice,documentObje
     const known=overviewData?.classes?.find(row=>row.id===classId);if(!known)return;
     const latest=new Map((known.learners||[]).map(row=>[row.id,permission(row)]));
     for(const row of data.classes?.find(row=>row.id===classId)?.learners||[]){
-      if(permissionChanged(permission(row),latest.get(row.id))||townPermissionChanged(permission(row),latest.get(row.id))||framePermissions.has(row.id)&&(permissionChanged(permission(row),framePermissions.get(row.id))||townPermissionChanged(permission(row),framePermissions.get(row.id))))throw Object.assign(new Error('학생의 공유 상태가 바뀌었어요. 최신 기록을 다시 확인해 주세요.'),{code:'CLASSROOM_SNAPSHOT_CHANGED',status:409});
+      if(permissionChanged(permission(row),latest.get(row.id))||townPermissionChanged(permission(row),latest.get(row.id))||framePermissions.has(row.id)&&(permissionChanged(permission(row),framePermissions.get(row.id))||townPermissionChanged(permission(row),framePermissions.get(row.id))))throw Object.assign(new Error('학생의 공유 상태가 바뀌었어요. 다시 불러와 주세요.'),{code:'CLASSROOM_SNAPSHOT_CHANGED',status:409});
     }
   }
   // 고른 반 학생 모두의 확인된 공유 상태. 한 줄이라도 비면 null이다(iframe이 그 자리에서 거를 수 없다).
@@ -44,29 +44,29 @@ export function createTeacherWorkspace({root,transport,guard,notice,documentObje
     selectedLearnerId=data.learnerId;windowObject.SYNKClassroomSelection={classId:data.classId,learnerId:data.learnerId};renderOverview();
   };
   windowObject.addEventListener('message',studentSelected);
-  function renderOverview(){if(!overviewData?.classes?.length&&classes.length){overviewRoot.className='teacher-overview';overviewRoot.replaceChildren(make('p',online?'담당 '+classes.length+'개 반의 학생 기록을 불러오고 있어요.':'담당 '+classes.length+'개 반의 학생 기록을 확인하지 못했어요. 연결 후 다시 불러와 주세요.'));return;}overview.render(overviewData||{classes:[]},{selectedClassId:selected?.id,selectedLearnerId,unavailable:!online});}
+  function renderOverview(){if(!overviewData?.classes?.length&&classes.length){overviewRoot.className='teacher-overview';overviewRoot.replaceChildren(make('p',online?'담당 '+classes.length+'개 반의 학생 기록을 불러오고 있어요.':'담당 '+classes.length+'개 반의 학생 기록을 불러오지 못했어요. 연결되면 다시 불러와 주세요.'));return;}overview.render(overviewData||{classes:[]},{selectedClassId:selected?.id,selectedLearnerId,unavailable:!online});}
   function picker(){
-    const empty=make('option',classes.length?'담당 반 전체 보기':'등록된 담당 수업이 없어요');empty.value='';select.replaceChildren(empty);
+    const empty=make('option',classes.length?'담당 반 전체 보기':'담당 반이 없어요');empty.value='';select.replaceChildren(empty);
     for(const row of classes){const option=make('option',row.name);option.value=row.id;select.append(option);}select.value=selected?.id||'';
   }
-  function canLeave(){try{return !frame?.contentWindow?.SYNKTeacherView?.hasDraft?.()||windowObject.confirm?.('작성 중인 과제나 관찰·케어 내용을 닫고 다른 학생을 볼까요?')===true;}catch{return false;}}
+  function canLeave(){try{return !frame?.contentWindow?.SYNKTeacherView?.hasDraft?.()||windowObject.confirm?.('쓰던 과제·관찰·챙길 일이 닫혀요. 다른 학생으로 넘어갈까요?')===true;}catch{return false;}}
   async function choose(row,{learnerId=null,userInitiated=false,refreshScope=false}={}){
     active();if(userInitiated&&!canLeave()){picker();return;}
     if(row&&selected?.id===row.id&&frame&&!refreshScope&&!permissionChanged(framePermissions.get(learnerId),permission(knownLearner(learnerId)))){
       selectedLearnerId=learnerId;windowObject.SYNKClassroomSelection={classId:row.id,learnerId};frame.contentWindow?.postMessage?.({type:'synk-teacher-select',classId:row.id,learnerId},new URL(locationHref).origin);picker();renderOverview();frame.scrollIntoView({block:'start',behavior:'instant'});return;
     }
     clearFrame();selected=row;selectedLearnerId=learnerId;picker();renderOverview();const version=epoch;
-    if(!row){status.textContent=classes.length?'모든 담당 반의 학생과 후속 일을 함께 보고 있어요. 학생을 선택하면 상세와 처리 화면이 열려요.':'기관에서 교사 소속과 담당 반을 등록하면 이곳에 표시돼요.';return;}
-    status.textContent='담당 수업의 접근 권한을 확인하고 있어요.';
-    const check=()=>{current(version);if(!online)throw Object.assign(new Error('수업 연결을 다시 확인하고 있어요. 잠시 뒤 다시 시도해 주세요.'),{code:'NETWORK_ERROR'});};
+    if(!row){status.textContent=classes.length?'담당 반 전체를 보고 있어요. 학생을 누르면 그 학생의 기록과 과제가 열려요.':'기관에서 담당 반을 등록하면 여기에 보여요.';return;}
+    status.textContent='이 반을 볼 권한을 확인하고 있어요.';
+    const check=()=>{current(version);if(!online)throw Object.assign(new Error('연결을 다시 확인하고 있어요. 잠시 뒤 다시 해 주세요.'),{code:'NETWORK_ERROR'});};
     const client=createClassroomClient({transport,classId:row.id,guard:check});
     let snapshotRequestSeq=0,snapshotAppliedSeq=0;
     const workspace=await client.request('/api/workspace');check();
-    if(workspace.mode!=='account-linked'||!workspace.classes?.some(classroom=>classroom.id===row.id))throw new Error('담당 수업을 확인하지 못했어요. 소속을 다시 확인해 주세요.');
+    if(workspace.mode!=='account-linked'||!workspace.classes?.some(classroom=>classroom.id===row.id))throw new Error('이 반을 열지 못했어요. 「반 목록 새로고침」을 눌러 주세요.');
     assertCurrentSnapshot(workspace,row.id);rememberPermissions(workspace,row.id);
-    host=Object.freeze({mode:'account-linked',classId:row.id,focusWorkspace:()=>{check();frame?.scrollIntoView({block:'start',behavior:'instant'});},request:(path,body)=>{check();const snapshotSeq=path==='/api/workspace'?++snapshotRequestSeq:0,pending=client.request(path,body);return pending.then(result=>{check();if(path==='/api/workspace'){if(snapshotSeq<snapshotAppliedSeq)throw Object.assign(new Error('더 최신의 수업 기록을 확인했어요. 다시 불러와 주세요.'),{code:'CLASSROOM_SNAPSHOT_CHANGED',status:409});assertCurrentSnapshot(result,row.id);rememberPermissions(result,row.id);snapshotAppliedSeq=snapshotSeq;}if(body!==undefined)void load().catch(report);return result;});}});
+    host=Object.freeze({mode:'account-linked',classId:row.id,focusWorkspace:()=>{check();frame?.scrollIntoView({block:'start',behavior:'instant'});},request:(path,body)=>{check();const snapshotSeq=path==='/api/workspace'?++snapshotRequestSeq:0,pending=client.request(path,body);return pending.then(result=>{check();if(path==='/api/workspace'){if(snapshotSeq<snapshotAppliedSeq)throw Object.assign(new Error('그사이 새 기록이 들어왔어요. 다시 불러와 주세요.'),{code:'CLASSROOM_SNAPSHOT_CHANGED',status:409});assertCurrentSnapshot(result,row.id);rememberPermissions(result,row.id);snapshotAppliedSeq=snapshotSeq;}if(body!==undefined)void load().catch(report);return result;});}});
     windowObject.SYNKClassroomHost=host;windowObject.SYNKClassroomSelection={classId:row.id,learnerId};
-    frame=make('iframe');frame.title=row.name+' · 학생 상세와 수업 처리';frame.src=new URL('../teacher-world/?account=1',locationHref).href;mount.append(frame);status.textContent='학생이 공유한 학습 기록으로 다음 수업과 과제를 준비해요.';
+    frame=make('iframe');frame.title=row.name+' · 학생별 기록과 과제';frame.src=new URL('../teacher-world/?account=1',locationHref).href;mount.append(frame);status.textContent='학생이 공유한 학습 기록으로 다음 수업과 과제를 준비해요.';
     if(userInitiated)mount.scrollIntoView({block:'start',behavior:'instant'});
   }
   async function readOverview(rows){
@@ -86,19 +86,19 @@ export function createTeacherWorkspace({root,transport,guard,notice,documentObje
     active();const version=++requestVersion,reconnecting=!online;let data,rows;
     try{
       const result=await transport('classes');active();if(version!==requestVersion)return;
-      if(result?.mode!=='account-linked'||!Array.isArray(result.classes)||result.classes.some(row=>typeof row.id!=='string'||!row.id||typeof row.name!=='string'||!['teacher','learner'].includes(row.role)))throw Object.assign(new Error('수업 목록을 확인하지 못했어요.'),{code:'INVALID_CLASSROOM_RESPONSE'});
+      if(result?.mode!=='account-linked'||!Array.isArray(result.classes)||result.classes.some(row=>typeof row.id!=='string'||!row.id||typeof row.name!=='string'||!['teacher','learner'].includes(row.role)))throw Object.assign(new Error('반 목록을 불러오지 못했어요. 다시 불러와 주세요.'),{code:'INVALID_CLASSROOM_RESPONSE'});
       rows=result.classes.filter(row=>row.role==='teacher').sort(compareTeacherRows);const authorized=new Set(rows.map(row=>row.id));
       // A successful membership response is already revocation evidence, even
       // when the following aggregate request is offline or fails later.
       if(selected&&!authorized.has(selected.id)){clearFrame();selected=null;selectedLearnerId=null;}
       classes=rows;overviewData=restrictOverview(overviewData,authorized);picker();renderOverview();
       data=rows.length?await readOverview(rows):{mode:'account-linked',classes:[],care:[],assignments:[]};active();if(version!==requestVersion)return;
-      if(data?.mode!=='account-linked'||!Array.isArray(data.classes)||data.classes.some(row=>typeof row.id!=='string'||!row.id))throw Object.assign(new Error('담당 반 전체의 기록을 확인하지 못했어요.'),{code:'INVALID_CLASSROOM_RESPONSE'});
+      if(data?.mode!=='account-linked'||!Array.isArray(data.classes)||data.classes.some(row=>typeof row.id!=='string'||!row.id))throw Object.assign(new Error('담당 반 기록을 불러오지 못했어요. 다시 불러와 주세요.'),{code:'INVALID_CLASSROOM_RESPONSE'});
       online=true;
     }catch(error){
       active();if(version!==requestVersion)return;online=false;
       if(error.status===401||error.status===403||error.code==='INVALID_CLASSROOM_RESPONSE'){clearFrame();selected=null;selectedLearnerId=null;classes=[];overviewData=null;picker();}
-      renderOverview();status.textContent='수업 소속을 확인하지 못했어요. 연결 후 다시 확인해 주세요.';throw error;
+      renderOverview();status.textContent='반 목록을 불러오지 못했어요. 연결되면 「반 목록 새로고침」을 눌러 주세요.';throw error;
     }
     const allowed=new Set(rows.map(row=>row.id));overviewData=restrictOverview({...data,classes:data.classes.map(row=>({...row,name:row.name||rows.find(member=>member.id===row.id)?.name,learners:Array.isArray(row.learners)?row.learners:[]}))},allowed);
     const visible=new Set(overviewData.classes.map(row=>row.id));classes=rows.filter(row=>visible.has(row.id));
@@ -112,10 +112,10 @@ export function createTeacherWorkspace({root,transport,guard,notice,documentObje
         if(!fenceFrame()){const unsaved=frameHasDraft(),reopened=choose(prior,{learnerId:knownLearner(focused)?focused:null,refreshScope:true});if(unsaved&&!stopped)notice('학생의 공유 상태가 바뀌어 수업 화면을 새로 열었어요. 저장하지 않은 내용은 닫혔어요.',true);await reopened;return;}
         if(!knownLearner(focused)){selectedLearnerId=null;windowObject.SYNKClassroomSelection={classId:prior.id,learnerId:null};}
       }
-      selected=prior;picker();renderOverview();status.textContent='학생이 공유한 학습 기록으로 다음 수업과 과제를 준비해요.';if(reconnecting)notice('수업 연결이 복구됐어요. 열어 둔 수업에서 계속할 수 있어요.');return;
+      selected=prior;picker();renderOverview();status.textContent='학생이 공유한 학습 기록으로 다음 수업과 과제를 준비해요.';if(reconnecting)notice('다시 연결됐어요. 열어 둔 반에서 이어서 하면 돼요.');return;
     }
     await choose(row);
-    if(reconnecting)notice('수업 연결이 복구됐어요. 담당 수업을 다시 확인했어요.');
+    if(reconnecting)notice('다시 연결됐어요. 담당 반을 새로 불러왔어요.');
   }
   select.onchange=()=>{void choose(classes.find(row=>row.id===select.value)||null,{userInitiated:true}).catch(report);};
   refresh.onclick=()=>{refresh.disabled=true;void load().catch(report).finally(()=>{if(!stopped)refresh.disabled=false;});};

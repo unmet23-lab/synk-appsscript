@@ -21,7 +21,7 @@ app.whenReady().then(async()=>{try{
   await teacher.loadURL(origin+'/#teacher-key='+server.ownerKey);await wait(teacher,`document.documentElement.dataset.ready==='true'`);
   check('teacher-key-removed-from-url',await js(teacher,`location.hash===''`));
   check('no-synthetic-learners-or-evidence',server.snapshot().learners.length===0);
-  check('teacher-empty-class-is-actionable',await js(teacher,`!document.getElementById('world-connections').hidden&&document.getElementById('roster').textContent.includes('연결된 학생이 아직 없어요')`));
+  check('teacher-empty-class-is-actionable',await js(teacher,`!document.getElementById('world-connections').hidden&&document.getElementById('roster').textContent.includes('아직 연결된 학생이 없어요')`));
   await js(teacher,`document.getElementById('world-learner-name').value='연결 확인 학생';document.querySelector('#world-link-form button').click()`);await wait(teacher,`!!document.getElementById('world-join-code')`);
   const code=await js(teacher,`document.getElementById('world-join-code').value`);
   check('code-created-before-consent-no-evidence',server.snapshot().learners[0].evidence.length===0&&!server.snapshot().learners[0].sharing.enabled);
@@ -39,7 +39,7 @@ app.whenReady().then(async()=>{try{
   check('world-first-reading-zero-of-three',await js(world,`document.querySelector('.wc-result').textContent.includes('0 / 3문항')`));
   check('server-records-first-real-reading-response',server.snapshot().practices.length===1&&server.snapshot().learners[0].evidence.filter(row=>row.grading==='server-scored').length===3);
   await js(teacher,`document.getElementById('refresh').click()`);await wait(teacher,`document.getElementById('student-detail').textContent.includes('0 / 3')`);
-  check('teacher-recommends-reading-from-reading-errors',await js(teacher,`document.getElementById('student-detail').textContent.includes('추가 연습')&&document.querySelector('.recommendation h3').textContent.includes('입장 검사')`));
+  check('teacher-recommends-reading-from-reading-errors',await js(teacher,`document.getElementById('student-detail').textContent.includes('연습 더 필요')&&document.querySelector('.recommendation h3').textContent.includes('입장 검사')`));
   await js(teacher,`document.getElementById('assign').click();document.getElementById('content-select').value='reading-detail-transfer';document.getElementById('content-select').dispatchEvent(new Event('change'));document.querySelector('#assignment-form textarea').value='방금 틀린 안내문을 다시 읽고 근거를 확인해 주세요.';document.getElementById('assignment-title').value='WORLD 연결 과제';document.querySelector('#assignment-form button[type=submit]').click()`);
   await wait(teacher,`!document.getElementById('assignment-dialog').open&&document.getElementById('assignments').textContent.includes('WORLD 연결 과제')`);
   await js(world,`document.querySelector('[data-world-action=back]').click();document.querySelector('[data-world-action=refresh]').click()`);await wait(world,`!!document.querySelector('[data-kind=assignment]')`);

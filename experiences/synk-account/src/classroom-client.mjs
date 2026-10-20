@@ -34,6 +34,7 @@ export function createClassroomClient({transport,classId,guard}){
     townRead:()=>call('townRead'),townCommand:body=>call('townCommand',body),
     townMembership:()=>call('townMembership'),townSharing:body=>call('townSharing',body),townActivity:body=>call('townActivity',body),
     learning:Object.freeze({get:({after,revision,signal})=>call('learningGet',undefined,{signal},{after,revision}),post:({revision,events,runId,signal})=>call('learningPost',{revision,events,...(runId?{runId}:{})},{signal})}),
-    request(path,body){const entry=Object.entries(routes).find(([,r])=>r[0]===path&&(r[1]==='POST')===(body!==undefined));if(!entry||!['coursePlan','courseRead','courseAssign','courseFeedback','workspace','care','careSave','homework','homeworkSave','homeworkKey','enrollmentInvite','assignments','assignmentUpdate','assignmentCancel','observations'].includes(entry[0]))throw failure('FORBIDDEN','지원하지 않는 교사 요청입니다.',403);return call(entry[0],body);}
+    // 「지원하지 않는 교사 요청」 구절은 지우지 않는다. 코드가 FORBIDDEN이라, 과제 첨삭(teacher-world/homework-review.mjs)은 이 구절로 옛 연결을 알아본다.
+    request(path,body){const entry=Object.entries(routes).find(([,r])=>r[0]===path&&(r[1]==='POST')===(body!==undefined));if(!entry||!['coursePlan','courseRead','courseAssign','courseFeedback','workspace','care','careSave','homework','homeworkSave','homeworkKey','enrollmentInvite','assignments','assignmentUpdate','assignmentCancel','observations'].includes(entry[0]))throw failure('FORBIDDEN','지원하지 않는 교사 요청이에요. 화면을 새로고침해 주세요.',403);return call(entry[0],body);}
   });
 }

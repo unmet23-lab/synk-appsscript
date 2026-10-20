@@ -53,7 +53,7 @@ export function createTeachingService({store,origin,config=null,fetch:fetcher=gl
   function bootstrapRate(req){
     const key=clientAddress(req);let row=bootstraps.get(key);
     if(!row){if(bootstraps.size>=MAX)bootstraps.delete(bootstraps.keys().next().value);row={count:0,expiresAt:now()+BOOTSTRAP_MS};bootstraps.set(key,row);}
-    if(++row.count>BOOTSTRAP_MAX)throw fail(429,'RATE_LIMITED','로그인 화면 요청이 많습니다. 잠시 뒤 다시 시도해 주세요.');
+    if(++row.count>BOOTSTRAP_MAX)throw fail(429,'RATE_LIMITED','로그인 화면을 너무 자주 열었어요. 잠시 뒤 다시 해 주세요.');
   }
   function browser(req,res){
     prune();const key=cookie(req,BROWSER_COOKIE),prior=key&&browsers.get(hash(key));
@@ -62,11 +62,11 @@ export function createTeachingService({store,origin,config=null,fetch:fetcher=gl
     // logout checks never consume this bucket. Bound both caches under new IPs.
     bootstrapRate(req);
     if(browsers.size>=MAX){const protectedKeys=new Set([...flows.values()].map(flow=>flow.bootstrapKey));const oldest=[...browsers.keys()].find(value=>!protectedKeys.has(value));if(oldest)browsers.delete(oldest);}
-    if(browsers.size>=MAX)throw fail(429,'BUSY','로그인 요청이 많습니다. 잠시 뒤 다시 시도해 주세요.');
+    if(browsers.size>=MAX)throw fail(429,'BUSY','로그인 요청이 몰렸어요. 잠시 뒤 다시 해 주세요.');
     const value=random(),row={key:hash(value),csrfToken:random(),expiresAt:now()+SESSION_MS};browsers.set(row.key,row);setCookie(res,BROWSER_COOKIE,value,SESSION_MS/1000);return row;
   }
   function csrf(req){requireOrigin(req);prune();const entry=sessions.get(sessionHash(req)),browserKey=cookie(req,BROWSER_COOKIE),bootstrap=browserKey&&browsers.get(hash(browserKey)),expected=current(entry)?entry.csrfToken:bootstrap?.csrfToken;if(!equal(req.headers?.['x-csrf-token'],expected))throw fail(403,'CSRF','내 수업의 로그인 상태를 다시 확인해 주세요.');return {entry:current(entry)?entry:null,bootstrap};}
-  function rate(req){prune();const key=clientAddress(req);let row=attempts.get(key);if(!row){if(attempts.size>=MAX)throw fail(429,'BUSY','로그인 요청이 많습니다.');row={count:0,expiresAt:now()+FLOW_MS};attempts.set(key,row);}if(++row.count>30)throw fail(429,'RATE_LIMITED','로그인 요청이 많습니다. 잠시 뒤 다시 시도해 주세요.');}
+  function rate(req){prune();const key=clientAddress(req);let row=attempts.get(key);if(!row){if(attempts.size>=MAX)throw fail(429,'BUSY','로그인 요청이 몰렸어요. 잠시 뒤 다시 해 주세요.');row={count:0,expiresAt:now()+FLOW_MS};attempts.set(key,row);}if(++row.count>30)throw fail(429,'RATE_LIMITED','로그인을 너무 자주 시도했어요. 잠시 뒤 다시 해 주세요.');}
   const upstreamHeaders=access=>({Authorization:'Bearer '+access,apikey:config.publishableKey,'X-SYNK-Product':PRODUCT,'X-SYNK-Contract':'1','X-SYNK-App-Version':'1.0.0'});
   async function remote(url,options){try{return await fetcher(url,{...options,redirect:'error',signal:AbortSignal.timeout(8000)});}catch{throw unavailable();}}
   async function verify(access){
@@ -102,7 +102,7 @@ export function createTeachingService({store,origin,config=null,fetch:fetcher=gl
     const bootstrap=browser(req,res),proof=cookie(req,FLOW_COOKIE);if(proof&&[...flows.values()].some(flow=>flow.browserHash===hash(proof)&&flow.expiresAt>now()))initial.status='signing-in';return {...initial,csrfToken:bootstrap.csrfToken};
   }
   function start(req,res){
-    requireEnabled();const {entry,bootstrap}=csrf(req);rate(req);if(flows.size>=MAX)throw fail(429,'BUSY','로그인 요청이 많습니다.');
+    requireEnabled();const {entry,bootstrap}=csrf(req);rate(req);if(flows.size>=MAX)throw fail(429,'BUSY','로그인 요청이 몰렸어요. 잠시 뒤 다시 해 주세요.');
     const previousHash=sessionHash(req),proof=cookie(req,FLOW_COOKIE);for(const [key,row]of flows)if(row.previousHash===previousHash&&previousHash||bootstrap&&row.bootstrapKey===bootstrap.key||proof&&row.browserHash===hash(proof))flows.delete(key);
     const state=random(),browserProof=random(),verifier=random(),key=hash(state);flows.set(key,{key,verifier,browserHash:hash(browserProof),bootstrapKey:bootstrap?.key,previousHash,previousEntry:entry,expiresAt:now()+FLOW_MS,consumed:false});setCookie(res,FLOW_COOKIE,browserProof,FLOW_MS/1000);
     const target=new URL('/auth/v1/oauth/authorize',config.issuer);target.search=new URLSearchParams({client_id:config.clientId,response_type:'code',redirect_uri:config.redirectUri,scope:'openid profile',state,code_challenge:createHash('sha256').update(verifier).digest('base64url'),code_challenge_method:'S256'}).toString();return {authorizationUrl:target.href};
@@ -111,10 +111,10 @@ export function createTeachingService({store,origin,config=null,fetch:fetcher=gl
   async function callback(req,res,url){
     requireEnabled();const allowed=['state','code','error','error_description'];if(url.origin!==origin||url.pathname!==CALLBACK||url.hash||[...url.searchParams.keys()].some(key=>!allowed.includes(key)||url.searchParams.getAll(key).length!==1)||url.searchParams.has('code')&&url.searchParams.has('error'))throw fail(403,'CALLBACK','내 수업의 로그인 콜백을 확인해 주세요.');
     const state=url.searchParams.get('state'),proof=cookie(req,FLOW_COOKIE),flow=state&&/^[A-Za-z0-9_-]{43}$/.test(state)?flows.get(hash(state)):null;
-    if(!flow||flow.consumed||!proof||flow.browserHash!==hash(proof)||flow.previousHash!==sessionHash(req)||!flowCurrent(flow))throw fail(403,'FLOW','수업 로그인 확인이 만료됐습니다. 다시 시작해 주세요.');flow.consumed=true;
+    if(!flow||flow.consumed||!proof||flow.browserHash!==hash(proof)||flow.previousHash!==sessionHash(req)||!flowCurrent(flow))throw fail(403,'FLOW','로그인 확인 시간이 지났어요. 다시 로그인해 주세요.');flow.consumed=true;
     try{
       const code=url.searchParams.get('code');if(!code||code.length>4000||url.searchParams.has('error'))throw fail(403,'CANCELLED','수업 로그인을 완료하지 못했어요.');
-      const tokens=await exchange({grant_type:'authorization_code',code,client_id:config.clientId,redirect_uri:config.redirectUri,code_verifier:flow.verifier});if(!flowCurrent(flow))throw rejected();if(!credential(tokens.access_token)||!credential(tokens.refresh_token)||tokens.token_type&&String(tokens.token_type).toLowerCase()!=='bearer')throw rejected();const identity=await verify(tokens.access_token);if(!flowCurrent(flow))throw rejected();prune();if(sessions.size>=MAX)throw fail(429,'BUSY','로그인 요청이 많습니다.');
+      const tokens=await exchange({grant_type:'authorization_code',code,client_id:config.clientId,redirect_uri:config.redirectUri,code_verifier:flow.verifier});if(!flowCurrent(flow))throw rejected();if(!credential(tokens.access_token)||!credential(tokens.refresh_token)||tokens.token_type&&String(tokens.token_type).toLowerCase()!=='bearer')throw rejected();const identity=await verify(tokens.access_token);if(!flowCurrent(flow))throw rejected();prune();if(sessions.size>=MAX)throw fail(429,'BUSY','로그인 요청이 몰렸어요. 잠시 뒤 다시 해 주세요.');
       const value=random(),key=hash(value),createdAt=now(),entry={hash:key,...identity,accessExpiresAt:identity.expiresAt,csrfToken:random(),createdAt,expiresAt:createdAt+SESSION_MS,accessToken:tokens.access_token,refreshToken:tokens.refresh_token,currentSessionId:identity.currentSessionId,pendingAccessToken:null,sessionGeneration:++generation,blocked:false,checking:null};
       sessions.set(key,entry);try{store.transaction(()=>{store.db.prepare('INSERT INTO teaching_identity_sessions VALUES(?,?,?)').run(key,entry.expiresAt,'');save(entry);if(flow.previousHash)removeRow.run(flow.previousHash);});}catch(error){sessions.delete(key);throw error;}if(flow.previousHash)sessions.delete(flow.previousHash);setCookie(res,SESSION_COOKIE,value,SESSION_MS/1000);return publicStatus(entry);
     }finally{if(flows.get(flow.key)===flow){flows.delete(flow.key);setCookie(res,FLOW_COOKIE,'',0);}}
@@ -135,7 +135,7 @@ export function createTeachingService({store,origin,config=null,fetch:fetcher=gl
   async function classroom(req,input){
     requireEnabled();const {entry}=csrf(req);if(!entry||!current(entry))throw rejected();if(closing)throw unavailable();const verified=await validate(entry);if(!current(entry))throw rejected();if(closing||entry.blocked)throw unavailable();if(!verified)throw rejected();
     if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).some(key=>!['operation','classId','body'].includes(key)))throw fail(400,'REQUEST','수업 요청을 확인해 주세요.');
-    const {operation,classId,body}=input,route=Object.hasOwn(routes,operation)&&routes[operation];if(!route)throw fail(403,'OPERATION','지원하지 않는 수업 요청입니다.');
+    const {operation,classId,body}=input,route=Object.hasOwn(routes,operation)&&routes[operation];if(!route)throw fail(403,'OPERATION','지원하지 않는 수업 요청이에요. 화면을 새로고침해 주세요.');
     const unscoped=['classes','teacherOverview'].includes(operation);
     if(unscoped&&(classId!==undefined||body!==undefined)||!unscoped&&(typeof classId!=='string'||!classId||classId.length>120)||route[1]&&(!body||typeof body!=='object'||Array.isArray(body))||!route[1]&&body!==undefined||body?.classId&&body.classId!==classId)throw fail(400,'CLASS_SCOPE','담당 수업의 요청 범위를 확인해 주세요.');
     const guard=()=>{if(!current(entry))throw rejected();if(closing||entry.blocked)throw unavailable();};

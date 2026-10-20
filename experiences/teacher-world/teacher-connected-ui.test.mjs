@@ -46,7 +46,7 @@ test('teacher key is removed from the URL before exchange and only the bearer is
   const exchange=f.requests.find(row=>row.url==='/api/teacher/session');assert.deepEqual(JSON.parse(exchange.options.body),{key:'temporary-key'});
   f.resolve('/api/teacher/session',{token:'teacher-token'});await tick();const get=f.requests.find(row=>row.url==='/api/workspace');assert.equal(get.options.headers.Authorization,'Bearer teacher-token');
   f.resolve('/api/workspace',workspace());await tick();assert.equal(f.storage.get('synk.teacher.local-linked.session'),'teacher-token');assert.equal(f.element('teacher-session').hidden,true);
-  assert.match(f.element('roster').innerHTML,/연결된 학생이 아직 없어요/);assert.equal(f.element('personalization-button').hidden,true);
+  assert.match(f.element('roster').innerHTML,/아직 연결된 학생이 없어요/);assert.equal(f.element('personalization-button').hidden,true);
 });
 
 test('an invalid key stays at the teacher gate and does not retain a credential',async()=>{
@@ -62,12 +62,12 @@ test('manual teacher reconnection reads the current key and opens an empty real 
 test('linked student details show consent and never link into the demo student impersonation screen',async()=>{
   const f=fixture({storedToken:'token'});await tick();f.resolve('/api/workspace',workspace([learner()]));await tick();
   assert.match(f.element('student-detail').innerHTML,/WORLD 계정 연결됨 · 학습 공유 중/);assert.doesNotMatch(f.element('student-detail').innerHTML,/href="\/student|예시 학생/);
-  assert.match(f.element('student-detail').innerHTML,/자신의 WORLD 앱에서 과제를/);
+  assert.match(f.element('student-detail').innerHTML,/WORLD 앱에서 과제를 받아요/);
 });
 
 test('a pending or withdrawn learner cannot be assigned work through the rendered action',async()=>{
   const f=fixture({storedToken:'token'});await tick();f.resolve('/api/workspace',workspace([learner({connectedAt:null,sharing:{enabled:false,revision:0}})]));await tick();
-  assert.match(f.element('student-detail').innerHTML,/id="assign" disabled/);assert.match(f.element('student-detail').innerHTML,/계정 연결을 기다리고/);
+  assert.match(f.element('student-detail').innerHTML,/id="assign" disabled/);assert.match(f.element('student-detail').innerHTML,/WORLD 계정 연결 전/);
 });
 
 test('logout removes student data and a late workspace cannot restore it',async()=>{
@@ -106,7 +106,7 @@ test('new learner connection sends only the selected class and chosen name',asyn
 
 test('the original demo still loads without a bearer or connected controls',async()=>{
   const f=fixture({mode:'demo'});await tick();f.resolve('/api/workspace',{...workspace([learner()]),mode:'demo',_token:'demo-csrf'});await tick();
-  assert.equal(f.requests.find(row=>row.url==='/api/workspace').options.headers.Authorization,undefined);assert.equal(f.element('world-connections').hidden,true);assert.match(f.element('student-detail').innerHTML,/학생의 WORLD 과제 체험/);
+  assert.equal(f.requests.find(row=>row.url==='/api/workspace').options.headers.Authorization,undefined);assert.equal(f.element('world-connections').hidden,true);assert.match(f.element('student-detail').innerHTML,/이 학생 화면에서 과제 보기/);
 });
 
 test('poll continues through an open assignment and preserves a valid draft',async()=>{
@@ -184,7 +184,7 @@ test('account frame fences a withdrawn learner in place for the portal: records 
  assert.equal(f.view().applySharing({classId:'class-local',learners:[{id:'learner-a'}]}),false,'빈 공유 정보는 받지 않는다');
  assert.equal(f.view().applySharing(null),false);assert.equal(f.element('note-dialog').open,true);
  assert.equal(f.view().applySharing({classId:'class-local',learners:[meta('learner-a',3,false),meta('learner-b',2,true)]}),true);
- assert.equal(f.element('note-dialog').open,false);assert.equal(f.element('note-text').value,'');assert.match(f.element('toast').textContent,/공유 또는 과제 상태가 바뀌어 작성 창을 닫았어요/);
+ assert.equal(f.element('note-dialog').open,false);assert.equal(f.element('note-text').value,'');assert.match(f.element('toast').textContent,/공유나 과제가 바뀌어 쓰던 창을 닫았어요/);
  assert.match(f.element('student-detail').innerHTML,/학습 공유 안 함/);assert.doesNotMatch(f.element('student-detail').innerHTML,/세부 정보/);
  assert.equal(homework.resets,0);assert.equal(f.view().hasDraft(),true,'과제 첨삭 초안은 남는다');
  assert.equal(f.requests.filter(row=>row.url==='/api/workspace').length,2,'걸러 낸 뒤 최신 판을 다시 읽는다');

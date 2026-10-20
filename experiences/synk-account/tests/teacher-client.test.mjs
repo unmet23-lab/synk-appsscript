@@ -48,7 +48,7 @@ test('temporary same-session verification failure preserves selection and a work
  await p.get('sign-out').onclick();assert.equal(scope.stopped,true);
 });
 test('logout closes scoped host before IPC and keeps incomplete server revocation visible despite auth event',async t=>{
-  const p=await session(t);await p.start;const old=p.scopes[0];await p.get('sign-out').onclick();assert.equal(old.stopped,true);assert.throws(old.guard,{code:'ACCOUNT_CHANGED'});assert.equal(p.scopes.length,1);assert.match(p.get('notice').textContent,/서버의 로그인 종료/);assert.match(p.get('notice').className,/error/);
+  const p=await session(t);await p.start;const old=p.scopes[0];await p.get('sign-out').onclick();assert.equal(old.stopped,true);assert.throws(old.guard,{code:'ACCOUNT_CHANGED'});assert.equal(p.scopes.length,1);assert.match(p.get('notice').textContent,/서버 쪽 로그아웃/);assert.match(p.get('notice').className,/error/);
 });
 test('failed logout cannot reopen classroom on refresh and offers a retry',async t=>{
   const p=await session(t,{authSignOut:async()=>{throw Error('IPC unavailable');}});await p.start;await p.get('sign-out').onclick();p.emit(signed());await settle();assert.equal(p.scopes.length,1);assert.equal(p.scopes[0].stopped,true);assert.equal(p.get('sign-out').hidden,false);assert.equal(p.get('connect').hidden,true);
@@ -136,7 +136,7 @@ test('membership removal and malformed class response invalidate captured teache
 });
 test('network loss blocks requests until successful membership recheck, and forbidden closes frame',async t=>{
   const p=classroom(t);await p.workspace.load();const host=p.windowObject.SYNKClassroomHost;p.error(Object.assign(Error('offline'),{code:'NETWORK_ERROR'}));await assert.rejects(p.workspace.load());assert.throws(()=>host.request('/api/workspace'),{code:'NETWORK_ERROR'});
-  p.error(null);await p.workspace.load();assert.equal(p.windowObject.SYNKClassroomHost,host);await host.request('/api/workspace');assert.match(p.root.children[1].textContent,/학생이 공유한 학습 기록/);assert.match(p.notices.at(-1)[0],/수업 연결이 복구/);assert.notEqual(p.notices.at(-1)[1],true);p.error(Object.assign(Error('forbidden'),{status:403}));await assert.rejects(p.workspace.load());assert.equal(p.windowObject.SYNKClassroomHost,undefined);
+  p.error(null);await p.workspace.load();assert.equal(p.windowObject.SYNKClassroomHost,host);await host.request('/api/workspace');assert.match(p.root.children[1].textContent,/학생이 공유한 학습 기록/);assert.match(p.notices.at(-1)[0],/다시 연결됐어요/);assert.notEqual(p.notices.at(-1)[1],true);p.error(Object.assign(Error('forbidden'),{status:403}));await assert.rejects(p.workspace.load());assert.equal(p.windowObject.SYNKClassroomHost,undefined);
 });
 test('late membership response after page shutdown cannot attach a frame',async t=>{
   const p=classroom(t),pending=deferred();p.hold(pending);const load=p.workspace.load();p.workspace.stop();pending.resolve({mode:'account-linked',classes:[{id:'a',name:'A',role:'teacher'}]});await assert.rejects(load,{code:'ACCOUNT_CHANGED'});assert.equal(p.windowObject.SYNKClassroomHost,undefined);assert.equal(p.root.hidden,true);

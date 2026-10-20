@@ -50,7 +50,7 @@ function companyTeacherFiles(){
 }
 // 회사 서버 responseHeaders()의 CSP(교사 화면은 같은 출처 iframe만 허용).
 const CSP="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; connect-src 'self'; frame-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'";
-const HOST_HTML=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,"><title>내 수업 QA</title><link rel="stylesheet" href="/qa/host.css"></head><body><iframe id="frame" title="합성 검증 수업 · 학생 상세와 수업 처리"></iframe><script type="module" src="/qa/host.mjs"></script></body></html>`;
+const HOST_HTML=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,"><title>내 수업 QA</title><link rel="stylesheet" href="/qa/host.css"></head><body><iframe id="frame" title="합성 검증 수업 · 학생별 기록과 과제"></iframe><script type="module" src="/qa/host.mjs"></script></body></html>`;
 const HOST_CSS='html,body{margin:0;background:#fff}iframe{display:block;width:100%;height:100vh;border:0}';
 // 계정 포털 teacher-workspace.mjs의 host와 같은 모양: 이 반의 수업 통로 request만 넘긴다(토큰은 부모 쪽).
 const HOST_MJS=`import {createClassroomTransport,createClassroomClient} from '/synk-account/src/classroom-client.mjs';

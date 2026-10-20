@@ -51,7 +51,7 @@ test('late error for the prior student cannot erase the current student screen',
 
 test('a mismatched server learner identity never renders assignments or enables submission',async()=>{
   const f=fixture();await tick();f.resolve('/api/student?learnerId=demo-nara',workspace('demo-bora',{assignments:[task]}));await tick();
-  assert.match(f.element('student-content').innerHTML,/선택한 학생의 과제를 확인하지 못했어요/);
+  assert.match(f.element('student-content').innerHTML,/고른 학생의 과제를 불러오지 못했어요/);
   assert.equal(f.element('html').dataset.ready,'error');
   f.clickStart(task.id);assert.equal(f.element('answer-form').onsubmit,undefined);
 });
