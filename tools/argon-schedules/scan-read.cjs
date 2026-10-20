@@ -1,13 +1,16 @@
 #!/usr/bin/env node
 'use strict';
 /* 월요일 스캔 수집(scan-lab · scan-ai · scan-platform) 결과를 브라우저 없이 읽는다 (2026-10-19).
+ * --매일: 매일 도는 제작 인사이트(full · yt-tt · meta-brand · synkbrief) 문서를 읽는다 (2026-10-20, 1일 1편 예약 작업용).
  *
  * 읽기 전용: GCE API로 standby 서버의 지금 주소를 읽고, 고정한 호스트 키로 SSH에 붙어
  * 서버의 docs-io.py read와 회차 상태만 가져온다. 서버·문서에 쓰지 않는다.
  *
  *   node tools/argon-schedules/scan-read.cjs [--out <폴더>]
+ *   node tools/argon-schedules/scan-read.cjs --매일 [--out <폴더>]
  *
  * 저장: <저장소>/.tmp/weekly-scan/<오늘 KST>/ 에 역할별 JSON(본문을 해석한 값)과 status.json.
+ *       --매일은 <저장소>/.tmp/daily-argon/<오늘 KST>/ 에 역할별 본문 원문(.txt)과 status.json.
  * 필요: ~/.ssh/synk_company_20261008(키), ~/.ssh/known_hosts_synk_argon(별칭 synk-argon-standby의 호스트 키),
  *       tools/모델정책.js의 Vertex 자격(GCE 읽기). 이 PC의 공인 IP가 회사 서버 SSH 허용 목록에 있어야 한다.
  * 막히면: 아래 「다른 길」로 결과 문서를 크롬 읽기 화면(/mobilebasic)에서 연다.
@@ -24,7 +27,10 @@ const NODE = { name: 'synk-company-2', zone: 'asia-northeast3-b', id: '831814642
 const KEY = path.join(os.homedir(), '.ssh', 'synk_company_20261008');
 const KNOWN = path.join(os.homedir(), '.ssh', 'known_hosts_synk_argon');
 const ALIAS = 'synk-argon-standby';
-const ROLES = ['scan-lab', 'scan-ai', 'scan-platform'];
+const WEEKLY_ROLES = ['scan-lab', 'scan-ai', 'scan-platform'];
+const DAILY_ROLES = ['full', 'yt-tt', 'meta-brand', 'synkbrief'];
+const DAILY = process.argv.includes('--매일');
+const ROLES = DAILY ? DAILY_ROLES : WEEKLY_ROLES;
 const DOCS = JSON.parse(fs.readFileSync(path.join(__dirname, 'configuration', 'docs.json'), 'utf8'));
 const MARKER = 'SYNK_WEEKLY_SCAN_COMPLETE';
 
@@ -108,10 +114,32 @@ function fallbackText() {
   return ROLES.map((r) => `- ${r}: https://docs.google.com/document/d/${DOCS[r]}/mobilebasic`).join('\n');
 }
 
+// 매일 문서는 형식이 역할마다 달라 해석하지 않고 원문만 남긴다. 신선함은 회차가 오늘이나 어제(KST) 끝났는지로 본다.
+function saveDaily(raw, outDir, today) {
+  const yesterday = kstDate(new Date(Date.now() - 24 * 3600 * 1000));
+  const summary = { readAt: new Date().toISOString(), today, roles: {} };
+  for (const r of ROLES) {
+    const entry = raw[r] || {};
+    const text = String(entry.plaintext || '');
+    const done = entry.run && entry.run.completedAt ? kstDate(new Date(entry.run.completedAt)) : null;
+    summary.roles[r] = {
+      run: entry.run, readCode: entry.readCode, readError: entry.readError, chars: text.length,
+      completedKst: done, fresh: done === today || done === yesterday,
+      doc: `https://docs.google.com/document/d/${DOCS[r]}/edit`,
+    };
+    if (text) fs.writeFileSync(path.join(outDir, r + '.txt'), text.endsWith('\n') ? text : text + '\n');
+  }
+  fs.writeFileSync(path.join(outDir, 'status.json'), JSON.stringify(summary, null, 2) + '\n');
+  console.log(JSON.stringify(summary, null, 2));
+  console.log('저장: ' + outDir);
+  if (!Object.values(summary.roles).some((x) => x.fresh && x.chars)) process.exitCode = 3;
+}
+
 async function main() {
   const argOut = process.argv.indexOf('--out');
   const today = kstDate();
-  const outDir = argOut > -1 ? path.resolve(process.argv[argOut + 1]) : path.join(REPO, '.tmp', 'weekly-scan', today);
+  const outDir = argOut > -1 ? path.resolve(process.argv[argOut + 1])
+    : path.join(REPO, '.tmp', DAILY ? 'daily-argon' : 'weekly-scan', today);
   const thisMonday = mondayKst();
   let raw;
   try {
@@ -123,6 +151,7 @@ async function main() {
     return;
   }
   fs.mkdirSync(outDir, { recursive: true });
+  if (DAILY) return saveDaily(raw, outDir, today);
   const summary = { readAt: new Date().toISOString(), thisMonday, roles: {} };
   for (const r of ROLES) {
     const entry = raw[r] || {};
