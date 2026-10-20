@@ -418,3 +418,9 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: `git log --all --oneline -- <경로>`로 origin의 다른 가지에 있는지 먼저 찾는다(입문 게임 277개는 `origin/codex/beginner-games-finish-20261010`에 있었다). 어디에도 없으면 PC에서 커밋한다(path-travel 계획 화면 8개·장소 사진 13장).
 - 다시 확인: PC 작업본에서 `git status --short experiences/path-travel`이 비어 있다.
 
+
+### 임시 index 안에서 실제 공용 index 경로를 물으면 임시 파일이 돌아온다 (2026-10-20 GPT)
+- 증상: exact-path 커밋 가드를 임시 index에서 시험한 뒤 공용 index 불변 검사만 실패했다.
+- 원인: `GIT_INDEX_FILE`을 설정한 환경의 `git rev-parse --git-path index`는 공용 index가 아니라 해당 임시 index를 반환한다.
+- 고침: 원래 환경에서 `GIT_INDEX_FILE`만 제거하고 실제 worktree index 경로를 먼저 구했다. 그 파일의 앞뒤 SHA를 대조하며, 가드는 임시 index 환경에서만 실행했다.
+- 다시 확인: Talk 자동화 8개 경로의 가드를 재실행해 통과했고 실제 공용 index SHA가 유지됐다. `.tmp/business-automation-20261020/talk-index-guard-knsBgG/result.json`을 확인한다.
