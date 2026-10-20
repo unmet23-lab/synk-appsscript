@@ -72,10 +72,10 @@ test('a channel-specific health check preserves the channel ID',async()=>{
 test('unknown direct publication hides the Postiz receipt form but keeps result actions and legacy mode',()=>{
   const f=fixture();f.run('socialWorkspaceState.data.posts=[{id:"p",title:"게시물",canPublish:true,variants:[]}];socialWorkspaceState.data.jobs=[{id:"j",postId:"p",channelId:"ig",status:"unknown"}]');
   const direct=f.run('snswJobCard(socialWorkspaceState.data.jobs[0])');
-  assert.doesNotMatch(direct,/접수 번호|data-sw-form="provider-job"/);
+  assert.doesNotMatch(direct,/접수 코드|data-sw-form="provider-job"/);
   assert.match(direct,/결과 확인 필요/);
   f.run('socialWorkspaceState.data.provider={configured:true,integrations:[]}');
-  assert.match(f.run('snswJobCard(socialWorkspaceState.data.jobs[0])'),/접수 번호/);
+  assert.match(f.run('snswJobCard(socialWorkspaceState.data.jobs[0])'),/접수 코드/);
 });
 
 test('publishing OAuth returns to account setup and clears only callback parameters',()=>{

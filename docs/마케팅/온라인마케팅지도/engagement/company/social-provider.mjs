@@ -263,7 +263,7 @@ export function createSocialProvider({store,fetchImpl=globalThis.fetch,clock=()=
       if(Date.parse(row.updatedAt)<=Date.parse(time())-300000)return saveResult(id,responseResult('failed','미디어를 준비하다 작업이 멈췄어요. 게시 요청은 보내지 않았으니 다시 예약할 수 있어요.',{errorCode:'NOT_SUBMITTED',definitive:true,retryable:true}),row.claimToken,'preparing');
       return responseResult('processing','미디어를 준비하고 있어요. 게시가 접수되기 전까지 상태를 다시 확인해요.',{requestId:row.requestId});
     }
-    if(!row.providerId)return responseResult('uncertain','접수 번호가 없어서 자동으로 다시 보내지 않아요. Postiz에서 결과를 확인해 주세요.',{requestId:row.requestId,errorCode:'SUBMISSION_ID_UNKNOWN'});
+    if(!row.providerId)return responseResult('uncertain','접수 코드가 없어서 자동으로 다시 보내지 않아요. 발행 서비스에서 결과를 확인해 주세요.',{requestId:row.requestId,errorCode:'SUBMISSION_ID_UNKNOWN'});
     try{
       const cfg=configured();if(cfg.version!==row.configVersion)throw fail('CONFIG_CHANGED','처음 발행할 때 쓴 Postiz 연결이 바뀌었어요. 원래 워크스페이스에서 결과를 확인해 주세요.',409);
       const rows=await listPosts(cfg,row,signal),found=rows.find(item=>item.id===row.providerId&&item.integration?.id===row.integrationId);

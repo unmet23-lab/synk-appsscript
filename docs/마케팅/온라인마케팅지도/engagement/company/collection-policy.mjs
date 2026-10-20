@@ -160,7 +160,7 @@ function healthItem(channel, ctx) {
   if (!supported(channel)) return show('unsupported', '자동 수집 안 됨', '이 플랫폼은 아직 자동 수집이 안 돼요.');
   if (channel.collectionDisabled) return show('needs-connection', '연결 끊김', '연결을 끊은 채널이에요. 다시 연결해야 수집해요.', 'connect');
   const failed = currentFailure(channel);
-  if (failed && (channel.requiresReconnect || channel.failureKind === 'auth')) return show('needs-reconnect', '다시 연결해야 함', '연결이 만료됐거나 권한이 모자라요. 「계정 연결」로 다시 연결해 주세요.', 'connect');
+  if (failed && (channel.requiresReconnect || channel.failureKind === 'auth')) return show('needs-reconnect', '다시 연결해야 함', '연결이 만료됐거나 권한이 모자라요. 채널 카드에서 계정을 다시 연결해 주세요.', 'connect');
   if (!connected(channel)) return show('needs-connection', '연결해야 함', '주소만 등록돼 있어요. 계정을 연결하면 수집을 시작해요.', 'connect');
   if (BUSY.has(channel.status)) return show('collecting', '수집 중', '수집하고 있어요. 끝날 때까지 기다려 주세요.', 'wait');
 

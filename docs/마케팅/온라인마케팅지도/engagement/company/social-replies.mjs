@@ -234,7 +234,7 @@ export function createSocialReplies({store,getCredentials,fetchImpl=globalThis.f
   }
   function reconcile(user,input={},context={}){return run(async signal=>{
     context={...context,signal};let attempt=normalizeLease(store.get(K.attempts,text(input.attemptId,100,'답장 기록 ID',true)));if(!attempt)throw fail('REPLY_NOT_FOUND','답장 전송 기록을 찾을 수 없어요.',404);
-    const {row,channel}=getItem(user,attempt.inboxId,context),replyId=id(input.remoteReplyId);if(!replyId)throw fail('INVALID_REPLY_ID','SNS에서 확인한 답장 ID를 입력해 주세요.',400);
+    const {row,channel}=getItem(user,attempt.inboxId,context),replyId=id(input.remoteReplyId);if(!replyId)throw fail('INVALID_REPLY_ID','SNS에서 확인한 답장 번호를 넣어 주세요.',400);
     if(attempt.status==='sent'&&attempt.remoteReplyId===replyId)return {attempt:attemptView(attempt)};
     if(store.all(K.attempts).some(other=>other.id!==attempt.id&&other.remoteReplyId===replyId))throw fail('REPLY_ALREADY_RECORDED','이 답장 ID는 다른 전송 기록에 이미 연결돼 있어요.',409);if(attempt.status!=='unknown')throw fail('RECONCILE_NOT_NEEDED','전송 여부를 모르는 답장만 SNS 답장 ID로 확인할 수 있어요.');
     const generation=await renewBeforeRead(user,channel,context),check=()=>{const current=getItem(user,row.id,context).row;if(binding(channel.id)!==generation||channel.platform!==attempt.platform||current.externalId!==attempt.externalId||current.nativePostId!==attempt.nativePostId||current.sourceAccountId!==attempt.sourceAccountId||current.source!=='api:'+channel.platform)throw fail('CONNECTION_CHANGED','원댓글이나 발신 계정이 바뀌었어요.');};check();

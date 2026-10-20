@@ -158,8 +158,8 @@ function apiError(status, apiCode, transient = false) {
   const codes = String(apiCode || '').toLowerCase();
   // YouTube는 한도를 403 + 이유(rateLimitExceeded·userRateLimitExceeded·dailyLimitExceeded·quotaExceeded)로, Meta는 4·17·32·613과
   // 업무별 한도 800xx로 알린다. 이것을 인증 오류로 읽으면 「재연결 필요」로 자동 수집이 멈춘다(10-20).
-  if (status === 429 || ['4', '17', '32', '613'].includes(codes) || /^800\d\d$/.test(codes) || /quota|rate.?limit|too.?many|limit.?exceeded/.test(codes)) return new CollectorError('RATE_LIMITED', '플랫폼 호출 한도에 걸렸어요. 잠시 뒤에 다시 수집해 주세요.', { retryable: true, status });
-  if (status === 401 || status === 403 || ['102', '190', '200'].includes(codes) || /access.token|access_token|unauthor|permission|oauth|scope/.test(codes)) return new CollectorError('AUTH_REQUIRED', '연결이 만료됐거나 권한이 모자라요. 「계정 연결」로 다시 연결해 주세요.', { status });
+  if (status === 429 || ['4', '17', '32', '613'].includes(codes) || /^800\d\d$/.test(codes) || /quota|rate.?limit|too.?many|limit.?exceeded/.test(codes)) return new CollectorError('RATE_LIMITED', '플랫폼 호출 한도에 걸렸어요. 적어도 24시간 뒤에 다시 시도해요.', { retryable: true, status });
+  if (status === 401 || status === 403 || ['102', '190', '200'].includes(codes) || /access.token|access_token|unauthor|permission|oauth|scope/.test(codes)) return new CollectorError('AUTH_REQUIRED', '연결이 만료됐거나 권한이 모자라요. 채널 카드에서 계정을 다시 연결해 주세요.', { status });
   if (status === 404) return new CollectorError('CHANNEL_NOT_FOUND', '플랫폼에서 이 채널이나 콘텐츠를 찾지 못했어요. 주소가 맞는지 봐 주세요.', { status });
   // Meta는 일시 오류에 is_transient:true를 붙인다. 영구 오류로 굳히지 않고 재시도한다.
   return new CollectorError('API_ERROR', '플랫폼이 수집 요청을 처리하지 못했어요. 연결과 플랫폼 상태를 봐 주세요.', { retryable: status >= 500 || transient, status });

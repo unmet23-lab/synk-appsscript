@@ -45,7 +45,7 @@ export function normalizeBenchmarkReport(input,{now=new Date().toISOString(),ser
   if(!record(value)||value.version!==1)throw fail('조사 결과의 version 값은 1이어야 해요.');
   const at=instant(now,'현재 시각'),periodStart=calendar(value.periodStart,'조사 기간 시작'),periodEnd=calendar(value.periodEnd,'조사 기간 종료'),researchedAt=instant(value.researchedAt,'조사 시각');
   const span=(Date.parse(periodEnd)-Date.parse(periodStart))/DAY+1;
-  if(span<1||span>30)throw fail('조사 기간은 시작일과 끝 날을 넣어 1~30일이어야 해요.');
+  if(span<1||span>30)throw fail('조사 기간은 시작일과 종료일을 모두 세어 1~30일이어야 해요.');
   if(Date.parse(researchedAt)>Date.parse(at)||periodEnd>kstDay(researchedAt))throw fail('조사 시각과 조사 기간에 앞으로의 날짜는 쓸 수 없어요.');
   if(!Array.isArray(value.items)||value.items.length<1||value.items.length>5)throw fail('근거가 있는 항목을 1~5개 넣어 주세요.');
   if(!Number.isSafeInteger(value.candidateCount)||value.candidateCount<value.items.length)throw fail('살펴본 후보 수는 고른 항목 수 이상의 정수여야 해요.');
