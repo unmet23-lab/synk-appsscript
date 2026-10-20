@@ -61,14 +61,16 @@ test('문장 끝 꼴과 문장 나누기', ()=>{
  assert.deepEqual(sentencesOf('수요일에 내놓습니다.2026년부터 바뀝니다.').map(s=>s.text),['수요일에 내놓습니다.','2026년부터 바뀝니다.']);
  // 같은 문장에 빈칸이 둘이면 다른 빈칸 자리를 띄어 앞뒤 어절이 붙지 않는다.
  assert.equal(blankContext({passage:[['그는 ',{blank:'a'},'고 ',{blank:'b'},'.']],blanks:[{id:'a',mark:'㉠'},{id:'b',mark:'㉡'}]},'b').before,'그는  고');
- assert.deepEqual(blankContext(by('w51-recycle'),'a'),{before:'지금은 화요일과 금요일 두 번 내놓고 있지만 다음 달부터는',after:'',next:'일주일에 한 번으로 줄어드는 대신 수거 시간은 저녁 6시부터 밤 10시까지로 늘어납니다.',endsSentence:true});
+ assert.deepEqual(blankContext(by('w51-recycle'),'a'),{before:'지금은 화요일과 금요일 두 번 내놓고 있지만 다음 달부터는',after:'',next:'일주일에 한 번으로 줄어드는 대신 수요일 수거 시간은 저녁 6시부터 밤 10시까지로 지금보다 길어집니다.',endsSentence:true});
 });
 
 test('51·52: 문체·앞말 되풀이·한 문장 넘기기·뒤 문장 옮기기·끝맺음·말하는 낱말을 「확인해 보세요」로', ()=>{
  assert.deepEqual(ids(checkWriting(by('w51-recycle'),{a:'다음 달부터는 수요일에만 내놓으세요',b:'수거하지 않습니다. 따라서 다음 수거일까지 보관해 주세요.'})),
   ['a:beforeWords','a:style','b:oneSentence','b:nextSentence','b:style']);
  assert.deepEqual(ids(checkWriting(by('w51-repair'),{a:'보일러가 고장 나서',b:'기다릴게요'})),['a:unfinished','b:style']);
- assert.deepEqual(ids(checkWriting(by('w51-study'),{a:'이번 주에는 문을 닫습니다',b:'몇 명이 오는지 알아야 해요'})),['a:style']);
+ assert.deepEqual(ids(checkWriting(by('w51-study'),{a:'이번 주에는 문을 닫습니다',b:'몇 명이 오는지 알아야 해요'})),['b:style']);
+ // 「-아요」체 글(51번에 드물지만 규칙은 받는다)이면 「-습니다」 답을 짚는다.
+ assert.deepEqual(ids(checkWriting({...by('w51-study'),style:'polite'},{a:'이번 주에는 문을 닫습니다',b:'몇 명이 오는지 알아야 해요'})),['a:style']);
  assert.deepEqual(ids(checkWriting(by('w52-crowd'),{a:'맛있기 때문이에요',b:'진짜 스스로 생각해야 한다'})),['a:style','b:spoken']);
  // 비운 빈칸은 메모(note)일 뿐 확인할 곳으로 세지 않는다.
  const empty=checkWriting(by('w52-card'),{a:'',b:'현금을 쓰는 것이 좋다'});assert.equal(checkCount(empty),0);assert.equal(empty.items[0].id,'empty');
@@ -80,7 +82,7 @@ test('53·54: 분량·제목·문체·개조식·자료 숫자·문제 베끼기
  assert.deepEqual(r53.items.find(i=>i.id==='facts').labels,['2022년 780만 명','2026년 1,500만 명(전망)']);
  assert.equal(r53.items.find(i=>i.id==='short').far,true);
  const prompt=by('w54-translation');
- const r54=checkWriting(prompt,`${prompt.prompt} 외국어를 배울 때 어려운 점은 무엇인가? 나는 공부할수있다고 생각한다. `.repeat(1));
+ const r54=checkWriting(prompt,`${prompt.prompt} 번역 기술을 바르게 활용하려면 어떤 노력이 필요한가? 나는 공부할수있다고 생각한다. `.repeat(1));
  assert.deepEqual(ids(r54),['short','copy','spelling']);
  const long=checkWriting(prompt,'가나다라마바사아자차. '.repeat(70));
  assert.deepEqual(ids(long).slice(0,1),['long']);
