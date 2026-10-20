@@ -379,6 +379,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: appsscript `.tmp/talk-master-align-20261019/`에 `align_merge.py`(REPO·RESOLVE만 바꾼 사본, 계획만) → `analyze.py`(경로마다 작업본과 가장 가까운 이력 판: 0줄 차이 + origin 조상 = 옛 판 → 새 판, 0줄 + 다른 가지 = 그 가지 판 → 손대지 않음, 차이 있음 → 그 판 기준 3방향) → `analyze3.py`(작업본이 더한 줄이 새 판에 있는지) → 문서·`.jsonl`은 손으로 만든 미리보기(`resolve_dm_doc.py`, 장부는 줄 합집합) → `apply.py --check`/`--go`(경로별 결정 고정, 쓰기 직전 해시 재대조, 백업, 병합 커밋 `commit-tree T -p 로컬 -p origin`, `update-ref` CAS, 계획 경로만 `reset --pathspec-from-file`, 적용 뒤 수정·미추적 전부 sha256 대조). 계획 뒤 origin이 움직이면 승인 계획을 보관하고 다시 계획해 「달라진 경로」만 따로 보인다.
 - 다시 확인: 10-19 13:12 `f8e3ba7`→`d82c82e`(부모 로컬·`bd9dafa`, push 안 함), 199경로 중 쓰기 49·유지 150, 잃은 파일 0·계획 밖 변경 0·스테이징 0, synkbrief-dm 함수 파일이 운영 v68과 15/15 같음. 결과 `result.json`, 백업 `backup-20261019-131249/`.
 
+### 앱이 갈라진 로컬 master에서 뜬 워크트리는 바탕 맞추기가 공용 문서 충돌로 멈춘다 (2026-10-20 Claude)
+- 증상: 새 앱 워크트리(`claude/nice-yalow-6c2596`)의 바탕이 로컬 master `832e4ccbf`였고, origin/master를 받으려고 `sync_with_base_branch`를 부르자 `AGENTS.md`·결정·트랙·현장노트 셋, 모두 6파일 충돌로 병합이 멈췄다. `git rev-list --count origin/master..HEAD`가 350이었다.
+- 원인: 앱은 워크트리를 공용 작업본의 로컬 master에서 뜬다. 로컬 master는 남의 미푸시 커밋과, `올리기`로 origin에 다시 쌓기 전의 옛 번호 커밋을 품어 origin과 갈라져 있다. 같은 줄이 양쪽에 다른 번호로 있으니 공용 문서가 겹친다.
+- 고침: 이 가지에 내 커밋이 아직 없으면 맞추기를 그만두고(`sync_with_base_branch`의 `abort: true`) 가지를 origin/master로 옮긴다 — `git branch --contains <지금 머리>`에 `master`가 있어 옛 머리가 로컬 master에 그대로 남는지 먼저 보고 `git reset --hard origin/master`. 일하는 사이 origin이 내 경로(생성 묶음 포함)를 또 바꾸면, 옛 머리를 적어 두고 `git reset --hard origin/master` → `git restore --source=<옛 머리> --worktree -- <내 경로들>`(스테이징 없이 — `내커밋.js 커밋`은 공용 인덱스에 내 경로의 스테이징이 있으면 멈춘다) → 생성 묶음은 그 도구의 `--check`로 새 바탕 원천과 맞는지 보고 → `내커밋.js 커밋`으로 다시 쌓는다. 공용 문서의 내 줄은 새 판에 손으로 다시 넣는다.
+- 다시 확인: `git rev-list --count HEAD..origin/master`가 0이고, `git diff --stat <옛 머리> HEAD -- <내 경로들>`이 비어 있다(10-20: 코드 14경로 같음, 다른 차이는 그사이 들어온 남의 커밋 다섯 파일뿐).
+
 ## 이력 훑기
 
 ### 큰 blob을 거른 클론에서 `git log -S`·`--find-object`가 「could not fetch」로 끝난다
