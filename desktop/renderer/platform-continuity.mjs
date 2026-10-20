@@ -43,7 +43,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 // experiences/synk-account/src/platform-entry.mjs
 function createPlatformEntry({ clientKey, getUrl, replaceUrl }) {
   const key = `synk.platform.entry.${clientKey}`;
-  let captured = false, restored = false, invalid5 = false, cancelled = false, intent = null, storage;
+  let captured = false, restored = false, invalid7 = false, cancelled = false, intent = null, storage;
   function capture(value) {
     if (captured) return;
     const url = new URL(getUrl()), params = new URLSearchParams(url.hash.slice(1));
@@ -64,7 +64,7 @@ function createPlatformEntry({ clientKey, getUrl, replaceUrl }) {
       throw Object.assign(new Error("플랫폼의 계정 연결을 이 탭에 보관하지 못했어요. 브라우저 저장 설정을 확인한 뒤 다시 시도해 주세요."), { code: "PLATFORM_ENTRY_STORAGE", retryable: true });
     }
     intent = next;
-    invalid5 = next.invalid === true;
+    invalid7 = next.invalid === true;
     params.delete(PARAM);
     url.hash = params.toString();
     replaceUrl(url.href);
@@ -76,14 +76,14 @@ function createPlatformEntry({ clientKey, getUrl, replaceUrl }) {
   return {
     capture,
     restore(value) {
-      if (invalid5) throw mismatch();
+      if (invalid7) throw mismatch();
       if (restored) return;
       storage = value;
-      const text4 = storage.getItem(key);
-      if (text4) {
+      const text3 = storage.getItem(key);
+      if (text3) {
         try {
-          if (text4.length > 1024) throw mismatch();
-          intent = JSON.parse(text4);
+          if (text3.length > 1024) throw mismatch();
+          intent = JSON.parse(text3);
         } catch {
           throw mismatch();
         }
@@ -93,8 +93,8 @@ function createPlatformEntry({ clientKey, getUrl, replaceUrl }) {
       restored = true;
     },
     accountId: () => intent?.accountId || null,
-    assertAccount(id2) {
-      if (intent?.accountId && id2 !== intent.accountId) throw mismatch();
+    assertAccount(id) {
+      if (intent?.accountId && id !== intent.accountId) throw mismatch();
     },
     isCancelled: () => cancelled,
     resume() {
@@ -164,7 +164,7 @@ var init_platform_entry = __esm({
     CANCEL = "synk-platform-cancelled";
     validId = (value) => typeof value === "string" && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value);
     mismatch = () => Object.assign(new Error("플랫폼에서 선택한 SYNK ID와 로그인 계정이 달라요. 플랫폼 계정을 확인한 뒤 다시 열어 주세요."), { code: "PLATFORM_ACCOUNT_MISMATCH" });
-    PUBLIC = Object.freeze({ world: "https://synk.im/account/client.html?product=world&play=learning-hub", care: "https://synk.im/care/", fortune: "https://synk.im/fortune/", rehearsal: "https://synk.im/rehearsal/" });
+    PUBLIC = Object.freeze({ world: "https://synk.im/account/client.html?product=world&play=learning-hub", care: "https://synk.im/care/", fortune: "https://synk.im/fortune/" });
   }
 });
 
@@ -341,10 +341,1106 @@ function scopedStorage(storage, accountKey, revision, guard) {
 var PRODUCTS, nativeSchemes, isLoopback, base64url;
 var init_core = __esm({
   "experiences/synk-account/src/core.mjs"() {
-    PRODUCTS = Object.freeze({ platform: "SYNK 플랫폼", world: "SYNK WORLD", messenger: "SYNK Workspace", care: "SYNK 플레저", path: "SYNK PATH", "path-travel": "SYNK PATH 여행", rehearsal: "중요한 대화 리허설", "family-album": "가족 이야기 앨범" });
+    PRODUCTS = Object.freeze({ platform: "SYNK 플랫폼", world: "SYNK WORLD", messenger: "SYNK Workspace", care: "SYNK 플레저", path: "SYNK PATH", "path-travel": "SYNK PATH 여행" });
     nativeSchemes = /* @__PURE__ */ new Set(["synktalk:", "im.synk.platform:", "im.synk.world:", "im.synk.messenger:", "im.synk.care:"]);
     isLoopback = (hostname) => ["localhost", "127.0.0.1", "[::1]"].includes(hostname);
     base64url = (bytes) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+});
+
+// experiences/synk-account/src/product-account.mjs
+function createProductAccount({
+  clientKey,
+  endpoint,
+  scope: scope3,
+  validateState: validateState2,
+  resource = null,
+  operations: operations2 = { load: "careLoad", save: "careSave", delete: "careDelete" },
+  onStatus = () => {
+  },
+  bridge,
+  fetcher = globalThis.fetch,
+  storage = globalThis.sessionStorage,
+  getUrl = () => globalThis.location.href,
+  configUrl = "/api/account-config",
+  replaceUrl = (url) => globalThis.history.replaceState(null, "", url),
+  navigate = (url) => globalThis.location.assign(url),
+  loadCore = () => Promise.resolve().then(() => (init_core(), core_exports)),
+  now = Date.now,
+  cryptoAPI
+} = {}) {
+  if (!["care", "path", "path-travel"].includes(clientKey) || !["synk-care", "synk-personal"].includes(endpoint) || typeof validateState2 !== "function") throw new TypeError("제품 계정 계약을 확인해 주세요.");
+  const LIMIT = 4 * 1024 * 1024 + 32768;
+  const SESSION_KEY = `synk.oauth.session.${clientKey}`;
+  const OPERATIONS = new Set(Object.values(operations2));
+  const bridgeRequest = bridge?.accountRequest || bridge?.request;
+  const native = typeof bridgeRequest === "function" && typeof bridge?.authStatus === "function";
+  const platformEntry = native ? null : createPlatformEntry({ clientKey, getUrl, replaceUrl });
+  let automaticNavigations = 0;
+  let snapshot = { configured: false, signedIn: false, status: "unconfigured", accountId: null, account: null, sessionGeneration: 0, error: null };
+  let config, core, session = null, pendingExchange = null, epoch = 0, loginIntent = 0, disposed = false, starting, started = false, refreshing, unsubscribe, nativeIdentity = null, nativeLoad = null, nativeGeneration = -1;
+  const controllers = /* @__PURE__ */ new Set();
+  const status = () => ({ ...snapshot, account: snapshot.account ? { ...snapshot.account } : null, error: snapshot.error ? { ...snapshot.error } : null });
+  const emit = (patch) => {
+    snapshot = { ...snapshot, ...patch, sessionGeneration: epoch };
+    if (!disposed) onStatus(status());
+    return status();
+  };
+  const guard = (expected) => {
+    if (disposed || expected !== epoch) throw fault("ACCOUNT_CHANGED", "계정 연결이 바뀌었어요.");
+  };
+  const binding = () => [config.supabaseUrl, config.accountApiUrl, config.clients[clientKey].clientId, config.clients[clientKey].redirectUri].join("|");
+  function stopRequests() {
+    for (const controller of controllers) controller.abort();
+  }
+  function clearSession(error, nextStatus = "signed-out") {
+    epoch++;
+    session = null;
+    pendingExchange = null;
+    nativeIdentity = null;
+    nativeLoad = null;
+    stopRequests();
+    if (!native) {
+      try {
+        storage?.removeItem(SESSION_KEY);
+      } catch {
+        error ||= fault("STORAGE", "화면의 로그인은 종료했지만 저장을 지우지 못했어요. 이 창을 닫아 주세요.");
+      }
+    }
+    return emit({ signedIn: false, status: snapshot.configured ? nextStatus : "unconfigured", accountId: null, account: null, error: error ? publicError(error) : null });
+  }
+  function saveSession(next) {
+    session = next;
+    try {
+      storage.setItem(SESSION_KEY, JSON.stringify({ ...next, configKey: binding() }));
+    } catch {
+      throw fault("STORAGE", "이 탭에 로그인을 보관하지 못했어요. 브라우저 저장 설정을 확인해 주세요.");
+    }
+  }
+  async function responseJson(response) {
+    if (!response.body?.getReader) {
+      const text4 = await response.text();
+      if (new TextEncoder().encode(text4).byteLength > LIMIT) throw fault("INVALID_RESPONSE", "계정 자료의 크기를 확인하지 못했어요.");
+      try {
+        return JSON.parse(text4);
+      } catch {
+        return null;
+      }
+    }
+    const reader = response.body.getReader(), decoder = new TextDecoder();
+    let bytes = 0, text3 = "";
+    try {
+      for (; ; ) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        bytes += value.byteLength;
+        if (bytes > LIMIT) {
+          await reader.cancel();
+          throw fault("INVALID_RESPONSE", "계정 자료의 크기를 확인하지 못했어요.");
+        }
+        text3 += decoder.decode(value, { stream: true });
+      }
+      text3 += decoder.decode();
+      try {
+        return JSON.parse(text3);
+      } catch {
+        return null;
+      }
+    } finally {
+      reader.releaseLock();
+    }
+  }
+  async function send(url, token3, body, { logout = false } = {}) {
+    const abort = new AbortController(), timer = setTimeout(() => abort.abort(), 12e3);
+    controllers.add(abort);
+    try {
+      const response = await fetcher(url, {
+        method: body === void 0 ? "GET" : "POST",
+        signal: abort.signal,
+        credentials: "omit",
+        cache: "no-store",
+        redirect: "error",
+        headers: { apikey: config.supabasePublishableKey, Authorization: `Bearer ${token3}`, "X-SYNK-Product": "platform", "X-SYNK-Contract": "1", ...body === void 0 ? {} : { "Content-Type": "application/json" } },
+        ...body === void 0 ? {} : { body: JSON.stringify(body) }
+      });
+      const data = logout && response.status === 204 ? null : await responseJson(response);
+      return { response, data };
+    } catch (error) {
+      if (error.code) throw error;
+      throw fault("NETWORK", "계정 서버에 연결하지 못했어요. 현재 자료를 유지하고 다시 시도해 주세요.", { retryable: true });
+    } finally {
+      clearTimeout(timer);
+      controllers.delete(abort);
+    }
+  }
+  async function refresh(expected) {
+    if (refreshing) return refreshing;
+    const old = session;
+    if (!old?.refresh_token) throw fault("AUTH_REQUIRED", "SYNK ID로 다시 로그인해 주세요.");
+    const promise = (async () => {
+      const next = await core.tokenRequest(config, { grant_type: "refresh_token", client_id: config.clients[clientKey].clientId, refresh_token: old.refresh_token }, fetcher);
+      guard(expected);
+      saveSession({ ...next, refresh_token: next.refresh_token || old.refresh_token });
+      return session.access_token;
+    })();
+    refreshing = promise;
+    try {
+      return await promise;
+    } finally {
+      if (refreshing === promise) refreshing = null;
+    }
+  }
+  function requestBody(operation, values = {}) {
+    if (!OPERATIONS.has(operation) || !values || typeof values !== "object" || Array.isArray(values)) throw fault("INVALID_REQUEST", "제품 계정 요청을 확인해 주세요.");
+    const careLibrarySave = clientKey === "care" && endpoint === "synk-care" && resource === null && operation === operations2.save;
+    const allowed = operation === operations2.load ? [] : operation === operations2.save ? ["expected_revision", "state", ...careLibrarySave ? ["messageLibraryVersion", "checkinPreferenceVersion"] : []] : ["expected_revision"];
+    if (Object.keys(values).some((key) => !allowed.includes(key))) throw fault("INVALID_REQUEST", "제품 계정 요청을 확인해 주세요.");
+    if (Object.hasOwn(values, "messageLibraryVersion") && (!careLibrarySave || values.messageLibraryVersion !== 1)) throw fault("INVALID_REQUEST", "문구 보관함의 저장 계약을 확인해 주세요.");
+    if (Object.hasOwn(values, "checkinPreferenceVersion") && (!careLibrarySave || values.checkinPreferenceVersion !== 1)) throw fault("INVALID_REQUEST", "안부 설정의 저장 계약을 확인해 주세요.");
+    if (operation === operations2.load) return void 0;
+    if (!Number.isSafeInteger(values.expected_revision) || values.expected_revision < 0) throw fault("INVALID_REQUEST", "저장할 자료의 버전을 확인해 주세요.");
+    return { action: operation === operations2.save ? "save" : "delete", expected_revision: values.expected_revision, ...operation === operations2.save ? { state: validateState2(values.state) } : {}, ...Object.hasOwn(values, "messageLibraryVersion") ? { messageLibraryVersion: 1 } : {}, ...Object.hasOwn(values, "checkinPreferenceVersion") ? { checkinPreferenceVersion: 1 } : {} };
+  }
+  function validateResponse(data, ownerId) {
+    if (data?.ok !== true) throw fault(data?.error?.code || "ACCOUNT_UNAVAILABLE", data?.error?.message || "계정 자료를 확인하지 못했어요.", { retryable: data?.error?.retryable === true, status: data?.error?.status, revision: data?.revision, ...missingAsset(data?.error) });
+    if (data.scope !== scope3 || resource && data.resource !== resource || typeof data.accountId !== "string" || !data.accountId || data.accountId.length > 100 || !Number.isSafeInteger(data.revision) || data.revision < 0 || !Object.hasOwn(data, "state")) throw fault("INVALID_RESPONSE", "계정 자료의 형식을 확인하지 못했어요. 현재 자료를 유지해 주세요.");
+    if (ownerId && data.accountId !== ownerId) throw fault("ACCOUNT_CHANGED", "다른 계정의 응답이 도착해 자료를 적용하지 않았어요.");
+    return { ok: true, scope: scope3, ...resource ? { resource } : {}, accountId: data.accountId, revision: data.revision, updatedAt: typeof data.updatedAt === "string" ? data.updatedAt : null, state: data.state === null ? null : validateState2(data.state) };
+  }
+  async function dispatch(operation, values, expected, ownerId) {
+    const body = requestBody(operation, values);
+    guard(expected);
+    let data;
+    if (native) {
+      const params = operation === operations2.load ? {} : operation === operations2.save ? { expected_revision: body.expected_revision, state: body.state, ...Object.hasOwn(body, "messageLibraryVersion") ? { messageLibraryVersion: body.messageLibraryVersion } : {}, ...Object.hasOwn(body, "checkinPreferenceVersion") ? { checkinPreferenceVersion: body.checkinPreferenceVersion } : {} } : { expected_revision: body.expected_revision };
+      data = await bridgeRequest.call(bridge, operation, params);
+      guard(expected);
+    } else {
+      if (!session?.access_token) throw fault("AUTH_REQUIRED", "SYNK ID로 로그인해 주세요.");
+      let token3 = session.access_token;
+      if (session.expires_at <= now() + 3e4) token3 = await refresh(expected);
+      guard(expected);
+      const url = `${config.accountApiUrl.replace(/\/$/, "")}/functions/v1/${endpoint}${resource && body === void 0 ? `?resource=${encodeURIComponent(resource)}` : ""}`;
+      let result = await send(url, token3, body === void 0 || !resource ? body : { ...body, resource });
+      guard(expected);
+      if (result.response.status === 401 && session?.refresh_token) {
+        token3 = session.access_token !== token3 ? session.access_token : await refresh(expected);
+        guard(expected);
+        result = await send(url, token3, body === void 0 || !resource ? body : { ...body, resource });
+        guard(expected);
+      }
+      if (!result.response.ok || result.data?.ok !== true) {
+        const code = result.data?.error?.code || (result.response.status === 401 ? "AUTH_REQUIRED" : "ACCOUNT_UNAVAILABLE");
+        throw fault(code, code === "REVISION_CONFLICT" ? "다른 기기에서 자료가 바뀌었어요. 계정 자료를 다시 확인해 주세요." : "계정 요청을 완료하지 못했어요. 현재 자료는 그대로 유지해 주세요.", { status: result.response.status, revision: result.data?.revision, retryable: result.response.status === 429 || result.response.status >= 500, ...missingAsset(result.data?.error) });
+      }
+      data = result.data;
+    }
+    guard(expected);
+    return validateResponse(data, ownerId);
+  }
+  async function nativeStatus(source) {
+    if (disposed) return status();
+    const identity = source?.account?.synk_user_id, generation = source?.sessionGeneration ?? 0;
+    if (!Number.isSafeInteger(generation) || generation < nativeGeneration) return status();
+    nativeGeneration = generation;
+    if (source?.status === "restoring" && nativeIdentity && nativeIdentity.endsWith(`:${generation}`)) return emit({ signedIn: false, status: "restoring", error: null });
+    if (!source?.signedIn || !identity) {
+      snapshot.configured = source?.configured === true;
+      return clearSession(source?.error ? Object.assign(new Error(source.error.message), source.error) : null, source?.status || "signed-out");
+    }
+    const key = `${identity}:${generation}`;
+    if (key === nativeIdentity && snapshot.accountId) return emit({ configured: true, signedIn: true, status: "signed-in", error: null });
+    if (key === nativeIdentity && nativeLoad) return nativeLoad;
+    epoch++;
+    nativeIdentity = key;
+    const expected = epoch;
+    emit({ configured: true, signedIn: false, status: "restoring", accountId: null, account: null, error: null });
+    const promise = (async () => {
+      try {
+        const data = await dispatch(operations2.load, {}, expected, identity);
+        guard(expected);
+        return emit({ configured: true, signedIn: true, status: "signed-in", accountId: data.accountId, account: { synk_user_id: data.accountId, display_name: source.account.display_name || "" }, error: null });
+      } catch (error) {
+        if (expected === epoch && !disposed) return clearSession(error, "error");
+        return status();
+      }
+    })();
+    nativeLoad = promise;
+    try {
+      return await promise;
+    } finally {
+      if (nativeLoad === promise) nativeLoad = null;
+    }
+  }
+  async function begin() {
+    const expected = epoch;
+    platformEntry?.capture(storage);
+    if (native) {
+      const environment = await bridge.getEnvironment();
+      guard(expected);
+      if (environment?.clientId !== clientKey) throw fault("INVALID_BRIDGE", "제품 앱의 로그인 연결을 확인해 주세요.");
+      if (disposed) return status();
+      unsubscribe?.();
+      unsubscribe = bridge.onAuthChanged((source2) => {
+        void nativeStatus(source2).catch(() => {
+        });
+      });
+      const source = await bridge.authStatus();
+      guard(expected);
+      return nativeStatus(source);
+    }
+    try {
+      core = await loadCore();
+    } catch {
+      throw fault("NETWORK", "로그인 연결을 불러오지 못했어요. 연결이 돌아오면 다시 확인해 주세요.", { retryable: true });
+    }
+    guard(expected);
+    let raw;
+    const configEndpoint = new URL(configUrl, getUrl());
+    if (configEndpoint.origin !== new URL(getUrl()).origin || configEndpoint.username || configEndpoint.password || configEndpoint.hash) throw fault("AUTH_CONFIG", "이 앱의 계정 설정 주소를 확인해 주세요.");
+    const abort = new AbortController(), timer = setTimeout(() => abort.abort(), 8e3);
+    controllers.add(abort);
+    try {
+      const response = await fetcher(configEndpoint.href, { cache: "no-store", credentials: "omit", signal: abort.signal, redirect: "error" });
+      if (response.ok) raw = await response.json();
+      else if (response.status !== 404) throw fault("AUTH_CONFIG", "계정 연결 설정을 불러오지 못했어요. 다시 확인해 주세요.", { status: response.status, retryable: response.status === 429 || response.status >= 500 });
+    } catch (error) {
+      if (error.code) throw error;
+      throw fault("NETWORK", "계정 연결 설정을 불러오지 못했어요. 연결이 돌아오면 다시 확인해 주세요.", { retryable: true });
+    } finally {
+      clearTimeout(timer);
+      controllers.delete(abort);
+    }
+    guard(expected);
+    config = core.readConfig(raw || { version: 1 }, getUrl());
+    const configured = !!(config.configured && config.clients[clientKey]?.clientId && config.clients[clientKey]?.redirectUri);
+    if (!configured) {
+      pendingExchange = null;
+      return emit({ configured: false, status: "unconfigured", error: null });
+    }
+    emit({ configured: true, status: "restoring", error: null });
+    platformEntry.restore(storage);
+    if (platformEntry.isCancelled()) {
+      session = null;
+      pendingExchange = null;
+      return emit({ signedIn: false, status: "signed-out", accountId: null, account: null, error: null });
+    }
+    const url = new URL(getUrl());
+    if (url.searchParams.has("code") || url.searchParams.has("error")) {
+      platformEntry.stop();
+      try {
+        pendingExchange = { fields: core.consumeCallback({ config, product: clientKey, url: url.href, storage, now: now() }), configKey: binding() };
+      } finally {
+        for (const key of ["code", "state", "error", "error_description"]) url.searchParams.delete(key);
+        replaceUrl(url.href);
+      }
+    }
+    if (pendingExchange) {
+      if (pendingExchange.configKey !== binding()) throw fault("AUTH_REQUIRED", "로그인 연결 설정이 바뀌었어요. SYNK ID로 다시 로그인해 주세요.");
+      const next = await core.tokenRequest(config, pendingExchange.fields, fetcher);
+      guard(expected);
+      pendingExchange = null;
+      saveSession(next);
+    } else {
+      try {
+        const text3 = storage.getItem(SESSION_KEY);
+        if (text3 && text3.length > 65536) throw Error("INVALID_SESSION");
+        const value = JSON.parse(text3 || "null");
+        if (value) {
+          if (value.configKey !== binding() || typeof value.access_token !== "string" || !value.access_token || value.access_token.length > 16384 || value.refresh_token !== null && typeof value.refresh_token !== "string" || !Number.isFinite(value.expires_at)) throw Error("INVALID_SESSION");
+          session = { access_token: value.access_token, refresh_token: value.refresh_token, expires_at: value.expires_at };
+        }
+      } catch {
+        storage.removeItem(SESSION_KEY);
+        session = null;
+      }
+    }
+    if (!session) return await automaticSignIn(expected) || emit({ signedIn: false, status: "signed-out", accountId: null, account: null, error: null });
+    emit({ status: "restoring" });
+    let data;
+    try {
+      data = await dispatch(operations2.load, {}, expected, platformEntry.accountId());
+      guard(expected);
+    } catch (error) {
+      guard(expected);
+      if (!platformEntry.accountId() || ![...AUTH_ERRORS, "ACCOUNT_CHANGED"].includes(error.code)) throw error;
+      session = null;
+      storage.removeItem(SESSION_KEY);
+      const redirected = await automaticSignIn(expected);
+      if (redirected) return redirected;
+      platformEntry.assertAccount(null);
+      throw error;
+    }
+    platformEntry.assertAccount(data.accountId);
+    platformEntry.stop();
+    return emit({ signedIn: true, status: "signed-in", accountId: data.accountId, account: { synk_user_id: data.accountId, display_name: "" }, error: null });
+  }
+  async function automaticSignIn(expected) {
+    if (!platformEntry.beginAttempt()) return null;
+    emit({ signedIn: false, accountId: null, account: null, status: "signing-in", error: null });
+    const url = await core.beginOAuth({ config, product: clientKey, storage, now: now(), cryptoAPI });
+    guard(expected);
+    automaticNavigations++;
+    navigate(url);
+    return status();
+  }
+  async function start() {
+    if (disposed) throw fault("ACCOUNT_CHANGED", "계정 연결이 종료됐어요.");
+    if (starting) return starting;
+    if (started && !snapshot.error?.retryable) return status();
+    started = true;
+    const expected = epoch;
+    emit({ status: "restoring", error: null });
+    const operation = begin().catch((error) => {
+      if (disposed || expected !== epoch) return status();
+      if (!native && error.retryable === true && !AUTH_ERRORS.has(error.code) && error.code !== "ACCOUNT_CHANGED")
+        return emit({ signedIn: false, accountId: null, account: null, status: "error", error: publicError(error) });
+      return clearSession(error, "error");
+    });
+    starting = operation;
+    try {
+      return await operation;
+    } finally {
+      if (starting === operation) starting = null;
+    }
+  }
+  async function signIn() {
+    const intent = ++loginIntent;
+    const before = automaticNavigations;
+    await start();
+    if (disposed || intent !== loginIntent) throw fault("ACCOUNT_CHANGED", "계정 연결이 바뀌었어요.");
+    if (snapshot.signedIn || automaticNavigations !== before) return status();
+    if (native && snapshot.error?.retryable) {
+      let result;
+      try {
+        result = await bridgeRequest.call(bridge, "load", {});
+      } catch {
+        result = { ok: false, error: { code: "NETWORK", message: "계정 연결을 다시 확인하지 못했어요. 잠시 뒤 다시 시도해 주세요.", retryable: true } };
+      }
+      if (disposed || intent !== loginIntent) throw fault("ACCOUNT_CHANGED", "계정 연결이 바뀌었어요.");
+      const source = await bridge.authStatus();
+      if (disposed || intent !== loginIntent) throw fault("ACCOUNT_CHANGED", "계정 연결이 바뀌었어요.");
+      await nativeStatus(source);
+      if (disposed || intent !== loginIntent) throw fault("ACCOUNT_CHANGED", "계정 연결이 바뀌었어요.");
+      if (snapshot.signedIn) return status();
+      const error = snapshot.error || result?.error || { code: "AUTH_REQUIRED", message: "저장된 로그인을 확인하지 못했어요. SYNK ID로 다시 로그인해 주세요.", retryable: false };
+      if (!snapshot.error) emit({ signedIn: false, accountId: null, account: null, status: "error", error: publicError(error) });
+      throw Object.assign(new Error(error.message), error);
+    }
+    if (snapshot.error?.retryable) throw Object.assign(new Error(snapshot.error.message), snapshot.error);
+    if (!snapshot.configured) throw fault("AUTH_CONFIG", "SYNK ID 연결 설정을 준비하고 있어요. 지금은 이 기기의 수첩을 사용할 수 있어요.");
+    if (native) {
+      const result = await bridge.authSignIn();
+      if (disposed || intent !== loginIntent) throw fault("ACCOUNT_CHANGED", "계정 연결이 바뀌었어요.");
+      if (result?.ok === false) throw Object.assign(new Error(result.error?.message), result.error);
+      return nativeStatus(result);
+    }
+    const expected = epoch;
+    platformEntry.resume();
+    const url = await core.beginOAuth({ config, product: clientKey, storage, now: now(), cryptoAPI });
+    guard(expected);
+    if (intent !== loginIntent) throw fault("ACCOUNT_CHANGED", "계정 연결이 바뀌었어요.");
+    emit({ status: "signing-in", error: null });
+    navigate(url);
+    return status();
+  }
+  async function signOut() {
+    loginIntent++;
+    let entryError;
+    try {
+      platformEntry?.cancel();
+    } catch (error) {
+      entryError = error;
+    }
+    const old = session;
+    clearSession(entryError);
+    if (native) {
+      const result = await bridge.authSignOut();
+      await nativeStatus(await bridge.authStatus());
+      return result;
+    }
+    let serverSessionRevoked = !old, refreshRevoked = !old;
+    if (old?.access_token && config) {
+      const accountUrl = `${config.accountApiUrl.replace(/\/$/, "")}/functions/v1/synk-account`;
+      try {
+        const loaded = await send(accountUrl, old.access_token);
+        const current = loaded.data?.sessions?.find((item) => item.current && !item.revoked);
+        if (current?.id) {
+          const revoked = await send(accountUrl, old.access_token, { action: "revoke-session", session_id: current.id });
+          serverSessionRevoked = revoked.response.ok && revoked.data?.ok === true;
+          refreshRevoked = serverSessionRevoked && revoked.data.current === true && revoked.data.refreshRevoked === true;
+        }
+      } catch {
+      }
+      if (!refreshRevoked) {
+        try {
+          const result = await send(new URL("/auth/v1/logout?scope=local", config.supabaseUrl).href, old.access_token, {}, { logout: true });
+          refreshRevoked = result.response.ok || result.response.status === 404 || serverSessionRevoked && result.response.status === 401;
+        } catch {
+        }
+      }
+    }
+    return { ok: !snapshot.error, status: status(), serverRevoked: serverSessionRevoked && refreshRevoked, serverSessionRevoked, refreshRevoked };
+  }
+  async function request(operation, values = {}) {
+    if (!snapshot.signedIn || !snapshot.accountId) throw fault("AUTH_REQUIRED", "SYNK ID로 로그인한 뒤 계정 자료를 확인해 주세요.");
+    const expected = epoch, ownerId = snapshot.accountId;
+    try {
+      return await dispatch(operation, values, expected, ownerId);
+    } catch (error) {
+      if (expected === epoch && (AUTH_ERRORS.has(error.code) || error.code === "ACCOUNT_CHANGED")) clearSession(error);
+      throw error;
+    }
+  }
+  async function requestPush(action, values = {}) {
+    if (clientKey !== "care" || endpoint !== "synk-care" || native) throw fault("PUSH_UNSUPPORTED", "예약 알림은 플레저 웹에서 설정해 주세요.");
+    if (!snapshot.signedIn || !snapshot.accountId) throw fault("AUTH_REQUIRED", "SYNK ID로 로그인한 뒤 알림을 설정해 주세요.");
+    const allowed = { status: ["endpoint"], subscribe: ["subscription", "hour", "minute"], update: ["endpoint", "hour", "minute"], unsubscribe: ["endpoint"] };
+    if (!Object.hasOwn(allowed, action) || !values || typeof values !== "object" || Array.isArray(values) || Object.keys(values).some((key) => !allowed[action].includes(key))) throw fault("INVALID_REQUEST", "알림 설정을 확인해 주세요.");
+    if (["subscribe", "update"].includes(action) && (!Number.isInteger(values.hour) || values.hour < 0 || values.hour > 23 || !Number.isInteger(values.minute) || values.minute < 0 || values.minute > 59)) throw fault("INVALID_REQUEST", "알림 시간을 확인해 주세요.");
+    if ((action === "update" || action === "unsubscribe" || Object.hasOwn(values, "endpoint")) && (typeof values.endpoint !== "string" || values.endpoint.length > 2048 || !values.endpoint.startsWith("https://"))) throw fault("INVALID_REQUEST", "이 기기의 알림 연결을 확인해 주세요.");
+    if (action === "subscribe" && (!values.subscription || typeof values.subscription !== "object" || Array.isArray(values.subscription))) throw fault("INVALID_REQUEST", "이 기기의 알림 연결을 확인해 주세요.");
+    const body = { action, ...values };
+    if (new TextEncoder().encode(JSON.stringify(body)).byteLength > 8192) throw fault("INVALID_REQUEST", "알림 설정의 크기를 확인해 주세요.");
+    const expected = epoch, ownerId = snapshot.accountId;
+    try {
+      guard(expected);
+      let token3 = session?.access_token;
+      if (!token3) throw fault("AUTH_REQUIRED", "SYNK ID로 다시 로그인해 주세요.");
+      if (session.expires_at <= now() + 3e4) token3 = await refresh(expected);
+      guard(expected);
+      const url = `${config.accountApiUrl.replace(/\/$/, "")}/functions/v1/synk-care-push`;
+      let result = await send(url, token3, body);
+      guard(expected);
+      if (result.response.status === 401 && session?.refresh_token) {
+        token3 = session.access_token !== token3 ? session.access_token : await refresh(expected);
+        guard(expected);
+        result = await send(url, token3, body);
+        guard(expected);
+      }
+      const data = result.data;
+      if (!result.response.ok || data?.ok !== true) throw fault(data?.error?.code || (result.response.status === 401 ? "AUTH_REQUIRED" : "PUSH_UNAVAILABLE"), "예약 알림을 설정하지 못했어요. 잠시 뒤 다시 시도해 주세요.", { status: result.response.status, retryable: result.response.status === 429 || result.response.status >= 500 });
+      if (data.accountId !== ownerId) throw fault("ACCOUNT_CHANGED", "계정이 바뀌어 알림 설정을 적용하지 않았어요.");
+      if (data.scope !== "synk-care-push" || typeof data.enabled !== "boolean" || data.timeZone !== "Asia/Seoul" || !Number.isInteger(data.hour) || data.hour < 0 || data.hour > 23 || !Number.isInteger(data.minute) || data.minute < 0 || data.minute > 59 || typeof data.publicKey !== "string" || !/^[A-Za-z0-9_-]{87}$/.test(data.publicKey)) throw fault("INVALID_RESPONSE", "알림 서버의 응답을 확인하지 못했어요.");
+      return { ok: true, scope: data.scope, accountId: ownerId, enabled: data.enabled, hour: data.hour, minute: data.minute, timeZone: data.timeZone, publicKey: data.publicKey, ...typeof data.deviceId === "string" ? { deviceId: data.deviceId } : {} };
+    } catch (error) {
+      if (expected === epoch && (AUTH_ERRORS.has(error.code) || error.code === "ACCOUNT_CHANGED")) clearSession(error);
+      throw error;
+    }
+  }
+  function dispose() {
+    disposed = true;
+    epoch++;
+    loginIntent++;
+    session = null;
+    pendingExchange = null;
+    nativeIdentity = null;
+    unsubscribe?.();
+    stopRequests();
+  }
+  return Object.freeze({ start, status, signIn, signOut, request, requestPush, dispose });
+}
+var AUTH_ERRORS, fault, missingAsset, publicError;
+var init_product_account = __esm({
+  "experiences/synk-account/src/product-account.mjs"() {
+    init_platform_entry();
+    AUTH_ERRORS = /* @__PURE__ */ new Set(["AUTH_REQUIRED", "AUTH_SESSION_MISSING", "SESSION_REVOKED"]);
+    fault = (code, message, extra = {}) => Object.assign(new Error(message), { code, ...extra });
+    missingAsset = (error) => ["ASSET_NOT_FOUND", "ASSET_NOT_CONFIRMED"].includes(error?.code) && typeof error?.assetId === "string" && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(error.assetId) ? { assetId: error.assetId } : {};
+    publicError = (error) => ({ code: error.code || "ACCOUNT_UNAVAILABLE", message: error.message || "계정 연결을 확인하지 못했어요.", retryable: error.retryable === true, ...error.status ? { status: error.status } : {}, ...missingAsset(error) });
+  }
+});
+
+// experiences/synk-account/src/document-sync.mjs
+function createDocumentSync({ transport, storage, onState = () => {
+}, onStatus = () => {
+}, onSaved = () => {
+}, onRemoved = () => {
+}, validateState: validateState2, emptyState, requiresConflictReview = () => false, preferRemoteOnOpen = false, scope: scope3, resource = null, cachePrefix, operations: operations2 = { load: "careLoad", save: "careSave", delete: "careDelete" } }) {
+  if (typeof validateState2 !== "function" || typeof emptyState !== "function" || typeof requiresConflictReview !== "function" || !scope3 || !cachePrefix) throw new TypeError("제품 기록 계약이 필요해요.");
+  const clone2 = (value) => validateState2(value);
+  const PREFIX = cachePrefix;
+  if (typeof transport !== "function") throw new TypeError("계정 저장 통로가 필요해요.");
+  let active = null, generation = 0, localError = null;
+  const records = /* @__PURE__ */ new Map(), knownKeys = /* @__PURE__ */ new Set();
+  const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const localSummary = () => {
+    const all = [...records.values()], own = active ? all.filter((value) => value.accountId === active.accountId) : [];
+    return {
+      count: active ? own.length : all.length,
+      pending: own.filter((value) => value.pending).length,
+      corrupt: own.filter((value) => value.corrupt).length,
+      exportable: own.length,
+      unknown: all.filter((value) => !value.accountId).length,
+      error: localError
+    };
+  };
+  function recordOwner(key, cached) {
+    if (typeof cached?.accountId !== "string" || !cached.accountId || cached.accountId.length > 120 || /[\x00-\x20]/.test(cached.accountId)) return null;
+    const base = PREFIX + encodeURIComponent(cached.accountId);
+    return key === base && cached.draftId === void 0 || UUID.test(cached.draftId || "") && key === base + ":draft:" + cached.draftId ? cached.accountId : null;
+  }
+  function cacheRecord(key, raw) {
+    let accountId = null;
+    try {
+      if (new TextEncoder().encode(raw).byteLength > 4 * 1024 * 1024 + 32768) throw failure("INVALID_LOCAL_CACHE");
+      const cached = JSON.parse(raw);
+      accountId = recordOwner(key, cached);
+      const base = PREFIX + encodeURIComponent(cached?.accountId);
+      const draft = typeof cached?.draftId === "string" && UUID.test(cached.draftId);
+      if (cached?.version !== 1 || typeof cached.accountId !== "string" || !(draft ? key === base + ":draft:" + cached.draftId : cached.draftId === void 0 && key === base) || draft && (typeof cached.createdAt !== "string" || !Number.isFinite(Date.parse(cached.createdAt))) || typeof cached.pending !== "boolean" || cached.baseRevision !== null && !validRevision(cached.baseRevision)) throw failure("INVALID_LOCAL_CACHE");
+      const state = clone2(cached.state);
+      return { accountId, pending: cached.pending, corrupt: false, cached: { ...cached, state } };
+    } catch {
+      return { accountId, pending: false, corrupt: true };
+    }
+  }
+  function localEntries() {
+    const keys = new Set(knownKeys);
+    if (typeof storage?.key !== "function" || !Number.isSafeInteger(storage.length) || storage.length < 0) throw failure("LOCAL_STORAGE_UNAVAILABLE");
+    for (let i = 0; i < storage.length; i++) {
+      const key = storage.key(i);
+      if (typeof key === "string" && key.startsWith(PREFIX)) keys.add(key);
+    }
+    if (!storage?.getItem) throw failure("LOCAL_STORAGE_UNAVAILABLE");
+    return [...keys].sort().flatMap((key) => {
+      const raw = storage.getItem(key);
+      return raw === null || raw === void 0 ? [] : [{ key, raw }];
+    });
+  }
+  function erase(key, expectedRaw) {
+    if (!storage?.removeItem) throw failure("LOCAL_STORAGE_UNAVAILABLE");
+    if (expectedRaw !== void 0 && storage.getItem(key) !== expectedRaw) return false;
+    storage.removeItem(key);
+    records.delete(key);
+    knownKeys.delete(key);
+    return true;
+  }
+  function localRecords() {
+    try {
+      const entries = localEntries();
+      records.clear();
+      localError = null;
+      for (const { key, raw } of entries) {
+        knownKeys.add(key);
+        const record2 = cacheRecord(key, raw);
+        records.set(key, { ...record2, key, raw });
+        if (active && record2.accountId === active.accountId && !record2.pending && !record2.corrupt) try {
+          erase(key, raw);
+        } catch {
+          localError = { code: "LOCAL_STORAGE_UNAVAILABLE", message: messages.LOCAL_STORAGE_UNAVAILABLE };
+        }
+      }
+    } catch {
+      localError = { code: "LOCAL_STORAGE_UNAVAILABLE", message: messages.LOCAL_STORAGE_UNAVAILABLE };
+    }
+    return localSummary();
+  }
+  function exportLocalRecords() {
+    if (!active) throw failure("LOCAL_RECOVERY_AUTH_REQUIRED");
+    try {
+      return { format: "synk-account-local-recovery", version: 1, scope: scope3, resource, accountId: active.accountId, entries: localEntries().filter(({ key, raw }) => cacheRecord(key, raw).accountId === active.accountId) };
+    } catch {
+      localError = { code: "LOCAL_STORAGE_UNAVAILABLE", message: messages.LOCAL_STORAGE_UNAVAILABLE };
+      if (active) emit(active, "storage-error", failure("LOCAL_STORAGE_UNAVAILABLE"));
+      else emitClosed();
+      throw failure("LOCAL_STORAGE_UNAVAILABLE");
+    }
+  }
+  function emitClosed() {
+    const local = localSummary(), error = localError || (local.corrupt ? { code: "INVALID_LOCAL_CACHE", message: messages.INVALID_LOCAL_CACHE } : null);
+    onStatus({ status: "closed", revision: null, accountId: null, error, pending: false, pendingStored: true, localPersistenceError: !!localError, localRecords: local, localDrafts: [] });
+  }
+  function clearLocalRecords() {
+    const context = active;
+    if (!context) {
+      emitClosed();
+      return false;
+    }
+    if (context.pending || context.busy || context.deleting) {
+      emit(context, "error", failure("LOCAL_CACHE_IN_USE"));
+      return false;
+    }
+    try {
+      for (const { key, raw } of localEntries()) if (cacheRecord(key, raw).accountId === context.accountId) erase(key, raw);
+      localRecords();
+      localError = null;
+      context.storageError = false;
+      context.invalidCache = false;
+      context.localChoice = false;
+      emit(context, "synced");
+      return true;
+    } catch {
+      context.storageError = true;
+      localRecords();
+      localError = { code: "LOCAL_STORAGE_UNAVAILABLE", message: messages.LOCAL_STORAGE_UNAVAILABLE };
+      emit(context, "storage-error", failure("LOCAL_STORAGE_UNAVAILABLE"));
+      return false;
+    }
+  }
+  localRecords();
+  const isCurrent = (context) => active === context && context.generation === generation;
+  const emitState = (context) => {
+    if (isCurrent(context)) onState(clone2(context.state));
+  };
+  function draftGroups(context, all = false) {
+    localRecords();
+    const groups = /* @__PURE__ */ new Map(), excluded = all ? /* @__PURE__ */ new Set() : /* @__PURE__ */ new Set([...context.owned.keys(), ...context.recovery.keys()]);
+    for (const record2 of records.values()) {
+      if (!record2.pending || record2.corrupt || record2.cached.accountId !== context.accountId || excluded.has(record2.key)) continue;
+      const signature = JSON.stringify({ baseRevision: record2.cached.baseRevision, state: record2.cached.state });
+      let group = groups.get(signature);
+      if (!group) {
+        group = {
+          id: record2.cached.draftId || "legacy",
+          createdAt: record2.cached.createdAt || null,
+          baseRevision: record2.cached.baseRevision,
+          state: record2.cached.state,
+          entries: /* @__PURE__ */ new Map(),
+          itemCount: Object.values(record2.cached.state).reduce((n, value) => n + (Array.isArray(value) ? value.length : 0), 0)
+        };
+        groups.set(signature, group);
+      }
+      group.entries.set(record2.key, record2.raw);
+    }
+    return [...groups.values()].sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || "") || a.id.localeCompare(b.id));
+  }
+  const publicDrafts = (groups) => groups.map(({ id, createdAt, baseRevision, itemCount, entries }) => ({ id, createdAt, baseRevision, itemCount, copies: entries.size }));
+  const emit = (context, status, error = null) => {
+    if (!isCurrent(context)) return;
+    context.choices = draftGroups(context);
+    if (context.localChoice && !context.choices.length && !localError) context.localChoice = false;
+    context.invalidCache = [...records.values()].some((record2) => record2.corrupt && record2.accountId === context.accountId);
+    const currentSignature = JSON.stringify(context.state);
+    const pendingStored = !context.pending || !localError && [...records.values()].some((record2) => record2.pending && !record2.corrupt && record2.cached.accountId === context.accountId && JSON.stringify(record2.cached.state) === currentSignature);
+    const warning = context.invalidCache ? { code: "INVALID_LOCAL_CACHE", message: messages.INVALID_LOCAL_CACHE } : context.storageError || localError ? { code: "LOCAL_STORAGE_UNAVAILABLE", message: messages.LOCAL_STORAGE_UNAVAILABLE } : null;
+    const choiceError = context.localChoice ? { code: "LOCAL_DRAFT_CONFLICT", message: messages.LOCAL_DRAFT_CONFLICT } : null;
+    const notification = {
+      status: choiceError ? "local-conflict" : !error && warning ? warning.code === "INVALID_LOCAL_CACHE" ? "error" : "storage-error" : status,
+      revision: context.revision,
+      accountId: context.accountId,
+      pending: context.pending,
+      pendingStored,
+      localPersistenceError: !!(context.storageError || localError),
+      localRecords: localSummary(),
+      localDrafts: publicDrafts(context.choices),
+      warning,
+      error: error ? { code: error.code || "CARE_SYNC_FAILED", message: documentSyncErrorMessage(error), ...typeof error.assetId === "string" && UUID.test(error.assetId) ? { assetId: error.assetId } : {} } : choiceError || warning
+    };
+    context.lastNotification = notification;
+    onStatus(notification);
+  };
+  function removeEntries(context, entries) {
+    let ok = true;
+    for (const [key, raw] of entries) try {
+      erase(key, raw);
+      context.owned.delete(key);
+      context.recovery.delete(key);
+    } catch {
+      context.storageError = true;
+      ok = false;
+    }
+    return ok;
+  }
+  function detachDraft(context) {
+    context.owned = /* @__PURE__ */ new Map();
+    context.recovery = /* @__PURE__ */ new Map();
+    context.currentDraft = null;
+  }
+  function persist(context) {
+    if (!isCurrent(context)) return false;
+    try {
+      if (context.pending) {
+        if (!storage?.setItem) throw failure("LOCAL_STORAGE_UNAVAILABLE");
+        const signature = JSON.stringify({ baseRevision: context.baseRevision, state: context.state });
+        if (context.currentDraft?.signature === signature && storage.getItem(context.currentDraft.key) === context.currentDraft.raw) {
+          if (!removeEntries(context, new Map([...context.owned].filter(([key2]) => key2 !== context.currentDraft.key)))) return false;
+          context.storageError = false;
+          return true;
+        }
+        const draftId = globalThis.crypto.randomUUID(), key = context.key + ":draft:" + draftId;
+        const raw = JSON.stringify({
+          version: 1,
+          accountId: context.accountId,
+          draftId,
+          createdAt: (/* @__PURE__ */ new Date()).toISOString(),
+          baseRevision: context.baseRevision,
+          state: context.state,
+          pending: true
+        });
+        storage.setItem(key, raw);
+        const previous = new Map(context.owned);
+        context.owned.set(key, raw);
+        context.currentDraft = { key, raw, signature };
+        knownKeys.add(key);
+        records.set(key, { ...cacheRecord(key, raw), key, raw });
+        if (!removeEntries(context, previous)) return false;
+      } else if (!removeEntries(context, new Map([...context.recovery, ...context.owned]))) return false;
+      if (context.storageError && localError?.code === "LOCAL_STORAGE_UNAVAILABLE") localError = null;
+      context.storageError = false;
+      return true;
+    } catch {
+      context.storageError = true;
+      return false;
+    }
+  }
+  function stopTimer(context) {
+    if (context?.timer) clearTimeout(context.timer);
+    if (context) context.timer = null;
+  }
+  function schedule(context) {
+    stopTimer(context);
+    if (!isCurrent(context) || context.conflict || context.localChoice || context.deleting) return;
+    context.timer = setTimeout(() => {
+      context.timer = null;
+      void flush();
+    }, 400);
+    context.timer.unref?.();
+  }
+  function reportFailure(context, error) {
+    if (!isCurrent(context)) return false;
+    if (["REVISION_CONFLICT", "LOCAL_CHANGED_DURING_REFRESH"].includes(error?.code)) {
+      context.conflict = true;
+      if (validRevision(error.revision)) context.revision = error.revision;
+      persist(context);
+      emit(context, "conflict", error);
+    } else {
+      const hard = ["AUTH_REQUIRED", "SESSION_REVOKED", "ACCOUNT_UNAVAILABLE", "PRODUCT_FORBIDDEN", "CARE_ACCOUNT_MISMATCH", "INVALID_CARE_RESPONSE", "INVALID_CARE_STATE", "CARE_CLIENT_UPDATE_REQUIRED", "PAYLOAD_TOO_LARGE", "INVALID_PERSONAL_STATE", "PERSONAL_DATA_TOO_LARGE", "REVISION_CAPACITY", "ASSET_NOT_FOUND", "ASSET_NOT_CONFIRMED", "MEDIA_QUOTA_EXCEEDED"].includes(error?.code);
+      emit(context, hard ? "error" : "offline", error);
+    }
+    return false;
+  }
+  function enqueue(context, operation) {
+    if (!context || !isCurrent(context)) return Promise.resolve(false);
+    context.busy++;
+    const result = context.chain.catch(() => {
+    }).then(async () => {
+      try {
+        return isCurrent(context) ? await operation() : false;
+      } catch (error) {
+        return reportFailure(context, error);
+      } finally {
+        context.busy--;
+      }
+    });
+    context.chain = result;
+    return result;
+  }
+  async function request(context, action, body) {
+    const reply = await transport(action, body);
+    if (!isCurrent(context)) throw failure("CARE_SESSION_ENDED");
+    if (reply?.ok === false) throw Object.assign(failure(reply.error?.code || reply.code || "CARE_SYNC_FAILED", reply.revision), typeof reply.error?.assetId === "string" && UUID.test(reply.error.assetId) ? { assetId: reply.error.assetId } : {});
+    if (!reply || reply.ok !== true || reply.scope !== scope3 || resource && reply.resource !== resource || !validRevision(reply.revision) || !Object.hasOwn(reply, "state")) throw failure("INVALID_CARE_RESPONSE");
+    if (reply.accountId !== context.accountId) throw failure("CARE_ACCOUNT_MISMATCH");
+    let state;
+    try {
+      state = reply.state === null ? emptyState() : clone2(reply.state);
+    } catch {
+      throw failure("INVALID_CARE_RESPONSE");
+    }
+    return { ...reply, state, empty: reply.state === null };
+  }
+  async function load(context, mode = "refresh") {
+    const before = context.sequence;
+    emit(context, "loading");
+    const remote = await request(context, operations2.load);
+    if (mode === "remote" && before !== context.sequence) {
+      context.conflict = true;
+      persist(context);
+      emit(context, "conflict", failure("LOCAL_CHANGED_DURING_REFRESH"));
+      return false;
+    }
+    if (mode === "remote" && context.pending && !persist(context)) {
+      emit(context, "storage-error", failure("LOCAL_STORAGE_UNAVAILABLE"));
+      return false;
+    }
+    context.known = true;
+    context.revision = remote.revision;
+    if (context.localChoice && mode !== "remote") {
+      context.state = remote.state;
+      context.baseRevision = remote.revision;
+      emitState(context);
+      emit(context, "local-conflict");
+      return false;
+    }
+    if (mode === "local") {
+      context.baseRevision = remote.revision;
+      context.pending = true;
+      context.conflict = false;
+      persist(context);
+      return true;
+    }
+    if (mode !== "remote" && context.pending) {
+      if (context.baseRevision === null && remote.empty && remote.revision === 0) context.baseRevision = 0;
+      const conflictCode = context.baseRevision !== remote.revision ? "REVISION_CONFLICT" : requiresConflictReview(context.state, remote.state) ? "CARE_LIBRARY_RECOVERY_REVIEW" : null;
+      if (conflictCode) {
+        context.conflict = true;
+        persist(context);
+        emit(context, "conflict", failure(conflictCode, remote.revision));
+        return false;
+      }
+      context.conflict = false;
+      persist(context);
+      emit(context, "idle");
+      return true;
+    }
+    const changed = JSON.stringify(context.state) !== JSON.stringify(remote.state);
+    if (mode === "remote") {
+      detachDraft(context);
+      context.localChoice = false;
+    }
+    context.state = remote.state;
+    context.baseRevision = remote.revision;
+    context.pending = false;
+    context.conflict = false;
+    persist(context);
+    if (changed || mode === "remote") emitState(context);
+    emit(context, "synced");
+    return true;
+  }
+  async function drain(context) {
+    if (context.localChoice) {
+      emit(context, "local-conflict");
+      if (!context.localChoice) return load(context);
+    }
+    if (context.localChoice) {
+      emit(context, "local-conflict");
+      return false;
+    }
+    if (!context.known && !await load(context)) return false;
+    if (!isCurrent(context) || context.conflict || context.deleting) return false;
+    while (context.pending && isCurrent(context) && !context.conflict && !context.deleting) {
+      const sequence = context.sequence, sent = clone2(context.state), expected = context.baseRevision;
+      const acknowledged = new Map([...context.recovery, ...context.owned]);
+      emit(context, "saving");
+      const remote = await request(context, operations2.save, { expected_revision: expected, state: sent });
+      if (remote.revision !== expected + 1 || remote.empty) throw failure("INVALID_CARE_RESPONSE");
+      onSaved(clone2(remote.state));
+      context.revision = remote.revision;
+      context.baseRevision = remote.revision;
+      if (context.sequence === sequence) {
+        context.state = remote.state;
+        context.pending = false;
+      }
+      removeEntries(context, acknowledged);
+      if (!context.pending) context.currentDraft = null;
+      persist(context);
+      emit(context, context.pending ? "idle" : "synced");
+    }
+    return !context.pending;
+  }
+  function close() {
+    if (active?.storageListener) globalThis.removeEventListener?.("storage", active.storageListener);
+    stopTimer(active);
+    if (active && !active.pending) persist(active);
+    const cleanupError = active?.storageError;
+    generation += 1;
+    active = null;
+    localRecords();
+    if (cleanupError) localError = { code: "LOCAL_STORAGE_UNAVAILABLE", message: messages.LOCAL_STORAGE_UNAVAILABLE };
+    onState(emptyState());
+    emitClosed();
+  }
+  async function open(accountId) {
+    if (typeof accountId !== "string" || !accountId || accountId.length > 120 || /[\x00-\x20]/.test(accountId)) throw failure("INVALID_ACCOUNT_ID");
+    close();
+    const context = {
+      accountId,
+      key: PREFIX + encodeURIComponent(accountId),
+      generation,
+      chain: Promise.resolve(),
+      state: emptyState(),
+      revision: null,
+      baseRevision: null,
+      pending: false,
+      known: false,
+      conflict: false,
+      deleting: false,
+      sequence: 0,
+      storageError: false,
+      invalidCache: false,
+      timer: null,
+      busy: 0
+    };
+    Object.assign(context, { owned: /* @__PURE__ */ new Map(), recovery: /* @__PURE__ */ new Map(), currentDraft: null, choices: [], localChoice: false });
+    active = context;
+    knownKeys.add(context.key);
+    try {
+      const choices = draftGroups(context, true);
+      context.invalidCache = [...records.values()].some((record2) => record2.corrupt && record2.accountId === accountId);
+      if (choices.length && !preferRemoteOnOpen) context.localChoice = true;
+    } catch {
+      context.storageError = true;
+      emit(context, "storage-error");
+    }
+    emitState(context);
+    context.storageListener = (event) => {
+      if (!isCurrent(context) || event.key !== null && !(event.key === context.key || event.key?.startsWith(context.key + ":draft:"))) return;
+      const choosing = context.localChoice, previous = context.lastNotification;
+      emit(context, choosing ? "synced" : previous?.status || (context.pending ? "idle" : "synced"), choosing ? null : previous?.error);
+      if (choosing && !context.localChoice && !context.pending) void refresh();
+    };
+    globalThis.addEventListener?.("storage", context.storageListener);
+    return enqueue(context, async () => {
+      const loaded = await load(context);
+      if (loaded && context.pending) schedule(context);
+      return loaded;
+    });
+  }
+  function change(state) {
+    const context = active;
+    if (!context) throw failure("CARE_ACCOUNT_REQUIRED");
+    if (context.deleting) throw failure("CARE_DELETE_IN_PROGRESS");
+    if (context.localChoice) {
+      emit(context, "local-conflict");
+      if (context.localChoice) throw failure("LOCAL_DRAFT_CONFLICT");
+    }
+    const normalized = clone2(state);
+    if (JSON.stringify(normalized) === JSON.stringify(context.state)) return false;
+    context.state = normalized;
+    context.pending = true;
+    context.sequence += 1;
+    persist(context);
+    emit(context, context.conflict ? "conflict" : "idle");
+    schedule(context);
+    return true;
+  }
+  function flush() {
+    const context = active;
+    stopTimer(context);
+    return enqueue(context, () => drain(context));
+  }
+  function refresh() {
+    const context = active;
+    stopTimer(context);
+    return enqueue(context, async () => {
+      const loaded = await load(context);
+      if (loaded && context.pending) schedule(context);
+      return loaded;
+    });
+  }
+  function resolveRemote() {
+    const context = active;
+    stopTimer(context);
+    return enqueue(context, () => {
+      if (context.pending && !persist(context)) {
+        emit(context, "storage-error", failure("LOCAL_STORAGE_UNAVAILABLE"));
+        return false;
+      }
+      return load(context, "remote");
+    });
+  }
+  function resolveLocal() {
+    const context = active;
+    stopTimer(context);
+    return enqueue(context, async () => {
+      if (!await load(context, "local")) return false;
+      return drain(context);
+    });
+  }
+  function selectLocalDraft(id) {
+    const context = active;
+    stopTimer(context);
+    return enqueue(context, async () => {
+      if (context.pending && !persist(context)) {
+        emit(context, "storage-error");
+        return false;
+      }
+      const selected = draftGroups(context).find((group) => group.id === id);
+      if (!selected) {
+        emit(context, "synced");
+        if (!context.localChoice && !context.pending) await load(context);
+        return false;
+      }
+      detachDraft(context);
+      context.recovery = new Map(selected.entries);
+      context.state = clone2(selected.state);
+      context.baseRevision = selected.baseRevision;
+      context.pending = true;
+      context.known = false;
+      context.conflict = false;
+      context.localChoice = false;
+      context.sequence++;
+      emitState(context);
+      try {
+        const loaded = await load(context);
+        if (loaded && context.pending) schedule(context);
+      } catch (error) {
+        reportFailure(context, error);
+      }
+      return true;
+    });
+  }
+  function remove() {
+    const context = active;
+    stopTimer(context);
+    if (!context) return Promise.resolve(false);
+    context.deleting = true;
+    return enqueue(context, async () => {
+      try {
+        if (!context.known && !await load(context)) return false;
+        if (context.conflict) {
+          emit(context, "conflict", failure("REVISION_CONFLICT", context.revision));
+          return false;
+        }
+        emit(context, "saving");
+        const expected = context.baseRevision;
+        const remote = await request(context, operations2.delete, { expected_revision: expected });
+        if (remote.revision !== expected + 1 || !remote.empty) throw failure("INVALID_CARE_RESPONSE");
+        onRemoved();
+        context.state = emptyState();
+        context.revision = remote.revision;
+        context.baseRevision = remote.revision;
+        context.pending = false;
+        context.conflict = false;
+        context.localChoice = false;
+        context.sequence += 1;
+        removeEntries(context, new Map([...context.recovery, ...context.owned]));
+        context.currentDraft = null;
+        persist(context);
+        emitState(context);
+        emit(context, "synced");
+        return true;
+      } finally {
+        context.deleting = false;
+      }
+    });
+  }
+  return { open, change, flush, refresh, resolveRemote, resolveLocal, selectLocalDraft, remove, close, localRecords, exportLocalRecords, clearLocalRecords };
+}
+var validRevision, failure, messages, documentSyncErrorMessage;
+var init_document_sync = __esm({
+  "experiences/synk-account/src/document-sync.mjs"() {
+    validRevision = (value) => Number.isSafeInteger(value) && value >= 0;
+    failure = (code, revision) => Object.assign(new Error(code), { code, ...validRevision(revision) ? { revision } : {} });
+    messages = {
+      CARE_CLIENT_UPDATE_REQUIRED: "더 새로운 앱에서 저장한 문구 보관함이나 안부 설정이 있어요. 현재 자료를 백업한 뒤 새로고침해 주세요.",
+      CARE_LIBRARY_RECOVERY_REVIEW: "계정 보관함의 이전 문구·즐겨찾기 또는 안부 주기 설정이 이 임시기록에는 없어요. 임시기록을 복구 파일로 백업한 뒤 계정 수첩을 선택해 주세요.",
+      REVISION_CONFLICT: "다른 기기에서 기록이 바뀌었어요. 어느 기록을 사용할지 골라 주세요.",
+      LOCAL_CHANGED_DURING_REFRESH: "가져오는 동안 새로 수정한 내용이 있어요. 기록을 다시 골라 주세요.",
+      AUTH_REQUIRED: "SYNK 계정에 다시 로그인해 주세요.",
+      SESSION_REVOKED: "로그인이 종료되었어요. 다시 로그인해 주세요.",
+      ACCOUNT_UNAVAILABLE: "지금은 이 계정의 기록을 사용할 수 없어요.",
+      PRODUCT_FORBIDDEN: "이 로그인으로는 플레저 기록에 접근할 수 없어요.",
+      CARE_ACCOUNT_MISMATCH: "로그인 계정과 기록의 계정이 달라요. 다시 로그인해 주세요.",
+      INVALID_CARE_RESPONSE: "계정에서 받은 기록을 확인하지 못했어요. 다시 불러와 주세요.",
+      INVALID_CARE_STATE: "저장할 기록을 확인하지 못했어요. 현재 자료를 내보내 주세요.",
+      INVALID_LOCAL_CACHE: "읽지 못한 기기 임시 기록의 원본을 그대로 보존했어요. 로그인한 계정의 기록으로 확인된 원본만 복구 파일로 내보내거나 직접 지울 수 있어요.",
+      LOCAL_DRAFT_CONFLICT: "이 계정의 미저장 기록이 기기에 남아 있어요. 다른 탭에서 편집 중일 수도 있으니 이어서 사용할 기록을 직접 골라 주세요. 고르지 않은 기록도 보존해요.",
+      LOCAL_STORAGE_UNAVAILABLE: "이 기기의 임시 기록을 보관하거나 지우지 못했어요. 저장 결과를 확인하고 현재 자료를 내보내 주세요.",
+      LOCAL_CACHE_IN_USE: "현재 변경을 저장하거나 계정 저장본으로 전환한 뒤 이 계정의 임시기록을 지울 수 있어요. 진행 중인 저장·조회도 먼저 마쳐 주세요.",
+      LOCAL_RECOVERY_AUTH_REQUIRED: "임시기록을 남긴 SYNK 계정으로 로그인해야 복구 파일 내보내기와 삭제를 할 수 있어요.",
+      PAYLOAD_TOO_LARGE: "저장할 기록이 계정 보관 크기를 넘었어요. 먼저 내보낸 뒤 내용을 줄여 저장해 주세요.",
+      INVALID_PERSONAL_STATE: "저장할 기록 형식을 확인하지 못했어요. 현재 자료를 내보내 보관해 주세요.",
+      PERSONAL_DATA_TOO_LARGE: "저장할 기록이 계정 보관 크기를 넘었어요. 먼저 내보낸 뒤 내용을 줄여 저장해 주세요.",
+      REVISION_CAPACITY: "이 기록의 저장 횟수 한도에 도달했어요. 현재 자료를 내보내 보관하고 지원을 요청해 주세요.",
+      ASSET_NOT_FOUND: "앨범 원본을 찾지 못했어요. 현재 화면에 원본이 있다면 저장 다시 시도로 다시 올려 주세요.",
+      ASSET_NOT_CONFIRMED: "앨범 원본의 보관을 확인하지 못했어요. 저장 다시 시도로 원본을 다시 올려 주세요.",
+      MEDIA_QUOTA_EXCEEDED: "사진·음성 보관 공간 20MiB 또는 파일 수 한도에 도달했어요. 기존 사진·음성을 제거하고 저장을 마친 뒤 새 파일을 추가해 주세요.",
+      CARE_UNAVAILABLE: "계정 저장 연결이 아직 준비되지 않았어요. 현재 기록은 이 기기에서 보관해요.",
+      AUTH_UNAVAILABLE: "로그인 서버에 연결하지 못했어요. 잠시 뒤 다시 시도해 주세요."
+    };
+    documentSyncErrorMessage = (error) => messages[error?.code] || error?.message || "계정에 저장하지 못했어요. 연결을 확인한 뒤 다시 시도해 주세요.";
   }
 });
 
@@ -415,533 +1511,6 @@ var init_model = __esm({
   }
 });
 
-// experiences/conversation-rehearsal/domain.mjs
-function validPractice(scenario, practice) {
-  return practice && typeof practice === "object" && !Array.isArray(practice) && Object.keys(practice).length === 2 && Object.keys(practice).every((key) => ["counterpart", "goal"].includes(key)) && Object.hasOwn(PRACTICES[scenario].counterparts, practice.counterpart) && Object.hasOwn(PRACTICES[scenario].goals, practice.goal);
-}
-function calendarDate(value) {
-  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-  const time2 = Date.parse(`${value}T00:00:00.000Z`);
-  return Number.isFinite(time2) && new Date(time2).toISOString().slice(0, 10) === value;
-}
-function validSchema2Session(s) {
-  if (has(s, "intensity") && !Object.hasOwn(INTENSITIES, s.intensity)) return false;
-  if (has(s, "plan") && s.plan !== null && (!keys(s.plan, ["ifThey", "iWill"]) || Object.keys(s.plan).length !== 2 || !bounded(s.plan.ifThey, 200) || !bounded(s.plan.iWill, 200) || !(s.plan.ifThey.trim() || s.plan.iWill.trim()))) return false;
-  if (has(s, "realAt") && s.realAt !== null && !calendarDate(s.realAt)) return false;
-  if (has(s, "outcome") && s.outcome !== null) {
-    const o = s.outcome;
-    if (!keys(o, ["did", "usedFirst", "reaction", "note", "at"]) || Object.keys(o).length !== 5 || !Object.hasOwn(OUTCOMES.did, o.did) || !(o.usedFirst === null || typeof o.usedFirst === "boolean") || !(o.reaction === null || Object.hasOwn(OUTCOMES.reaction, o.reaction)) || o.did !== "yes" && (o.usedFirst !== null || o.reaction !== null) || !bounded(o.note, 600) || !isoTime(o.at)) return false;
-  }
-  return true;
-}
-function validSchema2Turn(turn) {
-  if (has(turn, "mode") && !Object.hasOwn(MODES, turn.mode)) return false;
-  if (has(turn, "seconds") && (!secondsValue(turn.seconds) || turn.seconds !== null && turn.mode !== "voice")) return false;
-  if (has(turn, "retryMode") && (turn.retry ? !(turn.retryMode === null || Object.hasOwn(MODES, turn.retryMode)) : turn.retryMode !== null)) return false;
-  if (has(turn, "retrySeconds") && (!secondsValue(turn.retrySeconds) || turn.retrySeconds !== null && turn.retryMode !== "voice")) return false;
-  return true;
-}
-function validateArchive(value) {
-  const invalid5 = () => {
-    throw new TypeError("리허설 기록 형식이 올바르지 않아요. 이 앱에서 내보낸 JSON 파일을 선택해 주세요.");
-  };
-  if (!keys(value, ["schema", "savedAt", "sessions"]) || !SCHEMAS.includes(value.schema) || !bounded(value.savedAt, 40, false) || !Number.isFinite(Date.parse(value.savedAt)) || !Array.isArray(value.sessions) || value.sessions.length > MAX_SESSIONS) invalid5();
-  const ids3 = /* @__PURE__ */ new Set(), sessionKeys = SESSION_KEYS[value.schema], turnKeys = TURN_KEYS[value.schema];
-  for (const s of value.sessions) {
-    if (!keys(s, sessionKeys) || !bounded(s.id, 80, false) || ids3.has(s.id) || !bounded(s.at, 40, false) || !Number.isFinite(Date.parse(s.at)) || !Object.hasOwn(SCENARIOS, s.scenario) || !Object.hasOwn(DIRECTIONS, s.focus) || !bounded(s.counterpart, 80, false) || !bounded(s.goal, 240, false) || !bounded(s.firstSentence, 600) || !bounded(s.takeaway, 600) || !Array.isArray(s.turns) || s.turns.length !== 3 || Object.hasOwn(s, "practice") && !validPractice(s.scenario, s.practice) || !validSchema2Session(s)) invalid5();
-    ids3.add(s.id);
-    for (const [index, turn] of s.turns.entries()) {
-      const expected = index === 0 ? "opening" : index === 1 ? s.focus : "close";
-      if (!keys(turn, turnKeys) || turn.id !== expected || !bounded(turn.answer, 2e3, false) || !Object.hasOwn(REVIEWS, turn.review) || !bounded(turn.retry, 2e3) || (turn.retry ? !Object.hasOwn(REVIEWS, turn.retryReview) : turn.retryReview !== null) || !validSchema2Turn(turn)) invalid5();
-    }
-  }
-  const text4 = JSON.stringify(value);
-  if (byteLength(text4) > MAX_IMPORT_BYTES) invalid5();
-  return JSON.parse(text4);
-}
-var SCHEMAS, MAX_SESSIONS, MAX_IMPORT_BYTES, MAX_SPOKEN_SECONDS, REVIEWS, INTENSITIES, MODES, OUTCOMES, TURN_IDS, PRESENTATION_STATUS, NEGOTIATION_PRICE, APOLOGY_MISTAKE, FEEDBACK_IMPROVE, SCENARIOS, DIRECTIONS, PRACTICES, record, keys, safeCharacters, bounded, isoTime, byteLength, SESSION_KEYS, TURN_KEYS, has, secondsValue;
-var init_domain = __esm({
-  "experiences/conversation-rehearsal/domain.mjs"() {
-    SCHEMAS = Object.freeze([1, 2]);
-    MAX_SESSIONS = 30;
-    MAX_IMPORT_BYTES = 5e5;
-    MAX_SPOKEN_SECONDS = 600;
-    REVIEWS = Object.freeze({ easy: "말할 수 있었어요", unsure: "조금 망설였어요", stuck: "말이 막혔어요" });
-    INTENSITIES = Object.freeze({ gentle: "부드럽게", normal: "보통", tough: "세게" });
-    MODES = Object.freeze({ text: "글로 답함", voice: "말로 답함" });
-    OUTCOMES = Object.freeze({
-      did: Object.freeze({ yes: "대화했어요", no: "하지 못했어요", later: "나중으로 미뤘어요" }),
-      reaction: Object.freeze({ good: "잘 통했어요", mixed: "반반이었어요", hard: "어려웠어요" })
-    });
-    TURN_IDS = Object.freeze(["opening", "specific", "concise", "pressure", "close"]);
-    PRESENTATION_STATUS = {
-      opening: { title: "결론 한 문장으로 시작하기", prompt: "지금 진행 상황이 어떤지 먼저 말해 줄래요?", hint: "「결론부터 말씀드리면 ○○는 ○○ 상태입니다」처럼 상태를 먼저 말하고, 설명은 그 뒤에 붙이세요." },
-      specific: { title: "근거와 예시 붙이기", prompt: "그렇게 판단한 근거가 뭐예요? 숫자나 실제 사례가 있어요?", hint: "근거 하나에 그것을 보여 주는 숫자나 실제 장면 하나를 짝지어 말해 보세요." },
-      concise: { title: "30초 안에 정리하기", prompt: "회의가 곧 시작이라서요. 30초 안에 정리해 줄래요?", hint: "결론 한 문장, 근거 한 문장이면 충분해요. 배경 설명은 빼도 괜찮아요." },
-      pressure: { title: "근거가 약하다는 말에 답하기", prompt: "그 정도 근거로는 결정하기 어려운데요. 다른 자료는 없어요?", tones: { gentle: "근거를 조금만 더 들어 볼 수 있을까요?", tough: "그 숫자 하나로 결정하라는 거예요? 확실한 게 뭐예요?" }, hint: "근거를 부풀리지 말고 확인된 것과 아직 확인 중인 것을 나눠 말하세요. 언제까지 무엇을 더 확인할지도 덧붙이세요." },
-      close: { title: "필요한 결정으로 마무리하기", prompt: "알겠어요. 그래서 제가 정해 줘야 하는 게 뭐예요?", hint: "처음에 말한 결론을 한 번 더 말하고, 필요한 결정 하나를 분명히 부탁하세요." }
-    };
-    NEGOTIATION_PRICE = {
-      opening: { title: "원하는 조건을 숫자로", prompt: "생각하시는 금액이 어느 정도인가요?", hint: "「○○을 희망합니다」처럼 숫자 하나로 먼저 말하고, 근거는 그다음 한 문장으로 붙이세요." },
-      specific: { title: "숫자의 근거 세우기", prompt: "그 금액을 생각하신 근거가 있을까요?", hint: "비슷한 일의 시장 수준, 내가 낸 결과, 맡을 일의 범위 가운데 실제로 확인한 것을 말하세요." },
-      concise: { title: "요청을 짧게 정리하기", prompt: "정리하면 원하시는 게 정확히 뭔가요?", hint: "금액 한 문장, 함께 원하는 조건 하나로 정리해 보세요." },
-      pressure: { title: "기준에 안 맞는다는 말에", prompt: "저희 기준으로는 그 금액을 맞춰 드리기 어려워요.", tones: { gentle: "저희도 맞춰 드리고 싶은데, 그 금액은 조금 어려울 것 같아요.", tough: "그 금액은 불가능해요. 이 조건이 싫으시면 어쩔 수 없고요." }, hint: "바로 물러서지 말고, 금액 말고 조정할 수 있는 조건을 묻거나 받아들일 수 있는 선을 차분히 말하세요." },
-      close: { title: "다음 단계 정하기", prompt: "그럼 내부에서 다시 검토해 볼게요. 더 하실 말씀 있으세요?", hint: "오늘 이야기한 조건을 한 문장으로 다시 정리하고, 언제까지 어떤 방식으로 답을 받을지 확인하세요." }
-    };
-    APOLOGY_MISTAKE = {
-      opening: { title: "변명 없이 인정하기", prompt: "무슨 일이 있었던 건지 먼저 말해 줄래요?", hint: "무엇을 잘못했는지 한 문장으로 인정하고 사과하세요. 사정 설명은 뒤로 미뤄도 괜찮아요." },
-      specific: { title: "무엇을 놓쳤는지 짚기", prompt: "정확히 어떤 부분이 문제였다고 생각해요?", hint: "상황 탓보다 내가 놓친 것 하나를 짚고, 그 때문에 상대가 겪은 일을 말하세요." },
-      concise: { title: "사과와 행동을 한 번에", prompt: "길게 말하지 않아도 돼요. 그래서 어떻게 할 거예요?", hint: "「제 실수였어요. 죄송해요. 오늘 안에 다시 보내 드릴게요.」처럼 인정과 바로잡을 행동을 한 번에 말해 보세요." },
-      pressure: { title: "또 그러면 어떡하냐는 말에", prompt: "다음에도 또 이러면 어떡해요?", tones: { gentle: "다음에는 괜찮겠죠? 조금 걱정돼서요.", tough: "이번엔 정말 달라지는 거 맞아요? 뭘 바꿀 건데요?" }, hint: "다짐보다 방법을 말하세요. 무엇을 바꿔서 같은 일이 다시 생기지 않게 할지 한 가지를 정하세요." },
-      close: { title: "관계를 다시 잇기", prompt: "알겠어요. 이번엔 믿어 볼게요.", hint: "받아 준 것에 고마움을 전하고, 약속한 행동을 언제 확인할지 말하며 마무리하세요." }
-    };
-    FEEDBACK_IMPROVE = {
-      opening: { title: "본 것으로 시작하기", prompt: "무슨 이야기인지 먼저 들어 볼게요.", hint: "「지난 ○○ 때 ○○하는 걸 봤어요」처럼 언제 무엇을 봤는지로 시작하세요. 「항상」「늘」은 빼 보세요." },
-      specific: { title: "영향을 구체적으로", prompt: "그게 왜 문제가 되는 건지 잘 모르겠어요.", hint: "그 행동 때문에 일이나 다른 사람에게 실제로 생긴 일을 하나 말하세요." },
-      concise: { title: "바라는 것을 한 문장으로", prompt: "그래서 제가 어떻게 하면 되는 거예요?", hint: "「다음부터는 ○○해 주면 좋겠어요」처럼 바라는 행동 하나를 분명하게 말하세요." },
-      pressure: { title: "방어하는 반응에 답하기", prompt: "저만 그런 것도 아닌데요.", tones: { gentle: "아, 저는 그게 문제가 되는 줄 몰랐어요.", tough: "다른 사람들도 다 그렇게 하는데 왜 저한테만 그러세요?" }, hint: "다른 사람과 비교하는 이야기로 번지지 않게, 본 사실을 차분히 다시 말하고 상대의 사정을 물어보세요." },
-      close: { title: "함께 정하고 마무리하기", prompt: "알겠어요. 다음부터 신경 쓸게요.", hint: "고맙다고 말하고, 도울 일이 있는지 또는 언제 다시 이야기할지 물으며 마무리하세요." }
-    };
-    SCENARIOS = Object.freeze({
-      interview: {
-        name: "면접에서 나를 소개할 때",
-        short: "면접",
-        note: "내 경험을 근거로, 짧고 분명하게.",
-        counterpart: "면접관",
-        goal: "내 경험이 이 역할에 어떻게 도움이 되는지 전하기",
-        opening: "이 역할에 지원한 이유를 들려주시겠어요?",
-        turns: {
-          opening: { title: "첫 인상보다, 첫 문장", prompt: "이 역할에 지원한 이유를 들려주시겠어요?", hint: "관심 있는 일 한 가지와 연결되는 내 경험 한 가지를 적어 보세요." },
-          specific: { title: "경험을 하나만 꺼내기", prompt: "그 경험에서 본인이 직접 한 일은 무엇이었나요?", hint: "상황 → 내가 한 행동 → 실제로 일어난 결과. 없는 성과를 만들 필요는 없어요." },
-          concise: { title: "핵심부터 말하기", prompt: "시간이 많지 않아서요. 가장 전하고 싶은 내용을 두 문장으로 정리해 주시겠어요?", hint: "먼저 결론 한 문장. 그다음 그 결론을 뒷받침하는 실제 경험 한 문장." },
-          pressure: { title: "예상 밖의 질문", prompt: "그 경험이 우리 팀의 일에도 도움이 된다고 생각하는 이유는 무엇인가요?", tones: { gentle: "그 경험이 저희 일에도 도움이 될 수 있을지 궁금해요.", tough: "그 경험이 우리 일이랑 무슨 상관이죠?" }, hint: "상대의 상황을 모르면, 먼저 확인하고 싶은 점을 질문해도 좋아요." },
-          close: { title: "대화를 이어 갈 한마디", prompt: "마지막으로 저희에게 물어보고 싶은 것이 있나요?", hint: "역할에 관해 정말 알고 싶은 점 한 가지로 마무리해 보세요." }
-        },
-        starter: "제가 이 역할에 관심을 가진 이유는…",
-        check: "실제로 내가 한 행동을 한 가지 말했나요?"
-      },
-      request: {
-        name: "부탁을 꺼내야 할 때",
-        short: "부탁",
-        note: "필요한 도움과 가능한 범위를 함께.",
-        counterpart: "함께 일하는 동료",
-        goal: "상대의 상황을 확인하며 필요한 도움을 구하기",
-        turns: {
-          opening: { title: "조심스럽게 시작하기", prompt: "무슨 일이에요? 지금 잠깐 이야기할 수 있어요.", hint: "대화를 나눌 수 있는지 확인하고, 부탁하고 싶은 일을 한 가지로 말해 보세요." },
-          specific: { title: "부탁의 크기를 분명하게", prompt: "제가 정확히 무엇을, 언제까지 도와드리면 될까요?", hint: "필요한 작업과 기한을 나누어 적고, 조정 가능한 부분도 말해 보세요." },
-          concise: { title: "짧게 핵심 전하기", prompt: "지금은 시간이 별로 없어요. 필요한 것부터 짧게 말해 줄래요?", hint: "“○○를 부탁드리고 싶어요. ○○까지 가능하실까요?”처럼 시작할 수 있어요." },
-          pressure: { title: "부담스럽다는 말에 답하기", prompt: "저도 일정이 꽉 차 있어서 전부 도와드리기는 어려울 것 같아요.", tones: { gentle: "저도 일정이 좀 있어서, 일부만 도와드려도 괜찮을까요?", tough: "저도 일정이 꽉 찼어요. 그걸 왜 제가 해야 하죠?" }, hint: "상대의 상황을 인정하고, 부탁을 줄이거나 다른 시점을 제안해 보세요." },
-          close: { title: "서로 같은 뜻인지 확인하기", prompt: "그럼 제가 가능한 범위에서 해 볼게요. 어떻게 진행하면 좋을까요?", hint: "합의한 범위와 다음 확인 시점을 정리해 보세요. 아직 합의되지 않은 일은 묻는 표현으로요." }
-        },
-        starter: "잠깐 이야기 나눌 수 있을까요? 부탁드리고 싶은 일이 있어요.",
-        check: "무엇을 언제까지 부탁하는지, 조정 가능한 범위를 말했나요?"
-      },
-      refusal: {
-        name: "관계를 지키며 거절할 때",
-        short: "거절",
-        note: "미안함에 묻히지 않게, 내 범위까지.",
-        counterpart: "가까운 지인",
-        goal: "할 수 없는 범위를 분명히 전하면서 관계를 존중하기",
-        turns: {
-          opening: { title: "내 범위를 말하는 시작", prompt: "이번에도 부탁 좀 해도 될까요? 꼭 해 줬으면 좋겠어요.", hint: "상대의 마음을 짧게 받아 준 뒤, 내가 할 수 없는 부분을 분명하게 말해 보세요." },
-          specific: { title: "이유와 범위를 나누기", prompt: "어떤 부분이 어려운 건지 알려 줄 수 있어요?", hint: "공유하고 싶은 만큼만 이유를 말해도 괜찮아요. 할 수 있는 범위가 있다면 따로 말해 보세요." },
-          concise: { title: "짧고 분명한 거절", prompt: "그래서, 이번에는 가능하다는 건가요? 어렵다는 건가요?", hint: "결정을 한 문장으로 먼저 말하고, 필요하면 설명을 덧붙이세요." },
-          pressure: { title: "한 번 더 부탁할 때", prompt: "딱 이번 한 번만 안 될까요? 다른 부탁은 안 할게요.", tones: { gentle: "정말 어렵다면 어쩔 수 없지만, 이번 한 번만 다시 생각해 줄 수 있어요?", tough: "이번 한 번인데 그것도 안 돼요? 다른 부탁은 안 한다니까요." }, hint: "새로운 이유를 계속 만들기보다, 결정한 범위를 차분하게 반복해 보세요." },
-          close: { title: "관계를 남기는 마무리", prompt: "알겠어요. 조금 아쉽기는 하네요.", hint: "아쉬움을 인정하면서 마무리해 보세요. 할 수 없는 대안을 약속하지 않아도 괜찮아요." }
-        },
-        starter: "부탁한 마음은 이해해요. 다만 이번에는 제가…",
-        check: "내가 할 수 없는 범위를 모호하지 않게 말했나요?"
-      },
-      presentation: {
-        name: "결론부터 발표·보고할 때",
-        short: "발표·보고",
-        note: "결론을 먼저, 근거와 예시로 받치고, 끝에서 다시 결론.",
-        counterpart: "보고를 받는 팀장",
-        goal: "결론을 먼저 말하고 근거와 예시로 결정을 돕기",
-        turns: PRESENTATION_STATUS,
-        starter: "결론부터 말씀드리면…",
-        check: "첫 문장에 결론이 있고, 마지막에 다시 결론을 말했나요?"
-      },
-      negotiation: {
-        name: "조건과 연봉을 협상할 때",
-        short: "협상",
-        note: "원하는 것과 근거를 먼저, 물러설 수 없는 선은 미리 정해 두기.",
-        counterpart: "처우를 정하는 인사 담당자",
-        goal: "원하는 조건을 근거와 함께 말하고 다음 단계까지 정하기",
-        turns: NEGOTIATION_PRICE,
-        starter: "제가 희망하는 조건은 ○○입니다. 그렇게 생각한 근거는…",
-        check: "원하는 것을 숫자로 말하고, 근거와 다음 단계를 함께 정했나요?"
-      },
-      apology: {
-        name: "진심으로 사과해야 할 때",
-        short: "사과",
-        note: "변명보다 인정, 말보다 바로잡을 행동.",
-        counterpart: "함께 일하는 동료",
-        goal: "잘못을 인정하고 바로잡을 행동과 재발 방지를 약속하기",
-        turns: APOLOGY_MISTAKE,
-        starter: "제가 ○○한 건 제 잘못이에요. 죄송해요.",
-        check: "변명 없이 인정하고, 상대가 겪은 일과 바로잡을 행동을 말했나요?"
-      },
-      feedback: {
-        name: "피드백을 건네야 할 때",
-        short: "피드백",
-        note: "평가 대신 본 것, 그 영향, 바라는 것.",
-        counterpart: "함께 일하는 후배",
-        goal: "관찰한 사실과 영향을 말하고 바라는 점을 함께 정하기",
-        turns: FEEDBACK_IMPROVE,
-        starter: "지난 ○○ 때 본 것을 이야기하고 싶어요.",
-        check: "평가가 아니라 본 사실을 말하고, 상대의 생각을 물었나요?"
-      }
-    });
-    DIRECTIONS = Object.freeze({ specific: "내용을 구체적으로", concise: "짧고 분명하게", pressure: "부담스러운 반응에 답하기" });
-    PRACTICES = Object.freeze({
-      interview: {
-        counterparts: {
-          recruiter: {
-            label: "채용 담당자",
-            opening: "지원 내용을 함께 살펴볼게요.",
-            pressure: "채용 기준에 맞는지 확인하고 싶어요.",
-            hint: "직무 용어만 나열하지 말고, 처음 듣는 사람도 이해할 수 있게 설명해 보세요.",
-            tone: { gentle: { opening: "편하게 말씀하셔도 돼요. 지원 내용을 함께 살펴볼게요.", pressure: "기준에 맞는지 같이 확인해 보고 싶어서요." }, tough: { opening: "지원자가 많아서 짧게 여쭤볼게요.", pressure: "솔직히 지금까지 말씀만으로는 기준에 못 미쳐 보여요." } }
-          },
-          lead: {
-            label: "실무 팀장",
-            opening: "함께 일할 장면을 생각하며 여쭤볼게요.",
-            pressure: "우리 팀은 바로 함께 일할 사람을 찾고 있어요.",
-            hint: "내가 맡은 일과 함께 일한 사람의 일을 구분해 보세요.",
-            tone: { gentle: { opening: "편하게 이야기 나눠요. 함께 일하는 장면을 떠올리며 여쭤볼게요.", pressure: "저희 팀 일에 어떻게 맞을지 조금 더 듣고 싶어요." }, tough: { opening: "실무 이야기만 할게요.", pressure: "저희는 가르칠 시간이 없어요." } }
-          }
-        },
-        goals: {
-          experience: { label: "경험으로 강점 전하기", goal: "내가 직접 한 일과 그 경험의 쓰임을 전하기", starter: "제가 직접 맡았던 일은…", check: "내 행동과 실제 결과를 구분하고, 지원 역할과 연결했나요?", turns: {
-            opening: { title: "내가 한 일로 시작하기", prompt: "이 역할과 연결되는 경험을 하나 소개해 주시겠어요?", hint: "상황 한 문장 뒤에 내가 직접 한 일을 붙여 보세요." },
-            specific: { title: "내 행동과 결과 나누기", prompt: "그때 본인이 선택한 방법과 실제로 달라진 점은 무엇인가요?", hint: "내 선택 → 행동 → 확인한 결과를 적으세요. 수치가 없으면 관찰한 변화를 말해도 좋아요." },
-            concise: { title: "경험을 두 문장으로", prompt: "그 경험에서 드러난 강점을 두 문장으로 들려주시겠어요?", hint: "강점 한 문장, 그 근거가 되는 내 행동 한 문장으로 줄여 보세요." },
-            pressure: { title: "경험의 쓰임 설명하기", prompt: "같은 방법이 통하지 않는 상황이라면 어떻게 하시겠어요?", tones: { gentle: "혹시 그 방법이 잘 안 통했던 경우도 있었을까요?", tough: "그건 운이 좋았던 거 아닌가요? 안 통하면 어떻게 할 건데요?" }, hint: "바로 성과를 약속하기보다, 먼저 확인할 조건과 바꿔 볼 행동을 나누세요." },
-            close: { title: "역할을 확인하는 질문", prompt: "그 강점을 쓸 수 있을지 판단하려면 저희에게 무엇을 확인하고 싶으세요?", hint: "실제 맡을 일이나 협업 방식에 대한 질문 한 가지로 마무리하세요." }
-          } },
-          transition: { label: "새 역할에 도전하는 이유", goal: "부족한 경험을 인정하고 옮겨 쓸 역량과 준비를 전하기", starter: "이 역할은 새롭지만, 제가 옮겨 쓸 수 있는 경험은…", check: "아직 해 보지 않은 일과 이미 준비한 행동을 구분했나요?", turns: {
-            opening: { title: "새 역할을 택한 이유", prompt: "이전과 다른 역할에 도전하려는 이유는 무엇인가요?", hint: "떠나고 싶은 이유보다, 새 역할에서 해 보고 싶은 일과 연결되는 경험을 말해 보세요." },
-            specific: { title: "준비를 행동으로 보여 주기", prompt: "새 역할을 이해하기 위해 지금까지 직접 해 본 일은 무엇인가요?", hint: "실제로 해 본 공부·작은 작업·관찰 중 하나와 거기서 알게 된 점을 적으세요." },
-            concise: { title: "전환 이유를 짧게", prompt: "왜 이 역할인지, 어떤 준비가 되었는지 두 문장으로 정리해 주세요.", hint: "도전 이유 한 문장과 준비한 행동 한 문장을 남겨 보세요." },
-            pressure: { title: "경험 부족에 답하기", prompt: "직접 해 본 경험이 부족한데, 처음 맡는 일은 어떻게 시작하시겠어요?", tones: { gentle: "경험이 아직 많지 않으신데, 처음엔 어떻게 시작해 보고 싶으세요?", tough: "이 일을 직접 해 본 적이 없으시잖아요. 왜 경험자 대신 뽑아야 하죠?" }, hint: "모르는 점을 인정한 뒤, 확인할 기준·도움을 구할 시점·첫 작업을 구체적으로 말하세요." },
-            close: { title: "첫걸음의 기준 확인하기", prompt: "입사 초기에 무엇을 배우거나 확인하고 싶으세요?", hint: "첫 업무의 성공 기준이나 적응 과정에 관한 질문 하나를 준비해 보세요." }
-          } }
-        }
-      },
-      request: {
-        counterparts: {
-          colleague: {
-            label: "함께 일하는 동료",
-            opening: "지금 잠깐 이야기할 수 있어요.",
-            pressure: "저도 맡은 일이 남아 있어요.",
-            hint: "동료가 선택할 수 있도록 필요한 도움과 조정 가능한 범위를 함께 말하세요.",
-            tone: { gentle: { opening: "그럼요, 편하게 말해 줘요.", pressure: "저도 일이 좀 있긴 한데, 이야기는 들어 볼게요." }, tough: { opening: "지금 좀 바쁜데, 급한 거예요?", pressure: "제 일도 밀려 있어요. 왜 하필 저예요?" } }
-          },
-          manager: {
-            label: "일정을 결정하는 상사",
-            opening: "어떤 조정이 필요한지 말씀해 주세요.",
-            pressure: "다른 업무 일정에도 영향이 생길 수 있어요.",
-            hint: "현재 상태와 필요한 결정을 나누고, 내가 할 수 있는 대응도 제시하세요.",
-            tone: { gentle: { opening: "무슨 일인지 편하게 말해 봐요.", pressure: "다른 일정도 있어서 같이 고민해 봐야겠네요." }, tough: { opening: "용건만 간단히 말해 줘요.", pressure: "지금 와서 바꾸면 다른 팀 일정까지 다 꼬여요." } }
-          }
-        },
-        goals: {
-          help: { label: "작은 도움 구하기", goal: "필요한 작업과 기한을 정해 도움을 요청하기", starter: "지금 ○○까지 했는데, ○○ 부분을 부탁드려도 될까요?", check: "도움의 크기·기한·상대가 거절하거나 줄일 여지를 말했나요?", turns: {
-            opening: { title: "필요한 도움 하나 꺼내기", prompt: "어떤 도움이 필요한가요?", hint: "현재까지 한 일 뒤에, 부탁할 작업 하나와 필요한 시점을 붙이세요." },
-            specific: { title: "부탁의 끝을 정하기", prompt: "어디까지 도와드리면 되고, 언제까지 필요한가요?", hint: "작업의 시작과 끝, 필요한 기한, 전달 방법을 구체적으로 정해 보세요." },
-            concise: { title: "한 번에 이해할 부탁", prompt: "핵심 요청과 기한부터 짧게 말해 줄래요?", hint: "“○○를 ○○까지 부탁드릴 수 있을까요?” 다음에 이유를 한 문장만 붙이세요." },
-            pressure: { title: "도움을 줄일 수 있을 때", prompt: "전부 맡기는 어려운데, 가장 필요한 부분만 정할 수 있을까요?", tones: { gentle: "다 도와주긴 어렵지만, 꼭 필요한 부분이 있으면 말해 줘요.", tough: "그걸 다 해 달라고요? 저도 바빠요. 정말 필요한 게 뭐예요?" }, hint: "상황을 인정하고 최소한의 도움 하나로 줄이거나 다른 시점을 물어보세요." },
-            close: { title: "가능한 범위를 확인하기", prompt: "가능한 범위와 전달 방법을 같이 정해 볼까요?", hint: "아직 합의하지 않은 도움을 확정하지 말고, 범위·기한·확인 방법을 질문으로 확인하세요." }
-          } },
-          deadline: { label: "일정 조정 부탁하기", goal: "현재 진행 상황을 알리고 가능한 새 일정을 상의하기", starter: "현재 ○○까지 진행했고, ○○ 때문에 일정 조정을 상의드리고 싶어요.", check: "현재 상태·영향·가능한 대안·확인할 시점을 함께 전했나요?", turns: {
-            opening: { title: "일정 문제를 먼저 알리기", prompt: "지금 진행 상황과 조정이 필요한 일정을 알려 주세요.", hint: "끝난 일과 남은 일을 나누고, 바꾸고 싶은 시점을 구체적으로 말하세요." },
-            specific: { title: "새 일정의 근거 세우기", prompt: "얼마나 더 필요하고, 그때까지 무엇을 마칠 수 있나요?", hint: "막연히 늦추지 말고, 남은 작업·가능한 날짜·중간 확인 시점을 제안하세요." },
-            concise: { title: "변경 요청을 짧게", prompt: "기존 일정과 제안하는 일정, 이유를 짧게 정리해 주세요.", hint: "“○○를 ○○로 조정할 수 있을까요? 현재 ○○가 남았습니다.”처럼 말해 보세요." },
-            pressure: { title: "마감이 고정돼 있을 때", prompt: "마감 자체를 바꾸기 어렵다면 어떤 방법이 있을까요?", tones: { gentle: "마감은 그대로 두고 싶은데, 다른 방법이 있을까요?", tough: "마감은 못 바꿔요. 그 안에 어떻게 끝낼 건지 말해 봐요." }, hint: "그대로 가능하다고 약속하지 말고, 범위·우선순위·도움 중 조정할 수 있는 것을 상의하세요." },
-            close: { title: "조정안을 확정하기 전에", prompt: "그럼 변경 범위와 다음 확인 시점을 어떻게 정하면 될까요?", hint: "누가 무엇을 언제까지 하는지 제안하고, 상대가 동의하는지 확인하세요." }
-          } }
-        }
-      },
-      refusal: {
-        counterparts: {
-          colleague: {
-            label: "업무를 부탁하는 동료",
-            opening: "업무와 관련해 부탁이 있어요.",
-            pressure: "함께 일하는 사이인데 조금만 더 도와주시면 안 될까요?",
-            hint: "상대에 대한 평가 대신, 현재 맡은 일과 가능한 범위를 말하세요.",
-            tone: { gentle: { opening: "혹시 시간 되면 부탁 하나 해도 될까요?", pressure: "어렵다면 괜찮은데, 혹시 조금이라도 안 될까요?" }, tough: { opening: "바쁜 건 아는데, 이번엔 거절하지 말아 줘요.", pressure: "팀 일인데 이렇게 빠지면 곤란하죠." } }
-          },
-          friend: {
-            label: "가까운 친구",
-            opening: "함께하고 싶은 일이 있어요.",
-            pressure: "우리 사이인데 이번 한 번만 안 될까요?",
-            hint: "친구의 마음을 인정해도 결정한 범위를 바꿀 필요는 없어요.",
-            tone: { gentle: { opening: "같이 하고 싶은 일이 있는데, 들어 볼래요?", pressure: "아쉽다… 정말 안 되는 거예요?" }, tough: { opening: "이번엔 꼭 들어줬으면 해요.", pressure: "친구라면서 이 정도도 못 해 줘요?" } }
-          }
-        },
-        goals: {
-          scope: { label: "맡기 어려운 일 거절하기", goal: "이번에 맡을 수 없는 범위를 분명하게 전하기", starter: "부탁한 마음은 이해해요. 다만 이번 일은 제가 맡기 어려워요.", check: "거절의 뜻이 분명하고, 할 수 없는 대안을 약속하지 않았나요?", turns: {
-            opening: { title: "맡을 수 없는 범위 말하기", prompt: "이번 일을 맡아 줄 수 있을까요?", hint: "부탁을 받아 준 마음 한 문장과, 맡기 어려운 범위 한 문장을 나누세요." },
-            specific: { title: "어디까지 어려운지", prompt: "일부만이라도 맡을 수 있는지 알려 주세요.", hint: "전부 어려우면 그렇게 말해도 괜찮아요. 가능한 범위가 있을 때만 따로 제안하세요." },
-            concise: { title: "모호한 기대 남기지 않기", prompt: "그래서 이번 일은 맡을 수 있다는 뜻인가요?", hint: "“이번 일은 맡기 어렵습니다.”처럼 결정을 먼저 전하고 설명은 짧게 덧붙이세요." },
-            pressure: { title: "다시 부탁해도 내 범위 유지하기", prompt: "다른 사람을 구하기 어려워요. 조금만 맡아 줄 수 없나요?", tones: { gentle: "다른 사람을 찾기가 좀 어려워서요. 정말 조금이라도 안 될까요?", tough: "지금 맡아 줄 사람이 없어요. 이번만 그냥 해 줘요." }, hint: "상황이 어려운 점을 인정하되, 새 핑계를 만들지 말고 결정한 범위를 반복하세요." },
-            close: { title: "존중하며 끝맺기", prompt: "알겠어요. 다른 방법을 찾아볼게요.", hint: "들어 준 것에 고마움을 전하세요. 관계를 위해 불가능한 대안을 덧붙일 필요는 없어요." }
-          } },
-          schedule: { label: "약속·시간 제안 거절하기", goal: "어려운 시간을 분명히 말하고 가능한 경우에만 다른 때를 제안하기", starter: "그 시간에는 함께하기 어려워요. 제 일정을 먼저 말씀드릴게요.", check: "어려운 시간을 분명히 말하고, 대안은 실제 가능할 때만 제안했나요?", turns: {
-            opening: { title: "그 시간은 어렵다고 말하기", prompt: "이번에 제안한 시간에 함께할 수 있나요?", hint: "가능 여부를 먼저 말하세요. 개인 일정을 자세히 설명할 의무는 없어요." },
-            specific: { title: "가능한 시간과 불가능한 시간", prompt: "그 시간이 안 되면 가능한 다른 때가 있을까요?", hint: "가능한 때가 있으면 제안하고, 아직 모르겠으면 확인 전 약속하지 마세요." },
-            concise: { title: "가능 여부부터 짧게", prompt: "일정을 잡아야 해서요. 이번에는 참석할 수 있나요?", hint: "가능 여부 한 문장과, 필요하면 대안 한 문장으로 정리하세요." },
-            pressure: { title: "잠깐만 오라는 말에 답하기", prompt: "잠깐만 시간을 내면 안 될까요? 이미 기대하고 있어요.", tones: { gentle: "잠깐 얼굴만 보는 것도 어려울까요? 다들 보고 싶어 해서요.", tough: "다들 오는데 혼자만 빠지는 거예요? 잠깐이면 되잖아요." }, hint: "기대하는 마음을 인정하고, 어렵다는 결정을 차분히 반복해 보세요." },
-            close: { title: "다음 약속을 강요하지 않고", prompt: "알겠어요. 다음 일정을 정할 때 어떻게 하면 좋을까요?", hint: "다음 연락 방법을 정하거나, 일정 확인 뒤 답하겠다고 말하세요. 날짜를 억지로 약속하지 않아도 돼요." }
-          } }
-        }
-      },
-      presentation: {
-        counterparts: {
-          lead: {
-            label: "보고를 받는 팀장",
-            opening: "바쁘니까 핵심부터 들어 볼게요.",
-            pressure: "이대로 위에 올리기엔 아직 근거가 약해 보여요.",
-            hint: "팀장이 바로 결정하거나 위에 전달할 수 있게, 결론과 필요한 결정을 앞에 두세요.",
-            tone: { gentle: { opening: "편하게 말해 주세요. 핵심부터 들어 볼게요.", pressure: "조금만 더 보완하면 좋겠어요." }, tough: { opening: "5분밖에 없어요. 결론부터 말해요.", pressure: "이 근거로는 위에 못 올려요." } }
-          },
-          client: {
-            label: "제안을 듣는 고객",
-            opening: "오늘 어떤 이야기를 들고 오셨는지 궁금하네요.",
-            pressure: "좋은 말씀인데, 저희 상황에도 맞는지는 잘 모르겠어요.",
-            hint: "우리 쪽 사정보다 고객이 얻는 것과 고객이 정할 일을 먼저 말하세요.",
-            tone: { gentle: { opening: "천천히 들어 볼게요.", pressure: "저희 상황에 맞는지 조금 더 알고 싶어요." }, tough: { opening: "비슷한 제안을 많이 받아서요. 다른 점부터 말씀해 주세요.", pressure: "솔직히 다른 곳 제안이랑 차이를 모르겠어요." } }
-          }
-        },
-        goals: {
-          status: { label: "진행 상황 보고하기", goal: "현재 상태를 결론부터 알리고 필요한 결정을 받기", starter: "결론부터 말씀드리면, ○○는 지금 ○○ 상태입니다.", check: "첫 문장에 현재 상태가 있고, 근거와 필요한 결정을 함께 말했나요?", turns: PRESENTATION_STATUS },
-          proposal: { label: "새 방안 제안하기", goal: "제안을 결론부터 말하고 근거와 예시로 설득하기", starter: "제안드리고 싶은 것은 ○○입니다. 이유는 두 가지예요.", check: "제안을 먼저 말하고, 근거·예시·다시 결론의 순서로 정리했나요?", turns: {
-            opening: { title: "제안을 먼저 꺼내기", prompt: "오늘 제안하려는 게 정확히 뭐예요?", hint: "「○○를 ○○ 방식으로 바꾸자고 제안드립니다」처럼 무엇을 바꾸자는 건지 한 문장으로 먼저 말하세요." },
-            specific: { title: "근거를 예시로 보여 주기", prompt: "그 방법이 효과가 있다는 걸 어떻게 알 수 있어요?", hint: "직접 확인한 숫자·사례·비교 중 하나를 고르고, 예를 들어 어떤 장면에서 달라지는지 붙이세요." },
-            concise: { title: "제안을 두 문장으로", prompt: "핵심만 두 문장으로 정리해 주세요.", hint: "제안 한 문장, 가장 강한 근거 한 문장으로 줄여 보세요." },
-            pressure: { title: "반대 의견에 답하기", prompt: "지금 방식도 큰 문제는 없잖아요. 굳이 바꿔야 해요?", tones: { gentle: "지금 방식도 괜찮아 보이는데, 바꾸면 뭐가 좋아지는지 조금 더 듣고 싶어요.", tough: "바꿨다가 안 되면 누가 책임져요? 지금 방식으로도 충분해요." }, hint: "지금 방식의 장점을 인정한 뒤, 바꾸지 않으면 생기는 손해와 작게 시험해 볼 방법을 말해 보세요." },
-            close: { title: "다시 결론과 다음 단계", prompt: "좋아요. 그럼 다음에 뭘 하면 될까요?", hint: "제안을 한 문장으로 다시 말하고, 시험해 볼 범위와 확인 날짜를 제안하세요." }
-          } }
-        }
-      },
-      negotiation: {
-        counterparts: {
-          hr: {
-            label: "처우를 정하는 인사 담당자",
-            opening: "처우 이야기를 나눠 볼게요.",
-            pressure: "다른 직원들과의 형평성도 봐야 해서요.",
-            hint: "감정보다 기준과 근거로 말하세요. 금액이 막히면 시작일·직급·교육비처럼 다른 조건도 함께 보세요.",
-            tone: { gentle: { opening: "편하게 원하시는 조건을 말씀해 주세요.", pressure: "다른 분들과 균형도 맞춰야 해서 고민이에요." }, tough: { opening: "저희가 드릴 수 있는 범위는 정해져 있어요.", pressure: "이 조건이면 다른 지원자를 볼 수밖에 없어요." } }
-          },
-          partner: {
-            label: "계약을 정하는 거래처 담당자",
-            opening: "이번 계약 조건을 정리해 보죠.",
-            pressure: "다른 곳은 더 낮은 견적을 냈어요.",
-            hint: "가격만 맞서지 말고 품질·일정·범위처럼 상대가 얻는 것과 함께 말하세요.",
-            tone: { gentle: { opening: "서로 좋은 조건을 찾아봤으면 해요.", pressure: "예산이 조금 빠듯해서 고민이에요." }, tough: { opening: "시간이 많지 않으니 숫자로 이야기하죠.", pressure: "다른 업체는 20% 싸게 해 준대요." } }
-          }
-        },
-        goals: {
-          price: { label: "금액 협상하기", goal: "원하는 금액을 근거와 함께 말하고 받아들일 수 있는 선을 지키기", starter: "제가 희망하는 금액은 ○○입니다. 그 근거는…", check: "희망 금액, 근거, 내 기준선, 다음 단계를 구분해서 말했나요?", turns: NEGOTIATION_PRICE },
-          terms: { label: "일정·범위 같은 조건 맞추기", goal: "금액 밖의 조건에서 지킬 것과 양보할 것을 나눠 합의하기", starter: "이번에 제가 꼭 지키고 싶은 조건은 ○○입니다.", check: "지킬 조건과 양보할 수 있는 조건을 나누고, 상대가 얻는 것을 말했나요?", turns: {
-            opening: { title: "꼭 지킬 조건 먼저", prompt: "금액 말고 가장 중요하게 보시는 조건이 뭔가요?", hint: "일정·업무 범위·근무 방식 가운데 꼭 지킬 조건 하나를 먼저 말하고, 이유를 한 문장 붙이세요." },
-            specific: { title: "조건의 근거 세우기", prompt: "그 조건이 꼭 필요한 이유가 뭐예요?", hint: "들어가는 시간, 이전 경험, 결과물의 품질처럼 확인할 수 있는 근거를 말하세요." },
-            concise: { title: "조건을 한 번에 정리하기", prompt: "원하시는 조건을 한 번에 정리해 주시겠어요?", hint: "꼭 지킬 조건 하나, 양보할 수 있는 조건 하나를 나눠 말해 보세요." },
-            pressure: { title: "조건이 많다는 말에", prompt: "그 조건까지 맞춰 드리긴 어려워요.", tones: { gentle: "그 조건은 저희가 조금 고민이 되네요.", tough: "조건을 이렇게 많이 거시면 진행이 어려워요." }, hint: "모든 조건을 지키려 하지 말고, 꼭 지킬 것 하나를 남기고 나머지는 바꿀 수 있는 대안을 제안하세요." },
-            close: { title: "합의 내용 확인하기", prompt: "좋아요. 그럼 어떻게 마무리할까요?", hint: "합의한 조건을 정리하고, 서면으로 확인할 시점과 방법을 제안하세요." }
-          } }
-        }
-      },
-      apology: {
-        counterparts: {
-          colleague: {
-            label: "함께 일하는 동료",
-            opening: "네, 지금 잠깐 괜찮아요.",
-            pressure: "이번이 처음도 아니잖아요.",
-            hint: "상대가 겪은 불편을 구체적으로 말하고, 일에서 바로잡을 것을 정해 말하세요.",
-            tone: { gentle: { opening: "네, 천천히 말해도 돼요.", pressure: "솔직히 조금 서운하긴 했어요." }, tough: { opening: "지금 좀 화가 나 있어요. 짧게 말해 줘요.", pressure: "사과는 지난번에도 들었어요." } }
-          },
-          family: {
-            label: "가족이나 가까운 친구",
-            opening: "응, 지금 괜찮아요.",
-            pressure: "그때 내가 얼마나 속상했는지 알아요?",
-            hint: "잘잘못을 따지기보다 상대의 마음을 먼저 인정하세요. 사정 설명은 상대가 물을 때 짧게만요.",
-            tone: { gentle: { opening: "응, 천천히 말해요.", pressure: "사실 그때 좀 속상했어요." }, tough: { opening: "이제 와서요?", pressure: "그때 나는 정말 혼자라고 느꼈어요." } }
-          }
-        },
-        goals: {
-          mistake: { label: "실수 인정하고 바로잡기", goal: "내 실수를 인정하고 바로잡을 행동과 시점을 약속하기", starter: "○○를 놓친 건 제 실수예요. 죄송해요.", check: "실수를 내 말로 인정하고, 바로잡을 행동과 시점을 말했나요?", turns: APOLOGY_MISTAKE },
-          hurt: { label: "마음을 상하게 한 일 사과하기", goal: "상대가 겪은 마음을 인정하고 책임 있게 사과하기", starter: "그때 내가 한 말 때문에 속상했을 것 같아요. 미안해요.", check: "상대가 겪은 마음을 말하고, 변명 없이 내 책임을 인정했나요?", turns: {
-            opening: { title: "마음에 걸린 일 꺼내기", prompt: "어떤 이야기예요?", hint: "그 일이 계속 마음에 걸렸다고 말한 뒤, 무엇이 미안한지 구체적으로 말하세요." },
-            specific: { title: "무엇이 잘못이었는지", prompt: "정확히 뭐가 미안하다는 거예요?", hint: "「○○라고 말한 것」처럼 내가 한 행동을 짚고, 그게 상대에게 어떻게 닿았을지 말하세요." },
-            concise: { title: "한마디로 진심 전하기", prompt: "그래서 하고 싶은 말이 뭐예요?", hint: "「그때 ○○해서 미안해요. 앞으로는 ○○할게요.」처럼 사과와 달라질 행동을 한 번에 말해 보세요. 「~했다면」 같은 조건은 빼 보세요." },
-            pressure: { title: "쉽게 풀리지 않을 때", prompt: "미안하다고 하면 다 끝나는 거예요?", tones: { gentle: "사과해 줘서 고마운데, 아직은 마음이 좀 그래요.", tough: "말로만 미안하다고 하면 뭐가 달라져요?" }, hint: "마음이 바로 풀리지 않아도 괜찮다고 인정하고, 앞으로 달라질 행동 하나를 말하세요." },
-            close: { title: "기다려 주는 마무리", prompt: "조금 생각할 시간이 필요해요.", hint: "시간이 필요하다는 마음을 존중한다고 말하고, 재촉하지 않고 마무리하세요." }
-          } }
-        }
-      },
-      feedback: {
-        counterparts: {
-          junior: {
-            label: "함께 일하는 후배",
-            opening: "네, 지금 괜찮아요.",
-            pressure: "저는 나름대로 열심히 했는데요.",
-            hint: "사람이 아니라 행동을 이야기하세요. 실제로 잘한 점이 있다면 함께 말해도 좋아요.",
-            tone: { gentle: { opening: "네, 편하게 말씀하세요.", pressure: "아, 그렇게 보였을 수도 있겠네요." }, tough: { opening: "혹시 제가 뭐 잘못했나요?", pressure: "다들 그렇게 하는데 왜 저한테만 그러세요?" } }
-          },
-          peer: {
-            label: "같은 팀 동료",
-            opening: "잠깐이면 괜찮아요.",
-            pressure: "그건 제 방식인데, 꼭 바꿔야 해요?",
-            hint: "동료는 내 지시를 받는 사람이 아니에요. 부탁과 제안의 말로, 함께 정하는 방식으로 말하세요.",
-            tone: { gentle: { opening: "네, 들을게요.", pressure: "저는 그게 편해서 그랬는데요." }, tough: { opening: "바쁜데 짧게 해 줄래요?", pressure: "제 일에 그렇게까지 말할 건 아니지 않아요?" } }
-          }
-        },
-        goals: {
-          improve: { label: "고쳤으면 하는 점 말하기", goal: "관찰한 행동과 영향을 말하고 다음에 바라는 행동을 함께 정하기", starter: "지난 ○○ 때 ○○하는 걸 봤어요. 그래서 ○○ 일이 생겼어요.", check: "본 사실·영향·바라는 행동을 말하고, 상대의 사정을 물었나요?", turns: FEEDBACK_IMPROVE },
-          praise: { label: "잘한 점 구체적으로 칭찬하기", goal: "잘한 행동과 그 효과를 구체적으로 말해 계속하도록 돕기", starter: "어제 ○○한 거, 정말 도움이 됐어요.", check: "「잘했어요」 대신 무엇을 어떻게 했고 어떤 효과가 있었는지 말했나요?", turns: {
-            opening: { title: "잘한 행동을 짚기", prompt: "어떤 일 때문에 부르셨어요?", hint: "「잘했어요」 대신 언제 무엇을 했는지 구체적으로 짚으세요." },
-            specific: { title: "그 효과를 말하기", prompt: "그게 그렇게 도움이 됐어요?", hint: "그 행동 덕분에 실제로 달라진 일이나 사람들의 반응을 말하세요." },
-            concise: { title: "계속 바라는 것 한 문장", prompt: "쑥스럽네요. 그럼 앞으로도 이렇게 하면 된다는 거죠?", hint: "「다음에도 ○○해 주면 좋겠어요」처럼 계속 해 줬으면 하는 행동을 분명히 말해 보세요." },
-            pressure: { title: "칭찬을 밀어낼 때", prompt: "에이, 별것 아니었어요. 다들 하는 건데요.", tones: { gentle: "그렇게 말해 주시니 감사해요. 근데 별건 아니었어요.", tough: "칭찬하시는 거 보니 뭔가 부탁하실 게 있는 거죠?" }, hint: "겸손을 받아 주되, 그 행동이 왜 특별했는지 본 사실로 한 번 더 말하고 어떻게 했는지 물어보세요." },
-            close: { title: "계속하도록 묻기", prompt: "감사해요. 다음에도 그렇게 해 볼게요.", hint: "계속 해 줬으면 하는 점을 말하고, 그렇게 하는 데 필요한 게 있는지 물어보세요." }
-          } }
-        }
-      }
-    });
-    record = (value) => value && typeof value === "object" && !Array.isArray(value);
-    keys = (value, names2) => record(value) && Object.keys(value).every((key) => names2.includes(key));
-    safeCharacters = (value) => !/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/u.test(value);
-    bounded = (value, max, allowEmpty = true) => typeof value === "string" && value.length <= max && safeCharacters(value) && (allowEmpty || value.trim().length > 0);
-    isoTime = (value) => bounded(value, 40, false) && Number.isFinite(Date.parse(value));
-    byteLength = (text4) => new TextEncoder().encode(text4).length;
-    SESSION_KEYS = { 1: ["id", "at", "scenario", "counterpart", "goal", "practice", "focus", "turns", "firstSentence", "takeaway"] };
-    SESSION_KEYS[2] = [...SESSION_KEYS[1], "intensity", "plan", "realAt", "outcome"];
-    TURN_KEYS = { 1: ["id", "answer", "review", "retry", "retryReview"] };
-    TURN_KEYS[2] = [...TURN_KEYS[1], "mode", "seconds", "retryMode", "retrySeconds"];
-    has = (value, key) => Object.hasOwn(value, key);
-    secondsValue = (value) => value === null || Number.isInteger(value) && value >= 0 && value <= MAX_SPOKEN_SECONDS;
-  }
-});
-
-// experiences/family-album/model.mjs
-function validateStoryteller(v) {
-  if (!ownKeys(v, STORYTELLER_KEYS) || !STORYTELLER_KEYS.every((k) => Object.hasOwn(v, k))) storytellerError();
-  if (typeof v.name !== "string" || v.name.length > STORYTELLER_LIMITS.name || !v.name.trim()) storytellerError();
-  if (!STORYTELLER_RELATIONS.some((r) => r.id === v.relation)) storytellerError();
-  if (typeof v.callName !== "string" || v.callName.length > STORYTELLER_LIMITS.callName) storytellerError();
-  if (typeof v.hometown !== "string" || v.hometown.length > STORYTELLER_LIMITS.hometown) storytellerError();
-  if (v.birthYear !== null && !(Number.isInteger(v.birthYear) && v.birthYear >= STORYTELLER_LIMITS.firstBirthYear && v.birthYear <= (/* @__PURE__ */ new Date()).getFullYear())) storytellerError();
-  return { name: v.name.trim(), relation: v.relation, callName: v.callName.trim(), birthYear: v.birthYear, hometown: v.hometown.trim() };
-}
-function validateSkippedQuestions(v) {
-  if (!Array.isArray(v) || v.length > LIMITS.skippedQuestions) fail(`건너뛴 질문은 ${LIMITS.skippedQuestions}개까지 기억할 수 있어요.`);
-  const list3 = Array.from(v);
-  if (list3.some((item) => !isQuestionRef(item)) || new Set(list3).size !== list3.length) fail("건너뛴 질문 기록을 확인해 주세요.");
-  return list3;
-}
-function validateRecipe(recipe, at) {
-  if (!ownKeys(recipe, ["servings", "learnedFrom", "ingredients", "steps", "attempts", "revisedAt"]) || !Array.isArray(recipe.attempts) || recipe.attempts.length > LIMITS.attempts || !stamp(recipe.revisedAt ?? at)) fail("손맛 기록을 확인해 주세요. 만들어 본 기록은 20번까지 남길 수 있어요.");
-  const ids3 = /* @__PURE__ */ new Set();
-  const attempts = recipe.attempts.map((a) => {
-    if (!ownKeys(a, ["id", "date", "note", "createdAt"]) || !id(a.id) || ids3.has(a.id) || !validDate(a.date, true) || !stamp(a.createdAt)) fail("만들어 본 날짜와 기록을 확인해 주세요.");
-    ids3.add(a.id);
-    return { id: a.id, date: a.date, note: text(a.note, 2e3, true), createdAt: a.createdAt };
-  });
-  return { servings: text(recipe.servings, 120), learnedFrom: text(recipe.learnedFrom, 120, true), ingredients: text(recipe.ingredients, 6e3, true), steps: text(recipe.steps, 1e4, true), attempts, revisedAt: recipe.revisedAt ?? at };
-}
-function mediaBytes(media, kind) {
-  if (media === null) return 0;
-  if (!ownKeys(media, ["name", "type", "data"]) || typeof media.name !== "string" || media.name.length > 180 || typeof media.type !== "string" || typeof media.data !== "string") fail("파일 정보가 올바르지 않아요.");
-  const allowed = kind === "photo" ? ["image/jpeg", "image/png", "image/webp"] : ["audio/mpeg", "audio/wav", "audio/ogg", "audio/webm", "audio/mp4"];
-  if (!allowed.includes(media.type)) fail("지원하는 사진 또는 음성 파일을 골라 주세요.");
-  const prefix = `data:${media.type};base64,`;
-  if (!media.data.startsWith(prefix)) fail("파일 형식이 맞지 않아요.");
-  const b64 = media.data.slice(prefix.length);
-  if (!b64.length || b64.length % 4 !== 0 || !/^[A-Za-z0-9+/]*={0,2}$/.test(b64)) fail("파일 내용이 올바르지 않아요.");
-  const count = b64.length / 4 * 3 - (b64.endsWith("==") ? 2 : b64.endsWith("=") ? 1 : 0);
-  if (count > LIMITS[kind]) fail(kind === "photo" ? "사진은 한 장에 6 MB까지 담을 수 있어요." : "음성은 한 개에 8 MB까지 담을 수 있어요.");
-  const header = atob(b64.slice(0, 64));
-  const byte = (n) => header.charCodeAt(n);
-  const valid = media.type === "image/jpeg" ? byte(0) === 255 && byte(1) === 216 && byte(2) === 255 : media.type === "image/png" ? header.slice(1, 4) === "PNG" && byte(0) === 137 : media.type === "image/webp" ? header.slice(0, 4) === "RIFF" && header.slice(8, 12) === "WEBP" : media.type === "audio/wav" ? header.slice(0, 4) === "RIFF" && header.slice(8, 12) === "WAVE" : media.type === "audio/ogg" ? header.slice(0, 4) === "OggS" : media.type === "audio/webm" ? byte(0) === 26 && byte(1) === 69 && byte(2) === 223 && byte(3) === 163 : media.type === "audio/mp4" ? header.slice(4, 8) === "ftyp" : header.slice(0, 3) === "ID3" || byte(0) === 255 && (byte(1) & 224) === 224;
-  if (!valid) fail("확장자와 실제 파일 내용이 달라요. 다른 파일을 골라 주세요.");
-  return count;
-}
-function validateAlbum(input) {
-  if (!ownKeys(input, ["format", "version", "storyteller", "skippedQuestions", "pages"]) || input.format !== "synk-family-album" || input.version !== 1 || !Array.isArray(input.pages) || input.pages.length > LIMITS.pages) fail("가족 이야기 앨범 파일이 아니거나 페이지가 너무 많아요.");
-  const storyteller = Object.hasOwn(input, "storyteller") ? validateStoryteller(input.storyteller) : null;
-  const skippedQuestions = Object.hasOwn(input, "skippedQuestions") ? validateSkippedQuestions(input.skippedQuestions) : null;
-  let bytes = 0;
-  const ids3 = /* @__PURE__ */ new Set();
-  const pages = input.pages.map((p) => {
-    if (!ownKeys(p, ["id", "title", "date", "person", "author", "story", "photo", "audio", "details", "skipped", "contributions", "createdAt", "updatedAt", "questionId", "recipe"]) || !id(p.id) || ids3.has(p.id) || !stamp(p.createdAt) || !stamp(p.updatedAt)) fail("페이지 정보가 올바르지 않아요.");
-    ids3.add(p.id);
-    if (!validDate(p.date)) fail("날짜를 확인해 주세요.");
-    if (Object.hasOwn(p, "questionId") && !isQuestionRef(p.questionId)) fail("질문 기록을 확인해 주세요.");
-    const recipe = Object.hasOwn(p, "recipe") ? validateRecipe(p.recipe, p.createdAt) : null;
-    const questions = recipe ? [...QUESTIONS, ...RECIPE_QUESTIONS] : QUESTIONS;
-    if (!ownKeys(p.details, questions.map((q) => q.id)) || !Array.isArray(p.skipped) || p.skipped.some((v) => !questions.some((q) => q.id === v)) || new Set(p.skipped).size !== p.skipped.length) fail("질문 기록을 확인해 주세요.");
-    const details = Object.fromEntries(Object.entries(p.details).map(([k, v]) => [k, text(v, 1e3, true)]));
-    if (!Array.isArray(p.contributions) || p.contributions.length > LIMITS.contributions) fail("덧붙인 기억은 페이지마다 40개까지 담을 수 있어요.");
-    const contributionIds = /* @__PURE__ */ new Set();
-    const contributions = p.contributions.map((c) => {
-      if (!ownKeys(c, ["id", "name", "text", "createdAt"]) || !id(c.id) || contributionIds.has(c.id) || !stamp(c.createdAt)) fail("덧붙인 기억의 출처를 확인해 주세요.");
-      contributionIds.add(c.id);
-      return { id: c.id, name: text(c.name, 60, true), text: text(c.text, 2e3, true), createdAt: c.createdAt };
-    });
-    bytes += mediaBytes(p.photo, "photo") + mediaBytes(p.audio, "audio");
-    return { id: p.id, title: text(p.title, 100, true), date: p.date, person: text(p.person, 100), author: text(p.author, 60, true), story: text(p.story, 1e4, true), photo: p.photo ? { ...p.photo } : null, audio: p.audio ? { ...p.audio } : null, details, skipped: [...p.skipped], contributions, createdAt: p.createdAt, updatedAt: p.updatedAt, ...Object.hasOwn(p, "questionId") ? { questionId: p.questionId } : {}, ...recipe ? { recipe } : {} };
-  });
-  if (bytes > LIMITS.total) fail("앨범의 사진과 음성은 모두 합쳐 20 MB까지 담을 수 있어요. 기존 파일을 줄여 주세요.");
-  const result = { format: input.format, version: 1, ...storyteller ? { storyteller } : {}, ...skippedQuestions ? { skippedQuestions } : {}, pages };
-  if (new TextEncoder().encode(JSON.stringify(result)).length > LIMITS.export) fail("사진·음성·글을 합친 앨범 파일은 32 MB까지 담을 수 있어요. 일부 내용을 나눠 보관해 주세요.");
-  return result;
-}
-var LIMITS, STORYTELLER_RELATIONS, STORYTELLER_LIMITS, QUESTIONS, RECIPE_QUESTIONS, fail, text, id, stamp, validDate, ownKeys, isQuestionRef, STORYTELLER_KEYS, storytellerError;
-var init_model2 = __esm({
-  "experiences/family-album/model.mjs"() {
-    LIMITS = Object.freeze({ photo: 6 * 1024 * 1024, audio: 8 * 1024 * 1024, total: 20 * 1024 * 1024, export: 32 * 1024 * 1024, pages: 30, contributions: 40, attempts: 20, skippedQuestions: 300 });
-    STORYTELLER_RELATIONS = Object.freeze([
-      { id: "mother", label: "어머니", callName: "어머니" },
-      { id: "father", label: "아버지", callName: "아버지" },
-      { id: "grandmother", label: "할머니", callName: "할머니" },
-      { id: "grandfather", label: "할아버지", callName: "할아버지" },
-      { id: "maternal-grandmother", label: "외할머니", callName: "외할머니" },
-      { id: "maternal-grandfather", label: "외할아버지", callName: "외할아버지" },
-      { id: "spouse", label: "배우자", callName: "" },
-      { id: "self", label: "나", callName: "" },
-      { id: "other", label: "그 밖의 가족", callName: "" }
-    ].map(Object.freeze));
-    STORYTELLER_LIMITS = Object.freeze({ name: 30, callName: 20, hometown: 40, firstBirthYear: 1900 });
-    QUESTIONS = Object.freeze([
-      { id: "place", label: "장소", prompt: () => "함께한 그날, 어디에 있었나요?" },
-      { id: "occasion", label: "그날의 계기", prompt: (p) => `「${p.title}」의 날, 함께 모인 계기가 있었나요?` },
-      { id: "quote", label: "기억나는 한마디", prompt: () => "그날 나눈 말 중 지금도 떠오르는 한마디가 있나요?" },
-      { id: "feeling", label: "남은 마음", prompt: () => "이 이야기를 지금 다시 보면 어떤 마음이 드나요?" }
-    ]);
-    RECIPE_QUESTIONS = Object.freeze([
-      { id: "amount", label: "직접 확인한 양", prompt: () => "“적당히”라고 배운 재료가 있나요? 실제로 넣어 본 양을 남겨 주세요." },
-      { id: "heat", label: "불 세기와 시간", prompt: () => "어떤 불 세기로 얼마나 익혔나요? 사용한 냄비나 도구도 함께 적어 주세요." },
-      { id: "doneness", label: "완성의 기준", prompt: () => "다 익었다는 걸 어떻게 확인했나요? 맛이나 모양으로 알게 된 기준이 있나요?" }
-    ]);
-    fail = (message) => {
-      throw new Error(message);
-    };
-    text = (v, max, required = false) => {
-      if (typeof v !== "string" || v.length > max || required && !v.trim()) fail("글의 길이나 필수 항목을 확인해 주세요.");
-      return v.trim();
-    };
-    id = (v) => typeof v === "string" && /^[a-zA-Z0-9-]{1,80}$/.test(v);
-    stamp = (v) => typeof v === "string" && Number.isFinite(Date.parse(v));
-    validDate = (v, required = false) => typeof v === "string" && (!v ? !required : /^\d{4}-\d{2}-\d{2}$/.test(v) && Number.isFinite(Date.parse(v)) && new Date(v).toISOString().slice(0, 10) === v);
-    ownKeys = (v, allowed) => v && typeof v === "object" && !Array.isArray(v) && Object.keys(v).every((k) => allowed.includes(k));
-    isQuestionRef = (v) => typeof v === "string" && v.length <= 60 && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(v);
-    STORYTELLER_KEYS = ["name", "relation", "callName", "birthYear", "hometown"];
-    storytellerError = () => fail(`이야기 주인 정보를 확인해 주세요. 이름은 ${STORYTELLER_LIMITS.name}자, 호칭은 ${STORYTELLER_LIMITS.callName}자, 고향은 ${STORYTELLER_LIMITS.hometown}자까지이고 태어난 해는 ${STORYTELLER_LIMITS.firstBirthYear}년부터 올해까지 적을 수 있어요.`);
-  }
-});
-
 // experiences/synk-account/src/platform-library-data.mjs
 function emptyPlatformLibrary() {
   return { version: 1, consent: false, favorites: [], recent: [], rememberRecent: true, notes: [] };
@@ -951,7 +1520,7 @@ function validatePlatformLibrary(value) {
   if (!value.consent && (value.favorites.length || value.recent.length || value.notes.length) || !value.rememberRecent && value.recent.length) invalid();
   const seen = /* @__PURE__ */ new Set();
   for (const row of value.recent) {
-    if (!exact(row, ["id", "at", "mode"]) || !PLATFORM_APP_IDS.includes(row.id) || !stamp2(row.at) || !["web", "client"].includes(row.mode) || seen.has(row.id)) invalid();
+    if (!exact(row, ["id", "at", "mode"]) || !PLATFORM_APP_IDS.includes(row.id) || !stamp(row.at) || !["web", "client"].includes(row.mode) || seen.has(row.id)) invalid();
     seen.add(row.id);
   }
   seen.clear();
@@ -963,11 +1532,12 @@ function validatePlatformLibrary(value) {
 }
 function projectPlatformLibrary(value, { appIds = ACTIVE_PLATFORM_APP_IDS } = {}) {
   const next = validatePlatformLibrary(value);
-  next.favorites = [...new Set(next.favorites.map((id2) => platformDisplayAppId(id2, appIds)))];
+  next.favorites = [...new Set(next.favorites.filter((id) => !RETIRED_PLATFORM_APP_IDS.has(id)).map((id) => platformDisplayAppId(id, appIds)))];
   const recent = /* @__PURE__ */ new Map();
   for (const row of next.recent) {
-    const id2 = platformDisplayAppId(row.id, appIds), previous = recent.get(id2);
-    if (!previous || row.at > previous.at) recent.set(id2, { ...row, id: id2, ...row.id === "teacher" && id2 !== row.id ? { entryId: "teacher" } : {} });
+    if (RETIRED_PLATFORM_APP_IDS.has(row.id)) continue;
+    const id = platformDisplayAppId(row.id, appIds), previous = recent.get(id);
+    if (!previous || row.at > previous.at) recent.set(id, { ...row, id, ...row.id === "teacher" && id !== row.id ? { entryId: "teacher" } : {} });
   }
   next.recent = [...recent.values()].sort((a, b) => b.at - a.at);
   return next;
@@ -981,14 +1551,14 @@ function updatePlatformLibrary(value, action, now = Date.now(), appIds = ACTIVE_
   }
   if (!next.consent) throw new Error("계정에 저장할 항목을 확인하고 연결을 켜 주세요.");
   if (["favorite", "launch", "note"].includes(action.type) && !ACTIVE_PLATFORM_APP_IDS.includes(action.id)) invalid();
-  if (action.type === "favorite") next.favorites = next.favorites.some((id2) => platformDisplayAppId(id2, appIds) === platformDisplayAppId(action.id, appIds)) ? next.favorites.filter((id2) => platformDisplayAppId(id2, appIds) !== platformDisplayAppId(action.id, appIds)) : [...next.favorites, action.id];
+  if (action.type === "favorite") next.favorites = next.favorites.some((id) => platformDisplayAppId(id, appIds) === platformDisplayAppId(action.id, appIds)) ? next.favorites.filter((id) => platformDisplayAppId(id, appIds) !== platformDisplayAppId(action.id, appIds)) : [...next.favorites, action.id];
   else if (action.type === "move-favorite") {
     if (!ACTIVE_PLATFORM_APP_IDS.includes(action.id) || ![-1, 1].includes(action.direction)) invalid();
     const groups = /* @__PURE__ */ new Map();
-    for (const id2 of next.favorites) {
-      const visible2 = platformDisplayAppId(id2, appIds);
+    for (const id of next.favorites) {
+      const visible2 = platformDisplayAppId(id, appIds);
       if (!groups.has(visible2)) groups.set(visible2, []);
-      groups.get(visible2).push(id2);
+      groups.get(visible2).push(id);
     }
     const order = [...groups.keys()], visible = platformDisplayAppIds(appIds), from = order.indexOf(platformDisplayAppId(action.id, appIds));
     if (from < 0 || !visible.includes(order[from])) invalid();
@@ -996,7 +1566,7 @@ function updatePlatformLibrary(value, action, now = Date.now(), appIds = ACTIVE_
     while (to >= 0 && to < order.length && !visible.includes(order[to])) to += action.direction;
     if (to >= 0 && to < order.length) {
       [order[from], order[to]] = [order[to], order[from]];
-      next.favorites = order.flatMap((id2) => groups.get(id2));
+      next.favorites = order.flatMap((id) => groups.get(id));
     }
   } else if (action.type === "launch" && next.rememberRecent) next.recent = [{ id: action.id, at: now, mode: action.mode }, ...next.recent.filter((row) => platformDisplayAppId(row.id, appIds) !== platformDisplayAppId(action.id, appIds))];
   else if (action.type === "remember") {
@@ -1008,7 +1578,7 @@ function updatePlatformLibrary(value, action, now = Date.now(), appIds = ACTIVE_
     next.notes.unshift({ id: globalThis.crypto.randomUUID(), appId: action.id, title: String(action.title || "").trim(), done: false, createdAt: now });
   } else if (action.type === "edit-note") {
     const row = next.notes.find((row2) => row2.id === action.noteId);
-    if (!row || !text2(action.title, 240) || !ACTIVE_PLATFORM_APP_IDS.includes(action.id) && !(action.id === "partners" && row.appId === "partners")) invalid();
+    if (!row || !text(action.title, 240) || !ACTIVE_PLATFORM_APP_IDS.includes(action.id) && !(action.id === "partners" && row.appId === "partners")) invalid();
     row.title = action.title.trim();
     row.appId = action.id;
   } else if (action.type === "restore-note") {
@@ -1023,14 +1593,15 @@ function updatePlatformLibrary(value, action, now = Date.now(), appIds = ACTIVE_
   else if (!["favorite", "launch", "remember", "clear-recent"].includes(action.type)) invalid();
   return validatePlatformLibrary(next);
 }
-var PLATFORM_APP_IDS, ACTIVE_PLATFORM_APP_IDS, platformAppId, platformDisplayAppId, platformDisplayAppIds, PLATFORM_NOTE_LIMIT, object, invalid, noteLimit, exact, stamp2, text2, ids, note;
+var PLATFORM_APP_IDS, RETIRED_PLATFORM_APP_IDS, ACTIVE_PLATFORM_APP_IDS, platformAppId, platformDisplayAppId, platformDisplayAppIds, PLATFORM_NOTE_LIMIT, object, invalid, noteLimit, exact, stamp, text, ids, note;
 var init_platform_library_data = __esm({
   "experiences/synk-account/src/platform-library-data.mjs"() {
     PLATFORM_APP_IDS = Object.freeze(["world", "messenger", "teacher", "path", "pulse", "partners", "care", "fortune", "rehearsal", "family-album"]);
-    ACTIVE_PLATFORM_APP_IDS = Object.freeze(PLATFORM_APP_IDS.filter((id2) => id2 !== "partners"));
-    platformAppId = (id2) => id2 === "partners" ? "pulse" : id2;
-    platformDisplayAppId = (id2, appIds = ACTIVE_PLATFORM_APP_IDS) => platformAppId(id2) === "teacher" && appIds.includes("teacher") && appIds.includes("messenger") ? "messenger" : platformAppId(id2);
-    platformDisplayAppIds = (appIds = ACTIVE_PLATFORM_APP_IDS) => [...new Set(appIds.filter((id2) => ACTIVE_PLATFORM_APP_IDS.includes(id2)).map((id2) => platformDisplayAppId(id2, appIds)))];
+    RETIRED_PLATFORM_APP_IDS = /* @__PURE__ */ new Set(["rehearsal", "family-album"]);
+    ACTIVE_PLATFORM_APP_IDS = Object.freeze(PLATFORM_APP_IDS.filter((id) => id !== "partners" && !RETIRED_PLATFORM_APP_IDS.has(id)));
+    platformAppId = (id) => id === "partners" ? "pulse" : id;
+    platformDisplayAppId = (id, appIds = ACTIVE_PLATFORM_APP_IDS) => platformAppId(id) === "teacher" && appIds.includes("teacher") && appIds.includes("messenger") ? "messenger" : platformAppId(id);
+    platformDisplayAppIds = (appIds = ACTIVE_PLATFORM_APP_IDS) => [...new Set(appIds.filter((id) => ACTIVE_PLATFORM_APP_IDS.includes(id)).map((id) => platformDisplayAppId(id, appIds)))];
     PLATFORM_NOTE_LIMIT = 60;
     object = (value) => value && typeof value === "object" && !Array.isArray(value);
     invalid = () => {
@@ -1039,11 +1610,11 @@ var init_platform_library_data = __esm({
     noteLimit = () => {
       throw Object.assign(new Error("메모는 최대 " + PLATFORM_NOTE_LIMIT + "개까지 보관할 수 있어요. 필요 없는 메모를 삭제한 뒤 다시 시도해 주세요."), { code: "NOTE_LIMIT" });
     };
-    exact = (value, keys2) => object(value) && Object.keys(value).every((key) => keys2.includes(key)) && keys2.every((key) => Object.hasOwn(value, key));
-    stamp2 = (value) => Number.isSafeInteger(value) && value > 0 && value <= 864e13;
-    text2 = (value, limit) => typeof value === "string" && value.trim().length > 0 && value.length <= limit && !/[\x00-\x1f\x7f]/.test(value);
-    ids = (value) => Array.isArray(value) && value.length <= PLATFORM_APP_IDS.length && new Set(value).size === value.length && value.every((id2) => PLATFORM_APP_IDS.includes(id2));
-    note = (row) => exact(row, ["id", "appId", "title", "done", "createdAt"]) && text2(row.id, 80) && /^[a-zA-Z0-9-]+$/.test(row.id) && PLATFORM_APP_IDS.includes(row.appId) && text2(row.title, 240) && typeof row.done === "boolean" && stamp2(row.createdAt);
+    exact = (value, keys) => object(value) && Object.keys(value).every((key) => keys.includes(key)) && keys.every((key) => Object.hasOwn(value, key));
+    stamp = (value) => Number.isSafeInteger(value) && value > 0 && value <= 864e13;
+    text = (value, limit) => typeof value === "string" && value.trim().length > 0 && value.length <= limit && !/[\x00-\x1f\x7f]/.test(value);
+    ids = (value) => Array.isArray(value) && value.length <= PLATFORM_APP_IDS.length && new Set(value).size === value.length && value.every((id) => PLATFORM_APP_IDS.includes(id));
+    note = (row) => exact(row, ["id", "appId", "title", "done", "createdAt"]) && text(row.id, 80) && /^[a-zA-Z0-9-]+$/.test(row.id) && PLATFORM_APP_IDS.includes(row.appId) && text(row.title, 240) && typeof row.done === "boolean" && stamp(row.createdAt);
   }
 });
 
@@ -1063,9 +1634,9 @@ function validateMemberActivity(value, { now = Date.now(), enforceRetention = fa
     if (!exact2(event, ["id", "appId", "at"]) || !uuid(event.id) || !MEMBER_ACTIVITY_APP_IDS.includes(event.appId) || !iso(event.at) || eventIds.has(event.id.toLowerCase()) || value.consent && Date.parse(event.at) < Date.parse(value.enabledAt)) invalid2();
     eventIds.add(event.id.toLowerCase());
   }
-  for (const id2 of value.favorites) {
-    if (!MEMBER_ACTIVITY_APP_IDS.includes(id2) || favoriteIds.has(id2)) invalid2();
-    favoriteIds.add(id2);
+  for (const id of value.favorites) {
+    if (!MEMBER_ACTIVITY_APP_IDS.includes(id) || favoriteIds.has(id)) invalid2();
+    favoriteIds.add(id);
   }
   if (!value.consent) return emptyMemberActivity();
   if (enforceRetention) {
@@ -1090,7 +1661,7 @@ var init_member_activity_data = __esm({
       throw Object.assign(new TypeError("성향에 사용할 앱 이용 기록의 형식을 확인해 주세요."), { code: "INVALID_PERSONAL_STATE" });
     };
     object2 = (value) => value !== null && typeof value === "object" && !Array.isArray(value) && [Object.prototype, null].includes(Object.getPrototypeOf(value));
-    exact2 = (value, keys2) => object2(value) && Reflect.ownKeys(value).length === keys2.length && keys2.every((key) => Object.hasOwn(value, key) && Object.getOwnPropertyDescriptor(value, key).enumerable && Object.hasOwn(Object.getOwnPropertyDescriptor(value, key), "value"));
+    exact2 = (value, keys) => object2(value) && Reflect.ownKeys(value).length === keys.length && keys.every((key) => Object.hasOwn(value, key) && Object.getOwnPropertyDescriptor(value, key).enumerable && Object.hasOwn(Object.getOwnPropertyDescriptor(value, key), "value"));
     list = (value, max) => Array.isArray(value) && value.length <= max && Object.keys(value).length === value.length;
     uuid = (value) => typeof value === "string" && /^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(value);
     iso = (value) => typeof value === "string" && Number.isFinite(Date.parse(value)) && new Date(value).toISOString() === value;
@@ -1102,8 +1673,8 @@ var require_member_understanding_contract = __commonJS({
   "atlas/member-understanding-contract.js"(exports, module) {
     "use strict";
     var VERSION = 1;
-    var DAY = 864e5;
-    var choices = (rows) => Object.freeze(rows.map(([id2, label]) => Object.freeze({ id: id2, label })));
+    var DAY3 = 864e5;
+    var choices = (rows) => Object.freeze(rows.map(([id, label]) => Object.freeze({ id, label })));
     var MEMBER_UNDERSTANDING_FACETS = Object.freeze({
       topics: Object.freeze({ title: "직접 고른 관심 주제", multiple: true, max: 5, choices: choices([
         ["travel-planning", "여행 일정·동선"],
@@ -1160,39 +1731,39 @@ var require_member_understanding_contract = __commonJS({
     };
     var exact5 = (x, fields2) => plain2(x) && Reflect.ownKeys(x).length === fields2.length && fields2.every((key) => dataField(x, key));
     var token3 = (x) => typeof x === "string" && /^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,79}$/.test(x) && !["constructor", "prototype", "__proto__"].includes(x);
-    var fail6 = () => {
+    var fail5 = () => {
       throw new TypeError("Member understanding: invalid structured contract");
     };
     var CLAIM_FIELDS = Object.freeze(["version", "kind", "source", "generation", "reference", "value", "from", "to", "count", "total", "activeDays", "lastAt"]);
     function instant(x) {
-      if (typeof x !== "string" || !Number.isFinite(Date.parse(x)) || new Date(x).toISOString() !== x) fail6();
+      if (typeof x !== "string" || !Number.isFinite(Date.parse(x)) || new Date(x).toISOString() !== x) fail5();
       return Date.parse(x);
     }
     function understandingFacet(facetId) {
-      if (typeof facetId !== "string") fail6();
+      if (typeof facetId !== "string") fail5();
       if (facetId.startsWith("learning-topic:") && token3(facetId.slice(15))) return MEMBER_UNDERSTANDING_FACETS["learning-topic"];
       if (facetId !== "learning-topic" && Object.hasOwn(MEMBER_UNDERSTANDING_FACETS, facetId)) return MEMBER_UNDERSTANDING_FACETS[facetId];
-      return fail6();
+      return fail5();
     }
     function validateUnderstandingValues(facetId, values) {
       const facet2 = understandingFacet(facetId);
-      if (!Array.isArray(values) || !values.length || values.length > facet2.max || Reflect.ownKeys(values).length !== values.length + 1 || !Array.from({ length: values.length }, (_, index) => index).every((index) => dataField(values, String(index))) || new Set(values).size !== values.length || values.some((value) => !facet2.choices.some((choice) => choice.id === value))) fail6();
+      if (!Array.isArray(values) || !values.length || values.length > facet2.max || Reflect.ownKeys(values).length !== values.length + 1 || !Array.from({ length: values.length }, (_, index) => index).every((index) => dataField(values, String(index))) || new Set(values).size !== values.length || values.some((value) => !facet2.choices.some((choice) => choice.id === value))) fail5();
       return facet2.choices.filter((choice) => values.includes(choice.id)).map((choice) => choice.id);
     }
     function validateUnderstandingClaim(claim, { facetId } = {}) {
       understandingFacet(facetId);
-      if (!exact5(claim, CLAIM_FIELDS) || claim.version !== VERSION || !["learning-topic", "usage-repeat", "practice-mode", "practice-response"].includes(claim.kind)) fail6();
+      if (!exact5(claim, CLAIM_FIELDS) || claim.version !== VERSION || !["learning-topic", "usage-repeat", "practice-mode", "practice-response"].includes(claim.kind)) fail5();
       const expectedFacet = claim.kind === "learning-topic" ? `learning-topic:${claim.reference}` : claim.kind;
-      if (facetId !== expectedFacet || claim.source !== (claim.kind === "usage-repeat" ? "usage" : "learning") || claim.value !== (claim.kind === "learning-topic" ? "interested" : "fits") || !token3(claim.reference)) fail6();
+      if (facetId !== expectedFacet || claim.source !== (claim.kind === "usage-repeat" ? "usage" : "learning") || claim.value !== (claim.kind === "learning-topic" ? "interested" : "fits") || !token3(claim.reference)) fail5();
       if (claim.source === "usage") {
-        if (instant(claim.generation) > instant(claim.lastAt)) fail6();
-      } else if (!Number.isSafeInteger(claim.generation) || claim.generation < 0) fail6();
+        if (instant(claim.generation) > instant(claim.lastAt)) fail5();
+      } else if (!Number.isSafeInteger(claim.generation) || claim.generation < 0) fail5();
       if (claim.kind !== "learning-topic") {
-        const allowed = MEMBER_UNDERSTANDING_FACETS[claim.kind].choices.map((choice) => choice.id).filter((id2) => !["mixed", "no-fixed-app", "no-fixed-mode", "no-fixed-format"].includes(id2));
-        if (!allowed.includes(claim.reference)) fail6();
+        const allowed = MEMBER_UNDERSTANDING_FACETS[claim.kind].choices.map((choice) => choice.id).filter((id) => !["mixed", "no-fixed-app", "no-fixed-mode", "no-fixed-format"].includes(id));
+        if (!allowed.includes(claim.reference)) fail5();
       }
       const from = instant(claim.from), to = instant(claim.to), last = instant(claim.lastAt);
-      if (to - from !== 30 * DAY || last <= from || last > to || !["count", "total", "activeDays"].every((key) => Number.isSafeInteger(claim[key]) && claim[key] >= 1 && claim[key] <= 1e6) || claim.count > claim.total || claim.activeDays > claim.count || claim.activeDays > 31) fail6();
+      if (to - from !== 30 * DAY3 || last <= from || last > to || !["count", "total", "activeDays"].every((key) => Number.isSafeInteger(claim[key]) && claim[key] >= 1 && claim[key] <= 1e6) || claim.count > claim.total || claim.activeDays > claim.count || claim.activeDays > 31) fail5();
       return Object.fromEntries(CLAIM_FIELDS.map((key) => [key, claim[key]]));
     }
     module.exports = { VERSION, MEMBER_UNDERSTANDING_FACETS, understandingFacet, validateUnderstandingClaim, validateUnderstandingValues };
@@ -1252,25 +1823,25 @@ var require_member_statement_v1 = __commonJS({
     };
     var exact5 = (x, fields2) => plain2(x) && Reflect.ownKeys(x).length === fields2.length && fields2.every((key) => data(x, key));
     var list3 = (x, max) => Array.isArray(x) && x.length <= max && Reflect.ownKeys(x).length === x.length + 1 && Array.from({ length: x.length }, (_, i) => data(x, String(i))).every(Boolean);
-    var fail6 = () => {
+    var fail5 = () => {
       throw new TypeError("Member statement: invalid confirmed statement");
     };
     var literal = (x) => typeof x === "string" && x.trim() && [...x].length <= MEMBER_STATEMENT_LIMITS.text && !/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]|[\uD800-\uDFFF]/u.test(x);
-    var instant = (x) => typeof x === "string" && Number.isFinite(Date.parse(x)) && new Date(x).toISOString() === x ? Date.parse(x) : fail6();
+    var instant = (x) => typeof x === "string" && Number.isFinite(Date.parse(x)) && new Date(x).toISOString() === x ? Date.parse(x) : fail5();
     var semanticKey = (m) => [m.field, m.value, m.polarity, m.condition || "general"].join(":");
-    function clauses(text4) {
+    function clauses(text3) {
       const result = [], separators = /\s+(?:하지만|그런데|그리고|반면에)\s+|(?:지만|는데)(?=\s)|[.!?;\n]+/g;
       let start = 0, match;
       function push(end) {
-        while (start < end && /\s/u.test(text4[start])) start++;
-        while (end > start && /\s/u.test(text4[end - 1])) end--;
-        if (end > start) result.push({ start, end, quote: text4.slice(start, end) });
+        while (start < end && /\s/u.test(text3[start])) start++;
+        while (end > start && /\s/u.test(text3[end - 1])) end--;
+        if (end > start) result.push({ start, end, quote: text3.slice(start, end) });
       }
-      while (match = separators.exec(text4)) {
+      while (match = separators.exec(text3)) {
         push(match.index + (/^(?:지만|는데)$/.test(match[0]) ? match[0].length : 0));
         start = match.index + match[0].length;
       }
-      push(text4.length);
+      push(text3.length);
       return result;
     }
     var SUBJECTS = [
@@ -1306,8 +1877,8 @@ var require_member_statement_v1 = __commonJS({
       body = body.replace(/^(?:저는|나는|난|제가|내가|저|나)(?=.)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|현재(?:는)?|평소(?:에는|엔|는)|보통은|일반적으로는)/u, "");
       let condition = null;
       const conditions = [["first-try", /^(?:처음(?:에는|엔|은)|처음(?:시도)?할때(?:는)?|처음시도할때(?:는)?)/], ["familiar", /^(?:익숙할때(?:는)?|익숙한내용일때(?:는)?)/], ["busy", /^(?:바쁠때(?:는)?|시간이없을때(?:는)?)/]];
-      for (const [id2, pattern] of conditions) if (pattern.test(body)) {
-        condition = id2;
+      for (const [id, pattern] of conditions) if (pattern.test(body)) {
+        condition = id;
         body = body.replace(pattern, "");
         break;
       }
@@ -1322,13 +1893,13 @@ var require_member_statement_v1 = __commonJS({
       }
       return { reason: condition ? "condition" : "unsupported" };
     }
-    function parseMemberStatement(text4) {
-      if (!literal(text4)) fail6();
-      const meanings = [], unresolved = [], seen = /* @__PURE__ */ new Set(), pieces = clauses(text4);
+    function parseMemberStatement(text3) {
+      if (!literal(text3)) fail5();
+      const meanings = [], unresolved = [], seen = /* @__PURE__ */ new Set(), pieces = clauses(text3);
       let inherited = null, priorCondition = false, stopped = false;
       function unresolvedPiece(evidence, reason) {
         if (unresolved.length === MEMBER_STATEMENT_LIMITS.unresolved - 1 && evidence !== pieces.at(-1)) {
-          unresolved.push({ start: evidence.start, end: text4.length, quote: text4.slice(evidence.start), reason: "limit", reasonLabel: REASONS.limit });
+          unresolved.push({ start: evidence.start, end: text3.length, quote: text3.slice(evidence.start), reason: "limit", reasonLabel: REASONS.limit });
           stopped = true;
         } else unresolved.push({ ...evidence, reason, reasonLabel: REASONS[reason] });
       }
@@ -1373,19 +1944,19 @@ var require_member_statement_v1 = __commonJS({
       return `${m.condition ? CONDITIONS[m.condition] + " · " : ""}${m.polarity === "avoid" ? "선호하지 않는 내용" : "원하는 내용"}: ${LABELS[m.value]}`;
     }
     function validateMemberStatement(row, { now = Date.now(), enforceTime = false } = {}) {
-      if (!exact5(row, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings"]) || typeof row.id !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id) || row.parserVersion !== PARSER_VERSION || !literal(row.text) || !list3(row.meanings, MEMBER_STATEMENT_LIMITS.meanings) || !row.meanings.length) fail6();
-      const at = instant(row.at), confirmed = instant(row.confirmedAt), cutoff = enforceTime ? typeof now === "string" ? instant(now) : Number.isSafeInteger(now) ? now : fail6() : null;
-      if (confirmed < at || enforceTime && confirmed > cutoff) fail6();
+      if (!exact5(row, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings"]) || typeof row.id !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id) || row.parserVersion !== PARSER_VERSION || !literal(row.text) || !list3(row.meanings, MEMBER_STATEMENT_LIMITS.meanings) || !row.meanings.length) fail5();
+      const at = instant(row.at), confirmed = instant(row.confirmedAt), cutoff = enforceTime ? typeof now === "string" ? instant(now) : Number.isSafeInteger(now) ? now : fail5() : null;
+      if (confirmed < at || enforceTime && confirmed > cutoff) fail5();
       const parsed = parseMemberStatement(row.text), ids3 = /* @__PURE__ */ new Set(), meanings = row.meanings.map((m) => {
-        if (!exact5(m, ["id", "field", "value", "polarity", "condition", "evidence"]) || !exact5(m.evidence, ["start", "end", "quote"]) || ids3.has(m.id)) fail6();
+        if (!exact5(m, ["id", "field", "value", "polarity", "condition", "evidence"]) || !exact5(m.evidence, ["start", "end", "quote"]) || ids3.has(m.id)) fail5();
         ids3.add(m.id);
         const expected = parsed.meanings.find((x) => x.id === m.id);
-        if (!expected) fail6();
-        for (const field of ["field", "value", "polarity", "condition"]) if (m[field] !== expected[field]) fail6();
-        for (const field of ["start", "end", "quote"]) if (m.evidence[field] !== expected.evidence[field]) fail6();
+        if (!expected) fail5();
+        for (const field of ["field", "value", "polarity", "condition"]) if (m[field] !== expected[field]) fail5();
+        for (const field of ["start", "end", "quote"]) if (m.evidence[field] !== expected.evidence[field]) fail5();
         return { id: expected.id, field: expected.field, value: expected.value, polarity: expected.polarity, condition: expected.condition, evidence: { ...expected.evidence } };
       }).sort((a, b) => Number(a.id.slice(1)) - Number(b.id.slice(1)));
-      if (meanings.some((a, i) => meanings.slice(i + 1).some((b) => meaningsConflict(a, b)))) fail6();
+      if (meanings.some((a, i) => meanings.slice(i + 1).some((b) => meaningsConflict(a, b)))) fail5();
       return { id: row.id.toLowerCase(), parserVersion: PARSER_VERSION, text: row.text, at: row.at, confirmedAt: row.confirmedAt, meanings };
     }
     module.exports = {
@@ -1413,8 +1984,8 @@ var require_ask = __commonJS({
       const VERSION = "ask-1.1";
       const MAX_OPTIONS = 64;
       const KINDS = ["setting", "confirm", "choice", "refresh", "follow_up"];
-      const DAY = 864e5;
-      const id2 = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
+      const DAY3 = 864e5;
+      const id = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
       const canonical = (value) => JSON.stringify(value, (_key, entry) => entry && typeof entry === "object" && !Array.isArray(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key) => [key, entry[key]])) : entry);
       const time2 = (value) => {
         const n = Date.parse(value);
@@ -1435,11 +2006,11 @@ var require_ask = __commonJS({
         if (!Array.isArray(questions)) throw new TypeError("Ask: questions must be an array");
         const ids3 = /* @__PURE__ */ new Set();
         for (const q of questions) {
-          if (!q || !id2(q.id) || ids3.has(q.id) || !KINDS.includes(q.kind ?? "setting") || !id2(q.about ?? q.id) || !Array.isArray(q.options) || q.options.length < 2 || q.options.length > MAX_OPTIONS) throw new TypeError(`Ask: invalid question ${q && q.id}`);
+          if (!q || !id(q.id) || ids3.has(q.id) || !KINDS.includes(q.kind ?? "setting") || !id(q.about ?? q.id) || !Array.isArray(q.options) || q.options.length < 2 || q.options.length > MAX_OPTIONS) throw new TypeError(`Ask: invalid question ${q && q.id}`);
           ids3.add(q.id);
           const options = /* @__PURE__ */ new Set();
           for (const option of q.options) {
-            if (!option || !id2(option.id) || options.has(option.id)) throw new TypeError(`Ask: invalid option in ${q.id}`);
+            if (!option || !id(option.id) || options.has(option.id)) throw new TypeError(`Ask: invalid option in ${q.id}`);
             options.add(option.id);
           }
           probabilities(q);
@@ -1476,7 +2047,7 @@ var require_ask = __commonJS({
             result.push({ id: q.id, kind: q.kind ?? "setting", about, impact: 0, skippable: true, reason: "denied" });
             continue;
           }
-          if (Object.hasOwn(asked, q.id) && now !== null && time2(now) - time2(asked[q.id]) < quietDays * DAY) {
+          if (Object.hasOwn(asked, q.id) && now !== null && time2(now) - time2(asked[q.id]) < quietDays * DAY3) {
             result.push({ id: q.id, kind: q.kind ?? "setting", about, impact: 0, skippable: true, reason: "asked-recently" });
             continue;
           }
@@ -1582,15 +2153,15 @@ var require_member_statement_v2 = __commonJS({
     };
     var exact5 = (x, fields2) => plain2(x) && Reflect.ownKeys(x).length === fields2.length && fields2.every((key) => data(x, key));
     var list3 = (x, max) => Array.isArray(x) && x.length <= max && Reflect.ownKeys(x).length === x.length + 1 && Array.from({ length: x.length }, (_, i) => data(x, String(i))).every(Boolean);
-    var fail6 = () => {
+    var fail5 = () => {
       throw new TypeError("Member statement: invalid confirmed statement");
     };
-    var instant = (x) => typeof x === "string" && Number.isFinite(Date.parse(x)) && new Date(x).toISOString() === x ? Date.parse(x) : fail6();
+    var instant = (x) => typeof x === "string" && Number.isFinite(Date.parse(x)) && new Date(x).toISOString() === x ? Date.parse(x) : fail5();
     var semanticKey = (m) => [m.field, m.value, m.polarity, m.condition || "general"].join(":");
     var copy2 = (x) => JSON.parse(JSON.stringify(x));
     var SHA_K = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
-    function sourceKey(text4) {
-      const bytes = new TextEncoder().encode(text4), padded = new Uint8Array(Math.ceil((bytes.length + 9) / 64) * 64);
+    function sourceKey(text3) {
+      const bytes = new TextEncoder().encode(text3), padded = new Uint8Array(Math.ceil((bytes.length + 9) / 64) * 64);
       padded.set(bytes);
       padded[bytes.length] = 128;
       new DataView(padded.buffer).setUint32(padded.length - 4, bytes.length * 8);
@@ -1662,8 +2233,8 @@ var require_member_statement_v2 = __commonJS({
       body = body.replace(/^(?:저는|나는|난|제가|내가|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|현재(?:는)?|평소(?:에는|엔|는)|보통은|일반적으로는)/u, "");
       let condition = null;
       const prefixes = [["first-try", /^(?:처음(?:에는|엔|은)|처음(?:시도)?할때(?:에는|는)?|처음배울때(?:에는|는)?|처음(?:배우는|해보는|하는)(?:일|내용)(?:은|을할때(?:는)?)|낯선(?:일|내용)(?:은|을할때(?:는)?))/u], ["familiar", /^(?:익숙할때(?:는)?|익숙한(?:내용|일)(?:일때(?:는)?|은))/u], ["busy", /^(?:바쁠때(?:는)?|시간이없을때(?:는)?|바쁜날(?:에는|엔|은))/u]];
-      for (const [id2, re] of prefixes) if (re.test(body)) {
-        condition = id2;
+      for (const [id, re] of prefixes) if (re.test(body)) {
+        condition = id;
         body = body.replace(re, "");
         break;
       }
@@ -1690,12 +2261,12 @@ var require_member_statement_v2 = __commonJS({
     }
     var OPTIONS_END = [{ id: "unsure", label: "아직 잘 모르겠어요" }, { id: "skip", label: "이 부분은 건너뛸게요" }];
     var FIELDS = { support: "도움받는 방식", explanation: "설명 길이", "practice-mode": "연습 방식", topic: "관심 분야" };
-    function analyze(text4) {
-      const base = Legacy.parseMemberStatement(text4), segments = [...base.meanings.map((m) => ({ evidence: m.evidence, meanings: [m] })), ...base.unresolved.map((u) => ({ evidence: { start: u.start, end: u.end, quote: u.quote }, unresolved: u }))].sort((a, b) => a.evidence.start - b.evidence.start);
+    function analyze(text3) {
+      const base = Legacy.parseMemberStatement(text3), segments = [...base.meanings.map((m) => ({ evidence: m.evidence, meanings: [m] })), ...base.unresolved.map((u) => ({ evidence: { start: u.start, end: u.end, quote: u.quote }, unresolved: u }))].sort((a, b) => a.evidence.start - b.evidence.start);
       let blocked = false;
       for (const segment of segments) {
         if (segment.unresolved && ["other", "past", "hypothetical", "quotation", "duplicate"].includes(segment.unresolved.reason)) continue;
-        const ending = /^[\s.!?]*/u.exec(text4.slice(segment.evidence.end))[0];
+        const ending = /^[\s.!?]*/u.exec(text3.slice(segment.evidence.end))[0];
         if (ending.includes("?")) {
           delete segment.meanings;
           segment.unresolved = { ...segment.evidence, reason: "uncertain", reasonLabel: "질문으로 적은 내용을 현재 선호로 정하지 않았어요." };
@@ -1717,15 +2288,15 @@ var require_member_statement_v2 = __commonJS({
       }
       return segments;
     }
-    function stateFor(text4, segments, answers, key) {
+    function stateFor(text3, segments, answers, key) {
       const raw = [], unresolved = [], questions = [];
       const question = (index, stage, label, options, apply) => {
-        const id2 = `q.${key}.${index}.${stage}`, answer = answers[id2];
+        const id = `q.${key}.${index}.${stage}`, answer = answers[id];
         if (answer !== void 0) {
           apply(answer);
           return;
         }
-        questions.push({ id: id2, about: id2, kind: "follow_up", label, options: [...options, ...OPTIONS_END].map((o) => ({ ...o, value: o.id })) });
+        questions.push({ id, about: id, kind: "follow_up", label, options: [...options, ...OPTIONS_END].map((o) => ({ ...o, value: o.id })) });
       };
       for (let index = 0; index < segments.length; index++) {
         const s = segments[index], add = (meanings2) => meanings2.forEach((m) => raw.push({ ...m, evidence: copy2(s.evidence) }));
@@ -1746,14 +2317,14 @@ var require_member_statement_v2 = __commonJS({
             }
           );
         } else if (s.generic) {
-          question(index, "field", `「${s.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(FIELDS).map(([id2, label]) => ({ id: id2, label })), (field) => {
+          question(index, "field", `「${s.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(FIELDS).map(([id, label]) => ({ id, label })), (field) => {
             handled = true;
             if (!Object.hasOwn(VALUES, field)) return;
-            question(index, "value", `${FIELDS[field]}에서 어떤 내용을 확인할까요?`, VALUES[field].map((id2) => ({ id: id2, label: LABELS[id2] })), (selected) => {
+            question(index, "value", `${FIELDS[field]}에서 어떤 내용을 확인할까요?`, VALUES[field].map((id) => ({ id, label: LABELS[id] })), (selected) => {
               if (!VALUES[field].includes(selected)) return;
               question(index, "polarity", `‘${LABELS[selected]}’을 지금 어떻게 생각하나요?`, [{ id: "prefer", label: "원하거나 선호해요" }, { id: "avoid", label: "원하거나 선호하지 않아요" }], (polarity) => {
                 if (!["prefer", "avoid"].includes(polarity)) return;
-                question(index, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(Legacy.MEMBER_STATEMENT_CONDITIONS).map(([id2, label]) => ({ id: id2, label }))], (condition) => {
+                question(index, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(Legacy.MEMBER_STATEMENT_CONDITIONS).map(([id, label]) => ({ id, label }))], (condition) => {
                   if (condition === "general" || Object.hasOwn(Legacy.MEMBER_STATEMENT_CONDITIONS, condition)) add([{ field, value: selected, polarity, condition: condition === "general" ? null : condition }]);
                 });
               });
@@ -1779,36 +2350,36 @@ var require_member_statement_v2 = __commonJS({
         const group = meanings.filter((other) => other.id === m.id || Legacy.meaningsConflict(m, other));
         if (group.length < 2) continue;
         group.forEach((p) => grouped.add(p.id));
-        const id2 = `q.${key}.conflict.${sourceKey(group.map((p) => p.id + semanticKey(p)).join("|")).slice(0, 16)}`, answer = answers[id2];
-        if (answer === void 0) questions.push({ id: id2, about: id2, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...group.map((p) => ({ id: p.id, label: meaningLabel(p), value: p.id })), ...OPTIONS_END.map((o) => ({ ...o, value: o.id }))] });
+        const id = `q.${key}.conflict.${sourceKey(group.map((p) => p.id + semanticKey(p)).join("|")).slice(0, 16)}`, answer = answers[id];
+        if (answer === void 0) questions.push({ id, about: id, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...group.map((p) => ({ id: p.id, label: meaningLabel(p), value: p.id })), ...OPTIONS_END.map((o) => ({ ...o, value: o.id }))] });
         else for (const p of group) if (p.id !== answer) p.withheld = true;
       }
       return { meanings: meanings.filter((m) => !m.withheld), unresolved: unresolved.slice(0, MEMBER_STATEMENT_LIMITS.unresolved), questions };
     }
-    function choose(state, text4, segments, answers, key) {
+    function choose(state, text3, segments, answers, key) {
       const result = Ask2.choose({ questions: state.questions, decide: (scenario) => {
-        const outcome = stateFor(text4, segments, { ...answers, ...scenario }, key);
+        const outcome = stateFor(text3, segments, { ...answers, ...scenario }, key);
         return { meanings: outcome.meanings.map((m) => semanticKey(m)), questions: outcome.questions.map((q) => q.id) };
       } });
-      return result.status === "ask" ? { id: result.question.id, label: result.question.label, options: result.question.options.map(({ id: id2, label }) => ({ id: id2, label })) } : null;
+      return result.status === "ask" ? { id: result.question.id, label: result.question.label, options: result.question.options.map(({ id, label }) => ({ id, label })) } : null;
     }
-    function parseMemberStatement(text4, { clarifications = [], parserVersion = PARSER_VERSION } = {}) {
+    function parseMemberStatement(text3, { clarifications = [], parserVersion = PARSER_VERSION } = {}) {
       if (parserVersion === Legacy.PARSER_VERSION) {
-        if (clarifications.length) fail6();
-        return Legacy.parseMemberStatement(text4);
+        if (clarifications.length) fail5();
+        return Legacy.parseMemberStatement(text3);
       }
-      if (parserVersion !== PARSER_VERSION) fail6();
-      if (!list3(clarifications, MEMBER_STATEMENT_LIMITS.clarifications) || clarifications.some((row) => !exact5(row, ["questionId", "optionId"]) || typeof row.questionId !== "string" || typeof row.optionId !== "string")) fail6();
-      const segments = analyze(text4), key = sourceKey(text4), answers = /* @__PURE__ */ Object.create(null), clarificationAnswers = [];
-      let state = stateFor(text4, segments, answers, key), question = choose(state, text4, segments, answers, key);
+      if (parserVersion !== PARSER_VERSION) fail5();
+      if (!list3(clarifications, MEMBER_STATEMENT_LIMITS.clarifications) || clarifications.some((row) => !exact5(row, ["questionId", "optionId"]) || typeof row.questionId !== "string" || typeof row.optionId !== "string")) fail5();
+      const segments = analyze(text3), key = sourceKey(text3), answers = /* @__PURE__ */ Object.create(null), clarificationAnswers = [];
+      let state = stateFor(text3, segments, answers, key), question = choose(state, text3, segments, answers, key);
       for (const row of clarifications) {
-        if (!question || question.id !== row.questionId || Object.hasOwn(answers, row.questionId)) fail6();
+        if (!question || question.id !== row.questionId || Object.hasOwn(answers, row.questionId)) fail5();
         const option = question.options.find((o) => o.id === row.optionId);
-        if (!option) fail6();
+        if (!option) fail5();
         answers[row.questionId] = row.optionId;
         clarificationAnswers.push({ ...row, questionLabel: question.label, optionLabel: option.label });
-        state = stateFor(text4, segments, answers, key);
-        question = choose(state, text4, segments, answers, key);
+        state = stateFor(text3, segments, answers, key);
+        question = choose(state, text3, segments, answers, key);
       }
       if (clarifications.length === MEMBER_STATEMENT_LIMITS.clarifications && question) {
         const conflicted = state.meanings.filter((a) => state.meanings.some((b) => a !== b && Legacy.meaningsConflict(a, b)));
@@ -1824,19 +2395,19 @@ var require_member_statement_v2 = __commonJS({
     function validateMemberStatement(row, { now = Date.now(), enforceTime = false } = {}) {
       const parserVersion = plain2(row) ? Object.getOwnPropertyDescriptor(row, "parserVersion")?.value : null;
       if (parserVersion === Legacy.PARSER_VERSION) return Legacy.validateMemberStatement(row, { now, enforceTime });
-      if (!exact5(row, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || parserVersion !== PARSER_VERSION || typeof row.id !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id) || !list3(row.meanings, MEMBER_STATEMENT_LIMITS.meanings) || !row.meanings.length) fail6();
-      const at = instant(row.at), confirmed = instant(row.confirmedAt), cutoff = enforceTime ? typeof now === "string" ? instant(now) : Number.isSafeInteger(now) ? now : fail6() : null;
-      if (confirmed < at || enforceTime && confirmed > cutoff) fail6();
+      if (!exact5(row, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || parserVersion !== PARSER_VERSION || typeof row.id !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id) || !list3(row.meanings, MEMBER_STATEMENT_LIMITS.meanings) || !row.meanings.length) fail5();
+      const at = instant(row.at), confirmed = instant(row.confirmedAt), cutoff = enforceTime ? typeof now === "string" ? instant(now) : Number.isSafeInteger(now) ? now : fail5() : null;
+      if (confirmed < at || enforceTime && confirmed > cutoff) fail5();
       const parsed = parseMemberStatement(row.text, { clarifications: row.clarifications });
-      if (parsed.question) fail6();
+      if (parsed.question) fail5();
       const ids3 = /* @__PURE__ */ new Set(), meanings = row.meanings.map((m) => {
-        if (!exact5(m, ["id", "field", "value", "polarity", "condition", "evidence"]) || !exact5(m.evidence, ["start", "end", "quote"]) || ids3.has(m.id)) fail6();
+        if (!exact5(m, ["id", "field", "value", "polarity", "condition", "evidence"]) || !exact5(m.evidence, ["start", "end", "quote"]) || ids3.has(m.id)) fail5();
         ids3.add(m.id);
         const expected = parsed.meanings.find((p) => p.id === m.id);
-        if (!expected || ["field", "value", "polarity", "condition"].some((key) => m[key] !== expected[key]) || ["start", "end", "quote"].some((key) => m.evidence[key] !== expected.evidence[key])) fail6();
+        if (!expected || ["field", "value", "polarity", "condition"].some((key) => m[key] !== expected[key]) || ["start", "end", "quote"].some((key) => m.evidence[key] !== expected.evidence[key])) fail5();
         return copy2(expected);
       }).sort((a, b) => Number(a.id.slice(1)) - Number(b.id.slice(1)));
-      if (meanings.some((a, i) => meanings.slice(i + 1).some((b) => Legacy.meaningsConflict(a, b)))) fail6();
+      if (meanings.some((a, i) => meanings.slice(i + 1).some((b) => Legacy.meaningsConflict(a, b)))) fail5();
       return { id: row.id.toLowerCase(), parserVersion: PARSER_VERSION, text: row.text, at: row.at, confirmedAt: row.confirmedAt, meanings, clarifications: parsed.clarifications };
     }
     module.exports = { PARSER_VERSION, MEMBER_STATEMENT_LIMITS, MEMBER_STATEMENT_VALUES: VALUES, MEMBER_STATEMENT_LABELS: LABELS, MEMBER_STATEMENT_CONDITIONS: CONDITIONS, parseMemberStatement, validateMemberStatement, meaningsConflict: Legacy.meaningsConflict, meaningLabel };
@@ -1904,15 +2475,15 @@ var require_member_statement_v3 = __commonJS({
     };
     var exact5 = (x, fields2) => plain2(x) && Reflect.ownKeys(x).length === fields2.length && fields2.every((key) => data(x, key));
     var list3 = (x, max) => Array.isArray(x) && x.length <= max && Reflect.ownKeys(x).length === x.length + 1 && Array.from({ length: x.length }, (_, i) => data(x, String(i))).every(Boolean);
-    var fail6 = () => {
+    var fail5 = () => {
       throw new TypeError("Member statement: invalid confirmed statement");
     };
-    var instant = (x) => typeof x === "string" && Number.isFinite(Date.parse(x)) && new Date(x).toISOString() === x ? Date.parse(x) : fail6();
+    var instant = (x) => typeof x === "string" && Number.isFinite(Date.parse(x)) && new Date(x).toISOString() === x ? Date.parse(x) : fail5();
     var semanticKey = (m) => [m.field, m.value, m.polarity, m.condition || "general"].join(":");
     var copy2 = (x) => JSON.parse(JSON.stringify(x));
     var SHA_K = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
-    function sourceKey(text4) {
-      const bytes = new TextEncoder().encode(text4), padded = new Uint8Array(Math.ceil((bytes.length + 9) / 64) * 64);
+    function sourceKey(text3) {
+      const bytes = new TextEncoder().encode(text3), padded = new Uint8Array(Math.ceil((bytes.length + 9) / 64) * 64);
       padded.set(bytes);
       padded[bytes.length] = 128;
       new DataView(padded.buffer).setUint32(padded.length - 4, bytes.length * 8);
@@ -1984,8 +2555,8 @@ var require_member_statement_v3 = __commonJS({
       body = body.replace(/^(?:저는|나는|난|제가|내가|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|현재(?:는)?|평소(?:에는|엔|는)|보통은|일반적으로는)/u, "");
       let condition = null;
       const prefixes = [["first-try", /^(?:처음(?:에는|엔|은)|처음(?:시도)?할때(?:에는|는)?|처음배울때(?:에는|는)?|처음(?:배우는|해보는|하는)(?:일|내용)(?:은|을할때(?:는)?)|낯선(?:일|내용)(?:은|을할때(?:는)?))/u], ["familiar", /^(?:익숙할때(?:는)?|익숙한(?:내용|일)(?:일때(?:는)?|은))/u], ["busy", /^(?:바쁠때(?:는)?|시간이없을때(?:는)?|바쁜날(?:에는|엔|은))/u]];
-      for (const [id2, re] of prefixes) if (re.test(body)) {
-        condition = id2;
+      for (const [id, re] of prefixes) if (re.test(body)) {
+        condition = id;
         body = body.replace(re, "");
         break;
       }
@@ -2186,8 +2757,8 @@ var require_member_statement_v3 = __commonJS({
       let body = quote.replace(/\s/gu, "").replace(/(?:지만|는데)$/u, "");
       body = body.replace(/^(?:저는|나는|난|제가|내가|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|현재(?:는)?|평소(?:에는|엔|는)?|보통은|일반적으로는)/u, "");
       let condition = null;
-      for (const [id2, prefix] of CONDITION_PREFIXES) if (prefix.test(body)) {
-        condition = id2;
+      for (const [id, prefix] of CONDITION_PREFIXES) if (prefix.test(body)) {
+        condition = id;
         body = body.replace(prefix, "");
         break;
       }
@@ -2234,19 +2805,19 @@ var require_member_statement_v3 = __commonJS({
       if (/(?:만약|라면|다면|가정하|상상하)/u.test(body)) return "hypothetical";
       return null;
     }
-    function pieces(text4) {
+    function pieces(text3) {
       const result = [], separator = /\s+(?:하지만|그런데|그리고|반면에?|다만)\s+|(?:지만|는데)(?=\s)|[.!?;\n,]+/gu;
       let start = 0, match;
       const push = (end) => {
-        while (start < end && /\s/u.test(text4[start])) start++;
-        while (end > start && /\s/u.test(text4[end - 1])) end--;
-        if (end > start) result.push({ start, end, quote: text4.slice(start, end) });
+        while (start < end && /\s/u.test(text3[start])) start++;
+        while (end > start && /\s/u.test(text3[end - 1])) end--;
+        if (end > start) result.push({ start, end, quote: text3.slice(start, end) });
       };
-      while (match = separator.exec(text4)) {
+      while (match = separator.exec(text3)) {
         push(match.index + (/^(?:지만|는데)$/u.test(match[0]) ? match[0].length : 0));
         start = match.index + match[0].length;
       }
-      push(text4.length);
+      push(text3.length);
       return result;
     }
     var OPTIONS_END = [{ id: "unsure", label: "아직 잘 모르겠어요" }, { id: "skip", label: "이 부분은 건너뛸게요" }];
@@ -2260,11 +2831,11 @@ var require_member_statement_v3 = __commonJS({
       decision: "판단 방식",
       "explanation-detail": "설명에서 원하는 구성"
     };
-    function analyze(text4) {
-      Legacy.parseMemberStatement(text4);
+    function analyze(text3) {
+      Legacy.parseMemberStatement(text3);
       const segments = [];
       let inherited = null, previousCondition = false;
-      for (const evidence of pieces(text4)) {
+      for (const evidence of pieces(text3)) {
         const body = evidence.quote.replace(/\s/gu, ""), self = /^(?:나는|난|저는|제가|내가)/u.test(body), current = /^(?:(?:나는|난|저는|제가|내가))?(?:지금|요즘|현재)/u.test(body);
         const generalReset = /^(?:(?:나는|난|저는|제가|내가))?(?:평소|보통은|일반적으로)/u.test(body);
         if (inherited === "other" && self || inherited === "past" && current || inherited === "condition" && generalReset || inherited === "uncertain" && current || ["quotation", "hypothetical", "sensitive"].includes(inherited) && self && current) inherited = null;
@@ -2284,7 +2855,7 @@ var require_member_statement_v3 = __commonJS({
         let unresolvedCondition = previousCondition && found?.meanings.some((m) => !m.condition) && !generalReset;
         if (unresolvedCondition) found = null;
         previousCondition = !!found?.meanings.some((m) => m.condition) && /(?:지만|는데)$/u.test(body);
-        const asking = /^[\s.!?]*/u.exec(text4.slice(evidence.end))[0].includes("?");
+        const asking = /^[\s.!?]*/u.exec(text3.slice(evidence.end))[0].includes("?");
         const uncertain = /(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|없지않|않지는않)/u.test(body);
         if (!found && !uncertain && /(?:때|땐|경우|상황|동안|오늘만|내일만|이번만|퇴근후|출근전)/u.test(body)) {
           unresolvedCondition = true;
@@ -2303,27 +2874,27 @@ var require_member_statement_v3 = __commonJS({
           segment.unresolved = { ...evidence, reason: why, reasonLabel: EXCLUDED[why] };
         }
         segments.push(segment);
-        if (segments.length === MEMBER_STATEMENT_LIMITS.unresolved && evidence.end < text4.length) {
+        if (segments.length === MEMBER_STATEMENT_LIMITS.unresolved && evidence.end < text3.length) {
           const last = segments.at(-1);
           delete last.meanings;
           delete last.candidate;
           delete last.generic;
-          last.evidence = { ...evidence, end: text4.length, quote: text4.slice(evidence.start) };
+          last.evidence = { ...evidence, end: text3.length, quote: text3.slice(evidence.start) };
           last.unresolved = { ...last.evidence, reason: "limit", reasonLabel: EXCLUDED.limit };
           break;
         }
       }
       return segments;
     }
-    function stateFor(text4, segments, answers, key) {
+    function stateFor(text3, segments, answers, key) {
       const raw = [], unresolved = [], questions = [];
       const question = (index, stage, label, options, apply) => {
-        const id2 = `q.${key}.${index}.${stage}`, answer = answers[id2];
+        const id = `q.${key}.${index}.${stage}`, answer = answers[id];
         if (answer !== void 0) {
           apply(answer);
           return;
         }
-        questions.push({ id: id2, about: id2, kind: "follow_up", label, options: [...options, ...OPTIONS_END].map((o) => ({ ...o, value: o.id })) });
+        questions.push({ id, about: id, kind: "follow_up", label, options: [...options, ...OPTIONS_END].map((o) => ({ ...o, value: o.id })) });
       };
       for (let index = 0; index < segments.length; index++) {
         const s = segments[index], add = (meanings2) => meanings2.forEach((m) => raw.push({ ...m, evidence: copy2(s.evidence) }));
@@ -2344,14 +2915,14 @@ var require_member_statement_v3 = __commonJS({
             }
           );
         } else if (s.generic) {
-          question(index, "field", `「${s.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(FIELDS).map(([id2, label]) => ({ id: id2, label })), (field) => {
+          question(index, "field", `「${s.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(FIELDS).map(([id, label]) => ({ id, label })), (field) => {
             handled = true;
             if (!Object.hasOwn(VALUES, field)) return;
-            question(index, "value", `${FIELDS[field]}에서 어떤 내용을 확인할까요?`, VALUES[field].map((id2) => ({ id: id2, label: LABELS[id2] })), (selected) => {
+            question(index, "value", `${FIELDS[field]}에서 어떤 내용을 확인할까요?`, VALUES[field].map((id) => ({ id, label: LABELS[id] })), (selected) => {
               if (!VALUES[field].includes(selected)) return;
               question(index, "polarity", `‘${LABELS[selected]}’을 지금 어떻게 생각하나요?`, [{ id: "prefer", label: "원하거나 선호해요" }, { id: "avoid", label: "원하거나 선호하지 않아요" }], (polarity) => {
                 if (!["prefer", "avoid"].includes(polarity)) return;
-                question(index, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(CONDITIONS).map(([id2, label]) => ({ id: id2, label }))], (condition) => {
+                question(index, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(CONDITIONS).map(([id, label]) => ({ id, label }))], (condition) => {
                   if (condition === "general" || Object.hasOwn(CONDITIONS, condition)) add([{ field, value: selected, polarity, condition: condition === "general" ? null : condition }]);
                 });
               });
@@ -2377,37 +2948,37 @@ var require_member_statement_v3 = __commonJS({
         const group = meanings.filter((other) => other.id === m.id || meaningsConflict(m, other));
         if (group.length < 2) continue;
         group.forEach((p) => grouped.add(p.id));
-        const id2 = `q.${key}.conflict.${sourceKey(group.map((p) => p.id + semanticKey(p)).join("|")).slice(0, 16)}`, answer = answers[id2];
-        if (answer === void 0) questions.push({ id: id2, about: id2, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...group.map((p) => ({ id: p.id, label: meaningLabel(p), value: p.id })), ...OPTIONS_END.map((o) => ({ ...o, value: o.id }))] });
+        const id = `q.${key}.conflict.${sourceKey(group.map((p) => p.id + semanticKey(p)).join("|")).slice(0, 16)}`, answer = answers[id];
+        if (answer === void 0) questions.push({ id, about: id, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...group.map((p) => ({ id: p.id, label: meaningLabel(p), value: p.id })), ...OPTIONS_END.map((o) => ({ ...o, value: o.id }))] });
         else for (const p of group) if (p.id !== answer) p.withheld = true;
       }
       return { meanings: meanings.filter((m) => !m.withheld), unresolved: unresolved.slice(0, MEMBER_STATEMENT_LIMITS.unresolved), questions };
     }
-    function choose(state, text4, segments, answers, key) {
+    function choose(state, text3, segments, answers, key) {
       const result = Ask2.choose({ questions: state.questions, decide: (scenario) => {
-        const outcome = stateFor(text4, segments, { ...answers, ...scenario }, key);
+        const outcome = stateFor(text3, segments, { ...answers, ...scenario }, key);
         return { meanings: outcome.meanings.map((m) => semanticKey(m)), questions: outcome.questions.map((q) => q.id) };
       } });
-      return result.status === "ask" ? { id: result.question.id, label: result.question.label, options: result.question.options.map(({ id: id2, label }) => ({ id: id2, label })) } : null;
+      return result.status === "ask" ? { id: result.question.id, label: result.question.label, options: result.question.options.map(({ id, label }) => ({ id, label })) } : null;
     }
-    function parseMemberStatement(text4, { clarifications = [], parserVersion = PARSER_VERSION } = {}) {
+    function parseMemberStatement(text3, { clarifications = [], parserVersion = PARSER_VERSION } = {}) {
       if (parserVersion === Legacy.PARSER_VERSION) {
-        if (clarifications.length) fail6();
-        return Legacy.parseMemberStatement(text4);
+        if (clarifications.length) fail5();
+        return Legacy.parseMemberStatement(text3);
       }
-      if (parserVersion === Previous.PARSER_VERSION) return Previous.parseMemberStatement(text4, { clarifications, parserVersion });
-      if (parserVersion !== PARSER_VERSION) fail6();
-      if (!list3(clarifications, MEMBER_STATEMENT_LIMITS.clarifications) || clarifications.some((row) => !exact5(row, ["questionId", "optionId"]) || typeof row.questionId !== "string" || typeof row.optionId !== "string")) fail6();
-      const segments = analyze(text4), key = sourceKey(text4), answers = /* @__PURE__ */ Object.create(null), clarificationAnswers = [];
-      let state = stateFor(text4, segments, answers, key), question = choose(state, text4, segments, answers, key);
+      if (parserVersion === Previous.PARSER_VERSION) return Previous.parseMemberStatement(text3, { clarifications, parserVersion });
+      if (parserVersion !== PARSER_VERSION) fail5();
+      if (!list3(clarifications, MEMBER_STATEMENT_LIMITS.clarifications) || clarifications.some((row) => !exact5(row, ["questionId", "optionId"]) || typeof row.questionId !== "string" || typeof row.optionId !== "string")) fail5();
+      const segments = analyze(text3), key = sourceKey(text3), answers = /* @__PURE__ */ Object.create(null), clarificationAnswers = [];
+      let state = stateFor(text3, segments, answers, key), question = choose(state, text3, segments, answers, key);
       for (const row of clarifications) {
-        if (!question || question.id !== row.questionId || Object.hasOwn(answers, row.questionId)) fail6();
+        if (!question || question.id !== row.questionId || Object.hasOwn(answers, row.questionId)) fail5();
         const option = question.options.find((o) => o.id === row.optionId);
-        if (!option) fail6();
+        if (!option) fail5();
         answers[row.questionId] = row.optionId;
         clarificationAnswers.push({ ...row, questionLabel: question.label, optionLabel: option.label });
-        state = stateFor(text4, segments, answers, key);
-        question = choose(state, text4, segments, answers, key);
+        state = stateFor(text3, segments, answers, key);
+        question = choose(state, text3, segments, answers, key);
       }
       if (clarifications.length === MEMBER_STATEMENT_LIMITS.clarifications && question) {
         const conflicted = state.meanings.filter((a) => state.meanings.some((b) => a !== b && meaningsConflict(a, b)));
@@ -2429,19 +3000,19 @@ var require_member_statement_v3 = __commonJS({
       const parserVersion = plain2(row) ? Object.getOwnPropertyDescriptor(row, "parserVersion")?.value : null;
       if (parserVersion === Legacy.PARSER_VERSION) return Legacy.validateMemberStatement(row, { now, enforceTime });
       if (parserVersion === Previous.PARSER_VERSION) return Previous.validateMemberStatement(row, { now, enforceTime });
-      if (!exact5(row, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || parserVersion !== PARSER_VERSION || typeof row.id !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id) || !list3(row.meanings, MEMBER_STATEMENT_LIMITS.meanings) || !row.meanings.length) fail6();
-      const at = instant(row.at), confirmed = instant(row.confirmedAt), cutoff = enforceTime ? typeof now === "string" ? instant(now) : Number.isSafeInteger(now) ? now : fail6() : null;
-      if (confirmed < at || enforceTime && confirmed > cutoff) fail6();
+      if (!exact5(row, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || parserVersion !== PARSER_VERSION || typeof row.id !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id) || !list3(row.meanings, MEMBER_STATEMENT_LIMITS.meanings) || !row.meanings.length) fail5();
+      const at = instant(row.at), confirmed = instant(row.confirmedAt), cutoff = enforceTime ? typeof now === "string" ? instant(now) : Number.isSafeInteger(now) ? now : fail5() : null;
+      if (confirmed < at || enforceTime && confirmed > cutoff) fail5();
       const parsed = parseMemberStatement(row.text, { clarifications: row.clarifications });
-      if (parsed.question) fail6();
+      if (parsed.question) fail5();
       const ids3 = /* @__PURE__ */ new Set(), meanings = row.meanings.map((m) => {
-        if (!exact5(m, ["id", "field", "value", "polarity", "condition", "evidence"]) || !exact5(m.evidence, ["start", "end", "quote"]) || ids3.has(m.id)) fail6();
+        if (!exact5(m, ["id", "field", "value", "polarity", "condition", "evidence"]) || !exact5(m.evidence, ["start", "end", "quote"]) || ids3.has(m.id)) fail5();
         ids3.add(m.id);
         const expected = parsed.meanings.find((p) => p.id === m.id);
-        if (!expected || ["field", "value", "polarity", "condition"].some((key) => m[key] !== expected[key]) || ["start", "end", "quote"].some((key) => m.evidence[key] !== expected.evidence[key])) fail6();
+        if (!expected || ["field", "value", "polarity", "condition"].some((key) => m[key] !== expected[key]) || ["start", "end", "quote"].some((key) => m.evidence[key] !== expected.evidence[key])) fail5();
         return copy2(expected);
       }).sort((a, b) => Number(a.id.slice(1)) - Number(b.id.slice(1)));
-      if (meanings.some((a, i) => meanings.slice(i + 1).some((b) => meaningsConflict(a, b)))) fail6();
+      if (meanings.some((a, i) => meanings.slice(i + 1).some((b) => meaningsConflict(a, b)))) fail5();
       return { id: row.id.toLowerCase(), parserVersion: PARSER_VERSION, text: row.text, at: row.at, confirmedAt: row.confirmedAt, meanings, clarifications: parsed.clarifications };
     }
     module.exports = { PARSER_VERSION, MEMBER_STATEMENT_LIMITS, MEMBER_STATEMENT_VALUES: VALUES, MEMBER_STATEMENT_LABELS: LABELS, MEMBER_STATEMENT_CONDITIONS: CONDITIONS, MEMBER_STATEMENT_MULTI_FIELDS: MULTI_FIELDS, parseMemberStatement, validateMemberStatement, meaningsConflict, meaningLabel };
@@ -2510,15 +3081,15 @@ var require_member_statement_v4 = __commonJS({
     };
     var exact5 = (x, fields2) => plain2(x) && Reflect.ownKeys(x).length === fields2.length && fields2.every((key) => data(x, key));
     var list3 = (x, max) => Array.isArray(x) && x.length <= max && Reflect.ownKeys(x).length === x.length + 1 && Array.from({ length: x.length }, (_, i) => data(x, String(i))).every(Boolean);
-    var fail6 = () => {
+    var fail5 = () => {
       throw new TypeError("Member statement: invalid confirmed statement");
     };
-    var instant = (x) => typeof x === "string" && Number.isFinite(Date.parse(x)) && new Date(x).toISOString() === x ? Date.parse(x) : fail6();
+    var instant = (x) => typeof x === "string" && Number.isFinite(Date.parse(x)) && new Date(x).toISOString() === x ? Date.parse(x) : fail5();
     var semanticKey = (m) => [m.field, m.value, m.polarity, m.condition || "general"].join(":");
     var copy2 = (x) => JSON.parse(JSON.stringify(x));
     var SHA_K = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
-    function sourceKey(text4) {
-      const bytes = new TextEncoder().encode(text4), padded = new Uint8Array(Math.ceil((bytes.length + 9) / 64) * 64);
+    function sourceKey(text3) {
+      const bytes = new TextEncoder().encode(text3), padded = new Uint8Array(Math.ceil((bytes.length + 9) / 64) * 64);
       padded.set(bytes);
       padded[bytes.length] = 128;
       new DataView(padded.buffer).setUint32(padded.length - 4, bytes.length * 8);
@@ -2590,8 +3161,8 @@ var require_member_statement_v4 = __commonJS({
       body = body.replace(/^(?:저는|나는|난|제가|내가|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|현재(?:는)?|평소(?:에는|엔|는)|보통은|일반적으로는)/u, "");
       let condition = null;
       const prefixes = [["first-try", /^(?:처음(?:에는|엔|은)|처음(?:시도)?할때(?:에는|는)?|처음배울때(?:에는|는)?|처음(?:배우는|해보는|하는)(?:일|내용)(?:은|을할때(?:는)?)|낯선(?:일|내용)(?:은|을할때(?:는)?))/u], ["familiar", /^(?:익숙할때(?:는)?|익숙한(?:내용|일)(?:일때(?:는)?|은))/u], ["busy", /^(?:바쁠때(?:는)?|시간이없을때(?:는)?|바쁜날(?:에는|엔|은))/u]];
-      for (const [id2, re] of prefixes) if (re.test(body)) {
-        condition = id2;
+      for (const [id, re] of prefixes) if (re.test(body)) {
+        condition = id;
         body = body.replace(re, "");
         break;
       }
@@ -2896,8 +3467,8 @@ var require_member_statement_v4 = __commonJS({
       let body = quote.replace(/\s/gu, "").replace(/(?:지만|는데)$/u, "").replace(/좋고$/u, "좋아요").replace(/좋아하고$/u, "좋아해요").replace(/편하고$/u, "편해요").replace(/싫$/u, "싫어요").replace(/(?:좋아하|선호하)$/u, (s) => s.slice(0, -1) + "해").replace(/할땐/gu, "할때는").replace(/배울땐/gu, "배울때는");
       body = body.replace(/^(?:저는|나는|난|제가|내가|저한테는|제게는|나한테는|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|이제(?:는|부터는)?|현재(?:는)?|평소(?:에는|엔|는)?|보통은|일반적으로는)/u, "");
       let condition = null;
-      for (const [id2, prefix] of CONDITION_PREFIXES) if (prefix.test(body)) {
-        condition = id2;
+      for (const [id, prefix] of CONDITION_PREFIXES) if (prefix.test(body)) {
+        condition = id;
         body = body.replace(prefix, "");
         break;
       }
@@ -2995,22 +3566,22 @@ var require_member_statement_v4 = __commonJS({
       if (/(?:만약|라면|다면|가정하|상상하)/u.test(body)) return "hypothetical";
       return null;
     }
-    function pieces(text4) {
+    function pieces(text3) {
       const result = [], separator = /\s+(?:하지만|그런데|그리고|반면에?|다만)\s+|(?:지만|는데|좋고|좋아하고|편하고)(?=\s)|[.!?;\n,]+/gu;
       let start = 0, match;
       const push = (end) => {
-        while (start < end && /\s/u.test(text4[start])) start++;
-        while (end > start && /\s/u.test(text4[end - 1])) end--;
-        if (end > start) result.push({ start, end, quote: text4.slice(start, end) });
+        while (start < end && /\s/u.test(text3[start])) start++;
+        while (end > start && /\s/u.test(text3[end - 1])) end--;
+        if (end > start) result.push({ start, end, quote: text3.slice(start, end) });
       };
-      while (match = separator.exec(text4)) {
-        if (match[0] === "," && /(?:것|거)도\s*$/u.test(text4.slice(start, match.index)) && /^\s*.+?(?:것|거)도/u.test(text4.slice(match.index + 1))) continue;
-        if (/^(?:좋고|좋아하고|편하고)$/u.test(match[0]) && /^\s*(?:싶|말고|싫고|아니고)/u.test(text4.slice(match.index + match[0].length))) continue;
-        if (match[0] === "지만" && !/(?:좋|싫|하|되|있|없|않|했|았|었|겠|리|지|되|편이)$/u.test(text4.slice(start, match.index).replace(/\s/gu, ""))) continue;
+      while (match = separator.exec(text3)) {
+        if (match[0] === "," && /(?:것|거)도\s*$/u.test(text3.slice(start, match.index)) && /^\s*.+?(?:것|거)도/u.test(text3.slice(match.index + 1))) continue;
+        if (/^(?:좋고|좋아하고|편하고)$/u.test(match[0]) && /^\s*(?:싶|말고|싫고|아니고)/u.test(text3.slice(match.index + match[0].length))) continue;
+        if (match[0] === "지만" && !/(?:좋|싫|하|되|있|없|않|했|았|었|겠|리|지|되|편이)$/u.test(text3.slice(start, match.index).replace(/\s/gu, ""))) continue;
         push(match.index + (/^(?:지만|는데|좋고|좋아하고|편하고)$/u.test(match[0]) ? match[0].length : 0));
         start = match.index + match[0].length;
       }
-      push(text4.length);
+      push(text3.length);
       return result;
     }
     var OPTIONS_END = [{ id: "unsure", label: "아직 잘 모르겠어요" }, { id: "skip", label: "이 부분은 건너뛸게요" }];
@@ -3024,11 +3595,11 @@ var require_member_statement_v4 = __commonJS({
       decision: "판단 방식",
       "explanation-detail": "설명에서 원하는 구성"
     };
-    function analyze(text4) {
-      Legacy.parseMemberStatement(text4);
+    function analyze(text3) {
+      Legacy.parseMemberStatement(text3);
       const segments = [];
       let inherited = null, previousCondition = false, continuingCondition = null;
-      for (const evidence of pieces(text4)) {
+      for (const evidence of pieces(text3)) {
         const body = evidence.quote.replace(/\s/gu, ""), self = /^(?:나는|난|저는|제가|내가)/u.test(body), current = /^(?:(?:나는|난|저는|제가|내가))?(?:지금|요즘|현재|이제)/u.test(body);
         const generalReset = /^(?:(?:나는|난|저는|제가|내가))?(?:평소|보통은|일반적으로)/u.test(body);
         if (inherited === "other" && self || inherited === "past" && current || inherited === "condition" && generalReset || inherited === "uncertain" && current || ["quotation", "hypothetical", "sensitive"].includes(inherited) && self && current) inherited = null;
@@ -3056,7 +3627,7 @@ var require_member_statement_v4 = __commonJS({
         let unresolvedCondition = previousCondition && found?.meanings.some((m) => !m.condition) && !generalReset;
         if (unresolvedCondition) found = null;
         previousCondition = !!found?.meanings.some((m) => m.condition) && /(?:지만|는데)$/u.test(body);
-        const asking = /^[\s.!?]*/u.exec(text4.slice(evidence.end))[0].includes("?");
+        const asking = /^[\s.!?]*/u.exec(text3.slice(evidence.end))[0].includes("?");
         const uncertain = /(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|없지않|않지는않)/u.test(body);
         if (!found && !uncertain && /(?:때|땐|경우|상황|동안|오늘만|내일만|이번만|퇴근후|출근전)/u.test(body)) {
           unresolvedCondition = true;
@@ -3076,27 +3647,27 @@ var require_member_statement_v4 = __commonJS({
           segment.unresolved = { ...evidence, reason: why, reasonLabel: EXCLUDED[why] };
         }
         segments.push(segment);
-        if (segments.length === MEMBER_STATEMENT_LIMITS.unresolved && evidence.end < text4.length) {
+        if (segments.length === MEMBER_STATEMENT_LIMITS.unresolved && evidence.end < text3.length) {
           const last = segments.at(-1);
           delete last.meanings;
           delete last.candidate;
           delete last.generic;
-          last.evidence = { ...evidence, end: text4.length, quote: text4.slice(evidence.start) };
+          last.evidence = { ...evidence, end: text3.length, quote: text3.slice(evidence.start) };
           last.unresolved = { ...last.evidence, reason: "limit", reasonLabel: EXCLUDED.limit };
           break;
         }
       }
       return segments;
     }
-    function stateFor(text4, segments, answers, key) {
+    function stateFor(text3, segments, answers, key) {
       const raw = [], unresolved = [], questions = [];
       const question = (index, stage, label, options, apply) => {
-        const id2 = `q.${key}.${index}.${stage}`, answer = answers[id2];
+        const id = `q.${key}.${index}.${stage}`, answer = answers[id];
         if (answer !== void 0) {
           apply(answer);
           return;
         }
-        questions.push({ id: id2, about: id2, kind: "follow_up", label, options: [...options, ...OPTIONS_END].map((o) => ({ ...o, value: o.id })) });
+        questions.push({ id, about: id, kind: "follow_up", label, options: [...options, ...OPTIONS_END].map((o) => ({ ...o, value: o.id })) });
       };
       for (let index = 0; index < segments.length; index++) {
         const s = segments[index], add = (meanings2) => meanings2.forEach((m) => raw.push({ ...m, evidence: copy2(s.evidence) }));
@@ -3117,14 +3688,14 @@ var require_member_statement_v4 = __commonJS({
             }
           );
         } else if (s.generic) {
-          question(index, "field", `「${s.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(FIELDS).map(([id2, label]) => ({ id: id2, label })), (field) => {
+          question(index, "field", `「${s.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(FIELDS).map(([id, label]) => ({ id, label })), (field) => {
             handled = true;
             if (!Object.hasOwn(VALUES, field)) return;
-            question(index, "value", `${FIELDS[field]}에서 어떤 내용을 확인할까요?`, VALUES[field].map((id2) => ({ id: id2, label: LABELS[id2] })), (selected) => {
+            question(index, "value", `${FIELDS[field]}에서 어떤 내용을 확인할까요?`, VALUES[field].map((id) => ({ id, label: LABELS[id] })), (selected) => {
               if (!VALUES[field].includes(selected)) return;
               question(index, "polarity", `‘${LABELS[selected]}’을 지금 어떻게 생각하나요?`, [{ id: "prefer", label: "원하거나 선호해요" }, { id: "avoid", label: "원하거나 선호하지 않아요" }], (polarity) => {
                 if (!["prefer", "avoid"].includes(polarity)) return;
-                question(index, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(CONDITIONS).map(([id2, label]) => ({ id: id2, label }))], (condition) => {
+                question(index, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(CONDITIONS).map(([id, label]) => ({ id, label }))], (condition) => {
                   if (condition === "general" || Object.hasOwn(CONDITIONS, condition)) add([{ field, value: selected, polarity, condition: condition === "general" ? null : condition }]);
                 });
               });
@@ -3150,38 +3721,38 @@ var require_member_statement_v4 = __commonJS({
         const group = meanings.filter((other) => other.id === m.id || meaningsConflict(m, other));
         if (group.length < 2) continue;
         group.forEach((p) => grouped.add(p.id));
-        const id2 = `q.${key}.conflict.${sourceKey(group.map((p) => p.id + semanticKey(p)).join("|")).slice(0, 16)}`, answer = answers[id2];
-        if (answer === void 0) questions.push({ id: id2, about: id2, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...group.map((p) => ({ id: p.id, label: meaningLabel(p), value: p.id })), ...OPTIONS_END.map((o) => ({ ...o, value: o.id }))] });
+        const id = `q.${key}.conflict.${sourceKey(group.map((p) => p.id + semanticKey(p)).join("|")).slice(0, 16)}`, answer = answers[id];
+        if (answer === void 0) questions.push({ id, about: id, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...group.map((p) => ({ id: p.id, label: meaningLabel(p), value: p.id })), ...OPTIONS_END.map((o) => ({ ...o, value: o.id }))] });
         else for (const p of group) if (p.id !== answer) p.withheld = true;
       }
       return { meanings: meanings.filter((m) => !m.withheld), unresolved: unresolved.slice(0, MEMBER_STATEMENT_LIMITS.unresolved), questions };
     }
-    function choose(state, text4, segments, answers, key) {
+    function choose(state, text3, segments, answers, key) {
       const result = Ask2.choose({ questions: state.questions, decide: (scenario) => {
-        const outcome = stateFor(text4, segments, { ...answers, ...scenario }, key);
+        const outcome = stateFor(text3, segments, { ...answers, ...scenario }, key);
         return { meanings: outcome.meanings.map((m) => semanticKey(m)), questions: outcome.questions.map((q) => q.id) };
       } });
-      return result.status === "ask" ? { id: result.question.id, label: result.question.label, options: result.question.options.map(({ id: id2, label }) => ({ id: id2, label })) } : null;
+      return result.status === "ask" ? { id: result.question.id, label: result.question.label, options: result.question.options.map(({ id, label }) => ({ id, label })) } : null;
     }
-    function parseMemberStatement(text4, { clarifications = [], parserVersion = PARSER_VERSION } = {}) {
+    function parseMemberStatement(text3, { clarifications = [], parserVersion = PARSER_VERSION } = {}) {
       if (parserVersion === Legacy.PARSER_VERSION) {
-        if (clarifications.length) fail6();
-        return Legacy.parseMemberStatement(text4);
+        if (clarifications.length) fail5();
+        return Legacy.parseMemberStatement(text3);
       }
-      if (parserVersion === Previous.PARSER_VERSION) return Previous.parseMemberStatement(text4, { clarifications, parserVersion });
-      if (parserVersion === Previous3.PARSER_VERSION) return Previous3.parseMemberStatement(text4, { clarifications, parserVersion });
-      if (parserVersion !== PARSER_VERSION) fail6();
-      if (!list3(clarifications, MEMBER_STATEMENT_LIMITS.clarifications) || clarifications.some((row) => !exact5(row, ["questionId", "optionId"]) || typeof row.questionId !== "string" || typeof row.optionId !== "string")) fail6();
-      const segments = analyze(text4), key = sourceKey(text4), answers = /* @__PURE__ */ Object.create(null), clarificationAnswers = [];
-      let state = stateFor(text4, segments, answers, key), question = choose(state, text4, segments, answers, key);
+      if (parserVersion === Previous.PARSER_VERSION) return Previous.parseMemberStatement(text3, { clarifications, parserVersion });
+      if (parserVersion === Previous3.PARSER_VERSION) return Previous3.parseMemberStatement(text3, { clarifications, parserVersion });
+      if (parserVersion !== PARSER_VERSION) fail5();
+      if (!list3(clarifications, MEMBER_STATEMENT_LIMITS.clarifications) || clarifications.some((row) => !exact5(row, ["questionId", "optionId"]) || typeof row.questionId !== "string" || typeof row.optionId !== "string")) fail5();
+      const segments = analyze(text3), key = sourceKey(text3), answers = /* @__PURE__ */ Object.create(null), clarificationAnswers = [];
+      let state = stateFor(text3, segments, answers, key), question = choose(state, text3, segments, answers, key);
       for (const row of clarifications) {
-        if (!question || question.id !== row.questionId || Object.hasOwn(answers, row.questionId)) fail6();
+        if (!question || question.id !== row.questionId || Object.hasOwn(answers, row.questionId)) fail5();
         const option = question.options.find((o) => o.id === row.optionId);
-        if (!option) fail6();
+        if (!option) fail5();
         answers[row.questionId] = row.optionId;
         clarificationAnswers.push({ ...row, questionLabel: question.label, optionLabel: option.label });
-        state = stateFor(text4, segments, answers, key);
-        question = choose(state, text4, segments, answers, key);
+        state = stateFor(text3, segments, answers, key);
+        question = choose(state, text3, segments, answers, key);
       }
       if (clarifications.length === MEMBER_STATEMENT_LIMITS.clarifications && question) {
         const conflicted = state.meanings.filter((a) => state.meanings.some((b) => a !== b && meaningsConflict(a, b)));
@@ -3204,19 +3775,19 @@ var require_member_statement_v4 = __commonJS({
       if (parserVersion === Legacy.PARSER_VERSION) return Legacy.validateMemberStatement(row, { now, enforceTime });
       if (parserVersion === Previous.PARSER_VERSION) return Previous.validateMemberStatement(row, { now, enforceTime });
       if (parserVersion === Previous3.PARSER_VERSION) return Previous3.validateMemberStatement(row, { now, enforceTime });
-      if (!exact5(row, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || parserVersion !== PARSER_VERSION || typeof row.id !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id) || !list3(row.meanings, MEMBER_STATEMENT_LIMITS.meanings) || !row.meanings.length) fail6();
-      const at = instant(row.at), confirmed = instant(row.confirmedAt), cutoff = enforceTime ? typeof now === "string" ? instant(now) : Number.isSafeInteger(now) ? now : fail6() : null;
-      if (confirmed < at || enforceTime && confirmed > cutoff) fail6();
+      if (!exact5(row, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || parserVersion !== PARSER_VERSION || typeof row.id !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id) || !list3(row.meanings, MEMBER_STATEMENT_LIMITS.meanings) || !row.meanings.length) fail5();
+      const at = instant(row.at), confirmed = instant(row.confirmedAt), cutoff = enforceTime ? typeof now === "string" ? instant(now) : Number.isSafeInteger(now) ? now : fail5() : null;
+      if (confirmed < at || enforceTime && confirmed > cutoff) fail5();
       const parsed = parseMemberStatement(row.text, { clarifications: row.clarifications });
-      if (parsed.question) fail6();
+      if (parsed.question) fail5();
       const ids3 = /* @__PURE__ */ new Set(), meanings = row.meanings.map((m) => {
-        if (!exact5(m, ["id", "field", "value", "polarity", "condition", "evidence"]) || !exact5(m.evidence, ["start", "end", "quote"]) || ids3.has(m.id)) fail6();
+        if (!exact5(m, ["id", "field", "value", "polarity", "condition", "evidence"]) || !exact5(m.evidence, ["start", "end", "quote"]) || ids3.has(m.id)) fail5();
         ids3.add(m.id);
         const expected = parsed.meanings.find((p) => p.id === m.id);
-        if (!expected || ["field", "value", "polarity", "condition"].some((key) => m[key] !== expected[key]) || ["start", "end", "quote"].some((key) => m.evidence[key] !== expected.evidence[key])) fail6();
+        if (!expected || ["field", "value", "polarity", "condition"].some((key) => m[key] !== expected[key]) || ["start", "end", "quote"].some((key) => m.evidence[key] !== expected.evidence[key])) fail5();
         return copy2(expected);
       }).sort((a, b) => Number(a.id.slice(1)) - Number(b.id.slice(1)));
-      if (meanings.some((a, i) => meanings.slice(i + 1).some((b) => meaningsConflict(a, b)))) fail6();
+      if (meanings.some((a, i) => meanings.slice(i + 1).some((b) => meaningsConflict(a, b)))) fail5();
       return { id: row.id.toLowerCase(), parserVersion: PARSER_VERSION, text: row.text, at: row.at, confirmedAt: row.confirmedAt, meanings, clarifications: parsed.clarifications };
     }
     module.exports = { PARSER_VERSION, MEMBER_STATEMENT_LIMITS, MEMBER_STATEMENT_VALUES: VALUES, MEMBER_STATEMENT_LABELS: LABELS, MEMBER_STATEMENT_CONDITIONS: CONDITIONS, MEMBER_STATEMENT_MULTI_FIELDS: MULTI_FIELDS, parseMemberStatement, validateMemberStatement, meaningsConflict, meaningLabel };
@@ -3286,15 +3857,15 @@ var require_member_statement_v5 = __commonJS({
     };
     var exact5 = (x, fields2) => plain2(x) && Reflect.ownKeys(x).length === fields2.length && fields2.every((key) => data(x, key));
     var list3 = (x, max) => Array.isArray(x) && x.length <= max && Reflect.ownKeys(x).length === x.length + 1 && Array.from({ length: x.length }, (_, i) => data(x, String(i))).every(Boolean);
-    var fail6 = () => {
+    var fail5 = () => {
       throw new TypeError("Member statement: invalid confirmed statement");
     };
-    var instant = (x) => typeof x === "string" && Number.isFinite(Date.parse(x)) && new Date(x).toISOString() === x ? Date.parse(x) : fail6();
+    var instant = (x) => typeof x === "string" && Number.isFinite(Date.parse(x)) && new Date(x).toISOString() === x ? Date.parse(x) : fail5();
     var semanticKey = (m) => [m.field, m.value, m.polarity, m.condition || "general"].join(":");
     var copy2 = (x) => JSON.parse(JSON.stringify(x));
     var SHA_K = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
-    function sourceKey(text4) {
-      const bytes = new TextEncoder().encode(text4), padded = new Uint8Array(Math.ceil((bytes.length + 9) / 64) * 64);
+    function sourceKey(text3) {
+      const bytes = new TextEncoder().encode(text3), padded = new Uint8Array(Math.ceil((bytes.length + 9) / 64) * 64);
       padded.set(bytes);
       padded[bytes.length] = 128;
       new DataView(padded.buffer).setUint32(padded.length - 4, bytes.length * 8);
@@ -3366,8 +3937,8 @@ var require_member_statement_v5 = __commonJS({
       body = body.replace(/^(?:저는|나는|난|제가|내가|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|현재(?:는)?|평소(?:에는|엔|는)|보통은|일반적으로는)/u, "");
       let condition = null;
       const prefixes = [["first-try", /^(?:처음(?:에는|엔|은)|처음(?:시도)?할때(?:에는|는)?|처음배울때(?:에는|는)?|처음(?:배우는|해보는|하는)(?:일|내용)(?:은|을할때(?:는)?)|낯선(?:일|내용)(?:은|을할때(?:는)?))/u], ["familiar", /^(?:익숙할때(?:는)?|익숙한(?:내용|일)(?:일때(?:는)?|은))/u], ["busy", /^(?:바쁠때(?:는)?|시간이없을때(?:는)?|바쁜날(?:에는|엔|은))/u]];
-      for (const [id2, re] of prefixes) if (re.test(body)) {
-        condition = id2;
+      for (const [id, re] of prefixes) if (re.test(body)) {
+        condition = id;
         body = body.replace(re, "");
         break;
       }
@@ -3685,8 +4256,8 @@ var require_member_statement_v5 = __commonJS({
       body = body.replace(/좋(?:아하)?고요$/u, (s) => s.startsWith("좋아") ? "좋아해요" : "좋아요").replace(/^(?:저라면|나라면)/u, "");
       body = body.replace(/^(?:저는|나는|난|제가|내가|저한테는|제게는|나한테는|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|이제(?:는|부터는)?|현재(?:는)?|평소(?:에는|엔|는)?|보통은|일반적으로는)/u, "");
       let condition = null;
-      for (const [id2, prefix] of CONDITION_PREFIXES) if (prefix.test(body)) {
-        condition = id2;
+      for (const [id, prefix] of CONDITION_PREFIXES) if (prefix.test(body)) {
+        condition = id;
         body = body.replace(prefix, "");
         break;
       }
@@ -4001,39 +4572,39 @@ var require_member_statement_v5 = __commonJS({
     function composeRoles(units, nominalHead) {
       const tags = units.filter((t) => !["nominal", "means"].includes(t));
       if (nominalHead === "explanation" && !tags.includes("explanation")) tags.push("explanation");
-      const has2 = (t) => tags.includes(t), any = (...t) => t.some(has2), all = (...t) => t.every(has2), before = (a, b) => tags.indexOf(a) < tags.indexOf(b);
-      const beforeStart = (...actions) => !has2("start") || actions.some((action) => has2(action) && before(action, "start"));
-      const beforeOverview = has2("overview") ? tags.slice(0, tags.indexOf("overview")) : [];
+      const has = (t) => tags.includes(t), any = (...t) => t.some(has), all = (...t) => t.every(has), before = (a, b) => tags.indexOf(a) < tags.indexOf(b);
+      const beforeStart = (...actions) => !has("start") || actions.some((action) => has(action) && before(action, "start"));
+      const beforeOverview = has("overview") ? tags.slice(0, tags.indexOf("overview")) : [];
       const overviewLeads = beforeOverview.every((t) => ["explanation", "detail", "content", "first", "enter", "before"].includes(t)) && (!beforeOverview.includes("enter") || beforeOverview.indexOf("enter") < beforeOverview.indexOf("before"));
-      const explained = has2("explain") || all("explanation", "receive");
+      const explained = has("explain") || all("explanation", "receive");
       const matches = [], frame = (field, value, licensed, required) => {
         const allowed = new Set(licensed.split(" "));
         if (required && tags.every((t) => allowed.has(t))) matches.push({ field, value });
       };
-      frame("communication", "written", "text opinion communicate write send organize speak exchange", has2("text") && any("communicate", "write", "send", "organize", "speak", "exchange"));
-      frame("communication", "spoken", "speech opinion communicate speak send exchange", has2("speech") && any("communicate", "speak", "send", "exchange"));
+      frame("communication", "written", "text opinion communicate write send organize speak exchange", has("text") && any("communicate", "write", "send", "organize", "speak", "exchange"));
+      frame("communication", "spoken", "speech opinion communicate speak send exchange", has("speech") && any("communicate", "speak", "send", "exchange"));
       frame("communication", "listen-organize", "person opinion speech first listen organize", any("opinion", "speech") && all("listen", "organize") && before("listen", "organize"));
-      frame("communication", "share-first", "opinion speech first speak send start different-opinion occur before", has2("opinion") && any("speak", "send") && (has2("first") || all("different-opinion", "before")));
-      frame("work-style", "plan-first", "task plan first make decide start before-start", has2("plan") && any("make", "decide") && beforeStart("make", "decide"));
+      frame("communication", "share-first", "opinion speech first speak send start different-opinion occur before", has("opinion") && any("speak", "send") && (has("first") || all("different-opinion", "before")));
+      frame("work-style", "plan-first", "task plan first make decide start before-start", has("plan") && any("make", "decide") && beforeStart("make", "decide"));
       frame("work-style", "try-adjust", "small first try start mismatch later adjust", all("try", "adjust") && before("try", "adjust"));
-      frame("work-style", "single-task", "task one focus process finish do next proceed present-task", has2("one") && any("focus", "process", "finish", "do"));
-      frame("work-style", "prioritize", "task priority important first rank order front make decide process finish do identity", any("process", "finish", "do") && (has2("priority") && any("rank", "make", "decide") || has2("important") && any("rank", "order", "front", "first")));
-      frame("decision", "evidence", "data first check look reference basis decide conclusion", has2("data") && any("check", "look", "reference", "basis"));
-      frame("decision", "compare-options", "options available arrange compare check decide conclusion", has2("options") && any("compare", "check"));
-      frame("decision", "experience", "experience reference basis decide conclusion", has2("experience") && any("reference", "basis"));
-      frame("decision", "consult", "person opinion exchange first consult decide conclusion", has2("consult"));
-      frame("explanation-detail", "overview-first", "explanation overview first detail content enter before look show know listen make explain receive do", has2("overview") && overviewLeads && (any("look", "show", "know", "listen", "make") || explained) && (has2("first") || all("content", "before")));
-      frame("explanation-detail", "reasons-detail", "explanation-purpose explanation conclusion occur reason data detail know listen look explain receive", any("reason", "data") && has2("detail") && (any("know", "listen", "look") || explained));
+      frame("work-style", "single-task", "task one focus process finish do next proceed present-task", has("one") && any("focus", "process", "finish", "do"));
+      frame("work-style", "prioritize", "task priority important first rank order front make decide process finish do identity", any("process", "finish", "do") && (has("priority") && any("rank", "make", "decide") || has("important") && any("rank", "order", "front", "first")));
+      frame("decision", "evidence", "data first check look reference basis decide conclusion", has("data") && any("check", "look", "reference", "basis"));
+      frame("decision", "compare-options", "options available arrange compare check decide conclusion", has("options") && any("compare", "check"));
+      frame("decision", "experience", "experience reference basis decide conclusion", has("experience") && any("reference", "basis"));
+      frame("decision", "consult", "person opinion exchange first consult decide conclusion", has("consult"));
+      frame("explanation-detail", "overview-first", "explanation overview first detail content enter before look show know listen make explain receive do", has("overview") && overviewLeads && (any("look", "show", "know", "listen", "make") || explained) && (has("first") || all("content", "before")));
+      frame("explanation-detail", "reasons-detail", "explanation-purpose explanation conclusion occur reason data detail know listen look explain receive", any("reason", "data") && has("detail") && (any("know", "listen", "look") || explained));
       frame("explanation-detail", "long-flow", "explanation long flow explain", all("explanation", "long"));
-      frame("explanation", "brief", "explanation short explain listen know finish receive", has2("short") && (has2("explanation") || any("explain", "listen", "know")));
-      frame("explanation", "detailed", "explanation detail content explain listen know receive", has2("detail") && (has2("explanation") || any("explain", "listen", "know")));
+      frame("explanation", "brief", "explanation short explain listen know finish receive", has("short") && (has("explanation") || any("explain", "listen", "know")));
+      frame("explanation", "detailed", "explanation detail content explain listen know receive", has("detail") && (has("explanation") || any("explain", "listen", "know")));
       frame("explanation", "standard", "explanation standard", all("explanation", "standard"));
       frame("support", "independent", "self nohelp first try do process before-help", any("self", "nohelp") && any("try", "do", "process"));
-      frame("support", "together", "person together first try do process", has2("together") && any("try", "do", "process"));
-      frame("support", "example", "example first one look show start intent-start", has2("example") && any("look", "show") && beforeStart("look", "show"));
+      frame("support", "together", "person together first try do process", has("together") && any("try", "do", "process"));
+      frame("support", "example", "example first one look show start intent-start", has("example") && any("look", "show") && beforeStart("look", "show"));
       frame("support", "step", "step sequence-step help explain receive do", any("step", "sequence-step") && any("explain", "receive", "do"));
-      frame("support", "choose", "needhelp help choose decide receive", has2("needhelp") && any("choose", "decide") && (has2("help") || has2("receive")));
-      const practice = any("practice", "practice-verb", "mix"), listen = has2("listen"), read = has2("read");
+      frame("support", "choose", "needhelp help choose decide receive", has("needhelp") && any("choose", "decide") && (has("help") || has("receive")));
+      const practice = any("practice", "practice-verb", "mix"), listen = has("listen"), read = has("read");
       frame("practice-mode", listen && read ? "mixed" : listen ? "listening" : "reading", "practice practice-verb audio visual text listen read both together mix do", practice && (listen || read));
       const topicFrames = [
         ["reading-books", "book read learn", "book"],
@@ -4053,7 +4624,7 @@ var require_member_statement_v5 = __commonJS({
         ["ai-tools", "ai inquiry use possibility know learn", "ai"]
       ];
       for (const [value, licensed, anchor] of topicFrames) {
-        const enough = value === "travel-planning" ? has2("travel") && any("route", "plan") : value === "travel-food" ? all("travel", "cooking") : value === "travel-stay" ? all("travel", "stay") : has2(anchor);
+        const enough = value === "travel-planning" ? has("travel") && any("route", "plan") : value === "travel-food" ? all("travel", "cooking") : value === "travel-stay" ? all("travel", "stay") : has(anchor);
         frame("topic", value, licensed, enough);
       }
       return matches.length === 1 ? matches[0] : null;
@@ -4159,22 +4730,22 @@ var require_member_statement_v5 = __commonJS({
       if (/(?:만약|라면|다면|가정하|상상하)/u.test(scoped.condition ? scoped.body : body.replace(/^(?:저라면|나라면)/u, ""))) return "hypothetical";
       return null;
     }
-    function pieces(text4) {
+    function pieces(text3) {
       const result = [], separator = /\s+(?:하지만|그런데|그리고|반면에?|다만)\s+|(?:지만|는데|좋고|좋아하고|편하고|즐겁고)(?=\s)|[.!?;\n,]+/gu;
       let start = 0, match;
       const push = (end) => {
-        while (start < end && /\s/u.test(text4[start])) start++;
-        while (end > start && /\s/u.test(text4[end - 1])) end--;
-        if (end > start) result.push({ start, end, quote: text4.slice(start, end) });
+        while (start < end && /\s/u.test(text3[start])) start++;
+        while (end > start && /\s/u.test(text3[end - 1])) end--;
+        if (end > start) result.push({ start, end, quote: text3.slice(start, end) });
       };
-      while (match = separator.exec(text4)) {
-        if (match[0] === "," && /(?:것|거)도\s*$/u.test(text4.slice(start, match.index)) && /^\s*.+?(?:것|거)도/u.test(text4.slice(match.index + 1))) continue;
-        if (/^(?:좋고|좋아하고|편하고|즐겁고)$/u.test(match[0]) && /^\s*(?:싶|말고|싫고|아니고|그랬)/u.test(text4.slice(match.index + match[0].length))) continue;
-        if (match[0] === "지만" && !/(?:좋|싫|하|되|있|없|않|했|았|었|겠|리|지|되|편이)$/u.test(text4.slice(start, match.index).replace(/\s/gu, ""))) continue;
+      while (match = separator.exec(text3)) {
+        if (match[0] === "," && /(?:것|거)도\s*$/u.test(text3.slice(start, match.index)) && /^\s*.+?(?:것|거)도/u.test(text3.slice(match.index + 1))) continue;
+        if (/^(?:좋고|좋아하고|편하고|즐겁고)$/u.test(match[0]) && /^\s*(?:싶|말고|싫고|아니고|그랬)/u.test(text3.slice(match.index + match[0].length))) continue;
+        if (match[0] === "지만" && !/(?:좋|싫|하|되|있|없|않|했|았|었|겠|리|지|되|편이)$/u.test(text3.slice(start, match.index).replace(/\s/gu, ""))) continue;
         push(match.index + (/^(?:지만|는데|좋고|좋아하고|편하고|즐겁고)$/u.test(match[0]) ? match[0].length : 0));
         start = match.index + match[0].length;
       }
-      push(text4.length);
+      push(text3.length);
       return result;
     }
     var OPTIONS_END = [{ id: "unsure", label: "아직 잘 모르겠어요" }, { id: "skip", label: "이 부분은 건너뛸게요" }];
@@ -4188,11 +4759,11 @@ var require_member_statement_v5 = __commonJS({
       decision: "판단 방식",
       "explanation-detail": "설명에서 원하는 구성"
     };
-    function analyze(text4) {
-      Legacy.parseMemberStatement(text4);
+    function analyze(text3) {
+      Legacy.parseMemberStatement(text3);
       const segments = [];
       let inherited = null, previousCondition = false, continuingCondition = null;
-      for (const evidence of pieces(text4)) {
+      for (const evidence of pieces(text3)) {
         const body = evidence.quote.replace(/\s/gu, ""), self = /^(?:나는|난|저는|제가|내가)/u.test(body), current = /^(?:(?:나는|난|저는|제가|내가))?(?:지금|요즘|현재|이제)/u.test(body);
         const generalReset = /^(?:(?:나는|난|저는|제가|내가))?(?:평소|보통은|일반적으로)/u.test(body);
         if (inherited === "other" && self || inherited === "past" && current || inherited === "condition" && generalReset || inherited === "uncertain" && current || ["quotation", "hypothetical", "sensitive"].includes(inherited) && self && current) inherited = null;
@@ -4220,7 +4791,7 @@ var require_member_statement_v5 = __commonJS({
         let unresolvedCondition = previousCondition && found?.meanings.some((m) => !m.condition) && !generalReset;
         if (unresolvedCondition) found = null;
         previousCondition = !!found?.meanings.some((m) => m.condition) && /(?:지만|는데)$/u.test(body);
-        const asking = /^[\s.!?]*/u.exec(text4.slice(evidence.end))[0].includes("?");
+        const asking = /^[\s.!?]*/u.exec(text3.slice(evidence.end))[0].includes("?");
         const uncertain = /(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|없지않|않지는않)/u.test(body);
         if (!found && !uncertain && /(?:때|땐|경우|상황|동안|오늘만|내일만|이번만|퇴근후|출근전)/u.test(body)) {
           unresolvedCondition = true;
@@ -4240,27 +4811,27 @@ var require_member_statement_v5 = __commonJS({
           segment.unresolved = { ...evidence, reason: why, reasonLabel: EXCLUDED[why] };
         }
         segments.push(segment);
-        if (segments.length === MEMBER_STATEMENT_LIMITS.unresolved && evidence.end < text4.length) {
+        if (segments.length === MEMBER_STATEMENT_LIMITS.unresolved && evidence.end < text3.length) {
           const last = segments.at(-1);
           delete last.meanings;
           delete last.candidate;
           delete last.generic;
-          last.evidence = { ...evidence, end: text4.length, quote: text4.slice(evidence.start) };
+          last.evidence = { ...evidence, end: text3.length, quote: text3.slice(evidence.start) };
           last.unresolved = { ...last.evidence, reason: "limit", reasonLabel: EXCLUDED.limit };
           break;
         }
       }
       return segments;
     }
-    function stateFor(text4, segments, answers, key) {
+    function stateFor(text3, segments, answers, key) {
       const raw = [], unresolved = [], questions = [];
       const question = (index, stage, label, options, apply) => {
-        const id2 = `q.${key}.${index}.${stage}`, answer = answers[id2];
+        const id = `q.${key}.${index}.${stage}`, answer = answers[id];
         if (answer !== void 0) {
           apply(answer);
           return;
         }
-        questions.push({ id: id2, about: id2, kind: "follow_up", label, options: [...options, ...OPTIONS_END].map((o) => ({ ...o, value: o.id })) });
+        questions.push({ id, about: id, kind: "follow_up", label, options: [...options, ...OPTIONS_END].map((o) => ({ ...o, value: o.id })) });
       };
       for (let index = 0; index < segments.length; index++) {
         const s = segments[index], add = (meanings2) => meanings2.forEach((m) => raw.push({ ...m, evidence: copy2(s.evidence) }));
@@ -4281,14 +4852,14 @@ var require_member_statement_v5 = __commonJS({
             }
           );
         } else if (s.generic) {
-          question(index, "field", `「${s.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(FIELDS).map(([id2, label]) => ({ id: id2, label })), (field) => {
+          question(index, "field", `「${s.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(FIELDS).map(([id, label]) => ({ id, label })), (field) => {
             handled = true;
             if (!Object.hasOwn(VALUES, field)) return;
-            question(index, "value", `${FIELDS[field]}에서 어떤 내용을 확인할까요?`, VALUES[field].map((id2) => ({ id: id2, label: LABELS[id2] })), (selected) => {
+            question(index, "value", `${FIELDS[field]}에서 어떤 내용을 확인할까요?`, VALUES[field].map((id) => ({ id, label: LABELS[id] })), (selected) => {
               if (!VALUES[field].includes(selected)) return;
               question(index, "polarity", `‘${LABELS[selected]}’을 지금 어떻게 생각하나요?`, [{ id: "prefer", label: "원하거나 선호해요" }, { id: "avoid", label: "원하거나 선호하지 않아요" }], (polarity) => {
                 if (!["prefer", "avoid"].includes(polarity)) return;
-                question(index, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(CONDITIONS).map(([id2, label]) => ({ id: id2, label }))], (condition) => {
+                question(index, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(CONDITIONS).map(([id, label]) => ({ id, label }))], (condition) => {
                   if (condition === "general" || Object.hasOwn(CONDITIONS, condition)) add([{ field, value: selected, polarity, condition: condition === "general" ? null : condition }]);
                 });
               });
@@ -4314,39 +4885,39 @@ var require_member_statement_v5 = __commonJS({
         const group = meanings.filter((other) => other.id === m.id || meaningsConflict(m, other));
         if (group.length < 2) continue;
         group.forEach((p) => grouped.add(p.id));
-        const id2 = `q.${key}.conflict.${sourceKey(group.map((p) => p.id + semanticKey(p)).join("|")).slice(0, 16)}`, answer = answers[id2];
-        if (answer === void 0) questions.push({ id: id2, about: id2, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...group.map((p) => ({ id: p.id, label: meaningLabel(p), value: p.id })), ...OPTIONS_END.map((o) => ({ ...o, value: o.id }))] });
+        const id = `q.${key}.conflict.${sourceKey(group.map((p) => p.id + semanticKey(p)).join("|")).slice(0, 16)}`, answer = answers[id];
+        if (answer === void 0) questions.push({ id, about: id, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...group.map((p) => ({ id: p.id, label: meaningLabel(p), value: p.id })), ...OPTIONS_END.map((o) => ({ ...o, value: o.id }))] });
         else for (const p of group) if (p.id !== answer) p.withheld = true;
       }
       return { meanings: meanings.filter((m) => !m.withheld), unresolved: unresolved.slice(0, MEMBER_STATEMENT_LIMITS.unresolved), questions };
     }
-    function choose(state, text4, segments, answers, key) {
+    function choose(state, text3, segments, answers, key) {
       const result = Ask2.choose({ questions: state.questions, decide: (scenario) => {
-        const outcome = stateFor(text4, segments, { ...answers, ...scenario }, key);
+        const outcome = stateFor(text3, segments, { ...answers, ...scenario }, key);
         return { meanings: outcome.meanings.map((m) => semanticKey(m)), questions: outcome.questions.map((q) => q.id) };
       } });
-      return result.status === "ask" ? { id: result.question.id, label: result.question.label, options: result.question.options.map(({ id: id2, label }) => ({ id: id2, label })) } : null;
+      return result.status === "ask" ? { id: result.question.id, label: result.question.label, options: result.question.options.map(({ id, label }) => ({ id, label })) } : null;
     }
-    function parseMemberStatement(text4, { clarifications = [], parserVersion = PARSER_VERSION } = {}) {
+    function parseMemberStatement(text3, { clarifications = [], parserVersion = PARSER_VERSION } = {}) {
       if (parserVersion === Legacy.PARSER_VERSION) {
-        if (clarifications.length) fail6();
-        return Legacy.parseMemberStatement(text4);
+        if (clarifications.length) fail5();
+        return Legacy.parseMemberStatement(text3);
       }
-      if (parserVersion === Previous.PARSER_VERSION) return Previous.parseMemberStatement(text4, { clarifications, parserVersion });
-      if (parserVersion === Previous3.PARSER_VERSION) return Previous3.parseMemberStatement(text4, { clarifications, parserVersion });
-      if (parserVersion === Previous4.PARSER_VERSION) return Previous4.parseMemberStatement(text4, { clarifications, parserVersion });
-      if (parserVersion !== PARSER_VERSION) fail6();
-      if (!list3(clarifications, MEMBER_STATEMENT_LIMITS.clarifications) || clarifications.some((row) => !exact5(row, ["questionId", "optionId"]) || typeof row.questionId !== "string" || typeof row.optionId !== "string")) fail6();
-      const segments = analyze(text4), key = sourceKey(text4), answers = /* @__PURE__ */ Object.create(null), clarificationAnswers = [];
-      let state = stateFor(text4, segments, answers, key), question = choose(state, text4, segments, answers, key);
+      if (parserVersion === Previous.PARSER_VERSION) return Previous.parseMemberStatement(text3, { clarifications, parserVersion });
+      if (parserVersion === Previous3.PARSER_VERSION) return Previous3.parseMemberStatement(text3, { clarifications, parserVersion });
+      if (parserVersion === Previous4.PARSER_VERSION) return Previous4.parseMemberStatement(text3, { clarifications, parserVersion });
+      if (parserVersion !== PARSER_VERSION) fail5();
+      if (!list3(clarifications, MEMBER_STATEMENT_LIMITS.clarifications) || clarifications.some((row) => !exact5(row, ["questionId", "optionId"]) || typeof row.questionId !== "string" || typeof row.optionId !== "string")) fail5();
+      const segments = analyze(text3), key = sourceKey(text3), answers = /* @__PURE__ */ Object.create(null), clarificationAnswers = [];
+      let state = stateFor(text3, segments, answers, key), question = choose(state, text3, segments, answers, key);
       for (const row of clarifications) {
-        if (!question || question.id !== row.questionId || Object.hasOwn(answers, row.questionId)) fail6();
+        if (!question || question.id !== row.questionId || Object.hasOwn(answers, row.questionId)) fail5();
         const option = question.options.find((o) => o.id === row.optionId);
-        if (!option) fail6();
+        if (!option) fail5();
         answers[row.questionId] = row.optionId;
         clarificationAnswers.push({ ...row, questionLabel: question.label, optionLabel: option.label });
-        state = stateFor(text4, segments, answers, key);
-        question = choose(state, text4, segments, answers, key);
+        state = stateFor(text3, segments, answers, key);
+        question = choose(state, text3, segments, answers, key);
       }
       if (clarifications.length === MEMBER_STATEMENT_LIMITS.clarifications && question) {
         const conflicted = state.meanings.filter((a) => state.meanings.some((b) => a !== b && meaningsConflict(a, b)));
@@ -4370,19 +4941,19 @@ var require_member_statement_v5 = __commonJS({
       if (parserVersion === Previous.PARSER_VERSION) return Previous.validateMemberStatement(row, { now, enforceTime });
       if (parserVersion === Previous3.PARSER_VERSION) return Previous3.validateMemberStatement(row, { now, enforceTime });
       if (parserVersion === Previous4.PARSER_VERSION) return Previous4.validateMemberStatement(row, { now, enforceTime });
-      if (!exact5(row, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || parserVersion !== PARSER_VERSION || typeof row.id !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id) || !list3(row.meanings, MEMBER_STATEMENT_LIMITS.meanings) || !row.meanings.length) fail6();
-      const at = instant(row.at), confirmed = instant(row.confirmedAt), cutoff = enforceTime ? typeof now === "string" ? instant(now) : Number.isSafeInteger(now) ? now : fail6() : null;
-      if (confirmed < at || enforceTime && confirmed > cutoff) fail6();
+      if (!exact5(row, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || parserVersion !== PARSER_VERSION || typeof row.id !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id) || !list3(row.meanings, MEMBER_STATEMENT_LIMITS.meanings) || !row.meanings.length) fail5();
+      const at = instant(row.at), confirmed = instant(row.confirmedAt), cutoff = enforceTime ? typeof now === "string" ? instant(now) : Number.isSafeInteger(now) ? now : fail5() : null;
+      if (confirmed < at || enforceTime && confirmed > cutoff) fail5();
       const parsed = parseMemberStatement(row.text, { clarifications: row.clarifications });
-      if (parsed.question) fail6();
+      if (parsed.question) fail5();
       const ids3 = /* @__PURE__ */ new Set(), meanings = row.meanings.map((m) => {
-        if (!exact5(m, ["id", "field", "value", "polarity", "condition", "evidence"]) || !exact5(m.evidence, ["start", "end", "quote"]) || ids3.has(m.id)) fail6();
+        if (!exact5(m, ["id", "field", "value", "polarity", "condition", "evidence"]) || !exact5(m.evidence, ["start", "end", "quote"]) || ids3.has(m.id)) fail5();
         ids3.add(m.id);
         const expected = parsed.meanings.find((p) => p.id === m.id);
-        if (!expected || ["field", "value", "polarity", "condition"].some((key) => m[key] !== expected[key]) || ["start", "end", "quote"].some((key) => m.evidence[key] !== expected.evidence[key])) fail6();
+        if (!expected || ["field", "value", "polarity", "condition"].some((key) => m[key] !== expected[key]) || ["start", "end", "quote"].some((key) => m.evidence[key] !== expected.evidence[key])) fail5();
         return copy2(expected);
       }).sort((a, b) => Number(a.id.slice(1)) - Number(b.id.slice(1)));
-      if (meanings.some((a, i) => meanings.slice(i + 1).some((b) => meaningsConflict(a, b)))) fail6();
+      if (meanings.some((a, i) => meanings.slice(i + 1).some((b) => meaningsConflict(a, b)))) fail5();
       return { id: row.id.toLowerCase(), parserVersion: PARSER_VERSION, text: row.text, at: row.at, confirmedAt: row.confirmedAt, meanings, clarifications: parsed.clarifications };
     }
     module.exports = { PARSER_VERSION, MEMBER_STATEMENT_LIMITS, MEMBER_STATEMENT_VALUES: VALUES, MEMBER_STATEMENT_LABELS: LABELS, MEMBER_STATEMENT_CONDITIONS: CONDITIONS, MEMBER_STATEMENT_MULTI_FIELDS: MULTI_FIELDS, parseMemberStatement, validateMemberStatement, meaningsConflict, meaningLabel };
@@ -4453,15 +5024,15 @@ var require_member_statement_v6 = __commonJS({
     };
     var exact5 = (x, fields2) => plain2(x) && Reflect.ownKeys(x).length === fields2.length && fields2.every((key) => data(x, key));
     var list3 = (x, max) => Array.isArray(x) && x.length <= max && Reflect.ownKeys(x).length === x.length + 1 && Array.from({ length: x.length }, (_, i) => data(x, String(i))).every(Boolean);
-    var fail6 = () => {
+    var fail5 = () => {
       throw new TypeError("Member statement: invalid confirmed statement");
     };
-    var instant = (x) => typeof x === "string" && Number.isFinite(Date.parse(x)) && new Date(x).toISOString() === x ? Date.parse(x) : fail6();
+    var instant = (x) => typeof x === "string" && Number.isFinite(Date.parse(x)) && new Date(x).toISOString() === x ? Date.parse(x) : fail5();
     var semanticKey = (m) => [m.field, m.value, m.polarity, m.condition || "general"].join(":");
     var copy2 = (x) => JSON.parse(JSON.stringify(x));
     var SHA_K = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
-    function sourceKey(text4) {
-      const bytes = new TextEncoder().encode(text4), padded = new Uint8Array(Math.ceil((bytes.length + 9) / 64) * 64);
+    function sourceKey(text3) {
+      const bytes = new TextEncoder().encode(text3), padded = new Uint8Array(Math.ceil((bytes.length + 9) / 64) * 64);
       padded.set(bytes);
       padded[bytes.length] = 128;
       new DataView(padded.buffer).setUint32(padded.length - 4, bytes.length * 8);
@@ -4533,8 +5104,8 @@ var require_member_statement_v6 = __commonJS({
       body = body.replace(/^(?:저는|나는|난|제가|내가|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|현재(?:는)?|평소(?:에는|엔|는)|보통은|일반적으로는)/u, "");
       let condition = null;
       const prefixes = [["first-try", /^(?:처음(?:에는|엔|은)|처음(?:시도)?할때(?:에는|는)?|처음배울때(?:에는|는)?|처음(?:배우는|해보는|하는)(?:일|내용)(?:은|을할때(?:는)?)|낯선(?:일|내용)(?:은|을할때(?:는)?))/u], ["familiar", /^(?:익숙할때(?:는)?|익숙한(?:내용|일)(?:일때(?:는)?|은))/u], ["busy", /^(?:바쁠때(?:는)?|시간이없을때(?:는)?|바쁜날(?:에는|엔|은))/u]];
-      for (const [id2, re] of prefixes) if (re.test(body)) {
-        condition = id2;
+      for (const [id, re] of prefixes) if (re.test(body)) {
+        condition = id;
         body = body.replace(re, "");
         break;
       }
@@ -4869,8 +5440,8 @@ var require_member_statement_v6 = __commonJS({
       body = body.replace(/좋(?:아하)?고요$/u, (s) => s.startsWith("좋아") ? "좋아해요" : "좋아요").replace(/싶고$/u, "싶어요").replace(/을땐/gu, "을때는").replace(/^(?:저라면|나라면)/u, "");
       body = body.replace(/^(?:저는|나는|난|제가|내가|저한테는|제게는|나한테는|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|이제(?:는|부터는)?|현재(?:는)?|평소(?:에는|엔|는)?|보통은|일반적으로는)/u, "");
       let condition = null;
-      for (const [id2, prefix] of CONDITION_PREFIXES) if (prefix.test(body)) {
-        condition = id2;
+      for (const [id, prefix] of CONDITION_PREFIXES) if (prefix.test(body)) {
+        condition = id;
         body = body.replace(prefix, "");
         break;
       }
@@ -5326,39 +5897,39 @@ var require_member_statement_v6 = __commonJS({
     function composeRoles(units, nominalHead) {
       const tags = units.filter((t) => !["nominal", "means", "method"].includes(t));
       if (nominalHead === "explanation" && !tags.includes("explanation")) tags.push("explanation");
-      const has2 = (t) => tags.includes(t), any = (...t) => t.some(has2), all = (...t) => t.every(has2), before = (a, b) => tags.indexOf(a) < tags.indexOf(b);
-      const beforeStart = (...actions) => !has2("start") || actions.some((action) => has2(action) && before(action, "start"));
-      const beforeOverview = has2("overview") ? tags.slice(0, tags.indexOf("overview")) : [];
+      const has = (t) => tags.includes(t), any = (...t) => t.some(has), all = (...t) => t.every(has), before = (a, b) => tags.indexOf(a) < tags.indexOf(b);
+      const beforeStart = (...actions) => !has("start") || actions.some((action) => has(action) && before(action, "start"));
+      const beforeOverview = has("overview") ? tags.slice(0, tags.indexOf("overview")) : [];
       const overviewLeads = beforeOverview.every((t) => ["explanation", "detail", "content", "first", "enter", "before"].includes(t)) && (!beforeOverview.includes("enter") || beforeOverview.indexOf("enter") < beforeOverview.indexOf("before"));
-      const explained = has2("explain") || all("explanation", "receive");
+      const explained = has("explain") || all("explanation", "receive");
       const matches = [], frame = (field, value, licensed, required) => {
         const allowed = new Set(licensed.split(" "));
         if (required && tags.every((t) => allowed.has(t))) matches.push({ field, value });
       };
-      frame("communication", "written", "text opinion communicate write send organize speak exchange answer receive", has2("text") && any("communicate", "write", "send", "organize", "speak", "exchange"));
-      frame("communication", "spoken", "speech opinion communicate speak send exchange", has2("speech") && any("communicate", "speak", "send", "exchange"));
+      frame("communication", "written", "text opinion communicate write send organize speak exchange answer receive", has("text") && any("communicate", "write", "send", "organize", "speak", "exchange"));
+      frame("communication", "spoken", "speech opinion communicate speak send exchange", has("speech") && any("communicate", "speak", "send", "exchange"));
       frame("communication", "listen-organize", "person opinion speech first listen organize communicate", any("opinion", "speech") && all("listen", "organize") && before("listen", "organize"));
-      frame("communication", "share-first", "opinion speech first speak send start different-opinion occur before", has2("opinion") && any("speak", "send") && (has2("first") || all("different-opinion", "before")));
-      frame("work-style", "plan-first", "task plan first make decide start before-start", has2("plan") && any("make", "decide") && beforeStart("make", "decide"));
+      frame("communication", "share-first", "opinion speech first speak send start different-opinion occur before", has("opinion") && any("speak", "send") && (has("first") || all("different-opinion", "before")));
+      frame("work-style", "plan-first", "task plan first make decide start before-start", has("plan") && any("make", "decide") && beforeStart("make", "decide"));
       frame("work-style", "try-adjust", "small first try start mismatch later adjust outcome look method task do", all("try", "adjust") && before("try", "adjust"));
-      frame("work-style", "single-task", "task one focus process finish do next proceed present-task start multiple process-frame", has2("one") && any("focus", "process", "finish", "do", "process-frame") && (!has2("next") || has2("finish") && before("finish", "next")));
-      frame("work-style", "prioritize", "task priority important first rank order front make decide process finish do identity", any("process", "finish", "do") && (has2("priority") && any("rank", "make", "decide") || has2("important") && any("rank", "order", "front", "first")));
-      frame("decision", "evidence", "data first check look reference basis decide conclusion decision-context possibility", has2("data") && any("check", "look", "reference", "basis"));
-      frame("decision", "compare-options", "options available arrange compare check decide conclusion", has2("options") && any("compare", "check"));
-      frame("decision", "experience", "experience reference basis decide conclusion decision-context", has2("experience") && any("reference", "basis"));
-      frame("decision", "consult", "person opinion exchange first consult decide conclusion", has2("consult"));
-      frame("explanation-detail", "overview-first", "explanation overview first detail content enter before look show know listen make explain receive do reason-effect", has2("overview") && overviewLeads && (any("look", "show", "know", "listen", "make") || explained) && (has2("first") || all("content", "before")));
-      frame("explanation-detail", "reasons-detail", "explanation-purpose explanation conclusion occur reason data detail know listen look explain receive", any("reason", "data") && has2("detail") && (any("know", "listen", "look") || explained));
+      frame("work-style", "single-task", "task one focus process finish do next proceed present-task start multiple process-frame", has("one") && any("focus", "process", "finish", "do", "process-frame") && (!has("next") || has("finish") && before("finish", "next")));
+      frame("work-style", "prioritize", "task priority important first rank order front make decide process finish do identity", any("process", "finish", "do") && (has("priority") && any("rank", "make", "decide") || has("important") && any("rank", "order", "front", "first")));
+      frame("decision", "evidence", "data first check look reference basis decide conclusion decision-context possibility", has("data") && any("check", "look", "reference", "basis"));
+      frame("decision", "compare-options", "options available arrange compare check decide conclusion", has("options") && any("compare", "check"));
+      frame("decision", "experience", "experience reference basis decide conclusion decision-context", has("experience") && any("reference", "basis"));
+      frame("decision", "consult", "person opinion exchange first consult decide conclusion", has("consult"));
+      frame("explanation-detail", "overview-first", "explanation overview first detail content enter before look show know listen make explain receive do reason-effect", has("overview") && overviewLeads && (any("look", "show", "know", "listen", "make") || explained) && (has("first") || all("content", "before")));
+      frame("explanation-detail", "reasons-detail", "explanation-purpose explanation conclusion occur reason data detail know listen look explain receive", any("reason", "data") && has("detail") && (any("know", "listen", "look") || explained));
       frame("explanation-detail", "long-flow", "explanation long flow explain listen", all("explanation", "long"));
-      frame("explanation", "brief", "explanation short explain listen know finish receive do", has2("short") && (has2("explanation") || any("explain", "listen", "know")));
-      frame("explanation", "detailed", "explanation detail content explain listen know receive", has2("detail") && (has2("explanation") || any("explain", "listen", "know")));
+      frame("explanation", "brief", "explanation short explain listen know finish receive do", has("short") && (has("explanation") || any("explain", "listen", "know")));
+      frame("explanation", "detailed", "explanation detail content explain listen know receive", has("detail") && (has("explanation") || any("explain", "listen", "know")));
       frame("explanation", "standard", "explanation standard listen receive length", all("explanation", "standard"));
       frame("support", "independent", "self nohelp first try do process before-help", any("self", "nohelp") && any("try", "do", "process"));
-      frame("support", "together", "person together first try do process", has2("together") && any("try", "do", "process"));
-      frame("support", "example", "example first one look show start intent-start help method inquiry", has2("example") && any("look", "show") && beforeStart("look", "show"));
+      frame("support", "together", "person together first try do process", has("together") && any("try", "do", "process"));
+      frame("support", "example", "example first one look show start intent-start help method inquiry", has("example") && any("look", "show") && beforeStart("look", "show"));
       frame("support", "step", "step sequence-step help explain receive do order person", any("step", "sequence-step") && any("explain", "receive", "do", "help"));
-      frame("support", "choose", "needhelp help choose decide receive", has2("needhelp") && any("choose", "decide") && (has2("help") || has2("receive")));
-      const practice = any("practice", "practice-verb", "mix"), listen = has2("listen"), read = has2("read");
+      frame("support", "choose", "needhelp help choose decide receive", has("needhelp") && any("choose", "decide") && (has("help") || has("receive")));
+      const practice = any("practice", "practice-verb", "mix"), listen = has("listen"), read = has("read");
       frame("practice-mode", listen && read ? "mixed" : listen ? "listening" : "reading", "practice practice-verb audio visual text listen read both together mix do enter", practice && (listen || read));
       const topicFrames = [
         ["reading-books", "book read learn", "book"],
@@ -5379,7 +5950,7 @@ var require_member_statement_v6 = __commonJS({
         ["work-collaboration", "task together do person collaboration method know", "collaboration"]
       ];
       for (const [value, licensed, anchor] of topicFrames) {
-        const enough = value === "travel-planning" ? has2("travel") && any("route", "plan") : value === "travel-food" ? all("travel", "cooking") : value === "travel-stay" ? all("travel", "stay") : has2(anchor);
+        const enough = value === "travel-planning" ? has("travel") && any("route", "plan") : value === "travel-food" ? all("travel", "cooking") : value === "travel-stay" ? all("travel", "stay") : has(anchor);
         frame("topic", value, licensed + " opinion content topic-frame learn know", enough);
       }
       return matches.length === 1 ? matches[0] : null;
@@ -5480,36 +6051,36 @@ var require_member_statement_v6 = __commonJS({
       const results = [], add = (field, value, pass) => {
         if (pass && (!fields2 || fields2.includes(field))) results.push({ field, value, polarity, condition });
       };
-      const has2 = (re) => re.test(body), both = (a, b) => has2(a) && has2(b), pos = (re) => body.search(re), ordered = (a, b) => pos(a) >= 0 && pos(b) > pos(a);
-      const topicContext = has2(/(?:주제|소재|관심|분야|취미|배우|배워|공부|다루|익히)/u);
-      const practiceContext = has2(/(?:연습|문제|학습)/u) && !has2(/(?:주제|소재|관한)/u);
+      const has = (re) => re.test(body), both = (a, b) => has(a) && has(b), pos = (re) => body.search(re), ordered = (a, b) => pos(a) >= 0 && pos(b) > pos(a);
+      const topicContext = has(/(?:주제|소재|관심|분야|취미|배우|배워|공부|다루|익히)/u);
+      const practiceContext = has(/(?:연습|문제|학습)/u) && !has(/(?:주제|소재|관한)/u);
       if (practiceContext) {
-        const listening = has2(/(?:듣기|듣는|듣고|들으며|들으면서|들어)/u), reading = has2(/(?:읽기|읽는|읽고|읽으며|읽으면서)/u);
+        const listening = has(/(?:듣기|듣는|듣고|들으며|들으면서|들어)/u), reading = has(/(?:읽기|읽는|읽고|읽으며|읽으면서)/u);
         add("practice-mode", listening && reading ? "mixed" : listening ? "listening" : "reading", listening || reading);
       }
-      const noPriorStart = (verb) => !has2(/(?:시작하|시작한|착수하|착수한)/u) || ordered(verb, /(?:시작하|시작한|착수하|착수한)/u);
-      add("support", "independent", both(/(?:혼자|스스로|제힘으로|내힘으로|도움없이|누구도움없이)/u, /(?:시도|해보|진행|마무리|해결|하[는기고]|끝내)/u) && !has2(/함께|같이/u));
-      add("support", "together", both(/(?:함께|같이)/u, /(?:해보|해나가|풀어가|푸는|풀기|진행|하는|하기|해결)/u) && !topicContext && !has2(/혼자|도움없이/u));
+      const noPriorStart = (verb) => !has(/(?:시작하|시작한|착수하|착수한)/u) || ordered(verb, /(?:시작하|시작한|착수하|착수한)/u);
+      add("support", "independent", both(/(?:혼자|스스로|제힘으로|내힘으로|도움없이|누구도움없이)/u, /(?:시도|해보|진행|마무리|해결|하[는기고]|끝내)/u) && !has(/함께|같이/u));
+      add("support", "together", both(/(?:함께|같이)/u, /(?:해보|해나가|풀어가|푸는|풀기|진행|하는|하기|해결)/u) && !topicContext && !has(/혼자|도움없이/u));
       add("support", "example", both(/예시|예제|샘플|완성된예/u, /보여|살펴|보고|보는|보기|확인/u) && noPriorStart(/보여|살펴|보고|보는|확인/u));
       add("support", "step", both(/단계별|한단계씩|차근차근|차례차례/u, /도움|도와|안내|알려|짚어|설명|받/u));
-      add("support", "choose", both(/도움/u, /필요/u) && has2(/골라|고르|선택/u) && has2(/받|켜|사용/u));
-      const explanation = has2(/설명|알려|풀어|풀이/u), standard = has2(/보통|중간길이/u), detail = has2(/자세|상세|세세|구체적|속속들이/u), brief = has2(/짧|간단|간결|핵심만|요점만/u);
+      add("support", "choose", both(/도움/u, /필요/u) && has(/골라|고르|선택/u) && has(/받|켜|사용/u));
+      const explanation = has(/설명|알려|풀어|풀이/u), standard = has(/보통|중간길이/u), detail = has(/자세|상세|세세|구체적|속속들이/u), brief = has(/짧|간단|간결|핵심만|요점만/u);
       add("explanation", "standard", explanation && standard && !detail);
-      add("explanation", "brief", explanation && brief && !standard && !detail && !has2(/길게|긴설명/u));
-      const reasonDetail = has2(/근거|이유|왜그런/u) && detail;
+      add("explanation", "brief", explanation && brief && !standard && !detail && !has(/길게|긴설명/u));
+      const reasonDetail = has(/근거|이유|왜그런/u) && detail;
       add("explanation", "detailed", explanation && detail && !reasonDetail && !brief && !standard);
-      add("explanation-detail", "reasons-detail", reasonDetail && has2(/알|듣|설명|받|보/u));
-      add("explanation-detail", "long-flow", explanation && has2(/길게이어|길게계속|긴설명을끊|길게설명/u));
-      const overview = has2(/개요|큰그림|전체흐름|전체구조|큰틀/u);
-      add("explanation-detail", "overview-first", overview && has2(/먼저|부터|우선/u) && has2(/보|듣|파악|알/u) && !/(?:듣고|받고|보고|설명하고).*(?:개요|큰그림|전체흐름|큰틀)/u.test(body));
+      add("explanation-detail", "reasons-detail", reasonDetail && has(/알|듣|설명|받|보/u));
+      add("explanation-detail", "long-flow", explanation && has(/길게이어|길게계속|긴설명을끊|길게설명/u));
+      const overview = has(/개요|큰그림|전체흐름|전체구조|큰틀/u);
+      add("explanation-detail", "overview-first", overview && has(/먼저|부터|우선/u) && has(/보|듣|파악|알/u) && !/(?:듣고|받고|보고|설명하고).*(?:개요|큰그림|전체흐름|큰틀)/u.test(body));
       if (!topicContext && !practiceContext) {
-        add("communication", "written", both(/글로|문자로|메시지로|메신저로|텍스트로|글을/u, /소통|전달|주고받|쓰|적|남기|정리/u) && !has2(/말로|목소리/u));
-        add("communication", "spoken", both(/말로|말을|목소리|대화로/u, /소통|주고받|이야기|대화|전달/u) && !has2(/글로|문자로/u));
-        add("communication", "listen-organize", has2(/다른.*(?:생각|말|의견)|상대.*(?:생각|말|의견)|동료.*(?:생각|말|의견)/u) && ordered(/듣|들어/u, /정리|정돈|취합/u));
-        add("communication", "share-first", has2(/(?:제|내)(?:의견|생각)/u) && has2(/먼저|부터/u) && has2(/말하|꺼내|내는|전하/u));
+        add("communication", "written", both(/글로|문자로|메시지로|메신저로|텍스트로|글을/u, /소통|전달|주고받|쓰|적|남기|정리/u) && !has(/말로|목소리/u));
+        add("communication", "spoken", both(/말로|말을|목소리|대화로/u, /소통|주고받|이야기|대화|전달/u) && !has(/글로|문자로/u));
+        add("communication", "listen-organize", has(/다른.*(?:생각|말|의견)|상대.*(?:생각|말|의견)|동료.*(?:생각|말|의견)/u) && ordered(/듣|들어/u, /정리|정돈|취합/u));
+        add("communication", "share-first", has(/(?:제|내)(?:의견|생각)/u) && has(/먼저|부터/u) && has(/말하|꺼내|내는|전하/u));
         add("work-style", "plan-first", both(/계획|일정|할일목록/u, /세우|세워|짜|정해|만들/u) && noPriorStart(/세우|세워|짜|정해|만들/u));
         add("work-style", "try-adjust", ordered(/해보|시도|실행/u, /고치|고쳐|조정|수정|보완/u));
-        add("work-style", "single-task", has2(/한번에(?:한가지|하나)|하나씩|한가지만/u) && has2(/처리|하는|하기|끝내|마무리/u));
+        add("work-style", "single-task", has(/한번에(?:한가지|하나)|하나씩|한가지만/u) && has(/처리|하는|하기|끝내|마무리/u));
         add("work-style", "prioritize", both(/우선순위|중요한순서|중요도/u, /정하|정한|정해|매겨|매기|처리/u));
         add("decision", "evidence", both(/자료|데이터|근거|사실/u, /확인|검토|살펴|바탕|기준|참고/u) && !reasonDetail);
         add("decision", "compare-options", both(/선택지|대안|후보|장단점/u, /비교|따져/u));
@@ -5677,26 +6248,26 @@ var require_member_statement_v6 = __commonJS({
       if (/(?:만약|라면|다면|가정하|상상하)/u.test(scoped.condition ? scoped.body : surfaceDeclaration(body).replace(/^(?:저라면|나라면)/u, ""))) return "hypothetical";
       return null;
     }
-    function pieces(text4) {
+    function pieces(text3) {
       const result = [], separator = /\s+(?:하지만|그런데|그리고|반면에?|다만)\s+|(?:지만|는데|좋고|좋아하고|편하고|즐겁고|싶고)(?=\s|,)|[.!?;\n,]+/gu;
       let start = 0, match;
       const push = (end) => {
-        while (start < end && /\s/u.test(text4[start])) start++;
-        while (end > start && /\s/u.test(text4[end - 1])) end--;
-        if (end > start) result.push({ start, end, quote: text4.slice(start, end) });
+        while (start < end && /\s/u.test(text3[start])) start++;
+        while (end > start && /\s/u.test(text3[end - 1])) end--;
+        if (end > start) result.push({ start, end, quote: text3.slice(start, end) });
       };
-      while (match = separator.exec(text4)) {
+      while (match = separator.exec(text3)) {
         if (match[0] === ",") {
-          const prefix = text4.slice(start, match.index), scoped = normalizePrefix(surfaceDeclaration(prefix));
+          const prefix = text3.slice(start, match.index), scoped = normalizePrefix(surfaceDeclaration(prefix));
           if (scoped.condition && !scoped.body || /^어느쪽을고를지$/u.test(scoped.body) || /(?:인지|할지|갈지|는지|식으로|방식으로)\s*$/u.test(prefix) || /고\s*$/u.test(prefix) && !/해\s*주시고\s*$/u.test(prefix)) continue;
         }
-        if (match[0] === "," && /(?:것|거)도\s*$/u.test(text4.slice(start, match.index)) && /^\s*.+?(?:것|거)도/u.test(text4.slice(match.index + 1))) continue;
-        if (/^(?:좋고|좋아하고|편하고|즐겁고)$/u.test(match[0]) && /^\s*(?:싶|말고|싫고|아니고|그랬)/u.test(text4.slice(match.index + match[0].length))) continue;
-        if (match[0] === "지만" && !/(?:좋|싫|하|되|있|없|않|했|았|었|겠|리|지|되|편이)$/u.test(text4.slice(start, match.index).replace(/\s/gu, ""))) continue;
+        if (match[0] === "," && /(?:것|거)도\s*$/u.test(text3.slice(start, match.index)) && /^\s*.+?(?:것|거)도/u.test(text3.slice(match.index + 1))) continue;
+        if (/^(?:좋고|좋아하고|편하고|즐겁고)$/u.test(match[0]) && /^\s*(?:싶|말고|싫고|아니고|그랬)/u.test(text3.slice(match.index + match[0].length))) continue;
+        if (match[0] === "지만" && !/(?:좋|싫|하|되|있|없|않|했|았|었|겠|리|지|되|편이)$/u.test(text3.slice(start, match.index).replace(/\s/gu, ""))) continue;
         push(match.index + (/^(?:지만|는데|좋고|좋아하고|편하고|즐겁고|싶고)$/u.test(match[0]) ? match[0].length : 0));
         start = match.index + match[0].length;
       }
-      push(text4.length);
+      push(text3.length);
       return result;
     }
     var OPTIONS_END = [{ id: "unsure", label: "아직 잘 모르겠어요" }, { id: "skip", label: "이 부분은 건너뛸게요" }];
@@ -5710,11 +6281,11 @@ var require_member_statement_v6 = __commonJS({
       decision: "판단 방식",
       "explanation-detail": "설명에서 원하는 구성"
     };
-    function analyze(text4) {
-      Legacy.parseMemberStatement(text4);
+    function analyze(text3) {
+      Legacy.parseMemberStatement(text3);
       const segments = [];
       let inherited = null, previousCondition = false, continuingCondition = null;
-      for (const evidence of pieces(text4)) {
+      for (const evidence of pieces(text3)) {
         const body = evidence.quote.replace(/\s/gu, ""), self = /^(?:나는|난|저는|제가|내가)/u.test(body), current = /^(?:(?:나는|난|저는|제가|내가))?(?:지금|요즘|현재|이제)/u.test(body);
         const generalReset = /^(?:(?:나는|난|저는|제가|내가))?(?:평소|보통은|일반적으로)/u.test(body);
         if (inherited === "other" && self || inherited === "past" && current || inherited === "condition" && generalReset || inherited === "uncertain" && current || ["quotation", "hypothetical", "sensitive"].includes(inherited) && self && current) inherited = null;
@@ -5728,7 +6299,7 @@ var require_member_statement_v6 = __commonJS({
           continue;
         }
         let found = natural(evidence.quote) || expanded(evidence.quote) || compositional(evidence.quote) || tentative(evidence.quote) || restrictedMethod(evidence.quote);
-        if (!found && !/^[\s.!?]*\?/u.test(text4.slice(evidence.end)) && segments.at(-1)?.meanings?.length && (/^(?:그게|그건|이게|이건|제|내)?(?:취미|관심분야)(?:예요|입니다|거든요|라서요)$/u.test(body) || /^(?:(?:저는|나는)?(?:그쪽|그방식|그방법)(?:이|은)|그래야)(?:더)?(?:편해요|편하더라|좋아요)$/u.test(body) || /^(?:제가|내가)원하는방식(?:이에요|입니다)$/u.test(body) || /^그정도(?:분량|길이)(?:를|을)선호해요$/u.test(body) || segments.at(-1).meanings.some((m) => m.field === "communication" && m.value === "share-first") && /^다른얘기(?:는)?그뒤에들을래(?:요)?$/u.test(body))) {
+        if (!found && !/^[\s.!?]*\?/u.test(text3.slice(evidence.end)) && segments.at(-1)?.meanings?.length && (/^(?:그게|그건|이게|이건|제|내)?(?:취미|관심분야)(?:예요|입니다|거든요|라서요)$/u.test(body) || /^(?:(?:저는|나는)?(?:그쪽|그방식|그방법)(?:이|은)|그래야)(?:더)?(?:편해요|편하더라|좋아요)$/u.test(body) || /^(?:제가|내가)원하는방식(?:이에요|입니다)$/u.test(body) || /^그정도(?:분량|길이)(?:를|을)선호해요$/u.test(body) || segments.at(-1).meanings.some((m) => m.field === "communication" && m.value === "share-first") && /^다른얘기(?:는)?그뒤에들을래(?:요)?$/u.test(body))) {
           segment.meanings = [];
           segments.push(segment);
           continue;
@@ -5742,7 +6313,7 @@ var require_member_statement_v6 = __commonJS({
         let unresolvedCondition = previousCondition && found?.meanings.some((m) => !m.condition) && !generalReset;
         if (unresolvedCondition) found = null;
         previousCondition = !!found?.meanings.some((m) => m.condition) && /(?:지만|는데)$/u.test(body);
-        const asking = /^[\s.!?]*/u.exec(text4.slice(evidence.end))[0].includes("?");
+        const asking = /^[\s.!?]*/u.exec(text3.slice(evidence.end))[0].includes("?");
         const uncertain = /(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|없지않|않지는않)/u.test(body);
         if (!found && !uncertain && /(?:때|땐|경우|상황|동안|오늘만|내일만|이번만|퇴근후|출근전)/u.test(body)) {
           unresolvedCondition = true;
@@ -5762,27 +6333,27 @@ var require_member_statement_v6 = __commonJS({
           segment.unresolved = { ...evidence, reason: why, reasonLabel: EXCLUDED[why] };
         }
         segments.push(segment);
-        if (segments.length === MEMBER_STATEMENT_LIMITS.unresolved && evidence.end < text4.length) {
+        if (segments.length === MEMBER_STATEMENT_LIMITS.unresolved && evidence.end < text3.length) {
           const last = segments.at(-1);
           delete last.meanings;
           delete last.candidate;
           delete last.generic;
-          last.evidence = { ...evidence, end: text4.length, quote: text4.slice(evidence.start) };
+          last.evidence = { ...evidence, end: text3.length, quote: text3.slice(evidence.start) };
           last.unresolved = { ...last.evidence, reason: "limit", reasonLabel: EXCLUDED.limit };
           break;
         }
       }
       return segments;
     }
-    function stateFor(text4, segments, answers, key) {
+    function stateFor(text3, segments, answers, key) {
       const raw = [], unresolved = [], questions = [];
       const question = (index, stage, label, options, apply) => {
-        const id2 = `q.${key}.${index}.${stage}`, answer = answers[id2];
+        const id = `q.${key}.${index}.${stage}`, answer = answers[id];
         if (answer !== void 0) {
           apply(answer);
           return;
         }
-        questions.push({ id: id2, about: id2, kind: "follow_up", label, options: [...options, ...OPTIONS_END].map((o) => ({ ...o, value: o.id })) });
+        questions.push({ id, about: id, kind: "follow_up", label, options: [...options, ...OPTIONS_END].map((o) => ({ ...o, value: o.id })) });
       };
       for (let index = 0; index < segments.length; index++) {
         const s = segments[index], add = (meanings2) => meanings2.forEach((m) => raw.push({ ...m, evidence: copy2(s.evidence) }));
@@ -5803,14 +6374,14 @@ var require_member_statement_v6 = __commonJS({
             }
           );
         } else if (s.generic) {
-          question(index, "field", `「${s.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(FIELDS).map(([id2, label]) => ({ id: id2, label })), (field) => {
+          question(index, "field", `「${s.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(FIELDS).map(([id, label]) => ({ id, label })), (field) => {
             handled = true;
             if (!Object.hasOwn(VALUES, field)) return;
-            question(index, "value", `${FIELDS[field]}에서 어떤 내용을 확인할까요?`, VALUES[field].map((id2) => ({ id: id2, label: LABELS[id2] })), (selected) => {
+            question(index, "value", `${FIELDS[field]}에서 어떤 내용을 확인할까요?`, VALUES[field].map((id) => ({ id, label: LABELS[id] })), (selected) => {
               if (!VALUES[field].includes(selected)) return;
               question(index, "polarity", `‘${LABELS[selected]}’을 지금 어떻게 생각하나요?`, [{ id: "prefer", label: "원하거나 선호해요" }, { id: "avoid", label: "원하거나 선호하지 않아요" }], (polarity) => {
                 if (!["prefer", "avoid"].includes(polarity)) return;
-                question(index, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(CONDITIONS).map(([id2, label]) => ({ id: id2, label }))], (condition) => {
+                question(index, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(CONDITIONS).map(([id, label]) => ({ id, label }))], (condition) => {
                   if (condition === "general" || Object.hasOwn(CONDITIONS, condition)) add([{ field, value: selected, polarity, condition: condition === "general" ? null : condition }]);
                 });
               });
@@ -5836,40 +6407,40 @@ var require_member_statement_v6 = __commonJS({
         const group = meanings.filter((other) => other.id === m.id || meaningsConflict(m, other));
         if (group.length < 2) continue;
         group.forEach((p) => grouped.add(p.id));
-        const id2 = `q.${key}.conflict.${sourceKey(group.map((p) => p.id + semanticKey(p)).join("|")).slice(0, 16)}`, answer = answers[id2];
-        if (answer === void 0) questions.push({ id: id2, about: id2, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...group.map((p) => ({ id: p.id, label: meaningLabel(p), value: p.id })), ...OPTIONS_END.map((o) => ({ ...o, value: o.id }))] });
+        const id = `q.${key}.conflict.${sourceKey(group.map((p) => p.id + semanticKey(p)).join("|")).slice(0, 16)}`, answer = answers[id];
+        if (answer === void 0) questions.push({ id, about: id, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...group.map((p) => ({ id: p.id, label: meaningLabel(p), value: p.id })), ...OPTIONS_END.map((o) => ({ ...o, value: o.id }))] });
         else for (const p of group) if (p.id !== answer) p.withheld = true;
       }
       return { meanings: meanings.filter((m) => !m.withheld), unresolved: unresolved.slice(0, MEMBER_STATEMENT_LIMITS.unresolved), questions };
     }
-    function choose(state, text4, segments, answers, key) {
+    function choose(state, text3, segments, answers, key) {
       const result = Ask2.choose({ questions: state.questions, decide: (scenario) => {
-        const outcome = stateFor(text4, segments, { ...answers, ...scenario }, key);
+        const outcome = stateFor(text3, segments, { ...answers, ...scenario }, key);
         return { meanings: outcome.meanings.map((m) => semanticKey(m)), questions: outcome.questions.map((q) => q.id) };
       } });
-      return result.status === "ask" ? { id: result.question.id, label: result.question.label, options: result.question.options.map(({ id: id2, label }) => ({ id: id2, label })) } : null;
+      return result.status === "ask" ? { id: result.question.id, label: result.question.label, options: result.question.options.map(({ id, label }) => ({ id, label })) } : null;
     }
-    function parseMemberStatement(text4, { clarifications = [], parserVersion = PARSER_VERSION } = {}) {
+    function parseMemberStatement(text3, { clarifications = [], parserVersion = PARSER_VERSION } = {}) {
       if (parserVersion === Legacy.PARSER_VERSION) {
-        if (clarifications.length) fail6();
-        return Legacy.parseMemberStatement(text4);
+        if (clarifications.length) fail5();
+        return Legacy.parseMemberStatement(text3);
       }
-      if (parserVersion === Previous.PARSER_VERSION) return Previous.parseMemberStatement(text4, { clarifications, parserVersion });
-      if (parserVersion === Previous3.PARSER_VERSION) return Previous3.parseMemberStatement(text4, { clarifications, parserVersion });
-      if (parserVersion === Previous4.PARSER_VERSION) return Previous4.parseMemberStatement(text4, { clarifications, parserVersion });
-      if (parserVersion === Previous5.PARSER_VERSION) return Previous5.parseMemberStatement(text4, { clarifications, parserVersion });
-      if (parserVersion !== PARSER_VERSION) fail6();
-      if (!list3(clarifications, MEMBER_STATEMENT_LIMITS.clarifications) || clarifications.some((row) => !exact5(row, ["questionId", "optionId"]) || typeof row.questionId !== "string" || typeof row.optionId !== "string")) fail6();
-      const segments = analyze(text4), key = sourceKey(text4), answers = /* @__PURE__ */ Object.create(null), clarificationAnswers = [];
-      let state = stateFor(text4, segments, answers, key), question = choose(state, text4, segments, answers, key);
+      if (parserVersion === Previous.PARSER_VERSION) return Previous.parseMemberStatement(text3, { clarifications, parserVersion });
+      if (parserVersion === Previous3.PARSER_VERSION) return Previous3.parseMemberStatement(text3, { clarifications, parserVersion });
+      if (parserVersion === Previous4.PARSER_VERSION) return Previous4.parseMemberStatement(text3, { clarifications, parserVersion });
+      if (parserVersion === Previous5.PARSER_VERSION) return Previous5.parseMemberStatement(text3, { clarifications, parserVersion });
+      if (parserVersion !== PARSER_VERSION) fail5();
+      if (!list3(clarifications, MEMBER_STATEMENT_LIMITS.clarifications) || clarifications.some((row) => !exact5(row, ["questionId", "optionId"]) || typeof row.questionId !== "string" || typeof row.optionId !== "string")) fail5();
+      const segments = analyze(text3), key = sourceKey(text3), answers = /* @__PURE__ */ Object.create(null), clarificationAnswers = [];
+      let state = stateFor(text3, segments, answers, key), question = choose(state, text3, segments, answers, key);
       for (const row of clarifications) {
-        if (!question || question.id !== row.questionId || Object.hasOwn(answers, row.questionId)) fail6();
+        if (!question || question.id !== row.questionId || Object.hasOwn(answers, row.questionId)) fail5();
         const option = question.options.find((o) => o.id === row.optionId);
-        if (!option) fail6();
+        if (!option) fail5();
         answers[row.questionId] = row.optionId;
         clarificationAnswers.push({ ...row, questionLabel: question.label, optionLabel: option.label });
-        state = stateFor(text4, segments, answers, key);
-        question = choose(state, text4, segments, answers, key);
+        state = stateFor(text3, segments, answers, key);
+        question = choose(state, text3, segments, answers, key);
       }
       if (clarifications.length === MEMBER_STATEMENT_LIMITS.clarifications && question) {
         const conflicted = state.meanings.filter((a) => state.meanings.some((b) => a !== b && meaningsConflict(a, b)));
@@ -5894,19 +6465,19 @@ var require_member_statement_v6 = __commonJS({
       if (parserVersion === Previous3.PARSER_VERSION) return Previous3.validateMemberStatement(row, { now, enforceTime });
       if (parserVersion === Previous4.PARSER_VERSION) return Previous4.validateMemberStatement(row, { now, enforceTime });
       if (parserVersion === Previous5.PARSER_VERSION) return Previous5.validateMemberStatement(row, { now, enforceTime });
-      if (!exact5(row, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || parserVersion !== PARSER_VERSION || typeof row.id !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id) || !list3(row.meanings, MEMBER_STATEMENT_LIMITS.meanings) || !row.meanings.length) fail6();
-      const at = instant(row.at), confirmed = instant(row.confirmedAt), cutoff = enforceTime ? typeof now === "string" ? instant(now) : Number.isSafeInteger(now) ? now : fail6() : null;
-      if (confirmed < at || enforceTime && confirmed > cutoff) fail6();
+      if (!exact5(row, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || parserVersion !== PARSER_VERSION || typeof row.id !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id) || !list3(row.meanings, MEMBER_STATEMENT_LIMITS.meanings) || !row.meanings.length) fail5();
+      const at = instant(row.at), confirmed = instant(row.confirmedAt), cutoff = enforceTime ? typeof now === "string" ? instant(now) : Number.isSafeInteger(now) ? now : fail5() : null;
+      if (confirmed < at || enforceTime && confirmed > cutoff) fail5();
       const parsed = parseMemberStatement(row.text, { clarifications: row.clarifications });
-      if (parsed.question) fail6();
+      if (parsed.question) fail5();
       const ids3 = /* @__PURE__ */ new Set(), meanings = row.meanings.map((m) => {
-        if (!exact5(m, ["id", "field", "value", "polarity", "condition", "evidence"]) || !exact5(m.evidence, ["start", "end", "quote"]) || ids3.has(m.id)) fail6();
+        if (!exact5(m, ["id", "field", "value", "polarity", "condition", "evidence"]) || !exact5(m.evidence, ["start", "end", "quote"]) || ids3.has(m.id)) fail5();
         ids3.add(m.id);
         const expected = parsed.meanings.find((p) => p.id === m.id);
-        if (!expected || ["field", "value", "polarity", "condition"].some((key) => m[key] !== expected[key]) || ["start", "end", "quote"].some((key) => m.evidence[key] !== expected.evidence[key])) fail6();
+        if (!expected || ["field", "value", "polarity", "condition"].some((key) => m[key] !== expected[key]) || ["start", "end", "quote"].some((key) => m.evidence[key] !== expected.evidence[key])) fail5();
         return copy2(expected);
       }).sort((a, b) => Number(a.id.slice(1)) - Number(b.id.slice(1)));
-      if (meanings.some((a, i) => meanings.slice(i + 1).some((b) => meaningsConflict(a, b)))) fail6();
+      if (meanings.some((a, i) => meanings.slice(i + 1).some((b) => meaningsConflict(a, b)))) fail5();
       return { id: row.id.toLowerCase(), parserVersion: PARSER_VERSION, text: row.text, at: row.at, confirmedAt: row.confirmedAt, meanings, clarifications: parsed.clarifications };
     }
     module.exports = { PARSER_VERSION, MEMBER_STATEMENT_LIMITS, MEMBER_STATEMENT_VALUES: VALUES, MEMBER_STATEMENT_LABELS: LABELS, MEMBER_STATEMENT_CONDITIONS: CONDITIONS, MEMBER_STATEMENT_MULTI_FIELDS: MULTI_FIELDS, parseMemberStatement, validateMemberStatement, meaningsConflict, meaningLabel };
@@ -5978,15 +6549,15 @@ var require_member_statement_v7 = __commonJS({
     };
     var exact5 = (x, fields2) => plain2(x) && Reflect.ownKeys(x).length === fields2.length && fields2.every((key) => data(x, key));
     var list3 = (x, max) => Array.isArray(x) && x.length <= max && Reflect.ownKeys(x).length === x.length + 1 && Array.from({ length: x.length }, (_, i) => data(x, String(i))).every(Boolean);
-    var fail6 = () => {
+    var fail5 = () => {
       throw new TypeError("Member statement: invalid confirmed statement");
     };
-    var instant = (x) => typeof x === "string" && Number.isFinite(Date.parse(x)) && new Date(x).toISOString() === x ? Date.parse(x) : fail6();
+    var instant = (x) => typeof x === "string" && Number.isFinite(Date.parse(x)) && new Date(x).toISOString() === x ? Date.parse(x) : fail5();
     var semanticKey = (m) => [m.field, m.value, m.polarity, m.condition || "general"].join(":");
     var copy2 = (x) => JSON.parse(JSON.stringify(x));
     var SHA_K = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
-    function sourceKey(text4) {
-      const bytes = new TextEncoder().encode(text4), padded = new Uint8Array(Math.ceil((bytes.length + 9) / 64) * 64);
+    function sourceKey(text3) {
+      const bytes = new TextEncoder().encode(text3), padded = new Uint8Array(Math.ceil((bytes.length + 9) / 64) * 64);
       padded.set(bytes);
       padded[bytes.length] = 128;
       new DataView(padded.buffer).setUint32(padded.length - 4, bytes.length * 8);
@@ -6058,8 +6629,8 @@ var require_member_statement_v7 = __commonJS({
       body = body.replace(/^(?:저는|나는|난|제가|내가|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|현재(?:는)?|평소(?:에는|엔|는)|보통은|일반적으로는)/u, "");
       let condition = null;
       const prefixes = [["first-try", /^(?:처음(?:에는|엔|은)|처음(?:시도)?할때(?:에는|는)?|처음배울때(?:에는|는)?|처음(?:배우는|해보는|하는)(?:일|내용)(?:은|을할때(?:는)?)|낯선(?:일|내용)(?:은|을할때(?:는)?))/u], ["familiar", /^(?:익숙할때(?:는)?|익숙한(?:내용|일)(?:일때(?:는)?|은))/u], ["busy", /^(?:바쁠때(?:는)?|시간이없을때(?:는)?|바쁜날(?:에는|엔|은))/u]];
-      for (const [id2, re] of prefixes) if (re.test(body)) {
-        condition = id2;
+      for (const [id, re] of prefixes) if (re.test(body)) {
+        condition = id;
         body = body.replace(re, "");
         break;
       }
@@ -6405,8 +6976,8 @@ var require_member_statement_v7 = __commonJS({
       body = body.replace(/^(?:저는|나는|난|제가|내가|저한테는|제게는|나한테는|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|이제(?:는|부터는)?|현재(?:는)?|평소(?:에는|엔|는)?|보통은|일반적으로는)/u, "");
       body = body.replace(/^(?:저는|나는|난|제가|내가)/u, "");
       let condition = null;
-      for (const [id2, prefix] of CONDITION_PREFIXES) if (prefix.test(body)) {
-        condition = id2;
+      for (const [id, prefix] of CONDITION_PREFIXES) if (prefix.test(body)) {
+        condition = id;
         body = body.replace(prefix, "");
         break;
       }
@@ -6886,39 +7457,39 @@ var require_member_statement_v7 = __commonJS({
     function composeRoles(units, nominalHead) {
       const tags = units.filter((t) => !["nominal", "means", "method"].includes(t));
       if (nominalHead === "explanation" && !tags.includes("explanation")) tags.push("explanation");
-      const has2 = (t) => tags.includes(t), any = (...t) => t.some(has2), all = (...t) => t.every(has2), before = (a, b) => tags.indexOf(a) < tags.indexOf(b);
-      const beforeStart = (...actions) => !has2("start") || actions.some((action) => has2(action) && before(action, "start"));
-      const beforeOverview = has2("overview") ? tags.slice(0, tags.indexOf("overview")) : [];
+      const has = (t) => tags.includes(t), any = (...t) => t.some(has), all = (...t) => t.every(has), before = (a, b) => tags.indexOf(a) < tags.indexOf(b);
+      const beforeStart = (...actions) => !has("start") || actions.some((action) => has(action) && before(action, "start"));
+      const beforeOverview = has("overview") ? tags.slice(0, tags.indexOf("overview")) : [];
       const overviewLeads = beforeOverview.every((t) => ["explanation", "detail", "content", "first", "enter", "before"].includes(t)) && (!beforeOverview.includes("enter") || beforeOverview.indexOf("enter") < beforeOverview.indexOf("before"));
-      const explained = has2("explain") || all("explanation", "receive");
+      const explained = has("explain") || all("explanation", "receive");
       const matches = [], frame = (field, value, licensed, required) => {
         const allowed = new Set(licensed.split(" "));
         if (required && tags.every((t) => allowed.has(t))) matches.push({ field, value });
       };
-      frame("communication", "written", "text opinion communicate write send organize speak exchange answer receive", has2("text") && any("communicate", "write", "send", "organize", "speak", "exchange"));
-      frame("communication", "spoken", "speech opinion communicate speak send exchange", has2("speech") && any("communicate", "speak", "send", "exchange"));
+      frame("communication", "written", "text opinion communicate write send organize speak exchange answer receive", has("text") && any("communicate", "write", "send", "organize", "speak", "exchange"));
+      frame("communication", "spoken", "speech opinion communicate speak send exchange", has("speech") && any("communicate", "speak", "send", "exchange"));
       frame("communication", "listen-organize", "person opinion speech first listen organize communicate", any("opinion", "speech") && all("listen", "organize") && before("listen", "organize"));
-      frame("communication", "share-first", "opinion speech first speak send start different-opinion occur before", has2("opinion") && any("speak", "send") && (has2("first") || all("different-opinion", "before")));
-      frame("work-style", "plan-first", "task plan first make decide start before-start", has2("plan") && any("make", "decide") && beforeStart("make", "decide"));
+      frame("communication", "share-first", "opinion speech first speak send start different-opinion occur before", has("opinion") && any("speak", "send") && (has("first") || all("different-opinion", "before")));
+      frame("work-style", "plan-first", "task plan first make decide start before-start", has("plan") && any("make", "decide") && beforeStart("make", "decide"));
       frame("work-style", "try-adjust", "small first try start mismatch later adjust outcome look method task do adjust-context", all("try", "adjust") && before("try", "adjust"));
-      frame("work-style", "single-task", "task one only focus process finish do next proceed present-task start multiple process-frame", has2("one") && any("focus", "process", "finish", "do", "process-frame") && (!has2("next") || has2("finish") && before("finish", "next")));
-      frame("work-style", "prioritize", "task priority important first rank order front make decide process finish do identity", any("process", "finish", "do") && (has2("priority") && any("rank", "make", "decide") || has2("important") && any("rank", "order", "front", "first")));
-      frame("decision", "evidence", "data first check look reference basis decide conclusion decision-context possibility", has2("data") && any("check", "look", "reference", "basis"));
-      frame("decision", "compare-options", "options available arrange compare check decide conclusion", has2("options") && any("compare", "check"));
-      frame("decision", "experience", "experience reference basis decide conclusion decision-context", has2("experience") && any("reference", "basis"));
-      frame("decision", "consult", "person opinion exchange first consult decide conclusion", has2("consult"));
-      frame("explanation-detail", "overview-first", "explanation overview first detail content enter before look show know listen make explain receive do reason-effect", has2("overview") && overviewLeads && (any("look", "show", "know", "listen", "make") || explained) && (has2("first") || all("content", "before")));
-      frame("explanation-detail", "reasons-detail", "explanation-purpose explanation conclusion occur reason data detail know listen look explain receive", any("reason", "data") && has2("detail") && (any("know", "listen", "look") || explained));
+      frame("work-style", "single-task", "task one only focus process finish do next proceed present-task start multiple process-frame", has("one") && any("focus", "process", "finish", "do", "process-frame") && (!has("next") || has("finish") && before("finish", "next")));
+      frame("work-style", "prioritize", "task priority important first rank order front make decide process finish do identity", any("process", "finish", "do") && (has("priority") && any("rank", "make", "decide") || has("important") && any("rank", "order", "front", "first")));
+      frame("decision", "evidence", "data first check look reference basis decide conclusion decision-context possibility", has("data") && any("check", "look", "reference", "basis"));
+      frame("decision", "compare-options", "options available arrange compare check decide conclusion", has("options") && any("compare", "check"));
+      frame("decision", "experience", "experience reference basis decide conclusion decision-context", has("experience") && any("reference", "basis"));
+      frame("decision", "consult", "person opinion exchange first consult decide conclusion", has("consult"));
+      frame("explanation-detail", "overview-first", "explanation overview first detail content enter before look show know listen make explain receive do reason-effect", has("overview") && overviewLeads && (any("look", "show", "know", "listen", "make") || explained) && (has("first") || all("content", "before")));
+      frame("explanation-detail", "reasons-detail", "explanation-purpose explanation conclusion occur reason data detail know listen look explain receive", any("reason", "data") && has("detail") && (any("know", "listen", "look") || explained));
       frame("explanation-detail", "long-flow", "explanation long flow explain listen", all("explanation", "long"));
-      frame("explanation", "brief", "explanation short explain listen know finish receive do", has2("short") && (has2("explanation") || any("explain", "listen", "know")));
-      frame("explanation", "detailed", "explanation detail content explain listen know receive long", has2("detail") && (has2("explanation") || any("explain", "listen", "know")));
+      frame("explanation", "brief", "explanation short explain listen know finish receive do", has("short") && (has("explanation") || any("explain", "listen", "know")));
+      frame("explanation", "detailed", "explanation detail content explain listen know receive long", has("detail") && (has("explanation") || any("explain", "listen", "know")));
       frame("explanation", "standard", "explanation standard listen receive length", all("explanation", "standard"));
       frame("support", "independent", "self nohelp first try do process before-help", any("self", "nohelp") && any("try", "do", "process"));
-      frame("support", "together", "person together first try do process explain help receive", has2("together") && any("try", "do", "process", "explain", "help", "receive"));
-      frame("support", "example", "example first one look show start intent-start help method inquiry", has2("example") && any("look", "show") && beforeStart("look", "show"));
+      frame("support", "together", "person together first try do process explain help receive", has("together") && any("try", "do", "process", "explain", "help", "receive"));
+      frame("support", "example", "example first one look show start intent-start help method inquiry", has("example") && any("look", "show") && beforeStart("look", "show"));
       frame("support", "step", "step sequence-step help explain receive do order person", any("step", "sequence-step") && any("explain", "receive", "do", "help"));
-      frame("support", "choose", "needhelp help choose decide receive", has2("needhelp") && any("choose", "decide") && (has2("help") || has2("receive")));
-      const practice = any("practice", "practice-verb", "mix"), listen = has2("listen"), read = has2("read");
+      frame("support", "choose", "needhelp help choose decide receive", has("needhelp") && any("choose", "decide") && (has("help") || has("receive")));
+      const practice = any("practice", "practice-verb", "mix"), listen = has("listen"), read = has("read");
       frame("practice-mode", listen && read ? "mixed" : listen ? "listening" : "reading", "practice practice-verb audio visual text listen read both together mix do enter multiple", practice && (listen || read));
       const topicFrames = [
         ["reading-books", "book read learn", "book"],
@@ -6939,7 +7510,7 @@ var require_member_statement_v7 = __commonJS({
         ["work-collaboration", "task together do person collaboration method know", "collaboration"]
       ];
       for (const [value, licensed, anchor] of topicFrames) {
-        const enough = value === "travel-planning" ? has2("travel") && any("route", "plan") : value === "travel-food" ? all("travel", "cooking") : value === "travel-stay" ? all("travel", "stay") : has2(anchor);
+        const enough = value === "travel-planning" ? has("travel") && any("route", "plan") : value === "travel-food" ? all("travel", "cooking") : value === "travel-stay" ? all("travel", "stay") : has(anchor);
         frame("topic", value, licensed + " opinion content topic-frame learn know", enough);
       }
       return matches.length === 1 ? matches[0] : null;
@@ -7044,36 +7615,36 @@ var require_member_statement_v7 = __commonJS({
       const results = [], add = (field, value, pass) => {
         if (pass && (!fields2 || fields2.includes(field))) results.push({ field, value, polarity, condition });
       };
-      const has2 = (re) => re.test(body), both = (a, b) => has2(a) && has2(b), pos = (re) => body.search(re), ordered = (a, b) => pos(a) >= 0 && pos(b) > pos(a);
-      const topicContext = has2(/(?:주제|소재|관심|분야|취미|배우|배워|공부|다루|익히)/u);
-      const practiceContext = has2(/(?:연습|문제|학습)/u) && !has2(/(?:주제|소재|관한)/u);
+      const has = (re) => re.test(body), both = (a, b) => has(a) && has(b), pos = (re) => body.search(re), ordered = (a, b) => pos(a) >= 0 && pos(b) > pos(a);
+      const topicContext = has(/(?:주제|소재|관심|분야|취미|배우|배워|공부|다루|익히)/u);
+      const practiceContext = has(/(?:연습|문제|학습)/u) && !has(/(?:주제|소재|관한)/u);
       if (practiceContext) {
-        const listening = has2(/(?:듣기|듣는|듣고|들으며|들으면서|들어)/u), reading = has2(/(?:읽기|읽는|읽고|읽으며|읽으면서)/u);
+        const listening = has(/(?:듣기|듣는|듣고|들으며|들으면서|들어)/u), reading = has(/(?:읽기|읽는|읽고|읽으며|읽으면서)/u);
         add("practice-mode", listening && reading ? "mixed" : listening ? "listening" : "reading", listening || reading);
       }
-      const noPriorStart = (verb) => !has2(/(?:시작하|시작한|착수하|착수한)/u) || ordered(verb, /(?:시작하|시작한|착수하|착수한)/u);
-      add("support", "independent", both(/(?:혼자|스스로|제힘으로|내힘으로|도움없이|누구도움없이)/u, /(?:시도|해보|진행|마무리|해결|하[는기고]|끝내)/u) && !has2(/함께|같이/u));
-      add("support", "together", both(/(?:함께|같이)/u, /(?:해보|해나가|풀어가|푸는|풀기|진행|하는|하기|해결)/u) && !topicContext && !has2(/혼자|도움없이/u));
+      const noPriorStart = (verb) => !has(/(?:시작하|시작한|착수하|착수한)/u) || ordered(verb, /(?:시작하|시작한|착수하|착수한)/u);
+      add("support", "independent", both(/(?:혼자|스스로|제힘으로|내힘으로|도움없이|누구도움없이)/u, /(?:시도|해보|진행|마무리|해결|하[는기고]|끝내)/u) && !has(/함께|같이/u));
+      add("support", "together", both(/(?:함께|같이)/u, /(?:해보|해나가|풀어가|푸는|풀기|진행|하는|하기|해결)/u) && !topicContext && !has(/혼자|도움없이/u));
       add("support", "example", both(/예시|예제|샘플|완성된예/u, /보여|살펴|보고|보는|보기|확인/u) && noPriorStart(/보여|살펴|보고|보는|확인/u));
       add("support", "step", both(/단계별|한단계씩|차근차근|차례차례/u, /도움|도와|안내|알려|짚어|설명|받/u));
-      add("support", "choose", both(/도움/u, /필요/u) && has2(/골라|고르|선택/u) && has2(/받|켜|사용/u));
-      const explanation = has2(/설명|알려|풀어|풀이/u), standard = has2(/보통|중간길이/u), detail = has2(/자세|상세|세세|구체적|속속들이/u), brief = has2(/짧|간단|간결|핵심만|요점만/u);
+      add("support", "choose", both(/도움/u, /필요/u) && has(/골라|고르|선택/u) && has(/받|켜|사용/u));
+      const explanation = has(/설명|알려|풀어|풀이/u), standard = has(/보통|중간길이/u), detail = has(/자세|상세|세세|구체적|속속들이/u), brief = has(/짧|간단|간결|핵심만|요점만/u);
       add("explanation", "standard", explanation && standard && !detail);
-      add("explanation", "brief", explanation && brief && !standard && !detail && !has2(/길게|긴설명/u));
-      const reasonDetail = has2(/근거|이유|왜그런/u) && detail;
+      add("explanation", "brief", explanation && brief && !standard && !detail && !has(/길게|긴설명/u));
+      const reasonDetail = has(/근거|이유|왜그런/u) && detail;
       add("explanation", "detailed", explanation && detail && !reasonDetail && !brief && !standard);
-      add("explanation-detail", "reasons-detail", reasonDetail && has2(/알|듣|설명|받|보/u));
-      add("explanation-detail", "long-flow", explanation && has2(/길게이어|길게계속|긴설명을끊|길게설명/u));
-      const overview = has2(/개요|큰그림|전체흐름|전체구조|큰틀/u);
-      add("explanation-detail", "overview-first", overview && has2(/먼저|부터|우선/u) && has2(/보|듣|파악|알/u) && !/(?:듣고|받고|보고|설명하고).*(?:개요|큰그림|전체흐름|큰틀)/u.test(body));
+      add("explanation-detail", "reasons-detail", reasonDetail && has(/알|듣|설명|받|보/u));
+      add("explanation-detail", "long-flow", explanation && has(/길게이어|길게계속|긴설명을끊|길게설명/u));
+      const overview = has(/개요|큰그림|전체흐름|전체구조|큰틀/u);
+      add("explanation-detail", "overview-first", overview && has(/먼저|부터|우선/u) && has(/보|듣|파악|알/u) && !/(?:듣고|받고|보고|설명하고).*(?:개요|큰그림|전체흐름|큰틀)/u.test(body));
       if (!topicContext && !practiceContext) {
-        add("communication", "written", both(/글로|문자로|메시지로|메신저로|텍스트로|글을/u, /소통|전달|주고받|쓰|적|남기|정리/u) && !has2(/말로|목소리/u));
-        add("communication", "spoken", both(/말로|말을|목소리|대화로/u, /소통|주고받|이야기|대화|전달/u) && !has2(/글로|문자로/u));
-        add("communication", "listen-organize", has2(/다른.*(?:생각|말|의견)|상대.*(?:생각|말|의견)|동료.*(?:생각|말|의견)/u) && ordered(/듣|들어/u, /정리|정돈|취합/u));
-        add("communication", "share-first", has2(/(?:제|내)(?:의견|생각)/u) && has2(/먼저|부터/u) && has2(/말하|꺼내|내는|전하/u));
+        add("communication", "written", both(/글로|문자로|메시지로|메신저로|텍스트로|글을/u, /소통|전달|주고받|쓰|적|남기|정리/u) && !has(/말로|목소리/u));
+        add("communication", "spoken", both(/말로|말을|목소리|대화로/u, /소통|주고받|이야기|대화|전달/u) && !has(/글로|문자로/u));
+        add("communication", "listen-organize", has(/다른.*(?:생각|말|의견)|상대.*(?:생각|말|의견)|동료.*(?:생각|말|의견)/u) && ordered(/듣|들어/u, /정리|정돈|취합/u));
+        add("communication", "share-first", has(/(?:제|내)(?:의견|생각)/u) && has(/먼저|부터/u) && has(/말하|꺼내|내는|전하/u));
         add("work-style", "plan-first", both(/계획|일정|할일목록/u, /세우|세워|짜|정해|만들/u) && noPriorStart(/세우|세워|짜|정해|만들/u));
         add("work-style", "try-adjust", ordered(/해보|시도|실행/u, /고치|고쳐|조정|수정|보완/u));
-        add("work-style", "single-task", has2(/한번에(?:한가지|하나)|하나씩|한가지만/u) && has2(/처리|하는|하기|끝내|마무리/u));
+        add("work-style", "single-task", has(/한번에(?:한가지|하나)|하나씩|한가지만/u) && has(/처리|하는|하기|끝내|마무리/u));
         add("work-style", "prioritize", both(/우선순위|중요한순서|중요도/u, /정하|정한|정해|매겨|매기|처리/u));
         add("decision", "evidence", both(/자료|데이터|근거|사실/u, /확인|검토|살펴|바탕|기준|참고/u) && !reasonDetail);
         add("decision", "compare-options", both(/선택지|대안|후보|장단점/u, /비교|따져/u));
@@ -7245,10 +7816,10 @@ var require_member_statement_v7 = __commonJS({
       const ending = normalized.polarity === "avoid" ? "선호하지않아요" : "좋아요";
       const read = (part) => {
         if (work.remaining-- <= 0) return null;
-        const text4 = part.replace(/^,+|,+$/gu, "") + ending;
-        if (excludedOrigin(text4)) return null;
-        const cacheKey = depth + ":" + text4;
-        const found = work.cache.has(cacheKey) ? work.cache.get(cacheKey) : natural(text4) || expanded(text4) || compositional(text4) || coordinatedDeclaration(text4, depth + 1, work);
+        const text3 = part.replace(/^,+|,+$/gu, "") + ending;
+        if (excludedOrigin(text3)) return null;
+        const cacheKey = depth + ":" + text3;
+        const found = work.cache.has(cacheKey) ? work.cache.get(cacheKey) : natural(text3) || expanded(text3) || compositional(text3) || coordinatedDeclaration(text3, depth + 1, work);
         work.cache.set(cacheKey, found);
         if (!found?.meanings?.length || found.uncertain || found.typo) return null;
         if (condition && found.meanings.some((m) => m.condition && m.condition !== condition)) return null;
@@ -7357,26 +7928,26 @@ var require_member_statement_v7 = __commonJS({
       if (/(?:만약|라면|다면|가정하|상상하)/u.test(scoped.condition ? scoped.body : surfaceDeclaration(body).replace(/^(?:저라면|나라면)/u, ""))) return "hypothetical";
       return null;
     }
-    function pieces(text4) {
+    function pieces(text3) {
       const result = [], separator = /\s+(?:하지만|그런데|그리고|반면에?|다만)\s+|(?:좋아하고|좋아하며|선호하고|선호하며|원하고|원하며|편하고|편하며|좋고|싫고|즐겁고|싶고|관심이\s*있고|관심이\s*많고|(?:원|선호|좋아)하지\s*않고|지만|는데|쪽이고|것이고|편이고|방식이고)(?=\s|,)|[.!?;\n,]+/gu;
       let start = 0, match;
       const push = (end) => {
-        while (start < end && /\s/u.test(text4[start])) start++;
-        while (end > start && /\s/u.test(text4[end - 1])) end--;
-        if (end > start) result.push({ start, end, quote: text4.slice(start, end) });
+        while (start < end && /\s/u.test(text3[start])) start++;
+        while (end > start && /\s/u.test(text3[end - 1])) end--;
+        if (end > start) result.push({ start, end, quote: text3.slice(start, end) });
       };
-      while (match = separator.exec(text4)) {
+      while (match = separator.exec(text3)) {
         if (match[0] === ",") {
-          const prefix = text4.slice(start, match.index), scoped = normalizePrefix(surfaceDeclaration(prefix));
+          const prefix = text3.slice(start, match.index), scoped = normalizePrefix(surfaceDeclaration(prefix));
           if (scoped.condition && !scoped.body || /^어느쪽을고를지$/u.test(scoped.body) || /(?:인지|할지|갈지|는지|식으로|방식으로)\s*$/u.test(prefix) || /(?:고|하되|하며)\s*$/u.test(prefix) && !/해\s*주시고\s*$/u.test(prefix)) continue;
         }
-        if (match[0] === "," && (/(?:것|거|방식|시간|활동|쪽)(?:도)?\s*$/u.test(text4.slice(start, match.index)) || /^\s*(?:둘\s*다|모두)/u.test(text4.slice(match.index + 1)))) continue;
-        if (/^(?:좋고|좋아하고|편하고|즐겁고)$/u.test(match[0]) && /^\s*(?:싶|말고|싫고|아니고|그랬)/u.test(text4.slice(match.index + match[0].length))) continue;
-        if (match[0] === "지만" && !/(?:좋|싫|하|되|있|없|않|했|았|었|겠|리|지|많|되|편이|일이)$/u.test(text4.slice(start, match.index).replace(/\s/gu, ""))) continue;
+        if (match[0] === "," && (/(?:것|거|방식|시간|활동|쪽)(?:도)?\s*$/u.test(text3.slice(start, match.index)) || /^\s*(?:둘\s*다|모두)/u.test(text3.slice(match.index + 1)))) continue;
+        if (/^(?:좋고|좋아하고|편하고|즐겁고)$/u.test(match[0]) && /^\s*(?:싶|말고|싫고|아니고|그랬)/u.test(text3.slice(match.index + match[0].length))) continue;
+        if (match[0] === "지만" && !/(?:좋|싫|하|되|있|없|않|했|았|었|겠|리|지|많|되|편이|일이)$/u.test(text3.slice(start, match.index).replace(/\s/gu, ""))) continue;
         push(match.index + (!/^[.!?;\n,\s]/u.test(match[0]) ? match[0].length : 0));
         start = match.index + match[0].length;
       }
-      push(text4.length);
+      push(text3.length);
       return result;
     }
     function unresolvedSubject(quote) {
@@ -7404,18 +7975,18 @@ var require_member_statement_v7 = __commonJS({
       decision: "판단 방식",
       "explanation-detail": "설명에서 원하는 구성"
     };
-    function analyze(text4) {
-      Legacy.parseMemberStatement(text4);
+    function analyze(text3) {
+      Legacy.parseMemberStatement(text3);
       const segments = [];
       let inherited = null, previousCondition = false, continuingCondition = null, unknownSubject = false;
-      for (const evidence of pieces(text4)) {
+      for (const evidence of pieces(text3)) {
         const body = evidence.quote.replace(/\s/gu, ""), self = /^(?:나는|난|저는|제가|내가)/u.test(body), current = /^(?:(?:나는|난|저는|제가|내가))?(?:지금|요즘|현재|이제)/u.test(body);
         const generalReset = /^(?:(?:나는|난|저는|제가|내가))?(?:평소|보통은|일반적으로)/u.test(body);
         if (self) unknownSubject = false;
         if (inherited === "other" && self || inherited === "past" && current || inherited === "condition" && generalReset || inherited === "uncertain" && current || ["quotation", "hypothetical", "sensitive"].includes(inherited) && self && current) inherited = null;
-        const sentenceStart = Math.max(text4.lastIndexOf(".", evidence.start - 1), text4.lastIndexOf("!", evidence.start - 1), text4.lastIndexOf("?", evidence.start - 1), text4.lastIndexOf("\n", evidence.start - 1)) + 1;
-        const stop = /[.!?\n]/u.exec(text4.slice(evidence.end)), sentenceEnd = stop ? evidence.end + stop.index : text4.length;
-        const nounModifier = relativePersonClause(text4.slice(sentenceStart, sentenceEnd).replace(/\s/gu, ""));
+        const sentenceStart = Math.max(text3.lastIndexOf(".", evidence.start - 1), text3.lastIndexOf("!", evidence.start - 1), text3.lastIndexOf("?", evidence.start - 1), text3.lastIndexOf("\n", evidence.start - 1)) + 1;
+        const stop = /[.!?\n]/u.exec(text3.slice(evidence.end)), sentenceEnd = stop ? evidence.end + stop.index : text3.length;
+        const nounModifier = relativePersonClause(text3.slice(sentenceStart, sentenceEnd).replace(/\s/gu, ""));
         const segment = { evidence }, reason = (nounModifier ? "other" : excludedOrigin(body)) || inherited;
         if (reason || unknownSubject) {
           inherited = reason;
@@ -7437,7 +8008,7 @@ var require_member_statement_v7 = __commonJS({
         const inheritedScope = continuingCondition || (sameScope ? previousCondition : null) || antecedentScope;
         if (prior?.meanings.length && /^그다음\s+/u.test(clause)) clause = clause.replace(/^그다음\s+/u, "");
         let found = natural(clause) || expanded(clause) || compositional(clause) || coordinatedDeclaration(clause) || structuredDeclaration(clause) || tentative(clause) || restrictedMethod(clause);
-        if (!found && prior?.meanings.length && !/^[\s.!?]*\?/u.test(text4.slice(evidence.end))) {
+        if (!found && prior?.meanings.length && !/^[\s.!?]*\?/u.test(text3.slice(evidence.end))) {
           const reference = /^(?:(?:저는|나는)?(?:그|이|그런|이런)(?:방식|방법|쪽)(?:이|은|을)|둘다)(.+)$/u.exec(normalizePrefix(body).body);
           const declared = reference && composeStance("하는" + reference[1]);
           if (declared?.action === "하기" && !declared.habitual && prior.meanings.every((m) => m.polarity === declared.polarity)) {
@@ -7453,7 +8024,7 @@ var require_member_statement_v7 = __commonJS({
             continue;
           }
         }
-        if (!found && !/^[\s.!?]*\?/u.test(text4.slice(evidence.end)) && segments.at(-1)?.meanings?.length && (/^(?:그게|그건|이게|이건|제|내)?(?:취미|관심분야)(?:예요|입니다|거든요|라서요)$/u.test(body) || /^(?:(?:저는|나는)?(?:그쪽|그방식|그방법)(?:이|은)|그래야)(?:더)?(?:편해요|편하더라|좋아요)$/u.test(body) || /^(?:제가|내가)원하는방식(?:이에요|입니다)$/u.test(body) || /^그정도(?:분량|길이)(?:를|을)선호해요$/u.test(body) || segments.at(-1).meanings.some((m) => m.field === "communication" && m.value === "share-first") && /^다른얘기(?:는)?그뒤에들을래(?:요)?$/u.test(body))) {
+        if (!found && !/^[\s.!?]*\?/u.test(text3.slice(evidence.end)) && segments.at(-1)?.meanings?.length && (/^(?:그게|그건|이게|이건|제|내)?(?:취미|관심분야)(?:예요|입니다|거든요|라서요)$/u.test(body) || /^(?:(?:저는|나는)?(?:그쪽|그방식|그방법)(?:이|은)|그래야)(?:더)?(?:편해요|편하더라|좋아요)$/u.test(body) || /^(?:제가|내가)원하는방식(?:이에요|입니다)$/u.test(body) || /^그정도(?:분량|길이)(?:를|을)선호해요$/u.test(body) || segments.at(-1).meanings.some((m) => m.field === "communication" && m.value === "share-first") && /^다른얘기(?:는)?그뒤에들을래(?:요)?$/u.test(body))) {
           segment.meanings = [];
           segments.push(segment);
           continue;
@@ -7476,7 +8047,7 @@ var require_member_statement_v7 = __commonJS({
           inherited = "condition";
         }
         previousCondition = scopedCondition && /(?:지만|는데)$/u.test(body) ? scopedCondition : false;
-        const asking = /^[\s.!?]*/u.exec(text4.slice(evidence.end))[0].includes("?");
+        const asking = /^[\s.!?]*/u.exec(text3.slice(evidence.end))[0].includes("?");
         const uncertain = /(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|없지않|않지는않)/u.test(body);
         if (!found && !uncertain && !declaredCondition && /(?:때|땐|경우|상황|동안|날에는|날에만|에따라|오늘만|내일만|이번만|퇴근후|출근전|(?:뒤|후|다음)(?:에는|엔))/u.test(body)) {
           unresolvedCondition = true;
@@ -7497,27 +8068,27 @@ var require_member_statement_v7 = __commonJS({
           segment.unresolved = { ...evidence, reason: why, reasonLabel: EXCLUDED[why] };
         }
         segments.push(segment);
-        if (segments.length === MEMBER_STATEMENT_LIMITS.unresolved && evidence.end < text4.length) {
+        if (segments.length === MEMBER_STATEMENT_LIMITS.unresolved && evidence.end < text3.length) {
           const last = segments.at(-1);
           delete last.meanings;
           delete last.candidate;
           delete last.generic;
-          last.evidence = { ...evidence, end: text4.length, quote: text4.slice(evidence.start) };
+          last.evidence = { ...evidence, end: text3.length, quote: text3.slice(evidence.start) };
           last.unresolved = { ...last.evidence, reason: "limit", reasonLabel: EXCLUDED.limit };
           break;
         }
       }
       return segments;
     }
-    function stateFor(text4, segments, answers, key) {
+    function stateFor(text3, segments, answers, key) {
       const raw = [], unresolved = [], questions = [];
       const question = (index, stage, label, options, apply) => {
-        const id2 = `q.${key}.${index}.${stage}`, answer = answers[id2];
+        const id = `q.${key}.${index}.${stage}`, answer = answers[id];
         if (answer !== void 0) {
           apply(answer);
           return;
         }
-        questions.push({ id: id2, about: id2, kind: "follow_up", label, options: [...options, ...OPTIONS_END].map((o) => ({ ...o, value: o.id })) });
+        questions.push({ id, about: id, kind: "follow_up", label, options: [...options, ...OPTIONS_END].map((o) => ({ ...o, value: o.id })) });
       };
       for (let index = 0; index < segments.length; index++) {
         const s = segments[index], add = (meanings2) => meanings2.forEach((m) => raw.push({ ...m, evidence: copy2(s.evidence) }));
@@ -7538,14 +8109,14 @@ var require_member_statement_v7 = __commonJS({
             }
           );
         } else if (s.generic) {
-          question(index, "field", `「${s.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(FIELDS).map(([id2, label]) => ({ id: id2, label })), (field) => {
+          question(index, "field", `「${s.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(FIELDS).map(([id, label]) => ({ id, label })), (field) => {
             handled = true;
             if (!Object.hasOwn(VALUES, field)) return;
-            question(index, "value", `${FIELDS[field]}에서 어떤 내용을 확인할까요?`, VALUES[field].map((id2) => ({ id: id2, label: LABELS[id2] })), (selected) => {
+            question(index, "value", `${FIELDS[field]}에서 어떤 내용을 확인할까요?`, VALUES[field].map((id) => ({ id, label: LABELS[id] })), (selected) => {
               if (!VALUES[field].includes(selected)) return;
               question(index, "polarity", `‘${LABELS[selected]}’을 지금 어떻게 생각하나요?`, [{ id: "prefer", label: "원하거나 선호해요" }, { id: "avoid", label: "원하거나 선호하지 않아요" }], (polarity) => {
                 if (!["prefer", "avoid"].includes(polarity)) return;
-                question(index, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(CONDITIONS).map(([id2, label]) => ({ id: id2, label }))], (condition) => {
+                question(index, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(CONDITIONS).map(([id, label]) => ({ id, label }))], (condition) => {
                   if (condition === "general" || Object.hasOwn(CONDITIONS, condition)) add([{ field, value: selected, polarity, condition: condition === "general" ? null : condition }]);
                 });
               });
@@ -7571,41 +8142,41 @@ var require_member_statement_v7 = __commonJS({
         const group = meanings.filter((other) => other.id === m.id || meaningsConflict(m, other));
         if (group.length < 2) continue;
         group.forEach((p) => grouped.add(p.id));
-        const id2 = `q.${key}.conflict.${sourceKey(group.map((p) => p.id + semanticKey(p)).join("|")).slice(0, 16)}`, answer = answers[id2];
-        if (answer === void 0) questions.push({ id: id2, about: id2, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...group.map((p) => ({ id: p.id, label: meaningLabel(p), value: p.id })), ...OPTIONS_END.map((o) => ({ ...o, value: o.id }))] });
+        const id = `q.${key}.conflict.${sourceKey(group.map((p) => p.id + semanticKey(p)).join("|")).slice(0, 16)}`, answer = answers[id];
+        if (answer === void 0) questions.push({ id, about: id, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...group.map((p) => ({ id: p.id, label: meaningLabel(p), value: p.id })), ...OPTIONS_END.map((o) => ({ ...o, value: o.id }))] });
         else for (const p of group) if (p.id !== answer) p.withheld = true;
       }
       return { meanings: meanings.filter((m) => !m.withheld), unresolved: unresolved.slice(0, MEMBER_STATEMENT_LIMITS.unresolved), questions };
     }
-    function choose(state, text4, segments, answers, key) {
+    function choose(state, text3, segments, answers, key) {
       const result = Ask2.choose({ questions: state.questions, decide: (scenario) => {
-        const outcome = stateFor(text4, segments, { ...answers, ...scenario }, key);
+        const outcome = stateFor(text3, segments, { ...answers, ...scenario }, key);
         return { meanings: outcome.meanings.map((m) => semanticKey(m)), questions: outcome.questions.map((q) => q.id) };
       } });
-      return result.status === "ask" ? { id: result.question.id, label: result.question.label, options: result.question.options.map(({ id: id2, label }) => ({ id: id2, label })) } : null;
+      return result.status === "ask" ? { id: result.question.id, label: result.question.label, options: result.question.options.map(({ id, label }) => ({ id, label })) } : null;
     }
-    function parseMemberStatement(text4, { clarifications = [], parserVersion = PARSER_VERSION } = {}) {
+    function parseMemberStatement(text3, { clarifications = [], parserVersion = PARSER_VERSION } = {}) {
       if (parserVersion === Legacy.PARSER_VERSION) {
-        if (clarifications.length) fail6();
-        return Legacy.parseMemberStatement(text4);
+        if (clarifications.length) fail5();
+        return Legacy.parseMemberStatement(text3);
       }
-      if (parserVersion === Previous.PARSER_VERSION) return Previous.parseMemberStatement(text4, { clarifications, parserVersion });
-      if (parserVersion === Previous3.PARSER_VERSION) return Previous3.parseMemberStatement(text4, { clarifications, parserVersion });
-      if (parserVersion === Previous4.PARSER_VERSION) return Previous4.parseMemberStatement(text4, { clarifications, parserVersion });
-      if (parserVersion === Previous5.PARSER_VERSION) return Previous5.parseMemberStatement(text4, { clarifications, parserVersion });
-      if (parserVersion === Previous6.PARSER_VERSION) return Previous6.parseMemberStatement(text4, { clarifications, parserVersion });
-      if (parserVersion !== PARSER_VERSION) fail6();
-      if (!list3(clarifications, MEMBER_STATEMENT_LIMITS.clarifications) || clarifications.some((row) => !exact5(row, ["questionId", "optionId"]) || typeof row.questionId !== "string" || typeof row.optionId !== "string")) fail6();
-      const segments = analyze(text4), key = sourceKey(text4), answers = /* @__PURE__ */ Object.create(null), clarificationAnswers = [];
-      let state = stateFor(text4, segments, answers, key), question = choose(state, text4, segments, answers, key);
+      if (parserVersion === Previous.PARSER_VERSION) return Previous.parseMemberStatement(text3, { clarifications, parserVersion });
+      if (parserVersion === Previous3.PARSER_VERSION) return Previous3.parseMemberStatement(text3, { clarifications, parserVersion });
+      if (parserVersion === Previous4.PARSER_VERSION) return Previous4.parseMemberStatement(text3, { clarifications, parserVersion });
+      if (parserVersion === Previous5.PARSER_VERSION) return Previous5.parseMemberStatement(text3, { clarifications, parserVersion });
+      if (parserVersion === Previous6.PARSER_VERSION) return Previous6.parseMemberStatement(text3, { clarifications, parserVersion });
+      if (parserVersion !== PARSER_VERSION) fail5();
+      if (!list3(clarifications, MEMBER_STATEMENT_LIMITS.clarifications) || clarifications.some((row) => !exact5(row, ["questionId", "optionId"]) || typeof row.questionId !== "string" || typeof row.optionId !== "string")) fail5();
+      const segments = analyze(text3), key = sourceKey(text3), answers = /* @__PURE__ */ Object.create(null), clarificationAnswers = [];
+      let state = stateFor(text3, segments, answers, key), question = choose(state, text3, segments, answers, key);
       for (const row of clarifications) {
-        if (!question || question.id !== row.questionId || Object.hasOwn(answers, row.questionId)) fail6();
+        if (!question || question.id !== row.questionId || Object.hasOwn(answers, row.questionId)) fail5();
         const option = question.options.find((o) => o.id === row.optionId);
-        if (!option) fail6();
+        if (!option) fail5();
         answers[row.questionId] = row.optionId;
         clarificationAnswers.push({ ...row, questionLabel: question.label, optionLabel: option.label });
-        state = stateFor(text4, segments, answers, key);
-        question = choose(state, text4, segments, answers, key);
+        state = stateFor(text3, segments, answers, key);
+        question = choose(state, text3, segments, answers, key);
       }
       if (clarifications.length === MEMBER_STATEMENT_LIMITS.clarifications && question) {
         const conflicted = state.meanings.filter((a) => state.meanings.some((b) => a !== b && meaningsConflict(a, b)));
@@ -7631,19 +8202,19 @@ var require_member_statement_v7 = __commonJS({
       if (parserVersion === Previous4.PARSER_VERSION) return Previous4.validateMemberStatement(row, { now, enforceTime });
       if (parserVersion === Previous5.PARSER_VERSION) return Previous5.validateMemberStatement(row, { now, enforceTime });
       if (parserVersion === Previous6.PARSER_VERSION) return Previous6.validateMemberStatement(row, { now, enforceTime });
-      if (!exact5(row, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || parserVersion !== PARSER_VERSION || typeof row.id !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id) || !list3(row.meanings, MEMBER_STATEMENT_LIMITS.meanings) || !row.meanings.length) fail6();
-      const at = instant(row.at), confirmed = instant(row.confirmedAt), cutoff = enforceTime ? typeof now === "string" ? instant(now) : Number.isSafeInteger(now) ? now : fail6() : null;
-      if (confirmed < at || enforceTime && confirmed > cutoff) fail6();
+      if (!exact5(row, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || parserVersion !== PARSER_VERSION || typeof row.id !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id) || !list3(row.meanings, MEMBER_STATEMENT_LIMITS.meanings) || !row.meanings.length) fail5();
+      const at = instant(row.at), confirmed = instant(row.confirmedAt), cutoff = enforceTime ? typeof now === "string" ? instant(now) : Number.isSafeInteger(now) ? now : fail5() : null;
+      if (confirmed < at || enforceTime && confirmed > cutoff) fail5();
       const parsed = parseMemberStatement(row.text, { clarifications: row.clarifications });
-      if (parsed.question) fail6();
+      if (parsed.question) fail5();
       const ids3 = /* @__PURE__ */ new Set(), meanings = row.meanings.map((m) => {
-        if (!exact5(m, ["id", "field", "value", "polarity", "condition", "evidence"]) || !exact5(m.evidence, ["start", "end", "quote"]) || ids3.has(m.id)) fail6();
+        if (!exact5(m, ["id", "field", "value", "polarity", "condition", "evidence"]) || !exact5(m.evidence, ["start", "end", "quote"]) || ids3.has(m.id)) fail5();
         ids3.add(m.id);
         const expected = parsed.meanings.find((p) => p.id === m.id);
-        if (!expected || ["field", "value", "polarity", "condition"].some((key) => m[key] !== expected[key]) || ["start", "end", "quote"].some((key) => m.evidence[key] !== expected.evidence[key])) fail6();
+        if (!expected || ["field", "value", "polarity", "condition"].some((key) => m[key] !== expected[key]) || ["start", "end", "quote"].some((key) => m.evidence[key] !== expected.evidence[key])) fail5();
         return copy2(expected);
       }).sort((a, b) => Number(a.id.slice(1)) - Number(b.id.slice(1)));
-      if (meanings.some((a, i) => meanings.slice(i + 1).some((b) => meaningsConflict(a, b)))) fail6();
+      if (meanings.some((a, i) => meanings.slice(i + 1).some((b) => meaningsConflict(a, b)))) fail5();
       return { id: row.id.toLowerCase(), parserVersion: PARSER_VERSION, text: row.text, at: row.at, confirmedAt: row.confirmedAt, meanings, clarifications: parsed.clarifications };
     }
     module.exports = { PARSER_VERSION, MEMBER_STATEMENT_LIMITS, MEMBER_STATEMENT_VALUES: VALUES, MEMBER_STATEMENT_LABELS: LABELS, MEMBER_STATEMENT_CONDITIONS: CONDITIONS, MEMBER_STATEMENT_MULTI_FIELDS: MULTI_FIELDS, parseMemberStatement, validateMemberStatement, meaningsConflict, meaningLabel };
@@ -7716,15 +8287,15 @@ var require_member_statement_v8 = __commonJS({
     };
     var exact5 = (x, fields2) => plain2(x) && Reflect.ownKeys(x).length === fields2.length && fields2.every((key) => data(x, key));
     var list3 = (x, max) => Array.isArray(x) && x.length <= max && Reflect.ownKeys(x).length === x.length + 1 && Array.from({ length: x.length }, (_, i) => data(x, String(i))).every(Boolean);
-    var fail6 = () => {
+    var fail5 = () => {
       throw new TypeError("Member statement: invalid confirmed statement");
     };
-    var instant = (x) => typeof x === "string" && Number.isFinite(Date.parse(x)) && new Date(x).toISOString() === x ? Date.parse(x) : fail6();
+    var instant = (x) => typeof x === "string" && Number.isFinite(Date.parse(x)) && new Date(x).toISOString() === x ? Date.parse(x) : fail5();
     var semanticKey = (m) => [m.field, m.value, m.polarity, m.condition || "general"].join(":");
     var copy2 = (x) => JSON.parse(JSON.stringify(x));
     var SHA_K = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
-    function sourceKey(text4) {
-      const bytes = new TextEncoder().encode(text4), padded = new Uint8Array(Math.ceil((bytes.length + 9) / 64) * 64);
+    function sourceKey(text3) {
+      const bytes = new TextEncoder().encode(text3), padded = new Uint8Array(Math.ceil((bytes.length + 9) / 64) * 64);
       padded.set(bytes);
       padded[bytes.length] = 128;
       new DataView(padded.buffer).setUint32(padded.length - 4, bytes.length * 8);
@@ -7796,8 +8367,8 @@ var require_member_statement_v8 = __commonJS({
       body = body.replace(/^(?:저는|나는|난|제가|내가|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|현재(?:는)?|평소(?:에는|엔|는)|보통은|일반적으로는)/u, "");
       let condition = null;
       const prefixes = [["first-try", /^(?:처음(?:에는|엔|은)|처음(?:시도)?할때(?:에는|는)?|처음배울때(?:에는|는)?|처음(?:배우는|해보는|하는)(?:일|내용)(?:은|을할때(?:는)?)|낯선(?:일|내용)(?:은|을할때(?:는)?))/u], ["familiar", /^(?:익숙할때(?:는)?|익숙한(?:내용|일)(?:일때(?:는)?|은))/u], ["busy", /^(?:바쁠때(?:는)?|시간이없을때(?:는)?|바쁜날(?:에는|엔|은))/u]];
-      for (const [id2, re] of prefixes) if (re.test(body)) {
-        condition = id2;
+      for (const [id, re] of prefixes) if (re.test(body)) {
+        condition = id;
         body = body.replace(re, "");
         break;
       }
@@ -8156,8 +8727,8 @@ var require_member_statement_v8 = __commonJS({
       body = body.replace(/^(?:저는|나는|난|제가|내가|저한테는|제게는|나한테는|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|이제(?:는|부터는)?|현재(?:는)?|평소(?:에는|엔|는)?|보통은|일반적으로는)/u, "");
       body = body.replace(/^(?:저는|나는|난|제가|내가)/u, "");
       let condition = null;
-      for (const [id2, prefix] of CONDITION_PREFIXES) if (prefix.test(body)) {
-        condition = id2;
+      for (const [id, prefix] of CONDITION_PREFIXES) if (prefix.test(body)) {
+        condition = id;
         body = body.replace(prefix, "");
         break;
       }
@@ -8665,39 +9236,39 @@ var require_member_statement_v8 = __commonJS({
     function composeRoles(units, nominalHead) {
       const tags = units.filter((t) => !["nominal", "means", "method"].includes(t));
       if (nominalHead === "explanation" && !tags.includes("explanation")) tags.push("explanation");
-      const has2 = (t) => tags.includes(t), any = (...t) => t.some(has2), all = (...t) => t.every(has2), before = (a, b) => tags.indexOf(a) < tags.indexOf(b);
-      const beforeStart = (...actions) => !has2("start") || actions.some((action) => has2(action) && before(action, "start"));
-      const beforeOverview = has2("overview") ? tags.slice(0, tags.indexOf("overview")) : [];
+      const has = (t) => tags.includes(t), any = (...t) => t.some(has), all = (...t) => t.every(has), before = (a, b) => tags.indexOf(a) < tags.indexOf(b);
+      const beforeStart = (...actions) => !has("start") || actions.some((action) => has(action) && before(action, "start"));
+      const beforeOverview = has("overview") ? tags.slice(0, tags.indexOf("overview")) : [];
       const overviewLeads = beforeOverview.every((t) => ["explanation", "detail", "content", "first", "enter", "before"].includes(t)) && (!beforeOverview.includes("enter") || beforeOverview.indexOf("enter") < beforeOverview.indexOf("before"));
-      const explained = has2("explain") || all("explanation", "receive");
+      const explained = has("explain") || all("explanation", "receive");
       const matches = [], frame = (field, value, licensed, required) => {
         const allowed = new Set(licensed.split(" "));
         if (required && tags.every((t) => allowed.has(t))) matches.push({ field, value });
       };
-      frame("communication", "written", "text opinion communicate write send organize speak exchange answer receive do", has2("text") && any("communicate", "write", "send", "organize", "speak", "exchange"));
-      frame("communication", "spoken", "speech opinion communicate speak send exchange do", has2("speech") && any("communicate", "speak", "send", "exchange"));
+      frame("communication", "written", "text opinion communicate write send organize speak exchange answer receive do", has("text") && any("communicate", "write", "send", "organize", "speak", "exchange"));
+      frame("communication", "spoken", "speech opinion communicate speak send exchange do", has("speech") && any("communicate", "speak", "send", "exchange"));
       frame("communication", "listen-organize", "person opinion speech first listen organize communicate", any("opinion", "speech") && all("listen", "organize") && before("listen", "organize"));
-      frame("communication", "share-first", "opinion speech first speak send start different-opinion occur before", has2("opinion") && any("speak", "send") && (has2("first") || all("different-opinion", "before")));
-      frame("work-style", "plan-first", "task plan first make decide start before-start do", has2("plan") && any("make", "decide") && beforeStart("make", "decide"));
+      frame("communication", "share-first", "opinion speech first speak send start different-opinion occur before", has("opinion") && any("speak", "send") && (has("first") || all("different-opinion", "before")));
+      frame("work-style", "plan-first", "task plan first make decide start before-start do", has("plan") && any("make", "decide") && beforeStart("make", "decide"));
       frame("work-style", "try-adjust", "small first try start mismatch later adjust outcome look method task do adjust-context", all("try", "adjust") && before("try", "adjust"));
-      frame("work-style", "single-task", "task one only focus process finish do next proceed present-task start multiple process-frame", has2("one") && any("focus", "process", "finish", "do", "process-frame") && (!has2("next") || has2("finish") && before("finish", "next")));
-      frame("work-style", "prioritize", "task priority important first rank order front make decide process finish do identity", has2("priority") && any("rank", "make", "decide") || any("process", "finish", "do") && has2("important") && any("rank", "order", "front", "first"));
-      frame("decision", "evidence", "data first check look reference basis decide conclusion decision-context possibility", has2("data") && any("check", "look", "reference", "basis"));
-      frame("decision", "compare-options", "options available arrange compare check decide conclusion decision-context many-options", has2("options") && any("compare", "check"));
-      frame("decision", "experience", "experience reference basis decide conclusion decision-context only", has2("experience") && any("reference", "basis"));
-      frame("decision", "consult", "person opinion exchange first consult decide conclusion do", has2("consult"));
-      frame("explanation-detail", "overview-first", "explanation overview first detail content enter before look show know listen make explain receive do reason-effect", has2("overview") && overviewLeads && (any("look", "show", "know", "listen", "make") || explained) && (has2("first") || all("content", "before")));
-      frame("explanation-detail", "reasons-detail", "explanation-purpose explanation conclusion occur reason data detail know listen look explain receive", any("reason", "data") && has2("detail") && (any("know", "listen", "look") || explained));
+      frame("work-style", "single-task", "task one only focus process finish do next proceed present-task start multiple process-frame", has("one") && any("focus", "process", "finish", "do", "process-frame") && (!has("next") || has("finish") && before("finish", "next")));
+      frame("work-style", "prioritize", "task priority important first rank order front make decide process finish do identity", has("priority") && any("rank", "make", "decide") || any("process", "finish", "do") && has("important") && any("rank", "order", "front", "first"));
+      frame("decision", "evidence", "data first check look reference basis decide conclusion decision-context possibility", has("data") && any("check", "look", "reference", "basis"));
+      frame("decision", "compare-options", "options available arrange compare check decide conclusion decision-context many-options", has("options") && any("compare", "check"));
+      frame("decision", "experience", "experience reference basis decide conclusion decision-context only", has("experience") && any("reference", "basis"));
+      frame("decision", "consult", "person opinion exchange first consult decide conclusion do", has("consult"));
+      frame("explanation-detail", "overview-first", "explanation overview first detail content enter before look show know listen make explain receive do reason-effect", has("overview") && overviewLeads && (any("look", "show", "know", "listen", "make") || explained) && (has("first") || all("content", "before")));
+      frame("explanation-detail", "reasons-detail", "explanation-purpose explanation conclusion occur reason data detail know listen look explain receive", any("reason", "data") && has("detail") && (any("know", "listen", "look") || explained));
       frame("explanation-detail", "long-flow", "explanation long flow explain listen", all("explanation", "long"));
-      frame("explanation", "brief", "explanation short explain listen know finish receive do length", has2("short") && (has2("explanation") || any("explain", "listen", "know")));
-      frame("explanation", "detailed", "explanation detail content explain listen know receive long", has2("detail") && (has2("explanation") || any("explain", "listen", "know")));
+      frame("explanation", "brief", "explanation short explain listen know finish receive do length", has("short") && (has("explanation") || any("explain", "listen", "know")));
+      frame("explanation", "detailed", "explanation detail content explain listen know receive long", has("detail") && (has("explanation") || any("explain", "listen", "know")));
       frame("explanation", "standard", "explanation standard listen receive length", all("explanation", "standard"));
       frame("support", "independent", "self nohelp first try do process before-help", any("self", "nohelp") && any("try", "do", "process"));
-      frame("support", "together", "person together first try do process explain help receive", has2("together") && any("try", "do", "process", "explain", "help", "receive"));
-      frame("support", "example", "example first one look show check start intent-start help method inquiry", has2("example") && any("look", "show", "check") && beforeStart("look", "show", "check"));
+      frame("support", "together", "person together first try do process explain help receive", has("together") && any("try", "do", "process", "explain", "help", "receive"));
+      frame("support", "example", "example first one look show check start intent-start help method inquiry", has("example") && any("look", "show", "check") && beforeStart("look", "show", "check"));
       frame("support", "step", "step sequence-step help explain receive do order person explanation listen", any("step", "sequence-step") && any("explain", "receive", "do", "help", "explanation"));
-      frame("support", "choose", "needhelp help choose decide receive", has2("needhelp") && any("choose", "decide", "receive") && (has2("help") || has2("receive")));
-      const practice = any("practice", "practice-verb", "mix"), listen = has2("listen"), read = has2("read");
+      frame("support", "choose", "needhelp help choose decide receive", has("needhelp") && any("choose", "decide", "receive") && (has("help") || has("receive")));
+      const practice = any("practice", "practice-verb", "mix"), listen = has("listen"), read = has("read");
       frame("practice-mode", listen && read ? "mixed" : listen ? "listening" : "reading", "practice practice-verb audio visual text listen read both together mix do enter multiple", practice && (listen || read));
       const topicFrames = [
         ["reading-books", "book read learn", "book"],
@@ -8718,7 +9289,7 @@ var require_member_statement_v8 = __commonJS({
         ["work-collaboration", "task together do person collaboration method know", "collaboration"]
       ];
       for (const [value, licensed, anchor] of topicFrames) {
-        const enough = value === "travel-planning" ? has2("travel") && any("route", "plan") : value === "travel-food" ? all("travel", "cooking") : value === "travel-stay" ? all("travel", "stay") : has2(anchor);
+        const enough = value === "travel-planning" ? has("travel") && any("route", "plan") : value === "travel-food" ? all("travel", "cooking") : value === "travel-stay" ? all("travel", "stay") : has(anchor);
         frame("topic", value, licensed + " opinion content topic-frame learn know", enough);
       }
       return matches.length === 1 ? matches[0] : null;
@@ -8830,36 +9401,36 @@ var require_member_statement_v8 = __commonJS({
       const results = [], add = (field, value, pass) => {
         if (pass && (!fields2 || fields2.includes(field))) results.push({ field, value, polarity, condition });
       };
-      const has2 = (re) => re.test(body), both = (a, b) => has2(a) && has2(b), pos = (re) => body.search(re), ordered = (a, b) => pos(a) >= 0 && pos(b) > pos(a);
-      const topicContext = has2(/(?:주제|소재|관심|분야|취미|배우|배워|공부|다루|익히)/u);
-      const practiceContext = has2(/(?:연습|문제|학습)/u) && !has2(/(?:주제|소재|관한)/u);
+      const has = (re) => re.test(body), both = (a, b) => has(a) && has(b), pos = (re) => body.search(re), ordered = (a, b) => pos(a) >= 0 && pos(b) > pos(a);
+      const topicContext = has(/(?:주제|소재|관심|분야|취미|배우|배워|공부|다루|익히)/u);
+      const practiceContext = has(/(?:연습|문제|학습)/u) && !has(/(?:주제|소재|관한)/u);
       if (practiceContext) {
-        const listening = has2(/(?:듣기|듣는|듣고|들으며|들으면서|들어)/u), reading = has2(/(?:읽기|읽는|읽고|읽으며|읽으면서)/u);
+        const listening = has(/(?:듣기|듣는|듣고|들으며|들으면서|들어)/u), reading = has(/(?:읽기|읽는|읽고|읽으며|읽으면서)/u);
         add("practice-mode", listening && reading ? "mixed" : listening ? "listening" : "reading", listening || reading);
       }
-      const noPriorStart = (verb) => !has2(/(?:시작하|시작한|착수하|착수한)/u) || ordered(verb, /(?:시작하|시작한|착수하|착수한)/u);
-      add("support", "independent", both(/(?:혼자|스스로|제힘으로|내힘으로|도움없이|누구도움없이)/u, /(?:시도|해보|진행|마무리|해결|하[는기고]|끝내)/u) && !has2(/함께|같이/u));
-      add("support", "together", both(/(?:함께|같이)/u, /(?:해보|해나가|풀어가|푸는|풀기|진행|하는|하기|해결)/u) && !topicContext && !has2(/혼자|도움없이/u));
+      const noPriorStart = (verb) => !has(/(?:시작하|시작한|착수하|착수한)/u) || ordered(verb, /(?:시작하|시작한|착수하|착수한)/u);
+      add("support", "independent", both(/(?:혼자|스스로|제힘으로|내힘으로|도움없이|누구도움없이)/u, /(?:시도|해보|진행|마무리|해결|하[는기고]|끝내)/u) && !has(/함께|같이/u));
+      add("support", "together", both(/(?:함께|같이)/u, /(?:해보|해나가|풀어가|푸는|풀기|진행|하는|하기|해결)/u) && !topicContext && !has(/혼자|도움없이/u));
       add("support", "example", both(/예시|예제|샘플|완성된예/u, /보여|살펴|보고|보는|보기|확인/u) && noPriorStart(/보여|살펴|보고|보는|확인/u));
       add("support", "step", both(/단계별|한단계씩|차근차근|차례차례/u, /도움|도와|안내|알려|짚어|설명|받/u));
-      add("support", "choose", both(/도움/u, /필요/u) && has2(/골라|고르|선택/u) && has2(/받|켜|사용/u));
-      const explanation = has2(/설명|알려|풀어|풀이/u), standard = has2(/보통|중간길이/u), detail = has2(/자세|상세|세세|구체적|속속들이/u), brief = has2(/짧|간단|간결|핵심만|요점만/u);
+      add("support", "choose", both(/도움/u, /필요/u) && has(/골라|고르|선택/u) && has(/받|켜|사용/u));
+      const explanation = has(/설명|알려|풀어|풀이/u), standard = has(/보통|중간길이/u), detail = has(/자세|상세|세세|구체적|속속들이/u), brief = has(/짧|간단|간결|핵심만|요점만/u);
       add("explanation", "standard", explanation && standard && !detail);
-      add("explanation", "brief", explanation && brief && !standard && !detail && !has2(/길게|긴설명/u));
-      const reasonDetail = has2(/근거|이유|왜그런/u) && detail;
+      add("explanation", "brief", explanation && brief && !standard && !detail && !has(/길게|긴설명/u));
+      const reasonDetail = has(/근거|이유|왜그런/u) && detail;
       add("explanation", "detailed", explanation && detail && !reasonDetail && !brief && !standard);
-      add("explanation-detail", "reasons-detail", reasonDetail && has2(/알|듣|설명|받|보/u));
-      add("explanation-detail", "long-flow", explanation && has2(/길게이어|길게계속|긴설명을끊|길게설명/u));
-      const overview = has2(/개요|큰그림|전체흐름|전체구조|큰틀/u);
-      add("explanation-detail", "overview-first", overview && has2(/먼저|부터|우선/u) && has2(/보|듣|파악|알/u) && !/(?:듣고|받고|보고|설명하고).*(?:개요|큰그림|전체흐름|큰틀)/u.test(body));
+      add("explanation-detail", "reasons-detail", reasonDetail && has(/알|듣|설명|받|보/u));
+      add("explanation-detail", "long-flow", explanation && has(/길게이어|길게계속|긴설명을끊|길게설명/u));
+      const overview = has(/개요|큰그림|전체흐름|전체구조|큰틀/u);
+      add("explanation-detail", "overview-first", overview && has(/먼저|부터|우선/u) && has(/보|듣|파악|알/u) && !/(?:듣고|받고|보고|설명하고).*(?:개요|큰그림|전체흐름|큰틀)/u.test(body));
       if (!topicContext && !practiceContext) {
-        add("communication", "written", both(/글로|문자로|메시지로|메신저로|텍스트로|글을/u, /소통|전달|주고받|쓰|적|남기|정리/u) && !has2(/말로|목소리/u));
-        add("communication", "spoken", both(/말로|말을|목소리|대화로/u, /소통|주고받|이야기|대화|전달/u) && !has2(/글로|문자로/u));
-        add("communication", "listen-organize", has2(/다른.*(?:생각|말|의견)|상대.*(?:생각|말|의견)|동료.*(?:생각|말|의견)/u) && ordered(/듣|들어/u, /정리|정돈|취합/u));
-        add("communication", "share-first", has2(/(?:제|내)(?:의견|생각)/u) && has2(/먼저|부터/u) && has2(/말하|꺼내|내는|전하/u));
+        add("communication", "written", both(/글로|문자로|메시지로|메신저로|텍스트로|글을/u, /소통|전달|주고받|쓰|적|남기|정리/u) && !has(/말로|목소리/u));
+        add("communication", "spoken", both(/말로|말을|목소리|대화로/u, /소통|주고받|이야기|대화|전달/u) && !has(/글로|문자로/u));
+        add("communication", "listen-organize", has(/다른.*(?:생각|말|의견)|상대.*(?:생각|말|의견)|동료.*(?:생각|말|의견)/u) && ordered(/듣|들어/u, /정리|정돈|취합/u));
+        add("communication", "share-first", has(/(?:제|내)(?:의견|생각)/u) && has(/먼저|부터/u) && has(/말하|꺼내|내는|전하/u));
         add("work-style", "plan-first", both(/계획|일정|할일목록/u, /세우|세워|짜|정해|만들/u) && noPriorStart(/세우|세워|짜|정해|만들/u));
         add("work-style", "try-adjust", ordered(/해보|시도|실행/u, /고치|고쳐|조정|수정|보완/u));
-        add("work-style", "single-task", has2(/한번에(?:한가지|하나)|하나씩|한가지만/u) && has2(/처리|하는|하기|끝내|마무리/u));
+        add("work-style", "single-task", has(/한번에(?:한가지|하나)|하나씩|한가지만/u) && has(/처리|하는|하기|끝내|마무리/u));
         add("work-style", "prioritize", both(/우선순위|중요한순서|중요도/u, /정하|정한|정해|매겨|매기|처리/u));
         add("decision", "evidence", both(/자료|데이터|근거|사실/u, /확인|검토|살펴|바탕|기준|참고/u) && !reasonDetail);
         add("decision", "compare-options", both(/선택지|대안|후보|장단점/u, /비교|따져/u));
@@ -9031,10 +9602,10 @@ var require_member_statement_v8 = __commonJS({
       const ending = normalized.polarity === "avoid" ? "선호하지않아요" : "좋아요";
       const read = (part) => {
         if (work.remaining-- <= 0) return null;
-        const text4 = part.replace(/^,+|,+$/gu, "") + ending;
-        if (excludedOrigin(text4)) return null;
-        const cacheKey = depth + ":" + text4;
-        const found = work.cache.has(cacheKey) ? work.cache.get(cacheKey) : natural(text4) || expanded(text4) || compositional(text4) || coordinatedDeclaration(text4, depth + 1, work);
+        const text3 = part.replace(/^,+|,+$/gu, "") + ending;
+        if (excludedOrigin(text3)) return null;
+        const cacheKey = depth + ":" + text3;
+        const found = work.cache.has(cacheKey) ? work.cache.get(cacheKey) : natural(text3) || expanded(text3) || compositional(text3) || coordinatedDeclaration(text3, depth + 1, work);
         work.cache.set(cacheKey, found);
         if (!found?.meanings?.length || found.uncertain || found.typo) return null;
         if (condition && found.meanings.some((m) => m.condition && m.condition !== condition)) return null;
@@ -9194,42 +9765,42 @@ var require_member_statement_v8 = __commonJS({
       if (/(?:만약|라면|다면|가정하|상상하)/u.test(scoped.condition ? scoped.body : surfaceDeclaration(body).replace(/^(?:저라면|나라면)/u, ""))) return "hypothetical";
       return null;
     }
-    function pieces(text4) {
+    function pieces(text3) {
       const result = [], separator = /\s+(?:하지만|그런데|그리고|반면에?|다만)\s+|(?:마음에\s*들고|원치\s*않고|원치\s*않으며|좋으며|좋아하고|좋아하며|선호하고|선호하며|원하고|원하며|편하고|편하며|좋고|싫고|즐겁고|싶고|관심을\s*두고\s*있고|관심이\s*있고|관심이\s*많고|관심이\s*없고|관심이\s*있으며|싶으며|설명이고|(?:원|선호|좋아)하지\s*않고|지만|는데|쪽이고|것이고|편이고|방식이고|활동이고)(?=\s|,)|[.!?;\n,]+/gu;
       let start = 0, match;
       const push = (end) => {
-        while (start < end && /\s/u.test(text4[start])) start++;
-        while (end > start && /\s/u.test(text4[end - 1])) end--;
-        if (end > start) result.push({ start, end, quote: text4.slice(start, end) });
+        while (start < end && /\s/u.test(text3[start])) start++;
+        while (end > start && /\s/u.test(text3[end - 1])) end--;
+        if (end > start) result.push({ start, end, quote: text3.slice(start, end) });
       };
-      while (match = separator.exec(text4)) {
-        if (match[0] === "," && /^(?:(?![.!?;\n]).)*(?:모두|둘\s*다)(?:(?![.!?;\n]).)*(?:선호|좋아|관심|싫|원)/u.test(text4.slice(match.index + 1))) continue;
+      while (match = separator.exec(text3)) {
+        if (match[0] === "," && /^(?:(?![.!?;\n]).)*(?:모두|둘\s*다)(?:(?![.!?;\n]).)*(?:선호|좋아|관심|싫|원)/u.test(text3.slice(match.index + 1))) continue;
         if (match[0] === ",") {
-          const scope3 = normalizePrefix(surfaceDeclaration(text4.slice(start, match.index)));
+          const scope3 = normalizePrefix(surfaceDeclaration(text3.slice(start, match.index)));
           if (scope3.condition && (!scope3.body || universalAside(scope3.body.replace(/^,+/u, "")))) continue;
         }
-        if (match[0] === "," && /^\s*(?:(?:저는|나는|제가|내가|제\s*경우에는|내\s*경우에는|제\s*취향은)|(?:처음|익숙한|바쁠|회의할|함께\s*일할))/u.test(text4.slice(match.index + 1))) {
+        if (match[0] === "," && /^\s*(?:(?:저는|나는|제가|내가|제\s*경우에는|내\s*경우에는|제\s*취향은)|(?:처음|익숙한|바쁠|회의할|함께\s*일할))/u.test(text3.slice(match.index + 1))) {
           push(match.index);
           start = match.index + 1;
           continue;
         }
-        if (match[0] === "," && /(?:뜻|의미|이야기)(?:은|는)?\s*아니고\s*$/u.test(text4.slice(start, match.index))) {
+        if (match[0] === "," && /(?:뜻|의미|이야기)(?:은|는)?\s*아니고\s*$/u.test(text3.slice(start, match.index))) {
           push(match.index);
           start = match.index + 1;
           continue;
         }
         if (match[0] === ",") {
-          const prefix = text4.slice(start, match.index), scoped = normalizePrefix(surfaceDeclaration(prefix));
+          const prefix = text3.slice(start, match.index), scoped = normalizePrefix(surfaceDeclaration(prefix));
           if (scoped.condition && !scoped.body || /^어느쪽을고를지$/u.test(scoped.body) || /(?:인지|할지|갈지|는지|식으로|방식으로)\s*$/u.test(prefix) || /(?:고|하되|하며)\s*$/u.test(prefix) && !/해\s*주시고\s*$/u.test(prefix)) continue;
         }
-        if (match[0] === "," && /(?:기도)\s*$/u.test(text4.slice(start, match.index))) continue;
-        if (match[0] === "," && (/(?:것|거|방식|시간|활동|쪽)(?:도)?\s*$/u.test(text4.slice(start, match.index)) || /^\s*(?:둘\s*다|모두)/u.test(text4.slice(match.index + 1)))) continue;
-        if (/^(?:좋고|좋아하고|편하고|즐겁고)$/u.test(match[0]) && /^\s*(?:싶|말고|싫고|아니고|그랬)/u.test(text4.slice(match.index + match[0].length))) continue;
-        if (match[0] === "지만" && !/(?:좋|싫|하|되|있|없|않|했|았|었|겠|리|지|많|되|편이|일이|맞)$/u.test(text4.slice(start, match.index).replace(/\s/gu, ""))) continue;
+        if (match[0] === "," && /(?:기도)\s*$/u.test(text3.slice(start, match.index))) continue;
+        if (match[0] === "," && (/(?:것|거|방식|시간|활동|쪽)(?:도)?\s*$/u.test(text3.slice(start, match.index)) || /^\s*(?:둘\s*다|모두)/u.test(text3.slice(match.index + 1)))) continue;
+        if (/^(?:좋고|좋아하고|편하고|즐겁고)$/u.test(match[0]) && /^\s*(?:싶|말고|싫고|아니고|그랬)/u.test(text3.slice(match.index + match[0].length))) continue;
+        if (match[0] === "지만" && !/(?:좋|싫|하|되|있|없|않|했|았|었|겠|리|지|많|되|편이|일이|맞)$/u.test(text3.slice(start, match.index).replace(/\s/gu, ""))) continue;
         push(match.index + (!/^[.!?;\n,\s]/u.test(match[0]) ? match[0].length : 0));
         start = match.index + match[0].length;
       }
-      push(text4.length);
+      push(text3.length);
       return result;
     }
     function unresolvedSubject(quote) {
@@ -9280,29 +9851,29 @@ var require_member_statement_v8 = __commonJS({
       decision: "판단 방식",
       "explanation-detail": "설명에서 원하는 구성"
     };
-    function quotedAt(text4, end) {
+    function quotedAt(text3, end) {
       let quote = null;
       const close = { "“": "”", "‘": "’", "「": "」", "『": "』", '"': '"' };
       for (let i = 0; i < end; i++) {
-        const c = text4[i];
+        const c = text3[i];
         if (quote && c === quote) quote = null;
         else if (!quote && close[c]) quote = close[c];
       }
       return quote !== null;
     }
-    function scopeBoundaryBetween(text4, start, end) {
-      for (let i = start; i < end; i++) if (/[.!?;\n]/u.test(text4[i]) && !quotedAt(text4, i)) return true;
+    function scopeBoundaryBetween(text3, start, end) {
+      for (let i = start; i < end; i++) if (/[.!?;\n]/u.test(text3[i]) && !quotedAt(text3, i)) return true;
       return false;
     }
-    function analyze(text4) {
-      Legacy.parseMemberStatement(text4);
+    function analyze(text3) {
+      Legacy.parseMemberStatement(text3);
       const segments = [];
       let inherited = null, previousCondition = false, continuingCondition = null, unknownSubject = false, pendingScope = null;
-      for (const evidence of pieces(text4)) {
-        const insideLiteral = quotedAt(text4, evidence.start);
+      for (const evidence of pieces(text3)) {
+        const insideLiteral = quotedAt(text3, evidence.start);
         const body = evidence.quote.replace(/\s/gu, ""), self = !insideLiteral && (/^(?:나는|난|저는|제가|내가|제경우에는|내경우에는|제취향은|내취향은)/u.test(body) || /^(?:나는|난|저는|제가|내가|제경우에는|내경우에는|제취향은|내취향은)/u.test(surfaceDeclaration(body))), current = /^(?:(?:나는|난|저는|제가|내가))?(?:지금|요즘|현재|이제)/u.test(body);
         const generalReset = /^(?:(?:나는|난|저는|제가|내가))?(?:평소|보통은|일반적으로)/u.test(body);
-        if (pendingScope && (scopeBoundaryBetween(text4, pendingScope.end, evidence.start) || generalReset && !insideLiteral)) pendingScope = null;
+        if (pendingScope && (scopeBoundaryBetween(text3, pendingScope.end, evidence.start) || generalReset && !insideLiteral)) pendingScope = null;
         if (pendingScope && insideLiteral) pendingScope = { ...pendingScope, uncertain: true };
         if (self && !insideLiteral) unknownSubject = false;
         if (inherited === "quotation" && self && !insideLiteral) inherited = null;
@@ -9311,16 +9882,16 @@ var require_member_statement_v8 = __commonJS({
           continue;
         }
         if (inherited === "other" && self || inherited === "past" && current || inherited === "condition" && generalReset || inherited === "uncertain" && current || ["quotation", "hypothetical", "sensitive"].includes(inherited) && self && current) inherited = null;
-        const sentenceStart = Math.max(text4.lastIndexOf(".", evidence.start - 1), text4.lastIndexOf("!", evidence.start - 1), text4.lastIndexOf("?", evidence.start - 1), text4.lastIndexOf("\n", evidence.start - 1)) + 1;
-        const stop = /[.!?\n]/u.exec(text4.slice(evidence.end)), sentenceEnd = stop ? evidence.end + stop.index : text4.length;
-        const nounModifier = relativePersonClause(text4.slice(sentenceStart, sentenceEnd).replace(/\s/gu, ""));
+        const sentenceStart = Math.max(text3.lastIndexOf(".", evidence.start - 1), text3.lastIndexOf("!", evidence.start - 1), text3.lastIndexOf("?", evidence.start - 1), text3.lastIndexOf("\n", evidence.start - 1)) + 1;
+        const stop = /[.!?\n]/u.exec(text3.slice(evidence.end)), sentenceEnd = stop ? evidence.end + stop.index : text3.length;
+        const nounModifier = relativePersonClause(text3.slice(sentenceStart, sentenceEnd).replace(/\s/gu, ""));
         const segment = { evidence }, reason = (nounModifier ? "other" : excludedOrigin(body)) || inherited;
         if (reason || unknownSubject) {
           inherited = reason;
           continuingCondition = null;
           const outer = normalizePrefix(surfaceDeclaration(body)).condition;
           if (pendingScope) pendingScope = { ...pendingScope, end: evidence.end, uncertain: true };
-          else if (outer && !insideLiteral && (/^\s*,/u.test(text4.slice(evidence.end)) || quotedAt(text4, evidence.end))) pendingScope = { condition: outer, start: evidence.start, end: evidence.end, uncertain: true };
+          else if (outer && !insideLiteral && (/^\s*,/u.test(text3.slice(evidence.end)) || quotedAt(text3, evidence.end))) pendingScope = { condition: outer, start: evidence.start, end: evidence.end, uncertain: true };
           segment.unresolved = { ...evidence, reason: reason || "unsupported", reasonLabel: reason ? EXCLUDED[reason] : "앞 문장에 나온 주체를 본인으로 확인하지 못해 이 내용도 성향으로 사용하지 않았어요." };
           if (["uncertain", "condition"].includes(reason)) segment.generic = true;
           segments.push(segment);
@@ -9342,7 +9913,7 @@ var require_member_statement_v8 = __commonJS({
         let inheritedScope = pendingScope?.condition || continuingCondition || (sameScope ? previousCondition : null) || antecedentScope;
         if (prior?.meanings.length && /^그다음\s+/u.test(clause)) clause = clause.replace(/^그다음\s+/u, "");
         let found = natural(clause) || expanded(clause) || compositional(clause) || coordinatedDeclaration(clause) || focusedContrast(clause) || structuredDeclaration(clause) || tentative(clause) || restrictedMethod(clause);
-        const commaContinuation = /^\s*,/u.test(text4.slice(evidence.end));
+        const commaContinuation = /^\s*,/u.test(text3.slice(evidence.end));
         if (!found && (declaredCondition || pendingScope) && commaContinuation) {
           const safe = pendingScopeAside(normalizedClause.body);
           pendingScope = { condition: pendingScope?.condition || declaredCondition, start: pendingScope?.start ?? evidence.start, end: evidence.end, uncertain: !safe || !!pendingScope?.uncertain };
@@ -9352,12 +9923,12 @@ var require_member_statement_v8 = __commonJS({
             continue;
           }
         }
-        if (!found && !/^[\s.!?]*\?/u.test(text4.slice(evidence.end)) && redundantReference(evidence.quote, adjacent)) {
+        if (!found && !/^[\s.!?]*\?/u.test(text3.slice(evidence.end)) && redundantReference(evidence.quote, adjacent)) {
           segment.meanings = [];
           segments.push(segment);
           continue;
         }
-        if (!found && prior?.meanings.length && !/^[\s.!?]*\?/u.test(text4.slice(evidence.end))) {
+        if (!found && prior?.meanings.length && !/^[\s.!?]*\?/u.test(text3.slice(evidence.end))) {
           const reference = /^(?:(?:저는|나는)?(?:그|이|그런|이런)(?:방식|방법|쪽)(?:이|은|을)|둘다)(.+)$/u.exec(normalizePrefix(body).body);
           const declared = reference && composeStance("하는" + reference[1]);
           if (declared?.action === "하기" && !declared.habitual && prior.meanings.every((m) => m.polarity === declared.polarity)) {
@@ -9373,7 +9944,7 @@ var require_member_statement_v8 = __commonJS({
             continue;
           }
         }
-        if (!found && !/^[\s.!?]*\?/u.test(text4.slice(evidence.end)) && segments.at(-1)?.meanings?.length && (/^(?:그게|그건|이게|이건|제|내)?(?:취미|관심분야)(?:예요|입니다|거든요|라서요)$/u.test(body) || /^(?:(?:저는|나는)?(?:그쪽|그방식|그방법)(?:이|은)|그래야)(?:더)?(?:편해요|편하더라|좋아요)$/u.test(body) || /^(?:제가|내가)원하는방식(?:이에요|입니다)$/u.test(body) || /^그정도(?:분량|길이)(?:를|을)선호해요$/u.test(body) || segments.at(-1).meanings.some((m) => m.field === "communication" && m.value === "share-first") && /^다른얘기(?:는)?그뒤에들을래(?:요)?$/u.test(body))) {
+        if (!found && !/^[\s.!?]*\?/u.test(text3.slice(evidence.end)) && segments.at(-1)?.meanings?.length && (/^(?:그게|그건|이게|이건|제|내)?(?:취미|관심분야)(?:예요|입니다|거든요|라서요)$/u.test(body) || /^(?:(?:저는|나는)?(?:그쪽|그방식|그방법)(?:이|은)|그래야)(?:더)?(?:편해요|편하더라|좋아요)$/u.test(body) || /^(?:제가|내가)원하는방식(?:이에요|입니다)$/u.test(body) || /^그정도(?:분량|길이)(?:를|을)선호해요$/u.test(body) || segments.at(-1).meanings.some((m) => m.field === "communication" && m.value === "share-first") && /^다른얘기(?:는)?그뒤에들을래(?:요)?$/u.test(body))) {
           segment.meanings = [];
           segments.push(segment);
           continue;
@@ -9396,7 +9967,7 @@ var require_member_statement_v8 = __commonJS({
         continuingCondition = scopedCondition && /(?:고|며)$/u.test(body) ? scopedCondition : null;
         let unresolvedCondition = previousCondition && found?.meanings.some((m) => !m.condition) && !generalReset;
         if (pendingScope && found) {
-          segment.evidence = { start: pendingScope.start, end: evidence.end, quote: text4.slice(pendingScope.start, evidence.end) };
+          segment.evidence = { start: pendingScope.start, end: evidence.end, quote: text3.slice(pendingScope.start, evidence.end) };
           if (pendingScope.uncertain) unresolvedCondition = true;
           pendingScope = null;
         }
@@ -9405,7 +9976,7 @@ var require_member_statement_v8 = __commonJS({
           inherited = "condition";
         }
         previousCondition = scopedCondition && /(?:지만|는데)$/u.test(body) ? scopedCondition : false;
-        const asking = /^[\s.!?]*/u.exec(text4.slice(evidence.end))[0].includes("?");
+        const asking = /^[\s.!?]*/u.exec(text3.slice(evidence.end))[0].includes("?");
         const uncertain = /(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|없지않|않지는않)/u.test(body);
         if (!found && !uncertain && !declaredCondition && /(?:때|땐|경우|상황|동안|날에는|날에만|에만|에서만|에따라|오늘만|내일만|이번만|퇴근후|출근전|(?:뒤|후|다음)(?:에는|엔)|(?:에서|에)는$)/u.test(body)) {
           unresolvedCondition = true;
@@ -9426,27 +9997,27 @@ var require_member_statement_v8 = __commonJS({
           segment.unresolved = { ...evidence, reason: why, reasonLabel: EXCLUDED[why] };
         }
         segments.push(segment);
-        if (segments.length === MEMBER_STATEMENT_LIMITS.unresolved && evidence.end < text4.length) {
+        if (segments.length === MEMBER_STATEMENT_LIMITS.unresolved && evidence.end < text3.length) {
           const last = segments.at(-1);
           delete last.meanings;
           delete last.candidate;
           delete last.generic;
-          last.evidence = { ...evidence, end: text4.length, quote: text4.slice(evidence.start) };
+          last.evidence = { ...evidence, end: text3.length, quote: text3.slice(evidence.start) };
           last.unresolved = { ...last.evidence, reason: "limit", reasonLabel: EXCLUDED.limit };
           break;
         }
       }
       return segments;
     }
-    function stateFor(text4, segments, answers, key) {
+    function stateFor(text3, segments, answers, key) {
       const raw = [], unresolved = [], questions = [];
       const question = (index, stage, label, options, apply) => {
-        const id2 = `q.${key}.${index}.${stage}`, answer = answers[id2];
+        const id = `q.${key}.${index}.${stage}`, answer = answers[id];
         if (answer !== void 0) {
           apply(answer);
           return;
         }
-        questions.push({ id: id2, about: id2, kind: "follow_up", label, options: [...options, ...OPTIONS_END].map((o) => ({ ...o, value: o.id })) });
+        questions.push({ id, about: id, kind: "follow_up", label, options: [...options, ...OPTIONS_END].map((o) => ({ ...o, value: o.id })) });
       };
       for (let index = 0; index < segments.length; index++) {
         const s = segments[index], add = (meanings2) => meanings2.forEach((m) => raw.push({ ...m, evidence: copy2(s.evidence) }));
@@ -9467,14 +10038,14 @@ var require_member_statement_v8 = __commonJS({
             }
           );
         } else if (s.generic) {
-          question(index, "field", `「${s.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(FIELDS).map(([id2, label]) => ({ id: id2, label })), (field) => {
+          question(index, "field", `「${s.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(FIELDS).map(([id, label]) => ({ id, label })), (field) => {
             handled = true;
             if (!Object.hasOwn(VALUES, field)) return;
-            question(index, "value", `${FIELDS[field]}에서 어떤 내용을 확인할까요?`, VALUES[field].map((id2) => ({ id: id2, label: LABELS[id2] })), (selected) => {
+            question(index, "value", `${FIELDS[field]}에서 어떤 내용을 확인할까요?`, VALUES[field].map((id) => ({ id, label: LABELS[id] })), (selected) => {
               if (!VALUES[field].includes(selected)) return;
               question(index, "polarity", `‘${LABELS[selected]}’을 지금 어떻게 생각하나요?`, [{ id: "prefer", label: "원하거나 선호해요" }, { id: "avoid", label: "원하거나 선호하지 않아요" }], (polarity) => {
                 if (!["prefer", "avoid"].includes(polarity)) return;
-                question(index, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(CONDITIONS).map(([id2, label]) => ({ id: id2, label }))], (condition) => {
+                question(index, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(CONDITIONS).map(([id, label]) => ({ id, label }))], (condition) => {
                   if (condition === "general" || Object.hasOwn(CONDITIONS, condition)) add([{ field, value: selected, polarity, condition: condition === "general" ? null : condition }]);
                 });
               });
@@ -9500,42 +10071,42 @@ var require_member_statement_v8 = __commonJS({
         const group = meanings.filter((other) => other.id === m.id || meaningsConflict(m, other));
         if (group.length < 2) continue;
         group.forEach((p) => grouped.add(p.id));
-        const id2 = `q.${key}.conflict.${sourceKey(group.map((p) => p.id + semanticKey(p)).join("|")).slice(0, 16)}`, answer = answers[id2];
-        if (answer === void 0) questions.push({ id: id2, about: id2, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...group.map((p) => ({ id: p.id, label: meaningLabel(p), value: p.id })), ...OPTIONS_END.map((o) => ({ ...o, value: o.id }))] });
+        const id = `q.${key}.conflict.${sourceKey(group.map((p) => p.id + semanticKey(p)).join("|")).slice(0, 16)}`, answer = answers[id];
+        if (answer === void 0) questions.push({ id, about: id, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...group.map((p) => ({ id: p.id, label: meaningLabel(p), value: p.id })), ...OPTIONS_END.map((o) => ({ ...o, value: o.id }))] });
         else for (const p of group) if (p.id !== answer) p.withheld = true;
       }
       return { meanings: meanings.filter((m) => !m.withheld), unresolved: unresolved.slice(0, MEMBER_STATEMENT_LIMITS.unresolved), questions };
     }
-    function choose(state, text4, segments, answers, key) {
+    function choose(state, text3, segments, answers, key) {
       const result = Ask2.choose({ questions: state.questions, decide: (scenario) => {
-        const outcome = stateFor(text4, segments, { ...answers, ...scenario }, key);
+        const outcome = stateFor(text3, segments, { ...answers, ...scenario }, key);
         return { meanings: outcome.meanings.map((m) => semanticKey(m)), questions: outcome.questions.map((q) => q.id) };
       } });
-      return result.status === "ask" ? { id: result.question.id, label: result.question.label, options: result.question.options.map(({ id: id2, label }) => ({ id: id2, label })) } : null;
+      return result.status === "ask" ? { id: result.question.id, label: result.question.label, options: result.question.options.map(({ id, label }) => ({ id, label })) } : null;
     }
-    function parseMemberStatement(text4, { clarifications = [], parserVersion = PARSER_VERSION } = {}) {
+    function parseMemberStatement(text3, { clarifications = [], parserVersion = PARSER_VERSION } = {}) {
       if (parserVersion === Legacy.PARSER_VERSION) {
-        if (clarifications.length) fail6();
-        return Legacy.parseMemberStatement(text4);
+        if (clarifications.length) fail5();
+        return Legacy.parseMemberStatement(text3);
       }
-      if (parserVersion === Previous.PARSER_VERSION) return Previous.parseMemberStatement(text4, { clarifications, parserVersion });
-      if (parserVersion === Previous3.PARSER_VERSION) return Previous3.parseMemberStatement(text4, { clarifications, parserVersion });
-      if (parserVersion === Previous4.PARSER_VERSION) return Previous4.parseMemberStatement(text4, { clarifications, parserVersion });
-      if (parserVersion === Previous5.PARSER_VERSION) return Previous5.parseMemberStatement(text4, { clarifications, parserVersion });
-      if (parserVersion === Previous6.PARSER_VERSION) return Previous6.parseMemberStatement(text4, { clarifications, parserVersion });
-      if (parserVersion === Previous7.PARSER_VERSION) return Previous7.parseMemberStatement(text4, { clarifications, parserVersion });
-      if (parserVersion !== PARSER_VERSION) fail6();
-      if (!list3(clarifications, MEMBER_STATEMENT_LIMITS.clarifications) || clarifications.some((row) => !exact5(row, ["questionId", "optionId"]) || typeof row.questionId !== "string" || typeof row.optionId !== "string")) fail6();
-      const segments = analyze(text4), key = sourceKey(text4), answers = /* @__PURE__ */ Object.create(null), clarificationAnswers = [];
-      let state = stateFor(text4, segments, answers, key), question = choose(state, text4, segments, answers, key);
+      if (parserVersion === Previous.PARSER_VERSION) return Previous.parseMemberStatement(text3, { clarifications, parserVersion });
+      if (parserVersion === Previous3.PARSER_VERSION) return Previous3.parseMemberStatement(text3, { clarifications, parserVersion });
+      if (parserVersion === Previous4.PARSER_VERSION) return Previous4.parseMemberStatement(text3, { clarifications, parserVersion });
+      if (parserVersion === Previous5.PARSER_VERSION) return Previous5.parseMemberStatement(text3, { clarifications, parserVersion });
+      if (parserVersion === Previous6.PARSER_VERSION) return Previous6.parseMemberStatement(text3, { clarifications, parserVersion });
+      if (parserVersion === Previous7.PARSER_VERSION) return Previous7.parseMemberStatement(text3, { clarifications, parserVersion });
+      if (parserVersion !== PARSER_VERSION) fail5();
+      if (!list3(clarifications, MEMBER_STATEMENT_LIMITS.clarifications) || clarifications.some((row) => !exact5(row, ["questionId", "optionId"]) || typeof row.questionId !== "string" || typeof row.optionId !== "string")) fail5();
+      const segments = analyze(text3), key = sourceKey(text3), answers = /* @__PURE__ */ Object.create(null), clarificationAnswers = [];
+      let state = stateFor(text3, segments, answers, key), question = choose(state, text3, segments, answers, key);
       for (const row of clarifications) {
-        if (!question || question.id !== row.questionId || Object.hasOwn(answers, row.questionId)) fail6();
+        if (!question || question.id !== row.questionId || Object.hasOwn(answers, row.questionId)) fail5();
         const option = question.options.find((o) => o.id === row.optionId);
-        if (!option) fail6();
+        if (!option) fail5();
         answers[row.questionId] = row.optionId;
         clarificationAnswers.push({ ...row, questionLabel: question.label, optionLabel: option.label });
-        state = stateFor(text4, segments, answers, key);
-        question = choose(state, text4, segments, answers, key);
+        state = stateFor(text3, segments, answers, key);
+        question = choose(state, text3, segments, answers, key);
       }
       if (clarifications.length === MEMBER_STATEMENT_LIMITS.clarifications && question) {
         const conflicted = state.meanings.filter((a) => state.meanings.some((b) => a !== b && meaningsConflict(a, b)));
@@ -9562,19 +10133,19 @@ var require_member_statement_v8 = __commonJS({
       if (parserVersion === Previous5.PARSER_VERSION) return Previous5.validateMemberStatement(row, { now, enforceTime });
       if (parserVersion === Previous6.PARSER_VERSION) return Previous6.validateMemberStatement(row, { now, enforceTime });
       if (parserVersion === Previous7.PARSER_VERSION) return Previous7.validateMemberStatement(row, { now, enforceTime });
-      if (!exact5(row, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || parserVersion !== PARSER_VERSION || typeof row.id !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id) || !list3(row.meanings, MEMBER_STATEMENT_LIMITS.meanings) || !row.meanings.length) fail6();
-      const at = instant(row.at), confirmed = instant(row.confirmedAt), cutoff = enforceTime ? typeof now === "string" ? instant(now) : Number.isSafeInteger(now) ? now : fail6() : null;
-      if (confirmed < at || enforceTime && confirmed > cutoff) fail6();
+      if (!exact5(row, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || parserVersion !== PARSER_VERSION || typeof row.id !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id) || !list3(row.meanings, MEMBER_STATEMENT_LIMITS.meanings) || !row.meanings.length) fail5();
+      const at = instant(row.at), confirmed = instant(row.confirmedAt), cutoff = enforceTime ? typeof now === "string" ? instant(now) : Number.isSafeInteger(now) ? now : fail5() : null;
+      if (confirmed < at || enforceTime && confirmed > cutoff) fail5();
       const parsed = parseMemberStatement(row.text, { clarifications: row.clarifications });
-      if (parsed.question) fail6();
+      if (parsed.question) fail5();
       const ids3 = /* @__PURE__ */ new Set(), meanings = row.meanings.map((m) => {
-        if (!exact5(m, ["id", "field", "value", "polarity", "condition", "evidence"]) || !exact5(m.evidence, ["start", "end", "quote"]) || ids3.has(m.id)) fail6();
+        if (!exact5(m, ["id", "field", "value", "polarity", "condition", "evidence"]) || !exact5(m.evidence, ["start", "end", "quote"]) || ids3.has(m.id)) fail5();
         ids3.add(m.id);
         const expected = parsed.meanings.find((p) => p.id === m.id);
-        if (!expected || ["field", "value", "polarity", "condition"].some((key) => m[key] !== expected[key]) || ["start", "end", "quote"].some((key) => m.evidence[key] !== expected.evidence[key])) fail6();
+        if (!expected || ["field", "value", "polarity", "condition"].some((key) => m[key] !== expected[key]) || ["start", "end", "quote"].some((key) => m.evidence[key] !== expected.evidence[key])) fail5();
         return copy2(expected);
       }).sort((a, b) => Number(a.id.slice(1)) - Number(b.id.slice(1)));
-      if (meanings.some((a, i) => meanings.slice(i + 1).some((b) => meaningsConflict(a, b)))) fail6();
+      if (meanings.some((a, i) => meanings.slice(i + 1).some((b) => meaningsConflict(a, b)))) fail5();
       return { id: row.id.toLowerCase(), parserVersion: PARSER_VERSION, text: row.text, at: row.at, confirmedAt: row.confirmedAt, meanings, clarifications: parsed.clarifications };
     }
     module.exports = { PARSER_VERSION, MEMBER_STATEMENT_LIMITS, MEMBER_STATEMENT_VALUES: VALUES, MEMBER_STATEMENT_LABELS: LABELS, MEMBER_STATEMENT_CONDITIONS: CONDITIONS, MEMBER_STATEMENT_MULTI_FIELDS: MULTI_FIELDS, parseMemberStatement, validateMemberStatement, meaningsConflict, meaningLabel };
@@ -9648,15 +10219,15 @@ var require_member_statement_contract = __commonJS({
     };
     var exact5 = (x, fields2) => plain2(x) && Reflect.ownKeys(x).length === fields2.length && fields2.every((key) => data(x, key));
     var list3 = (x, max) => Array.isArray(x) && x.length <= max && Reflect.ownKeys(x).length === x.length + 1 && Array.from({ length: x.length }, (_, i) => data(x, String(i))).every(Boolean);
-    var fail6 = () => {
+    var fail5 = () => {
       throw new TypeError("Member statement: invalid confirmed statement");
     };
-    var instant = (x) => typeof x === "string" && Number.isFinite(Date.parse(x)) && new Date(x).toISOString() === x ? Date.parse(x) : fail6();
+    var instant = (x) => typeof x === "string" && Number.isFinite(Date.parse(x)) && new Date(x).toISOString() === x ? Date.parse(x) : fail5();
     var semanticKey = (m) => [m.field, m.value, m.polarity, m.condition || "general"].join(":");
     var copy2 = (x) => JSON.parse(JSON.stringify(x));
     var SHA_K = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
-    function sourceKey(text4) {
-      const bytes = new TextEncoder().encode(text4), padded = new Uint8Array(Math.ceil((bytes.length + 9) / 64) * 64);
+    function sourceKey(text3) {
+      const bytes = new TextEncoder().encode(text3), padded = new Uint8Array(Math.ceil((bytes.length + 9) / 64) * 64);
       padded.set(bytes);
       padded[bytes.length] = 128;
       new DataView(padded.buffer).setUint32(padded.length - 4, bytes.length * 8);
@@ -9728,8 +10299,8 @@ var require_member_statement_contract = __commonJS({
       body = body.replace(/^(?:저는|나는|제가|내가|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|현재(?:는)?|평소(?:에는|엔|는)|보통은|일반적으로는)/u, "");
       let condition = null;
       const prefixes = [["first-try", /^(?:처음(?:에는|엔|은)|처음(?:시도)?할때(?:에는|는)?|처음배울때(?:에는|는)?|처음(?:배우는|해보는|하는)(?:일|내용)(?:은|을할때(?:는)?)|낯선(?:일|내용)(?:은|을할때(?:는)?))/u], ["familiar", /^(?:익숙할때(?:는)?|익숙한(?:내용|일)(?:일때(?:는)?|은))/u], ["busy", /^(?:바쁠때(?:는)?|시간이없을때(?:는)?|바쁜날(?:에는|엔|은))/u]];
-      for (const [id2, re] of prefixes) if (re.test(body)) {
-        condition = id2;
+      for (const [id, re] of prefixes) if (re.test(body)) {
+        condition = id;
         body = body.replace(re, "");
         break;
       }
@@ -10096,8 +10667,8 @@ var require_member_statement_contract = __commonJS({
       body = body.replace(/^(?:저는|나는|제가|내가|저한테는|제게는|나한테는|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|이제(?:는|부터는)?|현재(?:는)?|평소(?:에는|엔|는)?|보통은|일반적으로는)/u, "");
       body = body.replace(/^(?:저는|나는|제가|내가)/u, "");
       let condition = null;
-      for (const [id2, prefix] of CONDITION_PREFIXES) if (prefix.test(body)) {
-        condition = id2;
+      for (const [id, prefix] of CONDITION_PREFIXES) if (prefix.test(body)) {
+        condition = id;
         body = body.replace(prefix, "");
         break;
       }
@@ -10606,39 +11177,39 @@ var require_member_statement_contract = __commonJS({
     function composeRoles(units, nominalHead) {
       const tags = units.filter((t) => !["nominal", "means", "method"].includes(t));
       if (nominalHead === "explanation" && !tags.includes("explanation")) tags.push("explanation");
-      const has2 = (t) => tags.includes(t), any = (...t) => t.some(has2), all = (...t) => t.every(has2), before = (a, b) => tags.indexOf(a) < tags.indexOf(b);
-      const beforeStart = (...actions) => !has2("start") || actions.some((action) => has2(action) && before(action, "start"));
-      const beforeOverview = has2("overview") ? tags.slice(0, tags.indexOf("overview")) : [];
+      const has = (t) => tags.includes(t), any = (...t) => t.some(has), all = (...t) => t.every(has), before = (a, b) => tags.indexOf(a) < tags.indexOf(b);
+      const beforeStart = (...actions) => !has("start") || actions.some((action) => has(action) && before(action, "start"));
+      const beforeOverview = has("overview") ? tags.slice(0, tags.indexOf("overview")) : [];
       const overviewLeads = beforeOverview.every((t) => ["explanation", "detail", "content", "first", "enter", "before"].includes(t)) && (!beforeOverview.includes("enter") || beforeOverview.indexOf("enter") < beforeOverview.indexOf("before"));
-      const explained = has2("explain") || all("explanation", "receive");
+      const explained = has("explain") || all("explanation", "receive");
       const matches = [], frame = (field, value, licensed, required) => {
         const allowed = new Set(licensed.split(" "));
         if (required && tags.every((t) => allowed.has(t))) matches.push({ field, value });
       };
-      frame("communication", "written", "text opinion communicate write send organize speak exchange answer receive do", has2("text") && any("communicate", "write", "send", "organize", "speak", "exchange"));
-      frame("communication", "spoken", "speech opinion communicate speak send exchange do", has2("speech") && any("communicate", "speak", "send", "exchange"));
+      frame("communication", "written", "text opinion communicate write send organize speak exchange answer receive do", has("text") && any("communicate", "write", "send", "organize", "speak", "exchange"));
+      frame("communication", "spoken", "speech opinion communicate speak send exchange do", has("speech") && any("communicate", "speak", "send", "exchange"));
       frame("communication", "listen-organize", "person opinion speech first listen organize communicate", any("opinion", "speech") && all("listen", "organize") && before("listen", "organize"));
-      frame("communication", "share-first", "opinion speech first speak send start different-opinion occur before", has2("opinion") && any("speak", "send") && (has2("first") || all("different-opinion", "before")));
-      frame("work-style", "plan-first", "task plan first make decide start before-start do", has2("plan") && any("make", "decide") && beforeStart("make", "decide"));
+      frame("communication", "share-first", "opinion speech first speak send start different-opinion occur before", has("opinion") && any("speak", "send") && (has("first") || all("different-opinion", "before")));
+      frame("work-style", "plan-first", "task plan first make decide start before-start do", has("plan") && any("make", "decide") && beforeStart("make", "decide"));
       frame("work-style", "try-adjust", "small first try start mismatch later adjust outcome look method task do adjust-context", all("try", "adjust") && before("try", "adjust"));
-      frame("work-style", "single-task", "task one only focus process finish do next proceed present-task start multiple process-frame", has2("one") && any("focus", "process", "finish", "do", "process-frame") && (!has2("next") || has2("finish") && before("finish", "next")));
-      frame("work-style", "prioritize", "task priority important first rank order front make decide process finish do identity", has2("priority") && any("rank", "make", "decide") || any("process", "finish", "do") && has2("important") && any("rank", "order", "front", "first"));
-      frame("decision", "evidence", "data first check look reference basis decide conclusion decision-context possibility", has2("data") && any("check", "look", "reference", "basis"));
-      frame("decision", "compare-options", "options available arrange compare check decide conclusion decision-context many-options", has2("options") && any("compare", "check"));
-      frame("decision", "experience", "experience reference basis decide conclusion decision-context only", has2("experience") && any("reference", "basis"));
-      frame("decision", "consult", "person opinion exchange first consult decide conclusion do", has2("consult"));
-      frame("explanation-detail", "overview-first", "explanation overview first detail content enter before look show know listen make explain receive do reason-effect", has2("overview") && overviewLeads && (any("look", "show", "know", "listen", "make") || explained) && (has2("first") || all("content", "before")));
-      frame("explanation-detail", "reasons-detail", "explanation-purpose explanation conclusion occur reason data detail know listen look explain receive", any("reason", "data") && has2("detail") && (any("know", "listen", "look") || explained));
+      frame("work-style", "single-task", "task one only focus process finish do next proceed present-task start multiple process-frame", has("one") && any("focus", "process", "finish", "do", "process-frame") && (!has("next") || has("finish") && before("finish", "next")));
+      frame("work-style", "prioritize", "task priority important first rank order front make decide process finish do identity", has("priority") && any("rank", "make", "decide") || any("process", "finish", "do") && has("important") && any("rank", "order", "front", "first"));
+      frame("decision", "evidence", "data first check look reference basis decide conclusion decision-context possibility", has("data") && any("check", "look", "reference", "basis"));
+      frame("decision", "compare-options", "options available arrange compare check decide conclusion decision-context many-options", has("options") && any("compare", "check"));
+      frame("decision", "experience", "experience reference basis decide conclusion decision-context only", has("experience") && any("reference", "basis"));
+      frame("decision", "consult", "person opinion exchange first consult decide conclusion do", has("consult"));
+      frame("explanation-detail", "overview-first", "explanation overview first detail content enter before look show know listen make explain receive do reason-effect", has("overview") && overviewLeads && (any("look", "show", "know", "listen", "make") || explained) && (has("first") || all("content", "before")));
+      frame("explanation-detail", "reasons-detail", "explanation-purpose explanation conclusion occur reason data detail know listen look explain receive", any("reason", "data") && has("detail") && (any("know", "listen", "look") || explained));
       frame("explanation-detail", "long-flow", "explanation long flow explain listen", all("explanation", "long"));
-      frame("explanation", "brief", "explanation short explain listen know finish receive do length", has2("short") && (has2("explanation") || any("explain", "listen", "know")));
-      frame("explanation", "detailed", "explanation detail content explain listen know receive long", has2("detail") && (has2("explanation") || any("explain", "listen", "know")));
+      frame("explanation", "brief", "explanation short explain listen know finish receive do length", has("short") && (has("explanation") || any("explain", "listen", "know")));
+      frame("explanation", "detailed", "explanation detail content explain listen know receive long", has("detail") && (has("explanation") || any("explain", "listen", "know")));
       frame("explanation", "standard", "explanation standard listen receive length", all("explanation", "standard"));
       frame("support", "independent", "self nohelp first try do process before-help", any("self", "nohelp") && any("try", "do", "process"));
-      frame("support", "together", "person together first try do process explain help receive", has2("together") && any("try", "do", "process", "explain", "help", "receive"));
-      frame("support", "example", "example first one look show check start intent-start help method inquiry", has2("example") && any("look", "show", "check") && beforeStart("look", "show", "check"));
+      frame("support", "together", "person together first try do process explain help receive", has("together") && any("try", "do", "process", "explain", "help", "receive"));
+      frame("support", "example", "example first one look show check start intent-start help method inquiry", has("example") && any("look", "show", "check") && beforeStart("look", "show", "check"));
       frame("support", "step", "step sequence-step help explain receive do order person explanation listen", any("step", "sequence-step") && any("explain", "receive", "do", "help", "explanation"));
-      frame("support", "choose", "needhelp help choose decide receive", has2("needhelp") && any("choose", "decide", "receive") && (has2("help") || has2("receive")));
-      const practice = any("practice", "practice-verb", "mix"), listen = has2("listen"), read = has2("read");
+      frame("support", "choose", "needhelp help choose decide receive", has("needhelp") && any("choose", "decide", "receive") && (has("help") || has("receive")));
+      const practice = any("practice", "practice-verb", "mix"), listen = has("listen"), read = has("read");
       frame("practice-mode", listen && read ? "mixed" : listen ? "listening" : "reading", "practice practice-verb audio visual text listen read both together mix do enter multiple", practice && (listen || read));
       const topicFrames = [
         ["reading-books", "book read learn", "book"],
@@ -10659,7 +11230,7 @@ var require_member_statement_contract = __commonJS({
         ["work-collaboration", "task together do person collaboration method know", "collaboration"]
       ];
       for (const [value, licensed, anchor] of topicFrames) {
-        const enough = value === "travel-planning" ? has2("travel") && any("route", "plan") : value === "travel-food" ? all("travel", "cooking") : value === "travel-stay" ? has2("stay") : has2(anchor);
+        const enough = value === "travel-planning" ? has("travel") && any("route", "plan") : value === "travel-food" ? all("travel", "cooking") : value === "travel-stay" ? has("stay") : has(anchor);
         frame("topic", value, licensed + " opinion content topic-frame learn know", enough);
       }
       return matches.length === 1 ? matches[0] : null;
@@ -10771,36 +11342,36 @@ var require_member_statement_contract = __commonJS({
       const results = [], add = (field, value, pass) => {
         if (pass && (!fields2 || fields2.includes(field))) results.push({ field, value, polarity, condition });
       };
-      const has2 = (re) => re.test(body), both = (a, b) => has2(a) && has2(b), pos = (re) => body.search(re), ordered = (a, b) => pos(a) >= 0 && pos(b) > pos(a);
-      const topicContext = has2(/(?:주제|소재|관심|분야|취미|배우|배워|공부|다루|익히)/u);
-      const practiceContext = has2(/(?:연습|문제|학습)/u) && !has2(/(?:주제|소재|관한)/u);
+      const has = (re) => re.test(body), both = (a, b) => has(a) && has(b), pos = (re) => body.search(re), ordered = (a, b) => pos(a) >= 0 && pos(b) > pos(a);
+      const topicContext = has(/(?:주제|소재|관심|분야|취미|배우|배워|공부|다루|익히)/u);
+      const practiceContext = has(/(?:연습|문제|학습)/u) && !has(/(?:주제|소재|관한)/u);
       if (practiceContext) {
-        const listening = has2(/(?:듣기|듣는|듣고|들으며|들으면서|들어)/u), reading = has2(/(?:읽기|읽는|읽고|읽으며|읽으면서)/u);
+        const listening = has(/(?:듣기|듣는|듣고|들으며|들으면서|들어)/u), reading = has(/(?:읽기|읽는|읽고|읽으며|읽으면서)/u);
         add("practice-mode", listening && reading ? "mixed" : listening ? "listening" : "reading", listening || reading);
       }
-      const noPriorStart = (verb) => !has2(/(?:시작하|시작한|착수하|착수한)/u) || ordered(verb, /(?:시작하|시작한|착수하|착수한)/u);
-      add("support", "independent", both(/(?:혼자|스스로|제힘으로|내힘으로|도움없이|누구도움없이)/u, /(?:시도|해보|진행|마무리|해결|하[는기고]|끝내)/u) && !has2(/함께|같이/u));
-      add("support", "together", both(/(?:함께|같이)/u, /(?:해보|해나가|풀어가|푸는|풀기|진행|하는|하기|해결)/u) && !topicContext && !has2(/혼자|도움없이/u));
+      const noPriorStart = (verb) => !has(/(?:시작하|시작한|착수하|착수한)/u) || ordered(verb, /(?:시작하|시작한|착수하|착수한)/u);
+      add("support", "independent", both(/(?:혼자|스스로|제힘으로|내힘으로|도움없이|누구도움없이)/u, /(?:시도|해보|진행|마무리|해결|하[는기고]|끝내)/u) && !has(/함께|같이/u));
+      add("support", "together", both(/(?:함께|같이)/u, /(?:해보|해나가|풀어가|푸는|풀기|진행|하는|하기|해결)/u) && !topicContext && !has(/혼자|도움없이/u));
       add("support", "example", both(/예시|예제|샘플|완성된예/u, /보여|살펴|보고|보는|보기|확인/u) && noPriorStart(/보여|살펴|보고|보는|확인/u));
       add("support", "step", both(/단계별|한단계씩|차근차근|차례차례/u, /도움|도와|안내|알려|짚어|설명|받/u));
-      add("support", "choose", both(/도움/u, /필요/u) && has2(/골라|고르|선택/u) && has2(/받|켜|사용/u));
-      const explanation = has2(/설명|알려|풀어|풀이/u), standard = has2(/보통|중간길이/u), detail = has2(/자세|상세|세세|구체적|속속들이/u), brief = has2(/짧|간단|간결|핵심만|요점만/u);
+      add("support", "choose", both(/도움/u, /필요/u) && has(/골라|고르|선택/u) && has(/받|켜|사용/u));
+      const explanation = has(/설명|알려|풀어|풀이/u), standard = has(/보통|중간길이/u), detail = has(/자세|상세|세세|구체적|속속들이/u), brief = has(/짧|간단|간결|핵심만|요점만/u);
       add("explanation", "standard", explanation && standard && !detail);
-      add("explanation", "brief", explanation && brief && !standard && !detail && !has2(/길게|긴설명/u));
-      const reasonDetail = has2(/근거|이유|왜그런/u) && detail;
+      add("explanation", "brief", explanation && brief && !standard && !detail && !has(/길게|긴설명/u));
+      const reasonDetail = has(/근거|이유|왜그런/u) && detail;
       add("explanation", "detailed", explanation && detail && !reasonDetail && !brief && !standard);
-      add("explanation-detail", "reasons-detail", reasonDetail && has2(/알|듣|설명|받|보/u));
-      add("explanation-detail", "long-flow", explanation && has2(/길게이어|길게계속|긴설명을끊|길게설명/u));
-      const overview = has2(/개요|큰그림|전체흐름|전체구조|큰틀/u);
-      add("explanation-detail", "overview-first", overview && has2(/먼저|부터|우선/u) && has2(/보|듣|파악|알/u) && !/(?:듣고|받고|보고|설명하고).*(?:개요|큰그림|전체흐름|큰틀)/u.test(body));
+      add("explanation-detail", "reasons-detail", reasonDetail && has(/알|듣|설명|받|보/u));
+      add("explanation-detail", "long-flow", explanation && has(/길게이어|길게계속|긴설명을끊|길게설명/u));
+      const overview = has(/개요|큰그림|전체흐름|전체구조|큰틀/u);
+      add("explanation-detail", "overview-first", overview && has(/먼저|부터|우선/u) && has(/보|듣|파악|알/u) && !/(?:듣고|받고|보고|설명하고).*(?:개요|큰그림|전체흐름|큰틀)/u.test(body));
       if (!topicContext && !practiceContext) {
-        add("communication", "written", both(/글로|문자로|메시지로|메신저로|텍스트로|글을/u, /소통|전달|주고받|쓰|적|남기|정리/u) && !has2(/말로|목소리/u));
-        add("communication", "spoken", both(/말로|말을|목소리|대화로/u, /소통|주고받|이야기|대화|전달/u) && !has2(/글로|문자로/u));
-        add("communication", "listen-organize", has2(/다른.*(?:생각|말|의견)|상대.*(?:생각|말|의견)|동료.*(?:생각|말|의견)/u) && ordered(/듣|들어/u, /정리|정돈|취합/u));
-        add("communication", "share-first", has2(/(?:제|내)(?:의견|생각)/u) && has2(/먼저|부터/u) && has2(/말하|꺼내|내는|전하/u));
+        add("communication", "written", both(/글로|문자로|메시지로|메신저로|텍스트로|글을/u, /소통|전달|주고받|쓰|적|남기|정리/u) && !has(/말로|목소리/u));
+        add("communication", "spoken", both(/말로|말을|목소리|대화로/u, /소통|주고받|이야기|대화|전달/u) && !has(/글로|문자로/u));
+        add("communication", "listen-organize", has(/다른.*(?:생각|말|의견)|상대.*(?:생각|말|의견)|동료.*(?:생각|말|의견)/u) && ordered(/듣|들어/u, /정리|정돈|취합/u));
+        add("communication", "share-first", has(/(?:제|내)(?:의견|생각)/u) && has(/먼저|부터/u) && has(/말하|꺼내|내는|전하/u));
         add("work-style", "plan-first", both(/계획|일정|할일목록/u, /세우|세워|짜|정해|만들/u) && noPriorStart(/세우|세워|짜|정해|만들/u));
         add("work-style", "try-adjust", ordered(/해보|시도|실행/u, /고치|고쳐|조정|수정|보완/u));
-        add("work-style", "single-task", has2(/한번에(?:한가지|하나)|하나씩|한가지만/u) && has2(/처리|하는|하기|끝내|마무리/u));
+        add("work-style", "single-task", has(/한번에(?:한가지|하나)|하나씩|한가지만/u) && has(/처리|하는|하기|끝내|마무리/u));
         add("work-style", "prioritize", both(/우선순위|중요한순서|중요도/u, /정하|정한|정해|매겨|매기|처리/u));
         add("decision", "evidence", both(/자료|데이터|근거|사실/u, /확인|검토|살펴|바탕|기준|참고/u) && !reasonDetail);
         add("decision", "compare-options", both(/선택지|대안|후보|장단점/u, /비교|따져/u));
@@ -10978,10 +11549,10 @@ var require_member_statement_contract = __commonJS({
       const ending = normalized.polarity === "avoid" ? "선호하지않아요" : "좋아요";
       const read = (part) => {
         if (work.remaining-- <= 0) return null;
-        const text4 = part.replace(/^,+|,+$/gu, "") + ending;
-        if (excludedOrigin(text4)) return null;
-        const cacheKey = depth + ":" + text4;
-        const found = work.cache.has(cacheKey) ? work.cache.get(cacheKey) : natural(text4) || expanded(text4) || compositional(text4) || coordinatedDeclaration(text4, depth + 1, work);
+        const text3 = part.replace(/^,+|,+$/gu, "") + ending;
+        if (excludedOrigin(text3)) return null;
+        const cacheKey = depth + ":" + text3;
+        const found = work.cache.has(cacheKey) ? work.cache.get(cacheKey) : natural(text3) || expanded(text3) || compositional(text3) || coordinatedDeclaration(text3, depth + 1, work);
         work.cache.set(cacheKey, found);
         if (!found?.meanings?.length || found.uncertain || found.typo) return null;
         if (condition && found.meanings.some((m) => m.condition && m.condition !== condition)) return null;
@@ -11221,52 +11792,52 @@ var require_member_statement_contract = __commonJS({
       if (/(?:만약|라면|다면|가정하|상상하)/u.test(hypotheticalBody)) return "hypothetical";
       return null;
     }
-    function pieces(text4) {
+    function pieces(text3) {
       const result = [], separator = /\s+(?:하지만|그런데|그리고|반면에?|다만)\s+|(?:즐기고|즐기며|싫어하고|흥미가\s*있고|선호하더라도|마음에\s*들고|원치\s*않고|원치\s*않으며|좋으며|좋아하고|좋아하며|선호하고|선호하며|원하고|원하며|편하고|편하며|좋고|싫고|즐겁고|싶고|관심을\s*두고\s*있고|관심이\s*있고|관심이\s*많고|관심이\s*없고|관심이\s*있으며|싶으며|설명이고|(?:원|선호|좋아)하지\s*않고|지만|는데|쪽이고|것이고|편이고|방식이고|활동이고)(?=\s|,)|[.!?;\n,]+/gu;
       let start = 0, match;
       const push = (end) => {
-        while (start < end && /\s/u.test(text4[start])) start++;
-        while (end > start && /\s/u.test(text4[end - 1])) end--;
-        if (end > start) result.push({ start, end, quote: text4.slice(start, end) });
+        while (start < end && /\s/u.test(text3[start])) start++;
+        while (end > start && /\s/u.test(text3[end - 1])) end--;
+        if (end > start) result.push({ start, end, quote: text3.slice(start, end) });
       };
-      while (match = separator.exec(text4)) {
-        if (match[0] === "," && /^(?:(?![.!?;\n]).)*(?:모두|둘\s*다)(?:(?![.!?;\n]).)*(?:선호|좋아|관심|싫|원)/u.test(text4.slice(match.index + 1))) continue;
+      while (match = separator.exec(text3)) {
+        if (match[0] === "," && /^(?:(?![.!?;\n]).)*(?:모두|둘\s*다)(?:(?![.!?;\n]).)*(?:선호|좋아|관심|싫|원)/u.test(text3.slice(match.index + 1))) continue;
         if (match[0] === ",") {
-          const head = text4.slice(start, match.index);
+          const head = text3.slice(start, match.index);
           if (/(?:게|것이|쪽이|방식이|편이|저는|나는|제가|내가)\s*$/u.test(head)) continue;
           const inset = head.split(",");
           if (inset.length === 2 && /(?:게|것이|쪽이|방식이|편이|저는|나는|제가|내가)\s*$/u.test(inset[0]) && clauseAdjunct(inset[1].replace(/\s/gu, ""), false, inset[1])) continue;
-          if (/기\s*$/u.test(head) && /^[^.!?;\n]*(?:좋아|선호|관심|싫)/u.test(text4.slice(match.index + 1))) continue;
-          const scope3 = normalizePrefix(surfaceDeclaration(text4.slice(start, match.index)));
+          if (/기\s*$/u.test(head) && /^[^.!?;\n]*(?:좋아|선호|관심|싫)/u.test(text3.slice(match.index + 1))) continue;
+          const scope3 = normalizePrefix(surfaceDeclaration(text3.slice(start, match.index)));
           if (scope3.condition && (!scope3.body || universalAside(scope3.body.replace(/^,+/u, "")))) continue;
         }
-        if (match[0] === "," && /^\s*(?:(?:저는|나는|제가|내가|제\s*경우에는|내\s*경우에는|제\s*취향은)|(?:처음|익숙한|바쁠|회의할|함께\s*일할))/u.test(text4.slice(match.index + 1))) {
+        if (match[0] === "," && /^\s*(?:(?:저는|나는|제가|내가|제\s*경우에는|내\s*경우에는|제\s*취향은)|(?:처음|익숙한|바쁠|회의할|함께\s*일할))/u.test(text3.slice(match.index + 1))) {
           push(match.index);
           start = match.index + 1;
           continue;
         }
-        if (match[0] === "," && /(?:뜻|의미|이야기)(?:은|는)?\s*아니고\s*$/u.test(text4.slice(start, match.index))) {
+        if (match[0] === "," && /(?:뜻|의미|이야기)(?:은|는)?\s*아니고\s*$/u.test(text3.slice(start, match.index))) {
           push(match.index);
           start = match.index + 1;
           continue;
         }
         if (match[0] === ",") {
-          const prefix = text4.slice(start, match.index), scoped = normalizePrefix(surfaceDeclaration(prefix));
+          const prefix = text3.slice(start, match.index), scoped = normalizePrefix(surfaceDeclaration(prefix));
           if (scoped.condition && !scoped.body || /^어느쪽을고를지$/u.test(scoped.body) || /(?:인지|할지|갈지|는지|식으로|방식으로)\s*$/u.test(prefix) || /(?:고|하되|하며)\s*$/u.test(prefix) && !/해\s*주시고\s*$/u.test(prefix)) continue;
         }
-        if (match[0] === "," && /(?:기도)\s*$/u.test(text4.slice(start, match.index))) continue;
-        if (match[0] === "," && (/(?:것|거|방식|시간|활동|쪽)(?:도)?\s*$/u.test(text4.slice(start, match.index)) || /^\s*(?:둘\s*다|모두)/u.test(text4.slice(match.index + 1)))) continue;
-        if (/^(?:흥미가\s*있고|관심이\s*있고)$/u.test(match[0]) && /^\s*(?:배워|알아|살펴)\s*보고\s*싶/u.test(text4.slice(match.index + match[0].length))) continue;
+        if (match[0] === "," && /(?:기도)\s*$/u.test(text3.slice(start, match.index))) continue;
+        if (match[0] === "," && (/(?:것|거|방식|시간|활동|쪽)(?:도)?\s*$/u.test(text3.slice(start, match.index)) || /^\s*(?:둘\s*다|모두)/u.test(text3.slice(match.index + 1)))) continue;
+        if (/^(?:흥미가\s*있고|관심이\s*있고)$/u.test(match[0]) && /^\s*(?:배워|알아|살펴)\s*보고\s*싶/u.test(text3.slice(match.index + match[0].length))) continue;
         if (/^(?:좋고|좋아하고|편하고|즐겁고|즐기고|즐기며|싫어하고|흥미가\s*있고|관심이\s*있고)$/u.test(match[0])) {
-          const tail = text4.slice(match.index + match[0].length);
+          const tail = text3.slice(match.index + match[0].length);
           if (/^\s*(?:싶|말고|싫고|아니고|그랬|없고)/u.test(tail)) continue;
           if (/^(?:즐기고|즐기며|싫어하고)$/u.test(match[0]) && /^[^.!?;\n]*(?:(?:다는|라는)\s*(?:말|뜻|의미|문장|이야기)|(?:다고|라고)\s*(?:말|이야기|얘기|하|했|하셨|들))/u.test(tail)) continue;
         }
-        if (match[0] === "지만" && !/(?:좋|싫|하|되|있|없|않|했|았|었|겠|리|지|많|되|편이|일이|맞|기|겼)$/u.test(text4.slice(start, match.index).replace(/\s/gu, ""))) continue;
+        if (match[0] === "지만" && !/(?:좋|싫|하|되|있|없|않|했|았|었|겠|리|지|많|되|편이|일이|맞|기|겼)$/u.test(text3.slice(start, match.index).replace(/\s/gu, ""))) continue;
         push(match.index + (!/^[.!?;\n,\s]/u.test(match[0]) ? match[0].length : 0));
         start = match.index + match[0].length;
       }
-      push(text4.length);
+      push(text3.length);
       return result;
     }
     function unresolvedSubject(quote) {
@@ -11317,18 +11888,18 @@ var require_member_statement_contract = __commonJS({
       decision: "판단 방식",
       "explanation-detail": "설명에서 원하는 구성"
     };
-    function quotedAt(text4, end) {
+    function quotedAt(text3, end) {
       let quote = null;
       const close = { "“": "”", "‘": "’", "「": "」", "『": "』", '"': '"' };
       for (let i = 0; i < end; i++) {
-        const c = text4[i];
+        const c = text3[i];
         if (quote && c === quote) quote = null;
         else if (!quote && close[c]) quote = close[c];
       }
       return quote !== null;
     }
-    function scopeBoundaryBetween(text4, start, end) {
-      for (let i = start; i < end; i++) if (/[.!?;\n]/u.test(text4[i]) && !quotedAt(text4, i)) return true;
+    function scopeBoundaryBetween(text3, start, end) {
+      for (let i = start; i < end; i++) if (/[.!?;\n]/u.test(text3[i]) && !quotedAt(text3, i)) return true;
       return false;
     }
     function reattributedPreference(body, segments) {
@@ -11342,15 +11913,15 @@ var require_member_statement_contract = __commonJS({
       prior.unresolved = { ...prior.evidence, reason: "other", reasonLabel: "뒤 문장에서 선호의 주체를 다른 사람으로 설명해 본인의 선호인지 다시 확인해요." };
       return true;
     }
-    function analyze(text4) {
-      Legacy.parseMemberStatement(text4);
+    function analyze(text3) {
+      Legacy.parseMemberStatement(text3);
       const segments = [];
       let inherited = null, previousCondition = false, continuingCondition = null, unknownSubject = false, pendingScope = null;
-      for (const evidence of pieces(text4)) {
-        const insideLiteral = quotedAt(text4, evidence.start);
+      for (const evidence of pieces(text3)) {
+        const insideLiteral = quotedAt(text3, evidence.start);
         const body = selfSurface(evidence.quote).replace(/\s/gu, ""), self = !insideLiteral && (/^(?:나는|저는|제가|내가|제경우에는|내경우에는|제취향은|내취향은)/u.test(body) || /^(?:나는|저는|제가|내가|제경우에는|내경우에는|제취향은|내취향은)/u.test(surfaceDeclaration(evidence.quote))), current = /^(?:(?:나는|저는|제가|내가))?(?:지금|요즘|현재|이제)/u.test(body);
         const generalReset = /^(?:(?:나는|저는|제가|내가))?(?:평소|보통은|일반적으로|상황과관계없이|일과별개로|별개로)/u.test(body);
-        if (pendingScope && (scopeBoundaryBetween(text4, pendingScope.end, evidence.start) || generalReset && !insideLiteral)) pendingScope = null;
+        if (pendingScope && (scopeBoundaryBetween(text3, pendingScope.end, evidence.start) || generalReset && !insideLiteral)) pendingScope = null;
         if (pendingScope && insideLiteral) pendingScope = { ...pendingScope, uncertain: true };
         if (self && !insideLiteral) unknownSubject = false;
         if (inherited === "quotation" && self && !insideLiteral) inherited = null;
@@ -11367,9 +11938,9 @@ var require_member_statement_contract = __commonJS({
           continue;
         }
         if (inherited === "other" && self || inherited === "past" && current || inherited === "condition" && generalReset || inherited === "uncertain" && current || ["quotation", "hypothetical", "sensitive"].includes(inherited) && self && current) inherited = null;
-        const sentenceStart = Math.max(text4.lastIndexOf(".", evidence.start - 1), text4.lastIndexOf("!", evidence.start - 1), text4.lastIndexOf("?", evidence.start - 1), text4.lastIndexOf("\n", evidence.start - 1)) + 1;
-        const stop = /[.!?\n]/u.exec(text4.slice(evidence.end)), sentenceEnd = stop ? evidence.end + stop.index : text4.length;
-        const nounModifier = relativePersonClause(text4.slice(sentenceStart, sentenceEnd).replace(/\s/gu, ""));
+        const sentenceStart = Math.max(text3.lastIndexOf(".", evidence.start - 1), text3.lastIndexOf("!", evidence.start - 1), text3.lastIndexOf("?", evidence.start - 1), text3.lastIndexOf("\n", evidence.start - 1)) + 1;
+        const stop = /[.!?\n]/u.exec(text3.slice(evidence.end)), sentenceEnd = stop ? evidence.end + stop.index : text3.length;
+        const nounModifier = relativePersonClause(text3.slice(sentenceStart, sentenceEnd).replace(/\s/gu, ""));
         const localRelative = /(?:좋아하는|싫어하는|선호하는|편한|좋은)[가-힣A-Za-z]{1,24}(?:이|가)(?:제게|저에게|내게|나에게|우리에게)/u.test(body);
         const segment = { evidence }, reason = (nounModifier || localRelative ? "other" : excludedOrigin(body)) || inherited;
         if (reason || unknownSubject) {
@@ -11377,7 +11948,7 @@ var require_member_statement_contract = __commonJS({
           continuingCondition = null;
           const outer = normalizePrefix(surfaceDeclaration(body)).condition;
           if (pendingScope) pendingScope = { ...pendingScope, end: evidence.end, uncertain: true };
-          else if (outer && !insideLiteral && (/^\s*,/u.test(text4.slice(evidence.end)) || quotedAt(text4, evidence.end))) pendingScope = { condition: outer, start: evidence.start, end: evidence.end, uncertain: true };
+          else if (outer && !insideLiteral && (/^\s*,/u.test(text3.slice(evidence.end)) || quotedAt(text3, evidence.end))) pendingScope = { condition: outer, start: evidence.start, end: evidence.end, uncertain: true };
           segment.unresolved = { ...evidence, reason: reason || "unsupported", reasonLabel: reason ? EXCLUDED[reason] : "앞 문장에 나온 주체를 본인으로 확인하지 못해 이 내용도 성향으로 사용하지 않았어요." };
           if (["uncertain", "condition"].includes(reason)) segment.generic = true;
           segments.push(segment);
@@ -11399,7 +11970,7 @@ var require_member_statement_contract = __commonJS({
         let inheritedScope = pendingScope?.condition || continuingCondition || (sameScope ? previousCondition : null) || antecedentScope;
         if (prior?.meanings.length && /^그다음\s+/u.test(clause)) clause = clause.replace(/^그다음\s+/u, "");
         let found = natural(clause) || expanded(clause) || compositional(clause) || coordinatedDeclaration(clause) || focusedContrast(clause) || structuredDeclaration(clause) || tentative(clause) || restrictedMethod(clause);
-        const commaContinuation = /^\s*,/u.test(text4.slice(evidence.end));
+        const commaContinuation = /^\s*,/u.test(text3.slice(evidence.end));
         if (!found && (declaredCondition || pendingScope) && commaContinuation) {
           const safe = pendingScopeAside(normalizedClause.body, sourceSurface(evidence.quote, normalizedClause.body, true));
           pendingScope = { condition: pendingScope?.condition || declaredCondition, start: pendingScope?.start ?? evidence.start, end: evidence.end, uncertain: !safe || !!pendingScope?.uncertain };
@@ -11409,12 +11980,12 @@ var require_member_statement_contract = __commonJS({
             continue;
           }
         }
-        if (!found && !/^[\s.!?]*\?/u.test(text4.slice(evidence.end)) && redundantReference(evidence.quote, adjacent)) {
+        if (!found && !/^[\s.!?]*\?/u.test(text3.slice(evidence.end)) && redundantReference(evidence.quote, adjacent)) {
           segment.meanings = [];
           segments.push(segment);
           continue;
         }
-        if (!found && prior?.meanings.length && !/^[\s.!?]*\?/u.test(text4.slice(evidence.end))) {
+        if (!found && prior?.meanings.length && !/^[\s.!?]*\?/u.test(text3.slice(evidence.end))) {
           const reference = /^(?:(?:저는|나는)?(?:그|이|그런|이런)(?:방식|방법|쪽)(?:이|은|을)|둘다)(.+)$/u.exec(normalizePrefix(body).body);
           const declared = reference && composeStance("하는" + reference[1]);
           if (declared?.action === "하기" && !declared.habitual && prior.meanings.every((m) => m.polarity === declared.polarity)) {
@@ -11430,7 +12001,7 @@ var require_member_statement_contract = __commonJS({
             continue;
           }
         }
-        if (!found && !/^[\s.!?]*\?/u.test(text4.slice(evidence.end)) && segments.at(-1)?.meanings?.length && (/^(?:그게|그건|이게|이건|제|내)?(?:취미|관심분야)(?:예요|입니다|거든요|라서요)$/u.test(body) || /^(?:(?:저는|나는)?(?:그쪽|그방식|그방법)(?:이|은)|그래야)(?:더)?(?:편해요|편하더라|좋아요)$/u.test(body) || /^(?:제가|내가)원하는방식(?:이에요|입니다)$/u.test(body) || /^그정도(?:분량|길이)(?:를|을)선호해요$/u.test(body) || segments.at(-1).meanings.some((m) => m.field === "communication" && m.value === "share-first") && /^다른얘기(?:는)?그뒤에들을래(?:요)?$/u.test(body))) {
+        if (!found && !/^[\s.!?]*\?/u.test(text3.slice(evidence.end)) && segments.at(-1)?.meanings?.length && (/^(?:그게|그건|이게|이건|제|내)?(?:취미|관심분야)(?:예요|입니다|거든요|라서요)$/u.test(body) || /^(?:(?:저는|나는)?(?:그쪽|그방식|그방법)(?:이|은)|그래야)(?:더)?(?:편해요|편하더라|좋아요)$/u.test(body) || /^(?:제가|내가)원하는방식(?:이에요|입니다)$/u.test(body) || /^그정도(?:분량|길이)(?:를|을)선호해요$/u.test(body) || segments.at(-1).meanings.some((m) => m.field === "communication" && m.value === "share-first") && /^다른얘기(?:는)?그뒤에들을래(?:요)?$/u.test(body))) {
           segment.meanings = [];
           segments.push(segment);
           continue;
@@ -11453,7 +12024,7 @@ var require_member_statement_contract = __commonJS({
         continuingCondition = scopedCondition && /(?:고|며)$/u.test(body) ? scopedCondition : null;
         let unresolvedCondition = previousCondition && found?.meanings.some((m) => !m.condition) && !generalReset;
         if (pendingScope && found) {
-          segment.evidence = { start: pendingScope.start, end: evidence.end, quote: text4.slice(pendingScope.start, evidence.end) };
+          segment.evidence = { start: pendingScope.start, end: evidence.end, quote: text3.slice(pendingScope.start, evidence.end) };
           if (pendingScope.uncertain) unresolvedCondition = true;
           pendingScope = null;
         }
@@ -11462,7 +12033,7 @@ var require_member_statement_contract = __commonJS({
           inherited = "condition";
         }
         previousCondition = scopedCondition && (!found || /(?:지만|는데)$/u.test(body)) ? scopedCondition : false;
-        const asking = /^[\s.!?]*/u.exec(text4.slice(evidence.end))[0].includes("?");
+        const asking = /^[\s.!?]*/u.exec(text3.slice(evidence.end))[0].includes("?");
         const uncertain = /(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|없지않|않지는않)/u.test(body);
         if (!found && !uncertain && !declaredCondition && /(?:때|땐|경우|상황|동안|날에는|날에만|에만|에서만|에따라|오늘만|내일만|이번만|퇴근후|출근전|(?:뒤|후|다음)(?:에는|엔)|(?:에서|에)는$)/u.test(body)) {
           unresolvedCondition = true;
@@ -11483,27 +12054,27 @@ var require_member_statement_contract = __commonJS({
           segment.unresolved = { ...evidence, reason: why, reasonLabel: EXCLUDED[why] };
         }
         segments.push(segment);
-        if (segments.length === MEMBER_STATEMENT_LIMITS.unresolved && evidence.end < text4.length) {
+        if (segments.length === MEMBER_STATEMENT_LIMITS.unresolved && evidence.end < text3.length) {
           const last = segments.at(-1);
           delete last.meanings;
           delete last.candidate;
           delete last.generic;
-          last.evidence = { ...evidence, end: text4.length, quote: text4.slice(evidence.start) };
+          last.evidence = { ...evidence, end: text3.length, quote: text3.slice(evidence.start) };
           last.unresolved = { ...last.evidence, reason: "limit", reasonLabel: EXCLUDED.limit };
           break;
         }
       }
       return segments;
     }
-    function stateFor(text4, segments, answers, key) {
+    function stateFor(text3, segments, answers, key) {
       const raw = [], unresolved = [], questions = [];
       const question = (index, stage, label, options, apply) => {
-        const id2 = `q.${key}.${index}.${stage}`, answer = answers[id2];
+        const id = `q.${key}.${index}.${stage}`, answer = answers[id];
         if (answer !== void 0) {
           apply(answer);
           return;
         }
-        questions.push({ id: id2, about: id2, kind: "follow_up", label, options: [...options, ...OPTIONS_END].map((o) => ({ ...o, value: o.id })) });
+        questions.push({ id, about: id, kind: "follow_up", label, options: [...options, ...OPTIONS_END].map((o) => ({ ...o, value: o.id })) });
       };
       for (let index = 0; index < segments.length; index++) {
         const s = segments[index], add = (meanings2) => meanings2.forEach((m) => raw.push({ ...m, evidence: copy2(s.evidence) }));
@@ -11524,14 +12095,14 @@ var require_member_statement_contract = __commonJS({
             }
           );
         } else if (s.generic) {
-          question(index, "field", `「${s.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(FIELDS).map(([id2, label]) => ({ id: id2, label })), (field) => {
+          question(index, "field", `「${s.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(FIELDS).map(([id, label]) => ({ id, label })), (field) => {
             handled = true;
             if (!Object.hasOwn(VALUES, field)) return;
-            question(index, "value", `${FIELDS[field]}에서 어떤 내용을 확인할까요?`, VALUES[field].map((id2) => ({ id: id2, label: LABELS[id2] })), (selected) => {
+            question(index, "value", `${FIELDS[field]}에서 어떤 내용을 확인할까요?`, VALUES[field].map((id) => ({ id, label: LABELS[id] })), (selected) => {
               if (!VALUES[field].includes(selected)) return;
               question(index, "polarity", `‘${LABELS[selected]}’을 지금 어떻게 생각하나요?`, [{ id: "prefer", label: "원하거나 선호해요" }, { id: "avoid", label: "원하거나 선호하지 않아요" }], (polarity) => {
                 if (!["prefer", "avoid"].includes(polarity)) return;
-                question(index, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(CONDITIONS).map(([id2, label]) => ({ id: id2, label }))], (condition) => {
+                question(index, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(CONDITIONS).map(([id, label]) => ({ id, label }))], (condition) => {
                   if (condition === "general" || Object.hasOwn(CONDITIONS, condition)) add([{ field, value: selected, polarity, condition: condition === "general" ? null : condition }]);
                 });
               });
@@ -11557,43 +12128,43 @@ var require_member_statement_contract = __commonJS({
         const group = meanings.filter((other) => other.id === m.id || meaningsConflict(m, other));
         if (group.length < 2) continue;
         group.forEach((p) => grouped.add(p.id));
-        const id2 = `q.${key}.conflict.${sourceKey(group.map((p) => p.id + semanticKey(p)).join("|")).slice(0, 16)}`, answer = answers[id2];
-        if (answer === void 0) questions.push({ id: id2, about: id2, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...group.map((p) => ({ id: p.id, label: meaningLabel(p), value: p.id })), ...OPTIONS_END.map((o) => ({ ...o, value: o.id }))] });
+        const id = `q.${key}.conflict.${sourceKey(group.map((p) => p.id + semanticKey(p)).join("|")).slice(0, 16)}`, answer = answers[id];
+        if (answer === void 0) questions.push({ id, about: id, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...group.map((p) => ({ id: p.id, label: meaningLabel(p), value: p.id })), ...OPTIONS_END.map((o) => ({ ...o, value: o.id }))] });
         else for (const p of group) if (p.id !== answer) p.withheld = true;
       }
       return { meanings: meanings.filter((m) => !m.withheld), unresolved: unresolved.slice(0, MEMBER_STATEMENT_LIMITS.unresolved), questions };
     }
-    function choose(state, text4, segments, answers, key) {
+    function choose(state, text3, segments, answers, key) {
       const result = Ask2.choose({ questions: state.questions, decide: (scenario) => {
-        const outcome = stateFor(text4, segments, { ...answers, ...scenario }, key);
+        const outcome = stateFor(text3, segments, { ...answers, ...scenario }, key);
         return { meanings: outcome.meanings.map((m) => semanticKey(m)), questions: outcome.questions.map((q) => q.id) };
       } });
-      return result.status === "ask" ? { id: result.question.id, label: result.question.label, options: result.question.options.map(({ id: id2, label }) => ({ id: id2, label })) } : null;
+      return result.status === "ask" ? { id: result.question.id, label: result.question.label, options: result.question.options.map(({ id, label }) => ({ id, label })) } : null;
     }
-    function parseMemberStatement(text4, { clarifications = [], parserVersion = PARSER_VERSION } = {}) {
+    function parseMemberStatement(text3, { clarifications = [], parserVersion = PARSER_VERSION } = {}) {
       if (parserVersion === Legacy.PARSER_VERSION) {
-        if (clarifications.length) fail6();
-        return Legacy.parseMemberStatement(text4);
+        if (clarifications.length) fail5();
+        return Legacy.parseMemberStatement(text3);
       }
-      if (parserVersion === Previous.PARSER_VERSION) return Previous.parseMemberStatement(text4, { clarifications, parserVersion });
-      if (parserVersion === Previous3.PARSER_VERSION) return Previous3.parseMemberStatement(text4, { clarifications, parserVersion });
-      if (parserVersion === Previous4.PARSER_VERSION) return Previous4.parseMemberStatement(text4, { clarifications, parserVersion });
-      if (parserVersion === Previous5.PARSER_VERSION) return Previous5.parseMemberStatement(text4, { clarifications, parserVersion });
-      if (parserVersion === Previous6.PARSER_VERSION) return Previous6.parseMemberStatement(text4, { clarifications, parserVersion });
-      if (parserVersion === Previous7.PARSER_VERSION) return Previous7.parseMemberStatement(text4, { clarifications, parserVersion });
-      if (parserVersion === Previous8.PARSER_VERSION) return Previous8.parseMemberStatement(text4, { clarifications, parserVersion });
-      if (parserVersion !== PARSER_VERSION) fail6();
-      if (!list3(clarifications, MEMBER_STATEMENT_LIMITS.clarifications) || clarifications.some((row) => !exact5(row, ["questionId", "optionId"]) || typeof row.questionId !== "string" || typeof row.optionId !== "string")) fail6();
-      const segments = analyze(text4), key = sourceKey(text4), answers = /* @__PURE__ */ Object.create(null), clarificationAnswers = [];
-      let state = stateFor(text4, segments, answers, key), question = choose(state, text4, segments, answers, key);
+      if (parserVersion === Previous.PARSER_VERSION) return Previous.parseMemberStatement(text3, { clarifications, parserVersion });
+      if (parserVersion === Previous3.PARSER_VERSION) return Previous3.parseMemberStatement(text3, { clarifications, parserVersion });
+      if (parserVersion === Previous4.PARSER_VERSION) return Previous4.parseMemberStatement(text3, { clarifications, parserVersion });
+      if (parserVersion === Previous5.PARSER_VERSION) return Previous5.parseMemberStatement(text3, { clarifications, parserVersion });
+      if (parserVersion === Previous6.PARSER_VERSION) return Previous6.parseMemberStatement(text3, { clarifications, parserVersion });
+      if (parserVersion === Previous7.PARSER_VERSION) return Previous7.parseMemberStatement(text3, { clarifications, parserVersion });
+      if (parserVersion === Previous8.PARSER_VERSION) return Previous8.parseMemberStatement(text3, { clarifications, parserVersion });
+      if (parserVersion !== PARSER_VERSION) fail5();
+      if (!list3(clarifications, MEMBER_STATEMENT_LIMITS.clarifications) || clarifications.some((row) => !exact5(row, ["questionId", "optionId"]) || typeof row.questionId !== "string" || typeof row.optionId !== "string")) fail5();
+      const segments = analyze(text3), key = sourceKey(text3), answers = /* @__PURE__ */ Object.create(null), clarificationAnswers = [];
+      let state = stateFor(text3, segments, answers, key), question = choose(state, text3, segments, answers, key);
       for (const row of clarifications) {
-        if (!question || question.id !== row.questionId || Object.hasOwn(answers, row.questionId)) fail6();
+        if (!question || question.id !== row.questionId || Object.hasOwn(answers, row.questionId)) fail5();
         const option = question.options.find((o) => o.id === row.optionId);
-        if (!option) fail6();
+        if (!option) fail5();
         answers[row.questionId] = row.optionId;
         clarificationAnswers.push({ ...row, questionLabel: question.label, optionLabel: option.label });
-        state = stateFor(text4, segments, answers, key);
-        question = choose(state, text4, segments, answers, key);
+        state = stateFor(text3, segments, answers, key);
+        question = choose(state, text3, segments, answers, key);
       }
       if (clarifications.length === MEMBER_STATEMENT_LIMITS.clarifications && question) {
         const conflicted = state.meanings.filter((a) => state.meanings.some((b) => a !== b && meaningsConflict(a, b)));
@@ -11621,19 +12192,19 @@ var require_member_statement_contract = __commonJS({
       if (parserVersion === Previous6.PARSER_VERSION) return Previous6.validateMemberStatement(row, { now, enforceTime });
       if (parserVersion === Previous7.PARSER_VERSION) return Previous7.validateMemberStatement(row, { now, enforceTime });
       if (parserVersion === Previous8.PARSER_VERSION) return Previous8.validateMemberStatement(row, { now, enforceTime });
-      if (!exact5(row, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || parserVersion !== PARSER_VERSION || typeof row.id !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id) || !list3(row.meanings, MEMBER_STATEMENT_LIMITS.meanings) || !row.meanings.length) fail6();
-      const at = instant(row.at), confirmed = instant(row.confirmedAt), cutoff = enforceTime ? typeof now === "string" ? instant(now) : Number.isSafeInteger(now) ? now : fail6() : null;
-      if (confirmed < at || enforceTime && confirmed > cutoff) fail6();
+      if (!exact5(row, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || parserVersion !== PARSER_VERSION || typeof row.id !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id) || !list3(row.meanings, MEMBER_STATEMENT_LIMITS.meanings) || !row.meanings.length) fail5();
+      const at = instant(row.at), confirmed = instant(row.confirmedAt), cutoff = enforceTime ? typeof now === "string" ? instant(now) : Number.isSafeInteger(now) ? now : fail5() : null;
+      if (confirmed < at || enforceTime && confirmed > cutoff) fail5();
       const parsed = parseMemberStatement(row.text, { clarifications: row.clarifications });
-      if (parsed.question) fail6();
+      if (parsed.question) fail5();
       const ids3 = /* @__PURE__ */ new Set(), meanings = row.meanings.map((m) => {
-        if (!exact5(m, ["id", "field", "value", "polarity", "condition", "evidence"]) || !exact5(m.evidence, ["start", "end", "quote"]) || ids3.has(m.id)) fail6();
+        if (!exact5(m, ["id", "field", "value", "polarity", "condition", "evidence"]) || !exact5(m.evidence, ["start", "end", "quote"]) || ids3.has(m.id)) fail5();
         ids3.add(m.id);
         const expected = parsed.meanings.find((p) => p.id === m.id);
-        if (!expected || ["field", "value", "polarity", "condition"].some((key) => m[key] !== expected[key]) || ["start", "end", "quote"].some((key) => m.evidence[key] !== expected.evidence[key])) fail6();
+        if (!expected || ["field", "value", "polarity", "condition"].some((key) => m[key] !== expected[key]) || ["start", "end", "quote"].some((key) => m.evidence[key] !== expected.evidence[key])) fail5();
         return copy2(expected);
       }).sort((a, b) => Number(a.id.slice(1)) - Number(b.id.slice(1)));
-      if (meanings.some((a, i) => meanings.slice(i + 1).some((b) => meaningsConflict(a, b)))) fail6();
+      if (meanings.some((a, i) => meanings.slice(i + 1).some((b) => meaningsConflict(a, b)))) fail5();
       return { id: row.id.toLowerCase(), parserVersion: PARSER_VERSION, text: row.text, at: row.at, confirmedAt: row.confirmedAt, meanings, clarifications: parsed.clarifications };
     }
     module.exports = { PARSER_VERSION, MEMBER_STATEMENT_LIMITS, MEMBER_STATEMENT_VALUES: VALUES, MEMBER_STATEMENT_LABELS: LABELS, MEMBER_STATEMENT_CONDITIONS: CONDITIONS, MEMBER_STATEMENT_MULTI_FIELDS: MULTI_FIELDS, parseMemberStatement, validateMemberStatement, meaningsConflict, meaningLabel };
@@ -11646,13 +12217,13 @@ function clock2(value) {
   if (Number.isSafeInteger(value) && Math.abs(value) <= 864e13) return value;
   invalid3();
 }
-function facet(id2) {
+function facet(id) {
   try {
-    if (!import_member_understanding_contract.default.understandingFacet(id2)) invalid3();
+    if (!import_member_understanding_contract.default.understandingFacet(id)) invalid3();
   } catch {
     invalid3();
   }
-  return id2;
+  return id;
 }
 function validateMemberUnderstanding(value, { now = Date.now(), enforceTime = false } = {}) {
   const version = object3(value) && Object.getOwnPropertyDescriptor(value, "version")?.value;
@@ -11716,7 +12287,7 @@ var init_member_understanding_data = __esm({
       throw Object.assign(new TypeError("확인·수정한 성향 정보의 형식을 확인해 주세요."), { code: "INVALID_PERSONAL_STATE" });
     };
     object3 = (value) => value !== null && typeof value === "object" && !Array.isArray(value) && [Object.prototype, null].includes(Object.getPrototypeOf(value));
-    exact3 = (value, keys2) => object3(value) && Reflect.ownKeys(value).length === keys2.length && keys2.every((key) => Object.hasOwn(value, key) && Object.getOwnPropertyDescriptor(value, key).enumerable && Object.hasOwn(Object.getOwnPropertyDescriptor(value, key), "value"));
+    exact3 = (value, keys) => object3(value) && Reflect.ownKeys(value).length === keys.length && keys.every((key) => Object.hasOwn(value, key) && Object.getOwnPropertyDescriptor(value, key).enumerable && Object.hasOwn(Object.getOwnPropertyDescriptor(value, key), "value"));
     list2 = (value, max) => Array.isArray(value) && value.length <= max && Reflect.ownKeys(value).length === value.length + 1 && Object.keys(value).length === value.length && Object.keys(value).every((key, index) => key === String(index) && Object.hasOwn(Object.getOwnPropertyDescriptor(value, key), "value"));
     uuid2 = (value) => typeof value === "string" && /^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(value);
     iso2 = (value) => typeof value === "string" && Number.isFinite(Date.parse(value)) && new Date(value).toISOString() === value;
@@ -15227,7 +15798,12 @@ var init_places_v2 = __esm({
 });
 
 // experiences/path-travel/real-conditions.mjs
-var REAL_CONDITION_LABELS;
+function invalid4(field, message) {
+  const error = new TypeError(message);
+  error.field = field;
+  throw error;
+}
+var REAL_CONDITION_LABELS, DAY, remember, dateValid, day, todayAt;
 var init_real_conditions = __esm({
   "experiences/path-travel/real-conditions.mjs"() {
     REAL_CONDITION_LABELS = Object.freeze({
@@ -15235,6 +15811,23 @@ var init_real_conditions = __esm({
       matched: "안내상 조건 맞음",
       unknown: "확인 필요",
       unmatched: "조건과 다름"
+    });
+    DAY = 864e5;
+    remember = (fn) => {
+      const memo = /* @__PURE__ */ new Map();
+      return (value) => {
+        if (memo.has(value)) return memo.get(value);
+        if (memo.size >= 4096) memo.clear();
+        const result = fn(value);
+        memo.set(value, result);
+        return result;
+      };
+    };
+    dateValid = remember((value) => typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) && !value.startsWith("0000-") && Number.isFinite(Date.parse(value + "T00:00:00.000Z")) && (/* @__PURE__ */ new Date(value + "T00:00:00.000Z")).toISOString().slice(0, 10) === value);
+    day = remember((value) => Date.parse(value + "T00:00:00.000Z") / DAY);
+    todayAt = remember((value) => {
+      if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value) || !Number.isFinite(Date.parse(value)) || new Date(value).toISOString() !== value) invalid4("now", "조건을 확인하는 시각이 올바르지 않습니다.");
+      return new Date(Date.parse(value) + 9 * 60 * 60 * 1e3).toISOString().slice(0, 10);
     });
   }
 });
@@ -15248,22 +15841,22 @@ var require_domain = __commonJS({
     })(typeof globalThis !== "undefined" ? globalThis : exports, function() {
       "use strict";
       const VERSION = "core-domain-1";
-      const DAY = 864e5;
+      const DAY3 = 864e5;
       const DOMAINS = ["LAB", "SHIFT", "PATH", "PULSE", "SYNK"];
       const SOURCES2 = ["declared", "observed", "inferred"];
-      const own2 = (o, k) => Object.hasOwn(o, k);
+      const own = (o, k) => Object.hasOwn(o, k);
       const plain2 = (o) => o !== null && typeof o === "object" && !Array.isArray(o) && [Object.prototype, null].includes(Object.getPrototypeOf(o));
       const token3 = (s) => typeof s === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(s) && !["__proto__", "prototype", "constructor"].includes(s);
-      const fail6 = (message) => {
+      const fail5 = (message) => {
         throw new TypeError(`Core domain: ${message}`);
       };
       const copy2 = (value) => JSON.parse(JSON.stringify(value));
       const canonical = (value) => JSON.stringify(value, (_key, v) => plain2(v) ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, v[k]])) : v);
-      const time2 = (value) => typeof value === "string" && Number.isFinite(Date.parse(value)) ? Date.parse(value) : fail6("invalid time");
+      const time2 = (value) => typeof value === "string" && Number.isFinite(Date.parse(value)) ? Date.parse(value) : fail5("invalid time");
       const finite = (n) => typeof n === "number" && Number.isFinite(n);
-      const keys2 = (value, allowed) => plain2(value) && Object.keys(value).every((k) => allowed.includes(k));
+      const keys = (value, allowed) => plain2(value) && Object.keys(value).every((k) => allowed.includes(k));
       const scopeKey = (scope3) => {
-        if (!keys2(scope3, ["domain", "workspace", "subject"]) || Object.keys(scope3).length !== 3 || !DOMAINS.includes(scope3.domain) || !token3(scope3.workspace) || !token3(scope3.subject)) fail6("invalid scope");
+        if (!keys(scope3, ["domain", "workspace", "subject"]) || Object.keys(scope3).length !== 3 || !DOMAINS.includes(scope3.domain) || !token3(scope3.workspace) || !token3(scope3.subject)) fail5("invalid scope");
         return canonical(scope3);
       };
       function validValue(field, value) {
@@ -15272,30 +15865,30 @@ var require_domain = __commonJS({
         return finite(value) && value >= field.range[0] && value <= field.range[1];
       }
       function validateContract(contract2) {
-        if (!keys2(contract2, ["id", "version", "purpose", "fields", "criteria", "objectives"]) || !token3(contract2.id) || !token3(contract2.version) || !token3(contract2.purpose) || !Array.isArray(contract2.fields) || !contract2.fields.length || contract2.fields.length > 100 || !Array.isArray(contract2.criteria) || contract2.criteria.length > 100) fail6("invalid contract");
+        if (!keys(contract2, ["id", "version", "purpose", "fields", "criteria", "objectives"]) || !token3(contract2.id) || !token3(contract2.version) || !token3(contract2.purpose) || !Array.isArray(contract2.fields) || !contract2.fields.length || contract2.fields.length > 100 || !Array.isArray(contract2.criteria) || contract2.criteria.length > 100) fail5("invalid contract");
         const fields2 = /* @__PURE__ */ new Map(), criteria = /* @__PURE__ */ new Set();
         for (const field of contract2.fields) {
-          if (!keys2(field, ["id", "kind", "values", "range", "maxAgeDays", "minIndependent", "minAgreement", "tolerance"]) || !token3(field.id) || fields2.has(field.id) || !["enum", "boolean", "number"].includes(field.kind)) fail6("invalid field");
-          if (field.kind === "enum" && (!Array.isArray(field.values) || field.values.length < 2 || field.values.length > 100 || new Set(field.values).size !== field.values.length || field.values.some((v) => !token3(v)))) fail6("invalid enum values");
-          if (field.kind !== "enum" && field.values != null) fail6("values belong to an enum");
-          if (field.kind === "number" && (!Array.isArray(field.range) || field.range.length !== 2 || !field.range.every(finite) || field.range[0] >= field.range[1] || !finite(field.range[1] - field.range[0]))) fail6("invalid numeric range");
-          if (field.kind !== "number" && (field.range != null || field.tolerance != null)) fail6("range/tolerance belong to a number");
-          if (field.maxAgeDays != null && (!finite(field.maxAgeDays) || field.maxAgeDays <= 0 || field.maxAgeDays > 36500)) fail6("invalid evidence lifetime");
-          if (field.minIndependent != null && (!Number.isInteger(field.minIndependent) || field.minIndependent < 1 || field.minIndependent > 1e4)) fail6("invalid minimum evidence");
-          if (field.minAgreement != null && (!finite(field.minAgreement) || field.minAgreement <= 0.5 || field.minAgreement > 1)) fail6("invalid agreement threshold");
-          if (field.tolerance != null && (!finite(field.tolerance) || field.tolerance < 0 || field.tolerance > field.range[1] - field.range[0])) fail6("invalid numeric tolerance");
+          if (!keys(field, ["id", "kind", "values", "range", "maxAgeDays", "minIndependent", "minAgreement", "tolerance"]) || !token3(field.id) || fields2.has(field.id) || !["enum", "boolean", "number"].includes(field.kind)) fail5("invalid field");
+          if (field.kind === "enum" && (!Array.isArray(field.values) || field.values.length < 2 || field.values.length > 100 || new Set(field.values).size !== field.values.length || field.values.some((v) => !token3(v)))) fail5("invalid enum values");
+          if (field.kind !== "enum" && field.values != null) fail5("values belong to an enum");
+          if (field.kind === "number" && (!Array.isArray(field.range) || field.range.length !== 2 || !field.range.every(finite) || field.range[0] >= field.range[1] || !finite(field.range[1] - field.range[0]))) fail5("invalid numeric range");
+          if (field.kind !== "number" && (field.range != null || field.tolerance != null)) fail5("range/tolerance belong to a number");
+          if (field.maxAgeDays != null && (!finite(field.maxAgeDays) || field.maxAgeDays <= 0 || field.maxAgeDays > 36500)) fail5("invalid evidence lifetime");
+          if (field.minIndependent != null && (!Number.isInteger(field.minIndependent) || field.minIndependent < 1 || field.minIndependent > 1e4)) fail5("invalid minimum evidence");
+          if (field.minAgreement != null && (!finite(field.minAgreement) || field.minAgreement <= 0.5 || field.minAgreement > 1)) fail5("invalid agreement threshold");
+          if (field.tolerance != null && (!finite(field.tolerance) || field.tolerance < 0 || field.tolerance > field.range[1] - field.range[0])) fail5("invalid numeric tolerance");
           fields2.set(field.id, field);
         }
         for (const criterion of contract2.criteria) {
-          if (!keys2(criterion, ["id", "field", "feature", "weight", "required", "prefer"]) || !token3(criterion.id) || criteria.has(criterion.id) || !fields2.has(criterion.field) || !token3(criterion.feature) || !finite(criterion.weight) || criterion.weight < 0 || criterion.required != null && typeof criterion.required !== "boolean" || !["match", "different", "at-least", "at-most"].includes(criterion.prefer || "match")) fail6("invalid criterion");
-          if (["at-least", "at-most"].includes(criterion.prefer) && fields2.get(criterion.field).kind !== "number") fail6("numeric comparison requires a number");
+          if (!keys(criterion, ["id", "field", "feature", "weight", "required", "prefer"]) || !token3(criterion.id) || criteria.has(criterion.id) || !fields2.has(criterion.field) || !token3(criterion.feature) || !finite(criterion.weight) || criterion.weight < 0 || criterion.required != null && typeof criterion.required !== "boolean" || !["match", "different", "at-least", "at-most"].includes(criterion.prefer || "match")) fail5("invalid criterion");
+          if (["at-least", "at-most"].includes(criterion.prefer) && fields2.get(criterion.field).kind !== "number") fail5("numeric comparison requires a number");
           criteria.add(criterion.id);
         }
-        if (own2(contract2, "objectives")) {
-          if (!Array.isArray(contract2.objectives) || contract2.objectives.length > 100) fail6("invalid objectives");
+        if (own(contract2, "objectives")) {
+          if (!Array.isArray(contract2.objectives) || contract2.objectives.length > 100) fail5("invalid objectives");
           const objectives = /* @__PURE__ */ new Set();
           for (const objective of contract2.objectives) {
-            if (!keys2(objective, ["id", "feature", "range", "weight", "prefer"]) || !token3(objective.id) || objectives.has(objective.id) || !token3(objective.feature) || !Array.isArray(objective.range) || objective.range.length !== 2 || !objective.range.every(finite) || objective.range[0] >= objective.range[1] || !finite(objective.range[1] - objective.range[0]) || !finite(objective.weight) || objective.weight < 0 || !["higher", "lower"].includes(objective.prefer)) fail6("invalid objective");
+            if (!keys(objective, ["id", "feature", "range", "weight", "prefer"]) || !token3(objective.id) || objectives.has(objective.id) || !token3(objective.feature) || !Array.isArray(objective.range) || objective.range.length !== 2 || !objective.range.every(finite) || objective.range[0] >= objective.range[1] || !finite(objective.range[1] - objective.range[0]) || !finite(objective.weight) || objective.weight < 0 || !["higher", "lower"].includes(objective.prefer)) fail5("invalid objective");
             objectives.add(objective.id);
           }
         }
@@ -15303,25 +15896,25 @@ var require_domain = __commonJS({
       }
       function project(contract2, scope3, observations, at) {
         const fields2 = validateContract(contract2), owner = scopeKey(scope3), cutoff = time2(at);
-        if (!Array.isArray(observations) || observations.length > 1e4) fail6("invalid observations");
+        if (!Array.isArray(observations) || observations.length > 1e4) fail5("invalid observations");
         const byId2 = /* @__PURE__ */ new Map(), rows = [], replaced = /* @__PURE__ */ new Set();
         for (const row of observations) {
-          if (!keys2(row, ["id", "scope", "contract", "field", "value", "source", "independentKey", "at", "recordedAt", "until", "refs", "quality", "supersedes"]) || !token3(row.id) || scopeKey(row.scope) !== owner || !fields2.has(row.field) || !SOURCES2.includes(row.source)) fail6("invalid or foreign observation");
-          if (!keys2(row.contract, ["id", "version", "purpose"]) || row.contract.id !== contract2.id || row.contract.version !== contract2.version || row.contract.purpose !== contract2.purpose) fail6("observation belongs to another contract or purpose");
-          if (scope3.domain === "PULSE" && row.source !== "declared") fail6("PULSE does not derive a personal behavioral profile");
-          if (row.value !== null && !validValue(fields2.get(row.field), row.value)) fail6("observation value is outside its field");
-          if (row.value === null && row.source !== "declared") fail6("only a declaration can withdraw a field");
-          if (row.source === "observed" && !token3(row.independentKey)) fail6("observations need an independence key");
-          if (row.independentKey != null && !token3(row.independentKey)) fail6("invalid independence key");
-          if (row.quality != null && !["usable", "confounded", "unassessed"].includes(row.quality)) fail6("invalid evidence quality");
-          if (row.source === "declared" && row.quality != null && row.quality !== "usable") fail6("a declaration is not a measured outcome");
+          if (!keys(row, ["id", "scope", "contract", "field", "value", "source", "independentKey", "at", "recordedAt", "until", "refs", "quality", "supersedes"]) || !token3(row.id) || scopeKey(row.scope) !== owner || !fields2.has(row.field) || !SOURCES2.includes(row.source)) fail5("invalid or foreign observation");
+          if (!keys(row.contract, ["id", "version", "purpose"]) || row.contract.id !== contract2.id || row.contract.version !== contract2.version || row.contract.purpose !== contract2.purpose) fail5("observation belongs to another contract or purpose");
+          if (scope3.domain === "PULSE" && row.source !== "declared") fail5("PULSE does not derive a personal behavioral profile");
+          if (row.value !== null && !validValue(fields2.get(row.field), row.value)) fail5("observation value is outside its field");
+          if (row.value === null && row.source !== "declared") fail5("only a declaration can withdraw a field");
+          if (row.source === "observed" && !token3(row.independentKey)) fail5("observations need an independence key");
+          if (row.independentKey != null && !token3(row.independentKey)) fail5("invalid independence key");
+          if (row.quality != null && !["usable", "confounded", "unassessed"].includes(row.quality)) fail5("invalid evidence quality");
+          if (row.source === "declared" && row.quality != null && row.quality !== "usable") fail5("a declaration is not a measured outcome");
           const happened = time2(row.at), recorded = time2(row.recordedAt ?? row.at);
-          if (recorded < happened || row.until != null && time2(row.until) <= happened) fail6("invalid observation chronology");
-          if (row.refs != null && (!Array.isArray(row.refs) || row.refs.length > 100 || row.refs.some((r) => !token3(r)) || new Set(row.refs).size !== row.refs.length)) fail6("invalid evidence references");
-          if (row.source === "inferred" && !row.refs?.length) fail6("an inferred proposal needs source references");
-          if (row.supersedes != null && !token3(row.supersedes)) fail6("invalid correction reference");
+          if (recorded < happened || row.until != null && time2(row.until) <= happened) fail5("invalid observation chronology");
+          if (row.refs != null && (!Array.isArray(row.refs) || row.refs.length > 100 || row.refs.some((r) => !token3(r)) || new Set(row.refs).size !== row.refs.length)) fail5("invalid evidence references");
+          if (row.source === "inferred" && !row.refs?.length) fail5("an inferred proposal needs source references");
+          if (row.supersedes != null && !token3(row.supersedes)) fail5("invalid correction reference");
           if (byId2.has(row.id)) {
-            if (canonical(byId2.get(row.id)) !== canonical(row)) fail6("conflicting observation id");
+            if (canonical(byId2.get(row.id)) !== canonical(row)) fail5("conflicting observation id");
             continue;
           }
           byId2.set(row.id, row);
@@ -15330,11 +15923,11 @@ var require_domain = __commonJS({
         for (const row of rows) {
           for (const ref of row.source === "inferred" ? row.refs : []) {
             const source = byId2.get(ref);
-            if (!source || source.id === row.id || source.source === "inferred" || time2(source.recordedAt ?? source.at) > time2(row.recordedAt ?? row.at) || time2(source.at) > time2(row.at)) fail6("invalid proposal source");
+            if (!source || source.id === row.id || source.source === "inferred" || time2(source.recordedAt ?? source.at) > time2(row.recordedAt ?? row.at) || time2(source.at) > time2(row.at)) fail5("invalid proposal source");
           }
           if (row.supersedes) {
             const prior = byId2.get(row.supersedes);
-            if (!prior || prior.id === row.id || prior.field !== row.field || prior.source !== row.source || time2(prior.at) > time2(row.at) || time2(prior.recordedAt ?? prior.at) > time2(row.recordedAt ?? row.at)) fail6("invalid correction");
+            if (!prior || prior.id === row.id || prior.field !== row.field || prior.source !== row.source || time2(prior.at) > time2(row.at) || time2(prior.recordedAt ?? prior.at) > time2(row.recordedAt ?? row.at)) fail5("invalid correction");
             replaced.add(prior.id);
           }
         }
@@ -15343,11 +15936,11 @@ var require_domain = __commonJS({
           let row = start;
           const path = /* @__PURE__ */ new Set();
           while (row && !checked.has(row.id)) {
-            if (path.has(row.id)) fail6("correction cycle");
+            if (path.has(row.id)) fail5("correction cycle");
             path.add(row.id);
             row = row.supersedes ? byId2.get(row.supersedes) : null;
           }
-          for (const id2 of path) checked.add(id2);
+          for (const id of path) checked.add(id);
         }
         rows.sort((a, b) => time2(a.at) - time2(b.at) || time2(a.recordedAt ?? a.at) - time2(b.recordedAt ?? b.at));
         const byField = /* @__PURE__ */ new Map(), orderedKeys = /* @__PURE__ */ new Map(), latestDeclarations = /* @__PURE__ */ new Map(), latestIndependent = /* @__PURE__ */ new Map();
@@ -15355,7 +15948,7 @@ var require_domain = __commonJS({
           if (row.source !== "inferred") {
             const key = canonical([row.field, row.source, row.source === "observed" ? row.independentKey : "", time2(row.at), time2(row.recordedAt ?? row.at)]);
             const previous = orderedKeys.get(key);
-            if (previous && (previous.value !== row.value || (previous.quality ?? "usable") !== (row.quality ?? "usable") || previous.until !== row.until)) fail6("ambiguous observation order");
+            if (previous && (previous.value !== row.value || (previous.quality ?? "usable") !== (row.quality ?? "usable") || previous.until !== row.until)) fail5("ambiguous observation order");
             orderedKeys.set(key, row);
           }
           if (!byField.has(row.field)) byField.set(row.field, []);
@@ -15363,11 +15956,11 @@ var require_domain = __commonJS({
           if (row.source === "declared") latestDeclarations.set(row.field, row);
           if (row.source === "observed") latestIndependent.set(canonical([row.field, row.independentKey]), row);
         }
-        const sourceUsable = (id2) => {
-          const row = byId2.get(id2);
-          if (!row || replaced.has(id2) || row.value === null || row.quality && row.quality !== "usable") return false;
+        const sourceUsable = (id) => {
+          const row = byId2.get(id);
+          if (!row || replaced.has(id) || row.value === null || row.quality && row.quality !== "usable") return false;
           const field = fields2.get(row.field);
-          if (cutoff >= (row.until ? time2(row.until) : time2(row.at) + (field.maxAgeDays ?? 30) * DAY)) return false;
+          if (cutoff >= (row.until ? time2(row.until) : time2(row.at) + (field.maxAgeDays ?? 30) * DAY3)) return false;
           const declared = latestDeclarations.get(row.field);
           if (declared && (declared.value === null || row.source === "declared" && declared.id !== row.id)) return false;
           if (row.source === "observed" && latestIndependent.get(canonical([row.field, row.independentKey]))?.id !== row.id) return false;
@@ -15376,7 +15969,7 @@ var require_domain = __commonJS({
         const result = [];
         for (const field of fields2.values()) {
           const all = byField.get(field.id) || [];
-          const fresh = (row) => cutoff < (row.until ? time2(row.until) : time2(row.at) + (field.maxAgeDays ?? 30) * DAY);
+          const fresh = (row) => cutoff < (row.until ? time2(row.until) : time2(row.at) + (field.maxAgeDays ?? 30) * DAY3);
           const base = { id: field.id, status: "unknown", value: null, usable: false, evidence: [], independent: 0, agreement: null, alternatives: [], proposals: [], excluded: [] };
           const declaration = all.filter((r) => r.source === "declared").at(-1);
           if (declaration) {
@@ -15449,15 +16042,15 @@ var require_domain = __commonJS({
         const objectives = contract2.objectives ?? [];
         const facts = new Map(understanding.fields.map((f) => [f.id, f]));
         const allowed = new Set([...contract2.criteria, ...objectives].map((c) => c.feature));
-        if (!Array.isArray(candidates) || candidates.length > 1e4) fail6("invalid candidates");
+        if (!Array.isArray(candidates) || candidates.length > 1e4) fail5("invalid candidates");
         const ids3 = /* @__PURE__ */ new Set(), ranked = [], excluded = [];
         for (const candidate of candidates) {
-          if (!keys2(candidate, ["id", "features", "eligible", "exclusions"]) || !token3(candidate.id) || ids3.has(candidate.id) || !plain2(candidate.features) || Object.keys(candidate.features).some((k) => !allowed.has(k)) || candidate.eligible != null && typeof candidate.eligible !== "boolean" || candidate.exclusions != null && (!Array.isArray(candidate.exclusions) || candidate.exclusions.some((r) => !token3(r)))) fail6("invalid candidate");
+          if (!keys(candidate, ["id", "features", "eligible", "exclusions"]) || !token3(candidate.id) || ids3.has(candidate.id) || !plain2(candidate.features) || Object.keys(candidate.features).some((k) => !allowed.has(k)) || candidate.eligible != null && typeof candidate.eligible !== "boolean" || candidate.exclusions != null && (!Array.isArray(candidate.exclusions) || candidate.exclusions.some((r) => !token3(r)))) fail5("invalid candidate");
           ids3.add(candidate.id);
-          for (const c of contract2.criteria) if (own2(candidate.features, c.feature) && !validValue(specs.get(c.field), candidate.features[c.feature])) fail6("invalid candidate feature");
-          for (const objective of objectives) if (own2(candidate.features, objective.feature)) {
+          for (const c of contract2.criteria) if (own(candidate.features, c.feature) && !validValue(specs.get(c.field), candidate.features[c.feature])) fail5("invalid candidate feature");
+          for (const objective of objectives) if (own(candidate.features, objective.feature)) {
             const value = candidate.features[objective.feature];
-            if (!finite(value) || value < objective.range[0] || value > objective.range[1]) fail6("invalid objective feature");
+            if (!finite(value) || value < objective.range[0] || value > objective.range[1]) fail5("invalid objective feature");
           }
           if (candidate.eligible === false || candidate.exclusions?.length) {
             excluded.push({ id: candidate.id, reasons: candidate.exclusions?.length ? candidate.exclusions : ["ineligible"] });
@@ -15466,8 +16059,8 @@ var require_domain = __commonJS({
           let score = 0;
           const reasons = [], policyReasons = [], blocked = [];
           for (const c of contract2.criteria) {
-            const fact = facts.get(c.field), field = specs.get(c.field), has2 = own2(candidate.features, c.feature), v = candidate.features[c.feature];
-            if (!fact.usable || !has2) {
+            const fact = facts.get(c.field), field = specs.get(c.field), has = own(candidate.features, c.feature), v = candidate.features[c.feature];
+            if (!fact.usable || !has) {
               if (c.required) blocked.push(`unknown:${c.id}`);
               continue;
             }
@@ -15483,20 +16076,20 @@ var require_domain = __commonJS({
             }
             const contribution = fit * c.weight;
             score += contribution;
-            if (!finite(score)) fail6("policy utility overflow");
+            if (!finite(score)) fail5("policy utility overflow");
             reasons.push({ criterion: c.id, field: c.field, value: fact.value, candidateValue: v, contribution, evidence: fact.evidence, status: fact.status });
           }
           for (const objective of objectives) {
-            if (!own2(candidate.features, objective.feature)) continue;
+            if (!own(candidate.features, objective.feature)) continue;
             const candidateValue = candidate.features[objective.feature];
             const fraction = (candidateValue - objective.range[0]) / (objective.range[1] - objective.range[0]);
             const contribution = (objective.prefer === "higher" ? fraction : 1 - fraction) * objective.weight;
             score += contribution;
-            if (!finite(score)) fail6("policy utility overflow");
+            if (!finite(score)) fail5("policy utility overflow");
             policyReasons.push({ objective: objective.id, feature: objective.feature, candidateValue, contribution });
           }
           if (blocked.length) excluded.push({ id: candidate.id, reasons: blocked });
-          else ranked.push({ id: candidate.id, score, reasons, ...own2(contract2, "objectives") ? { policyReasons } : {} });
+          else ranked.push({ id: candidate.id, score, reasons, ...own(contract2, "objectives") ? { policyReasons } : {} });
         }
         ranked.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id));
         return copy2({
@@ -15529,43 +16122,43 @@ var require_travel = __commonJS({
       const VERSION = "core-travel-feasibility-1";
       const plain2 = (value) => value !== null && typeof value === "object" && !Array.isArray(value) && [Object.prototype, null].includes(Object.getPrototypeOf(value));
       const token3 = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value) && !["__proto__", "prototype", "constructor"].includes(value);
-      const fail6 = (message) => {
+      const fail5 = (message) => {
         throw new TypeError(`Core travel: ${message}`);
       };
-      const keys2 = (value, required, optional = []) => plain2(value) && required.every((key) => Object.hasOwn(value, key)) && Object.keys(value).every((key) => [...required, ...optional].includes(key));
+      const keys = (value, required, optional = []) => plain2(value) && required.every((key) => Object.hasOwn(value, key)) && Object.keys(value).every((key) => [...required, ...optional].includes(key));
       const whole = (value) => Number.isSafeInteger(value) && value >= 0;
       const minute2 = (value) => whole(value) && value <= 1800;
       function instant(value) {
-        if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/.test(value) || !Number.isFinite(Date.parse(value))) fail6("time must be an ISO timestamp with timezone");
-        const [year, month, day, hour, minutes2, seconds] = value.slice(0, 19).split(/[-T:]/).map(Number);
+        if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/.test(value) || !Number.isFinite(Date.parse(value))) fail5("time must be an ISO timestamp with timezone");
+        const [year, month, day3, hour, minutes2, seconds] = value.slice(0, 19).split(/[-T:]/).map(Number);
         const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
         const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-        if (month < 1 || month > 12 || day < 1 || day > days[month - 1] || hour > 23 || minutes2 > 59 || seconds > 59) fail6("invalid timestamp calendar value");
+        if (month < 1 || month > 12 || day3 < 1 || day3 > days[month - 1] || hour > 23 || minutes2 > 59 || seconds > 59) fail5("invalid timestamp calendar value");
         return Date.parse(value);
       }
       function identifiers(value, label) {
-        if (!Array.isArray(value) || value.length > 1e3 || !value.every(token3) || new Set(value).size !== value.length) fail6(`invalid ${label}`);
+        if (!Array.isArray(value) || value.length > 1e3 || !value.every(token3) || new Set(value).size !== value.length) fail5(`invalid ${label}`);
         return value;
       }
       function add(total, value) {
-        if (!Number.isSafeInteger(total + value)) fail6("total exceeds safe integer range");
+        if (!Number.isSafeInteger(total + value)) fail5("total exceeds safe integer range");
         return total + value;
       }
       function checkItem(item) {
-        if (!keys2(item, ["id", "kind", "start", "end", "cost", "walkMinutes", "requirements", "source"]) || !token3(item.id) || !token3(item.kind) || !minute2(item.start) || !minute2(item.end) || item.end <= item.start || !whole(item.walkMinutes) || item.walkMinutes > item.end - item.start) fail6("invalid item or duration");
-        if (!keys2(item.cost, ["amount", "currency", "status"]) || !/^[A-Z]{3}$/.test(item.cost.currency) || !["known", "unknown"].includes(item.cost.status) || (item.cost.status === "known" ? !whole(item.cost.amount) : item.cost.amount !== null)) fail6("invalid cost; unknown amount must be null");
-        if (!plain2(item.requirements) || Object.entries(item.requirements).some(([key, value]) => !token3(key) || ![true, false, null].includes(value))) fail6("invalid item requirements");
-        if (!keys2(item.source, ["kind", "checkedAt", "validUntil"]) || !["fixture", "verified"].includes(item.source.kind)) fail6("invalid source");
+        if (!keys(item, ["id", "kind", "start", "end", "cost", "walkMinutes", "requirements", "source"]) || !token3(item.id) || !token3(item.kind) || !minute2(item.start) || !minute2(item.end) || item.end <= item.start || !whole(item.walkMinutes) || item.walkMinutes > item.end - item.start) fail5("invalid item or duration");
+        if (!keys(item.cost, ["amount", "currency", "status"]) || !/^[A-Z]{3}$/.test(item.cost.currency) || !["known", "unknown"].includes(item.cost.status) || (item.cost.status === "known" ? !whole(item.cost.amount) : item.cost.amount !== null)) fail5("invalid cost; unknown amount must be null");
+        if (!plain2(item.requirements) || Object.entries(item.requirements).some(([key, value]) => !token3(key) || ![true, false, null].includes(value))) fail5("invalid item requirements");
+        if (!keys(item.source, ["kind", "checkedAt", "validUntil"]) || !["fixture", "verified"].includes(item.source.kind)) fail5("invalid source");
         const checked = instant(item.source.checkedAt), until = instant(item.source.validUntil);
-        if (checked >= until) fail6("source validity must end after its check");
+        if (checked >= until) fail5("source validity must end after its check");
         return { checked, until };
       }
       function evaluateBundles(input = {}) {
-        if (!keys2(
+        if (!keys(
           input,
           ["bundles", "budget", "currency", "dayStart", "dayEnd", "maxWalkMinutes", "at"],
           ["requirements", "lockedIds", "excludedIds", "allowFixtures"]
-        )) fail6("invalid input fields");
+        )) fail5("invalid input fields");
         const {
           bundles,
           budget,
@@ -15578,18 +16171,18 @@ var require_travel = __commonJS({
           excludedIds = [],
           allowFixtures = false
         } = input;
-        if (!Array.isArray(bundles) || bundles.length > 1e3 || !whole(budget) || currency !== "KRW" || !minute2(dayStart) || !minute2(dayEnd) || dayEnd <= dayStart || !whole(maxWalkMinutes) || typeof allowFixtures !== "boolean") fail6("invalid evaluation bounds");
+        if (!Array.isArray(bundles) || bundles.length > 1e3 || !whole(budget) || currency !== "KRW" || !minute2(dayStart) || !minute2(dayEnd) || dayEnd <= dayStart || !whole(maxWalkMinutes) || typeof allowFixtures !== "boolean") fail5("invalid evaluation bounds");
         const now = instant(input.at), locks = identifiers(lockedIds, "locked ids"), excluded = new Set(identifiers(excludedIds, "excluded ids"));
-        if (!Array.isArray(requirements) || requirements.length > 100) fail6("invalid requirements");
+        if (!Array.isArray(requirements) || requirements.length > 100) fail5("invalid requirements");
         const needed = requirements.map((requirement) => {
           if (typeof requirement === "string" && token3(requirement)) return { id: requirement };
-          if (!keys2(requirement, ["id", "kind"]) || !token3(requirement.id) || !token3(requirement.kind)) fail6("invalid required condition");
+          if (!keys(requirement, ["id", "kind"]) || !token3(requirement.id) || !token3(requirement.kind)) fail5("invalid required condition");
           return { id: requirement.id, kind: requirement.kind };
         });
-        if (new Set(needed.map((row) => JSON.stringify(row))).size !== needed.length) fail6("duplicate required condition");
+        if (new Set(needed.map((row) => JSON.stringify(row))).size !== needed.length) fail5("duplicate required condition");
         const bundleIds = /* @__PURE__ */ new Set(), result = { version: VERSION, feasible: [], pending: [], rejected: [] };
         for (const bundle of bundles) {
-          if (!keys2(bundle, ["id", "items"]) || !token3(bundle.id) || bundleIds.has(bundle.id) || !Array.isArray(bundle.items) || bundle.items.length < 1 || bundle.items.length > 1e3) fail6("invalid bundle");
+          if (!keys(bundle, ["id", "items"]) || !token3(bundle.id) || bundleIds.has(bundle.id) || !Array.isArray(bundle.items) || bundle.items.length < 1 || bundle.items.length > 1e3) fail5("invalid bundle");
           bundleIds.add(bundle.id);
           const itemIds = /* @__PURE__ */ new Set(), reasons = [];
           let knownTotal = 0, walkMinutes = 0, unknownCost = false, demo = false;
@@ -15601,7 +16194,7 @@ var require_travel = __commonJS({
           };
           for (const item of bundle.items) {
             const validity = checkItem(item);
-            if (itemIds.has(item.id)) fail6("duplicate item id within bundle");
+            if (itemIds.has(item.id)) fail5("duplicate item id within bundle");
             itemIds.add(item.id);
             const detail = { itemId: item.id };
             if (item.start < dayStart || item.end > dayEnd) reason("time.outside-day", "rejected", detail);
@@ -15621,7 +16214,7 @@ var require_travel = __commonJS({
             if (validity.checked > now) reason("source.not-yet-checked", "pending", detail);
             else if (validity.until <= now) reason("source.expired", "pending", detail);
           }
-          for (const id2 of locks) if (!itemIds.has(id2)) reason("lock.missing", "rejected", { itemId: id2 });
+          for (const id of locks) if (!itemIds.has(id)) reason("lock.missing", "rejected", { itemId: id });
           const chronological = [...bundle.items].sort((a, b) => a.start - b.start || a.end - b.end || a.id.localeCompare(b.id));
           let latest = null;
           for (const item of chronological) {
@@ -15662,92 +16255,92 @@ var require_travel = __commonJS({
 });
 
 // experiences/path-travel/planner.mjs
-function fail2(field, message) {
+function fail(field, message) {
   const error = new TypeError(message);
   error.field = field;
   throw error;
 }
 function boolMap(value, field) {
-  if (!plain(value) || Object.entries(value).some(([key, entry]) => !SEMANTIC_KEYS.includes(key) || typeof entry !== "boolean")) fail2(field, "취향과 필수 조건을 확인해 주세요.");
+  if (!plain(value) || Object.entries(value).some(([key, entry]) => !SEMANTIC_KEYS.includes(key) || typeof entry !== "boolean")) fail(field, "취향과 필수 조건을 확인해 주세요.");
   return Object.fromEntries(SEMANTIC_KEYS.filter((key) => Object.hasOwn(value, key)).map((key) => [key, value[key]]));
 }
 function normalizeCompanions(value, partySize = 6) {
-  if (!Array.isArray(value) || value.length > 6 || value.length > partySize) fail2("companions", "동행 취향은 일행 수 안에서 최대 6명까지 입력해 주세요.");
+  if (!Array.isArray(value) || value.length > 6 || value.length > partySize) fail("companions", "동행 취향은 일행 수 안에서 최대 6명까지 입력해 주세요.");
   const result = value.map((row) => {
-    if (!plain(row) || Object.keys(row).length !== 4 || Object.keys(row).some((key) => !["id", "label", "preferences", "requiredFeatures"].includes(key)) || !token(row.id) || typeof row.label !== "string" || !row.label.trim() || row.label.trim().length > 24) fail2("companions", "동행의 별칭은 1~24자로 입력하고 취향·필수 조건을 확인해 주세요.");
+    if (!plain(row) || Object.keys(row).length !== 4 || Object.keys(row).some((key) => !["id", "label", "preferences", "requiredFeatures"].includes(key)) || !token(row.id) || typeof row.label !== "string" || !row.label.trim() || row.label.trim().length > 24) fail("companions", "동행의 별칭은 1~24자로 입력하고 취향·필수 조건을 확인해 주세요.");
     const preferences = boolMap(row.preferences, "companions"), requiredFeatures = boolMap(row.requiredFeatures, "companions");
-    if (!Object.keys(preferences).length && !Object.keys(requiredFeatures).length) fail2("companions", `${row.label.trim()}의 취향이나 필수 조건을 한 가지 이상 골라 주세요.`);
+    if (!Object.keys(preferences).length && !Object.keys(requiredFeatures).length) fail("companions", `${row.label.trim()}의 취향이나 필수 조건을 한 가지 이상 골라 주세요.`);
     return { id: row.id, label: row.label.trim(), preferences, requiredFeatures };
   });
-  if (new Set(result.map((row) => row.id)).size !== result.length) fail2("companions", "같은 동행의 취향을 두 번 넣을 수 없어요.");
+  if (new Set(result.map((row) => row.id)).size !== result.length) fail("companions", "같은 동행의 취향을 두 번 넣을 수 없어요.");
   return result.sort((a, b) => a.id.localeCompare(b.id));
 }
 function combinedRequiredFeatures(requiredFeatures, companions) {
   const combined = { ...requiredFeatures }, owners = new Map(Object.keys(requiredFeatures).map((key) => [key, "공통 필수 조건"]));
   for (const person of companions) for (const [key, value] of Object.entries(person.requiredFeatures)) {
-    if (Object.hasOwn(combined, key) && combined[key] !== value) fail2("companions", `${owners.get(key)}과 ${person.label}의 ${PREFERENCE_LABELS[key]} 필수 조건이 서로 반대예요. 직접 조정해 주세요.`);
+    if (Object.hasOwn(combined, key) && combined[key] !== value) fail("companions", `${owners.get(key)}과 ${person.label}의 ${PREFERENCE_LABELS[key]} 필수 조건이 서로 반대예요. 직접 조정해 주세요.`);
     combined[key] = value;
     owners.set(key, owners.has(key) ? `${owners.get(key)}·${person.label}` : person.label);
   }
   return combined;
 }
 function ids2(value, field) {
-  if (!Array.isArray(value) || value.length > 80 || value.some((id2) => !token(id2)) || new Set(value).size !== value.length) fail2(field, "장소 목록을 확인해 주세요.");
+  if (!Array.isArray(value) || value.length > 80 || value.some((id) => !token(id)) || new Set(value).size !== value.length) fail(field, "장소 목록을 확인해 주세요.");
   return [...value];
 }
 function point(value, field) {
-  if (!plain(value) || !Number.isFinite(value.lat) || !Number.isFinite(value.lon) || Math.abs(value.lat) > 90 || Math.abs(value.lon) > 180) fail2(field, "출발점의 위치를 확인해 주세요.");
+  if (!plain(value) || !Number.isFinite(value.lat) || !Number.isFinite(value.lon) || Math.abs(value.lat) > 90 || Math.abs(value.lon) > 180) fail(field, "출발점의 위치를 확인해 주세요.");
   return { lat: value.lat, lon: value.lon };
 }
 function namedPoint(value, field) {
-  if (!plain(value) || !token(value.id) || typeof value.name !== "string" || !value.name.trim() || value.name.length > 160) fail2(field, field === "destination" ? "마지막 도착지를 골라 주세요." : "출발점을 골라 주세요.");
+  if (!plain(value) || !token(value.id) || typeof value.name !== "string" || !value.name.trim() || value.name.length > 160) fail(field, field === "destination" ? "마지막 도착지를 골라 주세요." : "출발점을 골라 주세요.");
   return { id: value.id, name: value.name, ...point(value, field) };
 }
 function normalizePlannerInput(value, { places: places3 } = {}) {
-  if (!plain(value)) fail2("input", "여행 조건을 입력해 주세요.");
-  if (!dateValid(value.date)) fail2("date", "방문 날짜를 입력해 주세요.");
-  if (!timeValid(value.startTime) || !timeValid(value.endTime) || minutes(value.endTime) <= minutes(value.startTime)) fail2("endTime", "같은 날의 시작·종료 시간을 확인해 주세요.");
+  if (!plain(value)) fail("input", "여행 조건을 입력해 주세요.");
+  if (!dateValid2(value.date)) fail("date", "방문 날짜를 입력해 주세요.");
+  if (!timeValid(value.startTime) || !timeValid(value.endTime) || minutes(value.endTime) <= minutes(value.startTime)) fail("endTime", "같은 날의 시작·종료 시간을 확인해 주세요.");
   const origin = namedPoint(value.origin, "origin");
   const destination = value.destination == null ? null : namedPoint(value.destination, "destination");
-  if (!plain(value.party) || !integer(value.party.adults, 1, 20) || !integer(value.party.children, 0, 20)) fail2("party", "성인 1~20명, 아이 0~20명으로 입력해 주세요.");
-  if (!integer(value.budget, 0, 1e7)) fail2("budget", "일행의 표시 비용 예산을 0~1천만 원으로 입력해 주세요.");
-  if (!integer(value.maxWalkMinutes, 0, 360)) fail2("maxWalkMinutes", "장소 사이 걷기 상한을 0~360분으로 입력해 주세요.");
+  if (!plain(value.party) || !integer(value.party.adults, 1, 20) || !integer(value.party.children, 0, 20)) fail("party", "성인 1~20명, 아이 0~20명으로 입력해 주세요.");
+  if (!integer(value.budget, 0, 1e7)) fail("budget", "일행의 표시 비용 예산을 0~1천만 원으로 입력해 주세요.");
+  if (!integer(value.maxWalkMinutes, 0, 360)) fail("maxWalkMinutes", "장소 사이 걷기 상한을 0~360분으로 입력해 주세요.");
   const maxLegWalkMinutes = value.maxLegWalkMinutes ?? null, restEveryMinutes = value.restEveryMinutes ?? null, restDurationMinutes = value.restDurationMinutes === void 0 ? 10 : value.restDurationMinutes;
-  if (maxLegWalkMinutes !== null && !integer(maxLegWalkMinutes, 0, 360)) fail2("maxLegWalkMinutes", "한 번에 걷는 상한은 0~360분으로 입력해 주세요.");
-  if (restEveryMinutes !== null && !integer(restEveryMinutes, 30, 180)) fail2("restEveryMinutes", "쉬는 여유를 넣을 간격은 30~180분으로 입력해 주세요.");
-  if (!integer(restDurationMinutes, 5, 30)) fail2("restDurationMinutes", "한 번 쉬는 시간은 5~30분으로 입력해 주세요.");
+  if (maxLegWalkMinutes !== null && !integer(maxLegWalkMinutes, 0, 360)) fail("maxLegWalkMinutes", "한 번에 걷는 상한은 0~360분으로 입력해 주세요.");
+  if (restEveryMinutes !== null && !integer(restEveryMinutes, 30, 180)) fail("restEveryMinutes", "쉬는 여유를 넣을 간격은 30~180분으로 입력해 주세요.");
+  if (!integer(restDurationMinutes, 5, 30)) fail("restDurationMinutes", "한 번 쉬는 시간은 5~30분으로 입력해 주세요.");
   const planningMode = value.planningMode === void 0 ? "day" : value.planningMode;
-  if (!["day", "remaining"].includes(planningMode)) fail2("planningMode", "하루 일정 또는 남은 일정 중 계획 범위를 확인해 주세요.");
-  const minimumStops = planningMode === "remaining" ? 1 : 2, stopCount = value.stopCount ?? 3;
-  if (!integer(stopCount, minimumStops, 5)) fail2("stopCount", `희망 방문 수는 ${minimumStops}~5곳으로 골라 주세요.`);
+  if (!["day", "remaining"].includes(planningMode)) fail("planningMode", "하루 일정 또는 남은 일정 중 계획 범위를 확인해 주세요.");
+  const stopCount = value.stopCount ?? 3;
+  if (!integer(stopCount, 1, 5)) fail("stopCount", "희망 방문 수는 1~5곳으로 골라 주세요.");
   const preferences = boolMap(value.preferences ?? {}, "preferences");
   const requiredFeatures = boolMap(value.requiredFeatures ?? {}, "requiredFeatures");
   const companions = normalizeCompanions(value.companions === void 0 ? [] : value.companions, value.party.adults + value.party.children);
   combinedRequiredFeatures(requiredFeatures, companions);
   const requiredCategories = value.requiredCategories ?? [];
-  if (!Array.isArray(requiredCategories) || new Set(requiredCategories).size !== requiredCategories.length || requiredCategories.some((category) => !CATEGORIES.includes(category))) fail2("requiredCategories", "꼭 포함할 분야를 확인해 주세요.");
+  if (!Array.isArray(requiredCategories) || new Set(requiredCategories).size !== requiredCategories.length || requiredCategories.some((category) => !CATEGORIES.includes(category))) fail("requiredCategories", "꼭 포함할 분야를 확인해 주세요.");
   const lockedIds = ids2(value.lockedIds ?? [], "lockedIds"), excludedIds = ids2(value.excludedIds ?? [], "excludedIds");
-  if (lockedIds.some((id2) => excludedIds.includes(id2))) fail2("lockedIds", "같은 장소를 유지하면서 제외할 수는 없어요.");
+  if (lockedIds.some((id) => excludedIds.includes(id))) fail("lockedIds", "같은 장소를 유지하면서 제외할 수는 없어요.");
   const rawMeal = value.meal === void 0 ? { mode: "any", startTime: "12:00", endTime: "13:00" } : value.meal;
-  if (!plain(rawMeal) || !["any", "none", "window"].includes(rawMeal.mode)) fail2("meal", "식사 없음·시간 자유·식사 시작 시간대 중 골라 주세요.");
+  if (!plain(rawMeal) || !["any", "none", "window"].includes(rawMeal.mode)) fail("meal", "식사 없음·시간 자유·식사 시작 시간대 중 골라 주세요.");
   const meal = { mode: rawMeal.mode, startTime: rawMeal.startTime ?? "12:00", endTime: rawMeal.endTime ?? "13:00" };
-  if (!timeValid(meal.startTime) || !timeValid(meal.endTime) || meal.startTime > meal.endTime) fail2("meal", "같은 날의 식사 시작 허용 시간대를 확인해 주세요.");
+  if (!timeValid(meal.startTime) || !timeValid(meal.endTime) || meal.startTime > meal.endTime) fail("meal", "같은 날의 식사 시작 허용 시간대를 확인해 주세요.");
   const rawAppointments = value.appointments === void 0 ? [] : value.appointments;
-  if (!Array.isArray(rawAppointments) || rawAppointments.length > 3 || rawAppointments.some((row) => !plain(row) || !token(row.placeId) || !timeValid(row.time))) fail2("appointments", "예약 장소와 정확한 시각을 최대 3개까지 입력해 주세요.");
+  if (!Array.isArray(rawAppointments) || rawAppointments.length > 3 || rawAppointments.some((row) => !plain(row) || !token(row.placeId) || !timeValid(row.time))) fail("appointments", "예약 장소와 정확한 시각을 최대 3개까지 입력해 주세요.");
   const appointments = rawAppointments.map((row) => ({ placeId: row.placeId, time: row.time })).sort((a, b) => a.time.localeCompare(b.time) || a.placeId.localeCompare(b.placeId));
-  if (new Set(appointments.map((row) => row.placeId)).size !== appointments.length) fail2("appointments", "같은 장소를 두 번 예약 일정에 넣을 수 없어요.");
-  if (new Set(appointments.map((row) => row.time)).size !== appointments.length) fail2("appointments", "서로 다른 두 장소에 같은 시각으로 예약할 수 없어요.");
-  if (appointments.some((row) => row.time < value.startTime || row.time >= value.endTime)) fail2("appointments", "예약 시각은 여행 시작 이후, 여행 종료 이전이어야 해요.");
-  if (appointments.some((row) => excludedIds.includes(row.placeId))) fail2("appointments", "예약한 장소를 동시에 제외할 수는 없어요. 예약이나 제외를 직접 바꿔 주세요.");
-  if ((/* @__PURE__ */ new Set([...lockedIds, ...appointments.map((row) => row.placeId)])).size > stopCount) fail2("appointments", "예약과 유지한 장소 수가 희망 방문 수보다 많아요. 방문 수를 늘리거나 직접 설정을 바꿔 주세요.");
-  if (meal.mode === "none" && requiredCategories.includes("food")) fail2("meal", "식사를 생략하면서 식사 필수 포함을 동시에 선택할 수 없어요.");
+  if (new Set(appointments.map((row) => row.placeId)).size !== appointments.length) fail("appointments", "같은 장소를 두 번 예약 일정에 넣을 수 없어요.");
+  if (new Set(appointments.map((row) => row.time)).size !== appointments.length) fail("appointments", "서로 다른 두 장소에 같은 시각으로 예약할 수 없어요.");
+  if (appointments.some((row) => row.time < value.startTime || row.time >= value.endTime)) fail("appointments", "예약 시각은 여행 시작 이후, 여행 종료 이전이어야 해요.");
+  if (appointments.some((row) => excludedIds.includes(row.placeId))) fail("appointments", "예약한 장소를 동시에 제외할 수는 없어요. 예약이나 제외를 직접 바꿔 주세요.");
+  if ((/* @__PURE__ */ new Set([...lockedIds, ...appointments.map((row) => row.placeId)])).size > stopCount) fail("appointments", "예약과 유지한 장소 수가 희망 방문 수보다 많아요. 방문 수를 늘리거나 직접 설정을 바꿔 주세요.");
+  if (meal.mode === "none" && requiredCategories.includes("food")) fail("meal", "식사를 생략하면서 식사 필수 포함을 동시에 선택할 수 없어요.");
   const catalogue = places3 ?? TRAVEL_PLACES, byId2 = new Map(catalogue.map((place) => [place.id, place]));
-  if (appointments.some((row) => !byId2.has(row.placeId) || byId2.get(row.placeId).dayPlannerEligible === false || !CATEGORIES.includes(byId2.get(row.placeId).category))) fail2("appointments", "예약은 현재 당일 여행 장소 중에서 골라 주세요.");
-  if (meal.mode === "none" && [...lockedIds, ...appointments.map((row) => row.placeId)].some((id2) => byId2.get(id2)?.category === "food")) fail2("meal", "식사를 생략하면서 식당 예약·유지를 함께 선택할 수 없어요.");
-  if (meal.mode === "window" && appointments.some((row) => byId2.get(row.placeId).category === "food" && (row.time < meal.startTime || row.time > meal.endTime))) fail2("meal", "식당 예약 시각이 정한 식사 시작 시간대 밖이에요. 둘 중 하나를 직접 조정해 주세요.");
+  if (appointments.some((row) => !byId2.has(row.placeId) || byId2.get(row.placeId).dayPlannerEligible === false || !CATEGORIES.includes(byId2.get(row.placeId).category))) fail("appointments", "예약은 현재 당일 여행 장소 중에서 골라 주세요.");
+  if (meal.mode === "none" && [...lockedIds, ...appointments.map((row) => row.placeId)].some((id) => byId2.get(id)?.category === "food")) fail("meal", "식사를 생략하면서 식당 예약·유지를 함께 선택할 수 없어요.");
+  if (meal.mode === "window" && appointments.some((row) => byId2.get(row.placeId).category === "food" && (row.time < meal.startTime || row.time > meal.endTime))) fail("meal", "식당 예약 시각이 정한 식사 시작 시간대 밖이에요. 둘 중 하나를 직접 조정해 주세요.");
   if (places3) {
     const allowed = new Set(places3.map((place) => place.id));
-    if ([...lockedIds, ...excludedIds].some((id2) => !allowed.has(id2))) fail2("lockedIds", "현재 장소 목록에 없는 곳이 있어요.");
+    if ([...lockedIds, ...excludedIds].some((id) => !allowed.has(id))) fail("lockedIds", "현재 장소 목록에 없는 곳이 있어요.");
   }
   return {
     date: value.date,
@@ -15774,9 +16367,9 @@ function normalizePlannerInput(value, { places: places3 } = {}) {
   };
 }
 function fingerprint(value) {
-  const text4 = typeof value === "string" ? value : JSON.stringify(value);
+  const text3 = typeof value === "string" ? value : JSON.stringify(value);
   let a = 2166136261, b = 5381;
-  for (const char of text4) {
+  for (const char of text3) {
     a = Math.imul(a ^ char.charCodeAt(0), 16777619) >>> 0;
     b = (b * 33 ^ char.charCodeAt(0)) >>> 0;
   }
@@ -15824,7 +16417,7 @@ function requiredWalkingCheck(leg, placeId, returning = false) {
   return check(returning ? "required.stepFree.return" : "required.stepFree.route", matched ? "matched" : "unknown", matched ? "이동 경로의 무계단 조건을 확인했어요." : returning ? "마지막 도착지까지의 계단·단차 정보가 확인되지 않아 제외했어요." : "장소의 무계단 접근과 별개로 이동 경로의 계단·단차 정보가 확인되지 않아 제외했어요.", { placeId });
 }
 function assessPlannerRequirements(stops, input, { legs = [], returnLeg = null } = {}) {
-  if (!plain(input) || !Array.isArray(stops) || stops.length > 5 || stops.some((stop) => !plain(stop) || !token(stop.placeId) || !plain(stop.place)) || !Array.isArray(legs)) fail2("requirements", "필수 조건을 확인할 여행 장소와 이동 정보를 확인해 주세요.");
+  if (!plain(input) || !Array.isArray(stops) || stops.length > 5 || stops.some((stop) => !plain(stop) || !token(stop.placeId) || !plain(stop.place)) || !Array.isArray(legs)) fail("requirements", "필수 조건을 확인할 여행 장소와 이동 정보를 확인해 주세요.");
   const companions = normalizeCompanions(input.companions === void 0 ? [] : input.companions);
   const required = combinedRequiredFeatures(boolMap(input.requiredFeatures ?? {}, "requiredFeatures"), companions);
   const checks = stops.flatMap((stop) => requiredPlaceChecks(stop.place, required, companions));
@@ -15834,7 +16427,7 @@ function assessPlannerRequirements(stops, input, { legs = [], returnLeg = null }
   }
   return checks;
 }
-var DomainModule, TravelModule, AskModule, Domain, Travel, Ask, SEMANTIC_KEYS, PREFERENCE_LABELS, DETAIL_PREFERENCE_CATEGORIES, CATEGORIES, plain, token, integer, timeValid, minutes, dateValid, check, scope;
+var DomainModule, TravelModule, AskModule, Domain, Travel, Ask, SEMANTIC_KEYS, PREFERENCE_LABELS, DETAIL_PREFERENCE_CATEGORIES, CATEGORIES, plain, token, integer, timeValid, minutes, dateValid2, check, scope;
 var init_planner = __esm({
   "experiences/path-travel/planner.mjs"() {
     init_places_v2();
@@ -15855,16 +16448,16 @@ var init_planner = __esm({
     integer = (value, low, high) => Number.isSafeInteger(value) && value >= low && value <= high;
     timeValid = (value) => typeof value === "string" && /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value);
     minutes = (value) => Number(value.slice(0, 2)) * 60 + Number(value.slice(3));
-    dateValid = (value) => typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) && !value.startsWith("0000") && Number.isFinite(Date.parse(value + "T00:00:00.000Z")) && (/* @__PURE__ */ new Date(value + "T00:00:00.000Z")).toISOString().slice(0, 10) === value;
+    dateValid2 = (value) => typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) && !value.startsWith("0000") && Number.isFinite(Date.parse(value + "T00:00:00.000Z")) && (/* @__PURE__ */ new Date(value + "T00:00:00.000Z")).toISOString().slice(0, 10) === value;
     check = (kind, status, reason, extra = {}) => ({ kind, status, reason, ...extra });
     scope = Object.freeze({ domain: "PATH", workspace: "path-real-planner", subject: "local-visitor" });
   }
 });
 
-// experiences/path-travel/real-places.mjs?v=20261007-halfday1
+// experiences/path-travel/real-places.mjs?v=20261019-hours
 var REAL_META2, REAL_CONDITION_CALENDAR2, REAL_PLACES2;
 var init_real_places2 = __esm({
-  "experiences/path-travel/real-places.mjs?v=20261007-halfday1"() {
+  "experiences/path-travel/real-places.mjs?v=20261019-hours"() {
     REAL_META2 = Object.freeze({
       "version": 2,
       "area": "서울 종로·안국·인사동·북촌",
@@ -17202,15 +17795,37 @@ var init_real_places2 = __esm({
   }
 });
 
-// experiences/path-travel/real-conditions.mjs?v=20261007-halfday1
-var REAL_CONDITION_LABELS2;
+// experiences/path-travel/real-conditions.mjs?v=20261019-hours
+function invalid5(field, message) {
+  const error = new TypeError(message);
+  error.field = field;
+  throw error;
+}
+var REAL_CONDITION_LABELS2, DAY2, remember2, dateValid3, day2, todayAt2;
 var init_real_conditions2 = __esm({
-  "experiences/path-travel/real-conditions.mjs?v=20261007-halfday1"() {
+  "experiences/path-travel/real-conditions.mjs?v=20261019-hours"() {
     REAL_CONDITION_LABELS2 = Object.freeze({
       none: "조건 없음",
       matched: "안내상 조건 맞음",
       unknown: "확인 필요",
       unmatched: "조건과 다름"
+    });
+    DAY2 = 864e5;
+    remember2 = (fn) => {
+      const memo = /* @__PURE__ */ new Map();
+      return (value) => {
+        if (memo.has(value)) return memo.get(value);
+        if (memo.size >= 4096) memo.clear();
+        const result = fn(value);
+        memo.set(value, result);
+        return result;
+      };
+    };
+    dateValid3 = remember2((value) => typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) && !value.startsWith("0000-") && Number.isFinite(Date.parse(value + "T00:00:00.000Z")) && (/* @__PURE__ */ new Date(value + "T00:00:00.000Z")).toISOString().slice(0, 10) === value);
+    day2 = remember2((value) => Date.parse(value + "T00:00:00.000Z") / DAY2);
+    todayAt2 = remember2((value) => {
+      if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value) || !Number.isFinite(Date.parse(value)) || new Date(value).toISOString() !== value) invalid5("now", "조건을 확인하는 시각이 올바르지 않습니다.");
+      return new Date(Date.parse(value) + 9 * 60 * 60 * 1e3).toISOString().slice(0, 10);
     });
   }
 });
@@ -17261,8 +17876,8 @@ var init_real_guide = __esm({
       id: "path-real-opinions",
       version: "1",
       purpose: "order-real-places",
-      fields: fieldSpecs.map(({ id: id2 }) => ({ id: id2, kind: "boolean" })),
-      criteria: fieldSpecs.map(({ id: id2, weight }) => ({ id: id2, field: id2, feature: id2, weight, prefer: "match" }))
+      fields: fieldSpecs.map(({ id }) => ({ id, kind: "boolean" })),
+      criteria: fieldSpecs.map(({ id, weight }) => ({ id, field: id, feature: id, weight, prefer: "match" }))
     });
   }
 });
@@ -17286,25 +17901,25 @@ var require_trail_life = __commonJS({
       };
       const copy2 = (value) => JSON.parse(JSON.stringify(value));
       const object5 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
-      const id2 = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
+      const id = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
       const integer3 = (value) => Number.isSafeInteger(value) && value >= 0;
-      const list3 = (value, min = 0) => Array.isArray(value) && value.length >= min && value.length <= 64 && value.every(id2) && new Set(value).size === value.length;
-      const exact5 = (value, keys2) => object5(value) && Object.keys(value).length === keys2.length && keys2.every((key) => Object.hasOwn(value, key));
-      const revisions = (value) => object5(value) && Object.entries(value).length <= 64 && Object.entries(value).every(([key, revision]) => id2(key) && integer3(revision));
+      const list3 = (value, min = 0) => Array.isArray(value) && value.length >= min && value.length <= 64 && value.every(id) && new Set(value).size === value.length;
+      const exact5 = (value, keys) => object5(value) && Object.keys(value).length === keys.length && keys.every((key) => Object.hasOwn(value, key));
+      const revisions = (value) => object5(value) && Object.entries(value).length <= 64 && Object.entries(value).every(([key, revision]) => id(key) && integer3(revision));
       const canonical = (value) => JSON.stringify(value, (_key, entry) => object5(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key) => [key, entry[key]])) : entry);
       function scopeKey(scope3) {
-        if (!exact5(scope3, ["domain", "workspace", "subject"]) || !["LAB", "SHIFT", "PATH"].includes(scope3.domain) || !id2(scope3.workspace) || !id2(scope3.subject)) throw new TypeError("Trail Life: invalid scope");
+        if (!exact5(scope3, ["domain", "workspace", "subject"]) || !["LAB", "SHIFT", "PATH"].includes(scope3.domain) || !id(scope3.workspace) || !id(scope3.subject)) throw new TypeError("Trail Life: invalid scope");
         return JSON.stringify([scope3.domain, scope3.workspace, scope3.subject]);
       }
       function validate(event) {
-        if (!object5(event) || !TYPES.includes(event.type) || !exact5(event, [...BASE, ...FIELDS[event.type]]) || event.schema !== 1 || !id2(event.id) || !integer3(event.seq) || event.seq < 1) throw new TypeError("Trail Life: invalid event fields");
+        if (!object5(event) || !TYPES.includes(event.type) || !exact5(event, [...BASE, ...FIELDS[event.type]]) || event.schema !== 1 || !id(event.id) || !integer3(event.seq) || event.seq < 1) throw new TypeError("Trail Life: invalid event fields");
         scopeKey(event.scope);
-        if (event.type === "life.fact" && (!id2(event.factType) || !list3(event.causes) || !revisions(event.revisions) || !list3(event.knownBy))) {
+        if (event.type === "life.fact" && (!id(event.factType) || !list3(event.causes) || !revisions(event.revisions) || !list3(event.knownBy))) {
           throw new TypeError("Trail Life: invalid fact");
         }
-        if (event.type === "life.corrected" && !id2(event.targetId)) throw new TypeError("Trail Life: invalid correction");
-        if (event.type === "life.knowledge" && (!id2(event.factId) || !id2(event.npcId) || typeof event.allowed !== "boolean" || (event.allowed ? !id2(event.viaId) : event.viaId !== null))) throw new TypeError("Trail Life: invalid knowledge");
-        if (event.type === "life.delivered" && (![event.reactionId, event.deliveryId, event.npcId, event.semanticKey, event.contentVersion].every(id2) || !list3(event.sourceIds, 1) || !revisions(event.revisions) || !["motion", "static", "text"].includes(event.mode))) {
+        if (event.type === "life.corrected" && !id(event.targetId)) throw new TypeError("Trail Life: invalid correction");
+        if (event.type === "life.knowledge" && (!id(event.factId) || !id(event.npcId) || typeof event.allowed !== "boolean" || (event.allowed ? !id(event.viaId) : event.viaId !== null))) throw new TypeError("Trail Life: invalid knowledge");
+        if (event.type === "life.delivered" && (![event.reactionId, event.deliveryId, event.npcId, event.semanticKey, event.contentVersion].every(id) || !list3(event.sourceIds, 1) || !revisions(event.revisions) || !["motion", "static", "text"].includes(event.mode))) {
           throw new TypeError("Trail Life: invalid delivery");
         }
         return event;
@@ -17321,11 +17936,11 @@ var require_trail_life = __commonJS({
         const derivesFrom = (sourceId, targetId) => {
           const stack = [sourceId], visited = /* @__PURE__ */ new Set();
           while (stack.length) {
-            const id3 = stack.pop();
-            if (id3 === targetId) return true;
-            if (visited.has(id3)) continue;
-            visited.add(id3);
-            stack.push(...facts.get(id3)?.event.causes || []);
+            const id2 = stack.pop();
+            if (id2 === targetId) return true;
+            if (visited.has(id2)) continue;
+            visited.add(id2);
+            stack.push(...facts.get(id2)?.event.causes || []);
           }
           return false;
         };
@@ -17357,8 +17972,8 @@ var require_trail_life = __commonJS({
             if (event.allowed && (!active(event.factId) || !active(event.viaId) || !derivesFrom(event.viaId, event.factId) || !(permitted(event.npcId, event.viaId) || event.viaId === event.factId && facts.get(event.factId).event.knownBy.includes(event.npcId)))) {
               throw new Error("Trail Life: knowledge requires a witnessed source");
             }
-            const own2 = knowledge.get(event.npcId)?.get(event.factId);
-            if (!(event.allowed && own2?.allowed === true && own2.viaId === null)) know(event.npcId, event.factId, { allowed: event.allowed, viaId: event.viaId });
+            const own = knowledge.get(event.npcId)?.get(event.factId);
+            if (!(event.allowed && own?.allowed === true && own.viaId === null)) know(event.npcId, event.factId, { allowed: event.allowed, viaId: event.viaId });
           } else {
             if (event.sourceIds.some((source) => !permitted(event.npcId, source))) throw new Error("Trail Life: delivery requires permitted facts");
             if (deliveries.has(event.deliveryId)) throw new Error("Trail Life: duplicate delivery id");
@@ -17438,7 +18053,7 @@ var require_temper_outcomes = __commonJS({
         minimumSubjects = 5,
         strictProvenance = false
       } = {}) {
-        const fail6 = (message) => {
+        const fail5 = (message) => {
           throw new TypeError(`Temper outcomes: ${message}`);
         };
         const object5 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
@@ -17447,45 +18062,45 @@ var require_temper_outcomes = __commonJS({
         const number = (value) => typeof value === "number" && Number.isFinite(value);
         const instant = (value) => {
           const time2 = typeof value === "string" && value.length <= 40 ? Date.parse(value) : NaN;
-          if (!Number.isFinite(time2)) fail6("invalid timestamp");
+          if (!Number.isFinite(time2)) fail5("invalid timestamp");
           return time2;
         };
         const canonical = (value) => JSON.stringify(value, (_key, entry) => object5(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key) => [key, entry[key]])) : entry);
         const scopeKey = (scope3) => {
-          if (!exact5(scope3, ["domain", "workspace", "purpose"]) || !Object.values(scope3).every(token3)) fail6("invalid scope");
-          if (scope3.domain === "PULSE") fail6("PULSE does not keep personal behavioral observations");
+          if (!exact5(scope3, ["domain", "workspace", "purpose"]) || !Object.values(scope3).every(token3)) fail5("invalid scope");
+          if (scope3.domain === "PULSE") fail5("PULSE does not keep personal behavioral observations");
           return JSON.stringify([scope3.domain, scope3.workspace, scope3.purpose]);
         };
         const policyKey = (policy) => {
-          if (!exact5(policy, ["id", "version"]) || !token3(policy.id) || !token3(policy.version)) fail6("invalid policy");
+          if (!exact5(policy, ["id", "version"]) || !token3(policy.id) || !token3(policy.version)) fail5("invalid policy");
           return JSON.stringify([policy.id, policy.version]);
         };
-        if (!exact5(contract2, ["id", "version", "scope", "outcome"]) || !token3(contract2.id) || !token3(contract2.version)) fail6("invalid contract");
+        if (!exact5(contract2, ["id", "version", "scope", "outcome"]) || !token3(contract2.id) || !token3(contract2.version)) fail5("invalid contract");
         const sameContract = (ref) => exact5(ref, ["id", "version"]) && ref.id === contract2.id && ref.version === contract2.version;
-        if (typeof strictProvenance !== "boolean" || !Array.isArray(revisions)) fail6("invalid provenance options");
+        if (typeof strictProvenance !== "boolean" || !Array.isArray(revisions)) fail5("invalid provenance options");
         const trace = strictProvenance || revisions.length > 0;
         const boundary = scopeKey(contract2.scope), target = contract2.outcome;
-        if (!exact5(target, ["id", "kind", "direction", "windowMs"], ["allowedValues", "range"]) || !token3(target.id) || !["binary", "numeric"].includes(target.kind) || !["higher", "lower"].includes(target.direction) || !Number.isSafeInteger(target.windowMs) || target.windowMs < 0) fail6("invalid outcome definition");
+        if (!exact5(target, ["id", "kind", "direction", "windowMs"], ["allowedValues", "range"]) || !token3(target.id) || !["binary", "numeric"].includes(target.kind) || !["higher", "lower"].includes(target.direction) || !Number.isSafeInteger(target.windowMs) || target.windowMs < 0) fail5("invalid outcome definition");
         if (target.kind === "binary") {
-          if (Object.hasOwn(target, "range") || !Array.isArray(target.allowedValues) || target.allowedValues.length !== 2 || !target.allowedValues.includes(0) || !target.allowedValues.includes(1)) fail6("binary outcomes require allowedValues [0, 1]");
-        } else if (Object.hasOwn(target, "allowedValues") || !Array.isArray(target.range) || target.range.length !== 2 || !target.range.every(number) || target.range[0] >= target.range[1] || !Number.isFinite(target.range[1] - target.range[0])) fail6("numeric outcomes require a finite increasing range");
+          if (Object.hasOwn(target, "range") || !Array.isArray(target.allowedValues) || target.allowedValues.length !== 2 || !target.allowedValues.includes(0) || !target.allowedValues.includes(1)) fail5("binary outcomes require allowedValues [0, 1]");
+        } else if (Object.hasOwn(target, "allowedValues") || !Array.isArray(target.range) || target.range.length !== 2 || !target.range.every(number) || target.range[0] >= target.range[1] || !Number.isFinite(target.range[1] - target.range[0])) fail5("numeric outcomes require a finite increasing range");
         const valueOk = (value) => number(value) && (target.kind === "binary" ? target.allowedValues.includes(value) : value >= target.range[0] && value <= target.range[1]);
-        if (!Array.isArray(subjects) || !subjects.every(token3) || new Set(subjects).size !== subjects.length) fail6("authorized subjects are required");
-        if (!Array.isArray(policies2) || policies2.length !== 2 || new Set(policies2.map(policyKey)).size !== 2) fail6("two distinct policies are required");
-        if (!Number.isSafeInteger(minimumSubjects) || minimumSubjects < 1) fail6("invalid minimum subjects");
-        const cutoff = instant(asOf), allowed = new Set(subjects), keys2 = policies2.map(policyKey);
+        if (!Array.isArray(subjects) || !subjects.every(token3) || new Set(subjects).size !== subjects.length) fail5("authorized subjects are required");
+        if (!Array.isArray(policies2) || policies2.length !== 2 || new Set(policies2.map(policyKey)).size !== 2) fail5("two distinct policies are required");
+        if (!Number.isSafeInteger(minimumSubjects) || minimumSubjects < 1) fail5("invalid minimum subjects");
+        const cutoff = instant(asOf), allowed = new Set(subjects), keys = policies2.map(policyKey);
         const duplicateCounts = { decisions: 0, exposures: 0, outcomes: 0 };
         const records = (input, kind, required, optional = []) => {
-          if (!Array.isArray(input)) fail6(`${kind} must be an array`);
+          if (!Array.isArray(input)) fail5(`${kind} must be an array`);
           const found = /* @__PURE__ */ new Map();
           for (const row of input) {
-            if (!exact5(row, ["id", "subject", "scope", "at", ...required], ["recordedAt", ...optional]) || !token3(row.id) || !token3(row.subject)) fail6(`invalid ${kind} record`);
-            if (scopeKey(row.scope) !== boundary || !allowed.has(row.subject)) fail6("record outside authorized subject, workspace or purpose");
+            if (!exact5(row, ["id", "subject", "scope", "at", ...required], ["recordedAt", ...optional]) || !token3(row.id) || !token3(row.subject)) fail5(`invalid ${kind} record`);
+            if (scopeKey(row.scope) !== boundary || !allowed.has(row.subject)) fail5("record outside authorized subject, workspace or purpose");
             const happened = instant(row.at), recorded = instant(row.recordedAt ?? row.at);
-            if (recorded < happened) fail6("recorded before occurrence");
-            if (happened > cutoff || recorded > cutoff) fail6("record occurs or arrives after evaluation time");
+            if (recorded < happened) fail5("recorded before occurrence");
+            if (happened > cutoff || recorded > cutoff) fail5("record occurs or arrives after evaluation time");
             if (found.has(row.id)) {
-              if (canonical(found.get(row.id)) !== canonical(row)) fail6(`conflicting ${kind} id`);
+              if (canonical(found.get(row.id)) !== canonical(row)) fail5(`conflicting ${kind} id`);
               duplicateCounts[kind] += 1;
             } else found.set(row.id, row);
           }
@@ -17499,40 +18114,40 @@ var require_temper_outcomes = __commonJS({
         const costUnits = /* @__PURE__ */ new Set(), delivered = /* @__PURE__ */ new Map(), observed = /* @__PURE__ */ new Map(), originalOutcomes = /* @__PURE__ */ new Map();
         const sameParent = (row, parent) => parent && row.subject === parent.subject && scopeKey(row.scope) === scopeKey(parent.scope) && instant(row.at) >= instant(parent.at) && instant(row.recordedAt ?? row.at) >= instant(parent.recordedAt ?? parent.at);
         for (const row of ds.values()) {
-          if (!sameContract(row.contract)) fail6("decision outcome contract mismatch");
-          if (!keys2.includes(policyKey(row.policy))) fail6("decision uses an unrequested policy");
-          if (!Array.isArray(row.candidateIds) || !row.candidateIds.every(token3) || new Set(row.candidateIds).size !== row.candidateIds.length || !(row.selectedId === null || token3(row.selectedId) && row.candidateIds.includes(row.selectedId))) fail6("invalid decision candidates or selection");
-          if (Object.hasOwn(row, "latencyMs") && (!number(row.latencyMs) || row.latencyMs < 0)) fail6("invalid latency");
+          if (!sameContract(row.contract)) fail5("decision outcome contract mismatch");
+          if (!keys.includes(policyKey(row.policy))) fail5("decision uses an unrequested policy");
+          if (!Array.isArray(row.candidateIds) || !row.candidateIds.every(token3) || new Set(row.candidateIds).size !== row.candidateIds.length || !(row.selectedId === null || token3(row.selectedId) && row.candidateIds.includes(row.selectedId))) fail5("invalid decision candidates or selection");
+          if (Object.hasOwn(row, "latencyMs") && (!number(row.latencyMs) || row.latencyMs < 0)) fail5("invalid latency");
           if (Object.hasOwn(row, "cost")) {
-            if (!exact5(row.cost, ["value", "unit"]) || !number(row.cost.value) || row.cost.value < 0 || !token3(row.cost.unit)) fail6("invalid normalized cost");
+            if (!exact5(row.cost, ["value", "unit"]) || !number(row.cost.value) || row.cost.value < 0 || !token3(row.cost.unit)) fail5("invalid normalized cost");
             costUnits.add(row.cost.unit);
           }
         }
-        if (costUnits.size > 1) fail6("incompatible cost units");
+        if (costUnits.size > 1) fail5("incompatible cost units");
         for (const row of es.values()) {
-          if ((trace || Object.hasOwn(row, "contract")) && !sameContract(row.contract)) fail6("exposure outcome contract mismatch");
+          if ((trace || Object.hasOwn(row, "contract")) && !sameContract(row.contract)) fail5("exposure outcome contract mismatch");
           const parent = ds.get(row.decisionId);
-          if (!token3(row.decisionId) || !token3(row.candidateId) || !sameParent(row, parent) || row.candidateId !== parent.selectedId) fail6("exposure requires the selected candidate and prior decision in the same scope and subject");
-          if (delivered.has(parent.id)) fail6("multiple exposures for one decision");
+          if (!token3(row.decisionId) || !token3(row.candidateId) || !sameParent(row, parent) || row.candidateId !== parent.selectedId) fail5("exposure requires the selected candidate and prior decision in the same scope and subject");
+          if (delivered.has(parent.id)) fail5("multiple exposures for one decision");
           delivered.set(parent.id, row);
         }
         for (const row of os.values()) {
-          if ((trace || Object.hasOwn(row, "contract")) && !sameContract(row.contract)) fail6("outcome contract mismatch");
+          if ((trace || Object.hasOwn(row, "contract")) && !sameContract(row.contract)) fail5("outcome contract mismatch");
           const parent = es.get(row.exposureId);
-          if (!token3(row.exposureId) || !sameParent(row, parent) || !valueOk(row.value)) fail6("outcome requires valid value and prior exposure in the same scope and subject");
-          if (observed.has(parent.id)) fail6("multiple outcomes for one exposure");
+          if (!token3(row.exposureId) || !sameParent(row, parent) || !valueOk(row.value)) fail5("outcome requires valid value and prior exposure in the same scope and subject");
+          if (observed.has(parent.id)) fail5("multiple outcomes for one exposure");
           observed.set(parent.id, row);
           originalOutcomes.set(parent.id, row);
         }
         const successor = /* @__PURE__ */ new Map();
         for (const row of rs.values()) {
-          if (os.has(row.id)) fail6("revision id conflicts with an outcome");
-          if (!sameContract(row.contract)) fail6("revision outcome contract mismatch");
-          if (!token3(row.targetId) || !token3(row.sourceRef) || !["correct", "withdraw"].includes(row.action) || (row.action === "correct" ? !valueOk(row.value) : Object.hasOwn(row, "value"))) fail6("invalid revision");
+          if (os.has(row.id)) fail5("revision id conflicts with an outcome");
+          if (!sameContract(row.contract)) fail5("revision outcome contract mismatch");
+          if (!token3(row.targetId) || !token3(row.sourceRef) || !["correct", "withdraw"].includes(row.action) || (row.action === "correct" ? !valueOk(row.value) : Object.hasOwn(row, "value"))) fail5("invalid revision");
           const parent = os.get(row.targetId) || rs.get(row.targetId);
-          if (!sameParent(row, parent)) fail6("revision requires a prior outcome or revision in the same scope and subject");
-          if (parent.action === "withdraw") fail6("withdrawn outcomes cannot be restored");
-          if (successor.has(parent.id)) fail6("multiple revisions for one target");
+          if (!sameParent(row, parent)) fail5("revision requires a prior outcome or revision in the same scope and subject");
+          if (parent.action === "withdraw") fail5("withdrawn outcomes cannot be restored");
+          if (successor.has(parent.id)) fail5("multiple revisions for one target");
           successor.set(parent.id, row);
         }
         const checked = /* @__PURE__ */ new Set();
@@ -17540,11 +18155,11 @@ var require_temper_outcomes = __commonJS({
           const path = /* @__PURE__ */ new Set();
           let current = row;
           while (current && !checked.has(current.id)) {
-            if (path.has(current.id)) fail6("revision cycle");
+            if (path.has(current.id)) fail5("revision cycle");
             path.add(current.id);
             current = rs.get(current.targetId);
           }
-          for (const id2 of path) checked.add(id2);
+          for (const id of path) checked.add(id);
         }
         const histories = /* @__PURE__ */ new Map();
         for (const original of os.values()) {
@@ -17560,7 +18175,7 @@ var require_temper_outcomes = __commonJS({
         }
         const sum = (values) => {
           const total = values.reduce((accumulated, value) => accumulated + value, 0);
-          if (!Number.isFinite(total)) fail6("metric total exceeds supported range");
+          if (!Number.isFinite(total)) fail5("metric total exceeds supported range");
           return total;
         };
         const mean = (values) => values.length ? [...values].sort((a, b) => a - b).reduce((average, value, index) => average + (value - average) / (index + 1), 0) : null;
@@ -17592,7 +18207,7 @@ var require_temper_outcomes = __commonJS({
             }
             counts.delivered += 1;
             const end = instant(exposure.at) + target.windowMs, result = observed.get(exposure.id);
-            if (!Number.isSafeInteger(end)) fail6("observation window exceeds supported time");
+            if (!Number.isSafeInteger(end)) fail5("observation window exceeds supported time");
             if (end > cutoff) {
               counts.pending += 1;
               continue;
@@ -17682,33 +18297,33 @@ var require_temper_outcomes = __commonJS({
       function summarizePreparation({ scope: scope3, subject, records = [], asOf } = {}) {
         const object5 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
         const token3 = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
-        const fail6 = (message) => {
+        const fail5 = (message) => {
           throw new TypeError(`Temper preparation: ${message}`);
         };
-        if (!object5(scope3) || Object.keys(scope3).sort().join(",") !== "domain,purpose,workspace" || !Object.values(scope3).every(token3) || scope3.domain === "PULSE" || !token3(subject)) fail6("invalid boundary");
+        if (!object5(scope3) || Object.keys(scope3).sort().join(",") !== "domain,purpose,workspace" || !Object.values(scope3).every(token3) || scope3.domain === "PULSE" || !token3(subject)) fail5("invalid boundary");
         const time2 = (value) => {
           const at = typeof value === "string" ? Date.parse(value) : NaN;
-          if (!Number.isFinite(at)) fail6("invalid time");
+          if (!Number.isFinite(at)) fail5("invalid time");
           return at;
         };
         const cutoff = time2(asOf), seen = /* @__PURE__ */ new Set(), durations = [], ratings = [];
         let selected = 0;
-        if (!Array.isArray(records) || records.length > 1e4) fail6("invalid records");
+        if (!Array.isArray(records) || records.length > 1e4) fail5("invalid records");
         for (const row of records) {
-          if (!object5(row) || Object.keys(row).some((key) => !["id", "scope", "subject", "shownAt", "selectedAt", "elapsedSeconds", "satisfaction", "satisfactionAt"].includes(key)) || !token3(row.id) || row.subject !== subject || !object5(row.scope) || Object.keys(row.scope).length !== 3 || Object.keys(scope3).some((key) => row.scope[key] !== scope3[key])) fail6("foreign or invalid record");
-          if (seen.has(row.id)) fail6("duplicate record");
+          if (!object5(row) || Object.keys(row).some((key) => !["id", "scope", "subject", "shownAt", "selectedAt", "elapsedSeconds", "satisfaction", "satisfactionAt"].includes(key)) || !token3(row.id) || row.subject !== subject || !object5(row.scope) || Object.keys(row.scope).length !== 3 || Object.keys(scope3).some((key) => row.scope[key] !== scope3[key])) fail5("foreign or invalid record");
+          if (seen.has(row.id)) fail5("duplicate record");
           seen.add(row.id);
           const shown = time2(row.shownAt), chosen = row.selectedAt == null ? null : time2(row.selectedAt);
-          if (shown > cutoff || chosen !== null && (chosen < shown || chosen > cutoff)) fail6("invalid selection chronology");
+          if (shown > cutoff || chosen !== null && (chosen < shown || chosen > cutoff)) fail5("invalid selection chronology");
           if (chosen !== null) selected += 1;
           if (row.elapsedSeconds != null) {
-            if (chosen === null || !Number.isSafeInteger(row.elapsedSeconds) || row.elapsedSeconds < 0 || row.elapsedSeconds > 86400 || row.elapsedSeconds > Math.floor((chosen - shown) / 1e3)) fail6("invalid preparation duration");
+            if (chosen === null || !Number.isSafeInteger(row.elapsedSeconds) || row.elapsedSeconds < 0 || row.elapsedSeconds > 86400 || row.elapsedSeconds > Math.floor((chosen - shown) / 1e3)) fail5("invalid preparation duration");
             durations.push(row.elapsedSeconds);
           }
-          if (row.satisfaction == null !== (row.satisfactionAt == null)) fail6("incomplete self-report");
+          if (row.satisfaction == null !== (row.satisfactionAt == null)) fail5("incomplete self-report");
           if (row.satisfaction != null) {
             const rated = time2(row.satisfactionAt);
-            if (chosen === null || rated < chosen || rated > cutoff || !Number.isInteger(row.satisfaction) || row.satisfaction < 1 || row.satisfaction > 5) fail6("invalid self-report");
+            if (chosen === null || rated < chosen || rated > cutoff || !Number.isInteger(row.satisfaction) || row.satisfaction < 1 || row.satisfaction > 5) fail5("invalid self-report");
             ratings.push(row.satisfaction);
           }
         }
@@ -17735,25 +18350,25 @@ var require_temper_outcomes = __commonJS({
 // experiences/path-travel/planner-feedback.mjs
 function atTime(now) {
   const at = now ?? (/* @__PURE__ */ new Date()).toISOString();
-  if (!isTravelTime(at)) fail3("기록 시각을 확인해 주세요.");
+  if (!isTravelTime(at)) fail2("기록 시각을 확인해 주세요.");
   return at;
 }
 function validateTravelJournal(journal, { now = (/* @__PURE__ */ new Date()).toISOString() } = {}) {
-  if (!journal || Object.keys(journal).sort().join(",") !== "decisions,exposures,outcomes,trail" || Object.values(journal).some((rows) => !Array.isArray(rows) || rows.length > 600)) fail3("여행 기록의 연결 형식을 확인해 주세요.");
+  if (!journal || Object.keys(journal).sort().join(",") !== "decisions,exposures,outcomes,trail" || Object.values(journal).some((rows) => !Array.isArray(rows) || rows.length > 600)) fail2("여행 기록의 연결 형식을 확인해 주세요.");
   const summary = Trail.summarize(journal.trail, { scope: TRAVEL_SCOPE });
   const validFacts = new Map(summary.facts.map((fact) => [fact.id, fact]));
   for (const [rows, type] of [[journal.decisions, "travel.decision"], [journal.exposures, "travel.exposure"], [journal.outcomes, "travel.outcome"]]) {
     for (const row of rows) {
       const fact = validFacts.get(row.id);
-      if (!fact || fact.factType !== type) fail3("선택·노출·방문 기록의 출처가 이어지지 않아요.");
+      if (!fact || fact.factType !== type) fail2("선택·노출·방문 기록의 출처가 이어지지 않아요.");
       const parent = row.decisionId ?? row.exposureId;
-      if (parent && !fact.causes.includes(parent)) fail3("여행 기록의 앞선 사건을 확인해 주세요.");
+      if (parent && !fact.causes.includes(parent)) fail2("여행 기록의 앞선 사건을 확인해 주세요.");
     }
   }
   Temper.evaluateOutcomes({ contract: TRAVEL_OUTCOME_CONTRACT, ...journal, policies, subjects: [TRAVEL_SCOPE.subject], asOf: atTime(now), strictProvenance: true });
   return clone(journal);
 }
-var TrailModule, TemperModule, Trail, Temper, TRAVEL_SCOPE, outcomeScope, TRAVEL_OUTCOME_CONTRACT, contractRef, policies, TRAVEL_PREFERENCE_KEYS, TRAVEL_VISIT_REASONS, clone, isTravelTime, fail3;
+var TrailModule, TemperModule, Trail, Temper, TRAVEL_SCOPE, outcomeScope, TRAVEL_OUTCOME_CONTRACT, contractRef, policies, TRAVEL_PREFERENCE_KEYS, TRAVEL_VISIT_REASONS, clone, isTravelTime, fail2;
 var init_planner_feedback = __esm({
   "experiences/path-travel/planner-feedback.mjs"() {
     TrailModule = __toESM(require_trail_life(), 1);
@@ -17801,7 +18416,7 @@ var init_planner_feedback = __esm({
     ]);
     clone = (value) => JSON.parse(JSON.stringify(value));
     isTravelTime = (value) => typeof value === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value) && Number.isFinite(Date.parse(value)) && new Date(value).toISOString() === value;
-    fail3 = (message) => {
+    fail2 = (message) => {
       throw new TypeError(message);
     };
   }
@@ -17812,31 +18427,31 @@ function jsonCopy(value) {
   let nodes = 0;
   const ancestors = /* @__PURE__ */ new Set();
   const visit = (entry, depth) => {
-    if (++nodes > 8e4 || depth > 24) fail4("여행 기록이 너무 복잡해 불러오지 않았어요.");
+    if (++nodes > 8e4 || depth > 24) fail3("여행 기록이 너무 복잡해 불러오지 않았어요.");
     if (entry === null || typeof entry === "boolean") return;
     if (typeof entry === "number") {
-      if (!Number.isFinite(entry)) fail4();
+      if (!Number.isFinite(entry)) fail3();
       return;
     }
     if (typeof entry === "string") {
-      if (entry.length > 2e4 || /\u0000/.test(entry)) fail4();
+      if (entry.length > 2e4 || /\u0000/.test(entry)) fail3();
       return;
     }
-    if (typeof entry !== "object" || ancestors.has(entry)) fail4();
-    if (!Array.isArray(entry) && ![Object.prototype, null].includes(Object.getPrototypeOf(entry))) fail4();
+    if (typeof entry !== "object" || ancestors.has(entry)) fail3();
+    if (!Array.isArray(entry) && ![Object.prototype, null].includes(Object.getPrototypeOf(entry))) fail3();
     ancestors.add(entry);
     for (const key of Reflect.ownKeys(entry)) {
       if (Array.isArray(entry) && key === "length") continue;
       const descriptor = Object.getOwnPropertyDescriptor(entry, key);
-      if (typeof key !== "string" || ["__proto__", "prototype", "constructor"].includes(key) || !descriptor.enumerable || !Object.hasOwn(descriptor, "value") || Array.isArray(entry) && !/^(0|[1-9]\d*)$/.test(key)) fail4();
+      if (typeof key !== "string" || ["__proto__", "prototype", "constructor"].includes(key) || !descriptor.enumerable || !Object.hasOwn(descriptor, "value") || Array.isArray(entry) && !/^(0|[1-9]\d*)$/.test(key)) fail3();
       visit(descriptor.value, depth + 1);
     }
-    if (Array.isArray(entry) && Object.keys(entry).length !== entry.length) fail4();
+    if (Array.isArray(entry) && Object.keys(entry).length !== entry.length) fail3();
     ancestors.delete(entry);
   };
   visit(value, 0);
   const raw = JSON.stringify(value);
-  if (encoder.encode(raw).byteLength > TRAVEL_MAX_BYTES) fail4("여행 기록은 512 KB까지 불러올 수 있어요.");
+  if (encoder.encode(raw).byteLength > TRAVEL_MAX_BYTES) fail3("여행 기록은 512 KB까지 불러올 수 있어요.");
   return JSON.parse(raw);
 }
 function validateStoredLeg(leg) {
@@ -17844,134 +18459,134 @@ function validateStoredLeg(leg) {
     leg,
     ["fromId", "toId", "distanceMeters", "minMinutes", "maxMinutes", "coordinates", "source", "estimated", "label", "departureTime", "arrivalTime"],
     ["sourceAt", "unknownAccess", "steps", "connectorMeters", "notice", "assumptions", "stepFreeVerified"]
-  ) || !token2(leg.fromId) || !token2(leg.toId) || !Number.isFinite(leg.distanceMeters) || leg.distanceMeters < 0 || leg.distanceMeters > 1e7 || !integer2(leg.minMinutes, 0, 1440) || !integer2(leg.maxMinutes, leg.minMinutes, 1440) || !Array.isArray(leg.coordinates) || leg.coordinates.length < 2 || leg.coordinates.length > 8192 || !leg.coordinates.every(coordinate) || !text3(leg.source, 160) || !leg.source.length || leg.estimated !== true || !text3(leg.label, 500) || !time(leg.departureTime) || !time(leg.arrivalTime) || minute(leg.arrivalTime) - minute(leg.departureTime) !== leg.maxMinutes) fail4("저장된 이동 경로·시각·좌표를 확인해 주세요.");
-  for (const key of ["unknownAccess", "steps", "stepFreeVerified"]) if (Object.hasOwn(leg, key) && typeof leg[key] !== "boolean") fail4("저장된 이동 조건을 확인해 주세요.");
-  for (const key of ["notice", "assumptions"]) if (Object.hasOwn(leg, key) && !text3(leg[key])) fail4("저장된 이동 안내를 확인해 주세요.");
-  if (Object.hasOwn(leg, "sourceAt") && (!text3(leg.sourceAt, 40) || !Number.isFinite(Date.parse(leg.sourceAt)))) fail4("지도 자료 확인 시각을 확인해 주세요.");
-  if (Object.hasOwn(leg, "connectorMeters") && (!Number.isFinite(leg.connectorMeters) || leg.connectorMeters < 0 || leg.connectorMeters > 1e7)) fail4("지도 연결 구간의 거리를 확인해 주세요.");
+  ) || !token2(leg.fromId) || !token2(leg.toId) || !Number.isFinite(leg.distanceMeters) || leg.distanceMeters < 0 || leg.distanceMeters > 1e7 || !integer2(leg.minMinutes, 0, 1440) || !integer2(leg.maxMinutes, leg.minMinutes, 1440) || !Array.isArray(leg.coordinates) || leg.coordinates.length < 2 || leg.coordinates.length > 8192 || !leg.coordinates.every(coordinate) || !text2(leg.source, 160) || !leg.source.length || leg.estimated !== true || !text2(leg.label, 500) || !time(leg.departureTime) || !time(leg.arrivalTime) || minute(leg.arrivalTime) - minute(leg.departureTime) !== leg.maxMinutes) fail3("저장된 이동 경로·시각·좌표를 확인해 주세요.");
+  for (const key of ["unknownAccess", "steps", "stepFreeVerified"]) if (Object.hasOwn(leg, key) && typeof leg[key] !== "boolean") fail3("저장된 이동 조건을 확인해 주세요.");
+  for (const key of ["notice", "assumptions"]) if (Object.hasOwn(leg, key) && !text2(leg[key])) fail3("저장된 이동 안내를 확인해 주세요.");
+  if (Object.hasOwn(leg, "sourceAt") && (!text2(leg.sourceAt, 40) || !Number.isFinite(Date.parse(leg.sourceAt)))) fail3("지도 자료 확인 시각을 확인해 주세요.");
+  if (Object.hasOwn(leg, "connectorMeters") && (!Number.isFinite(leg.connectorMeters) || leg.connectorMeters < 0 || leg.connectorMeters > 1e7)) fail3("지도 연결 구간의 거리를 확인해 주세요.");
 }
 function validatePlan(plan, query) {
   if (plan === null) return null;
-  if (!exact4(plan, ["id", "status", "stops", "legs", "walking", "cost", "startTime", "endTime", "reasons", "checks", "lockedIds", "inputFingerprint"], ["score", "label", "destination", "returnLeg"]) || !token2(plan.id) || !["ready", "partial"].includes(plan.status) || !token2(plan.inputFingerprint) || !time(plan.startTime) || !time(plan.endTime) || minute(plan.startTime) >= minute(plan.endTime) || plan.startTime !== query.startTime || minute(plan.endTime) > minute(query.endTime) || !texts(plan.reasons) || !Array.isArray(plan.stops) || plan.stops.length < (query.planningMode === "remaining" ? 1 : 2) || plan.stops.length > query.stopCount || !Array.isArray(plan.legs) || plan.legs.length !== plan.stops.length || Object.hasOwn(plan, "score") && !Number.isFinite(plan.score) || Object.hasOwn(plan, "label") && !text3(plan.label, 160)) fail4("저장된 여행안의 구조를 확인하지 못했어요. 현재 기록은 유지했어요.");
+  if (!exact4(plan, ["id", "status", "stops", "legs", "walking", "cost", "startTime", "endTime", "reasons", "checks", "lockedIds", "inputFingerprint"], ["score", "label", "destination", "returnLeg"]) || !token2(plan.id) || !["ready", "partial"].includes(plan.status) || !token2(plan.inputFingerprint) || !time(plan.startTime) || !time(plan.endTime) || minute(plan.startTime) >= minute(plan.endTime) || plan.startTime !== query.startTime || minute(plan.endTime) > minute(query.endTime) || !texts(plan.reasons) || !Array.isArray(plan.stops) || plan.stops.length < (query.planningMode === "remaining" ? 1 : Math.min(2, query.stopCount)) || plan.stops.length > query.stopCount || !Array.isArray(plan.legs) || plan.legs.length !== plan.stops.length || Object.hasOwn(plan, "score") && !Number.isFinite(plan.score) || Object.hasOwn(plan, "label") && !text2(plan.label, 160)) fail3("저장된 여행안의 구조를 확인하지 못했어요. 현재 기록은 유지했어요.");
   const stopIds = /* @__PURE__ */ new Set();
   for (const stop of plan.stops) {
-    if (!exact4(stop, ["placeId", "place", "arrivalTime", "departureTime", "stayMinutes", "waitMinutes", "schedule", "cost", "reasons"], ["stayProvenance", "pauses", "preStartPause"]) || !places2.has(stop.placeId) || stopIds.has(stop.placeId) || !object4(stop.place) || stop.place.id !== stop.placeId || !time(stop.arrivalTime) || !time(stop.departureTime) || !integer2(stop.stayMinutes, 1, 1440) || !integer2(stop.waitMinutes, 0, 1440) || minute(stop.departureTime) - minute(stop.arrivalTime) !== stop.stayMinutes || Object.hasOwn(stop, "stayProvenance") && stop.stayProvenance !== "estimated" || !texts(stop.reasons)) fail4("저장된 장소의 방문 시각·체류시간을 확인해 주세요.");
+    if (!exact4(stop, ["placeId", "place", "arrivalTime", "departureTime", "stayMinutes", "waitMinutes", "schedule", "cost", "reasons"], ["stayProvenance", "pauses", "preStartPause"]) || !places2.has(stop.placeId) || stopIds.has(stop.placeId) || !object4(stop.place) || stop.place.id !== stop.placeId || !time(stop.arrivalTime) || !time(stop.departureTime) || !integer2(stop.stayMinutes, 1, 1440) || !integer2(stop.waitMinutes, 0, 1440) || minute(stop.departureTime) - minute(stop.arrivalTime) !== stop.stayMinutes || Object.hasOwn(stop, "stayProvenance") && stop.stayProvenance !== "estimated" || !texts(stop.reasons)) fail3("저장된 장소의 방문 시각·체류시간을 확인해 주세요.");
     if (Object.hasOwn(stop, "pauses")) {
-      if (!Array.isArray(stop.pauses) || stop.pauses.length > 288) fail4("저장된 쉬는 시간의 목록을 확인해 주세요.");
+      if (!Array.isArray(stop.pauses) || stop.pauses.length > 288) fail3("저장된 쉬는 시간의 목록을 확인해 주세요.");
       let previousEnd = minute(stop.arrivalTime), totalPause = 0;
       for (const pause of stop.pauses) {
-        if (!exact4(pause, ["startTime", "endTime", "durationMinutes", "kind", "locationStatus"]) || !time(pause.startTime) || !time(pause.endTime) || !integer2(pause.durationMinutes, 5, 30) || minute(pause.endTime) - minute(pause.startTime) !== pause.durationMinutes || minute(pause.startTime) < previousEnd || minute(pause.endTime) > minute(stop.departureTime) || pause.kind !== "planned-rest" || pause.locationStatus !== "unverified") fail4("저장된 쉬는 시간·순서·장소 확인 상태를 확인해 주세요.");
+        if (!exact4(pause, ["startTime", "endTime", "durationMinutes", "kind", "locationStatus"]) || !time(pause.startTime) || !time(pause.endTime) || !integer2(pause.durationMinutes, 5, 30) || minute(pause.endTime) - minute(pause.startTime) !== pause.durationMinutes || minute(pause.startTime) < previousEnd || minute(pause.endTime) > minute(stop.departureTime) || pause.kind !== "planned-rest" || pause.locationStatus !== "unverified") fail3("저장된 쉬는 시간·순서·장소 확인 상태를 확인해 주세요.");
         previousEnd = minute(pause.endTime);
         totalPause += pause.durationMinutes;
       }
-      if (totalPause >= stop.stayMinutes) fail4("쉬는 시간 외에 장소를 방문할 시간이 남아 있어야 해요.");
+      if (totalPause >= stop.stayMinutes) fail3("쉬는 시간 외에 장소를 방문할 시간이 남아 있어야 해요.");
     }
     const place = placeById.get(stop.placeId);
-    if (!object4(place.coordinates) || !coordinate([place.coordinates.lon, place.coordinates.lat])) fail4("현재 위치 자료가 없는 장소가 들어 있어 여행 지도를 열 수 없어요.");
+    if (!object4(place.coordinates) || !coordinate([place.coordinates.lon, place.coordinates.lat])) fail3("현재 위치 자료가 없는 장소가 들어 있어 여행 지도를 열 수 없어요.");
     stopIds.add(stop.placeId);
     const schedule = stop.schedule;
-    if (!exact4(schedule, ["status", "label", "reason"], ["sourceUrl"]) || !["matched", "unknown"].includes(schedule.status) || !text3(schedule.label, 160) || !text3(schedule.reason) || Object.hasOwn(schedule, "sourceUrl") && !publicUrl2(schedule.sourceUrl)) fail4("저장된 운영 안내의 형식을 확인해 주세요.");
+    if (!exact4(schedule, ["status", "label", "reason"], ["sourceUrl"]) || !["matched", "unknown"].includes(schedule.status) || !text2(schedule.label, 160) || !text2(schedule.reason) || Object.hasOwn(schedule, "sourceUrl") && !publicUrl2(schedule.sourceUrl)) fail3("저장된 운영 안내의 형식을 확인해 주세요.");
     const cost2 = stop.cost;
-    if (!exact4(cost2, ["knownAmount", "status", "unknowns", "items"]) || !amount(cost2.knownAmount) || !["matched", "unknown"].includes(cost2.status) || !texts(cost2.unknowns) || !Array.isArray(cost2.items) || cost2.items.length > 40 || (cost2.status === "matched" ? cost2.unknowns.length !== 0 : cost2.unknowns.length === 0)) fail4("저장된 장소의 비용 안내를 확인해 주세요.");
+    if (!exact4(cost2, ["knownAmount", "status", "unknowns", "items"]) || !amount(cost2.knownAmount) || !["matched", "unknown"].includes(cost2.status) || !texts(cost2.unknowns) || !Array.isArray(cost2.items) || cost2.items.length > 40 || (cost2.status === "matched" ? cost2.unknowns.length !== 0 : cost2.unknowns.length === 0)) fail3("저장된 장소의 비용 안내를 확인해 주세요.");
     for (const item of cost2.items) {
-      if (!exact4(item, ["label", "quantity", "unitAmount", "amount", "basis", "sourceUrl"]) || !text3(item.label, 500) || !integer2(item.quantity, 1, 40) || !amount(item.unitAmount) || !amount(item.amount) || item.quantity * item.unitAmount !== item.amount || !["suggested-menu", "adult-admission", "child-admission"].includes(item.basis) || !publicUrl2(item.sourceUrl)) fail4("저장된 비용 항목의 인원·금액·출처를 확인해 주세요.");
-      if (item.quantity !== (item.basis === "child-admission" ? query.party.children : query.party.adults)) fail4("저장된 비용 항목의 인원과 여행 인원이 맞지 않아요.");
+      if (!exact4(item, ["label", "quantity", "unitAmount", "amount", "basis", "sourceUrl"]) || !text2(item.label, 500) || !integer2(item.quantity, 1, 40) || !amount(item.unitAmount) || !amount(item.amount) || item.quantity * item.unitAmount !== item.amount || !["suggested-menu", "adult-admission", "child-admission"].includes(item.basis) || !publicUrl2(item.sourceUrl)) fail3("저장된 비용 항목의 인원·금액·출처를 확인해 주세요.");
+      if (item.quantity !== (item.basis === "child-admission" ? query.party.children : query.party.adults)) fail3("저장된 비용 항목의 인원과 여행 인원이 맞지 않아요.");
     }
     const adultItems = cost2.items.filter((item) => item.basis !== "child-admission"), childItems = cost2.items.filter((item) => item.basis === "child-admission");
-    if (adultItems.length > 1 || childItems.length > 1 || cost2.status === "matched" && (adultItems.length !== 1 || query.party.children > 0 && childItems.length !== 1)) fail4("저장된 인원별 비용의 확인 상태가 맞지 않아요.");
-    if (cost2.items.reduce((sum, item) => sum + item.amount, 0) !== cost2.knownAmount) fail4("저장된 장소 비용의 합계가 맞지 않아요.");
+    if (adultItems.length > 1 || childItems.length > 1 || cost2.status === "matched" && (adultItems.length !== 1 || query.party.children > 0 && childItems.length !== 1)) fail3("저장된 인원별 비용의 확인 상태가 맞지 않아요.");
+    if (cost2.items.reduce((sum, item) => sum + item.amount, 0) !== cost2.knownAmount) fail3("저장된 장소 비용의 합계가 맞지 않아요.");
     stop.place = jsonCopy(place);
   }
-  if (!uniqueIds(plan.lockedIds, stopIds) || plan.lockedIds.length !== query.lockedIds.length || query.lockedIds.some((id2) => !stopIds.has(id2) || !plan.lockedIds.includes(id2))) fail4("저장된 유지 장소와 여행 조건이 맞지 않아요.");
-  if (query.excludedIds.some((id2) => stopIds.has(id2))) fail4("제외한 장소가 저장된 일정에 포함되어 있어요.");
-  if (query.requiredCategories.some((category) => !plan.stops.some((stop) => stop.place.category === category))) fail4("필수 포함 분야와 저장된 일정이 맞지 않아요.");
+  if (!uniqueIds(plan.lockedIds, stopIds) || plan.lockedIds.length !== query.lockedIds.length || query.lockedIds.some((id) => !stopIds.has(id) || !plan.lockedIds.includes(id))) fail3("저장된 유지 장소와 여행 조건이 맞지 않아요.");
+  if (query.excludedIds.some((id) => stopIds.has(id))) fail3("제외한 장소가 저장된 일정에 포함되어 있어요.");
+  if (query.requiredCategories.some((category) => !plan.stops.some((stop) => stop.place.category === category))) fail3("필수 포함 분야와 저장된 일정이 맞지 않아요.");
   for (const [index, leg] of plan.legs.entries()) {
     validateStoredLeg(leg);
-    if (leg.toId !== plan.stops[index].placeId || leg.fromId !== (index ? plan.stops[index - 1].placeId : query.origin.id) || !sameCoordinate(leg.coordinates[0], index ? plan.legs[index - 1].coordinates.at(-1) : [query.origin.lon, query.origin.lat]) || leg.departureTime !== (index ? plan.stops[index - 1].departureTime : plan.startTime) || minute(plan.stops[index].arrivalTime) - minute(leg.arrivalTime) !== plan.stops[index].waitMinutes) fail4("저장된 이동 경로·시각·좌표를 확인해 주세요.");
+    if (leg.toId !== plan.stops[index].placeId || leg.fromId !== (index ? plan.stops[index - 1].placeId : query.origin.id) || !sameCoordinate(leg.coordinates[0], index ? plan.legs[index - 1].coordinates.at(-1) : [query.origin.lon, query.origin.lat]) || leg.departureTime !== (index ? plan.stops[index - 1].departureTime : plan.startTime) || minute(plan.stops[index].arrivalTime) - minute(leg.arrivalTime) !== plan.stops[index].waitMinutes) fail3("저장된 이동 경로·시각·좌표를 확인해 주세요.");
     const stop = plan.stops[index];
     if (Object.hasOwn(stop, "preStartPause")) {
       const pause = stop.preStartPause;
-      if (!exact4(pause, ["startTime", "endTime", "durationMinutes", "kind", "locationStatus"]) || !time(pause.startTime) || !time(pause.endTime) || !integer2(pause.durationMinutes, 5, 30) || minute(pause.endTime) - minute(pause.startTime) !== pause.durationMinutes || pause.startTime !== leg.arrivalTime || minute(pause.endTime) > minute(stop.arrivalTime) || pause.durationMinutes > stop.waitMinutes || query.restEveryMinutes === null || pause.durationMinutes !== query.restDurationMinutes || !query.appointments.some((row) => row.placeId === stop.placeId) && !(query.meal.mode === "window" && stop.place.category === "food") || pause.kind !== "planned-rest" || pause.locationStatus !== "unverified") fail4("방문 시작 전 쉬는 시간은 도착 뒤 대기 시간 안에 있어야 해요.");
+      if (!exact4(pause, ["startTime", "endTime", "durationMinutes", "kind", "locationStatus"]) || !time(pause.startTime) || !time(pause.endTime) || !integer2(pause.durationMinutes, 5, 30) || minute(pause.endTime) - minute(pause.startTime) !== pause.durationMinutes || pause.startTime !== leg.arrivalTime || minute(pause.endTime) > minute(stop.arrivalTime) || pause.durationMinutes > stop.waitMinutes || query.restEveryMinutes === null || pause.durationMinutes !== query.restDurationMinutes || !query.appointments.some((row) => row.placeId === stop.placeId) && !(query.meal.mode === "window" && stop.place.category === "food") || pause.kind !== "planned-rest" || pause.locationStatus !== "unverified") fail3("방문 시작 전 쉬는 시간은 도착 뒤 대기 시간 안에 있어야 해요.");
     }
   }
   const lastStop = plan.stops.at(-1), allLegs = [...plan.legs];
   if (query.destination !== null) {
     const destination = plan.destination;
-    if (!exact4(destination, ["id", "name", "lat", "lon"]) || ["id", "name", "lat", "lon"].some((key) => destination[key] !== query.destination[key])) fail4("저장된 마지막 도착지와 여행 조건이 맞지 않아요.");
+    if (!exact4(destination, ["id", "name", "lat", "lon"]) || ["id", "name", "lat", "lon"].some((key) => destination[key] !== query.destination[key])) fail3("저장된 마지막 도착지와 여행 조건이 맞지 않아요.");
     validateStoredLeg(plan.returnLeg);
     const leg = plan.returnLeg;
-    if (leg.fromId !== lastStop.placeId || leg.toId !== destination.id || leg.departureTime !== lastStop.departureTime || leg.arrivalTime !== plan.endTime || !sameCoordinate(leg.coordinates[0], plan.legs.at(-1).coordinates.at(-1)) || !sameCoordinate(leg.coordinates.at(-1), [destination.lon, destination.lat])) fail4("마지막 도착지까지의 이동 경로·시각·좌표가 맞지 않아요.");
+    if (leg.fromId !== lastStop.placeId || leg.toId !== destination.id || leg.departureTime !== lastStop.departureTime || leg.arrivalTime !== plan.endTime || !sameCoordinate(leg.coordinates[0], plan.legs.at(-1).coordinates.at(-1)) || !sameCoordinate(leg.coordinates.at(-1), [destination.lon, destination.lat])) fail3("마지막 도착지까지의 이동 경로·시각·좌표가 맞지 않아요.");
     allLegs.push(leg);
   } else if (plan.destination != null || plan.returnLeg != null || plan.endTime !== lastStop.departureTime) {
-    fail4("저장된 마지막 도착지와 일정 종료 시각을 확인해 주세요.");
+    fail3("저장된 마지막 도착지와 일정 종료 시각을 확인해 주세요.");
   }
   const requiredChecks2 = assessPlannerRequirements(plan.stops, query, { legs: plan.legs, returnLeg: plan.returnLeg ?? null });
-  if (requiredChecks2.some((check2) => check2.status !== "matched")) fail4("저장된 일정의 필수 조건을 현재 장소·이동 자료로 확인하지 못했어요. 파일과 현재 기록은 바꾸지 않았어요. 조건과 장소 자료를 확인해 주세요.");
-  if (query.appointments.some((appointment) => !plan.stops.some((stop) => stop.placeId === appointment.placeId && stop.arrivalTime === appointment.time))) fail4("저장된 일정이 예약 장소·시각과 맞지 않아요.");
+  if (requiredChecks2.some((check2) => check2.status !== "matched")) fail3("저장된 일정의 필수 조건을 현재 장소·이동 자료로 확인하지 못했어요. 파일과 현재 기록은 바꾸지 않았어요. 조건과 장소 자료를 확인해 주세요.");
+  if (query.appointments.some((appointment) => !plan.stops.some((stop) => stop.placeId === appointment.placeId && stop.arrivalTime === appointment.time))) fail3("저장된 일정이 예약 장소·시각과 맞지 않아요.");
   const meals = plan.stops.filter((stop) => stop.place.category === "food");
-  if (query.meal.mode === "none" && meals.length || query.meal.mode === "window" && (!meals.length || meals.some((stop) => stop.arrivalTime < query.meal.startTime || stop.arrivalTime > query.meal.endTime))) fail4("저장된 일정이 식사 조건과 맞지 않아요.");
+  if (query.meal.mode === "none" && meals.length || query.meal.mode === "window" && (!meals.length || meals.some((stop) => stop.arrivalTime < query.meal.startTime || stop.arrivalTime > query.meal.endTime))) fail3("저장된 일정이 식사 조건과 맞지 않아요.");
   const walking = plan.walking, cost = plan.cost;
-  if (!exact4(walking, ["minMinutes", "maxMinutes", "scope", "label"]) || !integer2(walking.minMinutes, 0, 1440) || !integer2(walking.maxMinutes, walking.minMinutes, 1440) || walking.scope !== "between-places" || !text3(walking.label, 500) || walking.minMinutes !== allLegs.reduce((sum, leg) => sum + leg.minMinutes, 0) || walking.maxMinutes !== allLegs.reduce((sum, leg) => sum + leg.maxMinutes, 0) || walking.maxMinutes > query.maxWalkMinutes || query.maxLegWalkMinutes !== null && allLegs.some((leg) => leg.maxMinutes > query.maxLegWalkMinutes)) fail4("저장된 도보 합계·상한이 맞지 않아요.");
-  if (!exact4(cost, ["knownAmount", "unknownPlaceIds", "status", "notes"]) || !amount(cost.knownAmount) || !uniqueIds(cost.unknownPlaceIds, stopIds) || !["matched", "unknown"].includes(cost.status) || !texts(cost.notes) || cost.knownAmount !== plan.stops.reduce((sum, stop) => sum + stop.cost.knownAmount, 0) || cost.status !== (cost.unknownPlaceIds.length ? "unknown" : "matched") || JSON.stringify(cost.unknownPlaceIds) !== JSON.stringify(plan.stops.filter((stop) => stop.cost.status === "unknown").map((stop) => stop.placeId))) fail4("저장된 여행 비용의 합계를 확인해 주세요.");
-  if (cost.knownAmount > query.budget || query.budget === 0 && cost.status !== "matched") fail4("저장된 여행 비용이 예산 조건과 맞지 않아요. 0원 예산은 무료로 확인된 장소만 가능해요.");
-  if (!Array.isArray(plan.checks) || plan.checks.length > 200 || plan.checks.some((check2) => !exact4(check2, ["kind", "status", "reason"], ["placeId"]) || !token2(check2.kind) || !["matched", "unknown"].includes(check2.status) || !text3(check2.reason) || Object.hasOwn(check2, "placeId") && !(stopIds.has(check2.placeId) || /^transfer-[0-4]$/.test(check2.placeId) || plan.returnLeg && check2.placeId === "return-transfer"))) fail4("저장된 확인 항목의 형식을 확인해 주세요.");
-  if (plan.stops.some((stop) => (stop.preStartPause || stop.pauses?.length) && !plan.checks.some((check2) => check2.kind === "rest-place" && check2.status === "unknown" && check2.placeId === stop.placeId))) fail4("쉬는 장소의 미확인 안내가 빠져 있어요.");
-  if (plan.status === "ready" && (plan.checks.some((check2) => check2.status === "unknown") || cost.status === "unknown" || plan.stops.some((stop) => stop.schedule.status === "unknown"))) fail4("저장된 일정의 완료 조건이 일치하지 않아요.");
-  if (!matchesPlannerInputFingerprint(query, plan.inputFingerprint)) fail4("저장된 일정과 날짜·여행 조건이 맞지 않아요. 조건을 바꾸려면 새 일정을 만들어 주세요.");
+  if (!exact4(walking, ["minMinutes", "maxMinutes", "scope", "label"]) || !integer2(walking.minMinutes, 0, 1440) || !integer2(walking.maxMinutes, walking.minMinutes, 1440) || walking.scope !== "between-places" || !text2(walking.label, 500) || walking.minMinutes !== allLegs.reduce((sum, leg) => sum + leg.minMinutes, 0) || walking.maxMinutes !== allLegs.reduce((sum, leg) => sum + leg.maxMinutes, 0) || walking.maxMinutes > query.maxWalkMinutes || query.maxLegWalkMinutes !== null && allLegs.some((leg) => leg.maxMinutes > query.maxLegWalkMinutes)) fail3("저장된 도보 합계·상한이 맞지 않아요.");
+  if (!exact4(cost, ["knownAmount", "unknownPlaceIds", "status", "notes"]) || !amount(cost.knownAmount) || !uniqueIds(cost.unknownPlaceIds, stopIds) || !["matched", "unknown"].includes(cost.status) || !texts(cost.notes) || cost.knownAmount !== plan.stops.reduce((sum, stop) => sum + stop.cost.knownAmount, 0) || cost.status !== (cost.unknownPlaceIds.length ? "unknown" : "matched") || JSON.stringify(cost.unknownPlaceIds) !== JSON.stringify(plan.stops.filter((stop) => stop.cost.status === "unknown").map((stop) => stop.placeId))) fail3("저장된 여행 비용의 합계를 확인해 주세요.");
+  if (cost.knownAmount > query.budget || query.budget === 0 && cost.status !== "matched") fail3("저장된 여행 비용이 예산 조건과 맞지 않아요. 0원 예산은 무료로 확인된 장소만 가능해요.");
+  if (!Array.isArray(plan.checks) || plan.checks.length > 200 || plan.checks.some((check2) => !exact4(check2, ["kind", "status", "reason"], ["placeId"]) || !token2(check2.kind) || !["matched", "unknown"].includes(check2.status) || !text2(check2.reason) || Object.hasOwn(check2, "placeId") && !(stopIds.has(check2.placeId) || /^transfer-[0-4]$/.test(check2.placeId) || plan.returnLeg && check2.placeId === "return-transfer"))) fail3("저장된 확인 항목의 형식을 확인해 주세요.");
+  if (plan.stops.some((stop) => (stop.preStartPause || stop.pauses?.length) && !plan.checks.some((check2) => check2.kind === "rest-place" && check2.status === "unknown" && check2.placeId === stop.placeId))) fail3("쉬는 장소의 미확인 안내가 빠져 있어요.");
+  if (plan.status === "ready" && (plan.checks.some((check2) => check2.status === "unknown") || cost.status === "unknown" || plan.stops.some((stop) => stop.schedule.status === "unknown"))) fail3("저장된 일정의 완료 조건이 일치하지 않아요.");
+  if (!matchesPlannerInputFingerprint(query, plan.inputFingerprint)) fail3("저장된 일정과 날짜·여행 조건이 맞지 않아요. 조건을 바꾸려면 새 일정을 만들어 주세요.");
   return plan;
 }
 function validateProgress(progress, memory) {
-  if (!exact4(progress, ["date", "currentTime", "completed", "skippedIds", "requiredCategories", "finished", "updatedAt"]) || memory.query.planningMode !== "remaining" || progress.date !== memory.query.date || !Array.isArray(progress.completed) || progress.completed.length > dayPlaces.size || !uniqueIds(progress.skippedIds, dayPlaces, dayPlaces.size) || progress.completed.length + progress.skippedIds.length > dayPlaces.size || !time(progress.currentTime) || !uniqueIds(progress.requiredCategories, /* @__PURE__ */ new Set(["food", "tea", "culture"]), 3) || typeof progress.finished !== "boolean" || !isTravelTime(progress.updatedAt) || !progress.finished && minute(progress.currentTime) > minute(memory.query.startTime) || Date.parse(progress.updatedAt) > Date.parse(memory.updatedAt)) fail4("여행 진행 기록의 날짜·형식·기록 시각을 확인해 주세요.");
+  if (!exact4(progress, ["date", "currentTime", "completed", "skippedIds", "requiredCategories", "finished", "updatedAt"]) || memory.query.planningMode !== "remaining" || progress.date !== memory.query.date || !Array.isArray(progress.completed) || progress.completed.length > dayPlaces.size || !uniqueIds(progress.skippedIds, dayPlaces, dayPlaces.size) || progress.completed.length + progress.skippedIds.length > dayPlaces.size || !time(progress.currentTime) || !uniqueIds(progress.requiredCategories, /* @__PURE__ */ new Set(["food", "tea", "culture"]), 3) || typeof progress.finished !== "boolean" || !isTravelTime(progress.updatedAt) || !progress.finished && minute(progress.currentTime) > minute(memory.query.startTime) || Date.parse(progress.updatedAt) > Date.parse(memory.updatedAt)) fail3("여행 진행 기록의 날짜·형식·기록 시각을 확인해 주세요.");
   const completedIds = /* @__PURE__ */ new Set();
   for (const entry of progress.completed) {
-    if (!exact4(entry, ["placeId", "completedTime"]) || !dayPlaces.has(entry.placeId) || completedIds.has(entry.placeId) || progress.skippedIds.includes(entry.placeId) || !time(entry.completedTime) || minute(entry.completedTime) > minute(progress.currentTime)) fail4("완료한 장소와 완료 시각을 확인해 주세요.");
+    if (!exact4(entry, ["placeId", "completedTime"]) || !dayPlaces.has(entry.placeId) || completedIds.has(entry.placeId) || progress.skippedIds.includes(entry.placeId) || !time(entry.completedTime) || minute(entry.completedTime) > minute(progress.currentTime)) fail3("완료한 장소와 완료 시각을 확인해 주세요.");
     completedIds.add(entry.placeId);
   }
   const removedIds = /* @__PURE__ */ new Set([...completedIds, ...progress.skippedIds]);
-  if ([...removedIds].some((id2) => !memory.query.excludedIds.includes(id2)) || memory.plan?.stops.some((stop) => removedIds.has(stop.placeId)) || memory.plan && memory.plan.startTime !== memory.query.startTime || progress.finished && memory.plan !== null) fail4("완료·건너뛴 장소와 남은 일정이 맞지 않아요.");
+  if ([...removedIds].some((id) => !memory.query.excludedIds.includes(id)) || memory.plan?.stops.some((stop) => removedIds.has(stop.placeId)) || memory.plan && memory.plan.startTime !== memory.query.startTime || progress.finished && memory.plan !== null) fail3("완료·건너뛴 장소와 남은 일정이 맞지 않아요.");
   return progress;
 }
 function validateTravelMemory(value, { now } = {}) {
   const memory = jsonCopy(value);
   timestamp(now);
-  if (!exact4(memory, ["format", "version", "consent", "query", "plan", "confirmedPreferences", "visits", "journal", "updatedAt"], ["progress"]) || memory.format !== TRAVEL_FORMAT || memory.version !== 1 || typeof memory.consent !== "boolean" || !isTravelTime(memory.updatedAt)) fail4();
+  if (!exact4(memory, ["format", "version", "consent", "query", "plan", "confirmedPreferences", "visits", "journal", "updatedAt"], ["progress"]) || memory.format !== TRAVEL_FORMAT || memory.version !== 1 || typeof memory.consent !== "boolean" || !isTravelTime(memory.updatedAt)) fail3();
   memory.query = normalizePlannerInput(memory.query, { places: TRAVEL_PLACES });
   memory.plan = validatePlan(memory.plan, memory.query);
   if (Object.hasOwn(memory, "progress")) memory.progress = validateProgress(memory.progress, memory);
   const validTime = (value2) => isTravelTime(value2) && Date.parse(value2) <= Date.parse(memory.updatedAt);
-  if (!Array.isArray(memory.visits) || memory.visits.length > 150 || !Array.isArray(memory.confirmedPreferences) || memory.confirmedPreferences.length > TRAVEL_PREFERENCE_KEYS.length) fail4();
+  if (!Array.isArray(memory.visits) || memory.visits.length > 150 || !Array.isArray(memory.confirmedPreferences) || memory.confirmedPreferences.length > TRAVEL_PREFERENCE_KEYS.length) fail3();
   const visitIds = /* @__PURE__ */ new Set();
   for (const visit of memory.visits) {
-    if (!exact4(visit, ["id", "placeId", "planId", "decisionId", "rating", "reasons", "at", "source"]) || !token2(visit.id) || visitIds.has(visit.id) || !places2.has(visit.placeId) || visit.planId !== null && !token2(visit.planId) || visit.decisionId !== null && !token2(visit.decisionId) || !Number.isInteger(visit.rating) || visit.rating < 1 || visit.rating > 5 || !validTime(visit.at) || visit.source !== "self-reported" || !Array.isArray(visit.reasons) || new Set(visit.reasons).size !== visit.reasons.length || visit.reasons.some((reason) => !TRAVEL_VISIT_REASONS.some((option) => option.id === reason))) fail4();
+    if (!exact4(visit, ["id", "placeId", "planId", "decisionId", "rating", "reasons", "at", "source"]) || !token2(visit.id) || visitIds.has(visit.id) || !places2.has(visit.placeId) || visit.planId !== null && !token2(visit.planId) || visit.decisionId !== null && !token2(visit.decisionId) || !Number.isInteger(visit.rating) || visit.rating < 1 || visit.rating > 5 || !validTime(visit.at) || visit.source !== "self-reported" || !Array.isArray(visit.reasons) || new Set(visit.reasons).size !== visit.reasons.length || visit.reasons.some((reason) => !TRAVEL_VISIT_REASONS.some((option) => option.id === reason))) fail3();
     visitIds.add(visit.id);
   }
-  const keys2 = /* @__PURE__ */ new Set();
+  const keys = /* @__PURE__ */ new Set();
   for (const preference of memory.confirmedPreferences) {
-    if (!exact4(preference, ["id", "key", "value", "status", "confirmedAt", "source"]) || !token2(preference.id) || !TRAVEL_PREFERENCE_KEYS.includes(preference.key) || keys2.has(preference.key) || typeof preference.value !== "boolean" || preference.status !== "confirmed" || !validTime(preference.confirmedAt) || !exact4(preference.source, ["kind"], ["feedbackId"]) || preference.source.kind !== "user-confirmation" || Object.hasOwn(preference.source, "feedbackId") && (!token2(preference.source.feedbackId) || !visitIds.has(preference.source.feedbackId))) fail4();
-    keys2.add(preference.key);
+    if (!exact4(preference, ["id", "key", "value", "status", "confirmedAt", "source"]) || !token2(preference.id) || !TRAVEL_PREFERENCE_KEYS.includes(preference.key) || keys.has(preference.key) || typeof preference.value !== "boolean" || preference.status !== "confirmed" || !validTime(preference.confirmedAt) || !exact4(preference.source, ["kind"], ["feedbackId"]) || preference.source.kind !== "user-confirmation" || Object.hasOwn(preference.source, "feedbackId") && (!token2(preference.source.feedbackId) || !visitIds.has(preference.source.feedbackId))) fail3();
+    keys.add(preference.key);
   }
   validateTravelJournal(memory.journal, { now: memory.updatedAt });
   const facts = new Map(memory.journal.trail.filter((row) => row.type === "life.fact").map((row) => [row.id, row]));
   const corrected = new Set(memory.journal.trail.filter((row) => row.type === "life.corrected").map((row) => row.targetId));
   for (const visit of memory.visits) {
     const fact = facts.get(visit.id);
-    if (!fact || fact.factType !== "travel.visit" || corrected.has(visit.id)) fail4();
+    if (!fact || fact.factType !== "travel.visit" || corrected.has(visit.id)) fail3();
     if (visit.decisionId) {
       const exposure = memory.journal.exposures.find((row) => row.decisionId === visit.decisionId);
-      if (!exposure || exposure.candidateId !== visit.planId || !fact.causes.includes(exposure.id) || Date.parse(visit.at) < Date.parse(exposure.at)) fail4();
+      if (!exposure || exposure.candidateId !== visit.planId || !fact.causes.includes(exposure.id) || Date.parse(visit.at) < Date.parse(exposure.at)) fail3();
     }
   }
   for (const preference of memory.confirmedPreferences) {
     const fact = facts.get(preference.id);
-    if (!fact || fact.factType !== "travel.preference" || corrected.has(preference.id) || preference.source.feedbackId && !fact.causes.includes(preference.source.feedbackId)) fail4();
+    if (!fact || fact.factType !== "travel.preference" || corrected.has(preference.id) || preference.source.feedbackId && !fact.causes.includes(preference.source.feedbackId)) fail3();
   }
   for (const outcome of memory.journal.outcomes) {
     const fact = facts.get(outcome.id), exposure = memory.journal.exposures.find((row) => row.id === outcome.exposureId);
-    if (!fact.causes.some((id2) => memory.visits.some((visit) => visit.id === id2 && visit.decisionId === exposure.decisionId && Date.parse(visit.at) <= Date.parse(outcome.at)))) fail4("전체 여행 평가의 방문 근거가 없어요.");
+    if (!fact.causes.some((id) => memory.visits.some((visit) => visit.id === id && visit.decisionId === exposure.decisionId && Date.parse(visit.at) <= Date.parse(outcome.at)))) fail3("전체 여행 평가의 방문 근거가 없어요.");
   }
   return memory;
 }
-var TRAVEL_FORMAT, TRAVEL_MAX_BYTES, encoder, token2, object4, exact4, fail4, timestamp, places2, placeById, dayPlaces, integer2, text3, texts, time, minute, amount, uniqueIds, publicUrl2, coordinate, sameCoordinate;
+var TRAVEL_FORMAT, TRAVEL_MAX_BYTES, encoder, token2, object4, exact4, fail3, timestamp, places2, placeById, dayPlaces, integer2, text2, texts, time, minute, amount, uniqueIds, publicUrl2, coordinate, sameCoordinate;
 var init_planner_storage = __esm({
   "experiences/path-travel/planner-storage.mjs"() {
     init_planner();
@@ -17984,26 +18599,26 @@ var init_planner_storage = __esm({
     token2 = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
     object4 = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
     exact4 = (value, fields2, optional = []) => object4(value) && fields2.every((key) => Object.hasOwn(value, key)) && Object.keys(value).every((key) => fields2.includes(key) || optional.includes(key));
-    fail4 = (message = "여행 파일의 형식이 맞지 않아요. 현재 기록은 유지했어요.") => {
+    fail3 = (message = "여행 파일의 형식이 맞지 않아요. 현재 기록은 유지했어요.") => {
       throw new TypeError(message);
     };
     timestamp = (now) => {
       const value = now ?? (/* @__PURE__ */ new Date()).toISOString();
-      if (!isTravelTime(value)) fail4("기록 시각을 확인해 주세요.");
+      if (!isTravelTime(value)) fail3("기록 시각을 확인해 주세요.");
       return value;
     };
     places2 = new Set(TRAVEL_PLACES.map((place) => place.id));
     placeById = new Map(TRAVEL_PLACES.map((place) => [place.id, place]));
     dayPlaces = new Set(TRAVEL_PLACES.filter((place) => place.dayPlannerEligible !== false && ["food", "tea", "culture"].includes(place.category)).map((place) => place.id));
     integer2 = (value, min, max) => Number.isSafeInteger(value) && value >= min && value <= max;
-    text3 = (value, max = 2e3) => typeof value === "string" && value.length <= max;
-    texts = (value, max = 100) => Array.isArray(value) && value.length <= max && value.every((entry) => text3(entry));
+    text2 = (value, max = 2e3) => typeof value === "string" && value.length <= max;
+    texts = (value, max = 100) => Array.isArray(value) && value.length <= max && value.every((entry) => text2(entry));
     time = (value) => typeof value === "string" && /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value);
     minute = (value) => Number(value.slice(0, 2)) * 60 + Number(value.slice(3));
     amount = (value) => integer2(value, 0, 1e7);
-    uniqueIds = (value, allowed, max = 5) => Array.isArray(value) && value.length <= max && value.every((id2) => token2(id2) && allowed.has(id2)) && new Set(value).size === value.length;
+    uniqueIds = (value, allowed, max = 5) => Array.isArray(value) && value.length <= max && value.every((id) => token2(id) && allowed.has(id)) && new Set(value).size === value.length;
     publicUrl2 = (value) => {
-      if (!text3(value, 2048)) return false;
+      if (!text2(value, 2048)) return false;
       try {
         const url = new URL(value);
         return ["https:", "http:"].includes(url.protocol) && !url.username && !url.password;
@@ -18060,1385 +18675,75 @@ var init_planner_account = __esm({
 
 // experiences/synk-account/src/personal-data.mjs
 function resourceLimit(resource) {
-  if (!Object.hasOwn(PERSONAL_LIMITS, resource)) invalid4();
+  if (!Object.hasOwn(PERSONAL_LIMITS, resource)) invalid6();
   return PERSONAL_LIMITS[resource];
 }
 function jsonCopy2(value, maxBytes) {
   const ancestors = /* @__PURE__ */ new Set();
   let nodes = 0;
   function visit(item, depth) {
-    if (++nodes > 2e5 || depth > 32) invalid4();
+    if (++nodes > 2e5 || depth > 32) invalid6();
     if (typeof item === "string") {
-      if (/\u0000|[\uD800-\uDFFF]/u.test(item)) invalid4();
+      if (/\u0000|[\uD800-\uDFFF]/u.test(item)) invalid6();
       return;
     }
     if (item === null || typeof item === "boolean") return;
     if (typeof item === "number") {
-      if (!Number.isFinite(item)) invalid4();
+      if (!Number.isFinite(item)) invalid6();
       return;
     }
-    if (typeof item !== "object" || ancestors.has(item)) invalid4();
+    if (typeof item !== "object" || ancestors.has(item)) invalid6();
     const prototype = Object.getPrototypeOf(item);
-    if (!Array.isArray(item) && prototype !== Object.prototype && prototype !== null) invalid4();
+    if (!Array.isArray(item) && prototype !== Object.prototype && prototype !== null) invalid6();
     ancestors.add(item);
     for (const key of Reflect.ownKeys(item)) {
       if (Array.isArray(item) && key === "length") continue;
       const descriptor = Object.getOwnPropertyDescriptor(item, key);
-      if (typeof key !== "string" || /\u0000|[\uD800-\uDFFF]/u.test(key) || !descriptor.enumerable || !Object.hasOwn(descriptor, "value")) invalid4();
-      if (Array.isArray(item) && !/^(0|[1-9]\d*)$/.test(key)) invalid4();
+      if (typeof key !== "string" || /\u0000|[\uD800-\uDFFF]/u.test(key) || !descriptor.enumerable || !Object.hasOwn(descriptor, "value")) invalid6();
+      if (Array.isArray(item) && !/^(0|[1-9]\d*)$/.test(key)) invalid6();
       visit(descriptor.value, depth + 1);
     }
-    if (Array.isArray(item) && Object.keys(item).length !== item.length) invalid4();
+    if (Array.isArray(item) && Object.keys(item).length !== item.length) invalid6();
     ancestors.delete(item);
   }
   visit(value, 0);
   const serialized = JSON.stringify(value);
-  if (encoder2.encode(serialized).length > maxBytes) fail5("PERSONAL_DATA_TOO_LARGE", "저장할 개인 기록이 허용 크기를 넘었어요.");
+  if (encoder2.encode(serialized).length > maxBytes) fail4("PERSONAL_DATA_TOO_LARGE", "저장할 개인 기록이 허용 크기를 넘었어요.");
   return JSON.parse(serialized);
 }
 function pathDocument(value) {
-  if (!fields(value, ["version", "prefsConfirmed", "prefs", "zone", "cursor", "answers"])) invalid4();
+  if (!fields(value, ["version", "prefsConfirmed", "prefs", "zone", "cursor", "answers"])) invalid6();
   const checked = validateState({ ...value, consent: true });
-  if (checked.answers.some((answer) => answer.at.length > 40)) invalid4();
+  if (checked.answers.some((answer) => answer.at.length > 40)) invalid6();
   delete checked.consent;
   return checked;
 }
 function validatePersonalState(resource, value, options) {
   const limit = resourceLimit(resource), copy2 = jsonCopy2(value, limit);
   try {
-    return resource === "member-understanding" ? validateMemberUnderstanding(copy2, options) : resource === "member-insight" ? validateMemberActivity(copy2, options) : resource === "path-travel" ? validateTravelAccountDocument(copy2) : resource === "platform-library" ? validatePlatformLibrary(copy2) : resource === "path" ? pathDocument(copy2) : resource === "rehearsal" ? validateArchive(copy2) : familyManifest(copy2);
+    return resource === "member-understanding" ? validateMemberUnderstanding(copy2, options) : resource === "member-insight" ? validateMemberActivity(copy2, options) : resource === "path-travel" ? validateTravelAccountDocument(copy2) : resource === "platform-library" ? validatePlatformLibrary(copy2) : pathDocument(copy2);
   } catch (error) {
     if (error.code) throw error;
-    invalid4();
+    invalid6();
   }
 }
-function validatePersonalMediaRef(value, { kind } = {}) {
-  const copy2 = jsonCopy2(value, 2048);
-  if (!fields(copy2, ["assetId", "sha256", "mime", "size", "kind"]) || typeof copy2.assetId !== "string" || !uuid3.test(copy2.assetId) || typeof copy2.sha256 !== "string" || !/^[a-f0-9]{64}$/.test(copy2.sha256) || !Object.hasOwn(mediaTypes, copy2.kind) || !mediaTypes[copy2.kind].includes(copy2.mime) || !Number.isSafeInteger(copy2.size) || copy2.size <= 0 || copy2.size > PERSONAL_MEDIA_LIMITS[copy2.kind] || kind !== void 0 && copy2.kind !== kind) invalid4();
-  return copy2;
-}
-function familyManifest(value) {
-  if (!fields(value, ["format", "version", ...FAMILY_ALBUM_OPTIONAL, "pages"]) || value.format !== FAMILY_MANIFEST_FORMAT || value.version !== 1 || !Array.isArray(value.pages) || value.pages.length > LIMITS.pages) invalid4();
-  let totalBytes = 0, encodedBytes = 0;
-  const assets = /* @__PURE__ */ new Map();
-  const pages = value.pages.map((page) => {
-    if (!record2(page)) invalid4();
-    const next = { ...page };
-    for (const slot of ["photo", "audio"]) {
-      const media = page[slot];
-      if (media !== null) {
-        if (!fields(media, ["name", "mediaRef"]) || typeof media.name !== "string" || media.name.length > 180) invalid4();
-        const ref = validatePersonalMediaRef(media.mediaRef, { kind: mediaKind(slot) });
-        const prior = assets.get(ref.assetId);
-        if (prior && ["sha256", "mime", "size", "kind"].some((key) => prior[key] !== ref[key])) invalid4();
-        assets.set(ref.assetId, ref);
-        totalBytes += ref.size;
-        encodedBytes += 4 * Math.ceil(ref.size / 3);
-      }
-      next[slot] = null;
-    }
-    return next;
-  });
-  if (totalBytes > LIMITS.total) fail5("PERSONAL_MEDIA_TOO_LARGE", "앨범의 사진과 음성은 모두 합쳐 20 MB까지 담을 수 있어요.");
-  const textAlbum = validateAlbum({ format: "synk-family-album", version: 1, ...familyOptional(value), pages });
-  const exportShell = { ...textAlbum, pages: textAlbum.pages.map((page, index) => {
-    const next = { ...page };
-    for (const slot of ["photo", "audio"]) {
-      const media = value.pages[index][slot];
-      next[slot] = media === null ? null : { name: media.name, type: media.mediaRef.mime, data: `data:${media.mediaRef.mime};base64,` };
-    }
-    return next;
-  }) };
-  if (encoder2.encode(JSON.stringify(exportShell)).length + encodedBytes > LIMITS.export) fail5("PERSONAL_DATA_TOO_LARGE", "원본을 포함한 앨범 내보내기가 32 MB를 넘어요. 앨범을 나눠 보관해 주세요.");
-  return { format: FAMILY_MANIFEST_FORMAT, version: 1, ...familyOptional(textAlbum), pages: textAlbum.pages.map((page, index) => ({ ...page, photo: value.pages[index].photo, audio: value.pages[index].audio })) };
-}
-var PERSONAL_LIMITS, PERSONAL_RESOURCES, FAMILY_MANIFEST_FORMAT, PERSONAL_MEDIA_LIMITS, encoder2, fail5, invalid4, record2, fields, uuid3, mediaTypes, mediaKind, FAMILY_ALBUM_OPTIONAL, familyOptional;
+var PERSONAL_LIMITS, PERSONAL_RESOURCES, encoder2, fail4, invalid6, record, fields;
 var init_personal_data = __esm({
   "experiences/synk-account/src/personal-data.mjs"() {
     init_model();
-    init_domain();
-    init_model2();
     init_platform_library_data();
     init_member_activity_data();
     init_member_understanding_data();
     init_planner_account();
-    PERSONAL_LIMITS = Object.freeze({ path: 64 * 1024, "path-travel": TRAVEL_ACCOUNT_CONTRACT.maxBytes, rehearsal: MAX_IMPORT_BYTES, "family-album": LIMITS.export, "platform-library": 64 * 1024, "member-insight": MEMBER_ACTIVITY_LIMITS.maxBytes, "member-understanding": MEMBER_UNDERSTANDING_LIMITS.maxBytes });
+    PERSONAL_LIMITS = Object.freeze({ path: 64 * 1024, "path-travel": TRAVEL_ACCOUNT_CONTRACT.maxBytes, "platform-library": 64 * 1024, "member-insight": MEMBER_ACTIVITY_LIMITS.maxBytes, "member-understanding": MEMBER_UNDERSTANDING_LIMITS.maxBytes });
     PERSONAL_RESOURCES = Object.freeze(Object.keys(PERSONAL_LIMITS));
-    FAMILY_MANIFEST_FORMAT = "synk-family-album-manifest";
-    PERSONAL_MEDIA_LIMITS = Object.freeze({ image: LIMITS.photo, audio: LIMITS.audio, total: LIMITS.total });
     encoder2 = new TextEncoder();
-    fail5 = (code, message) => {
+    fail4 = (code, message) => {
       throw Object.assign(new TypeError(message), { code });
     };
-    invalid4 = () => fail5("PERSONAL_DATA_INVALID", "저장할 개인 기록의 형식을 확인해 주세요.");
-    record2 = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
-    fields = (value, names2) => record2(value) && Object.keys(value).every((key) => names2.includes(key));
-    uuid3 = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
-    mediaTypes = Object.freeze({ image: ["image/jpeg", "image/png", "image/webp"], audio: ["audio/mpeg", "audio/wav", "audio/ogg", "audio/webm", "audio/mp4"] });
-    mediaKind = (slot) => slot === "photo" ? "image" : "audio";
-    FAMILY_ALBUM_OPTIONAL = Object.freeze(["storyteller", "skippedQuestions"]);
-    familyOptional = (value) => Object.fromEntries(FAMILY_ALBUM_OPTIONAL.filter((key) => Object.hasOwn(value, key)).map((key) => [key, value[key]]));
-  }
-});
-
-// experiences/synk-account/src/personal-media.mjs
-var personal_media_exports = {};
-__export(personal_media_exports, {
-  requestPersonalMedia: () => requestPersonalMedia,
-  validateMediaRequest: () => validateMediaRequest,
-  validateMediaResponse: () => validateMediaResponse
-});
-function validateMediaRequest(operation, values) {
-  if (!["assetUpload", "assetRead", "assetDelete"].includes(operation) || !values || typeof values !== "object" || Array.isArray(values)) throw fault("INVALID_REQUEST");
-  if (operation === "assetUpload") {
-    const bytes = buffer(values.bytes);
-    if (Object.keys(values).some((key) => !["kind", "mime", "bytes"].includes(key)) || !Object.hasOwn(types, values.kind) || !types[values.kind].includes(values.mime) || !bytes || !bytes.length || bytes.length > PERSONAL_MEDIA_LIMITS[values.kind]) throw fault("INVALID_REQUEST");
-  } else if (Object.keys(values).some((key) => key !== "assetId") || !uuid4(values.assetId)) throw fault("INVALID_REQUEST");
-}
-function own(data, ownerId) {
-  if (data?.ok !== true) throw Object.assign(fault(data?.error?.code || "MEDIA_TRANSFER_FAILED"), ["ASSET_NOT_FOUND", "ASSET_NOT_CONFIRMED"].includes(data?.error?.code) && uuid4(data?.error?.assetId) ? { assetId: data.error.assetId } : {});
-  if (data.scope !== "synk-personal" || data.resource !== "family-album" || data.accountId !== ownerId) throw fault("ACCOUNT_CHANGED");
-  return data;
-}
-function validateMediaResponse(data, { operation, values, ownerId }) {
-  own(data, ownerId);
-  const base = { ok: true, scope: "synk-personal", resource: "family-album", accountId: ownerId };
-  if (operation === "assetDelete") {
-    if (data.deleted !== true) throw fault();
-    return { ...base, deleted: true };
-  }
-  const ref = validatePersonalMediaRef(data.mediaRef);
-  if (operation === "assetRead" && ref.assetId !== values.assetId || operation === "assetUpload" && (ref.kind !== values.kind || ref.mime !== values.mime || ref.size !== values.bytes.byteLength)) throw fault();
-  if (operation === "assetRead") {
-    const bytes = buffer(data.bytes);
-    if (!bytes || bytes.length !== ref.size) throw fault();
-    return { ...base, mediaRef: ref, bytes: bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) };
-  }
-  return { ...base, mediaRef: ref };
-}
-function signedUrl(value, { origin, ownerId, assetId, upload }) {
-  let url, host;
-  try {
-    url = new URL(value);
-    host = new URL(origin);
-  } catch {
-    throw fault();
-  }
-  const path = `/storage/v1/object/${upload ? "upload/sign" : "sign"}/personal-media/${upload ? "staging" : "objects"}/${ownerId}/${assetId}`;
-  if (url.origin !== host.origin || !["https:", "http:"].includes(url.protocol) || url.protocol === "http:" && url.hostname !== "127.0.0.1" || url.username || url.password || url.hash || url.pathname !== path || !url.searchParams.get("token") || [...url.searchParams.keys()].some((key) => key !== "token" || url.searchParams.getAll(key).length !== 1)) throw fault();
-  return url.href;
-}
-async function requestPersonalMedia({ operation, values, ownerId, api, fetcher, guard, cryptoAPI, controllers, origin }) {
-  validateMediaRequest(operation, values);
-  guard();
-  const hash = async (bytes2) => {
-    const value = await cryptoAPI.subtle.digest("SHA-256", bytes2);
-    guard();
-    return Array.from(new Uint8Array(value), (byte) => byte.toString(16).padStart(2, "0")).join("");
-  };
-  const invoke = async (body) => {
-    const result = await api(body);
-    guard();
-    return own(result, ownerId);
-  };
-  async function transfer(url, { bytes: bytes2, mime, size }) {
-    guard();
-    const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 3e4);
-    controllers.add(controller);
-    try {
-      const response = await fetcher(url, { method: bytes2 ? "PUT" : "GET", credentials: "omit", redirect: "error", cache: "no-store", signal: controller.signal, ...bytes2 ? { headers: { "Content-Type": mime, "x-upsert": "false" }, body: bytes2 } : {} });
-      guard();
-      if (!response.ok) {
-        await response.body?.cancel?.();
-        throw fault("MEDIA_TRANSFER_FAILED");
-      }
-      if (bytes2) {
-        await response.body?.cancel?.();
-        return null;
-      }
-      const length = response.headers.get("content-length"), type = response.headers.get("content-type")?.split(";")[0].trim().toLowerCase();
-      if (length !== null && Number(length) !== size || type !== mime || !response.body?.getReader) {
-        await response.body?.cancel?.();
-        throw fault();
-      }
-      const reader = response.body.getReader(), result = new Uint8Array(size);
-      let offset = 0;
-      try {
-        for (; ; ) {
-          const { done, value } = await reader.read();
-          guard();
-          if (done) break;
-          if (offset + value.byteLength > size) {
-            await reader.cancel();
-            throw fault();
-          }
-          result.set(value, offset);
-          offset += value.byteLength;
-        }
-      } finally {
-        reader.releaseLock();
-      }
-      if (offset !== size) throw fault();
-      return result;
-    } catch (error) {
-      guard();
-      throw error.code ? error : fault("MEDIA_TRANSFER_FAILED");
-    } finally {
-      clearTimeout(timer);
-      controllers.delete(controller);
-    }
-  }
-  if (operation === "assetUpload") {
-    const bytes2 = buffer(values.bytes).slice(), sha256 = await hash(bytes2);
-    const prepared = await invoke({ action: "media-upload", kind: values.kind, mime: values.mime, size: bytes2.length, sha256 });
-    if (!uuid4(prepared.assetId)) throw fault();
-    await transfer(signedUrl(prepared.uploadUrl, { origin, ownerId, assetId: prepared.assetId, upload: true }), { bytes: bytes2, mime: values.mime, size: bytes2.length });
-    const confirmed = await invoke({ action: "media-confirm", assetId: prepared.assetId });
-    const result = validateMediaResponse(confirmed, { operation, values, ownerId });
-    if (result.mediaRef.assetId !== prepared.assetId || result.mediaRef.sha256 !== sha256) throw fault();
-    return result;
-  }
-  if (operation === "assetDelete") return validateMediaResponse(await invoke({ action: "media-delete", assetId: values.assetId }), { operation, values, ownerId });
-  const data = await invoke({ action: "media-read", assetId: values.assetId }), ref = validatePersonalMediaRef(data.mediaRef);
-  if (ref.assetId !== values.assetId) throw fault();
-  const bytes = await transfer(signedUrl(data.url, { origin, ownerId, assetId: ref.assetId, upload: false }), { mime: ref.mime, size: ref.size });
-  if (await hash(bytes) !== ref.sha256) throw fault();
-  guard();
-  return validateMediaResponse({ ...data, bytes }, { operation, values, ownerId });
-}
-var uuid4, fault, types, buffer;
-var init_personal_media = __esm({
-  "experiences/synk-account/src/personal-media.mjs"() {
-    init_personal_data();
-    uuid4 = (value) => typeof value === "string" && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value);
-    fault = (code = "INVALID_RESPONSE") => Object.assign(new Error("앨범 원본 파일을 확인하지 못했어요. 현재 앨범을 유지하고 다시 시도해 주세요."), { code });
-    types = { image: ["image/jpeg", "image/png", "image/webp"], audio: ["audio/mpeg", "audio/wav", "audio/ogg", "audio/webm", "audio/mp4"] };
-    buffer = (value) => value instanceof ArrayBuffer ? new Uint8Array(value) : ArrayBuffer.isView(value) && value.buffer instanceof ArrayBuffer ? new Uint8Array(value.buffer, value.byteOffset, value.byteLength) : null;
-  }
-});
-
-// experiences/synk-account/src/product-account.mjs
-function createProductAccount({
-  clientKey,
-  endpoint,
-  scope: scope3,
-  validateState: validateState2,
-  resource = null,
-  operations: operations2 = { load: "careLoad", save: "careSave", delete: "careDelete" },
-  onStatus = () => {
-  },
-  bridge,
-  fetcher = globalThis.fetch,
-  storage = globalThis.sessionStorage,
-  getUrl = () => globalThis.location.href,
-  configUrl = "/api/account-config",
-  replaceUrl = (url) => globalThis.history.replaceState(null, "", url),
-  navigate = (url) => globalThis.location.assign(url),
-  loadCore = () => Promise.resolve().then(() => (init_core(), core_exports)),
-  now = Date.now,
-  cryptoAPI
-} = {}) {
-  if (!["care", "path", "path-travel", "rehearsal", "family-album"].includes(clientKey) || !["synk-care", "synk-personal"].includes(endpoint) || typeof validateState2 !== "function") throw new TypeError("제품 계정 계약을 확인해 주세요.");
-  const LIMIT = (resource === "family-album" ? 32 : 4) * 1024 * 1024 + 32768;
-  const SESSION_KEY = `synk.oauth.session.${clientKey}`;
-  const OPERATIONS = new Set(Object.values(operations2));
-  const bridgeRequest = bridge?.accountRequest || bridge?.request;
-  const native = typeof bridgeRequest === "function" && typeof bridge?.authStatus === "function";
-  const platformEntry = native ? null : createPlatformEntry({ clientKey, getUrl, replaceUrl });
-  let automaticNavigations = 0;
-  let snapshot = { configured: false, signedIn: false, status: "unconfigured", accountId: null, account: null, sessionGeneration: 0, error: null };
-  let config, core, session = null, pendingExchange = null, epoch = 0, loginIntent = 0, disposed = false, starting, started = false, refreshing, unsubscribe, nativeIdentity = null, nativeLoad = null, nativeGeneration = -1;
-  const controllers = /* @__PURE__ */ new Set();
-  const status = () => ({ ...snapshot, account: snapshot.account ? { ...snapshot.account } : null, error: snapshot.error ? { ...snapshot.error } : null });
-  const emit = (patch) => {
-    snapshot = { ...snapshot, ...patch, sessionGeneration: epoch };
-    if (!disposed) onStatus(status());
-    return status();
-  };
-  const guard = (expected) => {
-    if (disposed || expected !== epoch) throw fault2("ACCOUNT_CHANGED", "계정 연결이 바뀌었어요.");
-  };
-  const binding = () => [config.supabaseUrl, config.accountApiUrl, config.clients[clientKey].clientId, config.clients[clientKey].redirectUri].join("|");
-  function stopRequests() {
-    for (const controller of controllers) controller.abort();
-  }
-  function clearSession(error, nextStatus = "signed-out") {
-    epoch++;
-    session = null;
-    pendingExchange = null;
-    nativeIdentity = null;
-    nativeLoad = null;
-    stopRequests();
-    if (!native) {
-      try {
-        storage?.removeItem(SESSION_KEY);
-      } catch {
-        error ||= fault2("STORAGE", "화면의 로그인은 종료했지만 저장을 지우지 못했어요. 이 창을 닫아 주세요.");
-      }
-    }
-    return emit({ signedIn: false, status: snapshot.configured ? nextStatus : "unconfigured", accountId: null, account: null, error: error ? publicError(error) : null });
-  }
-  function saveSession(next) {
-    session = next;
-    try {
-      storage.setItem(SESSION_KEY, JSON.stringify({ ...next, configKey: binding() }));
-    } catch {
-      throw fault2("STORAGE", "이 탭에 로그인을 보관하지 못했어요. 브라우저 저장 설정을 확인해 주세요.");
-    }
-  }
-  async function responseJson(response) {
-    if (!response.body?.getReader) {
-      const text5 = await response.text();
-      if (new TextEncoder().encode(text5).byteLength > LIMIT) throw fault2("INVALID_RESPONSE", "계정 자료의 크기를 확인하지 못했어요.");
-      try {
-        return JSON.parse(text5);
-      } catch {
-        return null;
-      }
-    }
-    const reader = response.body.getReader(), decoder = new TextDecoder();
-    let bytes = 0, text4 = "";
-    try {
-      for (; ; ) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        bytes += value.byteLength;
-        if (bytes > LIMIT) {
-          await reader.cancel();
-          throw fault2("INVALID_RESPONSE", "계정 자료의 크기를 확인하지 못했어요.");
-        }
-        text4 += decoder.decode(value, { stream: true });
-      }
-      text4 += decoder.decode();
-      try {
-        return JSON.parse(text4);
-      } catch {
-        return null;
-      }
-    } finally {
-      reader.releaseLock();
-    }
-  }
-  async function send(url, token3, body, { logout = false } = {}) {
-    const abort = new AbortController(), timer = setTimeout(() => abort.abort(), 12e3);
-    controllers.add(abort);
-    try {
-      const response = await fetcher(url, {
-        method: body === void 0 ? "GET" : "POST",
-        signal: abort.signal,
-        credentials: "omit",
-        cache: "no-store",
-        redirect: "error",
-        headers: { apikey: config.supabasePublishableKey, Authorization: `Bearer ${token3}`, "X-SYNK-Product": "platform", "X-SYNK-Contract": "1", ...body === void 0 ? {} : { "Content-Type": "application/json" } },
-        ...body === void 0 ? {} : { body: JSON.stringify(body) }
-      });
-      const data = logout && response.status === 204 ? null : await responseJson(response);
-      return { response, data };
-    } catch (error) {
-      if (error.code) throw error;
-      throw fault2("NETWORK", "계정 서버에 연결하지 못했어요. 현재 자료를 유지하고 다시 시도해 주세요.", { retryable: true });
-    } finally {
-      clearTimeout(timer);
-      controllers.delete(abort);
-    }
-  }
-  async function refresh(expected) {
-    if (refreshing) return refreshing;
-    const old = session;
-    if (!old?.refresh_token) throw fault2("AUTH_REQUIRED", "SYNK ID로 다시 로그인해 주세요.");
-    const promise = (async () => {
-      const next = await core.tokenRequest(config, { grant_type: "refresh_token", client_id: config.clients[clientKey].clientId, refresh_token: old.refresh_token }, fetcher);
-      guard(expected);
-      saveSession({ ...next, refresh_token: next.refresh_token || old.refresh_token });
-      return session.access_token;
-    })();
-    refreshing = promise;
-    try {
-      return await promise;
-    } finally {
-      if (refreshing === promise) refreshing = null;
-    }
-  }
-  function requestBody(operation, values = {}) {
-    if (!OPERATIONS.has(operation) || !values || typeof values !== "object" || Array.isArray(values)) throw fault2("INVALID_REQUEST", "제품 계정 요청을 확인해 주세요.");
-    const careLibrarySave = clientKey === "care" && endpoint === "synk-care" && resource === null && operation === operations2.save;
-    const allowed = operation === operations2.load ? [] : operation === operations2.save ? ["expected_revision", "state", ...careLibrarySave ? ["messageLibraryVersion", "checkinPreferenceVersion"] : []] : ["expected_revision"];
-    if (Object.keys(values).some((key) => !allowed.includes(key))) throw fault2("INVALID_REQUEST", "제품 계정 요청을 확인해 주세요.");
-    if (Object.hasOwn(values, "messageLibraryVersion") && (!careLibrarySave || values.messageLibraryVersion !== 1)) throw fault2("INVALID_REQUEST", "문구 보관함의 저장 계약을 확인해 주세요.");
-    if (Object.hasOwn(values, "checkinPreferenceVersion") && (!careLibrarySave || values.checkinPreferenceVersion !== 1)) throw fault2("INVALID_REQUEST", "안부 설정의 저장 계약을 확인해 주세요.");
-    if (operation === operations2.load) return void 0;
-    if (!Number.isSafeInteger(values.expected_revision) || values.expected_revision < 0) throw fault2("INVALID_REQUEST", "저장할 자료의 버전을 확인해 주세요.");
-    return { action: operation === operations2.save ? "save" : "delete", expected_revision: values.expected_revision, ...operation === operations2.save ? { state: validateState2(values.state) } : {}, ...Object.hasOwn(values, "messageLibraryVersion") ? { messageLibraryVersion: 1 } : {}, ...Object.hasOwn(values, "checkinPreferenceVersion") ? { checkinPreferenceVersion: 1 } : {} };
-  }
-  function validateResponse(data, ownerId) {
-    if (data?.ok !== true) throw fault2(data?.error?.code || "ACCOUNT_UNAVAILABLE", data?.error?.message || "계정 자료를 확인하지 못했어요.", { retryable: data?.error?.retryable === true, status: data?.error?.status, revision: data?.revision, ...missingAsset(data?.error) });
-    if (data.scope !== scope3 || resource && data.resource !== resource || typeof data.accountId !== "string" || !data.accountId || data.accountId.length > 100 || !Number.isSafeInteger(data.revision) || data.revision < 0 || !Object.hasOwn(data, "state")) throw fault2("INVALID_RESPONSE", "계정 자료의 형식을 확인하지 못했어요. 현재 자료를 유지해 주세요.");
-    if (ownerId && data.accountId !== ownerId) throw fault2("ACCOUNT_CHANGED", "다른 계정의 응답이 도착해 자료를 적용하지 않았어요.");
-    return { ok: true, scope: scope3, ...resource ? { resource } : {}, accountId: data.accountId, revision: data.revision, updatedAt: typeof data.updatedAt === "string" ? data.updatedAt : null, state: data.state === null ? null : validateState2(data.state) };
-  }
-  async function dispatch(operation, values, expected, ownerId) {
-    const body = requestBody(operation, values);
-    guard(expected);
-    let data;
-    if (native) {
-      const params = operation === operations2.load ? {} : operation === operations2.save ? { expected_revision: body.expected_revision, state: body.state, ...Object.hasOwn(body, "messageLibraryVersion") ? { messageLibraryVersion: body.messageLibraryVersion } : {}, ...Object.hasOwn(body, "checkinPreferenceVersion") ? { checkinPreferenceVersion: body.checkinPreferenceVersion } : {} } : { expected_revision: body.expected_revision };
-      data = await bridgeRequest.call(bridge, operation, params);
-      guard(expected);
-    } else {
-      if (!session?.access_token) throw fault2("AUTH_REQUIRED", "SYNK ID로 로그인해 주세요.");
-      let token3 = session.access_token;
-      if (session.expires_at <= now() + 3e4) token3 = await refresh(expected);
-      guard(expected);
-      const url = `${config.accountApiUrl.replace(/\/$/, "")}/functions/v1/${endpoint}${resource && body === void 0 ? `?resource=${encodeURIComponent(resource)}` : ""}`;
-      let result = await send(url, token3, body === void 0 || !resource ? body : { ...body, resource });
-      guard(expected);
-      if (result.response.status === 401 && session?.refresh_token) {
-        token3 = session.access_token !== token3 ? session.access_token : await refresh(expected);
-        guard(expected);
-        result = await send(url, token3, body === void 0 || !resource ? body : { ...body, resource });
-        guard(expected);
-      }
-      if (!result.response.ok || result.data?.ok !== true) {
-        const code = result.data?.error?.code || (result.response.status === 401 ? "AUTH_REQUIRED" : "ACCOUNT_UNAVAILABLE");
-        throw fault2(code, code === "REVISION_CONFLICT" ? "다른 기기에서 자료가 바뀌었어요. 계정 자료를 다시 확인해 주세요." : "계정 요청을 완료하지 못했어요. 현재 자료는 그대로 유지해 주세요.", { status: result.response.status, revision: result.data?.revision, retryable: result.response.status === 429 || result.response.status >= 500, ...missingAsset(result.data?.error) });
-      }
-      data = result.data;
-    }
-    guard(expected);
-    return validateResponse(data, ownerId);
-  }
-  async function mediaRequest(operation, values, expected, ownerId) {
-    if (resource !== "family-album" || endpoint !== "synk-personal") throw fault2("INVALID_REQUEST", "이 제품에는 원본 파일을 보관할 수 없어요.");
-    const media = await Promise.resolve().then(() => (init_personal_media(), personal_media_exports));
-    guard(expected);
-    if (native) {
-      media.validateMediaRequest(operation, values);
-      const result = await bridgeRequest.call(bridge, operation, values);
-      guard(expected);
-      return media.validateMediaResponse(result, { operation, values, ownerId });
-    }
-    const api = async (body) => {
-      guard(expected);
-      let token3 = session.access_token;
-      if (session.expires_at <= now() + 3e4) token3 = await refresh(expected);
-      guard(expected);
-      const url = `${config.accountApiUrl.replace(/\/$/, "")}/functions/v1/synk-personal`;
-      let result = await send(url, token3, { ...body, resource });
-      guard(expected);
-      if (result.response.status === 401 && session?.refresh_token) {
-        token3 = session.access_token !== token3 ? session.access_token : await refresh(expected);
-        guard(expected);
-        result = await send(url, token3, { ...body, resource });
-        guard(expected);
-      }
-      if (!result.response.ok) throw fault2(result.data?.error?.code || "MEDIA_TRANSFER_FAILED", "원본 파일을 계정에 보관하지 못했어요.", { status: result.response.status, ...missingAsset(result.data?.error) });
-      return result.data;
-    };
-    return media.requestPersonalMedia({ operation, values, ownerId, api, fetcher, guard: () => guard(expected), cryptoAPI: cryptoAPI || globalThis.crypto, controllers, origin: config.supabaseUrl });
-  }
-  async function nativeStatus(source) {
-    if (disposed) return status();
-    const identity = source?.account?.synk_user_id, generation = source?.sessionGeneration ?? 0;
-    if (!Number.isSafeInteger(generation) || generation < nativeGeneration) return status();
-    nativeGeneration = generation;
-    if (source?.status === "restoring" && nativeIdentity && nativeIdentity.endsWith(`:${generation}`)) return emit({ signedIn: false, status: "restoring", error: null });
-    if (!source?.signedIn || !identity) {
-      snapshot.configured = source?.configured === true;
-      return clearSession(source?.error ? Object.assign(new Error(source.error.message), source.error) : null, source?.status || "signed-out");
-    }
-    const key = `${identity}:${generation}`;
-    if (key === nativeIdentity && snapshot.accountId) return emit({ configured: true, signedIn: true, status: "signed-in", error: null });
-    if (key === nativeIdentity && nativeLoad) return nativeLoad;
-    epoch++;
-    nativeIdentity = key;
-    const expected = epoch;
-    emit({ configured: true, signedIn: false, status: "restoring", accountId: null, account: null, error: null });
-    const promise = (async () => {
-      try {
-        const data = await dispatch(operations2.load, {}, expected, identity);
-        guard(expected);
-        return emit({ configured: true, signedIn: true, status: "signed-in", accountId: data.accountId, account: { synk_user_id: data.accountId, display_name: source.account.display_name || "" }, error: null });
-      } catch (error) {
-        if (expected === epoch && !disposed) return clearSession(error, "error");
-        return status();
-      }
-    })();
-    nativeLoad = promise;
-    try {
-      return await promise;
-    } finally {
-      if (nativeLoad === promise) nativeLoad = null;
-    }
-  }
-  async function begin() {
-    const expected = epoch;
-    platformEntry?.capture(storage);
-    if (native) {
-      const environment = await bridge.getEnvironment();
-      guard(expected);
-      if (environment?.clientId !== clientKey) throw fault2("INVALID_BRIDGE", "제품 앱의 로그인 연결을 확인해 주세요.");
-      if (disposed) return status();
-      unsubscribe?.();
-      unsubscribe = bridge.onAuthChanged((source2) => {
-        void nativeStatus(source2).catch(() => {
-        });
-      });
-      const source = await bridge.authStatus();
-      guard(expected);
-      return nativeStatus(source);
-    }
-    try {
-      core = await loadCore();
-    } catch {
-      throw fault2("NETWORK", "로그인 연결을 불러오지 못했어요. 연결이 돌아오면 다시 확인해 주세요.", { retryable: true });
-    }
-    guard(expected);
-    let raw;
-    const configEndpoint = new URL(configUrl, getUrl());
-    if (configEndpoint.origin !== new URL(getUrl()).origin || configEndpoint.username || configEndpoint.password || configEndpoint.hash) throw fault2("AUTH_CONFIG", "이 앱의 계정 설정 주소를 확인해 주세요.");
-    const abort = new AbortController(), timer = setTimeout(() => abort.abort(), 8e3);
-    controllers.add(abort);
-    try {
-      const response = await fetcher(configEndpoint.href, { cache: "no-store", credentials: "omit", signal: abort.signal, redirect: "error" });
-      if (response.ok) raw = await response.json();
-      else if (response.status !== 404) throw fault2("AUTH_CONFIG", "계정 연결 설정을 불러오지 못했어요. 다시 확인해 주세요.", { status: response.status, retryable: response.status === 429 || response.status >= 500 });
-    } catch (error) {
-      if (error.code) throw error;
-      throw fault2("NETWORK", "계정 연결 설정을 불러오지 못했어요. 연결이 돌아오면 다시 확인해 주세요.", { retryable: true });
-    } finally {
-      clearTimeout(timer);
-      controllers.delete(abort);
-    }
-    guard(expected);
-    config = core.readConfig(raw || { version: 1 }, getUrl());
-    const configured = !!(config.configured && config.clients[clientKey]?.clientId && config.clients[clientKey]?.redirectUri);
-    if (!configured) {
-      pendingExchange = null;
-      return emit({ configured: false, status: "unconfigured", error: null });
-    }
-    emit({ configured: true, status: "restoring", error: null });
-    platformEntry.restore(storage);
-    if (platformEntry.isCancelled()) {
-      session = null;
-      pendingExchange = null;
-      return emit({ signedIn: false, status: "signed-out", accountId: null, account: null, error: null });
-    }
-    const url = new URL(getUrl());
-    if (url.searchParams.has("code") || url.searchParams.has("error")) {
-      platformEntry.stop();
-      try {
-        pendingExchange = { fields: core.consumeCallback({ config, product: clientKey, url: url.href, storage, now: now() }), configKey: binding() };
-      } finally {
-        for (const key of ["code", "state", "error", "error_description"]) url.searchParams.delete(key);
-        replaceUrl(url.href);
-      }
-    }
-    if (pendingExchange) {
-      if (pendingExchange.configKey !== binding()) throw fault2("AUTH_REQUIRED", "로그인 연결 설정이 바뀌었어요. SYNK ID로 다시 로그인해 주세요.");
-      const next = await core.tokenRequest(config, pendingExchange.fields, fetcher);
-      guard(expected);
-      pendingExchange = null;
-      saveSession(next);
-    } else {
-      try {
-        const text4 = storage.getItem(SESSION_KEY);
-        if (text4 && text4.length > 65536) throw Error("INVALID_SESSION");
-        const value = JSON.parse(text4 || "null");
-        if (value) {
-          if (value.configKey !== binding() || typeof value.access_token !== "string" || !value.access_token || value.access_token.length > 16384 || value.refresh_token !== null && typeof value.refresh_token !== "string" || !Number.isFinite(value.expires_at)) throw Error("INVALID_SESSION");
-          session = { access_token: value.access_token, refresh_token: value.refresh_token, expires_at: value.expires_at };
-        }
-      } catch {
-        storage.removeItem(SESSION_KEY);
-        session = null;
-      }
-    }
-    if (!session) return await automaticSignIn(expected) || emit({ signedIn: false, status: "signed-out", accountId: null, account: null, error: null });
-    emit({ status: "restoring" });
-    let data;
-    try {
-      data = await dispatch(operations2.load, {}, expected, platformEntry.accountId());
-      guard(expected);
-    } catch (error) {
-      guard(expected);
-      if (!platformEntry.accountId() || ![...AUTH_ERRORS, "ACCOUNT_CHANGED"].includes(error.code)) throw error;
-      session = null;
-      storage.removeItem(SESSION_KEY);
-      const redirected = await automaticSignIn(expected);
-      if (redirected) return redirected;
-      platformEntry.assertAccount(null);
-      throw error;
-    }
-    platformEntry.assertAccount(data.accountId);
-    platformEntry.stop();
-    return emit({ signedIn: true, status: "signed-in", accountId: data.accountId, account: { synk_user_id: data.accountId, display_name: "" }, error: null });
-  }
-  async function automaticSignIn(expected) {
-    if (!platformEntry.beginAttempt()) return null;
-    emit({ signedIn: false, accountId: null, account: null, status: "signing-in", error: null });
-    const url = await core.beginOAuth({ config, product: clientKey, storage, now: now(), cryptoAPI });
-    guard(expected);
-    automaticNavigations++;
-    navigate(url);
-    return status();
-  }
-  async function start() {
-    if (disposed) throw fault2("ACCOUNT_CHANGED", "계정 연결이 종료됐어요.");
-    if (starting) return starting;
-    if (started && !snapshot.error?.retryable) return status();
-    started = true;
-    const expected = epoch;
-    emit({ status: "restoring", error: null });
-    const operation = begin().catch((error) => {
-      if (disposed || expected !== epoch) return status();
-      if (!native && error.retryable === true && !AUTH_ERRORS.has(error.code) && error.code !== "ACCOUNT_CHANGED")
-        return emit({ signedIn: false, accountId: null, account: null, status: "error", error: publicError(error) });
-      return clearSession(error, "error");
-    });
-    starting = operation;
-    try {
-      return await operation;
-    } finally {
-      if (starting === operation) starting = null;
-    }
-  }
-  async function signIn() {
-    const intent = ++loginIntent;
-    const before = automaticNavigations;
-    await start();
-    if (disposed || intent !== loginIntent) throw fault2("ACCOUNT_CHANGED", "계정 연결이 바뀌었어요.");
-    if (snapshot.signedIn || automaticNavigations !== before) return status();
-    if (native && snapshot.error?.retryable) {
-      let result;
-      try {
-        result = await bridgeRequest.call(bridge, "load", {});
-      } catch {
-        result = { ok: false, error: { code: "NETWORK", message: "계정 연결을 다시 확인하지 못했어요. 잠시 뒤 다시 시도해 주세요.", retryable: true } };
-      }
-      if (disposed || intent !== loginIntent) throw fault2("ACCOUNT_CHANGED", "계정 연결이 바뀌었어요.");
-      const source = await bridge.authStatus();
-      if (disposed || intent !== loginIntent) throw fault2("ACCOUNT_CHANGED", "계정 연결이 바뀌었어요.");
-      await nativeStatus(source);
-      if (disposed || intent !== loginIntent) throw fault2("ACCOUNT_CHANGED", "계정 연결이 바뀌었어요.");
-      if (snapshot.signedIn) return status();
-      const error = snapshot.error || result?.error || { code: "AUTH_REQUIRED", message: "저장된 로그인을 확인하지 못했어요. SYNK ID로 다시 로그인해 주세요.", retryable: false };
-      if (!snapshot.error) emit({ signedIn: false, accountId: null, account: null, status: "error", error: publicError(error) });
-      throw Object.assign(new Error(error.message), error);
-    }
-    if (snapshot.error?.retryable) throw Object.assign(new Error(snapshot.error.message), snapshot.error);
-    if (!snapshot.configured) throw fault2("AUTH_CONFIG", "SYNK ID 연결 설정을 준비하고 있어요. 지금은 이 기기의 수첩을 사용할 수 있어요.");
-    if (native) {
-      const result = await bridge.authSignIn();
-      if (disposed || intent !== loginIntent) throw fault2("ACCOUNT_CHANGED", "계정 연결이 바뀌었어요.");
-      if (result?.ok === false) throw Object.assign(new Error(result.error?.message), result.error);
-      return nativeStatus(result);
-    }
-    const expected = epoch;
-    platformEntry.resume();
-    const url = await core.beginOAuth({ config, product: clientKey, storage, now: now(), cryptoAPI });
-    guard(expected);
-    if (intent !== loginIntent) throw fault2("ACCOUNT_CHANGED", "계정 연결이 바뀌었어요.");
-    emit({ status: "signing-in", error: null });
-    navigate(url);
-    return status();
-  }
-  async function signOut() {
-    loginIntent++;
-    let entryError;
-    try {
-      platformEntry?.cancel();
-    } catch (error) {
-      entryError = error;
-    }
-    const old = session;
-    clearSession(entryError);
-    if (native) {
-      const result = await bridge.authSignOut();
-      await nativeStatus(await bridge.authStatus());
-      return result;
-    }
-    let serverSessionRevoked = !old, refreshRevoked = !old;
-    if (old?.access_token && config) {
-      const accountUrl = `${config.accountApiUrl.replace(/\/$/, "")}/functions/v1/synk-account`;
-      try {
-        const loaded = await send(accountUrl, old.access_token);
-        const current = loaded.data?.sessions?.find((item) => item.current && !item.revoked);
-        if (current?.id) {
-          const revoked = await send(accountUrl, old.access_token, { action: "revoke-session", session_id: current.id });
-          serverSessionRevoked = revoked.response.ok && revoked.data?.ok === true;
-          refreshRevoked = serverSessionRevoked && revoked.data.current === true && revoked.data.refreshRevoked === true;
-        }
-      } catch {
-      }
-      if (!refreshRevoked) {
-        try {
-          const result = await send(new URL("/auth/v1/logout?scope=local", config.supabaseUrl).href, old.access_token, {}, { logout: true });
-          refreshRevoked = result.response.ok || result.response.status === 404 || serverSessionRevoked && result.response.status === 401;
-        } catch {
-        }
-      }
-    }
-    return { ok: !snapshot.error, status: status(), serverRevoked: serverSessionRevoked && refreshRevoked, serverSessionRevoked, refreshRevoked };
-  }
-  async function request(operation, values = {}) {
-    if (!snapshot.signedIn || !snapshot.accountId) throw fault2("AUTH_REQUIRED", "SYNK ID로 로그인한 뒤 계정 자료를 확인해 주세요.");
-    const expected = epoch, ownerId = snapshot.accountId;
-    try {
-      return await (operation.startsWith("asset") ? mediaRequest(operation, values, expected, ownerId) : dispatch(operation, values, expected, ownerId));
-    } catch (error) {
-      if (expected === epoch && (AUTH_ERRORS.has(error.code) || error.code === "ACCOUNT_CHANGED")) clearSession(error);
-      throw error;
-    }
-  }
-  async function requestPush(action, values = {}) {
-    if (clientKey !== "care" || endpoint !== "synk-care" || native) throw fault2("PUSH_UNSUPPORTED", "예약 알림은 플레저 웹에서 설정해 주세요.");
-    if (!snapshot.signedIn || !snapshot.accountId) throw fault2("AUTH_REQUIRED", "SYNK ID로 로그인한 뒤 알림을 설정해 주세요.");
-    const allowed = { status: ["endpoint"], subscribe: ["subscription", "hour", "minute"], update: ["endpoint", "hour", "minute"], unsubscribe: ["endpoint"] };
-    if (!Object.hasOwn(allowed, action) || !values || typeof values !== "object" || Array.isArray(values) || Object.keys(values).some((key) => !allowed[action].includes(key))) throw fault2("INVALID_REQUEST", "알림 설정을 확인해 주세요.");
-    if (["subscribe", "update"].includes(action) && (!Number.isInteger(values.hour) || values.hour < 0 || values.hour > 23 || !Number.isInteger(values.minute) || values.minute < 0 || values.minute > 59)) throw fault2("INVALID_REQUEST", "알림 시간을 확인해 주세요.");
-    if ((action === "update" || action === "unsubscribe" || Object.hasOwn(values, "endpoint")) && (typeof values.endpoint !== "string" || values.endpoint.length > 2048 || !values.endpoint.startsWith("https://"))) throw fault2("INVALID_REQUEST", "이 기기의 알림 연결을 확인해 주세요.");
-    if (action === "subscribe" && (!values.subscription || typeof values.subscription !== "object" || Array.isArray(values.subscription))) throw fault2("INVALID_REQUEST", "이 기기의 알림 연결을 확인해 주세요.");
-    const body = { action, ...values };
-    if (new TextEncoder().encode(JSON.stringify(body)).byteLength > 8192) throw fault2("INVALID_REQUEST", "알림 설정의 크기를 확인해 주세요.");
-    const expected = epoch, ownerId = snapshot.accountId;
-    try {
-      guard(expected);
-      let token3 = session?.access_token;
-      if (!token3) throw fault2("AUTH_REQUIRED", "SYNK ID로 다시 로그인해 주세요.");
-      if (session.expires_at <= now() + 3e4) token3 = await refresh(expected);
-      guard(expected);
-      const url = `${config.accountApiUrl.replace(/\/$/, "")}/functions/v1/synk-care-push`;
-      let result = await send(url, token3, body);
-      guard(expected);
-      if (result.response.status === 401 && session?.refresh_token) {
-        token3 = session.access_token !== token3 ? session.access_token : await refresh(expected);
-        guard(expected);
-        result = await send(url, token3, body);
-        guard(expected);
-      }
-      const data = result.data;
-      if (!result.response.ok || data?.ok !== true) throw fault2(data?.error?.code || (result.response.status === 401 ? "AUTH_REQUIRED" : "PUSH_UNAVAILABLE"), "예약 알림을 설정하지 못했어요. 잠시 뒤 다시 시도해 주세요.", { status: result.response.status, retryable: result.response.status === 429 || result.response.status >= 500 });
-      if (data.accountId !== ownerId) throw fault2("ACCOUNT_CHANGED", "계정이 바뀌어 알림 설정을 적용하지 않았어요.");
-      if (data.scope !== "synk-care-push" || typeof data.enabled !== "boolean" || data.timeZone !== "Asia/Seoul" || !Number.isInteger(data.hour) || data.hour < 0 || data.hour > 23 || !Number.isInteger(data.minute) || data.minute < 0 || data.minute > 59 || typeof data.publicKey !== "string" || !/^[A-Za-z0-9_-]{87}$/.test(data.publicKey)) throw fault2("INVALID_RESPONSE", "알림 서버의 응답을 확인하지 못했어요.");
-      return { ok: true, scope: data.scope, accountId: ownerId, enabled: data.enabled, hour: data.hour, minute: data.minute, timeZone: data.timeZone, publicKey: data.publicKey, ...typeof data.deviceId === "string" ? { deviceId: data.deviceId } : {} };
-    } catch (error) {
-      if (expected === epoch && (AUTH_ERRORS.has(error.code) || error.code === "ACCOUNT_CHANGED")) clearSession(error);
-      throw error;
-    }
-  }
-  function dispose() {
-    disposed = true;
-    epoch++;
-    loginIntent++;
-    session = null;
-    pendingExchange = null;
-    nativeIdentity = null;
-    unsubscribe?.();
-    stopRequests();
-  }
-  return Object.freeze({ start, status, signIn, signOut, request, requestPush, dispose });
-}
-var AUTH_ERRORS, fault2, missingAsset, publicError;
-var init_product_account = __esm({
-  "experiences/synk-account/src/product-account.mjs"() {
-    init_platform_entry();
-    AUTH_ERRORS = /* @__PURE__ */ new Set(["AUTH_REQUIRED", "AUTH_SESSION_MISSING", "SESSION_REVOKED"]);
-    fault2 = (code, message, extra = {}) => Object.assign(new Error(message), { code, ...extra });
-    missingAsset = (error) => ["ASSET_NOT_FOUND", "ASSET_NOT_CONFIRMED"].includes(error?.code) && typeof error?.assetId === "string" && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(error.assetId) ? { assetId: error.assetId } : {};
-    publicError = (error) => ({ code: error.code || "ACCOUNT_UNAVAILABLE", message: error.message || "계정 연결을 확인하지 못했어요.", retryable: error.retryable === true, ...error.status ? { status: error.status } : {}, ...missingAsset(error) });
-  }
-});
-
-// experiences/synk-account/src/document-sync.mjs
-function createDocumentSync({ transport, storage, onState = () => {
-}, onStatus = () => {
-}, onSaved = () => {
-}, onRemoved = () => {
-}, validateState: validateState2, emptyState, requiresConflictReview = () => false, preferRemoteOnOpen = false, scope: scope3, resource = null, cachePrefix, operations: operations2 = { load: "careLoad", save: "careSave", delete: "careDelete" } }) {
-  if (typeof validateState2 !== "function" || typeof emptyState !== "function" || typeof requiresConflictReview !== "function" || !scope3 || !cachePrefix) throw new TypeError("제품 기록 계약이 필요해요.");
-  const clone2 = (value) => validateState2(value);
-  const PREFIX = cachePrefix;
-  if (typeof transport !== "function") throw new TypeError("계정 저장 통로가 필요해요.");
-  let active = null, generation = 0, localError = null;
-  const records = /* @__PURE__ */ new Map(), knownKeys = /* @__PURE__ */ new Set();
-  const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  const localSummary = () => {
-    const all = [...records.values()], own2 = active ? all.filter((value) => value.accountId === active.accountId) : [];
-    return {
-      count: active ? own2.length : all.length,
-      pending: own2.filter((value) => value.pending).length,
-      corrupt: own2.filter((value) => value.corrupt).length,
-      exportable: own2.length,
-      unknown: all.filter((value) => !value.accountId).length,
-      error: localError
-    };
-  };
-  function recordOwner(key, cached) {
-    if (typeof cached?.accountId !== "string" || !cached.accountId || cached.accountId.length > 120 || /[\x00-\x20]/.test(cached.accountId)) return null;
-    const base = PREFIX + encodeURIComponent(cached.accountId);
-    return key === base && cached.draftId === void 0 || UUID.test(cached.draftId || "") && key === base + ":draft:" + cached.draftId ? cached.accountId : null;
-  }
-  function cacheRecord(key, raw) {
-    let accountId = null;
-    try {
-      if (new TextEncoder().encode(raw).byteLength > (resource === "family-album" ? 32 : 4) * 1024 * 1024 + 32768) throw failure("INVALID_LOCAL_CACHE");
-      const cached = JSON.parse(raw);
-      accountId = recordOwner(key, cached);
-      const base = PREFIX + encodeURIComponent(cached?.accountId);
-      const draft = typeof cached?.draftId === "string" && UUID.test(cached.draftId);
-      if (cached?.version !== 1 || typeof cached.accountId !== "string" || !(draft ? key === base + ":draft:" + cached.draftId : cached.draftId === void 0 && key === base) || draft && (typeof cached.createdAt !== "string" || !Number.isFinite(Date.parse(cached.createdAt))) || typeof cached.pending !== "boolean" || cached.baseRevision !== null && !validRevision(cached.baseRevision)) throw failure("INVALID_LOCAL_CACHE");
-      const state = clone2(cached.state);
-      return { accountId, pending: cached.pending, corrupt: false, cached: { ...cached, state } };
-    } catch {
-      return { accountId, pending: false, corrupt: true };
-    }
-  }
-  function localEntries() {
-    const keys2 = new Set(knownKeys);
-    if (typeof storage?.key !== "function" || !Number.isSafeInteger(storage.length) || storage.length < 0) throw failure("LOCAL_STORAGE_UNAVAILABLE");
-    for (let i = 0; i < storage.length; i++) {
-      const key = storage.key(i);
-      if (typeof key === "string" && key.startsWith(PREFIX)) keys2.add(key);
-    }
-    if (!storage?.getItem) throw failure("LOCAL_STORAGE_UNAVAILABLE");
-    return [...keys2].sort().flatMap((key) => {
-      const raw = storage.getItem(key);
-      return raw === null || raw === void 0 ? [] : [{ key, raw }];
-    });
-  }
-  function erase(key, expectedRaw) {
-    if (!storage?.removeItem) throw failure("LOCAL_STORAGE_UNAVAILABLE");
-    if (expectedRaw !== void 0 && storage.getItem(key) !== expectedRaw) return false;
-    storage.removeItem(key);
-    records.delete(key);
-    knownKeys.delete(key);
-    return true;
-  }
-  function localRecords() {
-    try {
-      const entries = localEntries();
-      records.clear();
-      localError = null;
-      for (const { key, raw } of entries) {
-        knownKeys.add(key);
-        const record3 = cacheRecord(key, raw);
-        records.set(key, { ...record3, key, raw });
-        if (active && record3.accountId === active.accountId && !record3.pending && !record3.corrupt) try {
-          erase(key, raw);
-        } catch {
-          localError = { code: "LOCAL_STORAGE_UNAVAILABLE", message: messages.LOCAL_STORAGE_UNAVAILABLE };
-        }
-      }
-    } catch {
-      localError = { code: "LOCAL_STORAGE_UNAVAILABLE", message: messages.LOCAL_STORAGE_UNAVAILABLE };
-    }
-    return localSummary();
-  }
-  function exportLocalRecords() {
-    if (!active) throw failure("LOCAL_RECOVERY_AUTH_REQUIRED");
-    try {
-      return { format: "synk-account-local-recovery", version: 1, scope: scope3, resource, accountId: active.accountId, entries: localEntries().filter(({ key, raw }) => cacheRecord(key, raw).accountId === active.accountId) };
-    } catch {
-      localError = { code: "LOCAL_STORAGE_UNAVAILABLE", message: messages.LOCAL_STORAGE_UNAVAILABLE };
-      if (active) emit(active, "storage-error", failure("LOCAL_STORAGE_UNAVAILABLE"));
-      else emitClosed();
-      throw failure("LOCAL_STORAGE_UNAVAILABLE");
-    }
-  }
-  function emitClosed() {
-    const local = localSummary(), error = localError || (local.corrupt ? { code: "INVALID_LOCAL_CACHE", message: messages.INVALID_LOCAL_CACHE } : null);
-    onStatus({ status: "closed", revision: null, accountId: null, error, pending: false, pendingStored: true, localPersistenceError: !!localError, localRecords: local, localDrafts: [] });
-  }
-  function clearLocalRecords() {
-    const context = active;
-    if (!context) {
-      emitClosed();
-      return false;
-    }
-    if (context.pending || context.busy || context.deleting) {
-      emit(context, "error", failure("LOCAL_CACHE_IN_USE"));
-      return false;
-    }
-    try {
-      for (const { key, raw } of localEntries()) if (cacheRecord(key, raw).accountId === context.accountId) erase(key, raw);
-      localRecords();
-      localError = null;
-      context.storageError = false;
-      context.invalidCache = false;
-      context.localChoice = false;
-      emit(context, "synced");
-      return true;
-    } catch {
-      context.storageError = true;
-      localRecords();
-      localError = { code: "LOCAL_STORAGE_UNAVAILABLE", message: messages.LOCAL_STORAGE_UNAVAILABLE };
-      emit(context, "storage-error", failure("LOCAL_STORAGE_UNAVAILABLE"));
-      return false;
-    }
-  }
-  localRecords();
-  const isCurrent = (context) => active === context && context.generation === generation;
-  const emitState = (context) => {
-    if (isCurrent(context)) onState(clone2(context.state));
-  };
-  function draftGroups(context, all = false) {
-    localRecords();
-    const groups = /* @__PURE__ */ new Map(), excluded = all ? /* @__PURE__ */ new Set() : /* @__PURE__ */ new Set([...context.owned.keys(), ...context.recovery.keys()]);
-    for (const record3 of records.values()) {
-      if (!record3.pending || record3.corrupt || record3.cached.accountId !== context.accountId || excluded.has(record3.key)) continue;
-      const signature = JSON.stringify({ baseRevision: record3.cached.baseRevision, state: record3.cached.state });
-      let group = groups.get(signature);
-      if (!group) {
-        group = {
-          id: record3.cached.draftId || "legacy",
-          createdAt: record3.cached.createdAt || null,
-          baseRevision: record3.cached.baseRevision,
-          state: record3.cached.state,
-          entries: /* @__PURE__ */ new Map(),
-          itemCount: Object.values(record3.cached.state).reduce((n, value) => n + (Array.isArray(value) ? value.length : 0), 0)
-        };
-        groups.set(signature, group);
-      }
-      group.entries.set(record3.key, record3.raw);
-    }
-    return [...groups.values()].sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || "") || a.id.localeCompare(b.id));
-  }
-  const publicDrafts = (groups) => groups.map(({ id: id2, createdAt, baseRevision, itemCount, entries }) => ({ id: id2, createdAt, baseRevision, itemCount, copies: entries.size }));
-  const emit = (context, status, error = null) => {
-    if (!isCurrent(context)) return;
-    context.choices = draftGroups(context);
-    if (context.localChoice && !context.choices.length && !localError) context.localChoice = false;
-    context.invalidCache = [...records.values()].some((record3) => record3.corrupt && record3.accountId === context.accountId);
-    const currentSignature = JSON.stringify(context.state);
-    const pendingStored = !context.pending || !localError && [...records.values()].some((record3) => record3.pending && !record3.corrupt && record3.cached.accountId === context.accountId && JSON.stringify(record3.cached.state) === currentSignature);
-    const warning = context.invalidCache ? { code: "INVALID_LOCAL_CACHE", message: messages.INVALID_LOCAL_CACHE } : context.storageError || localError ? { code: "LOCAL_STORAGE_UNAVAILABLE", message: messages.LOCAL_STORAGE_UNAVAILABLE } : null;
-    const choiceError = context.localChoice ? { code: "LOCAL_DRAFT_CONFLICT", message: messages.LOCAL_DRAFT_CONFLICT } : null;
-    const notification = {
-      status: choiceError ? "local-conflict" : !error && warning ? warning.code === "INVALID_LOCAL_CACHE" ? "error" : "storage-error" : status,
-      revision: context.revision,
-      accountId: context.accountId,
-      pending: context.pending,
-      pendingStored,
-      localPersistenceError: !!(context.storageError || localError),
-      localRecords: localSummary(),
-      localDrafts: publicDrafts(context.choices),
-      warning,
-      error: error ? { code: error.code || "CARE_SYNC_FAILED", message: documentSyncErrorMessage(error), ...typeof error.assetId === "string" && UUID.test(error.assetId) ? { assetId: error.assetId } : {} } : choiceError || warning
-    };
-    context.lastNotification = notification;
-    onStatus(notification);
-  };
-  function removeEntries(context, entries) {
-    let ok = true;
-    for (const [key, raw] of entries) try {
-      erase(key, raw);
-      context.owned.delete(key);
-      context.recovery.delete(key);
-    } catch {
-      context.storageError = true;
-      ok = false;
-    }
-    return ok;
-  }
-  function detachDraft(context) {
-    context.owned = /* @__PURE__ */ new Map();
-    context.recovery = /* @__PURE__ */ new Map();
-    context.currentDraft = null;
-  }
-  function persist(context) {
-    if (!isCurrent(context)) return false;
-    try {
-      if (context.pending) {
-        if (!storage?.setItem) throw failure("LOCAL_STORAGE_UNAVAILABLE");
-        const signature = JSON.stringify({ baseRevision: context.baseRevision, state: context.state });
-        if (context.currentDraft?.signature === signature && storage.getItem(context.currentDraft.key) === context.currentDraft.raw) {
-          if (!removeEntries(context, new Map([...context.owned].filter(([key2]) => key2 !== context.currentDraft.key)))) return false;
-          context.storageError = false;
-          return true;
-        }
-        const draftId = globalThis.crypto.randomUUID(), key = context.key + ":draft:" + draftId;
-        const raw = JSON.stringify({
-          version: 1,
-          accountId: context.accountId,
-          draftId,
-          createdAt: (/* @__PURE__ */ new Date()).toISOString(),
-          baseRevision: context.baseRevision,
-          state: context.state,
-          pending: true
-        });
-        storage.setItem(key, raw);
-        const previous = new Map(context.owned);
-        context.owned.set(key, raw);
-        context.currentDraft = { key, raw, signature };
-        knownKeys.add(key);
-        records.set(key, { ...cacheRecord(key, raw), key, raw });
-        if (!removeEntries(context, previous)) return false;
-      } else if (!removeEntries(context, new Map([...context.recovery, ...context.owned]))) return false;
-      if (context.storageError && localError?.code === "LOCAL_STORAGE_UNAVAILABLE") localError = null;
-      context.storageError = false;
-      return true;
-    } catch {
-      context.storageError = true;
-      return false;
-    }
-  }
-  function stopTimer(context) {
-    if (context?.timer) clearTimeout(context.timer);
-    if (context) context.timer = null;
-  }
-  function schedule(context) {
-    stopTimer(context);
-    if (!isCurrent(context) || context.conflict || context.localChoice || context.deleting) return;
-    context.timer = setTimeout(() => {
-      context.timer = null;
-      void flush();
-    }, 400);
-    context.timer.unref?.();
-  }
-  function reportFailure(context, error) {
-    if (!isCurrent(context)) return false;
-    if (["REVISION_CONFLICT", "LOCAL_CHANGED_DURING_REFRESH"].includes(error?.code)) {
-      context.conflict = true;
-      if (validRevision(error.revision)) context.revision = error.revision;
-      persist(context);
-      emit(context, "conflict", error);
-    } else {
-      const hard = ["AUTH_REQUIRED", "SESSION_REVOKED", "ACCOUNT_UNAVAILABLE", "PRODUCT_FORBIDDEN", "CARE_ACCOUNT_MISMATCH", "INVALID_CARE_RESPONSE", "INVALID_CARE_STATE", "CARE_CLIENT_UPDATE_REQUIRED", "PAYLOAD_TOO_LARGE", "INVALID_PERSONAL_STATE", "PERSONAL_DATA_TOO_LARGE", "REVISION_CAPACITY", "ASSET_NOT_FOUND", "ASSET_NOT_CONFIRMED", "MEDIA_QUOTA_EXCEEDED"].includes(error?.code);
-      emit(context, hard ? "error" : "offline", error);
-    }
-    return false;
-  }
-  function enqueue(context, operation) {
-    if (!context || !isCurrent(context)) return Promise.resolve(false);
-    context.busy++;
-    const result = context.chain.catch(() => {
-    }).then(async () => {
-      try {
-        return isCurrent(context) ? await operation() : false;
-      } catch (error) {
-        return reportFailure(context, error);
-      } finally {
-        context.busy--;
-      }
-    });
-    context.chain = result;
-    return result;
-  }
-  async function request(context, action, body) {
-    const reply = await transport(action, body);
-    if (!isCurrent(context)) throw failure("CARE_SESSION_ENDED");
-    if (reply?.ok === false) throw Object.assign(failure(reply.error?.code || reply.code || "CARE_SYNC_FAILED", reply.revision), typeof reply.error?.assetId === "string" && UUID.test(reply.error.assetId) ? { assetId: reply.error.assetId } : {});
-    if (!reply || reply.ok !== true || reply.scope !== scope3 || resource && reply.resource !== resource || !validRevision(reply.revision) || !Object.hasOwn(reply, "state")) throw failure("INVALID_CARE_RESPONSE");
-    if (reply.accountId !== context.accountId) throw failure("CARE_ACCOUNT_MISMATCH");
-    let state;
-    try {
-      state = reply.state === null ? emptyState() : clone2(reply.state);
-    } catch {
-      throw failure("INVALID_CARE_RESPONSE");
-    }
-    return { ...reply, state, empty: reply.state === null };
-  }
-  async function load(context, mode = "refresh") {
-    const before = context.sequence;
-    emit(context, "loading");
-    const remote = await request(context, operations2.load);
-    if (mode === "remote" && before !== context.sequence) {
-      context.conflict = true;
-      persist(context);
-      emit(context, "conflict", failure("LOCAL_CHANGED_DURING_REFRESH"));
-      return false;
-    }
-    if (mode === "remote" && context.pending && !persist(context)) {
-      emit(context, "storage-error", failure("LOCAL_STORAGE_UNAVAILABLE"));
-      return false;
-    }
-    context.known = true;
-    context.revision = remote.revision;
-    if (context.localChoice && mode !== "remote") {
-      context.state = remote.state;
-      context.baseRevision = remote.revision;
-      emitState(context);
-      emit(context, "local-conflict");
-      return false;
-    }
-    if (mode === "local") {
-      context.baseRevision = remote.revision;
-      context.pending = true;
-      context.conflict = false;
-      persist(context);
-      return true;
-    }
-    if (mode !== "remote" && context.pending) {
-      if (context.baseRevision === null && remote.empty && remote.revision === 0) context.baseRevision = 0;
-      const conflictCode = context.baseRevision !== remote.revision ? "REVISION_CONFLICT" : requiresConflictReview(context.state, remote.state) ? "CARE_LIBRARY_RECOVERY_REVIEW" : null;
-      if (conflictCode) {
-        context.conflict = true;
-        persist(context);
-        emit(context, "conflict", failure(conflictCode, remote.revision));
-        return false;
-      }
-      context.conflict = false;
-      persist(context);
-      emit(context, "idle");
-      return true;
-    }
-    const changed = JSON.stringify(context.state) !== JSON.stringify(remote.state);
-    if (mode === "remote") {
-      detachDraft(context);
-      context.localChoice = false;
-    }
-    context.state = remote.state;
-    context.baseRevision = remote.revision;
-    context.pending = false;
-    context.conflict = false;
-    persist(context);
-    if (changed || mode === "remote") emitState(context);
-    emit(context, "synced");
-    return true;
-  }
-  async function drain(context) {
-    if (context.localChoice) {
-      emit(context, "local-conflict");
-      if (!context.localChoice) return load(context);
-    }
-    if (context.localChoice) {
-      emit(context, "local-conflict");
-      return false;
-    }
-    if (!context.known && !await load(context)) return false;
-    if (!isCurrent(context) || context.conflict || context.deleting) return false;
-    while (context.pending && isCurrent(context) && !context.conflict && !context.deleting) {
-      const sequence = context.sequence, sent = clone2(context.state), expected = context.baseRevision;
-      const acknowledged = new Map([...context.recovery, ...context.owned]);
-      emit(context, "saving");
-      const remote = await request(context, operations2.save, { expected_revision: expected, state: sent });
-      if (remote.revision !== expected + 1 || remote.empty) throw failure("INVALID_CARE_RESPONSE");
-      onSaved(clone2(remote.state));
-      context.revision = remote.revision;
-      context.baseRevision = remote.revision;
-      if (context.sequence === sequence) {
-        context.state = remote.state;
-        context.pending = false;
-      }
-      removeEntries(context, acknowledged);
-      if (!context.pending) context.currentDraft = null;
-      persist(context);
-      emit(context, context.pending ? "idle" : "synced");
-    }
-    return !context.pending;
-  }
-  function close() {
-    if (active?.storageListener) globalThis.removeEventListener?.("storage", active.storageListener);
-    stopTimer(active);
-    if (active && !active.pending) persist(active);
-    const cleanupError = active?.storageError;
-    generation += 1;
-    active = null;
-    localRecords();
-    if (cleanupError) localError = { code: "LOCAL_STORAGE_UNAVAILABLE", message: messages.LOCAL_STORAGE_UNAVAILABLE };
-    onState(emptyState());
-    emitClosed();
-  }
-  async function open(accountId) {
-    if (typeof accountId !== "string" || !accountId || accountId.length > 120 || /[\x00-\x20]/.test(accountId)) throw failure("INVALID_ACCOUNT_ID");
-    close();
-    const context = {
-      accountId,
-      key: PREFIX + encodeURIComponent(accountId),
-      generation,
-      chain: Promise.resolve(),
-      state: emptyState(),
-      revision: null,
-      baseRevision: null,
-      pending: false,
-      known: false,
-      conflict: false,
-      deleting: false,
-      sequence: 0,
-      storageError: false,
-      invalidCache: false,
-      timer: null,
-      busy: 0
-    };
-    Object.assign(context, { owned: /* @__PURE__ */ new Map(), recovery: /* @__PURE__ */ new Map(), currentDraft: null, choices: [], localChoice: false });
-    active = context;
-    knownKeys.add(context.key);
-    try {
-      const choices = draftGroups(context, true);
-      context.invalidCache = [...records.values()].some((record3) => record3.corrupt && record3.accountId === accountId);
-      if (choices.length && !preferRemoteOnOpen) context.localChoice = true;
-    } catch {
-      context.storageError = true;
-      emit(context, "storage-error");
-    }
-    emitState(context);
-    context.storageListener = (event) => {
-      if (!isCurrent(context) || event.key !== null && !(event.key === context.key || event.key?.startsWith(context.key + ":draft:"))) return;
-      const choosing = context.localChoice, previous = context.lastNotification;
-      emit(context, choosing ? "synced" : previous?.status || (context.pending ? "idle" : "synced"), choosing ? null : previous?.error);
-      if (choosing && !context.localChoice && !context.pending) void refresh();
-    };
-    globalThis.addEventListener?.("storage", context.storageListener);
-    return enqueue(context, async () => {
-      const loaded = await load(context);
-      if (loaded && context.pending) schedule(context);
-      return loaded;
-    });
-  }
-  function change(state) {
-    const context = active;
-    if (!context) throw failure("CARE_ACCOUNT_REQUIRED");
-    if (context.deleting) throw failure("CARE_DELETE_IN_PROGRESS");
-    if (context.localChoice) {
-      emit(context, "local-conflict");
-      if (context.localChoice) throw failure("LOCAL_DRAFT_CONFLICT");
-    }
-    const normalized = clone2(state);
-    if (JSON.stringify(normalized) === JSON.stringify(context.state)) return false;
-    context.state = normalized;
-    context.pending = true;
-    context.sequence += 1;
-    persist(context);
-    emit(context, context.conflict ? "conflict" : "idle");
-    schedule(context);
-    return true;
-  }
-  function flush() {
-    const context = active;
-    stopTimer(context);
-    return enqueue(context, () => drain(context));
-  }
-  function refresh() {
-    const context = active;
-    stopTimer(context);
-    return enqueue(context, async () => {
-      const loaded = await load(context);
-      if (loaded && context.pending) schedule(context);
-      return loaded;
-    });
-  }
-  function resolveRemote() {
-    const context = active;
-    stopTimer(context);
-    return enqueue(context, () => {
-      if (context.pending && !persist(context)) {
-        emit(context, "storage-error", failure("LOCAL_STORAGE_UNAVAILABLE"));
-        return false;
-      }
-      return load(context, "remote");
-    });
-  }
-  function resolveLocal() {
-    const context = active;
-    stopTimer(context);
-    return enqueue(context, async () => {
-      if (!await load(context, "local")) return false;
-      return drain(context);
-    });
-  }
-  function selectLocalDraft(id2) {
-    const context = active;
-    stopTimer(context);
-    return enqueue(context, async () => {
-      if (context.pending && !persist(context)) {
-        emit(context, "storage-error");
-        return false;
-      }
-      const selected = draftGroups(context).find((group) => group.id === id2);
-      if (!selected) {
-        emit(context, "synced");
-        if (!context.localChoice && !context.pending) await load(context);
-        return false;
-      }
-      detachDraft(context);
-      context.recovery = new Map(selected.entries);
-      context.state = clone2(selected.state);
-      context.baseRevision = selected.baseRevision;
-      context.pending = true;
-      context.known = false;
-      context.conflict = false;
-      context.localChoice = false;
-      context.sequence++;
-      emitState(context);
-      try {
-        const loaded = await load(context);
-        if (loaded && context.pending) schedule(context);
-      } catch (error) {
-        reportFailure(context, error);
-      }
-      return true;
-    });
-  }
-  function remove() {
-    const context = active;
-    stopTimer(context);
-    if (!context) return Promise.resolve(false);
-    context.deleting = true;
-    return enqueue(context, async () => {
-      try {
-        if (!context.known && !await load(context)) return false;
-        if (context.conflict) {
-          emit(context, "conflict", failure("REVISION_CONFLICT", context.revision));
-          return false;
-        }
-        emit(context, "saving");
-        const expected = context.baseRevision;
-        const remote = await request(context, operations2.delete, { expected_revision: expected });
-        if (remote.revision !== expected + 1 || !remote.empty) throw failure("INVALID_CARE_RESPONSE");
-        onRemoved();
-        context.state = emptyState();
-        context.revision = remote.revision;
-        context.baseRevision = remote.revision;
-        context.pending = false;
-        context.conflict = false;
-        context.localChoice = false;
-        context.sequence += 1;
-        removeEntries(context, new Map([...context.recovery, ...context.owned]));
-        context.currentDraft = null;
-        persist(context);
-        emitState(context);
-        emit(context, "synced");
-        return true;
-      } finally {
-        context.deleting = false;
-      }
-    });
-  }
-  return { open, change, flush, refresh, resolveRemote, resolveLocal, selectLocalDraft, remove, close, localRecords, exportLocalRecords, clearLocalRecords };
-}
-var validRevision, failure, messages, documentSyncErrorMessage;
-var init_document_sync = __esm({
-  "experiences/synk-account/src/document-sync.mjs"() {
-    validRevision = (value) => Number.isSafeInteger(value) && value >= 0;
-    failure = (code, revision) => Object.assign(new Error(code), { code, ...validRevision(revision) ? { revision } : {} });
-    messages = {
-      CARE_CLIENT_UPDATE_REQUIRED: "더 새로운 앱에서 저장한 문구 보관함이나 안부 설정이 있어요. 현재 자료를 백업한 뒤 새로고침해 주세요.",
-      CARE_LIBRARY_RECOVERY_REVIEW: "계정 보관함의 이전 문구·즐겨찾기 또는 안부 주기 설정이 이 임시기록에는 없어요. 임시기록을 복구 파일로 백업한 뒤 계정 수첩을 선택해 주세요.",
-      REVISION_CONFLICT: "다른 기기에서 기록이 바뀌었어요. 어느 기록을 사용할지 골라 주세요.",
-      LOCAL_CHANGED_DURING_REFRESH: "가져오는 동안 새로 수정한 내용이 있어요. 기록을 다시 골라 주세요.",
-      AUTH_REQUIRED: "SYNK 계정에 다시 로그인해 주세요.",
-      SESSION_REVOKED: "로그인이 종료되었어요. 다시 로그인해 주세요.",
-      ACCOUNT_UNAVAILABLE: "지금은 이 계정의 기록을 사용할 수 없어요.",
-      PRODUCT_FORBIDDEN: "이 로그인으로는 플레저 기록에 접근할 수 없어요.",
-      CARE_ACCOUNT_MISMATCH: "로그인 계정과 기록의 계정이 달라요. 다시 로그인해 주세요.",
-      INVALID_CARE_RESPONSE: "계정에서 받은 기록을 확인하지 못했어요. 다시 불러와 주세요.",
-      INVALID_CARE_STATE: "저장할 기록을 확인하지 못했어요. 현재 자료를 내보내 주세요.",
-      INVALID_LOCAL_CACHE: "읽지 못한 기기 임시 기록의 원본을 그대로 보존했어요. 로그인한 계정의 기록으로 확인된 원본만 복구 파일로 내보내거나 직접 지울 수 있어요.",
-      LOCAL_DRAFT_CONFLICT: "이 계정의 미저장 기록이 기기에 남아 있어요. 다른 탭에서 편집 중일 수도 있으니 이어서 사용할 기록을 직접 골라 주세요. 고르지 않은 기록도 보존해요.",
-      LOCAL_STORAGE_UNAVAILABLE: "이 기기의 임시 기록을 보관하거나 지우지 못했어요. 저장 결과를 확인하고 현재 자료를 내보내 주세요.",
-      LOCAL_CACHE_IN_USE: "현재 변경을 저장하거나 계정 저장본으로 전환한 뒤 이 계정의 임시기록을 지울 수 있어요. 진행 중인 저장·조회도 먼저 마쳐 주세요.",
-      LOCAL_RECOVERY_AUTH_REQUIRED: "임시기록을 남긴 SYNK 계정으로 로그인해야 복구 파일 내보내기와 삭제를 할 수 있어요.",
-      PAYLOAD_TOO_LARGE: "저장할 기록이 계정 보관 크기를 넘었어요. 먼저 내보낸 뒤 내용을 줄여 저장해 주세요.",
-      INVALID_PERSONAL_STATE: "저장할 기록 형식을 확인하지 못했어요. 현재 자료를 내보내 보관해 주세요.",
-      PERSONAL_DATA_TOO_LARGE: "저장할 기록이 계정 보관 크기를 넘었어요. 먼저 내보낸 뒤 내용을 줄여 저장해 주세요.",
-      REVISION_CAPACITY: "이 기록의 저장 횟수 한도에 도달했어요. 현재 자료를 내보내 보관하고 지원을 요청해 주세요.",
-      ASSET_NOT_FOUND: "앨범 원본을 찾지 못했어요. 현재 화면에 원본이 있다면 저장 다시 시도로 다시 올려 주세요.",
-      ASSET_NOT_CONFIRMED: "앨범 원본의 보관을 확인하지 못했어요. 저장 다시 시도로 원본을 다시 올려 주세요.",
-      MEDIA_QUOTA_EXCEEDED: "사진·음성 보관 공간 20MiB 또는 파일 수 한도에 도달했어요. 기존 사진·음성을 제거하고 저장을 마친 뒤 새 파일을 추가해 주세요.",
-      CARE_UNAVAILABLE: "계정 저장 연결이 아직 준비되지 않았어요. 현재 기록은 이 기기에서 보관해요.",
-      AUTH_UNAVAILABLE: "로그인 서버에 연결하지 못했어요. 잠시 뒤 다시 시도해 주세요."
-    };
-    documentSyncErrorMessage = (error) => messages[error?.code] || error?.message || "계정에 저장하지 못했어요. 연결을 확인한 뒤 다시 시도해 주세요.";
+    invalid6 = () => fail4("PERSONAL_DATA_INVALID", "저장할 개인 기록의 형식을 확인해 주세요.");
+    record = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+    fields = (value, names2) => record(value) && Object.keys(value).every((key) => names2.includes(key));
   }
 });
 
@@ -20275,7 +19580,7 @@ function createLibraryRecovery({ getHost, getOwner, canUse, getPayload, onChange
 }
 
 // experiences/synk-account/src/platform-library-view.mjs
-var names = { world: "WORLD", messenger: "워크스페이스", teacher: "워크스페이스 · 내 수업", path: "PATH", pulse: "PULSE", partners: "PULSE · 이전 Partners 기록", care: "플레저", fortune: "운세", rehearsal: "대화 리허설", "family-album": "가족 앨범" };
+var names = { world: "WORLD", messenger: "워크스페이스", teacher: "워크스페이스 · 내 수업", path: "PATH", pulse: "PULSE", partners: "PULSE · 이전 Partners 기록", care: "플레저", fortune: "운세" };
 var esc = (value) => String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
 var librarySequence = 0;
 function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
@@ -20360,10 +19665,10 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
   }
   function summary() {
     const available = !pageSuspended && !disposed && !!notebook?.active && notebook.canEdit && doc.consent;
-    const note2 = available ? doc.notes.find((row) => !row.done) : null, recent = available ? projectPlatformLibrary(doc, { appIds: entryIds() }).recent[0] : null, hasDraft = available && (!!draft.title.trim() || !!parkedDraft?.title.trim());
+    const note2 = available ? doc.notes.find((row) => !row.done && ACTIVE_PLATFORM_APP_IDS.includes(platformAppId(row.appId))) : null, recent = available ? projectPlatformLibrary(doc, { appIds: entryIds() }).recent[0] : null, hasDraft = available && (!!draft.title.trim() || !!parkedDraft?.title.trim());
     resumeId = note2?.appId || recent?.entryId || recent?.id || null;
     root.querySelector("[data-library-title]").textContent = hasDraft ? editing ? "수정 중인 메모가 있어요" : "작성 중인 메모가 있어요" : note2?.title || (recent ? "다시 " + names[recent.id] + "에서" : "계정으로 이어가기");
-    root.querySelector("[data-library-detail]").textContent = message || (hasDraft ? "접어두어도 이 화면의 입력은 유지돼요." : note2 ? names[note2.appId] + " · 남겨 둔 다음 할 일" : recent ? "최근 열었던 공간을 바로 열 수 있어요." : available ? "다음에 할 일을 남겨 두면 여기서 바로 이어갈 수 있어요." : "즐겨찾기와 다음에 할 일을 같은 SYNK ID로 이어가세요.");
+    root.querySelector("[data-library-detail]").textContent = message || (hasDraft ? "접어두어도 이 화면의 입력은 유지돼요." : note2 ? (names[note2.appId] || "이전 앱의 메모") + " · 남겨 둔 다음 할 일" : recent ? "최근 열었던 공간을 바로 열 수 있어요." : available ? "다음에 할 일을 남겨 두면 여기서 바로 이어갈 수 있어요." : "즐겨찾기와 다음에 할 일을 같은 SYNK ID로 이어가세요.");
     root.querySelector("[data-library-status]").textContent = connecting ? "연결 준비 중…" : hasDraft && notebook.status.status === "synced" && !notebook.status.error && !notebook.pending ? "메모는 아직 계정에 저장하지 않았어요" : mount.querySelector("[data-notebook-status]")?.textContent || "";
     resumeButton.hidden = !available || !resumeId && !hasDraft;
     resumeButton.textContent = hasDraft ? "계속 작성" : "이어서 열기";
@@ -20447,15 +19752,15 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
     focusDraft();
   }
   function noteCard(row) {
-    return '<article tabindex="-1" data-note-id="' + esc(row.id) + '"><strong>' + esc(row.title) + "</strong><p>" + names[row.appId] + '</p><div class="continuity-note-actions"><button type="button" data-cloud="open" data-id="' + row.appId + '">이어가기</button><button type="button" data-cloud="edit-note" data-id="' + esc(row.id) + '" aria-label="' + esc(row.title) + ' 수정">수정</button><button type="button" data-cloud="toggle-note" data-id="' + esc(row.id) + '" aria-pressed="' + row.done + '">' + (row.done ? "완료됨 · 다시 열기" : "완료 표시") + '</button><button type="button" data-cloud="remove-note" data-id="' + esc(row.id) + '" aria-label="' + esc(row.title) + ' 삭제">메모 삭제</button></div></article>';
+    return '<article tabindex="-1" data-note-id="' + esc(row.id) + '"><strong>' + esc(row.title) + "</strong><p>" + (names[row.appId] || "이전 앱의 메모") + '</p><div class="continuity-note-actions">' + (ACTIVE_PLATFORM_APP_IDS.includes(platformAppId(row.appId)) ? '<button type="button" data-cloud="open" data-id="' + row.appId + '">이어가기</button>' : "") + '<button type="button" data-cloud="edit-note" data-id="' + esc(row.id) + '" aria-label="' + esc(row.title) + ' 수정">수정</button><button type="button" data-cloud="toggle-note" data-id="' + esc(row.id) + '" aria-pressed="' + row.done + '">' + (row.done ? "완료됨 · 다시 열기" : "완료 표시") + '</button><button type="button" data-cloud="remove-note" data-id="' + esc(row.id) + '" aria-label="' + esc(row.title) + ' 삭제">메모 삭제</button></div></article>';
   }
   function matchingNotes(query = "", filter = "all") {
     const terms = String(query).normalize("NFKC").toLocaleLowerCase("ko-KR").trim().split(/\s+/).filter(Boolean);
-    return doc.notes.filter((row) => (filter === "all" || row.done === (filter === "done")) && terms.every((term) => (row.title + " " + names[row.appId]).normalize("NFKC").toLocaleLowerCase("ko-KR").includes(term)));
+    return doc.notes.filter((row) => (filter === "all" || row.done === (filter === "done")) && terms.every((term) => (row.title + " " + (names[row.appId] || "이전 앱의 메모")).normalize("NFKC").toLocaleLowerCase("ko-KR").includes(term)));
   }
   function favoritesMarkup() {
-    const favorites = projectPlatformLibrary(doc, { appIds: entryIds() }).favorites.filter((id2) => displayIds().includes(id2));
-    return favorites.length > 1 ? '<h3>즐겨찾기 순서</h3><ol class="continuity-favorite-order">' + favorites.map((id2, index) => "<li><span>" + names[id2] + '</span><div><button type="button" data-cloud="favorite-up" data-id="' + id2 + '" aria-label="' + names[id2] + ' 즐겨찾기 위로"' + (index === 0 ? " data-order-edge disabled" : "") + '>위로</button><button type="button" data-cloud="favorite-down" data-id="' + id2 + '" aria-label="' + names[id2] + ' 즐겨찾기 아래로"' + (index === favorites.length - 1 ? " data-order-edge disabled" : "") + ">아래로</button></div></li>").join("") + "</ol>" : "";
+    const favorites = projectPlatformLibrary(doc, { appIds: entryIds() }).favorites.filter((id) => displayIds().includes(id));
+    return favorites.length > 1 ? '<h3>즐겨찾기 순서</h3><ol class="continuity-favorite-order">' + favorites.map((id, index) => "<li><span>" + names[id] + '</span><div><button type="button" data-cloud="favorite-up" data-id="' + id + '" aria-label="' + names[id] + ' 즐겨찾기 위로"' + (index === 0 ? " data-order-edge disabled" : "") + '>위로</button><button type="button" data-cloud="favorite-down" data-id="' + id + '" aria-label="' + names[id] + ' 즐겨찾기 아래로"' + (index === favorites.length - 1 ? " data-order-edge disabled" : "") + ">아래로</button></div></li>").join("") + "</ol>" : "";
   }
   function notesMarkup() {
     const matched = matchingNotes(noteQuery, noteFilter), pending = matched.filter((row) => !row.done), completed = matched.filter((row) => row.done);
@@ -20514,7 +19819,7 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
       if (nextNotes !== renderedNotes) content.querySelector(".continuity-notes").innerHTML = nextNotes;
       if (nextFavorites !== renderedFavorites) content.querySelector("[data-favorite-order]").innerHTML = nextFavorites;
     } else {
-      content.innerHTML = active ? '<h2>내 계정의 이어쓰기</h2><p role="status" data-cloud-message>' + esc(message) + "</p>" + (!doc.consent ? '<p>계정 연결을 켜면 지금부터 선택한 즐겨찾기와 최근 열기를 계정에 저장해요. 기존 기기 목록은 위의 옮기기 버튼으로 직접 가져올 수 있어요.</p><button data-cloud="enable">계정 저장 켜기</button>' : '<label><input type="checkbox" data-cloud="remember" ' + (doc.rememberRecent ? "checked" : "") + '> 최근 열기 시각도 계정에 보관</label><div class="continuity-apps">' + displayIds().map((id2) => '<button type="button" data-cloud="favorite" data-id="' + id2 + '" aria-pressed="' + favoriteSelected(id2) + '">' + (favoriteSelected(id2) ? "★ " : "☆ ") + names[id2] + "</button>").join("") + "</div><section data-favorite-order>" + nextFavorites + '</section><section data-note-recovery class="continuity-undo" hidden><p data-recovery-detail role="status"></p><button type="button" data-cloud="recover-draft">초안 복구</button><button type="button" data-cloud="discard-recovery">보관한 초안 버리기</button></section><form data-note-form><h3 data-editor-heading>새 메모</h3><p data-edit-detail hidden></p><p id="' + panelId + '-capacity" data-note-capacity role="status"></p><label>이어 쓸 공간<select name="appId">' + editorOptions(draft.appId) + '</select></label><label>다음에 할 일<input name="title" maxlength="240" required aria-describedby="' + panelId + '-capacity" value="' + esc(draft.title) + '" placeholder="예: 다음 부탁 대화의 첫 문장 다듬기"></label><button type="submit" data-note-submit>계정에 메모 남기기</button><button type="button" data-cloud="cancel-edit" hidden>수정 취소</button></form><div class="continuity-undo" data-note-undo hidden><p role="status" data-note-undo-message></p><button type="button" data-cloud="undo-note">삭제 되돌리기</button><p data-note-undo-detail></p></div><div class="continuity-note-tools"><label>메모 검색<input type="search" data-note-search placeholder="메모 내용이나 공간 이름" aria-label="메모 검색"></label><label>메모 상태<select data-note-filter><option value="all">모두</option><option value="pending">미완료</option><option value="done">완료</option></select></label></div><div class="continuity-notes">' + nextNotes + "</div><p>최근 열기는 실제 작업 완료나 학습 성과를 뜻하지 않아요.</p>") : "<p>계정에 로그인한 뒤 라이브러리를 연결할 수 있어요. 기기의 바로가기는 그대로 유지됩니다.</p>";
+      content.innerHTML = active ? '<h2>내 계정의 이어쓰기</h2><p role="status" data-cloud-message>' + esc(message) + "</p>" + (!doc.consent ? '<p>계정 연결을 켜면 지금부터 선택한 즐겨찾기와 최근 열기를 계정에 저장해요. 기존 기기 목록은 위의 옮기기 버튼으로 직접 가져올 수 있어요.</p><button data-cloud="enable">계정 저장 켜기</button>' : '<label><input type="checkbox" data-cloud="remember" ' + (doc.rememberRecent ? "checked" : "") + '> 최근 열기 시각도 계정에 보관</label><div class="continuity-apps">' + displayIds().map((id2) => '<button type="button" data-cloud="favorite" data-id="' + id2 + '" aria-pressed="' + favoriteSelected(id2) + '">' + (favoriteSelected(id2) ? "★ " : "☆ ") + names[id2] + "</button>").join("") + "</div><section data-favorite-order>" + nextFavorites + '</section><section data-note-recovery class="continuity-undo" hidden><p data-recovery-detail role="status"></p><button type="button" data-cloud="recover-draft">초안 복구</button><button type="button" data-cloud="discard-recovery">보관한 초안 버리기</button></section><form data-note-form><h3 data-editor-heading>새 메모</h3><p data-edit-detail hidden></p><p id="' + panelId + '-capacity" data-note-capacity role="status"></p><label>이어 쓸 공간<select name="appId">' + editorOptions(draft.appId) + '</select></label><label>다음에 할 일<input name="title" maxlength="240" required aria-describedby="' + panelId + '-capacity" value="' + esc(draft.title) + '" placeholder="예: 다음 학습에서 확인할 내용 정리하기"></label><button type="submit" data-note-submit>계정에 메모 남기기</button><button type="button" data-cloud="cancel-edit" hidden>수정 취소</button></form><div class="continuity-undo" data-note-undo hidden><p role="status" data-note-undo-message></p><button type="button" data-cloud="undo-note">삭제 되돌리기</button><p data-note-undo-detail></p></div><div class="continuity-note-tools"><label>메모 검색<input type="search" data-note-search placeholder="메모 내용이나 공간 이름" aria-label="메모 검색"></label><label>메모 상태<select data-note-filter><option value="all">모두</option><option value="pending">미완료</option><option value="done">완료</option></select></label></div><div class="continuity-notes">' + nextNotes + "</div><p>최근 열기는 실제 작업 완료나 학습 성과를 뜻하지 않아요.</p>") : "<p>계정에 로그인한 뒤 라이브러리를 연결할 수 있어요. 기기의 바로가기는 그대로 유지됩니다.</p>";
     }
     renderedNotes = nextNotes;
     renderedCatalog = catalog;
@@ -20855,14 +20160,14 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
       if (pageSuspended || disposed || !notebook?.active || !notebook.canEdit || !doc.consent) return [];
       return matchingNotes(query).sort((a, b) => Number(a.done) - Number(b.done) || b.createdAt - a.createdAt).slice(0, Math.max(0, Math.min(60, Number.isInteger(limit) ? limit : 8))).map((row) => ({ ...row }));
     },
-    openNote(id2) {
-      if (pageSuspended || disposed || !notebook?.active || !notebook.canEdit || !doc.consent || !doc.notes.some((row) => row.id === id2)) return false;
+    openNote(id) {
+      if (pageSuspended || disposed || !notebook?.active || !notebook.canEdit || !doc.consent || !doc.notes.some((row) => row.id === id)) return false;
       noteQuery = "";
       noteFilter = "all";
-      if (doc.notes.find((row) => row.id === id2).done) completedExpanded = true;
+      if (doc.notes.find((row) => row.id === id).done) completedExpanded = true;
       expand(true);
       render();
-      const card = content.querySelector('[data-note-id="' + id2 + '"]');
+      const card = content.querySelector('[data-note-id="' + id + '"]');
       card?.scrollIntoView?.({ block: "nearest", behavior: "instant" });
       card?.focus?.({ preventScroll: true });
       return true;
