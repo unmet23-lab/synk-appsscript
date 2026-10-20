@@ -1,12 +1,14 @@
 # SYNK ID 공통 등록 목록과 로컬 설정
 
+등록 도구의 계약과 10-06~09 실행 이력을 함께 보존한 문서다. 현재 등록 수·환경·적용 여부는 `registry.cjs`, `state/provision-환경.json` 및 제품별 최신 적용 기록으로 확인한다. 아래 최초 준비 단계의 미적용 설명을 이후 운영 상태로 읽지 않는다. 여행의 후속 등록·v23·공개 확인은 [10-09 운영 결과](qa/path-travel-production-20261009/README.md)에 있다. 당시 검수 담당·단계는 실행 이력이며 현재 공통 검수 절차를 새로 만들지 않는다.
+
 ## 2026-10-09 여행 전용 로컬 준비
 
 `path-travel-browser`는 기존 VR `path`와 다른 `platform` public client다. 개발 callback은 `http://127.0.0.1:4303/`이며 native 등록/포트는 추가하지 않는다. `provision-apply.cjs --only path-travel-browser`는 해당 등록과 제품 매핑만 계획하고, `--apply`가 없는 실행은 읽기다. 지정하지 않으면 기존 전체 계획/적용 동작을 유지한다. 범위 지정 적용은 다른 미등록/미매핑 항목을 보류하고 공통 runtime 설정 파일을 쓰지 않는다. 알 수 없는 ID·다른 pending mapping·다른 등록의 재시도는 거절한다.
 
 전용 등록·매핑이 확인된 뒤 `personal-public-provision.cjs --운영 --product path-travel --out <새-.tmp-폴더>`로 정확한 공개 callback `https://synk.im/try/travel/`과 포털/설정 후보를 준비한다. 이 명령도 `--apply`가 없으면 읽기이며, 옵션 없는 기존 운세·리허설 선택은 유지한다. `prepare-personal-public.mjs path-travel <새-.tmp-폴더> <여행설정.json>`은 앱을 복제하지 않고 `config.json`과 `build-manifest.json`만 만든다. 실제 여행 앱은 기존 홈페이지 여행 빌드가 담당한다.
 
-여행 등록·callback·매핑·DB/function 적용과 공개 동기화는 이번 로컬 구현에서 실행하지 않았다. [검증·정확한 단계](../../experiences/path-travel/qa/expansion-20261009/ACCOUNT-RELEASE-READINESS.md).
+아래 최초 로컬 준비 단계에서는 여행 등록·callback·매핑·DB/function 적용과 공개 동기화를 실행하지 않았다. [당시 준비 검증](../../experiences/path-travel/qa/expansion-20261009/ACCOUNT-RELEASE-READINESS.md)과 위 후속 운영 결과를 구분한다.
 
 `registry.cjs`가 서비스, 실행 환경, API 제품, 정확한 개발 콜백의 공통 목록이다. 플랫폼·WORLD·메신저·교사·운세·플레저는 각자의 OAuth client와 저장소를 사용하면서 기존 중앙 SYNK ID에 연결한다. 기존 WORLD 앱과 맞춤 도구의 등록 ID도 같은 목록에서 관리한다. 등록 ID나 비밀번호를 서비스 사이에 복사하지 않는다.
 
@@ -88,7 +90,7 @@ node --test tests/synk-id-provision-plan.test.cjs tests/synk-id-provision-apply.
 
 제품 매핑 쓰기 응답이 끊겨도 지문을 먼저 대조하며, 확인된 쓰기를 다시 POST하지 않는다. 전체 등록과 매핑이 확인된 뒤에만 실제 ID로 로컬 설정 파일을 생성한다. 매핑 병합 후 재개할 때는 오래된 `--mapping`을 다시 넘기지 않고 보존한 journal의 최신 매핑을 사용한다. 입력 원본이 journal과 다르면 중단한다. 동의 화면 배포, DB/function 배포, 역할·권한 변경, 유료 서비스, 사용자 로그인은 이 도구의 기능에 포함되지 않는다.
 
-## 2026-10-06 현재 적용 기준과 포털 보존
+## 2026-10-06 최초 적용 기준과 포털 보존
 
 운세가 먼저 등록되어 운영은 기존 WORLD·도구·운세 4개, 리허설은 WORLD·운세 3개다. 두 환경 모두 새 등록은 15개이며 teacher-browser는 제외한다. 운세 native/browser는 현재 원문과 명시 bindings로 재사용한다. 기존 `SYNK_FORTUNE_CLIENT_IDS` 배열 지문은 정본 운세 provisioner처럼 실제 binding ID 집합을 사전순 정렬해 대조하며 이 secret은 쓰지 않는다. native/browser 역할의 올바름은 각각 실제 콜백과 별도 대조한다. 제품 매핑은 `SYNK_OAUTH_CLIENT_PRODUCTS` 한 항목만 병합한다. 현재 확정 원문은 `state/*-before-unified.json`에도 보관한다.
 

@@ -1,5 +1,7 @@
 # Google Drive integration contract
 
+The 2026-09-27 connection and PC-storage observations below describe the standalone environment. The integrated company workspace stores its database on the company server; use [CLOUD-OPERATIONS](../../docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md) for that deployment and its backup scope. Neither the historical quota nor this contract confirms a current live connection. The per-file original-provider, ownership and deletion-queue contracts remain applicable.
+
 As of 2026-09-27, `unmet23@gmail.com` is connected and its live quota limit is **5497558138880 bytes (5TB in the UI)**. Dedicated private folder: [SYNK 팀 메신저](https://drive.google.com/drive/folders/1t9EzZO-JJLTDkOamtKhd0xUbvHqUEraL). Existing authorized OAuth credentials were used without modifying their source. No new subscriptions or public sharing were created. Additional messenger service fees are zero; the existing Google subscription is separate.
 
 New uploads use the active connection. Previous files retain their original provider, connection and remote ID; switching does not migrate them. Existing local attachments remain usable. Chat/account records stay in SQLite on the PC. File limits remain 100MiB per file and five attachments per message. Files never auto-expire. Explicit deletion moves only app-owned files to Drive trash; trash still consumes Google storage. The app never empties the account trash or permanently deletes remote files.

@@ -1,5 +1,7 @@
 # 데스크톱 SYNK ID 연결 — 0.2.0
 
+> 인증 구현의 10-02·10-04 이력과 경계를 보존한 문서다. 10-09부터 교사 기본 입구는 Workspace의 **내 수업**이며 독립 교사 앱은 호환 경로로 남는다([현재 앱 입구와 후속 기록](README.md)). 아래 API 목록은 당시 목록이고, 현재 허용 동작·제품/클라이언트 경계는 [`src/account-requests.cjs`](src/account-requests.cjs)와 각 제품 broker가 정한다. 과거 검증 횟수와 미설정 상태를 현재 설치·실계정 상태로 확대하지 않는다.
+
 ## 2026-10-04 소스 후속 — 독립 교사 앱과 WORLD 개인 맞춤 기억
 
 교사 앱은 `clientId: teacher`, OAuth `clients.teacher`, `im.synk.teacher.preview` 보관소·세션을 쓰는 독립 프로세스다. API 헤더의 제품은 `world`로 유지하고 실제 교사·담당 반 권한은 서버가 판정한다. 콜백은 `http://127.0.0.1:43824/synk/oauth/teacher/callback`이며 WORLD 클라이언트 ID·콜백·암호화 저장소를 재사용하지 않는다. 설정 예시는 [auth.example.json](auth.example.json), 동작 범위는 [README](README.md)에 있다.

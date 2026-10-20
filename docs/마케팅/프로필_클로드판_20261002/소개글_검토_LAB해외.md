@@ -1,7 +1,9 @@
-# 해외 LAB 24개 계정 · 새 소개(클로드판 2차)와 지금 소개
+# 해외 LAB 24개 계정 · 2026-10-02 소개 전후 검토 기록
+
+아래는 10월 2일의 기존 소개와 교체 초안이다. 미반영·첫 편 준비·커버 공백은 당시 상태이며 현재 계정 상태를 뜻하지 않는다. 재사용 전 [프로필 작업 기록](README.md), [계정 원장](../sns-계정.json)과 해당 계정의 게시 기록을 확인한다. 다국어 비교 원문은 보존하며, 현행 콘텐츠 방향은 [제작 방식](../콘텐츠_제작방식_v2_20261002.md)을 따른다.
 
 2026-10-02 · 원본은 `LAB해외_문구.py` → `계정별_문구_LAB해외.json`. 배너는 `배너/배너_LAB해외.html` → `배너/out_LAB해외/`.
-**어느 계정에도 반영하지 않았다.** 모든 언어가 AI 작성이고 원어민 확인 전이다. 계정 이름·핸들은 그대로 둔다.
+**10-02 초안 작성 시점에는 어느 계정에도 반영하지 않았다.** 모든 언어가 AI 작성이고 원어민 확인 전이다. 계정 이름·핸들은 그대로 둔 초안이다.
 
 ## 모든 계정의 같은 뼈대
 
@@ -18,7 +20,7 @@
 > 첫 편을 준비하고 있어요. 한국어 학습 앱도 만들고 있고, 소식은 이 채널에서 먼저 전해요.
 
 - 첫 영상을 올리면 「첫 편을 준비하고 있어요」 줄은 지운다. 학습 앱 소식 줄은 남긴다.
-- 지금 소개(GPT판)는 열여섯 나라가 같은 영어 틀을 옮긴 글이었다(인사·카페 주문·댓글 / 한글·TOPIK 기초·퀴즈 / 소리 내어 읽고 답을 고르고). 퀴즈처럼 아직 없는 것을 약속하던 부분은 뺐다.
+- 당시 기존 소개(GPT판)는 열여섯 나라가 같은 영어 틀을 옮긴 글이었다(인사·카페 주문·댓글 / 한글·TOPIK 기초·퀴즈 / 소리 내어 읽고 답을 고르고). 퀴즈처럼 아직 없는 것을 약속하던 부분은 뺐다.
 
 ## Japan · YouTube `@synklabjapan` (ja)
 
@@ -37,7 +39,7 @@
 
 SYNK LAB · https://synk.im/lab/
 ```
-<details><summary>지금 소개</summary>
+<details><summary>당시 기존 소개</summary>
 
 ```text
 学んですぐ使える韓国語。
@@ -73,7 +75,7 @@ Những tập đầu tiên sắp ra mắt. Chúng mình cũng đang làm một �
 
 SYNK LAB · https://synk.im/lab/
 ```
-<details><summary>지금 소개</summary>
+<details><summary>당시 기존 소개</summary>
 
 ```text
 Học tiếng Hàn, dùng ngay!
@@ -108,7 +110,7 @@ SYNK LAB · https://synk.im/
 
 SYNK LAB · https://synk.im/lab/
 ```
-<details><summary>지금 소개</summary>
+<details><summary>당시 기존 소개</summary>
 
 ```text
 學了就能用的韓語。
@@ -143,7 +145,7 @@ Mongle၊ Kkamong နဲ့ Marin ဆိုတဲ့ ချစ်စရာ သ�
 
 SYNK LAB · https://synk.im/lab/
 ```
-<details><summary>지금 소개</summary>
+<details><summary>당시 기존 소개</summary>
 
 ```text
 သင်ပြီးတာနဲ့ လက်တွေ့သုံးလို့ရတဲ့ ကိုရီးယားစကား။
@@ -178,7 +180,7 @@ Mongle, Kkamong และ Marin สามเพื่อนตุ๊กตาส
 
 SYNK LAB · https://synk.im/lab/
 ```
-<details><summary>지금 소개</summary>
+<details><summary>당시 기존 소개</summary>
 
 ```text
 เรียนเกาหลีแล้วเอาไปใช้ได้เลย
@@ -213,7 +215,7 @@ Episode pertama segera hadir. Kami juga sedang membuat aplikasi belajar bahasa K
 
 SYNK LAB · https://synk.im/lab/
 ```
-<details><summary>지금 소개</summary>
+<details><summary>당시 기존 소개</summary>
 
 ```text
 Belajar bahasa Korea, langsung coba pakai!
@@ -249,7 +251,7 @@ Mongle, Kkamong और Marin, हमारे तीन फ़ेल्ट द�
 Say what you mean, in Korean: short everyday scenes and real Korean phrases, with subtitles.
 SYNK LAB · https://synk.im/lab/
 ```
-<details><summary>지금 소개</summary>
+<details><summary>당시 기존 소개</summary>
 
 ```text
 कोरियन सीखो और तुरंत इस्तेमाल करके देखो!
@@ -285,7 +287,7 @@ SYNK LAB · https://synk.im/
 
 SYNK LAB · https://synk.im/lab/
 ```
-<details><summary>지금 소개</summary>
+<details><summary>당시 기존 소개</summary>
 
 ```text
 Үйрөнүп, дароо колдончу корей тили.
@@ -320,7 +322,7 @@ First episodes are on the way. We're also building a Korean learning app, and yo
 
 SYNK LAB · https://synk.im/lab/
 ```
-<details><summary>지금 소개</summary>
+<details><summary>당시 기존 소개</summary>
 
 ```text
 Learn Korean you can use right away.
@@ -355,7 +357,7 @@ Malapit na ang unang episodes. Gumagawa rin kami ng Korean learning app, at dito
 
 SYNK LAB · https://synk.im/lab/
 ```
-<details><summary>지금 소개</summary>
+<details><summary>당시 기존 소개</summary>
 
 ```text
 Korean na matututuhan mo at magagamit agad!
@@ -391,7 +393,7 @@ Mongle, Kkamong සහ Marin කියන යාළුවෝ තුන්දෙ�
 சொல்ல நினைப்பதை கொரிய மொழியில் சொல்லுங்கள்: அன்றாடக் குறுங்காட்சிகள், உண்மையான கொரிய சொற்றொடர்கள், சப்டைட்டில்களுடன்.
 SYNK LAB · https://synk.im/lab/
 ```
-<details><summary>지금 소개</summary>
+<details><summary>당시 기존 소개</summary>
 
 ```text
 ඉගෙන ගත් ගමන් භාවිත කරන්න පුළුවන් කොරියානු!
@@ -427,7 +429,7 @@ First episodes are on the way. We're also building a Korean learning app, and yo
 
 SYNK LAB · https://synk.im/lab/
 ```
-<details><summary>지금 소개</summary>
+<details><summary>당시 기존 소개</summary>
 
 ```text
 Learn Korean you can use straight away.
@@ -462,7 +464,7 @@ Los primeros episodios llegan pronto. También estamos haciendo una app para apr
 
 SYNK LAB · https://synk.im/lab/
 ```
-<details><summary>지금 소개</summary>
+<details><summary>당시 기존 소개</summary>
 
 ```text
 Coreano que aprendés y usás al toque.
@@ -497,7 +499,7 @@ First episodes are on the way. We're also building a Korean learning app, and yo
 
 SYNK LAB · https://synk.im/lab/
 ```
-<details><summary>지금 소개</summary>
+<details><summary>당시 기존 소개</summary>
 
 ```text
 Learn Korean you can use straight away.
@@ -532,7 +534,7 @@ Episod pertama akan tiba tidak lama lagi. Kami juga sedang membina aplikasi bela
 
 SYNK LAB · https://synk.im/lab/
 ```
-<details><summary>지금 소개</summary>
+<details><summary>당시 기존 소개</summary>
 
 ```text
 Belajar bahasa Korea, terus cuba guna!
@@ -570,7 +572,7 @@ First episodes are on the way. · Les premiers épisodes arrivent bientôt.
 
 SYNK LAB · https://synk.im/lab/
 ```
-<details><summary>지금 소개</summary>
+<details><summary>당시 기존 소개</summary>
 
 ```text
 Learn Korean you can use right away.
@@ -597,7 +599,7 @@ SYNK LAB · https://synk.im/
 ```text
 Nói điều bạn muốn nói bằng tiếng Hàn. Cảnh ngắn, câu thật, phụ đề Việt.
 ```
-<details><summary>지금 소개</summary>
+<details><summary>당시 기존 소개</summary>
 
 ```text
 Học tiếng Hàn thật vui. Học xong, thử nói ngay!
@@ -612,7 +614,7 @@ Học tiếng Hàn thật vui. Học xong, thử nói ngay!
 ```text
 ပြောချင်တာကို ကိုရီးယားလို ပြောကြမယ်။ မြင်ကွင်းတို၊ တကယ်သုံးတဲ့စကား။
 ```
-<details><summary>지금 소개</summary>
+<details><summary>당시 기존 소개</summary>
 
 ```text
 ကိုရီးယားစာ ပျော်ပျော်သင်မယ်။ သင်ပြီးတာနဲ့ ပြောကြည့်မယ်။
@@ -622,13 +624,13 @@ Học tiếng Hàn thật vui. Học xong, thử nói ngay!
 ## China · Xiaohongshu `synklab.cn(제안)` (zh-Hans)
 
 **뜻** 하고 싶은 말, 한국어로. 일상의 짧은 장면 + 한국 사람이 실제로 쓰는 표현, 중국어 자막. 보고 나서 바로 말해 봐요!
-**다른 점** 지금은 소개가 비어 있다.
+**다른 점** 당시에는 소개가 비어 있었다.
 
 새 소개 (42/100자)
 ```text
 想说的话，用韩语说。日常小场景＋韩国人真的在用的表达，配中文字幕。看完就开口说说看！
 ```
-<details><summary>지금 소개</summary>
+<details><summary>당시 기존 소개</summary>
 
 ```text
 (비어 있음)
@@ -656,7 +658,7 @@ SYNK LAB · https://synk.im/lab/
 ```text
 Говори по-корейски то, что хочешь сказать. Короткие сценки и живые фразы с русскими субтитрами.
 ```
-<details><summary>지금 소개</summary>
+<details><summary>당시 기존 소개</summary>
 
 ```text
 Хочешь начать учить корейский? Начнём с хангыля, а потом попробуем поздороваться и заказать напиток в кафе.
@@ -671,13 +673,13 @@ SYNK LAB: https://synk.im/lab/
 
 **배너 제목** भन्न मन लागेको कुरा, / कोरियनमा भनौँ। — 하고 싶은 말, 한국어로 말해요
 **뜻** 하고 싶은 말, 한국어로 말해요. 짧은 일상 장면과 한국 사람이 실제로 쓰는 문장.
-**다른 점** 커버는 지금 비어 있다 → 새 커버.
+**다른 점** 당시 커버가 비어 있어 새 커버를 제안했다.
 
 새 소개 (87/100자)
 ```text
 भन्न मन लागेको कुरा, कोरियनमा भनौँ। छोटा दैनिक दृश्य र कोरियालीले साँच्चै बोल्ने वाक्य।
 ```
-<details><summary>지금 소개</summary>
+<details><summary>당시 기존 소개</summary>
 
 ```text
 कोरियन सिकौँ, रमाइलो गर्दै। सिकेका शब्द आजै बोलौँ!
@@ -688,13 +690,13 @@ SYNK LAB: https://synk.im/lab/
 
 **배너 제목** អ្វីដែលចង់និយាយ / និយាយជាភាសាកូរ៉េ។ — 하고 싶은 말, 한국어로 말해요
 **뜻** 하고 싶은 말, 한국어로 말해요. 짧은 일상 장면과 한국 사람이 실제로 쓰는 표현.
-**다른 점** 커버는 지금 비어 있다 → 새 커버.
+**다른 점** 당시 커버가 비어 있어 새 커버를 제안했다.
 
 새 소개 (83/100자)
 ```text
 អ្វីដែលចង់និយាយ និយាយជាភាសាកូរ៉េ។ ឈុតខ្លីៗប្រចាំថ្ងៃ និងឃ្លាដែលជនជាតិកូរ៉េប្រើពិតៗ។
 ```
-<details><summary>지금 소개</summary>
+<details><summary>당시 기존 소개</summary>
 
 ```text
 រៀនភាសាកូរ៉េឱ្យសប្បាយ! រៀនហើយ សាកនិយាយភ្លាម។
@@ -705,13 +707,13 @@ SYNK LAB: https://synk.im/lab/
 
 **배너 제목** කියන්න ඕන දේ, / කොරියානුවෙන් කියමු. — 할 말을, 한국어로 말해요
 **뜻** 할 말을, 한국어로 말해요. 짧은 일상 장면, 실제로 쓰는 문장.
-**다른 점** 커버는 지금 비어 있다 → 새 커버.
+**다른 점** 당시 커버가 비어 있어 새 커버를 제안했다.
 
 새 소개 (77/100자)
 ```text
 කියන්න ඕන දේ, කොරියානුවෙන් කියමු. එදිනෙදා කෙටි දර්ශන, ඇත්තටම භාවිත වන වාක්‍ය.
 ```
-<details><summary>지금 소개</summary>
+<details><summary>당시 기존 소개</summary>
 
 ```text
 සතුටින් කොරියානු ඉගෙන ගමු. ඉගෙන ගත් වචන අදම කියලා බලමු!
@@ -726,7 +728,7 @@ SYNK LAB: https://synk.im/lab/
 ```text
 Aytmoqchi bo‘lganingni koreyschada ayt. Kundalik hayotdan qisqa sahnalar va koreyslar haqiqatan ishlatadigan iboralar, o‘zbekcha izoh bilan. Sahnani ko‘r, iborani eshit, keyin o‘zingcha ovoz chiqarib ayt. Birinchi epizodlar tez orada. synk.im/lab
 ```
-<details><summary>지금 소개</summary>
+<details><summary>당시 기존 소개</summary>
 
 ```text
 Koreys tilini zavq bilan o‘rganamiz! Hangul, kundalik iboralar va kichik testlar. Yangi boshlovchilar uchun materiallar tayyorlanmoqda. Bitta iborani o‘rganib, darrov aytib ko‘r.

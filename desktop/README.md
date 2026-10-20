@@ -1,5 +1,7 @@
 # SYNK 데스크톱 클라이언트
 
+> 현재 제품 연결과 릴리스 결과는 [플랫폼 계정·연결 원문](../docs/SYNK_플랫폼_계정과_연결_설계.md)을 따른다. 아래는 날짜별 구현·검증 이력이며 ‘현재 PC’, 앱 수, 미실행 항목은 해당 날짜의 범위다. 10-15 후속 0.4.16 기록도 그 원문에 있으므로 이 문서의 0.4.15나 더 오래된 파일을 최신 배포판으로 지정하지 않는다. 이사는 새 기기의 설치·로그인·효과 재검증을 뜻하지 않는다. 현재 공통 릴리스 재현은 [LIFECYCLE](LIFECYCLE.md#platform-release-reproduction)을 사용한다.
+
 ## 2026-10-15 · 0.4.15 성향 보완·최적화 — 공개·PC 설치와 실계정 재실행 완료
 
 기존 Atlas의 상황별 설명·자유서술 확인 반영과 입력/이력 표시 최적화를 **0.4.15 / build20261015.2**로 공개하고 현재 PC에 설치했다. 공개 세 설치파일 SHA·PC75파일·동결 소스142파일이 일치하며 기존 프로필319+Suite1파일은 설치 직후 모두 보존됐다. 실제 계정의 자동 연결·정상 종료 후 재실행·성향 화면과 기존 기록 유지를 확인했고 `closeToTray=true`로 원복했다. WORLD·Workspace 자식 설치파일은 0.4.11이다. [범위·검사·최종 공개 상태](../docs/SYNK_플랫폼_계정과_연결_설계.md#member-insight-optimization-20261015). 아래 PC 중단은 당시 이력이며 이번 사용자 재개 요청과 완료가 후속 상태다. 푸시는 보류한다.
@@ -292,7 +294,7 @@ PATH의 네이티브 창은 PC 3D 모드다. 사용자가 **VR 지원 브라우�
 
 ## 2026-10-02 초기 Windows 설치 파일 이력
 
-아래 `dist` 파일과 표는 초기 0.4.0 패키지의 보존 이력이다. 현재 PC의 플랫폼 설치본과 재설치 파일은 문서 상단의 **2026-10-09 최신 설치 파일**을 사용한다. 아래 초기 파일을 덮어쓰거나 다른 앱의 패키지를 함께 갱신하지 않았다.
+아래 `dist` 파일과 표는 초기 0.4.0 패키지의 보존 이력이다. 현재 설치·재설치는 이 문서 첫머리가 연결한 공통 릴리스 원문을 따른다. 아래 초기 파일을 덮어쓰거나 다른 앱의 패키지를 함께 갱신하지 않았다.
 
 아래 파일은 **서명되지 않은 개발판(0.4.0)**이다. 공개 배포판이 아니다. 플랫폼은 자체 번들 화면으로 부팅하며 WORLD·메신저의 개발 서비스는 각 로컬 서버가 필요하다. 설치 프로그램은 실행하지 않았고 설치·제거·설치 후 앱 간 실행은 아직 실제 기기에서 검증하지 않았다. 설치 완료 시 앱은 자동으로 열리지 않는다.
 
@@ -362,7 +364,7 @@ const unsubscribe = window.synkDesktop.onClientsChanged(clients => {});
 
 설치 파일 준비 진행률은 실제 로컬 복사 바이트다. 준비를 취소할 수 있고, 준비 완료 후 별도의 설치 버튼으로 열기 직전에 다시 해시를 검사한다. 설치 프로그램 열기를 설치 완료로 표시하지 않는다. 실제 설치 확인과 버전 비교·업데이트 상태는 고정 OS 경로의 파일 검사 결과를 사용한다. 자세한 상태와 검증은 [LIFECYCLE.md](LIFECYCLE.md)에 있다.
 
-## 확인한 범위
+## 2026-10-02 초기판에서 확인한 범위
 
 - 전체 데스크톱 시험 **58개 통과**. 기존 셸·인증 경계, 설치 파일 준비·취소·변조 거절, 구버전 실행과 업데이트 비교, 번들 프로토콜, 렌더러 상태와 실제 문서 연결을 검사했다.
 - [실제 Electron 플랫폼 검사](artifacts/platform-native-smoke.json): Windows x64 Electron 44.5.1의 숨김 창에서 라이브러리·설치 관리·설정·검색·즐겨찾기와 설정 유지·상세/계정 대화상자·키보드·폰트·창 제어 허용 목록 **14항목**을 통과했다. HTTP/HTTPS/WS/WSS 요청을 차단해도 번들 화면이 열렸고 네트워크 요청·콘솔 오류는 0이었다. 설치 프로그램·WORLD·메신저 실행과 실제 로그인은 이 검사에서 시작하지 않았다.
@@ -376,7 +378,7 @@ const unsubscribe = window.synkDesktop.onClientsChanged(clients => {});
 
 ![SYNK 플랫폼 — 실제 Electron 라이브러리](artifacts/platform-hidden-preview.png)
 
-## 보안 경계와 현재 기능 제한
+## 2026-10-02 보안 경계와 당시 기능 제한
 
 `sandbox`, `contextIsolation`, `webSecurity`를 켜고 Node·webview·임의 팝업·임의 외부 실행은 끈다. IPC는 해당 창의 최상위 프레임과 정확한 입구 경로를 확인한다. 클라이언트끼리 같은 origin을 쓰더라도 상대 입구를 같은 창에서 열 수 없다. 허용한 웹 체험 링크만 기본 브라우저로 연다. 자식 게임 문서의 `frame-ancestors`는 `'self'`, 최상위는 `'none'`이다.
 
@@ -384,7 +386,7 @@ const unsubscribe = window.synkDesktop.onClientsChanged(clients => {});
 
 아이콘은 기존 승인 자산을 색·모양 변경 없이 흰 바탕에 배치해 PNG·ICO·ICNS로 변환했다. [원본 경로·해시 기록](assets/sources.json), [변환 도구](tools/icons.cjs)에 재현 방법이 있다. 플랫폼은 SYNK 로고, WORLD는 책, 메신저는 노트북 자산을 사용한다.
 
-## 재현과 Mac 빌드
+## 2026-10-02 개발판 재현과 Mac 빌드 이력
 
 `desktop`에서 Node 24와 잠금 파일을 사용한다.
 
@@ -419,7 +421,7 @@ Cannot create symlinks (on Windows hosts, it requires admin privileges); skippin
 No Mac artifact created: this Windows host cannot create the required symbolic links. Build on macOS; no privilege escalation was attempted.
 ```
 
-## 정식 배포 전 남은 일
+## 2026-10-02 당시 정식 배포 전 남은 일
 
 공개 서버와 다운로드·업데이트 채널, 승인한 패키지 해시, 코드 서명, Mac 공증·기기 검증을 준비해야 한다. `--mode=release`는 별도 `--release-config`의 `version:1`, `approved:true`, WORLD·메신저의 HTTPS `entries` 및 `releases` 해시 목록을 요구하고 코드 서명을 강제한다. 로컬 주소는 개발 모드에만 허용하며 정식 서버 URL을 임의로 정하지 않았다. 이번 작업에서 운영 설정·배포·결제·인증 제공자 설정을 바꾸지 않았다.
 

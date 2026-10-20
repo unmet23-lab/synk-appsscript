@@ -1,5 +1,7 @@
 # Visualize: Direction Comps & Asset Production
 
+> 기존 영상에 동봉된 공급자 참고다. 현재 SYNK 정본·권한·승인·스타일의 적용 범위는 [이 폴더 안내](../SKILL.md)를 따른다. 이 원문이 별도 실행 권한이나 추가 승인 절차를 만들지 않는다.
+
 Load this from [new-work.md](new-work.md) on a comp-led build, when image generation is available (a harness-native tool or the API fallback `impeccable context` reports). A code-led contract skips this file by design, not by drift; do not load it then. PRODUCT.md and DESIGN.md are preconditions. New-work has already resolved the visual world; this file must not reopen it. A surface-scope structure round that already put three visualized cards before the user (new-work.md, established world) has discharged this round: the locked card's comp is the approved comp, so record the approval and continue at After approval; generate nothing new.
 
 A probe tests composition, narrative, hierarchy, density, focal moment, signature use, and image requirements. It is not a second identity workshop. Keep DESIGN.md's palette, typography direction, material language, component character, imagery stance, and motion grammar fixed.
@@ -27,7 +29,7 @@ Show the three together on the decision page (`impeccable serve-question`, one o
 
 Do not begin code until the user approves a direction or explicitly delegates the choice. If they delegate, choose using the task brief, PRODUCT.md, and DESIGN.md, and state the evidence. Approval refines the task concept; it does not modify DESIGN.md.
 
-This approval point has no substitute and no skip condition. When the structured question tool errors, fall back to the decision page; only after both fail may you treat the choice as delegated, and a delegated pick is recorded exactly as an approval is and disclosed in your first reply, not your last. The finish reviewer treats comp-round comps with no recorded approval as a material finding; decision comps under `.impeccable/mocks/decision/` are the direction round's hand, not comp-round output, and imply no approval on their own.
+Use the choice or delegation already given in the current request. If a required choice is still missing and the question tool fails, ask through an available user-facing channel; failure or silence is never delegation or approval. Record a delegated pick only when the user actually delegated it, keeping that provenance distinct from approval of the specific comp. The finish reviewer treats comp-round comps with no recorded approval as a material finding; decision comps under `.impeccable/mocks/decision/` are the direction round's hand, not comp-round output, and imply no approval on their own.
 
 After approval, record the choice where tools can find it: the approved comp's path goes in the surface brief, and its `.json` prompt sidecar gains `"approved": true` (every comp generated through `impeccable generate-image` has one; create it if a native tool didn't). The sidecar travels with the mocks folder, so the approval survives sessions and machines that never see the brief, and it is what `impeccable build-phase advance` reads to close the comps phase. Summarize the composition and the parts of the comp that must not be literalized, return to new-work.md, record the direction contract from the approved concept, and build.
 

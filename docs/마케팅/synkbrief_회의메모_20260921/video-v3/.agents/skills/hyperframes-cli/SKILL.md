@@ -1,15 +1,13 @@
 ---
 name: hyperframes-cli
-description: >
-  Use the HyperFrames CLI development loop: init, add, catalog, capture, lint, check, snapshot,
-  compare, grade-compare, preview, play, present, beats, keyframes, single or batch render, publish,
-  cloud, cloudrun, feedback, lambda, doctor, browser, info, upgrade, skills, compositions, timeline, docs,
-  benchmark, telemetry, transcribe, auth, tts, and remove-background. Also use when diagnosing build
-  or render failures. validate, inspect, and layout are deprecated aliases; use check. Covers local,
-  HeyGen-hosted cloud, AWS Lambda, and Google Cloud Run rendering.
+description: "CLI reference for inspecting, diagnosing, checking, previewing, and reproducing existing HyperFrames projects. Command coverage includes local and cloud tools, but this copy does not select a framework, require new-project scaffolding, authorize publishing, or grant installation, account, or paid-service permission."
 ---
 
+> 기존 영상 수정·재현용 사본이다. 새 영상은 [제작 방식 선택](../../../../../콘텐츠_제작방식_v2_20261002.md#video-tool-selection)을 먼저 따르며, 아래 공급자의 신규 제작·자동 라우팅 예시는 그 선택을 대신하지 않는다.
+
 # HyperFrames CLI
+
+> SYNK 적용 범위: 기존 HyperFrames 작업본의 기술 참고 자료다. 이 폴더의 프로젝트 의존성은 `hyperframes 0.8.58`이며 아래 공급자 문서의 모든 명령이 그 버전에서 지원된다는 뜻은 아니다. 새 제작 방식은 [SNS 키트](../../../../../../디자인/SNS키트/README.md), 담당·설치·인터넷 접근·비용·외부 발송·공개 범위는 [AI 운영 원칙](../../../../../../AI_운영원칙.md)과 현재 요청을 따른다. 공급자의 필수 라우팅·자동 업그레이드·피드백 전송·고정 승인 절차를 전역 지침으로 적용하지 않는다. 현재 요청이 로컬 렌더를 포함하면 별도 고정 승인을 다시 요구하지 않는다.
 
 Run commands as `npx hyperframes ...` unless project instructions provide a wrapper. Obey the wrapper when present. The CLI requires Node.js 22 or newer and FFmpeg.
 
@@ -55,7 +53,7 @@ ffprobe -v error -show_format -show_streams out.mp4
 
 ## Preview before render
 
-Open the final composition preview (`#project/<name>`) only after `check` passes, to review the assembled timeline. The plan in chat and the `storyboard.html` sketch sheet are not approval of the final video. Rendering always requires the final approval defined by `hyperframes/references/review-loop.md`.
+Open the final composition preview (`#project/<name>`) only after `check` passes, to review the assembled timeline. The plan in chat and the `storyboard.html` sketch sheet are not approval of the final video. 로컬 렌더 실행 범위는 현재 요청을 따른다. 아래 공급자 review-loop는 검토 방식 참고이며 이미 요청된 렌더의 별도 승인 관문이 아니다.
 
 ## Sub-composition smoke test
 
@@ -73,7 +71,8 @@ Treat tiny unstyled content, canvas-sized icons, missing hero elements, or timel
 - **Query in English even when the video is not.** Both tiers index an English catalog, so a query in another script produces no searchable terms and returns nothing. Describe the move in English; the on-screen copy stays in whatever language the video needs. `No searchable words in query` means exactly this and is not a missing component, so do not report it as a catalog gap.
 - **Read which tier answered; never infer it from results appearing.** With `--json` the envelope carries `query`, `tier` (`on-device` or `words`), `tier_detail`, `dropped`, `unindexed`, `shown`, `total` and `results`, plus `top_score` when the answering tier produces one and `warnings` when a tier was asked for and could not run, or when a search returned nothing and a better tier is still waiting on someone's consent. A weak result on `words` is expected; the same result on `on-device` is a bug. `top_score` is on-device only and has no threshold behind it: the ranker returns the whole catalog in some order for every query, so read it as evidence rather than as a pass or fail.
 - **`dropped` and `unindexed` are opposite skews between the registry and the on-device index, and rewording the query fixes neither.** `dropped` counts ranked names this registry cannot install, so the strongest matches are the ones being lost. `unindexed` counts registry moves the index cannot see at all, which no query can ever return. Refreshing the registry is not the answer to either: its manifest carries a 24h TTL and heals itself, while the vectors are a separately published artifact fetched into `~/.hyperframes/catalog/`. Re-running with `--on-device` refetches that index when `unindexed` is above zero, so that is the remedy to hand the user. A pure over-coverage skew (`dropped` above zero while `unindexed` is zero) does not trigger the refetch; clearing `~/.hyperframes/catalog/` is the only way out of that one. Both counts are of names rather than of results, so either can exceed `total`.
-- **When a search comes back with nothing worth installing, say so.** `npx hyperframes feedback --search-miss "<the query you ran>" --wanted "<the move you needed>" --tier <the tier that answered>`. You do not have to assemble that line: `catalog --query` prints it pre-filled, and every `--json` search envelope carries it as `report_gap` with the query and tier already correct — fill in `--wanted` and send. This is the only path that sends a query anywhere, and it is a separate deliberate command precisely so plain `catalog --query` keeps its promise of sending nothing. **Report on either tier**, whenever the results do not do the thing; do not hold out for the on-device tier, which needs a consented 33 MB download and is therefore off in most agent runs — waiting for it means never reporting at all. The tier rides along in the report, so a vocabulary miss stays distinguishable from a meaning miss without you having to judge which one you hit. What comes back is a list of moves the catalog does not have yet, read directly rather than guessed from install counts, so the phrasing that matters is the effect you wanted, not the item name you imagined. It carries no rating and never lands in the rating metric.
+- **검색 결과가 없으면 그 한계를 작업 기록에 남긴다.** `catalog`의 `report_gap`과 `feedback --search-miss`는 외부 전송용 예시다. 검색 실패만으로 실행하지 않으며, 발송은 사용자의 명시적 요청 범위를 따른다.
+
 - **Offer the offline tier; never enable it silently.** A one-time ~33 MB download (a quantized ONNX build of `bge-small-en-v1.5` plus its tokenizer, pinned to a fixed revision) and the catalog vectors from the registry, both cached under `~/.hyperframes/`, neither added to the project or any package. Once cached it ranks by meaning with nothing sent. Say the size out loud and let the person decide, then pass `--on-device` (with `-y` to skip the prompt) once they agree. The interactive offer only fires on a TTY. Under `--json` there is no prompt, but a search that found nothing puts the same ask in `warnings`, so read that array and put the decision to the user yourself.
 
 - Prefer `--json` for agent and CI calls. Server-mode `render`, `preview`, and `play` do not provide ordinary JSON output; `preview --selection --json` and `preview --context --json` are query-mode exceptions.
@@ -88,7 +87,7 @@ Treat tiny unstyled content, canvas-sized icons, missing hero elements, or timel
 - Use `--strict`, `--strict-all`, and `--strict-variables` when the corresponding warnings, variables, or CI conditions must gate the render.
 - JSON paths redact the home directory as `$HOME`; do not try to reverse the redaction.
 - When a hosted cloud project approaches or exceeds the 200 MB upload limit, use `cloud render --dry-run --json` and follow the `.hyperframesignore` investigation in `references/cloud.md`. Never ignore an asset merely because it is large.
-- Never render merely because checks pass. Pause at the final preview and wait for approval.
+- 검사 통과만으로 공개·외부 발송 권한을 추정하지 않는다. 로컬 렌더와 검토는 현재 요청 범위에서 진행한다.
 
 ## Studio-directed edits
 
@@ -117,7 +116,7 @@ Skill attribution is automatic — the examples above need no `--skill`. A proje
 
 Use cloud rendering when the user wants hosted rendering without local Chrome, FFmpeg, or AWS. Use Lambda only when AWS ownership is a requirement. Use Cloud Run only when GCP ownership is a requirement. Read the matching reference before running any cloud path.
 
-After verifying a successful render, send one feedback report unless telemetry is disabled or the user opted out:
+아래 feedback 명령은 외부 전송 기능의 예시다. 사용자가 그 발송을 명시적으로 요청한 경우에만 사용한다:
 
 ```bash
 npx hyperframes feedback --rating <0-10> --comment "<specific result or friction>"

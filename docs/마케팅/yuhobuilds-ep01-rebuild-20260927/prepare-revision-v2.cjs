@@ -2,7 +2,7 @@ const fs=require('node:fs'),path=require('node:path'),{spawnSync}=require('node:
 const source=__dirname,root=path.join(source,'revision-v2');
 for(const d of ['assets','compositions/components','audit','audio'])fs.mkdirSync(path.join(root,d),{recursive:true});
 const copy=(a,b=a)=>fs.copyFileSync(path.join(source,a),path.join(root,b));
-for(const f of ['build-scenes.cjs','finalize-html.cjs','audio-mix.cjs','package.json','hyperframes.json','AGENTS.md','BRIEF.md','design.md','practice.html','practice.js','복사용_첫완성질문.txt'])copy(f);
+for(const f of ['build-scenes.cjs','finalize-html.cjs','audio-mix.cjs','package.json','hyperframes.json','BRIEF.md','design.md','practice.html','practice.js','복사용_첫완성질문.txt'])copy(f);
 for(const f of ['SUIT-Variable.woff2','face.png','portrait.jpg','smile.png','puzzled.png','surprise.png','blink.png','music-source.wav'])copy('assets/'+f);
 for(const f of ['text-stagger.html','zoom-through-transition.html'])copy('compositions/components/'+f);
 const original=JSON.parse(fs.readFileSync(path.join(source,'timing.json'),'utf8'));

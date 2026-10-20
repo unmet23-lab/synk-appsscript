@@ -1,5 +1,7 @@
 # Brief contract
 
+> 기존 영상에 동봉된 공급자 참고다. 현재 SYNK 정본·권한·승인·스타일의 적용 범위는 [이 폴더 안내](../SKILL.md)를 따른다. 이 원문이 별도 실행 권한이나 추가 승인 절차를 만들지 않는다.
+
 The intent layer (`/hyperframes` → `references/intent-interview.md`) asks creation questions once. The executing workflow writes the confirmed result to `BRIEF.md` and does not ask those questions again. This contract defines the canonical run-shape fields, shared brief fields, and question rules. Route-specific options live in `/hyperframes` → `references/routes/<workflow>.md`.
 
 ## Contents

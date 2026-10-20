@@ -4,7 +4,7 @@
 
 ## 현재 기준
 
-Core·Loom·Vellum·Trail·Prism·Temper·Reed·Strata, 총 8종이다. Atlas는 필요한 엔진을 기억 → 결정 → 제공 → 확인의 흐름으로 연결하는 상위 시스템이다. 엔진 구성 확정과 각 기능의 구현·배포·효과는 별개다. Strata는 설계와 관련 재료를 준비한 단계다.
+Core·Loom·Vellum·Trail·Prism·Temper·Reed·Strata, 총 8종이다. 10-02 재확인한 [현행 Atlas 정의](../../아틀라스_설계.md#atlas-engine-ownership)에 따라 Atlas는 이 여덟 엔진의 총칭이며 별도 상위 엔진·작업 하네스가 아니다. 엔진 구성 확정과 각 기능의 구현·배포·효과는 별개다. 아래 Strata 소개·산출물과 구현 상태는 09-21 표기 통일 당시의 기록이다.
 
 ## 반영
 

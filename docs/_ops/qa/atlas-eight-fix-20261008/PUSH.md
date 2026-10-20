@@ -17,11 +17,11 @@
 
 원래 [report.json](report.json)의 875개 시험·140개 해시는 당시 공용 작업본의 검증이다. 이 브랜치와 완전히 같은 트리라고 주장하지 않는다. 화면 캡처는 원래 로컬 QA 폴더에 남기고 텍스트 근거를 보존했다. 실제 Linux CI·공개 배포·모델 실호출·실사용 효과는 이번 검증에 포함하지 않는다.
 
-## 다른 진행 작업에 연결할 수정
+## 당시 다른 진행 작업에 연결한 수정
 
 원격에는 아래의 대상 구현이 아직 없어, 그 기능 전체를 이번 커밋에 끌어오지 않고 정확한 기존 작업본 기준 패치를 보존한다. 현재 공용 작업본에는 수정이 이미 적용돼 있으므로 다시 적용하지 않는다.
 
-1. 회사 작업실 동기화의 Domain 선적재 순서와 동기화 시험의 실제 완료 대기: [pending-integration.patch](pending-integration.patch), [의존성 설명](integration-note.md), [적용 검증](pending-integration-result.json). 기존 동기화 구현을 보존 커밋할 때 함께 포함한다. 원격 기준 서버에는 해당 선적재가 없어 기본 실행판 검증이 그대로 통과한다.
+1. 회사 작업실 동기화의 Domain 선적재 순서와 동기화 시험의 실제 완료 대기: [pending-integration.patch](pending-integration.patch), [의존성 설명](integration-note.md), [적용 검증](pending-integration-result.json). 후속 `a43bf2b12`에 포함된 결과는 [인계 결과](../../아틀라스검토_인계_20261008.md)에 있다. 원격 기준 서버에 해당 선적재가 없어서 기본 실행판 검증이 통과한 당시 범위를 보존하며 패치를 재적용하지 않는다.
 2. 소개팅 discovery 공유판의 meeting-regions 동봉: [share-pending-integration.patch](share-pending-integration.patch), [의존성·검증](share-pending-integration.json). discovery·meeting-regions를 포함하는 기존 작업을 합칠 때 적용한다. 이 브랜치에는 이미 남은 import를 거부하는 공통 guard를 넣었고, 원격 기준 상담 공유판도 실제 브라우저에서 통과했다.
 
 공용 소스의 다른 변화는 버리거나 덮어쓰지 않았다. 원격 보존과 기본 브랜치 병합·공개 배포는 별도 상태다.
