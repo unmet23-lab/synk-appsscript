@@ -60,7 +60,7 @@ node tools/git-storage-check.cjs --base origin/master --head HEAD
 
 ## 자동 커밋 이력 보존(2026-10-18)
 
-`node tools/GitHub백업.cjs --apply`는 Documents 바로 아래 Git 저장소의 모든 로컬 가지·stash·연결 worktree HEAD를 원격 참조와 대조한다. 기존 `백업.js`의 master 전용 강제 push를 예약에 쓰지 않는다. 현재 작업 파일을 커밋하거나 공용 HEAD·인덱스·기본 가지를 이동하지 않는다. 미커밋 문서·소스의 최신 사본은 OneDrive 백업이 맡는다.
+`node tools/GitHub백업.cjs --apply`는 Documents 바로 아래 Git 저장소의 모든 로컬 가지·stash·연결 worktree HEAD를 원격 참조와 대조한다. 옛 `백업.js`의 master 전용 강제 push는 예약에 쓰지 않았고, 그 도구는 10-20에 tools에서 지웠다([도구 보관 목록](../도구_보관목록.md)). 현재 작업 파일을 커밋하거나 공용 HEAD·인덱스·기본 가지를 이동하지 않는다. 미커밋 문서·소스의 최신 사본은 OneDrive 백업이 맡는다.
 
 - 원격에 없는 기존 커밋만 비공개 원래 저장소의 `refs/synk-backup/<커밋 SHA>`에 보존하고 정확한 원격 SHA를 다시 조회한다. branch/tag 밖의 고정 참조이므로 일반 배포 가지를 갱신하지 않으며 force·덮어쓰기·자동 삭제를 하지 않는다.
 - 새 객체는 커밋된 Git 용량·산출물 정책으로 검사한다. 앱이 사용하는 정본 그림·음성·WASM은 정책 내에서 보존하며, 새 QA 출력·큰 묶음·실제 자격증명이 포함된 이력은 보류한다. 중간 커밋에서 추가했다가 지운 파일도 검사한다. 더미 자격 문자열은 경로와 값 SHA로 검토한 예외만 허용하고 실제 공급자 키 서명은 계속 막는다.

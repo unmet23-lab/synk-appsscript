@@ -45,15 +45,12 @@ test('옛 그림을 잰 광원 좌표를 새로 구운 장면에 재사용하지
   assert.deepEqual(Object.keys(lights), []);
 });
 
-test('정지 원본·배경 합성·영상 재굽기 정의는 보존한 실물 네 장만 허용한다', () => {
+test('정지 원본·배경 합성 정의는 보존한 실물 네 장만 허용한다', () => {
   const original = constant('tools/라디오무대굽기.js', '무대들');
-  const movie = constant('tools/라디오무대영상.js', '무대들');
   const background = constant('tools/라디오배경굽기.js', '장르들', { 색: {} });
   assert.deepEqual(Object.keys(original), keys);
-  assert.deepEqual(Object.keys(movie), keys);
   assert.deepEqual(Object.keys(background), [...keys, '기본']);
   assert.equal(original.neon_water.파일, '보관/전자_네온물가.png');
-  assert.equal(movie.neon_water.원본, original.neon_water.파일);
   assert.equal(background.neon_water.원본, original.neon_water.파일);
   for (const [key, item] of Object.entries(original)) {
     assert.ok(fs.existsSync(path.join(root, 'docs/라디오/무대', item.파일 || `${key}.png`)), key);
@@ -64,11 +61,9 @@ test('삭제 키와 값 없는 선택은 생성·렌더 시작 전에 실패한�
   const jobs = [
     ['tools/라디오무대굽기.js', '--장르', 'citypop'],
     ['tools/라디오배경굽기.js', '--장르', 'house'],
-    ['tools/라디오무대영상.js', '--무대', 'dream_sky', '--값만'],
     ['tools/무대영상굽기.js', '--결', '드림물결', '--낼', 'unused.mp4'],
     ['tools/라디오무대굽기.js', '--장르'],
     ['tools/라디오배경굽기.js', '--장르'],
-    ['tools/라디오무대영상.js', '--무대'],
   ];
   for (const args of jobs) {
     const r = spawnSync(process.execPath, args, { cwd: root, encoding: 'utf8', timeout: 10000 });
