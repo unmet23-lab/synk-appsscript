@@ -123,10 +123,24 @@ export function translateTree(root=globalThis.document){
  for(const node of root.querySelectorAll('[data-i18n-title]'))node.setAttribute('title',t(node.dataset.i18nTitle));
  for(const node of root.querySelectorAll('[data-i18n-alt]'))node.setAttribute('alt',t(node.dataset.i18nAlt));
 }
+// 몽골어 날짜 자료가 없는 런타임(일부 웹뷰·내장 브라우저)에서는 Intl이 오류 없이 기기 언어(예: 한국어 「2027년 1월」) 꼴로 떨어진다.
+// 한 자리 한 언어를 지키려고 그때는 ICU 몽골어의 짧은 꼴(「10-р сарын 26」)과 같은 숫자 꼴로 직접 만든다. 서울 시각(서머타임 없음).
+let mongolianIntl=null;
+const hasMongolianIntl=()=>mongolianIntl??=(()=>{try{return Intl.DateTimeFormat.supportedLocalesOf([LANG_LOCALES.mn]).length>0;}catch{return false;}})();
+export function mongolianDate(at,options={}){
+ const local=new Date(at+9*3600000),year=local.getUTCFullYear(),month=local.getUTCMonth()+1,day=local.getUTCDate();
+ // 꼴을 주지 않으면 Intl 기본처럼 연·월·일.
+ const given=options&&typeof options==='object'&&['year','month','day','hour'].some(key=>options[key]!==undefined)?options:{year:'numeric',month:'numeric',day:'numeric'};
+ const has=key=>given[key]!==undefined,pad=n=>String(n).padStart(2,'0');
+ const date=has('month')?`${has('year')?`${year} оны `:''}${month}-р сар${has('day')?`ын ${day}`:''}`:has('day')?String(day):has('year')?String(year):'';
+ return `${date}${has('hour')?` ${pad(local.getUTCHours())}:${pad(local.getUTCMinutes())}`:''}`.trim();
+}
 export function formatDate(at,options,lang=currentLang()){
  if(!Number.isFinite(at))return '';
+ if(lang==='mn'&&!hasMongolianIntl())return mongolianDate(at,options);
  try{return new Intl.DateTimeFormat(LANG_LOCALES[lang]||'ko-KR',{timeZone:'Asia/Seoul',...options}).format(new Date(at));}
- catch{return new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',...options}).format(new Date(at));}
+ // 꼴이 잘못돼 Intl이 거절해도 그 화면 언어로(한국어 꼴로 떨어지지 않게) — 몽골어는 직접 만들고, 나머지는 기본 꼴로 한 번 더.
+ catch{if(lang==='mn')return mongolianDate(at,options);try{return new Intl.DateTimeFormat(LANG_LOCALES[lang]||'ko-KR',{timeZone:'Asia/Seoul'}).format(new Date(at));}catch{return new Date(at+9*3600000).toISOString().slice(0,10);}}
 }
 applyDocument();
 if(globalThis.window)window.__synkWorldLang={current:currentLang,set:setLang,missing:missingStrings,langs:LANGS};

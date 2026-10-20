@@ -305,3 +305,33 @@ test('the shared contract and Core agree on the reasons and their broad goals', 
   assert.equal(P.MAX_REASONS, contract.최대);
   for (const goal of Object.values(P.REASON_GOAL)) assert(goal === null || P.OPTIONS.goal.includes(goal));
 });
+
+// 시험 정보(계약 r2 시험정보, 10-20 결정 「시험·자격 준비 · 목표 급·시험일」): 학생이 밝힌 시험은 제품 계획의 입력이고,
+// Core가 순위에 쓰는 넓은 목표·설정(goal·time·support·audio)에는 들어가지 않는다.
+test('the shared contract r2 and Core agree on the exam fields, which stay out of Core ranking', () => {
+  const contract = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../계약/배우는이유_선택응답_계약.json'), 'utf8'));
+  assert.equal(contract.판, 'r2');
+  const exam = contract.시험정보;
+  assert.deepEqual(P.OPTIONS.examType, exam.시험종류.map(item => item.값));
+  assert.deepEqual(P.OPTIONS.examMode, exam.방식.map(item => item.값));
+  assert.deepEqual(P.WEEKLY_MINUTES, exam.주당시간.보기);
+  assert.deepEqual([...exam.목표급.topik1, ...exam.목표급.topik2], [1, 2, 3, 4, 5, 6]);
+  for (const field of Object.keys(exam.atlas_필드)) assert(P.FIELDS.includes(field), field);
+  const declared = consent({ reasons: ['exam'], primaryReason: 'exam', examType: 'topik1', targetGrade: 2, examDate: '2027-01', examMode: 'pbt', weeklyMinutes: 60 });
+  assert.equal(declared.provenance.examDate.source, 'self-declared');
+  const plain = select(consent({ reasons: ['exam'], primaryReason: 'exam' })), withExam = select(declared);
+  assert.equal(withExam.plan.selected.id, plain.plan.selected.id, 'a declared test changes no Core choice by itself');
+  assert.equal(withExam.explanation.abilityClaim, false);
+  assert.equal(P.updateProfile(declared, { values: { examDate: '2027-01-11' } }, later).values.examDate, '2027-01-11');
+  for (const values of [{ examDate: '2027-02-30' }, { examDate: '2027-13' }, { examDate: '27-01' }, { targetGrade: 0 }, { targetGrade: 7 }, { weeklyMinutes: 45 }, { examType: 'eps' }, { examMode: 'cbt' }])
+    assert.throws(() => P.updateProfile(declared, { values }, later), /invalid/, JSON.stringify(values));
+  const cleared = P.updateProfile(declared, { values: { examType: null, targetGrade: null, examDate: null, examMode: null, weeklyMinutes: null } }, later);
+  assert.deepEqual(Object.keys(cleared.values).sort(), ['primaryReason', 'reasons']);
+  assert(cleared.generation > declared.generation, 'forgetting the test starts a clean decision history');
+  // 계약 r2 목표급: 시험 종류에 맞지 않는 급은 받지 않는다 — 함께 주면 거절, 종류만 바꾸면 맞지 않게 된 급을 잊는다.
+  assert.throws(() => P.updateProfile(declared, { values: { targetGrade: 4 } }, later), /target grade must fit/);
+  assert.throws(() => consent({ reasons: ['exam'], primaryReason: 'exam', targetGrade: 2 }), /target grade must fit/);
+  const switched = P.updateProfile(declared, { values: { examType: 'topik2' } }, later);
+  assert.equal(Object.hasOwn(switched.values, 'targetGrade'), false, 'a grade the new test does not have is forgotten');
+  assert.equal(P.updateProfile(declared, { values: { examType: 'topik2', targetGrade: 4 } }, later).values.targetGrade, 4);
+});

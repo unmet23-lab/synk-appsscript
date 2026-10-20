@@ -234,6 +234,8 @@ async function callLearningReady(command){
  if(command==='study'&&education)return education.open();
  // 「내 위치」(10-19 결정): 홈의 「내 위치 보기」·배우기 판의 줄·학습 목표 창의 줄이 같은 판을 연다.
  if(command==='position'&&education?.position)return education.position();
+ // 「이번 주 계획」(10-20 결정, 시험을 고른 사람): 홈의 단추·배우기 판의 줄이 같은 판을 연다.
+ if(command==='plan'&&education?.plan)return education.plan();
  if(host){callHost(command==='learn'?'learn':command);return;}
  try{const ui=await loadLearning();ui[command==='learn'?'next':command]?.();}catch{}
 }
@@ -266,6 +268,11 @@ function planLabel(next){
  if(!next||currentLang()==='ko')return label;
  if(next.route==='game'&&next.gameId)return t(`plan.game.${next.gameId}`);
  if(next.id==='world.resume.review')return t('plan.resumeReview');
+ // 10-20 TOPIK 맞춤: 읽기 짧은 연습(그 항목)·짧은 진단·쓰기 연습(51~54)도 화면 언어로.
+ if(next.route==='practice'&&next.skillId)return t('plan.practice',{skill:t(`position.skill.${next.skillId}`)});
+ // 짧은 진단: 처음 시작점 진단도 이번 주 다시 확인도 같은 이름(계획 판 NOW·한국어 홈과 같다, 10-21 검수).
+ if(next.route==='position')return t('position.diagnostic.title');
+ if(next.route==='writing'){const type=String(next.routeId||'').split(':')[1];return `${t('writing.title')} · ${type==='mock'?t('writing.mock.title'):t(`writing.type.${type}`)}`;}
  const strip=suffix=>label.endsWith(suffix)?label.slice(0,-suffix.length):null;
  const resumed=strip(' · 이어 하기'),reviewed=strip(' · 새 상황 복습');
  if(resumed!==null)return t('plan.resume',{title:resumed});
@@ -276,6 +283,9 @@ function updateStudy(plan){
  const next=plan?.selected,reason=$('#study-reason');
  $('#life-next-button').dataset.view=plan&&!next?'study':'learn';
  if(reason)reason.textContent=tMessage(plan?.reason||'');
+ // 「이번 주 계획」 단추(10-20, 시험을 고른 사람에게만): 이번 주에 한 연습 / 계획한 횟수. 못 한 것을 빨갛게 세지 않는다.
+ const planButton=$('#study-plan-button'),week=plan?.examPlan;
+ if(planButton){planButton.hidden=!week;if(week){const areas=week.areas||[];planButton.textContent=t('plan.week.home',{done:areas.reduce((n,row)=>n+Math.min(row.done,row.planned),0),total:areas.reduce((n,row)=>n+row.planned,0)});}}
  if(learningData.summary)homeTutor?.update({...learningData.summary,education:plan},learningData.details);
  if(!next){
   if(plan){$('#life-next-title').textContent=t('home.study.find');$('#life-next-kicker').textContent=t('home.study.check');$('#life-next-button').setAttribute('aria-label',t('home.study.checkLabel'));}
@@ -320,7 +330,7 @@ document.addEventListener('click',event=>{
  if(button.dataset.homeHost){callHost(button.dataset.homeHost);return;}
  if(button.dataset.world){if(['play','town','songs'].includes(button.dataset.world))callHost(button.dataset.world,button);return;}
  if(button.hasAttribute('data-close')){closePanel();return;}
- const view=button.dataset.view;if(['learn','packs','review','stories','cafe','study','position'].includes(view)){void callLearning(view);return;}if(view==='play')showPlay();else if(view==='wardrobe')showWardrobe();else if(view==='me')showMe();else{const closing=panel.open;if(closing)closePanel();if(place==='room')void go('town',{user:true,sound:closing?'':'close'});window.scrollTo({top:0,behavior:manualReduced||reduced.matches?'instant':'smooth'});}
+ const view=button.dataset.view;if(['learn','packs','review','stories','cafe','study','position','plan'].includes(view)){void callLearning(view);return;}if(view==='play')showPlay();else if(view==='wardrobe')showWardrobe();else if(view==='me')showMe();else{const closing=panel.open;if(closing)closePanel();if(place==='room')void go('town',{user:true,sound:closing?'':'close'});window.scrollTo({top:0,behavior:manualReduced||reduced.matches?'instant':'smooth'});}
 });
 content.addEventListener('change',event=>{const pref=event.target.dataset?.pref;if(pref){setPref(pref,event.target.checked);if(pref==='sound'&&event.target.checked)play('select');return;}if(event.target.name==='world-lang'){void chooseLanguage(event.target.value);return;}if(event.target.name==='orientation')chooseOrientation(event.target.value);if(event.target.id==='reduce-motion'){manualReduced=event.target.checked;try{localStorage.setItem('synk.world.maru.reduced',String(manualReduced));}catch{}syncScene();}});
 document.querySelector('[data-orientation-auto]').addEventListener('click',()=>chooseOrientation('auto'));

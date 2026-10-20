@@ -673,6 +673,57 @@ h3.life-poster-sub{margin-bottom:0}
 .wpos-done-list li span{font-size:13px;color:var(--w-ink-3);text-align:right}
 .wpos-summary-line{margin:0;font-size:14px;line-height:1.6;color:var(--w-ink-2)}
 
+/* ── 10-20 TOPIK 맞춤: 칸 아래 한 줄 · 먼저 볼 항목 · 해설 · 읽기 짧은 연습 · 이번 주 계획 ── */
+.wpos-skill-note{display:block;margin-top:2px;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3);text-wrap:pretty}
+.wpos-attention,.wplan-week,.wplan-next,.wplan-checks,.wplan-reach{display:grid;gap:8px;padding:16px 16px 18px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.wpos :is(.wpos-attention,.wplan-week,.wplan-next,.wplan-checks,.wplan-reach)>:is(.life-section-label,h3){margin:0}
+.wpos :is(.wpos-attention,.wplan-week,.wplan-next,.wplan-checks)>h3{font-size:18px;line-height:1.35;font-weight:var(--wt-title);letter-spacing:var(--track-title)}
+.wpos-attention ul,.wplan-checks ul{display:grid;margin:0;padding:0;list-style:none}
+.wpos-attention li{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 12px;min-height:56px;padding:8px 0;border-top:1px solid var(--w-line)}
+.wpos-attention-copy{display:grid;gap:2px;min-width:0;flex:1 1 180px}
+.wpos-attention-copy strong{font-size:15px;line-height:1.4;font-weight:var(--wt-strong);color:var(--w-ink)}
+.wpos-attention-copy small{font-size:13px;line-height:1.45;color:var(--w-ink-3)}
+.wpos .wpos-practice,.wpos-attention .quiet-button,.wplan-checks .quiet-button{justify-self:start;min-height:44px;padding:0 4px;text-align:left}
+.wpos-done-list li .wpos-done-copy{display:grid;gap:3px;min-width:0;font-size:inherit;color:inherit;text-align:left}
+.wpos-done-list li .wpos-done-copy>small{font-size:13px;line-height:1.45;color:var(--w-ink-3)}
+.wpos-explain{margin-top:2px}
+.wpos-explain>summary{min-height:44px;display:inline-flex;align-items:center;font-size:13.5px;font-weight:var(--wt-strong);color:var(--w-ink-2);text-decoration:underline;text-decoration-color:var(--w-ink-4);text-underline-offset:5px;cursor:pointer;list-style:none}
+.wpos-explain>summary::-webkit-details-marker{display:none}
+.wpos-explain>p{margin:0 0 4px;font-size:15px;line-height:1.6;color:var(--w-ink-2);text-wrap:pretty}
+.wpos-choice[data-state=answer]{color:var(--w-ink);background:var(--w-ok-wash);box-shadow:inset 0 0 0 2px var(--w-led-ok)}
+.wpos-choice[data-state=wrong]{color:var(--w-ink-2);background:var(--w-s1);box-shadow:inset 0 0 0 1px var(--w-line-2);text-decoration:line-through;text-decoration-color:var(--w-ink-4)}
+.wpos-feedback{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:6px 10px;padding:14px 16px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.wpos-feedback>strong{font-size:16px;line-height:1.4;font-weight:var(--wt-title)}
+.wpos-feedback>p{grid-column:1 / -1;margin:0;font-size:15px;line-height:1.6;color:var(--w-ink-2);text-wrap:pretty}
+.wpos-run>.felt-button,.wpos-change+.felt-button,.wplan-next>.felt-button{width:100%}
+.wpos-change{display:grid;gap:6px}
+.wpos-change>.life-section-label{margin:0}
+.wpos-misses ul{display:grid;gap:4px;margin:0;padding:0;list-style:none}
+.wpos-misses li{padding:8px 0;border-top:1px solid var(--w-line);font-size:15px;line-height:1.5}
+.wpos-print[data-print=plan]>i{background-image:var(--life-print-goals,none)}
+.wplan-areas{display:grid;margin:0;padding:0;list-style:none}
+.wplan-areas li{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:4px 12px;min-height:48px;padding:6px 0;border-top:1px solid var(--w-line)}
+.wplan-area-name{font-size:15px;line-height:1.4;font-weight:var(--wt-strong)}
+.wplan-area-count{font-family:var(--w-mono);font-size:12px;letter-spacing:.04em;color:var(--w-ink-3)}
+.wplan-classwork{grid-column:1 / -1;font-size:13px;line-height:1.45;color:var(--w-ink-3)}
+/* 계획한 횟수는 빈 점, 한 것은 채운 점. 못 한 것을 빨갛게 보이지 않는다. */
+.wplan-dots{display:inline-flex;gap:5px}
+.wplan-dots i{width:9px;height:9px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--w-line-2)}
+.wplan-dots i[data-done]{background:var(--w-led-ok);box-shadow:0 0 8px rgba(125,180,90,.45)}
+.wplan-checks li{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--w-line);font-size:15px;line-height:1.4}
+.wplan-checks li small{font-size:13px;color:var(--w-ok-text)}
+.wplan-shortage{flex-basis:100%;font-size:13px;line-height:1.45;color:var(--w-ink-3)}
+/* 학습 목표 창의 시험 칸 */
+.study-form [hidden]{display:none!important}
+.study-exam{display:grid;gap:22px;padding-top:20px;border-top:1px solid var(--w-line)}
+.study-exam>.life-section-label{margin:0}
+.study-exam-note,.study-exam-hint{margin:-10px 0 0;font-size:13.5px;line-height:1.55;color:var(--w-ink-3);text-wrap:pretty}
+.study-exam-hint{margin:8px 0 0}
+.study-exam-past{margin:0;padding:12px 14px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge);font-size:14.5px;line-height:1.55;color:var(--w-ink)}
+.study-date{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:8px}
+.study-date select{min-width:0;min-height:48px;padding:0 12px;border:0;border-radius:var(--w-r-md);background:var(--w-s1);color:var(--w-ink);box-shadow:var(--w-card-edge);font:inherit;font-size:15px}
+.study-date select:focus-visible{outline:2px solid var(--w-ink);outline-offset:2px}
+
 /* ── 넓은 둘러보기 판(PC 오른쪽 패널): 팩 3열 ── */
 @container life-sheet (min-width:600px){
   .life-pack-grid{grid-template-columns:repeat(3,minmax(0,1fr))}

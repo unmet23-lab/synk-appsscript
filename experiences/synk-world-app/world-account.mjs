@@ -13,7 +13,7 @@ import {createLifeProgressPort} from './life-progress-port.mjs';
 import {createHangulProgressPort} from './hangul-progress-port.mjs';
 export {createLifeProgressPort} from './life-progress-port.mjs';
 export {GUEST_TRIAL_GAMES,createGuestTrials,createGuestTrialPlayHost} from './guest-trial.mjs';
-export {createDeviceRecordsOffer} from './device-records.mjs';
+export {createDeviceRecordsOffer,noteDeviceSignOut,noteDeviceAccount} from './device-records.mjs';
 // 「내 위치」(판단 · 진단 문항 · 그림): 진단 문항이 앱 서버가 내주지 않는 게임 원고에서 오므로 이 묶음에 싣는다(world-position-kit.mjs).
 export {worldPosition} from './world-position-kit.mjs';
 import {classroomEndpoint,classroomReply,requestClassrooms} from './classroom-client.mjs';
@@ -164,6 +164,12 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
    onDispose:value=>{if(lifeHost===value)lifeHost=null;}});
   check();lifeHost=port;return port;
  }
+ // 손님 기기 학습 기록 옮기기(10-20, device-records.mjs): 지금 세운 계정 게임 호스트의 기록장으로만. 호스트가 없거나 계정이 바뀌었으면 받지 않는다.
+ async function importDeviceLearning(events){
+  const expected=epoch;guard(expected);
+  if(!owner||!session||!gameHost)throw Object.assign(Error('계정 학습 기록 연결을 다시 열어 주세요.'),{code:'LEARNING_NOT_READY'});
+  const host=gameHost,result=await host.importDeviceLearning(events);guard(expected);if(gameHost!==host)throw changed();return result;
+ }
  async function prepareHangulProgress({storage:cache=globalThis.localStorage,target=globalThis}={}){
   const expected=epoch,launch=++hangulLaunch;guard(expected);
   if(!owner||!session)throw Object.assign(Error('SYNK ID로 로그인해 주세요.'),{code:'AUTH_REQUIRED'});
@@ -274,7 +280,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
    const response=await revokeFetch(new URL('/auth/v1/logout?scope=local',config.supabaseUrl).href,{method:'POST',credentials:'omit',cache:'no-store',headers:{apikey:config.supabasePublishableKey,Authorization:`Bearer ${captured.access_token}`}});serverRevoked=response.ok&&serverRevoked;
   }catch{}finally{clearTimeout(timer);}return {serverRevoked};
  }
- return Object.freeze({mode:'account',restore,signIn,request,logout,prepareGame,prepareLifeProgress,prepareHangulProgress,topicAnswers,readClassrooms,readHomework,submitHomework,readHomeworkKey,courseRequest,writingRequest,get supportsWriting(){return !native;},get supportsClassroom(){return !native||nativeClassroom;},get supportsHomework(){return !native||nativeHomework;},identity:()=>({accountId:owner,generation:epoch}),assertActive(){guard(epoch);if(!owner)throw changed();},
+ return Object.freeze({mode:'account',restore,signIn,request,logout,prepareGame,prepareLifeProgress,prepareHangulProgress,importDeviceLearning,topicAnswers,readClassrooms,readHomework,submitHomework,readHomeworkKey,courseRequest,writingRequest,get supportsWriting(){return !native;},get supportsClassroom(){return !native||nativeClassroom;},get supportsHomework(){return !native||nativeHomework;},identity:()=>({accountId:owner,generation:epoch}),assertActive(){guard(epoch);if(!owner)throw changed();},
   preferences(){const learning=currentAccount?.learning;return learning&&typeof learning.enabled==='boolean'&&Number.isSafeInteger(learning.revision)?{enabled:learning.enabled,revision:learning.revision}:null;},
   async setLearning(enabled,expectedRevision){const expected=epoch;guard(expected);if(!owner||typeof enabled!=='boolean'||!Number.isSafeInteger(expectedRevision)||expectedRevision<0)throw new TypeError('Invalid account learning preference');
    const client=clientFor(expected);

@@ -1,6 +1,6 @@
 {
   "ok": true,
-  "date": "2026-10-20T21:59:54.164Z",
+  "date": "2026-10-20T22:52:40.714Z",
   "syntheticAccount": true,
   "syntheticClass": true,
   "syntheticStudentText": true,
@@ -762,7 +762,7 @@
     "1280-sheet.png"
   ],
   "homeworkRequests": 69,
-  "keyRequests": 120,
+  "keyRequests": 126,
   "contentLoads": 21,
   "requestShape": {
     "get": {
@@ -784,7 +784,7 @@
         "classId": "22222222-2222-4222-8222-222222222222",
         "week": 4,
         "kind": "reading",
-        "requestId": "9e63530f-07de-47e9-8f02-87e8a078f248",
+        "requestId": "67f01b45-5695-4d57-9a30-c6ce938ab087",
         "expectedRevision": 0,
         "contentVersion": "v1-53795e0997f6",
         "answers": "(합성)"

@@ -28,12 +28,13 @@ const clock=ms=>{const s=Math.max(0,Math.round(ms/1000));return `${pad(Math.floo
 
 function readStore(storage,owner){try{const v=JSON.parse(storage?.getItem(storeKey(owner))||'null');if(v&&typeof v==='object'&&v.drafts&&typeof v.drafts==='object')return {drafts:v.drafts,log:Array.isArray(v.log)?v.log:[],mock:v.mock||null};}catch{}return {drafts:{},log:[],mock:null};}
 function writeStore(storage,owner,state){try{storage?.setItem(storeKey(owner),JSON.stringify({drafts:state.drafts,log:state.log.slice(-LOG_MAX),mock:state.mock}));return true;}catch{return false;}}
-/** 계획 엔진·내 위치가 읽는 연습 요약(이 기기 기록). 자동 피드백 결과는 시도 수에 더하지 않고 따로 센다. */
+/** 계획 엔진·내 위치가 읽는 연습 요약(이 기기 기록). 자동 피드백 결과는 시도 수에 더하지 않고 따로 센다.
+ *  times: 규칙 점검 시도 시각(ISO) — 시험 계획이 이번 주 쓰기 횟수를 센다(Trail에 쓰기 기록이 생기기 전까지 · ① 세션 10-21). */
 export function readWritingSummary({storage=globalThis.localStorage,owner='guest'}={}){
- const state=readStore(storage,owner),attempts={51:0,52:0,53:0,54:0},feedback={51:0,52:0,53:0,54:0};let ms=0,lastAt=null;
- for(const entry of state.log){if(!TYPES.includes(entry.type))continue;if(entry.source==='rule-check')attempts[entry.type]++;if(entry.source==='ai-reference')feedback[entry.type]++;if(!lastAt||entry.at>lastAt)lastAt=entry.at;}
+ const state=readStore(storage,owner),attempts={51:0,52:0,53:0,54:0},feedback={51:0,52:0,53:0,54:0},times=[];let ms=0,lastAt=null;
+ for(const entry of state.log){if(!TYPES.includes(entry.type))continue;if(entry.source==='rule-check'){attempts[entry.type]++;times.push(entry.at);}if(entry.source==='ai-reference')feedback[entry.type]++;if(!lastAt||entry.at>lastAt)lastAt=entry.at;}
  for(const draft of Object.values(state.drafts))ms+=Number(draft?.spentMs)||0;
- return {attempts,feedback,minutes:Math.round(ms/60000),lastAt};
+ return {attempts,feedback,minutes:Math.round(ms/60000),lastAt,times};
 }
 /** 배우기 판(life-ui.mjs)의 「내 위치」 아래 한 줄. print는 life-ui의 펠트 인화지 함수다.
  *  검수를 통과해 열린 문항이 있을 때만 보인다(문항 은행을 아직 못 읽었거나 열린 문항이 없으면 줄이 없다 — 빈 화면으로 가는 단추를 두지 않는다). */

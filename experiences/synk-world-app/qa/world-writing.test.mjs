@@ -120,7 +120,7 @@ test('연결: 개발 서버·공개 빌드 목록, 앱 셸 명령·배우기 줄
  const server=read('experiences/synk-world-app/server.mjs'),build=read('tools/build-world-app-public.mjs');
  for(const name of ['world-writing-practice.mjs','world-writing-check.mjs','world-writing-items.json','world-writing.css']){assert.ok(server.includes(`'/${name}'`),name);assert.ok(build.includes(`'${name}'`),name);}
  const shell=read('experiences/synk-world-app/app-shell.mjs');
- assert.match(shell,/writing:openWriting/);assert.match(shell,/moreRows:print=>writingRow\(print\)/);assert.match(shell,/'world-writing':'WRITING'/);
+ assert.match(shell,/writing:openWriting/);assert.match(shell,/moreRows:print=>[^\n]*writingRow\(print\)/);assert.match(shell,/'world-writing':'WRITING'/);
  assert.match(read('experiences/brand-opening/home.mjs'),/hanger-list\|writing\|game-/);
  const account=read('experiences/synk-world-app/world-account.mjs');
  assert.match(account,/\['writing','POST'\]/);assert.match(account,/path==='writing'\?'world-writing'/);assert.match(account,/get supportsWriting\(\)\{return !native;\}/);

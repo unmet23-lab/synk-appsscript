@@ -1,14 +1,14 @@
 import {WorldClient} from './world-client.mjs';
 import {mountEnrollment} from './enrollment.mjs';
 import {mountClassroomLessons} from './classroom-lessons.mjs';
-import {mountClassroomHomework} from './classroom-homework.mjs';
-import {createWorldAccount,loadWorldConfig,createLifeProgressPort,createLocalWorldLearningHost,worldLearning,createWorldLearningPlan,GUEST_TRIAL_GAMES,createGuestTrials,createGuestTrialPlayHost,createDeviceRecordsOffer,worldPosition,mountCourseWritingEntry} from './world-account.bundle.mjs';
+import {mountClassroomHomework,homeworkWeek} from './classroom-homework.mjs';
+import {createWorldAccount,loadWorldConfig,createLifeProgressPort,createLocalWorldLearningHost,worldLearning,createWorldLearningPlan,GUEST_TRIAL_GAMES,createGuestTrials,createGuestTrialPlayHost,createDeviceRecordsOffer,noteDeviceSignOut,noteDeviceAccount,worldPosition,mountCourseWritingEntry} from './world-account.bundle.mjs';
 import {createWorldEducation} from './world-learning-ui.mjs';
 import {PACKS,LESSONS} from './life-content.mjs';
 import {createLifeProgress} from './life-progress.mjs';
 import {restoreTutorSelection,commitTutorSelection,tutorSelectionStatus,createWorldEntryGate} from './tutor-selection-sync.mjs';
 import {createLifeExperience} from './life-ui.mjs';
-import {createWritingPractice,writingRow,loadWritingBank,writingReady} from './world-writing-practice.mjs';
+import {createWritingPractice,writingRow,loadWritingBank,writingReady,WRITING_CANDIDATES,readWritingSummary} from './world-writing-practice.mjs';
 import {createTownWorldHost} from './world-town-client.mjs';
 import {WARDROBE_ITEMS} from '../synk-world-home/wardrobe-catalog.mjs';
 import {createWorkbenchStorage,thumbnailKey,wardrobeThumbnailCache} from '../synk-world-home/wardrobe-workbench.mjs';
@@ -262,7 +262,7 @@ function initializeLife(){
 }
 function mountLifeLearning(){
  education?.dispose();education=null;
- lifeUI=createLifeExperience({home,getProgress:()=>lifeProgress,asset:path=>worldUrl('brand-opening/assets/'+path),show:(title,html,options)=>show(title,html,options.type,{eyebrow:options.eyebrow,nav:options.nav}),onSummary:()=>education?.refresh(),onNext:()=>education?.next(),presentation:()=>education?.presentation(),moreRows:print=>writingRow(print)});
+ lifeUI=createLifeExperience({home,getProgress:()=>lifeProgress,asset:path=>worldUrl('brand-opening/assets/'+path),show:(title,html,options)=>show(title,html,options.type,{eyebrow:options.eyebrow,nav:options.nav}),onSummary:()=>education?.refresh(),onNext:()=>education?.next(),presentation:()=>education?.presentation(),moreRows:print=>[education?.planRow?.(print),writingRow(print)].filter(Boolean).join('')});
  // 공개판(계정 모드)의 손님은 GUEST_GAMES와 체험이 남은 게임만 바로 열고 나머지는 로그인부터 연다(launchGame). 추천도 같은 목록을 써야 로그인 창을 맴돌지 않는다.
  const createPlan=options=>createWorldLearningPlan({...options,answers:topicAnswers&&topicAnswers.owner===lifeOwner?topicAnswers:null,openGames:operating&&!client.snapshot?guestGames():null});
  // 내 위치(10-19 결정): 짧은 진단 듣기 문항의 녹음은 게임 폴더(korean-runner·korean-rhythm)에서 부른다.
@@ -272,8 +272,20 @@ function mountLifeLearning(){
    try{return port.read();}finally{port.dispose();}
   }:null,
   launchGame,startLesson:id=>lifeUI.start(id),startReview:(id,ids)=>lifeUI.reviewStart(id,ids),
+  // 시험 계획(10-20): 온라인 반 「이번 주 과제」를 그 주의 연습으로 먼저 세고, TOPIK II 쓰기 연습은 문항이 열렸을 때만 계획에 넣는다.
+  readClasswork:classworkThisWeek,writingPractice:{candidates:()=>writingReady()?WRITING_CANDIDATES:[],open:route=>openWriting({dataset:{writingRoute:route}}),attempts:()=>readWritingSummary({storage:localStorage,owner:writingOwnerId()}).times},
   prepare:async()=>{if(operating&&client.snapshot&&!window.SYNKLearningHost)await account.prepareGame({target:window});}});
  home.connectEducation?.(education);window.__synkEducation=education;
+}
+// 시험 계획이 먼저 세는 온라인 반 「이번 주 과제」(교사 배정, classroom-homework.mjs와 같은 주차·제출 기준): 이번 주 읽기·쓰기 갈래와 낸 것.
+// 반이 없거나 과제를 읽지 못하면 빈 목록이다(계획은 반 과제 없이 짠다). 시각은 서버 시계를 쓴다(기기 시계가 틀린 폰).
+async function classworkThisWeek(){
+ if(!operating||!client.snapshot||!account?.supportsHomework)return [];
+ try{
+  const reply=await account.readHomework(),at=Date.parse(reply?.serverTime),now=Number.isFinite(at)?at:Date.now();
+  return (Array.isArray(reply?.classes)?reply.classes:[]).filter(c=>c&&!c.readOnly&&c.startsOn).flatMap(c=>{const week=homeworkWeek({startsOn:c.startsOn,weeks:c.weeks,now}),sent=Array.isArray(c.submissions)?c.submissions:[];
+   return week.phase==='active'?['reading','writing'].map(kind=>({kind,done:sent.some(row=>row?.week===week.week&&row?.kind===kind)})):[];});
+ }catch{return [];}
 }
 // 쓰기 연습(TOPIK II 51~54, world-writing-practice.mjs): 손님도 쓰고 규칙 점검·예시답을 본다(이 기기 기록).
 // 자동 피드백은 계정 모드에서 로그인했고 그 통로가 있을 때만 붙이고, 서버 플래그가 꺼져 있으면 단추가 나오지 않는다.
@@ -283,6 +295,9 @@ const writingOwnerId=()=>client?.snapshot?.accountId||'guest';
 const repaintWritingRow=()=>{if(writingReady()&&lifeUI&&document.querySelector('#world-panel[open] #panel-content .life-hub')&&!document.querySelector('#panel-content [data-world="writing"]'))lifeUI.packs();};
 void loadWritingBank().then(repaintWritingRow).catch(()=>{});
 window.addEventListener('synk-writing-ready',repaintWritingRow);
+// 시험 계획(TOPIK II)의 쓰기 칸은 열린 문항이 있을 때만 생기므로, 은행이 늦게 열리면 추천·계획을 다시 세운다(10-21 검수).
+void loadWritingBank().then(()=>{if(writingReady())education?.refresh();}).catch(()=>{});
+window.addEventListener('synk-writing-ready',()=>education?.refresh());
 function openWriting(button){
  const owner=writingOwnerId();
  if(!writing||writingOwner!==owner){
@@ -466,7 +481,8 @@ const commands={
  'retry-pending':async()=>{try{await client.sendPending();wardrobe();}catch(e){home.toast(errorText(e));}},
  'discard-pending':async()=>{try{await client.discardPending();wardrobe();}catch(e){home.toast(errorText(e));}},
  refresh:async()=>{try{await client.refresh();home.toast(t('account.reconnected'));}catch(e){home.toast(errorText(e));}},
- logout:async()=>{accountActionPending=true;entryGate?.invalidate();try{await client.logout();sessionConfirmed=false;close();if(home.isMaru)await entryGate.start();else welcome();}catch(e){if(e.code==='STALE_RESPONSE')return;home.toast(t('account.logoutFailed'));if(home.isMaru)showEntryRecovery();else welcome();}finally{accountActionPending=false;}},
+ // 로그아웃: 이 뒤에 생긴 손님 기록만 다음 로그인에 옮길지 묻는다(device-records.mjs — 앞 사람의 손님 기록이 다음 사람에게 가지 않게).
+ logout:async()=>{accountActionPending=true;entryGate?.invalidate();const leaving=client.snapshot?.accountId;try{await client.logout();const signedOutAt=Date.now();if(leaving)noteDeviceAccount(localStorage,leaving,signedOutAt);noteDeviceSignOut(localStorage,signedOutAt);sessionConfirmed=false;close();if(home.isMaru)await entryGate.start();else welcome();}catch(e){if(e.code==='STALE_RESPONSE')return;home.toast(t('account.logoutFailed'));if(home.isMaru)showEntryRecovery();else welcome();}finally{accountActionPending=false;}},
 };
 document.addEventListener('click',event=>{
  const button=event.target.closest('button');if(!button)return;
@@ -503,9 +519,20 @@ const accountLife=()=>{const owner=client.snapshot?.accountId;if(!owner||owner!=
 const deviceRecordsText=()=>({title:t('records.title'),lead:t('records.lead'),move:t('records.move'),keep:t('records.keep'),snapshot:t('records.snapshot'),snapshotBody:t('records.snapshotBody'),
  moving:t('records.moving'),failed:t('records.failed'),moved:t('records.moved'),partly:t('records.partly'),kept:t('records.kept'),hangulRow:t('records.hangulRow'),answerRow:t('records.answerRow'),
  answerNew:t('records.answerNew'),answerReads:t('records.answerReads'),graduated:t('records.graduated'),met:n=>t('records.met',{n}),metMastered:(n,m)=>t('records.metMastered',{n,m}),
- skipped:t('records.skipped'),started:t('records.started'),keptHangul:t('records.keptHangul'),keptAnswer:t('records.keptAnswer')});
+ skipped:t('records.skipped'),started:t('records.started'),keptHangul:t('records.keptHangul'),keptAnswer:t('records.keptAnswer'),
+ lifeRow:t('records.lifeRow'),lessons:n=>t('records.lessons',{n}),reviews:n=>t('records.reviews',{n}),days:n=>t('records.days',{n}),learningRow:t('records.learningRow'),answers:n=>t('records.answers',{n}),profileRow:t('records.profileRow'),profileValue:t('records.profileValue')});
+// 생활 진도 옮기기(10-20): 이 계정의 생활 진도에 없는 것만 더하고, 계정 저장(CAS·보낼 칸)이 서버에 닿았는지까지 본다.
+async function importDeviceLife(records){
+ const owner=client.snapshot?.accountId;
+ if(!owner||owner!==lifeOwner||!lifeProgress)throw Object.assign(Error('계정 연결이 바뀌었어요.'),{code:'ACCOUNT_CHANGED'});
+ const progress=lifeProgress,added=progress.importRecords(records,{from:'guest-device'});
+ // 더한 것이 없어도(앞 시도에서 이미 더했으면) 계정 저장이 서버에 닿았는지 본다 — 다시 고른 시도가 확인 없이 성공으로 끝나지 않게(10-21 검수).
+ await progress.flush();const status=progress.status();if(status.scoped&&status.phase!=='synced')throw Object.assign(Error('생활 진도가 아직 계정에 저장되지 않았어요.'),{code:'LIFE_NOT_SAVED',added});
+ refreshLife();education?.refresh();return added;
+}
 let hangulMigrationPort=null;
 const deviceRecords=createDeviceRecordsOffer({storage:localStorage,learningStatus:()=>window.SYNKLearningHost?.status?.()||null,hangulPort:()=>hangulMigrationPort,accountOwner:()=>client.snapshot?.accountId||'guest',
+ importLife:importDeviceLife,importLearning:operating?events=>account.importDeviceLearning(events):null,
  accountAnswer:()=>accountLife().hangulReading(),setAccountAnswer:async(answer,options)=>{const life=accountLife();try{return await life.setHangulReading(answer,options);}finally{refreshLife();}},
  present:({title,html,onClose})=>{show(title,html,'world-device-records');home.attachPanelResource({dispose:onClose});},close,toast:message=>home.toast(message),head:accountPrint(),text:deviceRecordsText});
 commands['device-records']=button=>{const line=document.querySelector('[data-device-records-status]');return deviceRecords.choose(button.dataset.choice,{owner:client.snapshot?.accountId||'guest',

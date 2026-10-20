@@ -6,9 +6,13 @@ import {progressKey} from '../../hangul-stage/learning.mjs';
 import {emptyProgress,meet,answer as answerLetter} from '../../hangul-stage/core.mjs';
 import {createLifeProgress} from '../life-progress.mjs';
 import {HANGUL_DEVICE_KEY,GUEST_LIFE_KEY,DEVICE_RECORDS_KEY,hangulAccountKey,hangulProgressSummary,deviceHangulAnswer,planDeviceRecords,applyDeviceRecords,
- deviceRecordsDecision,saveDeviceRecordsDecision,describeDeviceRecords,createDeviceRecordsOffer} from '../device-records.mjs';
+ deviceRecordsDecision,saveDeviceRecordsDecision,describeDeviceRecords,createDeviceRecordsOffer,GUEST_LEARNING_KEY,guestLearningEvents,guestLifeRecords,deviceWatermark,noteDeviceSignOut,noteDeviceAccount} from '../device-records.mjs';
+import {PACKS,LESSONS} from '../life-content.mjs';
+import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url);
+const learningBrowser=require('../../../atlas/game-browser.js');
 function memory(){const values=new Map();return {values,get length(){return values.size;},key:i=>[...values.keys()][i]??null,getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,String(value)),removeItem:key=>values.delete(key)};}
-const ACCOUNT='11111111-1111-4111-8111-111111111111',AT='2026-10-19T03:00:00.000Z';
+const ACCOUNT='11111111-1111-4111-8111-111111111111',AT='2026-10-19T03:00:00.000Z',LATER=Date.parse(AT)+3600000;
 const learning={accountKey:ACCOUNT,revision:2},target=`synk.account.${ACCOUNT}.r2.hangul-stage.v1`;
 // The real hangul-stage judgement writes the progress a guest leaves behind.
 function guestHangul(){let p=meet(emptyProgress(),['g-giyeok','v-a','v-o'],AT);p=answerLetter(p,{focus:['v-a'],correct:true,at:AT,sessionId:'s1'});return p;}
@@ -86,7 +90,7 @@ function offerFixture({accountAnswer=null,setAccountAnswer}={}){
  storage.setItem(HANGUL_DEVICE_KEY,JSON.stringify(guestHangul()));guestAnswer(storage);
  const offer=createDeviceRecordsOffer({storage,learningStatus:()=>learning,accountAnswer:()=>account,
   setAccountAnswer:setAccountAnswer||(async(answer,options)=>{account={version:1,answer,at:1,via:options.via};log.push('answer');}),
-  present:({title,html,onClose})=>{shown={title,html,onClose};log.push('present');},close:()=>{log.push('close');shown?.onClose();shown=null;},toast:message=>log.push(`toast:${message}`),now:()=>9,defer:fn=>fn()});
+  present:({title,html,onClose})=>{shown={title,html,onClose};log.push('present');},close:()=>{log.push('close');shown?.onClose();shown=null;},toast:message=>log.push(`toast:${message}`),now:()=>LATER,defer:fn=>fn()});
  return {storage,log,offer,shown:()=>shown};
 }
 
@@ -94,13 +98,14 @@ test('the offer asks once after login, moves on 「이어 가기」 and finishes
  const f=offerFixture();
  assert.equal(f.offer.offer({owner:'guest'}),null,'a guest is never asked');
  const pending=f.offer.offer({owner:ACCOUNT});
- assert.ok(pending);assert.equal(f.shown().title,'한글 기록 이어 가기');
+ assert.ok(pending);assert.equal(f.shown().title,'이 기기의 학습 옮기기');assert.match(f.shown().html,/이 기기에서 한 학습을 이 계정으로 옮길까요\?/);
+ assert.match(f.shown().html,/>옮기기<\/button><button class="plain-button" data-world="device-records" data-choice="keep">이 기기에만 두기</);
  assert.match(f.shown().html,/글자 3개를 만났어요/);assert.match(f.shown().html,/한글을 아직 못 읽어요/);
  assert.match(f.shown().html,/data-world="device-records" data-choice="move"/);
  assert.equal(f.offer.offer({owner:ACCOUNT}),null,'not twice in one page');
  assert.equal(await f.offer.choose('move',{owner:ACCOUNT}),'moved');
  assert.equal(await pending,'moved','the gate continues with the choice, not with the sheet closing');
- assert.deepEqual(f.log,['present','answer','close','toast:한글 기록을 내 계정으로 옮겼어요.']);
+ assert.deepEqual(f.log,['present','answer','close','toast:이 기기의 학습을 내 계정으로 옮겼어요.']);
  assert.equal(f.storage.getItem(`synk.account.${ACCOUNT}.r2.hangul-stage.v1`),f.storage.getItem(HANGUL_DEVICE_KEY));
  assert.equal(deviceRecordsDecision(f.storage,ACCOUNT),'moved');
  assert.equal(createDeviceRecordsOffer({storage:f.storage,learningStatus:()=>learning,present:()=>assert.fail('asked again'),close(){}}).offer({owner:ACCOUNT}),null,'a later visit does not ask again');
@@ -129,7 +134,7 @@ test('a failed move keeps the sheet open to retry and records nothing',async()=>
  assert.deepEqual(statuses.at(-1),['옮기지 못했어요. 연결을 확인한 뒤 다시 골라 주세요.',false]);
  assert.equal(deviceRecordsDecision(f.storage,ACCOUNT),null);assert.ok(f.shown(),'the sheet stays');
  fail=false;assert.equal(await f.offer.choose('move',{owner:ACCOUNT}),'moved');assert.equal(await pending,'moved');
- assert.ok(f.log.includes('toast:한글 기록을 내 계정으로 옮겼어요.'),'the sheet already said the account keeps its own 한글 만나기 progress');
+ assert.ok(f.log.includes('toast:이 기기의 학습을 내 계정으로 옮겼어요.'),'the sheet already said the account keeps its own 한글 만나기 progress');
 });
 
 test('an account record that appears while the sheet is open is kept, and the message says only part moved',async()=>{
@@ -137,5 +142,113 @@ test('an account record that appears while the sheet is open is kept, and the me
  const own=JSON.stringify({...emptyProgress(),skipped:true});f.storage.setItem(`synk.account.${ACCOUNT}.r2.hangul-stage.v1`,own);
  assert.equal(await f.offer.choose('move',{owner:ACCOUNT}),'moved');assert.equal(await pending,'moved');
  assert.equal(f.storage.getItem(`synk.account.${ACCOUNT}.r2.hangul-stage.v1`),own);
- assert.ok(f.log.includes('toast:옮길 수 있는 한글 기록만 내 계정으로 옮겼어요.'));
+ assert.ok(f.log.includes('toast:옮길 수 있는 기록만 내 계정으로 옮겼어요.'));
+});
+
+// ── 10-20 손님 기록 옮기기 넓힘: 생활 진도·짧은 진단과 연습의 학습 기록·학습 목표(TOPIK 맞춤 재설계 ④) ──
+const OTHER='22222222-2222-4222-8222-222222222222';
+const lesson=LESSONS.find(row=>row.id==='greetings-expressions'),second=LESSONS.find(row=>row.id!==lesson.id&&row.questions?.length&&!row.id.startsWith('cafe'));
+// 손님이 이 기기에서: 생활 레슨 하나(문제마다 답) + 학습 목표 + 홈 코치의 짧은 진단 두 문항(Trail).
+function guestDay(storage,start,which=lesson){
+ let tick=start,n=0;
+ const life=createLifeProgress({storage,owner:'guest',now:()=>tick,uuid:()=>`guest-${start}-${++n}`});life.summary(PACKS,LESSONS);life.startLesson(which);
+ for(const q of which.questions){tick+=1000;life.recordAnswer({lessonId:which.id,questionId:q.id,correct:q===which.questions[0],choiceId:q===which.questions[0]?q.answerId:q.choices.find(c=>c.id!==q.answerId).id});}
+ life.updateLearningProfile({consent:true,expectedRevision:life.learningProfile().profile.revision,values:{reasons:['exam'],primaryReason:'exam',examType:'topik1',targetGrade:2}});
+ const coach=learningBrowser.engine.createGame({gameId:'world-home',storage,clock:()=>new Date(tick+=1000).toISOString()});
+ for(const id of ['qa.read.1','qa.read.2']){const pid=coach.present({id,itemKey:id,familyKey:id,skillId:'ko.reading.detail',modality:'reading',difficulty:1,responseFormat:'single-choice'});coach.answer(pid,{correct:id.endsWith('1'),assessable:true});}
+ return {life,coach,end:()=>tick};
+}
+test('only guest records made after the last person on this device are offered (other-student isolation)',()=>{
+ const storage=memory(),first=Date.parse(AT);
+ const a=guestDay(storage,first);
+ // 앞 사람(OTHER)이 이 기기에 로그인해 있었고 로그아웃했다 — 그 앞의 손님 기록은 다음 사람에게 묻지 않는다.
+ noteDeviceAccount(storage,OTHER,a.end()+1000);noteDeviceSignOut(storage,a.end()+2000);
+ assert.equal(deviceWatermark(storage,ACCOUNT),a.end()+2000);
+ assert.equal(planDeviceRecords({storage,learning,accountId:ACCOUNT,life:true,learningLog:true}),null,'nothing after the last sign-out');
+ // 로그아웃 뒤 새 손님 연습은 대상이다(앞 사람의 것은 그대로 빠진다).
+ const b=guestDay(storage,a.end()+60000,second);
+ const plan=planDeviceRecords({storage,learning,accountId:ACCOUNT,life:true,learningLog:true});
+ assert.equal(plan.learning.attempts,2,'only the two answers made after the sign-out');
+ assert.ok(plan.learning.events.every(event=>Date.parse(event.at)>a.end()+2000));
+ assert.equal(plan.life.counts.lessons,1);assert.equal(plan.life.counts.profile,true);
+ const {rows}=describeDeviceRecords(plan);
+ assert.deepEqual(rows.map(row=>row.label),['생활 한국어','짧은 진단·연습','학습 목표']);assert.match(rows[1].value,/답 2개/);
+ // 이 계정이 한 번 고르면 그때까지의 손님 기록은 이 계정에 다시 묻지 않는다.
+ saveDeviceRecordsDecision(storage,ACCOUNT,'kept',b.end()+1000,{through:b.end()+1000});
+ assert.equal(planDeviceRecords({storage,learning,accountId:ACCOUNT,life:true,learningLog:true}),null);
+});
+test('moving keeps every event as it was (same ids), adds only what the account lacks and never overwrites it',async()=>{
+ const storage=memory();guestDay(storage,Date.parse(AT));
+ const {events}=guestLearningEvents(storage);
+ assert.deepEqual(new Set(events.map(event=>event.type)),new Set(['decision.made','practice.presented','practice.attempted','experience.completed']));
+ // 계정 기록장: 이미 다른 기록이 있다. 손님 사건을 옮긴 뒤 같은 것을 또 옮겨도 늘지 않는다(사건 ID로 중복 제외).
+ const accountStore=memory(),account=learningBrowser.engine.createGame({gameId:'world-account',storage:accountStore,storageScope:'account',accountKey:ACCOUNT,fold:false});
+ const pid=account.present({id:'own.1',itemKey:'own.1',familyKey:'own.1',skillId:'ko.reading.main',modality:'reading',difficulty:1,responseFormat:'single-choice'});account.answer(pid,{correct:true,assessable:true});
+ const before=account.syncPort.events().length;
+ const first=account.syncPort.importEvents(events),again=account.syncPort.importEvents(events);
+ assert.equal(first.added,events.length);assert.equal(again.added,0,'importing twice adds nothing');
+ assert.equal(account.syncPort.events().length,before+events.length,'the account kept its own entries');
+ assert.equal(account.summary().skills.find(skill=>skill.id==='ko.reading.detail').n,2,'the moved first answers count as evidence in the account');
+ // 생활 진도: 계정에 같은 레슨이 있으면 계정 것을 두고, 없는 복습·날만 더한다. 학습 목표는 계정이 비었을 때만.
+ const records=guestLifeRecords(storage),mine=memory();
+ const own=createLifeProgress({storage:mine,owner:ACCOUNT,now:()=>LATER,uuid:()=>'own-attempt'});own.summary(PACKS,LESSONS);own.startLesson(lesson);
+ own.recordAnswer({lessonId:lesson.id,questionId:lesson.questions[0].id,correct:true,choiceId:lesson.questions[0].answerId});
+ own.updateLearningProfile({consent:true,expectedRevision:0,values:{reasons:['travel'],primaryReason:'travel'}});
+ const kept=own.importRecords(records);
+ assert.equal(kept.lessons,0,'the account already has this lesson');assert.equal(kept.profile,false,'the account already chose its goals');
+ assert.equal(own.exportSnapshot().lessons[lesson.id].attemptId,'own-attempt','the account lesson is not overwritten');
+ assert.deepEqual(own.learningProfileValues().reasons,['travel']);
+ const fresh=createLifeProgress({storage:memory(),owner:OTHER,now:()=>LATER,uuid:()=>'x'});fresh.summary(PACKS,LESSONS);
+ const moved=fresh.importRecords(records);
+ assert.equal(moved.lessons,1);assert.ok(moved.reviews>0);assert.equal(moved.profile,true);
+ assert.equal(fresh.learningProfileValues().examType,'topik1','an empty account takes the goals and test details as they were');
+ const provenance=fresh.exportSnapshot().imports;assert.equal(provenance.length,1);assert.equal(provenance[0].from,'guest-device');
+ const again2=fresh.importRecords(records);
+ assert.deepEqual([again2.lessons,again2.reviews,again2.days,again2.profile],[0,0,0,false],'moving again adds nothing');
+ assert.equal(fresh.exportSnapshot().imports.length,1,'nothing new, no new import record');
+ assert.ok(storage.getItem(GUEST_LEARNING_KEY)&&storage.getItem(GUEST_LIFE_KEY),'the guest copies stay on this device');
+});
+test('the sheet says moved only after the account confirms; an unconfirmed upload keeps the sheet open and records nothing',async()=>{
+ const storage=memory();guestDay(storage,Date.parse(AT));
+ const imports=[];let confirmed=false;
+ const offer=createDeviceRecordsOffer({storage,learningStatus:()=>learning,present:()=>{},close(){},now:()=>LATER,defer:fn=>fn(),toast(){},
+  importLife:async records=>{imports.push('life');return {lessons:records.counts.lessons,reviews:records.counts.reviews,days:records.counts.days,profile:records.counts.profile};},
+  importLearning:async events=>{imports.push('learning');return {added:events.length,confirmed};}});
+ const pending=offer.offer({owner:ACCOUNT}),statuses=[];
+ assert.ok(pending);
+ assert.equal(await offer.choose('move',{owner:ACCOUNT,status:(text,busy)=>statuses.push([text,busy])}),null,'not confirmed by the server: not moved');
+ assert.deepEqual(statuses.at(-1),['옮기지 못했어요. 연결을 확인한 뒤 다시 골라 주세요.',false]);
+ assert.equal(deviceRecordsDecision(storage,ACCOUNT),null);
+ confirmed=true;assert.equal(await offer.choose('move',{owner:ACCOUNT}),'moved');assert.equal(await pending,'moved');
+ const entry=JSON.parse(storage.getItem(DEVICE_RECORDS_KEY)).accounts[ACCOUNT];
+ assert.equal(entry.decision,'moved');assert.equal(entry.moved.from,'guest-device');assert.ok(entry.moved.events>0);assert.equal(entry.through,LATER,'the records up to this choice are not offered again');
+ assert.deepEqual(imports,['life','learning','life','learning']);
+});
+
+// 10-21 아르곤 검수 반영: 지난번에 레슨을 옮긴 뒤 손님으로 한 복습도 옮길 거리이고, 연습한 날만 있어도 판에 그 줄이 있다.
+test('a review made after the lesson was moved earlier is still offered; practice days alone get their own row',()=>{
+ const storage=memory(),T0=Date.parse(AT),guest=value=>storage.setItem(GUEST_LIFE_KEY,JSON.stringify({version:1,owner:'guest',...value}));
+ guest({lessons:{L1:{startedAt:T0,completedAt:T0,answers:{q1:{at:T0,correct:true}}}},reviews:{R1:{lessonId:'L1',lastAt:T0+3*3600000}},daily:{version:1,days:{}}});
+ assert.equal(guestLifeRecords(storage,{after:T0+3600000}).counts.reviews,1,'레슨은 기준 앞(지난번에 옮김), 복습은 그 뒤');
+ guest({lessons:{},reviews:{},daily:{version:1,days:{'2026-10-20':{items:{q1:{lessonId:'L1',observedAt:T0+60000,outcome:'independent'}}}}}});
+ const plan=planDeviceRecords({storage,accountId:ACCOUNT,life:true});
+ assert.deepEqual(describeDeviceRecords(plan).rows,[{label:'생활 한국어',value:'연습한 날 1일'}]);
+});
+
+// 10-21 Fable 검수: 첫 「옮기기」가 서버 확인 전에 실패해 다시 고르면, 앞 시도에서 이미 더한 것을 「일부만」으로 말하지 않는다.
+test('a retry after an unconfirmed save reports what the first try already added; keeping after it does not claim nothing moved',async()=>{
+ for(const second of ['move','keep']){
+  const storage=memory();guestDay(storage,Date.parse(AT));const toasts=[];let calls=0;
+  const offer=createDeviceRecordsOffer({storage,learningStatus:()=>learning,present:()=>{},close(){},now:()=>LATER,defer:fn=>fn(),toast:message=>toasts.push(message),
+   importLife:async records=>{calls+=1;const added={lessons:records.counts.lessons,reviews:records.counts.reviews,days:records.counts.days,profile:records.counts.profile};
+    if(calls===1)throw Object.assign(Error('생활 진도가 아직 계정에 저장되지 않았어요.'),{code:'LIFE_NOT_SAVED',added});return {lessons:0,reviews:0,days:0,profile:false};},
+   importLearning:null});
+  const pending=offer.offer({owner:ACCOUNT});assert.ok(pending);
+  assert.equal(await offer.choose('move',{owner:ACCOUNT}),null,'first try: not confirmed');
+  assert.equal(await offer.choose(second,{owner:ACCOUNT}),'moved',second);
+  assert.equal(await pending,'moved');
+  const entry=JSON.parse(storage.getItem(DEVICE_RECORDS_KEY)).accounts[ACCOUNT];
+  assert.equal(entry.decision,'moved');assert.ok(entry.moved.days>0||entry.moved.lessons>0,'the first try’s additions are recorded');
+  assert.equal(toasts.at(-1),second==='move'?'이 기기의 학습을 내 계정으로 옮겼어요.':'옮길 수 있는 기록만 내 계정으로 옮겼어요.');
+ }
 });

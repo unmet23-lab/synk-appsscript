@@ -1,14 +1,23 @@
-// 공개판 설계 §2 「로그인 없이 먼저 해 본다」: 손님이 이 기기에 쌓은 한글 기록을 로그인할 때 계정으로 옮길지 묻는다.
-// 옮기는 것은 지나간 사건이 아니라 지금 상태의 스냅샷이다 — 한글 만나기의 글자 진도(hangul-stage)와 첫 실행에 고른
-// 「한글을 읽을 수 있어요?」 답(생활 진도 기록의 hangul 칸). 계정에 이미 그 기록이 있으면 합치지 않고 계정 것을 쓴다.
-// 이 기기의 손님 기록은 지우지 않는다. 고른 답(옮김·처음부터)은 계정마다 이 기기에 한 번 남겨 다시 묻지 않는다.
+// 공개판 설계 §2 「로그인 없이 먼저 해 본다」: 손님이 이 기기에 쌓은 학습 기록을 로그인할 때 계정으로 옮길지 한 번 묻는다.
+// 10-19: 한글 만나기의 글자 진도(hangul-stage)와 첫 실행에 고른 「한글을 읽을 수 있어요?」 답(생활 진도 기록의 hangul 칸).
+// 10-20(TOPIK 맞춤 재설계 · 유호님이 방식을 Claude 추천에 맡김): 생활 진도(레슨·복습·하루 기록)·짧은 진단과 연습의 학습 기록(Trail)·
+// 학습 목표도 같은 물음 하나로 옮긴다.
+// - 계정이 비어 있으면 그대로 옮긴다. 계정에 이미 기록이 있으면 사건 ID(학습 기록)·레슨·복습·날(생활 진도)로 중복을 빼고 계정 것을 덮지 않는다.
+//   한글 진도와 첫 실행 답, 학습 목표는 계정에 이미 있으면 계정 것을 쓴다.
+// - 다른 학생이 쓴 적 있는 기기: 그 학생이 마지막으로 이 기기에 있었던 때(로그인해 있던 때·로그아웃)와 이 계정이 지난번에 고른 때 뒤의
+//   손님 기록만 대상이다(기준 시각 deviceWatermark). 그래서 앞 사람의 손님 기록이 다음 사람에게 넘어가지 않는다.
+// - 옮긴 출처(손님 기기)는 생활 진도의 imports와 이 기기의 고른 기록(DEVICE_RECORDS_KEY)에 남는다. 학습 기록은 사건 그대로라 ID가 같다.
+// - 이 기기의 손님 기록은 지우지 않는다. 계정 쪽은 서버가 받았다고 답한 뒤에만 「옮겼어요」라고 한다(못 받으면 다시 고를 수 있다).
 export const HANGUL_DEVICE_KEY='synk.hangul-stage.v1';
 export const GUEST_LIFE_KEY='synk.life-korean.progress.v1:guest';
+export const GUEST_LEARNING_KEY='synk.atlas.learning.v1.device';
 export const DEVICE_RECORDS_KEY='synk.world.device-records.v1';
 const RECORD_ANSWERS=new Set(['new','reads']),RECORD_VIA=new Set(['question','graduation','skip','unskip']);
 const recordObject=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
 const recordTime=value=>Number.isSafeInteger(value)&&value>=0;
 const recordEscape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const recordId=value=>typeof value==='string'&&/^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
+const isoTime=value=>{const at=typeof value==='string'?Date.parse(value):NaN;return Number.isFinite(at)?at:-Infinity;};
 
 // hangul-stage/learning.mjs progressKey와 같은 이름(synk-account scopedStorage의 계정·학습 동의 판 구역).
 export function hangulAccountKey(status){
@@ -23,19 +32,104 @@ export function hangulProgressSummary(value){
  const graduated=recordObject(value.graduated),skipped=value.skipped===true,sessions=Array.isArray(value.sessions)?value.sessions.length:0;
  return met||graduated||skipped||sessions?{met,mastered,graduated,skipped,sessions}:null;
 }
-function readHangul(storage,key){const raw=storage.getItem(key);if(raw===null)return null;try{return hangulProgressSummary(JSON.parse(raw));}catch{return null;}}
-export function deviceHangulAnswer(storage){
- try{
-  const value=JSON.parse(storage?.getItem(GUEST_LIFE_KEY)||'null'),hangul=value?.owner==='guest'?value.hangul:null;
-  return recordObject(hangul)&&hangul.version===1&&RECORD_ANSWERS.has(hangul.answer)&&RECORD_VIA.has(hangul.via)&&recordTime(hangul.at)?{answer:hangul.answer,via:hangul.via}:null;
- }catch{return null;}
+// 한글 진도에서 가장 늦은 활동 시각(글자를 만나거나 답한 때·졸업). 기준 시각보다 앞이면 다른 사람의 기록일 수 있어 묻지 않는다.
+function hangulLatest(value){
+ let latest=-Infinity;
+ for(const letter of recordObject(value?.letters)?Object.values(value.letters):[])for(const key of ['lastAt','metAt'])latest=Math.max(latest,isoTime(letter?.[key]));
+ latest=Math.max(latest,isoTime(value?.graduated?.at));
+ for(const session of Array.isArray(value?.sessions)?value.sessions:[])latest=Math.max(latest,isoTime(`${session?.day}T23:59:59+09:00`));
+ return latest;
+}
+function readHangul(storage,key,{after=0}={}){
+ const raw=storage.getItem(key);if(raw===null)return null;
+ try{const value=JSON.parse(raw),summary=hangulProgressSummary(value);return summary&&(!after||hangulLatest(value)>after)?summary:null;}catch{return null;}
+}
+function guestLife(storage){
+ try{const value=JSON.parse(storage?.getItem(GUEST_LIFE_KEY)||'null');return recordObject(value)&&value.owner==='guest'&&value.version===1?value:null;}catch{return null;}
+}
+export function deviceHangulAnswer(storage,{after=0}={}){
+ const hangul=guestLife(storage)?.hangul;
+ return recordObject(hangul)&&hangul.version===1&&RECORD_ANSWERS.has(hangul.answer)&&RECORD_VIA.has(hangul.via)&&recordTime(hangul.at)&&(!after||hangul.at>after)?{answer:hangul.answer,via:hangul.via}:null;
+}
+
+// ── 이 기기에 누가 언제 있었는지(기준 시각) ──
+// {version:1, accounts:{<계정>:{decision, at, through?, seenAt?, cloud?, moved?}}, signedOutAt?}
+function readDevice(storage){
+ try{const value=JSON.parse(storage?.getItem(DEVICE_RECORDS_KEY)||'null');if(recordObject(value)&&value.version===1&&recordObject(value.accounts))return value;}catch{}
+ return {version:1,accounts:{}};
+}
+function writeDevice(storage,value){try{storage.setItem(DEVICE_RECORDS_KEY,JSON.stringify(value));return true;}catch{return false;}}
+function accountEntry(device,accountId){return Object.hasOwn(device.accounts,accountId)&&recordObject(device.accounts[accountId])?device.accounts[accountId]:null;}
+// 이 계정에 물을 손님 기록의 시작점: 마지막 로그아웃, 다른 계정이 이 기기에 마지막으로 있던 때, 이 계정이 지난번에 고른 때 가운데 가장 늦은 것.
+// own=false: 이 계정이 지난번에 고른 때는 빼고 본다(예전에 이 기기에만 옮긴 한글 진도를 계정 저장으로 다시 묻는 경우).
+export function deviceWatermark(storage,accountId,{own=true}={}){
+ const device=readDevice(storage);let mark=recordTime(device.signedOutAt)?device.signedOutAt:0;
+ for(const [id,entry]of Object.entries(device.accounts)){
+  if(!recordObject(entry))continue;
+  if(id===accountId){if(own)mark=Math.max(mark,recordTime(entry.through)?entry.through:recordTime(entry.at)&&['moved','kept'].includes(entry.decision)?entry.at:0);continue;}
+  for(const key of ['seenAt','at','through'])if(recordTime(entry[key]))mark=Math.max(mark,entry[key]);
+ }
+ return mark;
+}
+// 로그아웃(app-shell의 logout): 이 뒤의 손님 기록만 다음 로그인에 묻는다.
+export function noteDeviceSignOut(storage,at=Date.now()){const device=readDevice(storage);device.signedOutAt=Math.max(recordTime(device.signedOutAt)?device.signedOutAt:0,at);return writeDevice(storage,device);}
+// 계정이 이 기기에 있었다(로그인·계정 화면을 연 때): 다른 계정은 이보다 앞선 손님 기록을 받지 않는다.
+export function noteDeviceAccount(storage,accountId,at=Date.now()){
+ if(!recordId(accountId)||accountId==='guest')return false;
+ const device=readDevice(storage),entry=accountEntry(device,accountId)||{};
+ device.accounts={...device.accounts,[accountId]:{...entry,seenAt:Math.max(recordTime(entry.seenAt)?entry.seenAt:0,at)}};
+ return writeDevice(storage,device);
+}
+
+// ── 손님 학습 기록(Trail, 이 기기 열쇠 synk.atlas.learning.v1.device)에서 기준 시각 뒤의 것 ──
+// 제시(practice.presented)를 기준으로 그 결정(decision.made)과 딸린 사건(첫 답·도움·소리·마침·빼기)을 함께 옮긴다 —
+// 부모 없는 사건을 보내면 계정 기록이 받지 않는다. 사건은 고치지 않는다(ID가 같아 다시 옮겨도 중복이 생기지 않는다).
+export function guestLearningEvents(storage,{after=0}={}){
+ let value=null;try{value=JSON.parse(storage?.getItem(GUEST_LEARNING_KEY)||'null');}catch{value=null;}
+ if(!recordObject(value)||value.version!==1||value.owner!=null||!Array.isArray(value.events))return {events:[],attempts:0};
+ const events=value.events.filter(event=>recordObject(event)&&recordId(event.id)&&typeof event.type==='string');
+ const byId=new Map(events.map(event=>[event.id,event]));
+ const shown=new Set(),decisions=new Set();
+ for(const event of events){
+  if(event.type!=='practice.presented'||isoTime(event.at)<=after)continue;
+  if(event.decisionId&&byId.get(event.decisionId)?.type!=='decision.made')continue;
+  shown.add(event.id);if(event.decisionId)decisions.add(event.decisionId);
+ }
+ const keep=new Set([...shown,...decisions]);
+ for(const event of events)if(event.presentationId&&shown.has(event.presentationId)||event.type==='experience.completed'&&decisions.has(event.decisionId))keep.add(event.id);
+ for(const event of events)if(event.type==='record.excluded'&&keep.has(event.targetId))keep.add(event.id);
+ const moved=events.filter(event=>keep.has(event.id));
+ return {events:moved,attempts:moved.filter(event=>event.type==='practice.attempted'&&event.attemptNo===1).length};
+}
+// ── 손님 생활 진도(레슨·복습·하루 기록·학습 목표)에서 기준 시각 뒤의 것 ──
+export function guestLifeRecords(storage,{after=0}={}){
+ const value=guestLife(storage);if(!value)return null;
+ const lessons={},reviews={},days={};
+ for(const [id,lesson]of Object.entries(recordObject(value.lessons)?value.lessons:{})){
+  if(!recordObject(lesson))continue;
+  const latest=Math.max(recordTime(lesson.startedAt)?lesson.startedAt:-1,recordTime(lesson.completedAt)?lesson.completedAt:-1,...Object.values(recordObject(lesson.answers)?lesson.answers:{}).map(answer=>recordTime(answer?.at)?answer.at:-1));
+  if(latest>after&&Object.keys(recordObject(lesson.answers)?lesson.answers:{}).length)lessons[id]=lesson;
+ }
+ // 복습은 그 레슨이 손님 기록에 있으면 옮길 거리다 — 레슨은 지난번에 이미 옮겼을 수 있다(받는 쪽 importRecords가 계정에 그 레슨이 있는지 본다).
+ for(const [id,review]of Object.entries(recordObject(value.reviews)?value.reviews:{}))if(recordObject(review)&&recordTime(review.lastAt)&&review.lastAt>after&&recordObject(value.lessons?.[review.lessonId]))reviews[id]=review;
+ for(const [key,day]of Object.entries(recordObject(value.daily?.days)?value.daily.days:{})){
+  const items=Object.entries(recordObject(day?.items)?day.items:{}).filter(([,item])=>recordTime(item?.observedAt)&&item.observedAt>after);
+  if(items.length)days[key]={...day,items:Object.fromEntries(items)};
+ }
+ const saved=value.learningProfile?.profile;
+ const profile=recordObject(saved)&&saved.status==='active'&&saved.consent===true&&isoTime(saved.updatedAt)>after&&recordObject(saved.values)&&Object.keys(saved.values).length?{values:{...saved.values}}:null;
+ const counts={lessons:Object.keys(lessons).length,reviews:Object.keys(reviews).length,days:Object.keys(days).length,profile:!!profile};
+ return counts.lessons||counts.reviews||counts.days||counts.profile?{lessons,reviews,days,profile,counts}:null;
 }
 
 // learning: 계정 학습 호스트의 status()(accountKey·revision), accountAnswer: 계정 생활 진도의 hangulReading()(없으면 null).
+// accountId: 기준 시각을 읽을 계정(없으면 기준 없이 모두 — 10-19 시험·옛 호출). life·learning: 생활 진도·학습 기록도 옮길 수 있으면 참.
 // 옮길 것이 없으면 null. 손님 글자 진도가 있는데 계정 자리를 모르면 이번에는 묻지 않는다(다음 로그인 때 다시 본다).
-export function planDeviceRecords({storage=globalThis.localStorage,learning=null,accountAnswer=null,hangulPort=null}={}){
+// retryCloud: 이 계정이 예전에 한글 진도를 이 기기 안에서만 옮겼다(계정 저장 전) — 그 진도는 계정 저장으로 다시 묻는다(10-20 GPT 판과 같다).
+export function planDeviceRecords({storage=globalThis.localStorage,learning=null,accountAnswer=null,hangulPort=null,accountId=null,life=false,learningLog=false,retryCloud=false}={}){
  let device,answer,target,accountHas=false,from=HANGUL_DEVICE_KEY;
- try{device=readHangul(storage,HANGUL_DEVICE_KEY);answer=deviceHangulAnswer(storage);target=hangulAccountKey(learning);
+ const after=accountId?deviceWatermark(storage,accountId):0,hangulAfter=accountId&&retryCloud?deviceWatermark(storage,accountId,{own:false}):after;
+ try{device=readHangul(storage,HANGUL_DEVICE_KEY,{after:hangulAfter});answer=deviceHangulAnswer(storage,{after});target=hangulAccountKey(learning);
   if(hangulPort){
    // Previous versions put account progress in an account-scoped local key.
    // Offer that same owner's snapshot before a guest copy; neither is uploaded silently.
@@ -43,14 +137,19 @@ export function planDeviceRecords({storage=globalThis.localStorage,learning=null
    target=HANGUL_DEVICE_KEY;accountHas=hangulPort.read()!==null;
   }else if(target)accountHas=storage.getItem(target)!==null;
  }catch{return null;}
- if(device&&!target)return null;
- const hangul=device&&!accountHas?{from,to:target,summary:device,...(hangulPort?{cloud:true}:{})}:null,moveAnswer=answer&&!accountAnswer?answer:null;
- if(!hangul&&!moveAnswer)return null;
- return {hangul,answer:moveAnswer,kept:{hangul:!!device&&accountHas,answer:!!answer&&!!accountAnswer}};
+ const hangulReady=!(device&&!target);
+ const hangul=hangulReady&&device&&!accountHas?{from,to:target,summary:device,...(hangulPort?{cloud:true}:{})}:null,moveAnswer=answer&&!accountAnswer?answer:null;
+ let lifeRecords=null,events=null;
+ try{if(life)lifeRecords=guestLifeRecords(storage,{after});}catch{lifeRecords=null;}
+ try{if(learningLog){const found=guestLearningEvents(storage,{after});if(found.events.length)events=found;}}catch{events=null;}
+ if(!hangul&&!moveAnswer&&!lifeRecords&&!events)return null;
+ return {hangul,answer:moveAnswer,life:lifeRecords,learning:events,after,kept:{hangul:hangulReady&&!!device&&accountHas,answer:!!answer&&!!accountAnswer}};
 }
 // 옮기는 순간에 다시 본다: 그사이 계정에 기록이 생겼으면 합치지 않는다('exists'), 손님 기록이 사라졌으면 건너뛴다('gone').
-export async function applyDeviceRecords(plan,{storage=globalThis.localStorage,accountAnswer=()=>null,setAccountAnswer,hangulPort=null,guard=()=>{}}){
- const result={hangul:null,answer:null,errors:[]};
+// importLife(records): 계정 생활 진도에 없는 것만 더하고 서버에 저장됐는지까지 확인한다(app-shell). importLearning(events): 같은 것을 학습 기록에.
+export async function applyDeviceRecords(plan,{storage=globalThis.localStorage,accountAnswer=()=>null,setAccountAnswer,hangulPort=null,guard=()=>{},importLife=null,importLearning=null}){
+ // pending: 서버 확인 전에 실패했지만 계정 쪽에 이미 더한 것(다시 고를 때 「일부만」으로 치지 않으려고 판이 기억한다).
+ const result={hangul:null,answer:null,life:null,learning:null,errors:[],added:{lessons:0,reviews:0,days:0,profile:false,events:0},pending:{}};
  if(plan?.hangul){
   try{
    const raw=storage.getItem(plan.hangul.from);
@@ -69,26 +168,41 @@ export async function applyDeviceRecords(plan,{storage=globalThis.localStorage,a
   try{guard();if(accountAnswer())result.answer='exists';else{await setAccountAnswer(plan.answer.answer,{via:plan.answer.via});guard();result.answer='moved';}}
   catch(error){result.errors.push(error);}
  }
+ if(plan?.life&&typeof importLife==='function'){
+  try{guard();const added=await importLife(plan.life);guard();
+   Object.assign(result.added,{lessons:added?.lessons||0,reviews:added?.reviews||0,days:added?.days||0,profile:!!added?.profile});
+   result.life=added&&(added.lessons||added.reviews||added.days||added.profile)?'moved':'exists';}
+  catch(error){const got=error?.added;if(recordObject(got)&&(got.lessons||got.reviews||got.days||got.profile))result.pending.life=got;result.errors.push(error);}
+ }
+ if(plan?.learning&&typeof importLearning==='function'){
+  try{guard();const added=await importLearning(plan.learning.events);guard();
+   if(added?.confirmed===false)throw Object.assign(Error('학습 기록이 아직 계정에 올라가지 않았어요.'),{code:'LEARNING_NOT_SAVED',added:added?.added||0});
+   result.added.events=added?.added||0;result.learning=added?.added?'moved':'exists';}
+  catch(error){if(Number.isInteger(error?.added)&&error.added>0)result.pending.learning=error.added;result.errors.push(error);}
+ }
  return result;
 }
 export function deviceRecordsDecision(storage,accountId,{cloud=false}={}){
- try{const value=JSON.parse(storage?.getItem(DEVICE_RECORDS_KEY)||'null'),accounts=recordObject(value)&&value.version===1&&recordObject(value.accounts)?value.accounts:{};
-  const entry=Object.hasOwn(accounts,accountId)?accounts[accountId]:null;return recordObject(entry)&&['moved','kept'].includes(entry.decision)&&(!cloud||entry.decision==='kept'||entry.cloud===true)?entry.decision:null;}catch{return null;}
+ try{const entry=accountEntry(readDevice(storage),accountId);return recordObject(entry)&&['moved','kept'].includes(entry.decision)&&(!cloud||entry.decision==='kept'||entry.cloud===true)?entry.decision:null;}catch{return null;}
 }
-export function saveDeviceRecordsDecision(storage,accountId,decision,at=Date.now(),{cloud=false}={}){
+// 고른 답과 그때까지의 기준 시각(through)을 계정마다 남긴다: 그 앞의 손님 기록은 이 계정에 다시 묻지 않는다.
+// moved: 옮긴 수(출처 기록 · 손님 기기에서 옮긴 레슨·복습·날·학습 기록 사건 수).
+export function saveDeviceRecordsDecision(storage,accountId,decision,at=Date.now(),{cloud=false,through=null,moved=null}={}){
  if(!['moved','kept'].includes(decision))throw TypeError('Invalid device records decision');
- let accounts={};try{const value=JSON.parse(storage.getItem(DEVICE_RECORDS_KEY)||'null');if(recordObject(value)&&value.version===1&&recordObject(value.accounts))accounts=value.accounts;}catch{}
- try{storage.setItem(DEVICE_RECORDS_KEY,JSON.stringify({version:1,accounts:{...accounts,[accountId]:{decision,at,...(cloud?{cloud:true}:{})}}}));return true;}catch{return false;}
+ const device=readDevice(storage),entry=accountEntry(device,accountId)||{};
+ device.accounts={...device.accounts,[accountId]:{...(recordTime(entry.seenAt)?{seenAt:entry.seenAt}:{}),decision,at,...(cloud?{cloud:true}:{}),...(recordTime(through)?{through}:{}),...(recordObject(moved)?{moved:{from:'guest-device',...moved}}:{})}};
+ return writeDevice(storage,device);
 }
 
 export const DEVICE_RECORDS_TEXT=Object.freeze({
- title:'한글 기록 이어 가기',lead:'이 기기에서 한 한글 기록을 내 계정에서 이어 갈까요?',move:'내 계정에서 이어 가기',keep:'처음부터 하기',
- snapshot:'지금 진도만 옮겨요',snapshotBody:'지나간 연습 하나하나가 아니라 지금 상태만 계정에 담아요. 이 기기의 손님 기록은 지우지 않아요.',
+ title:'이 기기의 학습 옮기기',lead:'이 기기에서 한 학습을 이 계정으로 옮길까요?',move:'옮기기',keep:'이 기기에만 두기',
+ snapshot:'계정 기록은 덮지 않아요',snapshotBody:'계정에 이미 있는 기록은 그대로 두고, 계정에 없는 것만 더해요. 이 기기의 기록은 지우지 않아요.',
  moving:'계정으로 옮기고 있어요.',failed:'옮기지 못했어요. 연결을 확인한 뒤 다시 골라 주세요.',
- moved:'한글 기록을 내 계정으로 옮겼어요.',partly:'옮길 수 있는 한글 기록만 내 계정으로 옮겼어요.',kept:'계정은 처음부터 시작해요. 이 기기의 기록은 그대로 남아 있어요.',
+ moved:'이 기기의 학습을 내 계정으로 옮겼어요.',partly:'옮길 수 있는 기록만 내 계정으로 옮겼어요.',kept:'계정은 이 기기의 학습 없이 이어 가요. 이 기기의 기록은 그대로 남아 있어요.',
  hangulRow:'한글 만나기',answerRow:'처음 고른 답',answerNew:'한글을 아직 못 읽어요',answerReads:'한글을 읽을 수 있어요',
  graduated:'졸업했어요',met:n=>`글자 ${n}개를 만났어요`,metMastered:(n,m)=>`글자 ${n}개를 만났고 ${m}개를 익혔어요`,skipped:'건너뛰기를 골랐어요',started:'연습을 시작했어요',
- keptHangul:'한글 만나기는 계정에 이미 진도가 있어 계정 진도로 이어 가요.',keptAnswer:'처음 고른 답은 계정에 이미 있어 계정 것을 써요.'
+ keptHangul:'한글 만나기는 계정에 이미 진도가 있어 계정 진도로 이어 가요.',keptAnswer:'처음 고른 답은 계정에 이미 있어 계정 것을 써요.',
+ lifeRow:'생활 한국어',lessons:n=>`레슨 ${n}개`,reviews:n=>`복습 ${n}개`,days:n=>`연습한 날 ${n}일`,learningRow:'짧은 진단·연습',answers:n=>`답 ${n}개`,profileRow:'학습 목표',profileValue:'고른 목표와 도움 방식'
 });
 // 화면 언어(10-19 1판): 판을 띄우는 쪽이 text()로 고른 언어의 글을 넘기면 같은 키를 그 글로 바꾼다(없거나 실패하면 위 한국어).
 function recordsText(text){let extra=null;try{extra=typeof text==='function'?text():text;}catch{extra=null;}return extra&&typeof extra==='object'?{...DEVICE_RECORDS_TEXT,...extra}:DEVICE_RECORDS_TEXT;}
@@ -101,6 +215,10 @@ export function describeDeviceRecords(plan,T=DEVICE_RECORDS_TEXT){
  const rows=[];
  if(plan?.hangul)rows.push({label:T.hangulRow,value:hangulLine(plan.hangul.summary,T)});
  if(plan?.answer)rows.push({label:T.answerRow,value:plan.answer.answer==='new'?T.answerNew:T.answerReads});
+ const counts=plan?.life?.counts;
+ if(counts&&(counts.lessons||counts.reviews||counts.days))rows.push({label:T.lifeRow,value:[counts.lessons?T.lessons(counts.lessons):'',counts.reviews?T.reviews(counts.reviews):'',!counts.lessons&&counts.days?T.days(counts.days):''].filter(Boolean).join(' · ')});
+ if(plan?.learning?.attempts)rows.push({label:T.learningRow,value:T.answers(plan.learning.attempts)});
+ if(counts?.profile)rows.push({label:T.profileRow,value:T.profileValue});
  const notes=[];
  if(plan?.kept.hangul)notes.push(T.keptHangul);
  if(plan?.kept.answer)notes.push(T.keptAnswer);
@@ -111,7 +229,9 @@ export function describeDeviceRecords(plan,T=DEVICE_RECORDS_TEXT){
 // 판의 단추(data-world="device-records" data-choice="move|keep")가 choose로 온다. 판을 닫으면 이번 화면에서는 다시 묻지 않는다.
 // 고른 뒤에는 관문이 이어지게 먼저 끝을 알리고 같은 차례에 판을 닫는다(이어지는 튜터 고르기 판을 닫지 않게). 알림은 그다음 판 위에 뜨게 미룬다.
 // text: 판 글을 고른 화면 언어로 넘기는 함수(DEVICE_RECORDS_TEXT와 같은 키, 열 때·알릴 때마다 다시 읽는다).
-export function createDeviceRecordsOffer({storage=globalThis.localStorage,learningStatus=()=>null,accountAnswer=()=>null,setAccountAnswer,present,close,toast=()=>{},head='',now=Date.now,defer=fn=>setTimeout(fn,0),text=null,hangulPort=()=>null,accountOwner=null}){
+// importLife·importLearning: 생활 진도·학습 기록을 옮기는 통로(app-shell, 없으면 한글만 — 10-19와 같다).
+export function createDeviceRecordsOffer({storage=globalThis.localStorage,learningStatus=()=>null,accountAnswer=()=>null,setAccountAnswer,present,close,toast=()=>{},head='',now=Date.now,defer=fn=>setTimeout(fn,0),text=null,hangulPort=()=>null,accountOwner=null,
+ importLife=null,importLearning=null}){
  const asked=new Set();let current=null;
  function markup(plan){
   const T=recordsText(text),{rows,notes}=describeDeviceRecords(plan,T);
@@ -124,12 +244,15 @@ export function createDeviceRecordsOffer({storage=globalThis.localStorage,learni
  function finish(job,value){if(current!==job)return;current=null;job.resolve(value);}
  function offer({owner}={}){
   const port=hangulPort();
-  if(typeof owner!=='string'||!owner||owner==='guest'||asked.has(owner)||deviceRecordsDecision(storage,owner,{cloud:!!port}))return null;
+  if(typeof owner!=='string'||!owner||owner==='guest'||asked.has(owner))return null;
   if(port&&port.accountId!==owner)return null;
-  let plan=null;try{plan=planDeviceRecords({storage,learning:learningStatus(),accountAnswer:accountAnswer(),hangulPort:port});}catch{plan=null;}
+  const entry=accountEntry(readDevice(storage),owner),retryCloud=!!port&&entry?.decision==='moved'&&entry.cloud!==true;
+  let plan=null;try{plan=planDeviceRecords({storage,learning:learningStatus(),accountAnswer:accountAnswer(),hangulPort:port,accountId:owner,life:typeof importLife==='function',learningLog:typeof importLearning==='function',retryCloud});}catch{plan=null;}
+  // 이 계정이 이 기기에 있었다는 사실은 기준 시각을 읽은 뒤에 남긴다(그래야 이 계정 자신의 기록은 빠지지 않는다).
+  noteDeviceAccount(storage,owner,now());
   if(!plan)return null;
   asked.add(owner);
-  return new Promise(resolve=>{const job={owner,plan,port,resolve,busy:false};current=job;present({title:recordsText(text).title,html:markup(plan),onClose:()=>finish(job,'dismissed')});});
+  return new Promise(resolve=>{const job={owner,plan,port,resolve,busy:false,startedAt:now()};current=job;present({title:recordsText(text).title,html:markup(plan),onClose:()=>finish(job,'dismissed')});});
  }
  function done(job,value,message){finish(job,value);close();if(message)defer(()=>toast(message));return value;}
  async function choose(choice,{owner,status=()=>{}}={}){
@@ -137,15 +260,29 @@ export function createDeviceRecordsOffer({storage=globalThis.localStorage,learni
   // 그사이 계정이 바뀌었으면 아무것도 옮기지 않고 판만 닫는다.
   if(owner!==job.owner){done(job,'dismissed');return null;}
   job.busy=true;
-  if(choice==='keep'){saveDeviceRecordsDecision(storage,job.owner,'kept',now());return done(job,'kept',recordsText(text).kept);}
+  if(choice==='keep'){
+   // 앞 「옮기기」가 서버 확인 전에 실패했어도 계정 쪽에 이미 더한 것은 남아 다음 저장 때 올라간다 — 「옮기지 않았다」고 말하지 않는다.
+   const prior=job.pending;
+   if(prior?.life||prior?.learning){saveDeviceRecordsDecision(storage,job.owner,'moved',now(),{cloud:!!job.port,through:job.startedAt,moved:{lessons:prior.life?.lessons||0,reviews:prior.life?.reviews||0,days:prior.life?.days||0,profile:!!prior.life?.profile,events:prior.learning||0,at:now()}});return done(job,'moved',recordsText(text).partly);}
+   saveDeviceRecordsDecision(storage,job.owner,'kept',now(),{through:job.startedAt});return done(job,'kept',recordsText(text).kept);}
   status(recordsText(text).moving,true);
   const guard=()=>{if(current!==job||hangulPort()!==job.port||accountOwner&&accountOwner()!==job.owner)throw Error('계정 연결이 바뀌었어요.');};
-  const result=await applyDeviceRecords(job.plan,{storage,accountAnswer,setAccountAnswer,hangulPort:job.port,guard});
+  const result=await applyDeviceRecords(job.plan,{storage,accountAnswer,setAccountAnswer,hangulPort:job.port,guard,importLife,importLearning});
   if(current!==job)return null;
-  const moved=[result.hangul,result.answer].includes('moved');
-  if(result.errors.length&&(!moved||job.plan.hangul?.cloud)){job.busy=false;status(recordsText(text).failed,false);return null;}
-  saveDeviceRecordsDecision(storage,job.owner,'moved',now(),{cloud:!!job.port});
-  return done(job,'moved',result.errors.length||result.hangul==='exists'||result.answer==='exists'||!moved?recordsText(text).partly:recordsText(text).moved);
+  // 계정 저장이 서버에 닿았는지 모르는 부분이 하나라도 있으면(생활 진도·학습 기록·계정 한글 저장) 고른 것을 남기지 않고 다시 고르게 한다 —
+  // 다시 고르면 이미 더한 것은 중복 없이 건너뛰고 남은 것만 다시 확인한다.
+  // 앞 시도에서 더하고 서버 확인만 못 한 것: 이번 시도가 「이미 있음」이면 그 앞 시도가 옮긴 것이다.
+  const prior=job.pending||{};
+  if(prior.life&&['moved','exists'].includes(result.life)){result.life='moved';Object.assign(result.added,{lessons:result.added.lessons+(prior.life.lessons||0),reviews:result.added.reviews+(prior.life.reviews||0),days:result.added.days+(prior.life.days||0),profile:result.added.profile||!!prior.life.profile});}
+  if(prior.learning&&['moved','exists'].includes(result.learning)){result.learning='moved';result.added.events+=prior.learning;}
+  const movedNow=[result.hangul,result.answer,result.life,result.learning].includes('moved');
+  if(result.errors.length&&(!movedNow||job.plan.hangul?.cloud||job.plan.life||job.plan.learning)){
+   const sum=(a,b)=>a&&b?{lessons:(a.lessons||0)+(b.lessons||0),reviews:(a.reviews||0)+(b.reviews||0),days:(a.days||0)+(b.days||0),profile:!!(a.profile||b.profile)}:a||b||null;
+   job.pending={life:sum(prior.life,result.pending.life),learning:(prior.learning||0)+(result.pending.learning||0)||null};
+   job.busy=false;status(recordsText(text).failed,false);return null;}
+  saveDeviceRecordsDecision(storage,job.owner,'moved',now(),{cloud:!!job.port,through:job.startedAt,moved:{...result.added,at:now()}});
+  const partly=result.errors.length||[result.hangul,result.answer,result.life,result.learning].includes('exists')||!movedNow;
+  return done(job,'moved',partly?recordsText(text).partly:recordsText(text).moved);
  }
  return Object.freeze({offer,choose,pending:()=>current?{owner:current.owner,plan:current.plan}:null});
 }

@@ -1,6 +1,7 @@
 import {PACKS,LESSONS} from './life-content.mjs';
 import {LISTENING_CHECKS,checkMetadata} from '../korean-runner/listening-check.mjs';
 import {RHYTHM_CANDIDATES} from '../korean-rhythm/personalization.mjs';
+import {planTokens} from './world-exam-plan.mjs';
 
 // Product routes and authored content live here. Core owns the ranking; this
 // adapter neither assesses a person nor writes a profile, answer or schedule.
@@ -66,11 +67,18 @@ function withAnswers(candidate,answers){
  return {...candidate,targets,goals:later?[]:[...new Set([...candidate.goals,...wanted.map(id=>`interest.${id}`)])]};
 }
 
-export function worldLearningSettings(settings={}){
+// 배우는 이유가 가리키는 넓은 목표(atlas/personalization.js REASON_GOAL과 같다 — 시험이 대조한다). 「시험·자격 준비」(exam)와
+// 넓은 목표 prepare는 한 목표의 두 표현이라, 둘을 함께 넘기면 둘 다 단 후보(바람길·리듬·읽기 짧은 연습)가 목표를 두 개 맞춘 것으로
+// 세어 순위가 두 번 오른다(10-20 검수 3차 「이중 가산」). 이유로 이미 정해진 넓은 목표는 다시 더하지 않는다.
+export const REASON_BROAD_GOAL=Object.freeze({culture:'explore',travel:'expression',people:'expression',life:'expression',study:'study',work:'work',career:'work',exam:'prepare',hobby:'explore',other:null});
+// planGoals: 시험 계획(world-exam-plan.mjs)이 이번 주 초점으로 넘기는 토큰(plan.*). Core가 같은 급한 정도 안에서만 순서를 바꾼다.
+export function worldLearningSettings(settings={},{planGoals=[]}={}){
  const value=record(settings)?settings:{};
  const reasons=Array.isArray(value.reasons)?[...new Set(value.reasons.filter(reason=>REASONS.includes(reason)))]:[];
  const goals=value.primaryReason&&reasons.includes(value.primaryReason)?[value.primaryReason]:reasons;
- if(BROAD_GOALS.includes(value.goal)&&!goals.includes(value.goal))goals.push(value.goal);
+ const implied=new Set(goals.map(reason=>REASON_BROAD_GOAL[reason]).filter(Boolean));
+ if(BROAD_GOALS.includes(value.goal)&&!goals.includes(value.goal)&&!implied.has(value.goal))goals.push(value.goal);
+ for(const token of Array.isArray(planGoals)?planGoals:[])if(typeof token==='string'&&/^plan\.[a-z]+\.[a-zA-Z0-9_.-]{1,80}$/.test(token)&&!goals.includes(token))goals.push(token);
  return {goals, ...(Number.isInteger(value.minutes)&&value.minutes>0&&value.minutes<=240?{minutes:value.minutes}:{}),
   support:supports.includes(value.support)?value.support:value.experience==='new'?'step':'choose',audioAvailable:value.audio!=='off'};
 }
@@ -162,26 +170,73 @@ function resumeCandidates(progress,settings,now){
  return result;
 }
 
+// 「이번 주 계획」·「내 위치」가 여는 후보: 읽기 짧은 연습(route 'practice', world-reading-practice.mjs가 만든다)과
+// 짧은 진단(route 'position', 학습 항목을 겨누지 않는 넓은 확인 — 급한 연습을 앞지르지 않게 targets를 비운다).
+// 호출하는 쪽(world-learning-ui.mjs)이 그 사람의 노출 기록으로 새 문항이 남은 것만 넘긴다.
+function extraCandidate(candidate,settings){
+ if(!record(candidate)||!['practice','position','writing'].includes(candidate.route)||typeof candidate.id!=='string')return null;
+ return {...candidate,targets:Array.isArray(candidate.targets)?candidate.targets:[],goals:Array.isArray(candidate.goals)?[...candidate.goals]:[],
+  supports:Array.isArray(candidate.supports)?[...candidate.supports]:[...supports],presentation:presentationFor(settings)};
+}
+// WORLD가 직접 쓰는 이유(10-20 검수 #17): 학습 항목을 겨누지 않는 후보(생활 레슨·복습)가 뽑히면 Core·Vellum은 「아직 연습 기록이 적어요」라고
+// 말한다(practice.unseen — 그 후보가 볼 항목이 없다는 뜻). 기록이 쌓인 사람에게 그 말은 틀리므로 그 후보를 고른 까닭을 말한다.
+// 짧은 진단은 이번 주 계획의 다시 확인이라 그 까닭을 쓴다. 다른 이유(복습 시기·놓친 항목·목표)는 Vellum 문장 그대로다.
+// 짧은 진단 후보(이번 주 계획의 시작점·다시 확인): 학습 항목을 겨누지 않는 넓은 확인이라 targets를 비운다(급한 연습을 앞지르지 않게).
+export function positionCheckCandidate(){
+ return {id:'world.position.check',label:'짧은 진단',route:'position',minutes:5,minutesEstimated:true,targets:[],goals:['exam','prepare'],audioRequired:false,modality:'reading'};
+}
+// labels: 항목 id → 한국어 이름(Strata). 시험 계획의 숙제 항목을 고른 까닭을 그 항목 이름으로 말할 때 쓴다.
+function hostReason(chosen,{history,plan,labels}){
+ const selected=chosen.selected;
+ if(!selected)return null;
+ // 이번 주 계획의 숙제(다시 볼 항목)를 Core가 같은 급한 정도 안에서 앞세웠는데, 고른 새 문항의 칸이 아직 기록 없는 칸이라
+ // Vellum 문장이 목표 한 줄뿐일 때: 그 숙제 항목과 까닭(놓친 답·다시 볼 때)을 말한다. 기록에 있는 사실만 말한다.
+ const generic=!(chosen.reasons||[]).some(reason=>reason.startsWith('practice.')&&reason!=='practice.unseen'||['review.due','activity.retry','activity.assisted'].includes(reason));
+ if(plan&&generic&&['practice','game'].includes(selected.route)){
+  // 읽기 짧은 연습은 그 항목, 게임은 Core가 그 게임에서 먼저 낼 문항의 항목(focusSkillId)일 때만 — 이유가 실제 첫 문항과 같은 항목을 말하게.
+  const skillId=selected.route==='practice'?selected.skillId:chosen.focusSkillId;
+  const homework=(plan.homework||[]).find(row=>!row.shortage&&row.skillId===skillId);
+  const label=homework&&labels?.[homework.skillId];
+  if(label)return {reason:homework.status==='review'?`이번 주 숙제예요. ${label} 기록이 오래돼 새 문항으로 다시 확인해요.`:`이번 주 숙제예요. ${label}에서 놓친 답이 있어 새 문항으로 다시 확인해요.`,reasons:['plan.homework'],focusSkillId:homework.skillId};
+ }
+ if(selected.route==='position')return {reason:plan?.notes?.includes('start')?'시험 목표에 맞춰 짧은 진단으로 시작점을 먼저 확인해요.':'이번 주 계획의 다시 확인이에요. 처음 보는 문항으로 지금 위치를 확인해요.',reasons:['plan.recheck']};
+ const unseen=(chosen.reasons||[]).includes('practice.unseen')&&!(chosen.reasons||[]).includes('goal.declared');
+ if(!unseen||!history||(selected.targets||[]).length)return null;
+ if(selected.route==='lesson')return {reason:'생활 팩의 다음 레슨이에요. 진도 순서대로 이어서 배워요.',reasons:['progress.next']};
+ return null;
+}
 // `answers` ({interested, notNow}: worldTopicAnswers) are the person's own answers on 「내 성향」.
-export function createWorldLearningPlan({summary=null,progress={},settings={},now=Date.now(),recommendActivities,answers=null,openGames=null}={}){
+// extra: 읽기 짧은 연습·짧은 진단 후보(extraCandidate). examPlan: 시험 계획(world-exam-plan.mjs buildExamPlan) — 있으면 후보마다 계획 토큰(planTokens)을
+// 붙이고 그 주 초점 토큰을 목표로 넘긴다. 순위는 그대로 Core가 정한다.
+export function createWorldLearningPlan({summary=null,progress={},settings={},now=Date.now(),recommendActivities,answers=null,openGames=null,extra=[],examPlan=null}={}){
  if(typeof recommendActivities!=='function')throw TypeError('WORLD learning plan needs Core recommendActivities');
- const at=clock(now),source=record(progress)?progress:{},normalized=worldLearningSettings(settings),told=answersOf(answers);
+ const at=clock(now),source=record(progress)?progress:{},planned=record(examPlan)&&Array.isArray(examPlan.goals)?examPlan:null;
+ const normalized=worldLearningSettings(settings,{planGoals:planned?.goals||[]}),told=answersOf(answers);
  const profile=record(summary)&&Array.isArray(summary.skills)&&typeof summary.evidenceComplete==='boolean'?summary:{skills:[],evidenceComplete:false,asOf:iso(at)};
  const skills=new Set(profile.skills.map(skill=>skill.id));
  const resumes=resumeCandidates(source,settings,at),resumingReview=resumes.some(candidate=>candidate.route==='review');
+ const added=(Array.isArray(extra)?extra:[]).map(candidate=>extraCandidate(candidate,settings)).filter(Boolean);
  const candidates=[...resumes,...buildWorldLearningCandidates({progress:source,settings,now:at,openGames}).filter(candidate=>
-  !(resumingReview&&candidate.route==='review')&&!resumes.some(resume=>candidate.route==='lesson'&&resume.route==='lesson'&&resume.lessonId===candidate.lessonId))];
+  !(resumingReview&&candidate.route==='review')&&!resumes.some(resume=>candidate.route==='lesson'&&resume.route==='lesson'&&resume.lessonId===candidate.lessonId)),...added];
  // A partial/empty host summary cannot manufacture missing ability cells. The
  // activities remain available through declared goals, without a skill claim.
- const ready=candidates.map(candidate=>withAnswers({...candidate,targets:candidate.targets.filter(target=>target.skillIds.every(id=>skills.has(id)))},told));
+ const ready=candidates.map(candidate=>{
+  const targets=candidate.targets.filter(target=>target.skillIds.every(id=>skills.has(id)));
+  const goals=planned?[...new Set([...(candidate.goals||[]),...planTokens({...candidate,targets})])]:candidate.goals;
+  return withAnswers({...candidate,targets,goals},told);
+ });
  const ranking=told.interested.length?{...normalized,goals:[...new Set([...normalized.goals,...told.interested.map(id=>`interest.${id}`)])]}:normalized;
  const chosen=recommendActivities({profile,candidates:ready,settings:ranking,at:iso(at)});
  // When an interest the person gave is what put this activity first, say so in their words.
  const interest=(chosen.matchedGoals||[]).find(goal=>goal.startsWith('interest.'));
  const pushed=interest&&!(chosen.reasons||[]).some(reason=>['review.due','activity.retry','activity.assisted'].includes(reason)||reason.startsWith('practice.'));
  const label=interest?(profile.concepts||[]).find(concept=>concept?.id===interest.slice(9))?.label:null;
+ // 기록이 있는 사람: 혼자 낸 첫 답이 하나라도 있거나 마친 생활 레슨이 있다.
+ const history=(Number.isFinite(profile.independent)&&profile.independent>0)||Object.values(record(source.lessons)?source.lessons:{}).some(lesson=>time(lesson?.completedAt));
+ const labels=Object.fromEntries(profile.skills.filter(skill=>typeof skill?.label==='string').map(skill=>[skill.id,skill.label]));
+ const own=pushed?null:hostReason(chosen,{history,plan:planned,labels});
  const ranked=pushed?{...chosen,reason:typeof label==='string'&&label.trim()?`더 배우고 싶다고 알려 준 ‘${label}’ 연습이에요.`:'더 배우고 싶다고 알려 준 내용이 들어 있는 연습이에요.',
-  reasons:[...chosen.reasons,'interest.declared']}:chosen;
+  reasons:[...chosen.reasons,'interest.declared']}:own?{...chosen,reason:own.reason,reasons:[...chosen.reasons,...own.reasons],...(own.focusSkillId?{planSkillId:own.focusSkillId}:{})}:chosen;
  const excluded=new Set((ranked.excluded||[]).map(item=>item.id));
  const listed=[ranked.selected,...(ranked.alternatives||[])].filter(Boolean);
  const offered=resumes.find(resume=>!excluded.has(resume.id)&&listed.some(item=>item.id===resume.id))||null;
@@ -195,6 +250,6 @@ export function createWorldLearningPlan({summary=null,progress={},settings={},no
    :{reason:'한글부터 만나요. 소리를 듣고 글자를 고르며 읽는 법을 익혀요.',reasons:['progress.prerequisite'],basis:'host-prerequisite'}),
   id:lead.id,evidence:[],hostEvidence:null,reviewAt:lead.reviewAt||null,reviewSource:lead.reviewAt?'host-schedule':null,
   focusSkillId:null,state:null,matchedGoals:lead.goals.filter(goal=>normalized.goals.includes(goal))}:ranked;
- return {...result,candidates:ready,resume:offered,prerequisite,presentation:presentationFor(settings),settings:normalized,answers:told,
+ return {...result,candidates:ready,resume:offered,prerequisite,presentation:presentationFor(settings),settings:normalized,answers:told,examPlan:planned,
   learningEffectClaim:false,abilityClaim:false,grade:null};
 }

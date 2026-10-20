@@ -41,23 +41,86 @@ function posAttemptIndex(events){
  };
 }
 
+// 도움과 함께 낸 첫 답(10-20 검수 N1): Core는 도움 받고 맞힌 답만 'supported'로 세고, 도움 받고 틀린 답은 어느 칸에도
+// 넣지 않는다(독립 근거가 아니므로 맞다). 판에서는 그 시도가 무기록처럼 사라지지 않게 사실(정오·날짜)만 따로 모은다.
+// 도움: 그 제시에 첫 답보다 먼저 남은 도움(글·힌트·정답·다시 듣기). 빼기(record.excluded)로 지운 시도와 평가할 수 없는 답은 넣지 않는다.
+function posHelpedTries(events,{asOf,days=30}={}){
+ const now=Date.parse(asOf),shown=new Map(),helped=new Set(),excluded=new Set(),rows=new Map(),decisions=new Map();
+ const list=Array.isArray(events)?events:[];
+ for(const event of list){if(event?.type==='record.excluded'&&event.targetId)excluded.add(event.targetId);else if(event?.type==='decision.made')decisions.set(event.id,event.experienceId);}
+ for(const event of list){
+  if(event?.type==='practice.presented')shown.set(event.id,event);
+  else if(event?.type==='practice.helped'&&event.presentationId)helped.add(event.presentationId);
+  else if(event?.type==='practice.attempted'&&event.attemptNo===1&&helped.has(event.presentationId)&&!excluded.has(event.id)&&['correct','incorrect'].includes(event.verdict)){
+   const at=Date.parse(event.at),skillId=shown.get(event.presentationId)?.measure?.skillId;
+   if(!skillId||!Number.isFinite(at)||Number.isFinite(now)&&(at>now||now-at>days*86400000))continue;
+   if(!rows.has(skillId))rows.set(skillId,[]);
+   const presentation=shown.get(event.presentationId);
+   rows.get(skillId).push({eventId:event.id,at:event.at,verdict:event.verdict,itemKey:presentation.itemKey,experienceId:decisions.get(presentation.decisionId)??null,difficulty:presentation.measure?.difficulty??null});
+  }
+ }
+ for(const tries of rows.values())tries.sort((a,b)=>Date.parse(b.at)-Date.parse(a.at)||a.eventId.localeCompare(b.eventId));
+ return rows;
+}
+// Core 판정 문턱(atlas/learning.js POLICY의 sample·stableRatio). 판이 「다시 확인할 때 · ○월 ○일 혼자 해냄」처럼 지난 성취를
+// 말해도 되는지만 이 수로 읽는다 — 칸·순위는 Core 상태 그대로다. 시험이 Core의 값과 같은지 대조한다.
+export const POSITION_CORE_POLICY=Object.freeze({sample:4,stableRatio:.8});
+// 칸 아래 한 줄(10-20 검수 #2·N1·N2·C): Core 상태를 바꾸지 않고, 같은 칸에 접힌 사실을 갈라 보인다.
+// 「한 번 틀림 · 확인 중」과 「한 번 맞음 · 확인 중」, 도움과 함께 한 시도, 난도별 이력, 7일 지난 「다시 확인할 때」의 지난 기록.
+function posNote(skill,{found,tries,levels,policy}){
+ const n=skill.n||0,correct=skill.correct||0,incorrect=skill.incorrect||0;
+ const latest=found.find(row=>!row.assisted)?.at||skill.lastAt||null;
+ let note;
+ if(skill.status==='practice')note={kind:'practice',n,wrong:incorrect};
+ else if(skill.status==='checking')note={kind:'checking',n,right:correct,wrong:incorrect};
+ else if(skill.status==='supported')note={kind:'supported',at:found[0]?.at||null};
+ else if(skill.status==='review')note={kind:'review',at:skill.lastAt||latest,done:n>=policy.sample&&n>0&&correct/n>=policy.stableRatio};
+ else if(skill.status==='recent-independent')note={kind:'independent',at:skill.lastAt||latest};
+ else if(tries.length)note={kind:'helped',at:tries[0].at,tries:tries.length};
+ else if(skill.unassessed)note={kind:'unassessed',n:skill.unassessed};
+ else note={kind:'none'};
+ // 난도가 둘 이상 보였고 상태가 다르면 난도별로 함께 적는다(숙달률을 합치지 않는다 · N2).
+ const seen=levels.filter(level=>level.status!=='unseen');
+ if(seen.length>1&&new Set(seen.map(level=>level.status)).size>1)note.levels=seen.map(level=>({difficulty:level.difficulty,status:level.status}));
+ return note;
+}
+// 「먼저 볼 항목」(최대 3): 보충 후보·도움으로만 해낸 항목·다시 확인할 때·틀린 답이 있는 확인 중. 약점 판정이 아니라 다음에 볼 자리다.
+// 순서는 Core의 우선순위(learning.js formatEvidence의 priority) 그대로, 같으면 지금 낼 새 문항이 연결된 항목(prefer) 먼저, 그다음 최근 것부터
+// (이번 주 계획의 숙제 묶음과 같은 규칙 — 10-21 검수).
+const POS_ATTENTION=new Set(['practice','supported','review']);
+function posAttention(skills,prefer=null){
+ const ready=id=>{try{return typeof prefer==='function'&&prefer(id)?1:0;}catch{return 0;}};
+ return skills.filter(skill=>POS_ATTENTION.has(skill.status)||skill.status==='checking'&&skill.incorrect>0)
+  .sort((a,b)=>(b.priority??0)-(a.priority??0)||ready(b.id)-ready(a.id)||(Date.parse(b.lastAt||0)||0)-(Date.parse(a.lastAt||0)||0)||a.id.localeCompare(b.id)).slice(0,3).map(skill=>skill.id);
+}
+
 // 칸 하나가 그렇게 보인 근거: Core가 그 상태를 정할 때 읽은 시도(reasonEvidence). 'supported'는 도움을 받아 맞힌 답이고,
 // 나머지 상태의 근거는 도움 없이 처음 본 문항에 낸 첫 답이다(learning.js formatEvidence). 로그에서 접혀(learning-ledger)
 // 자세한 사실이 없는 근거는 개수로만 남긴다.
-export function buildPositionMap({summary,events=[]}={}){
+// policy: Core의 판정 문턱(엔진 묶음의 POLICY). 없으면 POSITION_CORE_POLICY.
+// prefer(skillId): 그 항목에 지금 낼 새 문항이 있으면 참 — 「먼저 볼 항목」에서 같은 우선순위끼리만 앞세운다(판정은 바꾸지 않는다).
+export function buildPositionMap({summary,events=[],policy=POSITION_CORE_POLICY,prefer=null}={}){
  const profile=posProfile(summary),find=posAttemptIndex(events),counts={independent:0,practicing:0,notyet:0};
+ const rules={sample:Number.isInteger(policy?.sample)?policy.sample:POSITION_CORE_POLICY.sample,stableRatio:Number.isFinite(policy?.stableRatio)?policy.stableRatio:POSITION_CORE_POLICY.stableRatio};
+ const helped=posHelpedTries(events,{asOf:profile.asOf});
  const skills=posTopikSkills(profile).map(skill=>{
   const cell=positionCell(skill.status),ids=Array.isArray(skill.reasonEvidence)?skill.reasonEvidence:Array.isArray(skill.evidence)?skill.evidence:[];
   const assisted=skill.status==='supported',found=[],folded=[];
   for(const id of ids){const row=find(id);if(row)found.push({...row,assisted,independent:!assisted});else folded.push(id);}
   found.sort((a,b)=>Date.parse(b.at)-Date.parse(a.at)||a.eventId.localeCompare(b.eventId));
   counts[cell]+=1;
-  return {id:skill.id,label:skill.label,domain:skill.domain,cell,status:skill.status,lastAt:posTime(skill.lastAt)?skill.lastAt:null,
+  // 난도별 이력: Core가 난도마다 고른 대표 칸(levels[d])의 상태. 본 적 없는 난도는 빼고, 판정은 다시 하지 않는다.
+  const levels=[1,2,3].map(difficulty=>skill.levels?.[difficulty]).filter(level=>posRecord(level)&&(level.lastAt||level.assisted))
+   .map(level=>({difficulty:level.difficulty,status:level.status,n:level.n||0,correct:level.correct||0,incorrect:level.incorrect||0,lastAt:posTime(level.lastAt)?level.lastAt:null,responseFormat:level.responseFormat||'unknown'}));
+  const tries=helped.get(skill.id)||[];
+  const row={id:skill.id,label:skill.label,domain:skill.domain,cell,status:skill.status,priority:Number.isFinite(skill.priority)?skill.priority:null,lastAt:posTime(skill.lastAt)?skill.lastAt:null,
    n:skill.n||0,correct:skill.correct||0,incorrect:skill.incorrect||0,assisted:skill.assisted||0,unassessed:skill.unassessed||0,
-   difficulty:skill.difficulty??null,responseFormat:skill.responseFormat||'unknown',evidence:found,folded:folded.length};
+   difficulty:skill.difficulty??null,responseFormat:skill.responseFormat||'unknown',evidence:found,folded:folded.length,levels,helped:tries};
+  row.note=posNote(row,{found,tries,levels,policy:rules});
+  return row;
  });
  return {policy:POSITION_POLICY.version,corePolicy:profile.policy??null,asOf:profile.asOf??null,evidenceComplete:profile.evidenceComplete,
-  total:skills.length,counts,skills,learningEffectClaim:false,abilityClaim:false,grade:null};
+  total:skills.length,counts,skills,attention:posAttention(skills,prefer),learningEffectClaim:false,abilityClaim:false,grade:null};
 }
 
 // 짧은 진단: 15개 항목에 하나씩, 이 사람이 아직 본 적 없는 계열(familyKey)의 문항. 문항은 제품이 이미 가진

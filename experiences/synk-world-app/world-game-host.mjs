@@ -37,6 +37,28 @@ export function createWorldGameHost({accountId,revision,connected,play,learning,
   if(target.SYNKLearningHost===learnHost)delete target.SYNKLearningHost;
   playHost.stop();learnHost.stop();
  }
+ // 손님 기기 학습 기록 옮기기(10-20, device-records.mjs guestLearningEvents): 학생이 「옮기기」를 고른 뒤에만 이 계정의 학습 기록에
+ // 사건 그대로 더한다(atlas/game-learning.js importEvents — 사건 ID로 중복을 빼고, 같은 ID에 다른 내용이면 받지 않는다).
+ // 이 기록장은 learnHost의 동기화가 맡은 계정 기록과 같은 자리라, 동기화가 다음에 보낼 때 서버로 올린다.
+ // 서버가 받았다고 답해 보낼 것이 남지 않았을 때만 confirmed다(못 받으면 손님 기록은 그대로이고 다시 고를 수 있다).
+ async function importDeviceLearning(events,{timeoutMs=20000,pollMs=250,sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms))}={}){
+  check();
+  if(!Array.isArray(events)||!events.length)return {added:0,skipped:0,confirmed:true};
+  const adapter=engine.createGame({gameId:'world-device-import',storage:scopedStorage(storage,accountKey,revision,check),learnerKey:'device',storageScope:'account',accountKey,
+   historyComplete:!connected,fold:false});
+  const result=adapter.syncPort.importEvents(events);check();
+  if(!connected)return {added:result.added,skipped:result.skipped.length,confirmed:true,local:true};
+  // 동기화가 아직 없으면(놀이 충돌로 준비가 일찍 끝난 경로) 세운다. 없는 동기화의 'idle'은 보낸 것이 아니다(10-21 검수).
+  try{learnHost.preferences?.();}catch{/* the status below decides */}
+  try{await learnHost.retry?.();}catch{/* the status below decides */}
+  for(const until=Date.now()+timeoutMs;;){
+   check();const state=learnHost.status();
+   if(['blocked','stopped','offline'].includes(state.phase))return {added:result.added,skipped:result.skipped.length,confirmed:false,code:state.code||state.phase.toUpperCase()};
+   if(!state.queued&&(state.phase==='synced'||!result.added&&state.phase==='idle'))return {added:result.added,skipped:result.skipped.length,confirmed:true};
+   if(Date.now()>until)return {added:result.added,skipped:result.skipped.length,confirmed:false,code:'TIMEOUT'};
+   await sleep(pollMs);
+  }
+ }
  const publicHandle=Object.freeze({status,flush,async resolve(choice){check();await playHost.resolve(choice);check();return status();},closeGame(){
   if(disposed)return;
   try{check();learnHost.closeRun();void flush().catch(()=>{});}catch{/* Account invalidation already fenced old ports. */}
@@ -51,5 +73,5 @@ export function createWorldGameHost({accountId,revision,connected,play,learning,
   check();if(playHost.status().phase==='conflict')return;
   target.SYNKPlayHost=playHost;target.SYNKLearningHost=learnHost;
   if(!installed){installed=true;target.document?.addEventListener?.('visibilitychange',visibility);target.addEventListener?.('online',retry);}
- },dispose});
+ },dispose,importDeviceLearning});
 }

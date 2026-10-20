@@ -9,7 +9,8 @@ import {t,tMessage,currentLang} from './world-lang.mjs';
 export function createHomeTutor({container,getTutor,learn,choose,profile,reduced=()=>false}){
  let data=null,companion=null,identity='',recommendation={kind:'loading'},practiceRecommendation=null,completed='',active=true,practiceRecord=null,recap=null,days=homeTutorDays(null),dayButton=null,practiceButton=null,reviewButton=null;
  const practised=new Map();
- const note=document.createElement('p');note.className='home-tutor-context';
+ // 추천 이유 한 줄(10-20 검수 #6): 눈으로 보는 자리. 화면 읽기는 같은 글을 홈 줄의 #study-reason(바뀌면 알림)에서 한 번만 읽는다(10-21 검수).
+ const note=document.createElement('p');note.className='home-tutor-context';note.setAttribute('aria-hidden','true');
  function openPractice(candidate){
   if(!active||recap||!companion||companion.metrics().practice||candidate?.kind!=='difficult'||getTutor().owner!==data?.snapshot?.owner)return;
   practiceRecord={id:candidate.id,lastAt:candidate.lastAt,owner:getTutor().owner};

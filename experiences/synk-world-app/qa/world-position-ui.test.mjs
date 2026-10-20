@@ -19,13 +19,15 @@ const mongolian=createPositionView({t:(key,vars)=>t(key,vars,'mn'),has:hasString
 const HANGUL=/[가-힣]/;
 
 test('화면 글은 화면 언어 표(position.*)에서 읽고 {이름}을 채운다',()=>{
- assert.equal(t('position.summary',{independent:1,practicing:2,notyet:12}),'TOPIK I 15개 항목: 혼자 해냄 1 · 연습 중 2 · 아직 12');
+ assert.equal(t('position.summary',{independent:1,practicing:2,notyet:12,total:15}),'TOPIK I 15개 항목: 혼자 해냄 1 · 연습 중 2 · 아직 12');
+ assert.equal(t('position.row',{total:16}),'TOPIK I 16개 항목과 짧은 진단','항목 수는 지도에서 온다(항목이 늘면 글도 따라간다)');
  for(const cell of ['independent','practicing','notyet'])assert.ok(STRINGS[`position.cell.${cell}`]);
  for(const status of ['recent-independent','practice','checking','supported','review','unseen'])assert.ok(STRINGS[`position.status.${status}`],status);
  assert.equal(view.itemSource('korean-runner.listening-check.check-star-middle.v1'),'바람길 듣기 확인');
  assert.equal(view.itemSource('korean-rhythm:t0q0:v1:claim0'),'말의 리듬','리듬 문항 열쇠는 쌍점으로 나뉜다');
  assert.equal(view.itemSource('synk-town.reading-check.town-reading-place.v1'),'싱크타운 읽기');
  assert.equal(view.itemSource('blank-slice.p01.v1','world-home'),'짧은 진단','진단에서 푼 답은 진단에서 왔다고 쓴다');
+ assert.equal(view.itemSource('blank-slice.p01.v1','world-practice'),'읽기 짧은 연습','읽기 짧은 연습에서 푼 답은 그 연습에서 왔다고 쓴다');
  assert.equal(view.itemSource('unknown.thing'),'다른 연습');
  assert.throws(()=>createPositionView({}),TypeError,'t 없이는 그리지 않는다');
 });
@@ -83,12 +85,15 @@ test('진단 칸: 준비된 문항 수, 모자란 항목, 소리 끈 날을 알�
  assert.match(none,/data-diagnostic="unavailable"/);assert.doesNotMatch(none,/data-position-diagnostic/);
 });
 
-test('예상 급수는 문턱 전에는 범위 없이 「아직 판단하기 일러요」와 근거 수만 보인다',()=>{
+// 10-20 검수 #4: 지금 WORLD에는 TOPIK 형식 연습이 없어 근거가 쌓일 길이 없다 — 「0 / 30」 막대로 쌓이면 열린다고 약속하지 않는다.
+test('예상 급수는 문턱 전에는 범위 없이 「아직 판단하기 일러요」만, 근거가 없으면 막대·「0 / 30」 없이 지금 할 수 있는 말만',()=>{
  const c=coach(),map=buildPositionMap({summary:c.summary(),events:c.events()});
  const gate=estimateGate({evidence:[],asOf:'2026-10-19T09:00:00.000Z'});
  const html=view.renderPositionBoard({map,gate});
- assert.match(html,/data-estimate="too-early"/);assert.match(html,/아직 판단하기 일러요/);assert.match(html,/지금 근거 0 \/ 30/);
- assert.match(html,/듣기·읽기 10문항씩/);
+ assert.match(html,/data-estimate="too-early"/);assert.match(html,/아직 판단하기 일러요/);assert.doesNotMatch(html,/지금 근거 0 \/ 30|wpos-estimate-count|class="wpos-bar"/);
+ assert.match(html,/시험 형식 연습\(처음 보는 문항·실제 구성·시간 제한\)이 생기면 그 답으로 범위를 알려 드려요/);
+ assert.doesNotMatch(html,/쌓이면|곧 |준비 중/,'일정·출시를 약속하지 않는다');
+ assert.match(view.renderPositionBoard({map,gate:{...gate,evidence:4}}),/지금 근거 4 \/ 30/,'형식 연습의 근거가 생기면 그때 개수를 보인다');
  assert.doesNotMatch(html,/[1-6]급(?! 근처)|합격입니다|grade/i,'급수·합격 판정 글이 없다(설명의 예시 「1급 근처」만)');
  assert.doesNotMatch(view.renderPositionBoard({map}),/data-estimate/,'문턱 결과가 없으면 칸이 없다');
 });
@@ -115,7 +120,13 @@ test('진단 문항 화면은 끝까지 듣기 전에 보기를 막고, 끝 화�
  assert.equal(count(after,/ disabled>/g),0);assert.match(after,/다 들은 뒤 다시 들으면 도움을 받은 답으로 기록해요/);
  session.answer('qa.listen.b');
  const done=view.renderDiagnosticDone({map:buildPositionMap({summary:c.summary(),events:c.events()}),results:session.results()});
- assert.match(done,/짧은 진단, 끝!/);assert.match(done,/푼 문항 1개 · 건너뛴 문항 0개/);assert.match(done,/<li data-verdict="incorrect">/);
+ assert.match(done,/짧은 진단, 끝!/);assert.match(done,/푼 문항 1개 · 건너뛴 문항 0개/);assert.match(done,/<li data-verdict="incorrect" data-skill="ko.listening.detail">/);
+ assert.match(done,/틀림 · 확인 중/);assert.match(done,/틀린 건 다음에 볼 자리예요/);assert.doesNotMatch(done,/data-position-practice/,'연습할 길을 모르면 단추가 없다');
+ // 틀린 문항에는 해설을 접어 두고, 그 항목에 낼 연습이 있을 때만 「이 항목 연습하기」를 단다(10-20 검수 #2·#7).
+ const explained=view.renderDiagnosticDone({map:buildPositionMap({summary:c.summary(),events:c.events()}),results:session.results(),
+  items:new Map([[item.id,{...item,explanation:'가운데 길로 가라고 했어요.'}]]),practice:id=>id==='ko.listening.detail'});
+ assert.match(explained,/<details class="wpos-explain"><summary>해설 보기<\/summary><p lang="ko">가운데 길로 가라고 했어요.<\/p><\/details>/);
+ assert.match(explained,/data-position-practice="ko.listening.detail">이 항목 연습하기/);
 });
 
 test('입장 검사 문항은 안내문·시각·표·짐·손님 말을 글로 보이고, 보기는 「들여보내기」와 규칙들이다',async()=>{

@@ -6,7 +6,8 @@ const copy=value=>JSON.parse(JSON.stringify(value));
 const object=value=>value!==null&&typeof value==='object'&&!Array.isArray(value)&&[Object.prototype,null].includes(Object.getPrototypeOf(value));
 const exact=(value,keys)=>object(value)&&Object.keys(value).every(key=>keys.includes(key));
 const error=(code,message)=>Object.assign(new Error(message),{code});
-const persistentFields=Object.freeze(['goal','reasons','primaryReason','support','explanation','textSize','motion']);
+// 시험 정보(계약 r2 시험정보, 10-20): 「시험·자격 준비」를 고른 사람이 밝힌 시험 종류·목표 급·시험일·방식·주당 시간. 계획의 입력일 뿐 능력이 아니다.
+const persistentFields=Object.freeze(['goal','reasons','primaryReason','support','explanation','textSize','motion','examType','targetGrade','examDate','examMode','weeklyMinutes']);
 const iso=at=>{
  if(!Number.isSafeInteger(at)||at<0||at>253402268399999)throw TypeError('Invalid profile time');
  return new Date(at).toISOString();

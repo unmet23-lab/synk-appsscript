@@ -175,8 +175,8 @@ test('1판 표: 모든 줄에 ko·en·mn이 있고 값 자리가 같다',()=>{
 });
 
 test('영어·몽골어 칸에는 한글이 없고, 몽골어는 키릴로 쓴다(브랜드·약어만 라틴)',()=>{
- // 「TOPIK I」·「TOPIK II」는 시험 이름이다(내 위치 판의 TOPIK I 15개 항목, 쓰기 연습의 TOPIK II).
- const allowed=/\b(?:SYNK|ID|AI|WORLD|TOPIK(?: II| I)?|Google|Apple|Unity|PNG|O|X|3D)\b/g;
+ // 「TOPIK I」·「TOPIK II」는 시험 이름이다(내 위치 판의 TOPIK I 15개 항목, 쓰기 연습의 TOPIK II). PBT·IBT는 시험 방식의 공식 약어다(학습 목표 창).
+ const allowed=/\b(?:SYNK|ID|AI|WORLD|TOPIK(?: II| I)?|PBT|IBT|Google|Apple|Unity|PNG|O|X|3D)\b/g;
  const problems=[];
  for(const [key,entry]of Object.entries(STRINGS)){
   for(const code of ['en','mn'])for(const text of forms(entry[code]))if(HANGUL.test(text))problems.push(`${key}: ${code}에 한글`);
@@ -258,4 +258,16 @@ test('몽골어 글꼴: 키릴 조각이 두 곳에 같은 바이트로 있고 �
  assert.match(opening,/font-family:OpeningCyrillic,OpeningSUIT/);
  assert.match(hangul,/--w-sans:"World Latin","World Cyrillic",SUIT/);
  for(const css of [ui,opening,hangul])assert.ok(css.includes('unicode-range:U+0400-052F,U+2116'));
+});
+// 10-21: 몽골어 날짜 자료가 없는 런타임(내장 브라우저에서 확인)은 Intl이 한국어 꼴로 떨어져 몽골어 화면에 「2027년 1월」이 섞였다.
+test('몽골어 날짜: 런타임에 몽골어 자료가 없어도 숫자 꼴로 만들고, 짧은 꼴은 ICU 몽골어와 같다',()=>{
+ const at=Date.UTC(2026,9,26,5,7);
+ assert.equal(lang.mongolianDate(at,{year:'numeric',month:'long'}),'2026 оны 10-р сар');
+ assert.equal(lang.mongolianDate(at,{year:'numeric',month:'long',day:'numeric'}),'2026 оны 10-р сарын 26');
+ assert.equal(lang.mongolianDate(at,{month:'short',day:'numeric'}),'10-р сарын 26');
+ assert.equal(lang.mongolianDate(at,{month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit'}),'10-р сарын 26 14:07');
+ if(Intl.DateTimeFormat.supportedLocalesOf(['mn-MN']).length)assert.equal(lang.mongolianDate(at,{month:'short',day:'numeric'}),new Intl.DateTimeFormat('mn-MN',{timeZone:'Asia/Seoul',month:'short',day:'numeric'}).format(new Date(at)));
+ assert.doesNotMatch(lang.formatDate(at,{year:'numeric',month:'long'},'mn'),/[가-힣]/,'몽골어 화면에 한글 날짜가 없다');
+ assert.equal(lang.mongolianDate(at),'2026 оны 10-р сарын 26','꼴을 주지 않으면 연·월·일(Intl 기본처럼)');
+ assert.doesNotMatch(lang.formatDate(at,{month:'bogus'},'en'),/[가-힣]/,'꼴이 잘못돼도 영어 화면에 한국어 날짜로 떨어지지 않는다');
 });

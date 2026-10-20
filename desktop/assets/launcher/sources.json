@@ -154,8 +154,8 @@
     {
       "name": "personalization.js",
       "source": "atlas/personalization.js",
-      "bytes": 32366,
-      "sha256": "749eb298c8f4a0242e348385c4ea4b77c354546dc66ea16354ac7897210308e8"
+      "bytes": 34355,
+      "sha256": "d7d2bb47bcd0800d1df33f90ff095447bc654e4175c7b6c7bdcac9acbbec9f6b"
     },
     {
       "name": "racing.jpg",

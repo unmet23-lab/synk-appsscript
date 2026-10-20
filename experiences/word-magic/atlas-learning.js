@@ -2197,7 +2197,7 @@ var SynkLearning = (() => {
   var require_topik_i = __commonJS({
     "strata/maps/topik-i.json"(exports, module) {
       module.exports = {
-        map_ver: "topik-i-practice-1-c6e2390a4b06",
+        map_ver: "topik-i-practice-1-1165f6aa8121",
         subject: "ko",
         sources: {
           "practice-taxonomy": {
@@ -2214,7 +2214,7 @@ var SynkLearning = (() => {
           },
           "practice-situations": {
             path: "strata/topik-i.situations.json",
-            sha256: "38fed71d3ce08007714ffaa50ffdaa1a291b2948a235db4988ffe978c4163c0a"
+            sha256: "01062070e1071df130bf234cd5ff0127c0016d244d0e23494068e9cad441efc3"
           }
         },
         nodes: [
