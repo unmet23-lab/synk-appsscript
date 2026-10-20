@@ -1,5 +1,16 @@
 # SYNK 플랫폼 — 계정과 콘텐츠 연결 설계
 
+<a id="pulse-window-boundaries-20261020"></a>
+## 2026-10-20 PULSE 창의 남은 막힘 — 받기 단추·같은 출처 새 탭 링크·저장 안 한 글 (다음 PC 판부터)
+
+0.4.34로 체험이 열리자, 체험을 끝까지 하면 PC 앱 PULSE 창(`desktop/src/pulse-app.cjs`)에서만 조용히 막히는 길 셋이 남아 있었다(그 판 Fable P2-1·P3-1·P3-2). 실제 Electron 창(라이브 workspace.synk.im, 합성 계정, 창은 띄우지 않음)에서 셋 다 재현한 뒤 고쳤고, 검수(Fable 「그대로 진행」)가 찾은 실제 프로젝트의 같은 막힘 하나도 같이 고쳤다(`66ad85321`). 설치본에는 다음 PC 판부터 들어간다.
+
+- **받기 단추**: 체험 검토·이력 탭의 「파일 받기」는 `/pulse-app/demo-assets/preview-v1.mp4`·`preview-v2.mp4`인데, 창의 내려받기 규칙이 고객 미디어(`/pulse/api/(studio/)?media/<uuid>`)만 받아 `will-download`에서 막았다. 그 두 경로만 `video/mp4`로 더했다(쿼리·조각 없음, 100MiB 상한·저장 대화상자는 그대로). 실제 프로젝트의 MP3·WAV 참고자료 「첨부 받기」도 같은 규칙에 오디오가 없어 막혔다 — 고객 미디어 형식을 서버가 받는 목록(`studio-media.mjs`, `audio/mpeg`·`audio/wav` 포함)과 맞췄다.
+- **같은 출처 새 탭 링크**: 「7개 광고 기획 전체 보기 ↗」(`./production-library/`)·「광고 기획·콘티 보기 ↗」(`?model=<코드>`)·캐스팅 「본편 보기」(`./assets/casting/video/*.mp4`)는 같은 출처라 외부로도 넘기지 않아 버려졌다. **외부 브라우저로 연다** — 쿠키 없이 열리는 공개 정적 파일이고, 창 안 이동은 앱 화면과 쓰던 글을 떠나게 하며, 고객 세션을 쓰는 자식 창은 창의 경계를 넓힌다. 넘어가는 것은 주소 문자열뿐이라 고객 쿠키 묶음은 창 안에 남는다. 허용 목록은 정확히 `/pulse-app/production-library/`(쿼리는 `?model=<코드>`만)와 `/pulse-app/assets/` 아래 그림·영상·소리 파일(쿼리 없음)이고 둘 다 조각이 없어야 한다 — 앱 껍데기·초대 `#invite=`·다른 쿼리·인코딩된 경로는 지금처럼 나가지 않는다.
+- **저장 안 한 글**: 웹 앱의 `beforeunload`(쓰던 글·보내는 중)가 막은 떠나기를 Electron은 알리지 않고 취소해, 「체험 나가기」·창 닫기·앱 종료가 아무 반응 없이 멈췄다. 본창과 같은 확인 대화상자(`desktop/src/draft-exit.cjs` — 「돌아가서 저장 / 저장 없이 나가기」, 기본은 머물기)를 PULSE 문구(「아직 저장하거나 보내지 않은 내용이 있어요.」)로 띄운다. 앱을 끝내던 중에 머물기를 고르면 본창처럼 그 종료와 진행 중이던 업데이트 설치를 취소한다(`main.cjs`가 넘기는 `onUnloadKept` — PULSE 창은 트레이에 붙어 있지 않아 트레이 종료 상태도 여기서 풀고, 종료 중이 아닌 떠나기에서는 아무것도 바꾸지 않는다). 그때 초안이 없던 본창은 이미 닫혀 있을 수 있다 — 트레이·다시 실행으로 연다.
+
+확인: `desktop/tests/pulse-app.test.cjs`·`draft-exit.test.cjs`(desktop 시험 972개 중 971 통과·1 건너뜀), 실제 창 전후 기록 `.tmp/pulse-app-boundaries-20261020/`(`before.json`·`after2.json`·`quit-before.json`·`quit-after2.json`), 검수 `fable/review.md`. 그대로 둔 것: 실제 프로젝트의 「앱 설치 · 알림」·기기 알림 안내가 PC 창에 맞지 않는 문구(웹 앱 몫, 막힘은 아님). 설치본 반영은 유호님 「PC 릴리스 진행해」 뒤 0.4.34와 같은 절차(`.tmp/pulse-demo-pc-release-20261020/README.md`)로 낸다.
+
 <a id="pulse-demo-window-20261020"></a>
 ## 2026-10-20 PULSE 창 체험 주소 허용 — PC 0.4.34 공개
 
