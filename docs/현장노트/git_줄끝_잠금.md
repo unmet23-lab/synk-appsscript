@@ -335,6 +335,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 늘 `--jq`로 고른다 — 목록은 `number, secret_type, state, created_at, validity`, 위치는 `.details.path, .details.start_line, .details.commit_sha`. 진짜 키인지는 로컬 보관 값과 같은지 참·거짓만 대조한다(10-20 경보 1건: 지운 시험 파일의 탐지기 시험값, 이 PC 봇 토큰과 다름).
 - 다시 확인: 쓴 명령의 출력에 `secret` 키가 없다.
 
+### `올리기 --실행`이 「push가 거절됐다 — … failed to push some refs」로 멈춘다 — 다시 쌓는 사이 남이 먼저 올렸다 (2026-10-20 Claude)
+- 증상: 10-20 저녁 웹 푸시 커밋 둘을 `node tools/내커밋.js 올리기 … --실행`으로 올리자 미리 보기는 깨끗했는데 실행이 `[멈춤] push가 거절됐다 — Done /  / error: failed to push some refs`로 끝났다. 출력의 「origin 바탕」이 미리 보기 때(`7032078ca`)와 달랐다(`b5685e77d`).
+- 원인: 도구는 실행 때 origin을 다시 받아 그 위에 쌓고 push하는데, 쌓는 동안 다른 세션이 master에 먼저 올려(`c7df58685`) 빨리감기가 아니게 됐다. 바쁜 저녁에는 몇 분 사이에도 일어난다. 아무것도 올라가지 않는다.
+- 고침: 다시 돌리기 전에 정말 안 올라갔는지부터 본다 — `git fetch` 뒤 `git log origin/master --format=%s -20`에 내 커밋 제목이 없을 때만 같은 명령을 한 번 더 `--실행`한다(출력은 파일로). 올라간 뒤 또 돌리면 같은 줄이 두 번 들어갈 수 있다(위 「남이 내 커밋을 먼저 올렸는데…」).
+- 다시 확인: 두 번째 실행이 `[올림] origin/master ← 86e639023`이고, origin 내력에 두 제목이 한 번씩만 있다(10-20).
+
 ## 워크트리·연결 폴더·공간 정리
 
 ### junction이 든 워크트리를 통째로 지우면 공용 node_modules가 지워질 수 있다
