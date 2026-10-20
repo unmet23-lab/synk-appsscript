@@ -64,8 +64,8 @@ const CHECK = [
 ] as const;
 
 /** 한글을 치는 그대로(조합 중간 글자 포함). */
-const KEYS_POST = ['ㅇ', '오', '올', '올ㄹ', '올려'] as const;
-const KEYS_POST_AT = [58, 60, 63, 65, 68] as const;
+const KEYS_POST = ['ㅇ', '오', '올', '올려'] as const; // 「올ㄹ」 상태는 뒤 커서와 붙어 「올리」로 읽혀서 뺐다(Fable 검수)
+const KEYS_POST_AT = [58, 60, 63, 67] as const;
 const SEND_POST = wd('h1', 6); // 「"올려"」를 말하는 순간 보낸다
 const KEYS_RESUME = ['ㅇ', '이', '잉', '이어', '이엇', '이어서', '이어서 ', '이어서 ㅎ', '이어서 해'] as const;
 const KEYS_RESUME_AT = [668, 670, 673, 675, 678, 680, 683, 685, 687] as const;
@@ -414,12 +414,13 @@ const QueueView: React.FC<{ f: number }> = ({ f }) => {
 };
 
 /** 실제 캡처 넷: 브라우저 창 안에서 박마다 컷. */
-const CAPS = [
+/** page: 있으면 그 폭으로 왼쪽 위에 붙인다(웹 페이지처럼, 오른쪽은 창 밖). 없으면 가운데 맞춤. */
+const CAPS: { src: string; key: string; bg: string; url: string; label: string; page?: number }[] = [
   { src: 'cap/ig_cal2.png', key: 'ig_cal2', bg: '#0C0D10', url: 'instagram.com · 예약된 콘텐츠', label: '인스타 · 계정마다 따로 예약 달력' },
   { src: 'cap/bs.png', key: 'bs', bg: '#FFFFFF', url: 'business.facebook.com · 예약됨', label: 'Business Suite · 예약된 게시물 없음' },
-  { src: 'cap/tt.png', key: 'tt', bg: '#FFFFFF', url: 'tiktok.com/tiktokstudio', label: '틱톡 스튜디오 · 로그인한 한 계정만' },
-  { src: 'cap/rednote.png', key: 'rednote', bg: '#FFFFFF', url: 'creator.rednote.com', label: '샤오훙수 · 주소가 rednote' },
-] as const;
+  { src: 'cap/tt.png', key: 'tt', bg: '#FFFFFF', url: 'tiktok.com/tiktokstudio', label: '틱톡 스튜디오 · 로그인한 한 계정만', page: 1100 },
+  { src: 'cap/rednote.png', key: 'rednote', bg: '#FFFFFF', url: 'creator.rednote.com', label: '샤오훙수 · 주소가 rednote', page: 1700 },
+];
 const CAP_AT = [890, 902, 914, 926] as const;
 const BrowserCaps: React.FC<{ f: number }> = ({ f }) => {
   let k = 0;
@@ -435,7 +436,11 @@ const BrowserCaps: React.FC<{ f: number }> = ({ f }) => {
         <div style={{ position: 'absolute', left: 110, right: 26, top: 14, height: 36, borderRadius: 10, background: '#2A2926', fontFamily: MONO, fontSize: 20, lineHeight: '36px', color: '#B6B3AB', paddingLeft: 16, overflow: 'hidden', whiteSpace: 'nowrap' }}>{c.url}</div>
       </div>
       <div style={{ position: 'absolute', left: 0, right: 0, top: 64, bottom: 76, background: c.bg, overflow: 'hidden' }}>
-        <Cap src={c.src} w={w} h={hh} maxW={c.key === 'bs' ? 620 : 952} />
+        {c.page ? (
+          <Img src={staticFile(c.src)} style={{ position: 'absolute', left: 0, top: 0, width: c.page, height: (c.page * hh) / w, display: 'block' }} />
+        ) : (
+          <Cap src={c.src} w={w} h={hh} maxW={c.key === 'bs' ? 620 : 952} />
+        )}
       </div>
       <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 76, background: '#141412', borderTop: '1px solid #2A2926' }}>
         <div style={{ position: 'absolute', left: 28, top: 22, fontFamily: KO, fontWeight: 650, fontSize: 28, color: INK, whiteSpace: 'nowrap' }}>{c.label}</div>
@@ -530,8 +535,8 @@ const Content: React.FC<{ k: K; f: number }> = ({ k, f }) => {
 type Click = { at: number; x: number; y: number; from: [number, number]; pick?: number };
 const CLICKS: Click[] = [
   { at: wd('s1', 2), x: 400, y: 160, from: [720, 640] }, // 월요일 스캔 작업
-  { at: wd('s1b', 7), x: 330, y: 150, from: [760, 600], pick: 1 }, // 후보 2 고름
-  { at: wd('s1b', 7) + 8, x: 330, y: 470, from: [330, 150], pick: 5 }, // 후보 6 고름(이어서)
+  { at: wd('s1b', 7), x: 330, y: 217, from: [760, 620], pick: 1 }, // 후보 2 고름
+  { at: wd('s1b', 7) + 8, x: 330, y: 529, from: [330, 217], pick: 5 }, // 후보 6 고름(이어서)
   { at: wd('s3', 1), x: 420, y: 566, from: [780, 660] }, // 14:00 예약 큐 작업
   { at: wd('cta', 0), x: 893, y: 66, from: [700, 380] }, // 저장(책갈피)
 ];
@@ -624,7 +629,7 @@ const Label: React.FC = () => {
   if (o <= 0) return null;
   const k = SCENES[sceneAt(f)].k;
   const text = k === 'cards' || k === 'final' ? '오늘 만든 세 편의 실제 0초 화면' : k === 'caps' ? '실제 화면 · 10-20 17:45~17:51' : k === 'outline' || k === 'check' ? '이 영상의 구조' : '재현 화면 · 이름과 시각은 실제';
-  return <div style={{ position: 'absolute', left: 72, top: VP.y + VP.h + 66, fontFamily: MONO, fontSize: 25, color: DIM, opacity: o }}>{text}</div>;
+  return <div style={{ position: 'absolute', left: 72, top: VP.y + VP.h + 64, fontFamily: KO, fontWeight: 560, fontSize: 25, letterSpacing: '-0.01em', color: DIM, opacity: o }}>{text}</div>;
 };
 
 // ───────────── 소리: 컷은 박이 맡고, 효과음은 누름·입력·체크에만 ─────────────
