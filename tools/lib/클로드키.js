@@ -20,6 +20,8 @@
  *   const 클로드 = require('./tools/lib/클로드키.js');
  *   const { 응답, 키이름 } = await 클로드.보내기({ model: 'claude-opus-5-5', max_tokens: 1024,
  *     messages: [{ role: 'user', content: '…' }] }, { 용도: 'learning-blind' });
+ *   const { 배치id, 키이름 } = await 클로드.배치보내기([{ custom_id, params }], { 용도 });   반값 일괄(Message Batches)
+ *   await 클로드.배치보기(배치id, 키이름) · await 클로드.배치결과(배치id, 키이름)  — 결과는 만든 키의 조직에서만 받는다
  *   node tools/lib/클로드키.js --상태          키별 갱신일·상태·이번 주기 추정 사용액
  *   node tools/lib/클로드키.js --풀기 <이름>   소진·키오류 표시를 지운다
  */
@@ -143,11 +145,20 @@ function 크레딧부족(http, body) {
   return http >= 400 && http < 500 && /credit balance is too low/i.test(String(body?.error?.message ?? ''));
 }
 
-function 추정USD(model, usage) {
+// 캐시 읽기 단가는 입력 단가의 배수다(공식 가격, 10-20 claude-api 참고: Opus 5.5 $0.20/MTok = 0.05배, Fable 5.1 0.025배, 그 밖 0.1배).
+// 캐시 쓰기는 5분 1.25배·1시간 2배, 배치(Message Batches)는 모든 토큰이 반값이다.
+const 캐시읽기배수 = Object.freeze({ 'claude-opus-5-5': 0.05, 'claude-fable-5-1': 0.025 });
+function 추정USD(model, usage, { 배치 = false } = {}) {
   const 표 = 단가[model];
   if (!표 || !usage || !Number.isFinite(usage.input_tokens) || !Number.isFinite(usage.output_tokens)) return null;
-  const 입력 = usage.input_tokens + (usage.cache_creation_input_tokens ?? 0) + (usage.cache_read_input_tokens ?? 0);
-  return (입력 * 표[0] + usage.output_tokens * 표[1]) / 1e6;
+  const 쓰기 = usage.cache_creation || {};
+  const 쓰기전체 = Number(usage.cache_creation_input_tokens) || 0;
+  const 쓰기1h = Number(쓰기.ephemeral_1h_input_tokens) || 0;
+  const 쓰기5m = Number.isFinite(쓰기.ephemeral_5m_input_tokens) ? 쓰기.ephemeral_5m_input_tokens : Math.max(0, 쓰기전체 - 쓰기1h);
+  const 읽기 = Number(usage.cache_read_input_tokens) || 0;
+  const 입력 = usage.input_tokens + 쓰기5m * 1.25 + 쓰기1h * 2 + 읽기 * (캐시읽기배수[model] ?? 0.1);
+  const 값 = (입력 * 표[0] + usage.output_tokens * 표[1]) / 1e6;
+  return 배치 ? 값 / 2 : 값;
 }
 
 function 오류(code, 메시지, 덧붙임 = {}) {
@@ -321,7 +332,102 @@ function 키읽기(이름, 옵션 = {}) {
   return 키 ? { 이름: 키.이름, 값: 키값(키) } : { 이름: null, 값: null };
 }
 
-module.exports = { 보내기, 상태보기, 풀기, 키고르기, 키읽기, 소진표시, 기록남기기, 다음갱신, 순서, 크레딧부족, 추정USD, 단가 };
+/*
+ * Message Batches(반값·비동기, 10-20 TOPIK 문항 AI 검수). 같은 키 목록에서 크레딧이 남은 키를 1토큰으로 골라
+ * 일괄을 만들고, 그 키 이름을 돌려준다 — 결과는 같은 조직의 키로만 받을 수 있어서 부르는 쪽이 이름을 보관한다.
+ * 일괄을 만든 뒤의 실패·소진은 다른 키로 넘기지 않는다(이미 처리 중일 수 있다). 사용 기록은 결과를 받을 때
+ * 일괄 하나에 한 줄(토큰 합계·반값 추정)로 남긴다.
+ */
+const 배치주소 = 'https://api.anthropic.com/v1/messages/batches';
+
+function 키값읽기(이름, 옵션) {
+  const 키 = 키읽기(이름, 옵션);
+  if (!키.값) throw 오류('클로드키_키없음', `${이름}: 키 목록이나 키 파일에 없다`);
+  return 키.값;
+}
+
+async function 배치보내기(요청들, 옵션 = {}) {
+  if (!Array.isArray(요청들) || !요청들.length) throw new Error('보낼 요청이 없다');
+  const 아이디 = new Set();
+  for (const r of 요청들) {
+    if (!r || typeof r.custom_id !== 'string' || !/^[a-zA-Z0-9_-]{1,64}$/.test(r.custom_id) || 아이디.has(r.custom_id)) throw new Error(`custom_id 꼴·중복: ${r?.custom_id}`);
+    if (!r.params || typeof r.params.model !== 'string') throw new Error(`${r.custom_id}: params.model이 없다`);
+    아이디.add(r.custom_id);
+  }
+  const { 기록경로 } = 경로들(옵션);
+  const 고른 = await 키고르기(옵션);
+  if (!고른.이름) throw 오류('클로드키_모두소진', `쓸 수 있는 키가 없다 — ${고른.건너뛴키.map((k) => `${k.이름}:${k.이유}`).join(', ') || '목록에 키 없음'}`, { 건너뛴키: 고른.건너뛴키 });
+  const 보낼것 = 옵션.fetch || globalThis.fetch;
+  let 응답, 글;
+  try {
+    응답 = await 보낼것(배치주소, { method: 'POST', redirect: 'error', signal: AbortSignal.timeout(옵션.시간제한 || 120000),
+      headers: { 'content-type': 'application/json', 'anthropic-version': 버전, 'x-api-key': 고른.값 }, body: JSON.stringify({ requests: 요청들 }) });
+    글 = await 응답.text();
+  } catch (e) {
+    throw 오류('클로드키_결과모름', `${고른.이름}: 일괄을 만들었는지 모른다(목록 조회로 확인) — ${가리기(e.message, [고른.값])}`, { 키이름: 고른.이름, 청구모름: true });
+  }
+  let body = null; try { body = JSON.parse(글); } catch { /* 아래에서 실패로 */ }
+  if (!응답.ok || !body?.id) {
+    throw 오류('클로드키_요청실패', `${고른.이름}: 일괄 만들기 HTTP ${응답.status} ${가리기(body?.error?.message ?? 글.slice(0, 300), [고른.값])}`, { 키이름: 고른.이름, http: 응답.status });
+  }
+  fs.mkdirSync(path.dirname(기록경로), { recursive: true });
+  fs.appendFileSync(기록경로, JSON.stringify({ 시각: (옵션.지금 || new Date()).toISOString(), 키이름: 고른.이름, 용도: 옵션.용도 ?? null,
+    model: 요청들[0].params.model, 배치: body.id, 요청수: 요청들.length, http: 응답.status, usage: null, 추정USD: 0 }) + '\n');
+  return { 배치id: body.id, 키이름: 고른.이름, 상태: body.processing_status, 건너뛴키: 고른.건너뛴키 };
+}
+
+async function 배치가져오기(주소, 값, 옵션) {
+  const 보낼것 = 옵션.fetch || globalThis.fetch;
+  const 응답 = await 보낼것(주소, { method: 'GET', redirect: 'follow', signal: AbortSignal.timeout(옵션.시간제한 || 120000),
+    headers: { 'anthropic-version': 버전, 'x-api-key': 값 } });
+  const 글 = await 응답.text();
+  if (!응답.ok) throw 오류('클로드키_요청실패', `HTTP ${응답.status} ${가리기(글.slice(0, 300), [값])}`, { http: 응답.status });
+  return 글;
+}
+
+/** 일괄 상태(processing_status·request_counts·results_url). */
+async function 배치보기(배치id, 키이름, 옵션 = {}) {
+  const 값 = 키값읽기(키이름, 옵션);
+  return JSON.parse(await 배치가져오기(`${배치주소}/${encodeURIComponent(배치id)}`, 값, 옵션));
+}
+
+/**
+ * 끝난 일괄의 결과(순서는 보장되지 않는다 — custom_id로 찾는다). 성공 결과의 토큰을 합쳐 사용 기록 한 줄을 남긴다.
+ * 돌려주는 값: { 결과: [{custom_id, result}], 합계: {요청, 성공, usage, 추정USD} }
+ */
+async function 배치결과(배치id, 키이름, 옵션 = {}) {
+  const 값 = 키값읽기(키이름, 옵션);
+  const 일괄 = JSON.parse(await 배치가져오기(`${배치주소}/${encodeURIComponent(배치id)}`, 값, 옵션));
+  if (일괄.processing_status !== 'ended') throw 오류('클로드키_배치진행중', `${배치id}: 아직 끝나지 않았다(${일괄.processing_status})`, { 일괄 });
+  const 글 = await 배치가져오기(일괄.results_url || `${배치주소}/${encodeURIComponent(배치id)}/results`, 값, 옵션);
+  const 결과 = 글.split('\n').filter((줄) => 줄.trim()).map((줄) => JSON.parse(줄));
+  const 합 = { input_tokens: 0, output_tokens: 0, cache_creation_input_tokens: 0, cache_read_input_tokens: 0,
+    cache_creation: { ephemeral_5m_input_tokens: 0, ephemeral_1h_input_tokens: 0 } };
+  let 추정 = 0, 모델 = null, 성공 = 0;
+  for (const r of 결과) {
+    const m = r.result?.type === 'succeeded' ? r.result.message : null;
+    if (!m?.usage) continue;
+    성공 += 1; 모델 = 모델 || m.model;
+    const u = m.usage;
+    for (const k of ['input_tokens', 'output_tokens', 'cache_creation_input_tokens', 'cache_read_input_tokens']) 합[k] += Number(u[k]) || 0;
+    const 쓰기 = u.cache_creation || {};
+    const 쓰기1h = Number(쓰기.ephemeral_1h_input_tokens) || 0;
+    합.cache_creation.ephemeral_1h_input_tokens += 쓰기1h;
+    합.cache_creation.ephemeral_5m_input_tokens += Number.isFinite(쓰기.ephemeral_5m_input_tokens) ? 쓰기.ephemeral_5m_input_tokens : Math.max(0, (Number(u.cache_creation_input_tokens) || 0) - 쓰기1h);
+    추정 += 추정USD(m.model, u, { 배치: true }) ?? 0;
+  }
+  const 합계 = { 요청: 결과.length, 성공, usage: 합, 추정USD: Number(추정.toFixed(6)) };
+  if (!옵션.기록안함) {
+    const { 기록경로 } = 경로들(옵션);
+    fs.mkdirSync(path.dirname(기록경로), { recursive: true });
+    fs.appendFileSync(기록경로, JSON.stringify({ 시각: (옵션.지금 || new Date()).toISOString(), 키이름, 용도: 옵션.용도 ?? null,
+      model: 모델, 배치: 배치id, 결과수: 결과.length, 성공, http: 200, usage: 합, 추정USD: 합계.추정USD }) + '\n');
+  }
+  return { 결과, 합계 };
+}
+
+module.exports = { 보내기, 상태보기, 풀기, 키고르기, 키읽기, 소진표시, 기록남기기, 다음갱신, 순서, 크레딧부족, 추정USD, 단가,
+  배치보내기, 배치보기, 배치결과 };
 
 if (require.main === module) {
   const argv = process.argv.slice(2);

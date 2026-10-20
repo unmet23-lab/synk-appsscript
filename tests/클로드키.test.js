@@ -225,3 +225,70 @@ test('소진표시·기록남기기: 다른 프로그램이 쓴 키를 표시하
     assert.deepEqual(클로드.키읽기('없는키', t.옵션), { 이름: null, 값: null });
   } finally { t.지우기(); }
 });
+
+test('추정 비용은 캐시 쓰기(5분 1.25배·1시간 2배)·읽기(Opus 5.5 0.05배)와 일괄 반값을 셈한다', () => {
+  const usage = { input_tokens: 1000, output_tokens: 100, cache_creation_input_tokens: 2000, cache_read_input_tokens: 10000,
+    cache_creation: { ephemeral_5m_input_tokens: 0, ephemeral_1h_input_tokens: 2000 } };
+  const 보통 = ((1000 + 2000 * 2 + 10000 * 0.05) * 4 + 100 * 20) / 1e6;
+  assert.ok(Math.abs(클로드.추정USD('claude-opus-5-5', usage) - 보통) < 1e-12);
+  assert.ok(Math.abs(클로드.추정USD('claude-opus-5-5', usage, { 배치: true }) - 보통 / 2) < 1e-12);
+  // 쓰기 내역이 없으면 5분 쓰기로 본다, 다른 모델의 읽기는 0.1배.
+  const 간단 = { input_tokens: 0, output_tokens: 0, cache_creation_input_tokens: 400, cache_read_input_tokens: 1000 };
+  assert.ok(Math.abs(클로드.추정USD('claude-sonnet-5-5', 간단) - ((400 * 1.25 + 1000 * 0.1) * 2) / 1e6) < 1e-12);
+});
+
+function 일괄서버({ 끝남 = true } = {}) {
+  const 요청 = [];
+  const fetch = async (url, init) => {
+    요청.push({ url, method: init.method, 키: init.headers['x-api-key'], body: init.body ? JSON.parse(init.body) : null });
+    const 답 = (status, body, raw) => ({ status, ok: status >= 200 && status < 300, text: async () => raw ?? JSON.stringify(body) });
+    if (url.endsWith('/v1/messages')) return 답(200, { type: 'message', content: [], usage: { input_tokens: 8, output_tokens: 1 } });
+    if (url.endsWith('/v1/messages/batches') && init.method === 'POST') return 답(200, { id: 'msgbatch_test1', processing_status: 'in_progress' });
+    if (url.endsWith('/msgbatch_test1')) return 답(200, { id: 'msgbatch_test1', processing_status: 끝남 ? 'ended' : 'in_progress',
+      results_url: 'https://api.anthropic.com/v1/messages/batches/msgbatch_test1/results' });
+    if (url.endsWith('/msgbatch_test1/results')) {
+      const 줄 = [
+        { custom_id: 'b', result: { type: 'succeeded', message: { model: 'claude-opus-5-5', content: [{ type: 'text', text: '{}' }],
+          usage: { input_tokens: 500, output_tokens: 1000, cache_read_input_tokens: 6000, cache_creation_input_tokens: 0 } } } },
+        { custom_id: 'a', result: { type: 'succeeded', message: { model: 'claude-opus-5-5', content: [{ type: 'text', text: '{}' }],
+          usage: { input_tokens: 500, output_tokens: 800, cache_creation_input_tokens: 6000, cache_read_input_tokens: 0,
+            cache_creation: { ephemeral_5m_input_tokens: 0, ephemeral_1h_input_tokens: 6000 } } } } },
+        { custom_id: 'c', result: { type: 'errored', error: { type: 'invalid_request_error' } } },
+      ];
+      return 답(200, null, 줄.map((x) => JSON.stringify(x)).join('\n') + '\n');
+    }
+    return 답(404, { error: { message: 'not found' } });
+  };
+  return { fetch, 요청 };
+}
+
+test('일괄: 크레딧 남은 키를 1토큰으로 고른 뒤 만들고, 결과는 같은 키로 받아 한 줄 반값 기록을 남긴다', async () => {
+  const t = 방만들기([['A', 20, 'sk-ant-test-aaaa']]);
+  try {
+    const 서버 = 일괄서버();
+    const 요청들 = [{ custom_id: 'a', params: { model: 'claude-opus-5-5', max_tokens: 10, messages: [{ role: 'user', content: 'x' }] } },
+      { custom_id: 'b', params: { model: 'claude-opus-5-5', max_tokens: 10, messages: [{ role: 'user', content: 'y' }] } }];
+    await assert.rejects(클로드.배치보내기([{ custom_id: 'a', params: 요청들[0].params }, { custom_id: 'a', params: 요청들[1].params }], { ...t.옵션, fetch: 서버.fetch, 지금 }), /중복/);
+    const 만듦 = await 클로드.배치보내기(요청들, { ...t.옵션, fetch: 서버.fetch, 지금, 용도: 'topik-review:시험' });
+    assert.deepEqual([만듦.배치id, 만듦.키이름], ['msgbatch_test1', 'A']);
+    const 보낸일괄 = 서버.요청.find((r) => r.url.endsWith('/batches') && r.method === 'POST');
+    assert.deepEqual(보낸일괄.body.requests.map((r) => r.custom_id), ['a', 'b']);
+    const { 결과, 합계 } = await 클로드.배치결과(만듦.배치id, 만듦.키이름, { ...t.옵션, fetch: 서버.fetch, 지금, 용도: 'topik-review:시험' });
+    assert.deepEqual(결과.map((r) => r.custom_id), ['b', 'a', 'c']);
+    assert.equal(합계.성공, 2);
+    const 기대 = (((500 + 6000 * 0.05) * 4 + 1000 * 20) / 1e6 + ((500 + 6000 * 2) * 4 + 800 * 20) / 1e6) / 2;
+    assert.ok(Math.abs(합계.추정USD - 기대) < 1e-6);
+    const 기록 = fs.readFileSync(t.옵션.기록경로, 'utf8').trim().split('\n').map((줄) => JSON.parse(줄));
+    assert.deepEqual(기록.map((r) => [r.용도, r.배치 || null]), [['키확인:topik-review:시험', null], ['topik-review:시험', 'msgbatch_test1'], ['topik-review:시험', 'msgbatch_test1']]);
+    assert.equal(fs.readFileSync(t.옵션.기록경로, 'utf8').includes('sk-ant-test'), false);
+  } finally { t.지우기(); }
+});
+
+test('일괄: 끝나지 않은 일괄의 결과는 받지 않고, 목록에 없는 키 이름은 거절한다', async () => {
+  const t = 방만들기([['A', 20, 'sk-ant-test-aaaa']]);
+  try {
+    const 서버 = 일괄서버({ 끝남: false });
+    await assert.rejects(클로드.배치결과('msgbatch_test1', 'A', { ...t.옵션, fetch: 서버.fetch, 지금 }), (e) => e.code === '클로드키_배치진행중');
+    await assert.rejects(클로드.배치보기('msgbatch_test1', '없는키', { ...t.옵션, fetch: 서버.fetch, 지금 }), (e) => e.code === '클로드키_키없음');
+  } finally { t.지우기(); }
+});

@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://synk.im/schemas/topik-item-1.json",
+  "title": "SYNK TOPIK 연습 문항 묶음(topik-item-1)",
+  "description": "experiences/topik-items/items/*.json 한 파일의 꼴. 모든 문항은 자체 창작이다. 기계 검사의 정본은 experiences/topik-items/validate.mjs이고, 이 파일은 그 칸을 사람과 다른 도구에 알리는 설명이다(시험이 두 쪽의 필수 칸이 같은지 본다).",
+  "type": "object",
+  "required": ["schema", "batch", "author", "items"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": { "const": "topik-item-1" },
+    "batch": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$", "description": "파일 이름과 같은 묶음 이름. 문항 id의 앞머리다" },
+    "author": { "type": "string", "description": "누가 언제 썼는지(예: claude-opus-5-5 · Claude Code 세션 · 2026-10-20)" },
+    "note": { "type": "string" },
+    "items": { "type": "array", "items": { "$ref": "#/$defs/item" } }
+  },
+  "$defs": {
+    "item": {
+      "type": "object",
+      "required": ["id", "rev", "family", "exam", "section", "officialType", "targetGrade", "skillId", "difficulty", "responseFormat",
+        "question", "choices", "answer", "explanation", "choiceNotes", "origin", "reviewStatus", "review"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$", "description": "<batch>-<세 자리 번호>. 한 번 정하면 바꾸지 않는다" },
+        "rev": { "type": "integer", "minimum": 1, "description": "내용 판. 글·보기·정답·해설을 고치면 1 올린다 → itemKey가 바뀌고 검수를 다시 받는다" },
+        "family": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$", "description": "변형 계열. 숫자·이름만 바꾼 변형은 같은 계열, 새 장면은 자기 id" },
+        "exam": { "enum": ["topik-i", "topik-ii"] },
+        "format": { "enum": ["pbt"], "description": "IBT는 확인된 사양만 따로 표시한다(지금은 PBT형만)" },
+        "section": { "enum": ["listening", "reading"] },
+        "officialType": { "type": "string", "description": "strata/topik-types.json의 유형 id(예: TI-R-43)" },
+        "targetGrade": { "type": "integer", "minimum": 1, "maximum": 6, "description": "만든 이가 겨눈 급(제작 정보). 학생의 급수가 아니다" },
+        "skillId": { "type": "string", "description": "대표 측정 능력 — 그 유형의 skills 안에서 하나" },
+        "difficulty": { "enum": [1, 2, 3], "description": "그 시험 지도 안의 언어 난도(Core 칸). TOPIK 급수 환산이 아니다" },
+        "responseFormat": { "enum": ["single-choice"] },
+        "set": { "type": ["object", "null"], "required": ["id", "order"], "additionalProperties": false,
+          "properties": { "id": { "type": "string" }, "order": { "type": "integer", "minimum": 1 } },
+          "description": "한 글·대화에 딸린 두세 문항. 같은 set.id끼리 passage·script가 같다" },
+        "passage": { "type": ["string", "null"], "description": "읽기 글(듣기는 null). 줄바꿈은 \\n" },
+        "script": { "type": ["array", "null"], "items": { "type": "object", "required": ["speaker", "text"], "additionalProperties": false,
+          "properties": { "speaker": { "enum": ["남자", "여자"] }, "text": { "type": "string" } } }, "description": "듣기 대본(읽기는 null)" },
+        "question": { "type": "string", "description": "발문(우리 말로, 시험 말투 -십시오)" },
+        "choices": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "type": "string" } },
+        "answer": { "enum": [0, 1, 2, 3] },
+        "explanation": { "type": "object", "required": ["ko", "en", "mn"], "additionalProperties": false,
+          "properties": { "ko": { "type": "string" }, "en": { "type": "string" }, "mn": { "type": "string" } } },
+        "choiceNotes": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "type": "string" }, "description": "보기마다 왜 맞고 틀린지(한국어 한 줄)" },
+        "conceptIds": { "type": "array", "items": { "type": "string" }, "description": "쓰는 Strata 문형·낱말 마디(있으면)" },
+        "audio": { "type": ["object", "null"], "additionalProperties": false, "required": ["file", "plays", "status"],
+          "properties": { "file": { "type": "string" }, "plays": { "enum": [1, 2] }, "status": { "enum": ["pending", "ready"] },
+            "voices": { "type": "object", "additionalProperties": { "type": "string" } }, "seconds": { "type": "number" } } },
+        "origin": { "const": "synk-original" },
+        "reviewStatus": { "enum": ["draft", "ai-reviewed", "held", "rejected"] },
+        "review": { "type": "array", "description": "검수 계보. 줄마다 그때의 내용 지문(hash)을 적어, 검수 뒤 내용이 바뀌면 통과가 풀린다", "items": { "type": "object", "required": ["stage", "model", "rubric", "at", "verdict", "rev", "hash"],
+          "properties": { "stage": { "enum": ["claude", "argon", "adjudication", "author-fix"] }, "model": { "type": "string" },
+            "rubric": { "type": "string" }, "at": { "type": "string" }, "verdict": { "enum": ["pass", "fix", "drop"] },
+            "rev": { "type": "integer" }, "hash": { "type": "string", "pattern": "^[a-f0-9]{16}$" },
+            "scores": { "type": "object" }, "notes": { "type": "string" }, "packet": { "type": "string" } } } }
+      }
+    }
+  }
+}
