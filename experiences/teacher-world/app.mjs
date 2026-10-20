@@ -217,16 +217,23 @@ $('note-form').addEventListener('submit',async event=>{event.preventDefault();if
     await request('/api/teacher/care',{...payload,idempotencyKey:retryKey('care',payload)});if(version!==accessEpoch)return;careAttempt=null;$('care-dialog').close();await load();toast(editingCare?'케어 할 일을 수정했어요.':'담당자와 기한을 정해 케어 할 일을 남겼어요.');
   }catch(error){if(version===accessEpoch&&error.code!=='SESSION_CHANGED')$('care-error').textContent=error.message;}finally{if(version===accessEpoch)button.disabled=false;}
  });
- window.SYNKTeacherView=Object.freeze({hasDraft:()=>['assignment-dialog','note-dialog','care-dialog','student-invite-dialog'].some(id=>$(id).open)||homework.hasDraft()});
- window.addEventListener('message',event=>{
-  const data=event.data;
-  if(!accountRequested||event.source!==window.parent||event.origin!==location.origin||data?.type!=='synk-teacher-sharing'||window.parent.SYNKClassroomHost!==accountHost||data.classId!==accountHost?.classId||!Array.isArray(data.learners)||data.learners.some(row=>typeof row?.id!=='string'||!Number.isSafeInteger(row.revision)||typeof row.enabled!=='boolean'||typeof row.connected!=='boolean'||typeof row.revoked!=='boolean'))return;
-  parentSharingMetadata=data.learners;if(!workspace)return;
-  const fenced=applySharingFence(workspace,parentSharingMetadata);if(!fenced.changedLearnerIds.length)return;
+ // 부모(계정 포털)가 확인한 반 학생 모두의 공유 상태로 이 판을 그 자리에서 거른다. 바뀐 학생의 기록과 그 학생의 공유에 묶인 작성 창은 바로 닫고,
+ // 명부 기준인 과제 첨삭은 그대로 둔다. 걸렀으면(판을 아직 못 읽었으면 다음 읽기부터 거른다) true — 부모는 이 답을 받아야 iframe을 다시 만들지 않는다.
+ function applyParentSharing(target,latest){
+  if(!accountRequested||!accountHost||window.parent.SYNKClassroomHost!==accountHost||target!==accountHost.classId||!Array.isArray(latest)||latest.some(row=>typeof row?.id!=='string'||!Number.isSafeInteger(row.revision)||typeof row.enabled!=='boolean'||typeof row.connected!=='boolean'||typeof row.revoked!=='boolean'))return false;
+  parentSharingMetadata=latest;if(!workspace)return true;
+  const fenced=applySharingFence(workspace,parentSharingMetadata);if(!fenced.changedLearnerIds.length)return true;
   workspace=fenced.workspace;revision++;
-  if(draftContext&&!draftAllowed(draftContext.kind)){accessEpoch++;clearDraft();}
+  if(draftContext&&!draftAllowed(draftContext.kind)){accessEpoch++;clearDraft();toast('학생의 공유 또는 과제 상태가 바뀌어 작성 창을 닫았어요. 최신 내용을 확인해 주세요.');}
   if(!learners().some(row=>row.id===learnerId))learnerId=learners()[0]?.id;
   render();if(!draftContext||!draftAllowed(draftContext.kind))void load();
+  return true;
+ }
+ window.SYNKTeacherView=Object.freeze({hasDraft:()=>['assignment-dialog','note-dialog','care-dialog','student-invite-dialog'].some(id=>$(id).open)||homework.hasDraft(),applySharing:scope=>applyParentSharing(scope?.classId,scope?.learners)});
+ window.addEventListener('message',event=>{
+  const data=event.data;
+  if(!accountRequested||event.source!==window.parent||event.origin!==location.origin||data?.type!=='synk-teacher-sharing')return;
+  applyParentSharing(data.classId,data.learners);
  });
  window.addEventListener('message',event=>{
   const data=event.data,selection=accountRequested?window.parent.SYNKClassroomSelection:null;

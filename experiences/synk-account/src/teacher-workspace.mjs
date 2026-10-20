@@ -24,12 +24,17 @@ export function createTeacherWorkspace({root,transport,guard,notice,documentObje
       if(permissionChanged(permission(row),latest.get(row.id))||townPermissionChanged(permission(row),latest.get(row.id))||framePermissions.has(row.id)&&(permissionChanged(permission(row),framePermissions.get(row.id))||townPermissionChanged(permission(row),framePermissions.get(row.id))))throw Object.assign(new Error('학생의 공유 상태가 바뀌었어요. 최신 기록을 다시 확인해 주세요.'),{code:'CLASSROOM_SNAPSHOT_CHANGED',status:409});
     }
   }
-  function publishPermissions(){
-    if(!frame||!selected)return;
-    const learners=overviewData?.classes?.find(row=>row.id===selected.id)?.learners;if(!Array.isArray(learners))return;
-    if(learners.some(row=>!Number.isSafeInteger(row.sharing?.revision)||typeof row.sharing?.enabled!=='boolean'||typeof row.accountConnected!=='boolean'))return;
-    frame.contentWindow?.postMessage?.({type:'synk-teacher-sharing',classId:selected.id,learners:learners.map(permission)},new URL(locationHref).origin);
+  // 고른 반 학생 모두의 확인된 공유 상태. 한 줄이라도 비면 null이다(iframe이 그 자리에서 거를 수 없다).
+  function classPermissions(){
+    if(!frame||!selected)return null;
+    const learners=overviewData?.classes?.find(row=>row.id===selected.id)?.learners;if(!Array.isArray(learners))return null;
+    if(learners.some(row=>!Number.isSafeInteger(row.sharing?.revision)||typeof row.sharing?.enabled!=='boolean'||typeof row.accountConnected!=='boolean'))return null;
+    return learners.map(permission);
   }
+  function publishPermissions(){const learners=classPermissions();if(learners)frame.contentWindow?.postMessage?.({type:'synk-teacher-sharing',classId:selected.id,learners},new URL(locationHref).origin);}
+  // iframe이 바뀐 공유 상태로 그 자리에서 기록을 걸렀다고 바로 답할 때만 true다. 이때는 iframe을 다시 만들지 않아 쓰던 것이 남는다.
+  function fenceFrame(){const learners=classPermissions();if(!learners)return false;try{return frame.contentWindow?.SYNKTeacherView?.applySharing?.({classId:selected.id,learners})===true;}catch{return false;}}
+  function frameHasDraft(){try{return frame?.contentWindow?.SYNKTeacherView?.hasDraft?.()===true;}catch{return false;}}
   function report(error){if(!stopped&&error.code!=='ACCOUNT_CHANGED')notice(error.message,true);}
   const overview=createTeacherOverview({root:overviewRoot,onStudent:(classId,learnerId)=>{void choose(classes.find(row=>row.id===classId)||null,{learnerId,userInitiated:true}).catch(report);},onClass:classId=>{void choose(classes.find(row=>row.id===classId)||null,{userInitiated:true}).catch(report);},onAll:()=>{void choose(null,{userInitiated:true}).catch(report);}});
   const studentSelected=event=>{
@@ -101,7 +106,12 @@ export function createTeacherWorkspace({root,transport,guard,notice,documentObje
     if(prior&&frame){
       publishPermissions();
       const focused=selectedLearnerId||windowObject.SYNKClassroomSelection?.learnerId;
-      if(focused&&permissionChanged(framePermissions.get(focused),permission(knownLearner(focused)))){await choose(prior,{learnerId:knownLearner(focused)?focused:null,refreshScope:true});return;}
+      // 고른 학생의 공유가 바뀌면 그 학생의 기록은 묻지 않고 바로 내린다. iframe이 그 자리에서 걸렀다고 답하면 그대로 두고
+      // (명부 기준인 과제 첨삭 초안이 남는다), 답하지 못하면 지금처럼 다시 만든다 — 그때 닫힌 작성 내용이 있으면 알린다.
+      if(focused&&permissionChanged(framePermissions.get(focused),permission(knownLearner(focused)))){
+        if(!fenceFrame()){const unsaved=frameHasDraft(),reopened=choose(prior,{learnerId:knownLearner(focused)?focused:null,refreshScope:true});if(unsaved&&!stopped)notice('학생의 공유 상태가 바뀌어 수업 화면을 새로 열었어요. 저장하지 않은 내용은 닫혔어요.',true);await reopened;return;}
+        if(!knownLearner(focused)){selectedLearnerId=null;windowObject.SYNKClassroomSelection={classId:prior.id,learnerId:null};}
+      }
       selected=prior;picker();renderOverview();status.textContent='학생이 공유한 학습 기록으로 다음 수업과 과제를 준비해요.';if(reconnecting)notice('수업 연결이 복구됐어요. 열어 둔 수업에서 계속할 수 있어요.');return;
     }
     await choose(row);

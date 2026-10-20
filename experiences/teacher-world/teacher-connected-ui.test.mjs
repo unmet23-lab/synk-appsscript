@@ -12,7 +12,7 @@ const learner=(overrides={})=>({id:'learner-a',name:'연결 학생',goal:'안내
 const workspace=(learners=[])=>({mode:'local-linked',synthetic:false,teacher:{id:'teacher-local'},classes:[{id:'class-local',name:'내 수업',learners}],content:[{id:'reading-detail',title:'도서관 읽기',assignable:true,modality:'reading'}],assignments:[],integration:{worldConnected:true,productionConnected:false}});
 
 // Run the real module while controlling the order of authentication and data responses.
-function fixture({hash='',storedToken='',mode='local-linked',account=false}={}){
+function fixture({hash='',storedToken='',mode='local-linked',account=false,homework=null}={}){
   const nodes=new Map(),documentEvents=new Map(),requests=[],pending=[],storage=new Map();let cleanURL=null,poll;
   if(storedToken)storage.set('synk.teacher.local-linked.session',storedToken);
   function element(id){if(!nodes.has(id))nodes.set(id,{id,value:id==='assignment-filter'?'all':'',textContent:'',innerHTML:'',hidden:false,dataset:{},listeners:new Map(),addEventListener(name,fn){this.listeners.set(name,fn);},replaceChildren(){this.innerHTML='';this.textContent='';},close(){this.open=false;},showModal(){this.open=true;},querySelector(){return element(id+'-submit');},get elements(){return {instructions:element('assignment-instructions')};},reset(){for(const name of id==='assignment-form'?['assignment-title','assignment-due','assignment-instructions','content-select']:['note-text','note-skill'])element(name).value='';}});return nodes.get(id);}
@@ -20,12 +20,12 @@ function fixture({hash='',storedToken='',mode='local-linked',account=false}={}){
     location:{href:'http://127.0.0.1:44001/'+(account?'?account=1':'')+hash,origin:'http://127.0.0.1:44001'},history:{replaceState(_state,_title,url){cleanURL=url;}},
     sessionStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value),removeItem:key=>storage.delete(key)},
     window:{addEventListener(){}},document:{getElementById:element,documentElement:element('html'),querySelector:selector=>selector==='dialog[open]'?[...nodes.values()].find(n=>n.open)||null:null,querySelectorAll:selector=>selector==='dialog[open]'?[...nodes.values()].filter(n=>n.open):[],addEventListener:(name,fn)=>documentEvents.set(name,fn)},
-    mountHomeworkReview:()=>({show(){},peek(){},reset(){},hasDraft:()=>false,refresh(){}}),createPersonalizationUI:()=>({set(){},invalidate(){element('personalization-panel').hidden=true;}}),
+    mountHomeworkReview:()=>({show(){},peek(){},reset(){if(homework)homework.resets++;},hasDraft:()=>!!homework?.draft,refresh(){}}),createPersonalizationUI:()=>({set(){},invalidate(){element('personalization-panel').hidden=true;}}),
     fetch:(url,options={})=>{requests.push({url,options});if(url==='/api/health')return Promise.resolve(reply({mode}));return new Promise((resolve,reject)=>pending.push({url,resolve,reject}));}
   };
-  if(account){context.window.parent={location:{origin:context.location.origin},postMessage(){},SYNKClassroomHost:{mode:'account-linked',request:(url,payload)=>{requests.push({url,payload});return new Promise((resolve,reject)=>pending.push({url,resolve:response=>response.json().then(resolve),reject}));}}};context.document.fonts={ready:Promise.resolve()};}
+  if(account){context.window.parent={location:{origin:context.location.origin},postMessage(){},SYNKClassroomHost:{mode:'account-linked',classId:'class-local',request:(url,payload)=>{requests.push({url,payload});return new Promise((resolve,reject)=>pending.push({url,resolve:response=>response.json().then(resolve),reject}));}}};context.document.fonts={ready:Promise.resolve()};}
   vm.createContext(context);vm.runInContext(source,context,{filename:'app.mjs'});
-  return {element,requests,storage,pending,get cleanURL(){return cleanURL;},
+  return {element,requests,storage,pending,view:()=>context.window.SYNKTeacherView,get cleanURL(){return cleanURL;},
     resolve(url,body,status=200){const at=pending.findIndex(row=>row.url===url);assert.notEqual(at,-1,`pending ${url}`);pending.splice(at,1)[0].resolve(reply(body,status));},
     reject(url){const at=pending.findIndex(row=>row.url===url);assert.notEqual(at,-1);pending.splice(at,1)[0].reject(Error('network failure'));},
     click(id,dataset={}){return documentEvents.get('click')({target:{closest:()=>({id,dataset,disabled:false,classList:{contains:()=>false}})}});},
@@ -157,4 +157,29 @@ test('account invite stays in the dialog through polling without browser storage
  f.resolve('/api/workspace',snapshot);await tick();const creating=f.click('student-invite');f.resolve('/api/teacher/invites',{invite:{token:'b'.repeat(32),expiresAt:'2026-10-12T00:00:00Z'}});await creating;
  assert.equal(f.element('student-invite-code').value,'b'.repeat(32));const polling=f.poll();f.resolve('/api/workspace',snapshot);await polling;
  assert.equal(f.element('student-invite-code').value,'b'.repeat(32));assert.equal(f.element('student-invite-dialog').open,true);assert.equal(f.storage.size,0);
+});
+// 계정 포털은 고른 학생의 공유가 바뀌면 이 답(true)을 보고서야 교사 화면을 다시 만들지 않는다. 걸러 낸 학생의 기록과
+// 그 학생의 공유에 묶인 작성 창은 바로 닫히고, 명부 기준인 과제 첨삭 초안은 그대로다.
+test('account frame fences a withdrawn learner in place for the portal: records and the bound note close, the homework review draft stays',async()=>{
+ const homework={draft:true,resets:0},f=fixture({account:true,homework}),a=learner({accountConnected:true}),b=learner({id:'learner-b',name:'하늘 학생',accountConnected:true});
+ const meta=(id,revision,enabled)=>({id,revision,enabled,connected:true,revoked:false}),fresh={...workspace([a,b]),mode:'account-linked'};
+ f.resolve('/api/workspace',fresh);await tick();await f.click('',{student:'learner-a'});await f.click('add-note');f.element('note-text').value='공유가 끊길 학생의 관찰';
+ assert.equal(f.element('note-dialog').open,true);assert.match(f.element('student-detail').innerHTML,/세부 정보/);
+ assert.equal(f.view().applySharing({classId:'class-other',learners:[meta('learner-a',3,false),meta('learner-b',2,true)]}),false,'다른 반의 범위는 받지 않는다');
+ assert.equal(f.view().applySharing({classId:'class-local',learners:[{id:'learner-a'}]}),false,'빈 공유 정보는 받지 않는다');
+ assert.equal(f.view().applySharing(null),false);assert.equal(f.element('note-dialog').open,true);
+ assert.equal(f.view().applySharing({classId:'class-local',learners:[meta('learner-a',3,false),meta('learner-b',2,true)]}),true);
+ assert.equal(f.element('note-dialog').open,false);assert.equal(f.element('note-text').value,'');assert.match(f.element('toast').textContent,/공유 또는 과제 상태가 바뀌어 작성 창을 닫았어요/);
+ assert.match(f.element('student-detail').innerHTML,/학습 공유 안 함/);assert.doesNotMatch(f.element('student-detail').innerHTML,/세부 정보/);
+ assert.equal(homework.resets,0);assert.equal(f.view().hasDraft(),true,'과제 첨삭 초안은 남는다');
+ assert.equal(f.requests.filter(row=>row.url==='/api/workspace').length,2,'걸러 낸 뒤 최신 판을 다시 읽는다');
+ // 다시 읽은 판이 옛 공유를 담고 와도 포털이 알린 공유 상태로 걸러 보인다.
+ f.resolve('/api/workspace',fresh);await tick();assert.match(f.element('student-detail').innerHTML,/학습 공유 안 함/);assert.equal(f.view().hasDraft(),true);
+ assert.equal(f.view().applySharing({classId:'class-local',learners:[meta('learner-a',3,false),meta('learner-b',2,true)]}),true,'이미 거른 상태면 그대로 true');
+});
+test('a frame that has not read its class yet keeps the portal scope for the first read',async()=>{
+ const f=fixture({account:true}),meta=(id,revision,enabled)=>({id,revision,enabled,connected:true,revoked:false});
+ assert.equal(f.view().applySharing({classId:'class-local',learners:[meta('learner-a',3,false)]}),true);
+ f.resolve('/api/workspace',{...workspace([learner({accountConnected:true})]),mode:'account-linked'});await tick();
+ assert.match(f.element('student-detail').innerHTML,/학습 공유 안 함/);assert.doesNotMatch(f.element('student-detail').innerHTML,/세부 정보/);
 });

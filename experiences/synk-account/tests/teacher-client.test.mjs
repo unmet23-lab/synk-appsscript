@@ -76,6 +76,43 @@ test('another student withdrawal preserves the selected scope but rejects stale 
   page.learners({a:[revoked,b]});page.snapshots({a:[revoked,b]});await page.workspace.load();assert.equal(page.windowObject.SYNKClassroomHost,same);assert.equal(page.windowObject.SYNKClassroomSelection.learnerId,'student-b');
   pending.resolve({mode:'account-linked',classes:[{id:'a',learners:[a,b]}]});await assert.rejects(response,{code:'CLASSROOM_SNAPSHOT_CHANGED'});assert.equal((await same.request('/api/workspace')).classes[0].learners[0].sharing.revision,3);
 });
+// 쓰던 것이 있을 때 고른 학생의 공유가 바뀜: 교사 화면(iframe)이 그 자리에서 거르면 화면을 다시 만들지 않아 과제 첨삭 초안이 남는다.
+const frameOf=page=>page.root.children[3].children[0];
+const openFrame=(page,view)=>{let prompts=0;page.windowObject.confirm=()=>{prompts++;return true;};frameOf(page).contentWindow={postMessage(){},SYNKTeacherView:view};return {prompts:()=>prompts};};
+test('selected student withdrawal with unsaved work is fenced inside the open frame, without asking and without discarding the review',async t=>{
+  const page=classroom(t),before=privacyLearner('student-a'),other=privacyLearner('student-b'),after=privacyLearner('student-a',3,false);page.learners({a:[before,other]});page.snapshots({a:[before,other]});await page.workspace.load();await selectOverview(page,'student-a');
+  const host=page.windowObject.SYNKClassroomHost,frame=frameOf(page),applied=[],view=openFrame(page,{hasDraft:()=>true,applySharing:scope=>{applied.push(scope);return true;}});
+  const pending=deferred();page.workspaceHold(pending);const stale=host.request('/api/workspace');
+  page.learners({a:[after,other]});page.snapshots({a:[after,other]});await page.workspace.load();
+  assert.equal(page.windowObject.SYNKClassroomHost,host);assert.equal(frameOf(page),frame);assert.equal(view.prompts(),0);assert.equal(page.notices.length,0);
+  assert.equal(applied.length,1);assert.equal(applied[0].classId,'a');assert.deepEqual(applied[0].learners.map(row=>[row.id,row.revision,row.enabled,row.connected,row.revoked]),[['student-a',3,false,true,false],['student-b',2,true,true,false]]);
+  assert.deepEqual(page.windowObject.SYNKClassroomSelection,{classId:'a',learnerId:'student-a'});
+  // 걸러진 뒤에도 바뀌기 전 판의 늦은 응답은 그 학생의 기록을 되살리지 못한다.
+  pending.resolve({mode:'account-linked',classes:[{id:'a',learners:[before,other]}]});await assert.rejects(stale,{code:'CLASSROOM_SNAPSHOT_CHANGED'});
+  assert.equal((await host.request('/api/workspace')).classes[0].learners[0].sharing.enabled,false);
+});
+test('a selected student who leaves the class is fenced in place and the selection is cleared',async t=>{
+  const page=classroom(t),a=privacyLearner('student-a'),b=privacyLearner('student-b');page.learners({a:[a,b]});page.snapshots({a:[a,b]});await page.workspace.load();await selectOverview(page,'student-a');
+  const host=page.windowObject.SYNKClassroomHost,frame=frameOf(page),applied=[];openFrame(page,{hasDraft:()=>true,applySharing:scope=>{applied.push(scope);return true;}});
+  page.learners({a:[b]});page.snapshots({a:[b]});await page.workspace.load();
+  assert.equal(page.windowObject.SYNKClassroomHost,host);assert.equal(frameOf(page),frame);assert.deepEqual(applied.at(-1).learners.map(row=>row.id),['student-b']);
+  assert.deepEqual(page.windowObject.SYNKClassroomSelection,{classId:'a',learnerId:null});assert.doesNotMatch(page.root.children[2].innerHTML,/student-a/);
+});
+for(const [name,view] of [['an older frame without in-place fencing',{hasDraft:()=>true}],['a frame that declines the scope',{hasDraft:()=>true,applySharing:()=>false}],['a frame that fails while fencing',{hasDraft:()=>true,applySharing:()=>{throw Error('broken frame');}}]])
+  test(`${name} is rebuilt at once on withdrawal and the closed unsaved work is announced`,async t=>{
+    const page=classroom(t),before=privacyLearner('student-a'),after=privacyLearner('student-a',3,false);page.learners({a:[before]});page.snapshots({a:[before]});await page.workspace.load();await selectOverview(page,'student-a');
+    const old=page.windowObject.SYNKClassroomHost,frame=frameOf(page),opened=openFrame(page,view);
+    page.learners({a:[after]});page.snapshots({a:[after]});await page.workspace.load();
+    assert.notEqual(page.windowObject.SYNKClassroomHost,old);assert.notEqual(frameOf(page),frame);assert.equal(opened.prompts(),0);assert.throws(()=>old.request('/api/workspace'),{code:'ACCOUNT_CHANGED'});
+    assert.match(page.notices.at(-1)[0],/공유 상태가 바뀌어 수업 화면을 새로 열었어요\. 저장하지 않은 내용은 닫혔어요/);assert.equal(page.notices.at(-1)[1],true);
+  });
+test('incomplete sharing metadata never asks the frame to keep a withdrawn scope',async t=>{
+  const page=classroom(t),before=privacyLearner('student-a'),after=privacyLearner('student-a',3,false),unknown={id:'student-b',name:'student-b',sharing:{revision:1,enabled:true},skills:[]};
+  page.learners({a:[before,unknown]});page.snapshots({a:[before,unknown]});await page.workspace.load();await selectOverview(page,'student-a');
+  const old=page.windowObject.SYNKClassroomHost,applied=[];openFrame(page,{hasDraft:()=>false,applySharing:scope=>{applied.push(scope);return true;}});
+  page.learners({a:[after,unknown]});page.snapshots({a:[after,unknown]});await page.workspace.load();
+  assert.equal(applied.length,0);assert.notEqual(page.windowObject.SYNKClassroomHost,old);assert.equal(page.notices.length,0);
+});
 
 test('two real sixteen-member classes open together and selecting one student preserves a single class-scoped detail',async t=>{
   const page=classroom(t),rows=[{id:'a',name:'오전반',role:'teacher'},{id:'b',name:'오후반',role:'teacher'}];page.rows(rows);

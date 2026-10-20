@@ -1,5 +1,5 @@
 {
- "startedAt": "2026-10-20T10:08:38.311Z",
+ "startedAt": "2026-10-20T11:08:28.065Z",
  "talk": "talk-class-homework-20261020",
  "served": [
   "/teacher-world/homework-review.mjs",
@@ -538,6 +538,18 @@
    "ok": true
   },
   {
+   "name": "쓰던 첨삭이 있을 때 그 학생의 공유가 바뀜: 교사 화면이 그 자리에서 기록을 거르고 첨삭은 그대로",
+   "ok": true,
+   "detail": {
+    "before": "계정 연결 대기",
+    "applied": true,
+    "draft": true,
+    "marks": 3,
+    "good": "두 해의 비율을 정확히 옮겼어요.",
+    "roster": "학습 공유 안 함"
+   }
+  },
+  {
    "name": "임시 저장 뒤 쓰던 것 없음",
    "ok": true
   },
@@ -777,7 +789,7 @@
      "returnedAt": null,
      "revision": 1,
      "submissionRevision": 3,
-     "teacherId": "d01a2a01-eff9-4fc1-9d61-9dc2b9fb9854",
+     "teacherId": "a7a039a4-7b79-43ec-8757-b50586fbf28f",
      "updatedAt": "2027-03-26T01:25:00.000Z"
     }
    }
@@ -809,7 +821,7 @@
     "returnedAt": null,
     "revision": 2,
     "submissionRevision": 3,
-    "teacherId": "d01a2a01-eff9-4fc1-9d61-9dc2b9fb9854",
+    "teacherId": "a7a039a4-7b79-43ec-8757-b50586fbf28f",
     "updatedAt": "2027-03-26T01:25:00.000Z"
    }
   },
@@ -1149,7 +1161,7 @@
     {
      "tag": "1280",
      "type": "http",
-     "text": "409 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+     "text": "409 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
     },
     {
      "tag": "1280",
@@ -1159,7 +1171,7 @@
     {
      "tag": "1280",
      "type": "http",
-     "text": "409 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+     "text": "409 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
     },
     {
      "tag": "1280",
@@ -1169,7 +1181,7 @@
     {
      "tag": "1280",
      "type": "http",
-     "text": "409 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+     "text": "409 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
     },
     {
      "tag": "1280",
@@ -1179,7 +1191,7 @@
     {
      "tag": "1280",
      "type": "http",
-     "text": "409 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+     "text": "409 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
     },
     {
      "tag": "1280",
@@ -1189,7 +1201,7 @@
     {
      "tag": "1280",
      "type": "http",
-     "text": "403 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+     "text": "403 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
     },
     {
      "tag": "1280",
@@ -1199,7 +1211,7 @@
     {
      "tag": "1280",
      "type": "http",
-     "text": "404 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+     "text": "404 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
     },
     {
      "tag": "1280",
@@ -1209,7 +1221,7 @@
     {
      "tag": "390",
      "type": "http",
-     "text": "404 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+     "text": "404 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
     },
     {
      "tag": "390",
@@ -1225,7 +1237,7 @@
     {
      "tag": "1280",
      "type": "http",
-     "text": "409 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+     "text": "409 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
     },
     {
      "tag": "1280",
@@ -1235,7 +1247,7 @@
     {
      "tag": "1280",
      "type": "http",
-     "text": "409 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+     "text": "409 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
     },
     {
      "tag": "1280",
@@ -1245,7 +1257,7 @@
     {
      "tag": "1280",
      "type": "http",
-     "text": "409 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+     "text": "409 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
     },
     {
      "tag": "1280",
@@ -1255,7 +1267,7 @@
     {
      "tag": "1280",
      "type": "http",
-     "text": "409 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+     "text": "409 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
     },
     {
      "tag": "1280",
@@ -1265,7 +1277,7 @@
     {
      "tag": "1280",
      "type": "http",
-     "text": "403 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+     "text": "403 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
     },
     {
      "tag": "1280",
@@ -1275,7 +1287,7 @@
     {
      "tag": "1280",
      "type": "http",
-     "text": "404 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+     "text": "404 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
     },
     {
      "tag": "1280",
@@ -1285,7 +1297,7 @@
     {
      "tag": "390",
      "type": "http",
-     "text": "404 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+     "text": "404 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
     },
     {
      "tag": "390",
@@ -1299,7 +1311,7 @@
   {
    "tag": "1280",
    "type": "http",
-   "text": "409 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+   "text": "409 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
   },
   {
    "tag": "1280",
@@ -1309,7 +1321,7 @@
   {
    "tag": "1280",
    "type": "http",
-   "text": "409 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+   "text": "409 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
   },
   {
    "tag": "1280",
@@ -1319,7 +1331,7 @@
   {
    "tag": "1280",
    "type": "http",
-   "text": "409 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+   "text": "409 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
   },
   {
    "tag": "1280",
@@ -1329,7 +1341,7 @@
   {
    "tag": "1280",
    "type": "http",
-   "text": "409 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+   "text": "409 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
   },
   {
    "tag": "1280",
@@ -1339,7 +1351,7 @@
   {
    "tag": "1280",
    "type": "http",
-   "text": "403 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+   "text": "403 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
   },
   {
    "tag": "1280",
@@ -1349,7 +1361,7 @@
   {
    "tag": "1280",
    "type": "http",
-   "text": "404 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+   "text": "404 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
   },
   {
    "tag": "1280",
@@ -1359,7 +1371,7 @@
   {
    "tag": "390",
    "type": "http",
-   "text": "404 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+   "text": "404 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
   },
   {
    "tag": "390",
@@ -1367,5 +1379,5 @@
    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
   }
  ],
- "finishedAt": "2026-10-20T10:08:51.674Z"
+ "finishedAt": "2026-10-20T11:08:39.988Z"
 }

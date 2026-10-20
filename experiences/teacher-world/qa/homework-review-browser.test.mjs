@@ -286,6 +286,16 @@ test('과제 첨삭: 계획 → 주별 목록 → 기호·판정·한마디 → 
  await desk.frame.fill('[data-hr-key="comment:W3-1:retry"]','두 문장을 「-에서 -로 증가했다」로 이어 보세요.');
  check('쓰는 중에는 「저장하지 않은 고침」',/저장하지 않은 고침이 있어요/.test(await desk.frame.textContent('.hr-save-state')));
  check('저장 안 한 첨삭이 있으면 부모 호스트가 떠나기 전에 묻는다',await desk.frame.evaluate(()=>window.SYNKTeacherView.hasDraft()));
+ // 첨삭하던 학생의 공유가 바뀜: 계정 포털이 바뀐 공유 상태를 넘기면 교사 화면이 그 자리에서 그 학생의 기록을 거르고(다시 만들지 않는다),
+ // 명부 기준인 과제 첨삭은 쓰던 그대로 남는다(teacher-workspace.mjs가 이 답 true를 받아야 iframe을 그대로 둔다).
+ // 넘기는 꼴은 포털의 permission()과 같다. 계정 연결 여부는 포털이 개요 답에서 읽으므로(교사 화면의 /api/workspace에는 없다) 불리언으로 채운다.
+ const fencedHere=await desk.frame.evaluate(async({classId,learnerId})=>{
+  const roster=()=>document.querySelector(`[data-student="${learnerId}"] small`)?.textContent,before=roster();
+  const known=(await window.parent.SYNKClassroomHost.request('/api/workspace')).classes[0].learners;
+  const learners=known.map(row=>row.id===learnerId?{id:row.id,revision:row.sharing.revision+1,enabled:false,connected:true,revoked:false}:{id:row.id,revision:row.sharing.revision,enabled:row.sharing.enabled===true,connected:row.accountConnected===true,revoked:row.revoked===true});
+  return {before,applied:window.SYNKTeacherView.applySharing({classId,learners}),draft:window.SYNKTeacherView.hasDraft(),marks:document.querySelectorAll('.hr-mark').length,good:document.querySelector('[data-hr-key="comment:W3-1:good"]')?.value,roster:roster()};
+ },{classId:w.f.cls.class_id,learnerId:w.learners.l1.id});
+ check('쓰던 첨삭이 있을 때 그 학생의 공유가 바뀜: 교사 화면이 그 자리에서 기록을 거르고 첨삭은 그대로',fencedHere.applied===true&&fencedHere.draft===true&&fencedHere.marks===3&&fencedHere.good==='두 해의 비율을 정확히 옮겼어요.'&&fencedHere.before!==fencedHere.roster&&fencedHere.roster==='학습 공유 안 함',fencedHere);
  await desk.frame.click('[data-hr-key="save:draft"]');
  await settle(desk.frame,()=>document.querySelector('.hr-row.is-selected')?.dataset.status==='drafting'&&/임시 저장했어요/.test(document.querySelector('.hr-save-state')?.textContent||''));
  check('임시 저장 뒤 쓰던 것 없음',!(await desk.frame.evaluate(()=>window.SYNKTeacherView.hasDraft())));
