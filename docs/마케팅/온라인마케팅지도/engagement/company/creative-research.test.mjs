@@ -25,7 +25,7 @@ async function fixture(t,fetchImpl=async()=>response(detail)){
 test('official Top Ads parsing distinguishes filter country, reported regions, count and CTR percentile',()=>{
   const row=parseTopAd(html(detail),adUrl,at);assert.equal(row.source,'tiktok-top-ads');assert.equal(row.creator,'The North Face');assert.equal(row.ctrTopPercent,41);assert.equal(row.metrics.likes,134240);assert.equal(row.metrics.comments,2003);assert.equal(row.metrics.shares,1193);assert.equal(row.metrics.views,null);assert.equal(row.metrics.reach,null);assert.equal(row.durationSeconds,11.519);assert.equal(row.budgetLabel,'High');assert.equal(row.filterRegion,'US');assert.equal(row.region,'GLOBAL');assert.deepEqual(row.actualRegions,['DE','FR','GB','IT']);assert.equal(row.provenance,'official-page');assert.equal(row.periodDays,30);assert.ok(!JSON.stringify(row).includes('video.mp4'));assert.ok(!('rank' in row));assert.ok(!('ctr' in row.metrics));
   const missing=parseTopAd(html({...detail,like:'134K',ctr:10,cost:null,countryCode:['CN'],videoInfo:{duration:-2}}),adUrl,at);assert.equal(missing.metrics.likes,null);assert.equal(missing.ctrTopPercent,null);assert.equal(missing.budgetLabel,null);assert.equal(missing.region,'CN');assert.equal(missing.durationSeconds,null);
-  assert.throws(()=>parseTopAd(html({...detail,id:'00000000'}),adUrl,at),/요청한 광고/);assert.throws(()=>parseTopAd('<script>login</script>',adUrl,at),/공개 광고 정보/);
+  assert.throws(()=>parseTopAd(html({...detail,id:'00000000'}),adUrl,at),/이 광고의 공개 정보/);assert.throws(()=>parseTopAd('<script>login</script>',adUrl,at),/광고 페이지에서 공개 정보/);
 });
 
 test('specific official source URLs reject secrets, misleading sources and generic discovery pages',()=>{
@@ -65,7 +65,7 @@ test('missing metrics remain null and ad library never accepts invented performa
   const f=await fixture(t);assert.equal(f.service.add(f.owner,fb()).entry.metrics.likes,null);assert.equal(f.service.add(f.owner,fb({metrics:{likes:0}})).entry.metrics.likes,0);
   for(const metrics of [{ctr:41},{views:-1},{likes:2.5},{reach:'20'}])assert.throws(()=>f.service.add(f.owner,fb({metrics})));
   for(const source of ['facebook','instagram'])assert.throws(()=>f.service.add(f.owner,{source,kind:'ad',title:'광고',sourceUrl:'https://www.facebook.com/ads/library/?id=12345678',metrics:{views:100}}),/성과 수치/);
-  assert.throws(()=>f.service.add(f.owner,fb({ctrTopPercent:42})),/TikTok/);assert.throws(()=>f.service.add(f.owner,fb({interest:'high'})),/YouTube/);assert.throws(()=>f.service.add(f.owner,fb({budgetLabel:'High'})),/TikTok/);assert.throws(()=>f.service.add(f.owner,fb({periodDays:365})),/집계 기간/);assert.throws(()=>f.service.add(f.owner,fb({checkedAt:'2026-02-31T00:00:00Z'})),/확인 시각/);assert.throws(()=>f.service.add(f.owner,fb({checkedAt:'2026-10-03T00:00:00Z'})),/미래/);
+  assert.throws(()=>f.service.add(f.owner,fb({ctrTopPercent:42})),/TikTok/);assert.throws(()=>f.service.add(f.owner,fb({interest:'high'})),/YouTube/);assert.throws(()=>f.service.add(f.owner,fb({budgetLabel:'High'})),/TikTok/);assert.throws(()=>f.service.add(f.owner,fb({periodDays:365})),/집계 기간/);assert.throws(()=>f.service.add(f.owner,fb({checkedAt:'2026-02-31T00:00:00Z'})),/확인 시각/);assert.throws(()=>f.service.add(f.owner,fb({checkedAt:'2026-10-03T00:00:00Z'})),/오늘보다 뒤/);
 });
 
 test('annotations preserve official provenance; changing measured facts marks a manual edit',async t=>{

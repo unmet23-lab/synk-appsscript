@@ -71,10 +71,10 @@ async function requestText(url,fetchImpl){
   }finally{clearTimeout(timer);}
 }
 function failureMessage(error){
-  if(/^HTTP_\d+$/.test(error?.message||''))return '원본 서버가 HTTP '+error.message.slice(5)+' 응답을 보냈어요. 다음 수집 때 다시 확인합니다.';
+  if(/^HTTP_\d+$/.test(error?.message||''))return '원본 서버가 HTTP '+error.message.slice(5)+' 오류를 돌려줬어요. 다음 수집 때 다시 해 볼게요.';
   if(error?.message==='FEED_FORMAT')return '원본의 응답 형식이 달라서 목록을 확인하지 못했어요.';
   if(error?.message==='SOURCE_SIZE')return '원본 응답의 크기가 수집 한도를 넘어 목록을 저장하지 않았어요.';
-  return '원본에 연결하지 못했어요. 다음 수집 때 다시 확인합니다.';
+  return '원본에 연결하지 못했어요. 다음 수집 때 다시 해 볼게요.';
 }
 export async function collectDailyTrends({regions=['KR','US','CN'],at=new Date().toISOString(),fetchImpl=globalThis.fetch,youtubeConfig={}}={}){
   const tasks=[],sources=[],items=[],selected=new Set(regions.filter(r=>['KR','US','CN'].includes(r)));
@@ -85,20 +85,20 @@ export async function collectDailyTrends({regions=['KR','US','CN'],at=new Date()
     }catch(error){sources.push({...source,status:'error',count:0,collectedAt:null,attemptedAt:at,message:failureMessage(error)});}
   })());
   for(const region of ['KR','US'])if(selected.has(region)){
-    collect({id:'google-'+region.toLowerCase(),platform:'google',region,label:'Google 급상승 검색',url:'https://trends.google.com/trending/rss?geo='+region,message:'공식 급상승 검색 RSS 표본입니다. SNS 반응이나 전체 검색 순위가 아니며 검색량은 대략값이에요.'},xml=>parseGoogleTrends(xml,{region,at}));
-    const source={id:'youtube-'+region.toLowerCase(),platform:'youtube',region,label:'YouTube 인기 차트',url:'https://developers.google.com/youtube/v3/docs/videos/list',message:'음악·영화·게임 중심의 mostPopular 차트 표본입니다. 조회수는 누적값이며 전체 유튜브 급상승 순위가 아니에요.'};
+    collect({id:'google-'+region.toLowerCase(),platform:'google',region,label:'Google 급상승 검색',url:'https://trends.google.com/trending/rss?geo='+region,message:'Google 급상승 검색 RSS에서 모아요. 검색량은 대략이고, SNS 반응과는 달라요.'},xml=>parseGoogleTrends(xml,{region,at}));
+    const source={id:'youtube-'+region.toLowerCase(),platform:'youtube',region,label:'YouTube 인기 차트',url:'https://developers.google.com/youtube/v3/docs/videos/list',message:'음악·영화·게임이 많은 YouTube 인기 차트에서 모아요. 조회수는 누적이에요.'};
     if(youtubeConfig?.apiKey){const endpoint=new URL('https://www.googleapis.com/youtube/v3/videos');for(const [key,value] of Object.entries({part:'snippet,statistics',chart:'mostPopular',regionCode:region,maxResults:'50',key:youtubeConfig.apiKey}))endpoint.searchParams.set(key,value);
       collect(source,value=>parseYoutubeChart(JSON.parse(value),{region,at}),endpoint.href);
-    }else unavailable('youtube',region,source.label,'회사 설정에서 YouTube Data API 키를 연결하면 이 지역의 음악·영화·게임 인기 차트를 수집합니다.',source.url);
-    unavailable('tiktok',region,'TikTok 트렌드','공식 Discovery API의 트렌드 조회 권한 연결이 필요해요. 일반 계정 수치 연결과 별도이며 아직 수집하지 않았어요.','https://business-api.tiktok.com/gateway/docs/index?doc_id=1738811145996290&language=ENGLISH');
-    unavailable('instagram',region,'Instagram 참고 콘텐츠','공식 API는 전체 탐색 추천을 제공하지 않아요. 승인된 해시태그·전문 계정 표본을 정한 뒤 연결해야 합니다.','https://developers.facebook.com/documentation/instagram-platform/instagram-api-with-facebook-login/hashtag-search');
+    }else unavailable('youtube',region,source.label,'회사 설정에서 YouTube Data API 키를 연결하면 이 지역 인기 차트를 모아요.',source.url);
+    unavailable('tiktok',region,'TikTok 트렌드','TikTok 공식 Discovery API의 트렌드 권한을 따로 연결해야 해요. 계정 수치 연결과는 별개예요.','https://business-api.tiktok.com/gateway/docs/index?doc_id=1738811145996290&language=ENGLISH');
+    unavailable('instagram',region,'Instagram 참고 콘텐츠','공식 API가 탐색 탭 추천을 주지 않아요. 지켜볼 해시태그·전문 계정을 정한 뒤 연결해야 해요.','https://developers.facebook.com/documentation/instagram-platform/instagram-api-with-facebook-login/hashtag-search');
   }
   if(selected.has('CN')){
-    collect({id:'baidu-cn',platform:'baidu',region:'CN',label:'바이두 실시간 인기 검색',url:'https://top.baidu.com/board?tab=realtime',message:'공개 실시간 인기 목록입니다. 인기 지수는 검색량·SNS 조회수와 다른 바이두 자체 지표예요.'},html=>parseBaiduTrends(html,{at}));
-    unavailable('douyin','CN','도우인 트렌드','중국 도우인 자료는 TikTok과 별도예요. 승인된 트렌드 데이터 연결 전에는 순위를 수집하지 않습니다.','https://open.douyin.com/');
-    unavailable('xiaohongshu','CN','샤오홍슈 트렌드','인증 없이 정기 수집할 수 있는 공식 인기 목록 연결을 아직 확보하지 못했어요.','https://www.xiaohongshu.com/', 'unavailable');
+    collect({id:'baidu-cn',platform:'baidu',region:'CN',label:'바이두 실시간 인기 검색',url:'https://top.baidu.com/board?tab=realtime',message:'바이두 실시간 인기 목록에서 모아요. 인기 지수는 바이두가 매긴 값이에요.'},html=>parseBaiduTrends(html,{at}));
+    unavailable('douyin','CN','도우인 트렌드','도우인은 TikTok과 따로예요. 트렌드 자료를 공식으로 연결하기 전에는 모으지 않아요.','https://open.douyin.com/');
+    unavailable('xiaohongshu','CN','샤오홍슈 트렌드','정기적으로 모을 수 있는 공식 인기 목록을 아직 찾지 못했어요.','https://www.xiaohongshu.com/', 'unavailable');
   }
-  if(selected.size)collect({id:'youtube-culture-global',platform:'youtube-culture',region:'GLOBAL',label:'YouTube 공식 문화·트렌드 분석',url:'https://blog.youtube/rss/',message:'공식 블로그의 최신 분석 글입니다. 국가별 급상승 순위나 반응 지표가 아니에요.'},xml=>parseYoutubeCulture(xml,{at}));
+  if(selected.size)collect({id:'youtube-culture-global',platform:'youtube-culture',region:'GLOBAL',label:'YouTube 공식 문화·트렌드 분석',url:'https://blog.youtube/rss/',message:'YouTube 공식 블로그의 분석 글이에요. 나라별 순위는 아니에요.'},xml=>parseYoutubeCulture(xml,{at}));
   await Promise.all(tasks);
   return {items:items.sort((a,b)=>a.sourceId.localeCompare(b.sourceId)||(a.rank??Infinity)-(b.rank??Infinity)||String(b.publishedAt||'').localeCompare(String(a.publishedAt||''))),sources:sources.sort((a,b)=>a.id.localeCompare(b.id))};
 }

@@ -1,0 +1,290 @@
+{
+ "creative-research-client.test.mjs": [
+  [
+   "assert.match(f.evaluate('crMetrics(entry)'),/반응 수치 미확인/)",
+   "assert.match(f.evaluate('crMetrics(entry)'),/반응 수치 없음/)"
+  ],
+  [
+   "assert.match(html,/CTR 상대 위치/);assert.match(html,/Top 4.5%/);",
+   "assert.match(html,/클릭률 순위/);assert.match(html,/상위 4.5%/);"
+  ],
+  [
+   "assert.match(f.modals.at(-1).html,/실제 클릭률이 아닙니다/)",
+   "assert.match(f.modals.at(-1).html,/클릭률 순위는 광고끼리 견준 위치예요/)"
+  ],
+  [
+   "assert.match(f.evaluate('crPanel()'),/선택한 조건의 자료가 없어요/)",
+   "assert.match(f.evaluate('crPanel()'),/조건에 맞는 자료가 없어요/)"
+  ],
+  [
+   "assert.match(f.context.cp.input.proof,/CTR Top 12% \\(상대 위치, 실제 클릭률 아님\\)/)",
+   "assert.match(f.context.cp.input.proof,/클릭률 상위 12% \\(광고끼리 견준 순위\\)/)"
+  ],
+  [
+   "assert.match(f.context.cp.input.proof,/전체 인기 순위나 예상 성과가 아닙니다/)",
+   "assert.match(f.context.cp.input.proof,/확인한 날의 화면 기준이에요/)"
+  ],
+  [
+   "assert.deepEqual(f.navigation,['plan']);assert.match(f.context.cp.input.proof,/준비된 제작 양식/);}",
+   "assert.deepEqual(f.navigation,['plan']);assert.match(f.context.cp.input.proof,/제작 양식: /);}"
+  ],
+  [
+   "assert.match(f.evaluate('crMetrics(entry)'),/광고 게재 사례 · 성과 수치 미제공/)",
+   "assert.match(f.evaluate('crMetrics(entry)'),/광고 사례 · 성과 수치 없음/)"
+  ],
+  [
+   "assert.match(html,/모든 직원에게 공개/)",
+   "assert.match(html,/모든 크루가 봐요/)"
+  ],
+  [
+   "assert.match(html,/아직 가져온 일일 조사 보고서가 없어요/)",
+   "assert.match(html,/아직 가져온 조사 보고서가 없어요/)"
+  ],
+  [
+   "assert.ok(!html.includes('공식 상세 가져오기'));assert.ok(!html.includes('직접 확인 기록'));",
+   "assert.ok(!html.includes('공식 페이지에서 가져옴'));assert.ok(!html.includes('직접 기록'));"
+  ],
+  [
+   "assert.match(html,/확인할 새 자료 없음/)",
+   "assert.match(html,/ · 새 자료 없음/)"
+  ],
+  [
+   "assert.match(html,/신규 3건/);assert.match(html,/양식 보류 2건/);assert.match(html,/참고 자료 보류 1건/);assert.match(html,/제작 양식 반영은 계속됩니다/);assert.ok(!html.includes('양식 보류 3건'));",
+   "assert.match(html,/새 자료 3건/);assert.match(html,/한도로 못 넣은 양식 2건/);assert.match(html,/한도로 못 넣은 참고 자료 1건/);assert.match(html,/제작 양식은 계속 들어와요/);assert.ok(!html.includes('한도로 못 넣은 양식 3건'));"
+  ],
+  [
+   "assert.match(html,/양식 보류 3건/);assert.ok(!html.includes('참고 자료 보류'));assert.ok(!html.includes('저장 한도로'));",
+   "assert.match(html,/한도로 못 넣은 양식 3건/);assert.ok(!html.includes('못 넣은 참고 자료'));assert.ok(!html.includes('저장 한도가'));"
+  ],
+  [
+   "assert.match(card,/검토 브랜드 · LAB/);assert.match(card,/먼저 검토 · 추정/);",
+   "assert.match(card,/브랜드 · LAB/);assert.match(card,/먼저 검토 · 보고서 제안/);"
+  ],
+  [
+   "assert.ok(card.includes('조사 내용 확인 · '+f.evaluate('crTime(entry.researchCheckedAt)')));assert.ok(card.includes('자료·수치 확인 '+f.evaluate('crTime(entry.checkedAt)')));",
+   "assert.ok(card.includes('조사 확인 · '+f.evaluate('crTime(entry.researchCheckedAt)')));assert.ok(card.includes(' · 확인 '+f.evaluate('crTime(entry.checkedAt)')));"
+  ],
+  [
+   "assert.match(html,/조사 기록의 관찰과 확인 범위/);assert.match(html,/원문 페이지 확인/);assert.match(html,/아직 실행과 효과를 검증하지 않은 제안/);assert.match(html,/0초 훅/);assert.match(html,/시청자가 할 행동/);assert.match(html,/바로 받는 보상/);assert.match(html,/맞춤 도구/);assert.match(html,/72시간 검증/);",
+   "assert.match(html,/조사에서 본 것/);assert.match(html,/원문을 읽음/);assert.match(html,/아직 해 보지 않은 제안이에요/);assert.match(html,/0초 훅/);assert.match(html,/시청자가 할 일/);assert.match(html,/바로 얻는 것/);assert.match(html,/맞춤 도구/);assert.match(html,/72시간 판정/);"
+  ],
+  [
+   "assert.match(html,/검토 우선순위 · 추정/)",
+   "assert.match(html,/<label>검토 순서<select data-cr-priority/)"
+  ],
+  [
+   "assert.match(input.proof,/실행 전 적용 제안 · synkbrief/);assert.match(input.proof,/0초 훅 제안/);assert.match(input.proof,/72시간 검증 계획/);assert.ok(input.proof.includes('조사 내용 확인: '+",
+   "assert.match(input.proof,/아직 해 보지 않은 제안 · synkbrief/);assert.match(input.proof,/0초 훅: /);assert.match(input.proof,/72시간 판정: /);assert.ok(input.proof.includes('조사 확인: '+"
+  ],
+  [
+   "assert.match(input.authenticity.disclosure,/실행과 효과는 아직 검증하지 않았습니다/)",
+   "assert.match(input.authenticity.disclosure,/아직 만들어 보지 않았어요/)"
+  ],
+  [
+   "assert.match(html,/새 완료 결과를 기다리는 중/)",
+   "assert.match(html,/새 결과 기다리는 중/)"
+  ],
+  [
+   "assert.match(html,/연결한 조사 문서/)",
+   "assert.match(html,/조사 문서 열기/)"
+  ],
+  [
+   "assert.deepEqual(f.notifications,['조사 문서 자동 반영 설정을 저장했어요.'])",
+   "assert.deepEqual(f.notifications,['조사 문서 연결을 저장했어요.'])"
+  ],
+  [
+   "assert.deepEqual(f.notifications,['새로 반영할 완료 결과는 아직 없어요.'])",
+   "assert.deepEqual(f.notifications,['아직 새 조사 결과가 없어요.'])"
+  ],
+  [
+   "assert.match(html,/Google 문서 주소 또는 문서 ID를 입력하세요/)",
+   "assert.match(html,/Google 문서 주소나 문서 ID를 넣어 주세요/)"
+  ],
+  [
+   "assert.match(html,/<h2>준비된 제작 양식<\\/h2>/);assert.match(html,/하루 새 양식 약 10개 보충을 목표/);assert.match(html,/하루에도 여러 번 갱신/);assert.match(html,/오늘 반영 3개 \\/ 10개/);",
+   "assert.match(html,/<h2>제작 양식<\\/h2>/);assert.match(html,/새 양식은 하루 10개쯤 들어와요/);assert.match(html,/양식을 맡으면 다른 크루는 그 양식을 맡을 수 없어요/);assert.match(html,/오늘 들어온 양식 3\\/10개/);"
+  ],
+  [
+   "assert.match(html,/사용중 · 다른 직원/)",
+   "assert.match(html,/다른 직원 님이 맡음/)"
+  ],
+  [
+   "assert.match(html,/이 양식으로 기획/);assert.match(html,/선택 해제/);",
+   "assert.match(html,/>기획하기</);assert.match(html,/>내려놓기</);"
+  ],
+  [
+   "assert.match(f.context.cp.input.proof,/준비된 제작 양식/);assert.match(f.context.cp.input.proof,/준비물/);assert.match(f.context.cp.input.proof,/실행 1/);",
+   "assert.match(f.context.cp.input.proof,/제작 양식: /);assert.match(f.context.cp.input.proof,/준비물/);assert.match(f.context.cp.input.proof,/순서 1/);"
+  ],
+  [
+   "assert.match(f.notifications[0],/양식과 저장한 기획은 보존/)",
+   "assert.match(f.notifications[0],/저장한 기획은 그대로 있어요/)"
+  ],
+  [
+   "assert.match(modal.notifications[0],/내 선택/)",
+   "assert.match(modal.notifications[0],/내가 맡은 양식/)"
+  ],
+  [
+   "assert.ok(card.includes('가이드 근거 확인 '+f.evaluate('crTime(entry.productionGuideCheckedAt)')));assert.match(detail,/영상 직접 시청/);assert.ok(!detail.includes('제목·설명 등 메타데이터 확인'));",
+   "assert.ok(card.includes('가이드 확인 '+f.evaluate('crTime(entry.productionGuideCheckedAt)')));assert.match(detail,/영상을 직접 봄/);assert.ok(!detail.includes('제목·설명만 봄'));"
+  ],
+  [
+   "assert.match(f.notifications[0],/선택은 저장됐지만 목록을 다시 읽지 못했어요/)",
+   "assert.match(f.notifications[0],/양식은 맡았지만 목록을 다시 불러오지 못했어요/)"
+  ],
+  [
+   "assert.match(f.evaluate('crPlanSeriesNotice(\"PULSE\",\"company-work\")'),/범용.*시리즈/)",
+   "assert.match(f.evaluate('crPlanSeriesNotice(\"PULSE\",\"company-work\")'),/맞는 양식이 없어 회사 소개·작업물 양식으로.*시리즈/)"
+  ],
+  [
+   "assert.equal(status.textContent,'사용중 · 동료')",
+   "assert.equal(status.textContent,'동료 님이 맡음')"
+  ],
+  [
+   "assert.match(f.notifications.at(-1),/동료님이 사용 중/)",
+   "assert.match(f.notifications.at(-1),/동료 님이 맡은 양식이에요/)"
+  ],
+  [
+   "for(const label of ['조사 기준 시각','조사 시작','조사 완료','자료 업로드','자료 발행','자료·수치 확인','가이드 근거 확인'])assert.ok(detail.includes(label),label);",
+   "for(const label of ['<dt>조사 기준</dt>','<dt>조사 시작</dt>','<dt>조사 완료</dt>','<dt>반영</dt>','<dt>원문 게시</dt>','<dt>확인</dt>','가이드 확인 '])assert.ok(detail.includes(label),label);"
+  ],
+  [
+   "assert.match(f.evaluate('crTime(entry.provenanceDetails.asOfAt)'),/2026.*10.*10.*오전 1:05.*KST/);assert.match(f.evaluate('crRunTimes({})'),/보고서에 미기록/);assert.match(f.evaluate('crTime(\"invalid\")'),/시각 미기록/);assert.match(f.evaluate('crAutomationSummary()'),/조사 기준 시각/);",
+   "assert.match(f.evaluate('crTime(entry.provenanceDetails.asOfAt)'),/2026.*10.*10.*오전 1:05$/);assert.match(f.evaluate('crRunTimes({})'),/보고서에 없음/);assert.match(f.evaluate('crTime(\"invalid\")'),/시각 모름/);assert.match(f.evaluate('crAutomationSummary()'),/<dt>조사 기준<\\/dt>/);"
+  ],
+  [
+   "assert.match(f.notifications[0],/현재 선택할 수 없는/)",
+   "assert.match(f.notifications[0],/지금은 맡을 수 없는 양식이에요/)"
+  ],
+  [
+   "assert.deepEqual(f.notifications,['새 자료 1건이 반영됐어요. 현재 검색 조건은 유지했어요.'])",
+   "assert.deepEqual(f.notifications,['새 자료 1건이 들어왔어요. 보던 조건은 그대로예요.'])"
+  ],
+  [
+   "assert.match(f.evaluate('crSyncSummary()'),/일부 조사 문서 확인 필요/)",
+   "assert.match(f.evaluate('crSyncSummary()'),/확인할 문서 있음/)"
+  ],
+  [
+   "assert.match(f.evaluate('crSyncSummary()'),/상태를 새로 확인하지 못했어요/)",
+   "assert.match(f.evaluate('crSyncSummary()'),/상태를 새로 불러오지 못했어요/)"
+  ],
+  [
+   "for(const label of ['조사 문서별 상태','전체 조사','YouTube · TikTok','Meta · 브랜드','마지막 확인 시도','마지막 성공 읽기','마지막 조사 완료','마지막 자동 반영','36시간 넘게'])assert.ok(html.includes(label),label);assert.match(html,/일부 조사 문서 확인 필요/);",
+   "for(const label of ['문서별 상태','전체 조사','YouTube · TikTok','Meta · 브랜드','마지막 확인 ','마지막으로 읽음 ','조사 완료 ',' · 반영 ','36시간 넘게'])assert.ok(html.includes(label),label);assert.match(html,/확인할 문서 있음/);"
+  ],
+  [
+   "assert.ok(!html.includes('조사 문서별 상태'));assert.ok(!html.includes('전체 조사'));assert.match(html,/연결 문서 3개 · 읽기 오류 1개 · 조사 지연 1개/);",
+   "assert.ok(!html.includes('문서별 상태'));assert.ok(!html.includes('전체 조사'));assert.match(html,/연결한 문서 3개 · 못 읽음 1개 · 늦어짐 1개/);"
+  ],
+  [
+   "assert.ok(html.includes('오늘 입장 보류 20건 (보고서별 누적 · 자동 대기열 아님)'))",
+   "assert.ok(html.includes('한도로 못 넣은 양식 20건'))"
+  ],
+  [
+   "assert.match(replaced,/문서 읽기와 새 조사 도착/)",
+   "assert.match(replaced,/문서를 읽어도 새 조사가 없으면 반영하지 않아요/)"
+  ],
+  [
+   "assert.match(f.context.cp.input.proof,/관찰 대상 미국/);assert.match(f.context.cp.input.proof,/탐색 필터 한국 \\(실제 광고 지역과 별도\\)/);assert.match(f.context.cp.input.proof,/화면의 집계 기간 최근 7일/);",
+   "assert.match(f.context.cp.input.proof,/국가 미국/);assert.match(f.context.cp.input.proof,/찾을 때 고른 국가 한국/);assert.match(f.context.cp.input.proof,/집계 기간 최근 7일/);"
+  ],
+  [
+   "assert.deepEqual(f.notifications,['조사 보고서를 저장했어요. 신규 1건 · 갱신 0건'])",
+   "assert.deepEqual(f.notifications,['보고서를 저장했어요. 새 자료 1건 · 고친 자료 0건'])"
+  ],
+  [
+   "assert.deepEqual(f.notifications,['조사 보고서를 저장했어요. 신규 2건 · 갱신 3건']);assert.match(f.evaluate('crPanel()'),/신규 2건 · 갱신 3건 · 기존 유지 1건/);",
+   "assert.deepEqual(f.notifications,['보고서를 저장했어요. 새 자료 2건 · 고친 자료 3건']);assert.match(f.evaluate('crPanel()'),/새 자료 2건 · 고친 자료 3건 · 그대로 1건/);"
+  ],
+  [
+   "assert.match(f.context.form.errorBox.textContent,/1MB 이하/)",
+   "assert.match(f.context.form.errorBox.textContent,/1MB를 넘어요/)"
+  ],
+  [
+   "assert.match(f.notifications[0],/박 직원님이 먼저 사용 중/)",
+   "assert.match(f.notifications[0],/박 직원 님이 먼저 맡았어요/)"
+  ],
+  [
+   "assert.match(f.evaluate('crSyncSummary()'),/읽기 오류 0개 · 조사 지연 0개/)",
+   "assert.match(f.evaluate('crSyncSummary()'),/못 읽음 0개 · 늦어짐 0개/)"
+  ],
+  [
+   "assert.match(f.cr.syncStatusError,/확인하지 못했어요/)",
+   "assert.match(f.cr.syncStatusError,/새로 불러오지 못했어요/)"
+  ]
+ ],
+ "workroom-client.test.mjs": [
+  [
+   "assert.match(html,/출처별 일일 트렌드/);",
+   "assert.match(html,/출처별 트렌드/);"
+  ],
+  [
+   "assert.match(html,/이 출처 수집의 자동 실행은 꺼져 있습니다/);",
+   "assert.match(html,/매일 자동 수집이 꺼져 있어요/);"
+  ],
+  [
+   "assert.match(html,/문서 자동 반영은 별도로 동작/);",
+   "assert.match(html,/문서 자동 반영은 따로 돌아요/);"
+  ],
+  [
+   "assert.match(modal.html,/아직 저장하지 않은 입력/)",
+   "assert.match(modal.html,/저장하지 않은 내용은 사라져요/)"
+  ],
+  [
+   "assert.match(f.notifications[0],/다시 선택/)",
+   "assert.match(f.notifications[0],/다시 골라 주세요/)"
+  ],
+  [
+   "assert.ok(html.includes('관찰 2026.10.01'))",
+   "assert.ok(html.includes('확인 2026.10.01'))"
+  ],
+  [
+   "assert.ok(html.includes('검색량 미확인'))",
+   "assert.ok(html.includes('검색량 모름'))"
+  ],
+  [
+   "assert.ok(html.includes('일부 출처 수집'))",
+   "assert.ok(html.includes('일부만 수집'))"
+  ],
+  [
+   "assert.ok(html.includes('플랫폼끼리 합산한 전체 인기 순위가 아니며'))",
+   "assert.ok(html.includes('플랫폼끼리 합친 순위가 아니에요'))"
+  ],
+  [
+   "assert.ok(html.includes('공식 문화 분석 보고서'));assert.ok(html.includes('2025. 12. 1.'));assert.ok(!html.includes('출처 순위 null'));",
+   "assert.ok(html.includes('공식 문화 분석 '));assert.ok(html.includes('2025. 12. 1.'));assert.ok(!html.includes('순위 null'));"
+  ],
+  [
+   "assert.ok(html.includes('Baidu'))",
+   "assert.ok(html.includes('바이두'))"
+  ],
+  [
+   "assert.ok(html.includes('표시할 수집 항목이 없어요'))",
+   "assert.ok(html.includes('보여 줄 항목이 없어요'))"
+  ],
+  [
+   "assert.ok(html.includes('출처별 일일 트렌드'));assert.ok(html.includes('이전 자료'));assert.ok(html.includes('선택한 날짜의 최신 결과가 아닙니다.'));",
+   "assert.ok(html.includes('출처별 트렌드'));assert.ok(html.includes('지난 자료'));assert.ok(html.includes('이 날짜에 새로 모은 자료가 없어 그 전에 모은 자료를 보여 드려요.'));"
+  ],
+  [
+   "assert.ok(!html.includes('제작 자료를 꺼내고'))",
+   "assert.ok(!html.includes('제작 자료를 불러오고'))"
+  ],
+  [
+   "assert.ok(html.includes('수집 50개 · 표시 10개'))",
+   "assert.ok(html.includes('50개 중 10개 표시'))"
+  ],
+  [
+   "assert.ok(html.includes('이전 자료 · 이전 수집 2026. 10. 1.'));assert.ok(html.includes('보존 자료 · 이전 수집'));assert.ok(!html.includes('출처별 순위 ·'));",
+   "assert.ok(html.includes('지난 자료 · 수집 2026. 10. 1.'));assert.ok((html.match(/지난 자료 · 수집/g)||[]).length>=2);assert.ok(!html.includes('순위 · '));"
+  ],
+  [
+   "assert.ok(html.includes('수집 50개 · 표시 30개'))",
+   "assert.ok(html.includes('50개 중 30개 표시'))"
+  ],
+  [
+   "assert.ok(!html.includes('내 페이지 등록'))",
+   "assert.ok(!html.includes('페이지 등록</div>'))"
+  ]
+ ]
+}

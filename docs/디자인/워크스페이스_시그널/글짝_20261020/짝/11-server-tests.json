@@ -1,0 +1,12 @@
+{
+ "creative-research.test.mjs": [
+  [
+   "assert.throws(()=>parseTopAd(html({...detail,id:'00000000'}),adUrl,at),/요청한 광고/);assert.throws(()=>parseTopAd('<script>login</script>',adUrl,at),/공개 광고 정보/);",
+   "assert.throws(()=>parseTopAd(html({...detail,id:'00000000'}),adUrl,at),/이 광고의 공개 정보/);assert.throws(()=>parseTopAd('<script>login</script>',adUrl,at),/광고 페이지에서 공개 정보/);"
+  ],
+  [
+   "assert.throws(()=>f.service.add(f.owner,fb({checkedAt:'2026-10-03T00:00:00Z'})),/미래/)",
+   "assert.throws(()=>f.service.add(f.owner,fb({checkedAt:'2026-10-03T00:00:00Z'})),/오늘보다 뒤/)"
+  ]
+ ]
+}

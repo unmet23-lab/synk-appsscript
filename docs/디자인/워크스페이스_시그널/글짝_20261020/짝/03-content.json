@@ -1,0 +1,239 @@
+{
+ "public/content.js": [
+  [
+   "pageHeading('CONTENT','콘텐츠 기획','아이디어를 정리하고, 좋은 콘텐츠에서 배웁니다.',",
+   "pageHeading('CONTENT','콘텐츠 기획','아이디어를 정리하고 좋은 콘텐츠에서 배워요.',"
+  ],
+  [
+   "[['plan',draft||cp.draftId?'기획안':selected==='plan'?'기획 작성':'작성 중']]",
+   "[['plan',draft||cp.draftId?'기획안':selected==='plan'?'기획 쓰기':'쓰는 중']]"
+  ],
+  [
+   "<h2>어떤 이야기를 만들까요?</h2><p>주제부터 적고, 필요한 내용을 더해 보세요.</p>",
+   "<h2>어떤 이야기를 만들까요?</h2><p>주제부터 적고 필요한 내용을 더해 보세요.</p>"
+  ],
+  [
+   "<small>제작자가 바꾸고 확인할 내용입니다. 시청자용 대사와 행동은 아래에서 작성하세요.</small>",
+   "<small>만드는 사람이 이번에 바꿔 보고 확인할 것이에요. 시청자에게 할 말과 행동은 아래에 적어 주세요.</small>"
+  ],
+  [
+   "<summary>경험과 구성 보완 <span>",
+   "<summary>경험과 구성 더하기 <span>"
+  ],
+  [
+   "<small>개인 기획은 작성자와 관리자만 봅니다. 채널을 지정하면 해당 팀 담당자도 볼 수 있어요.</small>",
+   "<small>채널 없이 쓰면 나와 관리자만 봐요. 채널을 고르면 그 팀 담당자도 볼 수 있어요.</small>"
+  ],
+  [
+   "<p>${isViewer()?'조회 전용 계정은 저장된 기획을 볼 수 있어요.':'만든 구성안은 기획함에 저장됩니다.'}</p>",
+   "<p>${isViewer()?'보기 전용 계정이라 저장한 기획만 볼 수 있어요.':'만든 구성안은 기획함에 저장돼요.'}</p>"
+  ],
+  [
+   "empty('저장한 참고 자료가 없어요','마음에 드는 릴스 링크를 남겨 다음 기획에 활용하세요.',",
+   "empty('저장한 참고 자료가 없어요','마음에 드는 릴스 링크를 남겨 두면 다음 기획에 쓸 수 있어요.',"
+  ],
+  [
+   "<summary>새로운 참고 자료 찾기</summary>",
+   "<summary>새 참고 자료 찾기</summary>"
+  ],
+  [
+   "aria-label=\"탐색 기간\"",
+   "aria-label=\"기간\""
+  ],
+  [
+   "const evidence=row.source==='company-post'?'담당 채널 수집 · 누적값':row.source==='research'?'구성 참고 · 인기 미검증':candidate?'탐색 후보 · 인기 미검증':'직접 기록 · 인기 미검증';",
+   "const evidence=row.source==='company-post'?'담당 채널에서 모음 · 누적':row.source==='research'?'구성 참고':candidate?'찾은 후보':'직접 기록';"
+  ],
+  [
+   "const dateLabel=row.dateStatus==='provider-reported'?'검색 색인 날짜 ':row.source==='research'?'원문 표기 날짜 ':'게시일 ';",
+   "const dateLabel=row.dateStatus==='provider-reported'?'검색에 잡힌 날 ':row.source==='research'?'원문에 적힌 날 ':'게시 ';"
+  ],
+  [
+   "cpButton('기획에 활용','use-reference'",
+   "cpButton('기획에 쓰기','use-reference'",
+   {
+    "n": 2
+   }
+  ],
+  [
+   ":'게시일 미확인'}",
+   ":'게시일 모름'}"
+  ],
+  [
+   "`<span>관찰 ${time(row.checkedAt||row.observedAt)}</span>`",
+   "`<span>확인 ${time(row.checkedAt||row.observedAt)}</span>`"
+  ],
+  [
+   "<h2>저장한 기획</h2><p>이어서 작성하거나, 마음에 드는 구성을 골라 보세요.</p>",
+   "<h2>저장한 기획</h2><p>이어 쓰거나 마음에 드는 구성을 골라 보세요.</p>"
+  ],
+  [
+   "empty('아직 저장한 기획안이 없어요','주제와 우리만의 경험을 적으면 세 가지 구성안이 이곳에 저장됩니다.',",
+   "empty('아직 저장한 기획안이 없어요','주제와 우리 경험을 적으면 구성안 세 개가 여기에 저장돼요.',"
+  ],
+  [
+   "({provided:'작성됨',review:'직접 검토', 'needs-input':'보완 필요'})",
+   "({provided:'작성됨',review:'직접 검토', 'needs-input':'채워야 함'})"
+  ],
+  [
+   "<p class=\"cp-review-note\">제작자가 바꾸고 확인할 기록입니다.</p>",
+   "<p class=\"cp-review-note\">만드는 사람이 이번에 바꿔 보고 확인할 것이에요.</p>"
+  ],
+  [
+   "· 제작 양식 기반 초안</p>",
+   "· 양식으로 만든 초안</p>"
+  ],
+  [
+   "cpButton('내용 보완해서 새 기획','revise'",
+   "cpButton('고쳐서 새로 만들기','revise'"
+  ],
+  [
+   "download>제작안 내려받기${icon('download')}</a>",
+   "download>내려받기${icon('download')}</a>"
+  ],
+  [
+   "<label class=\"cp-status-control\"><span>검토 상태</span>",
+   "<label class=\"cp-status-control\"><span>상태</span>"
+  ],
+  [
+   "cpButton(draft.selectedIdeaId===chosen.id?'이 구성으로 선택됨':'이 구성 선택하기','select-idea'",
+   "cpButton(draft.selectedIdeaId===chosen.id?'고른 구성':'이 구성 고르기','select-idea'"
+  ],
+  [
+   "<p class=\"cp-review-note\">‘작성됨’은 내용이 있다는 뜻입니다. 사실 여부나 진정성을 자동으로 인증하지 않아요.</p>",
+   "<p class=\"cp-review-note\">‘작성됨’은 칸을 채웠다는 뜻이에요. 사실인지는 직접 확인해 주세요.</p>"
+  ],
+  [
+   "modal('우리가 콘텐츠를 만드는 기준','재미 · 도움 · 진정성 · 개인화.',",
+   "modal('우리가 콘텐츠를 만드는 기준','재미 · 도움 · 진정성 · 개인화',"
+  ],
+  [
+   "<p>직접 경험과 조사한 내용을 구분하고, 우리만의 판단과 배운 점을 남깁니다. 실패·한계·이해관계를 숨기지 않고 참고 출처와 연출을 밝힙니다. 경험이 없는 것을 경험담으로 만들지 않아요.</p>",
+   "<p>직접 겪은 일과 조사한 내용을 나누고, 우리 판단과 배운 점을 남겨요. 실패·한계·이해관계를 숨기지 않고 참고 출처와 연출을 밝혀요. 겪지 않은 일을 경험담으로 만들지 않아요.</p>"
+  ],
+  [
+   "사람의 이름만 바꾸거나 관심사를 추측하는 것으로 개인화를 대신하지 않습니다.</p>",
+   "이름만 바꾸거나 관심사를 짐작하는 것은 개인화가 아니에요.</p>"
+  ],
+  [
+   "<p class=\"cp-review-note\">회사 제작 기준이며 플랫폼의 노출을 보장하는 규칙은 아닙니다.</p>",
+   "<p class=\"cp-review-note\">회사가 정한 제작 기준이에요. 지킨다고 노출이 보장되지는 않아요.</p>"
+  ],
+  [
+   "<label class=\"field\">원문에서 확인한 게시일<input name=\"publishedAt\" type=\"date\" max=\"${dateToday()}\"><small>검색 결과의 날짜는 실제 게시일과 다를 수 있어요.</small>",
+   "<label class=\"field\">게시일<input name=\"publishedAt\" type=\"date\" max=\"${dateToday()}\"><small>원문에서 본 날짜를 넣어 주세요. 검색 결과의 날짜는 다를 수 있어요.</small>"
+  ],
+  [
+   "type=\"number\" min=\"0\" step=\"1\" placeholder=\"미확인\">",
+   "type=\"number\" min=\"0\" step=\"1\" placeholder=\"모름\">"
+  ],
+  [
+   "<small>채널을 지정하면 해당 팀의 팀장·조회 담당자에게도 보입니다.</small>",
+   "<small>채널을 고르면 그 팀의 팀장과 보기 담당자도 봐요.</small>"
+  ],
+  [
+   "<p class=\"cp-review-note\">수치는 지금 직접 확인한 관찰값으로 저장됩니다. 크기나 증가 추이의 비교 없이 인기라고 단정하지 않아요.</p>",
+   "<p class=\"cp-review-note\">수치는 지금 직접 본 값으로 저장돼요.</p>"
+  ],
+  [
+   "type=\"submit\">참고 자료 저장${icon('bookmark')}</button>",
+   "type=\"submit\">저장${icon('bookmark')}</button>"
+  ],
+  [
+   "<p class=\"notice\">관리자가 별도로 발급받은 API 키를 연결하면 앱 안에서 웹에 공개된 릴스 후보를 찾을 수 있어요. Instagram 전체 인기 순위나 비공개 반응 수집은 제공하지 않습니다.</p>",
+   "<p class=\"notice\">관리자가 따로 받은 API 키를 연결하면 웹에 공개된 릴스를 앱 안에서 찾을 수 있어요. Instagram 인기 순위나 비공개 반응은 가져오지 않아요.</p>"
+  ],
+  [
+   "<small>저장한 키는 다시 표시하지 않습니다.</small>",
+   "<small>저장한 키는 다시 보여 주지 않아요.</small>"
+  ],
+  [
+   "<input type=\"checkbox\" required>검색 주제와 기간이 Exa로 전송되고, 연결한 계정의 검색 이용량에 따라 요금이 발생할 수 있음을 확인했습니다.</label>",
+   "<input type=\"checkbox\" required>검색 주제와 기간이 Exa로 가고, 검색한 만큼 요금이 나올 수 있다는 걸 확인했어요.</label>"
+  ],
+  [
+   "<p class=\"cp-review-note\">경험담·기획안 본문은 검색에 전송하지 않습니다. 연결 정보 등록만으로 검색을 실행하지 않아요.</p>",
+   "<p class=\"cp-review-note\">경험담과 기획안 본문은 검색에 보내지 않아요. 키를 저장해도 검색은 누를 때만 해요.</p>"
+  ],
+  [
+   "cpButton('연결 해제','disconnect-search'",
+   "cpButton('연결 끊기','disconnect-search'"
+  ],
+  [
+   "<button class=\"btn primary\" type=\"submit\">검색 키 저장</button>",
+   "<button class=\"btn primary\" type=\"submit\">저장</button>"
+  ],
+  [
+   "modal('기획 검토 요청','원문은 기존 열람 권한을 유지합니다. 메시지에는 제목과 링크만 담아요.','<div class=\"loading-panel\"><p>검토를 요청할 대화를 확인하고 있어요.</p></div>')",
+   "modal('기획 검토 요청','메시지에는 제목과 링크만 담겨요. 기획을 볼 수 있는 사람은 그대로예요.','<div class=\"loading-panel\"><p>보낼 수 있는 대화를 찾고 있어요.</p></div>')"
+  ],
+  [
+   "modal('기획 검토 요청','대화를 고른 뒤 메신저에서 내용을 확인하고 직접 보내세요.',",
+   "modal('기획 검토 요청','대화를 고르면 메신저에 글이 준비돼요. 보내기는 직접 눌러 주세요.',"
+  ],
+  [
+   "<small>제목과 기획 링크만 공유됩니다.</small>",
+   "<small>제목과 기획 링크만 보내요.</small>"
+  ],
+  [
+   "<label class=\"field\">검토를 요청할 대화<select name=\"target\" required>",
+   "<label class=\"field\">보낼 대화<select name=\"target\" required>"
+  ],
+  [
+   "'<option value=\"\">대화를 선택해 주세요</option>'",
+   "'<option value=\"\">대화를 골라 주세요</option>'"
+  ],
+  [
+   "escape(row.reason||'열람 권한 없음')",
+   "escape(row.reason||'볼 권한 없음')"
+  ],
+  [
+   "'<p class=\"cp-review-note\">모든 참여자가 이 기획을 볼 수 있는 대화만 선택할 수 있어요. 팀방이 선택되지 않으면 아래 관리자·팀장과의 개인 대화를 이용하세요.</p>'",
+   "'<p class=\"cp-review-note\">모두가 이 기획을 볼 수 있는 대화만 고를 수 있어요. 팀방을 고를 수 없으면 관리자나 팀장과의 개인 대화로 보내 주세요.</p>'"
+  ],
+  [
+   "'<p class=\"cp-message\">검토를 요청할 대화가 없어요. 기획의 담당 채널과 팀 배정을 확인해 주세요.</p>'",
+   "'<p class=\"cp-message\">보낼 수 있는 대화가 없어요. 기획의 담당 채널과 팀을 확인해 주세요.</p>'"
+  ],
+  [
+   "'disabled'}>메신저에서 확인${icon('arrow')}</button>",
+   "'disabled'}>메신저 열기${icon('arrow')}</button>"
+  ],
+  [
+   "throw new Error('검토 대상의 권한이 바뀌었어요. 창을 다시 열어 대화를 선택해 주세요.')",
+   "throw new Error('그사이 대화의 권한이 바뀌었어요. 창을 다시 열어 대화를 골라 주세요.')"
+  ],
+  [
+   "notify('검토 상태를 저장했어요.')",
+   "notify('상태를 저장했어요.')"
+  ],
+  [
+   "notify('제작할 구성을 선택했어요.')",
+   "notify('만들 구성을 골랐어요.')"
+  ],
+  [
+   "notify('직접 탐색 모드로 바꿨어요.')",
+   "notify('검색 연결을 끊었어요. 이제 직접 찾아 주세요.')"
+  ],
+  [
+   "throw new Error('회사에 공유할 내용을 확인해 주세요.')",
+   "throw new Error('회사 전체에 공유한다는 칸을 체크해 주세요.')"
+  ],
+  [
+   "notify('세 가지 구성안을 기획함에 저장했어요.')",
+   "notify('구성안 세 개를 기획함에 저장했어요.')"
+  ],
+  [
+   "notify('검색 연결 정보를 저장했어요.')",
+   "notify('검색 키를 저장했어요.')"
+  ],
+  [
+   "<input type=\"checkbox\" name=\"shareConfirmed\" required>원문과 작성한 내용을 회사 전체에 공유합니다.</label>",
+   "<input type=\"checkbox\" name=\"shareConfirmed\" required>원문과 적은 내용을 회사 전체에 공유해요.</label>"
+  ],
+  [
+   "<button type=\"submit\" class=\"btn primary\">예시 저장</button>",
+   "<button type=\"submit\" class=\"btn primary\">저장</button>"
+  ]
+ ]
+}

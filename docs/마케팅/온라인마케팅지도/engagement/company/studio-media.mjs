@@ -10,7 +10,7 @@ const audioTypes={'audio/mpeg':'mp3','audio/wav':'wav'};
 const allTypes={...types,...audioTypes};
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const directory=storeDirectory=>resolve(storeDirectory,'studio-media');
-function located(storeDirectory,name){const root=directory(storeDirectory);if(!/^[a-f0-9-]{36}\.(?:mp4|webm|png|jpg|mp3|wav|upload)$/.test(name))throw fail('저장된 미디어 경로를 확인해 주세요.',404);const path=resolve(root,name);if(dirname(path)!==root)throw fail('미디어를 찾을 수 없습니다.',404);return path;}
+function located(storeDirectory,name){const root=directory(storeDirectory);if(!/^[a-f0-9-]{36}\.(?:mp4|webm|png|jpg|mp3|wav|upload)$/.test(name))throw fail('저장된 미디어 경로를 확인해 주세요.',404);const path=resolve(root,name);if(dirname(path)!==root)throw fail('파일을 찾지 못했어요. 새로고침해 주세요.',404);return path;}
 function header(req,key,max,fallback){const raw=req.headers[key];if(raw==null)return fallback;let decoded;try{decoded=decodeURIComponent(raw);}catch{throw fail('파일 이름과 버전 이름의 인코딩을 확인해 주세요.');}if(typeof decoded!=='string'||!decoded.trim()||decoded.length>max||/[\u0000-\u001f\u007f]/.test(decoded))throw fail('파일 이름과 버전 이름을 확인해 주세요.');return decoded.trim().replace(/[\\/]/g,'_');}
 export function validMediaSignature(mime,head){
   if(mime==='audio/wav')return head.length>=12&&head.subarray(0,4).toString('ascii')==='RIFF'&&head.subarray(8,12).toString('ascii')==='WAVE';
@@ -23,18 +23,18 @@ export function validMediaSignature(mime,head){
 }
 export async function receiveStudioMedia(req,storeDirectory,{maxLabelLength=100,allowAudio=false}={}){
   const suppliedType=String(req.headers['content-type']||'').split(';')[0].trim().toLowerCase(),mimeType=suppliedType==='audio/x-wav'?'audio/wav':suppliedType,extension=(allowAudio?allTypes:types)[mimeType];
-  if(!extension)throw fail(allowAudio?'MP4·WebM 영상, PNG·JPEG 이미지, MP3·WAV 소리를 올릴 수 있습니다.':'MP4·WebM 영상, PNG·JPEG 이미지만 올릴 수 있습니다.',415);
-  if(Number(req.headers['content-length'])>STUDIO_MEDIA_LIMIT)throw fail('파일은 100MiB 이하여야 합니다.',413);
+  if(!extension)throw fail(allowAudio?'MP4·WebM 영상, PNG·JPEG 이미지, MP3·WAV 소리를 올릴 수 있어요.':'MP4·WebM 영상, PNG·JPEG 이미지만 올릴 수 있어요.',415);
+  if(Number(req.headers['content-length'])>STUDIO_MEDIA_LIMIT)throw fail('파일은 100MB 이하만 올릴 수 있어요.',413);
   const id=randomUUID(),fileName=header(req,'x-file-name',200,`upload.${extension}`),label=header(req,'x-version-label',maxLabelLength,'업로드한 완성본');
-  const suppliedExtension=fileName.split('.').pop().toLowerCase();if(![extension,...(extension==='jpg'?['jpeg']:[])].includes(suppliedExtension))throw fail('파일 확장자와 영상·이미지 형식이 일치해야 합니다.',415);
+  const suppliedExtension=fileName.split('.').pop().toLowerCase();if(![extension,...(extension==='jpg'?['jpeg']:[])].includes(suppliedExtension))throw fail('파일 확장자와 실제 형식이 달라요. 파일을 다시 확인해 주세요.',415);
   await mkdir(directory(storeDirectory),{recursive:true,mode:0o700});const temporary=located(storeDirectory,id+'.upload'),handle=await open(temporary,'wx',0o600);let size=0,head=Buffer.alloc(0);
   try{
     for await(const chunk of req.iterator({destroyOnReturn:false})){
-      size+=chunk.length;if(size>STUDIO_MEDIA_LIMIT){req.resume();throw fail('파일은 100MiB 이하여야 합니다.',413);}
+      size+=chunk.length;if(size>STUDIO_MEDIA_LIMIT){req.resume();throw fail('파일은 100MB 이하만 올릴 수 있어요.',413);}
       if(head.length<4096)head=Buffer.concat([head,chunk.subarray(0,4096-head.length)]);
       let offset=0;while(offset<chunk.length){const {bytesWritten}=await handle.write(chunk,offset,chunk.length-offset);offset+=bytesWritten;}
     }
-    if(!size||!validMediaSignature(mimeType,head))throw fail('파일 내용이 선택한 영상·이미지 형식과 다릅니다.',415);
+    if(!size||!validMediaSignature(mimeType,head))throw fail('파일 내용이 고른 영상·이미지 형식과 달라요. 다른 파일을 골라 주세요.',415);
     await handle.close();return {temporary,metadata:{id,diskName:id+'.'+extension,mimeType,fileName,byteSize:size},label};
   }catch(error){await handle.close().catch(()=>{});await unlink(temporary).catch(()=>{});throw error;}
 }
@@ -46,7 +46,7 @@ export function mediaRange(headerValue,size){
   if(!Number.isSafeInteger(start)||!Number.isSafeInteger(end)||start<0||start>=size||end<start)throw fail('미디어 범위를 확인해 주세요.',416);return {start,end:Math.min(end,size-1)};
 }
 export async function serveStudioMedia(req,res,storeDirectory,media,authorize=()=>{}){
-  const path=located(storeDirectory,media.diskName);let info;try{info=await stat(path);}catch{throw fail('저장된 미디어 파일을 찾을 수 없습니다.',404);}if(!info.isFile()||!allTypes[media.mimeType])throw fail('미디어를 찾을 수 없습니다.',404);
+  const path=located(storeDirectory,media.diskName);let info;try{info=await stat(path);}catch{throw fail('저장된 파일을 찾지 못했어요. 파일을 다시 올려 주세요.',404);}if(!info.isFile()||!allTypes[media.mimeType])throw fail('파일을 찾지 못했어요. 새로고침해 주세요.',404);
   authorize();
   let range;try{range=mediaRange(req.headers.range,info.size);}catch(error){if(error.status===416){res.writeHead(416,{'Content-Range':`bytes */${info.size}`,'Cache-Control':'private, no-store'});res.end();return;}throw error;}
   const headers={'Content-Type':media.mimeType,'Content-Length':range?range.end-range.start+1:info.size,'Accept-Ranges':'bytes','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Cross-Origin-Resource-Policy':'same-origin','Content-Disposition':`inline; filename="studio-media.${allTypes[media.mimeType]}"; filename*=UTF-8''${encodeURIComponent(media.fileName).replace(/'/g,'%27')}`,'Content-Security-Policy':"default-src 'none'; sandbox"};

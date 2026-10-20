@@ -35,9 +35,9 @@ test('a disabled legacy collector never advertises a next run and explains the s
   const f=fixture();
   f.wr.daily={today:'2026-10-11',date:'2026-10-11',settings:{enabled:true},schedulerEnabled:false,nextRunAt:'2026-10-11T20:00:00.000Z',snapshot:null};
   const html=f.evaluate('wrTrends()');
-  assert.match(html,/출처별 일일 트렌드/);
-  assert.match(html,/이 출처 수집의 자동 실행은 꺼져 있습니다/);
-  assert.match(html,/문서 자동 반영은 별도로 동작/);
+  assert.match(html,/출처별 트렌드/);
+  assert.match(html,/매일 자동 수집이 꺼져 있어요/);
+  assert.match(html,/문서 자동 반영은 따로 돌아요/);
   assert.doesNotMatch(html,/다음 수집|다음 수집을 기다려/);
   f.wr.daily.schedulerEnabled=true;
   assert.match(f.evaluate('wrTrends()'),/다음 수집/);
@@ -82,7 +82,7 @@ test('own-page filtering, safe links and viewer restrictions survive permissive 
     {id:'archived',ownerIds:['A'],platform:'instagram',displayName:'old page',active:false}
   ];
   const html=f.evaluate('wrPages()');assert.equal(f.wr.platform,'all');assert.ok(html.includes('&lt;img'));assert.ok(html.includes('href="#"'));
-  assert.ok(!html.includes('other private page'));assert.ok(!html.includes('old page'));assert.ok(!html.includes('내 페이지 등록'));assert.ok(!html.includes('페이지 정보'));assert.ok(!html.includes('href="javascript:'));
+  assert.ok(!html.includes('other private page'));assert.ok(!html.includes('old page'));assert.ok(!html.includes('페이지 등록</div>'));assert.ok(!html.includes('페이지 정보'));assert.ok(!html.includes('href="javascript:'));
 });
 
 test('new planning templates ignore legacy completed reviews across identities and always copy nine empty checks',async()=>{
@@ -135,7 +135,7 @@ test('desk resumes only current-user non-archived plans in newest order and esca
 test('desk new-plan choice preserves unsaved input and stale confirmation cannot replace another account',async()=>{
   const f=fixture();f.context.cpBlank=()=>({seriesId:'default',topic:'',audience:''});Object.assign(f.context.cp,{userId:'A',draftId:'',results:null,input:{seriesId:'story',topic:'내가 쓰던 이야기',audience:'시청자'}});f.wr.guide={series:[{id:'story'}]};let modal;
   f.context.modal=(title,description,html)=>{f.context.state.modalRequest++;modal={title,description,html};};f.context.closeModal=()=>{};
-  await f.evaluate('wrOpenContent("plan","story")');assert.equal(f.context.cp.input.topic,'내가 쓰던 이야기');assert.equal(f.navigation.length,0);assert.match(modal.html,/아직 저장하지 않은 입력/);
+  await f.evaluate('wrOpenContent("plan","story")');assert.equal(f.context.cp.input.topic,'내가 쓰던 이야기');assert.equal(f.navigation.length,0);assert.match(modal.html,/저장하지 않은 내용은 사라져요/);
   await f.evaluate('wrResumePlan()');assert.equal(f.context.cp.input.topic,'내가 쓰던 이야기');assert.deepEqual(f.navigation,['plan']);
   f.context.state.user={id:'B',role:'member'};await f.evaluate('wrReplacePlan()');assert.equal(f.context.cp.input.topic,'내가 쓰던 이야기');assert.equal(f.navigation.length,1);
 });
@@ -155,7 +155,7 @@ test('changed input dismisses its confirmation without replacing the newer work'
   const f=fixture();f.context.cpBlank=()=>({seriesId:'default',topic:''});Object.assign(f.context.cp,{userId:'A',draftId:'',results:null,input:{seriesId:'default',topic:'처음 내용'}});let closed=0;
   f.context.modal=()=>{f.context.state.modalRequest++;};f.context.closeModal=()=>{closed++;f.context.state.modalRequest++;};
   f.evaluate('wrConfirmPlanChoice({seriesId:"default"})');f.context.cp.input.topic='새로 고친 내용';await f.evaluate('wrReplacePlan()');
-  assert.equal(closed,1);assert.equal(f.wr.planChoice,null);assert.equal(f.context.cp.input.topic,'새로 고친 내용');assert.equal(f.navigation.length,0);assert.match(f.notifications[0],/다시 선택/);
+  assert.equal(closed,1);assert.equal(f.wr.planChoice,null);assert.equal(f.context.cp.input.topic,'새로 고친 내용');assert.equal(f.navigation.length,0);assert.match(f.notifications[0],/다시 골라 주세요/);
 });
 
 test('viewer may confirm navigation to an existing own plan while new planning stays restricted',async()=>{
@@ -172,7 +172,7 @@ test('resuming reports a failed content load while preserving the current input'
 test('workroom observation dates keep KST and unknown reactions do not become zero',()=>{
   const f=fixture();f.context.number=value=>value==null?'—':String(value);
   f.wr.guide={trendLinks:[],trendNotes:[]};f.wr.content={references:[{ownerId:'A',title:'내 참고',url:'https://example.test/',checkedAt:'2026-09-30T15:01:00Z'}],benchmark:{current:{title:'공유 조사',researchedAt:'2026-09-30T15:00:00Z',items:[{id:'one',title:'예시',url:'https://example.test/',publishedAt:'2026-09-30',checkedAt:'2026-09-30T15:00:00Z',metrics:{likes:null,shares:0}}]}}};
-  const html=f.evaluate('wrTrends()');assert.ok(html.includes('관찰 2026.10.01'));assert.ok(html.includes('게시 2026.09.30'));assert.ok(html.includes('조사 2026.10.01'));assert.ok(html.includes('좋아요 — · 공유 0 · 저장 —'));
+  const html=f.evaluate('wrTrends()');assert.ok(html.includes('확인 2026.10.01'));assert.ok(html.includes('게시 2026.09.30'));assert.ok(html.includes('조사 2026.10.01'));assert.ok(html.includes('좋아요 — · 공유 0 · 저장 —'));
 });
 
 function dailyData(date='2026-10-02'){
@@ -193,16 +193,16 @@ function dailyData(date='2026-10-02'){
 test('daily trends render collected local items and honest connection states without external launcher cards or combined rankings',()=>{
   const f=fixture();f.wr.daily=dailyData();f.wr.dailyDate='2026-10-02';
   const html=f.evaluate('wrTrends()');assert.ok(html.includes('&lt;img'));assert.ok(!html.includes('href="javascript:'));assert.ok(!html.includes('위험 링크'));assert.ok(html.includes('관련 &amp; 뉴스'));
-  assert.ok(html.indexOf('&lt;img')<html.indexOf('한국 두 번째'),'source rank must sort within its own source');assert.ok(html.includes('검색량 0'));assert.ok(html.includes('검색량 미확인'));
-  assert.ok(html.includes('연결 필요'));assert.ok(html.includes('공식 연결이 필요합니다.'));assert.ok(html.includes('한국 TikTok'));assert.ok(html.includes('일부 출처 수집'));
-  assert.ok(!html.includes('미국 소식'));assert.ok(!html.includes('중국 소식'));assert.ok(!html.includes('wr-trend-links'));assert.ok(html.includes('플랫폼끼리 합산한 전체 인기 순위가 아니며'));
-  assert.ok(html.includes('공식 문화 분석 보고서'));assert.ok(html.includes('2025. 12. 1.'));assert.ok(!html.includes('출처 순위 null'));
+  assert.ok(html.indexOf('&lt;img')<html.indexOf('한국 두 번째'),'source rank must sort within its own source');assert.ok(html.includes('검색량 0'));assert.ok(html.includes('검색량 모름'));
+  assert.ok(html.includes('연결 필요'));assert.ok(html.includes('공식 연결이 필요합니다.'));assert.ok(html.includes('한국 TikTok'));assert.ok(html.includes('일부만 수집'));
+  assert.ok(!html.includes('미국 소식'));assert.ok(!html.includes('중국 소식'));assert.ok(!html.includes('wr-trend-links'));assert.ok(html.includes('플랫폼끼리 합친 순위가 아니에요'));
+  assert.ok(html.includes('공식 문화·트렌드 보고서 '));assert.ok(html.includes('2025. 12. 1.'));assert.ok(!html.includes('순위 null'));
 });
 
 test('country and platform filters retain missing connection states while preventing unrelated country items from appearing',()=>{
   const f=fixture();f.wr.daily=dailyData();f.wr.dailyDate='2026-10-02';f.wr.dailyRegion='CN';
-  let html=f.evaluate('wrTrends()');assert.ok(html.includes('중국 소식'));assert.ok(!html.includes('한국 두 번째'));assert.ok(html.includes('Baidu'));
-  f.wr.dailyRegion='KR';f.wr.dailyPlatform='tiktok';html=f.evaluate('wrTrends()');assert.ok(html.includes('표시할 수집 항목이 없어요'));assert.ok(html.includes('연결 필요'));assert.ok(!html.includes('한국 두 번째'));
+  let html=f.evaluate('wrTrends()');assert.ok(html.includes('중국 소식'));assert.ok(!html.includes('한국 두 번째'));assert.ok(html.includes('바이두'));
+  f.wr.dailyRegion='KR';f.wr.dailyPlatform='tiktok';html=f.evaluate('wrTrends()');assert.ok(html.includes('보여 줄 항목이 없어요'));assert.ok(html.includes('연결 필요'));assert.ok(!html.includes('한국 두 번째'));
 });
 
 test('a daily response from an older date cannot replace the latest chosen date or clear its loading state',async()=>{
@@ -248,19 +248,19 @@ test('switching date while a trend plan is loading cannot navigate with the old 
 
 test('daily feed remains readable when company guide is missing and never presents fallback data as today',()=>{
   const f=fixture();f.wr.view='trends';f.wr.guide=null;f.wr.daily=dailyData('2026-10-01');f.wr.dailyDate='2026-10-02';f.wr.dailyError='오늘 수집에 실패했어요.';
-  const html=f.evaluate('contentWorkroomPage()');assert.ok(html.includes('출처별 일일 트렌드'));assert.ok(html.includes('이전 자료'));assert.ok(html.includes('선택한 날짜의 최신 결과가 아닙니다.'));assert.ok(html.includes('2026-10-01'));assert.ok(html.includes('오늘 수집에 실패했어요.'));assert.ok(!html.includes('제작 자료를 꺼내고'));
+  const html=f.evaluate('contentWorkroomPage()');assert.ok(html.includes('출처별 트렌드'));assert.ok(html.includes('지난 자료'));assert.ok(html.includes('이 날짜에 새로 모은 자료가 없어 그 전에 모은 자료를 보여 드려요.'));assert.ok(html.includes('2026-10-01'));assert.ok(html.includes('오늘 수집에 실패했어요.'));assert.ok(!html.includes('제작 자료를 불러오고'));
 });
 
 test('a long source shows ten rows once and exposes one twenty-more control with truthful totals',()=>{
   const f=fixture();f.wr.daily=dailyData();f.wr.dailyRegion='CN';f.wr.dailyDate='2026-10-02';f.wr.daily.snapshot.items=Array.from({length:50},(_,index)=>({id:'cn-'+index,sourceId:'baidu-cn',platform:'baidu',region:'CN',title:'테스트 순위 '+(index+1),url:'https://example.test/'+index,rank:index+1,collectedAt:'2026-10-02T00:00:00Z'}));
-  let html=f.evaluate('wrTrends()');assert.equal((html.match(/class="wr-daily-item"/g)||[]).length,10);assert.ok(html.includes('수집 50개 · 표시 10개'));assert.equal((html.match(/20개 더 보기/g)||[]).length,1);
-  f.wr.dailyLimits.set('baidu-cn',30);html=f.evaluate('wrTrends()');assert.equal((html.match(/class="wr-daily-item"/g)||[]).length,30);assert.ok(html.includes('수집 50개 · 표시 30개'));
+  let html=f.evaluate('wrTrends()');assert.equal((html.match(/class="wr-daily-item"/g)||[]).length,10);assert.ok(html.includes('50개 중 10개 표시'));assert.equal((html.match(/20개 더 보기/g)||[]).length,1);
+  f.wr.dailyLimits.set('baidu-cn',30);html=f.evaluate('wrTrends()');assert.equal((html.match(/class="wr-daily-item"/g)||[]).length,30);assert.ok(html.includes('50개 중 30개 표시'));
   f.handlers.get('change')({target:{dataset:{action:'workroom-daily-platform'},value:'all'}});assert.equal(f.wr.dailyLimits.size,0);
 });
 
 test('unranked search interest and retained timestamps do not masquerade as fresh ranked entries',()=>{
   const f=fixture();f.wr.daily=dailyData();f.wr.dailyDate='2026-10-02';f.wr.daily.snapshot.items=f.wr.daily.snapshot.items.filter(row=>row.region==='KR').map(row=>({...row,rank:null,collectedAt:null,retainedAt:'2026-10-01T00:00:00Z'}));f.wr.daily.snapshot.sources[0].retainedAt='2026-10-01T00:00:00Z';
-  const html=f.evaluate('wrTrends()');assert.ok(html.includes('검색 관심'));assert.ok(html.includes('data-unranked'));assert.ok(html.includes('이전 자료 · 이전 수집 2026. 10. 1.'));assert.ok(html.includes('보존 자료 · 이전 수집'));assert.ok(!html.includes('출처별 순위 ·'));
+  const html=f.evaluate('wrTrends()');assert.ok(html.includes('검색 관심'));assert.ok(html.includes('data-unranked'));assert.ok(html.includes('지난 자료 · 수집 2026. 10. 1.'));assert.ok((html.match(/지난 자료 · 수집/g)||[]).length>=2);assert.ok(!html.includes('순위 · '));
 });
 
 test('running native collection polls only the visible trends panel and stops after completion',async()=>{

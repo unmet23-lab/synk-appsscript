@@ -5,7 +5,7 @@ const SETTINGS='creative-research-sync',PROGRESS='creative-research-sync-state',
 const INTERVAL_MS=30*1000,LEASE_MS=2*60*1000,MAX_DOCUMENT_BYTES=2*1024*1024;
 const MAX_RETRY_MS=5*60*1000,FRESHNESS_LIMIT_HOURS=36;
 export const CREATIVE_RESEARCH_COMPLETE='SYNK_CREATIVE_RESEARCH_COMPLETE';
-const messages={SYNC_CONFIG_INVALID:'자동 반영 설정의 켜짐 여부와 저장 계정 식별자를 확인해 주세요.',SYNC_DOCUMENT_ADDRESS_INVALID:'Google 문서 주소 또는 문서 ID를 입력해 주세요. 계정 정보·임의 추적값이 포함된 주소는 사용할 수 없습니다.',SYNC_READ_FAILED:'공유 조사 문서를 읽지 못했습니다. 기존 자료는 유지됩니다.',SYNC_READ_TIMEOUT:'공유 문서 읽기가 지연되었습니다. 다음 확인에서 다시 시도합니다.',SYNC_DOCUMENT_INVALID:'완료된 문서는 단일 JSON 보고서와 마지막 완료 표시만 포함해야 합니다.',SYNC_DOCUMENT_TOO_LARGE:'공유 조사 문서가 2MiB 한도를 넘었습니다. 기존 자료는 유지됩니다.',SYNC_REPORT_INVALID:'완료 보고서의 날짜·출처·자료 형식을 확인해 주세요. 기존 자료는 유지됩니다.',SYNC_IMPORT_FAILED:'완료 보고서를 저장하지 못했습니다. 기존 자료와 마지막 성공 기록은 유지됩니다.',SYNC_OWNER_UNAVAILABLE:'자동 반영을 설정한 관리자의 현재 권한을 확인해 주세요.',SYNC_AUTHORITY_CHANGED:'문서나 자동 반영 설정이 변경되어 읽은 결과를 반영하지 않았습니다.',SYNC_STOPPED:'자동 반영 서비스가 종료 중입니다.'};
+const messages={SYNC_CONFIG_INVALID:'자동 반영 설정의 켜짐 여부와 저장 계정 식별자를 확인해 주세요.',SYNC_DOCUMENT_ADDRESS_INVALID:'Google 문서 주소나 문서 ID를 넣어 주세요. 계정 정보나 추적값이 붙은 주소는 쓸 수 없어요.',SYNC_READ_FAILED:'조사 문서를 읽지 못했어요. 문서 공유와 Google Drive 연결을 확인해 주세요. 있던 자료는 그대로예요.',SYNC_READ_TIMEOUT:'조사 문서를 읽는 데 너무 오래 걸렸어요. 다음 확인 때 다시 읽을게요.',SYNC_DOCUMENT_INVALID:'끝난 조사 문서에는 JSON 보고서 하나와 맨 끝 완료 표시만 있어야 해요. 문서를 정리해 주세요.',SYNC_DOCUMENT_TOO_LARGE:'조사 문서가 2MB를 넘어 읽지 않았어요. 예약 조사가 적는 보고서를 줄여 주세요. 있던 자료는 그대로예요.',SYNC_REPORT_INVALID:'끝난 보고서의 날짜·출처·자료 형식이 맞지 않아요. 보고서를 고쳐 주세요. 있던 자료는 그대로예요.',SYNC_IMPORT_FAILED:'끝난 보고서를 저장하지 못했어요. 다음 확인 때 다시 해 볼게요. 있던 자료는 그대로예요.',SYNC_OWNER_UNAVAILABLE:'자동 반영을 연결한 관리자 계정을 쓸 수 없어요. 다른 관리자가 문서를 다시 연결해 주세요.',SYNC_AUTHORITY_CHANGED:'읽는 사이 문서나 연결 설정이 바뀌어 이번 결과는 넣지 않았어요.',SYNC_STOPPED:'서버를 다시 시작하는 중이라 자동 반영을 잠시 멈췄어요.'};
 const failure=(code,status=400)=>Object.assign(new Error(messages[code]||'자동 반영 입력을 확인해 주세요.'),{code,status});
 const object=value=>{if(!value||typeof value!=='object'||Array.isArray(value))throw failure('SYNC_DOCUMENT_INVALID');return value;};
 function instant(value){if(typeof value!=='string'||!Number.isFinite(Date.parse(value)))throw failure('SYNC_DOCUMENT_INVALID');return new Date(value).toISOString();}
@@ -49,7 +49,7 @@ export function createCreativeResearchSyncService({store,research,reader,clock=(
   const progress=source=>store.get('settings',recordKey(PROGRESS,source))||{};
   const leaseFor=source=>store.get('settings',recordKey(LEASE,source));
   const liveUser=user=>{const current=user?.id&&store.get('users',user.id);if(!current?.active)throw Object.assign(new Error('먼저 로그인해 주세요.'),{status:401});return current;};
-  function admin(user){user=liveUser(user);if(user.role!=='admin')throw Object.assign(new Error('관리자만 자동 반영을 설정할 수 있습니다.'),{status:403});if(stopped)throw failure('SYNC_STOPPED',503);return user;}
+  function admin(user){user=liveUser(user);if(user.role!=='admin')throw Object.assign(new Error('자동 반영은 관리자만 연결할 수 있어요.'),{status:403});if(stopped)throw failure('SYNC_STOPPED',503);return user;}
   const leaseActive=(lease,at)=>lease&&Date.parse(lease.leaseExpiresAt)>Date.parse(at);
   const ownerAllowed=current=>{const owner=current.ownerId&&store.get('users',current.ownerId);return owner?.active&&owner.role==='admin'?owner:null;};
   const sourceKey=source=>source.documentId+'\n'+(source.connectionId||'active');

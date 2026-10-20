@@ -16,7 +16,7 @@ function dateValue(value){if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.tes
 function settingsValue(input,prior=DAILY_TRENDS_DEFAULTS){
   if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).some(key=>!['enabled','hourKst','minuteKst','regions'].includes(key)))throw fail('트렌드 수집 설정을 확인해 주세요.');
   const merged={...prior,...input};
-  if(typeof merged.enabled!=='boolean'||!Number.isInteger(merged.hourKst)||merged.hourKst<0||merged.hourKst>23||!Number.isInteger(merged.minuteKst)||merged.minuteKst<0||merged.minuteKst>59)throw fail('자동 수집 여부와 한국시간 시·분을 확인해 주세요.');
+  if(typeof merged.enabled!=='boolean'||!Number.isInteger(merged.hourKst)||merged.hourKst<0||merged.hourKst>23||!Number.isInteger(merged.minuteKst)||merged.minuteKst<0||merged.minuteKst>59)throw fail('자동 수집 여부와 한국 시간 시·분을 확인해 주세요.');
   if(!Array.isArray(merged.regions)||!merged.regions.length||merged.regions.length>REGIONS.length||merged.regions.some(region=>!REGIONS.includes(region))||new Set(merged.regions).size!==merged.regions.length)throw fail('수집 지역은 한국·미국·중국 중 하나 이상 선택해 주세요.');
   return {...merged,regions:REGIONS.filter(region=>merged.regions.includes(region))};
 }
@@ -47,7 +47,7 @@ export function createDailyTrendsService({store,clock=()=>new Date().toISOString
     const dates=store.all('dailyTrendIssues').map(row=>row.date).filter(Boolean).sort().reverse();
     return {settings:current,today,date:selected,dates,snapshot:store.get('dailyTrendIssues',selected),running:activeTask!==null||!!activeRun(at),lastAttempt:latest(),nextRunAt:nextRunAt(at,current)};
   }
-  function configure(input){if(stopped)throw fail('트렌드 수집기가 종료되었습니다.',503);const value=settingsValue(input,settings());store.put('settings','daily-trends',value);return state();}
+  function configure(input){if(stopped)throw fail('서버를 다시 시작하는 중이에요. 잠시 뒤 다시 눌러 주세요.',503);const value=settingsValue(input,settings());store.put('settings','daily-trends',value);return state();}
   function normalize(result,at,regions,secrets){
     if(!result||!Array.isArray(result.items)||!Array.isArray(result.sources))throw fail('트렌드 수집 결과 형식을 확인해 주세요.');
     const clean=value=>{let output=string(value,700).replace(/(?:Bearer\s+|access_token=|refresh_token=|api[_-]?key=)[^\s&]+/gi,'[보호된 값]');for(const secret of secrets)if(secret.length>=4)output=output.split(secret).join('[보호된 값]');return output;};
@@ -77,14 +77,14 @@ export function createDailyTrendsService({store,clock=()=>new Date().toISOString
         for(const item of incoming)items.set(item.sourceId+':'+item.id,item);
         sources.set(source.id,source);
       }else{
-        sources.set(source.id,{...source,count:oldItems.length,...(oldItems.length?{retained:true,retainedAt:sources.get(source.id)?.retainedAt||sources.get(source.id)?.collectedAt||oldItems[0].collectedAt,message:[source.message,'이전 수집 항목을 유지했습니다.'].filter(Boolean).join(' ')}:{})});
+        sources.set(source.id,{...source,count:oldItems.length,...(oldItems.length?{retained:true,retainedAt:sources.get(source.id)?.retainedAt||sources.get(source.id)?.collectedAt||oldItems[0].collectedAt,message:[source.message,'지난 수집 항목을 그대로 뒀어요.'].filter(Boolean).join(' ')}:{})});
       }
     }
     const snapshot={date,collectedAt:at,items:[...items.values()],sources:[...sources.values()]};
     store.put('dailyTrendIssues',date,snapshot);return snapshot;
   }
   function collect({force=false,at=clock(),trigger='manual',requestedBy=null}={}){
-    if(stopped)return Promise.reject(fail('트렌드 수집기가 종료되었습니다.',503));
+    if(stopped)return Promise.reject(fail('서버를 다시 시작하는 중이에요. 잠시 뒤 다시 눌러 주세요.',503));
     if(typeof force!=='boolean')return Promise.reject(fail('다시 수집 여부를 확인해 주세요.'));
     if(activeTask)return activeTask;
     at=instant(at);
@@ -92,7 +92,7 @@ export function createDailyTrendsService({store,clock=()=>new Date().toISOString
     const claim=store.transaction(()=>{
       const current=settings(),date=kstDate(at),due=dueAt(date,current),configKey=keyFor(date,current.regions);
       if(activeRun(at))return null;
-      for(const row of orderedRuns().filter(row=>row.status==='running'))store.put('dailyTrendRuns',row.id,{...row,status:'interrupted',finishedAt:at,retryAt:at,message:'수집 잠금이 만료되어 다시 시도합니다.'});
+      for(const row of orderedRuns().filter(row=>row.status==='running'))store.put('dailyTrendRuns',row.id,{...row,status:'interrupted',finishedAt:at,retryAt:at,message:'수집이 너무 오래 걸려 다시 해요.'});
       const prior=latest(configKey,trigger==='scheduled'?due:null);
       if(trigger==='scheduled'&&(!current.enabled||Date.parse(at)<Date.parse(due)||prior&&(!prior.retryAt||Date.parse(at)<Date.parse(prior.retryAt))))return null;
       if(!force&&trigger!=='scheduled'&&prior&&['success','partial'].includes(prior.status)&&!prior.retryAt)return null;
@@ -107,7 +107,7 @@ export function createDailyTrendsService({store,clock=()=>new Date().toISOString
       return store.transaction(()=>{
         const saved=store.get('dailyTrendRuns',run.id);
         if(saved?.status!=='running')return false;
-        if(activeRun(finishedAt)?.id!==run.id){store.put('dailyTrendRuns',run.id,{...saved,status:'interrupted',finishedAt,retryAt:finishedAt,message:'수집 잠금이 만료되어 응답을 저장하지 않았습니다.'});return false;}
+        if(activeRun(finishedAt)?.id!==run.id){store.put('dailyTrendRuns',run.id,{...saved,status:'interrupted',finishedAt,retryAt:finishedAt,message:'수집이 너무 오래 걸려 이번 결과는 저장하지 않았어요.'});return false;}
         if(result){const snapshot=mergeIssue(date,at,result);store.put('dailyTrendSnapshots',run.id,snapshot);}
         store.put('dailyTrendRuns',run.id,{...run,...update,finishedAt});return true;
       });
@@ -122,10 +122,10 @@ export function createDailyTrendsService({store,clock=()=>new Date().toISOString
         const retryable=!result.sources.length||result.sources.some(source=>source.status==='error'||source.status==='unavailable'&&source.retryable===true)||!hasItems&&result.sources.some(source=>source.status==='ok');
         const status=hasItems?(retryable||result.sources.some(source=>source.status!=='ok')?'partial':'success'):(result.sources.some(source=>['error','unavailable'].includes(source.status))?'error':'empty');
         const finishedAt=instant(clock()),retryAt=retryable&&automaticAttempts<=RETRY_MINUTES.length?new Date(Date.parse(finishedAt)+RETRY_MINUTES[Math.max(0,automaticAttempts-1)]*MINUTE).toISOString():null;
-        finish(finishedAt,{status,itemCount:result.items.length,sourceCount:result.sources.length,retryAt,message:hasItems?'수집한 트렌드를 저장했습니다.':'새 항목이 없어 이전 수집 자료를 유지했습니다.'},result);
+        finish(finishedAt,{status,itemCount:result.items.length,sourceCount:result.sources.length,retryAt,message:hasItems?'모은 트렌드를 저장했어요.':'새 항목이 없어 지난 자료를 그대로 뒀어요.'},result);
       }catch{
         const finishedAt=instant(clock()),retryAt=automaticAttempts<=RETRY_MINUTES.length?new Date(Date.parse(finishedAt)+RETRY_MINUTES[Math.max(0,automaticAttempts-1)]*MINUTE).toISOString():null;
-        finish(finishedAt,{status:'error',retryAt,message:'트렌드를 수집하지 못했습니다. 이전 수집 자료는 유지됩니다.'});
+        finish(finishedAt,{status:'error',retryAt,message:'트렌드를 모으지 못했어요. 지난 자료는 그대로 있어요.'});
       }
     }).finally(()=>{activeTask=null;}).then(()=>state());
     return activeTask;

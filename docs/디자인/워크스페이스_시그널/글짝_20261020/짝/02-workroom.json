@@ -1,0 +1,458 @@
+{
+ "public/workroom.js": [
+  [
+   "result.reason?.message||'자료를 불러오지 못했어요.'",
+   "result.reason?.message||'자료를 불러오지 못했어요. 다시 불러와 주세요.'"
+  ],
+  [
+   "const heading={desk:['제작 데스크','새 기획을 시작하거나, 저장한 내 기획을 이어가세요.'],trends:['트렌드·레퍼런스','트렌드와 참고 자료에서 제작 아이디어를 찾으세요.'],pages:['내 관리 페이지','맡은 페이지를 등록하고 연결 상태를 확인하세요.']}[wr.view]||['제작 데스크','새 기획을 시작하거나, 저장한 내 기획을 이어가세요.'];",
+   "const heading={desk:['제작 데스크','새 기획을 시작하거나 저장한 기획을 이어 써요.'],trends:['트렌드·레퍼런스','요즘 뜨는 것과 참고 자료에서 다음 기획을 찾아요.'],pages:['내 관리 페이지','맡은 페이지를 등록하고 연결을 확인해요.']}[wr.view]||['제작 데스크','새 기획을 시작하거나 저장한 기획을 이어 써요.'];"
+  ],
+  [
+   "<p>${wr.loading?'제작 자료를 꺼내고 있어요.':'제작 자료를 불러옵니다.'}</p>",
+   "<p>${wr.loading?'제작 자료를 불러오고 있어요.':'제작 자료를 아직 불러오지 못했어요.'}</p>"
+  ],
+  [
+   ":'날짜 미확인';}",
+   ":'날짜 모름';}"
+  ],
+  [
+   "cp.activeDraft.title||'제목 없는 기획':'저장된 기획'):cp.input?.topic||'작성 중인 기획'",
+   "cp.activeDraft.title||'제목 없는 기획':'저장한 기획'):cp.input?.topic||'쓰던 기획'"
+  ],
+  [
+   "<span>${cp.draftId?'이 창에서 열어 둔 기획':'이 창에 작성 중인 내용이 있어요'}</span>",
+   "<span>${cp.draftId?'열어 둔 기획':'쓰던 기획이 있어요'}</span>"
+  ],
+  [
+   "wrButton('작성 중인 기획 이어하기','resume','','primary')",
+   "wrButton('이어 쓰기','resume','','primary')",
+   {
+    "n": 2
+   }
+  ],
+  [
+   "${escape(({draft:'아이디어',review:'검토 중',ready:'제작 준비'})[row.status]||'상태 미확인')} · 최근 저장 ${escape(wrDeskDate(row.updatedAt||row.createdAt))}",
+   "${escape(({draft:'아이디어',review:'검토 중',ready:'제작 준비'})[row.status]||'상태 모름')} · ${escape(wrDeskDate(row.updatedAt||row.createdAt))} 저장"
+  ],
+  [
+   "wrButton(viewer?'기획 보기':'이어서 작업','draft',",
+   "wrButton(viewer?'보기':'이어 쓰기','draft',"
+  ],
+  [
+   "<p>아직 저장한 내 기획이 없어요.</p><span>${viewer?'기획함에서 열람할 수 있는 자료를 확인하세요.':'위에서 콘텐츠 유형을 고르면 첫 기획을 시작할 수 있어요.'}</span>",
+   "<p>아직 저장한 기획이 없어요.</p><span>${viewer?'볼 수 있는 기획은 기획함에 있어요.':'위에서 유형을 고르고 첫 기획을 시작해 보세요.'}</span>"
+  ],
+  [
+   "<p>유형을 고르고, 주제와 보여 줄 결과부터 기획하세요.</p>",
+   "<p>유형을 고르고 주제와 보여 줄 결과부터 정해요.</p>"
+  ],
+  [
+   "<select data-action=\"workroom-series\" aria-label=\"제작 양식 선택\">",
+   "<select data-action=\"workroom-series\" aria-label=\"콘텐츠 유형\">"
+  ],
+  [
+   "'<p class=\"wr-desk-role\">열람 계정에서는 기획 작성과 수정을 할 수 없어요.</p>'",
+   "'<p class=\"wr-desk-role\">보기 전용 계정이라 기획을 쓰거나 고칠 수 없어요.</p>'"
+  ],
+  [
+   "${viewer?'저장된 기획과 제작 기준은 아래에서 확인하세요.':'선택한 유형의 기획 작성 화면으로 이동합니다.'}",
+   "${viewer?'저장한 기획과 제작 기준은 아래에서 볼 수 있어요.':'고른 유형으로 기획 쓰는 화면이 열려요.'}"
+  ],
+  [
+   "<h2 id=\"wr-desk-recent-title\">저장한 내 기획</h2><p>최근 저장한 기획부터 이어서 작업하세요.</p>",
+   "<h2 id=\"wr-desk-recent-title\">저장한 기획</h2><p>최근에 저장한 것부터 보여요.</p>"
+  ],
+  [
+   "<h2>완성한 콘텐츠가 있나요?</h2><p>게시 전 점검에서 파일 규격과 검토 항목을 확인하세요.</p>",
+   "<h2>완성한 콘텐츠가 있나요?</h2><p>올리기 전에 파일 규격과 검토할 것을 점검해요.</p>"
+  ],
+  [
+   "<h2>지난주의 결과와 다음 할 일</h2><p>완료 기록·콘텐츠 성과·남은 문제를 주간 정리에서 확인하세요.</p>",
+   "<h2>지난주 결과와 다음 할 일</h2><p>끝낸 일, 콘텐츠 성과, 남은 문제를 주간 정리에서 봐요.</p>"
+  ],
+  [
+   "<h2>자동화가 잘 이어지고 있나요?</h2><p>멈춘 작업과 직접 확인할 항목을 한곳에서 확인하세요.</p>",
+   "<h2>자동화가 잘 돌고 있나요?</h2><p>멈춘 작업과 직접 볼 것을 한곳에서 확인해요.</p>"
+  ],
+  [
+   "<span>제작 팁과 선택한 유형의 안내</span>",
+   "<span>제작 팁과 유형 안내</span>"
+  ],
+  [
+   "throw new Error(cp.error||'기획을 불러오지 못했어요. 다시 시도해 주세요.')",
+   "throw new Error(cp.error||'기획을 불러오지 못했어요. 다시 눌러 주세요.')"
+  ],
+  [
+   "modal('작성 중인 기획이 있어요','이 창의 입력 내용을 이어서 작성하거나, 다른 기획으로 바꿀 수 있어요.',`<div class=\"wr-plan-choice\"><p>다른 기획으로 바꾸면 아직 저장하지 않은 입력 내용이 사라집니다.</p>",
+   "modal('쓰던 기획이 있어요','쓰던 내용을 이어 쓰거나 다른 기획으로 바꿀 수 있어요.',`<div class=\"wr-plan-choice\"><p>다른 기획으로 바꾸면 저장하지 않은 내용은 사라져요.</p>"
+  ],
+  [
+   "wrButton(choice.draftId?'저장한 기획으로 바꾸기':'새 기획으로 시작','replace-plan'",
+   "wrButton(choice.draftId?'저장한 기획 열기':'새로 시작','replace-plan'"
+  ],
+  [
+   "notify('기획이나 권한이 바뀌었어요. 현재 내용을 확인한 뒤 다시 선택해 주세요.')",
+   "notify('그사이 기획이나 권한이 바뀌었어요. 지금 내용을 보고 다시 골라 주세요.')"
+  ],
+  [
+   "<h2>시청자가 볼 이유부터</h2><p>실제 도움과 재미를 먼저 정하고 제작을 시작하세요.</p></div>${wrButton('제작 양식 복사','copy','','small')}",
+   "<h2>시청자가 볼 이유부터</h2><p>무엇을 얻고 왜 재미있는지 먼저 정해요.</p></div>${wrButton('기획 양식 복사','copy','','small')}"
+  ],
+  [
+   "<h2>지금 필요한 제작 팁</h2><p>원문 기준을 이번 작업에 적용하는 질문과 예시입니다.</p>",
+   "<h2>단계별 제작 팁</h2><p>제작 기준을 이번 작업에 맞춰 보는 질문과 예시예요.</p>"
+  ],
+  [
+   "<h2>내 콘텐츠에 맞는 제작 양식</h2><p>기존 유형별 양식과 기획 엔진을 그대로 이어갑니다.</p>",
+   "<h2>유형별 제작 양식</h2><p>고른 유형의 준비물과 꼭 지킬 기준이에요.</p>"
+  ],
+  [
+   "<h4>반드시 지킬 기준</h4>",
+   "<h4>꼭 지킬 기준</h4>"
+  ],
+  [
+   "<summary>스토리 전개 아이디어 ${series.angles.length}가지</summary>",
+   "<summary>이야기 전개 아이디어 ${series.angles.length}가지</summary>"
+  ],
+  [
+   "wrButton('양식 원문 읽기','source',",
+   "wrButton('양식 원문','source',"
+  ],
+  [
+   "wrButton('이 양식으로 새 기획','plan',",
+   "wrButton('이 양식으로 기획','plan',"
+  ],
+  [
+   "<h2>결과물 점검은 제작 도구에서</h2><p>파일 규격과 직접 검토한 근거를 작업별로 저장할 수 있어요.</p>",
+   "<h2>만든 결과는 제작 도구에서 점검</h2><p>파일 규격과 검토한 내용을 작업마다 저장해요.</p>"
+  ],
+  [
+   "const wrRegions={KR:'한국',US:'미국',CN:'중국',GLOBAL:'글로벌'};",
+   "const wrRegions={KR:'한국',US:'미국',CN:'중국',GLOBAL:'전 세계'};"
+  ],
+  [
+   "douyin:'Douyin',xiaohongshu:'샤오홍슈',baidu:'Baidu',",
+   "douyin:'도우인',xiaohongshu:'샤오홍슈',baidu:'바이두',"
+  ],
+  [
+   "const wrSourceStatuses={ok:'수집 완료',needs_connection:'연결 필요',unavailable:'공개 수집 불가',error:'수집 실패',partial:'일부 수집',stale:'이전 자료'};",
+   "const wrSourceStatuses={ok:'수집 완료',needs_connection:'연결 필요',unavailable:'수집 안 됨',error:'수집 실패',partial:'일부만 수집',stale:'지난 자료'};"
+  ],
+  [
+   "String(value||'출처 미확인')",
+   "String(value||'출처 모름')"
+  ],
+  [
+   "return '시각 미확인'",
+   "return '시각 모름'",
+   {
+    "n": 2
+   }
+  ],
+  [
+   "hour12:false}).format(date)+' KST';",
+   "hour12:false}).format(date);"
+  ],
+  [
+   "aria-label=\"${ranked?'출처 순위 '+rank:'순위 미제공'}\"",
+   "aria-label=\"${ranked?'순위 '+rank:'순위 없음'}\""
+  ],
+  [
+   "escape(item.title||'제목 미확인')",
+   "escape(item.title||'제목 없음')"
+  ],
+  [
+   "<span>${escape(metric.label||'출처 지표')} ${escape(value||'미확인')}</span>",
+   "<span>${escape(metric.label||'지표')} ${escape(value||'모름')}</span>"
+  ],
+  [
+   "<span>${item.retainedAt?'이전 자료 · 이전 수집 '+escape(wrTrendTime(item.retainedAt)):'수집 '+escape(wrTrendTime(item.collectedAt))}</span>",
+   "<span>${item.retainedAt?'지난 자료 · 수집 '+escape(wrTrendTime(item.retainedAt)):'수집 '+escape(wrTrendTime(item.collectedAt))}</span>"
+  ],
+  [
+   "wrButton('새 기획','daily-plan',",
+   "wrButton('기획하기','daily-plan',"
+  ],
+  [
+   "'<p class=\"wr-note\">이 국가의 등록된 출처가 없어요. 수집 범위와 연결 설정을 확인해 주세요.</p>'",
+   "'<p class=\"wr-note\">이 국가에 등록한 출처가 없어요. 「수집 설정」에서 국가를 확인해 주세요.</p>'"
+  ],
+  [
+   "<summary>출처 상태 · 수집 완료 ${sources.filter(row=>row.status==='ok').length}/${sources.length}</summary>",
+   "<summary>출처 상태 · ${sources.length}곳 중 ${sources.filter(row=>row.status==='ok').length}곳 수집</summary>"
+  ],
+  [
+   "escape(wrSourceStatuses[source.status]||'상태 미확인')",
+   "escape(wrSourceStatuses[source.status]||'상태 모름')"
+  ],
+  [
+   "<span>보존 자료 · 이전 수집 ${escape(wrTrendTime(source.retainedAt))}</span>",
+   "<span>지난 자료 · 수집 ${escape(wrTrendTime(source.retainedAt))}</span>"
+  ],
+  [
+   "<span>확인 ${escape(wrTrendTime(source.collectedAt))}</span>",
+   "<span>수집 ${escape(wrTrendTime(source.collectedAt))}</span>"
+  ],
+  [
+   "<summary>공식 문화 분석 보고서 ${items.length}개</summary><p class=\"wr-note\">공식 분석 자료입니다. 오늘의 인기 순위나 실시간 성과 지표로 합산하지 않습니다.</p>",
+   "<summary>공식 문화 분석 ${items.length}개</summary><p class=\"wr-note\">플랫폼이 낸 분석 글이에요. 오늘 순위와는 따로 봐 주세요.</p>"
+  ],
+  [
+   "wrTrendLink('보고서 원문',item.url,'btn small quiet')",
+   "wrTrendLink('원문',item.url,'btn small quiet')"
+  ],
+  [
+   "const status=running?'수집 중':wr.dailyLoading?'불러오는 중':!snapshot?'수집 기록 없음':stale?'이전 자료':history?'지난 기록':partial?'일부 출처 수집':'수집 완료';",
+   "const status=running?'수집 중':wr.dailyLoading?'불러오는 중':!snapshot?'수집 기록 없음':stale?'지난 자료':history?'지난 날짜':partial?'일부만 수집':'수집 완료';"
+  ],
+  [
+   "'공개 자료와 연결된 출처의 결과가 이곳에 쌓입니다.'",
+   "'연결한 출처에서 모은 결과가 여기에 쌓여요.'"
+  ],
+  [
+   "<option value=\"all\" ${wr.dailyPlatform==='all'?'selected':''}>전체 플랫폼</option>",
+   "<option value=\"all\" ${wr.dailyPlatform==='all'?'selected':''}>모든 플랫폼</option>"
+  ],
+  [
+   "<h2>출처별 일일 트렌드</h2><p>직접 연결한 공개 출처의 수집 기록입니다. Gemini 제작 양식은 위 목록에서 확인하세요.</p>",
+   "<h2>출처별 트렌드</h2><p>연결한 공개 출처에서 날마다 모은 목록이에요. 조사로 만든 제작 양식은 위에 있어요.</p>"
+  ],
+  [
+   "wrButton('새로 읽기','daily-refresh',",
+   "wrButton('새로고침','daily-refresh',"
+  ],
+  [
+   "'<small>이 출처 수집의 자동 실행은 꺼져 있습니다. 위 제작 양식의 문서 자동 반영은 별도로 동작합니다.</small>'",
+   "'<small>매일 자동 수집이 꺼져 있어요. 위 제작 양식의 문서 자동 반영은 따로 돌아요.</small>'"
+  ],
+  [
+   "'<p class=\"wr-note\">선택한 날짜의 최신 결과가 아닙니다. 위 수집 날짜를 확인해 주세요.</p>'",
+   "'<p class=\"wr-note\">이 날짜에 새로 모은 자료가 없어 그 전에 모은 자료를 보여 드려요.</p>'"
+  ],
+  [
+   "kind=ordered.some(item=>Number(item.rank)>0)?'출처별 순위':",
+   "kind=ordered.some(item=>Number(item.rank)>0)?'순위':"
+  ],
+  [
+   "${source?.retained?'이전 자료 · ':''}${kind} · 수집 ${ordered.length}개${ordered.length>shown.length?' · 표시 '+shown.length+'개':''}",
+   "${source?.retained?'지난 자료 · ':''}${kind} · ${ordered.length}개${ordered.length>shown.length?' 중 '+shown.length+'개 표시':''}"
+  ],
+  [
+   "<h3>${snapshot?'표시할 수집 항목이 없어요':'이 날짜의 수집 기록이 없어요'}</h3><p>${snapshot?'이 국가·플랫폼에서 확인한 항목이 없습니다. 아래 출처 상태에서 연결 여부와 수집 결과를 확인하세요.':data?.schedulerEnabled===false?'수집 설정과 등록된 출처를 확인해 주세요. 준비된 제작 양식은 위 목록에서 볼 수 있어요.':'날짜를 바꾸거나 다음 수집을 기다려 주세요.'}</p>",
+   "<h3>${snapshot?'보여 줄 항목이 없어요':'이 날짜에 모은 자료가 없어요'}</h3><p>${snapshot?'이 국가·플랫폼에서 모은 항목이 없어요. 아래 「출처 상태」에서 연결과 수집 결과를 봐 주세요.':data?.schedulerEnabled===false?'「수집 설정」과 출처 연결을 확인해 주세요. 제작 양식은 위에서 볼 수 있어요.':'날짜를 바꾸거나 다음 수집을 기다려 주세요.'}</p>"
+  ],
+  [
+   "<p class=\"wr-note\">순위와 지표는 각 출처의 표본입니다. 플랫폼끼리 합산한 전체 인기 순위가 아니며, 내 콘텐츠의 예상 반응을 뜻하지 않습니다.</p>",
+   "<p class=\"wr-note\">순위와 지표는 출처마다 따로 매긴 거예요. 플랫폼끼리 합친 순위가 아니에요.</p>"
+  ],
+  [
+   "<p class=\"wr-note\">회사 참고 자료: ${escape(wr.error)}</p>",
+   "<p class=\"wr-note\">회사 참고 자료를 불러오지 못했어요: ${escape(wr.error)}</p>"
+  ],
+  [
+   "wr.dailyError=error.message||'수집을 완료하지 못했어요.'",
+   "wr.dailyError=error.message||'수집하지 못했어요. 잠시 뒤 다시 눌러 주세요.'"
+  ],
+  [
+   "modal('매일 수집 설정','한국 시간(KST) 기준입니다. 연결되지 않은 출처는 연결 필요 상태로 남습니다.',",
+   "modal('매일 수집 설정','한국 시간 기준이에요. 연결하지 않은 출처는 「연결 필요」로 남아요.',"
+  ],
+  [
+   "<p class=\"wr-note\">공개 접근과 공식 연결이 가능한 자료만 수집합니다. 플랫폼별 제한은 출처 상태에 표시됩니다.</p>",
+   "<p class=\"wr-note\">공개된 자료와 공식으로 연결한 자료만 모아요. 플랫폼마다 막힌 것은 「출처 상태」에 나와요.</p>"
+  ],
+  [
+   "<button class=\"btn primary\" type=\"submit\">설정 저장</button>",
+   "<button class=\"btn primary\" type=\"submit\">저장</button>"
+  ],
+  [
+   "throw new Error('수집 시각은 0~23시, 0~59분으로 입력해 주세요.')",
+   "throw new Error('시는 0~23, 분은 0~59로 넣어 주세요.')"
+  ],
+  [
+   "throw new Error('수집할 국가를 하나 이상 선택해 주세요.')",
+   "throw new Error('수집할 국가를 하나 이상 골라 주세요.')"
+  ],
+  [
+   "throw new Error('수집 목록에서 이 항목을 다시 확인해 주세요.')",
+   "throw new Error('이 항목을 목록에서 찾지 못했어요. 새로고침해 주세요.')"
+  ],
+  [
+   "url==='#'?'원문 주소 미확인':url",
+   "url==='#'?'원문 주소 없음':url"
+  ],
+  [
+   "'출처 순위 '+chosen.rank",
+   "'순위 '+chosen.rank"
+  ],
+  [
+   "'출처별 자료이며 전체 인기 순위가 아닙니다.'",
+   "'출처마다 따로 매긴 순위예요.'"
+  ],
+  [
+   "<summary>공식 자료 분석 메모</summary>",
+   "<summary>공식 자료를 읽은 메모</summary>"
+  ],
+  [
+   "<h2>확인한 흐름과 적용 아이디어</h2><p>공식 자료를 읽은 메모입니다. 오늘의 인기 순위와 구분해 참고하세요.</p>",
+   "<h2>읽은 흐름과 쓸 아이디어</h2><p>공식 자료를 읽고 적은 메모예요. 오늘 순위와는 따로 봐 주세요.</p>"
+  ],
+  [
+   "${note.needsRefresh?'다시 확인 권장':'확인한 자료'}",
+   "${note.needsRefresh?'다시 볼 때':'확인함'}"
+  ],
+  [
+   "<p>원본·도입·전개·가치·반응을 함께 보고 우리 내용으로 바꿔보세요.</p>",
+   "<p>원본의 도입·전개·가치·반응을 보고 우리 내용으로 바꿔 보세요.</p>"
+  ],
+  [
+   "wrButton(isAdmin()?'조사 자료 등록·보기':'팀 자료 자세히 보기','benchmarks',",
+   "wrButton(isAdmin()?'조사 자료 관리':'팀 자료 보기','benchmarks',"
+  ],
+  [
+   "${issue.stale?'새 조사 권장':'등록된 조사 자료'}",
+   "${issue.stale?'다시 조사할 때':'최근 조사'}"
+  ],
+  [
+   "<br>관찰 ${bmDate(item.checkedAt)} ·",
+   "<br>확인 ${bmDate(item.checkedAt)} ·"
+  ],
+  [
+   "wrButton('이 사례로 새 기획','benchmark',",
+   "wrButton('이 사례로 기획','benchmark',"
+  ],
+  [
+   "<h3>${wr.loading?'팀 자료를 불러오는 중이에요':'아직 공유된 조사 자료가 없어요'}</h3><p>확인한 보고서를 등록하면 실제 사례와 공개 반응을 함께 볼 수 있어요.</p>",
+   "<h3>${wr.loading?'팀 자료를 불러오는 중이에요':'아직 팀이 올린 조사 자료가 없어요'}</h3><p>조사 보고서를 올리면 사례와 공개 반응을 같이 볼 수 있어요.</p>"
+  ],
+  [
+   "<p class=\"wr-note\">미확인 수치는 —로 표시합니다. 계정 크기·게시 경과일·플랫폼이 다른 수치를 같은 조건처럼 비교하지 않아요.</p>",
+   "<p class=\"wr-note\">모르는 수치는 —로 적어요. 계정 크기·올린 지 며칠·플랫폼이 다르면 수치를 바로 견주지 마세요.</p>"
+  ],
+  [
+   "<summary>내가 모은 레퍼런스</summary>",
+   "<summary>내가 모은 참고 자료</summary>"
+  ],
+  [
+   "<p>우리 콘텐츠에 가져올 구조와 배울 점을 기록해 두세요.</p>",
+   "<p>가져올 구성과 배울 점을 적어 두세요.</p>"
+  ],
+  [
+   "escape(row.formatNotes||'배울 구조를 기획함에서 기록해 보세요.')",
+   "escape(row.formatNotes||'배울 점을 아직 적지 않았어요.')"
+  ],
+  [
+   "<span>게시 ${bmDate(row.publishedAt)} · 관찰 ${bmDate(row.checkedAt)}</span>",
+   "<span>게시 ${bmDate(row.publishedAt)} · 확인 ${bmDate(row.checkedAt)}</span>"
+  ],
+  [
+   "wrButton('전체 참고 자료 보기','references',",
+   "wrButton('모두 보기','references',"
+  ],
+  [
+   "'<div class=\"wr-empty\"><p>아직 모아 둔 참고 콘텐츠가 없어요. 링크와 배울 점을 남겨보세요.</p></div>'",
+   "'<div class=\"wr-empty\"><p>아직 모아 둔 참고 자료가 없어요. 링크와 배울 점을 남겨 보세요.</p></div>'"
+  ],
+  [
+   "<summary>이전 수동 관찰 기록</summary>",
+   "<summary>예전에 직접 본 기록</summary>"
+  ],
+  [
+   "<h2>이전에 기록한 관찰</h2><p>${escape(data.region)} · ${escape(data.period)} 화면 · ${escape(data.checkedAt)} 직접 확인${data.needsRefresh?' · 다시 확인 권장':''}</p>",
+   "<h2>예전에 직접 본 기록</h2><p>${escape(data.region)} · ${escape(data.period)} 화면 · ${escape(data.checkedAt)} 확인${data.needsRefresh?' · 다시 볼 때':''}</p>"
+  ],
+  [
+   "wrExternal('관찰한 원문',data.url)",
+   "wrExternal('원문',data.url)"
+  ],
+  [
+   "<span class=\"wr-kicker\">공식 화면 순위 ${item.rank}</span>",
+   "<span class=\"wr-kicker\">공식 화면 ${item.rank}위</span>"
+  ],
+  [
+   "<p class=\"wr-note\">공식 사이트에 표시된 해시태그 집계의 관찰 기록이며 자동 갱신하지 않습니다. 개별 영상의 성과나 내 콘텐츠의 예상 반응을 뜻하지 않아요. 제작하는 날 원문을 다시 확인하세요.</p>",
+   "<p class=\"wr-note\">공식 사이트의 해시태그 집계를 그때 적어 둔 거라 저절로 바뀌지 않아요. 만드는 날 원문을 다시 봐 주세요.</p>"
+  ],
+  [
+   "wrButton('내 페이지 등록','register','','primary')",
+   "wrButton('페이지 등록','register','','primary')"
+  ],
+  [
+   "<p>주소를 붙여 넣으면 플랫폼을 구분하고 <strong>본인 담당</strong>으로 등록해요. 수치 수집은 등록 후 계정 연결을 완료해야 시작됩니다.</p><p>담당 페이지는 회사의 기존 채널 열람 범위에 따라 공유됩니다.</p>",
+   "<p>주소를 붙여 넣으면 플랫폼을 알아서 나누고 <strong>내 담당</strong>으로 등록해요. 수치는 등록한 뒤 계정을 연결해야 모이기 시작해요.</p><p>담당 페이지는 회사의 채널 보기 권한에 따라 함께 보여요.</p>"
+  ],
+  [
+   "'<p class=\"wr-note\">열람 계정은 페이지 등록·수집 연결을 변경할 수 없어요.</p>'",
+   "'<p class=\"wr-note\">보기 전용 계정이라 페이지를 등록하거나 연결을 바꿀 수 없어요.</p>'"
+  ],
+  [
+   "<option value=\"all\">전체 플랫폼</option>",
+   "<option value=\"all\">모든 플랫폼</option>"
+  ],
+  [
+   "${channel.connected?'수집 연결됨':'주소 등록됨 · 수집 연결 필요'}",
+   "${channel.connected?'연결됨':'연결 필요'}"
+  ],
+  [
+   "wrButton('페이지 더 보기','more',",
+   "wrButton('더 보기','more',"
+  ],
+  [
+   "'<div class=\"wr-empty\"><h3>아직 맡은 페이지가 없어요</h3><p>페이지나 프로필 주소를 직접 등록해 보세요. 다른 담당자에게 이미 배정된 페이지는 관리자에게 담당 추가를 요청하세요.</p></div>'",
+   "'<div class=\"wr-empty\"><h3>아직 맡은 페이지가 없어요</h3><p>페이지나 프로필 주소를 등록해 보세요. 다른 사람이 맡은 페이지라면 관리자에게 담당을 더해 달라고 해 주세요.</p></div>'"
+  ],
+  [
+   "modal('제작 기준 원문','기존 정본의 현재 내용을 확인합니다.',",
+   "modal('제작 기준 원문','지금 쓰는 제작 기준을 그대로 보여 드려요.',"
+  ],
+  [
+   "throw new Error('최신 조사 자료에서 이 사례를 다시 확인해 주세요.')",
+   "throw new Error('최신 조사 자료에 이 사례가 없어요. 새로고침한 뒤 다시 골라 주세요.')"
+  ],
+  [
+   "modal('내가 관리하는 페이지 등록','주소를 한 줄에 하나씩 붙여 넣어 주세요.',",
+   "modal('페이지 등록','주소를 한 줄에 하나씩 붙여 넣어 주세요.',"
+  ],
+  [
+   "등 최대 20개. 플랫폼은 주소에서 자동으로 구분합니다. 게시물·단축 링크 대신 페이지·프로필 주소를 넣어 주세요.</small>",
+   "등 20개까지 넣을 수 있어요. 플랫폼은 주소로 알아서 나눠요. 게시물·단축 링크 말고 페이지·프로필 주소를 넣어 주세요.</small>"
+  ],
+  [
+   "<p class=\"wr-note\">담당자는 ${escape(state.user.name)}입니다. 등록된 페이지는 회사의 채널 권한에 따라 공유됩니다. 주소를 등록하는 것으로 로그인이나 수집 연결이 완료되지는 않아요.</p>",
+   "<p class=\"wr-note\">${escape(state.user.name)} 님 담당으로 등록해요. 수치를 모으려면 등록한 뒤 계정을 따로 연결해 주세요.</p>"
+  ],
+  [
+   "<button class=\"btn primary\" type=\"submit\">내 페이지로 등록</button>",
+   "<button class=\"btn primary\" type=\"submit\">등록</button>"
+  ],
+  [
+   "'스토리 (문제 → 시도 → 선택의 이유 → 확인한 결과): '",
+   "'이야기 (문제 → 시도 → 고른 이유 → 확인한 결과): '"
+  ],
+  [
+   "'참고 URL·게시일·확인일·관찰한 반응: ','측정할 지표·조건과 다음 실험: ','엔딩의 다음 행동과 제공 자료: '",
+   "'참고 주소·게시일·확인일·본 반응: ','잴 지표·조건과 다음 실험: ','끝에서 할 일과 줄 자료: '"
+  ],
+  [
+   "'체크는 본인의 표시이며 자동 품질 점수·게시 승인이 아닙니다.'",
+   "'체크는 직접 본 표시예요. 게시 승인과는 따로예요.'"
+  ],
+  [
+   "modal('기획·검토 양식','선택해서 복사해 주세요.',",
+   "modal('기획·검토 양식','전체를 골라 복사해 주세요.',"
+  ],
+  [
+   "<div class=\"form-success\">내 페이지 ${result.added.length}개 등록 · 내 기존 페이지 ${ownExisting.length}개</div>",
+   "<div class=\"form-success\">새로 등록 ${result.added.length}개 · 이미 내 담당 ${ownExisting.length}개</div>"
+  ],
+  [
+   "<p class=\"wr-note\">${otherExisting.length}개는 회사에 등록된 다른 담당자의 페이지입니다. 담당자 추가를 관리자에게 요청해 주세요.</p>",
+   "<p class=\"wr-note\">${otherExisting.length}개는 다른 사람이 맡은 페이지예요. 관리자에게 담당을 더해 달라고 해 주세요.</p>"
+  ],
+  [
+   "<p class=\"wr-note\">계정 연결을 완료하면 실제 수치를 확인할 수 있어요.</p>",
+   "<p class=\"wr-note\">계정을 연결하면 수치가 모이기 시작해요.</p>"
+  ]
+ ]
+}

@@ -24,7 +24,7 @@ const ordered=value=>value&&typeof value==='object'?Array.isArray(value)?value.m
 const stableJson=value=>JSON.stringify(ordered(value));
 function text(value,max,label,required=false){if(value==null&&!required)return '';if(typeof value!=='string'||value.length>max||/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(value))throw fail(`${label}: ${max}자 이하로 입력해 주세요.`);const result=value.trim();if(required&&!result)throw fail(`${label}을 입력해 주세요.`);return result;}
 function instant(value,label='확인 시각'){const match=typeof value==='string'&&/^(\d{4})-(\d{2})-(\d{2})T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/.exec(value);if(!match||+match[2]<1||+match[2]>12||+match[3]<1||+match[3]>new Date(Date.UTC(+match[1],+match[2],0)).getUTCDate()||!Number.isFinite(Date.parse(value)))throw fail(`${label}에는 시간대가 포함된 날짜와 시간을 입력해 주세요.`);return new Date(value).toISOString();}
-function publicationDay(value){const match=typeof value==='string'&&/^(\d{4})-(\d{2})-(\d{2})$/.exec(value);if(!match)throw fail('게시 날짜는 정확한 YYYY-MM-DD여야 합니다.');const year=+match[1],month=+match[2],day=+match[3],leap=year%4===0&&(year%100!==0||year%400===0),days=[31,leap?29:28,31,30,31,30,31,31,30,31,30,31];if(year<1||month<1||month>12||day<1||day>days[month-1])throw fail('실제로 존재하는 그레고리력 게시 날짜를 기록해 주세요.');return value;}
+function publicationDay(value){const match=typeof value==='string'&&/^(\d{4})-(\d{2})-(\d{2})$/.exec(value);if(!match)throw fail('게시 날짜는 YYYY-MM-DD로 적어 주세요.');const year=+match[1],month=+match[2],day=+match[3],leap=year%4===0&&(year%100!==0||year%400===0),days=[31,leap?29:28,31,30,31,30,31,31,30,31,30,31];if(year<1||month<1||month>12||day<1||day>days[month-1])throw fail('실제로 존재하는 그레고리력 게시 날짜를 기록해 주세요.');return value;}
 export function producerPublicationDateNotice(value){const date=publicationDay(value);return `[게시일 정밀도] 원보고서의 날짜 기록: ${date}. 정확한 게시 시각·시간대와 원문 일치 여부는 미확인입니다. 최근 6시간·24시간의 새 게시 자료로 확정하지 않습니다.`;}
 // This adapter is used only after a completed producer Doc is parsed. The
 // public/API/CLI validator below still requires an exact instant or null.
@@ -33,7 +33,7 @@ export function normalizeProducerPublicationDates(input,{at=new Date().toISOStri
   if(!Array.isArray(input.entries))return {report:input,publicationDateNormalizations};
   const entries=input.entries.map((entry,entryIndex)=>{
     const value=entry?.research?.publishedAt;if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value))return entry;
-    const publishedDate=publicationDay(value),checkedAt=instant(entry.checkedAt);if(publishedDate>kstDate(checkedAt)||publishedDate>kstDate(at))throw fail('게시 날짜 기록은 실제 확인 시각과 현재 시각의 한국 날짜보다 늦을 수 없습니다.');
+    const publishedDate=publicationDay(value),checkedAt=instant(entry.checkedAt);if(publishedDate>kstDate(checkedAt)||publishedDate>kstDate(at))throw fail('게시 날짜가 자료를 확인한 날이나 오늘보다 늦어요. 날짜를 다시 확인해 주세요.');
     const previous=text(entry.research.limitations,1500,'확인 범위와 한계',true),notice=producerPublicationDateNotice(publishedDate),limitations=previous.includes(notice)?previous:previous+' '+notice;
     text(limitations,1500,'게시 날짜 정밀도를 포함한 확인 범위와 한계',true);publicationDateNormalizations.push({entryIndex,publishedDate});
     return {...entry,research:{...entry.research,publishedAt:null,limitations}};
@@ -50,18 +50,18 @@ export function normalizeResearchUrl(source,kind,value){
   if(!sourceKinds[source]?.includes(kind))throw fail('자료 종류를 확인해 주세요.');
   const url=secureUrl(value),host=url.hostname.toLowerCase(),path=url.pathname;
   if(source==='tiktok-top-ads'){
-    if(host!=='ads.tiktok.com'||!/^\/business\/creativecenter\/topads\/\d{8,25}\/pc\/(?:en|ko)\/?$/.test(path))throw fail('TikTok Top Ads의 개별 광고 상세 주소를 입력해 주세요.');
+    if(host!=='ads.tiktok.com'||!/^\/business\/creativecenter\/topads\/\d{8,25}\/pc\/(?:en|ko)\/?$/.test(path))throw fail('TikTok 인기 광고의 개별 광고 상세 주소를 넣어 주세요.');
     params(url,['countryCode','period']);if(url.searchParams.has('countryCode')&&!/^[A-Z]{2}$/.test(url.searchParams.get('countryCode')))throw fail('광고 탐색 국가를 확인해 주세요.');
     if(url.searchParams.has('period')&&!['7','30','180'].includes(url.searchParams.get('period')))throw fail('광고 탐색 기간을 확인해 주세요.');
   }else if(source==='youtube-trends'){
-    if(host==='studio.youtube.com'){if(!/^\/channel\/[A-Za-z0-9_-]{8,80}\/analytics(?:\/[A-Za-z0-9_-]+)*\/?$/.test(path))throw fail('YouTube Studio의 채널 분석 주소를 입력해 주세요.');params(url,[]);}
+    if(host==='studio.youtube.com'){if(!/^\/channel\/[A-Za-z0-9_-]{8,80}\/analytics(?:\/[A-Za-z0-9_-]+)*\/?$/.test(path))throw fail('YouTube 스튜디오의 채널 분석 주소를 넣어 주세요.');params(url,[]);}
     else if(['breakout-video','recent-video'].includes(kind)&&['www.youtube.com','youtube.com','youtu.be'].includes(host)){
       if(host==='youtu.be'){if(!/^\/[A-Za-z0-9_-]{11}\/?$/.test(path))throw fail('개별 YouTube 영상 주소를 입력해 주세요.');params(url,[]);}
       else if(path==='/watch'){params(url,['v']);if(!/^[A-Za-z0-9_-]{11}$/.test(url.searchParams.get('v')||''))throw fail('개별 YouTube 영상 주소를 입력해 주세요.');}
       else{if(!/^\/(?:shorts|embed)\/[A-Za-z0-9_-]{11}\/?$/.test(path))throw fail('개별 YouTube 영상 주소를 입력해 주세요.');params(url,[]);}
-    }else throw fail('YouTube Studio 분석 또는 개별 영상 주소를 입력해 주세요.');
+    }else throw fail('YouTube 스튜디오 분석 주소나 영상 하나의 주소를 넣어 주세요.');
   }else if(kind==='ad'){
-    if(!['www.facebook.com','facebook.com'].includes(host)||!/^\/ads\/library\/?$/.test(path))throw fail('Meta 광고 라이브러리의 개별 광고 주소를 입력해 주세요.');params(url,['id']);if(!/^\d{5,30}$/.test(url.searchParams.get('id')||''))throw fail('개별 광고의 라이브러리 ID가 필요합니다.');url.hostname='www.facebook.com';url.pathname='/ads/library/';
+    if(!['www.facebook.com','facebook.com'].includes(host)||!/^\/ads\/library\/?$/.test(path))throw fail('Meta 광고 라이브러리의 개별 광고 주소를 입력해 주세요.');params(url,['id']);if(!/^\d{5,30}$/.test(url.searchParams.get('id')||''))throw fail('광고 라이브러리 주소에 광고 ID(id=…)가 있어야 해요.');url.hostname='www.facebook.com';url.pathname='/ads/library/';
   }else if(kind==='best-practice'){
     const fb=host==='about.fb.com'&&/^\/news\/\d{4}\/\d{2}\/[a-z0-9-]+\/?$/.test(path);
     const meta=['www.facebook.com','facebook.com'].includes(host)&&/^\/business\/(?:help\/\d+|news\/[a-z0-9-]+)\/?$/.test(path);
@@ -78,8 +78,8 @@ export function normalizeResearchUrl(source,kind,value){
     if(!['www.facebook.com','facebook.com','m.facebook.com'].includes(host))throw fail('Facebook의 개별 게시물·릴스 주소를 입력해 주세요.');
     const ordinary=/^\/(?:reel\/\d{5,30}|[A-Za-z0-9._-]+\/(?:posts|videos)\/[A-Za-z0-9_-]{5,120})\/?$/.test(path);
     if(ordinary)params(url,[]);
-    else if(path==='/watch/'||path==='/watch'){params(url,['v']);if(!/^\d{5,30}$/.test(url.searchParams.get('v')||''))throw fail('개별 Facebook 영상 ID가 필요합니다.');}
-    else if(path==='/permalink.php'){params(url,['story_fbid','id']);if(!['story_fbid','id'].every(key=>/^\d{5,30}$/.test(url.searchParams.get(key)||'')))throw fail('개별 Facebook 게시물 ID가 필요합니다.');}
+    else if(path==='/watch/'||path==='/watch'){params(url,['v']);if(!/^\d{5,30}$/.test(url.searchParams.get('v')||''))throw fail('주소에 Facebook 영상 ID(v=…)가 있어야 해요.');}
+    else if(path==='/permalink.php'){params(url,['story_fbid','id']);if(!['story_fbid','id'].every(key=>/^\d{5,30}$/.test(url.searchParams.get(key)||'')))throw fail('주소에 Facebook 게시물 ID가 있어야 해요.');}
     else throw fail('Facebook의 개별 게시물·릴스 주소를 입력해 주세요.');url.hostname='www.facebook.com';
   }
   return url.href;
@@ -112,21 +112,21 @@ const guideIdentity=row=>['facebook','instagram'].includes(row.source)&&row.kind
 
 function productionGuideValue(value,row){
   object(value);if(Object.keys(value).some(key=>!['formatName','productionSteps','requiredAssets','brandAdaptation','appeal','estimatedMinutes'].includes(key)))throw fail('제작 가이드에는 형식·제작 순서·준비물·브랜드 적용·어필·예상 시간만 넣어 주세요.');
-  if(!concreteKinds.has(row.kind))throw fail('준비된 제작 가이드는 실제 공개 광고·릴스·영상 사례에만 붙일 수 있습니다.');
-  if(!['page-read','video-watched'].includes(row.researchEvidenceLevel))throw fail('제작 가이드는 원문 본문이나 영상을 직접 확인한 사례에만 붙일 수 있습니다.');
+  if(!concreteKinds.has(row.kind))throw fail('제작 가이드는 공개된 광고·릴스·영상 사례에만 붙일 수 있어요.');
+  if(!['page-read','video-watched'].includes(row.researchEvidenceLevel))throw fail('제작 가이드는 원문이나 영상을 직접 본 사례에만 붙일 수 있어요.');
   const result={formatName:text(value.formatName,120,'제작 형식',true),productionSteps:[],requiredAssets:[],brandAdaptation:text(value.brandAdaptation,3000,'브랜드에 적용할 점',true),appeal:text(value.appeal,1600,'시청자에게 어필할 점',true)};
   if(!Array.isArray(value.productionSteps)||value.productionSteps.length<3||value.productionSteps.length>12)throw fail('실행할 제작 순서는 3개 이상 12개 이하로 기록해 주세요.');
-  result.productionSteps=value.productionSteps.map((step,index)=>{object(step);if(Object.keys(step).some(key=>!['order','title','instruction'].includes(key))||step.order!==index+1)throw fail('제작 순서는 1부터 빠짐없이 이어져야 합니다.');return {order:step.order,title:text(step.title,120,'제작 단계 제목',true),instruction:text(step.instruction,2000,'실행할 제작 지침',true)};});
+  result.productionSteps=value.productionSteps.map((step,index)=>{object(step);if(Object.keys(step).some(key=>!['order','title','instruction'].includes(key))||step.order!==index+1)throw fail('제작 순서는 1부터 빠짐없이 이어져야 해요.');return {order:step.order,title:text(step.title,120,'제작 단계 제목',true),instruction:text(step.instruction,2000,'실행할 제작 지침',true)};});
   if(!Array.isArray(value.requiredAssets)||value.requiredAssets.length<1||value.requiredAssets.length>12)throw fail('필요한 실제 자료와 준비물은 1개 이상 12개 이하로 기록해 주세요.');
   result.requiredAssets=value.requiredAssets.map(asset=>text(asset,300,'준비할 자료',true));
-  if(value.estimatedMinutes!==undefined){if(value.estimatedMinutes!==null&&(!Number.isSafeInteger(value.estimatedMinutes)||value.estimatedMinutes<1||value.estimatedMinutes>1440))throw fail('예상 제작 시간은 1~1,440분의 정수 또는 미확인 null이어야 합니다.');result.estimatedMinutes=value.estimatedMinutes;}
+  if(value.estimatedMinutes!==undefined){if(value.estimatedMinutes!==null&&(!Number.isSafeInteger(value.estimatedMinutes)||value.estimatedMinutes<1||value.estimatedMinutes>1440))throw fail('예상 제작 시간은 1~1,440분 사이 정수로 적고, 모르면 null로 두세요.');result.estimatedMinutes=value.estimatedMinutes;}
   return result;
 }
 
 function researchValue(value,row){
   object(value);if(Object.keys(value).some(key=>!researchKeys.has(key)))throw fail('조사 내용에는 허용된 사실·적용 제안 항목만 넣어 주세요.');
   if(!['page-read','video-watched','metadata-only','search-only'].includes(value.evidenceLevel))throw fail('조사에서 실제 확인한 근거 수준을 선택해 주세요.');
-  if(value.evidenceLevel==='search-only')throw fail('검색 결과만 본 자료는 가져올 수 없습니다. 공식 원문을 직접 연 자료만 포함해 주세요.');
+  if(value.evidenceLevel==='search-only')throw fail('검색 결과만 본 자료는 가져올 수 없어요. 원문을 직접 연 자료만 넣어 주세요.');
   if(!['high','medium','watch'].includes(value.priority))throw fail('검토 우선순위는 high·medium·watch 중에서 선택해 주세요.');
   const result={summary:text(value.summary,600,'짧은 조사 요약',true),whyNow:text(value.whyNow,1200,'지금 살펴볼 이유',true),brands:[],priority:value.priority,observedFacts:[],evidenceLevel:value.evidenceLevel,limitations:text(value.limitations,1500,'확인 범위와 한계',true),applications:[]};
   if(value.viewerReason!==undefined)result.viewerReason=text(value.viewerReason,600,'시청자가 볼 이유');
@@ -137,54 +137,54 @@ function researchValue(value,row){
     object(fact);if(Object.keys(fact).some(key=>!['text','sourceUrl'].includes(key)))throw fail('관찰 사실에는 내용과 공식 근거 주소만 넣어 주세요.');
     return {text:text(fact.text,1000,'조사에 기록된 관찰 사실',true),sourceUrl:normalizeResearchUrl(row.source,row.kind,fact.sourceUrl===undefined?row.sourceUrl:fact.sourceUrl)};
   });
-  if(value.publishedAt!==undefined){result.publishedAt=value.publishedAt===null?null:instant(value.publishedAt,'원문 게시 시각');if(result.publishedAt&&Date.parse(result.publishedAt)>Date.parse(row.checkedAt))throw fail('원문 게시 시각은 자료를 확인한 시각보다 늦을 수 없습니다.');}
+  if(value.publishedAt!==undefined){result.publishedAt=value.publishedAt===null?null:instant(value.publishedAt,'원문 게시 시각');if(result.publishedAt&&Date.parse(result.publishedAt)>Date.parse(row.checkedAt))throw fail('원문 게시 시각이 자료를 확인한 시각보다 늦어요. 시각을 다시 확인해 주세요.');}
   if(!Array.isArray(value.applications)||value.applications.length>3)throw fail('우리 콘텐츠의 적용 제안은 최대 3개까지 기록해 주세요.');
   result.applications=value.applications.map(application=>{
     object(application);if(Object.keys(application).some(key=>!Object.hasOwn(applicationLengths,key)))throw fail('적용 제안에는 브랜드·아이디어·훅·행동·보상·맞춤 도구·검증 계획만 넣어 주세요.');
     return Object.fromEntries(Object.entries(applicationLengths).map(([key,max])=>[key,text(application[key],max,'적용 제안 '+key,true)]));
   });
-  if(value.productionGuide!==undefined){if(!result.applications.length)throw fail('제작 가이드에는 브랜드·훅·행동·보상·맞춤 도구·72시간 검증 계획이 필요합니다.');result.productionGuide=productionGuideValue(value.productionGuide,{...row,researchEvidenceLevel:value.evidenceLevel});}
-  if(value.evidenceLevel==='metadata-only'&&['hook','structure'].some(key=>row[key]!==undefined&&row[key]!==''))throw fail('표시 정보만 확인한 자료에는 영상의 도입·전개 관찰을 넣을 수 없습니다. 적용 아이디어는 제안 항목에만 기록해 주세요.');
+  if(value.productionGuide!==undefined){if(!result.applications.length)throw fail('제작 가이드에는 적용 제안(브랜드·훅·행동·보상·맞춤 도구·72시간 판정)이 하나 이상 있어야 해요.');result.productionGuide=productionGuideValue(value.productionGuide,{...row,researchEvidenceLevel:value.evidenceLevel});}
+  if(value.evidenceLevel==='metadata-only'&&['hook','structure'].some(key=>row[key]!==undefined&&row[key]!==''))throw fail('제목·설명만 본 자료에는 영상의 도입·전개를 적을 수 없어요. 아이디어는 제안 항목에 적어 주세요.');
   return result;
 }
 
-function reportSize(input){let serialized;try{serialized=JSON.stringify(input);if(typeof serialized!=='string')throw new Error('JSON_REQUIRED');}catch{throw fail('보고서는 JSON으로 저장할 수 있는 입력이어야 합니다.');}if(Buffer.byteLength(serialized,'utf8')>REPORT_MAX_BYTES)throw fail('일일 조사 보고서는 UTF-8 JSON 기준 1MiB 이하여야 합니다.',413);}
+function reportSize(input){let serialized;try{serialized=JSON.stringify(input);if(typeof serialized!=='string')throw new Error('JSON_REQUIRED');}catch{throw fail('보고서를 JSON으로 저장할 수 없어요. 형식을 확인해 주세요.');}if(Buffer.byteLength(serialized,'utf8')>REPORT_MAX_BYTES)throw fail('조사 보고서가 1MB를 넘어요. 나눠서 가져와 주세요.',413);}
 
 // This read-only validator is shared with the scheduled report CLI. Account authority
 // and storage capacity are checked separately by importReport immediately before writing.
 export function validateResearchReport(input,{at=new Date().toISOString()}={}){
   object(input);reportSize(input);
   if(Object.keys(input).some(key=>!reportKeys.has(key))||input.schemaVersion!==1||!['gemini-spark','codex'].includes(input.provider))throw fail('일일 조사 보고서의 버전·제공자·항목을 확인해 주세요.');
-  const reportId=text(input.reportId,100,'보고서 ID',true);if(!/^[A-Za-z0-9][A-Za-z0-9._:-]*$/.test(reportId))throw fail('보고서 ID에는 영문·숫자·점·밑줄·콜론·하이픈만 사용할 수 있습니다.');
-  if(input.supersedesReportId!==undefined){const previous=text(input.supersedesReportId,100,'교정할 보고서 ID',true);if(previous!==input.supersedesReportId||previous===reportId||!/^[A-Za-z0-9][A-Za-z0-9._:-]*$/.test(previous)||runTimeKeys.some(key=>input[key]===undefined))throw fail('교정에는 서로 다른 기존 보고서 ID와 원래 조사 실행 시각이 필요합니다.');}
+  const reportId=text(input.reportId,100,'보고서 ID',true);if(!/^[A-Za-z0-9][A-Za-z0-9._:-]*$/.test(reportId))throw fail('보고서 ID에는 영문·숫자·점·밑줄·콜론·하이픈만 쓸 수 있어요.');
+  if(input.supersedesReportId!==undefined){const previous=text(input.supersedesReportId,100,'교정할 보고서 ID',true);if(previous!==input.supersedesReportId||previous===reportId||!/^[A-Za-z0-9][A-Za-z0-9._:-]*$/.test(previous)||runTimeKeys.some(key=>input[key]===undefined))throw fail('고쳐 넣는 보고서에는 원래 보고서 ID(새 ID와 다른 것)와 원래 조사 시각이 있어야 해요.');}
   at=instant(at);const date=input.date,today=kstDate(at),yesterday=kstDate(new Date(Date.parse(at)-DAY).toISOString());
-  if(typeof date!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(date)||![today,yesterday].includes(date))throw fail('일일 보고서 날짜는 한국시간 기준 오늘 또는 어제여야 합니다.');
+  if(typeof date!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(date)||![today,yesterday].includes(date))throw fail('보고서 날짜는 한국 시간으로 오늘이나 어제여야 해요.');
   const run={};
   if(runTimeKeys.some(key=>input[key]!==undefined)){
     for(const key of runTimeKeys)run[key]=instant(input[key],'조사 실행 시각 '+key);
     if(Date.parse(run.researchStartedAt)>Date.parse(run.asOfAt)||Date.parse(run.asOfAt)>Date.parse(run.researchCompletedAt)||Date.parse(run.researchCompletedAt)>Date.parse(at)||kstDate(run.researchCompletedAt)!==date||![today,yesterday].includes(kstDate(run.researchStartedAt)))throw fail('현재 검색 기준·조사 시작·완료의 실제 시각과 한국시간 완료 날짜를 확인해 주세요.');
   }
-  if(!Array.isArray(input.entries)||input.entries.length>30)throw fail('한 보고서에는 자료를 최대 30개까지 넣을 수 있습니다.');
+  if(!Array.isArray(input.entries)||input.entries.length>30)throw fail('한 보고서에는 자료를 30개까지 넣을 수 있어요.');
   if(input.shareConfirmed!==undefined&&typeof input.shareConfirmed!=='boolean')throw fail('보고서 공유 확인 여부를 확인해 주세요.');
   if(input.visibility!==undefined&&!['private','team','company'].includes(input.visibility))throw fail('공유 범위를 확인해 주세요.');
   if(input.visibility&&input.visibility!=='private'&&input.shareConfirmed!==true)throw fail('선택한 자료를 지정한 범위에 공유할지 확인해 주세요.');
   if(input.teamId!=null)text(input.teamId,100,'공유 팀',true);
   const identities=new Set(),guideIdentities=new Set(),entries=input.entries.map(entry=>{
     object(entry);if(Object.keys(entry).some(key=>!reportEntryKeys.has(key))||typeof entry.source!=='string'||!Object.hasOwn(sourceKinds,entry.source)||typeof entry.kind!=='string')throw fail('보고서 자료에는 허용된 관찰 항목만 넣어 주세요.');
-    const checkedAt=instant(entry.checkedAt),checked=Date.parse(checkedAt);if(run.researchStartedAt?(checked<Date.parse(run.researchStartedAt)||checked>Date.parse(run.researchCompletedAt)):(kstDate(checkedAt)!==date||checked>Date.parse(at)))throw fail('자료 확인 시각은 실제 조사 구간 안의 과거 시각이어야 합니다.');
+    const checkedAt=instant(entry.checkedAt),checked=Date.parse(checkedAt);if(run.researchStartedAt?(checked<Date.parse(run.researchStartedAt)||checked>Date.parse(run.researchCompletedAt)):(kstDate(checkedAt)!==date||checked>Date.parse(at)))throw fail('자료를 확인한 시각이 조사한 시간 밖이거나 아직 오지 않은 시각이에요. 확인 시각을 고쳐 주세요.');
     const row={...entry,title:text(entry.title,200,'제목',true),sourceUrl:normalizeResearchUrl(entry.source,entry.kind,entry.sourceUrl),checkedAt};
     for(const [key,max]of [['creator',200],['hook',2000],['structure',4000],['adaptation',4000],['note',4000],['objective',200],['industry',200]])if(entry[key]!==undefined)text(entry[key],max,key);
     if(entry.region!==undefined)region(entry.region);
     if(entry.periodDays!==undefined){const value=scalar(entry.periodDays,'관찰 기간',{max:3650});if(value!==null&&![7,28,30,90,180].includes(value))throw fail('화면에 제공된 집계 기간을 선택해 주세요.');}
-    if(entry.interest!==undefined){if(!['unknown','very-low','low','medium','high','very-high'].includes(entry.interest))throw fail('화면에서 확인한 관심도를 선택해 주세요.');if(entry.interest!=='unknown'&&(entry.source!=='youtube-trends'||!needsResearchChannel(row)))throw fail('시청자 관심도는 YouTube Studio 관찰에만 기록할 수 있습니다.');}
-    if(entry.budgetLabel!==undefined&&entry.budgetLabel!==null&&(!['Low','Medium','High'].includes(entry.budgetLabel)||entry.source!=='tiktok-top-ads'))throw fail('예산 단계는 TikTok Top Ads의 표시값만 기록할 수 있습니다.');
+    if(entry.interest!==undefined){if(!['unknown','very-low','low','medium','high','very-high'].includes(entry.interest))throw fail('화면에서 확인한 관심도를 선택해 주세요.');if(entry.interest!=='unknown'&&(entry.source!=='youtube-trends'||!needsResearchChannel(row)))throw fail('시청자 관심도는 YouTube 스튜디오에서 본 자료에만 적을 수 있어요.');}
+    if(entry.budgetLabel!==undefined&&entry.budgetLabel!==null&&(!['Low','Medium','High'].includes(entry.budgetLabel)||entry.source!=='tiktok-top-ads'))throw fail('예산 단계는 TikTok 인기 광고에만 적을 수 있어요.');
     if(entry.durationSeconds!==undefined)scalar(entry.durationSeconds,'영상 길이',{max:86400,integer:false});
-    if(entry.ctrTopPercent!==undefined){const value=scalar(entry.ctrTopPercent,'CTR 상위 백분위',{max:100,integer:false});if(value!==null&&entry.source!=='tiktok-top-ads')throw fail('CTR 상위 백분위는 TikTok Top Ads에서 확인한 값만 기록할 수 있습니다.');}
-    if(entry.metrics!==undefined){object(entry.metrics);if(Object.keys(entry.metrics).some(key=>!metricNames.includes(key)))throw fail('허용된 조회·반응 수치만 입력해 주세요.');for(const [key,value]of Object.entries(entry.metrics)){const count=scalar(value,key);if(count!==null&&['facebook','instagram'].includes(entry.source)&&['ad','best-practice'].includes(entry.kind))throw fail('Meta 광고 사례와 공식 제작 안내에는 성과 수치를 입력할 수 없습니다.');}}
+    if(entry.ctrTopPercent!==undefined){const value=scalar(entry.ctrTopPercent,'클릭률 순위',{max:100,integer:false});if(value!==null&&entry.source!=='tiktok-top-ads')throw fail('클릭률 순위는 TikTok 인기 광고에만 적을 수 있어요.');}
+    if(entry.metrics!==undefined){object(entry.metrics);if(Object.keys(entry.metrics).some(key=>!metricNames.includes(key)))throw fail('허용된 조회·반응 수치만 입력해 주세요.');for(const [key,value]of Object.entries(entry.metrics)){const count=scalar(value,key);if(count!==null&&['facebook','instagram'].includes(entry.source)&&['ad','best-practice'].includes(entry.kind))throw fail('Meta 광고 사례와 공식 제작 안내에는 성과 수치를 넣을 수 없어요.');}}
     if(entry.channelId!=null&&entry.channelId!=='')text(entry.channelId,100,'채널',true);else if(needsResearchChannel(row))throw fail('이 관찰에 해당하는 담당 채널을 선택해 주세요.');
     if(entry.research!==undefined)row.research=researchValue(entry.research,row);
-    if(row.research?.productionGuide){const guideKey=guideIdentity(row);if(guideIdentities.has(guideKey))throw fail('같은 원문의 제작 가이드를 한 보고서에 중복으로 넣을 수 없습니다.');guideIdentities.add(guideKey);}
-    const identity=researchIdentity(row);if(identities.has(identity))throw fail('한 보고서에 같은 원문 자료를 두 번 넣을 수 없습니다.');identities.add(identity);
+    if(row.research?.productionGuide){const guideKey=guideIdentity(row);if(guideIdentities.has(guideKey))throw fail('한 보고서에 같은 원문의 제작 가이드를 두 번 넣을 수 없어요.');guideIdentities.add(guideKey);}
+    const identity=researchIdentity(row);if(identities.has(identity))throw fail('한 보고서에 같은 원문 자료를 두 번 넣을 수 없어요.');identities.add(identity);
     return row;
   });
   const result={...input,...run,reportId,entries};reportSize(result);return result;
@@ -198,14 +198,14 @@ export const CREATIVE_RESEARCH_SOURCES=Object.freeze([
 ]);
 
 function parseNextData(html){
-  const match=/<script\b(?=[^>]*\bid\s*=\s*["']__NEXT_DATA__["'])[^>]*>([\s\S]*?)<\/script\s*>/i.exec(html);if(!match)throw fail('공개 광고 정보가 보이지 않습니다. 원문을 직접 확인해 기록해 주세요.',422);
-  let parsed;try{parsed=JSON.parse(match[1]);}catch{throw fail('공개 광고 정보를 읽지 못했습니다. 원문을 직접 확인해 기록해 주세요.',422);}return parsed?.props?.pageProps?.data?.baseDetail;
+  const match=/<script\b(?=[^>]*\bid\s*=\s*["']__NEXT_DATA__["'])[^>]*>([\s\S]*?)<\/script\s*>/i.exec(html);if(!match)throw fail('광고 페이지에서 공개 정보를 찾지 못했어요. 「직접 쓰기」로 기록해 주세요.',422);
+  let parsed;try{parsed=JSON.parse(match[1]);}catch{throw fail('광고 정보를 읽지 못했어요. 「직접 쓰기」로 기록해 주세요.',422);}return parsed?.props?.pageProps?.data?.baseDetail;
 }
 function publicText(value,max){return typeof value==='string'?value.replace(/[\u0000-\u001f]/g,' ').trim().slice(0,max):'';}
 function publicCount(value){return typeof value==='number'&&Number.isSafeInteger(value)&&value>=0?value:null;}
 export function parseTopAd(html,sourceUrl,checkedAt){
   const url=new URL(normalizeResearchUrl('tiktok-top-ads','ad',sourceUrl)),id=/\/topads\/(\d+)\//.exec(url.pathname)[1],detail=parseNextData(html);
-  if(!detail||typeof detail!=='object'||String(detail.id)!==id)throw fail('요청한 광고의 공개 상세 정보를 확인하지 못했습니다.',422);
+  if(!detail||typeof detail!=='object'||String(detail.id)!==id)throw fail('이 광고의 공개 정보를 찾지 못했어요. 「직접 쓰기」로 기록해 주세요.',422);
   const countries=Array.isArray(detail.countryCode)?[...new Set(detail.countryCode.filter(value=>typeof value==='string'&&/^[A-Z]{2}$/.test(value)))].slice(0,40):[];
   const ctr=typeof detail.ctr==='number'&&Number.isFinite(detail.ctr)&&detail.ctr>=0&&detail.ctr<=1?Math.round(detail.ctr*10000)/100:null;
   return {source:'tiktok-top-ads',kind:'ad',title:publicText(detail.adTitle,200)||publicText(detail.brandName,200)||'TikTok 광고 '+id,sourceUrl:url.href,creator:publicText(detail.brandName,200),region:countries.length===1?countries[0]:'GLOBAL',actualRegions:countries,filterRegion:url.searchParams.get('countryCode')||null,periodDays:url.searchParams.has('period')?Number(url.searchParams.get('period')):null,checkedAt:instant(checkedAt),durationSeconds:typeof detail.videoInfo?.duration==='number'&&Number.isFinite(detail.videoInfo.duration)&&detail.videoInfo.duration>=0&&detail.videoInfo.duration<=86400?detail.videoInfo.duration:null,ctrTopPercent:ctr,budgetLabel:Number.isInteger(detail.cost)&&detail.cost>=0&&detail.cost<=2?['Low','Medium','High'][detail.cost]:null,objective:publicText(detail.objectiveKey,100),industry:publicText(detail.industryKey,100),metrics:{views:null,likes:publicCount(detail.like),comments:publicCount(detail.comment),shares:publicCount(detail.share),saves:null,reach:null},provenance:'official-page',provenanceDetails:{method:'public-detail',source:'TikTok Creative Center',checkedAt:instant(checkedAt),adId:id,sourceUrl:url.href,filterRegion:url.searchParams.get('countryCode')||null,reportedRegions:countries,metricSemantics:'공개 상세 화면의 수치입니다. CTR 상위 백분위이며 실제 클릭률·전환율이 아닙니다.'}};
@@ -220,7 +220,7 @@ export function createCreativeResearchService({store,clock=()=>new Date().toISOS
   const inflight=new Set(),revisionSalt=randomUUID();let stopped=false,cachedSnapshot=null;
   const totalChanges=store.db.prepare('SELECT total_changes() AS count'),dataVersion=store.db.prepare('PRAGMA data_version');
   function current(user){const live=user?.id&&store.get('users',user.id);if(!live?.active)throw fail('먼저 로그인해 주세요.',401);return live;}
-  function writable(user){user=current(user);if(user.role==='viewer')throw fail('열람 계정은 제작 참고 자료를 변경할 수 없습니다.',403);if(stopped)throw fail('서버가 종료 중입니다.',503);return user;}
+  function writable(user){user=current(user);if(user.role==='viewer')throw fail('보기 전용 계정이라 자료를 바꿀 수 없어요.',403);if(stopped)throw fail('서버를 다시 시작하는 중이에요. 잠시 뒤 다시 해 주세요.',503);return user;}
   function sameTeam(user,row,readStore=store){return !!user.teamId&&user.teamId===row.teamId&&readStore.get('teams',row.teamId)?.active===true;}
   function canRead(user,row,readStore=store){const scope=user.role==='admin'||row.ownerId===user.id||row.visibility==='company'||row.visibility==='team'&&sameTeam(user,row,readStore);if(!scope)return false;const channel=row.channelId&&readStore.get('channels',row.channelId);return !row.channelId||!!channel&&channel.active!==false&&canReadChannel(user,channel);}
   function canEdit(user,row,readStore=store){return user.role!=='viewer'&&canRead(user,row,readStore)&&(row.ownerId===user.id||user.role==='admin'||row.visibility==='team'&&user.role==='manager'&&sameTeam(user,row,readStore))&&(!row.channelId||canWriteChannel(user,readStore.get('channels',row.channelId)));}
@@ -235,7 +235,7 @@ export function createCreativeResearchService({store,clock=()=>new Date().toISOS
   }
   function presentation(user,row,visibleUserIds,snapshot){const readStore=snapshot?.readStore||store,channel=row.channelId&&readStore.get('channels',row.channelId),editable=canEdit(user,row,readStore);return {ownerName:readStore.get('users',row.ownerId)?.name||'이전 담당자',channelName:channel?(channel.displayName||channel.handle||channel.canonicalUrl||channel.id):null,canEdit:editable,canArchive:editable,productionReady:productionReady(row),usage:usage(user,row,visibleUserIds,snapshot)};}
   function view(user,row,visibleUserIds,snapshot){const {automaticSourceId,...publicRow}=row;return {...publicRow,...presentation(user,row,visibleUserIds,snapshot)};}
-  function find(user,id){const row=store.get(KIND,text(id,100,'자료 ID',true));if(!row||!canRead(user,row))throw fail('참고 자료를 찾을 수 없습니다.',404);return row;}
+  function find(user,id){const row=store.get(KIND,text(id,100,'자료 ID',true));if(!row||!canRead(user,row))throw fail('이 자료를 찾지 못했어요. 새로고침해 주세요.',404);return row;}
   function channel(user,id,source,required){if(id==null||id===''){if(required)throw fail('이 관찰에 해당하는 담당 채널을 선택해 주세요.');return null;}id=text(id,100,'채널',true);const row=store.get('channels',id),platform=source==='youtube-trends'?'youtube':source==='tiktok-top-ads'?'tiktok':source;if(!row||row.active===false||!canWriteChannel(user,row))throw fail('현재 수정할 수 있는 활성 담당 채널을 선택해 주세요.',404);if(row.platform!==platform)throw fail('자료와 같은 플랫폼의 담당 채널을 선택해 주세요.');return id;}
   function sharing(user,row,input,old){
     if(input.visibility!==undefined){if(!['private','team','company'].includes(input.visibility))throw fail('공유 범위를 확인해 주세요.');row.visibility=input.visibility;}
@@ -254,21 +254,21 @@ export function createCreativeResearchService({store,clock=()=>new Date().toISOS
     if(input.periodDays!==undefined)row.periodDays=scalar(input.periodDays,'관찰 기간',{max:3650});
     if(row.periodDays!==null&&![7,28,30,90,180].includes(row.periodDays))throw fail('화면에 제공된 집계 기간을 선택해 주세요.');
     if(input.interest!==undefined){if(!['unknown','very-low','low','medium','high','very-high'].includes(input.interest))throw fail('화면에서 확인한 관심도를 선택해 주세요.');row.interest=input.interest;}
-    if((row.source!=='youtube-trends'||!needsResearchChannel(row))&&row.interest!=='unknown')throw fail('시청자 관심도는 YouTube Studio 관찰에만 기록할 수 있습니다.');
+    if((row.source!=='youtube-trends'||!needsResearchChannel(row))&&row.interest!=='unknown')throw fail('시청자 관심도는 YouTube 스튜디오에서 본 자료에만 적을 수 있어요.');
     if(input.budgetLabel!==undefined){if(input.budgetLabel!==null&&!['Low','Medium','High'].includes(input.budgetLabel))throw fail('화면에 표시된 예산 단계를 선택해 주세요.');row.budgetLabel=input.budgetLabel;}
-    if(row.source!=='tiktok-top-ads'&&row.budgetLabel!==null)throw fail('예산 단계는 TikTok Top Ads의 표시값만 기록할 수 있습니다.');
+    if(row.source!=='tiktok-top-ads'&&row.budgetLabel!==null)throw fail('예산 단계는 TikTok 인기 광고에만 적을 수 있어요.');
     if(input.durationSeconds!==undefined)row.durationSeconds=scalar(input.durationSeconds,'영상 길이',{max:86400,integer:false});
-    if(input.ctrTopPercent!==undefined)row.ctrTopPercent=scalar(input.ctrTopPercent,'CTR 상위 백분위',{max:100,integer:false});
-    if(row.source!=='tiktok-top-ads'&&row.ctrTopPercent!==null)throw fail('CTR 상위 백분위는 TikTok Top Ads에서 확인한 값만 기록할 수 있습니다.');
+    if(input.ctrTopPercent!==undefined)row.ctrTopPercent=scalar(input.ctrTopPercent,'클릭률 순위',{max:100,integer:false});
+    if(row.source!=='tiktok-top-ads'&&row.ctrTopPercent!==null)throw fail('클릭률 순위는 TikTok 인기 광고에만 적을 수 있어요.');
     if(input.metrics!==undefined){object(input.metrics);if(Object.keys(input.metrics).some(key=>!metricNames.includes(key)))throw fail('허용된 조회·반응 수치만 입력해 주세요.');for(const key of metricNames)if(input.metrics[key]!==undefined)row.metrics[key]=scalar(input.metrics[key],key);}
-    if(['facebook','instagram'].includes(row.source)&&row.kind==='ad'&&Object.values(row.metrics).some(value=>value!==null))throw fail('일반 광고 라이브러리는 광고 성과 수치를 공개하지 않습니다. 광고 사례에는 성과 수치를 입력할 수 없습니다.');
-    if(['facebook','instagram'].includes(row.source)&&row.kind==='best-practice'&&Object.values(row.metrics).some(value=>value!==null))throw fail('공식 제작 안내에는 성과 수치를 입력할 수 없습니다.');
+    if(['facebook','instagram'].includes(row.source)&&row.kind==='ad'&&Object.values(row.metrics).some(value=>value!==null))throw fail('광고 라이브러리는 성과 수치를 공개하지 않아서 광고 사례에는 수치를 넣을 수 없어요.');
+    if(['facebook','instagram'].includes(row.source)&&row.kind==='best-practice'&&Object.values(row.metrics).some(value=>value!==null))throw fail('공식 제작 안내에는 성과 수치를 넣을 수 없어요.');
     const required=needsResearchChannel(row);
     row.channelId=channel(user,input.channelId===undefined?row.channelId:input.channelId,row.source,required);
     sharing(user,row,input,old);
     if(input.archived!==undefined){if(typeof input.archived!=='boolean')throw fail('보관 여부를 확인해 주세요.');row.archived=input.archived;row.status=input.archived?'archived':'active';}
     if(input.checkedAt!==undefined)row.checkedAt=instant(input.checkedAt);else if(!old&&!imported)row.checkedAt=at;
-    if(Date.parse(row.checkedAt)>Date.parse(at))throw fail('확인 날짜는 미래일 수 없습니다.');
+    if(Date.parse(row.checkedAt)>Date.parse(at))throw fail('확인한 날짜가 오늘보다 뒤예요. 날짜를 다시 골라 주세요.');
     const manualProvenance=needsResearchChannel(row)?'studio-observation':'manual';
     if(!imported&&!old){row.provenance=manualProvenance;row.provenanceDetails={method:'manual',sourceUrl:row.sourceUrl,checkedAt:row.checkedAt,metricSemantics:'직원이 공식 원문 또는 담당 계정 화면에서 직접 확인해 기록한 값입니다.'};}
     if(!imported&&old){const changed=['source','kind','sourceUrl','title','creator','region','interest','periodDays','durationSeconds','ctrTopPercent','budgetLabel','metrics','checkedAt','objective','industry'].some(key=>input[key]!==undefined&&JSON.stringify(row[key])!==JSON.stringify(old[key]));if(changed){row.provenance=manualProvenance;row.actualRegions=[];row.filterRegion=null;row.provenanceDetails={...old.provenanceDetails,method:'manual',sourceUrl:row.sourceUrl,checkedAt:row.checkedAt,editedAt:at,metricSemantics:'원문 또는 담당 계정 화면을 직접 확인해 수정한 값입니다.'};}}
@@ -308,7 +308,7 @@ export function createCreativeResearchService({store,clock=()=>new Date().toISOS
   function reportView(row){return Object.fromEntries(['id','reportId','supersedesReportId','date','provider','status','checkedAt','importedAt','createdCount','updatedCount','retainedCount','itemCount','acceptedCount','deferredCount','deferredObservationCount','deferredGuideCount','addedGuideCount','originalInputHash','publicationDateNormalizationCount',...runTimeKeys].map(key=>[key,row[key]]));}
   function guideDay(date=kstDate(instant(clock()))){return store.get(GUIDE_DAYS,date)||{date,entryIds:[],deferredCount:0};}
   function guidePool(){const day=guideDay();return {date:day.date,limit:GUIDE_DAILY_LIMIT,addedCount:day.entryIds.length,remainingCount:Math.max(0,GUIDE_DAILY_LIMIT-day.entryIds.length),deferredCount:day.deferredCount||0,capacity:GUIDE_CAPACITY,storedCount:store.all(KIND).filter(companyGuide).length};}
-  function assertCapacity(rows){if(rows.filter(companyGuide).length>GUIDE_CAPACITY)throw fail('회사 제작 가이드는 최대 5,000개까지 보관할 수 있습니다.',409);const counts=new Map();for(const row of rows.filter(row=>!companyGuide(row)))counts.set(row.ownerId,(counts.get(row.ownerId)||0)+1);if([...counts.values()].some(value=>value>500))throw fail('한 직원은 개인 자료와 일반 참고 자료를 최대 500개까지 보관할 수 있습니다.',409);}
+  function assertCapacity(rows){if(rows.filter(companyGuide).length>GUIDE_CAPACITY)throw fail('회사 제작 양식은 5,000개까지 보관할 수 있어요.',409);const counts=new Map();for(const row of rows.filter(row=>!companyGuide(row)))counts.set(row.ownerId,(counts.get(row.ownerId)||0)+1);if([...counts.values()].some(value=>value>500))throw fail('개인 자료와 참고 자료는 한 사람당 500개까지 저장할 수 있어요.',409);}
   function quotaAdmission(row,old,day,at){if(!companyGuide(row)||companyGuide(old||{})||day.entryIds.includes(row.id))return false;if(day.entryIds.length>=GUIDE_DAILY_LIMIT)return null;day.entryIds.push(row.id);row.productionGuideAddedAt=at;row.productionGuideAddedDate=day.date;return true;}
   function canReadReport(user,row,readStore=store,readable){
     if(user.role==='admin'||row.ownerId===user.id)return true;
@@ -351,7 +351,7 @@ export function createCreativeResearchService({store,clock=()=>new Date().toISOS
     return store.transaction(()=>{
       assertSession?.();user=writable(user);if(automatic&&user.role!=='admin')throw fail('현재 관리자만 전용 문서의 공개 자료를 자동 반영할 수 있습니다.',403);const previous=store.get(REPORT_KIND,id);
       if(previous){
-        if(previous.contentHash!==contentHash)throw fail('같은 보고서 ID의 내용이 달라졌습니다. 새 보고서 ID로 다시 가져와 주세요.',409);
+        if(previous.contentHash!==contentHash)throw fail('같은 보고서 ID로 내용이 다른 보고서가 이미 있어요. 새 보고서 ID(reportId)로 다시 가져와 주세요.',409);
         return {report:reportView(previous),entries:(previous.entryIds||[]).flatMap(entryId=>{const row=store.get(KIND,entryId);return row&&canRead(user,row)?[view(user,row)]:[];}),existing:true};
       }
       const superseded=input.supersedesReportId?store.get(REPORT_KIND,createHash('sha256').update(namespace+'\n'+input.provider+'\n'+input.supersedesReportId).digest('hex')):null;
@@ -368,13 +368,13 @@ export function createCreativeResearchService({store,clock=()=>new Date().toISOS
       const ordered=[...candidates].sort((a,b)=>(priority[a.row.research?.priority]??3)-(priority[b.row.research?.priority]??3)||(evidence[a.row.research?.evidenceLevel]??3)-(evidence[b.row.research?.evidenceLevel]??3)||b.row.checkedAt.localeCompare(a.row.checkedAt)||a.identity.localeCompare(b.identity));
       for(const {row:candidate,identity} of ordered){
         const old=eligible.filter(row=>{try{return researchIdentity(row)===identity;}catch{return false;}}).sort((a,b)=>(automatic?Number(b.automaticSourceId===automaticSourceId)-Number(a.automaticSourceId===automaticSourceId):0)||String(b.updatedAt||b.createdAt||'').localeCompare(String(a.updatedAt||a.createdAt||'')))[0];
-        if(old&&!canEdit(user,old))throw fail('이 원문 자료를 현재 수정할 권한이 없습니다.',403);
+        if(old&&!canEdit(user,old))throw fail('이 자료를 고칠 권한이 없어요.',403);
         if(superseded){
           // Explicit corrections replace an accepted observation, never a newer
           // observation or another writer's coincidentally equal report ID.
           const provenance=old?.provenanceDetails,receipts=old?acceptedReports.filter(receipt=>receipt.entryIds?.includes(old.id)&&receipt.reportId===provenance?.reportId&&receipt.provider===provenance?.provider&&receipt.importedAt===provenance?.importedAt):[];
-          if(!old||receipts.length!==1||receipts[0].id!==superseded.id||old.checkedAt!==candidate.checkedAt||old.visibility!==scope.visibility||old.teamId!==scope.teamId||runTimeKeys.some(key=>provenance?.[key]!==input[key])||!candidate.research?.productionGuide)throw fail('교정 대상이 새 조사로 바뀌었거나 접수된 제작 가이드와 일치하지 않습니다. 현재 원문과 보고서를 다시 확인해 주세요.',409);
-          if(Date.parse(candidate.productionGuideCheckedAt)<Date.parse(old.productionGuideCheckedAt||old.researchCheckedAt||old.checkedAt))throw fail('더 오래된 확인 시각의 제작 가이드로 교정할 수 없습니다.',409);
+          if(!old||receipts.length!==1||receipts[0].id!==superseded.id||old.checkedAt!==candidate.checkedAt||old.visibility!==scope.visibility||old.teamId!==scope.teamId||runTimeKeys.some(key=>provenance?.[key]!==input[key])||!candidate.research?.productionGuide)throw fail('고치려는 양식이 그사이 새 조사로 바뀌었거나 들어온 양식과 맞지 않아요. 원문과 보고서를 다시 확인해 주세요.',409);
+          if(Date.parse(candidate.productionGuideCheckedAt)<Date.parse(old.productionGuideCheckedAt||old.researchCheckedAt||old.checkedAt))throw fail('더 오래전에 확인한 양식으로는 고쳐 넣을 수 없어요.',409);
           candidate.provenanceDetails.supersedesReportId=input.supersedesReportId;
         }
         if(old&&Date.parse(old.checkedAt)>Date.parse(candidate.checkedAt)){
@@ -384,7 +384,7 @@ export function createCreativeResearchService({store,clock=()=>new Date().toISOS
           }
           if(candidate.research?.productionGuide&&old.visibility==='company'&&!companyGuide(old)){
             const promoted={...retained,research:candidate.research,researchCheckedAt:candidate.researchCheckedAt,productionGuideCheckedAt:candidate.productionGuideCheckedAt,productionGuideEvidenceLevel:candidate.productionGuideEvidenceLevel},shared=all.find(existing=>companyGuide(existing)&&guideIdentity(existing)===guideIdentity(promoted));
-            if(shared){if(!canRead(user,shared))throw fail('이 원문의 회사 제작 가이드를 현재 열람할 수 없습니다.',404);writes.push({row:shared,write:false});retainedCount++;continue;}
+            if(shared){if(!canRead(user,shared))throw fail('이 원문의 회사 제작 양식을 볼 수 없어요.',404);writes.push({row:shared,write:false});retainedCount++;continue;}
             if(guideSlots<=0||quotaAdmission(promoted,old,day,at)===null){deferredCount++;deferredGuideCount++;}else{retained=promoted;write=true;guideSlots--;nonguideCounts.set(old.ownerId,Math.max(0,(nonguideCounts.get(old.ownerId)||0)-1));}
           }
           writes.push({row:retained,write});retainedCount++;continue;
@@ -401,7 +401,7 @@ export function createCreativeResearchService({store,clock=()=>new Date().toISOS
           if(automatic&&!old.automaticSourceId)row.provenanceDetails={...row.provenanceDetails,adoptedObservation:{provenance:old.provenance,checkedAt:old.checkedAt,provenanceDetails:old.provenanceDetails||null}};
           if(candidate.channelId===null&&old.channelId){channel(user,old.channelId,row.source,needsResearchChannel(row));row.channelId=old.channelId;}
         }
-        if(companyGuide(row)){const duplicateGuide=all.find(existing=>existing.id!==row.id&&companyGuide(existing)&&guideIdentity(existing)===guideIdentity(row));if(duplicateGuide){if(!canRead(user,duplicateGuide))throw fail('이 원문의 회사 제작 가이드를 현재 열람할 수 없습니다.',404);writes.push({row:duplicateGuide,write:false});retainedCount++;continue;}}
+        if(companyGuide(row)){const duplicateGuide=all.find(existing=>existing.id!==row.id&&companyGuide(existing)&&guideIdentity(existing)===guideIdentity(row));if(duplicateGuide){if(!canRead(user,duplicateGuide))throw fail('이 원문의 회사 제작 양식을 볼 수 없어요.',404);writes.push({row:duplicateGuide,write:false});retainedCount++;continue;}}
         const newGuide=companyGuide(row)&&!companyGuide(old||{});
         if(newGuide&&(guideSlots<=0||quotaAdmission(row,old,day,at)===null)){deferredCount++;deferredGuideCount++;if(old){const adopted=automatic&&!old.automaticSourceId;writes.push({row:adopted?{...old,automaticSourceId}:old,write:adopted});retainedCount++;}continue;}
         // Automatic metadata observations have their own admission decision.
@@ -423,38 +423,38 @@ export function createCreativeResearchService({store,clock=()=>new Date().toISOS
       return {report:reportView(report),entries:writes.map(({row})=>view(user,row)),existing:false};
     });
   }
-  function capacity(user){if(store.all(KIND).filter(row=>row.ownerId===user.id&&!companyGuide(row)).length>=500)throw fail('한 직원은 개인 자료와 일반 참고 자료를 최대 500개까지 보관할 수 있습니다.',409);}
+  function capacity(user){if(store.all(KIND).filter(row=>row.ownerId===user.id&&!companyGuide(row)).length>=500)throw fail('개인 자료와 참고 자료는 한 사람당 500개까지 저장할 수 있어요.',409);}
   function duplicate(user,row){if(row.source!=='tiktok-top-ads')return null;const id=/\/topads\/(\d+)\//.exec(row.sourceUrl)?.[1];return store.all(KIND).find(existing=>existing.ownerId===user.id&&existing.source===row.source&&!existing.archived&&canRead(user,existing)&&/\/topads\/(\d+)\//.exec(existing.sourceUrl)?.[1]===id)||null;}
   function add(user,input){user=writable(user);const row=normalized(user,input),existing=duplicate(user,row);if(existing)return {entry:view(user,existing),existing:true};capacity(user);store.put(KIND,row.id,row);return {entry:view(user,row)};}
-  function update(user,id,input){user=writable(user);return store.transaction(()=>{user=writable(user);const old=find(user,id);if(!canEdit(user,old))throw fail('이 참고 자료를 수정할 권한이 없습니다.',403);const row=normalized(user,input,old),at=instant(clock()),day=guideDay(kstDate(at)),all=store.all(KIND);if(companyGuide(row)&&all.some(existing=>existing.id!==row.id&&companyGuide(existing)&&guideIdentity(existing)===guideIdentity(row)))throw fail('같은 원문의 회사 제작 가이드를 중복으로 등록할 수 없습니다.',409);if(quotaAdmission(row,old,day,at)===null)throw fail('오늘 새로 등록할 회사 제작 가이드 10개를 모두 채웠습니다.',409);assertCapacity(all.map(existing=>existing.id===row.id?row:existing));store.put(KIND,row.id,row);if(day.entryIds.length)store.put(GUIDE_DAYS,day.date,day);return {entry:view(user,row)};});}
+  function update(user,id,input){user=writable(user);return store.transaction(()=>{user=writable(user);const old=find(user,id);if(!canEdit(user,old))throw fail('이 자료를 고칠 권한이 없어요.',403);const row=normalized(user,input,old),at=instant(clock()),day=guideDay(kstDate(at)),all=store.all(KIND);if(companyGuide(row)&&all.some(existing=>existing.id!==row.id&&companyGuide(existing)&&guideIdentity(existing)===guideIdentity(row)))throw fail('같은 원문의 회사 제작 양식이 이미 있어요.',409);if(quotaAdmission(row,old,day,at)===null)throw fail('오늘 들어올 회사 제작 양식 10개가 다 찼어요. 내일 다시 저장해 주세요.',409);assertCapacity(all.map(existing=>existing.id===row.id?row:existing));store.put(KIND,row.id,row);if(day.entryIds.length)store.put(GUIDE_DAYS,day.date,day);return {entry:view(user,row)};});}
   function archive(user,id,input={archived:true}){object(input);return update(user,id,{archived:input.archived??true});}
   function emptyUsageInput(input){object(input);if(Object.keys(input).length)throw fail('가이드 선택·해제는 빈 요청으로 보내 주세요.');}
   function claim(user,id,input={}){
-    user=writable(user);emptyUsageInput(input);return store.transaction(()=>{user=writable(user);const row=find(user,id);if(!productionReady(row))throw fail('현재 공유된 준비 가이드만 선택할 수 있습니다.',409);const saved=usageFor(row);if(saved&&saved.userId!==user.id)throw fail('다른 직원이 이미 사용 중인 가이드입니다.',409);if(!saved)usagePut.run(row.id,guideIdentity(row),user.id,instant(clock()));return {entry:view(user,row)};});
+    user=writable(user);emptyUsageInput(input);return store.transaction(()=>{user=writable(user);const row=find(user,id);if(!productionReady(row))throw fail('회사에 공유된 제작 양식만 맡을 수 있어요.',409);const saved=usageFor(row);if(saved&&saved.userId!==user.id)throw fail('다른 크루가 이미 맡은 양식이에요.',409);if(!saved)usagePut.run(row.id,guideIdentity(row),user.id,instant(clock()));return {entry:view(user,row)};});
   }
   function release(user,id,input={}){
-    user=writable(user);emptyUsageInput(input);return store.transaction(()=>{user=writable(user);id=text(id,100,'자료 ID',true);const direct=usageGet.get(id),stored=store.get(KIND,id);if(direct?.userId===user.id&&(!stored||!canRead(user,stored))){usageRemove.run(id);return {entry:{id,productionReady:false,usage:{status:'available',canClaim:false,canRelease:false,isMine:false}}};}const row=find(user,id),saved=usageFor(row);if(saved&&saved.userId!==user.id&&user.role!=='admin')throw fail('본인이 선택한 가이드만 해제할 수 있습니다.',403);if(row.visibility!=='company'&&user.role!=='admin'&&saved?.userId!==user.id)throw fail('공유된 가이드의 선택 상태만 변경할 수 있습니다.',403);if(saved)usageRemove.run(saved.entryId);return {entry:view(user,row)};});
+    user=writable(user);emptyUsageInput(input);return store.transaction(()=>{user=writable(user);id=text(id,100,'자료 ID',true);const direct=usageGet.get(id),stored=store.get(KIND,id);if(direct?.userId===user.id&&(!stored||!canRead(user,stored))){usageRemove.run(id);return {entry:{id,productionReady:false,usage:{status:'available',canClaim:false,canRelease:false,isMine:false}}};}const row=find(user,id),saved=usageFor(row);if(saved&&saved.userId!==user.id&&user.role!=='admin')throw fail('내가 맡은 양식만 내려놓을 수 있어요.',403);if(row.visibility!=='company'&&user.role!=='admin'&&saved?.userId!==user.id)throw fail('회사에 공유된 양식만 맡거나 내려놓을 수 있어요.',403);if(saved)usageRemove.run(saved.entryId);return {entry:view(user,row)};});
   }
   async function loadTopAd(sourceUrl){
     let url=normalizeResearchUrl('tiktok-top-ads','ad',sourceUrl);const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);timer.unref();
     try{
       for(let redirects=0;redirects<=2;redirects++){
         const response=await fetchImpl(url,{redirect:'manual',signal:controller.signal,headers:{Accept:'text/html','User-Agent':'SYNK-CreativeResearch/1.0'}});
-        if(response.status>=300&&response.status<400){const location=response.headers.get('location');if(!location||redirects===2)throw fail('공식 광고 상세 페이지로 연결하지 못했습니다.',502);url=normalizeResearchUrl('tiktok-top-ads','ad',new URL(location,url).href);continue;}
-        if(!response.ok)throw fail('공식 광고 페이지에 연결하지 못했습니다. 원문을 직접 확인해 기록해 주세요.',502);
+        if(response.status>=300&&response.status<400){const location=response.headers.get('location');if(!location||redirects===2)throw fail('광고 상세 페이지에 연결하지 못했어요. 「직접 쓰기」로 기록해 주세요.',502);url=normalizeResearchUrl('tiktok-top-ads','ad',new URL(location,url).href);continue;}
+        if(!response.ok)throw fail('광고 페이지에 연결하지 못했어요. 「직접 쓰기」로 기록해 주세요.',502);
         if(response.url)normalizeResearchUrl('tiktok-top-ads','ad',response.url);
-        if(!/text\/html|application\/xhtml\+xml/i.test(response.headers.get('content-type')||''))throw fail('공식 광고 상세 화면이 아닙니다.',422);
-        const limit=2*1024*1024;if(Number(response.headers.get('content-length'))>limit)throw fail('광고 상세 정보가 너무 큽니다.',422);
-        let html;if(response.body?.getReader){const reader=response.body.getReader(),parts=[];let size=0;try{for(;;){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>limit){await reader.cancel();throw fail('광고 상세 정보가 너무 큽니다.',422);}parts.push(Buffer.from(value));}html=Buffer.concat(parts).toString('utf8');}finally{reader.releaseLock();}}else{html=await response.text();if(Buffer.byteLength(html)>limit)throw fail('광고 상세 정보가 너무 큽니다.',422);}
+        if(!/text\/html|application\/xhtml\+xml/i.test(response.headers.get('content-type')||''))throw fail('광고 상세 페이지 주소가 아니에요. TikTok 인기 광고의 상세 주소를 넣어 주세요.',422);
+        const limit=2*1024*1024;if(Number(response.headers.get('content-length'))>limit)throw fail('광고 페이지가 너무 커서 읽지 못했어요. 「직접 쓰기」로 기록해 주세요.',422);
+        let html;if(response.body?.getReader){const reader=response.body.getReader(),parts=[];let size=0;try{for(;;){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>limit){await reader.cancel();throw fail('광고 페이지가 너무 커서 읽지 못했어요. 「직접 쓰기」로 기록해 주세요.',422);}parts.push(Buffer.from(value));}html=Buffer.concat(parts).toString('utf8');}finally{reader.releaseLock();}}else{html=await response.text();if(Buffer.byteLength(html)>limit)throw fail('광고 페이지가 너무 커서 읽지 못했어요. 「직접 쓰기」로 기록해 주세요.',422);}
         return parseTopAd(html,sourceUrl,clock());
       }
-      throw fail('공식 광고 상세 페이지로 연결하지 못했습니다.',502);
-    }catch(error){if(error.status)throw error;throw fail('공식 광고 정보를 가져오지 못했습니다. 원문을 직접 확인해 기록해 주세요.',502);}finally{clearTimeout(timer);}
+      throw fail('광고 상세 페이지에 연결하지 못했어요. 「직접 쓰기」로 기록해 주세요.',502);
+    }catch(error){if(error.status)throw error;throw fail('광고 정보를 가져오지 못했어요. 「직접 쓰기」로 기록해 주세요.',502);}finally{clearTimeout(timer);}
   }
   function importTopAd(user,input,{assertSession}={}){
     user=writable(user);object(input);const url=normalizeResearchUrl('tiktok-top-ads','ad',input.sourceUrl??input.url);
     const draft={...input,source:'tiktok-top-ads',kind:'ad',sourceUrl:url,title:'가져오는 광고'};delete draft.url;
-    const preview=normalized(user,draft),existing=duplicate(user,preview);if(existing)return Promise.resolve({entry:view(user,existing),existing:true});capacity(user);if(inflight.size>=3)throw fail('광고 가져오기가 진행 중입니다. 잠시 후 다시 시도해 주세요.',429);
+    const preview=normalized(user,draft),existing=duplicate(user,preview);if(existing)return Promise.resolve({entry:view(user,existing),existing:true});capacity(user);if(inflight.size>=3)throw fail('광고를 가져오는 중이에요. 잠시 뒤 다시 눌러 주세요.',429);
     const work=(async()=>{const imported=await loadTopAd(url);assertSession?.();user=writable(user);const allowed=Object.fromEntries(['visibility','teamId','shareConfirmed','channelId','hook','structure','adaptation','note'].filter(key=>input[key]!==undefined).map(key=>[key,input[key]]));const row=normalized(user,allowed,null,{imported});assertSession?.();const existing=duplicate(user,row);if(existing)return {entry:view(user,existing),existing:true};capacity(user);store.put(KIND,row.id,row);return {entry:view(user,row)};})();
     inflight.add(work);work.then(()=>inflight.delete(work),()=>inflight.delete(work));return work;
   }

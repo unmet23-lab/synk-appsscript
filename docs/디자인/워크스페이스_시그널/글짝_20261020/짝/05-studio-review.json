@@ -1,0 +1,187 @@
+{
+ "public/studio-review.js": [
+  [
+   "'날짜 미확인'",
+   "'날짜 모름'",
+   {
+    "n": 2
+   }
+  ],
+  [
+   "escape(version.text||'내용이 없습니다.')",
+   "escape(version.text||'내용이 없어요.')"
+  ],
+  [
+   "<h3>원문을 살펴보세요</h3><p>새 탭에서 콘텐츠를 보고, 함께 남긴 배울 점을 참고하세요.</p>",
+   "<h3>원문에서 보는 콘텐츠예요</h3><p>새 탭에서 열어 보세요.</p>"
+  ],
+  [
+   "'<p role=\"status\">열 수 있는 주소가 없습니다.</p>'",
+   "'<p role=\"status\">열 수 있는 주소가 없어요.</p>'"
+  ],
+  [
+   "'<div class=\"swr-no-media\"><p>미디어 주소를 확인할 수 없습니다.</p></div>'",
+   "'<div class=\"swr-no-media\"><p>파일 주소를 읽지 못했어요. 이 버전을 다시 올려 주세요.</p></div>'"
+  ],
+  [
+   "swrEmpty('함께 볼 완성본을 골라 주세요','제작 보드에서 콘텐츠를 열면 버전과 피드백을 한곳에서 확인할 수 있어요.',swButton('제작 보드로','review-board','arrow','primary'))",
+   "swrEmpty('볼 작업을 골라 주세요','제작 상황판에서 작업을 열면 버전과 의견을 한곳에서 볼 수 있어요.',swButton('제작 상황판으로','review-board','arrow','primary'))"
+  ],
+  [
+   "<span class=\"swr-kicker\">실제 완성본 검토</span>",
+   "<span class=\"swr-kicker\">완성본 검토</span>"
+  ],
+  [
+   "<p>제작 ${escape(production.assigneeName||production.ownerName||'담당자 미지정')}<span>·</span>검토 ${escape(production.reviewerName||'검토자 미지정')}</p>",
+   "<p>제작 ${escape(production.assigneeName||production.ownerName||'없음')}<span>·</span>검토 ${escape(production.reviewerName||'없음')}</p>"
+  ],
+  [
+   "swButton('연결된 기획 보기','open-linked-draft'",
+   "swButton('기획 보기','open-linked-draft'"
+  ],
+  [
+   "swButton('새 버전 추가','review-version','plus','primary')",
+   "swButton('버전 추가','review-version','plus','primary')"
+  ],
+  [
+   "<span><b>${versions.length}</b>개 버전</span><span><b>${openNotes}</b>개 남은 의견</span><p>직접 읽고 보고 들은 내용을 남겨 주세요. 의견 해결과 최종 품질 판단은 구분합니다.</p>",
+   "<span>버전 <b>${versions.length}</b>개</span><span>남은 의견 <b>${openNotes}</b>개</span><p>직접 읽고 보고 들은 것을 남겨 주세요. 의견을 다 해결해도 완성인지는 따로 정해요.</p>"
+  ],
+  [
+   "swrEmpty('첫 완성본을 기다리고 있어요','영상·이미지를 올리거나 글·외부 링크를 버전으로 남겨 보세요.'",
+   "swrEmpty('아직 버전이 없어요','영상·이미지를 올리거나 글·링크를 버전으로 남겨 보세요.'"
+  ],
+  [
+   "${version.kind==='video'?'영상은 직접 재생해 확인해 주세요. 장면에 대한 의견은 현재 재생 시간을 함께 남길 수 있어요.':version.kind==='text'?'문장의 흐름과 설명, 마지막 행동까지 실제로 읽어 보고 의견을 남겨 주세요.':'실제 크기와 내용을 확인하고 어떤 부분을 바꾸면 좋을지 구체적으로 남겨 주세요.'}",
+   "${version.kind==='video'?'영상은 끝까지 재생해 보고 의견을 남겨 주세요. 장면 의견에는 지금 재생 시간을 붙일 수 있어요.':version.kind==='text'?'끝까지 읽어 보고 흐름과 설명, 마지막 행동에 대한 의견을 남겨 주세요.':'실제 크기로 보고 바꿀 곳을 구체적으로 남겨 주세요.'}"
+  ],
+  [
+   "<p>이 버전과 좋은 이유를 함께 좋은 예시함에 공유할 수 있어요.</p>",
+   "<p>이 버전과 좋은 이유를 「좋은 콘텐츠 예시함」에 공유할 수 있어요.</p>"
+  ],
+  [
+   "'<p class=\"swr-readonly\">현재 권한으로는 의견을 읽을 수 있어요.</p>'",
+   "'<p class=\"swr-readonly\">의견을 읽을 수만 있어요.</p>'"
+  ],
+  [
+   "<span class=\"sr-only\">의견 버전 범위</span>",
+   "<span class=\"sr-only\">의견을 볼 버전</span>"
+  ],
+  [
+   "swrOption('current','선택한 버전',swr.noteScope)",
+   "swrOption('current','이 버전',swr.noteScope)"
+  ],
+  [
+   ">해결한 의견 포함</label>",
+   ">해결한 의견도 보기</label>"
+  ],
+  [
+   "<label class=\"field\">검토 관점<select name=\"axis\">",
+   "<label class=\"field\">관점<select name=\"axis\">"
+  ],
+  [
+   "swButton('현재 시간 담기','review-capture'",
+   "swButton('지금 시간 넣기','review-capture'"
+  ],
+  [
+   "'<span>의견은 이 버전에 남습니다.</span>'",
+   "'<span>이 버전에 의견이 남아요.</span>'"
+  ],
+  [
+   "'<p class=\"swr-notes-empty\">표시할 의견이 없어요.<br>보고 느낀 점을 첫 의견으로 남겨 보세요.</p>'",
+   "'<p class=\"swr-notes-empty\">아직 의견이 없어요.<br>보고 느낀 점을 남겨 보세요.</p>'"
+  ],
+  [
+   "'<span class=\"swr-resolved-mark\">해결 표시됨</span>':'<span>확인할 의견</span>'",
+   "'<span class=\"swr-resolved-mark\">해결함</span>':'<span>남은 의견</span>'"
+  ],
+  [
+   "<p>좋았던 이유까지 남겨, 다음 기획에 활용하세요.</p>",
+   "<p>좋았던 이유까지 남겨 두고 다음 기획에 써요.</p>"
+  ],
+  [
+   "cpButton('예시 등록','example-new','plus','primary')",
+   "cpButton('예시 추가','example-new','plus','primary')"
+  ],
+  [
+   "swButton('자세히 보기','example-open'",
+   "swButton('자세히','example-open'"
+  ],
+  [
+   "all.length?'다른 관점이나 검색어로 찾아보세요.':'다시 보고 싶은 링크나 글에 좋은 이유를 함께 남기면 됩니다.'",
+   "all.length?'다른 관점이나 검색어로 찾아 보세요.':'다시 보고 싶은 링크나 글을 좋은 이유와 함께 남겨 보세요.'"
+  ],
+  [
+   "modal('새 완성본 버전','이전 파일을 덮어쓰지 않고 새 버전으로 기록합니다.',",
+   "modal('새 버전','이전 버전은 그대로 두고 새 버전으로 남겨요.',"
+  ],
+  [
+   "<label class=\"field\">등록할 내용<select name=\"kind\" data-swr-upload-kind>",
+   "<label class=\"field\">올릴 것<select name=\"kind\" data-swr-upload-kind>"
+  ],
+  [
+   "<small>MP4·WebM·JPG·PNG, 최대 100 MB. 회사 프로그램에 저장됩니다.</small>",
+   "<small>MP4·WebM·JPG·PNG, 100MB까지 올릴 수 있어요. 회사 서버에 저장돼요.</small>"
+  ],
+  [
+   "<small>소셜 게시물 등은 새 탭에서 열어 확인합니다.</small>",
+   "<small>SNS 게시물은 새 탭에서 열어 봐요.</small>"
+  ],
+  [
+   "<button class=\"btn primary\" type=\"submit\">버전 저장</button>",
+   "<button class=\"btn primary\" type=\"submit\">저장</button>"
+  ],
+  [
+   "<p>선택한 완성본 버전과 아래 이유·배울 점이 회사 크루에게 공유됩니다. 검토실의 원래 의견은 함께 공유하지 않습니다.</p>",
+   "<p>이 버전과 아래에 적은 이유·배울 점을 회사 크루 모두가 봐요. 검토실에 남긴 의견은 공유하지 않아요.</p>"
+  ],
+  [
+   "placeholder=\"어떤 상황에 이 방법을 다시 써볼 수 있을까요?\"",
+   "placeholder=\"어떤 상황에 이 방법을 다시 써 볼 수 있을까요?\""
+  ],
+  [
+   "<input type=\"checkbox\" name=\"shareConfirmed\" required>선택한 버전과 작성한 내용을 회사에 공유하는 데 동의합니다.</label>",
+   "<input type=\"checkbox\" name=\"shareConfirmed\" required>이 버전과 적은 내용을 회사에 공유해요.</label>"
+  ],
+  [
+   "<button class=\"btn primary\" type=\"submit\">좋은 예시함에 공유</button>",
+   "<button class=\"btn primary\" type=\"submit\">공유</button>"
+  ],
+  [
+   "swButton('예시함에서 보관','example-archive'",
+   "swButton('보관','example-archive'"
+  ],
+  [
+   "throw new Error('선택한 영상을 먼저 불러와 주세요.')",
+   "throw new Error('영상이 아직 열리지 않았어요. 재생한 뒤 다시 눌러 주세요.')"
+  ],
+  [
+   "throw new Error('영상이나 이미지 파일을 선택해 주세요.')",
+   "throw new Error('영상이나 이미지 파일을 골라 주세요.')"
+  ],
+  [
+   "throw new Error('100 MB 이하의 파일을 선택해 주세요.')",
+   "throw new Error('100MB 이하 파일을 골라 주세요.')"
+  ],
+  [
+   "textContent='파일을 올리는 중입니다. 완료될 때까지 기다려 주세요.'",
+   "textContent='파일을 올리고 있어요. 끝날 때까지 이 창을 열어 두세요.'"
+  ],
+  [
+   "`파일 업로드 ${percent}%`:'파일을 확인하고 저장하는 중입니다.'",
+   "`올리는 중 ${percent}%`:'파일을 확인하고 저장하고 있어요.'"
+  ],
+  [
+   "throw new Error('장면 시간을 0 이상의 초 단위로 입력해 주세요.')",
+   "throw new Error('장면 시간은 0 이상의 초로 넣어 주세요.')"
+  ],
+  [
+   "throw new Error('회사에 공유할 버전과 내용을 확인해 주세요.')",
+   "throw new Error('회사에 공유한다는 칸을 체크해 주세요.')"
+  ],
+  [
+   "notify(kind==='example'?'선택한 버전을 좋은 예시함에 공유했어요.'",
+   "notify(kind==='example'?'이 버전을 좋은 콘텐츠 예시함에 공유했어요.'"
+  ]
+ ]
+}

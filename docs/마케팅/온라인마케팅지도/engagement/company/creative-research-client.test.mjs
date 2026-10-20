@@ -40,11 +40,11 @@ function form(values={},dataset={}){
 }
 
 test('unknown reactions stay unmeasured while a confirmed zero and CTR relative position remain distinct',()=>{
-  const f=fixture();f.context.entry=row();assert.match(f.evaluate('crMetrics(entry)'),/반응 수치 미확인/);
+  const f=fixture();f.context.entry=row();assert.match(f.evaluate('crMetrics(entry)'),/반응 수치 없음/);
   f.context.entry=row({metrics:{likes:0,comments:null,shares:1200},ctrTopPercent:4.5});
   const html=f.evaluate('crMetrics(entry)');assert.match(html,/좋아요<\/small><strong>0/);assert.match(html,/공유<\/small><strong>1,200/);assert.ok(!html.includes('댓글'));
-  assert.match(html,/CTR 상대 위치/);assert.match(html,/Top 4.5%/);
-  f.cr.data={entries:[f.context.entry]};f.evaluate('crDetail("one")');assert.match(f.modals.at(-1).html,/실제 클릭률이 아닙니다/);
+  assert.match(html,/클릭률 순위/);assert.match(html,/상위 4.5%/);
+  f.cr.data={entries:[f.context.entry]};f.evaluate('crDetail("one")');assert.match(f.modals.at(-1).html,/클릭률 순위는 광고끼리 견준 위치예요/);
 });
 
 test('untrusted saved text is escaped in cards and details and unsafe original links cannot execute',()=>{
@@ -61,7 +61,7 @@ test('platform, search and actual ad country intersect without treating the expl
     row({id:'ig',source:'instagram',kind:'reel',title:'인스타 사례',region:'KR',actualRegions:[],structure:'질문 뒤 반전'})
   ]};f.cr.source='tiktok-top-ads';f.cr.region='KR';f.cr.query='반전';
   const html=f.evaluate('crPanel()');assert.ok(html.includes('<h3>한국 사례</h3>'));assert.ok(!html.includes('<h3>미국 사례</h3>'));assert.ok(!html.includes('<h3>인스타 사례</h3>'));
-  f.cr.query='없는 검색어';assert.match(f.evaluate('crPanel()'),/선택한 조건의 자료가 없어요/);
+  f.cr.query='없는 검색어';assert.match(f.evaluate('crPanel()'),/조건에 맞는 자료가 없어요/);
 });
 
 test('a newer read wins and a late read cannot restore private data after logout and the same user signs in',async()=>{
@@ -81,8 +81,8 @@ test('viewer UI and write entry points remain read only even if row edit flags a
 test('an observed source prepares a fresh plan with honest evidence and never generates or saves it',async()=>{
   const f=fixture();f.cr.data={entries:[row({metrics:{likes:0,shares:15},ctrTopPercent:12,filterRegion:'KR',periodDays:7,hook:'첫 장면에서 결과 공개',structure:'결과 → 방법',adaptation:'학습 사례에 적용'})]};
   await f.evaluate('crPlan("one")');assert.equal(f.context.cp.input.topic,'실제 관찰 예시');assert.match(f.context.cp.input.proof,/좋아요 0/);assert.match(f.context.cp.input.proof,/공유 15/);assert.ok(!f.context.cp.input.proof.includes('댓글 0'));
-  assert.match(f.context.cp.input.proof,/CTR Top 12% \(상대 위치, 실제 클릭률 아님\)/);assert.match(f.context.cp.input.proof,/첫 장면에서 결과 공개/);assert.match(f.context.cp.input.proof,/전체 인기 순위나 예상 성과가 아닙니다/);
-  assert.match(f.context.cp.input.proof,/관찰 대상 미국/);assert.match(f.context.cp.input.proof,/탐색 필터 한국 \(실제 광고 지역과 별도\)/);assert.match(f.context.cp.input.proof,/화면의 집계 기간 최근 7일/);
+  assert.match(f.context.cp.input.proof,/클릭률 상위 12% \(광고끼리 견준 순위\)/);assert.match(f.context.cp.input.proof,/첫 장면에서 결과 공개/);assert.match(f.context.cp.input.proof,/확인한 날의 화면 기준이에요/);
+  assert.match(f.context.cp.input.proof,/국가 미국/);assert.match(f.context.cp.input.proof,/찾을 때 고른 국가 한국/);assert.match(f.context.cp.input.proof,/집계 기간 최근 7일/);
   assert.equal(f.context.cp.draftId,'');assert.equal(f.context.cp.activeDraft,null);assert.equal(f.context.cp.pendingDraftId,'');assert.equal(f.context.cp.ideaId,'');assert.equal(f.context.cp.results,null);assert.equal(f.invalidations,1);assert.deepEqual(f.navigation,['plan']);assert.equal(f.requests.length,0);
 });
 
@@ -99,7 +99,7 @@ test('a background reread during plan loading permits unchanged data and rejects
     const f=fixture(),chosen=guideRow({usage:{status:'in-use',canClaim:true,canRelease:true,isMine:true}});f.cr.data={entries:[chosen]};let done;f.context.loadContentWorkspace=()=>new Promise(resolve=>{done=resolve;});
     const pending=f.evaluate('crPlan("one",0,true)'),reread=f.evaluate('crLoad({background:true})');
     const next=transition==='changed'?{...chosen,title:'새로 조사한 원본'}:transition==='released'?{...chosen,usage:{status:'available',canClaim:true,canRelease:false,isMine:false}}:chosen;f.requests[0].resolve({entries:transition==='unreadable'?[]:[next]});await reread;done();await pending;
-    if(transition==='unchanged'){assert.deepEqual(f.navigation,['plan']);assert.match(f.context.cp.input.proof,/준비된 제작 양식/);}else{assert.equal(f.navigation.length,0);assert.equal(f.context.cp.input.topic,'기존 기획');}
+    if(transition==='unchanged'){assert.deepEqual(f.navigation,['plan']);assert.match(f.context.cp.input.proof,/제작 양식: /);}else{assert.equal(f.navigation.length,0);assert.equal(f.context.cp.input.topic,'기존 기획');}
   }
 });
 
@@ -168,7 +168,7 @@ test('switching Meta material kinds changes the account requirement and hides un
   const f=fixture(),counts={hidden:false},channel={required:false},url={placeholder:''},fakeForm={dataset:{source:'instagram'},querySelector:selector=>({'[data-cr-observed-metrics]':counts,'[data-cr-channel]':channel,'[data-cr-url]':url}[selector])};
   const target={value:'insight',closest:()=>fakeForm,matches:selector=>selector==='[data-cr-kind]'};f.handlers.get('change')({target});assert.equal(channel.required,true);assert.equal(counts.hidden,false);assert.match(url.placeholder,/professional_dashboard/);
   target.value='ad';f.handlers.get('change')({target});assert.equal(channel.required,false);assert.equal(counts.hidden,true);assert.match(url.placeholder,/facebook.com\/ads\/library/);
-  f.context.entry=row({source:'instagram',kind:'ad'});assert.match(f.evaluate('crMetrics(entry)'),/광고 게재 사례 · 성과 수치 미제공/);
+  f.context.entry=row({source:'instagram',kind:'ad'});assert.match(f.evaluate('crMetrics(entry)'),/광고 사례 · 성과 수치 없음/);
   f.context.entry.kind='best-practice';assert.match(f.evaluate('crMetrics(entry)'),/공식 제작 안내/);
 });
 
@@ -176,7 +176,7 @@ const report=(overrides={})=>({schemaVersion:1,reportId:'daily-2026-10-02',date:
 
 test('report importing defaults to private and ignores sharing instructions inside the JSON',()=>{
   const f=fixture();f.evaluate('crImportForm()');const html=f.modals.at(-1).html;
-  assert.match(html,/data-cr-report-file/);assert.match(html,/data-cr-report-json/);assert.match(html,/<option value="private" selected>/);assert.match(html,/모든 직원에게 공개/);
+  assert.match(html,/data-cr-report-file/);assert.match(html,/data-cr-report-json/);assert.match(html,/<option value="private" selected>/);assert.match(html,/모든 크루가 봐요/);
   f.context.form=form({report:JSON.stringify(report({visibility:'company',shareConfirmed:true})),visibility:'private'});
   let payload=plain(f.evaluate('crReportPayload(form)'));assert.equal(payload.visibility,'private');assert.equal(payload.shareConfirmed,false);
   f.context.form.values.visibility='company';payload=plain(f.evaluate('crReportPayload(form)'));assert.equal(payload.visibility,'company');assert.equal(payload.shareConfirmed,true);assert.equal(payload.entries[0].checkedAt,'2026-10-02T00:00:00+09:00');
@@ -190,7 +190,7 @@ test('manual report importing uploads producer run times unchanged and still use
     assert.deepEqual(Object.fromEntries(Object.keys(times).map(key=>[key,request.body[key]])),times);assert.equal(request.body.visibility,visibility);assert.equal(request.body.shareConfirmed,visibility==='company');
     const validated=validateResearchReport(plain(request.body),{at:times.researchCompletedAt});assert.deepEqual(Object.fromEntries(Object.keys(times).map(key=>[key,validated[key]])),times);
     assert.equal(f.context.form.errorBox.textContent,'');assert.equal(f.closes,0);request.resolve({report:{createdCount:1,...times},existing:false});await flush();assert.equal(f.requests[1].path,'/api/creative-research?includeArchived=1');f.requests[1].resolve({entries:[row()],automation:{lastReport:{date:input.date,provider:input.provider,createdCount:1,...times},reportCount:1}});await pending;
-    assert.equal(f.closes,1);assert.equal(f.context.form.submit.disabled,false);assert.deepEqual(f.notifications,['조사 보고서를 저장했어요. 신규 1건 · 갱신 0건']);
+    assert.equal(f.closes,1);assert.equal(f.context.form.submit.disabled,false);assert.deepEqual(f.notifications,['보고서를 저장했어요. 새 자료 1건 · 고친 자료 0건']);
   }
 });
 
@@ -206,7 +206,7 @@ test('a confirmed report upload refreshes the list and reports the server counts
   const pending=f.evaluate('crSaveReport(form)');await f.evaluate('crSaveReport(form)');assert.equal(f.requests.length,1);assert.equal(f.requests[0].path,'/api/creative-research/import-report');assert.equal(f.requests[0].body.shareConfirmed,true);
   assert.equal(f.closes,0);assert.equal(f.notifications.length,0);f.requests[0].resolve({report:{createdCount:2,updatedCount:3,retainedCount:1},existing:false});await flush();
   assert.equal(f.closes,1);assert.equal(f.requests[1].path,'/api/creative-research?includeArchived=1');f.requests[1].resolve({entries:[row()],automation:{lastReport:{date:'2026-10-02',provider:'gemini-spark',createdCount:2,updatedCount:3,retainedCount:1,itemCount:6},reportCount:1}});await pending;
-  assert.deepEqual(f.notifications,['조사 보고서를 저장했어요. 신규 2건 · 갱신 3건']);assert.match(f.evaluate('crPanel()'),/신규 2건 · 갱신 3건 · 기존 유지 1건/);assert.equal(f.context.form.submit.disabled,false);
+  assert.deepEqual(f.notifications,['보고서를 저장했어요. 새 자료 2건 · 고친 자료 3건']);assert.match(f.evaluate('crPanel()'),/새 자료 2건 · 고친 자료 3건 · 그대로 1건/);assert.equal(f.context.form.submit.disabled,false);
 });
 
 test('report failures preserve the import form and a late upload cannot cross an account change',async()=>{
@@ -217,17 +217,17 @@ test('report failures preserve the import form and a late upload cannot cross an
 });
 
 test('report provenance and imported metadata remain distinct from official and manual observations',()=>{
-  const f=fixture();f.cr.data={entries:[],automation:{lastReport:null,reportCount:0}};let html=f.evaluate('crPanel()');assert.match(html,/아직 가져온 일일 조사 보고서가 없어요/);assert.ok(!html.includes('매일 자동'));
-  f.context.entry=row({provenance:'research-report',provenanceDetails:{provider:'gemini-spark',reportDate:'2026-10-02'}});f.cr.data.entries=[f.context.entry];html=f.evaluate('crCard(entry)');assert.match(html,/Gemini 예약 조사/);assert.ok(!html.includes('공식 상세 가져오기'));assert.ok(!html.includes('직접 확인 기록'));
+  const f=fixture();f.cr.data={entries:[],automation:{lastReport:null,reportCount:0}};let html=f.evaluate('crPanel()');assert.match(html,/아직 가져온 조사 보고서가 없어요/);assert.ok(!html.includes('매일 자동'));
+  f.context.entry=row({provenance:'research-report',provenanceDetails:{provider:'gemini-spark',reportDate:'2026-10-02'}});f.cr.data.entries=[f.context.entry];html=f.evaluate('crCard(entry)');assert.match(html,/Gemini 예약 조사/);assert.ok(!html.includes('공식 페이지에서 가져옴'));assert.ok(!html.includes('직접 기록'));
   f.evaluate('crDetail("one")');assert.match(f.modals.at(-1).html,/Gemini 예약 조사/);assert.match(f.modals.at(-1).html,/조사 날짜/);
   f.context.entry.provenanceDetails.provider='codex';assert.match(f.evaluate('crCard(entry)'),/일일 조사/);
-  f.cr.data.automation={lastReport:{date:'<script>boom</script>',provider:'gemini-spark',createdCount:0,updatedCount:0,retainedCount:0,itemCount:0},reportCount:1};html=f.evaluate('crAutomationSummary()');assert.match(html,/&lt;script/);assert.ok(!html.includes('<script>'));assert.match(html,/확인할 새 자료 없음/);
+  f.cr.data.automation={lastReport:{date:'<script>boom</script>',provider:'gemini-spark',createdCount:0,updatedCount:0,retainedCount:0,itemCount:0},reportCount:1};html=f.evaluate('crAutomationSummary()');assert.match(html,/&lt;script/);assert.ok(!html.includes('<script>'));assert.match(html,/ · 보고서에 자료 없음/);
 });
 
 test('reference storage deferrals and daily guide deferrals remain distinct in the visible import result',()=>{
   const f=fixture();f.cr.data={entries:[],automation:{lastReport:{date:'2026-10-02',provider:'gemini-spark',createdCount:3,updatedCount:0,retainedCount:0,itemCount:6,deferredCount:3,deferredGuideCount:2,deferredObservationCount:1},reportCount:1}};
-  let html=f.evaluate('crAutomationSummary()');assert.match(html,/신규 3건/);assert.match(html,/양식 보류 2건/);assert.match(html,/참고 자료 보류 1건/);assert.match(html,/제작 양식 반영은 계속됩니다/);assert.ok(!html.includes('양식 보류 3건'));
-  delete f.cr.data.automation.lastReport.deferredGuideCount;delete f.cr.data.automation.lastReport.deferredObservationCount;html=f.evaluate('crAutomationSummary()');assert.match(html,/양식 보류 3건/);assert.ok(!html.includes('참고 자료 보류'));assert.ok(!html.includes('저장 한도로'));
+  let html=f.evaluate('crAutomationSummary()');assert.match(html,/새 자료 3건/);assert.match(html,/한도로 못 넣은 양식 2건/);assert.match(html,/한도로 못 넣은 참고 자료 1건/);assert.match(html,/제작 양식은 계속 들어와요/);assert.ok(!html.includes('한도로 못 넣은 양식 3건'));
+  delete f.cr.data.automation.lastReport.deferredGuideCount;delete f.cr.data.automation.lastReport.deferredObservationCount;html=f.evaluate('crAutomationSummary()');assert.match(html,/한도로 못 넣은 양식 3건/);assert.ok(!html.includes('못 넣은 참고 자료'));assert.ok(!html.includes('저장 한도가'));
 });
 
 test('viewer accounts cannot open or submit the report import even with forged controls',async()=>{
@@ -270,8 +270,8 @@ const research=(overrides={})=>({summary:'듣고 행동하는 짧은 사례의 �
 
 test('research cards and details separate observed records from proposals and keep the older analysis timestamp visible',()=>{
   const f=fixture();f.context.entry=row({source:'instagram',kind:'reel',checkedAt:'2026-10-09T09:00:00.000Z',researchCheckedAt:'2026-10-08T09:00:00.000Z',research:research(),provenance:'research-report',provenanceDetails:{provider:'gemini-spark'}});f.cr.data={entries:[f.context.entry]};
-  const card=f.evaluate('crCard(entry)');assert.match(card,/검토 브랜드 · LAB/);assert.match(card,/먼저 검토 · 추정/);assert.match(card,/볼 이유/);assert.match(card,/왜 지금/);assert.ok(card.includes('조사 내용 확인 · '+f.evaluate('crTime(entry.researchCheckedAt)')));assert.ok(card.includes('자료·수치 확인 '+f.evaluate('crTime(entry.checkedAt)')));assert.match(card,/>원문<\/a>/);
-  f.evaluate('crDetail("one")');const html=f.modals.at(-1).html;assert.match(html,/조사 기록의 관찰과 확인 범위/);assert.match(html,/원문 페이지 확인/);assert.match(html,/아직 실행과 효과를 검증하지 않은 제안/);assert.match(html,/0초 훅/);assert.match(html,/시청자가 할 행동/);assert.match(html,/바로 받는 보상/);assert.match(html,/맞춤 도구/);assert.match(html,/72시간 검증/);assert.match(html,/data-application="0"/);assert.ok(html.includes(f.evaluate('crTime(entry.researchCheckedAt)')));
+  const card=f.evaluate('crCard(entry)');assert.match(card,/브랜드 · LAB/);assert.match(card,/먼저 검토 · 보고서 제안/);assert.match(card,/볼 이유/);assert.match(card,/왜 지금/);assert.ok(card.includes('조사 확인 · '+f.evaluate('crTime(entry.researchCheckedAt)')));assert.ok(card.includes(' · 확인 '+f.evaluate('crTime(entry.checkedAt)')));assert.match(card,/>원문<\/a>/);
+  f.evaluate('crDetail("one")');const html=f.modals.at(-1).html;assert.match(html,/조사에서 본 것/);assert.match(html,/원문을 읽음/);assert.match(html,/아직 해 보지 않은 제안이에요/);assert.match(html,/0초 훅/);assert.match(html,/시청자가 할 일/);assert.match(html,/바로 얻는 것/);assert.match(html,/맞춤 도구/);assert.match(html,/72시간 판정/);assert.match(html,/data-application="0"/);assert.ok(html.includes(f.evaluate('crTime(entry.researchCheckedAt)')));
 });
 
 test('all research text is escaped and unsafe evidence links cannot execute',()=>{
@@ -287,14 +287,14 @@ test('brand and review priority filters intersect with platform, country and sea
     row({id:'watch',source:'instagram',kind:'reel',title:'지켜볼 자료',region:'KR',actualRegions:[],research:research({brands:['LAB'],priority:'watch'})}),
     row({id:'us',source:'instagram',kind:'reel',title:'다른 국가',region:'US',actualRegions:[],research:research()})
   ]};f.cr.source='instagram';f.cr.region='KR';f.cr.brand='LAB';f.cr.priority='high';f.cr.query='특별한 질문';let html=f.evaluate('crPanel()');assert.match(html,/<h3>LAB 일치<\/h3>/);for(const title of ['다른 브랜드','지켜볼 자료','다른 국가'])assert.ok(!html.includes('<h3>'+title+'</h3>'));
-  assert.match(html,/data-cr-brand/);assert.match(html,/검토 우선순위 · 추정/);f.cr.priority='watch';f.cr.query='';html=f.evaluate('crPanel()');assert.match(html,/<h3>지켜볼 자료<\/h3>/);assert.ok(!html.includes('<h3>LAB 일치</h3>'));
+  assert.match(html,/data-cr-brand/);assert.match(html,/<label>검토 순서<select data-cr-priority/);f.cr.priority='watch';f.cr.query='';html=f.evaluate('crPanel()');assert.match(html,/<h3>지켜볼 자료<\/h3>/);assert.ok(!html.includes('<h3>LAB 일치</h3>'));
   f.cr.data.entries=[];html=f.evaluate('crPanel()');assert.equal(f.cr.brand,'LAB');assert.equal(f.cr.priority,'watch');assert.equal(f.cr.region,'KR');assert.match(html,/<option value="LAB" selected>/);assert.match(html,/<option value="watch" selected>/);assert.match(html,/<option value="KR" selected>/);
 });
 
 test('a chosen application prepares a bounded usable plan and keeps proposals and observation limits explicit',async()=>{
   const f=fixture(),first=research().applications[0],second={...first,brand:'synkbrief',idea:'두 번째 적용안을 내 조건으로 바꾸기',reward:'내 조건에 맞는 결과',validation72h:'게시 뒤 72시간 동안 실제 저장 수를 비교합니다.'};f.cr.data={entries:[row({adaptation:'직원의 긴 메모'.repeat(600),researchCheckedAt:'2026-10-01T00:00:00.000Z',research:research({applications:[first,second],observedFacts:Array.from({length:8},()=>({text:'조사 기록의 긴 사실 '.repeat(60)}))})})]};
   f.context.cp.data={catalog:{series:[{id:'synkbrief-use',name:'synkbrief 활용'},{id:'lab-expression',name:'LAB 표현 소개'}]}};
-  await f.evaluate('crPlan("one",1)');const input=f.context.cp.input;assert.equal(input.seriesId,'synkbrief-use');assert.equal(input.topic,second.idea);assert.equal(input.takeaway,second.reward);assert.equal(input.entertainment,research().viewerReason);assert.ok(input.proof.length<=3000);assert.match(input.proof,/실행 전 적용 제안 · synkbrief/);assert.match(input.proof,/0초 훅 제안/);assert.match(input.proof,/72시간 검증 계획/);assert.ok(input.proof.includes('조사 내용 확인: '+f.evaluate('crTime(cr.data.entries[0].researchCheckedAt)')));assert.equal(input.authenticity.limits,research().limitations);assert.match(input.authenticity.disclosure,/실행과 효과는 아직 검증하지 않았습니다/);assert.equal(f.requests.length,0);assert.deepEqual(f.navigation,['plan']);
+  await f.evaluate('crPlan("one",1)');const input=f.context.cp.input;assert.equal(input.seriesId,'synkbrief-use');assert.equal(input.topic,second.idea);assert.equal(input.takeaway,second.reward);assert.equal(input.entertainment,research().viewerReason);assert.ok(input.proof.length<=3000);assert.match(input.proof,/아직 해 보지 않은 제안 · synkbrief/);assert.match(input.proof,/0초 훅: /);assert.match(input.proof,/72시간 판정: /);assert.ok(input.proof.includes('조사 확인: '+f.evaluate('crTime(cr.data.entries[0].researchCheckedAt)')));assert.equal(input.authenticity.limits,research().limitations);assert.match(input.authenticity.disclosure,/아직 만들어 보지 않았어요/);assert.equal(f.requests.length,0);assert.deepEqual(f.navigation,['plan']);
 });
 
 test('changing the deep report filters while a plan loads cannot overwrite a different plan',async()=>{
@@ -308,22 +308,22 @@ test('the client enforces the complete UTF-8 byte budget before uploading a long
   const f=fixture(),long='한'.repeat(600),item={brand:'LAB',idea:'한'.repeat(800),zeroSecondHook:'한'.repeat(300),action:long,reward:long,personalizationTool:'한'.repeat(800),validation72h:'한'.repeat(800)};
   const detail=research({summary:long,whyNow:'한'.repeat(1200),viewerReason:long,limitations:'한'.repeat(1500),observedFacts:Array.from({length:8},()=>({text:'한'.repeat(1000),sourceUrl:'https://www.instagram.com/reel/example/'})),applications:[item,item,item]});
   const input=report({entries:Array.from({length:20},(_,index)=>({...report().entries[0],sourceUrl:`https://www.instagram.com/reel/example_${index}/`,research:detail}))});assert.ok(new TextEncoder().encode(JSON.stringify(input)).byteLength>1048576);
-  f.context.form=form({report:JSON.stringify(input),visibility:'company'});await f.evaluate('crSaveReport(form)');assert.equal(f.requests.length,0);assert.match(f.context.form.errorBox.textContent,/1MB 이하/);assert.equal(f.context.form.submit.disabled,false);
+  f.context.form=form({report:JSON.stringify(input),visibility:'company'});await f.evaluate('crSaveReport(form)');assert.equal(f.requests.length,0);assert.match(f.context.form.errorBox.textContent,/1MB를 넘어요/);assert.equal(f.context.form.submit.disabled,false);
 });
 
 const sync=(overrides={})=>({enabled:true,status:'waiting',documentId:'test-doc',documentUrl:'https://docs.google.com/document/d/test-doc/edit',lastCheckedAt:'2026-10-09T01:00:00.000Z',lastImportedAt:null,lastError:null,nextCheckAt:'2026-10-09T01:05:00.000Z',...overrides});
 
 test('only admins see or operate the document connection while everyone can read its factual sync status',async()=>{
-  const f=fixture();f.cr.data={entries:[],automation:{lastReport:null,sync:sync()}};let html=f.evaluate('crPanel()');assert.match(html,/새 완료 결과를 기다리는 중/);assert.match(html,/마지막 확인/);assert.ok(!html.includes('docs.google.com'));assert.ok(!html.includes('creative-sync-settings'));
+  const f=fixture();f.cr.data={entries:[],automation:{lastReport:null,sync:sync()}};let html=f.evaluate('crPanel()');assert.match(html,/새 결과 기다리는 중/);assert.match(html,/마지막 확인/);assert.ok(!html.includes('docs.google.com'));assert.ok(!html.includes('creative-sync-settings'));
   f.context.form=form({documentId:'https://docs.google.com/document/d/new-document/edit',enabled:'on'});f.evaluate('crSyncForm()');await f.evaluate('crSaveSync(form)');await f.evaluate('crCheckSync()');assert.equal(f.modals.length,0);assert.equal(f.requests.length,0);
-  f.context.state.user.role='admin';html=f.evaluate('crPanel()');assert.match(html,/creative-sync-settings/);assert.match(html,/creative-sync-check/);assert.match(html,/연결한 조사 문서/);f.evaluate('crSyncForm()');assert.match(f.modals.at(-1).html,/name="documentId"/);assert.ok(!f.modals.at(-1).html.includes('name="connectionId"'));assert.ok(!f.modals.at(-1).html.includes('name="documentUrl"'));
+  f.context.state.user.role='admin';html=f.evaluate('crPanel()');assert.match(html,/creative-sync-settings/);assert.match(html,/creative-sync-check/);assert.match(html,/조사 문서 열기/);f.evaluate('crSyncForm()');assert.match(f.modals.at(-1).html,/name="documentId"/);assert.ok(!f.modals.at(-1).html.includes('name="connectionId"'));assert.ok(!f.modals.at(-1).html.includes('name="documentUrl"'));
 });
 
 test('document setup sends the strict URL contract and keeps a replacement modal open',async()=>{
   const f=fixture();f.context.state.user.role='admin';f.cr.data={entries:[],automation:{sync:sync({enabled:false})}};f.context.form=form({documentId:' https://docs.google.com/document/d/new-document/edit ',enabled:'on'});
   const pending=f.evaluate('crSaveSync(form)');await f.evaluate('crSaveSync(form)');assert.equal(f.requests.length,1);assert.equal(f.requests[0].path,'/api/creative-research/sync-settings');assert.deepEqual(plain(f.requests[0].body),{enabled:true,documentId:'https://docs.google.com/document/d/new-document/edit'});
   f.evaluate('modal("새 작업", "", "")');f.requests[0].resolve({enabled:true});await flush();assert.equal(f.closes,0);assert.equal(f.requests[1].path,'/api/creative-research?includeArchived=1');f.requests[1].resolve({entries:[],automation:{sync:sync()}});await pending;
-  assert.equal(f.modals.at(-1).title,'새 작업');assert.deepEqual(f.notifications,['조사 문서 자동 반영 설정을 저장했어요.']);assert.equal(f.context.form.submit.disabled,false);
+  assert.equal(f.modals.at(-1).title,'새 작업');assert.deepEqual(f.notifications,['조사 문서 연결을 저장했어요.']);assert.equal(f.context.form.submit.disabled,false);
 });
 
 test('missing document setup stays inline and a late setup cannot restore a previous account session',async()=>{
@@ -334,7 +334,7 @@ test('missing document setup stays inline and a late setup cannot restore a prev
 test('a manual completion check blocks duplicates and never announces a second import for unchanged results',async()=>{
   const f=fixture();f.context.state.user.role='admin';const prior='2026-10-08T00:00:00.000Z';f.cr.data={entries:[],automation:{sync:sync({lastImportedAt:prior,status:'imported'})}};
   const pending=f.evaluate('crCheckSync()');await f.evaluate('crCheckSync()');assert.equal(f.requests.length,1);assert.equal(f.requests[0].path,'/api/creative-research/sync-check');assert.deepEqual(plain(f.requests[0].body),{});f.requests[0].resolve({existing:true});await flush();f.requests[1].resolve({entries:[],automation:{sync:sync({lastImportedAt:prior,status:'imported'})}});await pending;
-  assert.deepEqual(f.notifications,['새로 반영할 완료 결과는 아직 없어요.']);assert.equal(f.cr.syncChecking,false);
+  assert.deepEqual(f.notifications,['아직 새 조사 결과가 없어요.']);assert.equal(f.cr.syncChecking,false);
   const next=f.evaluate('crCheckSync()');f.cr.syncRequest++;f.requests[2].resolve({});await next;assert.equal(f.cr.syncChecking,false,'a concurrent settings change must not strand the completion button');assert.equal(f.notifications.length,1);
 });
 
@@ -355,7 +355,7 @@ test('a late background refresh does not update hidden or departed workspaces',a
 
 test('the document field accepts bare IDs without browser URL validation or asking for credentials',()=>{
   const f=fixture();f.context.state.user.role='admin';f.evaluate('crSyncForm()');const html=f.modals.at(-1).html;
-  assert.match(html,/<input type="text" inputmode="url" spellcheck="false" autocapitalize="none" name="documentId"/);assert.match(html,/Google 문서 주소 또는 문서 ID를 입력하세요/);assert.ok(!html.includes('type="url" name="documentId"'));assert.ok(!html.includes('type="password"'));assert.ok(!html.includes('name="connectionId"'));
+  assert.match(html,/<input type="text" inputmode="url" spellcheck="false" autocapitalize="none" name="documentId"/);assert.match(html,/Google 문서 주소나 문서 ID를 넣어 주세요/);assert.ok(!html.includes('type="url" name="documentId"'));assert.ok(!html.includes('type="password"'));assert.ok(!html.includes('name="connectionId"'));
 });
 
 test('bare IDs and common Docs link variants are forwarded unchanged in the documentId contract',async()=>{
@@ -377,36 +377,36 @@ const mine=()=>({status:'in-use',userId:'A',userName:'직원',claimedAt:'2026-10
 
 test('the default pool contains only server-approved ready guides and keeps old or private observations in references',async()=>{
   const f=fixture({view:'guides'});f.cr.data={entries:[guideRow(),row({id:'legacy',title:'기존 근거 자료'}),guideRow({id:'private',title:'비공개 가이드',visibility:'private',productionReady:false})],automation:{pool:{date:'2026-10-02',limit:10,addedCount:3}}};let html=f.evaluate('crPanel()');
-  assert.match(html,/<h2>준비된 제작 양식<\/h2>/);assert.match(html,/하루 새 양식 약 10개 보충을 목표/);assert.match(html,/하루에도 여러 번 갱신/);assert.match(html,/오늘 반영 3개 \/ 10개/);assert.match(html,/<h3>듣고 골라보는 제작 양식<\/h3>/);assert.ok(!html.includes('<h3>기존 근거 자료</h3>'));assert.ok(!html.includes('<h3>비공개 가이드</h3>'));
+  assert.match(html,/<h2>제작 양식<\/h2>/);assert.match(html,/새 양식은 하루 10개까지 들어와요/);assert.match(html,/양식을 맡으면 다른 크루는 그 양식을 맡을 수 없어요/);assert.match(html,/오늘 들어온 양식 3\/10개/);assert.match(html,/<h3>듣고 골라보는 제작 양식<\/h3>/);assert.ok(!html.includes('<h3>기존 근거 자료</h3>'));assert.ok(!html.includes('<h3>비공개 가이드</h3>'));
   await f.handlers.get('click')({target:{closest:()=>({disabled:false,dataset:{action:'creative-view',id:'references'}})}});html=f.evaluate('crPanel()');assert.match(html,/<h3>기존 근거 자료<\/h3>/);assert.match(html,/<h3>비공개 가이드<\/h3>/);assert.ok(!html.includes('data-guide-id="one"'));
   f.evaluate('crReset()');assert.equal(f.cr.view,'guides');assert.equal(f.cr.usagePendingId,'');
 });
 
 test('guide status, brand and search filters compose and preserve the gray readable claimed card',()=>{
-  const f=fixture({view:'guides'});f.cr.data={entries:[guideRow({id:'available'}),guideRow({id:'other',usage:{status:'in-use',userId:'B',userName:'다른 직원',canClaim:false,canRelease:false,isMine:false}}),guideRow({id:'mine',usage:mine()})]};f.cr.brand='LAB';f.cr.query='카메라';f.cr.usageStatus='in-use';let html=f.evaluate('crPanel()');assert.ok(!html.includes('data-guide-id="available"'));assert.match(html,/data-guide-id="other"/);assert.match(html,/cr-guide-in-use/);assert.match(html,/사용중 · 다른 직원/);assert.match(html,/data-action="creative-guide-plan"[^>]*data-id="other"[^>]*disabled/);
-  f.cr.usageStatus='mine';html=f.evaluate('crPanel()');assert.match(html,/data-guide-id="mine"/);assert.ok(!html.includes('data-guide-id="other"'));assert.match(html,/이 양식으로 기획/);assert.match(html,/선택 해제/);
+  const f=fixture({view:'guides'});f.cr.data={entries:[guideRow({id:'available'}),guideRow({id:'other',usage:{status:'in-use',userId:'B',userName:'다른 직원',canClaim:false,canRelease:false,isMine:false}}),guideRow({id:'mine',usage:mine()})]};f.cr.brand='LAB';f.cr.query='카메라';f.cr.usageStatus='in-use';let html=f.evaluate('crPanel()');assert.ok(!html.includes('data-guide-id="available"'));assert.match(html,/data-guide-id="other"/);assert.match(html,/cr-guide-in-use/);assert.match(html,/다른 직원 님이 맡음/);assert.match(html,/data-action="creative-guide-plan"[^>]*data-id="other"[^>]*disabled/);
+  f.cr.usageStatus='mine';html=f.evaluate('crPanel()');assert.match(html,/data-guide-id="mine"/);assert.ok(!html.includes('data-guide-id="other"'));assert.match(html,/>기획하기</);assert.match(html,/>내려놓기</);
 });
 
 test('a guide claim is confirmed by the server and reread before preparing a fresh bounded plan',async()=>{
   const f=fixture({view:'guides'});f.cr.data={entries:[guideRow()]};const pending=f.evaluate('crPlan("one")');await f.evaluate('crClaimGuide("one")');assert.equal(f.requests.length,1);assert.equal(f.requests[0].path,'/api/creative-research/one/claim');assert.deepEqual(plain(f.requests[0].body),{});assert.equal(f.navigation.length,0);
   f.requests[0].resolve({entry:guideRow({usage:mine()})});await flush();assert.equal(f.requests[1].path,'/api/creative-research?includeArchived=1');f.requests[1].resolve({entries:[guideRow({usage:mine()})]});await pending;
-  assert.deepEqual(f.navigation,['plan']);assert.ok(f.context.cp.input.proof.length<=3000);assert.match(f.context.cp.input.proof,/준비된 제작 양식/);assert.match(f.context.cp.input.proof,/준비물/);assert.match(f.context.cp.input.proof,/실행 1/);assert.equal(f.cr.usagePendingId,'');
+  assert.deepEqual(f.navigation,['plan']);assert.ok(f.context.cp.input.proof.length<=3000);assert.match(f.context.cp.input.proof,/제작 양식: /);assert.match(f.context.cp.input.proof,/준비물/);assert.match(f.context.cp.input.proof,/순서 1/);assert.equal(f.cr.usagePendingId,'');
 });
 
 test('a claim conflict reloads ownership and never opens a competing plan',async()=>{
   const f=fixture({view:'guides'});f.cr.data={entries:[guideRow()]};const pending=f.evaluate('crClaimGuide("one")');f.requests[0].reject(Object.assign(new Error('이미 선택됐습니다.'),{status:409}));await flush();f.requests[1].resolve({entries:[guideRow({usage:{status:'in-use',userId:'B',userName:'박 직원',isMine:false,canClaim:false,canRelease:false}})]});await pending;
-  assert.equal(f.navigation.length,0);assert.equal(f.cr.data.entries[0].usage.userId,'B');assert.match(f.notifications[0],/박 직원님이 먼저 사용 중/);assert.equal(f.cr.usagePendingId,'');
+  assert.equal(f.navigation.length,0);assert.equal(f.cr.data.entries[0].usage.userId,'B');assert.match(f.notifications[0],/박 직원 님이 먼저 맡았어요/);assert.equal(f.cr.usagePendingId,'');
 });
 
 test('release preserves the guide and existing saved work and is limited to the current claimant',async()=>{
   const f=fixture({view:'guides'});f.cr.data={entries:[guideRow({usage:mine()})]};const pending=f.evaluate('crReleaseGuide("one")');assert.equal(f.requests[0].path,'/api/creative-research/one/release');f.requests[0].resolve({entry:guideRow()});await flush();f.requests[1].resolve({entries:[guideRow()]});await pending;
-  assert.equal(f.cr.data.entries.length,1);assert.equal(f.cr.data.entries[0].usage.status,'available');assert.equal(f.context.cp.draftId,'draft');assert.equal(f.context.cp.input.topic,'기존 기획');assert.match(f.notifications[0],/양식과 저장한 기획은 보존/);
+  assert.equal(f.cr.data.entries.length,1);assert.equal(f.cr.data.entries[0].usage.status,'available');assert.equal(f.context.cp.draftId,'draft');assert.equal(f.context.cp.input.topic,'기존 기획');assert.match(f.notifications[0],/저장한 기획은 그대로 있어요/);
   f.cr.data.entries[0]=guideRow({usage:{...mine(),userId:'B',isMine:false}});await f.evaluate('crReleaseGuide("one")');assert.equal(f.requests.length,2);f.context.state.user.role='viewer';f.cr.data.entries[0]=guideRow({usage:mine()});await f.evaluate('crClaimGuide("one")');await f.evaluate('crReleaseGuide("one")');assert.equal(f.requests.length,2);
 });
 
 test('late claim responses cannot cross accounts or replace a newer modal',async()=>{
   const f=fixture({view:'guides'});f.cr.data={entries:[guideRow()]};const pending=f.evaluate('crClaimGuide("one")');f.context.state.user=null;f.evaluate('crReset()');f.context.state.user={id:'A',role:'member'};f.evaluate('crIdentity()');f.requests[0].resolve({entry:guideRow({usage:mine()})});await pending;assert.equal(f.requests.length,1);assert.equal(f.navigation.length,0);assert.equal(f.cr.data,null);assert.equal(f.notifications.length,0);
-  const modal=fixture({view:'guides'});modal.cr.data={entries:[guideRow()]};const late=modal.evaluate('crClaimGuide("one")');modal.evaluate('modal("다른 작업", "", "")');modal.requests[0].resolve({entry:guideRow({usage:mine()})});await flush();modal.requests[1].resolve({entries:[guideRow({usage:mine()})]});await late;assert.equal(modal.navigation.length,0);assert.equal(modal.closes,0);assert.equal(modal.modals.at(-1).title,'다른 작업');assert.match(modal.notifications[0],/내 선택/);
+  const modal=fixture({view:'guides'});modal.cr.data={entries:[guideRow()]};const late=modal.evaluate('crClaimGuide("one")');modal.evaluate('modal("다른 작업", "", "")');modal.requests[0].resolve({entry:guideRow({usage:mine()})});await flush();modal.requests[1].resolve({entries:[guideRow({usage:mine()})]});await late;assert.equal(modal.navigation.length,0);assert.equal(modal.closes,0);assert.equal(modal.modals.at(-1).title,'다른 작업');assert.match(modal.notifications[0],/「내가 맡음」/);
 });
 
 test('pool ownership has a one-minute fallback even before document sync is enabled',async()=>{
@@ -420,7 +420,7 @@ test('untrusted long guide instructions, asset names and claimant names are esca
 
 test('the guide keeps its original evidence timestamp distinct from newer metadata-only analysis',()=>{
   const f=fixture({view:'guides'});f.context.entry=guideRow({productionGuideCheckedAt:'2026-10-01T09:00:00Z',productionGuideEvidenceLevel:'video-watched',researchCheckedAt:'2026-10-02T09:00:00Z',research:research({evidenceLevel:'metadata-only',productionGuide:productionGuide()})});
-  const card=f.evaluate('crGuideCard(entry)'),detail=f.evaluate('crGuideDetail(entry)');assert.ok(card.includes('가이드 근거 확인 '+f.evaluate('crTime(entry.productionGuideCheckedAt)')));assert.match(detail,/영상 직접 시청/);assert.ok(!detail.includes('제목·설명 등 메타데이터 확인'));assert.ok(detail.includes(f.evaluate('crTime(entry.productionGuideCheckedAt)')));
+  const card=f.evaluate('crGuideCard(entry)'),detail=f.evaluate('crGuideDetail(entry)');assert.ok(card.includes('가이드 확인 '+f.evaluate('crTime(entry.productionGuideCheckedAt)')));assert.match(detail,/영상을 직접 봄/);assert.ok(!detail.includes('제목·설명만 봄'));assert.ok(detail.includes(f.evaluate('crTime(entry.productionGuideCheckedAt)')));
 });
 
 test('a blind release removes cached unreadable content even if the follow-up read fails',async()=>{
@@ -428,7 +428,7 @@ test('a blind release removes cached unreadable content even if the follow-up re
 });
 
 test('a failed ownership reread keeps the confirmed selection but does not open a plan from stale cached content',async()=>{
-  const f=fixture({view:'guides'});f.cr.data={entries:[guideRow()]};const pending=f.evaluate('crClaimGuide("one")');f.requests[0].resolve({entry:guideRow({usage:mine()})});await flush();f.requests[1].reject(new Error('목록 연결 실패'));await pending;assert.equal(f.cr.data.entries[0].usage.isMine,true);assert.equal(f.navigation.length,0);assert.match(f.notifications[0],/선택은 저장됐지만 목록을 다시 읽지 못했어요/);assert.equal(f.cr.usagePendingId,'');
+  const f=fixture({view:'guides'});f.cr.data={entries:[guideRow()]};const pending=f.evaluate('crClaimGuide("one")');f.requests[0].resolve({entry:guideRow({usage:mine()})});await flush();f.requests[1].reject(new Error('목록 연결 실패'));await pending;assert.equal(f.cr.data.entries[0].usage.isMine,true);assert.equal(f.navigation.length,0);assert.match(f.notifications[0],/양식은 맡았지만 목록을 다시 불러오지 못했어요/);assert.equal(f.cr.usagePendingId,'');
 });
 
 test('a new company session generation invalidates a pending claim even when the account ID is unchanged',async()=>{
@@ -442,7 +442,7 @@ test('alias blind release uses the private reservation ID and purges only the cu
 
 test('actual catalog brands normalize SHIFT to synkbrief and use explicit generic planning for PULSE or PATH',()=>{
   const f=fixture();f.context.cp.data={catalog:{series:[{id:'synkbrief-news',name:'synkbrief 뉴스'},{id:'synkbrief-use',name:'synkbrief 활용'},{id:'synkbrief-basics',name:'synkbrief 기초'},{id:'yuhobuilds',name:'yuhobuilds 제작 여정'},{id:'lab-situation',name:'LAB 생활 상황극'},{id:'lab-expression',name:'LAB 표현 소개'},{id:'founder-clip',name:'인물·창업자 클립'},{id:'interview',name:'인물 인터뷰'},{id:'company-work',name:'회사 소개·작업물'},{id:'writing-newsletter',name:'글·뉴스레터'}]}};f.context.wr.series='lab-expression';
-  assert.equal(f.evaluate('crPlanSeries("SHIFT")'),'synkbrief-use');assert.equal(f.evaluate('crPlanSeries("PULSE")'),'company-work');assert.equal(f.evaluate('crPlanSeries("PATH")'),'company-work');assert.equal(f.evaluate('crPlanSeries("LAB")'),'lab-expression');assert.match(f.evaluate('crPlanSeriesNotice("PULSE","company-work")'),/범용.*시리즈/);assert.match(f.evaluate('crPlanSeriesNotice("SHIFT","synkbrief-use")'),/synkbrief/);
+  assert.equal(f.evaluate('crPlanSeries("SHIFT")'),'synkbrief-use');assert.equal(f.evaluate('crPlanSeries("PULSE")'),'company-work');assert.equal(f.evaluate('crPlanSeries("PATH")'),'company-work');assert.equal(f.evaluate('crPlanSeries("LAB")'),'lab-expression');assert.match(f.evaluate('crPlanSeriesNotice("PULSE","company-work")'),/맞는 양식이 없어 회사 소개·작업물 양식으로.*시리즈/);assert.match(f.evaluate('crPlanSeriesNotice("SHIFT","synkbrief-use")'),/synkbrief/);
   f.context.wr.series='synkbrief-news';assert.equal(f.evaluate('crPlanSeries("SHIFT")'),'synkbrief-news');f.context.wr.series='lab-expression';f.context.cp.data.catalog.series=[];assert.equal(f.evaluate('crPlanSeries("PULSE")'),'lab-expression','no-catalog fixtures keep the existing fallback');
 });
 
@@ -450,7 +450,7 @@ test('an open readonly guide refreshes its status and buttons while preserving r
   const f=fixture({view:'guides'});f.cr.data={entries:[guideRow()]};f.evaluate('crDetail("one")');const version=f.context.state.modalRequest,status={textContent:'사용 가능'},actions={dataset:{application:'0'},innerHTML:'old'},scroll={scrollTop:270};
   const detail={dataset:{crDetailId:'one'},closest:()=>scroll,contains:()=>false,querySelectorAll:selector=>selector==='[data-cr-guide-status]'?[status]:selector==='[data-cr-guide-actions]'?[actions]:[],querySelector:()=>null};f.context.document.querySelector=()=>detail;
   const pending=f.evaluate('crLoad()');f.requests[0].resolve({entries:[guideRow({usage:{status:'in-use',userId:'B',userName:'동료',isMine:false,canClaim:false,canRelease:false}})]});await pending;
-  assert.equal(status.textContent,'사용중 · 동료');assert.match(actions.innerHTML,/disabled/);assert.equal(scroll.scrollTop,270);assert.equal(f.context.state.modalRequest,version);assert.equal(f.closes,0);await f.evaluate('crClaimGuide("one")');assert.match(f.notifications.at(-1),/동료님이 사용 중/);assert.equal(f.requests.length,1);
+  assert.equal(status.textContent,'동료 님이 맡음');assert.match(actions.innerHTML,/disabled/);assert.equal(scroll.scrollTop,270);assert.equal(f.context.state.modalRequest,version);assert.equal(f.closes,0);await f.evaluate('crClaimGuide("one")');assert.match(f.notifications.at(-1),/동료 님이 맡은 양식이에요/);assert.equal(f.requests.length,1);
 });
 
 test('blind release closes only the matching readonly detail and leaves a newer unsaved modal untouched',()=>{
@@ -520,12 +520,12 @@ test('background updates defer replacing in-progress Korean search composition',
 
 test('KST run times distinguish the current reference, upload, publication, actual checks and retained guide proof',()=>{
   const f=fixture();f.context.entry=guideRow({provenance:'research-report',provenanceDetails:{asOfAt:'2026-10-09T16:05:00.000Z',researchStartedAt:'2026-10-09T16:06:00.000Z',researchCompletedAt:'2026-10-09T16:40:00.000Z',importedAt:'2026-10-09T16:41:00.000Z'},checkedAt:'2026-10-09T16:10:00.000Z',researchCheckedAt:'2026-10-08T09:00:00.000Z',productionGuideCheckedAt:'2026-10-07T09:00:00.000Z',research:research({publishedAt:'2026-10-06T09:00:00.000Z',productionGuide:productionGuide()})});f.cr.data={entries:[f.context.entry],automation:{lastReport:{date:'2026-10-10',...f.context.entry.provenanceDetails}}};
-  f.evaluate('crDetail("one")');const detail=f.modals.at(-1).html;for(const label of ['조사 기준 시각','조사 시작','조사 완료','자료 업로드','자료 발행','자료·수치 확인','가이드 근거 확인'])assert.ok(detail.includes(label),label);for(const time of [f.context.entry.checkedAt,f.context.entry.researchCheckedAt,f.context.entry.productionGuideCheckedAt,f.context.entry.research.publishedAt,...Object.values(f.context.entry.provenanceDetails)])assert.ok(detail.includes(f.evaluate('crTime('+JSON.stringify(time)+')')));
-  assert.match(f.evaluate('crTime(entry.provenanceDetails.asOfAt)'),/2026.*10.*10.*오전 1:05.*KST/);assert.match(f.evaluate('crRunTimes({})'),/보고서에 미기록/);assert.match(f.evaluate('crTime("invalid")'),/시각 미기록/);assert.match(f.evaluate('crAutomationSummary()'),/조사 기준 시각/);
+  f.evaluate('crDetail("one")');const detail=f.modals.at(-1).html;for(const label of ['<dt>조사 기준</dt>','<dt>조사 시작</dt>','<dt>조사 완료</dt>','<dt>반영</dt>','<dt>원문 게시</dt>','<dt>확인</dt>','가이드 확인 '])assert.ok(detail.includes(label),label);for(const time of [f.context.entry.checkedAt,f.context.entry.researchCheckedAt,f.context.entry.productionGuideCheckedAt,f.context.entry.research.publishedAt,...Object.values(f.context.entry.provenanceDetails)])assert.ok(detail.includes(f.evaluate('crTime('+JSON.stringify(time)+')')));
+  assert.match(f.evaluate('crTime(entry.provenanceDetails.asOfAt)'),/2026.*10.*10.*오전 1:05$/);assert.match(f.evaluate('crRunTimes({})'),/보고서에 없음/);assert.match(f.evaluate('crTime("invalid")'),/시각 모름/);assert.match(f.evaluate('crAutomationSummary()'),/<dt>조사 기준<\/dt>/);
 });
 
 test('a retained own selection cannot bypass server-revoked claim permission',async()=>{
-  const f=fixture({view:'guides'});f.context.entry=guideRow({usage:{...mine(),canClaim:false}});f.cr.data={entries:[f.context.entry]};assert.match(f.evaluate('crGuideActions(entry)'),/disabled/);await f.evaluate('crClaimGuide("one")');assert.equal(f.requests.length,0);assert.match(f.notifications[0],/현재 선택할 수 없는/);
+  const f=fixture({view:'guides'});f.context.entry=guideRow({usage:{...mine(),canClaim:false}});f.cr.data={entries:[f.context.entry]};assert.match(f.evaluate('crGuideActions(entry)'),/disabled/);await f.evaluate('crClaimGuide("one")');assert.equal(f.requests.length,0);assert.match(f.notifications[0],/지금은 맡을 수 없는 양식이에요/);
 });
 
 test('a changed readonly report refreshes its full safe body without changing modal generation or reading position',()=>{
@@ -537,7 +537,7 @@ test('a changed readonly report refreshes its full safe body without changing mo
 
 test('a new visible report notifies without private titles and a denied reread purges the old cache',async()=>{
   const f=liveFixture();f.cr.brand='LAB';f.cr.query='검색 유지';f.evaluate('crScheduleRefresh()');f.streams[0].open();let pending=fireTimer(f,150);f.requests[0].resolve({entries:[guideRow(),guideRow({id:'new',title:'비공개 제목은 알림에 넣지 않음'})],revision:'revision-2'});await pending;
-  assert.deepEqual(f.notifications,['새 자료 1건이 반영됐어요. 현재 검색 조건은 유지했어요.']);assert.equal(f.cr.query,'검색 유지');assert.equal(f.cr.brand,'LAB');f.streams[0].changed('permission-denied');pending=fireTimer(f,150);f.requests[1].reject(Object.assign(new Error('권한을 확인해 주세요.'),{status:403}));await pending;assert.equal(f.cr.data.entries.length,0);assert.match(f.cr.error,/권한/);
+  assert.deepEqual(f.notifications,['새 자료 1건이 들어왔어요. 보던 조건은 그대로예요.']);assert.equal(f.cr.query,'검색 유지');assert.equal(f.cr.brand,'LAB');f.streams[0].changed('permission-denied');pending=fireTimer(f,150);f.requests[1].reject(Object.assign(new Error('권한을 확인해 주세요.'),{status:403}));await pending;assert.equal(f.cr.data.entries.length,0);assert.match(f.cr.error,/권한/);
 });
 
 function fireSyncStatusTimer(f){const id=f.cr.syncStatusTimer,timer=f.timers.get(id);assert.ok(timer,'expected document-health timer');assert.equal(timer.delay,60000);f.timers.delete(id);return timer.handler();}
@@ -546,7 +546,7 @@ test('document-health polling continues with live SSE and preserves entries, sel
   const f=liveFixture();const entry=guideRow({usage:mine()});f.cr.data={entries:[entry],revision:'revision-1',automation:{sync:sync(),pool:{addedCount:10}}};f.cr.query='입력 중인 검색';f.cr.brand='LAB';f.evaluate('crDetail("one")');const modalVersion=f.context.state.modalRequest,detail=f.modals.at(-1),beforeEntries=f.cr.data.entries;
   f.evaluate('crScheduleRefresh()');f.streams[0].open();const initial=fireTimer(f,150);f.requests[0].resolve(f.cr.data);await initial;assert.equal(f.cr.liveStatus,'live');assert.equal(f.cr.refreshTimer,null);assert.ok(f.cr.syncStatusTimer);
   const pending=fireSyncStatusTimer(f);assert.equal(f.requests[1].path,'/api/creative-research/sync-status');assert.equal(f.requests[1].body,undefined);f.requests[1].resolve(sync({status:'error',sourceCount:3,errorSourceCount:1,staleSourceCount:0,lastError:'완료 문서 형식 확인 필요'}));await pending;
-  assert.equal(f.cr.data.entries,beforeEntries);assert.equal(f.cr.data.entries[0].usage.isMine,true);assert.equal(f.cr.query,'입력 중인 검색');assert.equal(f.cr.brand,'LAB');assert.equal(f.context.state.modalRequest,modalVersion);assert.equal(f.modals.at(-1),detail);assert.equal(f.requests.length,2);assert.match(f.evaluate('crSyncSummary()'),/일부 조사 문서 확인 필요/);assert.ok(f.cr.syncStatusTimer);
+  assert.equal(f.cr.data.entries,beforeEntries);assert.equal(f.cr.data.entries[0].usage.isMine,true);assert.equal(f.cr.query,'입력 중인 검색');assert.equal(f.cr.brand,'LAB');assert.equal(f.context.state.modalRequest,modalVersion);assert.equal(f.modals.at(-1),detail);assert.equal(f.requests.length,2);assert.match(f.evaluate('crSyncSummary()'),/확인할 문서 있음/);assert.ok(f.cr.syncStatusTimer);
 });
 
 test('late document-health responses cannot survive hidden views, logout, navigation or session replacement',async()=>{
@@ -566,8 +566,8 @@ test('a newer workspace or document setting operation wins over a pending health
 });
 
 test('health transport failures preserve saved data and recover on the next bounded poll',async()=>{
-  const f=liveFixture();f.cr.data.automation={sync:sync()};const original=f.cr.data.entries;f.evaluate('crScheduleRefresh()');let pending=fireSyncStatusTimer(f);f.requests[0].reject(Error('private transport details'));await pending;assert.equal(f.cr.data.entries,original);assert.match(f.evaluate('crSyncSummary()'),/상태를 새로 확인하지 못했어요/);assert.ok(!f.evaluate('crSyncSummary()').includes('private transport details'));
-  pending=fireSyncStatusTimer(f);f.requests[1].resolve(sync({sourceCount:3,errorSourceCount:0,staleSourceCount:0}));await pending;assert.equal(f.cr.syncStatusError,'');assert.match(f.evaluate('crSyncSummary()'),/읽기 오류 0개 · 조사 지연 0개/);assert.equal(f.requests.length,2);
+  const f=liveFixture();f.cr.data.automation={sync:sync()};const original=f.cr.data.entries;f.evaluate('crScheduleRefresh()');let pending=fireSyncStatusTimer(f);f.requests[0].reject(Error('private transport details'));await pending;assert.equal(f.cr.data.entries,original);assert.match(f.evaluate('crSyncSummary()'),/상태를 새로 불러오지 못해/);assert.ok(!f.evaluate('crSyncSummary()').includes('private transport details'));
+  pending=fireSyncStatusTimer(f);f.requests[1].resolve(sync({sourceCount:3,errorSourceCount:0,staleSourceCount:0}));await pending;assert.equal(f.cr.syncStatusError,'');assert.match(f.evaluate('crSyncSummary()'),/못 읽음 0개 · 늦어짐 0개/);assert.equal(f.requests.length,2);
 });
 
 test('denied health reads purge cached observations without closing another unsaved modal',async()=>{
@@ -578,12 +578,12 @@ test('denied health reads purge cached observations without closing another unsa
 
 test('admin source health separates read attempts, successful reads, research completion and upload',()=>{
   const f=fixture();f.context.state.user.role='admin';const completed='2026-10-09T01:00:00.000Z',read='2026-10-11T01:00:00.000Z';f.cr.data={entries:[],automation:{sync:sync({status:'imported',sourceCount:3,errorSourceCount:1,staleSourceCount:1,sources:[{id:'primary',status:'imported',lastCheckedAt:read,lastReadAt:read,researchCompletedAt:completed,lastImportedAt:'2026-10-09T01:05:00Z',freshness:'stale',freshnessLimitHours:36},{id:'meta-brand',status:'error',lastError:'원문 <script> 오류',freshness:'unknown'},{id:'yt-tt',status:'imported',freshness:'current',researchCompletedAt:read}]})}};
-  let html=f.evaluate('crSyncSummary()');for(const label of ['조사 문서별 상태','전체 조사','YouTube · TikTok','Meta · 브랜드','마지막 확인 시도','마지막 성공 읽기','마지막 조사 완료','마지막 자동 반영','36시간 넘게'])assert.ok(html.includes(label),label);assert.match(html,/일부 조사 문서 확인 필요/);assert.match(html,/원문 &lt;script&gt; 오류/);assert.ok(!html.includes('<script>'));assert.ok(html.includes(f.evaluate('crTime('+JSON.stringify(completed)+')')));assert.ok(html.includes(f.evaluate('crTime('+JSON.stringify(read)+')')));
-  f.context.state.user.role='member';html=f.evaluate('crSyncSummary()');assert.ok(!html.includes('조사 문서별 상태'));assert.ok(!html.includes('전체 조사'));assert.match(html,/연결 문서 3개 · 읽기 오류 1개 · 조사 지연 1개/);
+  let html=f.evaluate('crSyncSummary()');for(const label of ['문서별 상태','전체 조사','YouTube · TikTok','Meta · 브랜드','마지막 확인 ','마지막으로 읽음 ','조사 완료 ',' · 반영 ','36시간 넘게'])assert.ok(html.includes(label),label);assert.match(html,/확인할 문서 있음/);assert.match(html,/원문 &lt;script&gt; 오류/);assert.ok(!html.includes('<script>'));assert.ok(html.includes(f.evaluate('crTime('+JSON.stringify(completed)+')')));assert.ok(html.includes(f.evaluate('crTime('+JSON.stringify(read)+')')));
+  f.context.state.user.role='member';html=f.evaluate('crSyncSummary()');assert.ok(!html.includes('문서별 상태'));assert.ok(!html.includes('전체 조사'));assert.match(html,/연결한 문서 3개 · 못 읽음 1개 · 늦어짐 1개/);
 });
 
 test('day-limit deferrals are not shown as a queue for automatic next-day admission',()=>{
-  const f=fixture({view:'guides'});f.cr.data={entries:[guideRow()],automation:{pool:{date:'2026-10-11',addedCount:10,limit:10,deferredCount:20}}};const html=f.evaluate('crPanel()');assert.ok(html.includes('오늘 입장 보류 20건 (보고서별 누적 · 자동 대기열 아님)'));assert.ok(!html.includes('대기 20개'));
+  const f=fixture({view:'guides'});f.cr.data={entries:[guideRow()],automation:{pool:{date:'2026-10-11',addedCount:10,limit:10,deferredCount:20}}};const html=f.evaluate('crPanel()');assert.ok(html.includes('한도로 못 넣은 양식 20건'));assert.ok(!html.includes('대기 20개'));
 });
 
 
@@ -594,7 +594,7 @@ test('health rendering preserves the expanded source panel and defers in-progres
 
 
 test('document-health requests abort after fifteen seconds and retry once after the next minute',async()=>{
-  const f=liveFixture();f.cr.data.automation={sync:sync()};f.evaluate('crScheduleRefresh()');const pending=fireSyncStatusTimer(f);assert.equal(f.requests[0].method,'GET');const signal=f.requests[0].options.signal;assert.equal(signal.aborted,false);await fireTimer(f,15000);await pending;assert.equal(signal.aborted,true);assert.equal(f.cr.syncStatusLoading,false);assert.equal(f.cr.syncStatusTimeoutTimer,null);assert.match(f.cr.syncStatusError,/확인하지 못했어요/);assert.ok(f.cr.syncStatusTimer);const retry=fireSyncStatusTimer(f);f.requests[1].resolve(sync());await retry;assert.equal(f.requests.length,2);assert.equal(f.cr.syncStatusError,'');assert.ok(![...f.timers.values()].some(timer=>timer.delay===15000));
+  const f=liveFixture();f.cr.data.automation={sync:sync()};f.evaluate('crScheduleRefresh()');const pending=fireSyncStatusTimer(f);assert.equal(f.requests[0].method,'GET');const signal=f.requests[0].options.signal;assert.equal(signal.aborted,false);await fireTimer(f,15000);await pending;assert.equal(signal.aborted,true);assert.equal(f.cr.syncStatusLoading,false);assert.equal(f.cr.syncStatusTimeoutTimer,null);assert.match(f.cr.syncStatusError,/새로 불러오지 못해/);assert.ok(f.cr.syncStatusTimer);const retry=fireSyncStatusTimer(f);f.requests[1].resolve(sync());await retry;assert.equal(f.requests.length,2);assert.equal(f.cr.syncStatusError,'');assert.ok(![...f.timers.values()].some(timer=>timer.delay===15000));
 });
 
 test('leaving the visible pool aborts only its pending health request and clears its timeout',async()=>{
@@ -602,5 +602,5 @@ test('leaving the visible pool aborts only its pending health request and clears
 });
 
 test('health changes replace only the sync block while preserving expanded sources and their keyboard focus',()=>{
-  const f=fixture();let replaced='',focused=false;const active={tagName:'SUMMARY'},oldSource={open:true},nextSource={open:false,querySelector:()=>({focus(){focused=true;}})};const old={outerHTML:'old',contains:()=>true,querySelector:()=>oldSource},next={outerHTML:'new',querySelector:()=>nextSource};Object.defineProperty(old,'outerHTML',{get:()=> 'old',set:v=>{replaced=v;}});f.context.document.activeElement=active;f.context.document.querySelector=()=>replaced?next:old;f.cr.data={entries:[],automation:{sync:sync()}};const renders=f.renders;f.evaluate('crRenderSyncStatus()');assert.match(replaced,/문서 읽기와 새 조사 도착/);assert.equal(f.renders,renders);assert.equal(nextSource.open,true);assert.equal(focused,true);
+  const f=fixture();let replaced='',focused=false;const active={tagName:'SUMMARY'},oldSource={open:true},nextSource={open:false,querySelector:()=>({focus(){focused=true;}})};const old={outerHTML:'old',contains:()=>true,querySelector:()=>oldSource},next={outerHTML:'new',querySelector:()=>nextSource};Object.defineProperty(old,'outerHTML',{get:()=> 'old',set:v=>{replaced=v;}});f.context.document.activeElement=active;f.context.document.querySelector=()=>replaced?next:old;f.cr.data={entries:[],automation:{sync:sync()}};const renders=f.renders;f.evaluate('crRenderSyncStatus()');assert.match(replaced,/문서를 읽어도 새 조사가 없으면 반영하지 않아요/);assert.equal(f.renders,renders);assert.equal(nextSource.open,true);assert.equal(focused,true);
 });
