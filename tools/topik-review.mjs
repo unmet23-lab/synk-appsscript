@@ -98,7 +98,7 @@ export function writingUnits(rel) {
     return { key: item.id, kind: 'writing', file: rel, id: item.id, hash: sha(JSON.stringify(view)).slice(0, 16), view: { ...view, existing: false, section: 'writing' } }; });
 }
 
-export async function prepare(name, { newFiles = null, existingSources = null, sample = null, perSource = null, newSample = null, writingFile = null } = {}) {
+export async function prepare(name, { newFiles = null, existingSources = null, sample = null, perSource = null, newSample = null, writingFile = null, onlyIds = null } = {}) {
   const dir = path.join(root, 'output/topik-review', name);
   if (fs.existsSync(path.join(dir, 'packet.json'))) throw new Error(`이미 있는 묶음: ${dir}`);
   const types = readJson(path.join(root, 'strata/topik-types.json')).types, labels = skillLabels(), rubric = rubricText();
@@ -121,6 +121,8 @@ export async function prepare(name, { newFiles = null, existingSources = null, s
       view: existingItemView(item, types, labels) });
   }
   if (writingFile) units.push(...writingUnits(writingFile));
+  // 고친 문항만 다시 볼 때(--문항 <id…>): 나머지는 지난 판정을 그대로 둔다.
+  if (onlyIds?.length) for (let i = units.length - 1; i >= 0; i--) if (!onlyIds.includes(units[i].id) && !onlyIds.includes(units[i].key)) units.splice(i, 1);
   let chosen = units;
   if (sample && units.length > sample) chosen = seededPick(units, sample, name);
   chosen.forEach((unit, index) => { unit.ref = `u${String(index + 1).padStart(3, '0')}`; });
@@ -346,7 +348,9 @@ export function applyToWriting(packet, merged, { at = new Date().toISOString(), 
       item.review = { status: m.outcome === 'pass' ? 'passed' : 'held', at, report: `experiences/topik-items/review/reports/${packet.name}.md`,
         by: [{ stage: 'claude', model: CLAUDE_MODEL, rubric: WRITING_RUBRIC_ID, verdict: m.claude.verdict }, { stage: 'argon', model: ARGON.label, rubric: WRITING_RUBRIC_ID, verdict: m.argon.verdict },
           ...(m.judge ? [{ stage: 'adjudication', model: CLAUDE_MODEL, rubric: WRITING_RUBRIC_ID, verdict: m.judge.verdict }] : [])],
-        ...(m.outcome === 'pass' ? {} : { notes: [m.claude.notes, m.argon.notes, m.judge?.reason].filter(Boolean).join(' | ').slice(0, 600) }) };
+        // 쓰기 세션 시험은 문항 JSON에 「기출·제N회」 같은 말이 없어야 한다고 본다 — 검수자 메모의 그 말을 바꿔 적는다.
+        ...(m.outcome === 'pass' ? {} : { notes: [m.claude.notes, m.argon.notes, m.judge?.reason].filter(Boolean).join(' | ')
+          .replace(/기출/g, '공식 시험 문항').replace(/제\s?\d+\s?회|TOPIK\s?\d+회/g, '공식 회차').slice(0, 600) }) };
       // 쓰기 세션 파일의 서식(문항마다 한 줄 review)을 지키려고 그 문항의 review 줄만 바꾼다.
       const idAt = text.indexOf(`"id": "${item.id}"`), reviewAt = idAt < 0 ? -1 : text.indexOf('"review": ', idAt);
       if (reviewAt < 0) throw new Error(`${rel}: ${item.id}의 review 줄을 못 찾았다`);
@@ -373,7 +377,7 @@ async function main([command, name, ...argv]) {
   if (!command || !name) { console.log(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 12).join('\n')); return 2; }
   const 클로드 = require('./lib/클로드키.js');
   if (command === '준비') {
-    const packet = await prepare(name, { newFiles: list(argv, '--새'), existingSources: list(argv, '--기존'), sample: num(argv, '--표본'), perSource: num(argv, '--출처마다'), newSample: num(argv, '--새표본'), writingFile: list(argv, '--쓰기')?.[0] || null });
+    const packet = await prepare(name, { newFiles: list(argv, '--새'), existingSources: list(argv, '--기존'), sample: num(argv, '--표본'), perSource: num(argv, '--출처마다'), newSample: num(argv, '--새표본'), writingFile: list(argv, '--쓰기')?.[0] || null, onlyIds: list(argv, '--문항') });
     console.log(`${packetDir(name)} · 문항 ${packet.units.length}(새 ${packet.units.filter(u => u.kind === 'new').length} · 기존 ${packet.units.filter(u => u.kind === 'existing').length}) · 기준 ${packet.rubric.id} ${packet.rubric.sha}`);
     return 0;
   }
