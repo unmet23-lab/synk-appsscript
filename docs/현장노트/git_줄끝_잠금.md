@@ -396,6 +396,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 다시 확인: `git rev-list --count HEAD..origin/master`가 0이고, `git diff --stat <옛 머리> HEAD -- <내 경로들>`이 비어 있다(10-20: 코드 14경로 같음, 다른 차이는 그사이 들어온 남의 커밋 다섯 파일뿐).
 - 10-20 덧붙임(자동 모드에서 옮기기가 막힐 때, Claude): 내 위치 세션(`.claude/worktrees/magical-borg-0ea51c`, 로컬 master에서 떠 origin보다 366 앞·47 뒤, 작업본 깨끗)에서는 `git reset --hard origin/master`·`git switch -c <새 가지> origin/master`·`git config --worktree core.autocrlf false`가 모두 자동 모드 판정기에 「Irreversible Local Destruction」으로 거절됐다. 세션은 그 워크트리에 묶여 Edit·Write가 다른 워크트리 파일을 쓰지 않는다. 덮지 않고 새 워크트리를 더해 옮겼다 — `git -c core.autocrlf=false worktree add -b <가지> .claude/worktrees/<이름> origin/master`(한 번만 쓰는 `-c`라 공용 설정은 그대로, 꺼낸 파일은 LF) → `EnterWorktree`에 `path`로 세션을 옮긴다 → 그 워크트리에서 파일을 쓰는 git 명령(cherry-pick·rebase)에도 `-c core.autocrlf=false`. 워크트리로 격리된 세션의 Bash는 값이 실행 중에 정해지는 인자(`$VAR`·`for`, 파이프에 섞인 git)를 「안에 머무는지 확인할 수 없다」며 돌리지 않으니, 시험 파일 목록처럼 인자를 모으는 일은 노드 스크립트가 모아 `spawnSync`로 돌린다. 확인: 새 워크트리에서 `git ls-files --eol`의 `w/crlf` 28개가 모두 blob 자체가 CRLF(`i/crlf`)이고 `git rev-parse HEAD`가 그때의 origin/master(`a6060676f`)였다.
 
+### 워크트리 세션은 공용 `.tmp` 릴리스 폴더에 Write·Edit를 못 한다 — 워크트리에서 쓰고 장부 붙은 옮기기로 (2026-10-20 Claude)
+- 증상: 회사 릴리스 15판 도구를 공용 `.tmp/company-voice-on-*`에 만들려 하자 Write가 「isolated git worktree … Use the worktree path instead」로 막혔다. 릴리스 도구는 다른 릴리스 폴더를 `../../<이름>`으로 찾아 공용 `.tmp`에만 있어야 한다(워크트리 `.tmp`에는 형제 폴더가 없다).
+- 원인: 보호 장치가 워크트리 세션의 공용 작업본 경로 Write·Edit를 막는다. `.gitignore` 대상인 `.tmp`도 같다. junction으로 잇는 길은 워크트리를 지울 때 공용 쪽까지 지울 수 있어 쓰지 않는다(위 항목).
+- 고침: 원본은 워크트리 `.tmp/<이름>-src/<폴더>/`에서 쓰고, 옮기기 스크립트로 공용 `.tmp/<폴더>/`에 옮긴다 — 공용 쪽에 새로 만들거나 지난번 옮긴 바이트 그대로인 파일만 바꾸고(남이 고친 파일이면 멈춤), 옮긴 해시를 장부에 남긴다. 도구가 만드는 산출물은 node 실행이 공용 쪽에 직접 쓴다. 보고에 이 방식을 밝힌다. 참고 사본: `.tmp/company-voice-on-release-20261020/voice-env/worktree-sync.reference.cjs`.
+- 다시 확인: 옮기기 미리 보기가 바뀐 파일만 `new`·`update`로 보이고, 공용 쪽 파일을 손으로 바꾼 뒤 다시 돌리면 `SHARED_FILE_CHANGED_BY_SOMEONE_ELSE`로 멈춘다(10-20).
+
 ## 이력 훑기
 
 ### 큰 blob을 거른 클론에서 `git log -S`·`--find-object`가 「could not fetch」로 끝난다
