@@ -1,0 +1,82 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s3",
+ "text": "셋째, 게시는 \"올려\" 한 마디. 목표는 사일 치 비축, 오늘부터 쌓아요.",
+ "dur": 4.319,
+ "words": [
+  {
+   "text": "셋째,",
+   "start": 0.02,
+   "end": 0.302
+  },
+  {
+   "text": "게시는",
+   "start": 0.744,
+   "end": 1.105
+  },
+  {
+   "text": "\"올려\"",
+   "start": 1.125,
+   "end": 1.366
+  },
+  {
+   "text": "한",
+   "start": 1.427,
+   "end": 1.487
+  },
+  {
+   "text": "마디.",
+   "start": 1.547,
+   "end": 1.728
+  },
+  {
+   "text": "목표는",
+   "start": 2.25,
+   "end": 2.592
+  },
+  {
+   "text": "사일",
+   "start": 2.652,
+   "end": 2.833
+  },
+  {
+   "text": "치",
+   "start": 2.913,
+   "end": 2.953
+  },
+  {
+   "text": "비축,",
+   "start": 3.014,
+   "end": 3.335
+  },
+  {
+   "text": "오늘부터",
+   "start": 3.436,
+   "end": 3.777
+  },
+  {
+   "text": "쌓아요.",
+   "start": 3.837,
+   "end": 4.319
+  }
+ ],
+ "source": {
+  "key": "15b8b62db2bf6aca6bf57890d408c163",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

@@ -1,0 +1,67 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s1b",
+ "text": "예약이 텅 비어도, 만들 건 이 후보에서 골라요.",
+ "dur": 2.407,
+ "words": [
+  {
+   "text": "예약이",
+   "start": 0.02,
+   "end": 0.306
+  },
+  {
+   "text": "텅",
+   "start": 0.352,
+   "end": 0.502
+  },
+  {
+   "text": "비어도,",
+   "start": 0.547,
+   "end": 0.803
+  },
+  {
+   "text": "만들",
+   "start": 0.999,
+   "end": 1.24
+  },
+  {
+   "text": "건",
+   "start": 1.285,
+   "end": 1.406
+  },
+  {
+   "text": "이",
+   "start": 1.466,
+   "end": 1.481
+  },
+  {
+   "text": "후보에서",
+   "start": 1.526,
+   "end": 1.843
+  },
+  {
+   "text": "골라요.",
+   "start": 1.888,
+   "end": 2.407
+  }
+ ],
+ "source": {
+  "key": "c7aa12173f8a34eaa7f7b8ee1e33d9ce",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

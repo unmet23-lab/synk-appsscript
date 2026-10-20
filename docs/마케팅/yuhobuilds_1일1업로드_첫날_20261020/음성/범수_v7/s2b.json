@@ -1,0 +1,77 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s2b",
+ "text": "오늘은 셋 다 사용량 한도에 멈췄는데, \"이어서 해\"로 다시 이었어요.",
+ "dur": 3.653,
+ "words": [
+  {
+   "text": "오늘은",
+   "start": 0.02,
+   "end": 0.287
+  },
+  {
+   "text": "셋",
+   "start": 0.362,
+   "end": 0.481
+  },
+  {
+   "text": "다",
+   "start": 0.525,
+   "end": 0.585
+  },
+  {
+   "text": "사용량",
+   "start": 0.645,
+   "end": 0.987
+  },
+  {
+   "text": "한도에",
+   "start": 1.031,
+   "end": 1.24
+  },
+  {
+   "text": "멈췄는데,",
+   "start": 1.299,
+   "end": 1.805
+  },
+  {
+   "text": "\"이어서",
+   "start": 2.028,
+   "end": 2.564
+  },
+  {
+   "text": "해\"로",
+   "start": 2.624,
+   "end": 2.787
+  },
+  {
+   "text": "다시",
+   "start": 2.832,
+   "end": 3.055
+  },
+  {
+   "text": "이었어요.",
+   "start": 3.115,
+   "end": 3.653
+  }
+ ],
+ "source": {
+  "key": "c4cee3750b17f17236a3c5994be33e11",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "cta",
+ "text": "저장해 두고 하나씩 따라 해 보세요.",
+ "dur": 2.111,
+ "words": [
+  {
+   "text": "저장해",
+   "start": 0.02,
+   "end": 0.326
+  },
+  {
+   "text": "두고",
+   "start": 0.374,
+   "end": 0.551
+  },
+  {
+   "text": "하나씩",
+   "start": 1.05,
+   "end": 1.371
+  },
+  {
+   "text": "따라",
+   "start": 1.42,
+   "end": 1.548
+  },
+  {
+   "text": "해",
+   "start": 1.597,
+   "end": 1.645
+  },
+  {
+   "text": "보세요.",
+   "start": 1.693,
+   "end": 2.111
+  }
+ ],
+ "source": {
+  "key": "4acaee8400ed1ca8992b3f3442d57dc8",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

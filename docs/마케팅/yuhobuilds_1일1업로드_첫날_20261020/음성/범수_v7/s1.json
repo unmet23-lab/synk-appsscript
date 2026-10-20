@@ -1,0 +1,87 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s1",
+ "text": "첫째, 소재는 월요일에 에이아이가 한 주 치를 뽑아요. 트렌드, 질문, 달력, 실화.",
+ "dur": 5.321,
+ "words": [
+  {
+   "text": "첫째,",
+   "start": 0.02,
+   "end": 0.321
+  },
+  {
+   "text": "소재는",
+   "start": 0.683,
+   "end": 1.004
+  },
+  {
+   "text": "월요일에",
+   "start": 1.064,
+   "end": 1.446
+  },
+  {
+   "text": "에이아이가",
+   "start": 1.506,
+   "end": 1.888
+  },
+  {
+   "text": "한",
+   "start": 1.948,
+   "end": 2.008
+  },
+  {
+   "text": "주",
+   "start": 2.068,
+   "end": 2.129
+  },
+  {
+   "text": "치를",
+   "start": 2.189,
+   "end": 2.41
+  },
+  {
+   "text": "뽑아요.",
+   "start": 2.47,
+   "end": 2.771
+  },
+  {
+   "text": "트렌드,",
+   "start": 3.153,
+   "end": 3.534
+  },
+  {
+   "text": "질문,",
+   "start": 3.815,
+   "end": 4.217
+  },
+  {
+   "text": "달력,",
+   "start": 4.398,
+   "end": 4.82
+  },
+  {
+   "text": "실화.",
+   "start": 4.94,
+   "end": 5.321
+  }
+ ],
+ "source": {
+  "key": "4c707d26d9878429419ab77ca479d69a",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

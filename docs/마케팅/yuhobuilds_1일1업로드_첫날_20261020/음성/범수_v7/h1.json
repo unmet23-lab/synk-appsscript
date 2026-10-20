@@ -1,0 +1,72 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h1",
+ "text": "에스엔에스 업로드 자동화, 사람이 할 일은 \"올려\" 한 마디.",
+ "dur": 3.091,
+ "words": [
+  {
+   "text": "에스엔에스",
+   "start": 0.02,
+   "end": 0.497
+  },
+  {
+   "text": "업로드",
+   "start": 0.545,
+   "end": 0.799
+  },
+  {
+   "text": "자동화,",
+   "start": 0.863,
+   "end": 1.133
+  },
+  {
+   "text": "사람이",
+   "start": 1.674,
+   "end": 1.993
+  },
+  {
+   "text": "할",
+   "start": 2.04,
+   "end": 2.12
+  },
+  {
+   "text": "일은",
+   "start": 2.168,
+   "end": 2.327
+  },
+  {
+   "text": "\"올려\"",
+   "start": 2.343,
+   "end": 2.55
+  },
+  {
+   "text": "한",
+   "start": 2.597,
+   "end": 2.693
+  },
+  {
+   "text": "마디.",
+   "start": 2.741,
+   "end": 3.091
+  }
+ ],
+ "source": {
+  "key": "bf7a0cd5741f9585487217c8ef4ade47",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

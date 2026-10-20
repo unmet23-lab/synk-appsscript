@@ -1,0 +1,87 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h2",
+ "text": "첫날인 오늘 세 편. 따라 하실 수 있게 세 단계로, 끝엔 체크리스트.",
+ "dur": 3.897,
+ "words": [
+  {
+   "text": "첫날인",
+   "start": 0.05,
+   "end": 0.432
+  },
+  {
+   "text": "오늘",
+   "start": 0.477,
+   "end": 0.691
+  },
+  {
+   "text": "세",
+   "start": 0.753,
+   "end": 0.829
+  },
+  {
+   "text": "편.",
+   "start": 0.921,
+   "end": 1.119
+  },
+  {
+   "text": "따라",
+   "start": 1.501,
+   "end": 1.685
+  },
+  {
+   "text": "하실",
+   "start": 1.731,
+   "end": 1.929
+  },
+  {
+   "text": "수",
+   "start": 1.975,
+   "end": 2.036
+  },
+  {
+   "text": "있게",
+   "start": 2.082,
+   "end": 2.235
+  },
+  {
+   "text": "세",
+   "start": 2.296,
+   "end": 2.357
+  },
+  {
+   "text": "단계로,",
+   "start": 2.403,
+   "end": 2.739
+  },
+  {
+   "text": "끝엔",
+   "start": 2.907,
+   "end": 3.213
+  },
+  {
+   "text": "체크리스트.",
+   "start": 3.259,
+   "end": 3.897
+  }
+ ],
+ "source": {
+  "key": "e415719d63e831ac249d90be2c83b998",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

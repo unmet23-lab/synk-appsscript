@@ -1,0 +1,87 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "c1",
+ "text": "정리하면 넷. 월요일 목록, 같은 시각, \"올려\" 한 번, 사일 치 비축.",
+ "dur": 3.888,
+ "words": [
+  {
+   "text": "정리하면",
+   "start": 0.02,
+   "end": 0.522
+  },
+  {
+   "text": "넷.",
+   "start": 0.583,
+   "end": 0.784
+  },
+  {
+   "text": "월요일",
+   "start": 1.085,
+   "end": 1.386
+  },
+  {
+   "text": "목록,",
+   "start": 1.447,
+   "end": 1.768
+  },
+  {
+   "text": "같은",
+   "start": 1.888,
+   "end": 2.15
+  },
+  {
+   "text": "시각,",
+   "start": 2.21,
+   "end": 2.471
+  },
+  {
+   "text": "\"올려\"",
+   "start": 2.531,
+   "end": 2.853
+  },
+  {
+   "text": "한",
+   "start": 2.913,
+   "end": 2.973
+  },
+  {
+   "text": "번,",
+   "start": 3.034,
+   "end": 3.134
+  },
+  {
+   "text": "사일",
+   "start": 3.194,
+   "end": 3.415
+  },
+  {
+   "text": "치",
+   "start": 3.476,
+   "end": 3.536
+  },
+  {
+   "text": "비축.",
+   "start": 3.596,
+   "end": 3.888
+  }
+ ],
+ "source": {
+  "key": "29518deed16ff3c93e0883bb1654b875",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

@@ -1,0 +1,82 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s2",
+ "text": "둘째, 제작은 매일 아침 일곱 시로 걸어 뒀어요. 저는 최종본만 봐요.",
+ "dur": 4.246,
+ "words": [
+  {
+   "text": "둘째,",
+   "start": 0.08,
+   "end": 0.355
+  },
+  {
+   "text": "제작은",
+   "start": 1.034,
+   "end": 1.373
+  },
+  {
+   "text": "매일",
+   "start": 1.422,
+   "end": 1.599
+  },
+  {
+   "text": "아침",
+   "start": 1.648,
+   "end": 1.826
+  },
+  {
+   "text": "일곱",
+   "start": 1.874,
+   "end": 2.036
+  },
+  {
+   "text": "시로",
+   "start": 2.084,
+   "end": 2.23
+  },
+  {
+   "text": "걸어",
+   "start": 2.278,
+   "end": 2.423
+  },
+  {
+   "text": "뒀어요.",
+   "start": 2.504,
+   "end": 2.763
+  },
+  {
+   "text": "저는",
+   "start": 3.118,
+   "end": 3.328
+  },
+  {
+   "text": "최종본만",
+   "start": 3.377,
+   "end": 3.861
+  },
+  {
+   "text": "봐요.",
+   "start": 3.91,
+   "end": 4.246
+  }
+ ],
+ "source": {
+  "key": "68be29eb26c18ff3605d360185e90ca0",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

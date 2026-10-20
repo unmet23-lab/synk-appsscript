@@ -1,0 +1,120 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획_v7.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1017,
+  "lufs": -17
+ },
+ "made": "2026-10-20T11:56:01.598Z",
+ "lines": [
+  {
+   "id": "h1",
+   "text": "에스엔에스 업로드 자동화, 사람이 할 일은 \"올려\" 한 마디.",
+   "dur": 3.091,
+   "syllablesPerSec": 7.12,
+   "src": "h1.wav",
+   "key": "bf7a0cd5741f9585487217c8ef4ade47",
+   "words": 9
+  },
+  {
+   "id": "h2",
+   "text": "첫날인 오늘 세 편. 따라 하실 수 있게 세 단계로, 끝엔 체크리스트.",
+   "dur": 3.897,
+   "syllablesPerSec": 6.42,
+   "src": "h2.wav",
+   "key": "e415719d63e831ac249d90be2c83b998",
+   "words": 12
+  },
+  {
+   "id": "s1",
+   "text": "첫째, 소재는 월요일에 에이아이가 한 주 치를 뽑아요. 트렌드, 질문, 달력, 실화.",
+   "dur": 5.321,
+   "syllablesPerSec": 5.64,
+   "src": "s1.wav",
+   "key": "4c707d26d9878429419ab77ca479d69a",
+   "words": 12
+  },
+  {
+   "id": "s1b",
+   "text": "예약이 텅 비어도, 만들 건 이 후보에서 골라요.",
+   "dur": 2.407,
+   "syllablesPerSec": 7.48,
+   "src": "s1b.wav",
+   "key": "c7aa12173f8a34eaa7f7b8ee1e33d9ce",
+   "words": 8
+  },
+  {
+   "id": "s2",
+   "text": "둘째, 제작은 매일 아침 일곱 시로 걸어 뒀어요. 저는 최종본만 봐요.",
+   "dur": 4.246,
+   "syllablesPerSec": 6.12,
+   "src": "s2.wav",
+   "key": "68be29eb26c18ff3605d360185e90ca0",
+   "words": 11
+  },
+  {
+   "id": "s2b",
+   "text": "오늘은 셋 다 사용량 한도에 멈췄는데, \"이어서 해\"로 다시 이었어요.",
+   "dur": 3.653,
+   "syllablesPerSec": 7.12,
+   "src": "s2b.wav",
+   "key": "c4cee3750b17f17236a3c5994be33e11",
+   "words": 10
+  },
+  {
+   "id": "s3",
+   "text": "셋째, 게시는 \"올려\" 한 마디. 목표는 사일 치 비축, 오늘부터 쌓아요.",
+   "dur": 4.319,
+   "syllablesPerSec": 5.79,
+   "src": "s3.wav",
+   "key": "15b8b62db2bf6aca6bf57890d408c163",
+   "words": 11
+  },
+  {
+   "id": "s3b",
+   "text": "채널마다 예약 화면이 달라서, 올리기는 한 창에서 차례로. 동시엔 엉켜요.",
+   "dur": 4.11,
+   "syllablesPerSec": 7.06,
+   "src": "s3b.wav",
+   "key": "84d3bd0d42e3199811f61267e1a07173",
+   "words": 10
+  },
+  {
+   "id": "c1",
+   "text": "정리하면 넷. 월요일 목록, 같은 시각, \"올려\" 한 번, 사일 치 비축.",
+   "dur": 3.888,
+   "syllablesPerSec": 5.92,
+   "src": "c1.wav",
+   "key": "29518deed16ff3c93e0883bb1654b875",
+   "words": 12
+  },
+  {
+   "id": "cta",
+   "text": "저장해 두고 하나씩 따라 해 보세요.",
+   "dur": 2.111,
+   "syllablesPerSec": 6.63,
+   "src": "cta.wav",
+   "key": "4acaee8400ed1ca8992b3f3442d57dc8",
+   "words": 6
+  },
+  {
+   "id": "fo",
+   "text": "팔로우하면 다음 편도 보여 드릴게요.",
+   "dur": 2.093,
+   "syllablesPerSec": 7.17,
+   "src": "fo.wav",
+   "key": "e5e603a6e35f2a6e66831f682daa78bf",
+   "words": 5
+  }
+ ]
+}

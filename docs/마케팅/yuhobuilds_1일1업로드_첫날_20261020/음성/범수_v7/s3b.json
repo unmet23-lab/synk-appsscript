@@ -1,0 +1,77 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s3b",
+ "text": "채널마다 예약 화면이 달라서, 올리기는 한 창에서 차례로. 동시엔 엉켜요.",
+ "dur": 4.11,
+ "words": [
+  {
+   "text": "채널마다",
+   "start": 0.02,
+   "end": 0.444
+  },
+  {
+   "text": "예약",
+   "start": 0.535,
+   "end": 0.702
+  },
+  {
+   "text": "화면이",
+   "start": 0.763,
+   "end": 1.005
+  },
+  {
+   "text": "달라서,",
+   "start": 1.05,
+   "end": 1.353
+  },
+  {
+   "text": "올리기는",
+   "start": 1.687,
+   "end": 2.065
+  },
+  {
+   "text": "한",
+   "start": 2.111,
+   "end": 2.202
+  },
+  {
+   "text": "창에서",
+   "start": 2.247,
+   "end": 2.52
+  },
+  {
+   "text": "차례로.",
+   "start": 2.565,
+   "end": 2.853
+  },
+  {
+   "text": "동시엔",
+   "start": 3.277,
+   "end": 3.626
+  },
+  {
+   "text": "엉켜요.",
+   "start": 3.671,
+   "end": 4.11
+  }
+ ],
+ "source": {
+  "key": "84d3bd0d42e3199811f61267e1a07173",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}
