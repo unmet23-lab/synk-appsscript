@@ -42,6 +42,9 @@ const icons = {
   bookmark:'<path d="M6 3h12v18l-6-4-6 4z"/>',
   clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
   task:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="m8 12 3 3 5-6"/>',
+  refresh:'<path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/>',
+  more:'<circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/>',
+  calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/>',
 };
 const icon = (name) => `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">${icons[name] || icons.chat}</svg>`;
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -68,7 +71,7 @@ const chatCategories=[['personal','개인채팅','chat'],['team','팀채팅','us
 const systemRoomMeta={announcements:{icon:'announcement',description:'회사 일정과 꼭 볼 안내',intro:'회사 일정과 결정, 꼭 알아야 할 안내가 올라와요.'},info:{icon:'note',description:'일 자료와 링크',intro:'일에 필요한 자료와 링크, 쓸 만한 정보를 나눠요.'},social:{icon:'chat',description:'가벼운 이야기와 일상',intro:'가벼운 안부부터 오늘 있었던 일까지 편하게 나눠요.'}};
 Object.assign(state,{mentionIds:[],workspaceLink:null,ackRequired:false,mentionPicker:null,personalTab:'workday',savedView:'saved',taskFilter:'all',taskScope:'mine',shareSeq:0,personalSeq:0,personalItems:[],notificationCount:0,searchMessages:[],searchOffset:0,decisionQuery:'',decisionCurrent:true,decisionKind:'all',customerWork:[],catchUp:null});
 Object.assign(state,{scheduledNotifications:{enabled:null},workNotificationSession:0,workNotificationRevision:0,deadlineSettings:undefined,deadlineSettingsUser:null});
-Object.assign(state,{publicationWork:[],workdaySnapshot:null,workdayBody:null});
+Object.assign(state,{publicationWork:[],workdaySnapshot:null,workdayBody:null,workdayCount:null});
 Object.assign(state,{transferSession:0,sendAttempts:new Map(),transferFocusRevision:0});
 function sortedPublicChannels(channels){const order=Object.keys(systemRoomMeta);return channels.map((channel,index)=>({channel,index,rank:order.includes(channel.systemKey)?order.indexOf(channel.systemKey):order.length})).sort((a,b)=>a.rank-b.rank||a.index-b.index).map(item=>item.channel);}
 function channelCategory(channel){return channel?.kind==='self'||channel?.kind==='dm'?'personal':channel?.scope==='team'?'team':'all';}
@@ -1220,7 +1223,7 @@ function installProductivityUI(){
   $('#mention-picker').onmousedown=event=>event.preventDefault();$('#mention-picker').onclick=event=>{const button=event.target.closest('[data-mention-index]');if(button)chooseMention(Number(button.dataset.mentionIndex));};
   $('#composer-input').addEventListener('click',updateMentionPicker);$('#personal-bell').onclick=()=>openPersonalPanel('workday');$('#channel-notifications').onclick=roomSettingsDialog;
 }
-async function refreshNotificationCount(){const seq=state.notificationSeq=(state.notificationSeq||0)+1,userId=state.user?.id;try{const data=await api('/api/notifications?unread=1&limit=1');if(seq!==state.notificationSeq||userId!==state.user?.id)return;state.notificationCount=data.unreadCount||0;const badge=$('#personal-unread');if(badge){badge.hidden=!state.notificationCount;badge.textContent=state.notificationCount>99?'99+':String(state.notificationCount);}$('#personal-bell')?.setAttribute('aria-label',`내 업무 · 안 읽은 알림 ${state.notificationCount}개`);}catch{}}
+async function refreshNotificationCount(){const seq=state.notificationSeq=(state.notificationSeq||0)+1,userId=state.user?.id;try{const data=await api('/api/notifications?unread=1&limit=1');if(seq!==state.notificationSeq||userId!==state.user?.id)return;state.notificationCount=data.unreadCount||0;const badge=$('#personal-unread');if(badge){badge.hidden=!state.notificationCount;badge.textContent=state.notificationCount>99?'99+':String(state.notificationCount);}setPersonalTabCount('notifications',state.notificationCount);$('#personal-bell')?.setAttribute('aria-label',`내 업무 · 안 읽은 알림 ${state.notificationCount}개`);}catch{}}
 const notificationLabels={dm:'개인 대화',mention:'나를 멘션',reply:'내 글에 답글',message:'새 메시지',reminder:'다시 볼 시간',task:'할 일 바뀜',client_workflow:'고객 업무',automation_health:'자동화 상태',social_publishing:'SNS 게시',due_digest:'오늘 마감'};
 function taskStatusLabel(value){return{todo:'할 일',requested:'수락 전',accepted:'수락함',doing:'진행 중',review:'검토 중',changes:'수정 요청',done:'완료'}[value]||'할 일';}
 function taskStage(task){return task?.stage||({todo:'requested',doing:'doing',done:'done'}[task?.status])||'requested';}
@@ -1235,11 +1238,17 @@ function scheduleWorkdayRefresh(delay){
   },delay);
 }
 async function refreshVisibleWorkday(){if(workdayRefreshActive())await loadPersonalPanel({background:true});else cancelWorkdayRefresh();}
+const personalTabs=[['workday','오늘'],['catchup','바뀐 것'],['tasks','전체'],['notifications','알림'],['decisions','결정·최종본'],['saved','저장']];
+let personalTabsResizeBound=false;
+function setPersonalTabCount(key,value){const node=$(`[data-tab-count="${key}"]`);if(!node)return;const shown=Number.isInteger(value)&&value>0;node.hidden=!shown;node.textContent=shown?(value>99?'99+':String(value)):'';syncPersonalTabsOverflow();}
+function syncPersonalTabsOverflow(){const tabs=$('.wd-tabs');if(tabs&&Number.isFinite(tabs.scrollWidth))tabs.classList.toggle('is-overflowing',tabs.scrollWidth>tabs.clientWidth+1);}
 function openPersonalPanel(tab='workday'){
   state.notificationOpenSeq=(state.notificationOpenSeq||0)+1;
   closeDrawer();drawerReturnFocus=document.activeElement;setMobileMenu(false,{restoreFocus:false});state.drawer='personal';state.personalTab=tab;state.personalItems=[];
-  const drawer=$('#drawer');drawer.classList.remove('hidden');drawer.innerHTML=`<div class="drawer-head"><h2>내 업무</h2><button class="icon-button" id="close-drawer" aria-label="패널 닫기">${icon('close')}</button></div><div class="personal-tabs productivity-tabs" role="group" aria-label="개인 도구">${[['workday','오늘 할 일'],['catchup','바뀐 것'],['tasks','전체 할 일'],['decisions','결정·최종본'],['notifications','알림'],['saved','저장']].map(([key,label])=>`<button type="button" data-personal-tab="${key}" aria-pressed="${tab===key}">${label}</button>`).join('')}</div><div class="drawer-body personal-body" id="personal-body" aria-live="polite"></div>`;
-  $('#close-drawer').onclick=closeDrawer;$$('[data-personal-tab]',drawer).forEach(button=>button.onclick=()=>{state.notificationOpenSeq=(state.notificationOpenSeq||0)+1;state.personalTab=button.dataset.personalTab;state.personalItems=[];$$('[data-personal-tab]',drawer).forEach(item=>item.setAttribute('aria-pressed',String(item===button)));loadPersonalPanel();});$('#close-drawer').focus({preventScroll:true});syncDrawerAccess();loadPersonalPanel();
+  const drawer=$('#drawer');drawer.classList.remove('hidden');drawer.innerHTML=`<div class="drawer-head"><h2>내 업무</h2><button class="icon-button" id="close-drawer" aria-label="패널 닫기">${icon('close')}</button></div><div class="personal-tabs productivity-tabs wd-tabs" role="group" aria-label="개인 도구">${personalTabs.map(([key,label])=>`<button type="button" data-personal-tab="${key}" aria-pressed="${tab===key}">${label}${key==='workday'||key==='notifications'?`<span class="wd-tab-count" data-tab-count="${key}" hidden></span>`:''}</button>`).join('')}</div><div class="drawer-body personal-body" id="personal-body" aria-live="polite"></div>`;
+  $('#close-drawer').onclick=closeDrawer;$$('[data-personal-tab]',drawer).forEach(button=>button.onclick=()=>{state.notificationOpenSeq=(state.notificationOpenSeq||0)+1;state.personalTab=button.dataset.personalTab;state.personalItems=[];$$('[data-personal-tab]',drawer).forEach(item=>item.setAttribute('aria-pressed',String(item===button)));button.scrollIntoView?.({block:'nearest',inline:'nearest'});loadPersonalPanel();});$('#close-drawer').focus({preventScroll:true});
+  setPersonalTabCount('workday',state.workdayCount);setPersonalTabCount('notifications',state.notificationCount);syncPersonalTabsOverflow();if(!personalTabsResizeBound){personalTabsResizeBound=true;window.addEventListener?.('resize',syncPersonalTabsOverflow);}
+  syncDrawerAccess();loadPersonalPanel();
 }
 async function loadPersonalPanel({append=false,background=false}={}){
   cancelWorkdayRefresh();const body=$('#personal-body'),tab=state.personalTab,seq=++state.personalSeq;if(state.drawer!=='personal'||!body)return;const offset=append?state.personalItems.length:0;
@@ -1303,8 +1312,8 @@ async function openPersonalNotification(item){
 }
 function showDeadlineDigest(item){
   const digest=item.digest||{},tasks=Array.isArray(digest.tasks)?digest.tasks:[];
-  openModal('마감 일',`<p class="modal-description">${esc(digest.date||'오늘')}에 모은 일 가운데 아직 남은 ${tasks.length}개예요.</p><div class="deadline-digest-list">${tasks.length?tasks.map((task,index)=>workdayTaskHtml(task,index,digest.date||'').replace('data-workday-task=','data-digest-task=')).join(''):'<p class="workday-empty">남은 마감 일이 없어요.</p>'}</div><div class="modal-actions"><button class="button primary" type="button" id="digest-today">오늘 할 일 보기</button></div>`);
-  $('.modal-body',modal).onclick=event=>{const source=event.target.closest('[data-source-message]'),taskButton=event.target.closest('[data-digest-task]');if(source){modal.close();openProductivitySource(source);}else if(taskButton){const task=tasks[Number(taskButton.dataset.digestTask)];if(task)openTaskDetail(taskMessage(task));}};
+  openModal('마감 일',`<p class="modal-description">${esc(digest.date?workdayDateLabel(digest.date):'오늘')}에 모은 일 가운데 아직 남은 ${tasks.length}개예요.</p><div class="deadline-digest-list">${tasks.length?`<ul class="wd-rows">${tasks.map((task,index)=>workdayTaskHtml(task,index,digest.date||'').replace('data-workday-task=','data-digest-task=')).join('')}</ul>`:'<p class="workday-empty">남은 마감 일이 없어요.</p>'}</div><div class="modal-actions"><button class="button primary" type="button" id="digest-today">오늘 할 일 보기</button></div>`);
+  $('.modal-body',modal).onclick=event=>{const row=event.target.closest('[data-workday-row]'),source=event.target.closest('[data-source-message]'),taskButton=event.target.closest('[data-digest-task]')||(row&&!event.target.closest('button,a')?$('[data-digest-task]',row):null);if(source){modal.close();openProductivitySource(source);}else if(taskButton){const task=tasks[Number(taskButton.dataset.digestTask)];if(task)openTaskDetail(taskMessage(task));}};
   $('#digest-today').onclick=()=>{modal.close();openPersonalPanel('workday');};
 }
 async function attachDeadlineSettings(){
@@ -1313,6 +1322,7 @@ async function attachDeadlineSettings(){
   try{
     const settings=await loadWorkNotificationSettings();
     if(!settings||userId!==state.user?.id||session!==state.workNotificationSession||!button.isConnected)return;
+    if(button.dataset&&'deadlineLabel' in button.dataset)button.textContent=deadlineSettingsLabel(settings);
     button.hidden=false;button.onclick=async()=>{
       button.disabled=true;
       try{const settings=await loadWorkNotificationSettings();if(settings&&userId===state.user?.id&&session===state.workNotificationSession&&button.isConnected)deadlineSettingsDialog();}
@@ -1321,8 +1331,9 @@ async function attachDeadlineSettings(){
     };
   }catch(error){if(error.status===404&&userId===state.user?.id&&session===state.workNotificationSession)state.deadlineSettings=null;}
 }
+function deadlineSettingsLabel(settings){return !settings?.enabled?'마감 알림 꺼짐':settings.schedulerEnabled===false?'마감 알림 · 회사 알림 꺼짐':settings.includeWeekends?'마감 알림 · 매일 오전 9시':'마감 알림 · 평일 오전 9시';}
 function setWorkNotificationStatus(enabled,{invalidatePending=false}={}){if(invalidatePending)state.workNotificationRevision++;state.scheduledNotifications={enabled:typeof enabled==='boolean'?enabled:null};$$('[data-reminder-status]').forEach(label=>{label.textContent=reminderStatusLabel({deliveredAt:label.dataset.reminderDelivered==='1'});});}
-function resetWorkNotificationState(){cancelWorkdayRefresh();state.personalSeq++;state.workNotificationSession++;setWorkNotificationStatus(null,{invalidatePending:true});state.deadlineSettings=undefined;state.deadlineSettingsUser=null;state.publicationWork=[];state.customerWork=[];state.clientRechecks={};state.clientRecheckToday=null;state.customerGroupIdentity=null;state.workdaySnapshot=null;state.workdayBody=null;}
+function resetWorkNotificationState(){cancelWorkdayRefresh();state.personalSeq++;state.workNotificationSession++;setWorkNotificationStatus(null,{invalidatePending:true});state.deadlineSettings=undefined;state.deadlineSettingsUser=null;state.publicationWork=[];state.customerWork=[];state.clientRechecks={};state.clientRecheckToday=null;state.customerGroupIdentity=null;state.workdaySnapshot=null;state.workdayBody=null;state.workdayCount=null;}
 async function loadWorkNotificationSettings(){
   const userId=state.user?.id,session=state.workNotificationSession,revision=++state.workNotificationRevision;
   try{const settings=await api('/api/workday/notifications');if(!userId||userId!==state.user?.id||session!==state.workNotificationSession||revision!==state.workNotificationRevision)return null;state.deadlineSettings=settings;state.deadlineSettingsUser=userId;setWorkNotificationStatus(settings.schedulerEnabled);return settings;}
@@ -1343,35 +1354,72 @@ function deadlineSettingsDialog(){
     event.preventDefault();if(!active())return;const values=new FormData(form),enabled=values.has('enabled');
     if(enabled&&schedulerEnabled!==true){formError('회사 업무 알림이 켜져 있을 때만 마감 알림을 켤 수 있어요.');return;}
     button.disabled=true;
-    try{const data=await api('/api/workday/notifications',{method:'PATCH',body:{enabled,includeWeekends:values.has('includeWeekends')}});if(userId!==state.user?.id||session!==state.workNotificationSession||state.deadlineSettingsUser!==userId)return;state.deadlineSettings=data;setWorkNotificationStatus(data.schedulerEnabled,{invalidatePending:true});if(active())modal.close();refreshNotificationCount();toast('마감 알림 설정을 저장했어요.');}
+    try{const data=await api('/api/workday/notifications',{method:'PATCH',body:{enabled,includeWeekends:values.has('includeWeekends')}});if(userId!==state.user?.id||session!==state.workNotificationSession||state.deadlineSettingsUser!==userId)return;state.deadlineSettings=data;setWorkNotificationStatus(data.schedulerEnabled,{invalidatePending:true});$$('[data-deadline-label]').forEach(node=>{node.textContent=deadlineSettingsLabel(data);});if(active())modal.close();refreshNotificationCount();toast('마감 알림 설정을 저장했어요.');}
     catch(error){if(active()){if(error.code==='SYNK_WORK_NOTIFICATIONS_PAUSED'){schedulerEnabled=false;setWorkNotificationStatus(false,{invalidatePending:true});}formError(error.message);update();}}
   };
 }
-const workdayGroups=[['reply','내가 답할 요청','나에게 온 요청이에요. 보고 수락해 주세요.'],['due','오늘·지난 마감','오늘까지이거나 기한이 지난 내 일이에요.'],['review','내가 검토할 결과','결과물을 보고 완료하거나 수정을 요청해 주세요.'],['waiting','기다리는 일','다른 크루가 하고 있거나 검토를 기다리는 일이에요.']];
-const todayWorkdayGroups=[['reply','답할 요청','새 요청은 수락하고, 수정 요청은 고쳐 주세요.'],['due','오늘까지·기한 지남','오늘 끝내야 하거나 기한이 지난 내 일이에요.'],['review','내가 검토할 결과','결과물을 보고 완료하거나 수정을 요청해 주세요.'],['recovery','검토자 다시 정하기','검토자가 검토할 수 없게 됐어요. 새 검토자를 정해 주세요.']];
-const remainingWorkdayGroups=[['upcoming','이후 마감','내일부터 기한이 있는 내 일이에요.'],['undated','기한 미정','기한을 정하지 않은 내 일이에요.'],['waiting','기다리는 일','다른 크루가 하고 있거나 검토를 기다리는 일이에요.']];
-function hasWorkdayClassification(work){return Boolean(work?.today?.groups&&work?.remaining?.groups&&todayWorkdayGroups.every(([key])=>Array.isArray(work.today.groups[key]))&&remainingWorkdayGroups.every(([key])=>Array.isArray(work.remaining.groups[key])));}
+const todayWorkdayKeys=['reply','due','review','recovery'],remainingWorkdayKeys=['upcoming','undated','waiting'],workdayGroupOrder=[['reply','답할 요청','lapis'],['review','검토할 결과','green'],['recovery','검토자 다시 정하기','coral'],['due','오늘까지·기한 지남','coral'],['next','다음 단계','grey']],workdayWeekdays=['일','월','화','수','목','금','토'];
+function hasWorkdayClassification(work){return Boolean(work?.today?.groups&&work?.remaining?.groups&&todayWorkdayKeys.every(key=>Array.isArray(work.today.groups[key]))&&remainingWorkdayKeys.every(key=>Array.isArray(work.remaining.groups[key])));}
 function workdayCustomerCount(client,waiting=false){return new Set((client?.data?.items||[]).filter(item=>waiting?item.group==='waiting':['reply','review','next'].includes(item.group)).map(item=>item.id)).size;}
-function workdaySummaryHtml(work,client,publication={data:{items:[]}}){
-  if(!hasWorkdayClassification(work))return '<section class="workday-status workday-unverified" role="status"><h3>오늘 할 일을 다 불러오지 못했어요</h3><p>빠진 일이 있을 수 있어요. 다시 불러와 주세요.</p></section>';
-  const todayTasks=[...new Map(Object.values(work.today.groups).flat().map(task=>[task.id,task])).values()],pending=[...new Map([...work.remaining.groups.upcoming,...work.remaining.groups.undated].map(task=>[task.id,task])).values()],customers=[...new Map((client?.data?.items||[]).filter(item=>['reply','review','next'].includes(item.group)).map(item=>[item.id,item])).values()],publications=publicationWorkflowItems(publication.data?.items),count=todayTasks.length+customers.length+publications.length,tasks=count?todayTasks:pending,remaining=work.remaining.counts||{},customerWaiting=workdayCustomerCount(client,true),clientComplete=!client?.error&&(!state.integrated||Array.isArray(client?.data?.items)),publicationComplete=!publication?.error&&(!publicationWorkflowAvailable()||Array.isArray(publication?.data?.items)),complete=clientComplete&&publicationComplete;
-  const title=!complete?(count?`불러온 할 일 ${count}개`:'오늘 할 일을 다 불러오지 못했어요'):count?`오늘 할 일 ${count}개`:pending.length?`남은 내 일 ${pending.length}개`:'오늘 할 일은 없어요';
-  const deferredCount=client?.data?.deferredItems?.length||0;
-  const parts=[deferredCount?`미뤄 둔 일 ${deferredCount}개`:'',remaining.upcoming?`이후 마감 ${remaining.upcoming}개`:'',remaining.undated?`기한 미정 ${remaining.undated}개`:'',remaining.waiting||customerWaiting?`기다리는 일 ${(remaining.waiting||0)+customerWaiting}개`:''].filter(Boolean);
-  const quick=tasks.map(task=>`<button type="button" class="workday-quick-task" data-workday-task-id="${esc(task.id)}"><strong>${esc(task.title)}</strong><span>${esc(count?workdayActionText(task):task.dueDate?`마감 ${task.dueDate}`:'기한 미정')}</span></button>`).join('')+(Array.isArray(client?.data?.projectGroups)?[]:customers).map(item=>{const href=safeClientWorkflowHref(item.href),index=state.customerWork.findIndex(row=>row.id===item.id),content=`<strong>${esc(item.kind==='follow_up'&&item.projectTitle?item.title+' · '+item.projectTitle:item.title)}</strong><span>${esc(item.text||item.statusLabel||'고객 요청이 있어요.')}</span>`;return href&&index>=0?`<a class="workday-quick-task" href="${esc(href)}" target="_top" data-client-open="${index}">${content}</a>`:`<p class="workday-quick-task">${content}</p>`;}).join('')+publications.map(item=>{const href=safePublicationWorkflowHref(item.href),content=`<strong>${esc(item.title)}</strong><span>${esc(item.text||item.statusLabel||'게시 다음 단계가 있어요.')}</span>`;return href?`<a class="workday-quick-task" href="${esc(href)}" target="_top" data-publication-open="${esc(item.id)}">${content}</a>`:`<p class="workday-quick-task">${content}</p>`;}).join('');
-  const unchecked=[!clientComplete?'고객 업무':'',!publicationComplete?'게시 업무':''].filter(Boolean).join('와 ');
-  return `<section class="workday-status${count?' has-work':''}${!complete?' workday-unverified':''}" role="status"><h3>${title}</h3><p>${!complete?`${unchecked}를 불러오지 못했어요. 다시 불러와 주세요.`:count?'급한 일부터 모았어요.':pending.length?'오늘까지 할 일은 없어요. 남은 일의 기한만 챙겨 주세요.':deferredCount?'미뤄 둔 일이 있어요. 아래에서 언제든 다시 꺼낼 수 있어요.':parts.length?'다른 사람을 기다리는 일만 있어요.':'맡은 일도, 고객·게시 일도 없어요.'}</p>${parts.length?`<p class="workday-remaining-counts">${parts.join(' · ')}</p>`:''}${quick?`<div class="workday-quick-list" aria-label="${count?'지금 할 일':'남은 내 일'}">${quick}</div>`:''}<details class="workday-criteria"><summary>무엇이 오늘 할 일인가요?</summary><p>답할 요청과 수정 요청, 오늘까지 끝낼 일, 내가 검토하거나 검토자를 다시 정할 일이에요.${publicationWorkflowAvailable()?' 내 완성본의 게시 준비, 게시 주소 적기, 때가 된 성과 기록도 함께 나와요.':''} 끝난 일은 ‘전체 할 일’에 있어요. 미뤄 둔 고객 일은 아래에 따로 모으고, 원래 기한은 그대로예요.</p></details></section>`;
+function workdayDayParts(value){if(!clientRecheckDate(value))return null;const time=Date.parse(value+'T00:00:00Z'),day=new Date(time);return {time,month:day.getUTCMonth()+1,date:day.getUTCDate(),weekday:workdayWeekdays[day.getUTCDay()]};}
+function workdayDateLabel(value,{weekday=true,long=false}={}){const parts=workdayDayParts(value);return parts?`${parts.month}월 ${parts.date}일${weekday?' '+parts.weekday+(long?'요일':''):''}`:String(value||'');}
+function workdayDateHtml(value,options){return clientRecheckDate(value)?`<time datetime="${value}">${workdayDateLabel(value,options)}</time>`:esc(value||'');}
+function workdayDueHtml(dueDate,today,{long=false}={}){
+  if(!dueDate)return '기한 없음';
+  const due=workdayDayParts(dueDate),now=workdayDayParts(today);if(!due)return esc(dueDate);
+  const days=now?Math.round((now.time-due.time)/86400000):null;
+  if(long)return `${workdayDateHtml(dueDate,{long:true})}까지${days>0?` · <b>${days}일 지남</b>`:''}`;
+  if(days>0)return `<b>${days}일 지남</b>`;if(days===0)return '오늘까지';if(days===-1)return '내일까지';
+  return `${workdayDateHtml(dueDate,{weekday:false})}까지`;
 }
-function workdayActionText(task){
-  const stage=taskStage(task),mine=task.assignee?.id===state.user?.id,reviewer=taskReviewerId(task)===state.user?.id;
-  if(stage==='done'&&(task.assigneeUnavailable||task.reviewerUnavailable))return '끝난 기록은 그대로 남아요. 더 할 일이 있으면 새 할 일로 요청해 주세요.';
-  if(task.assigneeUnavailable||!task.assignee?.id)return '담당 크루를 찾을 수 없어요. 요청한 사람에게 담당을 다시 정해 달라고 해 주세요.';
-  if(task.canManage===false)return '이 계정으로는 상태를 바꿀 수 없어요. 바꿀 게 있으면 요청한 사람에게 말해 주세요.';
-  if(task.canReassignReviewer)return stage==='review'?'같은 결과물을 볼 새 검토자를 정해 주세요.':'요청과 담당은 그대로 두고 새 검토자만 정해 주세요.';
-  if(task.reviewerUnavailable&&stage!=='done')return '검토자가 검토할 수 없게 됐어요. 요청한 사람이나 관리자에게 새 검토자를 정해 달라고 해 주세요.';
-  if(stage==='review')return reviewer?'결과물을 보고 완료하거나 수정을 요청해 주세요.':'검토자의 답을 기다리는 중이에요.';
-  if(!mine)return `${task.assignee?.name||'담당 크루'}의 결과를 기다리는 중이에요.`;
-  return {requested:'요청과 기한을 보고 수락해 주세요.',changes:'답글로 온 수정 의견대로 고쳐 주세요.',accepted:'시작하면 상태를 ‘진행 중’으로 바꿔 주세요.',doing:'끝나면 결과물 파일이나 링크를 올려 주세요.',done:'끝난 일이에요. 결과물을 열어 볼 수 있어요.'}[stage]||'요청과 지금 상태를 열어 보세요.';
+function workdayCheckedLabel(serverNow){const time=Date.parse(serverNow||''),value=Number.isFinite(time)?new Date(time):new Date();try{return value.toLocaleTimeString('ko-KR',{timeZone:'Asia/Seoul',hour:'numeric',minute:'2-digit'})+' 새로 고침';}catch{return timeLabel(value)+' 새로 고침';}}
+function workdaySummary(work,client,publication={data:{items:[]}}){
+  const classified=hasWorkdayClassification(work),unique=list=>[...new Map(list.filter(Boolean).map(item=>[item.id,item])).values()];
+  const clientComplete=!client?.error&&(!state.integrated||Array.isArray(client?.data?.items)),publicationComplete=!publication?.error&&(!publicationWorkflowAvailable()||Array.isArray(publication?.data?.items));
+  const tasks=classified?unique(Object.values(work.today.groups).flat()).length:0,customers=state.integrated?workdayCustomerCount(client):0,publications=publicationWorkflowItems(publication?.data?.items).length;
+  const pending=classified?unique([...work.remaining.groups.upcoming,...work.remaining.groups.undated]).length:0,waiting=(classified?work.remaining.groups.waiting.length:0)+(state.integrated?workdayCustomerCount(client,true):0),deferred=state.integrated?client?.data?.deferredItems?.length||0:0;
+  return {classified,complete:classified&&clientComplete&&publicationComplete,clientComplete,publicationComplete,count:tasks+customers+publications,pending,waiting,deferred,errors:[!clientComplete?client?.error:'',!publicationComplete?publication?.error:''].filter(value=>typeof value==='string'&&value),unchecked:[!clientComplete?'고객 업무':'',!publicationComplete?'게시 업무':''].filter(Boolean).join('와 ')};
+}
+function workdaySummaryHtml(work,client,publication={data:{items:[]}},summary=workdaySummary(work,client,publication)){
+  const {classified,complete,count,pending,waiting,deferred,errors,unchecked}=summary,date=work?.date||'';
+  const title=!classified||!complete&&!count?'오늘 할 일을 다 불러오지 못했어요':`${complete?'오늘 할 일':'불러온 할 일'} <b class="wd-count">${count}</b><span class="sr-only">개</span>`;
+  const alert=!classified?'빠진 일이 있을 수 있어요. 다시 불러와 주세요.':!complete?`${unchecked}를 불러오지 못해 ${summary.clientComplete===false&&state.integrated?(summary.publicationComplete===false?'고객·게시 일과 기한 겹침이':'고객 일과 기한 겹침이'):'게시 일이'} 빠졌을 수 있어요.`:'';
+  const empty=alert||count?'':pending?'오늘까지 할 일은 없어요.':deferred?'미뤄 둔 일만 있어요. 아래에서 언제든 다시 꺼낼 수 있어요.':waiting?'다른 사람을 기다리는 일만 있어요.':'맡은 일도, 고객·게시 일도 없어요.';
+  return `<section class="wd-head"><div class="wd-head-text"><h3>${title}</h3><p class="wd-head-date">${date?workdayDateHtml(date)+' · ':''}<span data-workday-checked>${esc(workdayCheckedLabel(work?.serverNow))}</span></p></div><div class="wd-head-actions"><button class="wd-icon" type="button" data-productivity-refresh data-client-focus="refresh:head" aria-label="새로 고침" title="새로 고침">${icon('refresh')}</button>${taskCreateEntryHtml(date)}</div></section>${alert?`<div class="wd-alert" role="alert"><i aria-hidden="true"></i><span>${esc(alert)}${errors.length?`<small>${esc(errors.join(' · '))}</small>`:''}</span><button class="wd-act" type="button" data-productivity-refresh data-client-focus="refresh:alert">다시 불러오기</button></div>`:''}${empty?`<p class="wd-empty">${esc(empty)}</p>`:''}`;
+}
+function workdayRowHtml({title,meta='',quote='',actions='',late=false,attrs='',nested=''}){return `<li class="wd-row${late?' is-late':''}"${attrs?' '+attrs:''}><div class="wd-row-main" data-workday-row><div class="wd-row-text"><span class="wd-title">${title}</span>${meta?`<small class="wd-meta">${meta}</small>`:''}${quote?`<span class="wd-quote">${quote}</span>`:''}</div>${actions}</div>${nested}</li>`;}
+function workdayGroupHtml(key,label,tone,rows,count=rows.length){return rows.length?`<section class="wd-group" data-workday-group="${key}" aria-labelledby="wd-group-${key}"><h4 id="wd-group-${key}"><span class="wd-dot" data-tone="${tone}" aria-hidden="true"></span>${label} <span class="wd-group-count">${count}</span></h4><ul class="wd-rows">${rows.join('')}</ul></section>`:'';}
+function workdayFoldHtml(key,label,rows,{open=false,note=''}={}){
+  if(!rows.length)return '';
+  const peek=rows[0].title+(rows.length>1?` 외 ${rows.length-1}`:'');
+  return `<details class="wd-fold" data-client-group="${esc('fold:'+key)}"${open?' data-default-open="1" open':''}><summary data-client-focus="${esc('fold:'+key+':summary')}">${icon('chevron')}<strong>${label}</strong><span class="wd-group-count">${rows.length}</span><span class="wd-peek">${esc(peek)}</span></summary>${note?`<p class="wd-fold-note">${esc(note)}</p>`:''}<ul class="wd-rows">${rows.map(row=>row.html).join('')}</ul></details>`;
+}
+function workdayFootHtml(){
+  const integrated=Boolean(state.integrated),criteria=`답할 요청(새 요청·수정 요청), 내가 검토할 결과, 검토자를 다시 정할 일, 오늘까지 끝낼 일과 기한이 지난 일이에요.${integrated?' 고객 업무도 같은 기준으로 묶고, 그 밖의 고객 일은 ‘다음 단계’에 모여요.':''}${publicationWorkflowAvailable()?' 내 완성본의 게시 준비, 게시 주소 적기, 때가 된 성과 기록도 함께 나와요.':''} 다른 사람을 기다리는 일과 내일부터 할 일은 아래에 접어 두고, 끝난 일은 ‘전체’ 탭에 있어요.${integrated?' 미뤄 둔 고객 일은 따로 모으고, 원래 기한은 그대로예요.':''}`;
+  return `<footer class="wd-foot"><button class="wd-foot-link" type="button" id="deadline-settings" data-deadline-label hidden>마감 알림 설정</button><details class="workday-criteria wd-criteria"><summary>무엇이 오늘 할 일인가요?</summary><p>${criteria}</p></details></footer>`;
+}
+function workdayBodyHtml({work,client,customers=[],publication,summary=workdaySummary(work,client,publication),deferredItems=[],overlaps={data:null}}){
+  const date=work?.date||'',seen=new Set(),rows=Object.fromEntries(workdayGroupOrder.map(([key])=>[key,[]])),counts=Object.fromEntries(workdayGroupOrder.map(([key])=>[key,0])),later=[],waiting=[],deferred=[];
+  const addTasks=(tasks,group,target,options={})=>{for(const task of Array.isArray(tasks)?tasks:[]){if(!task||seen.has(task.id))continue;seen.add(task.id);const index=state.personalItems.push(task)-1;target.push({title:task.title,html:workdayTaskHtml(task,index,date,{group,...options})});if(group in counts)counts[group]++;}};
+  if(summary.classified){for(const [key] of workdayGroupOrder)if(key!=='next')addTasks(work.today.groups[key],key,rows[key]);addTasks(work.remaining.groups.upcoming,'later',later,{remaining:true});addTasks(work.remaining.groups.undated,'later',later,{remaining:true});addTasks(work.remaining.groups.waiting,'waiting',waiting,{remaining:true});}
+  else{const legacy=work?.groups||{};for(const key of ['reply','review','due'])addTasks(legacy[key],key,rows[key]);addTasks(legacy.waiting,'waiting',waiting,{remaining:true});}
+  const place=item=>item.group==='reply'?'reply':item.group==='review'?'review':'next',projectGroups=client?.data?.projectGroups;
+  if(state.integrated&&Array.isArray(projectGroups)){
+    const source=new Map(state.customerWork.map(item=>[item.id,item]));
+    for(const group of projectGroups){
+      const items=group.items.map(item=>source.get(item.id)).filter(Boolean),primary=group.primary&&items.find(item=>item.id===group.primary.id&&item.group!=='waiting'),related=items.filter(item=>item.id!==primary?.id&&item.group!=='waiting');
+      for(const item of items.filter(item=>item.group==='waiting'))waiting.push({title:item.title,html:customerRowHtml(item,{date})});
+      if(!primary)continue;
+      const key=place(primary),nested=related.length?`<details class="wd-related" data-client-group="${esc(group.projectId)}"><summary data-client-focus="${esc(group.projectId+':related')}">${icon('chevron')}같은 프로젝트 ${related.length}개 더</summary><ul class="wd-rows">${related.map(item=>customerRowHtml(item,{date,typeLabel:true})).join('')}</ul></details>`:'';
+      rows[key].push({title:primary.title,html:customerRowHtml(primary,{date,nested,project:group.projectId})});counts[key]+=1+related.length;
+    }
+  }else if(state.integrated)for(const item of customers){if(item.group==='waiting')waiting.push({title:item.title,html:customerRowHtml(item,{date})});else if(['reply','review','next'].includes(item.group)){const key=place(item);rows[key].push({title:item.title,html:customerRowHtml(item,{date})});counts[key]++;}}
+  for(const item of state.publicationWork){const key=item.group==='reply'?'reply':'next';rows[key].push({title:item.title,html:publicationRowHtml(item)});counts[key]++;}
+  if(state.integrated)for(const item of deferredItems)deferred.push({title:item.title,html:customerDeferredRowHtml(item,{date})});
+  const folds=[['waiting','기다리는 일',waiting,{}],['later','나중에 할 일',later,{open:!summary.count}],['deferred','미뤄 둔 일',deferred,{note:'내 오늘 목록에서만 접어 뒀어요. 원래 기한은 그대로이고, 새 요청이나 바뀐 게 생기거나 기한이 지나면 다시 꺼내요.'}]];
+  if(!summary.count)folds.unshift(folds.splice(1,1)[0]);
+  const foldsHtml=folds.map(([key,label,list,options])=>workdayFoldHtml(key,label,list,options)).join('');
+  return workdaySummaryHtml(work,client,publication,summary)+workdayGroupOrder.map(([key,label,tone])=>workdayGroupHtml(key,label,tone,rows[key].map(row=>row.html),counts[key])).join('')+(foldsHtml?`<div class="wd-folds">${foldsHtml}</div>`:'')+deadlineOverlapsHtml(overlaps)+workdayFootHtml();
 }
 const catchUpLabels={task_reviewer_reassigned:'검토자 바뀜',task_created:'새 요청',task_stage:'상태 바뀜',task_due:'기한 바뀜',task_assignment:'담당·검토자 바뀜',task_updated:'내용·결과물 바뀜',decision:'새 결정·최종본',decision_replaced:'결정·최종본 바뀜'};
 function personName(person){return person?.name||state.members.find(member=>member.id===person)?.name||'크루';}
@@ -1382,9 +1430,14 @@ function sourceButton(message,label='원래 대화',attributes=''){
 async function openProductivitySource(button){
   try{await openSearchMessage({id:button.dataset.sourceMessage,channelId:button.dataset.sourceChannel});}catch(error){toast(error.message,true);}
 }
-function workdayTaskHtml(task,index,date,{remaining=false}={}){
-  const stage=taskStage(task),overdue=task.dueDate&&task.dueDate<date,room=state.channels.find(channel=>channel.id===task.channelId);
-  return `<article class="workday-item"><span class="workday-meta"><span class="workflow-stage" data-stage="${esc(stage)}">${taskStatusLabel(stage)}</span><span class="${overdue?'overdue':''}">${esc(task.dueDate?(overdue?'기한 지남 · ':'')+task.dueDate:'기한 없음')}</span></span><h4>${esc(task.title)}</h4><p>${esc((task.assignee?.name||'담당 미정')+(task.assigneeUnavailable||!task.assignee?.id?' · 담당 바꿔야 함':''))}${task.reviewer?' · 검토 '+esc(task.reviewer.name)+(task.reviewerUnavailable?' · 검토자 바꿔야 함':''):task.reviewerUnavailable?' · 검토자 바꿔야 함':''} · ${esc(room?.name||'대화방')}</p><p class="workday-request-preview">${task.message?.body?esc(task.message.body.slice(0,180)):'설명이 따로 없어요. 원래 대화를 열어 보세요.'}</p><p class="workday-next-action"><strong>${remaining?(['review','done'].includes(stage)||task.assignee?.id!==state.user?.id?'지금 상태':'다음에 할 일'):'지금 할 일'}</strong> ${esc(workdayActionText(task))}</p><div class="workday-actions"><button class="button" type="button" data-workday-task="${index}">${remaining?'열기':task.canReassignReviewer?'검토자 정하기':stage==='requested'?'요청 보기':stage==='review'?'검토하기':'열기'}</button>${sourceButton(taskMessage(task))}</div></article>`;
+function workdayTaskHtml(task,index,date,{remaining=false,group=''}={}){
+  const stage=taskStage(task),me=state.user?.id,mine=task.assignee?.id===me,reviewer=taskReviewerId(task)===me,room=esc(state.channels.find(channel=>channel.id===task.channelId)?.name||'대화방'),person=user=>`<b>${esc(user?.name||'크루')}</b>`;
+  const kind=group||(remaining?'later':''),overdue=Boolean(task.dueDate&&date&&task.dueDate<date),due=workdayDueHtml(task.dueDate,date),stageLabel=taskStatusLabel(stage);
+  const requester=task.createdBy?.id&&task.createdBy.id!==me?`${person(task.createdBy)} 요청`:'',flag=task.assigneeUnavailable||!task.assignee?.id?'담당 바꿔야 함':task.reviewerUnavailable&&stage!=='done'?'검토자 바꿔야 함':'';
+  const parts=kind==='recovery'?['<b>검토자가 검토할 수 없어요</b>',room]:kind==='review'?[due,`${person(task.assignee)} 올림`,room]:kind==='reply'&&stage==='changes'?[stageLabel,task.reviewer?`검토 ${person(task.reviewer)}`:'',due]:kind==='reply'?[stageLabel,due,requester]:kind==='waiting'?[flag&&`<b>${flag}</b>`,due,stageLabel,stage==='review'?(task.reviewer?`검토 ${person(task.reviewer)}`:''):`담당 ${person(task.assignee)}`]:[flag&&`<b>${flag}</b>`,due,stageLabel,requester||room];
+  const label=remaining?'열기':task.canReassignReviewer?'정하기':stage==='requested'&&mine?'보기':stage==='review'&&reviewer?'검토':'열기';
+  const quote=stage==='requested'&&mine&&task.message?.body?`“${esc(task.message.body.slice(0,180))}”`:'';
+  return workdayRowHtml({title:esc(task.title),meta:parts.filter(Boolean).join(' · '),quote,late:kind==='recovery'||overdue&&!['later','waiting'].includes(kind),attrs:`data-task-row="${esc(task.id)}"`,actions:`<button class="wd-act" type="button" data-workday-task="${index}" data-workday-task-id="${esc(task.id)}" data-row-act aria-label="${esc(label+' — '+task.title)}">${label}</button>`});
 }
 function safeClientWorkflowHref(value){
   try{const url=new URL(value,location.origin),contexts=['followUp','delivery','closeout','kickoff','changes','requests','schedule','rights'],allowed=new Set(['tab','section','project','version','message','seconds','rightsTarget',...contexts]);if(url.origin!==location.origin||url.username||url.password||url.hash||url.pathname!=='/'||url.searchParams.get('tab')!=='workroom'||url.searchParams.get('section')!=='clients'||!url.searchParams.get('project'))return null;for(const key of url.searchParams.keys())if(!allowed.has(key)||url.searchParams.getAll(key).length!==1)return null;const rightsTarget=url.searchParams.get('rightsTarget');if(url.searchParams.has('rights')||rightsTarget!==null){const keys=[...url.searchParams.keys()];if(url.searchParams.get('rights')!=='1'||keys.length!==(rightsTarget?5:4)||keys.some(key=>!['tab','section','project','rights','rightsTarget'].includes(key))||rightsTarget!==null&&rightsTarget!=='portfolio'&&!/^material:(?:intake|asset|reference|concept|scene|version):[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rightsTarget)||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(url.searchParams.get('project')))return null;return url.href;}const selected=contexts.filter(key=>url.searchParams.has(key));if(selected.length&&(selected.length!==1||url.searchParams.get(selected[0])!=='1'||[...url.searchParams.keys()].length!==4))return null;const seconds=url.searchParams.get('seconds');if(seconds!==null&&(!/^(?:\d+)(?:\.\d+)?$/.test(seconds)||!Number.isFinite(Number(seconds))))return null;return url.href;}catch{return null;}
@@ -1409,19 +1462,20 @@ function validDeadlineOverlaps(data){
   return true;
 }
 function deadlineOverlapsResult(client){
-  if(client?.error)return {error:'고객 프로젝트를 불러오지 못해 기한 겹침도 볼 수 없어요.'};
+  if(client?.error)return {error:'고객 프로젝트를 불러오지 못해 기한 겹침도 볼 수 없어요.',fromClient:true};
   const result=client?.data?.deadlineOverlaps;if(result?.error&&typeof result.error==='string')return {error:result.error};
   return validDeadlineOverlaps(result?.data)?{data:result.data}:{error:'프로젝트 기한을 불러오지 못했어요. 다시 불러와 주세요.'};
 }
 function deadlineOverlapsHtml(result){
   if(!state.integrated)return '';
-  const heading='<div class="workday-section-head"><h3>기한이 겹치는 날</h3>';
-  if(result.error)return `<section class="workday-section deadline-overlaps">${heading}<span>못 불러옴</span></div><p class="productivity-error" role="alert">${esc(result.error)}</p><button class="button" type="button" data-productivity-refresh>다시 불러오기</button></section>`;
-  const data=result.data,{counts,period,observations}=data,link=(href,projectId,label,key)=>`<a href="${esc(safeDeadlineOverlapHref(href,projectId))}" target="_top" data-deadline-open data-deadline-project="${esc(projectId)}" data-client-focus="${esc('overlap:'+key)}">${esc(label)}</a>`;
-  const days=data.days.map(day=>`<details class="deadline-overlap-day" data-client-group="${esc('overlap:'+day.date)}"><summary data-client-focus="${esc('overlap:'+day.date+':summary')}"><strong>${esc(day.date)}</strong><span>프로젝트 ${day.projectCount}개 · 기한 ${day.milestoneCount}개</span></summary>${day.projects.map(project=>`<article class="deadline-overlap-project"><h4>${link(project.href,project.projectId,project.title,day.date+':'+project.projectId+':project')}</h4><ul>${project.milestones.map(item=>`<li><span class="deadline-overlap-type" data-type="${esc(item.dateType)}">${esc(item.dateTypeLabel)}</span>${link(item.href,project.projectId,item.label,day.date+':'+project.projectId+':'+item.id)}</li>`).join('')}</ul></article>`).join('')}</details>`).join('');
-  const empty=!counts.eligibleProjectCount?'일정을 지켜보는 프로젝트가 없어요.':!counts.rangeProjectCount?'앞으로 30일 안에 남은 기한이 없어요.':'같은 날 겹치는 기한이 없어요.';
-  const missing=[['undated','기한 안 적음'],['overdue','지난 기한'],['outsideWindow','30일 뒤 기한']].map(([key,label])=>{const row=observations[key];return `<div><h4>${label} · 프로젝트 ${row.projectCount}개 · 기한 ${row.milestoneCount}개</h4>${row.projects.length?`<ul>${row.projects.map(project=>`<li>${link(project.href,project.projectId,project.title+' · '+project.count+'개','observation:'+key+':'+project.projectId)}</li>`).join('')}</ul>`:'<p>없음</p>'}</div>`;}).join('');
-  return `<section class="workday-section deadline-overlaps">${heading}<span>${counts.overlapDayCount}일 · 프로젝트 ${counts.overlapProjectCount}개</span></div><p class="workday-section-description">내가 볼 수 있는 프로젝트 ${counts.visibleProjectCount}개에서 ${esc(period.startDate)}부터 ${esc(period.endDate)}까지 기한이 같은 날 몰린 곳을 모았어요(한국 시간).</p><p class="deadline-overlap-boundary">합의 기한·내부 목표일·점검일을 나눠 표시해요.</p>${days||`<p class="workday-empty">${empty}</p>`}<details class="deadline-overlap-observations" data-client-group="overlap:observations"><summary data-client-focus="overlap:observations:summary">겹침에서 뺀 기한 · 안 적음 ${observations.undated.milestoneCount}개 · 지난 기한 ${observations.overdue.milestoneCount}개 · 30일 뒤 ${observations.outsideWindow.milestoneCount}개</summary>${missing}<p>일정 지켜보기를 끈 프로젝트 ${observations.excluded.disabled}개, 보관한 ${observations.excluded.archived}개, 마감한 ${observations.excluded.closed}개, 납품이 끝난 ${observations.excluded.complete}개는 뺐어요.</p></details></section>`;
+  if(result?.fromClient)return '';
+  if(result?.error)return `<div class="wd-alert wd-overlap-alert" role="alert"><i aria-hidden="true"></i><span>${esc(result.error)}</span><button class="wd-act" type="button" data-productivity-refresh data-client-focus="refresh:overlap">다시 불러오기</button></div>`;
+  const data=result?.data;if(!data?.days?.length)return '';
+  const {counts,period,observations}=data,link=(href,projectId,label,key)=>`<a href="${esc(safeDeadlineOverlapHref(href,projectId))}" target="_top" data-deadline-open data-deadline-project="${esc(projectId)}" data-client-focus="${esc('overlap:'+key)}">${esc(label)}</a>`;
+  const dayHtml=day=>`<details class="wd-overlap" data-client-group="${esc('overlap:'+day.date)}"><summary data-client-focus="${esc('overlap:'+day.date+':summary')}">${icon('calendar')}<span><b>${workdayDateHtml(day.date)}</b> · 프로젝트 ${day.projectCount}개 기한이 겹쳐요<small>${esc(day.projects.map(project=>project.title).join(' · '))}</small></span>${icon('chevron')}</summary><div class="wd-overlap-body">${day.projects.map(project=>`<article class="deadline-overlap-project"><h5>${link(project.href,project.projectId,project.title,day.date+':'+project.projectId+':project')}</h5><ul>${project.milestones.map(item=>`<li><span class="deadline-overlap-type" data-type="${esc(item.dateType)}">${esc(item.dateTypeLabel)}</span>${link(item.href,project.projectId,item.label,day.date+':'+project.projectId+':'+item.id)}</li>`).join('')}</ul></article>`).join('')}</div></details>`;
+  const shown=data.days.slice(0,2),rest=data.days.slice(2),observed=observations.undated.milestoneCount+observations.overdue.milestoneCount+observations.outsideWindow.milestoneCount+Object.values(observations.excluded).reduce((sum,value)=>sum+value,0);
+  const missing=[['undated','기한 안 적음'],['overdue','지난 기한'],['outsideWindow','30일 뒤 기한']].map(([key,label])=>{const row=observations[key];return row.projects.length?`<div><h5>${label} · 프로젝트 ${row.projectCount}개 · 기한 ${row.milestoneCount}개</h5><ul>${row.projects.map(project=>`<li>${link(project.href,project.projectId,project.title+' · '+project.count+'개','observation:'+key+':'+project.projectId)}</li>`).join('')}</ul></div>`:'';}).join('');
+  return `<div class="wd-overlaps">${shown.map(dayHtml).join('')}${rest.length?`<details class="wd-overlap" data-client-group="overlap:rest"><summary data-client-focus="overlap:rest:summary">${icon('calendar')}<span><b>그 밖 ${rest.length}일</b> · 기한이 겹치는 날이 더 있어요</span>${icon('chevron')}</summary><div class="wd-overlap-body">${rest.map(dayHtml).join('')}</div></details>`:''}${observed?`<details class="wd-overlap-more" data-client-group="overlap:observations"><summary data-client-focus="overlap:observations:summary">겹침에서 뺀 기한 · 안 적음 ${observations.undated.milestoneCount}개 · 지난 기한 ${observations.overdue.milestoneCount}개 · 30일 뒤 ${observations.outsideWindow.milestoneCount}개</summary><p>내가 볼 수 있는 프로젝트 ${counts.visibleProjectCount}개에서 ${workdayDateHtml(period.startDate,{weekday:false})}부터 ${workdayDateHtml(period.endDate,{weekday:false})}까지 기한이 같은 날 몰린 곳을 모았어요(한국 시간). 합의 기한·내부 목표일·점검일을 나눠 표시해요.</p>${missing}<p>일정 지켜보기를 끈 프로젝트 ${observations.excluded.disabled}개, 보관한 ${observations.excluded.archived}개, 마감한 ${observations.excluded.closed}개, 납품이 끝난 ${observations.excluded.complete}개는 뺐어요.</p></details>`:''}</div>`;
 }
 function safePublicationWorkflowHref(value){
   try{
@@ -1445,22 +1499,22 @@ async function publicationWorkflowApi(){
 }
 function isPublicationWorkflowItem(item){return Boolean(item&&typeof item.id==='string'&&item.id&&['publication_prepare','publication_review','publication_publish','publication_performance','publication_link','publication_social'].includes(item.kind)&&['next','reply'].includes(item.group));}
 function publicationWorkflowItems(items){return [...new Map((Array.isArray(items)?items:[]).filter(isPublicationWorkflowItem).map(item=>[item.id,item])).values()];}
-function publicationWorkHtml(items,error){
-  if(!publicationWorkflowAvailable())return '';
-  return `<section class="workday-section publication-work"><div class="workday-section-head"><h3>게시할 일</h3><span>${error?'못 불러옴':items.length}</span></div><p class="workday-section-description">내 완성본과 게시 묶음, 성과 기록 가운데 손댈 차례인 것이에요. 원래 화면에서 끝내면 여기서도 빠져요.</p>${error?`<p class="productivity-error" role="alert">${esc(error)}</p><button class="button" type="button" data-productivity-refresh>다시 불러오기</button>`:items.map(item=>{const href=safePublicationWorkflowHref(item.href);return `<article class="workday-item"><span class="workday-meta">${esc(item.statusLabel||'다음 단계')}</span><h4>${esc(item.title)}</h4><p class="customer-work-text">${esc(item.text)}</p><div class="workday-actions">${href?`<a class="button" href="${esc(href)}" target="_top" data-publication-open="${esc(item.id)}">${esc(item.actionLabel||'게시 준비 열기')}</a>`:'<span>원래 화면 주소가 없어요.</span>'}</div></article>`;}).join('')}</section>`;
+function publicationRowHtml(item){
+  const href=safePublicationWorkflowHref(item.href);
+  return workdayRowHtml({title:esc(item.title),meta:`<span class="wd-source">게시</span><span class="sr-only"> · </span>${esc(item.statusLabel||'다음 단계')}`,quote:esc(item.text||''),attrs:`data-publication-item="${esc(item.id)}"`,actions:href?`<a class="wd-act" href="${esc(href)}" target="_top" data-publication-open="${esc(item.id)}" data-row-act aria-label="${esc('열기 — '+item.title)}">열기</a>`:'<span class="wd-act-missing">주소가 없어요</span>'});
 }
 function workdayInteractionActive(body){
-  if(modal.open)return true;
+  if(modal.open||body.querySelector?.('.wd-more[open]'))return true;
   const focused=document.activeElement;if(body.contains?.(focused)&&focused?.matches?.('input,textarea,select,[contenteditable="true"]'))return true;
   const selection=window.getSelection?.();return Boolean(selection&&!selection.isCollapsed&&(body.contains?.(selection.anchorNode)||body.contains?.(selection.focusNode)));
 }
 function renderWorkdayBody(body,html){
-  const identity=state.user?.id+':'+state.workNotificationSession,expanded=state.customerGroupIdentity===identity?[...(body.querySelectorAll?.('[data-client-group]')||[])].filter(node=>node.open).map(node=>node.dataset.clientGroup):[],scrollTop=body.scrollTop,focused=document.activeElement,focusInside=Boolean(focused&&body.contains?.(focused)),focusAttributes=['data-client-focus','id','data-workday-task-id','data-workday-task','data-publication-open','data-client-open','data-task-create','data-productivity-refresh','data-source-message'],focusAttribute=focusInside?focusAttributes.find(name=>focused?.hasAttribute?.(name)):null,focusValue=focusAttribute?focused.getAttribute(focusAttribute):null,focusTop=focusInside?focused.getBoundingClientRect?.().top:null,criteriaOpen=$('.workday-criteria',body)?.open;
+  const identity=state.user?.id+':'+state.workNotificationSession,groups=state.customerGroupIdentity===identity?new Map([...(body.querySelectorAll?.('[data-client-group]')||[])].filter(node=>Boolean(node.open)!==(node.dataset.defaultOpen==='1')).map(node=>[node.dataset.clientGroup,Boolean(node.open)])):new Map(),scrollTop=body.scrollTop,focused=document.activeElement,focusInside=Boolean(focused&&body.contains?.(focused)),focusAttributes=['data-client-focus','id','data-workday-task-id','data-workday-task','data-publication-open','data-client-open','data-task-create','data-productivity-refresh','data-source-message'],focusAttribute=focusInside?focusAttributes.find(name=>focused?.hasAttribute?.(name)):null,focusValue=focusAttribute?focused.getAttribute(focusAttribute):null,focusTop=focusInside?focused.getBoundingClientRect?.().top:null,criteriaOpen=$('.workday-criteria',body)?.open;
   body.innerHTML=html;
-  state.customerGroupIdentity=identity;for(const node of body.querySelectorAll?.('[data-client-group]')||[])if(expanded.includes(node.dataset.clientGroup))node.open=true;
+  state.customerGroupIdentity=identity;for(const node of body.querySelectorAll?.('[data-client-group]')||[])if(groups.has(node.dataset.clientGroup))node.open=groups.get(node.dataset.clientGroup);
   const criteria=$('.workday-criteria',body);if(criteria&&criteriaOpen)criteria.open=true;
   if(Number.isFinite(scrollTop))body.scrollTop=scrollTop;
-  if(focusAttribute){const selector=`[${focusAttribute}="${CSS.escape(focusValue)}"]`,replacement=$(selector,body);replacement?.focus({preventScroll:true});const nextTop=replacement?.getBoundingClientRect?.().top;if(Number.isFinite(focusTop)&&Number.isFinite(nextTop))body.scrollTop+=nextTop-focusTop;}
+  if(focusAttribute){const selector=`[${focusAttribute}="${CSS.escape(focusValue)}"]`,replacement=$(selector,body),shown=replacement&&(!replacement.getClientRects||replacement.getClientRects().length>0);if(shown){replacement.focus({preventScroll:true});}const nextTop=shown?replacement.getBoundingClientRect?.().top:null;if(Number.isFinite(focusTop)&&Number.isFinite(nextTop))body.scrollTop+=nextTop-focusTop;}
 }
 async function clientWorkflowApi(options={}){
   const userId=state.user?.id,session=state.workNotificationSession,integrated=state.integrated;
@@ -1482,14 +1536,20 @@ function validClientRechecks(data){
     seen.add(item.id);return true;
   }))&&seen.size===source.size;
 }
-function customerRecheckHtml(item,index){
-  const meta=state.clientRechecks?.[item.id];if(!meta||index<0)return '';
-  const label={due:'다시 볼 날짜가 됐어요.',changed:'새 요청이나 바뀐 게 있어 다시 꺼냈어요.',overdue:'기한이 지나 다시 꺼냈어요.'}[meta.state];
-  return `${label?`<p class="customer-recheck-notice">${esc(label)}</p>`:''}<div class="customer-recheck-actions">${meta.state==='deferred'?`<span>${esc(meta.date)} 다시 보기</span><button type="button" class="text-button" data-client-restore="${index}" data-client-focus="${esc(item.id+':restore')}">지금 꺼내기</button>`:`<button type="button" class="text-button" data-client-recheck="${index}" data-client-focus="${esc(item.id+':recheck')}">미루기</button>`}</div>`;
+function customerTypeLabel(item){return item.group==='waiting'?(item.statusLabel||(item.status==='review'||item.waitingFor==='staff'?'팀 검토 기다림':item.status==='waiting_customer'||item.waitingFor==='customer'?'고객 답 기다림':'답 기다림')):item.kind==='follow_up'&&item.statusLabel?item.statusLabel:{reply:'답할 요청',review:'검토할 결과',next:'다음 단계'}[item.group]||'고객 업무';}
+function customerRowHtml(item,{index=state.customerWork.findIndex(row=>row.id===item.id),date='',typeLabel=false,nested='',project=''}={}){
+  const href=safeClientWorkflowHref(item.href),meta=state.clientRechecks?.[item.id],recheck={due:'다시 볼 날',changed:'바뀌어서 다시 꺼냄',overdue:'기한 지나 다시 꺼냄'}[meta?.state];
+  const scene=Number.isFinite(item.seconds)?`${Math.floor(item.seconds/60)}:${String(Math.floor(item.seconds%60)).padStart(2,'0')} 장면`:'';
+  const parts=[recheck?`<b>${recheck}</b>`:'',item.dueDate?workdayDueHtml(item.dueDate,date):'',typeLabel||item.group==='waiting'||item.kind==='follow_up'?esc(customerTypeLabel(item)):'',esc(item.projectTitle||''),item.kind==='follow_up'&&item.customerName?esc(item.customerName):'',scene];
+  const label=item.group==='review'?'검토':item.group==='reply'?'보기':'열기';
+  const menu=index>=0?[meta&&meta.state!=='deferred'?`<button type="button" data-client-recheck="${index}" data-client-focus="${esc(item.id+':recheck')}">미루기</button>`:'',...(item.actions||[]).map(action=>`<button type="button" data-client-work="${index}" data-client-action="${esc(action.action)}" data-client-focus="${esc(item.id+':'+action.action)}">${esc(action.label)}</button>`)].filter(Boolean):[];
+  const actions=(menu.length?`<details class="wd-more"><summary aria-label="${esc('더 보기 — '+item.title)}" data-client-focus="${esc(item.id+':more')}">${icon('more')}</summary><div class="wd-more-menu">${menu.join('')}</div></details>`:'')+(href&&index>=0?`<a class="wd-act" href="${esc(href)}" target="_top" data-client-open="${index}" data-client-focus="${esc(item.id+':open')}" data-row-act aria-label="${esc(label+' — '+item.title)}">${label}</a>`:'<span class="wd-act-missing">주소가 없어요</span>');
+  return workdayRowHtml({title:esc(item.title),meta:`<span class="wd-source">고객</span><span class="sr-only"> · </span>${parts.filter(Boolean).join(' · ')}`,quote:esc(item.text||''),actions,late:Boolean(item.dueDate&&date&&item.dueDate<date&&item.group!=='waiting'),attrs:`data-client-item="${esc(item.id)}"${project?` data-client-project="${esc(project)}"`:''}`,nested});
 }
-function customerDeferredHtml(items){
-  if(!items.length)return '';
-  return `<section class="workday-section customer-deferred"><details data-client-group="personal-rechecks"><summary data-client-focus="personal-rechecks:summary">미뤄 둔 일 ${items.length}개</summary><p class="workday-section-description">내 오늘 목록에서만 잠시 접어 뒀어요. 원래 기한은 그대로이고, 새 요청이나 바뀐 게 생기거나 기한이 지나면 다시 꺼내요.</p>${items.map(item=>`<div class="customer-deferred-item"><p class="customer-project-counts">${esc(item.projectTitle)}</p>${customerWorkItemHtml(item)}</div>`).join('')}</details></section>`;
+function customerDeferredRowHtml(item,{date=''}={}){
+  const index=state.customerWork.findIndex(row=>row.id===item.id),meta=state.clientRechecks?.[item.id];
+  const parts=[meta?.date?`${workdayDateHtml(meta.date,{weekday:false})} 다시 보기`:'',esc(item.projectTitle||''),item.dueDate?workdayDueHtml(item.dueDate,date):''];
+  return workdayRowHtml({title:esc(item.title),meta:`<span class="wd-source">고객</span><span class="sr-only"> · </span>${parts.filter(Boolean).join(' · ')}`,attrs:`data-client-item="${esc(item.id)}"`,actions:index>=0?`<button class="wd-act" type="button" data-client-restore="${index}" data-client-focus="${esc(item.id+':restore')}" aria-label="${esc('꺼내기 — '+item.title)}">꺼내기</button>`:''});
 }
 async function submitClientRecheck(item,input){
   const userId=state.user?.id,session=state.workNotificationSession;
@@ -1522,25 +1582,6 @@ function validClientProjectGroups(groups,items){
     return group.counts.total===group.items.length&&group.counts.waiting===waiting&&group.counts.actionable===group.items.length-waiting&&(group.primary===null?waiting===group.items.length:group.items.some(item=>item.id===group.primary?.id&&item.group!=='waiting'));
   })&&seen.size===source.size;
 }
-function customerWorkItemHtml(item,{primary=false,grouped=false,index=state.customerWork.findIndex(row=>row.id===item.id)}={}){
-  const href=safeClientWorkflowHref(item.href),labels={reply:'답할 요청',review:'검토할 결과',waiting:item.statusLabel||(item.status==='review'||item.waitingFor==='staff'?'팀 검토 기다림':item.status==='waiting_customer'||item.waitingFor==='customer'?'고객 답 기다림':'답 기다림'),next:'다음 단계'};
-  return `<article class="workday-item${primary?' customer-project-primary':''}" data-client-item="${esc(item.id)}"><span class="workday-meta">${esc(item.kind==='follow_up'?item.statusLabel:labels[item.group]||'고객 업무')}${item.dueDate?' · '+esc(item.dueDate):''}${Number.isFinite(item.seconds)?` · ${esc(Math.floor(item.seconds/60)+':'+String(Math.floor(item.seconds%60)).padStart(2,'0'))} 장면`:''}</span><h${grouped?'5':'4'}>${esc(item.title)}</h${grouped?'5':'4'}>${!grouped&&item.kind==='follow_up'?`<p>${esc(item.projectTitle||'')} · ${esc(item.customerName||'')}</p>`:''}<p class="customer-work-text">${esc(item.text)}</p><div class="workday-actions">${href&&index>=0?`<a class="button" href="${esc(href)}" target="_top" data-client-open="${index}" data-client-focus="${esc(item.id+':open')}">${esc(item.actionLabel||(item.kind==='follow_up'?'연락 기록 열기':item.group==='review'?'검토하기':'고객 의견 보기'))}</a>`:'<span>원래 화면 주소가 없어요.</span>'}${index>=0?(item.actions||[]).map(action=>`<button type="button" class="text-button" data-client-work="${index}" data-client-action="${esc(action.action)}" data-client-focus="${esc(item.id+':'+action.action)}">${esc(action.label)}</button>`).join(''):''}</div>${customerRecheckHtml(item,index)}</article>`;
-}
-function customerProjectGroupsHtml(groups,heading='프로젝트마다 먼저 할 일'){
-  if(!state.integrated||!groups.length)return '';
-  const source=new Map(state.customerWork.map((item,index)=>[item.id,{item,index}])),count=groups.reduce((sum,group)=>sum+group.counts.total,0),labels={overdue:'기한 지남',today:'오늘까지',upcoming:'기한 남음',undated:'기한 미정',waiting:'기다리는 중'};
-  return `<section class="workday-section customer-projects"><div class="workday-section-head"><h3>${esc(heading)}</h3><span>프로젝트 ${groups.length}개 · 할 일 ${count}개</span></div><p class="workday-section-description">프로젝트마다 먼저 할 일과 그 이유를 모았어요. 같이 할 일과 기다리는 일은 카드를 펼치면 나와요.</p>${groups.map(group=>{
-    const items=group.items.map(item=>source.get(item.id)?.item).filter(Boolean),primary=group.primary&&items.find(item=>item.id===group.primary.id),related=items.filter(item=>item.id!==primary?.id&&item.group!=='waiting'),waiting=items.filter(item=>item.group==='waiting');
-    return `<article class="customer-project" data-client-project="${esc(group.projectId)}"><header><h4>${esc(group.projectTitle||'고객 프로젝트')}</h4><span class="customer-project-urgency" data-urgency="${esc(group.urgency)}">${labels[group.urgency]}</span></header><p class="customer-project-counts">할 일 ${group.counts.actionable}개 · 기다림 ${group.counts.waiting}개</p>${primary?`<p class="customer-project-reason"><strong>먼저 할 일</strong> ${esc(group.reason)}</p>${customerWorkItemHtml(primary,{primary:true,grouped:true,index:source.get(primary.id).index})}`:`<p class="customer-project-reason">${esc(group.reason||'고객이나 팀의 답을 기다리는 중이에요. 지금 할 일은 없어요.')}</p>`}${related.length||waiting.length?`<details class="customer-project-related" data-client-group="${esc(group.projectId)}"><summary data-client-focus="${esc(group.projectId+':related')}">${primary?'같은 프로젝트의 다른 일':'기다리는 일'} ${related.length+waiting.length}개 보기</summary>${related.length?`<h5>같이 할 일 ${related.length}개</h5>${related.map(item=>customerWorkItemHtml(item,{grouped:true,index:source.get(item.id).index})).join('')}`:''}${waiting.length?`<h5>답 기다리는 일 ${waiting.length}개</h5>${waiting.map(item=>customerWorkItemHtml(item,{grouped:true,index:source.get(item.id).index})).join('')}`:''}</details>`:''}</article>`;
-  }).join('')}</section>`;
-}
-function customerWorkHtml(items,error,heading='고객 업무'){
-  if(!state.integrated)return '';
-  return `<section class="workday-section customer-work"><div class="workday-section-head"><h3>${esc(heading)}</h3><span>${items.length}</span></div>${error?`<p class="productivity-error" role="alert">${esc(error)}</p><button class="button" type="button" data-productivity-refresh>다시 불러오기</button>`:items.length?items.map((item,position)=>{
-    const found=state.customerWork.indexOf(item),index=found<0?position:found,href=safeClientWorkflowHref(item.href),labels={reply:'답할 요청',review:'검토할 결과',waiting:'답 기다림',next:'다음 단계'};
-    return `<article class="workday-item"><span class="workday-meta">${esc(item.kind==='follow_up'?item.statusLabel:labels[item.group]||'고객 업무')}${item.kind==='follow_up'&&item.dueDate?' · '+esc(item.dueDate):''}${Number.isFinite(item.seconds)?` · ${esc(Math.floor(item.seconds/60)+':'+String(Math.floor(item.seconds%60)).padStart(2,'0'))} 장면`:''}</span><h4>${esc(item.title)}</h4>${item.kind==='follow_up'?`<p>${esc(item.projectTitle||'')} · ${esc(item.customerName||'')}</p>`:''}<p class="customer-work-text">${esc(item.text)}</p><div class="workday-actions">${href?`<a class="button" href="${esc(href)}" target="_top" data-client-open="${index}">${esc(item.actionLabel||(item.kind==='follow_up'?'연락 기록 열기':item.group==='review'?'검토하기':'고객 의견 보기'))}</a>`:''}${(item.actions||[]).map(action=>`<button type="button" class="text-button" data-client-work="${index}" data-client-action="${esc(action.action)}">${esc(action.label)}</button>`).join('')}</div></article>`;
-  }).join(''):'<p class="workday-empty">지금 볼 고객 요청이 없어요.</p>'}</section>`;
-}
 function catchUpChangeText(event){
   const change=event.changes||{},from=change.from,to=change.to;
   if(event.kind==='task_stage')return `${taskStatusLabel(from)} → ${taskStatusLabel(to)}`;
@@ -1572,18 +1613,11 @@ async function loadProductivityPanel({tab,seq,append=false,background=false}){
       const delay=work.nextDayRefreshAfterMs;scheduleWorkdayRefresh(publicationWorkflowAvailable()?Math.min(Number.isInteger(delay)&&delay>=1001&&delay<=86401000?delay:10000,10000):delay);
       if(background&&workdayInteractionActive(body))return;
       const overlaps=deadlineOverlapsResult(client),{checkedAt,...overlapContent}=overlaps.data||{},{deadlineOverlaps,...clientContent}=client.data||{}, {nextDayRefreshAfterMs,serverNow,...workContent}=work,snapshot=JSON.stringify({work:workContent,client:client.error?{error:client.error}:{data:clientContent},overlaps:overlaps.error?{error:overlaps.error}:overlapContent,publication:publication.error?{error:publication.error}:{items:publication.data.items}});
-      if(state.workdayBody===body&&state.workdaySnapshot===snapshot)return;
+      if(state.workdayBody===body&&state.workdaySnapshot===snapshot){const checked=$('[data-workday-checked]',body);if(checked)checked.textContent=workdayCheckedLabel(serverNow);return;}
       state.personalItems=[];state.customerWork=[...new Map((client.data?.items||[]).map(item=>[item.id,item])).values()];state.publicationWork=publicationWorkflowItems(publication.data?.items);state.clientRechecks=client.data?.rechecks||{};state.clientRecheckToday=client.data?.recheckToday||null;
       const visibleIds=new Set((client.data?.todayItems||state.customerWork).map(item=>item.id)),visibleCustomerWork=state.customerWork.filter(item=>visibleIds.has(item.id)),deferredItems=state.customerWork.filter(item=>state.clientRechecks[item.id]?.state==='deferred'),visibleClient=client.data?.todayItems?{...client,data:{...client.data,items:visibleCustomerWork,projectGroups:client.data.todayProjectGroups}}:client;
-      const classified=hasWorkdayClassification(work),seen=new Set();
-      const sectionHtml=(specs,groups,legacy=false,later=false)=>specs.map(([key,label,description])=>{
-        const tasks=(groups?.[key]||[]).filter(task=>{if(legacy)return true;if(seen.has(task.id))return false;seen.add(task.id);return true;}),start=state.personalItems.length;state.personalItems.push(...tasks);
-        return {count:tasks.length,html:tasks.length?`<section class="workday-section"><div class="workday-section-head"><h3>${label}</h3><span>${tasks.length}</span></div><p class="workday-section-description">${description}</p>${tasks.map((task,index)=>workdayTaskHtml(task,start+index,work.date,{remaining:later})).join('')}</section>`:`<section class="workday-empty-row"><h3>${label}</h3><span>없음</span></section>`};
-      });
-      const sections=sectionHtml(classified?todayWorkdayGroups:workdayGroups,classified?work.today.groups:work.groups,!classified),remaining=classified?sectionHtml(remainingWorkdayGroups,work.remaining.groups,false,true):[];
-      const customerNow=visibleCustomerWork.filter(item=>['reply','review','next'].includes(item.group)),customerWaiting=visibleCustomerWork.filter(item=>item.group==='waiting'),projectGroups=visibleClient.data?.projectGroups,grouped=Array.isArray(projectGroups),activeProjects=grouped?projectGroups.filter(group=>group.primary):[],waitingProjects=grouped?projectGroups.filter(group=>!group.primary):[];
-      const html=`<div class="productivity-heading"><strong>${esc(work.date||'')} · 오늘 할 일</strong><button class="text-button" type="button" data-productivity-refresh>새로고침</button></div>`+workdaySummaryHtml(work,visibleClient,publication)+taskCreateEntryHtml(work.date)+`<button class="text-button deadline-settings-entry" type="button" id="deadline-settings" hidden>마감 알림 설정</button>`+sections.filter(section=>section.count).map(section=>section.html).join('')+(grouped?customerProjectGroupsHtml(activeProjects):customerNow.length||client.error?customerWorkHtml(customerNow,client.error,'내 고객 업무'):'')+(state.publicationWork.length||publication.error?publicationWorkHtml(state.publicationWork,publication.error):'')+(remaining.some(section=>section.count)||(grouped?waitingProjects.length:customerWaiting.length)?'<h3 class="workday-remaining-heading">나중에 할 일과 기다리는 일</h3>':'')+remaining.filter(section=>section.count).map(section=>section.html).join('')+(grouped?customerProjectGroupsHtml(waitingProjects,'답을 기다리는 프로젝트'):customerWaiting.length?customerWorkHtml(customerWaiting,null,'고객 답 기다림'):'')+customerDeferredHtml(deferredItems)+(!classified?`<div class="workday-clear-groups">${sections.filter(section=>!section.count).map(section=>section.html).join('')}${state.integrated&&!state.customerWork.length&&!client.error?'<section class="workday-empty-row"><h3>고객 업무</h3><span>없음</span></section>':''}</div>`:'');
-      renderWorkdayBody(body,html+deadlineOverlapsHtml(overlaps));state.workdayBody=body;state.workdaySnapshot=snapshot;
+      const summary=workdaySummary(work,visibleClient,publication);state.workdayCount=summary.classified?summary.count:null;setPersonalTabCount('workday',state.workdayCount);
+      renderWorkdayBody(body,`<div class="wd">${workdayBodyHtml({work,client:visibleClient,customers:visibleCustomerWork,publication,summary,deferredItems,overlaps})}</div>`);state.workdayBody=body;state.workdaySnapshot=snapshot;
     }else if(tab==='catchup'){
       const data=await api('/api/catch-up');if(!active())return;state.catchUp=data;state.personalItems=data.events||[];
       body.innerHTML=`<div class="productivity-heading"><strong>지난번 확인 뒤 바뀐 것</strong><button class="text-button" type="button" data-productivity-refresh>새로고침</button></div><p class="productivity-description">${data.since?'지난번 확인 뒤에 바뀐':'아직 안 본'} 할 일과 결정을 원래 대화와 함께 모았어요. 확인을 눌러도 상태는 그대로예요.</p>${state.personalItems.length?state.personalItems.map(catchUpEventHtml).join(''):'<div class="drawer-empty">'+icon('check')+'<strong>모두 확인했어요</strong><p>새 요청이나 바뀐 게 생기면 여기에 모여요.</p></div>'}${state.personalItems.length?`<div class="catchup-confirm"><p>${data.hasMore?'더 지난 변경이 있어요. 이 목록을 확인하면 다음 묶음이 나와요.':'다 봤으면 눌러 주세요.'}</p><button class="button primary" type="button" id="catchup-read">${data.hasMore?'확인하고 다음 보기':'다 봤어요'}</button></div>`:''}`;
@@ -1596,7 +1630,11 @@ async function loadProductivityPanel({tab,seq,append=false,background=false}){
       $('#productivity-more')?.addEventListener('click',event=>{event.currentTarget.disabled=true;loadPersonalPanel({append:true});});
     }
     if(tab==='workday')attachDeadlineSettings();
+    body.onkeydown=event=>{if(event.key!=='Escape')return;const menu=event.target.closest?.('.wd-more[open]')||$('.wd-more[open]',body);if(!menu)return;event.preventDefault();event.stopPropagation();menu.open=false;$('summary',menu)?.focus();};
+    if(body.dataset&&!body.dataset.wdMenus){body.dataset.wdMenus='1';body.addEventListener('focusin',event=>{for(const open of body.querySelectorAll?.('.wd-more[open]')||[])if(!open.contains(event.target))open.open=false;});}
     body.onclick=async event=>{
+      const menu=event.target.closest?.('.wd-more');for(const open of body.querySelectorAll?.('.wd-more[open]')||[])if(open!==menu||event.target.closest('.wd-more-menu button'))open.open=false;
+      const row=event.target.closest('[data-workday-row]');if(row&&!event.target.closest('button,a,summary,input,select,textarea,label,.wd-more')&&window.getSelection?.()?.isCollapsed!==false){const act=$('[data-row-act]',row);if(act){act.click();return;}}
       const createTask=event.target.closest('[data-task-create]');if(createTask)return openTaskCreateDialog({date:createTask.dataset.taskCreateDate});
       const source=event.target.closest('[data-source-message]');if(source)return openProductivitySource(source);
       const quickTask=event.target.closest('[data-workday-task-id]');if(quickTask){const task=state.personalItems.find(item=>item.id===quickTask.dataset.workdayTaskId);if(task)return openTaskDetail(taskMessage(task));}
@@ -1611,7 +1649,7 @@ async function loadProductivityPanel({tab,seq,append=false,background=false}){
       const restoreButton=event.target.closest('[data-client-restore]');if(restoreButton){const item=state.customerWork[Number(restoreButton.dataset.clientRestore)];if(!item)return;restoreButton.disabled=true;try{if(await submitClientRecheck(item,{action:'restore'})&&current()){await loadPersonalPanel();if(current())toast('오늘 목록에 다시 꺼냈어요.');}}catch(error){if(!current())return;toast(error.message,true);if(error.status===409)await loadPersonalPanel();else if(restoreButton.isConnected)restoreButton.disabled=false;}return;}
       const clientAction=event.target.closest('[data-client-work]');if(clientAction){const item=state.customerWork[Number(clientAction.dataset.clientWork)];if(!item)return;clientAction.disabled=true;try{await clientWorkflowApi({method:'POST',body:{projectId:item.projectId,messageId:item.messageId,versionId:item.versionId,revision:item.revision,action:clientAction.dataset.clientAction}});if(!current())return;await loadPersonalPanel();if(current())toast('고객 업무에 반영했어요.');}catch(error){if(!current())return;toast(error.status===409?'다른 크루가 먼저 바꿨어요. 새 상태를 불러왔으니 다시 봐 주세요.':error.message,true);if(error.status===409&&current())await loadPersonalPanel();else if(clientAction.isConnected)clientAction.disabled=false;}}
     };
-  }catch(error){if(active()&&(!background||workdayRefreshActive())){if(tab==='workday'&&publicationWorkflowAvailable())scheduleWorkdayRefresh(10000);if(background&&workdayInteractionActive(body))return;state.workdaySnapshot=null;state.workdayBody=null;body.innerHTML=`<div class="drawer-empty">${tab==='workday'?'<strong>할 일을 불러오지 못했어요</strong>':''}<p role="alert">${esc(error.message)}</p><button class="button" data-productivity-refresh>다시 불러오기</button></div>`;body.onclick=event=>{if(event.target.closest('[data-productivity-refresh]'))loadPersonalPanel();};}}
+  }catch(error){if(active()&&(!background||workdayRefreshActive())){if(tab==='workday'&&publicationWorkflowAvailable())scheduleWorkdayRefresh(10000);if(background&&workdayInteractionActive(body))return;if(tab==='workday'){state.workdayCount=null;setPersonalTabCount('workday',null);}state.workdaySnapshot=null;state.workdayBody=null;body.innerHTML=`<div class="drawer-empty">${tab==='workday'?'<strong>할 일을 불러오지 못했어요</strong>':''}<p role="alert">${esc(error.message)}</p><button class="button" data-productivity-refresh>다시 불러오기</button></div>`;body.onclick=event=>{if(event.target.closest('[data-productivity-refresh]'))loadPersonalPanel();};}}
 }
 function roomSettingsDialog(){const channel=selectedConversation();if(!channel)return;if(isProject(channel)&&canManageProject(channel))editChannelDialog();else channelNotificationsDialog();}
 async function channelNotificationsDialog(){
@@ -1644,56 +1682,123 @@ async function openTaskDetail(message){
     $('#task-detail-retry').onclick=()=>openTaskDetail(message);
   }
 }
-function taskNextSteps(task){
+function taskNextSteps(task,message=null){
   if(taskStage(task)==='done'&&(task.assigneeUnavailable||task.reviewerUnavailable))return ['끝난 기록과 결과물은 그대로 남아요.','더 할 일이 있으면 새 할 일로 요청해 주세요.'];
   if(task.assigneeUnavailable||!task.assignee?.id)return ['담당 크루를 찾을 수 없어요. 요청한 사람에게 담당을 다시 정해 달라고 해 주세요.','담당이 정해질 때까지는 상태를 그대로 두세요.'];
-  if(task.canManage===false)return ['이 계정으로는 상태를 바꿀 수 없어요. 요청과 결과물만 볼 수 있어요.','상태나 담당을 바꿔야 하면 요청한 사람에게 말해 주세요.'];
+  if(task.canManage===false||message&&!canPostMessage(message))return ['이 계정으로는 상태를 바꿀 수 없어요. 요청과 결과물만 볼 수 있어요.','상태나 담당을 바꿔야 하면 요청한 사람에게 말해 주세요.'];
   const current=taskStage(task),assignee=task.assignee?.id===state.user?.id,reviewer=taskReviewerId(task)===state.user?.id,hasReviewer=Boolean(taskReviewerId(task));
   if(task.reviewerUnavailable&&current!=='done'){
-    if(task.canReassignReviewer)return ['검토자가 검토할 수 없게 됐어요. 아래에서 새 검토자를 정해 주세요.',current==='review'?'올린 결과물 그대로 새 검토자에게 다시 맡겨요.':'요청·담당·기한·상태와 결과물은 그대로예요.'];
+    if(task.canReassignReviewer)return ['검토자가 검토할 수 없게 됐어요. ‘검토자 정하기’를 눌러 새 검토자를 정해 주세요.',current==='review'?'올린 결과물 그대로 새 검토자에게 다시 맡겨요.':'요청·담당·기한·상태와 결과물은 그대로예요.'];
     return ['검토자가 검토할 수 없게 됐어요. 요청한 사람이나 관리자에게 새 검토자를 정해 달라고 해 주세요.','새 검토자가 정해질 때까지 ‘검토 중’이나 ‘완료’로 바꾸지 마세요.'];
   }
-  if(current==='done')return ['끝난 일이에요. 결과물과 원래 대화를 열어 볼 수 있어요.','더 할 게 생기면 담당이나 요청한 사람이 ‘진행 중’으로 바꿔 다시 열어요.'];
-  if(current==='review'){
-    return reviewer?['결과물을 열어 요청대로 됐는지 봐 주세요.','고칠 게 있으면 원래 대화에 의견을 남기고 ‘수정 요청’으로 바꿔 주세요.','요청대로 됐으면 ‘완료’로 바꾸고 저장해 주세요.']:['검토를 맡긴 상태예요. 검토자의 답을 기다려 주세요.','검토 의견은 원래 대화의 답글로 와요.'];
-  }
-  if(!assignee)return [`${task.assignee?.name||'담당 크루'}의 차례예요. ${current==='requested'?'요청을 보고 수락하기를':'요청대로 일하기를'} 기다리는 중이에요.`, '더할 조건이나 바뀐 점은 원래 대화에 답글로 남겨 주세요.'];
-  if(current==='requested')return ['요청과 기한, 참고 자료를 봐 주세요.','범위나 결과물이 애매하면 원래 대화에 답글로 물어봐 주세요.','할 수 있으면 상태를 ‘수락함’으로 바꾸고 저장해 주세요.'];
-  const steps=current==='changes'?['답글로 온 수정 의견대로 결과물을 고쳐 주세요.']:current==='accepted'?['일을 시작하면 상태를 ‘진행 중’으로 바꾸고 저장해 주세요.']:['요청에 맞춰 결과물을 만들어 주세요.'];
-  steps.push('다 만들면 파일이나 링크를 이 대화방에 올리고, 아래 ‘결과물 메시지’에서 골라 주세요.');
-  steps.push(hasReviewer?'상태를 ‘검토 중’으로 바꾸고 저장하면 검토자가 봐요.':'검토가 필요하면 검토자를 정하고 ‘검토 중’으로 바꿔 주세요. 검토자가 없으면 담당이 바로 ‘완료’로 바꿀 수 있어요.');
+  if(current==='done')return ['끝난 일이에요. 결과물과 원래 대화를 열어 볼 수 있어요.',assignee||task.createdBy?.id===state.user?.id?'더 할 게 생기면 ‘다시 열기’를 눌러 다시 시작해요.':'더 할 게 생기면 담당이나 요청한 사람이 다시 열 수 있어요.'];
+  if(current==='review')return reviewer?['결과물을 열어 요청대로 됐는지 봐 주세요.','고칠 게 있으면 ‘수정 요청’을 눌러 원래 대화에 의견을 남겨 주세요.','요청대로 됐으면 ‘완료’를 눌러 주세요.']:['검토를 맡긴 상태예요. 검토자의 답을 기다려 주세요.','검토 의견은 원래 대화의 답글로 와요.'];
+  if(!assignee)return [`${task.assignee?.name||'담당 크루'}의 차례예요. ${current==='requested'?'요청을 보고 수락하기를':'요청대로 일하기를'} 기다리는 중이에요.`,'더할 조건이나 바뀐 점은 원래 대화에 답글로 남겨 주세요.'];
+  if(current==='requested')return ['요청과 기한, 참고 자료를 봐 주세요.','범위나 결과물이 애매하면 원래 대화에 답글로 물어봐 주세요.','할 수 있으면 ‘수락하기’를 눌러 주세요.'];
+  if(current==='accepted')return ['일을 시작하면 ‘시작하기’를 눌러 주세요.','다 만들면 파일이나 링크를 이 대화방에 올려 주세요.'];
+  const steps=current==='changes'?['답글로 온 수정 의견대로 결과물을 고쳐 주세요.']:['요청에 맞춰 결과물을 만들어 주세요.'];
+  steps.push('다 만들면 파일이나 링크를 이 대화방에 올려 주세요.');
+  steps.push(hasReviewer?'‘검토 맡기기’를 누르고 올린 결과물을 골라 저장하면 검토자가 봐요.':'검토 없이 끝내려면 ‘완료’를 눌러 주세요. 검토가 필요하면 ‘검토 맡기기’에서 검토자를 정해 주세요.');
   return steps;
 }
-function taskWorkdayBasisHtml(task){
-  const basis=task.workday,todayKeys=['reply','due','review','recovery'],remainingKeys=['upcoming','undated','waiting'];
-  const valid=basis&&/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(basis.date||'')&&Array.isArray(basis.todayReasons)&&Array.isArray(basis.remainingReasons)&&basis.todayReasons.every(key=>todayKeys.includes(key))&&basis.remainingReasons.every(key=>remainingKeys.includes(key));
-  if(!valid)return '<section class="task-detail-section task-workday-basis"><h4>오늘 할 일인지 아직 몰라요</h4><p>서버에서 오늘 정보를 받지 못했어요. 다시 불러와 주세요.</p></section>';
+function taskWorkdayBasis(task){
+  const basis=task.workday;
+  const valid=basis&&/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(basis.date||'')&&Array.isArray(basis.todayReasons)&&Array.isArray(basis.remainingReasons)&&basis.todayReasons.every(key=>todayWorkdayKeys.includes(key))&&basis.remainingReasons.every(key=>remainingWorkdayKeys.includes(key));
+  if(!valid)return {title:'오늘 할 일인지 아직 몰라요',summary:'서버에서 오늘 정보를 받지 못했어요. 다시 불러와 주세요.',reasons:[],date:''};
   const today=[...new Set(basis.todayReasons)],remaining=[...new Set(basis.remainingReasons)];
   const waitingReason=task.assigneeUnavailable||!task.assignee?.id?'담당 크루를 찾을 수 없어 담당을 다시 정해야 하는 일이에요.':task.reviewerUnavailable?'검토자가 검토할 수 없게 돼 검토가 멈춘 일이에요. 요청한 사람이나 관리자가 새 검토자를 정해야 해요.':taskStage(task)==='review'?'결과물을 올렸고 검토자의 답을 기다리는 일이에요.':`${task.assignee?.name||'담당 크루'}의 수락이나 결과를 기다리는 일이에요.`;
-  const explanations={reply:taskStage(task)==='changes'?'수정 요청을 받은 일이라 의견대로 고쳐야 해요.':'아직 수락하지 않은 요청이라 기한과 상관없이 오늘 봐야 해요.',due:task.dueDate<basis.date?`기한(${task.dueDate})이 지났는데 아직 남은 내 일이에요.`:'오늘까지 끝내야 하는 내 일이에요.',review:'내가 검토자이고, 올라온 결과물이 검토를 기다려요.',recovery:'검토자가 검토할 수 없게 돼서 내가 새 검토자를 정해야 해요.',upcoming:`기한(${task.dueDate})이 아직 남은 내 일이에요.`,undated:'기한이 없는 내 일이라 오늘 할 일에는 넣지 않았어요.',waiting:waitingReason};
+  const explanations={reply:taskStage(task)==='changes'?'수정 요청을 받은 일이라 의견대로 고쳐야 해요.':'아직 수락하지 않은 요청이라 기한과 상관없이 오늘 봐야 해요.',due:task.dueDate<basis.date?`기한(${workdayDateLabel(task.dueDate,{weekday:false})})이 지났는데 아직 남은 내 일이에요.`:'오늘까지 끝내야 하는 내 일이에요.',review:'내가 검토자이고, 올라온 결과물이 검토를 기다려요.',recovery:'검토자가 검토할 수 없게 돼서 내가 새 검토자를 정해야 해요.',upcoming:`기한(${workdayDateLabel(task.dueDate,{weekday:false})})이 아직 남은 내 일이에요.`,undated:'기한이 없는 내 일이라 오늘 할 일에는 넣지 않았어요.',waiting:waitingReason};
   const reasons=(today.length?today:remaining).map(key=>explanations[key]);
   if(!reasons.length)reasons.push(taskStage(task)==='done'?'끝난 일이라 오늘 할 일에서 뺐어요.':'오늘 내가 할 차례가 아니에요.');
-  return `<section class="task-detail-section task-workday-basis"><h4>${today.length?'오늘 할 일에 들어간 이유':'오늘 할 일이 아닌 이유'}</h4><p class="workflow-help">${esc(basis.date)} 한국 시간 기준</p><ul>${reasons.map(reason=>`<li>${esc(reason)}</li>`).join('')}</ul></section>`;
+  return {title:today.length?'왜 오늘 할 일인가요?':'왜 오늘 할 일이 아닌가요?',summary:reasons[0],reasons,date:basis.date};
 }
 function taskManagementEntryHtml(message){
-  return message.task&&message.task.canManage!==false&&canPostMessage(message)?'<div class="task-management-entry"><button type="button" class="button primary" data-task-manage-entry aria-expanded="false" aria-controls="task-management">할 일 바꾸기</button><p class="workflow-help">바꾼 뒤 ‘저장’을 눌러야 반영돼요.</p></div>':'';
+  return message.task&&message.task.canManage!==false&&canPostMessage(message)?'<button type="button" class="button td-manage" data-task-manage-entry aria-expanded="false" aria-controls="task-management">바꾸기</button>':'';
 }
 function bindTaskManagementEntry(message,version){
   const entry=$('[data-task-manage-entry]',modal),management=$('.task-management',modal);if(!entry||!management)return;
   const userId=state.user?.id,session=state.workNotificationSession;
   entry.onclick=()=>{
     if(!modal.open||version!==modalVersion||userId!==state.user?.id||session!==state.workNotificationSession||!entry.isConnected||!management.isConnected||message.task?.canManage===false||!canPostMessage(message))return;
+    if(management.open){management.open=false;entry.setAttribute('aria-expanded','false');return;}
     management.open=true;entry.setAttribute('aria-expanded','true');
-    const form=$('#task-form'),targets=[...(message.task?.canReassignReviewer?[$('#replacement-reviewer',management)]:[]),...(message.task?.allowedStages?.length?[$('select[name=stage]',form)]:[]),$('input[name=dueDate]',form),$('input[name=title]',form),$('summary',management)];targets.find(target=>target&&!target.disabled)?.focus();
+    const form=$('#task-form'),targets=[...(message.task?.canReassignReviewer?[$('#replacement-reviewer',management)]:[]),...(message.task?.allowedStages?.length?[$('select[name=stage]',form)]:[]),$('input[name=dueDate]',form),$('input[name=title]',form),$('input:not(:disabled),select:not(:disabled)',management)];targets.find(target=>target&&!target.disabled)?.focus();
   };
   management.addEventListener('toggle',()=>{if(entry.isConnected)entry.setAttribute('aria-expanded',String(management.open));});
 }
-function taskDetailHtml(message){
+function taskDetailActions(message){
+  const task=message.task;if(!task||task.canManage===false||!canPostMessage(message))return [];
+  const stage=taskStage(task),me=state.user?.id,assignee=task.assignee?.id===me,reviewer=taskReviewerId(task)===me,hasReviewer=Boolean(taskReviewerId(task)),allowed=new Set(task.allowedStages||[]);
+  if(task.canReassignReviewer&&task.reviewerUnavailable&&stage!=='done')return [{action:'recovery',label:'검토자 정하기',primary:true}];
+  if(task.assigneeUnavailable||!task.assignee?.id||task.reviewerUnavailable&&stage!=='done')return [];
+  if(stage==='requested')return assignee&&allowed.has('accepted')?[{action:'stage',stage:'accepted',label:'수락하기',primary:true}]:[];
+  if(stage==='accepted')return assignee&&allowed.has('doing')?[{action:'stage',stage:'doing',label:'시작하기',primary:true},...(allowed.has('done')?[{action:'stage',stage:'done',label:'완료'}]:[])]:[];
+  if(['doing','changes'].includes(stage)){
+    if(!assignee)return [];
+    if(hasReviewer)return allowed.has('review')?[{action:'submit',label:'검토 맡기기',primary:true}]:[];
+    return [...(allowed.has('done')?[{action:'stage',stage:'done',label:'완료',primary:true}]:[]),...(allowed.has('review')?[{action:'submit',label:'검토 맡기기'}]:[])];
+  }
+  if(stage==='review')return reviewer?[...(allowed.has('done')?[{action:'stage',stage:'done',label:'완료',primary:true}]:[]),...(allowed.has('changes')?[{action:'changes',label:'수정 요청'}]:[])]:[];
+  return stage==='done'&&allowed.has('doing')?[{action:'reopen',label:'다시 열기'}]:[];
+}
+function openTaskManagement({stage=null,focus=null}={}){
+  const management=$('.task-management',modal);if(!management)return;
+  management.open=true;$('[data-task-manage-entry]',modal)?.setAttribute('aria-expanded','true');$('#task-changes-confirm',modal)?.classList.add('hidden');$('#task-actions',modal)?.classList.remove('hidden');
+  const form=$('#task-form',modal),select=form&&$('select[name=stage]',form);
+  if(stage&&select&&!select.disabled&&Array.from(select.options||[]).some(option=>option.value===stage)){select.value=stage;const help=$('#workflow-stage-help',modal);if(help)help.textContent=workflowStageHelp(stage);}
+  const target=focus&&$(focus,management);(target&&!target.disabled?target:$('input:not(:disabled),select:not(:disabled)',management))?.focus?.();
+}
+function bindTaskActions(message,version){
+  const bar=$('#task-actions',modal);if(!bar||!message.task)return;
+  const context={userId:state.user?.id,session:state.workNotificationSession},sessionCurrent=()=>context.userId===state.user?.id&&context.session===state.workNotificationSession,visible=()=>sessionCurrent()&&modal.open&&version===modalVersion;
+  const confirm=$('#task-changes-confirm',modal),error=$('#task-action-error',modal),reload=$('#task-action-reload',modal),buttons=()=>[...$$('[data-task-action]',modal),$('[data-task-manage-entry]',modal),$('#task-form button[type=submit]',modal),$('#reassign-reviewer',modal)].filter(Boolean),closeManagement=()=>{const management=$('.task-management',modal);if(management)management.open=false;$('[data-task-manage-entry]',modal)?.setAttribute('aria-expanded','false');};
+  const patch=async(stage,success,{rerender=true}={})=>{
+    if(!visible()||!canPostMessage(message))return false;
+    const controls=buttons();controls.forEach(button=>{button.disabled=true;});error?.classList.add('hidden');reload?.classList.add('hidden');
+    try{
+      const result=await api(`/api/messages/${id(message.id)}/task`,{method:'PATCH',body:{revision:message.task.revision,stage}});
+      if(!sessionCurrent())return false;
+      if(visible()){if(rerender){taskDialog({...message,task:result.task});($('#task-actions .button:not(:disabled)',modal)||$('#close-modal',modal))?.focus?.({preventScroll:true});}else modal.close();}
+      await refreshTaskViews(context,success);return true;
+    }catch(problem){
+      if(visible()){const stale=problem.status===409;if(stale)closeManagement();if(error){error.textContent=stale?'그사이 다른 크루가 바꿨어요. 새로 불러온 뒤 다시 해 주세요.':problem.message;error.classList.remove('hidden');}reload?.classList.toggle('hidden',!stale);controls.forEach(button=>{button.disabled=stale;});}
+      return false;
+    }
+  };
+  const onClick=async event=>{
+    const button=event.target.closest('[data-task-action]');if(!button||button.disabled||!visible())return;const action=button.dataset.taskAction;
+    if(action==='stage')return patch(button.dataset.taskStage,{accepted:'수락했어요.',doing:'시작했어요.',done:'완료했어요.'}[button.dataset.taskStage]||'바꿨어요.');
+    if(action==='submit')return openTaskManagement({stage:'review',focus:taskReviewerId(message.task)?'[data-picker-query]':'select[name=reviewerId]'});
+    if(action==='reopen')return openTaskManagement({stage:'doing',focus:'select[name=stage]'});
+    if(action==='recovery')return openTaskManagement({focus:'#replacement-reviewer'});
+    if(action==='changes'){closeManagement();bar.classList.add('hidden');confirm?.classList.remove('hidden');$('[data-task-action="changes-confirm"]',confirm)?.focus();return;}
+    if(action==='changes-cancel'){confirm?.classList.add('hidden');bar.classList.remove('hidden');$('[data-task-action="changes"]',bar)?.focus();return;}
+    if(action==='changes-confirm'){if(!await patch('changes','수정 요청으로 바꿨어요. 답글로 고칠 점을 남겨 주세요.',{rerender:false})||!sessionCurrent())return;await openSearchMessage(message);if(sessionCurrent()&&state.channelId===message.channelId)startReply(message);}
+  };
+  bar.onclick=onClick;if(confirm)confirm.onclick=onClick;
+  if(reload)reload.onclick=async()=>{if(!sessionCurrent())return;reload.disabled=true;try{const data=await api(`/api/messages/${id(message.id)}`);if(visible())taskDialog(data.message);}catch(problem){if(visible()){if(error){error.textContent=problem.message;error.classList.remove('hidden');}reload.disabled=false;}}};
+}
+function taskMoment(value){const time=Date.parse(value||'');if(!Number.isFinite(time))return '';try{return new Date(time).toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'long',day:'numeric',hour:'numeric',minute:'2-digit'});}catch{return shortDate(value);}}
+function taskDetailHtml(message,{managementHtml=''}={}){
   const task=message.task;if(!task)return '';
-  const source=task.message||message,room=state.channels.find(channel=>channel.id===message.channelId),mine=task.assignee?.id===state.user?.id;
-  const reason=mine?(task.createdBy?.id===state.user?.id?'내가 요청했고 담당도 나예요.':`내가 담당이에요. ${task.createdBy?.name?task.createdBy.name+' 님이 요청했어요.':'요청한 사람은 알 수 없어요.'}`):taskReviewerId(task)===state.user?.id?`내가 검토자예요. ${task.assignee?.name?'담당은 '+task.assignee.name+' 님이에요.':'담당은 알 수 없어요.'}`:task.createdBy?.id===state.user?.id?`내가 ${task.assignee?.name||'담당 크루'}에게 요청한 일이에요.`:`${task.assignee?.name||'담당 크루'}에게 맡긴 일이에요. 내가 있는 대화방의 일이라 보여요.`;
+  const source=task.message||message,me=state.user?.id,stage=taskStage(task),today=task.workday?.date||'',assigneeMe=task.assignee?.id===me,creatorMe=task.createdBy?.id===me,reviewerMe=taskReviewerId(task)===me;
+  const reason=assigneeMe?(creatorMe?'내가 요청했고 담당도 나예요.':`내가 담당이에요. ${task.createdBy?.name?task.createdBy.name+' 님이 요청했어요.':'요청한 사람은 알 수 없어요.'}`):reviewerMe?`내가 검토자예요. ${task.assignee?.name?'담당은 '+task.assignee.name+' 님이에요.':'담당은 알 수 없어요.'}`:creatorMe?`내가 ${task.assignee?.name||'담당 크루'}에게 요청한 일이에요.`:`${task.assignee?.name||'담당 크루'}에게 맡긴 일이에요. 내가 있는 대화방의 일이라 보여요.`;
   const completion=taskReviewerId(task)?'결과물을 연결하고 검토를 맡긴 뒤, 검토자가 ‘완료’로 바꾸면 끝나요.':'검토자가 없어서 담당이 ‘완료’로 바꾸면 끝나요. 결과물을 연결해 두면 무엇을 했는지 함께 남아요.';
-  return `<section class="task-detail" aria-label="할 일 상세"><div class="task-detail-heading"><span class="workflow-stage" data-stage="${esc(taskStage(task))}">${taskStatusLabel(taskStage(task))}</span><h3>${esc(task.title)}</h3></div><dl class="task-detail-meta"><div><dt>요청한 사람</dt><dd>${esc(task.createdBy?.name||'알 수 없는 크루')}</dd></div><div><dt>담당</dt><dd>${esc((task.assignee?.name||'알 수 없는 크루')+(task.assigneeUnavailable||!task.assignee?.id?' · 담당 바꿔야 함':''))}</dd></div><div><dt>검토</dt><dd>${esc(task.reviewerUnavailable?(task.reviewer?.name||'기존 검토자')+' · 검토자 바꿔야 함':task.reviewer?.name||'없음')}</dd></div><div><dt>기한</dt><dd>${esc(task.dueDate||'기한 없음')}</dd></div><div><dt>대화방</dt><dd>${esc(room?.name||'원래 대화방')}</dd></div></dl>${taskWorkdayBasisHtml(task)}<section class="task-detail-section"><h4>요청 내용</h4><p class="task-request-body">${source.body?esc(source.body):'설명 없이 자료만 붙은 요청이에요. 참고 자료를 열어 보세요.'}</p>${source.files?.length||source.workspaceLink?`<div class="task-reference"><h4>참고 자료</h4>${workspaceCardHtml(source.workspaceLink)}${(source.files||[]).map(fileHtml).join('')}</div>`:''}<p class="workflow-help">일의 범위와 결과물은 이 요청이 기준이에요. 모자란 설명은 원래 대화에 답글로 물어볼 수 있어요.</p><div class="task-detail-source">${sourceButton(message,'원래 대화 열기')}</div></section><section class="task-detail-section"><h4>지금 할 일</h4><ol>${taskNextSteps(task).map(step=>`<li>${esc(step)}</li>`).join('')}</ol>${taskManagementEntryHtml(message)}</section>${task.resultMessage?`<section class="task-detail-section"><h4>올린 결과물</h4><p class="task-request-body">${esc(linkedMessageTitle(task.resultMessage))}</p><div class="task-detail-source">${sourceButton({...task.resultMessage,channelId:message.channelId},'결과물 열기')}</div></section>`:''}<section class="task-detail-section"><h4>완료 조건</h4><p>${completion}</p></section><details class="task-selection"><summary>이 할 일이 보이는 이유</summary><p>${esc(reason)}</p><p>누군가 메시지를 할 일로 만들고 담당을 정한 기록이에요.</p></details></section>`;
+  const flags=[task.assigneeUnavailable||!task.assignee?.id?'담당 바꿔야 함':'',task.reviewerUnavailable&&stage!=='done'?'검토자 바꿔야 함':''].filter(Boolean);
+  const byline=stage==='review'&&task.assignee?.name&&!assigneeMe?`${esc(task.assignee.name)} 올림`:task.createdBy?.name&&!creatorMe?`${esc(task.createdBy.name)} 요청`:creatorMe?'내가 요청':'';
+  const meta=`<div class="td-meta"><span class="td-chip" data-stage="${esc(stage)}"><i aria-hidden="true"></i>${taskStatusLabel(stage)}</span><span>${workdayDueHtml(task.dueDate,stage==='done'?'':today,{long:true})}</span>${byline?`<span>${byline}</span>`:''}${flags.map(flag=>`<span class="td-flag"><i aria-hidden="true"></i>${flag}</span>`).join('')}</div>`;
+  const result=task.resultMessage,resultCard=result?`<div class="td-result"><span class="td-result-icon" aria-hidden="true">${icon('file')}</span><div><strong>${esc(linkedMessageTitle(result))}</strong><small>${esc([result.user?.name,taskMoment(result.createdAt)].filter(Boolean).join(' · ')||'고른 메시지')}</small></div>${sourceButton({...result,channelId:message.channelId},'결과물 열기')}</div>`:'';
+  const references=source.files?.length||source.workspaceLink?`<div class="task-reference">${workspaceCardHtml(source.workspaceLink)}${(source.files||[]).map(fileHtml).join('')}</div>`:'';
+  const links=`<div class="td-links">${sourceButton(message,'원래 대화 열기')}${canPostMessage(message)?'<button type="button" class="text-button" id="task-add-reply">답글 쓰기</button>':''}</div>`;
+  const who=[(source.user||message.user)?.name,taskMoment(source.createdAt||message.createdAt)].filter(Boolean).join(' · ');
+  const request=result&&['review','done'].includes(stage)?`<section class="td-block td-request"><h4>올린 결과물</h4>${resultCard}<p class="td-who">요청: ${source.body?`“${esc(source.body.length>90?source.body.slice(0,90)+'…':source.body)}”`:'자료만 붙은 요청'}${creatorMe?' · 내가 요청한 일이에요.':task.createdBy?.name?` · ${esc(task.createdBy.name)} 님이 요청한 일이에요.`:''}</p>${references}${links}</section>`:`<section class="td-block td-request"><h4>요청</h4><p class="td-quote">${source.body?esc(source.body):'설명 없이 자료만 붙은 요청이에요. 참고 자료를 열어 보세요.'}</p><p class="td-who">${who?esc(who)+' · ':''}범위가 애매하면 원래 대화에 답글로 물어봐 주세요.</p>${references}${result?`<h4 class="td-subhead">고른 결과물</h4>${resultCard}`:''}${links}</section>`;
+  const actions=taskDetailActions(message),manage=managementHtml?taskManagementEntryHtml(message):'';
+  const bar=actions.length||manage?`<div class="td-actions" id="task-actions">${actions.map(item=>`<button type="button" class="button${item.primary?' primary':''}" data-task-action="${item.action}"${item.stage?` data-task-stage="${item.stage}"`:''}>${item.label}</button>`).join('')}${manage}</div>${actions.some(item=>item.action==='changes')?'<div class="td-confirm hidden" id="task-changes-confirm"><p>‘수정 요청’으로 바꾸고 원래 대화의 답글 쓰기를 열어요. 고칠 점을 답글로 남겨 주세요.</p><div class="td-actions"><button type="button" class="button primary" data-task-action="changes-confirm">수정 요청 보내기</button><button type="button" class="button" data-task-action="changes-cancel">취소</button></div></div>':''}<p class="form-error hidden" id="task-action-error" role="alert"></p><button type="button" class="button hidden" id="task-action-reload">새로 불러오기</button>`:'';
+  const person=(role,user,flag,fallback)=>{const mine=Boolean(user?.id&&user.id===me);return `<div${mine?' class="is-me"':''}><span>${role}</span><strong>${mine?'나':esc(user?.name||fallback)}</strong>${flag?`<small><i aria-hidden="true"></i>${flag}</small>`:''}</div>`;};
+  const people=`<section class="td-block"><h4>사람</h4><div class="td-people">${person('요청',task.createdBy,'','알 수 없는 크루')}${person('담당',task.assignee,task.assigneeUnavailable||!task.assignee?.id?'담당 바꿔야 함':'','알 수 없는 크루')}${person('검토',task.reviewer||(task.reviewerUnavailable?{name:'기존 검토자'}:null),task.reviewerUnavailable&&stage!=='done'?'검토자 바꿔야 함':'','없음')}</div></section>`;
+  const basis=taskWorkdayBasis(task);
+  const folds=`<details class="td-fold"><summary>${icon('chevron')}<span>${esc(basis.title)}</span><small>${esc(basis.summary)}</small></summary><div class="td-fold-body">${basis.date?`<p>${esc(workdayDateLabel(basis.date))} 한국 시간 기준</p>`:''}${basis.reasons.length>1?`<ul>${basis.reasons.map(item=>`<li>${esc(item)}</li>`).join('')}</ul>`:''}<p>${esc(reason)}</p><p>누군가 메시지를 할 일로 만들고 담당을 정한 기록이에요.</p></div></details><details class="td-fold"><summary>${icon('chevron')}<span>언제 끝나나요?</span><small>${esc(completion)}</small></summary><div class="td-fold-body"><p>수락 → 진행 → 검토 → 완료 순서예요. 수정 요청을 받으면 고쳐서 다시 검토받아요.</p></div></details>`;
+  return `<section class="task-detail" aria-labelledby="task-detail-title"><h3 class="td-title" id="task-detail-title">${esc(task.title)}</h3>${meta}${request}${bar}${managementHtml}<section class="td-block"><h4>다음 할 일</h4><ol class="td-steps">${taskNextSteps(task,message).map(step=>`<li>${esc(step)}</li>`).join('')}</ol></section>${people}${folds}</section>`;
 }
 function taskReviewerId(task){return task?.reviewerId||task?.reviewer?.id||null;}
 function reviewerRecoveryHtml(task,people){
@@ -1725,7 +1830,7 @@ async function refreshTaskViews(context,successMessage){
   toast(failed.length?`${successMessage} ${failed.join('과 ')}을 새로 불러오지 못했어요. 새로고침해 주세요.`:successMessage,Boolean(failed.length));
 }
 function taskCreateEntryHtml(date){
-  return state.user&&canWriteMessages()?`<div class="task-create-entry"><button class="button primary" type="button" data-task-create data-task-create-date="${esc(date||'')}">할 일 추가</button><p>나만 볼 일도, 크루에게 맡길 일도 여기서 적어요.</p></div>`:'';
+  return state.user&&canWriteMessages()?`<button class="wd-icon is-line" type="button" data-task-create data-task-create-date="${esc(date||'')}" aria-label="할 일 추가" title="할 일 추가">${icon('plus')}</button>`:'';
 }
 async function openTaskCreateDialog({date=''}={}){
   if(!state.user||!canWriteMessages())return;
@@ -1769,15 +1874,19 @@ function taskDialog(message){
   const current=taskStage(task),stages=[...new Set([current,...(task?.allowedStages||[])])],manager=state.user.role==='owner'||state.integrated?.canManage;
   const metadataEditable=editable&&(!task||manager||[task.createdBy?.id,task.assignee?.id].includes(state.user.id)),reviewerEditable=editable&&(!task||(!taskReviewerId(task)&&task.assignee?.id===state.user.id)||((manager||task.createdBy?.id===state.user.id)&&task.assignee?.id!==state.user.id)),resultEditable=editable&&(!task||task.assignee?.id===state.user.id)&&!['review','done'].includes(current);
   let selectedResult=task?.resultMessage|| (task?.resultMessageId?{id:task.resultMessageId,channelId:message.channelId}:null);
-  openModal(task?'할 일 상세':'할 일로 만들기',`${taskDetailHtml(message)}${task?'<details class="task-management" id="task-management"><summary>할 일 바꾸기</summary>':''}<p class="modal-description">수락 → 진행 → 검토 → 완료 순서예요. 수정 요청을 받으면 고쳐서 다시 검토받아요.${!editable?' 담당·검토자·요청한 사람만 바꿀 수 있어요.':''}</p>${reviewerRecoveryHtml(task,people)}<form id="task-form" class="workflow-form"><label class="field"><span>제목</span><input name="title" maxlength="200" required value="${esc(task?.title||message.body?.slice(0,200)||message.workspaceLink?.title||'첨부 자료 보기')}" ${metadataEditable?'':'disabled'}></label><div class="field-row"><label class="field"><span>담당</span><select name="assigneeId" required ${metadataEditable&&!['review','done'].includes(current)?'':'disabled'}>${task&&(task.assigneeUnavailable||!task.assignee?.id)?'<option value="" disabled selected>담당을 다시 골라 주세요</option>':''}${people.map(person=>`<option value="${esc(person.id)}" ${person.id===(task?task.assigneeUnavailable?null:task.assignee?.id:state.user.id)?'selected':''}>${esc(person.name)}</option>`).join('')}</select></label><label class="field"><span>검토자</span><select name="reviewerId" ${reviewerEditable&&!['review','done'].includes(current)?'':'disabled'}><option value="">검토 전에 정하기</option>${task?.reviewerUnavailable&&taskReviewerId(task)?`<option value="${esc(taskReviewerId(task))}" selected>검토할 수 없음 · ${esc(task.reviewer?.name||'기존 검토자')}</option>`:''}${people.filter(person=>!task?.reviewerUnavailable||person.id!==taskReviewerId(task)).map(person=>`<option value="${esc(person.id)}" ${person.id===taskReviewerId(task)?'selected':''}>${esc(person.name)}</option>`).join('')}</select></label></div><div class="field-row"><label class="field"><span>기한</span><input name="dueDate" type="date" value="${esc(task?.dueDate||'')}" ${metadataEditable?'':'disabled'}></label><label class="field"><span>상태</span><select name="stage" ${editable&&task?'':'disabled'}>${stages.map(value=>`<option value="${esc(value)}" ${value===current?'selected':''}>${taskStatusLabel(value)}</option>`).join('')}</select></label></div><p class="workflow-help" id="workflow-stage-help">${workflowStageHelp(current)}</p><fieldset class="message-picker" id="task-result-picker"><legend>결과물 메시지</legend>${messagePickerHtml(Boolean(resultEditable))}</fieldset><div class="workflow-source-actions">${sourceButton(message,'원래 대화 열기')}${task&&canPostMessage(message)?'<button type="button" class="text-button" id="task-add-reply">원래 대화에 답글 쓰기</button>':''}</div><div id="modal-error" class="form-error hidden" role="alert"></div><button type="button" class="button hidden" id="task-reload">새로 불러오기</button>${editable?`<div class="modal-actions"><button class="button primary" type="submit">${task?'저장':'할 일 만들기'}</button></div>`:''}</form>${task?'</details>':''}`);
+  const formHtml=`<form id="task-form" class="workflow-form"><label class="field"><span>제목</span><input name="title" maxlength="200" required value="${esc(task?.title||message.body?.slice(0,200)||message.workspaceLink?.title||'첨부 자료 보기')}" ${metadataEditable?'':'disabled'}></label><div class="field-row"><label class="field"><span>담당</span><select name="assigneeId" required ${metadataEditable&&!['review','done'].includes(current)?'':'disabled'}>${task&&(task.assigneeUnavailable||!task.assignee?.id)?'<option value="" disabled selected>담당을 다시 골라 주세요</option>':''}${people.map(person=>`<option value="${esc(person.id)}" ${person.id===(task?task.assigneeUnavailable?null:task.assignee?.id:state.user.id)?'selected':''}>${esc(person.name)}</option>`).join('')}</select></label><label class="field"><span>검토자</span><select name="reviewerId" ${reviewerEditable&&!['review','done'].includes(current)?'':'disabled'}><option value="">검토 전에 정하기</option>${task?.reviewerUnavailable&&taskReviewerId(task)?`<option value="${esc(taskReviewerId(task))}" selected>검토할 수 없음 · ${esc(task.reviewer?.name||'기존 검토자')}</option>`:''}${people.filter(person=>!task?.reviewerUnavailable||person.id!==taskReviewerId(task)).map(person=>`<option value="${esc(person.id)}" ${person.id===taskReviewerId(task)?'selected':''}>${esc(person.name)}</option>`).join('')}</select></label></div><div class="field-row"><label class="field"><span>기한</span><input name="dueDate" type="date" value="${esc(task?.dueDate||'')}" ${metadataEditable?'':'disabled'}></label><label class="field"><span>상태</span><select name="stage" ${editable&&task?'':'disabled'}>${stages.map(value=>`<option value="${esc(value)}" ${value===current?'selected':''}>${taskStatusLabel(value)}</option>`).join('')}</select></label></div><p class="workflow-help" id="workflow-stage-help">${workflowStageHelp(current)}</p><fieldset class="message-picker" id="task-result-picker"><legend>결과물 메시지</legend>${messagePickerHtml(Boolean(resultEditable))}</fieldset>${task?'':`<div class="workflow-source-actions">${sourceButton(message,'원래 대화 열기')}</div>`}<div id="modal-error" class="form-error hidden" role="alert"></div><button type="button" class="button hidden" id="task-reload">새로 불러오기</button>${editable?`<div class="modal-actions"><button class="button primary" type="submit">${task?'저장':'할 일 만들기'}</button></div>`:''}</form>`;
+  const changeable=Boolean(task&&(metadataEditable||reviewerEditable||resultEditable||task.allowedStages?.length||task.canReassignReviewer));
+  if(task)openModal(`할 일 · ${channel?.name||'대화방'}`,taskDetailHtml(message,{managementHtml:editable&&changeable?`<details class="task-management" id="task-management"><summary>할 일 바꾸기</summary><p class="modal-description">바꾼 뒤 ‘저장’을 눌러야 반영돼요.</p>${reviewerRecoveryHtml(task,people)}${formHtml}</details>`:''}));
+  else openModal('할 일로 만들기',`<p class="modal-description">수락 → 진행 → 검토 → 완료 순서예요. 수정 요청을 받으면 고쳐서 다시 검토받아요.${!editable?' 담당·검토자·요청한 사람만 바꿀 수 있어요.':''}</p>${formHtml}`);
   if(task)modal.classList.add('task-detail-dialog');
   const version=modalVersion,context={userId:state.user?.id,session:state.workNotificationSession},sessionCurrent=()=>context.userId===state.user?.id&&context.session===state.workNotificationSession,form=$('#task-form');
-  bindTaskManagementEntry(message,version);
-  $('.task-detail',modal)?.addEventListener('click',event=>{const source=event.target.closest('[data-source-message]');if(source){modal.close();openProductivitySource(source);}else if(event.target.closest('[data-action=workspace-link]'))handleProductivityAction('workspace-link',message);});
+  bindTaskManagementEntry(message,version);bindTaskActions(message,version);
+  $('.task-detail',modal)?.addEventListener('click',event=>{if(event.target.closest('.task-management'))return;const source=event.target.closest('[data-source-message]');if(source){modal.close();openProductivitySource(source);}else if(event.target.closest('[data-action=workspace-link]'))handleProductivityAction('workspace-link',message);});
+  $('#task-add-reply')?.addEventListener('click',async()=>{modal.close();await openSearchMessage(message);if(state.channelId===message.channelId)startReply(message);});
+  if(!form)return;
   bindReviewerRecovery(message,version);
   bindMessagePicker($('#task-result-picker'),{channelId:message.channelId,selected:selectedResult,editable:resultEditable,onChange:value=>{selectedResult=value;}});
-  $('.workflow-source-actions',form).onclick=event=>{const source=event.target.closest('[data-source-message]');if(source){modal.close();openProductivitySource(source);}};
-  $('#task-add-reply')?.addEventListener('click',async()=>{modal.close();await openSearchMessage(message);if(state.channelId===message.channelId)startReply(message);});
+  const sourceActions=$('.workflow-source-actions',form);if(sourceActions)sourceActions.onclick=event=>{const source=event.target.closest('[data-source-message]');if(source){modal.close();openProductivitySource(source);}};
   $('select[name=stage]',form).onchange=event=>{$('#workflow-stage-help').textContent=workflowStageHelp(event.target.value);};
   $('#task-reload').onclick=async event=>{if(!sessionCurrent())return;event.currentTarget.disabled=true;try{const data=await api(`/api/messages/${id(message.id)}`);if(sessionCurrent()&&modal.open&&version===modalVersion)taskDialog(data.message);}catch(error){if(sessionCurrent()&&modal.open&&version===modalVersion){formError(error.message);$('#task-reload').disabled=false;}}};
   if(!editable)return;

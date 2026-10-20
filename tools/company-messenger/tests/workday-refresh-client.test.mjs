@@ -4,6 +4,7 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 
 const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8').replace(/\bboot\(\);\s*$/,'');
+const text=html=>String(html).replace(/<[^>]*>/g,'');const confirmsEmptyDay=html=>/오늘 할 일 0개/.test(text(html));
 function fixture({pathname='/',instant='2026-10-09T14:59:59.500Z'}={}){
   const nodes=new Map(),requests=[],toasts=[],timers=new Map(),documentEvents=new Map(),windowEvents=new Map();let now=Date.parse(instant),timerId=0;
   class ClockDate extends Date{constructor(...args){super(...(args.length?args:[now]));}static now(){return now;}}
@@ -26,17 +27,17 @@ function startSave(f){f.context.message=message();f.run('taskDialog(message)');c
 test('a successful task save refreshes today even if the current chat cannot be read',async()=>{
   const f=fixture();f.run("refreshMessages=async()=>{throw new Error('현재 채팅방 읽기 실패')}");f.nodes.get('#personal-body').innerHTML='오늘 할 일 1개';const saving=startSave(f);
   f.requests[0].resolve({task:{...message().task,stage:'done'}});await flush();assert.equal(f.requests[1].path,'/api/workday');f.requests[1].resolve(workday());await saving;
-  assert.ok(f.nodes.get('#personal-body').innerHTML.includes('오늘 할 일은 없어요'));assert.equal(f.nodes.get('#modal').open,false);assert.match(f.toasts[0].message,/저장했어요.*대화 내용.*불러오지 못/s);assert.equal(f.toasts[0].error,true);
+  assert.ok(confirmsEmptyDay(f.nodes.get('#personal-body').innerHTML));assert.equal(f.nodes.get('#modal').open,false);assert.match(f.toasts[0].message,/저장했어요.*대화 내용.*불러오지 못/s);assert.equal(f.toasts[0].error,true);
 });
 
 test('a files refresh failure cannot prevent the personal workday from updating after a save',async()=>{
   const f=fixture();f.run("state.mode='files';refreshMessages=async()=>{};loadFiles=async()=>{throw new Error('파일 조회 실패')}");const saving=startSave(f);f.requests[0].resolve({task:{...message().task,stage:'done'}});await flush();assert.equal(f.requests[1].path,'/api/workday');f.requests[1].resolve(workday());await saving;
-  assert.ok(f.nodes.get('#personal-body').innerHTML.includes('오늘 할 일은 없어요'));assert.equal(f.toasts[0].error,true);
+  assert.ok(confirmsEmptyDay(f.nodes.get('#personal-body').innerHTML));assert.equal(f.toasts[0].error,true);
 });
 
 test('a saved task with failed chat and workday refreshes never turns unknown work into an empty day',async()=>{
   const f=fixture();f.run("refreshMessages=async()=>{throw new Error('채팅 조회 실패')}");const saving=startSave(f);f.requests[0].resolve({task:{...message().task,stage:'done'}});await flush();assert.equal(f.requests[1].path,'/api/workday');f.requests[1].reject(new Error('오늘 업무 조회 실패'));await saving;
-  const html=f.nodes.get('#personal-body').innerHTML;assert.ok(html.includes('할 일을 불러오지 못했어요'));assert.ok(!html.includes('오늘 할 일은 없어요'));assert.ok(html.includes('data-productivity-refresh'));assert.match(f.toasts[0].message,/저장했어요.*불러오지 못/s);
+  const html=f.nodes.get('#personal-body').innerHTML;assert.ok(html.includes('할 일을 불러오지 못했어요'));assert.ok(!confirmsEmptyDay(html));assert.ok(html.includes('data-productivity-refresh'));assert.match(f.toasts[0].message,/저장했어요.*불러오지 못/s);
 });
 
 for(const [label,change] of [['another account',"state.user={id:'u2'}"],['a new login session','resetWorkNotificationState()']]){
@@ -49,7 +50,7 @@ test('reviewer reassignment refreshes today despite a failed unrelated chat read
   const f=fixture(),original=message();original.task={...original.task,stage:'review',reviewerId:'former',reviewerUnavailable:true,canReassignReviewer:true,assignee:{id:'u2',name:'다른 담당'},resultMessageId:'2'};f.context.message=original;
   f.run("refreshMessages=async()=>{throw new Error('채팅 조회 실패')};modal.open=true;bindReviewerRecovery(message,modalVersion);taskDialog=value=>state.recoveredTask=value.task;");f.nodes.get('#replacement-reviewer').value='u1';f.nodes.get('#reviewer-recovery-confirm').checked=true;
   const saving=f.nodes.get('#reassign-reviewer').onclick();f.requests[0].resolve({task:{...original.task,reviewerId:'u1',reviewer:{id:'u1',name:'담당'},reviewerUnavailable:false,revision:8}});await flush();assert.equal(f.requests[1].path,'/api/workday');f.requests[1].resolve(workday());await saving;
-  assert.equal(f.state.recoveredTask.revision,8);assert.ok(f.nodes.get('#personal-body').innerHTML.includes('오늘 할 일은 없어요'));assert.equal(f.toasts[0].error,true);
+  assert.equal(f.state.recoveredTask.revision,8);assert.ok(confirmsEmptyDay(f.nodes.get('#personal-body').innerHTML));assert.equal(f.toasts[0].error,true);
 });
 
 test('a late reviewer reassignment cannot reopen a dialog after the login session changes',async()=>{
@@ -83,7 +84,7 @@ test('showing the workspace module reads today even when channel refresh fails',
 
 test('one timer uses the server midnight delay even when the PC clock is one second fast',async()=>{
   const f=fixture({instant:'2026-10-09T15:00:00.500Z'}),loading=f.run('loadPersonalPanel()');assert.equal(f.timers.size,0,'no client-clock timer is armed before the server response');f.requests[0].resolve(workday());await loading;assert.equal(f.timers.size,1);const timer=[...f.timers.values()][0];assert.equal(timer.delay,1500);
-  f.advance(1500);f.fire(timer);assert.equal(f.requests[1].path,'/api/workday');f.requests[1].resolve(workday('2026-10-10',[message().task],86399000));await flush();assert.ok(f.nodes.get('#personal-body').innerHTML.includes('2026-10-10'));assert.ok(f.nodes.get('#personal-body').innerHTML.includes('오늘 할 일 1개'));assert.equal(f.timers.size,1);
+  f.advance(1500);f.fire(timer);assert.equal(f.requests[1].path,'/api/workday');f.requests[1].resolve(workday('2026-10-10',[message().task],86399000));await flush();assert.ok(f.nodes.get('#personal-body').innerHTML.includes('2026-10-10'));assert.ok(text(f.nodes.get('#personal-body').innerHTML).includes('오늘 할 일 1개'));assert.equal(f.timers.size,1);
 });
 
 test('an older response cannot overwrite the next days work loaded on visibility',async()=>{

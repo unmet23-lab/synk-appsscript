@@ -232,3 +232,219 @@
 @media(max-width:700px){:root body :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),select,textarea){font-size:16px!important}}
 /* 높은 대비 모드: 입력·단추 초점을 윤곽선으로(5판 공식 검수 P3) */
 @media(forced-colors:active){:root body :is(input:not([type=checkbox]):not([type=radio]),select,textarea):focus,:root body :is(button,a,summary,input,[tabindex]):focus-visible{outline:2px solid Highlight!important;outline-offset:2px}}
+
+/* ── 내 업무 · 오늘 할 일 3판(2026-10-20 Claude, 유호님 A안) ──────────────────
+   머리 한 줄(큰 숫자·날짜·갱신 시각·새로 고침·추가) → 동작 묶음(답할 요청 → 검토할 결과 → 검토자 다시 정하기 → 오늘까지·기한 지남 → 다음 단계)
+   → 접힌 줄(기다리는 일·나중에 할 일·미뤄 둔 일) → 기한 겹침(겹칠 때만) → 바닥(마감 알림 값·기준). 검은 알약은 목록에 두지 않는다. */
+:root body #drawer:has(.wd-tabs) .drawer-head{min-height:52px;padding:8px 10px 0 18px;border-bottom:0}
+:root body #drawer:has(.wd-tabs) .drawer-head h2{font-size:19px;font-weight:680;letter-spacing:-.01em;color:var(--sg-ink)}
+:root body #drawer:has(.wd-tabs) .drawer-head .icon-button{width:40px;height:40px;min-width:40px;min-height:40px;border:0}
+:root body .personal-tabs.productivity-tabs.wd-tabs{display:flex;gap:0;margin:0;padding:0 8px;border:0;border-bottom:1px solid var(--sg-line);border-radius:0;background:var(--sg-paper)!important;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;flex:none}
+:root body .wd-tabs::-webkit-scrollbar{display:none}
+:root body .wd-tabs.is-overflowing{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 16px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 16px),transparent)}
+:root body .personal-tabs.productivity-tabs.wd-tabs button{flex:none;position:relative;display:inline-flex;align-items:center;gap:5px;min-width:0;min-height:42px;padding:0 9px;border:0;border-radius:0;background:transparent!important;color:var(--sg-ink-3);font-size:13px;font-weight:550;line-height:1;box-shadow:none;white-space:nowrap}
+:root body .personal-tabs.productivity-tabs.wd-tabs button:hover{color:var(--sg-ink)}
+:root body .personal-tabs.productivity-tabs.wd-tabs button[aria-pressed="true"]{background:transparent!important;color:var(--sg-ink);font-weight:650}
+:root body .personal-tabs.productivity-tabs.wd-tabs button[aria-pressed="true"]::after{content:'';position:absolute;left:8px;right:8px;bottom:-1px;height:2px;border-radius:2px;background:var(--sg-ink)}
+:root body .wd-tab-count{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--sg-surface-2);color:var(--sg-ink-2);font:600 12px/1 'Inter Tight',var(--sg-sans)}
+:root body .wd-tab-count[hidden]{display:none}
+:root body #personal-body:has(>.wd){padding:0}
+:root body .wd{padding:0 0 4px;color:var(--sg-ink);word-break:keep-all;overflow-wrap:anywhere}
+:root body .wd h3,:root body .wd h4,:root body .wd h5,:root body .wd p{margin:0}
+/* 머리 */
+:root body .wd-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:18px 10px 2px 18px}
+:root body .wd-head-text{min-width:0}
+:root body .wd-head h3{display:flex;align-items:baseline;gap:8px;font-size:24px;font-weight:680;letter-spacing:-.02em;line-height:1.25;color:var(--sg-ink)}
+:root body .wd-count{font:700 24px/1 'Inter Tight',var(--sg-sans)}
+:root body .wd-head-date{margin-top:6px;font-size:13px;line-height:1.4;color:var(--sg-ink-3)}
+:root body .wd-head-actions{display:flex;align-items:center;gap:2px;flex:none}
+:root body .wd-icon{width:40px;height:40px;min-width:40px;display:grid;place-items:center;padding:0;border:0;border-radius:12px;background:none;color:var(--sg-ink-2);cursor:pointer}
+:root body .wd-icon:hover{background:var(--sg-surface-1);color:var(--sg-ink)}
+:root body .wd-icon svg{width:18px;height:18px}
+:root body .wd-icon.is-line{border:1px solid var(--sg-line-2);border-radius:50%}
+/* 불러오기 실패: 머리 바로 아래 한 줄(조용히 빼지 않는다) */
+:root body .wd-alert{display:flex;align-items:center;gap:10px;margin:12px 14px 0;padding:10px 10px 10px 14px;border:1px solid var(--sg-line-2);border-radius:14px;background:var(--sg-paper);font-size:13px;line-height:1.45;color:var(--sg-ink)}
+:root body .wd-alert>i{flex:none;width:7px;height:7px;border-radius:50%;background:var(--sg-coral)}
+:root body .wd-alert>span{flex:1;min-width:0}
+:root body .wd-alert small{display:block;margin-top:2px;font-size:13px;color:var(--sg-ink-3)}
+:root body .wd-overlap-alert{margin:12px 12px 0}
+:root body .wd-empty{padding:14px 18px 2px;font-size:14px;font-weight:600;line-height:1.5;color:var(--sg-ink-2)}
+/* 동작 묶음과 줄 */
+:root body .wd-group{padding-top:12px}
+:root body .wd-group h4{display:flex;align-items:center;gap:7px;padding:6px 18px 2px;font-size:13px;font-weight:620;color:var(--sg-ink)}
+:root body .wd-dot{flex:none;width:7px;height:7px;border-radius:50%;background:var(--sg-lapis)}
+:root body .wd-dot[data-tone="green"]{background:var(--sg-green)}
+:root body .wd-dot[data-tone="coral"]{background:var(--sg-coral)}
+:root body .wd-dot[data-tone="grey"]{background:var(--sg-ink-3)}
+:root body .wd-group-count{font:600 13px/1 'Inter Tight',var(--sg-sans);color:var(--sg-ink-3)}
+:root body .wd-rows{list-style:none;margin:0;padding:0}
+:root body .wd-row-main{position:relative;display:flex;align-items:center;gap:10px;min-height:62px;padding:9px 12px 9px 18px;cursor:pointer;transition:background .16s var(--sg-ease)}
+:root body .wd-row-main:hover{background:var(--sg-paper-2)}
+:root body .wd-row.is-late>.wd-row-main::before{content:'';position:absolute;left:0;top:10px;bottom:10px;width:2px;border-radius:2px;background:var(--sg-coral)}
+:root body .wd-row-text{flex:1;min-width:0}
+:root body .wd-title{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:14.5px;font-weight:620;line-height:1.35;color:var(--sg-ink)}
+:root body .wd-meta{display:block;margin-top:3px;font-size:13px;line-height:1.45;color:var(--sg-ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+:root body .wd-meta b{font-weight:600;color:var(--sg-ink-2)}
+:root body .wd-source{display:inline-block;margin-right:5px;padding:0 6px;border-radius:6px;background:var(--sg-lapis-wash);color:var(--sg-lapis-deep);font-weight:600}
+:root body .wd-quote{display:block;margin-top:3px;font-size:13px;line-height:1.45;color:var(--sg-ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+:root body .wd-act{flex:none;display:inline-flex;align-items:center;justify-content:center;height:40px;min-width:60px;padding:0 14px;border:1px solid var(--sg-line-2);border-radius:999px;background:var(--sg-paper);color:var(--sg-ink);font:600 13px/1 var(--sg-sans);text-decoration:none;white-space:nowrap;cursor:pointer;box-shadow:none}
+:root body .wd-act:hover{border-color:rgba(8,9,12,.28);background:var(--sg-surface-1)}
+:root body .wd-act:disabled{color:var(--sg-ink-4);cursor:default}
+@media(pointer:coarse){:root body .wd-act{height:44px}:root body #drawer:has(.wd-tabs) .drawer-head .icon-button,:root body .wd-icon,:root body .wd-more>summary{width:44px;height:44px;min-width:44px;min-height:44px}:root body .personal-tabs.productivity-tabs.wd-tabs button,:root body .wd-more-menu button,:root body .wd-related>summary{min-height:44px}}
+:root body .wd-row-main:not(:has([data-row-act])){cursor:default}
+:root body .wd-row-main:not(:has([data-row-act])):hover{background:none}
+:root body .wd-act-missing{flex:none;font-size:13px;color:var(--sg-ink-3)}
+/* 고객 줄 ⋯ : 미루기 + 서버가 내려 준 동작 */
+:root body .wd-more{position:relative;flex:none}
+:root body .wd-more>summary{list-style:none;display:grid;place-items:center;width:40px;height:40px;border-radius:12px;color:var(--sg-ink-3);cursor:pointer}
+:root body .wd-more>summary::-webkit-details-marker{display:none}
+:root body .wd-more>summary:hover,:root body .wd-more[open]>summary{background:var(--sg-surface-1);color:var(--sg-ink)}
+:root body .wd-more>summary svg{width:18px;height:18px}
+:root body .wd-more-menu{position:absolute;right:0;top:44px;z-index:6;min-width:156px;padding:6px;border:1px solid var(--sg-line);border-radius:14px;background:var(--sg-paper);box-shadow:0 18px 40px -18px rgba(8,9,12,.35)}
+:root body .wd-more-menu button{display:flex;align-items:center;width:100%;min-height:40px;padding:0 12px;border:0;border-radius:10px;background:none;color:var(--sg-ink);font:600 13px/1.3 var(--sg-sans);text-align:left;white-space:nowrap;cursor:pointer}
+:root body .wd-more-menu button:hover{background:var(--sg-surface-1)}
+:root body .wd-more-menu button:disabled{color:var(--sg-ink-4)}
+/* 같은 프로젝트의 다른 일 */
+:root body .wd-related{margin:0 12px 4px 18px;border-left:1px solid var(--sg-line-2)}
+:root body .wd-related>summary{list-style:none;display:flex;align-items:center;gap:6px;min-height:40px;padding:0 10px;font-size:13px;font-weight:600;color:var(--sg-ink-2);cursor:pointer}
+:root body .wd-related>summary::-webkit-details-marker{display:none}
+:root body .wd-related>summary svg{width:14px;height:14px;color:var(--sg-ink-3);transition:transform .16s var(--sg-ease)}
+:root body .wd-related[open]>summary svg{transform:rotate(90deg)}
+:root body .wd-related .wd-row-main{min-height:54px;padding-left:12px}
+/* 접힌 줄 */
+:root body .wd-folds{margin:12px 12px 0;border-top:1px solid var(--sg-line)}
+:root body .wd-fold{border-bottom:1px solid var(--sg-line)}
+:root body .wd-fold>summary{list-style:none;display:flex;align-items:center;gap:10px;min-height:52px;padding:8px 6px;cursor:pointer}
+:root body .wd-fold>summary::-webkit-details-marker{display:none}
+:root body .wd-fold>summary>svg{flex:none;width:16px;height:16px;color:var(--sg-ink-3);transition:transform .16s var(--sg-ease)}
+:root body .wd-fold[open]>summary>svg{transform:rotate(90deg)}
+:root body .wd-fold>summary>strong{flex:none;font-size:14px;font-weight:600;color:var(--sg-ink)}
+:root body .wd-peek{flex:1;min-width:0;font-size:13px;color:var(--sg-ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}
+:root body .wd-fold[open] .wd-peek{visibility:hidden}
+:root body .wd-fold-note{margin:0 6px 4px 32px!important;font-size:13px;line-height:1.5;color:var(--sg-ink-3)}
+:root body .wd-fold .wd-row-main{min-height:56px;padding-left:28px}
+:root body .wd-fold .wd-row.is-late>.wd-row-main::before{left:10px}
+/* 기한 겹침: 겹칠 때만, 펼치면 프로젝트별 기한 */
+:root body .wd-overlaps{margin:0 12px}
+:root body .wd-folds+.wd-overlaps{margin-top:0}
+:root body .wd-overlap,:root body .wd-overlap-more{border-bottom:1px solid var(--sg-line)}
+:root body .wd-overlaps>.wd-overlap:first-child{border-top:1px solid var(--sg-line)}
+:root body .wd-folds+.wd-overlaps>.wd-overlap:first-child{border-top:0}
+:root body .wd-overlap>summary{list-style:none;display:flex;align-items:center;gap:10px;min-height:52px;padding:8px 6px;font-size:13.5px;line-height:1.45;cursor:pointer}
+:root body .wd-overlap>summary::-webkit-details-marker{display:none}
+:root body .wd-overlap>summary>svg:first-child{flex:none;width:18px;height:18px;color:var(--sg-lapis)}
+:root body .wd-overlap>summary>span{flex:1;min-width:0;color:var(--sg-ink)}
+:root body .wd-overlap>summary small{display:block;font-size:13px;color:var(--sg-ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+:root body .wd-overlap>summary>svg:last-child{flex:none;width:16px;height:16px;color:var(--sg-ink-3);transition:transform .16s var(--sg-ease)}
+:root body .wd-overlap[open]>summary>svg:last-child{transform:rotate(90deg)}
+:root body .wd-overlap-body{padding:0 6px 12px 34px}
+:root body .wd-overlap-body .wd-overlap{border-bottom:0}
+:root body .wd-overlap-body .deadline-overlap-project{margin:0 0 10px}
+:root body .wd-overlap-body h5,:root body .wd-overlap-more h5{margin:0 0 4px;font-size:13.5px;font-weight:620;color:var(--sg-ink)}
+:root body .wd-overlap-body ul,:root body .wd-overlap-more ul{display:grid;gap:4px;margin:0 0 8px;padding:0;list-style:none;font-size:13px;line-height:1.45}
+:root body .wd-overlap-body li{display:flex;align-items:baseline;gap:8px}
+:root body .wd-overlap-body a,:root body .wd-overlap-more a{color:var(--sg-ink);text-underline-offset:3px;text-decoration-color:var(--sg-line-2)}
+:root body .wd-overlap-body .deadline-overlap-type{flex:none;padding:1px 7px;border-radius:6px;background:var(--sg-surface-1);color:var(--sg-ink-2);font-size:13px;font-weight:600}
+:root body .wd-overlap-body .deadline-overlap-type[data-type="agreed"]{background:var(--sg-lapis-wash);color:var(--sg-lapis-deep)}
+:root body .wd-overlap-more>summary{list-style:none;display:flex;align-items:center;min-height:44px;padding:0 6px;font-size:13px;color:var(--sg-ink-2);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--sg-line-2);cursor:pointer}
+:root body .wd-overlap-more>summary::-webkit-details-marker{display:none}
+:root body .wd-overlap-more>:not(summary){margin:0 6px 10px;font-size:13px;line-height:1.55;color:var(--sg-ink-2)}
+/* 바닥: 마감 알림의 지금 값 · 기준 */
+:root body .wd-foot{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:0 8px;padding:6px 12px 18px}
+:root body .wd-foot-link,:root body .wd-foot .wd-criteria>summary{display:inline-flex;align-items:center;min-height:44px;padding:0 6px;border:0;background:none;color:var(--sg-ink-2);font-size:13px;font-weight:500;line-height:1.4;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--sg-line-2);cursor:pointer;list-style:none}
+:root body .wd-foot-link:hover,:root body .wd-foot .wd-criteria>summary:hover{color:var(--sg-ink)}
+:root body .wd-foot-link[hidden]{display:none}
+:root body .wd-foot .wd-criteria>summary::-webkit-details-marker{display:none}
+:root body .wd-foot .wd-criteria{margin-left:auto}
+:root body .wd-foot .wd-criteria[open]{flex-basis:100%;margin-left:0}
+:root body .wd-foot .wd-criteria p{margin:0 6px 4px;font-size:13px;line-height:1.65;color:var(--sg-ink-2)}
+/* 마감 일 모음 창도 같은 줄을 쓴다 */
+:root body .deadline-digest-list .wd-rows{margin:0 -24px;border-top:1px solid var(--sg-line)}
+:root body .deadline-digest-list .wd-row{border-bottom:1px solid var(--sg-line)}
+
+/* ── 할 일 상세 3판: 요청(검토 땐 올린 결과물) → 주 단추 하나 → 다음 할 일 → 사람 → 접힌 두 줄 ── */
+:root body .task-detail-dialog:has(.task-detail) .modal-head{min-height:52px;padding:10px 12px 0 20px;border-bottom:0}
+:root body .task-detail-dialog:has(.task-detail) #modal-title{font-size:13px;font-weight:550;letter-spacing:0;line-height:1.4;color:var(--sg-ink-3)}
+:root body .task-detail-dialog:has(.task-detail) .modal-body{padding:2px 20px 14px}
+:root body .task-detail{color:var(--sg-ink);word-break:keep-all;overflow-wrap:anywhere}
+:root body .task-detail h3,:root body .task-detail h4,:root body .task-detail p{margin:0}
+:root body .td-title{font-size:23px;font-weight:680;letter-spacing:-.015em;line-height:1.3;color:var(--sg-ink)}
+:root body .td-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin-top:10px;font-size:13px;line-height:1.4;color:var(--sg-ink-2)}
+:root body .td-meta>span:not(.td-chip):not(.td-flag)+span:not(.td-flag)::before{content:'·';margin-right:8px;color:var(--sg-ink-3)}
+:root body .td-chip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:999px;background:var(--sg-surface-1);color:var(--sg-ink-2);font-weight:600}
+:root body .td-chip>i{width:6px;height:6px;border-radius:50%;background:var(--sg-ink-3)}
+:root body .td-chip:is([data-stage="requested"],[data-stage="accepted"]){background:var(--sg-lapis-wash);color:var(--sg-lapis-deep)}
+:root body .td-chip:is([data-stage="requested"],[data-stage="accepted"])>i{background:var(--sg-lapis)}
+:root body .td-chip:is([data-stage="review"],[data-stage="done"]){background:#E9F6EF;color:#1F6E47}
+:root body .td-chip:is([data-stage="review"],[data-stage="done"])>i{background:var(--sg-green)}
+:root body .td-chip[data-stage="changes"]>i{background:var(--sg-coral)}
+:root body .td-flag{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--sg-ink)}
+:root body .td-flag>i,:root body .td-people small>i{flex:none;width:6px;height:6px;border-radius:50%;background:var(--sg-coral)}
+:root body .td-block{padding:16px 0;border-bottom:1px solid var(--sg-line)}
+:root body .td-block h4{margin:0 0 10px;font-size:13px;font-weight:600;color:var(--sg-ink-3)}
+:root body .td-request{padding-bottom:6px;border-bottom:0}
+:root body .td-subhead{margin-top:14px!important}
+:root body .td-quote{max-height:15.5em;overflow:auto;padding:12px 14px;border-radius:14px;background:var(--sg-paper-2);font-size:14.5px;line-height:1.6;color:var(--sg-ink);white-space:pre-wrap}
+:root body .td-who{margin-top:8px!important;font-size:13px;line-height:1.5;color:var(--sg-ink-3)}
+:root body .td-links{display:flex;flex-wrap:wrap;gap:0 12px;margin-top:6px}
+:root body .td-links .text-button{display:inline-flex;align-items:center;gap:4px;min-height:40px;padding:0 4px;font-size:13px;font-weight:600;color:var(--sg-ink);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--sg-line-2)}
+:root body .td-links .text-button svg{width:14px;height:14px}
+:root body .td-result{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--sg-line-2);border-radius:14px}
+:root body .td-result-icon{flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:var(--sg-surface-1);color:var(--sg-ink-2)}
+:root body .td-result-icon svg{width:18px;height:18px}
+:root body .td-result>div{flex:1;min-width:0}
+:root body .td-result strong{display:block;overflow:hidden;font-size:14px;font-weight:620;white-space:nowrap;text-overflow:ellipsis}
+:root body .td-result small{display:block;margin-top:2px;font-size:13px;color:var(--sg-ink-3)}
+:root body .td-result .text-button{flex:none;min-height:40px;font-size:13px}
+:root body .td-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:14px 0 16px;border-bottom:1px solid var(--sg-line)}
+:root body .td-actions .button{min-height:40px;padding:0 16px;font-size:14px}
+:root body .td-actions .button.primary{min-height:46px;padding:0 22px}
+:root body .task-detail-dialog:has(.task-management[open]) #task-actions .button.primary{min-height:40px;border:1px solid var(--sg-line-2);background:var(--sg-paper)!important;color:var(--sg-ink);box-shadow:none}
+:root body .td-confirm{padding:14px 0 0;border-bottom:1px solid var(--sg-line)}
+:root body .td-confirm>p{font-size:14px;line-height:1.55;color:var(--sg-ink)}
+:root body .td-confirm .td-actions{border-bottom:0;padding-bottom:14px}
+:root body .task-detail .form-error{margin:12px 0 0}
+:root body .task-detail>#task-action-reload{margin-top:10px}
+:root body .task-detail .task-management{margin:0;border-bottom:1px solid var(--sg-line)}
+:root body .task-detail .task-management>summary{display:none}
+:root body .task-detail .task-management[open]{padding:16px 0 4px}
+:root body .task-detail .task-management .modal-description{margin-bottom:16px;font-size:13px;color:var(--sg-ink-3)}
+:root body .task-detail .reviewer-recovery{margin:0 0 18px;padding:14px;border:1px solid var(--sg-line);border-radius:14px;background:var(--sg-paper-2);color:var(--sg-ink)}
+:root body .task-detail .reviewer-recovery h3{margin:0 0 6px;font-size:15px;font-weight:650;color:var(--sg-ink)}
+:root body .task-detail .reviewer-recovery>p{margin:6px 0 12px;font-size:13px;color:var(--sg-ink-2)}
+:root body .td-steps{margin:0;padding:0;list-style:none;counter-reset:td}
+:root body .td-steps li{counter-increment:td;display:flex;gap:10px;padding:3px 0;font-size:14px;line-height:1.55;color:var(--sg-ink)}
+:root body .td-steps li::before{content:counter(td);flex:none;display:grid;place-items:center;width:20px;height:20px;margin-top:1px;border-radius:50%;background:var(--sg-surface-2);color:var(--sg-ink-2);font:600 12px/1 'Inter Tight',var(--sg-sans)}
+:root body .td-people{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+:root body .td-people>div{min-width:0;padding:10px 12px;border-radius:12px;background:var(--sg-paper-2)}
+:root body .td-people span{display:block;font-size:13px;font-weight:550;color:var(--sg-ink-3)}
+:root body .td-people strong{display:block;margin-top:3px;font-size:14px;font-weight:600;color:var(--sg-ink)}
+:root body .td-people .is-me strong{font-weight:750}
+:root body .td-people small{display:flex;align-items:center;gap:5px;margin-top:4px;font-size:13px;color:var(--sg-ink-2)}
+:root body .td-fold{padding:12px 0;border-bottom:1px solid var(--sg-line)}
+:root body .td-fold:last-child{border-bottom:0}
+:root body .td-fold>summary{list-style:none;display:grid;grid-template-columns:16px minmax(0,1fr);align-items:center;column-gap:10px;min-height:28px;cursor:pointer}
+:root body .td-fold>summary::-webkit-details-marker{display:none}
+:root body .td-fold>summary>svg{width:16px;height:16px;color:var(--sg-ink-3);transition:transform .16s var(--sg-ease)}
+:root body .td-fold[open]>summary>svg{transform:rotate(90deg)}
+:root body .td-fold>summary>span{font-size:14px;font-weight:600;color:var(--sg-ink)}
+:root body .td-fold>summary>small{grid-column:2;margin-top:2px;font-size:13px;line-height:1.5;color:var(--sg-ink-3)}
+:root body .td-fold-body{padding:8px 0 0 26px;font-size:13px;line-height:1.6;color:var(--sg-ink-2)}
+:root body .td-fold-body p,:root body .td-fold-body ul{margin:0 0 6px}
+:root body .td-fold-body ul{padding-left:18px}
+:root body .wd-overlap-body .deadline-overlap-project{margin:0 0 10px;padding:0;border-top:0}
+:root body .wd-overlap-body .deadline-overlap-project li{flex-wrap:nowrap;padding:0;font-size:13px;line-height:1.45}
+:root body .wd-overlap-body a,:root body .wd-overlap-more a{display:inline;min-height:0;padding:0;font-size:13px}
+:root body .td-result .text-button,:root body .td-links .text-button{white-space:nowrap}
+:root body .td-result .text-button{display:inline-flex;align-items:center;gap:4px;padding:0 4px;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--sg-line-2)}
+:root body .td-result .text-button svg{width:14px;height:14px}
+/* 바꾸기 양식: 상세 안에서 같은 글자 하한(13px)과 선 색을 쓴다 */
+:root body .task-detail .task-management :is(.workflow-help,.workday-empty,.productivity-error){margin:6px 0 12px;font-size:13px;line-height:1.6;color:var(--sg-ink-3)}
+:root body .task-detail .task-management :is(.message-choice small,.selected-result small){font-size:13px;color:var(--sg-ink-3)}
+:root body .task-detail .task-management .field-row .field :is(select,input){width:100%;min-width:0}
+:root body .task-detail .message-picker{margin:12px 0 16px;padding:14px;border:1px solid var(--sg-line-2);border-radius:14px;background:var(--sg-paper)}
+:root body .task-detail .message-picker legend{padding:0 6px;font-size:13px;font-weight:650;color:var(--sg-ink)}
+:root body .task-detail .message-choice{border-bottom-color:var(--sg-line);color:var(--sg-ink)}
+:root body .task-detail .modal-actions{margin-top:4px}
+@media(pointer:coarse){:root body .task-detail :is(.button,.text-button){min-height:44px}:root body .task-detail .td-actions .button.primary{min-height:46px}}
+@media(max-width:480px){:root body .td-people{gap:6px}:root body .td-people>div{padding:9px 10px}:root body .task-detail-dialog:has(.task-detail) .modal-body{padding:2px 16px 12px}}

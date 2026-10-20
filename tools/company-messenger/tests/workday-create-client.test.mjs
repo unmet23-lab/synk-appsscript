@@ -4,6 +4,7 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 
 const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8').replace(/\bboot\(\);\s*$/,'');
+const text=html=>String(html).replace(/<[^>]*>/g,'');const confirmsEmptyDay=html=>/오늘 할 일 0개/.test(text(html));
 const flush=async()=>{for(let index=0;index<8;index++)await Promise.resolve();};
 const decode=value=>String(value||'').replace(/&quot;/g,'"').replace(/&#39;|&#x27;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
 const attribute=(text,name)=>new RegExp(`\\b${name}\\s*=\\s*(["'])([\\s\\S]*?)\\1`).exec(text)?.[2];
@@ -124,12 +125,12 @@ test('an undated request sends null and an optional reviewer is sent separately'
 
 test('a saved direct request refreshes today even if the current chat read fails',async()=>{
   const f=fixture(),form=await open(f),values=fill(f);f.run("refreshTaskViews=originalRefreshTaskViews;refreshMessages=async()=>{throw new Error('채팅 읽기 실패')}");const saving=submit(form);const response=created(values);f.requests[1].resolve(response);await flush();assert.equal(f.requests[2]?.path,'/api/workday');const work=snapshot();work.today.groups.reply=[response.task];work.today.counts.reply=1;work.today.total=1;work.openTotal=1;f.requests[2].resolve(work);await saving;
-  assert.ok(f.nodes.get('#personal-body').innerHTML.includes(values.title));assert.ok(f.nodes.get('#personal-body').innerHTML.includes('오늘 할 일 1개'));assert.ok(f.toasts.some(item=>item.error&&/추가했어요/.test(item.message)&&/불러오지 못/.test(item.message)));
+  assert.ok(f.nodes.get('#personal-body').innerHTML.includes(values.title));assert.ok(text(f.nodes.get('#personal-body').innerHTML).includes('오늘 할 일 1개'));assert.ok(f.toasts.some(item=>item.error&&/추가했어요/.test(item.message)&&/불러오지 못/.test(item.message)));
 });
 
 test('a saved direct request with a failed today refresh never reports an empty day',async()=>{
   const f=fixture(),form=await open(f);fill(f);f.run('refreshTaskViews=originalRefreshTaskViews;refreshMessages=async()=>{}');const saving=submit(form);f.requests[1].resolve(created());await flush();assert.equal(f.requests[2]?.path,'/api/workday');f.requests[2].reject(new Error('오늘 업무 조회 실패'));await saving;
-  const html=f.nodes.get('#personal-body').innerHTML;assert.ok(html.includes('할 일을 불러오지 못했어요'));assert.ok(!html.includes('오늘 할 일은 없어요'));assert.match(html,/data-productivity-refresh/);
+  const html=f.nodes.get('#personal-body').innerHTML;assert.ok(html.includes('할 일을 불러오지 못했어요'));assert.ok(!confirmsEmptyDay(html));assert.match(html,/data-productivity-refresh/);
 });
 
 test('repeated submit events while pending send only one task creation',async()=>{

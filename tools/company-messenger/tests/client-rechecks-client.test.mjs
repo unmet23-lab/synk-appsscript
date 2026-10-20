@@ -4,6 +4,7 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 
 const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8').replace(/\bboot\(\);\s*$/,'');
+const text=html=>String(html).replace(/<[^>]*>/g,'');const confirmsEmptyDay=html=>/오늘 할 일 0개/.test(text(html));
 const uid='12345678-1234-1234-1234-123456789abc';
 const entryId='a1'.repeat(32);
 const publicationHref=(action='prepare',fields='inboxId='+uid)=>`/?tab=workroom&section=tools&tool=publication&publicationAction=${action}&${fields}`;
@@ -33,16 +34,16 @@ function recheckData(items,deferred=[],today='2026-10-12'){
 }
 test('personal dates move only selected tasks to an inspectable section and keep canonical indices and original deadlines',async()=>{
   const f=fixture(),items=[clientItem('later',{dueDate:'2026-10-15'}),clientItem('now')],html=await load(f,recheckData(items,['later']));
-  assert.match(html,/오늘 할 일 1개/);assert.match(html,/미뤄 둔 일 1개/);assert.match(html,/프로젝트 1개 · 할 일 1개/);assert.match(html,/2026-10-19 다시 보기/);assert.match(html,/2026-10-15/);assert.match(html,/data-client-restore="0"/);assert.match(html,/data-client-recheck="1"/);
+  assert.match(text(html),/오늘 할 일 1개/);assert.match(html,/<strong>미뤄 둔 일<\/strong><span class="wd-group-count">1</);assert.match(html,/datetime="2026-10-19">10월 19일<\/time> 다시 보기/);assert.match(html,/datetime="2026-10-15"/);assert.match(html,/data-client-restore="0"/);assert.match(html,/data-client-recheck="1"/);
   for(const item of items)assert.equal((html.match(new RegExp('data-client-item="'+item.id+'"','g'))||[]).length,1);
   assert.deepEqual([...f.state.customerWork.map(item=>item.id)],['later','now']);assert.match(html,/원래 기한은 그대로/);
 });
 test('an entirely deferred day explicitly retains unfinished work rather than claiming everything is complete',async()=>{
   const f=fixture(),html=await load(f,recheckData([clientItem('later')],['later']));
-  assert.match(html,/미뤄 둔 일이 있어요/);assert.doesNotMatch(html,/맡은 일도, 고객·게시 일도 없어요/);assert.doesNotMatch(html,/data-client-project=/);assert.match(html,/data-client-restore="0"/);
+  assert.match(html,/미뤄 둔 일만 있어요/);assert.doesNotMatch(html,/맡은 일도, 고객·게시 일도 없어요/);assert.doesNotMatch(html,/data-client-project=/);assert.match(html,/data-client-restore="0"/);
 });
 test('due dates and significant changes reappear with a reason while preserving exact source actions',async()=>{
-  for(const [state,label]of [['due','다시 볼 날짜가 됐어요'],['changed','새 요청이나 바뀐 게 있어'],['overdue','기한이 지나 다시 꺼냈']]){
+  for(const [state,label]of [['due','다시 볼 날'],['changed','바뀌어서 다시 꺼냄'],['overdue','기한 지나 다시 꺼냄']]){
     const f=fixture(),item=clientItem('returned',{actions:[{action:'start',label:'처리 시작'}]}),data=recheckData([item]);data.rechecks.returned={fingerprint,state,date:'2026-10-11'};const html=await load(f,data);
     assert.match(html,new RegExp(label));assert.match(html,/data-client-work="0" data-client-action="start"/);assert.match(html,/data-client-recheck="0"/);assert.doesNotMatch(html,/data-client-restore=/);
   }

@@ -4,6 +4,7 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 
 const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8').replace(/\bboot\(\);\s*$/,'');
+const text=html=>String(html).replace(/<[^>]*>/g,'');const confirmsEmptyDay=html=>/오늘 할 일 0개/.test(text(html));
 const uid='12345678-1234-1234-1234-123456789abc';
 const entryId='a1'.repeat(32);
 const publicationHref=(action='prepare',fields='inboxId='+uid)=>`/?tab=workroom&section=tools&tool=publication&publicationAction=${action}&${fields}`;
@@ -32,18 +33,18 @@ async function load(f,{items=[],customers=[],work=workday(),background=false}={}
 
 test('company today combines unique publication actions with tasks and customer work without creating records',async()=>{
   const f=fixture(),prepare=item(),publish=item({id:'publish',kind:'publication_publish',title:'게시 주소 기록',href:publicationHref('publish','packageId='+uid)}),html=await load(f,{items:[prepare,prepare,publish],customers:[{id:'client',group:'reply',title:'고객 답변'}],work:workday({today:[task()],remaining:[task('later')]})});
-  assert.match(html,/오늘 할 일 4개/);assert.match(html,/게시할 일/);assert.match(html,/완성본 확인/);assert.match(html,/이후 마감 1개/);assert.equal(f.state.publicationWork.length,2);assert.equal(f.state.personalItems.length,2);
+  assert.match(text(html),/오늘 할 일 4개/);assert.match(html,/data-workday-group="next"[\s\S]*<span class="wd-source">게시<\/span>/);assert.match(html,/완성본 확인/);assert.match(html,/<strong>나중에 할 일<\/strong><span class="wd-group-count">1</);assert.equal(f.state.publicationWork.length,2);assert.equal(f.state.personalItems.length,2);
   assert.deepEqual(f.requests.map(request=>request.path),['/api/workday','/api/client-workflow','/api/publication-workflow']);assert.ok(f.requests.every(request=>!request.options.method||request.options.method==='GET'));
 });
 
 test('publication source errors keep the count incomplete and cannot claim zero work',async()=>{
   const f=fixture(),loading=f.run('loadPersonalPanel()');f.requests[0].resolve(workday());f.requests[1].resolve({items:[]});f.requests[2].reject(new Error('<img src=x> 게시 조회 실패'));await loading;const html=f.nodes.get('#personal-body').innerHTML;
-  assert.match(html,/오늘 할 일을 다 불러오지 못했어요/);assert.match(html,/게시 업무를 불러오지 못했어요/);assert.match(html,/못 불러옴/);assert.match(html,/data-productivity-refresh/);assert.ok(!html.includes('오늘 할 일은 없어요'));assert.ok(!html.includes('<img src=x>'));assert.ok(html.includes('&lt;img'));
+  assert.match(html,/오늘 할 일을 다 불러오지 못했어요/);assert.match(html,/게시 업무를 불러오지 못해 게시 일이 빠졌을 수 있어요/);assert.match(html,/role="alert"/);assert.match(html,/data-productivity-refresh/);assert.ok(!confirmsEmptyDay(html));assert.ok(!html.includes('<img src=x>'));assert.ok(html.includes('&lt;img'));
 });
 
 test('known tasks remain visible when publication loading fails',async()=>{
   const f=fixture(),loading=f.run('loadPersonalPanel()');f.requests[0].resolve(workday({today:[task()]}));f.requests[1].resolve({items:[]});f.requests[2].reject(new Error('게시 연결 실패'));await loading;
-  assert.match(f.nodes.get('#personal-body').innerHTML,/불러온 할 일 1개/);assert.match(f.nodes.get('#personal-body').innerHTML,/오늘 마감 영상/);
+  assert.match(text(f.nodes.get('#personal-body').innerHTML),/불러온 할 일 1개/);assert.match(f.nodes.get('#personal-body').innerHTML,/오늘 마감 영상/);
 });
 
 test('standalone and an unauthenticated company module do not request the company publication API',async()=>{
@@ -67,8 +68,8 @@ test('publication formats belong only to an exact publish target and stay in the
   for(const href of [publicationHref('publish',`packageId=${uid}&publicationFormat=unknown`),publicationHref()+'&publicationFormat=youtube-shorts',publicationHref('publish',`packageId=${uid}&publicationFormat=youtube-shorts&publicationFormat=youtube-video`)]){f.context.href=href;assert.equal(f.run('safePublicationWorkflowHref(href)'),null);}
 });
 
-test('server-sourced action labels and titles are escaped in the summary and detail cards',async()=>{
-  const f=fixture(),html=await load(f,{items:[item({title:'<script>제목</script>',text:'<img src=x>',actionLabel:'<b>확인</b>',statusLabel:'<svg>'})]});for(const fragment of ['&lt;script&gt;','&lt;img','&lt;b&gt;','&lt;svg&gt;'])assert.ok(html.includes(fragment));assert.ok(!html.includes('<script>'));assert.ok(!html.includes('<img src=x>'));
+test('server-sourced titles, status and text are escaped and server action labels never reach the row',async()=>{
+  const f=fixture(),html=await load(f,{items:[item({title:'<script>제목</script>',text:'<img src=x>',actionLabel:'<b>확인</b>',statusLabel:'<svg>'})]});for(const fragment of ['&lt;script&gt;','&lt;img','&lt;svg&gt;'])assert.ok(html.includes(fragment),fragment);assert.ok(!html.includes('<b>확인</b>')&&!html.includes('&lt;b&gt;'));assert.match(html,/data-publication-open="[^"]*"[^>]*>열기<\/a>/);assert.ok(!html.includes('<script>'));assert.ok(!html.includes('<img src=x>'));
 });
 
 test('one company refresh timer is capped at ten seconds and keeps the earlier server midnight boundary',async()=>{
@@ -81,7 +82,7 @@ test('unchanged work skips DOM replacement even while server clock metadata adva
 });
 
 test('changed original status removes a completed action and preserves the drawer scroll',async()=>{
-  const f=fixture();await load(f,{items:[item()]});const body=f.nodes.get('#personal-body'),writes=body.writes;body.scrollTop=230;const html=await load(f,{background:true});assert.match(html,/오늘 할 일은 없어요/);assert.ok(!html.includes('LAB 완성본 확인'));assert.equal(body.writes,writes+1);assert.equal(body.scrollTop,230);assert.equal(f.state.publicationWork.length,0);
+  const f=fixture();await load(f,{items:[item()]});const body=f.nodes.get('#personal-body'),writes=body.writes;body.scrollTop=230;const html=await load(f,{background:true});assert.ok(confirmsEmptyDay(html));assert.ok(!html.includes('LAB 완성본 확인'));assert.equal(body.writes,writes+1);assert.equal(body.scrollTop,230);assert.equal(f.state.publicationWork.length,0);
 });
 
 test('a retained focused action uses its ID and corrects its position in the actual scrolling body',()=>{
@@ -115,7 +116,7 @@ test('an initial company workday read also discards its response after leaving t
 });
 
 test('a failed workday poll reports unknown work and schedules recovery without a false zero',async()=>{
-  const f=fixture();await load(f,{items:[item()]});const offset=f.requests.length,pending=f.run('loadPersonalPanel({background:true})');f.requests[offset].reject(new Error('업무 읽기 실패'));f.requests[offset+1].resolve({items:[]});f.requests[offset+2].resolve({items:[]});await pending;assert.match(f.nodes.get('#personal-body').innerHTML,/할 일을 불러오지 못했어요/);assert.ok(!f.nodes.get('#personal-body').innerHTML.includes('오늘 할 일은 없어요'));assert.equal(f.timers.size,1);assert.equal([...f.timers.values()][0].delay,10000);
+  const f=fixture();await load(f,{items:[item()]});const offset=f.requests.length,pending=f.run('loadPersonalPanel({background:true})');f.requests[offset].reject(new Error('업무 읽기 실패'));f.requests[offset+1].resolve({items:[]});f.requests[offset+2].resolve({items:[]});await pending;assert.match(f.nodes.get('#personal-body').innerHTML,/할 일을 불러오지 못했어요/);assert.ok(!confirmsEmptyDay(f.nodes.get('#personal-body').innerHTML));assert.equal(f.timers.size,1);assert.equal([...f.timers.values()][0].delay,10000);
 });
 
 test('returning from another personal tab renders today even with an unchanged source snapshot',async()=>{
@@ -135,7 +136,7 @@ test('package review is accepted by the real API validator and opens its exact p
   f.context.fetch=async()=>({ok:true,json:async()=>({items:[review]})});const response=await f.run('publicationWorkflowApi()');assert.equal(response.items[0].kind,'publication_review');
   f.context.href=review.href;assert.equal(f.run('safePublicationWorkflowHref(href)'),'http://localhost'+review.href);
   f.context.href=review.href+'&publicationFormat=youtube-shorts';assert.equal(f.run('safePublicationWorkflowHref(href)'),null);
-  f.run('publicationWorkflowApi=()=>request("/api/publication-workflow")');const html=await load(f,{items:[review]});assert.match(html,/오늘 할 일 1개/);assert.match(html,/남은 점검 확인/);
+  f.run('publicationWorkflowApi=()=>request("/api/publication-workflow")');const html=await load(f,{items:[review]});assert.match(text(html),/오늘 할 일 1개/);assert.match(html,/합성 게시 전 점검/);
   await f.nodes.get('#personal-body').onclick({preventDefault(){},target:{closest:selector=>selector==='[data-publication-open]'?{dataset:{publicationOpen:review.id}}:null}});
   assert.equal(f.messages[0].value.url,'http://localhost'+review.href);assert.equal(f.messages[0].value.type,'messenger:publication-open');
 });
@@ -145,7 +146,7 @@ test('link errors open exactly one stored package or post and reject mixed targe
   for(const field of ['packageId='+uid,'entryId='+entryId]){
     const entry=item({id:'publication:link:'+field,kind:'publication_link',title:'합성 링크 접속 오류',actionLabel:'링크 오류 확인',href:publicationHref('link',field)});
     f.run(source.slice(source.indexOf('async function publicationWorkflowApi(){'),source.indexOf('function publicationWorkflowItems(')));f.context.fetch=async()=>({ok:true,json:async()=>({items:[entry]})});assert.equal((await f.run('publicationWorkflowApi()')).items[0].kind,'publication_link');
-    f.run('publicationWorkflowApi=()=>request("/api/publication-workflow")');const html=await load(f,{items:[entry]});assert.match(html,/링크 오류 확인/);
+    f.run('publicationWorkflowApi=()=>request("/api/publication-workflow")');const html=await load(f,{items:[entry]});assert.match(html,/합성 링크 접속 오류/);
     await f.nodes.get('#personal-body').onclick({preventDefault(){},target:{closest:selector=>selector==='[data-publication-open]'?{dataset:{publicationOpen:entry.id}}:null}});assert.equal(f.messages.at(-1).value.url,'http://localhost'+entry.href);
   }
   for(const fields of [`packageId=${uid}&entryId=${entryId}`,`packageId=${uid}&checkpoint=24h`,`entryId=${entryId}&publicationFormat=youtube-shorts`,'packageId='+entryId,'entryId='+uid,'url=https://example.test']){f.context.href=publicationHref('link',fields);assert.equal(f.run('safePublicationWorkflowHref(href)'),null);}
