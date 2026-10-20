@@ -17881,6 +17881,24 @@ function activeRules(venue, at) {
 }
 var choicesFor = (venue, at) => ["pass", ...activeRules(venue, at).map((r) => r.id)];
 
+// experiences/synk-world-app/world-diagnostic-racing.mjs
+var DIAG_RACING_WORDS = Object.freeze([
+  ["w0001", "\uC0AC\uACFC", "\u{1F34E}", [["w0003", "\u{1F347}"], ["w0005", "\u{1F349}"]]],
+  ["w0008", "\uBE75", "\u{1F35E}", [["w0006", "\u{1F35A}"], ["w0010", "\u{1F41F}"]]],
+  ["w0012", "\uC6B0\uC720", "\u{1F95B}", [["w0013", "\u2615"], ["w0014", "\u{1F375}"]]],
+  ["w0018", "\uB2F9\uADFC", "\u{1F955}", [["w0016", "\u{1F954}"], ["w0019", "\u{1F952}"]]],
+  ["w0025", "\uC6B0\uC0B0", "\u2602\uFE0F", [["w0021", "\u{1F4D6}"], ["w0024", "\u231A"]]],
+  ["w0028", "\uBAA8\uC790", "\u{1F9E2}", [["w0027", "\u{1F45F}"], ["w0029", "\u{1F453}"]]],
+  ["w0035", "\uC790\uC804\uAC70", "\u{1F6B2}", [["w0031", "\u{1F68C}"], ["w0033", "\u{1F686}"]]],
+  ["w0036", "\uC9D1", "\u{1F3E0}", [["w0037", "\u{1F3EB}"], ["w0038", "\u{1F3E5}"]]],
+  ["w0042", "\uACE0\uC591\uC774", "\u{1F408}", [["w0044", "\u{1F420}"], ["w0045", "\u{1F40E}"]]],
+  ["w0050", "\uB098\uBB34", "\u{1F333}", [["w0046", "\u{1F30A}"], ["w0049", "\u{1F33C}"]]],
+  ["w0051", "\uBE44", "\u{1F327}\uFE0F", [["w0053", "\u{1F32C}\uFE0F"], ["w0055", "\u2600\uFE0F"]]],
+  ["w0056", "\uC758\uC790", "\u{1FA91}", [["w0057", "\u{1F6CF}\uFE0F"], ["w0058", "\u{1F6AA}"]]],
+  ["w0061", "\uCD95\uAD6C", "\u26BD", [["w0062", "\u{1F3C0}"], ["w0064", "\u{1F3CA}"]]]
+]);
+var racingWordAudio = (id) => `korean-racing/assets/narration/${id}.mp3`;
+
 // experiences/synk-world-app/world-diagnostic-items.mjs
 function diagSeeded(id) {
   let h = 2166136261;
@@ -17996,21 +18014,6 @@ function diagEntryItems() {
     };
   }));
 }
-var DIAG_RACING_WORDS = Object.freeze([
-  ["w0001", "\uC0AC\uACFC", "\u{1F34E}", [["w0003", "\u{1F347}"], ["w0005", "\u{1F349}"]]],
-  ["w0008", "\uBE75", "\u{1F35E}", [["w0006", "\u{1F35A}"], ["w0010", "\u{1F41F}"]]],
-  ["w0012", "\uC6B0\uC720", "\u{1F95B}", [["w0013", "\u2615"], ["w0014", "\u{1F375}"]]],
-  ["w0018", "\uB2F9\uADFC", "\u{1F955}", [["w0016", "\u{1F954}"], ["w0019", "\u{1F952}"]]],
-  ["w0025", "\uC6B0\uC0B0", "\u2602\uFE0F", [["w0021", "\u{1F4D6}"], ["w0024", "\u231A"]]],
-  ["w0028", "\uBAA8\uC790", "\u{1F9E2}", [["w0027", "\u{1F45F}"], ["w0029", "\u{1F453}"]]],
-  ["w0035", "\uC790\uC804\uAC70", "\u{1F6B2}", [["w0031", "\u{1F68C}"], ["w0033", "\u{1F686}"]]],
-  ["w0036", "\uC9D1", "\u{1F3E0}", [["w0037", "\u{1F3EB}"], ["w0038", "\u{1F3E5}"]]],
-  ["w0042", "\uACE0\uC591\uC774", "\u{1F408}", [["w0044", "\u{1F420}"], ["w0045", "\u{1F40E}"]]],
-  ["w0050", "\uB098\uBB34", "\u{1F333}", [["w0046", "\u{1F30A}"], ["w0049", "\u{1F33C}"]]],
-  ["w0051", "\uBE44", "\u{1F327}\uFE0F", [["w0053", "\u{1F32C}\uFE0F"], ["w0055", "\u2600\uFE0F"]]],
-  ["w0056", "\uC758\uC790", "\u{1FA91}", [["w0057", "\u{1F6CF}\uFE0F"], ["w0058", "\u{1F6AA}"]]],
-  ["w0061", "\uCD95\uAD6C", "\u26BD", [["w0062", "\u{1F3C0}"], ["w0064", "\u{1F3CA}"]]]
-]);
 var diagRacingMeta = (id) => ({
   id,
   itemKey: `korean-racing:${id}:v1`,
@@ -18030,7 +18033,7 @@ function diagRacingItems() {
     return {
       ...meta,
       source: "korean-racing",
-      audio: `korean-racing/assets/narration/${id}.mp3`,
+      audio: racingWordAudio(id),
       prompt: null,
       question: "\uB4E4\uB9AC\uB294 \uB0B1\uB9D0\uC758 \uADF8\uB9BC\uC744 \uACE0\uB974\uC138\uC694.",
       ask: "picture",

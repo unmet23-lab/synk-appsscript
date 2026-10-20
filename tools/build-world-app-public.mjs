@@ -4,7 +4,7 @@ import crypto from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {publicWorldConfig} from '../experiences/synk-world-app/operating-mode.mjs';
 import {renderWorldDocument} from '../experiences/synk-world-app/document.mjs';
-import {DIAGNOSTIC_ITEMS} from '../experiences/synk-world-app/world-diagnostic-items.mjs';
+import {DIAG_RACING_WORDS,racingWordAudio} from '../experiences/synk-world-app/world-diagnostic-racing.mjs';
 const root=fileURLToPath(new URL('../',import.meta.url));
 const args=process.argv.slice(2),arg=name=>{const i=args.indexOf(name);return i<0?null:args[i+1];};
 if(!arg('--config'))throw Error('Usage: build-world-app-public.mjs --config public-config.json [--out directory] [--base-path /world/] [--reuse payload-world-dir]');
@@ -130,8 +130,9 @@ const opening=path.join(root,'experiences/brand-opening');
 // assets/tutor-photos는 위에서 폴더째 실었다(home.html 기본 계정 사진이 여기 다시 잡혀도 두 번 쓰지 않는다).
 for(const name of openingAssets)if(!name.startsWith('tutor-photos/'))copyFile(path.join(opening,'assets',name),'brand-opening/assets/'+name);
 for(const game of ['korean-runner','korean-rhythm','hangul-stage'])copyTree(path.join(root,'experiences',game),game,(source,relative)=>!relative.startsWith('hangul-stage/assets/voice/'));
-// 내 위치 짧은 진단의 낱말 듣기: 레이싱 폴더는 싣지 않고 진단 묶음이 부르는 낱말 녹음만 싣는다(world-diagnostic-items.mjs).
-for(const item of DIAGNOSTIC_ITEMS)if(item.audio?.startsWith('korean-racing/'))copyFile(path.join(root,'experiences',item.audio),item.audio);
+// 내 위치 짧은 진단의 낱말 듣기: 레이싱 폴더는 싣지 않고 진단이 쓰는 낱말 녹음만 싣는다. 표는 아무것도 import하지 않는
+// world-diagnostic-racing.mjs에서 읽는다(진단 묶음 전체를 부르면 공개 내보내기에 없는 게임 폴더까지 따라 부른다).
+for(const [id] of DIAG_RACING_WORDS)copyFile(path.join(root,'experiences',racingWordAudio(id)),racingWordAudio(id));
  // Publish only explicitly approved voice clips, and runtime-only empty fallback metadata otherwise.
  const voiceRoot=path.join(root,'experiences/hangul-stage/assets/voice');
  const readVoice=name=>{try{return JSON.parse(fs.readFileSync(path.join(voiceRoot,name),'utf8'));}catch{return null;}};
