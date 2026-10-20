@@ -2,7 +2,7 @@
 
 > 판: Antigravity CLI `agy` 1.3.6(Windows winget)·1.4.0(Linux 별도 사용자) · Gemini API 무료 몫 · `tools/몽골어대조.js`·`tools/lib/제미나이구독호출.js` · Hermes Agent v0.22.2(`%LOCALAPPDATA%\hermes`, 텔레그램 팁 봇 게이트웨이) · Codex 세션 기록(`~/.codex/sessions`·`~/.codex/archived_sessions`)
 > 마지막 확인: 2026-10-19(조사 예약의 작업 파일 읽기·명령 거절 실패 — 원인 조회·고침·고친 뒤 첫 회차 complete), 2026-10-18(Linux 파일 인증 복원·실제 timer Argon 실행·계정별 모델 목록·headless 도구 권한, 기존 노트북 항목은10-17)
-> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-03~10-17 Claude 메모에서 옮김(10-17 2차) · GPT(Codex) 10-17 Antigravity 인증 공유·구형 Gemini CLI 지원 종료, 10-18 Linux 독립 실행·timer 검증 추가 · GPT(Codex) 10-17 예약 시각 해석 확인 추가 · GPT(Codex) 10-18 Argon 예약·Docs·장애 알림 확인 · Claude Code(Claude Opus 5.5) 10-18 `claude -p` 크레딧 청구(Claude Code 2.1.302) · Claude Code 10-18 아르곤 실행 두 항목 · Claude Code(Claude Opus 5.5) 10-19 조사 예약 거절 실패 관찰·고침
+> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-03~10-17 Claude 메모에서 옮김(10-17 2차) · GPT(Codex) 10-17 Antigravity 인증 공유·구형 Gemini CLI 지원 종료, 10-18 Linux 독립 실행·timer 검증 추가 · GPT(Codex) 10-17 예약 시각 해석 확인 추가 · GPT(Codex) 10-18 Argon 예약·Docs·장애 알림 확인 · Claude Code(Claude Opus 5.5) 10-18 `claude -p` 크레딧 청구(Claude Code 2.1.302) · Claude Code 10-18 아르곤 실행 두 항목 · Claude Code(Claude Opus 5.5) 10-19 조사 예약 거절 실패 관찰·고침 · Claude Code 10-20 데스크톱 앱 계정과 로그인 파일 계정이 다른 것 추가
 
 어느 AI·계정이 무엇을 맡는지는 [AI 운영 원칙 · 역할](../AI_운영원칙.md#역할), 유료 호출 승인은 [비용과 권한](../AI_운영원칙.md#비용과-권한)이 정한다. GPT 그림 굽기의 주간 한도와 계정 돌려쓰기는 [그림 굽기·오리기](그림_굽기_오리기.md#gpt-그림-굽기)에 있다. 여기는 AI CLI·구독 통로·세션 기록이 예상과 다르게 움직인 함정이다. 틀은 [README](README.md)를 따른다.
 
@@ -87,6 +87,12 @@
 - 원인: Opus 5.5에서 count_tokens는 모델별 생각 규칙 일부를 보지 않는다. 실측(강사 도우미 실제 몸통, synk.yuh 키): `adaptive` 200 · `disabled` 200 · `enabled`+`budget_tokens` 200 · `between_tools` 400(「not supported for this model」) · 없는 값 400. 생성 창구(`/v1/messages`)는 `disabled`를 400(「Use thinking.type.adaptive and output_config.effort」)으로 거절한다. 10-05 Sonnet 5.5 때는 count_tokens도 `disabled`를 400으로 거절해 이 점검이 통했다.
 - 고침: 점검의 틀린 값을 모델마다 표에 두고, 토큰 세기 창구가 그 모델에서 실제로 400을 내는 값으로 고른다(talk `lib/교정엔진.js` `도우미모델표`의 `점검틀린생각`, Opus 5.5는 `between_tools`, 커밋 `20849aa`). 모델을 옮길 때는 count_tokens에 후보 값을 먼저 보내 400이 나는지 본다(무료).
 - 다시 확인: 무료 시험 스크립트 `.tmp/companion-opus-20261019/thinking-variants.cjs`(결과 `thinking-variants-*.json`). 고친 판을 배포한 뒤 `?점검=몸통`이 `ok:true`·`틀린값거절: 400`이다.
+
+### 데스크톱 앱 계정과 `~/.claude` 로그인 파일의 계정이 다르다 (2026-10-20 Claude)
+- 증상: 앱 세션의 `get_usage`는 주간 99%였는데 계정판(`~/.ai-accounts/read-usage.mjs`)의 Claude는 27%로 떴다. 기본 로그인 `~/.claude/.credentials.json`을 읽어 홈 `~/.claude.json`의 이메일을 붙이자, 다른 계정의 27%가 앱 계정 이름으로 찍혔다.
+- 원인: 데스크톱 앱은 이 로그인 파일을 쓰지 않는다. 앱 안에 따로 로그인해 두고, 세션의 API 요청을 앱 쪽 통로(`ANTHROPIC_BASE_URL`)로 보낸다. 세션에는 `CLAUDE_CODE_USER_EMAIL`·`CLAUDE_CODE_ACCOUNT_UUID`만 오고 `CLAUDE_CODE_OAUTH_TOKEN`은 없다. 홈 `~/.claude.json`의 oauthAccount는 앱 계정을 따라가고, `~/.claude/.credentials.json`은 터미널 `claude` 로그인이라 둘이 다른 계정일 수 있다(10-20에는 서로 다른 Max 계정이었다).
+- 고침: 로그인 파일의 계정은 설정 파일이 아니라 토큰으로 묻는다(`/api/oauth/profile`, `anthropic-beta: oauth-2025-04-20`, 토큰은 출력하지 않는다). 앱 계정의 한도는 세션 안에서 `mcp__ccd_session_mgmt__get_usage`로 보고, 밖에서 읽으려면 그 계정으로 `CLAUDE_CONFIG_DIR=<폴더> claude auth login`을 한 번 해 둔 폴더를 쓴다. 계정판은 기본 로그인을 profile로 확인해 읽고, 앱 계정을 어느 폴더도 못 읽으면 `claude-app` 「못 읽음」 줄을 띄운다.
+- 다시 확인: `node ~/.ai-accounts/read-usage.mjs --only=claude`의 `folder: "claude"` 줄 이메일이 터미널 `claude auth status`의 계정과 같고, 세션의 `echo $CLAUDE_CODE_USER_EMAIL`과는 다를 수 있다.
 
 ## Claude Code 자동 모드
 
