@@ -351,6 +351,11 @@ test('a Drive-verified bundle becomes the base: the next bundle holds only new o
   const none = await preserveRecord(record([[later, 'refs/heads/archive-source'], [f.head, 'refs/heads/copy']]), f.root, cryptoTool, () => {}, dependencies);
   assert.equal(none.coveredOnly, true); assert.equal(none.coveredHeads.length, 2); assert.deepEqual(none.chain, [first.manifestRelativePath, second.manifestRelativePath]);
   assert.deepEqual(fs.readdirSync(path.join(f.root, 'Git-보관', 'public-fixture')).sort(), before);
+  // 그렇게 다 덮인 적용 실행의 상태(묶음 목록은 비고 covered만)는 확인 실행이 사슬 영수증의 검증을 적은 뒤에도 성공이다
+  // (10-21 실제 회차는 「묶음이 없으면 대기」 조건에 걸려 awaiting-drive-verification으로 되돌아갔다).
+  fs.writeFileSync(bundleStatus, JSON.stringify({ status: 'success', bundles: [], covered: [{ repository: none.repository, heads: 2, chainBundles: 2 }] }));
+  await reconcileEncryptedArchives({ repositories: [record([[later, 'refs/heads/archive-source'], [f.head, 'refs/heads/copy']])] }, state, false);
+  assert.equal(JSON.parse(fs.readFileSync(bundleStatus, 'utf8')).status, 'success');
   // 앞 묶음 영수증이 사라지면 그 사슬에 기대는 묶음도 보존 확인에서 빠진다.
   fs.renameSync(first.manifestPath, first.manifestPath + '.moved');
   const lost = record([[later, 'refs/heads/archive-source']]);

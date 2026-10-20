@@ -351,7 +351,10 @@ function recordDriveCoverage(vault, receipts) {
       const current = receipts.find(row => row.selectionHash === bundle.selectionHash && row.repository === bundle.repository);
       if (current) bundle.driveCoverage = current.driveCoverage;
     }
-    report.status = report.bundles?.length && report.bundles.every(row => row.driveCoverage?.ok) ? 'success' : 'awaiting-drive-verification';
+    // 새 묶음 없이 검증된 앞 묶음 사슬로 다 덮인 적용 실행(covered)은 묶음 목록이 비어도 성공이다. 사슬 영수증의 검증을 적는 확인
+    // 실행이 「묶음이 없으면 대기」로 되돌리던 것을 막는다(10-21 실제 회차).
+    const bundles = report.bundles || [];
+    report.status = (bundles.length ? bundles.every(row => row.driveCoverage?.ok) : Boolean(report.covered?.length)) ? 'success' : 'awaiting-drive-verification';
     report.pid = process.pid; report.checkedAt = report.finishedAt = new Date().toISOString();
     if (report.status === 'success') report.lastSuccessAt = report.finishedAt;
     atomicJson(file, report);
