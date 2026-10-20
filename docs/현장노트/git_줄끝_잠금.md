@@ -368,7 +368,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 증상: `git worktree remove --force`가 등록만 풀고 폴더를 남긴다. 남은 폴더를 `rm -rf`·`Remove-Item -Recurse`로 지우면 링크를 따라 공용 작업본의 node_modules까지 지울 수 있다(모든 세션의 빌드가 멈춤). `cmd /c rmdir`은 하네스가 막는다.
 - 원인: 빌드·시험용으로 `node_modules`를 공용 작업본에 잇는 junction을 만들어 둔다.
 - 고침: PowerShell에서 `(Get-Item <p> -Force).LinkType -eq 'Junction'`을 보고 `[System.IO.Directory]::Delete(<p>, $false)`로 링크만 지운다. 그다음 남은 폴더를 지운다.
-- 다시 확인: 지우기 전 `Get-ChildItem -Recurse -Force | Where-Object LinkType`이 비었고, 끝난 뒤 공용 쪽에서 esbuild가 돈다(`node tools/build-world-life.mjs --check`).
+- 다시 확인: 지우기 전 `Get-ChildItem -Recurse -Force | Where-Object LinkType`이 비었고, 끝난 뒤 공용 쪽에서 esbuild가 돈다(`node tools/build-world-life.mjs --check`). 10-20 밤 `Documents/SYNK-worktrees`의 작업트리 둘에도 공용 `node_modules`·`desktop/node_modules`·`experiences/synk-account/node_modules`로 가는 junction이 셋씩 있었다(`git status --ignored`에는 `!! node_modules/`로만 보인다). 링크만 끊고 나니 `git worktree remove`(--force 없이)가 폴더까지 지웠다. 공용 쪽 항목 수(9·233·7)와 `require.resolve('esbuild')`는 그대로였다.
 
 ### 사본(거울)의 junction 폴더를 타고 시험·패치가 공용 작업본에 쓴다
 - 증상: 격리 사본에서 고친 시험 맞춤 패치가 공용 `verify-*.mjs`에 들어갔고, 출력 위치를 박아 둔 시험이 GPT 증거 폴더 14개를 덮었다(10-13).
@@ -381,6 +381,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 세션·워크트리 정리가 추적되지 않는 파일을 지운다. 사용자가 앱에서 하는 일이라 작업 세션은 미리 알 수 없다.
 - 고침: 워크트리에서 오래 일하면 결과물을 커밋하거나 메인 `.tmp/`로 옮겨 둔다. 정리를 권하기 전에 워크트리마다 `git -C <워크트리> status`의 `??`를 보고 알린다.
 - 다시 확인: 정리 후보 워크트리의 `git status --porcelain | grep '^??'`가 비었다.
+
+### 보관한 세션의 깨끗한 앱 작업트리는 다음 새 세션이 다시 쓸 자리라, 손으로 지워도 공간이 늘지 않는다 (2026-10-20)
+- 증상: 10-20 밤 공간 정리 후보로 「세션 보관됨·깨끗함」인 `.claude/worktrees/serene-matsumoto-6be923`을 골랐다. 그런데 지우기 직전에 보니 HEAD가 보관 직후(21:38) 분리 상태로 바뀌어 있었고, 앱 저장 공간 보고(`get_storage_usage`)는 이것을 「새 세션용으로 남겨 둔 작업트리 1개(4.1GB)」로 셌다.
+- 원인: 앱은 깨끗한 작업트리를 보관된 세션에서 떼어 재사용 대기로 두고, 다음 새 세션에 다시 쓰거나 스스로 치운다. 미커밋 변경이 있는 것만 「보관 뒤에도 남긴 작업트리」(kept_after_archive)로 따로 센다.
+- 고침: 재사용 대기 작업트리는 지우지 않는다. 지우면 다음 새 세션이 4.1GB를 새로 만들 뿐이다. 공간을 실제로 늘리는 것은 앱 밖에서 만든 작업트리(`Documents/SYNK-worktrees` 등), 일이 끝난 세션 보관, 미커밋 변경을 살린 뒤의 `discard_kept_worktree`다.
+- 다시 확인: 정리 후보를 고르기 전에 `get_storage_usage`의 `kept_ready_count`·`kept_after_archive`와 그 작업트리의 `.git/worktrees/<이름>/HEAD`(분리 상태인지)를 본다.
 
 ### 공간 정리가 추적 파일을 지운다
 - 증상: PC 공간 정리 뒤 시험이 「파일 없음」으로 깨진다. 10-03 정리가 추적 파일 185개(142MB)를, 10-10 정리가 메인 추적 파일 217개 + 워크트리 10곳 약 8,900개를 지웠다(같은 SHA가 Drive에 있으면 로컬 삭제). 10-14에는 폴더 통째 삭제가 안쪽에 둔 git 클론까지 지웠다.
