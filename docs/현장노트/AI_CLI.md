@@ -412,3 +412,9 @@
 - 원인: 데스크톱 앱은 이 로그인 파일을 쓰지 않는다. 앱 안에 따로 로그인해 두고, 세션의 API 요청을 앱 쪽 통로(`ANTHROPIC_BASE_URL`)로 보낸다. 세션에는 `CLAUDE_CODE_USER_EMAIL`·`CLAUDE_CODE_ACCOUNT_UUID`만 오고 `CLAUDE_CODE_OAUTH_TOKEN`은 없다. 홈 `~/.claude.json`의 oauthAccount는 앱 계정을 따라가고, `~/.claude/.credentials.json`은 터미널 `claude` 로그인이라 둘이 다른 계정일 수 있다(10-20에는 서로 다른 Max 계정이었다).
 - 고침: 로그인 파일의 계정은 설정 파일이 아니라 토큰으로 묻는다(`/api/oauth/profile`, `anthropic-beta: oauth-2025-04-20`, 토큰은 출력하지 않는다). 앱 계정의 한도는 세션 안에서 `mcp__ccd_session_mgmt__get_usage`로 보고, 밖에서 읽으려면 그 계정으로 `CLAUDE_CONFIG_DIR=<폴더> claude auth login`을 한 번 해 둔 폴더를 쓴다. 계정판은 기본 로그인을 profile로 확인해 읽고, 앱 계정을 어느 폴더도 못 읽으면 `claude-app` 「못 읽음」 줄을 띄운다.
 - 다시 확인: `node ~/.ai-accounts/read-usage.mjs --only=claude`의 `folder: "claude"` 줄 이메일이 터미널 `claude auth status`의 계정과 같고, 세션의 `echo $CLAUDE_CODE_USER_EMAIL`과는 다를 수 있다.
+
+### 아스트라 검수를 `--ephemeral`로 돌리면 하위 협업 스레드 띄우기가 한 번 실패한다 — 본 답은 끝난다 (2026-10-20 Claude)
+- 증상: 10-20 WORLD TOPIK 검수 3차를 `node tools/codex계정.js exec -m gpt-6-astra -s read-only --skip-git-repo-check --ephemeral -C <빈 폴더> -o <답 파일> -`와 표준입력 묶음(152,701바이트)으로 돌렸다. 시작 14초 뒤 stderr에 `collab spawn failed … no rollout found for thread id`가 한 번 찍혔다.
+- 원인: 아스트라가 하위 협업 스레드를 띄우려 했는데, `--ephemeral`이라 부모 스레드 기록(rollout)이 없어 실패한 것으로 보인다(추정).
+- 고침: 그대로 두었다. 본 답은 계속 진행돼 10분 30초 만에 종료 코드 0, 답 22,999바이트, 마지막 줄에 묶음 끝 표식이 있었다. 하위 협업이 꼭 필요한 검수면 `--ephemeral`을 빼고 돌린다(시험 안 함).
+- 다시 확인: `-o` 답 파일의 마지막 줄에 묶음 끝 표식이 있는지 본다(`grep -c <표식> <답 파일>`). 표식이 없으면 「지적 0건」으로 세지 않는다. 기록은 로컬 `.tmp/topik-review-20261020/astra/`(run.log·stderr.log·astra_out.md).
