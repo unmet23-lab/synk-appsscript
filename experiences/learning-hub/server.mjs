@@ -18,10 +18,13 @@ consult.set('/consult/core/personalization.js', '../atlas/personalization.js');
 consult.set('/consult/core/interpretation.js', '../atlas/interpretation.js');
 consult.set('/consult/core/temper-outcomes.js', '../atlas/temper-outcomes.js');
 consult.set('/synk-account/src/core.mjs', 'synk-account/src/core.mjs');
+// 교사 화면 「과제 첨삭」(teacher-world/homework-review.mjs)이 계정 모드에서 읽는 TOPIK 4급 과제 자료(WORLD와 같은 파일)
+consult.set('/teacher-world/topik4-homework.json', 'synk-world-app/topik4-homework.json');
+consult.set('/teacher-world/topik4-homework-key.json', 'synk-world-app/topik4-homework-key.json');
 consult.set('/synk-town/engine/loom-motion.js','../tools/lib/loom-motion.js');
 consult.set('/synk-town/engine/loom-life.js','../tools/lib/loom-life.js');
 const classroomPublic={
-  'teacher-world':new Set(['index.html','style.css','app.mjs','personalization-ui.mjs','personalization.css','workspace-overview.mjs','workspace-overview.css','sharing-fence.mjs']),
+  'teacher-world':new Set(['index.html','style.css','app.mjs','personalization-ui.mjs','personalization.css','workspace-overview.mjs','workspace-overview.css','sharing-fence.mjs','homework-review.mjs','homework-review.css']),
   'synk-town':new Set(['linked.html','app.mjs','style.css','linked-client.mjs','understanding.mjs','understanding-ui.mjs'])
 };
 const accountPublic = new Set(['index.html', 'client.html', 'teacher.html', 'teacher.css', 'preview.html', 'platform.html', 'platform.css', 'config.json', 'style.css',

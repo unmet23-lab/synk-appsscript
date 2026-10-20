@@ -19,10 +19,10 @@ export const REVIEW_TEXT=Object.freeze({
  planSaved:'계획을 저장했어요. 학생 WORLD의 「이번 주 과제」가 이 일정으로 열려요.',
  pick:'목록에서 학생을 고르면 낸 글과 첨삭 칸이 열려요.',noRoster:'이 반의 학생 명부가 비어 있어요.',
  notSubmitted:'이 주 쓰기를 아직 내지 않았어요. 늦게 내도 받아요.',unlinked:'학생 계정이 아직 반에 연결되지 않았어요.',
- select:'글귀를 끌어 고르면(휴대폰은 길게 눌러) 기호를 붙여요. 한 문단 안에서 골라요.',
+ select:'글귀를 끌어 고르면(휴대폰은 길게 눌러) 기호를 붙여요. 학생 화면에도 이 자리에 표시돼요.',
  typed:'글귀를 직접 적어 붙이기',typedQuote:'글에 있는 글귀 그대로',typedCode:'기호',typedAdd:'붙이기',typedMissing:'이 글에서 그 글귀를 찾지 못했어요. 글에 있는 그대로 적어 주세요.',
- span:'한 문단 안에서 골라 주세요. 학생 화면도 문단마다 기호를 놓아요.',overlap:'이미 표시한 글귀와 겹쳐요. 겹치지 않게 골라 주세요.',
- earlier:'같은 글귀가 이 문단 앞쪽에도 있어 학생 화면에는 앞의 자리에 표시돼요. 앞뒤 낱말을 더 넣어 고르면 정확해요.',
+ span:'한 칸의 글 안에서 골라 주세요.',unplaceable:'글자 가운데서 끊긴 글귀는 표시할 수 없어요. 조금 넓게 골라 주세요.',overlap:'이미 표시한 글귀와 겹쳐요. 겹치지 않게 골라 주세요.',
+ earlier:'같은 글귀가 글 앞쪽에도 있어 학생 화면에는 앞의 자리에 표시돼요. 앞뒤 낱말을 더 넣어 고르면 정확해요.',
  tooManyCorrections:'한 편에 고칠 곳은 다섯 곳까지예요(첨삭 기준 §2). 같은 실수는 처음 한 곳만 표시하고 덧붙임에 「같은 실수 세 번」처럼 적어요.',
  tooManyMarks:'한 문항에 표시는 열두 곳까지예요.',cancel:'취소',remove:'빼기',note:'덧붙임(선택)',
  verdictReason:'한 줄 이유',model:'예시답',key:'예시답 · 채점 기준',problem:'문제 보기',
@@ -31,7 +31,8 @@ export const REVIEW_TEXT=Object.freeze({
  savedDraft:'임시 저장했어요. 학생에게는 아직 안 보여요.',returned:'학생에게 돌려줬어요. 학생은 WORLD 「이번 주 과제」에서 첨삭을 봐요.',returnedAgain:'고친 첨삭을 돌려줬어요. 학생 화면에 바로 보여요.',
  noParts:'첨삭한 문항이 없어요. 판정이나 기호, 한마디를 먼저 써 주세요.',allReturned:'이 주에 첨삭할 글을 모두 돌려줬어요.',
  resubmitted:'학생이 글을 고쳐 다시 냈어요. 새 글에 맞춰 판정과 기호를 확인한 뒤 저장해 주세요.',
- changedElsewhere:'다른 곳에서 이 첨삭이 먼저 저장됐어요. 지금 화면의 첨삭으로 저장하면 그 내용을 덮어써요.',useServer:'새로 불러온 첨삭으로 바꾸기',
+ changedElsewhere:'다른 곳에서 이 첨삭이 먼저 저장됐어요. 지금 화면의 첨삭으로 저장하면 그 내용을 덮어써요.',reloadedOther:'다른 곳에서 바뀐 첨삭을 새로 불러왔어요. 확인한 뒤 다시 저장하거나 돌려주세요.',
+ unknownResult:'저장 결과를 확인하지 못했어요. 새로고침해서 저장됐는지 확인해 주세요.',useServer:'새로 불러온 첨삭으로 바꾸기',
  lostSubmission:'열어 둔 글을 다시 찾지 못했어요. 명부나 학생 계정이 바뀌었을 수 있어요.',
  leave:'저장하지 않은 첨삭이 있어요. 닫고 다른 글을 볼까요?',
  privacy:'학생 글과 첨삭은 이 반 교사와 그 학생만 봐요. 점수나 급수로 바꾸지 않아요.',
@@ -69,24 +70,50 @@ export function homeworkWeek({startsOn,weeks=8,now=Date.now(),schedule}){
 export function homeworkDate(ms,{time=true}={}){
  return new Date(ms).toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'long',day:'numeric',weekday:'short',...(time?{hour:'numeric',minute:'2-digit'}:{})});
 }
-export const paragraphsOf=text=>String(text??'').split(/\n{2,}/);
+// 기호 자리: 칸 글 전체에서 처음 나오는 겹치지 않는 자리 한 곳(같은 글귀가 여러 문단에 있어도 한 곳). 줄끝은 LF로 맞추고 글귀 앞뒤 줄바꿈은 떼고 찾으며,
+// 글자(자소 묶음) 가운데서 끊기는 자리는 건너뛴다. 못 찾은 표시는 학생 화면에서 목록에만 남는다.
+export const homeworkPlain=value=>String(value??'').replace(/\r\n?/g,'\n').normalize('NFC');
+function homeworkEdges(source){
+ if(typeof Intl?.Segmenter!=='function')return null;
+ const edges=new Set([source.length]);for(const {index} of new Intl.Segmenter('ko',{granularity:'grapheme'}).segment(source))edges.add(index);return edges;
+}
 export function markSegments(text,marks){
- const source=String(text??'').normalize('NFC'),ranges=[];
+ const source=homeworkPlain(text),edges=homeworkEdges(source),ranges=[];
  marks.forEach((mark,index)=>{
-  const quote=String(mark.quote??'').normalize('NFC');if(!quote)return;
+  const quote=homeworkPlain(mark.quote).replace(/^\n+|\n+$/g,'');if(!quote)return;
   for(let from=0;;){const at=source.indexOf(quote,from);if(at<0)return;const end=at+quote.length;
-   if(ranges.some(r=>at<r.end&&end>r.start)){from=at+1;continue;}ranges.push({start:at,end,index});return;}
+   if(ranges.some(r=>at<r.end&&end>r.start)||edges&&!(edges.has(at)&&edges.has(end))){from=at+1;continue;}ranges.push({start:at,end,index});return;}
  });
  ranges.sort((a,b)=>a.start-b.start);const out=[];let pos=0;
- for(const r of ranges){if(r.start>pos)out.push({text:source.slice(pos,r.start)});out.push({text:source.slice(r.start,r.end),mark:r.index,start:r.start});pos=r.end;}
+ for(const r of ranges){if(r.start>pos)out.push({text:source.slice(pos,r.start)});out.push({text:source.slice(r.start,r.end),mark:r.index});pos=r.end;}
  if(pos<source.length)out.push({text:source.slice(pos)});
  return out;
 }
-// 표시마다 학생 글 위에 몇 곳에 놓이는지(문단마다 따로 놓으므로 둘 이상일 수 있고, 못 찾으면 0 — 학생 화면에서는 목록에만).
+// 학생 화면 markParagraphs와 같은 조각(빈 줄에서 문단을 나누고, 문단을 넘는 표시는 마지막 조각 end에만 기호)에
+// 칸 글(LF·NFC) 안의 시작 자리 start를 붙인다. 교사가 끌어 고른 자리를 칸 글의 자리로 되돌리는 데 쓴다.
+export function essayPieces(text,marks){
+ const paragraphs=[[]];let pos=0;
+ for(const seg of markSegments(text,marks)){
+  const parts=seg.text.split(/(\n{2,})/);let at=pos;
+  parts.forEach((part,k)=>{
+   if(k%2){paragraphs.push([]);at+=part.length;return;}
+   const end=k===parts.length-1;
+   if(seg.mark===undefined){if(part)paragraphs.at(-1).push({text:part,start:at});}
+   else if(part||end)paragraphs.at(-1).push({text:part,start:at,mark:seg.mark,...(end?{end:true}:{})});
+   at+=part.length;
+  });
+  pos+=seg.text.length;
+ }
+ return paragraphs;
+}
+// 표시마다 학생 글 위에 놓이는지(1) 못 찾아 목록에만 남는지(0).
 export function markPlacements(text,marks){
- const count=marks.map(()=>0);
- for(const paragraph of paragraphsOf(text))for(const seg of markSegments(paragraph,marks))if(seg.mark!==undefined)count[seg.mark]++;
- return count;
+ const placed=new Set(markSegments(text,marks).filter(seg=>seg.mark!==undefined).map(seg=>seg.mark));
+ return marks.map((_,i)=>placed.has(i)?1:0);
+}
+// 놓인 표시의 칸 글 안 자리 [start,end)
+function placedRanges(text,marks){
+ const out=[];let pos=0;for(const seg of markSegments(text,marks)){if(seg.mark!==undefined)out.push({mark:seg.mark,start:pos,end:pos+seg.text.length});pos+=seg.text.length;}return out;
 }
 
 // ── 낸 것 읽기 ──
@@ -177,13 +204,13 @@ export function homeworkErrorCode(error){
  if(code==='TEACHING_NOT_TEACHER')return 'FORBIDDEN';
  return code||'UNKNOWN';
 }
-const ERROR_TEXT=Object.freeze({FORBIDDEN:'이 반의 교사 권한을 확인하지 못했어요.',INVALID_FEEDBACK:'서버가 이 첨삭의 꼴을 받지 않았어요. 새로고침한 뒤 다시 저장해 주세요.',INVALID_PLAN:'계획을 확인해 주세요. 시작일과 주 수(1~12주)가 필요해요.',
+const ERROR_TEXT=Object.freeze({FORBIDDEN:'이 반의 교사 권한을 확인하지 못했어요.',INVALID_FEEDBACK:'서버가 이 첨삭의 꼴을 받지 않았어요. 새로고침한 뒤 다시 저장해 주세요.',INVALID_PLAN:'계획을 확인해 주세요. 시작일과 주 수(1~8주)가 필요해요.',
  NETWORK_ERROR:'연결이 끊겼어요. 쓴 첨삭은 이 화면에 그대로 있어요. 잠시 뒤 다시 저장해 주세요.',RATE_LIMITED:'요청이 많아요. 잠시 뒤 다시 시도해 주세요.',FEEDBACK_RETURNED:'이미 학생에게 돌려준 첨삭이에요. 고친 내용은 「고친 첨삭 다시 돌려주기」로 저장돼요.'});
 const errorText=(code,error)=>ERROR_TEXT[code]||(error?.message&&!/^[A-Z_]+$/.test(error.message)?error.message:'저장하지 못했어요. 잠시 뒤 다시 시도해 주세요.');
 const validData=(data,classId)=>!!data&&data.mode==='account-linked'&&(!classId||data.classId===classId)&&Array.isArray(data.learners)&&Array.isArray(data.submissions)
  &&(data.plan===null||data.plan===undefined||/^\d{4}-\d{2}-\d{2}$/.test(data.plan.startsOn||'')&&Number.isInteger(data.plan.weeks)&&Number.isSafeInteger(data.plan.revision));
 const startsOnValid=value=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(value||''))return false;const [y,m,d]=value.split('-').map(Number),date=new Date(Date.UTC(y,m-1,d));return date.getUTCFullYear()===y&&date.getUTCMonth()===m-1&&date.getUTCDate()===d&&y>=2026&&y<=2100;};
-const fetchJson=async name=>{const response=await fetch(new URL(name,import.meta.url),{cache:'no-cache'});if(!response.ok)throw Error('CONTENT_UNAVAILABLE');return response.json();};
+const fetchJson=async name=>{const response=await fetch(new URL(name,import.meta.url),{cache:'no-cache'});if(!response.ok)throw Object.assign(Error('CONTENT_UNAVAILABLE'),{code:'CONTENT_UNAVAILABLE'});return response.json();};
 
 export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./topik4-homework.json'),loadKey=()=>fetchJson('./topik4-homework-key.json'),now=Date.now,confirmLeave=text=>root.ownerDocument.defaultView?.confirm?.(text)!==false,onCount=()=>{}}){
  const doc=root.ownerDocument;
@@ -194,7 +221,8 @@ export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./t
  const message=(tone,text,className='hr-message')=>{const el=node('p',className);el.append(led(tone),doc.createTextNode(text));return el;};
  const button=(label,className,key,onClick)=>{const el=node('button',className,label);el.type='button';el.dataset.hrKey=key;el.addEventListener('click',onClick);return el;};
  const runs=(segments,el)=>{for(const s_ of segments||[])el.append(typeof s_==='string'?doc.createTextNode(s_):s_.u!==undefined?node('u','',s_.u):node('strong','',s_.b));return el;};
- const clock=()=>now();
+ // 주차·마감은 서버 답의 serverTime으로 고친 시계로 본다(보낸 때와 받은 때의 가운데, 학생 화면과 같다). 교사 기기 시계가 틀려도 이번 주가 맞게.
+ const clock=()=>now()+(s.skew||0);
  const schedule=()=>s.content?.schedule||{dueWeekday:3,dueTime:'23:00'};
  const weekContent=week=>s.content?.weeks?.[week-1]||null;
  const rows=()=>weekRows(s.data,s.week,s.content,s.key);
@@ -225,17 +253,24 @@ export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./t
   const content=await loadContent();if(content?.schema!=='synk.topik4-homework.v1'||!Array.isArray(content.weeks))throw Object.assign(Error('CONTENT_UNAVAILABLE'),{code:'CONTENT_UNAVAILABLE'});
   s.content=content;
   // 정답·예시답은 공개 자료(WORLD도 읽는다)라 따로, 판이 같을 때만 쓴다. 없어도 첨삭은 쓸 수 있다.
-  Promise.resolve().then(loadKey).then(key=>{if(!s.stopped&&key?.version===s.content.version){s.key=key;paint();}},()=>{});
+  needKey();
+ }
+ function needKey(){
+  if(s.key||s.keyLoading||!s.content)return;s.keyLoading=true;
+  Promise.resolve().then(loadKey).then(key=>{if(!s.stopped&&key?.version===s.content.version){s.key=key;paint();}},()=>{}).finally(()=>{s.keyLoading=false;});
  }
  async function load({quiet=false}={}){
   const gen=++s.generation,classId=s.classId;if(!classId)return;
   if(!s.data)s.phase='loading';else if(!quiet)s.notice={tone:'idle',text:T.refreshing};
   paint();
   try{
-   const [data]=await Promise.all([request('/api/teacher/homework'),ensureContent()]);
+   const sent=now(),[data]=await Promise.all([request('/api/teacher/homework'),ensureContent()]),server=Date.parse(data?.serverTime);
    if(s.stopped||gen!==s.generation||classId!==s.classId)return;
+   if(Number.isFinite(server))s.skew=server-(sent+now())/2;
    if(!validData(data,classId))throw Object.assign(Error('INVALID_RESPONSE'),{code:'INVALID_RESPONSE'});
-   accept(data);s.phase='ready';if(!quiet){s.notice=null;s.planNotice=null;}
+   // 「새로 불러오는 중」은 지우고 받는다 — 받는 동안(reconcile) 생긴 안내(글을 다시 찾지 못했어요 등)는 남긴다.
+   if(!quiet){s.notice=null;s.planNotice=null;}else if(s.notice?.text===T.refreshError)s.notice=null;
+   accept(data);s.phase='ready';needKey();
   }catch(error){
    if(s.stopped||gen!==s.generation||classId!==s.classId)return;
    const code=homeworkErrorCode(error);
@@ -251,7 +286,8 @@ export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./t
   s.data=data;s.loadedAt=Date.parse(data.serverTime)||clock();
   const plan=data.plan;
   if(plan){
-   if(!s.week||s.week>plan.weeks){const phase=homeworkWeek({startsOn:plan.startsOn,weeks:plan.weeks,now:clock(),schedule:schedule()});s.week=phase.week||1;}
+   const last=Math.min(plan.weeks,s.content?.weeks?.length||plan.weeks);
+   if(!s.week||s.week>last){const phase=homeworkWeek({startsOn:plan.startsOn,weeks:plan.weeks,now:clock(),schedule:schedule()});s.week=Math.min(phase.week||1,last);}
    if(!s.learnerId||!data.learners.some(l=>l.learnerId===s.learnerId))s.learnerId=rows().find(r=>needsFeedback(r.status))?.learnerId||null;
   }else{s.week=null;s.learnerId=null;s.editor=null;}
   reconcile();
@@ -268,7 +304,9 @@ export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./t
   if(revision!==e.feedbackRevision){
    // 교사 경로에는 멱등키가 없다: 응답을 잃은 저장을 다시 보내면 409로 돌아오지만 서버에는 이미 같은 첨삭이 있다 — 그때는 겹침이 아니다.
    const server=JSON.stringify(buildParts(draftFrom(sub.feedback),writing,sub.answers)),same=JSON.stringify(buildParts(e.draft,writing,sub.answers))===server;
-   if(wasDirty&&!same){notes.push(T.changedElsewhere);offer=true;}else if(!wasDirty)e.draft=draftFrom(sub.feedback);
+   if(wasDirty&&!same){notes.push(T.changedElsewhere);offer=true;}
+   // 고친 것이 없으면 새로 불러온 첨삭으로 바꾸되, 다른 곳에서 내용이 바뀌었으면 말없이 바꾸지 않고 알린다(확인한 뒤 돌려주게).
+   else if(!wasDirty){if(server!==e.saved)notes.push(T.reloadedOther);e.draft=draftFrom(sub.feedback);}
    e.feedbackRevision=revision;e.saved=server;
   }
   e.returnedAt=sub.feedback?.returnedAt||null;e.updatedAt=sub.feedback?.updatedAt||null;
@@ -286,26 +324,29 @@ export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./t
  async function savePlan(form){
   if(s.busy)return;const startsOn=form.startsOn,weeks=Number(form.weeks);
   if(!startsOnValid(startsOn)){s.planNotice={tone:'alert',text:T.planInvalid};paint();return;}
+  // 계획을 바꾸면 주가 옮겨질 수 있다: 저장하지 않은 첨삭이 있으면 먼저 묻는다.
+  if((!s.data.plan||s.week>weeks)&&!leaveOk())return;
   s.busy='plan';s.planNotice=null;paint();const classId=s.classId;
   try{
    const data=await request('/api/teacher/homework',{action:'plan',course:'topik4-online',startsOn,weeks,revision:s.data.plan?.revision||0});
    if(s.stopped||classId!==s.classId)return;if(!validData(data,classId))throw Object.assign(Error('INVALID_RESPONSE'),{code:'INVALID_RESPONSE'});
-   s.generation++;s.week=null;accept(data);s.planOpen=false;s.planNotice={tone:'ok',text:T.planSaved};
+   // 처음 계획이면 이번 주로, 바꾼 계획이면 보던 주를 그대로(새 주 수 밖이면 이번 주로).
+   s.generation++;if(!s.data.plan||s.week>weeks)s.week=null;accept(data);s.planOpen=false;s.planNotice={tone:'ok',text:T.planSaved};
   }catch(error){
    if(s.stopped||classId!==s.classId)return;const code=homeworkErrorCode(error);
-   if(code==='REVISION_CONFLICT'){s.busy=null;s.planOpen=false;await load({quiet:true});s.planNotice={tone:'check',text:T.planConflict};}
+   if(code==='REVISION_CONFLICT'){s.busy='reload';s.planOpen=false;await load({quiet:true});s.planNotice={tone:'check',text:T.planConflict};}
    else s.planNotice={tone:'alert',text:errorText(code,error)};
   }finally{s.busy=null;paint();}
  }
- async function saveFeedback(returned,{force=false}={}){
+ async function saveFeedback(returned,{force=false,retried=false}={}){
   const e=s.editor,row=currentRow(),sub=row?.writing;if(!e||!sub||s.busy||sub.submissionId!==e.submissionId)return;
   const writing=weekContent(e.week).writing,parts=buildParts(e.draft,writing,sub.answers),again=!!e.returnedAt;
   if(returned&&!Object.keys(parts).length){e.notice={tone:'check',text:T.noParts};paint();return;}
   if(returned&&!force&&reviewChecklist(e.draft,writing,sub.answers,s.content.feedback.comment).length){e.confirm=true;paint();root.querySelector('[data-hr-key="return:anyway"]')?.focus();return;}
-  const body={action:'feedback',submissionId:sub.submissionId,submissionRevision:e.submissionRevision,revision:e.feedbackRevision,parts,returned};
+  const body={action:'feedback',submissionId:sub.submissionId,submissionRevision:e.submissionRevision,revision:e.feedbackRevision,parts,returned},sent=JSON.stringify(parts);
   const size=sendSize(s.classId,body);
   if(size.chars>LIMITS.sendChars||size.bytes>LIMITS.sendBytes){e.notice={tone:'alert',text:`첨삭이 한 번에 보낼 수 있는 길이를 넘었어요(${size.chars.toLocaleString('ko-KR')}자 / ${LIMITS.sendChars.toLocaleString('ko-KR')}자). 덧붙임이나 한마디를 조금 줄여 주세요.`};paint();return;}
-  s.busy=returned?'return':'save';e.confirm=false;e.notice=null;paint();const classId=s.classId;
+  s.busy=returned?'return':'save';e.confirm=false;e.notice=null;paint();const classId=s.classId;let retry=false;
   try{
    const data=await request('/api/teacher/homework',body);
    if(s.stopped||classId!==s.classId)return;if(!validData(data,classId))throw Object.assign(Error('INVALID_RESPONSE'),{code:'INVALID_RESPONSE'});
@@ -317,10 +358,19 @@ export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./t
   }catch(error){
    if(s.stopped||classId!==s.classId)return;const code=homeworkErrorCode(error);
    // 첨삭은 지금 명부 계정이 낸 글에만 쓴다(명부 계정이 바뀐 옛 글은 403): 다시 읽어 그 글이 빠졌으면 「글을 찾지 못했어요」로 알린다.
-   if(code==='FORBIDDEN'){s.busy=null;await load({quiet:true});if(s.editor?.submissionId===e.submissionId)s.editor.notice={tone:'alert',text:ERROR_TEXT.FORBIDDEN};}
-   else if(code==='REVISION_CONFLICT'||code==='FEEDBACK_RETURNED'){s.busy=null;await load({quiet:true});if(s.editor&&code==='FEEDBACK_RETURNED')s.editor.notice={tone:'check',text:ERROR_TEXT.FEEDBACK_RETURNED,top:true};if(s.editor?.notice?.top)s.revealNotice=true;}
-   else if(!['SESSION_CHANGED','ACCOUNT_CHANGED'].includes(code))e.notice={tone:'alert',text:errorText(code,error)};
+   // 다시 읽는 동안에도 단추는 닫아 둔다(s.busy).
+   if(code==='FORBIDDEN'){s.busy='reload';await load({quiet:true});if(s.editor?.submissionId===e.submissionId)s.editor.notice={tone:'alert',text:ERROR_TEXT.FORBIDDEN};}
+   else if(code==='REVISION_CONFLICT'||code==='FEEDBACK_RETURNED'){
+    s.busy='reload';await load({quiet:true});const now_=s.editor;
+    if(now_&&code==='FEEDBACK_RETURNED')now_.notice={tone:'check',text:ERROR_TEXT.FEEDBACK_RETURNED,top:true};
+    // 겹침이 내 앞선 저장(응답을 잃은 같은 첨삭)뿐이었고 돌려주려던 것이면, 새 판으로 한 번 더 돌려준다(말없이 임시 저장에 머물지 않게).
+    else if(returned&&!retried&&now_?.submissionId===e.submissionId&&!now_.notice?.top&&!now_.returnedAt&&!dirty()&&now_.saved===sent)retry=true;
+    if(s.editor?.notice?.top)s.revealNotice=true;
+   }
+   else if(['SESSION_CHANGED','ACCOUNT_CHANGED'].includes(code))e.notice={tone:'check',text:T.unknownResult};
+   else e.notice={tone:'alert',text:errorText(code,error)};
   }finally{s.busy=null;paint();}
+  if(retry)return saveFeedback(true,{force:true,retried:true});
  }
  function nextRow(){
   const list=rows(),at=list.findIndex(r=>r.learnerId===s.learnerId);
@@ -339,7 +389,10 @@ export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./t
  function paint(){
   if(s.stopped)return;
   const active=doc.activeElement,focusKey=active&&root.contains(active)?active.dataset?.hrKey:null;
+  // 펼쳐 둔 칸(문제 보기·예시답·직접 적기·볼 것)은 다시 그려도 펼친 채로
+  const open=new Set([...root.querySelectorAll('details[open]>summary[data-hr-key]')].map(n=>n.dataset.hrKey));
   root.replaceChildren(...view());root.dataset.state=s.phase;
+  for(const summary of root.querySelectorAll('details>summary[data-hr-key]'))if(open.has(summary.dataset.hrKey))summary.parentElement.open=true;
   if(s.revealNotice){s.revealNotice=false;root.querySelector('.hr-editor-notice')?.scrollIntoView({block:'center'});}
   if(focusKey)root.querySelector(`[data-hr-key="${focusKey.replace(/["\\]/g,'\\$&')}"]`)?.focus({preventScroll:true});
  }
@@ -398,7 +451,7 @@ export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./t
  function weekNav(){
   const plan=s.data.plan,nav=node('nav','hr-weeks'),phase=homeworkWeek({startsOn:plan.startsOn,weeks:plan.weeks,now:clock(),schedule:schedule()});
   nav.setAttribute('aria-label','주차 고르기');
-  for(let w=1;w<=plan.weeks;w++){
+  for(let w=1;w<=Math.min(plan.weeks,s.content.weeks.length);w++){
    const win=homeworkWindow(plan.startsOn,w,schedule()),open=clock()>=win.start,pending=pendingCount(s.data,w,s.content),current=phase.phase==='active'&&phase.week===w;
    const b=button('',`hr-week${w===s.week?' is-selected':''}`,`week:${w}`,()=>chooseWeek(w));
    b.append(node('span','hr-week-name',`${w}주`));if(pending)b.append(node('span','hr-week-badge',String(pending)));
@@ -537,12 +590,14 @@ export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./t
  function textField(part,field,sub,d){
   const text=String(sub.answers[field.id]??''),n=homeworkLength(text),marks=d.marks.filter(m=>m.field===field.id),box=node('div','hr-field hr-field-text');box.dataset.field=field.id;
   const head=node('div','hr-field-head');head.append(node('p','hr-field-label',field.label),chip(n>=field.min&&n<=field.max?'ok':'check',`${n}자 · ${field.min}~${field.max}자`));box.append(head);
-  const essay=node('div','hr-essay');essay.dataset.field=field.id;essay.setAttribute('aria-label',`${field.label} · 학생 글`);
-  paragraphsOf(text).forEach((paragraph,index)=>{
-   const p=node('p','hr-para');p.dataset.field=field.id;p.dataset.part=part.key;p.dataset.paragraph=String(index);
-   for(const seg of markSegments(paragraph,marks)){
-    if(seg.mark===undefined){p.append(doc.createTextNode(seg.text));continue;}
-    const m=node('mark','',seg.text);m.dataset.code=marks[seg.mark].code;m.title=`〔${marks[seg.mark].code}〕 ${s.content.feedback.codes[marks[seg.mark].code]||''}`;p.append(m);
+  const essay=node('div','hr-essay');essay.dataset.field=field.id;essay.tabIndex=-1;essay.setAttribute('aria-label',`${field.label} · 학생 글`);
+  essay.dataset.part=part.key;
+  essayPieces(text,marks).forEach(paragraph=>{
+   const p=node('p','hr-para');
+   for(const piece of paragraph){
+    const el=node(piece.mark===undefined?'span':'mark','hr-piece',piece.text);el.dataset.start=String(piece.start);
+    if(piece.mark!==undefined){const code=marks[piece.mark].code;el.dataset.code=code;el.title=`〔${code}〕 ${s.content.feedback.codes[code]||''}`;if(!piece.end)el.dataset.cont='';}
+    p.append(el);
    }
    essay.append(p);
   });
@@ -554,8 +609,7 @@ export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./t
     const top=node('div','hr-mark-top');top.append(node('span','hr-code',`〔${mark.code}〕`),node('span','hr-mark-name',s.content.feedback.codes[mark.code]||''),node('q','hr-quote',mark.quote));
     top.append(button(T.remove,'hr-button hr-mark-remove',`mark:remove:${part.key}:${index}`,()=>{d.marks.splice(index,1);paint();}));
     li.append(top);
-    if(placed[i]===0)li.append(message('check','글에서 자리를 찾지 못해 학생에게는 목록에만 보여요.','hr-message hr-mark-hint'));
-    else if(placed[i]>1)li.append(message('info',`같은 글귀가 ${placed[i]}곳에 함께 표시돼요. 앞뒤 낱말을 더 넣어 고르면 한 곳에만 보여요.`,'hr-message hr-mark-hint'));
+    if(!placed[i])li.append(message('check','글에서 자리를 찾지 못해 학생에게는 목록에만 보여요.','hr-message hr-mark-hint'));
     const note=node('input','hr-input');note.type='text';note.maxLength=LIMITS.note;note.value=mark.note||'';note.placeholder=mark.code==='+'?'예: 숫자를 자료와 똑같이 옮겼어요.':'예: 글 전체를 「-다」로';note.dataset.hrKey=`mark:note:${part.key}:${index}`;
     note.setAttribute('aria-label',`〔${mark.code}〕 「${mark.quote}」 ${T.note}`);note.addEventListener('input',()=>{mark.note=note.value;changed();});
     const label=node('label','hr-mark-note');label.append(node('span','',T.note),note);li.append(label);
@@ -570,10 +624,10 @@ export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./t
   for(const c of CODES){const o=node('option','',`〔${c}〕 ${CODE_SHORT[c]}`);o.value=c;code.append(o);}code.value='체';code.dataset.hrKey=`typed:code:${field.id}`;code.setAttribute('aria-label',T.typedCode);
   add.type='submit';add.dataset.hrKey=`typed:add:${field.id}`;err.setAttribute('role','alert');
   form.append(quote,code,add,err);typed.append(form);
-  form.addEventListener('submit',event=>{event.preventDefault();const q=quote.value.trim().normalize('NFC');
-   const paragraph=paragraphsOf(text).findIndex(p=>p.normalize('NFC').includes(q));
-   if(!q||paragraph<0){err.textContent=T.typedMissing;return;}
-   const problem=addMark({field:field.id,part:part.key,quote:q},code.value);if(problem)err.textContent=problem;});
+  form.addEventListener('submit',event=>{event.preventDefault();const q=homeworkPlain(quote.value).trim();
+   if(!q||!homeworkPlain(text).includes(q)){err.textContent=T.typedMissing;return;}
+   if(!placedRanges(text,[...marks,{quote:q}]).some(r=>r.mark===marks.length)){err.textContent=T.overlap;return;}
+   const problem=addMark({field:field.id,part:part.key,quote:q},code.value,`typed:quote:${field.id}`);if(problem)err.textContent=problem;});
   box.append(typed);
   return box;
  }
@@ -638,27 +692,46 @@ export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./t
  // ── 글귀 고르기 → 기호 붙이기 ──
  function readSelection(){
   const sel=doc.getSelection?.();if(!sel||!sel.rangeCount||sel.isCollapsed)return null;
-  const range=sel.getRangeAt(0),para=n=>(n?.nodeType===1?n:n?.parentElement)?.closest?.('.hr-para'),a=para(range.startContainer),b=para(range.endContainer);
-  if(!a&&!b)return null;if(a&&!root.contains(a)||b&&!root.contains(b))return null;
-  if(a!==b)return {error:T.span};
-  const pre=doc.createRange();pre.selectNodeContents(a);pre.setEnd(range.startContainer,range.startOffset);
-  const raw=range.toString(),lead=raw.length-raw.trimStart().length,quote=raw.trim();if(!quote)return null;
+  const range=sel.getRangeAt(0);let a=textPoint(range.startContainer,range.startOffset),b=textPoint(range.endContainer,range.endOffset);
+  if(!a&&!b)return null;
+  // 한쪽 끝만 글 칸 안이면(문단 세 번 누르기, 글 끝을 넘겨 끌기) 다른 끝을 그 칸의 처음이나 끝으로 자른다.
+  const clamp=(essay,node,offset,end)=>{const box=doc.createRange();box.selectNodeContents(essay);let side=0;try{side=box.comparePoint(node,offset);}catch{side=end?1:-1;}
+   const length=homeworkPlain(currentRow()?.writing?.answers?.[essay.dataset.field]).length;return {essay,at:side<0?0:side>0?length:end?length:0};};
+  if(!a)a=clamp(b.essay,range.startContainer,range.startOffset,false);
+  if(!b)b=clamp(a.essay,range.endContainer,range.endOffset,true);
+  if(a.essay!==b.essay)return {error:T.span};
+  const field=a.essay.dataset.field,source=homeworkPlain(currentRow()?.writing?.answers?.[field]);
+  let start=Math.min(a.at,b.at),end=Math.max(a.at,b.at);const raw=source.slice(start,end),quote=raw.trim();if(!quote)return null;
+  start+=raw.length-raw.trimStart().length;end=start+quote.length;
   if(quote.length>LIMITS.quote)return {error:`글귀는 ${LIMITS.quote}자까지 고를 수 있어요. 조금 짧게 골라 주세요.`};
-  return {field:a.dataset.field,part:a.dataset.part,paragraph:Number(a.dataset.paragraph),start:pre.toString().length+lead,quote};
+  return {field,part:a.essay.dataset.part,start,quote};
+ }
+ function textPoint(node,offset){
+  const element=node?.nodeType===1?node:node?.parentElement,essay=element?.closest?.('.hr-essay');if(!essay||!root.contains(essay))return null;
+  if(node.nodeType===3){const piece=element.closest('[data-start]');return piece?{essay,at:Number(piece.dataset.start)+offset}:null;}
+  // 경계가 조각 요소 자체면(글 마디 하나뿐) 앞(0)이나 뒤(1)
+  if(node.matches?.('[data-start]'))return {essay,at:Number(node.dataset.start)+(offset?node.textContent.length:0)};
+  const pieceOf=child=>child.nodeType!==1?null:child.matches('[data-start]')?child:null,deep=(child,last)=>{if(child.nodeType!==1)return null;const list=[...child.querySelectorAll('[data-start]')];return pieceOf(child)||(last?list.at(-1):list[0])||null;};
+  const kids=[...node.childNodes],after=kids.slice(offset).map(child=>deep(child,false)).find(Boolean);if(after)return {essay,at:Number(after.dataset.start)};
+  const before=kids.slice(0,offset).reverse().map(child=>deep(child,true)).find(Boolean);if(before)return {essay,at:Number(before.dataset.start)+before.textContent.length};
+  return null;
  }
  // 고른 자리가 학생 화면에서도 그 자리인지(같은 문단의 앞쪽에 같은 글귀가 있으면 앞에 놓인다), 이미 놓인 표시와 겹치는지.
  function placement(sel){
   const e=s.editor,sub=currentRow()?.writing,d=e?.draft[sel.part];if(!sub||!d)return {error:T.span};
-  const paragraph=paragraphsOf(sub.answers[sel.field])[sel.paragraph]??'',marks=d.marks.filter(m=>m.field===sel.field),end=sel.start+sel.quote.length;
-  if(markSegments(paragraph,marks).some(seg=>seg.mark!==undefined&&seg.start<end&&seg.start+seg.text.length>sel.start))return {error:T.overlap};
-  const placed=markSegments(paragraph,[...marks,{quote:sel.quote}]).find(seg=>seg.mark===marks.length);
-  return {earlier:!!placed&&placed.start!==sel.start};
+  const text=sub.answers[sel.field],marks=d.marks.filter(m=>m.field===sel.field),end=sel.start+sel.quote.length;
+  if(placedRanges(text,marks).some(r=>r.start<end&&r.end>sel.start))return {error:T.overlap};
+  const placed=placedRanges(text,[...marks,{quote:sel.quote}]).find(r=>r.mark===marks.length);
+  if(!placed)return {error:T.unplaceable};
+  return {earlier:placed.start!==sel.start};
  }
- function addMark(sel,code){
+ // 붙인 뒤 초점: 직접 적기에서는 다음 글귀를 적을 칸으로, 끌어 고르기에서는 그 글 칸으로(초점이 문서 밖으로 빠지지 않게).
+ function addMark(sel,code,focusKey=null){
   const e=s.editor,d=e?.draft[sel.part];if(!d)return T.span;
   if(code!=='+'&&d.marks.filter(m=>m.code!=='+').length>=LIMITS.corrections)return T.tooManyCorrections;
   if(d.marks.length>=LIMITS.marks)return T.tooManyMarks;
-  d.marks.push({field:sel.field,quote:sel.quote,code,note:''});s.selection=null;doc.getSelection?.()?.removeAllRanges?.();paint();return null;
+  d.marks.push({field:sel.field,quote:sel.quote,code,note:''});s.selection=null;doc.getSelection?.()?.removeAllRanges?.();paint();
+  (focusKey?root.querySelector(`[data-hr-key="${focusKey}"]`):root.querySelector(`.hr-essay[data-field="${sel.field}"]`))?.focus({preventScroll:true});return null;
  }
  function markBar(){
   const bar=node('div','hr-markbar');bar.setAttribute('role','region');bar.setAttribute('aria-label','기호 붙이기');
@@ -684,20 +757,28 @@ export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./t
   if(s.stopped||!s.editor||root.hidden)return;
   const sel=readSelection();
   if(!sel){if(s.selection&&Date.now()-s.barPointer>800&&!root.querySelector('.hr-markbar')?.contains(doc.activeElement)){s.selection=null;renderBar();}return;}
-  const same=s.selection&&!s.selection.error&&!sel.error&&s.selection.field===sel.field&&s.selection.paragraph===sel.paragraph&&s.selection.start===sel.start&&s.selection.quote===sel.quote;if(same)return;
+  const same=s.selection&&!s.selection.error&&!sel.error&&s.selection.field===sel.field&&s.selection.start===sel.start&&s.selection.quote===sel.quote;if(same)return;
   if(sel.error){s.selection=sel;renderBar();return;}
   const where=placement(sel);s.selection=where.error?{error:where.error}:{...sel,earlier:where.earlier};renderBar();
  }
  doc.addEventListener('selectionchange',onSelection);
+ function switchClass(classId){s.classId=classId;s.generation++;Object.assign(s,{phase:'idle',error:null,data:null,loadedAt:null,week:null,learnerId:null,editor:null,planOpen:false,planNotice:null,notice:null,selection:null,busy:null});}
+ const stale=()=>s.phase==='ready'&&!s.busy&&!s.selection&&!dirty()&&clock()-(s.loadedAt||0)>120000;
 
  return Object.freeze({
   // 판을 보일 때마다 부른다(내 수업 화면이 다시 그려질 때도). 다른 반이면 처음부터 읽고, 같은 반이면 그대로 둔다 —
   // 쓰는 중인 칸을 다시 그리지 않게. 마지막으로 읽은 지 2분이 넘었고 저장하지 않은 고침이 없을 때만 조용히 새로 읽는다.
   show(classId){
    if(s.stopped||!classId)return;
-   if(classId!==s.classId){s.classId=classId;s.generation++;Object.assign(s,{phase:'idle',error:null,data:null,loadedAt:null,week:null,learnerId:null,editor:null,planOpen:false,planNotice:null,notice:null,selection:null,busy:null});}
+   if(classId!==s.classId)switchClass(classId);
    if(s.phase==='idle'||s.phase==='error'&&!s.busy)void load();
-   else if(s.phase==='ready'&&!s.busy&&!dirty()&&clock()-(s.loadedAt||0)>120000)void load({quiet:true});
+   else if(stale())void load({quiet:true});
+  },
+  // 다른 메뉴를 보는 동안에도 메뉴 숫자(이번 주 첨삭할 글)를 맞춘다: 처음 한 번, 그 뒤로는 2분이 지났을 때만 조용히 읽는다(판은 숨어 있다).
+  peek(classId){
+   if(s.stopped||!classId)return;
+   if(classId!==s.classId)switchClass(classId);
+   if(s.phase==='idle'||stale())void load({quiet:true});
   },
   refresh:()=>load(),
   hasDraft:()=>dirty(),

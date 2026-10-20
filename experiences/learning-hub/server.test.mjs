@@ -18,7 +18,7 @@ test('the Atlas lab serves named consultation rules and optional Core capabiliti
   for (const path of ['/consult/core/package.json', '/consult/core/storage.js', '/consult/computer/view.js', '/consult/computer/탐색노트.md', '/consult/../Code.js', '/atlas-lab/qa/x.json']) assert.equal(targetFor(path), null);
 });
 test('account classrooms serve teacher UI and Town assets while model, answer keys and stored state stay private',()=>{
-  for(const route of ['/teacher-world/?account=1','/teacher-world/app.mjs','/teacher-world/workspace-overview.mjs','/teacher-world/workspace-overview.css','/teacher-world/sharing-fence.mjs','/synk-account/world-classroom.css','/synk-town/linked.html','/synk-town/engine/loom-motion.js'])assert.ok(targetFor(route),route);
+  for(const route of ['/teacher-world/?account=1','/teacher-world/app.mjs','/teacher-world/workspace-overview.mjs','/teacher-world/workspace-overview.css','/teacher-world/sharing-fence.mjs','/teacher-world/homework-review.mjs','/teacher-world/homework-review.css','/teacher-world/topik4-homework.json','/teacher-world/topik4-homework-key.json','/synk-account/world-classroom.css','/synk-town/linked.html','/synk-town/engine/loom-motion.js'])assert.ok(targetFor(route),route);
   for(const route of ['/teacher-world/model.mjs','/teacher-world/account-service.mjs','/teacher-world/learning-runs.mjs','/teacher-world/.local/linked-state.json','/synk-town/core.mjs','/synk-town/server.mjs'])assert.equal(targetFor(route),null,route);
 });
 test('beginner games expose playable assets but keep cooperative authority and QA private', async () => {

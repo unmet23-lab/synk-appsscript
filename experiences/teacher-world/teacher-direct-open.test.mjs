@@ -19,7 +19,7 @@ function open({health,search=''}={}){
     location:{href:'https://workspace.synk.im/teacher-world/'+search,origin:'https://workspace.synk.im'},history:{replaceState(){}},
     sessionStorage:{getItem:()=>null,setItem(){},removeItem(){}},window:{addEventListener(){}},
     document:{getElementById:element,documentElement:element('html'),querySelector:()=>null,querySelectorAll:()=>[],addEventListener(){}},
-    mountHomeworkReview:()=>({show(){},reset(){},hasDraft:()=>false,refresh(){}}),createPersonalizationUI:()=>({set(){},invalidate(){}}),
+    mountHomeworkReview:()=>({show(){},peek(){},reset(){},hasDraft:()=>false,refresh(){}}),createPersonalizationUI:()=>({set(){},invalidate(){}}),
     fetch:url=>{requests.push(url);if(url==='/api/health')return Promise.resolve(reply(health));return new Promise(()=>{});}
   };
   vm.createContext(context);vm.runInContext(source,context,{filename:'app.mjs'});

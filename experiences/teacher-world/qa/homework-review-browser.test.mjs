@@ -164,22 +164,23 @@ const measureScript=()=>{
  return {innerWidth,visualWidth:Math.round(visualViewport.width),docOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,overflowing,small,shortTargets,clipped,targets:targets.length,
   primary:[...view.querySelectorAll('.felt-button.primary')].filter(shown).length,state:document.querySelector('.hr')?.dataset.state||null,height:Math.round(document.documentElement.scrollHeight)};
 };
-const selectScript=({field,quote})=>{
- for(const p of document.querySelectorAll(`.hr-para[data-field="${field}"]`)){
-  const w=document.createTreeWalker(p,NodeFilter.SHOW_TEXT),nodes=[];let text='';
-  for(let n=w.nextNode();n;n=w.nextNode()){nodes.push({n,start:text.length});text+=n.textContent;}
-  const at=text.indexOf(quote);if(at<0)continue;
-  const locate=pos=>{for(let i=nodes.length-1;i>=0;i--)if(nodes[i].start<=pos)return nodes[i];};
-  const a=locate(at),b=locate(at+quote.length),range=document.createRange();
-  range.setStart(a.n,at-a.start);range.setEnd(b.n,at+quote.length-b.start);
-  p.scrollIntoView({block:'center'});const s=getSelection();s.removeAllRanges();s.addRange(range);return true;
- }
- return false;
+// 칸 글에서 글귀의 nth번째 자리를 사람이 끌어 고른 것처럼 고른다(문단 사이는 빈 줄 하나로 본다 — 합성 글이 그렇다).
+const selectScript=({field,quote,nth=0})=>{
+ const essay=document.querySelector(`.hr-essay[data-field="${field}"]`);if(!essay)return false;
+ const nodes=[];let text='';
+ [...essay.querySelectorAll('.hr-para')].forEach((p,i)=>{if(i)text+='\n\n';const w=document.createTreeWalker(p,NodeFilter.SHOW_TEXT);for(let n=w.nextNode();n;n=w.nextNode()){nodes.push({n,start:text.length});text+=n.textContent;}});
+ let at=-1;for(let k=0,from=0;k<=nth;k++){at=text.indexOf(quote,from);if(at<0)return false;from=at+1;}
+ const locate=pos=>{for(let i=nodes.length-1;i>=0;i--)if(nodes[i].start<=pos)return nodes[i];};
+ const a=locate(at),b=locate(at+quote.length),range=document.createRange();
+ range.setStart(a.n,at-a.start);range.setEnd(b.n,at+quote.length-b.start);
+ a.n.parentElement.scrollIntoView({block:'center'});const s=getSelection();s.removeAllRanges();s.addRange(range);return true;
 };
 
 test('과제 첨삭: 계획 → 주별 목록 → 기호·판정·한마디 → 임시 저장·돌려주기 → 학생이 받는 첨삭, 판 겹침, 390·1280',{skip:!talkRoot&&'SYNK-talk 과제 가지(lib/synk-classroom-homework.js·tools/qa-synk-classroom-fixture.cjs)가 없다'||!playwright&&'playwright가 없다',timeout:600000},async t=>{
  fs.mkdirSync(out,{recursive:true});
  const w=await createWorld();t.after(()=>w.close());
+ // 교사 화면은 서버 답의 serverTime으로 시계를 고친다(학생 화면과 같다). 서버 시계도 브라우저와 같은 3주차 금요일에서 시작한다.
+ w.setClock('2027-03-26T10:00:00');
  const browser=await playwright.chromium.launch({channel:'chrome',headless:true});t.after(()=>browser.close());
  const result={startedAt:new Date().toISOString(),talk:path.basename(talkRoot),served:[...w.files.keys()].filter(k=>/homework|topik4/.test(k)),measures:{},checks:[],console:[]};
  t.after(()=>{if(!result.finishedAt){result.failedAt=new Date().toISOString();fs.writeFileSync(path.join(out,'result.json'),JSON.stringify(result,null,1)+'\n');}});
@@ -224,7 +225,11 @@ test('과제 첨삭: 계획 → 주별 목록 → 기호·판정·한마디 → 
 
  // ② 합성 기록을 넣고 새로고침 → 3주차(이번 주) 목록
  await seed(w);
- for(const s of [desk,phone]){if(s===phone){await reload(s);await openHomework(s);}else await s.frame.click('[data-hr-key="refresh"]');
+ for(const s of [desk,phone]){if(s===phone){await reload(s);
+   // 다시 열면 「학생과 학습」 메뉴다. 과제 판을 열기 전에도 메뉴 숫자(이번 주 첨삭할 글)가 뜬다.
+   const count=await s.frame.waitForFunction(()=>{const c=document.getElementById('homework-count');return !c.hidden&&c.textContent;},null,{timeout:20000}).then(h=>h.jsonValue()).catch(()=>null);
+   check('다른 메뉴에 있어도 「과제 첨삭」 메뉴 숫자(이번 주 첨삭할 글 4)',count==='4'&&await s.frame.isVisible('#view-students')&&!(await s.frame.isVisible('#view-homework')),count);
+   await openHomework(s);}else await s.frame.click('[data-hr-key="refresh"]');
   await settle(s.frame,()=>document.querySelectorAll('.hr-row').length===7&&!!document.querySelector('.hr-week.is-selected[data-current]'));}
  const rows=await desk.frame.$$eval('.hr-row',list=>list.map(b=>({name:b.querySelector('.hr-row-name').textContent,status:b.dataset.status,text:b.textContent})));
  check('3주차 목록: 이름 차례와 상태',JSON.stringify(rows.map(r=>[r.name,r.status]))===JSON.stringify([['나래 (합성)','new'],['다미 (합성)','resubmitted'],['로안 (합성)','drafting'],['미르 (합성)','returned'],['보라 (합성)','new'],['새봄 (합성)','none'],['온유 (합성)','none']]),rows.map(r=>[r.name,r.status]));
@@ -238,6 +243,11 @@ test('과제 첨삭: 계획 → 주별 목록 → 기호·판정·한마디 → 
  check('지난주 다시 써 볼 곳과 다시 쓴 문장을 보인다',/W2-3 · 「그런데 운동을 하면 스트레스가 진짜 줄어든다」를 글의 낱말로 다시 써 보세요\./.test(await desk.frame.textContent('.hr-retry')));
  check('학생 글의 문단 사이가 떨어져 있다(학생 화면처럼 빈 줄로 나눈 문단)',await desk.frame.evaluate(()=>{const p=[...document.querySelectorAll('.hr-essay .hr-para')];return p.length===2&&p[1].getBoundingClientRect().top-p[0].getBoundingClientRect().bottom>=12;}));
  check('읽기 결과 줄',/읽기 R3 · 5문항 중 \d문항 맞힘/.test(await desk.frame.textContent('.hr-reading-line')));
+ // 마지막 문단을 세 번 누르면 고르기 끝이 글 칸 밖(다음 칸의 처음)에 걸린다 — 글 칸 끝에서 잘라 받는다.
+ await desk.frame.click('.hr-essay[data-field="W3-1.1"] .hr-para >> nth=-1',{clickCount:3});
+ await settle(desk.frame,()=>!!document.querySelector('.hr-markbar:not([hidden])'));
+ check('마지막 문단 세 번 누르기 → 그 문단 전체가 글귀(글 칸 끝에서 자름)',(await desk.frame.textContent('.hr-markbar .hr-quote').catch(()=>null))===W3.l1.split('\n\n')[1]&&!!(await desk.frame.$('.hr-markbar .hr-codes')),await desk.frame.textContent('.hr-markbar'));
+ await desk.frame.click('[data-hr-key="markbar:cancel"]');
  async function mark(s,quote,code,{expectBar=true}={}){
   check(`${s.tag} 「${quote}」 고르기`,await s.frame.evaluate(selectScript,{field:'W3-1.1',quote}));
   await settle(s.frame,()=>!!document.querySelector('.hr-markbar:not([hidden])'));
@@ -253,6 +263,20 @@ test('과제 첨삭: 계획 → 주별 목록 → 기호·판정·한마디 → 
  // 겹치는 글귀는 받지 않는다
  await desk.frame.evaluate(selectScript,{field:'W3-1.1',quote:'조사했습니다. 조사'});await settle(desk.frame,()=>/겹쳐요/.test(document.querySelector('.hr-markbar:not([hidden])')?.textContent||''));
  check('이미 표시한 글귀와 겹치면 기호 단추 대신 안내',!(await desk.frame.$('.hr-markbar:not([hidden]) .hr-codes')));
+ await desk.frame.click('[data-hr-key="markbar:cancel"]');
+ // 글귀를 직접 적어 붙이기도 같은 겹침을 막는다(키보드·화면 읽기 프로그램 길).
+ await desk.frame.click('[data-hr-key="typed:W3-1.1"]');await desk.frame.fill('[data-hr-key="typed:quote:W3-1.1"]','조사했습니다. 조사');await desk.frame.click('[data-hr-key="typed:add:W3-1.1"]');
+ check('직접 적은 글귀도 겹치면 붙이지 않는다',/겹쳐요/.test(await desk.frame.textContent('.hr-typed-form .hr-help'))&&(await desk.frame.$$eval('.hr-mark',m=>m.length))===3);
+ // 같은 글귀가 글 앞쪽(다른 문단)에도 있으면 학생 화면처럼 앞 자리에 놓인다고 알린다(칸 글 전체에서 한 곳).
+ await desk.frame.evaluate(selectScript,{field:'W3-1.1',quote:'아르바이트를 하는',nth:1});await settle(desk.frame,()=>/글 앞쪽에도/.test(document.querySelector('.hr-markbar:not([hidden])')?.textContent||''));
+ check('뒤 문단에서 고른 글귀가 앞 문단에도 있으면 앞 자리 안내',!!(await desk.frame.$('.hr-markbar:not([hidden]) .hr-codes')));
+ await desk.frame.click('[data-hr-key="markbar:cancel"]');
+ // 문단을 넘는 글귀도 고를 수 있다(학생 화면은 마지막 조각에만 기호를 단다).
+ await desk.frame.evaluate(selectScript,{field:'W3-1.1',quote:'63%로 15%'});await settle(desk.frame,()=>!!document.querySelector('.hr-markbar:not([hidden])'));
+ check('겹치는 글귀(이미 표시한 「15% 증가했다」와 겹침)는 기호 대신 안내',/겹쳐요/.test(await desk.frame.textContent('.hr-markbar')));
+ await desk.frame.click('[data-hr-key="markbar:cancel"]');
+ await desk.frame.evaluate(selectScript,{field:'W3-1.1',quote:'.\n\n아르바이트를 하는 이유는'});await settle(desk.frame,()=>!!document.querySelector('.hr-markbar:not([hidden]) .hr-codes'));
+ check('문단을 넘는 글귀도 한 칸의 글 안이면 기호 막대가 열린다',/아르바이트를 하는 이유는/.test(await desk.frame.textContent('.hr-markbar .hr-quote')));
  await desk.frame.click('[data-hr-key="markbar:cancel"]');
  const placed=await desk.frame.$$eval('.hr-essay mark',m=>m.map(x=>[x.dataset.code,x.textContent]));
  check('학생 글 위에 기호 세 곳(문단마다 처음 자리)',JSON.stringify(placed)===JSON.stringify([['체','조사했습니다'],['낱','15% 증가했다'],['자','요즘 물가가 많이 올랐기 때문이다']]),placed);
@@ -297,14 +321,25 @@ test('과제 첨삭: 계획 → 주별 목록 → 기호·판정·한마디 → 
  await desk.frame.click('[data-hr-key="save:draft"]');await settle(desk.frame,()=>document.querySelector('.hr-row.is-selected')?.dataset.status==='drafting');
  const l3=(await w.api('teacher','teacher/homework')).submissions.find(s=>s.learnerId===w.learners.l3.id&&s.week===3&&s.kind==='writing');
  check('다시 저장하면 새 판에 맞춰 들어간다',l3.revision===3&&l3.feedback.submissionRevision===3&&l3.feedback.returnedAt===null,{revision:l3.revision,feedback:l3.feedback});
+ // ⑤-2 다른 곳에서 바뀐 첨삭: 고치지 않은 채 돌려주는데 그사이 다른 창이 다른 첨삭을 저장했으면, 409 → 다시 읽기 → 말없이 돌려주지 않고 새로 불러온 첨삭을 보이며 알린다.
+ await w.api('teacher','teacher/homework',{action:'feedback',submissionId:l3.submissionId,submissionRevision:l3.revision,revision:l3.feedback.revision,returned:false,parts:{'W3-1':{
+  marks:[{field:'W3-1.1',quote:'한빛대학교 언어교육원에서',code:'+'},{field:'W3-1.1',quote:'15%포인트 증가했다',code:'낱',note:'다른 창에서 쓴 덧붙임'}],comment:{good:'조사 기관과 대상을 먼저 밝혔어요.'}}}});
+ await desk.frame.click('[data-hr-key="return:now"]');await settle(desk.frame,()=>!!document.querySelector('[data-hr-key="return:anyway"]'));await desk.frame.click('[data-hr-key="return:anyway"]');
+ await settle(desk.frame,()=>/다른 곳에서 바뀐 첨삭을 새로 불러왔어요/.test(document.querySelector('.hr-editor-notice')?.textContent||''));
+ const l3other=(await w.api('teacher','teacher/homework')).submissions.find(s=>s.submissionId===l3.submissionId);
+ check('다른 곳에서 바뀐 첨삭은 말없이 돌려주지 않는다(서버는 다른 창의 임시 저장 그대로)',l3other.feedback.returnedAt===null&&l3other.feedback.parts['W3-1'].marks.length===2&&l3other.feedback.parts['W3-1'].comment?.good==='조사 기관과 대상을 먼저 밝혔어요.',l3other.feedback);
+ check('화면은 새로 불러온 첨삭(기호 둘·한마디)을 보인다',(await desk.frame.$$eval('.hr-mark',m=>m.length))===2&&(await desk.frame.inputValue('[data-hr-key="comment:W3-1:good"]'))==='조사 기관과 대상을 먼저 밝혔어요.');
+ await shoot(desk,'12-reloaded-other');
 
  // ⑥ 2주차: 51·52 빈칸과 바꿔 쓰기 판정(인정·부분·다시 + 한 줄 이유)
  await desk.frame.click('[data-hr-key="week:2"]');await settle(desk.frame,()=>document.querySelector('.hr-week.is-selected')?.textContent.startsWith('2주'));
  await desk.frame.click('[data-hr-key="row:'+w.learners.l2.id+'"]');await settle(desk.frame,()=>!!document.querySelector('.hr-seg'));
+ await desk.frame.click('[data-hr-key="problem:W2-1"]');
  for(const [id,verdict,reason] of [['W2-1.1','다시','「-아요」는 글의 문체와 섞여요. 「-ㄹ 수 있다」로 끝내요.'],['W2-1.2','인정',''],['W2-3.2','다시','동사는 「-는다」예요: 걸리지 않는다.'],['W2-3.5','부분','「근데」는 말하는 낱말이에요.']]){
   await desk.frame.click(`[data-hr-key="verdict:${id}:${verdict}"]`);if(reason)await desk.frame.fill(`[data-hr-key="reason:${id}"]`,reason);
  }
  check('판정을 고르면 그 칸이 눌린 상태',(await desk.frame.getAttribute('[data-hr-key="verdict:W2-1.1:다시"]','aria-pressed'))==='true');
+ check('판정을 눌러 다시 그려도 펼친 「문제 보기」는 그대로',await desk.frame.evaluate(()=>!!document.querySelector('summary[data-hr-key="problem:W2-1"]')?.parentElement.open));
  await shoot(desk,'08-week2-verdict');
  // 응답을 잃은 저장: 같은 첨삭이 서버에 먼저 들어가 있는 채로 다시 보내면 409지만(교사 경로에는 멱등키가 없다), 겹침이 아니라 「저장됨」으로 맞춘다.
  const w2=(await w.api('teacher','teacher/homework')).submissions.find(s=>s.learnerId===w.learners.l2.id&&s.week===2&&s.kind==='writing');
@@ -314,6 +349,14 @@ test('과제 첨삭: 계획 → 주별 목록 → 기호·판정·한마디 → 
  await desk.frame.click('[data-hr-key="save:draft"]');
  await settle(desk.frame,()=>document.querySelector('.hr-row.is-selected')?.dataset.status==='drafting'&&!document.querySelector('.hr-actions[data-dirty="true"]')&&!!document.querySelector('.hr-save-state'));
  check('응답을 잃은 같은 저장은 겹침 안내 없이 「임시 저장」',!(await desk.frame.$('.hr-editor-notice'))&&/임시 저장/.test(await desk.frame.textContent('.hr-save-state')),await desk.frame.textContent('.hr-save-state'));
+ // 같은 임시 저장이 한 번 더(응답을 잃은 저장) 들어간 뒤 「돌려주기」: 409 → 다시 읽기 → 내 첨삭과 같으면 새 판으로 한 번 더 돌려준다(말없이 임시 저장에 머물지 않게).
+ const w2b=(await w.api('teacher','teacher/homework')).submissions.find(s=>s.submissionId===w2.submissionId);
+ await w.api('teacher','teacher/homework',{action:'feedback',submissionId:w2.submissionId,submissionRevision:w2b.revision,revision:w2b.feedback.revision,returned:false,parts:w2b.feedback.parts});
+ await desk.frame.click('[data-hr-key="return:now"]');await settle(desk.frame,()=>!!document.querySelector('[data-hr-key="return:anyway"]'));
+ await desk.frame.click('[data-hr-key="return:anyway"]');
+ await settle(desk.frame,()=>document.querySelector('.hr-row.is-selected')?.dataset.status==='partly');
+ const l2w2=(await w.studentList('l2')).classes[0].submissions.find(s=>s.week===2&&s.kind==='writing');
+ check('응답을 잃은 저장 뒤의 돌려주기도 실제로 돌려준다(학생에게 보임, 일부 문항)',!!l2w2.feedback?.returnedAt&&Object.keys(l2w2.feedback.parts).join()==='W2-1,W2-3',l2w2.feedback);
 
  // ⑦ 휴대폰(390): 목록 → 글 → 기호 막대 → 저장
  await phone.frame.click('[data-hr-key="refresh"]');await settle(phone.frame,()=>document.querySelector('.hr-status')?.textContent.includes('불러온 때'));
@@ -352,11 +395,11 @@ test('과제 첨삭: 계획 → 주별 목록 → 기호·판정·한마디 → 
   check(`${v.tag} 5주차 개요 표와 서론`,/서론/.test(await s.frame.textContent('.hr-editor'))&&(await s.frame.$$eval('.hr-field .hr-table tbody tr',r=>r.length))===5);
   await shoot(s,'10-week5-grid');}
 
- // 일부러 만든 응답만 뺀다: 판 겹침 409 두 번(⑤ 학생이 고쳐 냄, ⑥ 응답을 잃은 같은 저장), 명부 계정이 바뀐 글 403 한 번(⑦-2),
- // 과제 표 없는 서버 404 두 번(⑧ 1280·390). 그 밖의 오류·CSP 위반은 0이어야 한다.
+ // 일부러 만든 응답만 뺀다: 판 겹침 409 네 번(⑤ 학생이 고쳐 냄, ⑤-2 다른 창의 저장, ⑥ 응답을 잃은 같은 저장과 그 뒤 돌려주기),
+ // 명부 계정이 바뀐 글 403 한 번(⑦-2), 과제 표 없는 서버 404 두 번(⑧ 1280·390). 그 밖의 오류·CSP 위반은 0이어야 한다.
  const homeworkHttp=c=>c.type==='http'&&c.text.includes('/api/teacher/homework?'),failedLoad=c=>c.type==='error'&&/^Failed to load resource: the server responded with a status of (409|404|403)/.test(c.text);
  const expected=result.console.filter(homeworkHttp).map(c=>c.text.slice(0,3)).sort().join(',');
- check('예상한 응답만: 409 두 번 · 403 한 번 · 404 두 번',expected==='403,404,404,409,409'&&result.console.filter(failedLoad).length===5,result.console.filter(c=>homeworkHttp(c)||failedLoad(c)));
+ check('예상한 응답만: 409 네 번 · 403 한 번 · 404 두 번',expected==='403,404,404,409,409,409,409'&&result.console.filter(failedLoad).length===7,result.console.filter(c=>homeworkHttp(c)||failedLoad(c)));
  check('콘솔 오류·CSP 위반 0',!result.console.filter(c=>c.type!=='warning'&&!homeworkHttp(c)&&!failedLoad(c)).length,result.console);
  result.finishedAt=new Date().toISOString();
  fs.writeFileSync(path.join(out,'result.json'),JSON.stringify(result,null,1)+'\n');

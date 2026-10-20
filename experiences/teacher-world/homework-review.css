@@ -147,6 +147,8 @@ textarea.hr-input{min-height:68px;resize:vertical}
 .hr-essay mark::after{content:'〔' attr(data-code) '〕';margin:0 1px;font-size:13px;font-weight:650;color:var(--sg-coral-ink)}
 .hr-essay mark[data-code="+"]{background:linear-gradient(transparent 58%,rgba(46,158,102,.26) 0)}
 .hr-essay mark[data-code="+"]::after{color:var(--sg-green)}
+/* 문단을 넘는 표시는 마지막 조각에만 기호를 단다(학생 화면 markParagraphs의 end와 같다) */
+.hr-essay mark[data-cont]::after{content:none}
 .hr-marks{display:grid;gap:8px;margin:0;padding:0;list-style:none}
 .hr-mark{display:grid;gap:8px;padding:10px 12px;border:1px solid var(--sg-line);border-radius:14px}
 .hr-mark-top{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}

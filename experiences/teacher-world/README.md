@@ -4,7 +4,7 @@
 
 SYNK ID 수업 연결(계정 모드)에서 넷째 메뉴 「과제 첨삭」을 연다. 교사는 반 시작일을 정해 학생 WORLD의 「이번 주 과제」를 열고, 주별로 낸 읽기·쓰기를 보고, 학생 글 위에 기호를 붙이고 판정·한마디 세 줄을 써서 돌려준다. 모듈은 `homework-review.mjs`·`homework-review.css`, 통로는 synk-classroom 교사 과제 경로(`GET/POST /api/teacher/homework`)다. 동작과 통로는 [과제 내기 설계 3-2절](../../docs/온라인반_TOPIK4급/과제_내기_설계.md#teacher-screen)에 있다.
 
-- 시험: `node --test experiences/teacher-world/homework-review.test.mjs`(계산 11개). 브라우저 시험 `node --test experiences/teacher-world/qa/homework-review-browser.test.mjs`는 실제 Chrome·실제 synk-classroom 과제 서버(PGlite)로 390·1280을 본다(116항목). SYNK-talk 가지 `claude/class-homework-20261020`가 있을 때만 돈다.
+- 시험: `node --test experiences/teacher-world/homework-review.test.mjs`(계산 11개). 브라우저 시험 `node --test experiences/teacher-world/qa/homework-review-browser.test.mjs`는 실제 Chrome·실제 synk-classroom 과제 서버(PGlite)로 390·1280을 본다(139항목). SYNK-talk 가지 `claude/class-homework-20261020`가 있을 때만 돈다.
 - 캡처는 `qa/homework-review-20261020/`(그림은 git 밖), 측정은 같은 폴더 `result.json`이다.
 - 운영 반영(synk-classroom 함수·DB, 회사 워크스페이스 릴리스)은 유호님 「진행해」 뒤다. 로컬 체험판(4290·4295)에는 이 메뉴가 없다.
 

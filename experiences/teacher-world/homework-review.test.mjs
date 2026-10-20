@@ -22,10 +22,10 @@ test('글자 수·주차·마감·기호 자리는 학생 화면 모듈과 같�
  for(const text of ['',ESSAY,'가\r\n나\n\n다','ㅎᅡㄴ','  띄어 쓰기  '])assert.equal(R.homeworkLength(text),World.homeworkLength(text),text);
  for(const startsOn of [START,'2027-03-10','2026-12-05','2027-3-6'])for(const week of [1,2,3,8])assert.deepEqual(R.homeworkWindow(startsOn,week,content.schedule),World.homeworkWindow(startsOn,week,content.schedule),`${startsOn} ${week}`);
  for(const now of [Date.parse('2027-03-01T00:00:00Z'),Date.parse('2027-03-26T01:00:00Z'),Date.parse('2027-06-01T00:00:00Z')])assert.deepEqual(R.homeworkWeek({startsOn:START,weeks:8,now,schedule:content.schedule}),World.homeworkWeek({startsOn:START,weeks:8,now,schedule:content.schedule}));
- const marks=[{quote:'조사했습니다',code:'체'},{quote:'15% 증가했다',code:'낱'},{quote:'유학생',code:'+'},{quote:'유학생은',code:'조'},{quote:'없는 글귀',code:'자'}];
- for(const paragraph of R.paragraphsOf(ESSAY)){
-  const mine=R.markSegments(paragraph,marks).map(({text,mark})=>({text,...(mark===undefined?{}:{mark})}));
-  assert.deepEqual(mine,World.markSegments(paragraph,marks),'학생 화면과 같은 자리에 놓는다');
+ const marks=[{quote:'조사했습니다',code:'체'},{quote:'15% 증가했다',code:'낱'},{quote:'유학생',code:'+'},{quote:'유학생은',code:'조'},{quote:'없는 글귀',code:'자'},{quote:'\n늘고 있다\n',code:'연'},{quote:'증가했다.\n\n아르바이트를',code:'연'}];
+ for(const text of [ESSAY,ESSAY.replace(/\n/g,'\r\n'),'가나\n\n\n다라 가나','좋아요 👍🏽 좋아요 👍',''])for(const list of [marks,[{quote:'👍',code:'+'},{quote:'좋아요',code:'+'}]]){
+  assert.deepEqual(R.markSegments(text,list),World.markSegments(text,list),'학생 화면과 같은 자리(칸 글 전체에서 한 곳, LF·NFC, 자소 묶음)');
+  assert.deepEqual(R.essayPieces(text,list).map(p=>p.map(({start,...piece})=>piece)),World.markParagraphs(text,list),'학생 화면과 같은 문단·조각(문단을 넘는 표시는 마지막 조각에만 기호)');
  }
 });
 
@@ -37,10 +37,13 @@ test('주차·마감이 SYNK-talk 과제 서버와 같다',{skip:!talkRoot&&'과
  assert.deepEqual([...R.CODES].sort(),[...server.CODES].sort(),'기호 열한 개가 같다');assert.deepEqual(R.VERDICTS,[...server.VERDICTS]);
 });
 
-test('기호는 문단마다 놓이고, 못 찾거나 여러 곳이면 그 수를 센다',()=>{
- const text='문체가 섞였습니다. 문체가 섞였다.\n\n문체가 또 섞였습니다.';
- assert.deepEqual(R.markPlacements(text,[{quote:'섞였습니다',code:'체'},{quote:'없는 말',code:'자'},{quote:'섞였다',code:'체'}]),[2,0,1]);
- assert.deepEqual(R.markPlacements(text,[{quote:'섞였습니다. 문체가 섞였다.\n\n문체',code:'체'}]),[0],'문단을 넘는 글귀는 학생 화면에서 놓이지 않는다');
+test('기호는 칸 글 전체에서 한 곳에 놓이고, 조각마다 칸 글 안 자리를 안다',()=>{
+ const text='문체가 섞였습니다. 문체가 섞였다.\r\n\r\n문체가 또 섞였습니다.',marks=[{quote:'섞였습니다',code:'체'},{quote:'없는 말',code:'자'},{quote:'섞였다',code:'체'},{quote:'섞였다.\n\n문체',code:'연'}];
+ assert.deepEqual(R.markPlacements(text,marks),[1,0,1,0],'같은 글귀는 처음 한 곳, 못 찾거나 겹치면 0(목록에만)');
+ assert.deepEqual(R.markPlacements(text,[{quote:'섞였다.\n\n문체',code:'연'}]),[1],'문단을 넘는 글귀도 놓인다');
+ const source=R.homeworkPlain(text),pieces=R.essayPieces(text,[{quote:'섞였다.\n\n문체',code:'연'}]);
+ assert.equal(pieces.length,2);for(const piece of pieces.flat())assert.equal(source.slice(piece.start,piece.start+piece.text.length),piece.text,'조각의 자리로 칸 글을 되찾는다');
+ assert.deepEqual(pieces.flat().filter(p=>p.mark!==undefined).map(p=>[p.text,!!p.end]),[['섞였다.',false],['문체',true]]);
 });
 
 test('쓰기 상태: 새로 냄 · 고쳐 냄 · 첨삭 중 · 고쳐 내서 다시 맞추기 · 돌려줌 · 일부 돌려줌',()=>{
@@ -159,4 +162,6 @@ test('교사 화면·회사 워크스페이스가 과제 첨삭 파일과 교사
  for(const file of ['topik4-homework.json','topik4-homework-key.json'])assert.ok(server.includes(`'${file}'`)&&docker.includes('experiences/synk-world-app/'+file)&&ignore.includes('!experiences/synk-world-app/'+file),file);
  for(const [file,pattern] of [['experiences/synk-account/src/classroom-client.mjs',/homework:\['\/api\/teacher\/homework'\],homeworkSave:\['\/api\/teacher\/homework','POST'\]/],[company+'teaching-service.mjs',/homework:\['\/api\/teacher\/homework'\],homeworkSave:\['\/api\/teacher\/homework','POST'\]/],
   ['experiences/synk-account/src/messenger-teacher.mjs',/'homework','homeworkSave'/],['desktop/src/classroom-requests.cjs',/homework:\['GET','teacher\/homework'\],homeworkSave:\['POST','teacher\/homework'\]/],['desktop/src/teacher-account.cjs',/'homework','homeworkSave'/]])assert.match(read(file),pattern,file);
+ // app.mjs가 새 모듈을 바로 부르므로, 교사 화면을 내보내는 다른 서버(데모 4290·로컬 연결 4295·개발 허브 4280)도 같은 파일을 내보내야 화면이 뜬다.
+ for(const file of ['experiences/teacher-world/server.mjs','experiences/teacher-world/linked-server.mjs','experiences/learning-hub/server.mjs'])for(const name of ['sharing-fence.mjs','homework-review.mjs','homework-review.css'])assert.ok(read(file).includes(`'${name}'`),`${file} · ${name}`);
 });

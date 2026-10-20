@@ -1,0 +1,1371 @@
+{
+ "startedAt": "2026-10-20T10:08:38.311Z",
+ "talk": "talk-class-homework-20261020",
+ "served": [
+  "/teacher-world/homework-review.mjs",
+  "/teacher-world/homework-review.css",
+  "/teacher-world/topik4-homework.json",
+  "/teacher-world/topik4-homework-key.json"
+ ],
+ "measures": {
+  "1280-01-plan-none": {
+   "innerWidth": 1280,
+   "visualWidth": 1280,
+   "docOverflow": 0,
+   "overflowing": [],
+   "small": [],
+   "shortTargets": [],
+   "clipped": [],
+   "targets": 8,
+   "primary": 1,
+   "state": "ready",
+   "height": 884
+  },
+  "390-01-plan-none": {
+   "innerWidth": 390,
+   "visualWidth": 390,
+   "docOverflow": 0,
+   "overflowing": [],
+   "small": [],
+   "shortTargets": [],
+   "clipped": [],
+   "targets": 8,
+   "primary": 1,
+   "state": "ready",
+   "height": 1269
+  },
+  "1280-02-week3": {
+   "innerWidth": 1280,
+   "visualWidth": 1280,
+   "docOverflow": 0,
+   "overflowing": [],
+   "small": [],
+   "shortTargets": [],
+   "clipped": [],
+   "targets": 34,
+   "primary": 1,
+   "state": "ready",
+   "height": 2521
+  },
+  "390-02-week3": {
+   "innerWidth": 390,
+   "visualWidth": 390,
+   "docOverflow": 0,
+   "overflowing": [],
+   "small": [],
+   "shortTargets": [],
+   "clipped": [],
+   "targets": 34,
+   "primary": 1,
+   "state": "ready",
+   "height": 4196
+  },
+  "1280-03-markbar": {
+   "innerWidth": 1280,
+   "visualWidth": 1280,
+   "docOverflow": 0,
+   "overflowing": [],
+   "small": [],
+   "shortTargets": [],
+   "clipped": [],
+   "targets": 50,
+   "primary": 1,
+   "state": "ready",
+   "height": 3022
+  },
+  "1280-04-draft": {
+   "innerWidth": 1280,
+   "visualWidth": 1280,
+   "docOverflow": 0,
+   "overflowing": [],
+   "small": [],
+   "shortTargets": [],
+   "clipped": [],
+   "targets": 40,
+   "primary": 1,
+   "state": "ready",
+   "height": 3044
+  },
+  "1280-05-confirm": {
+   "innerWidth": 1280,
+   "visualWidth": 1280,
+   "docOverflow": 0,
+   "overflowing": [],
+   "small": [],
+   "shortTargets": [],
+   "clipped": [],
+   "targets": 40,
+   "primary": 1,
+   "state": "ready",
+   "height": 3137
+  },
+  "1280-06-returned": {
+   "innerWidth": 1280,
+   "visualWidth": 1280,
+   "docOverflow": 0,
+   "overflowing": [],
+   "small": [],
+   "shortTargets": [],
+   "clipped": [],
+   "targets": 41,
+   "primary": 1,
+   "state": "ready",
+   "height": 3178
+  },
+  "1280-07-conflict": {
+   "innerWidth": 1280,
+   "visualWidth": 1280,
+   "docOverflow": 0,
+   "overflowing": [],
+   "small": [],
+   "shortTargets": [],
+   "clipped": [],
+   "targets": 36,
+   "primary": 1,
+   "state": "ready",
+   "height": 2490
+  },
+  "1280-12-reloaded-other": {
+   "innerWidth": 1280,
+   "visualWidth": 1280,
+   "docOverflow": 0,
+   "overflowing": [],
+   "small": [],
+   "shortTargets": [],
+   "clipped": [],
+   "targets": 38,
+   "primary": 1,
+   "state": "ready",
+   "height": 2697
+  },
+  "1280-08-week2-verdict": {
+   "innerWidth": 1280,
+   "visualWidth": 1280,
+   "docOverflow": 0,
+   "overflowing": [],
+   "small": [],
+   "shortTargets": [],
+   "clipped": [],
+   "targets": 78,
+   "primary": 1,
+   "state": "ready",
+   "height": 3833
+  },
+  "390-03-markbar": {
+   "innerWidth": 390,
+   "visualWidth": 390,
+   "docOverflow": 0,
+   "overflowing": [],
+   "small": [],
+   "shortTargets": [],
+   "clipped": [],
+   "targets": 48,
+   "primary": 1,
+   "state": "ready",
+   "height": 4355
+  },
+  "390-04-editor": {
+   "innerWidth": 390,
+   "visualWidth": 390,
+   "docOverflow": 0,
+   "overflowing": [],
+   "small": [],
+   "shortTargets": [],
+   "clipped": [],
+   "targets": 38,
+   "primary": 1,
+   "state": "ready",
+   "height": 4252
+  },
+  "1280-11-relinked": {
+   "innerWidth": 1280,
+   "visualWidth": 1280,
+   "docOverflow": 0,
+   "overflowing": [],
+   "small": [],
+   "shortTargets": [],
+   "clipped": [],
+   "targets": 22,
+   "primary": 0,
+   "state": "ready",
+   "height": 1746
+  },
+  "1280-09-unavailable": {
+   "innerWidth": 1280,
+   "visualWidth": 1280,
+   "docOverflow": 0,
+   "overflowing": [],
+   "small": [],
+   "shortTargets": [],
+   "clipped": [],
+   "targets": 5,
+   "primary": 0,
+   "state": "unavailable",
+   "height": 800
+  },
+  "390-09-unavailable": {
+   "innerWidth": 390,
+   "visualWidth": 390,
+   "docOverflow": 0,
+   "overflowing": [],
+   "small": [],
+   "shortTargets": [],
+   "clipped": [],
+   "targets": 5,
+   "primary": 0,
+   "state": "unavailable",
+   "height": 844
+  },
+  "1280-10-week5-grid": {
+   "innerWidth": 1280,
+   "visualWidth": 1280,
+   "docOverflow": 0,
+   "overflowing": [],
+   "small": [],
+   "shortTargets": [],
+   "clipped": [],
+   "targets": 37,
+   "primary": 1,
+   "state": "ready",
+   "height": 2443
+  },
+  "390-10-week5-grid": {
+   "innerWidth": 390,
+   "visualWidth": 390,
+   "docOverflow": 0,
+   "overflowing": [],
+   "small": [],
+   "shortTargets": [],
+   "clipped": [],
+   "targets": 37,
+   "primary": 1,
+   "state": "ready",
+   "height": 4123
+  }
+ },
+ "checks": [
+  {
+   "name": "1280 계정 모드 메뉴에 「과제 첨삭」",
+   "ok": true
+  },
+  {
+   "name": "1280-01-plan-none 가로 넘침 0",
+   "ok": true,
+   "detail": {
+    "doc": 0,
+    "overflowing": []
+   }
+  },
+  {
+   "name": "1280-01-plan-none 13px 밑 한글 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-01-plan-none 44px 밑 누르는 곳 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-01-plan-none 단추 글 넘침 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-01-plan-none 검은 주 단추 1개 이하",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "390 계정 모드 메뉴에 「과제 첨삭」",
+   "ok": true
+  },
+  {
+   "name": "390-01-plan-none 가로 넘침 0",
+   "ok": true,
+   "detail": {
+    "doc": 0,
+    "overflowing": []
+   }
+  },
+  {
+   "name": "390-01-plan-none 13px 밑 한글 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "390-01-plan-none 44px 밑 누르는 곳 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "390-01-plan-none 단추 글 넘침 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "390-01-plan-none 검은 주 단추 1개 이하",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "시작일을 고르면 1주차 열림·첫 마감을 미리 보인다",
+   "ok": true
+  },
+  {
+   "name": "계획이 서버에 들어갔다",
+   "ok": true,
+   "detail": {
+    "course": "topik4-online",
+    "startsOn": "2027-03-06",
+    "weeks": 8,
+    "revision": 1
+   }
+  },
+  {
+   "name": "다른 메뉴에 있어도 「과제 첨삭」 메뉴 숫자(이번 주 첨삭할 글 4)",
+   "ok": true,
+   "detail": "4"
+  },
+  {
+   "name": "3주차 목록: 이름 차례와 상태",
+   "ok": true,
+   "detail": [
+    [
+     "나래 (합성)",
+     "new"
+    ],
+    [
+     "다미 (합성)",
+     "resubmitted"
+    ],
+    [
+     "로안 (합성)",
+     "drafting"
+    ],
+    [
+     "미르 (합성)",
+     "returned"
+    ],
+    [
+     "보라 (합성)",
+     "new"
+    ],
+    [
+     "새봄 (합성)",
+     "none"
+    ],
+    [
+     "온유 (합성)",
+     "none"
+    ]
+   ]
+  },
+  {
+   "name": "늦게 낸 글·계정 연결 전·읽기 맞힌 수를 보인다",
+   "ok": true,
+   "detail": [
+    "나나래 (합성)새로 냄읽기 4/5 · 쓰기 3월 24일 (수) 오후 10:30",
+    "다다미 (합성)고쳐 냄읽기 안 냄 · 쓰기 3월 24일 (수) 오후 9:00 · 2번째",
+    "로로안 (합성)첨삭 중읽기 안 냄 · 쓰기 3월 23일 (화) 오후 7:00",
+    "미미르 (합성)돌려줌읽기 4/5 · 쓰기 3월 21일 (일) 오후 4:00",
+    "보보라 (합성)새로 냄늦게 냄읽기 3/5 · 쓰기 3월 25일 (목) 오전 8:40",
+    "새새봄 (합성)아직 안 냄읽기 3/5",
+    "온온유 (합성)계정 연결 전읽기 안 냄"
+   ]
+  },
+  {
+   "name": "숫자판: 첨삭할 글 4 · 쓰기 5/7(늦게 1) · 첨삭 중 1 · 돌려줌 1 · 읽기 4/7",
+   "ok": true
+  },
+  {
+   "name": "주차 표시: 첨삭할 글이 있는 2주(1편)·3주(4편)",
+   "ok": true
+  },
+  {
+   "name": "1280-02-week3 가로 넘침 0",
+   "ok": true,
+   "detail": {
+    "doc": 0,
+    "overflowing": []
+   }
+  },
+  {
+   "name": "1280-02-week3 13px 밑 한글 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-02-week3 44px 밑 누르는 곳 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-02-week3 단추 글 넘침 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-02-week3 검은 주 단추 1개 이하",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "390-02-week3 가로 넘침 0",
+   "ok": true,
+   "detail": {
+    "doc": 0,
+    "overflowing": []
+   }
+  },
+  {
+   "name": "390-02-week3 13px 밑 한글 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "390-02-week3 44px 밑 누르는 곳 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "390-02-week3 단추 글 넘침 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "390-02-week3 검은 주 단추 1개 이하",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "지난주 다시 써 볼 곳과 다시 쓴 문장을 보인다",
+   "ok": true
+  },
+  {
+   "name": "학생 글의 문단 사이가 떨어져 있다(학생 화면처럼 빈 줄로 나눈 문단)",
+   "ok": true
+  },
+  {
+   "name": "읽기 결과 줄",
+   "ok": true
+  },
+  {
+   "name": "마지막 문단 세 번 누르기 → 그 문단 전체가 글귀(글 칸 끝에서 자름)",
+   "ok": true,
+   "detail": "아르바이트를 하는 이유는 생활비 마련이 52%로 가장 많았고 한국어 연습이 27%, 경력 쌓기가 15%였다. 요즘 물가가 많이 올랐기 때문이다. 이처럼 아르바이트를 하는 유학생이 늘고 있다.고칠 곳 0/5취소〔+〕잘 쓴 곳〔체〕문체〔조〕조사〔어〕어미·호응〔낱〕낱말〔맞〕맞춤법〔띄〕띄어쓰기〔연〕연결〔근〕근거·예〔빠〕빠짐〔자〕자료"
+  },
+  {
+   "name": "1280 「조사했습니다」 고르기",
+   "ok": true
+  },
+  {
+   "name": "1280 「15% 증가했다」 고르기",
+   "ok": true
+  },
+  {
+   "name": "1280-03-markbar 가로 넘침 0",
+   "ok": true,
+   "detail": {
+    "doc": 0,
+    "overflowing": []
+   }
+  },
+  {
+   "name": "1280-03-markbar 13px 밑 한글 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-03-markbar 44px 밑 누르는 곳 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-03-markbar 단추 글 넘침 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-03-markbar 검은 주 단추 1개 이하",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "이미 표시한 글귀와 겹치면 기호 단추 대신 안내",
+   "ok": true
+  },
+  {
+   "name": "직접 적은 글귀도 겹치면 붙이지 않는다",
+   "ok": true
+  },
+  {
+   "name": "뒤 문단에서 고른 글귀가 앞 문단에도 있으면 앞 자리 안내",
+   "ok": true
+  },
+  {
+   "name": "겹치는 글귀(이미 표시한 「15% 증가했다」와 겹침)는 기호 대신 안내",
+   "ok": true
+  },
+  {
+   "name": "문단을 넘는 글귀도 한 칸의 글 안이면 기호 막대가 열린다",
+   "ok": true
+  },
+  {
+   "name": "학생 글 위에 기호 세 곳(문단마다 처음 자리)",
+   "ok": true,
+   "detail": [
+    [
+     "체",
+     "조사했습니다"
+    ],
+    [
+     "낱",
+     "15% 증가했다"
+    ],
+    [
+     "자",
+     "요즘 물가가 많이 올랐기 때문이다"
+    ]
+   ]
+  },
+  {
+   "name": "쓰는 중에는 「저장하지 않은 고침」",
+   "ok": true
+  },
+  {
+   "name": "저장 안 한 첨삭이 있으면 부모 호스트가 떠나기 전에 묻는다",
+   "ok": true
+  },
+  {
+   "name": "임시 저장 뒤 쓰던 것 없음",
+   "ok": true
+  },
+  {
+   "name": "임시 저장은 학생에게 보이지 않는다",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "name": "1280-04-draft 가로 넘침 0",
+   "ok": true,
+   "detail": {
+    "doc": 0,
+    "overflowing": []
+   }
+  },
+  {
+   "name": "1280-04-draft 13px 밑 한글 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-04-draft 44px 밑 누르는 곳 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-04-draft 단추 글 넘침 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-04-draft 검은 주 단추 1개 이하",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "〔+〕가 없으면 돌려주기 전에 묻는다",
+   "ok": true
+  },
+  {
+   "name": "1280-05-confirm 가로 넘침 0",
+   "ok": true,
+   "detail": {
+    "doc": 0,
+    "overflowing": []
+   }
+  },
+  {
+   "name": "1280-05-confirm 13px 밑 한글 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-05-confirm 44px 밑 누르는 곳 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-05-confirm 단추 글 넘침 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-05-confirm 검은 주 단추 1개 이하",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "1280 「이처럼 아르바이트를 하는 유학생이 늘고 있다」 고르기",
+   "ok": true
+  },
+  {
+   "name": "학생이 받는 첨삭 = 교사가 돌려준 첨삭",
+   "ok": true,
+   "detail": {
+    "parts": {
+     "W3-1": {
+      "marks": [
+       {
+        "code": "체",
+        "field": "W3-1.1",
+        "quote": "조사했습니다"
+       },
+       {
+        "code": "낱",
+        "note": "48에서 63은 15%포인트예요.",
+        "field": "W3-1.1",
+        "quote": "15% 증가했다"
+       },
+       {
+        "code": "자",
+        "field": "W3-1.1",
+        "quote": "요즘 물가가 많이 올랐기 때문이다"
+       },
+       {
+        "code": "+",
+        "field": "W3-1.1",
+        "quote": "이처럼 아르바이트를 하는 유학생이 늘고 있다"
+       }
+      ],
+      "comment": {
+       "fix": "물가 이야기는 자료에 없는 내용이에요.〔자〕",
+       "good": "두 해의 비율을 정확히 옮겼어요.",
+       "retry": "두 문장을 「-에서 -로 증가했다」로 이어 보세요."
+      }
+     }
+    },
+    "returnedAt": "2027-03-26T01:00:00.000Z"
+   }
+  },
+  {
+   "name": "돌려준 첨삭의 꼴",
+   "ok": true,
+   "detail": {
+    "W3-1": {
+     "marks": [
+      {
+       "code": "체",
+       "field": "W3-1.1",
+       "quote": "조사했습니다"
+      },
+      {
+       "code": "낱",
+       "note": "48에서 63은 15%포인트예요.",
+       "field": "W3-1.1",
+       "quote": "15% 증가했다"
+      },
+      {
+       "code": "자",
+       "field": "W3-1.1",
+       "quote": "요즘 물가가 많이 올랐기 때문이다"
+      },
+      {
+       "code": "+",
+       "field": "W3-1.1",
+       "quote": "이처럼 아르바이트를 하는 유학생이 늘고 있다"
+      }
+     ],
+     "comment": {
+      "fix": "물가 이야기는 자료에 없는 내용이에요.〔자〕",
+      "good": "두 해의 비율을 정확히 옮겼어요.",
+      "retry": "두 문장을 「-에서 -로 증가했다」로 이어 보세요."
+     }
+    }
+   }
+  },
+  {
+   "name": "돌려준 뒤 다음 글로 가는 단추",
+   "ok": true
+  },
+  {
+   "name": "1280-06-returned 가로 넘침 0",
+   "ok": true,
+   "detail": {
+    "doc": 0,
+    "overflowing": []
+   }
+  },
+  {
+   "name": "1280-06-returned 13px 밑 한글 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-06-returned 44px 밑 누르는 곳 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-06-returned 단추 글 넘침 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-06-returned 검은 주 단추 1개 이하",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "1280 「한빛대학교 언어교육원에서」 고르기",
+   "ok": true
+  },
+  {
+   "name": "겹친 뒤에도 쓰던 기호가 남는다",
+   "ok": true
+  },
+  {
+   "name": "새 글(3번째 판)을 보인다",
+   "ok": true
+  },
+  {
+   "name": "1280-07-conflict 가로 넘침 0",
+   "ok": true,
+   "detail": {
+    "doc": 0,
+    "overflowing": []
+   }
+  },
+  {
+   "name": "1280-07-conflict 13px 밑 한글 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-07-conflict 44px 밑 누르는 곳 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-07-conflict 단추 글 넘침 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-07-conflict 검은 주 단추 1개 이하",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "다시 저장하면 새 판에 맞춰 들어간다",
+   "ok": true,
+   "detail": {
+    "revision": 3,
+    "feedback": {
+     "parts": {
+      "W3-1": {
+       "marks": [
+        {
+         "code": "+",
+         "field": "W3-1.1",
+         "quote": "한빛대학교 언어교육원에서"
+        }
+       ]
+      }
+     },
+     "returnedAt": null,
+     "revision": 1,
+     "submissionRevision": 3,
+     "teacherId": "d01a2a01-eff9-4fc1-9d61-9dc2b9fb9854",
+     "updatedAt": "2027-03-26T01:25:00.000Z"
+    }
+   }
+  },
+  {
+   "name": "다른 곳에서 바뀐 첨삭은 말없이 돌려주지 않는다(서버는 다른 창의 임시 저장 그대로)",
+   "ok": true,
+   "detail": {
+    "parts": {
+     "W3-1": {
+      "marks": [
+       {
+        "code": "+",
+        "field": "W3-1.1",
+        "quote": "한빛대학교 언어교육원에서"
+       },
+       {
+        "code": "낱",
+        "note": "다른 창에서 쓴 덧붙임",
+        "field": "W3-1.1",
+        "quote": "15%포인트 증가했다"
+       }
+      ],
+      "comment": {
+       "good": "조사 기관과 대상을 먼저 밝혔어요."
+      }
+     }
+    },
+    "returnedAt": null,
+    "revision": 2,
+    "submissionRevision": 3,
+    "teacherId": "d01a2a01-eff9-4fc1-9d61-9dc2b9fb9854",
+    "updatedAt": "2027-03-26T01:25:00.000Z"
+   }
+  },
+  {
+   "name": "화면은 새로 불러온 첨삭(기호 둘·한마디)을 보인다",
+   "ok": true
+  },
+  {
+   "name": "1280-12-reloaded-other 가로 넘침 0",
+   "ok": true,
+   "detail": {
+    "doc": 0,
+    "overflowing": []
+   }
+  },
+  {
+   "name": "1280-12-reloaded-other 13px 밑 한글 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-12-reloaded-other 44px 밑 누르는 곳 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-12-reloaded-other 단추 글 넘침 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-12-reloaded-other 검은 주 단추 1개 이하",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "판정을 고르면 그 칸이 눌린 상태",
+   "ok": true
+  },
+  {
+   "name": "판정을 눌러 다시 그려도 펼친 「문제 보기」는 그대로",
+   "ok": true
+  },
+  {
+   "name": "1280-08-week2-verdict 가로 넘침 0",
+   "ok": true,
+   "detail": {
+    "doc": 0,
+    "overflowing": []
+   }
+  },
+  {
+   "name": "1280-08-week2-verdict 13px 밑 한글 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-08-week2-verdict 44px 밑 누르는 곳 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-08-week2-verdict 단추 글 넘침 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-08-week2-verdict 검은 주 단추 1개 이하",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "응답을 잃은 같은 저장은 겹침 안내 없이 「임시 저장」",
+   "ok": true,
+   "detail": "임시 저장 · 3월 26일 (금) 오전 10:25 · 학생에게는 아직 안 보여요"
+  },
+  {
+   "name": "응답을 잃은 저장 뒤의 돌려주기도 실제로 돌려준다(학생에게 보임, 일부 문항)",
+   "ok": true,
+   "detail": {
+    "parts": {
+     "W2-1": {
+      "fields": {
+       "W2-1.1": {
+        "reason": "「-아요」는 글의 문체와 섞여요. 「-ㄹ 수 있다」로 끝내요.",
+        "verdict": "다시"
+       },
+       "W2-1.2": {
+        "verdict": "인정"
+       }
+      }
+     },
+     "W2-3": {
+      "fields": {
+       "W2-3.2": {
+        "reason": "동사는 「-는다」예요: 걸리지 않는다.",
+        "verdict": "다시"
+       },
+       "W2-3.5": {
+        "reason": "「근데」는 말하는 낱말이에요.",
+        "verdict": "부분"
+       }
+      }
+     }
+    },
+    "returnedAt": "2027-03-26T01:25:00.000Z"
+   }
+  },
+  {
+   "name": "390 「유학생들은 아르바이트를 너무 많이 한다」 고르기",
+   "ok": true
+  },
+  {
+   "name": "390-03-markbar 가로 넘침 0",
+   "ok": true,
+   "detail": {
+    "doc": 0,
+    "overflowing": []
+   }
+  },
+  {
+   "name": "390-03-markbar 13px 밑 한글 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "390-03-markbar 44px 밑 누르는 곳 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "390-03-markbar 단추 글 넘침 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "390-03-markbar 검은 주 단추 1개 이하",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "390-04-editor 가로 넘침 0",
+   "ok": true,
+   "detail": {
+    "doc": 0,
+    "overflowing": []
+   }
+  },
+  {
+   "name": "390-04-editor 13px 밑 한글 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "390-04-editor 44px 밑 누르는 곳 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "390-04-editor 단추 글 넘침 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "390-04-editor 검은 주 단추 1개 이하",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "명부 계정이 바뀐 글: 첨삭 칸을 닫고 그 학생은 「아직 안 냄」",
+   "ok": true
+  },
+  {
+   "name": "명부 계정이 바뀐 글의 첨삭은 서버에 들어가지 않았다",
+   "ok": true
+  },
+  {
+   "name": "1280-11-relinked 가로 넘침 0",
+   "ok": true,
+   "detail": {
+    "doc": 0,
+    "overflowing": []
+   }
+  },
+  {
+   "name": "1280-11-relinked 13px 밑 한글 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-11-relinked 44px 밑 누르는 곳 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-11-relinked 단추 글 넘침 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-11-relinked 검은 주 단추 1개 이하",
+   "ok": true,
+   "detail": 0
+  },
+  {
+   "name": "1280 과제 표 없음 → 서버 준비 안내",
+   "ok": true
+  },
+  {
+   "name": "1280-09-unavailable 가로 넘침 0",
+   "ok": true,
+   "detail": {
+    "doc": 0,
+    "overflowing": []
+   }
+  },
+  {
+   "name": "1280-09-unavailable 13px 밑 한글 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-09-unavailable 44px 밑 누르는 곳 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-09-unavailable 단추 글 넘침 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-09-unavailable 검은 주 단추 1개 이하",
+   "ok": true,
+   "detail": 0
+  },
+  {
+   "name": "390 과제 표 없음 → 서버 준비 안내",
+   "ok": true
+  },
+  {
+   "name": "390-09-unavailable 가로 넘침 0",
+   "ok": true,
+   "detail": {
+    "doc": 0,
+    "overflowing": []
+   }
+  },
+  {
+   "name": "390-09-unavailable 13px 밑 한글 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "390-09-unavailable 44px 밑 누르는 곳 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "390-09-unavailable 단추 글 넘침 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "390-09-unavailable 검은 주 단추 1개 이하",
+   "ok": true,
+   "detail": 0
+  },
+  {
+   "name": "1280 5주차 개요 표와 서론",
+   "ok": true
+  },
+  {
+   "name": "1280-10-week5-grid 가로 넘침 0",
+   "ok": true,
+   "detail": {
+    "doc": 0,
+    "overflowing": []
+   }
+  },
+  {
+   "name": "1280-10-week5-grid 13px 밑 한글 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-10-week5-grid 44px 밑 누르는 곳 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-10-week5-grid 단추 글 넘침 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "1280-10-week5-grid 검은 주 단추 1개 이하",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "390 5주차 개요 표와 서론",
+   "ok": true
+  },
+  {
+   "name": "390-10-week5-grid 가로 넘침 0",
+   "ok": true,
+   "detail": {
+    "doc": 0,
+    "overflowing": []
+   }
+  },
+  {
+   "name": "390-10-week5-grid 13px 밑 한글 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "390-10-week5-grid 44px 밑 누르는 곳 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "390-10-week5-grid 단추 글 넘침 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "390-10-week5-grid 검은 주 단추 1개 이하",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "예상한 응답만: 409 네 번 · 403 한 번 · 404 두 번",
+   "ok": true,
+   "detail": [
+    {
+     "tag": "1280",
+     "type": "http",
+     "text": "409 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+    },
+    {
+     "tag": "1280",
+     "type": "error",
+     "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+    },
+    {
+     "tag": "1280",
+     "type": "http",
+     "text": "409 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+    },
+    {
+     "tag": "1280",
+     "type": "error",
+     "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+    },
+    {
+     "tag": "1280",
+     "type": "http",
+     "text": "409 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+    },
+    {
+     "tag": "1280",
+     "type": "error",
+     "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+    },
+    {
+     "tag": "1280",
+     "type": "http",
+     "text": "409 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+    },
+    {
+     "tag": "1280",
+     "type": "error",
+     "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+    },
+    {
+     "tag": "1280",
+     "type": "http",
+     "text": "403 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+    },
+    {
+     "tag": "1280",
+     "type": "error",
+     "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+     "tag": "1280",
+     "type": "http",
+     "text": "404 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+    },
+    {
+     "tag": "1280",
+     "type": "error",
+     "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+     "tag": "390",
+     "type": "http",
+     "text": "404 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+    },
+    {
+     "tag": "390",
+     "type": "error",
+     "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    }
+   ]
+  },
+  {
+   "name": "콘솔 오류·CSP 위반 0",
+   "ok": true,
+   "detail": [
+    {
+     "tag": "1280",
+     "type": "http",
+     "text": "409 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+    },
+    {
+     "tag": "1280",
+     "type": "error",
+     "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+    },
+    {
+     "tag": "1280",
+     "type": "http",
+     "text": "409 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+    },
+    {
+     "tag": "1280",
+     "type": "error",
+     "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+    },
+    {
+     "tag": "1280",
+     "type": "http",
+     "text": "409 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+    },
+    {
+     "tag": "1280",
+     "type": "error",
+     "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+    },
+    {
+     "tag": "1280",
+     "type": "http",
+     "text": "409 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+    },
+    {
+     "tag": "1280",
+     "type": "error",
+     "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+    },
+    {
+     "tag": "1280",
+     "type": "http",
+     "text": "403 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+    },
+    {
+     "tag": "1280",
+     "type": "error",
+     "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+     "tag": "1280",
+     "type": "http",
+     "text": "404 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+    },
+    {
+     "tag": "1280",
+     "type": "error",
+     "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+     "tag": "390",
+     "type": "http",
+     "text": "404 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+    },
+    {
+     "tag": "390",
+     "type": "error",
+     "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    }
+   ]
+  }
+ ],
+ "console": [
+  {
+   "tag": "1280",
+   "type": "http",
+   "text": "409 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+  },
+  {
+   "tag": "1280",
+   "type": "error",
+   "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+  },
+  {
+   "tag": "1280",
+   "type": "http",
+   "text": "409 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+  },
+  {
+   "tag": "1280",
+   "type": "error",
+   "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+  },
+  {
+   "tag": "1280",
+   "type": "http",
+   "text": "409 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+  },
+  {
+   "tag": "1280",
+   "type": "error",
+   "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+  },
+  {
+   "tag": "1280",
+   "type": "http",
+   "text": "409 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+  },
+  {
+   "tag": "1280",
+   "type": "error",
+   "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+  },
+  {
+   "tag": "1280",
+   "type": "http",
+   "text": "403 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+  },
+  {
+   "tag": "1280",
+   "type": "error",
+   "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+   "tag": "1280",
+   "type": "http",
+   "text": "404 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+  },
+  {
+   "tag": "1280",
+   "type": "error",
+   "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  },
+  {
+   "tag": "390",
+   "type": "http",
+   "text": "404 http://127.0.0.1:54326/functions/v1/synk-classroom/api/teacher/homework?classId=9f315155-de4e-4184-80f4-17a00f3159de"
+  },
+  {
+   "tag": "390",
+   "type": "error",
+   "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  }
+ ],
+ "finishedAt": "2026-10-20T10:08:51.674Z"
+}
