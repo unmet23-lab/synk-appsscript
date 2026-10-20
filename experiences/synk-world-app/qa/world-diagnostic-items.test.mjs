@@ -56,6 +56,15 @@ test('모든 문항이 실제 코치의 제시 검사를 통과하고, 보기·�
  }
 });
 
+test('할 일 지시(ask)는 빈칸 베기·입장 검사에만 있고, 화면 언어 표에 그 줄이 있다',async()=>{
+ const {default:STRINGS}=await import('../../brand-opening/world-strings.mjs');
+ for(const item of DIAGNOSTIC_ITEMS){
+  const expected={'blank-slice':'blank','entry-check':'entry'}[item.source]??undefined;
+  assert.equal(item.ask,expected,item.itemKey);
+  if(item.ask)assert.equal(STRINGS[`position.diagnostic.ask.${item.ask}`]?.ko,item.question,item.itemKey);
+ }
+});
+
 test('15개 항목 중 다루는 것과 모자란 것이 정확히 나뉜다',()=>{
  const covered=new Set(DIAGNOSTIC_ITEMS.map(item=>item.skillId));
  assert.deepEqual(SKILLS.filter(id=>!covered.has(id)),Object.keys(DIAGNOSTIC_GAPS));

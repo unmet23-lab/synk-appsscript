@@ -8,34 +8,36 @@ export const POSITION_POLICY=Object.freeze({version:'world-position-1',
  // 학습기준 §7-3의 여섯 상태 → 학습자에게 보이는 세 칸. 시험이 이 대응을 고정한다.
  cells:Object.freeze({'recent-independent':'independent',practice:'practicing',checking:'practicing',supported:'practicing',review:'practicing',unseen:'notyet'})});
 export const POSITION_CELLS=Object.freeze(['independent','practicing','notyet']);
-const record=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
-const own=(value,key)=>Object.prototype.hasOwnProperty.call(value,key);
-const time=value=>typeof value==='string'&&Number.isFinite(Date.parse(value));
+const posRecord=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
+const posOwn=(value,key)=>Object.prototype.hasOwnProperty.call(value,key);
+const posTime=value=>typeof value==='string'&&Number.isFinite(Date.parse(value));
 const TOPIK_SKILL=/^ko\.(listening|reading)\.[a-z]+$/;
 
 export function positionCell(status){
- if(typeof status!=='string'||!own(POSITION_POLICY.cells,status))throw TypeError(`WORLD position: unknown Core state ${status}`);
+ if(typeof status!=='string'||!posOwn(POSITION_POLICY.cells,status))throw TypeError(`WORLD position: unknown Core state ${status}`);
  return POSITION_POLICY.cells[status];
 }
-function profileOf(summary){
- if(!record(summary)||!Array.isArray(summary.skills)||typeof summary.evidenceComplete!=='boolean')throw TypeError('WORLD position needs a Core learning summary');
+function posProfile(summary){
+ if(!posRecord(summary)||!Array.isArray(summary.skills)||typeof summary.evidenceComplete!=='boolean')throw TypeError('WORLD position needs a Core learning summary');
  return summary;
 }
 // Strata의 TOPIK I 항목(듣기 7·읽기 8)만, 지도에 나온 순서대로.
-const topikSkills=summary=>profileOf(summary).skills.filter(skill=>TOPIK_SKILL.test(skill?.id||'')&&['listening','reading'].includes(skill.domain));
+const posTopikSkills=summary=>posProfile(summary).skills.filter(skill=>TOPIK_SKILL.test(skill?.id||'')&&['listening','reading'].includes(skill.domain));
 
-// Trail 로그에서 Core가 근거로 든 시도(eventId)의 사실만 찾는다: 정오·시각·문항. 도움·첫 노출의 해석은 Core 상태가 이미 했다.
-function attemptIndex(events){
- const presented=new Map(),attempts=new Map();
+// Trail 로그에서 Core가 근거로 든 시도(eventId)의 사실만 찾는다: 정오·시각·문항·어느 경험에서 냈는지. 도움·첫 노출의 해석은 Core 상태가 이미 했다.
+// experienceId: 그 문항을 낸 결정의 경험(게임이면 그 게임, WORLD 짧은 진단이면 진단을 낸 코치 'world-home').
+function posAttemptIndex(events){
+ const presented=new Map(),attempts=new Map(),decisions=new Map();
  for(const event of Array.isArray(events)?events:[]){
   if(event?.type==='practice.presented')presented.set(event.id,event);
   else if(event?.type==='practice.attempted')attempts.set(event.id,event);
+  else if(event?.type==='decision.made')decisions.set(event.id,event.experienceId);
  }
  return id=>{
   const attempt=attempts.get(id),shown=attempt&&presented.get(attempt.presentationId);
   if(!attempt||!shown)return null;
   return {eventId:id,at:attempt.at,verdict:attempt.verdict,attemptNo:attempt.attemptNo,itemKey:shown.itemKey,taskId:shown.taskId,
-   difficulty:shown.measure?.difficulty??null,responseFormat:shown.measure?.responseFormat||'unknown'};
+   experienceId:decisions.get(shown.decisionId)??null,difficulty:shown.measure?.difficulty??null,responseFormat:shown.measure?.responseFormat||'unknown'};
  };
 }
 
@@ -43,14 +45,14 @@ function attemptIndex(events){
 // 나머지 상태의 근거는 도움 없이 처음 본 문항에 낸 첫 답이다(learning.js formatEvidence). 로그에서 접혀(learning-ledger)
 // 자세한 사실이 없는 근거는 개수로만 남긴다.
 export function buildPositionMap({summary,events=[]}={}){
- const profile=profileOf(summary),find=attemptIndex(events),counts={independent:0,practicing:0,notyet:0};
- const skills=topikSkills(profile).map(skill=>{
+ const profile=posProfile(summary),find=posAttemptIndex(events),counts={independent:0,practicing:0,notyet:0};
+ const skills=posTopikSkills(profile).map(skill=>{
   const cell=positionCell(skill.status),ids=Array.isArray(skill.reasonEvidence)?skill.reasonEvidence:Array.isArray(skill.evidence)?skill.evidence:[];
   const assisted=skill.status==='supported',found=[],folded=[];
   for(const id of ids){const row=find(id);if(row)found.push({...row,assisted,independent:!assisted});else folded.push(id);}
   found.sort((a,b)=>Date.parse(b.at)-Date.parse(a.at)||a.eventId.localeCompare(b.eventId));
   counts[cell]+=1;
-  return {id:skill.id,label:skill.label,domain:skill.domain,cell,status:skill.status,lastAt:time(skill.lastAt)?skill.lastAt:null,
+  return {id:skill.id,label:skill.label,domain:skill.domain,cell,status:skill.status,lastAt:posTime(skill.lastAt)?skill.lastAt:null,
    n:skill.n||0,correct:skill.correct||0,incorrect:skill.incorrect||0,assisted:skill.assisted||0,unassessed:skill.unassessed||0,
    difficulty:skill.difficulty??null,responseFormat:skill.responseFormat||'unknown',evidence:found,folded:folded.length};
  });
@@ -63,25 +65,25 @@ export function buildPositionMap({summary,events=[]}={}){
 export const DIAGNOSTIC_POLICY=Object.freeze({version:'world-diagnostic-1',perSkill:1,
  // TOPIK 보기 고르기에 가까운 형식부터. 같은 형식이면 문항 id 순서로 늘 같은 것을 고른다.
  formats:Object.freeze(['single-choice','binary-choice','action','cup-compose','unknown'])});
-const FORMATS=new Set(['binary-choice','single-choice','cup-compose','action','unknown']);
-const token=value=>typeof value==='string'&&/^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
-function diagnosticItem(item){
- if(!record(item)||!token(item.id)||!token(item.itemKey)||!token(item.familyKey||item.itemKey)||!TOPIK_SKILL.test(item.skillId||'')
+const POS_FORMATS=new Set(['binary-choice','single-choice','cup-compose','action','unknown']);
+const posToken=value=>typeof value==='string'&&/^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
+function posDiagnosticItem(item){
+ if(!posRecord(item)||!posToken(item.id)||!posToken(item.itemKey)||!posToken(item.familyKey||item.itemKey)||!TOPIK_SKILL.test(item.skillId||'')
   ||!['listening','reading'].includes(item.modality)||item.skillId.split('.')[1]!==item.modality||![1,2,3].includes(item.difficulty)
-  ||!FORMATS.has(item.responseFormat??'unknown')||item.audioRequired!=null&&typeof item.audioRequired!=='boolean')throw TypeError('WORLD diagnostic: invalid item');
+  ||!POS_FORMATS.has(item.responseFormat??'unknown')||item.audioRequired!=null&&typeof item.audioRequired!=='boolean')throw TypeError('WORLD diagnostic: invalid item');
  return item;
 }
 // 이 항목에서 처음 볼 난도: 아직 「최근 혼자 수행」이 아닌 가장 쉬운 난도(Core의 readyForHarder와 같은 생각).
-function targetDifficulty(skill){
+function posTargetDifficulty(skill){
  for(const difficulty of [1,2,3])if(skill.levels?.[difficulty]?.status!=='recent-independent')return difficulty;
  return 3;
 }
 export function selectDiagnostic({summary,items=[],seen,audioAvailable=true}={}){
- const profile=profileOf(summary);
+ const profile=posProfile(summary);
  if(!Array.isArray(items)||typeof seen!=='function'||typeof audioAvailable!=='boolean')throw TypeError('WORLD diagnostic needs items, an exposure reader and the sound condition');
- const pool=items.map(diagnosticItem),ids=new Set();
+ const pool=items.map(posDiagnosticItem),ids=new Set();
  for(const item of pool){if(ids.has(item.id))throw TypeError('WORLD diagnostic: duplicate item');ids.add(item.id);}
- const skills=topikSkills(profile),common={policy:DIAGNOSTIC_POLICY.version,total:skills.length,learningEffectClaim:false,grade:null};
+ const skills=posTopikSkills(profile),common={policy:DIAGNOSTIC_POLICY.version,total:skills.length,learningEffectClaim:false,grade:null};
  if(!profile.evidenceComplete)return {...common,status:'unavailable',reason:'history.incomplete',items:[],missing:skills.map(skill=>({skillId:skill.id,reason:'history'}))};
  const chosen=[],missing=[];
  for(const skill of skills){
@@ -93,7 +95,7 @@ export function selectDiagnostic({summary,items=[],seen,audioAvailable=true}={})
   const read=playable.map(item=>{let value=null;try{value=seen(item);}catch{value=null;}return {item,seen:value===true||value===false?value:null};});
   const fresh=read.filter(row=>row.seen===false).map(row=>row.item);
   if(!fresh.length){missing.push({skillId:skill.id,reason:read.some(row=>row.seen===null)?'unknown':'all-seen'});continue;}
-  const target=targetDifficulty(skill),format=item=>DIAGNOSTIC_POLICY.formats.indexOf(item.responseFormat??'unknown');
+  const target=posTargetDifficulty(skill),format=item=>DIAGNOSTIC_POLICY.formats.indexOf(item.responseFormat??'unknown');
   fresh.sort((a,b)=>Math.abs(a.difficulty-target)-Math.abs(b.difficulty-target)||a.difficulty-b.difficulty||format(a)-format(b)||a.id.localeCompare(b.id));
   chosen.push({skillId:skill.id,target,item:fresh[0]});
  }
@@ -104,18 +106,18 @@ export function selectDiagnostic({summary,items=[],seen,audioAvailable=true}={})
 // present·delivery·help·answer)에 남긴다. 그래서 기록은 Trail의 처음 본 문항에 낸 혼자 푼 첫 시도가 된다.
 // 끝까지 듣기 전에는 답을 받지 않고, 다 들은 뒤 다시 듣기는 도움이다(바람길 듣기 확인과 같은 규칙).
 // 건너뛰거나 그만두면 그 문항은 평가할 수 없는 답으로 남는다(본 것은 본 것이다). 이미 낸 답은 그대로다.
-const measureOf=item=>({id:item.id,itemKey:item.itemKey,familyKey:item.familyKey||item.itemKey,skillId:item.skillId,modality:item.modality,
+const posMeasureOf=item=>({id:item.id,itemKey:item.itemKey,familyKey:item.familyKey||item.itemKey,skillId:item.skillId,modality:item.modality,
  difficulty:item.difficulty,responseFormat:item.responseFormat??'unknown',audioRequired:item.audioRequired??item.modality==='listening',confounded:false,
  ...(Array.isArray(item.conceptIds)?{conceptIds:[...item.conceptIds]}:{})});
-function playableItem(row){
- const item=diagnosticItem(row?.item??row);
- if(!Array.isArray(item.choices)||item.choices.length<2||item.choices.some(choice=>!record(choice)||!token(choice.id)||typeof choice.label!=='string'||!choice.label)
+function posPlayableItem(row){
+ const item=posDiagnosticItem(row?.item??row);
+ if(!Array.isArray(item.choices)||item.choices.length<2||item.choices.some(choice=>!posRecord(choice)||!posToken(choice.id)||typeof choice.label!=='string'||!choice.label)
   ||new Set(item.choices.map(choice=>choice.id)).size!==item.choices.length||!item.choices.some(choice=>choice.id===item.correctId))throw TypeError('WORLD diagnostic: an item needs its choices and answer');
  return item;
 }
 export function createDiagnosticSession({coach,items}={}){
  if(!coach||['present','delivery','help','answer'].some(name=>typeof coach[name]!=='function')||!Array.isArray(items))throw TypeError('WORLD diagnostic needs the learning coach and its items');
- const queue=items.map(playableItem),results=[];let index=-1,current=null,stopped=false;
+ const queue=items.map(posPlayableItem),results=[];let index=-1,current=null,stopped=false;
  const listening=item=>item.audioRequired??item.modality==='listening';
  const view=()=>current&&{index,total:queue.length,item:current.item,heard:current.heard,answered:current.answered,replayed:current.replayed,audio:current.audio};
  const close=(result,choiceId,skipped)=>{current.answered=true;const row={skillId:current.item.skillId,itemId:current.item.id,itemKey:current.item.itemKey,choiceId,skipped,
@@ -133,7 +135,7 @@ export function createDiagnosticSession({coach,items}={}){
    if(stopped)return null;
    if(current&&!current.answered)throw Error('WORLD diagnostic: answer or skip the current item first');
    index+=1;if(index>=queue.length){current=null;return null;}
-   const item=queue[index];current={item,pid:coach.present(measureOf(item)),audio:listening(item)?'pending':'none',heard:!listening(item),answered:false,replayed:false};
+   const item=queue[index];current={item,pid:coach.present(posMeasureOf(item)),audio:listening(item)?'pending':'none',heard:!listening(item),answered:false,replayed:false};
    return view();
   },
   // 실제 재생기의 결과만 받는다(재생을 불렀다는 것만으로 들었다고 하지 않는다).
@@ -164,21 +166,21 @@ export function createDiagnosticSession({coach,items}={}){
 // (hangul-stage/core.mjs의 꼴)에서 판에 보일 숫자만 꺼낸다. 글자 상태·졸업의 판단은 그 게임이 한다.
 // layer: Strata 한글 층(strata/hangul.json) — 49글자, 핵심 단원(U1~U7, core:false가 아닌 것)이 졸업 조건이다.
 export function hangulStageProgress(raw,layer){
- if(!record(layer)||!Array.isArray(layer.letters)||!Array.isArray(layer.units))throw TypeError('WORLD position needs the Strata Hangul layer');
- const progress=record(raw)&&raw.v===1?raw:null,letters=record(progress?.letters)?progress.letters:{};
- const ids=layer.letters.map(row=>Array.isArray(row)?row[0]:row?.id).filter(token);
- const state=id=>record(letters[id])&&typeof letters[id].state==='string'?letters[id].state:'unmet';
- const best=id=>record(letters[id])&&typeof letters[id].best==='string'?letters[id].best:state(id);
+ if(!posRecord(layer)||!Array.isArray(layer.letters)||!Array.isArray(layer.units))throw TypeError('WORLD position needs the Strata Hangul layer');
+ const progress=posRecord(raw)&&raw.v===1?raw:null,letters=posRecord(progress?.letters)?progress.letters:{};
+ const ids=layer.letters.map(row=>Array.isArray(row)?row[0]:row?.id).filter(posToken);
+ const state=id=>posRecord(letters[id])&&typeof letters[id].state==='string'?letters[id].state:'unmet';
+ const best=id=>posRecord(letters[id])&&typeof letters[id].best==='string'?letters[id].best:state(id);
  const core=layer.units.filter(unit=>unit?.core!==false&&Array.isArray(unit.letters));
  const met=ids.filter(id=>state(id)!=='unmet').length;
  return {started:met>0,met,total:ids.length,mastered:ids.filter(id=>best(id)==='mastered').length,
   units:core.length,unitsDone:core.filter(unit=>unit.letters.every(id=>best(id)==='mastered')).length,
-  graduated:!!(record(progress?.graduated)&&time(progress.graduated.at)),skipped:progress?.skipped===true};
+  graduated:!!(posRecord(progress?.graduated)&&posTime(progress.graduated.at)),skipped:progress?.skipped===true};
 }
 // 한글 판을 보일지: 첫 실행에서 「아직 못 읽어요」를 고른 사람(생활 기록 hangul.answer === 'new')이고 아직
 // 졸업하지 않았을 때만. 답이 없거나 읽는다고 고른 사람·졸업한 사람·건너뛴 사람은 항목 지도를 본다.
 export function showsHangulBoard({reading=null,stage=null}={}){
- return record(reading)&&reading.answer==='new'&&!(stage?.graduated)&&!(stage?.skipped);
+ return posRecord(reading)&&reading.answer==='new'&&!(stage?.graduated)&&!(stage?.skipped);
 }
 
 // 예상 급수의 문턱. 「1급 근처 · 근거 30문항 · 갱신일」처럼 범위를 보이려면 TOPIK 형식 연습(처음 보는 문항 · 실제 구성 ·
@@ -186,15 +188,15 @@ export function showsHangulBoard({reading=null,stage=null}={}){
 // 실제 자료로 조정한다(§7-3). 점수에서 범위를 읽는 검수된 방법이 아직 없어, 문턱을 넘어도 급수는 만들지 않는다.
 export const ESTIMATE_POLICY=Object.freeze({version:'world-topik-estimate-1',minEvidence:30,minPerDomain:10,recentDays:90,
  forms:Object.freeze(['topik-i']),compositions:Object.freeze(['official-blueprint'])});
-const DAY=86400000;
+const POS_DAY=86400000;
 // evidence: 호스트가 내놓는 TOPIK 형식 연습의 첫 답. 지금 WORLD에는 이런 연습이 없어 빈 목록이다.
 export function estimateGate({evidence=[],asOf,policy=ESTIMATE_POLICY}={}){
- if(!Array.isArray(evidence)||!time(asOf)||!record(policy)||!Number.isInteger(policy.minEvidence)||policy.minEvidence<1)throw TypeError('WORLD estimate gate needs evidence, a time and a policy');
+ if(!Array.isArray(evidence)||!posTime(asOf)||!posRecord(policy)||!Number.isInteger(policy.minEvidence)||policy.minEvidence<1)throw TypeError('WORLD estimate gate needs evidence, a time and a policy');
  const now=Date.parse(asOf),counted=new Map();
  for(const row of evidence){
-  if(!record(row)||!token(row.eventId)||!time(row.at)||!['listening','reading'].includes(row.domain))continue;
+  if(!posRecord(row)||!posToken(row.eventId)||!posTime(row.at)||!['listening','reading'].includes(row.domain))continue;
   const at=Date.parse(row.at);
-  if(at>now||now-at>policy.recentDays*DAY)continue;
+  if(at>now||now-at>policy.recentDays*POS_DAY)continue;
   if(row.firstExposure!==true||row.independent!==true||row.timed!==true||!['correct','incorrect'].includes(row.verdict))continue;
   if(!policy.forms.includes(row.form)||!policy.compositions.includes(row.composition))continue;
   if(!counted.has(row.eventId))counted.set(row.eventId,row);

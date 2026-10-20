@@ -11,6 +11,8 @@ import {createLifeProgressPort} from './life-progress-port.mjs';
 export {createLifeProgressPort} from './life-progress-port.mjs';
 export {GUEST_TRIAL_GAMES,createGuestTrials,createGuestTrialPlayHost} from './guest-trial.mjs';
 export {createDeviceRecordsOffer} from './device-records.mjs';
+// 「내 위치」(판단 · 진단 문항 · 그림): 진단 문항이 앱 서버가 내주지 않는 게임 원고에서 오므로 이 묶음에 싣는다(world-position-kit.mjs).
+export {worldPosition} from './world-position-kit.mjs';
 import {classroomEndpoint,classroomReply,requestClassrooms} from './classroom-client.mjs';
 const changed=()=>Object.assign(Error('계정 연결이 바뀌었어요.'),{code:'ACCOUNT_CHANGED'});
 const authErrors=new Set(['AUTH_REQUIRED','AUTH_SESSION_MISSING','SESSION_REVOKED','UNAUTHORIZED','ACCOUNT_UNAVAILABLE','PRODUCT_FORBIDDEN','PLATFORM_ACCOUNT_MISMATCH']);

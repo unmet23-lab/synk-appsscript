@@ -40,7 +40,8 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  // 10-17 움직임: 고른 답의 초록이 손끝 자리에서 번지도록 마지막으로 누른 자리를 기억한다. 진행 막대는 같은 레슨에서 늘 때만 움직인다.
  let lastPoint=null,justChose=false,barMemo={key:'',value:-1};
  content?.addEventListener('pointerdown',event=>{lastPoint={x:event.clientX,y:event.clientY};},{passive:true});
- for(const [variable,file]of Object.entries({'--cafe-room':'home/cafe-room-v1.webp','--cafe-drinks':'home/cafe-drinks-v2.png','--cafe-ice':'home/cafe-ice.webp','--life-print-goals':'world-felt/goals.webp'}))panel.style.setProperty(variable,`url("${asset(file)}")`);
+ // 내 위치 판(world-position-ui.mjs)의 인화지: 항목 지도는 채운 칸·빈칸 판, 한글 판은 한글 사진.
+ for(const [variable,file]of Object.entries({'--cafe-room':'home/cafe-room-v1.webp','--cafe-drinks':'home/cafe-drinks-v2.png','--cafe-ice':'home/cafe-ice.webp','--life-print-goals':'world-felt/goals.webp','--life-print-position':'world-felt/complete.webp','--life-print-hangul':'world-felt/hangul.webp'}))panel.style.setProperty(variable,`url("${asset(file)}")`);
  for(const kind of ['counter','window','garden'])if(hasCafePhoto(kind))panel.style.setProperty('--cafe-'+kind,`url("${asset(cafePhotoFile(kind))}")`);
  // 흰 인화지에 붙인 펠트 사진(assets/world-felt). 한 화면에 같은 사진은 한 번만 쓴다.
  const print=(name,className='')=>`<span class="w-print ${className}" aria-hidden="true"><img src="${asset('world-felt/'+name+'.webp')}" alt="" width="640" height="640" decoding="async"></span>`;
@@ -214,6 +215,8 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   // 처음 쓰는 사람에게는 복습 줄·완료 표시처럼 아직 쓸모없는 것을 두지 않는다.
   const rows=[`<button class="life-row" data-life-stories>${print('stories','life-row-print')}<span class="life-row-copy"><strong>${t('life.stories')}</strong><small>${t('life.storiesCount',{n:episodes})}</small></span></button>`];
   if(now.kind==='lesson'&&hasReviews)rows.push(reviewRow(s));
+  // 내 위치(10-19 결정): TOPIK I 항목 지도와 짧은 진단. 홈이 그 판을 연다(data-view). 다 마친 포스터가 채운 칸 판을 쓰면 나침반으로.
+  rows.push(`<button class="life-row" data-view="position">${print(now.kind==='rest'?'goals':'complete','life-row-print')}<span class="life-row-copy"><strong>${t('position.title')}</strong><small>${t('position.row')}</small></span></button>`);
   paint(t('life.learn'),`<div class="life-hub life-heading" tabindex="-1">${now.html}<section class="life-pack-section" aria-label="${t('life.packsSection')}"><div class="life-section-head"><p class="life-section-label">LIFE PACKS</p><small class="life-library-note">${s.completed?t('life.lessonsDone',{done:s.completed,total:s.total}):t('life.packsAndLessons',{packs:PACKS.length,lessons:LESSONS.length})}</small></div><div class="life-pack-grid">${PACKS.map((p,i)=>packCard(p,i,now.kind==='lesson'?now.packId:null)).join('')}</div></section><section class="life-rows" aria-label="${t('life.more')}"><p class="life-section-label">MORE</p>${rows.join('')}</section></div>`);}
  // 레슨 목록 줄: 번호 → 단계·제목·한 줄 설명 → 상태 LED. 시작 전 레슨은 상태 글 없이, 「지금」 줄만 코랄.
  function lessonRow(l,number,{nowId=null,className='',lead=null,kicker=phaseName(l.type),labels=[t('life.state.done'),t('life.state.doing'),'']}={}){

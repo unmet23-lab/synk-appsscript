@@ -1,11 +1,9 @@
-import {t,tMessage} from '../brand-opening/world-lang.mjs';
+import {t,tMessage,hasString,formatDate} from '../brand-opening/world-lang.mjs';
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // 화면 언어(10-19 1판): 이름·값과 순서는 그대로 두고 보이는 글만 표(goal.*)에서 읽는다.
 const REASON_IDS=['travel','life','people','exam','study','work','career','culture','hobby','other'];
 const reasons=()=>Object.fromEntries(REASON_IDS.map(id=>[id,t(`goal.reason.${id}`)]));
 const supportNames=()=>({choose:[t('goal.support.choose'),t('goal.support.chooseNote')],step:[t('goal.support.step'),t('goal.support.stepNote')],independent:[t('goal.support.independent'),t('goal.support.independentNote')]});
-const STATES=new Set(['practice','supported','review','checking','recent-independent']);
-const stateName=status=>STATES.has(status)?t(`goal.state.${status}`):'';
 // 고르기: 알약 묶음(고른 것은 흰 바탕). 이름·값 순서는 시험이 읽으므로 바꾸지 않는다.
 const radios=(name,options,value)=>(Array.isArray(options)?options:Object.entries(options)).map(([id,label])=>`<label class="study-pill"><input type="radio" name="${name}" value="${id}" ${value===id?'checked':''}><span>${label}</span></label>`).join('');
 // 도움 방식: 목록 줄(제목 + 설명 한 줄 + 체크).
@@ -13,10 +11,13 @@ const rows=(name,options,value)=>Object.entries(options).map(([id,[label,note]])
 
 // WORLD supplies meaningful candidates; the existing Core decides among them.
 // This controller owns no identity, grading, second event log, or server API.
-export function createWorldEducation({home,getProgress,engine,createPlan,launchGame,startLesson,startReview,prepare=async()=>{},target=globalThis}){
+// position: 「내 위치」 묶음(world-position-kit.mjs의 worldPosition — 계정 묶음·생활 묶음이 넘긴다). 없으면 그 판을 열지 않는다.
+// audioUrl(path): 짧은 진단 듣기 문항의 녹음(게임 폴더 기준 경로, 예: korean-runner/assets/voice/…)을 이 화면에서 부를 주소로.
+export function createWorldEducation({home,getProgress,engine,createPlan,launchGame,startLesson,startReview,prepare=async()=>{},position=null,audioUrl=path=>path,target=globalThis}){
  let stopped=false,coach=null,coachHost=null,current=null,refreshing=false;
  const owner=getProgress().owner;
  const empty=engine.engine.createGame({gameId:'world-home-empty',storage:null,historyComplete:false}).summary();
+ const view=position?position.createView({t,has:hasString,formatDate}):null;
  const check=()=>{if(stopped||getProgress()?.owner!==owner)throw Error('학습 계정이 바뀌었어요. 설정을 다시 열어 주세요.');};
  function readCoach(){
   check();const source=target.SYNKLearningHost||null;
@@ -86,7 +87,8 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  function open({continueAfter=false}={}){
   check();const progress=getProgress(),saved=progress.learningProfile(),profile=saved.profile,values=settingsFor(progress.learningProfileValues());let revision=profile.revision;
   let summary=empty;try{summary=readCoach()?.summary()||empty;}catch{}
-  const observed=summary.evidenceComplete?summary.skills.filter(s=>STATES.has(s.status)).slice(0,4):[];
+  // 「연습에서 본 것」 대신 「내 위치 보기」 한 줄(10-19 결정): 항목 지도의 세 칸 수를 미리 보이고, 누르면 내 위치 판이 열린다.
+  let counts=null;try{if(view&&summary.evidenceComplete)counts=position.buildPositionMap({summary}).counts;}catch{counts=null;}
   const reason=values.primaryReason||values.reasons?.[0]||'';
   // 폼 느낌을 걷어낸 목록: 알약 묶음(이유·설명·시간·소리) · 목록 줄(도움 방식) · 스위치(기억하기). 사진은 생활 화면이 심어 둔 나침반(--life-print-goals).
   home.showPanel(t('goal.title'),`<form id="world-study-form" class="study-form">
@@ -103,7 +105,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
    <p class="study-save-status" role="status">${escape(tMessage(progress.status().message))}</p>
    <div class="life-actions"><button class="felt-button" type="submit">${t(continueAfter?'goal.saveStart':'goal.save')} <span aria-hidden="true">→</span></button><button class="quiet-button" type="button" data-study-skip>${t(profile.status==='new'?'goal.skip':'goal.close')}</button></div>
    ${profile.status==='active'?`<div class="study-controls"><button type="button" class="quiet-button" data-study-clear="disable">${t('goal.disable')}</button><button type="button" class="quiet-button" data-study-clear="delete">${t('goal.delete')}</button></div>`:''}
-   <section class="study-understanding"><h3>${t('goal.seen')}</h3>${observed.length?`<ul>${observed.map(s=>`<li><strong>${escape(s.label)}</strong><span>${stateName(s.status)}</span></li>`).join('')}</ul>`:`<p>${t('goal.seen.empty')}</p>`}<p>${t('goal.seen.note')}</p></section>
+   ${view?`<section class="study-position"><p class="life-section-label">MY POSITION</p><button type="button" class="life-row study-position-row" data-view="position"><span class="life-row-copy"><strong>${t('position.open')}</strong><small>${escape(counts?t('position.summary',counts):t('position.row'))}</small></span></button></section>`:''}
   </form>`,{type:'world-study',eyebrow:'GOALS',nav:'me'});
   const form=target.document.querySelector('#world-study-form');if(!form)return;
   const status=form.querySelector('.study-save-status');let busy=false;
@@ -116,6 +118,120 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   form.querySelector('[data-study-skip]').addEventListener('click',()=>{if(profile.status==='new')void run(()=>progress.clearLearningProfile({mode:'skip',expectedRevision:revision}));else home.closePanel();});
   form.querySelectorAll('[data-study-clear]').forEach(button=>button.addEventListener('click',()=>void run(()=>progress.clearLearningProfile({mode:button.dataset.studyClear,expectedRevision:revision}))));
  }
+ // ── 「내 위치」(10-19 결정 · 학습기준 §7-3) ──
+ // 판: Core가 이미 읽은 TOPIK I 15개 항목 상태를 세 칸(혼자 해냄·연습 중·아직)으로 보이고, 칸마다 그렇게 본 근거를 단다.
+ // 짧은 진단은 이 화면의 코치(world-home)에 제시 → (듣기면) 끝까지 들음 → 첫 답 순서로 남긴다 — 처음 보는 문항에 혼자 낸 첫 시도다.
+ // 예상 급수는 문턱(TOPIK 형식 근거 30·영역별 10·90일) 전에는 보이지 않는다. 「아직 못 읽어요」를 고른 사람은 한글 진도부터.
+ let diagnosed=false,positionOpen=0;
+ const PANEL={type:'life-position',eyebrow:'MY POSITION',nav:'packs'};
+ const panelNode=selector=>target.document?.querySelector(`#panel-content ${selector}`)||null;
+ const failed=error=>home.toast(tMessage(error?.message)||t('position.failed'));
+ // 한글 만나기가 진도를 두는 자리(hangul-stage/learning.mjs progressKey): 손님은 이 기기, 계정은 그 계정·학습 동의 판의 구역.
+ // 계정인데 학습 호스트가 아직 없으면 자리를 모른다(null) — 손님 자리를 대신 읽지 않는다.
+ function hangulStage(coachNow){
+  if(owner!=='guest'&&!coachNow)return null;
+  try{
+   const key=position.hangulProgressKey(target,coachNow);if(!key)return null;
+   const raw=target.localStorage?.getItem(key);
+   return position.hangulStageProgress(raw?JSON.parse(raw):null,position.hangulLayer);
+  }catch{return null;}
+ }
+ function positionData(coachNow){
+  let summary=empty,events=[];
+  try{summary=coachNow?.summary()||empty;events=coachNow?.events?.()||[];}catch{summary=empty;events=[];}
+  const map=position.buildPositionMap({summary,events});
+  let audioAvailable=true;try{audioAvailable=getProgress().learningProfileValues().audio!=='off';}catch{}
+  // 노출을 모르면(null) 「처음 보는 문항」을 약속하지 않는다.
+  const seen=item=>{try{return coachNow?coachNow.exposure(item).seen:null;}catch{return null;}};
+  let plan=null;try{plan=position.selectDiagnostic({summary,items:position.items,seen,audioAvailable});}catch{plan=null;}
+  // 지금 WORLD에는 TOPIK 형식(처음 보는 문항·실제 구성·시간 제한) 연습이 없어 근거는 빈 목록이다.
+  const gate=position.estimateGate({evidence:[],asOf:new Date().toISOString()});
+  return {map,plan,gate};
+ }
+ function showBoard(coachNow){
+  check();
+  const {map,plan,gate}=positionData(coachNow);
+  let scope=null;try{scope=getProgress().status().scoped?'account':'device';}catch{}
+  home.showPanel(t('position.title'),view.renderPositionBoard({map,plan,gate,catalog:position.label,diagnosed,scope}),PANEL);
+  panelNode('[data-position-board]')?.focus?.({preventScroll:true});
+  panelNode('[data-position-diagnostic]')?.addEventListener('click',()=>{try{startDiagnostic(coachNow,plan,map);}catch(error){failed(error);}},{once:true});
+ }
+ function showHangul(stage){
+  home.showPanel(t('position.title'),view.renderHangulBoard({stage}),PANEL);
+  panelNode('[data-position-board]')?.focus?.({preventScroll:true});
+  panelNode('[data-position-hangul]')?.addEventListener('click',()=>{try{void Promise.resolve(launchGame('hangul')).catch(failed);}catch(error){failed(error);}},{once:true});
+ }
+ async function openPosition(){
+  if(!position)return;
+  check();const ticket=++positionOpen;
+  // 계정의 학습 호스트를 먼저 세운다(다음 연습과 같다). 세우지 못해도 판은 열고, 기록이 덜 왔다고 알린다.
+  try{await prepare();}catch{/* the board shows the records as incomplete */}
+  check();try{await target.SYNKLearningHost?.ready?.();}catch{/* device-local evidence still shows */}
+  check();if(ticket!==positionOpen)return;
+  let coachNow=null;try{coachNow=readCoach();}catch{coachNow=null;}
+  let reading=null;try{reading=getProgress().hangulReading?.()||null;}catch{reading=null;}
+  const stage=hangulStage(coachNow);
+  if(position.showsHangulBoard({reading,stage})){showHangul(stage);return;}
+  showBoard(coachNow);
+ }
+ // 진단 한 바퀴는 한 판 안에서 문항만 바꿔 그린다. 판을 닫거나 다른 판이 열리면(attachPanelResource) 보이던 문항은 건너뛴 것으로 남긴다.
+ function startDiagnostic(coachNow,plan,map){
+  check();
+  if(!coachNow||plan?.status!=='ready'||!plan.items.length)return;
+  const session=position.createDiagnosticSession({coach:coachNow,items:plan.items});
+  const skillOf=id=>map.skills.find(skill=>skill.id===id)||{id};
+  let clip=null,playing=false,notice='',ended=false;
+  const silence=()=>{const sound=clip;clip=null;playing=false;try{sound?.pause();}catch{}};
+  const stop=()=>{if(ended)return;ended=true;silence();try{session.stop();}catch{}try{coachNow.flush?.();}catch{}if(session.results().length)diagnosed=true;queueMicrotask(()=>refresh());};
+  home.showPanel(t('position.diagnostic.title'),'<div class="wpos-stage" data-position-stage></div>',{...PANEL,eyebrow:'QUICK CHECK'});
+  home.attachPanelResource?.({dispose:stop});
+  const box=panelNode('[data-position-stage]');if(!box){stop();return;}
+  // 배우기 판(life-*)은 내용 칸(#panel-content)이 스크롤되고, 다른 시트는 판 자체가 스크롤된다. 둘 다 맨 위로.
+  const top=()=>{for(const node of [box.closest?.('#panel-content'),box.closest?.('dialog')])if(node)node.scrollTop=0;};
+  // focus: 새 문항이면 항목 이름으로, 같은 문항을 다시 그릴 때(듣기 시작·끝)는 고른 곳으로 초점을 옮긴다.
+  function paint(focus='.wpos-run-skill'){
+   const now=session.current;if(!now){finish();return;}
+   box.innerHTML=view.renderDiagnosticItem({view:now,skill:skillOf(now.item.skillId),notice,playing});
+   if(focus)box.querySelector(focus)?.focus?.({preventScroll:true});
+  }
+  function advance(message=''){
+   notice=message;
+   if(!session.next()){finish();return;}
+   paint();top();
+  }
+  function finish(){
+   if(ended&&!box.isConnected)return;
+   ended=true;silence();try{coachNow.flush?.();}catch{}
+   const results=session.results();if(results.length)diagnosed=true;
+   let after=map;try{after=position.buildPositionMap({summary:coachNow.summary(),events:coachNow.events?.()||[]});}catch{after=map;}
+   box.innerHTML=view.renderDiagnosticDone({map:after,results});
+   box.querySelector('[data-position-done]')?.focus?.({preventScroll:true});top();
+   queueMicrotask(()=>refresh());
+  }
+  // 소리는 실제 재생기의 끝(ended)·실패(error)만 진단에 알린다(재생을 눌렀다는 것만으로 들었다고 하지 않는다).
+  function listen(){
+   const now=session.current;if(!now||now.answered||playing||!now.item.audio)return;
+   session.replay();notice='';
+   let sound;try{sound=new target.Audio(audioUrl(now.item.audio));}catch{session.delivery('failed');paint('[data-position-listen]');return;}
+   clip=sound;playing=true;paint('[data-position-listen]');
+   const done=status=>{if(clip!==sound)return;clip=null;playing=false;if(ended)return;try{session.delivery(status);}catch{}paint(status==='completed'?'.wpos-choice:not([disabled])':'[data-position-listen]');};
+   sound.addEventListener('ended',()=>done('completed'),{once:true});
+   sound.addEventListener('error',()=>done('failed'),{once:true});
+   Promise.resolve(sound.play()).catch(()=>done('failed'));
+  }
+  box.addEventListener('click',event=>{
+   const button=event.target.closest?.('button');if(!button||button.disabled||ended&&!button.hasAttribute('data-position-back'))return;
+   try{
+    check();
+    if(button.dataset.positionChoice){silence();if(session.answer(button.dataset.positionChoice))advance(t('position.diagnostic.saved'));else paint();}
+    else if(button.hasAttribute('data-position-listen'))listen();
+    else if(button.hasAttribute('data-position-skip')){silence();session.skip();advance('');}
+    else if(button.hasAttribute('data-position-stop')){stop();showBoard(readCoach());}
+    else if(button.hasAttribute('data-position-back'))showBoard(readCoach());
+   }catch(error){stop();failed(error);}
+  });
+  advance('');
+ }
  const onFocus=()=>refresh();target.addEventListener?.('focus',onFocus);
- return {next,open,refresh,applyPreferences,presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),dispose(){stopped=true;coach?.disconnect?.();target.removeEventListener?.('focus',onFocus);}};
+ return {next,open,refresh,applyPreferences,...(position?{position:openPosition}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),dispose(){stopped=true;coach?.disconnect?.();target.removeEventListener?.('focus',onFocus);}};
 }

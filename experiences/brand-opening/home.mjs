@@ -232,6 +232,8 @@ async function callLearning(command){
 async function callLearningReady(command){
  if(command==='learn'&&education)return education.next();
  if(command==='study'&&education)return education.open();
+ // 「내 위치」(10-19 결정): 홈의 「내 위치 보기」·배우기 판의 줄·학습 목표 창의 줄이 같은 판을 연다.
+ if(command==='position'&&education?.position)return education.position();
  if(host){callHost(command==='learn'?'learn':command);return;}
  try{const ui=await loadLearning();ui[command==='learn'?'next':command]?.();}catch{}
 }
@@ -318,7 +320,7 @@ document.addEventListener('click',event=>{
  if(button.dataset.homeHost){callHost(button.dataset.homeHost);return;}
  if(button.dataset.world){if(['play','town','songs'].includes(button.dataset.world))callHost(button.dataset.world,button);return;}
  if(button.hasAttribute('data-close')){closePanel();return;}
- const view=button.dataset.view;if(['learn','packs','review','stories','cafe','study'].includes(view)){void callLearning(view);return;}if(view==='play')showPlay();else if(view==='wardrobe')showWardrobe();else if(view==='me')showMe();else{const closing=panel.open;if(closing)closePanel();if(place==='room')void go('town',{user:true,sound:closing?'':'close'});window.scrollTo({top:0,behavior:manualReduced||reduced.matches?'instant':'smooth'});}
+ const view=button.dataset.view;if(['learn','packs','review','stories','cafe','study','position'].includes(view)){void callLearning(view);return;}if(view==='play')showPlay();else if(view==='wardrobe')showWardrobe();else if(view==='me')showMe();else{const closing=panel.open;if(closing)closePanel();if(place==='room')void go('town',{user:true,sound:closing?'':'close'});window.scrollTo({top:0,behavior:manualReduced||reduced.matches?'instant':'smooth'});}
 });
 content.addEventListener('change',event=>{const pref=event.target.dataset?.pref;if(pref){setPref(pref,event.target.checked);if(pref==='sound'&&event.target.checked)play('select');return;}if(event.target.name==='world-lang'){void chooseLanguage(event.target.value);return;}if(event.target.name==='orientation')chooseOrientation(event.target.value);if(event.target.id==='reduce-motion'){manualReduced=event.target.checked;try{localStorage.setItem('synk.world.maru.reduced',String(manualReduced));}catch{}syncScene();}});
 document.querySelector('[data-orientation-auto]').addEventListener('click',()=>chooseOrientation('auto'));

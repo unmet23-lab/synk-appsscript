@@ -1,0 +1,48 @@
+{
+ "createdAt": "2026-10-20T04:48:36.037Z",
+ "pairs": 6,
+ "budget": 900,
+ "batches": [
+  {
+   "file": "recheck-01.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "position.intro",
+     "mn": "Өмнө нь үзээгүй асуултад тусламжгүйгээр өгсөн анхны хариултаар чадвар бүр аль ангилалд орохыг тогтооно. Тоглоомын оноогоор түвшин тогтоохгүй, тэнцэх эсэхийг ч дүгнэхгүй."
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "position.incomplete",
+     "mn": "Сургалтын бүх мэдээллийг хараахан ачаалж дуусаагүй байна. Одоогийн байдал бодитоос илүү хоосон харагдаж магадгүй бөгөөд богино шалгалт ч мэдээлэл ачаалагдсаны дараа нээгдэнэ."
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "position.skill.ko.reading.grammar",
+     "mn": "Туслах үг, өгүүлбэрийн загварыг ойлгож унших"
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "position.evidence.level",
+     "mn": "Хүндийн зэрэг 3"
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "position.status.checking",
+     "mn": "Шинэ асуултаар шалгаж байна. Дахиад хэдэн удаа өөрөө хариулбал аль ангилалд орох нь тодорхой болно."
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "position.diagnostic.bag",
+     "mn": "Авч ирсэн зүйлс"
+    }
+   ]
+  }
+ ]
+}

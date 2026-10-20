@@ -1,0 +1,72 @@
+{
+ "createdAt": "2026-10-20T05:21:42.535Z",
+ "pairs": 10,
+ "budget": 900,
+ "batches": [
+  {
+   "file": "recheck-05.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "position.status.unseen",
+     "mn": "Өөрөө хариулсан шинэ асуулт хараахан алга. Энэ чадварт сул гэсэн үг биш."
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "position.status.supported",
+     "mn": "Тусламжтайгаар хийж чадсан. Дараагийн удаа тусламжийг багасгаж шалгана."
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "position.failed",
+     "mn": "Энэ хэсгийг нээж чадсангүй. Түр хүлээгээд дахин оролдоно уу."
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "position.source.other",
+     "mn": "Бусад дасгал"
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "position.diagnostic.allSeen",
+     "mn": "Бэлэн байгаа шалгалтын бүх асуултад хариулсан. Шинэ асуулт нэмэгдэхэд дахин нээгдэнэ."
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "position.diagnostic.listenFirst",
+     "mn": "Дуустал сонссоны дараа сонгож болно."
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "position.estimate.title",
+     "mn": "TOPIK-ийн ойролцоо түвшин"
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "position.row",
+     "mn": "TOPIK I-ийн 15 чадвар болон богино шалгалт"
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "position.hangul.unknown",
+     "mn": "Солонгос үсэг сурсан явцыг хараахан ачаалж чадаагүй байна."
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "position.status.practice",
+     "mn": "Өөрөө хариулсан шинэ асуултуудаас хэд хэдийг нь алдсан. Дахин дасгал хийх хэсэг байна."
+    }
+   ]
+  }
+ ]
+}

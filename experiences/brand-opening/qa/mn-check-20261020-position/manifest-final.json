@@ -1,0 +1,597 @@
+{
+ "createdAt": "2026-10-20T05:01:52.641Z",
+ "pairs": 94,
+ "budget": 900,
+ "batches": [
+  {
+   "file": "final-01.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "position.title",
+     "mn": "Миний ахиц"
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "position.open",
+     "mn": "Ахицаа харах"
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "position.row",
+     "mn": "TOPIK I-ийн 15 чадвар ба богино шалгалт"
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "position.summary",
+     "mn": "TOPIK I · 15 чадвар: өөрөө чадсан 1 · дасгалын шатанд 2 · хараахан болоогүй 12"
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "position.intro",
+     "mn": "Өмнө нь үзээгүй асуултад тусламжгүйгээр өгсөн анхны хариултаар чадвар бүр аль ангилалд орохыг тогтооно. Тоглоомын оноогоор түвшин тогтоохгүй, тэнцэх эсэхийг ч дүгнэхгүй."
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "position.incomplete",
+     "mn": "Сургалтын бүх мэдээллийг хараахан ачаалж дуусаагүй байна. Одоогийн байдал бодитоос илүү хоосон харагдаж магадгүй бөгөөд богино шалгалт ч мэдээлэл ачаалагдсаны дараа нээгдэнэ."
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "position.scope.account",
+     "mn": "SYNK бүртгэл дэх сургалтын мэдээлэлд үндэслэсэн."
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "position.scope.device",
+     "mn": "Энэ төхөөрөмж дээрх сургалтын мэдээлэлд үндэслэсэн. Бүртгэлгүйгээр хийсэн богино шалгалт зөвхөн энэ төхөөрөмжид үлдэнэ."
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "position.failed",
+     "mn": "Нээж чадсангүй. Түр хүлээгээд дахин оролдоно уу."
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "position.cell.independent",
+     "mn": "Өөрөө чадсан"
+    },
+    {
+     "line": 11,
+     "source": "world-strings",
+     "key": "position.cell.practicing",
+     "mn": "Дасгалын шатанд"
+    },
+    {
+     "line": 12,
+     "source": "world-strings",
+     "key": "position.cell.notyet",
+     "mn": "Хараахан болоогүй"
+    },
+    {
+     "line": 13,
+     "source": "world-strings",
+     "key": "position.domain.listening",
+     "mn": "Сонсгол"
+    },
+    {
+     "line": 14,
+     "source": "world-strings",
+     "key": "position.domain.reading",
+     "mn": "Уншлага"
+    },
+    {
+     "line": 15,
+     "source": "world-strings",
+     "key": "position.skill.ko.listening.word",
+     "mn": "Үг сонсох"
+    },
+    {
+     "line": 16,
+     "source": "world-strings",
+     "key": "position.skill.ko.listening.detail",
+     "mn": "Сонсоод нарийн мэдээллийг олох"
+    },
+    {
+     "line": 17,
+     "source": "world-strings",
+     "key": "position.skill.ko.listening.negation",
+     "mn": "Сонсоод үгүйсгэл, өөрчлөлтийг ойлгох"
+    },
+    {
+     "line": 18,
+     "source": "world-strings",
+     "key": "position.skill.ko.listening.sequence",
+     "mn": "Сонсоод дарааллыг ойлгох"
+    },
+    {
+     "line": 19,
+     "source": "world-strings",
+     "key": "position.skill.ko.listening.reason",
+     "mn": "Сонсоод шалтгааныг ойлгох"
+    }
+   ]
+  },
+  {
+   "file": "final-02.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "position.skill.ko.listening.condition",
+     "mn": "Сонсоод нөхцөлийг ойлгох"
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "position.skill.ko.listening.main",
+     "mn": "Сонсоод гол санааг ойлгох"
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "position.skill.ko.reading.vocabulary",
+     "mn": "Үгийн утгыг ойлгож унших"
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "position.skill.ko.reading.grammar",
+     "mn": "Туслах үг, өгүүлбэрийн загварыг ойлгож унших"
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "position.skill.ko.reading.detail",
+     "mn": "Уншаад нарийн мэдээллийг олох"
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "position.skill.ko.reading.negation",
+     "mn": "Уншаад үгүйсгэл, өөрчлөлтийг ойлгох"
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "position.skill.ko.reading.sequence",
+     "mn": "Уншаад дарааллыг ойлгох"
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "position.skill.ko.reading.reason",
+     "mn": "Уншаад шалтгааныг ойлгох"
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "position.skill.ko.reading.condition",
+     "mn": "Уншаад нөхцөлийг ойлгох"
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "position.skill.ko.reading.main",
+     "mn": "Уншаад гол санааг ойлгох"
+    },
+    {
+     "line": 11,
+     "source": "world-strings",
+     "key": "position.status.recent-independent",
+     "mn": "Саяхан шинэ асуултад өөрөө зөв хариулсан."
+    },
+    {
+     "line": 12,
+     "source": "world-strings",
+     "key": "position.status.practice",
+     "mn": "Өөрөө хариулсан шинэ асуултуудаас хэд хэдийг нь алдсан. Дахин дасгал хийх хэсэг."
+    },
+    {
+     "line": 13,
+     "source": "world-strings",
+     "key": "position.status.checking",
+     "mn": "Шинэ асуултаар шалгаж байна. Дахиад хэдэн удаа өөрөө хариулбал аль ангилалд орох нь тодорхой болно."
+    },
+    {
+     "line": 14,
+     "source": "world-strings",
+     "key": "position.status.supported",
+     "mn": "Тусламжтайгаар хийж чадсан. Дараагийн удаа бага тусламжтайгаар шалгана."
+    },
+    {
+     "line": 15,
+     "source": "world-strings",
+     "key": "position.status.review",
+     "mn": "Өөрөө хариулснаас хойш нэлээд хугацаа өнгөрчээ. Шинэ асуултаар дахин шалгах цаг боллоо."
+    },
+    {
+     "line": 16,
+     "source": "world-strings",
+     "key": "position.status.unseen",
+     "mn": "Өөрөө хариулсан шинэ асуулт хараахан алга. Энэ нь сул гэсэн үг биш."
+    },
+    {
+     "line": 17,
+     "source": "world-strings",
+     "key": "position.evidence.title",
+     "mn": "Үүний үндэслэл"
+    },
+    {
+     "line": 18,
+     "source": "world-strings",
+     "key": "position.evidence.correct",
+     "mn": "Зөв"
+    },
+    {
+     "line": 19,
+     "source": "world-strings",
+     "key": "position.evidence.incorrect",
+     "mn": "Буруу"
+    },
+    {
+     "line": 20,
+     "source": "world-strings",
+     "key": "position.evidence.alone",
+     "mn": "Өөрөө"
+    },
+    {
+     "line": 21,
+     "source": "world-strings",
+     "key": "position.evidence.assisted",
+     "mn": "Тусламжтай"
+    },
+    {
+     "line": 22,
+     "source": "world-strings",
+     "key": "position.evidence.level",
+     "mn": "Хүндийн зэрэг 3"
+    },
+    {
+     "line": 23,
+     "source": "world-strings",
+     "key": "position.evidence.folded",
+     "mn": "Өмнөх 3 мэдээлэл зөвхөн хураангуй хэлбэрээр хадгалагдсан."
+    }
+   ]
+  },
+  {
+   "file": "final-03-r2.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "position.evidence.unassessed",
+     "mn": "Алгассан эсвэл дуу гараагүй 3 хариултыг тооцоогүй."
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "position.evidence.none",
+     "mn": "Үндэслэл болох хариулт хараахан алга."
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "position.source.diagnostic",
+     "mn": "Богино шалгалт"
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "position.source.korean-runner",
+     "mn": "Салхин замын сонсголын шалгалт"
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "position.source.korean-rhythm",
+     "mn": "Үгийн хэмнэл"
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "position.source.blank-slice",
+     "mn": "Хоосон зай нөхөх"
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "position.source.entry-check",
+     "mn": "Хаалганы шалгалт"
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "position.source.synk-town",
+     "mn": "SYNK Таун · уншлага"
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "position.source.talk-rally",
+     "mn": "Ярианы ралли"
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "position.source.story-classroom",
+     "mn": "Багш буцаж ирлээ"
+    },
+    {
+     "line": 11,
+     "source": "world-strings",
+     "key": "position.source.order-rush",
+     "mn": "Захиалгын шуурга"
+    },
+    {
+     "line": 12,
+     "source": "world-strings",
+     "key": "position.source.korean-racing",
+     "mn": "Солонгос хэлний уралдаан"
+    },
+    {
+     "line": 13,
+     "source": "world-strings",
+     "key": "position.source.other",
+     "mn": "Өөр дасгал"
+    },
+    {
+     "line": 14,
+     "source": "world-strings",
+     "key": "position.diagnostic.intro",
+     "mn": "Өмнө нь үзээгүй 3 асуултаар эхлэх цэгээ тогтооно. Асуулт бүрийг алгасаж болох бөгөөд дараа нь өөр асуултаар дахин хийж болно."
+    },
+    {
+     "line": 15,
+     "source": "world-strings",
+     "key": "position.diagnostic.start",
+     "mn": "Богино шалгалт эхлүүлэх"
+    },
+    {
+     "line": 16,
+     "source": "world-strings",
+     "key": "position.diagnostic.again",
+     "mn": "Өөр асуултаар дахин хийх"
+    },
+    {
+     "line": 17,
+     "source": "world-strings",
+     "key": "position.diagnostic.missing",
+     "mn": "Шалгалтын асуулт хараахан байхгүй 3 чадвар: Үг сонсох · Уншаад шалтгааныг ойлгох"
+    },
+    {
+     "line": 18,
+     "source": "world-strings",
+     "key": "position.diagnostic.audioOff",
+     "mn": "Өнөөдөр дууг унтраасан тул сонсголын 3 чадварыг оруулахгүй."
+    },
+    {
+     "line": 19,
+     "source": "world-strings",
+     "key": "position.diagnostic.allSeen",
+     "mn": "Бэлэн байгаа бүх шалгалтын асуултад хариулсан. Шинэ асуулт нэмэгдэхэд дахин нээгдэнэ."
+    },
+    {
+     "line": 20,
+     "source": "world-strings",
+     "key": "position.diagnostic.unknown",
+     "mn": "Асуултыг нь өмнө үзсэн эсэхийг тодорхойлж чадаагүй 3 чадварыг оруулахгүй."
+    },
+    {
+     "line": 21,
+     "source": "world-strings",
+     "key": "position.diagnostic.history",
+     "mn": "Сургалтын бүх мэдээлэл ачаалагдсаны дараа богино шалгалт хийж болно."
+    },
+    {
+     "line": 22,
+     "source": "world-strings",
+     "key": "position.diagnostic.progress",
+     "mn": "1 / 12"
+    },
+    {
+     "line": 23,
+     "source": "world-strings",
+     "key": "position.diagnostic.listen",
+     "mn": "Сонсох"
+    },
+    {
+     "line": 24,
+     "source": "world-strings",
+     "key": "position.diagnostic.listenAgain",
+     "mn": "Дахин сонсох"
+    },
+    {
+     "line": 25,
+     "source": "world-strings",
+     "key": "position.diagnostic.listenFirst",
+     "mn": "Эцэс хүртэл сонссоны дараа сонгож болно."
+    }
+   ]
+  },
+  {
+   "file": "final-04.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "position.diagnostic.playing",
+     "mn": "Дууг тоглуулж байна."
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "position.diagnostic.audioFailed",
+     "mn": "Дуу гарсангүй. «Сонсох» дээр дахин дарна уу."
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "position.diagnostic.replayNote",
+     "mn": "Бүтэн сонссоны дараа дахин сонсвол таны хариултыг тусламжтай гэж тооцно."
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "position.diagnostic.time",
+     "mn": "Одоо 14:04"
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "position.diagnostic.bag",
+     "mn": "Авч ирсэн зүйлс"
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "position.diagnostic.ask.blank",
+     "mn": "Хоосон зайд тохирохыг нь сонгоно уу."
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "position.diagnostic.ask.entry",
+     "mn": "Энэ зочныг оруулах уу?"
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "position.diagnostic.skip",
+     "mn": "Энэ асуултыг алгасах"
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "position.diagnostic.stop",
+     "mn": "Шалгалтыг зогсоох"
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "position.diagnostic.saved",
+     "mn": "Хариултыг хадгаллаа."
+    },
+    {
+     "line": 11,
+     "source": "world-strings",
+     "key": "position.diagnostic.doneTitle",
+     "mn": "Богино шалгалт дууслаа!"
+    },
+    {
+     "line": 12,
+     "source": "world-strings",
+     "key": "position.diagnostic.doneSummary",
+     "mn": "Хариулсан 10 · алгассан 2"
+    },
+    {
+     "line": 13,
+     "source": "world-strings",
+     "key": "position.diagnostic.doneNote",
+     "mn": "Ганц асуултаар «Өөрөө чадсан» болохгүй. Зөв хариулсан чадварыг шинэ асуултаар дахиад хэдэн удаа шалгаж, алдсан чадвараасаа дасгалаа эхэлнэ."
+    },
+    {
+     "line": 14,
+     "source": "world-strings",
+     "key": "position.diagnostic.back",
+     "mn": "Ахиц руугаа буцах"
+    },
+    {
+     "line": 15,
+     "source": "world-strings",
+     "key": "position.estimate.title",
+     "mn": "TOPIK-ийн таамагласан түвшин"
+    },
+    {
+     "line": 16,
+     "source": "world-strings",
+     "key": "position.estimate.early",
+     "mn": "Дүгнэхэд хараахан эрт байна"
+    },
+    {
+     "line": 17,
+     "source": "world-strings",
+     "key": "position.estimate.waiting",
+     "mn": "Хангалттай мэдээлэл цугларсан. Түвшний хүрээг тогтоох аргыг баталгаажуулсны дараа харуулна"
+    },
+    {
+     "line": 18,
+     "source": "world-strings",
+     "key": "position.estimate.note",
+     "mn": "TOPIK хэлбэрийн дасгалын (өмнө нь үзээгүй асуулт, бодит бүтэц, хугацааны хязгаартай) хариулт 30 болж, сонсгол, уншлага тус бүрд 10 буюу түүнээс олон хариулт цугларвал «1-р түвшин орчим» гэх мэтээр ойролцоо түвшнийг харуулна. Тоглоомын оноогоор тогтоохгүй."
+    }
+   ]
+  },
+  {
+   "file": "final-05.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "position.estimate.count",
+     "mn": "Одоогоор 3 / 30"
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "position.hangul.title",
+     "mn": "Эхлээд солонгос үсэг"
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "position.hangul.intro",
+     "mn": "TOPIK I-ийн чадварын зураглал «Солонгос үсэгтэй танилцах»-ыг дуусгасны дараа нээгдэнэ. Одоогоор солонгос үсэгтэй хэр зэрэг танилцсаныг тань харуулж байна."
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "position.hangul.letters",
+     "mn": "Танилцсан үсэг 12 / 12"
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "position.hangul.units",
+     "mn": "Бүрэн эзэмшсэн бүлэг 1 / 7"
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "position.hangul.notStarted",
+     "mn": "Та «Солонгос үсэгтэй танилцах»-ыг хараахан эхлээгүй байна. Эхний үсгүүдтэй хамтдаа танилцъя."
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "position.hangul.start",
+     "mn": "Солонгос үсэгтэй танилцаж эхлэх"
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "position.hangul.continue",
+     "mn": "Солонгос үсэгтэй танилцахаа үргэлжлүүлэх"
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "position.hangul.unknown",
+     "mn": "Солонгос үсэгтэй танилцсан явцын мэдээллийг хараахан ачаалж чадаагүй байна."
+    }
+   ]
+  }
+ ],
+ "note": "final-03.txt의 「Үндэслэх хариулт」(어색)를 고친 뒤 같은 25줄을 final-03-r2.txt로 다시 쟀다. 줄마다 기록은 이 표의 묶음을 따른다."
+}

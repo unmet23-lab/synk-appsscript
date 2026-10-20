@@ -1,153 +1,102 @@
-// WORLD 「내 위치」 판의 그림(HTML)과 화면 글. 판단은 하지 않는다 — 칸·근거·진단 목록은 world-position.mjs가
-// Core 상태에서 읽어 넘긴 것을 그대로 그린다. 화면 글은 아래 한곳에 모은다(화면 언어 1판의 world-strings.mjs 표가
-// 들어오면 같은 키로 옮긴다). 학습 내용(문항·보기)은 늘 한국어 원문이다.
+// WORLD 「내 위치」 판의 그림(HTML). 판단은 하지 않는다 — 칸·근거·진단 목록은 world-position.mjs가 Core 상태에서 읽어
+// 넘긴 것을 그대로 그린다. 화면 글은 화면 언어 1판의 표(world-strings.mjs의 position.*)에 있고, 학습 내용(문항·보기·안내문)은
+// 늘 한국어 원문이다(lang="ko").
+// 이 모듈은 계정 묶음(world-account.bundle.mjs)에도 실리므로 world-lang.mjs를 직접 부르지 않는다 — 묶음 안에 언어 상태가
+// 한 벌 더 생겨 설정에서 바꾼 언어를 못 따라간다. 화면 쪽(world-learning-ui.mjs)이 넘긴 t·has·formatDate로 쓴다
+// (device-records.mjs가 app-shell에서 text를 받는 것과 같은 방식).
 
-export const POSITION_TEXT=Object.freeze({
- 'position.title':'내 위치',
- 'position.eyebrow':'MY POSITION',
- 'position.open':'내 위치 보기',
- 'position.summary':'TOPIK I 15개 항목: 혼자 해냄 {independent} · 연습 중 {practicing} · 아직 {notyet}',
- 'position.intro':'처음 보는 문제를 도움 없이 푼 첫 답으로 칸을 정해요. 게임 점수로 급수를 매기거나 합격을 판정하지 않아요.',
- 'position.incomplete':'학습 기록을 다 불러오지 못했어요. 지금 칸은 실제보다 비어 보일 수 있고, 짧은 진단도 기록이 돌아온 뒤에 열려요.',
- 'position.cell.independent':'혼자 해냄',
- 'position.cell.practicing':'연습 중',
- 'position.cell.notyet':'아직',
- 'position.domain.listening':'듣기',
- 'position.domain.reading':'읽기',
- 'position.status.recent-independent':'최근 처음 보는 문제를 혼자 풀었어요.',
- 'position.status.practice':'혼자 푼 새 문제에서 여러 번 틀렸어요. 다시 연습할 부분이에요.',
- 'position.status.checking':'새 문제로 확인하는 중이에요. 몇 번 더 혼자 풀면 칸이 정해져요.',
- 'position.status.supported':'도움을 받아 해냈어요. 다음에는 도움을 줄여 확인해요.',
- 'position.status.review':'혼자 푼 지 오래됐어요. 새 문제로 다시 확인할 때예요.',
- 'position.status.unseen':'아직 혼자 푼 새 문제가 없어요. 약하다는 뜻이 아니에요.',
- 'position.evidence.title':'이렇게 본 근거',
- 'position.evidence.correct':'맞음',
- 'position.evidence.incorrect':'틀림',
- 'position.evidence.alone':'혼자',
- 'position.evidence.assisted':'도움 받음',
- 'position.evidence.level':'난도 {n}',
- 'position.evidence.folded':'예전 기록 {n}개는 요약으로만 남아 있어요.',
- 'position.evidence.unassessed':'소리가 안 났거나 건너뛴 답 {n}개는 세지 않았어요.',
- 'position.evidence.none':'아직 근거가 된 답이 없어요.',
- 'position.source.korean-runner':'바람길 듣기 확인',
- 'position.source.korean-rhythm':'말의 리듬',
- 'position.source.blank-slice':'빈칸 베기',
- 'position.source.entry-check':'입장 검사',
- 'position.source.talk-rally':'말 랠리',
- 'position.source.story-classroom':'선생님이 돌아왔다',
- 'position.source.order-rush':'주문 폭주',
- 'position.source.korean-racing':'한국어 레이싱',
- 'position.source.other':'다른 연습',
- 'position.diagnostic.title':'짧은 진단',
- 'position.diagnostic.intro':'처음 보는 문항 {n}개로 시작점을 정해요. 문항마다 건너뛸 수 있고, 다음에 다른 문항으로 다시 할 수 있어요.',
- 'position.diagnostic.start':'짧은 진단 시작하기',
- 'position.diagnostic.again':'다른 문항으로 다시 하기',
- 'position.diagnostic.missing':'진단 문항이 아직 없는 항목 {n}개: {skills}',
- 'position.diagnostic.audioOff':'오늘은 소리를 끈 날이라 듣기 항목 {n}개는 빼요.',
- 'position.diagnostic.allSeen':'준비된 진단 문항을 모두 풀었어요. 새 문항이 생기면 다시 열려요.',
- 'position.diagnostic.unknown':'전에 본 문항인지 확인하지 못한 항목 {n}개는 빼요.',
- 'position.diagnostic.history':'학습 기록을 다 불러오면 짧은 진단을 할 수 있어요.',
- 'position.diagnostic.progress':'{index} / {total}',
- 'position.diagnostic.listen':'듣기',
- 'position.diagnostic.listenAgain':'다시 듣기',
- 'position.diagnostic.listenFirst':'끝까지 들은 뒤에 고를 수 있어요.',
- 'position.diagnostic.audioFailed':'소리가 나지 않았어요. 「듣기」를 다시 눌러 주세요.',
- 'position.diagnostic.replayNote':'다 들은 뒤 다시 들으면 도움을 받은 답으로 기록해요.',
- 'position.diagnostic.time':'지금 {at}',
- 'position.diagnostic.bag':'짐: {items}',
- 'position.diagnostic.skip':'이 문항 건너뛰기',
- 'position.diagnostic.stop':'진단 그만하기',
- 'position.diagnostic.saved':'답을 기록했어요.',
- 'position.diagnostic.doneTitle':'짧은 진단, 끝!',
- 'position.diagnostic.doneSummary':'푼 문항 {answered}개 · 건너뛴 문항 {skipped}개',
- 'position.diagnostic.doneNote':'한 문항만으로는 「혼자 해냄」이 되지 않아요. 맞힌 항목은 새 문제로 몇 번 더 확인하고, 틀린 항목부터 연습을 골라요.',
- 'position.diagnostic.back':'내 위치로 돌아가기',
- 'position.hangul.title':'한글부터',
- 'position.hangul.intro':'TOPIK I 항목 지도는 한글 만나기를 마치면 열려요. 지금은 한글을 어디까지 만났는지 보여 드려요.',
- 'position.hangul.letters':'만난 글자 {met} / {total}',
- 'position.hangul.units':'다 익힌 단원 {unitsDone} / {units}',
- 'position.hangul.notStarted':'아직 한글 만나기를 시작하지 않았어요. 첫 글자부터 함께 만나요.',
- 'position.hangul.start':'한글 만나기 시작하기',
- 'position.hangul.continue':'한글 만나기 이어 하기',
- 'position.hangul.unknown':'한글 진도를 아직 읽지 못했어요.',
-});
+const posEscape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const POS_LED={independent:'ok',practicing:'check',notyet:''},POS_CELLS=Object.freeze(['independent','practicing','notyet']);
+const posLed=tone=>`<i class="w-led${tone?` ${tone}`:''}" aria-hidden="true"></i>`;
+// 넓이 막대(0~1). 진행·만난 글자 막대가 같이 쓴다.
+const posFill=(value,max)=>(Math.max(0,Math.min(1,max?value/max:0))*100).toFixed(1);
 
-const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-// world-lang.mjs의 t()와 같은 꼴({name} 채우기). 표가 들어오면 이 함수만 t로 바꾼다.
-export function say(key,vars){
- const text=Object.prototype.hasOwnProperty.call(POSITION_TEXT,key)?POSITION_TEXT[key]:key;
- return String(text).replace(/\{(\w+)\}/g,(_,name)=>vars&&vars[name]!=null?String(vars[name]):'');
-}
-const LED={independent:'ok',practicing:'check',notyet:'idle'},POSITION_COUNTS=Object.freeze(['independent','practicing','notyet']);
-const day=value=>{const at=Date.parse(value);if(!Number.isFinite(at))return '';const d=new Date(at+9*3600000);return `${d.getUTCMonth()+1}월 ${d.getUTCDate()}일`;};
-// 문항 열쇠의 앞 이름으로 어느 연습의 문항인지 말한다. 모르는 앞 이름은 「다른 연습」.
-export function itemSource(itemKey){
- const prefix=String(itemKey||'').split('.')[0];
- return Object.prototype.hasOwnProperty.call(POSITION_TEXT,`position.source.${prefix}`)?say(`position.source.${prefix}`):say('position.source.other');
-}
-
-function evidenceRows(skill,catalog){
- if(!skill.evidence.length&&!skill.folded)return `<p class="wpos-empty">${escape(say('position.evidence.none'))}</p>`;
- const rows=skill.evidence.map(row=>{
-  const label=catalog?.(row.itemKey)||itemSource(row.itemKey),tone=row.verdict==='correct'?'ok':'alert';
-  return `<li class="wpos-evidence" data-verdict="${escape(row.verdict)}" data-assisted="${row.assisted?'true':'false'}"><span class="wpos-led" data-tone="${tone}" aria-hidden="true"></span><span class="wpos-evidence-main"><strong>${escape(say(`position.evidence.${row.verdict==='correct'?'correct':'incorrect'}`))} · ${escape(say(row.assisted?'position.evidence.assisted':'position.evidence.alone'))}</strong><small>${escape(label)}${row.difficulty?` · ${escape(say('position.evidence.level',{n:row.difficulty}))}`:''}</small></span><time datetime="${escape(row.at)}">${escape(day(row.at))}</time></li>`;
- }).join('');
- return `${rows?`<ul class="wpos-evidence-list">${rows}</ul>`:''}${skill.folded?`<p class="wpos-note">${escape(say('position.evidence.folded',{n:skill.folded}))}</p>`:''}`;
-}
-function skillRow(skill,catalog){
- return `<details class="wpos-skill" data-skill="${escape(skill.id)}" data-cell="${escape(skill.cell)}" data-status="${escape(skill.status)}"><summary><span class="wpos-skill-name">${escape(skill.label)}</span><span class="wpos-chip" data-tone="${LED[skill.cell]}"><span class="wpos-led" data-tone="${LED[skill.cell]}" aria-hidden="true"></span>${escape(say(`position.cell.${skill.cell}`))}</span></summary><div class="wpos-skill-body"><p class="wpos-status">${escape(say(`position.status.${skill.status}`))}</p><p class="wpos-evidence-title">${escape(say('position.evidence.title'))}</p>${evidenceRows(skill,catalog)}${skill.unassessed?`<p class="wpos-note">${escape(say('position.evidence.unassessed',{n:skill.unassessed}))}</p>`:''}</div></details>`;
-}
-const skillNames=(map,ids)=>ids.map(id=>map.skills.find(skill=>skill.id===id)?.label||id).join(' · ');
-function diagnosticBlock(map,plan,{done=false}={}){
- if(!plan)return '';
- const notes=[],by=reason=>plan.missing.filter(row=>row.reason===reason).map(row=>row.skillId);
- if(plan.reason==='history.incomplete')notes.push(say('position.diagnostic.history'));
- else{
-  const none=by('no-item'),audio=by('audio'),unknown=by('unknown'),seen=by('all-seen');
-  if(none.length)notes.push(say('position.diagnostic.missing',{n:none.length,skills:skillNames(map,none)}));
-  if(audio.length)notes.push(say('position.diagnostic.audioOff',{n:audio.length}));
-  if(unknown.length)notes.push(say('position.diagnostic.unknown',{n:unknown.length}));
-  if(seen.length&&!plan.items.length)notes.push(say('position.diagnostic.allSeen'));
+// t(키, 값) · has(키) · formatDate(ms, Intl 옵션): world-lang.mjs의 같은 이름 함수.
+export function createPositionView({t,has=()=>true,formatDate=null}={}){
+ if(typeof t!=='function')throw TypeError('WORLD position view needs the screen-language t()');
+ const day=value=>{const at=Date.parse(value);if(!Number.isFinite(at))return '';return formatDate?formatDate(at,{month:'short',day:'numeric'}):new Date(at).toISOString().slice(5,10);};
+ // 항목 이름: 표에 있으면 화면 언어로, 없으면 Strata의 한국어 이름 그대로.
+ const skillName=skill=>skill?.id&&has(`position.skill.${skill.id}`)?t(`position.skill.${skill.id}`):String(skill?.label||skill?.id||'');
+ // 어느 연습에서 낸 답인지: 짧은 진단(코치 'world-home')이면 진단, 아니면 문항 열쇠의 앞 이름(바람길은 '.', 리듬은 ':'로 나뉜다).
+ function itemSource(itemKey,experienceId=null){
+  if(experienceId==='world-home')return t('position.source.diagnostic');
+  const prefix=String(itemKey||'').split(/[.:]/)[0];
+  return prefix&&has(`position.source.${prefix}`)?t(`position.source.${prefix}`):t('position.source.other');
  }
- const ready=plan.status==='ready'&&plan.items.length>0;
- return `<section class="wpos-diagnostic" data-diagnostic="${ready?'ready':'unavailable'}"><p class="life-section-label">DIAGNOSTIC</p><h3>${escape(say('position.diagnostic.title'))}</h3>${ready?`<p>${escape(say('position.diagnostic.intro',{n:plan.items.length}))}</p>`:''}${notes.map(note=>`<p class="wpos-note">${escape(note)}</p>`).join('')}${ready?`<button class="felt-button" type="button" data-position-diagnostic>${escape(say(done?'position.diagnostic.again':'position.diagnostic.start'))} <span aria-hidden="true">→</span></button>`:''}</section>`;
-}
+ function evidenceRows(skill,catalog){
+  if(!skill.evidence.length&&!skill.folded)return `<p class="wpos-empty">${posEscape(t('position.evidence.none'))}</p>`;
+  const rows=skill.evidence.map(row=>{
+   const excerpt=catalog?.(row.itemKey)||'',ok=row.verdict==='correct';
+   return `<li class="wpos-evidence" data-verdict="${posEscape(row.verdict)}" data-assisted="${row.assisted?'true':'false'}">${posLed(ok?'ok':'alert')}<span class="wpos-evidence-main"><strong>${posEscape(t(ok?'position.evidence.correct':'position.evidence.incorrect'))} · ${posEscape(t(row.assisted?'position.evidence.assisted':'position.evidence.alone'))}</strong><small>${posEscape(itemSource(row.itemKey,row.experienceId))}${excerpt?` · <span lang="ko">${posEscape(excerpt)}</span>`:''}${row.difficulty?` · ${posEscape(t('position.evidence.level',{n:row.difficulty}))}`:''}</small></span><time datetime="${posEscape(row.at)}">${posEscape(day(row.at))}</time></li>`;
+  }).join('');
+  return `${rows?`<ul class="wpos-evidence-list">${rows}</ul>`:''}${skill.folded?`<p class="wpos-note">${posEscape(t('position.evidence.folded',{n:skill.folded}))}</p>`:''}`;
+ }
+ function skillRow(skill,catalog){
+  return `<details class="wpos-skill" data-skill="${posEscape(skill.id)}" data-cell="${posEscape(skill.cell)}" data-status="${posEscape(skill.status)}"><summary><span class="wpos-skill-name">${posEscape(skillName(skill))}</span><span class="wpos-chip" data-tone="${POS_LED[skill.cell]||'idle'}">${posLed(POS_LED[skill.cell])}${posEscape(t(`position.cell.${skill.cell}`))}</span></summary><div class="wpos-skill-body"><p class="wpos-status">${posEscape(t(`position.status.${skill.status}`))}</p><p class="wpos-evidence-title">${posEscape(t('position.evidence.title'))}</p>${evidenceRows(skill,catalog)}${skill.unassessed?`<p class="wpos-note">${posEscape(t('position.evidence.unassessed',{n:skill.unassessed}))}</p>`:''}</div></details>`;
+ }
+ const skillNames=(map,ids)=>ids.map(id=>skillName(map.skills.find(skill=>skill.id===id)||{id})).join(' · ');
+ function diagnosticBlock(map,plan,{done=false}={}){
+  if(!plan)return '';
+  const notes=[],by=reason=>plan.missing.filter(row=>row.reason===reason).map(row=>row.skillId);
+  if(plan.reason==='history.incomplete')notes.push(t('position.diagnostic.history'));
+  else{
+   const none=by('no-item'),audio=by('audio'),unknown=by('unknown'),seen=by('all-seen');
+   if(none.length)notes.push(t('position.diagnostic.missing',{n:none.length,skills:skillNames(map,none)}));
+   if(audio.length)notes.push(t('position.diagnostic.audioOff',{n:audio.length}));
+   if(unknown.length)notes.push(t('position.diagnostic.unknown',{n:unknown.length}));
+   if(seen.length&&!plan.items.length)notes.push(t('position.diagnostic.allSeen'));
+  }
+  const ready=plan.status==='ready'&&plan.items.length>0;
+  return `<section class="wpos-diagnostic" data-diagnostic="${ready?'ready':'unavailable'}"><p class="life-section-label">QUICK CHECK</p><h3>${posEscape(t('position.diagnostic.title'))}</h3>${ready?`<p>${posEscape(t('position.diagnostic.intro',{n:plan.items.length}))}</p>`:''}${notes.map(note=>`<p class="wpos-note">${posEscape(note)}</p>`).join('')}${ready?`<button class="felt-button" type="button" data-position-diagnostic>${posEscape(t(done?'position.diagnostic.again':'position.diagnostic.start'))} <span aria-hidden="true">→</span></button>`:''}</section>`;
+ }
+ // 예상 급수: 문턱(estimateGate) 전에는 급수·범위를 보이지 않고 「아직 판단하기 일러요」와 근거 수만(학습기준 §7-3).
+ function estimateBlock(gate){
+  if(!gate)return '';
+  const waiting=gate.status==='no-estimator';
+  return `<section class="wpos-estimate" data-estimate="${posEscape(gate.status)}"><p class="life-section-label">ESTIMATE</p><h3>${posEscape(t('position.estimate.title'))}</h3><p class="wpos-estimate-state">${posLed('')}<strong>${posEscape(t(waiting?'position.estimate.waiting':'position.estimate.early'))}</strong></p><p class="wpos-note">${posEscape(t('position.estimate.note',{needed:gate.needed,each:gate.neededPerDomain}))}</p><p class="wpos-estimate-count"><span>${posEscape(t('position.estimate.count',{n:gate.evidence,needed:gate.needed}))}</span><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(gate.evidence,gate.needed)}%"></i></span></p></section>`;
+ }
+ const poster=(word,sub,{print='position'}={})=>`<div class="life-poster wpos-poster"><span class="w-print wpos-print" data-print="${print}" aria-hidden="true"><i></i></span><small class="life-poster-label">MY POSITION</small><strong class="life-poster-word">${posEscape(word)}</strong><p class="life-poster-sub">${posEscape(sub)}</p></div>`;
 
-// map: buildPositionMap 결과 · plan: selectDiagnostic 결과(없으면 진단 칸 없음) · catalog(itemKey): 문항 이름(없으면 연습 이름)
-export function renderPositionBoard({map,plan=null,catalog=null,diagnosed=false}={}){
- const groups=['listening','reading'].map(domain=>{
-  const skills=map.skills.filter(skill=>skill.domain===domain);
-  return `<section class="wpos-group" data-domain="${domain}"><h3>${escape(say(`position.domain.${domain}`))} <span>${skills.length}</span></h3><div class="wpos-skills">${skills.map(skill=>skillRow(skill,catalog)).join('')}</div></section>`;
- }).join('');
- const counts=POSITION_COUNTS.map(cell=>`<li data-cell="${cell}"><span class="wpos-led" data-tone="${LED[cell]}" aria-hidden="true"></span><strong>${map.counts[cell]}</strong><span>${escape(say(`position.cell.${cell}`))}</span></li>`).join('');
- return `<div class="wpos" data-position-board><div class="life-poster wpos-poster"><small class="life-poster-label">${escape(say('position.eyebrow'))}</small><strong class="life-poster-word">${escape(say('position.title'))}</strong><p class="life-poster-sub wpos-summary">${escape(say('position.summary',map.counts))}</p></div><ul class="wpos-counts" aria-label="${escape(say('position.summary',map.counts))}">${counts}</ul><p class="wpos-intro">${escape(say('position.intro'))}</p>${map.evidenceComplete?'':`<p class="wpos-note" data-position-incomplete>${escape(say('position.incomplete'))}</p>`}${diagnosticBlock(map,plan,{done:diagnosed})}${groups}</div>`;
-}
+ // map: buildPositionMap 결과 · plan: selectDiagnostic 결과(없으면 진단 칸 없음) · gate: estimateGate 결과(없으면 예상 급수 칸 없음)
+ // catalog(itemKey): 문항 첫머리(없으면 연습 이름만) · scope: 'account'|'device'(어디 기록인지 한 줄)
+ function renderPositionBoard({map,plan=null,gate=null,catalog=null,diagnosed=false,scope=null}={}){
+  const summary=t('position.summary',map.counts);
+  const groups=['listening','reading'].map(domain=>{
+   const skills=map.skills.filter(skill=>skill.domain===domain);
+   return `<section class="wpos-group" data-domain="${domain}"><h3>${posEscape(t(`position.domain.${domain}`))} <span>${skills.length}</span></h3><div class="wpos-skills">${skills.map(skill=>skillRow(skill,catalog)).join('')}</div></section>`;
+  }).join('');
+  const counts=POS_CELLS.map(cell=>`<li data-cell="${cell}">${posLed(POS_LED[cell])}<strong>${map.counts[cell]}</strong><span>${posEscape(t(`position.cell.${cell}`))}</span></li>`).join('');
+  return `<div class="wpos life-heading" data-position-board tabindex="-1">${poster(t('position.title'),summary)}<ul class="wpos-counts" aria-label="${posEscape(summary)}">${counts}</ul><p class="wpos-intro">${posEscape(t('position.intro'))}</p>${map.evidenceComplete?'':`<p class="wpos-note" data-position-incomplete>${posEscape(t('position.incomplete'))}</p>`}${diagnosticBlock(map,plan,{done:diagnosed})}${groups}${estimateBlock(gate)}${scope?`<p class="wpos-scope">${posEscape(t(scope==='account'?'position.scope.account':'position.scope.device'))}</p>`:''}</div>`;
+ }
 
-// 한글 만나기 졸업 전: 항목 지도 대신 한글 진도. stage: hangulStageProgress 결과(모르면 null)
-export function renderHangulBoard({stage=null}={}){
- const known=!!stage&&Number.isInteger(stage.met)&&Number.isInteger(stage.total)&&stage.total>0;
- const bar=(value,max,label)=>`<span class="wpos-bar" role="progressbar" aria-label="${escape(label)}" aria-valuemin="0" aria-valuemax="${max}" aria-valuenow="${value}"><i style="width:${(Math.max(0,Math.min(1,max?value/max:0))*100).toFixed(1)}%"></i></span>`;
- const body=!known?`<p class="wpos-note">${escape(say('position.hangul.unknown'))}</p>`:!stage.started?`<p class="wpos-note">${escape(say('position.hangul.notStarted'))}</p>`
-  :`<div class="wpos-hangul"><p>${escape(say('position.hangul.letters',stage))}</p>${bar(stage.met,stage.total,say('position.hangul.letters',stage))}<p>${escape(say('position.hangul.units',stage))}</p>${bar(stage.unitsDone,stage.units,say('position.hangul.units',stage))}</div>`;
- return `<div class="wpos" data-position-board="hangul"><div class="life-poster wpos-poster"><small class="life-poster-label">${escape(say('position.eyebrow'))}</small><strong class="life-poster-word">${escape(say('position.hangul.title'))}</strong><p class="life-poster-sub">${escape(say('position.hangul.intro'))}</p></div>${body}<button class="felt-button" type="button" data-position-hangul>${escape(say(known&&stage.started?'position.hangul.continue':'position.hangul.start'))} <span aria-hidden="true">→</span></button></div>`;
-}
+ // 한글 만나기 졸업 전: 항목 지도 대신 한글 진도. stage: hangulStageProgress 결과(모르면 null)
+ function renderHangulBoard({stage=null}={}){
+  const known=!!stage&&Number.isInteger(stage.met)&&Number.isInteger(stage.total)&&stage.total>0;
+  const bar=(value,max,label)=>`<span class="wpos-bar" role="progressbar" aria-label="${posEscape(label)}" aria-valuemin="0" aria-valuemax="${max}" aria-valuenow="${value}"><i style="width:${posFill(value,max)}%"></i></span>`;
+  const body=!known?`<p class="wpos-note">${posEscape(t('position.hangul.unknown'))}</p>`:!stage.started?`<p class="wpos-note">${posEscape(t('position.hangul.notStarted'))}</p>`
+   :`<div class="wpos-hangul"><p>${posEscape(t('position.hangul.letters',stage))}</p>${bar(stage.met,stage.total,t('position.hangul.letters',stage))}<p>${posEscape(t('position.hangul.units',stage))}</p>${bar(stage.unitsDone,stage.units,t('position.hangul.units',stage))}</div>`;
+  return `<div class="wpos life-heading" data-position-board="hangul" tabindex="-1">${poster(t('position.hangul.title'),t('position.hangul.intro'),{print:'hangul'})}${body}<button class="felt-button" type="button" data-position-hangul>${posEscape(t(known&&stage.started?'position.hangul.continue':'position.hangul.start'))} <span aria-hidden="true">→</span></button></div>`;
+ }
 
-// 입장 검사처럼 안내문을 읽고 손님에게 적용하는 문항: 안내문 · 시각 · 손님의 표 · 짐 · 손님의 말을 글로 보인다.
-function entryCard(card){
- const rows=card.doc.rows.map(([name,value])=>`<div><dt>${escape(name)}</dt><dd>${escape(value)}</dd></div>`).join('');
- return `<div class="wpos-card" lang="ko"><section class="wpos-notice"><p class="wpos-notice-title">${escape(card.notice.title)}</p><ul>${card.notice.rules.map(rule=>`<li>${escape(rule)}</li>`).join('')}</ul></section><section class="wpos-guest"><p class="wpos-guest-time">${escape(say('position.diagnostic.time',{at:card.at}))}</p><p class="wpos-notice-title">${escape(card.doc.title)}</p><dl>${rows}</dl>${card.bag.length?`<p class="wpos-bag">${escape(say('position.diagnostic.bag',{items:card.bag.join(', ')}))}</p>`:''}<p class="wpos-line"><span>${escape(card.who)}</span>「${escape(card.line)}」</p></section></div>`;
-}
-// 진단 한 문항. view: createDiagnosticSession().current · notice: 들려줄 안내 한 줄(없으면 비움)
-export function renderDiagnosticItem({view,skillLabel='',notice=''}={}){
- const item=view.item,listening=item.audioRequired??item.modality==='listening',ready=view.heard&&!view.answered;
- const choices=item.choices.map(choice=>`<button class="wpos-choice" type="button" data-position-choice="${escape(choice.id)}"${ready?'':' disabled'}>${escape(choice.label)}</button>`).join('');
- return `<div class="wpos wpos-run" data-position-run="${escape(item.id)}"><div class="wpos-run-head"><span class="wpos-progress" aria-hidden="true"><i style="width:${(((view.index)/view.total)*100).toFixed(1)}%"></i></span><p class="wpos-run-count">${escape(say('position.diagnostic.progress',{index:view.index+1,total:view.total}))}</p></div><p class="life-section-label">${escape(say(`position.domain.${item.modality}`))} · ${escape(skillLabel)}</p>${item.prompt?`<p class="wpos-prompt" lang="ko">${escape(item.prompt)}</p>`:''}${item.card?entryCard(item.card):''}${listening?`<div class="wpos-listen"><button class="quiet-button" type="button" data-position-listen>${escape(say(view.heard?'position.diagnostic.listenAgain':'position.diagnostic.listen'))}</button><p class="wpos-note">${escape(say(view.heard?'position.diagnostic.replayNote':'position.diagnostic.listenFirst'))}</p></div>`:''}${item.question?`<p class="wpos-question" lang="ko">${escape(item.question)}</p>`:''}<div class="wpos-choices" lang="ko">${choices}</div><p class="wpos-run-status" role="status">${escape(notice)}</p><div class="wpos-run-actions"><button class="quiet-button" type="button" data-position-skip>${escape(say('position.diagnostic.skip'))}</button><button class="quiet-button" type="button" data-position-stop>${escape(say('position.diagnostic.stop'))}</button></div></div>`;
-}
+ // 입장 검사처럼 안내문을 읽고 손님에게 적용하는 문항: 안내문 · 시각 · 손님의 표 · 짐 · 손님의 말을 글로 보인다.
+ function entryCard(card){
+  const rows=card.doc.rows.map(([name,value])=>`<div><dt>${posEscape(name)}</dt><dd>${posEscape(value)}</dd></div>`).join('');
+  return `<div class="wpos-card"><section class="wpos-notice" lang="ko"><p class="wpos-notice-title">${posEscape(card.notice.title)}</p><ul>${card.notice.rules.map(rule=>`<li>${posEscape(rule)}</li>`).join('')}</ul></section><section class="wpos-guest"><p class="wpos-guest-time">${posEscape(t('position.diagnostic.time',{at:card.at}))}</p><p class="wpos-notice-title" lang="ko">${posEscape(card.doc.title)}</p><dl lang="ko">${rows}</dl>${card.bag.length?`<p class="wpos-bag">${posEscape(t('position.diagnostic.bag'))}: <span lang="ko">${posEscape(card.bag.join(', '))}</span></p>`:''}<p class="wpos-line" lang="ko"><span>${posEscape(card.who)}</span>「${posEscape(card.line)}」</p></section></div>`;
+ }
+ // 진단 한 문항. view: createDiagnosticSession().current · skill: 그 항목(이름) · notice: 상태 한 줄 · playing: 소리가 나는 중
+ function renderDiagnosticItem({view,skill=null,notice='',playing=false}={}){
+  const item=view.item,listening=item.audioRequired??item.modality==='listening',ready=view.heard&&!view.answered;
+  const choices=item.choices.map(choice=>`<button class="wpos-choice" type="button" data-position-choice="${posEscape(choice.id)}"${ready?'':' disabled'}>${posEscape(choice.label)}</button>`).join('');
+  const listenNote=playing?'position.diagnostic.playing':view.audio==='failed'&&!view.heard?'position.diagnostic.audioFailed':view.heard?'position.diagnostic.replayNote':'position.diagnostic.listenFirst';
+  return `<div class="wpos wpos-run" data-position-run="${posEscape(item.id)}"><div class="wpos-run-head"><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(view.index,view.total)}%"></i></span><p class="wpos-run-count">${posEscape(t('position.diagnostic.progress',{index:view.index+1,total:view.total}))}</p></div><p class="life-section-label wpos-run-skill" tabindex="-1">${posEscape(t(`position.domain.${item.modality}`))} · ${posEscape(skillName(skill||{id:item.skillId}))}</p>${item.prompt?`<p class="wpos-prompt" lang="ko">${posEscape(item.prompt)}</p>`:''}${item.card?entryCard(item.card):''}${listening?`<div class="wpos-listen"><button class="quiet-button" type="button" data-position-listen${playing?' aria-busy="true"':''}>${posEscape(t(view.heard?'position.diagnostic.listenAgain':'position.diagnostic.listen'))}</button><p class="wpos-note">${posEscape(t(listenNote))}</p></div>`:''}${item.question?item.ask&&has(`position.diagnostic.ask.${item.ask}`)?`<p class="wpos-question">${posEscape(t(`position.diagnostic.ask.${item.ask}`))}</p>`:`<p class="wpos-question" lang="ko">${posEscape(item.question)}</p>`:''}<div class="wpos-choices" lang="ko">${choices}</div><p class="wpos-run-status" role="status">${posEscape(notice)}</p><div class="wpos-run-actions"><button class="quiet-button" type="button" data-position-skip>${posEscape(t('position.diagnostic.skip'))}</button><button class="quiet-button" type="button" data-position-stop>${posEscape(t('position.diagnostic.stop'))}</button></div></div>`;
+ }
 
-// 진단 끝 한 장: 이번에 푼 것과 바뀐 지도. results: createDiagnosticSession().results()
-export function renderDiagnosticDone({map,results=[]}={}){
- const answered=results.filter(row=>!row.skipped).length,skipped=results.length-answered;
- const rows=results.filter(row=>!row.skipped).map(row=>{const skill=map.skills.find(s=>s.id===row.skillId);const tone=row.verdict==='correct'?'ok':'alert';
-  return `<li data-verdict="${escape(row.verdict)}"><span class="wpos-led" data-tone="${tone}" aria-hidden="true"></span><strong>${escape(skill?.label||row.skillId)}</strong><span>${escape(say(`position.evidence.${row.verdict==='correct'?'correct':'incorrect'}`))}${row.assisted?` · ${escape(say('position.evidence.assisted'))}`:''}</span></li>`;}).join('');
- return `<div class="wpos" data-position-done><div class="life-poster wpos-poster"><small class="life-poster-label">${escape(say('position.eyebrow'))}</small><strong class="life-poster-word">${escape(say('position.diagnostic.doneTitle'))}</strong><p class="life-poster-sub">${escape(say('position.diagnostic.doneSummary',{answered,skipped}))}</p></div>${rows?`<ul class="wpos-done-list">${rows}</ul>`:''}<p class="wpos-intro">${escape(say('position.diagnostic.doneNote'))}</p><p class="wpos-summary-line">${escape(say('position.summary',map.counts))}</p><button class="felt-button" type="button" data-position-back>${escape(say('position.diagnostic.back'))} <span aria-hidden="true">→</span></button></div>`;
+ // 진단 끝 한 장: 이번에 푼 것과 바뀐 지도. results: createDiagnosticSession().results()
+ function renderDiagnosticDone({map,results=[]}={}){
+  const answered=results.filter(row=>!row.skipped).length,skipped=results.length-answered;
+  const rows=results.filter(row=>!row.skipped).map(row=>{const skill=map.skills.find(s=>s.id===row.skillId)||{id:row.skillId},ok=row.verdict==='correct';
+   return `<li data-verdict="${posEscape(row.verdict)}">${posLed(ok?'ok':'alert')}<strong>${posEscape(skillName(skill))}</strong><span>${posEscape(t(ok?'position.evidence.correct':'position.evidence.incorrect'))}${row.assisted?` · ${posEscape(t('position.evidence.assisted'))}`:''}</span></li>`;}).join('');
+  return `<div class="wpos life-heading" data-position-done tabindex="-1">${poster(t('position.diagnostic.doneTitle'),t('position.diagnostic.doneSummary',{answered,skipped}))}${rows?`<ul class="wpos-done-list">${rows}</ul>`:''}<p class="wpos-intro">${posEscape(t('position.diagnostic.doneNote'))}</p><p class="wpos-summary-line">${posEscape(t('position.summary',map.counts))}</p><button class="felt-button" type="button" data-position-back>${posEscape(t('position.diagnostic.back'))} <span aria-hidden="true">→</span></button></div>`;
+ }
+ return Object.freeze({skillName,itemSource,renderPositionBoard,renderHangulBoard,renderDiagnosticItem,renderDiagnosticDone});
 }

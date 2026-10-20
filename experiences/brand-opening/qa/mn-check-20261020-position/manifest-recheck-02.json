@@ -1,0 +1,48 @@
+{
+ "createdAt": "2026-10-20T04:48:39.460Z",
+ "pairs": 6,
+ "budget": 900,
+ "batches": [
+  {
+   "file": "recheck-02.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "position.estimate.title",
+     "mn": "TOPIK-ийн таамагласан түвшин"
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "position.estimate.waiting",
+     "mn": "Үндэслэл хангалттай цугларсан. Түвшний хүрээг тогтоох аргыг баталгаажуулсны дараа харуулна"
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "position.estimate.note",
+     "mn": "TOPIK хэлбэрийн дасгалын (өмнө нь үзээгүй асуулт, бодит бүтэц, хугацааны хязгаар) 30 хариулт, сонсгол ба уншлагад тус бүр 10 хариулт цугларвал «1-р түвшний орчим» гэх мэтээр хүрээгээр нь харуулна. Тоглоомын оноогоор тогтоохгүй."
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "position.hangul.unknown",
+     "mn": "Солонгос үсэгтэй танилцсан явцын мэдээллийг хараахан ачаалж чадаагүй байна."
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "position.diagnostic.ask.blank",
+     "mn": "Хоосон зайд тохирохыг нь сонгоно уу."
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "position.diagnostic.ask.entry",
+     "mn": "Энэ зочныг оруулах уу?"
+    }
+   ]
+  }
+ ]
+}

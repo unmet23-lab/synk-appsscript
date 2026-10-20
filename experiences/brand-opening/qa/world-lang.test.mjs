@@ -115,7 +115,8 @@ test('1판 표: 모든 줄에 ko·en·mn이 있고 값 자리가 같다',()=>{
 });
 
 test('영어·몽골어 칸에는 한글이 없고, 몽골어는 키릴로 쓴다(브랜드·약어만 라틴)',()=>{
- const allowed=/\b(?:SYNK|ID|AI|WORLD|TOPIK|Google|Apple|Unity|PNG|O|X|3D)\b/g;
+ // 「TOPIK I」은 시험 이름이다(내 위치 판의 TOPIK I 15개 항목).
+ const allowed=/\b(?:SYNK|ID|AI|WORLD|TOPIK(?: I)?|Google|Apple|Unity|PNG|O|X|3D)\b/g;
  const problems=[];
  for(const [key,entry]of Object.entries(STRINGS)){
   for(const code of ['en','mn'])for(const text of forms(entry[code]))if(HANGUL.test(text))problems.push(`${key}: ${code}에 한글`);
@@ -168,7 +169,7 @@ test('표의 한국어가 원문과 같다(설정 스위치·튜터 카드·생�
 });
 
 test('화면 파일이 t()로 부르는 키는 모두 표에 있다(삼항의 두 키 포함)',()=>{
- const files=['../home.mjs','../first-run.mjs','../opening.mjs','../tutor-onboarding.mjs','../home-tutor.mjs','../home-town.mjs','../life-tutor.mjs','../lang-picker.mjs','../../synk-world-app/app-shell.mjs','../../synk-world-app/world-learning-ui.mjs','../../synk-world-app/life-ui.mjs'];
+ const files=['../home.mjs','../first-run.mjs','../opening.mjs','../tutor-onboarding.mjs','../home-tutor.mjs','../home-town.mjs','../life-tutor.mjs','../lang-picker.mjs','../../synk-world-app/app-shell.mjs','../../synk-world-app/world-learning-ui.mjs','../../synk-world-app/life-ui.mjs','../../synk-world-app/world-position-ui.mjs'];
  const used=new Map();
  for(const file of files){
   const source=read(file);
