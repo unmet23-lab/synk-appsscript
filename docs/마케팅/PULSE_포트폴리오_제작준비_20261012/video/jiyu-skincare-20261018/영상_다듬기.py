@@ -71,11 +71,17 @@ WINDOWS["7hs2"] = ("컷7손_세트2_s42_끝고정.mp4", 76, 48)
 # GPU 틈(다른 세션 LoRA 학습 사이)이 짧아 124장을 모두 키워 두고, 구간은 영상을 본 뒤 그 폴더에서 72장을 골라 옮긴다
 NAMES["7hs2전체"] = "컷7손_세트2_전체"
 WINDOWS["7hs2전체"] = ("컷7손_세트2_s42_끝고정.mp4", 0, 124)
+# 미소 판(영상_H3.py <컷>s2m, 10-20 v6): LoRA 학습이 다 끝난 아침에 GPU를 한 번에 쓰려고 124장을 모두 키워 두고(<컷>s2m전체),
+# 구간은 영상을 본 뒤 그 폴더에서 48장을 골라 <컷>_세트2미소/로 옮긴다(손 장면과 같은 방식)
+for _c, _n in (("1", "컷1"), ("4", "컷4"), ("5", "컷5"), ("C", "훅C")):
+    NAMES[f"{_c}s2m전체"] = f"{_n}_세트2미소_전체"
+    WINDOWS[f"{_c}s2m전체"] = (f"{_n}_세트2미소_s42.mp4", 0, 124)
 
 ASCII = r"C:\SYNK-LoRA\work\jiyu_up"  # SeedVR2(cv2.imwrite)는 한글 경로에 PNG를 못 쓴다 — 「저장함」이라고만 남기고 0장(10-19)
 ASCII_NAME = {"1": "cut1", "3": "cut3", "4": "cut4", "5": "cut5", "7": "cut7", "7b": "cut7b", "7b전체": "cut7b_all", "C": "hookC",
               "1s2": "cut1_s2", "3s2": "cut3_s2", "4s2": "cut4_s2", "5s2": "cut5_s2", "7s2": "cut7_s2", "Cs2": "hookC_s2",
-              "7hs2": "cut7h_s2", "7hs2전체": "cut7h_s2_all"}
+              "7hs2": "cut7h_s2", "7hs2전체": "cut7h_s2_all",
+              "1s2m전체": "cut1_s2m_all", "4s2m전체": "cut4_s2m_all", "5s2m전체": "cut5_s2m_all", "Cs2m전체": "hookC_s2m_all"}
 
 
 def upscale(c, src):

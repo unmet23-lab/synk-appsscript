@@ -154,6 +154,15 @@ SHOTS["7hs2"] = ("Single shot, shoulder-up, 65mm, locked-off camera. She holds t
                  "place for the whole shot. She looks into the lens from the first frame with a soft closed-mouth smile; within the "
                  "first second the smile deepens slightly into soft half-moon eyes, lips stay closed, and it holds until the end. "
                  "She may blink once. Nothing new appears and nothing else moves.")
+# 미소 판(<컷>s2m, 10-20 v6): 유호님(v5b를 보고) 「전반적인 모델의 표정이 좀 짜증나 있는 것 같아. 마지막 부분은 괜찮은데」 →
+# 컷 1 · 4 · 5 · 훅 C 키프레임을 Gemini로 표정만 손 장면 같은 입 다문 옅은 미소로 고침(키프레임_세트2/표정_v6/, 유호님 「네 장 다 좋아」).
+# 지시문에 표정 문장이 없으면 시작 그림의 미소가 클립 안에서 무표정으로 풀릴 수 있어(Fable P3) 한 문장 더한다
+KEEP_SMILE = (" She keeps the soft closed-mouth smile of the start image throughout: relaxed and quietly content, relaxed brows, "
+              "never frowning or tense; the smile neither fades nor grows, lips stay closed.")
+for _c in ("1", "4", "5", "C"):
+    INPUTS[_c + "s2m"] = os.path.join(K2, "표정_v6", f"{NAMES[_c]}_표정a.jpg")
+    NAMES[_c + "s2m"] = NAMES[_c] + "_세트2미소"
+    SHOTS[_c + "s2m"] = SHOTS.get(_c + "s2", SHOTS[_c]) + KEEP_SMILE
 SHOTS["7s2"] = ("Single shot, waist-up medium shot, 35mm, locked-off camera. She stands behind the white marble vanity in the left "
                  "half of the frame, her face turned about 15 degrees toward the window at camera left, lit like the first shot. "
                  "The right half of the frame is a plain, softly lit plaster wall that stays empty; the ceiling, window, towel bar, "
@@ -163,8 +172,8 @@ SHOTS["7s2"] = ("Single shot, waist-up medium shot, 35mm, locked-off camera. She
 
 
 def prompt(cut):
-    base = cut[:-2] if cut.endswith("s2") else cut
-    glob_ = GLOBAL2 if cut.endswith("s2") else GLOBAL
+    base = cut.split("s2")[0] if "s2" in cut else cut  # 「4s2」 · 「7hs2」 · 「4s2m」(미소 판) → 4 · 7h · 4
+    glob_ = GLOBAL2 if "s2" in cut else GLOBAL
     shot = SHOTS[cut] if cut in SHOTS else SHOTS[base]  # get(cut, SHOTS[base])는 base가 없는 컷(7hs2)에서 먼저 터진다
     if base == "3":
         parts = [glob_, REF_PAD, TEX_PAD, LIGHT_PAD, CAM_PAD, shot, CONS_PAD]
