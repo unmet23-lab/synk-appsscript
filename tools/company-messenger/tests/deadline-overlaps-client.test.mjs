@@ -33,27 +33,27 @@ async function load(f,result={data:report()},{background=false,clientError=null}
 }
 
 test('today displays existing projected overlaps without adding any request, timer, task or today-action count',async()=>{
-  const f=fixture(),html=await load(f);assert.match(html,/여러 프로젝트의 기한 겹침/);assert.match(html,/1일 · 2개 프로젝트/);assert.match(html,/2개 프로젝트 · 기한 항목 4개/);assert.match(html,/내가 처리할 일과 별도로/);assert.match(html,/현재 열람 권한이 있는 프로젝트 2개/);assert.match(html,/오늘 처리할 일이 없습니다/);assert.match(html,/합의한 전달일/);assert.match(html,/내부 목표일/);assert.match(html,/실제 작업 시간이나 과부하를 뜻하지/);
+  const f=fixture(),html=await load(f);assert.match(html,/기한이 겹치는 날/);assert.match(html,/1일 · 프로젝트 2개/);assert.match(html,/프로젝트 2개 · 기한 4개/);assert.match(html,/내가 볼 수 있는 프로젝트/);assert.match(html,/내가 볼 수 있는 프로젝트 2개에서/);assert.match(html,/오늘 할 일은 없어요/);assert.match(html,/합의한 전달일/);assert.match(html,/내부 목표일/);assert.match(html,/합의 기한·내부 목표일·점검일을 나눠 표시해요/);
   assert.deepEqual(f.requests.map(request=>request.path),['/api/workday','/api/client-workflow','/api/publication-workflow']);assert.equal(f.timers.size,1);assert.equal([...f.timers.values()][0].delay,10000);assert.equal(f.state.personalItems.length,0);
 });
 
 test('one project with several dates is not a cross-project overlap and undated entries remain visible',async()=>{
-  const html=await load(fixture(),{data:report([project(first)])});assert.match(html,/0일 · 0개 프로젝트/);assert.match(html,/같은 날 겹치는 프로젝트가 없습니다/);assert.match(html,/기한 미입력 2개/);assert.doesNotMatch(html,/class="deadline-overlap-day"/);
+  const html=await load(fixture(),{data:report([project(first)])});assert.match(html,/0일 · 프로젝트 0개/);assert.match(html,/같은 날 겹치는 기한이 없어요/);assert.match(html,/안 적음 2개/);assert.doesNotMatch(html,/class="deadline-overlap-day"/);
 });
 
 test('no enabled projects, missing dates, past dates and dates after the window have distinct observable states',async()=>{
-  const f=fixture();assert.match(await load(f,{data:report([])}),/일정 점검 중인 프로젝트가 없습니다/);
+  const f=fixture();assert.match(await load(f,{data:report([])}),/일정을 지켜보는 프로젝트가 없어요/);
   const missing=project(first,'날짜 없음',''),past=project(second,'지난 프로젝트','2026-10-11'),later=project('33333333-3333-4333-8333-333333333333','이후 프로젝트','2026-11-12');
-  const html=await load(f,{data:report([missing,past,later])});assert.match(html,/기간 안에 등록된 미완료 기한이 없습니다/);assert.match(html,/기한 미입력 8개/);assert.match(html,/지난 기한 2개/);assert.match(html,/기간 이후 2개/);assert.match(html,/2026-11-11/);assert.match(html,/날짜 없음/);assert.match(html,/지난 프로젝트/);assert.match(html,/이후 프로젝트/);
+  const html=await load(f,{data:report([missing,past,later])});assert.match(html,/30일 안에 남은 기한이 없어요/);assert.match(html,/안 적음 8개/);assert.match(html,/지난 기한 2개/);assert.match(html,/30일 뒤 2개/);assert.match(html,/2026-11-11/);assert.match(html,/날짜 없음/);assert.match(html,/지난 프로젝트/);assert.match(html,/이후 프로젝트/);
 });
 
 test('malformed or unavailable overlap data is a separate failure instead of an empty-success result',async()=>{
-  const f=fixture();for(const result of [null,{}, {error:'<img src=x> 일정 조회 실패'}, {data:{}}]){const html=await load(f,result);assert.match(html,/겹치는 기한이 없다는 뜻은 아닙니다/);assert.match(html,/확인 필요/);assert.doesNotMatch(html,/0일 · 0개 프로젝트|<img/);assert.match(html,/data-productivity-refresh/);}
-  const html=await load(f,undefined,{clientError:'고객 조회 실패'});assert.match(html,/고객 프로젝트를 불러오지 못해 기한 겹침도 확인하지 못했습니다/);
+  const f=fixture();for(const result of [null,{}, {error:'<img src=x> 일정 조회 실패'}, {data:{}}]){const html=await load(f,result);assert.match(html,/못 불러옴/);assert.match(html,/role="alert"/);assert.doesNotMatch(html,/0일 · 프로젝트 0개|<img/);assert.match(html,/data-productivity-refresh/);}
+  const html=await load(f,undefined,{clientError:'고객 조회 실패'});assert.match(html,/고객 프로젝트를 불러오지 못해 기한 겹침도 볼 수 없어요/);
 });
 
 test('duplicate projects, invalid counts, another project links and impossible period cannot pass UI validation',async()=>{
-  const f=fixture();for(const change of [data=>data.days[0].projects[1]=data.days[0].projects[0],data=>data.counts.overlapDayCount=0,data=>data.days[0].milestoneCount=8,data=>data.days[0].projects[0].milestones[0].href='/?tab=workroom&section=clients&project='+second+'&schedule=1',data=>data.period.endDate='2026-11-10',data=>data.observations.undated.milestoneCount=0]){const data=report();change(data);assert.match(await load(f,{data}),/기한 정보를 확인하지 못했습니다/);}
+  const f=fixture();for(const change of [data=>data.days[0].projects[1]=data.days[0].projects[0],data=>data.counts.overlapDayCount=0,data=>data.days[0].milestoneCount=8,data=>data.days[0].projects[0].milestones[0].href='/?tab=workroom&section=clients&project='+second+'&schedule=1',data=>data.period.endDate='2026-11-10',data=>data.observations.undated.milestoneCount=0]){const data=report();change(data);assert.match(await load(f,{data}),/기한을 불러오지 못했어요/);}
 });
 
 test('same-origin original PULSE and workroom links are preserved while unrelated or duplicate parameters are rejected',()=>{
@@ -76,5 +76,5 @@ test('late previous-session response cannot reveal project titles and a failed r
 });
 
 test('project text is escaped and standalone workday never displays company overlap data',async()=>{
-  const html=await load(fixture(),{data:report([project(first,'<svg onload=x>'),project(second)])});assert.doesNotMatch(html,/<svg/);assert.match(html,/&lt;svg/);const f=fixture({integrated:false});assert.doesNotMatch(await load(f),/여러 프로젝트의 기한 겹침/);assert.deepEqual(f.requests.map(request=>request.path),['/api/workday']);
+  const html=await load(fixture(),{data:report([project(first,'<svg onload=x>'),project(second)])});assert.doesNotMatch(html,/<svg/);assert.match(html,/&lt;svg/);const f=fixture({integrated:false});assert.doesNotMatch(await load(f),/기한이 겹치는 날/);assert.deepEqual(f.requests.map(request=>request.path),['/api/workday']);
 });

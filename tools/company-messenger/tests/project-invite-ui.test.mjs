@@ -33,16 +33,16 @@ test('invitation requires server permission, writable role, project and actual r
 });
 
 test('project participation controls clearly distinguish public membership from invitations',()=>{
- const f=fixture();f.run('syncProjectParticipation()');let html=f.get('#project-participation').innerHTML;assert.ok(html.includes('참여 크루 2명'));assert.ok(html.includes('data-project-invite'));assert.ok(html.includes('선택한 크루만 참여'));
+ const f=fixture();f.run('syncProjectParticipation()');let html=f.get('#project-participation').innerHTML;assert.ok(html.includes('참여 크루 2명'));assert.ok(html.includes('data-project-invite'));assert.ok(html.includes('고른 크루만 참여'));
  f.run("state.channelId='public';syncProjectParticipation()");html=f.get('#project-participation').innerHTML;assert.ok(html.includes('전체 공개'));assert.ok(html.includes('참여 크루 4명'));assert.ok(!html.includes('data-project-invite'));
 });
 
 test('public project roster explains current participation and reinvitation and a solo admin can reach crew registration',()=>{
- const f=fixture();f.run("state.members=[state.members[0]];state.channels[1].memberIds=['u1'];projectMembersDialog('public')");assert.ok(f.modal.innerHTML.includes('나간 크루는 관리자가 다시 초대'));assert.ok(f.modal.innerHTML.includes('먼저 크루를 등록하세요'));assert.ok(f.modal.innerHTML.includes('data-project-register'));assert.ok(!f.modal.innerHTML.includes('id="project-invite-submit"'));assert.equal(f.requests.length,0);
+ const f=fixture();f.run("state.members=[state.members[0]];state.channels[1].memberIds=['u1'];projectMembersDialog('public')");assert.ok(f.modal.innerHTML.includes('나간 크루는 관리자가 다시 초대'));assert.ok(f.modal.innerHTML.includes('먼저 크루를 등록해 주세요'));assert.ok(f.modal.innerHTML.includes('data-project-register'));assert.ok(!f.modal.innerHTML.includes('id="project-invite-submit"'));assert.equal(f.requests.length,0);
 });
 
 test('inviting selected crew posts only new members and explains access to previous messages and files',async()=>{
- const f=fixture();f.run("projectMembersDialog('private',{invite:true})");assert.ok(f.modal.innerHTML.includes('이전 대화와 공유 파일도 볼 수 있어요'));
+ const f=fixture();f.run("projectMembersDialog('private',{invite:true})");assert.ok(f.modal.innerHTML.includes('지난 대화와 파일을 볼 수 있어요'));
  const change=id=>f.get('#project-crew-list').onchange({target:{closest:()=>({dataset:{projectCrew:id},checked:true,disabled:false})}});change('u3');change('u4');assert.equal(f.get('#project-selection-count').textContent,'2명 선택');assert.equal(f.get('#project-invite-submit').disabled,false);
  const pending=f.get('#project-invite-form').onsubmit({preventDefault(){}});assert.equal(f.requests[0].path,'/api/channels/private/members');assert.deepEqual(Array.from(f.requests[0].options.body.memberIds),['u3','u4']);f.state.channels[0].memberIds.push('u3','u4');f.requests[0].resolve({addedIds:['u3','u4']});await pending;assert.equal(f.get('#project-selection-count').textContent,'0명 선택');assert.equal(f.get('#project-invite-submit').disabled,true);
 });
@@ -61,5 +61,5 @@ test('creating a project with nobody else selected submits a solo private room w
 });
 
 test('private project editing does not offer a public category change',()=>{
- const f=fixture();f.run('editChannelDialog()');assert.ok(f.modal.innerHTML.includes('선택한 크루만 참여하는 프로젝트'));assert.ok(f.modal.innerHTML.includes('<fieldset disabled class="room-category hidden"'));assert.ok(!f.modal.innerHTML.includes('회사 구성원 모두가 함께 보는 대화방'));
+ const f=fixture();f.run('editChannelDialog()');assert.ok(f.modal.innerHTML.includes('고른 크루만 들어오는 프로젝트'));assert.ok(f.modal.innerHTML.includes('<fieldset disabled class="room-category hidden"'));assert.ok(!f.modal.innerHTML.includes('회사 크루 모두가 함께 보는 대화방'));
 });

@@ -124,12 +124,12 @@ test('an undated request sends null and an optional reviewer is sent separately'
 
 test('a saved direct request refreshes today even if the current chat read fails',async()=>{
   const f=fixture(),form=await open(f),values=fill(f);f.run("refreshTaskViews=originalRefreshTaskViews;refreshMessages=async()=>{throw new Error('채팅 읽기 실패')}");const saving=submit(form);const response=created(values);f.requests[1].resolve(response);await flush();assert.equal(f.requests[2]?.path,'/api/workday');const work=snapshot();work.today.groups.reply=[response.task];work.today.counts.reply=1;work.today.total=1;work.openTotal=1;f.requests[2].resolve(work);await saving;
-  assert.ok(f.nodes.get('#personal-body').innerHTML.includes(values.title));assert.ok(f.nodes.get('#personal-body').innerHTML.includes('오늘 처리할 일 1개'));assert.ok(f.toasts.some(item=>item.error&&/만들|등록|요청/.test(item.message)&&/불러오지 못/.test(item.message)));
+  assert.ok(f.nodes.get('#personal-body').innerHTML.includes(values.title));assert.ok(f.nodes.get('#personal-body').innerHTML.includes('오늘 할 일 1개'));assert.ok(f.toasts.some(item=>item.error&&/추가했어요/.test(item.message)&&/불러오지 못/.test(item.message)));
 });
 
 test('a saved direct request with a failed today refresh never reports an empty day',async()=>{
   const f=fixture(),form=await open(f);fill(f);f.run('refreshTaskViews=originalRefreshTaskViews;refreshMessages=async()=>{}');const saving=submit(form);f.requests[1].resolve(created());await flush();assert.equal(f.requests[2]?.path,'/api/workday');f.requests[2].reject(new Error('오늘 업무 조회 실패'));await saving;
-  const html=f.nodes.get('#personal-body').innerHTML;assert.ok(html.includes('할 일을 확인하지 못했습니다'));assert.ok(!html.includes('오늘 처리할 일이 없습니다'));assert.match(html,/data-productivity-refresh/);
+  const html=f.nodes.get('#personal-body').innerHTML;assert.ok(html.includes('할 일을 불러오지 못했어요'));assert.ok(!html.includes('오늘 할 일은 없어요'));assert.match(html,/data-productivity-refresh/);
 });
 
 test('repeated submit events while pending send only one task creation',async()=>{
@@ -151,7 +151,7 @@ test('permission removal before submission refuses a stale form without a POST',
 });
 
 test('an open form reports readonly access after write permission changes and sends no POST',async()=>{
-  const f=fixture(),form=await open(f);fill(f);f.run('state.integrated={canWrite:false}');await submit(form);assert.equal(f.requests.length,1);assert.equal(f.opened.length,0);assert.ok(f.toasts.some(item=>item.error&&item.message==='현재 계정은 열람만 할 수 있어 할 일을 등록할 수 없습니다.'));
+  const f=fixture(),form=await open(f);fill(f);f.run('state.integrated={canWrite:false}');await submit(form);assert.equal(f.requests.length,1);assert.equal(f.opened.length,0);assert.ok(f.toasts.some(item=>item.error&&item.message==='보기 전용 계정이라 할 일을 추가할 수 없어요.'));
 });
 
 test('a backend rejection keeps all inputs and does not claim success or open task detail',async()=>{
@@ -173,7 +173,7 @@ test('late options cannot replace another modal or accept a new login session',a
 });
 
 test('write access removed while options are loading cannot expose a registration form',async()=>{
-  const f=fixture(),opening=f.run('openTaskCreateDialog()');await flush();f.run('state.integrated={canWrite:false}');f.requests[0].resolve(options(f));await opening;assert.ok(!f.state.testModal.includes('id="task-create-form"'));assert.match(f.state.testModal,/role="alert"[^>]*>현재 계정은 열람만 할 수 있어 할 일을 등록할 수 없습니다\./);assert.equal(f.requests.length,1);assert.equal(f.toasts.length,0);
+  const f=fixture(),opening=f.run('openTaskCreateDialog()');await flush();f.run('state.integrated={canWrite:false}');f.requests[0].resolve(options(f));await opening;assert.ok(!f.state.testModal.includes('id="task-create-form"'));assert.match(f.state.testModal,/role="alert"[^>]*>보기 전용 계정이라 할 일을 추가할 수 없어요\./);assert.equal(f.requests.length,1);assert.equal(f.toasts.length,0);
 });
 
 test('a late create rejection cannot paint an error into a replacement modal',async()=>{

@@ -82,7 +82,7 @@ for (const [label, change] of [
   test(`an actual ${label} change still rejects an in-flight request`, async () => {
     const f = fixture();
     const tasks = f.run("api('/api/tasks?scope=mine')");
-    const rejected = assert.rejects(tasks, /로그인이 바뀌어 이전 요청을 종료했어요/);
+    const rejected = assert.rejects(tasks, /로그인이 바뀌어 하던 요청을 멈췄어요/);
     const refresh = f.run('refreshStorageProvider()');
     f.respond('/api/bootstrap', f.bootstrap(change));
     await refresh;
@@ -95,7 +95,7 @@ for (const [label, change] of [
 test('an actual messenger-user change still rejects an in-flight request', async () => {
   const f = fixture();
   const tasks = f.run("api('/api/tasks?scope=mine')");
-  const rejected = assert.rejects(tasks, /로그인이 바뀌어 이전 요청을 종료했어요/);
+  const rejected = assert.rejects(tasks, /로그인이 바뀌어 하던 요청을 멈췄어요/);
   f.state.user = { id: 'messenger-user-2' };
   f.respond('/api/tasks?scope=mine', { tasks: [] });
   await rejected;

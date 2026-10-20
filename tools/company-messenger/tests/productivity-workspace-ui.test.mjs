@@ -35,7 +35,7 @@ test('rights expiry tasks retain only a valid registered source destination',()=
 test('today renders actual stage, due urgency and all four work groups without a company API in standalone',async()=>{
   const f=fixture();f.run("state.personalTab='workday'");const loading=f.run('loadPersonalPanel()');assert.equal(f.requests.length,1);assert.equal(f.requests[0].path,'/api/workday');
   f.requests[0].resolve({date:'2026-10-09',groups:{reply:[],due:[task],review:[],waiting:[task]},counts:{reply:0,due:1,review:0,waiting:1}});await loading;
-  const html=f.nodes.get('#personal-body').innerHTML;assert.ok(html.includes('기한 지남'));assert.ok(html.includes('검토 요청'));assert.ok(html.includes('내가 답할 요청'));assert.ok(html.includes('내가 검토할 결과'));assert.ok(html.includes('내 요청의 진행 상황'));assert.ok(html.includes('data-source-message="1"'));assert.equal(f.state.personalItems.length,2);
+  const html=f.nodes.get('#personal-body').innerHTML;assert.ok(html.includes('기한 지남'));assert.ok(html.includes('검토 중'));assert.ok(html.includes('내가 답할 요청'));assert.ok(html.includes('내가 검토할 결과'));assert.ok(html.includes('기다리는 일'));assert.ok(html.includes('data-source-message="1"'));assert.equal(f.state.personalItems.length,2);
 });
 
 test('a late today response cannot overwrite a different personal panel',async()=>{
@@ -43,12 +43,12 @@ test('a late today response cannot overwrite a different personal panel',async()
 });
 
 test('actionable customer work appears before compact empty groups',async()=>{
-  const f=fixture();f.run("state.personalTab='workday';state.integrated={canWrite:true};clientWorkflowApi=async()=>({items:[{id:'c1',group:'next',title:'납품 파일 전달',text:'승인된 버전을 전달하세요.',href:'/?tab=workroom&section=clients&project=p1',actions:[]}]})");const loading=f.run('loadPersonalPanel()');f.requests[0].resolve({date:'2026-10-09',groups:{reply:[],due:[],review:[],waiting:[]},counts:{reply:0,due:0,review:0,waiting:0}});await loading;const html=f.nodes.get('#personal-body').innerHTML;assert.ok(html.indexOf('납품 파일 전달')<html.indexOf('workday-empty-row'));assert.equal((html.match(/workday-empty-row/g)||[]).length,4);assert.ok(!html.includes('담당자로 지정된 요청을 확인하고 수락하세요.'));
+  const f=fixture();f.run("state.personalTab='workday';state.integrated={canWrite:true};clientWorkflowApi=async()=>({items:[{id:'c1',group:'next',title:'납품 파일 전달',text:'승인된 버전을 전달하세요.',href:'/?tab=workroom&section=clients&project=p1',actions:[]}]})");const loading=f.run('loadPersonalPanel()');f.requests[0].resolve({date:'2026-10-09',groups:{reply:[],due:[],review:[],waiting:[]},counts:{reply:0,due:0,review:0,waiting:0}});await loading;const html=f.nodes.get('#personal-body').innerHTML;assert.ok(html.indexOf('납품 파일 전달')<html.indexOf('workday-empty-row'));assert.equal((html.match(/workday-empty-row/g)||[]).length,4);assert.ok(!html.includes('나에게 온 요청이에요. 보고 수락해 주세요.'));
 });
 
 test('catch-up stays unread until explicit acknowledgement and sends only the displayed boundary',async()=>{
   const f=fixture();f.run("state.personalTab='catchup'");const loading=f.run('loadPersonalPanel()');f.requests[0].resolve({since:2,through:5,hasMore:true,events:[{sequence:5,kind:'task_stage',createdAt:'2026-10-08T00:00:00Z',message:{id:'1',channelId:'c1'},task,changes:{from:'doing',to:'review'},actor:{name:'담당'}}]});await loading;
-  assert.equal(f.requests.length,1);assert.ok(f.nodes.get('#personal-body').innerHTML.includes('진행 중 → 검토 요청'));
+  assert.equal(f.requests.length,1);assert.ok(f.nodes.get('#personal-body').innerHTML.includes('진행 중 → 검토 중'));
   f.run('loadPersonalPanel=async()=>{}');const confirming=f.nodes.get('#catchup-read').listeners.click({currentTarget:f.nodes.get('#catchup-read')});assert.equal(f.requests[1].path,'/api/catch-up/read');assert.equal(f.requests[1].options.body.through,5);f.requests[1].resolve({through:5});await confirming;
 });
 
@@ -71,7 +71,7 @@ test('kickoff, changes and delivery customer tasks preserve their exact destinat
 });
 
 test('change summaries use crew names, retain both reviewer changes and escape untrusted content',()=>{
-  const f=fixture();f.context.event={kind:'task_assignment',changes:{from:{assigneeId:'u1',reviewerId:null},to:{assigneeId:'u2',reviewerId:'u1'}}};const description=f.run('catchUpChangeText(event)');assert.equal(description,'담당 담당 → 검토 · 검토 미지정 → 담당');
+  const f=fixture();f.context.event={kind:'task_assignment',changes:{from:{assigneeId:'u1',reviewerId:null},to:{assigneeId:'u2',reviewerId:'u1'}}};const description=f.run('catchUpChangeText(event)');assert.equal(description,'담당 담당 → 검토 · 검토 없음 → 담당');
   f.context.decision={id:'d1',summary:'<img src=x onerror=alert(1)>',confirmedBy:{name:'<script>'},channelId:'c1',messageId:'1'};const html=f.run('decisionHtml(decision)');assert.ok(html.includes('&lt;img'));assert.ok(!html.includes('<script>'));
 });
 
@@ -96,7 +96,7 @@ test('an assignee can nominate the first reviewer before review while existing r
 });
 
 test('an optimistic conflict preserves the dialog and requires reloading before resubmission',async()=>{
-  const f=taskFixture();f.run("message.task.stage='doing';message.task.allowedStages=['review'];taskDialog(message)");const form=f.nodes.get('#task-form');form.values={title:'내가 수정한 제목',assigneeId:'u1',reviewerId:'u2',dueDate:'2026-10-09',stage:'review'};const saving=form.onsubmit({preventDefault(){}});f.requests[0].reject(Object.assign(new Error('conflict'),{status:409}));await saving;assert.equal(f.nodes.get('#modal').open,true);assert.equal(form.values.title,'내가 수정한 제목');assert.equal(f.nodes.get('button[type=submit]').disabled,true);assert.ok(f.errors[0].includes('최신 상태'));
+  const f=taskFixture();f.run("message.task.stage='doing';message.task.allowedStages=['review'];taskDialog(message)");const form=f.nodes.get('#task-form');form.values={title:'내가 수정한 제목',assigneeId:'u1',reviewerId:'u2',dueDate:'2026-10-09',stage:'review'};const saving=form.onsubmit({preventDefault(){}});f.requests[0].reject(Object.assign(new Error('conflict'),{status:409}));await saving;assert.equal(f.nodes.get('#modal').open,true);assert.equal(form.values.title,'내가 수정한 제목');assert.equal(f.nodes.get('button[type=submit]').disabled,true);assert.ok(f.errors[0].includes('새로 불러온 뒤'));
 });
 
 test('linked message picker ignores late search results after a different modal replaces it',async()=>{
@@ -105,7 +105,7 @@ test('linked message picker ignores late search results after a different modal 
 
 test('unavailable reviewer recovery excludes the assignee and requires the explicit server permission',()=>{
   const f=fixture();f.context.task={...task,reviewer:null,reviewerId:'former',reviewerUnavailable:true,canReassignReviewer:true};const html=f.run('reviewerRecoveryHtml(task,state.members)');assert.ok(html.includes('id="reassign-reviewer"'));assert.ok(html.includes('같은 결과물'));assert.ok(!html.includes('value="u1"'));assert.ok(html.includes('value="u2"'));
-  f.run('task.canReassignReviewer=false');const readonly=f.run('reviewerRecoveryHtml(task,state.members)');assert.ok(!readonly.includes('id="reassign-reviewer"'));assert.ok(readonly.includes('업무 요청자'));
+  f.run('task.canReassignReviewer=false');const readonly=f.run('reviewerRecoveryHtml(task,state.members)');assert.ok(!readonly.includes('id="reassign-reviewer"'));assert.ok(readonly.includes('요청한 사람이나 관리자'));
 });
 
 function recoveryFixture(){
@@ -113,12 +113,12 @@ function recoveryFixture(){
 }
 
 test('reviewer recovery requires confirmation and submits no stage, result or assignment changes',async()=>{
-  const f=recoveryFixture(),button=f.nodes.get('#reassign-reviewer');f.nodes.get('#replacement-reviewer').value='u2';await button.onclick();assert.equal(f.requests.length,0);assert.ok(f.errors[0].includes('확인'));
+  const f=recoveryFixture(),button=f.nodes.get('#reassign-reviewer');f.nodes.get('#replacement-reviewer').value='u2';await button.onclick();assert.equal(f.requests.length,0);assert.ok(f.errors[0].includes('체크해 주세요'));
   f.nodes.get('#reviewer-recovery-confirm').checked=true;const saving=button.onclick();assert.deepEqual({...f.requests[0].options.body},{revision:7,reviewerId:'u2',reassignReviewer:true});f.run('taskDialog=value=>state.recoveredTask=value.task');f.requests[0].resolve({task:{...task,reviewer:{id:'u2'},revision:8}});await saving;assert.equal(f.state.recoveredTask.resultMessageId,'2');assert.equal(f.state.recoveredTask.stage,'review');
 });
 
 test('reviewer recovery conflicts keep selection and confirmation while blocking stale resubmission',async()=>{
-  const f=recoveryFixture(),button=f.nodes.get('#reassign-reviewer');f.nodes.get('#replacement-reviewer').value='u2';f.nodes.get('#reviewer-recovery-confirm').checked=true;const saving=button.onclick();f.requests[0].reject(Object.assign(new Error('already reassigned'),{status:409}));await saving;assert.equal(f.nodes.get('#replacement-reviewer').value,'u2');assert.equal(f.nodes.get('#reviewer-recovery-confirm').checked,true);assert.equal(button.disabled,true);assert.equal(f.nodes.get('button[type=submit]').disabled,true);assert.ok(f.errors[0].includes('선택은 보존'));
+  const f=recoveryFixture(),button=f.nodes.get('#reassign-reviewer');f.nodes.get('#replacement-reviewer').value='u2';f.nodes.get('#reviewer-recovery-confirm').checked=true;const saving=button.onclick();f.requests[0].reject(Object.assign(new Error('already reassigned'),{status:409}));await saving;assert.equal(f.nodes.get('#replacement-reviewer').value,'u2');assert.equal(f.nodes.get('#reviewer-recovery-confirm').checked,true);assert.equal(button.disabled,true);assert.equal(f.nodes.get('button[type=submit]').disabled,true);assert.ok(f.errors[0].includes('고른 건 그대로'));
 });
 
 test('an unavailable reviewer raw ID survives ordinary metadata save and is never silently removed',async()=>{
@@ -131,7 +131,7 @@ test('customer notifications render exact context and read only on opening, even
 });
 
 test('unsafe customer notification links are neither read nor opened',async()=>{
-  const f=fixture();f.run("state.personalTab='notifications'");f.context.item={id:'client:1',kind:'client_workflow',href:'https://outside.test/?tab=workroom&section=clients&project=p1'};await f.run('openPersonalNotification(item)');assert.equal(f.requests.length,0);assert.ok(f.errors[0].includes('연결'));
+  const f=fixture();f.run("state.personalTab='notifications'");f.context.item={id:'client:1',kind:'client_workflow',href:'https://outside.test/?tab=workroom&section=clients&project=p1'};await f.run('openPersonalNotification(item)');assert.equal(f.requests.length,0);assert.ok(f.errors[0].includes('열 수 없어요'));
 });
 
 test('deadline notifications with no chat message open their task collection after read',async()=>{

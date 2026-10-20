@@ -43,11 +43,11 @@ test('a rejected leave keeps membership and the draft and restores posting',asyn
 });
 
 test('the last person gets an archive explanation and an empty category remains safe',async()=>{
- const f=fixture();f.state.channels=f.state.channels.filter(channel=>channel.id!=='public');f.state.channels[0].memberIds=['u1'];f.run("leaveProjectDialog('project')");assert.ok(f.modal.innerHTML.includes('혼자 남은 방은 보관되며 삭제된 대화방에서 복원'));const pending=f.run("leaveProjectChannel('project',null)");f.requests[0].resolve({ok:true,archived:true});await pending;assert.equal(f.state.channelId,null);assert.equal(f.state.chatCategory,'all');assert.ok(f.notices.some(text=>text.includes('삭제된 대화방에서 복원')));
+ const f=fixture();f.state.channels=f.state.channels.filter(channel=>channel.id!=='public');f.state.channels[0].memberIds=['u1'];f.run("leaveProjectDialog('project')");assert.ok(f.modal.innerHTML.includes('혼자 남은 방이라 보관해 두고, ‘삭제된 대화방’에서 복원'));const pending=f.run("leaveProjectChannel('project',null)");f.requests[0].resolve({ok:true,archived:true});await pending;assert.equal(f.state.channelId,null);assert.equal(f.state.chatCategory,'all');assert.ok(f.notices.some(text=>text.includes('‘삭제된 대화방’에서 복원')));
 });
 
 test('last-participant copy uses server active membership instead of historical inactive membership IDs',()=>{
- const f=fixture();assert.equal(f.state.channels[0].memberIds.length,2);f.state.channels[0].activeMemberCount=1;f.run("leaveProjectDialog('project')");assert.ok(f.modal.innerHTML.includes('참여 크루 1명'));assert.ok(f.modal.innerHTML.includes('혼자 남은 방은 보관'));f.run('syncProjectParticipation()');assert.ok(f.get('#project-participation').innerHTML.includes('참여 크루 1명'));
+ const f=fixture();assert.equal(f.state.channels[0].memberIds.length,2);f.state.channels[0].activeMemberCount=1;f.run("leaveProjectDialog('project')");assert.ok(f.modal.innerHTML.includes('참여 크루 1명'));assert.ok(f.modal.innerHTML.includes('혼자 남은 방이라 보관'));f.run('syncProjectParticipation()');assert.ok(f.get('#project-participation').innerHTML.includes('참여 크루 1명'));
 });
 
 test('server-granted restoration for a last-leaver archive works for viewers without weakening ordinary restore permissions',()=>{
@@ -71,7 +71,7 @@ test('the concise header retains notifications, search and room settings without
 });
 
 test('the restoration list distinguishes a last-leaver archive from a deleted room',()=>{
- const f=fixture();f.context.archived={...f.state.channels[0],deletedAt:'2026-09-30T00:00:00Z',archivedByLeave:true};let html=f.run('deletedProjectRows([archived])');assert.ok(html.includes('보관 · 마지막 참여자가 나간 방'));f.context.archived.archivedByLeave=false;html=f.run('deletedProjectRows([archived])');assert.ok(html.includes('삭제</small>'));assert.ok(!html.includes('마지막 참여자가 나간 방'));
+ const f=fixture();f.context.archived={...f.state.channels[0],deletedAt:'2026-09-30T00:00:00Z',archivedByLeave:true};let html=f.run('deletedProjectRows([archived])');assert.ok(html.includes('보관 · 마지막 사람이 나간 방'));f.context.archived.archivedByLeave=false;html=f.run('deletedProjectRows([archived])');assert.ok(html.includes('삭제</small>'));assert.ok(!html.includes('마지막 사람이 나간 방'));
 });
 
 test('the current project title has a mobile leave shortcut that opens the same confirmation and follows room permissions',()=>{

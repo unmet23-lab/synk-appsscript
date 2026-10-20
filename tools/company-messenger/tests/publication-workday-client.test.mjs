@@ -32,18 +32,18 @@ async function load(f,{items=[],customers=[],work=workday(),background=false}={}
 
 test('company today combines unique publication actions with tasks and customer work without creating records',async()=>{
   const f=fixture(),prepare=item(),publish=item({id:'publish',kind:'publication_publish',title:'게시 주소 기록',href:publicationHref('publish','packageId='+uid)}),html=await load(f,{items:[prepare,prepare,publish],customers:[{id:'client',group:'reply',title:'고객 답변'}],work:workday({today:[task()],remaining:[task('later')]})});
-  assert.match(html,/오늘 처리할 일 4개/);assert.match(html,/게시의 다음 할 일/);assert.match(html,/완성본 확인/);assert.match(html,/이후 마감 1개/);assert.equal(f.state.publicationWork.length,2);assert.equal(f.state.personalItems.length,2);
+  assert.match(html,/오늘 할 일 4개/);assert.match(html,/게시할 일/);assert.match(html,/완성본 확인/);assert.match(html,/이후 마감 1개/);assert.equal(f.state.publicationWork.length,2);assert.equal(f.state.personalItems.length,2);
   assert.deepEqual(f.requests.map(request=>request.path),['/api/workday','/api/client-workflow','/api/publication-workflow']);assert.ok(f.requests.every(request=>!request.options.method||request.options.method==='GET'));
 });
 
 test('publication source errors keep the count incomplete and cannot claim zero work',async()=>{
   const f=fixture(),loading=f.run('loadPersonalPanel()');f.requests[0].resolve(workday());f.requests[1].resolve({items:[]});f.requests[2].reject(new Error('<img src=x> 게시 조회 실패'));await loading;const html=f.nodes.get('#personal-body').innerHTML;
-  assert.match(html,/오늘 할 일 확인이 완료되지 않았습니다/);assert.match(html,/게시 업무를 확인하지 못했습니다/);assert.match(html,/확인 필요/);assert.match(html,/data-productivity-refresh/);assert.ok(!html.includes('오늘 처리할 일이 없습니다'));assert.ok(!html.includes('<img src=x>'));assert.ok(html.includes('&lt;img'));
+  assert.match(html,/오늘 할 일을 다 불러오지 못했어요/);assert.match(html,/게시 업무를 불러오지 못했어요/);assert.match(html,/못 불러옴/);assert.match(html,/data-productivity-refresh/);assert.ok(!html.includes('오늘 할 일은 없어요'));assert.ok(!html.includes('<img src=x>'));assert.ok(html.includes('&lt;img'));
 });
 
 test('known tasks remain visible when publication loading fails',async()=>{
   const f=fixture(),loading=f.run('loadPersonalPanel()');f.requests[0].resolve(workday({today:[task()]}));f.requests[1].resolve({items:[]});f.requests[2].reject(new Error('게시 연결 실패'));await loading;
-  assert.match(f.nodes.get('#personal-body').innerHTML,/확인된 오늘 할 일 1개/);assert.match(f.nodes.get('#personal-body').innerHTML,/오늘 마감 영상/);
+  assert.match(f.nodes.get('#personal-body').innerHTML,/불러온 할 일 1개/);assert.match(f.nodes.get('#personal-body').innerHTML,/오늘 마감 영상/);
 });
 
 test('standalone and an unauthenticated company module do not request the company publication API',async()=>{
@@ -81,7 +81,7 @@ test('unchanged work skips DOM replacement even while server clock metadata adva
 });
 
 test('changed original status removes a completed action and preserves the drawer scroll',async()=>{
-  const f=fixture();await load(f,{items:[item()]});const body=f.nodes.get('#personal-body'),writes=body.writes;body.scrollTop=230;const html=await load(f,{background:true});assert.match(html,/오늘 처리할 일이 없습니다/);assert.ok(!html.includes('LAB 완성본 확인'));assert.equal(body.writes,writes+1);assert.equal(body.scrollTop,230);assert.equal(f.state.publicationWork.length,0);
+  const f=fixture();await load(f,{items:[item()]});const body=f.nodes.get('#personal-body'),writes=body.writes;body.scrollTop=230;const html=await load(f,{background:true});assert.match(html,/오늘 할 일은 없어요/);assert.ok(!html.includes('LAB 완성본 확인'));assert.equal(body.writes,writes+1);assert.equal(body.scrollTop,230);assert.equal(f.state.publicationWork.length,0);
 });
 
 test('a retained focused action uses its ID and corrects its position in the actual scrolling body',()=>{
@@ -115,7 +115,7 @@ test('an initial company workday read also discards its response after leaving t
 });
 
 test('a failed workday poll reports unknown work and schedules recovery without a false zero',async()=>{
-  const f=fixture();await load(f,{items:[item()]});const offset=f.requests.length,pending=f.run('loadPersonalPanel({background:true})');f.requests[offset].reject(new Error('업무 읽기 실패'));f.requests[offset+1].resolve({items:[]});f.requests[offset+2].resolve({items:[]});await pending;assert.match(f.nodes.get('#personal-body').innerHTML,/할 일을 확인하지 못했습니다/);assert.ok(!f.nodes.get('#personal-body').innerHTML.includes('오늘 처리할 일이 없습니다'));assert.equal(f.timers.size,1);assert.equal([...f.timers.values()][0].delay,10000);
+  const f=fixture();await load(f,{items:[item()]});const offset=f.requests.length,pending=f.run('loadPersonalPanel({background:true})');f.requests[offset].reject(new Error('업무 읽기 실패'));f.requests[offset+1].resolve({items:[]});f.requests[offset+2].resolve({items:[]});await pending;assert.match(f.nodes.get('#personal-body').innerHTML,/할 일을 불러오지 못했어요/);assert.ok(!f.nodes.get('#personal-body').innerHTML.includes('오늘 할 일은 없어요'));assert.equal(f.timers.size,1);assert.equal([...f.timers.values()][0].delay,10000);
 });
 
 test('returning from another personal tab renders today even with an unchanged source snapshot',async()=>{
@@ -135,7 +135,7 @@ test('package review is accepted by the real API validator and opens its exact p
   f.context.fetch=async()=>({ok:true,json:async()=>({items:[review]})});const response=await f.run('publicationWorkflowApi()');assert.equal(response.items[0].kind,'publication_review');
   f.context.href=review.href;assert.equal(f.run('safePublicationWorkflowHref(href)'),'http://localhost'+review.href);
   f.context.href=review.href+'&publicationFormat=youtube-shorts';assert.equal(f.run('safePublicationWorkflowHref(href)'),null);
-  f.run('publicationWorkflowApi=()=>request("/api/publication-workflow")');const html=await load(f,{items:[review]});assert.match(html,/오늘 처리할 일 1개/);assert.match(html,/남은 점검 확인/);
+  f.run('publicationWorkflowApi=()=>request("/api/publication-workflow")');const html=await load(f,{items:[review]});assert.match(html,/오늘 할 일 1개/);assert.match(html,/남은 점검 확인/);
   await f.nodes.get('#personal-body').onclick({preventDefault(){},target:{closest:selector=>selector==='[data-publication-open]'?{dataset:{publicationOpen:review.id}}:null}});
   assert.equal(f.messages[0].value.url,'http://localhost'+review.href);assert.equal(f.messages[0].value.type,'messenger:publication-open');
 });

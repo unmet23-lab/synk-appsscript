@@ -23,7 +23,7 @@ function fixture({embedded=true,integrated=embedded}={}){
 const flush=async()=>{for(let index=0;index<12;index++)await Promise.resolve();};
 const workday=()=>({date:'2026-10-12',nextDayRefreshAfterMs:60000,today:{groups:{reply:[],due:[],review:[],recovery:[]}},remaining:{groups:{upcoming:[],undated:[],waiting:[]},counts:{upcoming:0,undated:0,waiting:0}}});
 const clientItem=(id,overrides={})=>({id,projectId:uid,projectTitle:'봄 캠페인',group:'reply',kind:'client_request',title:'수정 의견 '+id,text:'장면과 요청을 확인하세요.',href:'/?tab=workroom&section=clients&project='+uid+'&version=version-1&message=message-1&seconds=62.5',actionLabel:'요청 원문',actions:[],...overrides});
-function group(items){const actionable=items.filter(item=>item.group!=='waiting'),waiting=items.filter(item=>item.group==='waiting');return {projectId:items[0].projectId,projectTitle:items[0].projectTitle,href:items[0].href,primary:actionable[0]||null,reason:actionable.length?'기한이 지나 먼저 확인하세요.':'고객 또는 내부 담당자의 확인을 기다리고 있어요. 지금 처리할 일은 없어요.',urgency:actionable.length?'overdue':'waiting',dueDate:'2026-10-11',counts:{total:items.length,actionable:actionable.length,waiting:waiting.length,customerWaiting:waiting.filter(item=>item.status!=='review'&&item.waitingFor!=='staff').length,staffWaiting:waiting.filter(item=>item.status==='review'||item.waitingFor==='staff').length},items};}
+function group(items){const actionable=items.filter(item=>item.group!=='waiting'),waiting=items.filter(item=>item.group==='waiting');return {projectId:items[0].projectId,projectTitle:items[0].projectTitle,href:items[0].href,primary:actionable[0]||null,reason:actionable.length?'기한이 지나 먼저 확인하세요.':'고객 또는 내부 담당자의 확인을 기다리고 있어요. 지금 할 일은 없어요.',urgency:actionable.length?'overdue':'waiting',dueDate:'2026-10-11',counts:{total:items.length,actionable:actionable.length,waiting:waiting.length,customerWaiting:waiting.filter(item=>item.status!=='review'&&item.waitingFor!=='staff').length,staffWaiting:waiting.filter(item=>item.status==='review'||item.waitingFor==='staff').length},items};}
 async function load(f,data){const start=f.requests.length,pending=f.run('loadPersonalPanel()');for(const request of f.requests.slice(start)){if(request.path==='/api/workday')request.resolve(workday());else if(request.path==='/api/client-workflow')request.resolve(data);else if(request.path==='/api/publication-workflow')request.resolve({items:[]});else assert.fail(request.path);}await pending;return f.nodes.get('#personal-body').innerHTML;}
 
 const fingerprint='a'.repeat(64);
@@ -33,16 +33,16 @@ function recheckData(items,deferred=[],today='2026-10-12'){
 }
 test('personal dates move only selected tasks to an inspectable section and keep canonical indices and original deadlines',async()=>{
   const f=fixture(),items=[clientItem('later',{dueDate:'2026-10-15'}),clientItem('now')],html=await load(f,recheckData(items,['later']));
-  assert.match(html,/오늘 처리할 일 1개/);assert.match(html,/다시 볼 날짜를 정한 일 1개/);assert.match(html,/1개 프로젝트 · 할 일 항목 1개/);assert.match(html,/2026-10-19 다시 확인/);assert.match(html,/2026-10-15/);assert.match(html,/data-client-restore="0"/);assert.match(html,/data-client-recheck="1"/);
+  assert.match(html,/오늘 할 일 1개/);assert.match(html,/미뤄 둔 일 1개/);assert.match(html,/프로젝트 1개 · 할 일 1개/);assert.match(html,/2026-10-19 다시 보기/);assert.match(html,/2026-10-15/);assert.match(html,/data-client-restore="0"/);assert.match(html,/data-client-recheck="1"/);
   for(const item of items)assert.equal((html.match(new RegExp('data-client-item="'+item.id+'"','g'))||[]).length,1);
-  assert.deepEqual([...f.state.customerWork.map(item=>item.id)],['later','now']);assert.match(html,/원래 기한과 미완료 상태, 자동화 점검은 유지/);
+  assert.deepEqual([...f.state.customerWork.map(item=>item.id)],['later','now']);assert.match(html,/원래 기한은 그대로/);
 });
 test('an entirely deferred day explicitly retains unfinished work rather than claiming everything is complete',async()=>{
   const f=fixture(),html=await load(f,recheckData([clientItem('later')],['later']));
-  assert.match(html,/다시 볼 날짜를 정한 미완료 업무가 있습니다/);assert.doesNotMatch(html,/내게 배정된 미완료 업무와 내가 처리할 고객·게시 업무도 없습니다/);assert.doesNotMatch(html,/data-client-project=/);assert.match(html,/data-client-restore="0"/);
+  assert.match(html,/미뤄 둔 일이 있어요/);assert.doesNotMatch(html,/맡은 일도, 고객·게시 일도 없어요/);assert.doesNotMatch(html,/data-client-project=/);assert.match(html,/data-client-restore="0"/);
 });
 test('due dates and significant changes reappear with a reason while preserving exact source actions',async()=>{
-  for(const [state,label]of [['due','다시 볼 날짜가 됐어요'],['changed','새 요청이나 변경이 있어'],['overdue','기한이 지나 다시 표시']]){
+  for(const [state,label]of [['due','다시 볼 날짜가 됐어요'],['changed','새 요청이나 바뀐 게 있어'],['overdue','기한이 지나 다시 꺼냈']]){
     const f=fixture(),item=clientItem('returned',{actions:[{action:'start',label:'처리 시작'}]}),data=recheckData([item]);data.rechecks.returned={fingerprint,state,date:'2026-10-11'};const html=await load(f,data);
     assert.match(html,new RegExp(label));assert.match(html,/data-client-work="0" data-client-action="start"/);assert.match(html,/data-client-recheck="0"/);assert.doesNotMatch(html,/data-client-restore=/);
   }
@@ -67,7 +67,7 @@ test('tomorrow, next week, and custom dates use the server Korean day with no PC
   for(const [choice,date,expected]of [['tomorrow','2026-12-01','2026-10-13'],['week','2026-12-01','2026-10-19'],['custom','2026-11-03','2026-11-03']]){
     const f=dialogFixture();f.context.values={choice,date};const pending=f.form.onsubmit({preventDefault(){}}),request=f.requests.at(-1);assert.equal(request.path,'recheck-action');assert.equal(request.options.recheck,true);assert.deepEqual({...request.options.body},{action:'defer',date:expected,itemId:'one',fingerprint});request.resolve({});await pending;assert.equal(f.nodes.get('#modal').open,false);
   }
-  const f=dialogFixture();f.nodes.get('input[name="date"]').listeners.input();assert.equal(f.nodes.get('input[value="custom"]').checked,true);assert.match(f.context.modalMarkup,/한국시간 기준/);
+  const f=dialogFixture();f.nodes.get('input[name="date"]').listeners.input();assert.equal(f.nodes.get('input[value="custom"]').checked,true);assert.match(f.context.modalMarkup,/날짜 고르기 \(한국 시간\)/);
 });
 test('invalid/past custom date stays editable and stale work refreshes instead of persisting an obsolete selection',async()=>{
   const f=dialogFixture();f.context.values={choice:'custom',date:'2026-10-11'};await f.form.onsubmit({preventDefault(){}});assert.equal(f.requests.length,0);assert.match(f.context.modalError,/내일부터/);

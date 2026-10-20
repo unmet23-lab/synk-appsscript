@@ -68,7 +68,7 @@ test('response loss preserves the original send key across reload and explicit r
 test('a status lookup never posts and no receipt keeps the original key for a delayed server commit',async()=>{
   const f=fixture(),sending=send(f);fail(f.requests[0]);await sending;const key=f.run('sendAttempt().clientMessageId');
   const check=f.run('checkSendAttempt()');assert.equal(f.requests[1].options.method,undefined);assert.equal(f.requests[1].path,`/api/channels/c1/messages/requests/${key}`);fail(f.requests[1],404);await check;
-  assert.equal(f.run('sendAttempt().clientMessageId'),key);assert.equal(f.get('#send-message').disabled,true);assert.match(f.get('#send-recovery').innerHTML,/아직 전송 완료/);
+  assert.equal(f.run('sendAttempt().clientMessageId'),key);assert.equal(f.get('#send-message').disabled,true);assert.match(f.get('#send-recovery').innerHTML,/아직 보내진 기록이 없어요/);
 });
 
 test('completed lookup clears unchanged draft and attachments while preserving a modified reply and compose extras',async()=>{
@@ -91,7 +91,7 @@ test('logout and same-user re-login isolate late send callbacks without discardi
 });
 
 test('concurrent retry clicks issue one request and deleted messages are never sent again',async()=>{
-  const f=fixture(),sending=send(f);fail(f.requests[0]);await sending;const retry=f.run('retrySendAttempt()');await f.run('retrySendAttempt()');await f.run('checkSendAttempt()');assert.equal(f.requests.length,2);fail(f.requests[1],409,'MESSAGE_DELETED');await retry;assert.equal(f.run('sendAttempt()'),null);assert.equal(f.get('#composer-input').value,'');assert.match(f.toasts.at(-1),/삭제됐어요/);
+  const f=fixture(),sending=send(f);fail(f.requests[0]);await sending;const retry=f.run('retrySendAttempt()');await f.run('retrySendAttempt()');await f.run('checkSendAttempt()');assert.equal(f.requests.length,2);fail(f.requests[1],409,'MESSAGE_DELETED');await retry;assert.equal(f.run('sendAttempt()'),null);assert.equal(f.get('#composer-input').value,'');assert.match(f.toasts.at(-1),/지워졌어요/);
 });
 
 test('storage failure blocks a new send before network while leaving the draft intact',async()=>{
@@ -133,7 +133,7 @@ test('safe cancellation requires a server tombstone before allowing the modified
 });
 
 test('cancelling an already committed message reports the existing message and never deletes it',async()=>{
-  const f=fixture(),sending=send(f);fail(f.requests[0]);await sending;f.get('#composer-input').value='수정 초안';const cancelling=f.run('cancelSendAttempt()');f.requests[1].resolve({status:'sent',...response()});await cancelling;assert.equal(f.state.messages.length,1);assert.equal(f.get('#composer-input').value,'수정 초안');assert.match(f.toasts.at(-1),/이미 전송/);assert.equal(f.requests.length,2);
+  const f=fixture(),sending=send(f);fail(f.requests[0]);await sending;f.get('#composer-input').value='수정 초안';const cancelling=f.run('cancelSendAttempt()');f.requests[1].resolve({status:'sent',...response()});await cancelling;assert.equal(f.state.messages.length,1);assert.equal(f.get('#composer-input').value,'수정 초안');assert.match(f.toasts.at(-1),/이미 보내진/);assert.equal(f.requests.length,2);
 });
 
 test('uncertain cancellation and replay validation failures retain the original send key',async()=>{
@@ -141,7 +141,7 @@ test('uncertain cancellation and replay validation failures retain the original 
 });
 
 test('an upload cancellation with a lost response remains recoverable after reload and releases the raw file',async()=>{
-  const f=fixture();f.context.inputFile=file;f.run('addFiles([inputFile])');const key=f.run('queue()[0].key');const cancelling=f.run('removeUpload(queue()[0].key)');assert.equal(f.run('queue()[0].rawFile'),null);assert.equal(f.xhrs[0].aborted,true);fail(f.requests[0]);await cancelling;assert.equal(f.run('queue()[0].cancelPending'),true);assert.match(f.get('#upload-queue').innerHTML,/취소 확인/);assert.equal(f.get('#send-message').disabled,false,'cancelled files do not block unrelated text');
+  const f=fixture();f.context.inputFile=file;f.run('addFiles([inputFile])');const key=f.run('queue()[0].key');const cancelling=f.run('removeUpload(queue()[0].key)');assert.equal(f.run('queue()[0].rawFile'),null);assert.equal(f.xhrs[0].aborted,true);fail(f.requests[0]);await cancelling;assert.equal(f.run('queue()[0].cancelPending'),true);assert.match(f.get('#upload-queue').innerHTML,/다시 확인/);assert.equal(f.get('#send-message').disabled,false,'cancelled files do not block unrelated text');
   const restored=fixture(f.storage);assert.equal(restored.run('queue()[0].cancelPending'),true);restored.context.key=key;const retry=restored.run('removeUpload(key)');assert.equal(restored.requests[0].options.method,'DELETE');restored.requests[0].resolve({status:'cancelled'});await retry;assert.equal(restored.run('queue().length'),0);assert.equal(restored.xhrs.length,0);
 });
 
@@ -151,7 +151,7 @@ test('a cancelled upload callback cannot change a different account or revive pe
 
 test('a hanging request times out without forgetting its send key or automatically resending',async()=>{
   const f=fixture();let timeout,cleared=false;f.context.AbortController=AbortController;f.context.setTimeout=(callback,delay)=>{assert.equal(delay,30000);timeout=callback;return 1;};f.context.clearTimeout=()=>{cleared=true;};f.context.fetch=(path,options)=>new Promise((resolve,reject)=>options.signal.addEventListener('abort',()=>reject(new Error('aborted'))));f.run('api=originalApi');const sending=send(f);const key=f.run('sendAttempt().clientMessageId');timeout();await sending;
-  assert.equal(cleared,true);assert.equal(f.run('sendAttempt().clientMessageId'),key);assert.equal(f.run('sendAttempt().busy'),false);assert.equal(f.requests.length,0);assert.match(f.get('#send-recovery').innerHTML,/같은 내용 다시 보내기/);
+  assert.equal(cleared,true);assert.equal(f.run('sendAttempt().clientMessageId'),key);assert.equal(f.run('sendAttempt().busy'),false);assert.equal(f.requests.length,0);assert.match(f.get('#send-recovery').innerHTML,/다시 보내기/);
 });
 
 test('an old session HTTP 401 cannot log out a different current account',async()=>{
@@ -162,7 +162,7 @@ test('owned sent status without restricted content resolves post, lookup and can
   for(const action of ['retrySendAttempt()','checkSendAttempt()','cancelSendAttempt()']){
     const f=fixture();f.context.file=uploaded;f.run("state.queues.set('c1',[{key:'legacy-upload',status:'done',file}]);state.replyTarget={id:'1'};state.workspaceLink={title:'기획',url:'http://localhost/#view=content'};updateSend()");const sending=send(f);fail(f.requests[0]);await sending;
     f.get('#composer-input').value='공유 내용 대신 새로 작성한 초안';f.run("state.replyTarget={id:'2'};state.workspaceLink={title:'새 기획',url:'http://localhost/#view=studio'}");const completing=f.run(action);f.requests[1].resolve({status:'sent',unavailable:true,...(action==='retrySendAttempt()'?{replayed:true}:{})});await completing;
-    assert.equal(f.run('sendAttempt()'),null);assert.equal(f.run('queue().length'),0);assert.equal(f.get('#composer-input').value,'공유 내용 대신 새로 작성한 초안');assert.equal(f.state.replyTarget.id,'2');assert.equal(f.state.workspaceLink.title,'새 기획');assert.equal(f.get('#send-message').disabled,false);assert.equal(f.state.messages.length,0);assert.equal(f.requests.length,2);assert.match(f.toasts.at(-1),/전송은 완료됐어요/);
+    assert.equal(f.run('sendAttempt()'),null);assert.equal(f.run('queue().length'),0);assert.equal(f.get('#composer-input').value,'공유 내용 대신 새로 작성한 초안');assert.equal(f.state.replyTarget.id,'2');assert.equal(f.state.workspaceLink.title,'새 기획');assert.equal(f.get('#send-message').disabled,false);assert.equal(f.state.messages.length,0);assert.equal(f.requests.length,2);assert.match(f.toasts.at(-1),/보내졌어요/);
   }
 });
 
@@ -238,11 +238,11 @@ test('upload retry retains focus through receipt lookup and XHR completion, whil
 
 test('unchanged recovery content avoids repeated live-region writes, and identical later attempts render again',async()=>{
   const f=fixture(),sending=send(f);fail(f.requests[0]);await sending;const focus=focusFixture(f,'send');f.get('#composer-input').value='수정 첫 글자';f.run('updateSend()');const writes=focus.writes;for(const suffix of ['가','가나','가나다']){f.get('#composer-input').value=suffix;f.run('updateSend()');}assert.equal(focus.writes,writes);
-  const cancel=f.run('cancelSendAttempt()');f.requests[1].resolve({status:'cancelled'});await cancel;assert.equal(focus.wrap.innerHTML,'');f.get('#composer-input').value='보낼 원문';f.run('updateSend()');const repeated=send(f);fail(f.requests[2]);await repeated;assert.match(focus.wrap.innerHTML,/전송 결과를 확인해 주세요/);assert.ok(focus.wrap.querySelector('[data-send-check]'));
+  const cancel=f.run('cancelSendAttempt()');f.requests[1].resolve({status:'cancelled'});await cancel;assert.equal(focus.wrap.innerHTML,'');f.get('#composer-input').value='보낼 원문';f.run('updateSend()');const repeated=send(f);fail(f.requests[2]);await repeated;assert.match(focus.wrap.innerHTML,/보내졌는지 모르는 메시지가 있어요/);assert.ok(focus.wrap.querySelector('[data-send-check]'));
 });
 
 test('uncertain upload cancellation releases its slot without claiming remote deletion or sending again',async()=>{
-  const f=fixture();f.context.inputFile=file;f.run('addFiles([inputFile])');f.xhrs[0].onerror();const lookup=f.run('retryUpload(queue()[0].key)');fail(f.requests[0],409,'UPLOAD_UNCERTAIN');await lookup;assert.match(f.get('#upload-queue').innerHTML,/첨부를 취소하고 다시 골라/);
+  const f=fixture();f.context.inputFile=file;f.run('addFiles([inputFile])');f.xhrs[0].onerror();const lookup=f.run('retryUpload(queue()[0].key)');fail(f.requests[0],409,'UPLOAD_UNCERTAIN');await lookup;assert.match(f.get('#upload-queue').innerHTML,/첨부를 빼고 다시 골라/);
   const deleting=f.run('removeUpload(queue()[0].key)');f.requests[1].resolve({status:'cancelled',cleanupPending:true});await deleting;assert.equal(f.run('queue().length'),0);assert.equal(f.xhrs.length,1);assert.equal(f.requests.length,2);assert.ok(!f.toasts.some(message=>/Drive.*삭제.*완료|원격.*삭제.*완료/.test(message)));
 });
 

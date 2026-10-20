@@ -22,11 +22,11 @@ test('delete and restore require server permission and participating writable cr
 });
 
 test('project participation has visible text settings and settings exposes a separate recoverable delete action',()=>{
- const f=fixture();f.run('syncProjectParticipation()');assert.ok(f.get('#project-participation').innerHTML.includes('data-project-settings'));assert.ok(f.get('#project-participation').innerHTML.includes('대화방 설정'));f.run('editChannelDialog()');assert.ok(f.modal.innerHTML.includes('id="delete-project"'));assert.ok(f.modal.innerHTML.includes('삭제된 대화방에서 복원'));f.run('state.channels[0].canManage=false;syncProjectParticipation()');assert.ok(f.get('#project-participation').innerHTML.includes('data-project-settings'),'members retain their personal notification settings');
+ const f=fixture();f.run('syncProjectParticipation()');assert.ok(f.get('#project-participation').innerHTML.includes('data-project-settings'));assert.ok(f.get('#project-participation').innerHTML.includes('대화방 설정'));f.run('editChannelDialog()');assert.ok(f.modal.innerHTML.includes('id="delete-project"'));assert.ok(f.modal.innerHTML.includes('‘삭제된 대화방’에서 복원'));f.run('state.channels[0].canManage=false;syncProjectParticipation()');assert.ok(f.get('#project-participation').innerHTML.includes('data-project-settings'),'members retain their personal notification settings');
 });
 
 test('delete confirmation names the room and audience, explains restore, and cancellation makes no request',()=>{
- const f=fixture();f.run("deleteProjectDialog('project')");assert.ok(f.modal.innerHTML.includes('가을 &lt;캠페인&gt;'));assert.ok(f.modal.innerHTML.includes('참여 크루 2명'));assert.ok(f.modal.innerHTML.includes('모든 참여자의 대화방 목록에서 제외'));assert.ok(f.modal.innerHTML.includes('전체채팅 → 삭제된 대화방'));f.get('#cancel-delete-project').onclick();assert.equal(f.modal.open,false);assert.equal(f.requests.length,0);assert.equal(f.state.channels.length,3);
+ const f=fixture();f.run("deleteProjectDialog('project')");assert.ok(f.modal.innerHTML.includes('가을 &lt;캠페인&gt;'));assert.ok(f.modal.innerHTML.includes('참여 크루 2명'));assert.ok(f.modal.innerHTML.includes('모든 참여자의 대화방 목록에서 빠져요'));assert.ok(f.modal.innerHTML.includes('전체채팅 → 삭제된 대화방'));f.get('#cancel-delete-project').onclick();assert.equal(f.modal.open,false);assert.equal(f.requests.length,0);assert.equal(f.state.channels.length,3);
 });
 
 test('deletion blocks another submission, purges only this room local state, and selects a room in the same category',async()=>{

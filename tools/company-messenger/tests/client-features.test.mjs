@@ -79,7 +79,7 @@ test('employee directory filters actual teams and shows the real user when no te
   f.run("state.directoryTeam='mine'");assert.equal(f.run('directoryMembers().length'),0);
   f.run("state.directoryTeam='all';state.directoryQuery='마케팅'");assert.deepEqual(Array.from(f.run('directoryMembers()'),person=>person.id),['u2']);
   f.run("state.directoryQuery='';state.directoryTeam='team:design'");assert.deepEqual(Array.from(f.run('directoryMembers()'),person=>person.id),['u3']);
-  const self=f.run('personDirectoryHtml(state.user)');assert.ok(self.includes('팀 미배정'));assert.ok(self.includes('나에게 메모 열기'));assert.ok(!self.includes('온라인'));
+  const self=f.run('personDirectoryHtml(state.user)');assert.ok(self.includes('팀 없음'));assert.ok(self.includes('나에게 메모 열기'));assert.ok(!self.includes('온라인'));
 });
 
 test('clicking a person opens an existing DM directly without another create request',async()=>{
