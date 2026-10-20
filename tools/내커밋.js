@@ -10,7 +10,7 @@
  *   node tools/내커밋.js 올리기 <커밋…> --실행 [--합치기]              내 커밋만 origin/master에 push
  *   공통: --json · --저장소 <폴더>(기본: 지금 폴더의 저장소) · --줄끝그대로(줄끝을 일부러 바꾸는 커밋만)
  *   커밋: -F <메시지 파일> · --폴더(폴더 아래 바뀐 파일이 모두 내 것일 때만) · --자세히(바뀐 파일마다 조각을 보인다)
- *   올리기: --원격 <이름>(기본 origin) · --가지 <이름>(기본 master)
+ *   올리기: --원격 <이름>(기본 origin) · --가지 <이름>(기본 master) · --옛판아님(앞 60자가 같은 원격 줄이 옛·새 판이 아니라 다른 줄일 때만)
  *   git 2.31 이상(커밋)·2.43 이상(올리기, merge-file --object-id)이 필요하다.
  *
  * 커밋 — 공용 인덱스(git add → git commit)를 쓰지 않는다.
@@ -30,12 +30,15 @@
  *   1. origin/master를 fetch한다. 내 커밋이 origin/master 바로 위에 이어져 있으면 그대로 올리고, 아니면 별도 인덱스로
  *      origin/master 위에 내 커밋의 바뀐 경로만 다시 쌓는다(같은 메시지·작성자). 남의 미푸시 커밋은 올라가지 않는다.
  *      그대로 올릴 커밋에 줄끝만 원격 판과 다른 줄이 있으면 줄끝을 맞춰 다시 쌓는다.
- *   2. 경로마다: 원격 판이 내 부모 판과 같으면 내 판, 다르면 git merge-file. 문서가 겹치면 원격에도 있는 앞뒤 줄에 맞춰 붙인다.
+ *   2. 남이 내 커밋을 먼저 다시 쌓아 올렸으면(origin에 작성자·작성 시각·제목이 같은 짝 커밋) 짝이 같은 변화를 한 경로는
+ *      「이미 올라감」으로 건너뛴다. 짝이 안 건드렸거나 다르게 바꾼 경로만 다시 쌓는다(일부만 올라간 커밋).
+ *   3. 경로마다: 원격 판이 내 부모 판과 같으면 내 판, 다르면 git merge-file. 문서가 겹치면 원격에도 있는 앞뒤 줄에 맞춰 붙인다.
  *      원격이 같은 자리에 이미 더한 줄을 내 커밋도 품었으면(원격에만 있던 줄을 작업본에 같이 넣은 것) 그 줄은 한 번만 둔다.
- *   3. 검사: 올라갈 줄은 모두 내 커밋에서 온 줄(남의 미푸시 줄이 새지 않음) · 내 줄이 빠지지 않음 · 줄끝은 원격 판을 따름 ·
+ *      문서에서 내가 새로 더한 줄과 원격만 새로 더한 줄이 앞 60자가 같은 채 함께 남으면 같은 줄의 옛·새 판으로 보고 멈춘다.
+ *   4. 검사: 올라갈 줄은 모두 내 커밋에서 온 줄(남의 미푸시 줄이 새지 않음) · 내 줄이 빠지지 않음 · 줄끝은 원격 판을 따름 ·
  *      저장 용량(git-storage-check.cjs --base origin/master --head <올릴 머리>).
- *   4. --실행이면 빨리감기 push(강제 없음). 그새 origin이 움직였으면 다시 fetch해 처음부터 한다(세 번까지).
- *   5. --합치기: origin에 있는 남의 커밋이 바꾼 경로가 모두 로컬과 같을 때만 로컬 가지에 「트리는 로컬 그대로」 병합 커밋을 더한다.
+ *   5. --실행이면 빨리감기 push(강제 없음). 그새 origin이 움직였으면 다시 fetch해 처음부터 한다(세 번까지).
+ *   6. --합치기: origin에 있는 남의 커밋이 바꾼 경로가 모두 로컬과 같을 때만 로컬 가지에 「트리는 로컬 그대로」 병합 커밋을 더한다.
  *      다시 쌓으며 줄끝을 맞춘 경로가 있으면 로컬과 origin 판이 달라 합치지 않는다.
  *
  * 함정과 고친 기록: docs/현장노트/git_줄끝_잠금.md. 시험: node --test tests/내커밋.test.js
@@ -59,6 +62,14 @@ const 맞춰붙일문서 = /\.(md|markdown|txt|jsonl|csv|tsv)$/i;
 const 차이한도 = 3000;
 /** 같은 자리의 원격 줄 수 × 내 줄 수가 이보다 크면 겹친 줄을 찾지 않는다(그래도 같은 줄이 두 번 들어가게 되면 멈춘다). */
 const 겹침찾기한도 = 4000000;
+/**
+ * 같은 줄의 옛·새 판으로 보는 앞부분 길이(공백을 줄인 글자 수). 10-20 origin 판 공용 문서에서 앞 40자가 같은 줄 묶음은 24개다
+ * (결정 표의 같은 날·같은 표지 행이 12개 — 「| 2026-10-03 | 확정 | [Claude 추천 · 유호님 채택(MVP)] **」만 48자). 60자면 4개이고
+ * 그 가운데 결정 표 1개는 실제로 겹쳐 들어간 옛·새 판이다.
+ */
+const 판머리길이 = 60;
+/** 남이 다시 쌓아 올린 내 커밋(짝)을 찾을 때 내 커밋의 가장 이른 작성 시각보다 이만큼(초) 앞선 커밋까지 본다(세션마다 시계가 조금 다르다). */
+const 짝찾기여유 = 2 * 86400;
 const 영 = /^0+$/;
 const 위치환경 = /^GIT_(DIR|WORK_TREE|INDEX_FILE|COMMON_DIR|OBJECT_DIRECTORY|ALTERNATE_OBJECT_DIRECTORIES|NAMESPACE|PREFIX)$/;
 const 좋은결과 = new Set(['미리 보기', '커밋함', '커밋할 것 없음', '올림', '올릴 것 없음']);
@@ -558,6 +569,52 @@ function 자리맞춰붙이기(P, O, C) {
   return { 줄: 줄바꿈채우기(결과), 자리 };
 }
 
+/** 줄의 앞 60자(앞뒤 공백을 떼고 이어진 공백은 한 칸으로 줄인 UTF-8 글자). 그보다 짧거나 글자·숫자가 없는 틀 줄이면 null. */
+function 판머리(글) {
+  if (!뚜렷한줄(글)) return null;
+  const 글자 = Array.from(보이게(글).trim().replace(/\s+/g, ' ').slice(0, 판머리길이 * 2)).slice(0, 판머리길이);
+  return 글자.length === 판머리길이 ? 글자.join('') : null;
+}
+
+/**
+ * 합친 결과 R에 내가 새로 더한 줄(P·O에 없는 C의 줄)과 원격만 새로 더한 줄(P·C에 없는 O의 줄)이 앞 60자가 같은 채 함께 남는지 본다.
+ * 그러면 같은 줄의 옛·새 판이 나란히 들어간다 — 남이 내 커밋을 먼저 다시 쌓아 올렸고 그 줄을 고친 판이 origin에 있는데, 짝을 못 찾은 옛 커밋을
+ * 다시 넘겼을 때다(줄 셈 검사는 두 줄 모두 어딘가에서 온 줄이라 통과한다). 그 머리가 바탕 P에도 있거나 O·C 안에서 되풀이되면 틀 줄로 보고 넘긴다.
+ * → { 내줄, 원격줄 } | null
+ */
+function 다른판줄(P, O, C, R) {
+  const [p, o, c, r] = [P, O, C, R].map(줄셈);
+  const 머리 = new Map();
+  const 머리값 = (글) => { if (!머리.has(글)) 머리.set(글, 판머리(글)); return 머리.get(글); };
+  const 새줄 = (셈, 빼1, 빼2) => {
+    const m = new Map();
+    for (const 글 of 셈.keys()) if (!빼1.has(글) && !빼2.has(글) && r.has(글) && 머리값(글)) m.set(머리값(글), 글);
+    return m;
+  };
+  const 내새 = 새줄(c, p, o);
+  if (!내새.size) return null;
+  const 원격새 = 새줄(o, p, c);
+  const 겹 = new Set([...내새.keys()].filter((h) => 원격새.has(h)));
+  if (!겹.size) return null;
+  const 머리수 = (셈) => {
+    const m = new Map();
+    for (const 글 of 셈.keys()) { const h = 머리값(글); if (h && 겹.has(h)) m.set(h, (m.get(h) || 0) + 1); }
+    return m;
+  };
+  const [p수, o수, c수] = [p, o, c].map(머리수);
+  for (const h of 겹) if (!p수.has(h) && o수.get(h) === 1 && c수.get(h) === 1) return { 내줄: 내새.get(h), 원격줄: 원격새.get(h) };
+  return null;
+}
+
+/** 앞이 같은 두 줄이 처음 갈리는 곳 앞뒤만 보인다. → [a 조각, b 조각] */
+function 갈린곳(a, b) {
+  const x = Array.from(보이게(a)), y = Array.from(보이게(b));
+  let i = 0;
+  while (i < x.length && i < y.length && x[i] === y[i]) i++;
+  const 처음 = Math.max(0, i - 20);
+  return [x, y].map((z) => `${처음 ? '…' : ''}${z.slice(처음, i + 40).join('')}${z.length > i + 40 ? '…' : ''}`);
+}
+
 function 공용문서인가(경로) {
   return 공용문서.some((p) => (typeof p === 'string' ? p === 경로 : p.test(경로)));
 }
@@ -908,7 +965,8 @@ function 커밋풀기(git, 입력들) {
   return 결과;
 }
 
-function 세판합치기(git, 저장, 경로, 원sha, 부sha, 내sha) {
+/** 옛판아님이 아니면 문서에서 같은 줄의 옛·새 판이 함께 남는 결과(다른판줄)는 멈춘다. */
+function 세판합치기(git, 저장, 경로, 원sha, 부sha, 내sha, { 옛판아님 = false } = {}) {
   const O = 블롭(git, 저장, 원sha), P = 블롭(git, 저장, 부sha), C = 블롭(git, 저장, 내sha);
   if (이진인가(O) || 이진인가(P) || 이진인가(C)) return { 문제: '바이너리 파일이 원격에서도 바뀌었다 — 손으로 고른다' };
   const r = git.돌리기(['merge-file', '-p', '--object-id', 원sha, 부sha, 내sha], { 허용: null });
@@ -925,15 +983,89 @@ function 세판합치기(git, 저장, 경로, 원sha, 부sha, 내sha) {
       ...(x.이미있음 ? { 이미있음: x.이미있음 } : {}),
     }));
   } else return { 문제: `git merge-file 실패: ${String(r.stderr).trim()}` };
-  const 셈 = 줄셈검사(...[P, O, C, R].map((b) => 줄나누기(글로(b))));
-  return 셈 ? { 문제: 셈 } : { 버퍼: R, 방법, ...(자리 ? { 자리 } : {}) };
+  const 줄들 = [P, O, C, R].map((b) => 줄나누기(글로(b)));
+  const 셈 = 줄셈검사(...줄들);
+  if (셈) return { 문제: 셈 };
+  const 판 = 옛판아님 || !맞춰붙일문서.test(경로) ? null : 다른판줄(...줄들);
+  if (판) {
+    const [내, 원] = 갈린곳(판.내줄, 판.원격줄);
+    return {
+      문제: `원격에 같은 머리의 다른 판 줄이 있다 — 앞 ${판머리길이}자가 같은 줄의 옛·새 판이 함께 들어간다(내 줄 「${내}」 · 원격 줄 「${원}」). `
+        + '남이 이 커밋을 먼저 올렸으면 빼고 넘기고, 옛·새 판이 아니라 다른 줄이면 --옛판아님',
+    };
+  }
+  return { 버퍼: R, 방법, ...(자리 ? { 자리 } : {}) };
+}
+
+function 같은셈(a, b) {
+  if (a.size !== b.size) return false;
+  for (const [k, v] of a) if (b.get(k) !== v) return false;
+  return true;
+}
+
+/**
+ * 내 경로 변화 e(P→C)와 짝의 같은 경로 변화 f(P'→C')가 같은지. 더한 줄·뺀 줄(빈 줄은 빼고 줄끝은 보지 않는다)이 같거나,
+ * 내 변화를 짝의 부모 판 P'에 얹으면 C'가 된다(짝을 쌓을 때 원격에 이미 있던 내 줄을 한 번만 두었다). 더하고 뺀 줄 없이 차례·빈 줄만
+ * 바꾼 변화는 얹어 본 결과로만 가린다. 지움은 둘 다 지웠을 때, 바이너리는 같은 blob일 때만 같다.
+ */
+function 같은변화(git, 저장, 경로, e, f) {
+  if (!e.새 || !f.새) return !e.새 && !f.새;
+  if (e.새모드 !== f.새모드) return false;
+  if (e.새 === f.새) return true;
+  const 판들 = [e.옛, e.새, f.옛, f.새].map((s) => 블롭(git, 저장, s));
+  if (판들.some(이진인가)) return false;
+  const [p, c, p2, c2] = 판들.map((b) => 줄셈(줄나누기(글로(b))));
+  const 더한 = 셈빼기(c, p), 뺀 = 셈빼기(p, c);
+  if ((더한.size || 뺀.size) && 같은셈(더한, 셈빼기(c2, p2)) && 같은셈(뺀, 셈빼기(p2, c2))) return true;
+  if (!e.옛 || !f.옛) return false;
+  const m = 세판합치기(git, 저장, 경로, f.옛, e.옛, e.새, { 옛판아님: true });
+  const 다듬기 = (b) => 글로(b).replace(/\r\n/g, '\n');
+  return !m.문제 && 다듬기(m.버퍼) === 다듬기(판들[3]);
+}
+
+/**
+ * 남이 내 커밋을 먼저 origin에 다시 쌓아 올렸으면 그 짝을 찾는다. 짝은 바탕의 내력에서 작성자·작성 시각·제목이 같은 커밋이다
+ * (이 도구의 다시 쌓기·rebase·cherry-pick은 셋을 그대로 둔다). 짝은 내 커밋을 쓴 뒤에 커밋되니 내 커밋 가운데 가장 이른 작성 시각
+ * (짝찾기여유만큼 앞)부터 본다. 경로마다 짝이 같은 변화를 했을 때만 그 경로가 이미 올라간 것이다 — 짝이 안 건드린 경로(일부만 올라감)와
+ * 다르게 바꾼 경로는 그대로 다시 쌓는다. → Map(내 커밋 → Map(경로 → 짝 커밋))
+ */
+function 올라간짝찾기(git, 저장, 바탕, 항목들) {
+  const 형식 = '--format=%H%x1f%P%x1f%an%x1f%ae%x1f%ad%x1f%s';
+  const 읽기 = (버퍼) => 버퍼.toString('utf8').split('\n').filter(Boolean).map((줄) => {
+    const [sha, 부모, 이름, 메일, 날짜, 제목 = ''] = 줄.split('\x1f');
+    return { sha, 부모: 부모.split(' ').filter(Boolean), 열쇠: [이름, 메일, 날짜, 제목].join('\x1f'), 초: Number(날짜.split(' ')[0]) };
+  });
+  const 내것 = new Map(읽기(git(['show', '-s', '--date=raw', 형식, ...항목들.map((항) => 항.커밋)])).map((x) => [x.sha, x]));
+  const 가장이른 = Math.min(...[...내것.values()].map((x) => x.초));
+  const 후보 = new Map();
+  const 범위 = Number.isFinite(가장이른) ? [`--since=@${Math.max(0, 가장이른 - 짝찾기여유)}`] : [];
+  for (const x of 읽기(git(['log', '--no-merges', '--date=raw', ...범위, 형식, 바탕]))) {
+    if (x.부모.length !== 1) continue;
+    if (!후보.has(x.열쇠)) 후보.set(x.열쇠, []);
+    후보.get(x.열쇠).push(x);
+  }
+  const 결과 = new Map();
+  for (const 항 of 항목들) {
+    const 짝들 = 후보.get((내것.get(항.커밋) || {}).열쇠) || [];
+    const 맞음 = new Map();
+    for (const 짝 of 짝들) {
+      const 짝바뀜 = new Map(날차이읽기(git(['diff-tree', '-r', '--no-renames', '--no-abbrev', '-z', 짝.부모[0], 짝.sha])).map((f) => [f.경로, f]));
+      for (const e of 항.바뀜) {
+        const f = 짝바뀜.get(e.경로);
+        if (f && !맞음.has(e.경로) && 같은변화(git, 저장, e.경로, e, f)) 맞음.set(e.경로, 짝.sha);
+      }
+    }
+    if (맞음.size) 결과.set(항.커밋, 맞음);
+  }
+  return 결과;
 }
 
 /**
  * 내 커밋들을 바탕 위에 다시 쌓는다. 이미 바탕 바로 위에 차례대로 이어져 있으면 그대로 쓴다(다시쌓기면 그래도 쌓는다).
- * 줄끝그대로면 원격 판 줄끝에 맞추지 않는다.
+ * 남이 먼저 다시 쌓아 올린 짝이 있는 경로는 「이미 올라감」으로 건너뛴다(올라간짝찾기).
+ * 줄끝그대로면 원격 판 줄끝에 맞추지 않는다. 옛판아님이면 같은 줄의 옛·새 판이 함께 남아도 멈추지 않는다.
  */
-function 쌓기(git, 저장, 바탕, 커밋들, { 다시쌓기 = false, 줄끝그대로 = false } = {}) {
+function 쌓기(git, 저장, 바탕, 커밋들, { 다시쌓기 = false, 줄끝그대로 = false, 옛판아님 = false } = {}) {
   const 항목들 = 커밋들.map((c) => {
     const 부모 = git.글(['rev-parse', `${c}^`]);
     return { 커밋: c, 부모, 바뀜: 날차이읽기(git(['diff-tree', '-r', '--no-renames', '--no-abbrev', '-z', 부모, c])) };
@@ -949,10 +1081,11 @@ function 쌓기(git, 저장, 바탕, 커밋들, { 다시쌓기 = false, 줄끝�
       내변화.get(e.경로).push({ 옛: e.옛, 새: e.새 });
     }
   }
+  const 짝 = 올라간짝찾기(git, 저장, 바탕, 항목들);
   const 마지막 = 커밋들[커밋들.length - 1];
   const 이어짐 = git.글(['rev-list', '--reverse', `${바탕}..${마지막}`]).split('\n').filter(Boolean);
   // 첫 커밋의 부모가 바탕이어야 빨리감기다(내 커밋 뒤로 바탕만 움직였으면 rev-list는 내 커밋만 내지만 그대로는 못 올린다)
-  if (!다시쌓기 && 항목들[0].부모 === 바탕 && 이어짐.length === 커밋들.length && 이어짐.every((c, i) => c === 커밋들[i])) {
+  if (!다시쌓기 && !짝.size && 항목들[0].부모 === 바탕 && 이어짐.length === 커밋들.length && 이어짐.every((c, i) => c === 커밋들[i])) {
     return { 머리: 마지막, 그대로: true, 대응: 커밋들.map((c) => ({ 원래: c, 새: c })), 경로: [], 문제: [], 내변화 };
   }
   const 지금 = 트리항목들(git, 바탕, [...내변화.keys()]);
@@ -963,8 +1096,10 @@ function 쌓기(git, 저장, 바탕, 커밋들, { 다시쌓기 = false, 줄끝�
     let 머리 = 바탕;
     const 대응 = [], 경로 = [], 문제 = [];
     for (const 항 of 항목들) {
-      const 고침 = [];
+      const 고침 = [], 올라간 = 짝.get(항.커밋) || new Map();
+      const 짝표 = 올라간.size ? { 짝: [...new Set(올라간.values())] } : {};
       for (const e of 항.바뀜) {
+        if (올라간.has(e.경로)) { 경로.push({ 커밋: 항.커밋, 경로: e.경로, 방법: '이미 올라감', 짝: 올라간.get(e.경로) }); continue; }
         const 현재 = 지금.get(e.경로) || null, cs = 현재 ? 현재.sha : null;
         let 자리 = null;
         const 기록 = (방법) => 경로.push({ 커밋: 항.커밋, 경로: e.경로, 방법, ...(자리 ? { 자리 } : {}) });
@@ -981,7 +1116,7 @@ function 쌓기(git, 저장, 바탕, 커밋들, { 다시쌓기 = false, 줄끝�
         else if (cs === null) { 막힘('origin에 없는 파일을 고쳤다 — 그 파일을 만든 앞 커밋이 아직 origin에 없다(내 커밋이면 같이 준다)'); continue; }
         else if (e.옛 === null) { 막힘('새로 만든 파일인데 origin에 같은 이름의 다른 파일이 있다'); continue; }
         else {
-          const m = 세판합치기(git, 저장, e.경로, cs, e.옛, e.새);
+          const m = 세판합치기(git, 저장, e.경로, cs, e.옛, e.새, { 옛판아님 });
           if (m.문제) { 막힘(m.문제); continue; }
           sha = 블롭쓰기(git, 저장, m.버퍼);
           방법 = m.방법;
@@ -1001,13 +1136,13 @@ function 쌓기(git, 저장, 바탕, 커밋들, { 다시쌓기 = false, 줄끝�
       if (문제.length) break;
       if (고침.length) git(['update-index', '-z', '--index-info'], { env: 인덱스.env, input: `${고침.join('\0')}\0` });
       const 트리 = git.글(['write-tree'], { env: 인덱스.env });
-      if (트리 === git.글(['rev-parse', `${머리}^{tree}`])) { 대응.push({ 원래: 항.커밋, 새: null }); continue; }
+      if (트리 === git.글(['rev-parse', `${머리}^{tree}`])) { 대응.push({ 원래: 항.커밋, 새: null, ...짝표 }); continue; }
       const [이름, 메일, 날짜, ...몸] = git(['log', '-1', '--format=%an%x00%ae%x00%ad%x00%B', '--date=raw', 항.커밋]).toString('utf8').split('\0');
       const 새 = git.글(['commit-tree', 트리, '-p', 머리, '-F', '-'], {
         input: Buffer.from(`${몸.join('\0').replace(/\n+$/, '')}\n`, 'utf8'),
         env: { GIT_AUTHOR_NAME: 이름, GIT_AUTHOR_EMAIL: 메일, GIT_AUTHOR_DATE: 날짜 },
       });
-      대응.push({ 원래: 항.커밋, 새 });
+      대응.push({ 원래: 항.커밋, 새, ...짝표 });
       머리 = 새;
     }
     return { 머리, 그대로: false, 대응, 경로, 문제, 내변화 };
@@ -1095,7 +1230,7 @@ function 로컬합치기(git, 원격, 계획) {
 }
 
 /**
- * 옵션: 저장소 · 커밋들[](해시·참조·a..b) · 실행 · 합치기 · 줄끝그대로 · 원격(origin) · 가지(master)
+ * 옵션: 저장소 · 커밋들[](해시·참조·a..b) · 실행 · 합치기 · 줄끝그대로 · 옛판아님 · 원격(origin) · 가지(master)
  */
 async function 올리기(옵션 = {}) {
   try {
@@ -1106,7 +1241,7 @@ async function 올리기(옵션 = {}) {
     const 추적 = `refs/remotes/${원격}/${원격가지}`;
     const 원래 = 커밋풀기(git, 옵션.커밋들 || []);
     if (!원래.length) throw new 사용법오류('올릴 커밋을 준다');
-    const 줄끝그대로 = Boolean(옵션.줄끝그대로);
+    const 줄끝그대로 = Boolean(옵션.줄끝그대로), 옛판아님 = Boolean(옵션.옛판아님);
     const 저장 = new Map();
     for (let 차례 = 1; 차례 <= 3; 차례++) {
       const f = git.돌리기(['fetch', '-q', 원격, `+refs/heads/${원격가지}:${추적}`], { 허용: null });
@@ -1115,11 +1250,11 @@ async function 올리기(옵션 = {}) {
       const 남은 = 원래.filter((c) => !조상인가(git, c, 바탕));
       if (!남은.length) return { 결과: '올릴 것 없음', 이유: '준 커밋이 모두 이미 origin에 있다', 바탕 };
       const 차례맞춘 = git.글(['rev-list', '--topo-order', '--reverse', ...남은, `^${바탕}`]).split('\n').filter((c) => 남은.includes(c));
-      let 계획 = 쌓기(git, 저장, 바탕, 차례맞춘, { 줄끝그대로 });
+      let 계획 = 쌓기(git, 저장, 바탕, 차례맞춘, { 줄끝그대로, 옛판아님 });
       let 검사 = 계획.문제.length || 계획.머리 === 바탕 ? null : await 올릴판검사(git, 저장, 저장소, 바탕, 계획, { 줄끝그대로 });
       if (계획.그대로 && 검사 && 검사.문제.length && 검사.문제.every((x) => x.줄끝)) {
         // origin 바로 위의 내 커밋에 줄끝만 원격 판과 다른 줄이 있다: 그대로 올리지 않고 줄끝을 맞춰 다시 쌓는다
-        계획 = 쌓기(git, 저장, 바탕, 차례맞춘, { 다시쌓기: true });
+        계획 = 쌓기(git, 저장, 바탕, 차례맞춘, { 다시쌓기: true, 옛판아님 });
         검사 = 계획.문제.length || 계획.머리 === 바탕 ? null : await 올릴판검사(git, 저장, 저장소, 바탕, 계획);
       }
       let 로컬만 = [];
@@ -1174,18 +1309,19 @@ async function 올리기(옵션 = {}) {
 
 const 사용법 = `사용법
   node tools/내커밋.js 커밋 <경로…> -m "<메시지>" [--조각 <경로>=<조각,…>] [--폴더] [--자세히] [--줄끝그대로] [--실행] [--json]
-  node tools/내커밋.js 올리기 <커밋…> [--합치기] [--줄끝그대로] [--실행] [--json]
+  node tools/내커밋.js 올리기 <커밋…> [--합치기] [--줄끝그대로] [--옛판아님] [--실행] [--json]
   기본은 미리 보기다. --실행을 붙여야 커밋·push한다.
   --조각: 미리 보기가 보여 준 조각 id. 조각 안 일부 줄은 <id>:<줄>-<줄>, 그 파일의 바뀐 곳이 모두 내 것이면 <경로>=전부.
   --폴더: 준 폴더 아래 바뀐 파일이 모두 내 것일 때만. 없으면 폴더 경로는 파일 목록을 보이고 멈춘다.
   --줄끝그대로: 줄끝을 일부러 바꾸는 커밋(재정규화)일 때만. 바탕·원격 판 줄끝에 맞추지 않는다.
+  --옛판아님: 올리기가 「원격에 같은 머리의 다른 판 줄이 있다」로 멈췄는데 두 줄이 옛·새 판이 아니라 다른 줄일 때만.
   자세한 설명은 파일 머리.`;
 
 function 인자읽기(argv) {
   const [명령, ...나머지] = argv;
   if (!명령 || 명령 === '--help' || 명령 === '-h' || 명령 === '도움말') return { 도움말: true };
   if (!['커밋', '올리기'].includes(명령)) throw new 사용법오류(`모르는 명령: ${명령} (커밋 · 올리기)`);
-  const 옵션 = { 명령, 위치: [], 메시지: [], 조각: [], 실행: false, json: false, 자세히: false, 합치기: false, 폴더: false, 줄끝그대로: false };
+  const 옵션 = { 명령, 위치: [], 메시지: [], 조각: [], 실행: false, json: false, 자세히: false, 합치기: false, 폴더: false, 줄끝그대로: false, 옛판아님: false };
   for (let i = 0; i < 나머지.length; i++) {
     const a = 나머지[i];
     const 값 = () => {
@@ -1206,6 +1342,7 @@ function 인자읽기(argv) {
     else if (a === '--합치기') 옵션.합치기 = true;
     else if (a === '--폴더') 옵션.폴더 = true;
     else if (a === '--줄끝그대로') 옵션.줄끝그대로 = true;
+    else if (a === '--옛판아님') 옵션.옛판아님 = true;
     else if (a === '--저장소') 옵션.저장소 = 값();
     else if (a === '--원격') 옵션.원격 = 값();
     else if (a === '--가지') 옵션.가지 = 값();
@@ -1213,7 +1350,7 @@ function 인자읽기(argv) {
     else 옵션.위치.push(a);
   }
   if (명령 === '커밋') {
-    if (옵션.합치기 || 옵션.원격 || 옵션.가지) throw new 사용법오류('--합치기·--원격·--가지는 올리기에만 쓴다');
+    if (옵션.합치기 || 옵션.원격 || 옵션.가지 || 옵션.옛판아님) throw new 사용법오류('--합치기·--원격·--가지·--옛판아님은 올리기에만 쓴다');
     if (!옵션.위치.length && !옵션.조각.length) throw new 사용법오류('커밋할 경로를 준다');
     옵션.경로들 = 옵션.위치;
   } else {
@@ -1283,8 +1420,15 @@ function 올리기글(r) {
   const 줄 = [머리];
   if (r.바탕) 줄.push(`origin 바탕 ${짧게(r.바탕)}${r.다시한수 ? ` · origin이 움직여 ${r.다시한수}번 다시 함` : ''}`);
   if (r.대응 && r.대응.length) {
-    줄.push(r.그대로 ? `내 커밋 ${r.대응.length}개가 origin 바로 위에 이어져 있어 그대로 올린다` : `origin 위에 내 커밋 ${r.대응.length}개를 다시 쌓음`);
-    if (!r.그대로) for (const d of r.대응) 줄.push(`  ${짧게(d.원래)} → ${d.새 ? 짧게(d.새) : '(같은 내용이 이미 origin에 있어 건너뜀)'}`);
+    const 올라간수 = r.대응.filter((d) => !d.새 && d.짝).length;
+    줄.push(r.그대로 ? `내 커밋 ${r.대응.length}개가 origin 바로 위에 이어져 있어 그대로 올린다`
+      : `origin 위에 내 커밋 ${r.대응.length}개를 다시 쌓음${올라간수 ? `(남이 먼저 올린 ${올라간수}개는 건너뜀)` : ''}`);
+    for (const d of r.그대로 ? [] : r.대응) {
+      const 짝 = d.짝 ? d.짝.map(짧게).join('·') : '';
+      const 곳 = d.새 ? `${짧게(d.새)}${짝 ? ` (일부 경로는 origin ${짝}에 이미 올라감)` : ''}`
+        : 짝 ? `(이미 올라감: origin ${짝})` : '(같은 내용이 이미 origin에 있어 건너뜀)';
+      줄.push(`  ${짧게(d.원래)} → ${곳}`);
+    }
     if (!r.그대로 && r.결과 === '미리 보기') 줄.push('  (새 커밋 번호는 실행 때 다시 만들어 달라진다 — 원격 CI는 실행 출력의 번호로 본다)');
   }
   const 방법수 = new Map();
@@ -1292,7 +1436,7 @@ function 올리기글(r) {
   if (방법수.size) 줄.push(`경로: ${[...방법수].map(([k, v]) => `${k} ${v}`).join(' · ')}`);
   const 줄일 = (s) => (s.length > 60 ? `${s.slice(0, 60)}…` : s);
   for (const x of (r.경로 || []).filter((x) => x.방법 !== '내 판')) {
-    줄.push(`  ${x.방법}: ${x.경로}`);
+    줄.push(`  ${x.방법}: ${x.경로}${x.짝 ? ` (origin ${짧게(x.짝)})` : ''}`);
     for (const 자 of x.자리 || []) {
       const 곳 = 자.앞줄 === null ? '파일 맨 앞에' : `「${줄일(자.앞줄)}」 다음에`;
       const 이미 = 자.이미있음 ? ` (원격에 이미 있는 내 줄 ${자.이미있음}개는 한 번만)` : '';
@@ -1336,6 +1480,6 @@ if (require.main === module) main().then((code) => { process.exitCode = code; })
 
 module.exports = {
   커밋, 올리기, 인자읽기, main,
-  줄나누기, 줄잇기, 줄차이, 조각나누기, 조각만들기, 고름읽기, 조각얹기, 줄끝맞추기, 자리맞춰붙이기, 줄셈검사, 공용문서인가,
-  _시험: { git도구, 쌓기, 올릴판검사, 커밋글, 올리기글 },
+  줄나누기, 줄잇기, 줄차이, 조각나누기, 조각만들기, 고름읽기, 조각얹기, 줄끝맞추기, 자리맞춰붙이기, 줄셈검사, 다른판줄, 공용문서인가,
+  _시험: { git도구, 쌓기, 올릴판검사, 올라간짝찾기, 커밋글, 올리기글 },
 };
