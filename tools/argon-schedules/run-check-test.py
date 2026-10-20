@@ -22,13 +22,18 @@ NEW = 'b' * 64
 ROLE = 'synkbrief'
 
 
-def events(response, model='gemini-4-argon-high', denied=None):
+def events(response, model='gemini-4-argon-high', denied=None, status='SUCCESS', error=None):
+    result = {'conversation_id': 'synthetic-conversation', 'status': status,
+              'denied_actions': denied or [], 'response': response}
+    if error:
+        result['error'] = error
     return [
         {'event': 'init', 'conversation_id': 'synthetic-conversation', 'init': {'model': model}},
-        {'event': 'result', 'result': {
-            'conversation_id': 'synthetic-conversation', 'status': 'SUCCESS',
-            'denied_actions': denied or [], 'response': response}},
+        {'event': 'result', 'result': result},
     ]
+
+
+INTERRUPTED = 'The stream was interrupted. Please continue the task you were working on.'
 
 
 class RunCheckTest(unittest.TestCase):
@@ -125,6 +130,38 @@ class RunCheckTest(unittest.TestCase):
         self.begin_and_append(events('SYNK_RUN_COMPLETE: synkbrief : ' + NEW))
         code, state, calls = self.run_checker('end', BASE)
         self.assertEqual((code, state['error'], len(calls)), (1, 'DOC_SHA_MISMATCH', 1))
+
+    def test_transport_error_after_verified_delivery_is_complete(self):
+        # 10-19·20 yt-tt·meta-brand: the Doc was saved and the marker sent, then the model stream broke.
+        for response in ['SYNK_RUN_COMPLETE: synkbrief : ' + NEW + '\nSummary',
+                         ' Cui\nSYNK_RUN_COMPLETE: synkbrief : ' + NEW + '\nSummary']:
+            with self.subTest(response=response[:8]):
+                self.begin_and_append(events(response, status='ERROR', error=INTERRUPTED))
+                code, state, calls = self.run_checker('end', NEW)
+                self.assertEqual((code, state['status'], state['sha256'], len(calls)), (0, 'complete', NEW, 1))
+                self.assertEqual((state['cliStatus'], state['cliError']), ('ERROR', INTERRUPTED))
+                receipt = next(item for item in (json.loads(p.read_text()) for p in
+                                                 (self.home / 'run-status' / 'history').glob('*.json'))
+                               if item['startedAt'] == state['startedAt'])
+                self.assertEqual((receipt['status'], receipt['cliStatus']), ('complete', 'ERROR'))
+                self.assertNotIn('cliError', receipt)
+
+    def test_transport_error_still_needs_marker_and_matching_doc(self):
+        cases = [('SYNK_RUN_NO_CHANGE: synkbrief', BASE, 'CLI_FAILED_OR_DENIED', 0),
+                 ('partial answer', NEW, 'CLI_FAILED_OR_DENIED', 0),
+                 ('a\nb\nc\nSYNK_RUN_COMPLETE: synkbrief : ' + NEW, NEW, 'CLI_FAILED_OR_DENIED', 0),
+                 ('SYNK_RUN_COMPLETE: synkbrief : ' + NEW, BASE, 'DOC_SHA_MISMATCH', 1)]
+        for response, doc_sha, error, reads in cases:
+            with self.subTest(response=response[:12], doc=doc_sha[:1]):
+                self.begin_and_append(events(response, status='ERROR', error=INTERRUPTED))
+                code, state, calls = self.run_checker('end', doc_sha)
+                self.assertEqual((code, state['error'], len(calls)), (1, error, reads))
+
+    def test_denied_action_fails_even_with_verified_marker(self):
+        self.begin_and_append(events('SYNK_RUN_COMPLETE: synkbrief : ' + NEW, status='ERROR',
+                                     error=INTERRUPTED, denied=['synthetic-denial']))
+        code, state, calls = self.run_checker('end', NEW)
+        self.assertEqual((code, state['error'], len(calls)), (1, 'CLI_FAILED_OR_DENIED', 0))
 
     def test_begin_read_failure_records_failed_and_exits(self):
         code, state, calls = self.run_checker('begin', doc_failure=True)

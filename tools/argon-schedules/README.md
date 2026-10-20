@@ -2,6 +2,13 @@
 
 2026-10-18 12:12 KST 운영 전환을 마쳤다. 기존 Gemini 예약 4개는 일시중지했고, 서버 타이머 4개는 enabled·active로 확인했다. 전환 뒤 첫 정규 회차인 10-18 14:00 YouTube·TikTok 조사가 실제 타이머로 시작해 Argon 실행과 기존 Google Docs의 새 저장까지 성공했다. 장애 알림 메일 실제 수신도 확인해 요청한 운영 검증 목표를 충족했다. [YouTube·TikTok 결과 문서](https://docs.google.com/document/d/1aYwO_1qBcUs5uzeeRoeePBRo_qkWSFBwjr4Xj-LUXmI/edit), 최신 운영 결과는 [트랙](../../docs/_ops/트랙.md)의 해당 예약 항목과 아래 실행 상태에서 확인한다.
 
+## 2026-10-20 · 저장을 끝낸 뒤 연결이 끊긴 회차를 실패로 치던 것 고침
+
+- **증상.** 10-19 고침 뒤에도 yt-tt 20:00·meta-brand 23:00·yt-tt 10-20 08:00(KST)이 `CLI_FAILED_OR_DENIED`로 실패 메일을 냈다. 거절된 도구는 0개였다.
+- **원인.** 세 회차 모두 Argon이 조사·검증·Docs 저장을 끝내고 완료 표식까지 냈는데, 마지막에 모델 API 연결이 끊겨(「The stream was interrupted」·「stream idle timeout (5m0s)」) 공식 CLI가 결과 상태를 `ERROR`로 남겼다. 한 회차는 끊겼다 이어진 흐름의 조각(` Cui`)이 표식 앞줄에 붙었다. `run-check.py`는 상태가 `SUCCESS`가 아니면 문서를 보지 않고 실패로 쳤다. 표식의 문서 SHA가 다음 회차 시작 때(마지막 회차는 지금) 읽은 문서 SHA와 셋 다 같아, 문서는 실제로 갱신돼 있었다.
+- **고침(10-20 13:32 KST 서버 반영).** 거절이 하나라도 있으면 여전히 실패다. 상태가 `ERROR`여도 완료 표식(이때만 처음 세 줄 안)이 있고 Docs를 다시 읽은 SHA가 표식과 같으면 `complete`로 치고, `cliStatus`·`cliError`를 상태 파일에, `cliStatus`만 회차 영수증에 남긴다. 「변경 없음」 표식이나 표식 없는 `ERROR`는 그대로 실패다. `SUCCESS` 회차의 「표식은 첫 줄」 규칙은 바꾸지 않았다. 서버 사본은 `/var/backups/synk-argon-config/run-check.py.20261020T043208Z`.
+- **확인.** 오프라인 시험 17개(새 3개는 고치기 전 판에서 실패)가 이 PC와 서버 python 양쪽에서 통과했다. 서버 해시 run-check.py `226ef5ee72442f2b`(앞 16자리).
+
 ## 2026-10-19 · 권한 빈틈 고침과 월요일 스캔 수집
 
 - **증상과 원인.** 10-18 전환 뒤 6회 가운데 4회(yt-tt 20:00·08:00, meta-brand 23:00, full 05:00 KST)가 `CLI_FAILED_OR_DENIED`였다. Argon이 회차마다 스스로 고른 도구 — 도우미 원문 보기(`view_file /opt/synk-argon-77yuhbs/docs-io.py`)나 임시 `python3 -c` 명령 — 가 허용 목록 밖이라 headless에서 자동 거절됐고, 그 뒤 빈 응답으로 끝났다. `run-check.py`는 거절이 하나라도 있으면 실패로 친다. 타이머·PC·사용량 한도 문제는 아니었다. 상세는 [현장 노트 AI_CLI](../../docs/현장노트/AI_CLI.md).

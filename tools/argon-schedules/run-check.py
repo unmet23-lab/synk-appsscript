@@ -30,6 +30,7 @@ def terminal_receipt(d):
  invocation=d.get('invocationId') or os.environ.get('INVOCATION_ID','')
  if isinstance(invocation,str) and re.fullmatch(r'[a-f0-9]{32}',invocation):receipt['invocationId']=invocation
  if d.get('model')=='gemini-4-argon-high':receipt['model']=d['model']
+ if isinstance(d.get('cliStatus'),str) and re.fullmatch(r'[A-Z_]{1,32}',d['cliStatus']):receipt['cliStatus']=d['cliStatus']
  if d['status']=='failed':receipt['error']=d.get('error') if isinstance(d.get('error'),str) and d['error'] in SAFE_ERRORS else 'RUN_CHECK_FAILED'
  return receipt
 def archive(d):
@@ -79,15 +80,22 @@ try:
  assert len(init)==1 and len(res)==1,'MISSING_OR_MULTIPLE_RUNS'
  result=res[0];assert init[0]['init']['model']=='gemini-4-argon-high','MODEL_MISMATCH'
  assert result['conversation_id']==init[0]['conversation_id'],'CONVERSATION_MISMATCH'
- assert result['status']=='SUCCESS' and not result.get('denied_actions'),'CLI_FAILED_OR_DENIED'
- text=result.get('response','');firstline=text.splitlines()[0] if text else '';match=re.fullmatch(r'SYNK_RUN_COMPLETE: '+re.escape(role)+r' : ([a-f0-9]{64})',firstline)
- nochange=firstline=='SYNK_RUN_NO_CHANGE: '+role
+ assert not result.get('denied_actions'),'CLI_FAILED_OR_DENIED'
+ cli_ok=result['status']=='SUCCESS'
+ text=result.get('response','');lines=text.splitlines();complete=re.compile(r'SYNK_RUN_COMPLETE: '+re.escape(role)+r' : ([a-f0-9]{64})')
+ # A model-API transport error after delivery (stream interrupted, idle timeout) ends the CLI with
+ # status ERROR and can leave a short resumed-stream fragment before the marker. Only then accept a
+ # complete marker within the first three lines; the Doc re-read below must still match its SHA.
+ match=next((m for m in map(complete.fullmatch,lines[:1] if cli_ok else [x.strip() for x in lines[:3]]) if m),None)
+ nochange=cli_ok and bool(lines) and lines[0]=='SYNK_RUN_NO_CHANGE: '+role
+ assert cli_ok or match,'CLI_FAILED_OR_DENIED'
  assert match or nochange,'MISSING_DELIVERY_MARKER'
+ if not cli_ok:d.update({'cliStatus':str(result['status'])[:32],'cliError':str(result.get('error') or '')[:200]})
  doc=read_doc()
  if match:assert doc['sha256']==match.group(1),'DOC_SHA_MISMATCH'
  if nochange:assert doc['sha256']==d.get('baselineSha256'),'NO_CHANGE_DOC_CHANGED_OR_NO_BASELINE'
  d.update({'status':'no-change' if nochange else 'complete','completedAt':now(),'model':init[0]['init']['model'],'conversationId':result['conversation_id'],'documentId':doc['documentId'],'sha256':doc['sha256'],'revisionId':doc['revisionId'],'response':text})
- save(d);print(json.dumps({'role':role,'status':d['status'],'model':d['model'],'documentId':d['documentId']},ensure_ascii=False))
+ save(d);print(json.dumps({'role':role,'status':d['status'],'model':d['model'],'documentId':d['documentId'],**({'cliStatus':d['cliStatus']} if 'cliStatus' in d else {})},ensure_ascii=False))
 except Exception as ex:
  try:d
  except NameError:d={'role':role}
