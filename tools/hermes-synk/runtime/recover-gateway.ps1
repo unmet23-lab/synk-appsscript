@@ -100,6 +100,40 @@ function Invoke-DriftRecovery {
     New-RecoveryResult 0 "$note Official gateway restart completed. Delivery must be verified separately."
 }
 
+# The last check's outcome for the AI-free SYNK monitor (tools/hermes-synk/overview.cjs), which turns a
+# lasting drift (codes 4 and 6) into one Telegram notice. ASCII only, so Windows PowerShell writes no BOM;
+# the monitor owns the wording. Best effort: a failed write must never stop the recovery itself.
+function Write-RecoveryStatus {
+    param([string]$HermesHome, [int]$Code, $Drift)
+    try {
+        $since = $null
+        if ($Drift) {
+            try {
+                $seen = Get-Content -LiteralPath (Join-Path $HermesHome 'synk-gateway-recovery.json') -Raw | ConvertFrom-Json
+                if ($seen.firstSeenUnix) { $since = [DateTimeOffset]::FromUnixTimeSeconds([long]$seen.firstSeenUnix) }
+            } catch {
+                $since = $null
+            }
+        }
+        $format = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+        $culture = [Globalization.CultureInfo]::InvariantCulture
+        $record = [ordered]@{
+            schemaVersion = 1
+            checkedAt = [DateTimeOffset]::UtcNow.ToString($format, $culture)
+            code = $Code
+            drift = [bool]$Drift
+            selected = if ($Drift) { [string]$Drift.Selected } else { $null }
+            since = if ($since) { $since.ToUniversalTime().ToString($format, $culture) } else { $null }
+        }
+        $file = Join-Path $HermesHome 'synk-gateway-recovery-status.json'
+        $temp = '{0}.{1}.tmp' -f $file, $PID
+        [IO.File]::WriteAllText($temp, ($record | ConvertTo-Json -Compress), [Text.Encoding]::ASCII)
+        Move-Item -LiteralPath $temp -Destination $file -Force
+    } catch {
+        Write-Warning 'Could not record the recovery status for the SYNK monitor.'
+    }
+}
+
 # Tests dot-source this file for the functions above.
 if ($MyInvocation.InvocationName -eq '.') { return }
 
@@ -124,13 +158,17 @@ if (Test-Path -LiteralPath $pidFile) {
 }
 if ($running) {
     $drift = $null
+    $checked = $false
     try {
         $modules = @((Get-Process -Id ([int]$record.pid)).Modules | ForEach-Object { $_.FileName })
         $drift = Get-DependencyDrift -ModulePaths $modules -InstallsRoot (Join-Path $HermesHome 'installs')
+        $checked = $true
     } catch {
         $drift = $null
     }
     if (!$drift) {
+        # A failed module read proves nothing, so it must not close a warning the monitor is still showing.
+        if (!$ReadOnly -and $checked) { Write-RecoveryStatus -HermesHome $HermesHome -Code 0 }
         Write-Output 'Gateway process is running. No action taken.'
         exit 0
     }
@@ -142,6 +180,7 @@ if ($running) {
         if (!$restartProcess.WaitForExit(180000)) { return $null }
         $restartProcess.ExitCode
     }
+    if (!$ReadOnly) { Write-RecoveryStatus -HermesHome $HermesHome -Code $result.Code -Drift $drift }
     if ($result.Warn) { Write-Warning $result.Message } else { Write-Output $result.Message }
     exit $result.Code
 }
@@ -154,10 +193,13 @@ $env:HERMES_HOME = $HermesHome
 $env:HERMES_GATEWAY_INSTALL_START_ON_LOGIN = '0'
 $startProcess = Start-Process -FilePath $cliPath -ArgumentList @('gateway', 'start') -WindowStyle Hidden -PassThru
 if (!$startProcess.WaitForExit(60000)) {
+    Write-RecoveryStatus -HermesHome $HermesHome -Code 3
     Write-Warning 'Official gateway start is still in progress. No process was terminated.'
     exit 3
 }
 if ($startProcess.ExitCode -ne 0) {
+    Write-RecoveryStatus -HermesHome $HermesHome -Code 1
     throw 'Official gateway start failed. Review the Hermes gateway logs.'
 }
+Write-RecoveryStatus -HermesHome $HermesHome -Code 0
 Write-Output 'Official gateway start completed. Delivery must be verified separately.'

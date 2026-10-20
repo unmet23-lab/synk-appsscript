@@ -28,6 +28,12 @@ const BACKUP_STALE_MS = 2 * 60 * 60_000;
 const BACKUP_GRACE_MS = Object.freeze({ onedrive: 2 * 60 * 60_000, github: 4 * 60 * 60_000 });
 const BACKUP_STATUS = Object.freeze({ healthy: '정상', running: '실행 중', attention: '주의', failed: '실패', unknown: '상태 미확인' });
 const backupHealthDefault = () => process.env.SYNK_BACKUP_HEALTH || path.join(os.homedir(), 'Documents', 'SYNK_원본창고', 'backup-health.json');
+// 헤르메스 복구 작업(runtime/recover-gateway.ps1)이 점검마다 남기는 기록을 읽기만 한다. 재시작 뒤에도 새 패키지를 못 쓰거나
+// 바빠서 재시작을 30분 넘게 미룬 어긋남만 판단으로 올린다. 15분 넘게 새 기록이 없으면 절전·일시 중지일 수 있어 사건을 내지 않는다.
+const GATEWAY_RECOVERY_STATUS = 'synk-gateway-recovery-status.json';
+const GATEWAY_RECOVERY_STALE_MS = 15 * 60_000;
+const GATEWAY_RECOVERY_LABEL = Object.freeze({ ok: '이상 없음', starting: '게이트웨이를 켜는 중', startFailed: '게이트웨이 켜기 실패 · 다음 점검에서 다시 켭니다',
+  waiting: '새로 깔린 패키지를 반영하는 중', restarting: '다시 켜는 중', restartFailed: '다시 켜기 실패 · 다음 점검에서 다시 봅니다', recorded: '점검 기록 있음' });
 const MAX_TASKS = 300;
 const ROLES = Object.freeze({ full: '전체 조사', 'yt-tt': 'YouTube·TikTok', 'meta-brand': 'Meta·브랜드', synkbrief: 'synkbrief' });
 const STATES = new Set(['preparing', 'launching', 'running', 'finalizing', 'unknown', 'launch_failed', 'exited', 'closed_by_user']);
@@ -399,6 +405,16 @@ function backupSnapshot({ hermesHome, now, backupHealthFile, uptimeSeconds, pers
   return { available: true, checkedAt: health.checkedAt, stale, monitorStale: stale && uptime > 1800, components };
 }
 
+function gatewayRecoverySnapshot({ hermesHome, now }) {
+  let raw;
+  try { raw = readJson(hermesHome, GATEWAY_RECOVERY_STATUS, 4_000); } catch { return { available: false }; }
+  const checkedAt = iso(raw?.checkedAt);
+  if (raw?.schemaVersion !== 1 || !checkedAt || !Number.isSafeInteger(raw.code)) return { available: false };
+  const age = now.getTime() - Date.parse(checkedAt);
+  return { available: true, checkedAt, stale: age > GATEWAY_RECOVERY_STALE_MS || age < -60_000, code: raw.code, drift: raw.drift === true,
+    selected: /^[a-f0-9]{32}$/.test(raw.selected || '') ? raw.selected : null, since: iso(raw.since) };
+}
+
 function sanitizeSns(payload) {
   if (!payload || typeof payload !== 'object' || typeof payload.appRunning !== 'boolean') throw new Error('SNS_SHAPE');
   const code = value => typeof value === 'string' && /^[A-Za-z0-9_.-]{1,80}$/.test(value) ? value : null;
@@ -560,6 +576,22 @@ function backupEvents(backup) {
   return rows;
 }
 
+function gatewayRecoveryEvents(gateway) {
+  // 오래된 기록은 해결로도 문제로도 보지 않는다. 사건을 빼면 감시는 이전 판단을 그대로 둔다.
+  if (!gateway?.available || gateway.stale) return [];
+  const content = { code: gateway.code, drift: gateway.drift, selected: gateway.selected };
+  const incident = { id: 'gateway-recovery', code: gateway.code, selected: gateway.selected };
+  if (gateway.drift && gateway.code === 4) return [attention(event('gateway-recovery', 'gateway', 'error', '헤르메스 게이트웨이 · 재시작 뒤에도 새 패키지를 못 씀',
+    `자동 재시작을 한 번 시도했지만 새로 깔린 패키지를 아직 쓰지 못하고 있습니다 · 텔레그램 대화 일부가 실패할 수 있습니다 · 자동 재시작은 더 하지 않으니 PC에서 확인해 주세요 · 처음 확인 ${formatTime(gateway.since)}`,
+    content), true, incident)];
+  if (gateway.drift && gateway.code === 6) return [attention(event('gateway-recovery', 'gateway', 'warning', '헤르메스 게이트웨이 · 바빠서 재시작을 30분 넘게 미룸',
+    `새로 깔린 패키지를 쓰려면 다시 켜야 하는데 처리 중인 일이 이어지고 있습니다 · 그동안 텔레그램 대화 일부가 실패할 수 있습니다 · 한가해지면 자동으로 한 번 다시 켭니다 · 처음 확인 ${formatTime(gateway.since)}`,
+    content), true, incident)];
+  const state = gateway.drift ? { 0: 'waiting', 3: 'restarting', 1: 'restartFailed' }[gateway.code] : { 0: 'ok', 3: 'starting', 1: 'startFailed' }[gateway.code];
+  return [attention(event('gateway-recovery', 'gateway', 'info', '헤르메스 게이트웨이 복구 점검',
+    `${GATEWAY_RECOVERY_LABEL[state || 'recorded']} · 마지막 점검 ${formatTime(gateway.checkedAt)}`, content), false, incident)];
+}
+
 function snsEvents(sns, now) {
   if (!sns) return [];
   const rows = [];
@@ -602,7 +634,7 @@ function snsEvents(sns, now) {
   return rows;
 }
 
-function buildEvents({ track, tips, ledger, tasks, research, runtimes, now, backup, sns }) {
+function buildEvents({ track, tips, ledger, tasks, research, runtimes, now, backup, sns, gateway }) {
   const events = [];
   if (!track.available || !track.complete) events.push(event('coverage-track', 'coverage', 'warning', '트랙 조회 범위 미완전', '읽지 못한 기록을 삭제·완료로 판정하지 않습니다.'));
   for (const row of track.items) events.push(event(row.id, 'track', 'info', row.title, row.summary, { text: row.fingerprint }));
@@ -676,7 +708,7 @@ function buildEvents({ track, tips, ledger, tasks, research, runtimes, now, back
   }
   for (const runtime of runtimes) events.push(event('runtime-' + runtime.source, 'runtime', 'info', runtime.source + ' 작업 조회', runtime.note,
     { connected: runtime.connected, stale: runtime.stale }));
-  events.push(...backupEvents(backup), ...snsEvents(sns, now));
+  events.push(...backupEvents(backup), ...snsEvents(sns, now), ...gatewayRecoveryEvents(gateway));
   return events.sort((a, b) => a.id.localeCompare(b.id));
 }
 
@@ -713,6 +745,11 @@ function formatOverview(report) {
     const broken = events.filter(row => row.kind === 'sns' && row.needs_attention).length;
     lines.push(`- SNS 연결 ${sns.connections.length}개·댓글 수집 ${sns.inbox.length}개${broken ? ' · 확인 필요 ' + broken + '건' : ' · 이상 없음'} · 조회 ${formatTime(sns.checkedAt)}${sns.stale ? ' · 오래됨' : ''}`);
   } else if (sns) lines.push('- SNS 연결 상태 미확인(회사 서버 조회 전)');
+  const gateway = snapshot.gateway;
+  if (gateway?.available) {
+    const row = events.find(item => item.id === 'gateway-recovery');
+    lines.push(`- 헤르메스 게이트웨이 복구 점검 · ${gateway.stale ? '기록이 오래됨(절전·일시 중지일 수 있음)' : row?.needs_attention ? '확인 필요' : '확인할 문제 없음'} · 기록 ${formatTime(gateway.checkedAt)}`);
+  }
   lines.push(`- 트랙 ${snapshot.track.items.length}개 기록${snapshot.track.complete ? '' : ' · 일부 미확인'} · 문서 날짜로 마감을 추정하지 않습니다.`);
   for (const row of events.filter(item => item.kind === 'coverage' && item.severity !== 'info').slice(0, 3)) lines.push('- ' + row.title);
   lines.push('- PC 앱의 모든 작업·실패를 감시하는 기능은 아닙니다.');
@@ -736,6 +773,7 @@ async function readOverview({ root = ROOT, hermesHome = homeDefault(), now = new
   ]);
   const backup = backupResult.status === 'fulfilled' ? backupResult.value : { available: false, checkedAt: null, stale: true, monitorStale: false, components: [] };
   const sns = snsResult.status === 'fulfilled' ? snsResult.value : { available: false, checkedAt: null, stale: true, refreshFailed: true, connections: [], inbox: [], jobs: null };
+  const gateway = gatewayRecoverySnapshot({ hermesHome, now: clock });
   const source = sourceResult.status === 'fulfilled' ? sourceResult.value : {};
   const ledger = ledgerResult.status === 'fulfilled' ? ledgerResult.value : { available: false, stale: true, checkedAt: null, rows: [] };
   const track = source.snapshot?.track || { available: false, complete: false, items: [] };
@@ -743,15 +781,16 @@ async function readOverview({ root = ROOT, hermesHome = homeDefault(), now = new
   const tips = reconcileTips(cards, ledger);
   const tasks = taskResult.status === 'fulfilled' ? taskResult.value : { available: false, complete: false, items: [] };
   const research = researchResult.status === 'fulfilled' ? researchResult.value : { available: false, remoteVerified: false, items: [] };
-  const events = buildEvents({ track, tips, ledger, tasks, research, runtimes: source.runtimes || [], now: clock, backup, sns });
+  const events = buildEvents({ track, tips, ledger, tasks, research, runtimes: source.runtimes || [], now: clock, backup, sns, gateway });
   const report = { version: 1, checkedAt: clock.toISOString(), notification_policy: NOTIFICATION_POLICY, integration_policy: INTEGRATION_POLICY,
     fingerprint: hash(events.map(row => [row.id, row.fingerprint, row.needs_attention])), events,
-    snapshot: { track, tips, ledger, tasks, research, backup, sns },
+    snapshot: { track, tips, ledger, tasks, research, backup, sns, gateway },
     coverage: { trackComplete: track.available && track.complete, cardsComplete: cards.available && cards.complete,
       tasksComplete: tasks.available && tasks.complete, ledgerAvailable: ledger.available, ledgerStale: ledger.stale,
       ledgerComplete: ledger.available && !ledger.limited, researchComplete: research.available && research.complete === true,
       argonRemoteVerified: false, argonStatusAvailable: research.remoteStatusAvailable === true, argonStatusStale: research.stale !== false,
       backupStatusAvailable: backup.available, snsStatusAvailable: sns.available, snsStatusStale: sns.stale !== false,
+      gatewayRecoveryStatusAvailable: gateway.available,
       desktopFailureCoverage: '이 연결의 공식 작업 영수증만 · 다른 데스크톱 작업 미감시',
       comparison: '미완전한 원문에서 사라진 항목은 삭제·완료로 판정하지 않음', noModelCalls: true, noRemoteWrites: true },
   };
@@ -767,5 +806,5 @@ async function main(args = process.argv.slice(2)) {
 if (require.main === module) main().catch(() => { process.stderr.write('SYNK 오늘 조회를 확인하지 못했습니다. 원문·PC 연결을 확인해 주세요.\n'); process.exitCode = 1; });
 
 module.exports = { readOverview, formatOverview, sanitizeLedger, ledgerSnapshot, readLedgerCache, readTaskRecords, readArgonRecords, researchSnapshot, sanitizeArgon, refreshArgon, reconcileTips, buildEvents,
-  readBackupHealth, backupSnapshot, sanitizeSns, refreshSns, snsSnapshot,
-  LEDGER_TTL_MS, LEDGER_CACHE, ARGON_TTL_MS, ARGON_CACHE, SNS_CACHE, SNS_REFRESH_MS, SNS_STALE_MS, BACKUP_CACHE };
+  readBackupHealth, backupSnapshot, sanitizeSns, refreshSns, snsSnapshot, gatewayRecoverySnapshot,
+  LEDGER_TTL_MS, LEDGER_CACHE, ARGON_TTL_MS, ARGON_CACHE, SNS_CACHE, SNS_REFRESH_MS, SNS_STALE_MS, BACKUP_CACHE, GATEWAY_RECOVERY_STATUS, GATEWAY_RECOVERY_STALE_MS };

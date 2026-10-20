@@ -34,6 +34,7 @@ function writeFacts(hermes, environment) {
 
 const generation = (hermes, name) => path.join(hermes, 'installs', INSTALL, 'environments', name, 'venv');
 const moduleFile = (hermes, name) => path.join(generation(hermes, name), 'Lib', 'site-packages', 'pydantic_core', '_pydantic_core.cp314-win_amd64.pyd');
+const statusFile = hermes => path.join(hermes, 'synk-gateway-recovery-status.json');
 
 function drift(hermes, modules) {
   const input = path.join(hermes, 'input.json');
@@ -193,4 +194,24 @@ test('dot-sourcing loads the functions without running recovery, and a missing g
   const result = spawnSync(ps51, ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', script, '-HermesHome', hermes, '-ReadOnly'], { encoding: 'utf8', windowsHide: true });
   assert.equal(result.status, 2);
   assert.match(result.stdout, /not proven running/);
+  assert.equal(fs.existsSync(statusFile(hermes)), false, 'read-only checks leave no status record');
+});
+
+test('each check leaves a small ASCII status record that the AI-free monitor reads as is', { skip }, (t) => {
+  const hermes = home(t);
+  run(`. '${script}'; Write-RecoveryStatus -HermesHome '${hermes}' -Code 0`);
+  const bytes = fs.readFileSync(statusFile(hermes));
+  assert.ok(bytes.every(b => b < 128), 'ASCII only, so Windows PowerShell writes no BOM');
+  let record = JSON.parse(bytes.toString('ascii'));
+  assert.deepEqual({ ...record, checkedAt: undefined }, { schemaVersion: 1, checkedAt: undefined, code: 0, drift: false, selected: null, since: null });
+  assert.ok(Math.abs(Date.parse(record.checkedAt) - Date.now()) < 120000);
+
+  // A drift record names the generation and when recovery first saw it (the state file's Unix seconds).
+  fs.writeFileSync(path.join(hermes, 'synk-gateway-recovery.json'), JSON.stringify({ selected: NEW, loaded: OLD, firstSeen: '2026-10-19T21:42:00+09:00', firstSeenUnix: 1792413720 }));
+  run(`. '${script}'; Write-RecoveryStatus -HermesHome '${hermes}' -Code 4 -Drift ([pscustomobject]@{ Loaded = '${OLD}'; Selected = '${NEW}' })`);
+  record = JSON.parse(fs.readFileSync(statusFile(hermes), 'ascii'));
+  assert.deepEqual([record.code, record.drift, record.selected, Date.parse(record.since)], [4, true, NEW, 1792413720 * 1000]);
+  const { gatewayRecoverySnapshot } = require('../tools/hermes-synk/overview.cjs');
+  const seen = gatewayRecoverySnapshot({ hermesHome: hermes, now: new Date() });
+  assert.deepEqual([seen.available, seen.stale, seen.code, seen.drift, seen.selected], [true, false, 4, true, NEW]);
 });

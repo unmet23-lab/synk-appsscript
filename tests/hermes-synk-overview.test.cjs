@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const status = require('../tools/hermes-synk/status.cjs');
-const { readOverview, readTaskRecords, LEDGER_CACHE, LEDGER_TTL_MS, ARGON_CACHE, SNS_CACHE, BACKUP_CACHE } = require('../tools/hermes-synk/overview.cjs');
+const { readOverview, readTaskRecords, LEDGER_CACHE, LEDGER_TTL_MS, ARGON_CACHE, SNS_CACHE, BACKUP_CACHE, GATEWAY_RECOVERY_STATUS } = require('../tools/hermes-synk/overview.cjs');
 const { plan } = require('../tools/hermes-synk/monitor.cjs');
 const NOW = new Date('2026-10-18T08:00:00Z');
 const ID = 'synk-123456abcdef';
@@ -555,6 +555,59 @@ test('PC 백업은 짧은 유예 안의 실패·켠 직후의 오래된 기록·
   const stopped = await readOverview({ ...f.options, backupHealthFile: file, uptimeSeconds: 3600 });
   assert.equal(stopped.events.find(item => item.id === 'backup-monitor').needs_attention, true);
   assert.match(stopped.text, /PC 백업 1종/);
+});
+
+test('헤르메스 복구는 재시작 뒤에도 그대로이거나 30분 넘게 미룬 어긋남만 한 번 알리고, 오래된 기록으로는 판단을 바꾸지 않는다', async t => {
+  const f = fixture(t);
+  const GENERATION = 'e3240b89a48f4632a4a798146f6a9034';
+  const at = minutes => new Date(NOW.getTime() + minutes * 60_000);
+  const record = (minutes, extra) => write(f.home, GATEWAY_RECOVERY_STATUS,
+    { schemaVersion: 1, checkedAt: at(minutes).toISOString().replace('.000', ''), code: 0, drift: false, selected: null, since: null, ...extra });
+  const look = minutes => readOverview({ ...f.options, now: at(minutes) });
+  const row = report => report.events.find(item => item.id === 'gateway-recovery');
+  const drift = { drift: true, selected: GENERATION, since: '2026-10-18T07:20:00Z' };
+  const step = async (state, minutes) => plan(state, await look(minutes), at(minutes));
+
+  const none = await look(0);
+  assert.equal(row(none), undefined, '기록이 없으면 사건도 줄도 없다');
+  assert.doesNotMatch(none.text, /게이트웨이/);
+  let state = plan(null, none, at(0)).state;
+  record(0, {});
+  const healthy = await look(1);
+  assert.equal(row(healthy).needs_attention, false);
+  assert.match(healthy.text, /헤르메스 게이트웨이 복구 점검 · 확인할 문제 없음/);
+  record(1, { ...drift, code: 0 });
+  assert.equal(row(await look(2)).needs_attention, false, '처음 본 어긋남과 짧은 미룸은 복구 작업이 스스로 처리한다');
+
+  record(30, { ...drift, code: 6 });
+  const busy = await look(31);
+  const shown = row(busy).title + ' ' + row(busy).detail;
+  assert.equal(row(busy).needs_attention, true);
+  assert.ok(!shown.includes(GENERATION.slice(0, 8)) && !/코드|code/i.test(shown), '종료 코드·세대 번호는 글에 보이지 않는다');
+  assert.match(busy.text, /헤르메스 게이트웨이 복구 점검 · 확인 필요/);
+  let result = plan(state, busy, at(31));
+  assert.equal(result.notifications.length, 1);
+  assert.match(result.notifications[0].text, /바빠서 재시작을 30분 넘게 미룸/);
+  record(35, { ...drift, code: 6 });
+  result = await step(result.state, 36);
+  assert.equal(result.notifications.length, 0, '같은 미룸을 다시 보내지 않는다');
+  record(40, { ...drift, code: 4 });
+  result = await step(result.state, 41);
+  assert.equal(result.notifications.length, 1, '다시 켰는데도 그대로면 새 사건이다');
+  assert.match(result.notifications[0].text, /재시작 뒤에도 새 패키지를 못 씀/);
+
+  const stale = await look(70);
+  assert.equal(row(stale), undefined, '15분 넘은 기록은 해결로도 문제로도 보지 않는다');
+  assert.match(stale.text, /기록이 오래됨/);
+  result = plan(result.state, stale, at(70));
+  record(71, { ...drift, code: 4 });
+  result = await step(result.state, 72);
+  assert.equal(result.notifications.length, 0, '절전에서 깨어난 뒤 같은 문제를 다시 보내지 않는다');
+  record(80, {});
+  result = await step(result.state, 81);
+  record(90, { ...drift, code: 4 });
+  result = await step(result.state, 91);
+  assert.equal(result.notifications.length, 1, '풀린 뒤 다시 생기면 새로 알린다');
 });
 
 test('SNS 연결은 세 시간에 한 번만 읽고 코드·시각만 보관하며 끊김·지연·장기 미조회를 판단으로 올린다', async t => {
