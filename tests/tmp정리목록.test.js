@@ -80,3 +80,64 @@ test('최근 작업이 경로로 끌어 쓰는 옛 폴더와 그 폴더가 다�
     assert.ok(fs.existsSync(path.join(임시, 'platform-ha-20261011', 'remote.cjs')), '참조되는 폴더는 승인 목록에 있어도 옮기지 않는다');
   } finally { fs.rmSync(방, { recursive: true, force: true }); }
 });
+
+test('릴리스·후보 사본은 갈래마다 새 판 둘만 남기고 옛 판은 날짜와 상관없이 후보 — 남는 판이 끌어 쓰는 옛 판·_보존은 뺀다', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-tmp-release-'));
+  try {
+    const 임시 = path.join(방, '.tmp'), 대기 = path.join(방, '정리대기');
+    const 쓰기 = (상대, 글) => { const p = path.join(임시, 상대); fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, 글); };
+    for (const 판 of ['', '-v2', '-v3']) 쓰기(`post-performance-release${판}-20261018/a.bin`, 'x'.repeat(2048));
+    쓰기('company-read-release-20261018/helper.cjs', '//');
+    쓰기('company-read-release-v2-20261018/a.cjs', '//');
+    쓰기('company-read-release-v3-20261018/run.cjs', "require('../../company-read-release-20261018/helper.cjs')");
+    쓰기('push-wake-candidate-20261020/a.cjs', '//');
+    쓰기('push-wake-release-20261020/a.cjs', '//');
+    쓰기('push-wake-release-20261012/a.cjs', '//');
+    쓰기('push-wake-release-20261012/_보존.txt', '남김');
+    쓰기('solo-pc-release-20261019/a.bin', 'x');
+    쓰기('old-board-release-20261001/a.bin', 'x');
+    옛날로(path.join(임시, 'old-board-release-20261001'), 30);
+
+    const 목록 = 정리.목록만들기({ 임시, 대기 });
+    const 본것 = Object.fromEntries(목록.후보.map((c) => [c.이름, c.까닭]));
+    assert.deepEqual(본것, { 'post-performance-release-20261018': ['릴리스옛판'], 'old-board-release-20261001': ['14일'] },
+      '새 판 둘(v3·v2)·끌어 쓰는 옛 판·_보존·한 판짜리 새 사본은 후보가 아니다');
+    assert.deepEqual(목록.참조로남김.map((x) => x.이름), ['company-read-release-20261018']);
+    assert.deepEqual(목록.남긴판['post-performance'], ['post-performance-release-v3-20261018', 'post-performance-release-v2-20261018']);
+    assert.ok(목록.후보.every((c) => c.릴리스));
+    const 글 = 정리.글로(목록);
+    assert.match(글, /폴더 1개 · 릴리스·후보 사본의 옛 판 1개/);
+    assert.match(글, /① 릴리스·후보 사본 2개/);
+    assert.match(글, /post-performance: 1개 · [\d.]+MB \(남기는 새 판: post-performance-release-v3-20261018, post-performance-release-v2-20261018\)/);
+    assert.match(글, /「릴리스 옛 판 정리」/);
+    assert.deepEqual(정리.묶음(목록, '릴리스옛판'), ['post-performance-release-20261018']);
+    assert.throws(() => 정리.묶음(목록, '없는묶음'), /모르는 묶음/);
+    const r = 정리.옮기기(정리.묶음(목록, '릴리스옛판'), { 임시, 대기, 지금: new Date(2026, 10, 1).getTime() });
+    assert.deepEqual(r.옮김, ['post-performance-release-20261018']);
+    assert.ok(fs.existsSync(path.join(임시, 'company-read-release-20261018', 'helper.cjs')), '끌어 쓰는 옛 판은 그대로');
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
+
+test('후보가 서른 개를 넘으면 이름 앞말로 묶어 보이고, 이사 복사 날에 마지막 수정이 몰린 폴더는 따로 센다', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-tmp-group-'));
+  try {
+    const 임시 = path.join(방, '.tmp'), 대기 = path.join(방, '정리대기');
+    for (let i = 0; i < 31; i++) {
+      const p = path.join(임시, `alpha-${i}-2026090${i % 9 + 1}`);
+      fs.mkdirSync(p, { recursive: true }); fs.writeFileSync(path.join(p, 'a.txt'), 'x'); 옛날로(p, 30);
+    }
+    const p = path.join(임시, 'beta-20260801'); fs.mkdirSync(p, { recursive: true }); fs.writeFileSync(path.join(p, 'a.txt'), 'x'); 옛날로(p, 60);
+    const 그날 = new Date(Date.now() - 30 * 하루);
+    const 이사날 = [`${그날.getFullYear()}-${String(그날.getMonth() + 1).padStart(2, '0')}-${String(그날.getDate()).padStart(2, '0')}`];
+    const 목록 = 정리.목록만들기({ 임시, 대기, 이사날 });
+    assert.equal(목록.후보.length, 32);
+    const 글 = 정리.글로(목록);
+    assert.match(글, /② 마지막 수정이 노트북 이사 복사 날\([^)]+\)인 폴더 31개 · [\d.]+MB — 이름 속 날짜로는 2026-09-01 ~ 2026-09-09/);
+    assert.match(글, /③ 그 밖의 폴더 32개/);
+    assert.match(글, /· alpha: 31개/);
+    assert.doesNotMatch(글, /^- alpha-0-/m, '묶어 보일 때는 하나씩 적지 않는다');
+    assert.match(정리.글로(목록, { 자세히: true }), /^- alpha-0-20260901 · .* · 이사 복사 시각\(이름 날짜 2026-09-01\)/m);
+    assert.equal(정리.묶음(목록, '이사복사').length, 31);
+    assert.deepEqual(정리.묶음(목록, '14일').length, 32);
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
