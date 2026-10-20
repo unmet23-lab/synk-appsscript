@@ -31,6 +31,7 @@
  *      origin/master 위에 내 커밋의 바뀐 경로만 다시 쌓는다(같은 메시지·작성자). 남의 미푸시 커밋은 올라가지 않는다.
  *      그대로 올릴 커밋에 줄끝만 원격 판과 다른 줄이 있으면 줄끝을 맞춰 다시 쌓는다.
  *   2. 경로마다: 원격 판이 내 부모 판과 같으면 내 판, 다르면 git merge-file. 문서가 겹치면 원격에도 있는 앞뒤 줄에 맞춰 붙인다.
+ *      원격이 같은 자리에 이미 더한 줄을 내 커밋도 품었으면(원격에만 있던 줄을 작업본에 같이 넣은 것) 그 줄은 한 번만 둔다.
  *   3. 검사: 올라갈 줄은 모두 내 커밋에서 온 줄(남의 미푸시 줄이 새지 않음) · 내 줄이 빠지지 않음 · 줄끝은 원격 판을 따름 ·
  *      저장 용량(git-storage-check.cjs --base origin/master --head <올릴 머리>).
  *   4. --실행이면 빨리감기 push(강제 없음). 그새 origin이 움직였으면 다시 fetch해 처음부터 한다(세 번까지).
@@ -56,6 +57,8 @@ const 공용문서 = [
 /** 다시 쌓다 겹친 자리를 원격에도 있는 앞뒤 줄로 맞춰 붙여도 되는 문서. 코드·JSON은 겹치면 멈춘다. */
 const 맞춰붙일문서 = /\.(md|markdown|txt|jsonl|csv|tsv)$/i;
 const 차이한도 = 3000;
+/** 같은 자리의 원격 줄 수 × 내 줄 수가 이보다 크면 겹친 줄을 찾지 않는다(그래도 같은 줄이 두 번 들어가게 되면 멈춘다). */
+const 겹침찾기한도 = 4000000;
 const 영 = /^0+$/;
 const 위치환경 = /^GIT_(DIR|WORK_TREE|INDEX_FILE|COMMON_DIR|OBJECT_DIRECTORY|ALTERNATE_OBJECT_DIRECTORIES|NAMESPACE|PREFIX)$/;
 const 좋은결과 = new Set(['미리 보기', '커밋함', '커밋할 것 없음', '올림', '올릴 것 없음']);
@@ -441,13 +444,78 @@ function 줄셈검사(P, O, C, R) {
 }
 
 /**
+ * 겹친 줄로 맞대도 되는 줄: 글자·숫자가 있고 코드 울타리(```)나 태그만 있는 줄이 아니다.
+ * 빈 줄·`---`·`|---|`·```·</details> 같은 틀 줄은 서로 다른 덩어리에서도 똑같이 나온다.
+ */
+function 뚜렷한줄(글) {
+  const s = 보이게(글).trim();
+  return /[\p{L}\p{N}]/u.test(s) && !/^(`{3,}|~{3,})/.test(s) && !/^<\/?[A-Za-z][^<>]*>$/.test(s);
+}
+
+/** b마다: R[b-h..b)가 N의 앞 h줄과 같은 가장 긴 h(머리), R[b..b+t)가 N의 끝 t줄과 같은 가장 긴 t(꼬리) */
+function 맞닿은겹침(R, N) {
+  const 머리 = new Int32Array(R.length + 1), 꼬리 = new Int32Array(R.length + 1);
+  for (let s = 0; s < R.length; s++) {
+    let k = 0;
+    while (s + k < R.length && k < N.length && R[s + k].글 === N[k].글) { k++; if (k > 머리[s + k]) 머리[s + k] = k; }
+  }
+  for (let e = R.length; e > 0; e--) {
+    let k = 0;
+    while (k < e && k < N.length && R[e - 1 - k].글 === N[N.length - 1 - k].글) { k++; if (k > 꼬리[e - k]) 꼬리[e - k] = k; }
+  }
+  return { 머리, 꼬리 };
+}
+
+/**
+ * 원격이 같은 자리(앞뒤 공통 줄 사이)에 더한 줄 R 사이에 내가 더한 줄 N을 넣는다.
+ * N의 앞(머리)이나 끝(꼬리)이 R 안의 이어진 줄과 같으면 원격에만 있던 줄을 작업본에 같이 넣은 것이라 그 줄은 원격에 이미 있는 것으로 보고 걷는다.
+ * 머리와 꼬리를 함께 걷으면 R에서 둘이 맞닿아 있어야 하고(그 사이에 내 줄), 걷을 줄 가운데 같은 줄로 볼 줄(같은줄)이 하나는 있어야 한다.
+ * 남은 내 줄은 꼬리를 걷었으면 그 바로 앞, 아니면 R 끝(원격 줄 다음에 내 줄)에 둔다. → { 넣을, 자리(R 안 번호), 걷음 }
+ */
+function 더한줄자리(R, N, 같은줄) {
+  let b = R.length, h = 0, t = 0;
+  if (R.length && N.length && R.length * N.length <= 겹침찾기한도) {
+    const 셈 = [0];
+    for (const l of R) 셈.push(셈[셈.length - 1] + (같은줄(l.글) ? 1 : 0));
+    const { 머리, 꼬리 } = 맞닿은겹침(R, N);
+    // 걷는 줄이 가장 많은 곳, 같으면 뒤쪽(원격 줄 다음)
+    for (let 곳 = 0; 곳 <= R.length; 곳++) {
+      const 앞 = 머리[곳], 뒤 = Math.min(꼬리[곳], N.length - 앞);
+      if (앞 + 뒤 >= h + t && 셈[곳 + 뒤] > 셈[곳 - 앞]) { b = 곳; h = 앞; t = 뒤; }
+    }
+  }
+  return { 넣을: N.slice(h, N.length - t), 자리: t ? b : R.length, 걷음: h + t };
+}
+
+/** 고친 자리: 넣을 줄의 앞이 바로 앞 원격만의 줄(앞R)의 끝과, 끝이 바로 뒤 원격만의 줄(뒤R)의 앞과 같으면 걷는다(같은줄이 있을 때만). */
+function 고친줄걷기(앞R, 뒤R, N, 같은줄) {
+  const 있다 = (줄들) => 줄들.some((l) => 같은줄(l.글));
+  let h = 0, t = 0;
+  if (N.length && (앞R.length + 뒤R.length) * N.length <= 겹침찾기한도) {
+    h = 맞닿은겹침(앞R, N).머리[앞R.length];
+    if (!있다(앞R.slice(앞R.length - h))) h = 0;
+    t = Math.min(맞닿은겹침(뒤R, N).꼬리[0], N.length - h);
+    if (!있다(뒤R.slice(0, t))) t = 0;
+  }
+  return { 넣을: N.slice(h, N.length - t), 걷음: h + t };
+}
+
+/**
  * 내 커밋의 변화(P → C)를 원격 판 O에 얹는다. git merge-file이 겹친다고 한 문서에만 쓴다.
  * 내가 고치거나 지운 줄은 원격 판에 그대로 이어져 있어야 한다. 더한 줄은 「원격에도 있는 다음 줄」 바로 앞에 넣는다
  * (사이에 원격만 더한 줄이 있으면 그 뒤 — 원격 줄 다음에 내 줄). 남의 미푸시 줄(P에만 있는 줄)은 건너뛴다.
+ * 원격만 더한 줄을 내 커밋도 같은 자리에 품었으면 한 번만 둔다(더한줄자리·고친줄걷기). 같은 줄로 보는 것은 뚜렷한 줄 가운데
+ * 바탕 P에 없고 O·C에 한 번씩만 있는 줄이다 — 문서에 되풀이되는 틀 줄(`- **방법:**` 등)은 같은 줄로 보지 않는다.
+ * 그렇게 걷지 못해 같은 줄이 결과에 두 번 남으면(내 조각 가운데에 넣었거나 차이가 다른 자리로 보냈다) 멈춘다.
  */
 function 자리맞춰붙이기(P, O, C) {
   const 짝 = new Int32Array(P.length).fill(-1);
   for (const op of 줄차이(P.map((l) => l.글), O.map((l) => l.글))) if (op[0] === '=') 짝[op[1]] = op[2];
+  const [p셈, o셈, c셈] = [P, O, C].map(줄셈);
+  const 같은줄 = (글) => !p셈.has(글) && o셈.get(글) === 1 && c셈.get(글) === 1 && 뚜렷한줄(글);
+  // i번 앞쪽에서 가장 가까운 공통 줄의 원격 판 번호 + 1 · i번부터 뒤쪽에서 가장 가까운 공통 줄의 원격 판 번호
+  const 앞공통다음 = (i) => { let e = i - 1; while (e >= 0 && 짝[e] < 0) e--; return e >= 0 ? 짝[e] + 1 : 0; };
+  const 뒤공통 = (i) => { let f = i; while (f < P.length && 짝[f] < 0) f++; return f < P.length ? 짝[f] : O.length; };
   const 고침 = [];
   for (const m of 조각나누기(줄차이(P.map((l) => l.글), C.map((l) => l.글)), P, C)) {
     const 넣을 = C.slice(m.b1, m.b2);
@@ -456,12 +524,13 @@ function 자리맞춰붙이기(P, O, C) {
       for (let i = m.a1; i < m.a2; i++) {
         if (짝[i] < 0 || 짝[i] !== 시작 + (i - m.a1)) return { 문제: `내가 고친 줄이 원격 판에 그대로 없다: ${보이게(P[i].글).slice(0, 80)}` };
       }
-      고침.push({ o1: 시작, o2: 시작 + (m.a2 - m.a1), 넣을 });
+      const 끝 = 시작 + (m.a2 - m.a1);
+      const w = 고친줄걷기(O.slice(앞공통다음(m.a1), 시작), O.slice(끝, 뒤공통(m.a2)), 넣을, 같은줄);
+      고침.push({ o1: 시작, o2: 끝, 넣을: w.넣을, 걷음: w.걷음 });
     } else {
-      let f = m.a1;
-      while (f < P.length && 짝[f] < 0) f++;
-      const 자리 = f < P.length ? 짝[f] : O.length;
-      고침.push({ o1: 자리, o2: 자리, 넣을, 더함: true });
+      const 처음 = 앞공통다음(m.a1);
+      const w = 더한줄자리(O.slice(처음, 뒤공통(m.a1)), 넣을, 같은줄);
+      고침.push({ o1: 처음 + w.자리, o2: 처음 + w.자리, 넣을: w.넣을, 더함: true, 걷음: w.걷음 });
     }
   }
   고침.sort((x, y) => x.o1 - y.o1);
@@ -470,11 +539,22 @@ function 자리맞춰붙이기(P, O, C) {
   for (const g of 고침) {
     if (g.o1 < 앞) return { 문제: '고칠 자리가 서로 겹친다' };
     for (let i = 앞; i < g.o1; i++) 결과.push(O[i]);
-    if (g.더함 && g.넣을.length) 자리.push({ 앞줄: 결과.length ? 결과[결과.length - 1].글 : null, 내줄: g.넣을[0].글, 줄수: g.넣을.length });
+    if ((g.더함 && g.넣을.length) || g.걷음) {
+      자리.push({
+        앞줄: 결과.length ? 결과[결과.length - 1].글 : null, 내줄: g.넣을.length ? g.넣을[0].글 : null, 줄수: g.넣을.length,
+        ...(g.걷음 ? { 이미있음: g.걷음 } : {}),
+      });
+    }
     결과.push(...g.넣을);
     앞 = g.o2;
   }
   for (let i = 앞; i < O.length; i++) 결과.push(O[i]);
+  const 본 = new Set();
+  for (const l of 결과) {
+    if (!같은줄(l.글)) continue;
+    if (본.has(l.글)) return { 문제: `내가 더한 줄이 원격에도 있어 두 번 들어간다 — 그 파일은 손으로 합친다: ${보이게(l.글).slice(0, 80)}` };
+    본.add(l.글);
+  }
   return { 줄: 줄바꿈채우기(결과), 자리 };
 }
 
@@ -840,7 +920,10 @@ function 세판합치기(git, 저장, 경로, 원sha, 부sha, 내sha) {
     if (a.문제) return { 문제: a.문제 };
     R = 바이트로(줄잇기(a.줄));
     방법 = '자리 맞춤';
-    자리 = a.자리.map((x) => ({ 앞줄: x.앞줄 === null ? null : 보이게(x.앞줄), 내줄: 보이게(x.내줄), 줄수: x.줄수 }));
+    자리 = a.자리.map((x) => ({
+      앞줄: x.앞줄 === null ? null : 보이게(x.앞줄), 내줄: x.내줄 === null ? null : 보이게(x.내줄), 줄수: x.줄수,
+      ...(x.이미있음 ? { 이미있음: x.이미있음 } : {}),
+    }));
   } else return { 문제: `git merge-file 실패: ${String(r.stderr).trim()}` };
   const 셈 = 줄셈검사(...[P, O, C, R].map((b) => 줄나누기(글로(b))));
   return 셈 ? { 문제: 셈 } : { 버퍼: R, 방법, ...(자리 ? { 자리 } : {}) };
@@ -1210,7 +1293,11 @@ function 올리기글(r) {
   const 줄일 = (s) => (s.length > 60 ? `${s.slice(0, 60)}…` : s);
   for (const x of (r.경로 || []).filter((x) => x.방법 !== '내 판')) {
     줄.push(`  ${x.방법}: ${x.경로}`);
-    for (const 자 of x.자리 || []) 줄.push(`    ${자.앞줄 === null ? '파일 맨 앞에' : `「${줄일(자.앞줄)}」 다음에`} 「${줄일(자.내줄)}」${자.줄수 > 1 ? ` 외 ${자.줄수 - 1}줄` : ''}`);
+    for (const 자 of x.자리 || []) {
+      const 곳 = 자.앞줄 === null ? '파일 맨 앞에' : `「${줄일(자.앞줄)}」 다음에`;
+      const 이미 = 자.이미있음 ? ` (원격에 이미 있는 내 줄 ${자.이미있음}개는 한 번만)` : '';
+      줄.push(자.줄수 ? `    ${곳} 「${줄일(자.내줄)}」${자.줄수 > 1 ? ` 외 ${자.줄수 - 1}줄` : ''}${이미}` : `    ${곳} 넣을 줄 없음 — 내 줄 ${자.이미있음}개가 모두 원격에 이미 있다`);
+    }
   }
   for (const x of r.문제 || []) 줄.push(`  문제${x.커밋 ? ` ${짧게(x.커밋)}` : ''}${x.경로 ? ` ${x.경로}` : ''} — ${x.이유}`);
   if (r.용량) 줄.push(r.용량.통과 ? `저장 용량 검사 통과 — 새 blob ${r.용량.새blob}개 · ${r.용량.바이트}바이트` : '저장 용량 검사 걸림');
