@@ -6,9 +6,12 @@ const {scopeOf}=require('./pulse-requests.cjs');
 const PULSE_APP_ORIGIN='https://workspace.synk.im';
 const PULSE_APP_ENTRY=PULSE_APP_ORIGIN+'/pulse-app/';
 const PULSE_STAFF_ENTRY=PULSE_APP_ENTRY+'?mode=staff';
+// The customer entry's "try a project" link reloads this shell as a fictional
+// demo kept on the device; that single query may stay inside the window.
+const PULSE_DEMO_SEARCH='?demo=coffee',PULSE_DEMO_ENTRY=PULSE_APP_ENTRY+PULSE_DEMO_SEARCH;
 const MEDIA=/^\/pulse\/api\/(?:studio\/)?media\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 function fixedUrl(value){try{if(typeof value!=='string'||value.length>4096)return null;const url=new URL(value);return url.protocol==='https:'&&!url.username&&!url.password?url:null;}catch{return null;}}
-function pulseAppNavigationAllowed(value){const url=fixedUrl(value);return !!url&&url.origin===PULSE_APP_ORIGIN&&url.pathname==='/pulse-app/'&&!url.search;}
+function pulseAppNavigationAllowed(value){const url=fixedUrl(value);return !!url&&url.origin===PULSE_APP_ORIGIN&&url.pathname==='/pulse-app/'&&(!url.search||url.search===PULSE_DEMO_SEARCH);}
 function pulseAppResourceAllowed(value){const url=fixedUrl(value);return !!url&&url.origin===PULSE_APP_ORIGIN&&(url.pathname.startsWith('/pulse-app/')||url.pathname.startsWith('/pulse/api/')||url.pathname.startsWith('/messenger/assets/')||['/wordmark.svg','/font.woff2'].includes(url.pathname));}
 function pulseAppRequestAllowed(details){
   if(details.resourceType==='subFrame')return false;
@@ -86,4 +89,4 @@ function createPulseApp({clientId,getAccount,BrowserWindow,session,openExternal,
   }
   return {open,syncContext,dispose(){disposed=true;++epoch;pending=null;closeWindow();activeSession=null;}};
 }
-module.exports={createPulseApp,pulseAppPartition,pulseAppNavigationAllowed,pulseAppResourceAllowed,pulseAppRequestAllowed,pulseAppMediaAllowed,pulseAppExternalDestination,PULSE_APP_ORIGIN,PULSE_APP_ENTRY,PULSE_STAFF_ENTRY};
+module.exports={createPulseApp,pulseAppPartition,pulseAppNavigationAllowed,pulseAppResourceAllowed,pulseAppRequestAllowed,pulseAppMediaAllowed,pulseAppExternalDestination,PULSE_APP_ORIGIN,PULSE_APP_ENTRY,PULSE_STAFF_ENTRY,PULSE_DEMO_ENTRY};
