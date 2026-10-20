@@ -64,6 +64,34 @@ function 조상인가만들기(대상) {
   };
 }
 
+/* 위 둘을 run 헤드 전부에 대해 git 세 번으로 한꺼번에 구한다(10-20). 워크플로가 셋이 되자 헤드마다 git을 두 번씩 띄우는 판은
+ *   (최대 600번) 바쁜 PC에서 2분을 넘겼고, 배포 훅(clasp-guard)은 60초 안에 답을 받아야 한다.
+ *   있는가: cat-file --batch-check 한 번 · 자손(담는가): rev-list --ancestry-path ^대상 <헤드…> 한 번(대상의 자손이면서 헤드의 조상인
+ *   커밋 — 헤드가 거기 들면 대상을 담는다) · 조상: 대상에서 거슬러 오른 최근 5,000개(그보다 오래된 run은 이어받기 후보가 아니다).
+ *   어느 것이든 못 돌리면 하나씩 묻는 옛 판으로 물러난다. */
+function 관계만들기(대상, 헤드들, { cwd = ROOT } = {}) {
+  const 모양 = (h) => /^[0-9a-f]{40}$/i.test(String(h || ''));
+  const 후보 = [...new Set((헤드들 || []).filter(모양))];
+  const 하나씩 = { 담는가: 담는가만들기(대상), 조상인가: 조상인가만들기(대상) };
+  if (!후보.length) return 하나씩;
+  const 묻기 = (args, input) => {
+    const r = spawnSync('git', args, { cwd, input, encoding: 'utf8', windowsHide: true, maxBuffer: 256 << 20 });
+    return r.status === 0 ? String(r.stdout || '') : null;
+  };
+  const 있음 = 묻기(['cat-file', '--batch-check=%(objectname) %(objecttype)'], 후보.join('\n') + '\n');
+  if (있음 === null) return 하나씩;
+  const 있는 = new Set(있음.split('\n').filter((l) => l.endsWith(' commit')).map((l) => l.split(' ')[0]));
+  const 살아 = 후보.filter((h) => 있는.has(h));
+  const 자손글 = 살아.length ? 묻기(['rev-list', '--ancestry-path', '--stdin'], ['^' + 대상, ...살아].join('\n') + '\n') : '';
+  const 조상글 = 묻기(['rev-list', '--max-count=5000', 대상]);
+  if (자손글 === null || 조상글 === null) return 하나씩;
+  const 자손 = new Set(자손글.split(/\s+/).filter(Boolean)), 조상 = new Set(조상글.split(/\s+/).filter(Boolean));
+  return {
+    담는가: (h) => (!모양(h) || !있는.has(h) ? null : h === 대상 || 자손.has(h)),
+    조상인가: (h) => (!모양(h) || !있는.has(h) ? null : 조상.has(h)),
+  };
+}
+
 /* 분리 HEAD 면 `--abbrev-ref` 가 브랜치가 아니라 'HEAD' 를 준다 — 그대로 넘기면 gh 가
  * 「HEAD 라는 브랜치」를 찾아 0건이 나오고, 그게 「미검증」으로 둔갑한다. */
 function 브랜치정하기(원시) {
@@ -321,8 +349,12 @@ function main() {
   /* 🔴 브랜치를 안 거르면 **남의 브랜치 초록이 내 초록으로 보인다**. 워크플로가 브랜치를 안 걸러
    *   폰 작업 `claude/*` run 이 같은 목록에 섞이는데, 그 헤드가 내 커밋을 담고 있어도 검사한 나무는
    *   내 브랜치가 아니다. 새는 방향이 「통과」라 이쪽을 먼저 막는다. */
-  const 브랜치 = 브랜치정하기(sh('git', ['rev-parse', '--abbrev-ref', 'HEAD']).out);
-  const push됨 = sh('git', ['merge-base', '--is-ancestor', 대상, `origin/${브랜치}`]).ok;
+  let 브랜치 = 브랜치정하기(sh('git', ['rev-parse', '--abbrev-ref', 'HEAD']).out);
+  const 들었나 = (가지) => sh('git', ['merge-base', '--is-ancestor', 대상, `origin/${가지}`]).ok;
+  /* 워크트리는 바로올리기(10-20) 뒤 제 가지(claude/…)에 서 있고 커밋은 origin/master에 바로 올라간다. 그 가지가 origin에 없거나 대상을
+   *   안 담는데 origin/master가 담으면 master의 run을 본다 — 아니면 올린 커밋을 「push 전」이라 말한다. */
+  if (브랜치 !== 'master' && !들었나(브랜치) && 들었나('master')) 브랜치 = 'master';
+  const push됨 = 들었나(브랜치);
   const 짧게 = 대상.slice(0, 7);
 
   // push 도 안 됐으면 원격에 물어볼 것이 없다 — 네트워크를 아끼는 게 아니라 답이 이미 정해졌다.
@@ -333,9 +365,10 @@ function main() {
     process.exit(1);
   }
 
-  const 담는가 = 담는가만들기(대상), 조상인가 = 조상인가만들기(대상), 바뀐파일 = 바뀐파일만들기(대상);
-  const 결과들 = 워크플로찾기(대상).map((w) => ({ w, 결과: 워크플로판정({ push됨, runs: gh조회(브랜치, w.파일),
-    담는가, 조상인가, 필터: w.필터, 바뀐파일 }) }));
+  const 워크플로 = 워크플로찾기(대상).map((w) => ({ ...w, runs: gh조회(브랜치, w.파일) }));
+  const { 담는가, 조상인가 } = 관계만들기(대상, 워크플로.flatMap((w) => w.runs.map((r) => r.headSha)));
+  const 바뀐파일 = 바뀐파일만들기(대상);
+  const 결과들 = 워크플로.map((w) => ({ w, 결과: 워크플로판정({ push됨, runs: w.runs, 담는가, 조상인가, 필터: w.필터, 바뀐파일 }) }));
   const 전체 = 종합(결과들);
   const 대표 = 전체.대표;
   const 요약 = 결과들.map((x) => `${x.w.파일.replace(/\.ya?ml$/, '')} ${x.결과.이어받음 ? '이어받은 ' : ''}${x.결과.상태}`).join(' · ');
@@ -380,5 +413,5 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { 판정, 상태결정, 브랜치정하기, 담는가만들기, 조상인가만들기, 미기동인가, 푸시필터, 경로패턴, 걸리나, 이어받기,
+module.exports = { 판정, 상태결정, 브랜치정하기, 담는가만들기, 조상인가만들기, 관계만들기, 미기동인가, 푸시필터, 경로패턴, 걸리나, 이어받기,
   워크플로판정, 종합, CI_워크플로 };

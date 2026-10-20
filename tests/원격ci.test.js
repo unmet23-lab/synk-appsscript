@@ -85,6 +85,22 @@ test('종합 — 모두 초록(이어받은 초록 포함)일 때만 초록, 적
   assert.equal(종합([]).상태, '미검증');
 });
 
+test('헤드 관계는 git 세 번으로 한꺼번에 — 자손은 담고, 조상은 이어받기 후보, 옆 가지·없는 헤드는 가른다', (t) => {
+  const os = require('node:os'), { execFileSync } = require('node:child_process');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'remote-ci-relations-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const git = (...args) => execFileSync('git', ['-c', 'user.name=T', '-c', 'user.email=t@example.invalid', ...args], { cwd: dir, encoding: 'utf8' }).trim();
+  git('init', '-q', '-b', 'main');
+  const commit = (name) => { fs.writeFileSync(path.join(dir, name), name); git('add', name); git('commit', '-qm', name); return git('rev-parse', 'HEAD'); };
+  const a = commit('a'), b = commit('b'), c = commit('c'), d = commit('d');
+  git('switch', '-q', '-c', 'side', a); const side = commit('side');
+  const missing = 'f'.repeat(40);
+  const { 담는가, 조상인가 } = require('../tools/원격ci.js').관계만들기(c, [a, b, c, d, side, missing], { cwd: dir });
+  assert.deepEqual([a, b, c, d, side].map(담는가), [false, false, true, true, false]);
+  assert.deepEqual([a, b, c, d, side].map(조상인가), [true, true, true, false, false]);
+  assert.equal(담는가(missing), null); assert.equal(조상인가(missing), null); assert.equal(담는가('zz'), null);
+});
+
 test('저장소의 push 워크플로는 모두 필터를 읽을 수 있다 — 못 읽으면 이어받기가 조용히 꺼진다', () => {
   const dir = path.join(__dirname, '..', '.github', 'workflows');
   const 결과 = fs.readdirSync(dir).filter((f) => /\.ya?ml$/.test(f))
