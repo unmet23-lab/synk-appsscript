@@ -24,7 +24,26 @@ test('native WORLD reads 「우리 반 수업」 with the student contract versi
   assert.ok(web);assert.equal(send({route:'classroom'}).contractVer,web[1]);
   // The WORLD page shows the section only when main advertises this route (old apps do not).
   assert.ok(Object.isFrozen(WORLD_ROUTE_NAMES));
-  assert.deepEqual([...WORLD_ROUTE_NAMES],['bootstrap','play/start','play/complete','avatar/outfit','wardrobe/looks','town/entry','town/state','town/command','town/presence','town/sharing','enrollment/preview','enrollment/claim','classroom']);
+  assert.deepEqual([...WORLD_ROUTE_NAMES],['bootstrap','play/start','play/complete','avatar/outfit','wardrobe/looks','town/entry','town/state','town/command','town/presence','town/sharing','enrollment/preview','enrollment/claim','classroom','homework','homework/submit']);
+});
+test('native WORLD 「이번 주 과제」: a class-free read and a class-scoped submission with this week ids only',()=>{
+  const version='v1-53795e0997f6',other='22222222-2222-4222-8222-222222222222';
+  const body=(extra={})=>({classId:uuid,week:3,kind:'writing',requestId:uuid,expectedRevision:0,contentVersion:version,answers:{'W3-1.1':'합성 글'},...extra});
+  assert.deepEqual(send({route:'homework'}),{path:'synk-classroom/api/world/homework'});
+  const spec=send({route:'homework/submit',classId:uuid,body:body({retry:{'W2-1':'다시 쓴 문장'}})});
+  assert.deepEqual(spec,{path:'synk-classroom/api/world/homework?classId='+uuid,method:'POST',body:body({retry:{'W2-1':'다시 쓴 문장'}})});
+  assert.equal(send({route:'homework/submit',classId:uuid,body:body({kind:'reading',answers:{'R3-1':1,'R3-2':4}})}).method,'POST');
+  assert.equal(send({route:'homework/submit',classId:uuid,body:body({week:5,answers:{'W5-1.1':[['서론','-지만'],['본론','우선']],'W5-1.2':'서론 글'}})}).method,'POST');
+  for(const params of [{route:'homework',classId:uuid},{route:'homework',body:{}},{route:'homework',method:'POST'},{route:'homework/submit',body:body()},{route:'homework/submit',classId:other,body:body()},
+    {route:'homework/submit',classId:uuid,body:body({answers:{'W2-1.1':'다른 주'}})},{route:'homework/submit',classId:uuid,body:body({answers:{'W3-1x1':'점 없음'}})},{route:'homework/submit',classId:uuid,body:body({answers:{'W3-1.1':'가'.repeat(4001)}})},
+    {route:'homework/submit',classId:uuid,body:body({answers:{}})},{route:'homework/submit',classId:uuid,body:body({kind:'reading',answers:{'R3-1':5}})},{route:'homework/submit',classId:uuid,body:body({kind:'reading',answers:{'R3-1':1},retry:{'W2-1':'x'}})},
+    {route:'homework/submit',classId:uuid,body:body({retry:{'W3-1':'같은 주'}})},{route:'homework/submit',classId:uuid,body:body({week:1,retry:{'W0-1':'x'}})},{route:'homework/submit',classId:uuid,body:body({contentVersion:'v2'})},
+    {route:'homework/submit',classId:uuid,body:body({expectedRevision:-1})},{route:'homework/submit',classId:uuid,body:body({accountId:'other'})},{route:'homework/submit',classId:uuid,body:body({answers:{'W3-1.1':[['가','나','다','라','마','바']]}})}])
+    assert.throws(()=>send(params),{code:'INVALID_REQUEST'},JSON.stringify(params).slice(0,90));
+  assert.throws(()=>requestSpec('worldRequest',{route:'homework'},'0.4.2','platform','platform'),{code:'INVALID_REQUEST'});
+  // The WORLD page builds the same body (experiences/synk-world-app/homework-client.mjs homeworkSubmission).
+  const client=fs.readFileSync(path.join(__dirname,'../../experiences/synk-world-app/homework-client.mjs'),'utf8');
+  assert.match(client,/return \{classId,week,kind,requestId,expectedRevision,contentVersion,answers:normalized/);
 });
 test('native WORLD bounds nested JSON and rejects prototype pollution before transport',()=>{
   const body={id:uuid,type:'test',expectedRevision:0,payload:{}};

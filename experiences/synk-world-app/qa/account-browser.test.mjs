@@ -68,6 +68,11 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
    else if(target.pathname.endsWith('/town/sharing')){binding.sharing={...binding.sharing,enabled:body.enabled,revision:binding.sharing.revision+1};data={ok:true,sharing:binding.sharing};}
    else if(target.pathname.endsWith('/enrollment/preview'))data={ok:true,invite:{className:'합성 해바라기반',learnerLabel:'합성 학생 1',expiresAt:new Date(Date.now()+3600000).toISOString()}};
    else if(target.pathname.endsWith('/enrollment/claim')){classroomLinked=true;data={ok:true,linked:true,classId:C,learnerId:A,sharing:{enabled:false,revision:1},townSharing:{enabled:false,revision:1}};}
+   else if(target.pathname.endsWith('/functions/v1/synk-classroom/api/world/homework')){
+    // 「이번 주 과제」(내 계정 시트, classroom-homework.mjs): 반을 잇기 전에는 반이 없고, 이은 뒤에도 과제 계획 전이라 빈 목록이다. 칸은 숨는다.
+    assert.equal(req.method(),'GET');assert.equal(target.search,'');assert.equal((await req.allHeaders())['x-synk-contract'],'1');
+    data={ok:true,mode:'account-linked',accountId:A,classes:[],emptyReason:classroomLinked?'NO_HOMEWORK_PLAN':'NO_CLASS'};
+   }
    else if(target.pathname.endsWith('/functions/v1/classroom')){
     // 「우리 반 수업」(내 계정 시트): 반을 잇기 전 계정은 학생 명부에 없어 실제 classroom 함수가 401 AUTH_REQUIRED, 이은 뒤에는 영상 이용권 전이라 빈 목록이다.
     assert.equal(req.method(),'GET');assert.equal(target.search,'');assert.equal((await req.allHeaders())['x-contract-ver'],'c16');

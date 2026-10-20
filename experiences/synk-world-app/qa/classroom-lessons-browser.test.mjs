@@ -87,6 +87,8 @@ test('계정 모드 WORLD 내 계정 시트의 「우리 반 수업」: 상태�
     else if(target.pathname.endsWith('/synk-world-v1/bootstrap'))data={ok:true,accountId:A,revision:1,avatar:{characterId:'mongle',slots:{body:'',neck:''}},inventory:[{itemId:'mongle-apron-starter'}],activeRun:null};
     else if(target.pathname.endsWith('/synk-learning'))data={ok:true,revision:1,events:[],cursor:0,hasMore:false};
     else if(target.pathname.endsWith('/synk-personal')){status=403;data={ok:false,error:{code:'PRODUCT_FORBIDDEN'}};}
+    // 「이번 주 과제」(같은 시트, 수업 아래): 이 시험의 합성 반에는 과제 계획이 없어 빈 목록이다(칸은 숨는다. 과제 칸은 classroom-homework-browser.test.mjs가 본다).
+    else if(target.pathname==='/functions/v1/synk-classroom/api/world/homework')data={ok:true,mode:'account-linked',accountId:A,classes:[],emptyReason:'NO_HOMEWORK_PLAN'};
     else if(target.pathname.startsWith('/auth/v1/logout'))data={};
     else{unexpected.push(target.pathname);status=404;data={ok:false,error:{code:'NOT_IN_FIXTURE'}};}
    }catch(error){unexpected.push('fixture-error '+target.pathname+' '+error.message);status=500;data={ok:false,error:{code:'FIXTURE_ERROR'}};}

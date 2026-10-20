@@ -14,9 +14,10 @@ export {createDeviceRecordsOffer} from './device-records.mjs';
 // 「내 위치」(판단 · 진단 문항 · 그림): 진단 문항이 앱 서버가 내주지 않는 게임 원고에서 오므로 이 묶음에 싣는다(world-position-kit.mjs).
 export {worldPosition} from './world-position-kit.mjs';
 import {classroomEndpoint,classroomReply,requestClassrooms} from './classroom-client.mjs';
+import {homeworkReply,homeworkSubmission,homeworkUnavailable} from './homework-client.mjs';
 const changed=()=>Object.assign(Error('계정 연결이 바뀌었어요.'),{code:'ACCOUNT_CHANGED'});
 const authErrors=new Set(['AUTH_REQUIRED','AUTH_SESSION_MISSING','SESSION_REVOKED','UNAUTHORIZED','ACCOUNT_UNAVAILABLE','PRODUCT_FORBIDDEN','PLATFORM_ACCOUNT_MISMATCH']);
-const routes=new Map([['bootstrap','GET'],['play/start','POST'],['play/complete','POST'],['avatar/outfit','PUT'],['wardrobe/looks','PUT'],['town/entry','GET'],['town/state','GET'],['town/sharing','POST'],['town/command','POST'],['town/presence','POST'],['enrollment/preview','POST'],['enrollment/claim','POST']]);
+const routes=new Map([['bootstrap','GET'],['play/start','POST'],['play/complete','POST'],['avatar/outfit','PUT'],['wardrobe/looks','PUT'],['town/entry','GET'],['town/state','GET'],['town/sharing','POST'],['town/command','POST'],['town/presence','POST'],['enrollment/preview','POST'],['enrollment/claim','POST'],['homework','GET'],['homework/submit','POST']]);
 
 // Credentials are owned by the WORLD entry. A game receives only scoped methods.
 export function createWorldAccount({config:raw,storage=globalThis.sessionStorage,fetcher=(...args)=>globalThis.fetch(...args),
@@ -27,7 +28,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
  const binding=[config.supabaseUrl,config.accountApiUrl,config.clients.world.clientId,config.clients.world.redirectUri].join('|');
  const entry=createPlatformEntry({clientKey:'world',getUrl,replaceUrl});
  let session=null,rawSession=null,owner=null,currentSessionId=null,currentAccount=null,epoch=0,closed=false,refreshing=null,pendingExchange=null,townBinding=null,townStateRevision=-1,verifiedClient=null,gameHost=null,gameLaunch=0,lifeHost=null,lifeLaunch=0,verification=0;
- let nativeIdentity=null,nativeAccountId=null,nativeGeneration=-1,signedOutGeneration=-1,nativeEvents=0,nativeReady=null,unsubscribe=null,nativeClassroom=false;
+ let nativeIdentity=null,nativeAccountId=null,nativeGeneration=-1,signedOutGeneration=-1,nativeEvents=0,nativeReady=null,unsubscribe=null,nativeClassroom=false,nativeHomework=false;
  const controllers=new Set();
  const guard=expected=>{if(closed||expected!==epoch)throw changed();if(!native&&session&&storage.getItem(key)!==rawSession){clear();throw changed();}};
  const forgetSession=()=>{if(!native)storage.removeItem(key);};
@@ -59,6 +60,8 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
    if(environment?.clientId!=='world')throw Object.assign(Error('WORLD 앱의 계정 연결을 확인해 주세요.'),{code:'INVALID_BRIDGE'});
    // 「우리 반 수업」은 본체가 classroom 경로를 알릴 때만 연다. 그 경로가 없는 옛 PC 앱에서는 칸을 숨긴다.
    nativeClassroom=Array.isArray(environment.worldRoutes)&&environment.worldRoutes.includes('classroom');
+   // 「이번 주 과제」도 같다: 본체가 읽기·내기 두 경로를 다 알릴 때만 칸을 연다.
+   nativeHomework=Array.isArray(environment.worldRoutes)&&['homework','homework/submit'].every(route=>environment.worldRoutes.includes(route));
    unsubscribe=bridge.onAuthChanged(state=>{
     const before=nativeIdentity;nativeEvents++;
     if(nativeStatus(state)&&nativeIdentity!==before){const identity=nativeIdentity;queueMicrotask(()=>{if(!closed&&nativeIdentity===identity)onConnect();});}
@@ -176,11 +179,13 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   if(native){
    const body=options.body===undefined?undefined:JSON.parse(options.body);
    if(body!==undefined&&(!body||typeof body!=='object'||Array.isArray(body)))throw new TypeError('Invalid WORLD request body');
-   const data=await bridge.accountRequest('worldRequest',{route:path,...(body===undefined?{}:{body}),...(path.startsWith('town/')&&path!=='town/entry'&&townBinding?.classId?{classId:townBinding.classId}:{})});
+   const data=await bridge.accountRequest('worldRequest',{route:path,...(body===undefined?{}:{body}),...(path.startsWith('town/')&&path!=='town/entry'&&townBinding?.classId?{classId:townBinding.classId}:{}),...(path==='homework/submit'?{classId:body.classId}:{})});
    return accept(data,data?.ok===true,data?.ok===true?200:data?.error?.status||503);
   }
-  const endpoint=path==='town/sharing'||path.startsWith('enrollment/')?'synk-classroom':path.startsWith('town/')?'synk-town':'synk-world-v1',suffix=path==='town/sharing'?'api/world/town/sharing':path.startsWith('enrollment/')?`api/${path}`:path.startsWith('town/')?path.slice(5):path;
+  const homework=path==='homework'||path==='homework/submit';
+  const endpoint=path==='town/sharing'||path.startsWith('enrollment/')||homework?'synk-classroom':path.startsWith('town/')?'synk-town':'synk-world-v1',suffix=path==='town/sharing'?'api/world/town/sharing':path.startsWith('enrollment/')?`api/${path}`:homework?'api/world/homework':path.startsWith('town/')?path.slice(5):path;
   const url=new URL(config.accountApiUrl);url.pathname=url.pathname.replace(/\/$/,'').replace(/\/functions\/v1(?:\/synk-(?:account|world-v1|town))?$/,'')+`/functions/v1/${endpoint}/${suffix}`;url.search='';url.hash='';if(path.startsWith('town/')&&path!=='town/entry'&&townBinding?.classId)url.searchParams.set('classId',townBinding.classId);
+  if(path==='homework/submit')url.searchParams.set('classId',JSON.parse(options.body).classId);
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);controllers.add(controller);
   try{
    if(session.expires_at<=now()+30000)await renew(expected);guard(expected);
@@ -206,6 +211,18 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
     renew:()=>renew(expected),fetch:(url,init)=>fetcher(url,{...init,signal:controller.signal}),guard:()=>guard(expected)});
   }finally{clearTimeout(timer);controllers.delete(controller);}
  }
+ // 「이번 주 과제」: 반 연결과 같은 synk-classroom 경로(웹은 이 탭의 SYNK ID 토큰, PC 앱은 본체). 과제 경로가 아직 없는 서버나 꺼진 반 기능이면
+ // 빈 목록으로 보아 칸을 숨긴다(homework-client.mjs). 응답은 다른 계정 요청처럼 accountId가 이 계정과 같아야 쓴다.
+ async function readHomework(){
+  if(native&&!nativeHomework)throw Object.assign(Error('PC 앱에서는 아직 과제를 열 수 없어요.'),{code:'HOMEWORK_UNSUPPORTED'});
+  const response=await request('homework'),data=await response.json();
+  try{return homeworkReply(data,response.status);}catch(error){if(homeworkUnavailable(error))return {classes:[],emptyReason:'UNAVAILABLE'};throw error;}
+ }
+ async function submitHomework(input){
+  if(native&&!nativeHomework)throw Object.assign(Error('PC 앱에서는 아직 과제를 낼 수 없어요.'),{code:'HOMEWORK_UNSUPPORTED'});
+  const response=await request('homework/submit',{method:'POST',body:JSON.stringify(homeworkSubmission(input))}),data=await response.json();
+  return homeworkReply(data,response.status);
+ }
  async function logout(){
   if(native){signedOutGeneration=Math.max(signedOutGeneration,nativeGeneration);clear();const result=await bridge.authSignOut();return {serverRevoked:result?.ok===true&&result.serverRevoked===true};}
   const captured=session,id=currentSessionId;clear();entry.cancel();storage.removeItem(key);rawSession=null;
@@ -218,7 +235,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
    const response=await revokeFetch(new URL('/auth/v1/logout?scope=local',config.supabaseUrl).href,{method:'POST',credentials:'omit',cache:'no-store',headers:{apikey:config.supabasePublishableKey,Authorization:`Bearer ${captured.access_token}`}});serverRevoked=response.ok&&serverRevoked;
   }catch{}finally{clearTimeout(timer);}return {serverRevoked};
  }
- return Object.freeze({mode:'account',restore,signIn,request,logout,prepareGame,prepareLifeProgress,topicAnswers,readClassrooms,get supportsClassroom(){return !native||nativeClassroom;},identity:()=>({accountId:owner,generation:epoch}),assertActive(){guard(epoch);if(!owner)throw changed();},
+ return Object.freeze({mode:'account',restore,signIn,request,logout,prepareGame,prepareLifeProgress,topicAnswers,readClassrooms,readHomework,submitHomework,get supportsClassroom(){return !native||nativeClassroom;},get supportsHomework(){return !native||nativeHomework;},identity:()=>({accountId:owner,generation:epoch}),assertActive(){guard(epoch);if(!owner)throw changed();},
   preferences(){const learning=currentAccount?.learning;return learning&&typeof learning.enabled==='boolean'&&Number.isSafeInteger(learning.revision)?{enabled:learning.enabled,revision:learning.revision}:null;},
   async setLearning(enabled,expectedRevision){const expected=epoch;guard(expected);if(!owner||typeof enabled!=='boolean'||!Number.isSafeInteger(expectedRevision)||expectedRevision<0)throw new TypeError('Invalid account learning preference');
    const client=clientFor(expected);

@@ -453,6 +453,30 @@ test('native WORLD transport keeps tokens in main, sends fixed PUT and fences re
   assert.doesNotMatch(JSON.stringify(loaded),/synthetic-access|synthetic-refresh|must-not-reach-renderer/);
 });
 
+test('native WORLD 「이번 주 과제」 goes through synk-classroom with main credentials, a class query on submit and the account fence',async t=>{
+  const f=await fixture(t,{product:'world'});await f.login();const classId='11111111-1111-4111-8111-111111111111',requestId='22222222-2222-4222-8222-222222222222';
+  const homework=()=>f.requests.filter(r=>r.path==='/functions/v1/synk-classroom/api/world/homework');
+  const reply={ok:true,mode:'account-linked',accountId:'stable-synthetic-id',classes:[{classId,name:'합성 반',course:'topik4-online',startsOn:'2027-03-06',weeks:8,planRevision:1,submissions:[]}],emptyReason:null,nested:{access_token:'must-not-reach-renderer'}};
+  f.queueClassroom({data:reply});
+  const listed=await f.service.accountRequest('worldRequest',{route:'homework'});
+  assert.equal(listed.ok,true);assert.deepEqual(listed.classes,reply.classes);assert.deepEqual(listed.nested,{});
+  const [read]=homework();assert.equal(read.method,'GET');assert.deepEqual(read.query,{});assert.equal(read.headers.authorization,'Bearer synthetic-access-1');assert.equal(read.headers['x-synk-product'],'world');assert.equal(read.headers['x-synk-contract'],'1');
+  const body={classId,week:1,kind:'reading',requestId,expectedRevision:0,contentVersion:'v1-53795e0997f6',answers:{'R1-1':3}};
+  f.queueClassroom({data:{...reply,duplicate:false,submission:{week:1,kind:'reading',revision:1,late:false}}});
+  assert.equal((await f.service.accountRequest('worldRequest',{route:'homework/submit',classId,body})).ok,true);
+  const sent=homework().at(-1);assert.equal(sent.method,'POST');assert.deepEqual(sent.query,{classId});assert.deepEqual(JSON.parse(sent.body),body);assert.equal(sent.headers['content-type'],'application/json');
+  // Server refusals fail this request alone: an old server without the route, a revision conflict, a closed week.
+  for(const [status,data,code] of [[400,{ok:false,code:'CLASS_REQUIRED',error:{code:'CLASS_REQUIRED'}},'CLASS_REQUIRED'],[409,{ok:false,code:'REVISION_CONFLICT',error:{code:'REVISION_CONFLICT'},revision:2},'REVISION_CONFLICT'],[409,{ok:false,error:{code:'WEEK_NOT_OPEN'}},'WEEK_NOT_OPEN'],[403,{ok:false,error:{code:'CLASSROOM_UNAVAILABLE'}},'CLASSROOM_UNAVAILABLE']]){
+    f.queueClassroom({status,data});const failed=await f.service.accountRequest('worldRequest',{route:status===400?'homework':'homework/submit',...(status===400?{}:{classId,body})});
+    assert.deepEqual([failed.ok,failed.error.code,failed.error.status],[false,code,status],code);
+  }
+  assert.equal(f.service.status().signedIn,true);assert.equal(f.logoutCount,0);
+  // Like every account-owned WORLD answer, another account's homework is never delivered.
+  f.queueClassroom({data:{...reply,accountId:'other-account'}});const wrong=await f.service.accountRequest('worldRequest',{route:'homework'});
+  assert.equal(wrong.ok,false);assert.equal(wrong.classes,undefined);assert.equal(f.service.status().signedIn,false);
+  assert.doesNotMatch(JSON.stringify(listed),/synthetic-access|synthetic-refresh|must-not-reach-renderer/);
+});
+
 test('native WORLD reads 「우리 반 수업」: a roster 401 is an empty list, only a gateway 401 renews, and no classroom answer signs out',async t=>{
   const f=await fixture(t,{product:'world'});await f.login();const lessons=()=>f.requests.filter(r=>r.path==='/functions/v1/classroom');
   const classes=[{class_id:'c1',display_name:'합성 · TOPIK 4급 온라인 1기',sessions:[{session_key:'w3-tue',title:'3주차 화요일',status:'live',watch_url:'https://www.youtube.com/watch?v=AAAAAAAAAAA'}]}];

@@ -1,0 +1,640 @@
+{
+  "ok": true,
+  "date": "2026-10-20T06:47:44.864Z",
+  "syntheticAccount": true,
+  "syntheticClass": true,
+  "syntheticStudentText": true,
+  "liveProviderCalls": false,
+  "browser": "Edge headless (Playwright 1.64.1)",
+  "placement": "내 계정 시트 · 우리 반 수업 아래, 반 연결 위(#world-classroom-homework)",
+  "clock": {
+    "before": "2027-03-01T01:00:00.000Z",
+    "week": "2027-03-29T01:00:00.000Z",
+    "overdue": "2027-04-01T01:00:00.000Z",
+    "done": "2027-05-03T01:00:00.000Z"
+  },
+  "contentVersion": "v1-53795e0997f6",
+  "viewports": [
+    {
+      "tag": "390",
+      "size": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "tag": "1280",
+      "size": {
+        "width": 1280,
+        "height": 800
+      }
+    }
+  ],
+  "checks": {
+    "390-reading-submit": true,
+    "390-writing-resubmit": true,
+    "390-late": true,
+    "390-retry-after-error": true,
+    "390-hidden-without-class": true,
+    "1280-reading-submit": true,
+    "1280-writing-resubmit": true,
+    "1280-late": true,
+    "1280-retry-after-error": true,
+    "1280-hidden-without-class": true,
+    "closeDisposes": true
+  },
+  "measures": {
+    "390-week": {
+      "layout": "portrait",
+      "innerWidth": 390,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "cardWidth": 350,
+      "cardHeight": 832,
+      "overflowing": [],
+      "tableOverflow": 0,
+      "small": [],
+      "shortTargets": [],
+      "targets": 12,
+      "whitePills": 0,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "390-reading": {
+      "layout": "portrait",
+      "innerWidth": 390,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "cardWidth": 350,
+      "cardHeight": 4051,
+      "overflowing": [],
+      "tableOverflow": 0,
+      "small": [],
+      "shortTargets": [],
+      "targets": 33,
+      "whitePills": 1,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "15.5px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "390-reading-result": {
+      "layout": "portrait",
+      "innerWidth": 390,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "cardWidth": 350,
+      "cardHeight": 4685,
+      "overflowing": [],
+      "tableOverflow": 0,
+      "small": [],
+      "shortTargets": [],
+      "targets": 32,
+      "whitePills": 0,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "15.5px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "390-writing": {
+      "layout": "portrait",
+      "innerWidth": 390,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "cardWidth": 350,
+      "cardHeight": 2083,
+      "overflowing": [],
+      "tableOverflow": 0,
+      "small": [],
+      "shortTargets": [],
+      "targets": 15,
+      "whitePills": 1,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "15.5px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "390-writing-sent": {
+      "layout": "portrait",
+      "innerWidth": 390,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "cardWidth": 350,
+      "cardHeight": 1509,
+      "overflowing": [],
+      "tableOverflow": 0,
+      "small": [],
+      "shortTargets": [],
+      "targets": 13,
+      "whitePills": 0,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "390-feedback": {
+      "layout": "portrait",
+      "innerWidth": 390,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "cardWidth": 350,
+      "cardHeight": 2584,
+      "overflowing": [],
+      "tableOverflow": 0,
+      "small": [],
+      "shortTargets": [],
+      "targets": 13,
+      "whitePills": 0,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "15.5px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "390-feedback-blanks": {
+      "layout": "portrait",
+      "innerWidth": 390,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "cardWidth": 350,
+      "cardHeight": 2921,
+      "overflowing": [],
+      "tableOverflow": 0,
+      "small": [],
+      "shortTargets": [],
+      "targets": 15,
+      "whitePills": 0,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "15.5px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "390-overdue": {
+      "layout": "portrait",
+      "innerWidth": 390,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "cardWidth": 350,
+      "cardHeight": 832,
+      "overflowing": [],
+      "tableOverflow": 0,
+      "small": [],
+      "shortTargets": [],
+      "targets": 12,
+      "whitePills": 0,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "390-before": {
+      "layout": "portrait",
+      "innerWidth": 390,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "cardWidth": 350,
+      "cardHeight": 278,
+      "overflowing": [],
+      "tableOverflow": 0,
+      "small": [],
+      "shortTargets": [],
+      "targets": 1,
+      "whitePills": 0,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "390-done": {
+      "layout": "portrait",
+      "innerWidth": 390,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "cardWidth": 350,
+      "cardHeight": 736,
+      "overflowing": [],
+      "tableOverflow": 0,
+      "small": [],
+      "shortTargets": [],
+      "targets": 25,
+      "whitePills": 0,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "390-error": {
+      "layout": "portrait",
+      "innerWidth": 390,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "cardWidth": 350,
+      "cardHeight": 214,
+      "overflowing": [],
+      "tableOverflow": 0,
+      "small": [],
+      "shortTargets": [],
+      "targets": 2,
+      "whitePills": 0,
+      "fonts": [
+        "13.5px",
+        "14px",
+        "16px",
+        "20px"
+      ]
+    },
+    "390-loading": {
+      "layout": "portrait",
+      "innerWidth": 390,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "cardWidth": 350,
+      "cardHeight": 149,
+      "overflowing": [],
+      "tableOverflow": 0,
+      "small": [],
+      "shortTargets": [],
+      "targets": 1,
+      "whitePills": 0,
+      "fonts": [
+        "13.5px",
+        "14px",
+        "16px",
+        "20px"
+      ]
+    },
+    "1280-week": {
+      "layout": "landscape",
+      "innerWidth": 1280,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "cardWidth": 624,
+      "cardHeight": 749,
+      "overflowing": [],
+      "tableOverflow": 0,
+      "small": [],
+      "shortTargets": [],
+      "targets": 12,
+      "whitePills": 0,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "1280-reading": {
+      "layout": "landscape",
+      "innerWidth": 1280,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "cardWidth": 624,
+      "cardHeight": 3248,
+      "overflowing": [],
+      "tableOverflow": 0,
+      "small": [],
+      "shortTargets": [],
+      "targets": 33,
+      "whitePills": 1,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "15.5px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "1280-reading-result": {
+      "layout": "landscape",
+      "innerWidth": 1280,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "cardWidth": 624,
+      "cardHeight": 3695,
+      "overflowing": [],
+      "tableOverflow": 0,
+      "small": [],
+      "shortTargets": [],
+      "targets": 32,
+      "whitePills": 0,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "15.5px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "1280-writing": {
+      "layout": "landscape",
+      "innerWidth": 1280,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "cardWidth": 624,
+      "cardHeight": 1774,
+      "overflowing": [],
+      "tableOverflow": 0,
+      "small": [],
+      "shortTargets": [],
+      "targets": 15,
+      "whitePills": 1,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "15.5px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "1280-writing-sent": {
+      "layout": "landscape",
+      "innerWidth": 1280,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "cardWidth": 624,
+      "cardHeight": 1265,
+      "overflowing": [],
+      "tableOverflow": 0,
+      "small": [],
+      "shortTargets": [],
+      "targets": 13,
+      "whitePills": 0,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "1280-feedback": {
+      "layout": "landscape",
+      "innerWidth": 1280,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "cardWidth": 624,
+      "cardHeight": 2067,
+      "overflowing": [],
+      "tableOverflow": 0,
+      "small": [],
+      "shortTargets": [],
+      "targets": 13,
+      "whitePills": 0,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "15.5px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "1280-feedback-blanks": {
+      "layout": "landscape",
+      "innerWidth": 1280,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "cardWidth": 624,
+      "cardHeight": 2706,
+      "overflowing": [],
+      "tableOverflow": 0,
+      "small": [],
+      "shortTargets": [],
+      "targets": 15,
+      "whitePills": 0,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "15.5px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "1280-overdue": {
+      "layout": "landscape",
+      "innerWidth": 1280,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "cardWidth": 624,
+      "cardHeight": 749,
+      "overflowing": [],
+      "tableOverflow": 0,
+      "small": [],
+      "shortTargets": [],
+      "targets": 12,
+      "whitePills": 0,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "1280-before": {
+      "layout": "landscape",
+      "innerWidth": 1280,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "cardWidth": 624,
+      "cardHeight": 240,
+      "overflowing": [],
+      "tableOverflow": 0,
+      "small": [],
+      "shortTargets": [],
+      "targets": 1,
+      "whitePills": 0,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "1280-done": {
+      "layout": "landscape",
+      "innerWidth": 1280,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "cardWidth": 624,
+      "cardHeight": 678,
+      "overflowing": [],
+      "tableOverflow": 0,
+      "small": [],
+      "shortTargets": [],
+      "targets": 25,
+      "whitePills": 0,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "1280-error": {
+      "layout": "landscape",
+      "innerWidth": 1280,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "cardWidth": 624,
+      "cardHeight": 196,
+      "overflowing": [],
+      "tableOverflow": 0,
+      "small": [],
+      "shortTargets": [],
+      "targets": 2,
+      "whitePills": 0,
+      "fonts": [
+        "13.5px",
+        "14px",
+        "16px",
+        "20px"
+      ]
+    },
+    "1280-loading": {
+      "layout": "landscape",
+      "innerWidth": 1280,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "cardWidth": 624,
+      "cardHeight": 153,
+      "overflowing": [],
+      "tableOverflow": 0,
+      "small": [],
+      "shortTargets": [],
+      "targets": 1,
+      "whitePills": 0,
+      "fonts": [
+        "13.5px",
+        "14px",
+        "16px",
+        "20px"
+      ]
+    }
+  },
+  "shots": [
+    "390-week.png",
+    "390-reading.png",
+    "390-reading-result.png",
+    "390-writing.png",
+    "390-writing-sent.png",
+    "390-feedback.png",
+    "390-feedback-blanks.png",
+    "390-overdue.png",
+    "390-before.png",
+    "390-done.png",
+    "390-error.png",
+    "390-loading.png",
+    "390-sheet.png",
+    "1280-week.png",
+    "1280-reading.png",
+    "1280-reading-result.png",
+    "1280-writing.png",
+    "1280-writing-sent.png",
+    "1280-feedback.png",
+    "1280-feedback-blanks.png",
+    "1280-overdue.png",
+    "1280-before.png",
+    "1280-done.png",
+    "1280-error.png",
+    "1280-loading.png",
+    "1280-sheet.png"
+  ],
+  "homeworkRequests": 27,
+  "requestShape": {
+    "get": {
+      "method": "GET",
+      "query": {},
+      "body": null,
+      "product": "world",
+      "contract": "1",
+      "authorization": "Bearer synthetic-browser-token",
+      "apikey": "sb_publishable_browser_fixture",
+      "contentType": null
+    },
+    "post": {
+      "method": "POST",
+      "query": {
+        "classId": "22222222-2222-4222-8222-222222222222"
+      },
+      "body": {
+        "classId": "22222222-2222-4222-8222-222222222222",
+        "week": 4,
+        "kind": "reading",
+        "requestId": "5ab1851a-6956-41fe-8c6d-072d2efd3c8e",
+        "expectedRevision": 0,
+        "contentVersion": "v1-53795e0997f6",
+        "answers": "(합성)"
+      },
+      "product": "world",
+      "contract": "1",
+      "authorization": "Bearer synthetic-browser-token",
+      "apikey": "sb_publishable_browser_fixture",
+      "contentType": "application/json"
+    }
+  },
+  "errors": [],
+  "unexpected": [],
+  "external": []
+}

@@ -2,6 +2,28 @@
 
 > **검수 이미지 보관(2026-10-17):** 이 폴더의 과거 `qa/` 캡처는 [Git 자산 보관](../../docs/_ops/github-storage/README.md)의 파일별 해시와 Release ZIP으로 보존한다. 코드·검수 JSON·문서는 유지하며, 로컬 이미지도 삭제하지 않는다. 새 체크아웃에서 예전 이미지 링크를 볼 때는 저장소 루트에서 `python tools/git-storage-restore.py --path "experiences/synk-world-app/qa/<필요한 파일>"`로 해당 원본을 복원한다.
 
+<a id="classroom-homework-20261020"></a>
+
+## 2026-10-20 이번 주 과제 · TOPIK 4급 온라인 반 내기·돌려받기(로컬 · 서버·공개 전)
+
+「우리 반 수업」 바로 아래(`#world-classroom-homework`)에 학생의 「이번 주 과제」 칸을 붙였다. 설계·운영 반영 순서는 [과제 내기 설계](../../docs/온라인반_TOPIK4급/과제_내기_설계.md)에 있다.
+
+- **할 수 있는 것:**
+  - 그 주(반 시작일부터 7일씩, 수요일 23:00 마감)의 읽기 R 다섯 문항을 골라 낸다. 낸 즉시 정답·근거·고른 오답의 이유를 본다.
+  - 쓰기 W를 쓰고(글자 수 세기, 개요·오류 목록 표) 지난주 「다시 써 볼 곳」 문장과 함께 낸다. 첨삭이 오기 전까지 고쳐 낸다.
+  - 돌아온 첨삭(빈칸 판정, 학생 글 위의 기호, 기호 목록, 한마디 세 줄, 예시답)을 같은 칸에서 본다. 지난 과제는 아래 1px 줄에서 늦게 내기·다시 보기를 한다.
+- **자료:** `tools/build-topik4-homework.mjs`가 [수업 자료 v1](../../docs/온라인반_TOPIK4급/README.md)을 옮긴다. 문제용 `topik4-homework.json`과 낸 뒤에 읽는 정답용 `topik4-homework-key.json`이고, `tests/topik4-homework.test.js`가 문서와 같은지 본다.
+- **통로:** 반 연결과 같은 synk-classroom의 과제 경로다(`homework-client.mjs`, `world-account.mjs`의 `readHomework`·`submitHomework`, 묶음 다시 만듦).
+  - PC 앱은 본체의 `homework`·`homework/submit` 경로(`desktop/src/world-requests.cjs`)로 묻는다. 그 경로를 알리지 않는 옛 PC 앱(0.4.32 등)에서는 칸이 숨는다.
+  - 과제 경로가 없는 운영 서버(지금), 꺼진 반 기능, 반이 없는 계정에도 칸이 숨는다.
+- **서버:** SYNK-talk 가지 `claude/class-homework-20261020`에 있다(`lib/synk-classroom-homework.js`, 마이그레이션 `20261020150000_synk_classroom_homework_c18.sql`, 시험). 운영 함수·DB·synk.im/world 공개·Platform 판은 유호님 「진행해」 뒤에 한다.
+- **확인:**
+  - `qa/classroom-homework.test.mjs` 13개: 주차·마감을 서버와 대조, 서버 답 거르기, 웹·PC 통로, 파일 목록
+  - `qa/classroom-homework-browser.test.mjs`: 계정 모드 Edge, 합성 계정·반·학생 글, 시계 고정. 열두 상태 × 390·1280에서 가로 넘침·13px 밑 한글·44px 밑 단추 0, 흰 알약 1개 이하
+  - `desktop/tests/world-requests·auth.test.cjs`
+  - 캡처는 `qa/classroom-homework-20261020/`(그림은 git 밖), 측정은 같은 폴더 `result.json`에 있다.
+- **남은 일:** 교사 화면(teacher-world에 「과제 첨삭」 판), 운영 반영, 실제 학생 계정으로 웹·PC 확인, 학생 글 보관 기한.
+
 <a id="classroom-lessons-20261019"></a>
 
 ## 2026-10-19 우리 반 수업 · TOPIK 4급 온라인 반 학생 입구(synk.im/world · PC 설치본 Platform 0.4.32 공개)

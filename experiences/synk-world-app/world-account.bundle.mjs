@@ -16652,6 +16652,102 @@ function classroomList(body, status) {
   return { classes: normalizeClassroomClasses(body.classes), emptyReason: typeof body.empty_reason === "string" ? body.empty_reason : null };
 }
 
+// experiences/synk-world-app/homework-client.mjs
+var HOMEWORK_COURSE = "topik4-online";
+var HOMEWORK_CODES = Object.freeze(["\uCCB4", "\uC870", "\uC5B4", "\uB0B1", "\uB9DE", "\uB744", "\uC5F0", "\uADFC", "\uBE60", "\uC790", "+"]);
+var HOMEWORK_VERDICTS = Object.freeze(["\uC778\uC815", "\uBD80\uBD84", "\uB2E4\uC2DC"]);
+var homeworkRecord = (value) => !!value && typeof value === "object" && !Array.isArray(value);
+var homeworkText = (value, max = 4e3) => typeof value === "string" && value.length <= max ? value : null;
+var homeworkUuid = (value) => typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+var HOMEWORK_FIELD_ID = /^W[1-8]-[1-9]\.[1-9]$/;
+var HOMEWORK_ITEM_ID = /^R[1-8]-[1-9]$/;
+var HOMEWORK_PART_ID = /^W[1-8]-[1-9]$/;
+var homeworkFailure = (code, status, message = "\uACFC\uC81C\uB97C \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC5B4\uC694.") => Object.assign(new Error(message), { code, status });
+function normalizeHomeworkAnswers(kind, week, value) {
+  if (!homeworkRecord(value)) return null;
+  const out = {};
+  for (const [id, answer] of Object.entries(value)) {
+    if (kind === "reading") {
+      if (!HOMEWORK_ITEM_ID.test(id) || id[1] !== String(week) || !Number.isInteger(answer) || answer < 1 || answer > 4) return null;
+      out[id] = answer;
+      continue;
+    }
+    if (!HOMEWORK_FIELD_ID.test(id) || id[1] !== String(week)) return null;
+    if (typeof answer === "string") {
+      if (answer.length > 4e3) return null;
+      out[id] = answer;
+      continue;
+    }
+    if (!Array.isArray(answer) || answer.length > 10 || !answer.every((row) => Array.isArray(row) && row.length <= 5 && row.every((cell) => typeof cell === "string" && cell.length <= 600))) return null;
+    out[id] = answer.map((row) => [...row]);
+  }
+  return out;
+}
+function normalizeHomeworkFeedback(week, value) {
+  if (value === null || value === void 0) return null;
+  if (!homeworkRecord(value) || !homeworkText(value.returnedAt, 40) || !homeworkRecord(value.parts)) return null;
+  const parts = {};
+  for (const [key, part] of Object.entries(value.parts)) {
+    if (!HOMEWORK_PART_ID.test(key) || key[1] !== String(week) || !homeworkRecord(part)) continue;
+    const out = {};
+    if (homeworkRecord(part.fields)) {
+      out.fields = {};
+      for (const [id, f] of Object.entries(part.fields)) if (HOMEWORK_FIELD_ID.test(id) && id.startsWith(key + ".") && homeworkRecord(f) && HOMEWORK_VERDICTS.includes(f.verdict)) out.fields[id] = { verdict: f.verdict, reason: homeworkText(f.reason, 600) || "" };
+    }
+    if (Array.isArray(part.marks)) out.marks = part.marks.filter((m) => homeworkRecord(m) && HOMEWORK_FIELD_ID.test(m.field) && m.field.startsWith(key + ".") && HOMEWORK_CODES.includes(m.code) && homeworkText(m.quote, 300)).slice(0, 12).map((m) => ({ field: m.field, quote: m.quote, code: m.code, ...homeworkText(m.note, 300) ? { note: m.note } : {} }));
+    if (homeworkRecord(part.comment)) {
+      const c = {};
+      for (const name of ["good", "fix", "retry"]) if (homeworkText(part.comment[name], 600)) c[name] = part.comment[name];
+      if (Object.keys(c).length) out.comment = c;
+    }
+    if (Object.keys(out).length) parts[key] = out;
+  }
+  return { returnedAt: value.returnedAt, parts };
+}
+function normalizeHomeworkClasses(list) {
+  return list.filter((c) => homeworkRecord(c) && homeworkUuid(c.classId) && c.course === HOMEWORK_COURSE).map((c) => {
+    const weeks = Number.isInteger(c.weeks) && c.weeks >= 1 && c.weeks <= 12 ? c.weeks : 8;
+    const submissions = (Array.isArray(c.submissions) ? c.submissions : []).filter((s) => homeworkRecord(s) && Number.isInteger(s.week) && s.week >= 1 && s.week <= weeks && ["reading", "writing"].includes(s.kind) && Number.isSafeInteger(s.revision) && s.revision >= 1).map((s) => {
+      const answers = normalizeHomeworkAnswers(s.kind, s.week, s.answers);
+      if (!answers) return null;
+      const retry = homeworkRecord(s.retry) ? Object.fromEntries(Object.entries(s.retry).filter(([k, v]) => HOMEWORK_PART_ID.test(k) && k[1] === String(s.week - 1) && homeworkText(v, 600))) : {};
+      return {
+        week: s.week,
+        kind: s.kind,
+        answers,
+        retry,
+        revision: s.revision,
+        submittedAt: homeworkText(s.submittedAt, 40),
+        late: s.late === true,
+        contentVersion: homeworkText(s.contentVersion, 40),
+        feedback: s.kind === "writing" ? normalizeHomeworkFeedback(s.week, s.feedback) : null
+      };
+    }).filter(Boolean);
+    const unique = /* @__PURE__ */ new Map();
+    for (const s of submissions) {
+      const k = `${s.week}:${s.kind}`;
+      if (!unique.has(k) || unique.get(k).revision < s.revision) unique.set(k, s);
+    }
+    return { classId: c.classId, name: homeworkText(c.name, 200) || "", course: c.course, startsOn: typeof c.startsOn === "string" && /^\d{4}-\d{2}-\d{2}$/.test(c.startsOn) ? c.startsOn : null, weeks, submissions: [...unique.values()] };
+  });
+}
+function homeworkReply(data, status) {
+  if (!homeworkRecord(data) || data.ok !== true) {
+    const code = typeof data?.error?.code === "string" && data.error.code ? data.error.code : typeof data?.code === "string" && data.code ? data.code : "HOMEWORK_UNAVAILABLE";
+    throw homeworkFailure(code, status ?? data?.error?.status);
+  }
+  if (!Array.isArray(data.classes)) throw homeworkFailure("CONTRACT_VIOLATION", status);
+  return { classes: normalizeHomeworkClasses(data.classes), emptyReason: typeof data.emptyReason === "string" ? data.emptyReason : null };
+}
+var homeworkUnavailable = (error2) => ["HOMEWORK_UNAVAILABLE", "HOMEWORK_UNSUPPORTED", "CLASS_REQUIRED", "NOT_FOUND", "CLASSROOM_UNAVAILABLE"].includes(error2?.code) && !(error2?.status >= 500);
+function homeworkSubmission({ classId, week, kind, requestId, expectedRevision, contentVersion, answers, retry }) {
+  if (!homeworkUuid(classId) || !Number.isInteger(week) || week < 1 || week > 12 || !["reading", "writing"].includes(kind) || !homeworkUuid(requestId) || !Number.isSafeInteger(expectedRevision) || expectedRevision < 0 || !/^v1-[0-9a-f]{12}$/.test(contentVersion || "")) throw new TypeError("\uACFC\uC81C \uB0B4\uAE30 \uAF34\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+  const normalized = normalizeHomeworkAnswers(kind, week, answers);
+  if (!normalized || !Object.keys(normalized).length) throw new TypeError("\uACFC\uC81C \uB2F5\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+  const retryLines = kind === "writing" && homeworkRecord(retry) ? Object.fromEntries(Object.entries(retry).filter(([k, v]) => HOMEWORK_PART_ID.test(k) && k[1] === String(week - 1) && typeof v === "string" && v.trim()).map(([k, v]) => [k, v.trim().slice(0, 600)])) : {};
+  return { classId, week, kind, requestId, expectedRevision, contentVersion, answers: normalized, ...Object.keys(retryLines).length ? { retry: retryLines } : {} };
+}
+
 // experiences/synk-world-app/operating-mode.mjs
 function publicWorldConfig(value, base) {
   if (!value || !["rehearsal", "account"].includes(value.mode)) throw new TypeError("WORLD connection mode is required");
@@ -16673,7 +16769,7 @@ async function loadWorldConfig({ value = globalThis.__SYNK_WORLD_CONFIG__, base 
 // experiences/synk-world-app/world-account.mjs
 var changed = () => Object.assign(Error("\uACC4\uC815 \uC5F0\uACB0\uC774 \uBC14\uB00C\uC5C8\uC5B4\uC694."), { code: "ACCOUNT_CHANGED" });
 var authErrors = /* @__PURE__ */ new Set(["AUTH_REQUIRED", "AUTH_SESSION_MISSING", "SESSION_REVOKED", "UNAUTHORIZED", "ACCOUNT_UNAVAILABLE", "PRODUCT_FORBIDDEN", "PLATFORM_ACCOUNT_MISMATCH"]);
-var routes = /* @__PURE__ */ new Map([["bootstrap", "GET"], ["play/start", "POST"], ["play/complete", "POST"], ["avatar/outfit", "PUT"], ["wardrobe/looks", "PUT"], ["town/entry", "GET"], ["town/state", "GET"], ["town/sharing", "POST"], ["town/command", "POST"], ["town/presence", "POST"], ["enrollment/preview", "POST"], ["enrollment/claim", "POST"]]);
+var routes = /* @__PURE__ */ new Map([["bootstrap", "GET"], ["play/start", "POST"], ["play/complete", "POST"], ["avatar/outfit", "PUT"], ["wardrobe/looks", "PUT"], ["town/entry", "GET"], ["town/state", "GET"], ["town/sharing", "POST"], ["town/command", "POST"], ["town/presence", "POST"], ["enrollment/preview", "POST"], ["enrollment/claim", "POST"], ["homework", "GET"], ["homework/submit", "POST"]]);
 function createWorldAccount({
   config: raw,
   storage = globalThis.sessionStorage,
@@ -16695,7 +16791,7 @@ function createWorldAccount({
   const binding = [config.supabaseUrl, config.accountApiUrl, config.clients.world.clientId, config.clients.world.redirectUri].join("|");
   const entry = createPlatformEntry({ clientKey: "world", getUrl, replaceUrl });
   let session = null, rawSession = null, owner = null, currentSessionId = null, currentAccount = null, epoch = 0, closed = false, refreshing = null, pendingExchange = null, townBinding = null, townStateRevision = -1, verifiedClient = null, gameHost = null, gameLaunch = 0, lifeHost = null, lifeLaunch = 0, verification = 0;
-  let nativeIdentity = null, nativeAccountId = null, nativeGeneration = -1, signedOutGeneration = -1, nativeEvents = 0, nativeReady = null, unsubscribe = null, nativeClassroom = false;
+  let nativeIdentity = null, nativeAccountId = null, nativeGeneration = -1, signedOutGeneration = -1, nativeEvents = 0, nativeReady = null, unsubscribe = null, nativeClassroom = false, nativeHomework = false;
   const controllers = /* @__PURE__ */ new Set();
   const guard = (expected) => {
     if (closed || expected !== epoch) throw changed();
@@ -16761,6 +16857,7 @@ function createWorldAccount({
       guard(expected);
       if (environment?.clientId !== "world") throw Object.assign(Error("WORLD \uC571\uC758 \uACC4\uC815 \uC5F0\uACB0\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694."), { code: "INVALID_BRIDGE" });
       nativeClassroom = Array.isArray(environment.worldRoutes) && environment.worldRoutes.includes("classroom");
+      nativeHomework = Array.isArray(environment.worldRoutes) && ["homework", "homework/submit"].every((route) => environment.worldRoutes.includes(route));
       unsubscribe = bridge.onAuthChanged((state) => {
         const before = nativeIdentity;
         nativeEvents++;
@@ -17067,15 +17164,17 @@ function createWorldAccount({
     if (native) {
       const body = options.body === void 0 ? void 0 : JSON.parse(options.body);
       if (body !== void 0 && (!body || typeof body !== "object" || Array.isArray(body))) throw new TypeError("Invalid WORLD request body");
-      const data = await bridge.accountRequest("worldRequest", { route: path, ...body === void 0 ? {} : { body }, ...path.startsWith("town/") && path !== "town/entry" && townBinding?.classId ? { classId: townBinding.classId } : {} });
+      const data = await bridge.accountRequest("worldRequest", { route: path, ...body === void 0 ? {} : { body }, ...path.startsWith("town/") && path !== "town/entry" && townBinding?.classId ? { classId: townBinding.classId } : {}, ...path === "homework/submit" ? { classId: body.classId } : {} });
       return accept(data, data?.ok === true, data?.ok === true ? 200 : data?.error?.status || 503);
     }
-    const endpoint = path === "town/sharing" || path.startsWith("enrollment/") ? "synk-classroom" : path.startsWith("town/") ? "synk-town" : "synk-world-v1", suffix = path === "town/sharing" ? "api/world/town/sharing" : path.startsWith("enrollment/") ? `api/${path}` : path.startsWith("town/") ? path.slice(5) : path;
+    const homework = path === "homework" || path === "homework/submit";
+    const endpoint = path === "town/sharing" || path.startsWith("enrollment/") || homework ? "synk-classroom" : path.startsWith("town/") ? "synk-town" : "synk-world-v1", suffix = path === "town/sharing" ? "api/world/town/sharing" : path.startsWith("enrollment/") ? `api/${path}` : homework ? "api/world/homework" : path.startsWith("town/") ? path.slice(5) : path;
     const url = new URL(config.accountApiUrl);
     url.pathname = url.pathname.replace(/\/$/, "").replace(/\/functions\/v1(?:\/synk-(?:account|world-v1|town))?$/, "") + `/functions/v1/${endpoint}/${suffix}`;
     url.search = "";
     url.hash = "";
     if (path.startsWith("town/") && path !== "town/entry" && townBinding?.classId) url.searchParams.set("classId", townBinding.classId);
+    if (path === "homework/submit") url.searchParams.set("classId", JSON.parse(options.body).classId);
     const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 12e3);
     controllers.add(controller);
     try {
@@ -17137,6 +17236,21 @@ function createWorldAccount({
       controllers.delete(controller);
     }
   }
+  async function readHomework() {
+    if (native && !nativeHomework) throw Object.assign(Error("PC \uC571\uC5D0\uC11C\uB294 \uC544\uC9C1 \uACFC\uC81C\uB97C \uC5F4 \uC218 \uC5C6\uC5B4\uC694."), { code: "HOMEWORK_UNSUPPORTED" });
+    const response = await request("homework"), data = await response.json();
+    try {
+      return homeworkReply(data, response.status);
+    } catch (error2) {
+      if (homeworkUnavailable(error2)) return { classes: [], emptyReason: "UNAVAILABLE" };
+      throw error2;
+    }
+  }
+  async function submitHomework(input) {
+    if (native && !nativeHomework) throw Object.assign(Error("PC \uC571\uC5D0\uC11C\uB294 \uC544\uC9C1 \uACFC\uC81C\uB97C \uB0BC \uC218 \uC5C6\uC5B4\uC694."), { code: "HOMEWORK_UNSUPPORTED" });
+    const response = await request("homework/submit", { method: "POST", body: JSON.stringify(homeworkSubmission(input)) }), data = await response.json();
+    return homeworkReply(data, response.status);
+  }
   async function logout() {
     if (native) {
       signedOutGeneration = Math.max(signedOutGeneration, nativeGeneration);
@@ -17178,8 +17292,13 @@ function createWorldAccount({
     prepareLifeProgress,
     topicAnswers,
     readClassrooms,
+    readHomework,
+    submitHomework,
     get supportsClassroom() {
       return !native || nativeClassroom;
+    },
+    get supportsHomework() {
+      return !native || nativeHomework;
     },
     identity: () => ({ accountId: owner, generation: epoch }),
     assertActive() {
