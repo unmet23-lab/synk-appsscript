@@ -7,6 +7,7 @@
  *
  * API 키·Vertex·Google Cloud 결제는 쓰지 않는다. `agy`의 저장된 개인 Google 로그인만 쓰고,
  * 빈 임시 폴더 + sandbox에서 한 번 호출한다. 지원하지 않는 모델은 다른 모델로 내리지 않고 멈춘다.
+ * 답(stream-json의 result 사건)이 오면 agy가 끝나기를 기다리지 않고 받는다(10-19, `agy받기`).
  * 무료 API 몫이 찼을 때 `제미나이호출.js`가 같은 모델로 이 통로를 부른다(10-17 사용자 결정).
  *
  * 사용:
@@ -18,7 +19,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { spawn, spawnSync } = require('child_process');
+const { spawn, execFileSync } = require('child_process');
 
 const 경로표 = Object.freeze({
   'gemini-3.1-pro-preview': Object.freeze({
@@ -66,6 +67,11 @@ function 실행파일() {
   return 'agy';
 }
 
+/* SYNK_AGY_BIN이 .js면 node로 띄운다 — 시험의 가짜 agy(Windows는 .js를 바로 실행하지 못한다). */
+function 실행할것(bin = 실행파일()) {
+  return /\.[cm]?js$/i.test(bin) ? { 파일: process.execPath, 앞인자: [bin] } : { 파일: bin, 앞인자: [] };
+}
+
 function 설정파일() {
   return process.env.SYNK_AGY_SETTINGS
     || path.join(os.homedir(), '.gemini', 'antigravity-cli', 'settings.json');
@@ -89,16 +95,147 @@ function 구독설정확인(파일 = 설정파일()) {
   return { useG1Credits: false, sparseDefault: j.useG1Credits === undefined };
 }
 
+/* stream-json 한 줄을 사건으로 읽는다. JSON이 아니면 멈춘다(출력 모양이 바뀐 agy를 조용히 넘기지 않는다). */
+function 사건읽기(줄, 번호) {
+  try { return JSON.parse(줄); }
+  catch (e) { throw new Error(`agy 출력 ${번호}번째 줄이 JSON이 아니다: ${줄.slice(0, 160)}`); }
+}
+
+/* 다 받은 출력에서 init과 하나뿐인 result를 꺼낸다(저장해 둔 출력 다시 읽기). 호출 중에는 agy받기가 줄마다 읽는다. */
 function 결과읽기(stdout) {
   const 줄들 = String(stdout || '').split(/\r?\n/).filter((s) => s.trim());
-  const 사건들 = 줄들.map((줄, i) => {
-    try { return JSON.parse(줄); }
-    catch (e) { throw new Error(`agy 출력 ${i + 1}번째 줄이 JSON이 아니다: ${줄.slice(0, 160)}`); }
-  });
+  const 사건들 = 줄들.map((줄, i) => 사건읽기(줄, i + 1));
   const 결과들 = 사건들.filter((e) => e && e.event === 'result' && e.result).map((e) => e.result);
   if (결과들.length !== 1) throw new Error(`agy 완료 결과가 하나가 아니다(받은 수 ${결과들.length})`);
   const init = 사건들.find((e) => e && e.event === 'init' && e.init);
   return { init: init ? init.init : null, result: 결과들[0] };
+}
+
+/* 받은 init·result를 지금까지와 같은 기록 모양으로 만든다. 성공이 아니거나, 고른 모델이 요청과 다르거나,
+ * 답이 비었으면 멈춘다. */
+function 기록만들기({ init, result }, { model, thinking, selectedModel }) {
+  if (result.status !== 'SUCCESS') throw new Error(`agy 상태 ${result.status}: ${result.error || '(원인 없음)'}`);
+  if (init && init.model && init.model !== selectedModel) {
+    throw new Error(`agy가 고른 모델이 요청과 다르다: 요청 ${selectedModel} · 실행 ${init.model}`);
+  }
+  const text = result.structured_output !== undefined
+    ? JSON.stringify(result.structured_output)
+    : String(result.response || '').trim();
+  if (!text) throw new Error('agy가 빈 답을 냈다');
+  return {
+    text,
+    modelVersion: selectedModel,
+    finishReason: result.status,
+    usage: result.usage || null,
+    route: 'google-ai-subscription',
+    requestedModel: model,
+    requestedThinking: thinking,
+    selectedModel,
+  };
+}
+
+/* agy와 그 아래 프로세스(상태줄 명령·업데이터 등)를 함께 닫는다. 이미 끝났으면 아무것도 하지 않는다. */
+function 묶음닫기(p) {
+  if (!p.pid || p.exitCode !== null || p.signalCode !== null) return false;
+  if (process.platform === 'win32') {
+    try { execFileSync('taskkill', ['/PID', String(p.pid), '/T', '/F'], { stdio: 'ignore', windowsHide: true, timeout: 15_000 }); }
+    catch { /* 그사이 끝났다 */ }
+  } else {
+    try { process.kill(-p.pid, 'SIGKILL'); }
+    catch { try { p.kill('SIGKILL'); } catch { /* 그사이 끝났다 */ } }
+  }
+  return true;
+}
+
+function 쉬기(ms) { return new Promise((r) => setTimeout(r, ms).unref()); }
+
+/* 답을 낸 agy가 스스로 끝날 틈. 짧은 호출은 1초 안에 끝난다(10-19 실측). */
+const 끝남여유Ms = 5_000;
+
+/**
+ * agy를 띄워 stdout을 줄마다 읽는다. 끝나기를 기다렸다 읽지 않는다 — 10-19 긴 검수에서 agy가 답(result 사건)을
+ * 3분 만에 내고도 17분 넘게 끝나지 않아, 종료를 기다리던 spawnSync가 시간 제한에 걸려 받은 답까지 버렸다.
+ * result가 오면 { init, result, 닫기 }로 바로 풀린다. 닫기()는 스스로 끝날 틈(여유Ms)을 준 뒤 아직 살아 있으면
+ * 묶음을 닫고, 닫았으면 true를 돌려준다. result 전에 끝나거나, 제한Ms가 지나거나, JSON이 아닌 줄이 오면
+ * 묶음을 닫고 오류로 끝난다.
+ */
+function agy받기({ args, cwd, input, env, 제한Ms = 330_000, 여유Ms = 끝남여유Ms, bin = 실행파일() }) {
+  const { 파일, 앞인자 } = 실행할것(bin);
+  const p = spawn(파일, [...앞인자, ...args], {
+    cwd, env, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'],
+    detached: process.platform !== 'win32', // POSIX는 프로세스 그룹째 닫으려고 새 그룹으로 띄운다
+  });
+  const 끝남 = new Promise((r) => p.once('exit', r));
+  let 진단 = '';
+  p.stderr.setEncoding('utf8');
+  p.stderr.on('data', (d) => { 진단 = (진단 + d).slice(-64 * 1024); });
+  const 진단끝 = () => 진단.trim().split(/\r?\n/).filter(Boolean).slice(-3).join(' / ') || '(진단 없음)';
+  const 정리 = () => { p.stdin.destroy(); p.stdout.destroy(); p.stderr.destroy(); p.unref(); };
+
+  const 첫결과 = new Promise((resolve, reject) => {
+    let 버퍼 = '';
+    let 번호 = 0;
+    let init = null;
+    let 정해짐 = false;
+    let 나감후 = null;
+    const 제한 = setTimeout(() => 끝(new Error(`agy가 ${Math.round(제한Ms / 1000)}초 안에 결과를 내지 않았다(시간 제한)`)), 제한Ms);
+    function 끝(e, 값) {
+      if (정해짐) return;
+      정해짐 = true;
+      clearTimeout(제한);
+      clearTimeout(나감후);
+      if (e) reject(e); else resolve(값);
+    }
+    function 줄읽기(줄) {
+      if (정해짐 || !줄.trim()) return;
+      let 사건;
+      try { 사건 = 사건읽기(줄, ++번호); } catch (e) { 끝(e); return; }
+      if (사건 && 사건.event === 'init' && 사건.init) init = 사건.init;
+      if (사건 && 사건.event === 'result' && 사건.result) 끝(null, { init, result: 사건.result });
+    }
+    const 남은줄 = () => { const 줄 = 버퍼; 버퍼 = ''; 줄읽기(줄); };
+    const 결과없음 = (code, signal) => {
+      남은줄();
+      끝(new Error(`agy가 결과 없이 끝났다(종료 ${code ?? signal}): ${진단끝()}`));
+    };
+    p.stdout.setEncoding('utf8');
+    p.stdout.on('data', (d) => {
+      if (정해짐) return; // 결과 뒤에도 읽어 버린다 — 파이프가 차서 agy가 끝나지 못하는 일이 없게
+      버퍼 += d;
+      let i;
+      while ((i = 버퍼.indexOf('\n')) >= 0) {
+        const 줄 = 버퍼.slice(0, i);
+        버퍼 = 버퍼.slice(i + 1);
+        줄읽기(줄);
+      }
+      if (버퍼.length > 32 * 1024 * 1024) 끝(new Error('agy 출력 한 줄이 32MB를 넘었다'));
+    });
+    p.stdout.on('end', 남은줄);
+    p.on('error', (e) => 끝(new Error(`agy 실행 실패: ${e.message}`)));
+    p.on('close', 결과없음);
+    /* 손주 프로세스가 파이프를 물고 있으면 close가 오지 않는다 — 끝난 뒤 1초 안에 남은 줄을 마저 본다. */
+    p.on('exit', (code, signal) => { if (!정해짐) 나감후 = setTimeout(() => 결과없음(code, signal), 1_000); });
+    p.stdin.on('error', () => { /* 읽기 전에 끝난 agy — 끝난 쪽 오류로 알린다 */ });
+    p.stdin.end(input, 'utf8');
+  });
+
+  return 첫결과.then(
+    (받음) => ({
+      ...받음,
+      async 닫기() {
+        if (p.exitCode === null && p.signalCode === null) await Promise.race([끝남, 쉬기(여유Ms)]);
+        const 닫음 = 묶음닫기(p);
+        if (닫음) await Promise.race([끝남, 쉬기(2_000)]);
+        정리();
+        return 닫음;
+      },
+    }),
+    async (e) => {
+      if (묶음닫기(p)) await Promise.race([끝남, 쉬기(2_000)]);
+      정리();
+      throw e;
+    },
+  );
 }
 
 function 임시방지우기(방, 지우기 = fs.rmSync) {
@@ -135,7 +272,7 @@ function 비밀환경걷기(env = process.env) {
 const 도구없이 = '[이 요청은 도구 없이 답한다] 파일 읽기·명령 실행·검색 같은 도구를 쓰지 말고, '
   + '아래에 주어진 글만 보고 바로 답해라. 다른 문서를 읽어야 하는 요청이 아니다.\n\n';
 
-function main(argv = process.argv.slice(2)) {
+async function main(argv = process.argv.slice(2)) {
   const model = 값(argv, '--model');
   const out = 값(argv, '-o');
   if (!model || !out) throw new Error('사용: --model <정책 모델> -o <출력> 이 필요하다');
@@ -159,50 +296,26 @@ function main(argv = process.argv.slice(2)) {
       ...(schema ? ['--json-schema', schema] : []),
     ];
     const input = JSON.stringify({ event: 'user', message: { content: 도구없이 + prompt } }) + '\n';
-    const p = spawnSync(실행파일(), args, {
-      cwd: 방,
-      input,
-      encoding: 'utf8',
-      windowsHide: true,
-      timeout: timeoutMs + 30_000,
-      maxBuffer: 32 * 1024 * 1024,
-      env: 비밀환경걷기(),
-    });
-    if (p.error) throw new Error(`agy 실행 실패: ${p.error.message}`);
-    if (p.status !== 0) {
-      const 진단 = String(p.stderr || p.stdout || '').trim().split(/\r?\n/).filter(Boolean).slice(-3).join(' / ');
-      throw new Error(`agy 종료 ${p.status}: ${진단 || '(진단 없음)'}`);
+    const 받음 = await agy받기({ args, cwd: 방, input, env: 비밀환경걷기(), 제한Ms: timeoutMs + 30_000 });
+    try {
+      const 기록 = 기록만들기(받음, { model, thinking, selectedModel });
+      const 절대출력 = path.resolve(out);
+      fs.mkdirSync(path.dirname(절대출력), { recursive: true });
+      fs.writeFileSync(절대출력, JSON.stringify(기록), 'utf8');
+      return 기록;
+    } finally {
+      if (await 받음.닫기()) {
+        console.error(`참고: agy가 결과를 낸 뒤 ${끝남여유Ms / 1000}초 안에 끝나지 않아 프로세스 묶음을 닫았다.`);
+      }
     }
-    const { init, result } = 결과읽기(p.stdout);
-    if (result.status !== 'SUCCESS') throw new Error(`agy 상태 ${result.status}: ${result.error || '(원인 없음)'}`);
-    if (init && init.model && init.model !== selectedModel) {
-      throw new Error(`agy가 고른 모델이 요청과 다르다: 요청 ${selectedModel} · 실행 ${init.model}`);
-    }
-    const text = result.structured_output !== undefined
-      ? JSON.stringify(result.structured_output)
-      : String(result.response || '').trim();
-    if (!text) throw new Error('agy가 빈 답을 냈다');
-    const 기록 = {
-      text,
-      modelVersion: selectedModel,
-      finishReason: result.status,
-      usage: result.usage || null,
-      route: 'google-ai-subscription',
-      requestedModel: model,
-      requestedThinking: thinking,
-      selectedModel,
-    };
-    const 절대출력 = path.resolve(out);
-    fs.mkdirSync(path.dirname(절대출력), { recursive: true });
-    fs.writeFileSync(절대출력, JSON.stringify(기록), 'utf8');
-    return 기록;
   } finally {
     임시방지우기(방);
   }
 }
 
-/* 비동기 호출 — 이 파일을 **자식 프로세스로** 띄운다. agy를 동기로 기다리는 main을 그대로 쓰면서도
- * 부르는 쪽(몽골어 검문의 맞춤법 요청 등)이 그동안 멈추지 않게 한다. 돌려주는 값은 main의 기록 모양이다.
+/* 비동기 호출 — 이 파일을 **자식 프로세스로** 띄운다. 손잡이(CLI)와 같은 길(stdin → -o 기록)을 타므로 결과가
+ * 같고, agy 묶음 닫기·임시방 정리가 부르는 쪽(몽골어 검문의 맞춤법 요청 등) 프로세스 밖에서 끝난다.
+ * 돌려주는 값은 main의 기록 모양이다.
  * (10-17 몽골어대조.js의 「구독으로부르기」를 여기로 옮겼다 — 손잡이 --구독과 무료 몫 대체가 한 구현을 쓴다.) */
 function 부르기({ model, prompt, schema = null, thinking = 'high', timeoutMs } = {}) {
   const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-mn-sub-'));
@@ -237,9 +350,13 @@ function 부르기({ model, prompt, schema = null, thinking = 'high', timeoutMs 
   });
 }
 
-module.exports = { 경로표, 구독모델, 결과읽기, 비밀환경걷기, 설정파일, 구독설정확인, 임시방지우기, 부르기, main };
+module.exports = {
+  경로표, 구독모델, 결과읽기, 기록만들기, 비밀환경걷기, 설정파일, 구독설정확인, 임시방지우기, agy받기, 부르기, main,
+};
 
 if (require.main === module) {
-  try { main(); }
-  catch (e) { console.error(`확인 불가: 제미나이 구독 호출 실패 — ${e.message}`); process.exit(2); }
+  main()
+    .catch((e) => { console.error(`확인 불가: 제미나이 구독 호출 실패 — ${e.message}`); process.exitCode = 2; })
+    /* 무엇이 남아 붙잡더라도 3초 뒤엔 끝낸다 — 부르기는 이 프로세스가 끝나기를 기다린다. */
+    .finally(() => setTimeout(() => process.exit(), 3_000).unref());
 }
