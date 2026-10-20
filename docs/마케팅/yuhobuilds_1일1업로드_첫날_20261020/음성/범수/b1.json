@@ -1,0 +1,78 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b1",
+ "text": "유튜브는 에이피아이로 한 채널만 보여서, 나머진 스튜디오에서 바꿔 가며 봤고,",
+ "show": "유튜브 API로는 / 한 채널만",
+ "dur": 3.928,
+ "words": [
+  {
+   "text": "유튜브는",
+   "start": 0.02,
+   "end": 0.435
+  },
+  {
+   "text": "에이피아이로",
+   "start": 0.49,
+   "end": 1.001
+  },
+  {
+   "text": "한",
+   "start": 1.043,
+   "end": 1.126
+  },
+  {
+   "text": "채널만",
+   "start": 1.167,
+   "end": 1.499
+  },
+  {
+   "text": "보여서,",
+   "start": 1.54,
+   "end": 1.803
+  },
+  {
+   "text": "나머진",
+   "start": 2.245,
+   "end": 2.577
+  },
+  {
+   "text": "스튜디오에서",
+   "start": 2.618,
+   "end": 3.033
+  },
+  {
+   "text": "바꿔",
+   "start": 3.088,
+   "end": 3.268
+  },
+  {
+   "text": "가며",
+   "start": 3.309,
+   "end": 3.489
+  },
+  {
+   "text": "봤고,",
+   "start": 3.544,
+   "end": 3.928
+  }
+ ],
+ "source": {
+  "key": "e36e58ee4fd60b49ab6aaab6c0af09f5",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

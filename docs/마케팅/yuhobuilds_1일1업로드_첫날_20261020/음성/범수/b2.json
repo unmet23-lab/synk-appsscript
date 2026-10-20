@@ -1,0 +1,73 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b2",
+ "text": "인스타는 예약 달력이 계정마다 따로라, 계정을 세 번 바꿨고,",
+ "show": "예약 달력이 / 계정마다 따로",
+ "dur": 3.351,
+ "words": [
+  {
+   "text": "인스타는",
+   "start": 0.02,
+   "end": 0.398
+  },
+  {
+   "text": "예약",
+   "start": 0.44,
+   "end": 0.636
+  },
+  {
+   "text": "달력이",
+   "start": 0.678,
+   "end": 1.028
+  },
+  {
+   "text": "계정마다",
+   "start": 1.182,
+   "end": 1.573
+  },
+  {
+   "text": "따로라,",
+   "start": 1.615,
+   "end": 1.937
+  },
+  {
+   "text": "계정을",
+   "start": 2.245,
+   "end": 2.525
+  },
+  {
+   "text": "세",
+   "start": 2.567,
+   "end": 2.637
+  },
+  {
+   "text": "번",
+   "start": 2.679,
+   "end": 2.777
+  },
+  {
+   "text": "바꿨고,",
+   "start": 2.819,
+   "end": 3.351
+  }
+ ],
+ "source": {
+  "key": "a4d66122d1f99887290c6f06bf0e2dc2",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

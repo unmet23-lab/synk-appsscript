@@ -1,0 +1,78 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b3",
+ "text": "틱톡은 한 계정만 로그인돼 있었고, 샤오훙수는 주소를 레드노트로 바꿔야 열렸어요.",
+ "show": "틱톡은 한 계정만 → 샤오훙수는 / 주소를 rednote로",
+ "dur": 4.524,
+ "words": [
+  {
+   "text": "틱톡은",
+   "start": 0.02,
+   "end": 0.379
+  },
+  {
+   "text": "한",
+   "start": 0.448,
+   "end": 0.544
+  },
+  {
+   "text": "계정만",
+   "start": 0.586,
+   "end": 0.917
+  },
+  {
+   "text": "로그인돼",
+   "start": 0.958,
+   "end": 1.289
+  },
+  {
+   "text": "있었고,",
+   "start": 1.331,
+   "end": 1.607
+  },
+  {
+   "text": "샤오훙수는",
+   "start": 2.062,
+   "end": 2.641
+  },
+  {
+   "text": "주소를",
+   "start": 2.793,
+   "end": 3.111
+  },
+  {
+   "text": "레드노트로",
+   "start": 3.152,
+   "end": 3.524
+  },
+  {
+   "text": "바꿔야",
+   "start": 3.566,
+   "end": 3.897
+  },
+  {
+   "text": "열렸어요.",
+   "start": 3.938,
+   "end": 4.524
+  }
+ ],
+ "source": {
+  "key": "5432dd52c59c3f1443fcfbf0c0db2238",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

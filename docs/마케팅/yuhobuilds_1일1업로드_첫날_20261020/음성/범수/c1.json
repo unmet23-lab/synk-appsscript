@@ -1,0 +1,73 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "c1",
+ "text": "답이 오기까지 십칠 분, 막힌 데가 세 군데 있었어요.",
+ "show": "답이 오기까지 17분, / 막힌 데가 세 군데",
+ "dur": 3.154,
+ "words": [
+  {
+   "text": "답이",
+   "start": 0.02,
+   "end": 0.221
+  },
+  {
+   "text": "오기까지",
+   "start": 0.322,
+   "end": 0.704
+  },
+  {
+   "text": "십칠",
+   "start": 0.765,
+   "end": 1.006
+  },
+  {
+   "text": "분,",
+   "start": 1.066,
+   "end": 1.207
+  },
+  {
+   "text": "막힌",
+   "start": 1.811,
+   "end": 2.052
+  },
+  {
+   "text": "데가",
+   "start": 2.112,
+   "end": 2.233
+  },
+  {
+   "text": "세",
+   "start": 2.293,
+   "end": 2.354
+  },
+  {
+   "text": "군데",
+   "start": 2.414,
+   "end": 2.575
+  },
+  {
+   "text": "있었어요.",
+   "start": 2.635,
+   "end": 3.154
+  }
+ ],
+ "source": {
+  "key": "8b0309f8b763006bb3a7a27f2bd40157",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

@@ -1,0 +1,68 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "t1",
+ "text": "답을 듣고 정했어요. 준비된 채널마다, 하루 한 편.",
+ "show": "답을 듣고 / 정했어요 → 준비된 채널마다, / 하루 한 편",
+ "dur": 2.849,
+ "words": [
+  {
+   "text": "답을",
+   "start": 0,
+   "end": 0.188
+  },
+  {
+   "text": "듣고",
+   "start": 0.231,
+   "end": 0.376
+  },
+  {
+   "text": "정했어요.",
+   "start": 0.419,
+   "end": 0.852
+  },
+  {
+   "text": "준비된",
+   "start": 1.228,
+   "end": 1.56
+  },
+  {
+   "text": "채널마다,",
+   "start": 1.603,
+   "end": 2.022
+  },
+  {
+   "text": "하루",
+   "start": 2.195,
+   "end": 2.339
+  },
+  {
+   "text": "한",
+   "start": 2.397,
+   "end": 2.469
+  },
+  {
+   "text": "편.",
+   "start": 2.512,
+   "end": 2.849
+  }
+ ],
+ "source": {
+  "key": "aa4e0d7f57b37ebb34cdece80926e1a4",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

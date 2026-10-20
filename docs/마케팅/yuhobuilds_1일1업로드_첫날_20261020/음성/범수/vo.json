@@ -1,0 +1,141 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1017,
+  "lufs": -17
+ },
+ "made": "2026-10-20T10:33:08.691Z",
+ "lines": [
+  {
+   "id": "h1",
+   "text": "예약된 게시물 있냐고 물었더니, 에이아이가 채널 열두 곳을 다 돌고 와서, 하나도 없대요.",
+   "show": "예약된 게시물 / 있냐고 물었더니, / 채널 12곳, 하나도 없대요",
+   "dur": 4.561,
+   "syllablesPerSec": 7.67,
+   "src": "h1.wav",
+   "key": "784d857734177e7577c3937b9eaa0554",
+   "words": 13
+  },
+  {
+   "id": "h2",
+   "text": "그래서 에이아이 직원 셋에게, 오늘 올릴 영상을 한 편씩 맡겼어요.",
+   "show": "AI 직원 셋에게 / 한 편씩 맡겼어요",
+   "dur": 3.435,
+   "syllablesPerSec": 7.57,
+   "src": "h2.wav",
+   "key": "9656a73ece535621078323baf75c9a8d",
+   "words": 10
+  },
+  {
+   "id": "h3",
+   "text": "지금 이 영상도 그중 하나예요.",
+   "show": "지금 이 영상도 / 그중 하나예요",
+   "dur": 1.657,
+   "syllablesPerSec": 7.24,
+   "src": "h3.wav",
+   "key": "eaf4690e74ed8cc5011294d6b22c3f19",
+   "words": 5
+  },
+  {
+   "id": "c1",
+   "text": "답이 오기까지 십칠 분, 막힌 데가 세 군데 있었어요.",
+   "show": "답이 오기까지 17분, / 막힌 데가 세 군데",
+   "dur": 3.154,
+   "syllablesPerSec": 6.34,
+   "src": "c1.wav",
+   "key": "8b0309f8b763006bb3a7a27f2bd40157",
+   "words": 9
+  },
+  {
+   "id": "b1",
+   "text": "유튜브는 에이피아이로 한 채널만 보여서, 나머진 스튜디오에서 바꿔 가며 봤고,",
+   "show": "유튜브 API로는 / 한 채널만",
+   "dur": 3.928,
+   "syllablesPerSec": 8.15,
+   "src": "b1.wav",
+   "key": "e36e58ee4fd60b49ab6aaab6c0af09f5",
+   "words": 10
+  },
+  {
+   "id": "b2",
+   "text": "인스타는 예약 달력이 계정마다 따로라, 계정을 세 번 바꿨고,",
+   "show": "예약 달력이 / 계정마다 따로",
+   "dur": 3.351,
+   "syllablesPerSec": 7.16,
+   "src": "b2.wav",
+   "key": "a4d66122d1f99887290c6f06bf0e2dc2",
+   "words": 9
+  },
+  {
+   "id": "b3",
+   "text": "틱톡은 한 계정만 로그인돼 있었고, 샤오훙수는 주소를 레드노트로 바꿔야 열렸어요.",
+   "show": "틱톡은 한 계정만 → 샤오훙수는 / 주소를 rednote로",
+   "dur": 4.524,
+   "syllablesPerSec": 7.52,
+   "src": "b3.wav",
+   "key": "5432dd52c59c3f1443fcfbf0c0db2238",
+   "words": 10
+  },
+  {
+   "id": "t1",
+   "text": "답을 듣고 정했어요. 준비된 채널마다, 하루 한 편.",
+   "show": "답을 듣고 / 정했어요 → 준비된 채널마다, / 하루 한 편",
+   "dur": 2.849,
+   "syllablesPerSec": 6.67,
+   "src": "t1.wav",
+   "key": "aa4e0d7f57b37ebb34cdece80926e1a4",
+   "words": 8
+  },
+  {
+   "id": "s1",
+   "text": "월요일 트렌드 스캔에서 둘, 오늘 일에서 하나를 골라, 세션 셋을 한 번에 띄웠어요.",
+   "show": "월요일 스캔에서 둘, / 오늘 일에서 하나 → 세션 셋을 / 한 번에",
+   "dur": 4.543,
+   "syllablesPerSec": 7.04,
+   "src": "s1.wav",
+   "key": "51488d4206a80f5f6280c4c94b716811",
+   "words": 13
+  },
+  {
+   "id": "s2",
+   "text": "올리기만은 한 곳에서 해요. 계정을 바꿔 가며 올리니까, 같이 하면 엉키거든요.",
+   "show": "올리기만은 / 한 곳에서",
+   "dur": 4.241,
+   "syllablesPerSec": 7.31,
+   "src": "s2.wav",
+   "key": "28b03355a4e6251720d74f1e37c49ea5",
+   "words": 11
+  },
+  {
+   "id": "e1b",
+   "text": "내일부터 매일 한 편씩 올릴게요.",
+   "show": "내일부터 / 매일 한 편씩",
+   "dur": 1.811,
+   "syllablesPerSec": 7.18,
+   "src": "e1b.wav",
+   "key": "fe34dbe6aaca8c6d15d47123be87639d",
+   "words": 5
+  },
+  {
+   "id": "fo",
+   "text": "팔로우하면 다음 편도 보여 드릴게요.",
+   "show": "팔로우하면 / 다음 편도 보여 드릴게요",
+   "dur": 2.093,
+   "syllablesPerSec": 7.17,
+   "src": "fo.wav",
+   "key": "e5e603a6e35f2a6e66831f682daa78bf",
+   "words": 5
+  }
+ ]
+}

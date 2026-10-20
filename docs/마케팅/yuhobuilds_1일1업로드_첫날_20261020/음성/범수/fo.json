@@ -1,0 +1,53 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "fo",
+ "text": "팔로우하면 다음 편도 보여 드릴게요.",
+ "show": "팔로우하면 / 다음 편도 보여 드릴게요",
+ "dur": 2.093,
+ "words": [
+  {
+   "text": "팔로우하면",
+   "start": 0.02,
+   "end": 0.716
+  },
+  {
+   "text": "다음",
+   "start": 0.91,
+   "end": 1.12
+  },
+  {
+   "text": "편도",
+   "start": 1.169,
+   "end": 1.363
+  },
+  {
+   "text": "보여",
+   "start": 1.411,
+   "end": 1.557
+  },
+  {
+   "text": "드릴게요.",
+   "start": 1.606,
+   "end": 2.093
+  }
+ ],
+ "source": {
+  "key": "e5e603a6e35f2a6e66831f682daa78bf",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

@@ -1,0 +1,83 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s2",
+ "text": "올리기만은 한 곳에서 해요. 계정을 바꿔 가며 올리니까, 같이 하면 엉키거든요.",
+ "show": "올리기만은 / 한 곳에서",
+ "dur": 4.241,
+ "words": [
+  {
+   "text": "올리기만은",
+   "start": 0.03,
+   "end": 0.527
+  },
+  {
+   "text": "한",
+   "start": 0.57,
+   "end": 0.655
+  },
+  {
+   "text": "곳에서",
+   "start": 0.711,
+   "end": 0.981
+  },
+  {
+   "text": "해요.",
+   "start": 1.024,
+   "end": 1.18
+  },
+  {
+   "text": "계정을",
+   "start": 1.691,
+   "end": 2.004
+  },
+  {
+   "text": "바꿔",
+   "start": 2.046,
+   "end": 2.216
+  },
+  {
+   "text": "가며",
+   "start": 2.259,
+   "end": 2.444
+  },
+  {
+   "text": "올리니까,",
+   "start": 2.5,
+   "end": 2.855
+  },
+  {
+   "text": "같이",
+   "start": 3.054,
+   "end": 3.253
+  },
+  {
+   "text": "하면",
+   "start": 3.296,
+   "end": 3.452
+  },
+  {
+   "text": "엉키거든요.",
+   "start": 3.494,
+   "end": 4.241
+  }
+ ],
+ "source": {
+  "key": "28b03355a4e6251720d74f1e37c49ea5",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

@@ -1,0 +1,78 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h2",
+ "text": "그래서 에이아이 직원 셋에게, 오늘 올릴 영상을 한 편씩 맡겼어요.",
+ "show": "AI 직원 셋에게 / 한 편씩 맡겼어요",
+ "dur": 3.435,
+ "words": [
+  {
+   "text": "그래서",
+   "start": 0.02,
+   "end": 0.263
+  },
+  {
+   "text": "에이아이",
+   "start": 0.357,
+   "end": 0.628
+  },
+  {
+   "text": "직원",
+   "start": 0.682,
+   "end": 0.898
+  },
+  {
+   "text": "셋에게,",
+   "start": 0.938,
+   "end": 1.276
+  },
+  {
+   "text": "오늘",
+   "start": 1.6,
+   "end": 1.79
+  },
+  {
+   "text": "올릴",
+   "start": 1.83,
+   "end": 2.019
+  },
+  {
+   "text": "영상을",
+   "start": 2.06,
+   "end": 2.411
+  },
+  {
+   "text": "한",
+   "start": 2.452,
+   "end": 2.519
+  },
+  {
+   "text": "편씩",
+   "start": 2.56,
+   "end": 2.79
+  },
+  {
+   "text": "맡겼어요.",
+   "start": 2.83,
+   "end": 3.435
+  }
+ ],
+ "source": {
+  "key": "9656a73ece535621078323baf75c9a8d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

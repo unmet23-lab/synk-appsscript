@@ -1,0 +1,53 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e1b",
+ "text": "내일부터 매일 한 편씩 올릴게요.",
+ "show": "내일부터 / 매일 한 편씩",
+ "dur": 1.811,
+ "words": [
+  {
+   "text": "내일부터",
+   "start": 0.02,
+   "end": 0.415
+  },
+  {
+   "text": "매일",
+   "start": 0.503,
+   "end": 0.708
+  },
+  {
+   "text": "한",
+   "start": 0.752,
+   "end": 0.84
+  },
+  {
+   "text": "편씩",
+   "start": 0.884,
+   "end": 1.133
+  },
+  {
+   "text": "올릴게요.",
+   "start": 1.177,
+   "end": 1.811
+  }
+ ],
+ "source": {
+  "key": "fe34dbe6aaca8c6d15d47123be87639d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}
