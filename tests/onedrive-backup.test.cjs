@@ -122,6 +122,28 @@ test('a worktree merged into origin keeps only its changed files; an unmerged on
   assert.equal(after.mergedOnOrigin, 0);
   assert.ok(backup.readJson(path.join(folder, 'index.json')).mergedOnOrigin === undefined);
 });
+test('a worktree removed while documents are being collected is skipped alone; a folder still there whose git fails still stops (10-20)', t => {
+  const f = fixture(t), vault = path.join(f.temp, 'vault'), kept = path.join(f.temp, 'kept-tree'), removed = path.join(f.temp, 'removed-tree');
+  const { execFileSync } = require('node:child_process');
+  const git = (cwd, ...args) => execFileSync('git', ['-c', 'user.name=Backup Test', '-c', 'user.email=backup@example.invalid', ...args],
+    { cwd, windowsHide: true, stdio: 'pipe' }).toString().trim();
+  git(f.root, 'init', '-q', '-b', 'main'); f.put(f.root, 'plan.md', '# Plan'); git(f.root, 'add', '.'); git(f.root, 'commit', '-qm', 'base');
+  git(f.root, 'worktree', 'add', '-q', '--detach', kept); git(f.root, 'worktree', 'add', '-q', '--detach', removed);
+  f.put(kept, 'kept.md', '# Kept'); f.put(removed, 'removed.md', '# Removed');
+  const trees = [removed, kept].map(root => ({ repository: 'SYNK-appsscript', primary: f.root, root }));
+  // 목록을 만든 뒤 세션 보관처럼 작업트리 폴더가 통째로 지워진다(10-20 23:30 실행은 여기서 ENOENT로 실패).
+  fs.rmSync(removed, { recursive: true, force: true });
+  const report = backup.preserveWorktreeDocuments(f.root, vault, { trees });
+  assert.equal(report.vanished, 1); assert.equal(report.worktrees, 1);
+  const folder = path.join(vault, '작업문서_미통합_자동'), index = backup.readJson(path.join(folder, 'index.json'));
+  assert.equal(index.worktrees, 1);
+  const entries = index.manifests.flatMap(item => backup.readJson(path.join(folder, item.file)).entries);
+  assert.deepEqual(entries.map(row => [path.basename(row.worktree), row.relativePath]).sort(), [['kept-tree', 'kept.md'], ['kept-tree', 'plan.md']]);
+  // 폴더는 남아 있는데 git이 실패하면(작업트리가 아님) 건너뛰지 않고 예전처럼 실행을 멈춘다.
+  const broken = path.join(f.temp, 'not-a-worktree'); f.put(broken, 'note.md', '# Note');
+  assert.throws(() => backup.preserveWorktreeDocuments(f.root, vault, { trees: [...trees, { repository: 'SYNK-appsscript', primary: f.root, root: broken }] }),
+    error => !String(error.message).includes('ENOENT'));
+});
 test('receipt avoids rewrites, but changed sources and damaged destinations are repaired', t => {
   const f = fixture(t); f.put(f.root, 'document.md', '# Version one');
   const rows = [{ brand: 'SYNK', source: 'document.md', target: 'document.md', kind: 'system' }];

@@ -323,7 +323,7 @@ function preserveWorktreeDocuments(root, vault, { dryRun = false, trees = worktr
   lap('scanMs');
   const merged = mergedWorktrees(trees, gitState);
   lap('mergedMs');
-  const candidates = trees.flatMap(tree => {
+  const treeRows = tree => {
     const scan = scans?.get(tree.root);
     // origin에 합쳐진 작업트리는 모든 문서를 보지 않는다 — 커밋된 판은 GitHub에 있다. 아래에서 git status에 잡힌 것만 본다.
     const isMerged = merged.has(tree.root);
@@ -368,7 +368,19 @@ function preserveWorktreeDocuments(root, vault, { dryRun = false, trees = worktr
       ({ ...tree, relativePath, source: path.join(tree.root, relativePath), primaryPath: path.join(tree.primary, relativePath) }));
     onProgress();
     return rows;
+  };
+  // 목록을 만든 뒤 수집하는 사이 지워진 작업트리(세션 보관, 다른 세션의 임시 작업트리)는 그 작업트리만 건너뛴다 — 보존할 원문이 없다.
+  // 예전에는 없는 폴더를 걷거나 거기서 git을 띄우다 ENOENT로 실행 전체가 실패했다(10-20 23:30 실행, 꼬리 정리 세션이 지운 .tmp/tq).
+  // 폴더가 남아 있으면 예전처럼 실패다.
+  const vanished = [];
+  const candidates = trees.flatMap(tree => {
+    try { return treeRows(tree); }
+    catch (error) {
+      if (fs.existsSync(tree.root)) throw error;
+      vanished.push(tree.root); onProgress(); return [];
+    }
   });
+  const live = vanished.length ? trees.filter(tree => !vanished.includes(tree.root)) : trees;
   const linked = policy.linkPaths(candidates.flatMap(row => [row.source, row.primaryPath]));
   const filesDirectory = path.join(destination, 'files');
   if (policy.linkPaths([filesDirectory])(filesDirectory)) throw new Error('worktree preservation destination is linked');
@@ -440,17 +452,17 @@ function preserveWorktreeDocuments(root, vault, { dryRun = false, trees = worktr
       else throw error;
     }
   }
-  const report = { schemaVersion: 1, checkedAt: new Date().toISOString(), worktrees: trees.length,
+  const report = { schemaVersion: 1, checkedAt: new Date().toISOString(), worktrees: live.length, vanished: vanished.length,
     documents: entries.filter(row => /\.md$/i.test(row.relativePath)).length, sourceFiles,
     sameAsPrimary, uniquePreserved: unique.size, preservedBytes, written, rejected: rejected.length, readFiles, gitTrees, reusedTrees, statusRuns, diffRuns,
     mergedOnOrigin: merged.size, timings };
   Object.defineProperty(report, WORKTREE_ENTRIES, { value: entries });
-  Object.defineProperty(report, WORKTREE_TREES, { value: trees });
+  Object.defineProperty(report, WORKTREE_TREES, { value: live });
   Object.defineProperty(report, WORKTREE_REJECTED, { value: rejected });
   Object.defineProperty(report, WORKTREE_MERGED, { value: merged });
   lap('filesMs');
   if (!dryRun) {
-    writeWorktreeIndexes(destination, trees, entries, rejected, { cache, merged });
+    writeWorktreeIndexes(destination, live, entries, rejected, { cache, merged });
     lap('indexMs');
   }
   return report;
