@@ -40,6 +40,10 @@ export function createStudioService({store,clock=()=>new Date().toISOString()}){
     if(input.teamId!==undefined&&(input.teamId||null)!==row.teamId)row.teamId=team(user,input.teamId);
     if(input.draftId!==undefined&&(input.draftId||null)!==row.draftId)row.draftId=draftLink(user,input.draftId);
     if(input.dueDate!==undefined)row.dueDate=date(input.dueDate);
+    if(input.initialBrief!==undefined){
+      if(old)throw fail('처음 제작할 때만 조사 원문을 함께 저장할 수 있습니다.');
+      row.versions=[{id:randomUUID(),label:'선택한 조사와 제작 준비',kind:'text',text:text(input.initialBrief,60000,'제작 준비 원문',true),createdAt:at,createdById:user.id,createdByName:name(user.id)}];
+    }
     row.updatedAt=at;store.put('studioProductions',row.id,row);return {production:full(user,row)};
   }
   function addVersion(user,id,input){

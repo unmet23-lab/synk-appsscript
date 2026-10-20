@@ -1,43 +1,50 @@
 'use strict';
 
 // One shared workspace for real work, review and accumulated examples.
-const sw={userId:'',request:0,loadRequest:0,detailRequest:0,data:null,view:'board',productionId:'',detail:null,busy:false,error:'',loading:false,filters:{}};
+const sw={userId:'',identity:'',request:0,loadRequest:0,detailRequest:0,data:null,workspaceLoaded:false,workspaceAttempted:false,view:'board',productionId:'',detail:null,busy:false,error:'',loading:false,filters:{}};
 const swStages={idea:'준비',making:'제작 중',review:'검토 요청',ready:'완성',published:'게시 기록',archived:'보관'};
 const swButton=(text,action,glyph='',classes='',attrs='')=>button(text,'sw-'+action,glyph,classes,attrs);
-const swGuard=()=>({userId:state.user?.id,request:sw.request});
-const swAlive=guard=>!!guard.userId&&state.user?.id===guard.userId&&sw.request===guard.request;
+const swIdentity=()=>state.user?JSON.stringify([state.user.id,state.user.role||'',state.user.teamId||'']):'';
+const swGuard=()=>({userId:state.user?.id,identity:swIdentity(),request:sw.request});
+const swAlive=guard=>!!guard.userId&&swIdentity()===guard.identity&&sw.request===guard.request;
+const swVisible=()=>state.tab==='studio'||state.tab==='workroom'&&typeof wr!=='undefined'&&wr.view==='tools'&&typeof makerTools!=='undefined'&&makerTools.view==='productions';
+const swLocation=()=>JSON.stringify([state.tab,typeof wr!=='undefined'?wr.view:'',typeof makerTools!=='undefined'?makerTools.view:'']);
+function swSyncIdentity(){const identity=swIdentity();if(sw.userId!==state.user?.id||sw.identity&&sw.identity!==identity)resetStudioWorkspace();sw.userId=state.user?.id||'';sw.identity=identity;}
+function swShow(view){sw.view=view;if(typeof makerTools!=='undefined'&&typeof selectWorkspaceView==='function'){makerTools.view='productions';selectWorkspaceView('workroom','tools');}else state.tab='studio';}
+function ensureStudioWorkspace(){swSyncIdentity();if(state.user&&!sw.workspaceLoaded&&!sw.workspaceAttempted&&!sw.loading)swReload();}
 const swDetail=()=>sw.detail?.id===sw.productionId?sw.detail:null;
 const swDate=value=>value?escape(String(value).slice(0,10).replaceAll('-','.')):'기한 없음';
 async function swLoadExamples(){
   if(!state.user)return;
-  if(sw.userId!==state.user.id)resetStudioWorkspace();sw.userId=state.user.id;
+  swSyncIdentity();
   const guard=swGuard(),request=++sw.loadRequest;sw.loading=true;sw.error='';
   try{const result=await api('/api/studio-examples');if(!swAlive(guard)||request!==sw.loadRequest)return;sw.data={productions:[],materials:[],...sw.data,...result};}
   catch(error){if(swAlive(guard)&&request===sw.loadRequest)sw.error=error.message;}
   finally{if(swAlive(guard)&&request===sw.loadRequest){sw.loading=false;if(state.tab==='content'&&cp.view==='examples')render();}}
 }
-function resetStudioWorkspace(){sw.request++;sw.loadRequest++;sw.detailRequest++;if(typeof swResetReview==='function')swResetReview();Object.assign(sw,{userId:'',data:null,view:'board',productionId:'',detail:null,busy:false,error:'',loading:false,filters:{}});}
+function resetStudioWorkspace(){sw.request++;sw.loadRequest++;sw.detailRequest++;if(typeof swResetReview==='function')swResetReview();Object.assign(sw,{userId:'',identity:'',data:null,workspaceLoaded:false,workspaceAttempted:false,view:'board',productionId:'',detail:null,busy:false,error:'',loading:false,filters:{}});}
 async function swReload({renderPage=true}={}){
   if(!state.user)return;
-  if(sw.userId!==state.user.id)resetStudioWorkspace();sw.userId=state.user.id;
-  const guard=swGuard(),request=++sw.loadRequest;sw.loading=true;sw.error='';
-  if(renderPage&&state.tab==='studio'&&!sw.data)render();
-  try{const data=await api('/api/studio-workspace');if(!swAlive(guard)||request!==sw.loadRequest)return;sw.data=data;}
+  swSyncIdentity();
+  const guard=swGuard(),request=++sw.loadRequest;sw.loading=true;sw.workspaceAttempted=true;sw.error='';
+  if(renderPage&&swVisible()&&!sw.data)render();
+  try{const data=await api('/api/studio-workspace');if(!swAlive(guard)||request!==sw.loadRequest)return;sw.data=data;sw.workspaceLoaded=true;}
   catch(error){if(swAlive(guard)&&request===sw.loadRequest)sw.error=error.message;}
-  finally{if(swAlive(guard)&&request===sw.loadRequest){sw.loading=false;if(renderPage&&state.tab==='studio')render();}}
+  finally{if(swAlive(guard)&&request===sw.loadRequest){sw.loading=false;if(renderPage&&swVisible())render();}}
 }
 function swAcceptProduction(production){
   if(!production)return;sw.detail=production;
   if(sw.data){const {versions,notes,...summary}=production;sw.data.productions=[summary,...sw.data.productions.filter(row=>row.id!==production.id)];}
 }
 async function swOpenProduction(id){
-  const guard=swGuard(),request=++sw.detailRequest,tab=state.tab;sw.error='';
+  swSyncIdentity();const guard=swGuard(),request=++sw.detailRequest,location=swLocation();sw.error='';
   const result=await api('/api/studio-productions/'+encodeURIComponent(id));
-  if(!swAlive(guard)||request!==sw.detailRequest||state.tab!==tab)return;
+  if(!swAlive(guard)||request!==sw.detailRequest||swLocation()!==location)return;
   if(sw.productionId!==id&&typeof swResetReview==='function')swResetReview();
-  sw.productionId=id;swAcceptProduction(result.production);sw.view='review';state.tab='studio';render();window.scrollTo(0,0);
+  sw.productionId=id;swAcceptProduction(result.production);swShow('review');render();window.scrollTo(0,0);
 }
 function studioPage(){
+  swSyncIdentity();
   const heading=pageHeading('CREATIVE WORKSPACE','제작 스튜디오','직접 만든 것과 배운 것이, 다음 작품의 바탕이 됩니다.',!isViewer()?swButton('새 작업','new-production','plus','primary'):'');
   if(!sw.data)return heading+(sw.error?`<div class="sw-message" role="alert">${escape(sw.error)}${swButton('다시 불러오기','reload','refresh')}</div>`:'<div class="loading-panel"><span class="loading-line"></span><p>작업과 팀의 제작 경험을 불러오고 있어요.</p></div>');
   const tabs=[['board','제작 상황판'],['materials','경험·소재 보관함'],['examples','좋은 콘텐츠 예시함']];
@@ -95,7 +102,7 @@ document.addEventListener('click',async event=>{
 });
 document.addEventListener('submit',async event=>{
   const form=event.target.closest('[data-sw-form="production"]');if(!form)return;event.preventDefault();const submit=form.querySelector('[type="submit"]');if(submit.disabled)return;const errorBox=form.querySelector('.form-error'),guard=swGuard(),id=form.dataset.id;submit.disabled=true;errorBox.textContent='';
-  try{const values=Object.fromEntries(new FormData(form));for(const key of ['dueDate','teamId','reviewerId','draftId']){if(Object.hasOwn(values,key))values[key]||=null;}if(id)delete values.draftId;const result=await api('/api/studio-productions'+(id?'/'+encodeURIComponent(id):''),values);if(!swAlive(guard))return;const sameForm=form.isConnected;if(sameForm)closeModal();const place={tab:state.tab,view:sw.view,detailRequest:sw.detailRequest,modalRequest:state.modalRequest};await swReload({renderPage:false});if(!swAlive(guard))return;const samePlace=place.tab===state.tab&&place.view===sw.view&&place.detailRequest===sw.detailRequest&&place.modalRequest===state.modalRequest&&!overlay.children.length;if(sameForm&&samePlace){sw.productionId=result.production.id;swAcceptProduction(result.production);state.tab='studio';sw.view='board';render();}notify(id?'작업 정보를 저장했어요.':'새 작업을 상황판에 등록했어요.');}
+  try{const values=Object.fromEntries(new FormData(form));for(const key of ['dueDate','teamId','reviewerId','draftId']){if(Object.hasOwn(values,key))values[key]||=null;}if(id)delete values.draftId;const result=await api('/api/studio-productions'+(id?'/'+encodeURIComponent(id):''),values);if(!swAlive(guard))return;const sameForm=form.isConnected;if(sameForm)closeModal();const place={location:swLocation(),view:sw.view,detailRequest:sw.detailRequest,modalRequest:state.modalRequest};await swReload({renderPage:false});if(!swAlive(guard))return;const samePlace=place.location===swLocation()&&place.view===sw.view&&place.detailRequest===sw.detailRequest&&place.modalRequest===state.modalRequest&&!overlay.children.length;if(sameForm&&samePlace){sw.productionId=result.production.id;swAcceptProduction(result.production);swShow('board');render();}notify(id?'작업 정보를 저장했어요.':'새 작업을 상황판에 등록했어요.');}
   catch(error){if(swAlive(guard)){if(errorBox.isConnected)errorBox.textContent=error.message;else notify(error.message);}}
   finally{if(submit.isConnected)submit.disabled=false;}
 });

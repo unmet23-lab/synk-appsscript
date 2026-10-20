@@ -21,13 +21,19 @@ function links(html,base){return [...html.toString().matchAll(/(?:src|href)=["']
 async function unitResponse(respond,url,options={}){let status,headers,body;await respond({url,method:options.method||'GET',headers:options.headers||{}},{writeHead:(code,value)=>{status=code;headers=value;},end:value=>{body=value||Buffer.alloc(0);}},{path:'asset.js',type:'text/javascript; charset=utf-8',versioned:true,...options});return {status,headers:Object.fromEntries(Object.entries(headers).map(([key,value])=>[key.toLowerCase(),value])),body};}
 
 test('both no-store entry documents version their public scripts and styles; exact wire bytes match every digest',async t=>{
-  const {base}=await companyFixture(t);let count=0;
+  const {base}=await companyFixture(t);let count=0,expectedCount=0;
   for(const path of ['/','/messenger/']){
     const response=await wire(base,path);assert.equal(response.status,200);assert.equal(response.headers['cache-control'],'no-store');assert.equal(response.headers.etag,undefined);
-    const urls=links(response.body,new URL(path,base));assert.equal(urls.length,path==='/'?103:4);
+    const urls=links(response.body,new URL(path,base));
+    if(path==='/'){
+      const expected=[...publicScriptAndStylePaths(await readFile(new URL('./public/index.html',import.meta.url)),path)].sort();
+      assert.deepEqual(urls.map(url=>url.pathname).sort(),expected);
+      for(const added of ['/website-inquiries.js','/website-inquiries.css'])assert.ok(expected.includes(added),added);
+      expectedCount+=expected.length;
+    }else{assert.equal(urls.length,4);expectedCount+=4;}
     for(const url of urls){const asset=await wire(base,url.pathname+url.search,{headers:{'Accept-Encoding':'br'}});assert.equal(asset.status,200,url.pathname);assert.equal(asset.headers['cache-control'],'public, max-age=31536000, immutable',url.pathname);assert.equal(hash(decoded(asset)),url.searchParams.get('v'),url.pathname);count++;}
   }
-  assert.equal(count,107);
+  assert.equal(count,expectedCount);assert.ok(count>100);
 });
 
 test('wrong, truncated, duplicate, extra and unversioned queries retain revalidation; HEAD and representation-specific 304 remain correct',async t=>{

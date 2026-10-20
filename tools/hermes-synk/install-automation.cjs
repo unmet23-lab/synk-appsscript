@@ -35,7 +35,7 @@ function main() {
   if(before.length>1) throw new Error('Duplicate named schedules; refusing another schedule.');
   const destination=path.join(home,'scripts/synk_automation.py');
   const originals=['monitor.cjs','overview.cjs','status.cjs','workspace.cjs','validation.cjs','validation-preview.cjs','validation-data.cjs','validation-python.cjs','validation-python.py','validation-web.cjs','integration.cjs','integration-windows.ps1','plugin/__init__.py','plugin/plugin.yaml','automation.py'].map(x=>path.join(__dirname,x));
-  const shared=['tools/운영홈.js','tools/operations-home/resume.js','tools/operations-home/native-status.js','tools/참고카드_목록.js','tools/server-backup/read-status.cjs','tools/모델정책.js'].map(x=>path.join(root,x));
+  const shared=['tools/운영홈.js','tools/operations-home/resume.js','tools/operations-home/native-status.js','tools/operations-home/operations-status.cjs','tools/operations-home/performance-summary.cjs','tools/참고카드_목록.js','tools/server-backup/read-status.cjs','tools/모델정책.js'].map(x=>path.join(root,x));
   const native=['pyproject.toml','gateway/session_context.py'].map(x=>path.join(home,'hermes-agent',x));
   const files=[...originals,...shared,...native];
   for(const file of files) if(!fs.statSync(file).isFile()) throw new Error('Source contract file missing: '+path.basename(file));

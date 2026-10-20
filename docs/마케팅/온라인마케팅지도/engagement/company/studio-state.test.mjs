@@ -117,3 +117,38 @@ test('a current review note response still updates the production and clears its
   f.requests[0].resolve({production:{...production(),notes:[{id:'noteA',text:'현재 의견'}]}});await pending;
   assert.equal(f.sw.detail.notes[0].text,'현재 의견');assert.deepEqual(form.values,{});assert.equal(f.renders,1);assert.equal(f.evaluate('swr.busy'),false);
 });
+
+test('the production tool opens review in workroom and accepts its review notes',async()=>{
+  const f=fixture();
+  f.context.wr={view:'tools'};f.context.makerTools={view:'productions'};
+  f.context.selectWorkspaceView=(tab,view)=>{f.context.state.tab=tab;f.context.wr.view=view;};
+  f.context.state.tab='workroom';
+  const pending=f.evaluate('swOpenProduction("pA")');
+  f.requests[0].resolve({production:production()});await pending;
+  assert.equal(f.context.state.tab,'workroom');assert.equal(f.context.makerTools.view,'productions');assert.equal(f.sw.view,'review');
+  const form=f.form({text:'제작 도구 검토 의견',axis:'usefulness'},'pA','note'),save=f.dispatch('submit',form);
+  f.requests[1].resolve({production:{...production(),notes:[{id:'n1',text:'제작 도구 검토 의견'}]}});await save;
+  assert.equal(f.sw.detail.notes[0].text,'제작 도구 검토 의견');assert.deepEqual(form.values,{});
+});
+
+test('changing the workroom tool cancels delayed production navigation',async()=>{
+  const f=fixture();f.context.wr={view:'tools'};f.context.makerTools={view:'productions'};f.context.state.tab='workroom';
+  const pending=f.evaluate('swOpenProduction("pB")');f.context.makerTools.view='inquiries';
+  f.requests[0].resolve({production:production('pB')});await pending;
+  assert.equal(f.context.makerTools.view,'inquiries');assert.equal(f.sw.productionId,'pA');
+});
+
+test('same-user role changes reject cached workspace and in-flight detail data',async()=>{
+  const f=fixture();f.context.state.user.role='admin';f.evaluate('swSyncIdentity()');
+  const pending=f.evaluate('swOpenProduction("pB")');f.context.state.user.role='viewer';
+  f.requests[0].resolve({production:production('pB')});await pending;
+  assert.equal(f.sw.productionId,'pA');f.evaluate('swSyncIdentity()');
+  assert.equal(f.sw.data,null);assert.equal(f.sw.detail,null);
+});
+
+test('opening production tools after loading examples fetches the full workspace once',async()=>{
+  const f=fixture();f.context.wr={view:'tools'};f.context.makerTools={view:'productions'};f.context.state.tab='workroom';
+  f.evaluate('ensureStudioWorkspace();ensureStudioWorkspace()');assert.equal(f.requests.length,1);
+  f.requests[0].resolve(workspace());await f.settle();
+  f.evaluate('ensureStudioWorkspace()');assert.equal(f.requests.length,1);assert.equal(f.sw.workspaceLoaded,true);
+});

@@ -39,6 +39,40 @@ test('backup summaries require explicit root, redact fields and detect stale mon
   const view=readBackupSummary({backupRoot:root,now});assert.equal(view.status,'failed');assert.ok(!JSON.stringify(view).includes('SECRET'));
   assert.equal(readBackupSummary({backupRoot:root,now:now+3*3600000}).source.stale,true);
 });
+test('통합 백업은 수리 영수증이 같은 실패 회차의 모든 실패 단계를 보완했을 때만 정상으로 읽는다',t=>{
+  const root=fixture(t),now=Date.parse('2026-10-20T08:00:00Z'),at='2026-10-20T07:00:00Z';
+  atomicJson(path.join(root,'backup-monitor.json'),{schemaVersion:1,status:'partial_failure',checkedAt:at});
+  atomicJson(path.join(root,'backup-status.json'),{runId:'original',steps:[{id:'argon',status:'failed'}]});
+  atomicJson(path.join(root,'backup-repair-status.json'),{schemaVersion:1,status:'success',repairOfRunId:'original',finishedAt:at,repairedStepIds:['argon'],steps:[{id:'argon',status:'success'}],cause:'SECRET'});
+  atomicJson(path.join(root,'backup-health.json'),{schemaVersion:1,checkedAt:at,status:'healthy',components:[
+    {id:'server',status:'healthy',checkedAt:at,lastSuccessAt:at,repaired:true,repairedAt:at,receiptPath:'../../private.json',label:'SECRET',codes:[]},
+    {id:'github',status:'running',checkedAt:at,lastSuccessAt:'2026-10-20T06:00:00Z',codes:[]}]});
+  const result=readBackupSummary({backupRoot:root,now});
+  assert.equal(result.source.file,'backup-health.json');assert.equal(result.status,'running');
+  assert.equal(result.components[0].repair.status,'verified');assert.equal(result.components[0].receiptPath,'backup-status.json');
+  assert.doesNotMatch(JSON.stringify(result),/SECRET|private\.json/);assert.equal(result.lastSuccessAt,null,'구성요소 성공들을 전체 복원 성공 시각으로 합치지 않는다');
+  atomicJson(path.join(root,'backup-status.json'),{runId:'new-failure',steps:[{id:'argon',status:'failed'}]});
+  const changed=readBackupSummary({backupRoot:root,now});
+  assert.equal(changed.status,'unknown');assert.equal(changed.components[0].repair.status,'unverified');
+});
+test('통합 상태 손상과 오래됨을 구형 정상 기록으로 가리지 않는다',t=>{
+  const root=fixture(t),now=Date.parse('2026-10-20T08:00:00Z'),at='2026-10-20T07:00:00Z';
+  atomicJson(path.join(root,'backup-monitor.json'),{schemaVersion:1,status:'success',checkedAt:at});
+  fs.writeFileSync(path.join(root,'backup-health.json'),'{');
+  assert.equal(readBackupSummary({backupRoot:root,now}).source.available,false);
+  atomicJson(path.join(root,'backup-health.json'),{schemaVersion:1,checkedAt:'2026-10-20T00:00:00Z',components:[{id:'media',status:'healthy'}]});
+  const stale=readBackupSummary({backupRoot:root,now});assert.equal(stale.status,'unknown');assert.equal(stale.source.stale,true);
+});
+test('원본과 수리 영수증에 유효한 회차 ID가 둘 다 없으면 실패를 정상으로 바꾸지 않는다',t=>{
+  const root=fixture(t),at='2026-10-20T07:00:00Z',now=Date.parse('2026-10-20T08:00:00Z');
+  atomicJson(path.join(root,'backup-health.json'),{schemaVersion:1,checkedAt:at,components:[{id:'server',status:'healthy',repaired:true,repairedAt:at}]});
+  for(const runId of [undefined,null,'',' ',7]){
+    atomicJson(path.join(root,'backup-status.json'),{runId,steps:[{id:'argon',status:'failed'}]});
+    atomicJson(path.join(root,'backup-repair-status.json'),{schemaVersion:1,status:'success',repairOfRunId:runId,finishedAt:at,repairedStepIds:['argon'],steps:[{id:'argon',status:'success'}]});
+    const view=readBackupSummary({backupRoot:root,now});
+    assert.equal(view.components[0].repair.status,'unverified',String(runId));assert.equal(view.status,'unknown');
+  }
+});
 test('summary preserves audit limitations and reports preservation gaps',t=>{
   const root=fixture(t),file=path.join(root,'report.json');atomicJson(file,{schemaVersion:1,checkedAt:new Date().toISOString(),counts:{missing:2,hashDeferred:1,backupUnrecorded:3}});
   const view=readPreservationSummary({reportPath:file});assert.equal(view.status,'attention');assert.equal(view.counts.missing,2);assert.ok(view.scope.includes('원격'));assert.equal(view.issues.length,3);

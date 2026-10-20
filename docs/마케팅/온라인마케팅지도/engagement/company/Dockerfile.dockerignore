@@ -211,6 +211,11 @@ docs/마케팅/온라인마케팅지도/engagement/company/*-check.mjs
 # These are imported runtime services, not standalone validation programs.
 !docs/마케팅/온라인마케팅지도/engagement/company/publication-link-check.mjs
 !docs/마케팅/온라인마케팅지도/engagement/company/client-delivery-check.mjs
+!tools/lib/
+!tools/lib/sns-dm.js
+!tools/lib/generated/
+!tools/lib/generated/talk-publication.cjs
+!tools/sns-dm-connect.mjs
 **/.env
 **/.env.*
 **/*.sqlite

@@ -12,7 +12,7 @@ function resetWorkroom({clearStorage=false}={}){
 }
 function wrIdentity(){
   if(!state.user)return;
-  if(wr.userId!==state.user.id){resetWorkroom();wr.userId=state.user.id;const params=new URLSearchParams(location.search);if(state.tab==='workroom'&&['desk','trends','tools','pages','clients'].includes(params.get('section')))wr.view=params.get('section');if(wr.view==='tools'&&typeof makerTools!=='undefined'&&['weekly','publication','publish','subtitles','sources','brand','quality','automation'].includes(params.get('tool')))makerTools.view=params.get('tool');try{sessionStorage.removeItem(wrReviewKey(wr.userId));}catch{}}
+  if(wr.userId!==state.user.id){resetWorkroom();wr.userId=state.user.id;const params=new URLSearchParams(location.search);if(state.tab==='workroom'&&['desk','trends','tools','pages','clients'].includes(params.get('section')))wr.view=params.get('section');if(wr.view==='tools'&&typeof makerTools!=='undefined'&&['weekly','publication','publish','subtitles','sources','brand','quality','inquiries','productions','automation'].includes(params.get('tool')))makerTools.view=params.get('tool');try{sessionStorage.removeItem(wrReviewKey(wr.userId));}catch{}}
 }
 function ensureWorkroom(){
   if(!state.user)return;wrIdentity();

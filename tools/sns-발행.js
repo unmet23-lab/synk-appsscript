@@ -16,6 +16,7 @@ const {
   openManualItem,
   recordInstagramPublication,
 } = require('./lib/sns-publisher.js');
+const { recordAndRegister, registerPublication } = require('./lib/sns-dm-registration.js');
 
 function fail(message) {
   console.error(`\n❌ ${message}\n`);
@@ -36,6 +37,7 @@ SYNK SNS 발행기
   node tools/sns-발행.js --공개 <계획.json> --항목 <id> [--시각 2026-10-09T08:00:00+09:00] [--합성표시] --근거 "유호님 공개 승인"
   node tools/sns-발행.js --수동열기 <계획.json> --항목 <id>
   node tools/sns-발행.js --게시확인 <계획.json> --항목 <id> --주소 <Instagram URL> --근거 "승인한 게시물 확인"
+  node tools/sns-발행.js --DM등록재개 <계획.json> --항목 <id>
 
   --계정설정 <계정.json>  명시한 계정 설정 사용 (계획 작업은 기본적으로 계획의 설정 사용)
 
@@ -50,6 +52,9 @@ SYNK SNS 발행기
     --시각을 주면 영상은 그 시각에 YouTube가 공개하도록 예약하고 재생목록은 바로 공개합니다(시간대 필수).
     --합성표시는 YouTube의 '변경되거나 합성된 콘텐츠' 표시를 켭니다(AI로 만든 음악이 중심인 영상).
   · 다른 계획이나 브라우저에서 게시한 콘텐츠의 중복은 감지하지 못합니다.
+  · DM 설정을 승인한 Instagram --게시확인은 기존 Talk 자료 등록까지 이어갑니다.
+    등록이 보류돼도 게시를 다시 하지 않습니다. --DM등록재개는 같은 승인·게시물만 이어갑니다.
+    --talk-root, --registry, --dm-state-root로 기존 연결·비공개 기록 경로를 지정할 수 있습니다.
   · 비밀키는 Windows 자격 증명 보관소에만 들어갑니다.
 `);
 }
@@ -150,9 +155,22 @@ async function main() {
 
   if (arg('--게시확인')) {
     const selected=ids();if(selected.length!==1)throw new Error('--게시확인은 --항목을 하나만 지정합니다.');
-    const result=recordInstagramPublication(absolute(arg('--게시확인')),selected[0],arg('--주소'),arg('--근거'),
-      {accountsFile:arg('--계정설정')?accountsFile:undefined});
-    console.log(JSON.stringify({recorded:true,resultFile:result.resultFile,state:result.item.state}));return;
+    const result=await recordAndRegister(absolute(arg('--게시확인')),selected[0],arg('--주소'),arg('--근거'),
+      {accountsFile:arg('--계정설정')?accountsFile:undefined,
+       talkRoot:arg('--talk-root')?absolute(arg('--talk-root')):undefined,
+       registry:arg('--registry')?absolute(arg('--registry')):undefined,
+       stateRoot:arg('--dm-state-root')?absolute(arg('--dm-state-root')):undefined});
+    console.log(JSON.stringify(result));if(!result.dm.ok)process.exitCode=2;return;
+  }
+
+  if (arg('--DM등록재개')) {
+    const selected=ids();if(selected.length!==1)throw new Error('--DM등록재개는 --항목을 하나만 지정합니다.');
+    const result=await registerPublication(absolute(arg('--DM등록재개')),selected[0],
+      {accountsFile:arg('--계정설정')?accountsFile:undefined,
+       talkRoot:arg('--talk-root')?absolute(arg('--talk-root')):undefined,
+       registry:arg('--registry')?absolute(arg('--registry')):undefined,
+       stateRoot:arg('--dm-state-root')?absolute(arg('--dm-state-root')):undefined});
+    console.log(JSON.stringify(result));if(!result.ok)process.exitCode=2;return;
   }
 
   if (arg('--공개')) {

@@ -10,6 +10,8 @@ const {panels,documents} = require('./operations-home/sources');
 const {readClaude,companyRoots} = require('./operations-home/native-status');
 const {readAntigravity} = require('./operations-home/antigravity-status');
 const resume = require('./operations-home/resume');
+const {operationsStatus} = require('./operations-home/operations-status.cjs');
+const {readCachedPerformance} = require('./operations-home/performance-summary.cjs');
 const UI = path.join(__dirname,'operations-home');
 const DEFAULT_ROOT = path.resolve(__dirname,'..');
 const clean = text => text.replace(/<!--[^]*?-->/g,'').replace(/^---\r?\n[^]*?\r?\n---\r?\n/,'');
@@ -59,10 +61,10 @@ function trackItems(text){
   return result;
 }
 function definitions(root){return [...documents,...resume.documentSources,...resume.readCards(root).map(c=>({id:c.id,title:c.title,file:c.file}))].filter((d,i,all)=>all.findIndex(other=>other.id===d.id)===i);}
-function maintenance(root){
+function maintenance(root,backupRoot=path.join(path.dirname(root),'SYNK_원본창고')){
   try{
     const check=require('./보존점검.cjs');
-    return [check.readBackupSummary({backupRoot:path.join(path.dirname(root),'SYNK_원본창고')}),check.readPreservationSummary({reportPath:path.join(root,'.tmp','preservation','latest.json')})];
+    return [check.readBackupSummary({backupRoot}),check.readPreservationSummary({reportPath:path.join(root,'.tmp','preservation','latest.json')})];
   }catch{return [];}
 }
 function cacheDirectory(root){return path.join(os.tmpdir(),'synk-operations-home',crypto.createHash('sha256').update(path.resolve(root).toLowerCase()).digest('hex').slice(0,12));}
@@ -91,15 +93,19 @@ function assets(root){
   for(const name of ['SYNK','SYNK-LAB','SYNK-SHIFT','SYNK-PULSE'])items.push({id:name.toLowerCase()+'-logo',file:'docs/홍보물/마케팅실행_20260909/브랜드킷/배치용/'+name+'-Ink.png'});
   return items;
 }
-function state(root){
+function state(root,{backupRoot,hermesHome=path.resolve(root)===DEFAULT_ROOT?path.join(process.env.LOCALAPPDATA||os.homedir(),'hermes'):null,snsCacheFile}={}){
   const docs=definitions(root).map(d=>readDocument(root,d));const byId=new Map(docs.map(d=>[d.id,d]));
   const track=byId.get('track'),pending=trackItems(track.content);
+  let taskRecords={available:false,complete:false,items:[]};
+  if(hermesHome)try{taskRecords=require('./hermes-synk/overview.cjs').readTaskRecords({root,hermesHome});}catch{}
+  const operations=operationsStatus({root,pending,taskRecords,modifiedAt:track.modifiedAt});
+  const performance=readCachedPerformance(snsCacheFile||(hermesHome?path.join(hermesHome,'runtime','synk-overview','sns-cache.json'):null));
   const revisions=docs.map(d=>d.id+':'+(d.revision||'missing')).join('|');
-  return {name:'SYNK 운영 홈',readAt:new Date().toISOString(),revision:crypto.createHash('sha256').update(revisions).digest('hex').slice(0,16),panels:panels.map(p=>({...p,sources:p.sources.map(s=>{const d=byId.get(s.id);return {id:d.id,title:d.title,file:d.file,section:d.section,available:d.available,modifiedAt:d.modifiedAt,revision:d.revision,error:d.error};}),pending:pending.filter(t=>t.panelIds.includes(p.id))})),documents:docs.map(({content,...d})=>d),pending,resumeTargets:resume.targets.map(({id,label})=>({id,label})),maintenance:maintenance(root),trackModifiedAt:track.modifiedAt,runtime:runtime(root),assets:assets(root).filter(a=>{try{return fs.statSync(inside(root,a.file)).isFile();}catch{return false;}}).map(a=>({id:a.id,name:a.name,url:'/asset/'+a.id,original:'/asset/'+a.id+'?original=1'}))};
+  return {name:'SYNK 운영 홈',readAt:new Date().toISOString(),revision:crypto.createHash('sha256').update(revisions).digest('hex').slice(0,16),panels:panels.map(p=>({...p,sources:p.sources.map(s=>{const d=byId.get(s.id);return {id:d.id,title:d.title,file:d.file,section:d.section,available:d.available,modifiedAt:d.modifiedAt,revision:d.revision,error:d.error};}),pending:pending.filter(t=>t.panelIds.includes(p.id))})),documents:docs.map(({content,...d})=>d),pending,operations,performance,resumeTargets:resume.targets.map(({id,label})=>({id,label})),maintenance:maintenance(root,backupRoot),trackModifiedAt:track.modifiedAt,runtime:runtime(root),assets:assets(root).filter(a=>{try{return fs.statSync(inside(root,a.file)).isFile();}catch{return false;}}).map(a=>({id:a.id,name:a.name,url:'/asset/'+a.id,original:'/asset/'+a.id+'?original=1'}))};
 }
 let sharp;try{sharp=require('sharp');}catch{try{sharp=require(path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/sharp'));}catch{}}
 const imageCache=new Map();
-function createServer({root=DEFAULT_ROOT,port=8790}={}){
+function createServer({root=DEFAULT_ROOT,port=8790,backupRoot,hermesHome,snsCacheFile}={}){
   const staticFiles={'/':'index.html','/app.js':'app.js','/style.css':'style.css','/vendor/marked.mjs':'vendor/marked.mjs'};
   const types={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.woff2':'font/woff2','.ttf':'font/ttf','.png':'image/png','.svg':'image/svg+xml'};
   return http.createServer(async(req,res)=>{
@@ -112,7 +118,7 @@ function createServer({root=DEFAULT_ROOT,port=8790}={}){
     try{
       const url=new URL(req.url,'http://127.0.0.1');
       if(url.pathname==='/api/health')return send(200,{name:'SYNK 운영 홈',root,version:1});
-      if(url.pathname==='/api/state'){const output=state(root);output.otherRuntimes=await Promise.all([readClaude(root),readAntigravity(root,{receiverPath:path.join(root,'tools/operations-home/antigravity-status.js')})]);return send(200,output);}
+      if(url.pathname==='/api/state'){const output=state(root,{backupRoot,hermesHome,snsCacheFile});output.otherRuntimes=await Promise.all([readClaude(root),readAntigravity(root,{receiverPath:path.join(root,'tools/operations-home/antigravity-status.js')})]);return send(200,output);}
       if(url.pathname==='/api/resume'){
         const target=url.searchParams.get('target');if(!resume.targets.some(t=>t.id===target||t.label===target))return send(400,{error:'목록에서 작업 대상을 골라 주세요'});
         const track=readDocument(root,documents.find(d=>d.id==='track'));
@@ -148,6 +154,6 @@ if(require.main===module){
   if(args.includes('--record-runtime')){let input='';process.stdin.setEncoding('utf8');process.stdin.on('data',s=>{input+=s;if(input.length>100000)process.exit(2);});process.stdin.on('end',()=>{try{const r=saveRuntime(root,JSON.parse(input));console.log('작업 상태 '+r.tasks.length+'개 갱신');}catch(e){console.error(e.message);process.exitCode=1;}});}
   else if(args.includes('--resume')){try{const track=readDocument(root,documents.find(d=>d.id==='track'));const r=resume.buildResume(root,value('--resume'),{pending:trackItems(track.content),readDocument});if(args.includes('--json'))console.log(JSON.stringify(r,null,2));else{console.log(r.target.label+' · 작업 재개\n'+r.coverage);console.log('\n원문\n'+r.documents.map(d=>'· '+d.file+(d.available?'':' (연결 확인 필요)')).join('\n'));console.log('\n미적용 참고카드 '+r.cards.length+'개\n'+r.cards.map(c=>'· '+c.title+' — '+c.file).join('\n'));console.log('\n남은 일 '+r.pending.length+'개\n'+r.pending.slice(0,8).map(p=>'· ['+p.owner+'] '+p.title+' (트랙 '+p.line+'행)').join('\n'));console.log('\n로컬 변경 '+r.git.changeCount+'개 · '+(r.git.head?.slice(0,12)||'Git 미확인'));console.log('\n최근 검증 '+r.qa.length+'개\n'+r.qa.map(q=>'· '+q.label+' · '+q.status+' · '+q.freshness.state+' · '+q.manifest).join('\n'));}}catch(e){console.error(e.message);process.exitCode=1;}}
   else if(args.includes('--check')){const s=state(root);console.log(JSON.stringify({panels:s.panels.length,documents:s.documents.length,unavailable:s.documents.filter(d=>!d.available),assets:s.assets.map(a=>a.id),pending:s.pending.length},null,2));}
-  else{const server=createServer({root,port});server.on('error',e=>{console.error(e.code==='EADDRINUSE'?'운영 홈 포트가 이미 사용 중입니다':e.message);process.exitCode=1;});server.listen(port,'127.0.0.1',()=>console.log('SYNK 운영 홈 http://127.0.0.1:'+port));}
+  else{const server=createServer({root,port,backupRoot:value('--backup-root')||undefined,hermesHome:value('--hermes-home')||undefined,snsCacheFile:value('--sns-cache')||undefined});server.on('error',e=>{console.error(e.code==='EADDRINUSE'?'운영 홈 포트가 이미 사용 중입니다':e.message);process.exitCode=1;});server.listen(port,'127.0.0.1',()=>console.log('SYNK 운영 홈 http://127.0.0.1:'+port));}
 }
 module.exports={section,inside,readDocument,trackItems,state,createServer,saveRuntime,runtime,cacheDirectory};

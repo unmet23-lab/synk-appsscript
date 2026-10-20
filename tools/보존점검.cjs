@@ -17,10 +17,55 @@ const hash = data => crypto.createHash('sha256').update(data).digest('hex');
 function json(file, maxBytes=100*1024*1024) {if(fs.statSync(file).size>maxBytes)throw new Error('REPORT_TOO_LARGE');return JSON.parse(fs.readFileSync(file,'utf8').replace(/^\uFEFF/,''));}
 function atomicJson(file,value){fs.mkdirSync(path.dirname(file),{recursive:true});const temp=file+'.'+crypto.randomUUID()+'.tmp';try{fs.writeFileSync(temp,JSON.stringify(value,null,2)+'\n',{flag:'wx'});fs.renameSync(temp,file);}finally{if(fs.existsSync(temp))fs.unlinkSync(temp);}}
 function unavailable(kind,code){return {kind,status:'unknown',label:kind==='backup'?'백업 상태 미확인':'보존 점검 미실행',checkedAt:null,lastSuccessAt:null,nextExpectedAt:null,counts:{},issues:[{code,label:'점검 결과를 아직 읽을 수 없습니다.'}],source:{available:false,stale:true}};}
+const BACKUP_COMPONENTS={
+  onedrive:['OneDrive 문서·소스','상태/OneDrive/latest.json'],github:['GitHub 커밋','github-backup-status.json'],
+  server:['매일 서버·자료 백업','backup-status.json'],media:['미디어 원본','media-backup-status.json'],
+  archive:['기존 Drive 보관','archive-audit-status.json'],workspace:['작업 공간','workspace-backup-status.json'],
+  space:['디스크 공간','상태/공간지킴이/latest.json'],
+};
+const BACKUP_HEALTH_LABELS={healthy:'정상',running:'실행 중',pending:'대기 중',attention:'확인 필요',failed:'실패',unknown:'미확인'};
+const backupTime=value=>typeof value==='string'&&Number.isFinite(Date.parse(value))?value:null;
+function readBackupHealthSummary(backupRoot,now){
+  const data=json(path.join(backupRoot,'backup-health.json'),1024*1024),checked=Date.parse(data.checkedAt);
+  if(data.schemaVersion!==1||!Number.isFinite(checked)||!Array.isArray(data.components)||!data.components.length)throw new Error('INVALID');
+  const stale=now-checked>2*60*60*1000||checked>now+60*1000,seen=new Set();
+  const components=data.components.map(row=>{
+    if(!row||!BACKUP_COMPONENTS[row.id]||seen.has(row.id)||!Object.hasOwn(BACKUP_HEALTH_LABELS,row.status))throw new Error('INVALID');
+    seen.add(row.id);
+    const [label,receiptPath]=BACKUP_COMPONENTS[row.id],codes=(Array.isArray(row.codes)?row.codes:[]).filter(code=>typeof code==='string'&&/^[A-Z][A-Z0-9_]{1,100}$/.test(code));
+    let status=row.status,repair=null;
+    if(row.repaired===true){
+      // A repair belongs to one failed run. A different or older repair must not turn a new failure green.
+      try{
+        const original=json(path.join(backupRoot,receiptPath),1024*1024),proof=json(path.join(backupRoot,'backup-repair-status.json'),1024*1024);
+        const failed=(original.steps||[]).filter(step=>step.status==='failed').map(step=>step.id);
+        if(proof.schemaVersion!==1||proof.status!=='success'||typeof original.runId!=='string'||!original.runId.trim()||
+          typeof proof.repairOfRunId!=='string'||!proof.repairOfRunId.trim()||proof.repairOfRunId!==original.runId||!failed.length||
+          proof.finishedAt!==row.repairedAt||!backupTime(proof.finishedAt)||Date.parse(proof.finishedAt)>now+60_000||
+          failed.some(id=>!proof.repairedStepIds?.includes(id)||!proof.steps?.some(step=>step.id===id&&step.status==='success')))throw new Error('UNMATCHED');
+        repair={status:'verified',finishedAt:proof.finishedAt,steps:failed,source:'backup-repair-status.json'};
+      }catch{status='unknown';codes.push('BACKUP_REPAIR_UNVERIFIED');repair={status:'unverified',source:'backup-repair-status.json'};}
+    }
+    return {id:row.id,label,status:stale?'unknown':status,statusLabel:stale?'갱신 필요':BACKUP_HEALTH_LABELS[status],
+      checkedAt:backupTime(row.checkedAt),lastSuccessAt:backupTime(row.lastSuccessAt),nextExpectedAt:backupTime(row.task?.nextRunAt),
+      receiptPath,repair,codes,sourceStatus:row.status};
+  });
+  const state=stale||components.some(row=>row.status==='unknown')?'unknown':
+    components.some(row=>['failed','attention'].includes(row.status))?'partial_failure':
+    components.some(row=>['running','pending'].includes(row.status))?'running':'success';
+  const issues=stale?[{code:'BACKUP_MONITOR_STALE',label:'통합 상태가 2시간 넘게 갱신되지 않았습니다.'}]:
+    components.filter(row=>['failed','attention','unknown'].includes(row.status)).map(row=>({code:row.codes[0]||'BACKUP_CHECK_REQUIRED',label:row.label+' · '+row.statusLabel}));
+  return {kind:'backup',status:state,label:stale?'백업 감시 갱신 지연':LABELS[state],checkedAt:data.checkedAt,
+    lastSuccessAt:null,nextExpectedAt:components.map(row=>row.nextExpectedAt).filter(Boolean).sort()[0]||null,
+    counts:{components:components.length,success:components.filter(row=>row.status==='healthy').length,failed:issues.length},components,issues,
+    source:{available:true,stale,file:'backup-health.json'},scope:'기존 통합 감시와 실행·수리 영수증. 구성요소별 성공 시각이며 전체 복원 성공을 뜻하지 않습니다.'};
+}
 function readBackupSummary({backupRoot,now=Date.now()}={}) {
   // Callers must explicitly choose the authorized backup folder; fixtures never read the user's files.
   if(!backupRoot)return unavailable('backup','BACKUP_ROOT_NOT_CONFIGURED');
   try{
+    // Once a consolidated record exists, never conceal its damage or staleness with an older green record.
+    if(fs.existsSync(path.join(backupRoot,'backup-health.json')))return readBackupHealthSummary(backupRoot,now);
     const data=json(path.join(backupRoot,'backup-monitor.json'),1024*1024),checked=Date.parse(data.checkedAt);
     if(data.schemaVersion!==1||!Object.hasOwn(LABELS,data.status)||!Number.isFinite(checked))throw new Error('INVALID');
     const stale=now-checked>2*60*60*1000||checked>now+60*1000;
@@ -29,7 +74,7 @@ function readBackupSummary({backupRoot,now=Date.now()}={}) {
       counts:{steps:Number(data.counts?.steps)||0,success:Number(data.counts?.success)||0,failed:Number(data.counts?.failed)||0},
       issues:stale?[{code:'BACKUP_MONITOR_STALE',label:'상태 감시가 2시간 넘게 갱신되지 않았습니다.'}]:
         (data.issues||[]).slice(0,8).map(x=>({code:/^[A-Z_]+$/.test(x.code)?x.code:'BACKUP_CHECK_REQUIRED',label:LABELS[data.status]})),
-      source:{available:true,stale},scope:'기존 백업 실행 결과. 실제 복원 성공은 별도 확인.'};
+      source:{available:true,stale,file:'backup-monitor.json'},scope:'통합 상태가 없는 구형 백업 실행 결과. 실제 복원 성공은 별도 확인.'};
   }catch{return unavailable('backup','BACKUP_STATUS_UNREADABLE');}
 }
 function readPreservationSummary({reportPath=REPORT,now=Date.now()}={}) {

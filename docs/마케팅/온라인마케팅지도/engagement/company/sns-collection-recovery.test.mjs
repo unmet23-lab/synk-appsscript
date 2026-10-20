@@ -42,9 +42,9 @@ test('failure plans keep unknown and connection-change errors recoverable and se
   assert.equal(shouldCollect(channel,{at:'2026-10-21T00:05:00.000Z',hourKst:9}),true);
 });
 
-async function appFixture(t,{collector,seed=()=>{}}={}){
+async function appFixture(t,{collector,seed=()=>{},backgroundJobsEnabled=false}={}){
   const keys=['SYNK_COMPANY_BACKGROUND_JOBS_ENABLED','SYNK_COMPANY_WORKROOM_SCHEDULE_ENABLED'],before=keys.map(key=>process.env[key]);
-  process.env[keys[0]]='0';process.env[keys[1]]='1';
+  process.env[keys[0]]=backgroundJobsEnabled?'1':'0';process.env[keys[1]]='1';
   const directory=await mkdtemp(join(tmpdir(),'synk-collection-recovery-')),store=new Store(directory);
   const admin=store.createUser({name:'Synthetic admin',email:'recovery@example.test',role:'admin'});
   store.put('settings','company',{enabled:true,hourKst:9});seed(store,admin);store.close();
@@ -93,26 +93,36 @@ test('one failing write in error handling does not stop later collections',async
   assert.ok(calls.includes('second'),'the queue keeps running after a rejected job');
 });
 
-test('production settings purge expired records and old collection runs once an hour',async t=>{
+for(const backgroundJobsEnabled of [false,true])test(backgroundJobsEnabled?'the existing background cleanup expires records but never removes old collection runs':'production collection schedules do not newly activate physical retention cleanup',async t=>{
   const old='2026-10-01T00:00:00.000Z',recent='2026-10-19T00:00:00.000Z';
-  const f=await appFixture(t,{collector:async c=>collected(c),seed:store=>{
+  const f=await appFixture(t,{backgroundJobsEnabled,collector:async c=>collected(c),seed:store=>{
     store.put('posts','expired',{id:'expired',channelId:'x',source:'api:youtube',expiresAt:'2026-10-19T00:00:00.000Z'});
     store.put('posts','kept',{id:'kept',channelId:'x',source:'api:instagram',expiresAt:null});
     store.put('snapshots','expired-snapshot',{id:'expired-snapshot',postId:'kept',expiresAt:'2026-10-19T00:00:00.000Z'});
+    store.put('channelSnapshots','expired-channel',{id:'expired-channel',channelId:'x',expiresAt:'2026-10-19T00:00:00.000Z'});
     store.put('hypeObservations','stale',{id:'stale',postId:'kept',checkedAt:'2026-10-10T00:00:00.000Z'});
     store.put('hypeObservations','orphan',{id:'orphan',postId:'gone',checkedAt:recent});
     store.put('hypeObservations','fresh',{id:'fresh',postId:'kept',checkedAt:recent});
-    for(const [id,status,startedAt] of [['old-success','success',old],['new-success','success',recent]])store.put('runs',id,{id,channelId:'x',status,startedAt});
+    for(const [id,status,startedAt] of [['old-success','success',old],['new-success','success',recent],['invalid-time','error',null]])store.put('runs',id,{id,channelId:'x',status,startedAt});
   }});
   // 서버가 켜질 때 이전 프로세스의 대기 기록은 「중단」으로 바뀐다. 지금 프로세스가 기다리는 기록은 오래돼도 남긴다.
   f.app.store.put('runs','old-queued',{id:'old-queued',channelId:'x',status:'queued',startedAt:old});
   await f.tick();
   const ids=kind=>f.app.store.all(kind).map(row=>row.id).sort();
-  assert.deepEqual(ids('posts'),['kept']);assert.deepEqual(ids('snapshots'),[]);assert.deepEqual(ids('hypeObservations'),['fresh']);
-  assert.deepEqual(ids('runs'),['new-success','old-queued']);
+  assert.deepEqual(ids('posts'),backgroundJobsEnabled?['kept']:['expired','kept']);
+  assert.deepEqual(ids('snapshots'),backgroundJobsEnabled?[]:['expired-snapshot']);
+  assert.deepEqual(ids('channelSnapshots'),backgroundJobsEnabled?[]:['expired-channel']);
+  assert.deepEqual(ids('hypeObservations'),backgroundJobsEnabled?['fresh']:['fresh','orphan','stale']);
+  assert.deepEqual(ids('runs'),['invalid-time','new-success','old-queued','old-success']);
   f.app.store.put('runs','older',{id:'older',channelId:'x',status:'error',startedAt:old});
-  f.setClock('2026-10-20T00:30:00.000Z');await f.tick();assert.ok(ids('runs').includes('older'),'not again within the hour');
-  f.setClock('2026-10-20T01:06:00.000Z');await f.tick();assert.ok(!ids('runs').includes('older'));
+  f.setClock('2026-10-20T00:30:00.000Z');await f.tick();assert.ok(ids('runs').includes('older'));
+  f.setClock('2026-10-21T01:06:00.000Z');await f.tick();assert.ok(ids('runs').includes('older'),'elapsed time does not authorize collection history deletion');
+  if(!backgroundJobsEnabled){
+    assert.deepEqual(ids('posts'),['expired','kept']);
+    assert.deepEqual(ids('snapshots'),['expired-snapshot']);
+    assert.deepEqual(ids('channelSnapshots'),['expired-channel']);
+    assert.deepEqual(ids('hypeObservations'),['fresh','orphan','stale']);
+  }
 });
 
 test('the newest runs for visible channels are read without loading every run',t=>{

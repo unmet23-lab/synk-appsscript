@@ -6,11 +6,66 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const status = require('../tools/hermes-synk/status.cjs');
-const { readOverview, readTaskRecords, LEDGER_CACHE, LEDGER_TTL_MS, ARGON_CACHE, SNS_CACHE, BACKUP_CACHE, GATEWAY_RECOVERY_STATUS, MONITOR_STATE } = require('../tools/hermes-synk/overview.cjs');
+const { readOverview, readTaskRecords, sanitizeSns, LEDGER_CACHE, LEDGER_TTL_MS, ARGON_CACHE, SNS_CACHE, BACKUP_CACHE, GATEWAY_RECOVERY_STATUS, MONITOR_STATE } = require('../tools/hermes-synk/overview.cjs');
 const { plan } = require('../tools/hermes-synk/monitor.cjs');
 const NOW = new Date('2026-10-18T08:00:00Z');
 const ID = 'synk-123456abcdef';
 const UNAVAILABLE = async () => ({ connected: false, tasks: [], checkedAt: null });
+
+test('성과 사본의 반복 정제는 계정 게시물 수를 보존하고 손상된 선택 지표는 기존 SNS 상태를 가리지 않는다', () => {
+  const input={appRunning:true,connections:[{platform:'youtube',state:'healthy'}],jobs:{total:1},
+    performance:{schemaVersion:1,checkedAt:NOW.toISOString(),appRunning:true,
+      channels:[{id:'c1',platform:'youtube',label:'채널',url:'https://youtube.com/@channel',snapshot:{checkedAt:NOW.toISOString(),postCount:7}}],
+      entries:[]}};
+  const once=sanitizeSns(input),twice=sanitizeSns(once);
+  assert.deepEqual(twice,once);
+  assert.equal(twice.performance.channels[0].snapshot.posts,7);
+  const broken=sanitizeSns({...input,performance:{schemaVersion:8}});
+  assert.equal(broken.connections[0].state,'healthy');
+  assert.equal(broken.jobs.total,1);
+  assert.equal(broken.performance,undefined);
+});
+
+function persistedSnsRead(extra={}){
+  const raw=fs.readFileSync(path.join(__dirname,'../tools/hermes-synk/overview.cjs'),'utf8').split('async function refreshSns()')[1];
+  const source=/const source = String.raw`([^]*?)`;/.exec(raw)?.[1];assert.ok(source);
+  const rows={channels:[{id:'c1',platform:'youtube',active:true,canonicalUrl:'https://youtube.com/@fixture'}],
+    socialDirectConnections:[{id:'c1',enabled:true}],socialDirectHealth:[{id:'c1',state:'healthy'}],...extra};
+  const harness=String.raw`import sys,json,tempfile,pathlib,sqlite3,subprocess,urllib.request,types
+from unittest.mock import patch
+value=json.load(sys.stdin)
+with tempfile.TemporaryDirectory(prefix='synk-sns-reader-test-') as directory:
+ db=sqlite3.connect(str(pathlib.Path(directory)/'company.sqlite'))
+ db.execute('CREATE TABLE documents(kind TEXT,id TEXT,body TEXT)')
+ for kind,rows in value['rows'].items():
+  for row in rows:db.execute('INSERT INTO documents VALUES(?,?,?)',(kind,row['id'],json.dumps(row)))
+ db.commit();db.close()
+ def inspect(args,**kwargs):
+  assert args==['docker','inspect','synk-company-company-1']
+  return types.SimpleNamespace(stdout=json.dumps([{'State':{'Running':True},'Mounts':[{'Destination':'/data','Source':directory}]}]))
+ with patch.object(subprocess,'run',inspect),patch.object(urllib.request,'urlopen',lambda *a,**k:types.SimpleNamespace(read=lambda limit:b'fixture')):
+  exec(compile(value['source'],'actual-sns-remote-reader','exec'),{})
+`;
+  const python=process.platform==='win32'?path.join(os.homedir(),'.local/bin/python3.12.exe'):'python3';
+  const result=require('node:child_process').spawnSync(python,['-X','utf8','-c',harness],{input:JSON.stringify({source,rows}),encoding:'utf8',windowsHide:true,timeout:15000});
+  assert.equal(result.status,0,result.stderr);return JSON.parse(result.stdout);
+}
+test('원격 Python의 손상된 성과 행도 기존 SNS 연결 상태를 보존한다',()=>{
+  for(const bad of [{checkpoints:null},{checkpoints:[null]},{checkpoints:[{hours:24,metrics:null}]},{checkpoints:[{hours:24,metrics:{},metricProvenance:null}]}]){
+    const out=persistedSnsRead({postPerformanceEntries:[{id:'bad',channelId:'c1',publishedAt:'2026-10-20T00:00:00Z',...bad}]});
+    assert.equal(out.connections[0].state,'healthy');assert.equal(out.appRunning,true);
+    assert.equal(out.performanceError,'PERFORMANCE_READ_FAILED');assert.equal(out.performance,undefined);
+    assert.equal(sanitizeSns(out).connections[0].state,'healthy');
+  }
+});
+test('회사 채널 canonicalUrl과 시차가 다른 최신 계정 관측을 그대로 읽는다',()=>{
+  const out=persistedSnsRead({channelSnapshots:[
+    {id:'old',channelId:'c1',checkedAt:'2026-10-20T10:00:00+09:00',views:1},
+    {id:'new',channelId:'c1',checkedAt:'2026-10-20T02:00:00Z',views:2}
+  ]});
+  assert.equal(out.performance.channels[0].url,'https://youtube.com/@fixture');
+  assert.equal(out.performance.channels[0].snapshot.views,2);
+});
 
 function write(base, relative, value) {
   const file = path.join(base, relative);

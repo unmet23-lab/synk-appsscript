@@ -432,6 +432,25 @@ export function createCreativeResearchService({store,clock=()=>new Date().toISOS
   function claim(user,id,input={}){
     user=writable(user);emptyUsageInput(input);return store.transaction(()=>{user=writable(user);const row=find(user,id);if(!productionReady(row))throw fail('회사에 공유된 제작 양식만 맡을 수 있어요.',409);const saved=usageFor(row);if(saved&&saved.userId!==user.id)throw fail('다른 크루가 이미 맡은 양식이에요.',409);if(!saved)usagePut.run(row.id,guideIdentity(row),user.id,instant(clock()));return {entry:view(user,row)};});
   }
+  // One transaction owns both reservations and the downstream production rows.
+  // The callback is an in-process service, never supplied by an HTTP request.
+  function selectForProduction(user,ids,create){
+    user=writable(user);
+    if(!Array.isArray(ids)||ids.length<1||ids.length>7||new Set(ids).size!==ids.length||typeof create!=='function')throw fail('서로 다른 제작 양식을 1~7개 선택해 주세요.');
+    const result=store.transaction(()=>{
+      user=writable(user);
+      const rows=ids.map(id=>{
+        const row=find(user,id),saved=usageFor(row);
+        if(!productionReady(row))throw fail('현재 공유된 준비 가이드만 선택할 수 있습니다.',409);
+        if(saved&&saved.userId!==user.id)throw fail('다른 직원이 이미 사용 중인 가이드입니다.',409);
+        return row;
+      });
+      for(const row of rows)if(!usageFor(row))usagePut.run(row.id,guideIdentity(row),user.id,instant(clock()));
+      return create(rows,user);
+    });
+    try{onChanged?.();}catch{}
+    return result;
+  }
   function release(user,id,input={}){
     user=writable(user);emptyUsageInput(input);return store.transaction(()=>{user=writable(user);id=text(id,100,'자료 ID',true);const direct=usageGet.get(id),stored=store.get(KIND,id);if(direct?.userId===user.id&&(!stored||!canRead(user,stored))){usageRemove.run(id);return {entry:{id,productionReady:false,usage:{status:'available',canClaim:false,canRelease:false,isMine:false}}};}const row=find(user,id),saved=usageFor(row);if(saved&&saved.userId!==user.id&&user.role!=='admin')throw fail('내가 맡은 양식만 내려놓을 수 있어요.',403);if(row.visibility!=='company'&&user.role!=='admin'&&saved?.userId!==user.id)throw fail('회사에 공유된 양식만 맡거나 내려놓을 수 있어요.',403);if(saved)usageRemove.run(saved.entryId);return {entry:view(user,row)};});
   }
@@ -462,5 +481,5 @@ export function createCreativeResearchService({store,clock=()=>new Date().toISOS
   async function stop(){stopped=true;await waitForIdle();}
   const notify=()=>{try{onChanged?.();}catch{}};
   const mutation=operation=>(...args)=>{const result=operation(...args);if(result?.then)return result.then(value=>{notify();return value;});notify();return result;};
-  return {workspace,revision,reportVisible,add:mutation(add),importTopAd:mutation(importTopAd),importReport:mutation(importReport),update:mutation(update),archive:mutation(archive),claim:mutation(claim),release:mutation(release),waitForIdle,stop};
+  return {workspace,revision,reportVisible,selectForProduction,add:mutation(add),importTopAd:mutation(importTopAd),importReport:mutation(importReport),update:mutation(update),archive:mutation(archive),claim:mutation(claim),release:mutation(release),waitForIdle,stop};
 }

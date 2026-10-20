@@ -94,12 +94,12 @@ document.addEventListener('click',async event=>{
     else if(action==='review-resolve'){
       const note=production?.notes?.find(row=>row.id===target.dataset.id);if(!note?.canResolve||swr.busy||isViewer())return;
       const operation=++swr.operation;swr.busy=true;target.disabled=true;
-      try{const result=await api(`/api/studio-productions/${encodeURIComponent(production.id)}/notes/${encodeURIComponent(note.id)}`,{resolved:!note.resolved});if(!swAlive(guard)||swDetail()?.id!==production.id||!target.isConnected||state.tab!=='studio'||sw.view!=='review')return;swAcceptProduction(result.production);swr.busy=false;swrRender();}
+      try{const result=await api(`/api/studio-productions/${encodeURIComponent(production.id)}/notes/${encodeURIComponent(note.id)}`,{resolved:!note.resolved});if(!swAlive(guard)||swDetail()?.id!==production.id||!target.isConnected||!swVisible()||sw.view!=='review')return;swAcceptProduction(result.production);swr.busy=false;swrRender();}
       finally{if(operation===swr.operation)swr.busy=false;if(target.isConnected)target.disabled=false;}
     }else if(action==='example-archive'){
       const example=sw.data?.examples?.find(row=>row.id===target.dataset.id);if(!example?.canArchive||swr.busy||isViewer())return;
       const operation=++swr.operation,modalRequest=state.modalRequest;swr.busy=true;target.disabled=true;
-      try{await api('/api/studio-examples/'+encodeURIComponent(example.id),{archived:true});if(!swAlive(guard))return;sw.data.examples=sw.data.examples.filter(row=>row.id!==example.id);const sameSource=target.isConnected&&state.modalRequest===modalRequest;if(sameSource)closeModal();if(sameSource&&(state.tab==='studio'&&sw.view==='examples'||state.tab==='content'&&cp.view==='examples'))render();notify('예시를 보관했어요.');}
+      try{await api('/api/studio-examples/'+encodeURIComponent(example.id),{archived:true});if(!swAlive(guard))return;sw.data.examples=sw.data.examples.filter(row=>row.id!==example.id);const sameSource=target.isConnected&&state.modalRequest===modalRequest;if(sameSource)closeModal();if(sameSource&&(swVisible()&&sw.view==='examples'||state.tab==='content'&&cp.view==='examples'))render();notify('예시를 보관했어요.');}
       finally{if(operation===swr.operation)swr.busy=false;if(target.isConnected)target.disabled=false;}
     }
   }catch(error){if(swAlive(guard))notify(error.message);}
@@ -124,7 +124,7 @@ document.addEventListener('submit',async event=>{
       result=await api('/api/studio-examples',{productionId:id,versionId:form.dataset.version,title:values.get('title'),whyGood:values.get('whyGood'),lesson:values.get('lesson'),axis:values.get('axis'),shareConfirmed:true});
     }
     if(!swAlive(guard))return;
-    const sourceAlive=swDetail()?.id===id&&form.isConnected&&(kind==='note'||state.modalRequest===modalRequest)&&state.tab==='studio'&&sw.view==='review';
+    const sourceAlive=swDetail()?.id===id&&form.isConnected&&(kind==='note'||state.modalRequest===modalRequest)&&swVisible()&&sw.view==='review';
     if(!sourceAlive){notify(kind==='note'?'이전 작업의 의견을 저장했어요.':kind==='example'?'선택한 예시를 공유했어요.':'이전 작업의 새 버전을 저장했어요.');return;}
     if(kind==='example'){if(result.example)sw.data.examples=[result.example,...(sw.data.examples||[]).filter(row=>row.id!==result.example.id)];}
     else if(swDetail()?.id===id){swAcceptProduction(result.production);if(kind==='version'){swr.versionId=swrVersions(result.production)[0]?.id||'';swr.compareId='';}}

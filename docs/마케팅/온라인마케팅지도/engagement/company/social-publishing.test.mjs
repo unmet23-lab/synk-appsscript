@@ -33,6 +33,21 @@ test('new drafts canonicalize omitted performance formats and preserve explicit 
   const edited=f.service.savePost(f.users.writer,{revision:specific.revision,body:'본문만 수정'},specific.id).post;
   assert.equal(edited.variants[0].publicationFormat,'youtube-shorts');
 });
+test('fixed DM validity constrains scheduling, rescheduling and delayed execution',async t=>{
+  const f=await fixture(t),start=Date.now()+60000,end=start+120000;
+  f.setTime(new Date(start).toISOString());f.store.put('channels','ig',{...f.store.get('channels','ig'),externalId:'100001'});
+  const dm={account_id:'100001',title:'기간 자료',keyword:'자료',message:'승인한 기간 안내',duration_mode:'fixed',ends_at:new Date(end).toISOString(),
+    resource:{kind:'url',url:'https://synk.im/builds/manual/',folder_id:'fixture_campaign_folder',library_root:'fixture_library_root'}};
+  const post=f.approve(f.create({variants:[{channelId:'ig',text:'자료 안내',format:'post',dm}]}));
+  assert.throws(()=>f.schedule(post,{scheduledAt:new Date(end).toISOString()}),/DM.*만료/);
+  const [job]=f.schedule(post);
+  await assert.rejects(f.service.jobAction(f.users.manager,job.id,{action:'reschedule',scheduledAt:new Date(end).toISOString()}),/DM.*만료/);
+  assert.throws(()=>f.service.rescheduleApply(f.users.manager,{changes:[{jobId:job.id,from:job.scheduledAt,to:new Date(end).toISOString(),updatedAt:job.updatedAt}]}),/DM.*만료/);
+  f.setTime(new Date(end+1).toISOString());await f.service.tick();
+  assert.equal(f.sends.length,0);assert.equal(f.store.get('socialPublishJobs',job.id).status,'failed');
+  assert.equal(f.store.get('socialPublishJobs',job.id).errorCode,'DM_MATERIAL_EXPIRED');
+  assert.match(f.store.get('socialPublishJobs',job.id).message,/제공 기간이 끝났어요/);
+});
 
 test('bulk imports and source rules use canonical performance formats when inputs omit them',async t=>{
   const f=await fixture(t),rows=[f.input(),f.input({variants:[{channelId:'ig',format:'reel',text:'릴스 원문'}]})];

@@ -19,6 +19,36 @@ function fixture(){
 }
 const settle=()=>new Promise(resolve=>setImmediate(resolve));
 
+test('DM file import selects the exact channel and remains an unsent draft until normal save and approval',async()=>{
+  const f=fixture();f.run("socialWorkspaceState.data.channels[0].externalId='100001';socialWorkspaceState.draft={...snswBlank(),variants:[{channelId:'ch'}]}");
+  const input={id:'local-item',dm:{account_id:'100001',campaign_id:'old-campaign',title:'준비 자료',keyword:'자료',message:'승인할 안내',resource:{kind:'url',url:'https://synk.im/test/'}}};
+  const target={dataset:{swDmImport:'0'},files:[{size:200,text:async()=>JSON.stringify(input)}],hasAttribute:name=>name==='data-sw-dm-import'};
+  await f.handlers.get('change').at(-1)({target});
+  assert.equal(f.run('socialWorkspaceState.draft.variants[0].dm.title'),'준비 자료');
+  assert.equal(f.run('socialWorkspaceState.draft.variants[0].dm.campaign_id'),undefined);
+  assert.equal(f.run('socialWorkspaceState.dirty'),true);assert.equal(f.requests.length,0);
+  assert.match(f.run('snswDmFields(socialWorkspaceState.draft.variants[0],0,snswChannel("ch"))'),/저장하고 승인/);
+});
+test('ambiguous or foreign DM files cannot replace the draft contract',async()=>{
+  for(const items of [[{dm:{account_id:'200001'}}],[{dm:{account_id:'100001'}},{dm:{account_id:'100001'}}]]){
+    const f=fixture();f.run("socialWorkspaceState.data.channels[0].externalId='100001';socialWorkspaceState.draft={...snswBlank(),variants:[{channelId:'ch'}]}");
+    await f.handlers.get('change').at(-1)({target:{dataset:{swDmImport:'0'},files:[{size:200,text:async()=>JSON.stringify({items})}],hasAttribute:()=>true}});
+    assert.equal(f.run('socialWorkspaceState.draft.variants[0].dm'),undefined);assert.equal(f.requests.length,0);
+    assert.match(f.run('socialWorkspaceState.error'),/하나/);
+  }
+});
+test('DM status distinguishes completed registration, connection, revoked authority and changed approval',()=>{
+  const f=fixture();f.run("socialWorkspaceState.data.dmRegistration={configured:true,items:[{jobId:'one',channelId:'ch',state:'registered',routingCode:'D0012'},{jobId:'two',channelId:'ch',state:'permission_required'},{jobId:'three',channelId:'ch',state:'connection_required'},{jobId:'four',channelId:'ch',state:'approval_changed'}]}");
+  assert.match(f.run("snswDmJobStatus('one')"),/댓글 DM 등록 완료.*D0012/);
+  const attention=f.run('snswDmAttention()');assert.match(attention,/3건/);assert.match(attention,/담당 권한/);assert.match(attention,/서버 연결/);assert.match(attention,/승인 원고/);
+});
+test('expired material and changed receipt have distinct DM warnings',()=>{
+  const f=fixture();f.run("socialWorkspaceState.data.dmRegistration={configured:true,items:[{jobId:'expired',channelId:'ch',state:'material_expired'},{jobId:'conflict',channelId:'ch',state:'receipt_conflict'}]}");
+  assert.match(f.run("snswDmJobStatus('expired')"),/자료 제공 기간 만료/);
+  assert.match(f.run("snswDmJobStatus('conflict')"),/게시 주소·시각 확인/);
+  const attention=f.run('snswDmAttention()');assert.match(attention,/2건/);assert.doesNotMatch(attention,/승인 원고·게시 연결/);
+});
+
 test('overview shows actual observed posts separately from Workspace publishing and preserves unknown',()=>{
  const f=fixture();f.context.initial.observed={published7d:12,channelsObserved:3,channelsTotal:34};f.run('socialWorkspaceState.data=initial');
  let html=f.run('snswOverview()');assert.match(html,/SNS 7일 게시/);assert.match(html,/<strong>12<\/strong>/);assert.match(html,/3\/34개 채널/);assert.match(html,/Workspace 7일 발행/);assert.match(html,/href="\/\?tab=overview&section=all"/);

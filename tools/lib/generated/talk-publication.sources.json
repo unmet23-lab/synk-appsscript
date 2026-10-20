@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "files": {
+    "lib/sha256.js": "454b353ad6236e4be55b293d1e0c2818c51726b0a131c75072052c05ba58ac5f",
+    "lib/synkbrief-campaign.js": "03ad6b10d512f2ec229f0750b8dc3f9aaba8fd1ba65bcafc30dc7c18da78983d",
+    "lib/synkbrief-conversation.js": "4e3e22e0200b922361ab51d68f4a72b465ecf23d68008ab961c947d630c7f8ee",
+    "lib/synkbrief-drive.js": "beed2bb456a8e88233f38ba5b0b3d44bd6377b06ec88f34fb3d8b65fafcb34f5",
+    "lib/synkbrief-flow.js": "572f476e5e6fb28aaa7c067d5ec2b3ac255b2bab3b91eb9ffa7fd73d942802b9",
+    "lib/synkbrief-publication.js": "e4a39744776249c1183d74295da258ff5546ce2f5bc657d42a3f0ff496812bce",
+    "lib/synkbrief.js": "4503399c2ac7bb6f4fbbe8570e5f251f8f75dc80f7f3aebf7655cf5b69f1f57c",
+    "lib/플래그.js": "00e4cc3b50d3971b0ce802434bc63ae1d7cf9600448caba60545186afe24d387",
+    "tools/synkbrief-drive-manifest-upload.js": "6768f15239c08de9e60ac5a30f12877163566326f3b82f77c183aa36fd3f8728",
+    "tools/synkbrief-drive-manifest.js": "71b80ba0d763803787633b20410893f489c9b4a9ff0d9201a14cc27f392246e9"
+  }
+}

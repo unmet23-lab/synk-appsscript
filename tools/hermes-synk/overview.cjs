@@ -10,6 +10,7 @@ const { execFile } = require('node:child_process');
 const { promisify } = require('node:util');
 const status = require('./status.cjs');
 const { awakeSince } = require('./monitor.cjs');
+const { sanitizePerformance } = require('../operations-home/performance-summary.cjs');
 const runFile = promisify(execFile);
 const ROOT = path.resolve(__dirname, '../..');
 const LEDGER_CACHE = 'runtime/synk-overview/ledger-cache.json';
@@ -439,18 +440,23 @@ function sanitizeSns(payload) {
   const list = value => Array.isArray(value) ? value : [];
   if (list(payload.connections).length > 40 || list(payload.inbox).length > 20) throw new Error('SNS_SHAPE');
   const jobs = payload.jobs && typeof payload.jobs === 'object' ? payload.jobs : {};
+  let performance = null;
+  // Optional metrics must not hide the existing connection/publishing health.
+  try { if (payload.performance) performance = sanitizePerformance(payload.performance); } catch {}
   return { appRunning: payload.appRunning,
     connections: list(payload.connections).map(row => ({ platform: platform(row?.platform, ['youtube', 'instagram', 'facebook']), state: code(row?.state),
       errorCode: code(row?.errorCode), checkedAt: iso(row?.checkedAt), requiresReconnect: row?.requiresReconnect === true, failureCode: code(row?.failureCode) })),
     inbox: list(payload.inbox).map(row => ({ platform: platform(row?.platform, ['instagram', 'facebook']), lastStatus: code(row?.lastStatus),
       lastErrorCode: code(row?.lastErrorCode), lastSyncedAt: iso(row?.lastSyncedAt) })),
     jobs: { total: count(jobs.total), overdue: count(jobs.overdue), overdueRefs: refs(jobs.overdueRefs), recentFailed: count(jobs.recentFailed), recentFailedRefs: refs(jobs.recentFailedRefs) },
+    ...(performance ? { performance } : {}),
+    ...(payload.performanceError === 'PERFORMANCE_READ_FAILED' ? { performanceError: 'PERFORMANCE_READ_FAILED' } : {}),
   };
 }
 
 async function refreshSns() {
   // Argon 조회와 같은 고정 서버 신원·호스트 키·OAuth 도우미를 쓴다. 회사 DB를 읽기 전용으로 열고
-  // 연결 상태·예약 게시·댓글 수집의 코드와 시각만 가져온다. 인증값을 풀거나 SNS API를 부르지 않는다.
+  // 연결 상태와 이미 수집된 공개 채널·게시 관측의 허용 필드만 가져온다. 인증값을 풀거나 SNS API를 부르지 않는다.
   const { NODES } = require('../server-backup/read-status.cjs');
   const policy = require('../모델정책.js');
   const project = 'synk-bake-unmet27';
@@ -508,6 +514,33 @@ if app and app.get('State',{}).get('Running') is True and mount:
    if ch.get('platform') not in ('instagram','facebook') or c.get('enabled') is not True:continue
    inbox.append({'platform':ch.get('platform'),'lastStatus':code(c.get('lastStatus')),'lastErrorCode':code(c.get('lastErrorCode')),'lastSyncedAt':when(c.get('lastSyncedAt'))})
   out.update({'appRunning':True,'connections':conns[:40],'inbox':inbox[:20],'jobs':{'total':len(jobs),'overdue':len(overdue),'overdueRefs':sorted(ref(j['_id']) for j in overdue)[:50],'recentFailed':len(failed),'recentFailedRefs':sorted(ref(j['_id']) for j in failed)[:50]}})
+  # Optional observations must never erase the existing connection/publishing health.
+  try:
+   visible=[c for c in channels.values() if c.get('active') is not False and not c.get('hidden') and c.get('platform') in ('youtube','instagram','facebook','tiktok')]
+   visible.sort(key=lambda c:c['_id'])
+   chosen=visible[:200];chosenIds={c['_id'] for c in chosen}
+   snaps={}
+   for s in rows('channelSnapshots'):
+    cid=s.get('channelId')
+    if cid in chosenIds and when(s.get('checkedAt')) and (cid not in snaps or age(s['checkedAt'])<age(snaps[cid]['checkedAt'])):snaps[cid]=s
+   accountFields=('checkedAt','date','followers','views','postCount','source','expiresAt')
+   accounts=[{'id':c['_id'],'platform':c['platform'],'label':str(c.get('displayName') or c.get('handle') or c['platform'])[:160],'url':c.get('canonicalUrl'),'snapshot':{k:snaps[c['_id']].get(k) for k in accountFields} if c['_id'] in snaps else None} for c in chosen]
+   metricKeys=('views','likes','comments','shares','saves','reach','earlyRetention3sPct','stayedToWatchPct','averageWatchSeconds','averageViewPct','completionRatePct','toolVisits','subscribersGained','subscribersLost')
+   provenanceFields=('source','observedAt','recordedAt','timing','estimated','kind','startDate','endDate','timeZone','derivedFrom','measurementWindowMissed')
+   entries=[e for e in rows('postPerformanceEntries') if e.get('channelId') in chosenIds and e.get('active') is not False and when(e.get('publishedAt'))]
+   entries.sort(key=lambda e:age(e['publishedAt']))
+   observations=[]
+   for e in entries[:100]:
+    points=[]
+    for p in e.get('checkpoints',[])[:2]:
+     point={k:p.get(k) for k in ('hours','status','dueAt','observedAt','recordedAt','source','timing','measurementWindowMissed')}
+     point['metrics']={k:p.get('metrics',{}).get(k) for k in metricKeys}
+     point['metricProvenance']={k:{f:v.get(f) for f in provenanceFields} for k,v in p.get('metricProvenance',{}).items() if k in metricKeys and isinstance(v,dict)}
+     if isinstance(p.get('window'),dict):point['window']={k:p['window'].get(k) for k in ('status','dueAt','fetchedAt','lastErrorCode')}
+     points.append(point)
+    observations.append({'id':e['_id'],'channelId':e['channelId'],'title':str(e.get('title') or '게시물')[:240],'url':e.get('url'),'publishedAt':e['publishedAt'],'expiresAt':e.get('expiresAt'),'checkpoints':points})
+   out['performance']={'schemaVersion':1,'checkedAt':out['checkedAt'],'appRunning':True,'channels':accounts,'entries':observations,'coverage':{'channels':len(visible),'entries':len(entries),'limited':len(visible)>200 or len(entries)>100}}
+  except Exception:out['performanceError']='PERFORMANCE_READ_FAILED'
  finally:
   db.rollback();db.close()
 print(json.dumps(out))
@@ -517,7 +550,7 @@ print(json.dumps(out))
     const result = await new Promise((resolve, reject) => {
       const child = execFile('ssh', ['-i', path.join(os.homedir(), '.ssh', node.key), '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes',
         '-o', 'UserKnownHostsFile=' + known.replaceAll('\\', '/'), '-o', 'HostKeyAlias=' + node.alias, '-o', 'CheckHostIP=no', '-o', 'ConnectTimeout=8',
-        'synk@' + address, 'sudo -n python3 -'], { shell: false, windowsHide: true, timeout: 40_000, maxBuffer: 200_000, encoding: 'utf8' },
+        'synk@' + address, 'sudo -n python3 -'], { shell: false, windowsHide: true, timeout: 40_000, maxBuffer: 2_000_000, encoding: 'utf8' },
       (error, stdout) => error ? reject(error) : resolve(stdout));
       child.stdin.end(source);
     });
@@ -530,7 +563,7 @@ print(json.dumps(out))
 async function snsSnapshot({ hermesHome, now, remoteRefresh, readSnsRemote }) {
   let cached = null;
   try {
-    const record = readJson(hermesHome, SNS_CACHE, 60_000);
+    const record = readJson(hermesHome, SNS_CACHE, 2_000_000);
     if (record.version === 1 && iso(record.checkedAt)) cached = { checkedAt: iso(record.checkedAt), ...sanitizeSns(record) };
   } catch {}
   let refreshFailed = false;

@@ -274,6 +274,7 @@ function usage() {
       별도 근거로 확인된 과거 인지채널별 수만 적는다 (현재 폼·완료 API는 미연결)
       적지 않은 칸은 «모름»으로 남는다. 모든 칸을 셌으면 --전부로 나머지를 0으로 채운다
   node tools/채널성과.js --요약      장부에서 요약만 다시 만든다 (네트워크 안 씀)
+  node tools/채널성과.js --현재      기존 Hermes 수집 사본의 계정·게시 관측 JSON을 읽는다 (파일·장부 변경 없음)
   node tools/채널성과.js --계정      계정 키 목록
 
 인지채널 칸: ${CONSULT_COLUMNS.join(', ')}
@@ -289,6 +290,13 @@ async function main(argv) {
     args.splice(i, 2);
     return value;
   };
+  if(args[0] === '--현재'){
+    const os=require('node:os'),{readCachedPerformance}=require('./operations-home/performance-summary.cjs');
+    const file=take('--사본')||path.join(process.env.LOCALAPPDATA||os.homedir(),'hermes','runtime','synk-overview','sns-cache.json');
+    const result=readCachedPerformance(file);console.log(JSON.stringify(result,null,2));
+    if(!result.available)process.exitCode=1;
+    return;
+  }
   const accounts = loadAccounts();
 
   if (args[0] === '--계정') {
