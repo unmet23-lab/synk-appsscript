@@ -59,6 +59,61 @@ test('reads a staged large blob even when the worktree has a smaller replacement
   assert.equal(result.violations[0].path, 'assets/큰 그림.bin');
 });
 
+test('internal sources are rejected using staged bytes, including renamed copies', async t => {
+  const f = fixture(t);
+  f.write('docs/public-copy.md', '<!-- synk:private -->\nInternal draft.\n');
+  f.write('docs/_ops/NEXT/example.bin', 'internal');
+  f.git(['add', '--', 'docs/public-copy.md', 'docs/_ops/NEXT/example.bin']);
+  f.write('docs/public-copy.md', 'A sanitized unstaged replacement.\n');
+  const result = await f.check();
+  assert.equal(result.ok, false);
+  assert.deepEqual(result.violations.map(x => x.code).sort(), ['internal-source-declaration', 'internal-source-path']);
+});
+
+test('a private document added then removed still blocks publication of its history', async t => {
+  const f = fixture(t);
+  const base = f.git(['rev-parse', 'HEAD']);
+  f.write('notes.md', '<!-- synk:private -->\nPrivate fixture.\n');
+  f.git(['add', '--', 'notes.md']);
+  f.git(['commit', '-q', '-m', 'private fixture']);
+  f.git(['rm', '-q', '--', 'notes.md']);
+  f.git(['commit', '-q', '-m', 'remove fixture']);
+  const result = await f.check({ base, head: 'HEAD' });
+  assert.equal(result.ok, false);
+  assert.equal(result.violations[0].code, 'internal-source-declaration');
+});
+
+test('existing exposure does not block unrelated fixes or deleting its current copy', async t => {
+  const f = fixture(t, {}, { 'docs/_ops/NEXT/old.md': 'Old fixture.\n' });
+  f.write('source.js', 'module.exports = true;\n');
+  f.git(['add', '--', 'source.js']);
+  assert.equal((await f.check()).ok, true);
+  f.git(['rm', '-q', '--', 'docs/_ops/NEXT/old.md']);
+  assert.equal((await f.check()).ok, true);
+});
+
+test('a large historical document copied to a new name is still inspected', async t => {
+  const marked = '<!-- synk:private -->\n' + 'internal fixture\n'.repeat(20);
+  const f = fixture(t, { maxBlobBytes: 64, maxTotalBytes: 10000 }, { 'old.md': marked });
+  f.write('new.md', marked);
+  f.git(['add', '--', 'new.md']);
+  const result = await f.check();
+  assert.equal(result.newBlobs, 0, 'the copy is an already-known blob');
+  assert.deepEqual(result.violations.map(x => x.code), ['internal-source-declaration']);
+});
+
+test('UTF-16 private markers and edits to an exposed document cannot republish it', async t => {
+  const marked = '<!-- synk:private -->\nPrivate fixture.\n';
+  const f = fixture(t, {}, { 'old.md': marked });
+  f.write('old.md', marked + 'An edit.\n');
+  f.write('le.txt', Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from(marked, 'utf16le')]));
+  f.write('be.html', Buffer.concat([Buffer.from([0xfe, 0xff]), Buffer.from(marked, 'utf16le').swap16()]));
+  f.git(['add', '--', 'old.md', 'le.txt', 'be.html']);
+  const result = await f.check();
+  assert.deepEqual(result.violations.map(x => x.path).sort(), ['be.html', 'le.txt', 'old.md']);
+  assert.ok(result.violations.every(x => x.code === 'internal-source-declaration'));
+});
+
 test('grandfathers unchanged large originals and permits ordinary runtime images', async t => {
   const f = fixture(t, { maxBlobBytes: 64, maxTotalBytes: 10000 }, { 'assets/original.png': Buffer.alloc(256, 3) });
   f.write('source.js', 'module.exports = true;\n');

@@ -13,6 +13,21 @@ const POLICY_PATH = 'tools/git-storage-policy.json';
 const MAX_OUTPUT = 128 * 1024 * 1024;
 const OID = /^[0-9a-f]{40}(?:[0-9a-f]{24})?$/;
 const ZERO_OID = /^0+$/;
+// Internal-only sources cannot be republished, even under a new filename.
+// This prevents new exposure; historical copies require separate remediation.
+const INTERNAL_PREFIXES = ['docs/_ops/NEXT/'];
+function privateSourceReason(file, bytes) {
+  if (INTERNAL_PREFIXES.some(prefix => file.toLowerCase().startsWith(prefix.toLowerCase()))) return 'internal-source-path';
+  if (!/\.(?:md|txt|html?)$/i.test(file) || !bytes) return null;
+  // Windows editors may save a marked document as UTF-16. Keep the marker
+  // effective after that encoding-only change as well.
+  const text = bytes[0] === 0xff && bytes[1] === 0xfe ? bytes.subarray(2).toString('utf16le')
+    : bytes[0] === 0xfe && bytes[1] === 0xff ? Buffer.from(bytes.subarray(2)).swap16().toString('utf16le')
+    : bytes.toString('utf8');
+  if (/^\s*<!--\s*synk:private\s*-->\s*$/m.test(text)
+      || /이 문서나 연결한 내부 기록을 공개 저장소·외부 공유 링크에 게시하지 않는다\./.test(text)) return 'internal-source-declaration';
+  return null;
+}
 const USAGE = `Git storage check (read only)
   node tools/git-storage-check.cjs --cached [--base <commit>] [--json]
   node tools/git-storage-check.cjs --base <commit> --head <commit> [--json]
@@ -301,6 +316,13 @@ async function checkRepository(options, repo = process.cwd(), env = process.env)
     if (!item || item.type !== 'blob') throw new Error(`Changed file has no readable blob: ${row.path}`);
     if (!pathsByOid.has(row.oid)) pathsByOid.set(row.oid, []);
     pathsByOid.get(row.oid).push(row);
+    // A historical large blob copied to a new path is not a new storage blob,
+    // but is a new publication. Do not skip its content on the storage limit.
+    // cat-file fails closed if the inspection exceeds MAX_OUTPUT.
+    const privateReason = privateSourceReason(row.path,
+      /\.(?:md|txt|html?)$/i.test(row.path) ? git(['cat-file', 'blob', row.oid]) : null);
+    if (privateReason) violations.push({ code: privateReason, path: row.path, oid: row.oid, bytes: item.bytes,
+      message: 'Internal-only source must stay outside public Git history. Preserve it in private storage.' });
     if (exceptions.has(row.path)) {
       if (!hashes.has(row.oid)) hashes.set(row.oid, await git.sha256(row.oid));
       if (exceptions.get(row.path).has(hashes.get(row.oid))) {
@@ -358,4 +380,4 @@ async function main(argv = process.argv.slice(2)) {
 }
 
 if (require.main === module) main().then(code => { process.exitCode = code; }, error => { console.error(error.message); process.exitCode = 2; });
-module.exports = { checkRepository, generatedKind, main, parseArgs, validatePolicy };
+module.exports = { checkRepository, generatedKind, main, parseArgs, validatePolicy, privateSourceReason };
