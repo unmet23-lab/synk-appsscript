@@ -13,6 +13,7 @@ const root=fileURLToPath(new URL('../../../',import.meta.url));
 const read=file=>fs.readFileSync(path.join(root,file),'utf8');
 const bank=JSON.parse(read('experiences/synk-world-app/world-writing-items.json'));
 const by=id=>bank.items.find(i=>i.id===id);
+const ids=result=>result.items.filter(i=>i.level==='check').map(i=>(i.blank?`${i.blank}:`:'')+i.id);
 const modelAnswer=item=>item.type<=52?Object.fromEntries(item.blanks.map(b=>[b.id,b.model])):item.model;
 
 test('문항 은행: 과제별 모양, 예시답 글자 수 검산, 판 지문, 검수 상태', ()=>{
@@ -52,8 +53,10 @@ test('글자 수는 온라인 반 과제와 같은 규칙(NFC · 공백 포함 �
 });
 
 test('문장 끝 꼴과 문장 나누기', ()=>{
- assert.deepEqual(['있습니다.','안녕하십니까?','찾아가십시오.','좋아요.','그렇죠?','증가했다.','어떻게 해야 할까?','증가함.','있음','고장 나서'].map(endingOf),
-  ['formal','formal','formal','polite','polite','plain','plain','noun','noun','other']);
+ assert.deepEqual(['있습니다.','안녕하십니까?','찾아가십시오.','좋아요.','그렇죠?','증가했다.','어떻게 해야 할까?','증가함.','있음','고장 나서','함께 합시다.','규칙을 지킵시다','모입시다','내놓읍시다'].map(endingOf),
+  ['formal','formal','formal','polite','polite','plain','plain','noun','noun','other','formal','formal','formal','formal']);
+ assert.equal(endingOf('다시 생각해 보시다'),'plain');
+ assert.deepEqual(ids(checkWriting(by('w51-recycle'),{a:'수요일에만 내놓읍시다',b:'함께 지킵시다'})),[]);
  assert.deepEqual(sentencesOf('수거하지 않습니다.그러니 보관하세요. 3.5%다.').map(s=>s.text),['수거하지 않습니다.','그러니 보관하세요.','3.5%다.']);
  assert.deepEqual(sentencesOf('수요일에 내놓습니다.2026년부터 바뀝니다.').map(s=>s.text),['수요일에 내놓습니다.','2026년부터 바뀝니다.']);
  // 같은 문장에 빈칸이 둘이면 다른 빈칸 자리를 띄어 앞뒤 어절이 붙지 않는다.
@@ -61,7 +64,6 @@ test('문장 끝 꼴과 문장 나누기', ()=>{
  assert.deepEqual(blankContext(by('w51-recycle'),'a'),{before:'지금은 화요일과 금요일 두 번 내놓고 있지만 다음 달부터는',after:'',next:'그 대신 수거 시간은 저녁 6시부터 밤 10시까지로 늘어납니다.',endsSentence:true});
 });
 
-const ids=result=>result.items.filter(i=>i.level==='check').map(i=>(i.blank?`${i.blank}:`:'')+i.id);
 test('51·52: 문체·앞말 되풀이·한 문장 넘기기·뒤 문장 옮기기·끝맺음·말하는 낱말을 「확인해 보세요」로', ()=>{
  assert.deepEqual(ids(checkWriting(by('w51-recycle'),{a:'다음 달부터는 수요일에만 내놓으세요',b:'수거하지 않습니다. 그러니 다음 수거일까지 보관해 주세요.'})),
   ['a:beforeWords','a:style','b:oneSentence','b:nextSentence','b:style']);

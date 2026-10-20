@@ -24,7 +24,7 @@
 - **학습 기록:** 기기 기록에 출처(`rule-check`·`ai-reference`)와 함께 남기고, 계획 엔진(세션 ①)은 `readWritingSummary()`와 `WRITING_CANDIDATES`(skillId `ko2.writing.sentence`·`description`·`argument`)를 받는다. Trail에는 코치가 TOPIK II 쓰기 항목을 알 때만 `assessable:false` 시도로 남긴다(AI 판정을 혼자 해낸 성공으로 세지 않는다). 지금 WORLD 코치 지도는 TOPIK I이라 기기 기록만 남는다.
 - **확인:**
   - `node --test experiences/synk-world-app/qa/world-writing.test.mjs` 8개: 문항 모양·글자 수·판 지문, 예시답 점검 0, 51~54 점검 사례, 세 언어 글, 연결 목록, 계획 후보
-  - `node --test experiences/synk-world-app/qa/world-writing-browser.test.mjs`(Edge, 합성 계정, 문항은 시험에서만 통과로 바꿈): 390·1280 목록·51·53·54·점검·자동 피드백(가짜 서버)·예시답·한도·시간 숨기기, 영어·몽골어에서 한국어가 `lang="ko"` 칸 밖에 0, 가로 넘침·13px 밑 한글·44px 밑 단추 0, 흰 알약 1개 이하. 측정은 `qa/world-writing-20261020/result.json`(측정·그림 모두 git 밖, 시험을 다시 돌리면 생긴다)
+  - `node --test experiences/synk-world-app/qa/world-writing-browser.test.mjs`(Edge, 합성 계정, 문항은 시험에서만 통과로 바꿈): 390·1280 목록·51·53·54·점검·자동 피드백(가짜 서버)·예시답·한도·연타 한 번·보낼 길이 넘김·시간 숨기기·휴대폰 문항 이름 두 줄 이하, 영어·몽골어에서 한국어가 `lang="ko"` 칸 밖에 0, 가로 넘침·13px 밑 한글·44px 밑 단추 0, 흰 알약 1개 이하. 측정은 `qa/world-writing-20261020/result.json`(측정·그림 모두 git 밖, 시험을 다시 돌리면 생긴다)
   - 서버: SYNK-talk `node --test tests/world-writing.test.js` 13개
 
 <a id="classroom-homework-20261020"></a>

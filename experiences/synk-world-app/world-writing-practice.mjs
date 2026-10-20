@@ -17,7 +17,7 @@ export const WRITING_CANDIDATES=Object.freeze([51,52,53,54].map(type=>Object.fre
  .concat(Object.freeze({id:'topik2-writing-mock',route:'writing:mock',minutes:55,targets:Object.freeze([...new Set(Object.values(WRITING_SKILLS))]),area:'writing',exam:'topik2'})));
 // 50분 가운데 문항별 권장 시간(분). 시험장에서 흔히 나누는 비율이며 공식 배분이 아니다.
 const SUGGEST=Object.freeze({51:5,52:5,53:12,54:28});
-const TYPES=[51,52,53,54],MOCK_MS=50*60000,LOG_MAX=200;
+const TYPES=[51,52,53,54],MOCK_MS=50*60000,LOG_MAX=200,SEND_MAX=Object.freeze({51:150,52:150,53:600,54:1400});
 const storeKey=owner=>`synk.world.writing.v1:${owner||'guest'}`,TIMER_KEY='synk.world.writing.timer';
 const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const pad=n=>String(n).padStart(2,'0');
@@ -35,7 +35,8 @@ export function readWritingSummary({storage=globalThis.localStorage,owner='guest
 /** 배우기 판(life-ui.mjs)의 「내 위치」 아래 한 줄. print는 life-ui의 펠트 인화지 함수다.
  *  검수를 통과해 열린 문항이 있을 때만 보인다(문항 은행을 아직 못 읽었거나 열린 문항이 없으면 줄이 없다 — 빈 화면으로 가는 단추를 두지 않는다). */
 export function writingRow(print=()=>''){
- if(!openCount)return '';
+ // 읽기가 실패해 은행이 없으면 다시 읽어 두고, 열린 문항이 생기면 호스트에 알린다(app-shell이 판을 다시 칠한다).
+ if(!openCount){if(!bankPromise)void loadWritingBank().then(()=>{if(openCount)globalThis.dispatchEvent?.(new Event('synk-writing-ready'));}).catch(()=>{});return '';}
  return `<button class="life-row" data-world="writing">${print('sentence','life-row-print')}<span class="life-row-copy"><strong>${esc(t('writing.row.title'))}</strong><small>${esc(t('writing.row.sub'))}</small></span></button>`;
 }
 let bankPromise=null,openCount=0;
@@ -91,7 +92,7 @@ function modelHtml(item){
 }
 function feedbackHtml(item,state){
  if(state.status==='sending')return `<p class="ww-note" role="status">${esc(t('writing.ai.sending'))}</p>`;
- if(state.status!=='ok'){const key={limit:'writing.ai.limit',budget:'writing.ai.budget',changed:'writing.ai.changed',done_before:'writing.ai.doneBefore',busy:'writing.ai.busy',empty:'writing.ai.empty'}[state.status]||'writing.ai.unavailable';return `<p class="ww-note" role="status">${esc(t(key))}</p>`;}
+ if(state.status!=='ok'){const key={limit:'writing.ai.limit',budget:'writing.ai.budget',changed:'writing.ai.changed',done_before:'writing.ai.doneBefore',busy:'writing.ai.busy',empty:'writing.ai.empty',too_long:'writing.ai.tooLong'}[state.status]||'writing.ai.unavailable';return `<p class="ww-note" role="status">${esc(t(key,{n:SEND_MAX[item.type]}))}</p>`;}
  const f=state.feedback,out=[`<h3 class="ww-section-title">${esc(t('writing.ai.title'))}</h3><p class="ww-note">${esc(t('writing.ai.reference'))}</p>`];
  if(f.kind==='blanks')out.push(`<ul class="ww-checks">${f.blanks.map(b=>`<li class="ww-check" data-fit="${esc(b.fit)}"><span class="ww-mark" lang="ko">${esc(blankMark(item,b.id))}</span><div><p class="ww-fit">${esc(t(`writing.ai.fit.${b.fit}`))}</p>${b.reason?`<p>${esc(b.reason)}</p>`:''}${b.better?`<p class="ww-expect"><small>${esc(t('writing.ai.better'))}</small> <span lang="ko">${esc(b.better)}</span></p>`:''}</div></li>`).join('')}</ul>`);
  else{
@@ -111,12 +112,12 @@ const uuid=()=>globalThis.crypto?.randomUUID?.()||'10000000-1000-4000-8000-10000
  * coach(): 이 활동의 Atlas 코치(없거나 TOPIK II 쓰기 항목을 모르면 null/예외 — 그때는 기기 기록만 남긴다).
  */
 export function createWritingPractice({show,home,getOwner=()=>'guest',storage=globalThis.localStorage,feedback=null,coach=null,now=Date.now,doc=globalThis.document,lang=currentLang,fetcher}={}){
- let openSeq=0,bank=null,view={kind:'list'},owner=getOwner(),state=readStore(storage,owner),stage=null,ticker=null,offLang=null,shownAt=0,status=null,ai={},pids={},aiSeen={},results={},modelOpen={},stopped=false;
+ let openSeq=0,tries={},bank=null,view={kind:'list'},owner=getOwner(),state=readStore(storage,owner),stage=null,ticker=null,offLang=null,shownAt=0,status=null,ai={},pids={},aiSeen={},results={},modelOpen={},stopped=false;
  const timerOn=()=>{try{return storage?.getItem(TIMER_KEY)!=='off';}catch{return true;}};
  const save=()=>writeStore(storage,owner,state);
  const item=id=>bank?.open.find(i=>i.id===id)||null;
  const draftOf=id=>state.drafts[id]||(state.drafts[id]={answer:item(id)?.type<=52?{}:'',spentMs:0,updatedAt:null,checkedAt:null});
- function syncOwner(){const next=getOwner();if(next!==owner){owner=next;state=readStore(storage,owner);ai={};pids={};aiSeen={};results={};status=null;}}
+ function syncOwner(){const next=getOwner();if(next!==owner){owner=next;state=readStore(storage,owner);ai={};pids={};tries={};aiSeen={};results={};status=null;view={kind:'list'};shownAt=0;}}
  function log(entry){state.log.push({...entry,at:new Date(now()).toISOString()});save();}
  function track(){if(view.kind!=='task'||!shownAt)return;const draft=draftOf(view.id),t0=shownAt;shownAt=now();draft.spentMs=(Number(draft.spentMs)||0)+Math.max(0,Math.min(shownAt-t0,120000));}
  function record(it,{assisted}){
@@ -124,7 +125,7 @@ export function createWritingPractice({show,home,getOwner=()=>'guest',storage=gl
   try{
    pids[it.id]??=c.present({id:`writing-${it.id}`,itemKey:`writing.${it.id}`,familyKey:`writing.${it.id}`,skillId:WRITING_SKILLS[it.type],modality:'writing',difficulty:2,responseFormat:'unknown',audioRequired:false});
    if(assisted)c.help(pids[it.id],'hint');
-   c.answer(pids[it.id],{correct:null,assessable:false,attemptNo:1});
+   tries[it.id]=(tries[it.id]||0)+1;c.answer(pids[it.id],{correct:null,assessable:false,attemptNo:tries[it.id]});
   }catch{/* 코치 지도에 TOPIK II 쓰기 항목이 없으면 기기 기록만 남는다 */}
  }
  // ── 그리기 ──
@@ -136,7 +137,7 @@ export function createWritingPractice({show,home,getOwner=()=>'guest',storage=gl
   const first=bank.open.find(i=>i.type===51)||bank.open[0];
   const mock=TYPES.every(type=>bank.open.some(i=>i.type===type))?`<section class="ww-group"><button class="ww-row" data-ww-mock><span class="ww-row-copy"><strong>${esc(t('writing.mock.title'))}</strong><small>${esc(t('writing.mock.sub'))}</small></span><span class="ww-row-go" aria-hidden="true">→</span></button></section>`:'';
   return `<div class="ww ww-list-view" data-ww-stage><p class="ww-lead">${esc(t('writing.lead'))}</p><p class="ww-note">${esc(t('writing.basis'))}</p>`
-   +(first?`<button class="felt-button ww-primary" data-ww-open="${esc(last?last[0]:first.id)}">${esc(t(last?'writing.continue':'writing.start'))} <span aria-hidden="true">→</span></button>`:'')
+   +(first?`<button class="felt-button ww-primary" data-ww-open="${esc(last?last[0]:first.id)}">${esc(last?t('writing.continue'):t('writing.startAt',{n:first.type}))} <span aria-hidden="true">→</span></button>`:'')
    +groups+mock+`</div>`;
  }
  function answerHtml(it,draft){
@@ -147,26 +148,32 @@ export function createWritingPractice({show,home,getOwner=()=>'guest',storage=gl
  }
  const toneOf=(it,value)=>{const n=writingLength(value);return n===0?'idle':n>=it.min&&n<=it.max?'ok':'check';};
  function timerText(it){
-  if(view.mock){const left=MOCK_MS-(now()-state.mock.startedAt);return left>0?`${t('writing.timer.left')} ${clock(left)}`:t('writing.timer.up');}
+  if(view.mock&&state.mock){const left=MOCK_MS-(now()-state.mock.startedAt);return left>0?`${t('writing.timer.left')} ${clock(left)}`:t('writing.timer.up');}
   const spent=(Number(draftOf(it.id).spentMs)||0)+(shownAt?Math.max(0,now()-shownAt):0);
   return `${t('writing.timer.spent')} ${clock(spent)} · ${t('writing.timer.suggest',{n:SUGGEST[it.type]})}`;
  }
  function taskHtml(it){
+  if(view.mock&&!state.mock)view={...view,mock:false};
   const draft=draftOf(it.id),on=timerOn(),mockStep=view.mock?state.mock.order.indexOf(it.id)+1:0,lastStep=view.mock&&mockStep===state.mock.order.length;
   return `<div class="ww ww-task" data-ww-stage data-type="${it.type}">`
    +`<div class="ww-bar"><button class="quiet-button" data-ww-back>← ${esc(t('writing.back'))}</button><span class="ww-type">${esc(t(`writing.type.${it.type}`))}${view.mock?` · ${esc(t('writing.mock.step',{n:mockStep}))}`:''}</span>`
    +`<span class="ww-timer" data-ww-timer ${on?'':'hidden'}>${esc(timerText(it))}</span><button class="quiet-button ww-timer-toggle" data-ww-timer-toggle aria-pressed="${on?'true':'false'}">${esc(t(on?'writing.timer.hide':'writing.timer.show'))}</button></div>`
    +`<section class="ww-question" lang="ko" aria-label="${esc(t('writing.exam'))}">${questionHtml(it)}</section>`
    +`<section class="ww-answer" aria-label="${esc(t('writing.answer'))}">${answerHtml(it,draft)}<p class="ww-note">${esc(t('writing.saved'))}</p></section>`
-   +`<div class="ww-actions"><button class="felt-button" data-ww-check>${esc(t('writing.check.run'))}</button><button class="plain-button" data-ww-model aria-expanded="${modelOpen[it.id]?'true':'false'}">${esc(t(modelOpen[it.id]?'writing.model.hide':'writing.model.show'))}</button>`
-   +(aiAvailable()?`<button class="plain-button" data-ww-ai ${ai[it.id]?.status==='sending'?'disabled':''}>${esc(t('writing.ai.button'))}</button>`:'')
-   +(view.mock?`<button class="plain-button" data-ww-next>${esc(t(lastStep?'writing.finish':'writing.next'))}</button>`:'')
-   +`<button class="quiet-button" data-ww-clear>${esc(t('writing.clear'))}</button></div>`
-   +(aiAvailable()?`<p class="ww-note ww-ai-notice">${esc(t('writing.ai.notice',{n:status.dailyLimit}))}</p>`:'')
+   +`<div class="ww-actions-wrap" data-ww-actions>${actionsHtml(it,lastStep)}</div>`
    +`<section class="ww-results" data-ww-results aria-live="polite">${results[it.id]?checksHtml(it,results[it.id]):''}</section>`
    +`<section class="ww-feedback" data-ww-feedback aria-live="polite">${ai[it.id]?feedbackHtml(it,ai[it.id]):''}</section>`
    +`<section class="ww-model" data-ww-model-out ${modelOpen[it.id]?'':'hidden'}>${modelOpen[it.id]?modelHtml(it):''}</section></div>`;
  }
+ function actionsHtml(it,lastStep){
+  const sending=ai[it.id]?.status==='sending';
+  return `<div class="ww-actions"><button class="felt-button" data-ww-check>${esc(t('writing.check.run'))}</button><button class="plain-button" data-ww-model aria-expanded="${modelOpen[it.id]?'true':'false'}">${esc(t(modelOpen[it.id]?'writing.model.hide':'writing.model.show'))}</button>`
+   +(aiAvailable()?`<button class="plain-button" data-ww-ai ${sending?'disabled':''}>${esc(t('writing.ai.button'))}</button>`:'')
+   +(view.mock?`<button class="plain-button" data-ww-next>${esc(t(lastStep?'writing.finish':'writing.next'))}</button>`:'')
+   +`<button class="quiet-button" data-ww-clear ${sending?'disabled':''}>${esc(t('writing.clear'))}</button></div>`
+   +(aiAvailable()?`<p class="ww-note ww-ai-notice">${esc(t('writing.ai.notice',{n:status.dailyLimit}))}</p>`:'');
+ }
+ function paintActions(){const it=view.kind==='task'?item(view.id):null,box=stage?.querySelector('[data-ww-actions]');if(!it||!box)return;const last=view.mock&&state.mock?state.mock.order.indexOf(it.id)===state.mock.order.length-1:false;box.innerHTML=actionsHtml(it,last);}
  const aiAvailable=()=>!!(feedback&&status?.enabled&&status.bankHash===bank?.contentHash);
  function render(focus=null){
   if(stopped)return;syncOwner();
@@ -180,7 +187,10 @@ export function createWritingPractice({show,home,getOwner=()=>'guest',storage=gl
  function answerOf(it){const d=draftOf(it.id);return it.type<=52?{...(d.answer||{})}:String(d.answer||'');}
  function runCheck(it){
   const answer=answerOf(it),result=checkWriting(it,answer),d=draftOf(it.id);
-  results[it.id]=result;d.checkedAt=new Date(now()).toISOString();
+  results[it.id]=result;
+  const empty=it.type<=52?!Object.values(answer).some(v=>String(v).trim()):!String(answer).trim();
+  if(empty){const box=stage.querySelector('[data-ww-results]');if(box)box.innerHTML=checksHtml(it,result);return;}
+  d.checkedAt=new Date(now()).toISOString();
   log({source:'rule-check',itemId:it.id,type:it.type,length:it.type<=52?null:writingLength(answer),checks:result.items.filter(i=>i.level==='check').map(i=>i.id),assisted:!!aiSeen[it.id]});
   record(it,{assisted:!!aiSeen[it.id]});
   const box=stage.querySelector('[data-ww-results]');if(box){box.innerHTML=checksHtml(it,result);box.querySelector('h3')?.setAttribute('tabindex','-1');box.querySelector('h3')?.focus();}
@@ -189,17 +199,19 @@ export function createWritingPractice({show,home,getOwner=()=>'guest',storage=gl
   if(ai[it.id]?.status==='sending')return;
   const answer=answerOf(it),empty=it.type<=52?!Object.values(answer).some(v=>String(v).trim()):!answer.trim();
   if(empty){ai[it.id]={status:'empty'};paintFeedback(it);return;}
+  const over=it.type<=52?Object.values(answer).some(v=>writingLength(String(v).trim())>SEND_MAX[it.type]):writingLength(answer.trim())>SEND_MAX[it.type];
+  if(over){ai[it.id]={status:'too_long'};paintFeedback(it);return;}
   const expected=owner;ai[it.id]={status:'sending'};paintFeedback(it);
   let result;
   try{result=await feedback.request({action:'feedback',request_id:uuid(),consent:'send-once',item_id:it.id,bank_hash:bank.contentHash,answer,lang:['ko','en','mn'].includes(lang())?lang():'ko'});}
-  catch(error){result={status:error?.code==='ITEM_CHANGED'||error?.code==='ITEM_NOT_OPEN'?'changed':'unavailable'};}
+  catch(error){result={status:error?.code==='ITEM_CHANGED'||error?.code==='ITEM_NOT_OPEN'?'changed':error?.code==='ANSWER_TOO_LONG'?'too_long':'unavailable'};}
   if(stopped||expected!==getOwner())return;
   ai[it.id]=result?.status==='ok'&&result.feedback?{status:'ok',feedback:result.feedback}:{status:result?.status||'unavailable'};
   if(ai[it.id].status==='ok'){aiSeen[it.id]=true;const f=result.feedback;log({source:'ai-reference',itemId:it.id,type:it.type,
    ...(f.kind==='blanks'?{fits:f.blanks.map(b=>b.fit)}:{ranges:Object.fromEntries(f.categories.map(c=>[c.id,`${c.high}${c.low}`]))})});}
   if(view.kind==='task'&&view.id===it.id)paintFeedback(it);
  }
- function paintFeedback(it){const box=stage?.querySelector('[data-ww-feedback]');if(box)box.innerHTML=feedbackHtml(it,ai[it.id]);const button=stage?.querySelector('[data-ww-ai]');if(button)button.disabled=ai[it.id]?.status==='sending';}
+ function paintFeedback(it){const box=stage?.querySelector('[data-ww-feedback]');if(box)box.innerHTML=feedbackHtml(it,ai[it.id]);const sending=ai[it.id]?.status==='sending';for(const sel of ['[data-ww-ai]','[data-ww-clear]']){const button=stage?.querySelector(sel);if(button)button.disabled=sending;}}
  function startMock(){
   const order=TYPES.map(type=>{const pool=bank.open.filter(i=>i.type===type);return pool[Math.floor((now()/60000)%pool.length)]?.id;}).filter(Boolean);
   state.mock={startedAt:now(),order};save();openTask(order[0],{mock:true});
@@ -228,7 +240,7 @@ export function createWritingPractice({show,home,getOwner=()=>'guest',storage=gl
   else if(button.hasAttribute('data-ww-ai'))void askFeedback(it);
   else if(button.hasAttribute('data-ww-next'))nextMock();
   else if(button.hasAttribute('data-ww-timer-toggle')){const on=!timerOn();try{storage?.setItem(TIMER_KEY,on?'on':'off');}catch{}render('[data-ww-timer-toggle]');}
-  else if(button.hasAttribute('data-ww-clear')){if(doc.defaultView?.confirm&&!doc.defaultView.confirm(t('writing.clearAsk')))return;delete state.drafts[it.id];delete results[it.id];delete ai[it.id];delete aiSeen[it.id];save();shownAt=now();render();}
+  else if(button.hasAttribute('data-ww-clear')){if(ai[it.id]?.status==='sending')return;if(doc.defaultView?.confirm&&!doc.defaultView.confirm(t('writing.clearAsk')))return;delete state.drafts[it.id];delete results[it.id];delete ai[it.id];delete aiSeen[it.id];save();shownAt=now();render();}
  }
  function mount(){
   const root=doc.querySelector('#panel-content [data-ww-stage]')?.parentElement;if(!root)return false;
@@ -240,10 +252,10 @@ export function createWritingPractice({show,home,getOwner=()=>'guest',storage=gl
  }
  async function open(route='writing'){
   stopped=false;syncOwner();const seq=++openSeq,current=()=>!stopped&&seq===openSeq;
-  show(t('writing.title'),`<div class="ww" data-ww-stage><p class="ww-note" role="status">…</p></div>`);
+  show(t('writing.title'),`<div class="ww" data-ww-stage><p class="ww-note" role="status">${esc(t('writing.loading'))}</p></div>`);
   if(!mount())return;
   try{const loaded=await loadWritingBank(fetcher);if(!current())return;bank=loaded;}catch{if(!current())return;const root=doc.querySelector('#panel-content [data-ww-stage]');if(root)root.innerHTML=`<p class="ww-note" role="alert">${esc(t('writing.loadError'))}</p>`;return;}
-  if(feedback&&!status){let next;try{next=await feedback.status();}catch{next={enabled:false};}if(!current())return;status=next;}
+  if(feedback&&!status)Promise.resolve().then(()=>feedback.status()).then(next=>next,()=>({enabled:false})).then(next=>{if(!current())return;status=next;paintActions();});
   const [,which]=String(route).split(':'),type=Number(which);
   if(which==='mock'&&TYPES.every(ty=>bank.open.some(i=>i.type===ty))){startMock();return;}
   if(TYPES.includes(type)){const pick=bank.open.find(i=>i.type===type&&!state.drafts[i.id]?.checkedAt)||bank.open.find(i=>i.type===type);if(pick){openTask(pick.id);return;}}

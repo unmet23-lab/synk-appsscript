@@ -14,7 +14,7 @@ const CLOSERS=/[\s.?!…~"'”’)\]」』〉》>]+$/u;
 export function endingOf(sentence){
  const tail=String(sentence).replace(CLOSERS,'');
  if(!tail)return 'none';
- if(/(니다|니까|시오|읍시다|ㅂ시다)$/.test(tail))return 'formal';
+ if(/(니다|니까|시오|읍시다)$/.test(tail)||(/시다$/.test(tail)&&hasBieup(tail.at(-3)??'')))return 'formal';
  if(/(요|죠)$/.test(tail))return 'polite';
  if(/(했음|됐음|였음|었음|았음|있음|없음|겠음|많음|적음|좋음|높음|낮음|같음|함|됨|임)$/.test(tail))return 'noun';
  if(/(다|까|가|냐|자|라)$/.test(tail))return 'plain';
@@ -63,6 +63,7 @@ const SPELLING=[
  {re:/금새/g,suggest:'금세'},
  {re:/희안/g,suggest:'희한'},
 ];
+const hasBieup=syllable=>{const code=syllable.charCodeAt(0)-0xac00;return code>=0&&code<11172&&code%28===17;};
 const hasRieul=syllable=>{const code=syllable.charCodeAt(0)-0xac00;return code>=0&&code<11172&&code%28===8;};
 
 const scan=(value,rules)=>{

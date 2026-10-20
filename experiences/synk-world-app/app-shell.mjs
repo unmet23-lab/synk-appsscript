@@ -280,7 +280,9 @@ function mountLifeLearning(){
 // 계정이 바뀌면 새로 만든다(쓰던 글·코치는 계정별). 계획 카드는 data-writing-route(예: writing:54)로 그 과제를 연다.
 const writingOwnerId=()=>client?.snapshot?.accountId||'guest';
 // 배우기 판의 쓰기 줄은 열린 문항이 있을 때만 보이므로 문항 은행을 미리 읽어 둔다(작은 JSON 하나).
-void loadWritingBank().then(()=>{if(writingReady()&&lifeUI&&document.querySelector('#world-panel[open] #panel-content .life-hub')&&!document.querySelector('#panel-content [data-world="writing"]'))lifeUI.packs();}).catch(()=>{});
+const repaintWritingRow=()=>{if(writingReady()&&lifeUI&&document.querySelector('#world-panel[open] #panel-content .life-hub')&&!document.querySelector('#panel-content [data-world="writing"]'))lifeUI.packs();};
+void loadWritingBank().then(repaintWritingRow).catch(()=>{});
+window.addEventListener('synk-writing-ready',repaintWritingRow);
 function openWriting(button){
  const owner=writingOwnerId();
  if(!writing||writingOwner!==owner){

@@ -20,8 +20,8 @@
 /* 문항 화면 */
 .ww-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;min-width:0}
 .ww-bar .quiet-button{min-height:44px;padding:0 6px}
-.ww-type{flex:1;min-width:0;font-size:var(--t-label);line-height:1.5;font-weight:var(--wt-strong);color:var(--w-ink-2)}
-.ww-timer{font-family:var(--w-mono);font-size:var(--t-label);line-height:1.5;font-variant-numeric:tabular-nums;color:var(--w-ink-2)}
+.ww-type{flex:1 1 12em;min-width:0;font-size:var(--t-label);line-height:1.5;font-weight:var(--wt-strong);color:var(--w-ink-2)}
+.ww-timer{font-size:var(--t-label);line-height:1.5;font-weight:var(--wt-label);font-variant-numeric:tabular-nums;color:var(--w-ink-2)}
 .ww-timer[hidden]{display:none}
 /* 문제지: 바깥 상자 없이(카드 안 카드 금지) 지시문 + 한 단계 밝은 면의 지문·자료·논제. */
 .ww-question{display:grid;gap:12px;min-width:0}
@@ -81,7 +81,7 @@
 .ww-none{font-size:var(--t-help);line-height:1.6;color:var(--w-ink-2)}
 .ww-cat{display:grid;gap:4px;padding:10px 0;border-bottom:1px solid var(--w-line);font-size:var(--t-help);line-height:1.6;word-break:keep-all}
 .ww-cat-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
-.ww-range{font-family:var(--w-mono);font-size:var(--t-help);font-variant-numeric:tabular-nums}
+.ww-range{font-size:var(--t-help);font-weight:var(--wt-strong);font-variant-numeric:tabular-nums}
 .ww-model-label{font-size:var(--t-label);line-height:1.5;font-weight:var(--wt-strong);color:var(--w-ink-3)}
 .ww-model-text{display:grid;gap:8px;font-size:var(--t-lead);line-height:1.8;word-break:keep-all}
 .ww-model-blank{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;padding:8px 0;border-bottom:1px solid var(--w-line);font-size:var(--t-help);line-height:1.6}
