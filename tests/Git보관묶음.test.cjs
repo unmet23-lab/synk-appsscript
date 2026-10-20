@@ -417,8 +417,11 @@ test('public prerequisites take the first reaching remote ref (branches first, t
   assert.deepEqual(Object.fromEntries(receipt.prerequisites.map(row => [row.sha, row.ref])),
     Object.fromEntries([a, b, pinned].map(sha => [sha, expected(sha)])));
   assert.deepEqual([expected(a), expected(b), expected(pinned)], ['refs/heads/feat-a', 'refs/heads/feat-b', PREFIX + pinned]);
-  // 원격 ref 35개를 하나씩 묻지 않는다: rev-list는 그래프를 읽는 한 번뿐이다(10-20 19:30 회차는 1,702번).
-  assert.deepEqual(calls.filter(args => args[0] === 'rev-list'), [['rev-list', '--parents', '--stdin']]);
+  // 원격 ref 35개를 하나씩 묻지 않는다: 그래프를 읽는 rev-list --parents가 한 번이고, ref마다 부르던 rev-list --max-count=1은
+  // 없다(10-20 19:30 회차는 1,702번). 증분 묶음이 덮이지 않은 머리를 고르는 rev-list 한 번은 ref 수와 상관없다.
+  const revLists = calls.filter(args => args[0] === 'rev-list');
+  assert.equal(revLists.filter(args => args.includes('--parents')).length, 1, JSON.stringify(revLists));
+  assert.equal(revLists.filter(args => args.includes('--max-count=1')).length, 0, JSON.stringify(revLists));
   assert.equal(calls.some(args => args[0] === 'push'), false);
 });
 
