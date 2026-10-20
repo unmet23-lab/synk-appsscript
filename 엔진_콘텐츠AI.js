@@ -47,7 +47,7 @@ function replaceContentType(ss, type, items) {
  *   「어느 그림이 현행인가」를 파일 하나가 안다 — 굽기를 다시 하면 URL 을 안 건드려도 그림이 바뀐다.
  * ⚠ 한글 경로는 «퍼센트 인코딩»으로 박는다 — 시트 셀 → HTML → 앱을 거치며 어디서 인코딩이 갈릴지
  *   모른다. 인코딩판도 실측 200 이다(둘 다 재봤다).
- * 굽는 자 = tools/가이드아바타굽기.py */
+ * 굽는 자 = tools/가이드아바타굽기.py(10-20 보관) */
 const GUIDE_IMG_BASE_ = 'https://raw.githubusercontent.com/unmet23-lab/synk-appsscript/master/docs/'
   + '%EC%BA%90%EB%A6%AD%ED%84%B0/%EA%B0%80%EC%9D%B4%EB%93%9C_%EC%95%84%EB%B0%94%ED%83%80/';
 const GUIDE_IMG_ = {
@@ -55,7 +55,7 @@ const GUIDE_IMG_ = {
   까몽: GUIDE_IMG_BASE_ + '%EA%B9%8C%EB%AA%BD_%EC%95%84%EB%B0%94%ED%83%80_%EB%B0%B0%ED%8F%AC.jpg',
   /* 마린도 08-28 에 섰다(유호 「해골 빼고 아바타까지」). 08-27 에 비워 뒀던 까닭 — 렌더 전량이
    * 총과 해골을 정면에 들었다 — 은 두 갈래로 풀렸다: ①우주복판이 갑옷을 통째로 대신해 가슴
-   * 독수리+해골이 사라졌고 ②헬멧 해골은 «조각째» 걷었다(tools/마린에셋들이기.py 의 빼기=상자). */
+   * 독수리+해골이 사라졌고 ②헬멧 해골은 «조각째» 걷었다(tools/마린에셋들이기.py(10-20 보관) 의 빼기=상자). */
   마린: GUIDE_IMG_BASE_ + '%EB%A7%88%EB%A6%B0_%EC%95%84%EB%B0%94%ED%83%80_%EB%B0%B0%ED%8F%AC.jpg'
 };
 function GUIDE_ROWS_() {
