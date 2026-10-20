@@ -21,6 +21,9 @@ const TYPES=[51,52,53,54],MOCK_MS=50*60000,LOG_MAX=200,SEND_MAX=Object.freeze({5
 const storeKey=owner=>`synk.world.writing.v1:${owner||'guest'}`,TIMER_KEY='synk.world.writing.timer';
 const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const pad=n=>String(n).padStart(2,'0');
+// 자동 피드백 설명 칸(화면 언어)에 섞인 한국어 조각(「-다」·「그래서」 같은 예시)은 lang="ko" 칸으로 감싼다 — 한 자리 한 언어.
+const KO_RUN=/([「『“"'(\-~]*[가-힣ㄱ-ㅎㅏ-ㅣ]+(?:[\s\-~·]*[가-힣ㄱ-ㅎㅏ-ㅣ]+)*[」』”"')]*)/g;
+const explain=(text,lang)=>lang==='ko'?esc(text):String(text??'').split(KO_RUN).map((part,i)=>i%2?`<span lang="ko">${esc(part)}</span>`:esc(part)).join('');
 const clock=ms=>{const s=Math.max(0,Math.round(ms/1000));return `${pad(Math.floor(s/60))}:${pad(s%60)}`;};
 
 function readStore(storage,owner){try{const v=JSON.parse(storage?.getItem(storeKey(owner))||'null');if(v&&typeof v==='object'&&v.drafts&&typeof v.drafts==='object')return {drafts:v.drafts,log:Array.isArray(v.log)?v.log:[],mock:v.mock||null};}catch{}return {drafts:{},log:[],mock:null};}
@@ -90,17 +93,18 @@ function modelHtml(item){
  if(item.watch)rows.push(`<p class="ww-model-label">${esc(t('writing.watch'))}</p><p lang="ko">${esc(item.watch)}</p>`);
  return `<h3 class="ww-section-title">${esc(t('writing.model.title'))}</h3><p class="ww-note">${esc(t('writing.model.note'))}</p>${rows.join('')}`;
 }
-function feedbackHtml(item,state){
+function feedbackHtml(item,state,lang='ko'){
+ const ex=text=>explain(text,lang);
  if(state.status==='sending')return `<p class="ww-note" role="status">${esc(t('writing.ai.sending'))}</p>`;
  if(state.status!=='ok'){const key={limit:'writing.ai.limit',budget:'writing.ai.budget',changed:'writing.ai.changed',done_before:'writing.ai.doneBefore',busy:'writing.ai.busy',empty:'writing.ai.empty',too_long:'writing.ai.tooLong'}[state.status]||'writing.ai.unavailable';return `<p class="ww-note" role="status">${esc(t(key,{n:SEND_MAX[item.type]}))}</p>`;}
  const f=state.feedback,out=[`<h3 class="ww-section-title">${esc(t('writing.ai.title'))}</h3><p class="ww-note">${esc(t('writing.ai.reference'))}</p>`];
- if(f.kind==='blanks')out.push(`<ul class="ww-checks">${f.blanks.map(b=>`<li class="ww-check" data-fit="${esc(b.fit)}"><span class="ww-mark" lang="ko">${esc(blankMark(item,b.id))}</span><div><p class="ww-fit">${esc(t(`writing.ai.fit.${b.fit}`))}</p>${b.reason?`<p>${esc(b.reason)}</p>`:''}${b.better?`<p class="ww-expect"><small>${esc(t('writing.ai.better'))}</small> <span lang="ko">${esc(b.better)}</span></p>`:''}</div></li>`).join('')}</ul>`);
+ if(f.kind==='blanks')out.push(`<ul class="ww-checks">${f.blanks.map(b=>`<li class="ww-check" data-fit="${esc(b.fit)}"><span class="ww-mark" lang="ko">${esc(blankMark(item,b.id))}</span><div><p class="ww-fit">${esc(t(`writing.ai.fit.${b.fit}`))}</p>${b.reason?`<p>${ex(b.reason)}</p>`:''}${b.better?`<p class="ww-expect"><small>${esc(t('writing.ai.better'))}</small> <span lang="ko">${esc(b.better)}</span></p>`:''}</div></li>`).join('')}</ul>`);
  else{
-  out.push(`<ul class="ww-cats">${f.categories.map(c=>`<li class="ww-cat"><div class="ww-cat-head"><strong>${esc(t(`writing.ai.cat.${c.id}`))}</strong><span class="ww-range"><small>${esc(t('writing.ai.range'))}</small> ${esc(c.high===c.low?c.high:`${c.high}~${c.low}`)}</span></div>${c.good?`<p><small>${esc(t('writing.ai.good'))}</small> ${esc(c.good)}</p>`:''}${c.fix?`<p><small>${esc(t('writing.ai.fix'))}</small> ${esc(c.fix)}</p>`:''}${c.quote?`<p class="ww-quotes" lang="ko"><mark>${esc(c.quote)}</mark></p>`:''}</li>`).join('')}</ul><p class="ww-note">${esc(t('writing.ai.rangeNote'))}</p>`);
-  if(f.missing?.length)out.push(`<p class="ww-model-label">${esc(t('writing.ai.missing'))}</p><ul>${f.missing.map(m=>`<li>${esc(m)}</li>`).join('')}</ul>`);
-  if(f.rewrite?.to)out.push(`<p class="ww-model-label">${esc(t('writing.ai.rewrite'))}</p>${f.rewrite.from?`<p class="ww-quotes" lang="ko"><mark>${esc(f.rewrite.from)}</mark></p>`:''}<p class="ww-model-text" lang="ko">${esc(f.rewrite.to)}</p>${f.rewrite.why?`<p>${esc(f.rewrite.why)}</p>`:''}`);
+  out.push(`<ul class="ww-cats">${f.categories.map(c=>`<li class="ww-cat"><div class="ww-cat-head"><strong>${esc(t(`writing.ai.cat.${c.id}`))}</strong><span class="ww-range"><small>${esc(t('writing.ai.range'))}</small> ${esc(c.high===c.low?c.high:`${c.high}~${c.low}`)}</span></div>${c.good?`<p><small>${esc(t('writing.ai.good'))}</small> ${ex(c.good)}</p>`:''}${c.fix?`<p><small>${esc(t('writing.ai.fix'))}</small> ${ex(c.fix)}</p>`:''}${c.quote?`<p class="ww-quotes" lang="ko"><mark>${esc(c.quote)}</mark></p>`:''}</li>`).join('')}</ul><p class="ww-note">${esc(t('writing.ai.rangeNote'))}</p>`);
+  if(f.missing?.length)out.push(`<p class="ww-model-label">${esc(t('writing.ai.missing'))}</p><ul>${f.missing.map(m=>`<li>${ex(m)}</li>`).join('')}</ul>`);
+  if(f.rewrite?.to)out.push(`<p class="ww-model-label">${esc(t('writing.ai.rewrite'))}</p>${f.rewrite.from?`<p class="ww-quotes" lang="ko"><mark>${esc(f.rewrite.from)}</mark></p>`:''}<p class="ww-model-text" lang="ko">${esc(f.rewrite.to)}</p>${f.rewrite.why?`<p>${ex(f.rewrite.why)}</p>`:''}`);
  }
- if(f.note)out.push(`<p class="ww-note">${esc(f.note)}</p>`);
+ if(f.note)out.push(`<p class="ww-note">${ex(f.note)}</p>`);
  return out.join('');
 }
 const uuid=()=>globalThis.crypto?.randomUUID?.()||'10000000-1000-4000-8000-100000000000'.replace(/[018]/g,c=>(c^globalThis.crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16));
@@ -162,7 +166,7 @@ export function createWritingPractice({show,home,getOwner=()=>'guest',storage=gl
    +`<section class="ww-answer" aria-label="${esc(t('writing.answer'))}">${answerHtml(it,draft)}<p class="ww-note">${esc(t('writing.saved'))}</p></section>`
    +`<div class="ww-actions-wrap" data-ww-actions>${actionsHtml(it,lastStep)}</div>`
    +`<section class="ww-results" data-ww-results aria-live="polite">${results[it.id]?checksHtml(it,results[it.id]):''}</section>`
-   +`<section class="ww-feedback" data-ww-feedback aria-live="polite">${ai[it.id]?feedbackHtml(it,ai[it.id]):''}</section>`
+   +`<section class="ww-feedback" data-ww-feedback aria-live="polite">${ai[it.id]?feedbackHtml(it,ai[it.id],lang()):''}</section>`
    +`<section class="ww-model" data-ww-model-out ${modelOpen[it.id]?'':'hidden'}>${modelOpen[it.id]?modelHtml(it):''}</section></div>`;
  }
  function actionsHtml(it,lastStep){
@@ -211,7 +215,7 @@ export function createWritingPractice({show,home,getOwner=()=>'guest',storage=gl
    ...(f.kind==='blanks'?{fits:f.blanks.map(b=>b.fit)}:{ranges:Object.fromEntries(f.categories.map(c=>[c.id,`${c.high}${c.low}`]))})});}
   if(view.kind==='task'&&view.id===it.id)paintFeedback(it);
  }
- function paintFeedback(it){const box=stage?.querySelector('[data-ww-feedback]');if(box)box.innerHTML=feedbackHtml(it,ai[it.id]);const sending=ai[it.id]?.status==='sending';for(const sel of ['[data-ww-ai]','[data-ww-clear]']){const button=stage?.querySelector(sel);if(button)button.disabled=sending;}}
+ function paintFeedback(it){const box=stage?.querySelector('[data-ww-feedback]');if(box)box.innerHTML=feedbackHtml(it,ai[it.id],lang());const sending=ai[it.id]?.status==='sending';for(const sel of ['[data-ww-ai]','[data-ww-clear]']){const button=stage?.querySelector(sel);if(button)button.disabled=sending;}}
  function startMock(){
   const order=TYPES.map(type=>{const pool=bank.open.filter(i=>i.type===type);return pool[Math.floor((now()/60000)%pool.length)]?.id;}).filter(Boolean);
   state.mock={startedAt:now(),order};save();openTask(order[0],{mock:true});

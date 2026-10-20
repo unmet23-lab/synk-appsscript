@@ -27,7 +27,7 @@ const FEEDBACK={
 };
 
 // 서버 계약: 설명 칸(good·fix·why·missing·note)은 화면 언어로, 한국어는 quote·from·to·better 칸에만 온다.
-const localized=(f,lang)=>{const say=lang==='mn'?'Тайлбар':'Note';return {...f,categories:f.categories.map(c=>({...c,good:say+' — good'.replace('good',lang==='mn'?'сайн':'good'),fix:say+(lang==='mn'?' — засах':' — fix')})),missing:[lang==='mn'?'2022 оны тоо':'The 2022 figure'],rewrite:{...f.rewrite,why:lang==='mn'?'Төгсгөлийг тааруулна.':'Match the ending.'},note:lang==='mn'?'Дараа нь шалтгааныг нэмээрэй.':'Next, add the causes.'};};
+const localized=(f,lang)=>{const say=lang==='mn'?'Тайлбар':'Note';return {...f,categories:f.categories.map(c=>({...c,good:say+' — good'.replace('good',lang==='mn'?'сайн':'good'),fix:say+(lang==='mn'?' — засах: 「-다」 хэлбэрээр, 「그래서」 гэх мэт холбох үг':' — fix: use the 「-다」 ending and links such as 그래서')})),missing:[lang==='mn'?'2022 оны тоо':'The 2022 figure'],rewrite:{...f.rewrite,why:lang==='mn'?'Төгсгөлийг тааруулна.':'Match the ending.'},note:lang==='mn'?'Дараа нь шалтгааныг нэмээрэй.':'Next, add the causes.'};};
 test('계정 모드 WORLD의 「TOPIK II 쓰기 연습」: 목록·51·53·54·규칙 점검·자동 피드백·예시답·세 언어 (390·1280)',{timeout:600000,skip:!talkRoot&&'형제 저장소 SYNK-talk이 없다(SYNK_TALK_ROOT로 가리킨다)'},async t=>{
  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'synk-world-writing-'));fs.writeFileSync(path.join(directory,'config.json'),JSON.stringify(config));
  fs.mkdirSync(out,{recursive:true});for(const name of fs.readdirSync(out))if(/\.png$/.test(name))fs.rmSync(path.join(out,name));
