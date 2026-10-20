@@ -57,7 +57,7 @@
 .ww-actions .plain-button{min-height:48px;padding:0 18px;font-size:14px}
 .ww-actions .quiet-button{min-height:44px}
 .ww-actions [disabled]{opacity:.5;cursor:default}
-.ww-ai-notice{margin-top:-4px}
+.ww-actions-wrap{display:grid;gap:10px;min-width:0}
 /* 점검·피드백·예시답: 1px 선 목록. LED 점은 확인할 것(노랑)·메모(회색). */
 :is(.ww-results,.ww-feedback,.ww-model):not(:empty){display:grid;gap:10px;padding-top:14px;border-top:1px solid var(--w-line)}
 .ww-model[hidden]{display:none}
@@ -89,7 +89,7 @@
 .ww-model ul,.ww-feedback ul:not(.ww-checks):not(.ww-cats){padding-left:1.1em;font-size:var(--t-help);line-height:1.6}
 @container (min-width:900px){
  .ww-task{grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:28px;align-items:start}
- .ww-task>:is(.ww-bar,.ww-actions,.ww-ai-notice,.ww-results,.ww-feedback,.ww-model){grid-column:1/-1}
+ .ww-task>:is(.ww-bar,.ww-actions-wrap,.ww-results,.ww-feedback,.ww-model){grid-column:1/-1}
  .ww-task>.ww-question{grid-column:1;position:sticky;top:0}
  .ww-task>.ww-answer{grid-column:2}
 }

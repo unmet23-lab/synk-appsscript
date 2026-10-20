@@ -96,6 +96,7 @@ test('계정 모드 WORLD의 「TOPIK II 쓰기 연습」: 목록·51·53·54·�
    const targets=[...el.querySelectorAll('a,button,input,textarea')].filter(shown).map(n=>({key:n.dataset.wwOpen||n.className||n.tagName,height:Math.round(n.getBoundingClientRect().height)}));
    return {lang:document.documentElement.lang,innerWidth,docOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,panelOverflow:content.scrollWidth-content.clientWidth,
     overflowing,small,mixed,shortTargets:targets.filter(x=>x.height<44),whitePills:[...el.querySelectorAll('.felt-button')].filter(shown).length,
+    actions:(()=>{const w=el.querySelector('[data-ww-actions]');if(!w)return null;const r=w.getBoundingClientRect(),n=w.querySelector('.ww-ai-notice'),b=w.querySelector('.ww-actions');return {width:Math.round(r.width),stage:Math.round(box.width),noteGap:n&&b?Math.round(n.getBoundingClientRect().top-b.getBoundingClientRect().bottom):null};})(),
     typeLines:(()=>{const n=el.querySelector('.ww-type');if(!n)return null;return Math.round(n.getBoundingClientRect().height/parseFloat(getComputedStyle(n).lineHeight));})(),
     columns:(()=>{const q=el.querySelector('.ww-question'),a=el.querySelector('.ww-answer');if(!q||!a)return null;const r1=q.getBoundingClientRect(),r2=a.getBoundingClientRect();return r2.left>=r1.right-1?'side':'stack';})()};
   });
@@ -139,6 +140,8 @@ test('계정 모드 WORLD의 「TOPIK II 쓰기 연습」: 목록·51·53·54·�
    await page.locator('#panel-content [data-ww-back]').click();await page.locator('#panel-content [data-ww-open="w54-shared-rules"]').last().click();await page.waitForSelector('#panel-content .ww-task[data-type="54"]');
    await record(`${tag}-54`);
    assert.equal(measures[`${tag}-54`].columns,tag==='1280'?'side':'stack');
+   // 단추 칸은 넓은 판에서도 전폭이고, 단추 줄과 안내 줄 사이가 붙지 않는다.
+   assert.ok(measures[`${tag}-54`].actions.width>=measures[`${tag}-54`].actions.stage-1,`${tag} 단추 칸 ${JSON.stringify(measures[`${tag}-54`].actions)}`);assert.ok(measures[`${tag}-54`].actions.noteGap>=8,`${tag} 안내 간격`);
    assert.ok(measures[`${tag}-54`].typeLines<=(tag==='1280'?1:2),`${tag} 문항 이름 ${measures[`${tag}-54`].typeLines}줄`);
    // 보낼 수 있는 길이(1,400자)를 넘으면 보내지 않고 알린다.
    {const before=calls.filter(c=>c.body?.action==='feedback').length;await page.locator('#panel-content [data-ww-text]').fill('가'.repeat(1401));await page.locator('#panel-content [data-ww-ai]').click();
