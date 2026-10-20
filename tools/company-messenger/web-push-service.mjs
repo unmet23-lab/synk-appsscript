@@ -228,7 +228,9 @@ export function createWebPushService({ db, enabled = false, publicKey = null, pr
     const controller = new AbortController(); controllers.set(subscription.id, controller);
     let response;
     try {
-      const ttl = Math.max(1, Math.floor((Math.min(...claimed.map(row => Date.parse(row.expires_at))) - Date.parse(now())) / 1000));
+      // One payloadless wake-up covers every claimed row. Keep it for the longest-lived row so a 45-second call
+      // invitation in the same batch cannot shorten a mention's delivery window; rows still expire one by one.
+      const ttl = Math.max(1, Math.floor((Math.max(...claimed.map(row => Date.parse(row.expires_at))) - Date.parse(now())) / 1000));
       response = await send({ endpoint: current.endpoint, publicKey, privateKey, subject, ttl, now: now(), signal: controller.signal, authorize: async () => {
         if (stopped || controller.signal.aborted) throw unavailable();
         const active = await live(subscription.user_id, subscription.session_hash);
