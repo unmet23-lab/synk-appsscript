@@ -7,14 +7,18 @@ const map = createMap(require('../../strata/maps/topik-i.json'));
 function fixture() { const rows = new Map(); return createGame({ gameId: 'synk-town', map, storage: { getItem: key => rows.get(key) ?? null, setItem: (key, value) => rows.set(key, value) } }); }
 function target(items) { const m = readingMetadata(items[0]); return { skillId: m.skillId, difficulty: m.difficulty, modality: m.modality, responseFormat: m.responseFormat,
   familyKeys: items.map(x => readingMetadata(x).familyKey), itemKeys: items.map(x => readingMetadata(x).itemKey), requiredAttempts: 3 }; }
-test('Town has 18 distinct authored passages and six families per reading skill', () => {
-  assert.equal(READING_CHECKS.length, 18); assert.equal(new Set(READING_CHECKS.map(x => x.id)).size, 18);
-  assert.equal(new Set(READING_CHECKS.map(x => x.passage)).size, 18);
-  for (const skill of ['detail', 'negation', 'sequence']) assert.equal(READING_CHECKS.filter(x => x.skill === skill).length, 6);
+test('Town has 30 distinct authored passages and six families per reading skill', () => {
+  assert.equal(READING_CHECKS.length, 30); assert.equal(new Set(READING_CHECKS.map(x => x.id)).size, 30);
+  assert.equal(new Set(READING_CHECKS.map(x => x.passage)).size, 30);
+  for (const skill of ['detail', 'negation', 'sequence', 'reason', 'main']) assert.equal(READING_CHECKS.filter(x => x.skill === skill).length, 6);
+  // readingFeedback adds its own full stop after a choice, so a choice never ends with one ("…올랐어요..").
+  assert.ok(READING_CHECKS.every(x => x.choices.every(choice => !/\.$/.test(choice))));
+  // The reason and main items (2026-10-20) spread their answers over all three places.
+  for (const skill of ['reason', 'main']) assert.deepEqual([...new Set(READING_CHECKS.filter(x => x.skill === skill).map(x => x.correct))].sort(), [0, 1, 2], skill);
   for (const item of READING_CHECKS) { assert.equal(new Set(item.choices).size, 3); assert.ok(item.choices[item.correct]); assert.ok(item.hint && item.explanation); }
   assert.equal(readingMetadata(READING_CHECKS[0]).familyKey, 'synk-town.reading-check.town-reading-place.v1');
 });
-for (const skill of ['detail', 'negation', 'sequence']) test(`${skill}: first 3 and following 3 use different original passages`, () => {
+for (const skill of ['detail', 'negation', 'sequence', 'reason', 'main']) test(`${skill}: first 3 and following 3 use different original passages`, () => {
   const coach = fixture(), pool = READING_CHECKS.filter(x => x.skill === skill);
   const first = selectReadingChecks(coach, { assignment: target(pool) }); assert.equal(first.length, 3);
   for (const item of first) { const pid = coach.present(readingMetadata(item)); assert.equal(coach.answer(pid, readingAnswer(item, item.correct)).independent, true); }

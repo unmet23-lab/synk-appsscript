@@ -15187,6 +15187,127 @@ var READING_CHECKS = Object.freeze([
     correct: 0,
     hint: "\uD45C \uAD6C\uB9E4\uC640 \uC785\uC7A5 \uC0AC\uC774\uC758 \uD589\uB3D9\uC744 \uCC3E\uC544\uC694.",
     explanation: "\uD45C\uB97C \uC0B0 \uB4A4 \uC785\uAD6C\uC5D0\uC11C \uBCF4\uC5EC \uC8FC\uACE0 \uC548\uC73C\uB85C \uB4E4\uC5B4\uAC00\uC694."
+  },
+  // 읽고 이유 이해하기·핵심 이해하기(2026-10-20, 「내 위치」 짧은 진단이 비어 있던 두 항목, Fable 검수 반영). 다른 문항처럼 교원 검수 전 초안이다.
+  {
+    id: "town-reason-library",
+    skill: "reason",
+    passage: "\uC624\uB298 \uB9C8\uC744 \uB3C4\uC11C\uAD00\uC740 \uC624\uD6C4 3\uC2DC\uC5D0 \uBB38\uC744 \uB2EB\uC2B5\uB2C8\uB2E4. \uC800\uB141\uC5D0 \uB3C4\uC11C\uAD00 \uCCAD\uC18C\uB97C \uD558\uAE30 \uB54C\uBB38\uC785\uB2C8\uB2E4. \uB0B4\uC77C\uC740 \uC544\uCE68 9\uC2DC\uC5D0 \uBB38\uC744 \uC5FD\uB2C8\uB2E4.",
+    question: "\uC624\uB298 \uB3C4\uC11C\uAD00\uC774 \uC624\uD6C4 3\uC2DC\uC5D0 \uBB38\uC744 \uB2EB\uB294 \uC774\uC720\uB294 \uBB34\uC5C7\uC778\uAC00\uC694?",
+    choices: ["\uCCAD\uC18C\uB97C \uD574\uC57C \uD574\uC11C", "\uB0B4\uC77C \uC544\uCE68\uC5D0 \uBB38\uC744 \uC5F4\uC5B4\uC11C", "\uCC45\uC744 \uBE4C\uB9AC\uB294 \uC0AC\uB78C\uC774 \uC5C6\uC5B4\uC11C"],
+    correct: 0,
+    hint: "\u201C\uB54C\uBB38\uC785\uB2C8\uB2E4\u201D \uC55E\uC5D0 \uC788\uB294 \uB9D0\uC744 \uCC3E\uC544\uC694.",
+    explanation: "\uC800\uB141\uC5D0 \uB3C4\uC11C\uAD00 \uCCAD\uC18C\uB97C \uD558\uAE30 \uB54C\uBB38\uC5D0 \uC624\uB298\uC740 \uC624\uD6C4 3\uC2DC\uC5D0 \uBB38\uC744 \uB2EB\uC544\uC694."
+  },
+  {
+    id: "town-reason-bakery",
+    skill: "reason",
+    passage: "\uC624\uB298\uC740 \uC624\uBE10\uC774 \uACE0\uC7A5 \uB098\uC11C \uBE75\uC744 \uAD7D\uC9C0 \uBABB\uD569\uB2C8\uB2E4. \uB300\uC2E0 \uCFE0\uD0A4\uC640 \uC6B0\uC720\uB294 \uD31D\uB2C8\uB2E4. \uC624\uBE10\uC740 \uB0B4\uC77C \uACE0\uCE69\uB2C8\uB2E4.",
+    question: "\uC624\uB298 \uBE75\uC744 \uD314\uC9C0 \uC54A\uB294 \uC774\uC720\uB294 \uBB34\uC5C7\uC778\uAC00\uC694?",
+    choices: ["\uCFE0\uD0A4\uC640 \uC6B0\uC720\uB9CC \uD314\uACE0 \uC2F6\uC5B4\uC11C", "\uC624\uBE10\uC774 \uACE0\uC7A5 \uB098\uC11C", "\uB0B4\uC77C \uC624\uBE10\uC744 \uACE0\uCCD0\uC11C"],
+    correct: 1,
+    hint: "\u201C-\uC544\uC11C\u201D \uC55E\uC5D0 \uC788\uB294 \uC77C\uC744 \uCC3E\uC544\uC694.",
+    explanation: "\uC624\uBE10\uC774 \uACE0\uC7A5 \uB098\uC11C \uC624\uB298\uC740 \uBE75\uC744 \uAD7D\uC9C0 \uBABB\uD574\uC694."
+  },
+  {
+    id: "town-reason-walk",
+    skill: "reason",
+    passage: "\uC624\uB298\uC740 \uBE44\uAC00 \uB9CE\uC774 \uC624\uB2C8\uAE4C \uACF5\uC6D0 \uC0B0\uCC45 \uBAA8\uC784\uC740 \uC27D\uB2C8\uB2E4. \uB2E4\uC74C \uBAA8\uC784\uC740 \uD1A0\uC694\uC77C \uC544\uCE68\uC5D0 \uD569\uB2C8\uB2E4.",
+    question: "\uC624\uB298 \uC0B0\uCC45 \uBAA8\uC784\uC744 \uC26C\uB294 \uC774\uC720\uB294 \uBB34\uC5C7\uC778\uAC00\uC694?",
+    choices: ["\uD1A0\uC694\uC77C \uC544\uCE68\uC5D0 \uBAA8\uC5EC\uC11C", "\uACF5\uC6D0\uC774 \uBB38\uC744 \uB2EB\uC544\uC11C", "\uBE44\uAC00 \uB9CE\uC774 \uC640\uC11C"],
+    correct: 2,
+    hint: "\u201C-\uB2C8\uAE4C\u201D \uC55E\uC5D0 \uC788\uB294 \uB9D0\uC744 \uCC3E\uC544\uC694.",
+    explanation: "\uBE44\uAC00 \uB9CE\uC774 \uC624\uB2C8\uAE4C \uC624\uB298 \uC0B0\uCC45 \uBAA8\uC784\uC740 \uC26C\uC5B4\uC694."
+  },
+  {
+    id: "town-reason-bus",
+    skill: "reason",
+    passage: "\uC624\uB298 \uB9C8\uC744 \uBC84\uC2A4\uB294 \uC2DC\uC7A5 \uC55E\uC5D0 \uC11C\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uC2DC\uC7A5 \uC55E \uAE38\uC5D0\uC11C \uCD95\uC81C\uB97C \uD558\uAE30 \uB54C\uBB38\uC785\uB2C8\uB2E4. \uC2DC\uC7A5\uC5D0 \uAC00\uC2E4 \uBD84\uC740 \uB2E4\uC74C \uC815\uB958\uC7A5\uC5D0\uC11C \uB0B4\uB824 \uC8FC\uC138\uC694.",
+    question: "\uC624\uB298 \uBC84\uC2A4\uAC00 \uC2DC\uC7A5 \uC55E\uC5D0 \uC11C\uC9C0 \uC54A\uB294 \uC774\uC720\uB294 \uBB34\uC5C7\uC778\uAC00\uC694?",
+    choices: ["\uB2E4\uC74C \uC815\uB958\uC7A5\uC5D0\uC11C \uB0B4\uB824\uC57C \uD574\uC11C", "\uC2DC\uC7A5 \uC55E \uAE38\uC5D0\uC11C \uCD95\uC81C\uB97C \uD574\uC11C", "\uBC84\uC2A4\uC5D0 \uC0AC\uB78C\uC774 \uB9CE\uC544\uC11C"],
+    correct: 1,
+    hint: "\uB450 \uBC88\uC9F8 \uBB38\uC7A5\uC758 \u201C\uB54C\uBB38\uC785\uB2C8\uB2E4\u201D \uC55E\uC744 \uC77D\uC5B4\uC694.",
+    explanation: "\uC2DC\uC7A5 \uC55E \uAE38\uC5D0\uC11C \uCD95\uC81C\uB97C \uD558\uAE30 \uB54C\uBB38\uC5D0 \uBC84\uC2A4\uAC00 \uC2DC\uC7A5 \uC55E\uC5D0 \uC11C\uC9C0 \uC54A\uC544\uC694."
+  },
+  {
+    id: "town-reason-florist",
+    skill: "reason",
+    passage: "\uC624\uB298 \uC624\uD6C4\uC5D0\uB294 \uAF43 \uC2DC\uC7A5\uC5D0 \uAF43\uC744 \uC0AC\uB7EC \uAC00\uC11C \uAF43\uC9D1 \uBB38\uC744 \uC5F4\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uC800\uB141 6\uC2DC\uC5D0 \uB2E4\uC2DC \uBB38\uC744 \uC5FD\uB2C8\uB2E4.",
+    question: "\uC624\uB298 \uC624\uD6C4\uC5D0 \uAF43\uC9D1\uC774 \uBB38\uC744 \uC5F4\uC9C0 \uC54A\uB294 \uC774\uC720\uB294 \uBB34\uC5C7\uC778\uAC00\uC694?",
+    choices: ["\uC800\uB141 6\uC2DC\uC5D0 \uB2E4\uC2DC \uC5F4\uC5B4\uC11C", "\uAF43\uC774 \uB2E4 \uD314\uB824\uC11C", "\uAF43 \uC2DC\uC7A5\uC5D0 \uAF43\uC744 \uC0AC\uB7EC \uAC00\uC11C"],
+    correct: 2,
+    hint: "\u201C-\uC544\uC11C\u201D \uC55E\uC5D0 \uC788\uB294 \uC77C\uC744 \uCC3E\uC544\uC694.",
+    explanation: "\uAF43 \uC2DC\uC7A5\uC5D0 \uAF43\uC744 \uC0AC\uB7EC \uAC00\uC11C \uC624\uB298 \uC624\uD6C4\uC5D0\uB294 \uAF43\uC9D1 \uBB38\uC744 \uC5F4\uC9C0 \uC54A\uC544\uC694."
+  },
+  {
+    id: "town-reason-quiet",
+    skill: "reason",
+    passage: "\uB3C4\uC11C\uAD00 2\uCE35\uC5D0\uC11C\uB294 \uC791\uC740 \uC18C\uB9AC\uB85C \uC774\uC57C\uAE30\uD574 \uC8FC\uC138\uC694. \uC2DC\uD5D8 \uACF5\uBD80\uB97C \uD558\uB294 \uD559\uC0DD\uC774 \uB9CE\uAE30 \uB54C\uBB38\uC785\uB2C8\uB2E4. \uC774\uC57C\uAE30\uB97C \uD558\uACE0 \uC2F6\uC73C\uBA74 1\uCE35 \uCE74\uD398\uB97C \uC774\uC6A9\uD558\uC138\uC694.",
+    question: "2\uCE35\uC5D0\uC11C \uC791\uC740 \uC18C\uB9AC\uB85C \uC774\uC57C\uAE30\uD574\uC57C \uD558\uB294 \uC774\uC720\uB294 \uBB34\uC5C7\uC778\uAC00\uC694?",
+    choices: ["\uC2DC\uD5D8 \uACF5\uBD80\uB97C \uD558\uB294 \uD559\uC0DD\uC774 \uB9CE\uC544\uC11C", "1\uCE35\uC5D0 \uCE74\uD398\uAC00 \uC788\uC5B4\uC11C", "2\uCE35\uC5D0\uC11C \uC2DC\uD5D8\uC744 \uBD10\uC11C"],
+    correct: 0,
+    hint: "\u201C-\uAE30 \uB54C\uBB38\uC785\uB2C8\uB2E4\u201D \uC55E\uC5D0 \uC788\uB294 \uC77C\uC744 \uCC3E\uC544\uC694.",
+    explanation: "\uC2DC\uD5D8 \uACF5\uBD80\uB97C \uD558\uB294 \uD559\uC0DD\uC774 \uB9CE\uAE30 \uB54C\uBB38\uC5D0 2\uCE35\uC5D0\uC11C\uB294 \uC791\uC740 \uC18C\uB9AC\uB85C \uC774\uC57C\uAE30\uD574\uC57C \uD574\uC694."
+  },
+  {
+    id: "town-main-swim",
+    skill: "main",
+    passage: "\uB9C8\uC744 \uC218\uC601\uC7A5\uC5D0\uC11C \uC5B4\uB9B0\uC774 \uC218\uC601 \uC218\uC5C5\uC744 \uC5FD\uB2C8\uB2E4. \uC218\uC5C5\uC740 \uB9E4\uC8FC \uD1A0\uC694\uC77C \uC624\uC804\uC5D0 \uC788\uC2B5\uB2C8\uB2E4. \uC2E0\uCCAD\uC740 \uC774\uBC88 \uC8FC \uAE08\uC694\uC77C\uAE4C\uC9C0 \uC548\uB0B4 \uB370\uC2A4\uD06C\uC5D0\uC11C \uD569\uB2C8\uB2E4.",
+    question: "\uC774 \uC548\uB0B4\uBB38\uC740 \uBB34\uC5C7\uC5D0 \uB300\uD55C \uC548\uB0B4\uC778\uAC00\uC694?",
+    choices: ["\uC218\uC601\uC7A5 \uCCAD\uC18C \uC2DC\uAC04", "\uC5B4\uB9B0\uC774 \uC218\uC601 \uC218\uC5C5", "\uC548\uB0B4 \uB370\uC2A4\uD06C\uC758 \uC704\uCE58"],
+    correct: 1,
+    hint: "\uD55C \uBB38\uC7A5\uC5D0\uB9CC \uB098\uC624\uB294 \uAC83\uC774 \uC544\uB2C8\uB77C, \uC548\uB0B4\uBB38 \uC804\uCCB4\uAC00 \uC54C\uB9AC\uB294 \uAC83\uC744 \uCC3E\uC544\uC694.",
+    explanation: "\uC218\uC5C5 \uC694\uC77C\uB3C4, \uC2E0\uCCAD \uBC29\uBC95\uB3C4 \uBAA8\uB450 \uC5B4\uB9B0\uC774 \uC218\uC601 \uC218\uC5C5\uC5D0 \uB300\uD55C \uB9D0\uC774\uC5D0\uC694."
+  },
+  {
+    id: "town-main-cup",
+    skill: "main",
+    passage: "\uC774\uBC88 \uC8FC\uBD80\uD130 \uB9C8\uC744 \uCE74\uD398\uC5D0 \uC790\uAE30 \uCEF5\uC744 \uAC00\uC9C0\uACE0 \uC624\uC2DC\uBA74 \uCEE4\uD53C\uB97C 500\uC6D0 \uC2F8\uAC8C \uB4DC\uB9BD\uB2C8\uB2E4. \uC885\uC774\uCEF5\uC744 \uB35C \uC4F0\uACE0 \uC2F6\uC2B5\uB2C8\uB2E4. \uB9CE\uC774 \uB3C4\uC640\uC8FC\uC138\uC694.",
+    question: "\uCE74\uD398\uAC00 \uC774 \uAE00\uC5D0\uC11C \uAC00\uC7A5 \uD558\uACE0 \uC2F6\uC740 \uB9D0\uC740 \uBB34\uC5C7\uC778\uAC00\uC694?",
+    choices: ["\uC790\uAE30 \uCEF5\uC744 \uAC00\uC9C0\uACE0 \uC640 \uC8FC\uC138\uC694", "\uCEE4\uD53C \uAC12\uC774 \uC62C\uB790\uC5B4\uC694", "\uC885\uC774\uCEF5\uC744 \uD314\uC544\uC694"],
+    correct: 0,
+    hint: "\uCE74\uD398\uAC00 \uC190\uB2D8\uC5D0\uAC8C \uBD80\uD0C1\uD558\uB294 \uAC83\uC744 \uCC3E\uC544\uC694.",
+    explanation: "\uC885\uC774\uCEF5\uC744 \uB35C \uC4F0\uACE0 \uC2F6\uC5B4\uC11C \uC190\uB2D8\uC5D0\uAC8C \uC790\uAE30 \uCEF5\uC744 \uAC00\uC9C0\uACE0 \uC624\uB77C\uACE0 \uBD80\uD0C1\uD558\uB294 \uAE00\uC774\uC5D0\uC694. \uCEF5\uC744 \uAC00\uC9C0\uACE0 \uC624\uBA74 \uCEE4\uD53C\uB3C4 \uC2F8\uAC8C \uC918\uC694."
+  },
+  {
+    id: "town-main-post",
+    skill: "main",
+    passage: "\uB9C8\uC744 \uC6B0\uCCB4\uAD6D\uC774 \uB2E4\uC74C \uB2EC 1\uC77C\uC5D0 \uC740\uD589 \uC606 \uC0C8 \uAC74\uBB3C\uB85C \uC774\uC0AC\uD569\uB2C8\uB2E4. \uC774\uBC88 \uB2EC\uAE4C\uC9C0\uB294 \uC9C0\uAE08 \uC790\uB9AC\uC5D0\uC11C \uC77C\uD569\uB2C8\uB2E4. \uC0C8 \uC6B0\uCCB4\uAD6D\uB3C4 \uC544\uCE68 9\uC2DC\uC5D0 \uBB38\uC744 \uC5FD\uB2C8\uB2E4.",
+    question: "\uC774 \uC548\uB0B4\uBB38\uC758 \uC911\uC2EC \uB0B4\uC6A9\uC740 \uBB34\uC5C7\uC778\uAC00\uC694?",
+    choices: ["\uC740\uD589\uC774 \uC0C8 \uAC74\uBB3C\uB85C \uC774\uC0AC\uD574\uC694", "\uC6B0\uCCB4\uAD6D\uC774 \uC5EC\uB294 \uC2DC\uAC04\uC774 \uBC14\uB00C\uC5B4\uC694", "\uC6B0\uCCB4\uAD6D\uC774 \uB2E4\uB978 \uACF3\uC73C\uB85C \uC774\uC0AC\uD574\uC694"],
+    correct: 2,
+    hint: "\uC5EC\uB7EC \uBB38\uC7A5\uC774 \uD568\uAED8 \uC54C\uB9AC\uB294 \uC77C\uC744 \uCC3E\uC544\uC694.",
+    explanation: "\uC6B0\uCCB4\uAD6D\uC774 \uB2E4\uC74C \uB2EC\uC5D0 \uC740\uD589 \uC606 \uC0C8 \uAC74\uBB3C\uB85C \uC774\uC0AC\uD55C\uB2E4\uB294 \uC548\uB0B4\uC608\uC694."
+  },
+  {
+    id: "town-main-cat",
+    skill: "main",
+    passage: "\uC6B0\uB9AC \uACE0\uC591\uC774\uB97C \uCC3E\uC2B5\uB2C8\uB2E4. \uC774\uB984\uC740 \uAD6C\uB984\uC774\uACE0 \uD558\uC580 \uACE0\uC591\uC774\uC785\uB2C8\uB2E4. \uC5B4\uC81C \uC800\uB141\uC5D0 \uACF5\uC6D0 \uC55E\uC5D0\uC11C \uC783\uC5B4\uBC84\uB838\uC2B5\uB2C8\uB2E4. \uBCF4\uC2E0 \uBD84\uC740 \uAF43\uC9D1\uC73C\uB85C \uC5F0\uB77D\uD574 \uC8FC\uC138\uC694.",
+    question: "\uC774 \uAE00\uC740 \uBB34\uC5C7\uC5D0 \uB300\uD55C \uAE00\uC778\uAC00\uC694?",
+    choices: ["\uC783\uC5B4\uBC84\uB9B0 \uACE0\uC591\uC774\uB97C \uCC3E\uB294 \uAE00", "\uACE0\uC591\uC774\uB97C \uD30C\uB294 \uAE00", "\uAF43\uC9D1\uC744 \uC18C\uAC1C\uD558\uB294 \uAE00"],
+    correct: 0,
+    hint: "\uAE00\uC744 \uC4F4 \uC0AC\uB78C\uC774 \uBB34\uC5C7\uC744 \uBC14\uB77C\uB294\uC9C0 \uC0DD\uAC01\uD574\uC694.",
+    explanation: "\uACF5\uC6D0 \uC55E\uC5D0\uC11C \uC783\uC5B4\uBC84\uB9B0 \uD558\uC580 \uACE0\uC591\uC774\uB97C \uCC3E\uACE0 \uC788\uC5B4\uC694."
+  },
+  {
+    id: "town-main-swap",
+    skill: "main",
+    passage: "\uC774\uBC88 \uC8FC \uD1A0\uC694\uC77C\uC5D0 \uB9C8\uC744 \uAD11\uC7A5\uC5D0\uC11C \uBB3C\uAC74\uC744 \uBC14\uAFB8\uB294 \uC2DC\uC7A5\uC774 \uC5F4\uB9BD\uB2C8\uB2E4. \uC4F0\uC9C0 \uC54A\uB294 \uBB3C\uAC74\uC744 \uAC00\uC9C0\uACE0 \uC624\uC2DC\uBA74 \uB2E4\uB978 \uBB3C\uAC74\uACFC \uBC14\uAFC0 \uC218 \uC788\uC2B5\uB2C8\uB2E4. \uB204\uAD6C\uB098 \uC62C \uC218 \uC788\uC2B5\uB2C8\uB2E4.",
+    question: "\uC774 \uC548\uB0B4\uBB38\uC740 \uBB34\uC5C7\uC5D0 \uB300\uD55C \uC548\uB0B4\uC778\uAC00\uC694?",
+    choices: ["\uD1A0\uC694\uC77C \uB0A0\uC528", "\uB9C8\uC744 \uAD11\uC7A5\uC758 \uC704\uCE58", "\uBB3C\uAC74\uC744 \uBC14\uAFB8\uB294 \uC2DC\uC7A5"],
+    correct: 2,
+    hint: "\uC548\uB0B4\uBB38\uC758 \uBB38\uC7A5\uB4E4\uC774 \uBAA8\uB450 \uBB34\uC5C7\uC5D0 \uB300\uD574 \uB9D0\uD558\uB294\uC9C0 \uCC3E\uC544\uC694.",
+    explanation: "\uD1A0\uC694\uC77C\uC5D0 \uB9C8\uC744 \uAD11\uC7A5\uC5D0\uC11C \uC5F4\uB9AC\uB294, \uBB3C\uAC74\uC744 \uBC14\uAFB8\uB294 \uC2DC\uC7A5\uC744 \uC54C\uB824\uC694."
+  },
+  {
+    id: "town-main-thanks",
+    skill: "main",
+    passage: "\uC9C0\uB09C\uC8FC\uC5D0 \uAE38\uC5D0\uC11C \uB118\uC5B4\uC84C\uC744 \uB54C \uB3C4\uC640\uC8FC\uC2E0 \uBD84\uAED8 \uAC10\uC0AC\uD569\uB2C8\uB2E4. \uADF8\uBD84 \uB355\uBD84\uC5D0 \uBCD1\uC6D0\uC5D0 \uBE68\uB9AC \uAC08 \uC218 \uC788\uC5C8\uC2B5\uB2C8\uB2E4. \uB2E4\uC2DC \uB9CC\uB098\uBA74 \uAF2D \uCC28 \uD55C \uC794 \uC0AC \uB4DC\uB9AC\uACE0 \uC2F6\uC2B5\uB2C8\uB2E4.",
+    question: "\uC774 \uAE00\uC744 \uC4F4 \uC0AC\uB78C\uC774 \uAC00\uC7A5 \uD558\uACE0 \uC2F6\uC740 \uB9D0\uC740 \uBB34\uC5C7\uC778\uAC00\uC694?",
+    choices: ["\uBCD1\uC6D0\uC774 \uB108\uBB34 \uBA40\uC5B4\uC694", "\uB3C4\uC640\uC8FC\uC2E0 \uBD84\uAED8 \uACE0\uB9C8\uC6CC\uC694", "\uAE38\uC5D0\uC11C \uCC28\uB97C \uB9C8\uC168\uC5B4\uC694"],
+    correct: 1,
+    hint: "\uAE00\uC744 \uC4F4 \uC0AC\uB78C\uC774 \uCC98\uC74C\uACFC \uB05D\uC5D0 \uBB34\uC5C7\uC744 \uB9D0\uD558\uB294\uC9C0 \uBD10\uC694.",
+    explanation: "\uB118\uC5B4\uC84C\uC744 \uB54C \uB3C4\uC640\uC900 \uC0AC\uB78C\uC5D0\uAC8C \uACE0\uB9C8\uC6B4 \uB9C8\uC74C\uC744 \uC804\uD558\uB294 \uAE00\uC774\uC5D0\uC694."
   }
 ]);
 function readingMetadata(item) {
@@ -16321,12 +16442,53 @@ function diagEntryItems() {
     };
   }));
 }
-var DIAGNOSTIC_ITEMS = Object.freeze([...diagRunnerItems(), ...diagRhythmItems(), ...diagBlankItems(), ...diagTownItems(), ...diagEntryItems()].map((item) => Object.freeze(item)));
-var DIAGNOSTIC_GAPS = Object.freeze({
-  "ko.listening.word": "\uB0B1\uB9D0 \uB4E3\uAE30\uB294 \uD55C\uAD6D\uC5B4 \uB808\uC774\uC2F1\uC758 \uB0B1\uB9D0 2,000\uAC1C\uBFD0\uC774\uACE0 \uBCF4\uAE30\uAC00 \uD310\uB9C8\uB2E4 \uBB34\uC791\uC704\uB2E4. \uACE0\uC815 \uBCF4\uAE30\uC640 \uB808\uC774\uC2F1 \uB179\uC74C\uC744 WORLD\uC5D0 \uC2E4\uC5B4\uC57C \uD55C\uB2E4.",
-  "ko.reading.reason": "\uC77D\uACE0 \uC774\uC720 \uC774\uD574\uD558\uAE30\uC5D0 \uB9DE\uB294 \uBB38\uD56D\uC774 \uC5C6\uB2E4(\uB808\uC774\uC2F1 c04\uC758 \uC774\uC74C\uB9D0 \uBE48\uCE78\uC740 \uC774 \uD56D\uBAA9\uC758 \uB73B\uACFC \uB9DE\uC9C0 \uC54A\uB294\uB2E4).",
-  "ko.reading.main": "\uC77D\uACE0 \uD575\uC2EC \uC774\uD574\uD558\uAE30\uC5D0 \uB9DE\uB294 \uBB38\uD56D\uC774 \uC5C6\uB2E4(\uB808\uC774\uC2F1 c04q2\uB294 \uC774\uC74C\uB9D0 \uBE48\uCE78\uC774\uB2E4)."
+var DIAG_RACING_WORDS = Object.freeze([
+  ["w0001", "\uC0AC\uACFC", "\u{1F34E}", [["w0003", "\u{1F347}"], ["w0005", "\u{1F349}"]]],
+  ["w0008", "\uBE75", "\u{1F35E}", [["w0006", "\u{1F35A}"], ["w0010", "\u{1F41F}"]]],
+  ["w0012", "\uC6B0\uC720", "\u{1F95B}", [["w0013", "\u2615"], ["w0014", "\u{1F375}"]]],
+  ["w0018", "\uB2F9\uADFC", "\u{1F955}", [["w0016", "\u{1F954}"], ["w0019", "\u{1F952}"]]],
+  ["w0025", "\uC6B0\uC0B0", "\u2602\uFE0F", [["w0021", "\u{1F4D6}"], ["w0024", "\u231A"]]],
+  ["w0028", "\uBAA8\uC790", "\u{1F9E2}", [["w0027", "\u{1F45F}"], ["w0029", "\u{1F453}"]]],
+  ["w0035", "\uC790\uC804\uAC70", "\u{1F6B2}", [["w0031", "\u{1F68C}"], ["w0033", "\u{1F686}"]]],
+  ["w0036", "\uC9D1", "\u{1F3E0}", [["w0037", "\u{1F3EB}"], ["w0038", "\u{1F3E5}"]]],
+  ["w0042", "\uACE0\uC591\uC774", "\u{1F408}", [["w0044", "\u{1F420}"], ["w0045", "\u{1F40E}"]]],
+  ["w0050", "\uB098\uBB34", "\u{1F333}", [["w0046", "\u{1F30A}"], ["w0049", "\u{1F33C}"]]],
+  ["w0051", "\uBE44", "\u{1F327}\uFE0F", [["w0053", "\u{1F32C}\uFE0F"], ["w0055", "\u2600\uFE0F"]]],
+  ["w0056", "\uC758\uC790", "\u{1FA91}", [["w0057", "\u{1F6CF}\uFE0F"], ["w0058", "\u{1F6AA}"]]],
+  ["w0061", "\uCD95\uAD6C", "\u26BD", [["w0062", "\u{1F3C0}"], ["w0064", "\u{1F3CA}"]]]
+]);
+var diagRacingMeta = (id) => ({
+  id,
+  itemKey: `korean-racing:${id}:v1`,
+  familyKey: `korean-racing:${id}:v1`,
+  skillId: "ko.listening.word",
+  difficulty: 1,
+  modality: "listening",
+  responseFormat: "single-choice",
+  audioRequired: true,
+  confounded: false,
+  conceptIds: [`ko.word.${id}`]
 });
+function diagRacingItems() {
+  return DIAG_RACING_WORDS.map(([id, word, icon, others]) => {
+    const meta = diagRacingMeta(id);
+    const order = diagArrange(meta.itemKey, [{ id, label: icon }, ...others.map(([other, label]) => ({ id: other, label }))]);
+    return {
+      ...meta,
+      source: "korean-racing",
+      audio: `korean-racing/assets/narration/${id}.mp3`,
+      prompt: null,
+      question: "\uB4E4\uB9AC\uB294 \uB0B1\uB9D0\uC758 \uADF8\uB9BC\uC744 \uACE0\uB974\uC138\uC694.",
+      ask: "picture",
+      choices: order,
+      correctId: id,
+      explanation: `\uB4E4\uB9B0 \uB0B1\uB9D0\uC740 \u300C${word}\u300D\uC608\uC694.`,
+      label: word
+    };
+  });
+}
+var DIAGNOSTIC_ITEMS = Object.freeze([...diagRunnerItems(), ...diagRhythmItems(), ...diagBlankItems(), ...diagTownItems(), ...diagEntryItems(), ...diagRacingItems()].map((item) => Object.freeze(item)));
+var DIAGNOSTIC_GAPS = Object.freeze({});
 var diagByKey = new Map(DIAGNOSTIC_ITEMS.map((item) => [item.itemKey, item]));
 function diagnosticLabel(itemKey) {
   const item = diagByKey.get(itemKey) || diagByKey.get(String(itemKey || "").replace(/:v\d+$/, ""));
@@ -16407,7 +16569,7 @@ function createPositionView({ t, has = () => true, formatDate = null } = {}) {
     const item = view.item, listening = item.audioRequired ?? item.modality === "listening", ready = view.heard && !view.answered;
     const choices2 = item.choices.map((choice) => `<button class="wpos-choice" type="button" data-position-choice="${posEscape(choice.id)}"${ready ? "" : " disabled"}>${posEscape(choice.label)}</button>`).join("");
     const listenNote = playing ? "position.diagnostic.playing" : view.audio === "failed" && !view.heard ? "position.diagnostic.audioFailed" : view.heard ? "position.diagnostic.replayNote" : "position.diagnostic.listenFirst";
-    return `<div class="wpos wpos-run" data-position-run="${posEscape(item.id)}"><div class="wpos-run-head"><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(view.index, view.total)}%"></i></span><p class="wpos-run-count">${posEscape(t("position.diagnostic.progress", { index: view.index + 1, total: view.total }))}</p></div><p class="life-section-label wpos-run-skill" tabindex="-1">${posEscape(t(`position.domain.${item.modality}`))} \xB7 ${posEscape(skillName(skill2 || { id: item.skillId }))}</p>${item.prompt ? `<p class="wpos-prompt" lang="ko">${posEscape(item.prompt)}</p>` : ""}${item.card ? entryCard(item.card) : ""}${listening ? `<div class="wpos-listen"><button class="quiet-button" type="button" data-position-listen${playing ? ' aria-busy="true"' : ""}>${posEscape(t(view.heard ? "position.diagnostic.listenAgain" : "position.diagnostic.listen"))}</button><p class="wpos-note">${posEscape(t(listenNote))}</p></div>` : ""}${item.question ? item.ask && has(`position.diagnostic.ask.${item.ask}`) ? `<p class="wpos-question">${posEscape(t(`position.diagnostic.ask.${item.ask}`))}</p>` : `<p class="wpos-question" lang="ko">${posEscape(item.question)}</p>` : ""}<div class="wpos-choices" lang="ko">${choices2}</div><p class="wpos-run-status" role="status">${posEscape(notice)}</p><div class="wpos-run-actions"><button class="quiet-button" type="button" data-position-skip>${posEscape(t("position.diagnostic.skip"))}</button><button class="quiet-button" type="button" data-position-stop>${posEscape(t("position.diagnostic.stop"))}</button></div></div>`;
+    return `<div class="wpos wpos-run" data-position-run="${posEscape(item.id)}"><div class="wpos-run-head"><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(view.index, view.total)}%"></i></span><p class="wpos-run-count">${posEscape(t("position.diagnostic.progress", { index: view.index + 1, total: view.total }))}</p></div><p class="life-section-label wpos-run-skill" tabindex="-1">${posEscape(t(`position.domain.${item.modality}`))} \xB7 ${posEscape(skillName(skill2 || { id: item.skillId }))}</p>${item.prompt ? `<p class="wpos-prompt" lang="ko">${posEscape(item.prompt)}</p>` : ""}${item.card ? entryCard(item.card) : ""}${listening ? `<div class="wpos-listen"><button class="quiet-button" type="button" data-position-listen${playing ? ' aria-busy="true"' : ""}>${posEscape(t(view.heard ? "position.diagnostic.listenAgain" : "position.diagnostic.listen"))}</button><p class="wpos-note">${posEscape(t(listenNote))}</p></div>` : ""}${item.question ? item.ask && has(`position.diagnostic.ask.${item.ask}`) ? `<p class="wpos-question">${posEscape(t(`position.diagnostic.ask.${item.ask}`))}</p>` : `<p class="wpos-question" lang="ko">${posEscape(item.question)}</p>` : ""}<div class="wpos-choices${item.ask === "picture" ? " wpos-pictures" : ""}" lang="ko">${choices2}</div><p class="wpos-run-status" role="status">${posEscape(notice)}</p><div class="wpos-run-actions"><button class="quiet-button" type="button" data-position-skip>${posEscape(t("position.diagnostic.skip"))}</button><button class="quiet-button" type="button" data-position-stop>${posEscape(t("position.diagnostic.stop"))}</button></div></div>`;
   }
   function renderDiagnosticDone({ map, results = [] } = {}) {
     const answered = results.filter((row) => !row.skipped).length, skipped = results.length - answered;

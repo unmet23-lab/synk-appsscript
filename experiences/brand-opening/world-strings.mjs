@@ -431,6 +431,7 @@ export default {
  'position.diagnostic.bag':{ko:'짐',en:'Bag',mn:'Авч ирсэн зүйлс'},
  'position.diagnostic.ask.blank':{ko:'빈칸에 알맞은 것을 고르세요.',en:'Choose what fits in the blank.',mn:'Хоосон зайд тохирохыг нь сонгоно уу.'},
  'position.diagnostic.ask.entry':{ko:'이 손님을 들여보낼까요?',en:'Should this guest come in?',mn:'Энэ зочныг оруулах уу?'},
+ 'position.diagnostic.ask.picture':{ko:'들리는 낱말의 그림을 고르세요.',en:'Choose the picture of the word you hear.',mn:'Сонссон үгийнхээ зургийг сонгоно уу.'},
  'position.diagnostic.skip':{ko:'이 문항 건너뛰기',en:'Skip this question',mn:'Энэ асуултыг алгасах'},
  'position.diagnostic.stop':{ko:'진단 그만하기',en:'Stop the check',mn:'Шалгалтыг зогсоох'},
  'position.diagnostic.saved':{ko:'답을 기록했어요.',en:'Answer saved.',mn:'Хариултыг хадгаллаа.'},

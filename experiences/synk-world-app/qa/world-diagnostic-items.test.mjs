@@ -13,6 +13,8 @@ import {itemMetadata as blankMetadata} from '../../blank-slice/learning.mjs';
 import {READING_CHECKS,readingMetadata} from '../../synk-town/understanding.mjs';
 import {VENUES} from '../../entry-check/content.mjs';
 import {caseMetadata} from '../../entry-check/learning.mjs';
+import {racingItem} from '../../korean-racing/personalization.js';
+import {WORDS,STAGES} from '../../korean-racing/curriculum.js';
 
 const require=createRequire(import.meta.url);
 const worldLearning=require('../../../atlas/game-browser.js');
@@ -30,15 +32,39 @@ test('묶음의 문항은 모두 그 게임의 메타 함수와 같은 열쇠다
  for(const item of BLANKS)expected.set(blankMetadata(item).itemKey,blankMetadata(item));
  for(const item of READING_CHECKS)expected.set(readingMetadata(item).itemKey,readingMetadata(item));
  for(const venue of VENUES)for(const item of venue.cases)expected.set(caseMetadata(item).itemKey,caseMetadata(item));
+ // 레이싱 낱말 문항은 레이싱이 그 낱말에 붙이는 메타(racingItem — 그림 단계·듣기 단계 모두 answer가 낱말 id).
+ for(const word of WORDS){const meta=racingItem({answer:word.id,mode:'picture'});expected.set(meta.itemKey,meta);}
  for(const item of DIAGNOSTIC_ITEMS){
   const meta=expected.get(item.itemKey);assert.ok(meta,`원고에 없는 문항 ${item.itemKey}`);
   for(const key of ['id','familyKey','skillId','difficulty','modality','responseFormat','audioRequired'])assert.deepEqual(item[key],meta[key],`${item.itemKey} ${key}`);
+  if(item.source==='korean-racing')assert.deepEqual(item.conceptIds,meta.conceptIds,item.itemKey);
  }
  assert.equal(new Set(DIAGNOSTIC_ITEMS.map(item=>item.familyKey)).size,DIAGNOSTIC_ITEMS.length,'한 계열은 한 번만');
  assert.equal(new Set(DIAGNOSTIC_ITEMS.map(item=>item.id)).size,DIAGNOSTIC_ITEMS.length);
  // 입장 검사는 글만으로 풀게 쓴 손님만, 리듬은 계열마다 한 갈래만.
  assert.ok(DIAGNOSTIC_ITEMS.filter(item=>item.source==='entry-check').every(item=>VENUES.some(venue=>venue.cases.some(c=>caseMetadata(c).itemKey===item.itemKey&&c.textOnly))));
  assert.equal(DIAGNOSTIC_ITEMS.filter(item=>item.source==='korean-rhythm').length,15);
+});
+
+test('레이싱 낱말 표는 레이싱 원고 그대로다: 낱말·그림·그림 단계, 보기는 같은 단계의 다른 낱말',()=>{
+ const byId=new Map(WORDS.map(word=>[word.id,word])),pictureStage=new Map();
+ for(const stage of STAGES)if(stage.mode==='picture')for(const id of stage.words)pictureStage.set(id,stage.id);
+ const racing=DIAGNOSTIC_ITEMS.filter(item=>item.source==='korean-racing');
+ assert.equal(racing.length,13);
+ assert.equal(new Set(racing.map(item=>pictureStage.get(item.id))).size,13,'그림 단계마다 하나');
+ for(const item of racing){
+  const word=byId.get(item.id);assert.ok(word&&pictureStage.has(item.id),item.id);
+  assert.equal(item.label,word.word);assert.equal(item.audio,`korean-racing/assets/narration/${item.id}.mp3`);
+  assert.equal(item.choices.length,3);
+  for(const choice of item.choices){
+   const other=byId.get(choice.id);assert.ok(other,choice.id);
+   assert.equal(choice.label,other.icon,`${item.id} 보기 ${choice.id}의 그림`);
+   assert.equal(pictureStage.get(choice.id),pictureStage.get(item.id),`${item.id} 보기 ${choice.id}는 같은 단계`);
+  }
+  // 소리가 같은 다른 뜻이 있는 낱말(눈·새·말·차·개)은 듣기 정답으로 쓰지 않는다.
+  assert.ok(!['눈','새','말','차','개'].includes(word.word),item.id);
+ }
+ assert.deepEqual([...new Set(racing.map(item=>item.choices.findIndex(choice=>choice.id===item.correctId)))].sort(),[0,1,2],'정답 자리가 섞인다');
 });
 
 test('모든 문항이 실제 코치의 제시 검사를 통과하고, 보기·정답·소리가 다 있다',()=>{
@@ -56,19 +82,22 @@ test('모든 문항이 실제 코치의 제시 검사를 통과하고, 보기·�
  }
 });
 
-test('할 일 지시(ask)는 빈칸 베기·입장 검사에만 있고, 화면 언어 표에 그 줄이 있다',async()=>{
+test('할 일 지시(ask)는 빈칸 베기·입장 검사·레이싱 그림 고르기에만 있고, 화면 언어 표에 그 줄이 있다',async()=>{
  const {default:STRINGS}=await import('../../brand-opening/world-strings.mjs');
  for(const item of DIAGNOSTIC_ITEMS){
-  const expected={'blank-slice':'blank','entry-check':'entry'}[item.source]??undefined;
+  const expected={'blank-slice':'blank','entry-check':'entry','korean-racing':'picture'}[item.source]??undefined;
   assert.equal(item.ask,expected,item.itemKey);
   if(item.ask)assert.equal(STRINGS[`position.diagnostic.ask.${item.ask}`]?.ko,item.question,item.itemKey);
  }
 });
 
-test('15개 항목 중 다루는 것과 모자란 것이 정확히 나뉜다',()=>{
+test('15개 항목을 모두 다룬다(10-20 낱말 듣기·읽기 이유·읽기 핵심을 채움)',()=>{
  const covered=new Set(DIAGNOSTIC_ITEMS.map(item=>item.skillId));
  assert.deepEqual(SKILLS.filter(id=>!covered.has(id)),Object.keys(DIAGNOSTIC_GAPS));
- assert.equal(covered.size,12);
+ assert.deepEqual(Object.keys(DIAGNOSTIC_GAPS),[]);
+ assert.equal(covered.size,15);
+ // 읽기 이유·핵심은 싱크타운 읽기 확인의 새 갈래 — 다른 갈래처럼 여섯 계열이라 진단을 몇 번 다시 해도 새 문항이 있다.
+ for(const skillId of ['ko.reading.reason','ko.reading.main'])assert.equal(DIAGNOSTIC_ITEMS.filter(item=>item.skillId===skillId&&item.source==='synk-town').length,6,skillId);
 });
 
 test('정답이 자리나 O/X 한쪽으로 쏠리지 않는다',()=>{
@@ -81,15 +110,16 @@ test('정답이 자리나 O/X 한쪽으로 쏠리지 않는다',()=>{
  assert.ok(first<DIAGNOSTIC_ITEMS.filter(item=>item.source==='blank-slice').length/2);
 });
 
-test('처음 온 사람의 진단은 12문항(항목당 하나·새 계열)이고 세 항목은 모자람으로 돌려준다',()=>{
+test('처음 온 사람의 진단은 15문항(항목당 하나·새 계열)이고 모자란 항목이 없다',()=>{
  const c=coach(),plan=selectDiagnostic({summary:c.summary(),items:DIAGNOSTIC_ITEMS,seen:item=>c.exposure(item).seen});
- assert.equal(plan.status,'ready');assert.equal(plan.items.length,12);
- assert.deepEqual(plan.missing,[{skillId:'ko.listening.word',reason:'no-item'},{skillId:'ko.reading.reason',reason:'no-item'},{skillId:'ko.reading.main',reason:'no-item'}]);
- assert.equal(new Set(plan.items.map(row=>row.skillId)).size,12);
+ assert.equal(plan.status,'ready');assert.equal(plan.items.length,15);
+ assert.deepEqual(plan.missing,[]);
+ assert.equal(new Set(plan.items.map(row=>row.skillId)).size,15);
  // 같은 항목에 보기 고르기 문항이 있으면 O/X보다 먼저.
  for(const row of plan.items)if(['ko.listening.detail','ko.listening.negation'].includes(row.skillId))assert.equal(row.item.source,'korean-runner');
+ assert.equal(plan.items.find(row=>row.skillId==='ko.listening.word').item.source,'korean-racing');
  const quiet=selectDiagnostic({summary:c.summary(),items:DIAGNOSTIC_ITEMS,seen:item=>c.exposure(item).seen,audioAvailable:false});
- assert.equal(quiet.items.length,6);assert.ok(quiet.items.every(row=>row.item.modality==='reading'));
+ assert.equal(quiet.items.length,8);assert.ok(quiet.items.every(row=>row.item.modality==='reading'));
 });
 
 test('진단 한 바퀴: 답은 혼자 푼 첫 시도로 남고, 다음 진단은 모두 다른 계열에서 고른다',()=>{
@@ -97,9 +127,9 @@ test('진단 한 바퀴: 답은 혼자 푼 첫 시도로 남고, 다음 진단�
  const session=createDiagnosticSession({coach:c,items:first.items});
  let view;while((view=session.next())){if(view.item.audioRequired)session.delivery('completed');session.answer(view.item.correctId);}
  const results=session.results();
- assert.equal(results.length,12);assert.ok(results.every(row=>row.verdict==='correct'&&row.independent===true&&row.skipped===false));
+ assert.equal(results.length,15);assert.ok(results.every(row=>row.verdict==='correct'&&row.independent===true&&row.skipped===false));
  const map=buildPositionMap({summary:c.summary(),events:c.events()});
- assert.deepEqual(map.counts,{independent:0,practicing:12,notyet:3},'한 문항만으로는 혼자 해냄이 되지 않는다');
+ assert.deepEqual(map.counts,{independent:0,practicing:15,notyet:0},'한 문항만으로는 혼자 해냄이 되지 않는다');
  assert.ok(map.skills.filter(skill=>skill.cell==='practicing').every(skill=>skill.status==='checking'&&skill.evidence.length===1));
  const second=selectDiagnostic({summary:c.summary(),items:DIAGNOSTIC_ITEMS,seen:item=>c.exposure(item).seen});
  const used=new Set(first.items.map(row=>row.item.familyKey));

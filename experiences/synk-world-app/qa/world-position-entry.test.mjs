@@ -23,15 +23,15 @@ function setup({reading=null,hangul=null,position=worldPosition,audio='available
  return {education,panels,storage,launched};
 }
 
-test('처음 온 손님: 15개 항목 지도 · 짧은 진단 12문항 · 예상 급수는 「아직」 · 이 기기 기록',async()=>{
+test('처음 온 손님: 15개 항목 지도 · 짧은 진단 15문항 · 예상 급수는 「아직」 · 이 기기 기록',async()=>{
  const {education,panels}=setup();
  assert.equal(typeof education.position,'function');
  await education.position();
  const board=panels.at(-1);
  assert.equal(board.options.type,'life-position');assert.equal(board.options.nav,'packs','배우기 탭에 불이 들어온다');
  assert.equal(count(board.html,/<details class="wpos-skill"/g),15);
- assert.match(board.html,/data-diagnostic="ready"/);assert.match(board.html,/처음 보는 문항 12개로 시작점을 정해요/);
- assert.match(board.html,/진단 문항이 아직 없는 항목 3개: 낱말 듣기 · 읽고 이유 이해하기 · 읽고 핵심 이해하기/);
+ assert.match(board.html,/data-diagnostic="ready"/);assert.match(board.html,/처음 보는 문항 15개로 시작점을 정해요/);
+ assert.doesNotMatch(board.html,/진단 문항이 아직 없는 항목/,'10-20부터 15개 항목 모두 진단 문항이 있다');
  assert.match(board.html,/data-estimate="too-early"/);assert.match(board.html,/아직 판단하기 일러요/);
  assert.match(board.html,/이 기기의 학습 기록으로 보여요/);
  assert.doesNotMatch(board.html,/data-position-incomplete/);
@@ -40,8 +40,8 @@ test('처음 온 손님: 15개 항목 지도 · 짧은 진단 12문항 · 예상
 test('오늘 소리를 끈 사람은 듣기 문항 없이 읽기 진단만',async()=>{
  const {education,panels}=setup({audio:'off'});
  await education.position();
- assert.match(panels.at(-1).html,/처음 보는 문항 6개로 시작점을 정해요/);
- assert.match(panels.at(-1).html,/오늘은 소리를 끈 날이라 듣기 항목 6개는 빼요/);
+ assert.match(panels.at(-1).html,/처음 보는 문항 8개로 시작점을 정해요/);
+ assert.match(panels.at(-1).html,/오늘은 소리를 끈 날이라 듣기 항목 7개는 빼요/);
 });
 
 test('「아직 못 읽어요」를 고른 사람은 한글 판, 졸업하면 항목 지도',async()=>{
@@ -78,8 +78,8 @@ test('묶음을 받지 않은 화면은 내 위치를 열지 않는다',()=>{
  assert.doesNotMatch(panels.at(-1).html,/data-view="position"/);
 });
 
-test('묶음: 진단 문항 97 · 한글 층 49글자 · 한글 진도 자리는 한글 만나기와 같다',async()=>{
- assert.equal(worldPosition.items.length,97);
+test('묶음: 진단 문항 122 · 한글 층 49글자 · 한글 진도 자리는 한글 만나기와 같다',async()=>{
+ assert.equal(worldPosition.items.length,122,'97 + 싱크타운 읽기 이유·핵심 12 + 레이싱 낱말 13(10-20)');
  assert.equal(worldPosition.hangulLayer.letters.length,49);
  const learning=await import('../../hangul-stage/learning.mjs');
  assert.equal(worldPosition.hangulProgressKey,learning.progressKey);

@@ -1,5 +1,6 @@
 // WORLD 짧은 진단에 낼 수 있는 기존 TOPIK형 문항(2026-10-19 「WORLD 내 위치」). 새 문항을 쓰지 않는다 —
-// 각 게임의 원고와 그 게임의 Atlas 메타 함수를 그대로 써서 itemKey·familyKey가 게임과 같다. 그래서 진단에서 본 문항은
+// 각 게임의 원고와 그 게임의 Atlas 메타 함수를 그대로 써서 itemKey·familyKey가 게임과 같다(레이싱만 원고가 커서 쓰는 낱말을 적고
+// 시험으로 원고와 대조한다). 그래서 진단에서 본 문항은
 // 그 게임에서도 「이미 본 문항」이고(atlas/game-learning.js exposure), 게임에서 본 문항은 진단에 다시 나오지 않는다.
 // 모두 교원 검수 전 자체 창작 초안이다(각 원고 머리 주석). 보기 순서만 정하고 내용·정답은 바꾸지 않는다.
 import {LISTENING_CHECKS,checkMetadata} from '../korean-runner/listening-check.mjs';
@@ -65,14 +66,41 @@ function diagEntryItems(){
  }));
 }
 
+// 한국어 레이싱 그림 단계(s001~s013) 낱말 듣기 13: 낱말 녹음을 끝까지 듣고 그림 셋 중 고르기(낱말 듣기).
+// 레이싱 원고(curriculum.js, 284KB)를 묶음에 싣지 않으려고 쓰는 낱말만 적는다 — 낱말·그림·단계가 원고와 같은지,
+// 메타가 레이싱 racingItem()과 같은지는 시험(qa/world-diagnostic-items.test.mjs)이 원고와 대조한다.
+// 단계마다 그림이 뚜렷하고 소리가 같은 다른 뜻이 없는 낱말 하나(눈·새·말·차·개는 뺐다), 보기는 같은 단계의 다른 낱말 둘이다.
+// 레이싱 그림 단계는 판마다 보기를 무작위로 고르니, 진단은 보기를 고정하고 순서만 문항 id로 정한다. 보기 id는 레이싱처럼 낱말 id다.
+const DIAG_RACING_WORDS=Object.freeze([
+ ['w0001','사과','🍎',[['w0003','🍇'],['w0005','🍉']]],
+ ['w0008','빵','🍞',[['w0006','🍚'],['w0010','🐟']]],
+ ['w0012','우유','🥛',[['w0013','☕'],['w0014','🍵']]],
+ ['w0018','당근','🥕',[['w0016','🥔'],['w0019','🥒']]],
+ ['w0025','우산','☂️',[['w0021','📖'],['w0024','⌚']]],
+ ['w0028','모자','🧢',[['w0027','👟'],['w0029','👓']]],
+ ['w0035','자전거','🚲',[['w0031','🚌'],['w0033','🚆']]],
+ ['w0036','집','🏠',[['w0037','🏫'],['w0038','🏥']]],
+ ['w0042','고양이','🐈',[['w0044','🐠'],['w0045','🐎']]],
+ ['w0050','나무','🌳',[['w0046','🌊'],['w0049','🌼']]],
+ ['w0051','비','🌧️',[['w0053','🌬️'],['w0055','☀️']]],
+ ['w0056','의자','🪑',[['w0057','🛏️'],['w0058','🚪']]],
+ ['w0061','축구','⚽',[['w0062','🏀'],['w0064','🏊']]],
+]);
+// 레이싱 racingItem()의 낱말 문항 메타와 같다(itemKey·familyKey는 낱말 id, 한 낱말이 한 계열).
+const diagRacingMeta=id=>({id,itemKey:`korean-racing:${id}:v1`,familyKey:`korean-racing:${id}:v1`,skillId:'ko.listening.word',difficulty:1,
+ modality:'listening',responseFormat:'single-choice',audioRequired:true,confounded:false,conceptIds:[`ko.word.${id}`]});
+function diagRacingItems(){
+ return DIAG_RACING_WORDS.map(([id,word,icon,others])=>{const meta=diagRacingMeta(id);
+  const order=diagArrange(meta.itemKey,[{id,label:icon},...others.map(([other,label])=>({id:other,label}))]);
+  return {...meta,source:'korean-racing',audio:`korean-racing/assets/narration/${id}.mp3`,prompt:null,question:'들리는 낱말의 그림을 고르세요.',ask:'picture',
+   choices:order,correctId:id,explanation:`들린 낱말은 「${word}」예요.`,label:word};});
+}
+
 // 짧은 진단에서 고를 수 있는 전체 묶음. selectDiagnostic(world-position.mjs)이 항목마다 새 계열 하나를 고른다.
-export const DIAGNOSTIC_ITEMS=Object.freeze([...diagRunnerItems(),...diagRhythmItems(),...diagBlankItems(),...diagTownItems(),...diagEntryItems()].map(item=>Object.freeze(item)));
-// 이 묶음이 아직 다루지 못하는 TOPIK I 항목과 까닭(보고용). 문항을 새로 쓰면 학습기준 §4·§7 제작 기준을 따른다.
-export const DIAGNOSTIC_GAPS=Object.freeze({
- 'ko.listening.word':'낱말 듣기는 한국어 레이싱의 낱말 2,000개뿐이고 보기가 판마다 무작위다. 고정 보기와 레이싱 녹음을 WORLD에 실어야 한다.',
- 'ko.reading.reason':'읽고 이유 이해하기에 맞는 문항이 없다(레이싱 c04의 이음말 빈칸은 이 항목의 뜻과 맞지 않는다).',
- 'ko.reading.main':'읽고 핵심 이해하기에 맞는 문항이 없다(레이싱 c04q2는 이음말 빈칸이다).',
-});
+export const DIAGNOSTIC_ITEMS=Object.freeze([...diagRunnerItems(),...diagRhythmItems(),...diagBlankItems(),...diagTownItems(),...diagEntryItems(),...diagRacingItems()].map(item=>Object.freeze(item)));
+// 이 묶음이 아직 다루지 못하는 TOPIK I 항목과 까닭(보고용). 2026-10-20에 낱말 듣기(레이싱 그림 단계)와 읽기 이유·핵심
+// (싱크타운 읽기 확인에 새로 쓴 열두 문항)을 채워 지금은 비어 있다. 문항을 새로 쓰면 학습기준 §4·§7 제작 기준을 따른다.
+export const DIAGNOSTIC_GAPS=Object.freeze({});
 const diagByKey=new Map(DIAGNOSTIC_ITEMS.map(item=>[item.itemKey,item]));
 // 근거 줄에 쓸 문항 첫머리(학습 내용이라 한국어 원문 그대로). 연습 이름은 화면이 화면 언어로 앞에 붙인다(world-position-ui.mjs).
 // 진단 묶음에 없는 문항은 null(화면이 연습 이름만 쓴다).

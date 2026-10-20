@@ -8,7 +8,7 @@ import Strata from '../../strata/index.js';
 import mapData from '../../strata/maps/topik-i.json' with {type:'json'};
 const map = Strata.createMap(mapData);
 const VERSION = 'town-reading-support-1', SCOPE = 'preview-local-reading';
-const modes = ['plain', 'stepwise'], skills = ['detail', 'sequence', 'negation'];
+const modes = ['plain', 'stepwise'], skills = ['detail', 'sequence', 'negation', 'reason', 'main'];
 const kindSkills = { tea: 'sequence', coordination: 'sequence', help: 'detail' };
 const clone = value => structuredClone(value);
 const integer = value => Number.isSafeInteger(value) && value >= 0;

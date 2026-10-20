@@ -648,6 +648,10 @@ h3.life-poster-sub{margin-bottom:0}
 .wpos-choice:not(:disabled):hover{background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line-2)}
 .wpos-choice:not(:disabled):active{transform:scale(.985)}
 .wpos-choice:disabled{color:var(--w-ink-q);cursor:default}
+/* 그림 보기(낱말 듣기, 10-20): 세 칸에 그림을 크게 가운데. 그림은 글자색을 따르지 않으니 듣기 전(disabled)에는 흐리게 둔다. */
+.wpos-pictures{grid-template-columns:repeat(3,minmax(0,1fr))}
+.wpos-pictures .wpos-choice{justify-content:center;min-height:104px;padding:12px;font-size:52px;line-height:1;text-align:center}
+.wpos-pictures .wpos-choice:disabled{opacity:.42}
 .wpos-run-status{min-height:20px;margin:0;font-size:13px;line-height:1.5;color:var(--w-ink-3)}
 .wpos-run-status:empty{min-height:0}
 .wpos-run-actions{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 16px}
