@@ -1297,6 +1297,29 @@ prepareWorkspace({repo:args['--repo'],taskDir:args['--task-dir'],taskId:args['--
         self.assertIn("\n이어갈 문장: (", block)
         self.assertNotIn("승인", block)  # 헤르메스 지시문은 동의를 지어내지 않는다
 
+    def test_plugin_host_records_are_intercepted_like_in_process_events(self):
+        # plugins.isolation: host — 메시지는 Record(dict + 속성)로, 열거형은 값 글자로, 게이트웨이는 대역으로 넘어온다
+        # (hermes_cli/plugin_host_wire.py). 10-20 실제 코덱 점검: .tmp/tg-approval-20261019/host_wire_check.py
+        class Record(dict):
+            def __getattr__(self, name):
+                try:
+                    return self[name]
+                except KeyError:
+                    raise AttributeError(name) from None
+
+        class Opaque:
+            def __getattr__(self, name):
+                raise AttributeError("live object only in the Hermes process")
+
+        self.approval()
+        source = Record(platform="telegram", chat_id="12345", chat_type="dm", user_id="12345", message_id="77")
+        event = Record(text="그거 해줘", message_id="77", reply_to_message_id="tg-notice-1", internal=False, media_urls=[], source=source)
+        self.assertEqual(plugin._approval_dispatch(event=event, gateway=Opaque(), session_store=Opaque()),
+                         {"action": "rewrite", "text": "/synk_continue 그거 해줘"})
+        self.assertEqual(plugin._APPROVAL_MATCHES["77"][1], "그거 해줘")
+        self.assertIsNone(plugin._approval_dispatch(event=Record(event, source=Record(source, user_id="999", chat_id="999")),
+                                                    gateway=Opaque(), session_store=Opaque()))
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
