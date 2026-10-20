@@ -4,17 +4,20 @@ import {mkdtemp,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,dirname,resolve} from 'node:path';
 import {request as httpRequest} from 'node:http';
-import {randomUUID} from 'node:crypto';
+import {EventEmitter} from 'node:events';
+import {createDecipheriv,createECDH,hkdfSync,randomBytes,randomUUID} from 'node:crypto';
 import {createCompanyApp} from './server.mjs';
 import {hash} from './store.mjs';
+import {createPushSender} from '../../../../../tools/company-messenger/web-push-service.mjs';
 
 const endpoint='https://fcm.googleapis.com/fcm/send/SYNTHETIC-CAPABILITY';
 // 통화는 합성 LiveKit 대역으로만 켠다(실제 키·방 없음). 통화 시계는 회사 시계와 같게 둔다.
-async function fixture(t,{enabled=true,voice=null}={}){
+// send를 주면 기록한 뒤 그 송신기로 넘긴다(없으면 바로 201).
+async function fixture(t,{enabled=true,voice=null,send=null}={}){
   const directory=await mkdtemp(join(tmpdir(),'synk-device-http-'));
   let app,base,at=new Date().toISOString();const sent=[],users={},tokens={};
   async function start(){
-    app=createCompanyApp({dataDir:directory,port:0,allowTestHost:true,schedule:false,origin:'https://workspace.example.test',webPushEnabled:enabled,clock:()=>at,webPushSend:async value=>{sent.push(value);return {statusCode:201};},...(voice?{messengerVoice:{enabled:true,e2eeRequired:false,automaticSweep:false,now:()=>Date.parse(at),...voice}}:{})});
+    app=createCompanyApp({dataDir:directory,port:0,allowTestHost:true,schedule:false,origin:'https://workspace.example.test',webPushEnabled:enabled,clock:()=>at,webPushSend:async value=>{sent.push(value);return send?send(value):{statusCode:201};},...(voice?{messengerVoice:{enabled:true,e2eeRequired:false,automaticSweep:false,now:()=>Date.parse(at),...voice}}:{})});
     const address=await app.start();base='http://127.0.0.1:'+address.port;
   }
   await start();
@@ -91,21 +94,58 @@ test('actual customer support event reaches staff push once, stays unread, and l
   await f.app.deviceNotifications.tick();assert.equal(f.sent.length,1);assert.equal((await f.request('/api/device-notifications')).status,401);
 });
 
-test('a call invitation wakes the invited device at once with high urgency inside the 45-second invitation',async t=>{
-  const media=new Map(),provider={serverUrl:'wss://fixture.livekit.cloud',async createRoom(){},
-    issueToken(room,identity){media.set(room,[...(media.get(room)||[]),{identity,sid:'PA_'+identity,state:'ACTIVE',tracks:[]}]);return {token:'synthetic-media-'+identity,expiresAt:new Date(Date.now()+60000).toISOString()};},
-    async listParticipants(room){return media.get(room)||[];},verifyWebhook(){throw Object.assign(new Error('invalid'),{status:401,publicMessage:'invalid'});},async removeParticipant(){}};
-  const f=await fixture(t,{voice:{provider}});assert.equal((await f.register('other')).status,201);f.advance();
+const voiceProvider=()=>{const media=new Map();return {serverUrl:'wss://fixture.livekit.cloud',async createRoom(){},
+  issueToken(room,identity){media.set(room,[...(media.get(room)||[]),{identity,sid:'PA_'+identity,state:'ACTIVE',tracks:[]}]);return {token:'synthetic-media-'+identity,expiresAt:new Date(Date.now()+60000).toISOString()};},
+  async listParticipants(room){return media.get(room)||[];},verifyWebhook(){throw Object.assign(new Error('invalid'),{status:401,publicMessage:'invalid'});},async removeParticipant(){}};};
+// owner가 other와 같은 방에서 통화에 들어가 other를 부른다.
+async function inviteOther(f){
   const recipient=(await f.request('/messenger/api/bootstrap',{user:'other'})).data.user.id;
   const room=(await f.request('/messenger/api/channels',{body:{name:'합성 통화방',category:'project',memberIds:[recipient]}})).data.channel;
   assert.equal((await f.request('/messenger/api/channels/'+room.id+'/voice/join',{body:{requestId:randomUUID()}})).status,200);
   const invited=await f.request('/messenger/api/channels/'+room.id+'/voice/invitations',{body:{requestId:randomUUID(),recipientId:recipient}});
   assert.equal(invited.status,201);assert.equal(invited.data.invitation.state,'pending');
+  return {recipient,room};
+}
+const waitFor=async ready=>{for(let i=0;i<300&&!ready();i++)await new Promise(done=>setTimeout(done,10));};
+
+test('a call invitation wakes the invited device at once with high urgency inside the 45-second invitation',async t=>{
+  const f=await fixture(t,{voice:{provider:voiceProvider()}});assert.equal((await f.register('other')).status,201);f.advance();
+  await inviteOther(f);
   // 손으로 tick하지 않는다. 30초 주기도 이 시험 안에는 오지 않는다 — 초대가 스스로 깨운 전송만 기다린다.
-  for(let i=0;i<300&&!f.sent.length;i++)await new Promise(done=>setTimeout(done,10));
+  await waitFor(()=>f.sent.length);
   assert.equal(f.sent.length,1);assert.equal(f.sent[0].urgency,'high');assert.equal(f.sent[0].topic,'synk-company-calls');assert.equal(f.sent[0].ttl,45);
+  // 열쇠 없이 등록한 기기에는 통화 표시를 싣지 못해 빈 본문으로 깨운다.
+  assert.equal(f.sent[0].kind,'call');assert.equal(f.sent[0].keys,null);
   assert.doesNotMatch(JSON.stringify(f.sent),/합성 통화방|synthetic-media/);
   await f.app.deviceNotifications.tick();assert.equal(f.sent.length,1);
+});
+
+test('a call push leaves the company server as the encrypted call marker and a mention push stays empty',async t=>{
+  // 실제 송신기를 가짜 HTTPS 요청에 붙여, 푸시 사업자가 받을 머리말·본문 바이트를 그대로 본다.
+  const wire=[],send=createPushSender({lookup:async()=>[{address:'142.250.1.1',family:4}],request(url,options,callback){
+    const req=new EventEmitter();req.end=(...args)=>{wire.push({url:String(url),headers:options.headers,body:args[0]??null});callback({statusCode:201,headers:{},destroy(){}});};return req;
+  }});
+  const f=await fixture(t,{voice:{provider:voiceProvider()},send});
+  // 브라우저가 구독과 함께 주는 열쇠(RFC 8291). 개인 쪽 열쇠로 브라우저처럼 푼다.
+  const device=createECDH('prime256v1');device.generateKeys();const secret=randomBytes(16);
+  const keys={p256dh:device.getPublicKey().toString('base64url'),auth:secret.toString('base64url')};
+  const registered=await f.request('/api/device-notifications',{user:'other',body:{subscription:{endpoint,keys},label:'합성 기기'}});
+  assert.equal(registered.status,201);assert.equal(registered.data.subscription.callAlerts,true);
+  assert.equal(registered.text.includes(keys.auth)||registered.text.includes(keys.p256dh),false);
+  f.advance();const {recipient,room}=await inviteOther(f);
+  await waitFor(()=>wire.length);
+  assert.equal(wire.length,1);assert.equal(wire[0].url,endpoint);
+  assert.deepEqual([wire[0].headers.Urgency,wire[0].headers.Topic,wire[0].headers['Content-Encoding'],wire[0].headers['Content-Length']],['high','synk-company-calls','aes128gcm',String(wire[0].body.length)]);
+  const body=wire[0].body,salt=body.subarray(0,16),sender=body.subarray(21,21+body[20]),record=body.subarray(21+body[20]);
+  const derive=(ikm,salt,info,length)=>Buffer.from(hkdfSync('sha256',ikm,salt,Buffer.from(info),length));
+  const ikm=derive(device.computeSecret(sender),secret,Buffer.concat([Buffer.from('WebPush: info\0'),device.getPublicKey(),sender]),32);
+  const decipher=createDecipheriv('aes-128-gcm',derive(ikm,salt,'Content-Encoding: aes128gcm\0',16),derive(ikm,salt,'Content-Encoding: nonce\0',12));decipher.setAuthTag(record.subarray(-16));
+  assert.equal(Buffer.concat([decipher.update(record.subarray(0,-16)),decipher.final()]).toString(),'{"kind":"call"}\u0002');
+  // 같은 사람에게 온 멘션은 보통 깨우기다 — 빈 본문, normal, 원래 Topic.
+  f.advance();assert.equal((await f.request('/messenger/api/channels/'+room.id+'/messages',{body:{body:'PRIVATE MENTION TEXT',mentionIds:[recipient]}})).status,201);
+  await f.app.deviceNotifications.tick();
+  assert.equal(wire.length,2);assert.deepEqual([wire[1].headers.Urgency,wire[1].headers.Topic,wire[1].headers['Content-Length'],wire[1].headers['Content-Encoding'],wire[1].body],['normal','synk-company-notifications','0',undefined,null]);
+  assert.doesNotMatch(JSON.stringify(f.sent.map(({keys:_keys,...rest})=>rest)),/합성 통화방|PRIVATE MENTION TEXT|synthetic-media/);
 });
 
 test('deactivation or session expiry disables the linked device before any provider call',async t=>{

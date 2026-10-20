@@ -1,23 +1,26 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {webcrypto} from 'node:crypto';
+import {createHash,webcrypto} from 'node:crypto';
 import vm from 'node:vm';
 
 const directory=new URL('../../../docs/마케팅/온라인마케팅지도/engagement/company/public/',import.meta.url),source=readFileSync(new URL('device-notifications.js',directory),'utf8'),workerSource=readFileSync(new URL('notification-sw.js',directory),'utf8');
 const publicKey=Buffer.from([4,...Array(64).fill(1)]).toString('base64url');
-function fixture({permission='default',configured=true,ios=false,installed=false,secure=true}={}){
+// existing: this browser is already subscribed and the server lists it with these extra fields.
+function fixture({permission='default',configured=true,ios=false,installed=false,secure=true,existing=null}={}){
   const calls=[],nodes=new Map();let dialog,registration=null,subscription=null,registers=0,prompts=0,subscribes=0,unsubscribes=0,serverRows=[];
   const make=()=>({value:'',disabled:false,isConnected:true,innerHTML:'',open:false,listeners:{},dataset:{},focus(){},setAttribute(){},addEventListener(name,callback){this.listeners[name]=callback;},showModal(){this.open=true;},close(){this.open=false;this.listeners.close?.();},querySelector(selector){if(selector.startsWith('#')&&!this.innerHTML.includes(`id="${selector.slice(1)}"`))return null;if(!nodes.has(selector))nodes.set(selector,make());return nodes.get(selector);},querySelectorAll(selector){if(selector!=='[data-remove-device]')return [];return [...this.innerHTML.matchAll(/data-remove-device="([^"]+)"/g)].map(match=>({...make(),dataset:{removeDevice:match[1]}}));}});
   const endpoint='https://push.example.test/fake-only',sub={endpoint,toJSON:()=>({endpoint,keys:{p256dh:'fake-public-key',auth:'fake-auth-key'}}),unsubscribe:async()=>{unsubscribes++;subscription=null;return true;}};
-  const sw={getRegistration:async()=>registration,register:async()=>{registers++;registration={active:{scriptURL:'https://company.test/notification-sw.js'},pushManager:{getSubscription:async()=>subscription,subscribe:async options=>{subscribes++;assert.equal(options.userVisibleOnly,true);subscription=sub;return sub;}}};return registration;}};
+  const registered=()=>({active:{scriptURL:'https://company.test/notification-sw.js'},pushManager:{getSubscription:async()=>subscription,subscribe:async options=>{subscribes++;assert.equal(options.userVisibleOnly,true);subscription=sub;return sub;}}});
+  const sw={getRegistration:async()=>registration,register:async()=>{registers++;registration=registered();return registration;}};
+  if(existing){registration=registered();subscription=sub;serverRows=[{id:'sub1',label:'회사 폰',endpointHash:createHash('sha256').update(endpoint).digest('hex'),enabled:true,currentSession:true,...existing}];}
   const Notification={permission,requestPermission:async()=>{prompts++;Notification.permission='granted';return 'granted';}};
   const context=vm.createContext({window:{isSecureContext:secure,PushManager:class{},Notification,matchMedia:()=>({matches:installed})},navigator:{userAgent:ios?'iPhone Safari':'Chrome Windows',platform:ios?'iPhone':'Win32',maxTouchPoints:ios?1:0,serviceWorker:sw},Notification,location:{origin:'https://company.test'},document:{activeElement:null,body:{append:value=>{dialog=value;}},createElement:make},crypto:webcrypto,TextEncoder,Uint8Array,URL,setTimeout,clearTimeout,atob:value=>Buffer.from(value,'base64').toString('binary'),fetch:async(path,options)=>{
     calls.push({path,options});if(context.intercept){const result=await context.intercept(path,options);if(result)return result;}
     let data;if(path==='/api/me')data={user:{id:context.userId||'u1'}};else if(options.method==='DELETE'){serverRows=[];data={ok:true};}else if(options.method==='POST'){const endpointHash=Buffer.from(await webcrypto.subtle.digest('SHA-256',new TextEncoder().encode(endpoint))).toString('hex');serverRows=[{id:'sub1',label:'내 기기',endpointHash,enabled:true,currentSession:true}];data={subscription:serverRows[0]};}else data={configured,publicKey:configured?publicKey:null,subscriptions:serverRows,defaultEnabled:false};return{ok:true,json:async()=>data};
   }});
-  vm.runInContext(source,context);const api=context.window.SynkDeviceNotifications;api.syncIdentity({userId:'u1',csrf:'csrf1',generation:1});
-  return {api,context,calls,nodes,get dialog(){return dialog;},get registers(){return registers;},get prompts(){return prompts;},get subscribes(){return subscribes;},get unsubscribes(){return unsubscribes;},get sw(){return sw;},get subscription(){return subscription;}};
+  vm.runInContext(source,context);const api=context.window.SynkDeviceNotifications,ready=api.syncIdentity({userId:'u1',csrf:'csrf1',generation:1});
+  return {api,context,calls,nodes,ready,get dialog(){return dialog;},get registers(){return registers;},get prompts(){return prompts;},get subscribes(){return subscribes;},get unsubscribes(){return unsubscribes;},get sw(){return sw;},get subscription(){return subscription;}};
 }
 
 test('opening device settings reads status without registering, subscribing or requesting permission',async()=>{
@@ -56,4 +59,31 @@ test('push workers show generic text even for empty or malicious payloads and ne
 test('push click focuses only a same-origin company window or opens a fixed inbox URL without marking read',async()=>{
   const messages=[];let focused=0,work;const f=workerFixture([{url:'https://outside.test/',focus:async()=>assert.fail('outside focus')},{url:'https://company.test/pulse/',focus:async()=>assert.fail('customer lounge focus')},{url:'https://company.test/?tab=workroom',focus:async()=>focused++,postMessage:value=>messages.push(value)}]);f.listeners.notificationclick({notification:{close(){}},waitUntil:value=>work=value});await work;assert.equal(focused,1);assert.deepEqual(JSON.parse(JSON.stringify(messages)),[{type:'synk:open-notifications'}]);assert.equal(f.opened.length,0);
   const empty=workerFixture();empty.listeners.notificationclick({notification:{close(){}},waitUntil:value=>work=value});await work;assert.deepEqual(empty.opened,['/?tab=messenger&panel=notifications']);
+});
+test('a call marker rings with its own tag and renotify while every lock-screen field stays fixed',async()=>{
+  const f=workerFixture();let work;const push=data=>{f.listeners.push({data,waitUntil:value=>work=value});return work;};
+  await push({json:()=>({kind:'call'})});await push({json:()=>({kind:'call',body:'PRIVATE CALLER',title:'고객 이름',icon:'https://outside.test/x.png',tag:'other'})});
+  for(const data of [null,{json:()=>({kind:'Call'})},{json:()=>({kind:['call']})},{json:()=>'call'},{json:()=>null},{json:()=>{throw new SyntaxError('not json');}}])await push(data);
+  // Notification options are built in the worker's own realm; compare them as plain data.
+  const shown=JSON.parse(JSON.stringify(f.shown.map(([title,options])=>({title,...options}))));
+  const fixed={title:'SYNK',body:'확인할 새 업무가 있어요',icon:'/messenger-icon.png',badge:'/messenger-icon.png'};
+  const call={...fixed,tag:'synk-call-invitations',renotify:true,vibrate:[300,150,300,150,300],data:{kind:'synk-call-invitations'}},work_={...fixed,tag:'synk-work-notifications',renotify:false,data:{kind:'synk-work-notifications'}};
+  assert.deepEqual(shown,[call,call,work_,work_,work_,work_,work_,work_]);
+});
+test('a device subscribed before the server kept keys sends the same subscription once, with no prompt or new subscription',async()=>{
+  const f=fixture({existing:{callAlerts:false}});await f.ready;
+  const posts=f.calls.filter(call=>call.options.method==='POST');assert.equal(posts.length,1);
+  assert.equal(posts[0].path,'/api/device-notifications');assert.equal(posts[0].options.headers['X-CSRF-Token'],'csrf1');
+  assert.deepEqual(JSON.parse(posts[0].options.body),{subscription:{endpoint:'https://push.example.test/fake-only',keys:{p256dh:'fake-public-key',auth:'fake-auth-key'}},label:'회사 폰'});
+  assert.equal(f.registers,0);assert.equal(f.subscribes,0);assert.equal(f.prompts,0);assert.equal(f.unsubscribes,0);
+});
+test('devices with keys, another login, a removed row or an older server send nothing; unsubscribed browsers ask nothing',async()=>{
+  for(const existing of [{callAlerts:true},{callAlerts:false,currentSession:false},{callAlerts:false,enabled:false},{}]){
+    const f=fixture({existing});await f.ready;
+    assert.equal(f.calls.filter(call=>call.options.method==='POST').length,0,JSON.stringify(existing));assert.equal(f.calls.filter(call=>call.path==='/api/device-notifications').length,1);
+  }
+  const none=fixture();await none.ready;assert.deepEqual(none.calls,[]);
+  // A login change while the check runs drops it before anything is sent for the old account.
+  const switching=fixture({existing:{callAlerts:false}});switching.api.syncIdentity({userId:null,csrf:'',generation:2});await switching.ready;
+  assert.deepEqual(switching.calls,[]);
 });

@@ -1,16 +1,34 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
-import { ECDH, createECDH, createHash, createPublicKey, verify } from 'node:crypto';
+import { ECDH, createDecipheriv, createECDH, createHash, createPublicKey, hkdfSync, randomBytes, verify } from 'node:crypto';
 import { EventEmitter } from 'node:events';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve, sep } from 'node:path';
-import { createWebPushService, createPayloadlessPushSender, createVapidAuthorization, generateVapidKeys, isPublicPushAddress, validatePushEndpoint } from '../web-push-service.mjs';
+import { createWebPushService, createPushSender, createVapidAuthorization, encryptWebPushPayload, generateVapidKeys, isPublicPushAddress, validatePushEndpoint } from '../web-push-service.mjs';
 import { createCollaborationService } from '../collaboration-service.mjs';
 
 const endpoint = number => `https://fcm.googleapis.com/fcm/send/offline-test-${number}`;
 const status = expected => error => error.status === expected;
+// A browser's subscription keys (RFC 8291 p256dh and auth), kept with their private half to decrypt like the browser.
+function browserKeys() {
+  const ecdh = createECDH('prime256v1'); ecdh.generateKeys(); const secret = randomBytes(16);
+  return { ecdh, secret, keys: { p256dh: ecdh.getPublicKey().toString('base64url'), auth: secret.toString('base64url') } };
+}
+// The receiving side of RFC 8291/8188, written from the RFC and not from the service code.
+function decryptWebPush(body, receiver, secret) {
+  const salt = body.subarray(0, 16), sender = body.subarray(21, 21 + body[20]), record = body.subarray(21 + body[20]);
+  assert.equal(body.readUInt32BE(16), 4096); assert.ok(record.length <= 4096);
+  const derive = (ikm, salt, info, length) => Buffer.from(hkdfSync('sha256', ikm, salt, Buffer.from(info), length));
+  const ikm = derive(receiver.computeSecret(sender), secret, Buffer.concat([Buffer.from('WebPush: info\0'), receiver.getPublicKey(), sender]), 32);
+  const decipher = createDecipheriv('aes-128-gcm', derive(ikm, salt, 'Content-Encoding: aes128gcm\0', 16), derive(ikm, salt, 'Content-Encoding: nonce\0', 12));
+  decipher.setAuthTag(record.subarray(-16));
+  const plain = Buffer.concat([decipher.update(record.subarray(0, -16)), decipher.final()]);
+  let end = plain.length - 1; while (end > 0 && plain[end] === 0) end--;
+  assert.equal(plain[end], 2, 'a single record ends with the last-record delimiter');
+  return plain.subarray(0, end).toString();
+}
 async function fixture(t, options = {}) {
   const directory = await mkdtemp(join(tmpdir(), 'synk-web-push-'));
   const keys = generateVapidKeys(), sessions = new Set(['u1:s1', 'u1:s2', 'u2:s3']);
@@ -18,6 +36,7 @@ async function fixture(t, options = {}) {
   const sources = new Map([['u1', []], ['u2', []]]), sent = [];
   const open = () => {
     db = new DatabaseSync(join(directory, 'fixture.sqlite')); db.exec('PRAGMA foreign_keys=ON');
+    options.prepare?.(db, keys, stamp);
     service = createWebPushService({ db, enabled: true, ...keys, subject: 'mailto:workspace@example.test', now: () => stamp,
       notificationsForUser: async id => options.notifications ? options.notifications(id, sources) : sources.get(id) || [],
       currentSession: async (id, hash) => sessions.has(`${id}:${hash}`),
@@ -30,7 +49,7 @@ async function fixture(t, options = {}) {
     get service() { return service; }, get db() { return db; }, get time() { return stamp; }, sources, sessions, sent, keys,
     setTime: value => { stamp = value; }, advance: milliseconds => { stamp = new Date(Date.parse(stamp) + milliseconds).toISOString(); },
     add(id, userId = 'u1', extra = {}) { const row = { id, kind: 'mention', createdAt: stamp, readAt: null, ...extra }; sources.get(userId).push(row); return row; },
-    register: (number = 1, userId = 'u1', sessionHash = 's1') => service.register(userId, sessionHash, { subscription: { endpoint: endpoint(number) }, label: '시험 기기' }),
+    register: (number = 1, userId = 'u1', sessionHash = 's1', subscriptionKeys) => service.register(userId, sessionHash, { subscription: { endpoint: endpoint(number), ...(subscriptionKeys === undefined ? {} : { keys: subscriptionKeys }) }, label: '시험 기기' }),
     async restart() { await service.stop(); db.close(); open(); },
   };
 }
@@ -73,26 +92,167 @@ test('short-lived call sources bound queue/provider TTL and cancellation during 
   assert.equal(f.sent.length, 1);
 });
 
-test('a call invitation batched with a mention keeps the mention delivery window', async t => {
-  const f = await fixture(t);
-  await f.register(); f.advance(1);
+const invitation = f => ({ kind: 'voice_invitation', expiresAt: new Date(Date.parse(f.time) + 45000).toISOString() });
+const queued = (f, id) => ({ ...f.db.prepare('SELECT state,attempts,last_status FROM web_push_queue WHERE notification_id=?').get(id) });
+
+test('a call batched with a mention goes out first as its own wake-up and the mention keeps its own window', async t => {
+  const f = await fixture(t), device = browserKeys();
+  await f.register(1, 'u1', 's1', device.keys); f.advance(1);
   f.add('mention:batched', 'u1');
   const expiresAt = new Date(Date.parse(f.time) + 45000).toISOString();
   f.add('voice:batched', 'u1', { kind: 'voice_invitation', expiresAt });
   await f.service.tick();
-  assert.equal(f.sent.length, 1); assert.equal(f.sent[0].ttl, 3600);
+  assert.deepEqual(f.sent.map(row => [row.urgency, row.topic, row.ttl, row.kind ?? null]), [
+    ['high', 'synk-company-calls', 45, 'call'], ['normal', 'synk-company-notifications', 3600, null],
+  ]);
+  // Only the call wake-up is given the device's keys, and only to encrypt the marker.
+  assert.deepEqual(f.sent[0].keys, device.keys); assert.equal('keys' in f.sent[1], false);
   assert.equal(f.db.prepare('SELECT expires_at FROM web_push_queue WHERE notification_id=?').get('voice:batched').expires_at, expiresAt);
+  assert.deepEqual([queued(f, 'voice:batched'), queued(f, 'mention:batched')], [{ state: 'accepted', attempts: 1, last_status: 201 }, { state: 'accepted', attempts: 1, last_status: 201 }]);
 });
 
-test('call invitations make the wake-up high urgency and only call-only batches use the call topic', async t => {
-  const f = await fixture(t), call = () => ({ kind: 'voice_invitation', expiresAt: new Date(Date.parse(f.time) + 45000).toISOString() });
+test('every call goes out on the call topic with high urgency and nothing else does', async t => {
+  const f = await fixture(t);
   await f.register(); f.advance(1);
   f.add('mention:alone'); await f.service.tick();
-  f.advance(1); f.add('voice:alone', 'u1', call()); await f.service.tick();
-  f.advance(1); f.add('mention:mixed'); f.add('voice:mixed', 'u1', call()); await f.service.tick();
-  assert.deepEqual(f.sent.map(row => [row.urgency, row.topic, row.ttl]), [
-    ['normal', 'synk-company-notifications', 3600], ['high', 'synk-company-calls', 45], ['high', 'synk-company-notifications', 3600],
+  f.advance(1); f.add('voice:alone', 'u1', invitation(f)); await f.service.tick();
+  f.advance(1); f.add('mention:mixed'); f.add('voice:mixed', 'u1', invitation(f)); await f.service.tick();
+  assert.deepEqual(f.sent.map(row => [row.urgency, row.topic, row.ttl, row.kind ?? null]), [
+    ['normal', 'synk-company-notifications', 3600, null], ['high', 'synk-company-calls', 45, 'call'],
+    ['high', 'synk-company-calls', 45, 'call'], ['normal', 'synk-company-notifications', 3600, null],
   ]);
+  // A device registered without keys still gets the call wake-up, without a body.
+  assert.equal(f.sent[1].keys, null);
+});
+
+test('each wake-up of a mixed batch keeps its own result and retry', async t => {
+  let callCode = 503;
+  const f = await fixture(t, { send: async request => ({ statusCode: request.kind === 'call' ? callCode : 201 }) });
+  await f.register(); f.advance(1); f.add('mention:split'); f.add('voice:split', 'u1', invitation(f));
+  await f.service.tick();
+  assert.deepEqual(queued(f, 'voice:split'), { state: 'pending', attempts: 1, last_status: 503 });
+  assert.deepEqual(queued(f, 'mention:split'), { state: 'accepted', attempts: 1, last_status: 201 });
+  assert.equal((await f.service.state('u1', 's1')).subscriptions[0].lastAcceptedAt, f.time);
+  callCode = 201; f.advance(15000); await f.service.tick();
+  assert.deepEqual(f.sent.map(row => row.kind ?? null), ['call', null, 'call']);
+  assert.deepEqual(queued(f, 'voice:split'), { state: 'accepted', attempts: 2, last_status: 201 });
+});
+
+test('a call declined before its own send fails only that wake-up; the mention still goes out', async t => {
+  const f = await fixture(t, { send: async request => {
+    if (request.kind === 'call') f.sources.set('u1', f.sources.get('u1').filter(row => row.kind !== 'voice_invitation'));
+    return { statusCode: await request.authorize() ? 201 : 401 };
+  } });
+  await f.register(); f.advance(1); f.add('mention:kept'); f.add('voice:declined', 'u1', invitation(f));
+  await f.service.tick();
+  assert.deepEqual(f.sent.map(row => row.kind ?? null), ['call', null]);
+  assert.deepEqual([queued(f, 'voice:declined').state, queued(f, 'mention:kept').state], ['failed', 'accepted']);
+});
+
+test('a gone endpoint on the call wake-up disables the device before the rest of the batch', async t => {
+  const f = await fixture(t, { send: async request => ({ statusCode: request.kind === 'call' ? 410 : 201 }) });
+  await f.register(1, 'u1', 's1', browserKeys().keys); f.advance(1); f.add('mention:gone'); f.add('voice:gone', 'u1', invitation(f));
+  await f.service.tick();
+  assert.equal(f.sent.length, 1);
+  assert.deepEqual({ ...f.db.prepare('SELECT enabled,endpoint,p256dh,auth_secret FROM web_push_subscriptions').get() }, { enabled: 0, endpoint: null, p256dh: null, auth_secret: null });
+  assert.deepEqual([queued(f, 'voice:gone').state, queued(f, 'mention:gone').state], ['skipped', 'skipped']);
+});
+
+test('signing out during the call wake-up stops the rest of the batch', async t => {
+  const f = await fixture(t, { send: async request => { if (request.kind === 'call') await f.service.revokeSession('s1'); return { statusCode: 201 }; } });
+  await f.register(); f.advance(1); f.add('mention:after-logout'); f.add('voice:logout', 'u1', invitation(f));
+  await f.service.tick();
+  assert.equal(f.sent.length, 1);
+  assert.deepEqual([queued(f, 'voice:logout').state, queued(f, 'mention:after-logout').state], ['skipped', 'skipped']);
+});
+
+test('an identity outage while authorizing the call wake-up keeps both groups pending with their retry budget', async t => {
+  let calls = 0, failAt = 0;
+  const f = await fixture(t, { service: { currentSession: async () => {
+    if (++calls === failAt) throw Object.assign(new Error('synthetic verification failure'), { retryable: true, status: 503 });
+    return true;
+  } }, send: async request => ({ statusCode: await request.authorize() ? 201 : 401 }) });
+  await f.register(); f.advance(1); f.add('mention:outage'); f.add('voice:outage', 'u1', invitation(f));
+  // Checks 1 and 2 run before grouping; check 3 is the call wake-up's own authorization.
+  calls = 0; failAt = 3; await f.service.tick();
+  assert.deepEqual(f.sent.map(row => row.kind ?? null), ['call']);
+  assert.deepEqual([queued(f, 'voice:outage'), queued(f, 'mention:outage')], [{ state: 'pending', attempts: 0, last_status: 503 }, { state: 'pending', attempts: 0, last_status: null }]);
+  failAt = 0; f.advance(15000); await f.service.tick();
+  assert.deepEqual(f.sent.map(row => row.kind ?? null), ['call', 'call', null]);
+  assert.deepEqual([queued(f, 'voice:outage'), queued(f, 'mention:outage')], [{ state: 'accepted', attempts: 1, last_status: 201 }, { state: 'accepted', attempts: 1, last_status: 201 }]);
+});
+
+test('RFC 8291 encryption reproduces the RFC example message byte for byte', () => {
+  // RFC 8291 Section 5 and Appendix A publish these example values; they are not secrets of any system. They sit in one
+  // object so the backup copy's credential check (tools/이어하기꾸러미.js) does not read them as key assignments.
+  const example = {
+    plaintext: 'V2hlbiBJIGdyb3cgdXAsIEkgd2FudCB0byBiZSBhIHdhdGVybWVsb24', auth: 'BTBZMqHH6r4Tts7J_aSIgg', salt: 'DGv6ra1nlYgDCS1FRnbzlw',
+    receiverPublic: 'BCVxsr7N_eNgVRqvHtD0zTZsEc6-VV-JvLexhqUzORcxaOzi6-AYWXvTBHm4bjyPjs7Vd8pZGH6SRpkNtoIAiw4',
+    sender: 'yfWPiYE-n46HLnH0KqZOF1fJJU3MYrct3AELtAQ-oRw', receiver: 'q1dXpw3UpT5VOmu_cf_v6ih07Aems3njxI-JWgLcM94',
+    message: 'DGv6ra1nlYgDCS1FRnbzlwAAEABBBP4z9KsN6nGRTbVYI_c7VJSPQTBtkgcy27mlmlMoZIIgDll6e3vCYLocInmYWAmS6TlzAC8wEqKK6PBru3jl7A_yl95bQpu6cVPTpK4Mqgkf1CXztLVBSt2Ks3oZwbuwXPXLWyouBWLVWGNWQexSgSxsj_Qulcy4a-fN',
+  };
+  const body = encryptWebPushPayload({ plaintext: Buffer.from(example.plaintext, 'base64url'), p256dh: example.receiverPublic, auth: example.auth, salt: Buffer.from(example.salt, 'base64url'), privateKey: example.sender });
+  assert.equal(body.toString('base64url'), example.message);
+  const receiver = createECDH('prime256v1'); receiver.setPrivateKey(Buffer.from(example.receiver, 'base64url'));
+  assert.equal(decryptWebPush(body, receiver, Buffer.from(example.auth, 'base64url')), 'When I grow up, I want to be a watermelon');
+});
+
+test('sender encrypts only the fixed call marker, fresh each time, and sends every other push with an empty body', async () => {
+  const wire = [];
+  const sender = createPushSender({ lookup: async () => [{ address: '142.250.1.1', family: 4 }], request(url, options, callback) {
+    const req = new EventEmitter();
+    req.end = (...args) => { wire.push({ headers: options.headers, args }); callback({ statusCode: 201, headers: {}, destroy() {} }); };
+    return req;
+  } });
+  const device = browserKeys(), request = { endpoint: endpoint(1), ...generateVapidKeys(), subject: 'mailto:workspace@example.test', ttl: 45, now: '2026-10-08T01:00:00Z' };
+  for (let i = 0; i < 2; i++) await sender({ ...request, urgency: 'high', topic: 'synk-company-calls', kind: 'call', keys: device.keys });
+  for (const extra of [{ kind: 'call' }, { kind: 'call', keys: null }, { kind: 'mention', keys: device.keys }, { keys: device.keys }, {}]) await sender({ ...request, ...extra });
+  const [first, second, ...empty] = wire;
+  for (const call of [first, second]) {
+    assert.equal(call.args.length, 1); const [body] = call.args;
+    assert.equal(call.headers['Content-Encoding'], 'aes128gcm'); assert.equal(call.headers['Content-Type'], 'application/octet-stream');
+    assert.equal(call.headers['Content-Length'], String(body.length));
+    assert.equal(decryptWebPush(body, device.ecdh, device.secret), '{"kind":"call"}');
+  }
+  assert.notDeepEqual(first.args[0].subarray(0, 16), second.args[0].subarray(0, 16), 'fresh salt per message');
+  assert.notDeepEqual(first.args[0].subarray(21, 86), second.args[0].subarray(21, 86), 'fresh sender key per message');
+  assert.equal(empty.length, 5);
+  for (const push of empty) { assert.deepEqual(push.args, []); assert.equal(push.headers['Content-Length'], '0'); assert.equal(push.headers['Content-Encoding'], undefined); }
+});
+
+test('registration keeps only usable browser keys, a repeat registration brings them and disabling clears them', async t => {
+  const f = await fixture(t), device = browserKeys(), stored = () => ({ ...f.db.prepare('SELECT p256dh,auth_secret FROM web_push_subscriptions').get() });
+  const offCurve = Buffer.from([4, ...Array(64).fill(1)]).toString('base64url');
+  for (const keys of [undefined, 'text', [], {}, { p256dh: device.keys.p256dh }, { p256dh: offCurve, auth: device.keys.auth }, { p256dh: device.keys.p256dh, auth: randomBytes(15).toString('base64url') },
+    { p256dh: device.keys.p256dh.slice(1), auth: device.keys.auth }, { p256dh: `${device.keys.p256dh}!`, auth: device.keys.auth }, { p256dh: 7, auth: device.keys.auth }]) {
+    // Unusable keys never block the opt-in; that device just keeps empty-body wake-ups.
+    const { subscription } = await f.register(1, 'u1', 's1', keys);
+    assert.equal(subscription.enabled, true); assert.equal(subscription.callAlerts, false);
+    assert.deepEqual(stored(), { p256dh: null, auth_secret: null });
+  }
+  assert.equal((await f.register(1, 'u1', 's1', device.keys)).subscription.callAlerts, true);
+  assert.deepEqual(stored(), { p256dh: device.keys.p256dh, auth_secret: device.keys.auth });
+  // The browser's latest usable keys win: a stale pair would make every call push undecryptable on the device.
+  const rotated = browserKeys(); await f.register(1, 'u1', 's1', rotated.keys);
+  assert.deepEqual(stored(), { p256dh: rotated.keys.p256dh, auth_secret: rotated.keys.auth });
+  await f.register(1, 'u1', 's1', { p256dh: offCurve, auth: device.keys.auth }); await f.register(1);
+  assert.deepEqual(stored(), { p256dh: rotated.keys.p256dh, auth_secret: rotated.keys.auth });
+  assert.equal((await f.service.state('u1', 's1')).subscriptions[0].callAlerts, true);
+  assert.equal(f.db.prepare('SELECT count(*) AS n FROM web_push_subscriptions').get().n, 1);
+  await f.service.revokeSession('s1'); assert.deepEqual(stored(), { p256dh: null, auth_secret: null });
+});
+
+test('a database from before the key columns gains them and its device keeps empty-body call wake-ups', async t => {
+  const f = await fixture(t, { prepare(db, keys, at) {
+    if (db.prepare("SELECT 1 FROM sqlite_master WHERE name='web_push_subscriptions'").get()) return;
+    db.exec('CREATE TABLE web_push_subscriptions (id TEXT PRIMARY KEY,user_id TEXT NOT NULL,session_hash TEXT NOT NULL,endpoint_hash TEXT NOT NULL UNIQUE,endpoint TEXT,label TEXT NOT NULL,created_at TEXT NOT NULL,enabled INTEGER NOT NULL DEFAULT 0 CHECK(enabled IN (0,1)),public_key TEXT NOT NULL,last_accepted_at TEXT)');
+    db.prepare("INSERT INTO web_push_subscriptions VALUES('old-device','u1','s1',?,?,'예전 기기',?,1,?,NULL)").run(createHash('sha256').update(endpoint(1)).digest('hex'), endpoint(1), at, keys.publicKey);
+  } });
+  assert.deepEqual(f.db.prepare('PRAGMA table_info(web_push_subscriptions)').all().map(row => row.name).slice(-2), ['p256dh', 'auth_secret']);
+  assert.equal((await f.service.state('u1', 's1')).subscriptions[0].callAlerts, false);
+  f.advance(1); f.add('voice:old-device', 'u1', invitation(f)); await f.service.tick();
+  assert.deepEqual(f.sent.map(row => [row.kind, row.keys, row.topic]), [['call', null, 'synk-company-calls']]);
+  await f.restart(); assert.equal(f.db.prepare('SELECT count(*) AS n FROM web_push_subscriptions').get().n, 1);
 });
 
 test('a source created while a pass is sending gets one more pass instead of waiting for the next timer', async t => {
@@ -140,7 +300,7 @@ test('Chromium staging compatibility accepts only its exact Google host and none
 
 test('sender pins public DNS, sends no payload, does not follow redirects and checks permission after DNS', async () => {
   const keys = generateVapidKeys(), calls = [];
-  const sender = createPayloadlessPushSender({ lookup: async () => [{ address: '142.250.1.1', family: 4 }], request(url, options, callback) {
+  const sender = createPushSender({ lookup: async () => [{ address: '142.250.1.1', family: 4 }], request(url, options, callback) {
     calls.push({ url, options }); const req = new EventEmitter();
     req.end = (...args) => { assert.deepEqual(args, []); callback({ statusCode: 302, headers: { location: 'https://127.0.0.1/secret' }, destroy() {} }); };
     return req;
@@ -155,13 +315,13 @@ test('sender pins public DNS, sends no payload, does not follow redirects and ch
   assert.equal(calls.length, 1);
   await assert.rejects(() => sender({ endpoint: endpoint(1), ...keys, subject: 'mailto:workspace@example.test', ttl: 100, authorize: () => { throw Object.assign(new Error('synthetic verification unavailable'), { status: 503, code: 'PUSH_IDENTITY_UNAVAILABLE' }); } }), error => error.status === 503 && error.code === 'PUSH_IDENTITY_UNAVAILABLE');
   assert.equal(calls.length, 1, 'identity uncertainty after DNS must never begin a provider HTTP request');
-  const privateDns = createPayloadlessPushSender({ lookup: async () => [{ address: '127.0.0.1', family: 4 }], request() { assert.fail('private destination contacted'); } });
+  const privateDns = createPushSender({ lookup: async () => [{ address: '127.0.0.1', family: 4 }], request() { assert.fail('private destination contacted'); } });
   await assert.rejects(() => privateDns({ endpoint: endpoint(1), ...keys, subject: 'mailto:workspace@example.test', ttl: 100 }), status(400));
 });
 
 test('sender sends only the two known urgency and topic values', async () => {
   const headers = [];
-  const sender = createPayloadlessPushSender({ lookup: async () => [{ address: '142.250.1.1', family: 4 }], request(url, options, callback) {
+  const sender = createPushSender({ lookup: async () => [{ address: '142.250.1.1', family: 4 }], request(url, options, callback) {
     headers.push(options.headers); const req = new EventEmitter();
     req.end = () => callback({ statusCode: 201, headers: {}, destroy() {} });
     return req;
@@ -177,7 +337,7 @@ test('sender sends only the two known urgency and topic values', async () => {
 
 test('Chromium staging sender keeps public DNS pinning, zero payload and redirect rejection', async () => {
   const endpoint = 'https://jmt17.google.com/fcm/send/offline-test', keys = generateVapidKeys(), calls = [];
-  const sender = createPayloadlessPushSender({ lookup: async host => {
+  const sender = createPushSender({ lookup: async host => {
     assert.equal(host, 'jmt17.google.com'); return [{ address: '142.250.1.1', family: 4 }];
   }, request(url, options, callback) {
     calls.push({ url, options }); const req = new EventEmitter();
@@ -190,7 +350,7 @@ test('Chromium staging sender keeps public DNS pinning, zero payload and redirec
   const token = /^vapid t=([^,]+)/.exec(calls[0].options.headers.Authorization)[1];
   assert.equal(JSON.parse(Buffer.from(token.split('.')[1], 'base64url')).aud, 'https://jmt17.google.com');
   calls[0].options.lookup('jmt17.google.com', { all: true }, (error, addresses) => { assert.equal(error, null); assert.deepEqual(addresses, [{ address: '142.250.1.1', family: 4 }]); });
-  const privateDns = createPayloadlessPushSender({ lookup: async () => [{ address: '127.0.0.1', family: 4 }], request() { assert.fail('private staging destination contacted'); } });
+  const privateDns = createPushSender({ lookup: async () => [{ address: '127.0.0.1', family: 4 }], request() { assert.fail('private staging destination contacted'); } });
   await assert.rejects(() => privateDns({ endpoint, ...keys, subject: 'mailto:workspace@example.test', ttl: 100 }), status(400));
 });
 
@@ -418,7 +578,7 @@ test('push projection is read-only and removes internal fields, muted rooms, dep
 
 test('stopping aborts a sender still resolving DNS and never starts the HTTP request', async () => {
   const controller = new AbortController();
-  const sender = createPayloadlessPushSender({ lookup: () => new Promise(() => {}), request() { assert.fail('HTTP started after cancellation'); } });
+  const sender = createPushSender({ lookup: () => new Promise(() => {}), request() { assert.fail('HTTP started after cancellation'); } });
   const sending = sender({ endpoint: endpoint(1), ...generateVapidKeys(), subject: 'mailto:workspace@example.test', ttl: 100, signal: controller.signal });
   controller.abort();
   await assert.rejects(sending);

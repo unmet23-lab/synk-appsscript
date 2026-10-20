@@ -1,4 +1,4 @@
-import { createECDH, createHash, createPrivateKey, randomUUID, sign } from 'node:crypto';
+import { createCipheriv, createECDH, createHash, createPrivateKey, hkdfSync, randomBytes, randomUUID, sign } from 'node:crypto';
 import { lookup as dnsLookup } from 'node:dns/promises';
 import { request as httpsRequest } from 'node:https';
 import { isIP } from 'node:net';
@@ -9,7 +9,10 @@ const TOPIC = 'synk-company-notifications';
 // A provider replaces a pending push with a newer one of the same topic, so a 45-second call wake-up must not share
 // the topic of a pending mention wake-up: either one replacing the other could lose it.
 const CALL_KIND = 'voice_invitation', CALL_TOPIC = 'synk-company-calls';
-const fail = (status, message) => Object.assign(new Error(message), { status });
+// The only push body this module ever sends. The service worker cannot see Urgency or Topic, and a fixed-tag notice
+// already on screen would swallow a call silently, so a call wake-up carries this encrypted marker and nothing else.
+const CALL_MARKER = Buffer.from('{"kind":"call"}');
+const fail =(status, message) => Object.assign(new Error(message), { status });
 const sha256 = value => createHash('sha256').update(value).digest('hex');
 const iso = value => new Date(value).toISOString();
 const check = (value, status, message) => { if (!value) throw fail(status, message); };
@@ -33,7 +36,7 @@ function vapidKey(publicKey, privateKey, subject) {
   return createPrivateKey({ format: 'jwk', key: { kty: 'EC', crv: 'P-256', x: point.subarray(1, 33).toString('base64url'), y: point.subarray(33).toString('base64url'), d: privateKey } });
 }
 
-// RFC 8292 authentication only. Empty push bodies need no RFC 8291 encryption.
+// RFC 8292 authentication for every push request.
 export function createVapidAuthorization({ endpoint, publicKey, privateKey, subject, now = new Date().toISOString() }) {
   const key = vapidKey(publicKey, privateKey, subject);
   const header = Buffer.from(JSON.stringify({ typ: 'JWT', alg: 'ES256' })).toString('base64url');
@@ -41,6 +44,32 @@ export function createVapidAuthorization({ endpoint, publicKey, privateKey, subj
   const unsigned = `${header}.${claims}`;
   const signature = sign('sha256', Buffer.from(unsigned), { key, dsaEncoding: 'ieee-p1363' }).toString('base64url');
   return `vapid t=${unsigned}.${signature}, k=${publicKey}`;
+}
+
+// RFC 8291 message encryption (RFC 8188 aes128gcm, one record). Salt and sender key are fresh per message; the RFC
+// example passes its own so the bytes can be checked.
+export function encryptWebPushPayload({ plaintext, p256dh, auth, salt = randomBytes(16), privateKey = null }) {
+  const receiver = Buffer.from(p256dh, 'base64url'), ecdh = createECDH('prime256v1');
+  if (privateKey) ecdh.setPrivateKey(Buffer.from(privateKey, 'base64url')); else ecdh.generateKeys();
+  const sender = ecdh.getPublicKey(), derive = (ikm, salt, info, length) => Buffer.from(hkdfSync('sha256', ikm, salt, info, length));
+  const ikm = derive(ecdh.computeSecret(receiver), Buffer.from(auth, 'base64url'), Buffer.concat([Buffer.from('WebPush: info\0'), receiver, sender]), 32);
+  const cipher = createCipheriv('aes-128-gcm', derive(ikm, salt, Buffer.from('Content-Encoding: aes128gcm\0'), 16), derive(ikm, salt, Buffer.from('Content-Encoding: nonce\0'), 12));
+  const record = Buffer.concat([cipher.update(Buffer.concat([plaintext, Buffer.from([2])])), cipher.final(), cipher.getAuthTag()]);
+  const header = Buffer.alloc(21); salt.copy(header); header.writeUInt32BE(4096, 16); header[20] = sender.length;
+  return Buffer.concat([header, sender, record]);
+}
+
+// Browsers send these keys with every subscription. Keys that cannot encrypt cost only the call marker: the device
+// still gets empty-body wake-ups, so they never block the opt-in itself.
+function encryptionKeys(value) {
+  const decode = (text, length) => {
+    if (typeof text !== 'string' || !/^[A-Za-z0-9_-]{1,100}={0,2}$/.test(text)) return null;
+    const bytes = Buffer.from(text, 'base64url'); return bytes.length === length ? bytes : null;
+  };
+  const point = decode(value?.p256dh, 65), secret = decode(value?.auth, 16);
+  if (!point || point[0] !== 4 || !secret) return null;
+  try { const probe = createECDH('prime256v1'); probe.generateKeys(); probe.computeSecret(point); } catch { return null; }
+  return { p256dh: point.toString('base64url'), auth: secret.toString('base64url') };
 }
 
 export function validatePushEndpoint(value) {
@@ -67,9 +96,9 @@ export function isPublicPushAddress(address) {
   return first >= 0x2000 && first <= 0x3fff && first !== 0x2002 && !/^2001:(?:0*:|0*db8:)/i.test(address);
 }
 
-/** No redirects, proxy environment, request body, cookies, or source text. */
-export function createPayloadlessPushSender({ lookup = dnsLookup, request = httpsRequest } = {}) {
-  return async ({ endpoint, publicKey, privateKey, subject, ttl, urgency = 'normal', topic = TOPIC, now, signal, authorize = () => true }) => {
+/** No redirects, proxy environment, cookies, or source text. The body is empty except the encrypted call marker. */
+export function createPushSender({ lookup = dnsLookup, request = httpsRequest } = {}) {
+  return async ({ endpoint, publicKey, privateKey, subject, ttl, urgency = 'normal', topic = TOPIC, kind = null, keys = null, now, signal, authorize = () => true }) => {
     const url = new URL(validatePushEndpoint(endpoint));
     const deadline = signal ? AbortSignal.any([signal, AbortSignal.timeout(10000)]) : AbortSignal.timeout(10000);
     const bounded = promise => new Promise((resolve, reject) => {
@@ -85,10 +114,13 @@ export function createPayloadlessPushSender({ lookup = dnsLookup, request = http
     check(await bounded(authorize()), 401, '기기 알림을 받을 권한이 변경됐습니다.');
     if (deadline.aborted) throw Object.assign(new Error('기기 알림 전송을 중지했습니다.'), { code: 'PUSH_ABORTED' });
     const authorization = createVapidAuthorization({ endpoint: url.href, publicKey, privateKey, subject, now });
+    // Only the fixed marker can become a body; a subscription without stored keys gets the empty-body wake-up.
+    const body = kind === 'call' && keys ? encryptWebPushPayload({ plaintext: CALL_MARKER, p256dh: keys.p256dh, auth: keys.auth }) : null;
     return new Promise((resolve, reject) => {
       const req = request(url, {
         method: 'POST', agent: false, signal: deadline,
-        headers: { Authorization: authorization, TTL: String(ttl), Urgency: urgency === 'high' ? 'high' : 'normal', Topic: topic === CALL_TOPIC ? CALL_TOPIC : TOPIC, 'Content-Length': '0' },
+        headers: { Authorization: authorization, TTL: String(ttl), Urgency: urgency === 'high' ? 'high' : 'normal', Topic: topic === CALL_TOPIC ? CALL_TOPIC : TOPIC,
+          ...(body ? { 'Content-Encoding': 'aes128gcm', 'Content-Type': 'application/octet-stream', 'Content-Length': String(body.length) } : { 'Content-Length': '0' }) },
         // Pin the checked results to this connection to prevent DNS rebinding.
         lookup(_host, options, callback) { if (options?.all) callback(null, addresses); else callback(null, addresses[0].address, addresses[0].family); },
       }, res => {
@@ -96,22 +128,25 @@ export function createPayloadlessPushSender({ lookup = dnsLookup, request = http
         res.destroy(); resolve(result);
       });
       req.on('error', () => reject(Object.assign(new Error('기기 알림 전송을 완료하지 못했습니다.'), { code: signal?.aborted ? 'PUSH_ABORTED' : 'PUSH_NETWORK' })));
-      req.end();
+      if (body) req.end(body); else req.end();
     });
   };
 }
 
 /** Company SQLite stores opaque source IDs, never notification/message bodies. */
-export function createWebPushService({ db, enabled = false, publicKey = null, privateKey = null, subject = null, now = () => new Date().toISOString(), notificationsForUser, currentSession, send = createPayloadlessPushSender() }) {
+export function createWebPushService({ db, enabled = false, publicKey = null, privateKey = null, subject = null, now = () => new Date().toISOString(), notificationsForUser, currentSession, send = createPushSender() }) {
   check(typeof enabled === 'boolean' && typeof currentSession === 'function' && typeof notificationsForUser === 'function', 500, '기기 알림 연결 설정을 확인해 주세요.');
   let configured = false;
   if (enabled && publicKey && privateKey && subject) { vapidKey(publicKey, privateKey, subject); configured = true; }
   db.exec(`
-    CREATE TABLE IF NOT EXISTS web_push_subscriptions (id TEXT PRIMARY KEY,user_id TEXT NOT NULL,session_hash TEXT NOT NULL,endpoint_hash TEXT NOT NULL UNIQUE,endpoint TEXT,label TEXT NOT NULL,created_at TEXT NOT NULL,enabled INTEGER NOT NULL DEFAULT 0 CHECK(enabled IN (0,1)),public_key TEXT NOT NULL,last_accepted_at TEXT);
+    CREATE TABLE IF NOT EXISTS web_push_subscriptions (id TEXT PRIMARY KEY,user_id TEXT NOT NULL,session_hash TEXT NOT NULL,endpoint_hash TEXT NOT NULL UNIQUE,endpoint TEXT,label TEXT NOT NULL,created_at TEXT NOT NULL,enabled INTEGER NOT NULL DEFAULT 0 CHECK(enabled IN (0,1)),public_key TEXT NOT NULL,last_accepted_at TEXT,p256dh TEXT,auth_secret TEXT);
     CREATE INDEX IF NOT EXISTS web_push_user ON web_push_subscriptions(user_id);
     CREATE TABLE IF NOT EXISTS web_push_queue (subscription_id TEXT NOT NULL REFERENCES web_push_subscriptions(id) ON DELETE CASCADE,notification_id TEXT NOT NULL,source_created_at TEXT NOT NULL,expires_at TEXT NOT NULL,state TEXT NOT NULL CHECK(state IN ('baseline','pending','sending','accepted','skipped','failed')),attempts INTEGER NOT NULL DEFAULT 0,next_attempt_at TEXT NOT NULL,lease_until TEXT,last_status INTEGER,PRIMARY KEY(subscription_id,notification_id));
     CREATE INDEX IF NOT EXISTS web_push_due ON web_push_queue(state,next_attempt_at);
   `);
+  // Rows from before the key columns stay valid; their device sends its keys again on the next signed-in visit.
+  const columns = new Set(db.prepare('PRAGMA table_info(web_push_subscriptions)').all().map(row => row.name));
+  for (const name of ['p256dh', 'auth_secret']) if (!columns.has(name)) db.exec(`ALTER TABLE web_push_subscriptions ADD COLUMN ${name} TEXT`);
   const all = (sql, ...args) => db.prepare(sql).all(...args);
   const one = (sql, ...args) => db.prepare(sql).get(...args);
   const run = (sql, ...args) => db.prepare(sql).run(...args);
@@ -137,12 +172,12 @@ export function createWebPushService({ db, enabled = false, publicKey = null, pr
   const sourceExpiry = source => Math.min(Date.parse(source.createdAt) + TTL_MS,
     typeof source.expiresAt === 'string' && Number.isFinite(Date.parse(source.expiresAt)) ? Date.parse(source.expiresAt) : Infinity);
   const usable = row => configured && row?.enabled === 1 && row.public_key === publicKey && !!row.endpoint;
-  const metadata = (row, sessionHash, active) => ({ id: row.id, label: row.label, endpointHash: row.endpoint_hash, createdAt: row.created_at, lastAcceptedAt: row.last_accepted_at || null, enabled: usable(row) && active, currentSession: row.session_hash === sessionHash });
+  const metadata = (row, sessionHash, active) => ({ id: row.id, label: row.label, endpointHash: row.endpoint_hash, createdAt: row.created_at, lastAcceptedAt: row.last_accepted_at || null, enabled: usable(row) && active, currentSession: row.session_hash === sessionHash, callAlerts: !!(row.p256dh && row.auth_secret) });
   function disable(id) {
     if (stopped) return;
     controllers.get(id)?.abort();
     transaction(() => {
-      run('UPDATE web_push_subscriptions SET enabled=0,endpoint=NULL WHERE id=?', id);
+      run('UPDATE web_push_subscriptions SET enabled=0,endpoint=NULL,p256dh=NULL,auth_secret=NULL WHERE id=?', id);
       run("UPDATE web_push_queue SET state='skipped',lease_until=NULL WHERE subscription_id=? AND state IN ('pending','sending')", id);
     });
   }
@@ -161,7 +196,7 @@ export function createWebPushService({ db, enabled = false, publicKey = null, pr
     check(typeof userId === 'string' && userId && typeof sessionHash === 'string' && sessionHash, 401, '로그인 상태를 다시 확인해 주세요.');
     await requireLive(userId, sessionHash);
     check(input && typeof input === 'object' && !Array.isArray(input) && input.subscription && typeof input.subscription === 'object', 400, '브라우저의 알림 연결을 확인해 주세요.');
-    const endpoint = validatePushEndpoint(input.subscription.endpoint), endpointHash = sha256(endpoint);
+    const endpoint = validatePushEndpoint(input.subscription.endpoint), endpointHash = sha256(endpoint), keys = encryptionKeys(input.subscription.keys);
     const label = input.label === undefined ? '이 기기' : input.label;
     check(typeof label === 'string' && label.trim().length >= 1 && label.length <= 80 && !/[\x00-\x1f]/.test(label), 400, '기기 이름은 1~80자로 입력해 주세요.');
     const sources = await sourceList(userId);
@@ -171,13 +206,14 @@ export function createWebPushService({ db, enabled = false, publicKey = null, pr
     const row = transaction(() => {
       const existing = one('SELECT * FROM web_push_subscriptions WHERE endpoint_hash=?', endpointHash);
       if (existing && existing.user_id === userId && existing.session_hash === sessionHash && usable(existing)) {
-        run('UPDATE web_push_subscriptions SET label=? WHERE id=?', label.trim(), existing.id);
-        return { ...existing, label: label.trim() };
+        // The same subscription sent again also brings keys to a device registered before they were stored.
+        run('UPDATE web_push_subscriptions SET label=?,p256dh=COALESCE(?,p256dh),auth_secret=COALESCE(?,auth_secret) WHERE id=?', label.trim(), keys?.p256dh ?? null, keys?.auth ?? null, existing.id);
+        return one('SELECT * FROM web_push_subscriptions WHERE id=?', existing.id);
       }
       check(one('SELECT count(*) AS count FROM web_push_subscriptions WHERE user_id=? AND enabled=1 AND endpoint_hash<>?', userId, endpointHash).count < 10, 409, '알림을 받을 기기는 최대 10개까지 등록할 수 있습니다.');
       if (existing) { controllers.get(existing.id)?.abort(); run('DELETE FROM web_push_queue WHERE subscription_id=?', existing.id); run('DELETE FROM web_push_subscriptions WHERE id=?', existing.id); }
       const id = randomUUID();
-      run('INSERT INTO web_push_subscriptions(id,user_id,session_hash,endpoint_hash,endpoint,label,created_at,enabled,public_key) VALUES(?,?,?,?,?,?,?,1,?)', id, userId, sessionHash, endpointHash, endpoint, label.trim(), at, publicKey);
+      run('INSERT INTO web_push_subscriptions(id,user_id,session_hash,endpoint_hash,endpoint,label,created_at,enabled,public_key,p256dh,auth_secret) VALUES(?,?,?,?,?,?,?,1,?,?,?)', id, userId, sessionHash, endpointHash, endpoint, label.trim(), at, publicKey, keys?.p256dh ?? null, keys?.auth ?? null);
       // Exact IDs also exclude old unread rows with the same millisecond as opt-in.
       for (const source of sources) run("INSERT OR IGNORE INTO web_push_queue(subscription_id,notification_id,source_created_at,expires_at,state,next_attempt_at) VALUES(?,?,?,?,'baseline',?)", id, source.id, source.createdAt, iso(Date.parse(at) + TTL_MS), at);
       return one('SELECT * FROM web_push_subscriptions WHERE id=?', id);
@@ -227,18 +263,29 @@ export function createWebPushService({ db, enabled = false, publicKey = null, pr
     if (!usable(current) || current.session_hash !== subscription.session_hash || stopped) return;
     const selected = rows.filter(row => visible.has(row.notification_id) && row.expires_at > now());
     if (!selected.length) return;
-    const lease = iso(Date.parse(now()) + 30000);
-    const claimed = transaction(() => selected.filter(row => run("UPDATE web_push_queue SET state='sending',lease_until=?,attempts=attempts+1 WHERE subscription_id=? AND notification_id=? AND state='pending'", lease, subscription.id, row.notification_id).changes));
-    if (!claimed.length) return;
+    // Call invitations go out as their own wake-up: high urgency, the call topic, a TTL that ends with the invitation
+    // and the encrypted call marker. Everything else follows as a second, normal wake-up on the usual topic, so a later
+    // mention can neither replace a pending call push nor lower its urgency (RFC 8030 §5.4), and vice versa.
+    const keys = current.p256dh && current.auth_secret ? { p256dh: current.p256dh, auth: current.auth_secret } : null;
+    const groups = [{ rows: selected.filter(row => callIds.has(row.notification_id)), call: true }, { rows: selected.filter(row => !callIds.has(row.notification_id)), call: false }];
     const controller = new AbortController(); controllers.set(subscription.id, controller);
+    try {
+      for (const group of groups) {
+        if (group.rows.length && await dispatch(subscription, current.endpoint, group, keys, controller) === 'stop') return;
+      }
+    } finally { if (controllers.get(subscription.id) === controller) controllers.delete(subscription.id); }
+  }
+  // Each group is claimed, sent and recorded on its own, with the same lease, authorization and retry rules.
+  async function dispatch(subscription, endpoint, group, keys, controller) {
+    if (stopped || controller.signal.aborted) return 'stop';
+    const lease = iso(Date.parse(now()) + 30000);
+    const claimed = transaction(() => group.rows.filter(row => run("UPDATE web_push_queue SET state='sending',lease_until=?,attempts=attempts+1 WHERE subscription_id=? AND notification_id=? AND state='pending'", lease, subscription.id, row.notification_id).changes));
+    if (!claimed.length) return 'next';
     let response;
     try {
-      // One payloadless wake-up covers every claimed row. Keep it for the longest-lived row so a 45-second call
-      // invitation in the same batch cannot shorten a mention's delivery window; rows still expire one by one.
+      // Rows still expire one by one; the wake-up lives as long as the longest-lived row of its own group.
       const ttl = Math.max(1, Math.floor((Math.max(...claimed.map(row => Date.parse(row.expires_at))) - Date.parse(now())) / 1000));
-      // Any call invitation makes the wake-up high urgency; only a batch of call invitations alone uses the call topic.
-      const call = claimed.some(row => callIds.has(row.notification_id)), callOnly = claimed.every(row => callIds.has(row.notification_id));
-      response = await send({ endpoint: current.endpoint, publicKey, privateKey, subject, ttl, urgency: call ? 'high' : 'normal', topic: callOnly ? CALL_TOPIC : TOPIC, now: now(), signal: controller.signal, authorize: async () => {
+      response = await send({ endpoint, publicKey, privateKey, subject, ttl, urgency: group.call ? 'high' : 'normal', topic: group.call ? CALL_TOPIC : TOPIC, ...(group.call ? { kind: 'call', keys } : {}), now: now(), signal: controller.signal, authorize: async () => {
         if (stopped || controller.signal.aborted) throw unavailable();
         const active = await live(subscription.user_id, subscription.session_hash);
         if (active === null || stopped || controller.signal.aborted) throw unavailable();
@@ -250,10 +297,9 @@ export function createWebPushService({ db, enabled = false, publicKey = null, pr
         return usable(liveRow) && liveRow.session_hash === subscription.session_hash && claimed.some(row => ids.has(row.notification_id) && row.expires_at > now());
       } });
     } catch (error) { response = { statusCode: Number.isInteger(error?.status) ? error.status : 0, identityUnavailable: error?.code === 'PUSH_IDENTITY_UNAVAILABLE' }; }
-    finally { if (controllers.get(subscription.id) === controller) controllers.delete(subscription.id); }
-    if (stopped || controller.signal.aborted) return;
+    if (stopped || controller.signal.aborted) return 'stop';
     const code = Number(response?.statusCode || 0), completedAt = now();
-    if ([404, 410].includes(code)) { disable(subscription.id); return; }
+    if ([404, 410].includes(code)) { disable(subscription.id); return 'stop'; }
     const accepted = code >= 200 && code < 300;
     const transient = !code || code === 408 || code === 429 || code >= 500;
     transaction(() => {
@@ -276,6 +322,8 @@ export function createWebPushService({ db, enabled = false, publicKey = null, pr
       }
       if (accepted) run('UPDATE web_push_subscriptions SET last_accepted_at=? WHERE id=? AND enabled=1', completedAt, subscription.id);
     });
+    // An identity outage leaves the rest of this subscription's rows pending for the next pass, like the checks above.
+    return response.identityUnavailable ? 'stop' : 'next';
   }
   async function drain() {
     if (!configured || stopped) return;

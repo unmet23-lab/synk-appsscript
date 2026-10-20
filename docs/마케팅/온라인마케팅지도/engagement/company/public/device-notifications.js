@@ -14,7 +14,18 @@
   }
   function syncIdentity(next={}){
     const value={userId:next.userId||null,csrf:next.csrf||'',generation:next.generation??0};
-    if(value.userId!==identity.userId||value.csrf!==identity.csrf||value.generation!==identity.generation){identity=value;epoch++;view=null;busy=false;if(dialog?.open)dialog.close();}
+    if(value.userId!==identity.userId||value.csrf!==identity.csrf||value.generation!==identity.generation){identity=value;epoch++;view=null;busy=false;if(dialog?.open)dialog.close();if(value.userId&&value.csrf)return sendMissingKeys();}
+  }
+  // A device switched on before the server kept subscription keys gets empty-body call wake-ups, which a notice already
+  // on screen swallows silently. Sending the same subscription once more adds its keys: no permission prompt, no new
+  // subscription, and nothing at all unless this browser is already subscribed for the signed-in account.
+  async function sendMissingKeys(){
+    const stamp=snapshot();
+    try{
+      const local=await localSubscription();if(!local.subscription)return;
+      const server=await json(API,stamp),row=server.subscriptions?.find(item=>item.endpointHash===local.hash);
+      if(row?.enabled&&row.currentSession&&row.callAlerts===false)await json(API,stamp,{method:'POST',body:{subscription:local.subscription.toJSON(),label:row.label}});
+    }catch{}
   }
   function support(){
     const ios=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
