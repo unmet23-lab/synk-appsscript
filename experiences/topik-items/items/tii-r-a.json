@@ -40,8 +40,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 「올라가다가」가 유일하고 보기·해설·급 수준이 모두 기준에 맞아 통과로 판정한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "6f5d2aefe162069b",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "3급 수준의 연결어미 '-다가'를 묻는 TII-R-01 문항으로, 정답 유일성·오답 구성·해설 모두 적절하여 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "6f5d2aefe162069b",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-002",
@@ -80,8 +103,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고 보기 꼴이 고르다. 3급 문형에 맞고 세 언어 해설도 정확해 통과한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "e3fde481ed990dbd",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "3급 수준의 '-(으)ㄹ까 봐'를 묻는 TII-R-01 문항으로, 문맥과 오답 구성 및 3개 국어 해설이 모두 정확하여 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "e3fde481ed990dbd",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-003",
@@ -120,8 +166,42 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "held",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답 유일, 보기 설계, 세 언어 해설이 모두 좋은 문법 빈칸 문항입니다. 다만 생활 화제의 한 문장과 3급 문형이라 난도 칸을 1(targetGrade 3)로 낮추는 것이 맞습니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "e31af109fc1a8510",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "'-는 바람에'와 형태가 유사한 '-는 N(에)' 문형들을 변별하는 4급(난도 2) 문항으로 완성도가 높아 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "e31af109fc1a8510",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답 「되는 바람에」는 유일합니다. 「대신에」「김에」「반면에」는 원인과 결과를 잇지 못해 분명히 틀립니다. 보기는 모두 「-는 N(에)」 꼴로 맞춰져 있고, 문장도 자연스럽습니다. 세 언어 해설은 같은 근거를 바르게 짚고 있습니다(B의 역번역으로도 확인됩니다). 다만 난도 칸이 맞지 않습니다. 화제는 아파트 정전과 엘리베이터라는 생활 화제이고, 길이는 한 문장입니다. 문형 「-는 바람에」「-는 김에」「-는 대신에」「-는 반면에」도 대체로 3급 교재에서 다룹니다. 이는 작성 기준 §3의 TOPIK II difficulty 1(3급 근처, 생활의 친숙한 화제)에 해당하고, difficulty 2(4급, 사회 화제·짧은 기사)로 보기 어렵습니다. 따라서 A의 지적을 받아들여 난도 값만 고칩니다. 글·보기·정답·해설은 그대로 써도 됩니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "e31af109fc1a8510",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-004",
@@ -160,8 +240,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답은 「준비되자마자」 하나뿐이고, 오답 보기와 세 언어 해설도 고루 갖춰진 TII-R-03형 문법 문항이라 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "f0a304960d1593df",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "'-는 대로'와 '-자마자'의 유의 관계를 묻는 TII-R-03 문항으로, 유형 규칙과 해설 모두 기준에 부합하여 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "f0a304960d1593df",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-005",
@@ -200,8 +303,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "「-는 셈이다」를 「-는 것과 같다」로 바꿔 읽는 문형 문항이다. 정답이 하나로 분명하고, 오답이 그럴듯하며, 해설 세 언어도 정확해 통과한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "9e303166465f4466",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "「-는 셈이다」와 「-는 것과 같다」의 유의 관계를 묻는 TII-R-03 문항으로, 오답 구성과 해설 모두 적절하여 통과한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "9e303166465f4466",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-006",
@@ -240,8 +366,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나로 분명하고, 꼴이 고른 문형 보기와 바른 해설을 갖춘 TII-R-03 문항이에요. 그대로 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "7e9dcd28fbf5e3b4",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "「-기 마련이다」와 「-는 법이다」의 유의 관계를 묻는 TII-R-03 문항으로, 완성도가 높아 통과한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "7e9dcd28fbf5e3b4",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-007",
@@ -280,8 +429,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "분리배출 안내문의 화제를 고르는 문항이다. 정답이 유일하고 오답이 글 낱말에서 나와 그럴듯하며, 해설 세 언어도 일치한다. 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "57934b2842cc133d",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "폐건전지·폐형광등 분리배출 안내문을 소재로 한 TII-R-05 문항으로, 기준에 모두 부합하여 통과한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "57934b2842cc133d",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-008",
@@ -320,8 +492,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답 설계와 해설 세 언어가 모두 바릅니다. 자리·급·난도에도 맞아 그대로 통과합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "3064151664ccc777",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "의류 교환 안내문을 다룬 TII-R-05 문항으로, 지문·보기·해설이 모두 적절하여 통과한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "3064151664ccc777",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-009",
@@ -360,8 +555,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답이 글의 정보를 바꿔 그럴듯하게 짜였다. 해설 세 언어도 정확해서 그대로 써도 된다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "7cc94b31150cad29",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "안내문 세부 내용 일치 문항으로 정답이 유일하고 오답 구성과 3개 국어 해설 모두 적절함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "7cc94b31150cad29",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-010",
@@ -400,8 +618,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답이 글과 분명히 어긋나게 짜인 4급형 기사 내용 일치 문항이다. 해설 세 언어도 바르므로 통과로 본다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "72f9c0523def017a",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "짧은 기사문 세부 내용 일치 문항으로 난도·오답 매력도·해설 모두 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "72f9c0523def017a",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-011",
@@ -440,8 +681,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고 단서(그래서·그 택배·다시)가 분명한 3급 순서 배열 문항이다. 해설 세 언어도 일치해 통과로 판정한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "946a11d6adad3bb9",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "지시어와 접속어 단서가 명확한 문장 순서 배열 문항으로 모든 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "946a11d6adad3bb9",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-012",
@@ -480,8 +744,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 꼴·급·해설이 모두 기준에 맞는 순서 배열 문항입니다. 그대로 통과합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "c5b86d6735491261",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "지시어와 조건·순서 표지가 뚜렷한 문장 배열 문항으로 모든 검수 기준을 통과함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "c5b86d6735491261",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-013",
@@ -520,8 +807,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나로 분명하고, 이음말과 시간 단서로 순서를 가르는 13~15번형 문항이다. 보기 구성과 3개 언어 해설 모두 적절해 통과한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "631587401c095d54",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "공항 도착부터 비행기 지연 방송 및 대기까지의 시간·담화 표지가 명확하여 정답이 유일하고 해설도 정확한 문항입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "631587401c095d54",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-014",
@@ -560,8 +870,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 ④가 「특히」·「이러한 의견」 단서로 유일하게 정해지고, 보기 구성과 3개 언어 해설이 모두 바릅니다. 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "a32a0be2542befff",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "조사 결과 제시와 구체화, 원인, 해결책으로 이어지는 논리적 흐름과 지시어 연결이 뚜렷한 양호한 문항입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "a32a0be2542befff",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-015",
@@ -600,8 +933,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답이 고르게 그럴듯하다. 3급 수준의 문맥 빈칸 문항으로 해설 세 언어도 정확해 그대로 통과한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "0c4918ad3fd7afdc",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "등기 우편의 위치 확인 기능과 인과 관계를 이루는 빈칸 추론 문항으로 정답이 명확하고 해설이 충실합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "0c4918ad3fd7afdc",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-016",
@@ -640,8 +996,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 2번 하나뿐이고 근거가 분명하며, 꼴·급·해설이 모두 기준에 맞습니다. 오답 2·4번이 다소 약하지만 쓸 만해 통과로 판정합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "a4084fee07c413ff",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "약 복용법과 위 보호라는 앞뒤 문맥 단서가 분명하며 오답 매력도와 다국어 해설 모두 우수한 문항입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "a4084fee07c413ff",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-017",
@@ -680,8 +1059,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 꼴·급·해설이 모두 맞는 3급 빈칸 문항이다. 몽골어 해설에서 빈칸을 가리키는 「хоосон зай」 표현이 정답 내용과 겹치는 점만 사소하게 다듬을 만하다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "fa3127f788ad4602",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TOPIK II 16~18번 유형과 3급(난도 1) 수준에 잘 맞고 정답 유일성·오답 매력도·3개 국어 해설 모두 이상 없어 통과(pass) 판정함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "fa3127f788ad4602",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-018",
@@ -720,8 +1122,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나로 분명하고 자리 꼴·급·해설이 모두 맞는다. 영어·몽골어 해설에 'in the home'이 덧붙은 것은 사소하다. 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "23702817596a5db2",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TOPIK II 16~18번 유형 및 4급(난도 2) 기준에 부합하며, 정답의 근거가 명확하고 해설 번역도 일치하여 통과(pass) 판정함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "23702817596a5db2",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-019",
@@ -763,8 +1188,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나로 분명하고, 관용 표현 오답이 적절하며, 세 언어 해설이 정확해 그대로 쓸 수 있습니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "41caaea3a08c4628",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TOPIK II 21번 관용 표현 빈칸 문항으로 지문·보기·해설이 모두 기준에 부합하여 통과(pass) 판정함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "41caaea3a08c4628",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-020",
@@ -806,8 +1254,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나로 분명하다. 오답이 글과 어긋나게 짜였고, 3급 수준과 세트 자리 꼴에 맞으며 세 언어 해설이 일치한다. 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "ee789978a4315b0d",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TOPIK II 22번 중심 생각 파악 문항으로 오답 설계와 해설 번역까지 모두 기준을 충족하여 통과(pass) 판정함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "ee789978a4315b0d",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-021",
@@ -849,8 +1320,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 근거 문장이 분명합니다. 오답은 같은 꼴의 신체 관용 표현이라 고릅니다. 세 언어 해설도 일관되어 그대로 써도 됩니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "6261f0fba8f417df",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TOPIK II 읽기 21번 관용 표현 빈칸 문항으로 지문 맥락, 오답 구성, 다국어 해설 모두 기준에 부합한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "6261f0fba8f417df",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-022",
@@ -892,8 +1386,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 ③이 유일하고, 보기·해설·난도 모두 기준에 맞아 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "d8e9327e004d4835",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "u021과 세트를 이루는 TOPIK II 읽기 22번 중심 생각 문항으로 정답 유일성과 해설 품질이 우수하다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "d8e9327e004d4835",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-023",
@@ -935,8 +1452,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고 꼴·급·해설 세 언어가 모두 맞다. 오답 몇 개가 쉽게 지워지는 점은 사소하므로 통과로 판정한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "ee0315ca3616f9c4",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TOPIK II 읽기 23번 수필 심정 파악 문항으로 맥락 단서가 분명하고 3급 난도에 잘 맞는다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "ee0315ca3616f9c4",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-024",
@@ -978,8 +1518,42 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "held",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답이 하나뿐이고, 오답과 수준도 알맞은 좋은 문항이다. 몽골어 해설의 오타(тавиастай→тавиатай)와 겹친 처소격만 고치면 된다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "8e5efb434e75681d",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "u023과 세트를 이루는 TOPIK II 읽기 24번 내용 일치 문항으로 오답 설계와 해설 모두 기준을 충족한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "8e5efb434e75681d",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "I solved the item myself and got ②, which matches the answer key. ② matches 「퇴근길에 할머니 댁에 들러 이야기를 나누는 날이 많아졌다」, and the passage directly contradicts each wrong choice: ① by 「아는 사람이 한 명도 없어서」, ③ by 「현관문 앞에 … 놓여 있었다」 and ④ by 「과일을 담아」. None of them is merely 'not in the text', so the answer is unique. The essay form, the 24-type position (content match within the 23·24 set) and the TOPIK II difficulty 1 (around level 3) all fit. The skill (detail) also fits, and the Korean and English explanations are accurate. As reviewer A pointed out, the Mongolian explanation has two problems. First, 「Бичвэрт сүүлийн өгүүлбэрт」 stacks two locatives and reads awkwardly. Second, 「тавиастай」 is not the standard form; 「тавиатай」 is the natural word. Because the explanation goes to students, these small fixes are needed before it is shown.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "8e5efb434e75681d",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-025",
@@ -1021,8 +1595,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "수필 심정 문항으로 정답이 분명하고 꼴·난도·해설이 알맞다. 「걷는 때」 표현과 영어 해설의 인칭은 사소한 다듬기 거리다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "3d237f67f689967a",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TII-R-23 수필 심정 파악 문항으로 지문·보기·해설 모두 기준에 부합하여 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "3d237f67f689967a",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-026",
@@ -1064,8 +1661,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답이 글과 분명히 어긋나는 잘 짜인 수필 내용 일치 문항입니다. 「걷는 때가 많았다」를 「걸을 때가 많았다」로 다듬으면 더 자연스럽지만 통과에는 지장이 없습니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "09c1bdb3d2f49dbf",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TII-R-24 수필 내용 일치 문항으로 정답 유일성과 오답 매력도, 다국어 해설 모두 우수하여 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "09c1bdb3d2f49dbf",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-027",
@@ -1107,8 +1727,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나로 분명하고 꼴·난도·해설이 모두 적절해 통과입니다. 영어 해설의 1인칭 서술('I realized')을 'The narrator realized'로 바꾸면 더 자연스럽지만, 학습자에게 해가 되지는 않습니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "3cd5253644170955",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TII-R-23 수필 심정 파악 문항으로 지문 맥락과 보기, 3개 국어 해설이 모두 기준에 부합하여 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "3cd5253644170955",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-028",
@@ -1150,8 +1793,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고 오답이 그럴듯하며, 세 언어 해설이 같은 근거를 정확히 짚는 3급 수필 내용 일치 문항입니다. 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "cba00d9be3d8a348",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TII-R-24 수필 내용 일치 문항으로 모든 검수 항목을 충족하여 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "cba00d9be3d8a348",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-029",
@@ -1193,8 +1859,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 분명하고 꼴·급·해설이 맞는 수필 심정 문항입니다. 「지금까지 가끔」→「지금도 가끔」, 몽골어 「дассан」 같은 사소한 다듬기만 할 수 있습니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "c709bf0dd4a6944c",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "이사하는 날 정든 집을 떠나며 느끼는 '허전하다'의 심정을 묻는 문항으로, 지문·보기·해설 모두 기준에 맞게 잘 작성됨.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "c709bf0dd4a6944c",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-030",
@@ -1236,8 +1925,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 ③이 유일하고, 오답 셋이 글의 말로 분명히 지워진다. 꼴·난도·해설 세 언어 모두 기준에 맞는다. 마지막 문장 「지금까지」는 사소한 표현 다듬기 거리라 통과로 본다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "14ecabe45ee0162b",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "u029와 세트를 이루는 수필 내용 일치 문항으로, 정답 유일성과 오답 구성, 해설 모두 적절함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "14ecabe45ee0162b",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-031",
@@ -1279,8 +1991,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 분명하고 오답과 수필 꼴도 4급 23번 자리에 잘 맞아요. 영어 해설의 시점과 몽골어 낱말 하나는 다듬으면 더 좋지만, 그대로 내보내도 학습자에게 해가 없어 통과로 판정해요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "ce00b5d5f863d678",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "아이의 첫 심부름을 지켜보는 부모의 '조마조마하다' 심정을 묻는 문항으로, 매력적인 오답('흐뭇하다')과 해설이 잘 갖추어짐.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "ce00b5d5f863d678",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-032",
@@ -1322,8 +2057,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고, 오답이 글과 분명히 어긋난다. 꼴·급·해설 모두 기준에 맞아 통과한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "e10d7958f47b0951",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "u031과 세트를 이루는 수필 내용 일치 문항으로, 모든 검수 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "e10d7958f47b0951",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-033",
@@ -1365,8 +2123,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나로 분명하고, 오답도 그럴듯하며, 세 언어 해설이 같은 근거를 말합니다. 그대로 통과합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "29abd7e8a04c9f87",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "수필의 비유 표현을 통해 인물의 홀가분한 심정을 묻는 완성도 높은 문항이다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "29abd7e8a04c9f87",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-034",
@@ -1408,8 +2189,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 ③이 유일하고, 오답이 글과 분명히 어긋나며, 세 언어 해설이 일치합니다. 그대로 써도 됩니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "3545e2775a9cc432",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "u033과 세트를 이루는 수필 내용 일치 문항으로, 정답 유일성과 오답 구성이 모두 적절하다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "3545e2775a9cc432",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-035",
@@ -1448,8 +2252,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고, 오답이 제목의 감정·결과·인과를 고르게 바꿔 매력도가 있습니다. 해설 세 언어도 일치합니다. 그대로 통과합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "f6e39640dd576492",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "'싱글벙글'을 포함한 기사 제목을 풀어 읽는 문항으로 모든 기준을 충족한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "f6e39640dd576492",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-036",
@@ -1488,8 +2315,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 ②가 유일하고, 오답은 제목의 요소를 하나씩 뒤집어 그럴듯해요. 자리·급·난도·해설 세 언어 모두 기준에 맞아 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "d21af3801d9391f4",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "부사 '뚝'과 '-자'가 쓰인 기사 제목의 의미를 묻는 문항으로 모든 기준을 충족한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "d21af3801d9391f4",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-037",
@@ -1528,8 +2378,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답 설계가 좋습니다. 해설 세 언어도 같은 근거를 말하는 4급 기사 제목 문항이라 그대로 통과합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "a54db0f89ac6bbc2",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "기사 제목의 핵심 표현('쑥쑥', '제자리걸음')을 활용해 정답과 오답을 명확하게 구성한 양호한 문항이다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "a54db0f89ac6bbc2",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-038",
@@ -1568,8 +2441,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "늦더위로 단풍이 늦어져 축제가 잇따라 미뤄진다는 제목을 바르게 풀이한 ③이 유일한 정답이다. 오답은 반대·인과 역전·범위 축소로 그럴듯하게 짜였고, 해설 세 언어가 일치해 그대로 써도 된다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "c905d6cbc5743b6d",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "'늦더위', '지각', '줄줄이'의 의미를 정확히 묻고 오답 매력도도 잘 갖춘 문항이다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "c905d6cbc5743b6d",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-039",
@@ -1608,8 +2504,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 ②가 빈칸 뒤의 대비 설명으로 분명히 가려지고, 오답은 글의 말을 뒤집어 그럴듯하게 만들었어요. 급·난도·세 언어 해설 모두 기준에 맞아 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "84f1904f2efc7bb2",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "빈칸 뒤의 대조 설명을 통해 이유·목적을 명확히 추론할 수 있도록 잘 설계된 문항이다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "84f1904f2efc7bb2",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-040",
@@ -1648,8 +2567,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 문맥 인과가 분명한 4급 빈칸 문항입니다. 해설 세 언어가 일치해 그대로 써도 됩니다. 3번 오답이 다소 약한 점만 사소합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "2c27d34cb6cee7b1",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "빈칸 앞뒤의 인과관계가 뚜렷하여 정답이 유일하게 도출되는 양호한 빈칸 추론 문항이다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "2c27d34cb6cee7b1",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-041",
@@ -1688,8 +2630,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답 설계·해설·난도 모두 기준에 맞다. 기출 유사도만 화제가 흔해 「의심」으로 남겨 확인이 필요하지만, 학습자에게 해가 될 문제는 아니므로 통과로 본다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "1a47c8971908c2da",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "겨울철 실내 습도 관리에 관한 3급 내용 일치 문항으로, 지문·보기·해설 모두 기준에 잘 맞아 통과(pass) 판정함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "1a47c8971908c2da",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-042",
@@ -1728,8 +2693,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 ④가 유일하고 해설 세 언어가 일치해요. 보기 ④의 「열을 지켜 준다」가 조금 어색하고 오답이 단순 반대라 약간 쉽지만, 학습자에게 해가 없어 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "442a3a118d1ede57",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "옥상 정원의 효과와 단점을 다룬 4급 내용 일치 문항으로, 오답 구성과 해설이 깔끔하여 통과(pass) 판정함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "442a3a118d1ede57",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-043",
@@ -1768,8 +2756,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 ②가 유일하고, 오답은 글을 뒤집은 그럴듯한 보기예요. 꼴·급·해설 모두 기준에 맞아 통과예요. 몽골어 문장 하나만 다듬으면 더 좋아요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "16242038811390eb",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "직장인의 틈틈이 움직이는 습관을 강조한 4급 주제 찾기 문항으로, 모든 검수 기준을 충족하여 통과(pass) 판정함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "16242038811390eb",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-044",
@@ -1808,8 +2819,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "주장이 마지막 문장에 분명하고 정답이 하나뿐인 주제 문항입니다. ②는 좋은 오답이고 ③·④는 조금 약하지만 글과 분명히 어긋납니다. 몽골어 해설의 한 문장이 조금 어색한 정도라 통과로 판정합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "8e6c65cd33aff7f6",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "물건을 고쳐 쓰는 환경 조성의 필요성을 다룬 4급 주제 찾기 문항으로, 모든 기준에 부합하여 통과(pass) 판정함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "8e6c65cd33aff7f6",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-045",
@@ -1848,8 +2882,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "지시어 「그런 걱정」과 「그러나」로 위치가 ㉢ 하나로 정해지는 깔끔한 문장 넣기 문항입니다. 해설 세 언어가 같은 근거를 말하므로 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "74de6f73216f706d",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "지시어 「그런 걱정」과 접속부사 「그러나」를 통해 문장 삽입 위치(㉢)가 유일하게 결정되며, 지문·해설·번역 모두 기준에 부합합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "74de6f73216f706d",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-r-a-046",
@@ -1888,8 +2945,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "인과 연결로 ㉣ 하나만 맞는 깔끔한 문장 넣기 문항이다. 오답 매력도와 세 언어 해설이 모두 적절해 통과로 본다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "b75067bb0b369895",
+          "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "인과 구문 「~기 때문이다」와 담화 흐름이 ㉣에서 명확히 맞물리며, 지문 완성도와 세 언어 해설이 모두 우수합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T05:07:17.712Z",
+          "rev": 1,
+          "hash": "b75067bb0b369895",
+          "packet": "tii-r-a-r1"
+        }
+      ]
     }
   ]
 }
