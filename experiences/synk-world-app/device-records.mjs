@@ -33,7 +33,7 @@ export function hangulProgressSummary(value){
  return met||graduated||skipped||sessions?{met,mastered,graduated,skipped,sessions}:null;
 }
 // 기준 시각이 있으면 한 기록(레슨·한글 진도·학습 목표)의 모든 활동이 그 뒤일 때만 이 사람의 것으로 본다 — 앞 사람이 하던 기록에
-// 이어 한 것은 앞 사람 몫이 섞여 있어 통째로 두고 간다(10-21 GPT 검수 · 하루 기록 문항·학습 기록 사건은 하나하나 시각으로 가른다).
+// 이어 한 것은 앞 사람 몫이 섞여 있어 통째로 두고 간다(10-21 백엔드 검수 · 하루 기록 문항·학습 기록 사건은 하나하나 시각으로 가른다).
 const allAfter=(times,after)=>!after||times.length>0&&Math.min(...times)>after;
 // 한글 진도의 활동 시각(글자를 만나거나 답한 때·졸업·회차한 날). 회차는 날짜만 있어 그날 0시(한국 시각)로 친다 — 그날 앞선 기록을 뒤로 보지 않게.
 function hangulTimes(value){
@@ -43,7 +43,7 @@ function hangulTimes(value){
  for(const session of Array.isArray(value?.sessions)?value.sessions:[])times.push(isoTime(`${session?.day}T00:00:00+09:00`));
  return times.filter(Number.isFinite);
 }
-// 한글 원본 글(JSON) 하나를 기준 시각과 함께 본다. 옮길 때는 검사한 그 글을 그대로 옮긴다(저장소를 다시 읽지 않는다 — 10-21 GPT 재확인).
+// 한글 원본 글(JSON) 하나를 기준 시각과 함께 본다. 옮길 때는 검사한 그 글을 그대로 옮긴다(저장소를 다시 읽지 않는다 — 10-21 재확인).
 function hangulOf(raw,{after=0}={}){
  try{const value=JSON.parse(raw),summary=hangulProgressSummary(value);return summary&&allAfter(hangulTimes(value),after)?summary:null;}catch{return null;}
 }
@@ -268,7 +268,7 @@ export function createDeviceRecordsOffer({storage=globalThis.localStorage,learni
  }
  function done(job,value,message){finish(job,value);close();if(message)defer(()=>toast(message));return value;}
  // 앞 시도들이 남긴 것(같은 판을 다시 고를 때): moved — 서버가 받았다고 확인한 것(생활 진도·학습 기록 수, 한글·처음 고른 답),
- // pending — 계정에 더했지만 서버 확인을 못 한 것. 다시 고르면 이미 더한 것은 받는 쪽이 「이미 있음」으로 건너뛰고 확인만 다시 한다(10-21 GPT 검수).
+ // pending — 계정에 더했지만 서버 확인을 못 한 것. 다시 고르면 이미 더한 것은 받는 쪽이 「이미 있음」으로 건너뛰고 확인만 다시 한다(10-21 백엔드 검수).
  const lifeNonzero=counts=>!!(counts&&(counts.lessons||counts.reviews||counts.days||counts.profile));
  const lifeSum=(a,b)=>({lessons:(a?.lessons||0)+(b?.lessons||0),reviews:(a?.reviews||0)+(b?.reviews||0),days:(a?.days||0)+(b?.days||0),profile:!!(a?.profile||b?.profile)});
  async function choose(choice,{owner,status=()=>{}}={}){
@@ -279,7 +279,7 @@ export function createDeviceRecordsOffer({storage=globalThis.localStorage,learni
   const carry=job.carry??={moved:{lessons:0,reviews:0,days:0,profile:false,events:0},hangul:false,answer:false,pending:{life:null,learning:0}};
   const movedSoFar=()=>lifeNonzero(carry.moved)||carry.moved.events>0||carry.hangul||carry.answer;
   // cloud: 계정 한글 저장이 있는 상태에서 고른 결정이다(옮겼든 「두기」로 남겼든 한글은 정해졌다). 없으면 예전 기기 안 이전으로 보고 다음 로그인에
-  // 계정 저장으로 다시 묻는다(retryCloud) — 일부만 옮기고 「두기」를 고른 한글을 다시 묻지 않게 한글 성공 여부로 가르지 않는다(10-21 GPT 재확인).
+  // 계정 저장으로 다시 묻는다(retryCloud) — 일부만 옮기고 「두기」를 고른 한글을 다시 묻지 않게 한글 성공 여부로 가르지 않는다(10-21 재확인).
   const cloudDone=()=>!!job.port;
   if(choice==='keep'){
    // 앞 「옮기기」가 일부만 해냈으면 서버가 받은 만큼은 옮긴 것으로 남긴다. 서버 확인을 못 한 것만 있으면 고른 대로 「두기」로 남기되,
