@@ -23,13 +23,12 @@
   - 설명은 화면 언어로, 한국어(인용·고친 문장)는 `lang="ko"` 칸에만 둔다. 실패·한도·꺼짐이면 규칙 점검만 보인다.
   - 통로: `world-account.mjs`의 `writingRequest`(경로 `writing`, 95초). PC 앱 본체는 이 경로를 아직 몰라 단추가 숨는다.
   - 설명 칸에 섞인 짧은 한국어(「-다」·「그래서」 같은 예시)는 화면이 `lang="ko"` 칸으로 감싼다.
-  - 운영 반영(10-21 유호님 승인, [결정](../../docs/_ops/결정.md))은 결제 수단 없는 조직의 새 키가 오면 그 키로 한다. 그때까지 꺼 두고 unmet23 조직 키는 쓰지 않는다. 순서는 talk [현장 노트](../../docs/현장노트/배포_공개.md#talk-함수supabase)를 따른다.
-    1. GPT 검수 결과를 본다(범위는 트랙 ③ 줄).
-    2. talk 가지 `claude/world-writing-20261020`을 talk master에 합친다. 배포 커밋이 `origin/master`를 품는지 `merge-base --is-ancestor`로 묶어 본다.
-    3. 리허설에 `node tools/원격배포.js supabase/functions/world-writing --적용` → `배포대조`·`--호출`로 꺼짐(`off`) 답을 본다.
-    4. 운영 비밀값을 다이제스트로 지금 값과 대조한 뒤 쓴다: `WORLD_WRITING_ANTHROPIC_API_KEYS`(새 키, 값은 출력하지 않음), `SYNK_AI_PRICES`에 Sonnet·Opus 5.5 단가가 있는지.
-    5. 운영에 `--적용 --운영 --차이확인 <값>`으로 배포한다.
-    6. 끝으로 `SYNK_WORLD_WRITING_ENABLED=true`를 켜고, 계정 상태 답의 `bankHash`가 공개 은행 지문(`912ab9dee14c7d80`부터)과 같은지 본다.
+  - 운영 반영: 결제 수단 없는 조직의 새 키를 기다리는 대신 지금 synk.yuh 키로 켤지 유호님 확인 중이다(10-21, 부모 세션). unmet23 조직 키는 쓰지 않는다. 그 전까지 운영은 꺼 둔다. 순서는 talk [현장 노트](../../docs/현장노트/배포_공개.md#talk-함수supabase)를 따른다.
+    1. 백엔드 검수 — 10-21 Fable 독립 검수 P0·P1 없음. 켜기 전 고칠 것 셋과 권장 고침을 talk `0e892de`에 반영했다(529·503 오류 몸통 0원, 토큰 못 세면 안 보냄, 판정 말 거름망, 답 속 꼬리표, 보내기 70초 등). GPT 검수는 트랙 ③ 줄의 범위로 남는다.
+    2. talk 가지에 master를 합쳤다(`60dda6a`). 운영 배포 직전에 `merge-base --is-ancestor origin/master HEAD`로 다시 묶어 보고, 운영 판을 talk master에도 합친다.
+    3. 리허설(10-21 끝, 유호님 「1,2 진행해」): `world-writing` v3, `tools/쓰기피드백_설정.js --키파일 <synk.yuh> --켜기 --적용`, `tools/쓰기피드백_왕복.js --적용` 11단계가 모두 맞았다(거절 4·status·피드백·done_before·409·하루 한도 뒤 limit, 원장 횟수·금액 completed, 시험 6편 $0.0386).
+    4. 운영: `tools/원격배포.js supabase/functions/world-writing --적용 --운영 --차이확인 <값>` → `tools/쓰기피드백_설정.js --키파일 <키> --켜기 --적용 --운영`. 운영 가격표는 10-19 판(Sonnet·Opus 5.5 단가 있음)이고 OAuth 제품표도 있다(`tools/쓰기피드백_설정.js --운영` 미리보기).
+    5. 확인: 로그인 없는 요청이 401 봉투, `배포대조` 같음, 계정 상태 답의 `bankHash`가 공개 은행 지문과 같은지 본다. 새 키가 오면 4의 설정 도구에 새 키파일을 주면 목록이 통째로 바뀐다.
 
     DB는 새로 바꿀 것이 없다. 횟수 원장 `engine.reserve_ai_usage`(c16)는 이름 규칙만 보므로 `world.writing.feedback`을 받는다.
 - **비용 파일럿(10-21, synk.yuh 크레딧 키, [결정](../../docs/_ops/결정.md)):** 합성 학생 글 22편을 서버와 같은 요청 몸통으로 보냈다. 모두 정상 피드백이었고 합계 $0.227이었다.
