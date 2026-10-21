@@ -123,6 +123,18 @@ test('반영: 새 문항에는 그 내용 지문으로 검수 줄을 달고, 검
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
+test('레이싱 그림 낱말: 공식 자리 없이, 들리는 낱말과 그림마다 그 낱말을 붙여 검수자가 대조한다', async () => {
+  const { existingItemView } = await tool();
+  const item = { source: 'korean-racing', ask: 'picture', label: '사과', skillId: 'ko.listening.word', difficulty: 1, prompt: null, question: '들리는 낱말의 그림을 고르세요.',
+    choices: [{ id: 'w0001', label: '🍎' }, { id: 'w0003', label: '🍇' }, { id: 'w9999', label: '❓' }], correctId: 'w0001', explanation: '들린 낱말은 「사과」예요.' };
+  const v = existingItemView(item, [], { 'ko.listening.word': '낱말 듣기' });
+  assert.equal(v.officialType, null);
+  assert.equal(v.passage, '[소리로 들리는 낱말] 사과');
+  assert.deepEqual(v.choices, ['🍎(사과)', '🍇(포도)', '❓']);
+  assert.equal(v.answer, 0);
+  assert.match(v.format, /공식 시험 자리는 없다/);
+});
+
 test('--미판정: 지금 지문으로 판정을 받은 문항만 빠지고, 고쳐 rev·지문이 바뀐 문항과 기존 문항의 바뀐 원고는 다시 들어간다', async () => {
   const { alreadyJudged } = await tool();
   const line = (rev, hash, stage = 'claude') => ({ stage, model: 'm', rubric: 'r', at: '2026-10-21T00:00:00.000Z', verdict: 'fix', rev, hash });

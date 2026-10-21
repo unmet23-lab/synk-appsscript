@@ -59,7 +59,11 @@ export function newItemView(item, types, labels) {
     choices: item.choices, answer: item.answer, explanation: item.explanation, choiceNotes: item.choiceNotes };
 }
 // 기존 게임 문항: 출처마다 시험 자리(맞춘 꼴)와 화면에 보이는 글. 입장 검사는 안내문·서류·짐·말을 글로 옮긴다.
-const EXISTING_TYPE = { 'blank-slice': () => 'TI-R-34', 'synk-town': item => item.skillId === 'ko.reading.main' ? 'TI-R-46' : 'TI-R-43', 'entry-check': () => 'TI-R-40' };
+// 레이싱 그림 낱말(낱말 하나를 듣고 그림 고르기)은 맞는 공식 자리가 없어(그림 자리 TI-L-15는 대화·세부) 자리 없이 본다.
+const EXISTING_TYPE = { 'blank-slice': () => 'TI-R-34', 'synk-town': item => item.skillId === 'ko.reading.main' ? 'TI-R-46' : 'TI-R-43', 'entry-check': () => 'TI-R-40',
+  'korean-racing': () => null };
+let wordById = null;
+const wordOf = id => (wordById ??= new Map(readJson(path.join(root, 'strata/topik-i.words.json')).words.map(([wid, word]) => [wid, word]))).get(id) || null;
 function entryText(card) {
   const lines = [`[안내문] ${card.notice.title}`, ...card.notice.rules.map(rule => `- ${rule}`)];
   if (card.at) lines.push(`[지금 시각] ${card.at}`);
@@ -70,10 +74,14 @@ function entryText(card) {
 }
 export function existingItemView(item, types, labels) {
   const typeId = EXISTING_TYPE[item.source]?.(item);
-  const passage = item.source === 'entry-check' ? entryText(item.card) : item.prompt;
+  const picture = item.ask === 'picture';
+  const passage = item.source === 'entry-check' ? entryText(item.card) : picture ? `[소리로 들리는 낱말] ${item.label}` : item.prompt;
+  // 그림 보기는 그림 글자(이모지)만으로는 검수자가 어느 낱말 그림인지 대조할 수 없어, 그 그림이 가리키는 낱말을 괄호로 붙인다.
+  const choices = item.choices.map(choice => picture && wordOf(choice.id) ? `${choice.label}(${wordOf(choice.id)})` : choice.label);
   return { existing: true, source: item.source, exam: 'topik-i', officialType: typeView(types.find(t => t.id === typeId)), fit: 'adapted',
+    ...(picture ? { format: '게임 꼴: 낱말 하나를 듣고 보기 그림(이모지) 셋 가운데 고른다. 공식 시험 자리는 없다(낱말 듣기 연습). 그림이 그 낱말을 하나로 가리키는지, 보기 그림끼리 헷갈리지 않는지, 1급 낱말인지 본다' } : {}),
     targetGrade: null, skillId: item.skillId, skillLabel: labels[item.skillId] || null, difficulty: item.difficulty, passage, script: null,
-    question: item.question, choices: item.choices.map(choice => choice.label), answer: item.choices.findIndex(choice => choice.id === item.correctId),
+    question: item.question, choices, answer: item.choices.findIndex(choice => choice.id === item.correctId),
     explanation: { ko: item.explanation }, choiceNotes: null };
 }
 const blindView = view => { const { answer, explanation, choiceNotes, ...rest } = view; return rest; };
