@@ -1,8 +1,10 @@
 // 만든 파일 — tools/topik-items.mjs --묶기. 손으로 고치지 않는다(items/*.json을 고친 뒤 다시 만든다).
 import f0 from './items/ti-l-a.json' with { type: 'json' };
 import f1 from './items/ti-l-b.json' with { type: 'json' };
-import f2 from './items/ti-r-a.json' with { type: 'json' };
-import f3 from './items/ti-r-b.json' with { type: 'json' };
-import f4 from './items/ti-r-c.json' with { type: 'json' };
-import f5 from './items/ti-r-d.json' with { type: 'json' };
-export const ITEM_FILES = Object.freeze([f0, f1, f2, f3, f4, f5]);
+import f2 from './items/ti-l-e.json' with { type: 'json' };
+import f3 from './items/ti-r-a.json' with { type: 'json' };
+import f4 from './items/ti-r-b.json' with { type: 'json' };
+import f5 from './items/ti-r-c.json' with { type: 'json' };
+import f6 from './items/ti-r-d.json' with { type: 'json' };
+import f7 from './items/tii-r-a.json' with { type: 'json' };
+export const ITEM_FILES = Object.freeze([f0, f1, f2, f3, f4, f5, f6, f7]);
