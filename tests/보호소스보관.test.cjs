@@ -237,3 +237,26 @@ test('the status file keeps the previous evidence until every row is done, also 
   assert.deepEqual(final.files.map(row => [row.sourcePath, row.status]), done.files.map(row => [row.sourcePath, row.status]));
   assert.deepEqual(done.files.map(row => row.sourcePath), [f.row.sourcePath]);
 });
+test('a stale inventory waits for a running OneDrive run to write the new one, and stops at once when none is running (10-21)', { skip: !crypt }, async t => {
+  // 절전·핫스팟으로 3시간 넘게 멈췄다가 두 예약이 같이 시작하면, 이 단계가 OneDrive의 새 목록보다 먼저 닿는다.
+  const f = await fixture(t), inventory = path.join(f.vault, '상태/OneDrive/protected-sources.json'); fs.mkdirSync(path.dirname(inventory), { recursive: true });
+  const write = checkedAt => fs.writeFileSync(inventory, JSON.stringify({ status: 'success', checkedAt, files: [f.row] }));
+  const stale = () => write(new Date(Date.now() - 4 * 3600000).toISOString());
+  const options = { vault: f.vault, root: f.root, apply: true, roots: f.options.roots, cryptoTool: f.options.cryptoTool };
+  stale();
+  let sleeps = 0;
+  const waited = await reconcile({ ...options, inventoryWait: { running: () => true, pollMs: 1,
+    sleep: async () => { if (++sleeps === 2) write(new Date().toISOString()); } } });
+  assert.equal(sleeps, 2);
+  assert.deepEqual(waited.files.map(row => row.status), ['awaiting-drive-verification']);
+  assert.ok(waited.issues.every(issue => issue.code === 'GIT_ARCHIVE_AWAITING_DRIVE'), JSON.stringify(waited.issues));
+  const never = async () => { throw new Error('should not wait'); };
+  stale();
+  const idle = await reconcile({ ...options, inventoryWait: { running: () => false, sleep: never } });
+  assert.deepEqual(idle.issues.map(issue => issue.code), ['PROTECTED_SOURCE_INVENTORY_NOT_CURRENT']);
+  const late = await reconcile({ ...options, inventoryWait: { running: () => true, waitMs: 0, sleep: never } });
+  assert.deepEqual(late.issues.map(issue => issue.code), ['PROTECTED_SOURCE_INVENTORY_NOT_CURRENT']);
+  fs.rmSync(inventory);
+  const missing = await reconcile({ ...options, inventoryWait: { running: () => false, sleep: never } });
+  assert.deepEqual(missing.issues.map(issue => issue.code), ['PROTECTED_SOURCE_SYSTEM_ENOENT'], 'an unreadable inventory keeps its old code');
+});

@@ -234,6 +234,20 @@ function atomicJson(file, value) {
   fs.writeFileSync(temp, JSON.stringify(value, null, 2) + '\n');
   replaceFile(temp, file);
 }
+// 감싸개가 제한에 백업 나무를 끝내면(TerminateJobObject) 잠금이 남는다. Windows는 PID를 금방 다시 주므로, 그 PID가 다른 프로세스로
+// 살아 있으면 다음 실행이 「already-running」으로 조용히 건너뛴다(10-21 09:30 실행이 남긴 PID 45096 잠금). 그래서 PID가 살아 있어도
+// 같은 PID로 쓴 영수증(잠금 이름에서 .lock을 뺀 파일)이 running인 채 heartbeat가 45분 넘게 멈췄거나 잠금이 4시간을 넘으면 주인 없는
+// 잠금으로 본다. 살아 있는 실행은 heartbeat를 15초마다 쓰고(긴 동기 git 호출 동안 멈춘 가장 긴 틈이 28분), 적용 실행은 24분·확인 실행은
+// 3시간에 끝난다(10-21).
+const LOCK_HEARTBEAT_STALE_MS = 45 * 60000, LOCK_MAX_AGE_MS = 4 * 3600000;
+function abandonedLock(file, owner, now = Date.now()) {
+  const started = Date.parse(owner.startedAt);
+  if (Number.isFinite(started) && now - started > LOCK_MAX_AGE_MS) return true;
+  let receipt;
+  try { receipt = JSON.parse(fs.readFileSync(file.replace(/\.lock$/, ''), 'utf8')); } catch (_) { return false; }
+  const beat = Date.parse(receipt.heartbeatAt || receipt.checkedAt);
+  return receipt.pid === owner.pid && receipt.status === 'running' && Number.isFinite(beat) && now - beat > LOCK_HEARTBEAT_STALE_MS;
+}
 function acquireLock(file) {
   fs.mkdirSync(path.dirname(file), { recursive: true });
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -250,8 +264,9 @@ function acquireLock(file) {
       let owner;
       try { owner = JSON.parse(fs.readFileSync(file, 'utf8')); } catch (_) { return null; }
       if (!Number.isSafeInteger(owner.pid) || owner.pid < 1) return null;
-      try { process.kill(owner.pid, 0); return null; }
-      catch (probe) { if (probe.code !== 'ESRCH') return null; }
+      let alive = true;
+      try { process.kill(owner.pid, 0); } catch (probe) { alive = probe.code !== 'ESRCH'; }
+      if (alive && !abandonedLock(file, owner)) return null;
       // Re-read before removing only this stale lock; never kill its process.
       const current = JSON.parse(fs.readFileSync(file, 'utf8'));
       if (current.pid !== owner.pid || current.startedAt !== owner.startedAt) return null;

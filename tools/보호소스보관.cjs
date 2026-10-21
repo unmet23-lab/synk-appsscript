@@ -151,9 +151,35 @@ function refreshedRow(row) {
   if (!['secret-literal', 'secret-signature'].includes(reason) && !(reason === 'embedded-media-or-base64' && row.priorOneDriveCopy)) return null;
   return { ...row, reason, bytes: data.length, sha256: crypto.createHash('sha256').update(data).digest('hex'), inventorySha256: row.sha256 };
 }
+// 절전이나 핫스팟 멈춤(10-21 10:12~)으로 OneDrive 실행이 3시간 넘게 없다가 두 예약이 같이 시작하면, 이 단계가 OneDrive의 새 목록보다
+// 먼저 닿아 NOT_CURRENT로 멈춘다. OneDrive 실행이 돌고 있으면(run.lock의 PID가 살아 있음) 새 목록을 쓸 때까지 최대 8분 기다린다(10-21).
+// 돌고 있지 않거나 기다려도 안 바뀌면 예전처럼 멈춘다. 목록을 못 읽은 오류도 기다릴 수 없으면 예전 그대로 올라간다.
+function oneDriveRunning(vault) {
+  try {
+    const lock = JSON.parse(fs.readFileSync(path.join(vault, '상태', 'OneDrive', 'run.lock'), 'utf8'));
+    if (!Number.isSafeInteger(lock.pid) || lock.pid < 1) return false;
+    process.kill(lock.pid, 0); return true;
+  } catch (error) { return error.code === 'EPERM'; }
+}
+function inventoryCurrent(inventory, now = Date.now()) {
+  const at = Date.parse(inventory.checkedAt);
+  return inventory.status === 'success' && Array.isArray(inventory.files) && Number.isFinite(at) && now - at <= 3 * 3600000 && at <= now + 60000;
+}
+async function currentInventory(file, vault, { waitMs = 8 * 60000, pollMs = 5000, running = () => oneDriveRunning(vault),
+  sleep = ms => new Promise(resolve => setTimeout(resolve, ms)) } = {}) {
+  const deadline = Date.now() + waitMs;
+  for (;;) {
+    let inventory = null;
+    try { inventory = JSON.parse(fs.readFileSync(file, 'utf8')); }
+    catch (error) { if (Date.now() >= deadline || !running()) throw error; }
+    if (inventory && inventoryCurrent(inventory)) return inventory;
+    if (inventory && (Date.now() >= deadline || !running())) throw new Error('PROTECTED_SOURCE_INVENTORY_NOT_CURRENT');
+    await sleep(pollMs);
+  }
+}
 // appliedVersions: 마지막 적용 실행이 본 「경로\nSHA」 목록. 확인 실행은 새 암호문을 만들 수 없으므로, 그 목록에 없는(그 뒤에 처음 보인)
 // 판은 실패로 세지 않고 awaiting-next-apply로 남긴다(10-19). 목록이 없으면 예전처럼 엄격하다.
-async function reconcile({ vault, root, apply, onProgress = () => {}, roots: suppliedRoots, cryptoTool: suppliedCrypto, appliedVersions = null }) {
+async function reconcile({ vault, root, apply, onProgress = () => {}, roots: suppliedRoots, cryptoTool: suppliedCrypto, appliedVersions = null, inventoryWait = {} }) {
   const state = path.join(vault, 'protected-source-backup-status.json'), inventoryFile = path.join(vault, '상태', 'OneDrive', 'protected-sources.json');
   const unlock = acquireLock(state + '.lock');
   if (!unlock) return { status: 'attention', issues: [{ code: 'PROTECTED_SOURCE_ALREADY_RUNNING' }], files: [] };
@@ -175,10 +201,7 @@ async function reconcile({ vault, root, apply, onProgress = () => {}, roots: sup
   const timer = setInterval(progress, 15000);
   try {
     progress();
-    const inventory = JSON.parse(fs.readFileSync(inventoryFile, 'utf8'));
-    const at = Date.parse(inventory.checkedAt);
-    if (inventory.status !== 'success' || !Array.isArray(inventory.files) || !Number.isFinite(at) ||
-        Date.now() - at > 3 * 3600000 || at > Date.now() + 60000) throw new Error('PROTECTED_SOURCE_INVENTORY_NOT_CURRENT');
+    const inventory = await currentInventory(inventoryFile, vault, inventoryWait);
     const roots = suppliedRoots || authorizedRoots(root);
     const prior = { copies: priorCopies(vault) };
     if (inventory.files.some(row => row.reason === 'embedded-media-or-base64')) prior.links = priorLinks(inventory.files, prior.copies());

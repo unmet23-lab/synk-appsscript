@@ -97,6 +97,26 @@ test('a live owner lock prevents a concurrent backup and release removes only it
   release();
   assert.equal(fs.existsSync(file), false);
 });
+test('a lock left by a run the wrapper killed is taken over even after Windows gives its PID to another live process (10-21)', t => {
+  // 10-21 09:30 실행은 24분 제한에 끊겨 PID 45096 잠금을 남겼다. 그 PID를 살아 있는 다른 프로세스(여기서는 이 시험 프로세스)가 받은 꼴을 만든다.
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'github-backup-lock-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const receipt = path.join(dir, 'status.json'), file = receipt + '.lock', now = Date.now();
+  const ago = minutes => new Date(now - minutes * 60000).toISOString();
+  const leave = (startedMinutesAgo, beatMinutesAgo, pid = process.pid) => {
+    fs.writeFileSync(file, JSON.stringify({ pid: process.pid, startedAt: ago(startedMinutesAgo) }));
+    if (beatMinutesAgo === undefined) fs.rmSync(receipt, { force: true });
+    else fs.writeFileSync(receipt, JSON.stringify({ pid, status: 'running', checkedAt: ago(beatMinutesAgo), heartbeatAt: ago(beatMinutesAgo) }));
+  };
+  leave(30, 1); assert.equal(acquireLock(file), null, 'a fresh heartbeat keeps the lock');
+  leave(30); assert.equal(acquireLock(file), null, 'a young lock without a receipt is kept');
+  leave(120, 96, process.pid + 4); assert.equal(acquireLock(file), null, 'a receipt written by another PID is no evidence');
+  leave(120, 96);
+  const taken = acquireLock(file); assert.equal(typeof taken, 'function', 'the 11:30 run takes over the 09:30 lock'); taken();
+  leave(5 * 60);
+  const old = acquireLock(file); assert.equal(typeof old, 'function', 'no run holds a lock for four hours'); old();
+  assert.equal(fs.existsSync(file), false);
+});
 test('only apply with existing unverified ciphertext requests the durable transfer task', () => {
   const calls = [];
   const invoke = mode => { calls.push(mode); return { status: 'running', active: true, enabled: true }; };
