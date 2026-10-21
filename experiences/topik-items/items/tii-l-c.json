@@ -1,0 +1,342 @@
+{
+  "schema": "topik-item-1",
+  "batch": "tii-l-c",
+  "author": "claude-opus-5-5 · Claude Code 하위 에이전트 · 2026-10-21",
+  "items": [
+    {
+      "id": "tii-l-c-001",
+      "rev": 1,
+      "family": "tii-l-c-001",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-04",
+      "targetGrade": 4,
+      "skillId": "ko2.listening.response",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "올여름부터 우리 시 바닷가에서는 쓰레기를 두고 가면 벌금을 물린대요."
+        },
+        {
+          "speaker": "남자",
+          "text": "쓰레기통이 모자라서 그런 거 아니에요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "오히려 쓰레기통을 다 없앴대요. 통을 놓아두면 금방 넘쳐서 쓰레기가 바람에 날리니까 자기 쓰레기는 자기가 책임지게 하겠다는 거래요."
+        }
+      ],
+      "question": "다음을 듣고 이어질 수 있는 말로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "그럼 이제 바닷가에서 쓰레기통 찾기가 쉬워지겠네요.",
+        "그럼 바닷가에 갈 때는 쓰레기 담을 봉투를 챙겨야겠네요.",
+        "그럼 쓰레기는 바닷가 한쪽에 모아 두고 오면 되겠네요.",
+        "그럼 바람이 부는 날에만 쓰레기를 가져가면 되겠네요."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "여자는 바닷가 쓰레기통을 「다 없앴대요」라고 하고, 「자기 쓰레기는 자기가 책임지게 하겠다는 거래요」라고 했어요. 그래서 쓰레기를 담아 갈 봉투를 챙기겠다는 말이 이어져요. 바람에 날리는 것은 쓰레기통을 없앤 까닭이라서 바람이 부는 날에만 가져가면 된다는 말은 맞지 않아요.",
+        "en": "The woman says the trash cans on the beach were 「다 없앴대요」 (all taken away) and that the city wants 「자기 쓰레기는 자기가 책임지게 하겠다는 거래요」 (each person to take responsibility for their own trash). So the natural reply is that he should pack a bag for his trash when he goes to the beach. Trash blowing in the wind is only the reason the cans were removed, so taking trash back only on windy days does not fit.",
+        "mn": "Ярианд эмэгтэй далайн эргийн хогийн савнуудыг 「다 없앴대요」 (бүгдийг нь зайлуулсан гэнэ) гэж, 「자기 쓰레기는 자기가 책임지게 하겠다는 거래요」 (хүн бүрийг өөрийн хогийг өөрөө хариуцдаг болгоно гэнэ) гэж хэлсэн. Тиймээс далайн эрэг явахдаа хог хийх уут авч явах хэрэгтэй юм байна гэсэн үг дараа нь тохирно. Хог салхинд хийсдэг нь зөвхөн хогийн савыг зайлуулсан шалтгаан тул салхитай өдөр л хогоо буцааж авч явна гэсэн үг тохирохгүй."
+      },
+      "choiceNotes": [
+        "「쓰레기통을 다 없앴대요」 — 쓰레기통이 없어지니 찾기가 쉬워질 수 없어요.",
+        "「자기 쓰레기는 자기가 책임지게 하겠다는 거래요」에 맞는 말이에요. 쓰레기를 담아 갈 봉투가 필요해요.",
+        "「쓰레기를 두고 가면 벌금을 물린대요」 — 바닷가에 모아 두고 오면 안 돼요.",
+        "바람에 날리는 것은 쓰레기통을 없앤 까닭이에요. 쓰레기는 날씨와 상관없이 자기가 책임져야 해요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-c-001.mp3",
+        "plays": 1,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-c-002",
+      "rev": 1,
+      "family": "tii-l-c-002",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-09",
+      "targetGrade": 4,
+      "skillId": "ko2.listening.inference",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "부장님, 혼자 사는 사람들에 대한 기사 보셨어요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "네, 그런데 숫자만 많고 사람 이야기가 없네요."
+        },
+        {
+          "speaker": "여자",
+          "text": "저도 그게 마음에 걸렸어요. 그래서 내일 혼자 사는 직장인 세 명을 만나서 인터뷰하기로 했어요."
+        },
+        {
+          "speaker": "남자",
+          "text": "좋아요. 그런데 통계도 재작년 거네요."
+        },
+        {
+          "speaker": "여자",
+          "text": "아, 지난달에 새 조사 결과가 나왔지요. 그것부터 반영하고 인터뷰 내용은 내일 다녀와서 넣을게요."
+        }
+      ],
+      "question": "대화를 듣고 여자가 이어서 할 일로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "혼자 사는 직장인들을 만나 인터뷰한다.",
+        "인터뷰한 내용을 기사에 덧붙인다.",
+        "부장에게 기사를 보여 주고 의견을 묻는다.",
+        "새로 나온 통계로 기사 속 숫자를 바꾼다."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "남자가 「통계도 재작년 거네요」라고 하자 여자는 「지난달에 새 조사 결과가 나왔지요」라며 「그것부터 반영하고」라고 했어요. 그래서 여자는 먼저 새 통계로 기사 속 숫자를 바꿀 거예요. 인터뷰는 「내일」 하고 그 내용도 「내일 다녀와서」 넣는다고 했으니 지금 할 일이 아니에요.",
+        "en": "When the man points out 「통계도 재작년 거네요」 (the statistics are from two years ago, too), the woman recalls 「지난달에 새 조사 결과가 나왔지요」 (new survey results came out last month) and says 「그것부터 반영하고」 (I'll put that in first). So her next step is to update the numbers in the article with the new statistics. The interview is 「내일」 (tomorrow) and she will add it 「내일 다녀와서」 (after she goes tomorrow), so neither is what she does next.",
+        "mn": "Ярианд эрэгтэй 「통계도 재작년 거네요」 (статистик нь бас уржнан жилийнх байна) гэхэд эмэгтэй 「지난달에 새 조사 결과가 나왔지요」 (өнгөрсөн сард шинэ судалгааны дүн гарсан шүү дээ) гээд 「그것부터 반영하고」 (эхлээд түүнийг тусгаад) гэж хариулсан. Тиймээс эмэгтэй эхлээд нийтлэлийн тоонуудыг шинэ статистикаар солино. Ярилцлагыг 「내일」 (маргааш) хийх бөгөөд түүний агуулгыг 「내일 다녀와서」 (маргааш яваад ирээд) нэмнэ гэсэн тул эдгээр нь одоо хийх ажил биш."
+      },
+      "choiceNotes": [
+        "인터뷰는 「내일」 하기로 했어요. 지금 바로 할 일이 아니에요.",
+        "인터뷰 내용은 「내일 다녀와서 넣을게요」라고 했어요.",
+        "부장은 이미 기사를 보고 「숫자만 많고 사람 이야기가 없네요」라고 의견을 말했어요.",
+        "「그것부터 반영하고」 — 지난달에 나온 새 조사 결과부터 기사에 넣어 숫자를 바꿔요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-c-002.mp3",
+        "plays": 1,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-c-003",
+      "rev": 1,
+      "family": "tii-l-c-003",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-17",
+      "targetGrade": 4,
+      "skillId": "ko2.listening.main",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "이번 회식도 금요일 저녁에 술집에서 한대요. 저는 아이를 데리러 가야 해서 이번에도 못 가요."
+        },
+        {
+          "speaker": "남자",
+          "text": "회식을 늘 저녁에만 하니까 오는 사람만 오게 돼요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그럴 바에는 회식을 아예 없애는 게 낫지 않아요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "그래도 같이 밥 먹으면서 얘기할 시간은 있어야죠."
+        },
+        {
+          "speaker": "여자",
+          "text": "그럼 어떻게 하면 좋을까요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "점심을 같이 먹어도 되잖아요. 모두 올 수 있어야 진짜 회식이죠."
+        }
+      ],
+      "question": "대화를 듣고 남자의 중심 생각으로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "회식은 편하게 이야기할 수 있는 저녁에 하는 것이 좋다.",
+        "못 가는 사람이 있으니 회식은 아예 없애는 것이 좋다.",
+        "회식은 모든 직원이 함께할 수 있는 방식으로 하는 것이 좋다.",
+        "회식에는 시간이 되는 사람만 오게 하는 것이 좋다."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "남자는 회식을 저녁에만 하면 「오는 사람만 오게 돼요」라고 하고, 「모두 올 수 있어야 진짜 회식이죠」라고 했어요. 모든 직원이 함께할 수 있게 회식 방식을 바꾸자는 생각이에요. 회식을 아예 없애자는 것은 여자의 말이고, 남자는 「같이 밥 먹으면서 얘기할 시간은 있어야죠」라고 했어요.",
+        "en": "The man says that when team dinners are always held in the evening, 「오는 사람만 오게 돼요」 (only the same people end up coming), and that 「모두 올 수 있어야 진짜 회식이죠」 (it is only a real team dinner if everyone can come). His idea is that team dinners should be held in a way every employee can join. Getting rid of them altogether is the woman's idea; the man says 「같이 밥 먹으면서 얘기할 시간은 있어야죠」 (we still need time to eat and talk together).",
+        "mn": "Ярианд эрэгтэй хамт олны хоолны уулзалтыг (「회식」) үргэлж орой хийвэл 「오는 사람만 오게 돼요」 (ирдэг хүмүүс л ирдэг болчихдог) гэж, 「모두 올 수 있어야 진짜 회식이죠」 (бүгд ирж чаддаг байж л жинхэнэ хамт олны хоол болно) гэж хэлсэн. Түүний бодол бол бүх ажилтан оролцож чадахаар хамт олны хоолны уулзалтын хэлбэрийг өөрчлөх хэрэгтэй гэсэн санаа. Огт болиулъя гэдэг нь эмэгтэйн санал бөгөөд эрэгтэй 「같이 밥 먹으면서 얘기할 시간은 있어야죠」 (хамтдаа хоол идэж ярилцах цаг байх л ёстой) гэсэн."
+      },
+      "choiceNotes": [
+        "남자는 「회식을 늘 저녁에만 하니까 오는 사람만 오게 돼요」라고 했어요.",
+        "회식을 아예 없애자는 것은 여자의 말이에요. 남자는 「같이 밥 먹으면서 얘기할 시간은 있어야죠」라고 했어요.",
+        "「모두 올 수 있어야 진짜 회식이죠」와 같은 생각이에요.",
+        "남자는 오는 사람만 오는 것을 문제로 보고 「모두 올 수 있어야」 한다고 했어요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-c-003.mp3",
+        "plays": 1,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-c-004",
+      "rev": 1,
+      "family": "tii-l-c-004",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-21",
+      "targetGrade": 4,
+      "skillId": "ko2.listening.main",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "set": {
+        "id": "tii-l-c-s01",
+        "order": 1
+      },
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "시에서 동네에 있는 오래된 공장 건물을 문화 공간으로 바꾼대요. 건물은 허물지 않고 안만 고쳐서 쓴대요."
+        },
+        {
+          "speaker": "남자",
+          "text": "잘됐네요. 그 건물이 남는다니 다행이에요."
+        },
+        {
+          "speaker": "여자",
+          "text": "저는 아예 새로 짓는 게 나을 것 같아요. 너무 낡아서 위험해 보이잖아요."
+        },
+        {
+          "speaker": "남자",
+          "text": "안전 검사는 지난달에 이미 통과했대요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그래도 겉모습이 그렇게 낡았으면 사람들이 잘 안 찾아올 거예요."
+        },
+        {
+          "speaker": "남자",
+          "text": "동네 사람들이 오십 년 동안 일하던 곳이잖아요. 그런 곳이라야 일부러 찾아오죠."
+        }
+      ],
+      "question": "대화를 듣고 남자의 중심 생각으로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "오래된 공장은 동네의 역사가 담긴 모습을 살려서 쓰는 것이 좋다.",
+        "낡은 건물은 위험하니까 허물고 새로 짓는 것이 좋다.",
+        "문화 공간은 사람들이 찾아오도록 겉모습이 깔끔한 것이 좋다.",
+        "오래된 공장은 안도 고치지 말고 그대로 두는 것이 좋다."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "남자는 「동네 사람들이 오십 년 동안 일하던 곳이잖아요」라고 하면서 「그런 곳이라야 일부러 찾아오죠」라고 했어요. 동네의 역사가 담긴 옛 모습을 살려서 쓰는 것이 좋다는 생각이에요. 허물고 새로 짓자는 것은 여자의 의견이고, 남자는 「안전 검사는 지난달에 이미 통과했대요」라고 했어요.",
+        "en": "The man says 「동네 사람들이 오십 년 동안 일하던 곳이잖아요」 (local people worked there for fifty years, you know) and 「그런 곳이라야 일부러 찾아오죠」 (that is the kind of place people make a special trip to). His idea is that the old factory should be used while keeping the look that carries the neighborhood's history. Tearing it down and building a new one is the woman's opinion, and the man answers 「안전 검사는 지난달에 이미 통과했대요」 (it already passed a safety inspection last month).",
+        "mn": "Ярианд эрэгтэй 「동네 사람들이 오십 년 동안 일하던 곳이잖아요」 (хорооллын хүмүүс тавин жил ажиллаж байсан газар шүү дээ) гэж, 「그런 곳이라야 일부러 찾아오죠」 (ийм газар л байвал хүмүүс зориуд ирдэг) гэж хэлсэн. Түүний бодол бол хорооллын түүх шингэсэн хуучин төрхийг нь хадгалж ашиглах нь зүйтэй гэсэн санаа. Нурааж шинээр барья гэдэг нь эмэгтэйн санал бөгөөд эрэгтэй 「안전 검사는 지난달에 이미 통과했대요」 (өнгөрсөн сард аюулгүй байдлын шалгалтад аль хэдийн тэнцсэн гэнэ) гэсэн."
+      },
+      "choiceNotes": [
+        "「동네 사람들이 오십 년 동안 일하던 곳이잖아요」, 「그런 곳이라야 일부러 찾아오죠」와 같은 생각이에요.",
+        "새로 짓자는 것은 여자의 의견이에요. 남자는 「안전 검사는 지난달에 이미 통과했대요」라고 했어요.",
+        "겉모습이 낡으면 사람들이 안 온다는 것은 여자의 말이에요. 남자는 「그런 곳이라야 일부러 찾아오죠」라고 했어요.",
+        "남자는 「안만 고쳐서 쓴대요」라는 말에 「잘됐네요」라고 했어요. 고쳐서 쓰는 것에 찬성해요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-c-s01.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-c-005",
+      "rev": 1,
+      "family": "tii-l-c-005",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-22",
+      "targetGrade": 4,
+      "skillId": "ko2.listening.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "set": {
+        "id": "tii-l-c-s01",
+        "order": 2
+      },
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "시에서 동네에 있는 오래된 공장 건물을 문화 공간으로 바꾼대요. 건물은 허물지 않고 안만 고쳐서 쓴대요."
+        },
+        {
+          "speaker": "남자",
+          "text": "잘됐네요. 그 건물이 남는다니 다행이에요."
+        },
+        {
+          "speaker": "여자",
+          "text": "저는 아예 새로 짓는 게 나을 것 같아요. 너무 낡아서 위험해 보이잖아요."
+        },
+        {
+          "speaker": "남자",
+          "text": "안전 검사는 지난달에 이미 통과했대요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그래도 겉모습이 그렇게 낡았으면 사람들이 잘 안 찾아올 거예요."
+        },
+        {
+          "speaker": "남자",
+          "text": "동네 사람들이 오십 년 동안 일하던 곳이잖아요. 그런 곳이라야 일부러 찾아오죠."
+        }
+      ],
+      "question": "대화의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "시는 공장 건물을 허물고 새로 짓기로 했다.",
+        "공장 건물은 아직 안전 검사를 받지 않았다.",
+        "그 공장은 오랫동안 동네 사람들의 일터였다.",
+        "여자는 공장 건물이 남게 되어서 다행이라고 생각한다."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "남자가 「동네 사람들이 오십 년 동안 일하던 곳이잖아요」라고 했으니 그 공장은 오랫동안 동네 사람들의 일터였어요. 여자는 시에서 건물을 「허물지 않고 안만 고쳐서 쓴대요」라고 전했고, 건물이 남아 「다행이에요」라고 한 사람은 여자가 아니라 남자예요.",
+        "en": "The man says 「동네 사람들이 오십 년 동안 일하던 곳이잖아요」 (local people worked there for fifty years, you know), so the factory was the neighborhood's workplace for a long time. The woman reports that the city will 「허물지 않고 안만 고쳐서 쓴대요」 (not tear it down but only fix up the inside), and the one who said 「다행이에요」 (I'm glad) about the building staying is the man, not the woman.",
+        "mn": "Ярианд эрэгтэй 「동네 사람들이 오십 년 동안 일하던 곳이잖아요」 (хорооллын хүмүүс тавин жил ажиллаж байсан газар шүү дээ) гэж хэлсэн тул тэр үйлдвэр олон жилийн турш хорооллын хүмүүсийн ажлын газар байсан. Эмэгтэй хот барилгыг 「허물지 않고 안만 고쳐서 쓴대요」 (нураахгүй, зөвхөн дотор талыг нь засаж ашиглана гэнэ) гэж дамжуулсан бөгөөд барилга үлдэх нь 「다행이에요」 (сайн хэрэг) гэж хэлсэн хүн бол эмэгтэй биш, эрэгтэй."
+      },
+      "choiceNotes": [
+        "「건물은 허물지 않고 안만 고쳐서 쓴대요」 — 새로 짓지 않아요.",
+        "「안전 검사는 지난달에 이미 통과했대요」 — 검사를 이미 받았어요.",
+        "「동네 사람들이 오십 년 동안 일하던 곳이잖아요」와 같은 내용이에요.",
+        "「그 건물이 남는다니 다행이에요」라고 한 사람은 남자예요. 여자는 「아예 새로 짓는 게 나을 것 같아요」라고 했어요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-c-s01.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    }
+  ]
+}
