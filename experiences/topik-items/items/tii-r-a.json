@@ -131,15 +131,15 @@
     },
     {
       "id": "tii-r-a-003",
-      "rev": 1,
+      "rev": 2,
       "family": "tii-r-a-003",
       "exam": "topik-ii",
       "format": "pbt",
       "section": "reading",
       "officialType": "TII-R-01",
-      "targetGrade": 4,
+      "targetGrade": 3,
       "skillId": "ko2.reading.grammar",
-      "difficulty": 2,
+      "difficulty": 1,
       "responseFormat": "single-choice",
       "set": null,
       "passage": "아파트에 갑자기 정전이 (   ) 엘리베이터 안에 30분 넘게 갇혀 있었다.",
@@ -166,7 +166,7 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -200,6 +200,16 @@
           "rev": 1,
           "hash": "e31af109fc1a8510",
           "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:39:14.086Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "5f6f12abc0ad9216",
+          "notes": "tii-r-a-r1 판정대로 — 아파트 정전이라는 생활 화제의 한 문장과 3급 문형(-는 바람에·-는 김에·-는 대신에·-는 반면에)이라 TOPIK II 난도 2→1, 겨눈 급 4→3. 글·보기·해설은 그대로."
         }
       ]
     },
@@ -1480,7 +1490,7 @@
     },
     {
       "id": "tii-r-a-024",
-      "rev": 1,
+      "rev": 2,
       "family": "tii-r-a-024",
       "exam": "topik-ii",
       "format": "pbt",
@@ -1507,7 +1517,7 @@
       "explanation": {
         "ko": "마지막 문장에 「퇴근길에 할머니 댁에 들러 이야기를 나누는 날이 많아졌다」고 했으니 ②가 맞아요. 반찬 통은 할머니가 직접 건넨 것이 아니라 「현관문 앞에 … 놓여 있었다」고 했고, 빈 통은 그대로가 아니라 「과일을 담아」 돌려드렸어요. 또 이사 왔을 때 「이 동네에 아는 사람이 한 명도 없어서」 할머니를 미리 알지 못했어요.",
         "en": "The last sentence says 「퇴근길에 할머니 댁에 들러 이야기를 나누는 날이 많아졌다」 (more and more often I stopped by her home on my way back from work to chat), so ② is correct. The side-dish container was not handed over in person; it was 「현관문 앞에 … 놓여 있었다」 (left in front of my door), and I returned the container not empty but 「과일을 담아」 (with fruit in it). Also, when I moved in, 「이 동네에 아는 사람이 한 명도 없어서」 (I did not know a single person in this neighborhood), so I did not know her beforehand.",
-        "mn": "Бичвэрт сүүлийн өгүүлбэрт 「퇴근길에 할머니 댁에 들러 이야기를 나누는 날이 많아졌다」 (ажлаасаа харих замдаа эмээгийнд орж ярилцах өдөр олширсон) гэсэн тул ② зөв. Хачиртай савыг эмээ гардуулж өгөөгүй, 「현관문 앞에 … 놓여 있었다」 (үүдний өмнө … тавиастай байсан) бөгөөд хоосон савыг тэр чигээр нь биш, 「과일을 담아」 (жимс хийж) буцааж өгсөн. Мөн нүүж ирэхдээ 「이 동네에 아는 사람이 한 명도 없어서」 (энэ хороололд танил хүн нэг ч байгаагүй тул) эмээг урьд нь мэддэггүй байсан."
+        "mn": "Бичвэрийн сүүлийн өгүүлбэрт 「퇴근길에 할머니 댁에 들러 이야기를 나누는 날이 많아졌다」 (ажлаасаа харих замдаа эмээгийнд орж ярилцах өдөр олширсон) гэсэн тул ② зөв. Хачиртай савыг эмээ гардуулж өгөөгүй, 「현관문 앞에 … 놓여 있었다」 (үүдний өмнө … тавиатай байсан) бөгөөд хоосон савыг тэр чигээр нь биш, 「과일을 담아」 (жимс хийж) буцааж өгсөн. Мөн нүүж ирэхдээ 「이 동네에 아는 사람이 한 명도 없어서」 (энэ хороололд танил хүн нэг ч байгаагүй тул) эмээг урьд нь мэддэггүй байсан."
       },
       "choiceNotes": [
         "「이 동네에 아는 사람이 한 명도 없어서」라고 했으니 할머니를 미리 알지 못했어요.",
@@ -1518,7 +1528,7 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -1552,6 +1562,16 @@
           "rev": 1,
           "hash": "8e5efb434e75681d",
           "packet": "tii-r-a-r1"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:39:14.086Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "6be834dc0d3a6d79",
+          "notes": "tii-r-a-r1 판정대로 — 몽골어 해설의 겹친 처소격 「Бичвэрт сүүлийн өгүүлбэрт」 → 「Бичвэрийн сүүлийн өгүүлбэрт」, 표준이 아닌 「тавиастай」 → 「тавиатай」. 세트 s03 — 글 그대로라 짝 tii-r-a-023은 안 바꿈."
         }
       ]
     },

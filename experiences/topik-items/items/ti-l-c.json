@@ -957,15 +957,15 @@
     },
     {
       "id": "ti-l-c-013",
-      "rev": 1,
+      "rev": 2,
       "family": "ti-l-c-013",
       "exam": "topik-i",
       "format": "pbt",
       "section": "listening",
       "officialType": "TI-L-05",
-      "targetGrade": 2,
+      "targetGrade": 1,
       "skillId": "ko.listening.response",
-      "difficulty": 2,
+      "difficulty": 1,
       "responseFormat": "single-choice",
       "set": null,
       "passage": null,
@@ -1004,7 +1004,7 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -1038,6 +1038,16 @@
           "rev": 1,
           "hash": "12c275b4b041d523",
           "packet": "ti-l-ce-r1"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:39:14.086Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "9649afac88d3fab5",
+          "notes": "ti-l-ce-r1 판정대로 — 한 줄 제안에 1단계 문형(-(으)러 가다·-(으)ㄹ까요)뿐이라 난도 2→1, 겨눈 급 2→1. 대본·보기·해설은 그대로."
         }
       ]
     },
@@ -1750,7 +1760,7 @@
     },
     {
       "id": "ti-l-c-022",
-      "rev": 1,
+      "rev": 2,
       "family": "ti-l-c-022",
       "exam": "topik-i",
       "format": "pbt",
@@ -1782,7 +1792,7 @@
       ],
       "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
       "choices": [
-        "남자는 버스표가 없으면 기차를 타고 부산에 갑니다.",
+        "남자는 기차표가 있으면 버스를 타고 부산에 갑니다.",
         "남자는 어제 기차표를 사서 부산에 갑니다.",
         "남자는 기차표가 없으면 부산에 가지 않습니다.",
         "남자는 기차표가 없으면 버스를 타고 부산에 갑니다."
@@ -1794,7 +1804,7 @@
         "mn": "Ярианд эрэгтэй 「아직 표를 안 샀어요」 (тасалбараа хараахан аваагүй), 「표가 없으면 버스로 가요」 (тасалбар байхгүй бол автобусаар явна) гэсэн. Тиймээс галт тэрэгний тасалбар байхгүй бол автобусаар Пусан руу явна. ③ нь тасалбаргүй бол Пусан руу явахгүй гэж байгаа тул буруу."
       },
       "choiceNotes": [
-        "남자가 아직 안 산 것은 기차표예요 — 표가 없으면 기차가 아니라 버스를 타요.",
+        "남자는 기차로 가요 — 표가 있으면 버스가 아니라 기차를 타요. 버스는 표가 없을 때예요.",
         "「아직 표를 안 샀어요」 — 남자는 표를 사지 않았어요.",
         "「표가 없으면 버스로 가요」 — 표가 없어도 부산에 가요.",
         "「표가 없으면 버스로 가요」와 같아요."
@@ -1809,7 +1819,7 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -1843,6 +1853,16 @@
           "rev": 1,
           "hash": "13e322c5c4d61783",
           "packet": "ti-l-ce-r1"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:39:14.086Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "4f58325bbc1c0385",
+          "notes": "ti-l-ce-r1 판정대로 — 대화에 없는 버스표를 말해 「알 수 없음」으로 다툴 수 있던 보기 ①을 「남자는 기차표가 있으면 버스를 타고 부산에 갑니다.」로(「기차로 가요? — 네」와 분명히 어긋나게), 메모 ①을 맞춤. 대본·해설은 그대로."
         }
       ]
     },
@@ -2027,7 +2047,7 @@
     },
     {
       "id": "ti-l-c-025",
-      "rev": 1,
+      "rev": 2,
       "family": "ti-l-c-025",
       "exam": "topik-i",
       "format": "pbt",
@@ -2046,7 +2066,7 @@
         },
         {
           "speaker": "여자",
-          "text": "여권이 있으면 지금 바로 만들어요."
+          "text": "여권이 있으면 지금 바로 만들 수 있어요."
         },
         {
           "speaker": "남자",
@@ -2066,12 +2086,12 @@
       ],
       "answer": 0,
       "explanation": {
-        "ko": "여자는 「여권이 있으면 지금 바로 만들어요」라고 하고, 여권이 없는 남자에게 「여권을 가지고 다시 오세요」라고 했어요. 그래서 남자는 여권을 가지고 오면 카드를 만들어요. ④는 여권이 없는데도 지금 만든다고 해서 틀려요.",
-        "en": "The woman says 「여권이 있으면 지금 바로 만들어요」 (if you have your passport, we can make it right now), and since the man has no passport with him, she says 「여권을 가지고 다시 오세요」 (come back with your passport). So he will get the card when he brings his passport. Choice ④ says he gets it now without a passport, which is wrong.",
-        "mn": "Ярианд эмэгтэй 「여권이 있으면 지금 바로 만들어요」 (паспорт байвал одоо шууд хийж өгнө) гэсэн бөгөөд паспортгүй эрэгтэйд 「여권을 가지고 다시 오세요」 (паспортоо аваад дахиад ирээрэй) гэсэн. Тиймээс эрэгтэй паспортоо авчирвал карт гаргуулна. ④ нь паспортгүй ч одоо карт гаргуулна гэж байгаа тул буруу."
+        "ko": "여자는 「여권이 있으면 지금 바로 만들 수 있어요」라고 하고, 여권이 없는 남자에게 「여권을 가지고 다시 오세요」라고 했어요. 그래서 남자는 여권을 가지고 오면 카드를 만들어요. ④는 여권이 없는데도 지금 만든다고 해서 틀려요.",
+        "en": "The woman says 「여권이 있으면 지금 바로 만들 수 있어요」 (if you have your passport, you can make it right now), and since the man has no passport with him, she says 「여권을 가지고 다시 오세요」 (come back with your passport). So he will get the card when he brings his passport. Choice ④ says he gets it now without a passport, which is wrong.",
+        "mn": "Ярианд эмэгтэй 「여권이 있으면 지금 바로 만들 수 있어요」 (паспорт байвал одоо шууд хийлгэж болно) гэсэн бөгөөд паспортгүй эрэгтэйд 「여권을 가지고 다시 오세요」 (паспортоо аваад дахиад ирээрэй) гэсэн. Тиймээс эрэгтэй паспортоо авчирвал карт гаргуулна. ④ нь паспортгүй ч одоо карт гаргуулна гэж байгаа тул буруу."
       },
       "choiceNotes": [
-        "「여권이 있으면 지금 바로 만들어요」, 「여권을 가지고 다시 오세요」와 같아요.",
+        "「여권이 있으면 지금 바로 만들 수 있어요」, 「여권을 가지고 다시 오세요」와 같아요.",
         "「여권이 지금 없어요. 집에 있어요」 — 여권을 안 가지고 왔어요.",
         "여권이 있어야 카드를 만들어요 — 앞뒤가 반대예요.",
         "지금 바로 만드는 것은 「여권이 있으면」이에요 — 남자는 지금 여권이 없어요."
@@ -2085,7 +2105,7 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -2119,6 +2139,16 @@
           "rev": 1,
           "hash": "13d44bb61878cb71",
           "packet": "ti-l-ce-r1"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:39:14.086Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "1beeb959942f69aa",
+          "notes": "ti-l-ce-r1 판정대로 — 누가 만드는지 흐리던 여자 첫 줄 「여권이 있으면 지금 바로 만들어요.」 → 「여권이 있으면 지금 바로 만들 수 있어요.」(가능의 뜻을 분명히), 해설 세 언어·메모 ①의 인용과 풀이(en you can make it right now · mn хийлгэж болно)를 맞춤."
         }
       ]
     },
@@ -2667,7 +2697,7 @@
     },
     {
       "id": "ti-l-c-032",
-      "rev": 1,
+      "rev": 2,
       "family": "ti-l-c-032",
       "exam": "topik-i",
       "format": "pbt",
@@ -2686,11 +2716,11 @@
         },
         {
           "speaker": "여자",
-          "text": "먼저 박물관에 가고 점심을 먹어요. 시장은 그다음에 가요."
+          "text": "먼저 도서관에 가고 점심을 먹어요. 시장은 그다음에 가요."
         },
         {
           "speaker": "남자",
-          "text": "박물관까지 걸어서 가요?"
+          "text": "도서관까지 걸어서 가요?"
         },
         {
           "speaker": "여자",
@@ -2699,20 +2729,20 @@
       ],
       "question": "대화를 듣고 내용과 같은 것을 고르십시오.",
       "choices": [
-        "여자는 시장에 먼저 가고 박물관에 갑니다.",
-        "여자는 점심을 먹고 박물관에 갑니다.",
+        "여자는 시장에 먼저 가고 도서관에 갑니다.",
+        "여자는 점심을 먹고 도서관에 갑니다.",
         "여자는 점심을 먹고 시장에 갑니다.",
-        "여자는 박물관까지 걸어서 갑니다."
+        "여자는 도서관까지 걸어서 갑니다."
       ],
       "answer": 2,
       "explanation": {
-        "ko": "여자는 「먼저 박물관에 가고 점심을 먹어요. 시장은 그다음에 가요」라고 했어요. 순서는 박물관, 점심, 시장이에요. ②는 점심을 먹고 박물관에 간다고 해서 순서가 틀려요.",
-        "en": "The woman says 「먼저 박물관에 가고 점심을 먹어요. 시장은 그다음에 가요」 (first we go to the museum and have lunch; the market comes after that). The order is museum, lunch, market. Choice ② puts lunch before the museum, so the order is wrong.",
-        "mn": "Ярианд эмэгтэй 「먼저 박물관에 가고 점심을 먹어요. 시장은 그다음에 가요」 (эхлээд музейд очоод үдийн хоол идэнэ. Зах руу дараа нь явна) гэсэн. Дараалал нь музей, үдийн хоол, зах. ② нь үдийн хоол идээд музейд очно гэж байгаа тул дараалал буруу."
+        "ko": "여자는 「먼저 도서관에 가고 점심을 먹어요. 시장은 그다음에 가요」라고 했어요. 순서는 도서관, 점심, 시장이에요. ②는 점심을 먹고 도서관에 간다고 해서 순서가 틀려요.",
+        "en": "The woman says 「먼저 도서관에 가고 점심을 먹어요. 시장은 그다음에 가요」 (first we go to the library and have lunch; the market comes after that). The order is library, lunch, market. Choice ② puts lunch before the library, so the order is wrong.",
+        "mn": "Ярианд эмэгтэй 「먼저 도서관에 가고 점심을 먹어요. 시장은 그다음에 가요」 (эхлээд номын санд очоод үдийн хоол идэнэ. Зах руу дараа нь явна) гэсэн. Дараалал нь номын сан, үдийн хоол, зах. ② нь үдийн хоол идээд номын санд очно гэж байгаа тул дараалал буруу."
       },
       "choiceNotes": [
-        "「먼저 박물관에 가고」 — 시장은 「그다음에」 가요.",
-        "박물관에 먼저 가고 점심은 그 뒤에 먹어요.",
+        "「먼저 도서관에 가고」 — 시장은 「그다음에」 가요.",
+        "도서관에 먼저 가고 점심은 그 뒤에 먹어요.",
         "점심을 먹고 나서 「시장은 그다음에 가요」와 같아요.",
         "「걸어서 가요?」에 「아니요, 버스를 타요」라고 했어요."
       ],
@@ -2730,7 +2760,7 @@
         "seconds": 12.8
       },
       "origin": "synk-original",
-      "reviewStatus": "ai-reviewed",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -2753,6 +2783,16 @@
           "rev": 1,
           "hash": "546de9047de8d983",
           "packet": "ti-l-ce-r1"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:39:14.086Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "feface3538031822",
+          "notes": "받아쓰기 확인 — 합성 음성이 「박물관」을 「방울관」으로 읽어 장소 낱말을 바꿈: 「박물관」 → 「도서관」(TOPIK I 낱말 A). 대본 두 줄·보기 ①②④·해설 세 언어(en museum → library · mn музей → номын сан)·메모 ①②를 같게 바꿈. 순서·정답은 그대로."
         }
       ]
     },

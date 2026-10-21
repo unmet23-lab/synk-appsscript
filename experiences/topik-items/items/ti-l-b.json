@@ -627,7 +627,7 @@
     },
     {
       "id": "ti-l-b-007",
-      "rev": 2,
+      "rev": 3,
       "family": "ti-l-b-007",
       "exam": "topik-i",
       "format": "pbt",
@@ -662,7 +662,7 @@
       ],
       "answer": 0,
       "explanation": {
-        "ko": "여자는 「여기는 현금만 받아요」라고 했어요. 남자는 현금이 천 원 있어서 「물 한 병만 주세요」라고 했어요. 그래서 아이스크림은 사지 않아요.",
+        "ko": "여자는 「여기는 현금만 받아요」라고 했으니까 카드로는 낼 수 없어요. 남자는 현금이 천 원 있어서 「물 한 병만 주세요」라고 했어요. 그래서 아이스크림은 사지 않아요.",
         "en": "The woman says 「여기는 현금만 받아요」 (we only take cash here). The man has 천 원 (1,000 won) in cash, so he says 「물 한 병만 주세요」 (just one bottle of water, please). So he doesn't buy the ice cream, and he doesn't pay by card.",
         "mn": "Эмэгтэй 「여기는 현금만 받아요」 (энд зөвхөн бэлэн мөнгө авдаг) гэсэн. Эрэгтэйд бэлнээр мянган вон байгаа тул 「물 한 병만 주세요」 (зөвхөн нэг лонх ус өгөөч) гэсэн. Тиймээс тэр зайрмаг авахгүй, картаар ч төлөхгүй."
       },
@@ -686,7 +686,7 @@
         "seconds": 12
       },
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -752,6 +752,16 @@
           "rev": 2,
           "hash": "d846dbeae34a7fa0",
           "packet": "fix-r1-listening"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:39:14.086Z",
+          "verdict": "fix",
+          "rev": 3,
+          "hash": "081ec4cf07376b21",
+          "notes": "fix-r1-listening 판정대로 — 한국어 해설에 걸리기 쉬운 오답(카드로 냄)이 왜 틀린지가 빠져 en·mn과 근거가 어긋나던 것을, 「여기는 현금만 받아요」라서 카드로는 낼 수 없다는 근거를 더해 맞춤(판정 글의 앞 두 문장을 합쳐 세 문장 유지). 대본·보기·en·mn은 그대로."
         }
       ]
     },

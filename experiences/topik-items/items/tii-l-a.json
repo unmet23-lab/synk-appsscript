@@ -248,15 +248,15 @@
     },
     {
       "id": "tii-l-a-004",
-      "rev": 1,
+      "rev": 2,
       "family": "tii-l-a-004",
       "exam": "topik-ii",
       "format": "pbt",
       "section": "listening",
       "officialType": "TII-L-04",
-      "targetGrade": 4,
+      "targetGrade": 3,
       "skillId": "ko2.listening.response",
-      "difficulty": 2,
+      "difficulty": 1,
       "responseFormat": "single-choice",
       "set": null,
       "passage": null,
@@ -296,7 +296,7 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -330,20 +330,30 @@
           "rev": 1,
           "hash": "35c894404dcf921f",
           "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:39:14.086Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "0dee96051b3c8747",
+          "notes": "tii-l-a-r1 판정대로 — 가게에서 환불을 묻는 두 줄짜리 친숙한 생활 대화라 TOPIK II 난도 2→1, 겨눈 급 4→3. 대본·보기·해설은 그대로."
         }
       ]
     },
     {
       "id": "tii-l-a-005",
-      "rev": 1,
+      "rev": 2,
       "family": "tii-l-a-005",
       "exam": "topik-ii",
       "format": "pbt",
       "section": "listening",
       "officialType": "TII-L-04",
-      "targetGrade": 4,
+      "targetGrade": 3,
       "skillId": "ko2.listening.response",
-      "difficulty": 2,
+      "difficulty": 1,
       "responseFormat": "single-choice",
       "set": null,
       "passage": null,
@@ -357,7 +367,7 @@
           "text": "죄송해요. 숫자를 다시 확인하느라 늦어졌어요."
         }
       ],
-      "question": "대화를 듣고 여자가 이어서 할 말로 가장 알맞은 것을 고르십시오.",
+      "question": "다음을 듣고 이어질 수 있는 말로 가장 알맞은 것을 고르십시오.",
       "choices": [
         "자료를 일찍 보내 주셔서 준비가 쉬웠어요.",
         "회의가 끝났으니까 자료는 안 보내셔도 돼요.",
@@ -367,7 +377,7 @@
       "answer": 2,
       "explanation": {
         "ko": "여자는 자료를 「아직 못 받아서」 연락했고, 남자는 「숫자를 다시 확인하느라 늦어졌어요」라고 했어요. 그래서 확인이 끝나면 오늘 안에 보내 달라는 말이 알맞아요. 회의는 「내일」이니까 회의가 끝났다는 보기는 틀려요.",
-        "en": "The woman called because she has 「아직 못 받아서」 (not received it yet), and the man says 「숫자를 다시 확인하느라 늦어졌어요」 (it's late because he was rechecking the numbers). So asking him to send it today once he's done checking fits. The meeting is 「내일」 (tomorrow), so the choice saying the meeting is over is wrong.",
+        "en": "The woman called because she hasn't received the file yet (「아직 못 받아서」), and the man says 「숫자를 다시 확인하느라 늦어졌어요」 (it's late because he was rechecking the numbers). So asking him to send it today once he's done checking fits. The meeting is 「내일」 (tomorrow), so the choice saying the meeting is over is wrong.",
         "mn": "Ярианд эмэгтэй материалаа 「아직 못 받아서」 (одоо болтол аваагүй болохоор) холбогдсон, эрэгтэй 「숫자를 다시 확인하느라 늦어졌어요」 (тоонуудыг дахин шалгаад хоцорсон) гэсэн. Тиймээс шалгаж дуусмагцаа өнөөдөртөө явуулаарай гэсэн үг тохирно. Хурал 「내일」 (маргааш) болох тул хурал дууссан гэсэн хариулт буруу."
       },
       "choiceNotes": [
@@ -383,7 +393,7 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -417,20 +427,30 @@
           "rev": 1,
           "hash": "9bbbfc1c610c4e0e",
           "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:39:14.086Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "ffdc7a1b88a001c1",
+          "notes": "tii-l-a-r1 판정대로 — 두 줄짜리 친숙한 직장 대화라 TOPIK II 난도 2→1·겨눈 급 4→3, 발문을 자리 과제에 맞게 「다음을 듣고 이어질 수 있는 말로 가장 알맞은 것을 고르십시오.」로, 영어 해설 첫 문장의 어색한 문법(she has 「아직 못 받아서」 (not received it yet))을 판정 글대로 다듬음. 대본·보기는 그대로."
         }
       ]
     },
     {
       "id": "tii-l-a-006",
-      "rev": 1,
+      "rev": 2,
       "family": "tii-l-a-006",
       "exam": "topik-ii",
       "format": "pbt",
       "section": "listening",
       "officialType": "TII-L-04",
-      "targetGrade": 4,
+      "targetGrade": 3,
       "skillId": "ko2.listening.response",
-      "difficulty": 2,
+      "difficulty": 1,
       "responseFormat": "single-choice",
       "set": null,
       "passage": null,
@@ -470,7 +490,7 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -504,12 +524,22 @@
           "rev": 1,
           "hash": "f7edef3bab90ab37",
           "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:39:14.086Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "055dc3481eb38470",
+          "notes": "tii-l-a-r1 판정대로 — 동네 도로 공사·정류장 이전이라는 두 줄짜리 생활 대화라 TOPIK II 난도 2→1, 겨눈 급 4→3. 대본·보기·해설은 그대로."
         }
       ]
     },
     {
       "id": "tii-l-a-007",
-      "rev": 1,
+      "rev": 2,
       "family": "tii-l-a-007",
       "exam": "topik-ii",
       "format": "pbt",
@@ -550,7 +580,7 @@
       "explanation": {
         "ko": "남자가 「받는 분 주소부터 써 주세요」라고 했어요. 그래서 여자는 먼저 주소를 써요. 무게는 「그다음에」 남자가 잰다고 했으니 무게를 재는 보기는 틀려요.",
         "en": "The man says 「받는 분 주소부터 써 주세요」 (please write the recipient's address first). So the woman will write the address next. He says he'll weigh the box 「그다음에」 (after that), so weighing it isn't her next step.",
-        "mn": "Ярианд эрэгтэй 「받는 분 주소부터 써 주세요」 (эхлээд хүлээн авагчийн хаягийг бичээрэй) гэсэн. Тиймээс эмэгтэй дараа нь хаягаа бичнэ. Хайрцгийг 「그다음에」 (түүний дараа) эрэгтэй өөрөө жигнэнэ гэсэн тул жигнэх нь эмэгтэйн дараагийн ажил биш."
+        "mn": "Ярианд эрэгтэй 「받는 분 주소부터 써 주세요」 (эхлээд хүлээн авагчийн хаягийг бичээрэй) гэсэн. Тиймээс эмэгтэй дараа нь хүлээн авагчийн хаягийг бичнэ. Хайрцгийг 「그다음에」 (түүний дараа) эрэгтэй өөрөө жинлэнэ гэсэн тул жинлэх нь эмэгтэйн дараагийн ажил биш."
       },
       "choiceNotes": [
         "주소를 먼저 쓰라고 했으니 요금을 내는 것은 그 뒤의 일이에요.",
@@ -565,7 +595,7 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -599,6 +629,16 @@
           "rev": 1,
           "hash": "8d35f935a86bf8f5",
           "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:39:14.086Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "c5a766409b1db464",
+          "notes": "tii-l-a-r1 판정대로 — 몽골어 해설의 「хаягаа」(여자 자신의 주소로 읽힘)를 「хүлээн авагчийн хаягийг」(받는 사람의 주소)로, 판정의 선택 고침대로 「жигнэх」를 더 흔한 「жинлэх」로. 대본·보기·ko·en은 그대로."
         }
       ]
     },
@@ -704,15 +744,15 @@
     },
     {
       "id": "tii-l-a-009",
-      "rev": 1,
+      "rev": 2,
       "family": "tii-l-a-009",
       "exam": "topik-ii",
       "format": "pbt",
       "section": "listening",
       "officialType": "TII-L-09",
-      "targetGrade": 4,
+      "targetGrade": 3,
       "skillId": "ko2.listening.inference",
-      "difficulty": 2,
+      "difficulty": 1,
       "responseFormat": "single-choice",
       "set": null,
       "passage": null,
@@ -731,7 +771,7 @@
         },
         {
           "speaker": "남자",
-          "text": "윗집부터 확인해야 해요. 제가 연락해 볼게요."
+          "text": "윗집부터 확인해야 해요. 제가 연락해 볼 테니까 그 사진부터 보내 주세요."
         }
       ],
       "question": "대화를 듣고 여자가 이어서 할 일로 가장 알맞은 것을 고르십시오.",
@@ -743,14 +783,14 @@
       ],
       "answer": 2,
       "explanation": {
-        "ko": "남자가 사진을 「문자로 먼저 보내 주세요」라고 했고, 여자는 사진을 「아까 찍어 놨어요」라고 했어요. 그래서 여자는 이어서 관리사무소에 사진을 보내요. 사진은 이미 찍었으니 사진을 찍는 보기는 틀려요.",
-        "en": "The man asks her to 「문자로 먼저 보내 주세요」 (send it by text first), and she says she 「아까 찍어 놨어요」 (already took it earlier). So next she will send the photo to the management office. She already took the photo, so taking it isn't her next step.",
-        "mn": "Ярианд эрэгтэй зургаа 「문자로 먼저 보내 주세요」 (эхлээд мессежээр явуулаарай) гэсэн, эмэгтэй зургаа 「아까 찍어 놨어요」 (саяхан авчихсан) гэсэн. Тиймээс эмэгтэй дараа нь удирдлагын албанд зургаа явуулна. Зургаа аль хэдийн авсан тул зураг авах хариулт буруу."
+        "ko": "남자가 사진을 「문자로 먼저 보내 주세요」라고 했고, 마지막에도 「그 사진부터 보내 주세요」라고 했어요. 여자는 사진을 「아까 찍어 놨어요」라고 했으니까 이어서 관리사무소에 사진을 보내요. 사진은 이미 찍었으니 사진을 찍는 보기는 틀려요.",
+        "en": "The man asks her to 「문자로 먼저 보내 주세요」 (send it by text first), and at the end he says again 「그 사진부터 보내 주세요」 (send that photo first). She says she 「아까 찍어 놨어요」 (already took it earlier), so next she will send the photo to the management office. She already took the photo, so taking it isn't her next step.",
+        "mn": "Ярианд эрэгтэй зургийг 「문자로 먼저 보내 주세요」 (эхлээд мессежээр явуулаарай) гэсэн бөгөөд эцэст нь дахин 「그 사진부터 보내 주세요」 (тэр зургаа эхлээд явуулаарай) гэсэн. Эмэгтэй зургаа 「아까 찍어 놨어요」 (саяхан авчихсан) гэсэн тул дараа нь удирдлагын албанд зургаа явуулна. Зургаа аль хэдийн авсан тул зураг авах хариулт буруу."
       },
       "choiceNotes": [
         "「아까 찍어 놨어요」 — 사진은 이미 찍었어요.",
-        "「제가 연락해 볼게요」 — 윗집에는 남자가 연락해요.",
-        "「문자로 먼저 보내 주세요」에 맞는 행동이에요.",
+        "「제가 연락해 볼 테니까」 — 윗집에는 남자가 연락해요.",
+        "「그 사진부터 보내 주세요」에 맞는 행동이에요.",
         "「윗집부터 확인해야 해요」 — 기사가 오는 것은 아직 정해지지 않았어요."
       ],
       "conceptIds": [],
@@ -760,7 +800,7 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -794,20 +834,30 @@
           "rev": 1,
           "hash": "39907cd2a57860d5",
           "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:39:14.086Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "98d0bf59766c952d",
+          "notes": "tii-l-a-r1 판정대로 — 사진 보내기 요청이 두 턴 앞에만 있어 보기 ④(기다린다)를 다툴 여지가 있던 남자 마지막 줄 「윗집부터 확인해야 해요. 제가 연락해 볼게요.」 → 「윗집부터 확인해야 해요. 제가 연락해 볼 테니까 그 사진부터 보내 주세요.」, 해설 세 언어의 첫 근거에 「그 사진부터 보내 주세요」를 더함(en send that photo first · mn тэр зургаа эхлээд явуулаарай), 메모 ③을 판정 글대로, 바뀐 대본에 맞춰 메모 ②의 인용을 「제가 연락해 볼 테니까」로. 생활 대화라 난도 2→1·겨눈 급 4→3."
         }
       ]
     },
     {
       "id": "tii-l-a-010",
-      "rev": 1,
+      "rev": 2,
       "family": "tii-l-a-010",
       "exam": "topik-ii",
       "format": "pbt",
       "section": "listening",
       "officialType": "TII-L-09",
-      "targetGrade": 4,
+      "targetGrade": 3,
       "skillId": "ko2.listening.inference",
-      "difficulty": 2,
+      "difficulty": 1,
       "responseFormat": "single-choice",
       "set": null,
       "passage": null,
@@ -855,7 +905,7 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -889,6 +939,16 @@
           "rev": 1,
           "hash": "b111cbefab2a8f86",
           "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:39:14.086Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "801f84b3352a254a",
+          "notes": "tii-l-a-r1 판정대로 — 축제 부스 준비라는 네 줄짜리 친숙한 생활·직장 대화라 TOPIK II 난도 2→1, 겨눈 급 4→3. 대본·보기·해설은 그대로."
         }
       ]
     },
@@ -1242,7 +1302,7 @@
     },
     {
       "id": "tii-l-a-015",
-      "rev": 1,
+      "rev": 2,
       "family": "tii-l-a-015",
       "exam": "topik-ii",
       "format": "pbt",
@@ -1281,7 +1341,7 @@
       ],
       "answer": 3,
       "explanation": {
-        "ko": "남자는 「쓰는 시간을 아이와 같이 정해 보세요」라고 했어요. 그러면 아이가 「스스로 지키는 연습이 돼요」라고 했으니 함께 정하는 것이 좋다는 생각이에요. 아예 못 쓰게 하는 것은 여자의 생각이고, 남자는 「무조건 막으면 몰래 쓰게 될 뿐이에요」라고 했어요.",
+        "ko": "남자는 「쓰는 시간을 아이와 같이 정해 보세요」라고 했어요. 그렇게 하면 「스스로 지키는 연습이 돼요」라고 했으니 함께 정하는 것이 좋다는 생각이에요. 아예 못 쓰게 하는 것은 여자의 생각이고, 남자는 「무조건 막으면 몰래 쓰게 될 뿐이에요」라고 했어요.",
         "en": "The man says 「쓰는 시간을 아이와 같이 정해 보세요」 (try setting the usage time together with your child), because it becomes 「스스로 지키는 연습이 돼요」 (practice in keeping the rules on their own). Banning it completely is the woman's idea, and he says 「무조건 막으면 몰래 쓰게 될 뿐이에요」 (if you simply block it, they'll just use it secretly).",
         "mn": "Ярианд эрэгтэй 「쓰는 시간을 아이와 같이 정해 보세요」 (хэрэглэх цагийг хүүхэдтэйгээ хамт тогтоож үзээрэй) гэсэн. Ингэвэл 「스스로 지키는 연습이 돼요」 (өөрөө дагаж сурах дадлага болно) гэсэн тул хамтдаа тогтоох нь зүйтэй гэсэн бодол. Огт хэрэглүүлэхгүй байх нь эмэгтэйн санаа бөгөөд эрэгтэй 「무조건 막으면 몰래 쓰게 될 뿐이에요」 (шууд хориглох юм бол нууцаар л хэрэглэнэ) гэсэн."
       },
@@ -1298,7 +1358,7 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -1332,6 +1392,16 @@
           "rev": 1,
           "hash": "bfd09cce27be7d72",
           "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:39:14.086Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "51ff2f40e38da8e6",
+          "notes": "tii-l-a-r1 판정대로 — 남자의 말을 아이가 한 말처럼 읽히게 하던 한국어 해설 둘째 문장 「그러면 아이가 「스스로 지키는 연습이 돼요」라고 했으니」 → 「그렇게 하면 「스스로 지키는 연습이 돼요」라고 했으니」. 대본·보기·en·mn은 그대로."
         }
       ]
     },
@@ -2034,15 +2104,15 @@
     },
     {
       "id": "tii-l-a-023",
-      "rev": 1,
+      "rev": 2,
       "family": "tii-l-a-023",
       "exam": "topik-ii",
       "format": "pbt",
       "section": "listening",
       "officialType": "TII-L-23",
-      "targetGrade": 4,
+      "targetGrade": 3,
       "skillId": "ko2.listening.inference",
-      "difficulty": 2,
+      "difficulty": 1,
       "responseFormat": "single-choice",
       "set": {
         "id": "tii-l-a-s04",
@@ -2110,7 +2180,7 @@
         "seconds": 24.3
       },
       "origin": "synk-original",
-      "reviewStatus": "ai-reviewed",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -2133,20 +2203,30 @@
           "rev": 1,
           "hash": "b421bb750f0aaadc",
           "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:39:14.086Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "fb20bb3bce7bfeec",
+          "notes": "tii-l-a-r1 판정대로 — 세트 짝 tii-l-a-024 판정(같은 대본을 쓰는 짝의 난도도 함께 맞춤)에 따라 TOPIK II 난도 2→1, 겨눈 급 4→3. 대본·보기·해설은 그대로 — 짝 판정으로 난도가 바뀌어 다시 받음."
         }
       ]
     },
     {
       "id": "tii-l-a-024",
-      "rev": 1,
+      "rev": 2,
       "family": "tii-l-a-024",
       "exam": "topik-ii",
       "format": "pbt",
       "section": "listening",
       "officialType": "TII-L-24",
-      "targetGrade": 4,
+      "targetGrade": 3,
       "skillId": "ko2.listening.detail",
-      "difficulty": 2,
+      "difficulty": 1,
       "responseFormat": "single-choice",
       "set": {
         "id": "tii-l-a-s04",
@@ -2209,7 +2289,7 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -2243,6 +2323,16 @@
           "rev": 1,
           "hash": "0d9a9d2a7ab4fbab",
           "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:39:14.086Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "9180adbf807c55a1",
+          "notes": "tii-l-a-r1 판정대로 — 은행 창구에서 카드를 다시 만드는 친숙한 생활 대화라 TOPIK II 난도 2→1(겨눈 급도 난도 칸에 맞춰 4→3). 판정이 같은 대본의 세트 짝 tii-l-a-023 난도도 함께 맞추라고 해 짝도 고침. 보기 ③을 「받기로 했다」로 바꾸는 선택 고침은 보기 ②와 꼴이 같아져 거울 짝이 되고 정답만 길어져 두었음. 대본·보기·해설은 그대로."
         }
       ]
     },
