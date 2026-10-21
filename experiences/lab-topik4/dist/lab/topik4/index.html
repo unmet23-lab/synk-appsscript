@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>TOPIK 4급 온라인 반 · SYNK LAB</title>
+<meta name="description" content="한국 대학에 다니는 몽골 유학생을 위한 TOPIK II 4급 8주 온라인 반이에요. 토요일 실시간 수업과 매주 쓰기 첨삭, 관심 등록이 10명 모이면 열어요.">
+<meta name="theme-color" content="#060709">
+<script>
+/* 화면 테마: SYNK 플랫폼(웹, 같은 synk.im)에서 고른 밤·낮·기기 설정을 따른다. 고른 적이 없으면 밤(시그널 기본). */
+(function(){var v='night';try{v=localStorage.getItem('synk.platform.theme')||'night'}catch(e){}if(['night','day','system'].indexOf(v)<0)v='night';document.documentElement.setAttribute('data-theme',v);var day=v==='day'||(v==='system'&&window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches);document.querySelector('meta[name="theme-color"]').setAttribute('content',day?'#ECECEA':'#060709')})();
+</script>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SYNK LAB">
+<meta property="og:title" content="TOPIK 4급 온라인 반 · TOPIK 4-р түвшний онлайн анги">
+<meta property="og:description" content="Бямба гараг бүр 90 минутын шууд хичээл · долоо хоног бүр бичвэрийн засвар · 10 хүн бүрдвэл анги нээгдэнэ. / 토요일 90분 실시간 수업 · 매주 쓰기 첨삭 · 관심 등록이 10명 모이면 개강해요.">
+<meta property="og:url" content="https://synk.im/lab/topik4/">
+<meta property="og:image" content="https://synk.im/lab/topik4/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="assets/favicon-32.png">
+<link rel="preload" href="assets/SUIT-subset.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/InterTight-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="app.css?v=040dfba8e045">
+</head>
+<body class="biz-lab">
+<div class="tool t4">
+  <header class="bar">
+    <a class="brand" href="https://synk.im/lab/" aria-label="SYNK LAB">
+      <span class="bead"><img src="assets/logo-lab.webp" alt="SYNK LAB" width="78" height="24"></span>
+      <span class="crumb" aria-hidden="true" data-t="crumb">SYNK LAB / TOPIK 4</span>
+    </a>
+    <div class="t4-lang" role="group" aria-label="화면 언어" data-t-attr="aria-label:langLabel">
+      <button type="button" data-lang="mn" lang="mn" aria-pressed="false">Монгол</button>
+      <button type="button" data-lang="ko" lang="ko" aria-pressed="true">한국어</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="t4-hero" aria-labelledby="t4-h1">
+      <div class="t4-hero-text">
+        <p class="t4-eyebrow" data-t="eyebrow">TOPIK II · 4급 온라인 반</p>
+        <h1 id="t4-h1" data-t="h1">졸업까지 남은 TOPIK 4급, 8주 동안 같이 준비해요</h1>
+        <p class="t4-lead" data-t="lead">한국 대학에 다니는 몽골 유학생을 위한 온라인 반이에요. 토요일마다 90분 실시간 수업을 듣고, 매주 읽기 다섯 문항과 쓰기 과제 하나를 내면 선생님이 첨삭해서 돌려 드려요.</p>
+        <ul class="t4-facts" id="facts"></ul>
+        <div class="t4-actions">
+          <a class="btn primary" href="#signup" data-go-form><span data-t="cta">관심 등록하기</span><span aria-hidden="true">→</span></a>
+          <a class="btn ghost" href="#weeks" data-t="cta2">8주 차시표 보기</a>
+        </div>
+      </div>
+      <div class="poster tall t4-poster-hero" data-word="4급" style="--len:2" aria-hidden="true">
+        <span class="label">SYNK LAB · CLASS 01</span>
+        <span class="led-chip alert" data-t="chip">관심 등록 받는 중</span>
+        <img class="cut" src="assets/topik4-art-cap.webp" width="555" height="557" alt="">
+      </div>
+    </section>
+
+    <div class="t4-body">
+      <div class="t4-main">
+        <section class="t4-sec" id="who" aria-labelledby="h-who">
+          <h2 id="h-who"><span class="no">01</span><span data-t="whoTitle">이런 분께 맞아요</span></h2>
+          <ul class="t4-checks" id="who-list"></ul>
+          <p class="t4-note" data-t="whoNote"></p>
+        </section>
+
+        <section class="t4-sec" id="what" aria-labelledby="h-what">
+          <h2 id="h-what"><span class="no">02</span><span data-t="whatTitle">8주 동안 하는 것</span></h2>
+          <div class="t4-what">
+            <div class="poster t4-poster-mid" data-word="8주" style="--len:2" aria-hidden="true">
+              <span class="label">8 WEEKS · SATURDAY</span>
+              <img class="cut" src="assets/topik4-art-grid.webp" width="495" height="498" alt="">
+            </div>
+            <div class="t4-cards" id="what-list"></div>
+          </div>
+          <p class="t4-note" data-t="whatNote"></p>
+        </section>
+
+        <section class="t4-sec" id="weeks" aria-labelledby="h-weeks">
+          <h2 id="h-weeks"><span class="no">03</span><span data-t="weeksTitle">8주 차시표</span></h2>
+          <ol class="t4-weeks" id="weeks-list"></ol>
+          <p class="t4-note" data-t="weeksNote"></p>
+        </section>
+
+        <section class="t4-sec" id="terms" aria-labelledby="h-terms">
+          <h2 id="h-terms"><span class="no">04</span><span data-t="termsTitle">값과 여는 조건</span></h2>
+          <dl class="t4-terms" id="terms-list"></dl>
+        </section>
+
+        <section class="t4-sec" id="free" aria-labelledby="h-free">
+          <h2 id="h-free"><span class="no">05</span><span data-t="freeTitle">기다리는 동안 무료로</span></h2>
+          <div class="t4-free" id="free-list"></div>
+        </section>
+      </div>
+
+      <aside class="t4-side" id="signup" aria-labelledby="form-title">
+        <div class="t4-formcard">
+          <div class="poster t4-poster-form" data-word="등록" style="--len:2" aria-hidden="true">
+            <span class="label">SIGN UP · NO PAYMENT</span>
+            <img class="cut" src="assets/topik4-art-list.webp" width="491" height="537" alt="">
+          </div>
+          <form id="form" class="t4-form" novalidate>
+            <h2 id="form-title" data-t="formTitle">관심 등록</h2>
+            <p class="t4-sub" data-t="formSub">1분이면 끝나요. 개강일이 정해지면 이 이메일로 먼저 연락드려요.</p>
+
+            <div class="t4-field" data-field="name">
+              <label for="f-name"><span data-t="name">이름</span> <small>(<span data-t="optional">선택</span>)</small></label>
+              <input id="f-name" name="name" type="text" autocomplete="name" maxlength="40" aria-describedby="h-name">
+              <p class="t4-hint" id="h-name" data-t="nameHint">부르는 이름도 괜찮아요</p>
+            </div>
+
+            <div class="t4-field" data-field="email">
+              <label for="f-email" data-t="email">이메일</label>
+              <input id="f-email" name="email" type="email" autocomplete="email" inputmode="email" required maxlength="254" aria-describedby="h-email err-email">
+              <p class="t4-hint" id="h-email" data-t="emailHint">개강 안내를 받을 주소예요</p>
+              <p class="t4-err" id="err-email" hidden></p>
+            </div>
+
+            <fieldset class="t4-field" data-field="level" aria-describedby="err-level">
+              <legend data-t="level">지금 TOPIK 급수</legend>
+              <div class="t4-opts" id="opt-level"></div>
+              <p class="t4-err" id="err-level" hidden></p>
+            </fieldset>
+
+            <fieldset class="t4-field" data-field="when" aria-describedby="err-when">
+              <legend data-t="when">언제까지 4급이 필요하세요?</legend>
+              <div class="t4-opts" id="opt-when"></div>
+              <p class="t4-err" id="err-when" hidden></p>
+            </fieldset>
+
+            <fieldset class="t4-field" data-field="time">
+              <legend><span data-t="time">토요일에 들을 수 있는 시간</span> <small>(<span data-t="optional">선택</span>)</small></legend>
+              <div class="t4-opts t4-opts-row" id="opt-time"></div>
+            </fieldset>
+
+            <div class="t4-field" data-field="note">
+              <label for="f-note"><span data-t="note">쓰기에서 어려운 점</span> <small>(<span data-t="optional">선택</span>)</small></label>
+              <textarea id="f-note" name="note" rows="3" maxlength="300" data-t-attr="placeholder:notePlaceholder"></textarea>
+            </div>
+
+            <div class="t4-trap" aria-hidden="true"><label for="f-website">website</label><input id="f-website" name="website" type="text" tabindex="-1" autocomplete="off"></div>
+
+            <div class="t4-consent" data-field="consent">
+              <p class="t4-notice"><span data-t="notice"></span> <a href="https://synk.im/privacy/#website-contact" target="_blank" rel="noopener" data-t="privacy">개인정보 처리방침</a></p>
+              <label class="t4-check"><input id="f-consent" name="consent" type="checkbox" required aria-describedby="err-consent"><span data-t="consent">위 안내를 읽고, 문의 답변을 위한 개인정보 수집·이용에 동의합니다.</span></label>
+              <p class="t4-err" id="err-consent" hidden></p>
+            </div>
+
+            <button class="btn primary t4-submit" id="f-submit" type="submit" data-t="submit">관심 등록하기</button>
+            <p class="t4-err t4-send" id="send-error" hidden></p>
+          </form>
+
+          <div class="t4-done" id="done" hidden>
+            <p class="t4-done-mark" aria-hidden="true">✓</p>
+            <h2 id="done-title" tabindex="-1">등록했어요</h2>
+            <p id="done-body"></p>
+            <p class="t4-hint" data-t="doneHelp"></p>
+            <button type="button" class="t4-again" id="again" data-t="again">다시 등록하기</button>
+            <div class="t4-share">
+              <h3 data-t="shareTitle">같이 준비할 친구가 있나요?</h3>
+              <p data-t="shareBody"></p>
+              <button type="button" class="btn primary" id="share" data-t="share">링크 보내기</button>
+              <p class="t4-hint" id="share-state" aria-live="polite"></p>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="foot">
+    <span data-t="foot">SYNK LAB · 한국어 교육</span>
+    <span><a href="https://www.instagram.com/synk.mn/" target="_blank" rel="noopener">Instagram</a> · <a href="https://www.facebook.com/synkworld" target="_blank" rel="noopener">Facebook</a> · <a href="https://t.me/synkmn" target="_blank" rel="noopener">Telegram</a> · <a href="https://synk.im/privacy/#website-contact" target="_blank" rel="noopener" data-t="privacy">개인정보 처리방침</a></span>
+  </footer>
+  <div id="live" class="sr" aria-live="polite"></div>
+</div>
+<a class="btn primary t4-dock" href="#signup" data-go-form><span data-t="cta">관심 등록하기</span><span aria-hidden="true">→</span></a>
+<noscript><p class="t4-noscript" lang="mn">Энэ хуудасны бүртгэл JavaScript-ээр илгээгддэг. Асаах боломжгүй бол hello@synk.im хаягаар «TOPIK 4 онлайн анги» гэж бичээд имэйл илгээнэ үү.</p><p class="t4-noscript">이 페이지의 등록은 자바스크립트로 보내요. 켤 수 없으면 hello@synk.im으로 「TOPIK 4급 온라인 반 관심 등록」이라고 적어 보내 주세요.</p></noscript>
+<script src="copy.js?v=c2fab637961f"></script>
+<script src="app.js?v=2e70babb3aba"></script>
+</body>
+</html>

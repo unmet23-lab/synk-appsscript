@@ -1,0 +1,66 @@
+{
+  "app.css": {
+    "bytes": 81481,
+    "sha256": "040dfba8e04562e29d09452c6f97a8b4058977f8701e5a7c5b12d010850de9e8"
+  },
+  "app.js": {
+    "bytes": 15082,
+    "sha256": "2e70babb3aba9d37f3044d84e06a6e753d11376acff7e17ec4f41fd110ba2cd0"
+  },
+  "assets/DMMono-400.woff2": {
+    "bytes": 5896,
+    "sha256": "499891840ea2e5a85ed10ab59b4a5385846fe00e016d90ae05f16871bdf34f6e"
+  },
+  "assets/DMMono-500.woff2": {
+    "bytes": 5968,
+    "sha256": "a4e145a400524ba31da2b348bcd23d69d43a02f09155b184a652714d08648e07"
+  },
+  "assets/InterTight-400.woff2": {
+    "bytes": 28808,
+    "sha256": "d650f70550d1f2fa504b35a2fa60a9dabecf77c7084232e46013939fdcfa2090"
+  },
+  "assets/InterTight-500.woff2": {
+    "bytes": 29868,
+    "sha256": "64bd724a92f15e7cee8a825ceaba9f1eedbebbd83a1d7d26ca2761d1147bfb66"
+  },
+  "assets/InterTight-700.woff2": {
+    "bytes": 30056,
+    "sha256": "a1f8ef8722cee826313d0b56816757e4afef9bf37d77a1a8eb42055792a137ac"
+  },
+  "assets/SUIT-subset.woff2": {
+    "bytes": 95980,
+    "sha256": "4b9d8d32bf6bab68b8cf24c1a00d4866032858d01a83eaee4a8aacb9f3afc246"
+  },
+  "assets/favicon-32.png": {
+    "bytes": 2310,
+    "sha256": "b8c3f86ea746b58ef3fc4110755453c426db133aff38c5a4df9649b2487419f9"
+  },
+  "assets/logo-lab.webp": {
+    "bytes": 7626,
+    "sha256": "2f82a4686d45ef623dd8da8f4499a241074a4f14a43384285adc313002813f5f"
+  },
+  "assets/topik4-art-cap.webp": {
+    "bytes": 103876,
+    "sha256": "146af135226108950f2aed2d823477a0d24ad5d927b924be4b1cad2e7ee5690b"
+  },
+  "assets/topik4-art-grid.webp": {
+    "bytes": 62766,
+    "sha256": "49c025cd5b6d6500aee4491f310e105cf835fdfd6ca3b40c07f977a7899d2948"
+  },
+  "assets/topik4-art-list.webp": {
+    "bytes": 82988,
+    "sha256": "7497243a9bda0720878a78972fce5fbfab449f9febb091a831f8b393f977bc4f"
+  },
+  "copy.js": {
+    "bytes": 20954,
+    "sha256": "c2fab637961fbc3bfbe103d28e1bd405524c02666d76dc1c307568303d83e494"
+  },
+  "index.html": {
+    "bytes": 11835,
+    "sha256": "f11f3d77d0110161b32a675098c42f1c1d05369dbf1606ba85c4877dedfd1b3d"
+  },
+  "og.png": {
+    "bytes": 354497,
+    "sha256": "7a18adcb821191390a32644d34c2c35ebf77a7235d0d6d18e58bde49196fa132"
+  }
+}
