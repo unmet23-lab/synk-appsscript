@@ -10,7 +10,8 @@
   "판": [
     { "계정": "synkbrief-instagram", "파일": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/lock-a_upload.mp4", "원본": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/lock-a_master.mp4", "표지": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/표지_A.jpg", "시각": "2026-10-22T21:00:00+09:00", "게시글": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/README.md", "AI표시": true },
     { "계정": "synkbrief-youtube", "파일": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/lock-b_master.mp4", "표지": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/표지_B.jpg", "시각": "2026-10-22T21:00:00+09:00", "게시글": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/README.md", "AI표시": true, "아동용": false, "언어": "ko" },
-    { "계정": "shift-naverblog", "파일": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/blog/원고.md", "시각": "2026-10-22T21:10:00+09:00", "게시글": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/blog/원고.md" }
+    { "계정": "shift-naverblog", "파일": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/blog/원고.md", "시각": "2026-10-22T21:10:00+09:00", "게시글": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/blog/원고.md" },
+    { "계정": "shift-tistory", "파일": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/blog/티스토리.md", "시각": "2026-10-22T21:20:00+09:00", "게시글": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/blog/티스토리.md" }
   ],
   "끝행동링크": null,
   "미룰편": [],
