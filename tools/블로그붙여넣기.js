@@ -224,7 +224,7 @@ blockquote{margin:12px 0;padding:8px 14px;border-left:3px solid var(--line);back
 .imgs img{width:100%;border-radius:6px;border:1px solid var(--line)} figure{margin:0} figcaption{font-size:13px;color:var(--soft)}
 </style></head><body><main>
 <ol>
-<li>크롬에서 synkshift 블로그 글쓰기를 엽니다.</li>
+<li>크롬에서 <a href="https://blog.naver.com/PostWriteForm.naver?blogId=synkshift">synkshift 블로그 글쓰기</a>를 엽니다. 탭 이름이 「유호 · AI와 회사 만들기」인지 먼저 봅니다 — 다른 아이디로 로그인돼 있으면 그 아이디의 블로그 글쓰기로 넘어가니, synkshift를 가진 아이디로 바꾼 뒤 다시 엽니다(블로그 주소와 로그인 아이디는 다릅니다).</li>
 <li>「제목 복사」 → 제목 칸에 붙여 넣습니다.</li>
 <li>「그림까지 한 번에 복사」 → 본문에 붙여 넣습니다. 그림 ${bs.filter((b) => b.t === 'img').length}장이 다 보이면 4번으로 갑니다.<br>
 그림이 빠지면 본문을 지우고 「본문만 복사」로 다시 붙인 뒤, 빨간 「▶ 그림 N 자리」 줄마다 아래 그림 파일을 탐색기에서 끌어다 놓고 그 줄을 지웁니다.</li>
