@@ -810,6 +810,9 @@ class RetentionStepTests(unittest.TestCase):
         self.assertEqual((row['status'], row['codes']), ('attention', ['VAULT_COPY_MISSING']))
         row = self.vault(status='attention', lastSync={'available': False, 'errors': 1})
         self.assertEqual(row['codes'], ['VAULT_COPY_ERRORS', 'VAULT_DRIVE_NOT_MOUNTED'])
+        # The codes alone make it a problem, even if the receipt says healthy.
+        row = self.vault(status='healthy', lastSync={'errors': 2})
+        self.assertEqual((row['status'], row['codes']), ('attention', ['VAULT_COPY_ERRORS']))
         self.assertEqual(self.vault(age=dt.timedelta(days=4))['codes'], ['VAULT_STALE'])
         (self.root / health.VAULT['receipt']).write_text('{broken', encoding='utf-8')
         self.assertEqual(health.vault_copy(self.root, lib, self.now)['codes'], ['RECEIPT_UNREADABLE'])

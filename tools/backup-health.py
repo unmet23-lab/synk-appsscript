@@ -408,6 +408,8 @@ def vault_copy(root, lib, now, item=VAULT, suspended=None):
         if sync and not sync.get('available', True): codes.append('VAULT_DRIVE_NOT_MOUNTED'); notes.append('G: 드라이브가 연결되지 않음')
         if sync.get('errors'): codes.append('VAULT_COPY_ERRORS'); notes.append(f"복사 실패 {sync['errors']}개")
         if sync.get('deferred'): notes.append(f"남은 {sync['deferred']}개는 다음 날 이어서")
+        # A missing copy, an unmounted G: or a failed copy is a problem whatever status the receipt itself carries.
+        if codes: state = 'attention'
         late = stale_note(checked, now, item, suspended)
         if late:
             state = 'attention'; codes.append('VAULT_STALE'); notes.append(late)
