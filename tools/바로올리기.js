@@ -229,10 +229,12 @@ function 상태읽기(git) {
     const s = 칸[i];
     if (!s) continue;
     const x = s[0], y = s[1], p = s.slice(3);
+    // 인덱스에서 지운 경로에 작업본 파일이 남으면 「D 」 뒤에 「??」가 또 나온다 — 미추적 줄이 스테이징을 가리지 않게 한다
+    if (x === '?' && 결과.has(p)) continue;
     결과.set(p, { x, y });
     if (x === 'R' || x === 'C') {
       const 옛 = 칸[++i];
-      if (옛 && x === 'R') 결과.set(옛, { x: 'D', y: ' ' });
+      if (옛 && x === 'R') 결과.set(옛, { x: 'D', y: ' ', 이름바꿈: true });
     }
   }
   return 결과;
@@ -290,8 +292,9 @@ function 따라가기계획(c, B, T, { 바탕들 = new Map() } = {}) {
     if (!st && !덮을파일) { 새판.push(p); continue; }
     // 인덱스에서 이미 지웠고(작업본에 남긴 파일은 무시·미추적) origin도 지운 경로 — 인덱스가 이미 T와 같으니 남의 스테이징이 아니라
     // 먼저 올라간 일이다. 막지 않고, 작업본에 남은 파일은 read-tree가 지우지 않게 잠깐 비켜 두었다가 되돌린다(10-21 붙여넣기 판 셋).
-    if (!th && bh && st && ((st.x === 'D' && st.y === ' ') || st.x === '?') && !있음.폴더) {
-      if (!있음.없음) 비킬.push({ 경로: p, 바이트: 있음.바이트 });
+    // 이름 바꾸기(git mv)의 옛 경로는 남의 스테이징 그대로 멈춘다. 파일이 없는 지움도 넣어 둔다 — 실패 되돌리기에서 지움을 다시 맞춘다.
+    if (!th && bh && st && st.x === 'D' && st.y === ' ' && !st.이름바꿈 && !있음.폴더) {
+      비킬.push({ 경로: p, 바이트: 있음.없음 ? null : 있음.바이트, Bsha: bh.sha });
       continue;
     }
     if (c.공용 && st && st.x !== ' ' && st.x !== '?') { 걸림.push({ 경로: p, 이유: '공용 인덱스에 스테이징이 있다(남의 것일 수 있다)' }); continue; }
@@ -382,29 +385,20 @@ function 가까운바탕(c, B, T, p, 바탕sha, W글) {
 }
 
 /**
- * 가까운 바탕 K(B보다 새 origin 판)에서 작업본이 받은 적 없는 origin 줄을 뺀 바탕. K → 작업본 차이의 한 덩어리에서 빈 줄이 아닌
- * 뺀 줄이 모두 B 판에도 작업본에도 없으면, 작업본이 지운 줄이 아니라 B 뒤에 origin이 더해 작업본이 받지 못한 줄이다 — 덩어리째(빈 줄까지)
- * 뺀다. 덩어리에 B 판 줄이 섞였으면 그런 줄만 뺀다(B 판 줄은 작업본이 지운 줄로 남는다). K를 그대로 바탕으로 쓰면 3방향이 그 줄을
- * 작업본이 지운 줄로 보아 T에서도 지운다(10-21 공용 작업본 문서 9개에서 origin의 새 줄이 빠졌다). 뺄 줄이 없으면 K 그대로.
+ * 가까운 바탕 K(B보다 새 origin 판)에서 작업본이 받은 적 없는 origin 줄을 뺀 바탕. B → K에서 더해진 줄(B 뒤에 origin이 넣은 줄)
+ * 가운데 K → 작업본에서 빠진 줄은, 작업본(B에서 나왔다)이 지운 줄이 아니라 받은 적이 없는 줄이다 — 그 자리의 그 줄만 뺀다(빈 줄 포함).
+ * 줄 글이 아니라 두 차이의 자리로 가르므로, 파일 다른 곳에 같은 글의 줄(「- 다시 확인: 통과」·빈 줄)이 있어도 새 덩어리 안의 줄은 빠진다.
+ * K를 그대로 바탕으로 쓰면 3방향이 그 줄을 작업본이 지운 줄로 보아 T에서도 지운다(10-21 공용 작업본 문서 9개에서 origin의 새 줄이
+ * 빠졌다). 빼는 줄은 작업본에 없는 줄뿐이라, 결과는 「T 줄을 남기는」 쪽으로만 바뀐다. 뺄 줄이 없으면 K 그대로.
  */
 function 받은적없는줄뺀바탕(c, K, B바이트, W) {
   const K줄 = 줄나누기(글로(블롭(c.git, c.저장, K)));
+  const K글 = K줄.map((l) => l.글);
   const 글만 = (바이트) => 줄나누기(글로(바이트)).map((l) => l.글);
-  const B글 = new Set(글만(B바이트)), W글목록 = 글만(W), W글 = new Set(W글목록);
-  const 빈줄 = (i) => /^[ \t]*$/.test(K줄[i].글);
+  const B뒤더한 = new Set();
+  for (const op of 줄차이(글만(B바이트), K글)) if (op[0] === '+') B뒤더한.add(op[1]);
   const 뺄 = new Set();
-  let 덩어리 = [];
-  const 덩어리닫기 = () => {
-    const 글줄 = 덩어리.filter((i) => !빈줄(i));
-    const 없던 = 글줄.filter((i) => !B글.has(K줄[i].글) && !W글.has(K줄[i].글));
-    for (const i of 글줄.length && 없던.length === 글줄.length ? 덩어리 : 없던) 뺄.add(i);
-    덩어리 = [];
-  };
-  for (const op of 줄차이(K줄.map((l) => l.글), W글목록)) {
-    if (op[0] === '=') 덩어리닫기();
-    else if (op[0] === '-') 덩어리.push(op[1]);
-  }
-  덩어리닫기();
+  for (const op of 줄차이(K글, 글만(W))) if (op[0] === '-' && B뒤더한.has(op[1])) 뺄.add(op[1]);
   if (!뺄.size) return K;
   return 블롭쓰기(c.git, c.저장, 바이트로(줄잇기(K줄.filter((_, i) => !뺄.has(i)))));
 }
@@ -461,7 +455,8 @@ function 따라가기실행(c, 계획) {
   백업정리(백업뿌리);
   const 시각 = new Date().toISOString().replace(/[-:]/g, '').replace(/\..+$/, '').replace('T', '-');
   const 백업 = path.join(백업뿌리, `${시각}-${B.slice(0, 9)}-${T.slice(0, 9)}`);
-  const 백업목록 = [...계획.고침.map((x) => ({ 경로: x.경로, 바이트: x.전 })), ...비킬.map((v) => ({ 경로: v.경로, 바이트: v.바이트 }))];
+  const 비킬파일 = 비킬.filter((v) => v.바이트);               // 작업본에 파일이 남은 지움 — 비켜 두었다가 되돌린다
+  const 백업목록 = [...계획.고침.map((x) => ({ 경로: x.경로, 바이트: x.전 })), ...비킬파일.map((v) => ({ 경로: v.경로, 바이트: v.바이트 }))];
   if (백업목록.length) {
     fs.mkdirSync(path.join(백업, '파일'), { recursive: true });
     const 목록 = 백업목록.map((x, i) => {
@@ -482,7 +477,7 @@ function 따라가기실행(c, 계획) {
       if (올라간.length) git(['--literal-pathspecs', 'rm', '-q', '--cached', '--ignore-unmatch', '--pathspec-from-file=-', '--pathspec-file-nul'], { input: `${올라간.join('\0')}\0` });
       for (const p of B에없는) fs.rmSync(path.join(c.저장소, p), { force: true });
     }
-    for (const v of 비킬) fs.rmSync(path.join(c.저장소, v.경로), { force: true });   // 백업에 있다 — 따라간 뒤 되돌린다
+    for (const v of 비킬파일) fs.rmSync(path.join(c.저장소, v.경로), { force: true });   // 백업에 있다 — 따라간 뒤 되돌린다
   } catch (e) {
     const 못함 = 되돌리기(c, 계획, 백업목록);
     return { 결과: '실패', 이유: `고치는 파일을 바탕 판으로 돌리지 못했다 — ${e.message}${못함.length ? ` / 되돌리지 못함: ${못함.join('; ')}` : ' (되돌림)'}`, 백업 };
@@ -497,8 +492,16 @@ function 따라가기실행(c, 계획) {
   const ur = git.돌리기(['update-ref', ...(c.가지 ? [] : ['--no-deref']), '-m', `바로올리기: 따라가기 ${B.slice(0, 9)} → ${T.slice(0, 9)}`, 참조, T, B], { 허용: null });
   if (ur.status !== 0) {
     const 뒤로 = git.돌리기(['read-tree', '-m', '-u', T, B], { 허용: null });
-    // 되돌린 read-tree가 B 판 항목을 다시 넣었다 — 비켜 둔 경로는 처음처럼 인덱스에서 지운 채로 둔다
-    if (비킬.length) git.돌리기(['--literal-pathspecs', 'rm', '-q', '--cached', '--ignore-unmatch', '--', ...비킬.map((v) => v.경로)], { 허용: null });
+    // 되돌린 read-tree가 지움 경로에 B 판 항목과 파일을 다시 넣었다 — 처음처럼 인덱스에서 지운 채로 두고, 파일이 없던 경로는
+    // 그 B 판 파일만 치운다(그사이 남이 쓴 파일은 두고). 파일이 있던 경로는 아래 되돌리기가 비켜 둔 판을 다시 쓴다.
+    if (비킬.length) {
+      git.돌리기(['--literal-pathspecs', 'rm', '-q', '--cached', '--ignore-unmatch', '--pathspec-from-file=-', '--pathspec-file-nul'], { input: `${비킬.map((v) => v.경로).join('\0')}\0`, 허용: null });
+      for (const v of 비킬) {
+        if (v.바이트) continue;
+        const 지금 = 파일읽기(path.join(c.저장소, v.경로));
+        if (지금.바이트 && 지금.바이트.equals(꺼낸바이트(c, v.Bsha, v.경로))) fs.rmSync(path.join(c.저장소, v.경로), { force: true });
+      }
+    }
     const 못함 = 되돌리기(c, 계획, 백업목록);
     return { 결과: '실패', 이유: `가지를 옮기지 못했다(그사이 움직임) — 작업본을 되돌렸다${뒤로.status !== 0 ? `(read-tree 되돌리기 실패: ${String(뒤로.stderr).trim()})` : ''}${못함.length ? ` / 되돌리지 못함: ${못함.join('; ')}` : ''}`, 백업 };
   }
@@ -520,14 +523,14 @@ function 따라가기실행(c, 계획) {
     } catch (e) { 주의.push(`${x.경로}: ${e.message}(백업 ${백업})`); }
   }
   // 비켜 둔 파일(인덱스에서 지운 채 작업본에 남긴 판)을 제자리에
-  for (const v of 비킬) {
+  for (const v of 비킬파일) {
     const 파일 = path.join(c.저장소, v.경로);
     if (!파일읽기(파일).없음) { 주의.push(`${v.경로}: 그사이 그 자리에 파일이 생겨 비켜 둔 판을 되돌리지 않았다(백업 ${백업})`); continue; }
     try { 바꿔쓰기(파일, v.바이트); } catch (e) { 주의.push(`${v.경로}: ${e.message}(백업 ${백업})`); }
   }
   const r = {
     결과: '따라감', B, T, 경로: 계획.경로.length, 새판: 계획.새판.length,
-    고침: 계획.고침.map((x) => ({ 경로: x.경로, 방법: x.방법 })), ...(비킬.length ? { 지킨파일: 비킬.map((v) => v.경로) } : {}),
+    고침: 계획.고침.map((x) => ({ 경로: x.경로, 방법: x.방법 })), ...(비킬파일.length ? { 지킨파일: 비킬파일.map((v) => v.경로) } : {}),
     ...(백업목록.length ? { 백업 } : {}),
   };
   if (주의.length) r.주의 = 주의.join(' / ');
@@ -664,7 +667,7 @@ function 계획요약(계획) {
   if (계획.결과 !== '계획') return { 결과: 계획.결과, ...(계획.이유 ? { 이유: 계획.이유 } : {}), ...(계획.걸림 ? { 걸림: 계획.걸림 } : {}) };
   return {
     결과: '계획', B: 계획.B, T: 계획.T, 경로: 계획.경로.length, 새판: 계획.새판.length, 고침: 계획.고침.map((x) => ({ 경로: x.경로, 방법: x.방법 })),
-    ...(계획.비킬 && 계획.비킬.length ? { 지킬파일: 계획.비킬.map((v) => v.경로) } : {}),
+    ...(계획.비킬 && 계획.비킬.some((v) => v.바이트) ? { 지킬파일: 계획.비킬.filter((v) => v.바이트).map((v) => v.경로) } : {}),
   };
 }
 

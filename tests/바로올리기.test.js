@@ -649,6 +649,83 @@ test('공용 작업본: origin도 지운 경로의 「스테이징된 지움」�
   assert.deepEqual(판.공용.상태(), ['?? docs/글2/붙여넣기.html']);
 });
 
+test('공용 작업본: origin이 새로 넣은 덩어리에 파일 다른 곳과 같은 글의 줄(「- 다시 확인: 통과」)이 섞여 있어도 그 줄까지 남긴다', async (t) => {
+  const v0 = '# 노트\n\n## 가\n### 가 첫 항목은 길게 써서 다른 줄과 헷갈리지 않게 한다\n- 다시 확인: 통과\n\n## 나\n### 나 첫 항목은 길게 써서 다른 줄과 헷갈리지 않게 한다\n- 나 첫 항목 내용 줄\n';
+  const 판 = 새판(t, { 파일: { 'docs/현장노트/노트.md': v0 } });
+  const v1 = v0.replace('\n\n## 나', '\n\n### 가 절에 origin이 더한 항목\n- 가 절 새 항목 내용 줄\n- 다시 확인: 통과\n\n## 나');
+  판.남push({ 'docs/현장노트/노트.md': v1 });
+  const 나항목 = '\n### 나 절에 세션이 쓴 항목\n- 증상: 나 절 항목 증상 줄\n- 원인: 나 절 항목 원인 줄\n- 고침: 나 절 항목 고침 줄\n- 다시 확인: 나 절 항목 확인 줄\n';
+  const 안올린 = '- 덧붙임: 세션이 아직 올리지 않은 줄\n';
+  판.공용.쓰기('docs/현장노트/노트.md', `${v0}${나항목}${안올린}`);
+  판.남push({ 'docs/현장노트/노트.md': `${v1}${나항목}` });
+  const r = await 도구.따라가기({ 저장소: 판.공용.폴더, 실행: true });
+  assert.equal(r.결과, '따라감', JSON.stringify(r));
+  assert.equal(판.공용.읽기('docs/현장노트/노트.md'), `${v1}${나항목}${안올린}`, '새 덩어리 안의 「- 다시 확인: 통과」도 남는다');
+});
+
+test('공용 작업본: 받은 적 없는 줄을 바탕에서 빼도 작업본이 일부러 지운 B 줄은 지운 채로 따라간다', async (t) => {
+  const 지울 = '- 가 둘째 줄은 세션이 끝나서 지울 줄이다\n';
+  const v0 = `# 트랙\n\n## 가\n- 가 첫 줄은 길게 써서 다른 줄과 헷갈리지 않게 한다\n${지울}\n## 나\n- 나 첫 줄은 길게 써서 다른 줄과 헷갈리지 않게 한다\n`;
+  const 판 = 새판(t, { 파일: { 'docs/_ops/트랙.md': v0 } });
+  const v1 = v0.replace('\n## 나\n', '\n## 나\n- 나 절에 origin이 더한 줄\n');
+  판.남push({ 'docs/_ops/트랙.md': v1 });
+  // 세션: 가 둘째 줄을 지우고(아직 안 올림) 나 절 끝에 세 줄을 써서 그 세 줄만 조각으로 올렸다
+  const 셋 = '- 나 셋째 줄은 세션이 쓰고 조각으로 올린 줄이다\n- 나 넷째 줄도 세션이 쓰고 조각으로 올린 줄이다\n- 나 다섯째 줄도 세션이 쓰고 조각으로 올린 줄이다\n';
+  판.공용.쓰기('docs/_ops/트랙.md', v0.replace(지울, '') + 셋);
+  판.남push({ 'docs/_ops/트랙.md': v1 + 셋 });
+  const r = await 도구.따라가기({ 저장소: 판.공용.폴더, 실행: true });
+  assert.equal(r.결과, '따라감', JSON.stringify(r));
+  assert.equal(판.공용.읽기('docs/_ops/트랙.md'), (v1 + 셋).replace(지울, ''), 'origin이 더한 줄은 남고, 세션이 지운 B 줄은 지운 채로');
+  assert.deepEqual(판.공용.상태(), [' M docs/_ops/트랙.md']);
+});
+
+test('공용 작업본: 지움을 지킨 따라가기가 가지 옮기기에서 실패하면 스테이징된 지움과 비켜 둔 파일을 처음대로 되돌린다', async (t) => {
+  const 판 = 새판(t, { 파일: { 'docs/글/붙여넣기.html': '<p>옛 판</p>\n', 'docs/글3/지운.html': '<p>지운 판</p>\n', 'a.txt': '1\n' } });
+  판.남push({ 'docs/글/붙여넣기.html': null, 'docs/글3/지운.html': null, 'a.txt': '2\n' });
+  판.공용.g('rm', '-q', '--cached', 'docs/글/붙여넣기.html');
+  판.공용.쓰기('docs/글/붙여넣기.html', '<p>새로 만든 판</p>\n');
+  판.공용.g('rm', '-q', 'docs/글3/지운.html');               // 인덱스와 작업본 모두에서 지웠다
+  const 전상태 = 판.공용.상태();
+  const B = 판.공용.머리();
+  let 끼어든 = null;
+  const r = await 도구.따라가기({
+    저장소: 판.공용.폴더, 실행: true,
+    시험고리: { 가지옮기기직전: () => {
+      const 트리 = 판.공용.g('rev-parse', `${B}^{tree}`).trim();
+      끼어든 = execFileSync('git', ['commit-tree', 트리, '-p', B, '-m', '그사이 남이 master에 커밋'], { cwd: 판.공용.폴더, encoding: 'utf8' }).trim();
+      판.공용.g('update-ref', 'refs/heads/master', 끼어든);
+    } },
+  });
+  assert.equal(r.결과, '실패', JSON.stringify(r));
+  assert.equal(판.공용.머리(), 끼어든, '남이 옮긴 가지를 덮지 않는다');
+  assert.equal(판.공용.읽기('docs/글/붙여넣기.html'), '<p>새로 만든 판</p>\n', '비켜 둔 판을 되돌린다');
+  assert.equal(판.공용.있나('docs/글3/지운.html'), false, '작업본에서도 지웠던 파일은 되살리지 않는다');
+  assert.equal(판.공용.읽기('a.txt'), '1\n');
+  assert.deepEqual(판.공용.상태(), 전상태, '스테이징된 지움 둘이 그대로');
+});
+
+test('공용 작업본: origin이 지운 경로라도 남이 스테이징한 이름 바꾸기(git mv)의 옛 경로면 따라가지 않는다', async (t) => {
+  const 판 = 새판(t, { 파일: { 'docs/옛.md': '옮길 글은 길게 써서 이름 바꾸기로 잡히게 한다\n', 'a.txt': '1\n' } });
+  판.남push({ 'docs/옛.md': null, 'a.txt': '2\n' });
+  판.공용.g('mv', 'docs/옛.md', 'docs/새.md');
+  const 전 = { 머리: 판.공용.머리(), 상태: 판.공용.상태() };
+  const r = await 도구.따라가기({ 저장소: 판.공용.폴더, 실행: true });
+  assert.equal(r.결과, '멈춤', JSON.stringify(r));
+  assert.match(JSON.stringify(r.걸림), /스테이징/);
+  assert.deepEqual({ 머리: 판.공용.머리(), 상태: 판.공용.상태() }, 전);
+});
+
+test('공용 작업본: 남이 git rm --cached로 추적을 풀어 둔 파일을 origin이 고쳤으면 작업본 파일이 남아 있어도 따라가지 않는다', async (t) => {
+  const 판 = 새판(t, { 파일: { 's.txt': 's1\n', 'a.txt': '1\n' } });
+  판.남push({ 's.txt': 's1 원격\n', 'a.txt': '2\n' });
+  판.공용.g('rm', '-q', '--cached', 's.txt');                  // 「D  s.txt」와 「?? s.txt」가 함께 나온다
+  const 전 = { 머리: 판.공용.머리(), 상태: 판.공용.상태() };
+  const r = await 도구.따라가기({ 저장소: 판.공용.폴더, 실행: true });
+  assert.equal(r.결과, '멈춤', JSON.stringify(r));
+  assert.match(JSON.stringify(r.걸림), /스테이징/);
+  assert.deepEqual({ 머리: 판.공용.머리(), 상태: 판.공용.상태() }, 전);
+});
+
 test('공용 작업본: origin이 바꾼 경로에 남의 스테이징이 있으면 따라가지 않는다(남의 git add를 지우지 않게)', async (t) => {
   const 판 = 새판(t, { 파일: { 'a.txt': '1\n', 's.txt': 's1\ns2\ns3\n' } });
   const 워 = 판.워크트리('wt');
