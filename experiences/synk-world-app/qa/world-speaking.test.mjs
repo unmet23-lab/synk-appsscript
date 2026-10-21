@@ -150,7 +150,7 @@ test('화면 글: 공용 글 표의 speaking.* 줄 — 세 언어가 모두 있�
  assert.equal(t('speaking.type.meta',{prep:20,answer:30},'mn'),'Бэлтгэх 20 секунд · Хариулах 30 секунд');
 });
 
-test('플래그: 기본은 꺼짐, 주소 ?speaking=preview나 이 기기 설정일 때만 켜진다 · 공개 빌드 목록 밖',()=>{
+test('플래그: 기본은 꺼짐, 주소 ?speaking=preview나 이 기기 설정일 때만 켜진다 · 공개 빌드에는 모듈·글·문항·그림이 있다',()=>{
  const storage=memory();
  assert.equal(speakingPreviewOn({location:{search:''},storage}),false);
  assert.equal(speakingPreviewOn({location:{search:'?speaking=preview'},storage}),true);
@@ -159,7 +159,9 @@ test('플래그: 기본은 꺼짐, 주소 ?speaking=preview나 이 기기 설정
  assert.doesNotMatch(shell,/^import[^\n]*world-speaking-practice/m,'정적 import가 없다');
  assert.match(shell,/if\(speakingFlag\)void import\('\.\/world-speaking-practice\.mjs'\)/);
  const build=fs.readFileSync(path.join(root,'tools/build-world-app-public.mjs'),'utf8');
- assert.doesNotMatch(build,/world-speaking|speaking-assets/,'시범은 공개 빌드에 넣지 않는다');
+ // app-shell이 부르는 모듈이 공개 빌드에 없으면 빌드가 missing으로 멈춘다(10-21 ④ 세션 보고) — 파일은 싣고 켜는 것은 플래그다.
+ for(const name of ['world-speaking-practice.mjs','world-speaking.css','world-speaking-items.json'])assert.ok(build.includes(`'${name}'`),name);
+ assert.match(build,/speaking-assets/);assert.doesNotMatch(build,/speaking-dev-host/,'개발 서버 몫은 싣지 않는다');
 });
 
 test('기기 기록 요약과 계획 후보(제안): 세지 않은 녹음은 빠지고, 후보는 말하기 영역',()=>{
