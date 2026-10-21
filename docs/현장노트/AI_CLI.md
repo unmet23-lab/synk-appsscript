@@ -381,6 +381,12 @@
 - 고침: 권한을 바꾸지 않고 파일 접근이 필요 없는 stdin 전달을 쓴다. 최종 비교의 두 모델 모두 같은 네 묶음을 이 방식으로 받고, 접근 실패·큰 입력 잘림·압축 실패 실행은 점수에서 제외한다.
 - 다시 확인: 같은 비교의 `v2/runs/gpt/final.txt`·stderr와 `v3/run-audit.json`을 대조한다. 자료를 못 읽은 실행을 버그 0건으로 채점하지 않는다.
 
+### GPT에게 `codex exec -s workspace-write`로 백엔드를 맡기면 구현·시험은 끝나도 git 워크트리에서 커밋을 못 한다 (2026-10-21 Claude)
+- 증상: 10-21 SYNK-talk 워크트리(`~/Documents/SYNK-worktrees/teacher-connection-20261021/SYNK-talk`)에서 `codex exec -C <워크트리> -s workspace-write -c windows.sandbox=mxc --add-dir <SYNK-talk/.git> --add-dir <임시> -o <보고> -`(지시문은 표준입력, 본 계정 `~/.codex`)를 돌렸다. 8분 만에 구현·시험(84/84)은 끝났지만 `git add`부터 `.git/worktrees/SYNK-talk1/index.lock` 생성이 `Permission denied`로 막혀 8파일이 미커밋으로 남았다. 샌드박스 안 Town 시험 하나는 `connect EACCES 127.0.0.1`로 실패했다.
+- 원인: 워크트리의 git 메타데이터는 본 저장소 `.git/worktrees/<이름>`에 있다. `--add-dir`로 `.git`을 줬는데도 MXC 샌드박스가 그 아래 잠금 파일 쓰기를 막았다(정확한 정책 이유는 확인하지 못함). 루프백 접속도 샌드박스가 막는다.
+- 고침: GPT에게는 「구현·시험까지, 커밋은 막히면 남겨 둔다」로 맡기고, Claude가 diff를 검수하고 시험을 샌드박스 밖에서 다시 돌린 뒤 같은 가지에 커밋한다(그 Town 시험은 밖에서 13/13). 계정은 유호님이 정한 GPT 앱 본 폴더 `~/.codex`(pro)를 쓰고 모델·추론은 그 설정 그대로 둔다.
+- 다시 확인: `git -C <워크트리> status --porcelain`이 GPT 보고의 파일 수와 같고 `GPT_보고.md`(`-o`)에 커밋 해시가 없으면 이 경우다. 샌드박스 밖에서 `git -C <워크트리> add …`가 되면 권한 문제는 샌드박스 쪽이다.
+
 ## Codex 세션 기록
 
 ### GPT가 끝났는지를 기록 파일의 수정 시각으로 보면 틀린다
