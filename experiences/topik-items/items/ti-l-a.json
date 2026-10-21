@@ -95,7 +95,7 @@
     },
     {
       "id": "ti-l-a-002",
-      "rev": 1,
+      "rev": 2,
       "family": "ti-l-a-002",
       "exam": "topik-i",
       "format": "pbt",
@@ -115,21 +115,21 @@
       ],
       "question": "듣고 물음에 맞는 대답을 고르십시오.",
       "choices": [
-        "네, 노래를 알아요.",
-        "네, 노래를 몰라요.",
-        "아니요, 노래가 좋아요.",
-        "아니요, 노래를 알아요."
+        "네, 그 노래를 알아요.",
+        "네, 그 노래를 몰라요.",
+        "아니요, 그 노래가 좋아요.",
+        "아니요, 그 노래를 알아요."
       ],
       "answer": 0,
       "explanation": {
-        "ko": "「이 노래를 알아요?」는 아는지 묻는 말이에요. 「네」로 대답하면 「알아요」가 이어져야 맞아요. ④는 「아니요」라고 하고 「알아요」라고 해서 앞뒤가 맞지 않아요.",
-        "en": "「이 노래를 알아요?」 asks whether you know this song. An answer starting with 「네」(yes) should go on with 「알아요」(I know it). Choice ④ says 「아니요」(no) but then 「알아요」(I know it), so it contradicts itself.",
-        "mn": "「이 노래를 알아요?」(Та энэ дууг мэдэх үү?) гэж асууж байна. 「네」(тийм) гэж хариулбал 「알아요」(мэднэ) гэж үргэлжлэх ёстой. ④ нь 「아니요」(үгүй) гэчихээд 「알아요」(мэднэ) гэж байгаа тул зөрчилтэй."
+        "ko": "「이 노래를 알아요?」는 아는지 묻는 말이에요. 「네」로 대답하면 「그 노래를 알아요」가 이어져야 맞아요. ④는 「아니요」라고 하고 「알아요」라고 해서 앞뒤가 맞지 않아요.",
+        "en": "「이 노래를 알아요?」 asks whether you know this song. An answer starting with 「네」(yes) should go on with 「그 노래를 알아요」(I know that song). Choice ④ says 「아니요」(no) but then 「알아요」(I know it), so it contradicts itself.",
+        "mn": "「이 노래를 알아요?」(Та энэ дууг мэдэх үү?) гэж асууж байна. 「네」(тийм) гэж хариулбал 「그 노래를 알아요」(тэр дууг мэднэ) гэж үргэлжлэх ёстой. ④ нь 「아니요」(үгүй) гэчихээд 「알아요」(мэднэ) гэж байгаа тул зөрчилтэй."
       },
       "choiceNotes": [
         "「네」 뒤에 「알아요」가 와서 물음에 맞는 대답이에요.",
         "「네」라고 하고 「몰라요」라고 해서 앞뒤가 맞지 않아요.",
-        "「노래가 좋아요」는 노래를 아는지 묻는 말에 대한 대답이 아니에요.",
+        "「그 노래가 좋아요」는 노래를 아는지 묻는 말에 대한 대답이 아니에요.",
         "「아니요」라고 하고 「알아요」라고 해서 앞뒤가 맞지 않아요."
       ],
       "conceptIds": [],
@@ -144,7 +144,7 @@
         "seconds": 2
       },
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -178,6 +178,16 @@
           "rev": 1,
           "hash": "b2d1f3c1ed177993",
           "packet": "expand-listening"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T03:01:24.428Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "b00b1510391e4f14",
+          "notes": "expand-listening 판정대로 — 보기 넷에 지시어 「그」를 넣어 「네, 그 노래를 알아요.」 꼴로(특정한 노래를 묻는 말에 맞게) 고치고, 보기 ③ 메모와 해설 세 언어 둘째 문장의 인용을 맞춤. 대본은 그대로."
         }
       ]
     },
@@ -916,7 +926,7 @@
     },
     {
       "id": "ti-l-a-012",
-      "rev": 1,
+      "rev": 2,
       "family": "ti-l-a-012",
       "exam": "topik-i",
       "format": "pbt",
@@ -931,7 +941,7 @@
       "script": [
         {
           "speaker": "여자",
-          "text": "이 버스가 시장에 가요?"
+          "text": "저기요, 이 버스가 시장에 가요?"
         },
         {
           "speaker": "남자",
@@ -976,10 +986,10 @@
           "남자": "범수",
           "여자": "하나"
         },
-        "seconds": 12.5
+        "seconds": 13.9
       },
       "origin": "synk-original",
-      "reviewStatus": "ai-reviewed",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -1002,6 +1012,16 @@
           "rev": 1,
           "hash": "2e1c8339c61f45e2",
           "packet": "expand-listening"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T03:01:24.428Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "73675ddefec7f87d",
+          "notes": "받아쓰기 확인 — 합성 음성이 첫 자음을 바꿔 읽어 앞에 짧은 말을 붙임: 여자 첫 줄 「이 버스가 시장에 가요?」 → 「저기요, 이 버스가 시장에 가요?」(「버스가」가 「포스가」로 들림). 해설·메모 인용은 대본 글자 그대로라 그대로."
         }
       ]
     },
@@ -2318,7 +2338,7 @@
     },
     {
       "id": "ti-l-a-028",
-      "rev": 1,
+      "rev": 2,
       "family": "ti-l-a-028",
       "exam": "topik-i",
       "format": "pbt",
@@ -2352,7 +2372,7 @@
       "choices": [
         "운동은 주말에 한 번에 많이 하는 것이 좋습니다.",
         "바쁜 날에는 운동을 쉬는 것이 좋습니다.",
-        "운동을 많이 해도 다음 날 몸이 아프지 않습니다.",
+        "운동은 아침에 오래 하는 것이 좋습니다.",
         "운동은 매일 조금씩 하는 것이 좋습니다."
       ],
       "answer": 3,
@@ -2364,7 +2384,7 @@
       "choiceNotes": [
         "주말에만 많이 하는 것은 남자의 방법이에요 — 여자는 「매일 조금씩」이 좋다고 해요.",
         "여자는 「바쁘면 아침에 십 분만 하세요」라고 했어요 — 쉬라고 하지 않아요.",
-        "남자는 토요일에 많이 해서 「일요일에는 몸이 아파요」라고 했어요.",
+        "여자는 「아침에 십 분만 하세요」라고 했어요 — 오래 하라고 하지 않아요.",
         "「운동은 매일 조금씩 하는 것이 좋아요」 — 여자의 생각이에요."
       ],
       "conceptIds": [
@@ -2382,7 +2402,7 @@
         "seconds": 17.3
       },
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -2416,6 +2436,16 @@
           "rev": 1,
           "hash": "04d4fbfe786b0be5",
           "packet": "expand-listening"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T03:01:24.428Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "3d2621a8bd0f8a54",
+          "notes": "expand-listening 판정대로 — 생각 문장 꼴이 아니던 보기 ③을 「운동은 아침에 오래 하는 것이 좋습니다.」로 바꾸고 메모 ③을 맞춤. 대본은 그대로."
         }
       ]
     }
