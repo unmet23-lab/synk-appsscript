@@ -7,9 +7,9 @@ import {slotsFromText,normalizeFeedback,normalizeTurn,nextStep,audioGate,priceVe
 import STRINGS from '../../brand-opening/world-strings.mjs';
 import {t} from '../../brand-opening/world-lang.mjs';
 import {bankHash,coreModule,itemsModule,TALK_FILES} from '../../../tools/build-world-speaking-talk.mjs';
-import {speakingPreviewOn,readSpeakingSummary,SPEAKING_CANDIDATES,SPEAKING_SKILLS,SPEAKING_FLAG_KEY,SPEAKING_EXAM_KEY,readSpeakingExam,writeSpeakingExam,speakingWeek} from '../world-speaking-practice.mjs';
+import {speakingEnabled,readSpeakingSummary,SPEAKING_CANDIDATES,SPEAKING_SKILLS,SPEAKING_FLAG_KEY,SPEAKING_EXAM_KEY,readSpeakingExam,writeSpeakingExam,speakingWeek} from '../world-speaking-practice.mjs';
 import {createSpeakingDevHost} from '../speaking-dev-host.mjs';
-// 말하기 연습 시범(2026-10-21): 문항·공식 시간, 피드백 정리(보류·거름·인용), 역할극 다음 걸음, 값 셈, 플래그 꺼짐, 공개 빌드 밖, 개발 서버 몫,
+// 말하기 연습(2026-10-21): 문항·공식 시간, 피드백 정리(보류·거름·인용), 역할극 다음 걸음, 값 셈, 기본 켜짐·끄는 스위치, 공개 빌드 목록, 개발 서버 몫,
 // 운영 통로(SYNK-talk world-speaking 함수의 서버 사본·계정 경로·app-shell 연결).
 // 네트워크·모델을 부르지 않는다(개발 서버 몫은 가짜 caller).
 const root=fileURLToPath(new URL('../../../',import.meta.url));
@@ -217,16 +217,21 @@ test('화면 글: 공용 글 표의 speaking.* 줄 — 세 언어가 모두 있�
  assert.equal(t('speaking.type.meta',{prep:20,answer:30},'mn'),'Бэлтгэх 20 секунд · Хариулах 30 секунд');
 });
 
-test('플래그: 기본은 꺼짐, 주소 ?speaking=preview나 이 기기 설정일 때만 켜진다 · 공개 빌드에는 모듈·글·문항·그림이 있다',()=>{
+test('켜짐: 플래그 없이 기본으로 켜지고, 이 기기 설정 synk.world.speaking.preview=0일 때만 꺼진다(10-21 공개 판) · 공개 빌드에는 모듈·글·문항·그림이 있다',()=>{
  const storage=memory();
- assert.equal(speakingPreviewOn({location:{search:''},storage}),false);
- assert.equal(speakingPreviewOn({location:{search:'?speaking=preview'},storage}),true);
- storage.setItem(SPEAKING_FLAG_KEY,'1');assert.equal(speakingPreviewOn({location:{search:''},storage}),true);
+ assert.equal(SPEAKING_FLAG_KEY,'synk.world.speaking.preview','app-shell이 같은 열쇠 이름을 쓴다');
+ assert.equal(speakingEnabled({storage}),true,'기본은 켜짐');
+ storage.setItem(SPEAKING_FLAG_KEY,'0');assert.equal(speakingEnabled({storage}),false,'끄는 비상 스위치');
+ storage.setItem(SPEAKING_FLAG_KEY,'1');assert.equal(speakingEnabled({storage}),true,'시범 때 켜 둔 기기(1)도 켜짐');
+ assert.equal(speakingEnabled({storage:{getItem(){throw Error('blocked');}}}),true,'저장소를 못 읽어도 켜짐');
+ assert.equal(speakingEnabled({storage:null}),true);
  const shell=fs.readFileSync(path.join(app,'app-shell.mjs'),'utf8');
- assert.doesNotMatch(shell,/^import[^\n]*world-speaking-practice/m,'정적 import가 없다');
- assert.match(shell,/if\(speakingFlag\)void import\('\.\/world-speaking-practice\.mjs'\)/);
+ assert.doesNotMatch(shell,/^import[^\n]*world-speaking-practice/m,'정적 import가 없다(동적으로 부른다)');
+ assert.ok(shell.includes("const speakingOn=(()=>{try{return localStorage.getItem('synk.world.speaking.preview')!=='0';}catch{return true;}})();"),'app-shell도 같은 규칙');
+ assert.match(shell,/if\(speakingOn\)void import\('\.\/world-speaking-practice\.mjs'\)/);
+ assert.doesNotMatch(shell,/speaking=preview|get\('speaking'\)|speaking\.preview'\)==='1'/,'주소 미리 보기 플래그는 걷었다');
  const build=fs.readFileSync(path.join(root,'tools/build-world-app-public.mjs'),'utf8');
- // app-shell이 부르는 모듈이 공개 빌드에 없으면 빌드가 missing으로 멈춘다(10-21 ④ 세션 보고) — 파일은 싣고 켜는 것은 플래그다.
+ // app-shell이 부르는 모듈이 공개 빌드에 없으면 빌드가 missing으로 멈춘다(10-21 ④ 세션 보고) — 파일을 싣고 기본으로 켠다(10-21 공개 판).
  for(const name of ['world-speaking-practice.mjs','world-speaking.css','world-speaking-items.json'])assert.ok(build.includes(`'${name}'`),name);
  assert.match(build,/speaking-assets/);assert.doesNotMatch(build,/speaking-dev-host/,'개발 서버 몫은 싣지 않는다');
 });

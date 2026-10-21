@@ -280,7 +280,8 @@ function mountLifeLearning(){
   launchGame,startLesson:id=>lifeUI.start(id),startReview:(id,ids)=>lifeUI.reviewStart(id,ids),
   // 시험 계획(10-20): 온라인 반 「이번 주 과제」를 그 주의 연습으로 먼저 세고, TOPIK II 쓰기 연습은 문항이 열렸을 때만 계획에 넣는다.
   readClasswork:classworkThisWeek,writingPractice:{candidates:()=>writingReady()?WRITING_CANDIDATES:[],open:route=>openWriting({dataset:{writingRoute:route}}),attempts:()=>readWritingSummary({storage:localStorage,owner:writingOwnerId()}).times},
-  // 말하기 연습(10-21 시범 · 플래그 뒤): 모듈을 불렀을 때만 시험 정보의 「말하기 평가도 준비해요」(이 기기 기록)와 이번 주 계획의 말하기 칸이 생긴다.
+  // 말하기 연습(10-21 공개 판 · 기본 켜짐): 모듈이 문항을 읽은 뒤에만 시험 정보의 「말하기 평가도 준비해요」(이 기기 기록)와 이번 주 계획의 말하기 칸이 생긴다
+  // (이 기기에서 끄는 스위치를 켰으면 모듈을 부르지 않아 지금과 같다 — 아래 speakingOn).
   // 이 파일은 모듈을 정적으로 부르지 않으므로 그 모듈의 읽기·쓰기 함수를 감싸 넘긴다. owner는 학습 화면의 주인(계정·손님)이다.
   speakingPractice:{available:()=>!!speakingModule?.speakingReady(),candidates:()=>speakingModule?.speakingReady()?speakingModule.SPEAKING_CANDIDATES.filter(row=>row.exam==='speaking'):[],
    chosen:owner=>!!speakingModule&&speakingModule.readSpeakingExam({storage:localStorage,owner}),choose:(owner,on)=>!!speakingModule&&speakingModule.writeSpeakingExam({storage:localStorage,owner,on}),
@@ -362,15 +363,15 @@ function openWriting(button){
  }
  return writing.open(button?.dataset?.writingRoute||'writing');
 }
-// 말하기 연습 시범(10-21, world-speaking-practice.mjs · 설계 qa/speaking-pilot-20261021/설계.md): 기능 플래그(주소 ?speaking=preview 또는
-// 기기 설정 synk.world.speaking.preview=1)가 있을 때만 모듈을 불러 배우기 판에 줄을 더한다. 공개 빌드 목록에는 아직 파일이 없어 플래그가 없으면 바뀌는 것이 없다.
+// 말하기 연습(10-21 공개 판, world-speaking-practice.mjs · 설계 qa/speaking-pilot-20261021/설계.md): 플래그 없이 모듈을 동적으로 불러 문항을 읽으면
+// 배우기 판에 줄을 더한다. 끄는 비상 스위치는 이 기기 설정 synk.world.speaking.preview=0 하나다(화면 글 없음) — 그 기기에서는 모듈을 부르지 않는다.
 // 자동 피드백 통로: 계정 모드는 SYNK-talk world-speaking 함수(account.speakingRequest, 웹만 — 쓰기 연습과 같은 규칙), 리허설은 로컬 개발 서버의
 // /api/world/speaking. 로그인해야 붙고, 서버 플래그가 꺼져 있거나 문항 판이 다르면 단추 없이 스스로 확인만 보인다.
 let speakingModule=null,speaking=null,speakingOwner=null;
-const speakingFlag=(()=>{try{return new URLSearchParams(location.search).get('speaking')==='preview'||localStorage.getItem('synk.world.speaking.preview')==='1';}catch{return false;}})();
+const speakingOn=(()=>{try{return localStorage.getItem('synk.world.speaking.preview')!=='0';}catch{return true;}})();
 const repaintSpeakingRow=()=>{if(lifeUI&&document.querySelector('#world-panel[open] #panel-content .life-hub')&&!document.querySelector('#panel-content [data-world="speaking"]'))lifeUI.packs();};
 // 은행을 다 읽으면 배우기 줄을 그리고, 추천·이번 주 계획을 다시 세운다 — 시험 정보에서 말하기를 고른 학생의 말하기 칸은 문항이 열려야 생긴다(쓰기와 같다).
-if(speakingFlag)void import('./world-speaking-practice.mjs').then(module=>{speakingModule=module;return module.loadSpeakingBank();}).then(()=>{repaintSpeakingRow();education?.refresh();}).catch(()=>{});
+if(speakingOn)void import('./world-speaking-practice.mjs').then(module=>{speakingModule=module;return module.loadSpeakingBank();}).then(()=>{repaintSpeakingRow();education?.refresh();}).catch(()=>{});
 function openSpeaking(button){
  if(!speakingModule)return;
  const owner=writingOwnerId();

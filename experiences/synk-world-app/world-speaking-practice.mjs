@@ -1,6 +1,6 @@
-// WORLD 「말하기 연습」 시범(2026-10-21, 기능 플래그 꺼짐) — TOPIK 말하기 평가 6유형 연습과 「카페에서 말로 주문하기」 역할극.
-// 설계: qa/speaking-pilot-20261021/설계.md. 시범이라 공개 빌드 목록에 넣지 않았다. 주소의 ?speaking=preview나 이 기기 설정
-// (localStorage synk.world.speaking.preview=1)이 있을 때만 app-shell이 이 모듈을 불러 배우기 판에 줄 하나를 더한다.
+// WORLD 「말하기 연습」(2026-10-21 시범 → 같은 날 공개 판) — TOPIK 말하기 평가 6유형 연습과 「카페에서 말로 주문하기」 역할극.
+// 설계: qa/speaking-pilot-20261021/설계.md. 공개 빌드 목록에 이 모듈·CSS·문항·그림이 있고, app-shell이 플래그 없이 이 모듈을 동적으로 불러
+// 배우기 판에 줄 하나를 더한다. 끄는 비상 스위치는 이 기기 설정 localStorage synk.world.speaking.preview=0 하나다(화면 글 없음, speakingEnabled).
 // · 준비·대답 시간은 공식 시험과 같다(topik.go.kr 문항 구성, 10-21 확인). 문항은 자체 창작이고 10-21 문항 검수를 거쳤다(qa/speaking-pilot-20261021/item-review —
 //   목록의 「검수 전」 칩은 그때 뺐다). 점수·급수·합격을 만들지 않는다.
 // · 녹음: 첫 녹음 전에 이 기기에서 한 번 동의를 받고(계정·손님마다 따로), 브라우저 마이크 권한은 그다음에 묻는다. 녹음은 메모리에만
@@ -21,10 +21,9 @@ const st=(key,vars)=>t(`speaking.${key}`,vars);
 if(globalThis.document&&!document.querySelector('[data-speaking-style]')){const style=document.createElement('link');style.rel='stylesheet';style.href=new URL('./world-speaking.css',import.meta.url).href;style.dataset.speakingStyle='true';document.head.append(style);}
 
 export const SPEAKING_FLAG_KEY='synk.world.speaking.preview';
-/** 시범 플래그: 주소 ?speaking=preview 또는 이 기기 설정. 기본은 꺼짐. */
-export function speakingPreviewOn({location=globalThis.location,storage=globalThis.localStorage}={}){
- try{if(new URLSearchParams(location?.search||'').get('speaking')==='preview')return true;}catch{}
- try{return storage?.getItem(SPEAKING_FLAG_KEY)==='1';}catch{return false;}
+/** 이 기기에서 말하기 연습을 켤지: 기본은 켜짐, 이 기기 설정이 '0'일 때만 꺼짐(끄는 비상 스위치). app-shell의 speakingOn과 같은 규칙. */
+export function speakingEnabled({storage=globalThis.localStorage}={}){
+ try{return storage?.getItem(SPEAKING_FLAG_KEY)!=='0';}catch{return true;}
 }
 // TOPIK 말하기 유형 → 말하기 항목(제안, Strata에 아직 없다 · 설계.md §6).
 export const SPEAKING_SKILLS=Object.freeze({1:'ko.speaking.answer',2:'ko.speaking.roleplay',3:'ko.speaking.narrate',4:'ko.speaking.respond',5:'ko.speaking.interpret',6:'ko.speaking.opinion'});
@@ -39,7 +38,7 @@ const storeKey=owner=>`synk.world.speaking.v1:${owner||'guest'}`;
 const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const uuid=()=>globalThis.crypto?.randomUUID?.()||'10000000-1000-4000-8000-100000000000'.replace(/[018]/g,c=>(c^globalThis.crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16));
 const secs=ms=>Math.max(0,Math.ceil(ms/1000));
-// 소리 문제(학생의 약점이 아니다)와 서버 사정(한도·꺼짐·오류)을 가른다 — 서버 사정이면 스스로 확인으로 남길 수 있다(10-21 Fable 검수).
+// 소리 문제(학생의 약점이 아니다)와 서버 사정(한도·꺼짐·오류)을 가른다 — 서버 사정이면 스스로 확인으로 남길 수 있다(10-21 화면 검수).
 const AUDIO_FAIL=new Set(['no_speech','not_korean','unclear']);
 const statusKey=s=>hasString(`speaking.fb.status.${s}`)?`fb.status.${s}`:'fb.status.unavailable';
 
@@ -112,7 +111,7 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
  let openSeq=0,bank=null,view={kind:'list'},owner=getOwner(),state=readStore(storage,owner),stage=null,offLang=null,status=null,statusAsk=null,turnBlocked=false,stopped=false;
  let run=null,mic=null,player=null,clip=null,ticker=null,pids={},tries={},audioCtx=null,liveTimer=null;
  // 오디오 처리기는 하나를 누르는 순간(준비 시작·말하기) 깨워 같이 쓴다. 타이머 안에서 새로 만들면 아이폰 사파리에서 멈춘 채라
- // 소리 크기가 늘 0으로 읽혀 정상 녹음이 「말소리 없음」이 된다(10-21 아르곤 검수).
+ // 소리 크기가 늘 0으로 읽혀 정상 녹음이 「말소리 없음」이 된다(10-21 화면 검수).
  function sharedCtx(){const AC=win.AudioContext||win.webkitAudioContext;if(!AC)return null;try{if(!audioCtx||audioCtx.state==='closed')audioCtx=new AC();if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});}catch{return null;}return audioCtx;}
  const save=()=>writeStore(storage,owner,state);
  const item=id=>bank?.items.find(i=>i.id===id)||null,roleplay=id=>bank?.roleplays?.find(r=>r.id===id)||null;
@@ -122,7 +121,7 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
  // 서버가 다른 문항 사본을 보고 있으면(판 지문이 다르면) 자동 피드백 없이 스스로 확인만 연다(쓰기 연습과 같은 선).
  const aiAvailable=()=>!!(feedback&&status?.enabled&&status.itemsVersion===bank?.contentHash);
  const remaining=()=>Number.isInteger(status?.remaining)?status.remaining:status?.dailyLimit??0;
- // 서버가 알려 준 사정은 이 시트의 상태에 바로 남긴다(10-21 아르곤 검수) — 문항 판이 다르거나(409) 꺼졌으면 자동 피드백을 더 띄우지 않고,
+ // 서버가 알려 준 사정은 이 시트의 상태에 바로 남긴다(10-21 화면 검수) — 문항 판이 다르거나(409) 꺼졌으면 자동 피드백을 더 띄우지 않고,
  // 오늘 몫(횟수·금액)을 다 썼으면 남은 횟수를 0으로 둔다. 역할극은 횟수·금액이 막히면 다음 차례부터 서버를 부르지 않고 따라 말하기로 간다.
  // 금액은 시험 형식이 더 많이 쓰므로 역할극이 금액으로 막히면 시험 형식도 막는다(거꾸로는 막지 않는다).
  function noteServer(code,{turn=false}={}){
@@ -158,12 +157,12 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
   recorder.start(250);return m;
  }
  function stopRecorder(m){return new Promise(resolve=>{if(!m||m.recorder.state==='inactive'){resolve(null);return;}m.recorder.onstop=()=>resolve(new Blob(m.chunks,{type:m.mime.split(';')[0]}));try{m.recorder.stop();}catch{resolve(null);}});}
- // 시험의 삐 소리는 효과음이 아니라 말하기 시작 신호라 소리 설정과 상관없이 울린다(안내 글이 삐 소리를 약속한다 — 10-21 Fable 검수).
+ // 시험의 삐 소리는 효과음이 아니라 말하기 시작 신호라 소리 설정과 상관없이 울린다(안내 글이 삐 소리를 약속한다 — 10-21 화면 검수).
  function beep(){
   try{const ctx=sharedCtx();if(!ctx)return;const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type='sine';osc.frequency.value=1000;gain.gain.setValueAtTime(.0001,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(.16,ctx.currentTime+.01);gain.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+.32);osc.connect(gain);gain.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+.34);}catch{}
  }
  function stopPlayback(){try{player?.pause();}catch{}try{clip?.pause();}catch{}clip=null;}
- // 자동 피드백의 코치 기록은 「제가 한 말과 달라요」를 누를 틈을 두고, 이 녹음을 떠날 때 남긴다(잘못 들은 피드백은 세지 않는다 — 10-21 Fable 검수).
+ // 자동 피드백의 코치 기록은 「제가 한 말과 달라요」를 누를 틈을 두고, 이 녹음을 떠날 때 남긴다(잘못 들은 피드백은 세지 않는다 — 10-21 화면 검수).
  function flushRecord(){const pending=run?.pendingRecord;if(!pending||run.misheard)return;run.pendingRecord=null;const it=item(run.itemId);if(it)record(it,pending);}
  function teardown(){clearInterval(ticker);ticker=null;closeMic();stopPlayback();flushRecord();if(run?.url)try{URL.revokeObjectURL(run.url);}catch{}run=null;}
 
@@ -221,7 +220,7 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
   if(r.phase==='rec')return `<div class="wsp-meter" data-phase="rec"><p class="wsp-rec"><span class="wsp-dot" aria-hidden="true"></span>${esc(st('task.recording'))}</p><span class="wsp-level" aria-label="${esc(st('mic.level'))}" role="img"><span data-wsp-level></span></span><p class="wsp-big" data-wsp-clock>${esc(st('task.left',{s:secs(r.until-now())}))}</p></div><div class="wsp-actions"><button class="felt-button" data-wsp-stop>${esc(st('task.stop'))}</button></div>`;
   if(r.phase==='review'||r.phase==='sending'||r.phase==='feedback'){
    // 자동 피드백을 쓸 수 없을 때(손님·꺼짐·오늘 몫을 다 씀·서버 사정)와 「제가 한 말과 달라요」 뒤에는 스스로 확인으로 남길 수 있다.
-   // 소리 문제(말 없음·한국어 아님·잘 안 들림)는 다시 녹음을 권할 뿐 남기지 않는다(10-21 Fable 검수).
+   // 소리 문제(말 없음·한국어 아님·잘 안 들림)는 다시 녹음을 권할 뿐 남기지 않는다(10-21 화면 검수).
    const sending=r.phase==='sending',code=r.result?.status,audioFail=AUDIO_FAIL.has(code),fresh=r.voiced!==false&&!r.result&&!r.selfSaved;
    const canSend=aiAvailable()&&fresh&&remaining()>0,usedUp=aiAvailable()&&fresh&&remaining()<=0;
    const selfCheck=r.voiced!==false&&!canSend&&!sending&&!audioFail&&(code!=='ok'||r.misheard);
@@ -236,7 +235,7 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
     +(selfCheck?coversHtml(it,{self:true}):'');
   }
   if(r.phase==='opening')return `<p class="wsp-note" role="status">${esc(st('mic.opening'))}</p>`;
-  // 마이크 오류 뒤에도 시작 단추를 둔다 — 브라우저에서 권한을 허용한 뒤 바로 다시 해 볼 수 있다(10-21 Fable 검수).
+  // 마이크 오류 뒤에도 시작 단추를 둔다 — 브라우저에서 권한을 허용한 뒤 바로 다시 해 볼 수 있다(10-21 화면 검수).
   const note=r.error?`<p class="wsp-note" role="alert">${esc(st(`mic.${r.error}`))}</p>`:`<p class="wsp-note">${esc(st(practice?'task.startNotePractice':'task.startNote',{prep:tp.prepSec,answer:tp.answerSec}))}</p>`;
   return `${note}<div class="wsp-actions"><button class="felt-button" data-wsp-start>${esc(st('task.start'))}</button></div>${coversHtml(it)}`;
  }
@@ -314,7 +313,7 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
   try{const data=await blobToBase64(run.blob);result=await feedback.request({action:'feedback',request_id:requestId,consent:'send-once',mode:'exam',item_id:it.id,items_version:bank.contentHash,lang:['ko','en','mn'].includes(lang())?lang():'ko',audio:{mime:run.mime||'audio/webm',data},seconds:run.seconds});}
   catch(error){result={status:'unavailable',code:error?.code||null};}
   if(stopped)return;
-  // 보내는 사이 계정이 바뀌었으면(세션 끊김 등) 「듣고 있어요」에 멈추지 않고 새 계정의 목록으로 그린다(10-21 Fable 검수).
+  // 보내는 사이 계정이 바뀌었으면(세션 끊김 등) 「듣고 있어요」에 멈추지 않고 새 계정의 목록으로 그린다(10-21 화면 검수).
   if(expected!==getOwner()){render();return;}
   if(!run||run.requestId!==requestId)return;
   run.phase='feedback';run.result=result?.status==='ok'&&result.feedback?.status==='ok'?{status:'ok',feedback:result.feedback}:{status:result?.feedback?.status||result?.status||'unavailable'};
@@ -383,10 +382,10 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
   if(stopped||view.kind!=='roleplay'||!run)return;
   const step=rp.steps.find(s=>s.id===run.step),seconds=Math.max(1,Math.round((now()-run.startedAt)/1000));
   if(!blob||voicedMs!=null&&voicedMs<MIN_VOICED_MS){const note=st('rp.silent');run.phase='turn';run.bubble='retry';run.turns=[...run.turns,{who:'me',note}];render('[data-wsp-rp-speak]');announce(note);return;}
-  // 상태가 아직 오는 중이면 기다린 뒤 정한다 — 첫 차례가 까닭 없이 따라 말하기로 빠지지 않게(10-21 아르곤 검수).
+  // 상태가 아직 오는 중이면 기다린 뒤 정한다 — 첫 차례가 까닭 없이 따라 말하기로 빠지지 않게(10-21 화면 검수).
   if(feedback&&!status&&statusAsk){
    const token=run;run.phase='thinking';render();
-   // 녹음 화면에 멈춰 보이지 않게 「듣고 있어요」를 그리고, 상태가 늦으면 8초 뒤 따라 말하기로 넘긴다(10-21 Fable 검수).
+   // 녹음 화면에 멈춰 보이지 않게 「듣고 있어요」를 그리고, 상태가 늦으면 8초 뒤 따라 말하기로 넘긴다(10-21 화면 검수).
    await Promise.race([statusAsk,new Promise(resolve=>setTimeout(resolve,STATUS_WAIT_MS))]);
    if(stopped||view.kind!=='roleplay'||run!==token)return;
   }
@@ -402,7 +401,7 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
   const turn=result?.status==='ok'?result.turn:null,code=turn?turn.status:result?.status||'unavailable';
   if(!turn||turn.status!=='ok'){
    if(AUDIO_FAIL.has(code)){const note=st(code==='not_korean'?'rp.notKorean':'rp.silent');run.misses=(run.misses||0)+1;run.phase='turn';run.bubble='retry';run.turns=[...run.turns,{who:'me',note}];render('[data-wsp-rp-speak]');announce(note);return;}
-   // 서버 사정(한도·꺼짐·오류)은 학생 탓이 아니다 — 따라 말하기로 넘겨 예시 문장과 「다음 말 듣기」를 연다(10-21 Fable 검수).
+   // 서버 사정(한도·꺼짐·오류)은 학생 탓이 아니다 — 따라 말하기로 넘겨 예시 문장과 「다음 말 듣기」를 연다(10-21 화면 검수).
    const note=st('rp.selfNow');run.phase='self';run.turns=[...run.turns,{who:'me',note,better:step.model}];render('[data-wsp-rp-next]');announce(note);return;
   }
   const next=turn.next||{step:'done'},hint=next.hint||(turn.polite==='no'?'polite':null);
@@ -429,20 +428,20 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
  // ── 그리기 ──
  function render(focus=null,{top=false}={}){
   if(stopped)return;syncOwner();
-  // 문항 은행이 아직 없으면(불러오는 중·실패) 그 안내를 그대로 둔다 — 화면 언어를 바꿔도 목록을 그리다 멈추지 않게(10-21 아르곤 검수).
+  // 문항 은행이 아직 없으면(불러오는 중·실패) 그 안내를 그대로 둔다 — 화면 언어를 바꿔도 목록을 그리다 멈추지 않게(10-21 화면 검수).
   if(!bank)return;
   const root=doc.querySelector('#panel-content [data-wsp-stage]')?.parentElement;if(!root)return;
   const it=view.kind==='task'?item(view.id):null,rp=view.kind==='roleplay'?roleplay(view.id):null;
   if(view.kind==='task'&&!it||view.kind==='roleplay'&&!rp)view={kind:'list'};
   root.innerHTML=view.consent?consentHtml():view.kind==='task'?taskHtml(it):view.kind==='roleplay'?roleplayHtml(rp):listHtml();stage=root.firstElementChild;
-  // 새 문항·역할극을 열 때는 시트를 맨 위로 두고 포커스만 옮긴다 — 긴 문제에서 단추까지 내려가 제목·문제 첫 줄이 가려지지 않게(10-21 Fable 검수).
+  // 새 문항·역할극을 열 때는 시트를 맨 위로 두고 포커스만 옮긴다 — 긴 문제에서 단추까지 내려가 제목·문제 첫 줄이 가려지지 않게(10-21 화면 검수).
   if(top){const sheet=root.closest('dialog,.world-panel');if(sheet)sheet.scrollTop=0;}
   (focus?stage.querySelector(focus):null)?.focus({preventScroll:top});
  }
  function openTask(id){teardown();view={kind:'task',id};run={itemId:id,phase:'idle',timing:'exam'};render('[data-wsp-start]',{top:true});}
  function openRoleplay(id){teardown();view={kind:'roleplay',id};run={phase:'intro',turns:[],bubble:'mission'};render('[data-wsp-rp-start]',{top:true});}
 
- // 상태가 늦게 와도 하던 것을 지우지 않는다(10-21 아르곤 검수): 문항은 단추 자리만 다시 그리되 스스로 확인 칸을 고르던 중이면 그대로 두고,
+ // 상태가 늦게 와도 하던 것을 지우지 않는다(10-21 화면 검수): 문항은 단추 자리만 다시 그리되 스스로 확인 칸을 고르던 중이면 그대로 두고,
  // 역할극은 녹음·생각 중이 아닐 때만 다시 그린다(포커스가 시트 안에 있었으면 다음 단추로).
  function statusArrived(){
   if(view.kind==='task'){const it=item(view.id);if(it&&run&&!stage?.querySelector('[data-wsp-self]:checked'))paintZone(it);}
@@ -461,7 +460,7 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
   if(button.hasAttribute('data-wsp-back')){const from=view;teardown();view={kind:'list'};render(from.kind==='task'?`[data-wsp-open="${from.id}"]`:from.kind==='roleplay'?`[data-wsp-roleplay="${from.id}"]`:null);return;}
   const it=view.kind==='task'?item(view.id):null,rp=view.kind==='roleplay'?roleplay(view.id):null;
   if(it){
-   // 다시 하기·시간 바꾸기에도 「예시 답을 봤다」는 남긴다 — 본 뒤의 녹음은 도움을 받은 것이다(10-21 Fable 검수).
+   // 다시 하기·시간 바꾸기에도 「예시 답을 봤다」는 남긴다 — 본 뒤의 녹음은 도움을 받은 것이다(10-21 화면 검수).
    if(d.wspTiming){if(['opening','prep','rec','stopping','sending'].includes(run?.phase))return;const seen=!!run?.modelSeen;teardown();run={itemId:it.id,phase:'idle',timing:d.wspTiming,modelSeen:seen};render(`[data-wsp-timing="${d.wspTiming}"]`);return;}
    if(button.hasAttribute('data-wsp-start'))void begin(it);
    else if(button.hasAttribute('data-wsp-skip')){if(run?.phase==='prep')startAnswer(it);}
@@ -474,7 +473,7 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
     const end=()=>{if(run){run.playing=false;paintZone(it);}};player.addEventListener('ended',end,{once:true});player.addEventListener('pause',end,{once:true});player.play().catch(end);
    }
    else if(button.hasAttribute('data-wsp-misheard')){
-    // 잘못 들은 피드백은 세지 않는다: 이 녹음의 기록을 「세지 않음」으로 바꾸고 코치 기록도 남기지 않는다(10-21 Fable 검수).
+    // 잘못 들은 피드백은 세지 않는다: 이 녹음의 기록을 「세지 않음」으로 바꾸고 코치 기록도 남기지 않는다(10-21 화면 검수).
     if(!run?.result||run.misheard)return;run.misheard=true;run.pendingRecord=null;
     const entry=[...state.log].reverse().find(e=>e?.requestId&&e.requestId===run.requestId);
     if(entry){entry.counted=false;entry.status='misheard';save();}else log({mode:'exam',itemId:it.id,type:it.type,source:'misheard',counted:false,status:'misheard'});
@@ -482,7 +481,7 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
    else if(button.hasAttribute('data-wsp-self-save')){if(run?.selfSaved)return;if(run)run.selfSaved=true;button.disabled=true;const picked=[...stage.querySelectorAll('[data-wsp-self]:checked')].map(b=>Number(b.dataset.wspSelf));if(run)run.selfPicked=picked;log({mode:'exam',itemId:it.id,type:it.type,source:'self',status:'self',counted:run?.voiced!==false,seconds:run?.seconds,timing:run?.timing,covered:picked,helped:!!run?.modelSeen});if(run?.voiced!==false)record(it,{assisted:!!run?.modelSeen});announce(st('task.selfSaved'));home?.toast?.(st('task.selfSaved'));}
    else if(button.hasAttribute('data-wsp-partner')){stopPlayback();clip=new win.Audio(asset(it.partner.clip));clip.play().catch(()=>{});}
    else if(button.hasAttribute('data-wsp-model')){
-    // run을 새 객체로 바꾸지 않는다 — 권한 창을 기다리는 begin()이 run이 그대로인지(token)로 이어 갈지 정한다(10-21 Fable 재확인).
+    // run을 새 객체로 바꾸지 않는다 — 권한 창을 기다리는 begin()이 run이 그대로인지(token)로 이어 갈지 정한다(10-21 화면 검수 재확인).
     if(run)run.modelOpen=!run.modelOpen;else run={itemId:it.id,phase:'idle',modelOpen:true};if(run.modelOpen&&!['review','feedback','sending'].includes(run.phase))run.modelSeen=true;const box=stage.querySelector('.wsp-model');if(box){box.hidden=!run.modelOpen;}button.setAttribute('aria-expanded',String(run.modelOpen));button.textContent=st(run.modelOpen?'task.modelHide':'task.model');}
    return;
   }
@@ -508,7 +507,7 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
   show(st('title'),`<div class="wsp" data-wsp-stage><p class="wsp-note" role="status">${esc(st('loading'))}</p></div>`);
   if(!mount())return;
   try{const loaded=await loadSpeakingBank(fetcher);if(!current())return;bank=loaded;}catch{if(!current())return;const root=doc.querySelector('#panel-content [data-wsp-stage]');if(root)root.innerHTML=`<p class="wsp-note" role="alert">${esc(st('loadError'))}</p>`;return;}
-  // 자동 피드백 상태는 처음 열 때 묻는다. 묻기가 실패했으면 다음에 열 때 다시 묻고, 묻는 사이 계정이 바뀌었으면 그 답은 버린다(10-21 아르곤 검수).
+  // 자동 피드백 상태는 처음 열 때 묻는다. 묻기가 실패했으면 다음에 열 때 다시 묻고, 묻는 사이 계정이 바뀌었으면 그 답은 버린다(10-21 화면 검수).
   if(feedback&&(!status||status.failed)&&!statusAsk){
    const asked=owner,ask=statusAsk=Promise.resolve().then(()=>feedback.status()).then(next=>next||{enabled:false},()=>({enabled:false,failed:true}))
     .then(next=>{if(statusAsk===ask)statusAsk=null;if(stopped||asked!==owner||asked!==getOwner())return;status=next;statusArrived();});

@@ -7,9 +7,10 @@ import net from 'node:net';
 import {spawn} from 'node:child_process';
 import {createRequire} from 'node:module';
 import {fileURLToPath} from 'node:url';
-// 말하기 연습 시범(10-21)을 리허설 WORLD(실제 Edge, 합성 계정 player-a)에서 끝까지 돈다. 마이크는 Edge의 가짜 장치에 이 시험이 만든
+// 말하기 연습(10-21 공개 판)을 리허설 WORLD(실제 Edge, 합성 계정 player-a)에서 끝까지 돈다. 마이크는 Edge의 가짜 장치에 이 시험이 만든
 // 합성 소리(사람 목소리가 아니다)를 물린다. 자동 피드백·역할극 서버 몫은 가짜 응답이라 모델·운영 서버·돈을 쓰지 않는다.
-// 플래그가 없으면 줄이 없다 → ?speaking=preview로 연다 → 동의 → 녹음 → 서버로 간 몸통(소리·동의·문항) → 참고 피드백 → 역할극 세 차례.
+// 플래그 없이 배우기 판에 줄이 있다 → 이 기기 끄는 스위치(synk.world.speaking.preview=0)면 모듈도 줄도 없다 → 스위치를 지우고 연다
+// → 동의 → 녹음 → 서버로 간 몸통(소리·동의·문항) → 참고 피드백 → 역할극 세 차례.
 // 그 뒤 「제가 한 말과 달라요」(기록에서 빠짐)·서버 사정·오늘 몫을 다 쓴 때(스스로 확인)·역할극 서버 사정(따라 말하기로 넘김)을 본다.
 // 390·1280에서 가로 넘침·13px 밑 한글·44px 밑 단추·흰 알약 둘 이상이 없고, 영어·몽골어에서 lang="ko" 칸 밖 한글이 없는지 잰다.
 // 캡처와 result.json은 SYNK_SPEAKING_QA_OUT(기본 qa/speaking-pilot-20261021/browser/)에 쓴다(그림·결과 모두 git 밖).
@@ -38,7 +39,7 @@ const localized=lang=>({...FEEDBACK,elements:{task:{good:lang==='mn'?'Хоёр �
  delivery:{good:lang==='mn'?'Хурд тохиромжтой байсан.':'Your pace was comfortable.',try:''}}});
 const TURNS={order:{heard:'따뜻한 차 두 잔 주세요.',next:{step:'confirm',hint:null}},confirm:{heard:'네, 맞아요.',next:{step:'place',hint:null}},place:{heard:'가져갈게요.',next:{step:'place',hint:'place'}},placeAgain:{heard:'여기서 마실게요.',next:{step:'done',hint:null}}};
 
-test('리허설 WORLD 「말하기 연습」 시범: 플래그·동의·녹음·자동 피드백(가짜)·역할극·세 언어 (390·1280)',{timeout:900000,skip:!talkRoot&&'형제 저장소 SYNK-talk이 없다(SYNK_TALK_ROOT로 가리킨다)'},async t=>{
+test('리허설 WORLD 「말하기 연습」: 기본 켜짐·끄는 스위치·동의·녹음·자동 피드백(가짜)·역할극·세 언어 (390·1280)',{timeout:900000,skip:!talkRoot&&'형제 저장소 SYNK-talk이 없다(SYNK_TALK_ROOT로 가리킨다)'},async t=>{
  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'synk-world-speaking-')),wav=path.join(directory,'voice.wav');voicedWav(wav);
  fs.mkdirSync(out,{recursive:true});for(const name of fs.readdirSync(out))if(/\.png$/.test(name))fs.rmSync(path.join(out,name));
  const socket=net.createServer();await new Promise(r=>socket.listen(0,'127.0.0.1',r));const port=socket.address().port;await new Promise(r=>socket.close(r));
@@ -109,12 +110,16 @@ test('리허설 WORLD 「말하기 연습」 시범: 플래그·동의·녹음·
   const answerOnce=async()=>{await page.locator('#panel-content [data-wsp-start]').click();await page.waitForSelector('#panel-content [data-wsp-skip]');await page.locator('#panel-content [data-wsp-skip]').click();
    await page.waitForSelector('#panel-content [data-wsp-stop]');await page.waitForTimeout(1600);await page.locator('#panel-content [data-wsp-stop]').click();await page.waitForSelector('#panel-content [data-wsp-retry]');};
 
-  // 1. 플래그 없이: 배우기 판에 말하기 줄이 없다.
-  step('enter');await enter();step('packs');await openPacks();
-  checks.noFlag=await page.locator('#panel-content [data-world="speaking"]').count();assert.equal(checks.noFlag,0);
-  checks.noModule=await page.evaluate(()=>performance.getEntriesByType('resource').some(r=>r.name.includes('world-speaking-practice.mjs')));assert.equal(checks.noModule,false);
-  // 2. ?speaking=preview로 다시 열면 줄이 생긴다.
-  step('flag');await enter('&speaking=preview');
+  // 1. 플래그 없이(10-21 공개 판): 모듈을 부르고, 문항을 읽으면 배우기 판에 말하기 줄이 생긴다.
+  const moduleLoaded=()=>page.evaluate(()=>performance.getEntriesByType('resource').some(r=>r.name.includes('world-speaking-practice.mjs')));
+  step('enter');await enter();step('packs');await openPacks();await page.waitForSelector('#panel-content [data-world="speaking"]');
+  checks.defaultRow=await page.locator('#panel-content [data-world="speaking"]').count();assert.equal(checks.defaultRow,1);
+  checks.defaultModule=await moduleLoaded();assert.equal(checks.defaultModule,true);
+  // 2. 끄는 비상 스위치(이 기기 synk.world.speaking.preview=0, 화면 글 없음): 모듈을 부르지 않고 줄도 없다. 스위치를 지우면 다시 켜진다.
+  step('off switch');await page.evaluate(()=>localStorage.setItem('synk.world.speaking.preview','0'));await enter();await openPacks();await page.waitForTimeout(500);
+  checks.offRow=await page.locator('#panel-content [data-world="speaking"]').count();assert.equal(checks.offRow,0);
+  checks.offModule=await moduleLoaded();assert.equal(checks.offModule,false);
+  step('on again');await page.evaluate(()=>localStorage.removeItem('synk.world.speaking.preview'));await enter();
   for(const {tag,size} of VIEWPORTS){
    await page.setViewportSize(size);await page.waitForTimeout(200);
    step(`${tag} list`);await openSpeaking();
@@ -205,7 +210,7 @@ test('리허설 WORLD 「말하기 연습」 시범: 플래그·동의·녹음·
   // 5. 영어·몽골어: 화면 글은 그 언어, 한국어는 lang="ko" 칸에만
   for(const lang of ['en','mn']){
    // 계정에 저장된 화면 언어가 주소의 미리 보기(?lang=)를 이기므로(display-language-sync), 설정에서 바꾸듯 setLang을 부른다.
-   step(lang);await enter('&speaking=preview');
+   step(lang);await enter();
    await page.evaluate(async lang=>{const m=await import('/brand-opening/world-lang.mjs');m.setLang(lang);},lang);await page.waitForFunction(lang=>document.documentElement.lang===lang,lang);
    await openSpeaking();await record(`390-${lang}-list`);
    await page.locator('#panel-content [data-wsp-open="s1-weekend"]').click();await page.waitForSelector('#panel-content [data-wsp-start]');await page.locator('#panel-content [data-wsp-start]').click();
@@ -215,7 +220,7 @@ test('리허설 WORLD 「말하기 연습」 시범: 플래그·동의·녹음·
    await page.evaluate(()=>document.querySelector('#panel-content .wsp-feedback')?.scrollIntoView({block:'start'}));await record(`390-${lang}-feedback`);
   }
   // 6. 금액이 막히면(budget) 그 녹음은 스스로 확인으로 남기고, 다음 녹음부터는 보낼 단추 없이 그 안내만(10-21 아르곤 검수).
-  step('budget');await enter('&speaking=preview');
+  step('budget');await enter();
   await page.evaluate(async()=>{const m=await import('/brand-opening/world-lang.mjs');m.setLang('ko');});await page.waitForFunction(()=>document.documentElement.lang==='ko');
   await openSpeaking();await page.locator('#panel-content [data-wsp-open="s1-weekend"]').click();await page.waitForSelector('#panel-content [data-wsp-start]');
   await answerOnce();fake.feedback='budget';await page.locator('#panel-content [data-wsp-send]').click();await page.waitForSelector('#panel-content [data-wsp-self-save]');
