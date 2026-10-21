@@ -525,6 +525,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 10-14 「pending changes」 일괄 커밋들이 바뀐 파일이 import하는 새 파일만 넣어, 시험이 부르는 파일 일부가 PC 작업본에만 남았다.
 - 고침: `git log --all --oneline -- <경로>`로 origin의 다른 가지에 있는지 먼저 찾는다(입문 게임 277개는 `origin/codex/beginner-games-finish-20261010`에 있었다). 어디에도 없으면 PC에서 커밋한다(path-travel 계획 화면 8개·장소 사진 13장).
 - 다시 확인: PC 작업본에서 `git status --short experiences/path-travel`이 비어 있다.
+- 덧붙임(10-21 Claude): 워크트리(v2 기본)도 같은 꼴로 빨갛다 — `tests/라디오오버레이층.test.js`는 git 밖 굽기 원본 PNG(`docs/라디오/DJ장면_20261019/구운판/*.png`, 원본창고)를 CI에서는 건너뛰고(`tests/_git밖.js`의 `CI에없는로컬자료`) 개발 PC에서는 재도록 짰는데, 워크트리에는 그 원본이 없어 ENOENT로 실패한다. 고칠 시험이 아니다 — 원본이 있는 공용 작업본에서 돌리면 5/5다(10-21). 워크트리에서 재야 하면 그 PNG만 공용 작업본에서 복사해 온다.
 
 
 ### 임시 index 안에서 실제 공용 index 경로를 물으면 임시 파일이 돌아온다 (2026-10-20 GPT)
