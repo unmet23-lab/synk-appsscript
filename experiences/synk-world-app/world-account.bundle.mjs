@@ -15457,7 +15457,7 @@ function planDeviceRecords({ storage = globalThis.localStorage, learning = null,
     return null;
   }
   const hangulReady = !(device && !target);
-  const hangul = hangulReady && device && !accountHas ? { from, to: target, summary: device, ...hangulPort ? { cloud: true } : {} } : null, moveAnswer = answer && !accountAnswer ? answer : null;
+  const hangul = hangulReady && device && !accountHas ? { from, to: target, summary: device, after: from === HANGUL_DEVICE_KEY ? hangulAfter : 0, ...hangulPort ? { cloud: true } : {} } : null, moveAnswer = answer && !accountAnswer ? answer : null;
   let lifeRecords = null, events = null;
   try {
     if (life) lifeRecords = guestLifeRecords(storage, { after });
@@ -15484,13 +15484,13 @@ async function applyDeviceRecords(plan, { storage = globalThis.localStorage, acc
       guard();
       if (plan.hangul.cloud) {
         if (!hangulPort) throw Error("\uACC4\uC815 \uD55C\uAE00 \uC800\uC7A5 \uC5F0\uACB0\uC744 \uB2E4\uC2DC \uC5F4\uC5B4 \uC8FC\uC138\uC694.");
-        if (raw === null || !readHangul(storage, plan.hangul.from)) result.hangul = "gone";
+        if (raw === null || !readHangul(storage, plan.hangul.from, { after: plan.hangul.after || 0 })) result.hangul = "gone";
         else {
           result.hangul = await hangulPort.importSnapshot(raw);
           guard();
         }
       } else if (storage.getItem(plan.hangul.to) !== null) result.hangul = "exists";
-      else if (raw === null || !readHangul(storage, plan.hangul.from)) result.hangul = "gone";
+      else if (raw === null || !readHangul(storage, plan.hangul.from, { after: plan.hangul.after || 0 })) result.hangul = "gone";
       else {
         storage.setItem(plan.hangul.to, raw);
         result.hangul = "moved";
@@ -15675,7 +15675,7 @@ function createDeviceRecordsOffer({
     const T = recordsText(text2);
     const carry = job.carry ??= { moved: { lessons: 0, reviews: 0, days: 0, profile: false, events: 0 }, hangul: false, answer: false, pending: { life: null, learning: 0 } };
     const movedSoFar = () => lifeNonzero(carry.moved) || carry.moved.events > 0 || carry.hangul || carry.answer;
-    const cloudDone = () => !!job.port && (!job.plan.hangul?.cloud || carry.hangul);
+    const cloudDone = () => !!job.port;
     if (choice === "keep") {
       if (movedSoFar()) {
         saveDeviceRecordsDecision(storage, job.owner, "moved", now(), { cloud: cloudDone(), through: job.startedAt, moved: { ...carry.moved, at: now() } });

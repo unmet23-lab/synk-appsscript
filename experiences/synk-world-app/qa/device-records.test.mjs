@@ -45,7 +45,8 @@ test('a plan moves what the account lacks and never merges into an existing acco
  assert.equal(planDeviceRecords({storage,learning}),null,'nothing on this device');
  storage.setItem(HANGUL_DEVICE_KEY,JSON.stringify(guestHangul()));
  const plan=planDeviceRecords({storage,learning});
- assert.deepEqual(plan.hangul,{from:HANGUL_DEVICE_KEY,to:target,summary:{met:3,mastered:0,graduated:false,skipped:false,sessions:0}});
+ // after: 판을 만들 때 건 기준 시각 — 옮기는 순간에 원본을 다시 읽을 때도 같은 기준을 건다(10-21 GPT 재확인).
+ assert.deepEqual(plan.hangul,{from:HANGUL_DEVICE_KEY,to:target,summary:{met:3,mastered:0,graduated:false,skipped:false,sessions:0},after:0});
  assert.equal(plan.answer,null);
  assert.equal(planDeviceRecords({storage,learning:null}),null,'without the account place this login does not ask (it asks next time)');
  storage.setItem(target,JSON.stringify({...emptyProgress(),skipped:true}));
@@ -319,4 +320,30 @@ test('adding new questions to a day the account already has counts as an added d
  assert.equal(account.importRecords({days:a.days}).days,1);
  assert.equal(account.importRecords({days:b.days}).days,1,'the existing day got new questions');
  assert.equal(account.importRecords({days:b.days}).days,0,'nothing new the third time');
+});
+
+// 10-21 GPT 재확인(P0 잔여): 판을 띄운 뒤 옮기는 순간에 다시 읽는 한글 원본에도 판을 만들 때의 기준 시각을 다시 건다.
+test('the hangul copy is checked against the mark again when it is moved (it may have changed while the sheet was open)',async()=>{
+ const storage=memory();storage.setItem(HANGUL_DEVICE_KEY,JSON.stringify(guestHangul()));
+ noteDeviceSignOut(storage,Date.parse('2026-10-18T14:00:00.000Z'));
+ const plan=planDeviceRecords({storage,learning,accountId:ACCOUNT});assert.ok(plan?.hangul,'made after the mark: offered');
+ storage.setItem(HANGUL_DEVICE_KEY,JSON.stringify(meet(emptyProgress(),['g-giyeok'],'2026-10-18T05:00:00.000Z')));
+ const result=await applyDeviceRecords(plan,{storage});
+ assert.equal(result.hangul,'gone');assert.equal(storage.getItem(target),null,'nothing reached the account');
+});
+
+// 10-21 GPT 재확인(새 P2): 계정 한글 저장이 있는 상태에서 일부만 옮기고 「두기」를 골랐으면, 다음에 열 때 그 한글을 다시 묻지 않는다
+// (cloud는 「계정 한글 저장이 있는 상태에서 고른 결정」 — 옛 기기 안 이전만 계정 저장으로 다시 묻는다).
+test('keeping after a partial move with the account hangul store does not ask about the same hangul again',async()=>{
+ const storage=memory();guestDay(storage,Date.parse(AT));storage.setItem(HANGUL_DEVICE_KEY,JSON.stringify(guestHangul()));
+ const port={accountId:ACCOUNT,read:()=>null,importSnapshot:async()=>{throw Object.assign(Error('한글 진도 계정 저장을 확인하지 못했어요.'),{code:'HANGUL_NOT_SAVED'});}};
+ const make=()=>createDeviceRecordsOffer({storage,learningStatus:()=>learning,present:()=>{},close(){},now:()=>LATER,defer:fn=>fn(),toast(){},hangulPort:()=>port,
+  importLife:async records=>({lessons:records.counts.lessons,reviews:records.counts.reviews,days:records.counts.days,profile:records.counts.profile}),importLearning:null});
+ const offer=make(),pending=offer.offer({owner:ACCOUNT});assert.ok(pending);
+ assert.equal(offer.pending().plan.hangul?.cloud,true);
+ assert.equal(await offer.choose('move',{owner:ACCOUNT}),null,'the hangul step was not confirmed');
+ assert.equal(await offer.choose('keep',{owner:ACCOUNT}),'moved','the confirmed life step counts as moved');
+ const entry=JSON.parse(storage.getItem(DEVICE_RECORDS_KEY)).accounts[ACCOUNT];
+ assert.equal(entry.cloud,true,'decided with the account hangul store');
+ assert.equal(make().offer({owner:ACCOUNT}),null,'a fresh page does not ask about the kept hangul again');
 });

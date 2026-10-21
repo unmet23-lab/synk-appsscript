@@ -148,7 +148,7 @@ export function planDeviceRecords({storage=globalThis.localStorage,learning=null
   }else if(target)accountHas=storage.getItem(target)!==null;
  }catch{return null;}
  const hangulReady=!(device&&!target);
- const hangul=hangulReady&&device&&!accountHas?{from,to:target,summary:device,...(hangulPort?{cloud:true}:{})}:null,moveAnswer=answer&&!accountAnswer?answer:null;
+ const hangul=hangulReady&&device&&!accountHas?{from,to:target,summary:device,after:from===HANGUL_DEVICE_KEY?hangulAfter:0,...(hangulPort?{cloud:true}:{})}:null,moveAnswer=answer&&!accountAnswer?answer:null;
  let lifeRecords=null,events=null;
  try{if(life)lifeRecords=guestLifeRecords(storage,{after});}catch{lifeRecords=null;}
  try{if(learningLog){const found=guestLearningEvents(storage,{after});if(found.events.length)events=found;}}catch{events=null;}
@@ -166,11 +166,11 @@ export async function applyDeviceRecords(plan,{storage=globalThis.localStorage,a
    guard();
    if(plan.hangul.cloud){
     if(!hangulPort)throw Error('계정 한글 저장 연결을 다시 열어 주세요.');
-    if(raw===null||!readHangul(storage,plan.hangul.from))result.hangul='gone';
+    if(raw===null||!readHangul(storage,plan.hangul.from,{after:plan.hangul.after||0}))result.hangul='gone';
     else{result.hangul=await hangulPort.importSnapshot(raw);guard();}
    }
    else if(storage.getItem(plan.hangul.to)!==null)result.hangul='exists';
-   else if(raw===null||!readHangul(storage,plan.hangul.from))result.hangul='gone';
+   else if(raw===null||!readHangul(storage,plan.hangul.from,{after:plan.hangul.after||0}))result.hangul='gone';
    else{storage.setItem(plan.hangul.to,raw);result.hangul='moved';}
   }catch(error){result.errors.push(error);}
  }
@@ -277,8 +277,9 @@ export function createDeviceRecordsOffer({storage=globalThis.localStorage,learni
   job.busy=true;const T=recordsText(text);
   const carry=job.carry??={moved:{lessons:0,reviews:0,days:0,profile:false,events:0},hangul:false,answer:false,pending:{life:null,learning:0}};
   const movedSoFar=()=>lifeNonzero(carry.moved)||carry.moved.events>0||carry.hangul||carry.answer;
-  // 계정 한글 저장(cloud)으로 한글을 옮길 판이면, 실제로 올렸을 때만 cloud로 남긴다(못 올렸으면 다음 로그인에 다시 묻는다).
-  const cloudDone=()=>!!job.port&&(!job.plan.hangul?.cloud||carry.hangul);
+  // cloud: 계정 한글 저장이 있는 상태에서 고른 결정이다(옮겼든 「두기」로 남겼든 한글은 정해졌다). 없으면 예전 기기 안 이전으로 보고 다음 로그인에
+  // 계정 저장으로 다시 묻는다(retryCloud) — 일부만 옮기고 「두기」를 고른 한글을 다시 묻지 않게 한글 성공 여부로 가르지 않는다(10-21 GPT 재확인).
+  const cloudDone=()=>!!job.port;
   if(choice==='keep'){
    // 앞 「옮기기」가 일부만 해냈으면 서버가 받은 만큼은 옮긴 것으로 남긴다. 서버 확인을 못 한 것만 있으면 고른 대로 「두기」로 남기되,
    // 계정에 이미 더한 것이 있다고 알린다(그것은 다음 저장 때 올라간다 — 「옮기지 않았다」고도, 「옮겼다」고도 하지 않는다).
