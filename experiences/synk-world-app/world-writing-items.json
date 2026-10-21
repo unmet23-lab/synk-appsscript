@@ -2,7 +2,7 @@
   "version": "topik2-writing-practice-1",
   "note": "공개 WORLD의 TOPIK II 쓰기 51~54 연습 문항. 공식 PBT 형식을 따른 자체 창작이며 공식 기출을 옮기지 않았다. 자료의 기관·숫자는 모두 가상이다. 예시답은 좋은 답의 한 예이고 정답 하나가 아니다. 글자 수는 NFC 정규화 뒤 공백·문장부호를 넣고 줄바꿈을 뺀 Unicode 문자 수다(원고지 칸 수와 다를 수 있다). review.status가 passed인 문항만 화면에 나온다.",
   "basis": "PBT",
-  "contentHash": "942f8862c9feab83",
+  "contentHash": "a53b3ed5f9824a87",
   "items": [
     {
       "id": "w51-recycle",
@@ -46,7 +46,7 @@
         {"id": "b", "mark": "㉡", "model": "몇 명이 오는지 미리 알아야 해요", "accept": "올 사람의 수나 참석 여부를 미리 알아야(확인해야) 한다는 내용, 또는 인원에 맞춰 미리 예약해야 한다는 내용이면 된다. ㉡ 앞이 「-기 때문에」라서 「미리 알려 주세요」처럼 부탁·명령으로 맺으면 「-기 때문에」와 어울리지 않아 「조금 고쳐 봐요」로 본다(「-기 때문에」 뒤에는 명령·청유가 오지 않는다. 부탁하려면 「-니까」를 쓴다). ㉠처럼 해요체로 맺고, 「-습니다」로 쓰면 내용은 인정하지만 「조금 고쳐 봐요」로 본다."}
       ],
       "watch": "친구들에게 보내는 글인데 「알아야 합니다」처럼 「-습니다」로 쓴다. 내용은 맞아도 글의 다른 문장처럼 「-아요」로 고쳐야 한다. ㉡을 「미리 알려 주세요」처럼 부탁으로 맺는다 — 앞의 「-기 때문에」 뒤에는 부탁·명령이 올 수 없다.",
-      "review": {"status":"held","at":"2026-10-20T23:17:00.700Z","report":"experiences/topik-items/review/reports/writing-d97fd97.md","by":[{"stage":"claude","model":"claude-opus-5-5","rubric":"topik-review-writing-r2","verdict":"fix"},{"stage":"argon","model":"gemini-4-argon-high","rubric":"topik-review-writing-r2","verdict":"pass"},{"stage":"adjudication","model":"claude-opus-5-5","rubric":"topik-review-writing-r2","verdict":"fix"}],"notes":"글·예시답·문체 처리는 좋다. 다만 ㉡ 인정 범위가 「-기 때문에」 뒤의 명령형 「올 사람은 미리 알려 주세요」를 받아 문법 오류를 통과시킨다. 이 부분을 빼고 watch에 경고를 더하면 쓸 수 있다. | 스터디 장소 변경과 사전 인원 확인을 안내하는 51번 해요체 실용문 문항으로, 지문 구성과 예시답, 인정 범위가 모두 적절하여 통과(pass) 판정함. | 검수자 A의 지적이 맞다. ㉡ 앞이 「-기 때문에」인데, 이 연결 어미 뒤에는 명령·청유가 올 수 없다(한국어 교육 문법의 기본 제약, 이 경우는 「-니까」를 써야 함). 그런데 현재 인정 범위는 「올 사람은 미리 알려 주세요」 같은 명령형 부탁을 바른 답으로 받는다. 그대로 나가면 문법 오류를 정답으로 가르치게 되고, 채점 기준도 흔들린다. 그 밖의 항목은 문제가 없다. 지문은 해요체 실용문으로 자연스럽고, 예시답 「문을 열지 않는대요」·「몇 명이 오는지 미리 알아야 해요」는 앞뒤 문맥과 문체에 맞는다. 「-습니다」 답을 다루는 방법도 인정 범위와 흔한 실수(watch)에 분명히 적혀 있다. 두 검수자가 낸 다른 답(카페를 쓸 수 없게 됐어요, 영업을 안 한대요, 이용할 수 없어요, 참석 인원을 미리 "}
+      "review": {"status":"passed","at":"2026-10-21T00:43:08.709Z","report":"experiences/topik-items/review/reports/writing-6f76f69.md","by":[{"stage":"claude","model":"claude-opus-5-5","rubric":"topik-review-writing-r2","verdict":"pass"},{"stage":"argon","model":"gemini-4-argon-high","rubric":"topik-review-writing-r2","verdict":"pass"}]}
     },
     {
       "id": "w51-repair",
