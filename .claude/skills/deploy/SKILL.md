@@ -22,13 +22,14 @@ description: SYNK Apps Script를 고친 작업의 마감으로 검증·커밋·p
    - 라이브 배포는 메인 checkout에서 한다. worktree에서 만든 변경은 승인된 범위만 먼저 통합하고, 다른 worktree나 남의 변경은 건드리지 않는다.
 
 2. **배포 대상 검증**
+   - 버전 대상 파일에 `[vNEXT]`가 있으면 검사보다 먼저 `node tools/bump-version.js --desc "한 줄 요약" --종류 <수리|보강|신설>`로 채번한다. 채번이 `Code.js`를 고치므로 아래 검사는 그 뒤에 돌아야 마지막 고침 뒤의 검사가 된다.
    - 루트 Apps Script `.js`에 `node --check`를 실행하고 `appsscript.json`을 JSON으로 파싱한다.
    - `node tools/test-ci.js`와 `node tools/deploy-security-check.js`를 실행한다. 전체 저장소의 기존 실패와 이번 변경 때문에 생긴 실패를 나눠 보고, 이번 변경의 관련 실패나 P0·P1은 해결 전 배포하지 않는다.
    - `node tools/보안검토과녁.js`로 미커밋과 미배포 범위를 확인한다. 데이터·인증·익명 웹앱·소급 불가 변경은 현재 사용 가능한 공식/네이티브 검토 통로로 판단 검토까지 한다. 실행하지 못한 검토를 통과로 쓰지 않는다.
    - 필요한 검토는 현재 공식 앱·CLI에서 한다. 역할은 `docs/AI_운영원칙.md`를 따르며 별도 실행기·검수 장부를 요구하지 않는다.
 
 3. **이력과 GitHub**
-   - 버전 대상 파일에 `[vNEXT]`가 있으면 `node tools/bump-version.js --desc "한 줄 요약" --종류 <수리|보강|신설>`로 채번하고 `node tools/bump-version.js --check`로 대조한다.
+   - 2단계에서 채번했으면 `node tools/bump-version.js --check`로 대조한다.
    - 자기 변경만 `node tools/바로올리기.js <경로…> -m "…"`로 origin/master에 올린다(공용 작업본에서는 공용 문서를 `--조각`으로, AGENTS.md 커밋 줄). 먼저 `--실행` 없이 돌려 올라갈 경로·줄을 보고, 그다음 `--실행`을 붙인다. `git push origin HEAD:master`는 남의 미푸시 커밋까지 올리므로 쓰지 않는다. 다른 작업의 stage나 파일을 쓸어 담지 않는다.
    - `node tools/원격ci.js <올린 머리>`로 대상 커밋의 원격 상태를 확인한다. 인자를 빼면 로컬 HEAD를 보므로, 올리기가 커밋을 다시 쌓았으면 출력의 새 커밋(원래 → 새)을 준다. 기존의 관련 없는 적색은 그대로 밝혀 구분하고, 이번 배포 대상의 관련 실패는 라이브 전에 막는다.
 
@@ -36,17 +37,19 @@ description: SYNK Apps Script를 고친 작업의 마감으로 검증·커밋·p
    - `clasp`는 PATH에서 먼저 찾고, Windows에서 없으면 공식 설치 위치를 확인한다.
 
      ```powershell
+     Set-Location C:\Users\q1212\Documents\SYNK-appsscript
      $claspCommand = Get-Command clasp.cmd -ErrorAction SilentlyContinue
      $claspBin = if ($claspCommand) { $claspCommand.Source } else { Join-Path $env:APPDATA 'npm\clasp.cmd' }
      if (-not (Test-Path -LiteralPath $claspBin)) { throw 'clasp 실행 파일을 찾지 못했습니다.' }
-     git diff --quiet origin/master -- appsscript.json Code.js 엔진_synkbrief.js && & $claspBin push --force
+     git diff --quiet origin/master -- tools/deploy-security-check.js .clasp.json .claspignore appsscript.json Code.js 엔진_synkbrief.js && node tools/deploy-security-check.js && & $claspBin push --force
      ```
 
-   - push 앞의 `git diff --quiet origin/master -- …`는 clasp가 올리는 세 파일(`.claspignore`)이 origin/master와 같을 때만 통과시킨다. 내 변경을 먼저 origin에 올리고, 남의 미커밋이 그 파일에 섞여 있으면 push하지 않는다. 자동 모드 판정기가 미리 허락한 꼴이 이것이다(2026-10-21).
+   - push 줄은 사슬이다. 먼저 보안 검사 스크립트와, clasp가 올리는 세 파일·그 범위를 정하는 `.clasp.json`·`.claspignore`가 origin/master와 같은지 본다. 그다음 배포 표면 검사(`deploy-security-check.js`)가 통과해야 push까지 간다. 그래서 내 변경을 먼저 origin에 올려야 하고, 남의 미커밋이 그 파일들에 섞여 있으면 push하지 않는다.
+   - 자동 모드 판정기는 도구 결과를 못 보기 때문에, 통과 여부를 이 사슬로 가르게 미리 허락해 두었다(2026-10-21 검수 반영). 이 꼴 그대로 쓴다. 경로 철자가 틀리면 `git diff`가 조용히 통과하니 고쳐 쓰지 않는다.
 
    - `node tools/배포판점검.js --라이브`로 실제 라이브를 읽는다. 고정 버전 배포가 낡았으면 도구가 제시한 **기존 deployment ID**를 `clasp deploy -i <기존ID> --description "<설명> #fp:<지문>"`로 갱신한다. ID 없이 새 배포를 만들지 않는다.
    - 다시 `clasp deployments`와 `node tools/배포판점검.js --라이브`를 실행해 배포 개수, 내용 지문, 도장을 확인한다.
 
 ## 완료 보고
 
-커밋·push·로컬 검증·원격 CI·라이브 반영·라이브 대조를 각각 구분해 적는다. 확인하지 못한 층과 첫 예약 트리거 실행 시점은 남은 일로 밝힌다. 자동 훅이 보호했다고 쓰지 않는다.
+커밋·push·로컬 검증·원격 CI·라이브 반영·라이브 대조를 각각 구분해 적는다. 이 세션이 할 수 있는데 확인하지 못한 층은 남은 일로 밝힌다. 첫 예약 트리거 실행 시점처럼 시간이 지나야 보이는 것은 「참고」로 적는다 — 참고는 세션 보관을 막지 않는다(AGENTS.md 배포·공개 줄). 자동 훅이 보호했다고 쓰지 않는다.
