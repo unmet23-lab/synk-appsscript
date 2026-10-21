@@ -53,8 +53,31 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고, 꼴·단계·해설이 모두 기준에 맞는다. 오답이 쉬운 편이지만 사소해서 통과로 본다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "fb1e44078f130553",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "주말 이사 준비 대화에서 이어질 말을 고르는 문항으로, 정답 유일성·오답 매력도·해설 번역 모두 기준에 맞음.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "fb1e44078f130553",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-002",
@@ -106,8 +129,31 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 유형·급·해설이 모두 맞습니다. 오답이 다소 직접 모순형이지만 학습자에게 해가 없어 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "8df4d5b6a08eca73",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "옷 가게에서 사이즈 안내를 듣고 이어질 말을 고르는 문항으로, 모든 검수 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "8df4d5b6a08eca73",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-003",
@@ -159,8 +205,31 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고, 오답은 대화의 말을 바꿔 그럴듯하게 만들었어요. 꼴·급·해설 모두 기준에 맞아 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "fd6045420959304a",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "비 예보를 고려해 등산 일정을 조정하는 대화 문항으로, 구성과 해설 모두 적절함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "fd6045420959304a",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-004",
@@ -212,8 +281,42 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "held",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답이 하나뿐이고 오답도 그럴듯하며 해설 세 언어가 정확합니다. 다만 생활 화제의 짧은 대화라서 난도는 1(3급 근처)이 맞으므로 difficulty와 targetGrade만 고치면 됩니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "35c894404dcf921f",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "가전제품 환불 요청에 대해 교환 안내를 듣고 응답하는 문항으로, 난도와 보기·해설 모두 기준에 맞음.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "35c894404dcf921f",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "직접 풀어 보면 정답은 2번(인덱스 1)으로 정해진 정답과 같고, 답은 하나뿐입니다. 여자의 말이 1번(환불), 3번(교환 불가 전제), 4번(안 써 봤음)을 각각 분명히 지웁니다. 오답은 대화의 말을 써서 그럴듯하고, 해설 세 언어도 같은 근거를 바르게 짚습니다. 남는 문제는 난도 칸입니다. 작성 기준 §3에서 TOPIK II difficulty 2는 4급 근처로, 사회 화제·짧은 기사·설명문처럼 정보가 촘촘한 글을 말합니다. 이 문항은 가게에서 환불을 요청하는 친숙한 생활 대화이고, 두 줄에 정보도 단순합니다. 따라서 difficulty 1(3급 근처, 생활·직장의 친숙한 화제)이 정의에 맞습니다. 난도 칸이 틀리면 Core의 칸 나눔이 어긋나므로, 검수자 A의 지적을 받아들여 고친 뒤 내보냅니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "35c894404dcf921f",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-005",
@@ -265,8 +368,42 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "held",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답이 유일하고 오답·해설·자연스러움 모두 좋습니다. 다만 짧은 직장 대화라서 난도는 TOPIK II difficulty 1에 해당하므로 난도 값만 고치면 됩니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "9bbbfc1c610c4e0e",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "회의 자료 지연 사유를 듣고 오늘 안에 보내 달라고 응답하는 문항으로, 정답 유일성과 오답 매력도 및 3개 국어 해설이 모두 우수함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "9bbbfc1c610c4e0e",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답 ③은 하나뿐이고 오답 셋은 대본으로 지워진다. ①은 「아직 못 받아서」, ②는 「내일 회의」, ④는 늦은 사람이 남자라는 점과 어긋난다. 세 언어 해설도 같은 근거를 바르게 짚는다. 남는 문제는 난도다. 두 줄짜리 친숙한 직장 대화이고 정보가 촘촘하지 않으며 사회 화제·기사·설명문도 아니다. 작성 기준 §3에 따르면 TOPIK II difficulty 1(3급 근처, 생활·직장의 친숙한 화제)에 해당하므로 difficulty 2는 맞지 않는다는 A의 지적을 받아들인다. 난도 값은 Core 칸 나누기에 쓰이므로 고친 뒤 내보낸다. 발문은 공식 자리의 과제(이어질 수 있는 말)에 맞추는 편이 좋다. 영어 해설 첫 문장도 문법이 어색하니 다듬는다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "9bbbfc1c610c4e0e",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-006",
@@ -318,8 +455,42 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "held",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답이 하나로 분명하고 보기·해설·대본 모두 양호해요. 다만 내용이 생활 화제의 짧은 대화여서 난도 2(4급 근처)보다 난도 1(3급 근처)에 맞으므로, 난도 값을 고치는 수정이 필요해요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "f7edef3bab90ab37",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "도로 공사로 인한 버스 정류장 이전 안내를 듣고 이어질 말을 고르는 문항으로, 구성과 해설 모두 흠잡을 데 없음.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "f7edef3bab90ab37",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "직접 풀어 보면 정답은 0번 하나다. 여자가 「한 달 동안」 「정류장도 시장 앞으로 옮긴대요」라고 했으니 0번만 맞는다. 나머지 오답은 모두 대본과 어긋난다. 1번 「공사가 끝났으니까」는 「다음 주부터」, 2번 「버스는 그대로」는 「버스도 다른 길로」, 3번 「일주일만」은 「한 달 동안」과 맞지 않는다. 글에 없는 정보로 다툴 여지가 없다. 대본은 입말로 자연스럽고 숫자·기호가 없다. 해설 세 언어도 같은 근거를 바르게 짚는다(B의 역번역으로도 확인된다). 자리 꼴(TII-L-04, 두 사람 짧은 대화 → 이어질 말)과 능력(ko2.listening.response)도 맞다. 다만 A의 지적처럼 난도 칸이 맞지 않는다. 화제는 동네 도로 공사와 정류장 이전이라는 생활 화제다. 대본은 두 줄 대화이고 문형도 -대요/-이래요 같은 간접 인용 정도다. 작성 기준 §3의 TOPIK II difficulty 1(3급 근처, 생활·직장의 친숙한 화제)에 들어맞고, difficulty 2의 '사회 화제·짧은 기사·설명문, 촘촘한 정보'에는 미치지 못한다. 난도 값은 Core가 칸을 나누는 값이라, 그대로 두면 4급 칸에 쉬운 문항이 섞인다. 그래서 메타데이터를 고친 뒤 내보낸다. 내용은 그대로 써도 된다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "f7edef3bab90ab37",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-007",
@@ -379,8 +550,42 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "held",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답이 유일하고 꼴·난도·능력 모두 자리에 맞는 좋은 문항이다. 몽골어 해설의 「хаягаа」(자기 주소)와 「жигнэх」 표현만 바로잡으면 쓸 수 있다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "8d35f935a86bf8f5",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "우체국에서 국제 소포를 보낼 때 이어서 할 행동을 고르는 문항으로, 유형 적합성과 난도·해설 모두 기준에 맞음.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "8d35f935a86bf8f5",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "문항 자체는 쓸 만하다. 대화에서 「받는 분 주소부터 써 주세요」와 「무게는 그다음에 잴게요」가 순서를 정해 주므로 정답(주소를 쓴다)이 하나뿐이다. 요금 내기는 주소 쓰기와 무게 재기 뒤의 일이고, 배로 보내는 방법은 「비행기로 할게요」로 지워진다. 공식 자리 TII-L-09의 꼴, 3급·난도 1 어휘, 재생 한 번용 짧은 대화, 대표 능력(추론) 모두 맞다. 우체국 장면은 흔한 소재지만 특정 기출을 옮긴 흔적은 없다. 다만 몽골어 해설의 「хаягаа」는 재귀 소유형이라 '여자 자신의 주소'로 읽힐 수 있다. 정답 근거는 '받는 사람의 주소'이므로 이 부분은 A의 지적대로 바로잡아야 한다. A가 함께 지적한 「жигнэх」는 몽골어에서 '무게를 달다'의 뜻으로 쓰이므로(жигнүүр '저울' 참고) 틀린 말이 아니다. 다만 더 흔한 「жинлэх」로 바꾸는 것은 선택 사항이다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "8d35f935a86bf8f5",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-008",
@@ -440,8 +645,42 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답이 하나로 분명하고, 오답은 순서(이미 한 일·나중에 할 일)로 잘 설계됐어요. 자리·난도·해설 모두 기준에 맞아 통과예요. / 블라인드 풀이 3(정답 3) · 다툴 보기 1: 여자가 「지금 바로 예약하고 자료는 회의실에 갖다 놓을게요」라고 해서 바로 이어서 할 일은 회의실 예약이다. 그래서 3번이 정답이다. 하지만 1번 「자료를 회의실에 갖다 놓는다」도 여자가 하겠다고 말한 일이라서, 순서를 따지지 않으면 맞다고 다툴 여지가 있다. 확인이 필요하다. 0번 복사는 이미 끝난 일이고, 2번 회의 시간을 다시 정하는 일은 대화에 나오지 않는다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "f68e295ab5770641",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "회의 준비 대화에서 여자가 먼저 할 행동을 고르는 문항으로, 선후 관계를 활용한 오답 설계와 해설이 모두 적절함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "f68e295ab5770641",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답은 하나로 분명합니다. 여자가 「지금 바로 예약하고 자료는 회의실에 갖다 놓을게요」라고 해서 바로 이어서 할 일은 회의실 예약(3번)입니다. 검수자 A가 다툴 수 있다고 본 1번 「자료를 회의실에 갖다 놓는다」는 「-고」 뒤에 오는 나중 일입니다. 이렇게 먼저 할 일과 나중 할 일을 섞어 오답을 만드는 것은 TOPIK II 9~12번에서 흔히 쓰는 설계입니다. 발문도 「이어서 할 일」로 순서를 묻고 있어서 정답 유일성을 해치지 않습니다. 오답은 이미 한 일(복사), 나중 할 일(갖다 놓기), 대화와 어긋나는 일(시간 변경)로 고르게 짜였습니다. 자리·급·난도·능력도 맞습니다. 회의 준비 대화는 흔한 직장 장면이고 인물·세부가 새로워 기출을 옮긴 흔적은 없습니다. 영어 해설의 「(right now, and then)」 풀이는 조금 어색합니다. 하지만 뜻은 맞고 근거가 같아서 학습자에게 해가 없으므로 고치지 않아도 됩니다. 학생 화면에 내도 됩니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "f68e295ab5770641",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-009",
@@ -501,8 +740,42 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "held",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답 유일성, 오답 설계, 해설 세 언어 모두 양호하다. 다만 짧은 생활 대화라서 언어 난도는 2보다 1에 맞으므로 난도 값만 고치면 된다. / 블라인드 풀이 2(정답 2) · 다툴 보기 3: 남자가 「사진을 찍어서 문자로 먼저 보내 주세요」라고 했고, 여자는 「사진은 아까 찍어 놨어요」라고 했으므로 이어서 할 일은 사진을 보내는 것(2)이에요. 0은 이미 찍은 사진이라 틀리고, 1은 윗집 연락을 남자가 맡았으며 윗집에 아무도 없다고 해서 틀려요. 다만 마지막 말이 남자의 「제가 연락해 볼게요」이고 수리 기사 질문 뒤에 끝나므로, 여자가 기다린다는 3을 다툴 여지가 조금 있어요. 대화가 사진 보내기로 다시 돌아오지 않는 점은 확인이 필요해요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "39907cd2a57860d5",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "누수 신고 대화에서 이미 찍어 둔 사진을 문자로 보내는 후속 행동을 추론하는 문항으로 모든 기준을 충족한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "39907cd2a57860d5",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답 2(사진 보내기)는 맞고 해설 세 언어도 같은 근거를 말한다. 다만 두 가지는 고쳐야 한다. 첫째, 대화가 남자의 「윗집부터 확인해야 해요. 제가 연락해 볼게요」로 끝나고 사진 보내기 요청은 두 턴 앞에 있다. 그래서 여자가 연락이나 수리를 기다린다는 보기 3을 다툴 여지가 조금 남는다. 마지막 말에서 사진 보내기를 다시 짚어 주면 정답이 분명해진다. 둘째, 네 줄짜리 친숙한 생활 대화(관리사무소 누수 신고)라서 TOPIK II 난도 2(4급 근처의 사회 화제, 촘촘한 정보)보다 난도 1(3급 근처, 생활 화제)의 정의에 맞는다. 이 점에서는 검수자 A의 지적을 받아들인다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "39907cd2a57860d5",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-010",
@@ -562,8 +835,42 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "held",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답이 유일하고 오답 설계와 3개 언어 해설도 좋은 TII-L-09 문항이에요. 다만 언어 수준이 3급 근처라서 difficulty를 1로(targetGrade는 3으로) 낮추면 그대로 쓸 수 있어요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "b111cbefab2a8f86",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "축제 부스 준비 대화에서 여자가 이어서 할 행동을 고르는 문항으로 완성도가 높다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "b111cbefab2a8f86",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답은 0번 하나뿐이에요. 남자가 「인쇄할 필요 없어요」라고 해서 인쇄 보기가 지워지고, 안내판은 여자가 남자에게 부탁한 일이며, 탁자는 이미 다 옮겼어요. 오답 설계, 세 언어 해설, 대본 표기(「백 장쯤」)도 문제가 없어요. 걸리는 것은 난도 칸이에요. 화제는 축제 부스 준비라는 생활·직장의 친숙한 일이에요. 문형도 -(으)려고요, -(으)ㄹ 것 같다, -(으)ㄹ 필요 없다, -(으)ㄹ게요 정도이고 네 줄짜리 짧은 대화예요. 그래서 작성 기준 §3의 TOPIK II difficulty 1(3급 근처)에 해당해요. difficulty 2(4급 근처: 사회 화제, 연결 어미가 많고 정보가 촘촘함)에는 맞지 않아요. 계획이 바뀌는 장면(인쇄 → 가져오기)이 하나 있지만 3급 9~12번 수준을 넘지 않아요. 검수자 A의 지적이 맞으므로 난도와 겨눈 급만 고쳐요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "b111cbefab2a8f86",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-011",
@@ -619,8 +926,31 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답이 그럴듯하며, 자리·급·해설이 모두 기준에 맞습니다. 사소한 표현 다듬기만 가능하므로 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "36b0f17002f93f23",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "기차 지연 안내 방송의 세부 내용을 파악하는 문항으로 모든 기준을 충족한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "36b0f17002f93f23",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-012",
@@ -676,8 +1006,31 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나로 분명하고 오답 설계와 해설 세 언어가 바르며, 자리와 난도에 맞아 통과입니다. 발문을 공식 꼴인 「다음을 듣고 내용과 같은 것을 고르십시오.」로 바꾸는 것은 선택 사항입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "ead831deb911cb27",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "생활용품 무료 수리 센터 뉴스 보도의 세부 내용을 묻는 문항으로 모든 기준을 충족한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "ead831deb911cb27",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-013",
@@ -737,8 +1090,31 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나로 분명하고, 오답이 그럴듯하며, 해설 세 언어가 같은 근거를 말하는 TII-L-17 중심 생각 문항입니다. 그대로 통과합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "9aebab161e7f7732",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TII-L-17 유형과 3급(난도 1) 기준에 잘 맞고 정답 유일성·오답 매력도·해설 모두 우수한 문항입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "9aebab161e7f7732",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-014",
@@ -798,8 +1174,31 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답도 그럴듯하며, 꼴·난도·해설이 모두 기준에 맞아 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "92d7e6281c55b06e",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "직장 생활 화제를 바탕으로 남자의 중심 생각을 명확하게 묻는 양호한 문항입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "92d7e6281c55b06e",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-015",
@@ -859,8 +1258,42 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "held",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답은 하나이고, 자리와 난도에도 맞아요. 한국어 해설에서 남자의 말을 아이가 한 말처럼 쓴 표현 하나만 고치면 쓸 수 있어요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "bfd09cce27be7d72",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "자녀의 스마트폰 사용 시간 조절을 소재로 한 TII-L-17 문항으로 모든 검수 기준을 충족합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "bfd09cce27be7d72",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답(3번)은 하나뿐이고, 자리 꼴·능력·난도에도 맞습니다. 다만 한국어 해설 둘째 문장 「그러면 아이가 「스스로 지키는 연습이 돼요」라고 했으니」는 남자의 말을 아이가 한 말처럼 읽히게 합니다. 영어·몽골어 해설에는 이 오류가 없어 세 언어의 근거도 어긋납니다. 학습자가 누가 말했는지 헷갈릴 수 있으므로 A의 지적을 받아들여 고친 뒤 내보냅니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "bfd09cce27be7d72",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-016",
@@ -920,8 +1353,31 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고 오답이 그럴듯합니다. 자리 꼴과 세 언어 해설 모두 바르니 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "b7862515b970357b",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "중고 물품 구매를 소재로 한 TII-L-17 문항으로, 정답 유일성·오답 구성·해설 번역 모두 정확합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "b7862515b970357b",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-017",
@@ -992,8 +1448,31 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고 오답이 대화의 말을 그럴듯하게 바꾼 잘 짜인 중심 생각 문항이다. 해설 세 언어도 정확해서 통과다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "16e82c3847ce73a4",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TOPIK II 듣기 21번 유형(중심 생각)에 맞고 정답 유일성·오답 매력도·해설 번역 모두 우수하여 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "16e82c3847ce73a4",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-018",
@@ -1064,8 +1543,31 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답 설계가 좋으며, 대본이 자연스럽고 3급 수준에 맞습니다. 해설 본문에 3번 오답 설명을 더하면 좋겠지만 통과에 지장은 없습니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "4ad23e9adb11386b",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "u017과 짝을 이루는 TOPIK II 듣기 22번(내용 일치) 문항으로 모든 검수 기준을 충족하여 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "4ad23e9adb11386b",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-019",
@@ -1136,8 +1638,31 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고, 여자의 의견을 오답으로 쓴 설계가 좋으며, 해설 세 언어가 일관됩니다. 「시험 사용」→「시범 사용」은 선택적으로 다듬을 만한 사소한 점이라 통과로 판정합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "6d7c7900df27d300",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TOPIK II 듣기 21번(업무 대화 중심 생각, 난도 2) 기준에 부합하며 오답 구성과 해설이 정확하여 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "6d7c7900df27d300",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-020",
@@ -1208,8 +1733,31 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고 오답이 대화의 말을 바꿔 그럴듯하게 짜였어요. 자리 꼴·급·해설 세 언어 모두 기준에 맞아 통과예요. 세트 1번 문항과 대본이 똑같은지는 묶음 검사로 확인해야 해요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "a975b1c17fc41f0e",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "u019와 짝을 이루는 TOPIK II 듣기 22번(내용 일치, 난도 2) 문항으로 모든 기준을 충족하여 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "a975b1c17fc41f0e",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-021",
@@ -1284,8 +1832,31 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답이 대본의 말을 비틀어 그럴듯합니다. 꼴·난도·해설 모두 기준에 맞아 통과입니다(몽골어 낱말 하나는 다듬을 수 있으나 사소함).",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "6fa89566759acbab",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "치과 예약 시간을 변경하는 전화 대화 문항으로, 모든 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "6fa89566759acbab",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-022",
@@ -1360,8 +1931,31 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "치과 예약 변경 전화 대화의 내용 일치 문항입니다. 정답이 하나뿐이고, 오답은 때를 바꾼 그럴듯한 보기이며, 세 언어 해설이 같은 근거를 바르게 짚습니다. 그대로 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "3c95b279307991ca",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "u021과 세트를 이루는 세부 내용 일치 문항으로, 모든 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "3c95b279307991ca",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-023",
@@ -1436,8 +2030,31 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고 오답은 대본과 분명히 어긋난다. 꼴·해설·입말 모두 기준에 맞아 통과다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "b421bb750f0aaadc",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "은행 창구에서 체크카드 재발급을 신청하는 상황 추론 문항으로, 모든 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "b421bb750f0aaadc",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-024",
@@ -1512,8 +2129,42 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "held",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답은 유일하고 오답과 해설도 좋다. 다만 대화가 쉬운 생활 창구 대화라 난도는 1(3급 근처)이 더 맞아 보인다. 난도 값을 고치거나 대본을 보강하면 쓸 수 있다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "0d9a9d2a7ab4fbab",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "u023과 세트를 이루는 세부 내용 일치 문항으로, 모든 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "0d9a9d2a7ab4fbab",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답(보기 3)은 하나뿐이고 오답 셋도 대본과 분명히 어긋난다. 보기 1은 「어젯밤에」, 보기 2는 「그럼 그렇게 해 주세요」, 보기 4는 「일주일쯤」이 지운다. 세 언어 해설도 같은 근거를 바르게 짚고, 대본의 숫자도 한글로 적혀 있다. 다만 언어 난도가 맞지 않는다. 화제가 은행 창구에서 카드를 다시 만드는 친숙한 생활 대화이고, 문형도 -아서·-(으)면 정도라 작성 기준 §3의 TOPIK II difficulty 1(3급 근처, 생활·직장의 친숙한 화제)에 해당한다. difficulty 2(4급 근처, 사회 화제·촘촘한 정보)로 보기는 어렵다. 검수자 A의 지적이 맞다. 난도 칸은 Core가 칸을 나누는 값이므로 고친 뒤 내보낸다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "0d9a9d2a7ab4fbab",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-025",
@@ -1584,8 +2235,31 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나로 분명하고 꼴·난도·해설이 모두 맞아요. 몽골어 표현에 사소한 다듬을 점만 있어 통과로 판정해요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "6a4434a3a4f5902e",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "장터에 함께 가자고 권하는 남자의 의도를 묻는 문항으로 모든 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "6a4434a3a4f5902e",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-026",
@@ -1656,8 +2330,31 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고 오답도 대본의 말을 바꿔 잘 만든 내용 일치 문항임. 몽골어 해설의 요일 표기(гариг/гараг)만 통일하면 더 좋고, 그대로 통과함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "c3613c2c8ac9b694",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "세트 대본(tii-l-a-s05)의 세부 내용 일치를 묻는 문항으로 모든 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "c3613c2c8ac9b694",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-027",
@@ -1724,8 +2421,31 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "여자가 출장 동안 화분에 물을 주라고 부탁하는 의도를 묻는 문항으로, 정답이 하나뿐이고 오답이 대본 말을 그럴듯하게 비틀어 짜여 있다. 해설 세 언어도 일치하므로 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "706da858962c6a19",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "출장 기간 동안 화분에 물을 달라고 부탁하는 여자의 의도를 묻는 문항으로 모든 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "706da858962c6a19",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-028",
@@ -1792,8 +2512,31 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고, 오답은 대본의 세부를 바꾼 그럴듯한 보기입니다. 해설 세 언어도 일치하므로 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "74f9e6026d16f575",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "세트 대본(tii-l-a-s06)의 세부 내용 일치를 묻는 문항으로 모든 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "74f9e6026d16f575",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-029",
@@ -1860,8 +2603,31 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "남자의 제안 의도가 분명하고 오답도 대화의 말로 그럴듯하게 짰어요. 해설 세 언어가 같은 근거를 말해서 그대로 써도 돼요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "ae1f7844af172116",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TII-L-27 유형과 3급(난도 1) 기준에 잘 맞는 깔끔한 문항이다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "ae1f7844af172116",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-030",
@@ -1928,8 +2694,31 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답도 대본의 말을 바꿔 그럴듯해요. 해설 세 언어가 같은 근거를 말해요. 보기 0은 결정이 말로 드러나지 않지만 문맥상 지워지므로 그대로 써도 돼요. 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "2114e48689e9a38a",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "앞 문항(u029)과 세트를 이루는 TII-L-28 세부 내용 일치 문항으로 모든 기준을 충족한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "2114e48689e9a38a",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-031",
@@ -2000,8 +2789,31 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답이 그럴듯합니다. 꼴·난도·해설 모두 기준에 맞아 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "7f8ab12e07d07973",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "4급(난도 2) 수준에 맞는 화제와 정보량을 갖춘 좋은 의도 파악 문항이다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "7f8ab12e07d07973",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-032",
@@ -2072,8 +2884,31 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답이 대본과 분명히 어긋나며, 급·난도·해설 모두 기준에 맞아 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "bae8c1f9b3a04c21",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "u031과 세트를 이루는 TII-L-28 문항으로, 정답 유일성과 오답 매력도가 모두 우수하다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "bae8c1f9b3a04c21",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-033",
@@ -2144,8 +2979,31 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고, 27번 의도 자리 꼴과 보기 설계, 세 언어 해설이 모두 맞다. 몽골어 해설의 소유 어미가 사소하게 어색한 것 말고는 통과다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "5816c8e449ddeaea",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "인터넷 끊김에 따른 요금 감면 요구 의도를 묻는 문항으로 모든 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "5816c8e449ddeaea",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-034",
@@ -2216,8 +3074,31 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고, 오답은 대화의 말을 뒤집어 만들어 그럴듯하다. 해설 세 언어도 정확하다. 생활 화제라 난도가 다소 낮게 느껴질 수 있지만 그대로 써도 된다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "8440d7a7f7731c5c",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "u033과 세트를 이루는 세부 내용 일치 문항으로 정답이 명확하고 오답 설계가 적절함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "8440d7a7f7731c5c",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-035",
@@ -2288,8 +3169,31 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답이 그럴듯하며 해설 세 언어도 일치해요. 그대로 써도 되는 문항이에요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "901463df7c01d693",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "빈 강의실 개방을 제안하는 여자의 의도를 묻는 문항으로 모든 기준을 통과함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "901463df7c01d693",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     },
     {
       "id": "tii-l-a-036",
@@ -2360,8 +3264,31 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "The answer is unique, the distractors are well designed, and the explanations in all three languages agree. Pass.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "7eb83ca268581914",
+          "packet": "tii-l-a-r1"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "u035와 세트를 이루는 세부 내용 일치 문항으로 흠잡을 곳 없이 잘 작성됨.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:35.548Z",
+          "rev": 1,
+          "hash": "7eb83ca268581914",
+          "packet": "tii-l-a-r1"
+        }
+      ]
     }
   ]
 }

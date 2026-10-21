@@ -1,7 +1,7 @@
 {
   "version": "topik-existing-verdicts-1",
   "rubric": "topik-review-r1",
-  "updatedAt": "2026-10-21T02:01:50.174Z",
+  "updatedAt": "2026-10-21T06:00:35.236Z",
   "note": "기존 게임·진단 문항의 AI 2중 검수 판정(허용 목록). verdict \"pass\"만 연습에 낸다. 첫 판은 비어 있다 — 판정이 나오는 대로 채운다.",
   "items": [
     {
@@ -1477,6 +1477,362 @@
           "stage": "adjudication",
           "model": "claude-opus-5-5",
           "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-racing:w0001:v1",
+      "source": "korean-racing",
+      "verdict": "pass",
+      "skillId": "ko.listening.word",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "korean-racing:w0001:v1",
+      "officialType": null,
+      "reason": "「사과」를 듣고 🍎를 고르는 1급 낱말 듣기 게임 문항이에요. 정답이 하나뿐이고 오답도 같은 갈래의 과일이라 알맞아요. 해설이 짧지만 기존 게임 꼴로는 충분해서 통과예요. | 1급 기초 낱말 「사과」를 듣고 그림을 고르는 게임 문항으로 모든 기준을 충족함.",
+      "hash": "cba42c40db0add0e",
+      "reviewedAt": "2026-10-21T06:00:35.236Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-racing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-racing:w0008:v1",
+      "source": "korean-racing",
+      "verdict": "fix",
+      "skillId": "ko.listening.word",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "korean-racing:w0008:v1",
+      "officialType": null,
+      "reason": "정답이 하나뿐이고 보기 구성도 좋습니다. 다만 해설의 「「빵」예요」를 「「빵」이에요」로 고쳐야 하고, 오답 그림 설명을 덧붙이면 쓸 수 있습니다. | 문항 자체는 적절하나 한국어 해설의 조사 오류(「빵」예요 → 「빵」이에요) 수정 필요.",
+      "hash": "22608ad106a3adc2",
+      "reviewedAt": "2026-10-21T06:00:35.236Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-racing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-racing:w0012:v1",
+      "source": "korean-racing",
+      "verdict": "pass",
+      "skillId": "ko.listening.word",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "korean-racing:w0012:v1",
+      "officialType": null,
+      "reason": "우유를 듣고 🥛를 고르는 1급 낱말 듣기 문항이다. 정답이 유일하고 오답도 같은 범주의 마실 것이라 적절하다. 다만 보기의 괄호 글자(커피·우유·차)가 화면에 그대로 보이면 듣기가 아니라 글자 맞추기가 되니 그림만 보이는지 확인하면 좋다. 통과. | 1급 기초 낱말 「우유」를 듣고 그림을 고르는 게임 문항으로 모든 기준을 충족함.",
+      "hash": "31543c2f028e0809",
+      "reviewedAt": "2026-10-21T06:00:35.236Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-racing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-racing:w0018:v1",
+      "source": "korean-racing",
+      "verdict": "fix",
+      "skillId": "ko.listening.word",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "korean-racing:w0018:v1",
+      "officialType": null,
+      "reason": "당근을 듣고 🥕를 고르는 단순하고 정확한 1급 낱말 듣기 문항입니다. 보기 괄호 속 한글 이름이 학생 화면에 보이지 않는지만 확인하면 됩니다. | 문항 자체는 적절하나 한국어 해설의 조사 오류(「당근」예요 → 「당근」이에요) 수정 필요. | 보기 그림 🥒·🥔·🥕는 서로 헷갈리지 않습니다. 당근은 1급 생활 낱말이고 정답 2번(🥕)도 맞습니다. 다만 B의 지적이 옳습니다. 「당근」은 받침(ㄴ)으로 끝나므로 「예요」가 아니라 「이에요」를 써야 합니다. 해설에 조사 오류가 있는 채로 학생 화면에 내보낼 수 없으므로 고쳐야 합니다. 또 A가 말한 대로, 보기 괄호 속 한글 이름이 화면에 보이면 듣지 않고 글자만 맞춰도 풀립니다. 이 점도 확인이 필요합니다.",
+      "hash": "ef23a56bcbdf7407",
+      "reviewedAt": "2026-10-21T06:00:35.236Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-racing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-racing:w0025:v1",
+      "source": "korean-racing",
+      "verdict": "fix",
+      "skillId": "ko.listening.word",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "korean-racing:w0025:v1",
+      "officialType": null,
+      "reason": "정답 유일·1급 낱말·그림 구분 모두 좋다. 해설의 '우산예요'를 '우산이에요'로 고치면 쓸 수 있다. 괄호 이름 노출 여부는 확인이 필요하다. | 1급 기초 낱말 「우산」 듣기 게임 문항으로 적절하나, 해설의 서술격 조사 표기(「우산」예요 → 「우산」이에요)를 수정해야 한다.",
+      "hash": "a8f7841b4dc020be",
+      "reviewedAt": "2026-10-21T06:00:35.236Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-racing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-racing:w0028:v1",
+      "source": "korean-racing",
+      "verdict": "pass",
+      "skillId": "ko.listening.word",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "korean-racing:w0028:v1",
+      "officialType": null,
+      "reason": "「모자」를 듣고 🧢를 고르는 1급 낱말 듣기 문항이다. 정답이 하나뿐이고 보기 그림끼리 헷갈리지 않아 그대로 쓸 수 있다. | 1급 기초 낱말 「모자」를 듣고 그림을 고르는 게임 문항으로 모든 기준을 충족한다.",
+      "hash": "3c36df0e123a3b6e",
+      "reviewedAt": "2026-10-21T06:00:35.236Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-racing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-racing:w0035:v1",
+      "source": "korean-racing",
+      "verdict": "pass",
+      "skillId": "ko.listening.word",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "korean-racing:w0035:v1",
+      "officialType": null,
+      "reason": "1급 낱말 「자전거」를 그림으로 고르는 기존 게임 문항이다. 정답이 유일하고, 오답이 같은 갈래의 탈것이라 적절하다. 난도·능력 표기도 맞아 통과한다. | 1급 기초 낱말 「자전거」를 듣고 그림을 고르는 게임 문항으로 모든 기준을 충족한다.",
+      "hash": "2d29b22b8c564160",
+      "reviewedAt": "2026-10-21T06:00:35.236Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-racing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-racing:w0036:v1",
+      "source": "korean-racing",
+      "verdict": "fix",
+      "skillId": "ko.listening.word",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "korean-racing:w0036:v1",
+      "officialType": null,
+      "reason": "정답이 하나뿐이고 1급 낱말 듣기로 알맞습니다. 다만 해설의 「집」예요를 「집」이에요로 바로잡아야 하고, 보기 그림에 한글 이름이 함께 보이는지 확인해야 합니다. | 1급 기초 낱말 「집」 듣기 게임 문항으로 적절하나, 해설의 서술격 조사 표기(「집」예요 → 「집」이에요)를 수정해야 한다.",
+      "hash": "70b7f7600155c84a",
+      "reviewedAt": "2026-10-21T06:00:35.236Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-racing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-racing:w0042:v1",
+      "source": "korean-racing",
+      "verdict": "pass",
+      "skillId": "ko.listening.word",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "korean-racing:w0042:v1",
+      "officialType": null,
+      "reason": "「고양이」를 듣고 🐈를 고르는 1급 낱말 듣기 문항이에요. 정답이 하나뿐이고 보기 그림끼리 헷갈리지 않아 통과예요. | 1급 기초 낱말 「고양이」를 듣고 맞는 그림(🐈)을 고르는 게임 문항으로, 정답이 유일하고 오답 그림과 명확히 구별되어 통과.",
+      "hash": "37c5785e2bd2775a",
+      "reviewedAt": "2026-10-21T06:00:35.236Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-racing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-racing:w0050:v1",
+      "source": "korean-racing",
+      "verdict": "pass",
+      "skillId": "ko.listening.word",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "korean-racing:w0050:v1",
+      "officialType": null,
+      "reason": "「나무」를 듣고 🌳를 고르는 문항으로, 정답이 하나뿐이고 오답도 같은 자연 갈래의 1급 낱말이라 적절하다. 해설이 짧지만 게임 꼴에서는 충분하므로 통과한다. | 1급 기초 낱말 「나무」를 듣고 맞는 그림(🌳)을 고르는 게임 문항으로, 정답이 유일하고 오답 그림과 명확히 구별되어 통과.",
+      "hash": "58648b8e5b44c12c",
+      "reviewedAt": "2026-10-21T06:00:35.236Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-racing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-racing:w0051:v1",
+      "source": "korean-racing",
+      "verdict": "pass",
+      "skillId": "ko.listening.word",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "korean-racing:w0051:v1",
+      "officialType": null,
+      "reason": "「비」를 듣고 날씨 그림 셋 가운데 🌧️를 고르는 문항이다. 정답이 유일하고 보기가 같은 범주라 적절하다. 해설이 짧지만 게임 문항으로는 충분해 통과로 판정한다. | 1급 기초 낱말 「비」를 듣고 맞는 그림(🌧️)을 고르는 게임 문항으로, 정답이 유일하고 오답 그림과 명확히 구별되어 통과.",
+      "hash": "c8b35d2e025a7e17",
+      "reviewedAt": "2026-10-21T06:00:35.236Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-racing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-racing:w0056:v1",
+      "source": "korean-racing",
+      "verdict": "pass",
+      "skillId": "ko.listening.word",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "korean-racing:w0056:v1",
+      "officialType": null,
+      "reason": "「의자」를 듣고 🪑를 고르는 게임 문항입니다. 정답이 하나뿐이고, 오답은 같은 갈래의 가구라 적절합니다. 1급 낱말이며 해설도 기존 문항 기준으로 충분해 통과합니다. | 1급 기초 낱말 「의자」를 듣고 맞는 그림(🪑)을 고르는 게임 문항으로, 정답이 유일하고 오답 그림과 명확히 구별되어 통과.",
+      "hash": "a37fb77629da96cd",
+      "reviewedAt": "2026-10-21T06:00:35.236Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-racing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-racing:w0061:v1",
+      "source": "korean-racing",
+      "verdict": "pass",
+      "skillId": "ko.listening.word",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "korean-racing:w0061:v1",
+      "officialType": null,
+      "reason": "「축구」를 듣고 ⚽를 고르는 1급 낱말 듣기 문항이다. 정답이 하나로 분명하고, 농구·수영은 같은 갈래의 그럴듯한 오답이다. 보기 괄호 안 한글이 학습자 화면에 보이는지만 확인하면 되므로 통과로 판정한다. | 1급 기초 낱말 '축구'를 듣고 알맞은 이모지 그림(⚽)을 고르는 기존 게임 문항으로, 그림의 명확성·오답 구성·어휘 수준 모두 적절하여 통과(pass)로 판정한다.",
+      "hash": "39a3fd23415ca758",
+      "reviewedAt": "2026-10-21T06:00:35.236Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-racing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
         }
       ]
     },

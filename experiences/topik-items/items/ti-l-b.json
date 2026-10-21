@@ -244,7 +244,7 @@
         "seconds": 16
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -288,6 +288,28 @@
           "rev": 2,
           "hash": "9ab9885f73d45be8",
           "notes": "expand-listening 판정대로 — 여자 둘째 줄을 「열두 시에 닫아요. 열두 시가 지나면 기숙사에 못 들어가요.」로(-(으)면 조건·자연스러움), 보기 넷의 주어를 남자의 행동(「남자는 … 들어가야 합니다」)으로 바꾸고 해설 세 언어·메모를 새 대본 인용으로 다시 씀. 대표 능력은 조건 그대로, conceptIds에 G401을 더함."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고 조건 듣기를 잘 겨눈 1급 문항이다. 보기 3의 「기숙사에」 누락은 사소해서 통과로 본다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "9ab9885f73d45be8",
+          "packet": "fix-r1-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TI-L-17 내용 일치 문항으로 조건 이해 및 세부 대조가 잘 설계되었고 해설도 정확함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "9ab9885f73d45be8",
+          "packet": "fix-r1-listening"
         }
       ]
     },
@@ -352,7 +374,7 @@
         "seconds": 12.9
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -396,6 +418,28 @@
           "rev": 2,
           "hash": "4e11926c8c68fc48",
           "notes": "expand-listening 판정대로 — 여자 마지막 줄 「대회 날에 저도 가서 봐요」를 「대회 날에 저도 보러 갈게요」로(의지 -(으)ㄹ게요), 메모 ③ 인용을 맞춤."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나로 분명하고, 오답은 대본 말을 쓰되 사실을 바꿔 그럴듯해요. 해설 세 언어도 같은 근거를 바르게 말해서 그대로 쓸 수 있어요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "4e11926c8c68fc48",
+          "packet": "fix-r1-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "1급 듣기 이유 파악 문항으로 대본·보기·해설 모두 기준에 맞게 잘 작성되었다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "4e11926c8c68fc48",
+          "packet": "fix-r1-listening"
         }
       ]
     },
@@ -642,7 +686,7 @@
         "seconds": 12
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "held",
       "review": [
         {
           "stage": "claude",
@@ -675,6 +719,39 @@
           "rev": 2,
           "hash": "d846dbeae34a7fa0",
           "notes": "expand-listening 판정대로 — (두 검수 일치) 대표 능력 ko.listening.condition → ko.listening.negation(대본에 -(으)면이 없고, 정답이 주문을 바꿔 아이스크림을 사지 않는 데서 갈림). 대본·보기·해설은 그대로."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답이 하나로 분명하고 꼴·급·능력·난도가 모두 맞는 좋은 문항이에요. ko 해설에 걸리기 쉬운 오답(카드로 냄)을 지우는 한 줄을 더해 en·mn과 내용을 맞추면 바로 쓸 수 있어요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "d846dbeae34a7fa0",
+          "packet": "fix-r1-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "주문 변경 및 부정을 파악하는 1급 듣기 문항으로 기준에 부합한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "d846dbeae34a7fa0",
+          "packet": "fix-r1-listening"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "직접 풀어 보면 정답은 0번 하나뿐이에요. 남자가 「그럼 물 한 병만 주세요」라고 주문을 바꾸므로 아이스크림을 사지 않아요. 나머지 보기는 대본이 하나씩 지워요. 1번은 「현금만 받아요」, 2번은 「물 한 병만」, 3번은 「현금이 천 원 있어요」와 어긋나요. 그 밖에 맞는 점: 자리 TI-L-17 꼴, 1급 낱말, 부정·변경 능력, 난도 1, 자연스러운 입말 대본(숫자 한글 표기), 고른 보기 길이. 다만 ko 해설에는 작성 기준 §6이 요구하는 '걸리기 쉬운 오답이 왜 틀린지' 한 줄이 없어요. 그런데 en·mn에는 '카드로 내지 않음'이 들어 있어 세 언어의 근거가 서로 맞지 않아요. 검수자 A의 지적이 맞아요. 고치기는 쉽지만 기준을 벗어난 부분이므로 fix로 판정해요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "d846dbeae34a7fa0",
+          "packet": "fix-r1-listening"
         }
       ]
     },
@@ -834,7 +911,7 @@
         "seconds": 14.1
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -867,6 +944,28 @@
           "rev": 2,
           "hash": "17aa36d890f38c9e",
           "notes": "받아쓰기 확인 — 합성 음성이 첫 자음을 바꿔 읽어 앞에 짧은 말을 붙임: 여자 둘째 줄 「아니요, 못 샀어요. 표가 하나도 없었어요.」 → 「아니요, 못 샀어요. 남은 표가 하나도 없었어요.」(「표가」가 「효과·휴가」로 들림). 해설 세 언어·메모 ④의 인용을 대본 글자 그대로 맞춤."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고 오답도 대화의 말을 바꿔 그럴듯해요. 1급 난도와 TI-L-17 꼴에 맞고 해설 세 언어도 정확해서 그대로 써도 돼요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "17aa36d890f38c9e",
+          "packet": "fix-r1-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "1급 듣기 부정·변경 이해 문항으로 모든 기준을 충족한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "17aa36d890f38c9e",
+          "packet": "fix-r1-listening"
         }
       ]
     },
@@ -1022,7 +1121,7 @@
         "seconds": 11.6
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -1055,6 +1154,28 @@
           "rev": 2,
           "hash": "a3b8d5073f24530c",
           "notes": "expand-listening 판정대로 — (두 검수 일치) 대표 능력 ko.listening.condition → ko.listening.detail(정답을 가르는 것이 파는 날), 남자 마지막 줄 「그럼 금요일에 다시 와요」를 「그럼 금요일에 다시 올게요」로(남자 줄은 짧게 — 아르곤 안), 해설 ko에 「이번 주 금요일」 오답 근거를 더하고 세 언어·메모 인용을 맞춤."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답은 때만 바꿔 그럴듯합니다. 1급 수준에 맞고 세 언어 해설도 정확해서 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "a3b8d5073f24530c",
+          "packet": "fix-r1-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "시간 세부 정보를 파악하는 1급 듣기 문항으로 기준에 맞게 잘 작성되었다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "a3b8d5073f24530c",
+          "packet": "fix-r1-listening"
         }
       ]
     },
@@ -1119,7 +1240,7 @@
         "seconds": 11.2
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -1163,6 +1284,28 @@
           "rev": 2,
           "hash": "2435ea0b873f3697",
           "notes": "expand-listening 판정대로 — 남자 첫 줄을 「카밀라 씨, 오늘 저녁에 같이 김치찌개를 먹을까요?」로 고쳐 제안임을 분명히 함. 해설·메모는 이 줄을 인용하지 않아 그대로."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고 오답도 대화의 말을 바꾼 그럴듯한 꼴이에요. 1급 앞쪽 낱말과 이유(-아서) 능력에 맞고, 해설 세 언어도 같은 근거를 말해요. 정답이 조금 긴 점은 사소해서 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "2435ea0b873f3697",
+          "packet": "fix-r1-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "1급 듣기(이유 이해하기) 기준에 모든 면에서 잘 맞는 문항입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "2435ea0b873f3697",
+          "packet": "fix-r1-listening"
         }
       ]
     },
@@ -1227,7 +1370,7 @@
         "seconds": 11.9
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -1271,6 +1414,28 @@
           "rev": 2,
           "hash": "e7d6d73b9d904f32",
           "notes": "expand-listening 판정대로 — 남자 마지막 줄 「운전은 제가 다 해요」를 「운전은 제가 다 할게요」로, 정답 ④를 「내일은 남자만 운전을 합니다.」로(차에 혼자 탄다는 뜻으로 읽히지 않게) 고치고, 해설 세 언어·메모 인용을 맞추고 해설 ko에 「차로 가요」 오답 근거를 더함."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 분명하고 오답 설계가 고르다. 해설 세 언어도 일치한다. 말투에 사소한 다듬을 점만 있어 통과로 본다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "e7d6d73b9d904f32",
+          "packet": "fix-r1-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "1급 듣기(부정·변경 이해하기) 기준에 잘 맞는 문항입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "e7d6d73b9d904f32",
+          "packet": "fix-r1-listening"
         }
       ]
     },
@@ -1335,7 +1500,7 @@
         "seconds": 11.4
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -1379,6 +1544,28 @@
           "rev": 2,
           "hash": "88d9d92fa73ffc7f",
           "notes": "expand-listening 판정대로 — 여자 마지막 줄 「그럼 지금 드려요」를 「그럼 지금 드릴게요」로 고치고, 해설 ko의 어색한 인용을 바로잡고 시험지를 먼저 받지 않는다는 오답 근거를 더함, 영어·몽골어 해설·메모 ③의 인용을 맞춤."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 순서 능력을 바르게 겨눕니다. 1급 수준의 자연스러운 대화이고 해설 세 언어도 정확해 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "88d9d92fa73ffc7f",
+          "packet": "fix-r1-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "1급 듣기(순서 이해하기) 기준에 잘 맞는 문항입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "88d9d92fa73ffc7f",
+          "packet": "fix-r1-listening"
         }
       ]
     },
@@ -1625,7 +1812,7 @@
         "seconds": 12.3
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -1669,6 +1856,28 @@
           "rev": 2,
           "hash": "b6916f6e4dcfb14b",
           "notes": "expand-listening 판정대로 — 남자 마지막 줄 「다섯 시에 가요」를 「다섯 시에 갈게요」로(약속하는 말) 고치고, 영어·몽골어 해설과 메모 ③④의 인용을 맞춤."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고, 오답이 대화의 말을 바꿔 그럴듯하며, 꼴·난도·해설이 모두 기준에 맞아 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "b6916f6e4dcfb14b",
+          "packet": "fix-r1-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "1급 듣기(부정·변경 이해하기) 기준에 잘 맞는 문항입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "b6916f6e4dcfb14b",
+          "packet": "fix-r1-listening"
         }
       ]
     },
@@ -2183,7 +2392,7 @@
         "seconds": 12.1
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -2216,6 +2425,28 @@
           "rev": 2,
           "hash": "0760a8029f842ba0",
           "notes": "expand-listening 판정대로 — (두 검수 일치) 대표 능력 ko.listening.condition → ko.listening.detail(정답을 가르는 것이 만나는 때·횟수), 여자 둘째 줄에 「매주」를 넣어 「일주일에 한 번」의 근거를 분명히 하고, 해설 ko에 ③·④ 오답 근거를 더하고 세 언어·메모 인용을 맞춤."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답이 대화의 말과 분명히 어긋난다. 1급 앞쪽 수준과 세부 능력에 맞고 세 언어 해설도 바르다. 그대로 통과한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "0760a8029f842ba0",
+          "packet": "fix-r1-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "모임 요일과 빈도를 묻고 답하는 1급 듣기 세부 정보 문항으로 모든 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "0760a8029f842ba0",
+          "packet": "fix-r1-listening"
         }
       ]
     },
@@ -2280,7 +2511,7 @@
         "seconds": 12.3
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -2313,6 +2544,28 @@
           "rev": 2,
           "hash": "f1e9a47856fc9409",
           "notes": "expand-listening 판정대로 — (두 검수 일치) 여자 첫 줄을 마지막 줄과 이어지게 물음 「요즘 저녁에 공원에 자주 가요?」로(아르곤 안), 여자 마지막 줄을 「아, 그럼 저도 내일부터 같이 할게요.」로(Claude 안) 고치고, 해설 ko에 「내일부터」 오답 근거를 더하고 메모 ③ 인용을 맞춤."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답이 각각 대본과 분명히 어긋나며, 급·난도·해설 모두 기준에 맞아 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "f1e9a47856fc9409",
+          "packet": "fix-r1-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "산책하는 시간과 이유를 다룬 1급 듣기 이유 파악 문항으로 모든 기준에 부합함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "f1e9a47856fc9409",
+          "packet": "fix-r1-listening"
         }
       ]
     },
@@ -2568,7 +2821,7 @@
         "seconds": 12.3
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -2601,6 +2854,28 @@
           "rev": 2,
           "hash": "0cdcbc3a6f84e4e4",
           "notes": "expand-listening 판정대로 — (두 검수 일치) 대표 능력 ko.listening.condition → ko.listening.detail(대본에 -(으)면이 없고 정답을 가르는 것이 밥 주는 때). 대본·보기·해설은 그대로."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나로 분명하고 오답도 대화 말을 바꿔 그럴듯하게 짜였어요. 급·난도·해설 세 언어가 모두 기준에 맞아 그대로 써도 돼요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "0cdcbc3a6f84e4e4",
+          "packet": "fix-r1-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "고양이 밥 주기를 부탁하는 1급 듣기 세부 정보 문항으로 출제 기준을 잘 지킴.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "0cdcbc3a6f84e4e4",
+          "packet": "fix-r1-listening"
         }
       ]
     },
@@ -2665,7 +2940,7 @@
         "seconds": 12.3
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -2698,6 +2973,28 @@
           "rev": 2,
           "hash": "a8fd254fd8de4e97",
           "notes": "expand-listening 판정대로 — (두 검수 일치) 대본 첫 줄과 보기 ③의 「어제 밤」을 맞춤법대로 「어젯밤」으로."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고, 오답은 시각·부정·사람을 바꿔 그럴듯하며, 해설 세 언어가 같은 근거를 말합니다. 그대로 써도 됩니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "a8fd254fd8de4e97",
+          "packet": "fix-r1-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "드라마 시청 여부를 묻고 답하는 1급 듣기 부정 정보 문항으로 모든 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "a8fd254fd8de4e97",
+          "packet": "fix-r1-listening"
         }
       ]
     },
@@ -2853,7 +3150,7 @@
         "seconds": 12.4
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -2886,6 +3183,28 @@
           "rev": 2,
           "hash": "bcda971ad6e55c24",
           "notes": "expand-listening 판정대로 — (두 검수 일치) 대표 능력 ko.listening.condition → ko.listening.detail(정답을 가르는 것이 요일·시각), 남자 마지막 줄 「다시 와요」를 「다시 올게요」로, 메모 ④ 인용을 맞춤."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 3번이 유일하고, 오답은 대화의 말을 바꿔 그럴듯해요. 급·꼴·해설 세 언어가 모두 맞아서 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "bcda971ad6e55c24",
+          "packet": "fix-r1-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "약국 주말 영업시간을 묻고 답하는 대화로, 1급 수준과 TI-L-17 유형 기준을 모두 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "bcda971ad6e55c24",
+          "packet": "fix-r1-listening"
         }
       ]
     },
@@ -3045,7 +3364,7 @@
         "seconds": 12.5
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -3089,6 +3408,28 @@
           "rev": 2,
           "hash": "976f2b73cd1d3f03",
           "notes": "expand-listening 판정대로 — 대표 능력 ko.listening.condition → ko.listening.detail(「시험이 끝나면」은 장면의 틀이고 정답을 가르는 것은 요일·동행). 대본·보기·해설은 그대로."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "「금요일에 끝나요」와 「그다음 날」로 토요일을 찾는 1급 세부 듣기 문항입니다. 정답이 하나뿐이고 해설 세 언어가 같은 근거를 말하므로 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "976f2b73cd1d3f03",
+          "packet": "fix-r1-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "시험이 끝나는 금요일 다음 날(토요일)에 바다에 가기로 약속하는 대화로, 모든 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T06:00:34.803Z",
+          "rev": 2,
+          "hash": "976f2b73cd1d3f03",
+          "packet": "fix-r1-listening"
         }
       ]
     }
