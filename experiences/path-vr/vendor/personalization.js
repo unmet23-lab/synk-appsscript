@@ -36,6 +36,9 @@
   // A target grade belongs to its test (contract r2 시험정보 목표급: TOPIK I 1–2, TOPIK II 3–6).
   const EXAM_GRADES = Object.freeze({ topik1: Object.freeze([1, 2]), topik2: Object.freeze([3, 4, 5, 6]) });
   const gradeFits = values => !Object.hasOwn(values, 'targetGrade') || (EXAM_GRADES[values.examType] || []).includes(values.targetGrade);
+  // The exam details are asked only of a person who named the exam reason, and changing the reasons forgets them (contract r2 시험정보 묻는때).
+  const EXAM_FIELDS = Object.freeze(['examType', 'targetGrade', 'examDate', 'examMode', 'weeklyMinutes']);
+  const examFits = values => (values.reasons || []).includes('exam') || !EXAM_FIELDS.some(field => Object.hasOwn(values, field));
   const FIELDS = Object.freeze([...Object.keys(OPTIONS), 'minutes', 'reasons', 'primaryReason', 'targetGrade', 'examDate', 'weeklyMinutes']);
   // A test month (2027-01) or day (2027-01-11) that exists on the calendar.
   const examDay = value => typeof value === 'string' && /^\d{4}-(0[1-9]|1[0-2])(-(0[1-9]|[12]\d|3[01]))?$/.test(value)
@@ -155,6 +158,14 @@
     if (!gradeFits(next.values)) {
       if (patch.values?.targetGrade != null) fail('target grade must fit the declared exam type');
       delete next.values.targetGrade; delete next.provenance.targetGrade;
+      if (next.generation === profile.generation) next.generation += 1;
+    }
+    // And for the exam details and the exam reason: naming them without that reason is a host error; changing the
+    // reasons later forgets them. A stored profile that still holds them stays readable (checkProfile does not
+    // refuse it) and loses them on its next change; products read them only next to the exam reason.
+    if (!examFits(next.values)) {
+      if (EXAM_FIELDS.some(field => patch.values?.[field] != null)) fail('exam details need the exam reason');
+      for (const field of EXAM_FIELDS) { delete next.values[field]; delete next.provenance[field]; }
       if (next.generation === profile.generation) next.generation += 1;
     }
     return copy(checkProfile(next));

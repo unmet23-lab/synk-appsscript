@@ -787,6 +787,7 @@ export default {
  'records.moved':{ko:'이 기기의 학습을 내 계정으로 옮겼어요.',en:'Moved the learning on this device to your account.',mn:'Энэ төхөөрөмж дээрх сургалтын мэдээллийг таны бүртгэл рүү шилжүүллээ.'},
  'records.partly':{ko:'옮길 수 있는 기록만 내 계정으로 옮겼어요.',en:'Moved the records that could be moved to your account.',mn:'Шилжүүлж болох мэдээллийг л таны бүртгэл рүү шилжүүллээ.'},
  'records.kept':{ko:'계정은 이 기기의 학습 없이 이어 가요. 이 기기의 기록은 그대로 남아 있어요.',en:'Your account carries on without the learning from this device. The records on this device stay as they are.',mn:'Энэ төхөөрөмж дээрх сургалтын мэдээллийг бүртгэлд нэмэхгүйгээр үргэлжлүүлнэ. Энэ төхөөрөмж дээрх мэдээлэл хэвээр үлдэнэ.'},
+ 'records.pendingKept':{ko:'옮기던 기록 일부는 이미 내 계정에 더했어요. 다음에 저장할 때 함께 저장돼요. 나머지는 이 기기에만 둬요.',en:'Some of the records were already added to your account and will be saved the next time it saves. The rest stay on this device only.',mn:'Шилжүүлж байсан мэдээллийн нэг хэсгийг таны бүртгэлд аль хэдийн нэмсэн бөгөөд дараагийн удаа хадгалахад хамт хадгалагдана. Үлдсэн нь зөвхөн энэ төхөөрөмж дээр байна.'},
  'records.hangulRow':{ko:'한글 만나기',en:'Meet Hangul',mn:'Солонгос үсэгтэй танилцах'},
  'records.answerRow':{ko:'처음 고른 답',en:'Your first answer',mn:'Анх сонгосон хариулт'},
  'records.answerNew':{ko:'한글을 아직 못 읽어요',en:'I can’t read Hangul yet',mn:'Солонгос үсэг одоохондоо уншиж чадахгүй'},

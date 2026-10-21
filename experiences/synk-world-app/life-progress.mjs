@@ -299,18 +299,21 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
  // 학습 목표는 이 계정에 아직 아무것도 정하지 않았을 때(처음 상태)만 그 값을 이 계정의 선언으로 다시 남긴다.
  // 옮긴 출처는 imports에 남긴다(최근 20번). 더한 것이 없으면 아무것도 쓰지 않는다.
  function importRecords({lessons={},reviews={},days={},profile=null}={},{from='guest-device'}={}){
-  checkDailyWrite();const next=clone(state),added={lessons:0,reviews:0,days:0,profile:false};let items=0;
+  checkDailyWrite();const next=clone(state),added={lessons:0,reviews:0,days:0,profile:false};
   for(const [id,lesson]of Object.entries(object(lessons)?lessons:{}))if(!next.lessons[id]&&Object.keys(next.lessons).length<100){next.lessons[id]=clone(lesson);added.lessons+=1;}
   for(const [id,review]of Object.entries(object(reviews)?reviews:{}))if(!next.reviews[id]&&next.lessons[review?.lessonId]&&Object.keys(next.reviews).length<400){next.reviews[id]=clone(review);added.reviews+=1;}
+  // 날: 계정에 없는 날은 통째로, 있는 날은 그 날에 없는 문항만 — 문항을 더한 날도 더한 날로 센다(옮긴 결과가 「이미 있음」으로 보이지 않게, 10-21 GPT 검수).
   for(const [day,value]of Object.entries(object(days)?days:{})){
    const daily=next.daily??={version:1,days:{}},mine=daily.days[day];
    if(!mine){daily.days[day]=clone(value);added.days+=1;continue;}
-   for(const [questionId,item]of Object.entries(object(value?.items)?value.items:{}))if(!object(mine.items)||!mine.items[questionId]){(mine.items??={})[questionId]=clone(item);items+=1;}
+   let got=0;
+   for(const [questionId,item]of Object.entries(object(value?.items)?value.items:{}))if(!object(mine.items)||!mine.items[questionId]){(mine.items??={})[questionId]=clone(item);got+=1;}
+   if(got)added.days+=1;
   }
   if(object(profile?.values)&&readWorldLearningProfile(next.learningProfile,{owner,at:now()}).profile.status==='new'){
    next.learningProfile=updateWorldLearningProfile(next.learningProfile,{owner,at:now(),values:clone(profile.values),consent:true,expectedRevision:0});added.profile=true;
   }
-  if(!added.lessons&&!added.reviews&&!added.days&&!added.profile&&!items)return {...added,status:status()};
+  if(!added.lessons&&!added.reviews&&!added.days&&!added.profile)return {...added,status:status()};
   next.imports=[...(Array.isArray(state.imports)?state.imports:[]),{from,at:now(),lessons:added.lessons,reviews:added.reviews,days:added.days,profile:added.profile}].slice(-20);
   commit(next);return {...added,status:status()};
  }

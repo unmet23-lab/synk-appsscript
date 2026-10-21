@@ -32,17 +32,20 @@ export function hangulProgressSummary(value){
  const graduated=recordObject(value.graduated),skipped=value.skipped===true,sessions=Array.isArray(value.sessions)?value.sessions.length:0;
  return met||graduated||skipped||sessions?{met,mastered,graduated,skipped,sessions}:null;
 }
-// 한글 진도에서 가장 늦은 활동 시각(글자를 만나거나 답한 때·졸업). 기준 시각보다 앞이면 다른 사람의 기록일 수 있어 묻지 않는다.
-function hangulLatest(value){
- let latest=-Infinity;
- for(const letter of recordObject(value?.letters)?Object.values(value.letters):[])for(const key of ['lastAt','metAt'])latest=Math.max(latest,isoTime(letter?.[key]));
- latest=Math.max(latest,isoTime(value?.graduated?.at));
- for(const session of Array.isArray(value?.sessions)?value.sessions:[])latest=Math.max(latest,isoTime(`${session?.day}T23:59:59+09:00`));
- return latest;
+// 기준 시각이 있으면 한 기록(레슨·한글 진도·학습 목표)의 모든 활동이 그 뒤일 때만 이 사람의 것으로 본다 — 앞 사람이 하던 기록에
+// 이어 한 것은 앞 사람 몫이 섞여 있어 통째로 두고 간다(10-21 GPT 검수 · 하루 기록 문항·학습 기록 사건은 하나하나 시각으로 가른다).
+const allAfter=(times,after)=>!after||times.length>0&&Math.min(...times)>after;
+// 한글 진도의 활동 시각(글자를 만나거나 답한 때·졸업·회차한 날). 회차는 날짜만 있어 그날 0시(한국 시각)로 친다 — 그날 앞선 기록을 뒤로 보지 않게.
+function hangulTimes(value){
+ const times=[];
+ for(const letter of recordObject(value?.letters)?Object.values(value.letters):[])for(const key of ['metAt','lastAt'])times.push(isoTime(letter?.[key]));
+ times.push(isoTime(value?.graduated?.at));
+ for(const session of Array.isArray(value?.sessions)?value.sessions:[])times.push(isoTime(`${session?.day}T00:00:00+09:00`));
+ return times.filter(Number.isFinite);
 }
 function readHangul(storage,key,{after=0}={}){
  const raw=storage.getItem(key);if(raw===null)return null;
- try{const value=JSON.parse(raw),summary=hangulProgressSummary(value);return summary&&(!after||hangulLatest(value)>after)?summary:null;}catch{return null;}
+ try{const value=JSON.parse(raw),summary=hangulProgressSummary(value);return summary&&allAfter(hangulTimes(value),after)?summary:null;}catch{return null;}
 }
 function guestLife(storage){
  try{const value=JSON.parse(storage?.getItem(GUEST_LIFE_KEY)||'null');return recordObject(value)&&value.owner==='guest'&&value.version===1?value:null;}catch{return null;}
@@ -102,22 +105,29 @@ export function guestLearningEvents(storage,{after=0}={}){
  return {events:moved,attempts:moved.filter(event=>event.type==='practice.attempted'&&event.attemptNo===1).length};
 }
 // ── 손님 생활 진도(레슨·복습·하루 기록·학습 목표)에서 기준 시각 뒤의 것 ──
+const EXAM_FIELDS=['examType','targetGrade','examDate','examMode','weeklyMinutes'];
 export function guestLifeRecords(storage,{after=0}={}){
  const value=guestLife(storage);if(!value)return null;
  const lessons={},reviews={},days={};
- for(const [id,lesson]of Object.entries(recordObject(value.lessons)?value.lessons:{})){
-  if(!recordObject(lesson))continue;
-  const latest=Math.max(recordTime(lesson.startedAt)?lesson.startedAt:-1,recordTime(lesson.completedAt)?lesson.completedAt:-1,...Object.values(recordObject(lesson.answers)?lesson.answers:{}).map(answer=>recordTime(answer?.at)?answer.at:-1));
-  if(latest>after&&Object.keys(recordObject(lesson.answers)?lesson.answers:{}).length)lessons[id]=lesson;
- }
- // 복습은 그 레슨이 손님 기록에 있으면 옮길 거리다 — 레슨은 지난번에 이미 옮겼을 수 있다(받는 쪽 importRecords가 계정에 그 레슨이 있는지 본다).
- for(const [id,review]of Object.entries(recordObject(value.reviews)?value.reviews:{}))if(recordObject(review)&&recordTime(review.lastAt)&&review.lastAt>after&&recordObject(value.lessons?.[review.lessonId]))reviews[id]=review;
+ // 레슨: 연 때·마친 때·답이 모두 기준 시각 뒤인 레슨만(답이 하나도 없는 레슨은 옮길 거리가 아니다).
+ const ownLesson=lesson=>{
+  if(!recordObject(lesson))return false;const answers=Object.values(recordObject(lesson.answers)?lesson.answers:{});
+  return answers.length>0&&allAfter([lesson.startedAt,lesson.completedAt,...answers.map(answer=>answer?.at)].filter(recordTime),after);
+ };
+ for(const [id,lesson]of Object.entries(recordObject(value.lessons)?value.lessons:{}))if(ownLesson(lesson))lessons[id]=lesson;
+ // 복습은 레슨 답에서 생기므로 그 레슨이 이 사람의 것일 때만 따라간다(받는 쪽 importRecords가 계정에 그 레슨이 있는지 다시 본다).
+ for(const [id,review]of Object.entries(recordObject(value.reviews)?value.reviews:{}))if(recordObject(review)&&recordTime(review.lastAt)&&review.lastAt>after&&ownLesson(value.lessons?.[review.lessonId]))reviews[id]=review;
  for(const [key,day]of Object.entries(recordObject(value.daily?.days)?value.daily.days:{})){
   const items=Object.entries(recordObject(day?.items)?day.items:{}).filter(([,item])=>recordTime(item?.observedAt)&&item.observedAt>after);
   if(items.length)days[key]={...day,items:Object.fromEntries(items)};
  }
- const saved=value.learningProfile?.profile;
- const profile=recordObject(saved)&&saved.status==='active'&&saved.consent===true&&isoTime(saved.updatedAt)>after&&recordObject(saved.values)&&Object.keys(saved.values).length?{values:{...saved.values}}:null;
+ // 학습 목표: 지금 값마다 선언한 때(provenance.at)가 모두 기준 시각 뒤일 때만 — 앞 사람이 정한 목표가 남은 판에서 한 칸만 바꾼 것은 두고 간다.
+ // 넘기기 전에 시험 칸은 시험 이유와 짝을 맞춘다(계약 r2 — 이유를 바꾸면 시험 정보는 지운다).
+ const saved=value.learningProfile?.profile,declared=recordObject(saved?.provenance)?saved.provenance:{};
+ const savedValues=recordObject(saved)&&saved.status==='active'&&saved.consent===true&&recordObject(saved.values)?{...saved.values}:{};
+ if(!(Array.isArray(savedValues.reasons)&&savedValues.reasons.includes('exam')))for(const field of EXAM_FIELDS)delete savedValues[field];
+ const declaredAfter=()=>{const times=Object.keys(saved.values).map(field=>isoTime(declared[field]?.at));return !after||times.length>0&&times.every(at=>Number.isFinite(at)&&at>after);};
+ const profile=Object.keys(savedValues).length&&declaredAfter()?{values:savedValues}:null;
  const counts={lessons:Object.keys(lessons).length,reviews:Object.keys(reviews).length,days:Object.keys(days).length,profile:!!profile};
  return counts.lessons||counts.reviews||counts.days||counts.profile?{lessons,reviews,days,profile,counts}:null;
 }
@@ -199,6 +209,7 @@ export const DEVICE_RECORDS_TEXT=Object.freeze({
  snapshot:'계정 기록은 덮지 않아요',snapshotBody:'계정에 이미 있는 기록은 그대로 두고, 계정에 없는 것만 더해요. 이 기기의 기록은 지우지 않아요.',
  moving:'계정으로 옮기고 있어요.',failed:'옮기지 못했어요. 연결을 확인한 뒤 다시 골라 주세요.',
  moved:'이 기기의 학습을 내 계정으로 옮겼어요.',partly:'옮길 수 있는 기록만 내 계정으로 옮겼어요.',kept:'계정은 이 기기의 학습 없이 이어 가요. 이 기기의 기록은 그대로 남아 있어요.',
+ pendingKept:'옮기던 기록 일부는 이미 내 계정에 더했어요. 다음에 저장할 때 함께 저장돼요. 나머지는 이 기기에만 둬요.',
  hangulRow:'한글 만나기',answerRow:'처음 고른 답',answerNew:'한글을 아직 못 읽어요',answerReads:'한글을 읽을 수 있어요',
  graduated:'졸업했어요',met:n=>`글자 ${n}개를 만났어요`,metMastered:(n,m)=>`글자 ${n}개를 만났고 ${m}개를 익혔어요`,skipped:'건너뛰기를 골랐어요',started:'연습을 시작했어요',
  keptHangul:'한글 만나기는 계정에 이미 진도가 있어 계정 진도로 이어 가요.',keptAnswer:'처음 고른 답은 계정에 이미 있어 계정 것을 써요.',
@@ -255,34 +266,48 @@ export function createDeviceRecordsOffer({storage=globalThis.localStorage,learni
   return new Promise(resolve=>{const job={owner,plan,port,resolve,busy:false,startedAt:now()};current=job;present({title:recordsText(text).title,html:markup(plan),onClose:()=>finish(job,'dismissed')});});
  }
  function done(job,value,message){finish(job,value);close();if(message)defer(()=>toast(message));return value;}
+ // 앞 시도들이 남긴 것(같은 판을 다시 고를 때): moved — 서버가 받았다고 확인한 것(생활 진도·학습 기록 수, 한글·처음 고른 답),
+ // pending — 계정에 더했지만 서버 확인을 못 한 것. 다시 고르면 이미 더한 것은 받는 쪽이 「이미 있음」으로 건너뛰고 확인만 다시 한다(10-21 GPT 검수).
+ const lifeNonzero=counts=>!!(counts&&(counts.lessons||counts.reviews||counts.days||counts.profile));
+ const lifeSum=(a,b)=>({lessons:(a?.lessons||0)+(b?.lessons||0),reviews:(a?.reviews||0)+(b?.reviews||0),days:(a?.days||0)+(b?.days||0),profile:!!(a?.profile||b?.profile)});
  async function choose(choice,{owner,status=()=>{}}={}){
   const job=current;if(!job||job.busy||!['move','keep'].includes(choice))return null;
   // 그사이 계정이 바뀌었으면 아무것도 옮기지 않고 판만 닫는다.
   if(owner!==job.owner){done(job,'dismissed');return null;}
-  job.busy=true;
+  job.busy=true;const T=recordsText(text);
+  const carry=job.carry??={moved:{lessons:0,reviews:0,days:0,profile:false,events:0},hangul:false,answer:false,pending:{life:null,learning:0}};
+  const movedSoFar=()=>lifeNonzero(carry.moved)||carry.moved.events>0||carry.hangul||carry.answer;
+  // 계정 한글 저장(cloud)으로 한글을 옮길 판이면, 실제로 올렸을 때만 cloud로 남긴다(못 올렸으면 다음 로그인에 다시 묻는다).
+  const cloudDone=()=>!!job.port&&(!job.plan.hangul?.cloud||carry.hangul);
   if(choice==='keep'){
-   // 앞 「옮기기」가 서버 확인 전에 실패했어도 계정 쪽에 이미 더한 것은 남아 다음 저장 때 올라간다 — 「옮기지 않았다」고 말하지 않는다.
-   const prior=job.pending;
-   if(prior?.life||prior?.learning){saveDeviceRecordsDecision(storage,job.owner,'moved',now(),{cloud:!!job.port,through:job.startedAt,moved:{lessons:prior.life?.lessons||0,reviews:prior.life?.reviews||0,days:prior.life?.days||0,profile:!!prior.life?.profile,events:prior.learning||0,at:now()}});return done(job,'moved',recordsText(text).partly);}
-   saveDeviceRecordsDecision(storage,job.owner,'kept',now(),{through:job.startedAt});return done(job,'kept',recordsText(text).kept);}
-  status(recordsText(text).moving,true);
+   // 앞 「옮기기」가 일부만 해냈으면 서버가 받은 만큼은 옮긴 것으로 남긴다. 서버 확인을 못 한 것만 있으면 고른 대로 「두기」로 남기되,
+   // 계정에 이미 더한 것이 있다고 알린다(그것은 다음 저장 때 올라간다 — 「옮기지 않았다」고도, 「옮겼다」고도 하지 않는다).
+   if(movedSoFar()){saveDeviceRecordsDecision(storage,job.owner,'moved',now(),{cloud:cloudDone(),through:job.startedAt,moved:{...carry.moved,at:now()}});return done(job,'moved',T.partly);}
+   saveDeviceRecordsDecision(storage,job.owner,'kept',now(),{through:job.startedAt});
+   return done(job,'kept',lifeNonzero(carry.pending.life)||carry.pending.learning>0?T.pendingKept:T.kept);}
+  status(T.moving,true);
   const guard=()=>{if(current!==job||hangulPort()!==job.port||accountOwner&&accountOwner()!==job.owner)throw Error('계정 연결이 바뀌었어요.');};
   const result=await applyDeviceRecords(job.plan,{storage,accountAnswer,setAccountAnswer,hangulPort:job.port,guard,importLife,importLearning});
   if(current!==job)return null;
-  // 계정 저장이 서버에 닿았는지 모르는 부분이 하나라도 있으면(생활 진도·학습 기록·계정 한글 저장) 고른 것을 남기지 않고 다시 고르게 한다 —
-  // 다시 고르면 이미 더한 것은 중복 없이 건너뛰고 남은 것만 다시 확인한다.
-  // 앞 시도에서 더하고 서버 확인만 못 한 것: 이번 시도가 「이미 있음」이면 그 앞 시도가 옮긴 것이다.
-  const prior=job.pending||{};
-  if(prior.life&&['moved','exists'].includes(result.life)){result.life='moved';Object.assign(result.added,{lessons:result.added.lessons+(prior.life.lessons||0),reviews:result.added.reviews+(prior.life.reviews||0),days:result.added.days+(prior.life.days||0),profile:result.added.profile||!!prior.life.profile});}
-  if(prior.learning&&['moved','exists'].includes(result.learning)){result.learning='moved';result.added.events+=prior.learning;}
-  const movedNow=[result.hangul,result.answer,result.life,result.learning].includes('moved');
-  if(result.errors.length&&(!movedNow||job.plan.hangul?.cloud||job.plan.life||job.plan.learning)){
-   const sum=(a,b)=>a&&b?{lessons:(a.lessons||0)+(b.lessons||0),reviews:(a.reviews||0)+(b.reviews||0),days:(a.days||0)+(b.days||0),profile:!!(a.profile||b.profile)}:a||b||null;
-   job.pending={life:sum(prior.life,result.pending.life),learning:(prior.learning||0)+(result.pending.learning||0)||null};
-   job.busy=false;status(recordsText(text).failed,false);return null;}
-  saveDeviceRecordsDecision(storage,job.owner,'moved',now(),{cloud:!!job.port,through:job.startedAt,moved:{...result.added,at:now()}});
-  const partly=result.errors.length||[result.hangul,result.answer,result.life,result.learning].includes('exists')||!movedNow;
-  return done(job,'moved',partly?recordsText(text).partly:recordsText(text).moved);
+  // 「이미 있음」이 앞 시도 몫이면(앞에서 옮겼거나, 더하고 확인만 못 했다가 이번에 오류 없이 끝났다) 옮긴 것으로 본다.
+  const hadLife=lifeNonzero(carry.moved)||lifeNonzero(carry.pending.life),hadEvents=carry.moved.events>0||carry.pending.learning>0;
+  const status4={hangul:result.hangul==='exists'&&carry.hangul?'moved':result.hangul,answer:result.answer==='exists'&&carry.answer?'moved':result.answer,
+   life:result.life==='exists'&&hadLife?'moved':result.life,learning:result.learning==='exists'&&hadEvents?'moved':result.learning};
+  // 이번 시도에서 서버가 받은 것을 쌓는다. 앞 시도의 확인 못 한 것은 그 단계가 이번에 오류 없이 끝났으면 확인된 것이다.
+  if(result.life==='moved')carry.moved={...carry.moved,...lifeSum(carry.moved,result.added)};
+  if(['moved','exists'].includes(result.life)&&lifeNonzero(carry.pending.life)){carry.moved={...carry.moved,...lifeSum(carry.moved,carry.pending.life)};carry.pending.life=null;}
+  if(result.learning==='moved')carry.moved.events+=result.added.events;
+  if(['moved','exists'].includes(result.learning)&&carry.pending.learning>0){carry.moved.events+=carry.pending.learning;carry.pending.learning=0;}
+  if(result.hangul==='moved')carry.hangul=true;
+  if(result.answer==='moved')carry.answer=true;
+  if(lifeNonzero(result.pending.life))carry.pending.life=lifeSum(carry.pending.life,result.pending.life);
+  if(result.pending.learning>0)carry.pending.learning+=result.pending.learning;
+  const movedNow=Object.values(status4).includes('moved');
+  // 계정 저장이 서버에 닿았는지 모르는 부분이 하나라도 있으면(생활 진도·학습 기록·계정 한글 저장) 고른 것을 남기지 않고 다시 고르게 한다.
+  if(result.errors.length&&(!movedNow||job.plan.hangul?.cloud||job.plan.life||job.plan.learning)){job.busy=false;status(T.failed,false);return null;}
+  saveDeviceRecordsDecision(storage,job.owner,'moved',now(),{cloud:cloudDone(),through:job.startedAt,moved:{...carry.moved,at:now()}});
+  const partly=result.errors.length||Object.values(status4).includes('exists')||!movedNow;
+  return done(job,'moved',partly?T.partly:T.moved);
  }
  return Object.freeze({offer,choose,pending:()=>current?{owner:current.owner,plan:current.plan}:null});
 }

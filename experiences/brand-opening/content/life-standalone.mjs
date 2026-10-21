@@ -12606,6 +12606,8 @@ var require_personalization = __commonJS2({
       const WEEKLY_MINUTES = Object.freeze([30, 60, 120, 180]);
       const EXAM_GRADES3 = Object.freeze({ topik1: Object.freeze([1, 2]), topik2: Object.freeze([3, 4, 5, 6]) });
       const gradeFits = (values) => !Object.hasOwn(values, "targetGrade") || (EXAM_GRADES3[values.examType] || []).includes(values.targetGrade);
+      const EXAM_FIELDS = Object.freeze(["examType", "targetGrade", "examDate", "examMode", "weeklyMinutes"]);
+      const examFits = (values) => (values.reasons || []).includes("exam") || !EXAM_FIELDS.some((field) => Object.hasOwn(values, field));
       const FIELDS = Object.freeze([...Object.keys(OPTIONS), "minutes", "reasons", "primaryReason", "targetGrade", "examDate", "weeklyMinutes"]);
       const examDay = (value) => typeof value === "string" && /^\d{4}-(0[1-9]|1[0-2])(-(0[1-9]|[12]\d|3[01]))?$/.test(value) && (value.length === 7 || (/* @__PURE__ */ new Date(`${value}T00:00:00Z`)).toISOString().startsWith(value));
       const copy3 = (value) => JSON.parse(JSON.stringify(value));
@@ -12717,6 +12719,14 @@ var require_personalization = __commonJS2({
           if (patch.values?.targetGrade != null) fail2("target grade must fit the declared exam type");
           delete next.values.targetGrade;
           delete next.provenance.targetGrade;
+          if (next.generation === profile.generation) next.generation += 1;
+        }
+        if (!examFits(next.values)) {
+          if (EXAM_FIELDS.some((field) => patch.values?.[field] != null)) fail2("exam details need the exam reason");
+          for (const field of EXAM_FIELDS) {
+            delete next.values[field];
+            delete next.provenance[field];
+          }
           if (next.generation === profile.generation) next.generation += 1;
         }
         return copy3(checkProfile(next));
@@ -13621,7 +13631,6 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
   function importRecords({ lessons: lessons2 = {}, reviews = {}, days = {}, profile = null } = {}, { from = "guest-device" } = {}) {
     checkDailyWrite();
     const next = clone2(state), added = { lessons: 0, reviews: 0, days: 0, profile: false };
-    let items = 0;
     for (const [id, lesson2] of Object.entries(object2(lessons2) ? lessons2 : {})) if (!next.lessons[id] && Object.keys(next.lessons).length < 100) {
       next.lessons[id] = clone2(lesson2);
       added.lessons += 1;
@@ -13637,16 +13646,18 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
         added.days += 1;
         continue;
       }
+      let got = 0;
       for (const [questionId, item] of Object.entries(object2(value?.items) ? value.items : {})) if (!object2(mine.items) || !mine.items[questionId]) {
         (mine.items ??= {})[questionId] = clone2(item);
-        items += 1;
+        got += 1;
       }
+      if (got) added.days += 1;
     }
     if (object2(profile?.values) && readWorldLearningProfile(next.learningProfile, { owner, at: now() }).profile.status === "new") {
       next.learningProfile = updateWorldLearningProfile(next.learningProfile, { owner, at: now(), values: clone2(profile.values), consent: true, expectedRevision: 0 });
       added.profile = true;
     }
-    if (!added.lessons && !added.reviews && !added.days && !added.profile && !items) return { ...added, status: status() };
+    if (!added.lessons && !added.reviews && !added.days && !added.profile) return { ...added, status: status() };
     next.imports = [...Array.isArray(state.imports) ? state.imports : [], { from, at: now(), lessons: added.lessons, reviews: added.reviews, days: added.days, profile: added.profile }].slice(-20);
     commit(next);
     return { ...added, status: status() };

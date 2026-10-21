@@ -517,7 +517,7 @@ home.connectHost?.({profile,wardrobe,play,town,about,photo,songs,launchGame,prep
 const accountLife=()=>{const owner=client.snapshot?.accountId;if(!owner||owner!==lifeOwner||!lifeUI)throw Object.assign(Error('계정 연결이 바뀌었어요.'),{code:'ACCOUNT_CHANGED'});return lifeUI;};
 // 화면 언어(10-19 1판): 「한글 기록 이어 가기」 판의 글은 열 때마다 고른 언어로 읽는다(device-records.mjs DEVICE_RECORDS_TEXT와 같은 키).
 const deviceRecordsText=()=>({title:t('records.title'),lead:t('records.lead'),move:t('records.move'),keep:t('records.keep'),snapshot:t('records.snapshot'),snapshotBody:t('records.snapshotBody'),
- moving:t('records.moving'),failed:t('records.failed'),moved:t('records.moved'),partly:t('records.partly'),kept:t('records.kept'),hangulRow:t('records.hangulRow'),answerRow:t('records.answerRow'),
+ moving:t('records.moving'),failed:t('records.failed'),moved:t('records.moved'),partly:t('records.partly'),kept:t('records.kept'),pendingKept:t('records.pendingKept'),hangulRow:t('records.hangulRow'),answerRow:t('records.answerRow'),
  answerNew:t('records.answerNew'),answerReads:t('records.answerReads'),graduated:t('records.graduated'),met:n=>t('records.met',{n}),metMastered:(n,m)=>t('records.metMastered',{n,m}),
  skipped:t('records.skipped'),started:t('records.started'),keptHangul:t('records.keptHangul'),keptAnswer:t('records.keptAnswer'),
  lifeRow:t('records.lifeRow'),lessons:n=>t('records.lessons',{n}),reviews:n=>t('records.reviews',{n}),days:n=>t('records.days',{n}),learningRow:t('records.learningRow'),answers:n=>t('records.answers',{n}),profileRow:t('records.profileRow'),profileValue:t('records.profileValue')});
@@ -527,7 +527,9 @@ async function importDeviceLife(records){
  if(!owner||owner!==lifeOwner||!lifeProgress)throw Object.assign(Error('계정 연결이 바뀌었어요.'),{code:'ACCOUNT_CHANGED'});
  const progress=lifeProgress,added=progress.importRecords(records,{from:'guest-device'});
  // 더한 것이 없어도(앞 시도에서 이미 더했으면) 계정 저장이 서버에 닿았는지 본다 — 다시 고른 시도가 확인 없이 성공으로 끝나지 않게(10-21 검수).
- await progress.flush();const status=progress.status();if(status.scoped&&status.phase!=='synced')throw Object.assign(Error('생활 진도가 아직 계정에 저장되지 않았어요.'),{code:'LIFE_NOT_SAVED',added});
+ // 저장 자체가 실패해도 더한 수를 붙여 던진다 — 옮기기 판이 「계정에 더했지만 확인 못 함」으로 기억하게(10-21 GPT 검수).
+ try{await progress.flush();}catch(error){throw Object.assign(error instanceof Error?error:Error(String(error)),{code:error?.code||'LIFE_NOT_SAVED',added});}
+ const status=progress.status();if(status.scoped&&status.phase!=='synced')throw Object.assign(Error('생활 진도가 아직 계정에 저장되지 않았어요.'),{code:'LIFE_NOT_SAVED',added});
  refreshLife();education?.refresh();return added;
 }
 let hangulMigrationPort=null;

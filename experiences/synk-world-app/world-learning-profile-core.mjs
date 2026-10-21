@@ -1352,6 +1352,8 @@ var require_personalization = __commonJS({
       const WEEKLY_MINUTES = Object.freeze([30, 60, 120, 180]);
       const EXAM_GRADES = Object.freeze({ topik1: Object.freeze([1, 2]), topik2: Object.freeze([3, 4, 5, 6]) });
       const gradeFits = (values) => !Object.hasOwn(values, "targetGrade") || (EXAM_GRADES[values.examType] || []).includes(values.targetGrade);
+      const EXAM_FIELDS = Object.freeze(["examType", "targetGrade", "examDate", "examMode", "weeklyMinutes"]);
+      const examFits = (values) => (values.reasons || []).includes("exam") || !EXAM_FIELDS.some((field) => Object.hasOwn(values, field));
       const FIELDS = Object.freeze([...Object.keys(OPTIONS), "minutes", "reasons", "primaryReason", "targetGrade", "examDate", "weeklyMinutes"]);
       const examDay = (value) => typeof value === "string" && /^\d{4}-(0[1-9]|1[0-2])(-(0[1-9]|[12]\d|3[01]))?$/.test(value) && (value.length === 7 || (/* @__PURE__ */ new Date(`${value}T00:00:00Z`)).toISOString().startsWith(value));
       const copy = (value) => JSON.parse(JSON.stringify(value));
@@ -1463,6 +1465,14 @@ var require_personalization = __commonJS({
           if (patch.values?.targetGrade != null) fail("target grade must fit the declared exam type");
           delete next.values.targetGrade;
           delete next.provenance.targetGrade;
+          if (next.generation === profile.generation) next.generation += 1;
+        }
+        if (!examFits(next.values)) {
+          if (EXAM_FIELDS.some((field) => patch.values?.[field] != null)) fail("exam details need the exam reason");
+          for (const field of EXAM_FIELDS) {
+            delete next.values[field];
+            delete next.provenance[field];
+          }
           if (next.generation === profile.generation) next.generation += 1;
         }
         return copy(checkProfile(next));

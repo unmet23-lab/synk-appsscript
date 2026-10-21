@@ -335,3 +335,27 @@ test('the shared contract r2 and Core agree on the exam fields, which stay out o
   assert.equal(Object.hasOwn(switched.values, 'targetGrade'), false, 'a grade the new test does not have is forgotten');
   assert.equal(P.updateProfile(declared, { values: { examType: 'topik2', targetGrade: 4 } }, later).values.targetGrade, 4);
 });
+
+// 계약 r2 시험정보 묻는때: 시험 정보는 시험 이유를 고른 사람에게만 묻고, 이유를 바꾸면 지운다 — 시험 이유 없이 주면 거절, 이유만 바꾸면
+// 시험 정보를 잊고 기억 범위를 새로 연다. 이미 남아 있던 판은 읽히고 다음 변경 때 잊는다(10-21 GPT 검수).
+test('exam details live only under the exam reason: changing the reasons forgets them', () => {
+  const fields = ['examType', 'targetGrade', 'examDate', 'examMode', 'weeklyMinutes'];
+  const declared = consent({ reasons: ['exam'], primaryReason: 'exam', examType: 'topik1', targetGrade: 2, examDate: '2027-01', examMode: 'pbt', weeklyMinutes: 60 });
+  const travel = P.updateProfile(declared, { values: { reasons: ['travel'], primaryReason: 'travel' } }, later);
+  for (const field of fields) {
+    assert.equal(Object.hasOwn(travel.values, field), false, field);
+    assert.equal(Object.hasOwn(travel.provenance, field), false, field);
+  }
+  assert(travel.generation > declared.generation, 'forgetting the test starts a clean decision history');
+  const unnamed = consent({ reasons: ['exam', 'travel'], examType: 'topik2' });
+  assert.equal(P.updateProfile(unnamed, { values: { reasons: ['travel'] } }, later).values.examType, undefined, 'without a biggest reason too');
+  assert.equal(P.updateProfile(unnamed, { values: { reasons: ['travel', 'exam'] } }, later).values.examType, 'topik2', 'kept while the exam reason stays');
+  assert.throws(() => consent({ reasons: ['travel'], examType: 'topik1' }), /exam details need the exam reason/);
+  assert.throws(() => P.updateProfile(travel, { values: { examDate: '2027-01' } }, later), /exam details need the exam reason/);
+  const stale = JSON.parse(JSON.stringify(declared));
+  stale.values.reasons = ['travel']; stale.values.primaryReason = 'travel';
+  assert.doesNotThrow(() => P.validateProfile(stale), 'a stored profile that still holds them stays readable');
+  const next = P.updateProfile(stale, { values: { support: 'step' } }, later);
+  assert.equal(next.values.examType, undefined, 'and loses them on its next change');
+  assert.equal(next.values.support, 'step');
+});

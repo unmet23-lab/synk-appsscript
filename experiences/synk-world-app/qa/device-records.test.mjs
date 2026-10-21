@@ -6,7 +6,8 @@ import {progressKey} from '../../hangul-stage/learning.mjs';
 import {emptyProgress,meet,answer as answerLetter} from '../../hangul-stage/core.mjs';
 import {createLifeProgress} from '../life-progress.mjs';
 import {HANGUL_DEVICE_KEY,GUEST_LIFE_KEY,DEVICE_RECORDS_KEY,hangulAccountKey,hangulProgressSummary,deviceHangulAnswer,planDeviceRecords,applyDeviceRecords,
- deviceRecordsDecision,saveDeviceRecordsDecision,describeDeviceRecords,createDeviceRecordsOffer,GUEST_LEARNING_KEY,guestLearningEvents,guestLifeRecords,deviceWatermark,noteDeviceSignOut,noteDeviceAccount} from '../device-records.mjs';
+ deviceRecordsDecision,saveDeviceRecordsDecision,describeDeviceRecords,createDeviceRecordsOffer,GUEST_LEARNING_KEY,guestLearningEvents,guestLifeRecords,deviceWatermark,noteDeviceSignOut,noteDeviceAccount,
+ DEVICE_RECORDS_TEXT} from '../device-records.mjs';
 import {PACKS,LESSONS} from '../life-content.mjs';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
@@ -225,18 +226,22 @@ test('the sheet says moved only after the account confirms; an unconfirmed uploa
  assert.deepEqual(imports,['life','learning','life','learning']);
 });
 
-// 10-21 아르곤 검수 반영: 지난번에 레슨을 옮긴 뒤 손님으로 한 복습도 옮길 거리이고, 연습한 날만 있어도 판에 그 줄이 있다.
-test('a review made after the lesson was moved earlier is still offered; practice days alone get their own row',()=>{
+// 10-21 GPT 검수(P0): 레슨에 기준 시각 앞의 활동이 있으면 앞 사람 몫이 섞여 있어, 그 레슨과 그 레슨에서 생긴 복습은 두고 간다
+// (10-21 아르곤 검수 때 「지난번에 옮긴 레슨의 복습은 옮긴다」로 했던 것을 되돌림 — 결정 표 「앞 사람 기록이 다음 사람에게 가지 않게」가 앞선다).
+// 연습한 날만 있어도 판에 그 줄이 있다.
+test('a lesson or review with activity before the mark stays on the device; practice days alone get their own row',()=>{
  const storage=memory(),T0=Date.parse(AT),guest=value=>storage.setItem(GUEST_LIFE_KEY,JSON.stringify({version:1,owner:'guest',...value}));
  guest({lessons:{L1:{startedAt:T0,completedAt:T0,answers:{q1:{at:T0,correct:true}}}},reviews:{R1:{lessonId:'L1',lastAt:T0+3*3600000}},daily:{version:1,days:{}}});
- assert.equal(guestLifeRecords(storage,{after:T0+3600000}).counts.reviews,1,'레슨은 기준 앞(지난번에 옮김), 복습은 그 뒤');
+ assert.equal(guestLifeRecords(storage,{after:T0+3600000}),null,'레슨은 기준 앞, 그 레슨의 복습도 두고 간다');
+ assert.equal(guestLifeRecords(storage,{after:T0-1}).counts.reviews,1,'레슨이 기준 뒤면 복습도 따라간다');
  guest({lessons:{},reviews:{},daily:{version:1,days:{'2026-10-20':{items:{q1:{lessonId:'L1',observedAt:T0+60000,outcome:'independent'}}}}}});
  const plan=planDeviceRecords({storage,accountId:ACCOUNT,life:true});
  assert.deepEqual(describeDeviceRecords(plan).rows,[{label:'생활 한국어',value:'연습한 날 1일'}]);
 });
 
 // 10-21 Fable 검수: 첫 「옮기기」가 서버 확인 전에 실패해 다시 고르면, 앞 시도에서 이미 더한 것을 「일부만」으로 말하지 않는다.
-test('a retry after an unconfirmed save reports what the first try already added; keeping after it does not claim nothing moved',async()=>{
+// 10-21 GPT 검수(P1): 그 뒤 「두기」를 고르면 서버가 받았다는 확인이 없으니 「옮김」으로 남기지 않는다 — 고른 대로 「두기」이되, 계정에 이미 더한 것이 있다고 알린다.
+test('a retry after an unconfirmed save reports what the first try already added; keeping after it keeps, saying some was already added',async()=>{
  for(const second of ['move','keep']){
   const storage=memory();guestDay(storage,Date.parse(AT));const toasts=[];let calls=0;
   const offer=createDeviceRecordsOffer({storage,learningStatus:()=>learning,present:()=>{},close(){},now:()=>LATER,defer:fn=>fn(),toast:message=>toasts.push(message),
@@ -245,10 +250,73 @@ test('a retry after an unconfirmed save reports what the first try already added
    importLearning:null});
   const pending=offer.offer({owner:ACCOUNT});assert.ok(pending);
   assert.equal(await offer.choose('move',{owner:ACCOUNT}),null,'first try: not confirmed');
-  assert.equal(await offer.choose(second,{owner:ACCOUNT}),'moved',second);
-  assert.equal(await pending,'moved');
+  const expected=second==='move'?'moved':'kept';
+  assert.equal(await offer.choose(second,{owner:ACCOUNT}),expected,second);
+  assert.equal(await pending,expected);
   const entry=JSON.parse(storage.getItem(DEVICE_RECORDS_KEY)).accounts[ACCOUNT];
-  assert.equal(entry.decision,'moved');assert.ok(entry.moved.days>0||entry.moved.lessons>0,'the first try’s additions are recorded');
-  assert.equal(toasts.at(-1),second==='move'?'이 기기의 학습을 내 계정으로 옮겼어요.':'옮길 수 있는 기록만 내 계정으로 옮겼어요.');
+  assert.equal(entry.decision,expected);assert.equal(entry.cloud,undefined,'계정 한글 저장을 하지 않았다');
+  if(second==='move')assert.ok(entry.moved.days>0||entry.moved.lessons>0,'the first try’s additions are recorded once the retry confirms them');
+  else assert.equal(entry.moved,undefined,'확인 못 한 것은 옮긴 수로 남기지 않는다');
+  assert.equal(toasts.at(-1),second==='move'?'이 기기의 학습을 내 계정으로 옮겼어요.':DEVICE_RECORDS_TEXT.pendingKept);
  }
+});
+
+// 10-21 GPT 검수(P1): 앞 단계(생활 진도)는 서버까지 확인됐고 뒤 단계(학습 기록)만 실패했으면, 그 뒤 「두기」는 옮긴 만큼을 「옮김」으로 남기고
+// 다시 「옮기기」를 고르면 첫 시도의 생활 진도 수를 최종 수에 넣는다. 계정 한글 저장을 실제로 하지 않았으면 cloud로 남기지 않는다.
+test('an earlier step that was confirmed is remembered when a later step fails, for both keep and a retry',async()=>{
+ for(const second of ['move','keep']){
+  const storage=memory();guestDay(storage,Date.parse(AT));
+  const toasts=[];let learningCalls=0,lifeCalls=0;
+  const offer=createDeviceRecordsOffer({storage,learningStatus:()=>learning,present:()=>{},close(){},now:()=>LATER,defer:fn=>fn(),toast:message=>toasts.push(message),
+   // 다시 부르면 이미 더해 둔 것이라 0이다(받는 쪽 importRecords와 같다).
+   importLife:async records=>++lifeCalls===1?{lessons:records.counts.lessons,reviews:records.counts.reviews,days:records.counts.days,profile:records.counts.profile}:{lessons:0,reviews:0,days:0,profile:false},
+   importLearning:async events=>{learningCalls+=1;if(learningCalls===1)throw Object.assign(Error('offline'),{code:'OFFLINE'});return {added:events.length,confirmed:true};}});
+  const pending=offer.offer({owner:ACCOUNT});assert.ok(pending);
+  assert.equal(await offer.choose('move',{owner:ACCOUNT}),null,'learning failed: choose again');
+  assert.equal(await offer.choose(second,{owner:ACCOUNT}),'moved',second);
+  const entry=JSON.parse(storage.getItem(DEVICE_RECORDS_KEY)).accounts[ACCOUNT];
+  assert.equal(entry.decision,'moved');assert.ok(entry.moved.days>0,'the confirmed life step is counted');
+  if(second==='move')assert.ok(entry.moved.events>0,'the retried learning step is counted too');
+  else{assert.equal(entry.moved.events,0);assert.equal(toasts.at(-1),'옮길 수 있는 기록만 내 계정으로 옮겼어요.');}
+  assert.equal(entry.cloud,undefined);
+ }
+});
+
+// 10-21 GPT 검수(P0): 기준 시각 앞의 몫이 섞인 기록(레슨 답·학습 목표·한글 진도)은 통째로 두고 간다 — 앞 사람 기록이 다음 사람 계정에 가지 않게.
+test('records that mix work from before the mark stay on the device: a continued lesson, a partly changed goal, same-day hangul',()=>{
+ const T0=Date.parse(AT),mark=T0+3600000;
+ // 레슨: 기준 앞의 답 하나 + 뒤의 답 하나 → 두고 간다. 기준 뒤에만 답한 레슨은 옮긴다.
+ const mixed=memory();mixed.setItem(GUEST_LIFE_KEY,JSON.stringify({version:1,owner:'guest',lessons:{L1:{startedAt:T0,completedAt:null,answers:{q1:{at:T0,correct:true},q2:{at:mark+60000,correct:false}}},
+  L2:{startedAt:mark+1000,completedAt:mark+9000,answers:{q1:{at:mark+2000,correct:true}}}},reviews:{},daily:{version:1,days:{}}}));
+ assert.deepEqual(Object.keys(guestLifeRecords(mixed,{after:mark}).lessons),['L2']);
+ // 학습 목표: 앞 사람이 정한 시험 목표가 남은 판에서 뒤에 한 칸만 바꿨으면 두고 간다. 모든 칸을 뒤에 다시 정했으면 옮긴다.
+ let tick=T0;const goal=memory(),life=createLifeProgress({storage:goal,owner:'guest',now:()=>tick,uuid:()=>'g'});life.summary(PACKS,LESSONS);
+ life.updateLearningProfile({consent:true,expectedRevision:0,values:{reasons:['exam'],primaryReason:'exam',examType:'topik1',targetGrade:2}});
+ tick=mark+60000;life.updateLearningProfile({consent:true,expectedRevision:life.learningProfile().profile.revision,values:{support:'step'}});
+ assert.equal(guestLifeRecords(goal,{after:mark}),null,'only one field was declared after the mark');
+ tick=mark+120000;life.updateLearningProfile({consent:true,expectedRevision:life.learningProfile().profile.revision,values:{reasons:['travel'],primaryReason:'travel',support:'choose'}});
+ const redeclared=guestLifeRecords(goal,{after:mark});
+ assert.deepEqual(redeclared.profile.values,{reasons:['travel'],primaryReason:'travel',support:'choose'},'every field is now declared after the mark (changing the reason forgot the test details)');
+ // 옛 판처럼 시험 이유 없이 시험 칸이 남은 목표는 그 칸을 떼고 넘긴다(받는 쪽 저장 규칙이 거절하지 않게).
+ const legacy=memory(),at=new Date(mark+1000).toISOString(),source={source:'self-declared',confidence:'declared',at,revision:1};
+ legacy.setItem(GUEST_LIFE_KEY,JSON.stringify({version:1,owner:'guest',lessons:{},reviews:{},daily:{version:1,days:{}},learningProfile:{profile:{status:'active',consent:true,
+  values:{reasons:['travel'],examType:'topik1',targetGrade:2},provenance:{reasons:source,examType:source,targetGrade:source},createdAt:at,updatedAt:at}}}));
+ assert.deepEqual(guestLifeRecords(legacy,{after:mark}).profile.values,{reasons:['travel']});
+ // 한글: 같은 날 앞 사람이 한 진도(회차는 날짜만 있다)는 그날 늦은 시각으로 치지 않는다 — 로그아웃 뒤 새 활동이 없으면 묻지 않는다.
+ const hangul=memory();hangul.setItem(HANGUL_DEVICE_KEY,JSON.stringify(guestHangul()));noteDeviceSignOut(hangul,mark);
+ assert.equal(planDeviceRecords({storage:hangul,learning,accountId:ACCOUNT}),null,'same-day progress from before the sign-out is not offered');
+ const earlier=memory();earlier.setItem(HANGUL_DEVICE_KEY,JSON.stringify(guestHangul()));noteDeviceSignOut(earlier,Date.parse('2026-10-18T14:00:00.000Z'));
+ assert.ok(planDeviceRecords({storage:earlier,learning,accountId:ACCOUNT})?.hangul,'progress made entirely after the sign-out is offered');
+});
+
+// 10-21 GPT 검수(P2): 계정에 이미 있는 날에 그 날 없던 문항을 더하면 그 날도 더한 날로 센다(옮긴 결과가 「이미 있음」으로 보이지 않게).
+test('adding new questions to a day the account already has counts as an added day',()=>{
+ const first=memory(),second=memory();
+ guestDay(first,Date.parse(AT));guestDay(second,Date.parse(AT)+600000,LESSONS.find(row=>row.id!==lesson.id&&row.questions?.length&&!row.id.startsWith('cafe')));
+ const account=createLifeProgress({storage:memory(),owner:ACCOUNT,now:()=>LATER,uuid:()=>'acct'});account.summary(PACKS,LESSONS);
+ const a=guestLifeRecords(first),b=guestLifeRecords(second);
+ assert.deepEqual(Object.keys(a.days),Object.keys(b.days),'the same practice day');
+ assert.equal(account.importRecords({days:a.days}).days,1);
+ assert.equal(account.importRecords({days:b.days}).days,1,'the existing day got new questions');
+ assert.equal(account.importRecords({days:b.days}).days,0,'nothing new the third time');
 });

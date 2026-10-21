@@ -15315,19 +15315,20 @@ function hangulProgressSummary(value) {
   const graduated = recordObject(value.graduated), skipped = value.skipped === true, sessions = Array.isArray(value.sessions) ? value.sessions.length : 0;
   return met || graduated || skipped || sessions ? { met, mastered, graduated, skipped, sessions } : null;
 }
-function hangulLatest(value) {
-  let latest = -Infinity;
-  for (const letter of recordObject(value?.letters) ? Object.values(value.letters) : []) for (const key of ["lastAt", "metAt"]) latest = Math.max(latest, isoTime(letter?.[key]));
-  latest = Math.max(latest, isoTime(value?.graduated?.at));
-  for (const session of Array.isArray(value?.sessions) ? value.sessions : []) latest = Math.max(latest, isoTime(`${session?.day}T23:59:59+09:00`));
-  return latest;
+var allAfter = (times, after) => !after || times.length > 0 && Math.min(...times) > after;
+function hangulTimes(value) {
+  const times = [];
+  for (const letter of recordObject(value?.letters) ? Object.values(value.letters) : []) for (const key of ["metAt", "lastAt"]) times.push(isoTime(letter?.[key]));
+  times.push(isoTime(value?.graduated?.at));
+  for (const session of Array.isArray(value?.sessions) ? value.sessions : []) times.push(isoTime(`${session?.day}T00:00:00+09:00`));
+  return times.filter(Number.isFinite);
 }
 function readHangul(storage, key, { after = 0 } = {}) {
   const raw = storage.getItem(key);
   if (raw === null) return null;
   try {
     const value = JSON.parse(raw), summary = hangulProgressSummary(value);
-    return summary && (!after || hangulLatest(value) > after) ? summary : null;
+    return summary && allAfter(hangulTimes(value), after) ? summary : null;
   } catch {
     return null;
   }
@@ -15410,22 +15411,30 @@ function guestLearningEvents(storage, { after = 0 } = {}) {
   const moved = events.filter((event) => keep.has(event.id));
   return { events: moved, attempts: moved.filter((event) => event.type === "practice.attempted" && event.attemptNo === 1).length };
 }
+var EXAM_FIELDS = ["examType", "targetGrade", "examDate", "examMode", "weeklyMinutes"];
 function guestLifeRecords(storage, { after = 0 } = {}) {
   const value = guestLife(storage);
   if (!value) return null;
   const lessons = {}, reviews = {}, days = {};
-  for (const [id, lesson2] of Object.entries(recordObject(value.lessons) ? value.lessons : {})) {
-    if (!recordObject(lesson2)) continue;
-    const latest = Math.max(recordTime(lesson2.startedAt) ? lesson2.startedAt : -1, recordTime(lesson2.completedAt) ? lesson2.completedAt : -1, ...Object.values(recordObject(lesson2.answers) ? lesson2.answers : {}).map((answer) => recordTime(answer?.at) ? answer.at : -1));
-    if (latest > after && Object.keys(recordObject(lesson2.answers) ? lesson2.answers : {}).length) lessons[id] = lesson2;
-  }
-  for (const [id, review] of Object.entries(recordObject(value.reviews) ? value.reviews : {})) if (recordObject(review) && recordTime(review.lastAt) && review.lastAt > after && recordObject(value.lessons?.[review.lessonId])) reviews[id] = review;
+  const ownLesson = (lesson2) => {
+    if (!recordObject(lesson2)) return false;
+    const answers = Object.values(recordObject(lesson2.answers) ? lesson2.answers : {});
+    return answers.length > 0 && allAfter([lesson2.startedAt, lesson2.completedAt, ...answers.map((answer) => answer?.at)].filter(recordTime), after);
+  };
+  for (const [id, lesson2] of Object.entries(recordObject(value.lessons) ? value.lessons : {})) if (ownLesson(lesson2)) lessons[id] = lesson2;
+  for (const [id, review] of Object.entries(recordObject(value.reviews) ? value.reviews : {})) if (recordObject(review) && recordTime(review.lastAt) && review.lastAt > after && ownLesson(value.lessons?.[review.lessonId])) reviews[id] = review;
   for (const [key, day2] of Object.entries(recordObject(value.daily?.days) ? value.daily.days : {})) {
     const items = Object.entries(recordObject(day2?.items) ? day2.items : {}).filter(([, item]) => recordTime(item?.observedAt) && item.observedAt > after);
     if (items.length) days[key] = { ...day2, items: Object.fromEntries(items) };
   }
-  const saved = value.learningProfile?.profile;
-  const profile = recordObject(saved) && saved.status === "active" && saved.consent === true && isoTime(saved.updatedAt) > after && recordObject(saved.values) && Object.keys(saved.values).length ? { values: { ...saved.values } } : null;
+  const saved = value.learningProfile?.profile, declared = recordObject(saved?.provenance) ? saved.provenance : {};
+  const savedValues = recordObject(saved) && saved.status === "active" && saved.consent === true && recordObject(saved.values) ? { ...saved.values } : {};
+  if (!(Array.isArray(savedValues.reasons) && savedValues.reasons.includes("exam"))) for (const field of EXAM_FIELDS) delete savedValues[field];
+  const declaredAfter = () => {
+    const times = Object.keys(saved.values).map((field) => isoTime(declared[field]?.at));
+    return !after || times.length > 0 && times.every((at) => Number.isFinite(at) && at > after);
+  };
+  const profile = Object.keys(savedValues).length && declaredAfter() ? { values: savedValues } : null;
   const counts = { lessons: Object.keys(lessons).length, reviews: Object.keys(reviews).length, days: Object.keys(days).length, profile: !!profile };
   return counts.lessons || counts.reviews || counts.days || counts.profile ? { lessons, reviews, days, profile, counts } : null;
 }
@@ -15549,6 +15558,7 @@ var DEVICE_RECORDS_TEXT = Object.freeze({
   moved: "\uC774 \uAE30\uAE30\uC758 \uD559\uC2B5\uC744 \uB0B4 \uACC4\uC815\uC73C\uB85C \uC62E\uACBC\uC5B4\uC694.",
   partly: "\uC62E\uAE38 \uC218 \uC788\uB294 \uAE30\uB85D\uB9CC \uB0B4 \uACC4\uC815\uC73C\uB85C \uC62E\uACBC\uC5B4\uC694.",
   kept: "\uACC4\uC815\uC740 \uC774 \uAE30\uAE30\uC758 \uD559\uC2B5 \uC5C6\uC774 \uC774\uC5B4 \uAC00\uC694. \uC774 \uAE30\uAE30\uC758 \uAE30\uB85D\uC740 \uADF8\uB300\uB85C \uB0A8\uC544 \uC788\uC5B4\uC694.",
+  pendingKept: "\uC62E\uAE30\uB358 \uAE30\uB85D \uC77C\uBD80\uB294 \uC774\uBBF8 \uB0B4 \uACC4\uC815\uC5D0 \uB354\uD588\uC5B4\uC694. \uB2E4\uC74C\uC5D0 \uC800\uC7A5\uD560 \uB54C \uD568\uAED8 \uC800\uC7A5\uB3FC\uC694. \uB098\uBA38\uC9C0\uB294 \uC774 \uAE30\uAE30\uC5D0\uB9CC \uB46C\uC694.",
   hangulRow: "\uD55C\uAE00 \uB9CC\uB098\uAE30",
   answerRow: "\uCC98\uC74C \uACE0\uB978 \uB2F5",
   answerNew: "\uD55C\uAE00\uC744 \uC544\uC9C1 \uBABB \uC77D\uC5B4\uC694",
@@ -15651,6 +15661,8 @@ function createDeviceRecordsOffer({
     if (message) defer(() => toast(message));
     return value;
   }
+  const lifeNonzero = (counts) => !!(counts && (counts.lessons || counts.reviews || counts.days || counts.profile));
+  const lifeSum = (a, b) => ({ lessons: (a?.lessons || 0) + (b?.lessons || 0), reviews: (a?.reviews || 0) + (b?.reviews || 0), days: (a?.days || 0) + (b?.days || 0), profile: !!(a?.profile || b?.profile) });
   async function choose(choice, { owner, status = () => {
   } } = {}) {
     const job = current;
@@ -15660,41 +15672,54 @@ function createDeviceRecordsOffer({
       return null;
     }
     job.busy = true;
+    const T = recordsText(text2);
+    const carry = job.carry ??= { moved: { lessons: 0, reviews: 0, days: 0, profile: false, events: 0 }, hangul: false, answer: false, pending: { life: null, learning: 0 } };
+    const movedSoFar = () => lifeNonzero(carry.moved) || carry.moved.events > 0 || carry.hangul || carry.answer;
+    const cloudDone = () => !!job.port && (!job.plan.hangul?.cloud || carry.hangul);
     if (choice === "keep") {
-      const prior2 = job.pending;
-      if (prior2?.life || prior2?.learning) {
-        saveDeviceRecordsDecision(storage, job.owner, "moved", now(), { cloud: !!job.port, through: job.startedAt, moved: { lessons: prior2.life?.lessons || 0, reviews: prior2.life?.reviews || 0, days: prior2.life?.days || 0, profile: !!prior2.life?.profile, events: prior2.learning || 0, at: now() } });
-        return done(job, "moved", recordsText(text2).partly);
+      if (movedSoFar()) {
+        saveDeviceRecordsDecision(storage, job.owner, "moved", now(), { cloud: cloudDone(), through: job.startedAt, moved: { ...carry.moved, at: now() } });
+        return done(job, "moved", T.partly);
       }
       saveDeviceRecordsDecision(storage, job.owner, "kept", now(), { through: job.startedAt });
-      return done(job, "kept", recordsText(text2).kept);
+      return done(job, "kept", lifeNonzero(carry.pending.life) || carry.pending.learning > 0 ? T.pendingKept : T.kept);
     }
-    status(recordsText(text2).moving, true);
+    status(T.moving, true);
     const guard = () => {
       if (current !== job || hangulPort() !== job.port || accountOwner && accountOwner() !== job.owner) throw Error("\uACC4\uC815 \uC5F0\uACB0\uC774 \uBC14\uB00C\uC5C8\uC5B4\uC694.");
     };
     const result = await applyDeviceRecords(job.plan, { storage, accountAnswer, setAccountAnswer, hangulPort: job.port, guard, importLife, importLearning });
     if (current !== job) return null;
-    const prior = job.pending || {};
-    if (prior.life && ["moved", "exists"].includes(result.life)) {
-      result.life = "moved";
-      Object.assign(result.added, { lessons: result.added.lessons + (prior.life.lessons || 0), reviews: result.added.reviews + (prior.life.reviews || 0), days: result.added.days + (prior.life.days || 0), profile: result.added.profile || !!prior.life.profile });
+    const hadLife = lifeNonzero(carry.moved) || lifeNonzero(carry.pending.life), hadEvents = carry.moved.events > 0 || carry.pending.learning > 0;
+    const status4 = {
+      hangul: result.hangul === "exists" && carry.hangul ? "moved" : result.hangul,
+      answer: result.answer === "exists" && carry.answer ? "moved" : result.answer,
+      life: result.life === "exists" && hadLife ? "moved" : result.life,
+      learning: result.learning === "exists" && hadEvents ? "moved" : result.learning
+    };
+    if (result.life === "moved") carry.moved = { ...carry.moved, ...lifeSum(carry.moved, result.added) };
+    if (["moved", "exists"].includes(result.life) && lifeNonzero(carry.pending.life)) {
+      carry.moved = { ...carry.moved, ...lifeSum(carry.moved, carry.pending.life) };
+      carry.pending.life = null;
     }
-    if (prior.learning && ["moved", "exists"].includes(result.learning)) {
-      result.learning = "moved";
-      result.added.events += prior.learning;
+    if (result.learning === "moved") carry.moved.events += result.added.events;
+    if (["moved", "exists"].includes(result.learning) && carry.pending.learning > 0) {
+      carry.moved.events += carry.pending.learning;
+      carry.pending.learning = 0;
     }
-    const movedNow = [result.hangul, result.answer, result.life, result.learning].includes("moved");
+    if (result.hangul === "moved") carry.hangul = true;
+    if (result.answer === "moved") carry.answer = true;
+    if (lifeNonzero(result.pending.life)) carry.pending.life = lifeSum(carry.pending.life, result.pending.life);
+    if (result.pending.learning > 0) carry.pending.learning += result.pending.learning;
+    const movedNow = Object.values(status4).includes("moved");
     if (result.errors.length && (!movedNow || job.plan.hangul?.cloud || job.plan.life || job.plan.learning)) {
-      const sum = (a, b) => a && b ? { lessons: (a.lessons || 0) + (b.lessons || 0), reviews: (a.reviews || 0) + (b.reviews || 0), days: (a.days || 0) + (b.days || 0), profile: !!(a.profile || b.profile) } : a || b || null;
-      job.pending = { life: sum(prior.life, result.pending.life), learning: (prior.learning || 0) + (result.pending.learning || 0) || null };
       job.busy = false;
-      status(recordsText(text2).failed, false);
+      status(T.failed, false);
       return null;
     }
-    saveDeviceRecordsDecision(storage, job.owner, "moved", now(), { cloud: !!job.port, through: job.startedAt, moved: { ...result.added, at: now() } });
-    const partly = result.errors.length || [result.hangul, result.answer, result.life, result.learning].includes("exists") || !movedNow;
-    return done(job, "moved", partly ? recordsText(text2).partly : recordsText(text2).moved);
+    saveDeviceRecordsDecision(storage, job.owner, "moved", now(), { cloud: cloudDone(), through: job.startedAt, moved: { ...carry.moved, at: now() } });
+    const partly = result.errors.length || Object.values(status4).includes("exists") || !movedNow;
+    return done(job, "moved", partly ? T.partly : T.moved);
   }
   return Object.freeze({ offer, choose, pending: () => current ? { owner: current.owner, plan: current.plan } : null });
 }
