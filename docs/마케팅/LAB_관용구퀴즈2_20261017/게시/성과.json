@@ -1,0 +1,81 @@
+{
+  "readings": [
+    {
+      "at": "2026-10-21T18:07:50+09:00",
+      "window": "72h",
+      "youtube": {
+        "id": "F4iJDO6mjaY",
+        "account": "@synkkorean",
+        "views": 164,
+        "views_studio": 166,
+        "likes": 1,
+        "comments": 0,
+        "shares": 0,
+        "engaged_views": 24,
+        "unique_viewers": 20,
+        "stayed_to_watch_pct": 12.3,
+        "swiped_away_pct": 86.7,
+        "avg_view_duration_sec": 15,
+        "length_sec": 37,
+        "avg_view_pct": 40.6,
+        "subscribers_net": 0,
+        "first_three_days_views": 162,
+        "traffic_shorts_feed_pct": 89.2,
+        "top_country": "KR 93.2%",
+        "views_rank_card": null,
+        "rank_in_account": "공개 쇼츠 12편 중 첫 사흘 조회 7위, 계속 시청함은 조회 100회 넘은 8편 중 7위"
+      },
+      "instagram": {
+        "id": "DeoGOuuDBdk",
+        "account": "@synk.mn",
+        "views": 122,
+        "views_72h_point": 119,
+        "reach": 106,
+        "accounts_viewed": 104,
+        "likes": 0,
+        "comments": 0,
+        "shares": 1,
+        "saves": 1,
+        "follows": 1,
+        "avg_watch_sec": 3,
+        "watch_time": "4분 42초",
+        "three_sec_hold_pct": null,
+        "skip_rate_pct": null,
+        "shares_per_reach_pct": 0.9,
+        "rank_in_account": "사흘 지난 릴스 셋 중 72시간 조회 셋째, 평균 시청은 여섯 편 중 가장 짧음"
+      },
+      "facebook": {
+        "url": "https://facebook.com/reel/1655550979617910/",
+        "content_id": "122136692421343429",
+        "account": "SYNK (facebook.com/synkworld)",
+        "views": 207,
+        "views_72h_point": 206,
+        "reach": 197,
+        "accounts_viewed": 195,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "saves": 0,
+        "follows": 0,
+        "avg_watch_sec": 3,
+        "watch_time": "8분 17초",
+        "three_sec_views": 29,
+        "three_sec_views_pct": 14.1,
+        "fifteen_sec_views": null,
+        "distribution_recommended_pct": 99.9,
+        "rank_in_account": "교차 게시 릴스 넷이 조회 206~213으로 거의 같아 갈리지 않음"
+      },
+      "nation_youtube": {
+        "total_views": 6,
+        "top": { "lab-mm-youtube B0BNHSCtnQw": 2, "lab-ph-youtube ms7Up63e4vQ": 1, "lab-mx-youtube z4Vo-moGLZc": 1, "lab-tw-youtube pL3c0aenbTY": 1, "lab-my-youtube GzYiwwlRUa0": 1 },
+        "zero_view_channels": 13,
+        "likes": 0,
+        "comments": 0,
+        "note": "판정에 섞지 않음(§4-3). 10-19 09:13 합계 2회."
+      },
+      "custom_program_clicks": null,
+      "verdict": "@synkkorean 하위(상위 25% 아님) · 인스타 @synk.mn 하위(상위 25% 아님) · 페북 SYNK 중간(상위 25% 아님, 갈리지 않음). 추천: 같은 계정에 다시 올리지 않고, 0초를 사실·밈 문장으로 바꾼 퀴즈판을 다른 씨앗 계정에서 시험. 나라별판은 §4-3 기준 밖.",
+      "notes": "작업실 서버 관측값은 못 옮김 — ego·크롬 모두 workspace.synk.im 로그인 화면(GET /api/post-performance 401), 비밀번호 입력 안 함. 그래서 서버 몫 칸까지 화면·API에서 읽음: 유튜브 조회·좋아요·댓글은 숫자재기.cjs(Data API 17:41, 게시 뒤 75시간), 나머지는 스튜디오 분석(고급 모드는 태평양 10-19까지). 인스타·페북은 Business Suite 게시물 인사이트(총 328 = FB 206 + IG 122, 누적 그래프 72시간 점)와 인사이트 → 콘텐츠 표(인스타 피드 필터, 끝나고 풂). null 칸: 인스타 3초 유지율·건너뛴 비율은 Business Suite·인스타 웹에 칸 없음, 유튜브 조회수 순위 카드는 개요에 없음, 페북 15초 이상 조회는 값이 안 보임, 맞춤 프로그램은 연결한 것이 없어 해당 없음. 점수 댓글 없음(세 곳 댓글 0)."
+    }
+  ]
+}
