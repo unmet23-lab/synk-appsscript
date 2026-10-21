@@ -76,6 +76,14 @@ test('피드백 정리: 말 없음·한국어 아님·잘 안 들림은 세지 �
  // 한두 글자 인용은 받지 않는다(아무 곳에나 걸린다).
  const tiny=normalizeFeedback({...base,language:{...base.language,quote:'에는',better:'에서는'}},{item:it});
  assert.equal(tiny.elements.language.quote,'');
+ // 인용과 고친 말은 짝이다 — 고친 말이 거름망에 걸려 비면 인용도 내지 않는다(「인용 → 」 반쪽 막기, 10-21 아르곤 백엔드 검수).
+ const half=normalizeFeedback({...base,language:{...base.language,better:'2급 수준으로 같이 영화를 봤어요'}},{item:it});
+ assert.equal(half.elements.language.quote,'');assert.equal(half.elements.language.better,'');
+ assert.equal(normalizeFeedback({...base,language:{...base.language,better:''}},{item:it}).elements.language.quote,'');
+ // 쓰기 몫이 하나도 없으면(쓰기 답을 못 읽음) 빈 「참고」를 정상으로 내지 않는다.
+ const noWrite=normalizeFeedback({transcript:base.transcript,audio:base.audio},{item:it});
+ assert.equal(noWrite.status,'unavailable');assert.equal(noWrite.counted,false);
+ assert.equal(normalizeFeedback({...base,task:{good:'초급자에게 흔한 실수예요.',try:''}},{item:it}).elements.task.withheld,'nothing','수준 이름도 거른다');
 });
 
 test('소리 관문과 값 셈',()=>{
@@ -93,6 +101,7 @@ test('소리 관문과 값 셈',()=>{
  const c=priceClaude('claude-sonnet-5-5',{input_tokens:400,cache_read_input_tokens:1200,cache_creation_input_tokens:0,output_tokens:600});
  assert.ok(Math.abs(c.list-(400*2+1200*.2+600*10)/1e6)<1e-12);
  assert.ok(reserveEstimate({model:'gemini-3.8-flash',seconds:80})>0);
+ assert.equal(reserveEstimate({model:'gemini-3.8-flash',seconds:NaN}),null);assert.equal(reserveEstimate({model:'gemini-3.8-flash',seconds:-1}),null);
 });
 
 test('출력 꼴: Vertex는 대문자 형·속성 순서, Claude는 모든 객체에 additionalProperties:false',()=>{
@@ -124,6 +133,12 @@ test('카페 역할극: 목표와 다르면 직원이 되묻거나(미리 구운
  assert.equal(turn.status,'ok');assert.equal(turn.polite,'no');assert.deepEqual(turn.next,{step:'confirm',hint:null});
  assert.equal(normalizeTurn({heard:'(?)',audio:{speech:'unclear',language:'ko'}},{roleplay:rp,stepId:'order'}).status,'no_speech');
  assert.equal(normalizeTurn({heard:'따뜻(?)',audio:{speech:'unclear',language:'ko'}},{roleplay:rp,stepId:'order'}).status,'unclear');
+ // 모델이 「섞임」·한국어라 해도 한글 없이(또는 감탄사 한 글자만) 다른 글자로 받아 적혔으면 「말 없음」이 아니라 「한국어 아님」이다.
+ for(const heard of ['Two warm teas please','아, two warm teas please'])
+  assert.equal(normalizeTurn({heard,audio:{speech:'clear',language:'mixed'}},{roleplay:rp,stepId:'order'}).status,'not_korean',heard);
+ // 잔 수 차례에서 말하지 않은 칸은 그 역할극의 목표로 채운다(목표가 다른 역할극).
+ const iced={...rp,goal:{...rp.goal,drink:'coffee',temperature:'cold'}};
+ assert.deepEqual(nextStep({roleplay:iced,stepId:'count',slots:slots({count:2})}),{step:'confirm',hint:null});
 });
 
 test('역할극 주문 칸은 받아 적은 말에서 규칙으로 고른다(모델이 지어낼 수 없다)',()=>{
@@ -134,6 +149,52 @@ test('역할극 주문 칸은 받아 적은 말에서 규칙으로 고른다(모
  assert.equal(slotsFromText('네, 맞아요.').answer,'yes');assert.equal(slotsFromText('네 잔 주세요').answer,'none');assert.equal(slotsFromText('네 잔 주세요').count,4);
  assert.equal(slotsFromText('가져갈게요.').place,'togo');assert.equal(slotsFromText('여기서 마실게요.').place,'here');
  assert.deepEqual(slotsFromText('(?) (?)'),{drink:'none',temperature:'none',count:0,place:'none',answer:'none',polite:'unclear'});
+ // 10-21 아르곤 백엔드 검수: 낱말 머리만 같은 말·「A 말고 B」·잔 없이 말한 수·붙여 쓴 조사.
+ assert.equal(slotsFromText('칭찬 고마워요').temperature,'none','칭찬의 찬은 차가운 것이 아니다');
+ assert.equal(slotsFromText('찬 거 주세요').temperature,'cold');
+ for(const said of ['예전에 마신 차 주세요','네모난 컵이요','응원해요'])assert.equal(slotsFromText(said).answer,'none',said);
+ assert.equal(slotsFromText('넵 맞아요').answer,'yes');assert.equal(slotsFromText('아니요 따뜻한 거요').answer,'no');
+ assert.equal(slotsFromText('동네 잔치').count,0);assert.equal(slotsFromText('차 둘이요').count,2);assert.equal(slotsFromText('하나 주세요').count,1);
+ assert.equal(slotsFromText('둘이서 마실게요').count,0);assert.equal(slotsFromText('한 잔 말고 두 잔이요').count,2);
+ assert.equal(slotsFromText('매장 말고 포장해 주세요').place,'togo');
+ assert.equal(slotsFromText('따뜻한 거 말고 차가운 차 주세요').temperature,'cold');
+ assert.deepEqual(slotsFromText('차가운 거 말고 따뜻한 차 두 잔 주세요'),{drink:'tea',temperature:'warm',count:2,place:'none',answer:'none',polite:'yes'});
+ assert.equal(slotsFromText('차 말고 커피 주세요').drink,'coffee');assert.equal(slotsFromText('커피말고 차 두 잔').drink,'tea');
+ for(const said of ['차로요','따뜻한 차는요','차주세요','녹차예요'])assert.equal(slotsFromText(said).drink,'tea',said);
+ assert.equal(slotsFromText('커피숍에서').drink,'none');assert.equal(slotsFromText('아이스아메리카노 두 잔').drink,'coffee');
+ assert.equal(slotsFromText('따뜻한 차 두 잔이요.」').polite,'yes','닫는 따옴표 뒤도 말끝을 본다');
+ // 아르곤 다시 받기: 잔 없이 말한 수는 주문하는 꼴일 때만, 두 어절 이상의 「… 말고」는 이어진 주문 말을 함께 뺀다.
+ for(const said of ['따뜻한 차로 할게요. 하나만 물어볼게요, 화장실 어디예요?','하나, 둘, 셋 아아 들리나요? 따뜻한 차 주세요','녹차랑 홍차 둘 다 되나요?','하나 둘 셋','3개월 전에 마셨어요'])
+  assert.equal(slotsFromText(said).count,0,said);
+ for(const [said,n] of [['하나만 주세요',1],['둘 주세요',2],['둘요',2],['따뜻한 차 셋이요',3]])assert.equal(slotsFromText(said).count,n,said);
+ // 잔 수는 B가 다시 말할 때만 바꾼다 — 음료만 바꾼 「차 한 잔 말고 따뜻한 커피」는 커피 한 잔이다.
+ assert.deepEqual(slotsFromText('차 한 잔 말고 따뜻한 커피 주세요'),{drink:'coffee',temperature:'warm',count:1,place:'none',answer:'none',polite:'yes'});
+ assert.equal(slotsFromText('두 개 말고요 잔은 없나요').count,0);
+ assert.deepEqual(slotsFromText('따뜻한 차 두 잔 주세요 매장 말고 포장이요'),{drink:'tea',temperature:'warm',count:2,place:'togo',answer:'none',polite:'yes'});
+ assert.deepEqual(slotsFromText('따뜻한 차 두 잔 말고 차가운 커피 한 잔이요'),{drink:'coffee',temperature:'cold',count:1,place:'none',answer:'none',polite:'yes'});
+ assert.equal(slotsFromText('네, 따뜻한 차 말고 커피요').answer,'yes','대답 칸은 뺀 것 없이 본다');
+ // 셋째 확인: 「… 말고」는 한 구절만 — 앞에서 이미 말한 정상 주문은 남긴다.
+ for(const said of ['따뜻한 차 두 잔 차가운 거 말고 따뜻한 걸로 주세요','차 두 잔 뜨거운 거 말고 따뜻한 걸로요'])
+  assert.deepEqual(slotsFromText(said),{drink:'tea',temperature:'warm',count:2,place:'none',answer:'none',polite:'yes'},said);
+ assert.equal(slotsFromText('따뜻한 차하고 차가운 거 말고 따뜻한 거 주세요').drink,'tea');
+ assert.deepEqual([slotsFromText('두 잔 차 말고 커피').drink,slotsFromText('두 잔 차 말고 커피').count],['coffee',2]);
+ // 넷째 확인: B가 다시 말한 칸만 A에서 뺀다 — 잔 수만 고치면 음료·온도는 남고, 어순이 바뀐 구절도 고친 칸은 빠진다.
+ assert.deepEqual(slotsFromText('차 한 잔 말고 두 잔 주세요'),{drink:'tea',temperature:'none',count:2,place:'none',answer:'none',polite:'yes'});
+ assert.deepEqual(slotsFromText('따뜻한 차, 한 잔 말고 두 잔 주세요'),{drink:'tea',temperature:'warm',count:2,place:'none',answer:'none',polite:'yes'});
+ for(const said of ['차 차가운 말고 따뜻한 걸로 주세요','차 아이스 말고 따뜻한 거요','커피 차가운 거 말고 따뜻한 차 주세요'])
+  assert.deepEqual([slotsFromText(said).drink,slotsFromText(said).temperature],['tea','warm'],said);
+ assert.equal(slotsFromText('차 따뜻한 말고 커피 주세요').drink,'coffee');
+ for(const [said,n] of [['한 잔 차 말고 두 잔 커피 주세요',2],['두 잔 차 말고 한 잔 커피요',1]])
+  assert.deepEqual([slotsFromText(said).drink,slotsFromText(said).count],['coffee',n],said);
+ assert.equal(slotsFromText('칭찬 고마워요 차가운 거 말고요').temperature,'none','B가 없으면 한 구절만');
+ // 다섯째 확인: 음료를 바꾸면 그 음료의 온도도 버리고, 온도가 붙은 음료 낱말(아이스커피)은 온도·음료 두 칸이다.
+ for(const said of ['차가운 차 말고 커피 주세요','아이스 차 말고 커피요'])
+  assert.deepEqual([slotsFromText(said).drink,slotsFromText(said).temperature],['coffee','none'],said);
+ assert.deepEqual(slotsFromText('따뜻한 커피 말고 차 두 잔 주세요'),{drink:'tea',temperature:'none',count:2,place:'none',answer:'none',polite:'yes'});
+ assert.deepEqual([slotsFromText('차가운 차 말고 따뜻한 거요').drink,slotsFromText('차가운 차 말고 따뜻한 거요').temperature],['tea','warm'],'온도만 고치면 음료는 남는다');
+ assert.deepEqual([slotsFromText('커피 두 잔 말고 차 주세요').drink,slotsFromText('커피 두 잔 말고 차 주세요').count],['tea',2],'음료만 바꾸면 잔 수는 남는다');
+ assert.deepEqual([slotsFromText('아이스커피 말고 따뜻한 걸로 주세요').drink,slotsFromText('아이스커피 말고 따뜻한 걸로 주세요').temperature],['none','warm']);
+ assert.deepEqual(slotsFromText('차 두 잔 말고 아이스커피 주세요'),{drink:'coffee',temperature:'cold',count:2,place:'none',answer:'none',polite:'yes'});
  // 10-21 문항 검수 P2: 「녹차가·차가」의 「차가」는 차 + 조사다 — 차가운 것으로 읽어 「따뜻한 걸로」 도움말을 내지 않는다.
  for(const said of ['녹차가 두 잔이요.','차가 두 잔이요.','홍차는 두 잔 주세요.','보리차를 두 잔 주세요.','유자차가 좋아요.','반찬 두 개 주세요.'])assert.equal(slotsFromText(said).temperature,'none',said);
  assert.deepEqual(slotsFromText('녹차가 두 잔이요.'),{drink:'tea',temperature:'none',count:2,place:'none',answer:'none',polite:'yes'});

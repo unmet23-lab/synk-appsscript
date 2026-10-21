@@ -30,7 +30,7 @@ const text=(value,max=400)=>typeof value==='string'?value.replace(/\s+/g,' ').tr
 export function syllables(value){return (String(value??'').match(/[가-힣]/g)||[]).length;}
 
 // 점수·등급처럼 읽히는 말은 화면에 내지 않는다(쓰기 피드백의 판정 말 거름망과 같은 뜻).
-const SCORE_WORDS=/(\d+\s*(점|급)|\d+\s*\/\s*\d+|\d+\s*%|[A-F][+-]?\s*(등급|단계)|등급|급수|합격|점수|만점|[초중고]급\s*(수준|단계|정도)|\bscores?\b|\bgrades?\b|\blevel\s*\d|\b(pass(ed)?|fail(ed)?)\b|\b(beginner|intermediate|advanced)\s+level\b|оноо|түвшин\s*\d|тэнц|(анхан|дунд|ахисан)\s*шатны)/i;
+const SCORE_WORDS=/(\d+\s*(점|급)|\d+\s*\/\s*\d+|\d+\s*%|[A-F][+-]?\s*(등급|단계)|등급|급수|합격|점수|만점|[초중고]급(자|\s*(수준|단계|정도))|\bscores?\b|\bgrades?\b|\blevel\s*\d|\b(pass(ed)?|fail(ed)?)\b|\b(beginner|intermediate|advanced)\s+level\b|оноо|түвшин\s*\d|тэнц|(анхан|дунд|ахисан)\s*шатны)/i;
 // 자료 해석(5번)은 자료의 퍼센트를 그대로 인용하는 것이 정상이다 — 문항 자료에 있는 퍼센트만 거름에서 뺀다(10-21 Fable 검수).
 function dataPercents(item){
  const out=new Set(),add=v=>{const m=String(v??'').match(/(\d+(?:\.\d+)?)\s*%/);if(m)out.add(m[1]);};
@@ -217,13 +217,15 @@ export function normalizeFeedback(raw,{item,seconds=null}){
  const gate=audioGate(raw);
  if(gate.status!=='ok')return {status:gate.status,counted:false,heard:gate.heard};
  if(Number(seconds)>0&&gate.heard.syllables>Number(seconds)*MAX_SYLLABLES_PER_SECOND)return {status:'unclear',counted:false,heard:gate.heard,suspect:'too-many-syllables'};
+ // 쓰기 몫(task·language·delivery)이 하나도 없으면 피드백을 못 받은 것이다 — 빈 「참고」를 정상으로 내지 않는다(10-21 아르곤 백엔드 검수).
+ if(!ELEMENT_IDS.some(id=>isRecord(raw[id])))return {status:'unavailable',counted:false};
  const {transcript,speech,language,syllables:n}=gate.heard;
  const covers=Array.isArray(item?.covers)?item.covers.length:0;
  const covered=[...new Set((Array.isArray(raw.covered)?raw.covered:[]).filter(i=>Number.isInteger(i)&&i>=1&&i<=covers).map(i=>i-1))].sort((a,b)=>a-b);
  const allow=dataPercents(item),pick=(key,fields)=>{const v=isRecord(raw[key])?raw[key]:{};return Object.fromEntries(fields.map(f=>[f,clean(v[f],f==='quote'||f==='better'?200:300,allow)]));};
  const elements={task:pick('task',['good','try']),language:pick('language',['good','try','quote','better']),delivery:pick('delivery',['good','try'])};
- // 고친 말이 학생 말과 같으면 고칠 곳이 없는 것이다.
- if(elements.language.quote&&elements.language.quote===elements.language.better){elements.language.quote='';elements.language.better='';}
+ // 인용과 고친 말은 짝이다 — 한쪽이 비었으면(거름망에 걸린 것 포함) 둘 다 뺀다(10-21 아르곤 백엔드 검수). 고친 말이 학생 말과 같으면 고칠 곳이 없는 것이다.
+ if(!elements.language.quote||!elements.language.better||elements.language.quote===elements.language.better){elements.language.quote='';elements.language.better='';}
  // 인용은 실제로 받아 적은 말에 있어야 한다(지어낸 인용을 막는다 — 띄어쓰기만 무시).
  const squash=v=>v.replace(/\s+/g,'');
  // 한두 글자 인용은 아무 곳에나 걸리므로 세 음절 이상만 받는다(10-21 아르곤 검수).
@@ -247,7 +249,8 @@ export function normalizeTurn(raw,{roleplay,stepId,seconds=null}){
  const audio=isRecord(raw.audio)?raw.audio:{},speech=['clear','partly_unclear','unclear','none'].includes(audio.speech)?audio.speech:'unclear';
  const heard=text(raw.heard,300);
  if(speech==='none'||!heard.replace(/[\s(?)]/g,''))return {status:'no_speech',counted:false,heard};
- if(audio.language==='other')return {status:'not_korean',counted:false,heard};
+ // 한글이 거의 없고 다른 글자로 받아 적혔으면 모델이 「섞임」이라 해도 한국어 대답이 아니다(시험 형식 audioGate와 같은 선 — 10-21 아르곤 백엔드 검수).
+ if(audio.language==='other'||(syllables(heard)<3&&(heard.match(/[A-Za-zА-Яа-яЁёӨөҮү]/g)||[]).length>=6))return {status:'not_korean',counted:false,heard};
  if(syllables(heard)<1)return {status:'no_speech',counted:false,heard};
  if(speech==='unclear')return {status:'unclear',counted:false,heard};
  if(Number(seconds)>0&&syllables(heard)>Number(seconds)*MAX_SYLLABLES_PER_SECOND)return {status:'unclear',counted:false,heard,suspect:'too-many-syllables'};
@@ -260,20 +263,71 @@ export function normalizeTurn(raw,{roleplay,stepId,seconds=null}){
  * 매장에서 마시고 갈게요」를 들었다고 지어냈다(r7). 모델은 문제를 모른 채 받아 적기만 하고, 주문 칸은 여기서 정한다(지어낼 수 없다).
  */
 const NUMBER_WORDS=Object.freeze({한:1,하나:1,두:2,둘:2,세:3,셋:3,네:4,넷:4,다섯:5});
-export function slotsFromText(text){
- const t=String(text??'').replace(/\(\?\)/g,' ').replace(/\s+/g,' ').trim(),tokens=t.split(/[\s,.!?~…]+/).filter(Boolean);
- const has=re=>tokens.some(w=>re.test(w));
+// 「A 말고 B」·「A 아니고 B」·「A 대신 B」의 A는 고르지 않은 것이다 — 칸 고르기에서 뺀다(10-21 아르곤 다시 받기 둘~다섯째).
+// · 머리는 바로 앞 낱말(붙여 쓰면 그 앞말 — 「커피말고」)이다. 주문 말(온도·음료/거·수·잔)이 아니면(「매장 말고」) 그 낱말만 뺀다.
+// · B(다음 「말고」나 끝까지)가 칸을 다시 말했으면 A 쪽(머리부터 앞으로 이어지는 주문 말)에서 그 칸의 낱말만 뺀다. 음료를 바꾸면
+//   그 음료에 붙었던 온도도 버린다(「차가운 차 말고 커피」의 커피는 차갑다고 하지 않았다). 잔 수는 B가 다시 말할 때만 바꾼다 —
+//   「차 한 잔 말고 두 잔」은 차 두 잔, 「커피 두 잔 말고 차」는 차 두 잔, 「따뜻한 차 두 잔 차가운 거 말고 따뜻한 걸로」는 온도만 고친 것이다.
+// · B가 칸을 다시 말하지 않았으면(「차가운 거 말고요」) 머리에서 한 구절(온도 → 음료/거 → 수 → 잔의 차례가 거꾸로 이어지는 동안)만 뺀다.
+// · 낱말의 칸: 온도 0 · 음료/거 1(「아이스커피」는 0과 1) · 수 2 · 잔 3(「두잔」은 2와 3). rank는 한 구절을 잴 때의 자리다.
+const NOT_THIS=/^(.*?)(말고|말구|아니고|대신)(요|에)?$/;
+const DRINK_WORD='(녹차|홍차|유자차|보리차|허브차|차|주스|쥬스|커피|아메리카노|라떼|카페라떼)(를|을|로|는|도|가|랑|하고|만)?';
+const ORDER_WORDS=[
+ [/^(따뜻한|따듯한|뜨거운|따끈한|차가운|시원한|아이스|찬|핫)$/,0,[0]],
+ [new RegExp(`^(아이스|핫)${DRINK_WORD}$`),1,[0,1]],
+ [new RegExp(`^${DRINK_WORD}$|^(거|것|걸|건)$`),1,[1]],
+ [/^(\d+|한|두|세|네|다섯|하나|둘|셋|넷)$/,2,[2]],
+ [/^(\d+|한|두|세|네|다섯|하나|둘|셋|넷)(잔|개|컵)$/,3,[2,3]],
+ [/^(잔|개|컵)$/,3,[3]]
+];
+const orderWord=w=>{for(const [re,rank,cats] of ORDER_WORDS)if(re.test(w))return {rank,cats};return null;};
+// 음료 낱말 뒤에는 조사·「요」·「주세요」만 붙는다(「차가운」·「커피숍」은 음료 주문이 아니다).
+const DRINK_TAIL='(를|을|로|는|도|가|랑|하고|만)?(요|예요|이요|주세요)?$';
+/** 낱말들에서 주문 세 칸(음료·온도·잔 수)을 고른다. */
+function orderSlots(tokens){
+ const kept=tokens.join(' '),has=re=>tokens.some(w=>re.test(w));
  // 「차가운」은 차(tea)가 아니다 — 낱말 단위로 본다.
- const drink=has(/^(녹차|홍차|유자차|보리차|허브차|차)(를|로|는|도|가|랑|하고|요|만)?$/)?'tea':has(/^(주스|쥬스)/)?'juice':has(/^(커피|아메리카노|라떼|카페라떼)/)?'coffee':'none';
+ const drink=has(new RegExp(`^(녹차|홍차|유자차|보리차|허브차|차)${DRINK_TAIL}`))?'tea':has(new RegExp(`^(주스|쥬스)${DRINK_TAIL}`))?'juice'
+  :has(new RegExp(`^(아이스|핫)?(커피|아메리카노|라떼|카페라떼)${DRINK_TAIL}`))?'coffee':'none';
  // 차가운 것도 낱말 단위로 본다 — 「녹차가·홍차는·차가 두 잔」의 「차가」는 차 + 조사라 차가운 것이 아니다(10-21 문항 검수 P2).
- // 차가운 것: 차가운·차가워·차가우면·차갑게·차게·시원한·아이스(티)·찬 거. 「반찬」의 「찬」은 아니다.
- const temperature=/따뜻|따듯|뜨거|뜨겁|따끈|핫/.test(t)?'warm':has(/^(차가[운워우]|차갑|차게|시원)|아이스|^찬$|^찬(거|걸|것)/)?'cold':'none';
- const counted=t.match(/(\d+|한|두|세|네|다섯)\s*(잔|개|컵)/);
- const count=counted?Number(counted[1])||NUMBER_WORDS[counted[1]]||0:0;
- const place=/여기서|매장|먹고\s*갈|마시고\s*갈|앉아서|안에서/.test(t)?'here':/가져|포장|테이크\s*아웃|들고\s*갈/.test(t)?'togo':'none';
- // 「네 잔」의 네는 대답이 아니다.
- const answer=/^(네|예)(?!\s*(잔|개|컵))|^응|맞아요|맞습니다|그래요/.test(t)?'yes':/^(아니|아뇨)|아니에요|아니요/.test(t)?'no':'none';
- const last=t.replace(/[.!?~…\s]+$/,'');
+ // 차가운 것: 차가운·차가워·차가우면·차갑게·차게·시원한·아이스(티)·찬 거. 「반찬」·「칭찬」의 「찬」은 아니다(10-21 아르곤 백엔드 검수).
+ const temperature=/따뜻|따듯|뜨거|뜨겁|따끈|핫/.test(kept)?'warm':has(/^(차가[운워우]|차갑|차게|시원)|아이스|^찬$|^찬(거|걸|것)/)?'cold':'none';
+ // 「동네 잔치」의 네 잔은 잔 수가 아니다 — 한글 수는 낱말 머리에서만 본다(「3개월」의 개도 잔 수가 아니다). 잔 없이 말한 수는
+ // 주문하는 꼴(「둘이요」·「하나만 주세요」·「둘 주세요」)일 때만 센다 — 「하나만 물어볼게요」·「하나, 둘, 셋」·「둘 다」는 잔 수가 아니다(10-21 아르곤 다시 받기).
+ const counted=kept.match(/(\d+)\s*(잔|컵|개(?!월))|(?:^|\s)(한|두|세|네|다섯)\s*(잔|컵|개(?!월))|(?:^|\s)(하나|둘|셋|넷|다섯)만?(?:이요|요|이에요|예요|주세요|\s+주세요)(?=$|\s)/);
+ const number=counted?counted[1]||counted[3]||counted[5]:null,count=number?Number(number)||NUMBER_WORDS[number]||0:0;
+ return {drink,temperature,count};
+}
+export function slotsFromText(text){
+ const t=String(text??'').replace(/\(\?\)/g,' ').replace(/\s+/g,' ').trim(),words=t.split(/[\s,.!?~…]+/).filter(Boolean);
+ const skip=new Set();
+ words.forEach((w,i)=>{
+  const m=w.match(NOT_THIS);if(!m)return;
+  skip.add(i);
+  const attached=m[1];
+  let j=i-1;
+  const headWord=attached||words[j];if(!headWord)return;
+  const head=orderWord(headWord);
+  if(!head){if(!attached)skip.add(j);return;}
+  let end=words.findIndex((x,k)=>k>i&&NOT_THIS.test(x));if(end<0)end=words.length;
+  const b=orderSlots(words.slice(i+1,end)),again=new Set([...(b.temperature!=='none'?[0]:[]),...(b.drink!=='none'?[1]:[]),...(b.count>0?[2,3]:[])]);
+  if(again.size){
+   if(again.has(1))again.add(0);
+   const hit=o=>o.cats.some(c=>again.has(c));
+   if(!attached&&hit(head))skip.add(j);
+   for(let k=attached?j:j-1;k>=0;k--){const o=orderWord(words[k]);if(!o)break;if(hit(o))skip.add(k);}
+   return;
+  }
+  if(!attached)skip.add(j--);
+  for(let r=head.rank;r>0&&j>=0;j--){const o=orderWord(words[j]);if(!o||o.rank>=r)break;skip.add(j);r=o.rank;}
+ });
+ const tokens=words.filter((_,i)=>!skip.has(i)),kept=tokens.join(' ');
+ const {drink,temperature,count}=orderSlots(tokens);
+ const place=/여기서|매장|먹고\s*갈|마시고\s*갈|앉아서|안에서/.test(kept)?'here':/가져|포장|테이크\s*아웃|들고\s*갈/.test(kept)?'togo':'none';
+ // 「네 잔」의 네는 대답이 아니다. 「예전에」·「네모난」·「응원」처럼 낱말 머리일 뿐인 것도 대답이 아니다.
+ const said=words.join(' ');
+ const answer=/^(네|예)+(?![가-힣])(?!\s*(잔|개|컵))|^넵(?![가-힣])|^응(?![가-힣])|맞아요|맞습니다|그래요/.test(said)?'yes':/^(아니|아뇨)|아니에요|아니요/.test(said)?'no':'none';
+ const last=t.replace(/[.!?~…\s"'」』)\]]+$/,'');
  const polite=/(요|니다|세요|십시오|해요)$/.test(last)?'yes':/(줘|해|야|어|아|줄래|할래|봐)$/.test(last)?'no':'unclear';
  return {drink,temperature,count,place,answer,polite};
 }
@@ -287,7 +341,8 @@ export function nextStep({roleplay,stepId,slots}){
  if(['order','count','soldout'].includes(stepId)){
   if(slots.drink==='juice'&&stepId!=='soldout')return {step:'soldout',hint:null};
   // 잔 수만 묻는 차례(「따뜻한 차를 몇 잔…」)는 음료·온도를 말하지 않아도 되지만, 말했으면 그 말로 본다(10-21 아르곤 검수).
-  const drink=stepId==='count'&&slots.drink==='none'?'tea':slots.drink,temp=stepId==='count'&&slots.temperature==='none'?'warm':slots.temperature;
+  // 말하지 않은 칸은 그 역할극의 목표로 채운다(다른 목표의 역할극이 더해져도 맞게 — 10-21 아르곤 백엔드 검수).
+  const drink=stepId==='count'&&slots.drink==='none'?goal.drink:slots.drink,temp=stepId==='count'&&slots.temperature==='none'?goal.temperature:slots.temperature;
   if(drink!==goal.drink)return {step:stepId,hint:'drink'};
   if(temp!==goal.temperature)return {step:stepId,hint:'temperature'};
   if(slots.count===0)return {step:'count',hint:null};
@@ -318,6 +373,6 @@ export function priceClaude(model,usage){
 }
 /** 소리 길이로 미리 잡는 예약액(서버의 금액 예약용 어림): 초당 32토큰으로 넉넉히 + 글 입력 + 최대 출력. */
 export function reserveEstimate({model,seconds,promptTokens=1500,maxOutput=2048}){
- const p=PRICES[model];if(!p)return null;
- return (Math.ceil(seconds)*32*(p.audioInput??p.input)+promptTokens*p.input+maxOutput*p.output)/1e6;
+ const p=PRICES[model],s=Number(seconds);if(!p||!Number.isFinite(s)||s<0)return null;
+ return (Math.ceil(s)*32*(p.audioInput??p.input)+promptTokens*p.input+maxOutput*p.output)/1e6;
 }

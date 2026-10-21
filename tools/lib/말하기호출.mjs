@@ -77,7 +77,8 @@ export async function speakingFeedback({route='listen',item,types,audio,lang='ko
  const heard=await callVertex({model:plan.hear.model,thinking:plan.hear.thinking,prompt:plan.hear.blind?blindHearPrompt():hearPrompt({item,types}),schema:HEAR_SCHEMA,audio,maxOutput:1536});
  push('hear','vertex',plan.hear.model,heard);
  // 말이 없거나 한국어가 아니거나 거의 안 들리면(또는 녹음 길이에 비해 음절이 너무 많으면) 쓰기 단계를 부르지 않는다 — 돈을 쓰지 않고 다시 녹음을 권한다.
- const early=normalizeFeedback({...mergeSplit(heard.json,null),covered:[],task:{good:'-',try:''}},{item,seconds});
+ // 받아 적기 답을 못 읽었으면 말이 없던 것이 아니라 결과를 모르는 것이다(운영 함수와 같이 unavailable — 10-21 아르곤 백엔드 검수).
+ const early=heard.json&&typeof heard.json==='object'?normalizeFeedback({...mergeSplit(heard.json,null),covered:[],task:{good:'-',try:''}},{item,seconds}):{status:'unavailable',counted:false};
  if(early.status!=='ok')return {route,ms:Date.now()-t0,calls,raw:{hear:heard.json},result:early};
  const w=plan.write,user=writeUser({item,types,heard:heard.json});
  const write=w.provider==='anthropic'
