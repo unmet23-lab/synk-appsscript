@@ -101,6 +101,15 @@ class Retention(unittest.TestCase):
         again = retention.main({'op': 'plan'}, self.inventory)
         self.assertEqual([c['kind'] for c in again['candidates']], [])
 
+    def test_a_node_without_docker_plans_files_only(self):
+        def absent(*args):
+            raise FileNotFoundError('docker')
+        inventory = retention.Inventory(root=self.root, docker=absent, clock=lambda: NOW, current='%012x' % 0xabc000)
+        planned = retention.main({'op': 'plan'}, inventory)
+        self.assertNotIn('image', planned['summary'])
+        self.assertEqual(planned['summary']['release']['count'], 3)
+        self.assertTrue(planned['node'])
+
 
 if __name__ == '__main__':
     unittest.main()

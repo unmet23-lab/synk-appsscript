@@ -9,16 +9,22 @@ line back. Layout under the persistent disk (follows the writer on failover):
   /srv/synk/static/current -> sets/<id>     (relative link, replaced by rename)
   /srv/synk/static/history.json             (every flip, newest last)
 
-Sets are immutable once written. Nothing here touches the release root, the
-image, containers, services, data or HA state; the release root is only read.
+Each file row records `origin`: the release bytes it was made against (null
+when the release had no such file). The server serves the set copy only while
+its image still holds those bytes, so an image release that changes a file
+wins until a new set is made on top of it. Sets are immutable once written.
+
+Nothing here touches the release root, the image, containers, services, data
+or HA state; the release root is only read.
 """
 import base64, hashlib, json, os, pathlib, re, shutil, stat, sys, time
 
-SCHEMA = 'synk-company-static-set/v1'
+SCHEMA = 'synk-company-static-set/v2'
 SET_ID = re.compile(r'^[a-f0-9]{16}$')
 SHA256 = re.compile(r'^[a-f0-9]{64}$')
 COMMIT = re.compile(r'^[a-f0-9]{40}$')
 MAX_FILES = 10000
+MAX_SERVED_BYTES = 2_500_000  # base64 output must stay inside the 4 MiB SSH reply
 
 
 class Refused(Exception):
@@ -34,8 +40,8 @@ def safe(path):
     return isinstance(path, str) and 0 < len(path) <= 512 and not path.startswith('/') and '\\' not in path and '\0' not in path and all(part not in ('', '.', '..') for part in path.split('/'))
 
 
-def canonical_id(files, directories):
-    body = json.dumps({'directories': sorted(directories), 'files': files}, sort_keys=True, separators=(',', ':'), ensure_ascii=False)
+def canonical_id(files):
+    body = json.dumps({'files': files}, sort_keys=True, separators=(',', ':'), ensure_ascii=False)
     return hashlib.sha256(body.encode('utf-8')).hexdigest()[:16]
 
 
@@ -49,12 +55,11 @@ def file_digest(path):
 
 def validate(manifest, expected_id=None):
     require(isinstance(manifest, dict) and manifest.get('schema') == SCHEMA, 'STATIC_SET_SCHEMA')
-    files, directories = manifest.get('files'), manifest.get('directories', [])
+    files = manifest.get('files')
     require(isinstance(files, dict) and 0 < len(files) <= MAX_FILES, 'STATIC_SET_FILES')
     for path, row in files.items():
-        require(safe(path) and isinstance(row, dict) and set(row) == {'sha256', 'size'} and SHA256.match(str(row['sha256'])) and isinstance(row['size'], int) and row['size'] >= 0, 'STATIC_SET_FILE')
-    require(isinstance(directories, list) and all(safe(d) and any(p.startswith(d + '/') for p in files) for d in directories), 'STATIC_SET_DIRECTORIES')
-    require(SET_ID.match(str(manifest.get('id'))) and manifest['id'] == canonical_id(files, directories), 'STATIC_SET_ID')
+        require(safe(path) and isinstance(row, dict) and set(row) == {'sha256', 'size', 'origin'} and SHA256.match(str(row['sha256'])) and isinstance(row['size'], int) and row['size'] >= 0 and (row['origin'] is None or SHA256.match(str(row['origin']))), 'STATIC_SET_FILE')
+    require(SET_ID.match(str(manifest.get('id'))) and manifest['id'] == canonical_id(files), 'STATIC_SET_ID')
     require(expected_id is None or manifest['id'] == expected_id, 'STATIC_SET_ID')
     return manifest
 
@@ -119,8 +124,13 @@ class Node:
         path = self.root / 'history.json'
         return json.loads(path.read_text('utf-8')) if path.exists() else []
 
-    def write_set(self, files, directories, commit, source):
-        """files: rel -> callable(dest) that writes or links bytes; returns id."""
+    # The running release's copy of one repository path, or None.
+    def release_digest(self, rel):
+        path = self.release.resolve().joinpath(*rel.split('/'))
+        return file_digest(path) if path.is_file() and not path.is_symlink() else None
+
+    def write_set(self, files, commit, source):
+        """files: rel -> (callable(dest) that writes or links bytes, origin); returns id."""
         rows = {}
         work = self.sets() / ('.work-' + os.urandom(6).hex())
         work.mkdir(mode=0o755)
@@ -129,11 +139,12 @@ class Node:
                 require(safe(rel), 'STATIC_SET_FILE')
                 dest = work.joinpath(*rel.split('/'))
                 dest.parent.mkdir(mode=0o755, parents=True, exist_ok=True)
-                files[rel](dest)
+                write, origin = files[rel]
+                write(dest)
                 os.chmod(dest, 0o644)
-                rows[rel] = {'sha256': file_digest(dest), 'size': dest.stat().st_size}
-            set_id = canonical_id(rows, directories)
-            manifest = {'schema': SCHEMA, 'id': set_id, 'commit': commit if commit and COMMIT.match(commit) else None, 'source': source, 'createdAt': int(self.clock()), 'files': rows, 'directories': sorted(directories)}
+                rows[rel] = {'sha256': file_digest(dest), 'size': dest.stat().st_size, 'origin': origin}
+            set_id = canonical_id(rows)
+            manifest = {'schema': SCHEMA, 'id': set_id, 'commit': commit if commit and COMMIT.match(commit) else None, 'source': source, 'createdAt': int(self.clock()), 'files': rows}
             validate(manifest)
             (work / 'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, sort_keys=True, indent=1) + '\n', 'utf-8')
             os.chmod(work / 'manifest.json', 0o644)
@@ -150,8 +161,15 @@ class Node:
                     path.rmdir() if path.is_dir() and not path.is_symlink() else path.unlink()
                 work.rmdir()
 
-    # Copy the listed screen files out of the running release root.
-    def init(self, paths, directories, commit):
+    # The release compose binds this root read-only and refuses a missing source,
+    # so the owner gets the empty root before the first release that mounts it.
+    def ensure(self):
+        self.owner()
+        self.ensure_root()
+        return {'status': 'ensured', 'root': str(self.root), 'current': self.current_id()}
+
+    # Copy the listed screen files out of the running release root; each row's origin is its own bytes.
+    def init(self, paths, commit):
         self.owner()
         self.ensure_root()
         release = self.release.resolve()
@@ -160,28 +178,27 @@ class Node:
             require(safe(rel), 'STATIC_SET_FILE')
             source = release.joinpath(*rel.split('/'))
             require(source.is_file() and not source.is_symlink() and release in source.resolve().parents, 'RELEASE_FILE_MISSING')
-            listed[rel] = (lambda src: (lambda dest: shutil.copyfile(src, dest)))(source)
-        for directory in directories:
-            require(any(p.startswith(directory + '/') for p in listed), 'STATIC_SET_DIRECTORIES')
+            listed[rel] = ((lambda src: (lambda dest: shutil.copyfile(src, dest)))(source), file_digest(source))
         with self.lock():
-            set_id, created = self.write_set(listed, directories, commit, {'kind': 'release', 'releaseRoot': str(release)})
+            set_id, created = self.write_set(listed, commit, {'kind': 'release', 'releaseRoot': str(release)})
         return {'status': 'staged', 'set': set_id, 'created': created, 'files': len(listed)}
 
-    # A new set: the base set's files, hard-linked, with replacements written.
+    # A new set: the base set's files hard-linked with their origins, and replacements
+    # written against the bytes the running release holds now.
     def stage(self, base, changes, expected_id, commit):
         self.owner()
         self.ensure_root()
         with self.lock():
             manifest, base_dir = self.verify(base), self.sets() / base
             listed = {}
-            for rel in manifest['files']:
-                listed[rel] = (lambda src: (lambda dest: os.link(src, dest)))(base_dir.joinpath(*rel.split('/')))
+            for rel, row in manifest['files'].items():
+                listed[rel] = ((lambda src: (lambda dest: os.link(src, dest)))(base_dir.joinpath(*rel.split('/'))), row['origin'])
             for rel, row in changes.items():
                 require(safe(rel) and isinstance(row, dict), 'STATIC_SET_FILE')
                 body = base64.b64decode(row['base64'], validate=True)
                 require(hashlib.sha256(body).hexdigest() == row['sha256'], 'CHANGE_BYTES')
-                listed[rel] = (lambda data: (lambda dest: dest.write_bytes(data)))(body)
-            set_id, created = self.write_set(listed, manifest['directories'], commit, {'kind': 'delta', 'base': base, 'changed': sorted(changes)})
+                listed[rel] = ((lambda data: (lambda dest: dest.write_bytes(data)))(body), self.release_digest(rel))
+            set_id, created = self.write_set(listed, commit, {'kind': 'delta', 'base': base, 'changed': sorted(changes)})
         require(set_id == expected_id, 'STAGED_ID_MISMATCH')
         return {'status': 'staged', 'set': set_id, 'created': created, 'files': len(listed), 'changed': len(changes)}
 
@@ -210,12 +227,26 @@ class Node:
             os.replace(temporary, self.root / 'history.json')
         return {'status': 'flipped', 'from': current, 'to': to, 'files': len(manifest['files'])}
 
-    def read(self, set_id, paths):
-        manifest, out = self.manifest(set_id), {}
+    # The bytes a request for each path gets now: the current set copy while the
+    # release still holds its origin, otherwise the release copy, otherwise none.
+    def served(self, paths):
+        self.owner()
+        current = self.current_id()
+        rows = self.manifest(current)['files'] if current else {}
+        out = {}
         for rel in paths:
-            require(rel in manifest['files'] and manifest['files'][rel]['size'] <= 8 * 1024 * 1024, 'READ_NOT_LISTED')
-            out[rel] = (self.sets() / set_id).joinpath(*rel.split('/')).read_bytes().hex()
-        return {'status': 'read', 'set': set_id, 'files': out}
+            require(safe(rel), 'STATIC_SET_FILE')
+            release, row = self.release_digest(rel), rows.get(rel)
+            if row is not None and row['origin'] == release:
+                path, source = (self.sets() / current).joinpath(*rel.split('/')), 'set'
+            elif release is not None:
+                path, source = self.release.resolve().joinpath(*rel.split('/')), 'release'
+            else:
+                out[rel] = {'from': None, 'release': None}
+                continue
+            require(path.stat().st_size <= MAX_SERVED_BYTES, 'SERVED_TOO_LARGE')
+            out[rel] = {'from': source, 'release': release, 'base64': base64.b64encode(path.read_bytes()).decode('ascii')}
+        return {'status': 'served', 'set': current, 'files': out}
 
     def status(self):
         if self.owner_check and not os.path.ismount(self.persistent):
@@ -225,7 +256,7 @@ class Node:
         current = self.current_id()
         sets = sorted(p.name for p in self.sets().iterdir() if SET_ID.match(p.name)) if self.sets().exists() else []
         manifest = self.manifest(current) if current else None
-        return {'status': 'present', 'current': current, 'commit': manifest and manifest.get('commit'), 'files': manifest and len(manifest['files']), 'sets': sets, 'history': self.history()[-10:]}
+        return {'status': 'present', 'schema': SCHEMA, 'current': current, 'commit': manifest and manifest.get('commit'), 'files': manifest and len(manifest['files']), 'sets': sets, 'history': self.history()[-10:]}
 
 
 def main(request, node=None):
@@ -233,14 +264,16 @@ def main(request, node=None):
     op = request.get('op')
     if op == 'status':
         return node.status()
+    if op == 'ensure':
+        return node.ensure()
     if op == 'init':
-        return node.init(request['paths'], request.get('directories', []), request.get('commit'))
+        return node.init(request['paths'], request.get('commit'))
     if op == 'stage':
         return node.stage(request['base'], request['changes'], request['expectId'], request.get('commit'))
     if op == 'flip':
         return node.flip(request['to'], request.get('from'))
-    if op == 'read':
-        return node.read(request['set'], request['paths'])
+    if op == 'served':
+        return node.served(request['paths'])
     if op == 'manifest':
         return {'status': 'manifest', 'manifest': node.manifest(request['set'])}
     if op == 'verify':

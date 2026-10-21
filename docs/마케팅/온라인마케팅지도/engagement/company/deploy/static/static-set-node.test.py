@@ -6,6 +6,7 @@ spec.loader.exec_module(node_module)
 Node, Refused, canonical_id, validate, main = node_module.Node, node_module.Refused, node_module.canonical_id, node_module.validate, node_module.main
 
 COMPANY = 'docs/마케팅/온라인마케팅지도/engagement/company'
+digest = lambda body: hashlib.sha256(body).hexdigest()
 
 
 class FakeLinks:
@@ -43,31 +44,50 @@ class StaticSetNode(unittest.TestCase):
         self.temp.cleanup()
 
     def init(self):
-        return self.node.init([COMPANY + '/public/app.js', COMPANY + '/public/index.html', 'tools/company-messenger/public/app.js'], ['tools/company-messenger/public'], 'a' * 40)
+        return self.node.init([COMPANY + '/public/app.js', COMPANY + '/public/index.html', 'tools/company-messenger/public/app.js'], 'a' * 40)
 
-    def test_init_copies_listed_release_files_into_an_immutable_set(self):
+    def change(self, body):
+        return {'base64': base64.b64encode(body).decode(), 'sha256': digest(body)}
+
+    def release_file(self, rel, body):
+        path = self.release.joinpath(*rel.split('/'))
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(body)
+
+    def test_ensure_creates_the_empty_root_without_a_set(self):
+        self.assertFalse((self.node.root / 'sets').exists())
+        first = main({'op': 'ensure'}, self.node)
+        self.assertEqual(first['status'], 'ensured')
+        self.assertIsNone(first['current'])
+        self.assertTrue((self.node.root / 'sets').is_dir())
+        self.assertEqual(main({'op': 'ensure'}, self.node)['status'], 'ensured')
+        self.assertEqual(main({'op': 'status'}, self.node)['current'], None)
+
+    def test_init_copies_listed_release_files_with_their_own_bytes_as_origin(self):
         first = self.init()
         self.assertEqual(first['status'], 'staged')
         self.assertTrue(first['created'])
         manifest = self.node.verify(first['set'])
         self.assertEqual(sorted(manifest['files']), sorted([COMPANY + '/public/app.js', COMPANY + '/public/index.html', 'tools/company-messenger/public/app.js']))
-        self.assertEqual(manifest['files'][COMPANY + '/public/app.js'], {'sha256': hashlib.sha256(b'one').hexdigest(), 'size': 3})
-        self.assertEqual(manifest['id'], canonical_id(manifest['files'], manifest['directories']))
+        self.assertEqual(manifest['files'][COMPANY + '/public/app.js'], {'sha256': digest(b'one'), 'size': 3, 'origin': digest(b'one')})
+        self.assertEqual(manifest['id'], canonical_id(manifest['files']))
+        self.assertNotIn('directories', manifest)
         self.assertEqual(self.init()['created'], False)  # same bytes give the same id
         self.assertIsNone(self.node.current_id())
         with self.assertRaises(Refused) as caught:
-            self.node.init([COMPANY + '/server.mjs/../x'], [], None)
+            self.node.init([COMPANY + '/server.mjs/../x'], None)
         self.assertEqual(str(caught.exception), 'STATIC_SET_FILE')
         with self.assertRaises(Refused):
-            self.node.init([COMPANY + '/public/missing.js'], [], None)
+            self.node.init([COMPANY + '/public/missing.js'], None)
 
-    def test_stage_links_the_base_and_replaces_only_named_files(self):
+    def test_stage_links_the_base_and_writes_replacements_against_the_running_release(self):
         base = self.init()['set']
         body = b'console.log("two")'
-        changes = {COMPANY + '/public/app.js': {'base64': base64.b64encode(body).decode(), 'sha256': hashlib.sha256(body).hexdigest()}}
+        changes = {COMPANY + '/public/app.js': self.change(body), COMPANY + '/public/new.js': self.change(b'new')}
         expected = dict(self.node.manifest(base)['files'])
-        expected[COMPANY + '/public/app.js'] = {'sha256': hashlib.sha256(body).hexdigest(), 'size': len(body)}
-        expected_id = canonical_id(expected, ['tools/company-messenger/public'])
+        expected[COMPANY + '/public/app.js'] = {'sha256': digest(body), 'size': len(body), 'origin': digest(b'one')}
+        expected[COMPANY + '/public/new.js'] = {'sha256': digest(b'new'), 'size': 3, 'origin': None}
+        expected_id = canonical_id(expected)
         staged = self.node.stage(base, changes, expected_id, 'b' * 40)
         self.assertEqual(staged['set'], expected_id)
         self.assertEqual((self.node.sets() / expected_id).joinpath(*(COMPANY + '/public/app.js').split('/')).read_bytes(), body)
@@ -78,6 +98,11 @@ class StaticSetNode(unittest.TestCase):
         with self.assertRaises(Refused) as caught:
             self.node.stage(base, changes, '0' * 16, None)
         self.assertEqual(str(caught.exception), 'STAGED_ID_MISMATCH')
+        # A release that moved on since the plan gives another origin, so another id.
+        self.release_file(COMPANY + '/public/app.js', b'released')
+        with self.assertRaises(Refused) as caught:
+            self.node.stage(base, changes, '0123456789abcdef', None)
+        self.assertEqual(str(caught.exception), 'STAGED_ID_MISMATCH')
 
     def test_flip_is_compare_and_swap_records_history_and_rolls_back(self):
         first = self.init()['set']
@@ -86,15 +111,14 @@ class StaticSetNode(unittest.TestCase):
         self.assertEqual(self.node.flip(first, None)['to'], first)
         self.assertEqual(self.node.current_id(), first)
         body = b'two'
-        changes = {COMPANY + '/public/app.js': {'base64': base64.b64encode(body).decode(), 'sha256': hashlib.sha256(body).hexdigest()}}
         files = dict(self.node.manifest(first)['files'])
-        files[COMPANY + '/public/app.js'] = {'sha256': hashlib.sha256(body).hexdigest(), 'size': 3}
-        second = self.node.stage(first, changes, canonical_id(files, ['tools/company-messenger/public']), None)['set']
+        files[COMPANY + '/public/app.js'] = {'sha256': digest(body), 'size': 3, 'origin': digest(b'one')}
+        second = self.node.stage(first, {COMPANY + '/public/app.js': self.change(body)}, canonical_id(files), None)['set']
         self.assertEqual(self.node.flip(second, first)['from'], first)
         self.assertEqual(self.node.flip(first, second)['to'], first)  # rollback is a flip back
         self.assertEqual([(h['from'], h['to']) for h in self.node.history()], [(None, first), (first, second), (second, first)])
         status = self.node.status()
-        self.assertEqual((status['status'], status['current'], status['files']), ('present', first, 3))
+        self.assertEqual((status['status'], status['current'], status['files'], status['schema']), ('present', first, 3, node_module.SCHEMA))
         damaged = (self.node.sets() / second).joinpath(*(COMPANY + '/public/app.js').split('/'))
         os.chmod(damaged, 0o644)
         damaged.write_bytes(b'tampered')
@@ -103,20 +127,35 @@ class StaticSetNode(unittest.TestCase):
         self.assertEqual(str(caught.exception), 'STATIC_SET_FILE_MISMATCH')
         self.assertEqual(self.node.current_id(), first)
 
-    def test_read_returns_only_listed_files_and_main_refuses_unknown_operations(self):
+    def test_served_follows_the_origin_rule_and_main_refuses_unknown_operations(self):
+        app, chat, missing = COMPANY + '/public/app.js', 'tools/company-messenger/public/app.js', COMPANY + '/public/none.js'
+        before = self.node.served([app])['files'][app]  # no set yet: the release copy
+        self.assertEqual((before['from'], base64.b64decode(before['base64'])), ('release', b'one'))
         first = self.init()['set']
-        self.assertEqual(bytes.fromhex(self.node.read(first, [COMPANY + '/public/app.js'])['files'][COMPANY + '/public/app.js']), b'one')
-        with self.assertRaises(Refused):
-            self.node.read(first, [COMPANY + '/server.mjs'])
+        self.node.flip(first, None)
+        files = dict(self.node.manifest(first)['files'])
+        files[app] = {'sha256': digest(b'swapped'), 'size': 7, 'origin': digest(b'one')}
+        second = self.node.stage(first, {app: self.change(b'swapped')}, canonical_id(files), None)['set']
+        self.node.flip(second, first)
+        served = self.node.served([app, chat, missing])['files']
+        self.assertEqual((served[app]['from'], base64.b64decode(served[app]['base64']), served[app]['release']), ('set', b'swapped', digest(b'one')))
+        self.assertEqual(served[chat]['from'], 'set')
+        self.assertEqual(served[missing], {'from': None, 'release': None})
+        # An image release that changed the file wins over the set made against the old bytes.
+        self.release_file(app, b'released')
+        after = self.node.served([app])['files'][app]
+        self.assertEqual((after['from'], base64.b64decode(after['base64']), after['release']), ('release', b'released', digest(b'released')))
         with self.assertRaises(Refused):
             main({'op': 'delete'}, self.node)
+        with self.assertRaises(Refused):
+            main({'op': 'read', 'set': first, 'paths': [app]}, self.node)
         self.assertEqual(main({'op': 'verify', 'set': first}, self.node)['status'], 'verified')
 
     def test_manifest_validation_matches_the_server_rules(self):
-        files = {'a/b.js': {'sha256': '0' * 64, 'size': 1}}
-        good = {'schema': node_module.SCHEMA, 'id': canonical_id(files, ['a']), 'files': files, 'directories': ['a']}
+        files = {'a/b.js': {'sha256': '0' * 64, 'size': 1, 'origin': None}}
+        good = {'schema': node_module.SCHEMA, 'id': canonical_id(files), 'files': files}
         self.assertEqual(validate(good)['id'], good['id'])
-        for change in ({'schema': 'x'}, {'id': '0' * 16}, {'directories': ['b']}, {'files': {'../b.js': files['a/b.js']}}):
+        for change in ({'schema': 'x'}, {'schema': 'synk-company-static-set/v1'}, {'id': '0' * 16}, {'files': {'../b.js': files['a/b.js']}}, {'files': {'a/b.js': {'sha256': '0' * 64, 'size': 1}}}, {'files': {'a/b.js': {'sha256': '0' * 64, 'size': 1, 'origin': 'zz'}}}):
             with self.assertRaises(Refused):
                 validate({**good, **change})
 

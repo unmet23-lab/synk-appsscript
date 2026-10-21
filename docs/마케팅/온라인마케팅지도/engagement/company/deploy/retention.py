@@ -8,7 +8,7 @@ that list only when the digest still matches. Remote copies (GCS, Drive),
 HA job records, data, the running release and every image a container or the
 environment names are never candidates.
 """
-import hashlib, json, os, pathlib, re, shutil, subprocess, sys, time
+import hashlib, json, os, pathlib, re, shutil, socket, subprocess, sys, time
 
 RULES = {'releases': 5, 'snapshots': 3, 'archiveDays': 14, 'archives': 10, 'stage': 2, 'restores': 1}
 RELEASE = re.compile(r'^[a-f0-9]{12}$')
@@ -64,7 +64,11 @@ class Inventory:
         return [p for p in found if p.name in kept], [entry(p, 'release') for p in found if p.name not in kept]
 
     def images(self, kept_releases):
-        rows = [json.loads(line) for line in self.docker('image', 'ls', '--no-trunc', '--format', '{{json .}}').splitlines() if line.strip()]
+        try:
+            listing = self.docker('image', 'ls', '--no-trunc', '--format', '{{json .}}')
+        except FileNotFoundError:  # the HA control VM has no Docker and no company images
+            return []
+        rows = [json.loads(line) for line in listing.splitlines() if line.strip()]
         used = set()
         for line in self.docker('ps', '--all', '--no-trunc', '--format', '{{.ID}}').splitlines():
             if line.strip():
@@ -131,7 +135,7 @@ class Inventory:
                 row['oldest'] = min(row['oldest'] or stamp, stamp)
                 row['newest'] = max(row['newest'] or stamp, stamp)
         body = json.dumps(sorted((c['kind'], c['path'], c['bytes'], c['mtime'], c.get('image')) for c in candidates), separators=(',', ':'))
-        return {'status': 'planned', 'rules': rules, 'kept': {'releases': sorted(p.name for p in kept), 'current': self.current_release()}, 'summary': summary, 'candidates': candidates, 'sha256': hashlib.sha256(body.encode()).hexdigest()}
+        return {'status': 'planned', 'node': socket.gethostname(), 'rules': rules, 'kept': {'releases': sorted(p.name for p in kept), 'current': self.current_release()}, 'summary': summary, 'candidates': candidates, 'sha256': hashlib.sha256(body.encode()).hexdigest()}
 
     def apply(self, rules, expected):
         planned = self.plan(rules)

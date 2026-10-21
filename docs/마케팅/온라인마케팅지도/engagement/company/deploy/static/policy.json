@@ -1,6 +1,6 @@
 {
   "schema": "synk-company-static-policy/v1",
-  "note": "Browser-only files that may move to the host static set. Anything a server module imports or reads stays image-only; policy.test enforces it.",
+  "note": "Browser-only files that may move to the host static set. Anything a server module imports or reads stays image-only; deploy-static-swap.test enforces it. A set row is served only while the image still holds its origin bytes.",
   "include": [
     "docs/마케팅/온라인마케팅지도/engagement/company/public/**",
     "tools/company-messenger/public/**",
@@ -24,6 +24,5 @@
     "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/demo-assets/**",
     "experiences/atlas-lab/interpretation.mjs",
     "experiences/atlas-lab/model-extraction.mjs"
-  ],
-  "directories": ["tools/company-messenger/public"]
+  ]
 }

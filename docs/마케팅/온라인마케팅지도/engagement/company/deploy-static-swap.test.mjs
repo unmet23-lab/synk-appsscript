@@ -15,7 +15,7 @@ const git=args=>execFileSync('git',args,{cwd:repository,maxBuffer:256*1024*1024}
 test('policy keeps every server-read file in the image',()=>{
   for(const path of [C+'/public/app.js',C+'/public/index.html',C+'/public/pulse-app/assets/casting/m01.webp','tools/company-messenger/public/app.js','experiences/teacher-world/app.mjs','experiences/atlas-lab/lab.js','atlas/ask.js'])assert.equal(isStatic(path),true,path);
   for(const path of [C+'/server.mjs',C+'/public/publish-rules.js',C+'/public/subtitle-lab.js',C+'/public/pulse-app/casting-catalog.mjs',C+'/public/pulse-app/demo-assets/scene-1.png','atlas/engine.js','atlas/domain.js','experiences/atlas-lab/interpretation.mjs','experiences/atlas-lab/model-extraction.mjs','docs/브랜드_폰트/SUIT/SUIT-Variable.woff2','tools/company-messenger/server.mjs'])assert.equal(isStatic(path),false,path);
-  assert.deepEqual(policy.directories,['tools/company-messenger/public']);
+  assert.equal(policy.directories,undefined,'every file is judged on its own origin, never a whole folder');
 });
 
 // Every Docker COPY source, expanded against git: the release files a server module could reach.
@@ -48,9 +48,10 @@ test('no server module imports, requires or reads a file the static set would ca
 });
 
 test('set ids match the node script byte for byte',()=>{
-  const files={[C+'/public/앱.js']:{sha256:'a'.repeat(64),size:3},'tools/company-messenger/public/app.js':{sha256:'b'.repeat(64),size:0}};
-  const python=execFileSync('python',['-X','utf8','-B','-c',"import importlib.util,json,sys;s=importlib.util.spec_from_file_location('n',sys.argv[1]);m=importlib.util.module_from_spec(s);s.loader.exec_module(m);print(m.canonical_id(json.loads(sys.argv[2]),['tools/company-messenger/public']))",join(here,'deploy/static/static-set-node.py'),JSON.stringify(files)]).toString('utf8').trim();
-  assert.equal(canonicalId(files,['tools/company-messenger/public']),python);
+  const files={[C+'/public/앱.js']:{sha256:'a'.repeat(64),size:3,origin:'c'.repeat(64)},'tools/company-messenger/public/app.js':{size:0,origin:null,sha256:'b'.repeat(64)}};
+  const python=execFileSync('python',['-X','utf8','-B','-c',"import importlib.util,json,sys;s=importlib.util.spec_from_file_location('n',sys.argv[1]);m=importlib.util.module_from_spec(s);s.loader.exec_module(m);print(m.canonical_id(json.loads(sys.argv[2])))",join(here,'deploy/static/static-set-node.py'),JSON.stringify(files)]).toString('utf8').trim();
+  assert.equal(canonicalId(files),python);
+  assert.notEqual(canonicalId({...files,[C+'/public/앱.js']:{...files[C+'/public/앱.js'],origin:null}}),python,'the origin is part of the id');
 });
 
 test('three-way merge keeps live-only lines and refuses conflicts and diverged binaries',()=>{
@@ -62,11 +63,11 @@ test('three-way merge keeps live-only lines and refuses conflicts and diverged b
 });
 
 function fakeNode(){
-  const app=Buffer.from('a\nb\nc\nlive\n'),files={[C+'/public/app.js']:{sha256:sha(app),size:app.length},[C+'/public/style.css']:{sha256:'c'.repeat(64),size:1}},calls=[];
+  const app=Buffer.from('a\nb\nc\nlive\n'),files={[C+'/public/app.js']:{sha256:sha(app),size:app.length,origin:'e'.repeat(64)},[C+'/public/style.css']:{sha256:'c'.repeat(64),size:1,origin:'c'.repeat(64)}},calls=[];
   return {calls,files,remote:async request=>{calls.push(request.op);
     if(request.op==='status')return {status:'present',current:'0123456789abcdef'};
-    if(request.op==='manifest')return {manifest:{id:'0123456789abcdef',files,directories:[]}};
-    if(request.op==='read')return {files:{[C+'/public/app.js']:app.toString('hex')}};
+    if(request.op==='manifest')return {manifest:{id:'0123456789abcdef',files}};
+    if(request.op==='served')return {files:Object.fromEntries(request.paths.map(path=>[path,path===C+'/public/app.js'?{from:'set',release:'e'.repeat(64),base64:app.toString('base64')}:{from:null,release:null}]))};
     if(request.op==='stage')return {status:'staged',set:request.expectId};
     if(request.op==='flip')return {status:'flipped',from:request.from,to:request.to};
     throw Error(request.op);}};
@@ -79,8 +80,10 @@ test('a plan merges commits onto live bytes, lists image-only paths and pins the
   assert.equal(Buffer.from(result.changes[C+'/public/app.js'].base64,'base64').toString(),'a\nB\nc\nlive\n');
   assert.deepEqual(result.imageOnly,[C+'/server.mjs']);
   assert.deepEqual(result.skipped,[{commit,path:C+'/public/old.js',kind:'D'}]);
-  const merged=Buffer.from('a\nB\nc\nlive\n'),next={...node.files,[C+'/public/app.js']:{sha256:sha(merged),size:merged.length},[C+'/public/new.webp']:{sha256:sha(Buffer.from('RIFF')),size:4}};
-  assert.equal(result.expectId,canonicalId(next,[]));
+  // Changed rows are made against the release bytes the node reports; a new file has no origin.
+  const merged=Buffer.from('a\nB\nc\nlive\n'),next={...node.files,[C+'/public/app.js']:{sha256:sha(merged),size:merged.length,origin:'e'.repeat(64)},[C+'/public/new.webp']:{sha256:sha(Buffer.from('RIFF')),size:4,origin:null}};
+  assert.equal(result.expectId,canonicalId(next));
+  assert.deepEqual(result.origins,{[C+'/public/app.js']:'e'.repeat(64),[C+'/public/new.webp']:null});
   await assert.rejects(plan({commits:['abc'],remote:node.remote}),{message:'FULL_COMMITS_REQUIRED'});
   const swapped=await apply(result,{remote:node.remote,check:async()=>({matches:true})});
   assert.equal(swapped.status,'swapped');assert.deepEqual(node.calls.slice(-2),['stage','flip']);
@@ -90,6 +93,7 @@ test('a plan merges commits onto live bytes, lists image-only paths and pins the
 test('public spot checks map the plain company and teacher paths only',()=>{
   assert.equal(publicPath(C+'/public/index.html'),'/');assert.equal(publicPath(C+'/public/pulse-app/app.mjs'),'/pulse-app/app.mjs');
   assert.equal(publicPath(C+'/public/customer-computer.html'),null);assert.equal(publicPath('experiences/teacher-world/app.mjs'),'/teacher-world/app.mjs');
-  assert.equal(publicPath('tools/company-messenger/public/app.js'),null);
+  assert.equal(publicPath('tools/company-messenger/public/app.js'),'/messenger/app.js');
+  assert.equal(publicPath('tools/company-messenger/public/styles.css'),null);assert.equal(publicPath('tools/company-messenger/public/index.html'),null);
   assert.deepEqual(selectStaticPaths([C+'/server.mjs',C+'/public/b.js',C+'/public/a.js']),[C+'/public/a.js',C+'/public/b.js']);
 });

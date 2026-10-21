@@ -108,7 +108,7 @@ async function voiceWebhookBody(req) {
   return Buffer.concat(parts);
 }
 
-export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || path.join(ROOT, 'data'), port = Number(process.env.MESSENGER_PORT || 4197), host = '127.0.0.1', driveStorage, integration = null, basePath = '', platformUrl = process.env.SYNK_PLATFORM_URL, backgroundJobsEnabled = true, workNotificationsEnabled = backgroundJobsEnabled, staticResponderFactory = null, publicDirectory = directory => directory, voice = voiceOptionsFromEnv() } = {}) {
+export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || path.join(ROOT, 'data'), port = Number(process.env.MESSENGER_PORT || 4197), host = '127.0.0.1', driveStorage, integration = null, basePath = '', platformUrl = process.env.SYNK_PLATFORM_URL, backgroundJobsEnabled = true, workNotificationsEnabled = backgroundJobsEnabled, staticResponderFactory = null, publicFile = file => file, voice = voiceOptionsFromEnv() } = {}) {
   assert(typeof backgroundJobsEnabled === 'boolean', 400, '백그라운드 작업 설정은 boolean이어야 합니다.');
   assert(typeof workNotificationsEnabled === 'boolean', 400, '업무 알림 설정은 boolean이어야 합니다.');
   // This first version is deliberately local-only. Network deployment needs TLS and an explicit hosting design.
@@ -116,7 +116,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
   assert(basePath === '' || basePath === '/messenger', 400, '메신저 경로 설정을 확인해 주세요.');
   assert(Number.isInteger(port) && port >= 0 && port <= 65535, 400, '포트 번호가 올바르지 않습니다.');
   assert(staticResponderFactory === null || typeof staticResponderFactory === 'function', 400, '정적 응답 설정을 확인해 주세요.');
-  assert(typeof publicDirectory === 'function', 400, '정적 응답 설정을 확인해 주세요.');
+  assert(typeof publicFile === 'function', 400, '정적 응답 설정을 확인해 주세요.');
   const versionedMessengerAssets=new Set(['/app.js','/styles.css','/messenger-design.css','/signal.css']);
   // Hash and compress the final public bytes, including embedded CSS URLs.
   async function readPublicAsset(file) {
@@ -1266,10 +1266,11 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
       let relative;
       try { relative = decodeURIComponent(p); } catch { throw new AppError(400, '주소가 맞지 않아요.'); }
       assert(!relative.includes('\0') && !relative.includes('\\'), 404, '파일을 찾지 못했어요. 목록을 새로 불러와 주세요.');
-      // The company host may serve this whole directory from its static set.
-      const publicDir = publicDirectory(path.join(ROOT, 'public'));
-      const staticPath = path.resolve(publicDir, `.${relative === '/' ? '/index.html' : relative}`);
-      assert(staticPath.startsWith(`${publicDir}${path.sep}`), 404, '파일을 찾지 못했어요. 목록을 새로 불러와 주세요.');
+      const publicDir = path.join(ROOT, 'public');
+      const imagePath = path.resolve(publicDir, `.${relative === '/' ? '/index.html' : relative}`);
+      assert(imagePath.startsWith(`${publicDir}${path.sep}`), 404, '파일을 찾지 못했어요. 목록을 새로 불러와 주세요.');
+      // The company host may serve this file from its static set.
+      const staticPath = publicFile(imagePath);
       let info;
       try { info = await stat(staticPath); } catch { throw new AppError(404, '파일을 찾지 못했어요. 목록을 새로 불러와 주세요.'); }
       assert(info.isFile(), 404, '파일을 찾지 못했어요. 목록을 새로 불러와 주세요.');
@@ -1284,7 +1285,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
           resolveAsset: urlPath => {
             if (!urlPath.startsWith(basePath + '/')) return null;
             const asset = urlPath.slice(basePath.length);
-            return versionedMessengerAssets.has(asset) ? path.join(publicDir, asset.slice(1)) : null;
+            return versionedMessengerAssets.has(asset) ? publicFile(path.join(publicDir, asset.slice(1))) : null;
           },
         });
       }
