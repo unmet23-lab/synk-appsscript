@@ -20,7 +20,8 @@ BAD = {'failed', 'partial_failure', 'attention', 'blocked', 'unknown', 'missed',
 GOOD = {'healthy', 'success'}
 LABELS = {'onedrive': 'OneDrive 문서·소스', 'github': 'GitHub 커밋',
           'server': '20TB 서버·DB', 'media': '20TB 미디어 원본', 'archive': '5TB 기존 원본',
-          'workspace': '20TB 업무 문서·첨부·조사 상태', 'space': '공간 지킴이(C: 여유 300GB)'}
+          'workspace': '20TB 업무 문서·첨부·조사 상태', 'space': '공간 지킴이(C: 여유 300GB)',
+          'capacity': '드라이브 용량', 'vault': '금고 두 번째 사본(5TB)'}
 STATUS_LABELS = {'healthy': '정상', 'pending': '동기화 대기', 'running': '실행 중', 'paused': '의도적 중지',
                  'attention': '확인 필요', 'failed': '실패', 'missed': '최신 백업 지연', 'interrupted': '실행 중단',
                  'partial_failure': '일부 실패', 'unknown': '상태 확인 불가', 'blocked': '준비 미완료',
@@ -33,6 +34,13 @@ SPACE_GUARD = {'id': 'space', 'taskName': 'SYNK 공간 지킴이', 'receipt': '�
 # previously-backed-source-now-protected and every OneDrive run fails, so warn while it can still be split.
 # The guard continues the ledger in 내려놓은목록-002.jsonl, -003… at 4MiB; a part reaching this size means that stopped.
 SPACE_LEDGER_WARN_BYTES = 8 * 1024 * 1024
+# The retention step (../SYNK_원본창고/보존규칙.py, 10-21) ends the daily backup: it measures both Drive accounts and the company
+# GCS bucket, and fills the vault — the second copy of what cannot be made again — in unmet23 through Google Drive for desktop
+# (G:), where the servers' clasp keys can neither read nor delete. Both have no task of their own, so they are checked here like
+# the space guard. Capacity warns at half of an account (the owner's 10-21 rule: look at more space only past 50%).
+CAPACITY = {'id': 'capacity', 'receipt': '상태/용량/latest.json', 'upcoming': '상태/보존규칙/다가오는것.json',
+            'attentionRatio': 0.5, 'failedRatio': 0.8, 'maxStaleHours': 72}
+VAULT = {'id': 'vault', 'receipt': '상태/금고/latest.json', 'maxStaleHours': 72}
 # A suspended PC runs no backup, yet a running receipt's heartbeat and run ages are wall-clock times (10-20: five
 # sleeps, 46 minutes the longest). Each resume from sleep or hibernation sets the clock again from the hardware clock and
 # logs Kernel-General 1 with reason 2 at once: OldTime is when the clock stopped, NewTime when it was set again, and
@@ -318,6 +326,99 @@ def space_guard(root, lib, task, now, item=SPACE_GUARD, suspended=None):
             'receiptPath': item['receipt']}
 
 
+def read_receipt(root, lib, name):
+    """(receipt, problem): {} when not written yet, None with RECEIPT_UNREADABLE when it cannot be read."""
+    try:
+        receipt = lib.read_json(root / name)
+    except (OSError, ValueError):
+        return None, 'RECEIPT_UNREADABLE'
+    if receipt is None: return {}, None
+    return (receipt, None) if isinstance(receipt, dict) else (None, 'RECEIPT_UNREADABLE')
+
+
+def stale_note(checked, now, item, suspended):
+    # The measurement runs once a day inside the daily backup; three awake days without one means that step stopped.
+    if not checked or overdue(checked, now, dt.timedelta(hours=item['maxStaleHours']), suspended):
+        return f'{int((now - checked).total_seconds() // 86400)}일째 측정 없음' if checked else '측정 시각 없음'
+    return None
+
+
+def drive_capacity(root, lib, now, item=CAPACITY, suspended=None):
+    receipt, problem = read_receipt(root, lib, item['receipt'])
+    checked = lib.instant((receipt or {}).get('checkedAt'))
+    codes, notes = [], []
+    if problem:
+        state = 'unknown'; codes.append(problem)
+    elif not receipt:
+        state = 'not_ready'; codes.append('CAPACITY_FIRST_MEASURE_PENDING'); notes.append('첫 측정 전')
+    else:
+        state, worst = 'healthy', 0.0
+        for account in receipt.get('accounts') or []:
+            if account.get('error') or not account.get('limit'):
+                state = 'attention'; codes.append('CAPACITY_ACCOUNT_UNREADABLE'); notes.append(f"{account.get('email')} 용량을 못 읽음")
+                continue
+            ratio = account['usage'] / account['limit']
+            worst = max(worst, ratio)
+            years = account.get('yearsToHalf')
+            notes.append(f"{account['limit'] / 1024 ** 4:.0f}TB {ratio * 100:.1f}%" + (f'(반까지 약 {years:g}년)' if years is not None else ''))
+        if worst >= item['failedRatio']:
+            state = 'failed'; codes.append('DRIVE_CAPACITY_CRITICAL')
+        elif worst >= item['attentionRatio']:
+            state = 'attention'; codes.append('DRIVE_CAPACITY_HALF')
+        gcs = receipt.get('gcs')
+        if gcs and not gcs.get('lifecycleDays'):
+            if state == 'healthy': state = 'attention'
+            codes.append('GCS_LIFECYCLE_MISSING'); notes.append('회사 GCS 백업 30일 규칙이 없음')
+        late = stale_note(checked, now, item, suspended)
+        if late:
+            if state == 'healthy': state = 'attention'
+            codes.append('CAPACITY_STALE'); notes.append(late)
+    upcoming, _ = read_receipt(root, lib, item['upcoming'])
+    # The list counts server backups too; only the work originals are worth a look before they go.
+    work = (upcoming or {}).get('work') or {}
+    if work.get('files'):
+        notes.append(f"14일 안에 치울 작업 원본 {work['files']}개 {work.get('bytes', 0) / 1e9:.1f}GB(목록 {item['upcoming']})")
+    good = state == 'healthy' and checked
+    return {'id': item['id'], 'label': LABELS[item['id']], 'status': state,
+            'checkedAt': lib.stamp(checked) if checked else None, 'lastSuccessAt': lib.stamp(checked) if good else None,
+            'repaired': False, 'repairedAt': None, 'codes': sorted(set(codes)), 'detail': ', '.join(notes) or None,
+            'accounts': [{k: a.get(k) for k in ('email', 'limit', 'usage', 'ratio', 'yearsToHalf', 'error')}
+                         for a in (receipt or {}).get('accounts') or []],
+            'scope': '20TB·5TB Drive 사용률(반이 넘으면 확인)과 회사 GCS 백업의 30일 규칙. 매일 백업의 마지막 단계가 잰다.',
+            'receiptPath': item['receipt']}
+
+
+def vault_copy(root, lib, now, item=VAULT, suspended=None):
+    receipt, problem = read_receipt(root, lib, item['receipt'])
+    checked = lib.instant((receipt or {}).get('checkedAt'))
+    sync = (receipt or {}).get('lastSync') or {}
+    codes, notes = [], []
+    if problem:
+        state = 'unknown'; codes.append(problem)
+    elif not receipt:
+        state = 'not_ready'; codes.append('VAULT_FIRST_COPY_PENDING'); notes.append('첫 채움 전')
+    elif receipt.get('status') not in ('healthy', 'pending', 'attention'):
+        state = 'unknown'; codes.append('STATE_UNKNOWN')
+    else:
+        # Files copied within the grace hours are still being uploaded by Drive for desktop: normal, not a pending backup.
+        state = 'attention' if receipt['status'] == 'attention' else 'healthy'
+        notes.append(f"{receipt.get('verified', 0)}/{receipt.get('files', 0)}개 확인 · {receipt.get('bytes', 0) / 1e9:.1f}GB")
+        if receipt.get('pending'): notes.append(f"올라가는 중 {receipt['pending']}개")
+        if receipt.get('missing'): codes.append('VAULT_COPY_MISSING'); notes.append(f"{receipt['missing']}개가 하루 넘게 안 올라감")
+        if sync and not sync.get('available', True): codes.append('VAULT_DRIVE_NOT_MOUNTED'); notes.append('G: 드라이브가 연결되지 않음')
+        if sync.get('errors'): codes.append('VAULT_COPY_ERRORS'); notes.append(f"복사 실패 {sync['errors']}개")
+        if sync.get('deferred'): notes.append(f"남은 {sync['deferred']}개는 다음 날 이어서")
+        late = stale_note(checked, now, item, suspended)
+        if late:
+            state = 'attention'; codes.append('VAULT_STALE'); notes.append(late)
+    good = state == 'healthy' and checked
+    return {'id': item['id'], 'label': LABELS[item['id']], 'status': state,
+            'checkedAt': lib.stamp(checked) if checked else None, 'lastSuccessAt': lib.stamp(checked) if good else None,
+            'repaired': False, 'repairedAt': None, 'codes': sorted(set(codes)), 'detail': ', '.join(notes) or None,
+            'scope': '다시 못 만드는 것(만족 사례·최종본·LoRA·얼굴·산 음성·열쇠·서버 백업 주·달 판)을 unmet23에 드라이브 데스크톱으로 둔 사본의 원격 대조.',
+            'receiptPath': item['receipt']}
+
+
 def task_snapshot(config_path, extra=()):
     query, temp = Path(config_path), None
     if extra:
@@ -392,6 +493,12 @@ def gather(root, lib, config, tasks, now, sleep_record=lambda: None):
     except (OSError, ValueError, TypeError, KeyError):
         components.append({'id': SPACE_GUARD['id'], 'label': LABELS[SPACE_GUARD['id']], 'status': 'unknown',
                            'codes': ['RECEIPT_UNREADABLE'], 'lastSuccessAt': None})
+    for item, check in ((CAPACITY, drive_capacity), (VAULT, vault_copy)):
+        try:
+            components.append(check(root, lib, now, suspended=sleep_record))
+        except (OSError, ValueError, TypeError, KeyError):
+            components.append({'id': item['id'], 'label': LABELS[item['id']], 'status': 'unknown',
+                               'codes': ['RECEIPT_UNREADABLE'], 'lastSuccessAt': None})
     bad = [x for x in components if x['status'] in BAD]
     # A guard waiting for registration must not turn the backups into 'pending'; that would block recovery notices.
     state = 'attention' if bad else ('pending' if any(x['status'] not in ('healthy', 'not_ready') for x in components) else 'healthy')

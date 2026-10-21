@@ -699,7 +699,7 @@ class SpaceGuardTests(unittest.TestCase):
         lib.atomic_json(self.root / 'onedrive.json', {'status': 'healthy', 'lastSuccessAt': lib.stamp(self.now)})
         config = {'components': [{'id': 'onedrive', 'receipt': 'onedrive.json', 'maxAgeHours': 2}]}
         summary = health.gather(self.root, lib, config, {'onedrive': {'exists': True, 'enabled': True, 'result': 0}}, self.now)
-        self.assertEqual([x['id'] for x in summary['components']], ['onedrive', 'space'])
+        self.assertEqual([x['id'] for x in summary['components']], ['onedrive', 'space', 'capacity', 'vault'])
         self.assertEqual((summary['status'], summary['issues']), ('healthy', []))
         (self.root / health.SPACE_GUARD['receipt']).write_text('{broken', encoding='utf-8')
         self.assertEqual(health.space_guard(self.root, lib, None, self.now)['status'], 'not_ready')
@@ -753,6 +753,74 @@ class SpaceGuardTests(unittest.TestCase):
         self.assertEqual(tasks, {'space': {'id': 'space', 'exists': False}})
         self.assertFalse(seen['path'].exists())
         self.assertEqual(config.read_text(encoding='utf-8'), original)
+
+
+class RetentionStepTests(unittest.TestCase):
+    """10-21 보존 규칙 단계(../SYNK_원본창고/보존규칙.py)가 남기는 용량·금고 영수증."""
+    TB = 1024 ** 4
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory(); self.root = Path(self.temp.name)
+        self.now = dt.datetime(2026, 10, 22, 3, tzinfo=dt.timezone.utc)
+
+    def tearDown(self): self.temp.cleanup()
+
+    def capacity(self, used20=0.42, used5=0.40, age=dt.timedelta(hours=20), gcs=30, **extra):
+        accounts = [{'email': '77yuhbs@gmail.com', 'limit': 20 * self.TB, 'usage': int(used20 * self.TB)},
+                    {'email': 'unmet23@gmail.com', 'limit': 5 * self.TB, 'usage': int(used5 * self.TB)}]
+        accounts[0].update(extra)
+        lib.atomic_json(self.root / health.CAPACITY['receipt'], {'schemaVersion': 1, 'checkedAt': lib.stamp(self.now - age),
+            'accounts': accounts, 'gcs': {'bytes': 1, 'lifecycleDays': gcs}})
+        return health.drive_capacity(self.root, lib, self.now)
+
+    def vault(self, age=dt.timedelta(hours=20), **value):
+        lib.atomic_json(self.root / health.VAULT['receipt'], {'schemaVersion': 1, 'checkedAt': lib.stamp(self.now - age),
+            'status': 'healthy', 'files': 10, 'verified': 10, 'pending': 0, 'missing': 0, 'bytes': 2e9, **value})
+        return health.vault_copy(self.root, lib, self.now)
+
+    def test_capacity_states(self):
+        self.assertEqual(health.drive_capacity(self.root, lib, self.now)['status'], 'not_ready')
+        row = self.capacity(yearsToHalf=7.3)
+        self.assertEqual((row['status'], row['codes']), ('healthy', []))
+        self.assertEqual(row['detail'], '20TB 2.1%(반까지 약 7.3년), 5TB 8.0%')
+        self.assertEqual(self.capacity(used5=2.6)['codes'], ['DRIVE_CAPACITY_HALF'])        # 반을 넘기면 확인
+        self.assertEqual(self.capacity(used20=16.5)['status'], 'failed')                      # 80%
+        self.assertEqual(self.capacity(gcs=None)['codes'], ['GCS_LIFECYCLE_MISSING'])
+        self.assertEqual(self.capacity(error='HTTPError')['codes'], ['CAPACITY_ACCOUNT_UNREADABLE'])
+        row = self.capacity(age=dt.timedelta(days=4))
+        self.assertEqual((row['codes'], row['detail'].split(', ')[-1]), (['CAPACITY_STALE'], '4일째 측정 없음'))
+        # A night or three asleep is not a stopped measurement.
+        hours = lambda value: self.now - dt.timedelta(hours=value)
+        lib.atomic_json(self.root / health.CAPACITY['receipt'], {'checkedAt': lib.stamp(hours(80)), 'accounts': [], 'gcs': None})
+        self.assertEqual(health.drive_capacity(self.root, lib, self.now, suspended=[(hours(70), hours(20))])['status'], 'healthy')
+
+    def test_capacity_shows_upcoming_work_trims_only(self):
+        lib.atomic_json(self.root / health.CAPACITY['upcoming'], {'files': 40, 'bytes': 9e9, 'work': {'files': 3, 'bytes': 2.5e9},
+                                                                  'server': {'files': 37, 'bytes': 6.5e9}})
+        self.assertIn('14일 안에 치울 작업 원본 3개 2.5GB', self.capacity()['detail'])
+        lib.atomic_json(self.root / health.CAPACITY['upcoming'], {'files': 37, 'work': {'files': 0}, 'server': {'files': 37}})
+        self.assertNotIn('작업 원본', self.capacity()['detail'])
+
+    def test_vault_states(self):
+        self.assertEqual(health.vault_copy(self.root, lib, self.now)['status'], 'not_ready')
+        self.assertEqual(self.vault()['status'], 'healthy')
+        row = self.vault(status='pending', verified=7, pending=3)
+        self.assertEqual((row['status'], row['detail']), ('healthy', '7/10개 확인 · 2.0GB, 올라가는 중 3개'))
+        row = self.vault(status='attention', verified=9, missing=1)
+        self.assertEqual((row['status'], row['codes']), ('attention', ['VAULT_COPY_MISSING']))
+        row = self.vault(status='attention', lastSync={'available': False, 'errors': 1})
+        self.assertEqual(row['codes'], ['VAULT_COPY_ERRORS', 'VAULT_DRIVE_NOT_MOUNTED'])
+        self.assertEqual(self.vault(age=dt.timedelta(days=4))['codes'], ['VAULT_STALE'])
+        (self.root / health.VAULT['receipt']).write_text('{broken', encoding='utf-8')
+        self.assertEqual(health.vault_copy(self.root, lib, self.now)['codes'], ['RECEIPT_UNREADABLE'])
+
+    def test_new_checks_do_not_block_recovery_before_their_first_run(self):
+        summary = health.gather(self.root, lib, {'components': []}, {'space': {'exists': False}}, self.now)
+        self.assertEqual([x['status'] for x in summary['components']], ['not_ready', 'not_ready', 'not_ready'])
+        self.assertEqual(summary['status'], 'healthy')
+        self.capacity(used5=2.6)
+        summary = health.gather(self.root, lib, {'components': []}, {'space': {'exists': False}}, self.now)
+        self.assertEqual((summary['status'], summary['issues']), ('attention', [{'component': 'capacity', 'code': 'DRIVE_CAPACITY_HALF'}]))
 
 
 if __name__ == '__main__': unittest.main()
