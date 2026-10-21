@@ -28,6 +28,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { 장부올리기, 장부올리기글 } = require('./lib/장부올리기.js');
 
 const 루트 = path.join(__dirname, '..');
 const 장부경로 = path.join(루트, 'docs', '_ops', '몽골어검문.jsonl');
@@ -316,11 +317,13 @@ async function 태우기(인자) {
     let r;
     // 대량 실행은 무료 몫이 차도 구독으로 넘기지 않는다(10-17 · 구독 몫 보호) — 넘기려면 --구독대체.
     const 넘김플래그 = 인자.includes('--구독대체') ? [] : ['--대체없음'];
+    // 검문기는 공용 작업본에서 장부를 곧바로 올린다 — 수백 번 부르는 여기서는 자식마다 올리지 않고 끝에 한 번(10-21)
+    const 자식환경 = { ...process.env, SYNK_장부올리기: '나중' };
     if (x.겹 === 5) {
       fs.writeFileSync(임시, `${x.한국어}\n---\n${x.몽골어}\n`, 'utf8');
-      r = spawnSync(process.execPath, [path.join(__dirname, '몽골어대조.js'), '--파일', 임시, ...넘김플래그], { cwd: 루트, encoding: 'utf8', windowsHide: true, timeout: 300000 });
+      r = spawnSync(process.execPath, [path.join(__dirname, '몽골어대조.js'), '--파일', 임시, ...넘김플래그], { cwd: 루트, env: 자식환경, encoding: 'utf8', windowsHide: true, timeout: 300000 });
     } else {
-      r = spawnSync(process.execPath, [path.join(__dirname, '몽골어대조.js'), '--원문없음', x.몽골어, ...넘김플래그], { cwd: 루트, encoding: 'utf8', windowsHide: true, timeout: 300000 });
+      r = spawnSync(process.execPath, [path.join(__dirname, '몽골어대조.js'), '--원문없음', x.몽골어, ...넘김플래그], { cwd: 루트, env: 자식환경, encoding: 'utf8', windowsHide: true, timeout: 300000 });
     }
     const 글 = `${r.stdout || ''}${r.stderr || ''}`;
     const 판 = 한판읽기(글, r.status);
@@ -346,6 +349,9 @@ async function 태우기(인자) {
    *   (09-08 실측: 뭉쳐 세면 63건인데 진짜 맞춤법 지적은 3건이었다). */
   console.log(`\n■ 셈 ${통과 + 검수 + 못잼 + 불가}건 = 깨끗 ${통과} + 사람 눈 ${검수} + **못 쟀다** ${못잼} + 확인 불가 ${불가}`);
   if (못잼) console.log(`  🟠 못 잰 ${못잼}건은 «지적이 아니라 답이 없는 것»이다 — 층이 미실행이었다(맞춤법 층은 시간당 몫이 있다). 시간을 두고 다시 부르면 채워진다.`);
+  const 올림 = await 장부올리기(['docs/_ops/몽골어검문.jsonl'], `chore(장부): 몽골어 검문 — 출구 대청소 ${통과 + 검수 + 못잼 + 불가}건`);
+  const 올림글 = 장부올리기글(올림, '검문 장부');
+  if (올림글) console.log(올림글);
   console.log('  🔑 다음에 기준선을 다시 쓴다: node tools/몽골어출구.js --기준선쓰기');
   return (불가 || 못잼) ? 2 : 0;
 }

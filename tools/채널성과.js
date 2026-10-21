@@ -9,9 +9,12 @@
  * 자동: YouTube(기존 LAB YouTube 인증으로 공개 통계 조회) · Telegram 공개 채널(t.me 공개 페이지)
  * 손: 그 밖의 계정. 과거 상담 구분은 별도로 확인된 수치가 있을 때만 수동으로 보존한다.
  * 게시·수정·메시지 발송을 하지 않는다. 자격 값은 출력하지 않는다.
+ * 공용 작업본에서 돌면 장부·요약을 쓴 뒤 그 두 파일만 곧바로 origin에 올린다(lib/장부올리기.js · 10-21 — 예약 판정 작업이 쓰고
+ * 커밋하지 않은 23줄이 공용 작업본에 남아 따라가기를 막았다). 워크트리에서는 그 세션 커밋에 같이 올린다.
  */
 const fs = require('node:fs');
 const path = require('node:path');
+const { 장부올리기, 장부올리기글 } = require('./lib/장부올리기.js');
 
 const REPO_ROOT = path.resolve(__dirname, '..');
 const ACCOUNTS_FILE = path.join(REPO_ROOT, 'docs', '마케팅', 'sns-계정.json');
@@ -262,6 +265,13 @@ function writeSummary(text, file = SUMMARY_FILE) {
   fs.renameSync(file + '.tmp', file);
 }
 
+/** 장부·요약을 쓴 뒤 그 두 파일만 origin에 올린다(공용 작업본에서만 · 못 올려도 실패로 치지 않는다). */
+async function 올리기(설명) {
+  const 경로 = [LEDGER_FILE, SUMMARY_FILE].map(f => path.relative(REPO_ROOT, f).replace(/\\/g, '/'));
+  const 줄 = 장부올리기글(await 장부올리기(경로, `chore(장부): 채널 성과 — ${설명}`), '채널 성과 장부·요약');
+  if (줄) console.log(줄);
+}
+
 function usage() {
   console.log(`
 채널 성과 장부
@@ -310,6 +320,7 @@ async function main(argv) {
     appendLedger([entry]);
     writeSummary(summarize({ accounts, ledger: readLedger() }));
     console.log(`적었습니다: ${entry.account} ${Object.entries(METRICS).filter(([, f]) => entry[f] !== undefined).map(([n, f]) => `${n} ${entry[f]}`).join(' · ')}`);
+    await 올리기(`${entry.account} 손으로 적음`);
     return;
   }
   if (args[0] === '--상담') {
@@ -319,11 +330,13 @@ async function main(argv) {
     appendLedger([entry]);
     writeSummary(summarize({ accounts, ledger: readLedger() }));
     console.log(`적었습니다: 상담 ${entry.period} · 합 ${Object.values(entry.counts).reduce((s, n) => s + n, 0)}`);
+    await 올리기(`상담 ${entry.period}`);
     return;
   }
   if (args[0] === '--요약') {
     writeSummary(summarize({ accounts, ledger: readLedger() }));
     console.log('요약을 다시 만들었습니다: docs/마케팅/채널성과.md');
+    await 올리기('요약 다시 만듦');
     return;
   }
   if (args[0] === '--재기') {
@@ -336,6 +349,7 @@ async function main(argv) {
       else console.log(`✓ ${r.account}: 팔로워 ${number(r.followers)}${r.posts !== undefined ? ` · 게시물 ${number(r.posts)} · 조회 ${number(r.views)}` : ''}`);
     }
     console.log(`장부에 ${entries.length}줄을 더했습니다. 요약: docs/마케팅/채널성과.md`);
+    await 올리기(`공개 숫자 ${entries.length}줄`);
     return;
   }
   usage();

@@ -66,8 +66,9 @@ for (const c of 돌릴것) {
   fs.writeFileSync(f, KO + '\n---\n' + c.mn, 'utf8');
   let out = '', code = 0;
   try {
+    // 검문기는 공용 작업본에서 장부를 곧바로 올린다 — 문항마다 올리지 않고 끝에 한 번(10-21)
     out = execFileSync('node', [path.join(ROOT, 'tools', '몽골어대조.js'), '--파일', f],
-      { encoding: 'utf8', timeout: 300_000, windowsHide: true, maxBuffer: 16 * 1024 * 1024 });
+      { encoding: 'utf8', timeout: 300_000, windowsHide: true, maxBuffer: 16 * 1024 * 1024, env: { ...process.env, SYNK_장부올리기: '나중' } });
   } catch (e) { out = String(e.stdout || ''); code = e.status == null ? -1 : e.status; }
 
   /* exit 0 = 통과 · 2 = 검수 필요 · 그 밖 = 실행 오류(둘 중 어느 쪽도 아니다 — 갈라 적는다). */
@@ -97,4 +98,7 @@ L.push('', '> 🔴 「놓쳤다」가 하나라도 있으면 **그 종류가 지
 const 표 = path.join(방, '커버리지.md');
 fs.writeFileSync(표, L.join('\n'), 'utf8');
 process.stderr.write(`\n표: ${표}\n`);
-process.exit(결과.every((r) => r.맞나 === true) ? 0 : 2);
+const { 장부올리기, 장부올리기글 } = require('../tools/lib/장부올리기.js');
+장부올리기(['docs/_ops/몽골어검문.jsonl'], `chore(장부): 몽골어 검문 — 검문 커버리지 ${결과.length}문항`)
+  .then((r) => { const 줄 = 장부올리기글(r, '검문 장부'); if (줄) process.stderr.write(`${줄}\n`); })
+  .finally(() => process.exit(결과.every((x) => x.맞나 === true) ? 0 : 2));

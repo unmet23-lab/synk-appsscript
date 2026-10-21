@@ -38,6 +38,7 @@ const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
 const { spawnSync } = require('child_process');
+const { 장부올리기, 장부올리기글 } = require('./lib/장부올리기.js');
 
 const 루트 = path.join(__dirname, '..');
 const 검문자 = path.join(__dirname, '몽골어대조.js');
@@ -265,8 +266,9 @@ async function 태우기() {
      *   «실제로 넘기는 자»가 갈린다 — 09-07 에 실제로 갈렸다. 지문은 자리표시자를 채운 글로 내고
      *   파일은 안 채운 글로 써서, 자리표시자가 든 16줄이 **두 번을 태워도 「안 쟀다」로 남았다.** */
     fs.writeFileSync(임시, 넘길글(s), 'utf8');
+    // 검문기는 공용 작업본에서 장부를 곧바로 올린다 — 여러 번 부르는 여기서는 자식마다 올리지 않고 끝에 한 번(10-21)
     const r = spawnSync(process.execPath, [검문자, '--파일', 임시, ...문플래그], {
-      cwd: 루트, encoding: 'utf8', windowsHide: true, timeout: 300_000,
+      cwd: 루트, env: { ...process.env, SYNK_장부올리기: '나중' }, encoding: 'utf8', windowsHide: true, timeout: 300_000,
     });
     const 글 = `${r.stdout || ''}${r.stderr || ''}`;
     /* 종료코드 = 검문자의 자다: 0 통과 · 2 검수 필요 · 1 실행 실패(= 확인 불가). */
@@ -313,6 +315,8 @@ async function 태우기() {
   console.log(`\n■ 셈 — 태운 ${결과.length} = 통과 ${통과} + 검수 필요 ${검수필요} + 확인 불가 ${확인불가}`);
   console.log(`  남은 것 ${대상.length - 결과.length}${벽 ? ' (몫 벽에 막혔다)' : ''}`);
   console.log(`  장부 = docs/_ops/몽골어검문.jsonl (검문자가 직접 적는다)`);
+  const 올림글 = 장부올리기글(await 장부올리기(['docs/_ops/몽골어검문.jsonl'], `chore(장부): 몽골어 검문 — 검수표 ${결과.length}쌍`), '검문 장부');
+  if (올림글) console.log(올림글);
   if (검수필요) {
     console.log('\n🔴 검수 필요로 걸린 줄:');
     for (const x of 결과.filter((y) => y.코드 === 2)) {

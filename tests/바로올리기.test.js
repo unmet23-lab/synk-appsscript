@@ -122,6 +122,9 @@ function 새판(t, { 파일 = {}, autocrlf = 'false', 정책고침 = null } = {}
 
 const 지문 = (파일) => crypto.createHash('sha256').update(fs.readFileSync(파일)).digest('hex');
 const 공용글 = '# 공용\n\n## 가\n- a1\n\n## 나\n- b1\n';
+/** 덧붙이기 장부(.jsonl) 줄 — 줄마다 시각이 달라 앞 60자도 다르다 */
+const 장부줄 = (i) => `{"시각":"2026-10-${String(10 + i).padStart(2, '0')}T00:00:00.000Z","대상":"docs/x/${i}.txt","통과":true}\n`;
+const 장부바탕 = [1, 2, 3].map(장부줄).join('');
 
 // ── 워크트리에서 ─────────────────────────────────────────────────────────────
 
@@ -691,6 +694,118 @@ test('공용 작업본: 워크트리에서 올리면 꼬리 없는 공용 작업
   assert.equal(판.공용.머리(), 전);
   assert.equal(판.공용.읽기('남.txt'), 'n1 남의 미커밋\n');
   assert.equal(판.공용.읽기('a.txt'), '2\n');
+});
+
+// ── 덧붙이기 장부(.jsonl) ────────────────────────────────────────────────────
+
+test('장부 덧붙임: 양쪽이 바탕 끝에 더하기만 했을 때만 원격 줄 뒤에 원격에 없는 내 줄을 붙이고, 줄을 고치거나 지웠으면 보통 합치기로 돌린다', () => {
+  const { 장부덧붙이기, 줄나누기, 줄잇기 } = require(path.join(REPO, 'tools', '내커밋.js'));
+  const 합 = (p, o, c) => { const r = 장부덧붙이기(줄나누기(p), 줄나누기(o), 줄나누기(c)); return r && 줄잇기(r); };
+  assert.equal(합('a\n', 'a\nx\ny\n', 'a\ny\nz\n'), 'a\nx\ny\nz\n', '이미 올라간 내 줄(y)은 한 번만');
+  assert.equal(합('a\n', 'a\nx\n', 'a\nx\nx\n'), 'a\nx\nx\n', '같은 줄은 개수까지 센다');
+  assert.equal(합('a', 'a\nx\n', 'a\ny\n'), 'a\nx\ny\n', '바탕 끝 줄에 줄바꿈이 없어도');
+  assert.equal(합('a\nb\n', 'a\nb\nx\n', 'a\nB\ny\n'), null, '내가 바탕 줄을 고쳤다');
+  assert.equal(합('a\nb\n', 'a\nx\n', 'a\nb\ny\n'), null, '원격이 바탕 줄을 지웠다');
+});
+
+test('공용 작업본: 덧붙이기 장부는 origin도 같은 자리에 덧붙였어도 따라간다 — 이미 올라간 내 줄은 한 번만, 앞 60자가 같은 한 줄 회차도 막지 않는다', async (t) => {
+  // 10-21 재현: 자리 맞춤은 가운데 낀 이미 올라간 줄을 「두 번 들어간다」로, 앞 60자가 같은 한 줄 회차를 「옛·새 판」으로 보고 따라가기를 막았다
+  const 채널 = (at, 계정, n) => `{"at":"${at}","date":"${at.slice(0, 10)}","kind":"account","account":"${계정}","followers":${n}}\n`;
+  const 채널바탕 = 채널('2026-10-01T00:00:00.000Z', 'a', 1);
+  const 판 = 새판(t, { 파일: { 'docs/_ops/장부.jsonl': 장부바탕, 'docs/_ops/채널.jsonl': 채널바탕, '안내.md': '# 안내\n' } });
+  const 공 = 판.공용;
+  공.쓰기('docs/_ops/장부.jsonl', 장부바탕 + 장부줄(4) + 장부줄(5) + 장부줄(6));
+  공.쓰기('docs/_ops/채널.jsonl', 채널바탕 + 채널('2026-10-20T08:32:23.286Z', 'a', 2));
+  const O = 판.남push({
+    'docs/_ops/장부.jsonl': 장부바탕 + 장부줄(7) + 장부줄(5) + 장부줄(8),          // 5는 공용 작업본 줄이 먼저 올라간 것
+    'docs/_ops/채널.jsonl': 채널바탕 + 채널('2026-10-20T08:32:23.286Z', 'b', 3),    // 앞 60자가 같은 다른 회차 줄
+    '안내.md': '# 안내\n- 원격\n',
+  });
+  const r = await 도구.따라가기({ 저장소: 공.폴더, 실행: true });
+  assert.equal(r.결과, '따라감', JSON.stringify(r));
+  assert.deepEqual(r.고침.map((x) => x.방법).sort(), ['장부 덧붙임', '장부 덧붙임']);
+  assert.equal(공.머리(), O);
+  assert.equal(공.읽기('docs/_ops/장부.jsonl'), 장부바탕 + 장부줄(7) + 장부줄(5) + 장부줄(8) + 장부줄(4) + 장부줄(6));
+  assert.equal(공.읽기('docs/_ops/채널.jsonl'), `${채널바탕}${채널('2026-10-20T08:32:23.286Z', 'b', 3)}${채널('2026-10-20T08:32:23.286Z', 'a', 2)}`);
+  assert.equal(공.읽기('안내.md'), '# 안내\n- 원격\n');
+  assert.deepEqual(공.상태(), [' M docs/_ops/장부.jsonl', ' M docs/_ops/채널.jsonl']);
+});
+
+test('공용 작업본: 도구가 덧붙인 장부를 올리는 사이 origin이 같은 장부 끝에 줄을 더했어도 원격 줄 뒤에 붙여 올리고, 공용 작업본은 깨끗하게 따라간다(CRLF 체크아웃)', async (t) => {
+  const 판 = 새판(t, { 파일: { 'docs/_ops/장부.jsonl': 장부바탕 }, autocrlf: 'true' });
+  const 공 = 판.공용;
+  공.쓰기('docs/_ops/장부.jsonl', 장부바탕.replace(/\n/g, '\r\n'));                 // Windows 체크아웃 판
+  fs.appendFileSync(path.join(공.폴더, 'docs/_ops/장부.jsonl'), 장부줄(4));            // 도구는 LF로 덧붙인다
+  const O = 판.남push({ 'docs/_ops/장부.jsonl': 장부바탕 + 장부줄(5) });
+  const r = await 도구.올리기({ 저장소: 공.폴더, 경로들: ['docs/_ops/장부.jsonl'], 메시지: 'chore(장부): 시험', 실행: true });
+  assert.equal(r.결과, '올림', JSON.stringify(r));
+  assert.equal(판.원격부모(), O);
+  assert.equal(판.원격파일('docs/_ops/장부.jsonl'), 장부바탕 + 장부줄(5) + 장부줄(4), 'origin 줄 뒤에 내 줄 · 줄끝은 origin 판(LF)');
+  assert.match(r.경로.find((x) => x.경로 === 'docs/_ops/장부.jsonl').방법, /^장부 덧붙임/);
+  assert.equal(r.따라가기.결과, '따라감', JSON.stringify(r.따라가기));
+  assert.equal(공.머리(), 판.원격머리());
+  assert.deepEqual(공.상태(), []);
+});
+
+// ── 장부올리기(공용 작업본에서 도는 도구가 쓴 장부를 그 경로만 올린다) ─────────────
+
+const 장부올리기도구 = require(path.join(REPO, 'tools', 'lib', '장부올리기.js'));
+const 장부올리기 = (옵션) => 장부올리기도구.장부올리기(['docs/_ops/장부.jsonl'], 'chore(장부): 시험', 옵션);
+
+test('장부올리기: 공용 작업본에서 도구가 장부에 쓴 줄은 그 경로만 origin에 올리고 따라간다 — 남의 미커밋은 그대로', async (t) => {
+  const 판 = 새판(t, { 파일: { 'docs/_ops/장부.jsonl': 장부바탕, 'docs/_ops/트랙.md': 공용글, '남.txt': '바탕\n' } });
+  const 공 = 판.공용;
+  공.쓰기('남.txt', '바탕\n남의 미커밋\n');
+  공.쓰기('docs/_ops/트랙.md', `${공용글}- 남이 쓰는 중인 줄\n`);
+  fs.appendFileSync(path.join(공.폴더, 'docs/_ops/장부.jsonl'), 장부줄(4));
+  const O = 판.남push({ 'c.txt': '원격\n' });
+  const r = await 장부올리기({ 저장소: 공.폴더, 환경: {} });
+  assert.equal(r.결과, '올림', JSON.stringify(r));
+  assert.equal(판.원격부모(), O);
+  assert.equal(판.원격파일('docs/_ops/장부.jsonl'), 장부바탕 + 장부줄(4));
+  assert.equal(판.원격파일('남.txt'), '바탕\n', '남의 미커밋은 안 올라간다');
+  assert.equal(판.원격파일('docs/_ops/트랙.md'), 공용글);
+  assert.equal(공.머리(), 판.원격머리());
+  assert.equal(공.읽기('c.txt'), '원격\n');
+  assert.deepEqual(공.상태(), [' M docs/_ops/트랙.md', ' M 남.txt']);
+  assert.match(장부올리기도구.장부올리기글(r, '검문 장부'), /^ {3}검문 장부 → origin [0-9a-f]{9} ✓$/);
+  const 또 = await 장부올리기({ 저장소: 공.폴더, 환경: {} });
+  assert.equal(또.결과, '올릴 것 없음', JSON.stringify(또));
+  assert.equal(장부올리기도구.장부올리기글(또), null, '이미 origin에 있으면 조용하다');
+});
+
+test('장부올리기: 워크트리·SYNK_장부올리기=끔·나중·시험 안(저장소를 안 줌)이면 올리지 않고, 못 올리면(꼬리) 던지지 않고 알린다', async (t) => {
+  const 판 = 새판(t, { 파일: { 'docs/_ops/장부.jsonl': 장부바탕 } });
+  const 워 = 판.워크트리('wt');
+  fs.appendFileSync(path.join(워.폴더, 'docs/_ops/장부.jsonl'), 장부줄(4));
+  fs.appendFileSync(path.join(판.공용.폴더, 'docs/_ops/장부.jsonl'), 장부줄(5));
+  const 전 = 판.원격머리();
+  const 워결과 = await 장부올리기({ 저장소: 워.폴더, 환경: {} });
+  assert.equal(워결과.결과, '건너뜀', JSON.stringify(워결과));
+  assert.match(장부올리기도구.장부올리기글(워결과), /워크트리/);
+  assert.equal((await 장부올리기({ 저장소: 판.공용.폴더, 환경: { SYNK_장부올리기: '끔' } })).결과, '건너뜀');
+  const 미룸 = await 장부올리기({ 저장소: 판.공용.폴더, 환경: { SYNK_장부올리기: '나중' } });
+  assert.equal(미룸.결과, '미룸');
+  assert.equal(장부올리기도구.장부올리기글(미룸), null);
+  const 시험안 = await 장부올리기({ 환경: { NODE_TEST_CONTEXT: 'child' } });
+  assert.deepEqual(시험안, { 결과: '건너뜀', 이유: '시험 안' }, '시험 안에서 저장소를 안 주면 실제 저장소에 손대지 않는다');
+  assert.equal(판.원격머리(), 전);
+  // 공용 작업본에 꼬리가 있으면 바로올리기가 멈춘다 — 던지지 않고 알린다(장부는 작업본에 남는다)
+  판.미푸시({ '꼬리.txt': '꼬리\n' });
+  const 멈춤 = await 장부올리기({ 저장소: 판.공용.폴더, 환경: {} });
+  assert.equal(멈춤.결과, '멈춤', JSON.stringify(멈춤));
+  assert.match(장부올리기도구.장부올리기글(멈춤), /올리지 못했다.*다음에 올릴 때 같이 올라간다/);
+  assert.equal(판.원격머리(), 전);
+  assert.equal(판.공용.읽기('docs/_ops/장부.jsonl'), 장부바탕 + 장부줄(5));
+});
+
+test('장부올리기: 공용 작업본에서 장부를 쓰는 도구는 쓴 뒤 올리고, 검문기를 여러 번 부르는 묶음 실행기는 자식에 「나중」을 주고 끝에 한 번 올린다', () => {
+  const 읽기 = (p) => fs.readFileSync(path.join(REPO, p), 'utf8');
+  for (const p of ['tools/몽골어대조.js', 'tools/채널성과.js']) assert.match(읽기(p), /await 장부올리기\(/, p);
+  for (const p of ['tools/몽골어출구.js', 'tools/검수표검문.js', 'evals/검문커버리지.js']) {
+    assert.match(읽기(p), /SYNK_장부올리기: '나중'/, `${p}: 자식마다 올리지 않는다`);
+    assert.match(읽기(p), /장부올리기\(\['docs\/_ops\/몽골어검문\.jsonl'\]/, `${p}: 끝에 한 번 올린다`);
+  }
 });
 
 // ── 가볍게 ──────────────────────────────────────────────────────────────────
