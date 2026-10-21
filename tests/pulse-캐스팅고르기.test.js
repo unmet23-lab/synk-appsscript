@@ -96,6 +96,11 @@ test('브리프 추천: 1차 확장 업종(건강식품·생활/주방·육아·
   const sc = L.recommend([both, one], { product: '커피' }, T, 2).map((r) => r.score);
   assert.equal(sc[0], sc[1], '음료·카페 둘 다 맞아도 커피 한 낱말은 한 번');
   assert.ok(top('공기청정기').every((c) => ['F05', 'M04', 'F06', 'M05'].includes(c)), '가전은 1차 생활형·리얼 모델');
+  // 소연 업종 문구의 「카페」(10-21 유호님): 커피·카페 설명에서 소연도 나오고, 카페 라이프스타일 이안보다 앞서지는 않는다
+  const all = (product) => L.recommend(models, { product }, T, models.length).map((r) => r.model.code);
+  for (const w of ['카페 커피', '캔커피', '콜드브루', '동네 카페 홍보']) assert.ok(all(w).includes('F05'), `${w}에 소연`);
+  assert.deepEqual(all('카페 커피').slice(0, 2), ['M01', 'F05']);
+  assert.ok(!all('맥주').includes('F05') && !all('생수').includes('F05'), '카페 문구가 주류·음료 전체로 새지 않는다');
   for (const c of ['F05', 'M04', 'F06', 'F07', 'M05']) {
     const m = byCode(c);
     assert.ok(m.tagline && m.roles.length && m.avoid.length, `${c} 한 줄 캐릭터·역할·피할 것`);
