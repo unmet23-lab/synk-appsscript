@@ -296,14 +296,23 @@ test('⑥ 서체 원본이 못박은 지문 그대로다 — 아니면 위 다�
  *        (포트폴리오: `build.cjs` 가 `assets/fonts.css` 를 쓴다).
  *     ⓒ `@font-face` 가 저장소 안 서체 파일을 상대 경로로 싣는다 — 키트 사본
  *        (`tools/SNS키트_영상연결.js` 가 정본을 `assets/synk-kit/fonts/` 로 복사한다).
+ *        10-21 — 정본은 `docs/브랜드_폰트/SUIT/` 의 SUIT 파일 전부다: 가변 woff2 와 굵기별 정적 OTF 다섯
+ *        (`docs/브랜드_폰트/_먼저 읽어주세요.txt`). 지유 v7 모션 지면이 정적 OTF 를 상대 경로로 실어 실제로는 SUIT 로
+ *        굽는데, 가변 woff2 하나와만 대조해서 ⑦ 이 「안 싣는다」로 master CI 를 50회 빨갛게 했다.
+ *        바이트 대조는 그대로라 다른 서체·잘린 사본은 여전히 «안 싣는다»다(⑧).
  *   🔑 ⓑⓒ 의 파일은 만들기 단계가 쓰는 사본이라 git 밖에 있는 것이 많다. 그래서 «있나»가 아니라
  *      «정본과 바이트까지 같나»를 문다 — 다른 서체거나 저장소 밖이면 «안 싣는다», 부르는 파일이 없으면 «없음»으로 센다
  *      (⑧ 이 증명). «없음»은 개발 PC 에서는 실패이고, 그 사본이 아예 없는 CI 체크아웃에서만 건너뛴다.
  *   ⓑⓒ 는 «파일 하나»가 아니라서 ③(자립형·펠트 스킨)과 ④(심은 지면 목록)에는 안 쓴다 — 그 둘은 ⓐ 만 받는다.
  */
 
+const 정본폴더 = path.join(루트, 'docs', '브랜드_폰트', 'SUIT');
+/** 굵기별 정적 OTF — 가변 woff2 는 `브랜드폰트.woff2()` 가 지문까지 문다. */
+const 정적SUIT = () => fs.readdirSync(정본폴더)
+  .filter((이름) => /^SUIT-[A-Za-z]+\.otf$/.test(이름))
+  .map((이름) => fs.readFileSync(path.join(정본폴더, 이름)));
 let 정본서체 = null;
-const 정본인가 = (buf) => buf.equals(정본서체 ||= 브랜드폰트.woff2());
+const 정본인가 = (buf) => (정본서체 ||= [브랜드폰트.woff2(), ...정적SUIT()]).some((정본) => buf.equals(정본));
 
 /** 저장소(경계) 안의 상대 경로면 그 절대 경로(있든 없든), 아니면 null — data:·https:·`//`·`/` 로 시작하는 주소는 상대 경로가 아니다. */
 function 안쪽경로(기준, url, 경계) {
@@ -384,10 +393,14 @@ test('⑧ «싣나»는 이름만·다른 서체·저장소 밖 파일을 «안 
     return 파일;
   };
   const 면 = (src) => `<style>@font-face{font-family:'SUIT Variable';src:url(${src}) format('woff2-variations')}</style>`;
+  const 정적면 = (src) => `<style>@font-face{font-family:'SUIT';src:url(${src});font-weight:500}</style>`;
   const 스택 = '<p style="font-family:\'SUIT Variable\',sans-serif">가</p>';
+  const 정적 = fs.readFileSync(path.join(정본폴더, 'SUIT-Medium.otf'));
   try {
     쓰기(저장소, '키트/assets/synk-kit/fonts/SUIT-Variable.woff2', 정본);
     쓰기(저장소, '옛판/fonts/SUIT-Variable.woff2', 정본.subarray(0, 정본.length - 1));
+    쓰기(저장소, '모션/fonts/SUIT-Medium.otf', 정적);
+    쓰기(저장소, '헌모션/fonts/SUIT-Medium.otf', 정적.subarray(0, 정적.length - 1));
     쓰기(방, '밖/SUIT-Variable.woff2', 정본);
     쓰기(저장소, '묶음/assets/fonts.css',
       `@font-face{font-family:'SUIT Variable';src:url(data:font/woff2;base64,${정본.toString('base64')}) format('woff2')}`);
@@ -402,10 +415,13 @@ test('⑧ «싣나»는 이름만·다른 서체·저장소 밖 파일을 «안 
       빠진CSS: 쓰기(저장소, '빈묶음/source/쪽.html', '<link rel="stylesheet" href="../assets/fonts.css">' + 스택),
       키트사본: 쓰기(저장소, '키트/index.html', 면('"assets/synk-kit/fonts/SUIT-Variable.woff2"') + 스택),
       묶음CSS: 쓰기(저장소, '묶음/source/쪽.html', '<link href="../assets/fonts.css" rel="stylesheet">' + 스택),
+      정적사본: 쓰기(저장소, '모션/index.html', 정적면('"fonts/SUIT-Medium.otf"') + 스택),
+      잘린정적: 쓰기(저장소, '헌모션/index.html', 정적면('"fonts/SUIT-Medium.otf"') + 스택),
     };
     const 잰것 = Object.fromEntries(Object.entries(판).map(([이름, 파일]) => [이름, 싣나(파일, 저장소)]));
     assert.deepEqual(잰것, {
       이름만: false, 없는파일: '없음', 다른서체: false, 저장소밖: false, 다른서체CSS: false, 빠진CSS: '없음', 키트사본: true, 묶음CSS: true,
+      정적사본: true, 잘린정적: false,
     });
   } finally {
     fs.rmSync(방, { recursive: true, force: true });
