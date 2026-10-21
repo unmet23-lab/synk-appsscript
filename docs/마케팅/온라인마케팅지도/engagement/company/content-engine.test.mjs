@@ -14,7 +14,7 @@ test('editorial experiment notes stay metadata across every series and never ent
     assert.equal(plan.input.editorialNote,editorialNote);assert.deepEqual(plan.ideas,baseline.ideas,'editor notes cannot change narration, visuals, CTA or materials for '+series.id);
     for(const key of ['personalization','authenticity','reviewAxes','missingQuestions','checklist'])assert.deepEqual(plan[key],baseline[key],key+' must retain viewer-facing requirements');
     assert.doesNotMatch(JSON.stringify(plan.ideas),/제작자 전용 실험표식|72시간 완주율|abcdefghijk/);
-    const markdown=renderBriefMarkdown(plan);assert.match(markdown,/## 이번 편 제작 실험/);assert.ok(markdown.includes(editorialNote));assert.doesNotMatch(markdown.slice(markdown.indexOf('## 안 1.')),/제작자 전용 실험표식|72시간 완주율|abcdefghijk/);
+    const markdown=renderBriefMarkdown(plan);assert.match(markdown,/## 이번 편 제작 실험/);assert.ok(markdown.includes(editorialNote));assert.doesNotMatch(markdown.slice(markdown.indexOf('## 구성 1.')),/제작자 전용 실험표식|72시간 완주율|abcdefghijk/);
   }
 });
 
@@ -44,7 +44,7 @@ test('minimal valid input returns three usable outlines and explicit missing que
   assert.equal(new Set(plan.ideas.map(idea=>idea.id)).size,3);assert.equal(new Set(plan.ideas.map(idea=>idea.hook)).size,3);
   assert.ok(plan.missingQuestions.some(q=>q.field==='proof'));assert.ok(plan.missingQuestions.some(q=>q.field==='takeaway'));assert.ok(plan.missingQuestions.some(q=>q.field==='entertainment'));
   assert.ok(!plan.missingQuestions.some(q=>q.field==='experience'),'non-experience series must not require a personal story');
-  for(const idea of plan.ideas){assert.equal(idea.storyBeats.length,5);assert.ok(idea.viewerReason.includes('회의 메모'));assert.ok(idea.entertainment.includes('제안'));assert.ok(idea.factChecks.length>=5);assert.match(idea.takeaway,/작성할 내용/);}
+  for(const idea of plan.ideas){assert.equal(idea.storyBeats.length,5);assert.ok(idea.viewerReason.includes('회의 메모'));assert.ok(idea.entertainment.includes('제안'));assert.ok(idea.factChecks.length>=5);assert.match(idea.takeaway,/채울 것/);}
 });
 
 test('every series has distinct format-aware concepts and exactly one topic substitution',()=>{
@@ -61,8 +61,8 @@ test('personal journey asks for actual events and never fabricates first-person 
   const plan=generateContentIdeas(input({seriesId:'yuhobuilds'}));
   assert.ok(plan.missingQuestions.some(q=>q.field==='experience'));
   assert.equal(plan.checklist.find(item=>item.id==='experience').status,'needs-input');
-  assert.match(plan.ideas[0].storyBeats[1].visual,/경험이 없는 상태/);
-  assert.doesNotMatch(JSON.stringify(plan),/제가 성공했|직접 해보니|매출.*증가했|만들었더니|조회수.*올랐/);
+  assert.match(plan.ideas[0].storyBeats[1].visual,/아직 적은 경험이 없어요/);
+  assert.doesNotMatch(JSON.stringify(plan),/제가 성공했|직접 해 ?보니|매출.*증가했|만들었더니|조회수.*올랐/);
   const withExperience=generateContentIdeas(input({seriesId:'yuhobuilds',experience:'출석 버튼을 찾다가 메뉴가 많다는 사실을 알았다.'}));
   assert.match(withExperience.ideas[0].storyBeats[1].narration,/출석 버튼을 찾다가 메뉴가 많다는 사실을 알았다\./);
   assert.match(withExperience.ideas[0].storyBeats[1].narration,/사실 확인 전/);
@@ -82,7 +82,7 @@ test('authenticity records basis, perspective, limits and disclosure without a s
   assert.deepEqual(empty.authenticity.items.map(item=>item.status),['needs-input','needs-input','needs-input','review']);
   const plan=generateContentIdeas(filled());assert.ok(plan.authenticity.items.every(item=>item.status==='provided'));
   assert.ok(plan.authenticity.items.every(item=>item.detail.includes('확인 전')));
-  assert.match(plan.authenticity.summary,/자동 판정한 결과가 아닙니다/);
+  assert.match(plan.authenticity.summary,/점수가 아니라 하나씩 확인할 목록이에요/);
   assert.ok(!('score' in plan.authenticity));assert.ok(!('verified' in plan.authenticity));
   assert.ok(!plan.missingQuestions.some(q=>q.field.startsWith('authenticity.')));
   assert.match(plan.ideas[2].storyBeats[0].narration,/회의 메모/);
@@ -92,14 +92,14 @@ test('submitted proof does not silently convert checks to verified or completed'
   const plan=generateContentIdeas(filled());
   assert.equal(plan.checklist.find(item=>item.id==='evidence').status,'provided');
   assert.ok(plan.checklist.every(item=>['provided','needs-input','review'].includes(item.status)));
-  assert.match(plan.checklist.find(item=>item.id==='evidence').detail,/직접 대조/);
+  assert.match(plan.checklist.find(item=>item.id==='evidence').detail,/직접 견줘 봐야 해요/);
   assert.match(plan.ideas[0].factChecks[0],/비교할 예정/);
 });
 
 test('reference preserves unknown reactions and never certifies current popularity',()=>{
   const plan=generateContentIdeas(input({reference:{url:'https://www.instagram.com/reel/Example/',title:'참고할 공개 영상',publishedAt:'2026-09-20',checkedAt:'2026-09-27',reactions:{views:1000,likes:null},structure:'정답을 가리고 선택 뒤 공개'}}));
   assert.equal(plan.input.reference.reactions.views,1000);assert.equal(plan.input.reference.reactions.likes,null);assert.equal(plan.input.reference.reactions.comments,null);
-  for(const idea of plan.ideas){assert.match(idea.referenceAdaptation,/정답을 가리고/);assert.match(idea.referenceAdaptation,/최신·인기 여부를 자동 검증하지 않았습니다/);}
+  for(const idea of plan.ideas){assert.match(idea.referenceAdaptation,/정답을 가리고/);assert.match(idea.referenceAdaptation,/지금도 인기인지는 확인하지 않았어요/);}
   assert.equal(plan.checklist.find(item=>item.id==='reference').status,'review');
   assert.ok(!plan.missingQuestions.some(q=>q.field==='reference.dates'));
   const sparse=generateContentIdeas(input({reference:'https://www.instagram.com/reel/Example/'}));
@@ -119,7 +119,7 @@ test('interview plans leave actual quotes blank even when proof text was supplie
   for(const seriesId of ['founder-clip','interview']){
     const plan=generateContentIdeas(input({seriesId,proof:'인터뷰 영상이 있다.'}));
     const quote=plan.ideas[0].storyBeats.find(beat=>beat.visual.includes('타임코드를 대조한 발언'));
-    assert.ok(quote);assert.match(quote.narration,/작성할 내용/);assert.match(quote.narration,/실제 발언 원문/);
+    assert.ok(quote);assert.match(quote.narration,/채울 것/);assert.match(quote.narration,/실제 발언 원문/);
   }
 });
 
@@ -137,12 +137,12 @@ test('same input is deterministic without current timestamps or network access',
 
 test('Markdown contains all three concepts, real-source paths and authenticity questions',()=>{
   const plan=generateContentIdeas(filled()),out=renderBriefMarkdown(plan);
-  assert.equal((out.match(/^## 안 /gm)||[]).length,3);
-  assert.match(out,/## 진정성 검토/);assert.match(out,/우리만의 관점과 선택/);assert.match(out,/메모에 없는 기한은 만들지 않는다/);
-  assert.match(out,/## 회사 제작 원문/);assert.match(out,/콘텐츠\\_제작양식\.md/);
+  assert.equal((out.match(/^## 구성 /gm)||[]).length,3);
+  assert.match(out,/## 진정성 점검/);assert.match(out,/우리만의 생각과 선택/);assert.match(out,/메모에 없는 기한은 만들지 않는다/);
+  assert.match(out,/## 제작 기준 원문/);assert.match(out,/콘텐츠\\_제작양식\.md/);
   assert.ok(out.includes('직접 적은 회의 메모에서 담당자를 다시 찾았다.'));
-  assert.ok(out.includes('기획 안내'));assert.ok(out.includes('입력됨 · 검토 전'));assert.doesNotMatch(out,/- \[x\]/);
-  assert.match(renderBriefMarkdown(generateContentIdeas(input())),/## 더 작성할 질문/);
+  assert.ok(out.includes('적용한 제작 기준'));assert.ok(out.includes('작성됨'));assert.doesNotMatch(out,/- \[x\]/);
+  assert.match(renderBriefMarkdown(generateContentIdeas(input())),/## 조금 더 채워 볼 질문/);
 });
 
 test('Markdown escapes injected HTML, images and links without deleting the user text',()=>{
@@ -162,13 +162,13 @@ test('four review axes never certify supplied fields and keep missing inputs act
   assert.ok(blank.reviewAxes.every(axis=>axis.status==='needs-input'&&axis.questions.length&&axis.nextAction));
   assert.ok(blank.reviewAxes.every(axis=>!('score' in axis)&&!('passed' in axis)&&!('verified' in axis)));
   assert.ok(blank.reviewAxes.find(axis=>axis.id==='usefulness').questions.some(q=>q.includes('원문')));
-  assert.ok(blank.reviewAxes.find(axis=>axis.id==='fun').questions.some(q=>q.includes('해소')));
+  assert.ok(blank.reviewAxes.find(axis=>axis.id==='fun').questions.some(q=>q.includes('풀어 줄까요')));
   const full=generateContentIdeas({...filled(),personalization:personalized()});
   assert.ok(full.reviewAxes.every(axis=>axis.status==='review'));
-  assert.match(full.reviewAxes.find(axis=>axis.id==='authenticity').reason,/실제 경험.*인증되지 않습니다/);
+  assert.match(full.reviewAxes.find(axis=>axis.id==='authenticity').reason,/적었다고 사실이 확인된 건 아니에요/);
   assert.ok(full.reviewAxes.every(axis=>axis.evidence.length>0));
   assert.ok(full.personalization.items.every(item=>item.status==='review'));
-  assert.match(full.personalization.summary,/이름 삽입이나 취향 추정/);
+  assert.match(full.personalization.summary,/이름을 넣거나 취향을 짐작하는 것으로 대신하지 않아요/);
   assert.ok(full.sourcePaths.includes('docs/비전_정본.md'));
   assert.ok(full.sourcePaths.includes('docs/SYNK_플랫폼_계정과_연결_설계.md'));
 });
@@ -193,9 +193,9 @@ test('missing personalization is a question rather than invented viewer history 
   const plan=generateContentIdeas(input({personalization:{situation:'처음 한국어를 배우는 사람'}}));
   assert.deepEqual(plan.personalization.items.map(item=>item.status),['review','needs-input','needs-input']);
   for(const field of ['choice','nextStep'])assert.ok(plan.missingQuestions.some(q=>q.field==='personalization.'+field));
-  assert.ok(plan.guidance.some(item=>item.includes('본인이 밝힌 정보·관측 사실·추정')));
-  assert.ok(plan.guidance.some(item=>item.includes('장기 개인화 전체 시스템의 완성이나 효과를 이 기획으로 주장하지 않습니다')));
-  assert.doesNotMatch(JSON.stringify(plan),/SYNK ID가 자동으로 기억합니다|성격을 분석했습니다|개인화 효과가 검증됐습니다/);
+  assert.ok(plan.guidance.some(item=>item.includes('본인이 밝힌 정보, 직접 본 사실, 짐작한 것')));
+  assert.ok(plan.guidance.some(item=>item.includes('장기 개인화가 다 됐다거나 효과가 있다고 말하지 않아요')));
+  assert.doesNotMatch(JSON.stringify(plan),/SYNK ID가 자동으로 기억(합니다|해요)|성격을 분석했(습니다|어요)|개인화 효과가 검증됐(습니다|어요)/);
 });
 
 test('reference analysis affects production beats without copying it into dialogue or claiming popularity',()=>{
@@ -203,12 +203,12 @@ test('reference analysis affects production beats without copying it into dialog
   for(const idea of plan.ideas){
     const visuals=idea.storyBeats.map(beat=>beat.visual).join('\n'),dialogue=idea.storyBeats.map(beat=>beat.narration).join('\n');
     for(const key of ['hook','structure','payoff','brandFit','adaptation']){assert.ok(visuals.includes(reference[key]),key);assert.ok(idea.referenceAdaptation.includes(reference[key]),key);assert.ok(!dialogue.includes(reference[key]),key);}
-    assert.match(idea.referenceAdaptation,/최신·인기 여부를 자동 검증하지 않았습니다/);
+    assert.match(idea.referenceAdaptation,/지금도 인기인지는 확인하지 않았어요/);
   }
   assert.equal(plan.input.reference.reactions.views,null);assert.equal(plan.input.reference.reactions.likes,0);
   const sparse=generateContentIdeas(input({reference:{url:reference.url}}));
   for(const key of ['hook','structure','payoff','brandFit','adaptation','dates','reactions'])assert.ok(sparse.missingQuestions.some(q=>q.field==='reference.'+key),key);
-  assert.match(sparse.ideas[0].referenceAdaptation,/미확인/);
+  assert.match(sparse.ideas[0].referenceAdaptation,/원문을 보고 채워 주세요/);
   assert.ok(!('trendScore' in sparse));
 });
 
@@ -219,9 +219,9 @@ test('benchmark selection conditions, age and series fit remain explicit when mi
   assert.equal(plan.reviewAxes.find(axis=>axis.id==='personalization').status,'needs-input');
   assert.equal(plan.benchmark.rank,1);assert.equal(plan.benchmark.stale,true);
   assert.deepEqual(plan.benchmark,plan.input.benchmark);
-  assert.match(plan.ideas[0].referenceAdaptation,/플랫폼 전체 인기 순위를 뜻하지 않습니다/);
+  assert.match(plan.ideas[0].referenceAdaptation,/플랫폼 전체 순위가 아니에요/);
   const unknown=generateContentIdeas(input({benchmark:{}}));assert.equal(unknown.benchmark.stale,null);
-  assert.ok(unknown.missingQuestions.some(q=>q.field==='benchmark.freshness'&&q.question.includes('미확인')));
+  assert.ok(unknown.missingQuestions.some(q=>q.field==='benchmark.freshness'&&q.question.includes('알 수 없어요')));
 });
 
 test('complete company benchmark metadata preserves its provenance without certifying the result',()=>{
@@ -242,10 +242,10 @@ test('personalization and benchmark inputs reject malformed fields and discard p
 
 test('Markdown exports personalization, four axes, reference analysis and benchmark limits safely',()=>{
   const plan=generateContentIdeas({...filled(),personalization:personalized(),reference:analyzedReference(),benchmark:{id:'one',title:'<script>bad</script>',rank:1,stale:true}}),out=renderBriefMarkdown(plan);
-  assert.match(out,/## 개인화 방향 검토/);assert.match(out,/## 네 가지 콘텐츠 검토 축/);
+  assert.match(out,/## 개인화 점검/);assert.match(out,/## 좋은 기획을 위한 네 가지 질문/);
   for(const label of ['재미와 몰입','도움과 이해','진정성과 사실','SYNK다운 개인화'])assert.ok(out.includes(label));
-  assert.ok(out.includes(personalized().nextStep));assert.ok(out.includes('다음 수정:'));
-  assert.match(out,/## 회사 참고 선정 기록/);assert.match(out,/플랫폼 전체 순위나 콘텐츠 효과의 인증이 아닙니다/);
-  assert.match(out,/갱신 상태: 다시 확인 필요/);assert.match(out,/미확인/);assert.doesNotMatch(out,/<script>/);
+  assert.ok(out.includes(personalized().nextStep));assert.ok(out.includes('다음에 할 일:'));
+  assert.match(out,/## 회사 참고 자료/);assert.match(out,/플랫폼 전체 순위도, 효과를 확인한 결과도 아니에요/);
+  assert.match(out,/조사 시기: 오래됨/);assert.match(out,/안 적음/);assert.doesNotMatch(out,/<script>/);
   assert.match(out,/&lt;script&gt;/);assert.ok(out.includes('음식 비교'));assert.doesNotMatch(out,/- \[x\]/);
 });

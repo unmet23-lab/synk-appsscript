@@ -27,14 +27,14 @@ function bmCard(item,issue,preview,index){
 function bmSelection(){
   if(!cp.input.benchmarkId)return '';
   const issue=[bm.issue,cp.data?.benchmark?.current].find(row=>row?.id===cp.input.benchmarkId),item=issue?.items.find(row=>row.id===cp.input.benchmarkItemId);
-  return `<div class="bm-selection"><div><span class="cp-overline">SELECTED REFERENCE</span><strong>${escape(item?.title||cp.input.reference?.title||'저장된 벤치마크 자료')}</strong><p>참고 영상의 짜임을 빌려, 아래에 내 소재와 실제 경험을 적어 주세요.</p></div>${cpButton('선택 풀기','bm-clear','','quiet small')}<input type="hidden" name="benchmarkId" value="${escape(cp.input.benchmarkId)}"><input type="hidden" name="benchmarkItemId" value="${escape(cp.input.benchmarkItemId)}"></div>`;
+  return `<div class="bm-selection"><div><span class="cp-overline">고른 벤치마크</span><strong>${escape(item?.title||cp.input.reference?.title||'저장된 벤치마크 자료')}</strong><p>참고 영상의 짜임을 빌려, 아래에 내 소재와 실제 경험을 적어 주세요.</p></div>${cpButton('선택 풀기','bm-clear','','quiet small')}<input type="hidden" name="benchmarkId" value="${escape(cp.input.benchmarkId)}"><input type="hidden" name="benchmarkItemId" value="${escape(cp.input.benchmarkItemId)}"></div>`;
 }
 function cpPersonalizationInput(){
   return `<details class="cp-auth-input bm-personalization"><summary><span>시청자에 맞게 다듬기</span><small>누구에게, 어떤 도움이 맞을까요?</small></summary><p>이름을 넣기보다 각자의 목표와 상황에 맞는 도움을 주는 게 중요해요. 민감한 개인 정보는 적지 않아도 돼요.</p><div class="bm-personal-fields">${cpPersonalizationFields.map(([id,label,hint])=>`<label class="field">${label}<textarea name="person-${id}" maxlength="2000" rows="2" data-cp-input placeholder="${hint}">${escape(cp.input.personalization?.[id]||'')}</textarea></label>`).join('')}</div></details>`;
 }
 function cpReviewAxes(plan){
   if(!plan.reviewAxes?.length)return '';
-  return `<section class="bm-review"><div class="bm-heading"><div><span class="cp-overline">CREATIVE REVIEW</span><h3>좋은 기획을 위한 네 가지 질문</h3><p>빈 곳을 찾아 검토할 질문을 드려요. 점수를 매기거나 통과를 정하지는 않아요.</p></div></div><div class="bm-axes">${plan.reviewAxes.map((axis,index)=>`<details class="bm-axis ${axis.status==='needs-input'?'needs-input':''}"><summary><span>${String(index+1).padStart(2,'0')}</span><strong>${escape(axis.label)}</strong><em>${axis.status==='needs-input'?'채울 것 있음':'직접 볼 것'}</em></summary><p>${escape(axis.reason)}</p>${axis.evidence?.length?`<h4>적은 근거</h4>${cpList(axis.evidence)}`:''}${cpList(axis.questions)}<div class="bm-next"><strong>다음에 할 일</strong><p>${escape(axis.nextAction)}</p></div></details>`).join('')}</div></section>`;
+  return `<section class="bm-review"><div class="bm-heading"><div><span class="cp-overline">재미 · 도움 · 진정성 · 개인화</span><h3>좋은 기획을 위한 네 가지 질문</h3><p>빈 곳을 찾아 검토할 질문을 드려요. 점수를 매기거나 통과를 정하지는 않아요.</p></div></div><div class="bm-axes">${plan.reviewAxes.map((axis,index)=>`<details class="bm-axis ${axis.status==='needs-input'?'needs-input':''}"><summary><span>${String(index+1).padStart(2,'0')}</span><strong>${escape(axis.label)}</strong><em>${axis.status==='needs-input'?'채울 것 있음':'직접 볼 것'}</em></summary><p>${escape(axis.reason)}</p>${axis.evidence?.length?`<h4>적은 근거 · 확인 전</h4>${cpList(axis.evidence)}`:''}${cpList(axis.questions)}<div class="bm-next"><strong>다음에 할 일</strong><p>${escape(axis.nextAction)}</p></div></details>`).join('')}</div></section>`;
 }
 function bmImportModal(){
   bm.edit++;bm.preview=null;bm.raw='';

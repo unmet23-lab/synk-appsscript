@@ -7,4 +7,11 @@
 - `qa/fixture.mjs`·`qa/capture.mjs` — 합성 계정 서버(가짜 일일 트렌드 원본·조사 문서 읽기, 밖으로 나가는 요청 없음)와 1440·390px 캡처. `node qa/capture.mjs <회사 폴더> <출력 폴더>`. 임시 DB는 내 TEMP 아래 `wrc-*`에 만들고 끈 뒤 지운다. 합성 자료의 조사 내용은 실제 예약 조사 글을 흉내 낸 것이라 합니다체가 섞여 있다(화면 글이 아니다).
 - `검수_아르곤.md`·`검수_Fable.md` — 검수 지적과 처리.
 
+**기획 엔진 글(10-21, [README의 그 절](../README.md#planning-engine-copy-20261021)):** 같은 적용기로 넣은 짝 18~23이다. 18 엔진 `content-engine.mjs`(기획안·점검 문장·내려받기, 백엔드), 19 유형 자료 `content-catalog.json`(제작 기준·유형별 기획 양식, 백엔드 자료), 20 화면 `public/benchmark.js` 머리표, 21 엔진 시험 기대 문장, 22 엔진 글을 시나리오별로 뽑아 읽고 다듬은 것, 23 아르곤 반영, 24 Fable 반영. 10-21 판(`b87649570`)의 네 파일에 18부터 차례로 넣으면 커밋한 판과 바이트가 같게 나온다. 그 판에 다시 넣어도 바뀌는 곳은 없다(뒤 짝이 다시 다듬은 문장은 「0곳」으로 알린다 — 옛 문장이 새 문장 안에 든 짝은 0개라 두 번 붙지 않는다).
+
+- `qa/capture-engine.mjs` — 같은 합성 서버로 기획 쓰기·기획 결과 다섯(합성 서버 기획·주제만·개인화+개인 참고·회사 벤치마크·제작 여정)·벤치마크로 기획하기·제작 기준 창·데스크 「유형별 기획 양식」(1440은 열 유형, 390은 셋)을 찍고 내려받기 기획안 둘(`export-*.md`)을 남긴다. 기획 셋과 벤치마크 조사 자료 하나는 화면 안 `api()`로 만든다. `node qa/capture-engine.mjs <회사 폴더> <출력 폴더> [--only result-full,guide]`.
+- `qa/engine-texts.mjs` — 엔진이 만드는 사람이 읽는 글을 시나리오 19개(주제만·다 채움·개인화·개인 참고·회사 벤치마크 셋·제작 여정·유형 열 개)와 내려받기 글에서 겹치지 않게 모으고, 「~니다」 든 글을 센다. `node qa/engine-texts.mjs <회사 폴더> <출력 .json>`.
+- `qa/fixture.mjs`의 조사 보고서 날짜는 조사를 마친 시각의 한국 날짜로 바꿨다(UTC 날짜라 한국 0~9시에는 합성 서버가 뜨지 못했다).
+- `검수_아르곤_기획엔진.md`·`검수_Fable_기획엔진.md` — 이 작업의 검수 지적과 처리.
+
 **GPT 가지와 겹칠 때:** `codex/business-automation-20261020`(10-21 0시 기준 미병합, origin에 없음)을 지금 판 위에 합치는 것을 `git merge-tree`로 흉내 내 보면 이 작업의 파일 중 `public/creative-research.js` 210~212행(조사 패널 머리 — 제목·검색 칸·설명)만 충돌하고, `workroom.js`·`studio-review.js`(코드만)·`creative-research.mjs`·`studio-service.mjs`는 저절로 합쳐진다. 병합 때 충돌한 줄은 GPT 판을 받고 `node apply.cjs <회사 폴더> 짝/01-creative-research.json 짝/12-tweaks.json 짝/13-argon.json 짝/14-fable.json`을 다시 돌리면 이 판의 글이 다시 들어간다(이미 바뀐 짝은 건너뜀). GPT가 새로 넣은 글은 그 뒤 따로 다시 쓴다 — 화면의 「이번 주 제작 묶음」 창 등과, 저절로 합쳐지는 서버 오류 셋(`creative-research.mjs` 「현재 공유된 준비 가이드만 선택할 수 있습니다.」·「다른 직원이 이미 사용 중인 가이드입니다.」, `studio-service.mjs` 「처음 제작할 때만 조사 원문을 함께 저장할 수 있습니다.」).
