@@ -52,6 +52,16 @@ CUTS = [
     ("P9_팩샷", 12.0, 15.0, ("pushshift", 1.02, 1.02, 0.5, 0.42), []),
 ]
 DISSOLVE = {4.5 + 2.0: 4}   # 6.5초(제품 → 사람) 한 번만 녹이기(벤치마킹 2-4). 8프레임은 얼굴이 병 속에 비치는 순간이 보여 4프레임
+# 생성 영상으로 바꾼 컷: 컷 이름 → synk-vendor/…/v7/영상/업/<폴더>/의 키운 PNG(영상_키우기.py)에서 <시작>번부터 컷 길이만큼.
+# 이 컷은 정지컷 · 움직임 · 장면 효과 대신 그 프레임을 그대로 쓴다(글자 층 · 녹이기는 그대로).
+UPDIR = os.path.join(V, "v7", "영상", "업")
+CLIPS = {
+    # 10-21 유호님 「컷 7 미소만 생성해줘 그리고 동영상은 … 옴니로 해보자」 → Flow Omni 1.1 Flash 720p 4초 판 1(K7 정지컷 시작 그림,
+    # 지시문 지시문/생성_K7_미소_Omni.md). 원본 24~59번(1.0~2.5초: 감은 눈을 뜨며 미소가 짙어짐)만 배치 하나(37)로 키웠다 —
+    # 48장을 배치 33으로 키운 첫 판은 이음새 한 장(10.46초)이 흐려졌다(Fable). SeedVR2 결이 정지컷의 두 배로 또렷해
+    # soft(가우시안 σ)로 정지컷 결에 맞춘다(Fable: σ0.5면 컷 2와 같은 결)
+    "K7_미소": {"dir": "K7_미소", "start": 0, "soft": 0.5},
+}
 
 
 def imread_u(path, flags=cv2.IMREAD_COLOR):
@@ -210,11 +220,22 @@ def frames_iter(only=None, mg_dir=None):
     for cut in CUTS:
         if only is not None and cut[0] != only:
             continue
-        still = cover(cv2.cvtColor(imread_u(latest(cut[0])), cv2.COLOR_BGR2RGB))
+        clip = CLIPS.get(cut[0])
+        if clip:
+            pngs = sorted(glob.glob(os.path.join(UPDIR, clip["dir"], "*.png")))
+            if len(pngs) < clip["start"] + round((cut[2] - cut[1]) * FPS):
+                raise SystemExit(f"생성 영상 프레임이 모자라다: {cut[0]} ({len(pngs)}장)")
+        else:
+            still = cover(cv2.cvtColor(imread_u(latest(cut[0])), cv2.COLOR_BGR2RGB))
         n = round((cut[2] - cut[1]) * FPS)
         prev_last = last
         for i in range(n):
-            f = frame_of(cut, still, i, n)
+            if clip:
+                f = cover(cv2.cvtColor(imread_u(pngs[clip["start"] + i]), cv2.COLOR_BGR2RGB))
+                if clip.get("soft"):
+                    f = cv2.GaussianBlur(f, (0, 0), clip["soft"])
+            else:
+                f = frame_of(cut, still, i, n)
             for f0, m in dissolve.items():   # 6.5초 한 번 녹이기: 앞 컷 마지막 장을 다음 컷 첫 m장에 겹친다
                 if prev_last is not None and f0 <= k < f0 + m:
                     a = (k - f0 + 1) / (m + 1)
