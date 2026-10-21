@@ -234,6 +234,12 @@ test('켜짐: 플래그 없이 기본으로 켜지고, 이 기기 설정 synk.wo
  // app-shell이 부르는 모듈이 공개 빌드에 없으면 빌드가 missing으로 멈춘다(10-21 ④ 세션 보고) — 파일을 싣고 기본으로 켠다(10-21 공개 판).
  for(const name of ['world-speaking-practice.mjs','world-speaking.css','world-speaking-items.json'])assert.ok(build.includes(`'${name}'`),name);
  assert.match(build,/speaking-assets/);assert.doesNotMatch(build,/speaking-dev-host/,'개발 서버 몫은 싣지 않는다');
+ // 은행이 부르는 소리·그림은 은행 파일 자리 기준으로 푼다(asset()). 공개본에서 은행은 world/ 맨 위라 brand-opening/이 바로 옆이다 —
+ // 바깥을 가리키는 경로는 ../brand-opening/뿐이어야 하고, 공개 사본은 그것을 ./brand-opening/으로 바꾼다(10-21 공개 전 실제 주소 확인에서 6곳 404).
+ const refs=[...new Set(JSON.stringify(bank).match(/"[^"]*\.(?:mp3|webp|png|wav|m4a)"/g)||[])].map(s=>JSON.parse(s));
+ assert.ok(refs.length>=10&&refs.every(ref=>ref.startsWith('../brand-opening/')||/^speaking-assets\/[a-z0-9-]+\.webp$/.test(ref)),JSON.stringify(refs));
+ for(const ref of refs)assert.ok(fs.existsSync(path.join(app,ref)),ref);
+ assert.ok(build.includes(`if(relative==='world-speaking-items.json')bytes=Buffer.from(bytes.toString('utf8').replaceAll('"../brand-opening/','"./brand-opening/'));`),'공개 사본의 brand-opening 경로');
 });
 
 test('기기 기록 요약과 계획 후보(제안): 세지 않은 녹음은 빠지고, 후보는 말하기 영역',()=>{

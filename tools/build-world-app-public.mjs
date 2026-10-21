@@ -56,6 +56,9 @@ function publicAsset(relative,bytes){
  }
  // Writing bank: passed items only, without review records (reviewer models, notes); contentHash stays the source hash.
  if(relative==='world-writing-items.json')bytes=Buffer.from(JSON.stringify(publicBank(JSON.parse(bytes.toString('utf8'))))+'\n');
+ // Speaking bank: its clip/scene paths resolve against the bank file (world-speaking-practice.mjs asset()). In the payload brand-opening/
+ // sits beside the bank (top level), as rewrite() does for top-level code; contentHash stays the source hash (it covers the source bank).
+ if(relative==='world-speaking-items.json')bytes=Buffer.from(bytes.toString('utf8').replaceAll('"../brand-opening/','"./brand-opening/'));
  return {relative,bytes};
 }
 // Match the public site's producer-name check before declaring a build usable (synk-policy .github/site-check/check.mjs;
@@ -94,7 +97,7 @@ const indexSource=path.join(root,'experiences/brand-opening/home.html'),indexByt
 const html=rewrite(renderWorldDocument(indexBytes.toString('utf8'),config));
 for(const name of ['index.html','mobile.html','desktop.html'])write(name,Buffer.from(html),indexSource);
 for(const name of ['world-bootstrap.js','app-shell.mjs','app-shell.css','world-client.mjs','world-town-client.mjs','world-account.bundle.mjs','life-content.mjs','life-progress.mjs','world-learning-ui.mjs','world-learning-profile.mjs','world-learning-profile-core.mjs','tutor-selection-sync.mjs','display-language-sync.mjs','life-ui.mjs','life-story.mjs','life-content-lang.mjs','life-ui.css','cafe-activity.mjs','cafe-ui.mjs','classroom-lessons.mjs','classroom-homework.mjs','topik4-homework.json','world-writing-practice.mjs','world-writing-check.mjs','world-writing-items.json','world-writing.css','world-reminders.mjs','world-reminder-device.mjs','world-speaking-practice.mjs','world-speaking.css','world-speaking-items.json'])copyFile(path.join(root,'experiences/synk-world-app',name),name);
-// 말하기 연습(app-shell이 플래그일 때만 부른다): 3번 문항 그림 네 칸. 출처 기록(sources.json)은 내보내지 않는다.
+// 말하기 연습(10-21 공개 판부터 app-shell이 기본으로 부른다): 3번 문항 그림 네 칸. 출처 기록(sources.json)은 내보내지 않는다.
 for(const name of fs.readdirSync(path.join(root,'experiences/synk-world-app/speaking-assets')).filter(name=>/^[a-z0-9-]+\.webp$/.test(name)).sort())copyFile(path.join(root,'experiences/synk-world-app/speaking-assets',name),'speaking-assets/'+name);
 copyFile(path.join(root,'experiences/synk-account/src/enrollment.mjs'),'enrollment.mjs');
 // 바람길·말의 리듬이 ../social-conversion.mjs(SNS로 들어온 방문의 익명 체험 기록, synk.im에서만 동작)를 정적으로 부른다.
