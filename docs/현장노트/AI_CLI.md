@@ -278,6 +278,12 @@
 - 고침: 한도가 풀린 뒤 같은 에이전트에게 `SendMessage`로 「끊긴 자리부터 이어서」를 보낸다 — 지금까지의 맥락과 파일 변경이 남아 있어 새로 띄울 필요가 없다. 맡길 때 결과를 그때그때 파일에 남기게 하면(검수는 `review.md`에 덧붙이기) 끊겨도 잃는 것이 적다. 아르곤 검수는 Claude 한도와 따로라, Claude 쪽이 멈춘 동안 돌려 둘 수 있다.
 - 다시 확인: 멈춘 에이전트의 알림 끝의 「resets <시각>」 뒤에 SendMessage를 보내 「Resuming agent …」가 돌아오는지 본다.
 
+### 하위 에이전트가 Write로 보고서를 쓰려다 「Subagents should return findings as text」로 거절될 때가 있다 (2026-10-21 Claude)
+- 증상: 10-21 싱크타운 점검에서 하위 에이전트 여덟 가운데 스팀 조사 둘이 scratchpad의 `steam-A/report.md`·`steam-B/report.md`를 Write로 쓰려다 이 사유로 거절됐다. 같은 세션의 문서 검토 여섯은 같은 scratchpad의 `review/*.md`를 Write로 썼다.
+- 원인: 확인 못 함. 하네스가 거절 조건(파일 이름·폴더·호출 시점)을 알려 주지 않는다.
+- 고침: 맡길 때 「Write가 거절되면 파이썬·node 스크립트로 쓰고, 그것도 안 되면 본문을 최종 답변으로 돌려 달라」고 처음부터 적는다. 한 에이전트는 스크립트로 썼고, 다른 하나는 본문을 답변으로 돌려줘 부모가 파일로 옮겼다.
+- 다시 확인: 하위 에이전트에게 scratchpad의 `report.md`와 `review/x.md`를 각각 Write로 쓰게 해 결과를 비교한다.
+
 ## Hermes(텔레그램 팁 봇)
 
 봇 구성·장부·카드 절차는 [참고 카드 README](../참고카드/README.md)와 Hermes 스킬 폴더(`%LOCALAPPDATA%\hermes\skills\research\synk-tip-review\`)에 있다.

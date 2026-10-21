@@ -1,0 +1,229 @@
+﻿appid,name,sample,n,from,to,pos_all,hits,hit_share,pos_hit,neg_hits,top_terms
+1222670,The Sims 4,recent_en,400,2026-10-04,2026-10-21,0.848,2,0.005,0.5,1,autonomy:1; personalities:1; personality:1
+1222670,The Sims 4,recent_ko,300,2025-08-19,2026-10-18,0.813,5,0.017,0.6,2,성격:2; 기분:1; 욕구:1; 감정:1
+1222670,The Sims 4,helpful_en,393,2025-10-26,2026-10-21,0.532,14,0.036,0.286,10,wants:8; autonomy:3; personality:3; emotions:2; personalities:1; emotion:1; story progression:1; autonomously:1
+2456740,inZOI,recent_en,299,2026-09-18,2026-10-21,0.856,24,0.08,0.458,13,ai:14; autonomy:8; hollow:3; soulless:3; autonomously:2; lifeless:2; empty:2; autonomous:1
+2456740,inZOI,recent_ko,199,2026-01-13,2026-10-20,0.729,7,0.035,0.857,1,ai:2; 자율:2; 스마트조이:1; 공허:1; 영혼:1
+2456740,inZOI,helpful_en,285,2025-10-22,2026-10-20,0.635,82,0.288,0.329,55,ai:57; empty:14; lifeless:13; soulless:12; autonomy:10; hollow:6; smart zoi:4; autonomously:3
+1118520,Paralives,recent_en,400,2026-09-17,2026-10-21,0.818,36,0.09,0.667,12,needs:18; empty:7; wants:6; personality:5; personalities:5; autonomy:3; alive:2; townie:2
+1118520,Paralives,recent_ko,35,2026-05-25,2026-10-08,0.543,3,0.086,0.0,3,자율:2; 욕구:2
+1118520,Paralives,helpful_en,296,2026-05-25,2026-10-21,0.747,68,0.23,0.5,34,needs:29; personality:15; autonomy:14; empty:14; alive:10; wants:9; personalities:8; townie:4
+294100,RimWorld,recent_en,400,2026-10-09,2026-10-21,0.963,22,0.055,0.909,2,story:11; stories:9; randy:2; storyteller:1; mental break:1; attached:1
+294100,RimWorld,recent_ko,300,2026-08-11,2026-10-20,0.98,16,0.053,1.0,0,이야기:5; 정신:5; 랜디:3; 기분:2; 스토리:1; 애착:1
+294100,RimWorld,helpful_en,382,2025-10-21,2026-10-21,0.88,84,0.22,0.869,11,story:58; stories:22; storyteller:10; attached:8; randy:6; mental break:5; mood:5; relationships:3
+975370,Dwarf Fortress,recent_en,400,2026-06-15,2026-10-21,0.887,58,0.145,0.931,4,story:25; stories:16; history:15; thought:9; legends:5; legend:3; personality:2; personalities:2
+975370,Dwarf Fortress,recent_ko,105,2022-12-06,2026-09-27,0.943,9,0.086,1.0,0,이야기:4; 역사:3; 성격:2; 애착:1; 전설:1; 스토리:1
+975370,Dwarf Fortress,helpful_en,260,2025-10-19,2026-10-21,0.858,64,0.246,0.812,12,story:25; stories:18; history:16; thought:13; personalities:6; legends:6; thoughts:2; grudge:1
+758870,Kynseed,recent_en,400,2025-09-05,2026-10-20,0.853,84,0.21,0.857,12,generational:27; generations:18; age:16; generation:16; die:14; remember:12; legacy:9; death:8
+758870,Kynseed,recent_ko,139,2018-12-01,2026-10-17,0.777,22,0.158,0.818,4,죽:7; 나이:4; 장난:4; 세대:4; 반복:4; 늙:2; 기억:2
+758870,Kynseed,helpful_en,215,2025-11-04,2026-10-20,0.888,54,0.251,0.907,5,generational:19; generation:15; age:12; generations:11; die:10; legacy:5; death:5; remember:4
+413150,Stardew Valley,recent_en,400,2026-10-15,2026-10-21,0.98,13,0.033,0.923,1,community center:4; villagers:3; festivals:2; npcs:2; villager:2; npc:1; schedule:1; dialogue:1
+413150,Stardew Valley,recent_ko,300,2026-09-01,2026-10-21,0.987,5,0.017,1.0,0,이벤트:3; 주민:2; 선물:1
+413150,Stardew Valley,helpful_en,390,2025-10-22,2026-10-21,0.974,56,0.144,0.911,5,villagers:15; community center:11; npcs:10; npc:8; villager:6; festival:6; dialogue:5; schedule:5
+2142790,Fields of Mistria,recent_en,400,2026-10-06,2026-10-21,0.953,77,0.193,0.948,4,dialogue:29; npcs:20; npc:19; friday:13; inn:12; heart:11; villagers:7; weather:3
+2142790,Fields of Mistria,recent_ko,300,2025-08-24,2026-10-19,0.95,63,0.21,0.952,3,npc:29; 대사:19; 주민:18; 금요일:7; 하트:5; 기억:4; 여관:3; 날씨:1
+2142790,Fields of Mistria,helpful_en,200,2025-10-21,2026-10-18,0.73,96,0.48,0.646,34,dialogue:42; npcs:34; heart:32; npc:22; friday:22; inn:18; villagers:15; remember:10
+1158160,Coral Island,recent_en,400,2026-07-24,2026-10-21,0.91,38,0.095,0.737,10,dialogue:13; cutscenes:12; personality:9; cutscene:5; personalities:4; shallow:3; bland:3; alive:3
+1158160,Coral Island,recent_ko,300,2024-07-24,2026-10-20,0.803,24,0.08,0.792,5,대사:15; 개성:7; 컷신:5; 얕:2; 밋밋:1
+1158160,Coral Island,helpful_en,0,,,,,,,,
+1084600,My Time at Sandrock,recent_en,400,2026-05-01,2026-10-21,0.91,198,0.495,0.884,23,story:139; building:45; town:44; quests:33; build:23; builder:21; quest:21; grind:20
+1084600,My Time at Sandrock,recent_ko,300,2024-03-31,2026-10-19,0.89,98,0.327,0.908,9,스토리:60; 노가다:26; 마을:24; 퀘스트:24; 주민:10; 의뢰:8; 건설:3
+1084600,My Time at Sandrock,helpful_en,0,,,,,,,,
+1432860,Sun Haven,recent_en,400,2026-06-27,2026-10-20,0.762,43,0.107,0.674,14,depth:12; dialogue:12; too much:9; boring:8; personalities:5; personality:4; too many:3; bland:2
+1432860,Sun Haven,recent_ko,300,2025-02-17,2026-10-17,0.53,25,0.083,0.64,9,너무 많:8; 깊이:6; 개성:4; 대사:4; 지루:3
+1432860,Sun Haven,helpful_en,0,,,,,,,,
+1580240,Rune Factory 4 Special,recent_en,400,2024-08-17,2026-10-18,0.91,74,0.185,0.865,10,marriage:26; dialogue:25; same:22; marry:18; townsfolk:10; villagers:7; married:5; festivals:4
+1580240,Rune Factory 4 Special,recent_ko,90,2021-12-07,2026-09-17,0.733,16,0.178,0.812,3,결혼:9; 대사:4; 주민:2; 축제:2; 반복:2; 데이트:1
+1580240,Rune Factory 4 Special,helpful_en,0,,,,,,,,
+2864560,Rune Factory: Guardians of Azuma,recent_en,400,2025-11-28,2026-10-19,0.9,164,0.41,0.854,24,characters:108; character:59; villagers:48; village management:18; dialogue:16; village building:13; repetitive:8; assign:7
+2864560,Rune Factory: Guardians of Azuma,recent_ko,73,2025-06-05,2026-10-06,0.863,15,0.205,0.8,3,캐릭터:11; 주민:3; 대사:2; 배치:2; 마을 경영:2; 마을건설:2; 축제:1; 반복:1
+2864560,Rune Factory: Guardians of Azuma,helpful_en,0,,,,,,,,
+2111170,STORY OF SEASONS: A Wonderful Life,recent_en,400,2024-01-03,2026-10-16,0.78,71,0.177,0.775,16,kid:37; child:31; chapter:9; older:9; age:8; grow up:8; chapters:5; move in:2
+2111170,STORY OF SEASONS: A Wonderful Life,recent_ko,10,2023-06-28,2025-09-07,0.3,4,0.4,0.0,4,장:4
+2111170,STORY OF SEASONS: A Wonderful Life,helpful_en,0,,,,,,,,
+1896700,Wylde Flowers,recent_en,400,2025-05-21,2026-10-21,0.96,205,0.512,0.966,7,story:143; characters:96; character:44; voice acting:35; end:25; voiced:12; grindy:11; voice acted:9
+1896700,Wylde Flowers,recent_ko,44,2022-09-25,2026-08-21,0.886,23,0.523,0.87,3,스토리:17; 캐릭터:10; 엔딩:5; 더빙:5; 노가다:2; 성우:1; 음성:1
+1896700,Wylde Flowers,helpful_en,0,,,,,,,,
+1401590,Disney Dreamlight Valley,recent_en,400,2026-08-04,2026-10-20,0.87,96,0.24,0.792,20,quests:55; dreamlight:33; premium:19; shop:19; quest:11; friendship:9; grindy:8; villagers:7
+1401590,Disney Dreamlight Valley,recent_ko,95,2022-09-07,2026-09-29,0.863,24,0.253,0.792,5,퀘스트:17; 노가다:6; 과금:3; 대사:3; 상점:1; 반복:1
+1401590,Disney Dreamlight Valley,helpful_en,199,2025-10-20,2026-10-13,0.553,113,0.568,0.531,53,quests:63; premium:35; dreamlight:28; shop:27; quest:21; grind:16; villagers:10; grinding:10
+2707930,Palia,recent_en,400,2026-09-12,2026-10-20,0.815,60,0.15,0.633,22,grinding:13; npcs:12; romance:10; grind:8; villagers:7; npc:6; daily:5; grindy:5
+2707930,Palia,recent_ko,300,2024-08-24,2026-10-20,0.83,31,0.103,0.839,5,노가다:16; npc:13; 주민:2; 연애:2; 주간:1; 원하는:1
+2707930,Palia,helpful_en,380,2025-10-20,2026-10-20,0.616,109,0.287,0.532,51,grind:27; grinding:25; npcs:20; villagers:14; npc:13; romance:10; grindy:9; daily:9
+2016460,Tales of the Shire,recent_en,400,2025-12-24,2026-10-18,0.757,131,0.328,0.702,39,cooking:90; meals:39; cook:31; repetitive:25; meal:16; flavor:9; invite:9; flavors:6
+2016460,Tales of the Shire,recent_ko,16,2025-07-29,2026-06-27,0.75,9,0.562,0.778,2,요리:8; 맛:7; 식사:5; 반복:4; 편지:3; 초대:3; 저녁:1; 손님:1
+2016460,Tales of the Shire,helpful_en,211,2025-10-19,2026-10-18,0.588,98,0.464,0.622,37,cooking:70; meals:22; repetitive:22; cook:18; meal:9; dinner:8; invite:8; flavor:5
+1062520,Dinkum,recent_en,400,2026-05-01,2026-10-20,0.87,23,0.058,0.783,5,villagers:5; npcs:4; residents:4; license:4; npc:4; move in:3; resident:2; town building:2
+1062520,Dinkum,recent_ko,300,2025-05-03,2026-10-17,0.873,26,0.087,0.808,5,마을:14; npc:13; 주민:7; 이사:1; 면허:1
+1062520,Dinkum,helpful_en,0,,,,,,,,
+1245560,Roots of Pacha,recent_en,400,2025-06-30,2026-10-21,0.912,127,0.318,0.89,14,ideas:31; community:31; npcs:28; prehistoric:27; clan:26; idea:21; festivals:16; villagers:11
+1245560,Roots of Pacha,recent_ko,83,2023-04-26,2026-10-15,0.916,17,0.205,1.0,0,부족:7; 원시:7; 아이디어:4; 기여:4; 공동체:2; 주민:1; 축제:1
+1245560,Roots of Pacha,helpful_en,0,,,,,,,,
+666140,My Time at Portia,recent_en,400,2025-07-29,2026-10-20,0.805,85,0.212,0.729,23,quests:35; npcs:18; grind:16; npc:14; commissions:13; grindy:12; grinding:11; quest:8
+666140,My Time at Portia,recent_ko,300,2021-09-12,2026-10-17,0.85,68,0.227,0.779,15,퀘스트:25; 노가다:25; npc:19; 마을:13; 주민:7; 의뢰:6
+666140,My Time at Portia,helpful_en,0,,,,,,,,
+824000,Hokko Life,recent_en,400,2023-07-10,2026-10-20,0.54,131,0.328,0.489,67,villagers:47; design:31; house:28; houses:25; designs:21; designing:16; villager:16; empty:14
+824000,Hokko Life,recent_ko,44,2021-06-04,2026-02-04,0.5,15,0.341,0.6,6,집:10; 디자인:9; 주민:4; 공방:3; 이사:2
+824000,Hokko Life,helpful_en,0,,,,,,,,
+914800,Coffee Talk,recent_en,400,2025-11-28,2026-10-18,0.907,106,0.265,0.83,18,drinks:55; drink:37; customers:24; listen:20; recipes:17; listening:15; customer:12; serve:9
+914800,Coffee Talk,recent_ko,300,2023-03-18,2026-09-24,0.927,138,0.46,0.92,11,커피:98; 손님:36; 듣:33; 음료:33; 엔딩:25; 레시피:17; 신문:2; 분기:1
+914800,Coffee Talk,helpful_en,212,2025-10-29,2026-10-18,0.934,77,0.363,0.896,8,drinks:42; drink:22; customers:20; listen:14; recipes:12; customer:10; listening:9; serving:7
+1663220,Coffee Talk Episode 2,recent_en,400,2024-07-01,2026-10-19,0.965,120,0.3,0.967,4,drinks:46; drink:28; butterfly:23; endings:21; ending:18; latte:16; customers:15; recipes:12
+1663220,Coffee Talk Episode 2,recent_ko,211,2023-04-20,2026-10-10,0.972,100,0.474,0.96,4,커피:59; 음료:31; 엔딩:21; 듣:18; 손님:18; 레시피:10; 라떼:9; 분기:4
+1663220,Coffee Talk Episode 2,helpful_en,0,,,,,,,,
+3161220,Coffee Talk Tokyo,recent_en,257,2026-05-21,2026-10-14,0.907,83,0.323,0.904,8,drinks:42; drink:20; customers:10; social media:9; endings:8; ending:8; tomodachill:8; hashtags:6
+3161220,Coffee Talk Tokyo,recent_ko,30,2026-05-21,2026-09-08,0.933,15,0.5,1.0,0,음료:11; 엔딩:5; 손님:4; 선택:1
+3161220,Coffee Talk Tokyo,helpful_en,0,,,,,,,,
+447530,VA-11 Hall-A,recent_en,400,2026-02-26,2026-10-20,0.907,94,0.235,0.883,11,drinks:44; mix:23; drink:21; customers:13; mixing:13; serve:10; listen:8; ending:8
+447530,VA-11 Hall-A,recent_ko,300,2024-01-04,2026-10-20,0.937,99,0.33,0.929,7,술:81; 엔딩:19; 손님:17; 듣:12; 칵테일:10; 선택:3
+447530,VA-11 Hall-A,helpful_en,0,,,,,,,,
+2133760,Tiny Bookshop,recent_en,400,2026-07-13,2026-10-20,0.983,220,0.55,0.973,6,books:135; book:94; recommend:55; recommendations:37; customers:17; recommending:17; recommendation:17; stories:15
+2133760,Tiny Bookshop,recent_ko,33,2025-08-10,2026-10-10,0.879,16,0.485,0.938,1,책:13; 추천:13; 손님:5; 이야기:1
+2133760,Tiny Bookshop,helpful_en,0,,,,,,,,
+1299460,Wanderstop,recent_en,400,2026-02-12,2026-10-20,0.922,172,0.43,0.895,18,tea:120; burnout:53; customers:21; repetitive:11; chore:9; listen:8; tedious:6; listening:6
+1299460,Wanderstop,recent_ko,15,2025-03-11,2026-02-20,0.733,13,0.867,0.769,3,차:10; 손님:7; 번아웃:4; 반복:2; 지루:1
+1299460,Wanderstop,helpful_en,0,,,,,,,,
+1931010,Spirittea,recent_en,400,2023-11-23,2026-10-20,0.835,194,0.485,0.784,42,spirits:106; bathhouse:100; spirit:49; bath:33; npcs:30; repetitive:22; npc:21; villagers:19
+1931010,Spirittea,recent_ko,31,2023-11-14,2025-10-13,0.774,7,0.226,0.714,2,목욕:5; 영혼:3; 주민:1; 반복:1
+1931010,Spirittea,helpful_en,0,,,,,,,,
+1491670,Venba,recent_en,400,2026-03-03,2026-10-21,0.95,250,0.625,0.952,12,short:134; cooking:109; recipes:87; culture:64; family:61; tamil:25; recipe:22; puzzles:19
+1491670,Venba,recent_ko,22,2023-08-01,2026-08-06,0.727,18,0.818,0.667,6,요리:13; 짧:9; 가족:7; 문화:7; 레시피:6; 퍼즐:3; 언어:2; 타밀:2
+1491670,Venba,helpful_en,0,,,,,,,,
+1874490,Potionomics,recent_en,400,2025-07-29,2026-10-13,0.875,210,0.525,0.876,26,characters:126; character:68; deck:59; card:53; haggling:41; cards:40; relationships:29; relationship:22
+1874490,Potionomics,recent_ko,300,2022-11-10,2026-10-10,0.893,120,0.4,0.892,13,캐릭터:67; 덱:50; 카드:40; 흥정:17; 관계:10; 손님:8; 협상:2
+1874490,Potionomics,helpful_en,0,,,,,,,,
+1136370,Bear and Breakfast,recent_en,400,2025-05-25,2026-10-14,0.833,167,0.417,0.778,37,story:98; quests:55; quest:30; decorating:28; guests:28; hotel:23; decorate:16; decoration:10
+1136370,Bear and Breakfast,recent_ko,33,2022-07-28,2025-11-18,0.879,11,0.333,0.909,1,꾸미:7; 스토리:5; 손님:3; 호텔:3; 취향:1; 리뷰:1
+1136370,Bear and Breakfast,helpful_en,0,,,,,,,,
+1931770,Chants of Sennaar,recent_en,400,2026-09-08,2026-10-20,0.975,132,0.33,0.947,7,language:86; translation:17; translating:17; linguistics:15; deciphering:15; glyphs:15; decipher:12; context:9
+1931770,Chants of Sennaar,recent_ko,300,2025-09-08,2026-10-20,0.967,115,0.383,0.974,3,언어:103; 해독:25; 문자:16; 번역:16; 추측:5; 문맥:1; 일지:1; 짐작:1
+1931770,Chants of Sennaar,helpful_en,0,,,,,,,,
+774201,Heaven's Vault,recent_en,400,2024-06-27,2026-10-20,0.718,240,0.6,0.696,73,language:159; ancient:67; translation:60; words:53; deciphering:48; word:34; translating:29; translations:24
+774201,Heaven's Vault,recent_ko,9,2020-06-24,2026-06-12,0.667,5,0.556,0.6,2,해독:5; 언어:5; 고대:5; 단어:3
+774201,Heaven's Vault,helpful_en,0,,,,,,,,
+1677770,The Case of the Golden Idol,recent_en,400,2026-04-14,2026-10-21,0.963,113,0.282,0.956,5,deduction:50; word:15; fill:15; deductive:12; words:12; blanks:11; guess:10; brute:8
+1677770,The Case of the Golden Idol,recent_ko,300,2024-01-17,2026-10-16,0.95,124,0.413,0.96,5,추리:103; 단어:29; 단서:20; 문장:16; 빈칸:11; 추론:5
+1677770,The Case of the Golden Idol,helpful_en,0,,,,,,,,
+239030,"Papers, Please",recent_en,400,2026-08-14,2026-10-21,0.973,70,0.175,0.929,5,papers:31; family:13; documents:9; rules:8; discrepancies:6; paper:6; repetitive:5; inspector:5
+239030,"Papers, Please",recent_ko,300,2024-05-28,2026-10-11,0.97,34,0.113,0.882,4,반복:11; 서류:10; 도장:8; 가족:6; 검사:6; 문서:5; 스트레스:4; 규칙:1
+239030,"Papers, Please",helpful_en,0,,,,,,,,
+653530,Return of the Obra Dinn,recent_en,400,2026-08-03,2026-10-21,0.953,77,0.193,0.883,9,deduction:31; guess:15; guessing:12; three:8; brute:7; note:5; notes:5; guesswork:4
+653530,Return of the Obra Dinn,recent_ko,300,2025-03-01,2026-10-19,0.913,124,0.413,0.895,13,추리:109; 단서:21; 추론:17; 3명:5; 일지:3; 확정:1
+653530,Return of the Obra Dinn,helpful_en,0,,,,,,,,
+368370,Her Story,recent_en,400,2025-06-30,2026-10-18,0.815,149,0.372,0.772,34,clips:66; search:52; words:36; database:27; order:25; keywords:21; searching:21; clip:20
+368370,Her Story,recent_ko,241,2015-06-24,2026-10-15,0.913,114,0.473,0.912,10,영상:82; 검색:70; 키워드:54; 단어:38; 순서:17; 클립:6
+368370,Her Story,helpful_en,0,,,,,,,,
+1574580,Strange Horticulture,recent_en,400,2026-06-26,2026-10-20,0.927,165,0.412,0.927,12,plants:122; plant:51; clues:34; identifying:32; map:31; identify:18; book:16; customers:13
+1574580,Strange Horticulture,recent_ko,300,2022-04-30,2026-10-18,0.867,147,0.49,0.85,22,식물:114; 지도:35; 손님:30; 도감:28; 단서:20; 설명:18; 책:9; 식별:8
+1574580,Strange Horticulture,helpful_en,0,,,,,,,,
+274980,Influent,recent_en,400,2020-04-26,2026-10-19,0.708,298,0.745,0.738,78,language:171; learn:152; learning:144; words:143; vocabulary:103; word:57; vocab:57; japanese:34
+274980,Influent,recent_ko,29,2014-05-03,2023-01-01,0.517,18,0.621,0.556,8,단어:13; 언어:9; 한국어:6; 학습:1
+274980,Influent,helpful_en,0,,,,,,,,
+2313720,Noun Town Language Learning,recent_en,400,2024-07-08,2026-10-13,0.858,310,0.775,0.852,46,learning:198; language:167; learn:137; words:105; vocabulary:66; word:46; grammar:36; vocab:34
+2313720,Noun Town Language Learning,recent_ko,11,2024-01-18,2026-09-24,0.909,5,0.455,1.0,0,단어:4; 발음:3; 언어:3; 학습:1; 어휘:1; 대화:1
+2313720,Noun Town Language Learning,helpful_en,0,,,,,,,,
+2701720,Wagotabi: A Japanese Journey,recent_en,400,2026-01-12,2026-10-20,0.988,279,0.698,0.993,2,learning:183; learn:134; kanji:58; words:55; hiragana:53; grammar:50; learned:40; duolingo:34
+2701720,Wagotabi: A Japanese Journey,recent_ko,25,2025-08-14,2026-08-17,1.0,11,0.44,1.0,0,학습:8; 단어:6; 히라가나:4; 한자:4; 문법:2; 대화:1; 듀오링고:1
+2701720,Wagotabi: A Japanese Journey,helpful_en,0,,,,,,,,
+1632490,Shashingo,recent_en,400,2024-03-24,2026-10-14,0.887,300,0.75,0.89,33,learning:147; words:141; learn:141; vocabulary:79; word:47; photos:40; vocab:38; hiragana:34
+1632490,Shashingo,recent_ko,3,2024-03-02,2026-05-29,0.667,2,0.667,1.0,0,사진:2
+1632490,Shashingo,helpful_en,0,,,,,,,,
+438270,Learn Japanese To Survive! Hiragana Battle,recent_en,400,2021-01-15,2026-10-20,0.85,317,0.792,0.864,43,hiragana:219; learn:173; learning:155; rpg:62; battle:48; learned:38; repetition:24; repetitive:17
+438270,Learn Japanese To Survive! Hiragana Battle,recent_ko,4,2017-07-25,2022-10-05,0.5,4,1.0,0.5,2,히라가나:4; 학습:2; 전투:1; 반복:1
+438270,Learn Japanese To Survive! Hiragana Battle,helpful_en,0,,,,,,,,
+5376100,Jinjja World,recent_en,0,,,,,,,,
+5376100,Jinjja World,recent_ko,0,,,,,,,,
+5376100,Jinjja World,helpful_en,0,,,,,,,,
+1255040,Let's Learn Korean! Hangul,recent_en,64,2020-03-11,2026-10-12,0.969,45,0.703,0.978,1,learn:28; hangul:23; korean:21; learning:12; learned:10; letters:4; pronunciation:3; letter:3
+1255040,Let's Learn Korean! Hangul,recent_ko,5,2020-03-13,2025-10-29,0.6,3,0.6,0.333,2,발음:2; 한글:2; 학습:1; 한국어:1
+1255040,Let's Learn Korean! Hangul,helpful_en,0,,,,,,,,
+3320380,Hangul Typing Tale,recent_en,2,2026-02-01,2026-08-01,1.0,2,1.0,1.0,0,hangul:1; learning:1; type:1; typing:1; keyboard:1; learn:1; korean:1
+3320380,Hangul Typing Tale,recent_ko,2,2024-12-15,2024-12-22,1.0,1,0.5,1.0,0,한글:1; 스토리:1; 타자:1
+3320380,Hangul Typing Tale,helpful_en,0,,,,,,,,
+4140370,Lang Ops: Korean,recent_en,0,,,,,,,,
+4140370,Lang Ops: Korean,recent_ko,0,,,,,,,,
+4140370,Lang Ops: Korean,helpful_en,0,,,,,,,,
+2325290,Sky: Children of the Light,recent_en,400,2026-08-15,2026-10-20,0.845,117,0.292,0.752,29,friends:59; candles:30; friend:25; community:25; grind:25; candle:17; grinding:14; emotes:13
+2325290,Sky: Children of the Light,recent_ko,300,2024-04-12,2026-10-16,0.69,51,0.17,0.647,18,친구:37; 채팅:9; 노가다:9; 손:9; 양초:8; 촛불:6; 친절:5; 감정표현:1
+2325290,Sky: Children of the Light,helpful_en,362,2025-10-22,2026-10-20,0.663,179,0.494,0.542,82,friends:99; candles:54; grind:51; community:43; grinding:35; candle:35; friend:34; emotes:17
+638230,Journey,recent_en,400,2026-06-30,2026-10-21,0.907,61,0.152,0.951,3,together:31; alone:16; companion:12; stranger:12; co-op:6; coop:5; other player:3; anonymous:1
+638230,Journey,recent_ko,300,2023-10-25,2026-10-19,0.92,85,0.283,0.965,3,함께:51; 혼자:36; 동료:8; 협동:6; 낯선:4; 다른 플레이어:3
+638230,Journey,helpful_en,274,2025-10-23,2026-10-21,0.901,69,0.252,0.928,5,together:39; companion:19; stranger:16; alone:15; co-op:6; other player:3; coop:2; anonymous:1
+1850570,DEATH STRANDING DIRECTOR'S CUT,recent_en,400,2026-09-25,2026-10-21,0.88,98,0.245,0.786,21,like:79; roads:11; other players:9; connecting:7; bridges:7; structures:7; connect:5; road:5
+1850570,DEATH STRANDING DIRECTOR'S CUT,recent_ko,300,2025-10-03,2026-10-20,0.837,31,0.103,0.935,2,도로:17; 좋아요:9; 연결:8; 다리:7; 구조물:4; 다른 사람:4; 비동기:2; 다른 유저:2
+1850570,DEATH STRANDING DIRECTOR'S CUT,helpful_en,391,2025-10-20,2026-10-21,0.834,195,0.499,0.805,38,like:155; other players:30; roads:21; connection:21; bridges:19; structures:17; bridge:12; connections:12
+1245620,ELDEN RING,recent_en,400,2026-10-14,2026-10-21,0.935,11,0.028,1.0,0,try finger:3; but hole:3; co-op:3; message:2; notes:1; coop:1; summons:1
+1245620,ELDEN RING,recent_ko,300,2026-08-28,2026-10-20,0.917,5,0.017,0.6,2,평가:3; 소환:2; 메시지:1
+1245620,ELDEN RING,helpful_en,392,2025-10-21,2026-10-21,0.862,34,0.087,0.824,6,co-op:10; summons:9; note:7; message:4; summon:3; notes:2; coop:1; messages:1
+374320,DARK SOULS III,recent_en,400,2026-10-06,2026-10-21,0.932,4,0.01,1.0,0,summons:1; bloodstain:1; messages:1; coop:1
+374320,DARK SOULS III,recent_ko,300,2026-05-04,2026-10-20,0.93,4,0.013,1.0,0,평가:2; 소환:1; 메시지:1
+374320,DARK SOULS III,helpful_en,382,2025-10-24,2026-10-21,0.916,26,0.068,1.0,0,co-op:6; message:5; note:4; summons:3; summon:3; coop:2; jolly:1; bloodstain:1
+1070710,Kind Words,recent_en,400,2024-05-30,2026-10-17,0.94,199,0.497,0.94,12,kind:107; letters:56; strangers:40; kindness:37; stickers:28; support:25; anonymous:24; letter:19
+1070710,Kind Words,recent_ko,19,2019-09-13,2026-07-23,1.0,10,0.526,1.0,0,편지:5; 위로:4; 스티커:3; 답장:2; 외로:1
+1070710,Kind Words,helpful_en,94,2025-10-25,2026-10-17,0.904,46,0.489,0.87,6,kind:24; letters:13; strangers:10; anonymous:9; support:8; kindness:8; letter:5; reply:5
+2118120,Kind Words 2,recent_en,400,2024-11-20,2026-10-13,0.92,243,0.608,0.901,24,kind:151; letters:58; anonymous:40; strangers:39; stickers:34; support:29; kindness:27; letter:26
+2118120,Kind Words 2,recent_ko,2,2024-10-08,2026-08-31,1.0,2,1.0,1.0,0,시:2; 익명:1; 편지:1
+2118120,Kind Words 2,helpful_en,0,,,,,,,,
+3146520,WEBFISHING,recent_en,400,2026-08-11,2026-10-21,0.917,107,0.268,0.963,4,fishing:65; friends:40; chat:12; community:11; social:7; friend:7; lobbies:7; lobby:5
+3146520,WEBFISHING,recent_ko,299,2024-11-03,2026-10-04,0.977,80,0.268,1.0,0,낚시:66; 친구:22; 채팅:2; 소통:2
+3146520,WEBFISHING,helpful_en,0,,,,,,,,
+433340,Slime Rancher,recent_en,400,2026-09-15,2026-10-21,0.98,156,0.39,0.974,4,slime:69; slimes:61; cute:49; rancher:32; ranch:22; relaxing:19; relax:5; ranching:4
+433340,Slime Rancher,recent_ko,300,2024-10-11,2026-10-09,0.923,141,0.47,0.929,10,슬라임:88; 귀여:58; 힐링:45; 노가다:13; 목장:6; 반응:1
+433340,Slime Rancher,helpful_en,0,,,,,,,,
+1657630,Slime Rancher 2,recent_en,400,2026-09-06,2026-10-20,0.93,188,0.47,0.899,19,slime:104; slimes:77; rancher:60; cute:36; ranch:18; relaxing:14; grind:9; ranching:8
+1657630,Slime Rancher 2,recent_ko,300,2023-11-18,2026-10-04,0.803,127,0.423,0.835,21,슬라임:78; 귀여:41; 힐링:35; 노가다:13; 목장:1; 반응:1
+1657630,Slime Rancher 2,helpful_en,0,,,,,,,,
+1177980,"Little Kitty, Big City",recent_en,400,2026-05-16,2026-10-19,0.975,232,0.58,0.97,7,cat:121; cute:100; kitty:67; hats:27; cats:26; short:15; animals:13; animal:9
+1177980,"Little Kitty, Big City",recent_ko,99,2024-05-11,2026-09-25,0.96,53,0.535,0.981,1,고양이:39; 귀여:26; 짧:8; 동물:6; 모자:5; 낮잠:1
+1177980,"Little Kitty, Big City",helpful_en,244,2025-10-20,2026-10-19,0.967,167,0.684,0.952,8,cat:92; cute:82; kitty:46; cats:26; hats:25; short:18; animals:14; animal:10
+1354830,Cat Cafe Manager,recent_en,400,2025-02-23,2026-10-18,0.875,204,0.51,0.907,19,cats:136; cat:70; story:66; customers:31; repetitive:28; adopt:14; customer:13; stories:12
+1354830,Cat Cafe Manager,recent_ko,26,2022-04-14,2026-03-11,0.654,15,0.577,0.733,4,고양이:13; 손님:4; 입양:4; 단골:3; 반복:1
+1354830,Cat Cafe Manager,helpful_en,192,2025-10-25,2026-10-18,0.844,95,0.495,0.874,12,cats:60; cat:31; story:27; customers:17; repetitive:14; customer:9; adopt:7; adopting:5
+3109590,Cat Cafe Manager 2,recent_en,0,,,,,,,,
+3109590,Cat Cafe Manager 2,recent_ko,0,,,,,,,,
+3109590,Cat Cafe Manager 2,helpful_en,0,,,,,,,,
+2113850,Spirit City: Lofi Sessions,recent_en,400,2026-08-03,2026-10-21,0.973,276,0.69,0.978,6,work:73; focus:67; productivity:64; background:61; spirits:61; spirit:57; working:42; study:41
+2113850,Spirit City: Lofi Sessions,recent_ko,300,2024-07-17,2026-10-10,0.957,140,0.467,0.943,8,작업:61; 집중:43; 공부:36; 타이머:30; 할 일:19; 배경:16; 뽀모도로:11; 생산성:7
+2113850,Spirit City: Lofi Sessions,helpful_en,0,,,,,,,,
+2666510,Rusty's Retirement,recent_en,400,2026-02-05,2026-10-20,0.93,132,0.33,0.932,9,idle:96; background:34; while you work:6; bottom of my screen:6; while i work:5; second monitor:4; side of:3; afk:3
+2666510,Rusty's Retirement,recent_ko,300,2024-11-29,2026-09-24,0.967,95,0.317,0.947,5,방치:84; 모니터:12; 배경:3; 작업하면서:3; 듀얼:1
+2666510,Rusty's Retirement,helpful_en,0,,,,,,,,
+3419430,Bongo Cat,recent_en,400,2026-10-08,2026-10-21,0.958,95,0.237,0.947,5,cute:60; desktop:12; background:11; typing:9; items:7; hats:4; idle:3; hat:2
+3419430,Bongo Cat,recent_ko,300,2026-04-14,2026-10-21,0.967,86,0.287,0.988,1,귀여:73; 타자:5; 아이템:4; 중독:3; 방치:2; 타이핑:2; 모자:1; 작업하면서:1
+3419430,Bongo Cat,helpful_en,0,,,,,,,,
+1118240,Lake,recent_en,400,2025-10-25,2026-10-18,0.838,225,0.562,0.818,41,relaxing:99; mail:86; delivering:53; choices:34; small town:31; delivery:30; boring:29; deliver:24
+1118240,Lake,recent_ko,5,2021-12-18,2024-10-11,0.2,5,1.0,0.2,4,배달:4; 우편:4; 힐링:2; 마을:2; 대화:2; 선택:1; 지루:1; 반복:1
+1118240,Lake,helpful_en,0,,,,,,,,
+1055540,A Short Hike,recent_en,400,2026-07-05,2026-10-21,1.0,215,0.537,1.0,0,short:114; cozy:65; relaxing:32; exploration:24; island:24; characters:24; exploring:21; explore:19
+1055540,A Short Hike,recent_ko,300,2022-04-09,2026-10-11,0.997,147,0.49,1.0,0,힐링:107; 짧:45; 섬:24; npc:18; 깃털:14; 대화:12; 탐험:11; 캐릭터:8
+1055540,A Short Hike,helpful_en,0,,,,,,,,
+1307580,TOEM,recent_en,400,2026-07-12,2026-10-21,0.98,130,0.325,0.977,3,short:36; characters:34; camera:34; quests:32; photos:28; photo:13; quest:11; character:8
+1307580,TOEM,recent_ko,300,2022-12-16,2026-10-13,0.993,120,0.4,0.992,1,사진:95; 퀘스트:37; 카메라:23; 스탬프:10; 도장:9; 짧:8; 부탁:5; 버스:3
+1307580,TOEM,helpful_en,0,,,,,,,,
+2900640,TOEM 2,recent_en,397,2026-09-29,2026-10-21,0.904,150,0.378,0.86,21,short:76; characters:41; camera:27; quests:24; photo:19; character:11; photos:11; quest:9
+2900640,TOEM 2,recent_ko,21,2026-09-29,2026-10-20,1.0,13,0.619,1.0,0,사진:7; 짧:7; 카메라:4; 퀘스트:3; 스탬프:1; 부탁:1
+2900640,TOEM 2,helpful_en,0,,,,,,,,
+1607240,Mail Time,recent_en,400,2024-11-17,2026-10-20,0.85,311,0.777,0.868,41,cute:214; characters:105; short:91; mail:64; character:52; delivering:35; relaxing:30; delivery:19
+1607240,Mail Time,recent_ko,11,2023-04-29,2025-09-13,0.727,5,0.455,1.0,0,편지:3; 캐릭터:3; 배달:2; 귀여:2; 힐링:2; 우편:1
+1607240,Mail Time,helpful_en,0,,,,,,,,
+695330,SEASON: A letter to the future,recent_en,400,2024-02-03,2026-10-19,0.95,141,0.352,0.929,10,journal:47; people:37; slow:31; bike:28; camera:26; recording:23; record:22; photos:20
+695330,SEASON: A letter to the future,recent_ko,4,2023-02-02,2026-07-22,1.0,1,0.25,1.0,0,사진:1; 녹음:1; 사람:1; 스크랩:1; 자전거:1
+695330,SEASON: A letter to the future,helpful_en,0,,,,,,,,
+763890,Wildermyth,recent_en,400,2025-11-06,2026-10-21,0.9,191,0.477,0.885,22,story:100; characters:81; stories:57; character:48; heroes:29; legacy:25; comic:14; procedural:14
+763890,Wildermyth,recent_ko,90,2019-11-15,2026-10-20,0.922,31,0.344,0.903,3,스토리:18; 캐릭터:17; 영웅:7; 이야기:6; 은퇴:5; 나이:3; 관계:3; 전설:1
+763890,Wildermyth,helpful_en,216,2025-10-21,2026-10-21,0.944,139,0.644,0.95,7,story:68; characters:56; stories:40; character:36; heroes:24; legacy:21; procedural:9; age:8
+1158310,Crusader Kings III,recent_en,400,2026-09-12,2026-10-21,0.792,34,0.085,0.618,13,character:13; events:7; characters:7; event:6; story:6; dynasty:5; stories:5; trait:4
+1158310,Crusader Kings III,recent_ko,300,2025-11-04,2026-10-20,0.903,18,0.06,0.944,1,가문:10; 이벤트:4; 캐릭터:4; 성격:2; 스트레스:2; 롤플:2; 이야기:1
+1158310,Crusader Kings III,helpful_en,393,2025-10-26,2026-10-21,0.626,69,0.176,0.652,24,character:28; dynasty:18; events:12; characters:10; event:10; roleplaying:10; stories:10; story:9
+972660,Spiritfarer,recent_en,400,2026-06-26,2026-10-21,0.912,195,0.487,0.892,21,story:85; characters:68; cried:31; spirits:31; grief:30; death:30; character:28; stories:27
+972660,Spiritfarer,recent_ko,300,2023-05-06,2026-10-18,0.833,85,0.283,0.824,15,캐릭터:33; 영혼:29; 이별:20; 죽음:15; 이야기:14; 기억:11; 작별:8; 포옹:7
+972660,Spiritfarer,helpful_en,0,,,,,,,,
+1102130,Florence,recent_en,399,2026-02-10,2026-10-21,0.91,168,0.421,0.946,9,short:125; interactive:31; relationship:21; dialogue:19; mechanics:15; puzzles:14; puzzle:9; interactions:5
+1102130,Florence,recent_ko,300,2020-03-19,2026-10-16,0.887,95,0.317,0.895,10,짧:74; 퍼즐:25; 대화:11; 조작:10; 말풍선:8; 관계:3
+1102130,Florence,helpful_en,0,,,,,,,,
+1135690,Unpacking,recent_en,400,2026-08-02,2026-10-21,0.94,161,0.403,0.938,10,story:92; unpacking:41; life:38; where:29; items:22; place:17; unpack:16; objects:14
+1135690,Unpacking,recent_ko,300,2024-09-05,2026-10-18,0.943,130,0.433,0.962,5,방:58; 물건:54; 짐:50; 배치:19; 삶:8; 이야기:4; 상자:3
+1135690,Unpacking,helpful_en,379,2025-10-26,2026-10-21,0.847,199,0.525,0.844,31,story:120; unpacking:56; life:54; where:50; items:50; place:33; room:28; unpack:23
+1458100,Cozy Grove,recent_en,400,2025-03-09,2026-10-19,0.882,175,0.438,0.874,22,bears:52; story:51; daily:44; stories:29; each day:27; real time:25; wait:20; bear:18
+1458100,Cozy Grove,recent_ko,199,2021-04-08,2026-09-11,0.799,58,0.291,0.776,13,매일:25; 곰:19; 영혼:14; 기다:10; 이야기:7; 숙제:7; 실시간:4
+1458100,Cozy Grove,helpful_en,200,2025-10-23,2026-10-19,0.865,99,0.495,0.869,13,story:29; daily:26; bears:25; each day:17; real time:16; stories:15; bear:13; wait:12

@@ -1,0 +1,196 @@
+# -*- coding: utf-8 -*-
+"""Render report tables (markdown) + the list of games that still need a Korean one-liner.
+
+Only rows 1-10 of each table ask for a one-liner; later rows stay blank when none exists.
+python make_tables_md.py  -> report_tables.md, need_oneliners.json
+"""
+import json
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from common import BASE, read_json  # noqa: E402
+from segments import SEG_KO, SEG_ORDER  # noqa: E402
+import tables as T  # noqa: E402
+
+ONE = read_json(os.path.join(BASE, 'oneliners_ko.json'), {}) or {}
+NEED = {}
+
+
+def link(r):
+    name = (r.get('name') or str(r['appid'])).replace('|', '/')
+    mark = ' †' if r.get('relevance_life') == 'adjacent' else ''
+    if r.get('metric_basis') == 'display_approx':
+        mark += ' ‡'
+    return '[%s](https://store.steampowered.com/app/%d/)%s' % (name, r['appid'], mark)
+
+
+def num(x):
+    return '{:,}'.format(int(x)) if x is not None else '—'
+
+
+def pct(x, d=1):
+    return ('%.' + str(d) + 'f%%') % (100 * x) if x is not None else '—'
+
+
+def recent(r):
+    if r.get('recent_pct') is not None:
+        return '%d%% (%s)' % (r['recent_pct'], num(r.get('recent_n')))
+    if r.get('store_ok'):
+        if (r.get('release_iso') or '') >= '2026-09-21':
+            return '출시 30일 이내'
+        return '10개 미만'
+    return '미수집'
+
+
+def owners(r):
+    o = r.get('owners')
+    if not o:
+        return '—'
+    try:
+        lo, hi = [int(x.strip().replace(',', '')) for x in o.split('..')]
+    except Exception:
+        return o
+
+    def s(v):
+        if v >= 1_000_000:
+            return '%gM' % (v / 1_000_000)
+        if v >= 1_000:
+            return '%gK' % (v / 1_000)
+        return str(v)
+    if r.get('metric_total') and hi < r['metric_total']:
+        return '%s~%s(리뷰보다 적음)' % (s(lo), s(hi))
+    return '%s~%s' % (s(lo), s(hi))
+
+
+def korean(r):
+    if r.get('korean_interface') is None:
+        return '—'
+    parts = []
+    if r.get('korean_interface'):
+        parts.append('UI')
+    if r.get('korean_audio'):
+        parts.append('음성')
+    if r.get('korean_subtitles'):
+        parts.append('자막')
+    return '·'.join(parts) if parts else '없음'
+
+
+def rel(r):
+    s = r.get('release_iso') or '—'
+    if r.get('early_access'):
+        s += ' (EA)'
+    return s
+
+
+def one(r, i):
+    a = str(r['appid'])
+    if a in ONE:
+        return ONE[a]
+    if i <= 10:
+        NEED[a] = {'name': r.get('name'), 'tags': r.get('top_tags'), 'desc': r.get('short_description'),
+                   'release': r.get('release_iso'), 'dev': r.get('developers')}
+        return '(설명 필요)'
+    return ''
+
+
+def pn(r):
+    if r.get('metric_basis') == 'all':
+        return '%s / %s' % (num(r.get('cum_positive')), num(r.get('cum_total')))
+    if r.get('metric_basis') == 'display_approx':
+        return '≈ / %s' % num(r.get('metric_total'))
+    return '—'
+
+
+def ratio(r):
+    v = pct(r.get('metric_ratio'))
+    return ('≈' + v) if r.get('metric_basis') == 'display_approx' else v
+
+
+def wil(r):
+    v = pct(r.get('metric_wilson'), 2)
+    return ('≈' + v) if r.get('metric_basis') == 'display_approx' else v
+
+
+def table(rows, start=1, cols=('rank', 'game', 'rel', 'pn', 'ratio', 'wil', 'recent', 'owners', 'ko', 'one')):
+    head = {'rank': '순위', 'game': '게임', 'rel': '출시', 'pn': '긍정 / 전체', 'ratio': '긍정률', 'wil': 'Wilson 하한',
+            'recent': '최근 30일', 'owners': '보유자 추정', 'ko': '한국어', 'one': '한 줄 설명',
+            'shift': '최근−누적', 'basis': '비교한 누적'}
+    align = {'pn': '---:', 'ratio': '---:', 'wil': '---:', 'recent': '---:', 'owners': '---:', 'shift': '---:'}
+    out = ['| ' + ' | '.join(head[c] for c in cols) + ' |', '|' + '|'.join(align.get(c, '---') for c in cols) + '|']
+    for i, r in enumerate(rows, start):
+        cells = []
+        for c in cols:
+            if c == 'rank':
+                cells.append(str(i))
+            elif c == 'game':
+                cells.append(link(r))
+            elif c == 'rel':
+                cells.append(rel(r))
+            elif c == 'pn':
+                cells.append(pn(r))
+            elif c == 'ratio':
+                cells.append(ratio(r))
+            elif c == 'wil':
+                cells.append(wil(r))
+            elif c == 'recent':
+                cells.append(recent(r))
+            elif c == 'owners':
+                cells.append(owners(r))
+            elif c == 'ko':
+                cells.append(korean(r))
+            elif c == 'one':
+                cells.append(one(r, i))
+            elif c == 'shift':
+                cells.append('%+.1f%%p' % (100 * r.get('_shift', 0)))
+            elif c == 'basis':
+                cells.append({'all': '전체 경로(무료)', 'all*': '전체 경로', 'display': '상점 표시(≈)'}.get(r.get('_shift_basis'), '—'))
+        out.append('| ' + ' | '.join(cells) + ' |')
+    return '\n'.join(out)
+
+
+def main():
+    meta, apps = T.load()
+    md = ['<!-- generated by make_tables_md.py at %s -->' % meta['built_kst']]
+    md.append('## T_OVERALL\n' + table(T.overall(apps, 40)))
+    adult, peri = T.overall_hidden(apps, 40)
+    md.append('## T_OVERALL_ADULT_HIDDEN (n=%d)\n' % len(adult) + ', '.join(
+        '%s(%s, %s)' % (r['name'], wil(r), num(r['metric_total'])) for r in adult))
+    md.append('## T_OVERALL_PERIPHERAL_HIDDEN (n=%d)\n' % len(peri) + ', '.join(
+        '%s(%s, %s; %s)' % (r['name'], wil(r), num(r['metric_total']), '/'.join((r.get('source_queries') or [])[:3]))
+        for r in peri))
+    big = sorted([r for r in apps if r.get('rank_life') and (r.get('metric_total') or 0) >= 10000], key=lambda r: -r['metric_wilson'])
+    md.append('## T_OVERALL_10K (n=%d)\n' % len(big) + table(big[:15], cols=('rank', 'game', 'rel', 'pn', 'ratio', 'wil', 'recent', 'owners', 'ko', 'one')))
+    import re as _re
+    lw = _re.compile(r'(language learning|learn (japanese|korean|spanish|english|french|german|chinese|italian)|hiragana|katakana|kanji|hangul|vocabulary|decipher|translate)', _re.I)
+    def _is_lang(r):
+        t20 = [t['name'] for t in (r.get('tags') or [])[:20]]
+        if 'Language Learning' in t20:
+            return True
+        txt = (r.get('name') or '') + ' ' + (r.get('short_description') or '')
+        return bool(lw.search(txt)) and bool(set(t20[:10]) & {'Education', 'Word Game', 'Visual Novel', 'Puzzle'})
+    langl = [r for r in apps if not r.get('adult') and (r.get('metric_total') or 0) >= 100 and r.get('sb_ok') and _is_lang(r)
+             and set(r.get('layers') or []) & {'L', 'L2', 'U1', 'U2'}]
+    langl.sort(key=lambda r: -r['metric_wilson'])
+    md.append('## T_LANG_LEARNING (n=%d)\n' % len(langl) + table(langl[:15], cols=('rank', 'game', 'rel', 'pn', 'wil', 'recent', 'owners', 'ko', 'one')))
+    md.append('## T_SCALE\n' + table(T.by_scale(apps, 20)))
+    md.append('## T_RECENT_RELEASES\n' + table(T.recent_releases(apps, k=20)))
+    md.append('## T_RECENT_RELEASES_WILSON\n' + table(T.recent_releases_wilson(apps, k=10),
+                                                       cols=('rank', 'game', 'rel', 'pn', 'wil', 'recent', 'one')))
+    up, down = T.recent_shift(apps)
+    md.append('## T_SHIFT_UP (n=%d)\n' % len(up) + table(up[:12], cols=('rank', 'game', 'rel', 'pn', 'ratio', 'recent', 'shift', 'basis', 'one')))
+    md.append('## T_SHIFT_DOWN (n=%d)\n' % len(down) + table(down[:12], cols=('rank', 'game', 'rel', 'pn', 'ratio', 'recent', 'shift', 'basis', 'one')))
+    for seg in SEG_ORDER:
+        rows, used_min, total = T.segment_table(apps, seg, k=8, min_n=(100 if seg == 'language_edu' else 1000),
+                                                fallback_min=(100 if seg == 'language_edu' else 500))
+        md.append('## T_SEG %s %s (min=%d, segment size=%d)\n' % (seg, SEG_KO[seg], used_min, total) +
+                  table(rows, cols=('rank', 'game', 'rel', 'pn', 'wil', 'recent', 'owners', 'ko', 'one')))
+    with open(os.path.join(BASE, 'report_tables.md'), 'w', encoding='utf-8', newline='\n') as f:
+        f.write('\n\n'.join(md) + '\n')
+    with open(os.path.join(BASE, 'need_oneliners.json'), 'w', encoding='utf-8', newline='\n') as f:
+        json.dump(NEED, f, ensure_ascii=False, indent=1)
+    print('tables written; need one-liners for', len(NEED))
+
+
+if __name__ == '__main__':
+    main()

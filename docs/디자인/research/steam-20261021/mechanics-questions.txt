@@ -1,0 +1,67 @@
+shire_meal_any               n= 448 base_pos= 73.9% hits=  69 pos=43 neg=26 pos_rate= 62.3%
+shire_mad_not_invited        n= 448 base_pos= 73.9% hits=   7 pos=5 neg=2 pos_rate= 71.4%
+shire_repetitive             n= 448 base_pos= 73.9% hits=  52 pos=25 neg=27 pos_rate= 48.1%
+shire_points                 n= 448 base_pos= 73.9% hits=   6 pos=2 neg=4 pos_rate= 33.3%
+venba_recipe_puzzle          n= 400 base_pos= 95.0% hits=  99 pos=97 neg=2 pos_rate= 98.0%
+venba_short                  n= 400 base_pos= 95.0% hits= 141 pos=133 neg=8 pos_rate= 94.3%
+venba_real_recipe            n= 400 base_pos= 95.0% hits=  11 pos=10 neg=1 pos_rate= 90.9%
+unpack_story_objects         n= 400 base_pos= 94.0% hits=  95 pos=89 neg=6 pos_rate= 93.7%
+unpack_short_price           n= 400 base_pos= 94.0% hits=  57 pos=48 neg=9 pos_rate= 84.2%
+unpack_forced_place          n= 575 base_pos= 89.0% hits=   1 pos=0 neg=1 pos_rate=  0.0%
+sims_helpful_emotion         n= 393 base_pos= 53.2% hits=  25 pos=5 neg=20 pos_rate= 20.0%
+inzoi_ai_recent              n= 299 base_pos= 85.6% hits=  14 pos=5 neg=9 pos_rate= 35.7%
+inzoi_ai_helpful             n= 285 base_pos= 63.5% hits=  60 pos=17 neg=43 pos_rate= 28.3%
+inzoi_empty_helpful          n= 285 base_pos= 63.5% hits=  43 pos=12 neg=31 pos_rate= 27.9%
+rimworld_story               n= 659 base_pos= 90.9% hits=  75 pos=62 neg=13 pos_rate= 82.7%
+rimworld_attached            n= 659 base_pos= 90.9% hits=   8 pos=8 neg=0 pos_rate=100.0%
+df_history                   n= 552 base_pos= 87.7% hits=  80 pos=72 neg=8 pos_rate= 90.0%
+mistria_dialogue             n= 400 base_pos= 95.2% hits=  33 pos=33 neg=0 pos_rate=100.0%
+mistria_inn_friday           n= 594 base_pos= 87.9% hits=  41 pos=29 neg=12 pos_rate= 70.7%
+mistria_gates                n= 594 base_pos= 87.9% hits=  18 pos=9 neg=9 pos_rate= 50.0%
+palia_rep_dialogue           n= 572 base_pos= 71.0% hits=   3 pos=1 neg=2 pos_rate= 33.3%
+palia_gift_daily             n= 572 base_pos= 71.0% hits=  15 pos=6 neg=9 pos_rate= 40.0%
+all_rep_dialogue_dinkum      n= 400 base_pos= 87.0% hits=   2 pos=1 neg=1 pos_rate= 50.0%
+sunhaven_robot               n= 400 base_pos= 76.2% hits=   1 pos=1 neg=0 pos_rate=100.0%
+golden_brute                 n= 400 base_pos= 96.2% hits=  25 pos=23 neg=2 pos_rate= 92.0%
+golden_word                  n= 400 base_pos= 96.2% hits=  42 pos=38 neg=4 pos_rate= 90.5%
+golden_ko_translation        n= 300 base_pos= 95.0% hits=  35 pos=33 neg=2 pos_rate= 94.3%
+obra_guess                   n= 400 base_pos= 95.2% hits=  34 pos=27 neg=7 pos_rate= 79.4%
+obra_three                   n= 400 base_pos= 95.2% hits=   3 pos=2 neg=1 pos_rate= 66.7%
+chants_hypothesis            n= 400 base_pos= 97.5% hits=  18 pos=15 neg=3 pos_rate= 83.3%
+chants_brute                 n= 400 base_pos= 97.5% hits=  14 pos=8 neg=6 pos_rate= 57.1%
+heavens_translate            n= 400 base_pos= 71.8% hits= 145 pos=95 neg=50 pos_rate= 65.5%
+herstory_search              n= 400 base_pos= 81.5% hits=  79 pos=58 neg=21 pos_rate= 73.4%
+herstory_confus              n= 400 base_pos= 81.5% hits=  21 pos=15 neg=6 pos_rate= 71.4%
+horti_book                   n= 400 base_pos= 92.8% hits=  68 pos=61 neg=7 pos_rate= 89.7%
+horti_search_complaint       n= 400 base_pos= 92.8% hits=   3 pos=2 neg=1 pos_rate= 66.7%
+sky_friend                   n= 564 base_pos= 74.5% hits= 162 pos=105 neg=57 pos_rate= 64.8%
+sky_grind                    n= 564 base_pos= 74.5% hits= 133 pos=58 neg=75 pos_rate= 43.6%
+ds_like_struct               n= 619 base_pos= 85.0% hits= 185 pos=136 neg=49 pos_rate= 73.5%
+ds_clutter                   n= 619 base_pos= 85.0% hits=   7 pos=5 neg=2 pos_rate= 71.4%
+er_message_jokes             n= 716 base_pos= 89.2% hits=  10 pos=9 neg=1 pos_rate= 90.0%
+kind_letters                 n= 400 base_pos= 94.0% hits= 120 pos=112 neg=8 pos_rate= 93.3%
+kind_negative                n= 400 base_pos= 92.0% hits=  23 pos=17 neg=6 pos_rate= 73.9%
+spirit_parallel              n= 400 base_pos= 97.2% hits= 174 pos=170 neg=4 pos_rate= 97.7%
+rusty_babysit                n= 400 base_pos= 93.0% hits=  13 pos=9 neg=4 pos_rate= 69.2%
+rusty_desktop_alive          n= 400 base_pos= 93.0% hits=  66 pos=61 neg=5 pos_rate= 92.4%
+bongo_company                n= 400 base_pos= 95.8% hits=  16 pos=16 neg=0 pos_rate=100.0%
+bongo_fomo                   n= 400 base_pos= 95.8% hits=   9 pos=7 neg=2 pos_rate= 77.8%
+lake_empty                   n= 400 base_pos= 83.8% hits=  49 pos=22 neg=27 pos_rate= 44.9%
+lake_relax                   n= 400 base_pos= 83.8% hits= 236 pos=210 neg=26 pos_rate= 89.0%
+toem_help_photo              n= 400 base_pos= 98.0% hits=  47 pos=47 neg=0 pos_rate=100.0%
+toem2_label                  n= 397 base_pos= 90.4% hits=   2 pos=1 neg=1 pos_rate= 50.0%
+wildermyth_repeat            n= 414 base_pos= 90.1% hits=  30 pos=26 neg=4 pos_rate= 86.7%
+wildermyth_attach            n= 414 base_pos= 90.1% hits=  42 pos=39 neg=3 pos_rate= 92.9%
+ck3_repeat                   n= 589 base_pos= 71.0% hits=   6 pos=0 neg=6 pos_rate=  0.0%
+cozy_realtime                n= 400 base_pos= 88.2% hits= 131 pos=111 neg=20 pos_rate= 84.7%
+paralives_cards              n= 495 base_pos= 78.4% hits=  23 pos=12 neg=11 pos_rate= 52.2%
+paralives_alive_empty        n= 495 base_pos= 78.4% hits=  32 pos=10 neg=22 pos_rate= 31.2%
+spiritfarer_remembered       n= 400 base_pos= 91.2% hits=   2 pos=2 neg=0 pos_rate=100.0%
+littlekitty_npc              n= 480 base_pos= 96.9% hits=  82 pos=75 neg=7 pos_rate= 91.5%
+catcafe_story_rep            n= 400 base_pos= 87.5% hits=  50 pos=34 neg=16 pos_rate= 68.0%
+wylde_voice                  n= 400 base_pos= 96.0% hits=  61 pos=58 neg=3 pos_rate= 95.1%
+wagotabi_context             n= 400 base_pos= 98.8% hits=  65 pos=65 neg=0 pos_rate=100.0%
+wagotabi_slow                n= 400 base_pos= 98.8% hits=  30 pos=30 neg=0 pos_rate=100.0%
+nountown_speech              n= 400 base_pos= 85.8% hits=  93 pos=68 neg=25 pos_rate= 73.1%
+shashingo_content            n= 400 base_pos= 88.8% hits=  83 pos=57 neg=26 pos_rate= 68.7%
+influent_context             n= 400 base_pos= 70.8% hits=  29 pos=19 neg=10 pos_rate= 65.5%
