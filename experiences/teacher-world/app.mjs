@@ -25,6 +25,11 @@ const dateTime=value=>Number.isFinite(Date.parse(value))?new Date(value).toLocal
 const studentLinked=student=>student?.accountConnected===true||student?.accountConnected!==false&&!!student?.connectedAt;
 // 기록을 볼 수 없는 까닭을 머리 줄과 같은 기준(learnerOverview)으로 나눈다 — [문항 기록 줄 앞부분, 다음 수업 제안 제목, 챙길 일 안내].
 const evidenceGate=student=>learnerOverview(student).sharing==='revoked'?['연결이 해제되어','연결 상태부터 확인해요','연결이 해제된 학생이라 챙길 일을 남길 수 없어요.']:!studentLinked(student)?['아직 계정이 연결되지 않아','계정 연결부터 확인해요','학생이 계정을 연결하고 학습 공유를 켜면 챙길 일을 남길 수 있어요.']:['학습 공유가 켜져 있지 않아','학습 공유부터 확인해요','학생이 학습 공유를 켜면 챙길 일을 남길 수 있어요.'];
+// 연결 코드도 같은 기준이다. 수업 서버는 계정 없는 명부 학생을 revoked:true로 보내므로 revoked만 보면 코드가 꼭 필요한 학생에게 단추가 사라진다.
+const canInvite=student=>accountRequested&&!!student&&learnerOverview(student).sharing==='unconnected';
+// 서버는 거절 까닭을 코드 그대로(LEARNER_ALREADY_LINKED 등) 글로 보낸다. 선생님께는 코드나 영어 오류 대신 할 일을 보인다.
+// 반·담당·명부가 바뀌어 막힌 것(INVITE_UNAVAILABLE·FORBIDDEN)은 다시 눌러도 같아서 다시 만들기 대신 확인을 안내한다.
+const inviteError=error=>{const message=error?.message||'';return message==='LEARNER_ALREADY_LINKED'?'이미 계정이 연결된 학생이라 연결 코드를 만들 수 없어요. 계속 「계정 연결 전」으로 보이면 기관에 학생 계정 상태를 확인해 주세요.':['INVITE_UNAVAILABLE','FORBIDDEN'].includes(message)?'지금은 이 학생의 연결 코드를 만들 수 없어요. 반 목록을 새로고침한 뒤에도 그대로면 기관에 확인해 주세요.':/[가-힣]/.test(message)?message:'연결 코드를 만들지 못했어요. 창을 닫고 다시 만들어 주세요.';};
 const careFor=student=>!student?[]:(student.careTasks||student.care||workspace?.care||[]).filter(task=>task.learnerId===student.id&&task.classId===classId&&(!Number.isSafeInteger(student.sharing?.revision)||task.sharingRevision===student.sharing.revision));
 function renderStudentActivity(student){
   if(!linked)return '';
@@ -93,7 +98,7 @@ function clearDraft(){
 function draftAllowed(kind){
   if(!linked)return true;if(!workspaceReady||!draftContext||draftContext.kind!==kind)return false;
   const cls=workspace.classes.find(c=>c.id===draftContext.classId),student=cls?.learners.find(s=>s.id===draftContext.learnerId);
-  if(kind==='enrollment')return accountRequested&&classId===draftContext.classId&&learnerId===draftContext.learnerId&&!!student&&!student.revoked&&!studentLinked(student);
+  if(kind==='enrollment')return classId===draftContext.classId&&learnerId===draftContext.learnerId&&canInvite(student);
   if(!student||student.revoked||!studentLinked(student)||!student.sharing?.enabled||student.sharing.revision!==draftContext.sharingRevision)return false;
   if(draftContext.assignmentId){const assignment=workspace.assignments.find(a=>a.id===draftContext.assignmentId);if(!assignment||!['active','assigned'].includes(assignment.status)||assignment.revision!==draftContext.assignmentRevision)return false;}
   if(draftContext.careId){const care=careFor(student).find(task=>task.id===draftContext.careId);if(!care||care.revision!==draftContext.careRevision)return false;}
@@ -102,17 +107,17 @@ function draftAllowed(kind){
 function captureDraft(kind,record=null){const student=studentNow();draftContext={kind,classId,learnerId,sharingRevision:student?.sharing?.revision,...(kind==='assignment'?{assignmentId:record?.id,assignmentRevision:record?.revision}:{}),...(kind==='care'?{careId:record?.id,careRevision:record?.revision}:{})};}
 function clearInvite(){for(const id of ['student-invite-student','student-invite-expiry','student-invite-error'])$(id).textContent='';$('student-invite-code').value='';$('student-invite-copy').disabled=true;}
 async function openInvite(){
-  const student=studentNow();if(!accountRequested||!workspaceReady||!student||student.revoked||studentLinked(student))return;
+  const student=studentNow();if(!workspaceReady||!canInvite(student))return;
   clearDraft();captureDraft('enrollment');const context=draftContext,version=accessEpoch;
   $('student-invite-student').textContent=student.name+' 학생 · '+classNow().name;$('student-invite-expiry').textContent='연결 코드를 만들고 있어요.';
   accountHost?.focusWorkspace?.();$('student-invite-dialog').showModal();
   try{
     const result=await request('/api/teacher/invites',{learnerId:context.learnerId});
     if(version!==accessEpoch||draftContext!==context||!draftAllowed('enrollment')||!$('student-invite-dialog').open)return;
-    if(!/^[A-Za-z0-9_-]{22,128}$/.test(result.invite?.token||'')||!Number.isFinite(Date.parse(result.invite?.expiresAt)))throw Error('코드를 받지 못했어요. 창을 닫고 다시 만들어 주세요.');
+    if(!/^[A-Za-z0-9_-]{22,128}$/.test(result.invite?.token||'')||!Number.isFinite(Date.parse(result.invite?.expiresAt)))throw Error('연결 코드를 받지 못했어요. 창을 닫고 다시 만들어 주세요.');
     $('student-invite-code').value=result.invite.token;$('student-invite-copy').disabled=false;
     $('student-invite-expiry').textContent=dateTime(result.invite.expiresAt)+'까지 한 번 쓸 수 있어요.';
-  }catch(error){if(version===accessEpoch&&draftContext===context&&$('student-invite-dialog').open){$('student-invite-expiry').textContent='';$('student-invite-error').textContent=error.message;}}
+  }catch(error){if(version===accessEpoch&&draftContext===context&&draftAllowed('enrollment')&&$('student-invite-dialog').open){$('student-invite-expiry').textContent='';$('student-invite-error').textContent=inviteError(error);}}
 }
 function suspendWorkspace({retainCourse=false}={}){
   if(retainCourse)courseUI?.suspend();else{closeCourse();homework.reset();}
@@ -168,7 +173,7 @@ function render(){
 function renderRoster(){const query=$('student-search').value.trim().toLowerCase();const rows=learners().filter(s=>s.name.toLowerCase().includes(query));$('roster').innerHTML=rows.length?rows.map(s=>`<button class="student-row ${s.id===learnerId?'selected':''}" data-student="${escape(s.id)}" aria-pressed="${s.id===learnerId}"><span class="avatar">${escape(s.name.slice(0,1))}</span><span class="student-copy"><strong>${escape(s.name)}</strong><small>${escape(linked&&learnerOverview(s).sharing==='revoked'?'연결 해제':linked&&!studentLinked(s)?'계정 연결 전':linked&&!s.sharing?.enabled?'학습 공유 안 함':s.recommendation?.title||'문항 기록 보기')}</small></span><span class="arrow">↗</span></button>`).join(''):`<p class="empty">${query?'찾는 학생이 없어요.':linked?'아직 연결된 학생이 없어요. 위에서 학생 이름을 적고 연결 코드를 만들어 주세요.':'찾는 학생이 없어요.'}</p>`;}
 function renderDetail(){const s=studentNow();if(!s){$('student-detail').innerHTML=`<p class="empty">${linked?'학생이 연결에 동의하면 여기서 기록과 다음 과제를 볼 수 있어요.':'학생을 골라 주세요.'}</p>`;return;}const canSeeEvidence=!linked||(!s.revoked&&studentLinked(s)&&s.sharing?.enabled===true),rec=canSeeEvidence?s.recommendation:null;const skills=canSeeEvidence?s.skills.filter(k=>k.n||k.status!=='unseen'):[];const shown=skills.length?skills:canSeeEvidence?s.skills.slice(0,3):[];const selectedContent=workspace.content.find(c=>c.id===rec?.contentId);const canAssign=!linked||(workspaceReady&&!s.revoked&&studentLinked(s)&&s.sharing?.enabled===true);$('student-detail').innerHTML=`
   <div class="detail-header"><span class="avatar">${escape(s.name.slice(0,1))}</span><div><h3>${escape(s.name)}</h3><p>${escape(classNow().name)}${linked?'':' · 예시 학생'}</p></div><button class="text-button" id="add-note" ${canAssign?'':'disabled'}>관찰 남기기</button></div>
-  ${linked?`<div class="student-connection"><strong>${learnerOverview(s).sharing==='revoked'?'WORLD 연결 해제':studentLinked(s)?(s.sharing?.enabled?'WORLD 계정 연결됨 · 학습 공유 중':'WORLD 계정 연결됨 · 학습 공유 안 함'):'WORLD 계정 연결 전'}</strong>${canSeeEvidence?'<p class="help">'+((s.sharing?.since||s.connectedAt)?'학습 공유 시작 '+escape(date(s.sharing?.since||s.connectedAt)):'학습 공유 시작 전')+' · '+(s.lastEventAt?'마지막 활동 '+escape(date(s.lastEventAt)):'활동 기록 없음')+'</p>':''}<p class="help">공유 범위: 학습 문항 기록과 이 반 과제 결과</p>${accountRequested&&!s.revoked&&!studentLinked(s)?'<button class="felt-button" id="student-invite">학생 연결 코드 만들기</button>':''}${!accountRequested&&!s.revoked&&(s.sharing?.enabled||!s.connectedAt)?`<button class="text-button" data-revoke="${escape(s.id)}">학생 연결 해제</button>`:''}</div>`:''}
+  ${linked?`<div class="student-connection"><strong>${learnerOverview(s).sharing==='revoked'?'WORLD 연결 해제':studentLinked(s)?(s.sharing?.enabled?'WORLD 계정 연결됨 · 학습 공유 중':'WORLD 계정 연결됨 · 학습 공유 안 함'):'WORLD 계정 연결 전'}</strong>${canSeeEvidence?'<p class="help">'+((s.sharing?.since||s.connectedAt)?'학습 공유 시작 '+escape(date(s.sharing?.since||s.connectedAt)):'학습 공유 시작 전')+' · '+(s.lastEventAt?'마지막 활동 '+escape(date(s.lastEventAt)):'활동 기록 없음')+'</p>':''}<p class="help">공유 범위: 학습 문항 기록과 이 반 과제 결과</p>${canInvite(s)?'<button class="felt-button" id="student-invite">학생 연결 코드 만들기</button>':''}${!accountRequested&&!s.revoked&&(s.sharing?.enabled||!s.connectedAt)?`<button class="text-button" data-revoke="${escape(s.id)}">학생 연결 해제</button>`:''}</div>`:''}
   ${renderStudentActivity(s)}
   <p class="goal">학습 목표 · ${escape(s.goal||'TOPIK I 듣기·읽기 연습')}</p><div class="evidence-title"><h3>문항 기록</h3><span>최근 혼자 푼 문항 기준</span></div>
   ${!canSeeEvidence?'<p class="help">'+evidenceGate(s)[0]+' 문항 기록을 볼 수 없어요. 볼 수 없는 기록을 약점으로 여기지 않아요.</p>':''}

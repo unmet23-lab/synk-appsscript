@@ -144,8 +144,10 @@ test('a late write result cannot repopulate a connection code after access verif
   assert.equal(f.element('world-link-result').innerHTML,'');assert.equal(f.element('world-link-result').hidden,true);assert.equal(f.element('html').dataset.ready,'blocked');
 });
 
+// 연결 전 학생은 운영 수업 서버(SYNK-talk synk-classroom-store)가 보내는 모양 그대로 — 계정이 없으면 revoked:true다.
+const unlinked=(overrides={})=>learner({accountConnected:false,revoked:true,connectedAt:null,sharing:{enabled:false,revision:1},...overrides});
 for(const invalidation of ['learner-change','permission-loss','already-linked'])test('account invite cannot return after '+invalidation,async()=>{
- const f=fixture({account:true}),a=learner({accountConnected:false,connectedAt:null,sharing:{enabled:false,revision:0}}),b={...a,id:'learner-b'};
+ const f=fixture({account:true}),a=unlinked(),b={...a,id:'learner-b'};
  f.resolve('/api/workspace',{...workspace([a,b]),mode:'account-linked'});await tick();
  assert.match(f.element('student-detail').innerHTML,/student-invite/);const creating=f.click('student-invite');await tick();
  assert.equal(f.element('student-invite-dialog').open,true);assert.deepEqual(JSON.parse(JSON.stringify(f.requests.find(r=>r.url==='/api/teacher/invites').payload)),{learnerId:'learner-a'});
@@ -155,10 +157,47 @@ for(const invalidation of ['learner-change','permission-loss','already-linked'])
  assert.equal(f.element('student-invite-code').value,'');assert.equal(f.element('student-invite-dialog').open,false);
 });
 test('account invite stays in the dialog through polling without browser storage',async()=>{
- const f=fixture({account:true}),student=learner({accountConnected:false,connectedAt:null,sharing:{enabled:false,revision:0}}),snapshot={...workspace([student]),mode:'account-linked'};
+ const f=fixture({account:true}),student=unlinked(),snapshot={...workspace([student]),mode:'account-linked'};
  f.resolve('/api/workspace',snapshot);await tick();const creating=f.click('student-invite');f.resolve('/api/teacher/invites',{invite:{token:'b'.repeat(32),expiresAt:'2026-10-12T00:00:00Z'}});await creating;
  assert.equal(f.element('student-invite-code').value,'b'.repeat(32));const polling=f.poll();f.resolve('/api/workspace',snapshot);await polling;
  assert.equal(f.element('student-invite-code').value,'b'.repeat(32));assert.equal(f.element('student-invite-dialog').open,true);assert.equal(f.storage.size,0);
+});
+// 단추는 revoked가 아니라 머리 줄과 같은 「계정 연결 전」을 따른다. 연결이 해제됐거나, 이미 이어졌거나(공유를 껐어도), 연결 여부를 모르는 학생에게는 뜨지 않고 눌러도 코드를 만들지 않는다.
+for(const [label,student,offered,heading] of [
+ ['unconnected',unlinked(),true,/WORLD 계정 연결 전/],
+ ['connection-revoked',unlinked({accountConnectionStatus:'revoked'}),false,/WORLD 연결 해제/],
+ ['connected-shared',learner({accountConnected:true,revoked:false}),false,/WORLD 계정 연결됨 · 학습 공유 중/],
+ ['connected-unshared',learner({accountConnected:true,revoked:false,sharing:{enabled:false,revision:1}}),false,/WORLD 계정 연결됨 · 학습 공유 안 함/],
+ ['revoked-without-connection-flag',learner({revoked:true,connectedAt:null,sharing:{enabled:false,revision:1}}),false,/WORLD 연결 해제/],
+ ['connection-unknown',{id:'learner-a',name:'연결 학생',skills:[],observations:[]},false,null]
+])test('account invite is offered only to a learner before account connection: '+label,async()=>{
+ const f=fixture({account:true});f.resolve('/api/workspace',{...workspace([student]),mode:'account-linked'});await tick();
+ assert.equal(/id="student-invite"/.test(f.element('student-detail').innerHTML),offered);if(heading)assert.match(f.element('student-detail').innerHTML,heading);
+ const creating=f.click('student-invite');await tick();
+ assert.equal(f.requests.some(row=>row.url==='/api/teacher/invites'),offered);assert.equal(f.element('student-invite-dialog').open===true,offered);
+ if(offered){f.resolve('/api/teacher/invites',{invite:{token:'c'.repeat(32),expiresAt:'2026-10-12T00:00:00Z'}});await creating;assert.equal(f.element('student-invite-code').value,'c'.repeat(32));}else await creating;
+});
+// 서버는 거절 까닭을 코드 그대로(LEARNER_ALREADY_LINKED 등) 글로 보낸다. 창에는 코드나 영어 오류 대신 할 일이 보이고(다시 눌러도 같은 거절은 확인 안내), 사람 말은 그대로 보인다.
+const unavailable=/^지금은 이 학생의 연결 코드를 만들 수 없어요\. 반 목록을 새로고침한 뒤에도 그대로면 기관에 확인해 주세요\.$/,retry=/^연결 코드를 만들지 못했어요\. 창을 닫고 다시 만들어 주세요\.$/;
+for(const [message,expected] of [['LEARNER_ALREADY_LINKED',/^이미 계정이 연결된 학생이라 연결 코드를 만들 수 없어요\. 계속 「계정 연결 전」으로 보이면 기관에 학생 계정 상태를 확인해 주세요\.$/],['INVITE_UNAVAILABLE',unavailable],['FORBIDDEN',unavailable],['INVALID_INVITE',retry],['Failed to fetch',retry],['담당 수업을 확인하지 못했어요.',/^담당 수업을 확인하지 못했어요\.$/]])test('a refused account invite shows what to do, not the server code: '+message,async()=>{
+ const f=fixture({account:true});f.resolve('/api/workspace',{...workspace([unlinked()]),mode:'account-linked'});await tick();
+ const creating=f.click('student-invite');await tick();f.reject('/api/teacher/invites',Object.assign(Error(message),{code:'TEACHING_CLASSROOM',status:409}));await creating;
+ assert.match(f.element('student-invite-error').textContent,expected);assert.equal(f.element('student-invite-expiry').textContent,'');assert.equal(f.element('student-invite-code').value,'');assert.equal(f.element('student-invite-dialog').open,true);
+});
+test('a malformed account invite answer keeps the code field empty and asks for a new code',async()=>{
+ const f=fixture({account:true});f.resolve('/api/workspace',{...workspace([unlinked()]),mode:'account-linked'});await tick();
+ const creating=f.click('student-invite');await tick();f.resolve('/api/teacher/invites',{invite:{token:'short',expiresAt:'2026-10-12T00:00:00Z'}});await creating;
+ assert.equal(f.element('student-invite-code').value,'');assert.equal(f.element('student-invite-copy').disabled,true);assert.equal(f.element('student-invite-error').textContent,'연결 코드를 받지 못했어요. 창을 닫고 다시 만들어 주세요.');
+});
+// 계정 포털은 반 학생 모두의 공유 상태를 iframe에 알린다. 연결 전 학생은 포털 값(connected:false, revoked:true)으로 걸러져도 코드를 받을 수 있고
+// 열린 창과 코드가 그대로이며, 학생이 반 명부에서 빠지면 창과 코드가 닫힌다.
+test('portal sharing keeps an unconnected learner invitable and closes the invite only when the learner leaves the roster',async()=>{
+ const f=fixture({account:true});f.resolve('/api/workspace',{...workspace([unlinked()]),mode:'account-linked'});await tick();
+ const creating=f.click('student-invite');f.resolve('/api/teacher/invites',{invite:{token:'d'.repeat(32),expiresAt:'2026-10-12T00:00:00Z'}});await creating;
+ assert.equal(f.view().applySharing({classId:'class-local',learners:[{id:'learner-a',revision:1,enabled:false,connected:false,revoked:true}]}),true);
+ assert.equal(f.element('student-invite-dialog').open,true);assert.equal(f.element('student-invite-code').value,'d'.repeat(32));assert.match(f.element('student-detail').innerHTML,/id="student-invite"/);
+ assert.equal(f.view().applySharing({classId:'class-local',learners:[]}),true);
+ assert.equal(f.element('student-invite-dialog').open,false);assert.equal(f.element('student-invite-code').value,'');assert.doesNotMatch(f.element('student-detail').innerHTML,/id="student-invite"/);
 });
 
 for(const failure of ['network','503','forbidden','account-changed'])test('course draft lifecycle distinguishes '+failure,async()=>{
