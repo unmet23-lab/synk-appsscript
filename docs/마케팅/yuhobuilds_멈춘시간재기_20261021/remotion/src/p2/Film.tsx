@@ -1,7 +1,7 @@
 // yuhobuilds 「42초 중 24초가 멈춰 있었다」(10-21 둘째 편). 기획·콘티는 ../../기획.md. 움직임 문법은 같은 날 첫째 편(「트렌디하게」 편 p1)과 같다.
 //  · 판(창) 자리는 한 편 내내 같고 내용은 컷. 판은 늘 천천히 밀린다(프레임마다 0.07%, 1.08에서 멈춤).
 //  · 머리글은 줄 단위 올림 하나, 강조는 처음부터 칠한 낱말 하나(Type.tsx).
-//  · 근거는 전부 실제: 음식 사진 편 고치기 전(v3 휴대폰판)·고친 뒤(공개 올림판) 화면, tools/정지구간.js와 같은 셈의 0.5초 칸 값·출력(측정칸.mjs).
+//  · 근거는 전부 실제: 음식 사진 편 고치기 전·고친 뒤 화면(둘 다 v3·v4 휴대폰판 — 같은 압축), tools/정지구간.js와 같은 셈의 0.5초 칸 값·출력(측정칸.mjs).
 //  · 띠에서 「거의 멈춘 칸」만 버터, 나머지는 회색 — 강조색은 한 뜻으로만.
 import { Audio } from '@remotion/media';
 import React from 'react';
@@ -156,7 +156,7 @@ const TerminalView: React.FC<{ f: number; sceneStart: number }> = ({ f, sceneSta
   const scanned = Math.max(0, Math.min(B.length, Math.floor(((f - scanAt) / scanLen) * B.length)));
   const outAt = scanAt + scanLen + 2;
   const step = 3;
-  const sumK = on(f, at('b1', '쟀어요') - 2);
+  const sumK = on(f, at('b1', '측정') - 2);
   return (
     <>
       <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: BAR, background: '#1C1B19', borderBottom: '1px solid #2E2D2A' }}>
@@ -268,28 +268,41 @@ const FreezeVoice: React.FC<{ f: number }> = ({ f }) => {
 };
 
 /** 6·7. 전·후 나란히(같은 순간). */
-const Pair: React.FC<{ f: number; sceneStart: number; from: number; label: string; kAt: number }> = ({ f, sceneStart, from, label, kAt }) => {
+/** cells: 이 장면이 재생하는 구간의 0.5초 칸(시작 칸 번호, 6칸)을 두 반쪽 아래 띠로 붙인다 — 눈으로 갈리지 않는 「당기기」를 잰 값으로 보인다(Fable 완성본 검수 P2-1). */
+const PAIR_CELLS = 6;
+const Pair: React.FC<{ f: number; sceneStart: number; from: number; label: string; kAt: number; cells?: number }> = ({ f, sceneStart, from, label, kAt, cells }) => {
   const half = W / 2;
   const k = on(f, kAt - 2);
   const crop: Crop = { x: 0, y: 300, s: 0.44 };
+  const band = cells === undefined ? 0 : 76;
+  const playing = Math.floor((from + (f - sceneStart) / 30) * 2); // 지금 재생 중인 원본 칸
+  const upto = cells === undefined ? 0 : Math.max(0, Math.min(PAIR_CELLS, playing - cells + 1));
   const tag = (text: string, good: boolean): React.ReactNode => (
-    <div style={{ position: 'absolute', bottom: 16, left: 14, padding: '5px 14px', borderRadius: 12, background: good && k > 0.5 ? INK : '#1C1B19', color: good && k > 0.5 ? '#141412' : INK, fontFamily: KO, fontWeight: 700, fontSize: 24 }}>{text}</div>
+    <div style={{ position: 'absolute', bottom: band ? 19 : 16, left: 14, padding: '5px 14px', borderRadius: 12, background: good && k > 0.5 ? INK : '#1C1B19', color: good && k > 0.5 ? '#141412' : INK, fontFamily: KO, fontWeight: 700, fontSize: 24 }}>{text}</div>
   );
+  const strip = (values: readonly number[]) =>
+    cells === undefined ? null : (
+      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: band, background: '#141412', borderTop: '1px solid #2A2926' }}>
+        <Strip values={values.slice(cells, cells + PAIR_CELLS)} upto={upto} w={half - 1 - 90 - 22} h={36} left={90} top={20} dark />
+      </div>
+    );
   return (
     <>
       <div style={{ position: 'absolute', left: 0, top: 0, width: half - 1, height: H, overflow: 'hidden' }}>
-        <Clip src="clip/before.mp4" from={from} sceneAt={sceneStart} crop={crop} w={half - 1} top={BAR} h={H - BAR} />
+        <Clip src="clip/before.mp4" from={from} sceneAt={sceneStart} crop={crop} w={half - 1} top={BAR} h={H - BAR - band} />
+        {strip(B)}
         {tag('전', false)}
       </div>
       <div style={{ position: 'absolute', left: half - 1, top: BAR, width: 2, height: H - BAR, background: '#1C1B19' }} />
       <div style={{ position: 'absolute', left: half + 1, top: 0, width: half - 1, height: H, overflow: 'hidden' }}>
-        <Clip src="clip/after.mp4" from={from} sceneAt={sceneStart} crop={crop} w={half - 1} top={BAR} h={H - BAR} />
+        <Clip src="clip/after.mp4" from={from} sceneAt={sceneStart} crop={crop} w={half - 1} top={BAR} h={H - BAR - band} />
+        {strip(A)}
         {tag('후', true)}
         <div style={{ position: 'absolute', left: 0, right: 0, top: BAR, bottom: 0 }}>
           <Ring k={k} r={0} dark />
         </div>
       </div>
-      <ClipBar text={label} />
+      <ClipBar text={label} right={cells === undefined ? undefined : '노랑 = 거의 멈춘 0.5초'} />
     </>
   );
 };
@@ -400,13 +413,13 @@ const Content: React.FC<{ k: K; f: number; sceneStart: number }> = ({ k, f, scen
       return <FreezeVoice f={f} />;
     case 'f1':
       // 06 「결과 1」(20.1초~): 전은 사진이 그대로, 후는 같은 사진이 천천히 당겨진다(Opus 완성본 검수 P1-1 — 12.6초에서 시작하면 1.4초 뒤 요청문 장면으로 넘어갔다)
-      return <Pair f={f} sceneStart={sceneStart} from={20.1} label="음식 사진 편 · 같은 순간" kAt={at('f1', '당기기')} />;
+      return <Pair f={f} sceneStart={sceneStart} from={20.1} label="음식 사진 편 · 같은 순간" kAt={at('f1', '당기기')} cells={40} />;
     case 'f2':
       // 07 「확인 셋」: 전은 작은 칸 셋이 그대로, 후는 「양」·「재료」·「색」마다 그 자리로 당겨 들어간다
       return <Pair f={f} sceneStart={sceneStart} from={24.6} label="음식 사진 편 · 같은 순간" kAt={at('f2', '한')} />;
     case 'f3':
-      // 전은 11.6~11.9초에 글자 없는 파란 화면, 후는 같은 순간 이미 「만들지 말고,」와 사진(Opus 완성본 검수 P2-2)
-      return <Pair f={f} sceneStart={sceneStart} from={10.6} label="음식 사진 편 · 장면 사이" kAt={at('f3', '빈')} />;
+      // 22.3초~: 앞 1초는 형광펜 없는 06 「결과 1」, 고치기 전 23.3~23.5초 빈 파란 화면이 「빈 화면은」과 겹친다(Fable 완성본 검수 P2-2 — 10.6초~는 02 인용 카드의 노란 형광펜이 보였다)
+      return <Pair f={f} sceneStart={sceneStart} from={22.3} label="음식 사진 편 · 장면 사이" kAt={at('f3', '빈')} />;
     case 'two':
       return <TwoStrips f={f} />;
     case 'req':
@@ -459,7 +472,7 @@ type Head = { at: number; lines: string[]; accent?: string; size?: number };
 const HEADS = (): Head[] => [
   { at: -1, lines: ['42초 쇼츠를 재 보니,', '24초가 멈춰 있었어요'], accent: '24초가', size: 74 },
   { at: VO.h2 - 3, lines: ['멈춘 시간 재는 법,', '고치는 셋까지'], accent: '재는 법' },
-  { at: VO.b1 - 3, lines: ['0.5초마다', '화면 변화를 쟀어요'], accent: '0.5초마다' },
+  { at: VO.b1 - 3, lines: ['0.5초마다', '화면 변화를 측정했어요'], accent: '0.5초마다' },
   { at: VO.b2 - 3, lines: ['기준 둘: 15% 아래,', '1.5초 넘는 정지 없게'], accent: '15%', size: 74 },
   { at: VO.b3 - 3, lines: ['만들 땐 몰라요,', '목소리가 계속 나오니까'], accent: '몰라요', size: 74 },
   { at: VO.f1 - 3, lines: ['하나, 멈춘 사진은', '천천히 당기기'], accent: '당기기' },

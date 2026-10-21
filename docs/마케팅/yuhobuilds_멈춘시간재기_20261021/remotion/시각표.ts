@@ -2,7 +2,7 @@
 import { at, lineEnd, ORDER, S, TOTAL, VO } from './src/p2/time';
 for (const id of ORDER) console.log(id.padEnd(4), (VO[id] / 30).toFixed(2), '→', (lineEnd(id) / 30).toFixed(2));
 console.log('끝 카드', (S.end / 30).toFixed(2), '· 전체', (TOTAL / 30).toFixed(2));
-console.log('「쟀어요」', (at('b1', '쟀어요') / 30).toFixed(2), '「몰랐어요」', (at('b3', '몰랐') / 30).toFixed(2), '「이 초」', (at('b5', '이', 7) / 30).toFixed(2));
+console.log('「측정」', (at('b1', '측정') / 30).toFixed(2), '「몰랐어요」', (at('b3', '몰랐') / 30).toFixed(2), '「이 초」', (at('b5', '이', 7) / 30).toFixed(2));
 
 // --srt: 받아쓰기 대조용 기대 자막(out/expected-ko.srt). 글은 계획.json의 말 그대로.
 if (process.argv.includes('--srt')) {
