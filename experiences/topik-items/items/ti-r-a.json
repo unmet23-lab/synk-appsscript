@@ -361,7 +361,7 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -405,6 +405,28 @@
           "rev": 2,
           "hash": "d2e4ddf27767dd99",
           "notes": "expand-reading 판정대로 — 난도 1 → 2·겨눈 급 1 → 2(네 문장·정보 넷에 「비가 오면」 조건이 있어 §3의 2칸). 글·보기·해설은 그대로."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "조건(-(으)면)을 어긋나게 바꾼 4번이 유일한 정답이에요. 꼴·급·해설 세 언어가 모두 기준에 맞아서 그대로 써도 돼요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T03:13:33.462Z",
+          "rev": 2,
+          "hash": "d2e4ddf27767dd99",
+          "packet": "fix-r1-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "문자 메시지의 조건문을 이해해 불일치하는 보기를 고르는 문항으로 모든 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T03:13:33.462Z",
+          "rev": 2,
+          "hash": "d2e4ddf27767dd99",
+          "packet": "fix-r1-reading"
         }
       ]
     },
@@ -447,7 +469,7 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -491,6 +513,28 @@
           "rev": 2,
           "hash": "c168ff3570674276",
           "notes": "expand-reading 판정대로 — 대표 능력 ko.reading.condition → ko.reading.detail(정답을 가르는 것이 요일별로 문 닫는 시각이고 「만」은 -(으)면 조건이 아님). 글·보기·해설은 그대로."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고 오답이 고르며, 「만」을 짚는 해설도 세 언어로 정확합니다. 1급 안내문형 문항으로 그대로 쓸 수 있습니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T03:13:33.462Z",
+          "rev": 2,
+          "hash": "c168ff3570674276",
+          "packet": "fix-r1-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "박물관 이용 안내문의 세부 정보(요일별 운영 시간)를 파악하는 문항으로 출제 기준에 잘 맞음.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T03:13:33.462Z",
+          "rev": 2,
+          "hash": "c168ff3570674276",
+          "packet": "fix-r1-reading"
         }
       ]
     },
@@ -533,7 +577,7 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -577,6 +621,28 @@
           "rev": 2,
           "hash": "d7b12917dffe368c",
           "notes": "expand-reading 판정대로 — 대표 능력 ko.reading.condition → ko.reading.detail(정답을 가르는 것이 권수). 난도 1은 판정대로 둠(맞지 않는 것 고르기는 정보 셋 이상이 자리의 꼴). 글·보기·해설은 그대로."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 1급 수준·자리 꼴·해설 세 언어가 모두 맞는 도서관 안내문 문항으로, 그대로 써도 됩니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T03:13:33.462Z",
+          "rev": 2,
+          "hash": "d7b12917dffe368c",
+          "packet": "fix-r1-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "도서관 대출 안내문의 세부 정보를 묻는 1급 문항으로 모든 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T03:13:33.462Z",
+          "rev": 2,
+          "hash": "d7b12917dffe368c",
+          "packet": "fix-r1-reading"
         }
       ]
     },
@@ -619,7 +685,7 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -652,6 +718,28 @@
           "rev": 2,
           "hash": "e73c6c75bb31a246",
           "notes": "expand-reading 판정대로 — (두 검수 일치) 대표 능력 ko.reading.condition → ko.reading.detail(정답을 가르는 것이 신청 마감 날짜). 글·보기·해설은 그대로."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 3번(11월에도 신청을 받습니다)이 「10월 31일까지」와 어긋나 유일하다. 오답은 안내문 정보와 정확히 맞고, 꼴·해설·세 언어 모두 바르다. 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T03:13:33.462Z",
+          "rev": 2,
+          "hash": "e73c6c75bb31a246",
+          "packet": "fix-r1-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "사진 학원 모집 안내문의 세부 정보를 파악하는 문항으로 모든 검수 기준을 통과함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T03:13:33.462Z",
+          "rev": 2,
+          "hash": "e73c6c75bb31a246",
+          "packet": "fix-r1-reading"
         }
       ]
     },
@@ -692,7 +780,7 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -736,6 +824,28 @@
           "rev": 2,
           "hash": "6631e02e22c22460",
           "notes": "expand-reading 판정대로 — 「점심 시간」을 글·보기·해설 세 언어·메모 모두 「점심시간」으로 붙여 씀, 보기 ①을 「지금 점심시간은 오후 3시에 끝납니다.」로 정답 보기와 꼴을 맞춤, 난도 1 → 2·겨눈 급 1 → 2(바뀐 정보·정보 셋 이상)."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "The answer is unique, and the form, level and skill all fit. The only issue is minor wording in the Mongolian explanation, so this passes.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T03:13:33.462Z",
+          "rev": 2,
+          "hash": "6631e02e22c22460",
+          "packet": "fix-r1-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "식당 점심시간 변경 안내문을 읽고 맞지 않는 정보를 찾는 문항으로, 정답 유일성·오답 매력도·해설 번역 모두 우수함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T03:13:33.462Z",
+          "rev": 2,
+          "hash": "6631e02e22c22460",
+          "packet": "fix-r1-reading"
         }
       ]
     },
@@ -1428,7 +1538,7 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -1472,6 +1582,28 @@
           "rev": 2,
           "hash": "f2c51f4e0ad676fa",
           "notes": "expand-reading 판정대로 — 글에 없는 「저녁」을 쓴 보기 ④를 순서를 바꾼 「점심을 먹고 친구와 사진을 찍었습니다.」로, 정답 ③을 글을 바꿔 쓴 「결혼식이 끝나고 친구와 사진을 찍었습니다.」로 고치고, 해설 세 언어·메모에 점심이 사진 뒤라는 근거를 더함."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "순서를 묻는 1급 내용 일치 문항으로, 정답이 하나뿐이고 오답 셋은 순서만 바꾼 그럴듯한 보기예요. 해설 세 언어도 같은 근거를 바르게 말해서 그대로 써도 돼요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T03:13:33.462Z",
+          "rev": 2,
+          "hash": "f2c51f4e0ad676fa",
+          "packet": "fix-r1-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "결혼식 방문 일화를 읽고 행동 순서를 파악하는 1급 읽기 문항으로, 모든 검수 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T03:13:33.462Z",
+          "rev": 2,
+          "hash": "f2c51f4e0ad676fa",
+          "packet": "fix-r1-reading"
         }
       ]
     },
@@ -1839,7 +1971,7 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -1872,6 +2004,28 @@
           "rev": 2,
           "hash": "844b6c73510dd8ea",
           "notes": "expand-reading 판정대로 — (두 검수 일치) 대표 능력 ko.reading.condition → ko.reading.detail(글에 -(으)면 조건이 없고 정답을 가르는 것이 「토요일에만」이라는 요일 한정 — 두 검수가 함께 든 세부로). 글·보기·해설은 그대로."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답이 그럴듯하며, 1급 앞쪽 난도와 43번 꼴에 맞습니다. 해설 세 언어도 일치하므로 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T03:13:33.462Z",
+          "rev": 2,
+          "hash": "844b6c73510dd8ea",
+          "packet": "fix-r1-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "보조사 '만'을 활용해 요일별 세부 정보를 묻는 1급 읽기 문항으로, 완성도가 높음.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T03:13:33.462Z",
+          "rev": 2,
+          "hash": "844b6c73510dd8ea",
+          "packet": "fix-r1-reading"
         }
       ]
     },
@@ -1914,7 +2068,7 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -1947,6 +2101,28 @@
           "rev": 2,
           "hash": "54c18ddfbe2f422a",
           "notes": "expand-reading 판정대로 — (두 검수 일치) 대표 능력 ko.reading.condition → ko.reading.detail(정답을 가르는 것이 「다음 주 금요일까지」라는 때 정보). 글·보기·해설은 그대로."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답이 글의 말을 바꿔 그럴듯하며, 1급 수준과 해설 세 언어가 모두 바릅니다. 그대로 통과합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T03:13:33.462Z",
+          "rev": 2,
+          "hash": "54c18ddfbe2f422a",
+          "packet": "fix-r1-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "조사 '까지'를 통해 체류 기간과 요일 세부 정보를 파악하는 1급 읽기 문항으로, 모든 기준을 통과함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T03:13:33.462Z",
+          "rev": 2,
+          "hash": "54c18ddfbe2f422a",
+          "packet": "fix-r1-reading"
         }
       ]
     },
@@ -2121,7 +2297,7 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -2165,6 +2341,28 @@
           "rev": 2,
           "hash": "f218cc6c3aec0c56",
           "notes": "expand-reading 판정대로 — 해설 세 언어의 셋째 문장(앞 문장에 「그래서/That is why/Тиймээс」로 잘못 이은 인과)을 보기 ③의 직접 근거 「제가 책을 읽고 아들은 들어요」를 짚는 문장으로 바꿈."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고, 오답이 글과 분명히 어긋나요. 1급 난도와 부정 이해 능력에 맞고, 해설 세 언어가 같은 근거를 말해요. 그대로 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T03:13:33.462Z",
+          "rev": 2,
+          "hash": "f218cc6c3aec0c56",
+          "packet": "fix-r1-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "1급 난도 1에 맞는 자연스럽고 깔끔한 내용 일치(부정 이해) 문항입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T03:13:33.462Z",
+          "rev": 2,
+          "hash": "f218cc6c3aec0c56",
+          "packet": "fix-r1-reading"
         }
       ]
     },

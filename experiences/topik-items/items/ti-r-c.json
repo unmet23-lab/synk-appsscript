@@ -175,7 +175,7 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -219,6 +219,28 @@
           "rev": 2,
           "hash": "1efc7e63e11591ce",
           "notes": "expand-reading 판정대로 — 몽골어 해설에 중심 생각의 내용(「бусад хүмүүстэй хамт дасгал хийх нь сайн」)을 넣고, ③을 설명하는 끝 문장에 서술어(「гэсэн тул ③ буруу」)를 붙여 완결함."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "바뀌기 전과 뒤의 대비로 중심 생각을 분명히 드러낸 2급 중심 생각 문항이다. 정답이 하나뿐이고 오답이 그럴듯하며 세 언어 해설도 맞아 통과로 판정한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T03:13:33.462Z",
+          "rev": 2,
+          "hash": "1efc7e63e11591ce",
+          "packet": "fix-r1-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "중심 생각 파악 유형(TI-R-46)에 맞게 지문, 보기, 해설이 모두 완성도 높게 작성되어 통과(pass) 판정함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T03:13:33.462Z",
+          "rev": 2,
+          "hash": "1efc7e63e11591ce",
+          "packet": "fix-r1-reading"
         }
       ]
     },
@@ -1394,7 +1416,7 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -1438,6 +1460,28 @@
           "rev": 2,
           "hash": "17f255aad65cc636",
           "notes": "expand-reading 판정대로 — 몽골어 해설의 「хаягаа」(자기 주소로 읽힘)를 「найзынхаа хаягийг」로 두 곳, 「шуудан」을 「шуудангийн газар」로 고치고, 영어·한국어 해설도 「친구의 주소」로 맞춤."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 단서(그곳·그래서·마지막으로)가 분명한 순서 문항이에요. 보기 배치와 세 언어 해설도 바라서 그대로 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T03:13:33.462Z",
+          "rev": 2,
+          "hash": "17f255aad65cc636",
+          "packet": "fix-r1-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "문장 순서 배열 유형(TI-R-57)의 지시어·접속어 단서와 일의 차례가 명확하여 통과(pass) 판정함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T03:13:33.462Z",
+          "rev": 2,
+          "hash": "17f255aad65cc636",
+          "packet": "fix-r1-reading"
         }
       ]
     },
