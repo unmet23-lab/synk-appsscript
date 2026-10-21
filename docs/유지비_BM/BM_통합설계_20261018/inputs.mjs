@@ -442,7 +442,7 @@ export default {
   },
 
   funding: {
-    ownCashKRW: 40_000_000, // [확정 10-14] 자기자금 4,000만원
+    ownCashKRW: 90_000_000, // [확정 10-21] 자기자금 9,000만원(유호님 10-21, 10-14의 4,000만원에서 바뀜)
     modooActivityKRW: { month: '2026-11', krw: 2_000_000 }, // [확정] 모두의창업 1R 초기 활동비
     grant: { contractMonth: '2027-06', spendFrom: '2027-07', spendMonths: 8, selfShare: 0.3, substituteShare: 0.4 }, // [가정] 정부 사업화 자금 — 몽골 교실에는 못 씀
     // [아르곤 10-18] 지원금은 전용 통장에 묶여 건별로 쓴다 → 「가용 현금」에서 뺀다.
