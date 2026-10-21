@@ -1,6 +1,7 @@
 # 지유 스킨케어 광고 · 본편과 훅 판 편집(영상판). 컷 길이·엔드카드·소리는 이미지콘티_가편집.py와 같고, 정지 그림 자리에 영상을 넣는다.
 #   python 본편_편집.py [본편 훅B 훅C] [--비율 9:16,4:5,1:1] [--판 v1] [--색감 필름아침] [--부분보정 [0.2]] [--남기기 폴더] [--마스크만] [--컷7b]
-#                       [--세트2 [--손]]   (--손: 손에 든 새 병 마지막 장면 + 로고 층 엔드카드 + 새 병 컷 2 · 6, 10-20)
+#                       [--세트2 [--손] [--미소]]   (--손: 손에 든 새 병 마지막 장면 + 로고 층 엔드카드 + 새 병 컷 2 · 6, 10-20 ·
+#                       --미소: 얼굴 컷 1 · 4 · 5 · 훅 C를 입 다문 옅은 미소 판으로, 10-21 v6)
 #   --컷7b: 컷 7 자리에 사람을 작게 · 왼쪽에 둔 새 컷 7(영상_H3.py 7b)을 넣고 엔드카드를 9:16 글자 자리(y 269~1248 · x 65~920) 안에 둔다(10-19)
 #   --색감: PULSE 공용 색감(../색감/색감.py LOOKS). 컷을 자른 뒤 입히고 병 접사는 색조만, 엔드카드 팩샷·글자는 그 위에 그대로(10-19)
 #   --부분보정: 얼굴이 나오는 사람 컷(1·4·5·7·훅 C)은 색감 뒤에 「피부손」 마스크(얼굴·목 + 볼에 댄 손·팔) 안만 노출을 올린다
@@ -170,6 +171,29 @@ def hand_end(im, ratio, t):
     base = im.convert("RGBA")
     base.alpha_composite(lay, (0, round((1 - e) * HAND_RISE)))
     return base.convert("RGB")
+
+
+# 미소 판(--미소, --세트2 뒤에, 10-20 유호님 v5b를 보고 「전반적인 모델의 표정이 좀 짜증나 있는 것 같아. 마지막 부분은 괜찮은데」):
+# 얼굴 컷 네 장(컷 1 · 4 · 5 · 훅 C)을 표정만 입 다문 옅은 미소로 고친 시작 그림(키프레임_세트2/표정_v6)에서 다시 뽑은 H3
+# (<컷>_세트2미소, 영상_다듬기.py <컷>s2m)로 바꾼다. 구도는 세트 2 그림 그대로라 자르기 자리도 세트 2 값을 그대로 쓴다
+S2M = {"컷1_세트2": "컷1_세트2미소", "컷4_세트2": "컷4_세트2미소", "컷5_세트2": "컷5_세트2미소", "훅C_세트2": "훅C_세트2미소"}
+
+
+def use_smile():
+    global FACE_CUTS
+
+    def sm(src):
+        kind, name = src.split(":")
+        return f"{kind}:{S2M.get(name, name)}" if kind == "사람" else src
+    for e in EDITS.values():
+        e["head"] = [(a, b, sm(s)) for a, b, s in e["head"]]
+    BODY[:] = [(a, b, sm(s)) for a, b, s in BODY]
+    for old, new in S2M.items():
+        STILL[new] = os.path.join(K2, "표정_v6", f"{old.split('_')[0]}_표정a.jpg")
+        for table in (CROP_Y["4:5"], CROP_Y["1:1"]):
+            if old in table:
+                table[new] = table[old]
+    FACE_CUTS = FACE_CUTS + tuple(S2M.values())
 
 
 def numbered(folder, prefix=""):
@@ -420,6 +444,10 @@ if __name__ == "__main__":
         use_set2()
     if "--손" in args:  # 손에 든 새 병 마지막 장면 + 로고 층 엔드카드 + 새 병 컷(세트 2 위에)
         use_hand()
+    if "--미소" in args:  # 얼굴 컷 네 장을 입 다문 옅은 미소 판으로(세트 2 위에)
+        if "--세트2" not in args:
+            raise SystemExit("--미소는 --세트2와 같이 쓴다(세트 2 컷 이름을 미소 판으로 바꾼다)")
+        use_smile()
     edits = [a for a in args if a in EDITS] or ["본편"]
     if "--마스크만" in args:  # 여러 판을 나란히 돌리기 전에 마스크만 한 번(같은 폴더에 동시에 쓰지 않게)
         for e in edits:

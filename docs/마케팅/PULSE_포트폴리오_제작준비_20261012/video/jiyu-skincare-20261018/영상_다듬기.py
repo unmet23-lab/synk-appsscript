@@ -2,6 +2,7 @@
 # 로컬 SeedVR2-3B fp16으로 1080×1920까지 키운다(브리프 1절 업스케일).
 #   python 영상_다듬기.py 1 4 ...      → Documents/synk-vendor/jiyu-skincare-20261018/영상_H3/업/<컷>/<컷>/<컷>_000000.png …
 #   python 영상_다듬기.py --자르기만 1  → 구간만 잘라 영상_H3/구간/<컷>.mp4 (업스케일 전 확인용)
+#   python 영상_다듬기.py --전체에서 1s2m  → 미리 키운 <컷>전체 124장에서 구간만 업/<컷>/<컷>/로 옮김(GPU 안 씀)
 # SeedVR2는 ComfyUI 노드의 CLI를 따로 돌린다(현장 노트 영상_ffmpeg_자막.md 「ComfyUI 노드 패키지를 남이 쓰는 ComfyUI 환경에 깔지 않고」).
 # 설정은 10-18 다른 세션이 1080p 영상에 쓴 것과 같다: batch 33 · 균일 배치 · 시간 겹침 3 · VAE 타일.
 import os
@@ -76,6 +77,17 @@ WINDOWS["7hs2전체"] = ("컷7손_세트2_s42_끝고정.mp4", 0, 124)
 for _c, _n in (("1", "컷1"), ("4", "컷4"), ("5", "컷5"), ("C", "훅C")):
     NAMES[f"{_c}s2m전체"] = f"{_n}_세트2미소_전체"
     WINDOWS[f"{_c}s2m전체"] = (f"{_n}_세트2미소_s42.mp4", 0, 124)
+# 미소 판 구간(10-21 영상 봄, 「python 영상_다듬기.py --전체에서 1s2m …」으로 전체 폴더에서 옮긴다):
+# 1s2m: 0~12번 거의 정지 → 0.5~1.25초 고개 · 시선을 렌즈로 → 입 다문 미소. 1.5초부터 고개를 살짝 기울이며 왼쪽으로 옮겨 간다
+#   (얼굴 자리 768 기준 1.5초 −8px → 2.17초 −69px, 옛 세트 2는 −21px · 표정은 그대로). 0번 → 1번이 튀고(앞 프레임 차 5.1)
+#   1~8번은 정지라 옛 자리 6~53(끝을 당기면 앞 정지가 길어진다)
+# 4s2m: 1.0~2.25초에 오른쪽 올리브 가지 · 꽃병이 또 자라난다(옛 세트 2와 같은 자리) → 다 생긴 뒤 48~95를 옮기고 컷4_가지지우기.py --미소
+# 5s2m: 0.58~0.75초 깜빡 → 0.83초에 다 뜸, 2.8초부터 천천히 눈을 감아 3.0초에 다 감김 → 뜬 눈만 20~67
+# Cs2m: 0~0.7초 수건을 댄 채 내려다봄(0~16번은 거의 정지) → 0.75~1.1초 눈을 뜨며 렌즈 → 1.25~2.5초 렌즈를 본 채 입 다문 미소로
+#   고개가 조금 올라옴 → 3.0초부터 고개를 기울이며 왼쪽으로(얼굴 자리 −24px). 옛 자리 12~59: 첫 0.2초 정지 → 0.5초 눈 뜸 → 1.25초 눈 맞춤
+for _c, _n, _start in (("1", "컷1", 6), ("4", "컷4", 48), ("5", "컷5", 20), ("C", "훅C", 12)):
+    NAMES[f"{_c}s2m"] = f"{_n}_세트2미소"
+    WINDOWS[f"{_c}s2m"] = (f"{_n}_세트2미소_s42.mp4", _start, 48)
 
 ASCII = r"C:\SYNK-LoRA\work\jiyu_up"  # SeedVR2(cv2.imwrite)는 한글 경로에 PNG를 못 쓴다 — 「저장함」이라고만 남기고 0장(10-19)
 ASCII_NAME = {"1": "cut1", "3": "cut3", "4": "cut4", "5": "cut5", "7": "cut7", "7b": "cut7b", "7b전체": "cut7b_all", "C": "hookC",
@@ -113,9 +125,32 @@ def upscale(c, src):
     return r.returncode == 0 and len(frames) > 0
 
 
+def from_full(c):
+    """<컷>전체로 키워 둔 124장 가운데 WINDOWS[c] 구간을 업/<컷>/<컷>/<컷>_000000.png …로 복사한다(전체 폴더는 그대로).
+    새 시각으로 복사해 마스크 캐시(원본 지문)가 구간이 바뀐 것을 알아보게 한다."""
+    import glob
+    import shutil
+    _, start, n = WINDOWS[c]
+    full = NAMES[c + "전체"]
+    src = sorted(glob.glob(os.path.join(UP, full, full, f"{full}_*.png")))
+    if len(src) < start + n:
+        raise SystemExit(f"{full}: {len(src)}장이라 {start}~{start + n - 1}번을 못 옮김")
+    out = os.path.join(UP, NAMES[c], NAMES[c])
+    os.makedirs(out, exist_ok=True)
+    for f in glob.glob(os.path.join(out, f"{NAMES[c]}_*.png")):  # 구간을 바꿔 다시 옮길 때 옛 장이 남지 않게
+        os.remove(f)
+    for i, f in enumerate(src[start:start + n]):
+        shutil.copyfile(f, os.path.join(out, f"{NAMES[c]}_{i:06d}.png"))
+    print(f"{NAMES[c]}: {full}의 {start}~{start + n - 1}번 → {out}", flush=True)
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     args = sys.argv[1:]
+    if "--전체에서" in args:  # 미소 판: 키워 둔 전체 폴더에서 구간만 옮긴다(GPU 안 씀)
+        for c in [a for a in args if not a.startswith("--")]:
+            from_full(c)
+        raise SystemExit
     only_cut = "--자르기만" in args
     for c in [a for a in args if not a.startswith("--")]:
         src = cut(c)

@@ -6,7 +6,9 @@
 #   ② 덮을 판: 0번 프레임을 영상_다듬기.py와 같이 가운데 756으로 잘라 1080×1920으로 키움
 #   ③ 프레임마다 덮는 자리 둘레 띠의 평균 색에 판을 맞춰(밝기 흔들림) 섞는다
 #   python 컷4_가지지우기.py [--확인만]   → 업/컷4_세트2/컷4_세트2/ 를 고친 프레임으로 바꾸고 원본은 업/컷4_세트2/원본_가지있음/ 에 둔다
-#   --확인만: 바꾸지 않고 처음 · 가운데 · 끝 프레임의 전후와 덮는 자리만 그림으로(…/컷4_가지지우기_확인.jpg)
+#   --확인만: 바꾸지 않고 처음 · 가운데 · 끝 프레임의 전후와 덮는 자리만 그림으로(…/영상_H3/<컷>_가지지우기_확인.jpg)
+#   --미소: 미소 판(컷4_세트2미소, 10-21)에 같은 일을 한다 — 같은 자리에 가지 · 꽃병이 또 자라났다(영상_다듬기.py 4s2m).
+#     폴더는 업/컷4_세트2미소/ 아래로 바뀐다
 import glob
 import os
 import shutil
@@ -19,16 +21,28 @@ from PIL import Image, ImageDraw, ImageFilter
 sys.stdout.reconfigure(encoding="utf-8")
 V = os.path.join(os.environ["USERPROFILE"], "Documents", "synk-vendor", "jiyu-skincare-20261018")
 H3 = os.path.join(V, "영상_H3")
-SRC = os.path.join(H3, "컷4_세트2_s42.mp4")
-START = 48           # 영상_다듬기.py WINDOWS["4s2"]의 시작 프레임
+NAME = "컷4_세트2미소" if "--미소" in sys.argv else "컷4_세트2"
+SRC = os.path.join(H3, f"{NAME}_s42.mp4")
+START = 48           # 영상_다듬기.py WINDOWS["4s2"] · WINDOWS["4s2m"]의 시작 프레임
 N = 48
-UPD = os.path.join(H3, "업", "컷4_세트2", "컷4_세트2")
-KEEP = os.path.join(H3, "업", "컷4_세트2", "원본_가지있음")
+UPD = os.path.join(H3, "업", NAME, NAME)
+KEEP = os.path.join(H3, "업", NAME, "원본_가지있음")
 W0, H0, CROP_X = 768, 1344, 6   # H3 크기, 영상_다듬기.py의 가운데 756 자르기
 W, H = 1080, 1920
 X_MIN = 545          # 이보다 왼쪽은 사람(머리카락 · 티셔츠 끝 x≈530)이라 건드리지 않는다
+# 높이에 따라 경계를 당기는 칸 (y0, y1, x): 미소 판은 가지가 수건 앞까지 더 왼쪽으로 자라(768 공간 x≈495 · y 250~575) 545 경계
+# 밖에 잎 끝이 떠 남았다 → 그 높이만 485로(머리카락 끝 x≈465에서 20px, 어깨 · 티셔츠가 오른쪽으로 나오는 y 640 아래는 그대로)
+X_MIN_ROWS = [(200, 600, 485)] if NAME == "컷4_세트2미소" else []
 Y_MAX = 985          # 꽃병 밑(768 공간 y≈966)까지만 — 그 아래 수전 · 세면대 대리석은 H3가 무늬를 조금씩 바꿔 차가 커도 덮지 않는다
 THRESH, GROW, SOFT = 10.0, 14, 9
+
+
+def x_min_map(h, margin=0):
+    """줄마다 건드려도 되는 가장 왼쪽 x(768 공간). margin만큼 더 왼쪽까지 둔다."""
+    xs = np.full(h, X_MIN - margin)
+    for y0, y1, x in X_MIN_ROWS:
+        xs[y0:y1] = x - margin
+    return xs
 
 
 def h3_frames(idx):
@@ -60,12 +74,16 @@ def build():
     for i in idx[1:]:
         diff = np.maximum(diff, np.abs(fr[i] - base).mean(axis=2))
     m = (diff > THRESH).astype(np.uint8) * 255
-    m[:, :X_MIN] = 0
+    cols = np.arange(W0)[None, :]
+    m[cols < x_min_map(H0)[:, None]] = 0
     m[Y_MAX:, :] = 0
     mi = Image.fromarray(m).filter(ImageFilter.MaxFilter(5)).filter(ImageFilter.MinFilter(5))  # 잔점 없애기
     mi = mi.filter(ImageFilter.MaxFilter(2 * GROW + 1)).filter(ImageFilter.GaussianBlur(SOFT))
     mask768 = np.asarray(mi, np.float32) / 255
-    mask768[:, :X_MIN - 10] = 0
+    allow = cols >= x_min_map(H0, 10)[:, None]
+    if X_MIN_ROWS:  # 높이마다 경계가 다르면 그 계단에서 덮는 자리가 딱 끊기지 않게 경계도 부드럽게(옛 세트 2 판은 그대로)
+        allow = np.asarray(Image.fromarray(allow.astype(np.uint8) * 255).filter(ImageFilter.GaussianBlur(SOFT)), np.float32) / 255
+    mask768 = mask768 * allow
     mask768[Y_MAX + 20:, :] = 0
     mask = np.asarray(to_up(Image.fromarray((mask768 * 255).astype(np.uint8)).convert("RGB")).convert("L"), np.float32) / 255
     plate = np.asarray(to_up(base), np.float32)
@@ -84,9 +102,9 @@ def patch(up, mask, plate, ring):
 
 def main():
     only_check = "--확인만" in sys.argv
-    files = sorted(glob.glob(os.path.join(UPD, "컷4_세트2_*.png")))
+    files = sorted(glob.glob(os.path.join(UPD, f"{NAME}_*.png")))
     if os.path.isdir(KEEP) and len(glob.glob(os.path.join(KEEP, "*.png"))) == N:
-        files = sorted(glob.glob(os.path.join(KEEP, "컷4_세트2_*.png")))  # 다시 돌릴 땐 원본에서
+        files = sorted(glob.glob(os.path.join(KEEP, f"{NAME}_*.png")))  # 다시 돌릴 땐 원본에서
     assert len(files) == N, f"업스케일 프레임 {len(files)}장(48장이어야 함)"
     mask, plate, ring = build()
     if only_check:
@@ -104,7 +122,7 @@ def main():
         d = ImageDraw.Draw(S)
         for i, t in enumerate(["#0 전", "#0 후", "#24 전", "#24 후", "#47 전", "#47 후", "덮는 자리"]):
             d.text((i * 364 + 6, 6), t, fill=(255, 255, 0))
-        out = os.path.join(H3, "컷4_가지지우기_확인.jpg")
+        out = os.path.join(H3, f"{NAME}_가지지우기_확인.jpg")
         S.save(out, quality=90)
         print(out)
         return
@@ -112,7 +130,7 @@ def main():
         os.makedirs(KEEP, exist_ok=True)
         for f in files:
             shutil.copy2(f, os.path.join(KEEP, os.path.basename(f)))
-        files = sorted(glob.glob(os.path.join(KEEP, "컷4_세트2_*.png")))
+        files = sorted(glob.glob(os.path.join(KEEP, f"{NAME}_*.png")))
     gains = []
     for f in files:
         fixed, gain = patch(Image.open(f).convert("RGB"), mask, plate, ring)
