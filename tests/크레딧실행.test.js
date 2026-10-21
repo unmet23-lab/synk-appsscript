@@ -63,14 +63,31 @@ test('결과읽기·환경만들기: json·stream-json 결과를 읽고, 자격�
   assert.deepEqual(실행기.환경만들기(null, { PATH: 'p', ANTHROPIC_API_KEY: 'old', CLAUDE_CODE_OAUTH_TOKEN: 'o' }), { PATH: 'p', CLAUDE_CODE_OAUTH_TOKEN: 'o' });
 });
 
-test('할 일이 없으면 claude를 띄우지 않는다(비용 0)', async () => {
+test('할 일이 없으면 claude를 띄우지 않고(비용 0), 15분마다 돌아도 기록 파일을 쌓지 않는다', async () => {
   const t = 방만들기([['A', 20, 'sk-ant-test-aaaa']]);
   try {
     const { 작업 } = 가짜작업({ async 사전확인() { return { 할일: false, 이유: '쓸 줄 없음' }; } });
-    const r = await 실행기.작업돌리기('시험작업', { ...t.실행옵션, 작업, 방: path.join(t.방, 'out'), fetch: 확인200, 알림: () => {} });
-    assert.equal(r.상태, '할일없음');
+    const out = path.join(t.방, 'out');
+    for (let i = 0; i < 3; i++) {
+      const r = await 실행기.작업돌리기('시험작업', { ...t.실행옵션, 작업, 방: out, fetch: 확인200, 알림: () => {} });
+      assert.equal(r.상태, '할일없음');
+    }
     assert.equal(t.실행들().length, 0);
+    assert.deepEqual(fs.readdirSync(out), ['마지막확인.json']);
+    assert.equal(JSON.parse(fs.readFileSync(path.join(out, '마지막확인.json'), 'utf8')).이유, '쓸 줄 없음');
   } finally { t.지우기(); }
+});
+
+test('팁적용안: 방금 받은 줄 뒤로 공유가 이어질 수 있으면 기다리고, 오래 기다렸거나 시각을 모르면 바로 돈다', () => {
+  const { 기다릴까 } = require('../tools/크레딧작업/팁적용안.js');
+  const 지금 = Date.UTC(2026, 9, 21, 9, 0, 0);
+  const 분전 = (m) => 지금 - m * 60000;
+  assert.equal(기다릴까([분전(3)], 지금), true, '마지막 공유 3분 뒤 — 더 올 수 있다');
+  assert.equal(기다릴까([분전(12)], 지금), false, '마지막 공유 뒤 10분 넘게 조용하다');
+  assert.equal(기다릴까([분전(31), 분전(2)], 지금), false, '첫 공유가 30분 넘게 기다렸다');
+  assert.equal(기다릴까([분전(25), 분전(2)], 지금), true, '몰려 오는 중 — 첫 공유가 아직 30분 안');
+  assert.equal(기다릴까([NaN], 지금), false, 'intake.json이 없는 줄(옛 줄)은 기다리지 않는다');
+  assert.equal(기다릴까([], 지금), false);
 });
 
 // 키는 「다음 갱신일이 가장 가까운 것부터」 쓴다. 실제 시계로 돌리면 갱신일 20·25일인 A·B의 순서가 매달 20~24일에 뒤집혀

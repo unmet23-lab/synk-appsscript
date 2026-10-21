@@ -391,6 +391,18 @@
 - 고침: 운영 검증은 공식 cron의 `--no-agent` 경로로 한다. 일시중지 예약의 `cron run`은 성공 실행이 아니라 활성화 안내만 반환하므로 실제 `last_status`와 수집 `health.json`을 확인한다.
 - 다시 확인: 10-18 `synk-three-flows`의 17:00 공식 수동 실행과 17:10 첫 자동 실행 모두 `last_status=ok`, `health.json status=ok/noAgent=true`. 자동 실행이 보낸 점검 알림의 Telegram API 수신 확인과 발송 기록 재처리의 새 전송 0회를 대조했다.
 
+### 인스타 카드뉴스가 첫 장만 받히고, 그 계정의 다른 게시물 표지 두 장이 섞인다 (2026-10-21 Claude)
+- 증상: 카드뉴스·영상 여러 개 묶음 게시물에서 `ig_fetch.py`가 늘 그림 3장을 냈다. 첫 장만 그 게시물이고 나머지 두 장은 같은 계정의 다른 게시물 표지였다. 헤르메스와 Claude는 그 표지를 같은 카드뉴스로 읽어 VoiceStudio(장부 16행) 카드에 「AI 소식 모음」이라고 적었고, 8장 중 2~7장 본문과 유호님이 가리킨 8장은 못 봤다. Mirelo(20행)는 영상 8개 묶음에서 첫 영상만 받았다. 지난 게시물 4건에 옛 그림 고르기를 다시 돌려 보니 4건 모두 남의 표지 두 장이 섞였다.
+- 원인: 공개 임베드 화면(`/p/<ID>/embed/captioned/`) 전체에서 `cdninstagram…-15/` 그림 주소를 긁었다. 화면 아래에는 그 계정의 다른 게시물 표지가 붙어 있고, 묶음의 나머지 장은 HTML이 아니라 화면 안 `contextJSON`(`gql_data.shortcode_media.edge_sidecar_to_children`)에만 있다. 로그인 없이 공개로 다 들어 있다.
+- 고침: `contextJSON`의 장 목록으로 모든 장을 장 번호대로 받는다(그림 `images/NN.jpg`, 영상 `video-NN.mp4`·장면 `frames/NN-MM.jpg`, 받아쓰기는 `[N번 장]` 머리). 공유 링크의 `img_index`는 `pointed`로 넘긴다. 게시물 정보가 없으면 `EmbeddedMediaImage` 본 그림 한 장만 쓴다. 옛 판은 `%LOCALAPPDATA%\hermes\backups\synk-tip-수집고침-20261021\`.
+- 다시 확인: `ig_fetch.py "https://www.instagram.com/p/Dest5cyiKw7/?img_index=8"` → `type: 여러 장`·그림 8·`pointed: 8`(10-21, 2초). `…/p/DethWIyFFSp/?img_index=3` → 영상 8·그림 1·장면 32(115초).
+
+### 받아쓰기 small 모델이 한국어 속 영어 용어를 자주 틀린다 — GPU는 cublas가 없어 안 된다 (2026-10-21 Claude)
+- 증상: 「발칵 지집했어요」(뒤집혔어요), 「기터브」(GitHub), 「후 공식」(훅 공식), 「쉐임 롤핑」(Shape Morphing) 같은 받아쓰기가 장부·카드 근거로 들어갔다.
+- 원인: `ig_fetch.py`가 whisper `small`을 CPU로 썼다. `--device cuda`는 `Library cublas64_12.dll is not found`로 멈춘다. whisper-ctranslate2 환경에 CUDA 12 라이브러리가 없고, 받으려면 1GB가 넘는다.
+- 고침: 이 PC에 이미 받아 둔 `large-v3-turbo`를 CPU int8로 쓰고(38.8초 영상에 27초), `--initial_prompt`로 낱말 목록(Claude·GitHub·프롬프트·릴스·훅…)을 준다. 여러 영상은 한 번 부르며 모델을 한 번만 올린다. 실패하면 `small`로 한 번 더 한다.
+- 다시 확인: 장부 9행 영상(DenCrnBx_Up)이 「GitHub에 무료로 풀린 클로드 스킬」「훅 공식 26개」로 나온다. 음악만 있는 12행 영상은 낱말 목록을 줘도 빈 받아쓰기다(지어내지 않음, 10-21).
+
 ## Codex 예약
 
 ### heartbeat RRULE의 시각 해석이 예약 형태마다 달랐다
