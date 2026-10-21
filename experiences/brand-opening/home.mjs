@@ -29,7 +29,7 @@ const games={
  rhythm:{get title(){return t('game.rhythm.title');},get detail(){return t('game.rhythm.detail');},label:'RHYTHM',path:'../korean-rhythm/',image:'world-felt/rhythm.webp',area:'짧은 발화를 듣고 내용 일치 판단 연습'}
 };
 let lastFocus=null,panelKind='',inView=true,manualReduced=false,frameTimer,displayPreference='auto',layout='portrait';
-let learningUI=null,learningLoader=null,education=null;
+let learningUI=null,learningLoader=null,education=null,reminders=null;
 let host=null,panelResource=null,sceneActive=false,entryPhase='restoring',toastTimer,equipment={slots:{},dyes:{}},accountOwner='guest',learningData={},photoBusy=false,panelEpoch=0;
 let orientationTask=Promise.resolve();
 let tutorUI,homeTutor,firstRun,lastAccount=null;
@@ -315,6 +315,8 @@ function showTutorSettings(){
  button.dataset.tutorOpen='';button.addEventListener('click',()=>home.chooseTutor());
  content.querySelector('.panel-actions').prepend(button);
  if(education){const study=document.createElement('button');study.className='plain-button';study.textContent=t('settings.study');study.addEventListener('click',()=>education.open());content.querySelector('.panel-actions').prepend(study);}
+ // 학습 알림(app-shell이 붙이는 world-reminder-device.mjs): 켜기·끄기·횟수·시간. 혼자 여는 홈에는 없다.
+ if(reminders){content.querySelector('.panel-actions')?.insertAdjacentHTML('beforebegin',reminders.settingsMarkup());reminders.bindSettings(content);}
 }
 // 설정의 「화면 언어」: 바로 바꾸고(이 기기), 계정이면 계정 기록에도 둔다. 바뀐 언어로 설정 시트를 다시 그린다.
 async function chooseLanguage(lang){
@@ -390,7 +392,7 @@ export const home={
  updateAccount,updateLearning,updateStudy,
  // 사진은 3D 방에서 찍는다. 동네에서 부르면 문 열림 없이 바로 방으로 들어간다(capture는 방이 다 불러질 때까지 기다린다).
  photo:()=>{if(place!=='room'||trip)void go('room',{instant:true});return photo();},
- connectEducation(value){education=value;},openLearningGame:launchGame,
+ connectEducation(value){education=value;},connectReminders(value){reminders=value;},openLearningGame:launchGame,
  hangulReading,setHangulReading,startLifeLesson,firstRun:()=>({order:[...firstRun.order],active:firstRun.active()}),
  scene:()=>living.metrics(),memory:()=>memory.snapshot(),town:()=>({place,moving:trip?.to||null,...town.metrics()}),enterRoom:()=>go('room'),leaveRoom:()=>go('town'),
  startTutorial:()=>openTutor(),chooseTutor:()=>openTutor({force:true}),ensureTutor:then=>openTutor({then}),tutor:()=>tutorUI.metrics(),homeTutor:()=>homeTutor?.metrics(),

@@ -49,6 +49,18 @@
 .world-notice a.felt-button span[aria-hidden]{display:none}
 .world-notice a.felt-button::after{content:'';width:15px;height:15px;background:currentColor;-webkit-mask:var(--w-arrow-up-right) center/contain no-repeat;mask:var(--w-arrow-up-right) center/contain no-repeat}
 .world-notice .plain-button{margin-top:10px}
+/* 학습 알림(world-reminder-device.mjs): 배우기 판 맨 아래의 묻는 카드 · 설정의 「학습 알림」 묶음 · 시험 점검 카드 */
+.life-rows .reminder-card{margin:20px 0 4px}
+.reminder-card .reminder-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;margin-top:8px;padding-left:17px}
+.reminder-card .reminder-actions .plain-button{width:auto;min-height:48px;margin-top:0;padding:0 22px;white-space:nowrap}
+.reminder-card .reminder-actions .quiet-button{white-space:nowrap}
+.reminder-settings{margin-top:30px}
+.reminder-settings .reminder-choices{padding-top:20px}
+.reminder-settings .reminder-count{grid-template-columns:repeat(2,1fr)}
+.reminder-settings .reminder-hours{border-radius:var(--w-r-lg)}
+.reminder-settings .reminder-status{display:grid;gap:4px;margin:12px 0 18px}
+.reminder-settings .reminder-status-lead{font-size:14px;font-weight:var(--wt-strong);color:var(--w-ink-2)}
+.reminder-exam .world-notice{margin-top:4px}
 .review-note{display:grid;gap:14px;font-size:15.5px;line-height:1.75;color:var(--w-ink-2);text-wrap:pretty}
 .review-note strong{font-weight:var(--wt-title);color:var(--w-ink)}
 

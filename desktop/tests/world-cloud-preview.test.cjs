@@ -126,3 +126,21 @@ test('package preparation records WORLD opt-in without modifying legacy local ru
   const old=packageHarness(),legacy=old.prepare('world',{mode:'development',platform:'win32',arch:'x64'}),local=JSON.parse(old.writes.get(path.join(legacy.directories.app,'runtime.json')));assert.equal(local.entry,DEV_URLS.world);assert.equal(Object.hasOwn(local,'worldCloudPreview'),false);
   for(const [id,mode]of [['platform','development'],['messenger','development'],['world','release']]){const invalid=packageHarness();assert.throws(()=>invalid.prepare(id,{mode,platform:'win32',arch:'x64',worldCloudPreview:true}),/restricted/);assert.equal(invalid.operations.length,0);}
 });
+
+// WORLD 학습 알림(10-19 결정 · 1단 기기 예약): WORLD 창의 믿을 수 있는 첫 화면이 청한 알림만 허락하고, 나머지 권한·창·프레임은 그대로 거절한다.
+test('WORLD study reminders: only the trusted WORLD page in the main frame may ask for notifications',()=>{
+  const {worldNotificationAllowed}=require('../src/security.cjs');
+  const ask=(over={})=>worldNotificationAllowed({clientId:'world',permission:'notifications',url:entry,entry,isMainFrame:true,...over});
+  assert.equal(ask(),true);
+  for(const url of [entry+'?opening=off','https://synk.im/world/mobile.html','https://synk.im/world/desktop.html?tutor=choose'])assert.equal(ask({url}),true,url);
+  assert.equal(ask({url:DEV_URLS.world,entry:DEV_URLS.world}),false,'the old local account entry has no reminders');
+  for(const permission of ['media','geolocation','clipboard-read','clipboard-sanitized-write','midi','pointerLock','fullscreen','openExternal','push','background-sync','idle-detection','Notifications',''])assert.equal(ask({permission}),false,permission);
+  for(const clientId of ['platform','messenger',undefined,'World'])assert.equal(ask({clientId}),false,String(clientId));
+  assert.equal(ask({isMainFrame:false}),false,'game and town frames are never granted');
+  for(const url of ['https://synk.im/try/runner/','https://synk.im/world/town/day.html','https://synk.im/world/korean-runner/','https://synk.im/world/?reminder=1','https://synk.im/world/#x','https://evil.invalid/world/','http://synk.im/world/',accountEntry,undefined,null,''])assert.equal(ask({url}),false,String(url));
+  // main.cjs routes both the request and the check handler through it and keeps everything else refused.
+  const main=fs.readFileSync(path.join(__dirname,'../src/main.cjs'),'utf8');
+  assert.match(main,/setPermissionRequestHandler\(\(contents,permission,callback,details\)=>callback\(worldNotification\(/);
+  assert.match(main,/setPermissionCheckHandler\(\(contents,permission,_origin,details\)=>worldNotification\(/);
+  assert.match(main,/contents===window\.webContents&&worldNotificationAllowed\(\{clientId:runtime\.clientId,permission,url,entry,isMainFrame\}\)/);
+});

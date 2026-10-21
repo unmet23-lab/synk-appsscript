@@ -40,6 +40,13 @@ function trustedEntry(value,entry,clientId) {
   }
   return u.pathname===base.pathname&&(id==='messenger'||u.search===base.search);
 }
+// WORLD 학습 알림(2026-10-19 결정 「WORLD 알림 · 주 1~2회 · 학습 일만」 · 1단 기기 예약): WORLD 창의 믿을 수 있는 첫 화면(메인 프레임)이
+// 청한 「알림」만 허락한다. 다른 권한·다른 클라이언트·하위 프레임(게임·마을)·믿지 않는 주소는 그대로 거절한다. 언제 띄울지는 그 화면의 규칙이 정한다.
+function worldNotificationAllowed({clientId,permission,url,entry,isMainFrame=true}={}) {
+  if(clientId!=='world'||permission!=='notifications'||isMainFrame===false||typeof url!=='string'||!trustedEntry(url,entry,clientId))return false;
+  // 알림은 /world/ 첫 화면에만 있다(계정 페이지·옛 로컬 입구는 청하지 않는다).
+  try{return /^\/world\/(?:(?:index|mobile|desktop)\.html)?$/.test(new URL(url).pathname);}catch{return false;}
+}
 function assertSender(event,window,entry,clientId) {
   if(!window||window.isDestroyed()||event.sender!==window.webContents||event.senderFrame!==window.webContents.mainFrame||!trustedEntry(event.senderFrame?.url,entry,clientId))throw new Error('UNTRUSTED_SENDER');
 }
@@ -88,4 +95,4 @@ function downloadSpec({url,mime,filename,size,sourceUrl,entry,clientId}) {
 function allowedDownload(request){return !!downloadSpec(request);}
 function inside(root,target,pathApi=path) {const relative=pathApi.relative(root,target);return relative!==''&&!relative.startsWith('..'+pathApi.sep)&&relative!=='..'&&!pathApi.isAbsolute(relative);}
 function preferences(preload,partition) {return {preload,partition,sandbox:true,contextIsolation:true,nodeIntegration:false,nodeIntegrationInWorker:false,nodeIntegrationInSubFrames:false,webviewTag:false,webSecurity:true,allowRunningInsecureContent:false,experimentalFeatures:false,devTools:false};}
-module.exports={allowedUrl,safeEntry,assertSender,trustedEntry,inside,preferences,allowedNavigation,externalDestination,allowedDownload,downloadSpec,contentSecurityPolicy,nativeContentSecurityPolicy,isNativeEntry};
+module.exports={allowedUrl,safeEntry,assertSender,trustedEntry,worldNotificationAllowed,inside,preferences,allowedNavigation,externalDestination,allowedDownload,downloadSpec,contentSecurityPolicy,nativeContentSecurityPolicy,isNativeEntry};

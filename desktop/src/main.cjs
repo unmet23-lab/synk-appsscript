@@ -2,7 +2,7 @@
 const {app,BrowserWindow,ipcMain,session,protocol,Menu,Tray,shell,dialog,safeStorage,screen,globalShortcut,clipboard,Notification}=require('electron');
 const fs=require('node:fs'),path=require('node:path'),{spawn}=require('node:child_process');
 const {CLIENTS,DEV_URLS,PLATFORM_ENTRY,identity,sourceScope}=require('./catalog.cjs');
-const {safeEntry,assertSender,trustedEntry,preferences,allowedNavigation,externalDestination,contentSecurityPolicy,nativeContentSecurityPolicy}=require('./security.cjs');
+const {safeEntry,assertSender,trustedEntry,worldNotificationAllowed,preferences,allowedNavigation,externalDestination,contentSecurityPolicy,nativeContentSecurityPolicy}=require('./security.cjs');
 const {createClientLifecycle}=require('./client-lifecycle.cjs');
 const {resolveProgramRoot}=require('./program-root.cjs');
 const {loadDevelopmentReleases}=require('./local-releases.cjs');
@@ -225,8 +225,10 @@ function createWindow(){
     void teacherService.initialize();
   }
   // Same page permissions are not implicit desktop permissions. Media remains unavailable until a deliberate consent flow is implemented.
-  ownSession.setPermissionRequestHandler((_contents,_permission,callback)=>callback(false));
-  ownSession.setPermissionCheckHandler(()=>false);
+  // The one exception is WORLD's study reminders: notifications its own trusted page asks for in the main window (security.cjs).
+  const worldNotification=(contents,permission,url,isMainFrame)=>!!window&&!window.isDestroyed()&&contents===window.webContents&&worldNotificationAllowed({clientId:runtime.clientId,permission,url,entry,isMainFrame});
+  ownSession.setPermissionRequestHandler((contents,permission,callback,details)=>callback(worldNotification(contents,permission,details?.requestingUrl,details?.isMainFrame)));
+  ownSession.setPermissionCheckHandler((contents,permission,_origin,details)=>worldNotification(contents,permission,details?.requestingUrl||contents?.getURL?.(),details?.isMainFrame));
   if(smoke&&runtime.clientId==='platform')ownSession.webRequest.onBeforeRequest({urls:['http://*/*','https://*/*','ws://*/*','wss://*/*']},(details,callback)=>{smokeNetworkRequests.push(details.url);callback({cancel:true});});
   ownSession.webRequest.onHeadersReceived((details,callback)=>callback({responseHeaders:{...details.responseHeaders,'Content-Security-Policy':[details.url.startsWith('synk-desktop://platform/')?nativeContentSecurityPolicy():details.url.startsWith('synk-desktop://status/')?connectionContentSecurityPolicy():contentSecurityPolicy(details.resourceType)]}}));
   ownSession.removeAllListeners('will-download');
