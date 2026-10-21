@@ -75,7 +75,7 @@ function entryText(card) {
   if (card.date) lines.push(`[오늘] ${card.date}`); // 게임·WORLD 카드처럼 그날 날짜를 보인다(10-21)
   if (card.at) lines.push(`[지금 시각] ${card.at}`);
   if (card.doc) lines.push(`[손님 서류] ${card.doc.title}`, ...card.doc.rows.map(row => `  ${row.join(': ')}`));
-  if (card.bag?.length) lines.push(`[짐] ${card.bag.join(', ')}`);
+  if (card.bag) lines.push(`[짐] ${card.bag.length ? card.bag.join(', ') : '없음'}`); // 게임은 빈 짐도 「보여 준 짐이 없어요.」로 보인다(10-21)
   if (card.line) lines.push(`[손님 말] ${card.who ? `${card.who}: ` : ''}${card.line}`);
   return lines.join('\n');
 }

@@ -11,7 +11,7 @@ export const LISTENING_CHECKS = Object.freeze([
   { id: 'check-fence-jump', text: '앞에 낮은 울타리가 있어요. 울타리를 넘어가세요.', skill: '동작', explanation: '안내에서 ‘울타리를 넘어가세요’라고 했어요. 그래서 위로 뛰어넘어야 해요. 몸을 숙이면 울타리를 넘을 수 없고, 다른 길로 가라는 말은 없었어요.', steps: [jump()],
     choices: ['몸을 숙이기', '위로 뛰어넘기', '오른쪽 길로 가기'], correct: 1 },
   { id: 'check-sign-duck', text: '앞에 표지판이 낮게 걸려 있어요. 머리를 숙이고 지나가세요.', skill: '위치 · 동작', explanation: '‘머리를 숙이고 지나가세요’라고 했어요. 표지판이 낮게 걸려 있으니까 몸을 숙여 아래로 지나가요. 뛰어넘거나 그대로 달리면 표지판에 부딪혀요.', steps: [slide()],
-    choices: ['몸을 숙여 지나가기', '뛰어넘기', '그대로 달리기'], correct: 0 },
+    choices: ['몸을 숙여 지나가기', '위로 뛰어넘어 가기', '그대로 달려 지나가기'], correct: 0 },
   { id: 'check-not-middle', text: '가운데로 가지 말고 오른쪽으로 가세요.', skill: '부정 · 방향', explanation: '가운데는 가지 말라고 했어요. 오른쪽으로 가요.', steps: [lane(2)],
     choices: ['가운데로 가기', '왼쪽으로 가기', '오른쪽으로 가기'], correct: 2 },
   { id: 'check-no-fence', text: '울타리가 없으니까 뛰어넘지 않아도 돼요.', skill: '부정 지시', explanation: '‘울타리가 없으니까 뛰어넘지 않아도 돼요’라고 했어요. 울타리가 없어서 뛰어넘거나 옆으로 돌아갈 필요 없이 그냥 앞으로 달리면 돼요.', steps: [stay()],

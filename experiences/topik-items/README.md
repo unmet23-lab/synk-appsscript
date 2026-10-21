@@ -37,7 +37,7 @@ TOPIK I·II 연습 문항(모두 자체 창작)과 그 AI 2중 검수 기록을 
 - **기준 열 가지**: 정답 유일성 · 오답 매력도 · 유형 적합 · 어휘·문형 단계 · 자연스러움 · 해설 정확성 · 문화·편향 · 기출 유사도 · 대표 능력 · 난도 칸([rubric-r1.md](review/rubric-r1.md)).
 - **계보**: 문항의 `review`에 단계·모델·기준 판·날짜·판정·내용 지문(`hash`)이 쌓인다. 기존 문항은 `existing-verdicts.json` 줄의 `by`·`hash`·`packet`.
 - **기존 문항 약속**(① WORLD 읽기 짧은 연습): `pass`인 줄은 `skillId`·`difficulty`·`responseFormat`·`familyKey`가 진단 문항 메타와 같다. 검수자가 다른 능력을 제안하면 원고·메타를 고칠 때까지 `fix`로 둔다(`suggestedSkillId`).
-- **기존 문항 고침(10-21):** 판정 `fix` 67개를 게임 원고에서 고치고 고친 것만 다시 받았다 — [1차](review/reports/existing-fix-r1.md) 통과 63·고침 4 → [2차](review/reports/existing-fix-r2.md) 4 모두 통과(뺀 문항 없음), 판정 목록 168줄이 모두 `pass`다. 들리거나 보이는 글·보기·정답을 바꾼 문항은 판(`itemKey` 꼬리 `.vN`·`:vN`)을 올리고 계열(`familyKey`)은 v1 그대로 둔다 — 학생의 기록·노출이 이어진다. 해설·난도만 고치면 판은 그대로다. `반영`은 같은 계열·같은 문항의 옛 판 줄을 새 판 줄로 갈아 끼운다. 말의 리듬처럼 O/X 두 갈래가 해설 하나를 함께 쓰면 검수 보기에는 한 갈래만 나가므로, 해설에 다른 갈래에만 맞는 문장을 두지 않는다(그 문장이 「묻는 말과 상관없다」로 걸린다).
+- **기존 문항 고침(10-21):** 판정 `fix` 67개를 게임 원고에서 고치고 고친 것만 다시 받았다 — [1차](review/reports/existing-fix-r1.md) 통과 63·고침 4 → [2차](review/reports/existing-fix-r2.md) 4 모두 통과(뺀 문항 없음). 화면 검수 지적대로 해설·보기를 다듬은 여덟은 [3차](review/reports/existing-fix-r3a.md) 통과 7·고침 1, 그 하나(museum-11 — 짐이 빈 손님)는 [3차 둘째](review/reports/existing-fix-r3b.md)에서 통과해 판정 목록 168줄이 모두 `pass`다. 들리거나 보이는 글·보기·정답을 바꾼 문항은 판(`itemKey` 꼬리 `.vN`·`:vN`)을 올리고 계열(`familyKey`)은 v1 그대로 둔다 — 학생의 기록·노출이 이어진다. 해설·난도만 고치면 판은 그대로다. `반영`은 같은 계열·같은 문항의 옛 판 줄을 새 판 줄로 갈아 끼운다. 말의 리듬처럼 O/X 두 갈래가 해설 하나를 함께 쓰면 검수 보기에는 한 갈래만 나가므로, 해설에 다른 갈래에만 맞는 문장을 두지 않는다(그 문장이 「묻는 말과 상관없다」로 걸린다).
 
 ```bash
 node tools/topik-review.mjs 준비 <이름> --새 [<묶음>…] --기존 [blank-slice synk-town entry-check] [--표본 50]

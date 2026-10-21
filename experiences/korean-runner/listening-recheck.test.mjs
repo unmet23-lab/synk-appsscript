@@ -13,7 +13,7 @@ class Element {
   append(...nodes) { this.children.push(...nodes); }
   replaceChildren(...nodes) { this._text = ''; this.children = nodes; }
   querySelector(selector) { if (!this.nodes.has(selector)) this.nodes.set(selector, new Element()); return this.nodes.get(selector); }
-  setAttribute() {} addEventListener() {} focus() {}
+  setAttribute() {} addEventListener() {} focus() {} scrollIntoView() {}
   showModal() { this.open = true; } close() { this.open = false; }
 }
 class AudioContext {

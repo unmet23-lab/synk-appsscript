@@ -144,6 +144,10 @@ test('입장 검사 문항은 안내문·날짜와 시각·표·짐·손님 말�
  // 날짜는 게임 화면처럼 그날의 한국어 날짜(읽을 글)다 — 음악회 안내문은 날짜가 바뀐 날이 오늘인지가 판단 근거다(10-21 문항 검수).
  assert.match(html,/<p class="wpos-guest-time"><span lang="ko">8월 6일 수요일<\/span> · 지금 14:04<\/p>/);assert.match(html,/<dt>구분<\/dt><dd>학생 · 15살<\/dd>/);assert.match(html,/짐: <span lang="ko">수건, 물병<\/span>/);
  assert.match(html,/이단비<\/span>「수건과 물은 있어요\. 수영 모자는 없어요\.」/);
+ // 짐이 빈 손님(museum-11)도 「짐: 없음」을 보인다 — 게임처럼 없다는 것을 글로 보여야 카메라 규칙을 가를 수 있다(10-21 재검수).
+ const empty=DIAGNOSTIC_ITEMS.find(row=>row.itemKey==='entry-check.museum-11.v1');
+ const emptyHtml=view.renderDiagnosticItem({view:createDiagnosticSession({coach:coach(),items:[empty]}).next(),skill:{id:'ko.reading.condition'}});
+ assert.match(emptyHtml,/짐: <span lang="ko">없음<\/span>/);
  assert.match(html,/data-position-choice="pass">들여보내기</);assert.match(html,/data-position-choice="reject-cap">돌려보내기 · 수영 모자</);
  assert.doesNotMatch(html,/ disabled>/,'읽기 문항은 바로 고를 수 있다');
  assert.doesNotMatch(html,/data-position-listen/);

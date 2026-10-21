@@ -110,7 +110,7 @@ const CONTENT = {
   'check-star-middle': [1, 'df8166dd34f3'],
   'check-wide-left': [1, 'e504ce909f80'],
   'check-fence-jump': [2, 'd84f68a97b95'],
-  'check-sign-duck': [2, '512a12869ccd'],
+  'check-sign-duck': [2, '87b3f675f830'],
   'check-not-middle': [1, '4270e0c2ce5c'],
   'check-no-fence': [2, '3b45e58d017e'],
   'check-high-sign': [2, 'fda74c3663f1'],

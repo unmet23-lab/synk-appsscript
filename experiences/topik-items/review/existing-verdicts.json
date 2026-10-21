@@ -1,7 +1,7 @@
 {
   "version": "topik-existing-verdicts-1",
   "rubric": "topik-review-r1",
-  "updatedAt": "2026-10-21T11:33:38.739Z",
+  "updatedAt": "2026-10-21T13:36:34.684Z",
   "note": "기존 게임·진단 문항의 AI 2중 검수 판정(허용 목록). verdict \"pass\"만 연습에 낸다. 첫 판은 비어 있다 — 판정이 나오는 대로 채운다.",
   "items": [
     {
@@ -13,11 +13,11 @@
       "responseFormat": "single-choice",
       "familyKey": "blank-slice.a01.v1",
       "officialType": "TI-R-34",
-      "reason": "'아직'과 '안 했어요'의 호응을 묻는 1급 문형 빈칸 문항이에요. 정답이 하나뿐이고 자연스러워서 통과예요. 해설에 '할게요' 오답 설명을 더하면 더 좋아요. | 부사 '아직'과 부정 표현 '안 했어요'의 호응을 묻는 자연스럽고 명확한 1급 문법 문항으로 통과.",
-      "hash": "4f83ff2cc39bc4c1",
-      "reviewedAt": "2026-10-21T11:30:51.054Z",
+      "reason": "「아직」과 부정의 호응으로 정답 「안 했어요」가 하나로 정해지는 1급 문형 빈칸 문항입니다. 오답·해설·난도 모두 적절하여 통과입니다. | 부사 '아직'과 부정 서술어 '안 했어요'의 호응을 묻는 문항으로 정답 유일성과 해설 모두 적절함.",
+      "hash": "be6ce507a6c6d25a",
+      "reviewedAt": "2026-10-21T13:32:57.532Z",
       "rubric": "topik-review-r1",
-      "packet": "existing-fix-r1",
+      "packet": "existing-fix-r3a",
       "by": [
         {
           "stage": "claude",
@@ -40,11 +40,11 @@
       "responseFormat": "single-choice",
       "familyKey": "blank-slice.a02.v1",
       "officialType": "TI-R-34",
-      "reason": "정답 '열심히'가 유일하고 오답 부사도 쓰임으로 분명히 걸러진다. 1급 수준에 맞는 깔끔한 낱말 빈칸 문항이다. 발문 말투(-세요)만 시험 꼴과 다르지만 기존 게임 문항이라 그대로 통과시킨다. | 문맥과 서술어 호응에 맞는 부사 '열심히'를 고르는 완성도 높은 어휘 문항으로 통과.",
-      "hash": "faf7b4f038a945bd",
-      "reviewedAt": "2026-10-21T11:30:51.054Z",
+      "reason": "정답이 유일하고 보기 설계·해설이 바른 1급 부사 빈칸 문항으로, 그대로 통과합니다. | 문맥과 서술어 호응에 맞는 부사 '열심히'를 고르는 초급 어휘 문항으로 모든 기준을 충족함.",
+      "hash": "87302b6eb96ffbd3",
+      "reviewedAt": "2026-10-21T13:32:57.532Z",
       "rubric": "topik-review-r1",
-      "packet": "existing-fix-r1",
+      "packet": "existing-fix-r3a",
       "by": [
         {
           "stage": "claude",
@@ -796,11 +796,11 @@
       "responseFormat": "single-choice",
       "familyKey": "blank-slice.v08.v1",
       "officialType": "TI-R-34",
-      "reason": "「물 좀 주세요」가 단서인 낱말 빈칸 문항이에요. 정답 「매워요」 하나만 맞고, 보기 꼴과 난도가 알맞아서 그대로 써도 돼요. | 문맥 단서가 분명하고 보기 구성과 해설이 적절하여 그대로 쓸 수 있음",
-      "hash": "621fb3b23da69da9",
-      "reviewedAt": "2026-10-21T11:30:51.054Z",
+      "reason": "정답 「매워요」가 유일하고, 낱말과 꼴이 1급 형용사 빈칸에 맞는 기존 문항이에요. 발문 말투만 시험 꼴과 조금 다르지만 학습자에게 해가 없어 통과로 판정해요. | 문맥('물 좀 주세요')을 통해 형용사 어휘('매워요')를 고르는 초급 빈칸 문항으로 모든 기준을 충족함.",
+      "hash": "55b336aeed049630",
+      "reviewedAt": "2026-10-21T13:32:57.532Z",
       "rubric": "topik-review-r1",
-      "packet": "existing-fix-r1",
+      "packet": "existing-fix-r3a",
       "by": [
         {
           "stage": "claude",
@@ -958,11 +958,11 @@
       "responseFormat": "single-choice",
       "familyKey": "blank-slice.v14.v1",
       "officialType": "TI-R-34",
-      "reason": "정답 '샀어요'가 하나뿐이고 1급 낱말 빈칸으로 알맞아요. 오답 둘이 조금 쉽게 지워지지만 학습자에게 해가 없어 통과예요. | 1급 기초 동사 어휘(‘샀어요’)를 묻는 빈칸 문항으로 문맥상 정답이 분명하고 해설이 바르다.",
-      "hash": "55df3f48b4f316b9",
-      "reviewedAt": "2026-10-21T11:30:51.054Z",
+      "reason": "「친구 생일이라서 꽃을 ( )」에 「샀어요」가 유일한 정답이에요. 1급 낱말 뜻 빈칸으로 꼴·난도·해설 모두 알맞아 통과예요. 「입었어요·먹었어요」는 다소 쉽게 지워지지만 이 자리에서 흔한 꼴이에요. | 기초 동사 어휘의 의미와 호응을 묻는 단문 빈칸 문항으로 모든 기준을 충족한다.",
+      "hash": "46bd2248137b3708",
+      "reviewedAt": "2026-10-21T13:32:57.532Z",
       "rubric": "topik-review-r1",
-      "packet": "existing-fix-r1",
+      "packet": "existing-fix-r3a",
       "by": [
         {
           "stage": "claude",
@@ -1174,11 +1174,11 @@
       "responseFormat": "single-choice",
       "familyKey": "entry-check.museum-09.v1",
       "officialType": "TI-R-40",
-      "reason": "조건 세 가지를 모두 따져야 '들여보내기'가 유일한 정답이 되는 잘 짜인 게임형 문항입니다. 해설도 정확해 그대로 통과합니다. | 안내문의 입장 시각·소지품·연령별 표 조건을 모두 충족하는 손님을 통과시키는 문항으로 이상 없음.",
-      "hash": "23a5c6f1977b9160",
-      "reviewedAt": "2026-10-21T11:30:51.054Z",
+      "reason": "정답이 유일하고, 조건 대조로 풀리는 게임형 기존 문항입니다. 안내문의 세 조건을 오답 셋이 고르게 겨누고 해설도 근거를 모두 짚어 그대로 통과입니다. | 미술관 안내문의 세 조건과 손님 정보(시각·짐·나이)가 모두 명시되어 정답이 유일하고 해설도 정확하다.",
+      "hash": "390dc9482acd862c",
+      "reviewedAt": "2026-10-21T13:32:57.532Z",
       "rubric": "topik-review-r1",
-      "packet": "existing-fix-r1",
+      "packet": "existing-fix-r3a",
       "by": [
         {
           "stage": "claude",
@@ -1201,11 +1201,11 @@
       "responseFormat": "single-choice",
       "familyKey": "entry-check.museum-10.v1",
       "officialType": "TI-R-40",
-      "reason": "정답 2(카메라 반입 금지)가 유일하게 맞고, 시간·나이 함정도 적절해요. 손님 말이 답을 조금 드러내는 점은 사소해서 그대로 통과예요. | 카메라 반입 금지 규칙을 적용해 거절 사유를 고르는 문항으로 이상 없음.",
-      "hash": "412b470a707d87b8",
-      "reviewedAt": "2026-10-21T11:30:51.054Z",
+      "reason": "카메라 금지 조건으로 정답이 하나로 정해지는 기존 게임형 문항입니다. 함정(5시 마감 직전, 나이·표)이 적절하고 해설도 정확해 통과입니다. | 안내문의 금지 규정('카메라는 가지고 들어갈 수 없습니다')을 근거로 거절 사유를 고르는 문항으로 모든 기준을 충족한다.",
+      "hash": "72a44c39933c15ed",
+      "reviewedAt": "2026-10-21T13:32:57.532Z",
       "rubric": "topik-review-r1",
-      "packet": "existing-fix-r1",
+      "packet": "existing-fix-r3a",
       "by": [
         {
           "stage": "claude",
@@ -1228,11 +1228,11 @@
       "responseFormat": "single-choice",
       "familyKey": "entry-check.museum-11.v1",
       "officialType": "TI-R-40",
-      "reason": "정답 '들여보내기'가 유일하다. 시간·표 조건을 읽는 게임형 문항으로 기준을 충족한다. 카메라 보기는 단서가 없어 매력이 약하지만 사소한 점이라 통과로 본다. | 입장 시각과 나이·표 조건을 모두 충족하는 손님을 통과시키는 문항으로 이상 없음.",
-      "hash": "c5e97471288f4b71",
-      "reviewedAt": "2026-10-21T11:30:51.054Z",
+      "reason": "조건 셋을 모두 충족해 「들여보내기」가 유일한 정답입니다. 게임 꼴 안에서 보기와 해설이 바르므로 통과입니다. | 기존 게임(entry-check) 문항으로 안내문의 세 가지 입장 조건과 손님 정보를 대조하는 구성이 명확하고, 어휘·난도·해설 모두 기준에 부합하여 통과(pass) 판정함.",
+      "hash": "a285e141d404efe4",
+      "reviewedAt": "2026-10-21T13:36:34.684Z",
       "rubric": "topik-review-r1",
-      "packet": "existing-fix-r1",
+      "packet": "existing-fix-r3b",
       "by": [
         {
           "stage": "claude",
@@ -2416,11 +2416,11 @@
       "responseFormat": "single-choice",
       "familyKey": "korean-runner.listening-check.check-sign-duck.v1",
       "officialType": null,
-      "reason": "게임 꼴 세부 듣기 문항이다. 정답이 분명하고 오답이 행동 선택지로 고르며 해설도 정확해서 통과다. 「표지판」「숙이다」가 1급 앞쪽보다 조금 높은 점만 참고한다. | 낮게 걸린 표지판 아래로 머리를 숙이고 지나가라는 안내를 듣고 알맞은 행동을 고르는 문항으로 모든 기준을 통과한다.",
-      "hash": "154d1f6b0cd0e588",
-      "reviewedAt": "2026-10-21T11:30:51.054Z",
+      "reason": "낮은 표지판 안내를 듣고 몸을 숙이는 행동을 고르는 게임 문항이다. 정답이 분명하고 오답은 게임 행동이라 그럴듯하며, 해설도 근거를 바르게 짚는다. 통과. | 기존 러너 게임용 듣기 세부 정보 파악 문항으로 정답이 유일하고 오답과 해설이 적절하여 통과.",
+      "hash": "618c232129c0fce0",
+      "reviewedAt": "2026-10-21T13:32:57.532Z",
       "rubric": "topik-review-r1",
-      "packet": "existing-fix-r1",
+      "packet": "existing-fix-r3a",
       "by": [
         {
           "stage": "claude",

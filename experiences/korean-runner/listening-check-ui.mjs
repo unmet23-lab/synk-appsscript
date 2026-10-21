@@ -103,7 +103,8 @@ export function mountListeningCheck({ coach, beforeOpen, onClose = () => {}, onF
         const last = index === round.total - 1;
         if (last) { const sum = document.createElement('span'); sum.className = 'sum'; sum.textContent = `이번 확인: ${round.total}문제 중 ${rightCount}문제를 맞혔어요.`; fb.append(sum); }
         $('check-next').hidden = false; nextLabel(last ? '확인 마치기' : '다음 지시 듣기'); status('정답과 해설을 확인하거나 다시 들을 수 있어요. 다음 단추를 누를 때까지 기다릴게요.');
-        $('check-next').focus({ preventScroll: true });
+        // 해설이 길면 휴대폰에서 단추가 판 아래로 밀린다(10-21 화면 검수) — 단추가 보일 만큼만 판을 내린다.
+        $('check-next').focus({ preventScroll: true }); $('check-next').scrollIntoView({ block: 'nearest' });
       };
       return button;
     }));
