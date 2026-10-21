@@ -67,7 +67,13 @@
       },
       "nation_youtube": {
         "total_views": 6,
-        "top": { "lab-mm-youtube B0BNHSCtnQw": 2, "lab-ph-youtube ms7Up63e4vQ": 1, "lab-mx-youtube z4Vo-moGLZc": 1, "lab-tw-youtube pL3c0aenbTY": 1, "lab-my-youtube GzYiwwlRUa0": 1 },
+        "top": {
+          "lab-mm-youtube B0BNHSCtnQw": 2,
+          "lab-ph-youtube ms7Up63e4vQ": 1,
+          "lab-mx-youtube z4Vo-moGLZc": 1,
+          "lab-tw-youtube pL3c0aenbTY": 1,
+          "lab-my-youtube GzYiwwlRUa0": 1
+        },
         "zero_view_channels": 13,
         "likes": 0,
         "comments": 0,
@@ -77,5 +83,81 @@
       "verdict": "@synkkorean 하위(상위 25% 아님) · 인스타 @synk.mn 하위(상위 25% 아님) · 페북 SYNK 중간(상위 25% 아님, 갈리지 않음). 추천: 같은 계정에 다시 올리지 않고, 0초를 사실·밈 문장으로 바꾼 퀴즈판을 다른 씨앗 계정에서 시험. 나라별판은 §4-3 기준 밖.",
       "notes": "작업실 서버 관측값은 못 옮김 — ego·크롬 모두 workspace.synk.im 로그인 화면(GET /api/post-performance 401), 비밀번호 입력 안 함. 그래서 서버 몫 칸까지 화면·API에서 읽음: 유튜브 조회·좋아요·댓글은 숫자재기.cjs(Data API 17:41, 게시 뒤 75시간), 나머지는 스튜디오 분석(고급 모드는 태평양 10-19까지). 인스타·페북은 Business Suite 게시물 인사이트(총 328 = FB 206 + IG 122, 누적 그래프 72시간 점)와 인사이트 → 콘텐츠 표(인스타 피드 필터, 끝나고 풂). null 칸: 인스타 3초 유지율·건너뛴 비율은 Business Suite·인스타 웹에 칸 없음, 유튜브 조회수 순위 카드는 개요에 없음, 페북 15초 이상 조회는 값이 안 보임, 맞춤 프로그램은 연결한 것이 없어 해당 없음. 점수 댓글 없음(세 곳 댓글 0)."
     }
-  ]
+  ],
+  "자동판정": {
+    "설명": "tools/게시성과.js가 회사 서버 기록으로 다시 쓴다(AI 없음). 판정 규칙과 칸 뜻은 docs/마케팅/게시성과.md",
+    "판": [
+      {
+        "계정": "lab-instagram",
+        "채널": "인스타 @synk.mn",
+        "주소": "https://www.instagram.com/reel/DeoGOuuDBdk/",
+        "형식": "instagram-reels",
+        "게시": "2026-10-18T07:01:02.000Z",
+        "훅": null,
+        "역할": null,
+        "시점": {
+          "72시간": {
+            "관측": "2026-10-21T07:01:06.737Z",
+            "지표": {
+              "views": 122,
+              "likes": 0,
+              "comments": 0,
+              "shares": 1,
+              "saves": 1,
+              "reach": 106,
+              "earlyRetention3sPct": 14.4,
+              "averageWatchSeconds": 2.688
+            },
+            "평소대비": {
+              "배수": 0.96,
+              "중앙값": 126.5,
+              "편수": 6
+            },
+            "위치": {},
+            "판정": "자료 부족",
+            "다음": null,
+            "까닭": "견줄 이전 편이 모자란다(공유 0편 · 저장 0편 · 3초 유지율 0편 · 평균 시청 0편 — 4편부터)"
+          }
+        },
+        "화면필요": [
+          "팔로우"
+        ]
+      },
+      {
+        "계정": "lab-youtube",
+        "채널": "유튜브 @synkkorean",
+        "주소": "https://www.youtube.com/watch?v=F4iJDO6mjaY",
+        "형식": "youtube-shorts",
+        "게시": "2026-10-18T05:42:13.000Z",
+        "훅": null,
+        "역할": null,
+        "시점": {
+          "72시간": {
+            "관측": "2026-10-21T05:42:14.223Z",
+            "지표": {
+              "views": 164,
+              "likes": 1,
+              "comments": 0
+            },
+            "평소대비": {
+              "배수": 0.65,
+              "중앙값": 252,
+              "편수": 12
+            },
+            "위치": {},
+            "판정": "자료 부족",
+            "다음": null,
+            "까닭": "네 숫자(초반 유지·평균 시청·보내기와 저장·맞춤 도구 유입)가 아직 없다"
+          }
+        },
+        "화면필요": [
+          "본 비율",
+          "평균 시청",
+          "평균 조회율",
+          "공유",
+          "구독 증가"
+        ]
+      }
+    ]
+  }
 }
