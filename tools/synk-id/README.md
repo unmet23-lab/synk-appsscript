@@ -8,7 +8,7 @@ SYNK 계정(synk.im/id/)을 talk 프로젝트(Supabase)에 여는 데 쓴 스크
 
 | 스크립트 | 하는 일 |
 |---|---|
-| `auth-settings.js` | 로그인 설정 보기, `--적용`이면 사이트 주소·허용 주소·OAuth 서버와 동의 화면 경로(`/id/`·`/id-rehearsal/`)·가입 열기. `--메일문구`는 한국어 가입 확인·비밀번호 재설정·이메일 변경 메일(Supabase는 SMTP를 넣은 뒤에만 허용) |
+| `auth-settings.js` | 로그인 설정 보기, `--적용`이면 사이트 주소·허용 주소·OAuth 서버와 동의 화면 경로(`/id/`·`/id-rehearsal/`)·가입 열기. `--메일문구`는 그 대신 가입 확인·비밀번호 재설정·이메일 변경 메일 칸만(한국어 본문 + 영어·몽골어 한 줄씩, Supabase는 SMTP를 넣은 뒤에만 허용) — 메일을 고치다 대시보드에서 닫아 둔 가입·줄인 허용 주소를 되돌리지 않는다. 늘 지금 값과 다른 칸을 `differs:`로 찍고, `--적용`은 그 칸만 보낸다 |
 | `oauth-clients.js` | 읽기 전용 공개 OAuth 목록. 등록·매핑 변경은 아래 공통 도구만 사용한다 |
 | `provision-apply.cjs` | 기본 읽기 계획, `--apply`에서 기존 원문 지문 대조 후 public 등록·매핑 병합. [입력·복구 절차](UNIFIED-CONFIG.md) |
 | `company-public-provision.cjs` | `workspace.synk.im`의 직원 HTTPS 콜백과 별도 고객 `platform` 클라이언트 준비. 기본 읽기, `--apply`만 등록 변경. 회사 계정·DB·배포는 건드리지 않는다 |
@@ -21,7 +21,7 @@ SYNK 계정(synk.im/id/)을 talk 프로젝트(Supabase)에 여는 데 쓴 스크
 
 1. 운영 secret(`SYNK_OAUTH_CLIENT_PRODUCTS`·`SYNK_RELEASE_POLICY`) 변경은 [Supabase 공식 문서](https://supabase.com/docs/guides/functions/secrets)에 따라 함수가 즉시 읽으므로 재배포가 필요하지 않다(2026-10-07 확인). 변경한 원문의 원격 지문과 대상 함수 상태·인증 조건을 확인한다. 함수 소스를 별도로 바꾸는 작업에서만 검수된 배포 절차를 실행하며, secret 변경 때문에 더 최신인 운영 코드를 이전 작업본으로 덮지 않는다.
 2. 동의 목록만 추가할 때: 현재 게시 `config.json`을 읽기로 보관 → `node tools/synk-id/prepare-portal.mjs production <새폴더> --current=<현재게시본.json> --config=<등록후공개설정.json> --config-only` → 결과의 기존 항목 보존 확인 → synk-policy 격리 작업본에서 `id/config.json`만 갱신·검수·게시·실제 주소 대조. 이 경우 기존 앱 번들과 공개 자산은 바꾸지 않는다. 화면 자체의 배포가 별도로 승인된 경우에만 `node tools/build-synk-account.js` 후 `--config-only`를 빼서 전체 포털을 준비한다.
-3. **운영 메일 발송(SMTP)을 유호님이 넣은 뒤** `node tools/synk-id/auth-settings.js --운영 --적용 --메일문구`로 한국어 메일 문구를 넣는다.
+3. 메일 문구를 고칠 때: `node --test tests/synk-id-메일문구.test.js` → `node tools/synk-id/auth-settings.js --운영 --메일문구`(적용 없음)로 `differs:`가 메일 칸뿐인지 본다 → `--적용`. 리허설은 SMTP가 없어 Supabase가 메일 문구를 받지 않으므로(무료 등급 기본 발송기) 리허설 실제 메일 시험은 안 된다. 넣은 직후 운영에서 실제 메일 한 통으로 제목·본문·링크를 본다. 문구가 「링크는 1시간 뒤 만료」라고 쓰므로 `mailer_otp_exp`가 3600이 아니면 도구가 넣지 않는다.
 
 계정 지우기는 요청 뒤 7일 동안 본인이 계정 화면에서 취소할 수 있고, 그 뒤 지체 없이, 늦어도 요청 후 30일 안에 처리한다(유호님 2026-10-03). talk 예약 작업 `synk-account-purge`가 매일 한국 03:17에 유예가 끝난 대기 요청을 처리하고(talk 마이그레이션 20261003005000·20261003006000, 처리 함수는 유예 중이거나 취소된 요청을 돌려보낸다), 학원 소속이 이어진 계정처럼 남은 요청은 talk의 `supabase/계정삭제_대기.sql`(읽기, 요청마다 기한·남은 날)로 보고 `supabase/계정삭제_처리.sql`(쓰기)로 기한 안에 처리한다.
 
