@@ -297,6 +297,18 @@ test('시험 계획: 시작점 짧은 진단을 마친 그 주에도 다시 확�
  assert.equal(exam.recheckWeek(date,withLast.week.start),true,'다음 주는 주기로는 확인 주다');
  assert.equal(planned(withLast,'recheck'),0,'그래도 지난주에 확인했으면 이번 주에는 다시 확인을 넣지 않는다');
 });
+// 10-21 실제 주소 확인: 계획에서 짧은 진단을 열자마자 「진단 그만하기」를 누르면(보이던 문항은 건너뛴 것으로 남는다) 이번 주 다시 확인이 「1/1」이 됐다.
+test('시험 계획: 진단을 열고 답 없이 그만두거나 건너뛰기만 하면 다시 확인으로 세지 않고, 한 문항이라도 답하면 센다',()=>{
+ const s=student({start:KST_MONDAY+DAY}),week=exam.examWeek(s.now());
+ const open=()=>position.createDiagnosticSession({coach:s.coach,items:position.selectDiagnostic({summary:s.coach.summary(),items:DIAGNOSTIC_ITEMS,seen:item=>s.coach.exposure(item).seen,audioAvailable:true}).items});
+ const quit=open();s.tick();quit.next();quit.stop();
+ const skipped=open();s.tick();skipped.next();skipped.skip();s.tick();skipped.next();skipped.stop();
+ assert.equal(exam.weekActivity({events:s.coach.events(),week}).recheck,0,'건너뛴 시도만 있으면 0');
+ assert.equal(exam.lastRecheck({events:s.coach.events()}),null,'다음 확인 간격도 그 시각으로 재지 않는다');
+ const answered=open();s.tick();const first=answered.next();if(first.audio==='pending')answered.delivery('completed');answered.answer(first.item.correctId);answered.stop();
+ assert.equal(exam.weekActivity({events:s.coach.events(),week}).recheck,1,'한 문항이라도 답하면 한 번');
+ assert.ok(Number.isFinite(exam.lastRecheck({events:s.coach.events()})));
+});
 test('시험 정보: 달만 아는 시험일·없는 날·종류에 맞지 않는 급은 거르고, 시험을 고르지 않았으면 계획이 없다',()=>{
  assert.equal(exam.examInfo({reasons:['travel']}),null);
  assert.deepEqual(exam.examInfo({...EXAM,examType:'topik1',targetGrade:4,examDate:'2027-02-30',examMode:'cbt',weeklyMinutes:45}),{type:'topik1',grade:null,date:null,mode:null,weeklyMinutes:null});

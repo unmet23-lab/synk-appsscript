@@ -75,6 +75,9 @@ export function recheckWeek(date,weekStart){
  return index%(EXAM_PLAN_POLICY.recheckEvery[phase]||4)===0;
 }
 
+// 처음 낸 답: 첫 시도가 정답·오답으로 채점된 것. 건너뛴 문항·듣지 못해 채점하지 않은 시도(진단을 열자마자 그만둔 것 포함)는 세지 않는다.
+const planAnswered=event=>event?.type==='practice.attempted'&&event.attemptNo===1&&(event.verdict==='correct'||event.verdict==='incorrect');
+
 // 이번 주에 실제로 한 연습: Trail 기록(처음 낸 답이 있는 연습)과 생활 진도(레슨·복습에 답한 날). 영역은 그 문항의 측정 영역,
 // 짧은 진단(코치 'world-home')은 다시 확인, 읽기 짧은 연습(코치 'world-practice')은 읽기, 쓰기 연습(③ 코치 'world-writing')은 쓰기다.
 export function weekActivity({events=[],progress=null,week,extra=[]}={}){
@@ -85,7 +88,7 @@ export function weekActivity({events=[],progress=null,week,extra=[]}={}){
   else if(event?.type==='practice.presented')shown.set(event.id,event);
  }
  for(const event of Array.isArray(events)?events:[]){
-  if(event?.type!=='practice.attempted'||event.attemptNo!==1)continue;
+  if(!planAnswered(event))continue;
   const at=Date.parse(event.at),presentation=shown.get(event.presentationId);
   if(!Number.isFinite(at)||at<week.start||at>=week.end||!presentation)continue;
   const experience=decisions.get(presentation.decisionId)||'unknown',modality=presentation.measure?.modality;
@@ -116,12 +119,12 @@ export function weekActivity({events=[],progress=null,week,extra=[]}={}){
  return done;
 }
 
-// 이번 주 앞에서 가장 늦은 다시 확인(짧은 진단, 코치 'world-home'의 첫 시도) 시각. 없으면 null.
+// 이번 주 앞에서 가장 늦은 다시 확인(짧은 진단, 코치 'world-home'에서 처음 낸 답) 시각. 없으면 null.
 export function lastRecheck({events=[],before=Infinity}={}){
  const decisions=new Map(),shown=new Map();let last=null;
  for(const event of Array.isArray(events)?events:[]){if(event?.type==='decision.made')decisions.set(event.id,event.experienceId);else if(event?.type==='practice.presented')shown.set(event.id,event);}
  for(const event of Array.isArray(events)?events:[]){
-  if(event?.type!=='practice.attempted'||event.attemptNo!==1)continue;
+  if(!planAnswered(event))continue;
   const at=Date.parse(event.at),presentation=shown.get(event.presentationId);
   if(!Number.isFinite(at)||at>=before||!presentation||decisions.get(presentation.decisionId)!=='world-home')continue;
   if(last===null||at>last)last=at;

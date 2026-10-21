@@ -14391,6 +14391,7 @@ function recheckWeek(date2, weekStart) {
   const index = weeks === null ? Math.floor((weekStart + KST) / (7 * DAY)) : weeks;
   return index % (EXAM_PLAN_POLICY.recheckEvery[phase] || 4) === 0;
 }
+var planAnswered = (event) => event?.type === "practice.attempted" && event.attemptNo === 1 && (event.verdict === "correct" || event.verdict === "incorrect");
 function weekActivity({ events = [], progress = null, week, extra = [] } = {}) {
   if (!planRecord(week) || !planTime(week.start) || !planTime(week.end)) throw TypeError("WORLD exam plan needs a week");
   const done = { listening: 0, reading: 0, writing: 0, recheck: 0, life: 0 }, decisions = /* @__PURE__ */ new Map(), shown = /* @__PURE__ */ new Map(), runs = /* @__PURE__ */ new Map();
@@ -14399,7 +14400,7 @@ function weekActivity({ events = [], progress = null, week, extra = [] } = {}) {
     else if (event?.type === "practice.presented") shown.set(event.id, event);
   }
   for (const event of Array.isArray(events) ? events : []) {
-    if (event?.type !== "practice.attempted" || event.attemptNo !== 1) continue;
+    if (!planAnswered(event)) continue;
     const at = Date.parse(event.at), presentation = shown.get(event.presentationId);
     if (!Number.isFinite(at) || at < week.start || at >= week.end || !presentation) continue;
     const experience = decisions.get(presentation.decisionId) || "unknown", modality = presentation.measure?.modality;
@@ -14441,7 +14442,7 @@ function lastRecheck({ events = [], before = Infinity } = {}) {
     else if (event?.type === "practice.presented") shown.set(event.id, event);
   }
   for (const event of Array.isArray(events) ? events : []) {
-    if (event?.type !== "practice.attempted" || event.attemptNo !== 1) continue;
+    if (!planAnswered(event)) continue;
     const at = Date.parse(event.at), presentation = shown.get(event.presentationId);
     if (!Number.isFinite(at) || at >= before || !presentation || decisions.get(presentation.decisionId) !== "world-home") continue;
     if (last === null || at > last) last = at;
