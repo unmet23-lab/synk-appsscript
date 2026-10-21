@@ -415,6 +415,12 @@
 - 고침: 받기 지침을 바꾸면 유호님이 봇에 `/new`(또는 `/reset`)를 한 번 보내 새 세션을 연다. 세션 밖에서 `reset_session`을 부르는 길은 없다(게이트웨이가 세션 경로표를 메모리에 쥐고 저장한다). 수집 스크립트(`ig_fetch.py`)와 Claude 검토 쪽 고침은 세션과 상관없이 바로 적용된다.
 - 다시 확인: `/new` 뒤 첫 공유에서 `logs/agent.log`에 `tool skill_view completed`가 찍히고, 답장 끝이 「Claude 검토가 30분 안쪽에 시작돼요」다.
 
+### 오래 이어진 DM 세션에서 「thinking 블록이 다른 대화에 묶여 있다」 400이 되풀이된다 — 세션 복구가 앞 기록을 고쳐서 (2026-10-21 Claude)
+- 증상: 10-21 07:04~19:28 텔레그램 DM 세션(10-16부터 하나)에서 `Streaming failed before delivery: 400 … Invalid signature in thinking block. The block is bound to a different conversation.`이 20번 났다. 답은 다시 시도해서 나갔지만 공유 하나에 호출이 늘었다.
+- 원인: 게이트웨이가 세션을 되살리며 메시지 순서 위반을 고친다(`Repaired 35 message-alternation violation(s)`, `Agent cache invalidated … possible cross-process write`). Claude 5.5 세대의 생각 블록은 그 모델·그 대화에 묶이고, 2026-08-31 뒤에 만든 조직(synk.yuh 크레딧 조직 포함)은 앞 기록이 바뀐 대화의 블록을 400으로 거절한다.
+- 고침: 받기 대화는 오래 끌지 않는다 — 봇에 `/new`로 새 세션을 연다(10-21 20:00). 같은 대화 안에서 Sonnet 5.5 → Opus 5.5로 바꾸는 것은 괜찮다(Opus 5.5가 Sonnet 5.5 블록을 읽는다). 모델을 바꿀 때는 `hermes chat -q "Reply with the single word OK." --oneshot --provider anthropic -m <모델> --max-turns 1`로 먼저 한 번 부른다(10-21 Opus 5.5: `API call #1 … in=24723 … write=24719`, 생각 설정 거절 없음).
+- 다시 확인: `grep -c "bound to a different conversation" logs/agent.log`가 새 세션 뒤로 늘지 않는다.
+
 ## Codex 예약
 
 ### heartbeat RRULE의 시각 해석이 예약 형태마다 달랐다
