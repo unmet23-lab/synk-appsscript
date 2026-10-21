@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { dirname, join, posix, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { apply, canonicalId, isStatic, mergeFile, plan, policy, publicPath, selectStaticPaths } from './deploy/static/swap.mjs';
+import { apply, canonicalId, changedPaths, isStatic, mergeFile, plan, policy, publicPath, selectStaticPaths } from './deploy/static/swap.mjs';
 
 const here=dirname(fileURLToPath(import.meta.url)),repository=resolve(here,'../../../../..');
 const C='docs/마케팅/온라인마케팅지도/engagement/company';
@@ -75,7 +75,7 @@ function fakeNode(){
 test('a plan merges commits onto live bytes, lists image-only paths and pins the next set id',async()=>{
   const node=fakeNode(),commit='1'.repeat(40);
   const blobs={[commit+'^:'+C+'/public/app.js']:'a\nb\nc\n',[commit+':'+C+'/public/app.js']:'a\nB\nc\n',[commit+':'+C+'/public/new.webp']:'RIFF'};
-  const result=await plan({commits:[commit],remote:node.remote,read:(revision,path)=>blobs[revision+':'+path]===undefined?null:Buffer.from(blobs[revision+':'+path]),changed:()=>'M\t'+C+'/public/app.js\nM\t'+C+'/server.mjs\nA\t'+C+'/public/new.webp\nD\t'+C+'/public/old.js\n'});
+  const result=await plan({commits:[commit],remote:node.remote,read:(revision,path)=>blobs[revision+':'+path]===undefined?null:Buffer.from(blobs[revision+':'+path]),changed:()=>changedPaths(['M',C+'/public/app.js','M',C+'/server.mjs','A',C+'/public/new.webp','D',C+'/public/old.js',''].join('\0'))});
   assert.deepEqual(result.changed,[C+'/public/app.js',C+'/public/new.webp']);
   assert.equal(Buffer.from(result.changes[C+'/public/app.js'].base64,'base64').toString(),'a\nB\nc\nlive\n');
   assert.deepEqual(result.imageOnly,[C+'/server.mjs']);
@@ -96,4 +96,9 @@ test('public spot checks map the plain company and teacher paths only',()=>{
   assert.equal(publicPath('tools/company-messenger/public/app.js'),'/messenger/app.js');
   assert.equal(publicPath('tools/company-messenger/public/styles.css'),null);assert.equal(publicPath('tools/company-messenger/public/index.html'),null);
   assert.deepEqual(selectStaticPaths([C+'/server.mjs',C+'/public/b.js',C+'/public/a.js']),[C+'/public/a.js',C+'/public/b.js']);
+});
+
+test('changed paths come from NUL-separated diff-tree output, keeping Korean names and rename targets',()=>{
+  assert.deepEqual(changedPaths(['M',C+'/public/앱.js','R100',C+'/public/old.js',C+'/public/new.js','A','tools/company-messenger/public/a b.js',''].join('\0')),[{kind:'M',path:C+'/public/앱.js'},{kind:'R100',path:C+'/public/new.js'},{kind:'A',path:'tools/company-messenger/public/a b.js'}]);
+  assert.deepEqual(changedPaths(''),[]);
 });

@@ -45,6 +45,17 @@ def canonical_id(files):
     return hashlib.sha256(body.encode('utf-8')).hexdigest()[:16]
 
 
+def durable(path, directory=False):
+    """fsync one file or directory so a crash cannot leave a listed file short."""
+    if os.name == 'nt':  # Windows test runs only; production is Linux.
+        return
+    descriptor = os.open(path, os.O_RDONLY | (os.O_DIRECTORY if directory else 0))
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
 def file_digest(path):
     h = hashlib.sha256()
     with open(path, 'rb') as f:
@@ -152,7 +163,12 @@ class Node:
             if final.exists():
                 self.verify(set_id)
                 return set_id, False
+            # Every byte and directory entry reaches the disk before the set gets its name.
+            for path in sorted(work.rglob('*'), key=lambda p: len(p.parts), reverse=True):
+                durable(path, directory=path.is_dir())
+            durable(work, directory=True)
             os.rename(work, final)
+            durable(self.sets(), directory=True)
             work = None
             return set_id, True
         finally:
@@ -213,19 +229,20 @@ class Node:
             temporary = self.root / ('.current-' + os.urandom(6).hex())
             self.symlink('sets/' + to, temporary)
             os.replace(temporary, self.root / 'current')
-            if hasattr(os, 'O_DIRECTORY'):  # make the rename durable (Linux)
-                descriptor = os.open(self.root, os.O_RDONLY | os.O_DIRECTORY)
-                try:
-                    os.fsync(descriptor)
-                finally:
-                    os.close(descriptor)
-            history = self.history() + [{'at': int(self.clock()), 'from': current, 'to': to, 'commit': manifest.get('commit')}]
-            body = json.dumps(history[-200:], ensure_ascii=False, indent=1) + '\n'
-            temporary = self.root / ('.history-' + os.urandom(6).hex())
-            temporary.write_text(body, 'utf-8')
-            os.chmod(temporary, 0o644)
-            os.replace(temporary, self.root / 'history.json')
-        return {'status': 'flipped', 'from': current, 'to': to, 'files': len(manifest['files'])}
+            durable(self.root, directory=True)
+            # The link has moved; a history failure must not hide that from the caller.
+            try:
+                history = self.history() + [{'at': int(self.clock()), 'from': current, 'to': to, 'commit': manifest.get('commit')}]
+                body = json.dumps(history[-200:], ensure_ascii=False, indent=1) + '\n'
+                temporary = self.root / ('.history-' + os.urandom(6).hex())
+                temporary.write_text(body, 'utf-8')
+                os.chmod(temporary, 0o644)
+                durable(temporary)
+                os.replace(temporary, self.root / 'history.json')
+                recorded = True
+            except Exception:
+                recorded = False
+        return {'status': 'flipped', 'from': current, 'to': to, 'files': len(manifest['files']), 'historyRecorded': recorded}
 
     # The bytes a request for each path gets now: the current set copy while the
     # release still holds its origin, otherwise the release copy, otherwise none.

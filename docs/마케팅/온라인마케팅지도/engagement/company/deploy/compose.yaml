@@ -44,12 +44,13 @@ services:
         bind:
           create_host_path: false
       # The static root lives on the persistent disk, so it follows the writer on failover.
+      # An empty root only means "serve the image copy", so a restored or new disk may create it.
       - type: bind
         source: ${SYNK_COMPANY_STATIC_DIR:-/srv/synk/static}
         target: /static
         read_only: true
         bind:
-          create_host_path: false
+          create_host_path: true
     logging:
       driver: json-file
       options:

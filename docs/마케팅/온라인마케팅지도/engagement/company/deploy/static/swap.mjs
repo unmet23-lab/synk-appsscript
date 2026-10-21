@@ -63,13 +63,19 @@ export function mergeFile(base,ours,theirs){
   }finally{rmSync(folder,{recursive:true,force:true});}
 }
 
-export async function plan({commits,remote,read=show,changed=commit=>git(['diff-tree','--no-commit-id','--name-status','-r','-M','--root',commit]).toString('utf8')}){
+// `git diff-tree -z` output: NUL-separated, so non-ASCII paths are never quoted (core.quotePath).
+export function changedPaths(output){
+  const parts=output.split('\0'),rows=[];
+  for(let i=0;i<parts.length&&parts[i];){const kind=parts[i++],count=/^[RC]/.test(kind)?2:1;rows.push({kind,path:parts[i+count-1]});i+=count;}
+  return rows;
+}
+
+export async function plan({commits,remote,read=show,changed=commit=>changedPaths(git(['diff-tree','--no-commit-id','--name-status','-r','-M','--root','-z',commit]).toString('utf8'))}){
   if(!commits.length||!commits.every(commit=>/^[a-f0-9]{40}$/.test(commit)))throw Error('FULL_COMMITS_REQUIRED');
   const status=await remote({op:'status'});if(status.status!=='present'||!status.current)throw Error('LIVE_SET_REQUIRED');
   const live=(await remote({op:'manifest',set:status.current})).manifest,current=new Map(),origins=new Map(),imageOnly=new Set(),skipped=[];
   for(const commit of commits){
-    for(const line of changed(commit).split('\n').filter(Boolean)){
-      const [kind,...paths]=line.split('\t'),path=paths.at(-1);
+    for(const {kind,path} of changed(commit)){
       if(!isStatic(path)){imageOnly.add(path);continue;}
       if(kind.startsWith('D')||kind.startsWith('R')){skipped.push({commit,path,kind:kind[0]});continue;}
       const base=read(commit+'^',path),theirs=read(commit,path);if(!theirs)throw Error('COMMIT_BLOB_MISSING '+path);
