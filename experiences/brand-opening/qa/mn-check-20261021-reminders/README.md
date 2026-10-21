@@ -11,7 +11,7 @@ WORLD 학습 알림 화면 글(`experiences/brand-opening/world-strings.mjs`의 
 | `reminders-03` | 5 | 어색 — 수식어 없는 `Тоо`(수) | 의심 0 | `Давтамж`(빈도)로 고침 |
 | `recheck-01` | 5 | 정상 | 의심 0 | 고친 다섯 줄 |
 | `final-02` · `final-03` | 19 · 5 | 정상 | 의심 0 | 고친 줄이 든 묶음 전체를 다시 |
-| `recheck-02` | 3 | 정상 | (재는 중) | 시험 점검 시트 글 세 줄(`exam.body`에서 「짧게」를 뺌 · 새 `exam.mock` · 교정에서 `эхлэх` → `эхлүүлэх`로 고친 `exam.start`) |
+| `recheck-02` | 3 | 정상 | 의심 0(사전 시간당 한도로 한 시간 뒤 다시) | 시험 점검 시트 글 세 줄(`exam.body`에서 「짧게」를 뺌 · 새 `exam.mock` · 교정에서 `эхлэх` → `эхлүүлэх`로 고친 `exam.start`) |
 
 - 역번역 대조: 40줄 모두 한국어 원문과 뜻이 같다(값 자리 `{date}`·`{time}`·`{when}`은 실제 값을 넣어 쟀다).
 - 교정: 첫 검수에서 `reminder.exam.start`를 기존 `position.diagnostic.start`와 같은 꼴(`эхлүүлэх`)로 맞췄고, 재확인에서 바꾼 세 줄은 그대로 통과했다.
