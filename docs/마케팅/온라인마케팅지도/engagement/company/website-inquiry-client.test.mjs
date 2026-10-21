@@ -150,6 +150,74 @@ test('a status saved out of the open list keeps the inquiry selected and visible
   stale.resolve(view);await again;assert.equal(f.api.state.loading,false);assert.equal(f.api.state.saving,false);assert.match(f.api.state.error,/새로 읽어 주세요/);
 });
 
+const ready=()=>({...data(),connection:{configured:true,formId:'form-id'},settings:{enabled:true,revision:1,intervalMinutes:5},run:{status:'ready',lastSuccessAt:'2026-10-21T01:05:00Z'}});
+const press=f=>action=>f.listeners.click({target:{closest:selector=>selector==='[data-wi-action]'?{dataset:{wiAction:action},disabled:false}:null}});
+const confirmation=(extra={})=>({id:'fresh',revision:1,google:'present',task:'linked',isTest:false,expiresAt:'2026-10-21T01:20:00Z',token:'1792000000000.'+'a'.repeat(64),...extra});
+test('erasing asks the server first, keeps an unsaved draft while checking, names a Google original still there, then erases with the token',async()=>{
+  const f=fixture(),view=ready(),calls=[],notes=[],click=press(f);
+  view.items=[inquiry('fresh','new',{task:{state:'linked',href:'/?tab=messenger&panel=tasks&channelId=c&messageId=1'}}),inquiry('other','new')];
+  f.context.notify=text=>notes.push(text);
+  f.context.api=async(path,body)=>{calls.push({path,body});if(path==='/api/website-inquiries')return view;if(path.endsWith('/erase-check'))return {erasure:confirmation()};
+    if(path.endsWith('/erase')){view.items=view.items.filter(row=>row.id!=='fresh');return {erased:{id:'fresh',erasedAt:'2026-10-21T01:11:00Z',task:'removed'}};}return {};};
+  await f.api.load();assert.equal(f.api.state.selected,'fresh');
+  let html=f.api.panel();
+  assert.match(html,/data-wi-fold="erase"/);assert.match(html,/data-wi-action="erase-check"[^>]*>지우기 전에 확인</);assert.doesNotMatch(html,/data-wi-action="erase"[ >]/,'the erase button appears only after the check');
+  f.api.state.draft.replyDraft='쓰던 초안';f.api.state.dirty=true;
+  await click('erase-check');
+  assert.equal(calls.at(-1).path,'/api/website-inquiries/fresh/erase-check');assert.deepEqual({...calls.at(-1).body},{revision:1});
+  assert.equal(f.api.state.dirty,true,'checking keeps the unsaved draft');assert.equal(f.api.state.draft.replyDraft,'쓰던 초안');
+  html=f.api.panel();
+  assert.match(html,/이 문의를 지울까요\? 되돌릴 수 없어요/);assert.match(html,/data-wi-google="present"/);assert.match(html,/Google 원본에 이 응답이 아직 있어요/);assert.match(html,/href="https:\/\/docs.google.com\/forms\/d\/form-id\/edit#responses"/);
+  assert.match(html,/data-wi-action="erase"[^>]*>Google 원본은 두고 지우기</);assert.match(html,/이 문의로 만든 「홈페이지 문의 답변 검토」 할 일도 함께 지워요/);
+  assert.match(html,/<details class="mt-sec" open id="wi-sec-erase-fresh"/,'the section is open on the confirmation');
+  await click('erase');
+  const erase=calls.find(call=>call.path==='/api/website-inquiries/fresh/erase');assert.deepEqual({...erase.body},{revision:1,token:confirmation().token});
+  assert.deepEqual(notes,['문의와 그 할 일을 지웠어요.']);assert.equal(f.api.state.erasure,null);
+  assert.equal(calls.at(-1).path,'/api/website-inquiries','the list reloads');assert.equal(f.api.state.selected,'other','the next open inquiry opens');
+  assert.doesNotMatch(f.api.panel(),/data-wi-open="fresh"/);
+});
+
+test('a confirmation belongs to one inquiry and one revision, and a failed erase goes back to the check',async()=>{
+  const f=fixture(),view=ready(),click=press(f);view.items=[inquiry('fresh','new'),inquiry('other','new')];
+  f.api.state.data=view;f.api.select('fresh');f.api.state.erasure=confirmation({google:'deleted',task:null});
+  let html=f.api.panel();assert.match(html,/data-wi-action="erase"[^>]*>지우기</);assert.match(html,/Google 원본에서는 이미 지웠어요/);assert.doesNotMatch(html,/함께 지워요|Google 원본 열기<\/a><\/li>/);
+  view.items[0]={...view.items[0],revision:2};html=f.api.panel();assert.match(html,/지우기 전에 확인/);assert.doesNotMatch(html,/이 문의를 지울까요/,'a changed revision needs a new check');
+  view.items[0]={...view.items[0],revision:1};f.api.select('other');assert.equal(f.api.state.erasure,null,'opening another inquiry drops the confirmation');
+  f.api.select('fresh');f.api.state.erasure=confirmation({google:'unknown',task:'pending'});
+  f.context.api=async()=>{throw Object.assign(new Error('지우기 확인 시간이 지났거나 확인한 내용과 달라요. 「지우기 전에 확인」을 다시 눌러 주세요.'),{status:409});};
+  html=f.api.panel();assert.match(html,/Google 원본을 확인하지 못했어요/);assert.match(html,/data-wi-action="erase"[^>]*>지우기</);assert.match(html,/함께 지워요/);
+  await click('erase');assert.equal(f.api.state.erasure,null);html=f.api.panel();
+  assert.match(html,/「지우기 전에 확인」을 다시 눌러 주세요/);assert.match(html,/data-wi-action="erase-check"/);assert.equal(f.api.state.selected,'fresh');assert.match(html,/data-wi-open="fresh"/);
+  f.api.state.erasure=confirmation({task:'unreachable'});html=f.api.panel();assert.match(html,/그 할 일은 이제 쓰지 않는 관리자 계정의 방에 있어 그대로 둬요/);assert.doesNotMatch(html,/할 일도 함께 지워요/);
+  for(const google of ['present','deleted','unknown']){f.api.state.erasure=confirmation({google});
+    assert.doesNotMatch(f.api.panel().replace(/<[^>]+>/g,' '),/[가-힣](습니다|합니다|입니다|됩니다)[.!?]?(\s|$)/,'the confirmation speaks in the 해요 style');}
+});
+
+test('erase requests name themselves on their buttons, a failure stays inside section 03, and cancel or Escape goes back to the check',async()=>{
+  const f=fixture(),view=ready(),click=press(f),pending=[],notes=[],settle=async()=>{for(let i=0;i<12;i++)await Promise.resolve();};
+  view.items=[inquiry('fresh','new'),inquiry('check','new',{classification:{category:'test',label:'합성 기능 점검',reason:'문의 내용에 기능 점검 표식이 있어요.',nextAction:'',isTest:true},replyDraft:''})];
+  f.context.api=(path,body)=>new Promise((resolve,reject)=>pending.push({path,body,resolve,reject}));f.context.notify=text=>notes.push(text);
+  const load=f.api.load();pending.shift().resolve(view);await load;f.api.select('fresh');
+  const checking=click('erase-check');await settle();let html=f.api.panel();
+  assert.match(html,/data-wi-action="erase-check"[^>]*>확인 중…</);assert.match(html,/type="submit" disabled>저장</,'the save button keeps its own word while the check runs');
+  pending.shift().resolve({erasure:confirmation()});await checking;
+  const erasing=click('erase');await settle();html=f.api.panel();assert.match(html,/data-wi-action="erase"[^>]*>지우는 중…</);assert.doesNotMatch(html,/저장 중…/);
+  pending.shift().reject(Object.assign(new Error('이 문의의 할 일을 지우지 못해 문의도 그대로 뒀어요. 잠시 뒤 다시 해 주세요.'),{status:502}));await erasing;
+  html=f.api.panel();assert.equal(f.api.state.error,'','the failure is not shown at the top, far from the section');
+  assert.match(html,/class="mt-error wi-erase-error" role="alert"><span>이 문의의 할 일을 지우지 못해/);assert.match(html,/<details class="mt-sec" open id="wi-sec-erase-fresh"/);
+  const again=click('erase-check');assert.equal(f.api.state.eraseError,null,'a new check clears the message');await settle();pending.shift().resolve({erasure:confirmation()});await again;
+  await click('erase-cancel');assert.equal(f.api.state.erasure,null);
+  const third=click('erase-check');await settle();pending.shift().resolve({erasure:confirmation()});await third;
+  f.listeners.keydown({key:'Escape',target:{closest:selector=>selector==='[data-wi-erase]'?{}:null},preventDefault(){}});assert.equal(f.api.state.erasure,null,'Escape is 「그만두기」');
+  assert.equal(pending.length,0,'nothing was erased');
+  f.api.select('check');assert.match(f.api.panel(),/기능 점검 응답이에요\. 다 봤으면 지워도 돼요/,'a test response says so in section 03');
+  // A task left in a room nobody opens is named in the notice.
+  f.api.select('fresh');const fourth=click('erase-check');await settle();pending.shift().resolve({erasure:confirmation({task:'unreachable'})});await fourth;
+  const last=click('erase');await settle();pending.shift().resolve({erased:{id:'fresh',erasedAt:'2026-10-21T01:11:00Z',task:'unreachable'}});await settle();
+  pending.shift().resolve({...view,items:view.items.filter(row=>row.id!=='fresh')});await last;
+  assert.deepEqual(notes,['문의를 지웠어요. 할 일은 그 관리자 계정의 방에 그대로 있어요.']);
+});
+
 test('non-admin sessions never request the inquiry inbox',()=>{
   const f=fixture();let calls=0;f.context.api=async()=>{calls++;return data();};f.context.state.user.role='member';
   f.api.ensure();assert.equal(calls,0);

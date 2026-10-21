@@ -101,5 +101,16 @@ export function createGoogleFormsInquiryReader({getCredentials,fetchImpl=globalT
       throw fail('FORMS_RESPONSE_INVALID','Google에서 받은 문의 목록 형식이 맞지 않아요. 잠시 뒤 다시 모아 주세요.');
     return {items:(data.responses||[]).map(row=>normalizeGoogleInquiry(row,map)),nextPageToken:data.nextPageToken||null,questionMap:map};
   }
-  return {verify,readPage,configured:()=>{try{credentials();return true;}catch{return false;}}};
+  // Before the company copy is erased: does Google still keep this one response? Reads the responseId field
+  // only. The form is opened first, so a 404 afterwards means the response itself is gone.
+  async function responseState({responseId,signal}={}){
+    if(!validId(responseId))throw fail('FORMS_RESPONSE_INVALID','지울 문의의 응답 번호 형식이 맞지 않아요. 문의를 새로 읽은 뒤 다시 해 주세요.',400);
+    await schema({signal});
+    let data;
+    try{data=await request('/responses/'+encodeURIComponent(responseId),{fields:'responseId'},signal);}
+    catch(error){if(error.code==='FORMS_NOT_FOUND')return 'deleted';throw error;}
+    if(data.responseId!==responseId)throw fail('FORMS_RESPONSE_INVALID','Google에서 받은 응답 번호가 지울 문의와 달라요. 잠시 뒤 다시 해 주세요.');
+    return 'present';
+  }
+  return {verify,readPage,responseState,configured:()=>{try{credentials();return true;}catch{return false;}}};
 }

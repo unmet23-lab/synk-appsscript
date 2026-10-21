@@ -1,7 +1,7 @@
-import {createHash,randomUUID} from 'node:crypto';
+import {createHash,createHmac,randomUUID,timingSafeEqual} from 'node:crypto';
 import {WEBSITE_INQUIRY_FORM_ID} from './website-inquiry-google.mjs';
 
-const ROWS='websiteInquiries',STATE='websiteInquiryState',CONFIG='websiteInquiryConfig';
+const ROWS='websiteInquiries',STATE='websiteInquiryState',CONFIG='websiteInquiryConfig',ERASED='websiteInquiryErasures',CONFIRM_MINUTES=10;
 const fail=(code,message,status=400)=>Object.assign(new Error(message),{code,status});
 const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
 const iso=value=>typeof value==='string'&&Number.isFinite(Date.parse(value));
@@ -47,8 +47,9 @@ const sourceHref=id=>'/?tab=workroom&section=tools&tool=inquiries&inquiryId='+en
 const taskHref=(room,id)=>'/?tab=messenger&panel=tasks&channelId='+encodeURIComponent(room)+'&messageId='+encodeURIComponent(id);
 
 export function createWebsiteInquiryService({store,reader,tasks,origin='',clock=()=>new Date().toISOString(),onChange=()=>{}}={}){
-  if(!store||!reader||!tasks||['options','create','find','get'].some(key=>typeof tasks[key]!=='function'))throw new TypeError('store, reader and synchronous task adapter are required');
+  if(!store||!reader||!tasks||['options','create','find','get','remove'].some(key=>typeof tasks[key]!=='function'))throw new TypeError('store, reader and synchronous task adapter are required');
   const sourceOrigin=origin?new URL(origin).origin:'';
+  const confirmKey=createHmac('sha256',store.key).update('website-inquiry-erase-confirm\0v1').digest();
   let pending=null,stopped=false;
   function now(){const value=clock();if(!iso(value))throw new Error('Invalid inquiry clock');return new Date(value).toISOString();}
   function current(user,context={}){
@@ -106,8 +107,88 @@ export function createWebsiteInquiryService({store,reader,tasks,origin='',clock=
     const next={...row,status:input.status||row.status,replyDraft:draft,draftEdited:row.draftEdited||input.replyDraft!==undefined,revision:row.revision+1,updatedAt:now()};
     store.put(ROWS,id,next);return {item:snapshot(next)};
   }
+  // Erasing one inquiry (a deletion request, or the end of a cohort) takes two calls. checkErase() states what
+  // will go — and whether Google still holds the response, which should be deleted there first — and returns a
+  // confirmation token for this admin and this revision. erase() needs that token. Nothing is kept for the
+  // token; the erasure record is the row number and the time only.
+  function erasable(id,input,keys){
+    const row=store.get(ROWS,id);
+    if(!row)throw fail('INQUIRY_NOT_FOUND','문의 기록을 찾지 못했어요. 새로 읽어 주세요.',404);
+    if(!input||Object.keys(input).some(key=>!keys.includes(key))||input.revision!==row.revision)throw fail('INQUIRY_REVISION','그사이 문의가 바뀌었어요. 새로 읽어 주세요.',409);
+    return row;
+  }
+  function confirmation(user,row,until){return until+'.'+createHmac('sha256',confirmKey).update([user.id,row.id,row.revision,until].join('\0')).digest('hex');}
+  function confirmed(user,row,token){
+    const match=typeof token==='string'&&/^(\d{13})\.[0-9a-f]{64}$/.exec(token);
+    if(!match||Number(match[1])<=Date.parse(now()))return false;
+    const expected=Buffer.from(confirmation(user,row,Number(match[1]))),given=Buffer.from(token);
+    return expected.length===given.length&&timingSafeEqual(expected,given);
+  }
+  async function checkErase(user,id,input,context={}){
+    user=current(user,context);
+    const {responseId}=store.decrypt(erasable(id,input,['revision']).payload);
+    let google='unknown';
+    // Read with the responseId field only. A failed check never blocks the erasure; it is shown as unknown.
+    if(reader.configured?.()===true&&typeof reader.responseState==='function'){
+      try{google=await reader.responseState({responseId,signal:context.signal});}catch{context.signal?.throwIfAborted();}
+    }
+    user=current(user,context);const row=erasable(id,input,['revision']),until=Date.parse(now())+CONFIRM_MINUTES*60000;
+    return {erasure:{id,revision:row.revision,google:['present','deleted'].includes(google)?google:'unknown',task:taskPlan(row),isTest:row.classification?.isTest===true,
+      expiresAt:new Date(until).toISOString(),token:confirmation(user,row,until)}};
+  }
+  // What erase() will do with the task: remove (linked · pending), leave it in a room nobody can open (unreachable), or none.
+  function taskPlan(row){const task=row.task;if(!task||!['linked','pending'].includes(task.state))return null;return store.get('users',task.actorId)?.active?task.state:'unreachable';}
+  // The 「홈페이지 문의 답변 검토」 task was made for this inquiry alone (a link, no customer text), so it goes
+  // too — taken back as the admin it was made for. A room nobody can open any more is left as it is.
+  function eraseTask(row){
+    const task=row.task;
+    if(!task||!['linked','pending'].includes(task.state))return 'none';
+    const owner=store.get('users',task.actorId);
+    if(!owner?.active)return 'unreachable';
+    let result;
+    try{result=synchronous(tasks.remove(owner,{requestId:task.requestId,...(task.state==='linked'?{messageId:task.messageId}:{})}));}
+    catch(error){
+      if(error.status===403)return 'unreachable';
+      if(error.status===409)throw fail('INQUIRY_TASK_REMOVE','이 문의의 할 일을 지우지 못해 문의도 그대로 뒀어요. 메신저 「나에게」에서 그 할 일을 직접 지운 뒤 다시 해 주세요.',409);
+      throw fail('INQUIRY_TASK_REMOVE','이 문의의 할 일을 지우지 못해 문의도 그대로 뒀어요. 잠시 뒤 다시 해 주세요.',502);
+    }
+    return result?.removed===true?'removed':'none';
+  }
+  function erase(user,id,input,context={}){
+    user=current(user,context);
+    // A repeated call after a lost response answers from the erasure record.
+    const done=store.get(ERASED,id);if(done&&!store.get(ROWS,id))return {erased:{id,erasedAt:done.erasedAt,task:'none',repeated:true}};
+    const row=erasable(id,input,['revision','token']);
+    if(!confirmed(user,row,input.token))throw fail('INQUIRY_ERASE_CONFIRM','지우기 확인 시간이 지났거나 확인한 내용과 달라요. 「지우기 전에 확인」을 다시 눌러 주세요.',409);
+    // The task goes first. If anything stops here the inquiry is still whole, and the next try finishes.
+    const task=eraseTask(row),erasedAt=now();
+    // secure_delete zeroes the freed cells, so the encrypted payload and the plain draft do not linger in free pages.
+    const before=store.db.prepare('PRAGMA secure_delete').get().secure_delete;
+    store.db.exec('PRAGMA secure_delete=ON');
+    try{
+      store.transaction(()=>{
+        if(store.get(ROWS,id)?.revision!==row.revision)throw fail('INQUIRY_REVISION','그사이 문의가 바뀌었어요. 새로 읽어 주세요.',409);
+        store.remove(ROWS,id);store.put(ERASED,id,{id,erasedAt});
+      });
+    }catch(error){
+      // The task is gone already: mark it, so the screen offers no dead link and the next try goes straight to the row.
+      if(task==='removed'){try{const latest=store.get(ROWS,id);if(latest?.task)store.put(ROWS,id,{...latest,task:{...latest.task,state:'unavailable'}});}catch{}}
+      throw error;
+    }finally{store.db.exec('PRAGMA secure_delete='+(['OFF','ON','FAST'][before]||'OFF'));}
+    // Older frames of this row would otherwise wait in the -wal file until overwritten. Truncate it without waiting:
+    // with a reader open (a backup, a read-only check) the checkpoint does what it can and returns at once.
+    const wait=store.db.prepare('PRAGMA busy_timeout').get().timeout;
+    try{store.db.exec('PRAGMA busy_timeout=0');store.db.prepare('PRAGMA wal_checkpoint(TRUNCATE)').get();}catch{}
+    finally{store.db.exec('PRAGMA busy_timeout='+(Number.isInteger(wait)?wait:5000));}
+    try{onChange();}catch{}
+    return {erased:{id,erasedAt,task}};
+  }
   function importOne(raw){
-    const data=normalize(raw),id=hash([WEBSITE_INQUIRY_FORM_ID,data.responseId]),fingerprint=hash(data),prior=store.get(ROWS,id);
+    const data=normalize(raw),id=hash([WEBSITE_INQUIRY_FORM_ID,data.responseId]);
+    // An erased inquiry leaves only {id, erasedAt}. Google may still hold the response (a full re-read, or an
+    // edit that moves its timestamp past the watermark), so it never comes back.
+    if(store.get(ERASED,id))return null;
+    const fingerprint=hash(data),prior=store.get(ROWS,id);
     if(prior?.fingerprint===fingerprint)return prior;
     const classification=classifyWebsiteInquiry(data);
     const row={id,payload:store.encrypt(data),fingerprint,classification,replyDraft:prior?.draftEdited?prior.replyDraft:classification.draft,
@@ -166,7 +247,7 @@ export function createWebsiteInquiryService({store,reader,tasks,origin='',clock=
         if(!Array.isArray(page.items))throw fail('INQUIRY_PROVIDER_INVALID','Google에서 받은 문의 형식이 맞지 않아 멈췄어요. 잠시 뒤 다시 모아 주세요.',502);
         // Validate an entire page before committing any of its customer records.
         const normalized=page.items.map(normalize);
-        for(const raw of normalized){check();const row=importOne(raw);linkTask(row,actor);if(!cursor.maximum||Date.parse(raw.submittedAt)>Date.parse(cursor.maximum))cursor.maximum=raw.submittedAt;}
+        for(const raw of normalized){check();const row=importOne(raw);if(row)linkTask(row,actor);if(!cursor.maximum||Date.parse(raw.submittedAt)>Date.parse(cursor.maximum))cursor.maximum=raw.submittedAt;}
         cursor={...cursor,pageToken:page.nextPageToken||undefined};
         store.put('settings',STATE,{...state(),continuation:cursor.pageToken?cursor:null,watermark:cursor.pageToken?before.watermark||null:cursor.maximum});
         pages++;
@@ -198,5 +279,5 @@ export function createWebsiteInquiryService({store,reader,tasks,origin='',clock=
       errorCode:run.errorCode||null,error:run.error||null,href:'/?tab=workroom&section=tools&tool=inquiries'};
   }
   async function close(){stopped=true;await pending?.catch(()=>{});}
-  return {workspace,get,verify,configure,update,tick,health,close};
+  return {workspace,get,verify,configure,update,checkErase,erase,tick,health,close};
 }

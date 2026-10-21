@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 
 // Reuse the original message/task/receipt tables. Only publication leaves the
 // transaction; task and ordinary chat notifications are durable together.
-export function createDirectTaskService({ db, assert, textField, validateRequestId, now, transaction, requirePosting, channelShape, channelMembers, collaboration, messageShape, onPublishError = () => {} }) {
+export function createDirectTaskService({ db, assert, textField, validateRequestId, now, transaction, requirePosting, channelShape, channelMembers, collaboration, messageShape, publish = () => {}, onPublishError = () => {} }) {
   const one = (sql, ...args) => db.prepare(sql).get(...args);
   const fields = new Set(['requestId', 'channelId', 'title', 'body', 'assigneeId', 'reviewerId', 'dueDate']);
   function options(userId) {
@@ -50,5 +50,27 @@ export function createDirectTaskService({ db, assert, textField, validateRequest
     }
     return result;
   }
-  return { options, create };
+  // Takes back a task this person registered when its source record is erased (a deleted website inquiry).
+  // Only the receipt's own message goes, as when its author deletes it; one already gone is not an error.
+  function remove(userId, input) {
+    assert(input && typeof input === 'object' && !Array.isArray(input) && Object.keys(input).every(key => ['requestId', 'messageId'].includes(key)), 400, '지울 업무 정보가 맞지 않아요. 새로고침한 뒤 다시 해 주세요.');
+    const requestId = validateRequestId(input.requestId, '업무 등록');
+    const effects = [];
+    const result = transaction(() => {
+      const receipt = one('SELECT * FROM message_send_requests WHERE user_id=? AND request_id=?', userId, 'direct-task:' + requestId);
+      const message = receipt?.state === 'sent' && receipt.message_id ? one('SELECT * FROM messages WHERE id=?', receipt.message_id) : null;
+      if (!message) return { removed: false };
+      assert(message.user_id === userId && (input.messageId === undefined || String(input.messageId) === String(message.id)), 409, '지울 업무가 등록한 업무와 달라요. 새로고침한 뒤 다시 해 주세요.');
+      assert(!one('SELECT 1 FROM files WHERE message_id=? LIMIT 1', message.id), 409, '파일이 붙은 업무라 저절로 지우지 않았어요. 메신저에서 그 업무를 직접 지워 주세요.');
+      collaboration.productivity.assertMessageMutable(message.id);
+      db.prepare('DELETE FROM messages WHERE id=?').run(message.id);
+      effects.push(() => publish('message', message.channel_id));
+      return { removed: true, messageId: String(message.id) };
+    });
+    for (const effect of effects) {
+      try { effect(); } catch (error) { onPublishError(error); }
+    }
+    return result;
+  }
+  return { options, create, remove };
 }

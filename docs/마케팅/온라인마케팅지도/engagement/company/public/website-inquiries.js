@@ -1,14 +1,15 @@
 'use strict';
 // 문의 접수(회사 관리자만) — 제작 도구 13판 A 「목록 + 상세」(2026-10-21). 그리기 도우미(mt*)는 maker-tools.js 앞 절반에 있다.
 // 머리(계기판 = 고객 문의 상태별 수) → 수집 줄(연결 · 자동 수집 · 마지막 전체 수집) → 왼쪽 옅은 판: 찾기 · 「처리 중 / 모두」 · 01 새 문의 · 02 검토 중
-// (「모두」일 때 03 답변 완료 · 04 종결 · 05 기능 점검) / 오른쪽: 머리(분류 · 근거) → 「지금 할 일」 → 사실 칸 → 01 문의 내용 · 02 답변 초안(저장 · 복사).
+// (「모두」일 때 03 답변 완료 · 04 종결 · 05 기능 점검) / 오른쪽: 머리(분류 · 근거) → 「지금 할 일」 → 사실 칸 → 01 문의 내용 · 02 답변 초안(저장 · 복사) · 03 문의 지우기.
 // 서버 계약(/api/website-inquiries · data-wi-* · 상태 new/reviewing/replied/closed · 답변은 보내지 않음)은 그대로다. 서버가 준 글(분류 이름 · 근거 · 다음 할 일 · 오류)은 그대로 보인다.
-const websiteInquiryState={identity:'',request:0,loading:false,saving:false,attempted:false,data:null,error:'',selected:null,draft:null,dirty:false,query:'',scope:'open',picking:false,folds:{},copied:{},lastTarget:''};
+// 지우기는 두 번 부른다(10-22): …/erase-check가 Google 원본 상태 · 함께 지울 할 일과 10분짜리 확인 번호를 주고, …/erase가 그 번호로 지운다. 번호는 화면 메모리에만 둔다.
+const websiteInquiryState={identity:'',request:0,loading:false,saving:false,busyKind:'',attempted:false,data:null,error:'',selected:null,draft:null,dirty:false,query:'',scope:'open',picking:false,folds:{},copied:{},lastTarget:'',erasure:null,eraseError:null};
 const wiStatus={new:'새 문의',reviewing:'검토 중',replied:'답변 완료',closed:'종결'};
 const wiTones={new:'wait',reviewing:'info',replied:'ok',closed:'off'};
 const wiRunStatus={'not-connected':'읽기 연결 필요',ready:'자동 수집 켜짐',paused:'자동 수집 꺼짐',running:'수집 중','catching-up':'지난 문의 수집 중',failed:'수집 멈춤'};
 function wiIdentity(){return state.user?[state.user.id,state.user.role||''].join(':'):'';}
-function websiteInquiriesReset(){Object.assign(websiteInquiryState,{identity:'',request:websiteInquiryState.request+1,loading:false,saving:false,attempted:false,data:null,error:'',selected:null,draft:null,dirty:false,query:'',scope:'open',picking:false,folds:{},copied:{},lastTarget:''});}
+function websiteInquiriesReset(){Object.assign(websiteInquiryState,{identity:'',request:websiteInquiryState.request+1,loading:false,saving:false,busyKind:'',attempted:false,data:null,error:'',selected:null,draft:null,dirty:false,query:'',scope:'open',picking:false,folds:{},copied:{},lastTarget:'',erasure:null,eraseError:null});}
 function wiActive(){return !!state.user&&state.tab==='workroom'&&typeof wr!=='undefined'&&wr.view==='tools'&&typeof makerTools!=='undefined'&&makerTools.view==='inquiries';}
 function websiteInquiriesEnsure(){
   const s=websiteInquiryState;
@@ -44,6 +45,8 @@ async function wiLoad(){
 function wiSelect(id){
   const s=websiteInquiryState,row=s.data?.items.find(item=>item.id===id);
   s.selected=row?.id||null;s.draft=row?{revision:row.revision,status:row.status,replyDraft:row.replyDraft}:null;s.dirty=false;
+  if(s.erasure?.id!==s.selected)s.erasure=null;
+  if(s.eraseError?.id!==s.selected)s.eraseError=null;
 }
 function wiCanLeave(){return !websiteInquiryState.dirty||confirm('저장하지 않은 답변 초안 변경을 버릴까요?');}
 const wiTest=row=>row?.classification?.isTest===true;
@@ -132,11 +135,28 @@ function wiDetail(){
   const status=`<div class="wi-status" role="radiogroup" aria-label="처리 상태">${Object.entries(wiStatus).map(([id,label])=>`<label><input type="radio" name="status" value="${id}" ${draft.status===id?'checked':''}><span>${label}</span></label>`).join('')}</div>`;
   const copied=s.copied[row.id];
   const reply=`${c.nextAction&&!test&&row.status==='reviewing'?`<p class="mt-note wi-hint">${escape(c.nextAction)}</p>`:''}<div class="wi-draft"><p class="wi-draft-bar"><span>초안 · 저장하거나 복사해도 고객에게 보내지 않아요</span><span data-wi-copied>${copied?escape(wiClock(copied)+'에 복사했어요'):''}</span></p><label class="mt-field"><span class="sr-only">답변 초안</span><textarea name="replyDraft" maxlength="6000" rows="9" data-wi-draft placeholder="${test?'기능 점검 응답이라 초안이 없어요.':'고객에게 보낼 답장 초안'}">${escape(draft.replyDraft)}</textarea></label></div><div class="wi-status-row"><span class="wi-status-label">처리 상태</span>${status}</div><p class="mt-note">답변 완료는 메일을 보낸 뒤, 종결은 더 할 일이 없을 때 골라요.</p>`;
-  const body=`<fieldset class="wi-fields" ${lock}>${sec('message','01','문의 내용',wiShortText(row.message),`<pre class="wi-original">${escape(row.message)}</pre>`,true)}${sec('reply','02','답변 초안',draft.replyDraft?`${mtNum(draft.replyDraft.length)}자`:'비어 있어요',reply,true)}</fieldset>`;
-  const foot=`<div class="mt-form-foot"><span class="mt-note" data-wi-dirty>${s.dirty?'저장하지 않은 변경이 있어요.':'고객 연락처는 관리자에게만 보여요.'}</span>${wiButton('copy','초안 복사',s.saving||!draft.replyDraft)}<button class="btn primary" type="submit" ${lock}>${s.saving?'저장 중…':'저장'}</button></div>`;
+  const erasing=wiErasing(row);
+  const body=`<fieldset class="wi-fields" ${lock}>${sec('message','01','문의 내용',wiShortText(row.message),`<pre class="wi-original">${escape(row.message)}</pre>`,true)}${sec('reply','02','답변 초안',draft.replyDraft?`${mtNum(draft.replyDraft.length)}자`:'비어 있어요',reply,true)}${sec('erase','03','문의 지우기',erasing?'지우기 전 확인 중':test?'기능 점검을 다 봤으면':'삭제 요청이 왔을 때',wiErase(row),erasing||s.eraseError?.id===row.id)}</fieldset>`;
+  const foot=`<div class="mt-form-foot"><span class="mt-note" data-wi-dirty>${s.dirty?'저장하지 않은 변경이 있어요.':'고객 연락처는 관리자에게만 보여요.'}</span>${wiButton('copy','초안 복사',s.saving||!draft.replyDraft)}<button class="btn primary" type="submit" ${lock}>${wiBusy('save')?'저장 중…':'저장'}</button></div>`;
   return `<form class="mt-detail wi-sheet" data-wi-form data-wi-detail="${key}">${head}${wiNow(row,draft)}${facts}${body}${foot}</form>`;
 }
 function wiShortText(value){const text=value?String(value).replace(/\s+/g,' ').trim():'';return text?text.length>40?text.slice(0,40)+'…':text:'비어 있어요';}
+// 03 문의 지우기: 삭제 요청이 오거나 기수가 끝났을 때만 연다. 「지우기 전에 확인」 → 서버가 Google 원본 상태와 함께 지울 할 일을 알려 주면
+// → 「지우기」. 확인은 그 문의 · 그 판(revision)에만 맞고, 판이 바뀌면 처음으로 돌아간다. Google 원본이 남아 있으면 단추 글에 그대로 쓴다.
+function wiErasing(row){const e=websiteInquiryState.erasure;return !!e&&e.id===row.id&&e.revision===row.revision;}
+// 지금 도는 요청이 무엇인지: 저장 · 지우기 확인 · 지우기마다 단추 글이 따로다(지우는 중에 「저장 중…」이라고 쓰지 않는다).
+function wiBusy(kind){const s=websiteInquiryState;return s.saving&&s.busyKind===kind;}
+function wiErase(row){
+  const s=websiteInquiryState,e=s.erasure,busy=s.saving||s.loading;
+  // 확인 · 지우기가 실패한 글은 위 머리가 아니라 이 구역 안에 둔다 — 「지우기 전에 확인」을 다시 누를 자리 바로 위.
+  const failed=s.eraseError?.id===row.id?mtError(s.eraseError.text,'','wi-erase-error'):'';
+  const lead=wiTest(row)?'기능 점검 응답이에요. 다 봤으면 지워도 돼요. Google 원본에서도 그 응답을 지우면 깔끔해요.':'개인정보 삭제 요청이 오면 이 문의를 지워요. Google 원본에서 그 응답을 먼저 지운 뒤 여기서 지워요.';
+  if(!wiErasing(row))return `${failed}<p class="mt-note wi-erase-lead">${escape(lead)}</p><div class="mt-actions">${wiButton('erase-check',wiBusy('erase-check')?'확인 중…':'지우기 전에 확인',busy,'small danger')}</div>`;
+  const google={deleted:'Google 원본에서는 이미 지웠어요.',present:'Google 원본에 이 응답이 아직 있어요. 원본에서 먼저 지우는 게 순서예요.'}[e.google]||'Google 원본을 확인하지 못했어요. 원본에서 지웠는지 직접 봐요.';
+  const formId=s.data?.connection?.formId,source=e.google!=='deleted'&&formId?` <a class="mt-link" href="https://docs.google.com/forms/d/${escape(formId)}/edit#responses" target="_blank" rel="noopener noreferrer">Google 원본 열기</a>`:'';
+  const task=['linked','pending'].includes(e.task)?' 이 문의로 만든 「홈페이지 문의 답변 검토」 할 일도 함께 지워요.':e.task==='unreachable'?' 그 할 일은 이제 쓰지 않는 관리자 계정의 방에 있어 그대로 둬요.':'';
+  return `<div class="wi-erase" data-wi-erase tabindex="-1" role="group" aria-label="문의 지우기 확인"><strong>이 문의를 지울까요? 되돌릴 수 없어요.</strong><ul><li>이 서버에 있는 문의 내용 · 답변 이메일 · 답변 초안을 지워요.${escape(task)}</li><li data-wi-google="${escape(e.google)}">${escape(google)}${source}</li><li>지운 시각과 줄 번호만 남아요. 같은 응답은 다시 들어오지 않아요.</li></ul><div class="mt-actions">${wiButton('erase',wiBusy('erase')?'지우는 중…':e.google==='present'?'Google 원본은 두고 지우기':'지우기',busy,'small danger')}${wiButton('erase-cancel','그만두기',busy)}</div><p class="mt-note">확인하고 10분이 지나면 다시 확인해요.</p></div>`;
+}
 // 「지금 할 일」: 저장된 상태로 고른다 — 새 문의 · 검토 중이면 포스터(흰 알약이 화면의 주 단추), 끝났거나 기능 점검이면 옅은 판.
 // 이 화면은 메일을 보내지 않으니, 복사한 뒤 「답변 완료로 표시」를 바로 누르게 하고 복사한 시각만 남긴다(「보냄」이라고 쓰지 않는다).
 function wiNow(row,draft){const s=websiteInquiryState,tool='inquiries',attrs='data-wi-now',c=row.classification||{},copied=s.copied[row.id],href=wiTaskHref(row),busy=s.saving||s.loading,empty=!String(draft.replyDraft||'').trim(),lock=busy||empty?'disabled':'',noDraft=busy||!draft.replyDraft?'disabled':'';
@@ -164,13 +184,20 @@ function wiChanged(field){const s=websiteInquiryState;if(typeof document.querySe
   const row=s.data?.items.find(item=>item.id===s.selected),now=document.querySelector('[data-wi-now]');if(row&&s.draft&&now&&'outerHTML' in now)now.outerHTML=wiNow(row,s.draft);
   for(const button of document.querySelectorAll?.('[data-wi-action="copy"]')||[])button.disabled=s.saving||!s.draft?.replyDraft;}
 function wiShowDraft(){const s=websiteInquiryState;s.folds.reply=true;render();const go=()=>{const box=document.querySelector?.('[data-wi-draft]');box?.scrollIntoView?.({block:'center',behavior:'smooth'});box?.focus?.({preventScroll:true});};if(typeof requestAnimationFrame==='function')requestAnimationFrame(go);}
+// 다시 그리면 화면이 맨 위로 튀니, 그린 뒤 이어서 볼 자리를 화면 가운데로 끌어오고 초점을 옮긴다.
+function wiReveal(selector){if(!wiActive())return;render();const go=()=>{const node=document.querySelector?.(selector);node?.scrollIntoView?.({block:'center',behavior:'smooth'});node?.focus?.({preventScroll:true});};if(typeof requestAnimationFrame==='function')requestAnimationFrame(go);}
+// 확인 판은 상세 맨 아래라 판에 초점을 둔다(「지우기」 단추에는 두지 않는다 — Enter 한 번에 지워지지 않게).
+function wiShowErase(){websiteInquiryState.folds.erase=true;wiReveal('[data-wi-erase]');}
+// 그만두거나 실패하면 「지우기 전에 확인」으로 돌아간다. 실패 글은 그 구역 안에 둔다.
+function wiBackToCheck(){websiteInquiryState.folds.erase=true;wiReveal('[data-wi-action="erase-check"]');}
+function wiEraseFailed(id){const s=websiteInquiryState;if(!s.data||s.selected!==id||!s.error){wiRender();return;}s.eraseError={id,text:s.error};s.error='';wiBackToCheck();}
 // 저장한 문의를 판에 바로 넣는다. 「처리 중」에서 끝낸 문의는 목록에서 사라지지 않게 「모두」로 넓힌다.
 function wiAccept(result){const s=websiteInquiryState,item=result?.item;if(!item?.id||!s.data)return;s.data.items=s.data.items.map(row=>row.id===item.id?item:row);if(s.selected!==item.id)return;wiSelect(item.id);if(s.scope==='open'&&!wiVisibleOpen(item))s.scope='all';}
-async function wiMutate(action,body){
-  const s=websiteInquiryState,identity=wiIdentity(),request=++s.request;s.saving=true;s.loading=false;s.error='';wiRender();
-  try{const result=await api('/api/website-inquiries/'+action,body);if(identity!==wiIdentity()||request!==s.request)return null;s.dirty=false;return result||{};}
+async function wiMutate(action,body,{keepDraft=false,kind='save'}={}){
+  const s=websiteInquiryState,identity=wiIdentity(),request=++s.request;s.saving=true;s.busyKind=kind;s.loading=false;s.error='';wiRender();
+  try{const result=await api('/api/website-inquiries/'+action,body);if(identity!==wiIdentity()||request!==s.request)return null;if(!keepDraft)s.dirty=false;return result||{};}
   catch(error){if(identity===wiIdentity()&&request===s.request){s.error=error.message;if([401,403].includes(error.status)){s.data=null;s.draft=null;s.selected=null;}}return null;}
-  finally{if(identity===wiIdentity()&&request===s.request){s.saving=false;wiRender();}}
+  finally{if(identity===wiIdentity()&&request===s.request){s.saving=false;s.busyKind='';wiRender();}}
 }
 document.addEventListener('input',event=>{
   if(event.target.matches?.('[data-wi-search]')){websiteInquiryState.query=event.target.value;wiFilterList();return;}
@@ -190,7 +217,8 @@ document.addEventListener('submit',async event=>{
 // 접는 번호 구역의 열림을 기억한다(toggle은 거품이 없어 잡기 단계에서 듣는다).
 document.addEventListener('toggle',event=>{const node=event.target;if(node?.matches?.('[data-wi-fold]'))websiteInquiryState.folds[node.dataset.wiFold]=node.open;},true);
 document.addEventListener('click',async event=>{
-  const link=event.target.closest?.('[data-wi-form] a[href]');if(link){if(!wiCanLeave())event.preventDefault();return;}
+  // 새 탭으로 여는 링크(Google 원본 열기)는 이 화면을 떠나지 않으니 초안 버리기를 묻지 않는다.
+  const link=event.target.closest?.('[data-wi-form] a[href]:not([target="_blank"])');if(link){if(!wiCanLeave())event.preventDefault();return;}
   const open=event.target.closest?.('[data-wi-open]'),button=event.target.closest?.('[data-wi-action]'),s=websiteInquiryState;
   if((!open&&!button)||s.saving||!wiActive()||s.identity!==wiIdentity())return;
   if(open){if(s.selected===open.dataset.wiOpen){s.picking=false;wiRender();return;}if(wiCanLeave()){wiSelect(open.dataset.wiOpen);s.picking=false;s.folds={};wiRender();}return;}
@@ -203,8 +231,23 @@ document.addEventListener('click',async event=>{
   // 복사해 메일로 보낸 뒤: 지금 고친 초안과 함께 「답변 완료」로 저장한다(버리는 게 아니라 저장이라 떠나기 확인을 거치지 않는다).
   if(action==='replied'){if(!s.selected||!s.draft||!String(s.draft.replyDraft||'').trim())return;const id=s.selected,body={revision:s.draft.revision,status:'replied',replyDraft:s.draft.replyDraft};const result=await wiMutate(encodeURIComponent(id),body);if(result){delete s.copied[id];wiAccept(result);notify('「답변 완료」로 바꿨어요.');await wiLoad();}return;}
   if(action==='scope'){s.scope=button.dataset.scope==='all'?'all':'open';if(button.hasAttribute?.('data-wi-pick'))s.picking=true;wiRender();return;}
+  // 지우기 확인은 쓰던 초안을 그대로 둔다(아직 아무것도 지우지 않았다). 지우면 초안도 문의와 함께 사라지니 떠나기 확인을 거치지 않는다.
+  if(action==='erase-check'){const row=s.data?.items.find(item=>item.id===s.selected);if(!row)return;s.eraseError=null;const result=await wiMutate(encodeURIComponent(row.id)+'/erase-check',{revision:row.revision},{keepDraft:true,kind:'erase-check'});
+    if(result?.erasure?.id===row.id&&s.selected===row.id){s.erasure=result.erasure;wiShowErase();}else if(!result)wiEraseFailed(row.id);return;}
+  if(action==='erase-cancel'){s.erasure=null;s.eraseError=null;wiBackToCheck();return;}
+  if(action==='erase'){const e=s.erasure;if(!e||e.id!==s.selected)return;const result=await wiMutate(encodeURIComponent(e.id)+'/erase',{revision:e.revision,token:e.token},{kind:'erase'});s.erasure=null;
+    if(!result?.erased){wiEraseFailed(e.id);return;}
+    if(s.data)s.data.items=s.data.items.filter(row=>row.id!==e.id);delete s.copied[e.id];s.selected=null;s.draft=null;s.dirty=false;s.folds={};s.eraseError=null;
+    notify(result.erased.task==='removed'?'문의와 그 할 일을 지웠어요.':result.erased.task==='unreachable'?'문의를 지웠어요. 할 일은 그 관리자 계정의 방에 그대로 있어요.':'문의를 지웠어요.');
+    // 지운 뒤에는 새로 열린 문의의 목록 줄에 초점을 둔다(지운 단추와 함께 초점이 사라지지 않게).
+    await wiLoad();wiReveal('[data-wi-open][aria-current="true"]');return;}
   if(!wiCanLeave())return;
   if(action==='reload'){if(s.dirty&&s.selected)wiSelect(s.selected);s.dirty=false;await wiLoad();return;}
-  if(action==='toggle'){if(await wiMutate('configure',{enabled:!s.data.settings.enabled,revision:s.data.settings.revision}))await wiLoad();}
-  if(action==='verify'||action==='collect'){if(await wiMutate(action,{}))await wiLoad();}
+  if(action==='toggle'){if(await wiMutate('configure',{enabled:!s.data.settings.enabled,revision:s.data.settings.revision},{kind:'sync'}))await wiLoad();}
+  if(action==='verify'||action==='collect'){if(await wiMutate(action,{},{kind:'sync'}))await wiLoad();}
+});
+// 확인 판에서 Esc는 「그만두기」와 같다(지우지 않는다).
+document.addEventListener('keydown',event=>{
+  const s=websiteInquiryState;if(event.key!=='Escape'||!event.target?.closest?.('[data-wi-erase]')||s.saving||!wiActive()||s.identity!==wiIdentity())return;
+  event.preventDefault();s.erasure=null;s.eraseError=null;wiBackToCheck();
 });

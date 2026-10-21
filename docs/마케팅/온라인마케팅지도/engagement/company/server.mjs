@@ -424,6 +424,7 @@ export function createCompanyApp(options={}) {
     create:(u,input)=>messenger.createTaskForCompanyUser(u.id,input),
     find:(u,input)=>messenger.findTaskForCompanyUser(u.id,input),
     get:(u,input)=>messenger.taskForCompanyUser(u.id,input),
+    remove:(u,input)=>messenger.removeTaskForCompanyUser(u.id,input),
   }});
   let websiteInquiryTick=null;
   function collectWebsiteInquiries(){
@@ -1374,17 +1375,21 @@ export function createCompanyApp(options={}) {
       if(path==='/api/creator-reviews'){if(demoRequest)throw httpError('개인 점검은 실제 작업실에서 저장해 주세요.');const result=creatorReviews.save(user,input);audit(user,'creator-review-created',result.record.id);return send(res,201,result);}
       const creatorReviewRoute=path.match(/^\/api\/creator-reviews\/([^/]+)(?:\/(archive))?$/);
       if(creatorReviewRoute){if(demoRequest)throw httpError('개인 점검은 실제 작업실에서 저장해 주세요.');const result=creatorReviewRoute[2]?creatorReviews.archive(user,creatorReviewRoute[1],input):creatorReviews.save(user,input,creatorReviewRoute[1]);audit(user,creatorReviewRoute[2]?'creator-review-archived':'creator-review-updated',result.record.id);return send(res,200,result);}
-      if(path==='/api/website-inquiries/verify'||path==='/api/website-inquiries/configure'||path==='/api/website-inquiries/collect'||/^\/api\/website-inquiries\/[^/]+$/.test(path)){
+      const inquiryErase=path.match(/^\/api\/website-inquiries\/([^/]+)\/(erase-check|erase)$/);
+      if(path==='/api/website-inquiries/verify'||path==='/api/website-inquiries/configure'||path==='/api/website-inquiries/collect'||/^\/api\/website-inquiries\/[^/]+$/.test(path)||inquiryErase){
         if(demoRequest)throw httpError('문의 접수는 실제 작업실에서 확인해 주세요.');
         const originalHash=auth.hash,controller=new AbortController(),abort=()=>controller.abort();
         const authorize=()=>{const latest=session(req);if(stopRequested||!latest||latest.hash!==originalHash||latest.user.id!==user.id)throw httpError('로그인 상태를 다시 확인해 주세요.',401);if(latest.user.role!=='admin')throw httpError('관리자만 문의 접수함을 확인할 수 있습니다.',403);return latest.user;};
         res.once('close',abort);const context={authorize,signal:AbortSignal.any([controller.signal,publicationAbort.signal])};
         try{
           authorize();
-          const result=path.endsWith('/verify')?await websiteInquiries.verify(user,context):
+          const result=inquiryErase?(inquiryErase[2]==='erase-check'?await websiteInquiries.checkErase(user,inquiryErase[1],input,context):websiteInquiries.erase(user,inquiryErase[1],input,context)):
+            path.endsWith('/verify')?await websiteInquiries.verify(user,context):
             path.endsWith('/configure')?await websiteInquiries.configure(user,input,context):
             path.endsWith('/collect')?await websiteInquiries.tick({force:true,user,context,signal:context.signal}):
             websiteInquiries.update(user,path.split('/').at(-1),input,context);
+          // The audit names the row and the time only — never the message, email or draft.
+          if(inquiryErase?.[2]==='erase'&&!result.erased.repeated)audit(user,'website-inquiry-erased',inquiryErase[1]);
           authorize();return send(res,200,result);
         }finally{res.removeListener('close',abort);}
       }

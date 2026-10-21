@@ -206,7 +206,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
       readAll: userId => integration.notifications.readAll(bridge.companyUserId(userId)),
     } : null,
   });
-  const directTasks = createDirectTaskService({ db, assert, textField, validateRequestId: requestId, now, transaction, requirePosting, channelShape, channelMembers, collaboration, messageShape,
+  const directTasks = createDirectTaskService({ db, assert, textField, validateRequestId: requestId, now, transaction, requirePosting, channelShape, channelMembers, collaboration, messageShape, publish,
     onPublishError: error => console.error('[messenger] Committed task update publication:', String(error?.code || error?.name || 'Error').replace(/[^A-Za-z0-9_]/g, '').slice(0, 80)),
   });
   const voiceService = createVoiceService({ ...voice, db, assert, validateRequestId: requestId, publish, invitationVisible: voiceInvitationVisible });
@@ -1358,6 +1358,13 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
       const task = collaboration.productivity.getTask(String(message.id), member.id);
       assert(task, 404, '후속 업무를 찾지 못했어요. 목록을 새로 불러와 주세요.');
       return {task: {...task, assignee: task.assignee ? {...task.assignee, companyUserId: bridge.companyUserId(task.assignee.id) || null} : null}, message: {id: String(message.id), channelId: message.channel_id}, created: false};
+    },
+    removeTaskForCompanyUser(companyUserId, input) {
+      assert(bridge, 403, '회사 작업실에서 확인해 주세요.');
+      syncDirectory();
+      const member = members().find(row => bridge.companyUserId(row.id) === companyUserId);
+      assert(member, 403, '이 계정의 업무를 불러오지 못했어요. 새로고침한 뒤 다시 해 주세요.');
+      return directTasks.remove(member.id, input);
     },
     taskForCompanyUser(companyUserId, {messageId}) {
       assert(bridge, 403, '회사 작업실에서 확인해 주세요.');

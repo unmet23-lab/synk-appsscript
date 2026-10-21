@@ -32,6 +32,16 @@
 :root .synk-workspace .mt .wi-status input:disabled{cursor:not-allowed}
 :root .synk-workspace .mt .wi-fields:disabled .mt-sec>summary{cursor:default}
 :root .synk-workspace .mt .wi-sheet .mt-sec[data-wi-fold=message][open]>summary .mt-sum{display:none}
+/* 03 문의 지우기: 확인 판은 수집 멈춤 판과 같은 코랄 판이다(되돌릴 수 없는 일에만 코랄을 쓴다). */
+:root .synk-workspace .mt .wi-erase-lead{margin:0 0 12px}
+:root .synk-workspace .mt .wi-erase-error{margin:0 0 12px}
+:root .synk-workspace .mt .wi-erase{padding:14px 16px;border-radius:16px;background:var(--mt-coral-wash);scroll-margin:96px 0}
+:root .synk-workspace .mt .wi-erase:focus{outline:none}
+:root .synk-workspace .mt .wi-erase>strong{display:block;font-weight:var(--w-strong);color:var(--mt-coral-ink)}
+:root .synk-workspace .mt .wi-erase ul{margin:8px 0 14px;padding-left:18px;font-size:14px;line-height:1.6;color:var(--mt-ink-2)}
+:root .synk-workspace .mt .wi-erase li+li{margin-top:4px}
+:root .synk-workspace .mt .wi-erase .mt-link{white-space:normal}
+:root .synk-workspace .mt .wi-erase .mt-actions+.mt-note{margin-top:10px}
 @container mt (max-width:700px){
   :root .synk-workspace .mt .wi-sync{margin:-4px 0 16px}
   :root .synk-workspace .mt .wi-sync .mt-actions{width:100%}

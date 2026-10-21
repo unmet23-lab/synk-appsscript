@@ -24,7 +24,7 @@ async function fixture(t) {
   await start();
   const controllers = [];
   t.after(async () => { controllers.forEach(controller => controller.abort()); await stop(); assert.ok(resolve(directory).startsWith(resolve(tmpdir()) + sep)); await rm(directory, { recursive: true, force: true }); });
-  const f = { people, origin, get db() { return app.db; }, get url() { return url; },
+  const f = { people, origin, get app() { return app; }, get db() { return app.db; }, get url() { return url; },
     async raw(key, path, body, extra = {}) { return fetch(url + path, { method: body === undefined ? 'GET' : 'POST', headers: { Host: 'workspace.example.test', Cookie: 'qa=' + key, Origin: origin, 'X-CSRF-Token': 'csrf-' + key, ...(body === undefined ? {} : { 'Content-Type': 'application/json' }), ...extra }, body: body === undefined ? undefined : JSON.stringify(body) }); },
     async json(key, path, body, status = 200, extra) { const response = await f.raw(key, path, body, extra), value = await response.json(); assert.equal(response.status, status, path + ': ' + JSON.stringify(value)); return value; },
     async restart() { await stop(); await start(); },
@@ -88,6 +88,37 @@ test('a deleted original is a tombstone rather than a new task on retry', async 
   const f = await fixture(t), payload = f.payload(), created = await f.json('admin', '/api/tasks', payload, 201);
   f.db.prepare('DELETE FROM messages WHERE id=?').run(created.message.id); await f.json('admin', '/api/tasks', payload, 410);
   assert.equal(f.counts().messages, 0); assert.equal(f.counts().message_tasks, 0); assert.equal(f.counts().message_send_requests, 1);
+});
+
+test('a company record erased at its source takes back only the task its owner registered, once', async t => {
+  const f = await fixture(t), self = f.boot.worker.channels.find(row => row.kind === 'self');
+  const payload = f.payload({ channelId: self.id, assigneeId: f.boot.worker.user.id, reviewerId: null, dueDate: null });
+  const created = f.app.createTaskForCompanyUser('company-worker', payload), other = await f.json('admin', '/api/tasks', f.payload(), 201);
+  const stream = await f.events('worker');
+  assert.deepEqual(f.app.removeTaskForCompanyUser('company-admin', { requestId: payload.requestId }), { removed: false }, 'another person’s receipt is not theirs to take back');
+  assert.throws(() => f.app.removeTaskForCompanyUser('company-worker', { requestId: payload.requestId, messageId: other.message.id }), { status: 409 });
+  for (const input of [{ requestId: 'invalid' }, { requestId: payload.requestId, title: '다른 일' }, null]) assert.throws(() => f.app.removeTaskForCompanyUser('company-worker', input), { status: 400 });
+  const before = f.counts(); assert.equal(before.message_tasks, 2);
+  assert.deepEqual(f.app.removeTaskForCompanyUser('company-worker', { requestId: payload.requestId, messageId: created.message.id }), { removed: true, messageId: created.message.id });
+  const after = f.counts(), gone = Object.fromEntries(Object.keys(before).map(table => [table, before[table] - after[table]]));
+  assert.deepEqual(gone, { messages: 1, message_tasks: 1, notifications: 0, productivity_events: 1, message_send_requests: 0 }, 'the message, its task and its events go; the other task stays');
+  assert.equal(f.db.prepare('SELECT message_id FROM message_send_requests WHERE request_id=?').get('direct-task:' + payload.requestId).message_id, null, 'the receipt stays, pointing nowhere');
+  assert.deepEqual(f.app.removeTaskForCompanyUser('company-worker', { requestId: payload.requestId }), { removed: false }, 'a second call finds nothing to take back');
+  await new Promise(resolve => setTimeout(resolve, 40)); assert.ok(stream.events.join('').includes(`"type":"message","channelId":"${self.id}"`), 'the open room refreshes'); stream.stop(); await stream.pump;
+  assert.throws(() => f.app.removeTaskForCompanyUser('company-nobody', { requestId: payload.requestId }), { status: 403 });
+  assert.throws(() => f.app.createTaskForCompanyUser('company-worker', payload), { status: 410 }, 'the same registration does not make the task again');
+});
+
+test('a task message holding a file or another task’s result is left for its author to remove', async t => {
+  const f = await fixture(t), self = f.boot.worker.channels.find(row => row.kind === 'self');
+  const make = () => { const payload = f.payload({ channelId: self.id, assigneeId: f.boot.worker.user.id, reviewerId: null, dueDate: null }); return { payload, created: f.app.createTaskForCompanyUser('company-worker', payload) }; };
+  const withFile = make();
+  f.db.prepare('INSERT INTO files(id,channel_id,uploader_id,message_id,name,size,mime,disk_name,created_at) VALUES(?,?,?,?,?,?,?,?,?)').run(randomUUID(), self.id, f.boot.worker.user.id, Number(withFile.created.message.id), 'synthetic.txt', 1, 'text/plain', randomUUID() + '.bin', new Date().toISOString());
+  assert.throws(() => f.app.removeTaskForCompanyUser('company-worker', { requestId: withFile.payload.requestId }), { status: 409 });
+  const result = make(), work = make();
+  f.db.prepare("UPDATE message_tasks SET result_message_id=?,stage='done',status='done' WHERE message_id=?").run(Number(result.created.message.id), Number(work.created.message.id));
+  assert.throws(() => f.app.removeTaskForCompanyUser('company-worker', { requestId: result.payload.requestId }), { status: 409 });
+  assert.equal(f.counts().message_tasks, 3);
 });
 
 for (const [table, phase] of [['message_tasks', 'task insert'], ['message_send_requests', 'receipt insert after task and ordinary notifications']]) {

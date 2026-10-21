@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
+import {readFileSync,statSync} from 'node:fs';
 import {mkdtemp,rm,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve,dirname} from 'node:path';
@@ -21,20 +21,24 @@ async function fixture(t){
   const messenger=createMessenger({dataDir:join(directory,'messenger'),port:0,backgroundJobsEnabled:false,integration,
     driveStorage:{active:async()=>null,status:async()=>({provider:'local'})}});
   await messenger.startMounted();
-  let at='2026-10-20T02:00:00.000Z',items=[sample()],pages=null,readHook=null,taskHook=null,verifyHook=null,calls=0;
+  let at='2026-10-20T02:00:00.000Z',items=[sample()],pages=null,readHook=null,taskHook=null,verifyHook=null,removeHook=null,google='present',googleHook=null,calls=0;
+  const googleCalls=[];
   const tasks={
     options:u=>messenger.taskOptionsForCompanyUser(u.id),
     create(u,input){const result=messenger.createTaskForCompanyUser(u.id,input);taskHook?.(result);return result;},
     find:(u,input)=>messenger.findTaskForCompanyUser(u.id,input),
     get:(u,input)=>messenger.taskForCompanyUser(u.id,input),
+    remove(u,input){removeHook?.(u,input);return messenger.removeTaskForCompanyUser(u.id,input);},
   };
   const reader={configured:()=>true,async verify(){await verifyHook?.();return {connected:true,formId:WEBSITE_INQUIRY_FORM_ID,verifiedAt:at};},
-    async readPage(input){calls++;await readHook?.(input);return pages?pages(input):{items:structuredClone(items),nextPageToken:null,questionMap:{}};}};
+    async readPage(input){calls++;await readHook?.(input);return pages?pages(input):{items:structuredClone(items),nextPageToken:null,questionMap:{}};},
+    async responseState(input){googleCalls.push(input);await googleHook?.(input);return google;}};
   const make=()=>createWebsiteInquiryService({store,reader,tasks,origin:integration.origin,clock:()=>at});
   let service=make();
   t.after(async()=>{await service.close();await messenger.close();store.close();assert.equal(dirname(resolve(directory)),resolve(tmpdir()));await rm(directory,{recursive:true,force:true});});
-  return {store,users,messenger,reader,tasks,get service(){return service;},set items(value){items=value;},set pages(value){pages=value;},set at(value){at=value;},
-    set readHook(value){readHook=value;},set taskHook(value){taskHook=value;},set verifyHook(value){verifyHook=value;},get calls(){return calls;},
+  return {store,users,messenger,reader,tasks,googleCalls,get service(){return service;},set items(value){items=value;},set pages(value){pages=value;},set at(value){at=value;},
+    set readHook(value){readHook=value;},set taskHook(value){taskHook=value;},set verifyHook(value){verifyHook=value;},set removeHook(value){removeHook=value;},
+    set google(value){google=value;},set googleHook(value){googleHook=value;},get calls(){return calls;},
     restart(){service=make();},enable:()=>service.configure(users.admin,{enabled:true,revision:0}),
     counts:()=>Object.fromEntries(['messages','message_tasks','message_send_requests'].map(table=>[table,messenger.db.prepare('SELECT COUNT(*) AS n FROM '+table).get().n]))};
 }
@@ -117,6 +121,112 @@ test('paginated collection preserves its filter and resumes a bounded pass witho
   assert.ok(requests.every(input=>input.after===undefined));assert.equal(f.counts().message_tasks,11);
 });
 
+const ERASED='websiteInquiryErasures';
+const PRIVATE=/synthetic@example|SYNTHETIC_PRIVATE|SYNTHETIC_UPDATED|synthetic-response|검토한 답변 초안/;
+async function collected(f){await f.enable();await f.service.tick({force:true});return f.service.workspace(f.users.admin).items[0];}
+
+test('erasing takes a confirmation, takes back its task and leaves only the row number and the time',async t=>{
+  const f=await fixture(t),row=await collected(f),admin=f.users.admin;
+  f.service.update(admin,row.id,{revision:row.revision,replyDraft:'검토한 답변 초안',status:'reviewing'});
+  const current=f.service.get(admin,row.id);assert.equal(current.task.state,'linked');assert.deepEqual(f.counts(),{messages:1,message_tasks:1,message_send_requests:1});
+  const {erasure}=await f.service.checkErase(admin,row.id,{revision:current.revision});
+  assert.deepEqual({...erasure,token:typeof erasure.token},{id:row.id,revision:current.revision,google:'present',task:'linked',isTest:false,expiresAt:'2026-10-20T02:10:00.000Z',token:'string'});
+  assert.deepEqual(f.googleCalls.map(call=>call.responseId),['synthetic-response-1'],'Google is asked about this one response only');
+  assert.equal(f.service.get(admin,row.id).revision,current.revision,'checking changes nothing');assert.equal(f.counts().message_tasks,1);
+  for(const input of [{revision:current.revision},{revision:current.revision,token:'1'.repeat(13)+'.'+'0'.repeat(64)},{revision:current.revision,token:erasure.token.replace(/.$/,c=>c==='0'?'1':'0')},{revision:current.revision,token:erasure.token+'0'}])
+    assert.throws(()=>f.service.erase(admin,row.id,input),{code:'INQUIRY_ERASE_CONFIRM',status:409});
+  assert.throws(()=>f.service.erase(admin,row.id,{revision:current.revision-1,token:erasure.token}),{code:'INQUIRY_REVISION'});
+  assert.throws(()=>f.service.erase(admin,row.id,{revision:current.revision,token:erasure.token,force:true}),{code:'INQUIRY_REVISION'});
+  assert.throws(()=>f.service.erase(f.users.other,row.id,{revision:current.revision,token:erasure.token}),{status:403});
+  assert.equal(f.store.count('websiteInquiries'),1);assert.equal(f.counts().message_tasks,1);
+  f.at='2026-10-20T02:03:00.000Z';
+  const done=f.service.erase(admin,row.id,{revision:current.revision,token:erasure.token});
+  assert.deepEqual(done,{erased:{id:row.id,erasedAt:'2026-10-20T02:03:00.000Z',task:'removed'}});
+  assert.equal(f.store.count('websiteInquiries'),0);assert.deepEqual(f.counts(),{messages:0,message_tasks:0,message_send_requests:1},'the task message and its task are gone; the receipt keeps no text');
+  assert.deepEqual(f.store.all(ERASED),[{id:row.id,erasedAt:'2026-10-20T02:03:00.000Z'}],'the erasure record is the row number and the time only');
+  assert.doesNotMatch(JSON.stringify(f.store.db.prepare("SELECT kind,body FROM documents WHERE kind<>'users'").all()),PRIVATE,'no customer text, email, draft or response number is left in the company store');
+  // Only the last revision ever held this draft: the erase zeroed that cell and truncated the WAL, so neither file keeps it.
+  assert.equal(statSync(join(f.store.directory,'company.sqlite-wal')).size,0,'the erase truncates the WAL');
+  assert.equal(readFileSync(join(f.store.directory,'company.sqlite')).includes(Buffer.from('검토한 답변 초안')),false,'the erased draft is not left in the database file');
+  assert.equal(f.store.db.prepare('PRAGMA secure_delete').get().secure_delete,0,'secure_delete goes back to its earlier value');assert.equal(f.store.db.prepare('PRAGMA busy_timeout').get().timeout,5000,'so does busy_timeout');
+  assert.throws(()=>f.service.get(admin,row.id),{status:404});assert.equal(f.service.workspace(admin).items.length,0);
+  assert.deepEqual(f.service.erase(admin,row.id,{revision:current.revision,token:erasure.token}),{erased:{id:row.id,erasedAt:'2026-10-20T02:03:00.000Z',task:'none',repeated:true}},'a repeat answers from the record');
+  await assert.rejects(f.service.checkErase(admin,row.id,{revision:current.revision}),{status:404});
+});
+
+test('an erased response never comes back — next run, full re-read or edit — while a new response from the same person does',async t=>{
+  const f=await fixture(t),row=await collected(f),admin=f.users.admin;
+  const {erasure}=await f.service.checkErase(admin,row.id,{revision:row.revision});f.service.erase(admin,row.id,{revision:row.revision,token:erasure.token});
+  f.at='2026-10-20T02:10:00.000Z';await f.service.tick({force:true});assert.equal(f.store.count('websiteInquiries'),0);
+  const state=f.store.get('settings','websiteInquiryState');f.store.put('settings','websiteInquiryState',{...state,watermark:null,continuation:null});
+  f.items=[sample({message:'SYNTHETIC_UPDATED_CONTENT',submittedAt:'2026-10-20T02:09:00.000Z'})];
+  f.at='2026-10-20T02:20:00.000Z';const run=await f.service.tick({force:true});assert.equal(run.completed,true);
+  assert.equal(f.store.count('websiteInquiries'),0,'a full re-read of the edited response is blocked');assert.equal(f.counts().messages,0,'and no task is made again');
+  f.items=[sample({message:'SYNTHETIC_UPDATED_CONTENT',submittedAt:'2026-10-20T02:09:00.000Z'}),sample({responseId:'synthetic-response-2',createdAt:'2026-10-20T02:15:00.000Z',submittedAt:'2026-10-20T02:15:00.000Z'})];
+  f.at='2026-10-20T02:30:00.000Z';await f.service.tick({force:true});
+  const items=f.service.workspace(admin).items;assert.equal(items.length,1);assert.notEqual(items[0].id,row.id);assert.equal(items[0].task.state,'linked');assert.equal(f.counts().message_tasks,1);
+});
+
+test('the confirmation fits one admin, one revision and ten minutes',async t=>{
+  const f=await fixture(t),row=await collected(f),admin=f.users.admin,second={id:'admin-2',role:'admin',name:'합성 관리자 2',active:true};f.store.put('users',second.id,second);
+  const {erasure}=await f.service.checkErase(admin,row.id,{revision:row.revision});
+  assert.throws(()=>f.service.erase(second,row.id,{revision:row.revision,token:erasure.token}),{code:'INQUIRY_ERASE_CONFIRM'},'another admin needs a confirmation of their own');
+  f.at='2026-10-20T02:10:00.000Z';assert.throws(()=>f.service.erase(admin,row.id,{revision:row.revision,token:erasure.token}),{code:'INQUIRY_ERASE_CONFIRM'},'ten minutes later it has run out');
+  f.at='2026-10-20T02:11:00.000Z';const fresh=(await f.service.checkErase(admin,row.id,{revision:row.revision})).erasure;
+  const edited=f.service.update(admin,row.id,{revision:row.revision,status:'reviewing'}).item;
+  assert.throws(()=>f.service.erase(admin,row.id,{revision:edited.revision,token:fresh.token}),{code:'INQUIRY_ERASE_CONFIRM'},'a token for the earlier revision does not fit the new one');
+  assert.throws(()=>f.service.erase(admin,row.id,{revision:row.revision,token:fresh.token}),{code:'INQUIRY_REVISION'});
+  await assert.rejects(f.service.checkErase(admin,row.id,{revision:row.revision}),{code:'INQUIRY_REVISION'});
+  await assert.rejects(f.service.checkErase(admin,row.id,{revision:edited.revision,token:fresh.token}),{code:'INQUIRY_REVISION'},'the check takes the revision only');
+  await assert.rejects(f.service.checkErase(f.users.other,row.id,{revision:edited.revision}),{status:403});assert.equal(f.googleCalls.length,2,'a member never reaches Google');
+  // Authority is checked again after the Google await: a revoked admin gets no token.
+  f.googleHook=()=>f.store.put('users','admin',{...admin,role:'viewer'});
+  await assert.rejects(f.service.checkErase(admin,row.id,{revision:edited.revision}),{status:403});
+});
+
+test('a Google check that fails shows unknown and never blocks; a test response erases with no task',async t=>{
+  const f=await fixture(t);f.items=[sample({message:'[SYNK 기능 점검 · 실제 문의 아님] SYNTHETIC_PRIVATE_CONTENT'})];const row=await collected(f),admin=f.users.admin;
+  assert.equal(row.task,null);f.googleHook=()=>{throw Object.assign(new Error('synthetic provider failure'),{code:'FORMS_UNAVAILABLE',status:503});};
+  const {erasure}=await f.service.checkErase(admin,row.id,{revision:row.revision});assert.equal(erasure.google,'unknown');assert.equal(erasure.task,null);assert.equal(erasure.isTest,true);
+  f.googleHook=null;f.google='deleted';assert.equal((await f.service.checkErase(admin,row.id,{revision:row.revision})).erasure.google,'deleted');
+  f.google='something else';assert.equal((await f.service.checkErase(admin,row.id,{revision:row.revision})).erasure.google,'unknown');
+  assert.deepEqual(f.service.erase(admin,row.id,{revision:row.revision,token:erasure.token}).erased.task,'none');assert.equal(f.store.count('websiteInquiries'),0);
+  const controller=new AbortController();f.googleHook=()=>controller.abort();f.items=[sample({responseId:'synthetic-response-3'})];await f.service.tick({force:true});
+  const next=f.service.workspace(admin).items[0];
+  await assert.rejects(f.service.checkErase(admin,next.id,{revision:next.revision},{signal:controller.signal}),{name:'AbortError'},'a cancelled request gets no token');
+});
+
+test('a task that cannot be taken back keeps the inquiry whole; a pending task goes; a closed room does not block',async t=>{
+  const f=await fixture(t),row=await collected(f),admin=f.users.admin;
+  const {erasure}=await f.service.checkErase(admin,row.id,{revision:row.revision});
+  f.removeHook=()=>{throw Object.assign(new Error('synthetic messenger fault'),{status:500});};
+  assert.throws(()=>f.service.erase(admin,row.id,{revision:row.revision,token:erasure.token}),{code:'INQUIRY_TASK_REMOVE',status:502});
+  f.removeHook=()=>{throw Object.assign(new Error('synthetic result message'),{status:409});};
+  assert.throws(()=>f.service.erase(admin,row.id,{revision:row.revision,token:erasure.token}),{code:'INQUIRY_TASK_REMOVE',status:409});
+  assert.equal(f.store.count('websiteInquiries'),1);assert.equal(f.store.count(ERASED),0);assert.equal(f.counts().message_tasks,1);
+  // The task goes, then the row's transaction fails: the row stays, marked so the screen shows no dead task link.
+  f.removeHook=null;const transaction=f.store.transaction;f.store.transaction=()=>{throw Object.assign(new Error('synthetic disk fault'),{code:'ERR_SQLITE_ERROR'});};
+  try{assert.throws(()=>f.service.erase(admin,row.id,{revision:row.revision,token:erasure.token}),{message:'synthetic disk fault'});}finally{f.store.transaction=transaction;}
+  assert.equal(f.counts().message_tasks,0);assert.equal(f.service.get(admin,row.id).task.state,'unavailable');assert.equal(f.store.count(ERASED),0);
+  assert.equal(f.store.db.prepare('PRAGMA secure_delete').get().secure_delete,0,'secure_delete is put back after a failure too');
+  assert.equal(f.service.erase(admin,row.id,{revision:row.revision,token:erasure.token}).erased.task,'none','the same confirmation finishes the row');
+  assert.equal(f.store.count('websiteInquiries'),0);
+  // A task whose link was lost after the messenger stored it is found by its receipt.
+  f.taskHook=()=>{throw new Error('synthetic response lost');};f.items=[sample({responseId:'synthetic-response-4'})];
+  await assert.rejects(f.service.tick({force:true}));f.taskHook=null;
+  const pending=f.store.all('websiteInquiries')[0];assert.equal(pending.task.state,'pending');assert.equal(f.counts().message_tasks,1);
+  let removed;f.removeHook=(u,input)=>{removed=input;};
+  const check=(await f.service.checkErase(admin,pending.id,{revision:pending.revision})).erasure;assert.equal(check.task,'pending');
+  assert.equal(f.service.erase(admin,pending.id,{revision:pending.revision,token:check.token}).erased.task,'removed');assert.equal(f.counts().message_tasks,0);
+  assert.deepEqual(Object.keys(removed),['requestId'],'a pending task is looked up by its receipt alone');
+  // Another admin erases a row whose task sits in the personal room of an admin who has left.
+  f.removeHook=null;f.items=[sample({responseId:'synthetic-response-5'})];f.at='2026-10-20T02:30:00.000Z';await f.service.tick({force:true});
+  const last=f.service.workspace(admin).items[0],second={id:'admin-2',role:'admin',name:'합성 관리자 2',active:true};f.store.put('users',second.id,second);
+  const token=(await f.service.checkErase(second,last.id,{revision:last.revision})).erasure.token;f.store.put('users','admin',{...admin,active:false});
+  assert.equal((await f.service.checkErase(second,last.id,{revision:last.revision})).erasure.task,'unreachable','the check says the task stays');
+  assert.equal(f.service.erase(second,last.id,{revision:last.revision,token}).erased.task,'unreachable');assert.equal(f.store.count('websiteInquiries'),0);assert.equal(f.counts().message_tasks,1,'that room keeps its link-only message');
+});
+
 test('disabled or not-due runs never access the provider, and closed workers never run',async t=>{
   const f=await fixture(t);assert.equal((await f.service.tick()).reason,'paused');assert.equal(f.calls,0);
   await f.enable();await f.service.tick();assert.equal((await f.service.tick()).reason,'not-due');assert.equal(f.calls,1);
@@ -174,6 +284,22 @@ test('changing credential binding or cancellation during an await discards the r
   await assert.rejects(f.reader.verify(),{code:'FORMS_CONNECTION_CHANGED'});
   const controller=new AbortController();controller.abort();const cancelled=googleFixture();
   await assert.rejects(cancelled.reader.verify({signal:controller.signal}),{name:'AbortError'});assert.equal(cancelled.calls.length,0);
+});
+test('the erase check asks Google about one response by its id field only, and a 404 after the form opens means deleted',async()=>{
+  const f=googleFixture({hook:async url=>{const path=new URL(url).pathname;
+    if(path.endsWith('/responses/gone'))return new Response('{"error":{"status":"NOT_FOUND"}}',{status:404});
+    if(path.endsWith('/responses/kept'))return Response.json({responseId:'kept'});
+    if(path.endsWith('/responses/other'))return Response.json({responseId:'different'});return null;}});
+  assert.equal(await f.reader.responseState({responseId:'kept'}),'present');
+  const probe=f.calls.find(call=>call.url.includes('/responses/kept'));assert.equal(new URL(probe.url).searchParams.get('fields'),'responseId');
+  assert.equal(await f.reader.responseState({responseId:'gone'}),'deleted');
+  await assert.rejects(f.reader.responseState({responseId:'other'}),{code:'FORMS_RESPONSE_INVALID'});
+  const before=f.calls.length;await assert.rejects(f.reader.responseState({responseId:'../x'}),{code:'FORMS_RESPONSE_INVALID'});assert.equal(f.calls.length,before);
+  const missing=googleFixture({hook:async url=>new URL(url).hostname==='forms.googleapis.com'?new Response('{}',{status:404}):null});
+  await assert.rejects(missing.reader.responseState({responseId:'kept'}),{code:'FORMS_NOT_FOUND'},'a form that does not open is not a deleted response');
+  assert.equal(missing.calls.some(call=>call.url.includes('/responses/')),false);
+  const denied=googleFixture({hook:async url=>url.includes('/responses/')?new Response('private provider error',{status:403}):null});
+  await assert.rejects(denied.reader.responseState({responseId:'kept'}),error=>error.code==='FORMS_AUTH_REQUIRED'&&!error.message.includes('private'));
 });
 
 test('connection verification is read-only and installation stores an encrypted secret only after permission checks',async t=>{
