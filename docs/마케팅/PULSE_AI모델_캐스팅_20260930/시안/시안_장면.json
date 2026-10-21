@@ -1,0 +1,58 @@
+{
+ "설명": "1차 다섯 명 영상 게이트의 「실제 제품을 든 시안 3장」(2026-10-21). 사람은 모델 LoRA v2로 뽑고(로컬 ComfyUI, Z-Image Turbo 8단계), 손에는 같은 모양의 무지 갈색 캔(placeholder)을 들게 한 뒤 그 자리에 블렌더 MORU 캔 렌더를 얹는다(시안_합성.py). 장면은 로드맵 3절 역할·업종에서 모델마다 셋. 지시문 꼴은 검증과 같다: 트리거 맨 앞, 캡션과 같은 나이 낱말, 명세서 LoRA 「주의」의 보정 낱말.",
+ "크기": [896, 1184],
+ "시드": [11, 12, 13, 14],
+ "캔": "holding one slim tall dark brown aluminum beverage can with a silver top rim, the can is plain with no text, no logo and no label, upright, the front of the can facing the camera",
+ "모델": {
+  "F05": {
+   "lora": "f05_soyeon_v2\\f05_soyeon_v2.safetensors",
+   "앞": "pls_f05, a Korean woman in her mid-thirties",
+   "뒤": "collarbone-length dark brown hair with C-curl ends, her cheeks lift when she smiles, natural makeup with muted rose lips, 85mm portrait lens, realistic photo",
+   "장면": [
+    {"id": "S1", "이름": "주방 아침 · 생활·주방", "text": "waist-up, standing at the counter of a bright home kitchen in the morning, wearing a cream knit cardigan over a white t-shirt, {can} in her right hand at chest height, warm smile, soft window light from camera left"},
+    {"id": "S2", "이름": "작은 카페 사장 · 식품·카페", "text": "chest-up, standing behind the wooden counter of her small cozy cafe, wearing a beige linen apron over a navy striped shirt, {can} in her right hand beside her shoulder, friendly closed-mouth smile, warm afternoon light, softly blurred cafe shelves behind her"},
+    {"id": "S3", "이름": "거실 소파 후기 · 후기 화자", "text": "waist-up, sitting on a light grey sofa in a tidy living room, wearing a soft oatmeal sweatshirt, {can} in her right hand held a little toward the camera as if recommending it to a friend, gentle smile, bright natural daylight"}
+   ]
+  },
+  "M04": {
+   "lora": "m04_minjae_v2\\m04_minjae_v2.safetensors",
+   "앞": "pls_m04, a Korean man in his late twenties",
+   "뒤": "short black hair with messy straight bangs, soft hooded eyes, gentle expression, dry matte skin, muted rose-brown lips, average build, 85mm portrait lens, realistic photo",
+   "장면": [
+    {"id": "S1", "이름": "자취방 책상 밤 · 게임·간편식", "text": "chest-up, sitting at a desk in his small studio apartment at night with a monitor glowing softly behind him, wearing a grey hoodie, {can} in his right hand at chest height, relaxed warm smile, warm desk lamp light"},
+    {"id": "S2", "이름": "회사 탕비실 아침 · 신입사원", "text": "waist-up, standing in a bright office pantry in the morning, wearing a light blue oxford shirt, {can} in his right hand at chest height, friendly smile, soft daylight from a window"},
+    {"id": "S3", "이름": "원룸 창가 주말 · 생활용품 후기", "text": "waist-up, leaning by the window of his one-room apartment on a weekend morning, wearing a white t-shirt under an open denim shirt, {can} in his right hand held a little toward the camera, easy smile, natural daylight"}
+   ]
+  },
+  "F06": {
+   "lora": "f06_eunjeong_v2\\f06_eunjeong_v2.safetensors",
+   "앞": "pls_f06, a Korean woman in her mid-forties",
+   "뒤": "medium-length dark brown wavy hair swept to the side, small single pearl stud earrings, soft thin natural eyebrows, fine lines at the corners of her eyes, muted rose lips, petite 160 cm, average build, 85mm portrait lens, realistic photo",
+   "장면": [
+    {"id": "S1", "이름": "부티크 사장님 · 중년 패션", "text": "waist-up, standing in her bright boutique with garment racks softly blurred behind her, wearing an ivory silk blouse, {can} in her right hand at chest height, warm closed-mouth smile, soft warm light"},
+    {"id": "S2", "이름": "주방 · 주방 가전·엄마", "text": "chest-up, in an elegant modern kitchen with warm wood cabinets, wearing a camel cashmere sweater, {can} in her right hand beside her shoulder, warm smile showing her upper teeth, soft warm window light"},
+    {"id": "S3", "이름": "원장실 · 클리닉·원장", "text": "waist-up, sitting at a clean desk in a calm clinic office, wearing a white blouse under a navy blazer, {can} in her right hand at chest height, looking at the camera with a calm attentive expression and a soft smile, soft warm light"}
+   ]
+  },
+  "F07": {
+   "lora": "f07_chaewon_v2\\f07_chaewon_v2.safetensors",
+   "앞": "pls_f07, a young Korean woman in her mid-twenties",
+   "뒤": "short black pixie cut, thick straight eyebrows, sun-tanned warm skin with light sun freckles across her nose and cheekbones, muted rose-brown lips, healthy average build, 85mm portrait lens, realistic photo",
+   "장면": [
+    {"id": "S1", "이름": "강변 러닝 뒤 · 러닝·아웃도어", "text": "waist-up, standing on a riverside running path in the early morning after a run, wearing a black running jacket over a grey sports top, {can} in her right hand at chest height, bright confident smile, soft morning sunlight from camera left"},
+    {"id": "S2", "이름": "필라테스 스튜디오 · 필라테스·요가", "text": "chest-up, in a bright pilates studio with reformer machines softly blurred behind her, wearing a sage green athletic tank top, {can} in her right hand beside her shoulder, warm smile, soft daylight"},
+    {"id": "S3", "이름": "캠핑 의자 · 아웃도어", "text": "waist-up, sitting in a camping chair at a campsite in the afternoon with a tent softly blurred behind her, wearing an olive windbreaker, {can} in her right hand held a little toward the camera, relaxed smile, warm sunlight"}
+   ]
+  },
+  "M05": {
+   "lora": "m05_junho_v2\\m05_junho_v2.safetensors",
+   "앞": "pls_m05, a Korean man in his late thirties",
+   "뒤": "clean-shaven with a smooth jaw, short black hair neatly side-parted, broad forehead, soft kind eyes, crow's feet when he smiles, clear skin with only a few faint moles, muted rose lips, average build, 85mm portrait lens, realistic photo",
+   "장면": [
+    {"id": "S1", "이름": "캠핑장 아침 · 캠핑·아웃도어", "text": "waist-up, standing beside a tent at a campsite in the morning, wearing a navy fleece jacket, {can} in his right hand at chest height, warm friendly smile, soft morning daylight"},
+    {"id": "S2", "이름": "주말 요리 · 가전·주방", "text": "chest-up, in a bright home kitchen on a weekend, wearing a dark green apron over a grey t-shirt, {can} in his right hand beside his shoulder, warm smile, daylight from a window"},
+    {"id": "S3", "이름": "회의실 팀장 · 건강보조·생활", "text": "waist-up, standing in a bright modern office meeting room, wearing a light blue shirt with the sleeves rolled up, {can} in his right hand held a little toward the camera, friendly confident smile, soft daylight"}
+   ]
+  }
+ }
+}

@@ -1,1 +1,3 @@
 .say-cache/
+# 빌드 출력(node build-site.cjs) — 사진·소리·영상과 생성 HTML. 원본은 roster·catalog·voices·명세서와 git 밖 사진 폴더다
+site/

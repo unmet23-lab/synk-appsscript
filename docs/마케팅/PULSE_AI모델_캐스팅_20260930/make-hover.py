@@ -2,13 +2,16 @@
 # 웃음 컷을 대표 사진과 같은 눈 위치·얼굴 크기로 옮긴다(확대·이동만, 회전 없음). 바뀌는 동안 두 얼굴이 겹쳐 보이지 않게 하려는 것이다.
 # 맞춤 값은 hover-align.json에 있다. 가장자리가 비면(한 변에 3%까지) 웃음 컷 가장자리를 늘이고 흐리게 채운다.
 # 결과: raw/<key>-hover.png. build-site.cjs가 이것을 img/<코드>/hover-s.webp로 줄인다.
-import json, os
+import json, os, sys
 import numpy as np
 import cv2
 
 here = os.path.dirname(os.path.abspath(__file__))
-read = lambda p: cv2.imdecode(np.fromfile(os.path.join(here, p), dtype=np.uint8), cv2.IMREAD_COLOR)  # 한글 경로
+read = lambda p: cv2.imdecode(np.fromfile(os.path.join(here, p), dtype=np.uint8), cv2.IMREAD_COLOR)  # 한글 경로(절대 경로도 받음)
+want = set(sys.argv[1:])  # python make-hover.py F05 M04 … → 그 모델만(원본 사진이 이 PC에 있는 모델만 다시 만들 때)
 for m in json.load(open(os.path.join(here, 'hover-align.json'), encoding='utf-8'))['models']:
+    if want and m['code'] not in want:
+        continue
     hero, sm = read(m['hero']), read(m['smile'])
     H, W = hero.shape[:2]; sh, sw = sm.shape[:2]
     (hx, hy), (sx, sy), k = m['heroEye'], m['smileEye'], m['scale']

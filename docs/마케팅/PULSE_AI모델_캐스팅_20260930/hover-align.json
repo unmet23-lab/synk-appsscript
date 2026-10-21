@@ -105,6 +105,81 @@
     0.3409
    ],
    "scale": 1.0
+  },
+  {
+   "code": "F05",
+   "key": "F05",
+   "hero": "C:/SYNK-LoRA/casting/wave1_20261019/F05_c2.jpg",
+   "smile": "C:/SYNK-LoRA/casting/wave1_20261019/세트/F05_exp-smile.jpg",
+   "heroEye": [
+    0.553,
+    0.3583
+   ],
+   "smileEye": [
+    0.5216,
+    0.3556
+   ],
+   "scale": 0.9679
+  },
+  {
+   "code": "M04",
+   "key": "M04",
+   "hero": "C:/SYNK-LoRA/casting/wave1_20261019/M04_c2.jpg",
+   "smile": "C:/SYNK-LoRA/casting/wave1_20261019/세트/M04_exp-smile.jpg",
+   "heroEye": [
+    0.507,
+    0.3529
+   ],
+   "smileEye": [
+    0.4796,
+    0.3538
+   ],
+   "scale": 1.0116
+  },
+  {
+   "code": "F06",
+   "key": "F06",
+   "hero": "C:/SYNK-LoRA/casting/wave1_20261019/F06_c1.jpg",
+   "smile": "C:/SYNK-LoRA/casting/wave1_20261019/세트/F06_exp-smile.jpg",
+   "heroEye": [
+    0.514,
+    0.3509
+   ],
+   "smileEye": [
+    0.5159,
+    0.3498
+   ],
+   "scale": 0.9854
+  },
+  {
+   "code": "F07",
+   "key": "F07",
+   "hero": "C:/SYNK-LoRA/casting/wave1_20261019/F07_c1.jpg",
+   "smile": "C:/SYNK-LoRA/casting/wave1_20261019/세트/F07_exp-smile.jpg",
+   "heroEye": [
+    0.5129,
+    0.3476
+   ],
+   "smileEye": [
+    0.5144,
+    0.3456
+   ],
+   "scale": 1.0055
+  },
+  {
+   "code": "M05",
+   "key": "M05",
+   "hero": "C:/SYNK-LoRA/casting/wave1_20261019/M05_h1.jpg",
+   "smile": "C:/SYNK-LoRA/casting/wave1_20261019/세트/M05_exp-smile.jpg",
+   "heroEye": [
+    0.5118,
+    0.3507
+   ],
+   "smileEye": [
+    0.5127,
+    0.3508
+   ],
+   "scale": 0.9912
   }
  ]
 }

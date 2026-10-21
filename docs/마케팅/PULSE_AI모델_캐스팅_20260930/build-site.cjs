@@ -53,7 +53,9 @@ for (const m of models) {
   const code = m.code, extra = (catalog.models || {})[code] || {}, spec = specs[code];
   const shots = {};
   for (const [key, label, en] of SHOTS) {
-    const src = key === 'hero' ? path.join(here, m.hero) : path.join(here, 'raw', `${m.key}-${key}.png`);
+    // 1차 확장(10-21)부터는 캐스팅 세트를 raw/로 옮기지 않고 catalog의 set.dir(<코드>_<컷>.jpg)에서 바로 읽는다. 대표 사진은 절대 경로도 받는다
+    const rawPng = path.join(here, 'raw', `${m.key}-${key}.png`);
+    const src = key === 'hero' ? path.resolve(here, m.hero) : (extra.set && !fs.existsSync(rawPng) ? path.join(extra.set.dir, `${code}_${key}.jpg`) : rawPng);
     const p = pair(src, `img/${code}/${key}`);
     if (!p) { missing.push(`${code} ${key}`); continue; }
     let lab = label;
@@ -72,7 +74,7 @@ for (const m of models) {
 
   const scenes = [];
   for (const it of (extra.scenes || {}).items || []) {
-    const p = pair(path.join(extra.scenes.dir, it.file), `img/${code}/scene-${it.id}`);
+    const p = pair(path.join(it.dir || extra.scenes.dir, it.file), `img/${code}/scene-${it.id}`); // it.dir: 제품 시안처럼 다른 폴더의 장면
     if (p) scenes.push({ id: it.id, ...p, place: it.place, label: it.label, tags: it.tags || [] }); else missing.push(`${code} scene ${it.id}`);
   }
 
@@ -80,7 +82,7 @@ for (const m of models) {
   let stand = null;
   if (extra.stand) {
     const span = extra.stand.feet - extra.stand.top, half = Math.round(span * 0.18); // 팔까지 들어가는 폭(키의 0.36)
-    const ok = image(path.join(root, extra.stand.src), `img/${code}/stand.webp`, 1100, 82, { top: extra.stand.top, bottom: extra.stand.feet, half });
+    const ok = image(path.resolve(root, extra.stand.src), `img/${code}/stand.webp`, 1100, 82, { top: extra.stand.top, bottom: extra.stand.feet, half });
     if (ok) stand = { src: `img/${code}/stand.webp`, ratio: +(2 * half / span).toFixed(4) };
   }
 
@@ -127,6 +129,7 @@ for (const m of models) {
 
   const pub = {
     code, name: m.name, gender: m.gender, ageBand: m.ageBand || '', age: m.age || '', concept: m.concept, impression: m.impression, fits: m.fits,
+    tagline: m.tagline || '', roles: m.roles || [], // 한 줄 캐릭터·맡는 역할(로드맵 2절 4). avoid는 제작용이라 화면에 내지 않고 연출 「피하는」 문장으로 보인다
     height: m.height || null, weightKg: m.weightKg || null, build: m.build || '', sizes: m.sizes || {}, skin: m.skin || '', eyes: m.eyes || '', hairBase: m.hairBase || '',
     realPerson: !!m.realPerson, hair: m.hair.map((h) => ({ label: h.label })), looks: m.looks.map((l) => ({ label: l.label })),
     hero: shots.hero || null, alt, shots, scenes, stand, body, colors, voices: vs, motion, loop, tagged,
@@ -167,8 +170,21 @@ for (const [k, v] of Object.entries(rep)) if (k !== 'DATA') page = page.replace(
 if (/@@(?!DATA@@)\w+@@/.test(page)) throw Error('채우지 못한 자리표시가 있다');
 // 「우리 광고 문장으로 듣기」 서버 주소는 홈페이지판(index.html)에만 넣는다. claude.ai 페이지는 다른 주소로 요청을 보낼 수 없다.
 const sayBase = { max: (catalog.say || {}).max || 60, daily: (catalog.say || {}).daily || 10 };
-const dataJson = (api) => JSON.stringify({ ...data, say: { ...sayBase, api } }).replace(/</g, '\\u003c');
-const withData = (html, api) => html.replace('@@DATA@@', () => dataJson(api));
+const dataJson = (d, api) => JSON.stringify({ ...d, say: { ...sayBase, api } }).replace(/</g, '\\u003c');
+const withData = (html, api, d = data) => html.replace('@@DATA@@', () => dataJson(d, api));
+// claude.ai 판(artifact.html)은 한 판에 함께 올릴 수 있는 파일이 511개까지다(10-21 열두 명이 766개). 그 판에서만 대표 사진 말고는
+// 작은 판(s, 720px)을 큰 판(l, 1600px)으로 합치고, 움직이는 사진이 있어 쓰이지 않는 웃음 사진(alt)을 뺀다. 홈페이지판은 둘 다 쓴다.
+const big = (p) => (p && p.l ? { ...p, s: p.l } : p);
+const slim = {
+  ...data,
+  models: data.models.map((m) => ({
+    ...m,
+    shots: Object.fromEntries(Object.entries(m.shots).map(([k, v]) => [k, k === 'hero' || k === 'hair-1' ? v : big(v)])),
+    alt: m.loop ? null : m.alt,
+    scenes: m.scenes.map(big),
+    tagged: m.tagged.map(big),
+  })),
+};
 // 화면에 나가는 글에 만든 도구 이름이 섞이지 않았는지 본다(목소리 이름표는 VOICE_NOTE로 바꿔서 나간다)
 const banned = /Gemini|Nano ?Banana|Higgsfield|Soul 2|Vertex|LoRA|pls_f0|MediaPipe|Leda|Aoede|Laomedeia|SYNK-LoRA|Typecast|타입캐스트|tc_[0-9a-f]{8}/i;
 const leak = JSON.stringify(data).match(banned);
@@ -179,10 +195,14 @@ const cut = page.indexOf('</style>') + '</style>'.length;
 const head = page.slice(0, cut), body = page.slice(cut);
 const lic = `\n<!-- Embedded font licenses\n${licenses}\n-->`;
 const homeApi = process.env.PULSE_SAY_API ?? ((catalog.say || {}).api || '');
-fs.writeFileSync(path.join(out, 'artifact.html'), withData(head + lic + body, ''));
+fs.writeFileSync(path.join(out, 'artifact.html'), withData(head + lic + body, '', slim));
+// claude.ai에 함께 올릴 파일 목록(artifact.html이 가리키는 그림·소리·영상)
+const refs = [...new Set((fs.readFileSync(path.join(out, 'artifact.html'), 'utf8').match(/"(?:img|voice|video)\/[^"]+"/g) || []).map((x) => x.slice(1, -1)))].sort();
+fs.writeFileSync(path.join(here, 'jobs', '_publish-files.json'), JSON.stringify(refs.map((p) => ({ path: p }))));
 fs.writeFileSync(path.join(out, 'index.html'), withData(`<!doctype html>\n<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">${head}${lic}</head>\n<body>${body}</body></html>\n`, homeApi));
 const size = (p) => (fs.statSync(path.join(out, p)).size / 1024 / 1024).toFixed(2) + 'MB';
 console.log('모델', data.models.map((m) => `${m.code} ${m.name} 컷${m.shotCount} 장면${m.scenes.length} 목소리${m.voices.length}${m.voices.some((v) => v.say) ? '(문장 듣기)' : ''}${m.loop ? ' 움직임' : ''}${m.spec ? ' 명세서' : ''}`).join(' / '));
 if (homeApi) console.log('문장 듣기 서버', homeApi);
 if (missing.length) console.log('빠진 것', missing.join(', '));
-console.log('index.html', size('index.html'), '· artifact.html', size('artifact.html'));
+console.log('index.html', size('index.html'), '· artifact.html', size('artifact.html'), `· claude.ai 판 파일 ${refs.length}개`);
+if (refs.length > 511) console.log('경고: claude.ai 판 파일이 한 판 한도 511개를 넘는다');

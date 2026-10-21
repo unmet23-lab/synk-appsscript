@@ -428,6 +428,379 @@
         "raw/yuho-ref-0112.png",
         "raw/yuho-ref-0136.png"
       ]
+    },
+    {
+      "key": "F05",
+      "code": "F05",
+      "name": "소연",
+      "ageBand": "30대",
+      "hero": "C:/SYNK-LoRA/casting/wave1_20261019/F05_c2.jpg",
+      "heroEngine": "1차 확장 후보에서 유호님 선택(10-19)",
+      "gender": "여",
+      "age": "30대 중반",
+      "concept": "생활형",
+      "tagline": "믿고 사는 언니",
+      "impression": [
+        "따뜻한",
+        "단정한",
+        "친근한"
+      ],
+      "fits": [
+        "생활·주방",
+        "식품·간편식",
+        "건강식품",
+        "육아용품",
+        "인테리어",
+        "안티에이징 입문"
+      ],
+      "roles": [
+        "주부",
+        "워킹맘",
+        "1인 가구 직장인",
+        "카페 사장",
+        "후기 화자"
+      ],
+      "avoid": [
+        "섹시",
+        "수트 오피스"
+      ],
+      "height": 162,
+      "build": "보통(66) · 부드러운 어깨",
+      "sizes": {
+        "top": "66 (M)",
+        "bottom": "27",
+        "shoe": "235"
+      },
+      "skin": "밝은 웜톤, 눈 밑 옅은 그늘",
+      "eyes": "짙은 갈색 쌍꺼풀 아몬드 눈, 웃으면 반달",
+      "hairBase": "짙은 갈색, 쇄골 길이 끝 C컬",
+      "outfit": "plain oatmeal crew-neck knit",
+      "hair": [
+        {
+          "label": "기본 · 쇄골 C컬",
+          "prompt": ""
+        },
+        {
+          "label": "낮게 묶은 머리",
+          "prompt": "her collarbone-length dark-brown hair tied back in a low, loose ponytail with a few soft face-framing strands"
+        },
+        {
+          "label": "턱선 단발",
+          "prompt": "a neat chin-length bob with the ends curling softly inward, the same dark-brown color"
+        }
+      ],
+      "looks": [
+        {
+          "label": "카디건 · 줄무늬 티",
+          "prompt": "a cream cardigan over a navy-and-white striped tee with wide beige cotton trousers"
+        },
+        {
+          "label": "샴브레이 셔츠 · 앞치마",
+          "prompt": "a light-blue chambray shirt with the sleeves rolled once and a plain natural canvas apron tied at the waist"
+        }
+      ],
+      "context": "standing in a bright home kitchen in the morning, smiling as she stirs a pot on the stove with a wooden spoon, a plain unlabeled glass jar of olive oil on the counter, soft window light",
+      "hands": "holding a plain unlabeled white ceramic mug with both hands",
+      "voiceBrief": "30대 중반 여성, 따뜻하고 단정한 톤",
+      "spec": "명세서/F05_소연.json"
+    },
+    {
+      "key": "M04",
+      "code": "M04",
+      "name": "민재",
+      "ageBand": "20대",
+      "hero": "C:/SYNK-LoRA/casting/wave1_20261019/M04_c2.jpg",
+      "heroEngine": "1차 확장 후보에서 유호님 선택(10-19)",
+      "gender": "남",
+      "age": "20대 후반",
+      "concept": "리얼",
+      "tagline": "옆집 자취생",
+      "impression": [
+        "친근한",
+        "솔직한",
+        "호감 가는"
+      ],
+      "fits": [
+        "후기형·UGC",
+        "가전",
+        "생활용품",
+        "배달·앱·게임",
+        "간편식",
+        "남성 스킨케어 입문"
+      ],
+      "roles": [
+        "자취생",
+        "신입사원",
+        "게이머",
+        "배달 손님",
+        "후기 화자"
+      ],
+      "avoid": [
+        "수트 화보",
+        "섹시",
+        "배우 같은 조명"
+      ],
+      "height": 175,
+      "build": "보통",
+      "sizes": {
+        "top": "100 (L)",
+        "bottom": "31",
+        "shoe": "265"
+      },
+      "skin": "웜톤, 턱·인중 옅은 수염 그림자",
+      "eyes": "작은 쌍꺼풀, 살짝 처진 눈꼬리",
+      "hairBase": "검은색, 부스스한 일자 앞머리",
+      "outfit": "plain heather-grey crew-neck sweatshirt",
+      "hair": [
+        {
+          "label": "기본 · 일자 앞머리",
+          "prompt": ""
+        },
+        {
+          "label": "올린 투블럭",
+          "prompt": "his hair styled up and back off the forehead in a neat two-block cut with short sides"
+        },
+        {
+          "label": "자연스러운 펌",
+          "prompt": "a soft perm with loose natural curls on top and short sides"
+        }
+      ],
+      "looks": [
+        {
+          "label": "후드 집업 · 조거 팬츠",
+          "prompt": "a navy zip-up hoodie over a white tee with grey jogger pants"
+        },
+        {
+          "label": "옥스퍼드 셔츠 · 치노(첫 출근)",
+          "prompt": "a light-blue oxford shirt tucked into beige chinos with a brown belt, a first-job office look"
+        }
+      ],
+      "context": "sitting on the floor of a small cozy studio apartment at night, opening a plain unlabeled cardboard delivery box on a low wooden table and laughing, warm lamp light",
+      "hands": "holding a smartphone in both hands, thumbs on the screen, the screen facing away from the camera",
+      "voiceBrief": "20대 후반 남성, 담백하고 솔직한 톤",
+      "spec": "명세서/M04_민재.json"
+    },
+    {
+      "key": "F06",
+      "code": "F06",
+      "name": "은정",
+      "ageBand": "40대",
+      "hero": "C:/SYNK-LoRA/casting/wave1_20261019/F06_c1.jpg",
+      "heroEngine": "1차 확장 후보에서 유호님 선택(10-19)",
+      "gender": "여",
+      "age": "40대 중반",
+      "concept": "클래식",
+      "tagline": "관리 잘한 40대",
+      "impression": [
+        "우아한",
+        "세련된",
+        "다정한"
+      ],
+      "fits": [
+        "안티에이징·프리미엄 스킨케어",
+        "건강기능식품",
+        "중년 여성 패션",
+        "클리닉",
+        "주방 가전"
+      ],
+      "roles": [
+        "사장님",
+        "엄마",
+        "원장",
+        "강사"
+      ],
+      "avoid": [
+        "20대식 과장 리액션",
+        "차가운 빛 무표정 클로즈업"
+      ],
+      "height": 160,
+      "build": "보통(66)",
+      "sizes": {
+        "top": "66 (M)",
+        "bottom": "27",
+        "shoe": "235"
+      },
+      "skin": "관리된 웜톤, 눈가 잔주름·팔자 시작",
+      "eyes": "짙은 갈색, 웃으면 눈가 주름이 부드럽게 깊어짐",
+      "hairBase": "짙은 갈색, 옆으로 넘긴 중단발 웨이브",
+      "outfit": "ivory cashmere crew-neck knit and small pearl stud earrings",
+      "hair": [
+        {
+          "label": "기본 · 중단발 웨이브",
+          "prompt": ""
+        },
+        {
+          "label": "낮은 시뇽",
+          "prompt": "her dark-brown hair gathered into a low, elegant chignon at the nape with a few soft loose strands"
+        },
+        {
+          "label": "턱선 단발",
+          "prompt": "a sleek straight chin-length bob, the same dark-brown color"
+        }
+      ],
+      "looks": [
+        {
+          "label": "캐멀 코트 · 터틀넥",
+          "prompt": "a camel wool coat over a cream turtleneck with tailored black trousers"
+        },
+        {
+          "label": "실크 블라우스 · 진주 목걸이",
+          "prompt": "a navy silk blouse with a fine pearl necklace and grey wide-leg trousers"
+        }
+      ],
+      "context": "sitting at a sunlit cafe table by the window, reading a hardcover book with a cup of tea in front of her, a warm gentle smile",
+      "hands": "holding a plain unlabeled frosted-glass cream jar in one hand and lifting its lid with the other; the hands of a woman in her mid-forties with natural fine lines on the knuckles",
+      "voiceBrief": "40대 중반 여성, 우아하고 다정한 톤",
+      "spec": "명세서/F06_은정.json"
+    },
+    {
+      "key": "F07",
+      "code": "F07",
+      "name": "채원",
+      "ageBand": "20대",
+      "hero": "C:/SYNK-LoRA/casting/wave1_20261019/F07_c1.jpg",
+      "heroEngine": "1차 확장 후보에서 유호님 선택(10-19)",
+      "gender": "여",
+      "age": "20대 중반",
+      "concept": "스포티",
+      "tagline": "운동하는 언니",
+      "impression": [
+        "건강한",
+        "발랄한",
+        "친근한"
+      ],
+      "fits": [
+        "운동복·레깅스",
+        "다이어트·단백질",
+        "필라테스·요가",
+        "러닝·아웃도어",
+        "선크림·선케어"
+      ],
+      "roles": [
+        "필라테스 강사",
+        "러너",
+        "헬스 회원",
+        "캠핑족"
+      ],
+      "avoid": [
+        "섹시",
+        "전후 비교 연출"
+      ],
+      "height": 167,
+      "build": "건강한 체형(55~66) · 근육선 강조 없음",
+      "sizes": {
+        "top": "55~66 (S~M)",
+        "bottom": "26",
+        "shoe": "245"
+      },
+      "skin": "햇볕에 그을린 피부, 코·광대 햇빛 주근깨",
+      "eyes": "홑꺼풀, 굵은 일자 눈썹",
+      "hairBase": "검은색 픽시컷",
+      "outfit": "plain charcoal sports tank top",
+      "hair": [
+        {
+          "label": "기본 · 픽시컷",
+          "prompt": ""
+        },
+        {
+          "label": "넘긴 픽시컷",
+          "prompt": "her short pixie cut slicked back neatly and close to the head"
+        },
+        {
+          "label": "운동 헤어밴드",
+          "prompt": "her short hair pushed back under a plain black sports headband"
+        }
+      ],
+      "looks": [
+        {
+          "label": "크롭 스웻셔츠 · 레깅스",
+          "prompt": "a cropped grey sweatshirt over black high-waisted leggings"
+        },
+        {
+          "label": "윈드브레이커 · 러닝 쇼츠",
+          "prompt": "an olive windbreaker jacket over a white tee with black running shorts"
+        }
+      ],
+      "context": "on a riverside running path at golden hour after a run, stretching one arm across her chest and smiling, the river softly out of focus behind her",
+      "hands": "holding a plain unlabeled brushed-steel water bottle, a plain white towel over one shoulder",
+      "voiceBrief": "20대 중반 여성, 힘차고 생기 있는 톤",
+      "spec": "명세서/F07_채원.json"
+    },
+    {
+      "key": "M05",
+      "code": "M05",
+      "name": "준호",
+      "ageBand": "30대",
+      "hero": "C:/SYNK-LoRA/casting/wave1_20261019/M05_h1.jpg",
+      "heroEngine": "1차 확장 후보에서 유호님 선택(10-19)",
+      "gender": "남",
+      "age": "30대 후반",
+      "concept": "생활형",
+      "tagline": "믿음직한 생활형",
+      "impression": [
+        "믿음직한",
+        "다정한",
+        "단정한"
+      ],
+      "fits": [
+        "가전·주방",
+        "캠핑·아웃도어",
+        "패밀리 자동차",
+        "면도기·그루밍",
+        "건강보조",
+        "아빠 육아용품"
+      ],
+      "roles": [
+        "남편",
+        "아빠",
+        "캠핑족",
+        "주말 요리 담당",
+        "팀장"
+      ],
+      "avoid": [
+        "섹시",
+        "수염",
+        "위스키"
+      ],
+      "height": 177,
+      "build": "보통",
+      "sizes": {
+        "top": "100~105 (L~XL)",
+        "bottom": "32",
+        "shoe": "270"
+      },
+      "skin": "웜톤, 깨끗이 면도한 턱",
+      "eyes": "쌍꺼풀, 웃으면 눈가에 부채 주름",
+      "hairBase": "검은색, 옆 가르마로 단정하게",
+      "outfit": "plain navy crew-neck knit",
+      "hair": [
+        {
+          "label": "기본 · 옆 가르마",
+          "prompt": ""
+        },
+        {
+          "label": "짧은 크루컷",
+          "prompt": "his hair cut shorter into a clean, neat crew cut"
+        },
+        {
+          "label": "넘긴 머리",
+          "prompt": "his hair combed back neatly with a little product"
+        }
+      ],
+      "looks": [
+        {
+          "label": "옥스퍼드 셔츠 · 치노(평일)",
+          "prompt": "a light-grey oxford shirt with the sleeves rolled once and navy chinos, a weekday office look"
+        },
+        {
+          "label": "퀼팅 조끼 · 헨리넥(캠핑)",
+          "prompt": "an olive quilted vest over a cream waffle henley with dark jeans, a weekend camping look"
+        }
+      ],
+      "context": "at a campsite in the early morning, crouching by a small camping stove and pouring hot water from a kettle into two plain enamel mugs, smiling, misty trees behind him",
+      "hands": "holding a plain unlabeled stainless-steel tumbler with both hands",
+      "voiceBrief": "30대 후반 남성, 믿음직하고 편안한 톤",
+      "spec": "명세서/M05_준호.json"
     }
   ]
 }

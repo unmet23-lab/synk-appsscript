@@ -40,7 +40,9 @@ test('제품 설명의 낱말은 긴 낱말부터 찾고 영문은 낱말 경계
 
 test('거르기는 고른 조건만 보고, 업종·키 구간도 거른다', () => {
   assert.equal(L.filterModels(models, { gender: '전체', age: '전체', concept: '전체', height: '전체', industry: '' }).length, models.length);
-  assert.deepEqual(L.filterModels(models, { gender: '여', industry: 'food' }).map((m) => m.code), ['F02', 'F04']);
+  assert.deepEqual(L.filterModels(models, { gender: '여', industry: 'food' }).map((m) => m.code), ['F02', 'F04', 'F05'], '소연은 간편식으로, 은정의 「건강기능식품」은 식음료가 아니다');
+  assert.deepEqual(L.filterModels(models, { industry: 'sports' }).map((m) => m.code), ['F07']);
+  assert.deepEqual(L.filterModels(models, { industry: 'health' }).map((m) => m.code), ['F05', 'F06', 'M05']);
   assert.deepEqual(L.filterModels(models, { height: '180cm대' }).map((m) => m.code).sort(), ['M01', 'M02', 'M03']);
   assert.equal(L.heightBand(165), '160cm대');
   assert.equal(L.heightBand(null), '');
@@ -68,6 +70,36 @@ test('브리프 추천: 제품 설명의 세부 분야와 성별 낱말', () => 
   const it = L.recommend(models, { product: 'IT 솔루션 소개 영상' }, T, 1)[0];
   assert.equal(it.model.code, 'F03');
   assert.equal(new Set(it.reasons.map((r) => r.text)).size, it.reasons.length, '같은 이유를 두 번 쓰지 않는다');
+});
+
+test('브리프 추천: 1차 확장 업종(건강식품·생활/주방·육아·가전/인테리어·스포츠/다이어트)을 새 모델이 받는다', () => {
+  const T = { ...TAX, genderWords: catalog.genderWords };
+  const top = (product) => L.recommend(models, { product }, T, 3).map((r) => r.model.code);
+  assert.equal(top('단백질 쉐이크')[0], 'F07');
+  assert.equal(top('여성 레깅스')[0], 'F07', '운동복 낱말은 스포츠로, 성별 낱말 안에서');
+  assert.deepEqual(top('유산균 영양제').sort(), ['F05', 'F06', 'M05']);
+  assert.ok(top('아기 기저귀').every((c) => ['F05', 'M05'].includes(c)), '육아는 소연·준호만(아이 없이 찍는 두 사람)');
+  assert.ok(top('주름 개선 크림').includes('F06'), '안티에이징 세부 분야에 은정');
+  assert.ok(!top('편의점 도시락').includes('F06'), '건강기능식품 문구가 식음료로 새지 않는다');
+  assert.equal(top('남성 면도기')[0], 'M05', '그루밍 세부 분야는 면도 장면이 있는 준호가 맨 위');
+  assert.equal(top('캠핑 의자')[0], 'M05', '캠핑·아웃도어 둘 다 맞는 준호가 맨 위');
+  assert.ok(top('캠핑 의자').includes('F07'), '아웃도어 채원');
+  assert.deepEqual(top('패밀리 SUV'), ['M05'], '패밀리 세부 분야는 패밀리 자동차 문구가 있는 준호만');
+  assert.equal(top('선크림')[0], 'F07', '선케어 문구가 있는 채원이 스킨케어 모델보다 위');
+  assert.ok(!top('공기청정기').includes('F05') && top('소파').join() === 'F05', '가전·인테리어를 세부 분야로 가른다(Fable 10-21 P2)');
+  assert.ok(!top('주방 세제').slice(0, 1).includes('F06'), '세제는 생활 분야 — 주방 가전 은정이 맨 위로 오지 않는다');
+  for (const w of ['아웃도어', '글램핑', '트레킹', '미니밴']) assert.ok(top(w).length, `${w}는 혼자 적어도 업종이 잡힌다`);
+  // 한 낱말이 세부 분야 여럿에 들어 있어도(커피 → 음료·카페) 같은 근거를 두 번 세지 않는다(10-21 아르곤 P1)
+  const both = { code: 'X1', name: '둘', gender: '여', ageBand: '20대', concept: '상큼', impression: [], fits: ['음료·카페'], hair: [], voices: [], sizes: {} };
+  const one = { ...both, code: 'X2', name: '하나', fits: ['음료'] };
+  for (const m of [both, one]) Object.assign(m, L.tagModel(m, T));
+  const sc = L.recommend([both, one], { product: '커피' }, T, 2).map((r) => r.score);
+  assert.equal(sc[0], sc[1], '음료·카페 둘 다 맞아도 커피 한 낱말은 한 번');
+  assert.ok(top('공기청정기').every((c) => ['F05', 'M04', 'F06', 'M05'].includes(c)), '가전은 1차 생활형·리얼 모델');
+  for (const c of ['F05', 'M04', 'F06', 'F07', 'M05']) {
+    const m = byCode(c);
+    assert.ok(m.tagline && m.roles.length && m.avoid.length, `${c} 한 줄 캐릭터·역할·피할 것`);
+  }
 });
 
 test('브리프 추천: 성별 조건과 빈 브리프', () => {
@@ -114,13 +146,15 @@ test('문의 글: 고른 모델·헤어·목소리·메모, 손댄 브리프만,
 
 test('같은 성별 안에서의 위치와 조사', () => {
   const r = L.rankAmong(models, byCode('F02'), (m) => m.height);
-  assert.deepEqual([r.min, r.max, r.count, r.lowest], [165, 170, 4, true]);
+  assert.deepEqual([r.min, r.max, r.count, r.lowest], [160, 170, 7, false], '1차 확장 뒤 여자 일곱 명 가운데 하린은 가장 작지 않다');
+  const e = L.rankAmong(models, byCode('F06'), (m) => m.height);
+  assert.deepEqual([e.min, e.count, e.lowest], [160, 7, true], '은정 160cm가 가장 작다');
   assert.equal(L.josa('하린', '을', '를'), '을');
   assert.equal(L.josa('유나', '을', '를'), '를');
   assert.equal(L.josa('M03', '을', '를'), '을(를)');
 });
 
-test('7명 모두 명세서(몸 비율·색)와 얼굴 기준·연출이 있다', () => {
+test('명단의 모든 모델에 명세서(몸 비율·색)와 얼굴 기준·연출이 있다', () => {
   const fs = require('node:fs');
   const specDir = path.join(dir, '명세서');
   const specs = fs.readdirSync(specDir).filter((f) => f.endsWith('.json')).map((f) => JSON.parse(fs.readFileSync(path.join(specDir, f), 'utf8')));
@@ -186,14 +220,14 @@ test('문의 글: 들어 보고 싶은 문장이 모델마다 들어간다', () 
   assert.doesNotMatch(none, /문장/);
 });
 
-test('움직이는 사진: 7명 모두 loop/<코드>.mp4를 가리킨다', () => {
+test('움직이는 사진: 명단의 모든 모델이 loop/<코드>.mp4를 가리킨다', () => {
   for (const m of roster) assert.equal((catalog.models[m.code].loop || {}).src, `loop/${m.code}.mp4`, m.code);
 });
 
 test('문장 듣기 서버: 타입캐스트 목소리만 받고, 길이·빈 문장·없는 목소리를 막는다(타입캐스트는 부르지 않는다)', async () => {
   const say = require(path.join(dir, 'say-server.cjs'));
   const table = say.voiceTable();
-  assert.deepEqual(Object.keys(table).sort(), ['F01', 'F02', 'F03', 'F04', 'M01', 'M02'], '유호(실제 목소리) 말고 여섯 명이 타입캐스트 목소리');
+  assert.deepEqual(Object.keys(table).sort(), ['F01', 'F02', 'F03', 'F04', 'F05', 'F06', 'F07', 'M01', 'M02', 'M04', 'M05'], '유호(실제 목소리) 말고 열한 명이 타입캐스트 목소리');
   assert.deepEqual(Object.keys(table.M02), ['0', '1', '2']);
   assert.ok(!JSON.stringify(table).includes('Gemini'));
   assert.equal(say.clean(' 안녕\n하세요<b>\u0007 '), '안녕 하세요 b');

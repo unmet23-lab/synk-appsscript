@@ -74,11 +74,21 @@
     for (const e of findWords(brief.product, entries)) {
       if (e.kind === 'industry') add(inds, e.id, 2, e.word); else add(moods, e.id, 1, e.word);
     }
-    // 세부 분야: 「아이스크림」은 식음료 중에서도 「디저트」라서 업종 문구에 「디저트」가 있는 모델을 한 칸 더 올린다
-    const subs = new Map();
+    // 세부 분야: 「아이스크림」은 식음료 중에서도 「디저트」라서 업종 문구에 「디저트」가 있는 모델을 한 칸 더 올린다.
+    // subWords는 설명 낱말마다 그 낱말이 속한 세부 분야(「라떼」 → 음료·카페)다. 점수는 낱말 하나당 한 번만 센다(10-21).
+    const subs = new Map(), subWords = new Map();
     for (const ind of taxonomy.industries) {
-      const keys = Object.entries(ind.sub || {}).filter(([, words]) => findWords(brief.product, words.map((word) => ({ word }))).length).map(([k]) => k);
-      if (keys.length) subs.set(ind.id, keys);
+      const found = new Map();
+      for (const [k, words] of Object.entries(ind.sub || {})) {
+        for (const hit of findWords(brief.product, words.map((word) => ({ word })))) {
+          if (!found.has(hit.word)) found.set(hit.word, []);
+          found.get(hit.word).push(k);
+        }
+      }
+      if (found.size) {
+        subs.set(ind.id, [...new Set([...found.values()].flat())]);
+        subWords.set(ind.id, [...found].map(([word, keys]) => ({ word, keys })));
+      }
     }
     // 설명에 「남성·여자」 같은 말이 있으면 그 성별 모델을 한 칸 더 올린다(성별을 직접 고르면 그쪽이 우선)
     let gender = '', genderWord = '';
@@ -86,17 +96,20 @@
       const hit = findWords(brief.product, words.map((word) => ({ word })));
       if (hit.length) { gender = gender ? 'both' : g; genderWord = hit[0].word; }
     }
-    return gender && gender !== 'both' ? { inds, moods, subs, gender, genderWord } : { inds, moods, subs, gender: '', genderWord: '' };
+    return gender && gender !== 'both' ? { inds, moods, subs, subWords, gender, genderWord } : { inds, moods, subs, subWords, gender: '', genderWord: '' };
   }
 
   const briefIsEmpty = (b) => !b || (!b.industry && !(b.moods || []).length && !String(b.product || '').trim());
 
-  // 추천: 업종 3점(설명에서 찾은 업종 2점) · 설명에 세부 분야가 있으면 맞는 모델 +1, 안 맞는 모델은 그 업종으로 고르지 않음
+  // 추천: 업종 3점(설명에서 찾은 업종 2점) · 설명의 세부 분야 낱말 하나마다 그 분야가 모델 업종 문구에 있으면 +1, 문구에 그 낱말이
+  //   그대로 있으면 +1 더(그 낱말이 분야 둘 이상에 걸칠 때만: 「캠핑」 → 여행·캠핑·아웃도어 중 「캠핑·아웃도어」. 「앱」처럼 분야 이름이
+  //   곧 낱말이면 모두 같이 받으니 주지 않는다) · 세부 분야 낱말이 있는데 하나도 안 맞는 모델은 그 업종으로 고르지 않음
+  //   (10-21: 「주름 개선 크림」은 주름·크림 둘 다 맞는 은정이 크림만 맞는 모델보다 위. 한 낱말이 분야 여럿에 들어 있어도 한 번만 센다)
   // · 분위기 2점(설명에서 찾은 분위기 1점) · 그 업종 사진이 있으면 0.5점. 같은 점수는 명단 순서.
   // 성별·나이대를 고르면 그 안에서만 찾고, 성별을 안 골랐어도 설명에 「여성 니트」처럼 성별이 있으면 그 성별 안에서 찾는다.
   function recommend(models, brief, taxonomy, n = 3) {
     if (briefIsEmpty(brief)) return [];
-    const { inds, moods, subs, gender } = readBrief(brief, taxonomy);
+    const { inds, moods, subs, subWords, gender } = readBrief(brief, taxonomy);
     const label = (list, id) => (list.find((x) => x.id === id) || {}).label || id;
     const out = [];
     models.forEach((m, order) => {
@@ -108,10 +121,12 @@
       for (const [id, v] of inds) {
         if (!(m.industries || []).includes(id)) continue;
         const fits = (m.fitsBy || {})[id] || [];
-        const subFit = fits.find((f) => (subs.get(id) || []).some((k) => f.includes(k)));
+        const hits = (subWords.get(id) || []).filter((w) => fits.some((f) => w.keys.some((k) => f.includes(k))));
+        const subFit = fits.find((f) => hits.some((w) => w.keys.some((k) => f.includes(k))));
         // 설명에 세부 분야(라떼 → 음료·카페)가 있는데 이 모델의 업종 문구가 그 분야가 아니면(위스키·주류) 이 업종으로는 고르지 않는다
         if (subs.has(id) && !subFit) continue;
-        score += v.weight + (subFit ? 1 : 0); matchedInds.push(id);
+        const exact = hits.filter((w) => w.keys.length > 1 && fits.some((f) => f.includes(w.word))).length; // 분야 여럿에 걸친 낱말만 가려낸다
+        score += v.weight + hits.length + exact; matchedInds.push(id);
         const fit = subFit || fits[0] || label(taxonomy.industries, id);
         if (!reasons.some((r) => r.text === `${fit} 광고에 어울려요`)) reasons.push({ kind: 'industry', id, text: `${fit} 광고에 어울려요`, words: v.words });
       }

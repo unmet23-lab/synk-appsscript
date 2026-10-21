@@ -210,6 +210,7 @@
           ${m.realPerson ? '<span class="badge">실제 인물</span>' : ''}
         </div>
         <div class="cap"><span class="name">${E(m.name)}</span><span class="code num">${E(m.code)}</span>
+          ${m.tagline ? `<span class="tagline">${K(`“${m.tagline}”`)}</span>` : ''}
           <span class="line">${K(dot(m.height && m.height + 'cm', m.age || m.ageBand, m.concept))}</span>
           ${r ? `<span class="why">${K(whyOf(r))}</span>` : ''}</div>
       </a>
@@ -268,7 +269,7 @@
     }
     const tiles = order.map((m) => { const r = recs.find((x) => x.model.code === m.code); return tileHTML(m, r, r ? recs.indexOf(r) + 1 : 0, recs.length && !r); }).join('');
     body.innerHTML = `<section class="board pad" aria-label="모델 보드">${tiles || ''}
-      <div class="slot"><h3>찾는 얼굴이 없나요?</h3><p>10대·40대 모델은 준비하고 있어요. 원하는 나이·분위기를 알려 주시면 같은 방식으로 새 모델을 만들어 드려요.</p><button type="button" class="link" data-act="new-model">새 모델 문의 글 복사</button></div></section>`;
+      <div class="slot"><h3>찾는 얼굴이 없나요?</h3><p>10대 모델은 준비하고 있어요. 원하는 나이·분위기를 알려 주시면 같은 방식으로 새 모델을 만들어 드려요.</p><button type="button" class="link" data-act="new-model">새 모델 문의 글 복사</button></div></section>`;
     wireLoops(body);
   }
   // 움직이는 사진: 마우스를 올리면(휴대폰은 화면에 보이면) 짧게 돈다
@@ -314,6 +315,7 @@
         <a class="back" href="#board">← 모델 보드</a>
         <div>
           <h1>${E(m.name)} <small class="num">${E(m.code)}</small></h1>
+          ${m.tagline ? `<p class="tagline">${K(`“${m.tagline}”`)}</p>` : ''}
           <p class="who">${K(whoOf(m))}</p>
           ${m.realPerson ? '<p class="real">실제 인물 · SYNK 대표 본인의 얼굴로, 본인 동의를 받아 만든 모델이에요. 신체 정보는 본인이 알려 준 값이에요.</p>' : ''}
         </div>
@@ -329,6 +331,7 @@
           ${sayHTML(m)}
         </div>
         <div class="fit"><h2>어울리는 광고</h2><p>${K(m.fits.join(' · '))}</p>
+          ${(m.roles || []).length ? `<p class="roles"><b>맡는 역할</b>${K(m.roles.join(' · '))}</p>` : ''}
           ${m.direction ? `<ul>${m.direction.fit.slice(0, 4).map((t) => `<li>${K(t)}</li>`).join('')}</ul>` : ''}
           <label class="sec-h" for="memo">메모 <span class="muted">선택</span></label>
           <textarea class="memo" id="memo" rows="2" placeholder="예: 헤어는 2번인데 조금 더 짧게">${E(s.memo)}</textarea>
@@ -363,7 +366,7 @@
       return;
     }
     // 프로필
-    const info = [['성별', sexWord(m.gender)], ['나이대', m.age || m.ageBand], ['콘셉트', m.concept], ['키', m.height && m.height + 'cm'], ['몸무게', m.weightKg && m.weightKg + 'kg (설정값)'], ['체형', m.build], ['옷 사이즈', dot(m.sizes.top && '상의 ' + m.sizes.top, m.sizes.bottom && '하의 ' + m.sizes.bottom)], ['신발', m.sizes.shoe && m.sizes.shoe + 'mm'], ['피부 톤', m.skin], ['눈', m.eyes], ['기본 헤어', m.hairBase], ['어울리는 업종', m.fits.join(' · ')]].filter(([, v]) => v);
+    const info = [['한 줄 캐릭터', m.tagline && `“${m.tagline}”`], ['성별', sexWord(m.gender)], ['나이대', m.age || m.ageBand], ['콘셉트', m.concept], ['맡는 역할', (m.roles || []).join(' · ')], ['키', m.height && m.height + 'cm'], ['몸무게', m.weightKg && m.weightKg + 'kg (설정값)'], ['체형', m.build], ['옷 사이즈', dot(m.sizes.top && '상의 ' + m.sizes.top, m.sizes.bottom && '하의 ' + m.sizes.bottom)], ['신발', m.sizes.shoe && m.sizes.shoe + 'mm'], ['피부 톤', m.skin], ['눈', m.eyes], ['기본 헤어', m.hairBase], ['어울리는 업종', m.fits.join(' · ')]].filter(([, v]) => v);
     const sorted = D.models.filter((x) => x.height).slice().sort((a, b) => a.height - b.height);
     body.innerHTML = `<section class="panel pad prof">
       <div><h2 class="sec-h">기본 정보</h2><dl class="info">${info.map(([k, v]) => `<div><dt>${E(k)}</dt><dd>${K(v)}</dd></div>`).join('')}</dl>
@@ -501,7 +504,9 @@
         ${list.map((m) => `<div class="c name"><b>${E(m.name)}</b>${K(dot(m.code, sexWord(m.gender), m.age || m.ageBand, m.concept))}</div>`).join('')}
         <div class="wide">${lineupHTML(list, { maxH: 400, cols: true })}</div>
         ${brief.length ? row('광고 내용과 맞는 점', (m) => { const r = brief.find((y) => y.model.code === m.code); return r ? K(r.reasons.map((y) => y.text).join(' · ')) : '<span class="muted">겹치는 점이 적어요</span>'; }) : ''}
+        ${list.some((m) => m.tagline) ? row('한 줄 캐릭터', (m) => (m.tagline ? K(`“${m.tagline}”`) : '')) : ''}
         ${row('인상', (m) => K(m.impression.join(' · ')))}
+        ${list.some((m) => (m.roles || []).length) ? row('맡는 역할', (m) => K((m.roles || []).join(' · '))) : ''}
         ${row('키', num((m) => m.height, (v) => `${v}<small>cm</small>`))}
         ${row('등신', num((m) => m.body && m.body.heads, (v) => v.toFixed(2)))}
         ${row('어깨 ÷ 얼굴 폭', num((m) => m.body && m.body.shoulderFace, (v) => v.toFixed(2)))}
@@ -728,7 +733,7 @@
         <div class="dcard" id="dcard" role="group" aria-label="${E(cur.m.name)}">
           <img src="${E(p.l)}" alt="${E(cur.m.name)}">
           <span class="stamp yes" id="st-yes">담기</span><span class="stamp no" id="st-no">넘기기</span>
-          <div class="meta"><b>${E(cur.m.name)}</b><span>${K(dot(cur.m.height && cur.m.height + 'cm', cur.m.age || cur.m.ageBand, cur.m.concept))}</span>${cur.r ? `<span class="why">${K(whyOf(cur.r))}</span>` : `<span>${K(cur.m.impression.join(' · '))}</span>`}</div>
+          <div class="meta"><b>${E(cur.m.name)}</b><span>${K(dot(cur.m.height && cur.m.height + 'cm', cur.m.age || cur.m.ageBand, cur.m.concept))}</span>${cur.r ? `<span class="why">${K(whyOf(cur.r))}</span>` : `<span>${K(cur.m.tagline ? `“${cur.m.tagline}”` : cur.m.impression.join(' · '))}</span>`}</div>
         </div>
       </div>
       <div class="deck-acts"><button type="button" class="btn line" data-act="deck-no">넘기기</button><a class="btn line" href="#m-${E(cur.m.code)}">자세히</a><button type="button" class="btn ink" data-act="deck-yes">${inPkg(cur.m.code) ? '담겨 있음 · 다음' : '패키지에 담기'}</button></div>
