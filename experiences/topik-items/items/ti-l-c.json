@@ -2778,7 +2778,7 @@
     },
     {
       "id": "ti-l-c-032",
-      "rev": 2,
+      "rev": 3,
       "family": "ti-l-c-032",
       "exam": "topik-i",
       "format": "pbt",
@@ -2818,7 +2818,7 @@
       "answer": 2,
       "explanation": {
         "ko": "여자는 「먼저 도서관에 가고 점심을 먹어요. 시장은 그다음에 가요」라고 했어요. 순서는 도서관, 점심, 시장이에요. ②는 점심을 먹고 도서관에 간다고 해서 순서가 틀려요.",
-        "en": "The woman says 「먼저 도서관에 가고 점심을 먹어요. 시장은 그다음에 가요」 (first we go to the library and have lunch; the market comes after that). The order is library, lunch, market. Choice ② puts lunch before the library, so the order is wrong.",
+        "en": "The woman says 「먼저 도서관에 가고 점심을 먹어요. 시장은 그다음에 가요」 (first I go to the library and then have lunch; I go to the market after that). The order is library, lunch, market. Choice ② puts lunch before the library, so the order is wrong.",
         "mn": "Ярианд эмэгтэй 「먼저 도서관에 가고 점심을 먹어요. 시장은 그다음에 가요」 (эхлээд номын санд очоод үдийн хоол идэнэ. Зах руу дараа нь явна) гэсэн. Дараалал нь номын сан, үдийн хоол, зах. ② нь үдийн хоол идээд номын санд очно гэж байгаа тул дараалал буруу."
       },
       "choiceNotes": [
@@ -2841,7 +2841,7 @@
         "seconds": 12.8
       },
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -2907,6 +2907,16 @@
           "rev": 2,
           "hash": "feface3538031822",
           "packet": "round2"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T07:13:12.430Z",
+          "verdict": "fix",
+          "rev": 3,
+          "hash": "b551d5b15866ad74",
+          "notes": "round2 판정대로 — 영어 해설 풀이가 여자 혼자의 계획을 「we」로 옮겨 대본에 없는 정보를 더하던 것을 판정 글대로 「(first I go to the library and then have lunch; I go to the market after that)」로. 대본·보기·ko·mn은 그대로(대본은 2차 고침의 「도서관」 판)."
         }
       ]
     },

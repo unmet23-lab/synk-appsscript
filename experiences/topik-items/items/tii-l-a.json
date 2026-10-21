@@ -1464,15 +1464,15 @@
     },
     {
       "id": "tii-l-a-015",
-      "rev": 2,
+      "rev": 3,
       "family": "tii-l-a-015",
       "exam": "topik-ii",
       "format": "pbt",
       "section": "listening",
       "officialType": "TII-L-17",
-      "targetGrade": 4,
+      "targetGrade": 3,
       "skillId": "ko2.listening.main",
-      "difficulty": 2,
+      "difficulty": 1,
       "responseFormat": "single-choice",
       "set": null,
       "passage": null,
@@ -1509,8 +1509,8 @@
       },
       "choiceNotes": [
         "「아예 못 쓰게 하는 게」 낫다는 것은 여자의 생각이에요.",
-        "남자는 「몰래 쓰게 될 뿐」이라며 막는 방법에 반대했어요.",
-        "남자는 「무조건 막으면」 안 된다고 했으니 빼앗는 방법은 남자의 생각이 아니에요.",
+        "남자는 「무조건 막으면 몰래 쓰게 될 뿐」이라며 어른이 일방적으로 막는 방법에 반대하고, 「아이와 같이 정해 보세요」라고 했어요.",
+        "남자는 빼앗는 방법이 아니라 「아이와 같이 정해 보세요」라며 아이가 「스스로 지키는 연습」을 하게 하자고 했어요.",
         "「아이와 같이 정해 보세요」와 같은 생각이에요."
       ],
       "conceptIds": [],
@@ -1520,7 +1520,7 @@
         "status": "pending"
       },
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -1597,6 +1597,16 @@
           "rev": 2,
           "hash": "51ff2f40e38da8e6",
           "packet": "round2"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T07:13:12.430Z",
+          "verdict": "fix",
+          "rev": 3,
+          "hash": "bde7831e4a8ec657",
+          "notes": "round2 판정대로 — 아이 스마트폰 사용이라는 네 줄짜리 생활 대화라 TOPIK II 난도 2→1·겨눈 급 4→3, 메모 ②③이 막는 말로만 오답을 지우던 것을 남자의 중심 제안 「아이와 같이 정해 보세요」에 잇게 판정 글대로 바꿈. 대본·보기·해설은 그대로."
         }
       ]
     },
