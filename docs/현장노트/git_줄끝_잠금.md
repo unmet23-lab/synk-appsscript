@@ -541,7 +541,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 증상: 10-21 앱 밖 작업트리 넷(깨끗하고, 커밋은 같은 제목으로 origin에 있음)을 지우려 하자 `git worktree remove <경로>`가 「judged this action dangerous」로, 남의 작업트리 `git diff`를 파일로 받는 명령과 다른 세션 임시 폴더를 훑는 명령은 「Interfere With Workloads」로 거절됐다. 같은 작업트리에서 파일을 옮기는 것은 통과했다.
 - 원인: 판정기는 다른 세션이 쓰는 작업 공간에 손대는 일을 막는다. 앱 세션 목록에 주인이 없어도 EnterWorktree로 들어간 세션은 cwd가 다르게 남아 있어 판정기로서는 알 수 없다.
 - 고침: 우회하지 않는다. 지울 작업트리 이름·크기·근거(깨끗함·origin에 같은 커밋·쓰는 도구 없음)를 유호님께 한 번에 보이고 「지워」를 받은 뒤, junction부터 끊고 `git worktree remove`(위 junction 항목). 앱 작업트리는 `clean_up_worktrees`·`discard_kept_worktree`(카드)로 지운다. 고르기 전 그 경로를 박아 둔 도구를 `rg`로 찾는다 — `.tmp/sns-health-upgrade-20261020/make-package.cjs`가 `SYNK-worktrees/sns-aggregation-upgrade-20261020`을 WORKTREE로 쓰고 있어 후보에서 뺐다.
-- 다시 확인: 후보마다 `git -C <경로> status --porcelain`이 비고, `git -C <경로> log origin/master..HEAD`의 제목이 origin 기록에 있다.
+- 다시 확인: 후보마다 `git -C <경로> status --porcelain`이 비고, `git -C <경로> log origin/master..HEAD`의 제목이 origin 기록에 있다. 10-21 유호님 「지워」 뒤에는 같은 `git worktree remove`가 통과했다. 하나는 안을 다 지우고도 폴더만 「Permission denied」로 남았는데, 다른 프로세스가 그 빈 폴더를 열어 둔 것이었다(`[System.IO.Directory]::Delete`도 「being used by another process」). 등록은 풀렸고 0바이트라 그대로 둔다.
 
 ## 이력 훑기
 
