@@ -1,0 +1,27 @@
+{
+  "메모": "「매진 임박」 가편집 임시 목소리(2026-10-21, Typecast). 강도는 도현(오디션 — 강도_오디션.json: 도현 R1 1.41초 · 98Hz · 억양 폭 4.8반음, 주호 R1은 2.80초로 늘어져 2초 컷에 안 맞음), 지유 유라 · 하린 예나(명세서 목소리), 쇼호스트는 Typecast 「홈쇼핑 혜수」 · 「홈쇼핑 성준」. 화면 글과 읽는 글이 다르면 show에 화면 글. 출력은 저장소 밖: node tools/나레이션굽기.mjs <이 파일> --출력 ~/Documents/synk-vendor/homeshopping-horror-20261021/목소리/vo",
+  "voices": {
+    "강도": {"id": "tc_66d000ee0742c43c93a0ada1", "name": "도현"},
+    "지유": {"id": "tc_61130d6cf89dd58a4c13295d", "name": "유라"},
+    "하린": {"id": "tc_61e748d0fd9fb2d2cacbb04d", "name": "예나"},
+    "혜수": {"id": "tc_6215be66c55ef259159b2b39", "name": "홈쇼핑 혜수"},
+    "성준": {"id": "tc_6050bb4a630c0d0906e65d5d", "name": "홈쇼핑 성준"}
+  },
+  "defaults": {"model": "ssfm-v30", "lang": "ko", "emotion": "normal", "intensity": 1, "tempo": 1, "seed": 1021, "lufs": -17},
+  "lines": [
+    {"id": "R1", "role": "강도", "text": "가진 거... 다 내놔.", "emotion": "tonedown", "tempo": 0.9},
+    {"id": "V1", "role": "지유", "text": "이, 이거... 한정판이에요...", "emotion": "sad", "intensity": 1.6},
+    {"id": "HS1", "role": "혜수", "text": "지금 이 구성, 마지막입니다!", "emotion": "toneup", "intensity": 1.5, "tempo": 1.08, "speed": 1.1},
+    {"id": "R2", "role": "강도", "text": "장난해?", "emotion": "tonedown"},
+    {"id": "V2", "role": "하린", "text": "이것도요! 구성 추가... 무이자 십 개월...!", "show": "이것도요! 구성 추가… 무이자 십 개월…!", "emotion": "sad", "intensity": 1.6, "tempo": 1.12},
+    {"id": "HS2", "role": "성준", "text": "구성 추가! 무이자, 십 개월! 지금 바로 전화 주세요!", "show": "구성 추가! 무이자 10개월! 지금 바로 전화 주세요!", "emotion": "toneup", "intensity": 1.5, "tempo": 1.15, "메모": "쉼표 없는 「무이자 십 개월」은 깨끗한 파일에서도 「무의자」로, 「무이자 할부」는 「무의자일보」(3.2초)로 들려 쉼표로 숨을 줬다"},
+    {"id": "R3", "role": "강도", "text": "이게... 얼만데.", "tempo": 0.95},
+    {"id": "HS3a", "role": "혜수", "text": "오늘 단 하루!", "show": "오늘 단 하루!", "emotion": "toneup", "intensity": 1.5, "speed": 1.1, "메모": "「단 하루!」만 읽히면 믹스에서 첫소리가 약해 「다음 하루」로 들렸다"},
+    {"id": "HS3b", "role": "성준", "text": "특별 할인!", "emotion": "toneup", "intensity": 1.6},
+    {"id": "HS3c", "role": "혜수", "text": "구천구백 원!", "emotion": "toneup", "intensity": 1.5},
+    {"id": "R4", "role": "강도", "text": "네. 방송 보고 전화했는데요.", "tempo": 0.95},
+    {"id": "R5", "role": "강도", "text": "두 개요.", "tempo": 0.95},
+    {"id": "HS4", "role": "혜수", "text": "주문 감사합니다!", "emotion": "happy", "intensity": 1.4},
+    {"id": "SCREAM", "role": "지유", "text": "꺄아아아아아악!", "emotion": "angry", "intensity": 2}
+  ]
+}

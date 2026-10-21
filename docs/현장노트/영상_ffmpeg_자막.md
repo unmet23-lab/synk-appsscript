@@ -227,6 +227,12 @@
 - 다시 확인: `python -c "from fontTools.ttLib import TTFont; c=TTFont('docs/브랜드_폰트/SUIT/SUIT-SemiBold.otf').getBestCmap(); print([hex(x) for x in (0x2192,0x2702,0x2014) if x in c])"`가 `['0x2192']`.
 - 10-20 Remotion(yuhobuilds 첫날 편): DM Mono에는 →가 없어 `'DM Mono', 'SUIT', monospace`에서 SUIT의 꺾쇠로 나왔다(「17:35 질문 > 17:53 답」). 실제 출력 줄처럼 화살표를 글자 그대로 보여야 할 때는 글꼴 목록에서 Inter Tight를 SUIT 앞에 둔다(`'DM Mono', 'Inter Tight', monospace` → 제대로 된 →). 정지컷으로 확인.
 
+### 워크트리 안 긴 한글 경로에서는 Remotion 크롬이 「spawn … ENOENT」로 안 뜬다 (2026-10-21 Claude)
+- 증상: `.claude/worktrees/<이름>/docs/마케팅/PULSE_포트폴리오_제작준비_20261012/video/homeshopping-horror-20261021/remotion`에서 `npx remotion still`이 「Failed to launch the browser process! spawn …\chrome-headless-shell.exe ENOENT」로 끝났다. 파일은 그 자리에 있었다.
+- 원인: 실행 파일 경로가 윈도 260자를 넘어 프로세스를 못 만든다(같은 판 크롬이 짧은 공용 작업본 경로에서는 뜬다). 새 프로젝트라 크롬도 아직 안 받아져 있었다.
+- 고침: 크롬을 짧은 자리(`~/Documents/synk-vendor/도구/remotion-chrome/`)에 한 벌 두고 `remotion.config.ts`에 `Config.setBrowserExecutable(…)`. node_modules 안 `.remotion` 사본은 지운다.
+- 다시 확인: 같은 폴더에서 `npx remotion still src/index.ts H1 out/x.png --frame=30`이 그림을 낸다.
+
 ## 목소리·받아쓰기
 
 ### Gemini TTS가 영어 지시문을 소리로 읽거나 없는 말을 지어낸다

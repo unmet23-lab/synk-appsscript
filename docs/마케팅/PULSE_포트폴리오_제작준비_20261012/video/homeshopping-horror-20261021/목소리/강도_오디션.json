@@ -1,0 +1,14 @@
+{
+  "메모": "「매진 임박」 강도 목소리 고르기(2026-10-21). 한강 v40 오디션 실측(한국어 · 남자)에서 낮고 평평한 두 목소리 — 도현(103Hz · 억양 폭 8.3반음) · 주호(119Hz · 5.4반음). 위협하는 첫 줄과 공손한 주문 줄을 같은 목소리로 견준다.",
+  "defaults": {"model": "ssfm-v30", "lang": "ko", "emotion": "normal", "intensity": 1, "tempo": 1, "seed": 1021, "lufs": -17},
+  "versions": {
+    "도현": {"voice": {"id": "tc_66d000ee0742c43c93a0ada1", "name": "도현"}, "lines": [
+      {"id": "R1", "text": "가진 거... 다 내놔.", "emotion": "tonedown", "tempo": 0.9},
+      {"id": "R4", "text": "네. 방송 보고 전화했는데요.", "tempo": 0.95}
+    ]},
+    "주호": {"voice": {"id": "tc_658d1bea67f8ac8fa3cbbef9", "name": "주호"}, "lines": [
+      {"id": "R1", "text": "가진 거... 다 내놔.", "emotion": "tonedown", "tempo": 0.9},
+      {"id": "R4", "text": "네. 방송 보고 전화했는데요.", "tempo": 0.95}
+    ]}
+  }
+}
