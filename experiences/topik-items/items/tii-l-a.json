@@ -1,0 +1,2367 @@
+{
+  "schema": "topik-item-1",
+  "batch": "tii-l-a",
+  "author": "claude-opus-5-5 · Claude Code 하위 에이전트 · 2026-10-21",
+  "items": [
+    {
+      "id": "tii-l-a-001",
+      "rev": 1,
+      "family": "tii-l-a-001",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-04",
+      "targetGrade": 3,
+      "skillId": "ko2.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "이번 주말에 이사한다면서요? 짐은 다 쌌어요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "아니요, 아직 반도 못 쌌어요."
+        }
+      ],
+      "question": "대화를 듣고 여자가 이어서 할 말로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "벌써 다 쌌다니 정말 부지런하네요.",
+        "다음 주에 이사하면 그때 도와줄게요.",
+        "그럼 토요일에 제가 가서 도와줄게요.",
+        "이사를 다 끝냈으니까 이제 좀 쉬세요."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "남자는 짐을 「아직 반도 못 쌌어요」라고 했고, 이사는 「이번 주말에」 해요. 그래서 주말에 가서 돕겠다는 말이 가장 알맞아요. 다음 주에 이사한다고 한 보기는 이사 날짜와 맞지 않아요.",
+        "en": "The man says 「아직 반도 못 쌌어요」 (I haven't packed even half yet), and the move is 「이번 주말에」 (this weekend). So offering to come and help on Saturday fits best. The choice that talks about moving next week doesn't match the moving date.",
+        "mn": "Ярианд эрэгтэй 「아직 반도 못 쌌어요」 (одоохондоо талыг нь ч баглаж амжаагүй) гэсэн, нүүх нь 「이번 주말에」 (энэ амралтын өдөр). Тиймээс бямба гаригт очиж туслах санал хамгийн тохиромжтой. Ирэх долоо хоногт нүүнэ гэсэн хариулт нүүх өдөртэй таарахгүй."
+      },
+      "choiceNotes": [
+        "「아직 반도 못 쌌어요」 — 짐을 다 싸지 않았으니 맞지 않아요.",
+        "「이번 주말에」 이사하니까 다음 주 이야기는 맞지 않아요.",
+        "짐이 많이 남았고 이사는 주말이라서, 토요일에 돕겠다는 말이 알맞아요.",
+        "「이번 주말에」 이사할 예정이라 아직 이사를 끝내지 않았어요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-001.mp3",
+        "plays": 1,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-002",
+      "rev": 1,
+      "family": "tii-l-a-002",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-04",
+      "targetGrade": 3,
+      "skillId": "ko2.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "이 바지 좀 입어 봐도 돼요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "그럼요, 탈의실은 저쪽이에요. 그런데 이 색은 큰 사이즈만 남아 있어요."
+        }
+      ],
+      "question": "대화를 듣고 남자가 이어서 할 말로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "그럼 큰 거라도 한번 입어 볼게요.",
+        "작은 사이즈가 많이 남아 있어서 다행이네요.",
+        "탈의실이 없으면 집에 가서 입어 볼게요.",
+        "입어 볼 수 없다니 그냥 사 갈게요."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "여자는 「큰 사이즈만 남아 있어요」라고 했어요. 그래서 큰 것이라도 입어 보겠다는 대답이 자연스러워요. 여자가 「그럼요」라고 했으니 입어 볼 수 없다고 한 보기는 틀려요.",
+        "en": "The woman says 「큰 사이즈만 남아 있어요」 (only the large size is left), so the natural reply is that he'll try on the large one anyway. She also says 「그럼요」 (of course) to his trying it on, so the choice saying he can't try it on is wrong.",
+        "mn": "Ярианд эмэгтэй 「큰 사이즈만 남아 있어요」 (зөвхөн том хэмжээ нь үлдсэн) гэсэн. Тиймээс том нь ч гэсэн өмсөж үзье гэсэн хариулт зөв. Эмэгтэй өмсөж үзэхийг 「그럼요」 (мэдээж) гэж зөвшөөрсөн тул өмсөж болохгүй гэсэн хариулт буруу."
+      },
+      "choiceNotes": [
+        "「큰 사이즈만 남아 있어요」에 맞게 큰 것을 입어 보겠다는 말이에요.",
+        "「큰 사이즈만」 남았으니 작은 사이즈는 없어요.",
+        "「탈의실은 저쪽이에요」 — 가게에 탈의실이 있어요.",
+        "「그럼요」 — 입어 봐도 된다고 했어요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-002.mp3",
+        "plays": 1,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-003",
+      "rev": 1,
+      "family": "tii-l-a-003",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-04",
+      "targetGrade": 3,
+      "skillId": "ko2.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "내일 등산 가는 거 잊지 않았지요? 비가 온다는 소식이 있던데요."
+        },
+        {
+          "speaker": "남자",
+          "text": "저도 들었어요. 오후부터 많이 온대요."
+        }
+      ],
+      "question": "대화를 듣고 여자가 이어서 할 말로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "비가 안 온다니까 우산은 두고 가도 되겠어요.",
+        "오전부터 온다니까 등산은 다음에 가요.",
+        "저는 비가 온다는 이야기를 아직 못 들었어요.",
+        "그럼 아침 일찍 출발해서 점심 전에 내려와요."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "남자는 비가 「오후부터 많이 온대요」라고 했어요. 그러니까 비가 오기 전에 일찍 갔다가 내려오자는 말이 알맞아요. 비가 오전부터 온다고 한 보기는 들은 내용과 시간이 달라요.",
+        "en": "The man says 「오후부터 많이 온대요」 (it's supposed to rain heavily from the afternoon). So the best reply is to start early and come down before the rain. The choice saying the rain starts in the morning gets the time wrong.",
+        "mn": "Ярианд эрэгтэй бороо 「오후부터 많이 온대요」 (үдээс хойш их орно гэнэ) гэсэн. Тиймээс бороо орохоос өмнө эрт гарч, үд болохоос өмнө уулнаас буух санал тохирно. Бороо өглөөнөөс орно гэсэн хариулт сонссон цагтай таарахгүй."
+      },
+      "choiceNotes": [
+        "「비가 온다는 소식」이 있다고 했으니 비가 안 온다는 말은 틀려요.",
+        "「오후부터 많이 온대요」 — 비는 오전이 아니라 오후부터 와요.",
+        "여자가 먼저 「비가 온다는 소식이 있던데요」라고 했으니 못 들었다는 말은 맞지 않아요.",
+        "「오후부터」 비가 오니까 아침 일찍 다녀오자는 말이 알맞아요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-003.mp3",
+        "plays": 1,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-004",
+      "rev": 1,
+      "family": "tii-l-a-004",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-04",
+      "targetGrade": 4,
+      "skillId": "ko2.listening.response",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "이 청소기를 환불하고 싶어요. 며칠 써 보니까 소리가 너무 커요."
+        },
+        {
+          "speaker": "여자",
+          "text": "죄송하지만 사용하신 제품은 환불이 어렵습니다. 대신 사신 지 열흘 안에는 다른 제품으로 교환해 드립니다."
+        }
+      ],
+      "question": "대화를 듣고 남자가 이어서 할 말로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "그럼 환불은 며칠 뒤에 받을 수 있어요?",
+        "그럼 소리가 좀 더 작은 걸로 바꿔 주세요.",
+        "교환이 안 되면 수리라도 해 주세요.",
+        "아직 안 써 봤으니까 환불해 주세요."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "여자는 「사용하신 제품은 환불이 어렵습니다」라고 하고, 열흘 안에는 「다른 제품으로 교환해 드립니다」라고 했어요. 그래서 소리가 작은 제품으로 바꿔 달라는 말이 알맞아요. 남자는 「며칠 써 보니까」라고 했으니 안 써 봤다는 보기는 틀려요.",
+        "en": "The woman says 「사용하신 제품은 환불이 어렵습니다」 (a used product can't be refunded), but within ten days 「다른 제품으로 교환해 드립니다」 (they'll exchange it for another product). So asking to swap it for a quieter one fits. The man said 「며칠 써 보니까」 (after using it for a few days), so the choice saying he hasn't used it is wrong.",
+        "mn": "Ярианд эмэгтэй 「사용하신 제품은 환불이 어렵습니다」 (хэрэглэсэн барааны мөнгийг буцааж өгөх боломжгүй) гэсэн ч арав хоногийн дотор 「다른 제품으로 교환해 드립니다」 (өөр бараагаар сольж өгнө) гэсэн. Тиймээс чимээ багатай бараагаар сольж өгөхийг хүсэх нь тохирно. Эрэгтэй 「며칠 써 보니까」 (хэд хоног хэрэглэж үзэхэд) гэсэн тул хэрэглээгүй гэсэн хариулт буруу."
+      },
+      "choiceNotes": [
+        "「환불이 어렵습니다」 — 쓴 제품은 환불을 받을 수 없어요.",
+        "「다른 제품으로 교환해 드립니다」에 맞게 다른 제품으로 바꿔 달라는 말이에요.",
+        "「교환해 드립니다」 — 교환은 할 수 있어요.",
+        "「며칠 써 보니까」 — 남자는 이미 청소기를 써 봤어요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-004.mp3",
+        "plays": 1,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-005",
+      "rev": 1,
+      "family": "tii-l-a-005",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-04",
+      "targetGrade": 4,
+      "skillId": "ko2.listening.response",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "김 대리님, 내일 회의 자료를 오늘까지 보내 주기로 하셨잖아요. 아직 못 받아서 연락드렸어요."
+        },
+        {
+          "speaker": "남자",
+          "text": "죄송해요. 숫자를 다시 확인하느라 늦어졌어요."
+        }
+      ],
+      "question": "대화를 듣고 여자가 이어서 할 말로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "자료를 일찍 보내 주셔서 준비가 쉬웠어요.",
+        "회의가 끝났으니까 자료는 안 보내셔도 돼요.",
+        "그럼 확인 끝나는 대로 오늘 안에 보내 주세요.",
+        "제가 늦게 보내 드려서 정말 죄송합니다."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "여자는 자료를 「아직 못 받아서」 연락했고, 남자는 「숫자를 다시 확인하느라 늦어졌어요」라고 했어요. 그래서 확인이 끝나면 오늘 안에 보내 달라는 말이 알맞아요. 회의는 「내일」이니까 회의가 끝났다는 보기는 틀려요.",
+        "en": "The woman called because she has 「아직 못 받아서」 (not received it yet), and the man says 「숫자를 다시 확인하느라 늦어졌어요」 (it's late because he was rechecking the numbers). So asking him to send it today once he's done checking fits. The meeting is 「내일」 (tomorrow), so the choice saying the meeting is over is wrong.",
+        "mn": "Ярианд эмэгтэй материалаа 「아직 못 받아서」 (одоо болтол аваагүй болохоор) холбогдсон, эрэгтэй 「숫자를 다시 확인하느라 늦어졌어요」 (тоонуудыг дахин шалгаад хоцорсон) гэсэн. Тиймээс шалгаж дуусмагцаа өнөөдөртөө явуулаарай гэсэн үг тохирно. Хурал 「내일」 (маргааш) болох тул хурал дууссан гэсэн хариулт буруу."
+      },
+      "choiceNotes": [
+        "「아직 못 받아서」 — 여자는 자료를 아직 받지 못했어요.",
+        "「내일 회의 자료」라고 했으니 회의는 아직 하지 않았어요.",
+        "늦어진 까닭을 들은 뒤 오늘까지 보내 달라고 다시 부탁하는 말이에요.",
+        "늦은 사람은 남자예요. 여자가 사과할 일이 아니에요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-005.mp3",
+        "plays": 1,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-006",
+      "rev": 1,
+      "family": "tii-l-a-006",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-04",
+      "targetGrade": 4,
+      "skillId": "ko2.listening.response",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "다음 주부터 이 앞 도로가 공사 때문에 막힌대요."
+        },
+        {
+          "speaker": "여자",
+          "text": "네, 한 달 동안이래요. 그동안 버스도 다른 길로 다니고 정류장도 시장 앞으로 옮긴대요."
+        }
+      ],
+      "question": "대화를 듣고 남자가 이어서 할 말로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "그럼 한 달 동안은 시장 앞에서 버스를 타야겠네요.",
+        "공사가 끝났으니까 이제 이 길로 다닐 수 있겠네요.",
+        "버스는 그대로 다닌다니까 걱정 안 해도 되겠네요.",
+        "일주일만 참으면 되니까 그렇게 불편하지 않겠어요."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "여자는 공사가 「한 달 동안」이고 「정류장도 시장 앞으로 옮긴대요」라고 했어요. 그래서 한 달 동안 시장 앞에서 버스를 타야 한다는 말이 알맞아요. 공사는 「다음 주부터」 하니까 공사가 끝났다는 보기는 틀려요.",
+        "en": "The woman says the construction lasts 「한 달 동안」 (for a month) and 「정류장도 시장 앞으로 옮긴대요」 (the bus stop is moving to the front of the market). So saying he'll have to catch the bus at the market for a month fits. The work starts 「다음 주부터」 (from next week), so the choice saying it's finished is wrong.",
+        "mn": "Ярианд эмэгтэй засвар 「한 달 동안」 (нэг сарын турш) үргэлжилнэ, 「정류장도 시장 앞으로 옮긴대요」 (буудал нь ч захын урд шилжинэ гэнэ) гэсэн. Тиймээс нэг сарын турш захын урдаас автобусанд суух хэрэгтэй гэсэн үг тохирно. Засвар 「다음 주부터」 (ирэх долоо хоногоос) эхлэх тул засвар дууссан гэсэн хариулт буруу."
+      },
+      "choiceNotes": [
+        "「한 달 동안」 정류장이 「시장 앞으로」 옮겨지니 알맞은 말이에요.",
+        "「다음 주부터」 공사를 하니 아직 끝나지 않았어요.",
+        "「버스도 다른 길로 다니고」 — 버스는 그대로 다니지 않아요.",
+        "공사는 일주일이 아니라 「한 달 동안」이에요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-006.mp3",
+        "plays": 1,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-007",
+      "rev": 1,
+      "family": "tii-l-a-007",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-09",
+      "targetGrade": 3,
+      "skillId": "ko2.listening.inference",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "이 상자를 몽골로 보내려고 해요. 배로 보내면 얼마나 걸려요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "한 달쯤 걸려요. 비행기로는 일주일이면 돼요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그럼 조금 비싸도 비행기로 할게요."
+        },
+        {
+          "speaker": "남자",
+          "text": "네, 받는 분 주소부터 써 주세요. 무게는 그다음에 잴게요."
+        }
+      ],
+      "question": "대화를 듣고 여자가 이어서 할 일로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "우편 요금을 낸다.",
+        "받는 사람의 주소를 쓴다.",
+        "상자의 무게를 잰다.",
+        "배로 보내는 방법을 알아본다."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "남자가 「받는 분 주소부터 써 주세요」라고 했어요. 그래서 여자는 먼저 주소를 써요. 무게는 「그다음에」 남자가 잰다고 했으니 무게를 재는 보기는 틀려요.",
+        "en": "The man says 「받는 분 주소부터 써 주세요」 (please write the recipient's address first). So the woman will write the address next. He says he'll weigh the box 「그다음에」 (after that), so weighing it isn't her next step.",
+        "mn": "Ярианд эрэгтэй 「받는 분 주소부터 써 주세요」 (эхлээд хүлээн авагчийн хаягийг бичээрэй) гэсэн. Тиймээс эмэгтэй дараа нь хаягаа бичнэ. Хайрцгийг 「그다음에」 (түүний дараа) эрэгтэй өөрөө жигнэнэ гэсэн тул жигнэх нь эмэгтэйн дараагийн ажил биш."
+      },
+      "choiceNotes": [
+        "주소를 먼저 쓰라고 했으니 요금을 내는 것은 그 뒤의 일이에요.",
+        "「받는 분 주소부터 써 주세요」에 맞는 행동이에요.",
+        "「무게는 그다음에 잴게요」 — 무게는 나중에 남자가 재요.",
+        "「비행기로 할게요」 — 여자는 이미 비행기로 정했어요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-007.mp3",
+        "plays": 1,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-008",
+      "rev": 1,
+      "family": "tii-l-a-008",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-09",
+      "targetGrade": 3,
+      "skillId": "ko2.listening.inference",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "수진 씨, 세 시 회의 준비 다 됐어요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "자료는 다 복사해 놨어요. 그런데 회의실을 아직 못 잡았어요."
+        },
+        {
+          "speaker": "남자",
+          "text": "칠 층 회의실이 비어 있던데요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그래요? 그럼 지금 바로 예약하고 자료는 회의실에 갖다 놓을게요."
+        }
+      ],
+      "question": "대화를 듣고 여자가 이어서 할 일로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "회의 자료를 복사한다.",
+        "자료를 회의실에 갖다 놓는다.",
+        "회의 시간을 다시 정한다.",
+        "비어 있는 회의실을 예약한다."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "여자는 「지금 바로 예약하고」 자료는 회의실에 갖다 놓겠다고 했어요. 그래서 먼저 회의실을 예약해요. 자료는 「다 복사해 놨어요」라고 했으니 복사하는 보기는 이미 한 일이에요.",
+        "en": "The woman says she'll book the room 「지금 바로 예약하고」 (right now, and then) take the materials there. So her next step is booking the meeting room. She already said 「다 복사해 놨어요」 (I've copied everything), so copying is already done.",
+        "mn": "Ярианд эмэгтэй 「지금 바로 예약하고」 (одоо шууд захиалаад) материалаа хурлын өрөөнд аваачна гэсэн. Тиймээс эхлээд хурлын өрөөгөө захиална. Материалаа 「다 복사해 놨어요」 (бүгдийг нь хувилчихсан) гэсэн тул хувилах нь аль хэдийн хийсэн ажил."
+      },
+      "choiceNotes": [
+        "「다 복사해 놨어요」 — 복사는 이미 끝났어요.",
+        "「예약하고」 그다음에 할 일이에요. 바로 다음 일은 예약이에요.",
+        "회의는 그대로 「세 시」이고, 여자는 회의실 예약과 자료 준비만 말했어요.",
+        "「지금 바로 예약하고」 — 여자가 먼저 할 일이에요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-008.mp3",
+        "plays": 1,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-009",
+      "rev": 1,
+      "family": "tii-l-a-009",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-09",
+      "targetGrade": 4,
+      "skillId": "ko2.listening.inference",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "관리사무소지요? 욕실 천장에서 물이 떨어지는데 윗집에 아무도 안 계세요."
+        },
+        {
+          "speaker": "남자",
+          "text": "사진을 찍어서 문자로 먼저 보내 주세요."
+        },
+        {
+          "speaker": "여자",
+          "text": "사진은 아까 찍어 놨어요. 수리 기사님은 오늘 오실 수 있어요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "윗집부터 확인해야 해요. 제가 연락해 볼게요."
+        }
+      ],
+      "question": "대화를 듣고 여자가 이어서 할 일로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "욕실 천장 사진을 찍는다.",
+        "윗집에 다시 찾아간다.",
+        "관리사무소에 사진을 보낸다.",
+        "수리 기사가 오기를 기다린다."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "남자가 사진을 「문자로 먼저 보내 주세요」라고 했고, 여자는 사진을 「아까 찍어 놨어요」라고 했어요. 그래서 여자는 이어서 관리사무소에 사진을 보내요. 사진은 이미 찍었으니 사진을 찍는 보기는 틀려요.",
+        "en": "The man asks her to 「문자로 먼저 보내 주세요」 (send it by text first), and she says she 「아까 찍어 놨어요」 (already took it earlier). So next she will send the photo to the management office. She already took the photo, so taking it isn't her next step.",
+        "mn": "Ярианд эрэгтэй зургаа 「문자로 먼저 보내 주세요」 (эхлээд мессежээр явуулаарай) гэсэн, эмэгтэй зургаа 「아까 찍어 놨어요」 (саяхан авчихсан) гэсэн. Тиймээс эмэгтэй дараа нь удирдлагын албанд зургаа явуулна. Зургаа аль хэдийн авсан тул зураг авах хариулт буруу."
+      },
+      "choiceNotes": [
+        "「아까 찍어 놨어요」 — 사진은 이미 찍었어요.",
+        "「제가 연락해 볼게요」 — 윗집에는 남자가 연락해요.",
+        "「문자로 먼저 보내 주세요」에 맞는 행동이에요.",
+        "「윗집부터 확인해야 해요」 — 기사가 오는 것은 아직 정해지지 않았어요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-009.mp3",
+        "plays": 1,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-010",
+      "rev": 1,
+      "family": "tii-l-a-010",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-09",
+      "targetGrade": 4,
+      "skillId": "ko2.listening.inference",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "축제 안내 부스는 준비 다 됐어요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "탁자는 다 옮겼어요. 그런데 지도가 모자랄 것 같아서 더 인쇄하려고요."
+        },
+        {
+          "speaker": "남자",
+          "text": "인쇄할 필요 없어요. 사무실에 백 장쯤 남아 있어요."
+        },
+        {
+          "speaker": "여자",
+          "text": "잘됐네요, 그럼 제가 가서 가져올게요. 그동안 안내판 좀 세워 주세요."
+        }
+      ],
+      "question": "대화를 듣고 여자가 이어서 할 일로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "사무실에서 지도를 가져온다.",
+        "지도를 더 인쇄한다.",
+        "부스 앞에 안내판을 세운다.",
+        "탁자를 부스로 옮긴다."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "남자가 사무실에 지도가 「백 장쯤 남아 있어요」라고 하자, 여자는 「제가 가서 가져올게요」라고 했어요. 남자가 「인쇄할 필요 없어요」라고 했으니 지도를 인쇄하는 보기는 틀리고, 안내판은 여자가 남자에게 부탁한 일이에요.",
+        "en": "When the man says there are 「백 장쯤 남아 있어요」 (about a hundred left) in the office, the woman says 「제가 가서 가져올게요」 (I'll go get them). He said 「인쇄할 필요 없어요」 (no need to print), so printing is wrong, and setting up the sign is what she asked him to do.",
+        "mn": "Ярианд эрэгтэй оффист газрын зураг 「백 장쯤 남아 있어요」 (зуу орчим ширхэг үлдсэн) гэхэд эмэгтэй 「제가 가서 가져올게요」 (би очоод авчирна) гэсэн. Эрэгтэй 「인쇄할 필요 없어요」 (хэвлэх шаардлагагүй) гэсэн тул хэвлэх хариулт буруу, харин самбар босгохыг эмэгтэй эрэгтэйгээс гуйсан."
+      },
+      "choiceNotes": [
+        "「제가 가서 가져올게요」 — 사무실에 남은 지도를 가지러 가요.",
+        "「인쇄할 필요 없어요」 — 인쇄는 하지 않아요.",
+        "「안내판 좀 세워 주세요」 — 안내판은 남자에게 부탁했어요.",
+        "「탁자는 다 옮겼어요」 — 이미 끝난 일이에요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-010.mp3",
+        "plays": 1,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-011",
+      "rev": 1,
+      "family": "tii-l-a-011",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-13",
+      "targetGrade": 3,
+      "skillId": "ko2.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "승객 여러분께 안내 말씀을 드리겠습니다. 오후 세 시에 출발할 예정이던 기차가 이십 분 늦게 출발합니다."
+        },
+        {
+          "speaker": "여자",
+          "text": "앞 역에서 기계에 문제가 생겼기 때문입니다. 가지고 계신 기차표는 그대로 쓰실 수 있습니다."
+        },
+        {
+          "speaker": "여자",
+          "text": "기다리시는 동안 삼 층 휴게실을 이용해 주시기 바랍니다."
+        }
+      ],
+      "question": "안내 방송을 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "기차가 늦는 것은 날씨 때문이다.",
+        "승객들은 기차표를 새로 사야 한다.",
+        "3층 휴게실은 지금 이용할 수 없다.",
+        "기차는 3시 20분쯤 출발할 것이다."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "방송에서 「오후 세 시에 출발할 예정이던」 기차가 「이십 분 늦게 출발합니다」라고 했어요. 그래서 기차는 세 시 이십 분쯤 떠나요. 늦는 까닭은 「기계에 문제가 생겼기 때문」이라서 날씨 때문이라는 보기는 틀려요.",
+        "en": "The announcement says the train 「오후 세 시에 출발할 예정이던」 (that was scheduled to leave at 3 p.m.) will 「이십 분 늦게 출발합니다」 (leave twenty minutes late). So it will leave at about 3:20. The delay is 「기계에 문제가 생겼기 때문」 (because a machine problem occurred), so the weather choice is wrong.",
+        "mn": "Ярианд 「오후 세 시에 출발할 예정이던」 (үдээс хойш гурван цагт хөдлөх ёстой байсан) галт тэрэг 「이십 분 늦게 출발합니다」 (хорин минут хоцорч хөдөлнө) гэсэн. Тиймээс галт тэрэг гурван цаг хорин минут орчимд хөдөлнө. Хоцорсон шалтгаан нь 「기계에 문제가 생겼기 때문」 (машин механизмд асуудал гарсан учраас) тул цаг агаараас болсон гэсэн хариулт буруу."
+      },
+      "choiceNotes": [
+        "「기계에 문제가 생겼기 때문입니다」 — 날씨가 아니라 기계 문제 때문이에요.",
+        "「기차표는 그대로 쓰실 수 있습니다」 — 표를 새로 살 필요가 없어요.",
+        "「삼 층 휴게실을 이용해 주시기 바랍니다」 — 휴게실을 쓸 수 있어요.",
+        "세 시 기차가 「이십 분 늦게」 떠나니 세 시 이십 분쯤 출발해요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-011.mp3",
+        "plays": 1,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-012",
+      "rev": 1,
+      "family": "tii-l-a-012",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-13",
+      "targetGrade": 4,
+      "skillId": "ko2.listening.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "시에서 이번 달부터 매주 토요일에 고장 난 생활용품을 무료로 고쳐 주는 수리 센터를 운영합니다."
+        },
+        {
+          "speaker": "여자",
+          "text": "우산이나 선풍기, 전기 주전자 같은 물건을 가져가면 기사가 그 자리에서 고쳐 줍니다. 다만 부품을 바꿔야 할 때는 부품 값을 내야 합니다."
+        },
+        {
+          "speaker": "여자",
+          "text": "시는 버려지는 물건을 줄이려고 이 센터를 열었으며, 이용하려면 하루 전까지 시청 홈페이지에서 예약해야 합니다."
+        }
+      ],
+      "question": "뉴스를 듣고 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "수리 센터는 평일에만 문을 연다.",
+        "수리가 무료여도 새 부품 값은 따로 든다.",
+        "수리를 받으려면 그날 아침에 예약하면 된다.",
+        "이 센터에서는 큰 가전제품만 고쳐 준다."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "뉴스에서 수리는 무료지만 「부품을 바꿔야 할 때는 부품 값을 내야 합니다」라고 했어요. 센터는 「매주 토요일에」 열고, 예약은 「하루 전까지」 해야 하니 평일이나 그날 아침 예약을 말한 보기는 틀려요.",
+        "en": "The news says repairs are free, but 「부품을 바꿔야 할 때는 부품 값을 내야 합니다」 (when parts need replacing, you pay for the parts). The center opens 「매주 토요일에」 (every Saturday), and you must book 「하루 전까지」 (by the day before), so the choices about weekdays or booking that same morning are wrong.",
+        "mn": "Ярианд засвар үнэгүй ч 「부품을 바꿔야 할 때는 부품 값을 내야 합니다」 (сэлбэг солих бол сэлбэгийн үнийг төлнө) гэсэн. Төв 「매주 토요일에」 (долоо хоног бүрийн бямба гаригт) ажиллаж, захиалгыг 「하루 전까지」 (нэг өдрийн өмнө) хийх ёстой тул ажлын өдөр эсвэл тухайн өглөө захиална гэсэн хариултууд буруу."
+      },
+      "choiceNotes": [
+        "「매주 토요일에」 문을 열어요. 평일이 아니에요.",
+        "「부품 값을 내야 합니다」 — 수리는 무료여도 부품 값은 내요.",
+        "「하루 전까지」 예약해야 해요. 그날 아침에는 안 돼요.",
+        "「우산이나 선풍기」 같은 작은 물건도 고쳐 줘요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-012.mp3",
+        "plays": 1,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-013",
+      "rev": 1,
+      "family": "tii-l-a-013",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-17",
+      "targetGrade": 3,
+      "skillId": "ko2.listening.main",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "요즘 너무 바빠서 평일에는 운동을 못 해요. 주말에 몰아서 할까 봐요."
+        },
+        {
+          "speaker": "남자",
+          "text": "주말에만 많이 하면 오히려 몸이 더 힘들어요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그래도 평일에는 정말 시간이 없어요."
+        },
+        {
+          "speaker": "남자",
+          "text": "하루에 십 분이라도 매일 움직이는 게 더 좋아요."
+        }
+      ],
+      "question": "대화를 듣고 남자의 중심 생각으로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "운동은 시간이 날 때 오래 하는 것이 좋다.",
+        "운동은 짧게라도 날마다 하는 것이 좋다.",
+        "운동은 주말에 몰아서 하는 것이 좋다.",
+        "바쁠 때는 운동보다 쉬는 것이 좋다."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "남자는 「하루에 십 분이라도 매일 움직이는 게 더 좋아요」라고 했어요. 짧게라도 매일 운동하는 것이 좋다는 생각이에요. 주말에 몰아서 하는 것은 여자의 생각이고, 남자는 그러면 「오히려 몸이 더 힘들어요」라고 했어요.",
+        "en": "The man says 「하루에 십 분이라도 매일 움직이는 게 더 좋아요」 (moving every day, even for ten minutes, is better). His idea is that short daily exercise is best. Exercising all at once on weekends is the woman's plan, and he says that 「오히려 몸이 더 힘들어요」 (it's actually harder on your body).",
+        "mn": "Ярианд эрэгтэй 「하루에 십 분이라도 매일 움직이는 게 더 좋아요」 (өдөрт арван минут ч гэсэн өдөр бүр хөдөлгөөн хийх нь илүү дээр) гэсэн. Түүний бодол бол богино ч гэсэн өдөр бүр дасгал хийх нь сайн гэсэн санаа. Амралтын өдөр бөөгнүүлж хийх нь эмэгтэйн санаа бөгөөд эрэгтэй тэгвэл 「오히려 몸이 더 힘들어요」 (харин ч бие илүү ядарна) гэсэн."
+      },
+      "choiceNotes": [
+        "「하루에 십 분이라도」 — 오래 하는 것보다 짧게라도 자주 하자는 생각이에요.",
+        "「매일 움직이는 게 더 좋아요」와 같은 생각이에요.",
+        "주말에 「몰아서」 하는 것은 여자의 생각이고 남자는 반대했어요.",
+        "남자는 바빠도 「매일 움직이는 게」 좋다고 했어요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-013.mp3",
+        "plays": 1,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-014",
+      "rev": 1,
+      "family": "tii-l-a-014",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-17",
+      "targetGrade": 3,
+      "skillId": "ko2.listening.main",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "회사에 들어온 지 얼마 안 돼서 모르는 게 많아요. 그런데 자꾸 물어보기가 미안해요."
+        },
+        {
+          "speaker": "남자",
+          "text": "모르는 걸 그냥 넘기면 나중에 더 큰 실수를 해요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그래도 선배들이 다 바빠 보여서요."
+        },
+        {
+          "speaker": "남자",
+          "text": "처음에는 묻는 게 당연해요. 미안해하지 말고 물어보세요."
+        }
+      ],
+      "question": "대화를 듣고 남자의 중심 생각으로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "선배들이 바쁠 때는 묻지 않는 것이 좋다.",
+        "일은 실수를 해 보면서 배우는 것이 좋다.",
+        "모르는 것이 있으면 망설이지 말고 물어야 한다.",
+        "처음에는 무엇이든 혼자 해 보는 것이 좋다."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "남자는 「모르는 걸 그냥 넘기면 나중에 더 큰 실수를 해요」라고 하고, 「미안해하지 말고 물어보세요」라고 했어요. 모르는 것은 꼭 물어봐야 한다는 생각이에요. 선배들이 바빠서 묻기 어렵다는 것은 여자의 걱정이에요.",
+        "en": "The man says 「모르는 걸 그냥 넘기면 나중에 더 큰 실수를 해요」 (if you let things you don't know slide, you'll make bigger mistakes later) and 「미안해하지 말고 물어보세요」 (don't feel bad, just ask). His idea is that you should ask about what you don't know. Hesitating because the seniors look busy is the woman's worry.",
+        "mn": "Ярианд эрэгтэй 「모르는 걸 그냥 넘기면 나중에 더 큰 실수를 해요」 (мэдэхгүй зүйлээ орхивол дараа нь илүү том алдаа гаргана) гэж, 「미안해하지 말고 물어보세요」 (эвгүйцэлгүй асуугаарай) гэсэн. Түүний бодол бол мэдэхгүй зүйлээ заавал асуух хэрэгтэй гэсэн санаа. Ахлах ажилтнууд завгүй болохоор асуухад хэцүү гэдэг нь эмэгтэйн санаа зоволт."
+      },
+      "choiceNotes": [
+        "선배들이 「바빠 보여서」 묻기 어렵다는 것은 여자의 걱정이에요.",
+        "남자는 그냥 넘기면 「더 큰 실수를 해요」라고 했어요.",
+        "「미안해하지 말고 물어보세요」와 같은 생각이에요.",
+        "남자는 「처음에는 묻는 게 당연해요」라고 했어요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-014.mp3",
+        "plays": 1,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-015",
+      "rev": 1,
+      "family": "tii-l-a-015",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-17",
+      "targetGrade": 4,
+      "skillId": "ko2.listening.main",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "요즘 아이가 스마트폰을 너무 오래 봐서 걱정이에요. 아예 못 쓰게 하는 게 낫지 않을까요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "무조건 막으면 몰래 쓰게 될 뿐이에요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그럼 어떻게 해야 할까요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "쓰는 시간을 아이와 같이 정해 보세요. 스스로 지키는 연습이 돼요."
+        }
+      ],
+      "question": "대화를 듣고 남자의 중심 생각으로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "아이에게는 스마트폰을 아예 주지 않는 것이 좋다.",
+        "아이가 몰래 쓰지 못하게 늘 지켜봐야 한다.",
+        "약속을 어기면 스마트폰을 바로 빼앗아야 한다.",
+        "스마트폰 쓸 시간은 아이와 함께 정하는 것이 좋다."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "남자는 「쓰는 시간을 아이와 같이 정해 보세요」라고 했어요. 그러면 아이가 「스스로 지키는 연습이 돼요」라고 했으니 함께 정하는 것이 좋다는 생각이에요. 아예 못 쓰게 하는 것은 여자의 생각이고, 남자는 「무조건 막으면 몰래 쓰게 될 뿐이에요」라고 했어요.",
+        "en": "The man says 「쓰는 시간을 아이와 같이 정해 보세요」 (try setting the usage time together with your child), because it becomes 「스스로 지키는 연습이 돼요」 (practice in keeping the rules on their own). Banning it completely is the woman's idea, and he says 「무조건 막으면 몰래 쓰게 될 뿐이에요」 (if you simply block it, they'll just use it secretly).",
+        "mn": "Ярианд эрэгтэй 「쓰는 시간을 아이와 같이 정해 보세요」 (хэрэглэх цагийг хүүхэдтэйгээ хамт тогтоож үзээрэй) гэсэн. Ингэвэл 「스스로 지키는 연습이 돼요」 (өөрөө дагаж сурах дадлага болно) гэсэн тул хамтдаа тогтоох нь зүйтэй гэсэн бодол. Огт хэрэглүүлэхгүй байх нь эмэгтэйн санаа бөгөөд эрэгтэй 「무조건 막으면 몰래 쓰게 될 뿐이에요」 (шууд хориглох юм бол нууцаар л хэрэглэнэ) гэсэн."
+      },
+      "choiceNotes": [
+        "「아예 못 쓰게 하는 게」 낫다는 것은 여자의 생각이에요.",
+        "남자는 「몰래 쓰게 될 뿐」이라며 막는 방법에 반대했어요.",
+        "남자는 「무조건 막으면」 안 된다고 했으니 빼앗는 방법은 남자의 생각이 아니에요.",
+        "「아이와 같이 정해 보세요」와 같은 생각이에요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-015.mp3",
+        "plays": 1,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-016",
+      "rev": 1,
+      "family": "tii-l-a-016",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-17",
+      "targetGrade": 4,
+      "skillId": "ko2.listening.main",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "새 노트북을 사려고 하는데 생각보다 너무 비싸요."
+        },
+        {
+          "speaker": "남자",
+          "text": "중고로 사는 건 어때요? 저는 요즘 웬만한 건 중고로 사요."
+        },
+        {
+          "speaker": "여자",
+          "text": "중고는 금방 고장 날까 봐 걱정돼요."
+        },
+        {
+          "speaker": "남자",
+          "text": "판매자 평가를 꼼꼼히 보면 돼요. 쓸 만한 물건을 다시 쓰면 환경에도 좋고요."
+        }
+      ],
+      "question": "대화를 듣고 남자의 중심 생각으로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "아직 쓸 수 있는 물건은 중고로 사는 것이 좋다.",
+        "비싼 물건일수록 새것으로 사는 것이 좋다.",
+        "중고 물건은 고장이 잦으니 피하는 것이 좋다.",
+        "판매자의 평가는 너무 믿지 않는 것이 좋다."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "남자는 「중고로 사는 건 어때요?」라고 권하고, 「쓸 만한 물건을 다시 쓰면 환경에도 좋고요」라고 했어요. 쓸 수 있는 물건은 중고로 사는 것이 좋다는 생각이에요. 중고가 「금방 고장 날까 봐」 걱정하는 사람은 여자예요.",
+        "en": "The man suggests 「중고로 사는 건 어때요?」 (how about buying it used?) and says 「쓸 만한 물건을 다시 쓰면 환경에도 좋고요」 (reusing things that still work is good for the environment, too). His idea is that it's good to buy usable things secondhand. The one who worries used items will 「금방 고장 날까 봐」 (break down soon) is the woman.",
+        "mn": "Ярианд эрэгтэй 「중고로 사는 건 어때요?」 (хуучныг авбал ямар вэ?) гэж санал болгоод, 「쓸 만한 물건을 다시 쓰면 환경에도 좋고요」 (хэрэглэж болох эд зүйлийг дахин хэрэглэвэл байгаль орчинд ч сайн) гэсэн. Түүний бодол бол хэрэглэж болох эд зүйлийг хуучнаар авах нь зүйтэй гэсэн санаа. Хуучин эд 「금방 고장 날까 봐」 (удахгүй эвдрэх вий гэж) санаа зовж байгаа нь эмэгтэй."
+      },
+      "choiceNotes": [
+        "「중고로 사는 건 어때요?」와 「다시 쓰면 환경에도 좋고요」에 맞는 생각이에요.",
+        "남자는 비싼 노트북도 「중고로 사는 건 어때요?」라고 권했어요.",
+        "「금방 고장 날까 봐」 걱정하는 것은 여자예요.",
+        "남자는 「판매자 평가를 꼼꼼히 보면 돼요」라고 했어요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-016.mp3",
+        "plays": 1,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-017",
+      "rev": 1,
+      "family": "tii-l-a-017",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-21",
+      "targetGrade": 3,
+      "skillId": "ko2.listening.main",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": {
+        "id": "tii-l-a-s01",
+        "order": 1
+      },
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "이번 주말에 대형 마트에 가서 장을 한꺼번에 볼까요? 많이 사면 훨씬 싸잖아요."
+        },
+        {
+          "speaker": "남자",
+          "text": "우리는 두 식구라서 다 못 먹어요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그래도 한 번에 사 두면 자주 안 가도 되니까 편하잖아요."
+        },
+        {
+          "speaker": "남자",
+          "text": "지난번에도 채소를 반이나 버렸어요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그건 그렇네요. 그럼 어떻게 할까요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "조금 비싸도 필요한 만큼만 자주 사요. 그게 결국 아끼는 거예요."
+        }
+      ],
+      "question": "대화를 듣고 남자의 중심 생각으로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "장은 한 번에 많이 봐 두는 것이 편하다.",
+        "식구가 적으면 장을 자주 볼 필요가 없다.",
+        "조금 비싸더라도 필요한 양만 사는 것이 좋다.",
+        "대형 마트에서 많이 사는 것이 돈을 아끼는 길이다."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "남자는 「조금 비싸도 필요한 만큼만 자주 사요」라고 하고 「그게 결국 아끼는 거예요」라고 했어요. 필요한 만큼만 사는 것이 좋다는 생각이에요. 많이 사면 싸다는 것은 여자의 말이고, 남자는 「지난번에도 채소를 반이나 버렸어요」라고 반대했어요.",
+        "en": "The man says 「조금 비싸도 필요한 만큼만 자주 사요」 (let's buy only what we need, often, even if it costs a bit more) and 「그게 결국 아끼는 거예요」 (that's what really saves money in the end). His idea is to buy only what you need. Buying in bulk because it's cheaper is the woman's point, and he objects that 「지난번에도 채소를 반이나 버렸어요」 (last time we threw away half the vegetables, too).",
+        "mn": "Ярианд эрэгтэй 「조금 비싸도 필요한 만큼만 자주 사요」 (жаахан үнэтэй ч хэрэгтэй хэмжээгээрээ ойр ойрхон авъя) гэж, 「그게 결국 아끼는 거예요」 (эцэстээ тэр л хэмнэлт) гэсэн. Түүний бодол бол хэрэгтэй хэмжээгээр нь авах нь зүйтэй гэсэн санаа. Их авбал хямд гэдэг нь эмэгтэйн үг бөгөөд эрэгтэй 「지난번에도 채소를 반이나 버렸어요」 (өмнө нь ч ногооныхоо талыг хаясан) гэж эсэргүүцсэн."
+      },
+      "choiceNotes": [
+        "한 번에 사 두면 「편하잖아요」는 여자의 생각이에요.",
+        "남자는 「필요한 만큼만 자주 사요」라고 했어요.",
+        "「조금 비싸도 필요한 만큼만」 사자는 남자의 생각과 같아요.",
+        "많이 사면 싸다는 것은 여자의 말이고, 남자는 필요한 만큼 사는 것이 「결국 아끼는 거」라고 했어요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-s01.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-018",
+      "rev": 1,
+      "family": "tii-l-a-018",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-22",
+      "targetGrade": 3,
+      "skillId": "ko2.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": {
+        "id": "tii-l-a-s01",
+        "order": 2
+      },
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "이번 주말에 대형 마트에 가서 장을 한꺼번에 볼까요? 많이 사면 훨씬 싸잖아요."
+        },
+        {
+          "speaker": "남자",
+          "text": "우리는 두 식구라서 다 못 먹어요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그래도 한 번에 사 두면 자주 안 가도 되니까 편하잖아요."
+        },
+        {
+          "speaker": "남자",
+          "text": "지난번에도 채소를 반이나 버렸어요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그건 그렇네요. 그럼 어떻게 할까요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "조금 비싸도 필요한 만큼만 자주 사요. 그게 결국 아끼는 거예요."
+        }
+      ],
+      "question": "대화의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "이 집은 식구가 네 명이다.",
+        "지난번에 산 채소를 절반쯤 버렸다.",
+        "남자가 주말에 대형 마트에 가자고 했다.",
+        "여자는 장을 자주 보는 것이 편하다고 했다."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "남자가 「지난번에도 채소를 반이나 버렸어요」라고 했어요. 그래서 채소를 절반쯤 버렸다는 보기가 맞아요. 대형 마트에 가자고 한 사람은 여자이고, 이 집은 「두 식구」예요.",
+        "en": "The man says 「지난번에도 채소를 반이나 버렸어요」 (last time, too, we threw away half the vegetables), so the choice about throwing away about half matches. It was the woman who suggested going to the big supermarket, and the household is 「두 식구」 (two people).",
+        "mn": "Ярианд эрэгтэй 「지난번에도 채소를 반이나 버렸어요」 (өмнө нь ч ногооныхоо талыг хаясан) гэсэн. Тиймээс ногооны тал орчмыг хаясан гэсэн хариулт зөв. Том дэлгүүрт явъя гэсэн нь эмэгтэй бөгөөд энэ гэр 「두 식구」 (хоёр ам бүл)."
+      },
+      "choiceNotes": [
+        "「두 식구」 — 이 집은 두 사람이 살아요.",
+        "「채소를 반이나 버렸어요」와 같은 내용이에요.",
+        "대형 마트에 가자고 한 사람은 여자예요.",
+        "여자는 「자주 안 가도 되니까 편하잖아요」라고 했어요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-s01.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-019",
+      "rev": 1,
+      "family": "tii-l-a-019",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-21",
+      "targetGrade": 4,
+      "skillId": "ko2.listening.main",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "set": {
+        "id": "tii-l-a-s02",
+        "order": 1
+      },
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "팀장님, 새 앱은 예정대로 다음 주 월요일에 내놓을까요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "시험 사용 결과는 어땠어요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "스무 명 가운데 여섯 명이 결제할 때 오류가 났대요. 그런데 광고는 이미 월요일로 잡아 놨어요."
+        },
+        {
+          "speaker": "남자",
+          "text": "그럼 출시를 일주일 미룹시다."
+        },
+        {
+          "speaker": "여자",
+          "text": "광고 날짜를 바꾸면 비용이 더 들어요. 일부 사람들한테만 먼저 내놓으면 어떨까요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "처음 써 본 사람이 실망하면 다시 안 와요. 다 고친 다음에 내놓읍시다."
+        }
+      ],
+      "question": "대화를 듣고 남자의 중심 생각으로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "광고 일정을 바꾸지 않는 것이 가장 중요하다.",
+        "오류가 난 사람이 적으니 예정대로 내놓아도 된다.",
+        "새 앱은 일부 사람들에게 먼저 내놓는 것이 좋다.",
+        "오류를 모두 고친 뒤에 앱을 내놓아야 한다."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "남자는 「출시를 일주일 미룹시다」라고 하고, 「다 고친 다음에 내놓읍시다」라고 했어요. 오류를 고친 뒤에 내놓아야 한다는 생각이에요. 일부 사람들에게 먼저 내놓자는 것은 여자의 의견이에요.",
+        "en": "The man says 「출시를 일주일 미룹시다」 (let's push the launch back a week) and 「다 고친 다음에 내놓읍시다」 (let's release it after fixing everything). His idea is that the app should come out only after the errors are fixed. Releasing it to some people first is the woman's suggestion.",
+        "mn": "Ярианд эрэгтэй 「출시를 일주일 미룹시다」 (гаргахыг нэг долоо хоногоор хойшлуулъя) гэж, 「다 고친 다음에 내놓읍시다」 (бүгдийг засаад дараа нь гаргая) гэсэн. Түүний бодол бол алдааг засаад дараа нь аппыг гаргах ёстой гэсэн санаа. Зарим хүнд түрүүлж гаргая гэдэг нь эмэгтэйн санал."
+      },
+      "choiceNotes": [
+        "광고 날짜를 걱정한 사람은 여자이고, 남자는 「출시를 일주일 미룹시다」라고 했어요.",
+        "남자는 오류 결과를 듣고 「출시를 일주일 미룹시다」라고 했어요.",
+        "「일부 사람들한테만 먼저」 내놓자는 것은 여자의 의견이에요.",
+        "「다 고친 다음에 내놓읍시다」와 같은 생각이에요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-s02.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-020",
+      "rev": 1,
+      "family": "tii-l-a-020",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-22",
+      "targetGrade": 4,
+      "skillId": "ko2.listening.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "set": {
+        "id": "tii-l-a-s02",
+        "order": 2
+      },
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "팀장님, 새 앱은 예정대로 다음 주 월요일에 내놓을까요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "시험 사용 결과는 어땠어요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "스무 명 가운데 여섯 명이 결제할 때 오류가 났대요. 그런데 광고는 이미 월요일로 잡아 놨어요."
+        },
+        {
+          "speaker": "남자",
+          "text": "그럼 출시를 일주일 미룹시다."
+        },
+        {
+          "speaker": "여자",
+          "text": "광고 날짜를 바꾸면 비용이 더 들어요. 일부 사람들한테만 먼저 내놓으면 어떨까요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "처음 써 본 사람이 실망하면 다시 안 와요. 다 고친 다음에 내놓읍시다."
+        }
+      ],
+      "question": "대화의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "광고는 아직 날짜를 정하지 않았다.",
+        "남자는 출시를 한 달 늦추자고 했다.",
+        "결제하다가 오류가 난 사람이 있었다.",
+        "광고 날짜를 바꿔도 비용은 똑같다."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "여자가 「스무 명 가운데 여섯 명이 결제할 때 오류가 났대요」라고 했어요. 그래서 결제하다가 오류가 난 사람이 있었다는 보기가 맞아요. 광고는 「이미 월요일로 잡아 놨어요」라고 했고, 남자는 출시를 한 달이 아니라 「일주일」 미루자고 했어요.",
+        "en": "The woman says 「스무 명 가운데 여섯 명이 결제할 때 오류가 났대요」 (six of twenty people got an error when paying), so the choice saying some people had errors while paying matches. The ads are 「이미 월요일로 잡아 놨어요」 (already booked for Monday), and the man wants to delay the launch by 「일주일」 (a week), not a month.",
+        "mn": "Ярианд эмэгтэй 「스무 명 가운데 여섯 명이 결제할 때 오류가 났대요」 (хорин хүний зургаад нь төлбөр төлөхөд алдаа гарсан гэнэ) гэсэн. Тиймээс төлбөр төлж байхдаа алдаа гарсан хүмүүс байсан гэсэн хариулт зөв. Сурталчилгааг 「이미 월요일로 잡아 놨어요」 (аль хэдийн даваа гарагт товлочихсон) гэсэн бөгөөд эрэгтэй гаргахыг сар биш 「일주일」 (нэг долоо хоног) хойшлуулъя гэсэн."
+      },
+      "choiceNotes": [
+        "「이미 월요일로 잡아 놨어요」 — 광고 날짜는 정해져 있어요.",
+        "남자는 한 달이 아니라 「일주일」 미루자고 했어요.",
+        "「결제할 때 오류가 났대요」와 같은 내용이에요.",
+        "「광고 날짜를 바꾸면 비용이 더 들어요」 — 비용이 늘어요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-s02.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-021",
+      "rev": 1,
+      "family": "tii-l-a-021",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-23",
+      "targetGrade": 3,
+      "skillId": "ko2.listening.inference",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": {
+        "id": "tii-l-a-s03",
+        "order": 1
+      },
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "네, 치과입니다. 무엇을 도와드릴까요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "내일 오후 두 시에 예약한 이준호인데요."
+        },
+        {
+          "speaker": "여자",
+          "text": "네, 이준호 님. 내일 두 시 예약 맞으시네요."
+        },
+        {
+          "speaker": "남자",
+          "text": "회사 일 때문에 그 시간에 못 갈 것 같아요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그럼 다른 시간으로 바꿔 드릴까요? 내일은 오전 열 시나 저녁 여섯 시가 비어 있어요."
+        },
+        {
+          "speaker": "남자",
+          "text": "여섯 시로 해 주세요."
+        },
+        {
+          "speaker": "여자",
+          "text": "네, 내일 저녁 여섯 시로 바꿔 드렸습니다. 늦으시면 미리 전화 주세요."
+        }
+      ],
+      "question": "대화를 듣고 남자가 지금 무엇을 하고 있는지 고르십시오.",
+      "choices": [
+        "치과 예약을 취소하고 있다.",
+        "치과 예약 시간을 바꾸고 있다.",
+        "치과에 처음으로 예약을 하고 있다.",
+        "치과에 늦는다고 알리고 있다."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "남자는 「그 시간에 못 갈 것 같아요」라고 하고, 다른 시간 가운데 「여섯 시로 해 주세요」라고 했어요. 예약을 없애는 것이 아니라 시간을 바꾸고 있어요. 남자는 「내일 오후 두 시에 예약한」 사람이라서 처음 예약하는 것도 아니에요.",
+        "en": "The man says 「그 시간에 못 갈 것 같아요」 (I don't think I can make it at that time) and then 「여섯 시로 해 주세요」 (please make it six). He isn't cancelling; he's changing the time. He is the one who 「내일 오후 두 시에 예약한」 (booked for 2 p.m. tomorrow), so it isn't a first booking either.",
+        "mn": "Ярианд эрэгтэй 「그 시간에 못 갈 것 같아요」 (тэр цагт очиж чадахгүй байх) гээд, өөр цагуудаас 「여섯 시로 해 주세요」 (зургаан цаг болгож өгөөрэй) гэсэн. Тэр цагаа цуцлаагүй, харин цагаа сольж байна. Эрэгтэй 「내일 오후 두 시에 예약한」 (маргааш үдээс хойш хоёр цагт цаг захиалсан) хүн учраас анх удаа захиалж байгаа ч биш."
+      },
+      "choiceNotes": [
+        "「여섯 시로 해 주세요」 — 예약을 없애지 않고 다른 시간으로 옮겼어요.",
+        "「그 시간에 못 갈 것 같아요」라고 하고 시간을 바꿨어요.",
+        "「내일 오후 두 시에 예약한」 사람이니 처음 하는 예약이 아니에요.",
+        "「늦으시면 미리 전화 주세요」는 앞으로의 부탁이에요. 남자가 늦는다고 한 것이 아니에요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-s03.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-022",
+      "rev": 1,
+      "family": "tii-l-a-022",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-24",
+      "targetGrade": 3,
+      "skillId": "ko2.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": {
+        "id": "tii-l-a-s03",
+        "order": 2
+      },
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "네, 치과입니다. 무엇을 도와드릴까요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "내일 오후 두 시에 예약한 이준호인데요."
+        },
+        {
+          "speaker": "여자",
+          "text": "네, 이준호 님. 내일 두 시 예약 맞으시네요."
+        },
+        {
+          "speaker": "남자",
+          "text": "회사 일 때문에 그 시간에 못 갈 것 같아요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그럼 다른 시간으로 바꿔 드릴까요? 내일은 오전 열 시나 저녁 여섯 시가 비어 있어요."
+        },
+        {
+          "speaker": "남자",
+          "text": "여섯 시로 해 주세요."
+        },
+        {
+          "speaker": "여자",
+          "text": "네, 내일 저녁 여섯 시로 바꿔 드렸습니다. 늦으시면 미리 전화 주세요."
+        }
+      ],
+      "question": "대화의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "남자는 내일 오전에 치과에 간다.",
+        "치과는 내일 저녁에는 문을 열지 않는다.",
+        "남자는 처음에 오늘 오후로 예약했었다.",
+        "남자는 회사 일 때문에 예약 시간을 옮겼다."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "남자는 「회사 일 때문에 그 시간에 못 갈 것 같아요」라고 했고, 시간을 저녁 여섯 시로 바꿨어요. 남자가 고른 시간은 오전 열 시가 아니라 「여섯 시」예요. 치과는 「저녁 여섯 시가 비어 있어요」라고 했으니 저녁에도 문을 열어요.",
+        "en": "The man says 「회사 일 때문에 그 시간에 못 갈 것 같아요」 (because of work, I don't think I can go at that time), and he moved it to 6 p.m. The time he chose is 「여섯 시」 (six), not 10 a.m. The clinic says 「저녁 여섯 시가 비어 있어요」 (6 p.m. is free), so it is open in the evening.",
+        "mn": "Ярианд эрэгтэй 「회사 일 때문에 그 시간에 못 갈 것 같아요」 (ажлын учир тэр цагт очиж чадахгүй байх) гээд цагаа оройн зургаан цаг болгож сольсон. Эрэгтэйн сонгосон цаг нь өглөөний арван цаг биш, 「여섯 시」 (зургаан цаг). Шүдний эмнэлэг 「저녁 여섯 시가 비어 있어요」 (оройн зургаан цаг сул байна) гэсэн тул орой ч ажилладаг."
+      },
+      "choiceNotes": [
+        "남자는 「여섯 시로 해 주세요」라고 했어요. 오전이 아니에요.",
+        "「저녁 여섯 시가 비어 있어요」 — 저녁에도 진료해요.",
+        "처음 예약은 「내일 오후 두 시」였어요.",
+        "「회사 일 때문에」 시간을 바꿨으니 맞는 내용이에요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-s03.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-023",
+      "rev": 1,
+      "family": "tii-l-a-023",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-23",
+      "targetGrade": 4,
+      "skillId": "ko2.listening.inference",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "set": {
+        "id": "tii-l-a-s04",
+        "order": 1
+      },
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "체크카드를 잃어버려서 왔어요."
+        },
+        {
+          "speaker": "여자",
+          "text": "카드 분실 신고는 하셨어요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "네, 어젯밤에 전화로 했어요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그럼 새 카드를 만들어 드릴게요. 보통은 일주일쯤 뒤에 집으로 보내 드려요."
+        },
+        {
+          "speaker": "남자",
+          "text": "오늘 바로 받을 수는 없나요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "수수료 이천 원을 내시면 지금 바로 만들어 드릴 수 있어요."
+        },
+        {
+          "speaker": "남자",
+          "text": "그럼 그렇게 해 주세요."
+        }
+      ],
+      "question": "대화를 듣고 남자가 지금 무엇을 하고 있는지 고르십시오.",
+      "choices": [
+        "새 카드를 신청하고 있다.",
+        "카드 분실 신고를 하고 있다.",
+        "잃어버린 카드를 찾고 있다.",
+        "카드 수수료를 돌려받고 있다."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "남자는 분실 신고를 「어젯밤에 전화로 했어요」라고 했고, 은행 직원은 「새 카드를 만들어 드릴게요」라고 했어요. 그래서 남자는 지금 새 카드를 신청하고 있어요. 분실 신고는 이미 했으니 신고하고 있다는 보기는 틀려요.",
+        "en": "The man says he reported the loss 「어젯밤에 전화로 했어요」 (by phone last night), and the clerk says 「새 카드를 만들어 드릴게요」 (I'll make you a new card). So he is applying for a new card now. He has already reported the loss, so the choice about reporting it is wrong.",
+        "mn": "Ярианд эрэгтэй картаа алдсанаа 「어젯밤에 전화로 했어요」 (өчигдөр орой утсаар мэдэгдсэн) гэсэн, банкны ажилтан 「새 카드를 만들어 드릴게요」 (шинэ карт хийж өгье) гэсэн. Тиймээс эрэгтэй одоо шинэ картын хүсэлт гаргаж байна. Алдсанаа аль хэдийн мэдэгдсэн тул мэдэгдэж байна гэсэн хариулт буруу."
+      },
+      "choiceNotes": [
+        "「새 카드를 만들어 드릴게요」 — 남자는 새 카드를 신청하고 있어요.",
+        "「어젯밤에 전화로 했어요」 — 분실 신고는 이미 했어요.",
+        "남자는 카드를 찾는 것이 아니라 「잃어버려서」 새로 만들러 왔어요.",
+        "「수수료 이천 원을 내시면」 — 남자는 수수료를 내요. 돌려받지 않아요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-s04.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-024",
+      "rev": 1,
+      "family": "tii-l-a-024",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-24",
+      "targetGrade": 4,
+      "skillId": "ko2.listening.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "set": {
+        "id": "tii-l-a-s04",
+        "order": 2
+      },
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "체크카드를 잃어버려서 왔어요."
+        },
+        {
+          "speaker": "여자",
+          "text": "카드 분실 신고는 하셨어요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "네, 어젯밤에 전화로 했어요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그럼 새 카드를 만들어 드릴게요. 보통은 일주일쯤 뒤에 집으로 보내 드려요."
+        },
+        {
+          "speaker": "남자",
+          "text": "오늘 바로 받을 수는 없나요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "수수료 이천 원을 내시면 지금 바로 만들어 드릴 수 있어요."
+        },
+        {
+          "speaker": "남자",
+          "text": "그럼 그렇게 해 주세요."
+        }
+      ],
+      "question": "대화의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "남자는 오늘 아침에 분실 신고를 했다.",
+        "남자는 새 카드를 집에서 받기로 했다.",
+        "남자는 수수료를 내고 카드를 바로 받는다.",
+        "새 카드는 보통 사흘쯤 뒤에 집으로 온다."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "여자가 「수수료 이천 원을 내시면 지금 바로 만들어 드릴 수 있어요」라고 하자 남자는 「그럼 그렇게 해 주세요」라고 했어요. 그래서 남자는 수수료를 내고 카드를 바로 받아요. 분실 신고는 오늘이 아니라 「어젯밤에」 했어요.",
+        "en": "The clerk says 「수수료 이천 원을 내시면 지금 바로 만들어 드릴 수 있어요」 (if you pay a 2,000-won fee, we can make it right now), and the man answers 「그럼 그렇게 해 주세요」 (then please do that). So he pays the fee and gets the card right away. He reported the loss 「어젯밤에」 (last night), not this morning.",
+        "mn": "Ярианд эмэгтэй 「수수료 이천 원을 내시면 지금 바로 만들어 드릴 수 있어요」 (хоёр мянган воны шимтгэл төлбөл одоо шууд хийж өгч болно) гэхэд эрэгтэй 「그럼 그렇게 해 주세요」 (тэгвэл тэгж өгөөрэй) гэсэн. Тиймээс эрэгтэй шимтгэл төлөөд картаа шууд авна. Алдсанаа өнөө өглөө биш, 「어젯밤에」 (өчигдөр орой) мэдэгдсэн."
+      },
+      "choiceNotes": [
+        "「어젯밤에 전화로 했어요」 — 신고는 어젯밤에 했어요.",
+        "「그럼 그렇게 해 주세요」 — 집이 아니라 은행에서 바로 받기로 했어요.",
+        "「수수료 이천 원을 내시면 지금 바로」 만들 수 있다고 했고 남자가 그렇게 하기로 했어요.",
+        "「일주일쯤 뒤에 집으로 보내 드려요」 — 사흘이 아니라 일주일쯤 걸려요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-s04.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-025",
+      "rev": 1,
+      "family": "tii-l-a-025",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-27",
+      "targetGrade": 3,
+      "skillId": "ko2.listening.attitude",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": {
+        "id": "tii-l-a-s05",
+        "order": 1
+      },
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "이번 주말에 시청 앞에서 농산물 장터가 열린대요."
+        },
+        {
+          "speaker": "여자",
+          "text": "아, 그래요? 거기서는 뭘 팔아요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "근처 농장에서 키운 과일이랑 채소요. 마트보다 싸고 신선하대요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그런데 저는 토요일에 일이 있어서요."
+        },
+        {
+          "speaker": "남자",
+          "text": "일요일 오후까지 한대요. 같이 가 봐요."
+        },
+        {
+          "speaker": "여자",
+          "text": "일요일이면 괜찮아요. 몇 시에 만날까요?"
+        }
+      ],
+      "question": "대화를 듣고 남자가 이야기하는 의도로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "토요일 일정을 바꿔 달라고 부탁하려고",
+        "장터에 함께 가자고 권하려고",
+        "장터에서 산 채소를 자랑하려고",
+        "마트 물건값이 비싸다고 불평하려고"
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "남자는 장터가 「일요일 오후까지 한대요」라고 알려 주고 「같이 가 봐요」라고 했어요. 장터에 함께 가자고 권하는 것이 남자의 의도예요. 장터는 「이번 주말에」 열리니 이미 산 채소를 자랑한다는 보기는 맞지 않아요.",
+        "en": "The man tells her the market 「일요일 오후까지 한대요」 (runs until Sunday afternoon) and says 「같이 가 봐요」 (let's go together). His purpose is to invite her to the market. The market opens 「이번 주말에」 (this weekend), so he can't be showing off vegetables he already bought there.",
+        "mn": "Ярианд эрэгтэй зах 「일요일 오후까지 한대요」 (ням гарагийн үдээс хойш хүртэл болно гэнэ) гэж хэлээд 「같이 가 봐요」 (хамт очиж үзье) гэсэн. Эрэгтэйн зорилго бол захад хамт явахыг урих. Зах 「이번 주말에」 (энэ амралтын өдөр) болох тул аль хэдийн авсан ногоогоо гайхуулж байна гэсэн хариулт тохирохгүй."
+      },
+      "choiceNotes": [
+        "남자는 토요일 대신 「일요일 오후까지 한대요」라고 했어요. 일정을 바꿔 달라고 하지 않았어요.",
+        "「같이 가 봐요」 — 함께 가자고 권하고 있어요.",
+        "장터는 「이번 주말에」 열려요. 남자는 아직 채소를 사지 않았어요.",
+        "「마트보다 싸고 신선하대요」는 장터를 권하는 까닭이에요. 불평이 아니에요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-s05.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-026",
+      "rev": 1,
+      "family": "tii-l-a-026",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-28",
+      "targetGrade": 3,
+      "skillId": "ko2.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": {
+        "id": "tii-l-a-s05",
+        "order": 2
+      },
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "이번 주말에 시청 앞에서 농산물 장터가 열린대요."
+        },
+        {
+          "speaker": "여자",
+          "text": "아, 그래요? 거기서는 뭘 팔아요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "근처 농장에서 키운 과일이랑 채소요. 마트보다 싸고 신선하대요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그런데 저는 토요일에 일이 있어서요."
+        },
+        {
+          "speaker": "남자",
+          "text": "일요일 오후까지 한대요. 같이 가 봐요."
+        },
+        {
+          "speaker": "여자",
+          "text": "일요일이면 괜찮아요. 몇 시에 만날까요?"
+        }
+      ],
+      "question": "대화의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "여자는 토요일에 할 일이 있다.",
+        "장터는 토요일 하루만 열린다.",
+        "장터의 물건은 마트보다 비싸다.",
+        "장터의 채소는 먼 지역에서 가져온다."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "여자가 「저는 토요일에 일이 있어서요」라고 했어요. 그래서 여자는 토요일에 할 일이 있어요. 장터는 「일요일 오후까지 한대요」라고 했으니 토요일 하루만 연다는 보기는 틀려요.",
+        "en": "The woman says 「저는 토요일에 일이 있어서요」 (I have something on Saturday), so she has plans on Saturday. The market 「일요일 오후까지 한대요」 (runs until Sunday afternoon), so it isn't open on Saturday only.",
+        "mn": "Ярианд эмэгтэй 「저는 토요일에 일이 있어서요」 (би бямба гаригт ажилтай) гэсэн. Тиймээс эмэгтэй бямба гаригт хийх ажилтай. Зах 「일요일 오후까지 한대요」 (ням гарагийн үдээс хойш хүртэл болно гэнэ) гэсэн тул зөвхөн бямба гаригт болно гэсэн хариулт буруу."
+      },
+      "choiceNotes": [
+        "「토요일에 일이 있어서요」와 같은 내용이에요.",
+        "「일요일 오후까지 한대요」 — 일요일에도 열려요.",
+        "「마트보다 싸고 신선하대요」 — 마트보다 싸요.",
+        "「근처 농장에서 키운」 과일과 채소를 팔아요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-s05.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-027",
+      "rev": 1,
+      "family": "tii-l-a-027",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-27",
+      "targetGrade": 3,
+      "skillId": "ko2.listening.attitude",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": {
+        "id": "tii-l-a-s06",
+        "order": 1
+      },
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "제가 다음 주에 사흘 동안 출장을 가는데요. 그동안 우리 집 화분에 물 좀 줄 수 있어요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "그럼요. 며칠에 한 번씩 주면 돼요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "이틀에 한 번이면 돼요. 열쇠는 내일 저녁에 갖다 드릴게요."
+        },
+        {
+          "speaker": "남자",
+          "text": "베란다에 있는 화분도 줘야 해요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "아니요, 거기는 비를 맞으니까 괜찮아요. 거실에 있는 것만 부탁해요."
+        }
+      ],
+      "question": "대화를 듣고 여자가 이야기하는 의도로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "출장 가는 날짜를 알려 주려고",
+        "열쇠를 돌려 달라고 하려고",
+        "남자의 화분에 대신 물을 주겠다고 하려고",
+        "집에 있는 화분을 돌봐 달라고 부탁하려고"
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "여자는 출장을 가는 동안 「화분에 물 좀 줄 수 있어요?」라고 묻고, 「거실에 있는 것만 부탁해요」라고 했어요. 화분을 돌봐 달라고 부탁하는 것이 여자의 의도예요. 출장 이야기는 부탁하는 까닭이라서 날짜를 알려 주려는 것이 아니에요.",
+        "en": "The woman asks 「화분에 물 좀 줄 수 있어요?」 (could you water my plants?) while she's away and says 「거실에 있는 것만 부탁해요」 (just the ones in the living room, please). Her purpose is to ask him to look after her plants. The business trip is only the reason for asking, not the point she wants to make.",
+        "mn": "Ярианд эмэгтэй томилолтоор явах хугацаандаа 「화분에 물 좀 줄 수 있어요?」 (цэцэгт минь ус өгч чадах уу?) гэж асуугаад 「거실에 있는 것만 부탁해요」 (зочны өрөөнд байгааг нь л гуйя) гэсэн. Эмэгтэйн зорилго бол цэцгээ арчлаад өгөхийг гуйх. Томилолтын тухай яриа нь гуйх шалтгаан болохоос огноо мэдэгдэх гэсэн зорилго биш."
+      },
+      "choiceNotes": [
+        "「사흘 동안 출장을 가는데요」는 부탁하는 까닭이에요.",
+        "「열쇠는 내일 저녁에 갖다 드릴게요」 — 여자가 열쇠를 줄 거예요.",
+        "물을 주는 사람은 남자예요. 여자가 물을 주겠다는 것이 아니에요.",
+        "「화분에 물 좀 줄 수 있어요?」 — 화분을 돌봐 달라는 부탁이에요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-s06.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-028",
+      "rev": 1,
+      "family": "tii-l-a-028",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-28",
+      "targetGrade": 3,
+      "skillId": "ko2.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": {
+        "id": "tii-l-a-s06",
+        "order": 2
+      },
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "제가 다음 주에 사흘 동안 출장을 가는데요. 그동안 우리 집 화분에 물 좀 줄 수 있어요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "그럼요. 며칠에 한 번씩 주면 돼요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "이틀에 한 번이면 돼요. 열쇠는 내일 저녁에 갖다 드릴게요."
+        },
+        {
+          "speaker": "남자",
+          "text": "베란다에 있는 화분도 줘야 해요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "아니요, 거기는 비를 맞으니까 괜찮아요. 거실에 있는 것만 부탁해요."
+        }
+      ],
+      "question": "대화의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "여자는 일주일 동안 출장을 간다.",
+        "여자는 내일 저녁에 남자에게 열쇠를 준다.",
+        "베란다에 있는 화분에도 물을 줘야 한다.",
+        "화분에는 날마다 물을 줘야 한다."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "여자가 「열쇠는 내일 저녁에 갖다 드릴게요」라고 했어요. 그래서 여자는 내일 저녁에 남자에게 열쇠를 줘요. 물은 날마다가 아니라 「이틀에 한 번」 주면 되고, 베란다 화분은 「비를 맞으니까 괜찮아요」라고 했어요.",
+        "en": "The woman says 「열쇠는 내일 저녁에 갖다 드릴게요」 (I'll bring you the key tomorrow evening), so she'll give him the key then. The plants need water 「이틀에 한 번」 (once every two days), not every day, and the balcony plants are fine because 「비를 맞으니까 괜찮아요」 (they get rain).",
+        "mn": "Ярианд эмэгтэй 「열쇠는 내일 저녁에 갖다 드릴게요」 (түлхүүрийг маргааш орой авчирч өгье) гэсэн. Тиймээс эмэгтэй маргааш орой эрэгтэйд түлхүүр өгнө. Усыг өдөр бүр биш, 「이틀에 한 번」 (хоёр хоногт нэг удаа) өгөхөд болно, тагтан дээрх цэцгийн тухай 「비를 맞으니까 괜찮아요」 (бороонд норох тул зүгээр) гэсэн."
+      },
+      "choiceNotes": [
+        "「사흘 동안」 출장을 가요. 일주일이 아니에요.",
+        "「열쇠는 내일 저녁에 갖다 드릴게요」와 같은 내용이에요.",
+        "「거기는 비를 맞으니까 괜찮아요」 — 베란다 화분은 물을 안 줘도 돼요.",
+        "「이틀에 한 번이면 돼요」 — 날마다 줄 필요는 없어요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-s06.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-029",
+      "rev": 1,
+      "family": "tii-l-a-029",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-27",
+      "targetGrade": 3,
+      "skillId": "ko2.listening.attitude",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": {
+        "id": "tii-l-a-s07",
+        "order": 1
+      },
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "이번 연휴에 언니네 집에 갈 때 차를 가지고 갈까요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "연휴에는 길이 많이 막힐 거예요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그래도 짐이 많아서 차가 편하잖아요."
+        },
+        {
+          "speaker": "남자",
+          "text": "기차로 가면 두 시간이면 돼요. 짐은 택배로 미리 보내요."
+        },
+        {
+          "speaker": "여자",
+          "text": "택배요? 그럼 내일 보내야 연휴 전에 도착하겠네요."
+        }
+      ],
+      "question": "대화를 듣고 남자가 이야기하는 의도로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "기차를 타고 가자고 제안하려고",
+        "연휴에 길이 막히는 까닭을 설명하려고",
+        "짐을 줄여서 가자고 설득하려고",
+        "언니네 집에 가는 계획을 취소하려고"
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "남자는 「기차로 가면 두 시간이면 돼요」라고 하고 「짐은 택배로 미리 보내요」라고 했어요. 차 대신 기차로 가자고 제안하는 것이 남자의 의도예요. 길이 막힌다는 말은 기차를 권하는 까닭이지, 막히는 까닭을 설명하려는 것이 아니에요.",
+        "en": "The man says 「기차로 가면 두 시간이면 돼요」 (by train it takes only two hours) and 「짐은 택배로 미리 보내요」 (let's send the luggage ahead by courier). His purpose is to suggest going by train instead of by car. Mentioning the traffic is his reason for suggesting the train, not an explanation of why traffic happens.",
+        "mn": "Ярианд эрэгтэй 「기차로 가면 두 시간이면 돼요」 (галт тэргээр явбал хоёрхон цаг) гэж, 「짐은 택배로 미리 보내요」 (ачаагаа хүргэлтээр урьдчилж явуулъя) гэсэн. Машины оронд галт тэргээр явахыг санал болгох нь эрэгтэйн зорилго. Зам түгжрэнэ гэсэн үг нь галт тэрэг санал болгох шалтгаан болохоос түгжрэлийн шалтгааныг тайлбарлах гэсэн юм биш."
+      },
+      "choiceNotes": [
+        "「기차로 가면 두 시간이면 돼요」 — 기차로 가자고 제안하고 있어요.",
+        "「길이 많이 막힐 거예요」는 기차를 권하는 까닭이에요.",
+        "남자는 짐을 줄이자는 것이 아니라 「짐은 택배로 미리 보내요」라고 했어요.",
+        "두 사람은 여전히 「언니네 집에 갈」 방법을 이야기하고 있어요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-s07.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-030",
+      "rev": 1,
+      "family": "tii-l-a-030",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-28",
+      "targetGrade": 3,
+      "skillId": "ko2.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": {
+        "id": "tii-l-a-s07",
+        "order": 2
+      },
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "이번 연휴에 언니네 집에 갈 때 차를 가지고 갈까요?"
+        },
+        {
+          "speaker": "남자",
+          "text": "연휴에는 길이 많이 막힐 거예요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그래도 짐이 많아서 차가 편하잖아요."
+        },
+        {
+          "speaker": "남자",
+          "text": "기차로 가면 두 시간이면 돼요. 짐은 택배로 미리 보내요."
+        },
+        {
+          "speaker": "여자",
+          "text": "택배요? 그럼 내일 보내야 연휴 전에 도착하겠네요."
+        }
+      ],
+      "question": "대화의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "두 사람은 차를 가지고 가기로 했다.",
+        "여자는 짐을 연휴가 끝난 뒤에 보낼 것이다.",
+        "남자는 연휴에도 길이 막히지 않을 거라고 했다.",
+        "기차를 타면 두 시간쯤 걸린다."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "남자가 「기차로 가면 두 시간이면 돼요」라고 했어요. 그래서 기차로 두 시간쯤 걸려요. 여자는 「내일 보내야 연휴 전에 도착하겠네요」라고 했으니 연휴가 끝난 뒤에 보낸다는 보기는 틀려요.",
+        "en": "The man says 「기차로 가면 두 시간이면 돼요」 (by train it only takes two hours), so it takes about two hours by train. The woman says 「내일 보내야 연휴 전에 도착하겠네요」 (we have to send it tomorrow for it to arrive before the holiday), so sending it after the holiday is wrong.",
+        "mn": "Ярианд эрэгтэй 「기차로 가면 두 시간이면 돼요」 (галт тэргээр явбал хоёрхон цаг) гэсэн. Тиймээс галт тэргээр хоёр цаг орчим явна. Эмэгтэй 「내일 보내야 연휴 전에 도착하겠네요」 (маргааш явуулбал л баярын амралтаас өмнө хүрнэ) гэсэн тул амралтын дараа явуулна гэсэн хариулт буруу."
+      },
+      "choiceNotes": [
+        "남자가 기차와 택배를 권했고 여자도 택배를 보내려고 해요. 차를 가지고 가기로 하지 않았어요.",
+        "「내일 보내야 연휴 전에 도착하겠네요」 — 연휴 전에 보내요.",
+        "남자는 「길이 많이 막힐 거예요」라고 했어요.",
+        "「기차로 가면 두 시간이면 돼요」와 같은 내용이에요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-s07.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-031",
+      "rev": 1,
+      "family": "tii-l-a-031",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-27",
+      "targetGrade": 4,
+      "skillId": "ko2.listening.attitude",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "set": {
+        "id": "tii-l-a-s08",
+        "order": 1
+      },
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "안녕하세요. 지하 주차장에 전기차 충전기를 설치하는 일 때문에 왔어요."
+        },
+        {
+          "speaker": "남자",
+          "text": "충전기요? 그럼 주차할 자리가 줄어드는 거 아니에요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "두 자리만 충전용으로 바뀌어요. 설치 비용은 시에서 절반을 지원해 주고요."
+        },
+        {
+          "speaker": "남자",
+          "text": "나머지 비용은요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "관리비에서 나가는데 한 집에 한 달에 천 원 정도예요. 주민 절반 이상이 찬성해야 설치할 수 있어서 이렇게 동의서를 받으러 다니고 있어요."
+        },
+        {
+          "speaker": "남자",
+          "text": "그 정도면 괜찮네요. 어디에 이름을 쓰면 돼요?"
+        }
+      ],
+      "question": "대화를 듣고 여자가 이야기하는 의도로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "충전기 설치에 반대하는 까닭을 말하려고",
+        "주차장 이용 규칙이 바뀐 것을 알리려고",
+        "충전기 설치에 동의해 달라고 요청하려고",
+        "관리비가 오른 까닭을 설명하려고"
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "여자는 「주민 절반 이상이 찬성해야 설치할 수 있어서」 「동의서를 받으러 다니고 있어요」라고 했어요. 충전기 설치에 동의해 달라고 요청하는 것이 여자의 의도예요. 관리비 이야기는 앞으로 들 비용을 알려 준 것이고, 관리비가 이미 올랐다는 것이 아니에요.",
+        "en": "The woman says that because 「주민 절반 이상이 찬성해야 설치할 수 있어서」 (it can only be installed if more than half of the residents agree), she is going around 「동의서를 받으러 다니고 있어요」 (collecting consent forms). Her purpose is to ask him to agree to the charger installation. What she says about the maintenance fee is the cost that would come later; the fee hasn't gone up yet.",
+        "mn": "Ярианд эмэгтэй 「주민 절반 이상이 찬성해야 설치할 수 있어서」 (оршин суугчдын талаас илүү нь зөвшөөрвөл л суурилуулж болох тул) 「동의서를 받으러 다니고 있어요」 (зөвшөөрлийн хуудас цуглуулж явна) гэсэн. Эмэгтэйн зорилго бол цэнэглэгч суурилуулахыг зөвшөөрөхийг хүсэх. Ашиглалтын төлбөрийн тухай яриа нь цаашид гарах зардлыг хэлсэн болохоос төлбөр аль хэдийн нэмэгдсэн гэсэн үг биш."
+      },
+      "choiceNotes": [
+        "여자는 설치를 바라는 쪽이고 반대하는 까닭을 말하지 않았어요.",
+        "「찬성해야 설치할 수 있어서」 — 아직 정해진 것이 아니에요. 규칙이 바뀐 것이 아니에요.",
+        "「동의서를 받으러 다니고 있어요」 — 동의해 달라는 요청이에요.",
+        "「한 달에 천 원 정도」는 앞으로 들 비용이에요. 관리비가 오른 까닭을 설명한 것이 아니에요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-s08.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-032",
+      "rev": 1,
+      "family": "tii-l-a-032",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-28",
+      "targetGrade": 4,
+      "skillId": "ko2.listening.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "set": {
+        "id": "tii-l-a-s08",
+        "order": 2
+      },
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "안녕하세요. 지하 주차장에 전기차 충전기를 설치하는 일 때문에 왔어요."
+        },
+        {
+          "speaker": "남자",
+          "text": "충전기요? 그럼 주차할 자리가 줄어드는 거 아니에요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "두 자리만 충전용으로 바뀌어요. 설치 비용은 시에서 절반을 지원해 주고요."
+        },
+        {
+          "speaker": "남자",
+          "text": "나머지 비용은요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "관리비에서 나가는데 한 집에 한 달에 천 원 정도예요. 주민 절반 이상이 찬성해야 설치할 수 있어서 이렇게 동의서를 받으러 다니고 있어요."
+        },
+        {
+          "speaker": "남자",
+          "text": "그 정도면 괜찮네요. 어디에 이름을 쓰면 돼요?"
+        }
+      ],
+      "question": "대화의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "주차장에서 두 자리가 충전하는 곳으로 바뀐다.",
+        "시는 충전기 설치 비용을 지원하지 않는다.",
+        "관리비가 한 집에 한 달 만 원쯤 오른다.",
+        "남자는 주차 자리가 줄어서 반대했다."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "여자가 「두 자리만 충전용으로 바뀌어요」라고 했어요. 그래서 주차장의 두 자리가 충전하는 곳이 돼요. 시에서 비용의 「절반을 지원해 주고요」라고 했고, 관리비는 「한 달에 천 원 정도」예요.",
+        "en": "The woman says 「두 자리만 충전용으로 바뀌어요」 (only two spaces will be changed to charging spots), so two parking spaces become charging spots. The city will 「절반을 지원해 주고요」 (cover half) of the cost, and the fee is 「한 달에 천 원 정도」 (about 1,000 won a month).",
+        "mn": "Ярианд эмэгтэй 「두 자리만 충전용으로 바뀌어요」 (зөвхөн хоёр зогсоол цэнэглэгчийнх болно) гэсэн. Тиймээс зогсоолын хоёр байр цэнэглэх газар болно. Хот зардлын 「절반을 지원해 주고요」 (талыг нь даана) гэсэн бөгөөд ашиглалтын төлбөр 「한 달에 천 원 정도」 (сард мянга орчим вон)."
+      },
+      "choiceNotes": [
+        "「두 자리만 충전용으로 바뀌어요」와 같은 내용이에요.",
+        "「시에서 절반을 지원해 주고요」 — 시가 비용의 절반을 내요.",
+        "「한 달에 천 원 정도예요」 — 만 원이 아니라 천 원쯤이에요.",
+        "「그 정도면 괜찮네요」 — 남자는 찬성했어요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-s08.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-033",
+      "rev": 1,
+      "family": "tii-l-a-033",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-27",
+      "targetGrade": 4,
+      "skillId": "ko2.listening.attitude",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "set": {
+        "id": "tii-l-a-s09",
+        "order": 1
+      },
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "인터넷이 이번 달에만 세 번째 끊겼어요."
+        },
+        {
+          "speaker": "여자",
+          "text": "불편을 드려 정말 죄송합니다. 고객님 지역에 공사가 있어서 그런 것 같습니다."
+        },
+        {
+          "speaker": "남자",
+          "text": "저는 집에서 일을 해서 피해가 커요."
+        },
+        {
+          "speaker": "여자",
+          "text": "확인해 보니 공사는 이번 주 금요일에 끝납니다. 그때까지는 또 끊길 수도 있습니다."
+        },
+        {
+          "speaker": "남자",
+          "text": "그럼 이번 달 요금은 깎아 주셔야죠."
+        },
+        {
+          "speaker": "여자",
+          "text": "네, 끊긴 날만큼 요금을 빼 드리겠습니다."
+        }
+      ],
+      "question": "대화를 듣고 남자가 이야기하는 의도로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "공사가 언제 끝나는지 물어보려고",
+        "요금을 줄여 달라고 요구하려고",
+        "공사를 빨리 끝내 달라고 재촉하려고",
+        "인터넷 회사를 바꾸겠다고 알리려고"
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "남자는 인터넷이 「세 번째 끊겼어요」라고 하고 「그럼 이번 달 요금은 깎아 주셔야죠」라고 했어요. 쓰지 못한 만큼 요금을 줄여 달라고 요구하는 것이 남자의 의도예요. 공사가 끝나는 날은 남자가 물은 것이 아니라 여자가 확인해서 알려 준 거예요.",
+        "en": "The man says the internet has 「세 번째 끊겼어요」 (gone down for the third time) and 「그럼 이번 달 요금은 깎아 주셔야죠」 (then you should cut this month's bill). His purpose is to demand a lower bill for the time he couldn't use it. He didn't ask when the construction ends; the woman checked and told him.",
+        "mn": "Ярианд эрэгтэй интернет 「세 번째 끊겼어요」 (гурав дахь удаагаа тасарсан) гээд 「그럼 이번 달 요금은 깎아 주셔야죠」 (тэгвэл энэ сарын төлбөрөө хасаж өгөх ёстой) гэсэн. Эрэгтэйн зорилго бол ашиглаж чадаагүй хэмжээгээр төлбөрөө бууруулахыг шаардах. Засвар хэзээ дуусахыг эрэгтэй асуугаагүй, харин эмэгтэй шалгаад хэлж өгсөн."
+      },
+      "choiceNotes": [
+        "공사가 끝나는 날은 여자가 「확인해 보니」 먼저 알려 줬어요.",
+        "「이번 달 요금은 깎아 주셔야죠」 — 요금을 줄여 달라는 요구예요.",
+        "남자는 공사 기간이 아니라 「요금」 이야기를 했어요.",
+        "남자는 회사를 바꾸겠다고 하지 않고 요금을 「깎아 주셔야죠」라고 했어요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-s09.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-034",
+      "rev": 1,
+      "family": "tii-l-a-034",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-28",
+      "targetGrade": 4,
+      "skillId": "ko2.listening.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "set": {
+        "id": "tii-l-a-s09",
+        "order": 2
+      },
+      "passage": null,
+      "script": [
+        {
+          "speaker": "남자",
+          "text": "인터넷이 이번 달에만 세 번째 끊겼어요."
+        },
+        {
+          "speaker": "여자",
+          "text": "불편을 드려 정말 죄송합니다. 고객님 지역에 공사가 있어서 그런 것 같습니다."
+        },
+        {
+          "speaker": "남자",
+          "text": "저는 집에서 일을 해서 피해가 커요."
+        },
+        {
+          "speaker": "여자",
+          "text": "확인해 보니 공사는 이번 주 금요일에 끝납니다. 그때까지는 또 끊길 수도 있습니다."
+        },
+        {
+          "speaker": "남자",
+          "text": "그럼 이번 달 요금은 깎아 주셔야죠."
+        },
+        {
+          "speaker": "여자",
+          "text": "네, 끊긴 날만큼 요금을 빼 드리겠습니다."
+        }
+      ],
+      "question": "대화의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "남자의 인터넷은 이번 달에 처음 끊겼다.",
+        "공사가 끝날 때까지 인터넷이 끊기지 않는다.",
+        "회사는 요금을 깎아 줄 수 없다고 했다.",
+        "공사는 이번 주 금요일에 끝날 예정이다."
+      ],
+      "answer": 3,
+      "explanation": {
+        "ko": "여자가 「확인해 보니 공사는 이번 주 금요일에 끝납니다」라고 했어요. 그래서 공사는 금요일에 끝날 예정이에요. 그때까지는 「또 끊길 수도 있습니다」라고 했으니 끊기지 않는다는 보기는 틀려요.",
+        "en": "The woman says 「확인해 보니 공사는 이번 주 금요일에 끝납니다」 (I checked, and the construction ends this Friday), so it's due to finish on Friday. She also says it 「또 끊길 수도 있습니다」 (may cut out again) until then, so the choice saying it won't cut out is wrong.",
+        "mn": "Ярианд эмэгтэй 「확인해 보니 공사는 이번 주 금요일에 끝납니다」 (шалгаж үзэхэд засвар энэ баасан гаригт дуусна) гэсэн. Тиймээс засвар баасан гаригт дуусах төлөвтэй. Тэр хүртэл 「또 끊길 수도 있습니다」 (дахин тасарч магадгүй) гэсэн тул тасрахгүй гэсэн хариулт буруу."
+      },
+      "choiceNotes": [
+        "「이번 달에만 세 번째」 끊겼어요. 처음이 아니에요.",
+        "「그때까지는 또 끊길 수도 있습니다」 — 공사가 끝날 때까지 또 끊길 수 있어요.",
+        "「끊긴 날만큼 요금을 빼 드리겠습니다」 — 요금을 깎아 줘요.",
+        "「공사는 이번 주 금요일에 끝납니다」와 같은 내용이에요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-s09.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-035",
+      "rev": 1,
+      "family": "tii-l-a-035",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-27",
+      "targetGrade": 4,
+      "skillId": "ko2.listening.attitude",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "set": {
+        "id": "tii-l-a-s10",
+        "order": 1
+      },
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "선생님, 시험 기간마다 학생들이 공부할 자리가 너무 모자라요."
+        },
+        {
+          "speaker": "남자",
+          "text": "그렇죠. 아침부터 자리 맡으려고 줄을 선다고 들었어요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그래서 말인데요, 저녁에 비어 있는 강의실을 학생들한테 열어 주면 어떨까요? 다른 학교에서는 학생회가 돌아가면서 문을 열고 닫는대요."
+        },
+        {
+          "speaker": "남자",
+          "text": "관리는 누가 해요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "저희 학생회가 맡을게요. 청소도 저희가 하고요."
+        },
+        {
+          "speaker": "남자",
+          "text": "좋은 생각이네요. 학교에 정식으로 신청서를 내 보세요."
+        }
+      ],
+      "question": "대화를 듣고 여자가 이야기하는 의도로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "학생들이 아침부터 줄을 서는 것을 알리려고",
+        "강의실 청소를 맡아 달라고 부탁하려고",
+        "빈 강의실을 공부할 곳으로 쓰자고 제안하려고",
+        "신청서를 내는 방법을 물어보려고"
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "여자는 「저녁에 비어 있는 강의실을 학생들한테 열어 주면 어떨까요?」라고 했어요. 빈 강의실을 공부하는 곳으로 쓰자고 제안하는 것이 여자의 의도예요. 청소는 「저희가 하고요」라고 했으니 청소를 맡아 달라는 부탁이 아니에요.",
+        "en": "The woman says 「저녁에 비어 있는 강의실을 학생들한테 열어 주면 어떨까요?」 (how about opening the empty classrooms to students in the evening?). Her purpose is to suggest using empty classrooms as study space. About the cleaning she says 「저희가 하고요」 (we'll do it), so she isn't asking him to clean.",
+        "mn": "Ярианд эмэгтэй 「저녁에 비어 있는 강의실을 학생들한테 열어 주면 어떨까요?」 (орой хоосон байгаа лекцийн танхимуудыг оюутнуудад нээж өгвөл ямар вэ?) гэсэн. Хоосон танхимыг хичээл давтах газар болгохыг санал болгох нь эмэгтэйн зорилго. Цэвэрлэгээг 「저희가 하고요」 (бид хийнэ) гэсэн тул цэвэрлэгээ хариуцаж өгөөч гэсэн гуйлт биш."
+      },
+      "choiceNotes": [
+        "「줄을 선다고 들었어요」는 남자의 말이고, 여자가 말하려는 것은 강의실을 여는 일이에요.",
+        "「청소도 저희가 하고요」 — 청소는 학생회가 해요.",
+        "「비어 있는 강의실을 학생들한테 열어 주면 어떨까요?」 — 제안하는 말이에요.",
+        "신청서는 남자가 「내 보세요」라고 권한 것이고 여자가 물은 것이 아니에요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-s10.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    },
+    {
+      "id": "tii-l-a-036",
+      "rev": 1,
+      "family": "tii-l-a-036",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-28",
+      "targetGrade": 4,
+      "skillId": "ko2.listening.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "set": {
+        "id": "tii-l-a-s10",
+        "order": 2
+      },
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "선생님, 시험 기간마다 학생들이 공부할 자리가 너무 모자라요."
+        },
+        {
+          "speaker": "남자",
+          "text": "그렇죠. 아침부터 자리 맡으려고 줄을 선다고 들었어요."
+        },
+        {
+          "speaker": "여자",
+          "text": "그래서 말인데요, 저녁에 비어 있는 강의실을 학생들한테 열어 주면 어떨까요? 다른 학교에서는 학생회가 돌아가면서 문을 열고 닫는대요."
+        },
+        {
+          "speaker": "남자",
+          "text": "관리는 누가 해요?"
+        },
+        {
+          "speaker": "여자",
+          "text": "저희 학생회가 맡을게요. 청소도 저희가 하고요."
+        },
+        {
+          "speaker": "남자",
+          "text": "좋은 생각이네요. 학교에 정식으로 신청서를 내 보세요."
+        }
+      ],
+      "question": "대화의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "다른 학교는 학생회가 강의실 문을 연다.",
+        "강의실 관리는 학교 직원이 맡기로 했다.",
+        "여자는 이미 학교에 신청서를 냈다.",
+        "시험 기간에는 공부할 자리가 남는다."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "여자가 「다른 학교에서는 학생회가 돌아가면서 문을 열고 닫는대요」라고 했어요. 그래서 다른 학교는 학생회가 강의실 문을 열어요. 관리는 「저희 학생회가 맡을게요」라고 했으니 학교 직원이 맡는다는 보기는 틀려요.",
+        "en": "The woman says 「다른 학교에서는 학생회가 돌아가면서 문을 열고 닫는대요」 (at other schools, the student council takes turns opening and closing the rooms), so at other schools the student council opens the classrooms. About managing them she says 「저희 학생회가 맡을게요」 (our student council will take charge), so the choice saying school staff do it is wrong.",
+        "mn": "Ярианд эмэгтэй 「다른 학교에서는 학생회가 돌아가면서 문을 열고 닫는대요」 (бусад сургуульд оюутны холбоо ээлжлэн хаалгаа нээж хаадаг гэнэ) гэсэн. Тиймээс бусад сургуульд оюутны холбоо танхимын хаалгыг нээдэг. Хяналтыг 「저희 학생회가 맡을게요」 (манай оюутны холбоо хариуцъя) гэсэн тул сургуулийн ажилтан хариуцна гэсэн хариулт буруу."
+      },
+      "choiceNotes": [
+        "「학생회가 돌아가면서 문을 열고 닫는대요」와 같은 내용이에요.",
+        "「저희 학생회가 맡을게요」 — 관리는 학생회가 해요.",
+        "남자가 「신청서를 내 보세요」라고 했으니 아직 내지 않았어요.",
+        "「공부할 자리가 너무 모자라요」 — 자리가 모자라요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-l-a-s10.mp3",
+        "plays": 2,
+        "status": "pending"
+      },
+      "origin": "synk-original",
+      "reviewStatus": "draft",
+      "review": []
+    }
+  ]
+}

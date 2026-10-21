@@ -56,8 +56,42 @@
         "seconds": 2.3
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답이 하나뿐이고 꼴·난도가 알맞은 1~2번형 문항이다. 몽골어 해설의 여격 오류(муурт→мууранд)와 두 표현의 같은 번역만 고치면 쓸 수 있다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "7c529d7567526356",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TI-L-01 유형과 1급 난도에 잘 맞고 정답 유일성 및 해설이 정확한 문항임.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "7c529d7567526356",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "직접 풀어 보면 ④(index 3) 「아니요, 고양이를 안 좋아해요.」가 정답이며 정답 칸과 같다. ①은 물음과 맞지 않고, ②와 ③은 네/아니요와 뒤의 용언이 서로 어긋나서 정답은 하나뿐이다. 1~2번형(네/아니요) 꼴, 1급 낱말, 난도 1, 대표 능력 response가 모두 맞다. 대본에는 숫자나 기호가 없다. 세 언어 해설 모두 같은 근거(아니요 뒤에는 안 좋아해요, ②는 앞뒤가 모순)를 바르게 말한다. 검수자 A의 지적은 둘이다. 첫째, 「муурт」는 р로 끝나는 낱말에 붙는 규칙적인 여격 꼴이고(газарт와 같은 꼴, 속격도 муурын), 「мууранд」도 쓰이는 말이어서 오류로 보기 어렵다. 게다가 괄호 안 뜻풀이일 뿐이라 학습자에게 해가 없다. 둘째, 싫어해요와 안 좋아해요를 둘 다 「дургүй」로 옮긴 점은 ② 설명의 논리(тийм 뒤에 дургүй가 와서 모순)를 흐리지 않는다. 그래서 고칠 필요는 없다고 본다. 기출 유사도도 일반적인 생활 물음 수준이라 문제가 없다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "7c529d7567526356",
+          "packet": "expand-listening"
+        }
+      ]
     },
     {
       "id": "ti-l-a-002",
@@ -110,8 +144,42 @@
         "seconds": 2
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "held",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "TI-L-01 네/아니요형의 꼴을 잘 따른 문항입니다. 정답이 하나뿐이고 오답이 전형적이며, 세 언어 해설도 정확해서 그대로 써도 됩니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "b2d1f3c1ed177993",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix",
+          "notes": "정답 호응은 분명하나, 「이 노래를 알아요?」에 대해 관형사 없이 「노래를 알아요」라고 답하면 한국어 입말로 어색하므로 지시어('그 노래') 등을 보완할 필요가 있음.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "b2d1f3c1ed177993",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "꼴, 정답 유일성, 해설은 문제가 없어 A의 판단이 대체로 맞다. 하지만 B의 지적도 타당하다. 「이 노래를 알아요?」는 특정한 노래를 묻는 말인데, 지시어 없이 「노래를 알아요」라고 답하면 '노래(일반)를 안다'처럼 들려 입말로 어색하다. 학습자가 이 대답을 모범 응답으로 익히게 되므로, 화면에 내기 전에 지시어를 보완하는 것이 좋다. 고치는 범위가 작고 정답과 구조는 그대로 유지된다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "b2d1f3c1ed177993",
+          "packet": "expand-listening"
+        }
+      ]
     },
     {
       "id": "ti-l-a-003",
@@ -164,8 +232,31 @@
         "seconds": 2.3
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "TI-L-01 1~2번형에 맞는 네/아니요 대답 문항이다. 정답 ③이 유일하고, 오답 설계·해설 세 언어·난도가 모두 기준에 맞아 통과한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "9e1167b533e7bd04",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TI-L-01 유형과 1급 수준에 맞으며 오답 구성과 해설 모두 적절한 문항임.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "9e1167b533e7bd04",
+          "packet": "expand-listening"
+        }
+      ]
     },
     {
       "id": "ti-l-a-004",
@@ -220,8 +311,31 @@
         "seconds": 2.3
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "의문사 「언제」에 맞는 대답을 고르는 1급 앞쪽 문항이에요. 정답이 유일하고 오답(누구·어디·기간)도 그럴듯하며, 세 언어 해설이 같은 근거를 말해서 그대로 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "fdac3dc4475b6c3e",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TI-L-01 의문사 물음 유형에 잘 맞고 오답 매력도와 해설의 완성도가 높은 문항임.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "fdac3dc4475b6c3e",
+          "packet": "expand-listening"
+        }
+      ]
     },
     {
       "id": "ti-l-a-005",
@@ -276,8 +390,31 @@
         "seconds": 3.1
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "곳을 묻는 의문사 물음에 대답 넷을 둔, 꼴이 바른 1급 문항이에요. 정답이 하나뿐이고 오답은 때·누구·빈도로 고르게 바꿨어요. 세 언어 해설도 일치해서 그대로 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "62231eb924c89f7b",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TOPIK I 듣기 TI-L-01(의문사 물음) 유형에 정확히 맞고, 오답 매력도와 해설 번역 모두 우수한 문항임.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "62231eb924c89f7b",
+          "packet": "expand-listening"
+        }
+      ]
     },
     {
       "id": "ti-l-a-006",
@@ -332,8 +469,31 @@
         "seconds": 2.1
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "값을 묻는 의문사 물음에 맞는 대답을 고르는 1급 문항으로, 정답이 하나뿐이고 오답이 그럴듯하며 해설 세 언어가 같은 근거를 말합니다. 그대로 써도 됩니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "777381d55feda040",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "가격을 묻는 TI-L-01 문항으로, 구매 맥락의 매력적인 오답과 정확한 3개 국어 해설을 갖추었음.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "777381d55feda040",
+          "packet": "expand-listening"
+        }
+      ]
     },
     {
       "id": "ti-l-a-007",
@@ -388,8 +548,31 @@
         "seconds": 4.3
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "사과 한마디에 「괜찮아요」로 답하는 전형적인 TI-L-05 문항이에요. 정답이 하나뿐이고 보기 꼴이 고르며 해설 세 언어도 맞아요. 번역에서 「어제」가 빠진 것은 사소한 점이라 그대로 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "85e1494298e0c83d",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "사과에 대한 응답을 고르는 TI-L-05 문항으로, 보기의 균형과 해설이 모두 기준에 부합함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "85e1494298e0c83d",
+          "packet": "expand-listening"
+        }
+      ]
     },
     {
       "id": "ti-l-a-008",
@@ -444,8 +627,31 @@
         "seconds": 3.4
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "식사 뒤 감사에 대한 응답을 고르는 문항입니다. 정답이 하나뿐이고, 오답은 먹기 전 인사로 그럴듯하며, 세 언어 해설도 일치해 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "92fc8780581a9f6e",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "식사 후 감사 인사에 이어지는 말을 고르는 TI-L-05 문항으로, 식사 전 인사를 활용한 오답 설계와 해설이 뛰어남.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "92fc8780581a9f6e",
+          "packet": "expand-listening"
+        }
+      ]
     },
     {
       "id": "ti-l-a-009",
@@ -504,8 +710,31 @@
         "seconds": 9.7
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "약을 주며 복용법을 알려 주는 대화로 약국을 고르는 1급 문항이에요. 정답이 분명하고 해설 세 언어도 일치해서 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "4bf6c053096f93f7",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "약 복용 안내 단서를 통해 '약국'을 고르는 TI-L-07 문항으로 모든 기준을 충족한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "4bf6c053096f93f7",
+          "packet": "expand-listening"
+        }
+      ]
     },
     {
       "id": "ti-l-a-010",
@@ -572,8 +801,31 @@
         "seconds": 14.2
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "호텔 체크인 대화로 장소를 고르는 문항이에요. 정답이 하나로 분명하고, 식당 오답이 적절히 매력적이에요. 대본·해설·난도 모두 기준에 맞아 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "0c83be80cc14173f",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "방 열쇠 수령과 조식 안내 대화를 듣고 '호텔'을 고르는 문항으로 이상 없다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "0c83be80cc14173f",
+          "packet": "expand-listening"
+        }
+      ]
     },
     {
       "id": "ti-l-a-011",
@@ -636,8 +888,31 @@
         "seconds": 9.3
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "공항 장면의 장소 고르기 문항이에요. 정답이 하나로 분명하고, 꼴·단계·해설 세 언어가 모두 기준에 맞아 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "6d2444512d71d7e1",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "여권·비행기 표·출발 시각 안내를 듣고 '공항'을 고르는 문항으로 모든 기준을 통과한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "6d2444512d71d7e1",
+          "packet": "expand-listening"
+        }
+      ]
     },
     {
       "id": "ti-l-a-012",
@@ -704,8 +979,31 @@
         "seconds": 12.5
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정류장 장면의 TI-L-07 문항으로, 정답이 하나뿐이고 시장 오답이 매력적이며 해설 세 언어가 일관돼 그대로 써도 좋아요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "2e1c8339c61f45e2",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "버스 노선 문의 및 대기 대화를 듣고 '정류장'을 고르는 문항으로 모든 기준을 충족한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "2e1c8339c61f45e2",
+          "packet": "expand-listening"
+        }
+      ]
     },
     {
       "id": "ti-l-a-013",
@@ -768,8 +1066,31 @@
         "seconds": 10.5
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "교실 장소 고르기 문항으로 정답이 분명하고, 꼴·급·해설 세 언어가 모두 기준에 맞아요. 은행·극장 오답이 조금 약하지만 이 자리에서는 흔한 수준이라 통과로 봐요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "a4fbc59c2655e7dc",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "교실 수업 장면을 다룬 TI-L-07 문항으로, 정답 유일성·오답 매력도·난도·해설 모두 기준에 부합한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "a4fbc59c2655e7dc",
+          "packet": "expand-listening"
+        }
+      ]
     },
     {
       "id": "ti-l-a-014",
@@ -833,8 +1154,31 @@
         "seconds": 8.4
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "환전 단서로 은행을 고르는 전형적인 TI-L-07 문항이에요. 정답이 하나로 분명하고 난도·해설도 기준에 맞아 통과예요. 몽골어 해설의 「ч」 반복은 사소한 문체 문제라 고치지 않아도 돼요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "32642f82cb5be8a9",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "은행 환전 장면을 다룬 TI-L-07 문항으로 모든 검수 기준을 충족한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "32642f82cb5be8a9",
+          "packet": "expand-listening"
+        }
+      ]
     },
     {
       "id": "ti-l-a-015",
@@ -893,8 +1237,31 @@
         "seconds": 9.9
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "단서가 분명하고 정답이 유일하며 해설 세 언어가 일관된다. 「축구가 시작했어요」는 입말로 허용되는 수준이라 그대로 통과시킨다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "d0abf61774b42e48",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "운동장에서 축구 경기를 보는 장면을 다룬 TI-L-07 문항으로 오답 설계와 해설 모두 적절하다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "d0abf61774b42e48",
+          "packet": "expand-listening"
+        }
+      ]
     },
     {
       "id": "ti-l-a-016",
@@ -957,8 +1324,31 @@
         "seconds": 11.7
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 극장이 유일하고 단서가 분명해요. 1급 듣기 장소 문항으로 꼴·낱말·해설이 모두 알맞아서 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "b36a3d26c25187ad",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "극장에서 자리를 찾는 장면을 다룬 TI-L-07 문항으로 모든 기준을 통과한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "b36a3d26c25187ad",
+          "packet": "expand-listening"
+        }
+      ]
     },
     {
       "id": "ti-l-a-017",
@@ -1017,8 +1407,31 @@
         "seconds": 7.7
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 「가족」(2번)이 유일하고, 꼴·난도·해설이 모두 기준에 맞아요. 몽골어 해설의 「насаа」 표현만 사소하게 다듬을 여지가 있어 통과로 판정해요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "f56fa4d20312c7e9",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TI-L-11 유형과 1급(difficulty 1) 수준에 잘 맞고 정답이 명확한 양호한 문항임.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "f56fa4d20312c7e9",
+          "packet": "expand-listening"
+        }
+      ]
     },
     {
       "id": "ti-l-a-018",
@@ -1077,8 +1490,31 @@
         "seconds": 8.2
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "날씨 화제를 고르는 1급 듣기 문항으로, 정답이 유일하고 꼴·난도·해설이 모두 기준에 맞아 통과다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "6b137e646d81df6f",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TI-L-11 유형과 1급 수준에 부합하며 오답 매력도와 해설이 모두 적절한 문항임.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "6b137e646d81df6f",
+          "packet": "expand-listening"
+        }
+      ]
     },
     {
       "id": "ti-l-a-019",
@@ -1135,8 +1571,31 @@
         "seconds": 7.4
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "화제 고르기 꼴에 맞고 정답이 유일하며, 1급 낱말과 세 언어 해설이 모두 바른 문항이에요. 그대로 통과해요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "b3876e595471f6f6",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "'저녁'의 다의성을 활용한 오답 설계가 돋보이며 1급 수준에 잘 맞는 문항임.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "b3876e595471f6f6",
+          "packet": "expand-listening"
+        }
+      ]
     },
     {
       "id": "ti-l-a-020",
@@ -1193,8 +1652,31 @@
         "seconds": 7
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "가는 방법을 말하는 짧은 대화로 화제 「교통」이 분명하고, 보기·해설·난도 모두 기준에 맞아 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "9558f42b23a560d3",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "대본의 한글 숫자 표기까지 기준을 잘 지켰으며 1급 화제 파악 문항으로 적합함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "9558f42b23a560d3",
+          "packet": "expand-listening"
+        }
+      ]
     },
     {
       "id": "ti-l-a-021",
@@ -1259,8 +1741,31 @@
         "seconds": 13.5
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 「음식」이 유일하다. 오답 날씨·약속은 대화 낱말을 활용해 그럴듯하고, 해설 세 언어가 같은 근거를 말한다. 「아직 냉면을 안 먹었어요」를 「안 먹어 봤어요」로 바꾸면 더 자연스럽지만 사소하므로 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "68322f2a7dfd8da7",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "좋아하는 음식을 주제로 한 TI-L-11 문항으로 정답이 명확하고 오답 매력도와 해설 모두 기준에 부합함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "68322f2a7dfd8da7",
+          "packet": "expand-listening"
+        }
+      ]
     },
     {
       "id": "ti-l-a-022",
@@ -1327,8 +1832,31 @@
         "seconds": 10.5
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답은 직업 하나로 분명합니다. 꼴·급·해설이 모두 기준에 맞습니다. 몽골어 해설의 표현 하나와 장면이 흔하다는 점은 사소해 그대로 통과합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "1fc533a0e18eef75",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "하는 일(직업)을 주제로 한 TI-L-11 문항으로 모든 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "1fc533a0e18eef75",
+          "packet": "expand-listening"
+        }
+      ]
     },
     {
       "id": "ti-l-a-023",
@@ -1395,8 +1923,31 @@
         "seconds": 17.6
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고 오답이 대화의 말을 바꿔 그럴듯하다. 꼴·난도·해설이 모두 기준에 맞아 통과한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "3c9bb4b5bbf99b09",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "카페에서 개인 컵을 쓰는 것에 대한 TI-L-22 중심 생각 문항으로 모든 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "3c9bb4b5bbf99b09",
+          "packet": "expand-listening"
+        }
+      ]
     },
     {
       "id": "ti-l-a-024",
@@ -1464,8 +2015,31 @@
         "seconds": 15.3
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답은 하나뿐이고, 오답이 그럴듯하며, 꼴·급·난도가 모두 자리에 맞아요. 몽골어 해설에 조금 어색한 표현이 하나 있지만 뜻에는 해가 없어서 통과로 판정해요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "78bbb5212a92e0f9",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "고장 난 시계를 고쳐 쓰자는 여자의 중심 생각을 묻는 TI-L-22 문항으로 모든 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "78bbb5212a92e0f9",
+          "packet": "expand-listening"
+        }
+      ]
     },
     {
       "id": "ti-l-a-025",
@@ -1533,8 +2107,31 @@
         "seconds": 17.8
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 유일하고 오답이 대화의 말을 뒤집어 그럴듯하며, 1급 수준·꼴·해설 모두 기준에 맞아 통과. 「작아요」→「작아져요」는 선택적 다듬기.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "51197d190dcc87b7",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "신발을 오후에 사는 것이 좋다는 여자의 중심 생각을 고르는 문항으로, 지문·보기·해설 모두 기준에 부합하여 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "51197d190dcc87b7",
+          "packet": "expand-listening"
+        }
+      ]
     },
     {
       "id": "ti-l-a-026",
@@ -1602,8 +2199,31 @@
         "seconds": 15
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나로 분명하고 오답이 대화 낱말을 써서 그럴듯하며, 해설 세 언어도 일관됩니다. 「그래서 잠이 안 와요」의 입말 어색함은 사소하여 통과로 판정합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "ad9f6761314f4cdf",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "취침 전 스마트폰 사용을 자제하라는 여자의 중심 생각을 묻는 문항으로, 모든 검수 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "ad9f6761314f4cdf",
+          "packet": "expand-listening"
+        }
+      ]
     },
     {
       "id": "ti-l-a-027",
@@ -1670,8 +2290,31 @@
         "seconds": 15.7
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 ①이 분명하고 오답도 대화의 말을 바꿔 만들었습니다. 1급 앞쪽 수준과 자리 꼴에 맞고, 세 언어 해설도 바릅니다. 그대로 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "833965fd7b575bae",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "여행지의 언어로 인사하는 것이 좋다는 중심 생각을 고르는 문항으로, 기준에 모두 부합하여 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "833965fd7b575bae",
+          "packet": "expand-listening"
+        }
+      ]
     },
     {
       "id": "ti-l-a-028",
@@ -1739,8 +2382,42 @@
         "seconds": 17.3
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "held",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답 ④는 하나뿐이고 해설 세 언어가 모두 정확해요. 다만 ③이 생각 문장 꼴이 아닌 사실 진술이라 보기 꼴이 고르지 않아요. ③을 「-는 것이 좋습니다」 꼴의 그럴듯한 오답으로 바꾸면 쓸 수 있어요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "04d4fbfe786b0be5",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "운동은 매일 조금씩 하는 것이 좋다는 여자의 중심 생각을 고르는 문항으로, 모든 기준을 충족하여 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "04d4fbfe786b0be5",
+          "packet": "expand-listening"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답 ④는 여자의 말 「운동은 매일 조금씩 하는 것이 좋아요」와 맞고 하나뿐이에요. 해설 세 언어도 같은 근거를 바르게 말해요. 다만 검수자 A의 지적이 맞아요. ③ 「운동을 많이 해도 다음 날 몸이 아프지 않습니다」는 생각을 말하는 문장이 아니라 사실을 말하는 문장이에요. 게다가 여자의 생각이 아니라 남자의 말(「일요일에는 몸이 아파요」)로 지워지는 보기예요. 그래서 중심 생각 자리(TI-L-22)의 보기 꼴(「…는 것이 좋습니다」)과 맞지 않고, 작성 기준 §5.3 「꼴을 고르게」에도 어긋나요. 꼴이 다르니 생각을 묻는 문항에서 오답으로 쉽게 지울 수 있어요. ③을 같은 꼴의 그럴듯한 오답으로 바꾸면 쓸 수 있어요. 나머지(난도 1, 4번 주고받는 대화, 대본의 숫자 한글 표기, 문화 편향 없음)는 괜찮아요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:51:17.487Z",
+          "rev": 1,
+          "hash": "04d4fbfe786b0be5",
+          "packet": "expand-listening"
+        }
+      ]
     }
   ]
 }

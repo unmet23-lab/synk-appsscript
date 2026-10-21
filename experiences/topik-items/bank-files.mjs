@@ -7,5 +7,6 @@ import f4 from './items/ti-r-a.json' with { type: 'json' };
 import f5 from './items/ti-r-b.json' with { type: 'json' };
 import f6 from './items/ti-r-c.json' with { type: 'json' };
 import f7 from './items/ti-r-d.json' with { type: 'json' };
-import f8 from './items/tii-r-a.json' with { type: 'json' };
-export const ITEM_FILES = Object.freeze([f0, f1, f2, f3, f4, f5, f6, f7, f8]);
+import f8 from './items/tii-l-a.json' with { type: 'json' };
+import f9 from './items/tii-r-a.json' with { type: 'json' };
+export const ITEM_FILES = Object.freeze([f0, f1, f2, f3, f4, f5, f6, f7, f8, f9]);
