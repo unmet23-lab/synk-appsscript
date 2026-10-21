@@ -1,0 +1,45 @@
+{
+  "requestedAction": "Pause the 24-hour YouTube radio: end the public broadcast, stop the stream service and the broadcast guardian, keep the server (no deletion) on the free-tier machine so the server-independent backup keeps running, and move the radio project's billing to the 77yuhbs billing account",
+  "approval": [
+    "유호님 10-21 「웅 잠깐 끌게」 (끄기 추천 뒤)",
+    "유호님 10-21 「오 좋아 일단 그럼 77yuhbs 계정으로 통로 바꿔놓자」 (e2-micro로 내리기 제안 뒤)",
+    "유호님 10-21 「웅 권한 넣고 옮겨」 (77yuhbs 결제 계정 권한·결제 이전)"
+  ],
+  "decisionNumbers": {
+    "source": "YouTube Studio (ego-browser, unmet23, channel SYNK LAB @synkkorean UCmZplYKuNHLPng4iL2AbLLg) data through 2026-10-19; GCP billing console (billing account 0161FA-7C996C-F1B948)",
+    "last7days_20261013_19": { "liveViews": 13, "watchHours": "about 0.2 (11-15 min)", "uniqueViewers": 5, "avgConcurrent": 0, "peakConcurrent": 2, "subscribers": 0, "traffic": "channel page 38.5% · Shorts feed 38.5% · browse 15.4% · search 7.7%" },
+    "last30days_20260920_1019": { "liveViews": 41, "watchHours": "about 5.9 (4.75 of them on 09-21 and 09-23, 5 views)", "uniqueViewers": "18 or fewer (sum of three broadcasts 4+3+11)", "avgConcurrent28d": 0, "peakConcurrent28d": 3, "subscribers": 2 },
+    "cost": { "oct1to20UsageKRW": 23194, "octForecastKRW": 37029, "septUsageKRW": 29937, "parts": "E2 core+RAM 21,269 · Network Intelligence Center 1,923 · external IP, disk, 557.3 GiB to YouTube 0 (Oct 1-20)", "cardCharged": 0, "unmet23CreditKRW": 83781.58, "unmet23CreditExpires": "2026-11-13", "perWatchHour7dKRW": "about 40,000" },
+    "notes": "Shared notes file 라디오24_시청숫자_비용_20261021.md in the session notes folder holds the per-day rows."
+  },
+  "before": {
+    "at": "2026-10-21T06:23:46Z",
+    "broadcast": { "id": "aHASRkZDalc", "lifeCycleStatus": "live", "privacy": "public", "actualStartTime": "2026-10-05T12:29:38Z", "enableAutoStop": false },
+    "stream": { "title": "SYNK 라디오24 상시 3", "status": "active", "health": "good" },
+    "vm": { "name": "synk-radio-1", "project": "synk-radio-live", "zone": "us-central1-a", "status": "RUNNING", "machineType": "e2-medium", "id": "7522586804800754188" }
+  },
+  "steps": [
+    { "at": "2026-10-21T06:25:20Z", "where": "server (ssh synk-radio)", "did": "sudo -n systemctl disable --now radio-live → inactive / disabled; crontab saved to ~/crontab.before-radio-off-20261021; lines containing 방송지킴이.js prefixed with '#radio-off-20261021 ' (2 lines)" },
+    { "at": "2026-10-21T06:25:47Z", "where": "YouTube Data API (radio credential)", "did": "stream status inactive confirmed before touching the broadcast" },
+    { "at": "2026-10-21T06:25:49Z", "where": "YouTube Data API", "did": "liveBroadcasts/transition broadcastStatus=complete id=aHASRkZDalc → 200, lifeCycleStatus complete, actualEndTime 2026-10-21T06:25:49Z" },
+    { "at": "2026-10-21T06:30:36Z-06:31:27Z", "where": "Compute Engine API (deploy account ~/.clasprc.json, read-only use of the file)", "did": "instances.stop → TERMINATED → setMachineType e2-micro → instances.start → RUNNING; external address hash unchanged (static synk-radio-ip)" },
+    { "at": "2026-10-21T06:32:35Z", "where": "server (ssh synk-radio)", "did": "after boot: radio-live inactive / disabled · synk-server-backup.timer active / enabled · guardian paused lines 2 · machine e2-micro · up 1 min" }
+  ],
+  "notDeleted": "VM, 30 GB disk, static address, /opt/synk-radio files, ended broadcasts, original crontab — nothing was deleted",
+  "whyNotStopTheVm": "Company server A's watch.py audits the radio's server-independent backup receipt every 15 minutes; a stopped radio VM makes it RADIO_BACKUP_FAILED_OR_STALE after 26 hours (failure email every day) and suppresses A's own healthy heartbeat, which the absence policy also watches. e2-micro is the Compute Engine free tier (one per billing account in us-central1), so the backup keeps running at no compute cost.",
+  "billing": {
+    "status": "pending — unmet23 has no access to the 77yuhbs billing account (013A36-17619E-CE0D07); granting 「결제 계정 사용자」 to unmet23 is a security setting that 유호님 does in the console",
+    "credit77yuhbs": { "remainingKRW": 169831.68, "originalKRW": 414984, "percent": 41, "expires": "2026-12-05", "readAt": "2026-10-21 (billing console, ego-browser authuser=4)" }
+  },
+  "afterNotes": [
+    "Links still point to https://www.youtube.com/@synkkorean/live (SYNK-website src/public-actions.js, talk src/라디오화면.js) and the @synkkorean description mentions SYNK Radio — left as they are because this is a pause; with no live broadcast the address shows the channel.",
+    "Network Intelligence Center charges (about ₩3,000 a month) keep accruing on the project; they are the only expected cost on e2-micro.",
+    "Reference, needs time: the radio backup at 07:10 KST on 10-22 runs on e2-micro and A's radio audit stays healthy."
+  ],
+  "howToTurnBackOn": [
+    "Compute Engine: instances.stop → setMachineType zones/us-central1-a/machineTypes/e2-medium → instances.start (or console: synk-radio-1 → 중지 → 수정 → 머신 유형 e2-medium → 저장 → 시작)",
+    "ssh synk-radio 'sudo -n systemctl enable --now radio-live'",
+    "ssh synk-radio: crontab -l | sed 's/^#radio-off-20261021 //' | crontab -  (or restore ~/crontab.before-radio-off-20261021)",
+    "The guardian opens a new public broadcast within 5 minutes once the stream is active; check with node tools/라디오방송건강.js and https://www.youtube.com/@synkkorean/live"
+  ]
+}
