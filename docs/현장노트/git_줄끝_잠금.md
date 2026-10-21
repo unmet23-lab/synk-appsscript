@@ -531,6 +531,18 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 보호 파일을 손으로 들여오지 않는다. 고칠 경로가 바탕과 origin에서 같으면 그대로 일한다. 바탕에 없는 origin 줄을 고쳐야 하면 scratchpad에 origin 희소 사본을 떠서 거기서 올린다 — `git worktree add --no-checkout --detach <사본> origin/master` → 희소 목록 파일(`/*`·`!/*/` + 고칠 폴더·문서, `.claude`는 넣지 않음)을 `git -C <사본> sparse-checkout set --no-cone --stdin < <목록>`(Git Bash에서 `/docs/…`를 인자로 주면 윈도우 경로로 바뀐다) → `git -C <사본> read-tree -m -u HEAD`(위 항목: 빈 인덱스 채우기) → 고친 파일을 옮겨 그 사본에서 시험과 `node tools/바로올리기.js <경로…> -m … --실행` → `git worktree remove <사본>`. 세션 작업본의 같은 수정은 올라간 커밋과 바이트가 같은지 대조해 둔다. 다음부터 맞추기가 되게 하려면 유호님이 앱 Help → Troubleshooting → Review Pinned Git Origins에서 origin을 한 번 확인한다(트랙 §1 「앱의 Git origin 확인」).
 - 다시 확인: `sync_with_base_branch` 결과에 「pinned before the app asked them」이 없거나, 사본에서 `바로올리기.js` 미리 보기가 「작업본: 워크트리((분리된 HEAD))」·내 경로만·「검사 통과」를 보인다(10-20, 희소 사본 146MB).
 
+### 보관한 세션이 남긴 작업트리는 남은 파일을 살려 옮기면 앱이 스스로 치운다 — 고친 추적 파일이 남은 곳만 카드로 지운다 (2026-10-21 Claude)
+- 증상: 10-21 `get_storage_usage`의 `kept_after_archive`가 3곳(약 10GB)이었다. 미추적 파일과 무시된 `.tmp`만 남은 두 곳은, 그 파일을 옮긴 뒤 몇 시간 안에(사이에 앱 재시작) 목록과 디스크에서 사라졌다. 고친 추적 파일(M)이 남은 한 곳은 그대로 남았다.
+- 원인: 앱은 보관할 때 미커밋 변경이 있는 작업트리만 남겨 둔다. 깨끗해지면 다음 정리 때 스스로 지운다. 무시된 파일은 「변경」으로 치지 않아 함께 지워진다 — goofy-yonath의 `.tmp`에는 어디에도 사본이 없는 블렌더 작업 파일 1.8GB가 있었다.
+- 고침: 먼저 남은 것(미커밋·미추적·**무시된** 파일)을 보존본과 sha256으로 맞춘다 — 문서·소스는 원본창고 `작업문서_미통합_자동`(manifests), 미디어는 `원본_복원목록-*.json`(`.tmp/공간정리_20261021/보존대조.py`·`폴더대조.py`). 남길 것은 `.tmp/공간정리_20261021/작업트리보존.py <작업트리> --실행`으로 공용 `.tmp/보존_작업트리_<날짜>/<이름>/`에 옮긴다(같은 드라이브라 이름만 바뀜, 고친 추적 파일은 복사, 장부 `_보존목록.jsonl`). 그래도 남는 곳만 `discard_kept_worktree`(유호님 카드).
+- 다시 확인: `get_storage_usage(refresh: true)`의 `kept_dirty_count`가 줄고, 보존 폴더의 `_보존목록.jsonl` 줄 수가 옮긴 항목 수와 같다.
+
+### 주인 세션 없는 작업트리를 `git worktree remove`로 지우면 자동 모드 판정기가 막는다 (2026-10-21 Claude)
+- 증상: 10-21 앱 밖 작업트리 넷(깨끗하고, 커밋은 같은 제목으로 origin에 있음)을 지우려 하자 `git worktree remove <경로>`가 「judged this action dangerous」로, 남의 작업트리 `git diff`를 파일로 받는 명령과 다른 세션 임시 폴더를 훑는 명령은 「Interfere With Workloads」로 거절됐다. 같은 작업트리에서 파일을 옮기는 것은 통과했다.
+- 원인: 판정기는 다른 세션이 쓰는 작업 공간에 손대는 일을 막는다. 앱 세션 목록에 주인이 없어도 EnterWorktree로 들어간 세션은 cwd가 다르게 남아 있어 판정기로서는 알 수 없다.
+- 고침: 우회하지 않는다. 지울 작업트리 이름·크기·근거(깨끗함·origin에 같은 커밋·쓰는 도구 없음)를 유호님께 한 번에 보이고 「지워」를 받은 뒤, junction부터 끊고 `git worktree remove`(위 junction 항목). 앱 작업트리는 `clean_up_worktrees`·`discard_kept_worktree`(카드)로 지운다. 고르기 전 그 경로를 박아 둔 도구를 `rg`로 찾는다 — `.tmp/sns-health-upgrade-20261020/make-package.cjs`가 `SYNK-worktrees/sns-aggregation-upgrade-20261020`을 WORKTREE로 쓰고 있어 후보에서 뺐다.
+- 다시 확인: 후보마다 `git -C <경로> status --porcelain`이 비고, `git -C <경로> log origin/master..HEAD`의 제목이 origin 기록에 있다.
+
 ## 이력 훑기
 
 ### 큰 blob을 거른 클론에서 `git log -S`·`--find-object`가 「could not fetch」로 끝난다
