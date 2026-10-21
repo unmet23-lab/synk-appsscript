@@ -2,15 +2,15 @@
 
 유호님이 텔레그램으로 공유한 디자인 사이트·AI 팁을 **SYNK의 어느 화면·작업에, 무엇을, 언제** 넣을지 정리한 카드다. 공유의 90% 이상은 "적용하자"는 뜻이라(2026-10-17 유호님), 카드는 들일지 거르는 판정이 아니라 적용안이다.
 
-- **받기:** 헤르메스 텔레그램 봇(GPT)이 게시물을 받아 정리하고 [SYNK 팁 장부](https://docs.google.com/spreadsheets/d/1bqSom9mNKb3pB_YW7D_PxiI32cVG5ZzKnns0wgxeNKM/edit)의 「팁」 탭에 올린다. 판정은 하지 않는다.
-- **적용안:** Claude가 매일 09:00·21:00(예약 작업 `synk-tip-claude-review-2`) 장부의 새 줄마다 이 폴더에 카드를 쓰고 장부의 Claude 칸(어디에·가져올 것·적용안·언제·카드)을 채운 뒤 텔레그램으로 알린다. 절차는 `%LOCALAPPDATA%/hermes/skills/research/synk-tip-review/claude_review.md`.
+- **받기:** 헤르메스 텔레그램 봇이 게시물을 받아(카드뉴스·영상 묶음은 모든 장, 영상은 장면·받아쓰기) 정리하고 [SYNK 팁 장부](https://docs.google.com/spreadsheets/d/1bqSom9mNKb3pB_YW7D_PxiI32cVG5ZzKnns0wgxeNKM/edit)의 「팁」 탭에 올린다. 판정은 하지 않는다.
+- **적용안:** 2026-10-21부터 Windows 작업 스케줄러 「SYNK 팁 적용안」이 15분마다 `node tools/크레딧실행.js 작업 팁적용안`으로 장부를 AI 없이 보고, 새 줄이 있으면 Claude(Opus 5.5 max)를 띄운다(마지막 공유 10분 뒤 3줄씩, 공유하고 30분 안쪽). Claude가 이 폴더에 카드를 쓰면 실행기가 장부의 Claude 칸(어디에·가져올 것·적용안·언제·카드)을 채우고 커밋한 뒤 텔레그램으로 알린다. 절차는 `%LOCALAPPDATA%/hermes/skills/research/synk-tip-review/claude_review.md`.
 - **쓰는 법:** 아래 대상의 화면·작업을 시작할 때 그 대상의 카드를 먼저 본다. 장부에서 바로 찾으려면 `python %LOCALAPPDATA%/hermes/skills/research/synk-tip-review/scripts/ledger.py cards "WORLD 앱"`.
 - **「팁 장부 N행 적용해줘」:** 유호님이 이렇게 말하면 `ledger.py recent 50`이나 아래 목록에서 그 줄의 카드를 찾아 「적용 요청문」을 요청으로 삼아 진행한다. 돈·가입·되돌리기 어려운 일은 따로 여쭌다.
-- **휴대폰에서 적용 요청:** 기존 텔레그램 봇에 `/synk_claude 팁 장부 N행 적용해줘`라고 보내면 같은 카드의 요청을 새 공식 Claude Code 작업으로 맡긴다. 상태·작업 결과 조회는 [휴대폰 작업 연결](../../tools/hermes-synk/README.md)을 따른다. 링크만 공유하는 기존 팁 접수와 하루 두 번의 적용안 예약은 유지한다.
+- **휴대폰에서 적용 요청:** 기존 텔레그램 봇에 `/synk_claude 팁 장부 N행 적용해줘`라고 보내면 같은 카드의 요청을 새 공식 Claude Code 작업으로 맡긴다. 상태·작업 결과 조회는 [휴대폰 작업 연결](../../tools/hermes-synk/README.md)을 따른다. 링크만 공유하는 기존 팁 접수와 15분 적용안 확인은 그대로다.
 - **언제:** `지금`은 진행 중인 작업과 바로 이어진다. 카드의 「적용 요청문」대로 진행할지 유호님께 여쭌다. `그 작업 때`는 그 대상을 다음에 손볼 때 꺼내 본다. 분명히 상관없는 것(잘못 보낸 링크, 알맹이 없는 광고)만 카드 없이 장부에 `안 맞음`으로 남는다.
 - **적용한 뒤:** 카드 머리의 `상태:`를 `적용함`으로 바꾸고(어느 커밋·화면인지 한 줄) `node tools/참고카드_목록.js`로 아래 목록을 다시 쓴다. 장부의 상태 칸은 유호님이 바꾼다.
 - 장면·영상 같은 게시물 재료는 남의 것이라 저장소에 넣지 않는다. 카드 「근거」에 적힌 `%LOCALAPPDATA%/hermes/cache/synk-tips/<게시물ID>/`에 있다.
-- 커밋: Claude 검토는 `node tools/참고카드_커밋.js --커밋`으로 이 폴더만 별도 인덱스로 로컬 커밋한다. push는 하지 않는다.
+- 커밋: 실행기가 `node tools/참고카드_커밋.js --커밋`으로 이 폴더만 커밋한다. 꼬리 없는 공용 작업본에서는 바로올리기로 곧바로 push한다.
 
 <!-- 목록 시작 · tools/참고카드_목록.js 가 이 구간만 다시 쓴다 -->
 카드 22장. 새 카드가 위.
