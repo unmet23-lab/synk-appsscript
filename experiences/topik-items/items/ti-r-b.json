@@ -111,8 +111,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 0번이 유일하고, 오답이 글의 조건을 뒤집어 그럴듯하며, 해설 세 언어가 같은 근거를 바르게 말합니다. 그대로 써도 됩니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "c4df678bf5d3a1a4",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "세트형 내용 일치 문항으로 조건에 따른 요금 계산과 오답 구성, 3개 국어 해설이 모두 적절하여 통과합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "c4df678bf5d3a1a4",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-b-003",
@@ -222,8 +245,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "The answer is unique, the distractors are well designed, and the item fits both the slot and the difficulty level. Only a minor wording point remains in the mn explanation, so it can be used as is.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "b7ee14a11d960529",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "세트형 내용 일치 문항으로 세부 정보 파악 능력, 오답 매력도, 해설 번역 모두 기준에 맞아 통과합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "b7ee14a11d960529",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-b-005",
@@ -265,8 +311,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "지시 뒤에 결과를 잇는 「그러면」이 유일한 정답이에요. 보기·해설·급 수준이 모두 기준에 맞아 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "566448cd4fa52cbe",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "명령문 뒤에 결과를 잇는 접속부사 '그러면'을 묻는 문항으로, 정답 유일성과 오답 해설('그래서'와의 차이)까지 잘 갖추어져 통과합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "566448cd4fa52cbe",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-b-006",
@@ -310,8 +379,42 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "held",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답 2번은 맞아요. 다만 보기 0번이 마지막 문장(비 오는 날 방법을 쓰면 빨리 마름)을 그대로 옮겨서 맞다고 다툴 여지가 있어요. 0번을 분명히 어긋나는 보기로 바꾸면 쓸 수 있어요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "49cff7752de69a16",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TOPIK I 56번 유형에 맞고 정답 유일성·난도·해설 모두 적절한 양호한 문항임.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "49cff7752de69a16",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답 2번(「공기 속에 물이 많기 때문입니다」)은 맞고, 유형·난도·능력도 자리에 맞다. 다만 보기 0번 「비가 오는 날에는 바람이 잘 통해서 빨래가 빨리 마릅니다」가 문제다. 이 보기는 마지막 문장 「(그러면) 바람이 잘 통해서 빨래가 빨리 마릅니다」를 거의 그대로 옮겼다. 그 문장도 비 오는 날의 방법을 말하는 맥락이라, 학습자가 「비 오는 날에도 이렇게 하면 빨리 마른다고 했다」며 맞다고 다툴 여지가 있다. 검수자 A의 지적이 옳으므로 0번을 글과 분명히 어긋나는 보기로 바꾸고, 해설·메모도 그에 맞춰 고쳐야 한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "49cff7752de69a16",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-b-007",
@@ -353,8 +456,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "held",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "까닭 뒤에 명령이 오는 자리에 「그러니까」가 들어가는 정답이 유일하고, 「그래서」의 명령 제약을 묻는 좋은 2급 이음말 문항입니다. 몽골어 해설에 아주 작은 표현 다듬기만 권합니다. / 블라인드 풀이 1(정답 1) · 다툴 보기 0: 앞 문장 「어두운 산길은 걷기 힘들고 위험합니다」가 까닭이고, 뒤 문장 「늦어도 오후 4시에는 내려오기 시작하십시오」는 명령문입니다. 까닭 뒤에 명령·권유가 오므로 「그러니까」가 가장 알맞습니다. 「하지만」과 「그런데」는 앞뒤가 반대이거나 화제가 바뀔 때 쓰는 말이라 맞지 않습니다. 「그래서」는 원칙적으로 명령문과 함께 쓰지 않는다고 가르치지만, 실제 글에서는 「그래서 … 하십시오」도 흔히 보여 맞다고 다툴 여지가 있습니다(확인 필요). 이 점 때문에 정답 유일성이 문법 규칙 하나에 달려 있습니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "f62a169ffdcf6951",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix",
+          "notes": "TI-R-55는 앞뒤 문장의 의미 관계를 묻는 유형인데 같은 인과 접속부사인 「그래서」와 「그러니까」를 함께 보기에 두어 정답 시비 및 수준 초과 문제가 있으므로, 보기 0번 「그래서」를 「그러면」으로 고쳐야 함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "f62a169ffdcf6951",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-b-008",
@@ -396,8 +522,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답은 하나뿐이고 오답이 고르게 설계되어 있으며, 2급 난도와 56번 자리 꼴에 맞습니다. 몽골어 해설 첫 낱말만 조금 어색할 뿐 그대로 써도 학습자에게 해가 없습니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "55c17a2e1510cb3d",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "정답 유일성, 오답 구성, 해설 및 난도가 모두 기준에 부합하는 양호한 문항임.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "55c17a2e1510cb3d",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-b-009",
@@ -441,8 +590,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고, 문형 빈칸 보기가 고르게 짜였습니다. 세 언어 해설도 정확해 그대로 써도 됩니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "ef63d26bf1c74ebd",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "2급 필수 문형 변별력과 문맥 구성을 잘 갖춘 양호한 문항임.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "ef63d26bf1c74ebd",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-b-010",
@@ -552,8 +724,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 「맡겼습니다」가 유일하고 꼴·난도·해설이 모두 기준에 맞습니다. 몽골어 표현에 다듬을 곳이 조금 있지만 사소해서 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "1e21bd3600760817",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "세탁소 이용 맥락에서 동사 어휘 「맡기다」를 고르는 TI-R-49 문항으로 모든 기준을 충족한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "1e21bd3600760817",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-b-012",
@@ -597,8 +792,42 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "held",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답이 유일하고 오답 설계·난도·능력이 모두 맞다. 몽골어 해설 첫말 「Эхэд」만 「Бичвэрт」로 다듬으면 된다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "3085095084fcca54",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "u041과 세트를 이루는 TI-R-50 내용 일치 문항으로 부정·변경 파악 능력에 잘 맞는다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "3085095084fcca54",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "I solved the item myself and got choice 2 (0-based), which matches the answer field. The other three are each contradicted by the passage: choice 0 by 「1층」, choice 1 by 「화요일 저녁」, choice 3 by 「출근하기 전에」. None depends on missing information. The answer turns on 「가지 못했습니다」, so the negation skill fits. Difficulty 2 also fits: 2급 linking endings (-아서, 그런데, 그래서), five sentences, and a changed plan. The Korean and English explanations are accurate. The one problem is the Mongolian explanation's opening word 「Эхэд」. It can be read as 'in the source text', but it is unclear: it is the dative of эх ('mother' or 'source') and can be confused with 「эхэнд」 ('at the beginning'). Reviewer A's point is valid. The fix is small, but since there is doubt, I choose fix over pass.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "3085095084fcca54",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-b-013",
@@ -642,8 +871,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나로 분명하다. 오답은 같은 꼴의 문형 대비로 잘 짜였고, 2급 수준과 해설 세 언어도 알맞다. 그대로 써도 된다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "fcecb589e1688c60",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "치과 예약 맥락에서 불가능을 나타내는 문형 「-(으)ㄹ 수 없다」를 묻는 TI-R-49 문항으로 모든 기준을 충족한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "fcecb589e1688c60",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-b-014",
@@ -687,8 +939,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 3번이 유일하고, 오답이 글의 사실을 바꾼 그럴듯한 보기들이다. 조건 능력·2급 난도에 맞으며, 해설 세 언어가 같은 근거를 말한다. 몽골어 표현은 사소하게 다듬을 여지만 있어 통과로 본다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "3437e4f5b966142d",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "u043과 세트를 이루는 TI-R-50 내용 일치 문항으로 조건 이해 능력(ko.reading.condition)을 적절히 측정한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "3437e4f5b966142d",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-b-015",
@@ -730,8 +1005,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "국–끓이다 연어를 묻는 낱말 빈칸 문항입니다. 정답이 하나뿐이고 오답도 그럴듯합니다. 급과 난도에 맞고 세 언어 해설도 정확해 그대로 통과합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "9ccd8e5ef8520ae3",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "세트 지문(u045·u046)의 첫 문항으로, '국'과 호응하는 조리 동사 '끓이다'를 고르는 2급 어휘 문항이다. 보기 구성과 해설 모두 적절하다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "9ccd8e5ef8520ae3",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-b-016",
@@ -775,8 +1073,42 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "held",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "The answer is unique and the level, skill and explanations are appropriate. However, choice 2 is the direct opposite of the answer, so the mirror pair gives the answer away. Replacing choice 2 with a distractor that changes the reason makes the item usable.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "6f31e58fa767121e",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "세트 지문(u045·u046)의 두 번째 문항으로, 이유와 행동을 바르게 연결한 보기를 찾는 내용 일치 문항이다. 기준을 모두 충족한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "6f31e58fa767121e",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "The answer is unique and correct: option 1 states the passage's reason, 「수업이 있어서 … 늦게 갑니다」. The level, reason skill, difficulty 2 and the three-language explanations all fit. Reviewer A is right about one problem: option 2 (「수업이 없어서 … 일찍 갑니다」) simply negates the answer on both halves. That mirror pair lets a learner narrow the choice to options 1 and 2 without reading the passage, so it is a weak distractor. Reviewer B's pass overlooks this. The fix is small: swap option 2 for a distractor that uses passage words but gets the reason wrong. With that change the item is usable.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "6f31e58fa767121e",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-b-017",
@@ -818,8 +1150,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나로 분명하고 꼴·급·해설이 모두 맞는다. 오답 「깨끗합니다」가 조금 약하지만 고칠 필요는 없어 통과로 본다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "a0ec112dd5fdb8f7",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "세트 지문(u047·u048)의 첫 문항으로, 문맥상 자리가 모자란 상황을 나타내는 '부족합니다'를 고르는 적절한 2급 어휘 문항이다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "a0ec112dd5fdb8f7",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-b-018",
@@ -863,8 +1218,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고 오답이 모두 글과 분명히 어긋납니다. 급·난도·해설도 맞습니다. 2번 보기의 「한 번에」는 빼도 좋지만 꼭 고칠 정도는 아니라서 통과로 판정합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "e6cec0f9ebd064a0",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "세트 지문(u047·u048)의 두 번째 문항으로, 학년별 점심시간 세부 정보를 비교해 내용 일치를 판단하는 양호한 문항이다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "e6cec0f9ebd064a0",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-b-019",
@@ -974,8 +1352,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답이 글과 분명히 어긋나며, 2급 난도와 이유 능력에 맞는다. 몽골어 해설의 「Эхэд」를 「Бичвэрт」로 바꾸면 더 자연스럽지만, 고치지 않아도 학습자에게 해가 없어 통과로 본다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "211ab7cf11c09bdf",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "유형, 난도, 정답 유일성, 오답 매력도, 다국어 해설 모두 기준에 부합하는 양호한 문항입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "211ab7cf11c09bdf",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-b-021",
@@ -1017,8 +1418,42 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "held",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답이 하나뿐이고 자리·급·능력·난도가 맞는 좋은 빈칸 문항이에요. 몽골어 해설의 「Эхэд」 한 낱말만 고치면 돼요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "c8c950c4a682369e",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "빈칸 전후 맥락이 명확하고 오답 구성 및 다국어 해설이 정확한 문항입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "c8c950c4a682369e",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답 「젖었습니다」는 하나뿐이에요. 「비가 많이 왔습니다」, 「우산이 없어서」, 「뛰어갔지만」으로 다른 세 보기는 분명히 지워져요. 자리(TI-R-53 빈칸), 급, 능력(낱말 뜻), 난도 2도 맞고 한·영 해설도 정확해요. 다만 몽골어 해설 첫 낱말 「Эхэд」는 「글에서」보다 「처음에」나 「어머니에게」로 읽힐 수 있어요. 학습자 화면에 나가는 글이니 「Бичвэрт」로 분명히 하는 것이 안전해요. 검수자 A의 지적을 받아들여요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "c8c950c4a682369e",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-b-022",
@@ -1196,8 +1631,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 조건 읽기를 잘 겨눈 2급 내용 일치 문항입니다. 해설 번역의 작은 어색함(몽골어 「Эхэд」→「Бичвэрт」 권장)만 있어 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "3dca6a8441ec4a5f",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "조건(ko.reading.condition) 능력을 잘 측정하며 지문과 보기, 해설 모두 완성도가 높습니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "3dca6a8441ec4a5f",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-b-025",
@@ -1239,8 +1697,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 서점이 유일하고 해설 세 언어도 바릅니다. 빵집·꽃집이 쉽게 지워지는 점은 사소하므로 통과합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "72439c98413c6249",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "매력적인 오답(도서관)과 명확한 변별 단서(계산하고)를 갖춘 좋은 어휘 문항입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "72439c98413c6249",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-b-026",
@@ -1282,8 +1763,42 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "held",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답이 하나뿐이고 오답·급·난도·능력이 모두 맞다. 다만 몽골어 해설 첫 낱말 「Эхэд」가 「처음에」로 읽혀 글의 「처음에는」과 헷갈리므로 「Бичвэрт」로 고치면 쓸 수 있다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "d161d049b2cdb1ed",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "지문·보기·해설 모두 기준에 부합하는 양호한 문항입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "d161d049b2cdb1ed",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "직접 풀어 보니 정답은 2번 하나뿐이다. 「학교 앞」이니 학교 근처에서 일한다. 0번은 「한국 역사」와, 1번은 「지금은 일요일에도」와, 3번은 「책을 읽을 수 있어서」와 어긋난다. 꼴, 급, 난도 2, 세부 능력 모두 맞고 한국어·영어 해설도 바르다. 다만 검수자 A의 지적이 맞다. 몽골어 해설 첫 낱말 「Эхэд」는 「처음에」라는 뜻으로 읽힌다. 그러면 「처음에 바트는 학교 앞에서 일한다」가 되어, 바로 뒤의 「처음에는 토요일에만」과 헷갈리게 만든다. 순서·변경 정보를 다루는 문항에서 학습자를 오도할 수 있으므로 고친 뒤 내보낸다. 검수자 B의 역번역이 이 낱말을 「글에」로 옮긴 것은 너그럽게 읽은 결과로 보인다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "d161d049b2cdb1ed",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-b-027",
@@ -1325,8 +1840,42 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "held",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답이 하나뿐이고 꼴도 61번 자리에 맞는 좋은 문항입니다. 다만 정답 낱말 「지치다」가 TOPIK I 2급에서는 다소 높을 수 있으니, 「피곤합니다」로 바꾸고 해설도 맞춰 고치기를 권합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "2e11b3930cf3f147",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "앞뒤 문맥 단서가 분명하고 오답 구성과 3개 국어 해설이 정확한 문항입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "2e11b3930cf3f147",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답은 하나뿐입니다. 「그래도 … 힘이 납니다」와 이어지려면 빈칸에 힘든 상태가 와야 하고, 「웃습니다」「기뻐합니다」「놀랍니다」는 이 문맥으로 지워집니다. 61번 자리의 꼴, 해설 세 언어, 문화 면에도 문제가 없습니다. 다만 정답 낱말 「지치다」는 보통 중급(3급 이상) 낱말로 다뤄집니다. 낱말 뜻 읽기를 겨눈 TOPIK I 2급·난도 2 문항에서 정답 낱말이 급을 넘으면, 학생은 뜻을 알아서가 아니라 오답을 지워서 맞히게 됩니다. 그러면 대표 능력과 급이 어긋나므로 A의 지적을 받아들입니다. 「피곤합니다」로 바꾸면 2급에 맞고 정답도 하나로 유지됩니다. 세트 글(passage)은 바꾸지 않으므로 62번 짝 문항과의 일치도 깨지지 않습니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "2e11b3930cf3f147",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-b-028",
@@ -1436,8 +1985,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 「얇은」이 유일하고 꼴·급·난도가 맞습니다. 첫 문장의 「에는」 겹침만 사소하게 다듬을 만합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "ad287c224a7bfb1c",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "문맥 단서와 보기 구성, 해설 모두 기준에 잘 맞는 문항입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "ad287c224a7bfb1c",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-b-030",
@@ -1481,8 +2053,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답이 글과 분명히 어긋나며, 이유 능력과 난도 2에 맞습니다. 조사 겹침과 몽골어 낱말 하나는 사소하므로 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "b406f7f37171b822",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "세트 지문 일관성, 이유 파악 능력 측정, 오답 매력도 및 해설 모두 기준을 충족합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "b406f7f37171b822",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-b-031",
@@ -1524,8 +2119,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나로 분명하고 자리·급·능력·난도가 모두 맞아요. 오답이 모두 부정적인 뜻이라 쉽게 지워지는 점, 마지막 문장의 「그리고」가 조금 어색한 점은 사소한 메모예요. 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "ded8ebc3aaa8a220",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "김밥 설명문의 빈칸에 들어갈 어휘(「편해서」)를 고르는 문항으로, 정답 유일성·오답 매력도·난도·해설 모두 기준에 부합하여 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "ded8ebc3aaa8a220",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-b-032",
@@ -1569,8 +2187,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "There is one answer and every distractor contradicts a specific phrase in the passage. The format, level, skill, difficulty and three-language explanations are all appropriate. The only notes are minor wording points (「그리고」 → 「또」, 「зүгээр」 → 「сайн」), so the item passes.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "8f0d366547c31214",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "u057과 세트를 이루는 내용 일치 문항으로, 조건문 이해(ko.reading.condition)를 바르게 측정하며 오답 구성과 3개 국어 해설 모두 우수함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "8f0d366547c31214",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-b-033",
@@ -1680,8 +2321,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답이 글의 정보를 바꾸어 그럴듯하다. 급·꼴·해설도 적절하다. 몽골어 낱말 선택에 사소한 다듬을 점만 있어 통과로 본다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "276a3452fac25719",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "어린이 동물원 설명문의 세부 내용 일치 문항으로, 정답 유일성·오답 설계·난도·다국어 해설 모두 기준에 맞음.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "276a3452fac25719",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-b-035",
@@ -1723,8 +2387,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고 꼴·급·해설 모두 기준에 맞는 67번형 낱말 빈칸 문항입니다. 그대로 통과합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "523e9225f909f8fa",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "여름철 전기 요금 절약 방법 설명문의 빈칸 어휘(「줄이려면」) 추론 문항으로, 보기 구성과 해설 모두 기준에 부합하여 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "523e9225f909f8fa",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-b-036",
@@ -1768,8 +2455,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고 오답 설계와 난도가 적절하다. 몽골어 해설에 사소한 낱말 선택 문제만 있어 통과시킨다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "d582f79713a76675",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TI-R-68 세트 내용 일치 문항으로 지문, 보기, 다국어 해설 모두 기준에 부합함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "d582f79713a76675",
+          "packet": "expand-reading"
+        }
+      ]
     }
   ]
 }

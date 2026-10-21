@@ -40,8 +40,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 「계절」이 유일하고, 오답이 그럴듯하며 1급 낱말·꼴에 맞는다. 해설 세 언어가 같은 근거를 말한다. 그대로 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "0854aa02f5e18d37",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TOPIK I 1급 화제 찾기(TI-R-31) 유형에 부합하며 정답 유일성, 오답 매력도, 다국어 해설 모두 우수한 문항임.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "0854aa02f5e18d37",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-002",
@@ -80,8 +103,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 「값」이 유일하고, 오답의 끌림(우산→날씨, 숫자→시간·나이)이 적절하다. 1급 난도와 TI-R-31 꼴에 맞고 세 언어 해설도 정확해 통과한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "a0a1a28fa26612ab",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "우산의 가격을 통해 '값'이라는 화제를 찾는 TI-R-31 문항으로, 연상 오답('날씨')과 숫자 관련 오답('시간', '나이') 설계 및 해설이 뛰어남.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "a0a1a28fa26612ab",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-003",
@@ -120,8 +166,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 「나라」가 유일하고, 1급 앞쪽 31번 꼴에 잘 맞는다. 해설 세 언어도 같은 근거를 바르게 말해 그대로 써도 된다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "bedca6a86648d1bb",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "출신 국가를 소개하는 두 문장을 읽고 '나라' 화제를 고르는 TI-R-31 문항으로, 지문·보기·해설 모두 기준에 부합함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "bedca6a86648d1bb",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-004",
@@ -162,8 +231,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나로 분명하고, 오답이 안내문의 낱말을 써서 그럴듯하며, 해설 세 언어가 같은 근거(「만」)를 짚습니다. 몽골어 해설이 나머지 보기 인용을 줄인 것은 사소하므로 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "3834b4e66a29a273",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "학교 버스 안내문에서 맞지 않는 내용을 고르는 TI-R-40 문항으로, 한정 보조사 '만'을 활용한 정답 설계와 다국어 해설이 모두 정확함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "3834b4e66a29a273",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-005",
@@ -204,8 +296,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답 설계와 세 언어 해설이 바르다. 1급 안내문 유형에 잘 맞아 통과로 판정한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "ab90e64b1565b0d7",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "빵집 안내문의 할인 시간 조건을 바탕으로 맞지 않는 보기를 고르는 문항으로, 지문·보기·3개 국어 해설 모두 기준에 맞음.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "ab90e64b1565b0d7",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-006",
@@ -246,8 +361,42 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "held",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답이 유일하고 조건 읽기 능력에 잘 맞는 좋은 문항입니다. 다만 네 문장·정보 넷·조건이 있어 §3 기준으로는 difficulty 2(2급)에 해당하므로 난도 값만 고치면 됩니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "d8efb9f7bf058b7e",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "등산 약속 문자에서 「-(으)면」 조건을 파악하는 문항으로, 모든 검수 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "d8efb9f7bf058b7e",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답은 하나뿐입니다. 4번 보기 「비가 오면 토요일에 등산을 갑니다」는 「비가 오면 일요일에 가요」와 어긋납니다. 나머지 셋은 글과 같습니다(7시, 쓴 사람 지영의 「우리 집 앞」, 「제가」 = 지영). 정답을 가르는 정보가 -(으)면 조건이므로 skillId ko.reading.condition이 맞고, 세 언어 해설도 같은 근거를 바르게 짚습니다. 다만 난도 칸이 맞지 않습니다. 글이 네 문장이고 정보가 넷(토요일·7시·장소·준비물)이며 조건(비가 오면 일요일)까지 있습니다. 이는 작성 기준 §3의 difficulty 1(글 2~3문장·정보 1~2개)이 아니라 difficulty 2(글 4~6문장·정보 3개 이상, 바뀐 정보나 조건이 있음)의 정의에 해당합니다. 검수자 A의 지적이 맞습니다. 글·보기·정답은 그대로 쓰고 난도 값만 고치면 됩니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "d8efb9f7bf058b7e",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-007",
@@ -288,8 +437,42 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "held",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답이 유일하고 보기·해설·세 언어 모두 바른 좋은 안내문 문항이에요. 다만 정답을 가르는 정보가 요일·시각이라는 세부 정보라서 대표 능력은 조건이 아니라 detail로 고쳐야 해요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "36dbe167330f8cfe",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "박물관 안내문에서 보조사 「만」을 통한 야간 개장 요일 조건을 묻는 문항으로, 문제와 해설 모두 적절함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "36dbe167330f8cfe",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "직접 풀어 보니 정답은 1번 하나뿐이다. 안내문의 「금요일만 밤 9시까지」 때문에 목요일은 오후 6시에 닫으므로 1번만 맞지 않는다. 0번은 「월요일은 쉽니다」, 2번은 「어린이 1,000원」, 3번은 오후 6시 마감과 각각 맞는다. 오답의 매력도, 1급 어휘(박물관·어른·어린이·만), 자리의 꼴, 세 언어 해설도 모두 바르다. 읽기 글의 숫자·물결 기호는 듣기 대본 규칙에 해당하지 않으니 문제가 없다. 다만 작성 기준 §1은 시간·장소·수량을 가르는 정보를 '세부'로, -(으)면을 '조건'으로 정의한다. 이 문항에서 정답을 가르는 정보는 요일별로 문 닫는 시각이므로 대표 능력은 ko.reading.detail이 맞다. 「만」이 한정을 나타내기는 하지만 기준이 말하는 조건(-(으)면)은 아니다. 따라서 검수자 A의 지적을 받아들인다. 능력 표시만 고치면 그대로 쓸 수 있다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "36dbe167330f8cfe",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-008",
@@ -330,8 +513,42 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "held",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답이 하나뿐이고 해설도 정확한 좋은 문항입니다. 다만 정답을 가르는 정보가 수량이라 skillId는 detail이 맞고, 글 4문장·정보 4개는 난도 1 정의를 넘습니다. 메타 정보만 고치면 쓸 수 있습니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "d2c4e52fbfb3dcc6",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "도서관 대출 안내문에서 「까지」를 통한 권수 제한 조건을 묻는 문항으로, 초급 문형 제약 안에서 잘 구성됨.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "d2c4e52fbfb3dcc6",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "직접 풀어 보면 정답은 0번이고 하나뿐이다. 글의 「다섯 권까지」와 보기의 「여섯 권」이 어긋난다. 보기 1·2·3번은 글과 그대로 맞거나 글에서 바로 끌어낼 수 있는 내용이다. 해설 세 언어도 같은 근거를 바르게 짚는다. 남은 문제는 메타 정보 두 가지다.\n\n첫째, skillId는 A의 지적이 맞다. 정답을 가르는 정보는 권수(수량)이다. 작성 기준 §1은 「시간·장소·수량 = 세부」, 「-(으)면 = 조건」으로 나눈다. 따라서 ko.reading.condition이 아니라 ko.reading.detail이 맞다. Core가 칸을 나눌 때 쓰는 값이므로 고쳐야 한다.\n\n둘째, difficulty는 A의 안을 받지 않는다. TI-R-40은 「맞지 않는 것」을 묻기 때문에 글과 맞는 보기 셋이 있어야 하고, 그래서 정보가 셋 이상인 것이 이 자리의 꼴이다. 정보를 1~2개로 줄이면 문항이 성립하지 않는다. 낱말·문형도 모두 1단계(빌립니다·권·가지고 오세요·-지 못하다·까지)이다. 2단계 문형이나 바뀐 정보도 없다. 그러므로 difficulty 1을 그대로 둔다.\n\n자연스러움, 문화·편향, 기출 유사도에는 문제가 없다. skillId만 고치면 학생 화면에 내도 된다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "d2c4e52fbfb3dcc6",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-009",
@@ -372,8 +589,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "held",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답은 하나이고, 오답과 해설 세 언어 모두 좋습니다. 다만 정답을 가르는 정보가 마감 날짜라서 조건(condition)보다 세부(detail) 능력에 해당합니다. skillId만 고치면 쓸 수 있습니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "96913255a4a6d3b5",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix",
+          "notes": "문항과 해설은 완결성이 높으나, 정답을 가르는 정보가 신청 기한(세부 정보)이므로 skillId를 ko.reading.detail로 수정해야 함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "96913255a4a6d3b5",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-010",
@@ -412,8 +652,42 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "held",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답(보기 3)은 유일하고 오답 설계와 해설도 좋습니다. 고칠 것은 둘입니다. 「점심시간」 띄어쓰기를 바로잡고, 변경 정보와 정보 셋이 있어 기준상 2에 해당하는 난도 칸을 2로 올립니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "602cd0002558ac31",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "식당 점심시간 변경 안내를 소재로 변경 전후 정보를 정확히 묻는 양호한 문항임.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "602cd0002558ac31",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답(보기 2, 「지금 점심시간은 11시 30분에 시작합니다」)은 하나뿐이고, 오답 셋도 글로 확인됩니다. 해설 세 언어도 같은 근거를 말합니다. 다만 A의 지적 두 가지가 맞습니다. 첫째, 「점심시간」은 표준국어대사전에 오른 한 낱말이라 붙여 써야 합니다. 둘째, 글에 바뀐 정보(전·지금)가 있고 정보가 셋 이상이라 작성 기준 §3에서 TOPIK I difficulty 2에 해당합니다. 이 문항은 변경을 겨누므로 정보를 줄여 1로 맞추기보다 난도를 2로 올리는 것이 맞습니다. 또 보기 0에 「지금」이 없어 전·지금 중 어느 쪽인지 다툴 여지가 조금 있고, 「지금」이 정답 보기에만 있어 단서가 됩니다. 꼴을 맞추는 것이 좋습니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "602cd0002558ac31",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-011",
@@ -454,8 +728,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나로 분명하고, 부정 꼴 오답이 적절한 함정 역할을 합니다. 1급 메모형 TI-R-40으로 그대로 써도 되는 문항이에요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "fdfd65484111e933",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "짧은 메모에서 부정 표현의 일치 여부를 명확하게 측정하는 좋은 문항임.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "fdfd65484111e933",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-012",
@@ -496,8 +793,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "기차표 안내문에서 출발 시각과 도착 시각을 바꾼 보기를 고르는 1급 문항입니다. 정답이 하나로 분명하고 세 언어 해설도 정확해서 그대로 써도 됩니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "e28f9d45ff3204c3",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "기차표의 출발·도착 시각 정보를 정확히 읽는지 평가하는 깔끔한 문항임.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "e28f9d45ff3204c3",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-013",
@@ -538,8 +858,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "생일 초대 문자에서 파티 장소를 바꾼 보기를 고르는 문항입니다. 정답이 유일하고, 1급 어휘와 TI-R-40 꼴에 맞으며, 세 언어 해설도 정확해 그대로 써도 됩니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "3de05666f8f28b8a",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "문자 메시지를 읽고 맞지 않는 세부 정보를 고르는 1급 문항으로, 모든 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "3de05666f8f28b8a",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-014",
@@ -580,8 +923,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답은 글과 분명히 어긋난다. 1급 앞쪽 수준의 짧은 이유 읽기 문항으로, 해설 세 언어도 일치한다. 그대로 통과한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "9e44995bebee6ee1",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "일상생활의 이유·결과를 다룬 1급 내용 일치 문항으로, 모든 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "9e44995bebee6ee1",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-015",
@@ -622,8 +988,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고 꼴·급·해설이 모두 맞습니다. 굳이 고친다면 정답 보기를 글과 조금 다른 말로 바꿀 수 있지만, 학습자에게 해가 없어 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "c09acf7806bfd590",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "반려견 산책 이유를 묻는 1급 내용 일치 문항으로, 모든 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "c09acf7806bfd590",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-016",
@@ -664,8 +1053,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "A Grade 1 content-matching item with one clear correct answer. The wrong choices use words from the text while changing the facts, and the explanation is consistent across all three languages. Pass.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "0896a6b440570971",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "약속에 늦은 이유를 묻는 1급 내용 일치 문항으로, 모든 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "0896a6b440570971",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-017",
@@ -706,8 +1118,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고, 꼴·급·해설이 모두 기준에 맞아 통과예요. 오답 1번이 조금 쉽게 지워지는 점은 사소해서 고치지 않아도 돼요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "44ab1ff26e1a97da",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "1급 난도 1의 이유 이해하기(TI-R-43) 문항으로 지문·보기·해설 모두 기준에 부합함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "44ab1ff26e1a97da",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-018",
@@ -813,8 +1248,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나로 분명하고 오답이 이유·때·사람을 바꾼 그럴듯한 보기입니다. 1급 수준과 이유 능력에 맞고 해설 세 언어도 일치해 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "d93f31685f7ffd35",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "1급 난도 1의 이유 이해하기(TI-R-43) 문항으로 모든 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "d93f31685f7ffd35",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-020",
@@ -855,8 +1313,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "일과의 순서를 묻는 1급 내용 일치 문항이에요. 정답이 하나뿐이고, 오답은 글의 순서를 바꿔 그럴듯하게 만들어졌어요. 세 언어 해설도 정확해서 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "8f61e33ce5fbbb28",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "1급 난도 1의 순서 이해하기(TI-R-43) 문항으로 지문·보기·해설 모두 적절함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "8f61e33ce5fbbb28",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-021",
@@ -897,8 +1378,42 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "held",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답은 분명하고 난도·유형도 맞습니다. 다만 4번 오답이 글에 없는 저녁 정보를 써서 순서 능력과 어긋나고, 정답이 글 문장을 그대로 옮겨 쉽게 드러나므로 보기를 손보면 쓸 수 있습니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "6c0c190fd9b98db5",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "1급 난도 1의 순서 이해하기(TI-R-43) 문항으로 모든 검수 기준을 통과함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "6c0c190fd9b98db5",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답 2번은 글과 분명히 맞고, 0번과 1번은 순서가 글과 어긋나서 쉽게 지워진다. 문제는 3번 「결혼식이 끝나고 저녁을 먹었습니다」이다. 글에는 점심만 나오고 저녁을 먹지 않았다는 말은 없다. 그래서 이 보기는 엄밀히 보면 「알 수 없음」으로 다툴 여지가 있고(기준 §5-1), 순서가 아니라 때(세부)를 바꾼 보기라서 대표 능력과도 어긋난다. 이 점은 A의 지적이 맞다. 다만 A가 제안한 「결혼식 전에 식당에서 점심을 먹었습니다」는 0번과 같은 주장(점심이 결혼식보다 먼저)이 되어 보기가 겹치므로, 다른 순서 오답으로 바꾼다. 정답이 글 문장을 그대로 옮긴 꼴이라 문장 맞춰 보기만으로 풀리는 점도 고치는 편이 낫다. 나머지 항목(유형·급·자연스러움·해설 세 언어·문화·기출 유사도)은 문제없다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "6c0c190fd9b98db5",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-022",
@@ -1004,8 +1519,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "순서 정보로 정답이 하나로 갈리고, 오답이 글의 말을 바꿔 그럴듯하며, 해설 세 언어가 일치해요. 그대로 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "76692361383b98a9",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "시간 표지(첫날·다음 날·셋째 날)와 연결 어미 '-고'를 활용해 선후 관계를 묻는 1급 내용 일치 문항으로 모든 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "76692361383b98a9",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-024",
@@ -1046,8 +1584,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "순서를 묻는 1급 내용 일치 문항으로 정답이 하나뿐이고 오답도 그럴듯해요. 해설 세 언어가 같은 근거를 말해요. 정답이 글을 그대로 옮긴 점만 사소한 아쉬움이라 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "e36a8c6f92973f04",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "집 청소 순서를 소재로 한 1급 내용 일치 문항으로 지문·보기·해설이 모두 기준에 부합함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "e36a8c6f92973f04",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-025",
@@ -1153,8 +1714,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고 조건 읽기를 정확히 겨눈 1급 내용 일치 문항이에요. 오답·해설 세 언어 모두 문제가 없어 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "5d4ac4ade4a607db",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "'-(으)면' 조건 문형과 어휘 재진술('다 하다' → '끝내다')을 적절히 활용한 1급 내용 일치 문항임.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "5d4ac4ade4a607db",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-027",
@@ -1195,8 +1779,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "held",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답이 하나뿐이고 글·보기·해설이 모두 좋습니다. 다만 글에 조건 표현이 없으므로 대표 능력을 condition에서 detail로 바꿔야 합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "2dafac1028e9b099",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix",
+          "notes": "문항 자체의 완성도는 높으나 지문과 보기에 조건('-(으)면') 표현이 없고 보조사 '만'을 통한 요일 한정·부정을 묻고 있어 skillId 조정이 필요함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "2dafac1028e9b099",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-028",
@@ -1237,8 +1844,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "held",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답이 하나뿐이고 보기·해설·난도 모두 좋아요. 다만 정답을 가르는 것이 때 정보(까지·요일)이므로 대표 능력을 조건에서 세부(ko.reading.detail)로 바꿔야 해요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "785fdd397bdf9f88",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix",
+          "notes": "문항 자체의 완성도와 해설은 좋으나, 조건 표현이 없는 기간·시점 파악 문항에 skillId가 ko.reading.condition으로 잘못 지정되어 있어 수정이 필요하다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "785fdd397bdf9f88",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-029",
@@ -1279,8 +1909,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "조건(화요일이면 5,000원, 다른 날 9,000원)을 읽는 1급 내용 일치 문항이다. 정답이 유일하고, 오답은 글과 어긋나게 잘 짜였으며, 해설 세 언어도 정확해 통과한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "65b7e4f94638abb9",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "조건 표현(-(으)면)을 활용해 정답이 하나로 명확히 갈리며 해설과 난도 모두 기준에 잘 맞는다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "65b7e4f94638abb9",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-030",
@@ -1322,8 +1975,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "안/못 부정의 범위를 묻는 1급 내용 일치 문항이에요. 정답이 하나뿐이고, 오답이 그럴듯하며, 세 언어 해설도 정확해서 그대로 써도 돼요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "8afd78f9b6cc1bd5",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "짧은 부정문과 긴 부정문의 대응을 잘 겨눈 깔끔한 문항이다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "8afd78f9b6cc1bd5",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-031",
@@ -1365,8 +2041,42 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "held",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답이 하나뿐이고 꼴·급·능력·난도가 모두 맞는 좋은 문항이에요. 해설 세 언어의 셋째 문장에 맞지 않는 인과(그래서/That is why/Тиймээс)가 있어, 2번 오답의 근거를 직접 짚도록 고치면 쓸 수 있어요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "5186f007f4c86964",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "1급 수준의 부정 표현 이해를 정확하게 측정하며 보기와 해설 모두 흠잡을 데 없다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "5186f007f4c86964",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "정답은 0번 하나뿐이에요. 1번은 「아직 못 읽어요」, 2번은 「제가 책을 읽고 아들은 들어요」, 3번은 「다섯 살」과 어긋나요. 자리의 꼴, 급(1급 앞쪽), 능력(부정 「못」), 난도 1도 맞아요. 다만 해설 셋째 문장이 걸려요. 바로 앞 문장(「못 읽어요」=「읽지 못합니다」)에 「그래서/That is why/Тиймээс」로 이어져 있어, 낱말이 같은 뜻이라서 엄마가 읽는다는 엉뚱한 인과로 읽혀요. 또 2번 오답의 직접 근거인 「제가 책을 읽고 아들은 들어요」를 짚지 않아요. 글 안의 인과(못 읽으니 부모가 읽음)와 섞여 학습자가 헷갈릴 수 있으므로, 검수자 A의 지적대로 고쳐서 내보내는 것이 맞아요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "5186f007f4c86964",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-032",
@@ -1407,8 +2117,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나로 분명하고 오답이 글의 말을 바꿔 그럴듯해요. 1급 난도 1에 맞고, 세 언어 해설도 같은 근거를 바르게 짚어서 그대로 써도 돼요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "dc3807644bfae843",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "1급 세부 정보 파악(TI-R-43) 문항으로 지문, 보기, 해설 모두 기준에 부합하여 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "dc3807644bfae843",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-033",
@@ -1449,8 +2182,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답이 글의 수와 자리만 바꾼 그럴듯한 보기라서, 1급 앞쪽 세부 정보 문항으로 그대로 쓸 수 있어요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "846573d5c67b735d",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "1급 세부 정보 파악(TI-R-43) 문항으로 정답 유일성, 오답 매력도, 해설 모두 우수하여 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "846573d5c67b735d",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-034",
@@ -1491,8 +2247,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고, 오답이 글과 분명히 어긋나며, 1급에 맞는 중심 생각 문항이에요. 해설 ko 첫 문장이 조금 어색하고 소재가 흔하다는 점만 사소해서 그대로 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "56139722211488bb",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "1급 중심 생각 파악(TI-R-46) 문항으로 지문 구성, 오답 설계, 다국어 해설 모두 기준에 부합하여 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "56139722211488bb",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-035",
@@ -1533,8 +2312,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 2번이 유일하고 1급 수준·꼴·해설이 모두 맞아요. 오답이 단순한 반대 진술이라 조금 쉽지만 학습자에게 해가 없어 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "d2951118b4209395",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "1급 중심 생각 파악(TI-R-46) 문항으로 지문, 보기, 해설 모두 기준을 충족하여 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "d2951118b4209395",
+          "packet": "expand-reading"
+        }
+      ]
     },
     {
       "id": "ti-r-a-036",
@@ -1575,8 +2377,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고 오답은 글과 분명히 어긋난다. 1급 앞쪽 낱말·문형이며 해설 세 언어도 일치한다. 그대로 써도 된다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "b92681d08ad14519",
+          "packet": "expand-reading"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "1급 중심 생각 찾기 유형에 맞고 어휘·문형·해설 모두 자연스럽고 정확하여 통과합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:26:44.397Z",
+          "rev": 1,
+          "hash": "b92681d08ad14519",
+          "packet": "expand-reading"
+        }
+      ]
     }
   ]
 }
