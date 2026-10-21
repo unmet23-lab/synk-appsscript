@@ -4,6 +4,8 @@
  *
  * 네이버: 크롬 확장(10-20)과 앱 안 브라우저(10-21) 둘 다 blog.naver.com을 안전 제한으로 막아 Claude가 올릴 수 없다.
  *   유호님이 직접 올릴 때 소제목·굵게·인용·목록을 다시 잡지 않도록, 원고 옆에 붙여넣기.html을 만든다.
+ *   그림은 data URI로 품어 「그림까지 한 번에 복사」 한 번에 붙게 한다(10-21 유호님 「웅」). 그래서 파일이 크고
+ *   언제든 다시 만들 수 있으니 저장소에는 올리지 않는다(.gitignore). 네이버가 data URI 그림을 받아 주지 않으면 「본문만 복사」로 붙이고 그림을 끌어다 놓는다.
  * 티스토리(--티스토리): 같은 내용을 다른 느낌으로 쓴 티스토리판을 편집기(TinyMCE)에 넣을 본문 HTML과 제목·카테고리·태그·그림 목록으로
  *   묶어 원고 옆 티스토리_편집기.json에 쓴다. 게시 세션은 이 값을 `tinymce.get('editor-tistory').setContent`로 넣고,
  *   〔그림 N〕 문단마다 그림을 올린다([현장 노트 · 티스토리](../docs/현장노트/브라우저_게시.md#티스토리)).
@@ -149,8 +151,16 @@ function blocks(body) {
   return out;
 }
 
-function naverHtml(bs) {
+const MIME = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif' };
+const dataUri = (file) => `data:${MIME[file.split('.').pop().toLowerCase()] || 'image/jpeg'};base64,${fs.readFileSync(path.join(DIR, file)).toString('base64')}`;
+
+// embed: 그림 자리에 그림 자체를 data URI로 넣는다(「그림까지 한 번에 복사」). 파일 주소 그림은 남의 사이트에 붙지 않아서다.
+function naverHtml(bs, embed = false) {
   return bs.map((b) => {
+    if (embed && b.t === 'img' && b.file) {
+      return `<p style="text-align:center"><img src="${dataUri(b.file)}" alt="${esc(b.caption || '')}"></p>`
+        + (b.caption ? `\n<p class="cap" style="text-align:center"><i>${inline(b.caption)}</i></p>` : '');
+    }
     switch (b.t) {
       case 'p': return `<p>${inline(b.text)}</p>`;
       case 'h': return `<h3>${inline(b.text)}</h3>`;
@@ -205,6 +215,7 @@ main{max-width:760px;margin:0 auto;padding:24px 16px 80px}
 ol{padding-left:20px;color:var(--soft)} h1{font-size:20px;margin:24px 0 8px}
 .bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}
 button{font:inherit;padding:6px 14px;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:6px;cursor:pointer}
+button+button{background:#fff;color:var(--ink)}
 button.done{background:#2e7d32;border-color:#2e7d32}
 .box{border:1px solid var(--line);border-radius:8px;padding:16px;margin:8px 0 24px}
 #body .mark{color:var(--accent);font-weight:bold} #body .cap{text-align:center;color:var(--soft)}
@@ -214,15 +225,17 @@ blockquote{margin:12px 0;padding:8px 14px;border-left:3px solid var(--line);back
 </style></head><body><main>
 <ol>
 <li>크롬에서 synkshift 블로그 글쓰기를 엽니다.</li>
-<li>「제목 복사」 → 제목 칸에, 「본문 복사」 → 본문에 붙여 넣습니다.</li>
-<li>빨간 「▶ 그림 N 자리」 줄마다 아래 그림 파일을 탐색기에서 끌어다 놓고, 그 줄을 지웁니다.</li>
+<li>「제목 복사」 → 제목 칸에 붙여 넣습니다.</li>
+<li>「그림까지 한 번에 복사」 → 본문에 붙여 넣습니다. 그림 ${bs.filter((b) => b.t === 'img').length}장이 다 보이면 4번으로 갑니다.<br>
+그림이 빠지면 본문을 지우고 「본문만 복사」로 다시 붙인 뒤, 빨간 「▶ 그림 N 자리」 줄마다 아래 그림 파일을 탐색기에서 끌어다 놓고 그 줄을 지웁니다.</li>
 <li>발행 → 카테고리 · 태그(「태그 복사」) · 전체 공개를 확인하고 발행합니다.</li>
 </ol>
 <h1>제목</h1>
 <div class="bar"><button data-copy="title">제목 복사</button></div>
 <div class="box" id="title">${esc(title)}</div>
 <h1>본문</h1>
-<div class="bar"><button data-copy="body">본문 복사</button></div>
+<div class="bar"><button data-copy="body-img">그림까지 한 번에 복사</button><button data-copy="body">본문만 복사</button></div>
+<template id="body-img">${naverHtml(bs, true)}</template>
 <div class="box" id="body">
 ${naverHtml(bs)}
 </div>
@@ -239,6 +252,7 @@ document.querySelectorAll('button[data-copy]').forEach(function (b) {
   b.addEventListener('click', function () {
     var el = document.getElementById(b.dataset.copy);
     var html = el.innerHTML, text = el.innerText;
+    if (el.tagName === 'TEMPLATE') { var d = document.createElement('div'); d.innerHTML = html; text = d.textContent; }
     function onCopy(e) { e.clipboardData.setData('text/html', html); e.clipboardData.setData('text/plain', text); e.preventDefault(); }
     document.addEventListener('copy', onCopy);
     var ok = document.execCommand('copy');
