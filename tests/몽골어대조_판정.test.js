@@ -53,7 +53,7 @@ test('실제 CLI 판정은 뜻 검토를 대기시키며 정상·정상 아님�
   const filename = path.resolve(__dirname, '../tools/몽골어대조.js');
   const source = fs.readFileSync(filename, 'utf8');
   for (const grammar of [JSON.stringify({ 판정: '정상', 이유: '' }), '판정: 정상 아님']) {
-    const logs = [], ledger = [];
+    const logs = [], ledger = [], pushed = [];
     const fakeProcess = { argv: ['node', filename, '안녕하세요', 'Сайн байна уу.'], env: {}, stdout: { isTTY: false }, exit(code) { throw new Error(`unexpected exit ${code}`); } };
     const fakeFs = {
       existsSync: () => true,
@@ -66,6 +66,8 @@ test('실제 CLI 판정은 뜻 검토를 대기시키며 정상·정상 아님�
       if (id === './모델정책.js') return { 기본용도: () => '글', 제미나이설정: () => ({ model: 'test-model', thinking_level: 'high' }), 제미나이키경로: () => 'test-key-file' };
       if (id === './lib/몽골어맞춤법.js') return { 맞춤법검사: async () => ({ 의심: [], 허용: [], 제안: {} }) };
       if (id === './lib/제미나이호출.js') return { 제미나이: async (_key, _model, _prompt, options) => options.schema ? grammar : '안녕하세요', 재시도가능: () => false };
+      // 공용 작업본에서 쓴 장부를 곧바로 올리는 도우미(10-21) — 시험에서는 부른 경로만 적는다
+      if (id === './lib/장부올리기.js') return { 장부올리기: async (paths) => { pushed.push([...paths]); return { 결과: '건너뜀', 이유: '시험' }; }, 장부올리기글: () => null };
       if (id === 'path' || id === 'crypto') return require(id);
       throw new Error(`unexpected dependency ${id}`);
     };
@@ -80,5 +82,6 @@ test('실제 CLI 판정은 뜻 검토를 대기시키며 정상·정상 아님�
     const outcome = require('../tools/몽골어출구.js').한판읽기(logs.join('\n'), fakeProcess.exitCode);
     assert.strictEqual(outcome.갈래, '검수');
     assert.strictEqual(ledger[0].사유, grammar.startsWith('{') ? '공식 앱 뜻 검토 대기' : '판정불능');
+    assert.deepStrictEqual(pushed, [['docs/_ops/몽골어검문.jsonl']], '장부를 적은 뒤 그 장부만 올리기를 부른다');
   }
 });
