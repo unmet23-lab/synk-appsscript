@@ -65,8 +65,8 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  // Help style and explanation length come from the account's choice when the host gives one
  // (world-learning-ui.mjs presentation()); the rest of WORLD's own answers stay as they are.
  const preferences=()=>{let values={},chosen={};try{values=getProgress().learningProfileValues?.()||{};}catch{}try{chosen=presentation?.()||{};}catch{}return {...values,...chosen};};
- // 「내 위치」 줄의 항목 수: 호스트가 Strata 지도에서 센 값(world-learning-ui.mjs positionTotal). 아직 못 받으면 TOPIK I 15개.
- const positionCount=()=>{let n=null;try{n=positionTotal?.();}catch{}return Number.isInteger(n)&&n>0?n:15;};
+ // 「내 위치」 줄의 항목 수: 호스트가 Strata 지도에서 센 값(world-learning-ui.mjs positionTotal). 아직 못 받으면 TOPIK I 16개(10-21부터).
+ const positionCount=()=>{let n=null;try{n=positionTotal?.();}catch{}return Number.isInteger(n)&&n>0?n:16;};
  const photo=(speaker,size='')=>friends[speaker]?`<img class="life-friend ${size}" src="${asset('home/'+friends[speaker].file)}" alt="${friends[speaker].name}" width="384" height="384">`:'';
  const cut=speaker=>friends[speaker]?`<img class="life-friend" src="${asset('tutors/'+friends[speaker].cut+'-기본.webp')}" alt="${friends[speaker].name}" width="480" height="480" decoding="async">`:'';
  function updateHome(){if(ended)return;try{const value=summary();home.updateLearning?.(value,{snapshot:getProgress().exportSnapshot(),lessons:LESSONS,preparePractice:prepareHomePractice,completePractice:completeTutorPractice,finishDay:finishTutorDay});onSummary(value);}catch{}}

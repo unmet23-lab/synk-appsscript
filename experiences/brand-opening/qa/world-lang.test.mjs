@@ -62,13 +62,13 @@ const {learningReason,activityReason}=require('../../../atlas/vellum.js');
 const STATUSES=['unseen','checking','practice','supported','recent-independent','review'];
 const strataSkills=()=>['topik-i','hangul'].flatMap(name=>JSON.parse(read(`../../../strata/maps/${name}.json`)).nodes.filter(node=>node.kind==='skill'));
 
-test('항목 이름 줄은 Strata 이름과 같다(TOPIK I 15 · 한글 만나기 2)',()=>{
+test('항목 이름 줄은 Strata 이름과 같다(TOPIK I 16 · 한글 만나기 2)',()=>{
  const skills=strataSkills();
- assert.equal(skills.length,17);
+ assert.equal(skills.length,18);
  for(const skill of skills)assert.equal(STRINGS[`position.skill.${skill.id}`]?.ko,skill.label_ko,skill.id);
 });
 
-test('Vellum 추천 이유는 여섯 꼴 × 17 항목 × 고른 목표 줄 있음·없음 모두 영어·몽골어로 바뀐다',()=>{
+test('Vellum 추천 이유는 여섯 꼴 × 18 항목 × 고른 목표 줄 있음·없음 모두 영어·몽골어로 바뀐다',()=>{
  const before=missingStrings().length;let count=0;
  for(const skill of strataSkills())for(const status of STATUSES)for(const goal of [false,true]){
   if(goal&&status==='unseen')continue; // activityReason은 처음 보는 항목에 이름을 붙이지 않는다.
@@ -80,7 +80,7 @@ test('Vellum 추천 이유는 여섯 꼴 × 17 항목 × 고른 목표 줄 있�
    assert.equal(got,want,`${code}: ${ko}`);assert.doesNotMatch(got,HANGUL,ko);count++;
   }
  }
- assert.equal(count,17*11*2);
+ assert.equal(count,18*11*2);
  assert.equal(missingStrings().length,before,'바뀐 문장은 빠진 말로 남지 않는다');
  assert.equal(tMessage(learningReason({status:'checking',label:'듣고 세부 정보 찾기'}),'en'),'Let’s check ‘Listening for details’ a little more.');
  assert.equal(tMessage(learningReason({status:'review',label:'소리 듣고 글자 찾기'}),'mn'),'«Авиаг сонсоод үсгийг олох» чадварыг дахин харах цаг боллоо.');
@@ -175,7 +175,7 @@ test('1판 표: 모든 줄에 ko·en·mn이 있고 값 자리가 같다',()=>{
 });
 
 test('영어·몽골어 칸에는 한글이 없고, 몽골어는 키릴로 쓴다(브랜드·약어만 라틴)',()=>{
- // 「TOPIK I」·「TOPIK II」는 시험 이름이다(내 위치 판의 TOPIK I 15개 항목, 쓰기 연습의 TOPIK II). PBT·IBT는 시험 방식의 공식 약어다(학습 목표 창).
+ // 「TOPIK I」·「TOPIK II」는 시험 이름이다(내 위치 판의 TOPIK I 16개 항목, 쓰기 연습의 TOPIK II). PBT·IBT는 시험 방식의 공식 약어다(학습 목표 창).
  const allowed=/\b(?:SYNK|ID|AI|WORLD|TOPIK(?: II| I)?|PBT|IBT|Google|Apple|Unity|PNG|O|X|3D)\b/g;
  const problems=[];
  for(const [key,entry]of Object.entries(STRINGS)){

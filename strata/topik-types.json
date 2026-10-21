@@ -1,9 +1,7 @@
 {
   "version": "topik-types-1",
   "note": "공식 TOPIK 문항 유형과 Strata 학습 항목의 대응(2026-10-20). 유형은 시험의 자리이고 능력이 아니다 — 한 유형이 여러 능력으로, 여러 유형이 한 능력으로 갈 수 있다. skills의 첫 값이 그 자리의 기본 능력이고, 나머지는 문항이 실제로 겨누는 것에 따라 고를 수 있는 능력이다. 번호 배치는 PBT 기준이며 제102회 공식 온라인 풀이의 발문 유형(외부조사 §1-3)과 널리 알려진 2014년 개편 뒤 구성을 맞춰 적었다. 회차마다 일부 번호의 발문이 바뀔 수 있다(uncertain 표시). 발문은 우리 말로 줄여 적었고 공식 문구를 옮기지 않았다.",
-  "pending": {
-    "ko.listening.response": "TOPIK I 지도에 더할 능력(듣고 알맞게 대답하기, TI-L-01·05). 말 랠리·카페 대답이 지금 detail·main으로 기록되는 것을 바로잡는다. WORLD 위치판 묶음(① 세션)이 올라간 뒤 지도에 넣고 여기서 지운다."
-  },
+  "pending": {},
   "sources": [
     "experiences/synk-world-app/qa/topik-personalization-review-20261020/외부조사_요약.md §1 (topik.go.kr PBT·IBT 안내, 2026 시행계획 공고, 쓰기 답안 작성 방법 2024-02-27)",
     "experiences/synk-world-app/qa/topik-personalization-review-20261020/3차_아스트라.md ③-D (시험 유형과 학습 능력은 같은 분류가 아니다)"
@@ -142,7 +140,7 @@
     { "source": "blank-slice", "types": ["TI-R-34"], "fit": "adapted", "note": "빈칸 4지 → 3D 베기. 문항 내용은 시험형 빈칸 그대로" },
     { "source": "entry-check", "types": ["TI-R-40"], "fit": "adapted", "note": "안내문 읽고 규칙 적용 — 시험은 「맞지 않는 것」 고르기, 게임은 통과·거절과 어긴 규칙 고르기" },
     { "source": "synk-town", "types": ["TI-R-43", "TI-R-46"], "fit": "adapted", "note": "짧은 안내 읽고 3지 고르기(시험은 4지)" },
-    { "source": "talk-rally", "types": ["TI-L-01", "TI-L-05"], "fit": "adapted", "note": "한마디 듣고 대답 카드 3장 중 고르기(시험은 4지). 지금 기록은 detail·main — ko.listening.response가 생기면 옮긴다" },
+    { "source": "talk-rally", "types": ["TI-L-01", "TI-L-05"], "fit": "adapted", "note": "한마디 듣고 대답 카드 3장 중 고르기(시험은 4지). 2026-10-21부터 ko.listening.response로 기록한다(그전 답은 detail·main에 남아 있다)" },
     { "source": "korean-runner", "types": ["TI-L-17"], "fit": "adapted", "note": "지시를 듣고 행동 셋 중 고르기" },
     { "source": "korean-rhythm", "types": ["TI-L-17"], "fit": "adapted", "note": "O/X(binary-choice) — 시험의 4지와 다른 응답 형식" },
     { "source": "korean-racing", "types": ["TI-L-17", "TI-R-34", "TI-R-40", "TI-R-55"], "fit": "adapted", "note": "그림 단계 낱말 듣기는 시험 유형이 없는 기초 능력(ko.listening.word). c04 이음말 빈칸은 TI-R-55 = ko.reading.grammar" }

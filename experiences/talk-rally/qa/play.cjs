@@ -261,7 +261,7 @@ async function run(browser, name, view) {
   const sum = await page.evaluate(() => window.__rally.summary());
   const fmt = (id) => { const sk = sum?.skills?.find((x) => x.id === id); return Object.entries(sk?.levels || {}).map(([d, l]) => { const f = l.formats?.['single-choice']; return f ? `난도${d}: ${f.status} n${f.n} 맞${f.correct}${f.assisted ? ` 도움${f.assisted}` : ''}` : `난도${d}: -`; }).join(', '); };
   const nTotal = (sum?.skills || []).filter((x) => x.id.startsWith('ko.listening.')).reduce((a, sk) => a + Object.values(sk.levels || {}).reduce((b, l) => b + (l.formats?.['single-choice']?.n || 0), 0), 0);
-  notes.push(`학습 기록 — 세부: ${fmt('ko.listening.detail')} / 핵심: ${fmt('ko.listening.main')}`);
+  notes.push(`학습 기록 — 듣고 알맞게 대답하기: ${fmt('ko.listening.response')}`);
   check(nTotal === 11, `혼자 고른 듣기 응답 수 ${nTotal} ≠ 11(기다리며 다시 듣기·글로 보기를 쓴 1개는 도움 응답)`);
   const stored = await page.evaluate(() => { try { const keys = Object.keys(localStorage).filter((k) => k.startsWith('synk.atlas.learning.v1')), raw = keys.map((k) => localStorage.getItem(k)).join(''); return { keys, bytes: raw.length, mine: (raw.match(/talk-rally\./g) || []).length }; } catch (e) { return String(e); } });
   check(stored.mine > 0, `공통 학습 기록에 말 랠리 문항이 없음 ${JSON.stringify(stored)}`);

@@ -85,7 +85,7 @@ const LEVEL_LABEL = { 1: '쉬운 말', 2: '조금 어려운 말' };
 const LEVELS = Object.fromEntries(Object.keys(SKILL_LABEL).map((id) =>
   [id, [...new Set(ITEMS.filter((x) => x.skill === id).map((x) => x.difficulty))].sort((a, b) => a - b)]));
 
-/** 공통 기록 요약에서 이 게임의 두 학습 항목 상태(같은 형식·듣기 기록만). 빈칸 베기와 같은 방식. */
+/** 공통 기록 요약에서 이 게임의 학습 항목 상태(같은 형식·듣기 기록만, 10-21부터 듣고 알맞게 대답하기 하나). 빈칸 베기와 같은 방식. */
 export function skillReport(summary, { focusSkillId = null } = {}) {
   if (!summary?.skills) return [];
   return Object.keys(SKILL_LABEL).map((id) => {

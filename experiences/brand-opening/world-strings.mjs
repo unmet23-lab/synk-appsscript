@@ -401,6 +401,7 @@ export default {
  'position.skill.ko.listening.reason':{ko:'듣고 이유 이해하기',en:'Listening for reasons',mn:'Сонсоод шалтгааныг ойлгох'},
  'position.skill.ko.listening.condition':{ko:'듣고 조건 이해하기',en:'Listening for conditions',mn:'Сонсоод нөхцөлийг ойлгох'},
  'position.skill.ko.listening.main':{ko:'듣고 핵심 이해하기',en:'Listening for the main point',mn:'Сонсоод гол санааг ойлгох'},
+ 'position.skill.ko.listening.response':{ko:'듣고 알맞게 대답하기',en:'Responding to what you hear',mn:'Сонсоод тохирох хариулт өгөх'},
  'position.skill.ko.reading.vocabulary':{ko:'낱말 뜻 읽기',en:'Reading word meanings',mn:'Үгийн утгыг ойлгож унших'},
  'position.skill.ko.reading.grammar':{ko:'조사·문형 읽기',en:'Reading particles and sentence patterns',mn:'Туслах үг, өгүүлбэрийн загварыг ойлгож унших'},
  'position.skill.ko.reading.detail':{ko:'읽고 세부 정보 찾기',en:'Reading for details',mn:'Уншаад нарийн мэдээллийг олох'},

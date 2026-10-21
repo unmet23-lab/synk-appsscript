@@ -21,7 +21,7 @@ function posProfile(summary){
  if(!posRecord(summary)||!Array.isArray(summary.skills)||typeof summary.evidenceComplete!=='boolean')throw TypeError('WORLD position needs a Core learning summary');
  return summary;
 }
-// Strata의 TOPIK I 항목(듣기 7·읽기 8)만, 지도에 나온 순서대로.
+// Strata의 TOPIK I 항목(듣기 8·읽기 8)만, 지도에 나온 순서대로.
 const posTopikSkills=summary=>posProfile(summary).skills.filter(skill=>TOPIK_SKILL.test(skill?.id||'')&&['listening','reading'].includes(skill.domain));
 
 // Trail 로그에서 Core가 근거로 든 시도(eventId)의 사실만 찾는다: 정오·시각·문항·어느 경험에서 냈는지. 도움·첫 노출의 해석은 Core 상태가 이미 했다.
@@ -123,7 +123,7 @@ export function buildPositionMap({summary,events=[],policy=POSITION_CORE_POLICY,
   total:skills.length,counts,skills,attention:posAttention(skills,prefer),learningEffectClaim:false,abilityClaim:false,grade:null};
 }
 
-// 짧은 진단: 15개 항목에 하나씩, 이 사람이 아직 본 적 없는 계열(familyKey)의 문항. 문항은 제품이 이미 가진
+// 짧은 진단: 항목(TOPIK I 16개)마다 하나씩, 이 사람이 아직 본 적 없는 계열(familyKey)의 문항. 문항은 제품이 이미 가진
 // TOPIK형 문항에서만 고르고 새로 만들지 않는다. 기록이 불완전하면 「처음 보는 문항」을 약속할 수 없어 열지 않는다.
 export const DIAGNOSTIC_POLICY=Object.freeze({version:'world-diagnostic-1',perSkill:1,
  // TOPIK 보기 고르기에 가까운 형식부터. 같은 형식이면 문항 id 순서로 늘 같은 것을 고른다.

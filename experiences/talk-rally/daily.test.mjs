@@ -1,7 +1,7 @@
 // 하루 도전: 날짜만으로 정하는 같은 12번, 그날의 카드 순서, 개인 기록(최고·판 수·연속 일수·최근 7일).
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ITEMS, SKILL_LABEL, ROUND_SIZE } from './content.mjs';
+import { ITEMS, KIND_LABEL, ROUND_SIZE } from './content.mjs';
 import { seoulDate as coinDate } from '../korean-racing/garage-core.js';
 import { seoulDate, addDays, weekday, dateSeed, dailyRound, dailyOptions, emptyRecords, normalizeRecords, recordDaily, streak, dailyStatus, recentDays, KEEP_DAYS } from './daily.mjs';
 
@@ -14,7 +14,7 @@ test('서울 날짜는 공통 코인의 하루와 같고, 날짜 셈·요일이 
   assert.equal(weekday('2026-10-07'), '수');
 });
 
-test('그날의 12번: 같은 날이면 같고, 날마다 다르며, 보통 판의 규칙(두 학습 항목 4개 이상, 쉬운 것부터)을 지킨다', () => {
+test('그날의 12번: 같은 날이면 같고, 날마다 다르며, 보통 판의 규칙(두 종류 4개 이상, 쉬운 것부터)을 지킨다', () => {
   const ids = (d) => dailyRound(d).map((x) => x.id).join();
   assert.equal(ids('2026-10-07'), ids('2026-10-07'));
   const days = Array.from({ length: 30 }, (_, i) => addDays('2026-10-01', i));
@@ -24,7 +24,7 @@ test('그날의 12번: 같은 날이면 같고, 날마다 다르며, 보통 판�
     const round = dailyRound(d);
     assert.equal(round.length, ROUND_SIZE);
     assert.equal(new Set(round.map((x) => x.id)).size, ROUND_SIZE, '같은 말이 두 번 나오지 않는다');
-    for (const skill of Object.keys(SKILL_LABEL)) assert.ok(round.filter((x) => x.skill === skill).length >= 4, `${d} ${skill}`);
+    for (const kind of Object.keys(KIND_LABEL)) assert.ok(round.filter((x) => x.kind === kind).length >= 4, `${d} ${kind}`);
     assert.ok(round.every((x, i) => i === 0 || round[i - 1].difficulty <= x.difficulty), `${d} 쉬운 것부터`);
     hard += round.filter((x) => x.difficulty === 2).length;
   }

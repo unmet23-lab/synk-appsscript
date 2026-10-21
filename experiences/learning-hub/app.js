@@ -3,20 +3,20 @@ const $ = id => document.getElementById(id);
 // Each entry names only ability/difficulty/format cells its game really has (catalog.test.mjs):
 // a cell no game can fill would stay "unseen" for ever and keep suggesting the same game.
 const catalog = [
-  { id: 'racing-reading', label: '읽기부터 짧게 확인하기', href: '/korean-racing/?learning=reading', skillIds: ['ko.reading.grammar','ko.reading.main'], difficulty: 1, modality: 'reading', responseFormat: 'single-choice' },
+  { id: 'racing-reading', label: '읽기부터 짧게 확인하기', href: '/korean-racing/?learning=reading', skillIds: ['ko.reading.grammar'], difficulty: 1, modality: 'reading', responseFormat: 'single-choice' },
   { id: 'racing-listening', label: '들리는 뜻 따라 달리기', href: '/korean-racing/?learning=listening', skillIds: ['ko.listening.detail'], difficulty: 1, modality: 'listening', responseFormat: 'single-choice' },
   { id: 'order', label: '주문의 조건을 듣고 준비하기', href: '/order-rush/', skillIds: ['ko.listening.negation'], difficulty: 2, modality: 'listening', responseFormat: 'cup-compose' },
   { id: 'rhythm', label: '다른 목소리로 뜻 확인하기', href: '/korean-rhythm/', skillIds: ['ko.listening.detail','ko.listening.negation'], difficulty: 1, modality: 'listening', responseFormat: 'binary-choice' },
   { id: 'reading-entry-check', label: '안내문을 읽고 손님 입장 검사하기', href: '/entry-check/', skillIds: ['ko.reading.detail','ko.reading.negation','ko.reading.condition'], difficulty: 1, modality: 'reading', responseFormat: 'single-choice' },
   { id: 'reading-story-classroom', label: '이야기를 읽고 친구들과 교실 정리하기', href: '/story-classroom/?reading=1', skillIds: ['ko.reading.detail'], difficulty: 1, modality: 'reading', responseFormat: 'action' },
   { id: 'reading-blank-slice', label: '빈칸에 맞는 낱말 베기', href: '/blank-slice/', skillIds: ['ko.reading.vocabulary','ko.reading.grammar'], difficulty: 1, modality: 'reading', responseFormat: 'single-choice' },
-  { id: 'talk-rally', label: '몽글의 말에 알맞은 대답 받아치기', href: '/talk-rally/', skillIds: ['ko.listening.detail','ko.listening.main'], difficulty: 1, modality: 'listening', responseFormat: 'single-choice' },
+  { id: 'talk-rally', label: '몽글의 말에 알맞은 대답 받아치기', href: '/talk-rally/', skillIds: ['ko.listening.response'], difficulty: 1, modality: 'listening', responseFormat: 'single-choice' },
 ];
 // The item families each entry can give (catalog.test.mjs keeps them equal to the games' items). Once every
 // family of an entry has been presented the game cannot give a new first try there, so Core puts it behind
 // entries that still can, instead of suggesting the same spent game for ever.
 const families = {
-  'racing-reading': ['korean-racing:c03q1:v1', 'korean-racing:c03q2:v1', 'korean-racing:c03q3:v1', 'korean-racing:c03q4:v1', 'korean-racing:c03q5:v1', 'korean-racing:c04q2:v1'],
+  'racing-reading': ['korean-racing:c03q1:v1', 'korean-racing:c03q2:v1', 'korean-racing:c03q3:v1', 'korean-racing:c03q4:v1', 'korean-racing:c03q5:v1', 'korean-racing:c04q1:v1', 'korean-racing:c04q2:v1', 'korean-racing:c04q3:v1', 'korean-racing:c04q4:v1', 'korean-racing:c04q5:v1'],
   'racing-listening': ['korean-racing:c01q1:v1', 'korean-racing:c01q2:v1', 'korean-racing:c01q3:v1', 'korean-racing:c01q4:v1', 'korean-racing:c01q5:v1', 'korean-racing:c02q1:v1', 'korean-racing:c02q2:v1', 'korean-racing:c02q3:v1', 'korean-racing:c02q4:v1', 'korean-racing:c02q5:v1'],
   'order': ['order-rush.o03.v1', 'order-rush.o07.v1', 'order-rush.o09.v1', 'order-rush.o11.v1', 'order-rush.r01.v1'],
   'rhythm': ['korean-rhythm:t0q0:v1', 'korean-rhythm:t0q1:v1', 'korean-rhythm:t0q2:v1', 'korean-rhythm:t0q3:v1', 'korean-rhythm:t0q4:v1'],

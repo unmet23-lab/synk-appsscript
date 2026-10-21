@@ -78,7 +78,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 노출을 모르면(null) 「처음 보는 문항」을 약속하지 않는다.
  const seenBy=coachNow=>item=>{try{return coachNow?coachNow.exposure(item).seen:null;}catch{return null;}};
  // TOPIK I 항목 수(Strata 지도 그대로 — 항목이 늘면 글도 따라간다).
- const topikTotal=()=>(engine.SKILLS||[]).filter(node=>node?.kind==='skill'&&/^ko\.(listening|reading)\.[a-z]+$/.test(node.id||'')).length||15;
+ const topikTotal=()=>(engine.SKILLS||[]).filter(node=>node?.kind==='skill'&&/^ko\.(listening|reading)\.[a-z]+$/.test(node.id||'')).length||16;
  // 쓰기 연습 후보: 호스트가 함수(지금 열 수 있는 것)나 목록으로 넘긴다.
  const writingList=()=>{let value=null;try{value=typeof writingPractice?.candidates==='function'?writingPractice.candidates():writingPractice?.candidates;}catch{value=null;}return Array.isArray(value)?value.filter(row=>row&&typeof row.id==='string'&&typeof row.route==='string'&&Number.isFinite(row.minutes)):[];};
  // 쓰기 후보의 한국어 이름(홈이 화면 언어로 바꾼다 · home.mjs planLabel).

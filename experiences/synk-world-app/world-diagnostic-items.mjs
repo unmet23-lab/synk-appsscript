@@ -83,8 +83,11 @@ function diagRacingItems(){
 // 짧은 진단에서 고를 수 있는 전체 묶음. selectDiagnostic(world-position.mjs)이 항목마다 새 계열 하나를 고른다.
 export const DIAGNOSTIC_ITEMS=Object.freeze([...diagRunnerItems(),...diagRhythmItems(),...diagBlankItems(),...diagTownItems(),...diagEntryItems(),...diagRacingItems()].map(item=>Object.freeze(item)));
 // 이 묶음이 아직 다루지 못하는 TOPIK I 항목과 까닭(보고용). 2026-10-20에 낱말 듣기(레이싱 그림 단계)와 읽기 이유·핵심
-// (싱크타운 읽기 확인에 새로 쓴 열두 문항)을 채워 지금은 비어 있다. 문항을 새로 쓰면 학습기준 §4·§7 제작 기준을 따른다.
-export const DIAGNOSTIC_GAPS=Object.freeze({});
+// (싱크타운 읽기 확인에 새로 쓴 열두 문항)을 채웠고, 10-21 지도에 넣은 듣고 알맞게 대답하기 하나가 남았다.
+// 문항을 새로 쓰면 학습기준 §4·§7 제작 기준을 따른다.
+export const DIAGNOSTIC_GAPS=Object.freeze({
+ 'ko.listening.response':'듣고 알맞게 대답하기(TI-L-01·05)는 2026-10-21에 지도에 넣은 항목이라 진단 묶음에 아직 문항이 없다. 말 랠리의 대답 카드 46문항이 이 항목이지만 녹음이 그 게임 폴더에만 있고, 문항 묶음(experiences/topik-items)의 대답 고르기는 검수 전 초안이다.',
+});
 const diagByKey=new Map(DIAGNOSTIC_ITEMS.map(item=>[item.itemKey,item]));
 // 근거 줄에 쓸 문항 첫머리(학습 내용이라 한국어 원문 그대로). 연습 이름은 화면이 화면 언어로 앞에 붙인다(world-position-ui.mjs).
 // 진단 묶음에 없는 문항은 null(화면이 연습 이름만 쓴다).

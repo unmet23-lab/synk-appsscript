@@ -50,16 +50,19 @@ test('공이 기다리는 동안 다시 듣기·글로 보기를 쓰면 도움�
   assert.throws(() => createExchange(g, byId('w04')).confirm('아무 말'), /보기에서/);
 });
 
-test('추천: 이어지는 말을 계속 틀리면 그쪽이 다음 연습으로 앞에 온다', () => {
+// 10-21부터 묻는 말에 대답·이어지는 말이 한 학습 항목(듣고 알맞게 대답하기)이라, 아틀라스는 둘 중 어느 쪽을 틀렸는지 가르지 않는다.
+// 같은 점수의 말끼리는 문항 id 순이고, 두 종류가 판마다 섞이는 것은 composeRound가 맡는다(core.test.mjs).
+test('추천: 대답을 여러 번 틀리면 듣고 알맞게 대답하기가 「조금 더 연습」이 되고, 결과에는 그 항목 한 줄이 다음 연습으로 나온다', () => {
   const g = coach();
   for (const id of ['f01', 'f02', 'f03', 'f04', 'f05']) { const x = createExchange(g, byId(id)); x.heard(true); x.confirm(byId(id).options[1]); }
   for (const id of ['r01', 'r02', 'r03', 'w01', 'w02']) { const x = createExchange(g, byId(id)); x.heard(true); x.confirm(byId(id).answer); }
   const ranked = rankItems(g, ITEMS);
   assert.ok(ranked?.order?.length > 0);
-  assert.equal(ranked.skillId, 'ko.listening.main');
+  assert.equal(ranked.skillId, 'ko.listening.response'); assert.equal(ranked.state, 'practice');
   const report = skillReport(g.summary(), { focusSkillId: ranked.skillId });
-  assert.equal(report.length, 2);
-  assert.equal(report.find((r) => r.id === 'ko.listening.main').tone, 'focus');
+  assert.equal(report.length, 1);
+  const { id, label, status, tone, n, correct } = report[0];
+  assert.deepEqual({ id, label, status, tone, n, correct }, { id: 'ko.listening.response', label: '듣고 알맞게 대답하기', status: 'practice', tone: 'focus', n: 10, correct: 5 });
 });
 
 test('기록을 못 쓰는 곳에서도 게임은 멈추지 않는다(기록 거절은 null)', () => {

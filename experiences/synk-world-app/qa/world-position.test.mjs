@@ -31,11 +31,11 @@ test('Core의 여섯 상태는 세 칸으로만 간다: 혼자 해냄 · 연습 
  assert.ok(Object.isFrozen(POSITION_POLICY)&&Object.isFrozen(POSITION_POLICY.cells));
 });
 
-test('처음 온 사람은 TOPIK I 15개 항목이 모두 「아직」이고, 약하다고 표시하지 않는다',()=>{
+test('처음 온 사람은 TOPIK I 16개 항목이 모두 「아직」이고, 약하다고 표시하지 않는다',()=>{
  const {coach}=coachFixture(),map=buildPositionMap({summary:coach.summary(),events:coach.events()});
- assert.equal(map.total,15);
- assert.deepEqual(map.counts,{independent:0,practicing:0,notyet:15});
- assert.equal(map.skills.filter(skill=>skill.domain==='listening').length,7);
+ assert.equal(map.total,16);
+ assert.deepEqual(map.counts,{independent:0,practicing:0,notyet:16});
+ assert.equal(map.skills.filter(skill=>skill.domain==='listening').length,8);
  assert.equal(map.skills.filter(skill=>skill.domain==='reading').length,8);
  assert.ok(map.skills.every(skill=>skill.cell==='notyet'&&skill.evidence.length===0));
  assert.equal(map.grade,null);assert.equal(map.abilityClaim,false);assert.equal(map.learningEffectClaim,false);
@@ -56,7 +56,7 @@ test('칸마다 Core가 읽은 근거 문항(맞음·틀림·도움 받음, 날�
  assert.equal(reading.status,'supported');assert.equal(reading.cell,'practicing');
  assert.equal(reading.evidence.length,1);assert.equal(reading.evidence[0].assisted,true);assert.equal(reading.evidence[0].verdict,'correct');
  assert.equal(word.status,'checking');assert.equal(word.cell,'practicing');
- assert.deepEqual(map.counts,{independent:1,practicing:3,notyet:11});
+ assert.deepEqual(map.counts,{independent:1,practicing:3,notyet:12});
  // 근거는 최신부터, 날짜·문항 열쇠·난도·응답 형식이 있다.
  for(const skill of [grammar,detail]){
   const times=skill.evidence.map(row=>Date.parse(row.at));
@@ -83,12 +83,12 @@ test('기록이 불완전하면 지도에 그 사실을 남기고, 진단은 열
  const {coach}=coachFixture({historyComplete:false}),summary=coach.summary();
  assert.equal(buildPositionMap({summary,events:coach.events()}).evidenceComplete,false);
  const plan=selectDiagnostic({summary,items:pool(),seen:item=>coach.exposure(item).seen});
- assert.equal(plan.status,'unavailable');assert.equal(plan.reason,'history.incomplete');assert.equal(plan.items.length,0);assert.equal(plan.missing.length,15);
+ assert.equal(plan.status,'unavailable');assert.equal(plan.reason,'history.incomplete');assert.equal(plan.items.length,0);assert.equal(plan.missing.length,16);
 });
 
 // 항목마다 문항 두 개(쉬운 것·조금 어려운 것)를 가진 가상 묶음. 실제 WORLD 묶음은 world-diagnostic-items.mjs가 만든다.
 function pool({skip=[]}={}){
- const ids=['ko.listening.word','ko.listening.detail','ko.listening.negation','ko.listening.sequence','ko.listening.reason','ko.listening.condition','ko.listening.main',
+ const ids=['ko.listening.word','ko.listening.detail','ko.listening.negation','ko.listening.sequence','ko.listening.reason','ko.listening.condition','ko.listening.main','ko.listening.response',
   'ko.reading.vocabulary','ko.reading.grammar','ko.reading.detail','ko.reading.negation','ko.reading.sequence','ko.reading.reason','ko.reading.condition','ko.reading.main'];
  return ids.filter(id=>!skip.includes(id)).flatMap(skillId=>[1,2].map(difficulty=>{const key=`qa.diag.${skillId.split('.').slice(1).join('-')}.${difficulty}`;
   return {id:key,itemKey:key,familyKey:key,skillId,modality:skillId.split('.')[1],difficulty,responseFormat:'single-choice',audioRequired:skillId.includes('listening')};}));
@@ -98,9 +98,9 @@ test('짧은 진단은 항목마다 하나씩, 이 사람이 처음 보는 계�
  const f=coachFixture(),items=pool();
  const plan=selectDiagnostic({summary:f.coach.summary(),items,seen:item=>f.coach.exposure(item).seen});
  assert.equal(plan.status,'ready');assert.equal(plan.policy,DIAGNOSTIC_POLICY.version);
- assert.equal(plan.items.length,15);assert.deepEqual(plan.missing,[]);
- assert.equal(new Set(plan.items.map(row=>row.skillId)).size,15,'항목당 하나');
- assert.equal(new Set(plan.items.map(row=>row.item.familyKey)).size,15,'계열이 겹치지 않음');
+ assert.equal(plan.items.length,16);assert.deepEqual(plan.missing,[]);
+ assert.equal(new Set(plan.items.map(row=>row.skillId)).size,16,'항목당 하나');
+ assert.equal(new Set(plan.items.map(row=>row.item.familyKey)).size,16,'계열이 겹치지 않음');
  assert.ok(plan.items.every(row=>row.item.skillId===row.skillId&&row.item.difficulty===1&&row.target===1),'처음에는 쉬운 난도부터');
  // 같은 입력이면 늘 같은 문항(시험·재현).
  assert.deepEqual(selectDiagnostic({summary:f.coach.summary(),items,seen:item=>f.coach.exposure(item).seen}).items.map(row=>row.item.id),plan.items.map(row=>row.item.id));
@@ -112,7 +112,7 @@ test('본 적 있는 계열은 다시 내지 않고, 다음에 다른 문항으�
  // 첫 진단에서 낸 문항을 실제로 제시하고 답한다(혼자 푼 첫 시도).
  for(const {item} of first.items){const pid=f.coach.present(item);if(item.modality==='listening')f.coach.delivery(pid,{audio:'completed'});f.coach.answer(pid,{correct:true,assessable:true});}
  const second=selectDiagnostic({summary:f.coach.summary(),items,seen});
- assert.equal(second.items.length,15);
+ assert.equal(second.items.length,16);
  const before=new Set(first.items.map(row=>row.item.familyKey));
  assert.ok(second.items.every(row=>!before.has(row.item.familyKey)),'두 번째 진단은 모두 다른 계열');
  assert.ok(second.items.every(row=>row.item.difficulty===2));
@@ -121,7 +121,7 @@ test('본 적 있는 계열은 다시 내지 않고, 다음에 다른 문항으�
  const spent=selectDiagnostic({summary:f.coach.summary(),items,seen});
  assert.equal(spent.items.length,0);assert.equal(spent.status,'unavailable');
  assert.ok(spent.missing.every(row=>row.reason==='all-seen'));
- assert.equal(third.items.length,15);
+ assert.equal(third.items.length,16);
 });
 
 test('혼자 해낸 난도 다음 난도의 새 문항을 먼저 고른다',()=>{
@@ -135,11 +135,11 @@ test('혼자 해낸 난도 다음 난도의 새 문항을 먼저 고른다',()=>
 test('문항이 없거나 소리를 못 쓰거나 노출을 모르면 채운 척하지 않고 모자란 항목으로 돌려준다',()=>{
  const f=coachFixture(),seen=item=>f.coach.exposure(item).seen;
  const lacking=selectDiagnostic({summary:f.coach.summary(),items:pool({skip:['ko.reading.main','ko.listening.reason']}),seen});
- assert.equal(lacking.items.length,13);
+ assert.equal(lacking.items.length,14);
  assert.deepEqual(lacking.missing,[{skillId:'ko.listening.reason',reason:'no-item'},{skillId:'ko.reading.main',reason:'no-item'}]);
  const quiet=selectDiagnostic({summary:f.coach.summary(),items:pool(),seen,audioAvailable:false});
  assert.equal(quiet.items.length,8);assert.ok(quiet.items.every(row=>row.item.modality==='reading'));
- assert.ok(quiet.missing.every(row=>row.reason==='audio'&&row.skillId.startsWith('ko.listening.')));assert.equal(quiet.missing.length,7);
+ assert.ok(quiet.missing.every(row=>row.reason==='audio'&&row.skillId.startsWith('ko.listening.')));assert.equal(quiet.missing.length,8);
  const unknown=selectDiagnostic({summary:f.coach.summary(),items:pool(),seen:()=>null});
  assert.equal(unknown.items.length,0);assert.ok(unknown.missing.every(row=>row.reason==='unknown'));
  const broken=selectDiagnostic({summary:f.coach.summary(),items:pool(),seen:()=>{throw Error('storage');}});

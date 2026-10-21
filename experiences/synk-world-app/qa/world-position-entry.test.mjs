@@ -1,5 +1,5 @@
 // 「내 위치」 입구(10-19 결정): world-learning-ui.mjs가 묶음(world-position-kit.mjs)을 받아 판을 여는지 —
-// 처음 온 손님은 15개 항목 지도와 짧은 진단, 「아직 못 읽어요」를 고른 사람은 한글 판, 학습 목표 창에는 「내 위치 보기」 한 줄.
+// 처음 온 손님은 16개 항목 지도와 짧은 진단, 「아직 못 읽어요」를 고른 사람은 한글 판, 학습 목표 창에는 「내 위치 보기」 한 줄.
 // 실제 Core 코치(atlas/game-browser.js)와 이 기기 저장소 흉내로 돈다. 화면 그리기는 home.showPanel이 받은 HTML로 본다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -23,15 +23,16 @@ function setup({reading=null,hangul=null,position=worldPosition,audio='available
  return {education,panels,storage,launched};
 }
 
-test('처음 온 손님: 15개 항목 지도 · 짧은 진단 15문항 · 예상 급수는 「아직」 · 이 기기 기록',async()=>{
+test('처음 온 손님: 16개 항목 지도 · 짧은 진단 15문항(대답하기는 아직 문항 없음) · 예상 급수는 「아직」 · 이 기기 기록',async()=>{
  const {education,panels}=setup();
  assert.equal(typeof education.position,'function');
  await education.position();
  const board=panels.at(-1);
  assert.equal(board.options.type,'life-position');assert.equal(board.options.nav,'packs','배우기 탭에 불이 들어온다');
- assert.equal(count(board.html,/<details class="wpos-skill"/g),15);
+ assert.equal(count(board.html,/<details class="wpos-skill"/g),16);
+ assert.match(board.html,/TOPIK I 16개 항목: 혼자 해냄 0 · 연습 중 0 · 아직 16/,'판 위 요약 줄도 지도의 항목 수(16)를 받는다');
  assert.match(board.html,/data-diagnostic="ready"/);assert.match(board.html,/처음 보는 문항 15개로 시작점을 정해요/);
- assert.doesNotMatch(board.html,/진단 문항이 아직 없는 항목/,'10-20부터 15개 항목 모두 진단 문항이 있다');
+ assert.match(board.html,/진단 문항이 아직 없는 항목 1개: 듣고 알맞게 대답하기</,'10-21 지도에 넣은 대답하기 하나만 진단 문항이 없다(world-diagnostic-items.mjs DIAGNOSTIC_GAPS)');
  assert.match(board.html,/data-estimate="too-early"/);assert.match(board.html,/아직 판단하기 일러요/);
  assert.match(board.html,/이 기기의 학습 기록으로 보여요/);
  assert.doesNotMatch(board.html,/data-position-incomplete/);
@@ -42,6 +43,7 @@ test('오늘 소리를 끈 사람은 듣기 문항 없이 읽기 진단만',asyn
  await education.position();
  assert.match(panels.at(-1).html,/처음 보는 문항 8개로 시작점을 정해요/);
  assert.match(panels.at(-1).html,/오늘은 소리를 끈 날이라 듣기 항목 7개는 빼요/);
+ assert.match(panels.at(-1).html,/진단 문항이 아직 없는 항목 1개/,'문항이 없는 대답하기는 소리 탓이 아니라 문항 없음으로 센다');
 });
 
 test('「아직 못 읽어요」를 고른 사람은 한글 판, 졸업하면 항목 지도',async()=>{
@@ -67,9 +69,9 @@ test('학습 목표 창: 「연습에서 본 것」 대신 「내 위치 보기�
  education.open();
  const goal=panels.at(-1).html;
  assert.match(goal,/<button type="button" class="life-row study-position-row" data-view="position">/);
- assert.match(goal,/내 위치 보기[\s\S]*TOPIK I 15개 항목: 혼자 해냄 0 · 연습 중 0 · 아직 15/);
+ assert.match(goal,/내 위치 보기[\s\S]*TOPIK I 16개 항목: 혼자 해냄 0 · 연습 중 0 · 아직 16/);
  assert.doesNotMatch(goal,/study-understanding|연습에서 본 것/);
- assert.equal(education.positionTotal(),15,'「배우기」 목록의 내 위치 줄(life-ui.mjs)도 같은 항목 수를 받는다');
+ assert.equal(education.positionTotal(),16,'「배우기」 목록의 내 위치 줄(life-ui.mjs)도 같은 항목 수를 받는다');
 });
 
 test('묶음을 받지 않은 화면은 내 위치를 열지 않는다',()=>{

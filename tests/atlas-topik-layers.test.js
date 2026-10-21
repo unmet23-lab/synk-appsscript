@@ -1,5 +1,5 @@
 'use strict';
-// The TOPIK I map's content layers: grammar and words under the fifteen abilities. Items can
+// The TOPIK I map's content layers: grammar and words under the sixteen abilities. Items can
 // name the words and grammar they use, and the engine tells which content was missed lately.
 const test = require('node:test');
 const assert = require('node:assert/strict');
@@ -12,7 +12,7 @@ const memory = () => { const data = new Map(); return { getItem: k => data.get(k
 
 test('the map holds abilities, grammar and words, and none of them claims a TOPIK grade', () => {
   const nodes = map.allNodes(), count = kind => nodes.filter(n => n.kind === kind).length;
-  assert.deepEqual([count('skill'), count('grammar_point'), count('word')], [15, 87, 2000]);
+  assert.deepEqual([count('skill'), count('grammar_point'), count('word')], [16, 87, 2000]);
   assert.equal(map.getNode('ko.word.w0001').label_ko, '사과');
   assert.equal(map.getNode('ko.word.w0001').level, null, 'a word band is source metadata, not a level');
   assert.equal(map.getNode('G209').level.basis, 'grammar_bank', 'a grammar step is the grammar bank order');

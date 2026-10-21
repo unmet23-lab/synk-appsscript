@@ -2197,12 +2197,12 @@ var SynkLearning = (() => {
   var require_topik_i = __commonJS({
     "strata/maps/topik-i.json"(exports, module) {
       module.exports = {
-        map_ver: "topik-i-practice-1-1165f6aa8121",
+        map_ver: "topik-i-practice-1-54d0f008ed26",
         subject: "ko",
         sources: {
           "practice-taxonomy": {
             path: "strata/topik-i.skills.json",
-            sha256: "8923b769ed247dd6628df276fdd5e8ddf421d863b012f42aa34bce4e324c1513"
+            sha256: "5816eb6adeadc9274ebbd9c17ef0ff96c77e17d38dee89ea86b014695b7501d3"
           },
           "practice-grammar": {
             path: "strata/topik-i.grammar.json",
@@ -2330,6 +2330,24 @@ var SynkLearning = (() => {
             id: "ko.listening.main",
             kind: "skill",
             label_ko: "듣고 핵심 이해하기",
+            domain: "listening",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko.listening.response",
+            kind: "skill",
+            label_ko: "듣고 알맞게 대답하기",
             domain: "listening",
             level: null,
             difficulty: {

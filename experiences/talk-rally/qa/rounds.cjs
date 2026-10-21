@@ -2,8 +2,8 @@
 // 말 랠리 네 판을 이어서 친다(헤드리스 크롬, 진짜 시간·진짜 음성). 원고를 늘린 뒤(10-03 26개 → 46개) 새 말이 실제 판에 나오고,
 // 처음에 틀린 사람도 다 맞히면 조금 어려운 말로 넘어가는지 본다.
 // 1판(처음): 쉬운 말부터 — 이어지는 말은 일부러 틀린다. 2~4판: 아틀라스 필요 순서로 — 모두 맞힌다.
-// 확인: 판마다 12개·두 학습 항목 4개 이상씩, 새 말과 조금 어려운 말이 나옴, 2판이 틀린 쪽(이어지는 말)을 앞에 둠,
-// 3판 뒤 다음 판 이유가 ‘조금 어려운 이어지는 말’로 넘어가고 4판에 실제로 나옴(쉬운 말이 학습 항목마다 15개라서 — content.mjs),
+// 확인: 판마다 12개·두 종류(묻는 말에 대답·이어지는 말) 4개 이상씩, 새 말과 조금 어려운 말이 나옴, 2판이 이어지는 말을 앞에 둠,
+// 3판 뒤 다음 판 이유가 ‘조금 어려운 이어지는 말’로 넘어가고 4판에 실제로 나옴(쉬운 말이 종류마다 15개라서 — content.mjs),
 // 음성 파일 응답이 모두 200, 결과 복습 12줄, 아틀라스 기록 수(서로 다른 말의 혼자 응답), 콘솔 오류 0,
 // 공통 코인(판마다 완주 15 + 정답 비율 × 10: 8/12는 22, 다 맞히면 25 → 네 판 97).
 // 쓰는 법: node experiences/talk-rally/server.mjs 를 켠 뒤  node experiences/talk-rally/qa/rounds.cjs [desktop|phone]
@@ -60,9 +60,9 @@ async function run(browser, name) {
     const log = await page.evaluate(() => ({ rows: document.querySelectorAll('#r-log li').length, listen: document.querySelectorAll('#r-log .say-again').length,
       next: document.querySelector('#r-next-reason').textContent, correct: document.querySelector('#r-correct').textContent, coins: document.querySelector('#r-coins')?.textContent }));
     const kinds = queue.map((id) => byId.get(id));
-    const skills = kinds.reduce((m, x) => (m[x.skill] = (m[x.skill] || 0) + 1, m), {});
+    const byKind = kinds.reduce((m, x) => (m[x.kind] = (m[x.kind] || 0) + 1, m), {});
     check(queue.length === 12 && new Set(queue).size === 12, `${round}판 12개 서로 다름 ${queue}`);
-    check(Object.values(skills).length === 2 && Object.values(skills).every((n) => n >= 4), `${round}판 두 학습 항목 4개 이상씩 ${JSON.stringify(skills)}`);
+    check(Object.values(byKind).length === 2 && Object.values(byKind).every((n) => n >= 4), `${round}판 두 종류 4개 이상씩 ${JSON.stringify(byKind)}`);
     check(log.rows === 12 && log.listen === 12, `${round}판 결과 복습 ${JSON.stringify(log)}`);
     check(end.results.length === 12, `${round}판 결과 ${end.results.length}`);
     rounds.push({ round, queue, added: queue.filter((id) => ADDED.includes(id)), d2: kinds.filter((x) => x.difficulty === 2).length,
@@ -77,7 +77,9 @@ async function run(browser, name) {
   // 1판에서 이어지는 말 4개를 틀려도 2·3판을 다 맞히면 조금 어려운 이어지는 말로 넘어간다(쉬운 말이 11개였을 땐 30일 동안 못 넘어갔다)
   check(rounds[2].next.includes('조금 어려운'), `3판 뒤 다음 판이 조금 어려운 말로 넘어감 — ${rounds[2].next}`);
   check(rounds[3].queue.some((id) => byId.get(id).kind === 'follow' && byId.get(id).difficulty === 2), `4판에 조금 어려운 이어지는 말 ${rounds[3].queue}`);
-  check(rounds[1].first4.filter((id) => byId.get(id).kind === 'follow').length >= 3, `2판 앞쪽에 1판에서 틀린 쪽(이어지는 말) ${rounds[1].first4}`);
+  // 10-21부터 두 종류가 한 학습 항목(듣고 알맞게 대답하기)이라 아틀라스는 틀린 쪽을 가르지 않는다. 같은 점수면 문항 id 순(f < r < w)이라
+  // 이어지는 말이 앞에 오는 것이고, 1판에서 틀린 쪽이라서가 아니다.
+  check(rounds[1].first4.filter((id) => byId.get(id).kind === 'follow').length >= 3, `2판 앞쪽에 이어지는 말 ${rounds[1].first4}`);
   check(rounds[0].queue.every((id) => byId.get(id).difficulty === 1), '1판(처음)은 쉬운 말만');
   check(voice.length > 0 && voice.every((v) => v.status === 200 || v.status === 206 || v.status === 304), `음성 응답 ${JSON.stringify(voice.filter((v) => ![200, 206, 304].includes(v.status)))}`);
   // 아틀라스는 같은 말(familyKey)의 첫 혼자 응답만, 학습 항목·난도 칸마다 최근 12개까지 센다(atlas/learning.js formatEvidence)

@@ -22,7 +22,7 @@ const experiences=fileURLToPath(new URL('../../',import.meta.url));
 const memory=()=>{const values=new Map();return {getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,String(value)),removeItem:key=>values.delete(key)};};
 let tick=Date.parse('2026-10-19T01:00:00Z');
 const coach=()=>worldLearning.engine.createGame({gameId:'world-home',storage:memory(),clock:()=>new Date(tick+=1000).toISOString()});
-const SKILLS=['ko.listening.word','ko.listening.detail','ko.listening.negation','ko.listening.sequence','ko.listening.reason','ko.listening.condition','ko.listening.main',
+const SKILLS=['ko.listening.word','ko.listening.detail','ko.listening.negation','ko.listening.sequence','ko.listening.reason','ko.listening.condition','ko.listening.main','ko.listening.response',
  'ko.reading.vocabulary','ko.reading.grammar','ko.reading.detail','ko.reading.negation','ko.reading.sequence','ko.reading.reason','ko.reading.condition','ko.reading.main'];
 
 test('묶음의 문항은 모두 그 게임의 메타 함수와 같은 열쇠다(새 문항을 만들지 않는다)',()=>{
@@ -91,10 +91,13 @@ test('할 일 지시(ask)는 빈칸 베기·입장 검사·레이싱 그림 고�
  }
 });
 
-test('15개 항목을 모두 다룬다(10-20 낱말 듣기·읽기 이유·읽기 핵심을 채움)',()=>{
+test('16개 항목 가운데 15개를 다루고, 못 다루는 항목은 까닭과 함께 적는다(10-20 낱말 듣기·읽기 이유·읽기 핵심을 채움 · 10-21 지도에 넣은 대답하기는 아직)',()=>{
  const covered=new Set(DIAGNOSTIC_ITEMS.map(item=>item.skillId));
+ const skills=require('../../../strata/topik-i.skills.json').skills.map(([id])=>id);
+ assert.deepEqual(SKILLS,skills,'이 시험의 항목 목록이 Strata 지도와 같다');
  assert.deepEqual(SKILLS.filter(id=>!covered.has(id)),Object.keys(DIAGNOSTIC_GAPS));
- assert.deepEqual(Object.keys(DIAGNOSTIC_GAPS),[]);
+ assert.deepEqual(Object.keys(DIAGNOSTIC_GAPS),['ko.listening.response']);
+ assert.ok(Object.values(DIAGNOSTIC_GAPS).every(reason=>typeof reason==='string'&&reason.length>20),'빈 항목마다 까닭이 있다');
  assert.equal(covered.size,15);
  // 읽기 이유·핵심은 싱크타운 읽기 확인의 새 갈래 — 다른 갈래처럼 여섯 계열이라 진단을 몇 번 다시 해도 새 문항이 있다.
  for(const skillId of ['ko.reading.reason','ko.reading.main'])assert.equal(DIAGNOSTIC_ITEMS.filter(item=>item.skillId===skillId&&item.source==='synk-town').length,6,skillId);
@@ -110,10 +113,10 @@ test('정답이 자리나 O/X 한쪽으로 쏠리지 않는다',()=>{
  assert.ok(first<DIAGNOSTIC_ITEMS.filter(item=>item.source==='blank-slice').length/2);
 });
 
-test('처음 온 사람의 진단은 15문항(항목당 하나·새 계열)이고 모자란 항목이 없다',()=>{
+test('처음 온 사람의 진단은 15문항(항목당 하나·새 계열)이고 모자란 항목은 아직 문항이 없는 대답하기 하나다',()=>{
  const c=coach(),plan=selectDiagnostic({summary:c.summary(),items:DIAGNOSTIC_ITEMS,seen:item=>c.exposure(item).seen});
- assert.equal(plan.status,'ready');assert.equal(plan.items.length,15);
- assert.deepEqual(plan.missing,[]);
+ assert.equal(plan.status,'ready');assert.equal(plan.items.length,15);assert.equal(plan.total,16);
+ assert.deepEqual(plan.missing,[{skillId:'ko.listening.response',reason:'no-item'}]);
  assert.equal(new Set(plan.items.map(row=>row.skillId)).size,15);
  // 같은 항목에 보기 고르기 문항이 있으면 O/X보다 먼저.
  for(const row of plan.items)if(['ko.listening.detail','ko.listening.negation'].includes(row.skillId))assert.equal(row.item.source,'korean-runner');
@@ -129,7 +132,7 @@ test('진단 한 바퀴: 답은 혼자 푼 첫 시도로 남고, 다음 진단�
  const results=session.results();
  assert.equal(results.length,15);assert.ok(results.every(row=>row.verdict==='correct'&&row.independent===true&&row.skipped===false));
  const map=buildPositionMap({summary:c.summary(),events:c.events()});
- assert.deepEqual(map.counts,{independent:0,practicing:15,notyet:0},'한 문항만으로는 혼자 해냄이 되지 않는다');
+ assert.deepEqual(map.counts,{independent:0,practicing:15,notyet:1},'한 문항만으로는 혼자 해냄이 되지 않는다(진단 문항이 없는 대답하기는 「아직」)');
  assert.ok(map.skills.filter(skill=>skill.cell==='practicing').every(skill=>skill.status==='checking'&&skill.evidence.length===1));
  const second=selectDiagnostic({summary:c.summary(),items:DIAGNOSTIC_ITEMS,seen:item=>c.exposure(item).seen});
  const used=new Set(first.items.map(row=>row.item.familyKey));

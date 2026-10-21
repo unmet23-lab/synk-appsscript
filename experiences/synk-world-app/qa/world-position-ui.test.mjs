@@ -32,21 +32,22 @@ test('화면 글은 화면 언어 표(position.*)에서 읽고 {이름}을 채�
  assert.throws(()=>createPositionView({}),TypeError,'t 없이는 그리지 않는다');
 });
 
-test('항목 이름 15개는 표의 한국어가 Strata 이름과 같고, 표에 없으면 Strata 이름 그대로',()=>{
+test('항목 이름 16개는 표의 한국어가 Strata 이름과 같고, 표에 없으면 Strata 이름 그대로',()=>{
  const strata=require('../../../strata/topik-i.skills.json').skills.filter(([id])=>/^ko\.(listening|reading)\./.test(id));
- assert.equal(strata.length,15);
+ assert.equal(strata.length,16);
  for(const [id,,label] of strata)assert.equal(STRINGS[`position.skill.${id}`]?.ko,label,id);
  assert.equal(view.skillName({id:'ko.reading.unknown',label:'새 항목'}),'새 항목');
  assert.equal(english.skillName({id:'ko.listening.detail',label:'듣고 세부 정보 찾기'}),'Listening for details');
 });
 
-test('판에는 15개 항목이 듣기 7·읽기 8로, 세 칸 수와 함께 그려진다',()=>{
+test('판에는 16개 항목이 듣기 8·읽기 8로, 세 칸 수와 함께 그려진다',()=>{
  const c=coach(),map=buildPositionMap({summary:c.summary(),events:c.events()});
  const html=view.renderPositionBoard({map});
- assert.equal(count(html,/<details class="wpos-skill"/g),15);
- assert.equal(count(html,/data-cell="notyet"/g),15+1,'항목 15 + 세 칸 수의 「아직」');
- assert.match(html,/TOPIK I 15개 항목: 혼자 해냄 0 · 연습 중 0 · 아직 15/);
- assert.match(html,/<section class="wpos-group" data-domain="listening"><h3>듣기 <span>7<\/span>/);
+ assert.equal(count(html,/<details class="wpos-skill"/g),16);
+ assert.equal(count(html,/data-cell="notyet"/g),16+1,'항목 16 + 세 칸 수의 「아직」');
+ assert.match(html,/TOPIK I 16개 항목: 혼자 해냄 0 · 연습 중 0 · 아직 16/);
+ assert.match(html,/<section class="wpos-group" data-domain="listening"><h3>듣기 <span>8<\/span>/);
+ assert.match(html,/data-skill="ko.listening.response"[^>]*><summary><span class="wpos-skill-name">듣고 알맞게 대답하기/);
  assert.match(html,/<section class="wpos-group" data-domain="reading"><h3>읽기 <span>8<\/span>/);
  assert.doesNotMatch(html,/data-position-incomplete/);
  assert.doesNotMatch(html,/급수[는은] [0-9]|합격입니다|grade/i);
@@ -77,7 +78,7 @@ test('진단 칸: 준비된 문항 수, 모자란 항목, 소리 끈 날을 알�
  const plan=selectDiagnostic({summary,items,seen:item=>c.exposure(item).seen,audioAvailable:false});
  const html=view.renderPositionBoard({map,plan});
  assert.match(html,/data-diagnostic="ready"/);assert.match(html,/처음 보는 문항 1개로 시작점을 정해요/);
- assert.match(html,/진단 문항이 아직 없는 항목 13개: 낱말 듣기 · /);
+ assert.match(html,/진단 문항이 아직 없는 항목 14개: 낱말 듣기 · /);
  assert.match(html,/소리를 끈 날이라 듣기 항목 1개는 빼요/);
  assert.equal(count(html,/class="felt-button"/g),1,'흰 알약은 한 화면에 하나');
  assert.match(english.renderPositionBoard({map,plan}),/1 question you haven’t seen before sets your starting point/,'영어 단수');

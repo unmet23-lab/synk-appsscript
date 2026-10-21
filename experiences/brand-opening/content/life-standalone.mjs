@@ -2219,12 +2219,12 @@ var require_topik_i_words = __commonJS({
 var require_topik_i = __commonJS({
   "strata/maps/topik-i.json"(exports, module) {
     module.exports = {
-      map_ver: "topik-i-practice-1-1165f6aa8121",
+      map_ver: "topik-i-practice-1-54d0f008ed26",
       subject: "ko",
       sources: {
         "practice-taxonomy": {
           path: "strata/topik-i.skills.json",
-          sha256: "8923b769ed247dd6628df276fdd5e8ddf421d863b012f42aa34bce4e324c1513"
+          sha256: "5816eb6adeadc9274ebbd9c17ef0ff96c77e17d38dee89ea86b014695b7501d3"
         },
         "practice-grammar": {
           path: "strata/topik-i.grammar.json",
@@ -2352,6 +2352,24 @@ var require_topik_i = __commonJS({
           id: "ko.listening.main",
           kind: "skill",
           label_ko: "\uB4E3\uACE0 \uD575\uC2EC \uC774\uD574\uD558\uAE30",
+          domain: "listening",
+          level: null,
+          difficulty: {
+            authored: null,
+            measured: null,
+            n: 0
+          },
+          source_refs: [
+            {
+              source: "practice-taxonomy",
+              selector: "skills"
+            }
+          ]
+        },
+        {
+          id: "ko.listening.response",
+          kind: "skill",
+          label_ko: "\uB4E3\uACE0 \uC54C\uB9DE\uAC8C \uB300\uB2F5\uD558\uAE30",
           domain: "listening",
           level: null,
           difficulty: {
@@ -14431,7 +14449,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       n = positionTotal?.();
     } catch {
     }
-    return Number.isInteger(n) && n > 0 ? n : 15;
+    return Number.isInteger(n) && n > 0 ? n : 16;
   };
   const photo = (speaker, size = "") => friends[speaker] ? `<img class="life-friend ${size}" src="${asset("home/" + friends[speaker].file)}" alt="${friends[speaker].name}" width="384" height="384">` : "";
   const cut = (speaker) => friends[speaker] ? `<img class="life-friend" src="${asset("tutors/" + friends[speaker].cut + "-\uAE30\uBCF8.webp")}" alt="${friends[speaker].name}" width="480" height="480" decoding="async">` : "";
@@ -16136,7 +16154,7 @@ function createWorldEducation({
       return null;
     }
   };
-  const topikTotal = () => (engine.SKILLS || []).filter((node) => node?.kind === "skill" && /^ko\.(listening|reading)\.[a-z]+$/.test(node.id || "")).length || 15;
+  const topikTotal = () => (engine.SKILLS || []).filter((node) => node?.kind === "skill" && /^ko\.(listening|reading)\.[a-z]+$/.test(node.id || "")).length || 16;
   const writingList = () => {
     let value = null;
     try {
@@ -18928,7 +18946,9 @@ function diagRacingItems() {
   });
 }
 var DIAGNOSTIC_ITEMS = Object.freeze([...diagRunnerItems(), ...diagRhythmItems(), ...diagBlankItems(), ...diagTownItems(), ...diagEntryItems(), ...diagRacingItems()].map((item) => Object.freeze(item)));
-var DIAGNOSTIC_GAPS = Object.freeze({});
+var DIAGNOSTIC_GAPS = Object.freeze({
+  "ko.listening.response": "\uB4E3\uACE0 \uC54C\uB9DE\uAC8C \uB300\uB2F5\uD558\uAE30(TI-L-01\xB705)\uB294 2026-10-21\uC5D0 \uC9C0\uB3C4\uC5D0 \uB123\uC740 \uD56D\uBAA9\uC774\uB77C \uC9C4\uB2E8 \uBB36\uC74C\uC5D0 \uC544\uC9C1 \uBB38\uD56D\uC774 \uC5C6\uB2E4. \uB9D0 \uB7A0\uB9AC\uC758 \uB300\uB2F5 \uCE74\uB4DC 46\uBB38\uD56D\uC774 \uC774 \uD56D\uBAA9\uC774\uC9C0\uB9CC \uB179\uC74C\uC774 \uADF8 \uAC8C\uC784 \uD3F4\uB354\uC5D0\uB9CC \uC788\uACE0, \uBB38\uD56D \uBB36\uC74C(experiences/topik-items)\uC758 \uB300\uB2F5 \uACE0\uB974\uAE30\uB294 \uAC80\uC218 \uC804 \uCD08\uC548\uC774\uB2E4."
+});
 var diagByKey = new Map(DIAGNOSTIC_ITEMS.map((item) => [item.itemKey, item]));
 function diagnosticLabel(itemKey) {
   const item = diagByKey.get(itemKey) || diagByKey.get(String(itemKey || "").replace(/:v\d+$/, ""));
