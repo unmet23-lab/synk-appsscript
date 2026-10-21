@@ -12,7 +12,7 @@ const REPO = path.resolve(HERE, '..', '..', '..', '..');
 const FOOD = 'docs/마케팅/synkbrief_AI음식사진_20261020';
 const FILES = {
   before: `${FOOD}/remotion/out/food-a-v3-phone.mp4`, // 고치기 전(v3 휴대폰판)
-  after: `${FOOD}/게시/food-a_upload.mp4`, // 고친 뒤(v4 공개 올림판)
+  after: `${FOOD}/remotion/out/food-a-v4-phone.mp4`, // 고친 뒤(v4 휴대폰판 — 고치기 전과 같은 압축끼리 견준다, Opus 완성본 검수 P2-1)
 };
 
 const bins = (file) => {

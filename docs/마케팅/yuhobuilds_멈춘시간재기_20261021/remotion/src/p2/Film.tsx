@@ -56,8 +56,12 @@ const ClipBar: React.FC<{ text: string; right?: string }> = ({ text, right }) =>
 
 /** 지금 자리 표시: a에 6프레임 켜지고 b에 6프레임 꺼진다. */
 const on = (f: number, a: number, b = Infinity) => ease(f, a, 6) * (b === Infinity ? 1 : 1 - ease(f, b, 6));
-const Ring: React.FC<{ k: number; r: number; pad?: number }> = ({ k, r, pad = 0 }) =>
-  k > 0 ? <div style={{ position: 'absolute', inset: -pad, borderRadius: r + pad, background: `rgba(245,196,69,${0.14 * k})`, boxShadow: `inset 0 0 0 2.5px rgba(245,196,69,${k})`, pointerEvents: 'none' }} /> : null;
+/** 지금 자리 테두리. 버터는 「거의 멈춘 칸」과 머리글 강조에만 쓰고, 테두리는 글색으로 그린다(dark: 어두운 판 위). */
+const Ring: React.FC<{ k: number; r: number; pad?: number; dark?: boolean }> = ({ k, r, pad = 0, dark }) => {
+  if (k <= 0) return null;
+  const c = dark ? '244,242,236' : '34,33,30';
+  return <div style={{ position: 'absolute', inset: -pad, borderRadius: r + pad, background: `rgba(${c},${0.06 * k})`, boxShadow: `inset 0 0 0 3px rgba(${c},${k})`, pointerEvents: 'none' }} />;
+};
 
 // ───────────── 0.5초 칸 띠 ─────────────
 /** values: 칸 값. upto: 몇 칸까지 칠했나(재생 위치). dark: 어두운 판 위. */
@@ -109,7 +113,7 @@ const HookView: React.FC<{ f: number; sceneStart: number }> = ({ f, sceneStart }
 /** 2. 약속: 재는 법 · 기준 둘 · 고치는 셋(글은 가림). */
 const PROMISE = [
   { t: '재는 법', s: 'AI한테 시킬 요청문 한 장' },
-  { t: '기준 둘', s: '멈춘 시간 15% 아래 · 1.5초 넘는 정지 없게' },
+  { t: '기준 둘', s: '멈춘 시간 15% 이하 · 1.5초 넘는 정지 없게' },
   { t: '고치는 셋', s: '당기기 · 낱말마다 한 곳 · 빈 화면 없애기' },
 ] as const;
 const CardHead: React.FC<{ save?: number }> = ({ save = 0 }) => (
@@ -177,7 +181,7 @@ const TerminalView: React.FC<{ f: number; sceneStart: number }> = ({ f, sceneSta
           if (i === 0) {
             return (
               <div key={i} style={{ position: 'relative', marginTop: 10, marginBottom: 6, padding: '4px 10px', marginLeft: -10, whiteSpace: 'normal', fontFamily: KO, fontWeight: 650, fontSize: 28, lineHeight: 1.4, color: INK }}>
-                <Ring k={sumK} r={10} />
+                <Ring k={sumK} r={10} dark />
                 <span style={{ position: 'relative' }}>{ln}</span>
               </div>
             );
@@ -250,7 +254,7 @@ const FreezeVoice: React.FC<{ f: number }> = ({ f }) => {
   return (
     <>
       <Clip src="clip/before.mp4" from={26.0} hold={0} sceneAt={VO.b3 - 2} crop={{ x: 0, y: 330, s: 0.62 }} top={BAR} h={H - BAR - 150} />
-      <ClipBar text="고치기 전 · 24.5~30.5초 그대로" right="화면 6.0초 정지" />
+      <ClipBar text="고치기 전 · 24.5~30.5초 · 거의 멈춤 6.0초" />
       <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 150, background: '#141412' }}>
         <div style={{ position: 'absolute', left: 32, top: 22, fontFamily: KO, fontWeight: 620, fontSize: 24, color: '#B6B3AB' }}>목소리</div>
         <div style={{ position: 'absolute', left: 32, right: 32, top: 60, height: 70, display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -269,7 +273,7 @@ const Pair: React.FC<{ f: number; sceneStart: number; from: number; label: strin
   const k = on(f, kAt - 2);
   const crop: Crop = { x: 0, y: 300, s: 0.44 };
   const tag = (text: string, good: boolean): React.ReactNode => (
-    <div style={{ position: 'absolute', bottom: 16, left: 14, padding: '5px 14px', borderRadius: 12, background: good && k > 0.5 ? BUTTER : '#1C1B19', color: good && k > 0.5 ? '#141412' : INK, fontFamily: KO, fontWeight: 700, fontSize: 24 }}>{text}</div>
+    <div style={{ position: 'absolute', bottom: 16, left: 14, padding: '5px 14px', borderRadius: 12, background: good && k > 0.5 ? INK : '#1C1B19', color: good && k > 0.5 ? '#141412' : INK, fontFamily: KO, fontWeight: 700, fontSize: 24 }}>{text}</div>
   );
   return (
     <>
@@ -282,7 +286,7 @@ const Pair: React.FC<{ f: number; sceneStart: number; from: number; label: strin
         <Clip src="clip/after.mp4" from={from} sceneAt={sceneStart} crop={crop} w={half - 1} top={BAR} h={H - BAR} />
         {tag('후', true)}
         <div style={{ position: 'absolute', left: 0, right: 0, top: BAR, bottom: 0 }}>
-          <Ring k={k} r={0} />
+          <Ring k={k} r={0} dark />
         </div>
       </div>
       <ClipBar text={label} />
@@ -319,8 +323,9 @@ const TwoStrips: React.FC<{ f: number }> = ({ f }) => {
 };
 
 /** 10~11. 요청문: 입력창에 쳐지고 → 보냄 → 카드. */
-const REQUEST = '이 영상을 0.5초 칸으로 나눠서 칸마다 앞 프레임과의 밝기 차이 평균을 재 줘. 차이가 거의 없는 칸이 이어지는 구간을 표로 보여 주고, 전체에서 그 시간이 몇 %인지, 1.5초 넘는 구간이 어디인지 알려 줘. 끝 화면은 따로 표시해 줘.';
-const TYPE_CPS = 2.2; // 프레임당 글자(약 66자/초)
+// 도구(tools/정지구간.js)의 셈 그대로 — 기준값·단위·크기를 다 적어야 어느 AI에 붙여도 같은 %가 나온다(Opus 완성본 검수 P1-2).
+export const REQUEST = "이 영상을 가로 270픽셀로 줄인 뒤, 프레임마다 앞 프레임과의 픽셀 밝기 차이(0~255)를 평균 내 줘. 그 값을 0.5초 칸마다 다시 평균 내고, 0.15보다 작은 칸을 '거의 멈춤'으로 봐 줘. 거의 멈춘 칸이 이어지는 구간을 표로 보여 주고, 전체에서 그 시간이 몇 %인지, 1.5초 넘는 구간이 어디인지 알려 줘. 끝 화면은 따로 표시해 줘.";
+const TYPE_CPS = 2.8; // 프레임당 글자(약 84자/초)
 const RequestView: React.FC<{ f: number; sceneStart: number }> = ({ f, sceneStart }) => {
   const n = Math.max(0, Math.min(REQUEST.length, Math.floor((f - sceneStart - 6) * TYPE_CPS)));
   const done = n >= REQUEST.length;
@@ -331,12 +336,12 @@ const RequestView: React.FC<{ f: number; sceneStart: number }> = ({ f, sceneStar
     <>
       <CardHead save={save} />
       <div style={{ position: 'absolute', left: 40, top: 160, fontFamily: KO, fontWeight: 700, fontSize: 28, color: UI_INK }}>① 재는 법 — 영상 파일을 열 수 있는 AI한테</div>
-      <div style={{ position: 'absolute', left: 32, right: 32, top: 210, height: 300, borderRadius: 20, background: sent ? '#2B2A26' : '#FFFFFF', boxShadow: sent ? undefined : `inset 0 0 0 1.5px ${RULE}`, padding: '20px 24px', fontFamily: KO, fontWeight: 560, fontSize: 27, lineHeight: 1.5, color: sent ? '#F4F2EC' : UI_INK, letterSpacing: '-0.01em' }}>
+      <div style={{ position: 'absolute', left: 32, right: 32, top: 206, height: 276, wordBreak: 'keep-all', borderRadius: 20, background: sent ? '#2B2A26' : '#FFFFFF', boxShadow: sent ? undefined : `inset 0 0 0 1.5px ${RULE}`, padding: '18px 24px', fontFamily: KO, fontWeight: 560, fontSize: 29, lineHeight: 1.45, color: sent ? '#F4F2EC' : UI_INK, letterSpacing: '-0.01em' }}>
         {REQUEST.slice(0, n)}
         {!done ? <span style={{ display: 'inline-block', width: 3, height: 30, background: UI_INK, verticalAlign: 'middle', marginLeft: 2 }} /> : null}
       </div>
-      <div style={{ position: 'absolute', left: 40, top: 534, fontFamily: KO, fontWeight: 700, fontSize: 26, color: UI_INK, opacity: ease(f, doneAt + 4, 8) }}>② 기준 — 멈춘 시간 15% 아래 · 1.5초 넘는 정지 없게</div>
-      <div style={{ position: 'absolute', left: 40, top: 584, fontFamily: KO, fontWeight: 700, fontSize: 26, color: UI_INK, opacity: ease(f, doneAt + 10, 8) }}>③ 고치기 — 당기기 · 낱말마다 한 곳 · 빈 화면 없애기</div>
+      <div style={{ position: 'absolute', left: 40, top: 512, fontFamily: KO, fontWeight: 700, fontSize: 26, color: UI_INK, opacity: ease(f, doneAt + 4, 8) }}>② 기준 — 멈춘 시간 15% 이하 · 끝 화면 말고 1.5초 넘는 정지 없게</div>
+      <div style={{ position: 'absolute', left: 40, top: 562, fontFamily: KO, fontWeight: 700, fontSize: 26, color: UI_INK, opacity: ease(f, doneAt + 10, 8) }}>③ 고치기 — 당기기 · 낱말마다 한 곳 · 빈 화면 없애기</div>
     </>
   );
 };
@@ -371,7 +376,7 @@ const SCENES: Scene[] = [
   { k: 'freeze', at: VO.b3 - 2, bg: '#141412', o: [476, 300] },
   { k: 'f1', at: VO.f1 - 2, bg: '#141412', o: [700, 340] },
   { k: 'f2', at: VO.f2 - 2, bg: '#141412', o: [700, 340] },
-  { k: 'f3', at: VO.f3 - 2, bg: FOOD_BG, o: [476, 340] },
+  { k: 'f3', at: VO.f3 - 2, bg: '#141412', o: [700, 340] },
   { k: 'two', at: VO.b5 - 2, bg: PAPER, o: [476, 400] },
   { k: 'req', at: VO.c0 - 2, bg: PAPER, o: [476, 300] },
 ];
@@ -394,19 +399,14 @@ const Content: React.FC<{ k: K; f: number; sceneStart: number }> = ({ k, f, scen
     case 'freeze':
       return <FreezeVoice f={f} />;
     case 'f1':
-      // 04 「만들지 말고, 다듬기」: 전은 사진이 그대로, 후는 사진이 천천히 당겨진다
-      return <Pair f={f} sceneStart={sceneStart} from={12.6} label="음식 사진 편 · 같은 순간" kAt={at('f1', '당기기')} />;
+      // 06 「결과 1」(20.1초~): 전은 사진이 그대로, 후는 같은 사진이 천천히 당겨진다(Opus 완성본 검수 P1-1 — 12.6초에서 시작하면 1.4초 뒤 요청문 장면으로 넘어갔다)
+      return <Pair f={f} sceneStart={sceneStart} from={20.1} label="음식 사진 편 · 같은 순간" kAt={at('f1', '당기기')} />;
     case 'f2':
       // 07 「확인 셋」: 전은 작은 칸 셋이 그대로, 후는 「양」·「재료」·「색」마다 그 자리로 당겨 들어간다
       return <Pair f={f} sceneStart={sceneStart} from={24.6} label="음식 사진 편 · 같은 순간" kAt={at('f2', '한')} />;
     case 'f3':
-      // 03 → 04 장면 사이: 들어오는 장면 글이 밀기 동안 이미 보인다(빈 화면 없음)
-      return (
-        <>
-          <Clip src="clip/after.mp4" from={11.3} sceneAt={sceneStart} crop={{ x: 0, y: 380, s: 0.6 }} top={BAR} h={H - BAR} />
-          <ClipBar text="고친 뒤 · 장면 사이" />
-        </>
-      );
+      // 전은 11.6~11.9초에 글자 없는 파란 화면, 후는 같은 순간 이미 「만들지 말고,」와 사진(Opus 완성본 검수 P2-2)
+      return <Pair f={f} sceneStart={sceneStart} from={10.6} label="음식 사진 편 · 장면 사이" kAt={at('f3', '빈')} />;
     case 'two':
       return <TwoStrips f={f} />;
     case 'req':
@@ -418,7 +418,8 @@ const Content: React.FC<{ k: K; f: number; sceneStart: number }> = ({ k, f, scen
 
 // ───────────── 판 + 밀기 ─────────────
 const push = (f: number, i: number) => {
-  const drift = Math.min(0.08, 0.0007 * Math.max(0, f - SCENES[i].at));
+  const cap = SCENES[i].k === 'req' ? 0.12 : 0.08; // 요청문 장면은 길어 1.08에 닿은 뒤 1.5초 멈췄다(Opus 완성본 검수 P3)
+  const drift = Math.min(cap, 0.0007 * Math.max(0, f - SCENES[i].at));
   const punch = interpolate(f - SAVE_AT, [0, 3, 10], [0, 0.015, 0], clamp);
   return 1 + drift + punch;
 };
@@ -464,7 +465,7 @@ const HEADS = (): Head[] => [
   { at: VO.f1 - 3, lines: ['하나, 멈춘 사진은', '천천히 당기기'], accent: '당기기' },
   { at: VO.f2 - 3, lines: ['둘, 말하는 낱말마다', '화면 한 곳'], accent: '한 곳' },
   { at: VO.f3 - 3, lines: ['셋, 장면 사이', '빈 화면 없애기'], accent: '없애기' },
-  { at: VO.b5 - 3, lines: ['같은 말, 같은 길이,', '24초에서 2초로'], accent: '2초로' },
+  { at: VO.b5 - 3, lines: ['같은 말, 같은 길이,', '24초에서 2.5초로'], accent: '2.5초로' },
   { at: VO.c0 - 3, lines: ['재는 건', 'AI한테 이렇게'], accent: '이렇게' },
   { at: VO.cta - 3, lines: ['저장해 두고', '올리기 전에 한 번'], accent: '저장해' },
 ];
@@ -481,14 +482,14 @@ const Heads: React.FC = () => {
 
 // ───────────── 판 아래 표시 ─────────────
 const LABEL: Record<K, string> = {
-  hook: '고치기 전 실제 판 · 0.5초 칸마다 잰 값',
+  hook: '끝에 재는 법·고치는 셋을 드려요',
   promise: '끝에 드리는 한 장',
   term: '실제 도구 출력',
   gauge: '실제 잰 값',
   freeze: '목소리는 흐르는데 화면은 그대로',
   f1: '왼쪽 고치기 전 · 오른쪽 고친 뒤',
   f2: '왼쪽 고치기 전 · 오른쪽 고친 뒤',
-  f3: '고친 뒤 실제 화면',
+  f3: '왼쪽 고치기 전 · 오른쪽 고친 뒤',
   two: '같은 도구로 잰 값',
   req: '저장해 두고 그대로 붙여 넣기',
 };

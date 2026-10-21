@@ -20,7 +20,7 @@ const 목록 = [
   ['docs/디자인/SNS키트/assets/logo-synk-paper.webp', 'img/logo-synk-paper.webp'],
   [`${SESSION}/assets/yuho-profile-800.webp`, 'img/yuho-profile.webp'],
   [`${FOOD}/remotion/out/food-a-v3-phone.mp4`, 'clip/before.mp4'],
-  [`${FOOD}/게시/food-a_upload.mp4`, 'clip/after.mp4'],
+  [`${FOOD}/remotion/out/food-a-v4-phone.mp4`, 'clip/after.mp4'], // 고치기 전 휴대폰판과 같은 압축
 ];
 for (const [from, to] of 목록) {
   const dst = path.join(OUT, to);

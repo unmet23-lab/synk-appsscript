@@ -8,19 +8,19 @@
   "제목": "42초 쇼츠, 재 보니 24초가 멈춰 있었어요 — 멈춘 시간 재는 법과 고치는 셋",
   "길이": "40.9초",
   "0초 훅": "42초 쇼츠를 재 보니, 24초가 멈춰 있었어요 + 고치기 전 실제 판을 16배로 훑으며 0.5초 칸 띠가 노랑(멈춤)으로 차오름",
-  "최종본": ["docs/마케팅/yuhobuilds_멈춘시간재기_20261021/remotion/out/still-v3_final.mp4"],
+  "최종본": ["docs/마케팅/yuhobuilds_멈춘시간재기_20261021/remotion/out/still-v5_final.mp4"],
   "판": [
     {
       "계정": "yuhobuilds-instagram",
-      "파일": "docs/마케팅/yuhobuilds_멈춘시간재기_20261021/remotion/out/still-v3_final.mp4",
-      "올리기판": "docs/마케팅/yuhobuilds_멈춘시간재기_20261021/remotion/out/still-v3_upload.mp4",
+      "파일": "docs/마케팅/yuhobuilds_멈춘시간재기_20261021/remotion/out/still-v5_final.mp4",
+      "올리기판": "docs/마케팅/yuhobuilds_멈춘시간재기_20261021/remotion/out/still-v5_upload.mp4",
       "시각": "2026-10-22T21:00+09:00",
       "게시글": "docs/마케팅/yuhobuilds_멈춘시간재기_20261021/게시/게시글.md"
     },
     {
       "계정": "yuhobuilds-youtube",
-      "파일": "docs/마케팅/yuhobuilds_멈춘시간재기_20261021/remotion/out/still-v3_final.mp4",
-      "올리기판": "docs/마케팅/yuhobuilds_멈춘시간재기_20261021/remotion/out/still-v3_upload.mp4",
+      "파일": "docs/마케팅/yuhobuilds_멈춘시간재기_20261021/remotion/out/still-v5_final.mp4",
+      "올리기판": "docs/마케팅/yuhobuilds_멈춘시간재기_20261021/remotion/out/still-v5_upload.mp4",
       "시각": "2026-10-22T21:00+09:00",
       "게시글": "docs/마케팅/yuhobuilds_멈춘시간재기_20261021/게시/게시글.md"
     }
