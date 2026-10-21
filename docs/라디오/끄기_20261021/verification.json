@@ -28,8 +28,47 @@
   "notDeleted": "VM, 30 GB disk, static address, /opt/synk-radio files, ended broadcasts, original crontab — nothing was deleted",
   "whyNotStopTheVm": "Company server A's watch.py audits the radio's server-independent backup receipt every 15 minutes; a stopped radio VM makes it RADIO_BACKUP_FAILED_OR_STALE after 26 hours (failure email every day) and suppresses A's own healthy heartbeat, which the absence policy also watches. e2-micro is the Compute Engine free tier (one per billing account in us-central1), so the backup keeps running at no compute cost.",
   "billing": {
-    "status": "pending — unmet23 has no access to the 77yuhbs billing account (013A36-17619E-CE0D07); granting 「결제 계정 사용자」 to unmet23 is a security setting that 유호님 does in the console",
-    "credit77yuhbs": { "remainingKRW": 169831.68, "originalKRW": 414984, "percent": 41, "expires": "2026-12-05", "readAt": "2026-10-21 (billing console, ego-browser authuser=4)" }
+    "status": "completed",
+    "completedAt": "2026-10-21T09:04:25.849Z",
+    "fromBillingAccountName": "billingAccounts/0161FA-7C996C-F1B948",
+    "billingAccountName": "billingAccounts/013A36-17619E-CE0D07",
+    "billingEnabled": true,
+    "permissionGrant": {
+      "actorAccount": "77yuhbs",
+      "memberAccount": "unmet23",
+      "role": "roles/billing.user",
+      "verifiedAt": "2026-10-21T09:02:23.694Z",
+      "otherPrincipalRoleBindingsPreserved": true,
+      "method": "Cloud Billing API setIamPolicy with the current etag; exact before/after binding comparison"
+    },
+    "transfer": {
+      "actorAccount": "unmet23",
+      "method": "ego-browser authuser=0: SYNK Radio Live → 결제 변경 → 내 결제 계정 → 계정 설정",
+      "consoleSuccess": "'SYNK Radio Live' 프로젝트를 다른 결제 계정으로 옮겼습니다."
+    },
+    "verification": {
+      "at": "2026-10-21T09:04:25.849Z",
+      "source": "Cloud Billing projects.getBillingInfo and Compute Engine instances.get (read-only API)",
+      "projectId": "synk-radio-live",
+      "vm": {
+        "name": "synk-radio-1",
+        "id": "7522586804800754188",
+        "status": "RUNNING",
+        "machineType": "e2-micro",
+        "zone": "us-central1-a"
+      },
+      "streamService": "inactive / disabled",
+      "backupTimer": "active / enabled",
+      "serviceStateSource": "ssh synk-radio systemctl show (read-only, 2026-10-21 after transfer)"
+    },
+    "credit77yuhbs": {
+      "remainingKRW": 169831.68,
+      "originalKRW": 414984,
+      "percent": 41,
+      "expires": "2026-12-05",
+      "readAt": "2026-10-21 (billing console, ego-browser authuser=4)"
+    },
+    "note": "Console IAM save remained at 정책 업데이트 중; no role grant was present in the server policy. Used the existing verified destination-account credential and the official API for the single authorized grant, preserving all other bindings. No billing disable, billing lock, account closure or resource deletion was performed."
   },
   "afterNotes": [
     "Links still point to https://www.youtube.com/@synkkorean/live (SYNK-website src/public-actions.js, talk src/라디오화면.js) and the @synkkorean description mentions SYNK Radio — left as they are because this is a pause; with no live broadcast the address shows the channel.",
