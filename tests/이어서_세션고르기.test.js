@@ -493,6 +493,64 @@ test('나누기: 곁 세션이 일하거나 이번에 깨울 대상이면 끊기
   assert.equal(칸(r, 부모4.sessionId), '곁세션대기', '자식이 유호님 차례면 부모도 건드리지 않는다');
 });
 
+test('나누기: 사이드바에 고정된 세션은 끊김 없이 끝났으면 깨우지도 보관하지도 않고(--전부여도), 한도·재시작으로 끊겼으면 지금처럼 깨운다', () => {
+  /* 10-21 「LORA 학습 진행 상황」 — 앱이 고정 세션의 보관을 거절해 「보관은 보류」를 남겼고, 일괄 재개마다 네 번 깨어났다. */
+  const 보관거절 = 완료({ title: '보관이 거절된 고정', isStarred: true });
+  const 사이드바부탁 = 기록({ title: '사이드바 보관을 부탁한 고정', isStarred: true });
+  const 깨끗한고정 = 완료({ title: '깨끗한 고정', isStarred: true });
+  const 한도고정 = 기록({ title: '한도 고정', isStarred: true, error: "You've hit your session limit", errorAt: 지금 - 20 * 분, lastTurnCutShort: true });
+  const 재시작고정 = 기록({ title: '재시작 고정', isStarred: true });
+  const 핀풂 = 완료({ title: '핀을 푼 세션', isStarred: false });
+  const 모두 = [보관거절, 사이드바부탁, 깨끗한고정, 한도고정, 재시작고정, 핀풂];
+  const 끝들 = new Map(모두.map((s) => [s.sessionId, { 종류: '끝남', 시각: 지금 - 60 * 분 }]));
+  끝들.set(한도고정.sessionId, { 종류: '한도', 시각: 지금 - 20 * 분, 글: "You've hit your session limit" });
+  끝들.set(재시작고정.sessionId, { 종류: '재시작', 시각: 지금 - 30 * 분 });
+  const 보고들 = new Map([
+    [보관거절.sessionId, 보고판(보관거절, '고정돼 있어서 앱이 보관을 거절했어요. 남아 있는 일은 없어요. 핀은 그대로 두고 보관은 보류했어요.')],
+    [사이드바부탁.sessionId, 보고판(사이드바부탁, '다 했어요. 보관하시려면 사이드바에서 고정을 풀고 보관해 주세요.')],
+    [깨끗한고정.sessionId, 보고판(깨끗한고정, 깨끗한보고)],
+    [핀풂.sessionId, 보고판(핀풂, 깨끗한보고)],
+  ]);
+  for (const 전부 of [false, true]) {
+    const r = 판(모두, 끝들, { 보고들, 전부 });
+    for (const s of [보관거절, 사이드바부탁, 깨끗한고정]) assert.equal(칸(r, s.sessionId), '고정', `${s.title}(--전부 ${전부})`);
+    assert.equal(r.고정.find((s) => s.id === 깨끗한고정.sessionId).이유, '사이드바 고정 — 마지막 차례가 끊김 없이 끝남');
+    assert.equal(칸(r, 한도고정.sessionId), '보냄');
+    assert.equal(r.보냄.find((s) => s.id === 한도고정.sessionId).이유, '사용량 한도로 끊김');
+    assert.equal(칸(r, 재시작고정.sessionId), '보냄');
+    assert.equal(r.보냄.find((s) => s.id === 재시작고정.sessionId).이유, '앱 재시작·계정 전환으로 끊김');
+    assert.equal(칸(r, 핀풂.sessionId), '보관', '핀을 풀면(isStarred: false) 지금처럼 바로 보관한다');
+  }
+});
+
+test('나누기: 고정 세션도 유호님 지시 대기·Stop·쌓인 곁 세션 쪽지·못 읽은 원문은 지금 칸대로 두고, 고정된 곁 세션이 있는 부모는 보관하지 않는다', () => {
+  const 승인고정 = 기록({ title: '승인 기다리는 고정', isStarred: true, turnWrapUp: { description: '준비됨', needsUser: '게시 승인' } });
+  const 멈춘고정 = 기록({ title: 'Stop한 고정', isStarred: true, lastTurnCutShort: true });
+  const 쪽지고정 = 완료({ title: '쪽지 쌓인 고정', isStarred: true, queuedSideSessionNotes: [{ sessionId: 'local_z' }] });
+  const 원문모름 = 기록({ title: '원문 모르는 고정', isStarred: true });
+  const 도구이름 = 기록({ title: 'pinned 칸으로 온 고정', pinned: true });
+  const 부모 = 완료({ title: '고정 곁 세션의 부모' });
+  const 고정자식 = 완료({ title: '고정된 곁 세션', isStarred: true, spawnedFrom: { sessionId: 부모.sessionId } });
+  const 쉬는부모 = 기록({ title: '쉬는 부모' });
+  const 고정자식2 = 기록({ title: '고정된 곁 세션2', isStarred: true, spawnedFrom: { sessionId: 쉬는부모.sessionId } });
+  const 모두 = [승인고정, 멈춘고정, 쪽지고정, 원문모름, 도구이름, 부모, 고정자식, 쉬는부모, 고정자식2];
+  const 끝들 = new Map(모두.filter((s) => s !== 원문모름).map((s) => [s.sessionId, { 종류: '끝남', 시각: 지금 - 60 * 분 }]));
+  끝들.set(멈춘고정.sessionId, { 종류: '멈춤', 시각: 지금 - 60 * 분 });
+  const 보고들 = new Map([부모, 고정자식, 쪽지고정].map((s) => [s.sessionId, 보고판(s, 깨끗한보고)]));
+  const r = 판(모두, 끝들, { 보고들 });
+  assert.equal(칸(r, 승인고정.sessionId), '유호님차례', '기다리는 것을 보고한다');
+  assert.equal(칸(r, 멈춘고정.sessionId), '직접멈춤');
+  assert.equal(칸(판(모두, 끝들, { 보고들, 전부: true }), 멈춘고정.sessionId), '보냄', 'Stop한 고정 세션은 --전부면 지금처럼 보낸다');
+  assert.equal(칸(r, 쪽지고정.sessionId), '보냄', '곁 세션 쪽지가 쌓였으면 깨워서 읽게 한다');
+  assert.equal(칸(r, 원문모름.sessionId), '보냄', '끝난 모양을 모르면 지금처럼 깨운다');
+  assert.equal(칸(r, 도구이름.sessionId), '고정', 'list_sessions가 쓰는 pinned 이름도 고정으로 읽는다');
+  assert.equal(칸(r, 고정자식.sessionId), '고정');
+  const 기다림 = r.곁세션대기.find((s) => s.id === 부모.sessionId);
+  assert.deepEqual(기다림.곁, ['고정된 곁 세션'], '앱은 고정된 곁 세션 아래 쉬는 세션을 같이 보관할 수 있어 부모를 보관하지 않는다');
+  assert.equal(기다림.이유, '완료로 끝남 — 고정된 곁 세션이 있어 보관하지 않음');
+  assert.equal(칸(r, 쉬는부모.sessionId), '보냄', '일을 끝낸 고정 곁 세션은 끊기지 않은 부모를 붙잡지 않는다');
+});
+
 test('나누기: 방금 끝난 세션·오래 쉰 세션·막 움직이는 세션·재시작 보정 줄·/loop 깨우기', () => {
   const 방금 = 기록({ lastActivityAt: 지금 - 4 * 분 });
   const 오래 = 기록({ lastActivityAt: 지금 - 8 * 일 });
@@ -789,6 +847,24 @@ test('실행: 기록·원문 폴더를 읽어 칸을 나누고, --busy·이 세�
   assert.equal(고르기.실행(['--self', 'local_ffffffff-0000-4000-8000-000000000000', '--busy', '', ...공통], {}).ok, false);
   assert.equal(고르기.실행(['--busy', '', ...공통], {}).ok, false);
   assert.throws(() => 고르기.실행(['--모름'], {}), /모르는 인자/);
+});
+
+test('실행: 앱 기록의 isStarred(사이드바 고정)를 읽어 일을 끝낸 고정 세션은 고정 칸에 두고, 핀을 풀면 지금처럼 고른다', (t) => {
+  const 바탕 = 임시폴더();
+  t.after(() => fs.rmSync(바탕, { recursive: true, force: true }));
+  const 기록폴더 = path.join(바탕, 'sessions', 'acct', 'org');
+  const 원문뿌리 = path.join(바탕, 'projects');
+  fs.mkdirSync(기록폴더, { recursive: true });
+  const 나 = 기록({ title: '이어서 실행' });
+  const 고정 = 기록({ title: '고정', isStarred: true, postTurnSummary: { status_category: 'completed', summarizes_uuid: 'u-고정' } });
+  const 핀풂 = 기록({ title: '핀 풂', isStarred: false });
+  for (const r of [나, 고정, 핀풂]) fs.writeFileSync(path.join(기록폴더, `${r.sessionId}.json`), JSON.stringify(r));
+  원문쓰기(원문뿌리, 고정, [사람('이어서 해'), { ...답('고정돼 있어서 보관이 거절됐어요. 보관은 보류했어요.'), uuid: 'u-고정' }]);
+  원문쓰기(원문뿌리, 핀풂, [사람('해 줘'), 답('다 했습니다.')]);
+  const 결과 = 고르기.실행(['--self', 나.sessionId, '--busy', '', '--기록', 기록폴더, '--원문', 원문뿌리, '--지금', new Date(지금).toISOString()], {});
+  assert.equal(결과.ok, true, JSON.stringify(결과));
+  assert.deepEqual(결과.고정.map((s) => s.제목), ['고정']);
+  assert.deepEqual(결과.보냄.map((s) => s.제목), ['핀 풂']);
 });
 
 test('원문 끝: 읽는 범위 끝까지 메시지가 없으면 빈 목록(모름)이다', (t) => {
