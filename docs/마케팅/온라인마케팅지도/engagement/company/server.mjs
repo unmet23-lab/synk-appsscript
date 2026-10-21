@@ -48,6 +48,7 @@ import { createPulseAutoReplyService } from './pulse-auto-reply.mjs';
 import { createClientIntake,discardIntakeFiles,serveIntakeFile } from './client-intake.mjs';
 import { createBrandQualityService } from './brand-quality-service.mjs';
 import { createStaticResponder, publicScriptAndStylePaths } from './static-response.mjs';
+import { createStaticSet } from './static-set.mjs';
 import { workroomGuide,workroomSource } from './workroom-guide.mjs';
 import { companyGuide } from './company-guide.mjs';
 import { createStudioService } from './studio-service.mjs';
@@ -174,11 +175,13 @@ export function createCompanyApp(options={}) {
     try{integrationConfig=JSON.parse(readFileSync(integrationFile,'utf8'));}catch{throw new Error('사내 앱 통합 설정을 읽을 수 없습니다.');}
   }
   const messengerDataDir=options.messengerDataDir??integrationConfig.messengerDataDir??process.env.MESSENGER_DATA_DIR??((options.dataDir||options.store)?join(store.directory,'messenger'):resolve(here,'../../../../../tools/company-messenger/data'));
+  // Screen files may come from a host static set (deploy/static/README.md); server-read files never do.
+  const staticSet=options.staticSet??createStaticSet({root:options.staticRoot??process.env.SYNK_COMPANY_STATIC_ROOT??'',repository:resolve(here,'../../../../..')});
   let messenger,clientNotifications,automationNotifications,socialPublishing,socialMarketing;
   const synkIdentity=createSynkIdentity({store,origin,config:options.synkIdentityConfig===undefined?synkIdentityConfig():options.synkIdentityConfig,fetch:options.synkIdentityFetch,verifyIdentity:options.synkIdentityVerifier,now:options.synkIdentityNow,onRevoked:()=>messenger?.disconnectRevoked(),clientAddress});
   const teaching=createTeachingService({store,origin,config:options.teachingConfig===undefined?teachingServiceConfig():options.teachingConfig,fetch:options.teachingFetch,now:options.teachingNow,clientAddress});
   const customerIdentity=createCustomerIdentity({store,origin,config:options.synkCustomerIdentityConfig===undefined?customerIdentityConfig():options.synkCustomerIdentityConfig,fetch:options.synkCustomerIdentityFetch,now:options.synkCustomerIdentityNow,clientAddress});
-  messenger=createMessenger({dataDir:messengerDataDir,staticResponderFactory:createStaticResponder,driveStorage:options.messengerDriveStorage,voice:options.messengerVoice,basePath:'/messenger',platformUrl,backgroundJobsEnabled,workNotificationsEnabled,integration:{
+  messenger=createMessenger({dataDir:messengerDataDir,staticResponderFactory:createStaticResponder,publicDirectory:directory=>staticSet.directory(directory),driveStorage:options.messengerDriveStorage,voice:options.messengerVoice,basePath:'/messenger',platformUrl,backgroundJobsEnabled,workNotificationsEnabled,integration:{
     origin,identityLinks:options.messengerIdentityLinks??integrationConfig.identityLinks??[],
     listUsers:()=>store.all('users'),listTeams:()=>store.all('teams'),workspaceName:()=>store.get('settings','company')?.companyName||'SYNK',
     notifications:{
@@ -778,8 +781,14 @@ export function createCompanyApp(options={}) {
   }
   const respondStatic=createStaticResponder();
   // Only assets directly named by the public workspace entry may be immutable.
-  const versionedCompanyAssets=publicScriptAndStylePaths(readFileSync(join(here,'public/index.html')),'/');
-  versionedCompanyAssets.delete('/notification-sw.js');
+  // A new static set may name new ones, so the list follows the entry being served.
+  let versionedEntry=null,versionedCompanyAssets=new Set();
+  function companyVersionedAssets(){
+    let entry=staticSet.file(join(here,'public/index.html'));if(entry===versionedEntry)return versionedCompanyAssets;
+    let content;try{content=readFileSync(entry);}catch(error){if(entry===join(here,'public/index.html'))throw error;entry=join(here,'public/index.html');content=readFileSync(entry);}
+    const next=publicScriptAndStylePaths(content,'/');next.delete('/notification-sw.js');versionedEntry=entry;versionedCompanyAssets=next;return next;
+  }
+  companyVersionedAssets();
   function responseHeaders(type){return{'Content-Type':type,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','X-Frame-Options':'DENY','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; connect-src 'self'; frame-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"};}
   function writeResponse(res,status,body,type='application/json; charset=utf-8'){res.writeHead(status,responseHeaders(type));res.end(type.startsWith('application/json')?JSON.stringify(body):body);}
   function send(res,status,body,type='application/json; charset=utf-8'){messenger.disconnectRevoked();writeResponse(res,status,body,type);}
@@ -923,6 +932,7 @@ export function createCompanyApp(options={}) {
     if(path==='/pulse'||path==='/pulse/'){if(!['GET','HEAD'].includes(method))throw httpError('PULSE 주소를 확인해 주세요.',405);res.writeHead(302,{Location:'/pulse-app/'+url.search,'Cache-Control':'no-store','Referrer-Policy':'no-referrer'});return res.end();}
     if(path.startsWith('/messenger/'))return await messenger.handler(req,res);
     if(method==='GET'&&path==='/api/health')return send(res,ready?200:503,{ok:ready,app:'synk-company',version:1,workspaceIntegration:true,ready});
+    if(method==='GET'&&path==='/api/static-set')return send(res,200,staticSet.status());
     let auth=identityControl?rawSession(req):session(req),user=auth?.user;
     if(method==='GET'&&path==='/api/synk-id/status')return send(res,200,synkIdentity.status(auth));
     if(method==='GET'&&path==='/api/me')return send(res,200,{user:publicUser(user),csrfToken:auth?.body.csrfToken,synkUserId:auth?.body.synkIdentity||null,needsSetup:store.all('users').length===0,platformUrl});
@@ -1796,7 +1806,7 @@ export function createCompanyApp(options={}) {
     files['/device-notifications.js']=['public/device-notifications.js','text/javascript; charset=utf-8'];
     files['/device-notifications.css']=['public/device-notifications.css','text/css; charset=utf-8'];
     files['/notification-sw.js']=['public/notification-sw.js','text/javascript; charset=utf-8'];
-    if(['GET','HEAD'].includes(method)&&files[path]){const [file,type]=files[path];messenger.disconnectRevoked();const headers=responseHeaders(type);if(['/social-review','/social-review.js','/social-review.css'].includes(path))headers['Content-Security-Policy']="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' blob:; media-src 'self' blob:; base-uri 'none'; frame-ancestors 'none'; form-action 'self'";if(path==='/teacher-world/'){headers['X-Frame-Options']='SAMEORIGIN';headers['Content-Security-Policy']=headers['Content-Security-Policy'].replace("frame-ancestors 'none'","frame-ancestors 'self'");}return await respondStatic(req,res,{path:join(here,file),type,headers,versioned:versionedCompanyAssets.has(path),...(path==='/'?{transformHTML:content=>respondStatic.versionHTML(content,{documentPath:'/',resolveAsset:urlPath=>versionedCompanyAssets.has(urlPath)&&files[urlPath]?join(here,files[urlPath][0]):null})}:{})});}
+    if(['GET','HEAD'].includes(method)&&files[path]){const [file,type]=files[path];messenger.disconnectRevoked();const headers=responseHeaders(type);if(['/social-review','/social-review.js','/social-review.css'].includes(path))headers['Content-Security-Policy']="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' blob:; media-src 'self' blob:; base-uri 'none'; frame-ancestors 'none'; form-action 'self'";if(path==='/teacher-world/'){headers['X-Frame-Options']='SAMEORIGIN';headers['Content-Security-Policy']=headers['Content-Security-Policy'].replace("frame-ancestors 'none'","frame-ancestors 'self'");}return await respondStatic(req,res,{path:staticSet.file(join(here,file)),type,headers,versioned:companyVersionedAssets().has(path),...(path==='/'?{transformHTML:content=>respondStatic.versionHTML(content,{documentPath:'/',resolveAsset:urlPath=>companyVersionedAssets().has(urlPath)&&files[urlPath]?staticSet.file(join(here,files[urlPath][0])):null})}:{})});}
     throw httpError('페이지를 찾을 수 없습니다.',404);
   }catch(e){const failure=publicRequestError(e,{production});if(res.headersSent){res.destroy();return;}writeResponse(res,failure.status,{error:safeError(failure.message),...(typeof e.code==='string'&&(/^(?:SYNK|TEACHING)_[A-Z0-9_]{1,80}$/.test(e.code)||e.replySafe&&['EXISTING_REPLY_REQUIRES_CONFIRMATION','REPLY_HISTORY_CHANGED'].includes(e.code))?{code:e.code}:{})});}});
   function listen(listener,listenPort,listenHost){

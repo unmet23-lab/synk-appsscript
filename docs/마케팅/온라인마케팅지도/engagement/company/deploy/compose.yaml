@@ -25,6 +25,8 @@ services:
       SYNK_COMPANY_REQUIRE_EXISTING_DATA: "1"
       MESSENGER_DATA_DIR: /data/messenger
       SYNK_COMPANY_TRUSTED_PROXY_IPS: "172.30.77.3"
+      # Screen files come from the current static set when one is valid (static/README.md).
+      SYNK_COMPANY_STATIC_ROOT: /static
     networks:
       edge:
         ipv4_address: 172.30.77.2
@@ -39,6 +41,13 @@ services:
       - type: bind
         source: ${COMPANY_BACKUP_DIR:-/srv/synk/backups}
         target: /backups
+        bind:
+          create_host_path: false
+      # The static root lives on the persistent disk, so it follows the writer on failover.
+      - type: bind
+        source: ${SYNK_COMPANY_STATIC_DIR:-/srv/synk/static}
+        target: /static
+        read_only: true
         bind:
           create_host_path: false
     logging:

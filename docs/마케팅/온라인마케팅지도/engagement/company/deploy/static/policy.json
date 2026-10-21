@@ -1,0 +1,29 @@
+{
+  "schema": "synk-company-static-policy/v1",
+  "note": "Browser-only files that may move to the host static set. Anything a server module imports or reads stays image-only; policy.test enforces it.",
+  "include": [
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/**",
+    "tools/company-messenger/public/**",
+    "experiences/teacher-world/**",
+    "experiences/synk-world-app/topik4-homework.json",
+    "experiences/atlas-lab/**",
+    "experiences/learning-hub/**",
+    "experiences/korean-rhythm/**",
+    "experiences/order-rush/learning.mjs",
+    "atlas/ask.js",
+    "docs/마케팅/맞춤도구/computer/rules.js",
+    "docs/마케팅/맞춤도구/assets/computer-art-*.webp",
+    "docs/브랜드_폰트/InterTight/InterTight-Regular.ttf",
+    "docs/브랜드_폰트/InterTight/InterTight-SemiBold.ttf",
+    "docs/브랜드_폰트/DM_Mono/DMMono-Regular.ttf"
+  ],
+  "exclude": [
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/publish-rules.js",
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/subtitle-lab.js",
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/casting-catalog.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/demo-assets/**",
+    "experiences/atlas-lab/interpretation.mjs",
+    "experiences/atlas-lab/model-extraction.mjs"
+  ],
+  "directories": ["tools/company-messenger/public"]
+}
