@@ -109,6 +109,12 @@ function 벌텍스캐시식별자(파일, 프로젝트, t) {
     .digest('hex').slice(0, 24);
 }
 
+// 캐시 토큰을 내줄 때 남아 있어야 할 시간. 기본 2분이고, 받은 토큰 하나로 오래 도는 원격 작업기에 넘기는 쪽은
+// SYNK_VERTEX_TOKEN_MIN_LEFT_MS로 올린다(2026-10-21 이력 18 격리 복원이 도중 만료로 보류 — 재무장 사슬이 30분을 넘긴다).
+function 벌텍스토큰최소남은ms(env = process.env) {
+  return Math.max(120_000, Number(env.SYNK_VERTEX_TOKEN_MIN_LEFT_MS) || 0);
+}
+
 async function 벌텍스토큰() {
   const os = require('os');
   const path = require('path');
@@ -124,7 +130,7 @@ async function 벌텍스토큰() {
   const 캐시경로 = path.join(os.tmpdir(), `synk_vertex_token_${식별자}.json`);
   try {
     const c = JSON.parse(fs.readFileSync(캐시경로, 'utf8'));
-    if (c && c.identity === 식별자 && c.token && c.expiry > Date.now() + 120_000) return c.token;
+    if (c && c.identity === 식별자 && c.token && c.expiry > Date.now() + 벌텍스토큰최소남은ms()) return c.token;
   } catch { /* 없거나 깨졌으면 새로 만든다. 옛 전계정 공용 캐시는 읽지 않는다. */ }
 
   const 몸 = new URLSearchParams({
@@ -302,7 +308,7 @@ module.exports = {
   제미나이, 제미나이사고, 제미나이설정,
   제미나이키, 제미나이키경로, 제미나이키안내, 열쇠파일, 기본용도,
   제미나이문들, 제미나이문, 제미나이URL, 제미나이헤더,
-  붙인자격, 벌텍스프로젝트, 벌텍스위치, 벌텍스자격확인, 벌텍스캐시식별자, 벌텍스토큰,
+  붙인자격, 벌텍스프로젝트, 벌텍스위치, 벌텍스자격확인, 벌텍스캐시식별자, 벌텍스토큰최소남은ms, 벌텍스토큰,
   유료API허용, 유료API요구, 제미나이생존, 제미나이확인,
 };
 

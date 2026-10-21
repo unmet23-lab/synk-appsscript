@@ -253,3 +253,40 @@ test('설정 조회는 API를 호출하지 않고 폐기한 작업 배치 옵션
   assert.equal(obsolete.status, 2);
   assert.ok(obsolete.stderr.includes('공식 앱/CLI'));
 });
+
+test('Vertex 토큰 캐시는 남은 시간이 하한(SYNK_VERTEX_TOKEN_MIN_LEFT_MS)보다 짧으면 새로 받는다 — 기본 2분 그대로', async () => {
+  const fs = require('node:fs');
+  const os = require('node:os');
+  assert.strictEqual(정책.벌텍스토큰최소남은ms({}), 120_000);
+  assert.strictEqual(정책.벌텍스토큰최소남은ms({ SYNK_VERTEX_TOKEN_MIN_LEFT_MS: '1800000' }), 1_800_000);
+  assert.strictEqual(정책.벌텍스토큰최소남은ms({ SYNK_VERTEX_TOKEN_MIN_LEFT_MS: '1000' }), 120_000, '2분보다 짧게는 내리지 않는다');
+  assert.strictEqual(정책.벌텍스토큰최소남은ms({ SYNK_VERTEX_TOKEN_MIN_LEFT_MS: 'x' }), 120_000);
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-vertex-cache-test-'));
+  const 키 = ['SYNK_VERTEX_OAUTH', 'SYNK_VERTEX_PROJECT', 'SYNK_VERTEX_TOKEN_MIN_LEFT_MS', 'TEMP', 'TMP', 'TMPDIR'];
+  const 전 = Object.fromEntries(키.map(k => [k, process.env[k]]));
+  const 전fetch = globalThis.fetch;
+  try {
+    const 자격 = path.join(dir, 'oauth.json');
+    fs.writeFileSync(자격, JSON.stringify({ 프로젝트: 'synthetic-project', tokens: { default: { client_id: 'c', client_secret: 's', refresh_token: 'r' } } }));
+    Object.assign(process.env, { SYNK_VERTEX_OAUTH: 자격, SYNK_VERTEX_PROJECT: 'synthetic-project', TEMP: dir, TMP: dir, TMPDIR: dir });
+    delete process.env.SYNK_VERTEX_TOKEN_MIN_LEFT_MS;
+    assert.strictEqual(os.tmpdir(), dir, '이 PC의 실제 토큰 캐시를 건드리지 않는다');
+    const 식별자 = 정책.벌텍스캐시식별자(자격, 'synthetic-project', { client_id: 'c', refresh_token: 'r' });
+    const 캐시 = path.join(dir, `synk_vertex_token_${식별자}.json`);
+    fs.writeFileSync(캐시, JSON.stringify({ identity: 식별자, token: 'cached-10min', expiry: Date.now() + 10 * 60_000 }));
+    let 받음 = 0;
+    globalThis.fetch = async () => { 받음 += 1; return { ok: true, status: 200, json: async () => ({ access_token: 'fresh', expires_in: 3600 }) }; };
+    assert.strictEqual(await 정책.벌텍스토큰(), 'cached-10min');
+    assert.strictEqual(받음, 0);
+    process.env.SYNK_VERTEX_TOKEN_MIN_LEFT_MS = '1800000';
+    assert.strictEqual(await 정책.벌텍스토큰(), 'fresh', '10분 남은 캐시는 30분 하한에서 내주지 않는다');
+    assert.strictEqual(받음, 1);
+    assert.strictEqual(JSON.parse(fs.readFileSync(캐시, 'utf8')).token, 'fresh');
+    assert.strictEqual(await 정책.벌텍스토큰(), 'fresh', '막 받은 60분 토큰은 30분 하한에서도 캐시로 나간다');
+    assert.strictEqual(받음, 1);
+  } finally {
+    globalThis.fetch = 전fetch;
+    for (const k of 키) { if (전[k] === undefined) delete process.env[k]; else process.env[k] = 전[k]; }
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
