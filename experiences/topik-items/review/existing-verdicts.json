@@ -1,7 +1,7 @@
 {
   "version": "topik-existing-verdicts-1",
   "rubric": "topik-review-r1",
-  "updatedAt": "2026-10-21T06:32:18.885Z",
+  "updatedAt": "2026-10-21T08:28:35.810Z",
   "note": "기존 게임·진단 문항의 AI 2중 검수 판정(허용 목록). verdict \"pass\"만 연습에 낸다. 첫 판은 비어 있다 — 판정이 나오는 대로 채운다.",
   "items": [
     {
@@ -1510,27 +1510,27 @@
     {
       "itemKey": "korean-racing:w0008:v1",
       "source": "korean-racing",
-      "verdict": "fix",
+      "verdict": "pass",
       "skillId": "ko.listening.word",
       "difficulty": 1,
       "responseFormat": "single-choice",
       "familyKey": "korean-racing:w0008:v1",
       "officialType": null,
-      "reason": "정답이 하나뿐이고 보기 구성도 좋습니다. 다만 해설의 「「빵」예요」를 「「빵」이에요」로 고쳐야 하고, 오답 그림 설명을 덧붙이면 쓸 수 있습니다. | 문항 자체는 적절하나 한국어 해설의 조사 오류(「빵」예요 → 「빵」이에요) 수정 필요.",
-      "hash": "22608ad106a3adc2",
-      "reviewedAt": "2026-10-21T06:00:35.236Z",
+      "reason": "1급 낱말 「빵」을 듣고 그림을 고르는 게임 문항이다. 정답이 하나뿐이고 보기도 같은 범주로 잘 맞춰져 있어 그대로 써도 된다. | 1급 기초 낱말 '빵'을 듣고 그림을 고르는 기존 게임 문항으로 모든 기준을 충족한다.",
+      "hash": "02d7988975486a7d",
+      "reviewedAt": "2026-10-21T08:28:35.810Z",
       "rubric": "topik-review-r1",
-      "packet": "existing-racing",
+      "packet": "final",
       "by": [
         {
           "stage": "claude",
           "model": "claude-opus-5-5",
-          "verdict": "fix"
+          "verdict": "pass"
         },
         {
           "stage": "argon",
           "model": "gemini-4-argon-high",
-          "verdict": "fix"
+          "verdict": "pass"
         }
       ]
     },
@@ -1564,17 +1564,17 @@
     {
       "itemKey": "korean-racing:w0018:v1",
       "source": "korean-racing",
-      "verdict": "fix",
+      "verdict": "pass",
       "skillId": "ko.listening.word",
       "difficulty": 1,
       "responseFormat": "single-choice",
       "familyKey": "korean-racing:w0018:v1",
       "officialType": null,
-      "reason": "당근을 듣고 🥕를 고르는 단순하고 정확한 1급 낱말 듣기 문항입니다. 보기 괄호 속 한글 이름이 학생 화면에 보이지 않는지만 확인하면 됩니다. | 문항 자체는 적절하나 한국어 해설의 조사 오류(「당근」예요 → 「당근」이에요) 수정 필요. | 보기 그림 🥒·🥔·🥕는 서로 헷갈리지 않습니다. 당근은 1급 생활 낱말이고 정답 2번(🥕)도 맞습니다. 다만 B의 지적이 옳습니다. 「당근」은 받침(ㄴ)으로 끝나므로 「예요」가 아니라 「이에요」를 써야 합니다. 해설에 조사 오류가 있는 채로 학생 화면에 내보낼 수 없으므로 고쳐야 합니다. 또 A가 말한 대로, 보기 괄호 속 한글 이름이 화면에 보이면 듣지 않고 글자만 맞춰도 풀립니다. 이 점도 확인이 필요합니다.",
-      "hash": "ef23a56bcbdf7407",
-      "reviewedAt": "2026-10-21T06:00:35.236Z",
+      "reason": "「당근」을 듣고 🥕를 고르는 낱말 듣기 문항이에요. 정답이 하나뿐이고, 같은 채소 갈래의 오답도 알맞아요. 다만 보기에 한글 이름(오이·감자·당근)이 화면에 함께 보인다면 글자만 보고 맞힐 수 있어요. 게임 화면에서 이름 표시를 숨기는지 확인하면 좋겠어요. 통과예요. | 초급 기초 낱말 '당근'을 듣고 그림을 고르는 기존 게임 문항으로 이상 없다.",
+      "hash": "e450329e90adb589",
+      "reviewedAt": "2026-10-21T08:28:35.810Z",
       "rubric": "topik-review-r1",
-      "packet": "existing-racing",
+      "packet": "final",
       "by": [
         {
           "stage": "claude",
@@ -1584,39 +1584,34 @@
         {
           "stage": "argon",
           "model": "gemini-4-argon-high",
-          "verdict": "fix"
-        },
-        {
-          "stage": "adjudication",
-          "model": "claude-opus-5-5",
-          "verdict": "fix"
+          "verdict": "pass"
         }
       ]
     },
     {
       "itemKey": "korean-racing:w0025:v1",
       "source": "korean-racing",
-      "verdict": "fix",
+      "verdict": "pass",
       "skillId": "ko.listening.word",
       "difficulty": 1,
       "responseFormat": "single-choice",
       "familyKey": "korean-racing:w0025:v1",
       "officialType": null,
-      "reason": "정답 유일·1급 낱말·그림 구분 모두 좋다. 해설의 '우산예요'를 '우산이에요'로 고치면 쓸 수 있다. 괄호 이름 노출 여부는 확인이 필요하다. | 1급 기초 낱말 「우산」 듣기 게임 문항으로 적절하나, 해설의 서술격 조사 표기(「우산」예요 → 「우산」이에요)를 수정해야 한다.",
-      "hash": "a8f7841b4dc020be",
-      "reviewedAt": "2026-10-21T06:00:35.236Z",
+      "reason": "게임 꼴의 낱말 듣기 문항으로, 정답 ☂️(우산)이 분명하고 1급 낱말이다. 오답은 소리가 닮지 않아 변별력이 약간 낮지만 통과해도 된다. | 1급 기초 낱말 '우산'을 듣고 그림을 고르는 기존 게임 문항으로 모든 기준을 충족한다.",
+      "hash": "a332fbba381c2ef9",
+      "reviewedAt": "2026-10-21T08:28:35.810Z",
       "rubric": "topik-review-r1",
-      "packet": "existing-racing",
+      "packet": "final",
       "by": [
         {
           "stage": "claude",
           "model": "claude-opus-5-5",
-          "verdict": "fix"
+          "verdict": "pass"
         },
         {
           "stage": "argon",
           "model": "gemini-4-argon-high",
-          "verdict": "fix"
+          "verdict": "pass"
         }
       ]
     },
@@ -1677,27 +1672,27 @@
     {
       "itemKey": "korean-racing:w0036:v1",
       "source": "korean-racing",
-      "verdict": "fix",
+      "verdict": "pass",
       "skillId": "ko.listening.word",
       "difficulty": 1,
       "responseFormat": "single-choice",
       "familyKey": "korean-racing:w0036:v1",
       "officialType": null,
-      "reason": "정답이 하나뿐이고 1급 낱말 듣기로 알맞습니다. 다만 해설의 「집」예요를 「집」이에요로 바로잡아야 하고, 보기 그림에 한글 이름이 함께 보이는지 확인해야 합니다. | 1급 기초 낱말 「집」 듣기 게임 문항으로 적절하나, 해설의 서술격 조사 표기(「집」예요 → 「집」이에요)를 수정해야 한다.",
-      "hash": "70b7f7600155c84a",
-      "reviewedAt": "2026-10-21T06:00:35.236Z",
+      "reason": "「집」을 듣고 🏠를 고르는 1급 낱말 듣기 문항이다. 정답이 하나뿐이고, 보기 그림끼리 구별된다. 다만 보기에 붙은 한글 표기(「(집)」 등)가 화면에 보이면 듣기가 아닌 글자 맞추기가 될 수 있으니, 표시 방식은 게임 쪽에서 확인하면 좋다. 그 밖의 문제는 없어 통과로 판정한다. | 기초 1급 낱말 '집'을 듣고 알맞은 이모지 그림(🏠)을 고르는 게임형 문항으로, 그림의 명확성·오답 구성·난도 모두 기준에 부합한다.",
+      "hash": "6c813363b18c51d9",
+      "reviewedAt": "2026-10-21T08:28:35.810Z",
       "rubric": "topik-review-r1",
-      "packet": "existing-racing",
+      "packet": "final",
       "by": [
         {
           "stage": "claude",
           "model": "claude-opus-5-5",
-          "verdict": "fix"
+          "verdict": "pass"
         },
         {
           "stage": "argon",
           "model": "gemini-4-argon-high",
-          "verdict": "fix"
+          "verdict": "pass"
         }
       ]
     },

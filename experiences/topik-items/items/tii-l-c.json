@@ -54,11 +54,39 @@
       "audio": {
         "file": "audio/tii-l-c-001.mp3",
         "plays": 1,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 20.7
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나로 분명하고 오답이 대본의 말을 비틀어 그럴듯하다. 급·난도·해설 세 언어가 모두 기준에 맞아 통과한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T08:28:35.807Z",
+          "rev": 1,
+          "hash": "b02df9fdcac92482",
+          "packet": "final"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TII-L-04 유형과 4급 난도에 잘 맞고 정답 유일성과 오답 매력도, 다국어 해설 모두 우수하다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T08:28:35.807Z",
+          "rev": 1,
+          "hash": "b02df9fdcac92482",
+          "packet": "final"
+        }
+      ]
     },
     {
       "id": "tii-l-c-002",
@@ -119,11 +147,39 @@
       "audio": {
         "file": "audio/tii-l-c-002.mp3",
         "plays": 1,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 29.7
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 유일, 오답은 시점을 바꾼 그럴듯한 보기이고 해설 세 언어가 일치한다. 첫 줄의 기사 주체가 조금 모호한 것 말고는 문제가 없어 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T08:28:35.807Z",
+          "rev": 1,
+          "hash": "52c63a0c844ac02d",
+          "packet": "final"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TII-L-09 유형에 맞게 행동의 선후 관계가 명확히 설계되었고 오답 구성과 해설 모두 정확하다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T08:28:35.807Z",
+          "rev": 1,
+          "hash": "52c63a0c844ac02d",
+          "packet": "final"
+        }
+      ]
     },
     {
       "id": "tii-l-c-003",
@@ -188,11 +244,39 @@
       "audio": {
         "file": "audio/tii-l-c-003.mp3",
         "plays": 1,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 26.3
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답도 화자·입장을 바꿔 그럴듯하게 짜였어요. 해설 세 언어가 일치해요. 돌봄 설정의 성별 고정관념 소지는 사소해서 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T08:28:35.807Z",
+          "rev": 1,
+          "hash": "09a08c73fb7c5b7e",
+          "packet": "final"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TII-L-17 중심 생각 파악 유형에 알맞은 대화와 보기 구성을 갖추었으며 해설 번역도 정확하다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T08:28:35.807Z",
+          "rev": 1,
+          "hash": "09a08c73fb7c5b7e",
+          "packet": "final"
+        }
+      ]
     },
     {
       "id": "tii-l-c-004",
@@ -260,11 +344,39 @@
       "audio": {
         "file": "audio/tii-l-c-s01.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 34.7
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "남자의 중심 생각(역사가 담긴 옛 공장을 살려 쓰자)이 분명하고, 여자의 의견을 오답으로 쓴 설계가 탄탄해요. 해설 세 언어도 일치해서 그대로 통과해요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T08:28:35.807Z",
+          "rev": 1,
+          "hash": "eac7710c58002c26",
+          "packet": "final"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TII-L-21 세트 첫 문항으로 대화 구성과 정오답 근거, 다국어 해설 모두 기준에 부합한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T08:28:35.807Z",
+          "rev": 1,
+          "hash": "eac7710c58002c26",
+          "packet": "final"
+        }
+      ]
     },
     {
       "id": "tii-l-c-005",
@@ -332,11 +444,39 @@
       "audio": {
         "file": "audio/tii-l-c-s01.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 34.7
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고 오답 설계가 좋습니다. 급·자리·해설 세 언어 모두 기준에 맞아 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T08:28:35.807Z",
+          "rev": 1,
+          "hash": "7c87c05057007b96",
+          "packet": "final"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "오래된 공장 건물의 문화 공간 개조에 관한 대화로, 정답 유일성·오답 매력도·난도·3개 국어 해설 모두 기준을 충족한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T08:28:35.807Z",
+          "rev": 1,
+          "hash": "7c87c05057007b96",
+          "packet": "final"
+        }
+      ]
     }
   ]
 }
