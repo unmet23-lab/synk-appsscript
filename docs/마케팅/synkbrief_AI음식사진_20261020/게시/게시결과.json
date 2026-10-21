@@ -20,7 +20,7 @@
       "상태": "보류",
       "시각": null,
       "주소": null,
-      "방법": "Claude in Chrome이 blog.naver.com을 「safety restrictions」로 막아 올리지 못함. 원고·그림은 블로그/에 그대로 — 유호님이 직접 올리거나 크롬 확장 사이트 허용 뒤 조율"
+      "방법": "Claude in Chrome(10-20)과 앱 안 브라우저(10-21) 둘 다 blog.naver.com을 「safety restrictions」로 막아 Claude가 올릴 수 없음. 유호님 직접 올리기 — 블로그/붙여넣기.html(node tools/블로그붙여넣기.js 블로그/원고.md)에서 제목·본문을 복사해 붙이고 그림 셋을 빨간 자리 줄에 끌어다 놓는다"
     }
   ]
 }
