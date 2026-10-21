@@ -102,3 +102,13 @@ test('changed paths come from NUL-separated diff-tree output, keeping Korean nam
   assert.deepEqual(changedPaths(['M',C+'/public/앱.js','R100',C+'/public/old.js',C+'/public/new.js','A','tools/company-messenger/public/a b.js',''].join('\0')),[{kind:'M',path:C+'/public/앱.js'},{kind:'R100',path:C+'/public/new.js'},{kind:'A',path:'tools/company-messenger/public/a b.js'}]);
   assert.deepEqual(changedPaths(''),[]);
 });
+
+test('the public check waits out the server one-second reread of the current link',async()=>{
+  const {checkPublic}=await import('./deploy/static/swap.mjs');
+  let calls=0;const sleeps=[];
+  const fetch=async url=>{if(url.endsWith('/api/static-set')){calls++;return {json:async()=>({mode:'host',set:calls<3?'0123456789abcdef':'fedcba9876543210'})};}throw Error('unexpected '+url);};
+  const ok=await checkPublic({changed:[],changes:{},expectId:'fedcba9876543210'},{fetch,origin:'https://example.test',sleep:async ms=>{sleeps.push(ms);}});
+  assert.equal(ok.matches,true);assert.equal(calls,3);assert.deepEqual(sleeps,[1200,1200]);
+  calls=-100;const stuck=await checkPublic({changed:[],changes:{},expectId:'fedcba9876543210'},{fetch,origin:'https://example.test',attempts:2,sleep:async()=>{}});
+  assert.equal(stuck.matches,false);
+});

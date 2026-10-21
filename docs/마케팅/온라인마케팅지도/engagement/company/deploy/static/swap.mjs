@@ -106,8 +106,14 @@ export function publicPath(path){
   if(path.startsWith(messenger)&&!/\.(?:html|css)$/.test(path))return '/messenger/'+path.slice(messenger.length);
   return null;
 }
-async function checkPublic(result,{fetch=globalThis.fetch,origin=ORIGIN}={}){
-  const live=await (await fetch(origin+'/api/static-set',{cache:'no-store',signal:AbortSignal.timeout(20000)})).json();
+// The server rereads `current` at most once a second, so a just-flipped id may need a moment.
+export async function checkPublic(result,{fetch=globalThis.fetch,origin=ORIGIN,attempts=6,pause=1200,sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms))}={}){
+  let live;
+  for(let attempt=1;;attempt++){
+    live=await (await fetch(origin+'/api/static-set',{cache:'no-store',signal:AbortSignal.timeout(20000)})).json();
+    if((live.set===result.expectId&&live.mode==='host')||attempt>=attempts)break;
+    await sleep(pause);
+  }
   const checks=[];
   for(const path of result.changed){
     const url=publicPath(path);if(!url){checks.push({path,result:'unmapped'});continue;}
