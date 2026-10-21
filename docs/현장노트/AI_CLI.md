@@ -111,6 +111,12 @@
 - 고침: 제품 경로에는 모델 이름을 설정값으로 두고 3.6/3.7 Flash 또는 3.5 Flash-Lite를 쓴다. 429·503만 다시 보내고(4xx·5xx는 청구되지 않는다 — 가격 페이지), 시간 초과는 처리 여부를 모르니 다시 보내지 않는다(`tools/lib/말하기호출.mjs` callVertex). 같은 측정에서 문제 글을 함께 준 Flash 듣기는 4초 잡음에도 그 문제의 그럴듯한 대답을 지어냈다 — 받아 적는 단계에는 문제를 주지 않는다(`blindHearPrompt`).
 - 다시 확인: `node tools/말하기피드백_측정.mjs --유료-api --경로 turn-flash --듣기모델 gemini-3.8-flash --사례 r5 --결과 .tmp/x.json`(소리 2초, 1센트 미만)이 429·시간 초과 없이 끝나는지, `SYNK_SPEAKING_VERTEX_LOCATION=asia-northeast3`로 같은 명령이 아직 404인지 본다.
 
+### Git Bash에서 `agy -p "/usage"`를 치면 경로로 바뀌어 모델에게 질문으로 나간다 — PowerShell에서는 6초·토큰 0 (2026-10-21 Claude)
+- 증상: 10-21 Git Bash에서 `agy -p "/usage" --output-format json`이 사용량 대신 「`/usage`가 `C:/Program Files/Git/usage`로 바뀌어 일반 프롬프트로 전달됐다」는 모델 답을 64초 만에 돌려줬다(토큰 36,310 — Ultra 주간 몫에서 나감).
+- 원인: Git Bash(MSYS2)가 `/`로 시작하는 인자를 Windows 경로로 바꿔, agy가 슬래시 명령이 아니라 보통 질문으로 받았다.
+- 고침: 사용량은 PowerShell에서 `agy -p "/usage" --output-format json`으로 읽는다 — 같은 명령이 6.1초·토큰 0으로 Gemini·Claude/GPT 무리별 주간·5시간 `remaining_fraction`과 초기화 시각을 준다. Git Bash에서 꼭 써야 하면 `MSYS_NO_PATHCONV=1`을 붙인다(이 방법은 아직 재 보지 않았다).
+- 다시 확인: PowerShell 결과의 `command.name`이 `usage`이고 `usage.total_tokens`가 0인지 본다.
+
 ## Claude API
 
 ### 새 키의 조직에 월 API 크레딧이 없어 충전 잔액이 나갔다
