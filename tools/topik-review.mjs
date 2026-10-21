@@ -61,7 +61,13 @@ export function newItemView(item, types, labels) {
 // 기존 게임 문항: 출처마다 시험 자리(맞춘 꼴)와 화면에 보이는 글. 입장 검사는 안내문·서류·짐·말을 글로 옮긴다.
 // 레이싱 그림 낱말(낱말 하나를 듣고 그림 고르기)은 맞는 공식 자리가 없어(그림 자리 TI-L-15는 대화·세부) 자리 없이 본다.
 const EXISTING_TYPE = { 'blank-slice': () => 'TI-R-34', 'synk-town': item => item.skillId === 'ko.reading.main' ? 'TI-R-46' : 'TI-R-43', 'entry-check': () => 'TI-R-40',
-  'korean-racing': () => null };
+  'korean-racing': () => null, 'korean-runner': () => null, 'korean-rhythm': () => null, 'talk-rally': item => item.kind === 'follow' ? 'TI-L-05' : 'TI-L-01' };
+// 듣기 게임은 진단 문항에 들리는 글이 줄여져 있어(label) 게임 원고에서 들리는 글 전체를 찾아 대본으로 보인다.
+const LISTENING_FORMAT = {
+  'korean-runner': '게임 꼴: 안내 한마디를 듣고 갈 길(행동)을 보기 셋 가운데 고른다. 공식 시험 자리는 없다(세부 듣기 연습)',
+  'korean-rhythm': '게임 꼴: 짧은 이야기를 듣고 묻는 말이 맞으면 O, 틀리면 X를 고른다. 공식 시험 자리는 없다(듣기 이해 O/X 연습)',
+  'talk-rally': '게임 꼴: 몽글(마스코트)의 한마디를 듣고 알맞은 대답 카드를 셋 가운데 고른다(시험은 넷). 대답 카드는 글로 보인다',
+};
 let wordById = null;
 const wordOf = id => (wordById ??= new Map(readJson(path.join(root, 'strata/topik-i.words.json')).words.map(([wid, word]) => [wid, word]))).get(id) || null;
 function entryText(card) {
@@ -72,7 +78,14 @@ function entryText(card) {
   if (card.line) lines.push(`[손님 말] ${card.who ? `${card.who}: ` : ''}${card.line}`);
   return lines.join('\n');
 }
-export function existingItemView(item, types, labels) {
+export function existingItemView(item, types, labels, { script = null } = {}) {
+  if (script) {
+    const typeId = EXISTING_TYPE[item.source]?.(item);
+    return { existing: true, source: item.source, exam: 'topik-i', officialType: typeView(types.find(t => t.id === typeId)), fit: 'adapted',
+      format: LISTENING_FORMAT[item.source] || null, targetGrade: null, skillId: item.skillId, skillLabel: labels[item.skillId] || null,
+      difficulty: item.difficulty, passage: null, script, question: item.question, choices: item.choices.map(choice => choice.label),
+      answer: item.choices.findIndex(choice => choice.id === item.correctId), explanation: { ko: item.explanation }, choiceNotes: null };
+  }
   const typeId = EXISTING_TYPE[item.source]?.(item);
   const picture = item.ask === 'picture';
   const passage = item.source === 'entry-check' ? entryText(item.card) : picture ? `[소리로 들리는 낱말] ${item.label}` : item.prompt;
@@ -88,6 +101,32 @@ const blindView = view => { const { answer, explanation, choiceNotes, ...rest } 
 
 async function diagnosticItems() {
   return (await import(pathToFileURL(path.join(root, 'experiences/synk-world-app/world-diagnostic-items.mjs')))).DIAGNOSTIC_ITEMS;
+}
+// 말 랠리 대답 카드(WORLD 진단·연습에 들어갈 듣기 대답하기 문항)를 진단 문항과 같은 꼴로 만든다 — 열쇠는 게임과 같은 itemMetadata.
+async function talkRallyItems() {
+  const imp = rel => import(pathToFileURL(path.join(root, rel)));
+  const [{ ITEMS }, { itemMetadata }] = await Promise.all([imp('experiences/talk-rally/content.mjs'), imp('experiences/talk-rally/learning.mjs')]);
+  return ITEMS.map(item => ({ ...itemMetadata(item), source: 'talk-rally', kind: item.kind, line: item.line, question: null,
+    choices: item.options.map((label, index) => ({ id: `talk-rally.${item.id}.${index}`, label })),
+    correctId: `talk-rally.${item.id}.${item.options.indexOf(item.answer)}`, explanation: item.why }));
+}
+// 듣기 게임 문항의 들리는 글 전체(대본). 바람길은 안내 한 줄, 리듬은 이야기 + 묻는 말, 말 랠리는 몽글의 한마디.
+async function listeningScripts() {
+  const imp = rel => import(pathToFileURL(path.join(root, rel)));
+  const [{ LISTENING_CHECKS }, { TRACKS }] = await Promise.all([imp('experiences/korean-runner/listening-check.mjs'), imp('experiences/korean-rhythm/core.mjs')]);
+  return item => {
+    if (item.source === 'talk-rally') return [{ speaker: '몽글', text: item.line }];
+    if (item.source === 'korean-runner') {
+      const check = LISTENING_CHECKS.find(c => item.id === `korean-runner.listening-check.${c.id}` || item.itemKey?.startsWith(`korean-runner.listening-check.${c.id}.`));
+      return check ? [{ speaker: '안내', text: check.text }] : null;
+    }
+    if (item.source === 'korean-rhythm') {
+      const [, track, index, variant] = String(item.id).match(/^t(\d+)q(\d+)v(\d+)$/) || [];
+      const question = TRACKS.find(t => String(t.id) === track)?.questions[Number(index)];
+      return question ? [{ speaker: '이야기', text: question.prompt }, { speaker: '묻는 말', text: question.claims[Number(variant)].question }] : null;
+    }
+    return null;
+  };
 }
 function itemFiles() {
   const dir = path.join(bankDir, 'items');
@@ -132,12 +171,14 @@ export async function prepare(name, { newFiles = null, existingSources = null, s
     for (let i = units.length - 1; i >= 0; i--) if (units[i].kind === 'new' && !kept.has(units[i].key)) units.splice(i, 1);
   }
   if (existingSources) {
-    const pool = (await diagnosticItems()).filter(item => EXISTING_TYPE[item.source] && (!existingSources.length || existingSources.includes(item.source)));
+    const all = [...await diagnosticItems(), ...(existingSources.includes('talk-rally') ? await talkRallyItems() : [])];
+    const scriptOf = await listeningScripts();
+    const pool = all.filter(item => item.source in EXISTING_TYPE && (!existingSources.length || existingSources.includes(item.source)));
     const picked = perSource ? Object.values(Object.groupBy(pool.map(item => ({ key: item.itemKey, item })), row => row.item.source)).flatMap(rows => seededPick(rows, perSource, name)).map(row => row.item) : pool;
     for (const item of picked) {
+      const view = existingItemView(item, types, labels, { script: scriptOf(item) });
       const unit = { key: item.itemKey, kind: 'existing', source: item.source, meta: { itemKey: item.itemKey, familyKey: item.familyKey,
-        skillId: item.skillId, difficulty: item.difficulty, responseFormat: item.responseFormat }, hash: sha(JSON.stringify(existingItemView(item, types, labels))).slice(0, 16),
-        view: existingItemView(item, types, labels) };
+        skillId: item.skillId, difficulty: item.difficulty, responseFormat: item.responseFormat }, hash: sha(JSON.stringify(view)).slice(0, 16), view };
       if (onlyUnjudged && alreadyJudged(unit, { verdictHash })) continue;
       units.push(unit);
     }

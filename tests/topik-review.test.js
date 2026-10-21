@@ -135,6 +135,24 @@ test('레이싱 그림 낱말: 공식 자리 없이, 들리는 낱말과 그림�
   assert.match(v.format, /공식 시험 자리는 없다/);
 });
 
+test('듣기 게임 기존 문항(말 랠리·바람길·리듬): 들리는 글 전체를 대본으로 보이고, 말 랠리는 대답 자리(1~4·5~6번)에 맞춘다', async () => {
+  const { existingItemView } = await tool();
+  const types = [{ id: 'TI-L-01', numbers: [1, 4], task: '듣고 물음에 맞는 대답 고르기', skills: ['ko.listening.response'] }, { id: 'TI-L-05', numbers: [5, 6], task: '듣고 이어지는 말 고르기', skills: ['ko.listening.response'] }];
+  const rally = { source: 'talk-rally', kind: 'follow', skillId: 'ko.listening.response', difficulty: 1, question: null, explanation: '고마울 때 하는 대답이에요.',
+    choices: [{ id: 'talk-rally.f01.0', label: '아니에요.' }, { id: 'talk-rally.f01.1', label: '네, 고마워요.' }], correctId: 'talk-rally.f01.0' };
+  const v = existingItemView(rally, types, {}, { script: [{ speaker: '몽글', text: '고마워요.' }] });
+  assert.equal(v.officialType.id, 'TI-L-05');
+  assert.deepEqual(v.script, [{ speaker: '몽글', text: '고마워요.' }]);
+  assert.equal(v.passage, null);
+  assert.equal(v.answer, 0);
+  assert.match(v.format, /대답 카드/);
+  assert.equal(existingItemView({ ...rally, kind: 'answer' }, types, {}, { script: [] }).officialType.id, 'TI-L-01');
+  const rhythm = existingItemView({ source: 'korean-rhythm', skillId: 'ko.listening.detail', difficulty: 1, question: null, explanation: '내일이에요.',
+    choices: [{ id: 'korean-rhythm.o', label: 'O · 맞아요' }, { id: 'korean-rhythm.x', label: 'X · 아니에요' }], correctId: 'korean-rhythm.o' }, types, {}, { script: [{ speaker: '이야기', text: '내일 가요.' }, { speaker: '묻는 말', text: '내일 가나요?' }] });
+  assert.equal(rhythm.officialType, null);
+  assert.equal(rhythm.script.length, 2);
+});
+
 test('--미판정: 지금 지문으로 판정을 받은 문항만 빠지고, 고쳐 rev·지문이 바뀐 문항과 기존 문항의 바뀐 원고는 다시 들어간다', async () => {
   const { alreadyJudged } = await tool();
   const line = (rev, hash, stage = 'claude') => ({ stage, model: 'm', rubric: 'r', at: '2026-10-21T00:00:00.000Z', verdict: 'fix', rev, hash });
