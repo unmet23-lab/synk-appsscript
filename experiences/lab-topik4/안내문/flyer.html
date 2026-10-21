@@ -22,6 +22,7 @@ html,body{margin:0;background:var(--paper);color:var(--ink);-webkit-print-color-
 body{width:1240px;height:1754px;overflow:hidden;font-family:'Inter Tight','SUIT Variable',system-ui,sans-serif;font-kerning:normal}
 .page{display:flex;flex-direction:column;height:100%;padding:60px 72px 52px}
 .nw{white-space:nowrap}
+a{color:inherit;text-decoration:none}
 
 .poster{position:relative;isolation:isolate;overflow:hidden;flex:none;height:620px;border-radius:40px;background:var(--studio),var(--face);color:var(--on-face);box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
 .poster::before{content:"";position:absolute;inset:0;z-index:1;background:var(--grain);background-size:240px;opacity:.22;mix-blend-mode:overlay;pointer-events:none}
@@ -48,7 +49,7 @@ h1{margin:18px 0 0;font-size:62px;font-weight:700;line-height:1.13;letter-spacin
 .cta .go::after{content:"\2009→";color:var(--face)}
 .cta .note{margin:18px 0 0;font-size:24px;line-height:1.5;color:var(--ink-2)}
 .cta .url{margin:30px 0 0;padding-top:22px;border-top:1px solid var(--line);font-size:38px;font-weight:600;line-height:1;letter-spacing:-.015em}
-.cta .qr{width:288px;height:288px;border:1px solid var(--line);border-radius:22px;overflow:hidden;background:#fff}
+.cta .qr{display:block;width:288px;height:288px;border:1px solid var(--line);border-radius:22px;overflow:hidden;background:#fff}
 .cta .qr svg{display:block;width:100%;height:100%;shape-rendering:crispEdges}
 
 .foot{display:flex;justify-content:space-between;gap:32px;margin-top:30px;padding-top:20px;border-top:1px solid var(--line);font-size:19px;line-height:1.45;color:var(--ink-3)}
@@ -73,13 +74,13 @@ h1{margin:18px 0 0;font-size:62px;font-weight:700;line-height:1.13;letter-spacin
     <div>
       <p class="go">Урьдчилан бүртгүүлэх</p>
       <p class="note">Одоо төлбөр авахгүй. Эхний ангийг 2027 оны <span class="nw">3-р</span> сард эхлүүлэхээр бэлдэж байна.</p>
-      <p class="url">synk.im/lab/topik4</p>
+      <p class="url"><a href="{{URL}}">synk.im/lab/topik4</a></p>
     </div>
-    <div class="qr" role="img" aria-label="synk.im/lab/topik4">{{QR}}</div>
+    <a class="qr" href="{{URL}}" aria-label="synk.im/lab/topik4">{{QR}}</a>
   </div>
   <div class="foot">
     <span>Шалгалтад тэнцэх эсвэл тодорхой түвшин авахыг амлахгүй.</span>
-    <span class="nw">Instagram @synk.mn</span>
+    <a class="nw" href="https://www.instagram.com/synk.mn/">Instagram @synk.mn</a>
   </div>
 </div>
 </body>

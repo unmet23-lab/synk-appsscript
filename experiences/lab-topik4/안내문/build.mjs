@@ -29,11 +29,17 @@ const KEY = /^[a-z0-9][a-z0-9-]{0,39}$/;
 const SHEETS = [['intro-ko.html', 'synk-intro-ko'], ['intro-mn.html', 'synk-intro-mn']];
 
 const args = process.argv.slice(2);
+for (let i = 0; i < args.length; i += 2) {
+  if (!['--from', '--out'].includes(args[i])) throw new Error(`모르는 인자예요: ${args[i]} (쓸 수 있는 것: --from <키,키…> --out <폴더>)`);
+  if (args[i + 1] === undefined || args[i + 1].startsWith('--')) throw new Error(`${args[i]} 뒤에 값이 없어요`);
+}
 const opt = name => { const i = args.indexOf(name); return i < 0 ? null : args[i + 1]; };
 const perKey = opt('--from') !== null;
 const keys = (opt('--from') || 'flyer').split(',').map(s => s.trim()).filter(Boolean);
 const outDir = path.resolve(opt('--out') || HERE);
+if (!keys.length) throw new Error('--from에 키가 없어요');
 for (const k of keys) if (!KEY.test(k)) throw new Error(`들어온 곳 키 꼴이 아니에요(영소문자·숫자·하이픈 40자): ${k}`);
+if (perKey && !path.relative(path.resolve(HERE, '../../..'), outDir).startsWith('..')) throw new Error(`학교별 판은 저장소 밖 폴더에 굽는다(--out): ${outDir}`);
 if (!fs.existsSync(path.join(HERE, '../dist/lab/topik4/assets/SUIT-subset.woff2'))) throw new Error('글꼴이 없어요 — 먼저 node experiences/lab-topik4/build.mjs');
 
 const work = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-t4-print-'));
@@ -60,10 +66,15 @@ function inline(html, base) {
     if (!type) throw new Error(`실을 줄 모르는 파일이에요: ${rel}`);
     return `data:${type};base64,${fs.readFileSync(p).toString('base64')}`;
   };
-  return html
+  const out = html
     .replace(/<link rel="stylesheet" href="([^":]+\.css)">/g, (_, rel) => `<style>\n${fs.readFileSync(file(rel), 'utf8')}</style>`)
     .replace(/url\((\.\.?\/[^)'"]+)\)/g, (_, rel) => `url(${data(rel)})`)
     .replace(/\bsrc="(\.\.?\/[^"]+)"/g, (_, rel) => `src="${data(rel)}"`);
+  // 위 꼴에 안 맞아 못 실은 상대 경로(따옴표 url·./ 없는 경로·남은 stylesheet)가 있으면 멈춘다 — 임시 폴더에서 열면 조용히 깨진다.
+  // url(#n)·url(%23n)는 data: SVG 안의 필터 참조라 경로가 아니다.
+  const left = out.match(/url\((?!\s*['"]?(?:data:|#|%23))[^)]*\)|\b(?:src|href)="(?!data:|https?:|mailto:|#|\{\{)[^"]*"/g);
+  if (left) throw new Error(`싣지 못한 경로가 남았어요: ${left.slice(0, 3).join(' · ')}`);
+  return out;
 }
 
 async function shoot(browser, html, name) {
@@ -74,12 +85,16 @@ async function shoot(browser, html, name) {
   const check = await page.evaluate(async () => {
     await document.fonts.ready;
     const fam = [...document.fonts].filter(f => f.status !== 'loaded').map(f => `${f.family} ${f.weight}`);
+    const img = [...document.images].filter(i => !i.complete || !i.naturalWidth).map(i => i.src.slice(0, 40));
     const box = document.querySelector('.page');
-    const over = [...box.children].map(el => [el.className || el.tagName, Math.round(el.getBoundingClientRect().bottom)]).filter(([, b]) => b > innerHeight);
-    return { fam, over, scroll: box.scrollHeight };
+    // 마지막 덩이가 아래 여백 안쪽에서 끝나야 한다(여백까지 밀려도 종이 안이라 scrollHeight로는 안 잡힌다).
+    const limit = innerHeight - parseFloat(getComputedStyle(box).paddingBottom);
+    const over = [...box.children].map(el => [el.className || el.tagName, Math.round(el.getBoundingClientRect().bottom)]).filter(([, b]) => b > limit + 0.5);
+    return { fam, img, over, limit, scroll: box.scrollHeight, wide: box.scrollWidth > box.clientWidth };
   });
   if (check.fam.length) throw new Error(`${name}: 글꼴이 다 들어오지 않았어요 — ${check.fam.join(', ')}`);
-  if (check.over.length || check.scroll > H) throw new Error(`${name}: 글이 종이 밖으로 넘쳐요 — ${JSON.stringify(check)}`);
+  if (check.img.length) throw new Error(`${name}: 그림이 들어오지 않았어요 — ${check.img.join(', ')}`);
+  if (check.over.length || check.scroll > H || check.wide) throw new Error(`${name}: 글이 종이 밖이나 아래 여백으로 넘쳐요 — ${JSON.stringify(check)}`);
   const png = path.join(outDir, `${name}.png`);
   const pdf = path.join(outDir, `${name}.pdf`);
   await page.screenshot({ path: png });
@@ -93,13 +108,17 @@ const size = f => `${(fs.statSync(f).size / 1024).toFixed(0)}KB`;
 fs.mkdirSync(outDir, { recursive: true });
 const flyer = fs.readFileSync(path.join(HERE, 'flyer.html'), 'utf8');
 if (flyer.split('{{QR}}').length !== 2) throw new Error('flyer.html에 {{QR}} 자리가 꼭 한 번 있어야 해요');
+if (!flyer.includes('{{URL}}')) throw new Error('flyer.html에 {{URL}}(QR과 같은 주소의 링크) 자리가 없어요');
 const browser = await chromium.launch({ channel: 'chrome' });
 try {
   for (const key of keys) {
     const url = `${PAGE}?from=${key}&lang=mn`;
     const name = key === 'flyer' ? 'synk-lab-topik4-mn' : `synk-lab-topik4-mn-${key}`;
     const svg = qrSvg(url);
-    const { png, pdf } = await shoot(browser, inline(flyer, HERE).replace('{{QR}}', () => svg), name);
+    // PDF에서 주소·QR을 누르면 QR과 같은 들어온 곳 키로 연다.
+    const html = inline(flyer, HERE).replace('{{QR}}', () => svg).replaceAll('{{URL}}', url.replace(/&/g, '&amp;'));
+    if (/\{\{[A-Z]+\}\}/.test(html)) throw new Error(`${name}: 채우지 못한 자리가 남았어요`);
+    const { png, pdf } = await shoot(browser, html, name);
     const read = qrRead(png);
     if (read !== url) throw new Error(`${name}: 찍힌 QR이 ${JSON.stringify(read)}로 읽혀요(기대 ${url})`);
     console.log(`${name} — QR ${url} 읽힘 · png ${size(png)} · pdf ${size(pdf)}`);
