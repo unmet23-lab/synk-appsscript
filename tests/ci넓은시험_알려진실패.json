@@ -1,0 +1,625 @@
+{
+  "설명": "wide-tests 기준선 — 여기 적힌 실패는 빨강으로 치지 않는다(tools/ci넓은시험.js). 고치면 줄을 뺀다. 늘리지 않는다.",
+  "run": "39630428342",
+  "묶음": {
+    "루트": [
+      {
+        "파일": "tests/atlas-dating-backup-restore.test.mjs",
+        "시험": "tests/atlas-dating-backup-restore.test.mjs",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — test failed"
+      },
+      {
+        "파일": "tests/atlas-dating-central-lifecycle.test.mjs",
+        "시험": "tests/atlas-dating-central-lifecycle.test.mjs",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — test failed"
+      },
+      {
+        "파일": "tests/atlas-dating-reconcile-export.test.mjs",
+        "시험": "tests/atlas-dating-reconcile-export.test.mjs",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — test failed"
+      },
+      {
+        "파일": "tests/hermes-synk-integration.test.cjs",
+        "시험": "mode-only agent changes require review instead of quiet no-changes",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly equal:"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "strict schema and actual changed JSON property consumption pass",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — JSON_SCHEMA_RUNTIME_UNAVAILABLE"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "unrelated passing Node tests do not validate JSON",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly deep-equal:"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "reading the JSON bytes without consuming changed values is insufficient",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly deep-equal:"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "checking only unchanged property existence does not consume its changed value",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly deep-equal:"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "readFile JSON.parse consumer and asynchronous read consumer are observed",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — JSON_SCHEMA_RUNTIME_UNAVAILABLE"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "invalid JSON value, broad schema, remote refs and changed existing schema hold",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly deep-equal:"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "new concrete schema and new data are supported together",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — JSON_SCHEMA_RUNTIME_UNAVAILABLE"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "strict unknown schema keywords cannot silently pass",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly deep-equal:"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "local schema references are bound and returned as validated paths",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — JSON_SCHEMA_RUNTIME_UNAVAILABLE"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "unchanged schema accepts only CRLF versus LF differences from Git autocrlf",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — JSON_SCHEMA_RUNTIME_UNAVAILABLE"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "schema content and JSON-equivalent reformatting still require review",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly deep-equal:"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "reading another JSON object with the same property cannot credit target data",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly deep-equal:"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "test skip or failure holds JSON validation",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly deep-equal:"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "draft 2020 schema validates using its actual Ajv dialect",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — JSON_SCHEMA_RUNTIME_UNAVAILABLE"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "unknown JSON format and primitive unobservable consumer fail closed",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly deep-equal:"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "large changed JSON field sets are bounded before repeated domain probes",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly deep-equal:"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "TypeScript actual typecheck and emitted changed-line coverage pass",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — TYPESCRIPT_RUNTIME_UNAVAILABLE"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "TypeScript type errors cannot be replaced with passing unrelated tests",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly deep-equal:"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "loading emitted module without invoking changed function holds",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly deep-equal:"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "changed branch must execute, but untouched unused functions do not block",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly deep-equal:"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "JSONC tsconfig is parsed by compiler and included as validated config",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — TYPESCRIPT_RUNTIME_UNAVAILABLE"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "compiler config excluding changed TypeScript cannot claim it validated",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly deep-equal:"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "noCheck is explicitly rejected instead of accepting unchecked emit",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly deep-equal:"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "file-level TypeScript check suppression does not provide typecheck proof",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly deep-equal:"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "weakening an existing strict project cannot auto validate changed config",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly deep-equal:"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "mutating an emitted source during tests invalidates TypeScript proof",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly deep-equal:"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "TSX uses the installed JSX runtime and verifies executed component output",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — TYPESCRIPT_RUNTIME_UNAVAILABLE"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "derived node_modules writes cannot change original dependency root and compiler links are removed",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly deep-equal:"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "runtime package is a bounded actual copy and dependency writes invalidate proof without touching originals",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly deep-equal:"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "malformed dependency graph keys cannot select a path outside isolated node_modules",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly deep-equal:"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "pure TypeScript compiles and executes when the sandbox rejects all symlink and junction creation",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — TYPESCRIPT_RUNTIME_UNAVAILABLE"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-data.test.cjs",
+        "시험": "TSX type dependencies and JSX runtime are actual copies without any link creation",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — TYPESCRIPT_RUNTIME_UNAVAILABLE"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-web.test.cjs",
+        "시험": "existing parse5/postcss detect HTML, CSS and inline script syntax without installing packages",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — WEB_RUNTIME_UNAVAILABLE"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-web.test.cjs",
+        "시험": "actual Chrome loads changed HTML/CSS, proves an effective style and executes interactions at PC and mobile sizes",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — WEB_RUNTIME_UNAVAILABLE"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-web.test.cjs",
+        "시험": "real Chrome still verifies DOM/styles/interactions when the proxy HTTP listener is closed before launch",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — WEB_RUNTIME_UNAVAILABLE"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-web.test.cjs",
+        "시험": "viewport-specific assertions prove responsive rules without requiring identical PC/mobile styles",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — WEB_RUNTIME_UNAVAILABLE"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-web.test.cjs",
+        "시험": "browser errors fail closed and preserve private failure DOM/screenshot evidence",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — The validation function is expected to return \"true\". Received false"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-web.test.cjs",
+        "시험": "missing candidate assets and browser-invalid CSS declarations cannot pass",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — The validation function is expected to return \"true\". Received false"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-web.test.cjs",
+        "시험": "other loopback ports are blocked before any request reaches the unrelated service",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — The validation function is expected to return \"true\". Received false"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-web.test.cjs",
+        "시험": "horizontal overflow is checked at the fixed mobile viewport",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly deep-equal:"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-web.test.cjs",
+        "시험": "an unloaded changed CSS file and an overridden matched rule provide no execution evidence",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly deep-equal:"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-web.test.cjs",
+        "시험": "a proven old rule cannot hide a newly added unused selector or another untested changed declaration",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly deep-equal:"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-web.test.cjs",
+        "시험": "CSS removals, duplicate changed declarations, unsupported at-rules and shorthand require review",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — WEB_RUNTIME_UNAVAILABLE"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-web.test.cjs",
+        "시험": "evidence cannot be written into the candidate and invalid file encodings fail safely",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly deep-equal:"
+      },
+      {
+        "파일": "tests/hermes-synk-validation-web.test.cjs",
+        "시험": "only the fixed native preview evidence prefix is writable inside the candidate and .tmp is never served",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — WEB_RUNTIME_UNAVAILABLE"
+      },
+      {
+        "파일": "tests/hermes-synk-validation.test.cjs",
+        "시험": "compiler-validated tsconfig accepts JSONC while ordinary JSON stays strict",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — TYPESCRIPT_RUNTIME_UNAVAILABLE"
+      },
+      {
+        "파일": "tests/learning-blind-cases.test.mjs",
+        "시험": "tests/learning-blind-cases.test.mjs",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — test failed"
+      },
+      {
+        "파일": "tests/synk-id-provision-apply.test.cjs",
+        "시험": "existing Fortune and unrelated mapping source order survive the full workflow",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly equal:"
+      },
+      {
+        "파일": "tests/synk-id-provision-guard.test.cjs",
+        "시험": "tests/synk-id-provision-guard.test.cjs",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — test failed"
+      },
+      {
+        "파일": "tests/미니게임_목소리.test.cjs",
+        "시험": "미리보기 합계: 게임마다 줄·글자·출력 파일 수가 지금 목록에서 센 값과 같고 문제가 없다",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly deep-equal:"
+      },
+      {
+        "파일": "tests/보존점검.test.cjs",
+        "시험": "directory-relative siblings do not become nested under the preceding child",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly equal:"
+      },
+      {
+        "파일": "tests/보존점검.test.cjs",
+        "시험": "child-directory sheet resolves locally while later directories remain siblings",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly equal:"
+      },
+      {
+        "파일": "tests/영상사전검사.test.mjs",
+        "시험": "real defective media yields audio length, subtitle end, script warnings and actual review clips",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — spawnSync ffmpeg ENOENT"
+      },
+      {
+        "파일": "tests/영상사전검사.test.mjs",
+        "시험": "inspected finalization reaches the existing inbox and draft; repeats stay one version and changed inputs fail",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — spawnSync ffmpeg ENOENT"
+      },
+      {
+        "파일": "tests/영상사전검사.test.mjs",
+        "시험": "finalization rejects changed or missing script and transcript sources, including repeated deliveries",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — spawnSync ffmpeg ENOENT"
+      },
+      {
+        "파일": "tests/영상사전검사.test.mjs",
+        "시험": "provided comparison inputs cannot silently produce zero comparisons or match empty text",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — spawnSync ffmpeg ENOENT"
+      },
+      {
+        "파일": "tests/영상사전검사.test.mjs",
+        "시험": "inspection CLI distinguishes review warnings, blocked input and execution failure",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — spawnSync ffmpeg ENOENT"
+      }
+    ],
+    "회사": [
+      {
+        "파일": "docs/마케팅/온라인마케팅지도/engagement/company/publication-review-backup.test.mjs",
+        "시험": "ordinary and integrated workspace backups restore exact-package manual review history and media without inheriting it into another package",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — spawn ffmpeg ENOENT"
+      },
+      {
+        "파일": "docs/마케팅/온라인마케팅지도/engagement/company/pulse-casting-client.test.mjs",
+        "시험": "Harin shows the finished iced-coffee ad as an expression reference with a poster and keeps the runway motion sample in editable and saved casting views",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — ENOENT: no such file or directory, open '/home/runner/work/synk-appsscript/synk-appsscript/SYNK-appsscript/docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/video/F02-ad-iced-coffee"
+      },
+      {
+        "파일": "docs/마케팅/온라인마케팅지도/engagement/company/server-publication-inbox.test.mjs",
+        "시험": "a finalized file bundle is imported once and can create a real publication ZIP through existing routes",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — spawn ffmpeg ENOENT"
+      },
+      {
+        "파일": "docs/마케팅/온라인마케팅지도/engagement/company/server-publication-inbox.test.mjs",
+        "시험": "the local five-second scanner imports a delivered bundle without a manual scan while broader schedules stay off",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — spawn ffmpeg ENOENT"
+      },
+      {
+        "파일": "docs/마케팅/온라인마케팅지도/engagement/company/server-publication-learning.test.mjs",
+        "시험": "real publication source and 72h evidence flow into the existing private content draft without automatic writes",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — spawn ffmpeg ENOENT"
+      },
+      {
+        "파일": "docs/마케팅/온라인마케팅지도/engagement/company/server-publication-review.test.mjs",
+        "시험": "exact publication package keeps automatic results distinct from explicit human checks and saves no review on read",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — spawn ffmpeg ENOENT"
+      },
+      {
+        "파일": "docs/마케팅/온라인마케팅지도/engagement/company/server-publication-review.test.mjs",
+        "시험": "publication review HTTP routes enforce authentication, Origin, CSRF and current production access",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — spawn ffmpeg ENOENT"
+      },
+      {
+        "파일": "docs/마케팅/온라인마케팅지도/engagement/company/server-publication-review.test.mjs",
+        "시험": "concurrent review edits conflict instead of overwriting and the saved revision survives a server restart",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — spawn ffmpeg ENOENT"
+      },
+      {
+        "파일": "docs/마케팅/온라인마케팅지도/engagement/company/server-publication-review.test.mjs",
+        "시험": "new video version, copy or subtitles require separate human confirmation while an identical package retains it",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — spawn ffmpeg ENOENT"
+      },
+      {
+        "파일": "docs/마케팅/온라인마케팅지도/engagement/company/server-publication-workflow.test.mjs",
+        "시험": "today publication actions follow real intake, package, partial publication and metric completion without duplicated tasks",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — spawn ffmpeg ENOENT"
+      },
+      {
+        "파일": "docs/마케팅/온라인마케팅지도/engagement/company/server-publication-workflow.test.mjs",
+        "시험": "YouTube formats remain separate and invalid cross-platform or private package links are rejected",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — spawn ffmpeg ENOENT"
+      },
+      {
+        "파일": "docs/마케팅/온라인마케팅지도/engagement/company/server-publication.test.mjs",
+        "시험": "real uploaded video becomes downloadable per-channel files while original and private access remain intact",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — spawn ffmpeg ENOENT"
+      },
+      {
+        "파일": "docs/마케팅/온라인마케팅지도/engagement/company/social-direct-integration.test.mjs",
+        "시험": "default HTTP provider needs no Postiz settings; explicit opt-in enables approved Instagram media end to end",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — spawnSync ffmpeg ENOENT"
+      },
+      {
+        "파일": "docs/마케팅/온라인마케팅지도/engagement/company/social-direct-integration.test.mjs",
+        "시험": "pending Reel can fetch its grant and finish through the existing reconciliation route once",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — spawnSync ffmpeg ENOENT"
+      },
+      {
+        "파일": "docs/마케팅/온라인마케팅지도/engagement/company/social-direct-integration.test.mjs",
+        "시험": "emergency pause revokes pending media access and prevents continuation from making a public post",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — spawnSync ffmpeg ENOENT"
+      },
+      {
+        "파일": "docs/마케팅/온라인마케팅지도/engagement/company/social-direct-integration.test.mjs",
+        "시험": "lost Facebook final response cannot cause a second public submission",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — spawnSync ffmpeg ENOENT"
+      },
+      {
+        "파일": "docs/마케팅/온라인마케팅지도/engagement/company/social-direct-integration.test.mjs",
+        "시험": "disconnecting only publishing preserves comments credentials and invalidates already approved jobs",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — spawnSync ffmpeg ENOENT"
+      },
+      {
+        "파일": "docs/마케팅/온라인마케팅지도/engagement/company/social-direct-integration.test.mjs",
+        "시험": "YouTube MP4 uses the same approval and scheduler flow with explicit audience and privacy",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — spawnSync ffmpeg ENOENT"
+      },
+      {
+        "파일": "docs/마케팅/온라인마케팅지도/engagement/company/social-direct-integration.test.mjs",
+        "시험": "unlisted and private YouTube posts are not registered for public performance tracking; public posts are",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — spawnSync ffmpeg ENOENT"
+      },
+      {
+        "파일": "docs/마케팅/온라인마케팅지도/engagement/company/social-direct-integration.test.mjs",
+        "시험": "an explicitly rescheduled unsent YouTube failure can publish through the real scheduler",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — spawnSync ffmpeg ENOENT"
+      },
+      {
+        "파일": "docs/마케팅/온라인마케팅지도/engagement/company/social-provider-integration.test.mjs",
+        "시험": "real private-media resolver feeds multipart upload; foreign media and media changes are rejected",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — {\"error\":\"영상·이미지 규격을 읽지 못했어요. 재생되는 파일인지, 서버에 FFprobe가 설치돼 있는지 확인해 주세요.\"}"
+      },
+      {
+        "파일": "docs/마케팅/온라인마케팅지도/engagement/company/social-provider-integration.test.mjs",
+        "시험": "emergency pause during multipart upload is checked before the external create request",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — {\"error\":\"영상·이미지 규격을 읽지 못했어요. 재생되는 파일인지, 서버에 FFprobe가 설치돼 있는지 확인해 주세요.\"}"
+      },
+      {
+        "파일": "docs/마케팅/온라인마케팅지도/engagement/company/static-media.test.mjs",
+        "시험": "company allowlist exposes exactly the three M03 release files with Range playback",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — M03-mv-happy-gangster-excerpt-20s-v1.mp4"
+      },
+      {
+        "파일": "docs/마케팅/온라인마케팅지도/engagement/company/static-media.test.mjs",
+        "시험": "company allowlist serves the Harin iced-coffee ad and its poster with exact bytes and Range playback",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — F02-ad-iced-coffee-20s-v1.mp4"
+      }
+    ],
+    "desktop": [
+      {
+        "파일": "desktop/tests/care-notifications.test.cjs",
+        "시험": "generated desktop due logic agrees with canonical lunar, event and followup model",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Cannot find module '../../../SYNK-talk/lib/synk-care-push-worker.js'"
+      },
+      {
+        "파일": "desktop/tests/lifecycle.test.cjs",
+        "시험": "newer launch-only pins preserve available installers without offering a downgrade as an update",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly equal:"
+      },
+      {
+        "파일": "desktop/tests/source-profile.test.cjs",
+        "시험": "installed apps keep their exact name, profile folder, lock, taskbar ID, partition, vault and Suite folder",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — the entry point must reach its window"
+      },
+      {
+        "파일": "desktop/tests/source-profile.test.cjs",
+        "시험": "source runs of the three apps keep name, folder, lock, taskbar ID, vault and Suite apart from the installed Preview",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — INSTALLATION_ROOT_UNAVAILABLE"
+      },
+      {
+        "파일": "desktop/tests/source-profile.test.cjs",
+        "시험": "product and teacher previews keep their own folders and follow the source Platform Suite, never the installed one",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — INSTALLATION_ROOT_UNAVAILABLE"
+      }
+    ],
+    "experiences": [
+      {
+        "파일": "experiences/20260909/pulse/qa/story-browser.test.cjs",
+        "시험": "experiences/20260909/pulse/qa/story-browser.test.cjs",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — test failed"
+      },
+      {
+        "파일": "experiences/beginner-games/qa/scene-keepsake-release-20261009/public-route.test.mjs",
+        "시험": "experiences/beginner-games/qa/scene-keepsake-release-20261009/public-route.test.mjs",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — test failed"
+      },
+      {
+        "파일": "experiences/beginner-games/qa/scene-keepsake-release-20261009/reward-cas.test.mjs",
+        "시험": "experiences/beginner-games/qa/scene-keepsake-release-20261009/reward-cas.test.mjs",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — test failed"
+      },
+      {
+        "파일": "experiences/beginner-games/voice.test.cjs",
+        "시험": "beginner speech comes from 26 exact requests with approved narrator and matching game bytes",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly deep-equal:"
+      },
+      {
+        "파일": "experiences/brand-opening/qa/home-doors.test.mjs",
+        "시험": "experiences/brand-opening/qa/home-doors.test.mjs",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — test failed"
+      },
+      {
+        "파일": "experiences/brand-opening/qa/home-room-first-frame.test.mjs",
+        "시험": "experiences/brand-opening/qa/home-room-first-frame.test.mjs",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — test failed"
+      },
+      {
+        "파일": "experiences/brand-opening/qa/home-town.test.mjs",
+        "시험": "experiences/brand-opening/qa/home-town.test.mjs",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — test failed"
+      },
+      {
+        "파일": "experiences/brand-opening/qa/tutor-choice-sync.test.mjs",
+        "시험": "experiences/brand-opening/qa/tutor-choice-sync.test.mjs",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — test failed"
+      },
+      {
+        "파일": "experiences/korean-racing/tests/coastal-rocks.test.mjs",
+        "시험": "experiences/korean-racing/tests/coastal-rocks.test.mjs",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — test failed"
+      },
+      {
+        "파일": "experiences/korean-racing/tests/vehicles.test.mjs",
+        "시험": "shipped GT low detail reduces geometry while preserving exterior bounds, axles and original high/garage geometry",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — ENOENT: no such file or directory, open '/home/runner/work/synk-appsscript/synk-appsscript/SYNK-appsscript/experiences/korean-racing/assets/car.glb'"
+      },
+      {
+        "파일": "experiences/path-vr/tests/interview-mount.test.mjs",
+        "시험": "every published video quality and reference resolves inside root and nested deployments",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — ENOENT: no such file or directory, stat '/home/runner/work/synk-appsscript/synk-appsscript/SYNK-appsscript/experiences/path-vr/assets/interview/film/strict-question-4k.mp4'"
+      },
+      {
+        "파일": "experiences/path-vr/tests/interview-mount.test.mjs",
+        "시험": "room and comparison pages keep images, styles and media under the deployment mount",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — ENOENT: no such file or directory, stat '/home/runner/work/synk-appsscript/synk-appsscript/SYNK-appsscript/experiences/path-vr/assets/interview/film/seedance-sample.mp4'"
+      },
+      {
+        "파일": "experiences/path-vr/tests/interview-mount.test.mjs",
+        "시험": "speech model, microphone worklet and worker retain their deployment directory",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — ENOENT: no such file or directory, stat '/home/runner/work/synk-appsscript/synk-appsscript/SYNK-appsscript/experiences/path-vr/models/vosk-model-small-ko-0.22.tar.gz'"
+      },
+      {
+        "파일": "experiences/path-vr/tests/interview-pages.test.mjs",
+        "시험": "public manifest preserves exact continuity, clip hashes and both qualities",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — ENOENT: no such file or directory, open '/home/runner/work/synk-appsscript/synk-appsscript/SYNK-appsscript/experiences/path-vr/assets/interview/film/strict-question-4k.mp4'"
+      },
+      {
+        "파일": "experiences/path-vr/tests/interview-pages.test.mjs",
+        "시험": "Pages overlay is minimal, deterministic and source-audited",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Required public file is not approved: assets/interview/film/strict-followup-experience-4k.mp4"
+      },
+      {
+        "파일": "experiences/path-vr/tests/interview-pages.test.mjs",
+        "시험": "Pages rebuild refuses to overwrite an unexpected PATH introduction",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — ENOENT: no such file or directory, open '/home/runner/work/synk-appsscript/synk-appsscript/SYNK-appsscript/.tmp/path-interview-pages/public/path/index.html'"
+      },
+      {
+        "파일": "experiences/path-vr/tests/interview-pages.test.mjs",
+        "시험": "published imports, stylesheet URLs and fixed room textures resolve inside the minimal overlay",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — ENOENT: no such file or directory, open '/home/runner/work/synk-appsscript/synk-appsscript/SYNK-appsscript/.tmp/path-interview-pages/pages-manifest.json'"
+      },
+      {
+        "파일": "experiences/path-vr/tests/interview-pages.test.mjs",
+        "시험": "Pages verification detects changed published bytes",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — ENOENT: no such file or directory, open '/home/runner/work/synk-appsscript/synk-appsscript/SYNK-appsscript/.tmp/path-interview-pages/public/path/interview/film/strict-manifest.json'"
+      },
+      {
+        "파일": "experiences/path-vr/tests/interview-server-package.test.mjs",
+        "시험": "model GET and HEAD ranges return exact bytes and denied sources stay private",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly equal:"
+      },
+      {
+        "파일": "experiences/path-vr/tests/interview-server-package.test.mjs",
+        "시험": "standalone package copies current runtime exactly, keeps credit files, and excludes private artifacts",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Required public file is not approved: assets/interview/film/strict-listen-question-tail-720p.mp4"
+      },
+      {
+        "파일": "experiences/relationship-care/tests/account.test.mjs",
+        "시험": "both save capabilities are restricted to the care client, care endpoint and null resource together",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — 제품 계정 계약을 확인해 주세요."
+      },
+      {
+        "파일": "experiences/synk-account/tests/world-memory.test.mjs",
+        "시험": "the WORLD page sends changed memory when it goes to the background and reads it again when it comes back",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — Expected values to be strictly deep-equal:"
+      },
+      {
+        "파일": "experiences/synk-world-app/qa/account-browser.test.mjs",
+        "시험": "actual Chromium account-mode Maru preserves life progress, guarded games, Town, enrollment and logout",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — node:internal/modules/cjs/loader:1564"
+      },
+      {
+        "파일": "experiences/synk-world-app/qa/cafe-static.test.mjs",
+        "시험": "experiences/synk-world-app/qa/cafe-static.test.mjs",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — test failed"
+      },
+      {
+        "파일": "experiences/synk-world-app/qa/daily-tutor-static.test.mjs",
+        "시험": "experiences/synk-world-app/qa/daily-tutor-static.test.mjs",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — test failed"
+      },
+      {
+        "파일": "experiences/synk-world-app/qa/daily-tutor-store.test.mjs",
+        "시험": "experiences/synk-world-app/qa/daily-tutor-store.test.mjs",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — test failed"
+      },
+      {
+        "파일": "experiences/synk-world-app/qa/home-tutor-static.test.mjs",
+        "시험": "experiences/synk-world-app/qa/home-tutor-static.test.mjs",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — test failed"
+      },
+      {
+        "파일": "experiences/synk-world-app/qa/life-progress-store.test.mjs",
+        "시험": "experiences/synk-world-app/qa/life-progress-store.test.mjs",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — test failed"
+      },
+      {
+        "파일": "experiences/synk-world-app/qa/life-tutor-static.test.mjs",
+        "시험": "experiences/synk-world-app/qa/life-tutor-static.test.mjs",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — test failed"
+      },
+      {
+        "파일": "experiences/synk-world-app/qa/tutor-selection-store.test.mjs",
+        "시험": "experiences/synk-world-app/qa/tutor-selection-store.test.mjs",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — test failed"
+      },
+      {
+        "파일": "experiences/synk-world-app/qa/tutor-switch-20261011/backend-life-20261012/candidate-contract.test.cjs",
+        "시험": "experiences/synk-world-app/qa/tutor-switch-20261011/backend-life-20261012/candidate-contract.test.cjs",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — test failed"
+      },
+      {
+        "파일": "experiences/synk-world-app/qa/wardrobe-client.test.mjs",
+        "시험": "experiences/synk-world-app/qa/wardrobe-client.test.mjs",
+        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — test failed"
+      }
+    ],
+    "tools": []
+  }
+}

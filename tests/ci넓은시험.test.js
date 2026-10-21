@@ -90,3 +90,22 @@ test('종료판정 — 기준선에 실패가 있어도 못 읽은 실패·요�
   assert.equal(넓은.종료판정({ 파일: 3, 시험: 10, 실패수: 0, 셈: 0, 종료: 1, 실패: [] }, []).코드, 1, '시험 밖 실패');
   assert.equal(넓은.종료판정({ 파일: 3, 시험: 10, 실패수: 1, 셈: 1, 종료: 1, 실패: [{ 파일: 'tests/b.test.mjs', 시험: 'B' }] }, 기준).코드, 1, '새 실패');
 });
+
+test('기준선줄이기 — 그 run에서 통과한 줄만 빠지고, 새 실패는 안 들어오고, 후보 없는 묶음은 그대로다', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-ci넓은시험-'));
+  try {
+    const 파일 = path.join(방, '기준선.json');
+    fs.writeFileSync(파일, JSON.stringify({ 묶음: {
+      루트: [{ 파일: 'tests/a.test.mjs', 시험: 'A', 까닭: 'ffmpeg 없음' }, { 파일: 'tests/b.test.mjs', 시험: 'B', 까닭: 'ffmpeg 없음' }],
+      회사: [{ 파일: 'x/c.test.mjs', 시험: 'C', 까닭: '포트' }],
+    } }));
+    const 받은 = { 루트: [{ 파일: 'tests/a.test.mjs', 시험: 'A' }, { 파일: 'tests/새.test.mjs', 시험: '새 실패' }] };
+    const r = 넓은.기준선줄이기(7, { 받은, 파일 });
+    assert.deepEqual(r.뺀, { 루트: 1 });
+    const 새 = JSON.parse(fs.readFileSync(파일, 'utf8'));
+    assert.deepEqual(새.묶음.루트.map((x) => x.시험), ['A'], 'B는 통과해 빠지고, 새 실패는 들어오지 않는다');
+    assert.deepEqual(새.묶음.회사.map((x) => x.시험), ['C'], '후보가 없는 묶음은 못 본 것이라 그대로');
+    assert.equal(새.묶음.루트[0].까닭, 'ffmpeg 없음', '남는 줄의 까닭은 그대로');
+    assert.equal(새.줄인run, 7);
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});

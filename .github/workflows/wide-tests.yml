@@ -51,12 +51,14 @@ jobs:
           npm ci --ignore-scripts --no-audit --no-fund
           if [ "$BUNDLE" = "desktop" ]; then (cd desktop && npm ci --ignore-scripts --no-audit --no-fund); fi
           if [ "$BUNDLE" = "experiences" ]; then (cd experiences/synk-account && npm ci --ignore-scripts --no-audit --no-fund); fi
+          # 영상·납품 묶음 시험이 ffmpeg를 부른다 — 10-21 첫 실행에서 회사 19·루트 5개가 「spawn ffmpeg ENOENT」였다.
+          if [ "$BUNDLE" = "회사" ] || [ "$BUNDLE" = "루트" ]; then sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends ffmpeg; fi
       - name: run tests (기준선보다 늘어난 실패만 빨강)
         env:
           BUNDLE: ${{ matrix.bundle }}
         run: |
           if [ -f tests/ci넓은시험_알려진실패.json ]; then
-            node tools/ci넓은시험.js "$BUNDLE"
+            node tools/ci넓은시험.js "$BUNDLE" --후보 "$RUNNER_TEMP/wide-baseline.json"
           else
             node tools/ci넓은시험.js "$BUNDLE" --기준선 "$RUNNER_TEMP/wide-baseline.json"
           fi
