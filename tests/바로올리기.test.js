@@ -984,3 +984,65 @@ test('재현: 워크트리에서 명령줄로 올리고 따라간다', (t) => {
   assert.equal(또.status, 0, 또.stdout + 또.stderr);
   assert.match(또.stdout, /^\[올릴 것 없음\]/);
 });
+
+// ── push 전 관련 시험(2026-10-21) ───────────────────────────────────────────────
+
+const 관련흐름 = 'name: syntax-check\non:\n  push:\n    paths-ignore:\n      - \'docs/_ops/트랙.md\'\njobs:\n  check:\n    steps:\n      - run: node --test --test-reporter=tap tests/*.test.js\n';
+const 값시험 = "const { test } = require('node:test'); const assert = require('node:assert');\n"
+  + "test('tools/값.json 의 값은 1이다', () => { assert.equal(require('../tools/값.json').값, 1); });\n";
+const 관련판 = (t) => 새판(t, { 파일: { '.github/workflows/syntax-check.yml': 관련흐름, 'tests/값.test.js': 값시험, 'tools/값.json': '{"값":1}\n', 'a.txt': '1\n' } });
+
+test('관련 시험: 바꾼 경로를 읽는 시험이 깨지면 push하지 않고 깨진 시험을 보인다', async (t) => {
+  const 판 = 관련판(t);
+  const 워 = 판.워크트리('wt');
+  const 전 = 판.원격머리();
+  워.쓰기('tools/값.json', '{"값":2}\n');
+  const 미리 = await 도구.올리기({ 저장소: 워.폴더, 경로들: ['tools/값.json'], 메시지: '값 2' });
+  assert.equal(미리.결과, '미리 보기', JSON.stringify(미리));
+  assert.deepEqual(미리.관련시험.시험, ['tests/값.test.js']);
+  assert.equal(미리.관련시험.결과, undefined, '미리 보기는 고르기만 한다');
+  const r = await 도구.올리기({ 저장소: 워.폴더, 경로들: ['tools/값.json'], 메시지: '값 2', 실행: true });
+  assert.equal(r.결과, '멈춤', JSON.stringify(r));
+  assert.match(r.이유, /관련 시험이 깨졌다\(1\/1\)/);
+  assert.equal(r.관련시험.결과.실패[0].이름, 'tools/값.json 의 값은 1이다');
+  assert.equal(판.원격머리(), 전, '아무것도 올라가지 않았다');
+});
+
+test('관련 시험: --시험건너뜀은 까닭을 트레일러 앞 문단으로 남기고 올린다 · 통과하면 그대로 올린다 · 기록 전용은 고르지 않는다', async (t) => {
+  const 판 = 관련판(t);
+  const 워 = 판.워크트리('wt');
+  워.쓰기('tools/값.json', '{"값":2}\n');
+  const 메시지 = '값 2\n\n본문\n\nCo-Authored-By: 시험 <t@example.invalid>\n';
+  const r = await 도구.올리기({ 저장소: 워.폴더, 경로들: ['tools/값.json'], 메시지, 실행: true, 시험건너뜀: '값 시험은 다음 커밋에서 고친다' });
+  assert.equal(r.결과, '올림', JSON.stringify(r));
+  assert.equal(r.관련시험.건너뜀, '값 시험은 다음 커밋에서 고친다');
+  const 몸 = execFileSync('git', ['--git-dir', 판.원격, 'log', '-1', '--format=%B', 'master'], { encoding: 'utf8' });
+  assert.match(몸, /본문\n\n관련 시험 건너뜀: 값 시험은 다음 커밋에서 고친다\n\nCo-Authored-By: 시험/);
+  await assert.rejects(도구.올리기({ 저장소: 워.폴더, 경로들: ['a.txt'], 메시지: 'x', 실행: true, 시험건너뜀: ' ' }), /까닭/);
+
+  워.쓰기('tools/값.json', '{"값":1}\n');
+  const 됨 = await 도구.올리기({ 저장소: 워.폴더, 경로들: ['tools/값.json'], 메시지: '값 1로', 실행: true });
+  assert.equal(됨.결과, '올림', JSON.stringify(됨));
+  assert.equal(됨.관련시험.결과.통과함, true);
+  assert.equal(판.원격파일('tools/값.json'), '{"값":1}\n');
+
+  워.쓰기('docs/_ops/트랙.md', '- 기록\n');
+  const 기록 = await 도구.올리기({ 저장소: 워.폴더, 경로들: ['docs/_ops/트랙.md'], 메시지: '트랙', 실행: true });
+  assert.equal(기록.결과, '올림', JSON.stringify(기록));
+  assert.equal(기록.관련시험.기록전용, true);
+  assert.throws(() => 도구.인자읽기(['따라가기', '--시험건너뜀', 'x']), /받지 않는다/);
+  assert.equal(도구.인자읽기(['a.md', '-m', 'x', '--시험건너뜀', '까닭']).시험건너뜀, '까닭');
+});
+
+test('관련 시험(공용 작업본): 깨진 시험이 남의 미커밋을 읽었을 수 있으면 막지 않고 주의를 남긴다(아르곤 10-22 P1)', async (t) => {
+  const 시험글 = "// a.txt 를 바꾸면 이 시험이 골린다\n" + 값시험;
+  const 판 = 새판(t, { 파일: { '.github/workflows/syntax-check.yml': 관련흐름, 'tests/값.test.js': 시험글, 'tools/값.json': '{"값":1}\n', 'a.txt': '1\n' } });
+  판.공용.쓰기('tools/값.json', '{"값":2}\n'); // 다른 세션이 공용 작업본에서 고치다 만 파일
+  판.공용.쓰기('a.txt', '2\n');
+  const r = await 도구.올리기({ 저장소: 판.공용.폴더, 경로들: ['a.txt'], 메시지: 'a 2', 실행: true });
+  assert.equal(r.결과, '올림', JSON.stringify(r));
+  assert.equal(r.관련시험.결과.통과함, false);
+  assert.match(r.주의, /남의 미커밋\(tools\/값\.json\)/);
+  assert.equal(판.원격파일('a.txt'), '2\n');
+  assert.equal(판.원격파일('tools/값.json'), '{"값":1}\n', '남의 미커밋은 올라가지 않는다');
+});

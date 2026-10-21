@@ -1,0 +1,71 @@
+name: wide-tests
+
+# 루트 tests/*.test.js 밖의 시험(루트 .mjs·.cjs, 회사 서버, PC 앱, 경험 앱, tools)을 묶음마다 돌린다(2026-10-22).
+# 기준선(tests/ci넓은시험_알려진실패.json)에 적힌 실패는 빨강으로 치지 않고, 늘어난 실패만 빨강이다 — tools/ci넓은시험.js.
+# 기준선 파일이 없으면 이번 실패를 기준선 후보로 올리기만 한다(그 후보로 기준선을 적는다).
+on:
+  push:
+    # syntax-check.yml과 같은 기록 전용 경로는 띄우지 않는다.
+    paths-ignore:
+      - 'docs/_ops/트랙.md'
+      - 'docs/_ops/결정.md'
+      - 'docs/_ops/보관/**'
+      - 'docs/_ops/*.jsonl'
+      - 'docs/현장노트/**'
+  schedule:
+    - cron: '30 18 * * *' # 매일 03:30 KST — push가 안 건드린 바뀜(남의 저장소 계약 등)도 하루 한 번은 본다
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wide-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  wide:
+    if: ${{ github.event.repository.private == false || vars.SYNK_HOSTED_CI == 'on' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        bundle: [루트, 회사, desktop, experiences, tools]
+    defaults:
+      run:
+        working-directory: SYNK-appsscript
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          path: SYNK-appsscript
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      - name: install dependencies
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+          BUNDLE: ${{ matrix.bundle }}
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          if [ "$BUNDLE" = "desktop" ]; then (cd desktop && npm ci --ignore-scripts --no-audit --no-fund); fi
+          if [ "$BUNDLE" = "experiences" ]; then (cd experiences/synk-account && npm ci --ignore-scripts --no-audit --no-fund); fi
+      - name: run tests (기준선보다 늘어난 실패만 빨강)
+        env:
+          BUNDLE: ${{ matrix.bundle }}
+        run: |
+          if [ -f tests/ci넓은시험_알려진실패.json ]; then
+            node tools/ci넓은시험.js "$BUNDLE"
+          else
+            node tools/ci넓은시험.js "$BUNDLE" --기준선 "$RUNNER_TEMP/wide-baseline.json"
+          fi
+      - name: 기준선 후보 올리기
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v5
+        with:
+          name: wide-baseline-${{ strategy.job-index }}
+          path: ${{ runner.temp }}/wide-baseline.json
+          retention-days: 5
+          if-no-files-found: ignore

@@ -163,6 +163,20 @@ jobs:
             || echo "(not ok 0건 — 실패가 TAP 밖에서 났다: 스폰 실패·구문 오류 쪽을 본다)"
           echo "::endgroup::"
           exit "$rc"
+      - name: 시험 읽기 지도 (바로올리기가 push 전 관련 시험을 고른다 — tools/관련시험.js)
+        # 위 시험 단계의 읽기 기록으로 「시험 → 읽은 파일·나열한 폴더·git 무늬」 지도를 만든다. 실패해도 검사를 막지 않는다.
+        if: ${{ success() || failure() }}
+        continue-on-error: true
+        run: node tools/관련시험.js 지도 --trace "$SYNK_READ_TRACE_DIR" --out "$RUNNER_TEMP/test-read-map.json"
+      - name: 시험 읽기 지도 올리기
+        if: ${{ success() || failure() }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v5
+        with:
+          name: test-read-map
+          path: ${{ runner.temp }}/test-read-map.json
+          retention-days: 5
+          if-no-files-found: ignore
       - name: prism 접점 래칫 (학생·학부모 참조 0)
         env:
           NODE_OPTIONS: --require ${{ github.workspace }}/SYNK-appsscript/tools/ci읽기기록.cjs
