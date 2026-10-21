@@ -16,7 +16,8 @@ $components = @(
     # 10-19 유호님 결정: 무거운 렌더·학습과 겹치면 24분을 넘겨 끊겨서 55분(예약 제한 56분)으로 늘림. 겹치는 30분 실행은 IgnoreNew로 건너뜀.
     # 10-20 유호님 결정: 예약 우선순위 7(CPU 보통 아래·I/O 낮음·메모리 2)에서는 CPU가 꽉 찬 동안 같은 일이 중앙값 1.5배·평균 4.2배(나쁠 때 12~19배) 느려 5(보통)로 올림. 나머지 백업은 7 그대로.
     @{ id='onedrive'; taskName='SYNK OneDrive 문서 백업'; receipt='상태/OneDrive/latest.json'; maxAgeHours=2; maxRunHours=0.9167; intervalMinutes=30; taskPriority=5; scope='안전한 MD·소스와 복원 입구'; command=@($node,(Join-Path $PSScriptRoot 'onedrive-backup.cjs')); workingDirectory=$repo },
-    @{ id='github'; taskName='SYNK GitHub 커밋 백업'; receipt='github-backup-status.json'; maxAgeHours=6; maxRunHours=0.4; intervalMinutes=120; scope='비공개 커밋의 전용 ref, 공개 미게시 이력의 암호화 보존'; command=@($node,(Join-Path $PSScriptRoot 'GitHub백업.cjs'),'--apply'); workingDirectory=$repo },
+    # 10-21 유호님 결정: GitHub도 5로 올리고, OneDrive와 같은 시각에 시작하지 않게 15분 늦게 시작(09:30 겹침에서 우선순위 7로 밀려 24분 제한).
+    @{ id='github'; taskName='SYNK GitHub 커밋 백업'; receipt='github-backup-status.json'; maxAgeHours=6; maxRunHours=0.4; intervalMinutes=120; taskPriority=5; startOffsetMinutes=45; scope='비공개 커밋의 전용 ref, 공개 미게시 이력의 암호화 보존'; command=@($node,(Join-Path $PSScriptRoot 'GitHub백업.cjs'),'--apply'); workingDirectory=$repo },
     @{ id='server'; taskName=$dailyName; receipt='backup-status.json'; maxAgeHours=36; maxRunHours=6; dailyTime='05:30'; scope='서버·DB 암호화 사본'; command=@($python,'-X','utf8','-B',(Join-Path $root '매일백업.py')); workingDirectory=$root },
     @{ id='media'; taskName='SYNK 미디어 원본 백업'; receipt='media-backup-status.json'; maxAgeHours=36; maxRunHours=12; dailyTime='12:30'; scope='77yuhbs 20TB, 변경된 원본 새 버전 보존'; command=@($python,'-X','utf8','-B',(Join-Path $root '원본백업.py')); workingDirectory=$root },
     @{ id='archive'; taskName='SYNK 기존 Drive 보관 점검'; receipt='archive-audit-status.json'; maxAgeHours=192; maxRunHours=1; weeklyTime='14:00'; scope='unmet23 5TB 기존 보관 원본 무결성 확인'; command=@($python,'-X','utf8','-B',(Join-Path $root '기존보관점검.py')); workingDirectory=$root }
@@ -50,7 +51,8 @@ foreach ($item in $components + $auxiliaryTasks) {
     if ($item.id -eq 'server' -and $daily) { continue }
     $action = New-ScheduledTaskAction -Execute $pythonw -Argument "-X utf8 -B `"$(Join-Path $PSScriptRoot 'backup-command.py')`" --config `"$configFile`" --id $($item.id)" -WorkingDirectory $repo
     if ($item.intervalMinutes) {
-        $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(30) -RepetitionInterval (New-TimeSpan -Minutes $item.intervalMinutes)
+        # GitHub(2시간)은 OneDrive(30분)보다 15분 늦게 시작해 둘이 같은 시각에 돌지 않게 한다(10-21 09:30 겹침에 24분 제한, 유호님 승인).
+        $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes($(if ($item.startOffsetMinutes) { $item.startOffsetMinutes } else { 30 })) -RepetitionInterval (New-TimeSpan -Minutes $item.intervalMinutes)
         $logon = New-ScheduledTaskTrigger -AtLogOn -User $taskUser
         $triggers = @($trigger,$logon)
     } elseif ($item.dailyTime) {
