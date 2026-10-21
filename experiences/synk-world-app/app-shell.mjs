@@ -371,7 +371,7 @@ function openSpeaking(button){
   const feedback=operating?(client.snapshot&&account?.supportsSpeaking?{status:()=>account.speakingRequest({action:'status'}),request:payload=>account.speakingRequest(payload)}:null)
    :client?.snapshot?{status:()=>client.request('speaking',{method:'POST',body:{action:'status'}}),request:payload=>client.request('speaking',{method:'POST',body:payload})}:null;
   speaking=speakingModule.createSpeakingPractice({show:(title,html)=>show(title,html,'world-speaking',{eyebrow:'SPEAKING'}),home,getOwner:writingOwnerId,tutor:()=>home.tutor?.()?.tutor||null,feedback,
-   coach:()=>{if(coach)return coach;if(writingOwnerId()!==owner)return null;const source=window.SYNKLearningHost||null;if(!source&&owner!=='guest')return null;
+   coach:()=>{if(writingOwnerId()!==owner)return null;if(coach)return coach;const source=window.SYNKLearningHost||null;if(!source&&owner!=='guest')return null;
     coach=source?source.createGame({gameId:'world-speaking'},worldLearning.engine.createGame,worldLearning.createLearningSync):worldLearning.engine.createGame({gameId:'world-speaking',storage:localStorage});return coach;}});
  }
  return speaking.open(button?.dataset?.speakingRoute||'speaking');

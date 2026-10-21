@@ -195,6 +195,11 @@ test('리허설 WORLD 「말하기 연습」 시범: 플래그·동의·녹음·
   await page.waitForSelector('#panel-content [data-wsp-rp-next]');await record('390-roleplay-self');
   await page.locator('#panel-content [data-wsp-rp-next]').click();await page.waitForSelector('#panel-content [data-wsp-rp-speak]',{timeout:30000});
   checks.selfNext=await page.evaluate(()=>document.querySelectorAll('#panel-content .wsp-say[data-who="staff"]').length);assert.equal(checks.selfNext,2);fake.turn='ok';
+  // 4-4. 역할극이 횟수·금액으로 막힌 뒤에는 다음 차례부터 서버로 보내지 않고 따라 말하기로 간다(10-21 아르곤 검수).
+  const turnsBefore=calls.filter(c=>c.action==='turn').length;
+  await page.locator('#panel-content [data-wsp-rp-speak]').click();await page.waitForSelector('#panel-content [data-wsp-rp-stop]');await page.waitForTimeout(1600);await page.locator('#panel-content [data-wsp-rp-stop]').click();
+  await page.waitForSelector('#panel-content [data-wsp-rp-next]');
+  assert.equal(calls.filter(c=>c.action==='turn').length,turnsBefore,'막힌 뒤의 차례는 서버로 보내지 않는다');
   // 5. 영어·몽골어: 화면 글은 그 언어, 한국어는 lang="ko" 칸에만
   for(const lang of ['en','mn']){
    // 계정에 저장된 화면 언어가 주소의 미리 보기(?lang=)를 이기므로(display-language-sync), 설정에서 바꾸듯 setLang을 부른다.
@@ -207,6 +212,14 @@ test('리허설 WORLD 「말하기 연습」 시범: 플래그·동의·녹음·
    assert.equal(calls.filter(c=>c.action==='feedback').at(-1).lang,lang);
    await page.evaluate(()=>document.querySelector('#panel-content .wsp-feedback')?.scrollIntoView({block:'start'}));await record(`390-${lang}-feedback`);
   }
+  // 6. 금액이 막히면(budget) 그 녹음은 스스로 확인으로 남기고, 다음 녹음부터는 보낼 단추 없이 그 안내만(10-21 아르곤 검수).
+  step('budget');await enter('&speaking=preview');
+  await page.evaluate(async()=>{const m=await import('/brand-opening/world-lang.mjs');m.setLang('ko');});await page.waitForFunction(()=>document.documentElement.lang==='ko');
+  await openSpeaking();await page.locator('#panel-content [data-wsp-open="s1-weekend"]').click();await page.waitForSelector('#panel-content [data-wsp-start]');
+  await answerOnce();fake.feedback='budget';await page.locator('#panel-content [data-wsp-send]').click();await page.waitForSelector('#panel-content [data-wsp-self-save]');
+  await page.locator('#panel-content [data-wsp-retry]').click();await answerOnce();await page.waitForSelector('#panel-content [data-wsp-self-save]');
+  assert.equal(await page.locator('#panel-content [data-wsp-send]').count(),0,'금액이 막힌 뒤에는 보낼 단추가 없다');
+  checks.budget=await page.locator('#panel-content .wsp-review').innerText();assert.match(checks.budget,/지금은 자동 피드백을 쓸 수 없어요/);await record('390-task1-budget');fake.feedback='ok';
   for(const [name,m]of Object.entries(measures)){
    assert.equal(m.docOverflow,0,`${name} 가로 넘침`);assert.equal(m.panelOverflow,0,`${name} 시트 가로 넘침`);assert.deepEqual(m.overflowing,[],`${name} 칸 밖으로 나간 것`);
    assert.deepEqual(m.small,[],`${name} 13px 밑 한글`);assert.deepEqual(m.mixed,[],`${name} lang=ko 밖 한글`);assert.deepEqual(m.shortTargets,[],`${name} 44px 밑 단추`);assert.ok(m.whitePills<=1,`${name} 흰 알약 ${m.whitePills}`);
