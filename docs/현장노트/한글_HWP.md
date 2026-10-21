@@ -121,6 +121,12 @@
 - 고침: 뷰어로 연 파일이 있으면 다른 이름(예: `v12b.hwp`)으로 만들고, 그 파일로 검사·글 뽑기를 한다. 이어 붙인 명령은 `set -o pipefail`을 먼저 켜거나 `tail` 없이 돌린다. 뷰어 창은 사용자가 보고 있을 수 있으니 셸에서 닫지 않는다.
 - 다시 확인: 만든 파일의 SHA256이 바뀌었는지, 검사기 출력에 「≠ v6」 줄이 없는지 본다.
 
+### 뷰어를 깐 뒤 작업 표시줄 시계 위에 쿠팡 광고 창이 뜬다 (2026-10-21 Claude)
+- 증상: 10-21 12:17 화면 오른쪽 아래 시계 위에 제목 줄 없는 300×250 쿠팡 「골드박스」 광고 창(☒ 닫기)이 떴다. 유호님이 「왜 뜨냐」고 물었을 때는 이미 닫혀 있어 창 주인을 바로 잡지 못했다.
+- 원인: 뷰어와 같이 깔리는 `HncUpdateTray.exe`(로그온마다 HKLM `…\WOW6432Node\…\Run`의 `HncUpdateTray_2024_Viewer`로 뜬다)가 WebView2로 `https://www.mobwithad.com/banner/bottom?zone=…&w=300&h=250`을 띄운다. 이 주소는 트레이 실행 파일 안에 그대로 들어 있고, 뷰어 본체 `HwpViewer.exe`에는 없다. 그 WebView2 사용자 폴더 `%APPDATA%\EBWebView`는 10-21 11:15에 처음 생겼고, 12:15·12:18에 `img.mobwithad.com/ad/imgfile/coupangBg/300x250/coupang*.jpg`가 캐시에 남았다. 설치할 때 준 `/update-disable`·`/psl-disable`로는 막히지 않는다.
+- 고침: 그 자리에서는 `HncUpdateTray.exe` pid를 실행 경로로 확인하고 그 프로세스만 끈다. 뷰어 창과 `HncUpdateService`는 그대로 두며, 트레이는 다시 뜨지 않았다. 다음 로그온부터 막으려면 작업 관리자 → 시작 앱에서 「HncUpdateTray」를 사용 안 함으로 둔다. HKLM 항목이라 관리자 권한이 필요해 유호님이 한다. 새 PC에 뷰어를 깔 때도 같이 끈다. 창이 이미 닫혔으면 그 시각 전후에 쓰인 파일(이번에는 WebView2 캐시)로 주인을 찾는다 — [윈도우 셸](윈도우_셸.md)의 robocopy 시각 항목.
+- 다시 확인: 다시 로그온한 뒤 `Get-Process HncUpdateTray -ErrorAction SilentlyContinue`가 비어 있는지, `%APPDATA%\EBWebView\Default\Cache\Cache_Data`의 수정 시각이 더 늘지 않는지 본다.
+
 ## 양식 채우기
 
 ### XML로 고친 문단의 줄 배치가 옛 글 그대로 남는다
