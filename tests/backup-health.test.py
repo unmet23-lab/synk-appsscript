@@ -19,6 +19,8 @@ REPO = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location('health', REPO / 'tools' / 'backup-health.py')
 health = importlib.util.module_from_spec(spec); spec.loader.exec_module(health)
 lib = health.load_legacy(REPO.parent / 'SYNK_원본창고')
+spec = importlib.util.spec_from_file_location('command', REPO / 'tools' / 'backup-command.py')
+command = importlib.util.module_from_spec(spec); spec.loader.exec_module(command)
 
 
 class HealthTests(unittest.TestCase):
@@ -535,6 +537,56 @@ class HealthTests(unittest.TestCase):
         result=subprocess.run([sys.executable,str(REPO/'tools'/'backup-command.py'),'--config',str(config),'--id','fixture'],
             capture_output=True,timeout=10)
         self.assertEqual(result.returncode,7)
+
+    def test_upload_stop_skips_the_scheduled_run_with_success(self):
+        # 10-21: on the phone hotspot the OneDrive and GitHub runs (this wrapper) stop like the media and Git ones do.
+        ran = self.root / 'ran.txt'
+        config = self.root / 'config.json'
+        config.write_text(json.dumps({'components': [{'id': 'fixture', 'command': [sys.executable, '-c',
+            f'open({str(ran)!r}, "w").write("x"); raise SystemExit(7)'], 'workingDirectory': str(self.root), 'maxRunHours': 0.01}]}), encoding='utf-8')
+        (self.root / 'upload.stop').write_text('', encoding='utf-8')
+        run = lambda: subprocess.run([sys.executable, str(REPO / 'tools' / 'backup-command.py'), '--config', str(config), '--id', 'fixture'],
+                                     capture_output=True, timeout=60)
+        self.assertEqual(run().returncode, 0); self.assertFalse(ran.exists())
+        trace = [json.loads(x) for x in (self.root / '상태' / '예약실행' / 'fixture.jsonl').read_text(encoding='utf-8').splitlines()]
+        self.assertEqual([x['event'] for x in trace], ['stopped-on-purpose'])
+        (self.root / 'upload.stop').unlink()
+        self.assertEqual(run().returncode, 7); self.assertTrue(ran.exists())
+
+    def test_hotspot_stop_lifts_itself_only_on_another_wifi(self):
+        config, marker = self.root / 'config.json', self.root / 'upload.stop'
+        hotspot = json.dumps({'reason': 'hotspot', 'ssid': '유호의 S26 Ultra'}, ensure_ascii=False)
+        def stopped(text, networks):
+            if text is None: marker.unlink(missing_ok=True)
+            else: marker.write_text(text, encoding='utf-8')
+            with patch.object(command, 'wifi_networks', return_value=networks):
+                return command.stopped(config), marker.exists()
+        # Still on the hotspot, Wi-Fi unreadable or off: the stop holds.
+        for networks in (['유호의 S26 Ultra'], ['유호의 S26 Ultra', '옆집'], None, []):
+            with self.subTest(networks=networks):
+                self.assertEqual(stopped(hotspot, networks), (True, True))
+        # On another Wi-Fi the marker goes, so the media and Git backups that read it run again too.
+        self.assertEqual(stopped(hotspot, ['집 와이파이']), (False, False))
+        # A plain marker (someone stopping uploads by hand) or another reason never lifts by itself.
+        for text in ('', 'stop', json.dumps({'reason': 'manual'}), json.dumps({'reason': 'hotspot'})):
+            with self.subTest(text=text):
+                self.assertEqual(stopped(text, ['집 와이파이']), (True, True))
+        self.assertEqual(stopped(None, ['유호의 S26 Ultra']), (False, False))
+
+    def test_old_success_while_stopped_on_purpose_is_paused_not_missed(self):
+        old = {'status': 'success', 'lastSuccessAt': lib.stamp(self.now - dt.timedelta(hours=3))}  # past the 2-hour age
+        row = self.evaluate(old, stopped=True)
+        self.assertEqual((row['status'], row['codes']), ('paused', ['BACKUP_STOPPED']))
+        self.assertEqual(self.evaluate(old)['codes'], ['BACKUP_STALE'])
+        # gather reads the marker: the stop is shown, not alarmed.
+        lib.atomic_json(self.root / 'onedrive.json', old)
+        config = {'components': [{'id': 'onedrive', 'receipt': 'onedrive.json', 'maxAgeHours': 2}]}
+        tasks = {'onedrive': {'exists': True, 'enabled': True, 'result': 0}}
+        (self.root / 'upload.stop').write_text('', encoding='utf-8')
+        summary = health.gather(self.root, lib, config, tasks, self.now)
+        self.assertEqual((summary['components'][0]['status'], summary['issues']), ('paused', []))
+        (self.root / 'upload.stop').unlink()
+        self.assertEqual(health.gather(self.root, lib, config, tasks, self.now)['components'][0]['status'], 'missed')
 
     def tree_config(self, marker, hours):
         # The child starts a grandchild (as node starts git or pwsh); both would sleep far past the limit.

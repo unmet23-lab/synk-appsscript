@@ -23,6 +23,8 @@ import time
 
 CREATE_NO_WINDOW, CREATE_SUSPENDED = 0x08000000, 0x00000004
 TRACE_LIMIT_BYTES = 256 * 1024
+# The backups' stop marker next to the config; 매일백업.py, 원본백업.py and Git보관백업.py read the same file.
+STOP_MARKER = 'upload.stop'
 
 
 def started_seconds_ago():
@@ -92,6 +94,43 @@ def stop(process, job):
     except subprocess.TimeoutExpired: pass
 
 
+def wifi_networks():
+    """Names of the Wi-Fi networks this PC is connected to; None when they cannot be read."""
+    if os.name != 'nt': return None
+    try:
+        out = subprocess.run(['netsh.exe', 'wlan', 'show', 'interfaces'], capture_output=True, timeout=30,
+                             stdin=subprocess.DEVNULL, creationflags=CREATE_NO_WINDOW | 0x00000020).stdout
+    except (OSError, subprocess.SubprocessError):
+        return None
+    for encoding in ('utf-8', 'cp949'):  # UTF-8 from a UTF-8 console, the ANSI page from a scheduled run
+        try: text = out.decode(encoding); break
+        except UnicodeDecodeError: continue
+    else: return None
+    return [v.strip() for k, _, v in (line.partition(':') for line in text.splitlines()) if k.strip() == 'SSID' and v.strip()]
+
+
+def stopped(config_path):
+    """Whether the backups are stopped on purpose by the marker next to the config.
+
+    A marker that names a hotspot (10-21 유호님: 「핫스팟 쓰는 동안 자동 백업 멈춰 줘. 와이파이로 돌아오면 다시 켜.」) lifts
+    itself once the PC is on another Wi-Fi: it is removed, so the backups that read it run again too. Any other marker,
+    or a network that cannot be read, keeps the stop."""
+    marker = Path(config_path).parent / STOP_MARKER
+    try:
+        note = json.loads(marker.read_text(encoding='utf-8-sig'))
+    except FileNotFoundError:
+        return False
+    except (OSError, ValueError):
+        return True
+    if not isinstance(note, dict) or note.get('reason') != 'hotspot' or not note.get('ssid'): return True
+    networks = wifi_networks()
+    if not networks or note['ssid'] in networks: return True
+    try: marker.unlink()
+    except FileNotFoundError: pass
+    except OSError: return True
+    return False
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--config', type=Path, required=True)
@@ -101,6 +140,9 @@ def main():
     item = next(x for x in config['components'] + config.get('auxiliaryTasks', []) if x['id'] == args.id)
     command = item['command']
     if not command or not all(isinstance(x,str) for x in command): return 2
+    if stopped(args.config):
+        trace(args.config, args.id, event='stopped-on-purpose', marker=STOP_MARKER)
+        return 0
     flags = CREATE_NO_WINDOW if os.name == 'nt' else 0
     limit = item['maxRunHours'] * 3600
     job = None

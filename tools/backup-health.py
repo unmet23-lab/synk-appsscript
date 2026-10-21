@@ -160,7 +160,7 @@ def suspended_seconds():
     return (interrupt.value - unbiased.value) / 1e7
 
 
-def evaluate(item, receipt, now, lib, task=None, installed_at=None, repair=None, suspended=None):
+def evaluate(item, receipt, now, lib, task=None, installed_at=None, repair=None, suspended=None, stopped=False):
     # suspended: the sleep record (spans, or None when unreadable), or a function that reads it when an age needs it.
     record = suspended if callable(suspended) else lambda: suspended
     receipt = receipt or {}
@@ -213,7 +213,9 @@ def evaluate(item, receipt, now, lib, task=None, installed_at=None, repair=None,
         # awake is reported at the same moment as before, since that time has no sleep to leave out.
         baseline = success or installed_at
         if baseline and overdue(baseline, now, max_age, record):
-            state = 'missed'; codes.append('BACKUP_STALE')
+            # While upload.stop holds the backups on purpose (10-21: on the phone hotspot), an old success is the stop.
+            if stopped: state = 'paused'; codes.append('BACKUP_STOPPED')
+            else: state = 'missed'; codes.append('BACKUP_STALE')
         if item['id'] == 'server' and success and overdue(lib.next_daily(success), now, dt.timedelta(hours=6), record):
             state = 'missed'; codes.append('DAILY_RUN_MISSED')
     if state not in GOOD | BAD | {'pending', 'running', 'paused'}:
@@ -346,7 +348,7 @@ def task_snapshot(config_path, extra=()):
 def gather(root, lib, config, tasks, now, sleep_record=lambda: None):
     # The System log is read at most once, and only while a run is in progress or an age passes its limit.
     sleep_record = functools.cache(sleep_record)
-    components = []
+    components, stopped = [], (root / 'upload.stop').exists()
     for item in config['components'] + config.get('additionalChecks', []):
         try:
             receipt = lib.read_json(root / item['receipt'])
@@ -380,7 +382,7 @@ def gather(root, lib, config, tasks, now, sleep_record=lambda: None):
             if auxiliary:
                 task['auxiliaryTasks'] = [tasks.get(x['id'], {'id':x['id'], 'exists':False}) for x in auxiliary]
             component = evaluate(item, receipt, now, lib, task,
-                lib.instant(item.get('installedAt') or config.get('installedAt')), repair, sleep_record)
+                lib.instant(item.get('installedAt') or config.get('installedAt')), repair, sleep_record, stopped)
         except (OSError, ValueError, TypeError, KeyError):
             component = {'id': item['id'], 'label': LABELS[item['id']], 'status': 'unknown',
                          'codes': ['RECEIPT_UNREADABLE'], 'lastSuccessAt': None}
