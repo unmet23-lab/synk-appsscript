@@ -130,7 +130,7 @@ function renderStatus(){
  if((snap?.accountId||'guest')!==lifeOwner||client.generation!==lifeGeneration)initializeLife();
  renderHomeHanger(snap);
  if(!snap&&townSession){townSession.dispose();townSession=null;delete window.SYNKWorldTownHost;}
- if(!snap&&['world-play','world-retry','world-reward','world-profile','world-device-records','game','world-game-loading','world-game-error','world-game-conflict'].includes(screen)){draftRun=null;answers=[];lastCompletion=null;close();}
+ if(!snap&&['world-play','world-retry','world-reward','world-profile','world-device-records','game','world-game-loading','world-game-error','world-game-conflict','world-speaking'].includes(screen)){draftRun=null;answers=[];lastCompletion=null;close();}
  if(!home.isMaru){if(snap){home.setEquipment(snap.avatar?.slots,snap.avatar?.dyes);$('.page-heading h1').textContent=snap.activeRun?'하던 놀이가 있어요':'첫 문장 놀이부터 시작해요';$('.hero-copy .felt-button').innerHTML=`${snap.activeRun?'이어서 하기':'첫 문장 놀이 시작하기'} <span aria-hidden="true">→</span>`;}
  else {home.setEquipment({});$('.page-heading h1').textContent='첫 문장 놀이부터 시작해요';$('.hero-copy .felt-button').innerHTML='첫 놀이 시작하기 <span aria-hidden="true">→</span>';}
  }

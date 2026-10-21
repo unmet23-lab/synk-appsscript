@@ -193,6 +193,7 @@ test('리허설 WORLD 「말하기 연습」 시범: 플래그·동의·녹음·
   await page.locator('#panel-content [data-wsp-rp-start]').click();await page.waitForSelector('#panel-content [data-wsp-rp-speak]',{timeout:30000});fake.turn='limit';
   await page.locator('#panel-content [data-wsp-rp-speak]').click();await page.waitForSelector('#panel-content [data-wsp-rp-stop]');await page.waitForTimeout(1600);await page.locator('#panel-content [data-wsp-rp-stop]').click();
   await page.waitForSelector('#panel-content [data-wsp-rp-next]');await record('390-roleplay-self');
+  checks.selfNowCount=await page.evaluate(()=>(document.querySelector('#panel-content').innerText.match(/지금은 자동 대답을 쓸 수 없어요/g)||[]).length);assert.equal(checks.selfNowCount,1,'막힌 안내는 한 곳에만(10-21 Fable 검수)');
   await page.locator('#panel-content [data-wsp-rp-next]').click();await page.waitForSelector('#panel-content [data-wsp-rp-speak]',{timeout:30000});
   checks.selfNext=await page.evaluate(()=>document.querySelectorAll('#panel-content .wsp-say[data-who="staff"]').length);assert.equal(checks.selfNext,2);fake.turn='ok';
   // 4-4. 역할극이 횟수·금액으로 막힌 뒤에는 다음 차례부터 서버로 보내지 않고 따라 말하기로 간다(10-21 아르곤 검수).

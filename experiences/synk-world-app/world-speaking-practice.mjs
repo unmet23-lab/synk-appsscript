@@ -32,7 +32,7 @@ export const SPEAKING_CANDIDATES=Object.freeze([1,2,3,4,5,6].map(type=>Object.fr
  .concat(Object.freeze({id:'life-speaking-cafe',route:'speaking:rp-cafe-tea',minutes:4,targets:Object.freeze([SPEAKING_SKILLS[2]]),area:'speaking',exam:null})));
 
 const MIMES=['audio/webm;codecs=opus','audio/ogg;codecs=opus','audio/mp4','audio/webm'];
-const LOG_MAX=200,VOICED_RMS=.018,MIN_VOICED_MS=700,SEND_MAX_BYTES=1400000;
+const LOG_MAX=200,VOICED_RMS=.018,MIN_VOICED_MS=700,SEND_MAX_BYTES=1400000,STATUS_WAIT_MS=8000;
 const storeKey=owner=>`synk.world.speaking.v1:${owner||'guest'}`;
 const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const uuid=()=>globalThis.crypto?.randomUUID?.()||'10000000-1000-4000-8000-100000000000'.replace(/[018]/g,c=>(c^globalThis.crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16));
@@ -110,7 +110,7 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
   if(code==='budget'||code==='limit'&&!turn)status={...status,remaining:0,blocked:code};
   if(turn&&(code==='budget'||code==='limit'))turnBlocked=true;
  }
- const turnAvailable=()=>aiAvailable()&&!turnBlocked&&status?.turnRemaining!==0;
+ const turnAvailable=()=>aiAvailable()&&status?.turnEnabled!==false&&!turnBlocked&&status?.turnRemaining!==0;
 
  // ── 튜터 말풍선 ──
  function tutorHtml(kind){
@@ -293,7 +293,10 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
   let result;
   try{const data=await blobToBase64(run.blob);result=await feedback.request({action:'feedback',request_id:requestId,consent:'send-once',mode:'exam',item_id:it.id,items_version:bank.contentHash,lang:['ko','en','mn'].includes(lang())?lang():'ko',audio:{mime:run.mime||'audio/webm',data},seconds:run.seconds});}
   catch(error){result={status:'unavailable',code:error?.code||null};}
-  if(stopped||expected!==getOwner()||!run||run.requestId!==requestId)return;
+  if(stopped)return;
+  // 보내는 사이 계정이 바뀌었으면(세션 끊김 등) 「듣고 있어요」에 멈추지 않고 새 계정의 목록으로 그린다(10-21 Fable 검수).
+  if(expected!==getOwner()){render();return;}
+  if(!run||run.requestId!==requestId)return;
   run.phase='feedback';run.result=result?.status==='ok'&&result.feedback?.status==='ok'?{status:'ok',feedback:result.feedback}:{status:result?.feedback?.status||result?.status||'unavailable'};
   if(Number.isInteger(result?.remaining))status={...status,remaining:result.remaining};
   noteServer(result?.code||result?.status);
@@ -326,7 +329,7 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
   return `<div class="wsp wsp-roleplay" data-wsp-stage><div class="wsp-bar"><button class="quiet-button" data-wsp-back ${['opening','rec','stopping','thinking'].includes(r.phase)?'disabled':''}>← ${esc(st('task.back'))}</button><span class="wsp-type">${esc(st('rp.title'))}</span></div>`
    +tutorHtml(r.phase==='done'?'done':r.bubble||'mission')
    +`<section class="wsp-mission"><p class="wsp-label">${esc(st('rp.mission'))}</p><p class="wsp-order" lang="ko"><span>${goal.temperature==='warm'?'따뜻한':'차가운'} ${goal.drink==='tea'?'차':'주스'}</span><span>${goal.count===2?'두':goal.count} 잔</span><span>${goal.place==='here'?'카페 안에서':'포장'}</span></p>${lang()!=='ko'&&rp.missionGloss?.[lang()]?`<p class="wsp-note">${esc(rp.missionGloss[lang()])}</p>`:''}</section>`
-   +(offline&&r.phase!=='done'?`<p class="wsp-note">${esc(st('rp.offline'))}</p>`:blockedTurns&&r.phase!=='done'?`<p class="wsp-note">${esc(st('rp.selfNow'))}</p>`:'')
+   +(offline&&r.phase!=='done'?`<p class="wsp-note">${esc(st(status?.failed?'rp.selfNow':'rp.offline'))}</p>`:blockedTurns&&r.phase!=='done'&&r.turns?.at(-1)?.note!==st('rp.selfNow')?`<p class="wsp-note">${esc(st('rp.selfNow'))}</p>`:'')
    +`<ol class="wsp-chat">${turns}</ol><section class="wsp-stage" data-wsp-zone>${action}</section><p class="wsp-sr" aria-live="polite" data-wsp-live></p></div>`;
  }
  function playStaff(rp,stepId,{again=false}={}){
@@ -361,13 +364,20 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
   const step=rp.steps.find(s=>s.id===run.step),seconds=Math.max(1,Math.round((now()-run.startedAt)/1000));
   if(!blob||voicedMs!=null&&voicedMs<MIN_VOICED_MS){const note=st('rp.silent');run.phase='turn';run.bubble='retry';run.turns=[...run.turns,{who:'me',note}];render('[data-wsp-rp-speak]');announce(note);return;}
   // 상태가 아직 오는 중이면 기다린 뒤 정한다 — 첫 차례가 까닭 없이 따라 말하기로 빠지지 않게(10-21 아르곤 검수).
-  if(feedback&&!status&&statusAsk){const token=run;await statusAsk;if(stopped||view.kind!=='roleplay'||run!==token)return;}
+  if(feedback&&!status&&statusAsk){
+   const token=run;run.phase='thinking';render();
+   // 녹음 화면에 멈춰 보이지 않게 「듣고 있어요」를 그리고, 상태가 늦으면 8초 뒤 따라 말하기로 넘긴다(10-21 Fable 검수).
+   await Promise.race([statusAsk,new Promise(resolve=>setTimeout(resolve,STATUS_WAIT_MS))]);
+   if(stopped||view.kind!=='roleplay'||run!==token)return;
+  }
   if(!turnAvailable()){run.phase='self';run.turns=[...run.turns,{who:'me',note:st('task.review',{s:seconds}),better:step.model}];render();return;}
   run.phase='thinking';render();
   const expected=owner;let result;
   try{const data=await blobToBase64(blob);result=await feedback.request({action:'turn',request_id:uuid(),consent:'send-once',mode:'roleplay',roleplay_id:rp.id,step_id:step.id,items_version:bank.contentHash,lang:['ko','en','mn'].includes(lang())?lang():'ko',audio:{mime:blob.type||'audio/webm',data},seconds});}
   catch(error){result={status:'unavailable',code:error?.code||null};}
-  if(stopped||expected!==getOwner()||view.kind!=='roleplay'||!run)return;
+  if(stopped)return;
+  if(expected!==getOwner()){render();return;}
+  if(view.kind!=='roleplay'||!run)return;
   noteServer(result?.code||result?.status,{turn:true});
   const turn=result?.status==='ok'?result.turn:null,code=turn?turn.status:result?.status||'unavailable';
   if(!turn||turn.status!=='ok'){
@@ -481,7 +491,7 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
   // 자동 피드백 상태는 처음 열 때 묻는다. 묻기가 실패했으면 다음에 열 때 다시 묻고, 묻는 사이 계정이 바뀌었으면 그 답은 버린다(10-21 아르곤 검수).
   if(feedback&&(!status||status.failed)&&!statusAsk){
    const asked=owner,ask=statusAsk=Promise.resolve().then(()=>feedback.status()).then(next=>next||{enabled:false},()=>({enabled:false,failed:true}))
-    .then(next=>{if(statusAsk===ask)statusAsk=null;if(stopped||asked!==owner)return;status=next;if(current())statusArrived();});
+    .then(next=>{if(statusAsk===ask)statusAsk=null;if(stopped||asked!==owner||asked!==getOwner())return;status=next;statusArrived();});
   }
   const [,which]=String(route).split(':');
   if(roleplay(which)){openRoleplay(which);return;}

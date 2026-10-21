@@ -21,7 +21,8 @@ export function createSpeakingDevHost({enabled=process.env.SYNK_WORLD_SPEAKING_D
  const count=id=>used.get(`${day()}|${id}`)||0;
  let lib=caller;
  const load=async()=>lib||=await import('../../tools/lib/말하기호출.mjs');
- const bad=code=>({status:400,body:{ok:false,code}});
+ // 오류 몸통은 운영 함수 꼴(code)과 리허설 클라이언트(world-client.mjs)가 읽는 꼴(error.code)을 함께 싣는다(10-21 Fable 검수).
+ const bad=(code,status=400)=>({status,body:{ok:false,code,error:{code}}});
  async function handle(accountId,raw){
   let input;try{input=JSON.parse(Buffer.isBuffer(raw)?raw.toString('utf8'):String(raw||''));}catch{return bad('INVALID_JSON');}
   if(!input||typeof input!=='object')return bad('INVALID_JSON');
@@ -34,10 +35,10 @@ export function createSpeakingDevHost({enabled=process.env.SYNK_WORLD_SPEAKING_D
   const mime=String(input.audio?.mime||'').split(';')[0].toLowerCase(),data=input.audio?.data;
   if(!MIMES.has(mime)||typeof data!=='string'||!data)return bad('INVALID_AUDIO');
   if(typeof input.seconds!=='number'||!Number.isFinite(input.seconds)||input.seconds<=0)return bad('INVALID_SECONDS');
-  if(input.items_version!==bank.contentHash)return {status:409,body:{ok:false,code:'ITEM_CHANGED'}};
+  if(input.items_version!==bank.contentHash)return bad('ITEM_CHANGED',409);
   let item=null,roleplay=null,step=null;
-  if(input.action==='feedback'){item=bank.items.find(i=>i.id===input.item_id);if(!item)return {status:409,body:{ok:false,code:'ITEM_CHANGED'}};}
-  else{roleplay=(bank.roleplays||[]).find(r=>r.id===input.roleplay_id);step=roleplay?.steps.find(s=>s.id===input.step_id);if(!step)return {status:409,body:{ok:false,code:'ITEM_CHANGED'}};}
+  if(input.action==='feedback'){item=bank.items.find(i=>i.id===input.item_id);if(!item)return bad('ITEM_CHANGED',409);}
+  else{roleplay=(bank.roleplays||[]).find(r=>r.id===input.roleplay_id);step=roleplay?.steps.find(s=>s.id===input.step_id);if(!step)return bad('ITEM_CHANGED',409);}
   const limit=item?bank.types[item.type].answerSec:roleplay.answerSec;
   if(data.length>MAX_BASE64||Number(input.seconds)>limit+5)return {status:200,body:{ok:true,accountId,status:'too_long'}};
   if(!enabled)return {status:200,body:{ok:true,accountId,status:'off'}};
