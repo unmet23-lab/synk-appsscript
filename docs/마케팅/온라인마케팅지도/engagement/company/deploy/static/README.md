@@ -104,4 +104,5 @@
 - 메신저: `tools/company-messenger/server.mjs`(`publicFile` 옵션·검사, 정적 경로를 파일마다 고름, 버전 붙일 자산도 같은 함수)
 - 배포: `deploy/compose.yaml`(마운트·환경 1줄), `deploy/static/`(정책·PC 도구·노드 스크립트(`ensure`·`served`)·Python 시험), `deploy/retention.py`(docker 없는 감시 VM은 이미지 칸을 건너뜀, plan에 노드 이름)·`retention.test.py`
 - 특히 봐 줄 것: origin 규칙이 뒤이은 이미지 릴리스의 공개 대조와 맞물리는지(위 「남는 규칙」), 노드 `served`·`stage`의 origin 계산이 서버 판정과 같은지, 큰 화면 파일 첫 요청 때 동기 해시 비용(컨테이너당 파일마다 한 번).
+- Fable 검수(10-21, `78dd8fbda`·덧붙임 `41ea503b9`): 「그대로 운영 후보로」, P0·P1 0. 반영한 것은 위 「노드 쓰기 내구성」과 compose `create_host_path: true`, 깨진 history.json·노드 예외도 한 줄 JSON으로. 남긴 P3: `deploy/SYSTEMD.md` 8행 「Compose는 빠진 디렉터리를 자동 생성하지 않는다」가 이 마운트에는 안 맞는다(SYSTEMD.md는 릴리스 원문이라 다음 이미지 릴리스에서 고친다), `ensure_root`가 o+rx(0755)는 보지 않는다.
 - 운영 반영 0. 위 「처음 한 번」과 2절의 재무장 생성기 고침, 주간 연습 설치, 보존 `apply`는 아직 하지 않았다.

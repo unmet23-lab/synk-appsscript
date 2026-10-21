@@ -151,6 +151,14 @@ class StaticSetNode(unittest.TestCase):
             main({'op': 'read', 'set': first, 'paths': [app]}, self.node)
         self.assertEqual(main({'op': 'verify', 'set': first}, self.node)['status'], 'verified')
 
+    def test_a_damaged_history_record_does_not_stop_status_or_flip(self):
+        first = self.init()['set']
+        self.node.root.joinpath('history.json').write_text('{not json', 'utf-8')
+        self.assertEqual(self.node.status()['history'], [])
+        flipped = self.node.flip(first, None)
+        self.assertEqual((flipped['status'], flipped['historyRecorded']), ('flipped', True))
+        self.assertEqual([h['to'] for h in self.node.history()], [first])
+
     def test_manifest_validation_matches_the_server_rules(self):
         files = {'a/b.js': {'sha256': '0' * 64, 'size': 1, 'origin': None}}
         good = {'schema': node_module.SCHEMA, 'id': canonical_id(files), 'files': files}

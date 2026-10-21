@@ -131,9 +131,14 @@ class Node:
             require(stat.S_ISREG(info.st_mode) and info.st_size == row['size'] and file_digest(path) == row['sha256'], 'STATIC_SET_FILE_MISMATCH')
         return manifest
 
+    # A damaged record must not stop status, plan or the next flip; the link is the truth.
     def history(self):
         path = self.root / 'history.json'
-        return json.loads(path.read_text('utf-8')) if path.exists() else []
+        try:
+            value = json.loads(path.read_text('utf-8')) if path.exists() else []
+        except (OSError, ValueError):
+            return []
+        return value if isinstance(value, list) else []
 
     # The running release's copy of one repository path, or None.
     def release_digest(self, rel):
@@ -306,4 +311,6 @@ if __name__ == '__main__':
         result = {'status': 'refused', 'code': str(error)}
     except BlockingIOError:
         result = {'status': 'refused', 'code': 'STATIC_SET_BUSY'}
+    except Exception as error:  # the PC side reads exactly one JSON line
+        result = {'status': 'refused', 'code': 'NODE_ERROR_' + type(error).__name__}
     print(json.dumps(result, ensure_ascii=False))
