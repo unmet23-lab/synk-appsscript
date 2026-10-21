@@ -1,0 +1,33 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w01",
+ "text": "안녕하세요.",
+ "show": "안녕하세요",
+ "dur": 0.911,
+ "words": [
+  {
+   "text": "안녕하세요.",
+   "start": 0.02,
+   "end": 0.855
+  }
+ ],
+ "source": {
+  "key": "fd3fed395da33ac0d1badb8020581837",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1021,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1.1,
+  "cut": null
+ }
+}

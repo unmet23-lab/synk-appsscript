@@ -1,0 +1,33 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w07",
+ "text": "서울.",
+ "show": "서울",
+ "dur": 0.443,
+ "words": [
+  {
+   "text": "서울.",
+   "start": 0,
+   "end": 0.443
+  }
+ ],
+ "source": {
+  "key": "c616a8eec5133a3250f2b2a6889268b7",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1021,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1.1,
+  "cut": null
+ }
+}

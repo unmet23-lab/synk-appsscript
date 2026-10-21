@@ -1,0 +1,524 @@
+{
+  "_주": "at은 영상 시작 기준 초. 120 BPM이라 한 박 = 0.5초. 문제마다 0 제목 · 0.5 조각 · 1.0 오답 · 1.5 Nope · 2.0 카드 · 2.5~3.5 카운트다운(음악 멈춤) · 4.0 정답(음악 다시 터짐) · 4.5 예문 · 6.0 SAY IT · 7.73 다음 장면. 목소리는 두 판 모두 하나.",
+  "defaults": {
+    "seed": 1310,
+    "tempo": 1,
+    "lufs": -17,
+    "emotion": "normal",
+    "intensity": 1
+  },
+  "limits": [
+    {
+      "from": 0,
+      "to": 9.5
+    },
+    {
+      "from": 9.6,
+      "to": 19.1
+    },
+    {
+      "from": 19.2,
+      "to": 28.7
+    },
+    {
+      "from": 28.8,
+      "to": 33.25
+    }
+  ],
+  "versions": {
+    "q5en": {
+      "_말투": "관용구 퀴즈 #5 영어판(v5b 틀). 퀴즈쇼 진행자처럼 신나게(하나). 순서 파리 → 개구리 → 고양이.",
+      "defaults": {
+        "tempo": 1.15,
+        "emotion": "smart"
+      },
+      "lines": [
+        {
+          "id": "q1_title",
+          "at": 0.03,
+          "lang": "ko",
+          "text": "파리 날리다!",
+          "tempo": 1.05,
+          "emotion": "happy",
+          "intensity": 0.8
+        },
+        {
+          "id": "q1_guess",
+          "at": 1.15,
+          "lang": "en",
+          "text": "Flying flies?",
+          "prev": "A fun Korean idiom quiz. The idiom literally reads fly plus let fly, like flying a kite.",
+          "next": "Nope! That's not it.",
+          "speed": 1.35
+        },
+        {
+          "id": "q1_nope",
+          "at": 2.36,
+          "lang": "en",
+          "text": "Nope!",
+          "emotion": "happy",
+          "intensity": 1.3,
+          "speed": 1.05
+        },
+        {
+          "id": "q1_3",
+          "at": 3,
+          "lang": "en",
+          "text": "Three!",
+          "emotion": "toneup",
+          "intensity": 1.2,
+          "speed": 1.05
+        },
+        {
+          "id": "q1_2",
+          "at": 3.6,
+          "lang": "en",
+          "text": "Two!",
+          "emotion": "toneup",
+          "intensity": 1.2
+        },
+        {
+          "id": "q1_1",
+          "at": 4.2,
+          "lang": "en",
+          "text": "One!",
+          "emotion": "toneup",
+          "intensity": 1.2,
+          "speed": 1.05
+        },
+        {
+          "id": "q1_answer",
+          "at": 5.04,
+          "lang": "en",
+          "text": "No customers!",
+          "emotion": "happy",
+          "intensity": 1.3,
+          "speed": 1.1
+        },
+        {
+          "id": "q1_joke",
+          "at": 6.2,
+          "lang": "en",
+          "text": "So quiet!",
+          "emotion": "happy",
+          "intensity": 1.2,
+          "speed": 1.3
+        },
+        {
+          "id": "q1_say",
+          "at": 7.25,
+          "lang": "ko",
+          "text": "파리만 날려요!",
+          "tempo": 1.05,
+          "emotion": "happy",
+          "intensity": 0.8
+        },
+        {
+          "id": "q2_title",
+          "at": 9.63,
+          "lang": "ko",
+          "text": "우물 안 개구리!",
+          "tempo": 1.05,
+          "emotion": "happy",
+          "intensity": 0.8,
+          "speed": 1.25
+        },
+        {
+          "id": "q2_guess",
+          "at": 10.76,
+          "lang": "en",
+          "text": "Frog in a well?",
+          "prev": "A fun Korean idiom quiz. The idiom literally reads inside a well plus frog.",
+          "next": "Nope! That's not it.",
+          "speed": 1.35
+        },
+        {
+          "id": "q2_nope",
+          "at": 11.96,
+          "lang": "en",
+          "text": "Nope!",
+          "emotion": "happy",
+          "intensity": 1.3,
+          "speed": 1.05
+        },
+        {
+          "id": "q2_3",
+          "at": 12.6,
+          "lang": "en",
+          "text": "Three!",
+          "emotion": "toneup",
+          "intensity": 1.2,
+          "speed": 1.05
+        },
+        {
+          "id": "q2_2",
+          "at": 13.2,
+          "lang": "en",
+          "text": "Two!",
+          "emotion": "toneup",
+          "intensity": 1.2
+        },
+        {
+          "id": "q2_1",
+          "at": 13.8,
+          "lang": "en",
+          "text": "One!",
+          "emotion": "toneup",
+          "intensity": 1.2,
+          "speed": 1.05
+        },
+        {
+          "id": "q2_answer",
+          "at": 14.64,
+          "lang": "en",
+          "text": "Tiny world view!",
+          "emotion": "happy",
+          "intensity": 1.3,
+          "speed": 1.2
+        },
+        {
+          "id": "q2_joke",
+          "at": 15.8,
+          "lang": "en",
+          "text": "Well, well!",
+          "emotion": "happy",
+          "intensity": 1.2,
+          "speed": 1.3
+        },
+        {
+          "id": "q2_say",
+          "at": 16.85,
+          "lang": "ko",
+          "text": "우물 안 개구리였어요!",
+          "tempo": 1.05,
+          "emotion": "happy",
+          "intensity": 0.8
+        },
+        {
+          "id": "q3_title",
+          "at": 19.23,
+          "lang": "ko",
+          "text": "고양이 세수하듯!",
+          "tempo": 1.05,
+          "emotion": "happy",
+          "intensity": 0.8
+        },
+        {
+          "id": "q3_guess",
+          "at": 20.38,
+          "lang": "en",
+          "text": "Cat face wash?",
+          "prev": "A fun Korean idiom quiz. The idiom literally reads cat plus like washing its face.",
+          "next": "Nope! That's not it.",
+          "speed": 1.2
+        },
+        {
+          "id": "q3_nope",
+          "at": 21.56,
+          "lang": "en",
+          "text": "Nope!",
+          "emotion": "happy",
+          "intensity": 1.3,
+          "speed": 1.05
+        },
+        {
+          "id": "q3_3",
+          "at": 22.2,
+          "lang": "en",
+          "text": "Three!",
+          "emotion": "toneup",
+          "intensity": 1.2,
+          "speed": 1.05
+        },
+        {
+          "id": "q3_2",
+          "at": 22.8,
+          "lang": "en",
+          "text": "Two!",
+          "emotion": "toneup",
+          "intensity": 1.2
+        },
+        {
+          "id": "q3_1",
+          "at": 23.4,
+          "lang": "en",
+          "text": "One!",
+          "emotion": "toneup",
+          "intensity": 1.2,
+          "speed": 1.05
+        },
+        {
+          "id": "q3_answer",
+          "at": 24.24,
+          "lang": "en",
+          "text": "A quick splash!",
+          "emotion": "happy",
+          "intensity": 1.3,
+          "speed": 1.25
+        },
+        {
+          "id": "q3_joke",
+          "at": 25.4,
+          "lang": "en",
+          "text": "Lazy!",
+          "emotion": "happy",
+          "intensity": 1.2,
+          "speed": 1.1
+        },
+        {
+          "id": "q3_say",
+          "at": 26.45,
+          "lang": "ko",
+          "text": "고양이 세수만 했어요!",
+          "tempo": 1.05,
+          "emotion": "happy",
+          "intensity": 0.8
+        },
+        {
+          "id": "end_score",
+          "at": 28.86,
+          "lang": "en",
+          "text": "Okay! How many did you get?",
+          "prev": "That was the last question of a fun Korean idiom quiz.",
+          "next": "Drop your score below!",
+          "cut": 1.9
+        },
+        {
+          "id": "end_comment",
+          "at": 30.8,
+          "lang": "en",
+          "text": "Drop your score below!",
+          "prev": "How many did you get?",
+          "next": "See you next round!",
+          "cut": 1.35
+        },
+        {
+          "id": "end_fighting",
+          "at": 32.42,
+          "lang": "ko",
+          "text": "화이팅!",
+          "tempo": 1.05,
+          "emotion": "happy",
+          "intensity": 1.2,
+          "cut": 0.6
+        }
+      ]
+    },
+    "q5ko": {
+      "_말투": "관용구 퀴즈 #5 한국어로만(몽골어판 등). 관용구 제목·해요체 + 한국 퀴즈쇼 말. 순서 파리 → 고양이 → 개구리.",
+      "defaults": {
+        "tempo": 1.15,
+        "emotion": "smart"
+      },
+      "lines": [
+        {
+          "id": "q1_title",
+          "at": 0.03,
+          "lang": "ko",
+          "text": "파리 날리다!",
+          "tempo": 1.05,
+          "emotion": "happy",
+          "intensity": 0.8
+        },
+        {
+          "id": "q1_nope",
+          "at": 1.86,
+          "lang": "ko",
+          "text": "땡!",
+          "emotion": "happy"
+        },
+        {
+          "id": "q1_3",
+          "at": 3,
+          "lang": "ko",
+          "text": "셋!",
+          "emotion": "toneup"
+        },
+        {
+          "id": "q1_2",
+          "at": 3.6,
+          "lang": "ko",
+          "text": "둘!",
+          "emotion": "toneup"
+        },
+        {
+          "id": "q1_1",
+          "at": 4.2,
+          "lang": "ko",
+          "text": "하나!",
+          "emotion": "toneup"
+        },
+        {
+          "id": "q1_answer",
+          "at": 4.86,
+          "lang": "ko",
+          "text": "딩동댕!",
+          "emotion": "happy"
+        },
+        {
+          "id": "q1_sayit",
+          "at": 5.8,
+          "lang": "ko",
+          "text": "따라 해 보세요!",
+          "emotion": "happy",
+          "speed": 1.1
+        },
+        {
+          "id": "q1_say",
+          "at": 6.84,
+          "lang": "ko",
+          "text": "파리만 날려요!",
+          "tempo": 1.05,
+          "emotion": "happy",
+          "intensity": 0.8
+        },
+        {
+          "id": "q2_title",
+          "at": 9.63,
+          "lang": "ko",
+          "text": "고양이 세수하듯!",
+          "tempo": 1.05,
+          "emotion": "happy",
+          "intensity": 0.8
+        },
+        {
+          "id": "q2_nope",
+          "at": 11.46,
+          "lang": "ko",
+          "text": "땡!",
+          "emotion": "happy"
+        },
+        {
+          "id": "q2_3",
+          "at": 12.6,
+          "lang": "ko",
+          "text": "셋!",
+          "emotion": "toneup"
+        },
+        {
+          "id": "q2_2",
+          "at": 13.2,
+          "lang": "ko",
+          "text": "둘!",
+          "emotion": "toneup"
+        },
+        {
+          "id": "q2_1",
+          "at": 13.8,
+          "lang": "ko",
+          "text": "하나!",
+          "emotion": "toneup"
+        },
+        {
+          "id": "q2_answer",
+          "at": 14.46,
+          "lang": "ko",
+          "text": "딩동댕!",
+          "emotion": "happy"
+        },
+        {
+          "id": "q2_sayit",
+          "at": 15.4,
+          "lang": "ko",
+          "text": "따라 해 보세요!",
+          "emotion": "happy",
+          "speed": 1.1
+        },
+        {
+          "id": "q2_say",
+          "at": 16.44,
+          "lang": "ko",
+          "text": "고양이 세수만 했어요!",
+          "tempo": 1.05,
+          "emotion": "happy",
+          "intensity": 0.8
+        },
+        {
+          "id": "q3_title",
+          "at": 19.23,
+          "lang": "ko",
+          "text": "우물 안 개구리!",
+          "tempo": 1.05,
+          "emotion": "happy",
+          "intensity": 0.8,
+          "speed": 1.25
+        },
+        {
+          "id": "q3_nope",
+          "at": 21.06,
+          "lang": "ko",
+          "text": "땡!",
+          "emotion": "happy"
+        },
+        {
+          "id": "q3_3",
+          "at": 22.2,
+          "lang": "ko",
+          "text": "셋!",
+          "emotion": "toneup"
+        },
+        {
+          "id": "q3_2",
+          "at": 22.8,
+          "lang": "ko",
+          "text": "둘!",
+          "emotion": "toneup"
+        },
+        {
+          "id": "q3_1",
+          "at": 23.4,
+          "lang": "ko",
+          "text": "하나!",
+          "emotion": "toneup"
+        },
+        {
+          "id": "q3_answer",
+          "at": 24.06,
+          "lang": "ko",
+          "text": "딩동댕!",
+          "emotion": "happy"
+        },
+        {
+          "id": "q3_sayit",
+          "at": 25,
+          "lang": "ko",
+          "text": "따라 해 보세요!",
+          "emotion": "happy",
+          "speed": 1.1
+        },
+        {
+          "id": "q3_say",
+          "at": 26.04,
+          "lang": "ko",
+          "text": "우물 안 개구리였어요!",
+          "tempo": 1.05,
+          "emotion": "happy",
+          "intensity": 0.8
+        },
+        {
+          "id": "end_score",
+          "at": 28.86,
+          "lang": "ko",
+          "text": "몇 개 맞혔어요?",
+          "emotion": "happy"
+        },
+        {
+          "id": "end_comment",
+          "at": 30.2,
+          "lang": "ko",
+          "text": "댓글로 알려 주세요!",
+          "emotion": "happy"
+        },
+        {
+          "id": "end_fighting",
+          "at": 32.42,
+          "lang": "ko",
+          "text": "화이팅!",
+          "tempo": 1.05,
+          "emotion": "happy",
+          "intensity": 1.2
+        }
+      ]
+    }
+  }
+}

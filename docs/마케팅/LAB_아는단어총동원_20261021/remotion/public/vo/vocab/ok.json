@@ -1,0 +1,44 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "ok",
+ "text": "네, 천천히 말할게요.",
+ "dur": 1.642,
+ "words": [
+  {
+   "text": "네,",
+   "start": 0.02,
+   "end": 0.101
+  },
+  {
+   "text": "천천히",
+   "start": 0.522,
+   "end": 0.863
+  },
+  {
+   "text": "말할게요.",
+   "start": 0.923,
+   "end": 1.642
+  }
+ ],
+ "source": {
+  "key": "4c14300a69020c376ded81c96b2ccb12",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1021,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+   "prev": "외국인 친구가 「천천히 말해 주세요!」라고 부탁했다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

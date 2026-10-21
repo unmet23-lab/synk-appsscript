@@ -1,0 +1,16 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — one needle-felted wool character shown with four facial expressions for a kids' Korean video, one sheet.
+
+The attached reference photo only shows the felt craft look we want (wool texture, colors, lighting). Do not copy its objects.
+
+Character (the same in all four cells): a friendly young Korean man as a cute needle-felted wool doll, head and shoulders only (bust), round face in warm light-peach wool, short neat black wool hair with a soft side part, small black bead eyes, rosy pink felt cheeks, a navy-blue felt hoodie with a mustard-yellow drawstring. Simple doll proportions (big head, small shoulders). Same size, same framing, same angle (front, very slightly turned toward the viewer's left) in every cell — only the face changes.
+
+Layout: one square image, 2 columns × 2 rows, four cells of equal size. One bust per cell, centered, filling about 65% of the cell, with wide empty margins. Seamless pure white background (#FFFFFF), flat even studio light, no floor, no cast shadows, no border lines. Absolutely no text, letters, numbers, speech bubbles or symbols anywhere. Nothing white or cream except the background (the hoodie has no white parts, no white teeth showing).
+
+1. top-left, CURIOUS ASKING — eyebrows raised, head tilted slightly, small round "oh?" mouth, friendly and interested.
+2. top-right, AMAZED — eyes wide, eyebrows high, mouth in a small open "wow" oval, impressed.
+3. bottom-left, TRYING NOT TO LAUGH — lips pressed tightly together, cheeks puffed out and extra pink, eyes squeezed into happy crescents, shoulders slightly raised — clearly holding in a laugh in a kind way.
+4. bottom-right, WARM SMILE — big gentle closed-mouth smile, eyes curved like crescents, relaxed and kind, as if saying "sure, I'll speak slowly".
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, cute and playful for children, consistent soft lighting, saturated but soft colors that will read well on a cobalt blue background.

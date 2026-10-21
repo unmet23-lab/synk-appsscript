@@ -1,0 +1,20 @@
+{
+ "id": "01-youtube-en",
+ "brand": "LAB",
+ "platform": "youtube",
+ "account": "@synkkorean",
+ "format": "shorts",
+ "language": "en",
+ "audioLanguage": "en",
+ "title": "Korean idiom quiz 🪰🐸🐱 \"flying flies\" means NO customers?! Guess all 3 in 3 seconds #learnkorean",
+ "caption": "Can you guess these 3 Korean animal idioms in 3 seconds? 🪰🐸🐱\n\n파리 날리다 — not “flying flies”: a shop with no customers\n우물 안 개구리 — not just “a frog in a well”: someone who only knows a tiny world\n고양이 세수하듯 — not “washing like a cat”: a quick splash instead of a real wash\n\nSay it: 파리만 날려요 · 우물 안 개구리였어요 · 고양이 세수만 했어요\n\nHow many did you get? Comment your score 0/3 – 3/3 👇\n\n🎮 Play Korean listening & reading mini games: https://synk.im/try/learning-hub/\n\nSYNK LAB · Korean idiom quiz 5 with Mongle.\n#learnkorean #koreanlanguage #studykorean #koreanidioms",
+ "pinnedComment": "🎮 New to Korean? Play our listening & reading mini games → https://synk.im/try/learning-hub/\nWhat's your score? 0/3 – 3/3 👇",
+ "alt": [
+  "Felt mascot Mongle hosts a Korean idiom quiz. Felt flies flown on strings like kites, a frog sitting on a stone well and an orange cat washing its face with its paw show the literal readings of 파리 날리다, 우물 안 개구리 and 고양이 세수하듯; a bored bear in an empty shop, the frog with a backpack gazing at a globe, and a sleepy bear splashing a little water at a sink show the real meanings."
+ ],
+ "madeForKids": false,
+ "alteredContent": false,
+ "category": "Education",
+ "_비고": "video.mp4 = q5-en(100 BPM, 33.3초, 렌더_q5.mjs). 표지 cover.png = 1.3초(GUESS IN 3 SECONDS! + 파리 날리다 + 연처럼 날린 파리 + flying flies like kites??). 어린이 전용 아님(점수 댓글이 필요 — 퀴즈 #1·#2와 같음). 합성 표시는 필수 아님(펠트 그림·특정인이 아닌 TTS 진행자, 퀴즈 #2와 같음). 동영상 언어 en(영어 진행), 제목·설명 언어 en. 자동 더빙 꺼짐 확인.",
+ "version": "q5-en"
+}

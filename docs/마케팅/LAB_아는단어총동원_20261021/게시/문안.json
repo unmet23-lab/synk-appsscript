@@ -1,0 +1,20 @@
+{
+ "_설명": "LAB 「아는 단어 총동원」(10-21) 게시글 정본(제작 방식 v2 §4-3 「정본 둘」의 하나). 화면 글 정본은 remotion/src/vocab/data.ts. 판마다 글 파일은 이 파일에서 만든다(node remotion/게시묶음.mjs). 학습 허브 링크는 10-21 07:3x 응답 200 확인(synk.im/try/learning-hub/ · 「SYNK LAB PLAY 한국어 놀이」, 한국어·영어 화면). 인스타 해시태그는 캡션·첫 댓글 합쳐 5개 이하.",
+ "_ko": {
+  "title": "한국 사람이 「한국어 할 줄 알아요?」 물으면 아는 단어 다 나온다 — 살려 주는 한마디는 끝에",
+  "caption": "한국 사람이 「한국어 할 줄 알아요?」라고 물으면… 아는 단어가 다 튀어나온다 😅\n안녕하세요 · 감사합니다 · 사랑해요 · 하나 둘 셋 · 서울 · 부산 · 제주 · 김치 · 비빔밥 · 떡볶이 · 대박 · 화이팅\n\n💡 진짜 살려 주는 한마디: 천천히 말해 주세요 — 천천히 말해 달라는 부탁\n🔊 따라 말해 봐요: (몽골어로 적은 읽는 법)\n\n몇 개 알았어요? 아는 한국어 단어를 댓글에 다 써 줘요 👇",
+  "comment": "🎮 한국어 듣기·읽기 놀이(영어·한국어 화면): synk.im/try/learning-hub/"
+ },
+ "en": {
+  "account": "YouTube @synkkorean",
+  "title": "Using my WHOLE Korean vocabulary 😭 (the 1 phrase that actually saves you) #learnkorean",
+  "description": "A Korean asks 「한국어 할 줄 알아요?」 (Do you speak Korean?) and I panic-list every word I know 😭\n\n안녕하세요 hello · 감사합니다 thank you · 사랑해요 I love you\n하나 둘 셋 one two three · 서울 부산 제주 Seoul, Busan, Jeju\n김치 · 비빔밥 · 떡볶이 · 대박 awesome · 화이팅 (standard spelling: 파이팅) you got this\n\n✅ The 1 phrase that actually saves you:\n천천히 말해 주세요 (cheoncheonhi malhae juseyo) = Please speak slowly\nSay it out loud!\n\nHow many did you know? Comment every Korean word you know 👇\n\n🎮 Play Korean listening & reading mini games: https://synk.im/try/learning-hub/\n\nSYNK LAB · Korean for beginners\n#learnkorean #koreanlanguage #studykorean #koreanforbeginners",
+  "pinned_comment": "Your turn 👇 Comment every Korean word you know!\nNext time someone talks too fast, try: 천천히 말해 주세요 (Please speak slowly) 🐌\n🎮 Korean mini games → https://synk.im/try/learning-hub/",
+  "alt": "Felt-craft short. A felt Korean guy in a navy hoodie asks 「한국어 할 줄 알아요?」 and a learner lists every Korean word they know, one felt picture per word: a waving hand, a bowing bear, a heart, dice for one two three, N Seoul Tower, a Busan beach, a Jeju tangerine, kimchi, bibimbap, tteokbokki, a treasure chest and a boxing glove. A felt snail ends it with 천천히 말해 주세요 — Please speak slowly."
+ },
+ "mn": {
+  "account": "Instagram @synk.mn · Facebook synkworld",
+  "caption": "Солонгос хүн «한국어 할 줄 알아요?» (Солонгосоор ярьдаг уу?) гэвэл мэддэг бүх үг маань нэг дор гарч ирдэг 😅\n안녕하세요 · 감사합니다 · 사랑해요 · 하나 둘 셋 · 서울 · 부산 · 제주 · 김치 · 비빔밥 · 떡볶이 · 대박 · 화이팅\n\n💡 Үнэхээр аврах ганц хэллэг: 천천히 말해 주세요 — «Удаан ярьж өгнө үү»\n🔊 Дагаж хэлээрэй: чөнчөнхи малхэ жусэё\n\nХэдийг нь мэдэж байсан бэ? Мэддэг бүх солонгос үгээ сэтгэгдэлд бичээрэй 👇\n\n#солонгосхэл #한국어 #learnkorean #mongolia",
+  "comment": "🎮 Солонгос хэлний сонсох, унших тоглоом (англи, солонгос хэлээр): synk.im/try/learning-hub/"
+ }
+}

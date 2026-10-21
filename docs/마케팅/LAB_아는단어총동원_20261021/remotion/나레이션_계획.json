@@ -1,0 +1,147 @@
+{
+ "_설명": "LAB 「아는 단어 총동원」(10-21) 나레이션 — 모든 판이 같은 한국어 소리. 묻는 사람(남자)은 범수, 학습자(나)는 하나(낱말이 또렷한 목소리, 결정 표 10-10). 역할마다 목소리 하나. 낱말은 끝에 마침표를 붙여 또렷하게 읽힌다(현장 노트 Typecast). 낱말 자리는 src/vocab/schedule.ts가 줄 길이로 정한다(이 파일에는 at이 없다).",
+ "voices": {
+  "asker": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "learner": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  }
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1021,
+  "lufs": -17
+ },
+ "out": "public/vo/vocab",
+ "srcBase": "public",
+ "ts": "src/vocab/vo.generated.ts",
+ "trim": "both",
+ "lines": [
+  {
+   "id": "ask",
+   "role": "asker",
+   "text": "한국어 할 줄 알아요?",
+   "tempo": 1.12
+  },
+  {
+   "id": "w01",
+   "role": "learner",
+   "text": "안녕하세요.",
+   "show": "안녕하세요",
+   "speed": 1.1
+  },
+  {
+   "id": "w02",
+   "role": "learner",
+   "text": "감사합니다.",
+   "show": "감사합니다",
+   "speed": 1.1
+  },
+  {
+   "id": "w03",
+   "role": "learner",
+   "text": "사랑해요.",
+   "show": "사랑해요",
+   "speed": 1.1
+  },
+  {
+   "id": "w04",
+   "role": "learner",
+   "text": "하나.",
+   "show": "하나",
+   "speed": 1.1
+  },
+  {
+   "id": "w05",
+   "role": "learner",
+   "text": "둘.",
+   "show": "둘",
+   "speed": 1.1
+  },
+  {
+   "id": "w06",
+   "role": "learner",
+   "text": "셋.",
+   "show": "셋",
+   "speed": 1.1
+  },
+  {
+   "id": "w07",
+   "role": "learner",
+   "text": "서울.",
+   "show": "서울",
+   "speed": 1.1
+  },
+  {
+   "id": "w08",
+   "role": "learner",
+   "text": "부산.",
+   "show": "부산",
+   "speed": 1.1
+  },
+  {
+   "id": "w09",
+   "role": "learner",
+   "text": "제주.",
+   "show": "제주",
+   "speed": 1.1
+  },
+  {
+   "id": "w10",
+   "role": "learner",
+   "text": "김치.",
+   "show": "김치",
+   "speed": 1.1
+  },
+  {
+   "id": "w11",
+   "role": "learner",
+   "text": "비빔밥.",
+   "show": "비빔밥",
+   "speed": 1.1
+  },
+  {
+   "id": "w12",
+   "role": "learner",
+   "text": "떡볶이.",
+   "show": "떡볶이",
+   "speed": 1.1
+  },
+  {
+   "id": "w13",
+   "role": "learner",
+   "text": "대박.",
+   "show": "대박",
+   "speed": 1.1
+  },
+  {
+   "id": "w14",
+   "role": "learner",
+   "text": "화이팅?",
+   "show": "화이팅",
+   "speed": 1.1
+  },
+  {
+   "id": "slow",
+   "role": "learner",
+   "text": "천천히 말해 주세요!",
+   "show": "천천히 말해 주세요"
+  },
+  {
+   "id": "ok",
+   "role": "asker",
+   "text": "네, 천천히 말할게요.",
+   "tempo": 1.12,
+   "emotion": "smart",
+   "prev": "외국인 친구가 「천천히 말해 주세요!」라고 부탁했다.",
+   "next": ""
+  }
+ ]
+}

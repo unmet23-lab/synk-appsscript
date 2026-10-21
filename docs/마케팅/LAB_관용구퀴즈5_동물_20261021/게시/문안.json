@@ -1,0 +1,31 @@
+{
+ "_설명": "관용구 퀴즈 #5 「동물」 편 게시글 정본(10-21, 제작 방식 v2 §4-3 「정본 둘」의 하나). 화면 글 정본은 remotion/src/film/data.ts(한국어·영어)와 remotion/src/kids/i18n.ts(몽골어). 판마다 글 파일은 이 파일에서 만든다(node remotion/게시묶음_q5.mjs). 학습 허브 링크는 10-21 07:3x 응답 200 확인(synk.im/try/learning-hub/). 인스타 해시태그는 캡션·첫 댓글 합쳐 5개 이하.",
+ "_ko": {
+  "title": "한국어 동물 관용구 퀴즈: 「파리 날리다」는 손님이 없다는 뜻?! 3초 안에 셋 다 맞혀 봐",
+  "caption": "파리 날리다 ≠ 「파리를 날린다」 🪰 동물 이름이 든 한국어 관용구 3개 — 하나씩 3초 안에 맞혀 봐!\n\n파리 날리다 — 손님이 없다, 장사가 전혀 안된다\n고양이 세수하듯 — 얼굴에 물만 묻히고 끝(대충 씻기)\n우물 안 개구리 — 세상을 조금밖에 모르는, 생각이 좁은 사람\n\n💡 「우물 바닥의 개구리」라는 말, 들어 본 적 있어?\n\n🔊 따라 말해 봐: 파리만 날려요 · 고양이 세수만 했어요 · 우물 안 개구리였어요\n\n몇 개 맞혔어? 점수(0/3–3/3)를 댓글에 써 줘 👇",
+  "comment": "🎮 한국어 듣기·읽기 게임(영어·한국어로): synk.im/try/learning-hub/"
+ },
+ "en": {
+  "account": "YouTube @synkkorean",
+  "title": "Korean idiom quiz 🪰🐸🐱 \"flying flies\" means NO customers?! Guess all 3 in 3 seconds #learnkorean",
+  "description": "Can you guess these 3 Korean animal idioms in 3 seconds? 🪰🐸🐱\n\n파리 날리다 — not “flying flies”: a shop with no customers\n우물 안 개구리 — not just “a frog in a well”: someone who only knows a tiny world\n고양이 세수하듯 — not “washing like a cat”: a quick splash instead of a real wash\n\nSay it: 파리만 날려요 · 우물 안 개구리였어요 · 고양이 세수만 했어요\n\nHow many did you get? Comment your score 0/3 – 3/3 👇\n\n🎮 Play Korean listening & reading mini games: https://synk.im/try/learning-hub/\n\nSYNK LAB · Korean idiom quiz 5 with Mongle.\n#learnkorean #koreanlanguage #studykorean #koreanidioms",
+  "pinned_comment": "🎮 New to Korean? Play our listening & reading mini games → https://synk.im/try/learning-hub/\nWhat's your score? 0/3 – 3/3 👇",
+  "alt": "Felt mascot Mongle hosts a Korean idiom quiz. Felt flies flown on strings like kites, a frog sitting on a stone well and an orange cat washing its face with its paw show the literal readings of 파리 날리다, 우물 안 개구리 and 고양이 세수하듯; a bored bear in an empty shop, the frog with a backpack gazing at a globe, and a sleepy bear splashing a little water at a sink show the real meanings."
+ },
+ "mn": {
+  "account": "Instagram @synk.mn · Facebook synkworld",
+  "caption": "파리 날리다 ≠ «ялаа нисгэх» 🪰 Амьтны нэртэй солонгос 3 хэлц үг — тус бүрийг 3 секундэд таагаарай!\n\n파리 날리다 — үйлчлүүлэгч алга, наймаа огт явахгүй\n고양이 세수하듯 — нүүрээ л норгоод өнгөрөх (яаран угаах)\n우물 안 개구리 — ертөнцийг бага мэддэг, явцуу сэтгэлгээтэй хүн\n\n💡 Та «худгийн ёроолын мэлхий» гэдэг үгийг сонсож байсан уу?\n\n🔊 Дагаж хэлээрэй: 파리만 날려요 · 고양이 세수만 했어요 · 우물 안 개구리였어요\n\nХэдийг нь зөв таасан бэ? Оноогоо (0/3–3/3) сэтгэгдэлд бичээрэй 👇\n\n#солонгосхэл #한국어 #learnkorean #mongolia",
+  "comment": "🎮 Солонгос хэлний сонсгол, уншлагын тоглоом (англи, солонгос хэлээр): synk.im/try/learning-hub/"
+ },
+ "zhs": {
+  "account": "샤오훙수 SYNK LAB(creator.rednote.com, 제목 20자 제한)",
+  "title": "3秒猜韩语惯用语：파리 날리다",
+  "caption": "这3个带动物的韩语惯用语，每个3秒，你能猜对几个？🪰\n\n파리 날리다 — 不是“放飞苍蝇”，是店里一个客人都没有，相当于中文的“门可罗雀”\n고양이 세수하듯 — 像猫洗脸一样，只用水随便抹一把脸\n우물 안 개구리 — 和中文的“井底之蛙”一模一样！\n\n💡 看到“井底之蛙”是不是秒懂？这题送分！\n\n跟读一下：파리만 날려요 · 고양이 세수만 했어요 · 우물 안 개구리였어요\n\n你答对了几题？评论区告诉我分数 0/3 – 3/3 👇\n\nSYNK LAB｜和Mongle一起玩 · 韩语惯用语挑战第5期\n#学韩语 #韩语学习 #韩语惯用语 #韩语入门",
+  "_ko": "[게시 제목] 3초 만에 맞히는 한국어 관용구: 파리 날리다 / [게시글] 동물이 든 한국어 관용구 3개, 하나에 3초씩, 몇 개 맞힐 수 있어? / 파리 날리다 — 「파리를 날려 보낸다」가 아니라 가게에 손님이 한 명도 없다, 중국어 「문 앞에 그물을 쳐 참새를 잡을 만하다(门可罗雀)」와 같다 / 고양이 세수하듯 — 고양이가 세수하듯, 물로 얼굴을 대충 한 번 닦을 뿐 / 우물 안 개구리 — 중국어의 「우물 바닥의 개구리(井底之蛙)」와 똑같다! / 💡 「井底之蛙」를 보고 바로 알았지? 이 문제는 거저 주는 문제! / 따라 읽어 봐 / 몇 개 맞혔어? 점수를 댓글로 알려 줘 / SYNK LAB｜몽글과 함께 노는 한국어 관용구 도전 제5회"
+ },
+ "my": {
+  "account": "틱톡 @synklab.mm",
+  "caption": "တိရစ္ဆာန်ပါတဲ့ ကိုရီးယား ဆိုရိုးစကား ၃ ခွန်းကို ၃ စက္ကန့်အတွင်း ခန့်မှန်းနိုင်မလား? 😆\n\n파리 날리다 — “ယင်ကောင် လွှတ်တယ်” မဟုတ်ဘဲ ဆိုင်မှာ ဝယ်သူ တစ်ယောက်မှ မရှိတာကို ပြောတာ\n고양이 세수하듯 — ကြောင် မျက်နှာသစ်သလို မျက်နှာကို ရေပဲ ပက်လိုက်တာ\n우물 안 개구리 — “ရေတွင်းထဲက ဖား” ဆိုတာ မြန်မာမှာလည်း ကြားဖူးမှာပါ!\n\n💡 ကိုရီးယားလိုလည်း “ရေတွင်းထဲက ဖား” လို့ ပြောတယ်၊ ခန့်မှန်းမိလား?\n\nလိုက်ပြောပါ: 파리만 날려요 · 고양이 세수만 했어요 · 우물 안 개구리였어요\n\nဘယ်နှစ်ခု ဖြေမှန်လဲ? ရမှတ်ကို ကွန်မန့်မှာ ရေးခဲ့ပါ 0/3 – 3/3 👇\n\nSYNK LAB · Mongle နဲ့ ကိုရီးယားဆိုရိုးစကား ပဟေဠိ ၅\n#learnkorean #ကိုရီးယားစာ #koreanlanguage #EPSTOPIK",
+  "_ko": "[게시글] 동물이 든 한국어 관용구 3개를 3초 안에 맞힐 수 있을까? / 파리 날리다 — 「파리를 풀어 준다」가 아니라 가게에 손님이 한 명도 없다는 말 / 고양이 세수하듯 — 고양이가 세수하듯 얼굴에 물만 끼얹는 것 / 우물 안 개구리 — 「우물 속 개구리」라는 말은 미얀마에서도 들어 봤을 거예요! / 💡 한국어로도 「우물 속 개구리」라고 해, 맞혔어? / 따라 말해 봐 / 몇 개 맞혔어? 점수를 댓글에 써 줘 / SYNK LAB · 몽글과 함께하는 한국어 관용구 퀴즈 #5"
+ }
+}

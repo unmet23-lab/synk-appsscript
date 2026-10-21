@@ -1,0 +1,30 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — fifteen needle-felted wool props for a kids' Korean vocabulary video ("a learner says every Korean word they know"), one sheet.
+
+The attached reference photo only shows the felt craft look we want (wool texture, colors, lighting). Do not copy its objects.
+
+Layout: one landscape image, 5 columns × 3 rows, fifteen cells of equal size. One object group per cell, centered, filling about 60–70% of the cell, with wide empty margins so no two cells touch. Seamless pure white background (#FFFFFF), flat even studio light, no floor, no cast shadows, no reflections, no border lines. Absolutely no text, letters, numbers, digits, logos or symbols anywhere. Nothing in the image is white or cream except the background; every outer edge is a clear saturated color or charcoal. Where real food would be white (rice, rice cakes, egg white), cover it completely with colored toppings or sauce so no white shows.
+
+Row 1, left to right:
+1. HELLO — a chubby butter-yellow felt mitten-style hand (rounded, four soft fingers and a thumb) waving, with three short sky-blue felt motion arcs beside it.
+2. THANK YOU — a small caramel-brown felt teddy bear bowing politely forward at about 45 degrees, both paws on its tummy, eyes closed happily, tiny pink cheeks.
+3. I LOVE YOU — one big plump glossy red felt heart with two small pink felt hearts floating beside it.
+4. ONE — a soft rounded coral-red felt dice cube showing exactly one big navy felt dot on its front face.
+5. TWO — the same coral-red felt dice cube showing exactly two big navy felt dots on its front face (diagonal).
+
+Row 2, left to right:
+6. THREE — the same coral-red felt dice cube showing exactly three big navy felt dots on its front face (diagonal line).
+7. SEOUL — a cute felt N Seoul Tower: slim grey tower with a round observation deck and a red tip, standing on a small rounded green felt hill with two tiny dark-green trees.
+8. BUSAN — a small sandy-orange felt beach mound with a turquoise felt wave curling over one side, a red-and-yellow striped beach umbrella on top, and a tiny grey felt seagull (grey body, yellow beak, no white).
+9. JEJU — a shiny orange felt tangerine with two green felt leaves on top, sitting on a tiny green felt island that has a small rounded dark-green volcano mountain behind it.
+10. KIMCHI — a small round sky-blue felt bowl heaped with red-orange felt napa-cabbage kimchi leaves (red and light-green layers, no white), a few tiny red pepper flakes.
+
+Row 3, left to right:
+11. BIBIMBAP — a black felt stone pot bowl, its top fully covered with colorful toppings in neat wedges: orange carrot strips, green spinach, brown mushrooms, yellow bean sprouts, red chili paste dot in the center and a sunny orange egg yolk (no egg white, no rice visible).
+12. TTEOKBOKKI — a shallow orange felt dish with chunky cylinder rice cakes fully coated in glossy red felt sauce (no white showing), a few green felt spring-onion pieces and two triangle fish cakes in tan.
+13. DAEBAK (jackpot / awesome) — a small brown felt treasure chest open and overflowing with shiny gold felt coins, with three yellow felt sparkle stars bursting above it.
+14. FIGHTING (you can do it) — a bright red felt boxing glove raised straight up like a cheering fist, with three short yellow felt sparkle bursts around it.
+15. SLOWLY — a cute green-and-mustard felt snail with a spiral shell, two little eye stalks with black bead eyes, and a calm happy smile.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, cute and playful for children, consistent soft lighting across all fifteen cells, saturated but soft colors that will read well on a cobalt blue background. Keep each cell's pieces close together inside the cell but clearly separated from neighboring cells by white space.

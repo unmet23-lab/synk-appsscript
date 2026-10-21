@@ -1,0 +1,33 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w12",
+ "text": "떡볶이.",
+ "show": "떡볶이",
+ "dur": 0.84,
+ "words": [
+  {
+   "text": "떡볶이.",
+   "start": 0.18,
+   "end": 0.84
+  }
+ ],
+ "source": {
+  "key": "5fa94b31d25fb3a4ece429c4b382e157",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1021,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1.1,
+  "cut": null
+ }
+}

@@ -1,0 +1,33 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w11",
+ "text": "비빔밥.",
+ "show": "비빔밥",
+ "dur": 0.612,
+ "words": [
+  {
+   "text": "비빔밥.",
+   "start": 0,
+   "end": 0.612
+  }
+ ],
+ "source": {
+  "key": "bd91db845c5e992e14fea9c8c951720f",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1021,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1.1,
+  "cut": null
+ }
+}

@@ -1,0 +1,43 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "slow",
+ "text": "천천히 말해 주세요!",
+ "show": "천천히 말해 주세요",
+ "dur": 1.436,
+ "words": [
+  {
+   "text": "천천히",
+   "start": 0.05,
+   "end": 0.594
+  },
+  {
+   "text": "말해",
+   "start": 0.674,
+   "end": 0.936
+  },
+  {
+   "text": "주세요!",
+   "start": 0.996,
+   "end": 1.436
+  }
+ ],
+ "source": {
+  "key": "4cead9fd0ba4f48e36062f1f0ad0e0f1",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1021,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

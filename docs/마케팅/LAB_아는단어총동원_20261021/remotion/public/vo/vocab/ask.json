@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "ask",
+ "text": "한국어 할 줄 알아요?",
+ "dur": 0.953,
+ "words": [
+  {
+   "text": "한국어",
+   "start": 0.03,
+   "end": 0.327
+  },
+  {
+   "text": "할",
+   "start": 0.372,
+   "end": 0.446
+  },
+  {
+   "text": "줄",
+   "start": 0.491,
+   "end": 0.58
+  },
+  {
+   "text": "알아요?",
+   "start": 0.625,
+   "end": 0.953
+  }
+ ],
+ "source": {
+  "key": "3835ef86a534e6a10c351e0a7b87eb00",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1021,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

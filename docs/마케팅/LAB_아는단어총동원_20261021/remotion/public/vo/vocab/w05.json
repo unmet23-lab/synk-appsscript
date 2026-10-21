@@ -1,0 +1,33 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w05",
+ "text": "둘.",
+ "show": "둘",
+ "dur": 0.449,
+ "words": [
+  {
+   "text": "둘.",
+   "start": 0.02,
+   "end": 0.449
+  }
+ ],
+ "source": {
+  "key": "70926bb32e6605e83817359471a612bc",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1021,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1.1,
+  "cut": null
+ }
+}

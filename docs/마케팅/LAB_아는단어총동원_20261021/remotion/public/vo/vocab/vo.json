@@ -1,0 +1,189 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../나레이션_계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1021,
+  "lufs": -17
+ },
+ "made": "2026-10-20T22:26:23.358Z",
+ "lines": [
+  {
+   "id": "ask",
+   "text": "한국어 할 줄 알아요?",
+   "dur": 0.953,
+   "syllablesPerSec": 8.39,
+   "src": "vo/vocab/ask.wav",
+   "key": "3835ef86a534e6a10c351e0a7b87eb00",
+   "words": 4
+  },
+  {
+   "id": "w01",
+   "text": "안녕하세요.",
+   "show": "안녕하세요",
+   "dur": 0.911,
+   "syllablesPerSec": 5.49,
+   "src": "vo/vocab/w01.wav",
+   "key": "fd3fed395da33ac0d1badb8020581837",
+   "words": 1
+  },
+  {
+   "id": "w02",
+   "text": "감사합니다.",
+   "show": "감사합니다",
+   "dur": 0.819,
+   "syllablesPerSec": 6.11,
+   "src": "vo/vocab/w02.wav",
+   "key": "c8caad2eb708520a51d146a6fd62b074",
+   "words": 1
+  },
+  {
+   "id": "w03",
+   "text": "사랑해요.",
+   "show": "사랑해요",
+   "dur": 0.762,
+   "syllablesPerSec": 5.25,
+   "src": "vo/vocab/w03.wav",
+   "key": "4d6c4916987862bbe2506a8c5ef8237d",
+   "words": 1
+  },
+  {
+   "id": "w04",
+   "text": "하나.",
+   "show": "하나",
+   "dur": 0.381,
+   "syllablesPerSec": 5.25,
+   "src": "vo/vocab/w04.wav",
+   "key": "726f5bce4cda5b92a0ab2aba6d9770f5",
+   "words": 1
+  },
+  {
+   "id": "w05",
+   "text": "둘.",
+   "show": "둘",
+   "dur": 0.449,
+   "syllablesPerSec": 2.23,
+   "src": "vo/vocab/w05.wav",
+   "key": "70926bb32e6605e83817359471a612bc",
+   "words": 1
+  },
+  {
+   "id": "w06",
+   "text": "셋.",
+   "show": "셋",
+   "dur": 0.332,
+   "syllablesPerSec": 3.01,
+   "src": "vo/vocab/w06.wav",
+   "key": "4a201e2920bf33eaec9842ea923c8505",
+   "words": 1
+  },
+  {
+   "id": "w07",
+   "text": "서울.",
+   "show": "서울",
+   "dur": 0.443,
+   "syllablesPerSec": 4.51,
+   "src": "vo/vocab/w07.wav",
+   "key": "c616a8eec5133a3250f2b2a6889268b7",
+   "words": 1
+  },
+  {
+   "id": "w08",
+   "text": "부산.",
+   "show": "부산",
+   "dur": 0.521,
+   "syllablesPerSec": 3.84,
+   "src": "vo/vocab/w08.wav",
+   "key": "407e0321937f81b19b1582d0e490e263",
+   "words": 1
+  },
+  {
+   "id": "w09",
+   "text": "제주.",
+   "show": "제주",
+   "dur": 0.505,
+   "syllablesPerSec": 3.96,
+   "src": "vo/vocab/w09.wav",
+   "key": "002f8f3cfa8dc553db3547b8771c6d9b",
+   "words": 1
+  },
+  {
+   "id": "w10",
+   "text": "김치.",
+   "show": "김치",
+   "dur": 0.61,
+   "syllablesPerSec": 3.28,
+   "src": "vo/vocab/w10.wav",
+   "key": "0a5eb73cf0870d333ae93bd886e8a519",
+   "words": 1
+  },
+  {
+   "id": "w11",
+   "text": "비빔밥.",
+   "show": "비빔밥",
+   "dur": 0.612,
+   "syllablesPerSec": 4.9,
+   "src": "vo/vocab/w11.wav",
+   "key": "bd91db845c5e992e14fea9c8c951720f",
+   "words": 1
+  },
+  {
+   "id": "w12",
+   "text": "떡볶이.",
+   "show": "떡볶이",
+   "dur": 0.84,
+   "syllablesPerSec": 3.57,
+   "src": "vo/vocab/w12.wav",
+   "key": "5fa94b31d25fb3a4ece429c4b382e157",
+   "words": 1
+  },
+  {
+   "id": "w13",
+   "text": "대박.",
+   "show": "대박",
+   "dur": 0.457,
+   "syllablesPerSec": 4.38,
+   "src": "vo/vocab/w13.wav",
+   "key": "fb30e167c855475f06ec4406c2a9d24c",
+   "words": 1
+  },
+  {
+   "id": "w14",
+   "text": "화이팅?",
+   "show": "화이팅",
+   "dur": 0.524,
+   "syllablesPerSec": 5.73,
+   "src": "vo/vocab/w14.wav",
+   "key": "f0dd7e5725942ecb4625dee76cfd6557",
+   "words": 1
+  },
+  {
+   "id": "slow",
+   "text": "천천히 말해 주세요!",
+   "show": "천천히 말해 주세요",
+   "dur": 1.436,
+   "syllablesPerSec": 5.57,
+   "src": "vo/vocab/slow.wav",
+   "key": "4cead9fd0ba4f48e36062f1f0ad0e0f1",
+   "words": 3
+  },
+  {
+   "id": "ok",
+   "text": "네, 천천히 말할게요.",
+   "dur": 1.642,
+   "syllablesPerSec": 4.87,
+   "src": "vo/vocab/ok.wav",
+   "key": "4c14300a69020c376ded81c96b2ccb12",
+   "words": 3
+  }
+ ]
+}

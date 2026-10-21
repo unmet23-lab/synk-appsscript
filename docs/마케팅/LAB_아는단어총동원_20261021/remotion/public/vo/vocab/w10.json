@@ -1,0 +1,33 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w10",
+ "text": "김치.",
+ "show": "김치",
+ "dur": 0.61,
+ "words": [
+  {
+   "text": "김치.",
+   "start": 0.04,
+   "end": 0.61
+  }
+ ],
+ "source": {
+  "key": "0a5eb73cf0870d333ae93bd886e8a519",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1021,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1.1,
+  "cut": null
+ }
+}

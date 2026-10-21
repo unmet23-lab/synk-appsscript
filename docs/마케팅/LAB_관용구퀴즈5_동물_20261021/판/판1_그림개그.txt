@@ -1,0 +1,19 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — six needle-felted wool props for a kids' Korean idiom quiz about ANIMAL idioms, one sheet.
+
+The attached reference photo only shows the felt craft look we want (wool texture, colors, lighting). Do not copy its objects.
+
+Layout: one landscape image, 3 columns × 2 rows, six cells of equal size. One object group per cell, centered, filling about 65–75% of the cell, with wide empty margins so no two cells touch. Seamless pure white background (#FFFFFF), flat even studio light, no floor, no cast shadows, no reflections, no border lines. Absolutely no text, letters, numbers, logos or symbols anywhere — not on signs, clocks, boxes or tags. Nothing in the image is white or cream except the background; every outer edge is a clear saturated color or charcoal.
+
+Top row = the funny WRONG literal readings:
+1. "FLYING FLIES LIKE KITES" — three cute charcoal-grey felt houseflies with light-blue felt wings and big bead eyes, each tied to its own thin red string like a little kite, all three strings gathering down to one small wooden spool at the bottom of the cell. The flies look happy, floating up in a fan shape.
+2. "A FROG IN A WELL" — a round grey felt stone well (seen from the front, stones outlined in darker grey), and a cute bright-green felt frog with big round bead eyes sitting on the well's rim, smiling. Inside the well top you can see dark blue felt water.
+3. "A CAT WASHING ITS FACE" — a chubby orange tabby felt cat (orange and ginger stripes only, no white fur anywhere) sitting up, eyes closed contentedly, licking one raised paw and rubbing it over its cheek.
+
+Bottom row = the TRUE meanings:
+4. NO CUSTOMERS, THE SHOP IS DEAD — a tiny felt shop stall with a red-and-yellow striped awning and an empty mustard-yellow counter; behind the counter a caramel-brown felt teddy bear shopkeeper (same style as a classic plush bear) rests its chin on its paws, bored, half-closed eyes; one small charcoal felt fly circles lazily above with two short light-blue motion arcs. Shelves behind it are empty.
+5. A SMALL VIEW OF THE WORLD (now opening up) — the same bright-green felt frog now standing on top of the stone well with a tiny red felt backpack, looking up in amazement at a big colorful felt globe (blue oceans, green continents) floating above it, with a small yellow felt paper airplane circling the globe.
+6. A QUICK LAZY FACE WASH — the same caramel-brown felt teddy bear in blue-and-yellow striped pajamas, very sleepy (one eye open, hair tuft sticking up), splashing just a few light-blue felt water drops on its face with one paw at a small mint-green felt sink; a red felt alarm clock with two bells sits on the sink edge (no numbers on the clock face — plain yellow face).
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, cute and playful for children, consistent soft lighting across all six cells, saturated but soft colors that will read well on a cobalt blue background. Keep each cell's pieces close together inside the cell but clearly separated from neighboring cells by white space.

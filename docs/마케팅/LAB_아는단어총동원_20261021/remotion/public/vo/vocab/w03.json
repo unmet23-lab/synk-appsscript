@@ -1,0 +1,33 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w03",
+ "text": "사랑해요.",
+ "show": "사랑해요",
+ "dur": 0.762,
+ "words": [
+  {
+   "text": "사랑해요.",
+   "start": 0.02,
+   "end": 0.762
+  }
+ ],
+ "source": {
+  "key": "4d6c4916987862bbe2506a8c5ef8237d",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1021,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1.1,
+  "cut": null
+ }
+}

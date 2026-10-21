@@ -1,0 +1,33 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w08",
+ "text": "부산.",
+ "show": "부산",
+ "dur": 0.521,
+ "words": [
+  {
+   "text": "부산.",
+   "start": 0.04,
+   "end": 0.521
+  }
+ ],
+ "source": {
+  "key": "407e0321937f81b19b1582d0e490e263",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1021,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1.1,
+  "cut": null
+ }
+}

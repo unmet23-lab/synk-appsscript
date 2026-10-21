@@ -1,0 +1,20 @@
+{
+ "id": "01-youtube-en",
+ "brand": "LAB",
+ "platform": "youtube",
+ "account": "@synkkorean",
+ "format": "shorts",
+ "language": "en",
+ "audioLanguage": "ko",
+ "title": "Using my WHOLE Korean vocabulary 😭 (the 1 phrase that actually saves you) #learnkorean",
+ "caption": "A Korean asks 「한국어 할 줄 알아요?」 (Do you speak Korean?) and I panic-list every word I know 😭\n\n안녕하세요 hello · 감사합니다 thank you · 사랑해요 I love you\n하나 둘 셋 one two three · 서울 부산 제주 Seoul, Busan, Jeju\n김치 · 비빔밥 · 떡볶이 · 대박 awesome · 화이팅 (standard spelling: 파이팅) you got this\n\n✅ The 1 phrase that actually saves you:\n천천히 말해 주세요 (cheoncheonhi malhae juseyo) = Please speak slowly\nSay it out loud!\n\nHow many did you know? Comment every Korean word you know 👇\n\n🎮 Play Korean listening & reading mini games: https://synk.im/try/learning-hub/\n\nSYNK LAB · Korean for beginners\n#learnkorean #koreanlanguage #studykorean #koreanforbeginners",
+ "pinnedComment": "Your turn 👇 Comment every Korean word you know!\nNext time someone talks too fast, try: 천천히 말해 주세요 (Please speak slowly) 🐌\n🎮 Korean mini games → https://synk.im/try/learning-hub/",
+ "alt": [
+  "Felt-craft short. A felt Korean guy in a navy hoodie asks 「한국어 할 줄 알아요?」 and a learner lists every Korean word they know, one felt picture per word: a waving hand, a bowing bear, a heart, dice for one two three, N Seoul Tower, a Busan beach, a Jeju tangerine, kimchi, bibimbap, tteokbokki, a treasure chest and a boxing glove. A felt snail ends it with 천천히 말해 주세요 — Please speak slowly."
+ ],
+ "madeForKids": false,
+ "alteredContent": false,
+ "category": "Education",
+ "_비고": "video.mp4 = vocab-en(렌더.mjs). 표지 cover.png = 0.5초(띠 + 약속 딱지 + 「한국어 할 줄 알아요?」 + 물음표). 어린이 전용 아님(댓글이 필요). 합성 표시는 필수 아님 — 펠트 그림과 특정인이 아닌 TTS라 사실적인 사람·장면이 없다(관용구 퀴즈 #2 판단과 같음). 동영상 언어는 실제로 말하는 한국어(ko), 제목·설명 언어 en. 자동 더빙 끔.",
+ "version": "vocab-en"
+}
