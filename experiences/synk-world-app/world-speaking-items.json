@@ -1,8 +1,8 @@
 {
   "version": 1,
   "status": "draft",
-  "contentHash": "eef1eb06ec8938f0",
-  "note": "WORLD 말하기 연습 시범 문항(2026-10-21). 자체 창작 초안이고 AI 2중 검수 전이라 공개 빌드에 넣지 않는다. 공식 기출·견본 문항을 옮기지 않았다. 자료 숫자와 인물은 가상이다.",
+  "contentHash": "da12c14fb2abe895",
+  "note": "WORLD 말하기 연습 시범 문항(2026-10-21). 자체 창작이며 공식 기출·견본 문항을 옮기지 않았다. 자료 숫자와 인물은 가상이다. 10-21 2중 검수(검수자·근거는 qa/speaking-pilot-20261021/item-review/README.md — 공개 데이터라 모델 이름은 여기 적지 않는다)에서 시험 형식 6개는 고친 판을 두 검수자가 다시 확인했고 역할극은 고침 없이 통과했다(문항마다 review 칸). 운영 함수는 review.status가 passed인 문항·역할극만 연다(리허설 설정이면 초안도). 화면은 기능 플래그 뒤에 있다. 3번 그림은 승인 소품을 옮긴 시범 그림이라 scene·covers를 지금 그림에 맞췄다 — 정식 그림을 구우면 scene대로 굽고 다시 검수한다.",
   "basis": {
     "source": "topik.go.kr 토픽 말하기 평가 — 시험 소개·문항 구성(HMENU00048), 문항유형 및 학습방법(HMENU00023)",
     "checked": "2026-10-21",
@@ -24,8 +24,9 @@
       "prompt": "주말에 보통 무엇을 해요? 지난 주말에는 무엇을 했어요? 주말에 하는 일에 대해 이야기하세요.",
       "covers": ["주말에 보통 하는 일", "지난 주말에 한 일"],
       "minSyllables": 20,
-      "model": "저는 주말에 보통 집 근처 공원에서 산책을 해요. 날씨가 좋으면 친구와 같이 자전거도 타요. 지난 주말에는 비가 와서 밖에 나가지 않았어요. 그래서 집에서 김밥을 만들고 한국 드라마를 봤어요. 다음 주말에는 친구와 한강 공원에 가고 싶어요.",
-      "watch": "지금 하는 일(-아요/-어요)과 지난 일(-았어요/-었어요)을 나눠 말해요."
+      "model": "저는 주말에 보통 집 근처 공원에서 산책을 해요. 날씨가 좋으면 친구와 같이 자전거도 타요. 지난 주말에는 비가 와서 밖에 나가지 않았어요. 그래서 집에서 김밥을 만들고 한국 드라마를 봤어요.",
+      "watch": "보통 하는 일(-아요/-어요)과 지난 일(-았어요/-었어요)을 나눠 말해요.",
+      "review": {"status":"passed","at":"2026-10-21T10:27:17Z","report":"experiences/synk-world-app/qa/speaking-pilot-20261021/item-review/README.md","rubric":"speaking-review-r1","by":[{"stage":"first","verdicts":{"r1":"fix","r3":"pass"}},{"stage":"second","verdicts":{"r1":"fix","r3":"pass"}}]}
     },
     {
       "id": "s2-cafe",
@@ -35,9 +36,10 @@
       "picture": {"src": "../brand-opening/assets/home/cafe-room-v1.webp", "alt": "카페 안. 커피 기계가 있는 계산대와 창가 자리 세 개가 보인다."},
       "partner": {"role": "직원", "line": "어서 오세요. 어떤 음료를 몇 잔 준비할까요?", "clip": "../brand-opening/assets/cafe-voice/cafe-compose-1.mp3"},
       "covers": ["음료 이름과 수량", "마실 곳(여기서·포장)"],
-      "minSyllables": 20,
+      "minSyllables": 10,
       "model": "안녕하세요. 따뜻한 녹차 두 잔 주세요. 친구랑 같이 마실 거예요. 저희는 여기 창가 자리에서 마시고 갈게요. 그리고 혹시 쿠키도 있어요? 있으면 하나 주세요.",
-      "watch": "주문할 때는 「-(으)ㄹ게요」·「주세요」처럼 직원에게 맞는 높임말을 써요."
+      "watch": "주문할 때는 「주세요」·「-(으)ㄹ게요」처럼 「-요」로 끝나는 공손한 말을 써요.",
+      "review": {"status":"passed","at":"2026-10-21T10:27:17Z","report":"experiences/synk-world-app/qa/speaking-pilot-20261021/item-review/README.md","rubric":"speaking-review-r1","by":[{"stage":"first","verdicts":{"r1":"fix","r2":"fix","r3":"pass"}},{"stage":"second","verdicts":{"r1":"fix","r2":"fix","r3":"pass"}}]}
     },
     {
       "id": "s3-birthday",
@@ -45,15 +47,16 @@
       "label": "친구 생일 준비",
       "prompt": "수아 씨가 친구의 생일을 준비했습니다. 그림을 보고 수아 씨에게 무슨 일이 있었는지 순서대로 이야기하세요.",
       "panels": [
-        {"src": "speaking-assets/s3-birthday-1.webp", "alt": "초 하나가 꽂힌 케이크", "scene": "수아 씨가 아침에 빵집에서 친구 생일 케이크를 산다"},
-        {"src": "speaking-assets/s3-birthday-2.webp", "alt": "하트 스티커를 붙인 편지 봉투", "scene": "집에서 친구에게 줄 생일 편지를 쓴다"},
-        {"src": "speaking-assets/s3-birthday-3.webp", "alt": "리본이 달린 선물 상자", "scene": "선물을 상자에 넣고 리본으로 포장한다"},
-        {"src": "speaking-assets/s3-birthday-4.webp", "alt": "꽃병에 꽂힌 꽃다발", "scene": "저녁에 친구를 만나 꽃과 선물을 주며 생일을 축하하고, 친구가 기뻐한다"}
+        {"src": "speaking-assets/s3-birthday-1.webp", "alt": "초 하나가 꽂힌 케이크", "scene": "수아 씨가 친구 생일 케이크를 준비하고 초를 꽂는다"},
+        {"src": "speaking-assets/s3-birthday-2.webp", "alt": "하트 스티커를 붙인 편지 봉투", "scene": "친구에게 줄 생일 편지를 쓰고 봉투에 하트 스티커를 붙인다"},
+        {"src": "speaking-assets/s3-birthday-3.webp", "alt": "뚜껑이 열린 상자와 붉은 리본", "scene": "선물을 상자에 넣고 리본으로 포장한다"},
+        {"src": "speaking-assets/s3-birthday-4.webp", "alt": "꽃병에 꽂힌 꽃", "scene": "수아 씨가 친구 생일을 위해 꽃을 준비해 꽃병에 꽂는다"}
       ],
-      "covers": ["케이크를 준비한 일", "편지를 쓴 일", "선물을 포장한 일", "꽃과 선물을 주며 축하한 일"],
+      "covers": ["케이크를 준비한 일", "편지를 쓴 일", "선물을 포장한 일", "꽃을 준비한 일"],
       "minSyllables": 40,
-      "model": "오늘은 수아 씨 친구의 생일이었어요. 수아 씨는 아침 일찍 빵집에 가서 케이크를 샀어요. 집에 와서는 친구에게 줄 편지를 정성껏 썼어요. 그다음에 선물을 상자에 넣고 예쁜 리본으로 포장했어요. 저녁에 친구를 만나서 꽃과 선물을 주면서 생일을 축하했어요. 친구는 깜짝 놀라면서 정말 기뻐했어요.",
-      "watch": "그림 순서대로 「먼저·그다음에·마지막으로」로 이어 말하고, 지난 일이라 「-았어요/-었어요」로 말해요."
+      "model": "수아 씨는 친한 친구의 생일을 축하해 주려고 여러 가지를 준비했어요. 먼저 생일 케이크를 사서 초를 꽂았어요. 그다음에 친구에게 줄 편지를 정성껏 쓰고 봉투에 하트 스티커를 붙였어요. 그리고 선물을 상자에 넣고 빨간 리본으로 포장했어요. 마지막으로 꽃을 준비해서 꽃병에 예쁘게 꽂았어요. 수아 씨는 친구가 기뻐하는 모습을 생각하면서 즐겁게 준비를 마쳤어요.",
+      "watch": "그림 순서대로 「먼저·그다음에·마지막으로」로 이어 말하고, 지난 일이라 「-았어요/-었어요」로 말해요.",
+      "review": {"status":"passed","at":"2026-10-21T10:27:17Z","report":"experiences/synk-world-app/qa/speaking-pilot-20261021/item-review/README.md","rubric":"speaking-review-r1","by":[{"stage":"first","verdicts":{"r1":"fix","r2":"fix","r3":"pass"}},{"stage":"second","verdicts":{"r1":"fix","r2":"fix","r3":"pass"}}]}
     },
     {
       "id": "s4-festival",
@@ -66,10 +69,11 @@
         {"speaker": "여자", "line": "시험이 끝나면 바로 방학이라서 고향에 가는 학생이 많아요. 그러면 축제에 오는 사람이 너무 적을 거예요."}
       ],
       "prompt": "여자의 마지막 말을 듣고, 남자가 되어 축제를 시험이 끝난 뒤에 하는 것이 좋은 이유를 들어 여자를 설득하세요.",
-      "covers": ["여자의 걱정(방학·사람 수)에 대한 대답", "시험 뒤에 하는 것이 좋은 이유", "걱정을 줄일 방법"],
+      "covers": ["여자의 걱정(방학·사람 수)에 대한 대답", "시험 뒤에 하는 것이 좋은 이유"],
       "minSyllables": 40,
-      "model": "그 걱정도 이해해요. 하지만 시험 전에 축제를 하면 학생들이 공부 때문에 마음 편하게 즐기기 어려워요. 작년에도 시험 준비 때문에 축제에 못 온 친구들이 많았잖아요. 그리고 방학 바로 전에 하면 한 학기를 마무리하는 의미도 있어요. 고향에 가는 학생이 걱정이라면 시험이 끝난 바로 다음 날로 정하면 될 것 같아요. 그러면 더 많은 학생이 즐겁게 참여할 수 있을 거예요.",
-      "watch": "상대의 말을 먼저 받아 주고(「그 걱정도 이해해요. 하지만…」) 이유와 방법을 이어 말해요."
+      "model": "그 걱정도 이해해요. 하지만 시험 전에 축제를 하면 학생들이 공부 때문에 마음 편하게 즐기기 어려워요. 작년에도 시험 준비 때문에 축제에 못 온 친구들이 많았잖아요. 그리고 시험이 끝나고 하면 한 학기를 마무리하는 의미도 있어요. 고향에 가는 학생이 걱정이라면 축제 날짜를 미리 알려 주면 될 것 같아요. 그러면 축제를 즐기고 나서 고향에 가는 학생도 많을 거예요.",
+      "watch": "상대의 말을 먼저 받아 주고(「그 걱정도 이해해요. 하지만…」) 이유를 말한 뒤 걱정에 대한 생각도 말해요.",
+      "review": {"status":"passed","at":"2026-10-21T10:27:17Z","report":"experiences/synk-world-app/qa/speaking-pilot-20261021/item-review/README.md","rubric":"speaking-review-r1","by":[{"stage":"first","verdicts":{"r1":"fix","r2":"fix","r3":"pass"}},{"stage":"second","verdicts":{"r1":"fix","r2":"fix","r3":"pass"}}]}
     },
     {
       "id": "s5-bike",
@@ -82,22 +86,24 @@
         "source": "가상 자료",
         "unit": "만 건",
         "series": [{"label": "2021년", "value": 120}, {"label": "2023년", "value": 210}, {"label": "2025년", "value": 340}],
-        "reasons": {"title": "자전거를 빌리는 이유(복수 응답)", "rows": [{"label": "공원 자전거 길이 늘었다", "value": "45%"}, {"label": "휴대폰으로 쉽게 빌린다", "value": "30%"}, {"label": "건강에 관심이 많아졌다", "value": "25%"}]}
+        "reasons": {"title": "자전거 대여가 늘어난 이유", "rows": [{"label": "공원 자전거 길이 늘었다", "value": "45%"}, {"label": "휴대폰으로 쉽게 빌린다", "value": "30%"}, {"label": "건강에 관심이 많아졌다", "value": "25%"}]}
       },
-      "covers": ["대여 건수의 변화(숫자)", "변화의 이유 두 가지 이상", "앞으로의 전망"],
+      "covers": ["대여 건수의 변화(숫자)", "변화의 이유", "앞으로의 전망"],
       "minSyllables": 60,
       "model": "자료에 따르면 한강 공원의 공공 자전거 대여 건수는 2021년 120만 건에서 2023년 210만 건, 2025년에는 340만 건으로 크게 늘었습니다. 4년 만에 세 배 가까이 증가한 것입니다. 이렇게 늘어난 이유는 첫째, 공원 안에 자전거 길이 많이 생겼기 때문입니다. 둘째, 휴대폰으로 쉽게 빌릴 수 있게 되어 이용 방법이 편리해졌습니다. 또한 건강에 관심을 가지는 사람이 많아진 것도 이유라고 할 수 있습니다. 앞으로도 자전거 길이 계속 생기고 환경을 생각하는 사람이 많아지면서 대여 건수는 꾸준히 늘어날 것으로 보입니다.",
-      "watch": "「-에서 -(으)로 늘었습니다」로 숫자를 옮기고, 「첫째·둘째」로 이유를 나눈 뒤 「-(으)ㄹ 것으로 보입니다」로 전망을 말해요."
+      "watch": "「-에서 -(으)로 늘었습니다」로 숫자를 옮기고, 「첫째·둘째」로 이유를 나눈 뒤 「-(으)ㄹ 것으로 보입니다」로 전망을 말해요.",
+      "review": {"status":"passed","at":"2026-10-21T10:27:17Z","report":"experiences/synk-world-app/qa/speaking-pilot-20261021/item-review/README.md","rubric":"speaking-review-r1","by":[{"stage":"first","verdicts":{"r1":"fix","r3":"pass"}},{"stage":"second","verdicts":{"r1":"fix","r3":"pass"}}]}
     },
     {
       "id": "s6-phone",
       "type": 6,
       "label": "학교의 휴대폰 사용",
-      "prompt": "최근 일부 학교에서는 수업 시간뿐 아니라 쉬는 시간에도 학생들의 휴대폰 사용을 제한하고 있습니다. 학교에서 휴대폰 사용을 제한하는 것에 대해 어떻게 생각합니까? 찬성 또는 반대 입장을 정하고, 그 이유를 들어 자신의 생각을 말하세요.",
-      "covers": ["찬성·반대 입장", "근거 두 가지 이상", "다른 생각에 대한 대답이나 마무리"],
+      "prompt": "최근 일부 학교에서는 수업 시간뿐 아니라 쉬는 시간에도 학생들의 휴대폰 사용을 제한하고 있습니다. 학교에서 휴대폰 사용을 제한하는 것에 대해 어떻게 생각합니까? 찬성 또는 반대 입장을 정하고, 그 이유를 두 가지 이상 들어 말하세요. 그리고 다른 의견도 짚으며 자신의 생각을 정리하세요.",
+      "covers": ["찬성·반대 입장", "근거 두 가지 이상", "다른 의견을 짚으며 생각 정리"],
       "minSyllables": 60,
       "model": "저는 학교에서 휴대폰 사용을 어느 정도 제한하는 것에 찬성합니다. 첫째, 휴대폰을 자유롭게 쓰면 학생들이 수업에 집중하기 어렵습니다. 알림이 올 때마다 확인하게 되어 공부의 흐름이 자주 끊기기 때문입니다. 둘째, 쉬는 시간에 휴대폰만 보면 친구들과 직접 이야기할 기회가 줄어듭니다. 학교는 지식뿐 아니라 사람과 어울리는 법도 배우는 곳이라고 생각합니다. 물론 급한 연락이 필요한 경우도 있기 때문에 무조건 금지하기보다는 정해진 장소와 시간에만 쓸 수 있게 하는 것이 좋겠습니다. 이렇게 하면 학생의 안전과 학습을 함께 지킬 수 있을 것입니다.",
-      "watch": "처음에 입장을 분명히 말하고, 근거마다 이유나 예를 붙인 뒤, 다른 생각을 인정하며 마무리해요."
+      "watch": "처음에 입장을 분명히 말하고, 근거마다 이유나 예를 붙인 뒤, 다른 생각을 인정하며 마무리해요.",
+      "review": {"status":"passed","at":"2026-10-21T10:27:17Z","report":"experiences/synk-world-app/qa/speaking-pilot-20261021/item-review/README.md","rubric":"speaking-review-r1","by":[{"stage":"first","verdicts":{"r1":"fix","r2":"fix","r3":"pass"}},{"stage":"second","verdicts":{"r1":"fix","r2":"fix","r3":"pass"}}]}
     }
   ],
   "roleplays": [
@@ -121,7 +127,8 @@
         {"id": "place", "line": "가져가실 건가요, 여기서 드실 건가요?", "clip": "../brand-opening/assets/cafe-voice/cafe-compose-3.mp3", "asks": ["place"],
           "model": "여기서 마실게요."}
       ],
-      "ending": "따뜻한 차 두 잔을 받아 {friend} 창가 자리에 앉았어요."
+      "ending": "따뜻한 차 두 잔을 받아 {friend} 창가 자리에 앉았어요.",
+      "review": {"status":"passed","at":"2026-10-21T10:27:17Z","report":"experiences/synk-world-app/qa/speaking-pilot-20261021/item-review/README.md","rubric":"speaking-review-r1","by":[{"stage":"first","verdicts":{"r1":"fix","r2":"pass"}},{"stage":"second","verdicts":{"r1":"pass","r2":"pass"}}]}
     }
   ]
 }

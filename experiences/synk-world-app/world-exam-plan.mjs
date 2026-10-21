@@ -80,9 +80,10 @@ const planAnswered=event=>event?.type==='practice.attempted'&&event.attemptNo===
 
 // 이번 주에 실제로 한 연습: Trail 기록(처음 낸 답이 있는 연습)과 생활 진도(레슨·복습에 답한 날). 영역은 그 문항의 측정 영역,
 // 짧은 진단(코치 'world-home')은 다시 확인, 읽기 짧은 연습(코치 'world-practice')은 읽기, 쓰기 연습(③ 코치 'world-writing')은 쓰기다.
+// 말하기 연습(10-21)은 Trail에 채점 없는 시도만 남거나(말하기 항목이 생긴 뒤) 기기에만 남으므로 기기 기록의 시각(extra {area:'speaking'})으로 센다.
 export function weekActivity({events=[],progress=null,week,extra=[]}={}){
  if(!planRecord(week)||!planTime(week.start)||!planTime(week.end))throw TypeError('WORLD exam plan needs a week');
- const done={listening:0,reading:0,writing:0,recheck:0,life:0},decisions=new Map(),shown=new Map(),runs=new Map();
+ const done={listening:0,reading:0,writing:0,recheck:0,life:0,speaking:0},decisions=new Map(),shown=new Map(),runs=new Map();
  for(const event of Array.isArray(events)?events:[]){
   if(event?.type==='decision.made')decisions.set(event.id,event.experienceId);
   else if(event?.type==='practice.presented')shown.set(event.id,event);
@@ -167,7 +168,12 @@ function split(total,needs,boost={}){
 // 10-20 판의 reading:{skillId:수}도 받는다 — practice가 없으면 그것을 짧은 연습 수로 쓴다. classwork: 온라인 반 「이번 주 과제」(교사 배정) [{kind:'reading'|'writing', done}] —
 // 반 과제가 있으면 그 갈래의 횟수를 반 과제로 먼저 채우고 나머지만 자기 연습으로 둔다(같은 주에 두 번 내지 않게).
 // lastCheckAt: 이번 주 앞의 가장 늦은 다시 확인(lastRecheck) — 다음 확인을 그 단계의 주기보다 가깝게 잡지 않는다(10-21 검수).
-export function buildExamPlan({exam,summary=null,now=Date.now(),done=null,available={},classwork=[],audioAvailable=true,lastCheckAt=null}={}){
+// 말하기(10-21): 시험 정보에서 「말하기 평가도 준비해요」를 고른 TOPIK I·II 학생(exam.speaking===true)만 영역 speaking이 생긴다.
+// 말하기는 TOPIK I·II에 더해 따로 고른 시험이라 다른 영역(다시 확인·듣기·읽기·쓰기·생활)의 자리를 빼앗지 않고, 열린 주에 한 번을 더한다
+// (나누기 밖 — 다른 영역의 배분은 고르지 않은 학생과 같다). 이번 주에 한 번 이상 했으면 남은 횟수는 0이다.
+// available.speaking: 지금 열 수 있는 말하기 연습 후보(시험 유형) · speakingNeeds: 이번 주에 아직 안 해 본 유형 수 — 「다음 연습」을 고를 때
+// 남은 횟수가 같은 영역끼리의 순서에만 쓴다. 채점하지 않으므로 숙제 묶음·진행·도달 파악에 넣지 않는다. 고르지 않은 학생의 계획은 이 칸들이 없던 때와 같다.
+export function buildExamPlan({exam,summary=null,now=Date.now(),done=null,available={},classwork=[],audioAvailable=true,lastCheckAt=null,speakingNeeds=null}={}){
  if(!planRecord(exam))return null;
  const week=examWeek(now),{phase,weeks}=examPhase(exam.date,now),policy=EXAM_PLAN_POLICY;
  const pace=exam.weeklyMinutes&&policy.weekly[exam.weeklyMinutes]||policy.fallback;
@@ -209,12 +215,19 @@ export function buildExamPlan({exam,summary=null,now=Date.now(),done=null,availa
   open[domain]=has[domain]?needs[domain]:null;
   if(!has[domain])notes.push(domain==='listening'&&!audioAvailable?'audio-off':`${domain}-unavailable`);
  }
+ // 말하기: 고른 학생만. 소리를 끈 날은 듣기처럼 닫고(까닭을 notes에), 열 수 있는 연습이 없어도 닫는다. 열리면 나누기 밖에서 한 번을 더한다.
+ // 필요(이번 주에 아직 안 해 본 유형 수)는 「다음 연습」의 순서에만 쓴다(열 수 있는 유형 수를 넘지 않는다).
+ const speakingChosen=exam.speaking===true&&['topik1','topik2'].includes(exam.type);
+ const speakingList=speakingChosen&&Array.isArray(available.speaking)?available.speaking.filter(row=>planRecord(row)&&typeof row.id==='string'):[];
+ const speakingOpen=speakingChosen&&audioAvailable&&speakingList.length>0;
+ const speakingNeed=speakingOpen?Math.min(speakingList.length,Number.isInteger(speakingNeeds)&&speakingNeeds>0?speakingNeeds:0):null;
+ if(speakingChosen&&!speakingOpen)notes.push(audioAvailable?'speaking-unavailable':'speaking-audio-off');
  // 시험이 가까우면 시험형 문항이 있는 읽기·쓰기를 조금 더(듣기는 지금 게임 연습이라 비중을 키우지 않는다).
  const boost=['near','final'].includes(phase)?{reading:1.25,writing:1.25}:{};
- const planned={...split(Math.max(0,total-recheck-life),open,boost),recheck,life};
+ const planned={...split(Math.max(0,total-recheck-life),open,boost),recheck,life,...(speakingOpen?{speaking:1}:{})};
  // 반 과제가 있는 갈래: 계획 횟수를 반 과제 수 이상으로 두고 반 과제로 먼저 채운다(반 과제를 빼거나 따로 하나 더 내지 않는다).
  for(const kind of ['reading','writing'])planned[kind]=Math.max(planned[kind]||0,classCount(kind));
- const areas=['recheck',...domains,'life'].map(area=>({area,planned:planned[area]||0,done:did[area]||0,
+ const areas=['recheck',...domains,...(speakingChosen?['speaking']:[]),'life'].map(area=>({area,planned:planned[area]||0,done:did[area]||0,
   remaining:Math.max(0,(planned[area]||0)-(did[area]||0)),classwork:tasks.filter(row=>row.kind===area).map(row=>({kind:row.kind,done:!!row.done,...(row.title?{title:String(row.title)}:{})}))}))
   .filter(row=>row.planned>0||row.done>0);
  // 숙제 묶음: 다시 볼 항목(보충·도움으로만·다시 확인·틀린 답이 있는 확인 중)마다 그 항목의 새 문항 연습. 없으면 모자람을 알린다.
@@ -231,8 +244,8 @@ export function buildExamPlan({exam,summary=null,now=Date.now(),done=null,availa
  }).sort((a,b)=>b.priority-a.priority||Number(a.shortage)-Number(b.shortage)||a.skillId.localeCompare(b.skillId)).slice(0,3).map(({priority,...row})=>row);
  // 다음 연습의 초점: 기록이 없으면 짧은 진단(시작점)부터, 아니면 남은 횟수가 가장 많은 영역(같으면 더 필요한 영역).
  // 그 영역의 첫 숙제 항목도 함께 넘긴다.
- const rank=row=>start&&row.area==='recheck'?1:0;
- const next=areas.filter(row=>row.remaining>0).sort((a,b)=>rank(b)-rank(a)||b.remaining-a.remaining||(needs[b.area]??0)-(needs[a.area]??0)||a.area.localeCompare(b.area))[0]||null;
+ const rank=row=>start&&row.area==='recheck'?1:0,needOf=area=>area==='speaking'?speakingNeed??0:needs[area]??0;
+ const next=areas.filter(row=>row.remaining>0).sort((a,b)=>rank(b)-rank(a)||b.remaining-a.remaining||needOf(b.area)-needOf(a.area)||a.area.localeCompare(b.area))[0]||null;
  const focus=next?homework.find(row=>row.domain===next.area&&!row.shortage)||null:null;
  const goals=next?[`plan.area.${next.area}`,...(focus?[`plan.skill.${focus.skillId}`]:[])]:[];
  // 다시 확인 일정: 이번 주부터 다음 세 번. 시험이 지났으면 없고, 낼 새 문항이 없으면 이번 주에 이미 한 것만 남는다.
@@ -257,14 +270,18 @@ export function buildExamPlan({exam,summary=null,now=Date.now(),done=null,availa
  const progress=Object.fromEntries(domains.filter(domain=>domain!=='writing').map(domain=>{const rows=skills.filter(skill=>skill.domain===domain);
   return [domain,{total:rows.length,checked:rows.filter(skill=>skill.status!=='unseen').length,basis:two(domain)?'topik2':'topik1'}];}));
  const sessions=Math.max(total,areas.reduce((n,row)=>n+row.planned,0));
+ // 말하기가 열렸으면 그 한 줄(계획 판의 말하기 칸): 이번 주에 아직 안 해 본 유형 수 / 열 수 있는 유형 수. 점수·숙달이 아니다.
+ const speaking=speakingOpen?{speaking:{untried:speakingNeed,total:speakingList.length}}:{};
  return {policy:policy.version,exam:{...exam},week,phase,weeksLeft:weeks,sessions:{total:sessions,minutes:pace.minutes},areas,homework,next:next?{area:next.area,skillId:focus?.skillId||null}:null,goals,checks,
-  reach:{confirmed,observed:observed.length,total:skills.filter(skill=>skill.domain!=='writing').length,evidence,basis},progress,notes:[...new Set(notes)],
+  reach:{confirmed,observed:observed.length,total:skills.filter(skill=>skill.domain!=='writing').length,evidence,basis},progress,...speaking,notes:[...new Set(notes)],
   learningEffectClaim:false,abilityClaim:false,grade:null,passClaim:false};
 }
-// 후보에 붙일 계획 토큰: 영역(읽기 짧은 연습=읽기, 듣기 게임=듣기, 짧은 진단=다시 확인, 생활 레슨=생활)과 그 후보가 다루는 항목.
+// 후보에 붙일 계획 토큰: 영역(읽기 짧은 연습=읽기, 듣기 게임=듣기, 짧은 진단=다시 확인, 생활 레슨=생활, 말하기 연습=말하기)과 그 후보가 다루는 항목.
+// 말하기 후보는 route가 'speaking'(추천 후보 — 유형은 routeId) 또는 'speaking:N'(말하기 모듈의 후보 그대로)이다.
 export function planTokens(candidate){
  const area=candidate?.route==='practice'?'reading':candidate?.route==='position'?'recheck':candidate?.route==='writing'?'writing'
-  :candidate?.route==='game'?candidate.modality==='reading'?'reading':'listening':['lesson','review'].includes(candidate?.route)?'life':null;
+  :candidate?.route==='game'?candidate.modality==='reading'?'reading':'listening':['lesson','review'].includes(candidate?.route)?'life'
+  :typeof candidate?.route==='string'&&candidate.route.split(':')[0]==='speaking'?'speaking':null;
  if(!area)return [];
  const skills=new Set((Array.isArray(candidate.targets)?candidate.targets:[]).flatMap(target=>Array.isArray(target?.skillIds)?target.skillIds:[]));
  return [`plan.area.${area}`,...[...skills].sort().map(id=>`plan.skill.${id}`)];

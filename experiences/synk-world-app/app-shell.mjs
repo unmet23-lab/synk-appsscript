@@ -280,6 +280,11 @@ function mountLifeLearning(){
   launchGame,startLesson:id=>lifeUI.start(id),startReview:(id,ids)=>lifeUI.reviewStart(id,ids),
   // 시험 계획(10-20): 온라인 반 「이번 주 과제」를 그 주의 연습으로 먼저 세고, TOPIK II 쓰기 연습은 문항이 열렸을 때만 계획에 넣는다.
   readClasswork:classworkThisWeek,writingPractice:{candidates:()=>writingReady()?WRITING_CANDIDATES:[],open:route=>openWriting({dataset:{writingRoute:route}}),attempts:()=>readWritingSummary({storage:localStorage,owner:writingOwnerId()}).times},
+  // 말하기 연습(10-21 시범 · 플래그 뒤): 모듈을 불렀을 때만 시험 정보의 「말하기 평가도 준비해요」(이 기기 기록)와 이번 주 계획의 말하기 칸이 생긴다.
+  // 이 파일은 모듈을 정적으로 부르지 않으므로 그 모듈의 읽기·쓰기 함수를 감싸 넘긴다. owner는 학습 화면의 주인(계정·손님)이다.
+  speakingPractice:{available:()=>!!speakingModule?.speakingReady(),candidates:()=>speakingModule?.speakingReady()?speakingModule.SPEAKING_CANDIDATES.filter(row=>row.exam==='speaking'):[],
+   chosen:owner=>!!speakingModule&&speakingModule.readSpeakingExam({storage:localStorage,owner}),choose:(owner,on)=>!!speakingModule&&speakingModule.writeSpeakingExam({storage:localStorage,owner,on}),
+   week:(owner,week)=>speakingModule?speakingModule.speakingWeek({storage:localStorage,owner,week}):null,open:route=>openSpeaking({dataset:{speakingRoute:route}})},
   prepare:async()=>{if(operating&&client.snapshot&&!window.SYNKLearningHost)await account.prepareGame({target:window});}});
  home.connectEducation?.(education);window.__synkEducation=education;
  // 학습 알림(10-19 결정 · 1단 기기 예약, world-reminder-device.mjs): 주인마다 이 기기에 따로 두고, 무엇을 알릴지는 복습 일정·이번 주 시험 계획·Core 추천에서 읽는다.
@@ -310,6 +315,8 @@ function studyTimes(snapshot){
  for(const day of Object.values(snapshot?.daily?.days||{}))for(const item of Object.values(day?.items||{}))add(item?.observedAt);
  for(const at of reminderTrail?.read()||[])add(at);
  try{for(const at of readWritingSummary({storage:localStorage,owner:writingOwnerId()}).times)add(at);}catch{}
+ // 말하기 연습(모듈을 불렀을 때만): 이번 주 계획의 말하기 칸도 남은 연습으로 세므로, 말한 날은 그날 이미 공부한 날이다.
+ try{if(speakingModule)for(const at of speakingModule.readSpeakingSummary({storage:localStorage,owner:writingOwnerId()}).times)add(at);}catch{}
  return times;
 }
 // 알림을 누르면 그 알림이 가리키는 자리로: 돌아온 복습은 나의 복습 화면, 이번 주 연습은 이번 주 계획, 시험 점검 카드의 주 단추는
@@ -362,7 +369,8 @@ function openWriting(button){
 let speakingModule=null,speaking=null,speakingOwner=null;
 const speakingFlag=(()=>{try{return new URLSearchParams(location.search).get('speaking')==='preview'||localStorage.getItem('synk.world.speaking.preview')==='1';}catch{return false;}})();
 const repaintSpeakingRow=()=>{if(lifeUI&&document.querySelector('#world-panel[open] #panel-content .life-hub')&&!document.querySelector('#panel-content [data-world="speaking"]'))lifeUI.packs();};
-if(speakingFlag)void import('./world-speaking-practice.mjs').then(module=>{speakingModule=module;return module.loadSpeakingBank();}).then(repaintSpeakingRow).catch(()=>{});
+// 은행을 다 읽으면 배우기 줄을 그리고, 추천·이번 주 계획을 다시 세운다 — 시험 정보에서 말하기를 고른 학생의 말하기 칸은 문항이 열려야 생긴다(쓰기와 같다).
+if(speakingFlag)void import('./world-speaking-practice.mjs').then(module=>{speakingModule=module;return module.loadSpeakingBank();}).then(()=>{repaintSpeakingRow();education?.refresh();}).catch(()=>{});
 function openSpeaking(button){
  if(!speakingModule)return;
  const owner=writingOwnerId();

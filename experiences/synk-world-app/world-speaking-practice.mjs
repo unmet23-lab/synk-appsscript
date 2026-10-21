@@ -1,7 +1,8 @@
 // WORLD 「말하기 연습」 시범(2026-10-21, 기능 플래그 꺼짐) — TOPIK 말하기 평가 6유형 연습과 「카페에서 말로 주문하기」 역할극.
 // 설계: qa/speaking-pilot-20261021/설계.md. 시범이라 공개 빌드 목록에 넣지 않았다. 주소의 ?speaking=preview나 이 기기 설정
 // (localStorage synk.world.speaking.preview=1)이 있을 때만 app-shell이 이 모듈을 불러 배우기 판에 줄 하나를 더한다.
-// · 준비·대답 시간은 공식 시험과 같다(topik.go.kr 문항 구성, 10-21 확인). 문항은 자체 창작 초안(검수 전). 점수·급수·합격을 만들지 않는다.
+// · 준비·대답 시간은 공식 시험과 같다(topik.go.kr 문항 구성, 10-21 확인). 문항은 자체 창작이고 10-21 문항 검수를 거쳤다(qa/speaking-pilot-20261021/item-review —
+//   목록의 「검수 전」 칩은 그때 뺐다). 점수·급수·합격을 만들지 않는다.
 // · 녹음: 첫 녹음 전에 이 기기에서 한 번 동의를 받고(계정·손님마다 따로), 브라우저 마이크 권한은 그다음에 묻는다. 녹음은 메모리에만
 //   두어 이 화면에서 다시 듣고, 기기·서버 어디에도 저장하지 않는다. 문항을 떠나거나 시트를 닫으면 버리고 마이크를 끈다.
 // · 자동 피드백: 「자동 피드백 받기」를 누를 때만 그 녹음을 서버로 보낸다(send-once). 서버가 공식 세 요소의 「참고」를 돌려준다.
@@ -27,7 +28,8 @@ export function speakingPreviewOn({location=globalThis.location,storage=globalTh
 }
 // TOPIK 말하기 유형 → 말하기 항목(제안, Strata에 아직 없다 · 설계.md §6).
 export const SPEAKING_SKILLS=Object.freeze({1:'ko.speaking.answer',2:'ko.speaking.roleplay',3:'ko.speaking.narrate',4:'ko.speaking.respond',5:'ko.speaking.interpret',6:'ko.speaking.opinion'});
-// 계획 엔진(세션 ①)에 넘길 후보(제안): 유형마다 준비+대답+피드백 읽기 어림 분.
+// 이번 주 계획에 넘길 후보: 유형마다 준비+대답+피드백 읽기 어림 분. 시험 유형 여섯(exam 'speaking')은 시험 정보에서 「말하기 평가도 준비해요」를
+// 고른 학생의 계획(available.speaking)과 추천(route 'speaking')에 들어가고, 카페 역할극(exam null)은 아직 계획에 넣지 않는다(10-21).
 export const SPEAKING_CANDIDATES=Object.freeze([1,2,3,4,5,6].map(type=>Object.freeze({id:`topik-speaking-${type}`,route:`speaking:${type}`,minutes:{1:3,2:3,3:4,4:4,5:5,6:5}[type],targets:Object.freeze([SPEAKING_SKILLS[type]]),area:'speaking',exam:'speaking'}))
  .concat(Object.freeze({id:'life-speaking-cafe',route:'speaking:rp-cafe-tea',minutes:4,targets:Object.freeze([SPEAKING_SKILLS[2]]),area:'speaking',exam:null})));
 
@@ -56,11 +58,29 @@ const TUTOR_FACE={intro:'기본',rec:'집중',review:'기쁨',feedback:'기쁨',
 
 function readStore(storage,owner){try{const v=JSON.parse(storage?.getItem(storeKey(owner))||'null');if(v&&typeof v==='object')return {consent:v.consent||null,log:Array.isArray(v.log)?v.log:[]};}catch{}return {consent:null,log:[]};}
 function writeStore(storage,owner,state){try{storage?.setItem(storeKey(owner),JSON.stringify({consent:state.consent,log:state.log.slice(-LOG_MAX)}));return true;}catch{return false;}}
-/** 계획 엔진·내 위치가 읽을 연습 요약(이 기기 기록). 소리 문제로 세지 않은 녹음은 빠진다. times: 센 시도 시각(ISO). */
+/** 계획 엔진·내 위치가 읽을 연습 요약(이 기기 기록). 소리 문제로 세지 않은 녹음은 빠진다. times: 센 시도 시각(ISO). typeTimes: 시험 유형마다 센 시도 시각. */
 export function readSpeakingSummary({storage=globalThis.localStorage,owner='guest'}={}){
- const state=readStore(storage,owner),attempts={1:0,2:0,3:0,4:0,5:0,6:0},feedback={1:0,2:0,3:0,4:0,5:0,6:0},times=[];let roleplays=0,lastAt=null;
- for(const e of state.log){if(!e||e.counted===false)continue;if(e.mode==='exam'&&attempts[e.type]!=null){attempts[e.type]++;if(e.source==='ai-reference')feedback[e.type]++;times.push(e.at);}if(e.mode==='roleplay'&&e.done){roleplays++;times.push(e.at);}if(!lastAt||e.at>lastAt)lastAt=e.at;}
- return {attempts,feedback,roleplays,lastAt,times};
+ const state=readStore(storage,owner),attempts={1:0,2:0,3:0,4:0,5:0,6:0},feedback={1:0,2:0,3:0,4:0,5:0,6:0},typeTimes={1:[],2:[],3:[],4:[],5:[],6:[]},times=[];let roleplays=0,lastAt=null;
+ for(const e of state.log){if(!e||e.counted===false)continue;if(e.mode==='exam'&&attempts[e.type]!=null){attempts[e.type]++;if(e.source==='ai-reference')feedback[e.type]++;times.push(e.at);typeTimes[e.type].push(e.at);}if(e.mode==='roleplay'&&e.done){roleplays++;times.push(e.at);}if(!lastAt||e.at>lastAt)lastAt=e.at;}
+ return {attempts,feedback,roleplays,lastAt,times,typeTimes};
+}
+/** 이번 주 계획(world-exam-plan.mjs)이 읽는 말하기 한 주. week: 계획의 주({start,end} ms, 한국 시각 월요일 0시부터).
+ * times: 센 시도 시각 전부(계획의 weekActivity가 그 주 것만 같은 간격 규칙으로 센다) · tried: 그 주에 한 번이라도 센 시험 유형(1~6). */
+export function speakingWeek({storage=globalThis.localStorage,owner='guest',week}={}){
+ const {times,typeTimes}=readSpeakingSummary({storage,owner}),start=Number(week?.start),end=Number(week?.end);
+ const inWeek=at=>{const ms=Date.parse(at);return Number.isFinite(ms)&&ms>=start&&ms<end;};
+ return {times,tried:Object.keys(typeTimes).map(Number).filter(type=>typeTimes[type].some(inWeek))};
+}
+// 시험 정보의 「말하기 평가도 준비해요」(10-21): Atlas 선택 응답 계약(atlas/personalization.js)을 바꾸지 않고 WORLD 이 기기에만 둔다(계정·손님마다).
+// 값은 {on:true|false, at:ISO}. 학습 목표 창이 저장할 때만 쓰고, 이번 주 계획이 읽는다 — 계정에 동기화되지 않는다(목표 창이 그렇게 밝힌다).
+export const SPEAKING_EXAM_KEY='synk.world.speaking.exam.v1';
+const examChoiceKey=owner=>`${SPEAKING_EXAM_KEY}:${owner||'guest'}`;
+export function readSpeakingExam({storage=globalThis.localStorage,owner='guest'}={}){
+ try{const value=JSON.parse(storage?.getItem(examChoiceKey(owner))||'null');return !!value&&typeof value==='object'&&value.on===true;}catch{return false;}
+}
+export function writeSpeakingExam({storage=globalThis.localStorage,owner='guest',on=false,now=Date.now}={}){
+ if(!storage)return false;
+ try{storage.setItem(examChoiceKey(owner),JSON.stringify({on:on===true,at:new Date(now()).toISOString()}));return true;}catch{return false;}
 }
 
 let bankPromise=null,bankReady=false;
@@ -163,7 +183,7 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
   const rows=[1,2,3,4,5,6].map(type=>{const it=bank.items.find(i=>i.type===type);if(!it)return '';const tp=bank.types[type];
    return `<button class="wsp-row" data-wsp-open="${esc(it.id)}"><span class="wsp-num" aria-hidden="true">${type}</span><span class="wsp-row-copy"><strong>${esc(st(`type.${type}`))}</strong><small>${esc(st(`band.${tp.band}`))} · ${esc(st('type.meta',{prep:tp.prepSec,answer:tp.answerSec}))}${tried(type)?` · ${esc(st('state.tried'))}`:''}</small></span><span class="wsp-row-label" lang="ko">${esc(it.label)}</span></button>`;}).join('');
   const rp=(bank.roleplays||[]).map(r=>`<button class="wsp-row" data-wsp-roleplay="${esc(r.id)}"><img class="wsp-num wsp-num-print" src="${esc(asset('../brand-opening/assets/world-felt/cafe.webp'))}" alt="" width="40" height="40" loading="lazy"><span class="wsp-row-copy"><strong>${esc(st('rp.title'))}</strong><small>${esc(st('rp.sub'))}</small></span></button>`).join('');
-  return `<div class="wsp wsp-list" data-wsp-stage><p class="wsp-lead" tabindex="-1">${esc(st('lead'))}</p><p class="wsp-note">${esc(st('basis'))} <span class="wsp-chip">${esc(st('draft'))}</span></p>`
+  return `<div class="wsp wsp-list" data-wsp-stage><p class="wsp-lead" tabindex="-1">${esc(st('lead'))}</p><p class="wsp-note">${esc(st('basis'))}</p>`
    +`<section class="wsp-group"><h3 class="wsp-section-title">${esc(st('group.exam'))}</h3>${rows}</section>`
    +(rp?`<section class="wsp-group"><h3 class="wsp-section-title">${esc(st('group.roleplay'))}</h3>${rp}</section>`:'')
    +(state.consent?`<p class="wsp-note"><button class="quiet-button" data-wsp-revoke>${esc(st('consent.revoke'))}</button></p>`:'')

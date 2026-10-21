@@ -193,7 +193,8 @@ test('리허설 WORLD 「말하기 연습」 시범: 플래그·동의·녹음·
   await page.locator('#panel-content [data-wsp-rp-start]').click();await page.waitForSelector('#panel-content [data-wsp-rp-speak]',{timeout:30000});fake.turn='limit';
   await page.locator('#panel-content [data-wsp-rp-speak]').click();await page.waitForSelector('#panel-content [data-wsp-rp-stop]');await page.waitForTimeout(1600);await page.locator('#panel-content [data-wsp-rp-stop]').click();
   await page.waitForSelector('#panel-content [data-wsp-rp-next]');await record('390-roleplay-self');
-  checks.selfNowCount=await page.evaluate(()=>(document.querySelector('#panel-content').innerText.match(/지금은 자동 대답을 쓸 수 없어요/g)||[]).length);assert.equal(checks.selfNowCount,1,'막힌 안내는 한 곳에만(10-21 Fable 검수)');
+  // 화면에 보이는 안내만 센다 — 화면 읽기용 알림 칸(data-wsp-live)은 150ms 뒤 같은 글을 받으므로 빼고 센다(캡처가 늦으면 둘로 세던 것).
+  checks.selfNowCount=await page.evaluate(()=>{const root=document.querySelector('#panel-content').cloneNode(true);root.querySelectorAll('[data-wsp-live]').forEach(n=>n.remove());return (root.textContent.match(/지금은 자동 대답을 쓸 수 없어요/g)||[]).length;});assert.equal(checks.selfNowCount,1,'막힌 안내는 한 곳에만(10-21 Fable 검수)');
   await page.locator('#panel-content [data-wsp-rp-next]').click();await page.waitForSelector('#panel-content [data-wsp-rp-speak]',{timeout:30000});
   checks.selfNext=await page.evaluate(()=>document.querySelectorAll('#panel-content .wsp-say[data-who="staff"]').length);assert.equal(checks.selfNext,2);fake.turn='ok';
   // 4-4. 역할극이 횟수·금액으로 막힌 뒤에는 다음 차례부터 서버로 보내지 않고 따라 말하기로 간다(10-21 아르곤 검수).
@@ -221,6 +222,76 @@ test('리허설 WORLD 「말하기 연습」 시범: 플래그·동의·녹음·
   await page.locator('#panel-content [data-wsp-retry]').click();await answerOnce();await page.waitForSelector('#panel-content [data-wsp-self-save]');
   assert.equal(await page.locator('#panel-content [data-wsp-send]').count(),0,'금액이 막힌 뒤에는 보낼 단추가 없다');
   checks.budget=await page.locator('#panel-content .wsp-review').innerText();assert.match(checks.budget,/지금은 자동 피드백을 쓸 수 없어요/);await record('390-task1-budget');fake.feedback='ok';
+  // 7. 시험 정보 「말하기 평가도 준비해요」 → 이번 주 계획의 말하기 칸(10-21). 목표 창에서 시험·TOPIK I·말하기를 켜고 저장하면 이 기기 열쇠(계정마다)에
+  //    켜지고, 계획 판에 말하기 영역과 「말하기 연습 열기」가 생기며, 누르면 말하기 유형 목록이 열린다. 목표 창의 시험 칸과 계획 판을 390·1280에서 잰다.
+  step('exam speaking');
+  // 시트 안 한 구역을 잰다(위 measure와 같은 기준 — 누름 자리는 단추·고르기 칸·스위치를 감싼 label 전체).
+  const measureIn=selector=>page.evaluate(selector=>{
+   const el=document.querySelector(selector),content=document.querySelector('#panel-content'),box=el.getBoundingClientRect(),shown=n=>n.getClientRects().length>0;
+   const overflowing=[...el.querySelectorAll('*')].filter(n=>shown(n)&&(n.getBoundingClientRect().right>box.right+.5||n.getBoundingClientRect().left<box.left-.5)).map(n=>n.className||n.tagName);
+   const small=[],mixed=[],walker=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);
+   for(let n=walker.nextNode();n;n=walker.nextNode()){const text=n.textContent.trim();if(!text||!shown(n.parentElement))continue;
+    if(/[가-힣]/.test(text)&&parseFloat(getComputedStyle(n.parentElement).fontSize)<13)small.push(text.slice(0,24));
+    if(document.documentElement.lang!=='ko'&&/[가-힣]/.test(text)&&!n.parentElement.closest('[lang="ko"]'))mixed.push(text.slice(0,30));}
+   const targets=[...el.querySelectorAll('button,a,select,label:has(input[type=checkbox]),label:has(input[type=radio])')].filter(shown).map(n=>({key:Object.keys(n.dataset)[0]||n.className||n.tagName,height:Math.round(n.getBoundingClientRect().height)}));
+   return {lang:document.documentElement.lang,docOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,panelOverflow:content.scrollWidth-content.clientWidth,
+    viewportOverflow:innerWidth-(visualViewport?.width||innerWidth),overflowing,small,mixed,shortTargets:targets.filter(x=>x.height<44),whitePills:[...el.querySelectorAll('.felt-button')].filter(shown).length};
+  },selector);
+  const recordIn=async(name,selector,into)=>{await page.evaluate(s=>document.querySelector(s)?.scrollIntoView({block:'center'}),into||selector);measures[name]=await measureIn(selector);await shoot(name);};
+  const closeSheet=async()=>{if(await page.evaluate(()=>document.querySelector('#world-panel')?.open)){await page.locator('#panel-close').click();await page.waitForFunction(()=>!document.querySelector('#world-panel')?.open);}};
+  await page.setViewportSize(VIEWPORTS[0].size);await closeSheet();
+  await page.locator('#settings-open').click();await page.locator('#panel-content .panel-actions .plain-button',{hasText:'학습 목표·도움 방식'}).click();await page.waitForSelector('#world-study-form');
+  await page.locator('#world-study-form input[name="reason"][value="exam"]').check({force:true});
+  checks.speakingRowBeforeType=await page.locator('#world-study-form [data-study-speaking]').isVisible();
+  await page.locator('#world-study-form input[name="examType"][value="topik1"]').check({force:true});
+  await page.locator('#world-study-form [data-study-speaking]').waitFor({state:'visible'});
+  checks.studySpeaking=await page.locator('#world-study-form [data-study-speaking]').innerText();
+  assert.match(checks.studySpeaking,/말하기 평가도 준비해요/);assert.match(checks.studySpeaking,/이 기기에만 저장돼요/,'계정에 저장된다는 거짓 약속이 없다');
+  await page.locator('#world-study-form input[name="speakingExam"]').check({force:true});
+  if(!await page.locator('#world-study-form input[name="consent"]').isChecked())await page.locator('#world-study-form input[name="consent"]').check({force:true});
+  await recordIn('390-study-speaking','#world-study-form [data-study-exam]','#world-study-form [data-study-speaking]');
+  await page.setViewportSize(VIEWPORTS[1].size);await page.waitForTimeout(200);await recordIn('1280-study-speaking','#world-study-form [data-study-exam]','#world-study-form [data-study-speaking]');
+  await page.setViewportSize(VIEWPORTS[0].size);await page.waitForTimeout(200);
+  await page.locator('#world-study-form button[type="submit"]').click();await page.waitForFunction(()=>!document.querySelector('#world-study-form'));
+  const owner=await page.evaluate(()=>window.__synkWorld.client.snapshot.accountId);
+  checks.examChoice=await page.evaluate(owner=>({mine:JSON.parse(localStorage.getItem(`synk.world.speaking.exam.v1:${owner}`)||'null'),guest:localStorage.getItem('synk.world.speaking.exam.v1:guest')}),owner);
+  assert.equal(checks.examChoice.mine?.on,true,'저장하면 이 계정의 이 기기 열쇠에 켠다');assert.equal(checks.examChoice.guest,null,'손님 열쇠는 그대로');
+  // 계획 판(배우기 판의 「이번 주 계획」 줄): 말하기 영역 · 말하기 칸 · 열기.
+  for(const {tag,size} of VIEWPORTS){
+   await page.setViewportSize(size);await page.waitForTimeout(200);
+   await openPacks();
+   checks[`${tag}-planRow`]=await page.locator('#panel-content [data-view="plan"]').innerText();
+   await page.locator('#panel-content [data-view="plan"]').click();await page.waitForSelector('#panel-content [data-plan-board]');
+   checks[`${tag}-planAreas`]=await page.evaluate(()=>[...document.querySelectorAll('#panel-content .wplan-areas li')].map(li=>`${li.dataset.area} ${li.querySelector('.wplan-area-name')?.textContent} ${li.querySelector('.wplan-area-count')?.textContent}`));
+   assert.ok(checks[`${tag}-planAreas`].some(row=>/^speaking 말하기 \d+ \/ 1$/.test(row)),`${tag}: 말하기 영역은 한 주에 한 번 ${checks[`${tag}-planAreas`]}`);
+   // 「이번 주 n번」(머리 줄)과 배우기 판 줄의 합이 말하기 한 번을 더한 영역 합 그대로다(10-21 결정 — 말하기는 다른 영역 자리를 빼앗지 않는다).
+   const plannedTotal=checks[`${tag}-planAreas`].reduce((n,row)=>n+Number(row.split(' / ')[1]),0);
+   checks[`${tag}-planHead`]=await page.locator('#panel-content .wplan-week h3').textContent();
+   assert.equal(Number(/이번 주 연습 (\d+)번/.exec(checks[`${tag}-planHead`])?.[1]),plannedTotal,`${tag}: 머리 줄 ${checks[`${tag}-planHead`]}`);
+   assert.equal(Number(/이번 주 연습 \d+\/(\d+)/.exec(checks[`${tag}-planRow`])?.[1]),plannedTotal,`${tag}: 배우기 판 줄 ${checks[`${tag}-planRow`]}`);
+   checks[`${tag}-planSpeaking`]=await page.locator('#panel-content [data-plan-speaking-section]').innerText();
+   assert.match(checks[`${tag}-planSpeaking`],/SPEAKING[\s\S]*말하기 연습[\s\S]*(아직 말해 보지 않은 유형이 \d개|모든 유형을 한 번씩)[\s\S]*말하기 연습 열기/);
+   assert.doesNotMatch(await page.locator('#panel-content [data-plan-board]').innerText(),/\d+\s*점|[1-6]급(?! 목표)|합격(?! 가능성은 판단하지 않아요)|연속|D-\d/,'점수·급수·연속 말이 없다(판단하지 않는다는 안내만)');
+   await recordIn(`${tag}-plan-speaking`,'#panel-content [data-plan-board]','#panel-content [data-plan-speaking-section]');
+  }
+  await page.locator('#panel-content [data-plan-speaking]').click();await page.waitForSelector('#panel-content .wsp-list');
+  checks.planOpened=await page.evaluate(()=>document.querySelectorAll('#panel-content .wsp-list .wsp-row').length);assert.equal(checks.planOpened,7,'「말하기 연습 열기」는 유형 목록을 연다');
+  assert.equal(checks.speakingRowBeforeType,false,'시험 종류를 고르기 전에는 말하기 칸이 없다');
+  // 영어·몽골어(390): 계획 판의 말하기 칸과 목표 창의 시험 칸(고른 말하기 그대로)을 그 언어로 잰다 — 한 자리 한 언어·13px·44px·흰 알약(아래 공통 단언).
+  await page.setViewportSize(VIEWPORTS[0].size);
+  for(const lang of ['en','mn']){
+   await page.evaluate(async lang=>{const m=await import('/brand-opening/world-lang.mjs');m.setLang(lang);},lang);await page.waitForFunction(lang=>document.documentElement.lang===lang,lang);
+   await openPacks();await page.locator('#panel-content [data-view="plan"]').click();await page.waitForSelector('#panel-content [data-plan-speaking-section]');
+   checks[`${lang}-planSpeaking`]=await page.locator('#panel-content [data-plan-speaking-section]').innerText();
+   assert.doesNotMatch(checks[`${lang}-planSpeaking`],/[가-힣]/,`${lang}: 말하기 칸에 한글이 없다`);
+   await recordIn(`390-${lang}-plan-speaking`,'#panel-content [data-plan-board]','#panel-content [data-plan-speaking-section]');
+   await closeSheet();await page.locator('#settings-open').click();await page.locator('#panel-content .panel-actions .plain-button').first().click();await page.waitForSelector('#world-study-form [data-study-speaking]');
+   checks[`${lang}-studySpeaking`]=await page.locator('#world-study-form [data-study-speaking]').innerText();
+   assert.equal(await page.locator('#world-study-form input[name="speakingExam"]').isChecked(),true,`${lang}: 고른 값 그대로`);
+   await recordIn(`390-${lang}-study-speaking`,'#world-study-form [data-study-exam]','#world-study-form [data-study-speaking]');
+   await closeSheet();
+  }
+  await page.evaluate(async()=>{const m=await import('/brand-opening/world-lang.mjs');m.setLang('ko');});await page.waitForFunction(()=>document.documentElement.lang==='ko');
   for(const [name,m]of Object.entries(measures)){
    assert.equal(m.docOverflow,0,`${name} 가로 넘침`);assert.equal(m.panelOverflow,0,`${name} 시트 가로 넘침`);assert.deepEqual(m.overflowing,[],`${name} 칸 밖으로 나간 것`);
    assert.deepEqual(m.small,[],`${name} 13px 밑 한글`);assert.deepEqual(m.mixed,[],`${name} lang=ko 밖 한글`);assert.deepEqual(m.shortTargets,[],`${name} 44px 밑 단추`);assert.ok(m.whitePills<=1,`${name} 흰 알약 ${m.whitePills}`);

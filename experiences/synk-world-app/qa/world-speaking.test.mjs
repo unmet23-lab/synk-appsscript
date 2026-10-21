@@ -7,7 +7,7 @@ import {slotsFromText,normalizeFeedback,normalizeTurn,nextStep,audioGate,priceVe
 import STRINGS from '../../brand-opening/world-strings.mjs';
 import {t} from '../../brand-opening/world-lang.mjs';
 import {bankHash,coreModule,itemsModule,TALK_FILES} from '../../../tools/build-world-speaking-talk.mjs';
-import {speakingPreviewOn,readSpeakingSummary,SPEAKING_CANDIDATES,SPEAKING_SKILLS,SPEAKING_FLAG_KEY} from '../world-speaking-practice.mjs';
+import {speakingPreviewOn,readSpeakingSummary,SPEAKING_CANDIDATES,SPEAKING_SKILLS,SPEAKING_FLAG_KEY,SPEAKING_EXAM_KEY,readSpeakingExam,writeSpeakingExam,speakingWeek} from '../world-speaking-practice.mjs';
 import {createSpeakingDevHost} from '../speaking-dev-host.mjs';
 // 말하기 연습 시범(2026-10-21): 문항·공식 시간, 피드백 정리(보류·거름·인용), 역할극 다음 걸음, 값 셈, 플래그 꺼짐, 공개 빌드 밖, 개발 서버 몫,
 // 운영 통로(SYNK-talk world-speaking 함수의 서버 사본·계정 경로·app-shell 연결).
@@ -134,6 +134,12 @@ test('역할극 주문 칸은 받아 적은 말에서 규칙으로 고른다(모
  assert.equal(slotsFromText('네, 맞아요.').answer,'yes');assert.equal(slotsFromText('네 잔 주세요').answer,'none');assert.equal(slotsFromText('네 잔 주세요').count,4);
  assert.equal(slotsFromText('가져갈게요.').place,'togo');assert.equal(slotsFromText('여기서 마실게요.').place,'here');
  assert.deepEqual(slotsFromText('(?) (?)'),{drink:'none',temperature:'none',count:0,place:'none',answer:'none',polite:'unclear'});
+ // 10-21 문항 검수 P2: 「녹차가·차가」의 「차가」는 차 + 조사다 — 차가운 것으로 읽어 「따뜻한 걸로」 도움말을 내지 않는다.
+ for(const said of ['녹차가 두 잔이요.','차가 두 잔이요.','홍차는 두 잔 주세요.','보리차를 두 잔 주세요.','유자차가 좋아요.','반찬 두 개 주세요.'])assert.equal(slotsFromText(said).temperature,'none',said);
+ assert.deepEqual(slotsFromText('녹차가 두 잔이요.'),{drink:'tea',temperature:'none',count:2,place:'none',answer:'none',polite:'yes'});
+ assert.deepEqual(nextStep({roleplay:bank.roleplays[0],stepId:'count',slots:slotsFromText('녹차가 두 잔이요.')}),{step:'confirm',hint:null},'잔 수 차례의 「녹차가 두 잔이요」는 온도 도움말 없이 확인으로');
+ for(const said of ['차가운 녹차 두 잔 주세요.','녹차는 차갑게 해 주세요.','차가워야 해요.','시원한 걸로 주세요.','아이스티 두 잔 주세요.','찬 거 두 잔 주세요.','아이스로 주세요.'])assert.equal(slotsFromText(said).temperature,'cold',said);
+ assert.equal(slotsFromText('따뜻한 녹차가 두 잔이요.').temperature,'warm');
 });
 
 test('화면 글: 공용 글 표의 speaking.* 줄 — 세 언어가 모두 있고 영어·몽골어 칸에는 「」 밖 한글이 없다(한 자리 한 언어)',()=>{
@@ -220,4 +226,91 @@ test('운영 통로: 계정 모드는 SYNK-talk world-speaking 함수(feedback, 
  const practice=fs.readFileSync(path.join(app,'world-speaking-practice.mjs'),'utf8');
  assert.equal((practice.match(/items_version:bank\.contentHash/g)||[]).length,2,'시험 형식·역할극 모두 판 지문을 보낸다');
  assert.ok(practice.includes('status.itemsVersion===bank?.contentHash'),'서버 판이 다르면 자동 피드백 단추를 띄우지 않는다');
+});
+
+// ── 시험 정보 「말하기 평가도 준비해요」와 이번 주 계획의 말하기 칸(10-21) ──
+test('말하기 평가 선택: 이 기기에만 계정·손님마다 따로 두고({on,at}), 한 주의 시각·해 본 유형을 계획에 넘긴다',()=>{
+ const storage=memory(),at='2026-10-21T03:00:00.000Z';
+ assert.equal(SPEAKING_EXAM_KEY,'synk.world.speaking.exam.v1');
+ assert.equal(readSpeakingExam({storage,owner:'acc-a'}),false,'처음에는 꺼짐');
+ assert.equal(writeSpeakingExam({storage,owner:'acc-a',on:true,now:()=>Date.parse(at)}),true);
+ assert.deepEqual(JSON.parse(storage.getItem('synk.world.speaking.exam.v1:acc-a')),{on:true,at});
+ assert.equal(readSpeakingExam({storage,owner:'acc-a'}),true);
+ assert.equal(readSpeakingExam({storage,owner:'acc-b'}),false,'다른 계정에는 없다');assert.equal(readSpeakingExam({storage,owner:'guest'}),false,'손님에게도 없다');
+ writeSpeakingExam({storage,owner:'acc-a',on:false});assert.equal(readSpeakingExam({storage,owner:'acc-a'}),false);
+ storage.setItem('synk.world.speaking.exam.v1:guest','{broken');assert.equal(readSpeakingExam({storage,owner:'guest'}),false,'못 읽으면 꺼짐');
+ assert.equal(writeSpeakingExam({storage:null,owner:'acc-a',on:true}),false,'저장소가 없으면 쓰지 못했다고 알린다');
+ // 한 주: 센 시도만, 그 주(월요일 0시부터) 안의 유형만 「해 봤어요」. 지난주·세지 않은 녹음·역할극은 유형에 들지 않는다(역할극 시각은 times에 남는다).
+ const week={start:Date.parse('2026-10-18T15:00:00.000Z'),end:Date.parse('2026-10-25T15:00:00.000Z')};
+ storage.setItem('synk.world.speaking.v1:acc-a',JSON.stringify({consent:null,log:[{at,mode:'exam',type:3,source:'self',counted:true},{at,mode:'exam',type:5,source:'ai-unclear',counted:false},
+  {at:'2026-10-15T03:00:00.000Z',mode:'exam',type:1,source:'ai-reference',counted:true},{at,mode:'roleplay',itemId:'rp-cafe-tea',done:true,counted:true}]}));
+ const state=speakingWeek({storage,owner:'acc-a',week});
+ assert.deepEqual(state.tried,[3]);assert.equal(state.times.length,3);assert.deepEqual(speakingWeek({storage,owner:'acc-b',week}),{times:[],tried:[]});
+ assert.deepEqual(readSpeakingSummary({storage,owner:'acc-a'}).typeTimes,{1:['2026-10-15T03:00:00.000Z'],2:[],3:[at],4:[],5:[],6:[]});
+});
+
+test('계획 연결: 말하기를 고른 TOPIK 학생만 이번 주 계획·추천·시험 정보 칸에 말하기가 생기고, 고르지 않은 학생은 지금과 같다',async()=>{
+ const [{createWorldEducation},{worldLearning},{createWorldLearningPlan},{worldPosition},{createLifeProgress},{PACKS,LESSONS}]=await Promise.all(['../world-learning-ui.mjs','../world-learning-map.mjs','../world-learning-plan.mjs','../world-position-kit.mjs','../life-progress.mjs','../life-content.mjs'].map(file=>import(file)));
+ const fullMemory=()=>{const values=new Map();return {get length(){return values.size;},key:i=>[...values.keys()][i]??null,getItem:k=>values.get(k)??null,setItem:(k,v)=>values.set(k,String(v)),removeItem:k=>values.delete(k)};};
+ // 같은 기기 기록으로 시작하는 TOPIK 학생 한 명(손님): 학습 목표 저장 → 학습 화면. host: 호스트가 넘기는 말하기 함수 묶음(app-shell과 같은 꼴) 또는 null.
+ function fixture({host=true,type='topik1',audio='available'}={}){
+  const storage=fullMemory(),life=createLifeProgress({storage,owner:'guest'}),plans=[],shown=[],opened=[];life.summary(PACKS,LESSONS);
+  life.updateLearningProfile({consent:true,expectedRevision:life.learningProfile().profile.revision,values:{reasons:['exam'],primaryReason:'exam',examType:type,targetGrade:type==='topik2'?4:type==='topik1'?2:null,examDate:'2027-04',weeklyMinutes:120},today:{audio}});
+  const speakingPractice=host?{available:()=>true,candidates:()=>SPEAKING_CANDIDATES.filter(row=>row.exam==='speaking'),chosen:owner=>readSpeakingExam({storage,owner}),choose:(owner,on)=>writeSpeakingExam({storage,owner,on}),
+   week:(owner,week)=>speakingWeek({storage,owner,week}),open:route=>opened.push(route)}:null;
+  const education=createWorldEducation({home:{updateStudy:plan=>plans.push(plan),toast(){},showPanel:(title,html)=>shown.push(html),closePanel(){}},getProgress:()=>life,engine:worldLearning,createPlan:createWorldLearningPlan,
+   launchGame(){},startLesson(){},startReview(){},position:worldPosition,speakingPractice,target:{localStorage:storage,addEventListener(){},removeEventListener(){},document:{querySelector:()=>null}}});
+  return {storage,life,education,plans,shown,opened};
+ }
+ // 고르지 않은 학생: 말하기 함수가 있어도 계획은 말하기 함수가 없던 판과 바이트까지 같고, Core 후보에도 말하기가 없다.
+ for(const type of ['topik1','topik2']){
+  const before=fixture({host:false,type}),after=fixture({type});
+  const a=before.education.refresh(),b=after.education.refresh();
+  assert.equal(JSON.stringify(b.examPlan),JSON.stringify(a.examPlan),`${type}: 고르지 않은 학생의 계획`);
+  assert.ok(b.examPlan&&!b.examPlan.areas.some(row=>row.area==='speaking')&&!('speaking' in b.examPlan));
+  assert.ok(!b.candidates.some(candidate=>candidate.route==='speaking'));
+ }
+ // 고른 학생(이 기기, 이 주인): 영역 speaking · 아직 안 해 본 유형 여섯 · 추천 후보는 route 'speaking'과 계획 토큰.
+ const f=fixture();writeSpeakingExam({storage:f.storage,owner:'guest',on:true});
+ const chosen=f.education.refresh(),plain=fixture().education.refresh();
+ assert.equal(chosen.examPlan.exam.speaking,true);assert.deepEqual(chosen.examPlan.speaking,{untried:6,total:6});
+ // 말하기는 다른 영역의 자리를 빼앗지 않고 한 주에 한 번을 더한다(10-21 결정) — 배우기 판 줄·머리 줄의 「이번 주 n번」도 그만큼 는다.
+ assert.equal(chosen.examPlan.areas.find(row=>row.area==='speaking')?.planned,1);
+ assert.deepEqual(chosen.examPlan.areas.filter(row=>row.area!=='speaking'),plain.examPlan.areas,'다른 영역은 고르지 않은 학생과 같다');
+ const sum=plan=>plan.areas.reduce((n,row)=>n+row.planned,0);
+ assert.equal(sum(chosen.examPlan),sum(plain.examPlan)+1);assert.equal(chosen.examPlan.sessions.total,sum(chosen.examPlan));
+ assert.ok(f.education.planRow().includes(`이번 주 연습 0/${sum(chosen.examPlan)} `),'배우기 판 줄의 이번 주 횟수에 말하기 한 번이 들어 있다');
+ const offered=chosen.candidates.filter(candidate=>candidate.route==='speaking');
+ assert.deepEqual(offered.map(candidate=>candidate.routeId),['speaking:1','speaking:2','speaking:3','speaking:4','speaking:5','speaking:6']);
+ assert.ok(offered.every(candidate=>candidate.goals.includes('plan.area.speaking')&&candidate.audioRequired===true&&candidate.targets.length===0&&/^말하기 연습 · /.test(candidate.label)));
+ // 이번 주에 1번을 해 보면: 필요 5, 이번 주 한 번, 1번은 추천 후보에서 빠진다(다른 계정 기록은 세지 않는다).
+ f.storage.setItem('synk.world.speaking.v1:guest',JSON.stringify({consent:null,log:[{at:new Date().toISOString(),mode:'exam',type:1,source:'self',counted:true}]}));
+ f.storage.setItem('synk.world.speaking.v1:acc-b',JSON.stringify({consent:null,log:[{at:new Date().toISOString(),mode:'exam',type:2,source:'self',counted:true}]}));
+ const after=f.education.refresh();
+ assert.deepEqual(after.examPlan.speaking,{untried:5,total:6});assert.equal(after.examPlan.areas.find(row=>row.area==='speaking').done,1);
+ assert.deepEqual(after.candidates.filter(candidate=>candidate.route==='speaking').map(candidate=>candidate.routeId),['speaking:2','speaking:3','speaking:4','speaking:5','speaking:6']);
+ // 시험 정보 칸: 말하기를 쓸 수 있으면 체크 하나(고른 값 그대로, 이 기기라는 설명), 없으면 칸이 없다.
+ f.education.open();assert.match(f.shown.at(-1),/<label class="study-consent study-speaking" data-study-speaking><input type="checkbox" name="speakingExam" checked><span><strong>말하기 평가도 준비해요<\/strong><small>[^<]*이 기기에만 저장돼요\.<\/small>/);
+ const none=fixture({host:false});none.education.open();assert.doesNotMatch(none.shown.at(-1),/data-study-speaking|speakingExam/);
+ const unknown=fixture({type:'unknown'});writeSpeakingExam({storage:unknown.storage,owner:'guest',on:true});unknown.education.open();
+ assert.match(unknown.shown.at(-1),/data-study-speaking hidden>/,'시험 종류를 모르면 칸을 숨긴다');
+ assert.ok(!unknown.education.refresh().examPlan.areas.some(row=>row.area==='speaking'),'시험 종류를 모르면 계획에도 없다');
+ // 소리를 끈 날: 계획에서 닫고 까닭을 남기며, Core도 말하기 후보를 뺀다.
+ const quiet=fixture({audio:'off'});writeSpeakingExam({storage:quiet.storage,owner:'guest',on:true});
+ const muted=quiet.education.refresh();
+ assert.ok(!muted.examPlan.areas.some(row=>row.area==='speaking'));assert.ok(muted.examPlan.notes.includes('speaking-audio-off'));
+ assert.notEqual(muted.selected?.route,'speaking');assert.ok(muted.excluded.some(row=>row.id==='topik-speaking-1'&&row.reasons.includes('audio.unavailable')));
+});
+
+test('계획 연결: app-shell은 말하기 모듈을 정적으로 부르지 않고 함수로 넘기며, 문항을 읽으면 계획을 다시 세우고, 말한 날은 공부한 날로 센다',()=>{
+ const shell=fs.readFileSync(path.join(app,'app-shell.mjs'),'utf8');
+ assert.doesNotMatch(shell,/^import[^\n]*world-speaking-practice/m);
+ assert.match(shell,/speakingPractice:\{available:\(\)=>!!speakingModule\?\.speakingReady\(\)/);
+ for(const name of ['readSpeakingExam','writeSpeakingExam','speakingWeek'])assert.ok(shell.includes(`speakingModule.${name}({storage:localStorage,owner`),name);
+ assert.ok(shell.includes("SPEAKING_CANDIDATES.filter(row=>row.exam==='speaking')"),'계획에는 시험 유형만(카페 역할극은 아직 넣지 않는다)');
+ assert.ok(shell.includes('.then(()=>{repaintSpeakingRow();education?.refresh();})'),'은행을 읽으면 추천·계획을 다시 세운다');
+ assert.ok(shell.includes('speakingModule.readSpeakingSummary({storage:localStorage,owner:writingOwnerId()}).times)add(at)'),'알림의 「그날 공부함」에 말하기 시각');
+ const ui=fs.readFileSync(path.join(app,'world-learning-ui.mjs'),'utf8');
+ assert.ok(ui.includes("speakingPractice.open('speaking')"),'계획 판의 「말하기 연습 열기」는 유형 목록을 연다');
+ assert.ok(ui.includes("if(selected.route==='speaking'&&typeof speakingPractice?.open==='function')return speakingPractice.open(selected.routeId);"),'「지금 할 것」은 그 유형을 바로 연다');
 });

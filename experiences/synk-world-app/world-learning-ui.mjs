@@ -28,9 +28,12 @@ function examMonths(now){
 // audioUrl(path): 짧은 진단 듣기 문항의 녹음(게임 폴더 기준 경로, 예: korean-runner/assets/voice/…)을 이 화면에서 부를 주소로.
 // readClasswork(): 온라인 반 「이번 주 과제」(교사 배정)의 이번 주 갈래 [{kind:'reading'|'writing', done}] — 계획이 그 주의 연습으로 먼저 센다.
 // writingPractice: 쓰기 연습 후보(③ 세션의 world-writing-practice.mjs가 생기면 호스트가 넘긴다, 없으면 TOPIK II 계획에서 쓰기를 빼 둔다).
+// speakingPractice: 말하기 연습(10-21 시범, world-speaking-practice.mjs — 호스트가 그 모듈을 불렀을 때만 넘긴다). 함수 묶음
+//  {available(), candidates(), chosen(owner), choose(owner,on), week(owner,{start,end}), open(route)}: 시험 정보 칸의 「말하기 평가도 준비해요」(이 기기에만 저장)를
+//  읽고 쓰고, 고른 TOPIK I·II 학생의 이번 주 계획에 말하기 영역과 추천 후보를 넣는다. 없으면 시험 정보·계획이 지금과 같다.
 // topikBankUrl: 공개 TOPIK 은행(world-topik-items.json — 검수 통과 문항)의 주소. 없으면 audioUrl로 WORLD 자리에서 찾는다(10-21 ④).
 export function createWorldEducation({home,getProgress,engine,createPlan,launchGame,startLesson,startReview,prepare=async()=>{},position=null,audioUrl=path=>path,readHangulProgress=null,
- readClasswork=null,writingPractice=null,topikBankUrl=null,target=globalThis}){
+ readClasswork=null,writingPractice=null,speakingPractice=null,topikBankUrl=null,target=globalThis}){
  let stopped=false,coach=null,coachHost=null,practiceCoach=null,practiceHost=null,mockCoach=null,mockHost=null,current=null,refreshing=false,classwork={at:0,rows:[],pending:null};
  const owner=getProgress().owner;
  const empty=engine.engine.createGame({gameId:'world-home-empty',storage:null,historyComplete:false}).summary();
@@ -114,6 +117,21 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 쓰기 후보의 한국어 이름(홈이 화면 언어로 바꾼다 · home.mjs planLabel).
  const writingLabel=route=>{const type=String(route||'').split(':')[1],key=type==='mock'?'writing.mock.title':`writing.type.${type}`;return hasString(key)?`${t('writing.title',undefined,'ko')} · ${t(key,undefined,'ko')}`:String(route||'');};
  const skillLabel=id=>hasString(`position.skill.${id}`)?t(`position.skill.${id}`,undefined,'ko'):id;
+ // 말하기 연습(10-21): 호스트 함수가 없거나 던지면 말하기를 없는 것으로 본다(시험 정보·계획이 지금과 같다).
+ const speakingCall=(name,...args)=>{try{return typeof speakingPractice?.[name]==='function'?speakingPractice[name](...args):null;}catch{return null;}};
+ const speakingType=route=>{const type=Number(String(route||'').split(':')[1]);return Number.isInteger(type)?type:null;};
+ // 시험 유형 후보만(route 'speaking:N') — 카페 역할극은 이번 주 계획에 넣지 않는다.
+ const speakingList=()=>{const value=speakingCall('candidates');return Array.isArray(value)?value.filter(row=>row&&typeof row.id==='string'&&speakingType(row.route)&&Number.isFinite(row.minutes)):[];};
+ // 말하기 후보의 한국어 이름(홈·계획 판이 화면 언어로 바꾼다 · home.mjs planLabel, world-position-ui.mjs planTitle).
+ const speakingLabel=route=>{const key=`speaking.type.${speakingType(route)}`;return hasString(key)?`${t('speaking.title',undefined,'ko')} · ${t(key,undefined,'ko')}`:t('speaking.title',undefined,'ko');};
+ const speakingChosen=()=>speakingCall('chosen',owner)===true;
+ // 이번 주(계획의 주) 말하기: 열 수 있는 유형 후보 · 센 시도 시각 · 아직 안 해 본 유형 수, 그리고 Core에 넘길 추천 후보(아직 안 해 본 유형, 다 해 봤으면 모두).
+ function speakingThisWeek(now){
+  const list=speakingList(),state=speakingCall('week',owner,position.exam.examWeek(now))||{};
+  const tried=new Set(Array.isArray(state.tried)?state.tried:[]),fresh=list.filter(row=>!tried.has(speakingType(row.route)));
+  return {list,times:Array.isArray(state.times)?state.times:[],untried:fresh.length,
+   recommend:(fresh.length?fresh:list).map(row=>({id:row.id,label:speakingLabel(row.route),route:'speaking',routeId:row.route,minutes:row.minutes,minutesEstimated:true,targets:[],goals:['exam','prepare','speaking'],audioRequired:true,modality:'speaking'}))};
+ }
  // 반 과제: 열 때마다 서버에 묻지 않고 10분 동안 같은 답을 쓴다. 못 읽으면 반 과제 없이 계획한다.
  function classworkRows(){
   if(typeof readClasswork!=='function')return [];
@@ -145,6 +163,10 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   // 학습 항목을 겨누지 않는 후보로 넘긴다(관측하지 않은 쓰기를 약점으로 세지 않는다). 여는 길은 호스트의 openWriting(route)다.
   const writing=exam?.type==='topik2'?writingList().map(row=>({id:row.id,label:writingLabel(row.route),route:'writing',routeId:row.route,minutes:row.minutes,minutesEstimated:true,targets:[],goals:['exam','prepare','writing'],audioRequired:false,modality:'writing'})):[];
   extra.push(...writing);
+  // 말하기 연습(10-21): TOPIK I·II를 고르고 시험 정보에서 「말하기 평가도 준비해요」를 켠 학생만(이 기기 기록, 계정·손님마다). 말하기 항목은 Core 지도에
+  // 없어 학습 항목을 겨누지 않는 후보로 넘기고(소리가 필요하다 — 소리를 끈 날은 Core가 뺀다), 계획에는 이번 주 시각과 아직 안 해 본 유형 수를 넘긴다.
+  const speaking=exam&&['topik1','topik2'].includes(exam.type)&&speakingChosen()?speakingThisWeek(now):null;
+  if(speaking)extra.push(...speaking.recommend);
   const base=createPlan({summary,progress:progress.exportSnapshot(),settings:values,now,recommendActivities,extra});
   if(!exam)return base;
   // 지금 열 수 있는 연습: 읽기는 항목별 새 문항 수, 듣기는 새 문항이 남은 게임(손님에게 닫힌 게임은 뺀다).
@@ -160,10 +182,11 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   let lastCheckAt=null;try{lastCheckAt=position.exam.lastRecheck?.({events,before:week.start})??null;}catch{lastCheckAt=null;}
   // 쓰기 연습은 아직 Trail에 남지 않아 기기 기록의 규칙 점검 시각으로 센다(③ readWritingSummary times).
   let writingTimes=[];if(exam.type==='topik2'&&typeof writingPractice?.attempts==='function'){try{const times=writingPractice.attempts();writingTimes=Array.isArray(times)?times:[];}catch{writingTimes=[];}}
-  const examPlan=position.exam.buildExamPlan({exam,summary,now,audioAvailable,classwork:classworkRows(),lastCheckAt,
-   done:position.exam.weekActivity({events,progress:progress.exportSnapshot(),week,extra:writingTimes.length?[{area:'writing',times:writingTimes}]:[]}),
+  // 말하기를 고른 학생만 시험 정보에 speaking:true · 말하기 후보 · 필요 · 이번 주 시각이 더해진다(고르지 않은 학생의 계획 입력은 그대로다).
+  const examPlan=position.exam.buildExamPlan({exam:speaking?{...exam,speaking:true}:exam,summary,now,audioAvailable,classwork:classworkRows(),lastCheckAt,...(speaking?{speakingNeeds:speaking.untried}:{}),
+   done:position.exam.weekActivity({events,progress:progress.exportSnapshot(),week,extra:[...(writingTimes.length?[{area:'writing',times:writingTimes}]:[]),...(speaking?.times.length?[{area:'speaking',times:speaking.times}]:[])]}),
    available:{practice:practice?practice.practiceSupply({pool,seen,audioAvailable}):{},listening,recheck:diagnostic?.items?.length||0,life:true,
-    writing:writingAvailable,topik2:topik2Domains()}});
+    writing:writingAvailable,topik2:topik2Domains(),...(speaking?{speaking:speaking.list}:{})}});
   if(examPlan&&mock)examPlan.mock={status:mock.status,minutes:mock.minutes,total:mock.total,sections:mock.sections.map(row=>({section:row.section,status:row.status,count:row.items.length,minutes:row.minutes}))};
   return createPlan({summary,progress:progress.exportSnapshot(),settings:values,now,recommendActivities,extra,examPlan});
  }
@@ -195,7 +218,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   if(applyPreferences()===false){home.toast('도움 방식 저장을 다시 확인해 주세요.');return;}
   return launch(selected);
  }
- // 고른 활동 열기: 게임·복습·레슨, 짧은 연습(그 항목), 짧은 진단(내 위치에서 바로 시작), 시험 형식 연습, 쓰기 연습(호스트가 연다).
+ // 고른 활동 열기: 게임·복습·레슨, 짧은 연습(그 항목), 짧은 진단(내 위치에서 바로 시작), 시험 형식 연습, 쓰기·말하기 연습(호스트가 연다).
  function launch(selected){
   if(selected.route==='game')return launchGame(selected.gameId);
   if(selected.route==='review')return startReview(selected.lessonId,selected.reviewIds);
@@ -203,6 +226,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   if(selected.route==='position')return openPosition({start:true});
   if(selected.route==='mock')return openMock();
   if(selected.route==='writing'&&typeof writingPractice?.open==='function')return writingPractice.open(selected.routeId);
+  if(selected.route==='speaking'&&typeof speakingPractice?.open==='function')return speakingPractice.open(selected.routeId);
   return startLesson(selected.lessonId);
  }
  function open({continueAfter=false}={}){
@@ -218,9 +242,12 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const months=examMonths(now);if(month&&!months.some(([value])=>value===month))months.unshift([month,formatDate(Date.UTC(Number(month.slice(0,4)),Number(month.slice(5))-1,15)-KST,{year:'numeric',month:'long'})]);
   const gradeOptions=[...EXAM_GRADES.topik1,...EXAM_GRADES.topik2].map(n=>[String(n),t('goal.exam.grade.n',{n})]);
   const gradeType=n=>EXAM_GRADES.topik1.includes(Number(n))?'topik1':'topik2';
+  // 「말하기 평가도 준비해요」(10-21): 말하기 연습을 쓸 수 있을 때만, TOPIK I·II를 고르면 보인다. 이 기기에만 저장하는 선택이라 글이 그렇게 밝힌다.
+  const speakingOffer=speakingCall('available')===true,speakingRow=speakingOffer?`<label class="study-consent study-speaking" data-study-speaking${['topik1','topik2'].includes(values.examType)?'':' hidden'}><input type="checkbox" name="speakingExam" ${speakingChosen()?'checked':''}><span><strong>${t('goal.exam.speaking')}</strong><small>${t('goal.exam.speakingNote')}</small></span></label>`:'';
   const examSection=position?.exam?`<section class="study-exam" data-study-exam${reason==='exam'?'':' hidden'}><p class="life-section-label">EXAM</p><p class="study-exam-note">${t('goal.exam.note')}</p>${past?`<p class="study-exam-past" data-study-exam-past>${t('goal.exam.past')}</p>`:''}
     <fieldset class="study-group"><legend>${t('goal.exam.type')}</legend><div class="study-pills study-wrap">${radios('examType',EXAM_TYPES.map(id=>[id,t(`goal.exam.type.${id}`)]),values.examType||'')}</div></fieldset>
     <fieldset class="study-group" data-study-grade${['topik1','topik2'].includes(values.examType)?'':' hidden'}><legend>${t('goal.exam.grade')}</legend><div class="study-pills study-wrap">${radios('targetGrade',[['',t('goal.exam.none')],...gradeOptions],values.targetGrade?String(values.targetGrade):'',id=>id&&gradeType(id)!==values.examType?` data-grade-type="${gradeType(id)}" hidden`:id?` data-grade-type="${gradeType(id)}"`:'')}</div></fieldset>
+    ${speakingRow}
     <fieldset class="study-group"><legend>${t('goal.exam.date')}</legend><div class="study-date"><select name="examMonth" aria-label="${escape(t('goal.exam.month'))}"><option value="">${t('goal.exam.none')}</option>${months.map(([value,label])=>`<option value="${value}"${value===month?' selected':''}>${escape(label)}</option>`).join('')}</select><select name="examDay" aria-label="${escape(t('goal.exam.day'))}"><option value="">${t('goal.exam.dayUnknown')}</option>${Array.from({length:31},(_,i)=>String(i+1)).map(n=>`<option value="${n}"${n===day?' selected':''}>${escape(t('goal.exam.day.n',{n}))}</option>`).join('')}</select></div><p class="study-exam-hint">${t('goal.exam.dateNote')}</p></fieldset>
     <fieldset class="study-group"><legend>${t('goal.exam.mode')}</legend><div class="study-pills study-wrap">${radios('examMode',EXAM_MODES.map(id=>[id,t(`goal.exam.mode.${id}`)]),values.examMode||'')}</div></fieldset>
     <fieldset class="study-group"><legend>${t('goal.exam.weekly')}</legend><div class="study-pills study-wrap">${radios('weeklyMinutes',[['',t('goal.exam.none')],...EXAM_WEEKLY.map(n=>[n,t(`goal.exam.weekly.${n}`)])],values.weeklyMinutes?String(values.weeklyMinutes):'')}</div></fieldset>
@@ -247,7 +274,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const form=target.document.querySelector('#world-study-form');if(!form)return;
   const status=form.querySelector('.study-save-status');let busy=false;
   // 이유가 「시험·자격 준비」일 때만 시험 칸을 펼치고, 시험 종류에 맞는 목표 급만 보인다.
-  const exam=form.querySelector('[data-study-exam]'),grade=form.querySelector('[data-study-grade]');
+  const exam=form.querySelector('[data-study-exam]'),grade=form.querySelector('[data-study-grade]'),speakingBox=form.querySelector('[data-study-speaking]');
   const sync=()=>{
    if(exam)exam.hidden=form.elements.reason.value!=='exam';
    const monthValue=form.elements.examMonth?.value||'',daySelect=form.elements.examDay;
@@ -255,6 +282,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
     for(const option of daySelect.options){const off=Number(option.value)>last;option.disabled=off;option.hidden=off;}
     if(Number(daySelect.value)>last)daySelect.value='';}
    const type=form.elements.examType?.value||'';
+   if(speakingBox)speakingBox.hidden=!['topik1','topik2'].includes(type);
    if(grade){grade.hidden=!['topik1','topik2'].includes(type);
     for(const pill of grade.querySelectorAll('[data-grade-type]')){const show=pill.dataset.gradeType===type;pill.hidden=!show;const input=pill.querySelector('input');if(!show&&input?.checked){input.checked=false;grade.querySelector('input[value=""]').checked=true;}}}
   };
@@ -269,12 +297,17 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
    const weekly=Number(form.elements.weeklyMinutes?.value)||null,mode=form.elements.examMode?.value||null;
    return {examType:type,targetGrade:type&&EXAM_GRADES[type]?.includes(level)?level:null,examDate:date,examMode:mode,weeklyMinutes:weekly};
   };
-  form.addEventListener('submit',event=>{event.preventDefault();if(!form.elements.consent.checked){status.textContent=t('goal.needConsent',{name:consentName});form.querySelector('.study-consent input')?.focus?.();return;}
+  // 「말하기 평가도 준비해요」는 학습 목표를 저장한 뒤 이 기기에만 쓴다(계정·손님마다). 시험을 고르지 않았거나 TOPIK I·II가 아니면 끈다.
+  // 그 칸이 없던 창(말하기 연습을 아직 못 쓰는 때)의 저장은 이 기기 선택을 건드리지 않는다.
+  const saveSpeaking=reason=>{const box=form.elements.speakingExam;if(!box)return;speakingCall('choose',owner,reason==='exam'&&['topik1','topik2'].includes(form.elements.examType?.value||'')&&box.checked);};
+  // 저장 스위치가 둘(말하기 평가 · 기억하기)이라 이름으로 찾는다.
+  form.addEventListener('submit',event=>{event.preventDefault();if(!form.elements.consent.checked){status.textContent=t('goal.needConsent',{name:consentName});form.elements.consent?.focus?.();return;}
    const reason=form.elements.reason.value,minutes=Number(form.elements.minutes.value);
-   void run(()=>progress.updateLearningProfile({consent:true,expectedRevision:revision,values:{reasons:reason?[reason]:null,primaryReason:reason||null,goal:null,support:form.elements.support.value,explanation:form.elements.explanation.value,...examValues(reason)},today:{...(minutes?{minutes}:{}),audio:form.elements.audio.value}}));
+   void run(()=>{progress.updateLearningProfile({consent:true,expectedRevision:revision,values:{reasons:reason?[reason]:null,primaryReason:reason||null,goal:null,support:form.elements.support.value,explanation:form.elements.explanation.value,...examValues(reason)},today:{...(minutes?{minutes}:{}),audio:form.elements.audio.value}});saveSpeaking(reason);});
   });
   form.querySelector('[data-study-skip]').addEventListener('click',()=>{if(profile.status==='new')void run(()=>progress.clearLearningProfile({mode:'skip',expectedRevision:revision}));else home.closePanel();});
-  form.querySelectorAll('[data-study-clear]').forEach(button=>button.addEventListener('click',()=>void run(()=>progress.clearLearningProfile({mode:button.dataset.studyClear,expectedRevision:revision}))));
+  // 목표를 지우면 이 기기의 말하기 선택도 끈다(끄기만 하면 다시 켤 때 그대로 둔다).
+  form.querySelectorAll('[data-study-clear]').forEach(button=>button.addEventListener('click',()=>void run(()=>{progress.clearLearningProfile({mode:button.dataset.studyClear,expectedRevision:revision});if(button.dataset.studyClear==='delete'&&speakingChosen())speakingCall('choose',owner,false);})));
  }
  // ── 「내 위치」(10-19 결정 · 학습기준 §7-3) ──
  // 판: Core가 이미 읽은 TOPIK I 항목 상태를 세 칸(혼자 해냄·연습 중·아직)으로 보이고, 칸마다 그렇게 본 근거를 단다.
@@ -628,6 +661,8 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   root?.querySelector('[data-plan-recheck]')?.addEventListener('click',()=>{try{check();void openPosition({start:true});}catch(error){failed(error);}});
   root?.querySelectorAll('[data-plan-writing]').forEach(button=>button.addEventListener('click',()=>{try{check();if(typeof writingPractice?.open==='function')void Promise.resolve(writingPractice.open(button.dataset.planWriting)).catch(failed);}catch(error){failed(error);}}));
   root?.querySelector('[data-plan-mock]')?.addEventListener('click',()=>{try{check();void Promise.resolve(openMock()).catch(failed);}catch(error){failed(error);}});
+  // 말하기 칸의 「말하기 연습 열기」: 유형 목록을 연다(어느 유형을 할지는 학생이 고른다 — 「지금 할 것」은 아직 안 해 본 유형을 바로 연다).
+  root?.querySelector('[data-plan-speaking]')?.addEventListener('click',()=>{try{check();if(typeof speakingPractice?.open==='function')void Promise.resolve(speakingPractice.open('speaking')).catch(failed);}catch(error){failed(error);}});
  }
  const onFocus=()=>refresh();target.addEventListener?.('focus',onFocus);
  // 배우기 판의 「이번 주 계획」 줄(life-ui.mjs moreRows): 시험을 고른 사람에게만. print는 그 판의 인화지 그림.

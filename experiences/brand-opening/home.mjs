@@ -275,6 +275,8 @@ function planLabel(next){
  // 짧은 진단: 처음 시작점 진단도 이번 주 다시 확인도 같은 이름(계획 판 NOW·한국어 홈과 같다, 10-21 검수).
  if(next.route==='position')return t('position.diagnostic.title');
  if(next.route==='writing'){const type=String(next.routeId||'').split(':')[1];return `${t('writing.title')} · ${type==='mock'?t('writing.mock.title'):t(`writing.type.${type}`)}`;}
+ // 10-21 말하기 연습(시험 정보에서 말하기 평가를 고른 학생): 「말하기 연습 · 유형 이름」.
+ if(next.route==='speaking'){const type=String(next.routeId||'').split(':')[1];return /^[1-6]$/.test(type)?`${t('speaking.title')} · ${t(`speaking.type.${type}`)}`:t('speaking.title');}
  const strip=suffix=>label.endsWith(suffix)?label.slice(0,-suffix.length):null;
  const resumed=strip(' · 이어 하기'),reviewed=strip(' · 새 상황 복습');
  if(resumed!==null)return t('plan.resume',{title:resumed});

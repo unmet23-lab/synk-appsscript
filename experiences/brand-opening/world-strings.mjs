@@ -377,6 +377,9 @@ export default {
  'goal.exam.weekly.60':{ko:'1시간쯤',en:'About 1 hour',mn:'Ойролцоогоор 1 цаг'},
  'goal.exam.weekly.120':{ko:'2시간쯤',en:'About 2 hours',mn:'Ойролцоогоор 2 цаг'},
  'goal.exam.weekly.180':{ko:'3시간 넘게',en:'More than 3 hours',mn:'3 цагаас илүү'},
+ // 10-21 「말하기 평가도 준비해요」: 말하기 연습을 쓸 수 있을 때 TOPIK I·II를 고르면 보인다. 계정이 아니라 이 기기에만 저장한다(거짓 약속을 하지 않게 밝힌다).
+ 'goal.exam.speaking':{ko:'말하기 평가도 준비해요',en:'I’m preparing for the speaking test too',mn:'Ярианы шалгалтад ч бэлтгэж байна'},
+ 'goal.exam.speakingNote':{ko:'녹음해 말해 보는 연습을 이번 주 계획에 넣어요. 이 선택은 이 기기에만 저장돼요.',en:'We’ll add recorded speaking practice to this week’s plan. This choice is saved only on this device.',mn:'Бичлэг хийж ярих дасгалыг энэ долоо хоногийн төлөвлөгөөнд оруулна. Энэ сонголт зөвхөн энэ төхөөрөмжид хадгалагдана.'},
 
  // ── 내 위치: TOPIK I 항목 지도 · 짧은 진단 · 한글 판(world-position-ui.mjs · world-learning-ui.mjs, 10-19 결정) ──
  // 항목 이름은 학습 내용이 아니라 화면 글이라 옮긴다. 문항·보기·안내문은 한국어 원문 그대로다.
@@ -632,6 +635,8 @@ export default {
  'plan.week.readingLater':{ko:'읽기 짧은 연습은 문항을 준비하고 있어서 이번 주 계획에 아직 없어요.',en:'Short reading practice isn’t in this week’s plan yet — its questions are still being prepared.',mn:'Уншлагын богино дасгалын асуултыг бэлтгэж байгаа тул энэ долоо хоногийн төлөвлөгөөнд хараахан ороогүй.'},
  'plan.week.audioOff':{ko:'오늘은 소리를 끈 날이라 듣기 연습은 빼고 소리 없이 할 수 있는 연습으로 골라요. 듣기가 약하다는 뜻은 아니에요.',en:'Sound is off today, so we’re skipping listening and picking practice you can do without sound. That doesn’t mean listening is a weak spot.',mn:'Өнөөдөр дуу унтраалттай тул сонсголын дасгалыг алгасаж, дуугүй хийж болох дасгал сонгоно. Энэ нь сонсгол сул гэсэн үг биш.'},
  'plan.week.writingLater':{ko:'TOPIK II 쓰기 연습은 아직 열리지 않아 이번 주 계획에서 뺐어요.',en:'TOPIK II writing practice isn’t open yet, so it’s not in this week’s plan.',mn:'TOPIK II бичгийн дасгал хараахан нээгдээгүй тул энэ долоо хоногийн төлөвлөгөөнд ороогүй.'},
+ 'plan.week.speakingAudioOff':{ko:'소리를 끈 날에는 말하기 연습을 계획에 넣지 않아요. 소리를 켜면 다시 넣어요.',en:'Speaking practice stays out of the plan on days with sound off. It comes back when sound is on.',mn:'Дуу унтраалттай өдөр ярианы дасгалыг төлөвлөгөөнд оруулахгүй. Дуугаа асаавал дахин оруулна.'},
+ 'plan.week.speakingLater':{ko:'말하기 연습을 아직 불러오지 못해 이번 주 계획에서 뺐어요.',en:'Speaking practice hasn’t loaded yet, so it’s not in this week’s plan.',mn:'Ярианы дасгал хараахан ачаалагдаагүй тул энэ долоо хоногийн төлөвлөгөөнд ороогүй.'},
  'plan.week.noDate':{ko:'시험일을 정하면 시험이 가까워질수록 시험형 문항 연습을 늘려요.',en:'Add your test date and we’ll add more TOPIK-style questions as it gets closer.',mn:'Шалгалтын өдрөө оруулбал ойртох тусам TOPIK хэлбэрийн асуултын дасгалыг нэмнэ.'},
  'plan.week.start':{ko:'지금 할 것 시작하기',en:'Start what’s next',mn:'Одоо эхлэх'},
  'plan.week.change':{ko:'목표·시험 정보 바꾸기',en:'Change goals or test details',mn:'Зорилго, шалгалтын мэдээллээ өөрчлөх'},
@@ -641,6 +646,11 @@ export default {
  'plan.area.writing':{ko:'쓰기',en:'Writing',mn:'Бичих'},
  'plan.area.recheck':{ko:'다시 확인',en:'Check again',mn:'Дахин шалгах'},
  'plan.area.life':{ko:'생활 레슨',en:'Daily-life lessons',mn:'Өдөр тутмын хичээл'},
+ 'plan.area.speaking':{ko:'말하기',en:'Speaking',mn:'Яриа'},
+ // 10-21 계획 판의 말하기 칸(시험 정보에서 말하기 평가를 고른 학생): 이번 주에 아직 안 해 본 유형 수와 연습 열기. 점수·숙달 말이 없다.
+ 'plan.speaking.note':{ko:'이번 주에 아직 말해 보지 않은 유형이 {n}개 있어요. 녹음해 말하고 내 대답을 다시 들어 봐요.',en:{one:'There’s 1 task type you haven’t tried yet this week. Record your answer and listen back.',other:'There are {n} task types you haven’t tried yet this week. Record your answer and listen back.'},mn:'Энэ долоо хоногт хараахан ярьж үзээгүй {n} төрөл байна. Бичлэг хийж яриад хариултаа дахин сонсоорой.'},
+ 'plan.speaking.noteAll':{ko:'이번 주에 모든 유형을 한 번씩 말해 봤어요. 같은 유형을 다시 해 봐도 좋아요.',en:'You’ve tried every task type this week. Feel free to do one again.',mn:'Энэ долоо хоногт бүх төрлөөр нэг удаа ярьж үзсэн байна. Аль нэгийг нь дахин хийж болно.'},
+ 'plan.speaking.open':{ko:'말하기 연습 열기',en:'Open speaking practice',mn:'Ярианы дасгалыг нээх'},
  'plan.area.count':{ko:'{done} / {planned}',en:'{done} / {planned}',mn:'{done} / {planned}'},
  'plan.classwork.todo':{ko:'반 과제 · {kind}',en:'Class task · {kind}',mn:'Ангийн даалгавар · {kind}'},
  'plan.classwork.done':{ko:'반 과제 · {kind} 냄',en:'Class task · {kind} handed in',mn:'Ангийн даалгавар · {kind} илгээсэн'},
@@ -1181,7 +1191,6 @@ export default {
  'speaking.row.sub':{ko:'TOPIK 말하기 6유형 · 카페에서 말로 주문하기',en:'6 TOPIK speaking tasks · Order at a café out loud',mn:'TOPIK ярианы 6 төрөл · Кафед ярьж захиалах'},
  'speaking.lead':{ko:'TOPIK 말하기 평가 형식으로 연습해요. 점수나 급수는 매기지 않아요.',en:'Practise in the format of the TOPIK Speaking Test. No scores or levels.',mn:'TOPIK ярианы шалгалтын хэлбэрээр дасгал хийнэ. Оноо, түвшин тогтоохгүй.'},
  'speaking.basis':{ko:'준비 시간과 대답 시간은 공식 시험과 같아요. 문항은 연습용으로 새로 만들었어요.',en:'Preparation and answer times match the official test. The questions were written for practice.',mn:'Бэлтгэх болон хариулах хугацаа албан ёсны шалгалттай ижил. Даалгаврыг дасгалд зориулж шинээр бичсэн.'},
- 'speaking.draft':{ko:'시범 문항 · 검수 전',en:'Preview questions · not yet reviewed',mn:'Туршилтын даалгавар · хянагдаагүй'},
  'speaking.group.exam':{ko:'시험 형식 연습',en:'Test-format practice',mn:'Шалгалтын хэлбэрийн дасгал'},
  'speaking.group.roleplay':{ko:'말로 해 보기',en:'Try it out loud',mn:'Ярьж үзэх'},
  'speaking.type.1':{ko:'질문에 대답하기',en:'Answer a question',mn:'Асуултад хариулах'},

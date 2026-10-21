@@ -14731,7 +14731,7 @@ function recheckWeek(date2, weekStart) {
 var planAnswered = (event) => event?.type === "practice.attempted" && event.attemptNo === 1 && (event.verdict === "correct" || event.verdict === "incorrect");
 function weekActivity({ events = [], progress = null, week, extra = [] } = {}) {
   if (!planRecord(week) || !planTime(week.start) || !planTime(week.end)) throw TypeError("WORLD exam plan needs a week");
-  const done = { listening: 0, reading: 0, writing: 0, recheck: 0, life: 0 }, decisions = /* @__PURE__ */ new Map(), shown = /* @__PURE__ */ new Map(), runs = /* @__PURE__ */ new Map();
+  const done = { listening: 0, reading: 0, writing: 0, recheck: 0, life: 0, speaking: 0 }, decisions = /* @__PURE__ */ new Map(), shown = /* @__PURE__ */ new Map(), runs = /* @__PURE__ */ new Map();
   for (const event of Array.isArray(events) ? events : []) {
     if (event?.type === "decision.made") decisions.set(event.id, event.experienceId);
     else if (event?.type === "practice.presented") shown.set(event.id, event);
@@ -14820,7 +14820,7 @@ function split(total, needs, boost = {}) {
   }
   return out;
 }
-function buildExamPlan({ exam, summary = null, now = Date.now(), done = null, available = {}, classwork = [], audioAvailable = true, lastCheckAt = null } = {}) {
+function buildExamPlan({ exam, summary = null, now = Date.now(), done = null, available = {}, classwork = [], audioAvailable = true, lastCheckAt = null, speakingNeeds = null } = {}) {
   if (!planRecord(exam)) return null;
   const week = examWeek(now), { phase, weeks } = examPhase(exam.date, now), policy = EXAM_PLAN_POLICY;
   const pace = exam.weeklyMinutes && policy.weekly[exam.weeklyMinutes] || policy.fallback;
@@ -14858,10 +14858,15 @@ function buildExamPlan({ exam, summary = null, now = Date.now(), done = null, av
     open[domain] = has[domain] ? needs[domain] : null;
     if (!has[domain]) notes.push(domain === "listening" && !audioAvailable ? "audio-off" : `${domain}-unavailable`);
   }
+  const speakingChosen = exam.speaking === true && ["topik1", "topik2"].includes(exam.type);
+  const speakingList = speakingChosen && Array.isArray(available.speaking) ? available.speaking.filter((row) => planRecord(row) && typeof row.id === "string") : [];
+  const speakingOpen = speakingChosen && audioAvailable && speakingList.length > 0;
+  const speakingNeed = speakingOpen ? Math.min(speakingList.length, Number.isInteger(speakingNeeds) && speakingNeeds > 0 ? speakingNeeds : 0) : null;
+  if (speakingChosen && !speakingOpen) notes.push(audioAvailable ? "speaking-unavailable" : "speaking-audio-off");
   const boost = ["near", "final"].includes(phase) ? { reading: 1.25, writing: 1.25 } : {};
-  const planned = { ...split(Math.max(0, total - recheck - life), open, boost), recheck, life };
+  const planned = { ...split(Math.max(0, total - recheck - life), open, boost), recheck, life, ...speakingOpen ? { speaking: 1 } : {} };
   for (const kind of ["reading", "writing"]) planned[kind] = Math.max(planned[kind] || 0, classCount(kind));
-  const areas = ["recheck", ...domains, "life"].map((area) => ({
+  const areas = ["recheck", ...domains, ...speakingChosen ? ["speaking"] : [], "life"].map((area) => ({
     area,
     planned: planned[area] || 0,
     done: did[area] || 0,
@@ -14883,8 +14888,8 @@ function buildExamPlan({ exam, summary = null, now = Date.now(), done = null, av
       ...skill2.domain === "listening" && !audioAvailable ? { blocked: "audio" } : {}
     };
   }).sort((a, b) => b.priority - a.priority || Number(a.shortage) - Number(b.shortage) || a.skillId.localeCompare(b.skillId)).slice(0, 3).map(({ priority, ...row }) => row);
-  const rank = (row) => start && row.area === "recheck" ? 1 : 0;
-  const next = areas.filter((row) => row.remaining > 0).sort((a, b) => rank(b) - rank(a) || b.remaining - a.remaining || (needs[b.area] ?? 0) - (needs[a.area] ?? 0) || a.area.localeCompare(b.area))[0] || null;
+  const rank = (row) => start && row.area === "recheck" ? 1 : 0, needOf = (area) => area === "speaking" ? speakingNeed ?? 0 : needs[area] ?? 0;
+  const next = areas.filter((row) => row.remaining > 0).sort((a, b) => rank(b) - rank(a) || b.remaining - a.remaining || needOf(b.area) - needOf(a.area) || a.area.localeCompare(b.area))[0] || null;
   const focus = next ? homework.find((row) => row.domain === next.area && !row.shortage) || null : null;
   const goals = next ? [`plan.area.${next.area}`, ...focus ? [`plan.skill.${focus.skillId}`] : []] : [];
   const checks = [];
@@ -14913,6 +14918,7 @@ function buildExamPlan({ exam, summary = null, now = Date.now(), done = null, av
     return [domain, { total: rows2.length, checked: rows2.filter((skill2) => skill2.status !== "unseen").length, basis: two(domain) ? "topik2" : "topik1" }];
   }));
   const sessions = Math.max(total, areas.reduce((n, row) => n + row.planned, 0));
+  const speaking = speakingOpen ? { speaking: { untried: speakingNeed, total: speakingList.length } } : {};
   return {
     policy: policy.version,
     exam: { ...exam },
@@ -14927,6 +14933,7 @@ function buildExamPlan({ exam, summary = null, now = Date.now(), done = null, av
     checks,
     reach: { confirmed, observed: observed.length, total: skills.filter((skill2) => skill2.domain !== "writing").length, evidence, basis },
     progress,
+    ...speaking,
     notes: [...new Set(notes)],
     learningEffectClaim: false,
     abilityClaim: false,
@@ -14935,7 +14942,7 @@ function buildExamPlan({ exam, summary = null, now = Date.now(), done = null, av
   };
 }
 function planTokens(candidate) {
-  const area = candidate?.route === "practice" ? "reading" : candidate?.route === "position" ? "recheck" : candidate?.route === "writing" ? "writing" : candidate?.route === "game" ? candidate.modality === "reading" ? "reading" : "listening" : ["lesson", "review"].includes(candidate?.route) ? "life" : null;
+  const area = candidate?.route === "practice" ? "reading" : candidate?.route === "position" ? "recheck" : candidate?.route === "writing" ? "writing" : candidate?.route === "game" ? candidate.modality === "reading" ? "reading" : "listening" : ["lesson", "review"].includes(candidate?.route) ? "life" : typeof candidate?.route === "string" && candidate.route.split(":")[0] === "speaking" ? "speaking" : null;
   if (!area) return [];
   const skills = new Set((Array.isArray(candidate.targets) ? candidate.targets : []).flatMap((target) => Array.isArray(target?.skillIds) ? target.skillIds : []));
   return [`plan.area.${area}`, ...[...skills].sort().map((id) => `plan.skill.${id}`)];
@@ -15203,7 +15210,7 @@ function resumeCandidates(progress, settings, now) {
   return result;
 }
 function extraCandidate(candidate, settings) {
-  if (!record(candidate) || !["practice", "position", "writing", "mock"].includes(candidate.route) || typeof candidate.id !== "string") return null;
+  if (!record(candidate) || !["practice", "position", "writing", "mock", "speaking"].includes(candidate.route) || typeof candidate.id !== "string") return null;
   return {
     ...candidate,
     targets: Array.isArray(candidate.targets) ? candidate.targets : [],
@@ -18784,6 +18791,10 @@ function createPositionView({ t, has = () => true, formatDate = null, lang = () 
     const type = String(routeId || "").split(":")[1], key = type === "mock" ? "writing.mock.title" : `writing.type.${type}`;
     return type && has(key) ? `${t("writing.title")} \xB7 ${t(key)}` : "";
   };
+  const speakingName = (routeId) => {
+    const key = `speaking.type.${String(routeId || "").split(":")[1]}`;
+    return has(key) ? `${t("speaking.title")} \xB7 ${t(key)}` : t("speaking.title");
+  };
   function planTitle(next) {
     const label = String(next.label || next.title || ""), strip = (suffix) => label.endsWith(suffix) ? label.slice(0, -suffix.length) : null;
     if (next.route === "practice" && next.skillId) return posEscape(t(String(next.skillId).split(".")[1] === "listening" ? "plan.practice.listening" : "plan.practice", { skill: skillName({ id: next.skillId }) }));
@@ -18791,6 +18802,7 @@ function createPositionView({ t, has = () => true, formatDate = null, lang = () 
     if (next.route === "mock") return posEscape(t("mock.title"));
     if (next.route === "game" && next.gameId && has(`plan.game.${next.gameId}`)) return posEscape(t(`plan.game.${next.gameId}`));
     if (next.route === "writing" && writingName(next.routeId)) return posEscape(writingName(next.routeId));
+    if (next.route === "speaking") return posEscape(speakingName(next.routeId));
     if (next.id === "world.resume.review" && has("plan.resumeReview")) return posEscape(t("plan.resumeReview"));
     const resumed = strip(" \xB7 \uC774\uC5B4 \uD558\uAE30"), reviewed = strip(" \xB7 \uC0C8 \uC0C1\uD669 \uBCF5\uC2B5");
     if (resumed !== null) return withKo("plan.resume", resumed);
@@ -18814,7 +18826,7 @@ function createPositionView({ t, has = () => true, formatDate = null, lang = () 
     const checks = (plan.checks || []).map((row) => `<li${row.done ? " data-done" : ""}><span>${posEscape(row.weekStart === plan.week?.start ? t("plan.checks.thisWeek") : t("plan.checks.week", { date: day2(new Date(row.weekStart).toISOString()) }))}</span>${row.done ? `<small>${posEscape(t("plan.checks.done"))}</small>` : ""}</li>`).join("");
     const reach = plan.reach || { confirmed: 0, total: 0, evidence: 0 };
     const bridged = exam.type !== "topik2" ? [] : plan.progress ? ["listening", "reading"].filter((area2) => plan.progress[area2]?.basis === "topik1") : reach.basis === "topik1" ? ["listening", "reading"] : [];
-    return `<div class="wpos wplan life-heading" data-plan-board tabindex="-1">${poster(t("plan.week.title"), head, { print: "plan", label: "MY PLAN" })}` + (notes.has("past") ? `<section class="wpos-diagnostic" data-plan-past><p class="wpos-intro">${posEscape(t("goal.exam.past"))}</p><button class="quiet-button" type="button" data-view="study">${posEscape(t("plan.week.setGoal"))}</button></section>` : "") + `<section class="wplan-week"><p class="life-section-label">THIS WEEK</p><h3>${posEscape(t("plan.week.sessions", { n: plan.sessions?.total || 0, minutes: plan.sessions?.minutes || 0 }))}</h3><ul class="wplan-areas">${(plan.areas || []).map(area).join("")}</ul><p class="wpos-note">${posEscape(t("plan.week.rest"))}</p>${notes.has("audio-off") ? `<p class="wpos-note">${posEscape(t("plan.week.audioOff"))}</p>` : ""}${notes.has("reading-unavailable") ? `<p class="wpos-note" data-plan-reading-later>${posEscape(t("plan.week.readingLater"))}</p>` : ""}${notes.has("writing-unavailable") ? `<p class="wpos-note">${posEscape(t("plan.week.writingLater"))}</p>` : ""}${notes.has("no-date") ? `<p class="wpos-note">${posEscape(t("plan.week.noDate"))}</p>` : ""}</section>` + (next ? `<section class="wplan-next"><p class="life-section-label">NOW</p><h3>${nextTitle}</h3>${reason ? `<p class="wpos-note">${posEscape(reason)}</p>` : ""}<button class="felt-button" type="button" data-plan-next>${posEscape(t("plan.week.start"))} <span aria-hidden="true">\u2192</span></button></section>` : "") + (homework ? `<section class="wpos-attention wplan-homework"><p class="life-section-label">HOMEWORK</p><h3>${posEscape(t("plan.homework.title"))}</h3><p class="wpos-note">${posEscape(t("plan.homework.note"))}</p><ul>${homework}</ul></section>` : "") + (checks ? `<section class="wplan-checks"><p class="life-section-label">CHECK</p><h3>${posEscape(t("plan.checks.title"))}</h3><ul>${checks}</ul><p class="wpos-note">${posEscape(t("plan.checks.note"))}</p>${thisWeek && !thisWeek.done && next?.route !== "position" ? `<button class="quiet-button" type="button" data-plan-recheck>${posEscape(t("position.diagnostic.start"))} <span aria-hidden="true">\u2192</span></button>` : ""}</section>` : "") + (plan.mock?.status === "ready" ? `<section class="wplan-next" data-plan-mock-section><p class="life-section-label">EXAM FORM</p><h3>${posEscape(t("mock.title"))}</h3><p class="wpos-note">${posEscape(t("mock.planNote", { minutes: plan.mock.minutes, n: plan.mock.total }))}</p><button class="quiet-button" type="button" data-plan-mock>${posEscape(t("mock.open", { minutes: plan.mock.minutes }))} <span aria-hidden="true">\u2192</span></button></section>` : "") + `<section class="wplan-reach"><p class="life-section-label">SO FAR</p>${["listening", "reading"].filter((area2) => plan.progress?.[area2]).map((area2) => `<p class="wpos-progress" data-plan-progress="${area2}"><span>${posEscape(t(`plan.area.${area2}`))}${bridged.includes(area2) ? ` \xB7 ${posEscape(t("goal.exam.type.topik1"))}` : ""} \xB7 ${posEscape(t("position.progress", { checked: plan.progress[area2].checked, total: plan.progress[area2].total }))}</span><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(plan.progress[area2].checked, plan.progress[area2].total)}%"></i></span></p>`).join("")}<p class="wpos-intro">${posEscape(t("plan.reach.line", { confirmed: reach.confirmed, total: reach.total, evidence: reach.evidence }))}</p><p class="wpos-note">${posEscape(t("plan.reach.note"))}</p>${bridged.length ? `<p class="wpos-note" data-plan-reach-basis>${posEscape(t(bridged.length > 1 ? "plan.reach.topik1Basis" : bridged[0] === "listening" ? "plan.reach.topik1Basis.listening" : "plan.reach.topik1Basis.reading"))}</p>` : ""}</section><button class="quiet-button" type="button" data-view="study">${posEscape(t("plan.week.change"))}</button></div>`;
+    return `<div class="wpos wplan life-heading" data-plan-board tabindex="-1">${poster(t("plan.week.title"), head, { print: "plan", label: "MY PLAN" })}` + (notes.has("past") ? `<section class="wpos-diagnostic" data-plan-past><p class="wpos-intro">${posEscape(t("goal.exam.past"))}</p><button class="quiet-button" type="button" data-view="study">${posEscape(t("plan.week.setGoal"))}</button></section>` : "") + `<section class="wplan-week"><p class="life-section-label">THIS WEEK</p><h3>${posEscape(t("plan.week.sessions", { n: plan.sessions?.total || 0, minutes: plan.sessions?.minutes || 0 }))}</h3><ul class="wplan-areas">${(plan.areas || []).map(area).join("")}</ul><p class="wpos-note">${posEscape(t("plan.week.rest"))}</p>${notes.has("audio-off") ? `<p class="wpos-note">${posEscape(t("plan.week.audioOff"))}</p>` : ""}${notes.has("reading-unavailable") ? `<p class="wpos-note" data-plan-reading-later>${posEscape(t("plan.week.readingLater"))}</p>` : ""}${notes.has("writing-unavailable") ? `<p class="wpos-note">${posEscape(t("plan.week.writingLater"))}</p>` : ""}${notes.has("speaking-audio-off") ? `<p class="wpos-note" data-plan-speaking-later>${posEscape(t("plan.week.speakingAudioOff"))}</p>` : ""}${notes.has("speaking-unavailable") ? `<p class="wpos-note" data-plan-speaking-later>${posEscape(t("plan.week.speakingLater"))}</p>` : ""}${notes.has("no-date") ? `<p class="wpos-note">${posEscape(t("plan.week.noDate"))}</p>` : ""}</section>` + (next ? `<section class="wplan-next"><p class="life-section-label">NOW</p><h3>${nextTitle}</h3>${reason ? `<p class="wpos-note">${posEscape(reason)}</p>` : ""}<button class="felt-button" type="button" data-plan-next>${posEscape(t("plan.week.start"))} <span aria-hidden="true">\u2192</span></button></section>` : "") + (homework ? `<section class="wpos-attention wplan-homework"><p class="life-section-label">HOMEWORK</p><h3>${posEscape(t("plan.homework.title"))}</h3><p class="wpos-note">${posEscape(t("plan.homework.note"))}</p><ul>${homework}</ul></section>` : "") + (checks ? `<section class="wplan-checks"><p class="life-section-label">CHECK</p><h3>${posEscape(t("plan.checks.title"))}</h3><ul>${checks}</ul><p class="wpos-note">${posEscape(t("plan.checks.note"))}</p>${thisWeek && !thisWeek.done && next?.route !== "position" ? `<button class="quiet-button" type="button" data-plan-recheck>${posEscape(t("position.diagnostic.start"))} <span aria-hidden="true">\u2192</span></button>` : ""}</section>` : "") + (plan.speaking ? `<section class="wplan-next" data-plan-speaking-section><p class="life-section-label">SPEAKING</p><h3>${posEscape(t("speaking.title"))}</h3><p class="wpos-note">${posEscape(plan.speaking.untried > 0 ? t("plan.speaking.note", { n: plan.speaking.untried }) : t("plan.speaking.noteAll"))}</p><button class="quiet-button" type="button" data-plan-speaking>${posEscape(t("plan.speaking.open"))} <span aria-hidden="true">\u2192</span></button></section>` : "") + (plan.mock?.status === "ready" ? `<section class="wplan-next" data-plan-mock-section><p class="life-section-label">EXAM FORM</p><h3>${posEscape(t("mock.title"))}</h3><p class="wpos-note">${posEscape(t("mock.planNote", { minutes: plan.mock.minutes, n: plan.mock.total }))}</p><button class="quiet-button" type="button" data-plan-mock>${posEscape(t("mock.open", { minutes: plan.mock.minutes }))} <span aria-hidden="true">\u2192</span></button></section>` : "") + `<section class="wplan-reach"><p class="life-section-label">SO FAR</p>${["listening", "reading"].filter((area2) => plan.progress?.[area2]).map((area2) => `<p class="wpos-progress" data-plan-progress="${area2}"><span>${posEscape(t(`plan.area.${area2}`))}${bridged.includes(area2) ? ` \xB7 ${posEscape(t("goal.exam.type.topik1"))}` : ""} \xB7 ${posEscape(t("position.progress", { checked: plan.progress[area2].checked, total: plan.progress[area2].total }))}</span><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(plan.progress[area2].checked, plan.progress[area2].total)}%"></i></span></p>`).join("")}<p class="wpos-intro">${posEscape(t("plan.reach.line", { confirmed: reach.confirmed, total: reach.total, evidence: reach.evidence }))}</p><p class="wpos-note">${posEscape(t("plan.reach.note"))}</p>${bridged.length ? `<p class="wpos-note" data-plan-reach-basis>${posEscape(t(bridged.length > 1 ? "plan.reach.topik1Basis" : bridged[0] === "listening" ? "plan.reach.topik1Basis.listening" : "plan.reach.topik1Basis.reading"))}</p>` : ""}</section><button class="quiet-button" type="button" data-view="study">${posEscape(t("plan.week.change"))}</button></div>`;
   }
   return Object.freeze({
     skillName,

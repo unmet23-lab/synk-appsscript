@@ -265,7 +265,9 @@ export function slotsFromText(text){
  const has=re=>tokens.some(w=>re.test(w));
  // 「차가운」은 차(tea)가 아니다 — 낱말 단위로 본다.
  const drink=has(/^(녹차|홍차|유자차|보리차|허브차|차)(를|로|는|도|가|랑|하고|요|만)?$/)?'tea':has(/^(주스|쥬스)/)?'juice':has(/^(커피|아메리카노|라떼|카페라떼)/)?'coffee':'none';
- const temperature=/따뜻|따듯|뜨거|뜨겁|따끈|핫/.test(t)?'warm':/차가|차갑|시원|아이스|찬\s/.test(t)?'cold':'none';
+ // 차가운 것도 낱말 단위로 본다 — 「녹차가·홍차는·차가 두 잔」의 「차가」는 차 + 조사라 차가운 것이 아니다(10-21 문항 검수 P2).
+ // 차가운 것: 차가운·차가워·차가우면·차갑게·차게·시원한·아이스(티)·찬 거. 「반찬」의 「찬」은 아니다.
+ const temperature=/따뜻|따듯|뜨거|뜨겁|따끈|핫/.test(t)?'warm':has(/^(차가[운워우]|차갑|차게|시원)|아이스|^찬$|^찬(거|걸|것)/)?'cold':'none';
  const counted=t.match(/(\d+|한|두|세|네|다섯)\s*(잔|개|컵)/);
  const count=counted?Number(counted[1])||NUMBER_WORDS[counted[1]]||0:0;
  const place=/여기서|매장|먹고\s*갈|마시고\s*갈|앉아서|안에서/.test(t)?'here':/가져|포장|테이크\s*아웃|들고\s*갈/.test(t)?'togo':'none';
