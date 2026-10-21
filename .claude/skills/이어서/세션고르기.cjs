@@ -20,10 +20,15 @@
  *   - 워크트리      완료로 끝난 워크트리 세션만 git status·rev-list·cherry로 미커밋·미푸시를 센다(읽기만).
  * 지금 일하는 중인지는 기록에 남지 않아서, 스킬이 list_sessions의 isRunning을 --busy로 넘긴다.
  * 5시간 한도와 이 세션의 권한 모드도 스킬이 get_usage·get_session("self")로 읽어 --한도·--한도풀림·--내모드로 넘긴다.
+ * --받았나(4단계)는 보낸 글을 받지 못한(undelivered) 세션만 본다. 보낸 뒤의 앱 로그 줄(CLI가 떴는지·차례가 돌았는지·묶였는지),
+ * 대화 원문의 대기열(queue-operation)·user·assistant 줄, 세션 기록(보관됐는지)을 3초마다 다시 읽고, 아무것도 쓰지 않는다.
  *
  *   node 세션고르기.cjs --self <local_…> --busy <id,id,…> [--전부] [--한도 <5시간 사용 %> --한도풀림 <ISO 시각>] [--내모드 <모드>]
+ *   node 세션고르기.cjs --self <local_…> --받았나 <id,id,…> --보낸때 <ISO 시각> [--다시보낸뒤] [--상한 <초>]
+ *                        (4단계 — undelivered 세션이 받았는지 가르고, CLI는 떴는데 글을 잃어버린 세션을 다시보냄에 둔다)
  *   node 세션고르기.cjs … --기록 <계정/조직 폴더> --원문 <projects 폴더> --로그 <logs 폴더> --지금 <ISO 시각>
- *                        [--미룸파일 <경로>]   (시험·점검용 — --기록을 주면 --미룸파일 없이는 미룸 파일을 읽지도 쓰지도 않는다)
+ *                        [--미룸파일 <경로>]   (시험·점검용 — --기록을 주면 --미룸파일 없이는 미룸 파일을 읽지도 쓰지도 않는다.
+ *                        받았나에 --지금을 주면 기다리지 않고 그 시각에 한 번만 가른다)
  *
  * 판정 순서(위가 먼저): 일하는중 → 유호님차례 → (막 움직임)일하는중 → 끊긴 세션 보냄 → 직접멈춤 → 방금끝남 → 보관 → 오래쉼 → 보냄.
  * 승인 대기를 끊김보다 먼저 본다. 앱은 새 차례를 시작할 때 요약·마무리 상자를 지우므로(app.asar Zk→Yk)
@@ -70,7 +75,8 @@
  *   방금끝남    끊김 없이 10분 안에 끝났다 — 유호님과 대화 중일 수 있어 건드리지 않는다
  *   오래쉼      마지막 활동이 7일보다 오래됐다 — --전부면 보냄
  * 보냄·직접입력·한도대기에는 문맥(마지막 응답의 문맥 크기, 만 토큰)과 몫(깨우면 쓸 5시간 한도 어림 %)을 붙인다.
- * 한도는 넘겨받은 5시간 한도와 나눠 깨운 셈(사용·풀림·여유·남길·보낸몫·미룸)이다.
+ * 한도는 넘겨받은 5시간 한도와 나눠 깨운 셈(사용·풀림·여유·남길·보낸몫·미룸)이다. 지금은 고른 시각이다 — 4단계 받았나의 --보낸때로 넘긴다.
+ * 받았나 출력은 받음·움직임·다시보냄·전달안됨(--지금이면 기다림도)과 다음 받았나의 --보낸때로 넘길 지금이다(판정은 받았나판정 머리말).
  */
 
 const { execFileSync } = require('child_process');
@@ -96,6 +102,8 @@ const 답없음문구 = /^No response requested\.?$/;
 /* 원문 끝에서 메시지 줄을 찾을 때까지 읽는 범위를 늘린다. 끝까지 못 찾으면 「모름」. */
 const 읽기단계 = [1, 4, 16, 32].map((mb) => mb * 1024 * 1024);
 const 로그최대 = 32 * 1024 * 1024;
+/* 앱 로그 한 줄 — 「2026-10-20 19:22:00 [info] 글」(시각은 이 PC 시간대, 초 단위). */
+const 로그한줄 = /^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) \[\w+\] (.*)$/;
 const 기다림상태 = new Set(['blocked', 'need_input']);
 /* 나눠 깨우기 — 10-20 20:42 계정 전환 뒤 33분 동안 세션 37개가 5시간 한도 66%를 썼다. 원문 usage를 입력값으로 환산하면
  * (캐시 쓰기 ×2, 캐시 읽기 ×0.1, 출력 ×5) 1.32억 — 1%가 약 200만이다. 깨운 세션은 첫 호출에 문맥 전체를 캐시 없이 다시 쓰고
@@ -354,7 +362,7 @@ function 로그읽기(로그파일들) {
     let 종료시각 = -Infinity; // 마지막 종료 정리·로그아웃 줄
     const 같은때 = new Map(); // id → 5초 안의 Stop·Esc 사건(「Interrupting」「Stopping」이 그 뒤에 붙어 찍힌다)
     for (const 줄 of 줄들) {
-      const m = 줄.match(/^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) \[\w+\] (.*)$/);
+      const m = 줄.match(로그한줄);
       if (!m) continue;
       const 시각 = 로그시각(m[1]);
       const 글 = m[2];
@@ -781,6 +789,12 @@ function 날짜(ms) {
   return d.toISOString().slice(5, 16).replace('T', ' ');
 }
 
+/** 초까지 적은 KST 시각(「09:31:07」) — 받았나가 CLI가 뜬 때·받은 때를 보일 때 쓴다. */
+function 시각표시(ms) {
+  if (!ms) return '';
+  return new Date(ms + 9 * 60 * 분).toISOString().slice(11, 19);
+}
+
 /**
  * 세션마다 칸을 정한다.
  * @param {object[]} 기록들 보관되지 않은 세션 기록(이 세션 포함)
@@ -1043,7 +1057,313 @@ function 나누기(기록들, 끝들, 옵션) {
   return { ...칸들, 한도 };
 }
 
+/* ── 받았나(4단계 다시 보내기) ─────────────────────────────────────────── */
+
+/* send_message가 undelivered(「20초 안에 시작 신호 없음」)를 낸 세션이 그 글을 받았는지, 한 번 더 보내야 하는지 가른다(10-21).
+ * 일괄 재개 때 앱이 다시 띄운 CLI에 「이어서 해」를 넘기지 않고 잃어버리는 일이 있다 — 곁 세션 7ba52375가 10-20 22:07·
+ * 10-21 06:58·09:31에 그랬다. 세 번 모두 CLI는 3~9초 만에 떴고(앱 로그 Mapping internal session·CycleHealth …
+ * hadFirstResponse=false·Starting idle timeout), CLI 대기열(원문 queue-operation)에는 끊긴 백그라운드 작업 알림만 들어갔다가
+ * 나왔다. 받은 00:27에는 알림 1.2초 뒤에 /이어서 글이 들어갔다. 몇 분 뒤 다시 보낸 글은 바로 차례를 열었다(07:04:52·09:32:06).
+ * 그래서 CLI가 떴다는 줄을 기다렸다가 그 뒤에도 차례가 없으면 한 번만 더 보낸다.
+ *   - start-timing 줄은 첫 응답이 나와야 찍히고, 그 init은 CLI가 뜬 시간이 아니라 첫 글이 실제로 들어가기까지의 시간이다
+ *     (778083·370501·64971ms의 끝이 다음 글이 들어온 22:20:32·07:04:52·09:32:06과 같다). 차례가 돌았다는 증거로만 쓴다.
+ *   - 실제로 늦게 뜬 CLI는 늦게라도 받았다(10-21 09:36~09:39 원격 제어 연결이 60초 막혀 70~110초) — 곧바로 다시 보내지 않는다.
+ *   - 모드 맞춤으로 묶인 글(앱 로그 CLI undelivered·refused input, peer input … drew no acknowledgement — 45초 뒤부터 찍힌다)은
+ *     다시 보내도 또 묶이므로 보내지 않는다. */
+const 받았나유예 = 15 * 1000; // CLI가 뜬 뒤 차례가 열리기를 기다리는 몫(00:27에 받을 때는 뜬 지 1초 안에 열렸다)
+const 받았나최소 = 50 * 1000; // 보낸 뒤 이만큼은 기다린다 — 묶인 글은 45초 뒤에야 로그에 찍힌다
+const 받았나상한 = 5 * 분; // 보낸 뒤 이만큼 지나도 CLI가 뜨지 않으면 다시 보내지 않는다
+const 받았나간격 = 3 * 1000;
+const 보낸이꼴 = /<cross-session-message from="(local_[0-9a-f-]+)"/;
+
+/**
+ * 앱 로그에서 이후(로그는 초 단위라 2초를 덜어 본다)부터 까지 사이에 쓰인 줄만 { 시각, 글 }로, 시각순. 끝에서부터 읽는 범위를
+ * 늘린다. 까지는 --지금으로 지난 일괄을 되짚을 때 그 뒤 줄을 빼려고 둔다.
+ */
+function 로그줄뒤(로그파일들, 이후, 까지 = Infinity) {
+  const 기준 = 이후 - 2000;
+  const 줄들 = [];
+  for (const 파일 of 로그파일들) {
+    if (바뀐시각(파일) < 기준) continue;
+    for (const 바이트 of 읽기단계) {
+      let 읽음;
+      try {
+        읽음 = 끝읽기(파일, 바이트);
+      } catch {
+        break;
+      }
+      let 덮음 = 읽음.처음까지 || 바이트 === 읽기단계[읽기단계.length - 1];
+      const 이번 = [];
+      for (const 줄 of 읽음.글.split(/\r?\n/)) {
+        const m = 줄.match(로그한줄);
+        if (!m) continue;
+        const 시각 = 로그시각(m[1]);
+        if (시각 < 기준) 덮음 = true;
+        else if (시각 <= 까지) 이번.push({ 시각, 글: m[2] });
+      }
+      if (!덮음) continue;
+      줄들.push(...이번);
+      break;
+    }
+  }
+  return 줄들.sort((a, b) => a.시각 - b.시각);
+}
+
+/**
+ * 받았나 — 보낸 뒤 앱 로그에 찍힌 세션마다의 첫 사건 시각.
+ *   떴음  CLI가 떠 있다: Mapping internal session(글을 넘길 때도 찍힌다)·첫 응답 없이 끝난 CycleHealth 주기·Starting idle timeout
+ *   차례  차례가 돌았다: start-timing(새 CLI의 첫 응답 — init도 남긴다)·Stop hook Query completed·첫 응답이 있던 주기(오류로 끝나도)
+ *   묶임  다른 세션 글을 승인 대기로 묶었다: CLI undelivered·refused input, peer input … drew no acknowledgement
+ *   CLI들 Mapping 줄의 CLI 세션 id(원문 파일 이름)
+ */
+function 받았나로그사건(줄들, ids) {
+  const 사건들 = new Map(ids.map((id) => [id, { CLI들: new Set() }]));
+  for (const { 시각, 글 } of 줄들) {
+    const 사건 = 사건들.get((글.match(/local_[0-9a-f-]{36}/) || [])[0]);
+    if (!사건) continue;
+    const 첫 = (칸) => {
+      if (사건[칸] === undefined) 사건[칸] = 시각;
+    };
+    let m;
+    if ((m = 글.match(/^Mapping internal session local_\S+ to CLI session ([0-9a-f-]{36})/))) {
+      사건.CLI들.add(m[1]);
+      첫('떴음');
+    } else if ((m = 글.match(/^\[CCD CycleHealth\] \w+ cycle for local_\S+ \(\d+s, hadFirstResponse=(true|false)/))) {
+      첫(m[1] === 'true' ? '차례' : '떴음');
+    } else if (/^\[WarmLifecycle:\w+\] Starting idle timeout for local_/.test(글)) 첫('떴음');
+    else if ((m = 글.match(/^\[CCD start-timing\] local_\S+ .*?\binit=(\d+)ms/))) {
+      첫('차례');
+      if (사건.init === undefined) 사건.init = Number(m[1]);
+    } else if (/^\[Stop hook\] Query completed for session local_/.test(글)) 첫('차례');
+    else if (/^\[LocalSessionManager\] (?:CLI (?:undelivered|refused) input|peer input) \S+ for local_/.test(글)) 첫('묶임');
+  }
+  return 사건들;
+}
+
+/**
+ * 받았나 — 보낸 뒤 대화 원문에 쓰인 사건의 첫 시각.
+ *   받음  이 세션이 보낸 글이 CLI에 들어왔다: 대기열 enqueue나 user 줄의 <cross-session-message from="<이 세션>">
+ *   차례  다른 글로 차례가 돌았다: 사람·다른 세션 글, 실제 응답과 API 오류 응답
+ *   떴음  CLI가 대기열을 썼다 — 다시 뜬 CLI는 끊긴 백그라운드 작업 알림을 차례 없이 넣고 뺀다(06:58·09:31)
+ * 끊긴 작업 알림(task-notification)·도구 결과(보정 줄)·「No response requested.」·메타 줄은 차례로 치지 않는다.
+ * 대기열의 remove는 차례 도중에 글을 끼워 넣은 것이라 enqueue만 본다. 까지보다 늦은 줄은 뺀다(로그줄뒤와 같다).
+ */
+function 받았나원문사건(파일, 이후, self, 까지 = Infinity) {
+  const 기준 = 이후 - 2000;
+  const 사건 = {};
+  const 첫 = (칸, 시각) => {
+    if (사건[칸] === undefined || 시각 < 사건[칸]) 사건[칸] = 시각;
+  };
+  for (const 바이트 of 읽기단계) {
+    const { 글, 처음까지 } = 끝읽기(파일, 바이트);
+    let 덮음 = 처음까지 || 바이트 === 읽기단계[읽기단계.length - 1];
+    const 뒤 = [];
+    for (const 줄 of 글.split('\n')) {
+      if (!줄.startsWith('{')) continue;
+      let j;
+      try {
+        j = JSON.parse(줄);
+      } catch {
+        continue;
+      }
+      const 시각 = Date.parse(j.timestamp) || 0;
+      if (!시각) continue;
+      if (시각 < 기준) 덮음 = true;
+      else if (시각 <= 까지) 뒤.push([j, 시각]);
+    }
+    if (!덮음) continue;
+    for (const [j, 시각] of 뒤) {
+      if (j.type === 'queue-operation') {
+        첫('떴음', 시각);
+        if (j.operation === 'enqueue' && (String(j.content || '').match(보낸이꼴) || [])[1] === self) 첫('받음', 시각);
+        continue;
+      }
+      if (!j.message) continue;
+      if (j.type === 'assistant') {
+        const 보정 = j.message.model === '<synthetic>' || 답없음문구.test(글만(j).trim());
+        if (j.isApiErrorMessage || !보정) 첫('차례', 시각);
+        continue;
+      }
+      if (j.type !== 'user') continue;
+      const o = j.origin || {};
+      const 내용 = 글만(j);
+      const 보낸이 = (o.kind === 'peer' && o.from) || (내용.match(보낸이꼴) || [])[1];
+      if (보낸이 === self) {
+        첫('받음', 시각);
+        continue;
+      }
+      const 작업알림 = o.kind === 'task-notification' || /^\s*<task-notification>/.test(내용);
+      const 도구결과 = 블록들(j).some((b) => b.type === 'tool_result');
+      if (!작업알림 && !도구결과 && (보낸이 || o.kind === 'peer' || o.kind === 'human' || (!j.isMeta && 내용.trim()))) 첫('차례', 시각);
+    }
+    break;
+  }
+  return 사건;
+}
+
+/**
+ * 받았나 판정 — 보낸 뒤(이후)의 사건과 지금 시각으로 세션 하나를 가른다.
+ *   받음     보낸 글이 CLI에 들어왔다(늦게라도) — 다시 보내지 않는다
+ *   움직임   다른 글로 차례가 돌았거나 그 사이 보관됐다 — 이미 일을 시작했으니 다시 보내지 않는다
+ *   묶임     모드 맞춤으로 승인 대기에 묶였다 — 다시 보내도 또 묶이므로 보내지 않는다
+ *   모름     세션 기록이 없다 — 보내지 않는다
+ *   다시보냄 CLI가 떴는데 뜬 뒤 유예(15초)·보낸 뒤 최소(50초)가 지나도 차례가 없다 — 글을 잃어버렸으니 한 번 더 보낸다
+ *   안뜸     보낸 뒤 상한(5분)이 지나도 CLI가 뜨지 않았다 — 다시 보내지 않는다
+ *   기다림   아직 가를 수 없다
+ */
+function 받았나판정(사건, { 이후, 지금, 유예 = 받았나유예, 최소 = 받았나최소, 상한 = 받았나상한 }) {
+  if (사건.받음 !== undefined) return { 판: '받음', 시각: 사건.받음 };
+  if (사건.보관됨) return { 판: '움직임', 까닭: '그 사이 보관됨' };
+  if (사건.차례 !== undefined) return { 판: '움직임', 시각: 사건.차례, 까닭: '보낸 글 말고 다른 글로 차례가 돎' };
+  if (사건.묶임 !== undefined) return { 판: '묶임', 시각: 사건.묶임 };
+  if (사건.기록없음) return { 판: '모름' };
+  if (사건.떴음 !== undefined) {
+    return 지금 >= Math.max(사건.떴음 + 유예, 이후 + 최소) ? { 판: '다시보냄', 떴음: 사건.떴음 } : { 판: '기다림' };
+  }
+  return 지금 >= 이후 + 상한 ? { 판: '안뜸' } : { 판: '기다림' };
+}
+
+/** 받았나 — 세션마다 보낸 뒤(이후~까지)의 사건을 앱 로그·세션 기록·대화 원문에서 모은다. 찾은 원문 경로는 캐시에 둔다. */
+function 받았나모으기(ids, { self, 이후, 까지 = Infinity, 로그파일들, 기록폴더, 원문뿌리, 캐시 = new Map() }) {
+  const 로그 = 받았나로그사건(로그줄뒤(로그파일들, 이후, 까지), ids);
+  const 사건들 = new Map();
+  for (const id of ids) {
+    const { CLI들, ...사건 } = 로그.get(id);
+    const 기록파일 = path.join(기록폴더, `${id}.json`);
+    let 기록 = null;
+    try {
+      /* 몇 개만 읽으니 보관된 기록도 파싱한다(보고에 제목을 남긴다). */
+      const j = JSON.parse(fs.readFileSync(기록파일, 'utf8'));
+      if (j.title) 사건.제목 = j.title;
+      if (j.isArchived === true) 사건.보관됨 = true;
+      else 기록 = j;
+    } catch {
+      /* 앱·미러가 쓰는 중이라 깨져 보이면 이번에는 건너뛰고 다음에 다시 읽는다 */
+      if (!fs.existsSync(기록파일)) 사건.기록없음 = true;
+    }
+    const cli들 = new Set([...(기록 && 기록.cliSessionId ? [기록.cliSessionId] : []), ...CLI들]);
+    for (const cli of cli들) {
+      const 열쇠 = `${id}|${cli}`;
+      if (!캐시.get(열쇠)) {
+        const p = 원문찾기(원문뿌리, { ...(기록 || {}), cliSessionId: cli });
+        if (p) 캐시.set(열쇠, p);
+      }
+      const 파일 = 캐시.get(열쇠);
+      if (!파일) continue;
+      let 원;
+      try {
+        원 = 받았나원문사건(파일, 이후, self, 까지);
+      } catch {
+        continue;
+      }
+      for (const [칸, 시각] of Object.entries(원)) if (사건[칸] === undefined || 시각 < 사건[칸]) 사건[칸] = 시각;
+    }
+    사건들.set(id, 사건);
+  }
+  return 사건들;
+}
+
+/**
+ * 받았나 — 세션을 모두 가를 때까지 간격마다 다시 모아 판정한다. 끝(보낸 뒤 상한 + 유예)이 되면 멈추고, 그때도 기다림인 세션은
+ * CLI가 떴으면 다시보냄, 아니면 안뜸으로 둔다. 한번이면(--지금 — 시험·점검) 한 번만 보고 기다림을 그대로 둔다.
+ * 모으기(남은 id들, 지금) → id별 사건. 도구.시계·도구.잠깐은 시험이 바꿔 끼운다.
+ */
+function 받았나기다리기(ids, 모으기, 옵션, 도구 = {}) {
+  const 시계 = 도구.시계 || Date.now;
+  const 쉬기 = 도구.잠깐 || 잠깐;
+  const { 이후 } = 옵션;
+  const 유예 = 옵션.유예 ?? 받았나유예;
+  const 최소 = 옵션.최소 ?? 받았나최소;
+  const 상한 = 옵션.상한 ?? 받았나상한;
+  const 간격 = 옵션.간격 ?? 받았나간격;
+  /* 상한 직전에 뜬 CLI도 유예까지는 본다. --보낸때를 늦게 넘겨도 이 실행이 상한 + 유예를 넘기지 않는다. */
+  const 끝 = Math.min(이후, 시계()) + 상한 + 유예 + 간격;
+  const 판들 = new Map();
+  let 사건들 = new Map();
+  for (;;) {
+    const 지금 = 시계();
+    const 남은 = ids.filter((id) => !판들.has(id));
+    사건들 = 모으기(남은, 지금);
+    for (const id of 남은) {
+      const 사건 = 사건들.get(id) || {};
+      const 판 = 받았나판정(사건, { 이후, 지금, 유예, 최소, 상한 });
+      if (판.판 !== '기다림') 판들.set(id, { ...판, 사건 });
+    }
+    if (판들.size === ids.length || 옵션.한번 || 지금 >= 끝) break;
+    쉬기(간격);
+  }
+  for (const id of ids) {
+    if (판들.has(id) || 옵션.한번) continue;
+    const 사건 = 사건들.get(id) || {};
+    판들.set(id, 사건.떴음 !== undefined ? { 판: '다시보냄', 떴음: 사건.떴음, 사건 } : { 판: '안뜸', 사건 });
+  }
+  return 판들;
+}
+
+/**
+ * 4단계 받았나 — undelivered 세션이 받았는지 가르고, 한 번 더 보낼 세션(다시보냄)을 고른다.
+ * 다시보낸뒤(두 번째로 보낸 뒤)에는 세 번째를 보내지 않으므로 다시보냄도 전달안됨으로 둔다.
+ */
+function 받았나실행(옵션, env) {
+  const self = 아이디(옵션.self);
+  const ids = [...new Set(String(옵션.받았나).split(/[\s,]+/).filter(Boolean).map(아이디))];
+  if (!ids.length) return { ok: false, 까닭: '--받았나에 가를 세션이 없습니다. send_message가 undelivered를 낸 세션 id를 쉼표로 넘기세요.' };
+  const 이후 = Date.parse(옵션.보낸때 || '');
+  if (!Number.isFinite(이후)) {
+    return { ok: false, 까닭: `--보낸때를 시각으로 읽지 못했습니다: ${옵션.보낸때 || '(빈 값)'} — 3단계(두 번째면 앞 받았나) 출력의 지금을 넘기세요.` };
+  }
+  const 고정 = 옵션.지금 ? Date.parse(옵션.지금) : null;
+  if (옵션.지금 && !Number.isFinite(고정)) return { ok: false, 까닭: `--지금 값을 시각으로 읽지 못했습니다: ${옵션.지금}` };
+  const 시계 = 고정 !== null ? () => 고정 : Date.now;
+  if (이후 > 시계() + 분) return { ok: false, 까닭: `--보낸때가 지금보다 늦습니다: ${옵션.보낸때}` };
+  const 상한 = 옵션.상한 === undefined ? 받았나상한 : Number(옵션.상한) * 1000;
+  if (!(상한 > 0)) return { ok: false, 까닭: `--상한(초) 값을 읽지 못했습니다: ${옵션.상한 || '(빈 값)'}` };
+
+  const 로그목록 = () =>
+    옵션.로그 ? 목록(옵션.로그).filter((f) => /^main\d*\.log$/i.test(f)).map((f) => path.join(옵션.로그, f)) : 옵션.기록 ? [] : 로그후보(env);
+  let 폴더 = 옵션.기록;
+  if (!폴더) {
+    const 찾음 = 지금계정폴더({ 뿌리들: 세션뿌리후보(env), 로그인: 로그읽기(로그목록()).로그인 });
+    if (!찾음) return { ok: false, 까닭: '앱 세션 기록 폴더(claude-code-sessions)를 찾지 못했습니다.' };
+    폴더 = 찾음.폴더;
+  }
+  const 원문뿌리 = 옵션.원문 || path.join(env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude'), 'projects');
+  const 캐시 = new Map();
+  const 제목들 = new Map();
+  let 로그없음 = false;
+  const 모으기 = (남은, 까지) => {
+    const 로그파일들 = 로그목록();
+    if (!로그파일들.length && !옵션.기록) 로그없음 = true;
+    const 사건들 = 받았나모으기(남은, { self, 이후, 까지, 로그파일들, 기록폴더: 폴더, 원문뿌리, 캐시 });
+    for (const [id, 사건] of 사건들) if (사건.제목) 제목들.set(id, 사건.제목);
+    return 사건들;
+  };
+  const 판들 = 받았나기다리기(ids, 모으기, { 이후, 상한, 한번: 고정 !== null }, { 시계 });
+
+  const 결과 = { ok: true, 차례: 옵션.다시보낸뒤 ? 2 : 1, 지금: new Date(시계()).toISOString(), 받음: [], 움직임: [], 다시보냄: [], 전달안됨: [], 기다림: [], 알림: [] };
+  const 상한글 = 상한 % 분 === 0 ? `${상한 / 분}분` : `${Math.round(상한 / 1000)}초`;
+  for (const id of ids) {
+    const 판 = 판들.get(id) || { 판: '기다림' };
+    const 사건 = 판.사건 || {};
+    const s = { id, 제목: 제목들.get(id) || '(제목 없음)' };
+    if (사건.init !== undefined) s.init = `${Math.round(사건.init / 1000)}초`;
+    if (판.판 === '받음') 결과.받음.push({ ...s, 받은때: 시각표시(판.시각) });
+    else if (판.판 === '움직임') 결과.움직임.push({ ...s, 까닭: 판.까닭 });
+    else if (판.판 === '다시보냄' && !옵션.다시보낸뒤) 결과.다시보냄.push({ ...s, 떴음: 시각표시(판.떴음) });
+    else if (판.판 === '다시보냄') 결과.전달안됨.push({ ...s, 까닭: '다시 보낸 글도 CLI에 들어가지 않음(CLI는 떠 있음)' });
+    else if (판.판 === '묶임') 결과.전달안됨.push({ ...s, 까닭: '다른 세션 글을 승인 대기로 묶음(모드 맞춤) — 다시 보내도 또 묶여서 보내지 않음' });
+    else if (판.판 === '안뜸') 결과.전달안됨.push({ ...s, 까닭: `보낸 뒤 ${상한글} 안에 CLI가 뜨지 않음` });
+    else if (판.판 === '모름') 결과.전달안됨.push({ ...s, 까닭: '세션 기록을 찾지 못함' });
+    else 결과.기다림.push(s);
+  }
+  if (로그없음) 결과.알림.push('앱 로그(main.log)를 찾지 못해 대화 원문만으로 가렸습니다 — CLI가 떴는지 몰라 상한까지 기다렸을 수 있습니다.');
+  return 결과;
+}
+
 /* ── 실행 ─────────────────────────────────────────────────────────────── */
+
+/* 값을 받는 인자 가운데 값이 빠질 수 있는 것(빈 인자를 빼는 PowerShell 5.1 등) — 빠졌으면 다음 인자를 값으로 먹지 않는다. */
+const 값인자 = { '--한도': '한도', '--한도풀림': '한도풀림', '--내모드': '내모드', '--받았나': '받았나', '--보낸때': '보낸때', '--상한': '상한' };
 
 function 인자읽기(argv) {
   const 옵션 = { 전부: false };
@@ -1061,14 +1381,11 @@ function 인자읽기(argv) {
       if (v === undefined || v.startsWith('--')) 옵션.busy = '';
       else 옵션.busy = 다음();
     } else if (a.startsWith('--busy=')) 옵션.busy = a.slice('--busy='.length);
-    else if (a === '--한도' || a === '--한도풀림' || a === '--내모드') {
-      /* 값이 빠졌으면(빈 인자를 뺀 PowerShell 5.1 등) 다음 인자를 값으로 먹지 않는다. */
+    else if (Object.hasOwn(값인자, a)) {
       const v = argv[i + 1];
-      const 값 = v === undefined || v.startsWith('--') ? '' : 다음();
-      if (a === '--한도') 옵션.한도 = 값;
-      else if (a === '--한도풀림') 옵션.한도풀림 = 값;
-      else 옵션.내모드 = 값;
-    } else if (a === '--전부' || a === '--all') 옵션.전부 = true;
+      옵션[값인자[a]] = v === undefined || v.startsWith('--') ? '' : 다음();
+    } else if (a === '--다시보낸뒤') 옵션.다시보낸뒤 = true;
+    else if (a === '--전부' || a === '--all') 옵션.전부 = true;
     else if (a === '--기록') 옵션.기록 = 다음();
     else if (a === '--원문') 옵션.원문 = 다음();
     else if (a === '--로그') 옵션.로그 = 다음();
@@ -1085,10 +1402,14 @@ function 실행(argv = process.argv.slice(2), env = process.env) {
   if (옵션.도움말) {
     return {
       ok: true,
-      도움말: '세션고르기.cjs --self <local_…> --busy <id,id,…> [--전부] [--한도 <5시간 사용 %> --한도풀림 <ISO 시각>] [--내모드 <권한 모드>]',
+      도움말: [
+        '세션고르기.cjs --self <local_…> --busy <id,id,…> [--전부] [--한도 <5시간 사용 %> --한도풀림 <ISO 시각>] [--내모드 <권한 모드>]',
+        '세션고르기.cjs --self <local_…> --받았나 <id,id,…> --보낸때 <ISO 시각> [--다시보낸뒤] [--상한 <초>]',
+      ].join('\n'),
     };
   }
   if (!옵션.self) return { ok: false, 까닭: '--self(이 세션 id)가 없습니다. get_session("self")의 sessionId를 넘기세요.' };
+  if (옵션.받았나 !== undefined) return 받았나실행(옵션, env);
   if (옵션.busy === undefined) {
     return { ok: false, 까닭: '--busy가 없습니다. 지금 일하는 세션을 모르면 고르지 않습니다. 없으면 --busy ""로 넘기세요.' };
   }
@@ -1249,7 +1570,17 @@ function 실행(argv = process.argv.slice(2), env = process.env) {
   if (메시지없음) 알림.push(`대화 원문 끝 32MB 안에서 메시지를 못 찾은 세션 ${메시지없음}개는 앱 기록만으로 판정했습니다.`);
   const 모르는busy = 일하나판(busy).목록.filter((b) => !기록들.some((r) => r.sessionId === b || r.sessionId.startsWith(b)));
   if (모르는busy.length) 알림.push(`--busy에 있지만 기록에 없는 세션 ${모르는busy.length}개(보관됐거나 다른 계정 폴더).`);
-  return { ok: true, 기록폴더: 폴더, 폴더근거: 근거, 세션수: 기록들.length - 1, 앱켜진지초: 켜진지초, ...칸들, 기억, 알림 };
+  return {
+    ok: true,
+    지금: new Date(지금).toISOString(),
+    기록폴더: 폴더,
+    폴더근거: 근거,
+    세션수: 기록들.length - 1,
+    앱켜진지초: 켜진지초,
+    ...칸들,
+    기억,
+    알림,
+  };
 }
 
 if (require.main === module) {
@@ -1282,5 +1613,10 @@ module.exports = {
   마지막로그인,
   로그읽기,
   로그후보,
+  로그줄뒤,
+  받았나로그사건,
+  받았나원문사건,
+  받았나판정,
+  받았나기다리기,
   실행,
 };

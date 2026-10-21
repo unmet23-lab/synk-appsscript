@@ -768,6 +768,7 @@ test('실행: 기록·원문 폴더를 읽어 칸을 나누고, --busy·이 세�
   assert.equal(결과.보냄.find((s) => s.제목 === '한도').이유, '사용량 한도로 끊김');
   assert.equal(결과.보냄.find((s) => s.제목 === '재시작').이유, '앱 재시작·계정 전환으로 끊김');
   assert.equal(결과.보냄.find((s) => s.제목 === '재시작').워크트리, true);
+  assert.equal(결과.지금, new Date(지금).toISOString(), '고른 시각 — 4단계 받았나의 --보낸때로 넘긴다');
   assert.ok(결과.알림.some((a) => a.includes('원문을 못 찾은 세션 2개')), JSON.stringify(결과.알림));
   assert.ok(결과.알림.some((a) => a.includes('5시간 한도를 넘겨받지 않아')), '--한도가 없으면 나눠 깨우지 않았다고 알린다');
   assert.equal(결과.한도, null);
@@ -1012,4 +1013,285 @@ test('워크트리상태: git으로 미커밋·미푸시를 세고, 다시 쌓�
   assert.deepEqual(상태(), { 깨끗: true, 미커밋: 0, 미푸시: 0 });
   assert.deepEqual(고르기.워크트리상태({ cwd: path.join(바탕, '.claude', 'worktrees', '없음') }), { 깨끗: false, 까닭: '폴더를 찾지 못함' });
   assert.deepEqual(고르기.워크트리상태({ cwd: 'C:\\work\\repo' }), { 깨끗: false, 까닭: '폴더를 찾지 못함' }, '워크트리가 아닌 폴더는 보지 않는다');
+});
+
+/* ── 받았나(4단계 다시 보내기) ─────────────────────────────────────────── */
+
+const 초 = 1000;
+/* 앱 로그는 이 PC 시간대로 초까지 적는다(스크립트도 PC 시간대로 읽는다). */
+function 로그때(ms) {
+  const d = new Date(ms);
+  const p = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
+const 로그줄 = (뒤초, 글, 수준 = 'info') => `${로그때(지금 + 뒤초 * 초)} [${수준}] ${글}`;
+const 원문때 = (뒤초) => new Date(지금 + 뒤초 * 초).toISOString();
+const 대기열 = (뒤초, operation, content) => ({ type: 'queue-operation', operation, timestamp: 원문때(뒤초), sessionId: 'x', ...(content ? { content } : {}) });
+const 세션글 = (보낸이, 본문) => `<cross-session-message from="${보낸이}" name="이어서">\n${본문}\n</cross-session-message>`;
+const 다른세션글 = (뒤초, 보낸이, 본문) => ({
+  type: 'user',
+  isMeta: true,
+  timestamp: 원문때(뒤초),
+  origin: { kind: 'peer', from: 보낸이, hostInjected: true, fromMode: 'bypass' },
+  message: { role: 'user', content: `Another Claude session sent a message:\n${세션글(보낸이, 본문)}` },
+});
+const 작업알림 =
+  "<task-notification>\n<task-id>bstxvwyj7</task-id>\n<status>stopped</status>\n<summary>Background shell command didn't finish before the previous session ended</summary>\n</task-notification>";
+const 실제답 = (글, 뒤초) => ({ ...답(글, 지금 + 뒤초 * 초), message: { role: 'assistant', model: 'claude-opus-5-5', content: [{ type: 'text', text: 글 }] } });
+
+test('받았나판정: 받았거나 다른 차례가 돌았으면 다시 보내지 않고, CLI가 떴는데 차례가 없을 때만 한 번 더 보낸다', () => {
+  const 판 = (사건, 뒤초) => 고르기.받았나판정(사건, { 이후: 지금, 지금: 지금 + 뒤초 * 초 }).판;
+  assert.equal(판({ 떴음: 지금 + 5 * 초, 받음: 지금 + 40 * 초 }, 60), '받음', '늦게라도 받았으면 건너뛴다');
+  assert.equal(판({ 떴음: 지금 + 5 * 초, 차례: 지금 + 30 * 초 }, 60), '움직임', '다른 글로 이미 일을 시작했으면 건너뛴다');
+  assert.equal(판({ 보관됨: true }, 60), '움직임');
+  assert.equal(판({ 떴음: 지금 + 2 * 초, 묶임: 지금 + 45 * 초 }, 60), '묶임', '모드 맞춤으로 묶인 글은 다시 보내도 또 묶인다');
+  assert.equal(판({ 기록없음: true }, 60), '모름');
+  /* 10-21 06:58·09:31 — CLI는 몇 초 만에 떴는데 그 글이 들어가지 않았다. 보낸 뒤 50초·뜬 뒤 15초를 채우면 다시 보낸다. */
+  assert.equal(판({ 떴음: 지금 + 5 * 초 }, 30), '기다림', '묶인 글은 45초 뒤에야 로그에 찍히니 50초는 기다린다');
+  assert.equal(판({ 떴음: 지금 + 5 * 초 }, 50), '다시보냄');
+  assert.equal(판({ 떴음: 지금 + 45 * 초 }, 55), '기다림', '막 뜬 CLI에는 차례가 열릴 틈을 준다');
+  assert.equal(판({ 떴음: 지금 + 45 * 초 }, 60), '다시보냄');
+  /* 늦게 뜨는 CLI(원격 제어 연결이 60초 막힘)는 늦게라도 받으니 상한까지 기다리고, 그래도 안 뜨면 다시 보내지 않는다. */
+  assert.equal(판({}, 120), '기다림');
+  assert.equal(판({}, 299), '기다림');
+  assert.equal(판({}, 300), '안뜸');
+});
+
+test('받았나로그사건: 보낸 뒤 앱 로그에서 CLI가 뜬 줄·차례가 돈 줄·묶인 줄을 세션마다 첫 시각으로 뽑는다', (t) => {
+  const 바탕 = 임시폴더();
+  t.after(() => fs.rmSync(바탕, { recursive: true, force: true }));
+  const [잃음, 늦게, 묶임, 오류차례, 남] = [새id(), 새id(), 새id(), 새id(), 새id()];
+  const cli = '95cb97e0-ad98-4107-9739-129b7179ca86';
+  const 입력 = '192ef09a-066d-483d-995d-05a8373c19c9';
+  const 로그 = path.join(바탕, 'main.log');
+  fs.writeFileSync(
+    로그,
+    [
+      /* 보내기 전의 줄은 세지 않는다 */
+      로그줄(-90, `[Stop hook] Query completed for session ${잃음}`),
+      로그줄(-90, `Mapping internal session ${잃음} to CLI session ${cli}`),
+      /* 10-21 09:31 그대로 — CLI는 6초 만에 떴고 첫 응답 없이 주기가 끝나 쉬었다 */
+      로그줄(0, `Resuming session ${잃음} in C:\\work\\repo`),
+      로그줄(3, `[CCD CycleHealth] unhealthy cycle for ${오류차례} (3s, hadFirstResponse=true, reason=api_error)`),
+      로그줄(4, `[Stop hook] Query completed for session ${남}`),
+      로그줄(6, `Mapping internal session ${잃음} to CLI session ${cli}`),
+      로그줄(6, `[CCD CycleHealth] healthy cycle for ${잃음} (6s, hadFirstResponse=false)`),
+      로그줄(6, `[WarmLifecycle:preview] Starting idle timeout for ${잃음}: 1800s`),
+      로그줄(6, `[CliGovernor] at cap=21; would evict ${잃음} (idle 0s) for user spawn`),
+      로그줄(45, `[LocalSessionManager] CLI undelivered input ${입력} for ${묶임} without running it — settled (hold=false cycle=true next=false)`),
+      로그줄(45, `[LocalSessionManager] peer input ${입력} for ${묶임} drew no acknowledgement from the CLI in 45005ms — settled as undelivered (ownedCycle=true)`, 'warn'),
+      /* 10-21 09:36~09:39처럼 원격 제어 연결이 막혀 늦게 떴지만 받았다 */
+      로그줄(71, `Mapping internal session ${늦게} to CLI session ${cli.replace('95cb', '96cb')}`),
+      로그줄(85, `[CCD start-timing] ${늦게} preflight=27ms worktree=20ms mcp=165ms query=13ms enqueue=62ms init=70479ms first_assistant=14462ms | ccd_overhead=225ms`),
+      '',
+    ].join('\r\n'),
+  );
+  const 사건들 = 고르기.받았나로그사건(고르기.로그줄뒤([로그], 지금), [잃음, 늦게, 묶임, 오류차례]);
+  const 잃은 = 사건들.get(잃음);
+  assert.equal(잃은.떴음, 지금 + 6 * 초);
+  assert.equal(잃은.차례, undefined, '보내기 전의 차례와 첫 응답 없는 주기는 차례가 아니다');
+  assert.deepEqual([...잃은.CLI들], [cli]);
+  assert.equal(사건들.get(늦게).떴음, 지금 + 71 * 초);
+  assert.equal(사건들.get(늦게).차례, 지금 + 85 * 초);
+  assert.equal(사건들.get(늦게).init, 70479, 'init은 첫 글이 실제로 들어가기까지의 시간이라 차례의 증거로만 남긴다');
+  assert.equal(사건들.get(묶임).묶임, 지금 + 45 * 초);
+  assert.equal(사건들.get(오류차례).차례, 지금 + 3 * 초, '오류로 끝났어도 첫 응답이 있었으면 차례가 돌았다');
+  assert.equal(사건들.has(남), false, '묻지 않은 세션은 모으지 않는다');
+  assert.equal(
+    고르기.받았나로그사건(고르기.로그줄뒤([로그], 지금, 지금 + 60 * 초), [늦게]).get(늦게).떴음,
+    undefined,
+    '--지금으로 지난 일괄을 되짚을 때는 그 뒤 줄을 뺀다',
+  );
+  /* 보낸 뒤 쓰인 적 없는 로그 파일(돌려 쓴 옛 main1.log)은 읽지 않는다. */
+  const 옛 = path.join(바탕, 'main1.log');
+  fs.writeFileSync(옛, `${로그줄(10, `[Stop hook] Query completed for session ${잃음}`)}\r\n`);
+  fs.utimesSync(옛, new Date(지금 - 60 * 분), new Date(지금 - 60 * 분));
+  assert.equal(고르기.받았나로그사건(고르기.로그줄뒤([옛, 로그], 지금), [잃음]).get(잃음).차례, undefined);
+});
+
+test('받았나원문사건: 끊긴 작업 알림만 들어간 원문은 떴음뿐이고, 이 세션 글이 대기열에 들어가면 받음, 다른 글로 차례가 돌면 차례다', (t) => {
+  const 바탕 = 임시폴더();
+  t.after(() => fs.rmSync(바탕, { recursive: true, force: true }));
+  const 나 = 'local_aaaaaaaa-0000-4000-8000-000000000000';
+  const 부모 = 'local_bbbbbbbb-0000-4000-8000-000000000000';
+  const 쓰기 = (이름, 줄들) => {
+    const p = path.join(바탕, `${이름}.jsonl`);
+    fs.writeFileSync(p, `${줄들.map((j) => JSON.stringify(j)).join('\n')}\n`);
+    return p;
+  };
+  /* 10-21 06:58·09:31 그대로 — 다시 뜬 CLI가 끊긴 작업 알림만 넣고 뺐고, /이어서 글은 대기열에 없다. */
+  const 잃음 = 쓰기('잃음', [
+    다른세션글(-600, 나, '이어서 해.'),
+    실제답('지난 /이어서에 답했습니다.', -590),
+    대기열(5, 'enqueue', 작업알림),
+    대기열(5.1, 'dequeue'),
+    { type: 'user', timestamp: 원문때(5.2), origin: { kind: 'task-notification' }, message: { role: 'user', content: 작업알림 } },
+  ]);
+  assert.deepEqual(고르기.받았나원문사건(잃음, 지금, 나), { 떴음: 지금 + 5 * 초 }, '지난 /이어서 글과 끊긴 작업 알림은 받음·차례가 아니다');
+  /* 10-21 00:27 그대로 — 알림 1.2초 뒤에 /이어서 글이 대기열에 들어가 차례가 열렸다. */
+  const 받음 = 쓰기('받음', [
+    대기열(5, 'enqueue', 작업알림),
+    대기열(5.3, 'dequeue'),
+    대기열(6.2, 'enqueue', 세션글(나, '이어서 해.')),
+    대기열(6.6, 'dequeue'),
+    다른세션글(6.6, 나, '이어서 해.'),
+    실제답('이어서 합니다.', 19),
+  ]);
+  assert.equal(고르기.받았나원문사건(받음, 지금, 나).받음, 지금 + 6.2 * 초);
+  /* 대기열 줄이 없는 원문(옛 판)도 이 세션 글이 든 user 줄로 받음을 본다. */
+  assert.equal(고르기.받았나원문사건(쓰기('옛판', [다른세션글(8, 나, '이어서 해.')]), 지금, 나).받음, 지금 + 8 * 초);
+  /* 부모 세션이 다시 보낸 글로 차례가 돌았다(07:04:52) — 이 세션 글은 아니지만 이미 일한다. */
+  const 다른 = 쓰기('다른', [대기열(30, 'enqueue', 세션글(부모, '감시가 끊겼어요')), 다른세션글(30, 부모, '감시가 끊겼어요'), 실제답('다시 걸었습니다.', 40)]);
+  const 다른사건 = 고르기.받았나원문사건(다른, 지금, 나);
+  assert.equal(다른사건.받음, undefined);
+  assert.equal(다른사건.차례, 지금 + 30 * 초);
+  /* 재시작 보정 줄(도구 결과·No response requested.)은 차례가 아니고, 사람이 친 글·API 오류 응답은 차례다. */
+  const 보정줄 = 쓰기('보정', [
+    도구결과(보정, 지금 + 5 * 초),
+    { ...답('No response requested.', 지금 + 5 * 초), message: { role: 'assistant', model: '<synthetic>', content: [{ type: 'text', text: 'No response requested.' }] } },
+  ]);
+  assert.deepEqual(고르기.받았나원문사건(보정줄, 지금, 나), {});
+  const 사람 = 쓰기('사람', [{ type: 'user', timestamp: 원문때(10), origin: { kind: 'human' }, message: { role: 'user', content: '이어서 해' } }]);
+  assert.equal(고르기.받았나원문사건(사람, 지금, 나).차례, 지금 + 10 * 초);
+  const 오류 = 쓰기('오류', [답("You've hit your session limit", 지금 + 12 * 초, { isApiErrorMessage: true })]);
+  assert.equal(고르기.받았나원문사건(오류, 지금, 나).차례, 지금 + 12 * 초);
+});
+
+test('실행 --받았나: 글을 잃어버린 세션만 다시보냄에 두고, 늦게 받은 세션·다른 글로 움직인 세션은 건너뛰며, 상한을 넘기거나 두 번째도 못 받으면 전달안됨이다', (t) => {
+  const 바탕 = 임시폴더();
+  t.after(() => fs.rmSync(바탕, { recursive: true, force: true }));
+  const 기록폴더 = path.join(바탕, 'sessions', 'acct', 'org');
+  const 원문뿌리 = path.join(바탕, 'projects');
+  const 로그폴더 = path.join(바탕, 'logs');
+  fs.mkdirSync(기록폴더, { recursive: true });
+  fs.mkdirSync(로그폴더);
+  const 나 = 기록({ title: '이어서 실행' });
+  const 잃음 = 기록({ title: '글을 잃어버림' });
+  const 다시받음 = 기록({ title: '다시 보내 받음' });
+  const 늦게 = 기록({ title: '늦게 받음' });
+  const 다른 = 기록({ title: '다른 글로 움직임' });
+  const 안뜸 = 기록({ title: 'CLI가 안 뜸' });
+  const 묶임 = 기록({ title: '모드 맞춤으로 묶임', permissionMode: 'bypassPermissions' });
+  const 보관됨 = 기록({ title: '그 사이 보관됨', isArchived: true });
+  for (const r of [나, 잃음, 다시받음, 늦게, 다른, 안뜸, 묶임, 보관됨]) fs.writeFileSync(path.join(기록폴더, `${r.sessionId}.json`), JSON.stringify(r));
+  const 원문파일 = (r) => path.join(원문뿌리, 고르기.원문폴더이름(r.cwd), `${r.cliSessionId}.jsonl`);
+  const 덧쓰기 = (r, 줄들) => fs.appendFileSync(원문파일(r), `${줄들.map((j) => JSON.stringify(j)).join('\n')}\n`);
+  for (const r of [잃음, 다시받음]) 원문쓰기(원문뿌리, r, [대기열(6, 'enqueue', 작업알림), 대기열(6.1, 'dequeue')]);
+  원문쓰기(원문뿌리, 늦게, [대기열(72, 'enqueue', 세션글(나.sessionId, '이어서 해.')), 대기열(72.3, 'dequeue'), 다른세션글(72.3, 나.sessionId, '이어서 해.')]);
+  원문쓰기(원문뿌리, 다른, [다른세션글(30, 'local_cccccccc-0000-4000-8000-000000000000', '감시가 끊겼어요'), 실제답('다시 걸었습니다.', 40)]);
+  const 로그 = path.join(로그폴더, 'main.log');
+  const 떴다 = (r, 뒤초) => [
+    로그줄(뒤초, `Mapping internal session ${r.sessionId} to CLI session ${r.cliSessionId}`),
+    로그줄(뒤초, `[CCD CycleHealth] healthy cycle for ${r.sessionId} (6s, hadFirstResponse=false)`),
+    로그줄(뒤초, `[WarmLifecycle:preview] Starting idle timeout for ${r.sessionId}: 1800s`),
+  ];
+  fs.writeFileSync(
+    로그,
+    [
+      ...떴다(잃음, 6),
+      ...떴다(다시받음, 6),
+      로그줄(45, `[LocalSessionManager] CLI undelivered input 192ef09a-066d-483d-995d-05a8373c19c9 for ${묶임.sessionId} without running it — settled (hold=false cycle=true next=false)`),
+      로그줄(71, `Mapping internal session ${늦게.sessionId} to CLI session ${늦게.cliSessionId}`),
+      로그줄(85, `[CCD start-timing] ${늦게.sessionId} preflight=27ms enqueue=62ms init=70479ms first_assistant=14462ms | ccd_overhead=225ms`),
+      '',
+    ].join('\r\n'),
+  );
+  const 첫때 = 지금 + 90 * 초;
+  const 받았나 = (ids, 보낸때, 때, ...덧) =>
+    고르기.실행(
+      ['--self', 나.sessionId, '--받았나', ids.map((r) => r.sessionId).join(','), '--보낸때', new Date(보낸때).toISOString(), '--기록', 기록폴더, '--원문', 원문뿌리, '--로그', 로그폴더, '--지금', new Date(때).toISOString(), ...덧],
+      {},
+    );
+  const 이름 = (목록) => 목록.map((s) => s.제목).sort();
+
+  const 첫 = 받았나([잃음, 다시받음, 늦게, 다른, 안뜸, 묶임, 보관됨], 지금, 첫때);
+  assert.equal(첫.ok, true, JSON.stringify(첫));
+  assert.equal(첫.차례, 1);
+  assert.deepEqual(이름(첫.다시보냄), ['글을 잃어버림', '다시 보내 받음'], 'CLI는 떴는데 글이 대기열에 들어가지 않은 세션만 다시 보낸다');
+  assert.equal(첫.다시보냄[0].떴음, new Date(지금 + 6 * 초 + 9 * 60 * 분).toISOString().slice(11, 19), 'CLI가 뜬 때를 KST로 보인다');
+  assert.deepEqual(이름(첫.받음), ['늦게 받음'], '늦게 뜬 CLI가 받은 세션은 건너뛴다');
+  assert.equal(첫.받음[0].init, '70초');
+  assert.deepEqual(이름(첫.움직임), ['그 사이 보관됨', '다른 글로 움직임'], '이미 일을 시작했거나 보관된 세션은 건너뛴다');
+  assert.deepEqual(
+    첫.전달안됨.map((s) => [s.제목, s.까닭]),
+    [['모드 맞춤으로 묶임', '다른 세션 글을 승인 대기로 묶음(모드 맞춤) — 다시 보내도 또 묶여서 보내지 않음']],
+  );
+  assert.deepEqual(이름(첫.기다림), ['CLI가 안 뜸'], '--지금으로 한 번만 볼 때 상한 전이면 기다림으로 둔다');
+  assert.equal(첫.지금, new Date(첫때).toISOString(), '두 번째 받았나의 --보낸때로 넘긴다');
+
+  /* 상한(5분)을 넘기면 CLI가 안 뜬 세션은 다시 보내지 않고 전달안됨이다. */
+  const 상한뒤 = 받았나([안뜸], 지금, 지금 + 301 * 초);
+  assert.deepEqual(상한뒤.전달안됨.map((s) => [s.제목, s.까닭]), [['CLI가 안 뜸', '보낸 뒤 5분 안에 CLI가 뜨지 않음']]);
+  assert.equal(상한뒤.다시보냄.length, 0);
+
+  /* 두 번째로 보낸 뒤: 들어갔으면 받음, 떠 있는 CLI에 또 들어가지 않았으면 세 번째는 보내지 않고 전달안됨이다. */
+  fs.appendFileSync(
+    로그,
+    [
+      로그줄(95, `Sending message to session ${잃음.sessionId}`),
+      로그줄(95, `Mapping internal session ${잃음.sessionId} to CLI session ${잃음.cliSessionId}`),
+      로그줄(95, `Sending message to session ${다시받음.sessionId}`),
+      로그줄(95, `Mapping internal session ${다시받음.sessionId} to CLI session ${다시받음.cliSessionId}`),
+      '',
+    ].join('\r\n'),
+  );
+  덧쓰기(다시받음, [대기열(95.2, 'enqueue', 세션글(나.sessionId, '이어서 해.')), 대기열(95.3, 'dequeue'), 실제답('이어서 합니다.', 110)]);
+  const 둘째 = 받았나([잃음, 다시받음], 첫때, 지금 + 150 * 초, '--다시보낸뒤');
+  assert.equal(둘째.차례, 2);
+  assert.deepEqual(이름(둘째.받음), ['다시 보내 받음']);
+  assert.deepEqual(둘째.전달안됨.map((s) => [s.제목, s.까닭]), [['글을 잃어버림', '다시 보낸 글도 CLI에 들어가지 않음(CLI는 떠 있음)']]);
+  assert.equal(둘째.다시보냄.length, 0, '세 번째는 보내지 않는다');
+
+  /* 인자: 빈 --받았나(PowerShell 5.1이 ""를 뺌)·시각 아닌 --보낸때는 가르지 않는다. */
+  const 기본 = ['--self', 나.sessionId, '--기록', 기록폴더, '--원문', 원문뿌리, '--지금', new Date(첫때).toISOString()];
+  assert.match(고르기.실행([...기본, '--받았나', '--보낸때', new Date(지금).toISOString()], {}).까닭, /가를 세션이 없습니다/);
+  assert.match(고르기.실행([...기본, '--받았나', 잃음.sessionId, '--보낸때', '어제'], {}).까닭, /--보낸때를 시각으로 읽지 못했습니다: 어제/);
+  assert.match(고르기.실행([...기본, '--받았나', 잃음.sessionId], {}).까닭, /--보낸때를 시각으로 읽지 못했습니다/);
+});
+
+test('받았나기다리기: CLI가 뜨기를 기다렸다가 다시 보낼 세션을 고르고, 다 가르면 바로 멈추며, 상한을 넘기면 다시 보내지 않는다', () => {
+  const [잃음, 늦게, 안뜸] = [새id(), 새id(), 새id()];
+  let 시각 = 0;
+  const 쉰 = [];
+  const 도구 = {
+    시계: () => 시각,
+    잠깐: (ms) => {
+      쉰.push(ms);
+      시각 += ms;
+    },
+  };
+  const 물음 = [];
+  /* 잃음: 6초에 CLI가 떴고 차례가 없다. 늦게: 71초에 떠서 72초에 받는다. 안뜸: 끝내 뜨지 않는다. */
+  const 모으기 = (남은, 까지) => {
+    물음.push(남은.length);
+    const 뒤 = 까지 - 지금;
+    return new Map(
+      남은.map((id) => {
+        if (id === 잃음) return [id, { 떴음: 지금 + 6 * 초 }];
+        if (id === 늦게) return [id, 뒤 >= 72 * 초 ? { 떴음: 지금 + 71 * 초, 받음: 지금 + 72 * 초 } : 뒤 >= 71 * 초 ? { 떴음: 지금 + 71 * 초 } : {}];
+        return [id, {}];
+      }),
+    );
+  };
+  시각 = 지금 + 20 * 초; /* send_message가 20초를 기다리고 undelivered를 낸 때 */
+  const 둘 = 고르기.받았나기다리기([잃음, 늦게], 모으기, { 이후: 지금 }, 도구);
+  assert.equal(둘.get(잃음).판, '다시보냄');
+  assert.equal(둘.get(늦게).판, '받음', '늦게 뜬 CLI가 받을 때까지 기다린다 — 곧바로 다시 보내지 않는다');
+  assert.ok(시각 - 지금 >= 72 * 초 && 시각 - 지금 < 80 * 초, `다 가르면 바로 멈춘다(${(시각 - 지금) / 초}초)`);
+  assert.equal(물음.at(-1), 1, '가른 세션은 다시 모으지 않는다');
+  assert.ok(쉰.every((ms) => ms === 3 * 초), '3초마다 다시 읽는다');
+
+  시각 = 지금 + 20 * 초;
+  const 셋 = 고르기.받았나기다리기([잃음, 늦게, 안뜸], 모으기, { 이후: 지금 }, 도구);
+  assert.equal(셋.get(잃음).판, '다시보냄');
+  assert.equal(셋.get(늦게).판, '받음');
+  assert.equal(셋.get(안뜸).판, '안뜸');
+  assert.ok(시각 - 지금 >= 5 * 분 && 시각 - 지금 <= 5 * 분 + 21 * 초, `상한 5분과 유예까지만 기다린다(${(시각 - 지금) / 초}초)`);
+
+  /* --보낸때를 한참 전 시각으로 넘겨도 한 번 보고 끝낸다 — 그때도 못 가른 세션은 떴으면 다시보냄, 아니면 안뜸이다. */
+  시각 = 지금 + 30 * 분;
+  const 옛 = 고르기.받았나기다리기([잃음, 안뜸], (남은) => new Map(남은.map((id) => [id, id === 잃음 ? { 떴음: 지금 + 6 * 초 } : {}])), { 이후: 지금 }, 도구);
+  assert.equal(옛.get(잃음).판, '다시보냄');
+  assert.equal(옛.get(안뜸).판, '안뜸');
+  assert.equal(시각, 지금 + 30 * 분, '기다리지 않는다');
 });
