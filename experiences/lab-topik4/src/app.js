@@ -4,7 +4,7 @@
  * 보내기: 홈페이지 문의 구글 폼(copy.js FORM)에 바로 보낸다. 회사 서버가 그 폼을 5분마다 모아 분류·답변 초안·할 일로 만든다.
  *   no-cors라 응답을 읽지 못한다 — 요청이 네트워크에서 끝나면 접수로 본다. 그래서 이메일은 폼보다 깐깐하게 미리 보고,
  *   완료 판에 「다시 등록하기」와 문의 주소를 둔다. 등록을 셀 때는 문의 내용 첫 줄의 FORM.marker로 거른다.
- * 보내는 것: 사용자가 적은 칸 + 들어온 링크 표시(from) + 화면 언어. 앞 사이트 주소는 보내지 않는다(안내문과 맞춤, 아르곤 10-21).
+ * 보내는 것: 사용자가 적은 칸 + 들어온 링크 표시(from) + 화면 언어. 앞 사이트 주소는 보내지 않는다(안내문과 맞춤, 10-21 검수).
  * 기록: 이 기기에는 아무것도 남기지 않는다(화면 언어만 주소에 남긴다).
  */
 (function (root, factory) {
@@ -69,6 +69,7 @@
     const note = clip(v.note, 300);
     if (note) lines.push(`쓰기에서 어려운 점: ${note}`);
     lines.push(`들어온 곳: ${v.from || 'direct'} · 화면 언어 ${v.lang === 'mn' ? '몽골어' : '한국어'}`);
+    if (v.resubmit) lines.push('다시 등록: 앞서 보낸 등록의 이메일을 고쳐 다시 보냄(앞 등록은 버림)');
     return lines.join('\n');
   }
 
@@ -109,6 +110,7 @@
     sendErr: '',     // 보내기 오류 글 키
     share: null,     // { key } 또는 { url } — 언어를 바꿔도 다시 그린다
     done: null,      // { name, email }
+    resubmit: false, // 「이메일을 고쳐 다시 등록하기」 뒤의 등록
   };
   const T = () => C[state.lang];
   const live = msg => { const el = $('#live'); if (el) { el.textContent = ''; setTimeout(() => { el.textContent = msg; }, 40); } };
@@ -141,6 +143,7 @@
     $('#opt-when').innerHTML = radios('when', C.WHEN, true);
     $('#opt-time').innerHTML = radios('time', C.TIMES, false);
     Object.entries(keep).forEach(([n, v]) => { const el = $(`input[name="${n}"][value="${v}"]`); if (el) el.checked = true; });
+    markChecked();
     showErrors();
     const se = $('#send-error');
     se.textContent = state.sendErr ? t[state.sendErr] : '';
@@ -154,8 +157,13 @@
     const val = n => { const c = $(`input[name="${n}"]:checked`, f); return c ? c.value : ''; };
     return {
       name: f.elements.name.value, email: f.elements.email.value, level: val('level'), when: val('when'), time: val('time'),
-      note: f.elements.note.value, consent: f.elements.consent.checked, from: state.from, lang: state.lang,
+      note: f.elements.note.value, consent: f.elements.consent.checked, from: state.from, lang: state.lang, resubmit: state.resubmit,
     };
+  }
+
+  /** 고른 선택지 칸에 on — :has()를 못 쓰는 브라우저에서도 고른 칸이 보이게(10-21 검수). */
+  function markChecked() {
+    $$('.t4-opt').forEach(l => { const i = l.querySelector('input'); l.classList.toggle('on', Boolean(i && i.checked)); });
   }
 
   /** 오류 글·테두리·aria-invalid를 state.errors대로. 오류가 없는 칸은 aria-invalid를 지운다(처음부터 false를 찍지 않는다). */
@@ -187,7 +195,6 @@
     const f = $('#form');
     state.sendErr = '';
     $('#send-error').hidden = true;
-    if (f.elements.website && f.elements.website.value) return; // 자동 입력 덫 칸 — 사람은 보지 못한다
     const v = values();
     const err = validate(v);
     if (!err.email && !$('#f-email').checkValidity()) err.email = 'errEmail';
@@ -223,6 +230,7 @@
       state.sending = false;
       btn.disabled = false;
       btn.textContent = T().submit;
+      if (state.sendErr) btn.focus(); // disabled로 잃은 초점을 되돌린다
     }
   }
 
@@ -230,6 +238,7 @@
   function again() {
     state.done = null;
     state.share = null;
+    state.resubmit = true;
     $('#done').hidden = true;
     const f = $('#form');
     f.hidden = false;
@@ -252,7 +261,6 @@
     try {
       await navigator.clipboard.writeText(url);
       state.share = { key: 'copied' };
-      live(t.copied);
     } catch (x) {
       state.share = { url };
     }
@@ -283,7 +291,10 @@
     $$('[data-lang]').forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
     $$('[data-go-form]').forEach(a => a.addEventListener('click', goForm));
     $('#form').addEventListener('submit', submit);
-    $('#form').addEventListener('change', () => { if (Object.keys(state.errors).length) { state.errors = validate(values()); showErrors(); } });
+    // 오류가 난 뒤에는 입력하는 동안 다시 본다 — change(blur)에서만 보면 고친 뒤 첫 클릭 순간 오류 줄이 사라지며 단추가 움직여 클릭이 빗나간다(10-21 검수).
+    const recheck = () => { markChecked(); if (Object.keys(state.errors).length) { state.errors = validate(values()); showErrors(); } };
+    $('#form').addEventListener('input', recheck);
+    $('#form').addEventListener('change', recheck);
     $('#share').addEventListener('click', share);
     $('#again').addEventListener('click', again);
     // 휴대폰 아래 단추: 등록 판이 화면에 보이면 숨긴다(숨은 동안은 초점도 받지 않게 CSS가 visibility로 감춘다).

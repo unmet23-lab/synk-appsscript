@@ -82,6 +82,12 @@ test('보낼 값: 선택 칸이 비면 그렇다고 적고, 긴 글·제어 문�
   assert.equal(body.at(-1), '들어온 곳: direct · 화면 언어 한국어');
 });
 
+test('「이메일을 고쳐 다시 등록하기」 뒤의 등록에는 다시 등록 줄이 붙는다', () => {
+  const v = { email: 'a@b.mn', level: 'has3', when: 'y2026', lang: 'ko' };
+  assert.ok(!A.buildBody(v).includes('다시 등록'));
+  assert.match(A.buildBody({ ...v, resubmit: true }), /다시 등록: 앞서 보낸 등록의 이메일을 고쳐 다시 보냄/);
+});
+
 test('친구에게 보낼 주소는 from=friend로 바꾸고 화면 언어를 지킨다', () => {
   assert.equal(A.shareUrl('https://synk.im/lab/topik4/?from=univ-a&lang=ko#signup', 'mn'), 'https://synk.im/lab/topik4/?from=friend&lang=mn');
 });
@@ -103,8 +109,12 @@ test('두 언어의 글 키·목록 길이가 같다', () => {
 });
 
 test('화면 글 약속: 보장·할인·AI 도구 이름·「AI 생성」이 없고 조건은 결정 표와 같다', () => {
-  const all = JSON.stringify([C.ko, C.mn, C.WEEKS]) + fs.readFileSync(path.join(__dirname, 'src/index.html'), 'utf8');
+  // 공개되는 파일 전부(주석 포함) — 사이트에는 AI 도구 이름을 쓰지 않는다
+  const all = JSON.stringify([C.ko, C.mn, C.WEEKS]) + ['src/index.html', 'src/app.js', 'src/page.css', 'src/copy.js'].map(f => fs.readFileSync(path.join(__dirname, f), 'utf8')).join('');
   for (const bad of [/보장|합격률|무제한|할인/, /Claude|GPT|Gemini|ChatGPT|Higgsfield|Codex|Argon/i, /AI 생성/]) assert.doesNotMatch(all, bad);
+  // 사이트에 게임 링크를 새로 넣지 않는다(10-05 유호님) · 환불 기준점은 수업 시작
+  assert.doesNotMatch(all, /\/try\//);
+  assert.ok(C.ko.terms[2].d.includes('수업이 시작된 뒤 첫 2주'));
   const ko = JSON.stringify(C.ko);
   for (const must of ['30만 원', '부가세', '10명', '2027년 3월', '첫 2주', '전액', '합격이나 급수를 약속하지는 않아요']) assert.ok(ko.includes(must), must);
   const mn = JSON.stringify(C.mn);

@@ -1,11 +1,11 @@
 {
   "app.css": {
-    "bytes": 81481,
-    "sha256": "040dfba8e04562e29d09452c6f97a8b4058977f8701e5a7c5b12d010850de9e8"
+    "bytes": 82514,
+    "sha256": "24f19eb03717dcf0160996dd33a526978fab85926873281a2c41de9103f44f64"
   },
   "app.js": {
-    "bytes": 15082,
-    "sha256": "2e70babb3aba9d37f3044d84e06a6e753d11376acff7e17ec4f41fd110ba2cd0"
+    "bytes": 16202,
+    "sha256": "f9a7a30b9c995775b178574c029b186955b2243093cb80274498ceae7d497574"
   },
   "assets/DMMono-400.woff2": {
     "bytes": 5896,
@@ -28,8 +28,8 @@
     "sha256": "a1f8ef8722cee826313d0b56816757e4afef9bf37d77a1a8eb42055792a137ac"
   },
   "assets/SUIT-subset.woff2": {
-    "bytes": 95980,
-    "sha256": "4b9d8d32bf6bab68b8cf24c1a00d4866032858d01a83eaee4a8aacb9f3afc246"
+    "bytes": 97660,
+    "sha256": "39f8062b978f773c93c215794994d70bbf1b0b9762aaa340b02896cb3475447c"
   },
   "assets/favicon-32.png": {
     "bytes": 2310,
@@ -52,12 +52,12 @@
     "sha256": "7497243a9bda0720878a78972fce5fbfab449f9febb091a831f8b393f977bc4f"
   },
   "copy.js": {
-    "bytes": 20954,
-    "sha256": "c2fab637961fbc3bfbe103d28e1bd405524c02666d76dc1c307568303d83e494"
+    "bytes": 21290,
+    "sha256": "cffad9d3278377520e3a0aafc76ae8fd68f3241bfc57c6e792761d4586a8d1e9"
   },
   "index.html": {
-    "bytes": 11835,
-    "sha256": "f11f3d77d0110161b32a675098c42f1c1d05369dbf1606ba85c4877dedfd1b3d"
+    "bytes": 11995,
+    "sha256": "b7be58489848211e8e8c2f5298082d9abac065b6bebd2539de705cd336f6c1fc"
   },
   "og.png": {
     "bytes": 354497,

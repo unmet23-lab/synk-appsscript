@@ -99,7 +99,8 @@
             <span class="label">SIGN UP · NO PAYMENT</span>
             <img class="cut" src="assets/topik4-art-list.webp" width="491" height="537" alt="">
           </div>
-          <form id="form" class="t4-form" novalidate>
+          <div class="t4-fallback"><p class="t4-noscript" lang="mn">Энэ хуудасны бүртгэл JavaScript-ээр илгээгддэг. JavaScript-ийг асаах боломжгүй бол hello@synk.im хаягаар «TOPIK 4 онлайн анги» гэж бичээд имэйл илгээнэ үү («TOPIK 4급 온라인 반 관심 등록» гэж солонгосоор бичиж болно).</p><p class="t4-noscript">이 페이지의 등록은 자바스크립트로 보내요. 켤 수 없으면 hello@synk.im으로 「TOPIK 4급 온라인 반 관심 등록」이라고 적어 보내 주세요.</p></div>
+          <form id="form" class="t4-form" method="post" action="#" novalidate>
             <h2 id="form-title" data-t="formTitle">관심 등록</h2>
             <p class="t4-sub" data-t="formSub">1분이면 끝나요. 개강일이 정해지면 이 이메일로 먼저 연락드려요.</p>
 
@@ -138,8 +139,6 @@
               <textarea id="f-note" name="note" rows="3" maxlength="300" data-t-attr="placeholder:notePlaceholder"></textarea>
             </div>
 
-            <div class="t4-trap" aria-hidden="true"><label for="f-website">website</label><input id="f-website" name="website" type="text" tabindex="-1" autocomplete="off"></div>
-
             <div class="t4-consent" data-field="consent">
               <p class="t4-notice"><span data-t="notice"></span> <a href="https://synk.im/privacy/#website-contact" target="_blank" rel="noopener" data-t="privacy">개인정보 처리방침</a></p>
               <label class="t4-check"><input id="f-consent" name="consent" type="checkbox" required aria-describedby="err-consent"><span data-t="consent">위 안내를 읽고, 문의 답변을 위한 개인정보 수집·이용에 동의합니다.</span></label>
@@ -175,7 +174,6 @@
   <div id="live" class="sr" aria-live="polite"></div>
 </div>
 <a class="btn primary t4-dock" href="#signup" data-go-form><span data-t="cta">관심 등록하기</span><span aria-hidden="true">→</span></a>
-<noscript><p class="t4-noscript" lang="mn">Энэ хуудасны бүртгэл JavaScript-ээр илгээгддэг. Асаах боломжгүй бол hello@synk.im хаягаар «TOPIK 4 онлайн анги» гэж бичээд имэйл илгээнэ үү.</p><p class="t4-noscript">이 페이지의 등록은 자바스크립트로 보내요. 켤 수 없으면 hello@synk.im으로 「TOPIK 4급 온라인 반 관심 등록」이라고 적어 보내 주세요.</p></noscript>
 <script src="copy.js"></script>
 <script src="app.js"></script>
 </body>

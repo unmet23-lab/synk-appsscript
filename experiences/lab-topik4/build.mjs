@@ -72,7 +72,8 @@ fs.writeFileSync(path.join(OUT, 'app.css'), `${fs.readFileSync(SIGNAL, 'utf8')}\
 // 2) 글꼴. 한글은 화면에 실제로 쓰인 글자만(빠지면 멈춤), Inter Tight는 라틴 + 키릴 전체(몽골어 Ө·Ү 포함).
 const pageText = ['index.html', 'copy.js', 'app.js', 'og.html'].map(f => fs.readFileSync(path.join(SRC, f), 'utf8')).join('');
 const chars = new Set([...ascii(), ...LATIN_EXTRA, ...'「」']);
-for (const ch of pageText) if (/[\u3131-\u318e\uac00-\ud7a3]/.test(ch)) chars.add(ch);
+// \ud0a4\ub9b4\uc740 Inter Tight\uac00 \ub9e1\uace0(SUIT\uc5d0 \uc5c6\uc74c), \ub098\uba38\uc9c0 \uc544\uc2a4\ud0a4 \ubc16 \uae00\uc790(\ud55c\uae00\u00b7\u2460\u2461\u00b7\u300c\u300d \ub4f1)\ub294 \ubaa8\ub450 SUIT \uc11c\ube0c\uc14b\uc5d0 \ub123\ub294\ub2e4(Fable 10-21 \u2460\u2461 \ube60\uc9d0).
+for (const ch of pageText) if (ch.codePointAt(0) > 0x7e && !/[\u0400-\u04ff]/.test(ch)) chars.add(ch);
 const suitOut = path.join(ASSETS, 'SUIT-subset.woff2');
 subset(path.join(FONTS, 'SUIT/SUIT-Variable.woff2'), [...chars].join(''), suitOut);
 const miss = run('python', ['-c', 'import sys\nfrom fontTools.ttLib import TTFont\ncm=TTFont(sys.argv[1]).getBestCmap()\nt=open(sys.argv[2],encoding="utf-8").read()\nprint("".join(sorted({c for c in t if "\\uac00"<=c<="\\ud7a3" and ord(c) not in cm})))', suitOut, path.join(SRC, 'copy.js')]).stdout.trim();
