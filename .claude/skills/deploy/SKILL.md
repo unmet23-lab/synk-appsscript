@@ -1,6 +1,6 @@
 ---
 name: deploy
-description: SYNK Apps Script 변경을 사용자가 라이브 반영까지 요청했을 때 검증·커밋·push·clasp 배포·라이브 대조를 끝낸다. 로컬 수정이나 검토만 요청된 작업에는 자동으로 배포하지 않는다.
+description: SYNK Apps Script를 고친 작업의 마감으로 검증·커밋·push·clasp 배포·라이브 대조를 끝낸다. 2026-10-21부터 Apps Script를 고친 작업은 검증을 통과하면 묻지 않고 라이브까지 반영한다. 검토·조사만 맡은 작업에는 배포하지 않는다.
 ---
 
 # SYNK Apps Script 배포
@@ -9,7 +9,7 @@ description: SYNK Apps Script 변경을 사용자가 라이브 반영까지 요�
 
 ## 경계
 
-- 사용자가 라이브 반영을 요청했거나 현재 작업 범위에 배포가 명시된 경우에만 실행한다. 로컬 제작, 커밋·push, 라이브 배포는 서로 다른 상태다.
+- Apps Script를 고친 작업은 이 스킬로 라이브까지 마친다. 따로 묻지 않는다(2026-10-21 사용자 확정, [AI 운영 원칙 · 비용과 권한](../../../docs/AI_운영원칙.md#비용과-권한)). 검토·조사만 맡은 작업, 배포물에 남의 미커밋이 섞인 경우, 아래 검증이 실패한 경우에는 배포하지 않는다. 로컬 제작, 커밋·push, 라이브 배포는 서로 다른 상태다.
 - `clasp pull`은 작업본을 덮어쓰므로 실행하지 않는다.
 - 저장소의 `.claude/hooks/*`는 현재 자동 등록된 보호막이 아니다(옛 `tools/githooks/`는 09-21에 비웠고 10-21에 폴더도 걷었다). `PreToolUse`·Git hook이 명령을 막아 준다고 가정하거나 보고하지 않는다. 아래 실측과 각 명령의 종료코드가 배포 게이트다.
 - 신규 결제·인증·서비스 보호 절차가 필요하면 그 행동만 사용자에게 요청한다. 다른 검증과 준비는 계속한다.
@@ -29,7 +29,7 @@ description: SYNK Apps Script 변경을 사용자가 라이브 반영까지 요�
 
 3. **이력과 GitHub**
    - 버전 대상 파일에 `[vNEXT]`가 있으면 `node tools/bump-version.js --desc "한 줄 요약" --종류 <수리|보강|신설>`로 채번하고 `node tools/bump-version.js --check`로 대조한다.
-   - 자기 변경만 `node tools/내커밋.js 커밋 <경로…> -m "…"`로 커밋하고 `node tools/내커밋.js 올리기 <커밋…>`로 내 커밋만 origin/master에 올린다. 둘 다 먼저 `--실행` 없이 돌려 올라갈 경로·줄을 보고, 그다음 `--실행`을 붙인다. `git push origin HEAD:master`는 로컬 master에 깔린 남의 미푸시 커밋까지 올리므로 쓰지 않는다. 다른 작업의 stage나 파일을 쓸어 담지 않는다.
+   - 자기 변경만 `node tools/바로올리기.js <경로…> -m "…"`로 origin/master에 올린다(공용 작업본에서는 공용 문서를 `--조각`으로, AGENTS.md 커밋 줄). 먼저 `--실행` 없이 돌려 올라갈 경로·줄을 보고, 그다음 `--실행`을 붙인다. `git push origin HEAD:master`는 남의 미푸시 커밋까지 올리므로 쓰지 않는다. 다른 작업의 stage나 파일을 쓸어 담지 않는다.
    - `node tools/원격ci.js <올린 머리>`로 대상 커밋의 원격 상태를 확인한다. 인자를 빼면 로컬 HEAD를 보므로, 올리기가 커밋을 다시 쌓았으면 출력의 새 커밋(원래 → 새)을 준다. 기존의 관련 없는 적색은 그대로 밝혀 구분하고, 이번 배포 대상의 관련 실패는 라이브 전에 막는다.
 
 4. **라이브 반영과 대조**
@@ -39,8 +39,10 @@ description: SYNK Apps Script 변경을 사용자가 라이브 반영까지 요�
      $claspCommand = Get-Command clasp.cmd -ErrorAction SilentlyContinue
      $claspBin = if ($claspCommand) { $claspCommand.Source } else { Join-Path $env:APPDATA 'npm\clasp.cmd' }
      if (-not (Test-Path -LiteralPath $claspBin)) { throw 'clasp 실행 파일을 찾지 못했습니다.' }
-     & $claspBin push --force
+     git diff --quiet origin/master -- appsscript.json Code.js 엔진_synkbrief.js && & $claspBin push --force
      ```
+
+   - push 앞의 `git diff --quiet origin/master -- …`는 clasp가 올리는 세 파일(`.claspignore`)이 origin/master와 같을 때만 통과시킨다. 내 변경을 먼저 origin에 올리고, 남의 미커밋이 그 파일에 섞여 있으면 push하지 않는다. 자동 모드 판정기가 미리 허락한 꼴이 이것이다(2026-10-21).
 
    - `node tools/배포판점검.js --라이브`로 실제 라이브를 읽는다. 고정 버전 배포가 낡았으면 도구가 제시한 **기존 deployment ID**를 `clasp deploy -i <기존ID> --description "<설명> #fp:<지문>"`로 갱신한다. ID 없이 새 배포를 만들지 않는다.
    - 다시 `clasp deployments`와 `node tools/배포판점검.js --라이브`를 실행해 배포 개수, 내용 지문, 도장을 확인한다.
