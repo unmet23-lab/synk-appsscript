@@ -1,0 +1,8 @@
+[
+ {"type": "text", "t0": 0.3, "t1": 1.35, "text": "MALGEUM", "font": "inter", "size": 30, "track": 0.42, "align": "center", "y": 300, "color": "paper"},
+ {"type": "text", "t0": 1.6, "t1": 3.0, "text": "세안 뒤 첫 숨", "size": 44, "x": 96, "y": 1100, "color": "ink"},
+ {"type": "text", "t0": 3.25, "t1": 4.5, "text": "약산성", "size": 150, "weight": 600, "x": 88, "y": 1218, "color": "ink"},
+ {"type": "text", "t0": 4.6, "t1": 6.45, "text": "무향", "size": 150, "weight": 600, "x": 88, "y": 1218, "color": "ink"},
+ {"type": "lockup", "t0": 12.3, "y": 440, "color": "ink", "size": 104},
+ {"type": "pill", "t0": 12.3, "text": "AI로 만든 가상 모델·음성", "x": 65, "y": 281}
+]

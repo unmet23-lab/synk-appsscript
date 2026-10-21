@@ -1,0 +1,12 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — a product reference sheet for the exact bottle in Image 1 (MALGEUM 맑음 mild acidic toner, 150 ml). Landscape 3:2 image.
+
+Show the SAME bottle three times side by side at the same scale, standing on a pure white seamless sweep (#FFFFFF), evenly spaced, nothing else in the frame:
+1. Left — straight front view, camera at the bottle's mid-height (the full front print readable).
+2. Middle — three-quarter view, the bottle turned about 35 degrees to the right (the print wraps with the cylinder's curve).
+3. Right — exact side profile, showing the very thick clear glass base, the straight wall thickness, the liquid line 1 cm below the shoulder and the hairline gap under the cap.
+
+Keep everything identical to Image 1: the heavy thick-walled flint-glass cylinder with straight sides and the extremely thick solid clear base, the crystal-clear liquid, the tall bead-blasted brushed-aluminium cap with fine vertical grain at exactly the bottle's diameter. The front print must match Image 2 letter for letter (warm charcoal screen-print on the glass: MALGEUM, a short rule, 맑음, 약산성 토너, MILD ACIDIC TONER, pH 5.5 · 무향 · 150 ml) — same layout, hierarchy and spacing; do not invent any other text.
+
+Light: soft, even studio light from a large overhead softbox plus white bounce on both sides, so the glass edges read as clean dark-grey lines and the liquid stays crystal clear; one soft contact shadow under each bottle, no reflections of a room, no colored tint. Photoreal product photography, 100mm lens, f/11, no CGI plastic look, no over-sharpening.

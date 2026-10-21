@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — cut 1 of a 15-second toner commercial: the reveal. Low-key product shot: the bottle stands alone on a dark honed stone slab in near darkness; only thin white rim lights from behind trace its silhouette and the edges of the thick glass base, the frosted shoulder glows faintly, the label is just readable in soft shadow. Pure deep warm-black background with a faint gradient. The bottle is centered, filling about 55% of the frame height, camera at mid-height. Leave the area above the cap dark and empty.
+
+THE PRODUCT — the exact bottle in Image 1 (MALGEUM 맑음 mild acidic toner, 150 ml): a heavy straight glass cylinder, frosted on the upper half and turning crystal clear toward the bottom, an extremely thick clear glass base, a tall bead-blasted brushed-aluminium cap flush with the body, the front print exactly as in Image 2 (MALGEUM, a short silver rule, 맑음, 약산성 토너 · 150 ml) — letter for letter, same layout. It must look like the same real object in every respect. No other text anywhere, no watermark.
+
+Look: a premium skincare commercial still, photoreal, shot on a cinema camera with a 100mm macro lens; color world of frost-white, crystal-clear water and one silver point, warm pale neutrals, no teal, no saturated color; natural photographic finish, no CGI plastic sheen, no HDR, no over-sharpening, very fine film grain. Vertical 9:16.

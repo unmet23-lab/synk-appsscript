@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>맑음 모션그래픽</title>
+<!--
+  지유 광고 v7 · 맑음 모션그래픽 층(2026-10-21). 한강 재촬영 v40 타이틀 도구(시안.html + 렌더.js)와 같은 방식:
+  window.seek(t)가 그 시각의 화면을 그린다 — CSS 전환 없이 시각으로만 정해져 프레임마다 같은 결과가 나온다.
+  배경은 투명(렌더.js가 omitBackground로 찍는다). 미리 보기는 ?bg=<그림 경로>로 바탕 그림을 깐다.
+  큐는 window.M_CUES(렌더.js가 큐 JSON을 넣는다) — 종류: hook · callout · specs · lockup · timer.
+  글자 규칙: 유호님 취향 「글자 모션은 줄 단위로 조용히(낱말 팝·형광펜은 AI 티)」(10-20), 9:16 글자 자리 x 65~920 · y 269~1248.
+-->
+<style>
+@font-face { font-family: 'SUIT'; src: url('../../../../../../브랜드_폰트/SUIT/SUIT-SemiBold.otf'); font-weight: 600; }
+@font-face { font-family: 'SUIT'; src: url('../../../../../../브랜드_폰트/SUIT/SUIT-Medium.otf'); font-weight: 500; }
+@font-face { font-family: 'Inter Tight'; src: url('../../../../../../브랜드_폰트/InterTight/InterTight-Medium.ttf'); font-weight: 500; }
+@font-face { font-family: 'DM Mono'; src: url('../../../../../../브랜드_폰트/DM_Mono/DMMono-Regular.ttf'); font-weight: 400; }
+:root { --ink: #34342F; --paper: #F7F4EE; }
+html, body { margin: 0; background: transparent; }
+#stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; }
+#bg { position: absolute; inset: 0; width: 1080px; height: 1920px; object-fit: cover; display: none; }
+.cue { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; pointer-events: none; display: none; }
+.line { display: block; overflow: hidden; }
+.line > span { display: inline-block; will-change: transform; }
+.hook { position: absolute; font-family: 'SUIT'; font-weight: 500; font-size: 58px; line-height: 1.32; letter-spacing: -0.01em; }
+.cap { font-family: 'Inter Tight'; font-weight: 500; white-space: nowrap; }  /* 대문자는 큐 글에서 정한다(pH처럼 소문자가 맞는 단위가 있다) */
+.callout svg { position: absolute; left: 0; top: 0; overflow: visible; }
+.callout .label { position: absolute; display: flex; flex-direction: column; gap: 6px; }
+.callout .label .cap { font-size: 26px; letter-spacing: 0.2em; }
+.callout .label .ko { font-family: 'SUIT'; font-weight: 500; font-size: 30px; }
+.specs { position: absolute; display: flex; align-items: center; gap: 22px; font-family: 'SUIT'; font-weight: 500; font-size: 34px; white-space: nowrap; }
+.specs .sep { width: 1.5px; height: 26px; }
+.lockup { position: absolute; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; }
+.lockup .word { font-family: 'SUIT'; font-weight: 600; font-size: 128px; line-height: 1.1; letter-spacing: -0.01em; }
+.lockup .en { font-size: 30px; letter-spacing: 0.42em; margin-top: 10px; padding-left: 0.42em; }
+.lockup .rule { height: 1.5px; width: 72px; margin: 30px 0 26px; }
+.lockup .tag { font-family: 'SUIT'; font-weight: 500; font-size: 36px; }
+.timer { position: absolute; font-family: 'DM Mono'; font-weight: 400; font-size: 30px; letter-spacing: 0.08em; display: flex; align-items: center; gap: 14px; }
+.timer svg { overflow: visible; }
+</style>
+</head>
+<body>
+<div id="stage"><img id="bg" alt=""></div>
+<script>
+const Q = new URLSearchParams(location.search);
+const stage = document.getElementById('stage');
+if (Q.get('bg')) { const bg = document.getElementById('bg'); bg.src = Q.get('bg'); bg.style.display = 'block'; }
+const el = (tag, cls, txt) => { const n = document.createElement(tag); if (cls) n.className = cls; if (txt != null) n.textContent = txt; return n; };
+const svgEl = (tag, attrs) => { const n = document.createElementNS('http://www.w3.org/2000/svg', tag); for (const k in attrs) n.setAttribute(k, attrs[k]); return n; };
+const clamp = v => Math.max(0, Math.min(1, v));
+const outQuint = p => 1 - Math.pow(1 - clamp(p), 5);           // 빠르게 나와 천천히 멈춤(v5 로고 층과 같은 곡선)
+const inOutCubic = p => { p = clamp(p); return p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2; };
+// 들어올 때 IN초(줄마다 STAGGER초 늦게), 나갈 때 OUT초 — 나가기는 자리를 두고 투명도만(줄 단위로 조용히)
+const IN = 0.55, STAGGER = 0.12, OUT = 0.28;
+const fadeOut = (t, t1) => (t1 == null ? 1 : 1 - clamp((t - (t1 - OUT)) / OUT));
+const ink = c => (c === 'paper' ? '#F7F4EE' : '#34342F');
+const rise = (s, e) => { s.style.transform = `translateY(${(1 - e) * 105}%)`; };   // 가려진 줄 안에서 아래 → 제자리
+const lineOf = (parent, cls, txt) => { const l = el('div', 'line'), s = el('span', cls, txt); l.appendChild(s); parent.appendChild(l); return s; };
+
+// 빌더: 큐 하나의 뿌리(.cue)를 무대에 붙이고, 시각 t를 받아 그리는 함수를 돌려준다
+const builders = {
+  text(c, root) {   // 한 줄(머리말 · 큰 단어 · 작은 로고 · 표시 문구): font suit|inter, weight, size, track(em), align left|center, alpha
+    const box = el('div');
+    Object.assign(box.style, { position: 'absolute', top: c.y + 'px', color: ink(c.color), whiteSpace: 'nowrap',
+      fontFamily: c.font === 'inter' ? "'Inter Tight'" : "'SUIT'", fontWeight: String(c.weight || 500), fontSize: (c.size || 36) + 'px',
+      letterSpacing: (c.track || 0) + 'em', lineHeight: '1.12' });
+    if (c.align === 'center') Object.assign(box.style, { left: '0', right: '0', textAlign: 'center', paddingLeft: (c.track || 0) + 'em' });
+    else box.style.left = c.x + 'px';
+    const s = lineOf(box, null, c.text);
+    root.appendChild(box);
+    return t => {
+      rise(s, outQuint((t - c.t0) / IN));
+      box.style.opacity = (c.alpha ?? 1) * fadeOut(t, c.t1);
+    };
+  },
+  pill(c, root) {   // AI 표시 알약: 흰 알약(불투명 85%) 위 짙은 회색 34px — 부속물 AI_표시_문구_견본 「영상 안 자리」(왼쪽 65 · 위 281)
+    const box = el('div', null, c.text);
+    Object.assign(box.style, { position: 'absolute', left: (c.x ?? 65) + 'px', top: (c.y ?? 281) + 'px', padding: '10px 22px 11px',
+      borderRadius: '999px', background: 'rgba(255,255,255,0.85)', color: '#3C3C3A', fontFamily: "'SUIT'", fontWeight: '500',
+      fontSize: (c.size || 34) + 'px', whiteSpace: 'nowrap' });
+    root.appendChild(box);
+    return t => { box.style.opacity = Math.min(clamp((t - c.t0) / 0.25), fadeOut(t, c.t1)); };
+  },
+  hook(c, root) {   // 줄마다 아래에서 가려진 채 올라온다(마스크 와이프)
+    const box = el('div', 'hook');
+    Object.assign(box.style, { left: c.x + 'px', top: c.y + 'px', color: ink(c.color) });
+    if (c.size) box.style.fontSize = c.size + 'px';
+    if (c.align === 'center') Object.assign(box.style, { left: '0', right: '0', textAlign: 'center' });
+    const spans = c.lines.map(s => lineOf(box, null, s));
+    root.appendChild(box);
+    return t => {
+      spans.forEach((sp, i) => rise(sp, outQuint((t - c.t0 - i * STAGGER) / IN)));
+      box.style.opacity = fadeOut(t, c.t1);
+    };
+  },
+  callout(c, root) {   // 점이 찍히고 선이 그어진 뒤(0.45초) 끝에 작은 글이 올라온다
+    root.classList.add('callout');
+    const svg = svgEl('svg', { width: 1080, height: 1920 });
+    const [x1, y1] = c.from, [x2, y2] = c.to, len = Math.hypot(x2 - x1, y2 - y1);
+    const ln = svgEl('line', { x1, y1, x2, y2, stroke: ink(c.color), 'stroke-width': 1.5, 'stroke-dasharray': len, 'stroke-dashoffset': len });
+    const dot = svgEl('circle', { cx: x1, cy: y1, r: 0, fill: ink(c.color) });
+    svg.appendChild(ln); svg.appendChild(dot); root.appendChild(svg);
+    const lab = el('div', 'label');
+    Object.assign(lab.style, { color: ink(c.color), top: (y2 - 18) + 'px' });
+    if (x2 >= x1) lab.style.left = (x2 + 16) + 'px'; else Object.assign(lab.style, { right: (1080 - x2 + 16) + 'px', alignItems: 'flex-end' });
+    const rows = [];
+    if (c.label) rows.push(lineOf(lab, 'cap', c.label));
+    if (c.sub) rows.push(lineOf(lab, 'ko', c.sub));
+    root.appendChild(lab);
+    return t => {
+      dot.setAttribute('r', 4.5 * outQuint((t - c.t0) / 0.18));
+      ln.setAttribute('stroke-dashoffset', len * (1 - inOutCubic((t - c.t0 - 0.1) / 0.45)));
+      rows.forEach((s, i) => rise(s, outQuint((t - c.t0 - 0.42 - i * STAGGER) / IN)));
+      root.style.opacity = fadeOut(t, c.t1);
+    };
+  },
+  specs(c, root) {   // 「약산성 | pH 5.5 | 무향」을 왼쪽부터 하나씩, 칸막이는 아래에서 자란다
+    const row = el('div', 'specs');
+    Object.assign(row.style, { left: c.x + 'px', top: c.y + 'px', color: ink(c.color) });
+    if (c.align === 'center') Object.assign(row.style, { left: '0', right: '0', justifyContent: 'center' });
+    const parts = [];
+    c.items.forEach((s, i) => {
+      if (i) { const sep = el('div', 'sep'); sep.style.background = ink(c.color); row.appendChild(sep); parts.push({ sep, i }); }
+      parts.push({ span: lineOf(row, null, s), i });
+    });
+    root.appendChild(row);
+    return t => {
+      parts.forEach(p => {
+        const e = outQuint((t - c.t0 - p.i * STAGGER) / IN);
+        if (p.sep) p.sep.style.transform = `scaleY(${e})`; else rise(p.span, e);
+      });
+      row.style.opacity = fadeOut(t, c.t1);
+    };
+  },
+  lockup(c, root) {   // 「맑음」 → MALGEUM → 가운데서 벌어지는 선 → 문구
+    const box = el('div', 'lockup');
+    Object.assign(box.style, { top: c.y + 'px', color: ink(c.color) });
+    const word = lineOf(box, 'word', c.word || '맑음'), en = lineOf(box, 'cap en', c.en || 'MALGEUM');
+    if (c.size) word.style.fontSize = c.size + 'px';
+    const rule = el('div', 'rule'); rule.style.background = ink(c.color); box.appendChild(rule);
+    const tag = lineOf(box, 'tag', c.tag || '세안 뒤 첫 숨, 맑게');
+    root.appendChild(box);
+    return t => {
+      rise(word, outQuint((t - c.t0) / IN));
+      rise(en, outQuint((t - c.t0 - STAGGER) / IN));
+      rule.style.transform = `scaleX(${inOutCubic((t - c.t0 - 0.3) / 0.5)})`;
+      rise(tag, outQuint((t - c.t0 - 0.45) / IN));
+      box.style.opacity = fadeOut(t, c.t1);
+    };
+  },
+  timer(c, root) {   // 「00:03」이 1초마다 줄고 옆의 가는 고리가 같이 닫힌다(세안 후 3초)
+    const box = el('div', 'timer');
+    Object.assign(box.style, { left: c.x + 'px', top: c.y + 'px', color: ink(c.color) });
+    const R = 15, L = 2 * Math.PI * R;
+    const svg = svgEl('svg', { width: 36, height: 36, viewBox: '-18 -18 36 36' });
+    svg.appendChild(svgEl('circle', { r: R, fill: 'none', stroke: ink(c.color), 'stroke-opacity': 0.25, 'stroke-width': 1.5 }));
+    const arc = svgEl('circle', { r: R, fill: 'none', stroke: ink(c.color), 'stroke-width': 1.5, 'stroke-dasharray': L, transform: 'rotate(-90)' });
+    svg.appendChild(arc);
+    const txt = el('span'); box.appendChild(svg); box.appendChild(txt); root.appendChild(box);
+    const dur = Math.max(0.1, c.t1 - c.t0 - OUT);
+    return t => {
+      const p = clamp((t - c.t0) / dur), left = Math.max(c.to, Math.ceil(c.from - p * (c.from - c.to) - 1e-6));
+      txt.textContent = '00:' + String(left).padStart(2, '0');
+      arc.setAttribute('stroke-dashoffset', L * p);
+      box.style.opacity = Math.min(clamp((t - c.t0) / 0.25), fadeOut(t, c.t1));
+    };
+  },
+};
+
+const live = (window.M_CUES || []).map(c => {
+  const root = el('div', 'cue');
+  stage.appendChild(root);
+  return { c, root, draw: builders[c.type](c, root) };
+});
+window.seek = t => {
+  for (const { c, root, draw } of live) {
+    const on = t >= c.t0 && (c.t1 == null || t < c.t1);
+    root.style.display = on ? 'block' : 'none';
+    if (on) draw(t);
+  }
+};
+document.fonts.ready.then(() => { window.seek(0); window.ready = true; });
+</script>
+</body>
+</html>

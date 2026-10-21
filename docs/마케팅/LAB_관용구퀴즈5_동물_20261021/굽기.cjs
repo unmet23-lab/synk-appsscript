@@ -53,8 +53,9 @@ let 실 = null;
   const 줄들 = 남은.split('\n');
   남은 = 줄들.pop();
   for (const 줄 of 줄들) {
+    // 한도에 걸리면 codex계정.js가 다른 계정으로 다시 부르며 thread가 새로 열린다 — 그림은 마지막 thread에 있다(10-21 지유 K5)
     const m = /"thread_id"\s*:\s*"([^"]+)"/.exec(줄);
-    if (m && !실) 실 = m[1];
+    if (m) 실 = m[1];
   }
 });
 자식.on('close', (code) => {

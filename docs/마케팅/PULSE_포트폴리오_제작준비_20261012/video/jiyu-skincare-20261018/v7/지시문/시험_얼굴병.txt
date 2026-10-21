@@ -1,0 +1,11 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — one frame from a premium Korean skincare commercial for the toner MALGEUM (맑음). Vertical 9:16, photoreal, shot like a real beauty campaign on a cinema camera: 85mm lens at f/2, camera at eye level, shallow depth of field.
+
+THE WOMAN — exactly the same Korean woman as in Images 1, 2 and 3 (identity reference only: same face shape, eyes, nose, lips, jaw, skin tone and age; do not copy their background, light or framing). Her look for this ad matches Image 4: long straight black hair with a center part worn down, a white terry-cloth headband pushing the hair back, a plain white cotton crew-neck T-shirt, bare fresh skin with a natural dewy glow right after washing her face, no visible makeup.
+
+THE PRODUCT — the exact bottle in Image 5 (heavy thick-walled clear glass cylinder, very thick clear base, tall brushed-aluminium cap, charcoal print MALGEUM / 맑음 / 약산성 토너 / MILD ACIDIC TONER / pH 5.5 · 무향 · 150 ml, letter for letter as in Image 5). Same proportions; it must look like the same real object, not a redesign.
+
+THE SHOT — a chest-up close-up. She holds the bottle upright in her right hand beside her right cheek (on the left side of the picture), fingers relaxed around the lower half so the whole print stays visible and readable, the bottle slightly closer to the camera than her face and in sharp focus; her face is turned about 15 degrees toward the window and she looks just past the lens with a soft, closed-mouth, quietly content smile (relaxed brows, eyes gently smiling). Setting as in Image 4's bathroom but warmer and more refined: a warm greige limewashed plaster wall softly out of focus behind her, a hint of a brass towel bar. Light: early-morning sun through a sheer white curtain from the left of the picture, warm and soft, a gentle highlight sweeping across the glass and the liquid, natural skin texture with pores, no retouching.
+
+Finish: real photographic look — no CGI or plastic sheen, no HDR, no over-sharpening, very fine 35mm film grain. No text anywhere except the bottle's own print. No watermark.
