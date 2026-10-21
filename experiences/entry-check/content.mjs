@@ -127,7 +127,7 @@ export const VENUES = [
         reply: '그럼 1층에서 카드를 새로 만들게요.', oops: '잠시 뒤, 관장님이 “카드 없이 들어온 분 계세요?” 하고 찾으러 나왔어요.' },
       { id: 'library-10', at: '16:59', who: 'deer', followupOnly: true, textOnly: true, doc: doc('별빛 도서관 카드', [['이름', '노나래'], ['카드 번호', 'L-1026']], 'card'),
         items: ['book'], line: '제 도서관 카드를 가져왔어요. 책을 빌리고 싶어요.', answer: 'pass', skill: 'ko.reading.detail', difficulty: 1,
-        look: 'doc', evidence: ['card'], why: '나래 씨 이름이 적힌 도서관 카드가 있고, 짐은 책뿐이에요. 지금은 4시 59분이라 아직 5시 30분 전이어서 들어갈 수 있어요.',
+        look: 'doc', evidence: ['card'], why: '나래 씨 이름이 적힌 도서관 카드가 있고, 짐은 책뿐이에요. 지금은 오후 4시 59분이라 아직 오후 5시 30분 전이어서 들어갈 수 있어요.',
         reply: '고마워요. 빌릴 책을 찾아볼게요.', oops: '나래 씨가 카드를 다시 보여 줬어요. “제 이름, 여기 있는데요?”' },
       { id: 'library-03', at: '17:01', who: 'rabbit', doc: doc('별빛 도서관 카드', [['이름', '박토순'], ['카드 번호', '1953-0402']], 'card'),
         items: ['coffee-lid'], line: '커피는 뚜껑을 꼭 닫았어요.', answer: 'pass', skill: 'ko.reading.condition', difficulty: 2,

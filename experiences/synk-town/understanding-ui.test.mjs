@@ -8,7 +8,7 @@ const map = createMap(require('../../strata/maps/topik-i.json'));
 class Element {
   constructor() { this.children = []; this.dataset = {}; this.open = false; this.textContent = ''; }
   replaceChildren(...nodes) { this.children = nodes; }
-  addEventListener() {} showModal() { this.open = true; } close() { this.open = false; }
+  addEventListener() {} showModal() { this.open = true; } close() { this.open = false; } scrollIntoView() {}
 }
 function fixture(t, { noApi = false, throws = false, exhausted = false } = {}) {
   const nodes = new Map(), $ = id => { if (!nodes.has(id)) nodes.set(id, new Element()); return nodes.get(id); };

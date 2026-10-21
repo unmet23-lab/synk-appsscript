@@ -38,6 +38,8 @@ export function mountUnderstanding({ transport, available }) {
             node.textContent = `${item.choices[option]}${option === choice ? ' · 내가 고른 답' : ''}${option === item.correct ? ' · 정답' : ''}`;
           }
           $('reading-hint').disabled = true; $('reading-next').hidden = false; $('reading-next').textContent = index === round.length - 1 ? '읽기 확인 마치기' : follow?.status === 'new' ? '새 안내문으로 확인하기' : '다음 안내문';
+          // 해설이 길면 휴대폰(마을 안 판)에서 단추가 판 아래로 밀린다(10-21 화면 검수) — 단추가 보일 만큼만 판을 내린다.
+          $('reading-next').scrollIntoView({ block: 'nearest' });
         } catch { clear(); } finally { if (mine === epoch) pending = false; }
       }; return button;
     }));
