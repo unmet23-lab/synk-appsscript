@@ -1019,14 +1019,14 @@
     },
     {
       "id": "ti-r-d-023",
-      "rev": 1,
+      "rev": 2,
       "family": "ti-r-d-023",
       "exam": "topik-i",
       "format": "pbt",
       "section": "reading",
       "officialType": "TI-R-70",
       "targetGrade": 2,
-      "skillId": "ko.reading.reason",
+      "skillId": "ko.reading.detail",
       "difficulty": 2,
       "responseFormat": "single-choice",
       "set": {
@@ -1059,7 +1059,7 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -1093,6 +1093,16 @@
           "rev": 1,
           "hash": "925663599f84e7be",
           "packet": "pilot-new"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T01:08:46.636Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "4dcfb057e0af6c32",
+          "notes": "pilot-new 판정(고침)대로 대표 능력을 ko.reading.reason → ko.reading.detail로 — 오답 셋이 이유가 아니라 세부 정보(동행·방향·경험)로 지워진다. 글·보기·해설은 그대로."
         }
       ]
     }

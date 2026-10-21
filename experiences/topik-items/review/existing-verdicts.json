@@ -1,9 +1,268 @@
 {
   "version": "topik-existing-verdicts-1",
   "rubric": "topik-review-r1",
-  "updatedAt": "2026-10-21T00:54:30.583Z",
+  "updatedAt": "2026-10-21T02:01:50.174Z",
   "note": "기존 게임·진단 문항의 AI 2중 검수 판정(허용 목록). verdict \"pass\"만 연습에 낸다. 첫 판은 비어 있다 — 판정이 나오는 대로 채운다.",
   "items": [
+    {
+      "itemKey": "blank-slice.a01.v1",
+      "source": "blank-slice",
+      "verdict": "fix",
+      "skillId": "ko.reading.grammar",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "blank-slice.a01.v1",
+      "officialType": "TI-R-34",
+      "reason": "「아직 + 안 -었어요」 호응을 묻는 짧은 빈칸 문항입니다. 정답이 유일하고 보기도 그럴듯하지만, 길이와 문형으로 보아 난도는 1이 맞아 difficulty만 고치면 됩니다. | 부사 '아직'과 부정 문형 '안 했어요'의 호응을 묻는 문항으로 통과. | 정답은 하나뿐이고, 오답도 그럴듯합니다. 「아직」 뒤에 「할게요」「했어요」「다 했어요」는 어울리지 않고 「안 했어요」만 맞습니다. 글은 두 문장이고 정보는 한두 개입니다. 묻는 것은 「아직」과 「안 -었어요」의 호응으로, 1급 앞쪽의 문형 1단계입니다. 작성 기준 §3의 difficulty 2(문형 2단계, 정보 3개 이상, 바뀐 정보나 조건)에 해당하지 않으므로 difficulty는 1이 맞습니다. 검수자 A의 지적을 받아들입니다. 나머지(능력 ko.reading.grammar, 자연스러움, 문화)는 문제없습니다. 발문의 「-세요」와 한국어만 있는 해설은 기존 게임 문항이라 허용합니다.",
+      "hash": "41320e30f87558cf",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "blank-slice.a02.v1",
+      "source": "blank-slice",
+      "verdict": "fix",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "blank-slice.a02.v1",
+      "officialType": "TI-R-34",
+      "reason": "정답 '열심히'는 유일하고, 오답도 같은 품사로 그럴듯해요. 해설에 '가끔' 설명이 빠진 것은 사소해서 통과예요. | 문항 자체와 해설은 적절하나, 1급 기초 어휘·문형 두 문장이므로 difficulty를 2에서 1로 낮추어야 한다. | 직접 풀어도 정답은 0번 ‘열심히’ 하나뿐입니다. ‘별로·전혀’는 부정어(안·못·않다)와 함께 써야 하므로 긍정문 ‘공부했어요’와 맞지 않습니다. ‘가끔’은 여러 번 가운데 때때로 한다는 뜻이라, 하룻밤의 일인 ‘어젯밤에’와 어울리지 않습니다. 오답은 모두 같은 품사(부사)라 그럴듯하고, 문항 자체는 쓸 만합니다. 다만 검수자 B의 지적이 맞습니다. 글은 두 문장이고, 정보는 시험·어젯밤 공부 1~2개이며, 이음말은 1급 ‘그래서’뿐입니다. 2단계 문형도, 바뀐 정보나 조건도 없습니다. 따라서 작성 기준 §3의 difficulty 2(글 4~6문장·정보 3개 이상·문형 2단계)가 아니라 difficulty 1에 해당합니다. 난도 칸이 틀리면 Core가 칸을 잘못 나누므로 고쳐서 내보냅니다. 해설에 ‘가끔’이 틀린 까닭이 빠진 것은 검수자 A 말대로 사소하지만, 고치는 김에 함께 보완합니다. 기존 게임 문항이라 발문 말투(-세",
+      "hash": "cd5f16c73fc43f3d",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "blank-slice.e01.v3",
+      "source": "blank-slice",
+      "verdict": "pass",
+      "skillId": "ko.reading.grammar",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "blank-slice.e01.v1",
+      "officialType": "TI-R-34",
+      "reason": "목적의 「-(으)러」를 묻는 1급 문형 빈칸으로 정답이 하나뿐이고 보기 꼴이 고르다. 해설에 「보고」 오답 설명이 빠진 점만 사소하다. 통과. | 목적 연결 어미 '-(으)러'를 묻는 초급 문법 문항으로 정답이 유일하고 오답 구성이 적절함.",
+      "hash": "7fd8cbbe521c08ad",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "blank-slice.e02.v2",
+      "source": "blank-slice",
+      "verdict": "pass",
+      "skillId": "ko.reading.grammar",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "blank-slice.e02.v1",
+      "officialType": "TI-R-34",
+      "reason": "정답이 하나뿐이고 문형만 가르는 깔끔한 1급 빈칸 문항이에요. 해설에 오답 설명이 없는 점은 사소해서 그대로 통과예요. | 희망 표현 '-고 싶다'를 묻는 초급 문법 문항으로 맥락이 분명하고 오답 구성이 적절함.",
+      "hash": "e80f97491cd73d9a",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "blank-slice.e03.v1",
+      "source": "blank-slice",
+      "verdict": "pass",
+      "skillId": "ko.reading.grammar",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "blank-slice.e03.v1",
+      "officialType": "TI-R-34",
+      "reason": "정답 「있으면」이 유일하다. 오답도 그럴듯하고 꼴이 고르다. 해설은 짧지만 정확하다. 그대로 써도 된다. | 조건 연결 어미 '-(으)면'과 청유형 후행절 제약을 묻는 깔끔한 문항으로 통과.",
+      "hash": "bfdb7c0373f9004c",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "blank-slice.e04.v1",
+      "source": "blank-slice",
+      "verdict": "pass",
+      "skillId": "ko.reading.grammar",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "blank-slice.e04.v1",
+      "officialType": "TI-R-34",
+      "reason": "정답이 하나뿐이고 1급 문형 '못'과 -아서 호응을 묻는 깔끔한 빈칸 문항입니다. 해설에 '갔어요'가 왜 틀린지 한 줄 덧붙이면 더 좋지만, 고치지 않아도 통과입니다. | 이유 연결 어미 뒤에서 부정 문형 '못 갔어요'를 고르는 기초 문항으로 통과.",
+      "hash": "5c10637a69351821",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "blank-slice.e05.v1",
+      "source": "blank-slice",
+      "verdict": "pass",
+      "skillId": "ko.reading.grammar",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "blank-slice.e05.v1",
+      "officialType": "TI-R-34",
+      "reason": "정답 '후에'가 유일하고, 오답들이 관형형 결합으로 분명히 지워지는 바른 문법 빈칸 문항이에요. 해설에 '동안'·'때문에'가 틀린 까닭을 한 줄 더하면 좋지만, 고치지 않아도 통과예요. | '-(으)ㄴ 후에'의 문형 결합 제약을 정확히 묻는 문항으로 통과.",
+      "hash": "eca889830b744296",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "blank-slice.e06.v1",
+      "source": "blank-slice",
+      "verdict": "fix",
+      "skillId": "ko.reading.grammar",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "blank-slice.e06.v1",
+      "officialType": "TI-R-34",
+      "suggestedSkillId": "ko.reading.vocabulary",
+      "reason": "정답은 유일하고 난도도 맞아요. 다만 「지하철을 내리세요」는 조사가 틀리고 「파세요」는 터무니없는 오답이에요. 정답이 동사 뜻으로 갈리므로 능력도 낱말 읽기로 바꾸는 것이 맞아요. 보기 두 개를 바꾸면 쓸 수 있어요. | 보기에 문형 오답('타지 마세요')과 어휘 오답('내리세요', '파세요')이 뒤섞여 있고 '지하철을 파세요'가 터무니없으므로, 문형 또는 어휘 한쪽으로 보기를 통일해야 함.",
+      "hash": "642bee071505f94b",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "blank-slice.e07.v2",
+      "source": "blank-slice",
+      "verdict": "fix",
+      "skillId": "ko.reading.grammar",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "blank-slice.e07.v1",
+      "officialType": "TI-R-34",
+      "reason": "정답 '도와줄'은 유일하고 보기 꼴도 좋아요. 다만 겨눈 문형이 1단계라 난도를 1로 내리고, 발문 말투와 해설을 조금 다듬으면 쓸 수 있어요. | '-(으)ㄹ 거예요'의 관형사형 결합을 묻는 깔끔한 문항으로 바로 사용 가능함. | 정답 '도와줄'은 하나뿐이에요. '-(으)ㄹ 거예요' 앞에는 관형사형만 올 수 있어서 '도와주면·도와주고·도와줘서'는 문법적으로 들어갈 수 없어요. 오답 꼴도 같은 동사의 다른 어미로 고르게 짜여 있어 문법 빈칸으로 알맞아요. 다만 난도 표시가 기준과 맞지 않아요. 글이 두 문장이고 정보가 하나이며, 겨눈 문형 '-(으)ㄹ 거예요'와 이음말 '그래서'는 모두 1단계예요. 작성 기준 §3에 따르면 difficulty 2(2급: 문형 2단계, 글 4~6문장, 정보 3개 이상)가 아니라 1이에요. 이 값은 Core가 칸을 나누는 데 쓰이므로 그대로 두면 안 돼요. 발문 말투(-세요 → -십시오)와 해설에 오답 근거가 없는 점은 사소하지만 함께 고치는 것이 좋아요. 따라서 검수자 A의 지적을 받아들여요.",
+      "hash": "1363e41fa3d13568",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
     {
       "itemKey": "blank-slice.e08.v3",
       "source": "blank-slice",
@@ -45,6 +304,357 @@
       "reviewedAt": "2026-10-21T00:54:30.583Z",
       "rubric": "topik-review-r1",
       "packet": "pilot-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "blank-slice.e10.v1",
+      "source": "blank-slice",
+      "verdict": "pass",
+      "skillId": "ko.reading.grammar",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "blank-slice.e10.v1",
+      "officialType": "TI-R-34",
+      "reason": "정답이 하나로 분명하고, 문형 빈칸으로서 꼴과 난도가 맞습니다. 해설에 「'동안' 앞에는 '-는'이 와야 해서 '여행해서·여행하면·여행하고'는 쓸 수 없어요.」를 덧붙이면 더 좋지만, 그대로 통과해도 됩니다. | '-는 동안' 문형의 관형사형 결합을 묻는 문항으로 모든 기준을 충족함.",
+      "hash": "9efd8d69281dd3b0",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "blank-slice.g01.v1",
+      "source": "blank-slice",
+      "verdict": "pass",
+      "skillId": "ko.reading.grammar",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "blank-slice.g01.v1",
+      "officialType": "TI-R-34",
+      "reason": "이유와 결과를 잇는 ‘그래서’를 고르는 1급 이음말 빈칸 문항이에요. 정답이 하나뿐이고 오답도 적절해서 통과예요. 앞으로 영어·몽골어 해설과 보기별 메모를 더하면 좋아요. | 인과 접속부사 ‘그래서’를 고르는 문항으로 문맥과 오답 구성, 해설 모두 적절하다.",
+      "hash": "880d01733a7d3710",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "blank-slice.g02.v1",
+      "source": "blank-slice",
+      "verdict": "pass",
+      "skillId": "ko.reading.grammar",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "blank-slice.g02.v1",
+      "officialType": "TI-R-34",
+      "reason": "대조를 나타내는 이음말 '하지만'을 고르는 쉬운 빈칸 문항이다. 정답이 하나뿐이고 급과 난도에 맞아서 그대로 써도 된다. | 역접 접속부사 ‘하지만’을 고르는 문항으로 대립 맥락이 분명하고 해설과 보기 구성이 적절하다.",
+      "hash": "d432914a6d148f7f",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "blank-slice.g03.v1",
+      "source": "blank-slice",
+      "verdict": "pass",
+      "skillId": "ko.reading.grammar",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "blank-slice.g03.v1",
+      "officialType": "TI-R-34",
+      "reason": "정답 「그리고」가 유일하고, 1급에 맞는 짧은 이음말 빈칸 문항입니다. 해설이 짧은 것 말고는 문제가 없어 통과합니다. | 초급 접속부사를 알맞게 변별하는 문항으로 모든 기준을 충족함.",
+      "hash": "f2ba5d6bcfe0fcf2",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "blank-slice.p01.v1",
+      "source": "blank-slice",
+      "verdict": "pass",
+      "skillId": "ko.reading.grammar",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "blank-slice.p01.v1",
+      "officialType": "TI-R-34",
+      "reason": "정답 '을'이 유일하고 오답도 적절한 기초 조사 빈칸 문항이에요. 기존 게임 문항이라 해설이 한국어만 있고 발문이 -세요체인 점은 허용 범위여서 통과로 판정해요. | 목적격 조사 '을'을 고르는 기초 문법 문항으로 모든 기준을 충족한다.",
+      "hash": "73891f27d352b1a2",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "blank-slice.p02.v1",
+      "source": "blank-slice",
+      "verdict": "pass",
+      "skillId": "ko.reading.grammar",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "blank-slice.p02.v1",
+      "officialType": "TI-R-34",
+      "reason": "장소 조사 「에서」를 묻는 기본 빈칸 문항입니다. 정답이 하나로 분명하고 급과 난도에도 맞아 통과입니다. 해설에 「에」와의 차이를 보태면 더 좋습니다. | 동작의 장소를 나타내는 조사 '에서'를 고르는 문항으로 오답 매력도와 해설이 모두 적절하다.",
+      "hash": "55997df47bddb97a",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "blank-slice.p03.v1",
+      "source": "blank-slice",
+      "verdict": "pass",
+      "skillId": "ko.reading.grammar",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "blank-slice.p03.v1",
+      "officialType": "TI-R-34",
+      "reason": "'있어요' 앞의 주격 조사 '이'를 고르는 1급 조사 빈칸 문항이에요. 정답이 하나뿐이고 오답 꼴도 고르게 맞춰져 있어요. 해설에 오답 「을」 설명을 더하면 더 좋지만, 지금 그대로 통과해도 돼요. | 1급 기초 주격 조사 '이'를 묻는 자연스럽고 명확한 문항이다.",
+      "hash": "c7da7baec64298ab",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "blank-slice.p04.v1",
+      "source": "blank-slice",
+      "verdict": "pass",
+      "skillId": "ko.reading.grammar",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "blank-slice.p04.v1",
+      "officialType": "TI-R-34",
+      "reason": "수단 조사 '(으)로' 빈칸 문항으로, 정답이 하나이고 급과 난도에 맞다. 해설에 '를'이 틀린 까닭('버스를 타요'와 구별)을 한 줄 더하면 좋겠지만 고치지 않아도 통과한다. | 교통수단을 나타내는 조사 '(으)로'를 묻는 깔끔한 1급 문항이다.",
+      "hash": "78b873f0d8e5f283",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "blank-slice.p05.v1",
+      "source": "blank-slice",
+      "verdict": "pass",
+      "skillId": "ko.reading.grammar",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "blank-slice.p05.v1",
+      "officialType": "TI-R-34",
+      "reason": "「친구와 같이」를 묻는 기초 조사 빈칸 문항입니다. 정답이 하나로 분명하고 오답도 적절하며, 해설이 정확해 통과입니다. | 동반 격조사 ‘와’를 고르는 기초 문항으로 정답 유일성, 오답 구성, 해설 모두 적절하다.",
+      "hash": "1536f60dccbed296",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "blank-slice.p06.v1",
+      "source": "blank-slice",
+      "verdict": "fix",
+      "skillId": "ko.reading.grammar",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "blank-slice.p06.v1",
+      "officialType": "TI-R-34",
+      "reason": "정답 「을」은 하나뿐이고, 오답 「이」도 매력적인 좋은 조사 빈칸 문항이에요. 다만 1단계 문형만 쓰는 두 문장 글이라 난도는 1이 맞아요. 난도 값만 고치면 쓸 수 있어요. | 기초 목적격 조사 ‘을’을 묻는 적절한 문항이나, 1급 앞쪽 수준이므로 difficulty를 2에서 1로 수정해야 한다.",
+      "hash": "91d2d6bf8ce00f78",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "blank-slice.t01.v1",
+      "source": "blank-slice",
+      "verdict": "pass",
+      "skillId": "ko.reading.grammar",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "blank-slice.t01.v1",
+      "officialType": "TI-R-34",
+      "reason": "과거 시제 빈칸 문항으로 정답이 유일하고 수준·능력·난도가 맞아요. 발문 말투와 해설 언어가 부족하지만 기존 게임 문항이라 통과예요. | 시간 부사어 '어제'에 호응하는 과거 시제 '-았/었-'을 묻는 적절한 문항이다.",
+      "hash": "485f2c54a7516cf6",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "blank-slice.v01.v1",
+      "source": "blank-slice",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "blank-slice.v01.v1",
+      "officialType": "TI-R-34",
+      "reason": "정답 「물」이 하나뿐이고 1급 낱말 빈칸 꼴에 맞는 기초 문항이에요. 오답 둘(옷·책)은 약하지만 1급 앞쪽에서는 문제가 되지 않아 통과예요. | 맥락과 서술어 '마시다'에 맞는 명사 '물'을 고르는 어휘 문항으로 적합하다.",
+      "hash": "9789e49f7b58de84",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "blank-slice.v02.v1",
+      "source": "blank-slice",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "blank-slice.v02.v1",
+      "officialType": "TI-R-34",
+      "reason": "「코트를 입어요」로 정답이 하나뿐인 1급 낱말 빈칸 문항입니다. 착용 동사 오답이 적절하고 해설도 바르므로 통과입니다. | '코트'와 어울리는 착용 동사 '입어요'를 고르는 어휘 문항으로 모든 기준을 충족한다.",
+      "hash": "e1219103a5af519b",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
       "by": [
         {
           "stage": "claude",
@@ -113,6 +723,33 @@
       ]
     },
     {
+      "itemKey": "blank-slice.v05.v1",
+      "source": "blank-slice",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "blank-slice.v05.v1",
+      "officialType": "TI-R-34",
+      "reason": "정답 '병원'이 유일하고, 보기 꼴과 급이 TI-R-34·1급 앞쪽에 맞아요. 해설이 짧고 한국어뿐이지만 기존 문항이라 통과로 봐요. 보완한다면 해설에 「배가 아파요」 근거와 오답 이유를 더하는 것이 좋아요. | 기초 장소 명사 '병원'의 의미를 문맥으로 묻는 적절한 1급 어휘 문항이다.",
+      "hash": "d84e69dde5fd558d",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
       "itemKey": "blank-slice.v06.v3",
       "source": "blank-slice",
       "verdict": "pass",
@@ -167,6 +804,65 @@
       ]
     },
     {
+      "itemKey": "blank-slice.v08.v1",
+      "source": "blank-slice",
+      "verdict": "fix",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "blank-slice.v08.v1",
+      "officialType": "TI-R-34",
+      "reason": "정답 매워요는 맞다. 다만 「너무 달아요. 물 좀 주세요」도 자연스러워 정답 유일성이 흔들리므로 달아요를 바꾸고, 해설에 단서와 오답 설명을 보강해야 한다. | 문맥(‘물 좀 주세요’)에 맞는 맛 형용사 ‘매워요’를 고르는 문항으로 모든 기준을 충족한다. | 정답 「매워요」는 「물 좀 주세요」라는 단서에 맞습니다. 하지만 「너무 달아요. 물 좀 주세요」도 단 음식을 먹은 뒤 물을 찾는 말로 자연스럽게 읽힙니다. 이 보기를 지우려면 「김치찌개는 달지 않다」는 음식 상식이 필요해 정답 유일성이 흔들리므로, A의 지적을 받아들입니다. 「싱거워요」와 「차가워요」는 물을 찾을 까닭이 아니어서 분명히 틀립니다. 해설은 단서를 짚지 않고 오답 설명도 없어 함께 보강합니다. 낱말과 문형은 1급 앞쪽에 맞습니다.",
+      "hash": "ef2736098c4e1ec9",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "blank-slice.v09.v1",
+      "source": "blank-slice",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "blank-slice.v09.v1",
+      "officialType": "TI-R-34",
+      "reason": "단위 명사 ‘잔’을 고르는 1급 낱말 빈칸 문항으로, 정답이 유일하고 보기와 해설이 바르다. 발문 말투와 choiceNotes가 없는 점은 기존 게임 문항이라 사소하다. | 음료의 단위 명사 '잔'을 묻는 기초 어휘 문항으로 구성과 해설이 모두 적절함.",
+      "hash": "fa272d31c0d6d5d4",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
       "itemKey": "blank-slice.v10.v1",
       "source": "blank-slice",
       "verdict": "pass",
@@ -207,6 +903,33 @@
       "reviewedAt": "2026-10-21T00:54:30.583Z",
       "rubric": "topik-review-r1",
       "packet": "pilot-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "blank-slice.v12.v1",
+      "source": "blank-slice",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "blank-slice.v12.v1",
+      "officialType": "TI-R-34",
+      "reason": "정답이 분명한 1급 부사 빈칸 문항이라 그대로 써도 된다. 해설에 「크게」가 왜 틀린지 한 줄을 더하면 좋다(선택). | 장소 맥락에 맞는 기초 부사 '조용히'를 묻는 어휘 문항으로 정답이 유일하고 오답이 고름.",
+      "hash": "bd5f199aec806873",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
       "by": [
         {
           "stage": "claude",
@@ -307,6 +1030,66 @@
       ]
     },
     {
+      "itemKey": "entry-check.concert-11.v1",
+      "source": "entry-check",
+      "verdict": "fix",
+      "skillId": "ko.reading.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.concert-11.v1",
+      "officialType": "TI-R-40",
+      "reason": "정답(의자 반입 금지로 돌려보내기)은 유일하고 날짜·어린이 함정도 잘 짜였다. 다만 정보량과 낱말(보호자·이하·접이식)로 보아 난도는 2가 맞다. 해설에는 날짜 함정이 왜 문제가 아닌지 한 줄을 더해야 한다. | 문항과 해설 모두 이상 없으나, 동일한 안내문을 쓰는 u052와 마찬가지로 작성 기준 §3상 difficulty 2에 해당함. | 직접 풀어도 정답은 2(돌려보내기·의자)다. 안내문의 「의자는 가지고 올 수 없습니다」와 손님 짐의 「접이식 의자」가 맞부딪친다. 날짜 보기는 「8월 9일 표로 들어올 수 있습니다」로 지워지고, 어린이 보기는 구분 「어른」으로 지워져서 정답은 하나뿐이다. 기존 게임 꼴(들여보낼지 고르기)이니 TI-R-40 발문 꼴과 다른 것은 문제 삼지 않는다. 다만 두 검수자 모두 난도를 2로 보았고, 나도 같은 생각이다. 작성 기준 §3에서 2는 「정보 3개 이상, 바뀐 정보나 조건」이다. 이 글에는 날짜 변경, 반입 조건, 나이 조건, 손님 서류가 있고, 「보호자」「이하」「접이식」은 1급 앞쪽 낱말이 아니다. 따라서 difficulty 1은 틀린 값이고, B처럼 pass로 두면 Core 칸이 잘못 나간다. 또 이 문항에서 가장 걸리",
+      "hash": "309bf25b2168ef5c",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.concert-12.v1",
+      "source": "entry-check",
+      "verdict": "fix",
+      "skillId": "ko.reading.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.concert-12.v1",
+      "officialType": "TI-R-40",
+      "suggestedSkillId": "ko.reading.negation",
+      "reason": "정답은 유일하고 난도도 맞다. 다만 손님 말이 정답 근거를 그대로 알려 주고, 해설이 근거 없이 「할머니」라고 부르며 근거 인용이 없다. 대표 능력은 변경 정보이므로 negation이 더 맞다. 이 세 가지를 고치면 쓸 수 있다. | 지문에 없는 '할머니' 지칭(게임 이미지 의존)이 해설에 쓰여 '토순 씨'로 다듬을 필요가 있고, 핵심 판단 근거가 일정 변경이므로 대표 능력은 ko.reading.negation이 적절함.",
+      "hash": "f29f2afa38590a18",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
       "itemKey": "entry-check.concert-13.v1",
       "source": "entry-check",
       "verdict": "fix",
@@ -366,6 +1149,38 @@
       ]
     },
     {
+      "itemKey": "entry-check.library-10.v1",
+      "source": "entry-check",
+      "verdict": "fix",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.library-10.v1",
+      "officialType": "TI-R-40",
+      "reason": "정답 「들여보내기」는 유일하고 오답도 규칙별로 잘 짜여 있습니다. 다만 규칙 셋과 조건, 손님 정보가 겹친 글이라 난도를 2로 올려야 합니다. | 정답과 해설에 문제가 없어 화면 노출 가능하나, 지문 길이(안내문 6문장·조건 3개)와 문형(-아/어야, -(으)면)은 작성 기준 §3의 difficulty 2에 해당함. | 직접 풀어 보면 정답은 0번 「들여보내기」 하나뿐입니다. 카드는 본인 이름(노나래)으로 되어 있고, 짐은 책뿐이며, 지금 시각 16:59는 입장 마감 5시 30분 전입니다. 오답 셋도 규칙 하나씩과 짝지어져 있어 다툴 여지가 없습니다. 기존 게임 꼴(통과·거절 고르기)이므로 시험 꼴과 다르다는 점과 해설이 한국어만 있는 점은 문제 삼지 않습니다. 다만 두 검수자 모두 난도를 2로 보았고, 저도 같은 판단입니다. 안내문이 6문장이고 조건(-아야, -(으)면)과 마감 시각, 손님 정보·짐을 함께 대조해야 하므로 작성 기준 §3의 difficulty 2(2급, 문형 2단계, 정보 3개 이상, 조건 있음)에 해당합니다. difficulty 값이 틀리면 Core의 칸 나누기가 어긋나므로 pass가 아니라 fix로 고칩니다. 해설에도 짐 근거를 더하면 ",
+      "hash": "e0665d7cf7398d67",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
       "itemKey": "entry-check.library-11.v1",
       "source": "entry-check",
       "verdict": "pass",
@@ -406,6 +1221,38 @@
       "reviewedAt": "2026-10-21T00:54:30.583Z",
       "rubric": "topik-review-r1",
       "packet": "pilot-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.museum-10.v1",
+      "source": "entry-check",
+      "verdict": "fix",
+      "skillId": "ko.reading.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.museum-10.v1",
+      "officialType": "TI-R-40",
+      "reason": "The answer (camera) is unique and the distractors are tempting. However, the amount of information and the conditions fit difficulty 2, so the difficulty value should be changed to 2. | 정답 유일성과 해설이 명확하여 그대로 사용 가능하나, 지문 분량(안내문 6문장·규칙 3개)과 어휘 수준은 difficulty 2에 해당함. | I solved it myself and got choice 2. At 16:29 the 5 p.m. entry cutoff has not passed. A 24-year-old with an adult ticket raises no problem. The only violation is the camera, against 「카메라는 가지고 들어갈 수 없습니다」. So the answer is unique, and the distractors (time, ticket and age) are tempting conditions, so they work. As an existing game it",
+      "hash": "7a657a1b4b6a779a",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
       "by": [
         {
           "stage": "claude",
@@ -485,6 +1332,33 @@
           "stage": "adjudication",
           "model": "claude-opus-5-5",
           "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.pool-10.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.pool-10.v1",
+      "officialType": "TI-R-40",
+      "reason": "짐의 과자가 음식 반입 금지 규칙에 걸려 정답 2번이 유일해요. 손님 말이 적절한 함정 역할을 하고, 게임 꼴 안에서 기준을 모두 충족해 통과입니다. | 수영장 안내문의 음식 반입 금지 규칙을 적용해 판단하는 기존 게임 문항으로 완성도가 높다.",
+      "hash": "9ece10f0e434bb80",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
         }
       ]
     },
@@ -575,6 +1449,38 @@
       ]
     },
     {
+      "itemKey": "entry-check.pool-14.v1",
+      "source": "entry-check",
+      "verdict": "fix",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.pool-14.v1",
+      "officialType": "TI-R-40",
+      "reason": "정답은 유일하고 게임 꼴 안에서 잘 짜였다. 다만 정보량과 문형으로 보아 난도는 2가 맞고, 캐릭터처럼 보이는 이름 교체와 해설 보완이 필요하다. | 수영장 이용 안내문과 손님 정보를 대조해 입장 가능 여부를 판단하는 기존 게임 문항으로 모든 기준에 부합한다. | 정답은 하나뿐이다. 손님은 수영 모자를 가져왔고 쓰겠다고 하며, 짐에 음식이 없고, 24살 어른이다. 그래서 '들여보내기'만 맞다. 다만 고칠 곳이 셋이다. 첫째, 규칙 세 개와 서류·짐·손님 말을 모두 대조해야 하고 문형 '-아/어야 하다'가 쓰였다. 작성 기준 §3의 '정보 3개 이상, 조건' 정의에 따라 난도는 2가 맞다. 둘째, '남콩이'는 흔한 한국 이름이 아니고 캐릭터처럼 보여 §8에 어긋난다. 셋째, 해설이 나이 조건을 짚지 않아 근거가 빠져 있다. A의 지적이 맞으므로 고친 뒤 내보낸다.",
+      "hash": "da80a44060fd966d",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
       "itemKey": "synk-town.reading-check.town-detail-festival.v1",
       "source": "synk-town",
       "verdict": "pass",
@@ -629,6 +1535,38 @@
       ]
     },
     {
+      "itemKey": "synk-town.reading-check.town-detail-lost.v1",
+      "source": "synk-town",
+      "verdict": "fix",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "synk-town.reading-check.town-detail-lost.v1",
+      "officialType": "TI-R-43",
+      "reason": "정답은 관리실 하나로 분명하고 능력·난도도 맞습니다. 다만 「버스 정류장」이 글과 무관해서 오답 구실을 하지 못하고, 해설이 오답의 까닭을 짚지 않아 보기 하나와 해설만 고치면 쓸 수 있습니다. | 분실물 보관 장소를 묻는 세부 정보 파악 문항으로 정답이 명확하고 난도 1에 적합함. | 정답은 「관리실」 하나로 분명합니다. 대표 능력(세부)과 난도 1도 맞고, 기존 게임 문항이라 보기가 셋이고 발문이 해요체인 것은 받아들일 수 있습니다. 다만 「버스 정류장」은 글에 나오지 않는 바깥 장소여서, 실내 분실물 보관 장소를 묻는 이 문항에서 상식만으로 지울 수 있습니다. 작성 기준 §5-2가 금하는 터무니없는 오답이므로, 사실상 두 보기 가운데 하나를 고르는 문항이 됩니다. 해설도 근거만 말하고 가장 걸리기 쉬운 오답 「안내 데스크」가 왜 틀린지 짚지 않아 §6에 못 미칩니다. 검수자 A의 지적이 맞고, 보기 하나와 해설을 고치면 쓸 수 있습니다.",
+      "hash": "214eaf0ff6061d9a",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
       "itemKey": "synk-town.reading-check.town-detail-market.v1",
       "source": "synk-town",
       "verdict": "pass",
@@ -642,6 +1580,33 @@
       "reviewedAt": "2026-10-21T00:54:30.583Z",
       "rubric": "topik-review-r1",
       "packet": "pilot-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "synk-town.reading-check.town-detail-workshop.v1",
+      "source": "synk-town",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "synk-town.reading-check.town-detail-workshop.v1",
+      "officialType": "TI-R-43",
+      "reason": "Simple game item asking for a time detail. Only one answer is correct, and the skill and difficulty fit. The explanation is thin and '오전 2시' is a weak distractor, but neither harms learners, so it passes. | 수업 시작 시각을 묻는 세부 정보 파악 문항으로 오답 구성과 난도가 적절함.",
+      "hash": "485c2aa2affe8c47",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
       "by": [
         {
           "stage": "claude",
@@ -683,6 +1648,38 @@
       ]
     },
     {
+      "itemKey": "synk-town.reading-check.town-main-cup.v1",
+      "source": "synk-town",
+      "verdict": "fix",
+      "skillId": "ko.reading.main",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "synk-town.reading-check.town-main-cup.v1",
+      "officialType": "TI-R-46",
+      "reason": "정답은 유일하고 자리·난도·능력은 맞습니다. 다만 오답 「종이컵을 팔아요」가 근거 없이 쉽게 지워집니다. 이 보기를 글과 어긋나는 보기로 바꾸고 해설에 오답 설명을 한 줄 더하면 쓸 수 있습니다. | 서너 문장 안내문에서 가장 하고 싶은 말(중심 생각)을 고르는 문항으로, 정답 유일성·오답 구성·자연스러움·해설이 모두 적절함. | 기존 게임 문항이라 보기 셋과 한국어만 있는 해설은 받아들일 수 있습니다. 정답 「자기 컵을 가지고 와 주세요」는 유일하고, 자리(중심 생각)·능력(ko.reading.main)·난도 1도 맞습니다. 다만 오답 「종이컵을 팔아요」는 글의 어느 말과도 직접 어긋나지 않습니다. 상식만으로 지워지는 터무니없는 보기여서 오답 매력도 기준(§5-2)에 못 미칩니다. 해설에도 걸리기 쉬운 오답이 왜 틀렸는지가 없습니다. 이 점에서 A의 지적이 맞습니다. 고치면 쓸 수 있으므로 fix로 판정합니다.",
+      "hash": "4a6ff52a3266276b",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
       "itemKey": "synk-town.reading-check.town-main-post.v1",
       "source": "synk-town",
       "verdict": "pass",
@@ -696,6 +1693,210 @@
       "reviewedAt": "2026-10-21T00:54:30.583Z",
       "rubric": "topik-review-r1",
       "packet": "pilot-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "synk-town.reading-check.town-main-swap.v1",
+      "source": "synk-town",
+      "verdict": "fix",
+      "skillId": "ko.reading.main",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "synk-town.reading-check.town-main-swap.v1",
+      "officialType": "TI-R-46",
+      "reason": "정답은 유일하고 수준도 적절합니다. 다만 오답('토요일 날씨', '광장의 위치')이 글과 거의 무관해 매력이 없고, 중심 생각 자리에 화제를 묻는 꼴이라 자리와 조금 어긋납니다. 오답과 해설을 고치면 쓸 수 있습니다. | 짧은 안내문의 핵심 내용을 묻는 기존 게임 문항으로 정답이 명확하고 난도와 어휘가 적절하다. | 정답 「물건을 바꾸는 시장」은 하나뿐이고, 낱말과 난도도 1급 앞쪽에 맞습니다. 게임 꼴(보기 셋, 해요체 발문)은 기존 문항이라 그대로 인정합니다. 화제를 묻는 발문도 핵심 이해(ko.reading.main)로 볼 수 있어 자리를 옮길 일은 아닙니다. 다만 오답 「토요일 날씨」「마을 광장의 위치」는 글의 낱말만 빌렸을 뿐, 글이 다루지 않는 내용이라 읽지 않고도 지울 수 있습니다. 기준 §5의 오답 매력도에 못 미친다는 A의 지적이 맞습니다. 해설도 근거 문장을 짚지 않고, 걸리기 쉬운 오답도 설명하지 않습니다. 오답과 해설만 고치면 쓸 수 있으므로 fix로 판정합니다.",
+      "hash": "67948a5cd93ca452",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "synk-town.reading-check.town-main-swim.v1",
+      "source": "synk-town",
+      "verdict": "pass",
+      "skillId": "ko.reading.main",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "synk-town.reading-check.town-main-swim.v1",
+      "officialType": "TI-R-46",
+      "reason": "정답이 유일하고 1급 수준에 맞는 기존 게임 문항이다. 발문이 중심 생각보다 화제 고르기(TI-R-31)에 가깝고 '수영장 청소 시간'이 다소 약한 오답이지만, 학습자에게 해가 없어 통과로 판정한다. | 3문장 안내문의 핵심 화제를 묻는 기존 게임 문항으로, 정답 유일성·오답 매력도·어휘 및 문형 난도(difficulty 1)가 모두 기준에 부합함.",
+      "hash": "9c13f3e97d61f0a9",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "synk-town.reading-check.town-main-thanks.v1",
+      "source": "synk-town",
+      "verdict": "fix",
+      "skillId": "ko.reading.main",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "synk-town.reading-check.town-main-thanks.v1",
+      "officialType": "TI-R-46",
+      "reason": "정답은 분명하고 능력도 맞다. 다만 오답이 글과 어긋나지 않거나 상식만으로 지워져 약하다. 「덕분에」「-아 드리다」 같은 문형으로 보아 난도는 2가 맞다. 오답 두 개와 해설을 고치면 쓸 수 있다. | 감사 인사를 담은 짧은 글의 중심 생각을 묻는 기존 게임 문항으로 모든 기준을 충족한다. | 정답(보기 1 「도와주신 분께 고마워요」)은 분명하고, 대표 능력(중심 생각)도 맞다. 다만 오답이 약하다. 「병원이 너무 멀어요」는 글과 어긋나지 않는 「알 수 없음」 보기이고, 「길에서 차를 마셨어요」는 글의 낱말을 엉뚱하게 이어 붙여 쉽게 지워진다. 지문에 「-(으)ㄹ 때」「덕분에」「-(으)ㄹ 수 있었다」「-아 드리고 싶다」 같은 2단계 문형이 들어 있어 난도 1(1급 앞쪽)과 맞지 않는다. 해설도 근거가 된 말을 짚지 않는다. 그래서 B의 pass보다 A의 지적이 맞다고 본다. 고치면 쓸 수 있다.",
+      "hash": "30bd45c1bf992b6f",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "synk-town.reading-check.town-negation-bike.v1",
+      "source": "synk-town",
+      "verdict": "pass",
+      "skillId": "ko.reading.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "synk-town.reading-check.town-negation-bike.v1",
+      "officialType": "TI-R-43",
+      "reason": "금지 표현 「타지 마세요」를 읽는 1급 게임 문항이다. 정답이 유일하고 오답이 글의 '해야 할 일'로 매력적이며, 난도·능력이 맞다. 통과. | 다리 위 금지 행동을 묻는 부정 이해 문항으로 어휘·문형·오답 설계가 모두 난도 1에 적합함.",
+      "hash": "f35e53edc5435945",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "synk-town.reading-check.town-negation-books.v1",
+      "source": "synk-town",
+      "verdict": "fix",
+      "skillId": "ko.reading.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "synk-town.reading-check.town-negation-books.v1",
+      "officialType": "TI-R-43",
+      "reason": "정답(1번)은 유일하고 능력과 난도도 맞습니다. 발문의 「으로」가 어색하고, 해설이 문체가 섞였으며 근거 인용이 없습니다. 오답 「책을 읽기」가 약하므로 가벼운 수정 뒤 쓸 수 있습니다. | 금지 표현을 이해해 하면 안 되는 행동을 고르는 문항으로 능력과 난도에 잘 맞음. | 정답(1번 「책장에 직접 꽂기」)은 「책장에 직접 꽂지 마세요」로 유일하게 정해지고, 능력(부정)과 난도 1도 맞다. 다만 학생 화면에 그대로 내기에는 두 군데가 걸려 A의 지적을 받아들인다. 첫째, 발문 「읽은 책으로 하면 안 되는 행동」은 조사 「으로」가 어색한 한국어다. 둘째, 해설이 합니다체와 해요체를 섞어 쓰고, 근거 문장을 「…」로 짚지 않는다. 오답 「책을 읽기」는 약하지만 게임 꼴(보기 셋) 안에서 정답을 흐리지는 않는다. A가 대안으로 낸 「책상 위 바구니에 놓기」는 3번 보기와 사실상 같은 행동이라 겹치므로 받아들이지 않는다.",
+      "hash": "00b1ee2cef13d9d1",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "synk-town.reading-check.town-negation-bus.v1",
+      "source": "synk-town",
+      "verdict": "fix",
+      "skillId": "ko.reading.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "synk-town.reading-check.town-negation-bus.v1",
+      "officialType": "TI-R-43",
+      "reason": "정답 1(버스 문 앞)은 맞다. 다만 오답 「정류장의 의자 옆」이 글에 없는 정보라 알 수 없음 시비가 생긴다. 글에 의자 옆을 허용 장소로 넣으면 쓸 수 있다. | 보기 2번('정류장의 의자 옆')이 지문에 없는 정보로 구성되어 있고 지문의 '문 앞'과 보기 1번 '버스 문 앞'의 표현 차이도 있으므로 지문에 해당 장소를 명시하도록 수정(fix).",
+      "hash": "f9ddcb6568ce0c94",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "synk-town.reading-check.town-negation-desk.v1",
+      "source": "synk-town",
+      "verdict": "pass",
+      "skillId": "ko.reading.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "synk-town.reading-check.town-negation-desk.v1",
+      "officialType": "TI-R-43",
+      "reason": "짧은 이용 안내에서 금지된 행동을 고르는 게임 문항이에요. 정답이 하나뿐이고, 능력과 난도도 맞아요. 해설이 짧고 보기가 글을 그대로 옮긴 점은 사소하므로 통과예요. | 지문의 부정 표현('-지 말고')을 바탕으로 금지 행동을 정확히 묻고 있으며 오답 구성도 적절하여 통과(pass).",
+      "hash": "9e8cfd7ead6dc454",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
       "by": [
         {
           "stage": "claude",
@@ -733,6 +1934,60 @@
           "stage": "argon",
           "model": "gemini-4-argon-high",
           "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "synk-town.reading-check.town-reading-negation.v1",
+      "source": "synk-town",
+      "verdict": "fix",
+      "skillId": "ko.reading.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "synk-town.reading-check.town-reading-negation.v1",
+      "officialType": "TI-R-43",
+      "reason": "정답은 맞지만, 오답 「찻집 안의 자리」가 글에 없는 장소라 다툴 여지가 있습니다. 글에 그 장소를 허용 장소로 넣으면 쓸 수 있습니다. | 보기 1번(‘찻집 안의 자리’)이 지문에 없는 정보이므로, 지문에 ‘찻집 안의 자리’도 마실 수 있는 곳으로 명시해 글에 없는 정보 오답을 없애야 한다.",
+      "hash": "0dd6de890a6cb93f",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "synk-town.reading-check.town-reading-place.v1",
+      "source": "synk-town",
+      "verdict": "fix",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "synk-town.reading-check.town-reading-place.v1",
+      "officialType": "TI-R-43",
+      "reason": "정답은 유일하고 난도·능력도 맞다. 셋째 보기의 꼴이 다르고 해설이 오답 근거를 짚지 않아 손보면 쓸 수 있다. | 보기 2번만 문장 꼴(‘내일부터만 쉴 수 있어요’)이어서 명사구인 보기 0·1번과 꼴이 맞지 않고, 한국어 해설이 지문 첫 문장을 그대로 복사한 형태여서 수정이 필요하다.",
+      "hash": "1ae05199457b809a",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
         }
       ]
     },
@@ -791,6 +2046,33 @@
       ]
     },
     {
+      "itemKey": "synk-town.reading-check.town-reason-bus.v1",
+      "source": "synk-town",
+      "verdict": "fix",
+      "skillId": "ko.reading.reason",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "synk-town.reading-check.town-reason-bus.v1",
+      "officialType": "TI-R-43",
+      "reason": "정답은 유일하고 이유 능력에도 맞다. 다만 「마을버스」 띄어쓰기를 고치고, 2단계 문형 「-기 때문이다」에 맞춰 난도를 2로 올려야 한다. | 정답과 해설은 명확하나, '마을 버스'를 '마을버스'로 붙여 써야 하며 '-기 때문에'·'-아/어야 하다' 등 2단계 문형이 쓰여 난도를 2로 조정할 필요가 있음.",
+      "hash": "3353d62e4174a2f4",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
       "itemKey": "synk-town.reading-check.town-reason-florist.v1",
       "source": "synk-town",
       "verdict": "pass",
@@ -818,6 +2100,168 @@
       ]
     },
     {
+      "itemKey": "synk-town.reading-check.town-reason-library.v1",
+      "source": "synk-town",
+      "verdict": "fix",
+      "skillId": "ko.reading.reason",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "synk-town.reading-check.town-reason-library.v1",
+      "officialType": "TI-R-43",
+      "reason": "정답은 0번 하나뿐이고 이유 능력에도 맞아요. 다만 근거 문형 「-기 때문에」가 2단계라 난도를 2로 올려야 해요. 글 밖 내용인 오답 하나는 글의 말로 어긋나게 바꾸는 게 좋아요. | 보기 2번 「책을 빌리는 사람이 없어서」가 글에 없는 정보이므로 지문 낱말을 활용해 사실과 어긋나게 만든 오답으로 수정 필요.",
+      "hash": "3e8077c9dfa5ece8",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "synk-town.reading-check.town-reason-quiet.v1",
+      "source": "synk-town",
+      "verdict": "fix",
+      "skillId": "ko.reading.reason",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "synk-town.reading-check.town-reason-quiet.v1",
+      "officialType": "TI-R-43",
+      "reason": "정답은 하나이고 오답도 적절합니다. 다만 근거 문형 「-기 때문에」가 2단계라서 difficulty를 2로 고치고, 해설에 오답이 틀린 까닭을 더하면 쓸 수 있습니다. | 지문·오답·해설 모두 자연스럽고 정확하나, 작성 기준 §3의 2단계 문형('-기 때문에', '-아/어야 하다')과 조건문이 쓰였으므로 difficulty를 2로 조정하는 것이 적절함.",
+      "hash": "cb50b4a602ef19c1",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "synk-town.reading-check.town-reason-walk.v1",
+      "source": "synk-town",
+      "verdict": "fix",
+      "skillId": "ko.reading.reason",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "synk-town.reading-check.town-reason-walk.v1",
+      "officialType": "TI-R-43",
+      "reason": "정답은 분명하고 이유 능력에도 맞는다. 다만 오답 하나가 글에 없는 정보이고, 「-(으)니까」 때문에 난도는 2가 맞아 보인다. 보기·발문·해설을 조금 손보면 쓸 수 있다. | 보기 1번 「공원이 문을 닫아서」가 글에 없는 정보(알 수 없음)에 해당하므로 지문 내용과 직접 어긋나는 오답으로 수정 필요.",
+      "hash": "a356db964cca5cf4",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "synk-town.reading-check.town-sequence-borrow.v1",
+      "source": "synk-town",
+      "verdict": "fix",
+      "skillId": "ko.reading.sequence",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "synk-town.reading-check.town-sequence-borrow.v1",
+      "officialType": "TI-R-43",
+      "reason": "정답 유일하고 순서 능력에도 맞아요. 다만 「반납하다」가 난도 1 낱말 수준을 넘으므로 「돌려주다」로 바꾸고, 해설에 근거 인용과 오답 설명을 보강하면 쓸 수 있어요. | 오답인 보기 1번('집에 돌아가기')이 지문에 없는 '집'을 포함하고 상식만으로 쉽게 소거되므로, 지문 안의 실제 행동 순서로 오답을 구성하도록 수정(fix).",
+      "hash": "2aff64302acd198f",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "synk-town.reading-check.town-sequence-class.v1",
+      "source": "synk-town",
+      "verdict": "fix",
+      "skillId": "ko.reading.sequence",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "synk-town.reading-check.town-sequence-class.v1",
+      "officialType": "TI-R-43",
+      "reason": "정답은 분명하고 순서 능력에도 맞습니다. 다만 '집에 가기'가 글에 없는 터무니없는 오답이라 글의 말을 쓴 오답으로 바꾸고, 해설에 근거 인용과 오답 설명을 보태면 쓸 수 있습니다. | 오답인 보기 2번('집에 가기')이 지문에 전혀 없고 상식만으로 소거 가능한 터무니없는 보기이므로, 지문에 나온 다른 순서의 행동으로 바꾸도록 수정(fix).",
+      "hash": "9b7b9f2a1503a48d",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "synk-town.reading-check.town-sequence-garden.v1",
+      "source": "synk-town",
+      "verdict": "fix",
+      "skillId": "ko.reading.sequence",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "synk-town.reading-check.town-sequence-garden.v1",
+      "officialType": "TI-R-43",
+      "reason": "정답은 유일하고 순서 능력·난도 1에 맞는 기존 게임 문항이다. 다만 「꽃을 꺾기」가 글과 무관해 쉽게 지워지므로 글의 말을 쓴 순서 오답으로 바꾸고 해설을 조금 보강하면 좋다. | 정답과 순서 단서는 명확하나 오답 보기 「꽃을 꺾기」가 글과 무관하고 중급 어휘(꺾다)를 포함하므로 초급 표현 및 지문 어휘 기반 오답으로 수정 필요.",
+      "hash": "79adb7f9eef430a5",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
       "itemKey": "synk-town.reading-check.town-sequence-parcel.v1",
       "source": "synk-town",
       "verdict": "pass",
@@ -841,6 +2285,38 @@
           "stage": "argon",
           "model": "gemini-4-argon-high",
           "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "synk-town.reading-check.town-sequence-ticket.v1",
+      "source": "synk-town",
+      "verdict": "fix",
+      "skillId": "ko.reading.sequence",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "synk-town.reading-check.town-sequence-ticket.v1",
+      "officialType": "TI-R-43",
+      "reason": "정답은 분명하고 능력·난도도 맞아요. 다만 오답이 글의 말을 쓰지 않아 쉽게 지워지고, 해설이 근거를 짚지 않아 보기와 해설을 조금 고치면 쓸 수 있어요. | 지문 흐름이 자연스럽고 오답 보기도 지문 어휘를 활용해 순서·방향을 바꾼 좋은 문항으로 통과. | 정답 0(「입구에서 표 보여 주기」)은 「산 표를 입구에서 보여 주세요. 그다음 안으로 들어가세요.」로 하나뿐이고, 순서 능력과 난도 1도 맞다. 다만 오답이 약하다. 보기 2 「공연장 밖으로 나가기」는 글에 없는 낱말(공연장·밖)을 쓴 보기라 상식만으로 지워진다. 보기 1 「다시 표 사기」도 쉽게 지워진다. 그래서 오답 매력도 기준(글의 말을 쓰되 사실을 바꿈)에 맞지 않고, B의 「지문 어휘를 활용했다」는 평가는 맞지 않는다. 한국어 해설도 근거 문장을 「…」로 짚지 않는다. 기존 게임 꼴(보기 셋, 해요체 발문, 한국어 해설만)은 허용 범위라 문제 삼지 않는다. 보기와 해설만 고치면 쓸 수 있으므로 A의 지적을 받아들인다.",
+      "hash": "b5736eee269c49b0",
+      "reviewedAt": "2026-10-21T02:01:50.174Z",
+      "rubric": "topik-review-r1",
+      "packet": "expand-existing",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
         }
       ]
     }

@@ -122,3 +122,17 @@ test('반영: 새 문항에는 그 내용 지문으로 검수 줄을 달고, 검
       [['blank-slice.p01.v1', 'pass', 'ko.reading.grammar', null], ['synk-town.x.v1', 'fix', 'ko.reading.detail', 'ko.reading.reason']]);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
+
+test('--미판정: 지금 지문으로 판정을 받은 문항만 빠지고, 고쳐 rev·지문이 바뀐 문항과 기존 문항의 바뀐 원고는 다시 들어간다', async () => {
+  const { alreadyJudged } = await tool();
+  const line = (rev, hash, stage = 'claude') => ({ stage, model: 'm', rubric: 'r', at: '2026-10-21T00:00:00.000Z', verdict: 'fix', rev, hash });
+  const unit = { kind: 'new', rev: 2, hash: 'bbbbbbbbbbbbbbbb' };
+  assert.equal(alreadyJudged(unit, { review: [] }), false);
+  assert.equal(alreadyJudged(unit, { review: [line(1, 'aaaaaaaaaaaaaaaa')] }), false); // 판정 뒤 고친 문항
+  assert.equal(alreadyJudged(unit, { review: [line(2, 'bbbbbbbbbbbbbbbb', 'author-fix')] }), false); // 고친 기록만으로는 판정이 아니다
+  assert.equal(alreadyJudged(unit, { review: [line(2, 'bbbbbbbbbbbbbbbb')] }), true);
+  const verdictHash = new Map([['blank-slice.v01.v1', 'cccccccccccccccc']]);
+  assert.equal(alreadyJudged({ kind: 'existing', key: 'blank-slice.v01.v1', hash: 'cccccccccccccccc' }, { verdictHash }), true);
+  assert.equal(alreadyJudged({ kind: 'existing', key: 'blank-slice.v01.v1', hash: 'dddddddddddddddd' }, { verdictHash }), false);
+  assert.equal(alreadyJudged({ kind: 'existing', key: 'blank-slice.v02.v1', hash: 'cccccccccccccccc' }, { verdictHash }), false);
+});

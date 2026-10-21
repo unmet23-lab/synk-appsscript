@@ -3,7 +3,7 @@
 // 2차 아르곤(Google AI 구독 · 영어·몽골어 해설 역번역), 엇갈리면 Opus가 두 의견을 놓고 판정한다.
 // 새 LLM 실행기가 아니다 — 부르는 통로는 tools/lib/클로드키.js(일괄·한 건)와 tools/lib/제미나이구독호출.js 그대로다.
 //
-//   node tools/topik-review.mjs 준비 <이름> [--새 [<묶음…>]] [--새표본 N] [--기존 [<출처…>]] [--출처마다 N] [--표본 N]   검수 묶음(output/topik-review/<이름>/)
+//   node tools/topik-review.mjs 준비 <이름> [--새 [<묶음…>]] [--새표본 N] [--기존 [<출처…>]] [--출처마다 N] [--표본 N] [--미판정]   검수 묶음(output/topik-review/<이름>/)
 //   node tools/topik-review.mjs 클로드 <이름> [--보내기|--받기]   1차: 블라인드 풀이 + 기준 검수 일괄(반값)
 //   node tools/topik-review.mjs 아르곤 <이름> [--묶음 4]           2차: 독립 검수 + 해설 역번역(하나씩 차례로)
 //   node tools/topik-review.mjs 판정 <이름> [--보내기]             두 검수 합치기 · 엇갈린 문항은 Opus 판정
@@ -98,15 +98,25 @@ export function writingUnits(rel) {
     return { key: item.id, kind: 'writing', file: rel, id: item.id, hash: sha(JSON.stringify(view)).slice(0, 16), view: { ...view, existing: false, section: 'writing' } }; });
 }
 
-export async function prepare(name, { newFiles = null, existingSources = null, sample = null, perSource = null, newSample = null, writingFile = null, onlyIds = null } = {}) {
+// --미판정: 지금 내용(지문)으로 이미 판정을 받은 문항은 다시 보내지 않는다. 고친 문항은 rev·지문이 달라 다시 들어간다.
+export function alreadyJudged(unit, { review = [], verdictHash = new Map() } = {}) {
+  if (unit.kind === 'new') return review.some(entry => entry.stage !== 'author-fix' && entry.rev === unit.rev && entry.hash === unit.hash);
+  if (unit.kind === 'existing') return verdictHash.get(unit.key) === unit.hash;
+  return false;
+}
+
+export async function prepare(name, { newFiles = null, existingSources = null, sample = null, perSource = null, newSample = null, writingFile = null, onlyIds = null, onlyUnjudged = false } = {}) {
   const dir = path.join(root, 'output/topik-review', name);
   if (fs.existsSync(path.join(dir, 'packet.json'))) throw new Error(`이미 있는 묶음: ${dir}`);
   const types = readJson(path.join(root, 'strata/topik-types.json')).types, labels = skillLabels(), rubric = rubricText();
+  const verdictHash = new Map((readJson(path.join(bankDir, 'review/existing-verdicts.json')).items || []).map(row => [row.itemKey, row.hash]));
   const units = [];
   if (newFiles) for (const { name: fileName, data } of itemFiles().filter(f => !newFiles.length || newFiles.includes(f.name) || newFiles.includes(f.name.replace(/\.json$/, '')))) {
     for (const item of data.items) {
       if (item.reviewStatus === 'ai-reviewed' && reviewOutcome(item) === 'pass') continue;
-      units.push({ key: itemKeyOf(item), kind: 'new', file: `items/${fileName}`, id: item.id, rev: item.rev, hash: contentHash(item), view: newItemView(item, types, labels) });
+      const unit = { key: itemKeyOf(item), kind: 'new', file: `items/${fileName}`, id: item.id, rev: item.rev, hash: contentHash(item), view: newItemView(item, types, labels) };
+      if (onlyUnjudged && alreadyJudged(unit, { review: item.review })) continue;
+      units.push(unit);
     }
   }
   if (newSample) {
@@ -116,9 +126,13 @@ export async function prepare(name, { newFiles = null, existingSources = null, s
   if (existingSources) {
     const pool = (await diagnosticItems()).filter(item => EXISTING_TYPE[item.source] && (!existingSources.length || existingSources.includes(item.source)));
     const picked = perSource ? Object.values(Object.groupBy(pool.map(item => ({ key: item.itemKey, item })), row => row.item.source)).flatMap(rows => seededPick(rows, perSource, name)).map(row => row.item) : pool;
-    for (const item of picked) units.push({ key: item.itemKey, kind: 'existing', source: item.source, meta: { itemKey: item.itemKey, familyKey: item.familyKey,
-      skillId: item.skillId, difficulty: item.difficulty, responseFormat: item.responseFormat }, hash: sha(JSON.stringify(existingItemView(item, types, labels))).slice(0, 16),
-      view: existingItemView(item, types, labels) });
+    for (const item of picked) {
+      const unit = { key: item.itemKey, kind: 'existing', source: item.source, meta: { itemKey: item.itemKey, familyKey: item.familyKey,
+        skillId: item.skillId, difficulty: item.difficulty, responseFormat: item.responseFormat }, hash: sha(JSON.stringify(existingItemView(item, types, labels))).slice(0, 16),
+        view: existingItemView(item, types, labels) };
+      if (onlyUnjudged && alreadyJudged(unit, { verdictHash })) continue;
+      units.push(unit);
+    }
   }
   if (writingFile) units.push(...writingUnits(writingFile));
   // 고친 문항만 다시 볼 때(--문항 <id…>): 나머지는 지난 판정을 그대로 둔다.
@@ -377,7 +391,7 @@ async function main([command, name, ...argv]) {
   if (!command || !name) { console.log(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 12).join('\n')); return 2; }
   const 클로드 = require('./lib/클로드키.js');
   if (command === '준비') {
-    const packet = await prepare(name, { newFiles: list(argv, '--새'), existingSources: list(argv, '--기존'), sample: num(argv, '--표본'), perSource: num(argv, '--출처마다'), newSample: num(argv, '--새표본'), writingFile: list(argv, '--쓰기')?.[0] || null, onlyIds: list(argv, '--문항') });
+    const packet = await prepare(name, { newFiles: list(argv, '--새'), existingSources: list(argv, '--기존'), sample: num(argv, '--표본'), perSource: num(argv, '--출처마다'), newSample: num(argv, '--새표본'), writingFile: list(argv, '--쓰기')?.[0] || null, onlyIds: list(argv, '--문항'), onlyUnjudged: argv.includes('--미판정') });
     console.log(`${packetDir(name)} · 문항 ${packet.units.length}(새 ${packet.units.filter(u => u.kind === 'new').length} · 기존 ${packet.units.filter(u => u.kind === 'existing').length}) · 기준 ${packet.rubric.id} ${packet.rubric.sha}`);
     return 0;
   }
