@@ -64,7 +64,9 @@ test('진단 문항 풀은 검수를 통과한 것만: 게임 지시문·질문 
  assert.ok(!items.some(item=>['korean-runner','korean-rhythm'].includes(item.source)),'바람길 지시문·리듬 O/X는 진단에서 빠졌다');
  const listening=items.filter(item=>item.modality==='listening');
  assert.ok(listening.length>0);
- for(const item of listening)assert.ok(item.source==='topik-items'?worldPosition.mock.allowedPlays(item)===2:item.source==='korean-racing',`${item.id}: 문항 묶음 듣기(TOPIK I 두 번) 또는 판정을 받은 레이싱 낱말`);
+ // 문항 묶음 듣기의 허용 재생 수는 공식 유형표 그대로(TOPIK I 두 번, TOPIK II 1~20번 한 번·21~50번 두 번 — 10-21 TOPIK II 듣기가 은행에 들어옴).
+ const officialPlays=item=>BANK.forms[item.exam]?.types.find(type=>type.id===item.officialType)?.plays;
+ for(const item of listening)assert.ok(item.source==='topik-items'?worldPosition.mock.allowedPlays(item)===officialPlays(item)&&[1,2].includes(officialPlays(item)):item.source==='korean-racing',`${item.id}: 문항 묶음 듣기(공식 재생 수) 또는 판정을 받은 레이싱 낱말`);
  assert.ok(listening.filter(item=>item.source==='topik-items').every(item=>Array.isArray(item.script)&&item.script.length&&item.question),'대화형: 대본과 물음이 있다');
  const bankIds=new Set(BANK.items.map(row=>row.id));
  assert.ok(items.filter(item=>item.source==='topik-items').every(item=>bankIds.has(item.id)),'문항 묶음 문항은 공개 은행(검수 통과)에서만');
@@ -84,7 +86,7 @@ test('TOPIK II를 고른 학생의 판은 TOPIK II 항목(듣기 5·읽기 7)이
  assert.match(board,/data-position-exam="topik1" aria-pressed="false">TOPIK I<[\s\S]*data-position-exam="topik2" aria-pressed="true">TOPIK II</);
  assert.match(board,/data-domain="writing"[\s\S]*쓰기는 맞음·틀림을 자동으로 매기지 않아[\s\S]*data-position-writing>쓰기 연습/);
  assert.match(board,/확인한 항목 0 \/ 5/);assert.match(board,/확인한 항목 0 \/ 7/);
- if(!BANK.items.some(row=>row.exam==='topik-ii'))assert.match(board,/TOPIK II 진단 문항은 검수를 마치는 대로 열려요/,'검수 통과 TOPIK II 문항이 없으면 항목을 늘어놓지 않고 한 줄로');
+ if(!BANK.items.some(row=>row.exam==='topik-ii'))assert.match(board,/TOPIK II 진단 문항은 준비되는 대로 열려요/,'검수 통과 TOPIK II 문항이 없으면 항목을 늘어놓지 않고 한 줄로');
 });
 
 test('「아직 못 읽어요」를 고른 사람은 한글 판, 졸업하면 항목 지도',async()=>{

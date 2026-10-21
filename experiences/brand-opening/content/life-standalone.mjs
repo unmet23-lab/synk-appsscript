@@ -16005,7 +16005,9 @@ function buildExamPlan({ exam, summary = null, now = Date.now(), done = null, av
       priority: skill2.priority ?? 0,
       fresh,
       activities: [...games],
-      shortage: skill2.domain === "reading" ? fresh === 0 : skill2.domain === "writing" ? games.length === 0 : fresh === 0 && games.length === 0 || !audioAvailable
+      shortage: skill2.domain === "reading" ? fresh === 0 : skill2.domain === "writing" ? games.length === 0 : fresh === 0 && games.length === 0 || !audioAvailable,
+      // 듣기 숙제가 막힌 까닭: 소리를 끈 날(audio)이면 문항이 남아 있어도 못 하는 것이라 「모자라요」가 아니다(화면이 까닭대로 쓴다).
+      ...skill2.domain === "listening" && !audioAvailable ? { blocked: "audio" } : {}
     };
   }).sort((a, b) => b.priority - a.priority || Number(a.shortage) - Number(b.shortage) || a.skillId.localeCompare(b.skillId)).slice(0, 3).map(({ priority, ...row }) => row);
   const rank = (row) => start && row.area === "recheck" ? 1 : 0;
@@ -16277,7 +16279,9 @@ function resumeCandidates(progress2, settings, now) {
   const result = [];
   const lesson2 = knownLessons.get(progress2?.activeLessonId), saved = lesson2 && progress2.lessons?.[lesson2.id];
   const answered = record(saved?.answers) && Object.keys(saved.answers).length > 0;
-  if (lesson2 && saved && answered && time2(saved.startedAt) && saved.startedAt <= now) {
+  const stage = record(saved?.stage) ? saved.stage : null;
+  const moved = !!stage && (stage.phase === "story" || stage.phase === "questions" || stage.sceneIndex > 0 || stage.questionIndex > 0);
+  if (lesson2 && saved && (answered || moved) && time2(saved.startedAt) && saved.startedAt <= now) {
     const index = PACKS.findIndex((pack) => pack.id === lesson2.packId);
     result.push({ ...lessonCandidate(lesson2, index, settings), id: `world.resume.lesson.${lesson2.id}`, resume: true, label: `${lesson2.title} \xB7 \uC774\uC5B4 \uD558\uAE30` });
   }
@@ -16479,10 +16483,11 @@ function createWorldEducation({
     mockHost = b;
   });
   const bankUrl = topikBankUrl || audioUrl("world-topik-items.json");
-  let bankWait = null;
+  let bankWait = null, bankFailedAt = -Infinity;
   function loadBank() {
     const bank = position?.topik;
     if (!bank || bank.ready) return Promise.resolve();
+    if (!bankWait && Date.now() - bankFailedAt < 6e4) return Promise.resolve();
     bankWait ||= Promise.resolve().then(() => bank.load(bankUrl)).then(() => {
       if (stopped) return;
       queueMicrotask(() => {
@@ -16491,6 +16496,7 @@ function createWorldEducation({
       });
     }, () => {
       bankWait = null;
+      bankFailedAt = Date.now();
     });
     return bankWait;
   }
@@ -16840,6 +16846,7 @@ function createWorldEducation({
       try {
         valid();
         operation();
+        boardExam = null;
         revision2 = progress2.learningProfile().profile.revision;
         await progress2.flush();
         valid();
@@ -16978,19 +16985,20 @@ function createWorldEducation({
     const mock = summary.evidenceComplete ? mockPlan({ coachNow, values, exam }) : null;
     const writing = exam === "topik2" && writingList().length > 0;
     const two2 = topik2Domains(), exams = studentExam(values) === "topik2" || two2.listening || two2.reading ? ["topik1", "topik2"] : null;
-    return { map, plan, gate, mock, exam, writing, exams };
+    const bridged = exam === "topik2" ? ["listening", "reading"].filter((domain) => !two2[domain]) : [];
+    return { map, plan, gate, mock, exam, writing, exams, bridged };
   }
   function showBoard(coachNow, { keepScroll = false } = {}) {
     check3();
     refresh();
     const scroller = keepScroll ? panelNode("[data-position-board]")?.closest?.("#panel-content") : null, scrollTop = scroller?.scrollTop || 0;
-    const routes = practiceRoutes(coachNow), { map, plan, gate, mock, exam, writing, exams } = positionData(coachNow, (id) => routes.has(id));
+    const routes = practiceRoutes(coachNow), { map, plan, gate, mock, exam, writing, exams, bridged } = positionData(coachNow, (id) => routes.has(id));
     let scope = null;
     try {
       scope = getProgress().status().scoped ? "account" : "device";
     } catch {
     }
-    home.showPanel(t2("position.title"), view.renderPositionBoard({ map, plan, gate, mock, exams, writing, catalog: position.label, diagnosed, scope, practice: (id) => routes.get(id) || null }), PANEL);
+    home.showPanel(t2("position.title"), view.renderPositionBoard({ map, plan, gate, mock, exams, writing, bridged, catalog: position.label, diagnosed, scope, practice: (id) => routes.get(id) || null }), PANEL);
     const root = panelNode("[data-position-board]");
     if (keepScroll) {
       const node = root?.closest?.("#panel-content");
@@ -17256,7 +17264,10 @@ function createWorldEducation({
       try {
         sound = new target.Audio(url(now.item.audio));
       } catch {
-        if (kind === "first") session.delivery("failed");
+        try {
+          session.delivery("failed");
+        } catch {
+        }
         onChange("failed");
         return kind;
       }
@@ -17332,7 +17343,7 @@ function createWorldEducation({
     let ended = false, notice = "";
     const player = soundPlayer({ session, url: audioUrl, onChange: (state) => {
       if (ended) return;
-      notice = state === "failed" ? t2("position.diagnostic.audioFailed") : "";
+      notice = state === "failed" && session.current?.heard ? t2("position.diagnostic.audioFailed") : "";
       paint(state === "completed" ? ".wpos-choice:not([disabled])" : "[data-practice-listen]");
     } });
     const stop = () => {
@@ -17401,6 +17412,7 @@ function createWorldEducation({
         check3();
         if (button.dataset.practiceChoice) {
           player.silence();
+          notice = "";
           session.answer(button.dataset.practiceChoice);
           paint("[data-practice-feedback]");
         } else if (button.hasAttribute("data-practice-listen")) player.play();
@@ -17474,7 +17486,7 @@ function createWorldEducation({
     box.querySelector("[data-mock-start]")?.addEventListener("click", () => {
       try {
         check3();
-        runMock({ coachNow, plan, sections, exam: which, box, top });
+        runMock({ coachNow, plan, sections, exam: which, mode: values.examMode || null, box, top });
       } catch (error2) {
         failed(error2);
       }
@@ -17487,18 +17499,27 @@ function createWorldEducation({
       }
     }, { once: true });
   }
-  function runMock({ coachNow, plan, sections, exam, box, top }) {
+  function runMock({ coachNow, plan, sections, exam, mode = null, box, top }) {
     const session = position.mock.createMockSession({ coach: coachNow, sections, exam });
     let ended = false, notice = "", ticker = null, confirm = false;
     const cell = () => session.current;
-    const proxy = { get current() {
-      const now = cell();
-      return now && !now.between ? { ...now, heard: now.heard } : null;
-    }, replay: () => session.play(), delivery: (status) => session.delivery(status) };
+    let finishedAt = null;
+    const proxy = {
+      get current() {
+        const now = cell();
+        return now && !now.between ? { ...now, heard: now.heard } : null;
+      },
+      replay: () => session.play(),
+      delivery: (status) => {
+        finishedAt = cell()?.sounding ?? null;
+        return session.delivery(status);
+      }
+    };
     const player = soundPlayer({ session: proxy, url: audioUrl, onChange: (state) => {
       if (ended) return;
-      notice = state === "failed" ? t2("position.diagnostic.audioFailed") : "";
-      paint(state === "completed" ? ".wpos-choice:not([disabled])" : "[data-mock-listen]");
+      const now = cell(), other = state !== "playing" && Number.isInteger(finishedAt) && !!now && !now.between && finishedAt !== now.index;
+      notice = state !== "failed" ? "" : other ? t2("mock.failedOther", { n: finishedAt + 1 }) : now?.heard ? t2("position.diagnostic.audioFailed") : "";
+      paint(state === "playing" ? "[data-mock-listen]" : other ? ".wpos-run-skill" : state === "completed" ? ".wpos-choice:not([disabled])" : "[data-mock-listen]");
     } });
     const stopTick = () => {
       if (ticker) {
@@ -17570,7 +17591,7 @@ function createWorldEducation({
       }
       refresh();
       const routes = practiceRoutes(readCoach());
-      box.innerHTML = view.renderMockDone({ results: session.results(), items: position.itemsById, plan, exam, practice: (id) => routes.get(id) || null });
+      box.innerHTML = view.renderMockDone({ results: session.results(), items: position.itemsById, plan, exam, mode, practice: (id) => routes.get(id) || null });
       bindPractice(box, routes);
       box.querySelector("[data-mock-done]")?.focus?.({ preventScroll: true });
       top();
@@ -17581,13 +17602,12 @@ function createWorldEducation({
       try {
         check3();
         if (button.dataset.mockChoice) {
-          player.silence();
+          confirm = false;
           session.answer(button.dataset.mockChoice);
           notice = t2("position.diagnostic.saved");
           paint("[data-mock-status]");
         } else if (button.hasAttribute("data-mock-listen")) player.play();
         else if (button.dataset.mockGo) {
-          player.silence();
           notice = "";
           confirm = false;
           session.go(Number(button.dataset.mockGo));
@@ -17938,19 +17958,24 @@ function createMockSession({ coach, sections = [], exam, clock: clock2 = () => D
   const parts = sections.map((row) => {
     if (!MOCK_POLICY.sections.includes(row?.section) || !Array.isArray(row.items) || !row.items.length || !Number.isFinite(row.minutes) || row.minutes <= 0) throw TypeError("WORLD mock: invalid section");
     for (const item of row.items) if (item?.modality !== row.section || !Array.isArray(item.choices) || !item.choices.some((choice) => choice?.id === item.correctId)) throw TypeError("WORLD mock: an item needs its section, choices and answer");
-    return { section: row.section, items: row.items, minutes: row.minutes, startedAt: null, endedAt: null, ended: null, cells: row.items.map((item) => ({
-      item,
-      pid: null,
-      audio: "none",
-      heard: item.modality !== "listening",
-      plays: { allowed: allowedPlays(item), completed: 0 },
-      choiceId: null,
-      result: null,
-      shownAt: null
-    })) };
+    const tracks = /* @__PURE__ */ new Map();
+    const trackOf = (item) => {
+      const key = item.setId ? `set:${item.setId}` : `item:${item.id}`;
+      if (!tracks.has(key)) tracks.set(key, { heard: item.modality !== "listening", audio: "none", plays: { allowed: allowedPlays(item), completed: 0 } });
+      return tracks.get(key);
+    };
+    return {
+      section: row.section,
+      items: row.items,
+      minutes: row.minutes,
+      startedAt: null,
+      endedAt: null,
+      ended: null,
+      cells: row.items.map((item) => ({ item, pid: null, track: trackOf(item), choiceId: null, result: null, shownAt: null }))
+    };
   });
   const examId = MOCK_POLICY.exams[exam] || exam;
-  let partIndex = 0, cursor = 0, finished = false;
+  let partIndex = 0, cursor = 0, finished = false, sounding = null;
   const part = () => parts[partIndex] || null;
   const deadline = (row) => row.startedAt === null ? null : row.startedAt + row.minutes * 6e4;
   const condition = (row, item) => presentCondition(item, { content: MOCK_POLICY.gameId, extra: { form: examId, composition: MOCK_POLICY.composition, section: row.section, minutes: row.minutes, timed: true } });
@@ -17959,10 +17984,18 @@ function createMockSession({ coach, sections = [], exam, clock: clock2 = () => D
     if (!cell.pid) {
       cell.pid = coach.present(efMeasure(cell.item), condition(row, cell.item));
       cell.shownAt = clock2();
-      if (cell.item.modality === "listening") cell.audio = "pending";
+      if (cell.item.modality === "listening") {
+        if (cell.track.heard) coach.delivery(cell.pid, { audio: "completed" });
+        else if (cell.track.audio === "none") cell.track.audio = "pending";
+      }
     }
     return cell;
   }
+  const setRange = (row, cell) => {
+    if (!cell.item.setId) return null;
+    const at = row.cells.map((entry, index) => entry.item.setId === cell.item.setId ? index : -1).filter((index) => index >= 0);
+    return at.length > 1 ? { first: at[0] + 1, last: at[at.length - 1] + 1 } : null;
+  };
   function expire() {
     const row = part();
     if (row && row.startedAt !== null && row.ended === null && clock2() >= deadline(row)) close(row, "time");
@@ -17970,7 +18003,7 @@ function createMockSession({ coach, sections = [], exam, clock: clock2 = () => D
   function close(row, reason) {
     if (row.ended !== null) return;
     for (const cell of row.cells) if (cell.pid && !cell.result) {
-      cell.result = coach.answer(cell.pid, { correct: null, assessable: false, reason: cell.heard ? "unanswered" : "audio" });
+      cell.result = coach.answer(cell.pid, { correct: null, assessable: false, reason: cell.track.heard ? "unanswered" : "audio" });
     }
     row.ended = reason;
     row.endedAt = clock2();
@@ -17989,14 +18022,17 @@ function createMockSession({ coach, sections = [], exam, clock: clock2 = () => D
       index: cursor,
       total: row.cells.length,
       item: cell.item,
-      heard: cell.heard,
-      audio: cell.audio,
-      plays: { ...cell.plays },
+      heard: cell.track.heard,
+      audio: cell.track.audio,
+      plays: { ...cell.track.plays },
       answered: !!cell.result,
       choiceId: cell.choiceId,
       started: row.startedAt !== null,
       deadline: deadline(row),
       remainingMs: row.startedAt === null ? row.minutes * 6e4 : Math.max(0, deadline(row) - clock2()),
+      set: setRange(row, cell),
+      // sounding: 지금 소리가 나는 문항(이 영역 안 0부터, 없으면 null) — 다른 문항을 보고 있을 때 화면이 「n번 소리」로 알린다.
+      sounding: sounding && sounding.row === row ? row.cells.indexOf(sounding.cell) : null,
       marks: row.cells.map((entry) => entry.result ? "answered" : entry.pid ? "opened" : "new")
     };
   };
@@ -18030,34 +18066,38 @@ function createMockSession({ coach, sections = [], exam, clock: clock2 = () => D
     play() {
       expire();
       const row = part(), cell = row?.cells[cursor];
-      if (!cell || row.ended !== null || cell.result || cell.item.modality !== "listening") return false;
-      const kind = nextPlay(cell.plays, { heard: cell.heard, exam: true });
+      if (!cell || row.ended !== null || cell.result || cell.item.modality !== "listening" || sounding) return false;
+      const kind = nextPlay(cell.track.plays, { heard: cell.track.heard, exam: true });
       if (kind === "closed") return false;
       if (kind === "first") {
-        cell.audio = "pending";
+        cell.track.audio = "pending";
         coach.delivery(cell.pid, { audio: "pending" });
       }
+      sounding = { row, cell };
       return kind;
     },
+    // 재생기의 끝(completed)·실패(failed): 시작한 문항의 대본(track)에 남긴다. 영역이 닫힌 뒤에 끝난 재생은 세지 않는다.
     delivery(status) {
-      const row = part(), cell = row?.cells[cursor];
-      if (!cell || row.ended !== null || cell.result || cell.item.modality !== "listening") return false;
       if (!["completed", "failed"].includes(status)) throw TypeError("WORLD mock: invalid audio state");
+      const now = sounding;
+      sounding = null;
+      if (!now || now.row.ended !== null) return false;
+      const { row, cell } = now, track = cell.track;
       if (status === "completed") {
-        cell.plays.completed += 1;
-        coach.delivery(cell.pid, { audio: "completed" });
-        cell.heard = true;
-        cell.audio = "completed";
-      } else if (!cell.heard) {
-        cell.audio = "failed";
-        coach.delivery(cell.pid, { audio: "failed" });
+        track.plays.completed += 1;
+        track.heard = true;
+        track.audio = "completed";
+        for (const entry of row.cells) if (entry.track === track && entry.pid && !entry.result) coach.delivery(entry.pid, { audio: "completed" });
+      } else if (!track.heard) {
+        track.audio = "failed";
+        if (!cell.result) coach.delivery(cell.pid, { audio: "failed" });
       }
       return true;
     },
     answer(choiceId) {
       expire();
       const row = part(), cell = row?.cells[cursor];
-      if (!cell || row.ended !== null || cell.result || !cell.heard) return null;
+      if (!cell || row.ended !== null || cell.result || !cell.track.heard) return null;
       if (!cell.item.choices.some((choice) => choice.id === choiceId)) throw TypeError("WORLD mock: unknown choice");
       cell.choiceId = choiceId;
       cell.result = coach.answer(cell.pid, { correct: choiceId === cell.item.correctId, assessable: true, choice: { selectedId: choiceId, correctId: cell.item.correctId } });
@@ -18069,6 +18109,7 @@ function createMockSession({ coach, sections = [], exam, clock: clock2 = () => D
       if (!row || finished) return null;
       if (row.startedAt === null) row.startedAt = clock2();
       close(row, row.ended ?? "submitted");
+      sounding = null;
       partIndex += 1;
       cursor = 0;
       if (partIndex >= parts.length) finished = true;
@@ -18079,6 +18120,7 @@ function createMockSession({ coach, sections = [], exam, clock: clock2 = () => D
       if (finished) return;
       const row = part();
       if (row && row.startedAt !== null) close(row, "stopped");
+      sounding = null;
       finished = true;
     },
     results() {
@@ -18098,7 +18140,7 @@ function createMockSession({ coach, sections = [], exam, clock: clock2 = () => D
           verdict: cell.result?.verdict ?? null,
           independent: cell.result?.independent === true,
           eventId: cell.result?.eventId ?? null,
-          plays: { ...cell.plays }
+          plays: { ...cell.track.plays }
         }))
       }));
     },
@@ -18850,7 +18892,7 @@ var READING_CHECKS = Object.freeze([
     hint: "\uD45C \uAD6C\uB9E4\uC640 \uC785\uC7A5 \uC0AC\uC774\uC758 \uD589\uB3D9\uC744 \uCC3E\uC544\uC694.",
     explanation: "\uD45C\uB97C \uC0B0 \uB4A4 \uC785\uAD6C\uC5D0\uC11C \uBCF4\uC5EC \uC8FC\uACE0 \uC548\uC73C\uB85C \uB4E4\uC5B4\uAC00\uC694."
   },
-  // 읽고 이유 이해하기·핵심 이해하기(2026-10-20, 「내 위치」 짧은 진단이 비어 있던 두 항목, Fable 검수 반영). 다른 문항처럼 교원 검수 전 초안이다.
+  // 읽고 이유 이해하기·핵심 이해하기(2026-10-20, 「내 위치」 짧은 진단이 비어 있던 두 항목, 검수 반영). 다른 문항처럼 교원 검수 전 초안이다.
   {
     id: "town-reason-library",
     skill: "reason",
@@ -20134,6 +20176,10 @@ var diagRacingMeta = (id) => ({
   confounded: false,
   conceptIds: [`ko.word.${id}`]
 });
+var diagCopula = (word) => {
+  const code = String(word).charCodeAt(String(word).length - 1) - 44032;
+  return code >= 0 && code < 11172 && code % 28 ? "\uC774\uC5D0\uC694" : "\uC608\uC694";
+};
 function diagRacingItems() {
   return DIAG_RACING_WORDS.map(([id, word, icon, others]) => {
     const meta = diagRacingMeta(id);
@@ -20147,7 +20193,7 @@ function diagRacingItems() {
       ask: "picture",
       choices: order2,
       correctId: id,
-      explanation: `\uB4E4\uB9B0 \uB0B1\uB9D0\uC740 \u300C${word}\u300D\uC608\uC694.`,
+      explanation: `\uB4E4\uB9B0 \uB0B1\uB9D0\uC740 \u300C${word}\u300D${diagCopula(word)}.`,
       label: word
     };
   });
@@ -20247,17 +20293,18 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
     if (!gate) return "";
     const state = gate.status === "mode-unsupported" ? "position.estimate.ibt" : gate.status === "no-estimator" ? "position.estimate.waiting" : "position.estimate.early";
     const ready = mock?.status === "ready";
-    return `<section class="wpos-estimate" data-estimate="${posEscape(gate.status)}"><p class="life-section-label">ESTIMATE</p><h3>${posEscape(t3("position.estimate.title"))}</h3><p class="wpos-estimate-state">${posLed("")}<strong>${posEscape(t3(state))}</strong></p><p class="wpos-note">${posEscape(t3("position.estimate.basis"))}</p>${gate.evidence > 0 ? `<p class="wpos-estimate-count"><span>${posEscape(t3("position.estimate.collected", { n: gate.evidence, listening: gate.perDomain?.listening ?? 0, reading: gate.perDomain?.reading ?? 0 }))}</span></p>` : ""}${ready ? `<button class="quiet-button wpos-practice" type="button" data-position-mock>${posEscape(t3("mock.open", { minutes: mock.minutes }))} <span aria-hidden="true">\u2192</span></button>` : ""}</section>`;
+    return `<section class="wpos-estimate" data-estimate="${posEscape(gate.status)}"><p class="life-section-label">ESTIMATE</p><h3>${posEscape(t3("position.estimate.title"))}</h3><p class="wpos-estimate-state">${posLed("")}<strong>${posEscape(t3(state))}</strong></p><p class="wpos-note">${posEscape(t3("position.estimate.basis"))}</p>${gate.evidence > 0 && gate.status !== "mode-unsupported" ? `<p class="wpos-estimate-count"><span>${posEscape(t3("position.estimate.collected", { n: gate.evidence, listening: gate.perDomain?.listening ?? 0, reading: gate.perDomain?.reading ?? 0 }))}</span></p>` : ""}${ready ? `<button class="quiet-button wpos-practice" type="button" data-position-mock>${posEscape(t3("mock.open", { minutes: mock.minutes }))} <span aria-hidden="true">\u2192</span></button>` : ""}</section>`;
   }
   const examSwitch = (exam, exams) => Array.isArray(exams) && exams.length > 1 ? `<div class="wpos-exam" role="group" aria-label="${posEscape(t3("position.exam.label"))}">${exams.map((id) => `<button class="wpos-exam-pill" type="button" data-position-exam="${posEscape(id)}" aria-pressed="${id === exam ? "true" : "false"}">${posEscape(t3(`goal.exam.type.${id}`))}</button>`).join("")}</div>` : "";
   const progressLine2 = (row) => row ? `<p class="wpos-progress"><span>${posEscape(t3("position.progress", { checked: row.checked, total: row.total }))}</span><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(row.checked, row.total)}%"></i></span></p>` : "";
   const poster = (word, sub, { print = "position", label = "MY POSITION" } = {}) => `<div class="life-poster wpos-poster"><span class="w-print wpos-print" data-print="${print}" aria-hidden="true"><i></i></span><small class="life-poster-label">${label}</small><strong class="life-poster-word">${posEscape(word)}</strong><p class="life-poster-sub">${posEscape(sub)}</p></div>`;
-  function renderPositionBoard({ map, plan = null, gate = null, mock = null, catalog = null, diagnosed = false, scope = null, practice = null, exams = null, writing = false } = {}) {
+  function renderPositionBoard({ map, plan = null, gate = null, mock = null, catalog = null, diagnosed = false, scope = null, practice = null, exams = null, writing = false, bridged = [] } = {}) {
     const exam = map.exam === "topik2" ? "topik2" : "topik1";
     const summary = t3(exam === "topik2" ? "position.summary.topik2" : "position.summary", { ...map.counts, total: map.total });
     const groups = ["listening", "reading"].map((domain) => {
       const skills = map.skills.filter((skill2) => skill2.domain === domain);
-      return `<section class="wpos-group" data-domain="${domain}"><h3>${posEscape(t3(`position.domain.${domain}`))} <span>${skills.length}</span></h3>${progressLine2(map.domains?.[domain])}<div class="wpos-skills">${skills.map((skill2) => skillRow(skill2, catalog, practice)).join("")}</div></section>`;
+      const bridge = exam === "topik2" && Array.isArray(bridged) && bridged.includes(domain) ? `<p class="wpos-note" data-position-bridge="${domain}">${posEscape(t3(domain === "listening" ? "position.bridge.listening" : "position.bridge.reading"))}</p>` : "";
+      return `<section class="wpos-group" data-domain="${domain}"><h3>${posEscape(t3(`position.domain.${domain}`))} <span>${skills.length}</span></h3>${progressLine2(map.domains?.[domain])}${bridge}<div class="wpos-skills">${skills.map((skill2) => skillRow(skill2, catalog, practice)).join("")}</div></section>`;
     }).join("");
     const writingBlock = exam === "topik2" ? `<section class="wpos-group" data-domain="writing"><h3>${posEscape(t3("plan.area.writing"))}</h3><p class="wpos-note">${posEscape(t3("position.writing.note"))}</p>${writing ? `<button class="quiet-button wpos-practice" type="button" data-position-writing>${posEscape(t3("writing.title"))} <span aria-hidden="true">\u2192</span></button>` : ""}</section>` : "";
     const counts = POS_CELLS.map((cell) => `<li data-cell="${cell}">${posLed(POS_LED[cell])}<strong>${map.counts[cell]}</strong><span>${posEscape(t3(`position.cell.${cell}`))}</span></li>`).join("");
@@ -20363,14 +20410,15 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
   }
   function renderMockItem({ view, playing = false, notice = "", confirm = false, parts = [] } = {}) {
     const item = view.item, listening = item.modality === "listening", last = view.partIndex + 1 >= view.parts;
-    const choices2 = item.choices.map((choice) => `<button class="wpos-choice" type="button" data-mock-choice="${posEscape(choice.id)}"${choice.id === view.choiceId ? ' data-state="chosen" aria-pressed="true"' : ""}${view.heard && !view.answered ? "" : " disabled"}>${posEscape(choice.label)}</button>`).join("");
+    const choices2 = item.choices.map((choice) => `<button class="wpos-choice" type="button" data-mock-choice="${posEscape(choice.id)}"${choice.id === view.choiceId ? ' data-state="chosen" aria-pressed="true"' : ' aria-pressed="false"'}${view.heard && !view.answered ? "" : " disabled"}>${posEscape(choice.label)}</button>`).join("");
     const palette = view.marks.map((mark, index) => `<button type="button" class="wmock-number" data-mock-go="${index}" data-mark="${mark}"${index === view.index ? ' aria-current="step"' : ""} aria-label="${posEscape(t3(`mock.mark.${mark}`, { n: index + 1 }))}">${index + 1}</button>`).join("");
     const allowed = view.plays?.allowed, heard = view.plays?.completed || 0;
-    const playNote = playing ? t3("position.diagnostic.playing") : view.audio === "failed" && !view.heard ? t3("position.diagnostic.audioFailed") : Number.isInteger(allowed) ? heard >= allowed ? t3("mock.plays.done") : t3("mock.plays.left", { heard, allowed }) : "";
-    const listen = listening ? `<div class="wpos-listen"><button class="quiet-button" type="button" data-mock-listen${playing ? ' aria-busy="true"' : ""}${view.answered || Number.isInteger(allowed) && heard >= allowed ? " disabled" : ""}>${posEscape(t3(view.heard ? "position.diagnostic.listenAgain" : "position.diagnostic.listen"))}</button><p class="wpos-note">${posEscape(playNote)}</p></div>` : "";
+    const elsewhere = playing && Number.isInteger(view.sounding) && view.sounding !== view.index;
+    const playNote = elsewhere ? t3("mock.playingOther", { n: view.sounding + 1 }) : playing ? t3("position.diagnostic.playing") : view.audio === "failed" && !view.heard ? t3("position.diagnostic.audioFailed") : Number.isInteger(allowed) ? heard >= allowed ? t3("mock.plays.done") : t3("mock.plays.left", { heard, allowed }) : "";
+    const listen = listening ? `<div class="wpos-listen"><button class="quiet-button" type="button" data-mock-listen${playing && !elsewhere ? ' aria-busy="true"' : ""}${view.answered || elsewhere || Number.isInteger(allowed) && heard >= allowed ? " disabled" : ""}>${posEscape(t3(view.heard ? "position.diagnostic.listenAgain" : "position.diagnostic.listen"))}</button><p class="wpos-note">${posEscape(playNote)}</p></div>` : "";
     const left = view.marks.filter((mark) => mark !== "answered").length;
-    const submit = confirm ? `<div class="wmock-confirm" data-mock-confirm tabindex="-1" role="alert"><p>${posEscape(t3("mock.confirm", { n: left }))}</p><button class="felt-button" type="button" data-mock-submit>${posEscape(t3(last ? "mock.submitLast" : "mock.submit"))}</button><button class="quiet-button" type="button" data-mock-keep>${posEscape(t3("mock.keep"))}</button></div>` : `<button class="felt-button" type="button" data-mock-submit>${posEscape(t3(last ? "mock.submitLast" : "mock.submit"))} <span aria-hidden="true">\u2192</span></button>`;
-    return `<div class="wpos wpos-run wmock" data-mock-run="${posEscape(item.id)}"><div class="wmock-head"><p class="life-section-label wpos-run-skill" tabindex="-1">${posEscape(sectionName(view.section))} \xB7 ${posEscape(t3("position.diagnostic.progress", { index: view.index + 1, total: view.total }))}</p><p class="wmock-clock"><span class="wmock-clock-label">${posEscape(t3("mock.timeLeft"))}</span><span data-mock-clock>${posEscape(mockClock(view.remainingMs))}</span></p></div><nav class="wmock-palette" aria-label="${posEscape(t3("mock.palette"))}">${palette}</nav>${item.prompt ? `<p class="wpos-prompt" lang="ko">${posEscape(item.prompt)}</p>` : ""}${listen}${item.question ? item.ask && has(`position.diagnostic.ask.${item.ask}`) ? `<p class="wpos-question">${posEscape(t3(`position.diagnostic.ask.${item.ask}`))}</p>` : `<p class="wpos-question" lang="ko">${posEscape(item.question)}</p>` : ""}<div class="wpos-choices" lang="ko">${choices2}</div><p class="wpos-run-status" role="status" data-mock-status tabindex="-1">${posEscape(notice)}</p><div class="wpos-run-actions"><button class="quiet-button" type="button" data-mock-go="${Math.max(0, view.index - 1)}"${view.index === 0 ? " disabled" : ""}>${posEscape(t3("mock.prev"))}</button><button class="quiet-button" type="button" data-mock-go="${Math.min(view.total - 1, view.index + 1)}"${view.index + 1 >= view.total ? " disabled" : ""}>${posEscape(t3("mock.next"))}</button></div>${submit}<button class="quiet-button" type="button" data-mock-stop>${posEscape(t3("practice.stop"))}</button></div>`;
+    const submit = confirm && left > 0 ? `<div class="wmock-confirm" data-mock-confirm tabindex="-1" role="alert"><p>${posEscape(t3("mock.confirm", { n: left }))}</p><button class="felt-button" type="button" data-mock-submit>${posEscape(t3(last ? "mock.submitLast" : "mock.submit"))}</button><button class="quiet-button" type="button" data-mock-keep>${posEscape(t3("mock.keep"))}</button></div>` : `<button class="felt-button" type="button" data-mock-submit>${posEscape(t3(last ? "mock.submitLast" : "mock.submit"))} <span aria-hidden="true">\u2192</span></button>`;
+    return `<div class="wpos wpos-run wmock" data-mock-run="${posEscape(item.id)}"><div class="wmock-head"><p class="life-section-label wpos-run-skill" tabindex="-1">${posEscape(sectionName(view.section))} \xB7 ${posEscape(t3("position.diagnostic.progress", { index: view.index + 1, total: view.total }))}</p><p class="wmock-clock"><span class="wmock-clock-label">${posEscape(t3("mock.timeLeft"))}</span><span data-mock-clock>${posEscape(mockClock(view.remainingMs))}</span></p></div><nav class="wmock-palette" aria-label="${posEscape(t3("mock.palette"))}">${palette}</nav>` + (view.set ? `<p class="wpos-note" data-mock-set>${posEscape(t3(listening ? "mock.set.listening" : "mock.set.reading", { first: view.set.first, last: view.set.last }))}</p>` : "") + `${item.prompt ? `<p class="wpos-prompt" lang="ko">${posEscape(item.prompt)}</p>` : ""}${listen}${item.question ? item.ask && has(`position.diagnostic.ask.${item.ask}`) ? `<p class="wpos-question">${posEscape(t3(`position.diagnostic.ask.${item.ask}`))}</p>` : `<p class="wpos-question" lang="ko">${posEscape(item.question)}</p>` : ""}<div class="wpos-choices" lang="ko">${choices2}</div><p class="wpos-run-status" role="status" data-mock-status tabindex="-1">${posEscape(notice)}</p><div class="wpos-run-actions"><button class="quiet-button" type="button" data-mock-go="${Math.max(0, view.index - 1)}"${view.index === 0 ? " disabled" : ""}>${posEscape(t3("mock.prev"))}</button><button class="quiet-button" type="button" data-mock-go="${Math.min(view.total - 1, view.index + 1)}"${view.index + 1 >= view.total ? " disabled" : ""}>${posEscape(t3("mock.next"))}</button></div>${submit}<button class="quiet-button" type="button" data-mock-stop>${posEscape(t3("practice.stop"))}</button></div>`;
   }
   function renderMockBetween({ view, parts = [] } = {}) {
     const next = view.started ? parts[view.partIndex + 1] : parts[view.partIndex];
@@ -20378,7 +20426,7 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
     const sub = next ? t3("mock.nextPart", { section: sectionName(next.section), n: next.total, minutes: next.minutes }) : t3("mock.allDone");
     return `<div class="wpos life-heading" data-mock-between tabindex="-1">${poster(head, sub, { print: "plan", label: "EXAM FORM" })}<button class="felt-button" type="button" data-mock-next-section>${posEscape(next ? t3("mock.startPart", { section: sectionName(next.section) }) : t3("practice.finish"))} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" type="button" data-mock-stop>${posEscape(t3("practice.stop"))}</button></div>`;
   }
-  function renderMockDone({ results = [], items = null, plan = null, exam = "topik1", practice = null } = {}) {
+  function renderMockDone({ results = [], items = null, plan = null, exam = "topik1", mode = null, practice = null } = {}) {
     const itemOf = (id) => items?.get?.(id) || null, numbers = plan?.numbers || {};
     const rows2 = results.flatMap((part) => part.items);
     const answered = rows2.filter((row) => ["correct", "incorrect"].includes(row.verdict)).length, total = rows2.length;
@@ -20392,7 +20440,7 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
       }).join("");
       return `<section class="wplan-checks" data-mock-section="${posEscape(part.section)}"><p class="life-section-label">${posEscape(part.section.toUpperCase())}</p><h3>${posEscape(sectionName(part.section))}</h3><p class="wpos-intro">${posEscape(t3("mock.partSummary", { right, wrong, open, unopened }))}</p>${part.ended === "time" ? `<p class="wpos-note">${posEscape(t3("mock.endedByTime"))}</p>` : ""}<ul class="wpos-done-list">${list}</ul></section>`;
     }).join("");
-    return `<div class="wpos life-heading" data-mock-done tabindex="-1">${poster(t3("mock.doneTitle"), t3("mock.doneSummary", { answered, total, exam: examName(exam) }), { print: "plan", label: "EXAM FORM" })}${sections}<p class="wpos-note">${posEscape(t3("mock.noGradeNote"))}</p><div class="wpos-run-actions"><button class="quiet-button" type="button" data-mock-position>${posEscape(t3("position.open"))}</button><button class="quiet-button" type="button" data-mock-home>${posEscape(t3("practice.home"))}</button></div></div>`;
+    return `<div class="wpos life-heading" data-mock-done tabindex="-1">${poster(t3("mock.doneTitle"), t3("mock.doneSummary", { answered, total, exam: examName(exam) }), { print: "plan", label: "EXAM FORM" })}${sections}<p class="wpos-note">${posEscape(t3(mode === "ibt" ? "mock.noGradeNote.ibt" : "mock.noGradeNote"))}</p><div class="wpos-run-actions"><button class="quiet-button" type="button" data-mock-position>${posEscape(t3("position.open"))}</button><button class="quiet-button" type="button" data-mock-home>${posEscape(t3("practice.home"))}</button></div></div>`;
   }
   const examDay = (value) => {
     const match = typeof value === "string" && /^(\d{4})-(\d{2})(?:-(\d{2}))?$/.exec(value);
@@ -20430,15 +20478,17 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
     const area = (row) => `<li data-area="${posEscape(row.area)}"><span class="wplan-area-name">${posEscape(t3(`plan.area.${row.area}`))}</span>${dots(row.planned, row.done)}<span class="wplan-area-count">${posEscape(t3("plan.area.count", { done: row.done, planned: row.planned }))}</span>${row.classwork?.length ? `<small class="wplan-classwork">${row.classwork.map((task) => posEscape(t3(task.done ? "plan.classwork.done" : "plan.classwork.todo", { kind: t3(`plan.area.${task.kind}`) }))).join(" \xB7 ")}</small>` : ""}</li>`;
     const nextTitle = next ? planTitle(next) : "";
     const gameOf = (id) => String(id || "").split(".").pop();
+    const bridgeName = (id) => exam.type === "topik2" && /^ko\.(listening|reading)\./.test(String(id || "")) ? `${t3("goal.exam.type.topik1")} \xB7 ` : "";
     const homework = (plan.homework || []).map((row) => {
-      const name = skillName({ id: row.skillId }), games = row.activities || [];
-      const action = row.shortage ? `<small class="wplan-shortage">${posEscape(t3("plan.homework.shortage"))}</small>` : row.domain !== "writing" && row.fresh > 0 ? `<button class="quiet-button" type="button" data-plan-practice="${posEscape(row.skillId)}">${posEscape(t3("plan.homework.reading", { n: Math.min(row.fresh, 5) }))} <span aria-hidden="true">\u2192</span></button>` : row.domain === "writing" ? `<button class="quiet-button" type="button" data-plan-writing="${posEscape(games[0])}">${posEscape(writingName(games[0]) || t3("writing.title"))} <span aria-hidden="true">\u2192</span></button>` : `<button class="quiet-button" type="button" data-plan-game="${posEscape(gameOf(games[0]))}">${posEscape(has(`plan.game.${gameOf(games[0])}`) ? t3(`plan.game.${gameOf(games[0])}`) : gameOf(games[0]))} <span aria-hidden="true">\u2192</span></button>`;
+      const name = bridgeName(row.skillId) + skillName({ id: row.skillId }), games = row.activities || [];
+      const action = row.shortage ? `<small class="wplan-shortage">${posEscape(t3(row.blocked === "audio" ? "practice.audioOff" : "plan.homework.shortage"))}</small>` : row.domain !== "writing" && row.fresh > 0 ? `<button class="quiet-button" type="button" data-plan-practice="${posEscape(row.skillId)}">${posEscape(t3("plan.homework.reading", { n: Math.min(row.fresh, 5) }))} <span aria-hidden="true">\u2192</span></button>` : row.domain === "writing" ? `<button class="quiet-button" type="button" data-plan-writing="${posEscape(games[0])}">${posEscape(writingName(games[0]) || t3("writing.title"))} <span aria-hidden="true">\u2192</span></button>` : `<button class="quiet-button" type="button" data-plan-game="${posEscape(gameOf(games[0]))}">${posEscape(has(`plan.game.${gameOf(games[0])}`) ? t3(`plan.game.${gameOf(games[0])}`) : gameOf(games[0]))} <span aria-hidden="true">\u2192</span></button>`;
       return `<li data-skill="${posEscape(row.skillId)}"><span class="wpos-attention-copy"><strong>${posEscape(name)}</strong><small>${posEscape(t3(`position.level.${row.status}`))}</small></span>${action}</li>`;
     }).join("");
     const thisWeek = (plan.checks || [])[0]?.weekStart === plan.week?.start ? (plan.checks || [])[0] : null;
     const checks = (plan.checks || []).map((row) => `<li${row.done ? " data-done" : ""}><span>${posEscape(row.weekStart === plan.week?.start ? t3("plan.checks.thisWeek") : t3("plan.checks.week", { date: day(new Date(row.weekStart).toISOString()) }))}</span>${row.done ? `<small>${posEscape(t3("plan.checks.done"))}</small>` : ""}</li>`).join("");
     const reach = plan.reach || { confirmed: 0, total: 0, evidence: 0 };
-    return `<div class="wpos wplan life-heading" data-plan-board tabindex="-1">${poster(t3("plan.week.title"), head, { print: "plan", label: "MY PLAN" })}` + (notes.has("past") ? `<section class="wpos-diagnostic" data-plan-past><p class="wpos-intro">${posEscape(t3("goal.exam.past"))}</p><button class="quiet-button" type="button" data-view="study">${posEscape(t3("plan.week.setGoal"))}</button></section>` : "") + `<section class="wplan-week"><p class="life-section-label">THIS WEEK</p><h3>${posEscape(t3("plan.week.sessions", { n: plan.sessions?.total || 0, minutes: plan.sessions?.minutes || 0 }))}</h3><ul class="wplan-areas">${(plan.areas || []).map(area).join("")}</ul><p class="wpos-note">${posEscape(t3("plan.week.rest"))}</p>${notes.has("audio-off") ? `<p class="wpos-note">${posEscape(t3("plan.week.audioOff"))}</p>` : ""}${notes.has("reading-unavailable") ? `<p class="wpos-note" data-plan-reading-later>${posEscape(t3("plan.week.readingLater"))}</p>` : ""}${notes.has("writing-unavailable") ? `<p class="wpos-note">${posEscape(t3("plan.week.writingLater"))}</p>` : ""}${notes.has("no-date") ? `<p class="wpos-note">${posEscape(t3("plan.week.noDate"))}</p>` : ""}</section>` + (next ? `<section class="wplan-next"><p class="life-section-label">NOW</p><h3>${nextTitle}</h3>${reason ? `<p class="wpos-note">${posEscape(reason)}</p>` : ""}<button class="felt-button" type="button" data-plan-next>${posEscape(t3("plan.week.start"))} <span aria-hidden="true">\u2192</span></button></section>` : "") + (homework ? `<section class="wpos-attention wplan-homework"><p class="life-section-label">HOMEWORK</p><h3>${posEscape(t3("plan.homework.title"))}</h3><p class="wpos-note">${posEscape(t3("plan.homework.note"))}</p><ul>${homework}</ul></section>` : "") + (checks ? `<section class="wplan-checks"><p class="life-section-label">CHECK</p><h3>${posEscape(t3("plan.checks.title"))}</h3><ul>${checks}</ul><p class="wpos-note">${posEscape(t3("plan.checks.note"))}</p>${thisWeek && !thisWeek.done && next?.route !== "position" ? `<button class="quiet-button" type="button" data-plan-recheck>${posEscape(t3("position.diagnostic.start"))} <span aria-hidden="true">\u2192</span></button>` : ""}</section>` : "") + (plan.mock?.status === "ready" ? `<section class="wplan-next" data-plan-mock-section><p class="life-section-label">EXAM FORM</p><h3>${posEscape(t3("mock.title"))}</h3><p class="wpos-note">${posEscape(t3("mock.planNote", { minutes: plan.mock.minutes, n: plan.mock.total }))}</p><button class="quiet-button" type="button" data-plan-mock>${posEscape(t3("mock.open", { minutes: plan.mock.minutes }))} <span aria-hidden="true">\u2192</span></button></section>` : "") + `<section class="wplan-reach"><p class="life-section-label">SO FAR</p>${["listening", "reading"].filter((area2) => plan.progress?.[area2]).map((area2) => `<p class="wpos-progress" data-plan-progress="${area2}"><span>${posEscape(t3(`plan.area.${area2}`))} \xB7 ${posEscape(t3("position.progress", { checked: plan.progress[area2].checked, total: plan.progress[area2].total }))}</span><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(plan.progress[area2].checked, plan.progress[area2].total)}%"></i></span></p>`).join("")}<p class="wpos-intro">${posEscape(t3("plan.reach.line", { confirmed: reach.confirmed, total: reach.total, evidence: reach.evidence }))}</p><p class="wpos-note">${posEscape(t3("plan.reach.note"))}</p>${reach.basis === "topik1" && exam.type === "topik2" ? `<p class="wpos-note" data-plan-reach-basis>${posEscape(t3("plan.reach.topik1Basis"))}</p>` : ""}</section><button class="quiet-button" type="button" data-view="study">${posEscape(t3("plan.week.change"))}</button></div>`;
+    const bridged = exam.type !== "topik2" ? [] : plan.progress ? ["listening", "reading"].filter((area2) => plan.progress[area2]?.basis === "topik1") : reach.basis === "topik1" ? ["listening", "reading"] : [];
+    return `<div class="wpos wplan life-heading" data-plan-board tabindex="-1">${poster(t3("plan.week.title"), head, { print: "plan", label: "MY PLAN" })}` + (notes.has("past") ? `<section class="wpos-diagnostic" data-plan-past><p class="wpos-intro">${posEscape(t3("goal.exam.past"))}</p><button class="quiet-button" type="button" data-view="study">${posEscape(t3("plan.week.setGoal"))}</button></section>` : "") + `<section class="wplan-week"><p class="life-section-label">THIS WEEK</p><h3>${posEscape(t3("plan.week.sessions", { n: plan.sessions?.total || 0, minutes: plan.sessions?.minutes || 0 }))}</h3><ul class="wplan-areas">${(plan.areas || []).map(area).join("")}</ul><p class="wpos-note">${posEscape(t3("plan.week.rest"))}</p>${notes.has("audio-off") ? `<p class="wpos-note">${posEscape(t3("plan.week.audioOff"))}</p>` : ""}${notes.has("reading-unavailable") ? `<p class="wpos-note" data-plan-reading-later>${posEscape(t3("plan.week.readingLater"))}</p>` : ""}${notes.has("writing-unavailable") ? `<p class="wpos-note">${posEscape(t3("plan.week.writingLater"))}</p>` : ""}${notes.has("no-date") ? `<p class="wpos-note">${posEscape(t3("plan.week.noDate"))}</p>` : ""}</section>` + (next ? `<section class="wplan-next"><p class="life-section-label">NOW</p><h3>${nextTitle}</h3>${reason ? `<p class="wpos-note">${posEscape(reason)}</p>` : ""}<button class="felt-button" type="button" data-plan-next>${posEscape(t3("plan.week.start"))} <span aria-hidden="true">\u2192</span></button></section>` : "") + (homework ? `<section class="wpos-attention wplan-homework"><p class="life-section-label">HOMEWORK</p><h3>${posEscape(t3("plan.homework.title"))}</h3><p class="wpos-note">${posEscape(t3("plan.homework.note"))}</p><ul>${homework}</ul></section>` : "") + (checks ? `<section class="wplan-checks"><p class="life-section-label">CHECK</p><h3>${posEscape(t3("plan.checks.title"))}</h3><ul>${checks}</ul><p class="wpos-note">${posEscape(t3("plan.checks.note"))}</p>${thisWeek && !thisWeek.done && next?.route !== "position" ? `<button class="quiet-button" type="button" data-plan-recheck>${posEscape(t3("position.diagnostic.start"))} <span aria-hidden="true">\u2192</span></button>` : ""}</section>` : "") + (plan.mock?.status === "ready" ? `<section class="wplan-next" data-plan-mock-section><p class="life-section-label">EXAM FORM</p><h3>${posEscape(t3("mock.title"))}</h3><p class="wpos-note">${posEscape(t3("mock.planNote", { minutes: plan.mock.minutes, n: plan.mock.total }))}</p><button class="quiet-button" type="button" data-plan-mock>${posEscape(t3("mock.open", { minutes: plan.mock.minutes }))} <span aria-hidden="true">\u2192</span></button></section>` : "") + `<section class="wplan-reach"><p class="life-section-label">SO FAR</p>${["listening", "reading"].filter((area2) => plan.progress?.[area2]).map((area2) => `<p class="wpos-progress" data-plan-progress="${area2}"><span>${posEscape(t3(`plan.area.${area2}`))}${bridged.includes(area2) ? ` \xB7 ${posEscape(t3("goal.exam.type.topik1"))}` : ""} \xB7 ${posEscape(t3("position.progress", { checked: plan.progress[area2].checked, total: plan.progress[area2].total }))}</span><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(plan.progress[area2].checked, plan.progress[area2].total)}%"></i></span></p>`).join("")}<p class="wpos-intro">${posEscape(t3("plan.reach.line", { confirmed: reach.confirmed, total: reach.total, evidence: reach.evidence }))}</p><p class="wpos-note">${posEscape(t3("plan.reach.note"))}</p>${bridged.length ? `<p class="wpos-note" data-plan-reach-basis>${posEscape(t3(bridged.length > 1 ? "plan.reach.topik1Basis" : bridged[0] === "listening" ? "plan.reach.topik1Basis.listening" : "plan.reach.topik1Basis.reading"))}</p>` : ""}</section><button class="quiet-button" type="button" data-view="study">${posEscape(t3("plan.week.change"))}</button></div>`;
   }
   return Object.freeze({
     skillName,

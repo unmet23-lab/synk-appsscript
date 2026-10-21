@@ -137,10 +137,11 @@ for(const game of ['korean-runner','korean-rhythm','hangul-stage'])copyTree(path
 // world-diagnostic-racing.mjs에서 읽는다(진단 묶음 전체를 부르면 공개 내보내기에 없는 게임 폴더까지 따라 부른다).
 for(const [id] of DIAG_RACING_WORDS)copyFile(path.join(root,'experiences',racingWordAudio(id)),racingWordAudio(id));
 // 공개 TOPIK 은행(검수 통과 문항만 — tools/build-world-topik-items.mjs가 만든 파일 그대로)과 그 듣기 문항의 소리만 싣는다(10-21 ④).
-// 화면은 이 은행을 필요할 때 불러온다(world-topik-items.mjs). 초안·보류 문항의 소리는 싣지 않는다.
+// 화면은 이 은행을 필요할 때 불러온다(world-topik-items.mjs). 초안·보류 문항의 소리는 싣지 않는다. 세트 문항은 대본(소리 파일) 하나를 함께 쓰므로 파일마다 한 번만.
 copyFile(path.join(root,'experiences/synk-world-app','world-topik-items.json'),'world-topik-items.json');
+{const topikAudio=new Set();
 for(const row of JSON.parse(fs.readFileSync(path.join(root,'experiences/synk-world-app/world-topik-items.json'),'utf8')).items)
- if(row?.audio?.file&&/^audio\/[a-z0-9-]+\.mp3$/.test(row.audio.file))copyFile(path.join(root,'experiences/topik-items',row.audio.file),`topik-items/${row.audio.file}`);
+ if(row?.audio?.file&&/^audio\/[a-z0-9-]+\.mp3$/.test(row.audio.file)&&!topikAudio.has(row.audio.file)){topikAudio.add(row.audio.file);copyFile(path.join(root,'experiences/topik-items',row.audio.file),`topik-items/${row.audio.file}`);}}
  // Publish only explicitly approved voice clips, and runtime-only empty fallback metadata otherwise.
  const voiceRoot=path.join(root,'experiences/hangul-stage/assets/voice');
  const readVoice=name=>{try{return JSON.parse(fs.readFileSync(path.join(voiceRoot,name),'utf8'));}catch{return null;}};

@@ -53,10 +53,12 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  const readMockCoach=()=>coachFor(position?.mock?.MOCK_POLICY?.gameId||'world-mock',()=>[mockCoach,mockHost],(a,b)=>{mockCoach=a;mockHost=b;});
  // 공개 TOPIK 은행: 처음 추천·판을 열 때 한 번 불러오고(실패하면 다음에 다시), 다 불러오면 추천과 열려 있는 판을 다시 그린다.
  const bankUrl=topikBankUrl||audioUrl('world-topik-items.json');
- let bankWait=null;
+ let bankWait=null,bankFailedAt=-Infinity;
  function loadBank(){
   const bank=position?.topik;if(!bank||bank.ready)return Promise.resolve();
-  bankWait||=Promise.resolve().then(()=>bank.load(bankUrl)).then(()=>{if(stopped)return;queueMicrotask(()=>{refresh();repaint();});},()=>{bankWait=null;});
+  // 못 불러왔으면 1분 동안은 다시 묻지 않는다 — refresh(초점·답)마다 요청이 되풀이되지 않게.
+  if(!bankWait&&Date.now()-bankFailedAt<60000)return Promise.resolve();
+  bankWait||=Promise.resolve().then(()=>bank.load(bankUrl)).then(()=>{if(stopped)return;queueMicrotask(()=>{refresh();repaint();});},()=>{bankWait=null;bankFailedAt=Date.now();});
   return bankWait;
  }
  // 은행을 기다리되 오래 붙잡지 않는다(못 불러와도 판은 기존 문항으로 연다).
@@ -258,7 +260,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   };
   form.addEventListener('change',event=>{if(['reason','examType','examMonth'].includes(event.target?.name))sync();});sync();
   const valid=()=>{check();if(progress!==getProgress()||!form.isConnected)throw Error('설정을 다시 열어 주세요.');};
-  const run=async operation=>{if(busy)return;busy=true;form.querySelectorAll('button').forEach(b=>b.disabled=true);try{valid();operation();revision=progress.learningProfile().profile.revision;await progress.flush();valid();if(progress.learningProfile().profile.status!=='skipped'){await prepare();valid();try{await target.SYNKLearningHost?.ready?.();}catch{/* the save still goes to this device */}valid();if(applyPreferences({explicit:true})===false)throw Error('도움 방식 저장을 다시 확인해 주세요.');}refresh();home.closePanel();if(continueAfter)await next();else home.toast(t('goal.saved'));}catch(error){if(form.isConnected)status.textContent=tMessage(error.message)||t('goal.retry');}finally{busy=false;if(form.isConnected)form.querySelectorAll('button').forEach(b=>b.disabled=false);}};
+  const run=async operation=>{if(busy)return;busy=true;form.querySelectorAll('button').forEach(b=>b.disabled=true);try{valid();operation();boardExam=null;revision=progress.learningProfile().profile.revision;await progress.flush();valid();if(progress.learningProfile().profile.status!=='skipped'){await prepare();valid();try{await target.SYNKLearningHost?.ready?.();}catch{/* the save still goes to this device */}valid();if(applyPreferences({explicit:true})===false)throw Error('도움 방식 저장을 다시 확인해 주세요.');}refresh();home.closePanel();if(continueAfter)await next();else home.toast(t('goal.saved'));}catch(error){if(form.isConnected)status.textContent=tMessage(error.message)||t('goal.retry');}finally{busy=false;if(form.isConnected)form.querySelectorAll('button').forEach(b=>b.disabled=false);}};
   // 고른 시험 정보: 시험을 고르지 않았으면 모두 지운다(다른 이유로 바꾸면 시험 계획도 끝난다). 날은 그 달에 있는 날만.
   const examValues=reason=>{
    if(reason!=='exam'||!exam)return {examType:null,targetGrade:null,examDate:null,examMode:null,weeklyMinutes:null};
@@ -331,16 +333,18 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const writing=exam==='topik2'&&writingList().length>0;
   // 판에서 고를 수 있는 시험: TOPIK II를 고른 사람이거나 검수 통과 TOPIK II 문항이 있을 때 TOPIK I·II 둘 다.
   const two=topik2Domains(),exams=studentExam(values)==='topik2'||two.listening||two.reading?['topik1','topik2']:null;
-  return {map,plan,gate,mock,exam,writing,exams};
+  // TOPIK II 판: TOPIK II 문항이 아직 없는 영역은 이번 주 계획이 TOPIK I 항목으로 센다(계획의 available.topik2와 같은 판단) — 판이 그 영역에 알린다.
+  const bridged=exam==='topik2'?['listening','reading'].filter(domain=>!two[domain]):[];
+  return {map,plan,gate,mock,exam,writing,exams,bridged};
  }
  function showBoard(coachNow,{keepScroll=false}={}){
   check();
   // 듣기 항목의 「이 항목 연습하기」는 지금 추천 후보에서 찾으므로 판을 그리기 전에 추천을 새로 세운다(10-21 검수).
   refresh();
   const scroller=keepScroll?panelNode('[data-position-board]')?.closest?.('#panel-content'):null,scrollTop=scroller?.scrollTop||0;
-  const routes=practiceRoutes(coachNow),{map,plan,gate,mock,exam,writing,exams}=positionData(coachNow,id=>routes.has(id));
+  const routes=practiceRoutes(coachNow),{map,plan,gate,mock,exam,writing,exams,bridged}=positionData(coachNow,id=>routes.has(id));
   let scope=null;try{scope=getProgress().status().scoped?'account':'device';}catch{}
-  home.showPanel(t('position.title'),view.renderPositionBoard({map,plan,gate,mock,exams,writing,catalog:position.label,diagnosed,scope,practice:id=>routes.get(id)||null}),PANEL);
+  home.showPanel(t('position.title'),view.renderPositionBoard({map,plan,gate,mock,exams,writing,bridged,catalog:position.label,diagnosed,scope,practice:id=>routes.get(id)||null}),PANEL);
   const root=panelNode('[data-position-board]');
   if(keepScroll){const node=root?.closest?.('#panel-content');if(node)node.scrollTop=scrollTop;}else root?.focus?.({preventScroll:true});
   panelNode('[data-position-diagnostic]')?.addEventListener('click',()=>{try{startDiagnostic(coachNow,plan,map);}catch(error){failed(error);}},{once:true});
@@ -450,7 +454,8 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   function play(){
    const now=session.current;if(!now||now.answered||playing||!now.item.audio)return null;
    const kind=session.replay();if(!kind||kind==='closed')return kind;
-   let sound;try{sound=new target.Audio(url(now.item.audio));}catch{if(kind==='first')session.delivery('failed');onChange('failed');return kind;}
+   // 재생기를 못 만들면 늘 실패를 알린다 — 세션이 「소리 나는 중」으로 남지 않게(들은 뒤의 실패는 세션이 기록하지 않는다).
+   let sound;try{sound=new target.Audio(url(now.item.audio));}catch{try{session.delivery('failed');}catch{}onChange('failed');return kind;}
    clip=sound;playing=true;onChange('playing');
    const done=status=>{if(clip!==sound)return;clip=null;playing=false;try{session.delivery(status);}catch{}onChange(status);};
    sound.addEventListener('ended',()=>done('completed'),{once:true});
@@ -477,7 +482,8 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const mapOf=()=>{try{return position.buildPositionMap({summary:coachNow.summary(),events:coachNow.events?.()||[],policy:engine.POLICY,exam});}catch{return null;}};
   const before=mapOf()?.skills.find(skill=>skill.id===skillId)||null;
   let ended=false,notice='';
-  const player=soundPlayer({session,url:audioUrl,onChange:state=>{if(ended)return;notice=state==='failed'?t('position.diagnostic.audioFailed'):'';paint(state==='completed'?'.wpos-choice:not([disabled])':'[data-practice-listen]');}});
+  // 아직 못 들은 문항의 재생 실패는 듣기 칸 한 줄(listenNote)이 알린다 — 상태 줄에는 이미 들은 뒤 다시 듣기가 실패했을 때만.
+  const player=soundPlayer({session,url:audioUrl,onChange:state=>{if(ended)return;notice=state==='failed'&&session.current?.heard?t('position.diagnostic.audioFailed'):'';paint(state==='completed'?'.wpos-choice:not([disabled])':'[data-practice-listen]');}});
   const stop=()=>{if(ended)return;ended=true;player.silence();try{session.stop();}catch{}try{coachNow.flush?.();}catch{}queueMicrotask(()=>refresh());};
   home.showPanel(t(listening?'practice.title.listening':'practice.title'),'<div class="wpos-stage" data-practice-stage></div>',{...PANEL,eyebrow:'PRACTICE'});
   home.attachPanelResource?.({dispose:stop});
@@ -503,7 +509,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
    const button=event.target.closest?.('button');if(!button||button.disabled)return;
    try{
     check();
-    if(button.dataset.practiceChoice){player.silence();session.answer(button.dataset.practiceChoice);paint('[data-practice-feedback]');}
+    if(button.dataset.practiceChoice){player.silence();notice='';session.answer(button.dataset.practiceChoice);paint('[data-practice-feedback]');}
     else if(button.hasAttribute('data-practice-listen'))player.play();
     else if(button.hasAttribute('data-practice-next'))advance();
     else if(button.hasAttribute('data-practice-skip')){player.silence();session.skip();advance();}
@@ -538,15 +544,21 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const top=()=>{for(const node of [box.closest?.('#panel-content'),box.closest?.('dialog')])if(node)node.scrollTop=0;};
   box.innerHTML=view.renderMockIntro({plan,exam:which,mode:values.examMode||null});
   box.querySelector('[data-mock-intro]')?.focus?.({preventScroll:true});top();
-  box.querySelector('[data-mock-start]')?.addEventListener('click',()=>{try{check();runMock({coachNow,plan,sections,exam:which,box,top});}catch(error){failed(error);}},{once:true});
+  box.querySelector('[data-mock-start]')?.addEventListener('click',()=>{try{check();runMock({coachNow,plan,sections,exam:which,mode:values.examMode||null,box,top});}catch(error){failed(error);}},{once:true});
   box.querySelector('[data-mock-later]')?.addEventListener('click',()=>{try{void openPosition();}catch(error){failed(error);}},{once:true});
  }
- function runMock({coachNow,plan,sections,exam,box,top}){
+ function runMock({coachNow,plan,sections,exam,mode=null,box,top}){
   const session=position.mock.createMockSession({coach:coachNow,sections,exam});
   let ended=false,notice='',ticker=null,confirm=false;
   const cell=()=>session.current;
-  const proxy={get current(){const now=cell();return now&&!now.between?{...now,heard:now.heard}:null;},replay:()=>session.play(),delivery:status=>session.delivery(status)};
-  const player=soundPlayer({session:proxy,url:audioUrl,onChange:state=>{if(ended)return;notice=state==='failed'?t('position.diagnostic.audioFailed'):'';paint(state==='completed'?'.wpos-choice:not([disabled])':'[data-mock-listen]');}});
+  // finishedAt: 방금 끝난(또는 실패한) 소리의 문항 — 다른 문항을 보고 있을 때 끝나면 초점을 옮기지 않고, 실패는 그 번호로 알린다.
+  let finishedAt=null;
+  const proxy={get current(){const now=cell();return now&&!now.between?{...now,heard:now.heard}:null;},replay:()=>session.play(),
+   delivery:status=>{finishedAt=cell()?.sounding??null;return session.delivery(status);}};
+  const player=soundPlayer({session:proxy,url:audioUrl,onChange:state=>{
+   if(ended)return;const now=cell(),other=state!=='playing'&&Number.isInteger(finishedAt)&&!!now&&!now.between&&finishedAt!==now.index;
+   notice=state!=='failed'?'':other?t('mock.failedOther',{n:finishedAt+1}):now?.heard?t('position.diagnostic.audioFailed'):'';
+   paint(state==='playing'?'[data-mock-listen]':other?'.wpos-run-skill':state==='completed'?'.wpos-choice:not([disabled])':'[data-mock-listen]');}});
   const stopTick=()=>{if(ticker){clearInterval(ticker);ticker=null;}};
   const stop=()=>{if(ended)return;ended=true;stopTick();player.silence();try{session.stop();}catch{}try{coachNow.flush?.();}catch{}queueMicrotask(()=>refresh());};
   home.attachPanelResource?.({dispose:stop});
@@ -570,7 +582,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
    if(ended&&!box.isConnected)return;
    ended=true;stopTick();player.silence();try{coachNow.flush?.();}catch{}
    refresh();const routes=practiceRoutes(readCoach());
-   box.innerHTML=view.renderMockDone({results:session.results(),items:position.itemsById,plan,exam,practice:id=>routes.get(id)||null});
+   box.innerHTML=view.renderMockDone({results:session.results(),items:position.itemsById,plan,exam,mode,practice:id=>routes.get(id)||null});
    bindPractice(box,routes);
    box.querySelector('[data-mock-done]')?.focus?.({preventScroll:true});top();
   }
@@ -578,9 +590,11 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
    const button=event.target.closest?.('button');if(!button||button.disabled)return;
    try{
     check();
-    if(button.dataset.mockChoice){player.silence();session.answer(button.dataset.mockChoice);notice=t('position.diagnostic.saved');paint('[data-mock-status]');}
+    // 영역 안에서 답하거나 다른 번호로 옮겨도 듣던 소리는 끊지 않는다 — 실제 시험처럼 소리는 끝까지 흐르고, 끝난 재생은 시작한 문항의 대본 셈이 된다
+    // (끊었다 처음부터 다시 듣는 길이 없다). 소리는 영역이 끝날 때·그만둘 때만 멈춘다.
+    if(button.dataset.mockChoice){confirm=false;session.answer(button.dataset.mockChoice);notice=t('position.diagnostic.saved');paint('[data-mock-status]');}
     else if(button.hasAttribute('data-mock-listen'))player.play();
-    else if(button.dataset.mockGo){player.silence();notice='';confirm=false;session.go(Number(button.dataset.mockGo));paint();}
+    else if(button.dataset.mockGo){notice='';confirm=false;session.go(Number(button.dataset.mockGo));paint();}
     else if(button.hasAttribute('data-mock-submit')){
      const now=session.current,left=now&&!now.between?now.marks.filter(mark=>mark!=='answered').length:0;
      if(left&&!confirm){confirm=true;paint('[data-mock-confirm]');return;}

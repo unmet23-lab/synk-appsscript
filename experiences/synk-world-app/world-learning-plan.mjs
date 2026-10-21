@@ -153,9 +153,12 @@ export function buildWorldLearningCandidates({progress={},settings={},now=Date.n
 function resumeCandidates(progress,settings,now){
  const result=[];
  const lesson=knownLessons.get(progress?.activeLessonId),saved=lesson&&progress.lessons?.[lesson.id];
- // A lesson only opened (no answered question) is not 「하던 자리」: it must not jump ahead of a returned review.
+ // A lesson only opened (no answered question, still at its intro) is not 「하던 자리」: it must not jump ahead of a returned review.
+ // A lesson read into its story or questions is (life-progress stage starts at {phase:'intro',sceneIndex:0,questionIndex:0}).
  const answered=record(saved?.answers)&&Object.keys(saved.answers).length>0;
- if(lesson&&saved&&answered&&time(saved.startedAt)&&saved.startedAt<=now){
+ const stage=record(saved?.stage)?saved.stage:null;
+ const moved=!!stage&&(stage.phase==='story'||stage.phase==='questions'||stage.sceneIndex>0||stage.questionIndex>0);
+ if(lesson&&saved&&(answered||moved)&&time(saved.startedAt)&&saved.startedAt<=now){
   const index=PACKS.findIndex(pack=>pack.id===lesson.packId);
   result.push({...lessonCandidate(lesson,index,settings),id:`world.resume.lesson.${lesson.id}`,resume:true,label:`${lesson.title} · 이어 하기`});
  }

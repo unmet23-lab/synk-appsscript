@@ -193,6 +193,58 @@ test('미니 모의 한 번: 시간 제한·한 번 고른 답·열어 본 문�
  assert.deepEqual(decision.candidateSnapshot[0].flow.values,{plays:2,form:'topik-i',composition:'mini-blueprint',section:'listening',minutes:plan.sections[0].minutes,timed:true});
 });
 
+// 10-21 아르곤 검수 반영: 세트 문항마다 재생 셈을 따로 두면 세트 대본을 네 번 듣고, 둘째 문항은 다시 들어야 답할 수 있었다.
+test('시험 형식 연습의 세트 듣기: 대본 하나를 세트 문항이 함께 쓴다 — 재생 셈은 세트에 하나, 다 들은 뒤 연 세트 문항도 혼자 낸 답이 된다',()=>{
+ const bank=bankOf(topikIBank());
+ const open=()=>{
+  const f=coachFixture('world-mock'),plan=selectMock({forms:bank.forms,exam:'topik1',pool:bank.items,seen:item=>f.coach.exposure(item).seen});
+  const listening=plan.sections.find(row=>row.section==='listening'),first=listening.items.findIndex(item=>item.setId==='qa-ls1');
+  const session=createMockSession({coach:f.coach,exam:'topik1',sections:[listening],clock:()=>Date.parse('2026-10-21T02:00:00Z')});
+  session.start();return {f,listening,first,second:first+1,session};
+ };
+ const deliveries=(f,itemId)=>{const events=f.coach.events(),p=events.filter(event=>event.type==='practice.presented'&&event.measure?.familyKey===`topik-items.${itemId}`).map(event=>event.id);
+  return events.filter(event=>event.type==='practice.delivery'&&p.includes(event.presentationId)&&event.audio==='completed').length;};
+ // (1) 첫 문항에서 두 번 다 듣고 둘째 문항으로: 이미 들은 대본이라 바로 답하고, 더 듣지 못한다.
+ const a=open();
+ assert.equal(a.listening.items[a.second].setId,'qa-ls1');
+ let view=a.session.go(a.first);
+ assert.deepEqual(view.set,{first:a.first+1,last:a.second+1});
+ assert.equal(a.session.play(),'first');a.session.delivery('completed');
+ assert.equal(a.session.play(),'allowed');a.session.delivery('completed');
+ assert.equal(a.session.play(),false,'세트 대본도 허용 두 번까지');
+ view=a.session.go(a.second);
+ assert.equal(view.heard,true,'같은 세트의 둘째 문항은 이미 들은 대본으로 푼다');assert.deepEqual(view.plays,{allowed:2,completed:2});
+ assert.equal(a.session.play(),false,'세트 안에서 옮겨도 재생 셈은 그대로(네 번이 되지 않는다)');
+ assert.equal(a.session.answer(view.item.correctId).independent,true,'다 들은 뒤 연 세트 문항의 답도 혼자 낸 첫 답');
+ a.session.go(a.first);assert.equal(a.session.answer(a.listening.items[a.first].correctId).independent,true);
+ assert.deepEqual([deliveries(a.f,a.listening.items[a.first].id),deliveries(a.f,a.listening.items[a.second].id)],[2,1],'첫 문항은 끝까지 들은 두 번, 둘째 문항은 열 때 이미 들은 대본 한 번');
+ // (2) 두 문항을 열어 두고 한 번 들으면 그 재생이 두 문항 모두에 남는다.
+ const b=open();
+ b.session.go(b.first);b.session.go(b.second);
+ assert.equal(b.session.play(),'first');b.session.delivery('completed');
+ view=b.session.go(b.first);assert.equal(view.heard,true);assert.deepEqual(view.plays,{allowed:2,completed:1});
+ assert.equal(b.session.answer(view.item.correctId).independent,true);
+ assert.deepEqual([deliveries(b.f,b.listening.items[b.first].id),deliveries(b.f,b.listening.items[b.second].id)],[1,1]);
+ // (3) 세트가 아닌 문항은 문항마다 따로 센다.
+ const c=open();
+ c.session.go(0);c.session.play();c.session.delivery('completed');
+ view=c.session.go(1);assert.equal(view.heard,false);assert.deepEqual(view.plays,{allowed:2,completed:0});assert.equal(view.set,null);
+ // (4) Fable 검수 반영: 재생은 시작한 문항의 대본에 남는다 — 듣는 동안 같은 세트의 다른 문항에 답해도(그 문항에서 끝나도) 셈에서 빠지지 않아
+ //     세 번째 재생이 「허용 안」으로 열리지 않는다.
+ const d=open();
+ d.session.go(d.first);d.session.play();d.session.delivery('completed');
+ d.session.go(d.second);assert.equal(d.session.play(),'allowed');
+ d.session.go(d.first);assert.equal(d.session.answer(d.listening.items[d.first].correctId).independent,true);
+ assert.equal(d.session.delivery('completed'),true,'답한 문항을 보고 있을 때 끝난 재생도 센다');
+ view=d.session.go(d.second);assert.deepEqual(view.plays,{allowed:2,completed:2});assert.equal(d.session.play(),false,'두 번 들었으면 닫힌다');
+ // (5) 다른 문항으로 옮긴 뒤 끝난 첫 재생은 시작한 문항의 대본 셈이다(화면은 영역 안 이동에서 소리를 끊지 않는다 — 처음부터 다시 듣는 길이 없다).
+ const e=open();
+ e.session.go(0);assert.equal(e.session.play(),'first');e.session.go(1);e.session.delivery('completed');
+ assert.equal(e.session.current.heard,false,'보고 있는 다른 문항은 아직 듣지 않았다');
+ view=e.session.go(0);assert.equal(view.heard,true);assert.deepEqual(view.plays,{allowed:2,completed:1});
+ assert.equal(e.session.play(),'allowed');
+});
+
 test('예상 급수 문턱: 시험 형식 연습의 혼자 낸 첫 답만 세고, 30개를 넘어도 범위는 만들지 않는다 · IBT는 따로',()=>{
  const asOf='2026-10-21T09:00:00.000Z';
  const rows=(n,domain,extra={})=>Array.from({length:n},(_,i)=>({eventId:`qa.${domain}.${i}`,at:'2026-10-20T09:00:00.000Z',domain,firstExposure:true,independent:true,timed:true,

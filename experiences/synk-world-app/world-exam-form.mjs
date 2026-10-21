@@ -150,30 +150,46 @@ const efMeasure=item=>({id:item.id,itemKey:item.itemKey,familyKey:item.familyKey
 //   답하지 않고 넘긴 문항은 그 영역 안에서 다시 열 수 있다. 영역이 끝날 때 열어 본 문항 가운데 답하지 않은 것은 「답하지 않음」
 //   (평가할 수 없는 답)으로 남기고, 열어 보지 않은 문항은 기록하지 않는다(본 적 없는 문항은 다음에 처음 보는 문항으로 남는다).
 // - 듣기: 허용 재생 수(시험 조건)까지만 들을 수 있다. 실제 재생은 끝까지 들은 재생마다 기록한다. 정답·해설은 끝난 뒤에만 보인다.
+//   세트 듣기(25~26번 등)는 실제 시험처럼 대본 하나를 세트 문항이 함께 쓴다: 재생 셈·들음은 세트에 하나(track)이고,
+//   끝까지 들은 재생은 열어 둔 세트 문항 모두에 남긴다. 다 들은 뒤에 여는 세트 문항에는 그 전달을 한 번 남긴다(대본은 이미 들었다).
+//   재생은 시작한 문항의 대본에 남긴다 — 실제 시험처럼 듣는 동안 다른 문항으로 옮기거나 답해도 소리는 이어지고(화면이 끊지 않는다),
+//   끝난 재생은 그때 보고 있는 문항이 아니라 시작한 대본의 셈이 된다.
 export function createMockSession({coach,sections=[],exam,clock=()=>Date.now()}={}){
  if(!coach||['present','delivery','answer'].some(name=>typeof coach[name]!=='function')||!Array.isArray(sections)||!sections.length)throw TypeError('WORLD mock needs the learning coach and its sections');
  const parts=sections.map(row=>{
   if(!MOCK_POLICY.sections.includes(row?.section)||!Array.isArray(row.items)||!row.items.length||!Number.isFinite(row.minutes)||row.minutes<=0)throw TypeError('WORLD mock: invalid section');
   for(const item of row.items)if(item?.modality!==row.section||!Array.isArray(item.choices)||!item.choices.some(choice=>choice?.id===item.correctId))throw TypeError('WORLD mock: an item needs its section, choices and answer');
-  return {section:row.section,items:row.items,minutes:row.minutes,startedAt:null,endedAt:null,ended:null,cells:row.items.map(item=>({item,pid:null,audio:'none',heard:item.modality!=='listening',
-   plays:{allowed:allowedPlays(item),completed:0},choiceId:null,result:null,shownAt:null}))};
+  const tracks=new Map();
+  const trackOf=item=>{const key=item.setId?`set:${item.setId}`:`item:${item.id}`;
+   if(!tracks.has(key))tracks.set(key,{heard:item.modality!=='listening',audio:'none',plays:{allowed:allowedPlays(item),completed:0}});return tracks.get(key);};
+  return {section:row.section,items:row.items,minutes:row.minutes,startedAt:null,endedAt:null,ended:null,
+   cells:row.items.map(item=>({item,pid:null,track:trackOf(item),choiceId:null,result:null,shownAt:null}))};
  });
  const examId=MOCK_POLICY.exams[exam]||exam;
- let partIndex=0,cursor=0,finished=false;
+ let partIndex=0,cursor=0,finished=false,sounding=null;
  const part=()=>parts[partIndex]||null;
  const deadline=row=>row.startedAt===null?null:row.startedAt+row.minutes*60000;
  const condition=(row,item)=>presentCondition(item,{content:MOCK_POLICY.gameId,extra:{form:examId,composition:MOCK_POLICY.composition,section:row.section,minutes:row.minutes,timed:true}});
  function show(row,index){
   const cell=row.cells[index];
-  if(!cell.pid){cell.pid=coach.present(efMeasure(cell.item),condition(row,cell.item));cell.shownAt=clock();if(cell.item.modality==='listening')cell.audio='pending';}
+  if(!cell.pid){
+   cell.pid=coach.present(efMeasure(cell.item),condition(row,cell.item));cell.shownAt=clock();
+   if(cell.item.modality==='listening'){if(cell.track.heard)coach.delivery(cell.pid,{audio:'completed'});else if(cell.track.audio==='none')cell.track.audio='pending';}
+  }
   return cell;
  }
+ // 지금 문항이 든 세트의 자리(이 영역 안 1부터): 화면이 「n~m번은 같은 내용」으로 알린다.
+ const setRange=(row,cell)=>{
+  if(!cell.item.setId)return null;
+  const at=row.cells.map((entry,index)=>entry.item.setId===cell.item.setId?index:-1).filter(index=>index>=0);
+  return at.length>1?{first:at[0]+1,last:at[at.length-1]+1}:null;
+ };
  // 시간을 넘겼으면 그 영역을 닫는다(호출하는 쪽이 시계를 따로 돌리지 않아도 답·이동 때마다 확인한다).
  function expire(){const row=part();if(row&&row.startedAt!==null&&row.ended===null&&clock()>=deadline(row))close(row,'time');}
  function close(row,reason){
   if(row.ended!==null)return;
   for(const cell of row.cells)if(cell.pid&&!cell.result){
-   cell.result=coach.answer(cell.pid,{correct:null,assessable:false,reason:cell.heard?'unanswered':'audio'});
+   cell.result=coach.answer(cell.pid,{correct:null,assessable:false,reason:cell.track.heard?'unanswered':'audio'});
   }
   row.ended=reason;row.endedAt=clock();
  }
@@ -184,9 +200,11 @@ export function createMockSession({coach,sections=[],exam,clock=()=>Date.now()}=
   if(row.startedAt===null)return {section:row.section,partIndex,parts:parts.length,between:true,started:false,ended:null,total:row.cells.length,minutes:row.minutes};
   if(row.ended!==null)return {section:row.section,ended:row.ended,partIndex,parts:parts.length,between:true,started:true};
   const cell=row.cells[cursor];
-  return {section:row.section,partIndex,parts:parts.length,index:cursor,total:row.cells.length,item:cell.item,heard:cell.heard,audio:cell.audio,
-   plays:{...cell.plays},answered:!!cell.result,choiceId:cell.choiceId,started:row.startedAt!==null,deadline:deadline(row),
-   remainingMs:row.startedAt===null?row.minutes*60000:Math.max(0,deadline(row)-clock()),
+  return {section:row.section,partIndex,parts:parts.length,index:cursor,total:row.cells.length,item:cell.item,heard:cell.track.heard,audio:cell.track.audio,
+   plays:{...cell.track.plays},answered:!!cell.result,choiceId:cell.choiceId,started:row.startedAt!==null,deadline:deadline(row),
+   remainingMs:row.startedAt===null?row.minutes*60000:Math.max(0,deadline(row)-clock()),set:setRange(row,cell),
+   // sounding: 지금 소리가 나는 문항(이 영역 안 0부터, 없으면 null) — 다른 문항을 보고 있을 때 화면이 「n번 소리」로 알린다.
+   sounding:sounding&&sounding.row===row?row.cells.indexOf(sounding.cell):null,
    marks:row.cells.map(entry=>entry.result?'answered':entry.pid?'opened':'new')};
  };
  return Object.freeze({
@@ -205,23 +223,30 @@ export function createMockSession({coach,sections=[],exam,clock=()=>Date.now()}=
   // 실제 재생기의 결과만 받는다(재생을 눌렀다는 것만으로 들었다고 하지 않는다). 허용 횟수를 넘긴 재생은 받지 않는다.
   play(){
    expire();const row=part(),cell=row?.cells[cursor];
-   if(!cell||row.ended!==null||cell.result||cell.item.modality!=='listening')return false;
-   const kind=nextPlay(cell.plays,{heard:cell.heard,exam:true});
+   // 한 번에 소리 하나: 다른 재생이 끝나기 전에는 시작하지 않는다(끝난 재생이 엉뚱한 대본의 셈이 되지 않게).
+   if(!cell||row.ended!==null||cell.result||cell.item.modality!=='listening'||sounding)return false;
+   const kind=nextPlay(cell.track.plays,{heard:cell.track.heard,exam:true});
    if(kind==='closed')return false;
-   if(kind==='first'){cell.audio='pending';coach.delivery(cell.pid,{audio:'pending'});}
+   if(kind==='first'){cell.track.audio='pending';coach.delivery(cell.pid,{audio:'pending'});}
+   sounding={row,cell};
    return kind;
   },
+  // 재생기의 끝(completed)·실패(failed): 시작한 문항의 대본(track)에 남긴다. 영역이 닫힌 뒤에 끝난 재생은 세지 않는다.
   delivery(status){
-   const row=part(),cell=row?.cells[cursor];
-   if(!cell||row.ended!==null||cell.result||cell.item.modality!=='listening')return false;
    if(!['completed','failed'].includes(status))throw TypeError('WORLD mock: invalid audio state');
-   if(status==='completed'){cell.plays.completed+=1;coach.delivery(cell.pid,{audio:'completed'});cell.heard=true;cell.audio='completed';}
-   else if(!cell.heard){cell.audio='failed';coach.delivery(cell.pid,{audio:'failed'});}
+   const now=sounding;sounding=null;
+   if(!now||now.row.ended!==null)return false;
+   const {row,cell}=now,track=cell.track;
+   if(status==='completed'){
+    track.plays.completed+=1;track.heard=true;track.audio='completed';
+    for(const entry of row.cells)if(entry.track===track&&entry.pid&&!entry.result)coach.delivery(entry.pid,{audio:'completed'});
+   }
+   else if(!track.heard){track.audio='failed';if(!cell.result)coach.delivery(cell.pid,{audio:'failed'});}
    return true;
   },
   answer(choiceId){
    expire();const row=part(),cell=row?.cells[cursor];
-   if(!cell||row.ended!==null||cell.result||!cell.heard)return null;
+   if(!cell||row.ended!==null||cell.result||!cell.track.heard)return null;
    if(!cell.item.choices.some(choice=>choice.id===choiceId))throw TypeError('WORLD mock: unknown choice');
    cell.choiceId=choiceId;
    cell.result=coach.answer(cell.pid,{correct:choiceId===cell.item.correctId,assessable:true,choice:{selectedId:choiceId,correctId:cell.item.correctId}});
@@ -231,17 +256,17 @@ export function createMockSession({coach,sections=[],exam,clock=()=>Date.now()}=
   finishSection(){
    const row=part();if(!row||finished)return null;
    if(row.startedAt===null)row.startedAt=clock();
-   close(row,row.ended??'submitted');
+   close(row,row.ended??'submitted');sounding=null;
    partIndex+=1;cursor=0;if(partIndex>=parts.length)finished=true;
    return view();
   },
   // 그만두기: 지금 영역을 닫고(열어 본 문항은 답하지 않음) 남은 영역은 시작하지 않는다.
-  stop(){if(finished)return;const row=part();if(row&&row.startedAt!==null)close(row,'stopped');finished=true;},
+  stop(){if(finished)return;const row=part();if(row&&row.startedAt!==null)close(row,'stopped');sounding=null;finished=true;},
   results(){
    return parts.map(row=>({section:row.section,minutes:row.minutes,ended:row.ended,startedAt:row.startedAt,endedAt:row.endedAt,
     items:row.cells.map(cell=>({itemId:cell.item.id,itemKey:cell.item.itemKey,officialType:cell.item.officialType,skillId:cell.item.skillId,opened:!!cell.pid,
      choiceId:cell.choiceId,verdict:cell.result?.verdict??null,independent:cell.result?.independent===true,eventId:cell.result?.eventId??null,
-     plays:{...cell.plays}}))}));
+     plays:{...cell.track.plays}}))}));
   },
   get finished(){return finished;},
  });

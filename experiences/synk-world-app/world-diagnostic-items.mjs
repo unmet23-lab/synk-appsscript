@@ -73,11 +73,13 @@ function diagEntryItems(){
 // 레이싱 racingItem()의 낱말 문항 메타와 같다(itemKey·familyKey는 낱말 id, 한 낱말이 한 계열).
 const diagRacingMeta=id=>({id,itemKey:`korean-racing:${id}:v1`,familyKey:`korean-racing:${id}:v1`,skillId:'ko.listening.word',difficulty:1,
  modality:'listening',responseFormat:'single-choice',audioRequired:true,confounded:false,conceptIds:[`ko.word.${id}`]});
+// 「이에요/예요」: 낱말 끝 글자에 받침이 있으면 「이에요」(빵이에요·당근이에요), 없으면 「예요」(우유예요). 10-21 ② 판정 반영.
+const diagCopula=word=>{const code=String(word).charCodeAt(String(word).length-1)-0xAC00;return code>=0&&code<11172&&code%28?'이에요':'예요';};
 function diagRacingItems(){
  return DIAG_RACING_WORDS.map(([id,word,icon,others])=>{const meta=diagRacingMeta(id);
   const order=diagArrange(meta.itemKey,[{id,label:icon},...others.map(([other,label])=>({id:other,label}))]);
   return {...meta,source:'korean-racing',audio:racingWordAudio(id),prompt:null,question:'들리는 낱말의 그림을 고르세요.',ask:'picture',
-   choices:order,correctId:id,explanation:`들린 낱말은 「${word}」예요.`,label:word};});
+   choices:order,correctId:id,explanation:`들린 낱말은 「${word}」${diagCopula(word)}.`,label:word};});
 }
 
 // 게임 원고에서 온 TOPIK형 문항 전체. 10-21 ④부터 짧은 진단·짧은 연습은 이 가운데 문항 검수 판정이 통과(pass)인 것만 쓴다

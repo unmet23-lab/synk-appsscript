@@ -225,7 +225,9 @@ export function buildExamPlan({exam,summary=null,now=Date.now(),done=null,availa
   // fresh: 그 항목의 짧은 연습 새 문항 수(읽기·듣기) · activities: 듣기 게임 후보 또는 그 항목을 겨누는 쓰기 과제.
   const fresh=skill.domain==='writing'?0:practice[skill.id]||0,games=skill.domain==='listening'?supply.listening[skill.id]||[]:skill.domain==='writing'?writingFor(skill.id):[];
   return {skillId:skill.id,domain:skill.domain,status:skill.status,priority:skill.priority??0,fresh,activities:[...games],
-   shortage:skill.domain==='reading'?fresh===0:skill.domain==='writing'?games.length===0:fresh===0&&games.length===0||!audioAvailable};
+   shortage:skill.domain==='reading'?fresh===0:skill.domain==='writing'?games.length===0:fresh===0&&games.length===0||!audioAvailable,
+   // 듣기 숙제가 막힌 까닭: 소리를 끈 날(audio)이면 문항이 남아 있어도 못 하는 것이라 「모자라요」가 아니다(화면이 까닭대로 쓴다).
+   ...(skill.domain==='listening'&&!audioAvailable?{blocked:'audio'}:{})};
  }).sort((a,b)=>b.priority-a.priority||Number(a.shortage)-Number(b.shortage)||a.skillId.localeCompare(b.skillId)).slice(0,3).map(({priority,...row})=>row);
  // 다음 연습의 초점: 기록이 없으면 짧은 진단(시작점)부터, 아니면 남은 횟수가 가장 많은 영역(같으면 더 필요한 영역).
  // 그 영역의 첫 숙제 항목도 함께 넘긴다.

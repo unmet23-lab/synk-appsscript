@@ -424,6 +424,33 @@ test('내 위치: 듣기 게임으로 가는 단추는 게임 이름으로, 읽�
  assert.ok(closed.notes.includes('reading-unavailable'));
  assert.match(view.renderExamPlan({plan:closed}),/data-plan-reading-later>읽기 짧은 연습은 문항을 준비하고 있어서 이번 주 계획에 아직 없어요\./);
  const topik2=exam.buildExamPlan({exam:exam.examInfo({...EXAM,examType:'topik2',targetGrade:4,examDate:'2027-04'}),summary:s.coach.summary(),now:s.now(),available:{recheck:15,life:true}});
- assert.equal(topik2.reach.basis,'topik1');assert.match(view.renderExamPlan({plan:topik2}),/data-plan-reach-basis>TOPIK II 문항이 검수를 마치기 전이라 듣기·읽기는 지금 TOPIK I 항목으로 세요/);
+ assert.equal(topik2.reach.basis,'topik1');assert.match(view.renderExamPlan({plan:topik2}),/data-plan-reach-basis>TOPIK II 문항이 준비되기 전이라 듣기·읽기는 지금 TOPIK I 항목으로 세요/);
  assert.doesNotMatch(view.renderExamPlan({plan:closed}),/data-plan-reach-basis/,'TOPIK I 학생에게는 말하지 않는다');
+ // 10-21 ④ 화면 검수: TOPIK II 문항이 한 영역에만 있으면 그 영역은 TOPIK II로 세므로, 안내는 TOPIK I로 세는 영역만 말한다.
+ const mixed={...topik2,progress:{listening:{total:8,checked:0,basis:'topik1'},reading:{total:7,checked:0,basis:'topik2'}}};
+ assert.match(view.renderExamPlan({plan:mixed}),/data-plan-reach-basis>TOPIK II 듣기 문항이 준비되기 전이라 듣기는 지금 TOPIK I 항목으로 세요/);
+ assert.match(view.renderExamPlan({plan:{...mixed,progress:{listening:{...mixed.progress.listening,basis:'topik2'},reading:{...mixed.progress.reading,basis:'topik1'}}}}),/data-plan-reach-basis>TOPIK II 읽기 문항이 준비되기 전이라 읽기는/);
+ assert.doesNotMatch(view.renderExamPlan({plan:{...mixed,progress:{listening:{...mixed.progress.listening,basis:'topik2'},reading:mixed.progress.reading}}}),/data-plan-reach-basis/,'두 영역 모두 TOPIK II로 세면 말하지 않는다');
+ // 아르곤 C 반영: TOPIK II 학생의 계획에서 TOPIK I로 세는 항목·영역은 「TOPIK I」을 붙여, 같은 이름의 TOPIK II 항목(내 위치 TOPIK II 판)과 가른다.
+ const bridgedPlan=view.renderExamPlan({plan:{...mixed,homework:[{skillId:'ko.listening.detail',domain:'listening',status:'checking',fresh:3,activities:[]}]}});
+ assert.match(bridgedPlan,/<strong>TOPIK I · 듣고 세부 정보 찾기<\/strong>/);
+ assert.match(bridgedPlan,/data-plan-progress="listening"><span>듣기 · TOPIK I · 확인한 항목 0 \/ 8/);assert.match(bridgedPlan,/data-plan-progress="reading"><span>읽기 · 확인한 항목 0 \/ 7/);
+ assert.doesNotMatch(view.renderExamPlan({plan:{...closed,homework:[{skillId:'ko.listening.detail',domain:'listening',status:'checking',fresh:3,activities:[]}]}}),/<strong>TOPIK I · |듣기 · TOPIK I · /,'TOPIK I 학생에게는 붙이지 않는다');
+ // 내 위치 TOPIK II 판: 그 영역에 한 줄로 알린다(판은 TOPIK II 항목, 계획은 TOPIK I 항목이라 수가 다르다).
+ const board2=view.renderPositionBoard({map:position.buildPositionMap({summary:s.coach.summary(),events:s.coach.events(),exam:'topik2'}),bridged:['listening']});
+ assert.match(board2,/data-position-bridge="listening">TOPIK II 듣기 문항이 준비되기 전이라, 이번 주 계획은 듣기를 TOPIK I 항목으로 세요\./);
+ assert.doesNotMatch(board2,/data-position-bridge="reading"/);
+ assert.doesNotMatch(view.renderPositionBoard({map,bridged:['listening']}),/data-position-bridge/,'TOPIK I 판에는 없다');
+});
+
+// 10-21 ④ 인계(① 「대답하기 숙제 안내」): 소리를 끈 날의 듣기 숙제는 문항이 남아 있어도 못 하는 것이라 「새 문항이 모자라요」가 아니라 그 까닭을 쓴다.
+test('소리를 끈 날: 듣기 숙제 줄은 「소리를 끈 날」로, 읽기 숙제는 그대로 새 문항 단추',()=>{
+ const s=student();diagnose(s,{wrong:()=>true});
+ const quiet=exam.buildExamPlan({exam:exam.examInfo({...EXAM,examType:'topik1',examDate:'2027-01'}),summary:s.coach.summary(),now:s.now(),audioAvailable:false,
+  available:{practice:{'ko.listening.response':5,'ko.reading.detail':5},listening:{},recheck:15,life:true}});
+ const rows=quiet.homework.filter(row=>row.domain==='listening');
+ assert.ok(rows.length>0&&rows.every(row=>row.shortage&&row.blocked==='audio'));
+ const html=view.renderExamPlan({plan:quiet});
+ assert.match(html,/wplan-shortage">오늘은 소리를 끈 날이라 듣기 연습은 다음에 해요\./);
+ assert.doesNotMatch(html,/data-plan-practice="ko\.listening/,'소리를 끈 날엔 듣기 연습 단추가 없다');
 });

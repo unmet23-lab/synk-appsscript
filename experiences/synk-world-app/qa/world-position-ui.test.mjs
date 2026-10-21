@@ -168,3 +168,34 @@ test('영어·몽골어 판에는 학습 내용 밖의 한국어 글자가 없�
   }
  }
 });
+
+// 10-21 아르곤 검수 반영(④ 시험 형식 연습).
+test('시험 형식 연습 문항: 마치기 확인은 답하지 않은 문항이 남았을 때만 · 세트 문항은 같은 내용으로 푸는 번호를 알린다',()=>{
+ const item={id:'qa.m',itemKey:'topik-items.qa-m.v1',skillId:'ko.listening.main',modality:'listening',audio:'topik-items/audio/qa.mp3',setId:'qa-set',
+  question:'알맞은 것을 고르십시오.',choices:[{id:'a',label:'가'},{id:'b',label:'나'}],correctId:'a'};
+ const now={section:'listening',partIndex:0,parts:2,index:0,total:2,item,heard:true,audio:'completed',plays:{allowed:2,completed:1},answered:false,choiceId:null,
+  started:true,deadline:0,remainingMs:60000,set:{first:1,last:2},marks:['opened','answered'],sets:['qa-set','qa-set']};
+ const open=view.renderMockItem({view:now,confirm:true});
+ assert.match(open,/data-mock-confirm/);assert.match(open,/답하지 않은 문항이 1개/);
+ const done=view.renderMockItem({view:{...now,answered:true,choiceId:'a',marks:['answered','answered']},confirm:true});
+ assert.doesNotMatch(done,/data-mock-confirm/,'마지막 문항에 답하면 「0개 남았어요」 확인창을 남기지 않는다');assert.match(done,/data-mock-submit/);
+ assert.match(open,/data-mock-set>1~2번은 같은 내용을 듣고 풀어요\. 들은 횟수도 함께 세요\./);
+ assert.match(english.renderMockItem({view:now}),/data-mock-set>Questions 1–2 use the same recording/);
+ const reading={...now,section:'reading',item:{...item,modality:'reading',audio:null,prompt:'지문입니다.'}};
+ assert.match(view.renderMockItem({view:reading}),/data-mock-set>1~2번은 같은 글을 읽고 풀어요\./);
+ assert.doesNotMatch(view.renderMockItem({view:{...now,set:null}}),/data-mock-set/,'세트가 아니면 알리지 않는다');
+});
+
+// 10-21 Fable 검수 반영(④ 시험 형식 연습 · 예상 급수).
+test('IBT 학생: 예상 급수 칸에 모은 답 수를 보이지 않고, 시험 형식 연습 끝 안내도 예상 급수 근거를 말하지 않는다 · 모의 보기는 모두 눌림 상태를 가진다',()=>{
+ const rows=n=>Array.from({length:n},(_,i)=>({eventId:`qa.e.${i}`,at:'2026-10-20T09:00:00.000Z',domain:i%2?'reading':'listening',firstExposure:true,independent:true,timed:true,verdict:'correct',form:'topik-i',composition:'mini-blueprint',mode:'pbt'}));
+ const c=coach(),map=buildPositionMap({summary:c.summary(),events:c.events()});
+ const ibt=view.renderPositionBoard({map,gate:estimateGate({evidence:rows(4),asOf:'2026-10-21T09:00:00.000Z',mode:'ibt'})});
+ assert.match(ibt,/data-estimate="mode-unsupported"/);assert.doesNotMatch(ibt,/wpos-estimate-count/);
+ assert.match(view.renderPositionBoard({map,gate:estimateGate({evidence:rows(4),asOf:'2026-10-21T09:00:00.000Z'})}),/wpos-estimate-count/,'PBT 학생에게는 모은 수를 보인다');
+ assert.doesNotMatch(view.renderMockDone({results:[],exam:'topik1',mode:'ibt'}),/예상 급수/);
+ assert.match(view.renderMockDone({results:[],exam:'topik1'}),/예상 급수 칸의 근거로도 모아요/);
+ const item={id:'qa.m',itemKey:'topik-items.qa-m.v1',skillId:'ko.reading.main',modality:'reading',question:'알맞은 것을 고르십시오.',choices:[{id:'a',label:'가'},{id:'b',label:'나'}],correctId:'a'};
+ const html=view.renderMockItem({view:{section:'reading',partIndex:0,parts:1,index:0,total:1,item,heard:true,audio:'none',plays:{allowed:null,completed:0},answered:true,choiceId:'a',started:true,deadline:0,remainingMs:60000,set:null,marks:['answered']}});
+ assert.equal(count(html,/aria-pressed="true"/g),1);assert.equal(count(html,/aria-pressed="false"/g),1);
+});

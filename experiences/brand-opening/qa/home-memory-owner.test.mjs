@@ -34,7 +34,10 @@ function harness(){
   };
   const api=new Function('ports',`
     const {memory,homeTutor,tutorUI,$}=ports;
-    let accountOwner='guest',learningData={},panelKind='';
+    // 잘라 온 범위가 쓰는 home.mjs의 다른 이름(10-19 화면 언어 1판의 t·onLang, 마을 진도 town, 언어 바꿈 때 다시 그릴 lastAccount):
+    // 이 시험은 주인 바꿈만 보므로 글은 키 그대로, 언어 구독은 빈 구독으로 둔다(applyLanguage는 부르지 않는다).
+    const t=key=>key,tMessage=key=>key,currentLang=()=>'ko',onLang=()=>()=>{},town={setProgress(){}};
+    let accountOwner='guest',learningData={},panelKind='',lastAccount=null;
     function closePanel(){panelKind='';ports.panelClosed();}
     ${controller}
     return {updateLearning,updateAccount,openMemory(){panelKind='memory';},owner:()=>accountOwner};
