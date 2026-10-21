@@ -1,8 +1,8 @@
 // WORLD TOPIK 맞춤 재설계(2026-10-20 결정 「재설계 진행」 · 최종 제안 §2-1): 「약점이 보이고, 맞는 연습이 오고, 나아진 것이 보이게」.
 // 완료 기준 다섯 시나리오(최종 제안 §2-1 표)와 시험 계획(10-20 결정 「시험·자격 준비 · 목표 급·시험일 · 시험 계획」)의 합성 학생을
 // 실제 Core(atlas/learning.js)·Trail 코치·진단 문항·생활 진도로 돌린다. 화면·서버는 쓰지 않는다.
-// 문항 검수 판정은 ② 세션의 허용 목록(experiences/topik-items/review/existing-verdicts.json)이 채우기 전이라, 여기서는 읽기 문항이
-// 모두 통과했다고 둔 대역을 쓴다(목록이 비면 읽기 짧은 연습이 닫히는 것은 아래 「검수 목록」 시험이 본다).
+// 문항 검수 판정은 ② 세션의 허용 목록(experiences/topik-items/review/existing-verdicts.json)이 판정이 나오는 대로 채운다. 시나리오는
+// 목록 내용에 묶이지 않게 읽기 문항이 모두 통과했다고 둔 대역을 쓴다(실제 목록은 아래 「검수 목록」·「공개 묶음」 시험이 본다).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
@@ -188,6 +188,22 @@ test('검수 목록: 통과(pass)이고 검수가 확인한 메타가 같은 문
  assert.deepEqual(pool([{...base,skillId:'ko.reading.main'}]),[],'검수가 본 항목과 문항 메타가 다르면 내지 않는다');
  assert.deepEqual(pool([base,{...base,verdict:'drop'}]),[],'같은 문항의 판정이 둘이면 내지 않는다');
  assert.deepEqual(pool([{...base,itemKey:DIAGNOSTIC_ITEMS.find(item=>item.modality==='listening').itemKey}]),[],'듣기 문항은 읽기 연습에 넣지 않는다');
+});
+// 10-21: 판정 목록의 줄에는 검수 이유와 검수한 모델 이름(by)이 있다. 계정·생활 묶음은 연습이 쓰는 칸만 싣는다(tools/lib/world-verdicts.mjs).
+test('공개 묶음: 판정 목록은 연습이 쓰는 칸만 실리고, 줄인 판으로도 같은 문항이 열리며, 묶음에 AI 도구 이름이 없다',async()=>{
+ const {slimVerdicts,VERDICT_FIELDS}=await import('../../../tools/lib/world-verdicts.mjs');
+ const fs=await import('node:fs');
+ const source=new URL('../../topik-items/review/existing-verdicts.json',import.meta.url);
+ const slim=slimVerdicts(fs.readFileSync(source,'utf8'));
+ assert.equal(slim.version,verdicts.version);assert.equal(slim.items.length,verdicts.items.length,'고칠 판정 줄도 남긴다(같은 문항의 판정이 둘이면 빼는 규칙이 본다)');
+ assert.ok(slim.items.every(row=>Object.keys(row).every(key=>VERDICT_FIELDS.includes(key))));
+ const keys=list=>practice.practicePool({items:DIAGNOSTIC_ITEMS,verdicts:list}).map(item=>item.itemKey);
+ assert.deepEqual(keys(slim),keys(verdicts),'줄인 판으로도 같은 문항');
+ assert.deepEqual(slimVerdicts(JSON.stringify({version:'v',items:[{itemKey:'a',verdict:'pass',by:[{model:'x'}],reason:'r',hash:'h'},null]})).items,[{itemKey:'a',verdict:'pass'},{}]);
+ for(const bundle of ['../world-account.bundle.mjs','../../brand-opening/content/life-standalone.mjs']){
+  const text=fs.readFileSync(new URL(bundle,import.meta.url),'utf8');
+  assert.doesNotMatch(text,/claude|opus|argon|gemini|gpt-|openai|anthropic/i,`${bundle}에 AI 도구 이름이 없다(node tools/build-world-*.mjs로 다시 짓는다)`);
+ }
 });
 
 // ── 시험 계획: 합성 학생(시험 4주 전·12주 전 × 듣기 약·읽기 약 × 주 30분·2시간) ──
