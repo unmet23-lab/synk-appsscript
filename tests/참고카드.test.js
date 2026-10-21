@@ -111,7 +111,7 @@ test('카드 커밋: 꼬리 없는 작업본(HEAD가 origin/master의 조상)에
   const git = (...args) => execFileSync('git', ['-c', 'core.quotepath=false', ...args], { cwd: 작업본, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
   try {
     fs.mkdirSync(path.join(작업본, 'tools'), { recursive: true });
-    for (const f of ['참고카드_커밋.js', '참고카드_목록.js', 'git잠금.js', '바로올리기.js', '내커밋.js', 'git-storage-check.cjs', 'git-storage-policy.json']) {
+    for (const f of ['참고카드_커밋.js', '참고카드_목록.js', 'git잠금.js', '바로올리기.js', '내커밋.js', '공개검사.js', 'git-storage-check.cjs', 'git-storage-policy.json']) {
       fs.copyFileSync(path.join(REPO, 'tools', f), path.join(작업본, 'tools', f));
     }
     fs.mkdirSync(path.join(작업본, 'docs', '참고카드', '카드'), { recursive: true });
