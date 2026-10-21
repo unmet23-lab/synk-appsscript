@@ -35,7 +35,7 @@ export function createTownSharingControl({root, client, classId, learnerId, guar
     const shared = membership.townSharing;
     title.textContent = membership.town.name || '우리 반 마을';
     status.textContent = shared.blockedByLearningSharing
-      ? '수업 기록 공유를 먼저 켜면 마을 활동 공유를 선택할 수 있어요.'
+      ? '학습 공유를 먼저 켜면 TOWN 활동 요약 공유를 켤 수 있어요.'
       : shared.enabled ? '활동 요약 공유 켜짐 · 지금부터 기록한 활동을 담당 선생님이 확인해요.'
         : '활동 요약 공유 꺼짐 · 마을 활동은 담당 선생님에게 보이지 않아요.';
   }

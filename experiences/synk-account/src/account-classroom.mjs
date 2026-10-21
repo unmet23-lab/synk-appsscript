@@ -9,21 +9,21 @@ export function createAccountWorkspace({client,transport,product,guard,notice,lo
   let stopped=false,epoch=0,accountView=null,classroom=null,teacherFrame=null,selected=null,classes=[],context=null,host=null,townSharingControl=null;
   const panel=node('section'),controls=node('div'),content=node('section');panel.className='sb-card classroom-connection';panel.hidden=true;content.id='world-classroom';content.hidden=true;panel.append(controls,content);document.getElementById('account').before(panel);
   function clear(){epoch++;townSharingControl?.stop();townSharingControl=null;classroom?.stop();classroom=null;accountView?.stop();accountView=null;teacherFrame?.remove();teacherFrame=null;if(window.SYNKClassroomHost===host)delete window.SYNKClassroomHost;host=null;context=null;}
-  const current=version=>{guard();if(stopped||version!==epoch)throw Object.assign(new Error('수업 연결이 바뀌었어요.'),{code:'ACCOUNT_CHANGED'});};
+  const current=version=>{guard();if(stopped||version!==epoch)throw Object.assign(new Error('고른 반이 바뀌었어요.'),{code:'ACCOUNT_CHANGED'});};
   function picker(){
-    controls.replaceChildren(node('h2','나의 수업 연결'));
-    const label=node('label','수업 공간'),select=node('select');select.setAttribute('aria-label','수업 공간');const empty=node('option','개인 학습');empty.value='';select.append(empty);
+    controls.replaceChildren(node('h2','내 반 연결'));
+    const label=node('label','반'),select=node('select');select.setAttribute('aria-label','반 고르기');const empty=node('option','개인 학습');empty.value='';select.append(empty);
     for(const row of classes){const option=node('option',`${row.name} · ${row.role==='teacher'?'교사':'학생'}`);option.value=`${row.role}:${row.id}`;select.append(option);}select.value=selected?`${selected.role}:${selected.id}`:'';label.append(select);controls.append(label);
     select.onchange=()=>{const row=classes.find(c=>`${c.role}:${c.id}`===select.value)||null;void choose(row).catch(report);};
     const status=node('p');status.className='small';status.dataset.sharingStatus='';controls.append(status);
-    const retry=node('button','수업 소속 다시 확인');retry.className='plain';retry.onclick=()=>{void load().catch(report);};controls.append(retry);
+    const retry=node('button','반 목록 새로고침');retry.className='plain';retry.onclick=()=>{void load().catch(report);};controls.append(retry);
   }
   function report(error){if(!stopped&&error.code!=='ACCOUNT_CHANGED')notice(error.message,true);}
   function sharingUI(value,scoped,version){
     current(version);context=value;controls.querySelector('[data-sharing-toggle]')?.remove();
-    const status=controls.querySelector('[data-sharing-status]');status.textContent='동의하면 계정에 이미 저장한 학습 기록과 앞으로 저장할 학습 기록, 이 수업의 과제 결과를 담당 선생님이 볼 수 있어요. 개인 기록 저장과 별도로 선택하며 언제든 끌 수 있어요.';
-    const label=node('label'),input=node('input');label.className='toggle';label.dataset.sharingToggle='';input.type='checkbox';input.checked=value.sharing?.enabled===true;input.disabled=!input.checked&&value.accountLearning?.enabled===false;label.append(input,node('span',`${selected.name} 선생님에게 수업 기록 공유`));controls.append(label);
-    if(input.disabled)status.textContent+=' 먼저 계정의 학습 기록 연결을 켜 주세요.';
+    const status=controls.querySelector('[data-sharing-status]');status.textContent='켜면 계정에 이미 저장한 학습 기록과 앞으로 저장할 기록, 이 반 과제 결과를 담당 선생님이 볼 수 있어요. 개인 기록 저장과는 따로 정하고, 언제든 끌 수 있어요.';
+    const label=node('label'),input=node('input');label.className='toggle';label.dataset.sharingToggle='';input.type='checkbox';input.checked=value.sharing?.enabled===true;input.disabled=!input.checked&&value.accountLearning?.enabled===false;label.append(input,node('span',`${selected.name} 선생님에게 학습 공유`));controls.append(label);
+    if(input.disabled)status.textContent+=' 먼저 계정의 「학습 기록 연결」을 켜 주세요.';
     input.onchange=()=>{const enabled=input.checked,revision=context.sharing.revision;input.disabled=true;accountView?.closeGame();void (async()=>{current(version);await scoped.setSharing(enabled,revision);current(version);await choose(selected);})().catch(error=>{if(version===epoch){input.checked=context?.sharing.enabled===true;input.disabled=false;}report(error);});};
     townSharingControl?.stop();controls.querySelector('[data-town-sharing-panel]')?.remove();
     const townRoot=node('section');controls.append(townRoot);
@@ -38,22 +38,22 @@ export function createAccountWorkspace({client,transport,product,guard,notice,lo
       await scoped.request('/api/workspace');check();
       accountView=createAccountView({client,product:'platform',guard:check,notice,logout});await accountView.load();check();
       if(new URL(location.href).origin==='https://synk.im'){
-        teacherFrame=node('a','SYNK Workspace에서 담당 수업 열기');teacherFrame.href='https://workspace.synk.im/?tab=teaching';
-        controls.append(node('p','같은 SYNK ID로 Workspace에 로그인하면 담당 반과 학생 기록을 확인할 수 있어요.'),teacherFrame);return;
+        teacherFrame=node('a','워크스페이스에서 내 수업 열기');teacherFrame.href='https://workspace.synk.im/?tab=teaching';
+        controls.append(node('p','같은 SYNK ID로 워크스페이스에 로그인하면 「내 수업」에서 담당 반 학생이 공유한 기록을 볼 수 있어요.'),teacherFrame);return;
       }
       host=Object.freeze({mode:'account-linked',classId:row.id,focusWorkspace:()=>{check();teacherFrame?.scrollIntoView({block:'start',behavior:'instant'});},request:(path,body)=>{check();return scoped.request(path,body);}});window.SYNKClassroomHost=host;
-      teacherFrame=node('iframe');teacherFrame.title=`${row.name} 교사 공간`;teacherFrame.src=new URL('../teacher-world/?account=1',location.href).href;panel.append(teacherFrame);return;
+      teacherFrame=node('iframe');teacherFrame.title=`${row.name} · 내 수업`;teacherFrame.src=new URL('../teacher-world/?account=1',location.href).href;panel.append(teacherFrame);return;
     }
-    accountView=createAccountView({client,product,guard:check,notice,logout,...(row?{classConnection:{classId:row.id,learnerId:row.learnerId,client:scoped,onContext:value=>sharingUI(value,scoped,version)},onGameRequest:gameId=>{check();if(!classroom)throw new Error('수업 목록을 불러오는 중이에요.');return classroom.openGame(gameId);}}:{})});
+    accountView=createAccountView({client,product,guard:check,notice,logout,...(row?{classConnection:{classId:row.id,learnerId:row.learnerId,client:scoped,onContext:value=>sharingUI(value,scoped,version)},onGameRequest:gameId=>{check();if(!classroom)throw new Error('이 반의 과제를 아직 불러오지 못했어요. 잠시 뒤 다시 눌러도 안 되면 「반 목록 새로고침」을 눌러 주세요.');return classroom.openGame(gameId);}}:{})});
     await accountView.load();check();
-    if(row){const student=await scoped.student();check();if(student?.learner?.id!==row.learnerId)throw new Error('수업의 학생 계정을 다시 확인해 주세요.');
+    if(row){const student=await scoped.student();check();if(student?.learner?.id!==row.learnerId)throw new Error('이 반의 학생 정보를 확인하지 못했어요. 「반 목록 새로고침」을 눌러 주세요.');
       classroom=createWorldClassroom({root:content,client:scoped,learnerId:row.learnerId,guard:check,notice,launchRun:run=>accountView.launchRun(run),closeGame:()=>accountView?.closeGame(),onSharingChange:()=>{void choose(row).catch(report);}});await classroom.reload();check();}
   }
   async function load(){
     clear();const version=epoch;guard();
     if(!transport){await choose(null);return;}
-    let result;try{result=await transport('classes');current(version);}catch(error){current(version);classes=[];selected=null;await choose(null);panel.hidden=false;controls.querySelector('[data-sharing-status]').textContent='수업 연결 서비스가 아직 준비되지 않았거나 소속을 확인하지 못했어요. 개인 계정의 학습은 계속 사용할 수 있어요.';return;}
-    if(!Array.isArray(result.classes)||result.classes.some(c=>typeof c.id!=='string'||typeof c.name!=='string'||!['teacher','learner'].includes(c.role)))throw new Error('수업 목록 응답을 확인하지 못했어요.');
+    let result;try{result=await transport('classes');current(version);}catch(error){current(version);classes=[];selected=null;await choose(null);panel.hidden=false;controls.querySelector('[data-sharing-status]').textContent='반 목록을 불러오지 못했어요. 개인 학습은 그대로 할 수 있어요. 잠시 뒤 「반 목록 새로고침」을 눌러 주세요.';return;}
+    if(!Array.isArray(result.classes)||result.classes.some(c=>typeof c.id!=='string'||typeof c.name!=='string'||!['teacher','learner'].includes(c.role)))throw new Error('반 목록을 읽지 못했어요. 잠시 뒤 이 화면을 새로고침해 주세요.');
     classes=result.classes;panel.hidden=!classes.length;
     // An explicit WORLD game is personal practice. Class membership/sharing and
     // the class practice-list fetch must not become prerequisites for this entry.
