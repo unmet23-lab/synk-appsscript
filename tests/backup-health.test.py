@@ -92,7 +92,9 @@ class HealthTests(unittest.TestCase):
             for record in (None, []):
                 row = self.evaluate(receipt, suspended=record)
                 self.assertEqual((row['status'], row['codes']), ('interrupted', ['PROCESS_OR_HEARTBEAT_MISSING']))
-            self.assertNotIn('suspendedSinceHeartbeatSeconds', self.evaluate(receipt)); self.assertEqual(row['suspendedSinceHeartbeatSeconds'], 0)
+            # null marks a record that could not be read, 0 one with no sleep in it; only running receipts carry it.
+            self.assertIsNone(self.evaluate(receipt)['suspendedSinceHeartbeatSeconds']); self.assertEqual(row['suspendedSinceHeartbeatSeconds'], 0)
+            self.assertNotIn('suspendedSinceHeartbeatSeconds', self.evaluate(self.ok, suspended=slept))
             # A sleep shorter than the gap, before the heartbeat, or after this check took its time (the PC slept during the
             # check and the record was read on waking) does not hide a run that stopped writing.
             for spans in ([(self.ago(30), self.ago(20))], [(self.ago(70), self.ago(41))], [(self.ago(-1), self.ago(-40))]):
@@ -219,6 +221,8 @@ class HealthTests(unittest.TestCase):
         t = lambda value: dt.datetime.fromisoformat('2026-10-20T' + value + '+00:00')
         self.assertEqual(health.suspensions(run), [(t('03:01:59.530196'), t('03:50:00')), (t('07:28:55.878561'), t('08:13:00.5'))])
         self.assertEqual((seen['args'][:2], seen['args'][3], seen['timeout']), (['wevtutil.exe', 'qe'], '/q:' + health.SUSPEND_QUERY, 20))
+        # Normal CPU priority like the schedule query: right after a wake the below-normal task could not read it in time.
+        self.assertEqual(seen['creationflags'], health.HELPER_FLAGS)
         self.assertEqual(health.suspensions(lambda *_, **__: subprocess.CompletedProcess([], 0, b'', b'')), [])
         # A failed, slow or broken query is no record, so the wall clock judges.
         def slow(*_, **__): raise subprocess.TimeoutExpired('wevtutil.exe', 20)

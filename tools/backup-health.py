@@ -71,10 +71,13 @@ def safe_codes(receipt):
 
 
 def suspensions(run=subprocess.run):
-    """Merged (stopped, resumed) spans of the last 24 hours in which the PC was suspended; None when unreadable."""
+    """Merged (stopped, resumed) spans of the last 9 days in which the PC was suspended; None when unreadable.
+
+    Started at normal CPU priority like the other helpers: the catch-up check after the 10-21 08:29–09:26 sleep spent
+    114 s just starting Python under the task's below-normal class, and its wevtutil, below normal too, gave no record."""
     try:
         result = run(['wevtutil.exe', 'qe', 'System', '/q:' + SUSPEND_QUERY, '/f:xml', '/rd:true', '/c:500'],
-            capture_output=True, stdin=subprocess.DEVNULL, timeout=20, creationflags=0x08000000 if os.name == 'nt' else 0)
+            capture_output=True, stdin=subprocess.DEVNULL, timeout=20, creationflags=HELPER_FLAGS)
         if result.returncode: return None
         # wevtutil writes the ANSI code page (CP949 here); the times and reason read below are ASCII.
         events = ET.fromstring('<events>' + result.stdout.decode('utf-8', 'replace') + '</events>')
@@ -191,14 +194,14 @@ def evaluate(item, receipt, now, lib, task=None, installed_at=None, repair=None,
     if not receipt:
         state = 'pending' if installed_at and not overdue(installed_at, now, max_age, record) else 'unknown'
         if state == 'unknown': codes.append('RECEIPT_MISSING')
-    slept = None
-    if state == 'running':
+    slept, was_running = None, state == 'running'
+    if was_running:
         heartbeat = lib.instant(receipt.get('heartbeatAt') or receipt.get('checkedAt') or receipt.get('startedAt'))
         start = lib.instant(receipt.get('startedAt'))
         # Both ages leave out the time the PC was suspended while this run was alive; without the record, the wall clock.
         sleep = record()
         spans = paused(sleep or [], receipt.get('pid'))
-        if sleep is not None and heartbeat: slept = round((now - heartbeat - awake(heartbeat, now, spans)).total_seconds())
+        if sleep is not None: slept = round((now - heartbeat - awake(heartbeat, now, spans)).total_seconds()) if heartbeat else 0
         if not lib.process_alive(receipt.get('pid')) or not heartbeat or awake(heartbeat, now, spans) > dt.timedelta(minutes=15):
             state = 'interrupted'; codes.append('PROCESS_OR_HEARTBEAT_MISSING')
         elif not start or awake(start, now, spans) > dt.timedelta(hours=item.get('maxRunHours', 6)):
@@ -236,8 +239,8 @@ def evaluate(item, receipt, now, lib, task=None, installed_at=None, repair=None,
            'repairedAt': lib.stamp(repaired_at) if repaired_at else None,
            'codes': sorted(set(codes)), 'task': task,
            'scope': item.get('scope'), 'receiptPath': item['receipt']}
-    # Seconds of suspension left out of a running receipt's heartbeat age (absent when the record could not be read).
-    if slept is not None: row['suspendedSinceHeartbeatSeconds'] = slept
+    # A running receipt's seconds of suspension left out of its heartbeat age; null when the System log could not be read.
+    if was_running: row['suspendedSinceHeartbeatSeconds'] = slept
     return row
 
 
