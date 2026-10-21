@@ -6,7 +6,8 @@
  *   맨 앞 not ok만 세면 같은 묶음 안에서 새로 깨진 시험이 「이미 아는 실패(부모)」에 묻힌다(아르곤 10-22 P1).
  *   그래서 잎만 세고, 이름은 「부모 › 잎」으로 짓는다. 파일째 죽은 시험(모듈 없음·최상위 예외)은 이름이 시험 파일 경로이고
  *   location이 없을 수 있다 — 그때는 그 이름으로 파일을 잡는다.
- * 돌려주는 것: { 시험, 통과, 실패수, 취소, 건너뜀, 실패: [{ 시험(이름 길), 잎, 파일, 위치(파일:줄), 오류(첫 줄), 안내[] }] }
+ * 돌려주는 것: { 시험, 통과, 실패수, 취소, 건너뜀, 셈, 실패: [{ 시험(이름 길), 잎, 파일, 위치(파일:줄), 오류(첫 줄), 안내[] }] }
+ *   셈 = 읽은 not ok 가운데 node가 `# fail`에 세는 것의 수(describe 빼고 TODO·SKIP 빼고). 실패수(# fail)가 이보다 크면 못 읽은 실패가 있다.
  *   파일·위치는 root를 주면 그 저장소 기준이고, 아니면 경로 안의 tests/·tools/·docs/·desktop/·experiences/부터 자른다(CI 로그).
  */
 const path = require('node:path');
@@ -15,7 +16,8 @@ const 앞자리 = /((?:tests|tools|docs|desktop|experiences|atlas)\/[^':]+?)(?::
 
 function 줄이기(경로, root) {
   if (!경로) return null;
-  const 바른 = String(경로).replace(/\\\\/g, '\\');
+  // TAP은 역슬래시를 두 겹으로 적는다. Linux의 path는 역슬래시를 구분자로 안 보니, 계산하기 전에 슬래시로 바꾼다(10-22 CI에서 깨짐).
+  const 바른 = String(경로).replace(/\\\\/g, '\\').replace(/\\/g, '/');
   if (root) {
     const rel = path.relative(root, path.resolve(root, 바른));
     if (rel && !rel.startsWith('..') && !path.isAbsolute(rel)) return rel.split(path.sep).join('/');
@@ -36,7 +38,8 @@ function tap실패(글, { root = null } = {}) {
   const 수 = (k) => Number((줄들.find((l) => l.startsWith(`# ${k} `)) || '').split(' ')[2] || 0);
   const 쌓임 = []; // { 깊이, 이름 } — 지금 열린 하위 시험들
   const 모음 = new Map();
-  const 부모이름 = new Set(); // subtestsFailed로 건너뛴 부모 — 요약 칸에 블록 없이 다시 찍혀도 세지 않는다
+  const 부모이름 = new Set(), 부모잎 = new Set(); // subtestsFailed로 건너뛴 부모 — 요약 칸에 블록 없이 다시 찍혀도 세지 않는다
+  let 셈 = 0;
   for (let i = 0; i < 줄들.length; i++) {
     const l = 줄들[i];
     const 하위 = l.match(/^( *)# Subtest: (.*)$/);
@@ -46,15 +49,16 @@ function tap실패(글, { root = null } = {}) {
       쌓임.push({ 깊이: d, 이름: 하위[2].trim() });
       continue;
     }
-    const 결과 = l.match(/^( *)(not ok|ok) \d+ - (.+?)\s*(?:# (?:TODO|SKIP)\b.*)?$/i);
+    const 결과 = l.match(/^( *)(not ok|ok) \d+ - (.+?)\s*(?:# (TODO|SKIP)\b.*)?$/i);
     if (!결과) continue;
     const d = 결과[1].length;
     while (쌓임.length && 쌓임[쌓임.length - 1].깊이 > d) 쌓임.pop();
     const 부모들 = 쌓임.filter((x) => x.깊이 < d).map((x) => x.이름);
     if (쌓임.length && 쌓임[쌓임.length - 1].깊이 === d) 쌓임.pop();
-    if (결과[2] !== 'not ok') continue;
+    // TODO·SKIP은 깨져도 실패가 아니다(node도 # fail에 안 센다 — 아르곤 10-22).
+    if (결과[2] !== 'not ok' || 결과[4]) continue;
     // 진단 블록: 다음 줄부터, 이 결과 줄보다 깊게 들여 쓴 줄들(빈 줄 포함) — '...'에서 끝난다.
-    let 종류 = null, 위치값 = null, 오류 = null;
+    let 종류 = null, 위치값 = null, 오류 = null, 꼴 = null, 블록 = false;
     const 안내 = [];
     for (let j = i + 1; j < 줄들.length && j < i + 400; j++) {
       const b = 줄들[j];
@@ -62,6 +66,9 @@ function tap실패(글, { root = null } = {}) {
       if (b.trim() === '...' ) break;
       const 종 = b.match(/^\s*failureType: '?([^']+)'?\s*$/);
       if (종) 종류 = 종[1];
+      const 형 = b.match(/^\s*type: '?(suite|test)'?\s*$/);
+      if (형 && !꼴) 꼴 = 형[1];
+      if (b.trim() === '---') 블록 = true;
       const 위 = b.match(/^\s*location: '(.+)'\s*$/);
       if (위 && !위치값) 위치값 = 위[1];
       const 오 = b.match(/^\s*error: (.*)$/);
@@ -73,18 +80,25 @@ function tap실패(글, { root = null } = {}) {
       if (화 && 안내.length < 3 && !안내.includes(화[1])) 안내.push(화[1].slice(0, 300));
     }
     const 잎 = 결과[3].trim();
-    if (종류 === 'subtestsFailed') { 부모이름.add([...부모들, 잎].join(' › ')); continue; } // 부모 — 깨진 잎이 따로 찍힌다
+    // node가 # fail에 세는 것 — describe(suite)는 안 세고, t.test 자식을 둔 test 부모는 센다. 블록 없이 다시 찍힌 요약 줄은 안 센다.
+    if (블록 && 꼴 !== 'suite') 셈++;
+    if (종류 === 'subtestsFailed') { 부모이름.add([...부모들, 잎].join(' › ')); 부모잎.add(잎); continue; } // 부모 — 깨진 잎이 따로 찍힌다
     let { 파일, 위치 } = 위치값 ? 위치읽기(위치값, root) : { 파일: null, 위치: null };
-    if (!파일 && /\.test\.[cm]?js$/.test(잎)) { 파일 = 줄이기(잎, root) || 잎.replace(/\\/g, '/'); 위치 = 파일; }
-    // 파일째 죽은 시험의 이름은 그 파일 경로다(Windows는 역슬래시) — OS와 상관없이 같은 이름이 되게 저장소 기준 경로로 쓴다.
-    const 이름길 = /\.test\.[cm]?js$/.test(잎) && 파일 ? 파일 : [...부모들, 잎].join(' › ');
+    // 파일째 죽은 시험은 부모 없이 이름이 그 파일 경로다(Windows는 역슬래시). 위치가 없거나 그 파일일 때만 그렇게 본다 —
+    // 이름이 .test.js로 끝나는 보통 시험까지 파일 이름으로 덮으면 같은 파일의 실패가 합쳐져 사라진다(아르곤 10-22).
+    const 이름파일 = !부모들.length && /\.test\.[cm]?js$/.test(잎) ? 줄이기(잎, root) || 잎.replace(/\\+/g, '/') : null;
+    const 파일째 = Boolean(이름파일) && (!파일 || 파일 === 이름파일);
+    if (파일째 && !파일) { 파일 = 이름파일; 위치 = 이름파일; }
+    const 이름길 = 파일째 ? 이름파일 : [...부모들, 잎].join(' › ');
     const 열쇠 = `${파일 || ''}\0${이름길}`;
     if (!모음.has(열쇠)) 모음.set(열쇠, { 시험: 이름길.slice(0, 300), 잎: 잎.slice(0, 200), 파일, 위치, ...(오류 ? { 오류: 오류.slice(0, 200) } : {}), 안내 });
   }
-  // 위치 없이 다시 찍힌 줄(CI 단계의 「--- not ok ---」 요약 따위)은 같은 이름의 위치 있는 실패가 있으면 버린다.
-  const 위치있는이름 = new Set([...모음.values()].filter((x) => x.파일).map((x) => x.시험));
-  const 실패 = [...모음.values()].filter((x) => x.파일 || (!위치있는이름.has(x.시험) && !부모이름.has(x.시험)));
-  return { 시험: 수('tests'), 통과: 수('pass'), 실패수: 수('fail'), 취소: 수('cancelled'), 건너뜀: 수('skipped'), 실패 };
+  // 위치 없이 다시 찍힌 줄(CI 단계의 「--- not ok ---」 요약 따위)은 버린다 — 부모 경로가 빠진 채 다시 찍힐 수 있으니
+  // 이름 길과 잎 이름 둘 다로 위치 있는 실패·건너뛴 부모와 대조한다.
+  const 위치있는 = [...모음.values()].filter((x) => x.파일);
+  const 아는이름 = new Set([...위치있는.map((x) => x.시험), ...위치있는.map((x) => x.잎), ...부모이름, ...부모잎]);
+  const 실패 = [...모음.values()].filter((x) => x.파일 || (!아는이름.has(x.시험) && !아는이름.has(x.잎)));
+  return { 시험: 수('tests'), 통과: 수('pass'), 실패수: 수('fail'), 취소: 수('cancelled'), 건너뜀: 수('skipped'), 셈, 실패 };
 }
 
 module.exports = { tap실패, 줄이기 };

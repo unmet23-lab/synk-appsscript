@@ -153,3 +153,12 @@ test('고르기 — 같은 push로 처음 올리는 (아직 추적 안 된) 시�
   assert.deepEqual(r.시험, ['tests/새.test.js']);
   assert.equal(r.까닭['tests/새.test.js'], '바꾼 시험');
 });
+
+test('git 무늬 — `.`·`dir/.`·`dir/`은 그 폴더 전부, 저장소 맨 위의 `.`은 전부(아르곤 10-22 재확인 P2)', () => {
+  const root = path.join(os.tmpdir(), '가상저장소');
+  const 무늬 = (args, cwd = root) => 관련.git무늬({ command: 'git', args, cwd }, root);
+  assert.deepEqual(무늬(['ls-files', '--', '.']), ['*']);
+  assert.deepEqual(무늬(['ls-files', '.'], path.join(root, 'tests')), ['tests']);
+  assert.deepEqual(무늬(['ls-files', '--', 'docs/']), ['docs']);
+  assert.equal(관련.git무늬식(무늬(['ls-files', '.'], path.join(root, 'tests'))[0]).test('tests/a.test.js'), true);
+});

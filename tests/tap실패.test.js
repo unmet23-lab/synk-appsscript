@@ -85,3 +85,36 @@ test('다른 파일의 같은 이름은 따로 센다', () => {
   ].join('\n');
   assert.deepEqual(tap실패(로그, { root }).실패.map((x) => x.파일), ['tests/e.test.js', 'tests/f.test.js']);
 });
+
+test('TODO·SKIP은 실패로 안 세고, 셈은 node의 # fail과 같게 센다(describe 빼고, t.test 부모는 넣고)', () => {
+  const 글 = [
+    'not ok 1 - 할 일 # TODO', '  ---', "  type: 'test'", '  ...',
+    '# Subtest: 묶음', '    not ok 1 - 잎', '      ---', "      type: 'test'", "      failureType: 'testCodeFailure'", '      ...',
+    'not ok 2 - 묶음', '  ---', "  type: 'suite'", "  failureType: 'subtestsFailed'", '  ...',
+    '# Subtest: 부모 시험', '    not ok 1 - 자식', '      ---', "      type: 'test'", '      ...',
+    'not ok 3 - 부모 시험', '  ---', "  type: 'test'", "  failureType: 'subtestsFailed'", '  ...',
+    '# fail 3',
+  ].join('\n');
+  const r = tap실패(글, { root });
+  assert.deepEqual(r.실패.map((x) => x.시험), ['묶음 › 잎', '부모 시험 › 자식']);
+  assert.equal(r.셈, 3, '잎 둘 + test 부모 하나 — describe와 TODO는 안 센다');
+  assert.equal(r.실패수, 3);
+});
+
+test('이름이 .test.js로 끝나는 보통 시험은 파일 이름으로 덮지 않는다 — 같은 파일의 두 실패가 둘 다 남는다', () => {
+  const 글 = [
+    '# Subtest: 고르기', '    not ok 1 - tests/a.test.js', '      ---', `      location: '${위('tests/관련.test.js', 5)}'`, '      ...',
+    '    not ok 2 - tests/b.test.js', '      ---', `      location: '${위('tests/관련.test.js', 6)}'`, '      ...',
+    'not ok 1 - 고르기', '  ---', "  type: 'suite'", "  failureType: 'subtestsFailed'", '  ...',
+    'not ok 2 - tests/c.test.js', '  ---', `  location: '${위('tests/관련.test.js', 9)}'`, '  ...',
+  ].join('\n');
+  assert.deepEqual(tap실패(글, { root }).실패.map((x) => [x.시험, x.파일]), [
+    ['고르기 › tests/a.test.js', 'tests/관련.test.js'], ['고르기 › tests/b.test.js', 'tests/관련.test.js'], ['tests/c.test.js', 'tests/관련.test.js'],
+  ]);
+});
+
+test('요약 칸에 부모 경로 없이 다시 찍힌 잎·부모는 가짜 실패로 남기지 않는다', () => {
+  const 글 = ['# Subtest: 묶음', '    # Subtest: 세부', '    not ok 1 - 세부', '      ---', "      location: 'tests/a.test.js:3:1'", '      ...',
+    'not ok 1 - 묶음', '  ---', "  failureType: 'subtestsFailed'", '  ...', '# --- not ok ---', '    not ok 1 - 세부', 'not ok 1 - 묶음'].join('\n');
+  assert.deepEqual(tap실패(글, { root }).실패.map((x) => x.시험), ['묶음 › 세부']);
+});

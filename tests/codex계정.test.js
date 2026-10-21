@@ -14,8 +14,10 @@ const 도구 = path.join(REPO, 'tools', 'codex계정.js');
 const { 풀리는시각, 코덱스오류, 한도문구 } = require(도구);
 
 /* 한도 오류 문장은 codex-cli 0.163 꼴(굽은 따옴표)이다. 이 파일은 한도 문구를 일부러 담는다 —
- * 굽기가 이 파일을 읽어도 계정을 「막힘」으로 적지 않는다는 것이 ⑥·⑦이 지키는 일이다. */
-const 한도 = "You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/settings to buy credits or try again at Oct 21st, 2026 3:40 PM.";
+ * 굽기가 이 파일을 읽어도 계정을 「막힘」으로 적지 않는다는 것이 ⑥·⑦이 지키는 일이다.
+ * 풀리는 시각은 먼 앞날(2099)로 둔다 — 실제 시계와 견주는 ①이 그 시각이 지나면 막힌 계정을 「풀렸다」고 다시 불러 깨진다
+ * (10-21 2026판이 15:40 UTC부터 master CI를 빨갛게 했다). */
+const 한도 = "You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/settings to buy credits or try again at Oct 21st, 2099 3:40 PM.";
 
 /* 폴더 이름이 bake1이면 한도, bake3이면 로그인 풀림, quote는 한도 문구를 인용한 성공,
  * quotefail은 한도 문구를 인용한 뒤 다른 오류로 실패, json은 --json 사건으로 한도, 그 밖은 성공 */
@@ -79,7 +81,7 @@ test('① 한도에 막힌 계정은 풀리는 시각을 적고 다음 계정으
   assert.strictEqual(r.status, 0, r.stderr);
   assert.match(r.stdout, /done\[bake2\] 5 exec --skip-git-repo-check -/);
   assert.match(r.stderr, /bake1 한도 — 10-21 15:40에 풀림/);
-  assert.strictEqual(장부()[0].막힘까지, new Date(2026, 9, 21, 15, 40).getTime());
+  assert.strictEqual(장부()[0].막힘까지, new Date(2099, 9, 21, 15, 40).getTime());
   assert.ok(장부()[1].마지막사용 > 0);
 
   /* 두 번째에는 막힌 계정을 부르지 않고 바로 다음 계정으로 간다 */
@@ -165,7 +167,7 @@ test('⑧ --json 실행의 한도 사건(error·turn.failed)은 막힘으로 적
   assert.strictEqual(r.status, 0, r.stderr);
   assert.match(r.stdout, /done\[bake2\]/);
   /* 명령 출력(item.completed) 속 다른 날짜가 아니라 한도 사건의 날짜를 읽는다 */
-  assert.strictEqual(장부()[0].막힘까지, new Date(2026, 9, 21, 15, 40).getTime());
+  assert.strictEqual(장부()[0].막힘까지, new Date(2099, 9, 21, 15, 40).getTime());
 });
 
 test('⑨ Codex 오류 문장 — ERROR:/Error: 줄과 --json 사건만, 차례대로', () => {

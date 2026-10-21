@@ -88,7 +88,11 @@ function git무늬(spawn, root) {
   const k = args.indexOf('--');
   const 뒤 = (k >= 0 ? args.slice(k + 1) : args.slice(args.indexOf('ls-files') + 1).filter((a) => !a.startsWith('-')));
   if (!뒤.length) return [앞 === '.' ? '*' : `${앞}/*`];
-  return 뒤.map((a) => (앞 === '.' ? a : `${앞}/${a}`).replace(/^\.\//, ''));
+  // `.`·`dir/.`·`dir/`은 그 폴더 전부다 — 저장소 맨 위면 '*'(아르곤 10-22 P2)
+  return 뒤.map((a) => {
+    const 붙인 = (앞 === '.' ? a : `${앞}/${a}`).replace(/^\.\//, '').replace(/\/\.?$/, '');
+    return 붙인 === '.' || 붙인 === '' ? '*' : 붙인;
+  });
 }
 
 /** 기록들(ci읽기기록 json들)을 시험 파일별 {읽음, 폴더, 무늬}로 묶는다. 추적 파일·추적 파일이 든 폴더만 남긴다. */

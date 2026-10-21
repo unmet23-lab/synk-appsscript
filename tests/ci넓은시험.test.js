@@ -35,7 +35,8 @@ test('실패읽기 — not ok 이름과 저장소 기준 파일을 짝짓고, �
     '  ...',
     'not ok 3 - real PostgreSQL export: deleted',
     `  location: '${path.join(root, 'tests', 'pg.test.mjs').replace(/\\/g, '\\\\')}:40:3'`,
-    'not ok 9 - 파일 모르는 실패 # TODO',
+    'not ok 9 - 파일 모르는 실패',
+    'not ok 10 - 할 일 # TODO',
     '# tests 10', '# pass 7', '# fail 2', '# skipped 1',
   ].join('\n');
   const r = 넓은.실패읽기(tap, root);
@@ -76,4 +77,16 @@ test('같은 describe 안의 새 실패는 기준선의 다른 잎에 묻히지 
   assert.deepEqual(r.실패.map((x) => x.시험), ['API › 알던 실패', 'API › 새 실패']);
   const 기준 = [{ 파일: '(파일 모름)', 시험: 'API › 알던 실패', 까닭: '알던 것' }];
   assert.deepEqual(넓은.견주기(r.실패, 기준).새.map((x) => x.시험), ['API › 새 실패']);
+});
+
+test('종료판정 — 기준선에 실패가 있어도 못 읽은 실패·요약 없는 실행·시험 밖 실패는 빨강(아르곤 10-22 재확인 P1)', () => {
+  const 기준 = [{ 파일: 'tests/a.test.mjs', 시험: 'A', 까닭: '알던 것' }];
+  const 알던 = [{ 파일: 'tests/a.test.mjs', 시험: 'A' }];
+  assert.equal(넓은.종료판정({ 파일: 3, 시험: 10, 실패수: 1, 셈: 1, 종료: 1, 실패: 알던 }, 기준).코드, 0, '알던 실패뿐이면 초록');
+  const 못읽음 = 넓은.종료판정({ 파일: 3, 시험: 10, 실패수: 2, 셈: 1, 종료: 1, 실패: 알던 }, 기준);
+  assert.equal(못읽음.코드, 1);
+  assert.match(못읽음.줄들.join('\n'), /2개 가운데 1개를 못 읽었다/);
+  assert.equal(넓은.종료판정({ 파일: 3, 시험: 0, 실패수: 0, 셈: 0, 종료: 1, 실패: [] }, 기준).코드, 1, '요약 없음');
+  assert.equal(넓은.종료판정({ 파일: 3, 시험: 10, 실패수: 0, 셈: 0, 종료: 1, 실패: [] }, []).코드, 1, '시험 밖 실패');
+  assert.equal(넓은.종료판정({ 파일: 3, 시험: 10, 실패수: 1, 셈: 1, 종료: 1, 실패: [{ 파일: 'tests/b.test.mjs', 시험: 'B' }] }, 기준).코드, 1, '새 실패');
 });

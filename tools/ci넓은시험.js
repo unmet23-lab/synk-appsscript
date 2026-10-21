@@ -50,7 +50,7 @@ function 목록(묶음, root = ROOT, 추적 = 추적파일들(root)) {
 /** TAP에서 깨진 잎 시험 {파일, 시험(「부모 › 잎」), 오류} — tools/lib/tap실패.js. 부모(subtestsFailed)는 세지 않는다. */
 function 실패읽기(글, root = ROOT) {
   const r = tap실패(글, { root });
-  return { ...r, 실패: r.실패.map((x) => ({ 파일: x.파일, 시험: x.시험, ...(x.오류 ? { 오류: x.오류 } : {}) })) };
+  return { ...r, 실패: r.실패.map((x) => ({ 파일: x.파일, 시험: x.시험, ...(x.오류 ? { 오류: x.오류 } : {}) })) }; // 셈도 그대로 넘긴다
 }
 
 function 기준선읽기(파일 = 기준선파일) {
@@ -132,16 +132,30 @@ function main(argv = process.argv.slice(2)) {
     return 0;
   }
   const 기준 = 기준선읽기();
-  if (!기준) { console.log('  기준선 파일이 없다 — 이번 실패를 모두 새 실패로 친다'); }
-  const { 새, 남은, 풀린 } = 견주기(r.실패, 기준 && 기준.묶음 ? 기준.묶음[묶음] : []);
-  if (남은.length) console.log(`  알려진 실패 ${남은.length}개(기준선) — 그대로`);
-  for (const x of 풀린) console.log(`  ✓ 이제 통과 — 기준선에서 뺀다: ${x.파일} — ${x.시험}`);
-  for (const x of 새) console.log(`  ✗ 새 실패: ${x.파일 || '(파일 모름)'} — ${x.시험}`);
-  if (r.실패수 && !r.실패.length) return 1;
-  if (r.종료 !== 0 && !r.실패수 && !새.length) { console.log(`  node --test 종료 ${r.종료} — 시험 밖에서 실패했다`); return 1; }
-  return 새.length ? 1 : 0;
+  if (!기준) console.log('  기준선 파일이 없다 — 이번 실패를 모두 새 실패로 친다');
+  const 판 = 종료판정(r, 기준 && 기준.묶음 ? 기준.묶음[묶음] : []);
+  for (const 줄 of 판.줄들) console.log(`  ${줄}`);
+  return 판.코드;
+}
+
+/** 돌린 결과와 기준선 줄들로 종료 코드와 찍을 줄을 정한다. 기준선에 실패가 있어도 못 읽은 실패·끝까지 못 간 실행은 빨강이다
+ *  — 그런 실패가 기준선 뒤에 숨지 않게(아르곤 10-22 P1). */
+function 종료판정(r, 기준줄들) {
+  const { 새, 남은, 풀린 } = 견주기(r.실패, 기준줄들);
+  const 줄들 = [];
+  if (남은.length) 줄들.push(`알려진 실패 ${남은.length}개(기준선) — 그대로`);
+  for (const x of 풀린) 줄들.push(`✓ 이제 통과 — 기준선에서 뺀다: ${x.파일} — ${x.시험}`);
+  for (const x of 새) 줄들.push(`✗ 새 실패: ${x.파일 || 파일모름} — ${x.시험}`);
+  const 읽은수 = r.셈 ?? r.실패.length;
+  if (r.실패수 > 읽은수) {
+    줄들.push(`TAP 요약의 실패 ${r.실패수}개 가운데 ${r.실패수 - 읽은수}개를 못 읽었다 — 파일째 죽은 시험·스폰 실패 쪽을 본다`);
+    return { 코드: 1, 줄들 };
+  }
+  if (r.파일 && !r.시험) { 줄들.push('TAP 요약(# tests)이 없다 — 시험 실행기가 끝까지 못 갔다'); return { 코드: 1, 줄들 }; }
+  if (r.종료 !== undefined && r.종료 !== 0 && !r.실패수) { 줄들.push(`node --test 종료 ${r.종료} — 시험 밖에서 실패했다`); return { 코드: 1, 줄들 }; }
+  return { 코드: 새.length ? 1 : 0, 줄들 };
 }
 
 if (require.main === module) process.exitCode = main();
 
-module.exports = { 목록, 실패읽기, 기준선읽기, 견주기, 기준선모으기, 묶음들, 기준선파일 };
+module.exports = { 목록, 실패읽기, 기준선읽기, 견주기, 종료판정, 기준선모으기, 묶음들, 기준선파일 };
