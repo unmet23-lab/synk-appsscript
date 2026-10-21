@@ -42,9 +42,28 @@ function stable(before, after) {
 const metadataOnlyChange = (before, after) => before.dev === after.dev && before.ino === after.ino &&
   before.size === after.size && before.mtimeMs === after.mtimeMs;
 const pause = ms => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
-function verifyPriorMedia(row, vault) {
+// 한 번 맞추는 동안 미디어 줄마다 아래 확인을 세 번(처음 훑기·보관 앞·보관 뒤) 한다. 복사 목록(20MB)은 stat이 같으면 다시 읽지 않고,
+// OneDrive 사본의 reparse 확인은 맞추기 앞뒤에 미디어 줄 전부를 PowerShell 한 번씩으로 본다(prior). 예약 우선순위 7에서 CPU가 꽉 차면
+// PowerShell 한 번 띄우는 데 수십 초라, 부를 때마다 띄우면 미디어 줄 수만큼 단계가 길어졌다(10-21). prior 없이 부르면 예전처럼 매번 읽고 본다.
+function priorCopies(vault) {
+  const file = path.join(vault, '상태/OneDrive/copy-manifest.json');
+  let kept = null;
+  return () => {
+    const stat = fs.statSync(file), key = [stat.size, stat.mtimeMs, stat.ctimeMs, stat.ino].join(':');
+    if (!kept || kept.key !== key) kept = { key, manifest: JSON.parse(fs.readFileSync(file, 'utf8')) };
+    return kept.manifest;
+  };
+}
+function priorLinks(rows, manifest) {
+  const targets = rows.filter(row => row.reason === 'embedded-media-or-base64' && typeof row.priorOneDriveCopy?.target === 'string')
+    .map(row => row.priorOneDriveCopy.target);
+  if (!targets.length || typeof manifest.oneDriveRoot !== 'string' || !path.isAbsolute(manifest.oneDriveRoot)) return null;
+  return { root: manifest.oneDriveRoot, targets: new Set(targets.map(folded)),
+    linked: policy.linkPaths(targets, { cloudDestinationRoot: manifest.oneDriveRoot }) };
+}
+function verifyPriorMedia(row, vault, prior = null) {
   if (row.reason !== 'embedded-media-or-base64') return;
-  const manifest = JSON.parse(fs.readFileSync(path.join(vault, '상태/OneDrive/copy-manifest.json'), 'utf8'));
+  const manifest = prior ? prior.copies() : JSON.parse(fs.readFileSync(path.join(vault, '상태/OneDrive/copy-manifest.json'), 'utf8'));
   const previous = manifest.files;
   const proof = row.priorOneDriveCopy;
   if (!proof || !previous.some(file => file.source && folded(file.source) === folded(row.sourcePath) &&
@@ -52,8 +71,10 @@ function verifyPriorMedia(row, vault) {
     file.expectedBytes === proof.bytes && file.sha256 === proof.sha256)) throw new Error('PROTECTED_SOURCE_PRIOR_COPY_UNCONFIRMED');
   if (typeof manifest.oneDriveRoot !== 'string' || !path.isAbsolute(manifest.oneDriveRoot)) throw new Error('PROTECTED_SOURCE_PRIOR_ROOT_INVALID');
   const relative = path.relative(path.resolve(manifest.oneDriveRoot), path.resolve(proof.target));
+  const batched = prior?.links && prior.links.root === manifest.oneDriveRoot && prior.links.targets.has(folded(proof.target));
   if (!relative || relative === '..' || relative.startsWith('..' + path.sep) || path.isAbsolute(relative) ||
-    policy.linkPaths([proof.target], { cloudDestinationRoot: manifest.oneDriveRoot })(proof.target)) throw new Error('PROTECTED_SOURCE_PRIOR_COPY_ESCAPE');
+    (batched ? prior.links.linked : policy.linkPaths([proof.target], { cloudDestinationRoot: manifest.oneDriveRoot }))(proof.target))
+    throw new Error('PROTECTED_SOURCE_PRIOR_COPY_ESCAPE');
   // ctime만 바뀐 읽기는 다시 읽어, ctime까지 전후가 모두 같은 읽기만 받아들인다.
   for (let attempt = 1; ; attempt++) {
     const before = fs.statSync(proof.target);
@@ -73,8 +94,8 @@ function receiptPaths(row, vault) {
     manifestRelative: relative.replace(/\.source\.enc$/, '.manifest.json'),
     manifest: path.join(vault, 'Git-보관', relative.replace(/\.source\.enc$/, '.manifest.json')) };
 }
-async function preserveSource(row, { vault, roots, linked, cryptoTool, apply = false }) {
-  verifyPriorMedia(row, vault);
+async function preserveSource(row, { vault, roots, linked, cryptoTool, apply = false, prior = null }) {
+  verifyPriorMedia(row, vault, prior);
   const file = sourceLocation(row, roots);
   if (linked(row.sourcePath)) throw new Error('PROTECTED_SOURCE_REPARSE');
   const before = fs.statSync(file);
@@ -116,7 +137,7 @@ async function preserveSource(row, { vault, roots, linked, cryptoTool, apply = f
   }
   if (!stable(before, fs.statSync(file)) || sourceLocation(row, roots) !== file || (await fileDigest(file)).sha256 !== row.sha256)
     throw new Error('PROTECTED_SOURCE_CHANGED_DURING_CHECK');
-  verifyPriorMedia(row, vault);
+  verifyPriorMedia(row, vault, prior);
   return { ...receipt, filePath: selected.file, manifestPath: selected.manifest };
 }
 // 목록(OneDrive 실행이 30분마다 만든다) 뒤에 원본이 바뀌었으면, 목록을 만들 때와 같은 분류로 그 한 줄만 새로 잡는다.
@@ -138,7 +159,19 @@ async function reconcile({ vault, root, apply, onProgress = () => {}, roots: sup
   if (!unlock) return { status: 'attention', issues: [{ code: 'PROTECTED_SOURCE_ALREADY_RUNNING' }], files: [] };
   const report = { schemaVersion: 1, component: 'protected-sources', pid: process.pid, startedAt: new Date().toISOString(),
     checkedAt: new Date().toISOString(), status: 'running', files: [], issues: [] };
-  const progress = () => { report.checkedAt = report.heartbeatAt = new Date().toISOString(); atomicJson(state, report); onProgress(); };
+  // OneDrive 실행(30분마다)은 이 파일의 files로 보호 소스의 암호화 보관을 확인한다. 줄을 다 돌기 전에는 이번에 처리한 줄과, 아직 안 본
+  // 원본의 지난 줄을 함께 쓴다. 시작하자마자 빈 목록을 쓰던 때는 겹쳐 끝난 OneDrive 실행이 남은 줄을 모두 보관 미확인으로 봤다
+  // (10-21 09:49에 끝난 OneDrive 실행 때 이 단계는 404줄 중 100줄 남짓이라, 217번째 synk-tips style.css의 증거도 없었다).
+  let carried = [], complete = false, written = 0;
+  try { const last = JSON.parse(fs.readFileSync(state, 'utf8')); if (Array.isArray(last.files)) carried = last.files; } catch (_) { /* 처음 실행·깨진 파일 */ }
+  const evidence = () => {
+    if (complete) return report;
+    const seen = new Set(report.files.map(row => folded(row.sourcePath)));
+    return { ...report, files: report.files.concat(carried.filter(row => typeof row.sourcePath === 'string' && !seen.has(folded(row.sourcePath)))) };
+  };
+  const progress = () => { report.checkedAt = report.heartbeatAt = new Date().toISOString(); atomicJson(state, evidence()); written = Date.now(); onProgress(); };
+  // 줄마다 이 파일(1MB 남짓)과 GitHub 영수증을 다시 쓰지 않는다. heartbeat는 5초 간격이면 된다(감시는 15분 멈춤을 본다, 10-21).
+  const tick = () => { if (Date.now() - written >= 5000) progress(); };
   const timer = setInterval(progress, 15000);
   try {
     progress();
@@ -147,7 +180,9 @@ async function reconcile({ vault, root, apply, onProgress = () => {}, roots: sup
     if (inventory.status !== 'success' || !Array.isArray(inventory.files) || !Number.isFinite(at) ||
         Date.now() - at > 3 * 3600000 || at > Date.now() + 60000) throw new Error('PROTECTED_SOURCE_INVENTORY_NOT_CURRENT');
     const roots = suppliedRoots || authorizedRoots(root);
-    for (const row of inventory.files) verifyPriorMedia(row, vault);
+    const prior = { copies: priorCopies(vault) };
+    if (inventory.files.some(row => row.reason === 'embedded-media-or-base64')) prior.links = priorLinks(inventory.files, prior.copies());
+    for (const row of inventory.files) verifyPriorMedia(row, vault, prior);
     // 목록 뒤에 원본이나 그 범위 폴더가 통째로 지워진 줄. 읽을 것이 없으므로 그 줄만 source-disappeared로 남긴다.
     // 범위 폴더는 작업트리이거나, Documents 바로 아래에 만든 임시 작업트리처럼 자기 이름의 저장소 범위로 잡힌 폴더다(10-19 talk-wt-path).
     // 범위 밖 경로·남아 있는 폴더의 범위 불일치는 그대로 전체를 멈추고, 어느 줄인지 남긴다(10-19).
@@ -173,14 +208,19 @@ async function reconcile({ vault, root, apply, onProgress = () => {}, roots: sup
       const identity = { sourceScope: row.sourceScope, sourceRoot: row.sourceRoot, sourcePath: row.sourcePath, source: row.source };
       try {
         let current = row, receipt;
-        try { receipt = await preserveSource(row, { vault, roots, linked, cryptoTool, apply }); }
+        try { receipt = await preserveSource(row, { vault, roots, linked, cryptoTool, apply, prior }); }
         catch (error) {
           if (error.message !== 'PROTECTED_SOURCE_INVENTORY_STALE') throw error;
           current = refreshedRow(row);
-          if (!current) { report.files.push({ ...identity, bytes: row.bytes, sha256: row.sha256, status: 'no-longer-protected' }); progress(); continue; }
+          if (!current) { report.files.push({ ...identity, bytes: row.bytes, sha256: row.sha256, status: 'no-longer-protected' }); tick(); continue; }
           const selected = receiptPaths(current, vault), paths = [current.sourcePath, selected.file, selected.manifest];
           refreshed.push({ row: current, paths });
-          receipt = await preserveSource(current, { vault, roots, linked: policy.linkPaths(paths), cryptoTool, apply });
+          // 새 판의 영수증 자리는 옛 판 영수증과 같은 폴더라, 조상은 앞에서 묶어 본 경로에 다 들어 있다. 두 자리가 비었으면(보통) 그 결과를
+          // 쓰고 PowerShell을 다시 띄우지 않는다(10-21 09:32 실행은 바뀐 줄마다 약 30초). 무엇이 있으면 예전처럼 따로 본다. 끝의 afterLinks가 다시 본다.
+          const occupied = [selected.file, selected.manifest].some(file => {
+            try { fs.lstatSync(file); return true; } catch (statError) { return statError.code !== 'ENOENT'; }
+          });
+          receipt = await preserveSource(current, { vault, roots, linked: occupied ? policy.linkPaths(paths) : linked, cryptoTool, apply, prior });
         }
         const coverage = receipt ? await verifyDriveCoverage(receipt, vault, { verification }) : { ok: false, code: 'PROTECTED_SOURCE_NOT_CREATED' };
         const later = !receipt && !apply && appliedVersions instanceof Set && !appliedVersions.has(current.sourcePath + '\n' + current.sha256);
@@ -195,8 +235,9 @@ async function reconcile({ vault, root, apply, onProgress = () => {}, roots: sup
         else report.issues.push({ code: /^[A-Z][A-Z0-9_]{2,80}$/.test(error.message) ? error.message : 'PROTECTED_SOURCE_ARCHIVE_FAILED',
           sourceScope: row.sourceScope, source: row.source });
       }
-      progress();
+      tick();
     }
+    complete = true;
     // Reparse or content changes during the batch keep the entire coverage incomplete.
     const afterLinks = policy.linkPaths(checkedPaths.concat(refreshed.flatMap(item => item.paths)));
     for (const row of inventory.files) {
@@ -206,6 +247,12 @@ async function reconcile({ vault, root, apply, onProgress = () => {}, roots: sup
     }
     for (const item of refreshed) if (item.paths.some(file => afterLinks(file)))
       report.issues.push({ code: 'PROTECTED_SOURCE_REPARSE_AFTER_CHECK', source: item.row.source });
+    // 미디어 줄의 이전 OneDrive 사본도 줄마다가 아니라 끝에서 한 번 더 묶어 본다(위 prior).
+    if (prior.links) {
+      const after = priorLinks(inventory.files, prior.copies());
+      for (const row of inventory.files) if (row.reason === 'embedded-media-or-base64' && (!after || after.linked(row.priorOneDriveCopy.target)))
+        report.issues.push({ code: 'PROTECTED_SOURCE_PRIOR_COPY_ESCAPE', source: row.source });
+    }
     report.status = report.issues.length ? 'attention' : 'success';
   } catch (error) {
     // 코드 꼴이 아닌 오류도 시스템 오류 코드(EPERM 등)는 남긴다. 메시지 원문은 남기지 않는다(10-19).
@@ -214,7 +261,7 @@ async function reconcile({ vault, root, apply, onProgress = () => {}, roots: sup
   } finally {
     clearInterval(timer); report.finishedAt = report.checkedAt = new Date().toISOString();
     if (report.status === 'success') report.lastSuccessAt = report.finishedAt;
-    atomicJson(state, report); unlock();
+    atomicJson(state, evidence()); unlock();
   }
   return report;
 }

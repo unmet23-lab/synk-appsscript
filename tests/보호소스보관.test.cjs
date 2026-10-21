@@ -165,3 +165,75 @@ test('prior OneDrive copy re-reads a ctime-only change once but never accepts pe
   fs.writeFileSync(target, Buffer.from('body{color:white}'));
   await assert.rejects(preserveSource(row, f.options), /PRIOR_COPY_CHANGED/);
 });
+
+// 미디어 줄 m개와 목록 뒤에 바뀐 줄 s개로 목록을 만든다. 미디어 줄마다 이전 OneDrive 사본과 복사 목록 줄이 있다.
+async function batchFixture(t, mediaCount, editedCount) {
+  const f = await fixture(t), onedrive = path.join(f.root, 'onedrive'), rows = [], copies = [];
+  fs.mkdirSync(onedrive);
+  const safe = Buffer.from('body{color:black}'), media = Buffer.from(['body{background:url("da', 'ta:im', 'age/png;base', '64,AAAA")}'].join(''));
+  for (let i = 0; i < mediaCount; i++) {
+    const sourcePath = path.join(f.sourceRoot, `style-${i}.css`), target = path.join(onedrive, `style-${i}.css`);
+    fs.writeFileSync(sourcePath, media); fs.writeFileSync(target, safe);
+    const priorOneDriveCopy = { target, bytes: safe.length, sha256: crypto.createHash('sha256').update(safe).digest('hex') };
+    rows.push({ ...f.row, sourcePath, source: `style-${i}.css`, reason: 'embedded-media-or-base64', ...await fileDigest(sourcePath), priorOneDriveCopy });
+    copies.push({ source: sourcePath, target, expectedBytes: safe.length, sha256: priorOneDriveCopy.sha256, protectedSource: 'embedded-media-or-base64' });
+  }
+  for (let i = 0; i < editedCount; i++) {
+    const sourcePath = path.join(f.sourceRoot, `edited-${i}.js`); fs.copyFileSync(f.sourcePath, sourcePath);
+    rows.push({ ...f.row, sourcePath, source: `edited-${i}.js`, ...await fileDigest(sourcePath) });
+    fs.appendFileSync(sourcePath, `// edited ${i} after the inventory\n`);
+  }
+  const states = path.join(f.vault, '상태/OneDrive'); fs.mkdirSync(states, { recursive: true });
+  fs.writeFileSync(path.join(states, 'copy-manifest.json'), JSON.stringify({ oneDriveRoot: onedrive, files: copies }));
+  fs.writeFileSync(path.join(states, 'protected-sources.json'), JSON.stringify({ status: 'success', checkedAt: new Date().toISOString(), files: rows }));
+  return { ...f, rows, options: { vault: f.vault, root: f.root, apply: true, roots: f.options.roots, cryptoTool: f.options.cryptoTool } };
+}
+test('a reconcile checks reparse points in four batches and reads the copy manifest once, however many media and edited rows it has (10-21)', { skip: !crypt }, async t => {
+  // 10-21 09:32 GitHub 실행은 예약 우선순위 7에서 PowerShell을 미디어 줄마다 세 번, 바뀐 줄마다 한 번 띄우다 24분 제한에 걸렸다.
+  const policy = require('../tools/이어하기꾸러미.js');
+  const counted = async (mediaCount, editedCount, linkedAt = () => false) => {
+    const f = await batchFixture(t, mediaCount, editedCount), calls = [];
+    let manifestReads = 0, stateWrites = 0;
+    const read = fs.readFileSync, write = fs.writeFileSync, state = path.join(f.vault, 'protected-source-backup-status.json');
+    t.mock.method(policy, 'linkPaths', files => {
+      const call = calls.push(files.length);
+      return Object.assign(file => linkedAt(call, file), { cloudPaths: new Set(), cloudOnlineOnly: new Set() });
+    });
+    t.mock.method(fs, 'readFileSync', (file, ...rest) => { if (String(file).endsWith('copy-manifest.json')) manifestReads++; return read(file, ...rest); });
+    t.mock.method(fs, 'writeFileSync', (file, ...rest) => { if (String(file).startsWith(state + '.')) stateWrites++; return write(file, ...rest); });
+    try { return { f, calls, report: await reconcile(f.options), manifestReads, stateWrites }; } finally { t.mock.restoreAll(); }
+  };
+  const one = await counted(1, 0), many = await counted(3, 2), none = await counted(0, 2);
+  assert.equal(one.calls.length, 4); assert.equal(many.calls.length, 4); assert.equal(none.calls.length, 2);
+  assert.equal(one.manifestReads, 1); assert.equal(many.manifestReads, 1); assert.equal(none.manifestReads, 0);
+  assert.ok(many.stateWrites < many.f.rows.length + 2, `state written ${many.stateWrites} times for ${many.f.rows.length} rows`);
+  for (const run of [one, many, none]) {
+    assert.deepEqual(run.report.files.map(row => row.status), run.f.rows.map(() => 'awaiting-drive-verification'));
+    assert.ok(run.report.issues.every(issue => issue.code === 'GIT_ARCHIVE_AWAITING_DRIVE'), JSON.stringify(run.report.issues));
+  }
+  assert.deepEqual(many.report.files.filter(row => row.inventorySha256).map(row => row.source), ['edited-0.js', 'edited-1.js']);
+  // 끝의 묶음(네 번째)에서 OneDrive 사본이 링크로 바뀌었으면 그 줄을 짚는다.
+  const target = path.join('onedrive', 'style-1.css');
+  const late = await counted(3, 0, (call, file) => call === 4 && file.endsWith(target));
+  assert.deepEqual(late.report.issues.filter(issue => issue.code === 'PROTECTED_SOURCE_PRIOR_COPY_ESCAPE').map(issue => issue.source), ['style-1.css']);
+});
+test('the status file keeps the previous evidence until every row is done, also when a run stops early (10-21)', { skip: !crypt }, async t => {
+  // OneDrive 실행은 이 파일의 files로 보관을 확인한다. 예전에는 시작하자마자 빈 목록을 써서, 겹쳐 끝난 OneDrive 실행이 남은 줄을 미확인으로 봤다.
+  const f = await fixture(t), state = path.join(f.vault, 'protected-source-backup-status.json');
+  const inventory = path.join(f.vault, '상태/OneDrive/protected-sources.json'); fs.mkdirSync(path.dirname(inventory), { recursive: true });
+  const previous = [{ sourcePath: f.row.sourcePath, sha256: f.row.sha256, bytes: f.row.bytes, status: 'encrypted-drive-verified' },
+    { sourcePath: path.join(f.sourceRoot, 'no-longer-listed.js'), sha256: 'b'.repeat(64), bytes: 1, status: 'encrypted-drive-verified' }];
+  fs.writeFileSync(state, JSON.stringify({ status: 'success', finishedAt: new Date().toISOString(), files: previous }));
+  const options = { vault: f.vault, root: f.root, apply: true, roots: f.options.roots, cryptoTool: f.options.cryptoTool };
+  fs.writeFileSync(inventory, JSON.stringify({ status: 'success', checkedAt: new Date(Date.now() - 4 * 3600000).toISOString(), files: [f.row] }));
+  const stopped = await reconcile(options);
+  assert.deepEqual(stopped.issues.map(issue => issue.code), ['PROTECTED_SOURCE_INVENTORY_NOT_CURRENT']);
+  assert.deepEqual(JSON.parse(fs.readFileSync(state, 'utf8')).files, previous);
+  fs.writeFileSync(inventory, JSON.stringify({ status: 'success', checkedAt: new Date().toISOString(), files: [f.row] }));
+  const seen = [];
+  const done = await reconcile({ ...options, onProgress() { seen.push(JSON.parse(fs.readFileSync(state, 'utf8'))); } });
+  assert.equal(seen[0].status, 'running'); assert.deepEqual(seen[0].files, previous);
+  const final = JSON.parse(fs.readFileSync(state, 'utf8'));
+  assert.deepEqual(final.files.map(row => [row.sourcePath, row.status]), done.files.map(row => [row.sourcePath, row.status]));
+  assert.deepEqual(done.files.map(row => row.sourcePath), [f.row.sourcePath]);
+});

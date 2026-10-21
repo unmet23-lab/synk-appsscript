@@ -622,6 +622,21 @@
       "sha256": "cac85f630fba0eb4112b0c287214b23d73b945ba6b2795a6391b17ca6269883e",
       "kind": "encoded-text",
       "reason": "Base64 copy of the public site deploy check's producer-name pattern (10-20 list, 452 characters). Decodes to 276 characters of plain regex text; no media, binary, or credential. Reviewed 2026-10-20."
+    },
+    {
+      "path": "experiences/synk-account/src/portal.mjs",
+      "sha256": "223df8668c851ca27409f183c5482625fd9f089d8326388588004970eeca4358",
+      "reason": "Korean sign-in error label for the weak-password rule (eight or more characters mixing letters, digits and symbols); UI copy, not a credential. Same value as the 2026-10-18 whole-file review in onedrive-reviewed-literals.json, which stopped matching once the file bytes changed. Reviewed 2026-10-21."
+    },
+    {
+      "path": "experiences/synk-account/src/portal.mjs",
+      "sha256": "93841add0ab1763e05e5702f9b14c64adcbac4642f3388ac61f986fd22dd4968",
+      "reason": "Korean error label asking for a new password that differs from the current one; UI copy, not a credential. Same value as the 2026-10-18 whole-file review. Reviewed 2026-10-21."
+    },
+    {
+      "path": "experiences/synk-account/src/portal.mjs",
+      "sha256": "b8b9f8f23992ebc2617febc03d92ecb1763fba7b77a5d053b69c416bad18a369",
+      "reason": "HTML autocomplete ternary that picks the browser hint for the sign-in or sign-up form; the matched value is the literal autocomplete token for a new password. Same value as the 2026-10-18 whole-file review. Reviewed 2026-10-21."
     }
   ]
 }
