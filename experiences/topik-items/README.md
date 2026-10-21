@@ -20,7 +20,7 @@ TOPIK I·II 연습 문항(모두 자체 창작)과 그 AI 2중 검수 기록을 
 1. **쓰기** — [작성기준](작성기준.md)대로 `items/<묶음>.json`에 `reviewStatus: "draft"`로 쓴다. 공식 기출은 쓰지 않는다.
 2. **검사** — `node tools/topik-items.mjs --묶기` → `node tools/topik-items.mjs`(검사 통과까지). 재고는 `--재고`(Core 칸마다 통과·초안 수와 목표 12), 소리는 `--소리`.
 3. **AI 2중 검수** — 아래. 둘 다 통과하면 `reviewStatus: "ai-reviewed"`.
-4. **소리(듣기)** — `node tools/topik-audio.mjs 굽기 <묶음> --짝 <이름>`(유호님이 견본을 듣고 고른 목소리 짝).
+4. **소리(듣기)** — `node tools/topik-audio.mjs 굽기 <묶음>`(목소리 짝 하나-범수가 기본) → 폰 대역(300~3400Hz)으로 깎아 받아쓰기 확인.
 5. **화면** — WORLD는 `bank.mjs`의 `PUBLISHED`와 `EXISTING_PASS`만 낸다. 내용을 고치면 `rev`를 올리고 검수를 다시 받는다(검수 줄의 내용 지문이 달라져 통과가 저절로 풀린다).
 
 ## AI 2중 검수
@@ -62,7 +62,8 @@ node tools/topik-review.mjs 보고 <이름>                # report.md(판정 �
 
 ## 소리
 
-- Typecast(`tools/나레이션굽기.mjs`, 1글자 1크레딧, API Lite 월 20만 — 10-20 남은 193,012). 역할마다 한 목소리(남자·여자), 짝은 유호님이 견본(`node tools/topik-audio.mjs 견본`)을 듣고 고른다.
+- Typecast(`tools/나레이션굽기.mjs`, 1글자 1크레딧, API Lite 월 20만 — 10-21 TOPIK I 듣기 60문항 약 4,200자). 역할마다 한 목소리 — 여자 하나·남자 범수(10-21 유호님 위임으로 견본 받아쓰기 오류율·남녀 높낮이 차이를 재고 Fable 검수로 정함, 견본은 `node tools/topik-audio.mjs 견본`). 범수는 속도 1.0·줄 음량 +1.5dB(`VOICE_TUNE`), 대본의 남자 줄은 짧게 쓴다.
+- 굽고 나면 내보내는 mp3를 원음·폰 대역으로 줄마다 받아써 대본과 견준다(10-21 첫 60문항: 범수 92줄·하나 90줄 모두 유사도 0.98 위, 폰 대역에서 떨어진 줄 없음). 세 받아쓰기 모델이 같게 잘못 듣는 줄은 앞에 짧은 말을 붙여 다시 굽는다(현장 노트 「Typecast가 기호·낱말 하나를 엉뚱하게 읽는다」).
 - 대본의 숫자·시각은 읽는 대로 한글로 쓴다(합성 음성이 기호를 잘못 읽는다 — [현장 노트](../../docs/현장노트/영상_ffmpeg_자막.md)).
 - 재생 횟수는 파일에 넣지 않는다. TOPIK I 두 번, TOPIK II 1~20번 한 번·21~50번 두 번을 화면이 `audio.plays`로 지킨다.
 

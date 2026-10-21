@@ -48,7 +48,12 @@
       "audio": {
         "file": "audio/ti-l-a-001.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 2.3
       },
       "origin": "synk-original",
       "reviewStatus": "draft",
@@ -97,7 +102,12 @@
       "audio": {
         "file": "audio/ti-l-a-002.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 2
       },
       "origin": "synk-original",
       "reviewStatus": "draft",
@@ -146,7 +156,12 @@
       "audio": {
         "file": "audio/ti-l-a-003.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 2.3
       },
       "origin": "synk-original",
       "reviewStatus": "draft",
@@ -197,7 +212,12 @@
       "audio": {
         "file": "audio/ti-l-a-004.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 2.3
       },
       "origin": "synk-original",
       "reviewStatus": "draft",
@@ -248,7 +268,12 @@
       "audio": {
         "file": "audio/ti-l-a-005.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 3.1
       },
       "origin": "synk-original",
       "reviewStatus": "draft",
@@ -299,7 +324,12 @@
       "audio": {
         "file": "audio/ti-l-a-006.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 2.1
       },
       "origin": "synk-original",
       "reviewStatus": "draft",
@@ -350,7 +380,12 @@
       "audio": {
         "file": "audio/ti-l-a-007.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 4.3
       },
       "origin": "synk-original",
       "reviewStatus": "draft",
@@ -401,7 +436,12 @@
       "audio": {
         "file": "audio/ti-l-a-008.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 3.4
       },
       "origin": "synk-original",
       "reviewStatus": "draft",
@@ -456,7 +496,12 @@
       "audio": {
         "file": "audio/ti-l-a-009.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 9.7
       },
       "origin": "synk-original",
       "reviewStatus": "draft",
@@ -519,7 +564,12 @@
       "audio": {
         "file": "audio/ti-l-a-010.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 14.2
       },
       "origin": "synk-original",
       "reviewStatus": "draft",
@@ -578,7 +628,12 @@
       "audio": {
         "file": "audio/ti-l-a-011.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 9.3
       },
       "origin": "synk-original",
       "reviewStatus": "draft",
@@ -641,7 +696,12 @@
       "audio": {
         "file": "audio/ti-l-a-012.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 12.5
       },
       "origin": "synk-original",
       "reviewStatus": "draft",
@@ -700,7 +760,12 @@
       "audio": {
         "file": "audio/ti-l-a-013.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 10.5
       },
       "origin": "synk-original",
       "reviewStatus": "draft",
@@ -760,7 +825,12 @@
       "audio": {
         "file": "audio/ti-l-a-014.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 8.4
       },
       "origin": "synk-original",
       "reviewStatus": "draft",
@@ -815,7 +885,12 @@
       "audio": {
         "file": "audio/ti-l-a-015.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 9.9
       },
       "origin": "synk-original",
       "reviewStatus": "draft",
@@ -874,7 +949,12 @@
       "audio": {
         "file": "audio/ti-l-a-016.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 11.7
       },
       "origin": "synk-original",
       "reviewStatus": "draft",
@@ -929,7 +1009,12 @@
       "audio": {
         "file": "audio/ti-l-a-017.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 7.7
       },
       "origin": "synk-original",
       "reviewStatus": "draft",
@@ -984,7 +1069,12 @@
       "audio": {
         "file": "audio/ti-l-a-018.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 8.2
       },
       "origin": "synk-original",
       "reviewStatus": "draft",
@@ -1037,7 +1127,12 @@
       "audio": {
         "file": "audio/ti-l-a-019.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 7.4
       },
       "origin": "synk-original",
       "reviewStatus": "draft",
@@ -1090,7 +1185,12 @@
       "audio": {
         "file": "audio/ti-l-a-020.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 7
       },
       "origin": "synk-original",
       "reviewStatus": "draft",
@@ -1151,7 +1251,12 @@
       "audio": {
         "file": "audio/ti-l-a-021.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 13.5
       },
       "origin": "synk-original",
       "reviewStatus": "draft",
@@ -1214,7 +1319,12 @@
       "audio": {
         "file": "audio/ti-l-a-022.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 10.5
       },
       "origin": "synk-original",
       "reviewStatus": "draft",
@@ -1277,7 +1387,12 @@
       "audio": {
         "file": "audio/ti-l-a-023.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 17.6
       },
       "origin": "synk-original",
       "reviewStatus": "draft",
@@ -1341,7 +1456,12 @@
       "audio": {
         "file": "audio/ti-l-a-024.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 15.3
       },
       "origin": "synk-original",
       "reviewStatus": "draft",
@@ -1405,7 +1525,12 @@
       "audio": {
         "file": "audio/ti-l-a-025.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 17.8
       },
       "origin": "synk-original",
       "reviewStatus": "draft",
@@ -1469,7 +1594,12 @@
       "audio": {
         "file": "audio/ti-l-a-026.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 15
       },
       "origin": "synk-original",
       "reviewStatus": "draft",
@@ -1532,7 +1662,12 @@
       "audio": {
         "file": "audio/ti-l-a-027.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 15.7
       },
       "origin": "synk-original",
       "reviewStatus": "draft",
@@ -1596,7 +1731,12 @@
       "audio": {
         "file": "audio/ti-l-a-028.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 17.3
       },
       "origin": "synk-original",
       "reviewStatus": "draft",

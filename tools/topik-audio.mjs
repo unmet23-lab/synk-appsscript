@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // TOPIK 듣기 문항의 두 사람 대화 음성 — 대본(script)을 tools/나레이션굽기.mjs 계획으로 옮겨 Typecast로 굽는다.
-// 목소리는 역할(남자·여자)마다 하나를 끝까지 쓰고(메모 「역할마다 목소리 하나」), 짝은 유호님이 견본을 듣고 정한다.
+// 목소리는 역할(남자·여자)마다 하나를 끝까지 쓴다(메모 「역할마다 목소리 하나」, 짝은 아래 DEFAULT_PAIR).
 //   node tools/topik-audio.mjs 견본                       목소리 짝 후보마다 견본 대화 둘(output/topik-audio/견본/)
-//   node tools/topik-audio.mjs 굽기 <묶음|id…> --짝 <이름> [--최대 20000]   대본 → 줄마다 굽기 → 이어 붙여 audio/<id>.mp3(64k 모노)
-//   node tools/topik-audio.mjs 미리보기 <묶음|id…> --짝 <이름>             살 글자 수만(키·네트워크 없음)
+//   node tools/topik-audio.mjs 굽기 <묶음|id…> [--짝 <이름>] [--최대 20000]   대본 → 줄마다 굽기 → 이어 붙여 audio/<id>.mp3(64k 모노)
+//   node tools/topik-audio.mjs 미리보기 <묶음|id…> [--짝 <이름>]             살 글자 수만(키·네트워크 없음)
 // 재생 횟수(1·2번)는 소리 파일에 넣지 않는다 — 화면이 audio.plays만큼 들려준다(공식 규칙은 strata/topik-types.json).
 import fs from 'node:fs';
 import path from 'node:path';
@@ -13,12 +13,17 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const bankDir = path.join(root, 'experiences/topik-items');
 const workDir = path.join(root, 'output/topik-audio');
-// 승인된 Typecast 목소리(experiences/hangul-stage/assets/voice/voices.json·talkers.json). 대화 짝으로는 아직 승인 전이다.
+// 승인된 Typecast 목소리(experiences/hangul-stage/assets/voice/voices.json·talkers.json). 듣기 대화 짝은 하나-범수로 정했다
+// (10-21 유호님 위임 → 견본 받아쓰기 오류율 1.6%·남녀 높낮이 한 옥타브 넘게 갈림 + Fable 검수).
 export const PAIRS = Object.freeze({
   '진희-재영': { 여자: { id: 'tc_6731b2b2478a48710ecc9158', name: '진희' }, 남자: { id: 'tc_65571d3fb22102b993a24350', name: '재영' } },
   '하나-범수': { 여자: { id: 'tc_61659cc118732016a95fe7c6', name: '하나' }, 남자: { id: 'tc_5c3c52cb5827e00008dd7f3b', name: '범수' } },
 });
+export const DEFAULT_PAIR = '하나-범수';
 const TEMPO = { 'topik-i': 0.95, 'topik-ii': 1 };
+// 목소리마다 덮는 값(10-21 Fable 굽기 권고): 범수는 느리게 구우면 말끝이 뭉개져 시험과 상관없이 1.0(0.97 아래로 내리지 않는다),
+// 낮은 남자 목소리가 폰 스피커에서 작게 들려 줄 음량을 1.5dB 올린다. 감정은 모두 normal 그대로.
+export const VOICE_TUNE = Object.freeze({ 범수: { tempo: 1, lufs: -15.5 } });
 const SAMPLES = [
   { id: 'sample-topik1', exam: 'topik-i', script: [
     { speaker: '여자', text: '민수 씨, 이번 주 토요일에 시간 있어요?' },
@@ -38,7 +43,7 @@ export function planFor(unit, pair, outDir) {
   return { voices: { 남자: voices.남자, 여자: voices.여자 },
     defaults: { model: 'ssfm-v30', lang: 'ko', emotion: 'normal', intensity: 1, tempo: TEMPO[unit.exam] || 1, seed: 1003, lufs: -17 },
     out: path.join(outDir, 'lines'), trim: 'both',
-    lines: unit.script.map((line, index) => ({ id: `l${String(index + 1).padStart(2, '0')}`, role: line.speaker, text: line.text })),
+    lines: unit.script.map((line, index) => ({ id: `l${String(index + 1).padStart(2, '0')}`, role: line.speaker, text: line.text, ...VOICE_TUNE[voices[line.speaker]?.name] })),
     take: { lead: 0.4, gap: 0.7, tail: 0.6, lufs: -16, limiter: 0.89, wav: path.join(outDir, 'take.wav'), mp3: path.join(outDir, 'take.mp3') } };
 }
 
@@ -94,8 +99,8 @@ async function main([command, ...argv]) {
     return 0;
   }
   if (command === '굽기' || command === '미리보기') {
-    const pair = flag('--짝'), cap = Number(flag('--최대') || 20000);
-    if (!PAIRS[pair]) throw new Error(`--짝 ${Object.keys(PAIRS).join(' | ')} (유호님이 견본을 듣고 고른 짝)`);
+    const pair = flag('--짝') || DEFAULT_PAIR, cap = Number(flag('--최대') || 20000);
+    if (!PAIRS[pair]) throw new Error(`--짝 ${Object.keys(PAIRS).join(' | ')} (기본 ${DEFAULT_PAIR})`);
     const selectors = argv.filter((arg, index) => !arg.startsWith('--') && !argv[index - 1]?.startsWith('--'));
     const list = units(selectors);
     for (const unit of list) {
