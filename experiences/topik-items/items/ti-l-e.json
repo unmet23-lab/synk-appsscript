@@ -1694,10 +1694,15 @@
       "audio": {
         "file": "audio/ti-l-e-s09.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 25.4
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -1741,6 +1746,28 @@
           "rev": 2,
           "hash": "235fa7804871b010",
           "notes": "ti-l-ce-r1 판정대로 — 「이번 주말에는 집에 있어요」를 「부탁할 일이 없어요」의 근거로 삼던 메모 ①을 「남자는 「택배를 받아 주셨어요. 고마워서요」라고 했어요. 앞으로 택배를 부탁하려고 준 것이 아니에요.」로, 몽골어 해설 둘째 문장에 포도를 준 사람 「эрэгтэй」를 밝힘. 세트 s09 — 대본 그대로라 짝 ti-l-e-018은 안 바꿈."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답이 그럴듯하며, 세 언어 해설과 난도가 기준에 맞아 그대로 통과한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T07:04:45.488Z",
+          "rev": 2,
+          "hash": "235fa7804871b010",
+          "packet": "round2"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "포도를 준 이유를 묻는 2급 듣기 세트 문항으로, 모든 기준에 부합한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T07:04:45.488Z",
+          "rev": 2,
+          "hash": "235fa7804871b010",
+          "packet": "round2"
         }
       ]
     },
@@ -2231,10 +2258,15 @@
       "audio": {
         "file": "audio/ti-l-e-s11.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 28
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -2278,6 +2310,28 @@
           "rev": 2,
           "hash": "a6b41640af21890e",
           "notes": "ti-l-ce-r1 판정대로 — 대본에 없는 「점심」이라 「알 수 없음」으로 다툴 수 있던 보기 ④를 「여자는 모임 친구들과 저녁을 가끔 먹습니다.」로(「저녁도 자주 먹어요」와 분명히 어긋나게), 메모 ④를 맞춤. 세트 s11 — 대본 그대로라 짝 ti-l-e-021은 안 바꿈."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고 오답이 대본의 말을 바꿔 그럴듯하다. 해설 세 언어도 일치해 그대로 쓸 수 있다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T07:04:45.488Z",
+          "rev": 2,
+          "hash": "a6b41640af21890e",
+          "packet": "round2"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "대본·보기·해설 모두 기준에 잘 맞는 양호한 문항임.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T07:04:45.488Z",
+          "rev": 2,
+          "hash": "a6b41640af21890e",
+          "packet": "round2"
         }
       ]
     },

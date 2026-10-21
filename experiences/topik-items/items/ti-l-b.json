@@ -686,7 +686,7 @@
         "seconds": 12
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -762,6 +762,28 @@
           "rev": 3,
           "hash": "081ec4cf07376b21",
           "notes": "fix-r1-listening 판정대로 — 한국어 해설에 걸리기 쉬운 오답(카드로 냄)이 왜 틀린지가 빠져 en·mn과 근거가 어긋나던 것을, 「여기는 현금만 받아요」라서 카드로는 낼 수 없다는 근거를 더해 맞춤(판정 글의 앞 두 문장을 합쳐 세 문장 유지). 대본·보기·en·mn은 그대로."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답이 대화와 분명히 어긋나요. 1급 낱말로 된 자연스러운 가게 대화이고, 세 언어 해설도 정확해요. 그대로 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T07:04:45.488Z",
+          "rev": 3,
+          "hash": "081ec4cf07376b21",
+          "packet": "round2"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "상점에서 현금만 받아 주문을 변경하는 대화로, 정답이 유일하고 조건과 해설 모두 기준에 부합합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T07:04:45.488Z",
+          "rev": 3,
+          "hash": "081ec4cf07376b21",
+          "packet": "round2"
         }
       ]
     },

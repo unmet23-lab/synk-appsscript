@@ -1001,10 +1001,15 @@
       "audio": {
         "file": "audio/ti-l-c-013.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 3.6
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -1048,6 +1053,28 @@
           "rev": 2,
           "hash": "9649afac88d3fab5",
           "notes": "ti-l-ce-r1 판정대로 — 한 줄 제안에 1단계 문형(-(으)러 가다·-(으)ㄹ까요)뿐이라 난도 2→1, 겨눈 급 2→1. 대본·보기·해설은 그대로."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "제안에 맞는 응답을 고르는 1급 문항이다. 정답이 하나뿐이고 오답이 고르며, 세 언어 해설도 바르다. 고칠 곳 없이 통과한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T07:04:45.488Z",
+          "rev": 2,
+          "hash": "9649afac88d3fab5",
+          "packet": "round2"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "미술관에 같이 가자는 제안에 알맞게 응답하는 문항으로, 모든 검수 기준을 충족합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T07:04:45.488Z",
+          "rev": 2,
+          "hash": "9649afac88d3fab5",
+          "packet": "round2"
         }
       ]
     },
@@ -1816,10 +1843,15 @@
       "audio": {
         "file": "audio/ti-l-c-022.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 11.2
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -1863,6 +1895,28 @@
           "rev": 2,
           "hash": "4f58325bbc1c0385",
           "notes": "ti-l-ce-r1 판정대로 — 대화에 없는 버스표를 말해 「알 수 없음」으로 다툴 수 있던 보기 ①을 「남자는 기차표가 있으면 버스를 타고 부산에 갑니다.」로(「기차로 가요? — 네」와 분명히 어긋나게), 메모 ①을 맞춤. 대본·해설은 그대로."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고 오답이 조건·때·부정을 바꿔 그럴듯하며, 급·자리·해설이 모두 기준에 맞아 통과한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T07:04:45.488Z",
+          "rev": 2,
+          "hash": "4f58325bbc1c0385",
+          "packet": "round2"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "기차표 유무에 따른 이동 수단 조건을 묻는 듣기 문항으로, 구성과 해설이 모두 적절합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T07:04:45.488Z",
+          "rev": 2,
+          "hash": "4f58325bbc1c0385",
+          "packet": "round2"
         }
       ]
     },
@@ -2102,10 +2156,15 @@
       "audio": {
         "file": "audio/ti-l-c-025.mp3",
         "plays": 2,
-        "status": "pending"
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 13.6
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -2149,6 +2208,28 @@
           "rev": 2,
           "hash": "1beeb959942f69aa",
           "notes": "ti-l-ce-r1 판정대로 — 누가 만드는지 흐리던 여자 첫 줄 「여권이 있으면 지금 바로 만들어요.」 → 「여권이 있으면 지금 바로 만들 수 있어요.」(가능의 뜻을 분명히), 해설 세 언어·메모 ①의 인용과 풀이(en you can make it right now · mn хийлгэж болно)를 맞춤."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "조건(-(으)면)을 겨눈 1급 듣기 문항으로 정답이 하나뿐이고, 꼴·난도·해설이 모두 맞습니다. ①의 「만듭니다」를 「만들 수 있습니다」로 바꾸면 조금 더 정확해지지만 꼭 고칠 필요는 없습니다. 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T07:04:45.488Z",
+          "rev": 2,
+          "hash": "1beeb959942f69aa",
+          "packet": "round2"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "은행 카드 발급을 위한 여권 지참 조건을 이해하는 문항으로, 모든 기준에 부합합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T07:04:45.488Z",
+          "rev": 2,
+          "hash": "1beeb959942f69aa",
+          "packet": "round2"
         }
       ]
     },
@@ -2760,7 +2841,7 @@
         "seconds": 12.8
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "held",
       "review": [
         {
           "stage": "claude",
@@ -2793,6 +2874,39 @@
           "rev": 2,
           "hash": "feface3538031822",
           "notes": "받아쓰기 확인 — 합성 음성이 「박물관」을 「방울관」으로 읽어 장소 낱말을 바꿈: 「박물관」 → 「도서관」(TOPIK I 낱말 A). 대본 두 줄·보기 ①②④·해설 세 언어(en museum → library · mn музей → номын сан)·메모 ①②를 같게 바꿈. 순서·정답은 그대로."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "The answer is unique, the distractors are well built, and the type, level and skill fit. The only issue is the English gloss, which wrongly uses 'we' for the woman's own plan; it should say 'I'. Usable after this small fix.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T07:04:45.488Z",
+          "rev": 2,
+          "hash": "feface3538031822",
+          "packet": "round2"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "일상 이동·식사 순서를 묻는 1급 듣기 내용 일치 문항으로, 모든 기준에 부합한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T07:04:45.488Z",
+          "rev": 2,
+          "hash": "feface3538031822",
+          "packet": "round2"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix",
+          "notes": "Answer ③ (index 2) is unique, and the sequence skill and difficulty 1 fit. A is right about one thing: the woman describes only her own plan, yet the English gloss says 'we'. This adds information that is not in the script and could mislead learners. The fix is a single line, so the verdict is fix rather than pass.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T07:04:45.488Z",
+          "rev": 2,
+          "hash": "feface3538031822",
+          "packet": "round2"
         }
       ]
     },
