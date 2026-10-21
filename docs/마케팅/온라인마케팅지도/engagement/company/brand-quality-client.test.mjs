@@ -88,3 +88,15 @@ test('item changes update the summary, the facts and the now card in place witho
   const renders=f.renders;f.evaluate("bq.drafts.quality.checks.links.status='issue';bqLive(fakeForm,'quality')");assert.equal(f.renders,renders);
   assert.match(nodes.get('[data-bq-item="links"]>summary').innerHTML,/문제 있음/);assert.match(nodes.get('[data-bq-now="quality"]').outerHTML,/문제 1개를 고친 뒤 다시 확인해요/);assert.match(nodes.get('[data-bq-facts]').outerHTML,/<dt>문제<\/dt><dd>1/);assert.equal(nodes.get('[data-bq-fold="quality:checks"] .mt-sum').textContent,'확인됨 1 · 미확인 4 · 문제 1');
 });
+test('saved XSS payloads stay escaped in the list, detail, version history, inputs and links (운영 옛 시험을 13판 함수로 옮김)',async()=>{
+  const f=fixture();
+  const bad={title:'<img src=x onerror=alert(1)>',purpose:'<script>alert(1)</script>',format:'" onfocus="alert(1)',exampleUrl:'javascript:alert(1)',ownerName:'<img src=y onerror=alert(3)>',
+    versions:[{id:'v1',label:'<svg onload=alert(1)>',body:'</pre><script>alert(2)</script>',url:'javascript:alert(2)',createdAt:'2026-10-08T00:00:00.000Z'}]};
+  await loaded(f,workspace({recipes:[recipe(bad)],operations:[operation({title:'<script>alert(4)</script>',targetUrl:'javascript:alert(5)',nextAction:'<svg onload=alert(6)>',ownerName:'" autofocus onfocus="alert(7)'})]}));
+  for(const kind of ['brand','quality']){
+    const html=f.evaluate(`brandQualityPanel('${kind}')`);assert.match(html,kind==='brand'?/&lt;img src=x/:/&lt;script&gt;alert\(4\)/);
+    for(const raw of ['<script>','<svg onload','<img src=x','<img src=y','href="javascript:','onfocus="alert','" autofocus'])assert.ok(!html.includes(raw),kind+' '+raw);
+  }
+  assert.equal(f.evaluate('bqLink("https://name:secret@example.test/","link")'),'');assert.equal(f.evaluate('bqLink("//example.test/","link")'),'');assert.equal(f.evaluate('bqLink("javascript:alert(1)","link")'),'');
+  assert.ok(!f.evaluate(`bqInput('제목','title','" onfocus="alert(1)')`).includes('onfocus="alert'));
+});

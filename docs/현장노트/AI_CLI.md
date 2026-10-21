@@ -395,6 +395,12 @@
 - 고침: GPT에게는 「구현·시험까지, 커밋은 막히면 남겨 둔다」로 맡기고, Claude가 diff를 검수하고 시험을 샌드박스 밖에서 다시 돌린 뒤 같은 가지에 커밋한다(그 Town 시험은 밖에서 13/13). 계정은 유호님이 정한 GPT 앱 본 폴더 `~/.codex`(pro)를 쓰고 모델·추론은 그 설정 그대로 둔다.
 - 다시 확인: `git -C <워크트리> status --porcelain`이 GPT 보고의 파일 수와 같고 `GPT_보고.md`(`-o`)에 커밋 해시가 없으면 이 경우다. 샌드박스 밖에서 `git -C <워크트리> add …`가 되면 권한 문제는 샌드박스 쪽이다.
 
+### GPT 백엔드 검수를 회사 폴더만 꺼낸 sparse 사본에서 돌리면 회사 서버가 부르는 다른 폴더가 빠져 시험 일부가 못 돈다 (2026-10-21 Claude)
+- 증상: 10-21 제작 도구 13판 서버 글 GPT 검수를 회사·메신저 폴더만 꺼낸 sparse 워크트리에서 `codex exec -C <사본> -s workspace-write -c windows.sandbox=mxc -o <보고> -`(지시문은 표준입력, 본 계정)로 돌렸다. 저장소 전체 `git grep`·메모리 저장소로 따로 돌린 확인까지 됐지만, 관련 시험 24파일 중 3이 「모듈 없음」으로 못 떴다. 2차 검수 때 통합 시험 둘도 같은 까닭으로 못 돌았다.
+- 원인: 회사 서버가 `tools/lib`(`sns-dm.js`·`generated/talk-publication.cjs`)·`atlas/`·`experiences/shift-workbench`·`experiences/atlas-lab`·`docs/마케팅/클라이언트_발주서_20260930/receiver/sync.cjs`를 부른다. 전체 체크아웃은 4.3GB라 sparse로 줄이면서 이 폴더들을 빠뜨렸다. 같은 사본에서는 합성 계정 서버(`verify-workspace-fixture.mjs`)도 뜨지 않는다.
+- 고침: `git worktree add --no-checkout --detach <폴더> origin/master` → `git sparse-checkout set --cone <회사 폴더> tools/company-messenger tools/lib atlas experiences/shift-workbench experiences/atlas-lab docs/마케팅/클라이언트_발주서_20260930/receiver` → `git read-tree -mu HEAD`(백 MB 안쪽). 검수 자료(diff·파일 목록)는 사본 안 `.gpt-review*/`에 두고 지시문에 경로를 적는다. 이 꼴(mxc · workspace-write)에서는 git 읽기와 시험 실행이 됐다(10-18 read-only 거절과 다름). 그래도 사본에서 못 돈 시험은 Claude가 전체 작업본에서 다시 돌려 빈칸을 메운다(10-21 62/62). 끝나면 `git worktree remove`로 사본을 지운다.
+- 다시 확인: 사본에서 `node -e "import('./<회사 폴더>/server.mjs')"`가 모듈 없음 없이 뜨는지, GPT 보고의 「못 돈 시험」이 0인지.
+
 ## Codex 세션 기록
 
 ### GPT가 끝났는지를 기록 파일의 수정 시각으로 보면 틀린다
