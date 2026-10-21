@@ -2838,10 +2838,10 @@
           "남자": "범수",
           "여자": "하나"
         },
-        "seconds": 12.8
+        "seconds": 13.4
       },
       "origin": "synk-original",
-      "reviewStatus": "draft",
+      "reviewStatus": "ai-reviewed",
       "review": [
         {
           "stage": "claude",
@@ -2917,6 +2917,28 @@
           "rev": 3,
           "hash": "b551d5b15866ad74",
           "notes": "round2 판정대로 — 영어 해설 풀이가 여자 혼자의 계획을 「we」로 옮겨 대본에 없는 정보를 더하던 것을 판정 글대로 「(first I go to the library and then have lunch; I go to the market after that)」로. 대본·보기·ko·mn은 그대로(대본은 2차 고침의 「도서관」 판)."
+        },
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "순서 정보로 정답 ③이 하나로 정해져요. 오답과 세 언어 해설도 바르게 짜인 TI-L-17 난도 1 문항이라 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T08:02:25.003Z",
+          "rev": 3,
+          "hash": "b551d5b15866ad74",
+          "packet": "round3"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "1급 듣기 순서 파악 문항으로 대본, 보기, 3개 국어 해설 모두 기준에 맞게 잘 작성됨.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T08:02:25.003Z",
+          "rev": 3,
+          "hash": "b551d5b15866ad74",
+          "packet": "round3"
         }
       ]
     },
