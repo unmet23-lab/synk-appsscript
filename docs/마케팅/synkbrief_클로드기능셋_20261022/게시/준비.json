@@ -1,0 +1,63 @@
+{
+  "브랜드": "synkbrief",
+  "날짜": "2026-10-22",
+  "슬롯": "2026-10-24",
+  "성격": "상시",
+  "역할": "권위",
+  "시한": null,
+  "상태": "올릴 준비",
+  "제목": "Claude한테 같은 설명, 아직도 매번 하세요? — 반복하는 말로 고르는 기능 셋",
+  "최종본": [
+    "docs/마케팅/synkbrief_클로드기능셋_20261022/게시/claude-a_master.mp4",
+    "docs/마케팅/synkbrief_클로드기능셋_20261022/게시/claude-b_master.mp4"
+  ],
+  "판": [
+    {
+      "계정": "synkbrief-instagram",
+      "파일": "docs/마케팅/synkbrief_클로드기능셋_20261022/게시/claude-a_upload.mp4",
+      "원본": "docs/마케팅/synkbrief_클로드기능셋_20261022/게시/claude-a_master.mp4",
+      "표지": "docs/마케팅/synkbrief_클로드기능셋_20261022/게시/표지_A.jpg",
+      "시각": "2026-10-24T21:00:00+09:00",
+      "게시글": "docs/마케팅/synkbrief_클로드기능셋_20261022/게시/README.md",
+      "훅": "A",
+      "AI표시": true
+    },
+    {
+      "계정": "synkbrief-youtube",
+      "파일": "docs/마케팅/synkbrief_클로드기능셋_20261022/게시/claude-b_master.mp4",
+      "표지": "docs/마케팅/synkbrief_클로드기능셋_20261022/게시/표지_B.jpg",
+      "시각": "2026-10-24T21:00:00+09:00",
+      "게시글": "docs/마케팅/synkbrief_클로드기능셋_20261022/게시/README.md",
+      "훅": "B",
+      "AI표시": true,
+      "아동용": false,
+      "언어": "ko"
+    },
+    {
+      "계정": "shift-naverblog",
+      "파일": "docs/마케팅/synkbrief_클로드기능셋_20261022/게시/blog/원고.md",
+      "시각": "2026-10-24T21:10:00+09:00",
+      "게시글": "docs/마케팅/synkbrief_클로드기능셋_20261022/게시/blog/원고.md"
+    },
+    {
+      "계정": "shift-tistory",
+      "파일": "docs/마케팅/synkbrief_클로드기능셋_20261022/게시/blog/티스토리.md",
+      "시각": "2026-10-24T21:20:00+09:00",
+      "게시글": "docs/마케팅/synkbrief_클로드기능셋_20261022/게시/blog/티스토리.md"
+    }
+  ],
+  "끝행동링크": null,
+  "미룰편": [],
+  "남은위험": [
+    "Anthropic 도움말이 바뀌었을 수 있다(2026-10-22 07:30~08:10 KST 확인본) — 게시 전날·직전에 「무료 계정 프로젝트 5개」(support.claude.com/en/articles/9519177) · 「스킬 Free 포함 모든 요금제 + Code execution and file creation 켜기」(12512180) · 「Google 커넥터 all users · 보내기·공유 전 승인」(10166901, 10-21 수정본) · 「아티팩트 모든 요금제」(릴리스 노트 09-16)를 다시 본다.",
+    "무료 계정에서 「주간 보고 스킬 만들고 싶어」로 스킬이 실제로 만들어지고 올라가는지는 해 보지 않았다(이 예약 실행은 로그인하지 않음, Fable 콘티 검수 P3). 영상 말은 Anthropic Academy 튜토리얼 「How to create a skill with Claude through conversation」과 도움말의 ZIP 올리기 절차를 따른다. 게시 전에 한 번 해 볼 수 있으면 좋고, 다르게 되면 캡션·블로그의 3단계를 고친다.",
+    "「셋 다 무료 계정도 돼요」의 커넥터는 도움말이 「all users on Claude and Claude Desktop」로 적어 Free를 이름으로 적지는 않는다(같은 글이 Free·Pro·Max를 소비자 제품으로 묶어 all users에 Free가 든다고 읽음, Fable 완성본 검수 P3). 무료 계정 Customize › Connectors에 Gmail이 보이는지 게시 전에 한 번 보면 좋다.",
+    "스킬 켜고 끄는 메뉴 경로가 원문끼리 다르다 — 도움말은 Customize › Skills, 튜토리얼은 Settings › Capabilities › Skills. 영상은 Customize › Skills와 설정 켜기(Settings › Capabilities)만 보이고, 블로그에 둘 다 적었다.",
+    "메뉴 이름은 도움말 영문 표기다. 한국어 화면 이름은 확인하지 못했고, Pro·Max는 09-16부터 채팅·Cowork를 합친 화면이 차례로 배포 중이라 메뉴 위치가 다를 수 있다 — 화면·캡션에 「요금제·언어에 따라 화면이 조금 다를 수 있어요」.",
+    "말과 화면 그림은 SYNK 키트로 그린 예시(「예시 그림 · 실제 앱 화면 아님」 도장)이고 실제 Claude 화면 녹화는 없다. 앱 로고는 쓰지 않았다(Gmail·Google 캘린더는 글자 칩).",
+    "AI 표시는 목소리(Typecast 범수)만 AI라 보수적으로 켠 것.",
+    "받아쓰기(faster-whisper medium)에서 「메일」이 「매일」, 「또 할 때」가 「도 할 때」로 적혔다 — 자연스러운 발음이고 화면 글자가 받친다(가장 큰 글자 오차 0.06).",
+    "네이버 블로그는 10-20 두 브라우저가 blog.naver.com을 막았다 — 붙여넣기 판으로 유호님 직접(10-21 유호님). 티스토리는 게시 세션이 쇼츠 ID로 〔유튜브 쇼츠〕 칸을 채운다.",
+    "역할: 이번 주(10-19~25) synkbrief는 권위 편(잠그기 10-23)이 이미 있어 권위가 하나 더 든다. 트리거가 있는 후보가 이 편 하나였다(기획.md 머리)."
+  ]
+}
