@@ -1,0 +1,50 @@
+{
+ "note": "말하기 시범 3번(그림 보고 이야기하기) 그림. 승인된 이야기 교실 펠트 소품(experiences/story-classroom/assets)을 크림 바탕 칸에 옮겨 놓은 것이다. 새로 생성한 그림이 아니다. 정식 문항 그림은 장면과 함께 새로 굽는다(유호님 선택).",
+ "made": "2026-10-21",
+ "panels": {
+  "s3-birthday-1.webp": {
+   "bytes": 6730,
+   "sha256": "6633bd618d3561eb291708bb24b6d8aedcdbc57b7624ad0fe9f6e15d7069896d",
+   "from": [
+    {
+     "file": "experiences/story-classroom/assets/prop-cake.webp",
+     "sha256": "6e55265332d81c0392182c84f2a7a4431743ceac6697173e718efe4e2a768f8b"
+    }
+   ]
+  },
+  "s3-birthday-2.webp": {
+   "bytes": 4536,
+   "sha256": "0133356675252760ef92332b7d81f973b4030e46b11197ebb40b4aefe0659ada",
+   "from": [
+    {
+     "file": "experiences/story-classroom/assets/prop-letter.webp",
+     "sha256": "57596ece4500c820d9cf633b4952e9456568ad69c1bf4e55bd5ad09a99a97663"
+    }
+   ]
+  },
+  "s3-birthday-3.webp": {
+   "bytes": 8468,
+   "sha256": "2b6d069b7ef0a6e01249860a4a1fb6480694c1d84029605aa7802e151d87c1a8",
+   "from": [
+    {
+     "file": "experiences/story-classroom/assets/prop-box.webp",
+     "sha256": "aef2155a2b3a0a0539aa742c251dd53be75dd53f3ddefb31a5451961978bf09c"
+    },
+    {
+     "file": "experiences/story-classroom/assets/prop-ribbon.webp",
+     "sha256": "5e38a770353afd30b3b4b9c2b96f129b159f4817158bc9af5717621eaf65f495"
+    }
+   ]
+  },
+  "s3-birthday-4.webp": {
+   "bytes": 9396,
+   "sha256": "b03c20696c4ee9d6b83f55b4090bdb216c80181ef804c4cb74f0545a0e5a8b4a",
+   "from": [
+    {
+     "file": "experiences/story-classroom/assets/prop-flowers.webp",
+     "sha256": "16d8be2f21f3f09940141a2fe3a483f12fdd769901ed93395dae47da2738f51a"
+    }
+   ]
+  }
+ }
+}

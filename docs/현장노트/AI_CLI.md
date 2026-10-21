@@ -105,6 +105,12 @@
 - 고침: 계산 코드 검수는 medium으로 먼저 보내고(결과표를 쓰는 출력 부분은 묶음에서 빼서 줄임), high는 시간 여유가 있을 때 따로 한 번만 보낸다. 제한 시간은 `--timeout`(ms)이 agy `--print-timeout`과 함께 정해지므로 답이 없을 때 끝까지 기다리게 된다.
 - 다시 확인: 같은 묶음을 high로 혼자 보냈을 때 끝나는지, 끝나는 데 몇 분 걸리는지 잰다. 기록은 세션 임시 폴더의 `argon_review_code2_medium.json`(SUCCESS)과 작업 출력의 오류 줄이다.
 
+### Vertex `gemini-3.8-flash`가 429·시간 초과로 자주 막힌다 — 같은 값의 3.7·3.6 Flash는 되고, 3.8 Flash·3.5 Flash-Lite는 전역 주소에만 있다 (2026-10-21 Claude)
+- 증상: 10-21 WORLD 말하기 측정(`tools/말하기피드백_측정.mjs`, 프로젝트 synk-bake-unmet27)에서 `gemini-3.8-flash` 전역 호출이 `429 Resource exhausted`와 45초 시간 초과로 거의 다 실패했다(소리 11건 중 2건만 성공, 2·4·8초 쉬고 다시 보내도 같음). 같은 시각 `gemini-3.7-flash`·`gemini-3.6-flash`(가격 같음)와 `gemini-3.5-flash-lite`는 정상이었다. `asia-northeast3`(서울)·`us-central1` 주소로 3.8 Flash·3.5 Flash-Lite를 부르면 404 「Publisher model … was not found」였다.
+- 원인: 확인하지 못했다. 새 모델의 공용 몫(동적 공유 몫)이 붐빈 것으로 보인다. 지역 404는 그 모델이 전역에만 열려 있어서다.
+- 고침: 제품 경로에는 모델 이름을 설정값으로 두고 3.6/3.7 Flash 또는 3.5 Flash-Lite를 쓴다. 429·503만 다시 보내고(4xx·5xx는 청구되지 않는다 — 가격 페이지), 시간 초과는 처리 여부를 모르니 다시 보내지 않는다(`tools/lib/말하기호출.mjs` callVertex). 같은 측정에서 문제 글을 함께 준 Flash 듣기는 4초 잡음에도 그 문제의 그럴듯한 대답을 지어냈다 — 받아 적는 단계에는 문제를 주지 않는다(`blindHearPrompt`).
+- 다시 확인: `node tools/말하기피드백_측정.mjs --유료-api --경로 turn-flash --듣기모델 gemini-3.8-flash --사례 r5 --결과 .tmp/x.json`(소리 2초, 1센트 미만)이 429·시간 초과 없이 끝나는지, `SYNK_SPEAKING_VERTEX_LOCATION=asia-northeast3`로 같은 명령이 아직 404인지 본다.
+
 ## Claude API
 
 ### 새 키의 조직에 월 API 크레딧이 없어 충전 잔액이 나갔다

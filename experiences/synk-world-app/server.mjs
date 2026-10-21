@@ -28,6 +28,7 @@ const playRuntime=mode==='rehearsal'?require(path.join(talk,'supabase/functions/
 if(database)await database.db.exec(fs.readFileSync(path.join(talk,'supabase/migrations/20261009170000_synk_play_c16.sql'),'utf8'));
 const townHost=mode==='rehearsal'?createAccountTownHost({directory:`${dataDir}-town`}):null;
 const sessions=new Map();
+let speakingHost=null;
 const ids={'player-a':'11111111-1111-4111-8111-111111111111','player-b':'22222222-2222-4222-8222-222222222222'};
 const allowedGames=new Set(['korean-runner','korean-rhythm','hangul-stage']);
 const mime={'.html':'text/html; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg','.svg':'image/svg+xml','.woff2':'font/woff2','.ttf':'font/ttf','.mp4':'video/mp4','.mp3':'audio/mpeg','.wav':'audio/wav','.glb':'model/gltf-binary','.wasm':'application/wasm'};
@@ -52,7 +53,7 @@ const server=http.createServer(async(req,res)=>{
    const tab=req.headers['x-synk-rehearsal-tab'];if(tab!==undefined&&(typeof tab!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(tab)))return json(res,400,{ok:false,error:{code:'REHEARSAL_TAB_INVALID'}});
    if(!['GET','POST','PUT'].includes(req.method))return json(res,405,{ok:false,error:{code:'METHOD_NOT_ALLOWED'}});
    if(req.method!=='GET'&&!req.headers['content-type']?.startsWith('application/json'))return json(res,415,{ok:false,error:{code:'JSON_REQUIRED'}});
-   const raw=req.method==='GET'?undefined:await body(req,url.pathname==='/api/world/life-progress'?600000:16384);const headers=new Headers(req.headers);
+   const raw=req.method==='GET'?undefined:await body(req,url.pathname==='/api/world/life-progress'?600000:url.pathname==='/api/world/speaking'?2000000:16384);const headers=new Headers(req.headers);
    const suffix=url.pathname.slice('/api/world/'.length);
    const request=new Request(`http://local/synk-world-v1/${suffix}${url.search}`,{method:req.method,headers,...(raw?{body:raw}:{})});
    if(suffix==='rehearsal/status'&&req.method==='GET'){let authenticated=false;try{identity(request);authenticated=true;}catch{}return json(res,200,{ok:true,authenticated,rehearsal:true,...(authenticated?{accessToken:requestToken(request)}:{})});}
@@ -71,6 +72,8 @@ const server=http.createServer(async(req,res)=>{
     if(req.method==='POST'){let command;try{command=JSON.parse(raw.toString('utf8'));}catch{return json(res,400,{ok:false,error:{code:'INVALID_JSON'}});}if(command.action!=='progress'||!Array.isArray(command.changes)||command.changes.some(change=>change.key!=='synk.life-korean.progress.v1'))return json(res,400,{ok:false,error:{code:'INVALID_PLAY_REQUEST'}});}
     const reply=await lifeService(new Request('http://local/synk-play',{method:req.method,headers,...(raw?{body:raw}:{})}));res.writeHead(reply.status,Object.fromEntries([...reply.headers].filter(([name])=>!name.startsWith('access-control'))));res.end(await reply.text());return;
    }
+   // 말하기 연습 시범(10-21): 리허설에서만. 기본은 꺼짐이고, 실제 모델은 SYNK_WORLD_SPEAKING_DEV=1일 때만 부른다(speaking-dev-host.mjs).
+   if(suffix==='speaking'){const account=identity(request);if(req.method!=='POST')return json(res,405,{ok:false,error:{code:'METHOD_NOT_ALLOWED'}});speakingHost??=(await import('./speaking-dev-host.mjs')).createSpeakingDevHost();const reply=await speakingHost.handle(account.id,raw);return json(res,reply.status,reply.body);}
    if(suffix.startsWith('town/')){
     const account=identity(request);let input;
     try{input=raw?JSON.parse(raw.toString('utf8')):undefined;}catch{return json(res,400,{error:'INVALID_JSON'});}
@@ -92,6 +95,8 @@ const server=http.createServer(async(req,res)=>{
   else if(/^\/topik-items\/audio\/[a-z0-9-]+\.mp3$/.test(pathname)){base=path.resolve(root,'../topik-items');pathname=pathname.slice('/topik-items'.length);}
   else if(pathname.startsWith('/synk-world-home/')){pathname=pathname.slice('/synk-world-home'.length);base=home;}
   else if(pathname==='/enrollment.mjs'){base=path.resolve(root,'../synk-account/src');}
+  // 말하기 연습 시범(10-21, 플래그 꺼짐 · 공개 빌드 목록에는 아직 없다): 모듈·글·문항과 3번 문항 그림 칸.
+  else if(['/world-speaking-practice.mjs','/world-speaking-strings.mjs','/world-speaking-items.json','/world-speaking.css'].includes(pathname)||/^\/speaking-assets\/[a-z0-9-]+\.webp$/.test(pathname))base=root;
   // Preview-only route (10-14 redesign worktree): the games import ../social-conversion.mjs (shared trial tracking, in progress elsewhere).
   else if(pathname==='/social-conversion.mjs'){base=path.resolve(root,'..');}
   else if(['/world-bootstrap.js','/app-shell.mjs','/app-shell.css','/world-client.mjs','/world-town-client.mjs','/world-account.bundle.mjs','/life-ui.mjs','/life-story.mjs','/life-ui.css','/life-content.mjs','/life-progress.mjs','/world-learning-ui.mjs','/world-learning-profile.mjs','/world-learning-profile-core.mjs','/tutor-selection-sync.mjs','/display-language-sync.mjs','/life-content-lang.mjs','/cafe-activity.mjs','/cafe-ui.mjs','/classroom-lessons.mjs','/classroom-homework.mjs','/topik4-homework.json','/world-writing-practice.mjs','/world-writing-check.mjs','/world-writing-items.json','/world-writing.css','/world-topik-items.json','/world-reminders.mjs','/world-reminder-device.mjs'].includes(pathname))base=root;

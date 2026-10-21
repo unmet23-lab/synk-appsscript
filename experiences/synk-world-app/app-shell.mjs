@@ -268,7 +268,7 @@ function initializeLife(){
 }
 function mountLifeLearning(){
  education?.dispose();education=null;
- lifeUI=createLifeExperience({home,getProgress:()=>lifeProgress,asset:path=>worldUrl('brand-opening/assets/'+path),show:(title,html,options)=>show(title,html,options.type,{eyebrow:options.eyebrow,nav:options.nav}),onSummary:()=>education?.refresh(),onNext:()=>education?.next(),presentation:()=>education?.presentation(),moreRows:print=>[education?.planRow?.(print),writingRow(print),reminders?.askMarkup()].filter(Boolean).join(''),positionTotal:()=>education?.positionTotal?.()});
+ lifeUI=createLifeExperience({home,getProgress:()=>lifeProgress,asset:path=>worldUrl('brand-opening/assets/'+path),show:(title,html,options)=>show(title,html,options.type,{eyebrow:options.eyebrow,nav:options.nav}),onSummary:()=>education?.refresh(),onNext:()=>education?.next(),presentation:()=>education?.presentation(),moreRows:print=>[education?.planRow?.(print),writingRow(print),speakingModule?.speakingRow?.(print),reminders?.askMarkup()].filter(Boolean).join(''),positionTotal:()=>education?.positionTotal?.()});
  // 공개판(계정 모드)의 손님은 GUEST_GAMES와 체험이 남은 게임만 바로 열고 나머지는 로그인부터 연다(launchGame). 추천도 같은 목록을 써야 로그인 창을 맴돌지 않는다.
  const createPlan=options=>createWorldLearningPlan({...options,answers:topicAnswers&&topicAnswers.owner===lifeOwner?topicAnswers:null,openGames:operating&&!client.snapshot?guestGames():null});
  // 내 위치(10-19 결정): 짧은 진단 듣기 문항의 녹음은 게임 폴더(korean-runner·korean-rhythm)에서 부른다.
@@ -354,6 +354,25 @@ function openWriting(button){
     coach=source?source.createGame({gameId:'world-writing'},worldLearning.engine.createGame,worldLearning.createLearningSync):worldLearning.engine.createGame({gameId:'world-writing',storage:localStorage});return coach;}});
  }
  return writing.open(button?.dataset?.writingRoute||'writing');
+}
+// 말하기 연습 시범(10-21, world-speaking-practice.mjs · 설계 qa/speaking-pilot-20261021/설계.md): 기능 플래그(주소 ?speaking=preview 또는
+// 기기 설정 synk.world.speaking.preview=1)가 있을 때만 모듈을 불러 배우기 판에 줄을 더한다. 공개 빌드 목록에는 아직 파일이 없어 플래그가 없으면 바뀌는 것이 없다.
+// 자동 피드백은 리허설(로컬 개발 서버의 /api/world/speaking)에서만 붙인다 — 운영 통로(SYNK-talk world-speaking 함수)는 아직 없다.
+let speakingModule=null,speaking=null,speakingOwner=null;
+const speakingFlag=(()=>{try{return new URLSearchParams(location.search).get('speaking')==='preview'||localStorage.getItem('synk.world.speaking.preview')==='1';}catch{return false;}})();
+const repaintSpeakingRow=()=>{if(lifeUI&&document.querySelector('#world-panel[open] #panel-content .life-hub')&&!document.querySelector('#panel-content [data-world="speaking"]'))lifeUI.packs();};
+if(speakingFlag)void import('./world-speaking-practice.mjs').then(module=>{speakingModule=module;return module.loadSpeakingBank();}).then(repaintSpeakingRow).catch(()=>{});
+function openSpeaking(button){
+ if(!speakingModule)return;
+ const owner=writingOwnerId();
+ if(!speaking||speakingOwner!==owner){
+  speaking?.dispose();speakingOwner=owner;let coach=null;
+  const feedback=!operating&&client?.snapshot?{status:()=>client.request('speaking',{method:'POST',body:{action:'status'}}),request:payload=>client.request('speaking',{method:'POST',body:payload})}:null;
+  speaking=speakingModule.createSpeakingPractice({show:(title,html)=>show(title,html,'world-speaking',{eyebrow:'SPEAKING'}),home,getOwner:writingOwnerId,tutor:()=>home.tutor?.()?.tutor||null,feedback,
+   coach:()=>{if(coach)return coach;if(writingOwnerId()!==owner)return null;const source=window.SYNKLearningHost||null;if(!source&&owner!=='guest')return null;
+    coach=source?source.createGame({gameId:'world-speaking'},worldLearning.engine.createGame,worldLearning.createLearningSync):worldLearning.engine.createGame({gameId:'world-speaking',storage:localStorage});return coach;}});
+ }
+ return speaking.open(button?.dataset?.speakingRoute||'speaking');
 }
 async function openLife(method,...args){
  if(!lifeReady)initializeLife();
@@ -532,6 +551,7 @@ const commands={
  // 로그아웃: 이 뒤에 생긴 손님 기록만 다음 로그인에 옮길지 묻는다(device-records.mjs — 앞 사람의 손님 기록이 다음 사람에게 가지 않게).
  logout:async()=>{accountActionPending=true;entryGate?.invalidate();const leaving=client.snapshot?.accountId;try{await client.logout();const signedOutAt=Date.now();if(leaving)noteDeviceAccount(localStorage,leaving,signedOutAt);noteDeviceSignOut(localStorage,signedOutAt);sessionConfirmed=false;close();if(home.isMaru)await entryGate.start();else welcome();}catch(e){if(e.code==='STALE_RESPONSE')return;home.toast(t('account.logoutFailed'));if(home.isMaru)showEntryRecovery();else welcome();}finally{accountActionPending=false;}},
 };
+commands.speaking=openSpeaking;
 document.addEventListener('click',event=>{
  const button=event.target.closest('button');if(!button)return;
  if(button.dataset.worldGame){event.preventDefault();event.stopImmediatePropagation();void launchGame(button.dataset.worldGame);return;}
@@ -549,7 +569,7 @@ document.addEventListener('click',event=>{
  }
 },true);
 document.addEventListener('change',event=>{const control=event.target;if(control.matches?.('[data-world-learning]')){control.disabled=true;const enabled=control.checked;void account.setLearning(enabled,Number(control.dataset.revision)).then(()=>{if(screen==='world-profile')profile();}).catch(error=>{control.checked=!enabled;home.toast(errorText(error));}).finally(()=>{control.disabled=false;});return;}if(!control.matches?.('[data-town-sharing]'))return;control.disabled=true;const enabled=control.checked,revision=Number(control.dataset.revision);void client.request('town/sharing',{method:'POST',body:{enabled,revision}}).then(()=>town()).catch(error=>{control.checked=!enabled;home.toast(errorText(error));}).finally(()=>{control.disabled=false;});});
-window.addEventListener('pagehide',()=>{writing?.dispose();education?.dispose();disposeReminders();localLearning?.dispose();lifeEpoch++;lifeUI?.dispose();lifeProgress?.stop();lifePort?.dispose();townSession?.dispose();delete window.SYNKWorldTownHost;account?.stop();});
+window.addEventListener('pagehide',()=>{writing?.dispose();speaking?.dispose();education?.dispose();disposeReminders();localLearning?.dispose();lifeEpoch++;lifeUI?.dispose();lifeProgress?.stop();lifePort?.dispose();townSession?.dispose();delete window.SYNKWorldTownHost;account?.stop();});
 window.addEventListener('online',()=>{if(client.snapshot)client.refresh().then(refreshTutorAccount).catch(()=>{});});
 // Switching between side-by-side web and desktop windows need not hide either
 // document. Refocus must also restore the latest selected companion.
