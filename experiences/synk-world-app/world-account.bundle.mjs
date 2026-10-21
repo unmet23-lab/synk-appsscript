@@ -15323,15 +15323,17 @@ function hangulTimes(value) {
   for (const session of Array.isArray(value?.sessions) ? value.sessions : []) times.push(isoTime(`${session?.day}T00:00:00+09:00`));
   return times.filter(Number.isFinite);
 }
-function readHangul(storage, key, { after = 0 } = {}) {
-  const raw = storage.getItem(key);
-  if (raw === null) return null;
+function hangulOf(raw, { after = 0 } = {}) {
   try {
     const value = JSON.parse(raw), summary = hangulProgressSummary(value);
     return summary && allAfter(hangulTimes(value), after) ? summary : null;
   } catch {
     return null;
   }
+}
+function readHangul(storage, key, options) {
+  const raw = storage.getItem(key);
+  return raw === null ? null : hangulOf(raw, options);
 }
 function guestLife(storage) {
   try {
@@ -15484,13 +15486,13 @@ async function applyDeviceRecords(plan, { storage = globalThis.localStorage, acc
       guard();
       if (plan.hangul.cloud) {
         if (!hangulPort) throw Error("\uACC4\uC815 \uD55C\uAE00 \uC800\uC7A5 \uC5F0\uACB0\uC744 \uB2E4\uC2DC \uC5F4\uC5B4 \uC8FC\uC138\uC694.");
-        if (raw === null || !readHangul(storage, plan.hangul.from, { after: plan.hangul.after || 0 })) result.hangul = "gone";
+        if (raw === null || !hangulOf(raw, { after: plan.hangul.after || 0 })) result.hangul = "gone";
         else {
           result.hangul = await hangulPort.importSnapshot(raw);
           guard();
         }
       } else if (storage.getItem(plan.hangul.to) !== null) result.hangul = "exists";
-      else if (raw === null || !readHangul(storage, plan.hangul.from, { after: plan.hangul.after || 0 })) result.hangul = "gone";
+      else if (raw === null || !hangulOf(raw, { after: plan.hangul.after || 0 })) result.hangul = "gone";
       else {
         storage.setItem(plan.hangul.to, raw);
         result.hangul = "moved";

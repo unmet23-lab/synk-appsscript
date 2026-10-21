@@ -43,10 +43,11 @@ function hangulTimes(value){
  for(const session of Array.isArray(value?.sessions)?value.sessions:[])times.push(isoTime(`${session?.day}T00:00:00+09:00`));
  return times.filter(Number.isFinite);
 }
-function readHangul(storage,key,{after=0}={}){
- const raw=storage.getItem(key);if(raw===null)return null;
+// 한글 원본 글(JSON) 하나를 기준 시각과 함께 본다. 옮길 때는 검사한 그 글을 그대로 옮긴다(저장소를 다시 읽지 않는다 — 10-21 GPT 재확인).
+function hangulOf(raw,{after=0}={}){
  try{const value=JSON.parse(raw),summary=hangulProgressSummary(value);return summary&&allAfter(hangulTimes(value),after)?summary:null;}catch{return null;}
 }
+function readHangul(storage,key,options){const raw=storage.getItem(key);return raw===null?null:hangulOf(raw,options);}
 function guestLife(storage){
  try{const value=JSON.parse(storage?.getItem(GUEST_LIFE_KEY)||'null');return recordObject(value)&&value.owner==='guest'&&value.version===1?value:null;}catch{return null;}
 }
@@ -166,11 +167,11 @@ export async function applyDeviceRecords(plan,{storage=globalThis.localStorage,a
    guard();
    if(plan.hangul.cloud){
     if(!hangulPort)throw Error('계정 한글 저장 연결을 다시 열어 주세요.');
-    if(raw===null||!readHangul(storage,plan.hangul.from,{after:plan.hangul.after||0}))result.hangul='gone';
+    if(raw===null||!hangulOf(raw,{after:plan.hangul.after||0}))result.hangul='gone';
     else{result.hangul=await hangulPort.importSnapshot(raw);guard();}
    }
    else if(storage.getItem(plan.hangul.to)!==null)result.hangul='exists';
-   else if(raw===null||!readHangul(storage,plan.hangul.from,{after:plan.hangul.after||0}))result.hangul='gone';
+   else if(raw===null||!hangulOf(raw,{after:plan.hangul.after||0}))result.hangul='gone';
    else{storage.setItem(plan.hangul.to,raw);result.hangul='moved';}
   }catch(error){result.errors.push(error);}
  }

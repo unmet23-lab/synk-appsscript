@@ -347,3 +347,14 @@ test('keeping after a partial move with the account hangul store does not ask ab
  assert.equal(entry.cloud,true,'decided with the account hangul store');
  assert.equal(make().offer({owner:ACCOUNT}),null,'a fresh page does not ask about the kept hangul again');
 });
+
+// 10-21 GPT 마지막 확인(P0 잔여): 검사한 원본과 옮기는 원본이 같아야 한다 — 옮길 때 읽은 그 글 하나를 기준 시각으로 보고 그대로 옮긴다.
+test('the hangul text that is checked is the very text that is moved (no second read)',async()=>{
+ const storage=memory(),fresh=JSON.stringify(guestHangul()),stale=JSON.stringify(meet(emptyProgress(),['g-giyeok'],'2026-10-18T05:00:00.000Z'));
+ storage.setItem(HANGUL_DEVICE_KEY,fresh);noteDeviceSignOut(storage,Date.parse('2026-10-18T14:00:00.000Z'));
+ const plan=planDeviceRecords({storage,learning,accountId:ACCOUNT});assert.ok(plan?.hangul);
+ // 옮기는 순간: 첫 읽기는 앞 사람 몫이 섞인 글, 그 뒤 읽기는 이 사람의 글을 주는 저장소.
+ let reads=0;const flipping={...storage,getItem:key=>key===HANGUL_DEVICE_KEY?(reads++===0?stale:fresh):storage.getItem(key),setItem:(key,value)=>storage.setItem(key,value)};
+ const result=await applyDeviceRecords(plan,{storage:flipping});
+ assert.equal(result.hangul,'gone');assert.equal(storage.getItem(target),null,'the stale text never reaches the account');
+});
