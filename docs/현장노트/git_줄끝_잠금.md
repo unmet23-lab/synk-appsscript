@@ -542,6 +542,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 판정기는 다른 세션이 쓰는 작업 공간에 손대는 일을 막는다. 앱 세션 목록에 주인이 없어도 EnterWorktree로 들어간 세션은 cwd가 다르게 남아 있어 판정기로서는 알 수 없다.
 - 고침: 우회하지 않는다. 지울 작업트리 이름·크기·근거(깨끗함·origin에 같은 커밋·쓰는 도구 없음)를 유호님께 한 번에 보이고 「지워」를 받은 뒤, junction부터 끊고 `git worktree remove`(위 junction 항목). 앱 작업트리는 `clean_up_worktrees`·`discard_kept_worktree`(카드)로 지운다. 고르기 전 그 경로를 박아 둔 도구를 `rg`로 찾는다 — `.tmp/sns-health-upgrade-20261020/make-package.cjs`가 `SYNK-worktrees/sns-aggregation-upgrade-20261020`을 WORKTREE로 쓰고 있어 후보에서 뺐다.
 - 다시 확인: 후보마다 `git -C <경로> status --porcelain`이 비고, `git -C <경로> log origin/master..HEAD`의 제목이 origin 기록에 있다. 10-21 유호님 「지워」 뒤에는 같은 `git worktree remove`가 통과했다. 하나는 안을 다 지우고도 폴더만 「Permission denied」로 남았는데, 다른 프로세스가 그 빈 폴더를 열어 둔 것이었다(`[System.IO.Directory]::Delete`도 「being used by another process」). 등록은 풀렸고 0바이트라 그대로 둔다.
+- 놓친 것(10-21 저녁, 효율 점검 세션): 지운 넷 중 `ci-backup-incremental`은 보관 전인 「CI·백업은 바뀐 것만」 세션이 20:56 기록을 올리려 남겨 둔 자리였고, 「다른 프로세스가 연 빈 폴더」는 그 세션 셸의 자리였다(커밋은 origin에 있어 잃은 것은 없고, 그 세션은 origin 최신에서 새 가지로 옮겼다). 깨끗함·origin 커밋만으로는 「아직 쓰는 중」을 가르지 못한다. 세션이 손으로 만든 작업트리(`git worktree add -b <가지> .claude/worktrees/<이름>`)는 앱이 주인을 모르니, 고르기 전에 `search_session_transcripts`로 그 이름을 찾는다 — `git worktree list` 출력에만 나온 세션은 빼고, 보관 전 세션이 그 경로에서 일한 흔적(`cd`·`-C <경로>`·cwd)이 있으면 후보에서 빼거나 그 세션에 먼저 묻는다. 손으로 만든 세션은 다 쓰면 그 자리에서 지운다.
 
 ## 이력 훑기
 
