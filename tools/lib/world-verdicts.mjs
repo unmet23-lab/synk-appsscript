@@ -11,7 +11,8 @@ export function slimVerdicts(text){
  return {version:data?.version??null,items:rows.map(row=>row&&typeof row==='object'?Object.fromEntries(VERDICT_FIELDS.filter(key=>Object.hasOwn(row,key)).map(key=>[key,row[key]])):{})};
 }
 
-// esbuild 플러그인: 그 JSON을 불러올 때 줄인 판으로 바꾼다(import 속성 `with {type:'json'}` 그대로).
+// esbuild 플러그인: 그 JSON을 불러올 때 줄인 판으로 바꾼다(import 속성 `with {type:'json'}` 그대로). 누가 부르든 경로로 잡으므로,
+// 같은 JSON을 쓰는 experiences/topik-items/bank.mjs를 묶음에 넣게 되면 그 모듈이 쓰는 칸(hash 등)도 여기 남길지 먼저 본다.
 export const verdictsPlugin=Object.freeze({name:'world-verdicts',setup(build){
  build.onLoad({filter:/[\\/]topik-items[\\/]review[\\/]existing-verdicts\.json$/},args=>({contents:JSON.stringify(slimVerdicts(fs.readFileSync(args.path,'utf8'))),loader:'json'}));
 }});

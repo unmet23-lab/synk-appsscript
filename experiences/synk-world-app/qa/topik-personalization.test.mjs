@@ -202,7 +202,9 @@ test('공개 묶음: 판정 목록은 연습이 쓰는 칸만 실리고, 줄인 
  assert.deepEqual(slimVerdicts(JSON.stringify({version:'v',items:[{itemKey:'a',verdict:'pass',by:[{model:'x'}],reason:'r',hash:'h'},null]})).items,[{itemKey:'a',verdict:'pass'},{}]);
  for(const bundle of ['../world-account.bundle.mjs','../../brand-opening/content/life-standalone.mjs']){
   const text=fs.readFileSync(new URL(bundle,import.meta.url),'utf8');
-  assert.doesNotMatch(text,/claude|opus|argon|gemini|gpt-|openai|anthropic/i,`${bundle}에 AI 도구 이름이 없다(node tools/build-world-*.mjs로 다시 짓는다)`);
+  // 낱말 경계를 둔다(tools/공개.js의 AI 이름 검사와 같은 꼴) — 지문의 jargon 같은 낱말에 걸리지 않게. 모델 이름은 claude-…·gemini-…로 잡힌다.
+  // 리듬 게임 음악 모듈 이름(suno-tracks)은 공개 빌드(tools/build-world-app-public.mjs)가 바꾸므로 여기서 보지 않는다.
+  assert.doesNotMatch(text,/\b(?:claude|anthropic|openai|chatgpt|gemini|gpt-?\d[\w.]*)\b/i,`${bundle}에 AI 도구 이름이 없다(node tools/build-world-*.mjs로 다시 짓는다)`);
  }
 });
 
