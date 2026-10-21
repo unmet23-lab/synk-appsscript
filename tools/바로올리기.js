@@ -254,6 +254,11 @@ function 꺼낸바이트(c, sha, 경로) {
   return c.git(['cat-file', `--path=${경로}`, '--filters', sha]);
 }
 
+/** 이 경로로 git add 하면 생길 blob의 sha(줄끝 정규화 같은 clean 필터를 거친다). 객체는 쓰지 않는다. */
+function 깨끗한sha(c, 경로, 바이트) {
+  return c.git.글(['hash-object', `--path=${경로}`, '--stdin'], { input: 바이트 });
+}
+
 /**
  * B → T로 옮길 계획. 바탕들: 방금 올린 경로 → 올린 내 판(C의 blob sha 또는 null). 3방향 바탕으로 B 판 대신 쓴다.
  * → {결과:'이미 최신'} | {결과:'멈춤', 걸림[]} | {결과:'계획', B, T, 경로[], 새판[], 고침[]}
@@ -296,8 +301,9 @@ function 따라가기계획(c, B, T, { 바탕들 = new Map() } = {}) {
       continue;
     }
     if (!바탕sha) {
-      // 바탕에 없던 파일이 작업본에 있다(미추적·새 파일)
-      if (th && W.equals(꺼낸바이트(c, th.sha, p))) 고침항(th.sha, '이미 같음');
+      // 바탕에 없던 파일이 작업본에 있다(미추적·새 파일). 줄끝만 다르면(작업본 LF · 체크아웃 CRLF) git add가 만들 blob이
+      // origin 판과 같으니 같은 파일이다 — 백업 뒤 체크아웃 판으로 바뀐다(10-21, 미추적 끝난 작업물을 올렸을 때 공용 작업본이 못 따라가던 일).
+      if (th && (W.equals(꺼낸바이트(c, th.sha, p)) || 깨끗한sha(c, p, W) === th.sha)) 고침항(th.sha, '이미 같음');
       else 걸림.push({ 경로: p, 이유: th ? 'origin이 새로 넣는 파일과 다른 파일이 작업본에 있다' : '바탕에 없는 파일이다' });
       continue;
     }

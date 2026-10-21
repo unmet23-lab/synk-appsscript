@@ -1,0 +1,14 @@
+const fs=require('node:fs'),path=require('node:path');
+const root=path.resolve(__dirname,'../..');
+const uri=(p,m='image/webp')=>`data:${m};base64,${fs.readFileSync(path.join(root,p)).toString('base64')}`;
+let fonts=require('../lib/브랜드폰트.js').면();
+for(const [name,file,weight] of [['Inter Tight','InterTight-500.woff2',500],['Inter Tight','InterTight-700.woff2',700],['DM Mono','DMMono-500.woff2',500]])fonts+=`@font-face{font-family:'${name}';font-weight:${weight};font-display:swap;src:url(${uri('docs/마케팅/맞춤도구/dist/brief/computer/assets/'+file,'font/woff2')}) format('woff2');}`;
+const tokens={FONTS:fonts,COMMON:fs.readFileSync(path.join(root,'docs/디자인/펠트스크랩북/scrapbook.css'),'utf8'),STYLE:fs.readFileSync(path.join(__dirname,'style.css'),'utf8'),CORE:fs.readFileSync(path.join(__dirname,'core.js'),'utf8'),APP:fs.readFileSync(path.join(__dirname,'app.js'),'utf8'),LOGO:uri('docs/마케팅/클라이언트_발주서_20260930/assets/brand-pulse.webp'),CHECK:uri('docs/디자인/펠트부품/assets/ui/badge-check.webp')};
+tokens.STYLE+=`:root{--felt-cream:url('${uri('docs/디자인/펠트부품/assets/ui/slab-cream-long.webp')}');--felt-berry:url('${uri('docs/디자인/펠트부품/assets/ui/slab-blush-long.webp')}');}`;
+let html=fs.readFileSync(path.join(__dirname,'template.html'),'utf8');
+for(const [key,value]of Object.entries(tokens))html=html.replaceAll('@@'+key+'@@',()=>value);
+if(/@@[A-Z]+@@/.test(html))throw Error('Unresolved build token');
+const licenses=['SUIT/LICENSE_OFL.txt','InterTight/OFL.txt','DM_Mono/OFL.txt'].map(p=>fs.readFileSync(path.join(root,'docs/브랜드_폰트',p),'utf8')).join('\n\n');
+html=html.replace('</head>',()=>`<!-- Embedded font licenses\n${licenses}\n--></head>`);
+const dist=path.join(__dirname,'dist');fs.mkdirSync(dist,{recursive:true});
+fs.writeFileSync(path.join(dist,'SYNK_실사영상_제작체크.html'),html);console.log('Built offline film checklist:',Buffer.byteLength(html),'bytes');

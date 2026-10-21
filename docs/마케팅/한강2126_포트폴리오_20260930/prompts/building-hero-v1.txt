@@ -1,0 +1,20 @@
+Create a premium photorealistic architectural film keyframe, vertical 9:16 portrait composition, for SYNK's future-Korea company film. This is a NEW original scene using the supplied images only as references, not a reproduction of the referenced building or ad.
+
+REFERENCE ROLES:
+Image 1 is a MATERIAL IDEA ONLY: a building with visible soft fibers. Use far shorter, finer, denser, carefully cropped fibers than that shaggy pink reference. Do not copy its classical columns, massing, pink color, lettering, people, black frame, or playback controls.
+Image 2 is the approved lowercase "synk" brand wordmark. Faithfully retain this reference logo's distinctive letter contours, raised k and descending y, proportions and spacing, dark neutral felt material without visible stitches. Place it once as modest architectural signage above the entrance, readable, not a new font or an uppercase replacement.
+
+SCENE:
+The year is 2126, an original imagined Han River garden neighborhood in Seoul, South Korea. Expansive beautiful river, real-scale riverside promenade, gentle Korean mountain silhouettes, a few distant exceptionally elegant futuristic buildings and garden walkways, trees and landscaped riverbanks, a very distant small Namsan tower silhouette on a hill if composition permits. Water and sky provide generous breathing room. Futurism is expressed through sophisticated architecture and materials, not crowded neon signs. A dreamlike yet plausible and emotionally inviting place people would want to visit. Do not imitate Chongqing, Hong Kong, or Blade Runner.
+
+HERO SUBJECT:
+A distinctive standalone THREE-STORY SYNK learning academy on a dry riverside plaza, physically grounded, not floating. Show the entire building with enough breathing room, three-quarter view from the promenade. It occupies roughly the middle 65 percent of the image height and is the unmistakable hero. Refined sculptural architecture: clean readable floor divisions, softly rounded corners and elegantly sweeping thin roof edges subtly recalling Korean eaves, comfortable human-scale entrance, large recessed clear-glass windows with visible warm learning spaces. A restrained rooftop garden. The building must look full-scale and usable, not a miniature model, toy, pillow or inflatable.
+
+MOST IMPORTANT MATERIAL:
+The external solid walls, curved edges and roof surfaces are clad in bright white, dense, SHORT-PILE felted merino wool, approximately 15–25 mm of fine cropped fiber pile at architectural scale. Tangible fine fibers must be clearly visible along grazing-lit edges and near facade planes; small fibers catch the sidelight individually, the compressed wool underneath has subtle directional nap and soft contact shadows. This is visibly fuzzy textile cladding, NOT smooth plaster, stucco, concrete, snow, stone, sprayed foam, flat noise, long shag or hanging fur. Uniformly groomed, luxurious, elegant, architectural lines remain crisp. No giant tufts, no bedraggled hair, no feathers. White wool exterior with clear glass and dark window recesses, not beige.
+
+CAMERA / LIGHT:
+High-end architectural cinema, near street-eye-level camera, natural 32 mm lens perspective, no fisheye, mild three-quarter angle so front and side are legible. Just after a summer rain, luminous sky with exceptionally beautiful layered clouds, soft warm oblique sunlight raking the white fibers, fresh silver-blue river reflections, subtly atmospheric distant skyline. Natural exposure and believable materials, no heavy orange filter. A few very small distant pedestrians give scale, no foreground protagonist. Attractive wide stair and accessible entrance path lead toward the academy. Keep the building and river spatially coherent.
+
+OUTPUT:
+One single finished cinematic image, not a collage, no inset, no title, no caption, no watermark, no UI. Highest available visual detail. 9:16 portrait. The only text is the faithfully referenced "synk" logo.

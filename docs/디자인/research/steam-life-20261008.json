@@ -1,0 +1,447 @@
+{
+  "researchDateKst": "2026-10-08",
+  "startedUtc": "2026-10-08T12:38:31.666Z",
+  "completedUtc": "2026-10-08T12:39:44.973Z",
+  "scope": "24 selected living/farming/crafting/community games, including household and online life sims; not exhaustive Steam ranking",
+  "metric": "Steam-purchase all-language lifetime recommendations; off-topic filtering enabled; Wilson lower bound z=1.96; minimum 1000 reviews",
+  "selectionRule": "Selected candidate pool, sort Wilson lower95 descending. Not sales, CCU, all-Steam rank, or causal evidence of feature quality.",
+  "rows": [
+    {
+      "name": "Stardew Valley",
+      "appId": 413150,
+      "url": "https://store.steampowered.com/appreviews/413150?json=1&filter=all&language=all&review_type=all&purchase_type=steam&num_per_page=1&filter_offtopic_activity=1",
+      "storeUrl": "https://store.steampowered.com/app/413150/?l=english",
+      "retrievedUtc": "2026-10-08T12:38:31.947Z",
+      "httpDate": "Thu, 08 Oct 2026 12:38:31 GMT",
+      "querySummary": {
+        "num_reviews": 1,
+        "review_score": 9,
+        "review_score_desc": "Overwhelmingly Positive",
+        "total_positive": 884544,
+        "total_negative": 13251,
+        "total_reviews": 897795
+      },
+      "positiveRatio": 0.9852405059061367,
+      "wilsonLower95": 0.984988976761508
+    },
+    {
+      "name": "Slime Rancher",
+      "appId": 433340,
+      "url": "https://store.steampowered.com/appreviews/433340?json=1&filter=all&language=all&review_type=all&purchase_type=steam&num_per_page=1&filter_offtopic_activity=1",
+      "storeUrl": "https://store.steampowered.com/app/433340/?l=english",
+      "retrievedUtc": "2026-10-08T12:38:32.966Z",
+      "httpDate": "Thu, 08 Oct 2026 12:38:32 GMT",
+      "querySummary": {
+        "num_reviews": 1,
+        "review_score": 9,
+        "review_score_desc": "Overwhelmingly Positive",
+        "total_positive": 137236,
+        "total_negative": 2758,
+        "total_reviews": 139994
+      },
+      "positiveRatio": 0.9802991556781004,
+      "wilsonLower95": 0.9795578806477264
+    },
+    {
+      "name": "Fields of Mistria",
+      "appId": 2142790,
+      "url": "https://store.steampowered.com/appreviews/2142790?json=1&filter=all&language=all&review_type=all&purchase_type=steam&num_per_page=1&filter_offtopic_activity=1",
+      "storeUrl": "https://store.steampowered.com/app/2142790/?l=english",
+      "retrievedUtc": "2026-10-08T12:38:32.040Z",
+      "httpDate": "Thu, 08 Oct 2026 12:38:31 GMT",
+      "querySummary": {
+        "num_reviews": 1,
+        "review_score": 9,
+        "review_score_desc": "Overwhelmingly Positive",
+        "total_positive": 31759,
+        "total_negative": 1013,
+        "total_reviews": 32772
+      },
+      "positiveRatio": 0.9690894666178445,
+      "wilsonLower95": 0.9671599173880124
+    },
+    {
+      "name": "Tiny Bookshop",
+      "appId": 2133760,
+      "url": "https://store.steampowered.com/appreviews/2133760?json=1&filter=all&language=all&review_type=all&purchase_type=steam&num_per_page=1&filter_offtopic_activity=1",
+      "storeUrl": "https://store.steampowered.com/app/2133760/?l=english",
+      "retrievedUtc": "2026-10-08T12:38:32.704Z",
+      "httpDate": "Thu, 08 Oct 2026 12:38:32 GMT",
+      "querySummary": {
+        "num_reviews": 1,
+        "review_score": 9,
+        "review_score_desc": "Overwhelmingly Positive",
+        "total_positive": 6769,
+        "total_negative": 281,
+        "total_reviews": 7050
+      },
+      "positiveRatio": 0.9601418439716312,
+      "wilsonLower95": 0.9553190708182551
+    },
+    {
+      "name": "Spiritfarer",
+      "appId": 972660,
+      "url": "https://store.steampowered.com/appreviews/972660?json=1&filter=all&language=all&review_type=all&purchase_type=steam&num_per_page=1&filter_offtopic_activity=1",
+      "storeUrl": "https://store.steampowered.com/app/972660/?l=english",
+      "retrievedUtc": "2026-10-08T12:38:32.344Z",
+      "httpDate": "Thu, 08 Oct 2026 12:38:32 GMT",
+      "querySummary": {
+        "num_reviews": 1,
+        "review_score": 8,
+        "review_score_desc": "Very Positive",
+        "total_positive": 44887,
+        "total_negative": 2419,
+        "total_reviews": 47306
+      },
+      "positiveRatio": 0.9488648374413393,
+      "wilsonLower95": 0.9468431377521432
+    },
+    {
+      "name": "Slime Rancher 2",
+      "appId": 1657630,
+      "url": "https://store.steampowered.com/appreviews/1657630?json=1&filter=all&language=all&review_type=all&purchase_type=steam&num_per_page=1&filter_offtopic_activity=1",
+      "storeUrl": "https://store.steampowered.com/app/1657630/?l=english",
+      "retrievedUtc": "2026-10-08T12:38:32.953Z",
+      "httpDate": "Thu, 08 Oct 2026 12:38:32 GMT",
+      "querySummary": {
+        "num_reviews": 1,
+        "review_score": 8,
+        "review_score_desc": "Very Positive",
+        "total_positive": 41458,
+        "total_negative": 2427,
+        "total_reviews": 43885
+      },
+      "positiveRatio": 0.9446963655007405,
+      "wilsonLower95": 0.9425186227710092
+    },
+    {
+      "name": "Hello Kitty Island Adventure",
+      "appId": 2495100,
+      "url": "https://store.steampowered.com/appreviews/2495100?json=1&filter=all&language=all&review_type=all&purchase_type=steam&num_per_page=1&filter_offtopic_activity=1",
+      "storeUrl": "https://store.steampowered.com/app/2495100/?l=english",
+      "retrievedUtc": "2026-10-08T12:39:44.902Z",
+      "httpDate": "Thu, 08 Oct 2026 12:39:44 GMT",
+      "querySummary": {
+        "num_reviews": 1,
+        "review_score": 8,
+        "review_score_desc": "Very Positive",
+        "total_positive": 9070,
+        "total_negative": 651,
+        "total_reviews": 9721
+      },
+      "positiveRatio": 0.9330315811130542,
+      "wilsonLower95": 0.9278893890767269
+    },
+    {
+      "name": "Farm Together 2",
+      "appId": 2418520,
+      "url": "https://store.steampowered.com/appreviews/2418520?json=1&filter=all&language=all&review_type=all&purchase_type=steam&num_per_page=1&filter_offtopic_activity=1",
+      "storeUrl": "https://store.steampowered.com/app/2418520/?l=english",
+      "retrievedUtc": "2026-10-08T12:38:32.406Z",
+      "httpDate": "Thu, 08 Oct 2026 12:38:32 GMT",
+      "querySummary": {
+        "num_reviews": 1,
+        "review_score": 8,
+        "review_score_desc": "Very Positive",
+        "total_positive": 4200,
+        "total_negative": 293,
+        "total_reviews": 4493
+      },
+      "positiveRatio": 0.9347874471399955,
+      "wilsonLower95": 0.9271899988979441
+    },
+    {
+      "name": "STORY OF SEASONS: Grand Bazaar",
+      "appId": 2508780,
+      "url": "https://store.steampowered.com/appreviews/2508780?json=1&filter=all&language=all&review_type=all&purchase_type=steam&num_per_page=1&filter_offtopic_activity=1",
+      "storeUrl": "https://store.steampowered.com/app/2508780/?l=english",
+      "retrievedUtc": "2026-10-08T12:38:32.710Z",
+      "httpDate": "Thu, 08 Oct 2026 12:38:32 GMT",
+      "querySummary": {
+        "num_reviews": 1,
+        "review_score": 8,
+        "review_score_desc": "Very Positive",
+        "total_positive": 2965,
+        "total_negative": 202,
+        "total_reviews": 3167
+      },
+      "positiveRatio": 0.9362172402904957,
+      "wilsonLower95": 0.9271666681664207
+    },
+    {
+      "name": "Roots of Pacha",
+      "appId": 1245560,
+      "url": "https://store.steampowered.com/appreviews/1245560?json=1&filter=all&language=all&review_type=all&purchase_type=steam&num_per_page=1&filter_offtopic_activity=1",
+      "storeUrl": "https://store.steampowered.com/app/1245560/?l=english",
+      "retrievedUtc": "2026-10-08T12:38:32.141Z",
+      "httpDate": "Thu, 08 Oct 2026 12:38:32 GMT",
+      "querySummary": {
+        "num_reviews": 1,
+        "review_score": 8,
+        "review_score_desc": "Very Positive",
+        "total_positive": 3539,
+        "total_negative": 252,
+        "total_reviews": 3791
+      },
+      "positiveRatio": 0.9335267739382749,
+      "wilsonLower95": 0.9251499112893343
+    },
+    {
+      "name": "Littlewood",
+      "appId": 894940,
+      "url": "https://store.steampowered.com/appreviews/894940?json=1&filter=all&language=all&review_type=all&purchase_type=steam&num_per_page=1&filter_offtopic_activity=1",
+      "storeUrl": "https://store.steampowered.com/app/894940/?l=english",
+      "retrievedUtc": "2026-10-08T12:38:32.232Z",
+      "httpDate": "Thu, 08 Oct 2026 12:38:32 GMT",
+      "querySummary": {
+        "num_reviews": 1,
+        "review_score": 8,
+        "review_score_desc": "Very Positive",
+        "total_positive": 5664,
+        "total_negative": 421,
+        "total_reviews": 6085
+      },
+      "positiveRatio": 0.9308134757600658,
+      "wilsonLower95": 0.9241615969444721
+    },
+    {
+      "name": "Go-Go Town!",
+      "appId": 2195120,
+      "url": "https://store.steampowered.com/appreviews/2195120?json=1&filter=all&language=all&review_type=all&purchase_type=steam&num_per_page=1&filter_offtopic_activity=1",
+      "storeUrl": "https://store.steampowered.com/app/2195120/?l=english",
+      "retrievedUtc": "2026-10-08T12:38:32.714Z",
+      "httpDate": "Thu, 08 Oct 2026 12:38:32 GMT",
+      "querySummary": {
+        "num_reviews": 1,
+        "review_score": 8,
+        "review_score_desc": "Very Positive",
+        "total_positive": 2333,
+        "total_negative": 169,
+        "total_reviews": 2502
+      },
+      "positiveRatio": 0.9324540367705836,
+      "wilsonLower95": 0.9219423596436664
+    },
+    {
+      "name": "Dinkum",
+      "appId": 1062520,
+      "url": "https://store.steampowered.com/appreviews/1062520?json=1&filter=all&language=all&review_type=all&purchase_type=steam&num_per_page=1&filter_offtopic_activity=1",
+      "storeUrl": "https://store.steampowered.com/app/1062520/?l=english",
+      "retrievedUtc": "2026-10-08T12:38:31.982Z",
+      "httpDate": "Thu, 08 Oct 2026 12:38:31 GMT",
+      "querySummary": {
+        "num_reviews": 1,
+        "review_score": 8,
+        "review_score_desc": "Very Positive",
+        "total_positive": 22787,
+        "total_negative": 1880,
+        "total_reviews": 24667
+      },
+      "positiveRatio": 0.9237848137187336,
+      "wilsonLower95": 0.9204070824632227
+    },
+    {
+      "name": "My Time at Portia",
+      "appId": 666140,
+      "url": "https://store.steampowered.com/appreviews/666140?json=1&filter=all&language=all&review_type=all&purchase_type=steam&num_per_page=1&filter_offtopic_activity=1",
+      "storeUrl": "https://store.steampowered.com/app/666140/?l=english",
+      "retrievedUtc": "2026-10-08T12:38:32.910Z",
+      "httpDate": "Thu, 08 Oct 2026 12:38:32 GMT",
+      "querySummary": {
+        "num_reviews": 1,
+        "review_score": 8,
+        "review_score_desc": "Very Positive",
+        "total_positive": 31883,
+        "total_negative": 2971,
+        "total_reviews": 34854
+      },
+      "positiveRatio": 0.9147587077523384,
+      "wilsonLower95": 0.9117811808776078
+    },
+    {
+      "name": "FANTASY LIFE i",
+      "appId": 2993780,
+      "url": "https://store.steampowered.com/appreviews/2993780?json=1&filter=all&language=all&review_type=all&purchase_type=steam&num_per_page=1&filter_offtopic_activity=1",
+      "storeUrl": "https://store.steampowered.com/app/2993780/?l=english",
+      "retrievedUtc": "2026-10-08T12:38:32.516Z",
+      "httpDate": "Thu, 08 Oct 2026 12:38:32 GMT",
+      "querySummary": {
+        "num_reviews": 1,
+        "review_score": 8,
+        "review_score_desc": "Very Positive",
+        "total_positive": 10750,
+        "total_negative": 1027,
+        "total_reviews": 11777
+      },
+      "positiveRatio": 0.9127961280461917,
+      "wilsonLower95": 0.9075649941238545
+    },
+    {
+      "name": "Paralives",
+      "appId": 1118520,
+      "url": "https://store.steampowered.com/appreviews/1118520?json=1&filter=all&language=all&review_type=all&purchase_type=steam&num_per_page=1&filter_offtopic_activity=1",
+      "storeUrl": "https://store.steampowered.com/app/1118520/?l=english",
+      "retrievedUtc": "2026-10-08T12:38:32.722Z",
+      "httpDate": "Thu, 08 Oct 2026 12:38:32 GMT",
+      "querySummary": {
+        "num_reviews": 1,
+        "review_score": 8,
+        "review_score_desc": "Very Positive",
+        "total_positive": 18227,
+        "total_negative": 2120,
+        "total_reviews": 20347
+      },
+      "positiveRatio": 0.8958077357841451,
+      "wilsonLower95": 0.8915348613386959
+    },
+    {
+      "name": "Coral Island",
+      "appId": 1158160,
+      "url": "https://store.steampowered.com/appreviews/1158160?json=1&filter=all&language=all&review_type=all&purchase_type=steam&num_per_page=1&filter_offtopic_activity=1",
+      "storeUrl": "https://store.steampowered.com/app/1158160/?l=english",
+      "retrievedUtc": "2026-10-08T12:38:32.315Z",
+      "httpDate": "Thu, 08 Oct 2026 12:38:32 GMT",
+      "querySummary": {
+        "num_reviews": 1,
+        "review_score": 8,
+        "review_score_desc": "Very Positive",
+        "total_positive": 19572,
+        "total_negative": 2362,
+        "total_reviews": 21934
+      },
+      "positiveRatio": 0.8923133035470047,
+      "wilsonLower95": 0.8881419991589116
+    },
+    {
+      "name": "Cozy Grove",
+      "appId": 1458100,
+      "url": "https://store.steampowered.com/appreviews/1458100?json=1&filter=all&language=all&review_type=all&purchase_type=steam&num_per_page=1&filter_offtopic_activity=1",
+      "storeUrl": "https://store.steampowered.com/app/1458100/?l=english",
+      "retrievedUtc": "2026-10-08T12:38:32.523Z",
+      "httpDate": "Thu, 08 Oct 2026 12:38:32 GMT",
+      "querySummary": {
+        "num_reviews": 1,
+        "review_score": 8,
+        "review_score_desc": "Very Positive",
+        "total_positive": 6704,
+        "total_negative": 812,
+        "total_reviews": 7516
+      },
+      "positiveRatio": 0.8919638105375199,
+      "wilsonLower95": 0.8847443850334071
+    },
+    {
+      "name": "Palia",
+      "appId": 2707930,
+      "url": "https://store.steampowered.com/appreviews/2707930?json=1&filter=all&language=all&review_type=all&purchase_type=steam&num_per_page=1&filter_offtopic_activity=1",
+      "storeUrl": "https://store.steampowered.com/app/2707930/?l=english",
+      "retrievedUtc": "2026-10-08T12:39:44.904Z",
+      "httpDate": "Thu, 08 Oct 2026 12:39:44 GMT",
+      "querySummary": {
+        "num_reviews": 1,
+        "review_score": 8,
+        "review_score_desc": "Very Positive",
+        "total_positive": 57,
+        "total_negative": 2,
+        "total_reviews": 59
+      },
+      "positiveRatio": 0.9661016949152542,
+      "wilsonLower95": 0.8845621301839242
+    },
+    {
+      "name": "My Time at Sandrock",
+      "appId": 1084600,
+      "url": "https://store.steampowered.com/appreviews/1084600?json=1&filter=all&language=all&review_type=all&purchase_type=steam&num_per_page=1&filter_offtopic_activity=1",
+      "storeUrl": "https://store.steampowered.com/app/1084600/?l=english",
+      "retrievedUtc": "2026-10-08T12:38:32.073Z",
+      "httpDate": "Thu, 08 Oct 2026 12:38:32 GMT",
+      "querySummary": {
+        "num_reviews": 1,
+        "review_score": 8,
+        "review_score_desc": "Very Positive",
+        "total_positive": 21285,
+        "total_negative": 2875,
+        "total_reviews": 24160
+      },
+      "positiveRatio": 0.8810016556291391,
+      "wilsonLower95": 0.8768580804762562
+    },
+    {
+      "name": "Travellers Rest",
+      "appId": 1139980,
+      "url": "https://store.steampowered.com/appreviews/1139980?json=1&filter=all&language=all&review_type=all&purchase_type=steam&num_per_page=1&filter_offtopic_activity=1",
+      "storeUrl": "https://store.steampowered.com/app/1139980/?l=english",
+      "retrievedUtc": "2026-10-08T12:38:32.940Z",
+      "httpDate": "Thu, 08 Oct 2026 12:38:32 GMT",
+      "querySummary": {
+        "num_reviews": 1,
+        "review_score": 8,
+        "review_score_desc": "Very Positive",
+        "total_positive": 14597,
+        "total_negative": 2009,
+        "total_reviews": 16606
+      },
+      "positiveRatio": 0.8790196314585089,
+      "wilsonLower95": 0.8739717848004867
+    },
+    {
+      "name": "The Sims 4",
+      "appId": 1222670,
+      "url": "https://store.steampowered.com/appreviews/1222670?json=1&filter=all&language=all&review_type=all&purchase_type=steam&num_per_page=1&filter_offtopic_activity=1",
+      "storeUrl": "https://store.steampowered.com/app/1222670/?l=english",
+      "retrievedUtc": "2026-10-08T12:39:44.904Z",
+      "httpDate": "Thu, 08 Oct 2026 12:39:44 GMT",
+      "querySummary": {
+        "num_reviews": 1,
+        "review_score": 8,
+        "review_score_desc": "Very Positive",
+        "total_positive": 71190,
+        "total_negative": 12177,
+        "total_reviews": 83367
+      },
+      "positiveRatio": 0.8539350102558566,
+      "wilsonLower95": 0.8515212793809973
+    },
+    {
+      "name": "Sun Haven",
+      "appId": 1432860,
+      "url": "https://store.steampowered.com/appreviews/1432860?json=1&filter=all&language=all&review_type=all&purchase_type=steam&num_per_page=1&filter_offtopic_activity=1",
+      "storeUrl": "https://store.steampowered.com/app/1432860/?l=english",
+      "retrievedUtc": "2026-10-08T12:38:32.530Z",
+      "httpDate": "Thu, 08 Oct 2026 12:38:32 GMT",
+      "querySummary": {
+        "num_reviews": 1,
+        "review_score": 6,
+        "review_score_desc": "Mostly Positive",
+        "total_positive": 17708,
+        "total_negative": 4453,
+        "total_reviews": 22161
+      },
+      "positiveRatio": 0.7990614141961103,
+      "wilsonLower95": 0.7937340464923608
+    },
+    {
+      "name": "inZOI",
+      "appId": 2456740,
+      "url": "https://store.steampowered.com/appreviews/2456740?json=1&filter=all&language=all&review_type=all&purchase_type=steam&num_per_page=1&filter_offtopic_activity=1",
+      "storeUrl": "https://store.steampowered.com/app/2456740/?l=english",
+      "retrievedUtc": "2026-10-08T12:39:44.973Z",
+      "httpDate": "Thu, 08 Oct 2026 12:39:44 GMT",
+      "querySummary": {
+        "num_reviews": 1,
+        "review_score": 6,
+        "review_score_desc": "Mostly Positive",
+        "total_positive": 23565,
+        "total_negative": 6724,
+        "total_reviews": 30289
+      },
+      "positiveRatio": 0.7780052164152003,
+      "wilsonLower95": 0.7732897975540737
+    }
+  ],
+  "errors": [],
+  "notes": [
+    "Sequels are separate Steam products; review rankings are within this candidate pool only.",
+    "Free-to-play and paid games differ in access and audience; review score is not proof of NPC or education quality."
+  ]
+}

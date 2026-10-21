@@ -1,0 +1,1011 @@
+{
+  "verifiedDateKST": "2026-10-01",
+  "scope": "Read-only ffprobe of fourteen original-color cut exports. No source mutation or generation.",
+  "processing": "render_selects_v2.py applies fps30, optional 1.06/1.065 crop, Lanczos1920x1080, BT709 full-to-limited-range conversion, yuv420p H264 CRF13. No creative grade, curves, white balance, skin smoothing or face geometry edit in this script. Not bit-exact raw due transcode/range/crop.",
+  "processingEvidence": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\outputs\\interview_20260925\\work\\render_selects_v2.py",
+  "cutMapEvidence": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\outputs\\interview_20260925\\edit_plan.json",
+  "deliveryWarning": "Existing delivery/양유호_인터뷰_무자막_1080p.mp4 is older than v2, has pc range unlike v2 tv, matches old clean_export.log. original_color clean_export.log/final_color_choice.json absent. picture_v2.mp4 is incomplete/unprobeable. Use verified individual selects_v2 files directly, not the older long delivery.",
+  "angleNames": "Angles describe direction in image, not anatomical left/right.",
+  "entries": [
+    {
+      "id": "01_intro",
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\outputs\\interview_20260925\\studio\\assets\\selects_v2\\01_intro.mp4",
+      "exists": true,
+      "source": "MVI_2548",
+      "sourceInSeconds": 2.9,
+      "sourceOutSeconds": 10.6,
+      "editedTimelineInSeconds": 0.0,
+      "editedTimelineOutSeconds": 7.7,
+      "expectedFrames": 231,
+      "expectedDurationSeconds": 7.7,
+      "crop": 1,
+      "angle": "frontal",
+      "renderFingerprint": {
+        "version": "original-color-pc-to-tv-bt709-20260925-v1",
+        "cut": {
+          "id": "01_intro",
+          "source": "MVI_2548",
+          "in": 2.9,
+          "out": 10.6,
+          "frames": 231,
+          "start": 0.0,
+          "chapter": "INTRO",
+          "label": "양유호 · SYNK",
+          "crop": 1,
+          "mute": false
+        },
+        "source_size": 11550754424,
+        "source_mtime_ns": 1790260246000000000
+      },
+      "bytes": 21066174,
+      "mtime": "2026-09-25T05:49:14.202406",
+      "probeExitCode": 0,
+      "probe": {
+        "programs": [],
+        "stream_groups": [
+          {
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080,
+                "pix_fmt": "yuv420p",
+                "color_range": "tv",
+                "color_space": "bt709",
+                "r_frame_rate": "30/1",
+                "duration": "7.700000",
+                "nb_frames": "231"
+              }
+            ]
+          }
+        ],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv",
+            "color_space": "bt709",
+            "r_frame_rate": "30/1",
+            "duration": "7.700000",
+            "nb_frames": "231"
+          }
+        ],
+        "format": {
+          "duration": "7.700000"
+        }
+      },
+      "probeOK": true
+    },
+    {
+      "id": "02_origin",
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\outputs\\interview_20260925\\studio\\assets\\selects_v2\\02_origin.mp4",
+      "exists": true,
+      "source": "MVI_2549",
+      "sourceInSeconds": 17.55,
+      "sourceOutSeconds": 45.216667,
+      "editedTimelineInSeconds": 7.7,
+      "editedTimelineOutSeconds": 35.366667,
+      "expectedFrames": 830,
+      "expectedDurationSeconds": 27.666666666666668,
+      "crop": 1,
+      "angle": "three-quarter looking screen right",
+      "renderFingerprint": {
+        "version": "original-color-pc-to-tv-bt709-20260925-v1",
+        "cut": {
+          "id": "02_origin",
+          "source": "MVI_2549",
+          "in": 17.55,
+          "out": 45.216667,
+          "frames": 830,
+          "start": 7.7,
+          "chapter": "01",
+          "label": "학생 한 명 한 명을 위한 시작",
+          "crop": 1,
+          "mute": false
+        },
+        "source_size": 1341669740,
+        "source_mtime_ns": 1790261618000000000
+      },
+      "bytes": 62020685,
+      "mtime": "2026-09-25T05:49:58.646661",
+      "probeExitCode": 0,
+      "probe": {
+        "programs": [],
+        "stream_groups": [
+          {
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080,
+                "pix_fmt": "yuv420p",
+                "color_range": "tv",
+                "color_space": "bt709",
+                "r_frame_rate": "30/1",
+                "duration": "27.666667",
+                "nb_frames": "830"
+              }
+            ]
+          }
+        ],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv",
+            "color_space": "bt709",
+            "r_frame_rate": "30/1",
+            "duration": "27.666667",
+            "nb_frames": "830"
+          }
+        ],
+        "format": {
+          "duration": "27.666667"
+        }
+      },
+      "probeOK": true
+    },
+    {
+      "id": "03_start",
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\outputs\\interview_20260925\\studio\\assets\\selects_v2\\03_start.mp4",
+      "exists": true,
+      "source": "MVI_2550",
+      "sourceInSeconds": 99.95,
+      "sourceOutSeconds": 114.916667,
+      "editedTimelineInSeconds": 35.366667,
+      "editedTimelineOutSeconds": 50.333334,
+      "expectedFrames": 449,
+      "expectedDurationSeconds": 14.966666666666667,
+      "crop": 1.065,
+      "angle": "three-quarter looking screen right",
+      "renderFingerprint": {
+        "version": "original-color-pc-to-tv-bt709-20260925-v1",
+        "cut": {
+          "id": "03_start",
+          "source": "MVI_2550",
+          "in": 99.95,
+          "out": 114.916667,
+          "frames": 449,
+          "start": 35.366667,
+          "chapter": "01",
+          "label": "학생 한 명 한 명을 위한 시작",
+          "crop": 1.065,
+          "mute": false
+        },
+        "source_size": 12928886804,
+        "source_mtime_ns": 1790262763000000000
+      },
+      "bytes": 49211903,
+      "mtime": "2026-09-25T05:49:58.760946",
+      "probeExitCode": 0,
+      "probe": {
+        "programs": [],
+        "stream_groups": [
+          {
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080,
+                "pix_fmt": "yuv420p",
+                "color_range": "tv",
+                "color_space": "bt709",
+                "r_frame_rate": "30/1",
+                "duration": "14.966667",
+                "nb_frames": "449"
+              }
+            ]
+          }
+        ],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv",
+            "color_space": "bt709",
+            "r_frame_rate": "30/1",
+            "duration": "14.966667",
+            "nb_frames": "449"
+          }
+        ],
+        "format": {
+          "duration": "14.966667"
+        }
+      },
+      "probeOK": true
+    },
+    {
+      "id": "04_taste",
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\outputs\\interview_20260925\\studio\\assets\\selects_v2\\04_taste.mp4",
+      "exists": true,
+      "source": "MVI_2550",
+      "sourceInSeconds": 201.85,
+      "sourceOutSeconds": 225.45,
+      "editedTimelineInSeconds": 50.333333,
+      "editedTimelineOutSeconds": 73.933333,
+      "expectedFrames": 708,
+      "expectedDurationSeconds": 23.6,
+      "crop": 1,
+      "angle": "three-quarter looking screen right",
+      "renderFingerprint": {
+        "version": "original-color-pc-to-tv-bt709-20260925-v1",
+        "cut": {
+          "id": "04_taste",
+          "source": "MVI_2550",
+          "in": 201.85,
+          "out": 225.45,
+          "frames": 708,
+          "start": 50.333333,
+          "chapter": "02",
+          "label": "각자의 입맛에 맞는 배움",
+          "crop": 1,
+          "mute": false
+        },
+        "source_size": 12928886804,
+        "source_mtime_ns": 1790262763000000000
+      },
+      "bytes": 77172406,
+      "mtime": "2026-09-25T05:51:04.181741",
+      "probeExitCode": 0,
+      "probe": {
+        "programs": [],
+        "stream_groups": [
+          {
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080,
+                "pix_fmt": "yuv420p",
+                "color_range": "tv",
+                "color_space": "bt709",
+                "r_frame_rate": "30/1",
+                "duration": "23.600000",
+                "nb_frames": "708"
+              }
+            ]
+          }
+        ],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv",
+            "color_space": "bt709",
+            "r_frame_rate": "30/1",
+            "duration": "23.600000",
+            "nb_frames": "708"
+          }
+        ],
+        "format": {
+          "duration": "23.600000"
+        }
+      },
+      "probeOK": true
+    },
+    {
+      "id": "05_personal",
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\outputs\\interview_20260925\\studio\\assets\\selects_v2\\05_personal.mp4",
+      "exists": true,
+      "source": "MVI_2548",
+      "sourceInSeconds": 277.9,
+      "sourceOutSeconds": 297.2,
+      "editedTimelineInSeconds": 73.933333,
+      "editedTimelineOutSeconds": 93.233333,
+      "expectedFrames": 579,
+      "expectedDurationSeconds": 19.3,
+      "crop": 1,
+      "angle": "frontal",
+      "renderFingerprint": {
+        "version": "original-color-pc-to-tv-bt709-20260925-v1",
+        "cut": {
+          "id": "05_personal",
+          "source": "MVI_2548",
+          "in": 277.9,
+          "out": 297.2,
+          "frames": 579,
+          "start": 73.933333,
+          "chapter": "02",
+          "label": "각자의 입맛에 맞는 배움",
+          "crop": 1,
+          "mute": false
+        },
+        "source_size": 11550754424,
+        "source_mtime_ns": 1790260246000000000
+      },
+      "bytes": 52994297,
+      "mtime": "2026-09-25T05:50:56.486870",
+      "probeExitCode": 0,
+      "probe": {
+        "programs": [],
+        "stream_groups": [
+          {
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080,
+                "pix_fmt": "yuv420p",
+                "color_range": "tv",
+                "color_space": "bt709",
+                "r_frame_rate": "30/1",
+                "duration": "19.300000",
+                "nb_frames": "579"
+              }
+            ]
+          }
+        ],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv",
+            "color_space": "bt709",
+            "r_frame_rate": "30/1",
+            "duration": "19.300000",
+            "nb_frames": "579"
+          }
+        ],
+        "format": {
+          "duration": "19.300000"
+        }
+      },
+      "probeOK": true
+    },
+    {
+      "id": "06_experience",
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\outputs\\interview_20260925\\studio\\assets\\selects_v2\\06_experience.mp4",
+      "exists": true,
+      "source": "MVI_2548",
+      "sourceInSeconds": 312.9,
+      "sourceOutSeconds": 337.266667,
+      "editedTimelineInSeconds": 93.233333,
+      "editedTimelineOutSeconds": 117.6,
+      "expectedFrames": 731,
+      "expectedDurationSeconds": 24.366666666666667,
+      "crop": 1.06,
+      "angle": "frontal",
+      "renderFingerprint": {
+        "version": "original-color-pc-to-tv-bt709-20260925-v1",
+        "cut": {
+          "id": "06_experience",
+          "source": "MVI_2548",
+          "in": 312.9,
+          "out": 337.266667,
+          "frames": 731,
+          "start": 93.233333,
+          "chapter": "02",
+          "label": "각자의 입맛에 맞는 배움",
+          "crop": 1.06,
+          "mute": false
+        },
+        "source_size": 11550754424,
+        "source_mtime_ns": 1790260246000000000
+      },
+      "bytes": 67211850,
+      "mtime": "2026-09-25T05:51:58.838176",
+      "probeExitCode": 0,
+      "probe": {
+        "programs": [],
+        "stream_groups": [
+          {
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080,
+                "pix_fmt": "yuv420p",
+                "color_range": "tv",
+                "color_space": "bt709",
+                "r_frame_rate": "30/1",
+                "duration": "24.366667",
+                "nb_frames": "731"
+              }
+            ]
+          }
+        ],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv",
+            "color_space": "bt709",
+            "r_frame_rate": "30/1",
+            "duration": "24.366667",
+            "nb_frames": "731"
+          }
+        ],
+        "format": {
+          "duration": "24.366667"
+        }
+      },
+      "probeOK": true
+    },
+    {
+      "id": "07_smile",
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\outputs\\interview_20260925\\studio\\assets\\selects_v2\\07_smile.mp4",
+      "exists": true,
+      "source": "MVI_2548",
+      "sourceInSeconds": 348.85,
+      "sourceOutSeconds": 360.95,
+      "editedTimelineInSeconds": 117.6,
+      "editedTimelineOutSeconds": 129.7,
+      "expectedFrames": 363,
+      "expectedDurationSeconds": 12.1,
+      "crop": 1,
+      "angle": "frontal",
+      "renderFingerprint": {
+        "version": "original-color-pc-to-tv-bt709-20260925-v1",
+        "cut": {
+          "id": "07_smile",
+          "source": "MVI_2548",
+          "in": 348.85,
+          "out": 360.95,
+          "frames": 363,
+          "start": 117.6,
+          "chapter": "02",
+          "label": "각자의 입맛에 맞는 배움",
+          "crop": 1,
+          "mute": false
+        },
+        "source_size": 11550754424,
+        "source_mtime_ns": 1790260246000000000
+      },
+      "bytes": 32976919,
+      "mtime": "2026-09-25T05:51:33.428348",
+      "probeExitCode": 0,
+      "probe": {
+        "programs": [],
+        "stream_groups": [
+          {
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080,
+                "pix_fmt": "yuv420p",
+                "color_range": "tv",
+                "color_space": "bt709",
+                "r_frame_rate": "30/1",
+                "duration": "12.100000",
+                "nb_frames": "363"
+              }
+            ]
+          }
+        ],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv",
+            "color_space": "bt709",
+            "r_frame_rate": "30/1",
+            "duration": "12.100000",
+            "nb_frames": "363"
+          }
+        ],
+        "format": {
+          "duration": "12.100000"
+        }
+      },
+      "probeOK": true
+    },
+    {
+      "id": "08_time",
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\outputs\\interview_20260925\\studio\\assets\\selects_v2\\08_time.mp4",
+      "exists": true,
+      "source": "MVI_2548",
+      "sourceInSeconds": 465.25,
+      "sourceOutSeconds": 482.55,
+      "editedTimelineInSeconds": 129.7,
+      "editedTimelineOutSeconds": 147.0,
+      "expectedFrames": 519,
+      "expectedDurationSeconds": 17.3,
+      "crop": 1.06,
+      "angle": "frontal",
+      "renderFingerprint": {
+        "version": "original-color-pc-to-tv-bt709-20260925-v1",
+        "cut": {
+          "id": "08_time",
+          "source": "MVI_2548",
+          "in": 465.25,
+          "out": 482.55,
+          "frames": 519,
+          "start": 129.7,
+          "chapter": "03",
+          "label": "기술이 만들어 줄 시간",
+          "crop": 1.06,
+          "mute": false
+        },
+        "source_size": 11550754424,
+        "source_mtime_ns": 1790260246000000000
+      },
+      "bytes": 48069127,
+      "mtime": "2026-09-25T05:52:19.336757",
+      "probeExitCode": 0,
+      "probe": {
+        "programs": [],
+        "stream_groups": [
+          {
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080,
+                "pix_fmt": "yuv420p",
+                "color_range": "tv",
+                "color_space": "bt709",
+                "r_frame_rate": "30/1",
+                "duration": "17.300000",
+                "nb_frames": "519"
+              }
+            ]
+          }
+        ],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv",
+            "color_space": "bt709",
+            "r_frame_rate": "30/1",
+            "duration": "17.300000",
+            "nb_frames": "519"
+          }
+        ],
+        "format": {
+          "duration": "17.300000"
+        }
+      },
+      "probeOK": true
+    },
+    {
+      "id": "08b_ai",
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\outputs\\interview_20260925\\studio\\assets\\selects_v2\\08b_ai.mp4",
+      "exists": true,
+      "source": "MVI_2548",
+      "sourceInSeconds": 605.95,
+      "sourceOutSeconds": 620.083333,
+      "editedTimelineInSeconds": 147.0,
+      "editedTimelineOutSeconds": 161.133333,
+      "expectedFrames": 424,
+      "expectedDurationSeconds": 14.133333333333333,
+      "crop": 1,
+      "angle": "frontal",
+      "renderFingerprint": {
+        "version": "original-color-pc-to-tv-bt709-20260925-v1",
+        "cut": {
+          "id": "08b_ai",
+          "source": "MVI_2548",
+          "in": 605.95,
+          "out": 620.083333,
+          "frames": 424,
+          "start": 147.0,
+          "chapter": "03",
+          "label": "기술이 만들어 줄 시간",
+          "crop": 1,
+          "mute": false
+        },
+        "source_size": 11550754424,
+        "source_mtime_ns": 1790260246000000000
+      },
+      "bytes": 38427114,
+      "mtime": "2026-09-25T05:52:39.731387",
+      "probeExitCode": 0,
+      "probe": {
+        "programs": [],
+        "stream_groups": [
+          {
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080,
+                "pix_fmt": "yuv420p",
+                "color_range": "tv",
+                "color_space": "bt709",
+                "r_frame_rate": "30/1",
+                "duration": "14.133333",
+                "nb_frames": "424"
+              }
+            ]
+          }
+        ],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv",
+            "color_space": "bt709",
+            "r_frame_rate": "30/1",
+            "duration": "14.133333",
+            "nb_frames": "424"
+          }
+        ],
+        "format": {
+          "duration": "14.133333"
+        }
+      },
+      "probeOK": true
+    },
+    {
+      "id": "09_values",
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\outputs\\interview_20260925\\studio\\assets\\selects_v2\\09_values.mp4",
+      "exists": true,
+      "source": "MVI_2550",
+      "sourceInSeconds": 565.55,
+      "sourceOutSeconds": 589.916667,
+      "editedTimelineInSeconds": 161.133333,
+      "editedTimelineOutSeconds": 185.5,
+      "expectedFrames": 731,
+      "expectedDurationSeconds": 24.366666666666667,
+      "crop": 1,
+      "angle": "three-quarter looking screen right",
+      "renderFingerprint": {
+        "version": "original-color-pc-to-tv-bt709-20260925-v1",
+        "cut": {
+          "id": "09_values",
+          "source": "MVI_2550",
+          "in": 565.55,
+          "out": 589.916667,
+          "frames": 731,
+          "start": 161.133333,
+          "chapter": "03",
+          "label": "기술이 만들어 줄 시간",
+          "crop": 1,
+          "mute": false
+        },
+        "source_size": 12928886804,
+        "source_mtime_ns": 1790262763000000000
+      },
+      "bytes": 81131125,
+      "mtime": "2026-09-25T05:53:28.947010",
+      "probeExitCode": 0,
+      "probe": {
+        "programs": [],
+        "stream_groups": [
+          {
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080,
+                "pix_fmt": "yuv420p",
+                "color_range": "tv",
+                "color_space": "bt709",
+                "r_frame_rate": "30/1",
+                "duration": "24.366667",
+                "nb_frames": "731"
+              }
+            ]
+          }
+        ],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv",
+            "color_space": "bt709",
+            "r_frame_rate": "30/1",
+            "duration": "24.366667",
+            "nb_frames": "731"
+          }
+        ],
+        "format": {
+          "duration": "24.366667"
+        }
+      },
+      "probeOK": true
+    },
+    {
+      "id": "10_experience",
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\outputs\\interview_20260925\\studio\\assets\\selects_v2\\10_experience.mp4",
+      "exists": true,
+      "source": "MVI_2550",
+      "sourceInSeconds": 964.8,
+      "sourceOutSeconds": 982.666667,
+      "editedTimelineInSeconds": 185.5,
+      "editedTimelineOutSeconds": 203.366667,
+      "expectedFrames": 536,
+      "expectedDurationSeconds": 17.866666666666667,
+      "crop": 1.065,
+      "angle": "three-quarter looking screen right",
+      "renderFingerprint": {
+        "version": "original-color-pc-to-tv-bt709-20260925-v1",
+        "cut": {
+          "id": "10_experience",
+          "source": "MVI_2550",
+          "in": 964.8,
+          "out": 982.666667,
+          "frames": 536,
+          "start": 185.5,
+          "chapter": "04",
+          "label": "생각하고, 경험하고, 함께",
+          "crop": 1.065,
+          "mute": false
+        },
+        "source_size": 12928886804,
+        "source_mtime_ns": 1790262763000000000
+      },
+      "bytes": 59165481,
+      "mtime": "2026-09-25T05:53:30.772828",
+      "probeExitCode": 0,
+      "probe": {
+        "programs": [],
+        "stream_groups": [
+          {
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080,
+                "pix_fmt": "yuv420p",
+                "color_range": "tv",
+                "color_space": "bt709",
+                "r_frame_rate": "30/1",
+                "duration": "17.866667",
+                "nb_frames": "536"
+              }
+            ]
+          }
+        ],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv",
+            "color_space": "bt709",
+            "r_frame_rate": "30/1",
+            "duration": "17.866667",
+            "nb_frames": "536"
+          }
+        ],
+        "format": {
+          "duration": "17.866667"
+        }
+      },
+      "probeOK": true
+    },
+    {
+      "id": "11_future",
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\outputs\\interview_20260925\\studio\\assets\\selects_v2\\11_future.mp4",
+      "exists": true,
+      "source": "MVI_2547",
+      "sourceInSeconds": 648.45,
+      "sourceOutSeconds": 664.95,
+      "editedTimelineInSeconds": 203.366667,
+      "editedTimelineOutSeconds": 219.866667,
+      "expectedFrames": 495,
+      "expectedDurationSeconds": 16.5,
+      "crop": 1,
+      "angle": "three-quarter looking screen left",
+      "renderFingerprint": {
+        "version": "original-color-pc-to-tv-bt709-20260925-v1",
+        "cut": {
+          "id": "11_future",
+          "source": "MVI_2547",
+          "in": 648.45,
+          "out": 664.95,
+          "frames": 495,
+          "start": 203.366667,
+          "chapter": "04",
+          "label": "생각하고, 경험하고, 함께",
+          "crop": 1,
+          "mute": false
+        },
+        "source_size": 8180378492,
+        "source_mtime_ns": 1790259123000000000
+      },
+      "bytes": 32171553,
+      "mtime": "2026-09-25T05:53:57.021328",
+      "probeExitCode": 0,
+      "probe": {
+        "programs": [],
+        "stream_groups": [
+          {
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080,
+                "pix_fmt": "yuv420p",
+                "color_range": "tv",
+                "color_space": "bt709",
+                "r_frame_rate": "30/1",
+                "duration": "16.500000",
+                "nb_frames": "495"
+              }
+            ]
+          }
+        ],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv",
+            "color_space": "bt709",
+            "r_frame_rate": "30/1",
+            "duration": "16.500000",
+            "nb_frames": "495"
+          }
+        ],
+        "format": {
+          "duration": "16.500000"
+        }
+      },
+      "probeOK": true
+    },
+    {
+      "id": "12_thanks",
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\outputs\\interview_20260925\\studio\\assets\\selects_v2\\12_thanks.mp4",
+      "exists": true,
+      "source": "MVI_2548",
+      "sourceInSeconds": 992.85,
+      "sourceOutSeconds": 999.75,
+      "editedTimelineInSeconds": 219.866667,
+      "editedTimelineOutSeconds": 226.766667,
+      "expectedFrames": 207,
+      "expectedDurationSeconds": 6.9,
+      "crop": 1,
+      "angle": "frontal",
+      "renderFingerprint": {
+        "version": "original-color-pc-to-tv-bt709-20260925-v1",
+        "cut": {
+          "id": "12_thanks",
+          "source": "MVI_2548",
+          "in": 992.85,
+          "out": 999.75,
+          "frames": 207,
+          "start": 219.866667,
+          "chapter": "END",
+          "label": "SYNK · 양유호",
+          "crop": 1,
+          "mute": false
+        },
+        "source_size": 11550754424,
+        "source_mtime_ns": 1790260246000000000
+      },
+      "bytes": 18788164,
+      "mtime": "2026-09-25T05:53:43.710977",
+      "probeExitCode": 0,
+      "probe": {
+        "programs": [],
+        "stream_groups": [
+          {
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080,
+                "pix_fmt": "yuv420p",
+                "color_range": "tv",
+                "color_space": "bt709",
+                "r_frame_rate": "30/1",
+                "duration": "6.900000",
+                "nb_frames": "207"
+              }
+            ]
+          }
+        ],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv",
+            "color_space": "bt709",
+            "r_frame_rate": "30/1",
+            "duration": "6.900000",
+            "nb_frames": "207"
+          }
+        ],
+        "format": {
+          "duration": "6.900000"
+        }
+      },
+      "probeOK": true
+    },
+    {
+      "id": "13_hold",
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\outputs\\interview_20260925\\studio\\assets\\selects_v2\\13_hold.mp4",
+      "exists": true,
+      "source": "MVI_2548",
+      "sourceInSeconds": 999.75,
+      "sourceOutSeconds": 1003.15,
+      "editedTimelineInSeconds": 226.766667,
+      "editedTimelineOutSeconds": 230.166667,
+      "expectedFrames": 102,
+      "expectedDurationSeconds": 3.4,
+      "crop": 1,
+      "angle": "frontal",
+      "renderFingerprint": {
+        "version": "original-color-pc-to-tv-bt709-20260925-v1",
+        "cut": {
+          "id": "13_hold",
+          "source": "MVI_2548",
+          "in": 999.75,
+          "out": 1003.15,
+          "frames": 102,
+          "start": 226.766667,
+          "chapter": "END",
+          "label": "SYNK · 양유호",
+          "crop": 1,
+          "mute": true
+        },
+        "source_size": 11550754424,
+        "source_mtime_ns": 1790260246000000000
+      },
+      "bytes": 6662816,
+      "mtime": "2026-09-25T05:53:52.052410",
+      "probeExitCode": 0,
+      "probe": {
+        "programs": [],
+        "stream_groups": [
+          {
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080,
+                "pix_fmt": "yuv420p",
+                "color_range": "tv",
+                "color_space": "bt709",
+                "r_frame_rate": "30/1",
+                "duration": "3.400000",
+                "nb_frames": "102"
+              }
+            ]
+          }
+        ],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "pix_fmt": "yuv420p",
+            "color_range": "tv",
+            "color_space": "bt709",
+            "r_frame_rate": "30/1",
+            "duration": "3.400000",
+            "nb_frames": "102"
+          }
+        ],
+        "format": {
+          "duration": "3.400000"
+        }
+      },
+      "probeOK": true
+    }
+  ],
+  "deliveryFirstDecodedFrameEvidence": {
+    "method": "FFmpeg first decoded video frame SHA256, no output files; 2026-10-01",
+    "deliveryAndOldSelect01": "160af4f00268d8d4e884929257a1d30c538442ad84901c20374fa17241a59ba0",
+    "originalColorSelectV2_01": "af7b82ed323ae981f52fe06aa4c2d98d21fdcfd7c0e85e966d46665a1fdc97cd",
+    "conclusion": "Delivery first frame is pixel-identical to old graded selects/01_intro.mp4 and differs from selects_v2/01_intro.mp4. This supports the older graded assembly lineage; not an all-frame equivalence claim."
+  }
+}

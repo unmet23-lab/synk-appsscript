@@ -544,6 +544,31 @@ test('따라가기: origin이 새로 넣는 경로에 다른 미추적 파일이
   assert.equal(워.읽기('a.txt'), '내 위\n1\n', '바탕 판으로 돌렸던 내 고침을 되돌려 놓는다');
 });
 
+test('따라가기: origin이 새로 넣는 경로의 미추적 파일이 줄끝만 다르면(작업본 LF · 체크아웃 CRLF) 같은 파일로 보고 백업 뒤 체크아웃 판으로 바꾼다', async (t) => {
+  const 판 = 새판(t, { 파일: { 'a.txt': '1\n' }, autocrlf: 'true' });
+  const 워 = 판.워크트리('wt');
+  워.쓰기('qa/README.md', '# 기록\n- 하나\n');             // 미추적 LF — 체크아웃 판은 CRLF다
+  워.쓰기('다른.md', '내 판\n');
+  const O1 = 판.남push({ 'qa/README.md': '# 기록\n- 하나\n' });
+  const r = await 도구.따라가기({ 저장소: 워.폴더, 실행: true });
+  assert.equal(r.결과, '따라감', JSON.stringify(r));
+  assert.equal(워.머리(), O1);
+  assert.deepEqual(r.고침, [{ 경로: 'qa/README.md', 방법: '이미 같음' }]);
+  assert.equal(워.읽기('qa/README.md'), '# 기록\r\n- 하나\r\n', '체크아웃 판으로 바뀐다');
+  assert.deepEqual(워.상태(), ['?? 다른.md'], '추적 파일이 되고 남은 차이가 없다');
+  const 목록 = JSON.parse(fs.readFileSync(path.join(r.백업, '목록.json'), 'utf8'));
+  assert.equal(fs.readFileSync(path.join(r.백업, '파일', 목록.경로[0].파일), 'utf8'), '# 기록\n- 하나\n', '바꾸기 전 바이트는 백업에 있다');
+  // 줄끝 말고 내용이 다르면 여전히 멈춘다
+  워.쓰기('다른.md', '내 판\n');
+  판.남push({ '다른.md': '원격 판\n' });
+  const B = 워.머리();
+  const r2 = await 도구.따라가기({ 저장소: 워.폴더, 실행: true });
+  assert.equal(r2.결과, '멈춤', JSON.stringify(r2));
+  assert.equal(r2.걸림[0].경로, '다른.md');
+  assert.equal(워.머리(), B);
+  assert.equal(워.읽기('다른.md'), '내 판\n');
+});
+
 test('워크트리: 조각으로 일부만 올리면 남은 내 고침은 올린 판을 바탕으로 3방향 — 붙어 있는 코드 줄도 따라간다', async (t) => {
   const 바탕글 = 'const a1 = 1;\nconst a2 = 2;\nconst a3 = 3;\nconst a4 = 4;\n';
   const 판 = 새판(t, { 파일: { 'tools/x.js': 바탕글 } });

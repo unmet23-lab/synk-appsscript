@@ -1,0 +1,860 @@
+{
+"source": "외래어 표기법 표 17·제3장 제19절 보기(국립국어원 어문 규범, 2026-10-12)",
+"examples": [
+{
+"w": "Abreu",
+"h": "아브레우",
+"br": false
+},
+{
+"w": "Cabral",
+"h": "카브랄",
+"br": false
+},
+{
+"w": "Francisco",
+"h": "프란시스쿠",
+"br": false
+},
+{
+"w": "saraça",
+"h": "사라사",
+"br": false
+},
+{
+"w": "Eça",
+"h": "에사",
+"br": false
+},
+{
+"w": "Chaves",
+"h": "샤베스",
+"br": false
+},
+{
+"w": "Espichel",
+"h": "이스피셸",
+"br": false
+},
+{
+"w": "escudo",
+"h": "이스쿠두",
+"br": false
+},
+{
+"w": "Bernardim",
+"h": "베르나르딩",
+"br": false
+},
+{
+"w": "Dias",
+"h": "지아스",
+"br": true
+},
+{
+"w": "fado",
+"h": "파두",
+"br": false
+},
+{
+"w": "Figo",
+"h": "피구",
+"br": false
+},
+{
+"w": "Saramago",
+"h": "사라마구",
+"br": false
+},
+{
+"w": "Jorge",
+"h": "조르즈",
+"br": false
+},
+{
+"w": "Portalegre",
+"h": "포르탈레그르",
+"br": false
+},
+{
+"w": "Guerra",
+"h": "게하",
+"br": false
+},
+{
+"w": "Henrique",
+"h": "엔히크",
+"br": false
+},
+{
+"w": "hostia",
+"h": "오스티아",
+"br": false
+},
+{
+"w": "Aljezur",
+"h": "알제주르",
+"br": false
+},
+{
+"w": "panja",
+"h": "판자",
+"br": false
+},
+{
+"w": "Lisboa",
+"h": "리스보아",
+"br": false
+},
+{
+"w": "Manuel",
+"h": "마누엘",
+"br": false
+},
+{
+"w": "Melo",
+"h": "멜루",
+"br": false
+},
+{
+"w": "Salvador",
+"h": "사우바도르",
+"br": true
+},
+{
+"w": "Coelho",
+"h": "코엘류",
+"br": false
+},
+{
+"w": "Batalha",
+"h": "바탈랴",
+"br": false
+},
+{
+"w": "Moniz",
+"h": "모니스",
+"br": false
+},
+{
+"w": "Humberto",
+"h": "움베르투",
+"br": false
+},
+{
+"w": "Camocim",
+"h": "카모싱",
+"br": false
+},
+{
+"w": "Natal",
+"h": "나탈",
+"br": false
+},
+{
+"w": "António",
+"h": "안토니우",
+"br": false
+},
+{
+"w": "Angola",
+"h": "앙골라",
+"br": false
+},
+{
+"w": "Rondon",
+"h": "혼동",
+"br": false
+},
+{
+"w": "Marinha",
+"h": "마리냐",
+"br": false
+},
+{
+"w": "Matosinhos",
+"h": "마토지뉴스",
+"br": false
+},
+{
+"w": "Pedroso",
+"h": "페드로주",
+"br": false
+},
+{
+"w": "Lopes",
+"h": "로페스",
+"br": false
+},
+{
+"w": "Prado",
+"h": "프라두",
+"br": false
+},
+{
+"w": "Aquilino",
+"h": "아킬리누",
+"br": false
+},
+{
+"w": "Junqueiro",
+"h": "중케이루",
+"br": false
+},
+{
+"w": "Freire",
+"h": "프레이르",
+"br": false
+},
+{
+"w": "Rodrigues",
+"h": "호드리게스",
+"br": false
+},
+{
+"w": "Cardoso",
+"h": "카르도주",
+"br": false
+},
+{
+"w": "Salazar",
+"h": "살라자르",
+"br": false
+},
+{
+"w": "Barroso",
+"h": "바호주",
+"br": false
+},
+{
+"w": "Egas",
+"h": "에가스",
+"br": false
+},
+{
+"w": "mesmo",
+"h": "메즈무",
+"br": false
+},
+{
+"w": "Tavira",
+"h": "타비라",
+"br": false
+},
+{
+"w": "Garrett",
+"h": "가헤트",
+"br": false
+},
+{
+"w": "Aracati",
+"h": "아라카치",
+"br": true
+},
+{
+"w": "Vicente",
+"h": "비센트",
+"br": false
+},
+{
+"w": "Oliveira",
+"h": "올리베이라",
+"br": false
+},
+{
+"w": "Xira",
+"h": "시라",
+"br": false
+},
+{
+"w": "exame",
+"h": "이자므",
+"br": false
+},
+{
+"w": "exportar",
+"h": "이스포르타르",
+"br": false
+},
+{
+"w": "Diaz",
+"h": "디아스",
+"br": false
+},
+{
+"w": "Almeida",
+"h": "알메이다",
+"br": false
+},
+{
+"w": "Egas",
+"h": "에가스",
+"br": false
+},
+{
+"w": "Elvas",
+"h": "엘바스",
+"br": false
+},
+{
+"w": "escudo",
+"h": "이스쿠두",
+"br": false
+},
+{
+"w": "Mangualde",
+"h": "망구알드",
+"br": false
+},
+{
+"w": "Belmonte",
+"h": "베우몬치",
+"br": true
+},
+{
+"w": "Amalia",
+"h": "아말리아",
+"br": false
+},
+{
+"w": "Vitorino",
+"h": "비토리누",
+"br": false
+},
+{
+"w": "Odemira",
+"h": "오데미라",
+"br": false
+},
+{
+"w": "Melo",
+"h": "멜루",
+"br": false
+},
+{
+"w": "Passos",
+"h": "파수스",
+"br": false
+},
+{
+"w": "Manuel",
+"h": "마누엘",
+"br": false
+},
+{
+"w": "Guterres",
+"h": "구테흐스",
+"br": false
+},
+{
+"w": "Sampaio",
+"h": "삼파이우",
+"br": false
+},
+{
+"w": "Cascais",
+"h": "카스카이스",
+"br": false
+},
+{
+"w": "Bauru",
+"h": "바우루",
+"br": false
+},
+{
+"w": "São Paulo",
+"h": "상파울루",
+"br": false
+},
+{
+"w": "Guimarães",
+"h": "기마랑이스",
+"br": false
+},
+{
+"w": "Magalhães",
+"h": "마갈량이스",
+"br": false
+},
+{
+"w": "Durão",
+"h": "두랑",
+"br": false
+},
+{
+"w": "Fundão",
+"h": "푼당",
+"br": false
+},
+{
+"w": "Ribeiro",
+"h": "히베이루",
+"br": false
+},
+{
+"w": "Oliveira",
+"h": "올리베이라",
+"br": false
+},
+{
+"w": "Abreu",
+"h": "아브레우",
+"br": false
+},
+{
+"w": "Eusebio",
+"h": "에우제비우",
+"br": false
+},
+{
+"w": "Aeminium",
+"h": "아에미니웅",
+"br": false
+},
+{
+"w": "Ituiutaba",
+"h": "이투이우타바",
+"br": false
+},
+{
+"w": "Coimbra",
+"h": "코임브라",
+"br": false
+},
+{
+"w": "Goiás",
+"h": "고이아스",
+"br": false
+},
+{
+"w": "Lousã",
+"h": "로장",
+"br": false
+},
+{
+"w": "Mogadouro",
+"h": "모가도루",
+"br": false
+},
+{
+"w": "Camões",
+"h": "카몽이스",
+"br": false
+},
+{
+"w": "Pilões",
+"h": "필롱이스",
+"br": false
+},
+{
+"w": "Luis",
+"h": "루이스",
+"br": false
+},
+{
+"w": "Cuiabá",
+"h": "쿠이아바",
+"br": false
+},
+{
+"w": "Cabral",
+"h": "카브랄",
+"br": false
+},
+{
+"w": "Camocim",
+"h": "카모싱",
+"br": false
+},
+{
+"w": "Egas",
+"h": "에가스",
+"br": false
+},
+{
+"w": "Gil",
+"h": "질",
+"br": false
+},
+{
+"w": "Iguaçú",
+"h": "이구아수",
+"br": false
+},
+{
+"w": "Araquari",
+"h": "아라쿠아리",
+"br": false
+},
+{
+"w": "Guerra",
+"h": "게하",
+"br": false
+},
+{
+"w": "Aquilino",
+"h": "아킬리누",
+"br": false
+},
+{
+"w": "Amado",
+"h": "아마두",
+"br": false
+},
+{
+"w": "Costa",
+"h": "코스타",
+"br": false
+},
+{
+"w": "Diamantina",
+"h": "디아만티나",
+"br": false
+},
+{
+"w": "Diamantina",
+"h": "지아만치나",
+"br": true
+},
+{
+"w": "Alegrete",
+"h": "알레그레트",
+"br": false
+},
+{
+"w": "Alegrete",
+"h": "알레그레치",
+"br": true
+},
+{
+"w": "Montes",
+"h": "몬트스",
+"br": false
+},
+{
+"w": "Montes",
+"h": "몬치스",
+"br": true
+},
+{
+"w": "Angoche",
+"h": "앙고시",
+"br": false
+},
+{
+"w": "Peniche",
+"h": "페니시",
+"br": false
+},
+{
+"w": "Carlos",
+"h": "카를루스",
+"br": false
+},
+{
+"w": "Amalia",
+"h": "아말리아",
+"br": false
+},
+{
+"w": "Sul",
+"h": "술",
+"br": false
+},
+{
+"w": "Azul",
+"h": "아줄",
+"br": false
+},
+{
+"w": "Gilberto",
+"h": "질베르투",
+"br": false
+},
+{
+"w": "Gilberto",
+"h": "지우베르투",
+"br": true
+},
+{
+"w": "Caracol",
+"h": "카라콜",
+"br": false
+},
+{
+"w": "Caracol",
+"h": "카라코우",
+"br": true
+},
+{
+"w": "Manuel",
+"h": "마누엘",
+"br": false
+},
+{
+"w": "Moniz",
+"h": "모니스",
+"br": false
+},
+{
+"w": "Campos",
+"h": "캄푸스",
+"br": false
+},
+{
+"w": "Vincente",
+"h": "빈센트",
+"br": false
+},
+{
+"w": "Rondon",
+"h": "혼동",
+"br": false
+},
+{
+"w": "Lins",
+"h": "링스",
+"br": false
+},
+{
+"w": "Rubens",
+"h": "후벵스",
+"br": false
+},
+{
+"w": "Angola",
+"h": "앙골라",
+"br": false
+},
+{
+"w": "Angelo",
+"h": "안젤루",
+"br": false
+},
+{
+"w": "Branco",
+"h": "브랑쿠",
+"br": false
+},
+{
+"w": "Francisco",
+"h": "프란시스쿠",
+"br": false
+},
+{
+"w": "Conquista",
+"h": "콩키스타",
+"br": false
+},
+{
+"w": "Junqueiro",
+"h": "중케이루",
+"br": false
+},
+{
+"w": "Ribeiro",
+"h": "히베이루",
+"br": false
+},
+{
+"w": "Henrique",
+"h": "엔히크",
+"br": false
+},
+{
+"w": "Bandeira",
+"h": "반데이라",
+"br": false
+},
+{
+"w": "Salazar",
+"h": "살라자르",
+"br": false
+},
+{
+"w": "Salazar",
+"h": "살라자르",
+"br": false
+},
+{
+"w": "Afonso",
+"h": "아폰수",
+"br": false
+},
+{
+"w": "Barroso",
+"h": "바호주",
+"br": false
+},
+{
+"w": "Gervasio",
+"h": "제르바지우",
+"br": false
+},
+{
+"w": "Fresco",
+"h": "프레스쿠",
+"br": false
+},
+{
+"w": "Soares",
+"h": "소아르스",
+"br": false
+},
+{
+"w": "mesmo",
+"h": "메즈무",
+"br": false
+},
+{
+"w": "Nascimento",
+"h": "나시멘투",
+"br": false
+},
+{
+"w": "piscina",
+"h": "피시나",
+"br": false
+},
+{
+"w": "excelente",
+"h": "이셀렌트",
+"br": false
+},
+{
+"w": "cresça",
+"h": "크레사",
+"br": false
+},
+{
+"w": "Teixeira",
+"h": "테이셰이라",
+"br": false
+},
+{
+"w": "lixo",
+"h": "리슈",
+"br": false
+},
+{
+"w": "exame",
+"h": "이자므",
+"br": false
+},
+{
+"w": "exemplo",
+"h": "이젬플루",
+"br": false
+},
+{
+"w": "Garrett",
+"h": "가헤트",
+"br": false
+},
+{
+"w": "Barroso",
+"h": "바호주",
+"br": false
+},
+{
+"w": "Mattoso",
+"h": "마토주",
+"br": false
+},
+{
+"w": "Toress",
+"h": "토레스",
+"br": false
+},
+{
+"w": "Nobre",
+"h": "노브르",
+"br": false
+},
+{
+"w": "António",
+"h": "안토니우",
+"br": false
+},
+{
+"w": "Melo",
+"h": "멜루",
+"br": false
+},
+{
+"w": "Saramago",
+"h": "사라마구",
+"br": false
+},
+{
+"w": "Passos",
+"h": "파수스",
+"br": false
+},
+{
+"w": "Lagos",
+"h": "라구스",
+"br": false
+},
+{
+"w": "Montemayor",
+"h": "몬테마요르",
+"br": false
+},
+{
+"w": "Estremoz",
+"h": "이스트레모스",
+"br": false
+},
+{
+"w": "Chifre",
+"h": "시프르",
+"br": false
+},
+{
+"w": "Chifre",
+"h": "시프리",
+"br": true
+},
+{
+"w": "Lopes",
+"h": "로페스",
+"br": false
+},
+{
+"w": "Gomes",
+"h": "고메스",
+"br": false
+},
+{
+"w": "Neves",
+"h": "네베스",
+"br": false
+},
+{
+"w": "Chaves",
+"h": "샤베스",
+"br": false
+},
+{
+"w": "Soares",
+"h": "소아르스",
+"br": false
+},
+{
+"w": "Pires",
+"h": "피르스",
+"br": false
+},
+{
+"w": "Dorneles",
+"h": "도르넬리스",
+"br": true
+},
+{
+"w": "Correntes",
+"h": "코헨치스",
+"br": true
+}
+]
+}

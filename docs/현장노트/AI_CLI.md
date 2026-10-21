@@ -448,6 +448,12 @@
 - 고침: 거절이 하나라도 있으면 그대로 실패다. status가 `ERROR`여도 완료 표식(이때만 처음 세 줄 안)이 있고 Docs를 다시 읽은 SHA가 표식과 같으면 `complete`로 치고, 상태 파일에 `cliStatus`·`cliError`, 회차 영수증에 `cliStatus`만 남긴다. 「변경 없음」 표식이나 표식 없는 `ERROR`는 실패다. `SUCCESS` 회차의 「표식은 첫 줄」 규칙은 그대로 뒀다(`f5d67fd1f`, 서버 반영 10-20 13:32 KST, README 「2026-10-20」).
 - 다시 확인: 실패 회차가 진짜 미전달인지는 그 역할 다음 회차 영수증(`run-status/history/ROLE-*.json`)의 `baselineSha256`과, 그 회차 stream 끝 `result.response`의 표식 SHA를 대조해 본다. 로그는 매일 회전하니 하루 지난 회차는 `logs/ROLE.stream.jsonl.1`에 있고, 영수증의 `offset`은 그 파일 기준이다(회차 시작 시각이 `.1` 파일의 수정 시각보다 이르면 `.1`). 읽기 도구는 `.tmp/standby-backup-fix-20261020/read-argon-delivery.cjs`, 오프라인 시험은 `python3 tools/argon-schedules/run-check-test.py` 17개(이 PC와 서버 python 양쪽 통과). full 10-20 05:00·meta-brand 11:00은 고치기 전 판에서도 `complete`였다.
 
+### apply_patch 기록에서 경로를 줄바꿈 기호까지 잘라 찾으면 패치를 거의 다 놓친다 (2026-10-21 Claude)
+- 증상: 10-21 공용 작업본 미추적 파일의 주인을 가릴 때 `*** Add File: ` 뒤를 `\n`까지 잘라 경로로 찾았더니 기록 187개·29만 줄에서 패치가 0건, 한 번 고쳐도 4건이었다.
+- 원인: 패치 본문이 도구 인자 JSON 안의 문자열이라, 줄바꿈이 `\n`으로 남는 줄과 `\\n`(역슬래시 둘 + n)으로 남는 줄이 섞여 있다. 경로 뒤에 붙는 꼴이 줄마다 달라 자르는 자리가 어긋난다.
+- 고침: 줄에서 역슬래시 묶음을 모두 `/`로 바꾼 뒤, 저장소 경로 머리(`docs/`·`tools/`·`experiences/` …)에서 시작해 찾는 경로들의 길이로 잘라 목록과 맞췄다. 바로 다음 글자가 이름에 이어지는 글자면 버린다(긴 이름의 앞부분). 패치 53개 파일과 경로 언급 1,329개가 나왔다. 상대 경로 패치는 세션 `cwd`가 그 작업본일 때만 센다. 스크립트는 공유 노트 `미추적판정_20261021/codex_scan.cjs`.
+- 다시 확인: `grep -c 'Add File: ' ~/.codex/archived_sessions/rollout-2026-10-17T14-50-39-*.jsonl`(10-21에 94)과, 그 줄들에서 `\n` 기준으로 자른 경로가 실제 파일과 맞는 수를 견준다.
+
 ## Claude Code·공식 CLI 읽기(계정판)
 
 ### 데스크톱 앱 계정과 `~/.claude` 로그인 파일의 계정이 다르다 (2026-10-20 Claude)

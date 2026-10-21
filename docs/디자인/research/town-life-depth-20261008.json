@@ -1,0 +1,305 @@
+{
+  "schemaVersion": 1,
+  "taskStartedLocalDate": "2026-10-08",
+  "reviewLocalDate": "2026-10-09",
+  "timezone": "Asia/Seoul",
+  "scope": "Detailed design manuscripts and cross-document consistency; no new runtime execution",
+  "status": "detailed-design-reviewed-not-runtime-validated",
+  "entryDocument": "docs/디자인/싱크타운_생활재미와_성장콘텐츠_설계_20261008.md#living-detail",
+  "priorBoundedReview": "docs/디자인/research/town-design-readiness-20261008.json",
+  "priority": [
+    "생활 자체의 재미",
+    "플레이어의 선택과 숙련에 맞는 실제 NPC 행동",
+    "검증 가능한 한국어 수행과 학습 연결"
+  ],
+  "requirements": [
+    {
+      "id": "resident-continuity",
+      "need": "주민별 바람과 관계, 실제 기여에 근거한 기억과 보답",
+      "evidence": [
+        "싱크타운_주민관계와_연속생활_원고.md#cast",
+        "싱크타운_주민관계와_연속생활_원고.md#goals",
+        "싱크타운_주민관계와_연속생활_원고.md#pairs",
+        "싱크타운_주민관계와_연속생활_원고.md#returns",
+        "싱크타운_주민관계와_연속생활_원고.md#legacy"
+      ],
+      "result": "주민 3명과 연속 방문객 1명, 세 이야기 각 4회차, 주민쌍 장면과 보답, 기본 일과를 작성. 목격/전달/현재 사용과 과거 기여를 구분."
+    },
+    {
+      "id": "revisit-depth",
+      "need": "반복 방문의 다른 생활, 유한 원고와 익숙한 생활의 편성",
+      "evidence": [
+        "싱크타운_재방문_콘텐츠와_원고.md#continued-stories",
+        "싱크타운_재방문_콘텐츠와_원고.md#life-connections",
+        "싱크타운_재방문_콘텐츠와_원고.md#pacing",
+        "싱크타운_재방문_콘텐츠와_원고.md#static-rehearsal"
+      ],
+      "result": "기존 9편에 후속 15편을 더해 취향별 8편, 혼합 24편. 후보 최대 3개와 거절 지속, 현재 사실과 선행 조건, 5/10/30세션의 책상 리허설을 작성."
+    },
+    {
+      "id": "actual-support-scripts",
+      "need": "10가지 생활에서 지원 요청과 생활 숙련에 따라 실제 대사와 동작이 달라짐",
+      "evidence": [
+        "싱크타운_10대생활콘텐츠_제작설계_20261008.md#scene-support-scripts",
+        "싱크타운_NPC자율생활_설계_20261008.md#level-actions"
+      ],
+      "result": "각 생활의 7상황을 작성. 짧은 한국어로 전체 기획, 넓은 한국어로 시범 요청 모두 가능. 지원과 역할을 분리하고 관람/거절의 동일한 생활 권리를 보존."
+    },
+    {
+      "id": "first-play-execution-contract",
+      "need": "첫 집과 골목의 물건·동선·원고·입력·확정·중단·권한·저장 이관",
+      "evidence": [
+        "싱크타운_첫플레이_실행설계.md#space",
+        "싱크타운_첫플레이_실행설계.md#home-script",
+        "싱크타운_첫플레이_실행설계.md#input-table",
+        "싱크타운_첫플레이_실행설계.md#commands",
+        "싱크타운_첫플레이_실행설계.md#account-state",
+        "싱크타운_첫플레이_실행설계.md#migration",
+        "싱크타운_첫플레이_실행설계.md#walkthrough"
+      ],
+      "result": "H00.01~06과 FT10/51 연결, 입력 10턴, 계정 상태별 동작, 기존 저장을 덮어쓰지 않는 이관, FP01~12 예상 결과를 작성. 제안 명령/API 필드를 현행 코드와 구분."
+    },
+    {
+      "id": "repeatable-request-lifecycle",
+      "need": "생활 의뢰의 발급부터 실제 산출·인도·정산·재발급까지 연결",
+      "evidence": [
+        "싱크타운_생활경제와_상품_설계.md#repeat-orders",
+        "싱크타운_생활경제와_상품_설계.md#RQ01",
+        "싱크타운_생활경제와_상품_설계.md#RQ02",
+        "싱크타운_생활경제와_상품_설계.md#RQ03",
+        "싱크타운_생활경제와_상품_설계.md#RQ04"
+      ],
+      "result": "메뉴·관찰·제작·주민 돕기 4종과 각 2개 변주. 실제 수요/소유/준비분/취소/재전송을 구분. 같은 실제 사건의 FT/LS/RV 참조는 이야기 준비분을 공유."
+    },
+    {
+      "id": "performance-manuscripts",
+      "need": "공연 구조를 실제 이야기·가사·곡·지원 원고로 채움",
+      "evidence": [
+        "싱크타운_공연과_생활학습_설계_20261008.md#P01-support-script",
+        "싱크타운_공연과_생활학습_설계_20261008.md#M01-script",
+        "싱크타운_공연과_생활학습_설계_20261008.md#M01-score",
+        "싱크타운_공연과_생활학습_설계_20261008.md#M01-cue"
+      ],
+      "result": "P01 네 지원판, M01 전체 이야기·두 결말·창작 가사·곡 구성·신호 실행과 기여 조건 작성. 작곡 초안은 음원/실연 결과가 아님."
+    },
+    {
+      "id": "all-ten-preserved",
+      "need": "첨부한 열 생활 구조를 모두 우리 방식으로 연결",
+      "evidence": [
+        "싱크타운_10대생활콘텐츠_제작설계_20261008.md#map",
+        "싱크타운_메인콘텐츠_구현준비.md#all-ten-implementation",
+        "싱크타운_재방문_콘텐츠와_원고.md#life-connections"
+      ],
+      "result": "T01~T10 유지. 농사·판매·집 초대·말하기를 의무화하지 않고 같은 생활을 마칠 대안을 보존. 기존 Steam 조사 범위를 확대하거나 새 순위를 주장하지 않음."
+    }
+  ],
+  "counts": {
+    "fixedResidents": 3,
+    "recurringVisitor": 1,
+    "coreEpisodes": {
+      "total": 12,
+      "reusedFirstLifeEpisodes": 3,
+      "newSequels": 9
+    },
+    "npcPairScenes": 3,
+    "returnHelpFunctions": {
+      "total": 2,
+      "alreadyIncludedInCoreEpisodes": true
+    },
+    "backgroundActionPatterns": 6,
+    "legacyEntryScenes": 3,
+    "legacyArcsMapped": {
+      "total": 11,
+      "fullNewScriptsWritten": false
+    },
+    "revisitManuscripts": {
+      "total": 24,
+      "previous": 9,
+      "new": 15,
+      "perPreference": 8
+    },
+    "supportScripts": {
+      "activities": 10,
+      "situationsEach": 7,
+      "situationRows": 70
+    },
+    "repeatRequests": {
+      "templates": 4,
+      "variantsEach": 2,
+      "variantsAreNewStories": false
+    },
+    "P01Support": {
+      "boundaries": 8,
+      "supportVersions": 4
+    },
+    "M01": {
+      "lyricLines": 16,
+      "syllablesPerLine": 8,
+      "bars": 48,
+      "renderedAudioExistsFromThisWork": false
+    }
+  },
+  "countPolicy": "대안 대사·지원·반복 관람·재사용 보답은 새 이야기 수에 더하지 않는다. 동일 실제 사건을 여러 문서에서 참조하면 한 번만 센다. 원고 수는 구현 수가 아니다.",
+  "staticRehearsal": {
+    "mixed": {
+      "at5New": 4,
+      "at10New": 8,
+      "at30New": 24,
+      "at30Familiar": 6
+    },
+    "singlePreference": {
+      "at5New": 4,
+      "at10New": 7,
+      "at30New": 8,
+      "at30Familiar": 22
+    },
+    "economicExample": {
+      "initialCoins": 20,
+      "finalCoins": 32,
+      "netCoins": 12,
+      "settlementSlotsUsed": 4
+    },
+    "meaning": "원고·선행·산식의 정적 대조이며 실제 30회 이용이나 재미 평가가 아니다."
+  },
+  "correctedCases": [
+    "T05와 RETURN의 제안자는 본인이 실제로 아는 원인 사건만 회상한다.",
+    "FT30 표본/그림과 PAIR02 한 장/비교의 기억을 분리했다.",
+    "LS01.2의 동시/순차, LS02.4의 자리/소개/메뉴 기여, LS03.4의 기획/위임/관람을 분리했다.",
+    "M01은 실제 소리 또는 조명 효과만 기여로 기록하고 공유 cue 대행과 플레이어 실행을 배타 처리한다.",
+    "기본 쉼터 의자 1개, 활동 시험 의자 대여, 공연 전용 좌석의 소유/예약을 구분했다.",
+    "LS02.2는 차 1잔과 물 1잔으로 확정하고 LS/RV의 이야기 준비분을 실제 사건별 단일 배정으로 연결했다.",
+    "LS03 전시 안내는 FT10/51 완료 없이 NPC 기본 안내판으로 완결한다.",
+    "RV14/24는 미리보기에서 물건을 이동하지 않고 최종 확인 뒤 적용한다.",
+    "RV10의 기존 인지와 RV11의 실제 관람 이력을 현재 설정과 분리했다.",
+    "RV21/22는 실제 꽃이 있을 때만 꽃을 말하고 기본 잎 대상도 완결 가능하다.",
+    "거절한 같은 회차는 새 세션에도 자동 재권유하지 않으며 다른 NPC/접점으로 우회하지 않는다.",
+    "서로 다른 실제 수요·입력·수령 몫이면 같은 RQ 템플릿 3개를 예약할 수 있게 기존 경제 예시와 일치시켰다.",
+    "학습 입장 권한 unknown을 fail로 취급하지 않고 확인 대기와 기록 보존으로 구분했다.",
+    "현행 CHOOSE 즉시 지급과 PLACE 사용 사실 확정을 새 수락/실행/관람 계약의 구현 차이로 명시했다."
+  ],
+  "review": {
+    "method": "각 담당자가 원고를 작성하고 다른 담당자의 실제 문서를 독립 대조. 주 담당자가 분기별 대사, 자원 수량, 권한, 코드 경계와 수정 결과를 재확인.",
+    "independentScopes": [
+      "첫 플레이·주민 관계·RV12/RV17·생활 카드와 공연의 비품/동의/기억 연결",
+      "RV10~24의 현재 대상·NPC 인지·거절 지속·30세션 수량과 RQ01~04의 소유·정산·재발급",
+      "기존 Town core 및 teacher-world bridge의 명령·완료·계정 경계와 제안 설계의 차이"
+    ],
+    "result": "검토한 범위에서 확인된 충돌을 수정하고 재대조했다. 발견하지 못한 결함이 없음을 보증하지 않는다.",
+    "runtimeTestsExecutedThisPhase": false,
+    "newRuntimeImplemented": false,
+    "assetsOrAudioGenerated": false,
+    "deployed": false,
+    "studentEffectsMeasured": false
+  },
+  "remaining": [
+    "명세를 장면 데이터·NPC 실행·권한·실제 저장/재전송/예약 처리로 구현하고 첫 연결 구간에서 확인",
+    "동작·미술·음악/음성·현지화의 제작과 실제 기기 표시/성능/접근성 검증",
+    "첫 방문과 반복/복귀 플레이에서 원인 이해·자율성·방해·반복 피로를 관찰해 대사/편성/수치를 수정",
+    "출시 포함 원고·가격/청구·운영 편성은 실제 제작 범위로 확정; 공유 마을의 기존 반 이동/활성 반 정의는 해당 단계에서 완료",
+    "TOPIK 연습 범위 검수와 학생 학습효과를 별도 자료·평가로 확인"
+  ],
+  "structureValidation": {
+    "type": "static-document-structure-only",
+    "generatedAt": "2026-10-08T15:18:44.079Z",
+    "documents": [
+      {
+        "file": "docs/디자인/싱크타운_생활재미와_성장콘텐츠_설계_20261008.md",
+        "lines": 418,
+        "links": 53,
+        "tables": 19,
+        "explicitAnchors": 13,
+        "sha256": "097747a8aa2b40da23027fe00e3eb0d3ffe8f2ac3b2f8c1afb6465ebc96bb5c4"
+      },
+      {
+        "file": "docs/디자인/싱크타운_10대생활콘텐츠_제작설계_20261008.md",
+        "lines": 513,
+        "links": 8,
+        "tables": 13,
+        "explicitAnchors": 25,
+        "sha256": "b355c49d2a7a15950e4bb6a938b448e79bd577c1dec2dee9ee3fd58a893adf41"
+      },
+      {
+        "file": "docs/디자인/싱크타운_NPC자율생활_설계_20261008.md",
+        "lines": 358,
+        "links": 18,
+        "tables": 14,
+        "explicitAnchors": 5,
+        "sha256": "ee4766bd7b4ba62486b6f5c0c3c0562fea16e22838c31b24034994e407221e89"
+      },
+      {
+        "file": "docs/디자인/싱크타운_공연과_생활학습_설계_20261008.md",
+        "lines": 509,
+        "links": 7,
+        "tables": 17,
+        "explicitAnchors": 13,
+        "sha256": "418743d34abb3ccc1cb18eead6094a3076aa542a3de6068b681186a276ac9d51"
+      },
+      {
+        "file": "docs/디자인/싱크타운_메인콘텐츠_구현준비.md",
+        "lines": 275,
+        "links": 53,
+        "tables": 13,
+        "explicitAnchors": 14,
+        "sha256": "9e39ac1dcca8e011b25b534143cc95904d8e888e58523f81c139cad07a5434ee"
+      },
+      {
+        "file": "docs/디자인/싱크타운_재방문_콘텐츠와_원고.md",
+        "lines": 601,
+        "links": 10,
+        "tables": 31,
+        "explicitAnchors": 35,
+        "sha256": "2ad269066f49cdda314cd50e4b9a6aaaf095833986df997051eb6fe2a33a0a01"
+      },
+      {
+        "file": "docs/디자인/싱크타운_생활경제와_상품_설계.md",
+        "lines": 455,
+        "links": 14,
+        "tables": 18,
+        "explicitAnchors": 18,
+        "sha256": "ab001bf2aacb77ff5e2ad11b14072412fca7f87768d2e84fe9ec39bc8ce1fa9c"
+      },
+      {
+        "file": "docs/디자인/싱크타운_주민관계와_연속생활_원고.md",
+        "lines": 389,
+        "links": 9,
+        "tables": 19,
+        "explicitAnchors": 23,
+        "sha256": "0f646f8096ab0d07e0e8b0de128c854f505fc1e9d9a13318a2324b47bb32ae45"
+      },
+      {
+        "file": "docs/디자인/싱크타운_첫플레이_실행설계.md",
+        "lines": 142,
+        "links": 8,
+        "tables": 7,
+        "explicitAnchors": 7,
+        "sha256": "926abc438345fd8e48ff6cc33043bae1f8d3829fee0c2bc1417558c4905fedea"
+      }
+    ],
+    "totals": {
+      "documents": 9,
+      "localLinks": 180,
+      "tables": 151,
+      "explicitAnchors": 153
+    },
+    "errors": [],
+    "evidenceRefs": 30,
+    "navigationRefs": 8,
+    "supportSituationRows": {
+      "support-T01": 7,
+      "support-T02": 7,
+      "support-T03": 7,
+      "support-T04": 7,
+      "support-T05": 7,
+      "support-T06": 7,
+      "support-T07": 7,
+      "support-T08": 7,
+      "support-T09": 7,
+      "support-T10": 7
+    },
+    "uniqueRV": 24,
+    "uniqueRQ": 4,
+    "scopedTrackedDiffWhitespaceCheck": "passed; untracked Markdown checked through document parser",
+    "limitations": "Links, anchors, table structure and counts only; not a proof of all semantics or user experience."
+  },
+  "reviewedAt": "2026-10-08T15:20:23.609Z"
+}

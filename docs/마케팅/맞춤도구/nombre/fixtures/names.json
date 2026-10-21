@@ -1,0 +1,1517 @@
+{
+"source": "docs/마케팅/맞춤도구/nombre/탐색노트.md — 국립국어원 외래어 표기 용례 조사(2026-10-12)",
+"es": [
+{
+"name": "Santiago",
+"rule": "산티아고",
+"usage": "산티아고"
+},
+{
+"name": "Mateo",
+"rule": "마테오",
+"usage": "마테오"
+},
+{
+"name": "Sebastián",
+"rule": "세바스티안",
+"usage": "세바스티안"
+},
+{
+"name": "Leonardo",
+"rule": "레오나르도",
+"usage": ""
+},
+{
+"name": "Matías",
+"rule": "마티아스",
+"usage": ""
+},
+{
+"name": "Emiliano",
+"rule": "에밀리아노",
+"usage": "에밀리아노"
+},
+{
+"name": "Diego",
+"rule": "디에고",
+"usage": "디에고"
+},
+{
+"name": "Miguel",
+"rule": "미겔",
+"usage": "미겔"
+},
+{
+"name": "Ángel",
+"rule": "앙헬",
+"usage": "앙헬"
+},
+{
+"name": "Daniel",
+"rule": "다니엘",
+"usage": "다니엘"
+},
+{
+"name": "Alejandro",
+"rule": "알레한드로",
+"usage": "알레한드로"
+},
+{
+"name": "Gael",
+"rule": "가엘",
+"usage": ""
+},
+{
+"name": "Rodrigo",
+"rule": "로드리고",
+"usage": "로드리고"
+},
+{
+"name": "Iker",
+"rule": "이케르",
+"usage": "이케르"
+},
+{
+"name": "Thiago",
+"rule": "티아고",
+"usage": ""
+},
+{
+"name": "Tadeo",
+"rule": "타데오",
+"usage": ""
+},
+{
+"name": "Maximiliano",
+"rule": "막시밀리아노",
+"usage": ""
+},
+{
+"name": "Luis",
+"rule": "루이스",
+"usage": "루이스"
+},
+{
+"name": "José",
+"rule": "호세",
+"usage": "호세"
+},
+{
+"name": "Juan",
+"rule": "후안",
+"usage": "후안"
+},
+{
+"name": "Carlos",
+"rule": "카를로스",
+"usage": "카를로스"
+},
+{
+"name": "Jesús",
+"rule": "헤수스",
+"usage": "헤수스"
+},
+{
+"name": "Fernando",
+"rule": "페르난도",
+"usage": "페르난도"
+},
+{
+"name": "Jorge",
+"rule": "호르헤",
+"usage": "호르헤"
+},
+{
+"name": "Ricardo",
+"rule": "리카르도",
+"usage": "리카르도"
+},
+{
+"name": "Eduardo",
+"rule": "에두아르도",
+"usage": "에두아르도"
+},
+{
+"name": "Francisco",
+"rule": "프란시스코",
+"usage": "프란시스코"
+},
+{
+"name": "Javier",
+"rule": "하비에르",
+"usage": "하비에르"
+},
+{
+"name": "Antonio",
+"rule": "안토니오",
+"usage": "안토니오"
+},
+{
+"name": "Manuel",
+"rule": "마누엘",
+"usage": "마누엘"
+},
+{
+"name": "Pedro",
+"rule": "페드로",
+"usage": "페드로"
+},
+{
+"name": "Pablo",
+"rule": "파블로",
+"usage": "파블로"
+},
+{
+"name": "Rafael",
+"rule": "라파엘",
+"usage": "라파엘"
+},
+{
+"name": "Roberto",
+"rule": "로베르토",
+"usage": "로베르토"
+},
+{
+"name": "Andrés",
+"rule": "안드레스",
+"usage": "안드레스"
+},
+{
+"name": "Gabriel",
+"rule": "가브리엘",
+"usage": "가브리엘"
+},
+{
+"name": "Hugo",
+"rule": "우고",
+"usage": "우고"
+},
+{
+"name": "Adrián",
+"rule": "아드리안",
+"usage": "아드리안"
+},
+{
+"name": "Iván",
+"rule": "이반",
+"usage": "이반"
+},
+{
+"name": "Joaquín",
+"rule": "호아킨",
+"usage": "호아킨"
+},
+{
+"name": "Julián",
+"rule": "훌리안",
+"usage": ""
+},
+{
+"name": "Nicolás",
+"rule": "니콜라스",
+"usage": "니콜라스"
+},
+{
+"name": "Emilio",
+"rule": "에밀리오",
+"usage": "에밀리오"
+},
+{
+"name": "Enrique",
+"rule": "엔리케",
+"usage": "엔리케"
+},
+{
+"name": "Arturo",
+"rule": "아르투로",
+"usage": "아르투로"
+},
+{
+"name": "Alberto",
+"rule": "알베르토",
+"usage": "알베르토"
+},
+{
+"name": "Héctor",
+"rule": "엑토르",
+"usage": "엑토르"
+},
+{
+"name": "Raúl",
+"rule": "라울",
+"usage": "라울"
+},
+{
+"name": "Sergio",
+"rule": "세르히오",
+"usage": "세르히오"
+},
+{
+"name": "Óscar",
+"rule": "오스카르",
+"usage": "오스카르"
+},
+{
+"name": "Mario",
+"rule": "마리오",
+"usage": "마리오"
+},
+{
+"name": "Víctor",
+"rule": "빅토르",
+"usage": "빅토르"
+},
+{
+"name": "Ramón",
+"rule": "라몬",
+"usage": "라몬"
+},
+{
+"name": "Guillermo",
+"rule": "기예르모",
+"usage": "기예르모"
+},
+{
+"name": "Gerardo",
+"rule": "헤라르도",
+"usage": "헤라르도"
+},
+{
+"name": "Alfonso",
+"rule": "알폰소",
+"usage": "알폰소"
+},
+{
+"name": "Ignacio",
+"rule": "이그나시오",
+"usage": ""
+},
+{
+"name": "Gonzalo",
+"rule": "곤살로",
+"usage": "곤살로"
+},
+{
+"name": "Felipe",
+"rule": "펠리페",
+"usage": "펠리페"
+},
+{
+"name": "Cristian",
+"rule": "크리스티안",
+"usage": "크리스티안"
+},
+{
+"name": "Sofía",
+"rule": "소피아",
+"usage": "소피아"
+},
+{
+"name": "Valentina",
+"rule": "발렌티나",
+"usage": ""
+},
+{
+"name": "Regina",
+"rule": "레히나",
+"usage": ""
+},
+{
+"name": "María",
+"rule": "마리아",
+"usage": "마리아"
+},
+{
+"name": "Ximena",
+"rule": "시메나",
+"usage": ""
+},
+{
+"name": "Jimena",
+"rule": "히메나",
+"usage": ""
+},
+{
+"name": "Camila",
+"rule": "카밀라",
+"usage": ""
+},
+{
+"name": "Fernanda",
+"rule": "페르난다",
+"usage": "페르난다"
+},
+{
+"name": "Valeria",
+"rule": "발레리아",
+"usage": ""
+},
+{
+"name": "Victoria",
+"rule": "빅토리아",
+"usage": "빅토리아"
+},
+{
+"name": "Renata",
+"rule": "레나타",
+"usage": ""
+},
+{
+"name": "Romina",
+"rule": "로미나",
+"usage": ""
+},
+{
+"name": "Natalia",
+"rule": "나탈리아",
+"usage": ""
+},
+{
+"name": "Daniela",
+"rule": "다니엘라",
+"usage": ""
+},
+{
+"name": "Isabella",
+"rule": "이사베야",
+"usage": ""
+},
+{
+"name": "Mariana",
+"rule": "마리아나",
+"usage": ""
+},
+{
+"name": "Andrea",
+"rule": "안드레아",
+"usage": ""
+},
+{
+"name": "Paula",
+"rule": "파울라",
+"usage": ""
+},
+{
+"name": "Lucía",
+"rule": "루시아",
+"usage": ""
+},
+{
+"name": "Emilia",
+"rule": "에밀리아",
+"usage": "에밀리아"
+},
+{
+"name": "Julieta",
+"rule": "훌리에타",
+"usage": ""
+},
+{
+"name": "Sara",
+"rule": "사라",
+"usage": ""
+},
+{
+"name": "Ana",
+"rule": "아나",
+"usage": "아나"
+},
+{
+"name": "Guadalupe",
+"rule": "과달루페",
+"usage": "과달루페"
+},
+{
+"name": "Gabriela",
+"rule": "가브리엘라",
+"usage": "가브리엘라"
+},
+{
+"name": "Alejandra",
+"rule": "알레한드라",
+"usage": ""
+},
+{
+"name": "Patricia",
+"rule": "파트리시아",
+"usage": "파트리시아"
+},
+{
+"name": "Rosa",
+"rule": "로사",
+"usage": "로사"
+},
+{
+"name": "Carmen",
+"rule": "카르멘",
+"usage": "카르멘"
+},
+{
+"name": "Elena",
+"rule": "엘레나",
+"usage": "엘레나"
+},
+{
+"name": "Isabel",
+"rule": "이사벨",
+"usage": "이사벨"
+},
+{
+"name": "Teresa",
+"rule": "테레사",
+"usage": "테레사"
+},
+{
+"name": "Adriana",
+"rule": "아드리아나",
+"usage": ""
+},
+{
+"name": "Mónica",
+"rule": "모니카",
+"usage": ""
+},
+{
+"name": "Verónica",
+"rule": "베로니카",
+"usage": ""
+},
+{
+"name": "Claudia",
+"rule": "클라우디아",
+"usage": "클라우디아"
+},
+{
+"name": "Leticia",
+"rule": "레티시아",
+"usage": ""
+},
+{
+"name": "Luisa",
+"rule": "루이사",
+"usage": "루이사"
+},
+{
+"name": "Montserrat",
+"rule": "몬트세라트",
+"usage": "몬세라트"
+},
+{
+"name": "Paola",
+"rule": "파올라",
+"usage": ""
+},
+{
+"name": "Karla",
+"rule": "카를라",
+"usage": ""
+},
+{
+"name": "Diana",
+"rule": "디아나",
+"usage": ""
+},
+{
+"name": "Alicia",
+"rule": "알리시아",
+"usage": "알리시아"
+},
+{
+"name": "Beatriz",
+"rule": "베아트리스",
+"usage": ""
+},
+{
+"name": "Margarita",
+"rule": "마르가리타",
+"usage": "마르가리타"
+},
+{
+"name": "Silvia",
+"rule": "실비아",
+"usage": ""
+},
+{
+"name": "Lorena",
+"rule": "로레나",
+"usage": ""
+},
+{
+"name": "Laura",
+"rule": "라우라",
+"usage": "라우라"
+},
+{
+"name": "Carolina",
+"rule": "카롤리나",
+"usage": ""
+},
+{
+"name": "Dulce",
+"rule": "둘세",
+"usage": ""
+},
+{
+"name": "Itzel",
+"rule": "이트셀",
+"usage": ""
+},
+{
+"name": "Abril",
+"rule": "아브릴",
+"usage": ""
+},
+{
+"name": "Fátima",
+"rule": "파티마",
+"usage": ""
+},
+{
+"name": "Luciana",
+"rule": "루시아나",
+"usage": ""
+},
+{
+"name": "Josefina",
+"rule": "호세피나",
+"usage": "호세피나"
+},
+{
+"name": "Inés",
+"rule": "이네스",
+"usage": ""
+},
+{
+"name": "Pilar",
+"rule": "필라르",
+"usage": ""
+},
+{
+"name": "Raquel",
+"rule": "라켈",
+"usage": ""
+},
+{
+"name": "Rocío",
+"rule": "로시오",
+"usage": ""
+},
+{
+"name": "Esperanza",
+"rule": "에스페란사",
+"usage": "에스페란사"
+}
+],
+"pt": [
+{
+"name": "Miguel",
+"pt": "미겔",
+"br": "미게우",
+"usage_br": "미게우",
+"usage_pt": "미겔"
+},
+{
+"name": "Arthur",
+"pt": "아르투르",
+"br": "아르투르",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Gael",
+"pt": "가엘",
+"br": "가에우",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Heitor",
+"pt": "에이토르",
+"br": "에이토르",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Theo",
+"pt": "테우",
+"br": "테우",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Davi",
+"pt": "다비",
+"br": "다비",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Gabriel",
+"pt": "가브리엘",
+"br": "가브리에우",
+"usage_br": "가브리에우",
+"usage_pt": ""
+},
+{
+"name": "Bernardo",
+"pt": "베르나르두",
+"br": "베르나르두",
+"usage_br": "",
+"usage_pt": "베르나르두"
+},
+{
+"name": "Samuel",
+"pt": "사무엘",
+"br": "사무에우",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Ravi",
+"pt": "하비",
+"br": "하비",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Lucas",
+"pt": "루카스",
+"br": "루카스",
+"usage_br": "루카스",
+"usage_pt": ""
+},
+{
+"name": "Pedro",
+"pt": "페드루",
+"br": "페드루",
+"usage_br": "페드루",
+"usage_pt": "페드루"
+},
+{
+"name": "Matheus",
+"pt": "마테우스",
+"br": "마테우스",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Rafael",
+"pt": "하파엘",
+"br": "하파에우",
+"usage_br": "",
+"usage_pt": "하파엘"
+},
+{
+"name": "Joaquim",
+"pt": "조아킹",
+"br": "조아킹",
+"usage_br": "조아킹",
+"usage_pt": "조아킹"
+},
+{
+"name": "Isaac",
+"pt": "이자악",
+"br": "이자악",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Lorenzo",
+"pt": "로렌주",
+"br": "로렌주",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Henrique",
+"pt": "엔히크",
+"br": "엔히키",
+"usage_br": "엔히키",
+"usage_pt": ""
+},
+{
+"name": "Nicolas",
+"pt": "니콜라스",
+"br": "니콜라스",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Guilherme",
+"pt": "길례르므",
+"br": "길례르미",
+"usage_br": "길례르미",
+"usage_pt": ""
+},
+{
+"name": "Gustavo",
+"pt": "구스타부",
+"br": "구스타부",
+"usage_br": "구스타부",
+"usage_pt": ""
+},
+{
+"name": "Felipe",
+"pt": "펠리프",
+"br": "펠리피",
+"usage_br": "펠리피",
+"usage_pt": "펠리페"
+},
+{
+"name": "Enzo",
+"pt": "엔주",
+"br": "엔주",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Murilo",
+"pt": "무릴루",
+"br": "무릴루",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Daniel",
+"pt": "다니엘",
+"br": "다니에우",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Vicente",
+"pt": "비센트",
+"br": "비센치",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Benício",
+"pt": "베니시우",
+"br": "베니시우",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Bento",
+"pt": "벤투",
+"br": "벤투",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Leonardo",
+"pt": "레오나르두",
+"br": "레오나르두",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Eduardo",
+"pt": "이두아르두",
+"br": "이두아르두",
+"usage_br": "에두아르두",
+"usage_pt": "에두아르두"
+},
+{
+"name": "Vitor",
+"pt": "비토르",
+"br": "비토르",
+"usage_br": "비토르",
+"usage_pt": ""
+},
+{
+"name": "Thiago",
+"pt": "티아구",
+"br": "치아구",
+"usage_br": "치아구",
+"usage_pt": ""
+},
+{
+"name": "Tiago",
+"pt": "티아구",
+"br": "치아구",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Caio",
+"pt": "카이우",
+"br": "카이우",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "João",
+"pt": "조앙",
+"br": "조앙",
+"usage_br": "주앙",
+"usage_pt": "주앙"
+},
+{
+"name": "José",
+"pt": "조제",
+"br": "조제",
+"usage_br": "조제",
+"usage_pt": "조제"
+},
+{
+"name": "Antônio",
+"pt": "안토니우",
+"br": "안토니우",
+"usage_br": "안토니우",
+"usage_pt": "안토니우"
+},
+{
+"name": "António",
+"pt": "안토니우",
+"br": "안토니우",
+"usage_br": "안토니우",
+"usage_pt": "안토니우"
+},
+{
+"name": "Francisco",
+"pt": "프란시스쿠",
+"br": "프란시스쿠",
+"usage_br": "프란시스쿠",
+"usage_pt": "프란시스쿠"
+},
+{
+"name": "Carlos",
+"pt": "카를루스",
+"br": "카를루스",
+"usage_br": "",
+"usage_pt": "카를루스"
+},
+{
+"name": "Paulo",
+"pt": "파울루",
+"br": "파울루",
+"usage_br": "파울루",
+"usage_pt": ""
+},
+{
+"name": "Luiz",
+"pt": "루이스",
+"br": "루이스",
+"usage_br": "루이스",
+"usage_pt": ""
+},
+{
+"name": "Luís",
+"pt": "루이스",
+"br": "루이스",
+"usage_br": "",
+"usage_pt": "루이스"
+},
+{
+"name": "Marcos",
+"pt": "마르쿠스",
+"br": "마르쿠스",
+"usage_br": "마르쿠스",
+"usage_pt": ""
+},
+{
+"name": "Rodrigo",
+"pt": "호드리구",
+"br": "호드리구",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Fernando",
+"pt": "페르난두",
+"br": "페르난두",
+"usage_br": "페르난두",
+"usage_pt": "페르난두"
+},
+{
+"name": "Ricardo",
+"pt": "히카르두",
+"br": "히카르두",
+"usage_br": "히카르두",
+"usage_pt": "히카르두"
+},
+{
+"name": "Sérgio",
+"pt": "세르지우",
+"br": "세르지우",
+"usage_br": "세르지우",
+"usage_pt": ""
+},
+{
+"name": "Fábio",
+"pt": "파비우",
+"br": "파비우",
+"usage_br": "파비우",
+"usage_pt": ""
+},
+{
+"name": "Márcio",
+"pt": "마르시우",
+"br": "마르시우",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "André",
+"pt": "안드레",
+"br": "안드레",
+"usage_br": "안드레",
+"usage_pt": ""
+},
+{
+"name": "Bruno",
+"pt": "브루누",
+"br": "브루누",
+"usage_br": "브루누",
+"usage_pt": ""
+},
+{
+"name": "Diogo",
+"pt": "디오구",
+"br": "지오구",
+"usage_br": "",
+"usage_pt": "디오구"
+},
+{
+"name": "Rui",
+"pt": "후이",
+"br": "후이",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Vinícius",
+"pt": "비니시우스",
+"br": "비니시우스",
+"usage_br": "비니시우스",
+"usage_pt": ""
+},
+{
+"name": "Otávio",
+"pt": "오타비우",
+"br": "오타비우",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Caetano",
+"pt": "카에타누",
+"br": "카에타누",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Ronaldo",
+"pt": "호날두",
+"br": "호나우두",
+"usage_br": "",
+"usage_pt": "호날두"
+},
+{
+"name": "Afonso",
+"pt": "아폰수",
+"br": "아폰수",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Duarte",
+"pt": "두아르트",
+"br": "두아르치",
+"usage_br": "두아르치",
+"usage_pt": ""
+},
+{
+"name": "Martim",
+"pt": "마르팅",
+"br": "마르칭",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Tomás",
+"pt": "토마스",
+"br": "토마스",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Lourenço",
+"pt": "로렌수",
+"br": "로렌수",
+"usage_br": "로렌수",
+"usage_pt": ""
+},
+{
+"name": "Rogério",
+"pt": "호제리우",
+"br": "호제리우",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Júlio",
+"pt": "줄리우",
+"br": "줄리우",
+"usage_br": "줄리우",
+"usage_pt": ""
+},
+{
+"name": "Renato",
+"pt": "헤나투",
+"br": "헤나투",
+"usage_br": "헤나투",
+"usage_pt": ""
+},
+{
+"name": "Roberto",
+"pt": "호베르투",
+"br": "호베르투",
+"usage_br": "호베르투",
+"usage_pt": ""
+},
+{
+"name": "Alexandre",
+"pt": "알레샨드르",
+"br": "알레샨드리",
+"usage_br": "",
+"usage_pt": "알레샨드르"
+},
+{
+"name": "Raimundo",
+"pt": "하이문두",
+"br": "하이문두",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Sebastião",
+"pt": "세바스티앙",
+"br": "세바스치앙",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Helena",
+"pt": "엘레나",
+"br": "엘레나",
+"usage_br": "",
+"usage_pt": "엘레나"
+},
+{
+"name": "Alice",
+"pt": "알리스",
+"br": "알리시",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Laura",
+"pt": "라우라",
+"br": "라우라",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Valentina",
+"pt": "발렌티나",
+"br": "발렌치나",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Heloísa",
+"pt": "엘로이자",
+"br": "엘로이자",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Clara",
+"pt": "클라라",
+"br": "클라라",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Cecília",
+"pt": "세실리아",
+"br": "세실리아",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Lívia",
+"pt": "리비아",
+"br": "리비아",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Sophia",
+"pt": "소피아",
+"br": "소피아",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Manuela",
+"pt": "마누엘라",
+"br": "마누엘라",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Maitê",
+"pt": "마이테",
+"br": "마이테",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Isabela",
+"pt": "이자벨라",
+"br": "이자벨라",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Júlia",
+"pt": "줄리아",
+"br": "줄리아",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Lorena",
+"pt": "로레나",
+"br": "로레나",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Beatriz",
+"pt": "베아트리스",
+"br": "베아트리스",
+"usage_br": "베아트리스",
+"usage_pt": ""
+},
+{
+"name": "Ana",
+"pt": "아나",
+"br": "아나",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Maria",
+"pt": "마리아",
+"br": "마리아",
+"usage_br": "마리아",
+"usage_pt": "마리아"
+},
+{
+"name": "Mariana",
+"pt": "마리아나",
+"br": "마리아나",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Larissa",
+"pt": "라리사",
+"br": "라리사",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Letícia",
+"pt": "레티시아",
+"br": "레치시아",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Gabriela",
+"pt": "가브리엘라",
+"br": "가브리엘라",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Fernanda",
+"pt": "페르난다",
+"br": "페르난다",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Amanda",
+"pt": "아만다",
+"br": "아만다",
+"usage_br": "아만다",
+"usage_pt": ""
+},
+{
+"name": "Camila",
+"pt": "카밀라",
+"br": "카밀라",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Vitória",
+"pt": "비토리아",
+"br": "비토리아",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Luíza",
+"pt": "루이자",
+"br": "루이자",
+"usage_br": "루이자",
+"usage_pt": ""
+},
+{
+"name": "Luísa",
+"pt": "루이자",
+"br": "루이자",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Giovanna",
+"pt": "지오바나",
+"br": "지오바나",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Isadora",
+"pt": "이자도라",
+"br": "이자도라",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Aurora",
+"pt": "아우로라",
+"br": "아우로라",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Elisa",
+"pt": "일리자",
+"br": "일리자",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Melissa",
+"pt": "멜리사",
+"br": "멜리사",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Rafaela",
+"pt": "하파엘라",
+"br": "하파엘라",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Bruna",
+"pt": "브루나",
+"br": "브루나",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Carolina",
+"pt": "카롤리나",
+"br": "카롤리나",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Juliana",
+"pt": "줄리아나",
+"br": "줄리아나",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Patrícia",
+"pt": "파트리시아",
+"br": "파트리시아",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Adriana",
+"pt": "아드리아나",
+"br": "아드리아나",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Raquel",
+"pt": "하켈",
+"br": "하케우",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Joana",
+"pt": "조아나",
+"br": "조아나",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Conceição",
+"pt": "콘세이상",
+"br": "콘세이상",
+"usage_br": "",
+"usage_pt": "콘세이상"
+},
+{
+"name": "Aparecida",
+"pt": "아파레시다",
+"br": "아파레시다",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Teresa",
+"pt": "테레자",
+"br": "테레자",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Rita",
+"pt": "히타",
+"br": "히타",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Inês",
+"pt": "이네스",
+"br": "이네스",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Leonor",
+"pt": "레오노르",
+"br": "레오노르",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Matilde",
+"pt": "마틸드",
+"br": "마치우지",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Margarida",
+"pt": "마르가리다",
+"br": "마르가리다",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Benedita",
+"pt": "베네디타",
+"br": "베네지타",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Marta",
+"pt": "마르타",
+"br": "마르타",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Regina",
+"pt": "헤지나",
+"br": "헤지나",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Graça",
+"pt": "그라사",
+"br": "그라사",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Glória",
+"pt": "글로리아",
+"br": "글로리아",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Lúcia",
+"pt": "루시아",
+"br": "루시아",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Sílvia",
+"pt": "실비아",
+"br": "시우비아",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Simone",
+"pt": "시모느",
+"br": "시모니",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Débora",
+"pt": "데보라",
+"br": "데보라",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Daniela",
+"pt": "다니엘라",
+"br": "다니엘라",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Natália",
+"pt": "나탈리아",
+"br": "나탈리아",
+"usage_br": "",
+"usage_pt": ""
+},
+{
+"name": "Vanessa",
+"pt": "바네사",
+"br": "바네사",
+"usage_br": "",
+"usage_pt": ""
+}
+]
+}

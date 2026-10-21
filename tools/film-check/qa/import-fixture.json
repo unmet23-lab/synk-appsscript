@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "title": "가져오기 확인용 미검토 프로젝트",
+  "audience": "",
+  "message": "",
+  "viewerReward": "",
+  "targetSeconds": 20,
+  "aspect": "16:9",
+  "resolution": "1080p",
+  "continuity": "",
+  "budgetCredits": null,
+  "finalFile": "",
+  "finalReviewer": "",
+  "finalReviewedAt": "",
+  "finalChecks": {
+    "story": {
+      "status": "pending",
+      "note": ""
+    },
+    "edit": {
+      "status": "pending",
+      "note": ""
+    },
+    "finish": {
+      "status": "pending",
+      "note": ""
+    },
+    "accuracy": {
+      "status": "pending",
+      "note": ""
+    },
+    "audio": {
+      "status": "pending",
+      "note": ""
+    },
+    "delivery": {
+      "status": "pending",
+      "note": ""
+    }
+  },
+  "shots": [
+    {
+      "id": "shot-muwsosny-1",
+      "title": "",
+      "purpose": "",
+      "sourceType": "generated",
+      "sourceRef": "",
+      "identityRef": "",
+      "styleRef": "",
+      "referenceFile": "",
+      "startState": "",
+      "action": "",
+      "endState": "",
+      "lighting": "",
+      "camera": "",
+      "continuity": "",
+      "sound": "",
+      "model": "Wan 3.0",
+      "duration": 5,
+      "generationSeconds": 5,
+      "settingNote": "",
+      "quotedCredits": null,
+      "plannedTakes": 1,
+      "actualCredits": null,
+      "actualTakes": 0,
+      "file": "",
+      "reviewer": "",
+      "reviewedAt": "",
+      "review": {
+        "identity": {
+          "status": "pending",
+          "note": ""
+        },
+        "product": {
+          "status": "pending",
+          "note": ""
+        },
+        "lighting": {
+          "status": "pending",
+          "note": ""
+        },
+        "composition": {
+          "status": "pending",
+          "note": ""
+        },
+        "material": {
+          "status": "pending",
+          "note": ""
+        },
+        "reference": {
+          "status": "pending",
+          "note": ""
+        },
+        "physics": {
+          "status": "pending",
+          "note": ""
+        },
+        "acting": {
+          "status": "pending",
+          "note": ""
+        },
+        "temporal": {
+          "status": "pending",
+          "note": ""
+        },
+        "continuity": {
+          "status": "pending",
+          "note": ""
+        },
+        "sound": {
+          "status": "pending",
+          "note": ""
+        },
+        "playback": {
+          "status": "pending",
+          "note": ""
+        }
+      }
+    }
+  ]
+}

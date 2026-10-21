@@ -1,0 +1,428 @@
+{
+  "schemaVersion": 2,
+  "reviewDate": "2026-10-08",
+  "createdAt": "2026-10-08T14:08:09.196Z",
+  "scope": "design-preparation-only",
+  "status": "reviewed-and-repaired",
+  "objective": "열 가지 생활을 모두 설계하되 생활 재미 → 사용자 주인공·한국어 숙련도에 따른 체감 주민 행동 → TOPIK 학습 순서를 유지한다.",
+  "verificationMethod": "원래 사용자 조건을 다시 분해하고 네 주설계 전체를 읽었다. 3개 병렬 검토에서 놀이/소유/경제, NPC 실행/현재 코드, 공연/학습 정본을 각각 대조했다. 실제 설계 충돌 5개를 원문과 반대 사례로 수정하고 공유 도움 권한 및 열 가지 전체 구현 추적표를 보완했다. 마지막으로 수정된 문구의 반대 사례와 참조를 재검사했다. 런타임 실행이나 실제 재미·학습 효과 검증은 하지 않았다.",
+  "requirements": [
+    {
+      "id": "priority",
+      "status": "verified-in-design",
+      "evidence": [
+        {
+          "file": "docs/디자인/싱크타운_생활재미와_성장콘텐츠_설계_20261008.md",
+          "anchor": "priority"
+        },
+        {
+          "file": "docs/마을_설계.md",
+          "line": 3
+        },
+        {
+          "file": "docs/_ops/결정.md",
+          "line": 8
+        }
+      ],
+      "finding": "재미·반응·학습의 순차 제작 및 탈락 조건. 옛 심부름 선정 규칙도 생활 선택을 먼저 보존하도록 수정."
+    },
+    {
+      "id": "all-ten",
+      "status": "verified-in-design",
+      "evidence": [
+        {
+          "file": "docs/디자인/싱크타운_생활재미와_성장콘텐츠_설계_20261008.md",
+          "anchor": "full-scope"
+        },
+        {
+          "file": "docs/디자인/싱크타운_10대생활콘텐츠_제작설계_20261008.md",
+          "anchor": "T01"
+        },
+        {
+          "file": "docs/디자인/싱크타운_10대생활콘텐츠_제작설계_20261008.md",
+          "anchor": "T02"
+        },
+        {
+          "file": "docs/디자인/싱크타운_10대생활콘텐츠_제작설계_20261008.md",
+          "anchor": "T03"
+        },
+        {
+          "file": "docs/디자인/싱크타운_10대생활콘텐츠_제작설계_20261008.md",
+          "anchor": "T04"
+        },
+        {
+          "file": "docs/디자인/싱크타운_10대생활콘텐츠_제작설계_20261008.md",
+          "anchor": "T05"
+        },
+        {
+          "file": "docs/디자인/싱크타운_10대생활콘텐츠_제작설계_20261008.md",
+          "anchor": "T06"
+        },
+        {
+          "file": "docs/디자인/싱크타운_10대생활콘텐츠_제작설계_20261008.md",
+          "anchor": "T07"
+        },
+        {
+          "file": "docs/디자인/싱크타운_10대생활콘텐츠_제작설계_20261008.md",
+          "anchor": "T08"
+        },
+        {
+          "file": "docs/디자인/싱크타운_10대생활콘텐츠_제작설계_20261008.md",
+          "anchor": "T09"
+        },
+        {
+          "file": "docs/디자인/싱크타운_10대생활콘텐츠_제작설계_20261008.md",
+          "anchor": "T10"
+        }
+      ],
+      "finding": "각 카드에 즐거움, 시작, 직접 행동, A/B/거절, 즉시·현재·재방문 반응, 지원·상태·복귀·반복·제작·인수 조건. 10개 × 15항목."
+    },
+    {
+      "id": "player-protagonist",
+      "status": "verified-in-design",
+      "evidence": [
+        {
+          "file": "docs/디자인/싱크타운_10대생활콘텐츠_제작설계_20261008.md",
+          "anchor": "priority"
+        },
+        {
+          "file": "docs/디자인/싱크타운_10대생활콘텐츠_제작설계_20261008.md",
+          "anchor": "assembly"
+        },
+        {
+          "file": "docs/디자인/싱크타운_NPC자율생활_설계_20261008.md",
+          "anchor": "player-first"
+        }
+      ],
+      "finding": "사용자 발의·생활 선택·역할·결과·종료를 보존하며 조용한 관람도 완결. 열 가지를 강제 숙제 순서로 만들지 않는다."
+    },
+    {
+      "id": "proficiency-visible-behavior",
+      "status": "verified-in-design",
+      "evidence": [
+        {
+          "file": "docs/디자인/싱크타운_NPC자율생활_설계_20261008.md",
+          "anchor": "reaction-plan"
+        },
+        {
+          "file": "docs/디자인/싱크타운_NPC자율생활_설계_20261008.md",
+          "anchor": "level-actions"
+        },
+        {
+          "file": "docs/디자인/싱크타운_공연과_생활학습_설계_20261008.md",
+          "anchor": "language-support"
+        }
+      ],
+      "finding": "물건 제시·시범·기다림·역할 양도·동선 변경·리허설. 언어, 생활 숙련, 관계를 분리하고 쉬운 표현으로도 같은 기획권을 제공."
+    },
+    {
+      "id": "autonomy-and-time",
+      "status": "verified-in-design",
+      "evidence": [
+        {
+          "file": "docs/디자인/싱크타운_생활재미와_성장콘텐츠_설계_20261008.md",
+          "anchor": "time"
+        },
+        {
+          "file": "docs/디자인/싱크타운_생활재미와_성장콘텐츠_설계_20261008.md",
+          "anchor": "novelty"
+        },
+        {
+          "file": "docs/디자인/싱크타운_NPC자율생활_설계_20261008.md",
+          "anchor": "approach"
+        },
+        {
+          "file": "docs/디자인/싱크타운_10대생활콘텐츠_제작설계_20261008.md",
+          "anchor": "T08"
+        }
+      ],
+      "finding": "목적·일과·자원 예약·NPC 교류·능동 접근·보답, 사건/일과/성장 시간과 부재 처리, 실제 이용에 따른 습관 변화 및 개인/공유 경계."
+    },
+    {
+      "id": "performance",
+      "status": "verified-in-design",
+      "evidence": [
+        {
+          "file": "docs/디자인/싱크타운_공연과_생활학습_설계_20261008.md",
+          "anchor": "performance-play"
+        },
+        {
+          "file": "docs/디자인/싱크타운_공연과_생활학습_설계_20261008.md",
+          "anchor": "performance-music"
+        },
+        {
+          "file": "docs/디자인/싱크타운_공연과_생활학습_설계_20261008.md",
+          "anchor": "contribution-evidence"
+        }
+      ],
+      "finding": "P01 상황극 대표 창작 대본과 A/B 결말, M01 음악 이야기 제작 명세. 관객·부분 참가·연출과 지원별 행동을 준비. 음원·모든 최종 지원판은 후속 제작."
+    },
+    {
+      "id": "learning-third",
+      "status": "verified-in-design",
+      "evidence": [
+        {
+          "file": "docs/디자인/싱크타운_공연과_생활학습_설계_20261008.md",
+          "anchor": "priority"
+        },
+        {
+          "file": "docs/디자인/싱크타운_공연과_생활학습_설계_20261008.md",
+          "anchor": "learning-map"
+        }
+      ],
+      "finding": "열 생활 각각에 자연스러운 언어 기회·TOPIK 영역·선택 연습·근거 한계를 연결했다. 자연 대화의 검증된 수행과 생활 취향/감상/완료를 분리하고, 별도 훈련·평가는 본인이 선택한다. 공연 중 퀴즈와 종료 직후 자동 학습창 없음."
+    },
+    {
+      "id": "whole-design-handoff",
+      "status": "verified-in-design",
+      "evidence": [
+        {
+          "file": "docs/디자인/싱크타운_생활재미와_성장콘텐츠_설계_20261008.md",
+          "anchor": "production"
+        },
+        {
+          "file": "docs/디자인/싱크타운_생활재미와_성장콘텐츠_설계_20261008.md",
+          "anchor": "acceptance"
+        },
+        {
+          "file": "docs/디자인/싱크타운_10대생활콘텐츠_제작설계_20261008.md",
+          "anchor": "handoff"
+        },
+        {
+          "file": "docs/디자인/싱크타운_공연과_생활학습_설계_20261008.md",
+          "anchor": "production-contract"
+        },
+        {
+          "file": "docs/디자인/싱크타운_공연과_생활학습_설계_20261008.md",
+          "anchor": "acceptance"
+        },
+        {
+          "file": "docs/디자인/싱크타운_메인콘텐츠_구현준비.md",
+          "anchor": "all-ten-implementation"
+        }
+      ],
+      "finding": "열 가지 전체와 두 공연 유형을 사용자 입력→Town 행동→완료/저장→실화면/재방문 시나리오에 연결. 현재 코드 재사용과 새 일과/예약/공연 구현 책임 분리. 단계적 구현은 전체 범위를 축소하지 않는다."
+    }
+  ],
+  "resolvedFindings": [
+    {
+      "id": "shared-performance",
+      "evidence": {
+        "file": "docs/디자인/싱크타운_공연과_생활학습_설계_20261008.md",
+        "anchor": "performance-scope"
+      },
+      "resolution": "공유 배우 몸체·경로·결말은 하나의 확정 계획. 개인 언어 지원으로 공용 행동을 분기하지 않는다."
+    },
+    {
+      "id": "silent-choice",
+      "evidence": {
+        "file": "docs/디자인/싱크타운_공연과_생활학습_설계_20261008.md",
+        "anchor": "performance-play"
+      },
+      "resolution": "명시한 준비 공연만 자동 진행. 미응답·앱 숨김·연결 끊김은 위임이나 동의가 아니다."
+    },
+    {
+      "id": "contribution-credit",
+      "evidence": {
+        "file": "docs/디자인/싱크타운_공연과_생활학습_설계_20261008.md",
+        "anchor": "contribution-evidence"
+      },
+      "resolution": "갈래 선택·경로 지정·자리 배치·신호 실행을 구분하고 실제 적용된 공로만 회수."
+    },
+    {
+      "id": "T08-output",
+      "evidence": {
+        "file": "docs/디자인/싱크타운_10대생활콘텐츠_제작설계_20261008.md",
+        "anchor": "T08"
+      },
+      "resolution": "동일 소유 화분 성장, NPC 소유 받침 준비/대여, FT20 딸기 산출의 입력·개체·소유·시간·완료를 분리."
+    },
+    {
+      "id": "T09-knowledge",
+      "evidence": {
+        "file": "docs/디자인/싱크타운_10대생활콘텐츠_제작설계_20261008.md",
+        "anchor": "T09"
+      },
+      "resolution": "소개를 듣거나 본 기억과 물건의 인도·소유·이용 사실을 분리."
+    },
+    {
+      "id": "errand-priority",
+      "evidence": {
+        "file": "docs/마을_설계.md",
+        "line": 402
+      },
+      "resolution": "학습 약점으로 생활 틀을 정하는 옛 문구를 사용자 생활·역할·실제 주민 행동 우선으로 변경."
+    },
+    {
+      "id": "review2-T05-actor-knowledge",
+      "evidence": {
+        "file": "docs/디자인/싱크타운_10대생활콘텐츠_제작설계_20261008.md",
+        "anchor": "T05"
+      },
+      "resolution": "같은 인지 NPC가 작업 도움/휴식 준비 두 갈래를 제공한다. 공방만 아는 개인 사건으로 찻집·연구원에게 기억을 생성하지 않는다."
+    },
+    {
+      "id": "review2-T06-custody",
+      "evidence": {
+        "file": "docs/디자인/싱크타운_10대생활콘텐츠_제작설계_20261008.md",
+        "anchor": "T06"
+      },
+      "resolution": "집은 같은 발견 기록 표시 또는 별도 소유 화분으로 꾸민다. 기존 온실 표본의 소유/관리/위치를 무단 변경하지 않는다. 전체 연결 시나리오도 같은 출처 구분을 따른다."
+    },
+    {
+      "id": "review2-T08-queue-time",
+      "evidence": {
+        "file": "docs/디자인/싱크타운_10대생활콘텐츠_제작설계_20261008.md",
+        "anchor": "T08"
+      },
+      "resolution": "승인/등록/실제 착수/완료를 분리. 300초 작업 뒤 받침은 480초에 완료. 장식 화분의 산출 없는 독립 자연 성장과 최대3 보조 순차 작업 구분. 준비 배정과 임시 인도 예약의 중단/복귀/만료 처리 연결."
+    },
+    {
+      "id": "review2-shared-cue-departure",
+      "evidence": {
+        "file": "docs/디자인/싱크타운_공연과_생활학습_설계_20261008.md",
+        "anchor": "performance-scope"
+      },
+      "resolution": "공개 회차 참가자가 사전 명시 동의한 신호 구간/NPC 기본 진행. runId+cueId의 playerExecuted/npcExecuted 단일 확정, 늦은 입력/이탈/중복 재생/공로를 구분. 개인 공연의 미결정은 계속 보존."
+    },
+    {
+      "id": "review2-natural-language-observation",
+      "evidence": {
+        "file": "docs/디자인/싱크타운_공연과_생활학습_설계_20261008.md",
+        "anchor": "learning-map"
+      },
+      "resolution": "생활 취향/감상/꾸미기 완료는 언어 근거가 아니다. 자발 대화의 실제 수행은 기존 검증 조건으로 관측하며 별도 문제/훈련/평가는 사용자 선택. 대화 정본과 카드/공연 본문·인수 기준 통일."
+    }
+  ],
+  "structuralValidation": {
+    "primaryDocuments": 6,
+    "primaryLocalLinks": 113,
+    "explicitAnchors": 66,
+    "tables": 68,
+    "ownerDocuments": 10,
+    "ownerNewDesignLinks": 43,
+    "cards": 10,
+    "requiredFieldsPerCard": 15,
+    "cardFields": 150,
+    "lifeImplementationScenarios": 10,
+    "performanceImplementationScenarios": 2,
+    "errors": [],
+    "notes": "주설계4개+구현준비+경제의 모든 로컬 링크·앵커·표·끝 공백 검사. 담당 원문10개의 이번 설계/구현준비 링크 검사. 지정 변경9문서 diff --check 통과. 이는 내용 검토와 별개의 구조 검사이며 실제 게임 시험이 아니다."
+  },
+  "sources": [
+    {
+      "file": "docs/디자인/싱크타운_생활재미와_성장콘텐츠_설계_20261008.md",
+      "sha256": "65ba6df09c3652d22dae6334e2207718cdd66da2f77276da49b96fda7122a21e"
+    },
+    {
+      "file": "docs/디자인/싱크타운_10대생활콘텐츠_제작설계_20261008.md",
+      "sha256": "dad5594ae9482a20e59fa85d8fc84cfcf00c7421590c022f7e4f01ce07021ccb"
+    },
+    {
+      "file": "docs/디자인/싱크타운_NPC자율생활_설계_20261008.md",
+      "sha256": "423c83c79e76bf758f25f65da45889fb854c425ec49e36631fc74b0dfc21505a"
+    },
+    {
+      "file": "docs/디자인/싱크타운_공연과_생활학습_설계_20261008.md",
+      "sha256": "619d2e1f991f51f3939696f006dd0e160241607430100703ef9a467c02f66635"
+    },
+    {
+      "file": "docs/디자인/싱크타운_메인콘텐츠_구현준비.md",
+      "sha256": "a3b0ae36ed009c9e0c82df8b8c6429937d249d4d5717094d196c8321a09183d4"
+    },
+    {
+      "file": "docs/디자인/싱크타운_생활경제와_상품_설계.md",
+      "sha256": "a9ce2939fe86f0adb859400adf6424cc37fb9e6bedf11d03561053558ad34d1d"
+    },
+    {
+      "file": "docs/대화_설계.md",
+      "sha256": "5468ec30e467856dc9e2bec5b50bf6e22b4e54af287fe2d7aca4722912fe613c"
+    },
+    {
+      "file": "docs/아틀라스_구현명세.md",
+      "sha256": "25a02c9f3f791dfc392286655e3550c120b45066c6fbc4b24ff7f0325e0c2bb7"
+    }
+  ],
+  "outOfScopeUnverified": [
+    "새 자율생활 런타임·공유 호스트 구현",
+    "전체 출시 회차의 최종 대사·미술·동작·음원",
+    "휴대폰 성능과 실제 플레이에서의 재미·체감",
+    "실학생의 새 자료 수행·TOPIK 점수 효과"
+  ],
+  "nextPhase": "열 가지 전체의 장면 데이터·원고·동작·지원판·저장 계약을 제작하고 공통 실행을 단계별로 검증한다. 현재 설계 완료를 구현·효과 완료로 확장하지 않는다.",
+  "previousReview": {
+    "createdAt": "2026-10-08T14:08:09.196Z",
+    "scope": "design-preparation-only",
+    "status": "complete",
+    "structuralValidation": {
+      "primaryDocuments": 4,
+      "primaryLocalLinks": 45,
+      "explicitAnchors": 38,
+      "tables": 40,
+      "ownerDocuments": 11,
+      "ownerNewDesignLinks": 39,
+      "cards": 10,
+      "requiredFieldsPerCard": 15,
+      "cardFields": 150,
+      "learningMappings": 10,
+      "errors": [],
+      "notes": "기존 담당 원문 11개는 이번 20261008 설계로 연결하는 링크만 검사. Git diff --check는 지정한 15개 문서 범위에서 통과. 필드·링크 존재 자체를 내용·재미 검증의 대체물로 사용하지 않는다."
+    },
+    "sources": [
+      {
+        "file": "docs/디자인/싱크타운_생활재미와_성장콘텐츠_설계_20261008.md",
+        "sha256": "3998f65dbf9de328793813b0b8e3f32e058f7b7c6575e3eb097877b85cf3efa9"
+      },
+      {
+        "file": "docs/디자인/싱크타운_10대생활콘텐츠_제작설계_20261008.md",
+        "sha256": "2896dc00d2727c03c61891ba9015f79ce60aa41492fcb4601171029b613f0e8b"
+      },
+      {
+        "file": "docs/디자인/싱크타운_NPC자율생활_설계_20261008.md",
+        "sha256": "b6ac018cacc36b262e3ddddd7a5693dcb12a58a297241d16070bc8a29c8c4050"
+      },
+      {
+        "file": "docs/디자인/싱크타운_공연과_생활학습_설계_20261008.md",
+        "sha256": "343d53f04fa723cb5f110c0f08a5308102f24a2eb31ea9436cc222cd651e75f3"
+      }
+    ]
+  },
+  "updatedAt": "2026-10-08T14:29:33.900Z",
+  "reviewRevision": 2,
+  "reReview": {
+    "objective": "제대로 했는지 처음부터 검토하고 사용자가 말한 조건들이 모두 구현되도록 설계됐는지 확인한다.",
+    "requirementMap": {
+      "file": "docs/디자인/싱크타운_생활재미와_성장콘텐츠_설계_20261008.md",
+      "anchor": "requirements-review"
+    },
+    "implementationMap": {
+      "file": "docs/디자인/싱크타운_메인콘텐츠_구현준비.md",
+      "anchor": "all-ten-implementation"
+    },
+    "confirmedDesignConflicts": 5,
+    "repairedDesignConflicts": 5,
+    "unresolvedConfirmedDesignConflicts": [],
+    "clarifications": [
+      "일반 공유 생활에서 단독 예약자의 도움과 참가 동의가 필요한 공동 계획 변경을 분리",
+      "승인된 준비 작업의 지속 비품 배정과 실제 인도용 임시 대여 예약을 구분",
+      "기존 첫 FT10/51 중심 작업표에 열 가지와 공연 각각의 구현·인수 시나리오를 연결"
+    ],
+    "runtimeBoundaryEvidence": [
+      "experiences/synk-town/core.mjs",
+      "experiences/synk-town/server.mjs",
+      "experiences/teacher-world/town-bridge.mjs",
+      "atlas/trail-life.js",
+      "atlas/vellum-life.js",
+      "tools/lib/loom-life.js"
+    ],
+    "runtimeExecutionPerformed": false,
+    "steamSnapshotRecalculation": {
+      "source": "docs/디자인/research/steam-life-20261008.json",
+      "candidates": 24,
+      "eligible": 23,
+      "top10OrderMatches": true,
+      "countAndWilsonCalculationErrors": 0,
+      "scope": "원래 수집한 스냅샷 재계산. 새 수집이나 Steam 전체 순위 검증이 아님."
+    }
+  }
+}

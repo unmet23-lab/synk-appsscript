@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "checkedAt": "2026-10-11",
+  "purpose": "PULSE public model gallery in the local desktop platform",
+  "modelFactsSource": "docs/마케팅/PULSE_AI모델_캐스팅_20260930/roster-v2.json",
+  "publicSelectionSource": "../SYNK-website/site-v10/content/ko.mjs",
+  "selectionNote": "The website copy-models.py records that M03 replaced F04 at the user request on 2026-10-01. Keep the current public selection of six. No smile/hover or unapproved media included.",
+  "assets": [
+    {
+      "id": "M01",
+      "file": "models/m01.webp",
+      "source": "../SYNK-website/dist/assets/pulse-models/pulse-model-m01-20260930.webp",
+      "publicUrl": "https://synk.im/assets/pulse-models/pulse-model-m01-20260930.webp",
+      "publicHttpStatus": 200,
+      "publicContentType": "image/webp",
+      "bytes": 17266,
+      "sha256": "aa23a0997ea99f463652dca2257c5dfea7d299631023f09ddcd666640351723f",
+      "transformation": "none; byte-for-byte copy"
+    },
+    {
+      "id": "F02",
+      "file": "models/f02.webp",
+      "source": "../SYNK-website/dist/assets/pulse-models/pulse-model-f02-20260930.webp",
+      "publicUrl": "https://synk.im/assets/pulse-models/pulse-model-f02-20260930.webp",
+      "publicHttpStatus": 200,
+      "publicContentType": "image/webp",
+      "bytes": 20494,
+      "sha256": "9dec3a997c8a7fe990e7d4310777f67d30ac344823538eb1b076e763dad8cf74",
+      "transformation": "none; byte-for-byte copy"
+    },
+    {
+      "id": "M03",
+      "file": "models/m03.webp",
+      "source": "../SYNK-website/dist/assets/pulse-models/pulse-model-m03-20260930.webp",
+      "publicUrl": "https://synk.im/assets/pulse-models/pulse-model-m03-20260930.webp",
+      "publicHttpStatus": 200,
+      "publicContentType": "image/webp",
+      "bytes": 12586,
+      "sha256": "e9f8ee81f5b812e73b172b63c49fb176cc82d9d69b70c2e6a862efd5937c9a2c",
+      "transformation": "none; byte-for-byte copy"
+    },
+    {
+      "id": "F03",
+      "file": "models/f03.webp",
+      "source": "../SYNK-website/dist/assets/pulse-models/pulse-model-f03-20260930.webp",
+      "publicUrl": "https://synk.im/assets/pulse-models/pulse-model-f03-20260930.webp",
+      "publicHttpStatus": 200,
+      "publicContentType": "image/webp",
+      "bytes": 14516,
+      "sha256": "053a8aefdc4ee609c81b4ac2f5a5702795d0eb1d549f7a60b1f5d7a38e4d00d1",
+      "transformation": "none; byte-for-byte copy"
+    },
+    {
+      "id": "M02",
+      "file": "models/m02.webp",
+      "source": "../SYNK-website/dist/assets/pulse-models/pulse-model-m02-20260930.webp",
+      "publicUrl": "https://synk.im/assets/pulse-models/pulse-model-m02-20260930.webp",
+      "publicHttpStatus": 200,
+      "publicContentType": "image/webp",
+      "bytes": 14290,
+      "sha256": "9246edab6921a5bbfd6beb19b8457ec786c3d6164c46a00f162b0f477571cb6d",
+      "transformation": "none; byte-for-byte copy"
+    },
+    {
+      "id": "F01",
+      "file": "models/f01.webp",
+      "source": "../SYNK-website/dist/assets/pulse-models/pulse-model-f01-20260930.webp",
+      "publicUrl": "https://synk.im/assets/pulse-models/pulse-model-f01-20260930.webp",
+      "publicHttpStatus": 200,
+      "publicContentType": "image/webp",
+      "bytes": 29184,
+      "sha256": "b47d4a8baa2bae52ce435e3a1894419dad6a6c8faf5cdee67510e0911317aeb8",
+      "transformation": "none; byte-for-byte copy"
+    }
+  ]
+}

@@ -1,0 +1,299 @@
+{
+  "schemaVersion": 1,
+  "localDate": "2026-10-09",
+  "timezone": "Asia/Seoul",
+  "request": "남은 핵심설계 이어서 진행",
+  "status": "core-rhythm-design-reviewed-not-runtime-validated",
+  "scope": "NPC 접근 리듬, 사건에 근거한 관계 발전, 반복과 소진 이후 생활, 출시 후보 및 첫 후속 원고, 검증 계획",
+  "entryDocument": "docs/디자인/싱크타운_생활재미와_성장콘텐츠_설계_20261008.md#core-rhythm",
+  "previousReview": "docs/디자인/research/town-life-depth-20261008.json",
+  "requirements": [
+    {
+      "id": "approach-rhythm",
+      "evidence": [
+        "싱크타운_NPC자율생활_설계_20261008.md#approach-ledger",
+        "싱크타운_NPC자율생활_설계_20261008.md#approach-selection",
+        "싱크타운_NPC자율생활_설계_20261008.md#autonomy-without-response"
+      ],
+      "result": "계정 단위 유효시간과 롤링 상한, 모드/방문/기기 전환, 발급/전달/응답, 같은 사건의 접점 간 중복과 거절, 실제 후보 선택, 응답 없이도 끝나는 자기 일과를 규정."
+    },
+    {
+      "id": "relationship-pace",
+      "evidence": [
+        "싱크타운_주민관계와_연속생활_원고.md#relationship-state",
+        "싱크타운_주민관계와_연속생활_원고.md#relationship-transitions",
+        "싱크타운_주민관계와_연속생활_원고.md#relationship-pace",
+        "싱크타운_주민관계와_연속생활_원고.md#relationship-habits"
+      ],
+      "result": "관계 사실 5종, LS12의 정확한 후속 조건, 빠른 진행/부재/관람/거절 등 8상황, 동등한 공동 경험에서 서로 다른 일과가 남는 3경로. 사적 듣기 동의와 실제 전달 구간을 분리."
+    },
+    {
+      "id": "repetition-and-exhaustion",
+      "evidence": [
+        "싱크타운_재방문_콘텐츠와_원고.md#pacing",
+        "싱크타운_재방문_콘텐츠와_원고.md#after-pack",
+        "싱크타운_재방문_콘텐츠와_원고.md#repeat-history"
+      ],
+      "result": "기존 동작의 익숙한 이용 9종, 최근 이력과 반복 판정의 정확한 단위, 명시 취향/직접 선택 우선, 소진/권한/기기 변경의 결과를 작성. 9종을 새 이야기로 집계하지 않음."
+    },
+    {
+      "id": "bounded-release-and-followup",
+      "evidence": [
+        "싱크타운_출시와_후속콘텐츠_편성.md#units",
+        "싱크타운_출시와_후속콘텐츠_편성.md#launch-roster",
+        "싱크타운_출시와_후속콘텐츠_편성.md#ten-launch-evidence",
+        "싱크타운_출시와_후속콘텐츠_편성.md#production-order",
+        "싱크타운_출시와_후속콘텐츠_편성.md#first-followup",
+        "싱크타운_출시와_후속콘텐츠_편성.md#followup-check"
+      ],
+      "result": "첫 실행/생활 리듬 시험/열 가지 전체 출시 후보/독립 후속3/기존 장편 연결을 구분. NEXT01~03의 실제 A/B·동작·지원·거절·중단·현재 결과·후속 원고를 작성. 날짜·정기 공급 약속 없음."
+    },
+    {
+      "id": "observable-validation",
+      "evidence": [
+        "싱크타운_생활리듬_검증설계.md#decision-rules",
+        "싱크타운_생활리듬_검증설계.md#fixtures",
+        "싱크타운_생활리듬_검증설계.md#counterexamples",
+        "싱크타운_생활리듬_검증설계.md#arithmetic",
+        "싱크타운_생활리듬_검증설계.md#play-observation",
+        "싱크타운_생활리듬_검증설계.md#revision-policy"
+      ],
+      "result": "8초기 세계, 20실행 반대 사례, 접근 시각 산식, 6~8명 형성 평가 출발안과 기록/수정 규칙. 실제 시험을 수행한 결과가 아님."
+    }
+  ],
+  "counts": {
+    "relationshipFactTypes": 5,
+    "existingCoreEpisodesMapped": 12,
+    "paceExceptionScenarios": 8,
+    "equallyValidHabitPaths": 3,
+    "existingRevisitStories": 24,
+    "familiarUses": 9,
+    "familiarUsesCountAsNewStories": false,
+    "newFollowupStories": 3,
+    "revisitAndFollowupTotal": 27,
+    "perPreferenceWithFollowup": 9,
+    "runtimeCounterexamplesSpecified": 20,
+    "runtimeCounterexamplesExecuted": 0,
+    "participantsObserved": 0
+  },
+  "numericPolicy": "900초 창, 2/4회 상한, 180/90초 간격, 첫45초, 인사/신호/논리방문/최근이력 수치는 비교를 시작할 설계 가정. 동의·실제 인지·거절·소유·직접 선택권은 수치 조정으로 완화하지 않음.",
+  "review": {
+    "method": "담당 원문 작성 후 다른 담당자가 관련 선행 원고와 교차 대조. 주 담당자가 추가 원고와 수정 결과, 산식과 범위, 문서 연결을 확인.",
+    "independentScopes": [
+      "NPC 리듬과 관계 원고의 무응답/미접속 인지 경계",
+      "RH01~11과 계정 누적시간 산식",
+      "RH12~17과 관계/관람/위임의 구분",
+      "NEXT01~03 및 선행 RV/FT, LIFE-A2/C2의 이름·슬롯·인지·소유 연결",
+      "마을 정본 §11/12와 Town/앱 공통 예산 경계"
+    ],
+    "correctedCases": [
+      "관람/위임의 동일한 도움 권리를 LS01.4와 RETURN01 실제 원고에 연결",
+      "사적 이야기를 듣겠다는 동의만으로 미전달 결말을 기억하지 않게 구간 전달을 분리",
+      "물건 철거와 자리 점유의 안내 대사를 분리",
+      "옛 하루1회 설명과 새 Town 정책의 범위를 마을 정본에서 명확화",
+      "무료 기본 생활까지 막는 것으로 읽힐 수 있는 만료 뒤 NPC 예약 문구를 유료 활동 범위로 한정",
+      "최근2회 같은 원고와 같은 계열의 반복 판정을 동일한 활동 식별자로 통일",
+      "NEXT01의 기존 받침 이름과 실제 적용할 설명 슬롯을 선행 원고와 일치",
+      "NEXT01 최종 유지 선택 전 중단과 다른 기기 개정의 복원을 분리",
+      "NEXT03 연구원의 실제 자기 관찰 이동을 실행 단계에 명시",
+      "미선택 후보의 일회 정렬이 겹치는 과거 노출로 계속 재발동하지 않게 소비 순번을 보존",
+      "NEXT02는 FT52의 정확한 메뉴/기록 구분을 훼손하지 않고 두 주민의 소개 순서와 동선을 새 문제로 다룸"
+    ],
+    "meaning": "확인 범위의 문서 일관성 검토. 결함 부재·실제 재미·성능·교육 효과 보증이 아님.",
+    "runtimeChanged": false,
+    "deployed": false,
+    "assetsOrAudioGenerated": false
+  },
+  "remaining": [
+    "첫 연결 구간에 실제 NPC 실행·접근 원장·관계 사실·저장/복귀를 연결하고 RH01~20 실행",
+    "실제 동작/미술/음악·언어 검수/현지화·기기 확인",
+    "형성 평가에서 원인 이해·방해·선택 차이·반복 피로를 관찰하고 초기값 수정",
+    "전체 출시 후보를 실제 제공량으로 완성하고 다음 공개 순서를 제작 용량과 관찰 근거로 결정"
+  ],
+  "arithmetic": {
+    "type": "design-arithmetic-not-runtime-test",
+    "generatedAt": "2026-10-08T15:30:42.932Z",
+    "assumptions": "U counts valid foreground time once per account. Empty history. First approach at 45. Always safe and distinct valid candidates. No user interactions or closing states. Window (U-900,U]. No schedule obligation.",
+    "normal": {
+      "arrivals": [
+        45,
+        225,
+        945,
+        1125,
+        1845,
+        2025,
+        2745,
+        2925
+      ],
+      "countsAt5_20_60Minutes": [
+        2,
+        4,
+        8
+      ]
+    },
+    "lively": {
+      "arrivals": [
+        45,
+        135,
+        225,
+        315,
+        945,
+        1035,
+        1125,
+        1215,
+        1845,
+        1935,
+        2025,
+        2115,
+        2745,
+        2835,
+        2925,
+        3015
+      ],
+      "countsAt5_20_60Minutes": [
+        3,
+        7,
+        16
+      ]
+    },
+    "quiet": {
+      "arrivals": [],
+      "countsAt5_20_60Minutes": [
+        0,
+        0,
+        0
+      ]
+    },
+    "livelyToNormal": {
+      "initialArrivals": [
+        45,
+        225,
+        315,
+        405
+      ],
+      "normalFrom": 406,
+      "nextPossibleAt": 1215
+    },
+    "errors": []
+  },
+  "structureValidation": {
+    "type": "static-document-structure-only",
+    "generatedAt": "2026-10-08T15:49:56.507Z",
+    "documents": [
+      {
+        "file": "docs/디자인/싱크타운_생활재미와_성장콘텐츠_설계_20261008.md",
+        "lines": 437,
+        "links": 60,
+        "tables": 20,
+        "explicitAnchors": 14,
+        "sha256": "c5aafc729b9a6488f7576e1b2109a7bcca457e85b546b6406812093bd0acc2e4"
+      },
+      {
+        "file": "docs/디자인/싱크타운_10대생활콘텐츠_제작설계_20261008.md",
+        "lines": 513,
+        "links": 8,
+        "tables": 13,
+        "explicitAnchors": 25,
+        "sha256": "b355c49d2a7a15950e4bb6a938b448e79bd577c1dec2dee9ee3fd58a893adf41"
+      },
+      {
+        "file": "docs/디자인/싱크타운_NPC자율생활_설계_20261008.md",
+        "lines": 444,
+        "links": 21,
+        "tables": 19,
+        "explicitAnchors": 8,
+        "sha256": "9a6a264aa3dd3f5cf25469f023e12ede8e361392de781f21c90301116b9d2f9c"
+      },
+      {
+        "file": "docs/디자인/싱크타운_공연과_생활학습_설계_20261008.md",
+        "lines": 509,
+        "links": 7,
+        "tables": 17,
+        "explicitAnchors": 13,
+        "sha256": "418743d34abb3ccc1cb18eead6094a3076aa542a3de6068b681186a276ac9d51"
+      },
+      {
+        "file": "docs/디자인/싱크타운_메인콘텐츠_구현준비.md",
+        "lines": 277,
+        "links": 56,
+        "tables": 13,
+        "explicitAnchors": 14,
+        "sha256": "9001d034342120d83fcec7b7ca5164abbed3dbabf940391ff5f1e7b4690f26d3"
+      },
+      {
+        "file": "docs/디자인/싱크타운_재방문_콘텐츠와_원고.md",
+        "lines": 664,
+        "links": 13,
+        "tables": 34,
+        "explicitAnchors": 37,
+        "sha256": "1b282f6d5039291c4c3076c56982b62d1610fe7a377086db04a7a55c46ee95d2"
+      },
+      {
+        "file": "docs/디자인/싱크타운_생활경제와_상품_설계.md",
+        "lines": 455,
+        "links": 14,
+        "tables": 18,
+        "explicitAnchors": 18,
+        "sha256": "ab001bf2aacb77ff5e2ad11b14072412fca7f87768d2e84fe9ec39bc8ce1fa9c"
+      },
+      {
+        "file": "docs/디자인/싱크타운_주민관계와_연속생활_원고.md",
+        "lines": 473,
+        "links": 9,
+        "tables": 24,
+        "explicitAnchors": 27,
+        "sha256": "a74b077f2853d78971372b54f141c8d68f03acf55055a86e558d022aaecb2593"
+      },
+      {
+        "file": "docs/디자인/싱크타운_첫플레이_실행설계.md",
+        "lines": 142,
+        "links": 8,
+        "tables": 7,
+        "explicitAnchors": 7,
+        "sha256": "926abc438345fd8e48ff6cc33043bae1f8d3829fee0c2bc1417558c4905fedea"
+      },
+      {
+        "file": "docs/디자인/싱크타운_출시와_후속콘텐츠_편성.md",
+        "lines": 164,
+        "links": 7,
+        "tables": 9,
+        "explicitAnchors": 9,
+        "sha256": "04f1c1dd617f8ad51df5054962119192cbcb33fffe3c2b48e74a5f661c11ffa6"
+      },
+      {
+        "file": "docs/디자인/싱크타운_생활리듬_검증설계.md",
+        "lines": 131,
+        "links": 5,
+        "tables": 6,
+        "explicitAnchors": 7,
+        "sha256": "1c43c16ed4f471af1df96697c029ffe7f8f1c0c3fe8df86d0f18f685b339dcbd"
+      }
+    ],
+    "totals": {
+      "documents": 11,
+      "localLinks": 208,
+      "tables": 180,
+      "explicitAnchors": 179
+    },
+    "errors": [],
+    "evidenceRefs": 22,
+    "navigationRefs": 14,
+    "supportSituationRows": {
+      "support-T01": 7,
+      "support-T02": 7,
+      "support-T03": 7,
+      "support-T04": 7,
+      "support-T05": 7,
+      "support-T06": 7,
+      "support-T07": 7,
+      "support-T08": 7,
+      "support-T09": 7,
+      "support-T10": 7
+    },
+    "uniqueRV": 24,
+    "uniqueRQ": 4,
+    "scopedTrackedDiffWhitespaceCheck": "passed; untracked Markdown checked through document parser",
+    "limitations": "Links, anchors, table structure and counts only; not a proof of all semantics or user experience."
+  },
+  "reviewedAt": "2026-10-08T15:49:56.583Z"
+}

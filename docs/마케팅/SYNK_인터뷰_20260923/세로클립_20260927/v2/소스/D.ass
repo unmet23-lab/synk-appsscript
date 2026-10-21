@@ -1,0 +1,31 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+WrapStyle: 2
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Title,SUIT ExtraBold,68,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,5,1,8,80,80,272,1
+Style: Name,SUIT SemiBold,38,&H00F0F0F0,&H000000FF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,3,1,8,80,80,462,1
+Style: Cap,SUIT ExtraBold,70,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,5,1,2,90,90,676,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:27.20,Title,,0,0,0,,기술이 만들어 준 시간,\N{\c&H4DD8FF&}사람은 어디에 써야 할까요?
+Dialogue: 0,0:00:00.00,0:00:03.50,Name,,0,0,0,,양유호 · SYNK 창업자
+Dialogue: 0,0:00:00.00,0:00:02.06,Cap,,0,0,0,,기술이 만들어 준
+Dialogue: 0,0:00:02.06,0:00:03.24,Cap,,0,0,0,,이 시간을
+Dialogue: 0,0:00:03.24,0:00:05.19,Cap,,0,0,0,,{\c&H4DD8FF&}사람은{\c&HFFFFFF&} {\c&H4DD8FF&}온전히{\c&HFFFFFF&}
+Dialogue: 0,0:00:05.19,0:00:07.48,Cap,,0,0,0,,{\c&H4DD8FF&}느끼고{\c&HFFFFFF&} {\c&H4DD8FF&}경험하고{\c&HFFFFFF&}
+Dialogue: 0,0:00:07.48,0:00:10.33,Cap,,0,0,0,,배우고 활동하는 데 쓰는 게
+Dialogue: 0,0:00:10.33,0:00:12.40,Cap,,0,0,0,,좋다고 생각합니다.
+Dialogue: 0,0:00:12.81,0:00:15.94,Cap,,0,0,0,,이걸 구현하기 위해 증명해야
+Dialogue: 0,0:00:15.94,0:00:17.51,Cap,,0,0,0,,될 게 되게 많죠.
+Dialogue: 0,0:00:17.65,0:00:20.13,Cap,,0,0,0,,이게 될까?
+Dialogue: 0,0:00:20.55,0:00:22.55,Cap,,0,0,0,,저를 지켜봐 주셨으면 좋겠고
+Dialogue: 0,0:00:22.68,0:00:24.40,Cap,,0,0,0,,지금까지 SYNK에서 교육
+Dialogue: 0,0:00:24.40,0:00:25.68,Cap,,0,0,0,,시스템을 만들고 있는
+Dialogue: 0,0:00:25.68,0:00:27.23,Cap,,0,0,0,,양유호였습니다.
+Dialogue: 0,0:00:27.24,0:00:28.70,Cap,,0,0,0,,감사합니다.
