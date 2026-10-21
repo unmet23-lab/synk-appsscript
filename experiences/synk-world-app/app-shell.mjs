@@ -357,7 +357,8 @@ function openWriting(button){
 }
 // 말하기 연습 시범(10-21, world-speaking-practice.mjs · 설계 qa/speaking-pilot-20261021/설계.md): 기능 플래그(주소 ?speaking=preview 또는
 // 기기 설정 synk.world.speaking.preview=1)가 있을 때만 모듈을 불러 배우기 판에 줄을 더한다. 공개 빌드 목록에는 아직 파일이 없어 플래그가 없으면 바뀌는 것이 없다.
-// 자동 피드백은 리허설(로컬 개발 서버의 /api/world/speaking)에서만 붙인다 — 운영 통로(SYNK-talk world-speaking 함수)는 아직 없다.
+// 자동 피드백 통로: 계정 모드는 SYNK-talk world-speaking 함수(account.speakingRequest, 웹만 — 쓰기 연습과 같은 규칙), 리허설은 로컬 개발 서버의
+// /api/world/speaking. 로그인해야 붙고, 서버 플래그가 꺼져 있거나 문항 판이 다르면 단추 없이 스스로 확인만 보인다.
 let speakingModule=null,speaking=null,speakingOwner=null;
 const speakingFlag=(()=>{try{return new URLSearchParams(location.search).get('speaking')==='preview'||localStorage.getItem('synk.world.speaking.preview')==='1';}catch{return false;}})();
 const repaintSpeakingRow=()=>{if(lifeUI&&document.querySelector('#world-panel[open] #panel-content .life-hub')&&!document.querySelector('#panel-content [data-world="speaking"]'))lifeUI.packs();};
@@ -367,7 +368,8 @@ function openSpeaking(button){
  const owner=writingOwnerId();
  if(!speaking||speakingOwner!==owner){
   speaking?.dispose();speakingOwner=owner;let coach=null;
-  const feedback=!operating&&client?.snapshot?{status:()=>client.request('speaking',{method:'POST',body:{action:'status'}}),request:payload=>client.request('speaking',{method:'POST',body:payload})}:null;
+  const feedback=operating?(client.snapshot&&account?.supportsSpeaking?{status:()=>account.speakingRequest({action:'status'}),request:payload=>account.speakingRequest(payload)}:null)
+   :client?.snapshot?{status:()=>client.request('speaking',{method:'POST',body:{action:'status'}}),request:payload=>client.request('speaking',{method:'POST',body:payload})}:null;
   speaking=speakingModule.createSpeakingPractice({show:(title,html)=>show(title,html,'world-speaking',{eyebrow:'SPEAKING'}),home,getOwner:writingOwnerId,tutor:()=>home.tutor?.()?.tutor||null,feedback,
    coach:()=>{if(coach)return coach;if(writingOwnerId()!==owner)return null;const source=window.SYNKLearningHost||null;if(!source&&owner!=='guest')return null;
     coach=source?source.createGame({gameId:'world-speaking'},worldLearning.engine.createGame,worldLearning.createLearningSync):worldLearning.engine.createGame({gameId:'world-speaking',storage:localStorage});return coach;}});

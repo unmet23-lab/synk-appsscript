@@ -1,6 +1,7 @@
 {
   "version": 1,
   "status": "draft",
+  "contentHash": "eef1eb06ec8938f0",
   "note": "WORLD 말하기 연습 시범 문항(2026-10-21). 자체 창작 초안이고 AI 2중 검수 전이라 공개 빌드에 넣지 않는다. 공식 기출·견본 문항을 옮기지 않았다. 자료 숫자와 인물은 가상이다.",
   "basis": {
     "source": "topik.go.kr 토픽 말하기 평가 — 시험 소개·문항 구성(HMENU00048), 문항유형 및 학습방법(HMENU00023)",

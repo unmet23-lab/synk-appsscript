@@ -4,10 +4,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {slotsFromText,normalizeFeedback,normalizeTurn,nextStep,audioGate,priceVertex,priceClaude,vertexSchema,claudeSchema,LISTEN_SCHEMA,TURN_SCHEMA,syllables,taskBrief,listenPrompt,reserveEstimate} from '../../../tools/lib/말하기피드백.mjs';
-import {SPEAKING_STRINGS,st} from '../world-speaking-strings.mjs';
+import STRINGS from '../../brand-opening/world-strings.mjs';
+import {t} from '../../brand-opening/world-lang.mjs';
+import {bankHash,coreModule,itemsModule,TALK_FILES} from '../../../tools/build-world-speaking-talk.mjs';
 import {speakingPreviewOn,readSpeakingSummary,SPEAKING_CANDIDATES,SPEAKING_SKILLS,SPEAKING_FLAG_KEY} from '../world-speaking-practice.mjs';
 import {createSpeakingDevHost} from '../speaking-dev-host.mjs';
-// 말하기 연습 시범(2026-10-21): 문항·공식 시간, 피드백 정리(보류·거름·인용), 역할극 다음 걸음, 값 셈, 플래그 꺼짐, 공개 빌드 밖, 개발 서버 몫.
+// 말하기 연습 시범(2026-10-21): 문항·공식 시간, 피드백 정리(보류·거름·인용), 역할극 다음 걸음, 값 셈, 플래그 꺼짐, 공개 빌드 밖, 개발 서버 몫,
+// 운영 통로(SYNK-talk world-speaking 함수의 서버 사본·계정 경로·app-shell 연결).
 // 네트워크·모델을 부르지 않는다(개발 서버 몫은 가짜 caller).
 const root=fileURLToPath(new URL('../../../',import.meta.url));
 const app=path.join(root,'experiences/synk-world-app');
@@ -133,14 +136,18 @@ test('역할극 주문 칸은 받아 적은 말에서 규칙으로 고른다(모
  assert.deepEqual(slotsFromText('(?) (?)'),{drink:'none',temperature:'none',count:0,place:'none',answer:'none',polite:'unclear'});
 });
 
-test('화면 글: 세 언어가 모두 있고 영어·몽골어 칸에는 「」 밖 한글이 없다(한 자리 한 언어)',()=>{
- for(const [key,row]of Object.entries(SPEAKING_STRINGS)){
+test('화면 글: 공용 글 표의 speaking.* 줄 — 세 언어가 모두 있고 영어·몽골어 칸에는 「」 밖 한글이 없다(한 자리 한 언어)',()=>{
+ const rows=Object.entries(STRINGS).filter(([key])=>key.startsWith('speaking.'));
+ assert.ok(rows.length>=120,`speaking.* ${rows.length}줄`);
+ assert.equal(fs.existsSync(path.join(app,'world-speaking-strings.mjs')),false,'시범 글 표는 공용 표로 옮겼다');
+ const practice=fs.readFileSync(path.join(app,'world-speaking-practice.mjs'),'utf8');
+ for(const [,key]of practice.matchAll(/\bst\('([\w.]+)'/g))assert.ok(Object.hasOwn(STRINGS,`speaking.${key}`),`speaking.${key}`);
+ for(const [key,row]of rows){
   for(const lang of ['ko','en','mn'])assert.ok(String(row[lang]||'').trim(),`${key}.${lang}`);
   for(const lang of ['en','mn'])assert.doesNotMatch(String(row[lang]).replace(/「[^」]*」/g,''),/[가-힣]/,`${key}.${lang}`);
   assert.doesNotMatch(Object.values(row).join(' '),/Gemini|Claude|Vertex|Google|Anthropic|GPT|OpenAI/i,`${key}: 도구 이름`);
  }
- assert.equal(st('type.meta',{prep:20,answer:30},'mn'),'Бэлтгэх 20 секунд · Хариулах 30 секунд');
- assert.equal(st('없는 키',{},'en'),'없는 키');
+ assert.equal(t('speaking.type.meta',{prep:20,answer:30},'mn'),'Бэлтгэх 20 секунд · Хариулах 30 секунд');
 });
 
 test('플래그: 기본은 꺼짐, 주소 ?speaking=preview나 이 기기 설정일 때만 켜진다 · 공개 빌드 목록 밖',()=>{
@@ -165,22 +172,50 @@ test('기기 기록 요약과 계획 후보(제안): 세지 않은 녹음은 빠
  assert.equal(SPEAKING_CANDIDATES.length,7);assert.ok(SPEAKING_CANDIDATES.every(c=>c.area==='speaking'&&c.targets.every(id=>Object.values(SPEAKING_SKILLS).includes(id))));
 });
 
-test('개발 서버 몫: 기본은 꺼짐, 동의·형식·길이를 보고, 같은 요청은 다시 처리하지 않는다',async()=>{
+test('개발 서버 몫: 기본은 꺼짐, 운영 함수와 같은 순서로 형식·판 지문·길이를 보고, 같은 요청은 다시 처리하지 않는다',async()=>{
  const calls=[];
  const caller={speakingFeedback:async({item})=>{calls.push(item.id);return {route:'listen',ms:5,calls:[{model:'fake',cost:{list:.001}}],result:{status:'ok',counted:true,covered:[0]}};},speakingTurn:async()=>({route:'turn',ms:5,calls:[],result:{status:'ok',next:{step:'confirm',hint:null}}})};
  const audio={mime:'audio/webm;codecs=opus',data:Buffer.from('fake').toString('base64')};
+ const exam=(extra={})=>JSON.stringify({action:'feedback',request_id:crypto.randomUUID(),consent:'send-once',item_id:'s1-weekend',items_version:bank.contentHash,lang:'ko',audio,seconds:20,...extra});
  const off=createSpeakingDevHost({enabled:false,caller,log:()=>{}});
- assert.deepEqual((await off.handle('a',JSON.stringify({action:'status'}))).body.enabled,false);
- assert.equal((await off.handle('a',JSON.stringify({action:'feedback',request_id:crypto.randomUUID(),consent:'send-once',item_id:'s1-weekend',audio,seconds:20}))).body.status,'off');
+ const status=(await off.handle('a',JSON.stringify({action:'status'}))).body;
+ assert.deepEqual([status.enabled,status.itemsVersion],[false,bank.contentHash]);
+ assert.equal((await off.handle('a',exam())).body.status,'off');
  const on=createSpeakingDevHost({enabled:true,caller,dailyLimit:1,log:()=>{}});
- assert.equal((await on.handle('a',JSON.stringify({action:'feedback',request_id:crypto.randomUUID(),item_id:'s1-weekend',audio}))).status,400,'동의 없음');
- assert.equal((await on.handle('a',JSON.stringify({action:'feedback',request_id:crypto.randomUUID(),consent:'send-once',item_id:'s1-weekend',audio:{mime:'text/plain',data:'x'}}))).status,400,'소리 아님');
- assert.equal((await on.handle('a',JSON.stringify({action:'feedback',request_id:crypto.randomUUID(),consent:'send-once',item_id:'s1-weekend',audio,seconds:60}))).body.status,'too_long');
- const id=crypto.randomUUID(),first=await on.handle('a',JSON.stringify({action:'feedback',request_id:id,consent:'send-once',item_id:'s1-weekend',audio,seconds:20}));
+ for(const [extra,code]of [[{consent:undefined},'CONSENT_REQUIRED'],[{request_id:'x'},'INVALID_REQUEST_ID'],[{lang:'ja'},'INVALID_LANGUAGE'],[{audio:{mime:'text/plain',data:'x'}},'INVALID_AUDIO'],[{seconds:undefined},'INVALID_SECONDS']]){
+  const r=await on.handle('a',exam(extra));assert.deepEqual([r.status,r.body.code],[400,code],code);
+ }
+ for(const extra of [{items_version:'0000000000000000'},{items_version:bank.version},{item_id:'s9-none'}]){const r=await on.handle('a',exam(extra));assert.deepEqual([r.status,r.body.code],[409,'ITEM_CHANGED'],JSON.stringify(extra));}
+ assert.equal((await on.handle('a',exam({seconds:60}))).body.status,'too_long');
+ const id=crypto.randomUUID(),first=await on.handle('a',exam({request_id:id}));
  assert.equal(first.body.status,'ok');assert.equal(first.body.feedback.status,'ok');
- assert.equal((await on.handle('a',JSON.stringify({action:'feedback',request_id:id,consent:'send-once',item_id:'s1-weekend',audio,seconds:20}))).body.status,'done_before');
- assert.equal((await on.handle('a',JSON.stringify({action:'feedback',request_id:crypto.randomUUID(),consent:'send-once',item_id:'s1-weekend',audio,seconds:20}))).body.status,'limit');
- const turn=await on.handle('a',JSON.stringify({action:'turn',request_id:crypto.randomUUID(),consent:'send-once',roleplay_id:'rp-cafe-tea',step_id:'order',audio,seconds:4}));
+ assert.equal((await on.handle('a',exam({request_id:id}))).body.status,'done_before');
+ assert.equal((await on.handle('a',exam())).body.status,'limit');
+ const turn=await on.handle('a',JSON.stringify({action:'turn',request_id:crypto.randomUUID(),consent:'send-once',roleplay_id:'rp-cafe-tea',step_id:'order',items_version:bank.contentHash,lang:'ko',audio,seconds:4}));
  assert.equal(turn.body.turn.next.step,'confirm','역할극 차례는 하루 횟수에 세지 않는다');
  assert.deepEqual(calls,['s1-weekend']);
+});
+
+test('운영 통로: 은행 판 지문이 내용과 맞고, talk 함수의 서버 사본 둘(피드백 핵심 CommonJS·문항)을 이 저장소에서 만든다',()=>{
+ assert.equal(bank.contentHash,bankHash(bank),'node tools/build-world-speaking-talk.mjs --write 뒤 --talk <SYNK-talk>로 서버 사본도 다시 만든다');
+ const core=coreModule(),items=itemsModule(bank);
+ assert.doesNotMatch(core,/^export /m);
+ const exported=core.match(/module\.exports = \{([^}]*)\}/)[1].split(',').map(s=>s.trim());
+ for(const name of ['blindHearPrompt','writeSystem','writeUser','normalizeFeedback','normalizeTurn','slotsFromText','PRICES','reserveEstimate'])assert.ok(exported.includes(name),name);
+ assert.ok(items.includes(`const BANK_HASH = "${bank.contentHash}";`));
+ // talk 작업본을 주면(SYNK_TALK_ROOT) 그 저장소의 사본이 지금 원본과 바이트까지 같은지 본다 — 다르면 함수가 다른 판으로 피드백한다.
+ const talk=process.env.SYNK_TALK_ROOT;
+ if(talk)for(const [rel,want]of [[TALK_FILES.core,core],[TALK_FILES.items,items]])assert.equal(fs.readFileSync(path.join(talk,rel),'utf8').replace(/\r\n/g,'\n'),want,`${rel} — node tools/build-world-speaking-talk.mjs --talk ${talk}`);
+});
+
+test('운영 통로: 계정 모드는 SYNK-talk world-speaking 함수(feedback, 95초, 웹만)로 보내고 app-shell이 그 통로를 준다 · 화면은 판 지문을 보낸다',()=>{
+ const account=fs.readFileSync(path.join(app,'world-account.mjs'),'utf8');
+ assert.ok(account.includes("['speaking','POST']"));assert.ok(account.includes("path==='speaking'?'world-speaking'"));assert.ok(account.includes("path==='writing'||path==='speaking'?'feedback'"));
+ assert.ok(account.includes("path==='writing'||path==='speaking'?95000:12000"));assert.ok(account.includes('get supportsSpeaking(){return !native;}'));
+ assert.match(fs.readFileSync(path.join(app,'world-account.bundle.mjs'),'utf8'),/\["speaking", ?"POST"\][\s\S]*speakingRequest/,'node tools/build-world-account.mjs');
+ const shell=fs.readFileSync(path.join(app,'app-shell.mjs'),'utf8');
+ assert.ok(shell.includes("operating?(client.snapshot&&account?.supportsSpeaking?{status:()=>account.speakingRequest({action:'status'}),request:payload=>account.speakingRequest(payload)}:null)"));
+ const practice=fs.readFileSync(path.join(app,'world-speaking-practice.mjs'),'utf8');
+ assert.equal((practice.match(/items_version:bank\.contentHash/g)||[]).length,2,'시험 형식·역할극 모두 판 지문을 보낸다');
+ assert.ok(practice.includes('status.itemsVersion===bank?.contentHash'),'서버 판이 다르면 자동 피드백 단추를 띄우지 않는다');
 });

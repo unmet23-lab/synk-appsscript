@@ -5,6 +5,7 @@
 // · 녹음: 첫 녹음 전에 이 기기에서 한 번 동의를 받고(계정·손님마다 따로), 브라우저 마이크 권한은 그다음에 묻는다. 녹음은 메모리에만
 //   두어 이 화면에서 다시 듣고, 기기·서버 어디에도 저장하지 않는다. 문항을 떠나거나 시트를 닫으면 버리고 마이크를 끈다.
 // · 자동 피드백: 「자동 피드백 받기」를 누를 때만 그 녹음을 서버로 보낸다(send-once). 서버가 공식 세 요소의 「참고」를 돌려준다.
+//   통로는 app-shell이 준다 — 계정 모드는 SYNK-talk world-speaking 함수(웹만), 리허설은 로컬 개발 서버의 /api/world/speaking.
 //   말이 없거나 한국어가 아니거나 잘 안 들린 녹음은 다시 녹음을 권하고 기록에 세지 않는다(소리 문제는 학생의 약점이 아니다).
 //   말소리가 거의 없는 녹음은 이 기기에서 먼저 걸러 보내지 않는다(빈 녹음에 돈을 쓰지 않는다).
 // · 역할극: 직원 말은 미리 구운 카페 직원 목소리(승인본)를 다시 쓰고, 튜터(마스코트)는 목소리 없이 말풍선으로만 돕는다.
@@ -12,9 +13,10 @@
 // · 학습 기록: 기기 기록(시도·출처 'self'·'ai-reference')만 남긴다. 호스트가 코치를 주고 코치가 말하기 항목을 알면 Trail에
 //   「채점 안 함」 시도(assessable:false)로 남긴다 — 지금 Strata에는 말하기 항목이 없어 코치가 거절하고 기기 기록만 남는다.
 // · 한 자리 한 언어: 화면 글은 st()(화면 언어), 문제·대화·자료·예시 답·받아 적은 말·튜터 대사는 lang="ko" 칸.
-import {currentLang,onLang} from '../brand-opening/world-lang.mjs';
+import {currentLang,onLang,t,hasString} from '../brand-opening/world-lang.mjs';
 import {tutorPhoto} from '../brand-opening/tutor-photos.mjs';
-import {st,SPEAKING_STRINGS} from './world-speaking-strings.mjs';
+// 화면 글은 공용 글 표(brand-opening/world-strings.mjs)의 speaking.* 줄이다(10-21 운영 통로와 함께 시범 글 표에서 옮김).
+const st=(key,vars)=>t(`speaking.${key}`,vars);
 if(globalThis.document&&!document.querySelector('[data-speaking-style]')){const style=document.createElement('link');style.rel='stylesheet';style.href=new URL('./world-speaking.css',import.meta.url).href;style.dataset.speakingStyle='true';document.head.append(style);}
 
 export const SPEAKING_FLAG_KEY='synk.world.speaking.preview';
@@ -37,7 +39,7 @@ const uuid=()=>globalThis.crypto?.randomUUID?.()||'10000000-1000-4000-8000-10000
 const secs=ms=>Math.max(0,Math.ceil(ms/1000));
 // 소리 문제(학생의 약점이 아니다)와 서버 사정(한도·꺼짐·오류)을 가른다 — 서버 사정이면 스스로 확인으로 남길 수 있다(10-21 Fable 검수).
 const AUDIO_FAIL=new Set(['no_speech','not_korean','unclear']);
-const statusKey=s=>SPEAKING_STRINGS[`fb.status.${s}`]?`fb.status.${s}`:'fb.status.unavailable';
+const statusKey=s=>hasString(`speaking.fb.status.${s}`)?`fb.status.${s}`:'fb.status.unavailable';
 
 // 튜터 대사(한국어 · 튜터마다 말투). 마스코트는 목소리를 합성하지 않는다 — 말풍선 글만.
 const TUTOR_LINES={
@@ -97,7 +99,8 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
  const asset=src=>new URL(src,new URL('./world-speaking-items.json',import.meta.url)).href;
  function syncOwner(){const next=getOwner();if(next!==owner){teardown();owner=next;state=readStore(storage,owner);pids={};tries={};status=null;view={kind:'list'};}}
  function log(entry){state.log.push({...entry,at:new Date(now()).toISOString()});save();}
- const aiAvailable=()=>!!(feedback&&status?.enabled);
+ // 서버가 다른 문항 사본을 보고 있으면(판 지문이 다르면) 자동 피드백 없이 스스로 확인만 연다(쓰기 연습과 같은 선).
+ const aiAvailable=()=>!!(feedback&&status?.enabled&&status.itemsVersion===bank?.contentHash);
  const remaining=()=>Number.isInteger(status?.remaining)?status.remaining:status?.dailyLimit??0;
 
  // ── 튜터 말풍선 ──
@@ -279,7 +282,7 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
   if(run.blob.size>SEND_MAX_BYTES){run.result={status:'too_big'};paintZone(it);return;}
   const expected=owner,requestId=run.requestId;run.phase='sending';paintZone(it);announce(st('fb.sending'));
   let result;
-  try{const data=await blobToBase64(run.blob);result=await feedback.request({action:'feedback',request_id:requestId,consent:'send-once',mode:'exam',item_id:it.id,items_version:bank.version,lang:['ko','en','mn'].includes(lang())?lang():'ko',audio:{mime:run.mime||'audio/webm',data},seconds:run.seconds});}
+  try{const data=await blobToBase64(run.blob);result=await feedback.request({action:'feedback',request_id:requestId,consent:'send-once',mode:'exam',item_id:it.id,items_version:bank.contentHash,lang:['ko','en','mn'].includes(lang())?lang():'ko',audio:{mime:run.mime||'audio/webm',data},seconds:run.seconds});}
   catch{result={status:'unavailable'};}
   if(stopped||expected!==getOwner()||!run||run.requestId!==requestId)return;
   run.phase='feedback';run.result=result?.status==='ok'&&result.feedback?.status==='ok'?{status:'ok',feedback:result.feedback}:{status:result?.feedback?.status||result?.status||'unavailable'};
@@ -350,7 +353,7 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
   if(!aiAvailable()){run.phase='self';run.turns=[...run.turns,{who:'me',note:st('task.review',{s:seconds}),better:step.model}];render();return;}
   run.phase='thinking';render();
   const expected=owner;let result;
-  try{const data=await blobToBase64(blob);result=await feedback.request({action:'turn',request_id:uuid(),consent:'send-once',mode:'roleplay',roleplay_id:rp.id,step_id:step.id,items_version:bank.version,lang:['ko','en','mn'].includes(lang())?lang():'ko',audio:{mime:blob.type||'audio/webm',data},seconds});}
+  try{const data=await blobToBase64(blob);result=await feedback.request({action:'turn',request_id:uuid(),consent:'send-once',mode:'roleplay',roleplay_id:rp.id,step_id:step.id,items_version:bank.contentHash,lang:['ko','en','mn'].includes(lang())?lang():'ko',audio:{mime:blob.type||'audio/webm',data},seconds});}
   catch{result={status:'unavailable'};}
   if(stopped||expected!==getOwner()||view.kind!=='roleplay'||!run)return;
   const turn=result?.status==='ok'?result.turn:null,code=turn?turn.status:result?.status||'unavailable';

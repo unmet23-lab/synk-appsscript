@@ -96,7 +96,7 @@ const server=http.createServer(async(req,res)=>{
   else if(pathname.startsWith('/synk-world-home/')){pathname=pathname.slice('/synk-world-home'.length);base=home;}
   else if(pathname==='/enrollment.mjs'){base=path.resolve(root,'../synk-account/src');}
   // 말하기 연습 시범(10-21, 플래그 꺼짐 · 공개 빌드 목록에는 아직 없다): 모듈·글·문항과 3번 문항 그림 칸.
-  else if(['/world-speaking-practice.mjs','/world-speaking-strings.mjs','/world-speaking-items.json','/world-speaking.css'].includes(pathname)||/^\/speaking-assets\/[a-z0-9-]+\.webp$/.test(pathname))base=root;
+  else if(['/world-speaking-practice.mjs','/world-speaking-items.json','/world-speaking.css'].includes(pathname)||/^\/speaking-assets\/[a-z0-9-]+\.webp$/.test(pathname))base=root;
   // Preview-only route (10-14 redesign worktree): the games import ../social-conversion.mjs (shared trial tracking, in progress elsewhere).
   else if(pathname==='/social-conversion.mjs'){base=path.resolve(root,'..');}
   else if(['/world-bootstrap.js','/app-shell.mjs','/app-shell.css','/world-client.mjs','/world-town-client.mjs','/world-account.bundle.mjs','/life-ui.mjs','/life-story.mjs','/life-ui.css','/life-content.mjs','/life-progress.mjs','/world-learning-ui.mjs','/world-learning-profile.mjs','/world-learning-profile-core.mjs','/tutor-selection-sync.mjs','/display-language-sync.mjs','/life-content-lang.mjs','/cafe-activity.mjs','/cafe-ui.mjs','/classroom-lessons.mjs','/classroom-homework.mjs','/topik4-homework.json','/world-writing-practice.mjs','/world-writing-check.mjs','/world-writing-items.json','/world-writing.css','/world-topik-items.json','/world-reminders.mjs','/world-reminder-device.mjs'].includes(pathname))base=root;

@@ -19,6 +19,8 @@ const talkRoot=[process.env.SYNK_TALK_ROOT,path.resolve(root,'../SYNK-talk'),pat
  .filter(Boolean).map(p=>path.resolve(p)).find(p=>fs.existsSync(path.join(p,'lib/world-v1-server.js')));
 const out=path.resolve(process.env.SYNK_SPEAKING_QA_OUT||path.join(root,'experiences/synk-world-app/qa/speaking-pilot-20261021/browser'));
 const VIEWPORTS=[{tag:'390',size:{width:390,height:844}},{tag:'1280',size:{width:1280,height:800}}];
+// 서버가 같은 문항 사본(판 지문)을 볼 때만 화면이 자동 피드백 단추를 띄운다 — 가짜 서버도 운영 함수처럼 지문을 준다.
+const BANK_HASH=JSON.parse(fs.readFileSync(path.join(root,'experiences/synk-world-app/world-speaking-items.json'),'utf8')).contentHash;
 
 // 가짜 마이크 소리: 16kHz 한 채널 6초. 말소리처럼 켜졌다 꺼지는 배음(사람 목소리·녹음이 아니다).
 function voicedWav(file){
@@ -58,9 +60,9 @@ test('리허설 WORLD 「말하기 연습」 시범: 플래그·동의·녹음·
   // 마이크 스트림을 모아 두고, 녹음이 끝난 뒤 모든 트랙이 꺼졌는지 본다.
   await context.addInitScript(()=>{const md=navigator.mediaDevices;if(!md?.getUserMedia)return;const real=md.getUserMedia.bind(md);window.__micStreams=[];md.getUserMedia=async c=>{const s=await real(c);window.__micStreams.push(s);return s;};});
   await context.route('**/api/world/speaking',async route=>{
-   const body=route.request().postDataJSON();calls.push({action:body.action,item:body.item_id||`${body.roleplay_id}/${body.step_id}`,consent:body.consent,lang:body.lang,mime:body.audio?.mime,bytes:body.audio?.data?.length||0,seconds:body.seconds});
+   const body=route.request().postDataJSON();calls.push({action:body.action,item:body.item_id||`${body.roleplay_id}/${body.step_id}`,consent:body.consent,lang:body.lang,mime:body.audio?.mime,bytes:body.audio?.data?.length||0,seconds:body.seconds,version:body.items_version});
    let data;
-   if(body.action==='status')data={ok:true,enabled:true,dailyLimit:5,remaining:5};
+   if(body.action==='status')data={ok:true,enabled:true,dailyLimit:5,remaining:5,itemsVersion:BANK_HASH};
    else if(body.action==='feedback')data=fake.feedback==='ok'?{ok:true,status:'ok',feedback:body.lang==='ko'?FEEDBACK:localized(body.lang),remaining:fake.remaining}:{ok:true,status:fake.feedback};
    else if(fake.turn!=='ok')data={ok:true,status:fake.turn};
    else{const key=body.step_id==='place'&&placeTries++>0?'placeAgain':body.step_id;const turn=TURNS[key];data={ok:true,status:'ok',turn:{status:'ok',counted:true,heard:turn.heard,unclear:false,slots:{},polite:'yes',better:key==='place'?'여기서 마실게요.':'',tip:'',next:turn.next}};}
@@ -133,7 +135,7 @@ test('리허설 WORLD 「말하기 연습」 시범: 플래그·동의·녹음·
    await record(`${tag}-task1-review`);
    await page.locator('#panel-content [data-wsp-send]').click();await page.waitForSelector('#panel-content .wsp-els');
    const sent=calls.filter(c=>c.action==='feedback').at(-1);
-   assert.equal(sent.consent,'send-once');assert.equal(sent.item,'s1-weekend');assert.match(sent.mime,/^audio\/(webm|ogg|mp4)/);assert.ok(sent.bytes>1000,'소리 몸통이 실렸다');assert.ok(sent.seconds>=2&&sent.seconds<=35);
+   assert.equal(sent.consent,'send-once');assert.equal(sent.item,'s1-weekend');assert.equal(sent.version,BANK_HASH,'문항 판 지문을 보낸다');assert.match(sent.mime,/^audio\/(webm|ogg|mp4)/);assert.ok(sent.bytes>1000,'소리 몸통이 실렸다');assert.ok(sent.seconds>=2&&sent.seconds<=35);
    checks[`${tag}-feedback`]=await page.evaluate(()=>document.querySelector('#panel-content .wsp-feedback').innerText);
    assert.match(checks[`${tag}-feedback`],/참고/);assert.match(checks[`${tag}-feedback`],/내용 및 과제 수행/);assert.match(checks[`${tag}-feedback`],/발화 전달력/);assert.doesNotMatch(checks[`${tag}-feedback`],/\d+\s*점|[1-6]\s*급|합격/);
    await page.evaluate(()=>document.querySelector('#panel-content .wsp-feedback')?.scrollIntoView({block:'start'}));await record(`${tag}-task1-feedback`);
@@ -170,6 +172,7 @@ test('리허설 WORLD 「말하기 연습」 시범: 플래그·동의·녹음·
   checks.staffText=await page.evaluate(()=>document.querySelectorAll('#panel-content .wsp-say[data-who="staff"] p[lang="ko"]').length);assert.equal(checks.staffText,3);
   checks.roleplayCalls=calls.filter(c=>c.action==='turn').map(c=>c.item);
   assert.deepEqual(checks.roleplayCalls,['rp-cafe-tea/order','rp-cafe-tea/confirm','rp-cafe-tea/place','rp-cafe-tea/place']);
+  assert.ok(calls.filter(c=>c.action==='turn').every(c=>c.version===BANK_HASH),'역할극도 문항 판 지문을 보낸다');
   assert.match(checks.placeHint,/여기 앉아서/,'마실 곳을 틀리면 튜터(몽글)가 말풍선으로 돕는다');
   // 4-1. 서버 사정(피드백을 만들지 못함): 보낼 단추 없이 스스로 확인을 열고, 남기면 그 시도만 센다.
   step('server trouble');await page.locator('#panel-content [data-wsp-back]').click();await page.locator('#panel-content [data-wsp-open="s1-weekend"]').click();await page.waitForSelector('#panel-content [data-wsp-start]');

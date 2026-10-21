@@ -4,9 +4,10 @@
 //   실제 모델(소리는 Vertex, 글은 Claude 또는 Vertex)을 부른다. 경로는 SYNK_WORLD_SPEAKING_ROUTE(기본 blind-claude — 측정 보고 참고),
 //   역할극은 SYNK_WORLD_SPEAKING_TURN_ROUTE(기본 turn-blind: 문제를 가린 받아 적기 + 규칙으로 주문 칸).
 // · 받은 소리·받아 적은 말은 파일·로그에 남기지 않는다. 콘솔에는 경로·모델·시간·추정 금액만 찍는다.
-// · 서버 계약(운영 함수와 같은 꼴): {action:'status'} → {ok,enabled,dailyLimit,remaining} ·
-//   {action:'feedback'|'turn', request_id, consent:'send-once', item_id|roleplay_id+step_id, lang, audio:{mime,data}, seconds} →
-//   {ok:true,status:'ok',feedback|turn} 또는 {ok:true,status:'off'|'limit'|'done_before'|'too_long'|'unavailable'}. 형식 오류는 400.
+// · 서버 계약(운영 함수 SYNK-talk world-speaking과 같은 꼴·같은 검사 순서): {action:'status'} → {ok,enabled,dailyLimit,remaining,itemsVersion} ·
+//   {action:'feedback'|'turn', request_id, consent:'send-once', item_id|roleplay_id+step_id, items_version(은행 contentHash), lang, audio:{mime,data}, seconds} →
+//   {ok:true,status:'ok',feedback|turn} 또는 {ok:true,status:'off'|'limit'|'done_before'|'too_long'|'unavailable'}. 형식 오류는 400, 문항이 바뀌었으면 409.
+//   운영 함수와 다른 점: 하루 횟수는 이 프로세스 메모리로 세고, 역할극 차례는 세지 않으며, 금액 원장과 검수 전 문항 닫기가 없다(리허설 시범값).
 import fs from 'node:fs';
 import {fileURLToPath} from 'node:url';
 
@@ -24,13 +25,16 @@ export function createSpeakingDevHost({enabled=process.env.SYNK_WORLD_SPEAKING_D
  async function handle(accountId,raw){
   let input;try{input=JSON.parse(Buffer.isBuffer(raw)?raw.toString('utf8'):String(raw||''));}catch{return bad('INVALID_JSON');}
   if(!input||typeof input!=='object')return bad('INVALID_JSON');
-  if(input.action==='status')return {status:200,body:{ok:true,accountId,enabled,dailyLimit,remaining:Math.max(0,dailyLimit-count(accountId)),itemsVersion:bank.version}};
+  if(input.action==='status')return {status:200,body:{ok:true,accountId,enabled,dailyLimit,remaining:Math.max(0,dailyLimit-count(accountId)),itemsVersion:bank.contentHash}};
   if(!['feedback','turn'].includes(input.action))return bad('INVALID_ACTION');
-  if(input.consent!=='send-once')return bad('CONSENT_REQUIRED');
   if(typeof input.request_id!=='string'||!/^[0-9a-f-]{36}$/i.test(input.request_id))return bad('INVALID_REQUEST_ID');
+  if(input.consent!=='send-once')return bad('CONSENT_REQUIRED');
+  if(!['ko','en','mn'].includes(input.lang))return bad('INVALID_LANGUAGE');
+  const lang=input.lang;
   const mime=String(input.audio?.mime||'').split(';')[0].toLowerCase(),data=input.audio?.data;
   if(!MIMES.has(mime)||typeof data!=='string'||!data)return bad('INVALID_AUDIO');
-  const lang=['ko','en','mn'].includes(input.lang)?input.lang:'ko';
+  if(typeof input.seconds!=='number'||!Number.isFinite(input.seconds)||input.seconds<=0)return bad('INVALID_SECONDS');
+  if(input.items_version!==bank.contentHash)return {status:409,body:{ok:false,code:'ITEM_CHANGED'}};
   let item=null,roleplay=null,step=null;
   if(input.action==='feedback'){item=bank.items.find(i=>i.id===input.item_id);if(!item)return {status:409,body:{ok:false,code:'ITEM_CHANGED'}};}
   else{roleplay=(bank.roleplays||[]).find(r=>r.id===input.roleplay_id);step=roleplay?.steps.find(s=>s.id===input.step_id);if(!step)return {status:409,body:{ok:false,code:'ITEM_CHANGED'}};}
@@ -45,7 +49,7 @@ export function createSpeakingDevHost({enabled=process.env.SYNK_WORLD_SPEAKING_D
   const audio={mime,data:Buffer.from(data,'base64')};
   try{
    const api=await load();
-   const seconds=Number(input.seconds)>0?Number(input.seconds):null;
+   const seconds=input.seconds;
    const run=item?await api.speakingFeedback({route,item,types:bank.types,audio,lang,seconds}):await api.speakingTurn({route:turnRoute,roleplay,stepId:step.id,audio,lang,seconds});
    const cost=run.calls.reduce((n,c)=>n+(c.cost?.list||0),0);
    log(`[speaking-dev] ${input.action} ${item?.id||`${roleplay.id}/${step.id}`} ${run.route} ${run.calls.map(c=>c.model).join('+')} ${run.ms}ms ≈$${cost.toFixed(5)} → ${run.result.status}`);

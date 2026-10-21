@@ -19604,7 +19604,7 @@ async function loadWorldConfig({ value = globalThis.__SYNK_WORLD_CONFIG__, base 
 // experiences/synk-world-app/world-account.mjs
 var changed = () => Object.assign(Error("\uACC4\uC815 \uC5F0\uACB0\uC774 \uBC14\uB00C\uC5C8\uC5B4\uC694."), { code: "ACCOUNT_CHANGED" });
 var authErrors = /* @__PURE__ */ new Set(["AUTH_REQUIRED", "AUTH_SESSION_MISSING", "SESSION_REVOKED", "UNAUTHORIZED", "ACCOUNT_UNAVAILABLE", "PRODUCT_FORBIDDEN", "PLATFORM_ACCOUNT_MISMATCH"]);
-var routes2 = /* @__PURE__ */ new Map([["bootstrap", "GET"], ["play/start", "POST"], ["play/complete", "POST"], ["avatar/outfit", "PUT"], ["wardrobe/looks", "PUT"], ["town/entry", "GET"], ["town/state", "GET"], ["town/sharing", "POST"], ["town/command", "POST"], ["town/presence", "POST"], ["enrollment/preview", "POST"], ["enrollment/claim", "POST"], ["homework", "GET"], ["homework/submit", "POST"], ["homework/key", "POST"], ["writing", "POST"]]);
+var routes2 = /* @__PURE__ */ new Map([["bootstrap", "GET"], ["play/start", "POST"], ["play/complete", "POST"], ["avatar/outfit", "PUT"], ["wardrobe/looks", "PUT"], ["town/entry", "GET"], ["town/state", "GET"], ["town/sharing", "POST"], ["town/command", "POST"], ["town/presence", "POST"], ["enrollment/preview", "POST"], ["enrollment/claim", "POST"], ["homework", "GET"], ["homework/submit", "POST"], ["homework/key", "POST"], ["writing", "POST"], ["speaking", "POST"]]);
 function createWorldAccount({
   config: raw,
   storage = globalThis.sessionStorage,
@@ -20063,14 +20063,14 @@ function createWorldAccount({
       return accept(data, data?.ok === true, data?.ok === true ? 200 : data?.error?.status || 503);
     }
     const homework = path === "homework" || path.startsWith("homework/");
-    const endpoint = path === "writing" ? "world-writing" : path === "town/sharing" || path.startsWith("enrollment/") || homework ? "synk-classroom" : path.startsWith("town/") ? "synk-town" : "synk-world-v1", suffix = path === "writing" ? "feedback" : path === "town/sharing" ? "api/world/town/sharing" : path.startsWith("enrollment/") ? `api/${path}` : homework ? "api/world/homework" + (path === "homework/key" ? "/key" : "") : path.startsWith("town/") ? path.slice(5) : path;
+    const endpoint = path === "writing" ? "world-writing" : path === "speaking" ? "world-speaking" : path === "town/sharing" || path.startsWith("enrollment/") || homework ? "synk-classroom" : path.startsWith("town/") ? "synk-town" : "synk-world-v1", suffix = path === "writing" || path === "speaking" ? "feedback" : path === "town/sharing" ? "api/world/town/sharing" : path.startsWith("enrollment/") ? `api/${path}` : homework ? "api/world/homework" + (path === "homework/key" ? "/key" : "") : path.startsWith("town/") ? path.slice(5) : path;
     const url = new URL(config.accountApiUrl);
     url.pathname = url.pathname.replace(/\/$/, "").replace(/\/functions\/v1(?:\/synk-(?:account|world-v1|town))?$/, "") + `/functions/v1/${endpoint}/${suffix}`;
     url.search = "";
     url.hash = "";
     if (path.startsWith("town/") && path !== "town/entry" && townBinding?.classId) url.searchParams.set("classId", townBinding.classId);
     if (path === "homework/submit" || path === "homework/key") url.searchParams.set("classId", JSON.parse(options.body).classId);
-    const controller = new AbortController(), timer = setTimeout(() => controller.abort(), path === "writing" ? 95e3 : 12e3);
+    const controller = new AbortController(), timer = setTimeout(() => controller.abort(), path === "writing" || path === "speaking" ? 95e3 : 12e3);
     controllers.add(controller);
     try {
       if (session.expires_at <= now() + 3e4) await renew(expected);
@@ -20163,6 +20163,12 @@ function createWorldAccount({
     if (!response.ok) throw Object.assign(Error(data?.code || "WRITING_UNAVAILABLE"), { code: data?.code || "WRITING_UNAVAILABLE", status: response.status });
     return data;
   }
+  async function speakingRequest(payload) {
+    if (native) throw Object.assign(Error("PC \uC571\uC5D0\uC11C\uB294 \uC544\uC9C1 \uB9D0\uD558\uAE30 \uC790\uB3D9 \uD53C\uB4DC\uBC31\uC744 \uC4F8 \uC218 \uC5C6\uC5B4\uC694."), { code: "SPEAKING_UNSUPPORTED" });
+    const response = await request("speaking", { method: "POST", body: JSON.stringify(payload) }), data = await response.json();
+    if (!response.ok) throw Object.assign(Error(data?.code || "SPEAKING_UNAVAILABLE"), { code: data?.code || "SPEAKING_UNAVAILABLE", status: response.status });
+    return data;
+  }
   async function submitHomework(input) {
     if (native && !nativeHomework) throw Object.assign(Error("PC \uC571\uC5D0\uC11C\uB294 \uC544\uC9C1 \uACFC\uC81C\uB97C \uB0BC \uC218 \uC5C6\uC5B4\uC694."), { code: "HOMEWORK_UNSUPPORTED" });
     const response = await request("homework/submit", { method: "POST", body: JSON.stringify(homeworkSubmission(input)) }), data = await response.json();
@@ -20216,7 +20222,11 @@ function createWorldAccount({
     readHomeworkKey,
     courseRequest,
     writingRequest,
+    speakingRequest,
     get supportsWriting() {
+      return !native;
+    },
+    get supportsSpeaking() {
       return !native;
     },
     get supportsClassroom() {
