@@ -513,12 +513,6 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 보호 파일을 손으로 들여오지 않는다. 고칠 경로가 바탕과 origin에서 같으면 그대로 일한다. 바탕에 없는 origin 줄을 고쳐야 하면 scratchpad에 origin 희소 사본을 떠서 거기서 올린다 — `git worktree add --no-checkout --detach <사본> origin/master` → 희소 목록 파일(`/*`·`!/*/` + 고칠 폴더·문서, `.claude`는 넣지 않음)을 `git -C <사본> sparse-checkout set --no-cone --stdin < <목록>`(Git Bash에서 `/docs/…`를 인자로 주면 윈도우 경로로 바뀐다) → `git -C <사본> read-tree -m -u HEAD`(위 항목: 빈 인덱스 채우기) → 고친 파일을 옮겨 그 사본에서 시험과 `node tools/바로올리기.js <경로…> -m … --실행` → `git worktree remove <사본>`. 세션 작업본의 같은 수정은 올라간 커밋과 바이트가 같은지 대조해 둔다. 다음부터 맞추기가 되게 하려면 유호님이 앱 Help → Troubleshooting → Review Pinned Git Origins에서 origin을 한 번 확인한다(트랙 §1 「앱의 Git origin 확인」).
 - 다시 확인: `sync_with_base_branch` 결과에 「pinned before the app asked them」이 없거나, 사본에서 `바로올리기.js` 미리 보기가 「작업본: 워크트리((분리된 HEAD))」·내 경로만·「검사 통과」를 보인다(10-20, 희소 사본 146MB).
 
-### SYNK-talk 워크트리 커밋이 공용 작업본의 옛 `guard.js`로 막힌다 — 훅 경로가 공용 작업본에 고정돼 있다 (2026-10-21 Claude)
-- 증상: 10-21 SYNK-talk 워크트리(origin/master `21bfbc4` 기반 가지)에서 서버 묶음 `supabase/functions/_shared/synk-classroom-runtime.js`(1.03MB)를 커밋하자 「[guard] 대용량 파일 — 1MB 넘는 파일은 git에 넣지 않는다」로 막혔다. 그 가지의 `tools/guard.js` `큰파일예외`에는 이 파일이 10-20부터 이름으로 올라 있었다.
-- 원인: SYNK-talk의 `core.hooksPath`가 공용 작업본의 절대 경로(`~/Documents/SYNK-talk/.githooks`)이고, 훅은 `$(dirname "$0")/../tools/precommit.js` — 공용 작업본의 `precommit.js`·`guard.js`를 부른다. 공용 작업본이 10-19 판(`d82c82e`)에 머물러 있어 새 예외를 몰랐다.
-- 고침: 검사를 끄지 않는다(`SYNK_SKIP_GUARD`·`--no-verify` 쓰지 않음). 워크트리에서 `node tools/precommit.js`로 그 가지 판 검사를 먼저 돌려 통과를 보고, `git -C <워크트리> -c core.hooksPath=<워크트리>/.githooks commit …`으로 같은 훅을 가지 판으로 돌려 자격증명·무시 파일·크기·계약 검사를 모두 거친다. 커밋 메시지에 까닭을 적는다.
-- 다시 확인: `git -C <워크트리> config --show-origin --get core.hooksPath`가 공용 작업본 경로이고, `grep -c synk-classroom-runtime <공용 SYNK-talk>/tools/guard.js`가 0이면 아직 이 경우다(공용 작업본이 origin을 따라가면 풀린다).
-
 ## 이력 훑기
 
 ### 큰 blob을 거른 클론에서 `git log -S`·`--find-object`가 「could not fetch」로 끝난다
