@@ -98,10 +98,17 @@ test('unseen confirmation-only guests do not keep a spent free entry shift ahead
   const map = createMap(require('../../strata/topik-i.js').topikMap());
   let t = Date.parse('2026-10-09T09:00:00Z'); const store = new Map();
   const coach = createGame({ gameId: 'learning-hub', map, storage: { getItem: k => store.get(k) ?? null, setItem: (k, v) => store.set(k, v) }, clock: () => new Date(t += 60000).toISOString() });
-  const entries = catalog.filter(e => ['reading-entry-check', 'reading-blank-slice'].includes(e.id))
-    .map(e => ({ ...e, familyKeys: families[e.id] }));
+  // Since 10-21 the entry check is a difficulty-2 cell (language difficulty), and Core puts a simpler cell first anyway
+  // (readyForHarder). The fresh practice it is compared with is therefore the blank-slice sentences of the same difficulty.
+  const slice = await import(new URL('blank-slice/learning.mjs', games)), { ITEMS: SENTENCES } = await import(new URL('blank-slice/content.mjs', games));
+  const blank = catalog.find(e => e.id === 'reading-blank-slice'), hub = catalog.find(e => e.id === 'reading-entry-check');
+  const hard = SENTENCES.map(slice.itemMetadata).filter(m => m.difficulty === hub.difficulty && blank.skillIds.includes(m.skillId));
+  const entries = [{ ...hub, familyKeys: families[hub.id] },
+    { ...blank, difficulty: hub.difficulty, skillIds: [...new Set(hard.map(m => m.skillId))], familyKeys: hard.map(m => m.familyKey) }];
+  assert.ok(hard.length, 'blank slice has sentences in the entry check difficulty');
   const hubEntry = entries[0];
-  const inCell = c => hubEntry.skillIds.includes(c.skill) && c.difficulty === hubEntry.difficulty;
+  // The cell is Core's (entry-check/learning.mjs caseMetadata): since 10-21 its difficulty is the language difficulty, not the authored game stage.
+  const inCell = c => hubEntry.skillIds.includes(c.skill) && entry.caseMetadata(c).difficulty === hubEntry.difficulty;
   const ordinary = VENUES.flatMap(v => v.cases).filter(c => !c.followupOnly && inCell(c));
   const confirmations = VENUES.flatMap(v => v.cases).filter(c => c.followupOnly && inCell(c));
   assert.ok(confirmations.length, 'the fixture must retain confirmation-only guests in this cell');

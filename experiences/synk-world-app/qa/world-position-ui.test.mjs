@@ -135,13 +135,14 @@ test('진단 문항 화면은 끝까지 듣기 전에 보기를 막고, 끝 화�
  assert.match(explained,/data-position-practice="ko.listening.detail">이 항목 연습하기/);
 });
 
-test('입장 검사 문항은 안내문·시각·표·짐·손님 말을 글로 보이고, 보기는 「들여보내기」와 규칙들이다',async()=>{
+test('입장 검사 문항은 안내문·날짜와 시각·표·짐·손님 말을 글로 보이고, 보기는 「들여보내기」와 규칙들이다',async()=>{
  const {DIAGNOSTIC_ITEMS}=await import('../world-diagnostic-items.mjs');
  const c=coach(),item=DIAGNOSTIC_ITEMS.find(row=>row.itemKey==='entry-check.pool-09.v1');
  const session=createDiagnosticSession({coach:c,items:[item]}),shown=session.next();
  const html=view.renderDiagnosticItem({view:shown,skill:{id:'ko.reading.detail'}});
  assert.match(html,/하늘 수영장 이용 안내/);assert.match(html,/<li>수영 모자를 꼭 써야 합니다\.<\/li>/);
- assert.match(html,/지금 14:04/);assert.match(html,/<dt>구분<\/dt><dd>학생 · 15살<\/dd>/);assert.match(html,/짐: <span lang="ko">수건, 물병<\/span>/);
+ // 날짜는 게임 화면처럼 그날의 한국어 날짜(읽을 글)다 — 음악회 안내문은 날짜가 바뀐 날이 오늘인지가 판단 근거다(10-21 문항 검수).
+ assert.match(html,/<p class="wpos-guest-time"><span lang="ko">8월 6일 수요일<\/span> · 지금 14:04<\/p>/);assert.match(html,/<dt>구분<\/dt><dd>학생 · 15살<\/dd>/);assert.match(html,/짐: <span lang="ko">수건, 물병<\/span>/);
  assert.match(html,/이단비<\/span>「수건과 물은 있어요\. 수영 모자는 없어요\.」/);
  assert.match(html,/data-position-choice="pass">들여보내기</);assert.match(html,/data-position-choice="reject-cap">돌려보내기 · 수영 모자</);
  assert.doesNotMatch(html,/ disabled>/,'읽기 문항은 바로 고를 수 있다');

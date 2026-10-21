@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
-import { LISTENING_CHECKS, CHECK_GRAMMAR, checkMetadata, createListeningCheck, selectListeningChecks } from './listening-check.mjs';
+import { LISTENING_CHECKS, CHECK_GRAMMAR, CHECK_VERSION, checkMetadata, createListeningCheck, selectListeningChecks } from './listening-check.mjs';
 import { instructionMetadata } from './learning.mjs';
 const require = createRequire(import.meta.url), { createGame } = require('../../atlas/game-learning.js'), { createMap } = require('../../strata/index.js');
 const map = createMap(require('../../strata/maps/topik-i.json'));
@@ -68,7 +68,8 @@ test('twelve authored checks: their own recorded clips and families, three choic
   const counts = {}, places = [0, 0, 0];
   for (const item of LISTENING_CHECKS) {
     const m = checkMetadata(item); counts[m.skillId] = (counts[m.skillId] || 0) + 1; places[item.correct] += 1;
-    assert.equal(m.familyKey, m.itemKey); assert.match(m.itemKey, /^korean-runner.listening-check.check-[a-z-]+.v1$/);
+    assert.equal(m.familyKey, `korean-runner.listening-check.${item.id}.v1`, 'a new version keeps the first family');
+    assert.equal(m.itemKey, `korean-runner.listening-check.${item.id}.v${CHECK_VERSION[item.id] || 1}`);
     assert.equal(jobs.find(j => j.id === item.id)?.text, item.text, `${item.id}: the clip says the check sentence`);
     assert.equal(new Set(item.choices).size, 3); assert.ok(item.choices[item.correct]);
     assert.ok((await stat(new URL(`./assets/voice/${item.id}.mp3`, import.meta.url))).size > 1000);
@@ -100,4 +101,33 @@ test('free runner rounds use Core exposure history and choose new phrases on ret
   for(const item of first){const token=check.begin(item);check.delivery(token,'completed');check.answer(item.correct);}
   const next = selectListeningChecks(coach); assert.equal(next.length,3);
   assert.ok(next.every(item=>!first.some(old=>old.id===item.id)));
+});
+
+// A check's heard sentence, choices or answer changing must raise its version (listening-check.mjs CHECK_VERSION, learning standard §7-2).
+// After raising it, update this table's version and digest (first 12 hex of the hash) together. A new check starts at version 1.
+// Explanations, corrections and difficulty alone keep the version (added 10-21).
+const CONTENT = {
+  'check-star-middle': [1, 'df8166dd34f3'],
+  'check-wide-left': [1, 'e504ce909f80'],
+  'check-fence-jump': [2, 'd84f68a97b95'],
+  'check-sign-duck': [2, '512a12869ccd'],
+  'check-not-middle': [1, '4270e0c2ce5c'],
+  'check-no-fence': [2, '3b45e58d017e'],
+  'check-high-sign': [2, 'fda74c3663f1'],
+  'check-not-left': [1, '49cf51491d4a'],
+  'check-duck-jump': [1, 'b0cc57a0dca4'],
+  'check-middle-left': [1, '383ab00e31e0'],
+  'check-right-before-jump': [1, 'ded8b6ab068b'],
+  'check-left-run': [1, 'd603e38a71e7'],
+};
+test('content version: changing a sentence, choice or answer raises the version and keeps the family', async () => {
+  const crypto = await import('node:crypto');
+  const digest = (x) => crypto.createHash('sha256').update(JSON.stringify([x.text, x.choices, x.correct])).digest('hex').slice(0, 12);
+  assert.deepEqual(Object.keys(CONTENT).sort(), LISTENING_CHECKS.map((x) => x.id).sort(), 'add a new check here at version 1');
+  for (const x of LISTENING_CHECKS) {
+    const [version, hash] = CONTENT[x.id];
+    assert.equal(digest(x), hash, `${x.id}: the content changed — raise CHECK_VERSION and update this table`);
+    assert.equal(checkMetadata(x).itemKey, `korean-runner.listening-check.${x.id}.v${version}`, x.id);
+    assert.equal(checkMetadata(x).familyKey, `korean-runner.listening-check.${x.id}.v1`, x.id);
+  }
 });

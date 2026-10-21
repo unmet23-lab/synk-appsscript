@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import { VENUES, CAST, SHIFT_SIZE } from './content.mjs';
 import { activeRules, composeShift, minutes, validateContent } from './core.mjs';
-import { answerPayload, caseMetadata } from './learning.mjs';
+import { answerPayload, caseMetadata, ITEM_VERSION } from './learning.mjs';
 import { choiceId, immediateCheck } from './correction.mjs';
 const require = createRequire(import.meta.url);
 const { createGame } = require('../../atlas/game-learning.js');
@@ -91,8 +91,8 @@ test('eleven added confirmations keep authored facts, correct rule, explanation 
     const violations = factualViolations(venue, item);
     assert.deepEqual(violations, item.answer === 'pass' ? [] : [item.answer], item.id);
     assert.deepEqual(item.evidence, [rule]); assert.deepEqual(caseMetadata(item).conceptIds, concepts);
-    assert.equal(caseMetadata(item).itemKey, `entry-check.${to}.v1`);
-    assert.equal(caseMetadata(item).familyKey, caseMetadata(item).itemKey);
+    assert.equal(caseMetadata(item).itemKey, `entry-check.${to}.v${ITEM_VERSION[to] || 1}`);
+    assert.equal(caseMetadata(item).familyKey, `entry-check.${to}.v1`, '판을 올려도 계열은 처음 판 그대로');
     assert.notEqual(item.id, original.id); assert.notEqual(item.line, original.line); assert.notEqual(item.why, original.why);
     assert.doesNotMatch(item.why, /오개념|숙달|급수|약점/);
   }
@@ -103,12 +103,14 @@ test('eleven added confirmations keep authored facts, correct rule, explanation 
   assert.match(find(museum, 'museum-10').why, /카메라는 가지고 들어갈 수 없.*카메라가 있어/);
   assert.match(find(museum, 'museum-11').why, /13살 이하.*21살.*어른 표/);
   assert.match(find(concert, 'concert-10').why, /10일로 바뀌었지만.*9일 표/);
-  assert.match(find(concert, 'concert-12').why, /9일 표.*10일로 바뀌었지만.*9일 표도 된다/);
-  assert.match(find(concert, 'concert-13').why, /6시 25분.*6시 30분.*과자도 음식/);
+  assert.match(find(concert, 'concert-12').why, /8월 2일.*8월 9일 표로 들어올 수 있습니다.*날짜가 달라/);
+  assert.doesNotMatch(find(concert, 'concert-12').line, /9일|안내문/, '손님 말이 정답 근거를 먼저 알려 주지 않는다(10-21 검수)');
+  assert.match(find(concert, 'concert-13').why, /지금부터 음식은 가지고 들어갈 수 없습니다.*과자도 음식/);
   assert.match(find(concert, 'concert-14').why, /7살 이하.*7살.*엄마와 함께/);
   const added = pairs.map(([venueId, , to]) => find(byVenue(venueId), to));
-  assert.equal(added.filter(item => item.answer === 'pass').length, 8);
-  assert.equal(added.filter(item => item.answer !== 'pass').length, 3);
+  // 10-21 재검수부터 concert-12는 짝 concert-03처럼 날짜가 다른 표를 돌려보내는 손님이다.
+  assert.equal(added.filter(item => item.answer === 'pass').length, 7);
+  assert.equal(added.filter(item => item.answer !== 'pass').length, 4);
 });
 
 test('the original 34 guests and all four default six-person shifts remain unchanged', () => {
@@ -160,7 +162,7 @@ test('new confirmations cannot cross WORLD item/family scope, a prior screen exp
   }
 });
 
-test('fixed first-shift coverage excludes four final slots and preserves the three unresolved learning-target limits', () => {
+test('fixed first-shift coverage excludes four final slots and preserves the two unresolved learning-target limits', () => {
   let fresh = 0, exact = 0, nonFinal = 0;
   const results = new Map();
   for (const venue of VENUES) {
@@ -175,8 +177,9 @@ test('fixed first-shift coverage excludes four final slots and preserves the thr
       }
     }
   }
-  assert.equal(nonFinal, 20); assert.equal(fresh, 18); assert.equal(exact, 17);
-  assert.equal(results.get('museum-04').status, 'unavailable');
+  // 10-21부터 손님 모두 학습 기록 난도 2(learning.mjs LANGUAGE_DIFFICULTY)라 museum-04도 같은 규칙(무료 표)의 새 손님 museum-05로 확인한다.
+  assert.equal(nonFinal, 20); assert.equal(fresh, 19); assert.equal(exact, 18);
+  assert.equal(results.get('museum-04').item.id, 'museum-05'); assert.match(results.get('museum-04').line, /같은 안내 규칙/);
   assert.equal(results.get('museum-05').status, 'unavailable');
   assert.equal(results.get('library-05').item.id, 'library-09');
   assert.match(results.get('library-05').line, /규칙·표현은 달라질 수/);

@@ -123,6 +123,27 @@ test('반영: 새 문항에는 그 내용 지문으로 검수 줄을 달고, 검
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
+test('반영: 판을 올린 기존 문항은 같은 문항의 옛 판 줄을 새 판 줄로 갈아 끼우고, 같은 계열의 다른 문항 줄은 그대로 둔다', async () => {
+  const { applyToExisting } = await tool();
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'topik-bank-'));
+  try {
+    fs.mkdirSync(path.join(dir, 'review'));
+    const row = (itemKey, familyKey, verdict) => ({ itemKey, familyKey, verdict, source: 'x', skillId: 'ko.reading.grammar', difficulty: 1, responseFormat: 'single-choice', hash: 'h' });
+    fs.writeFileSync(path.join(dir, 'review/existing-verdicts.json'), JSON.stringify({ version: 'topik-existing-verdicts-1', items: [
+      row('blank-slice.e06.v1', 'blank-slice.e06.v1', 'fix'), row('blank-slice.e07.v2', 'blank-slice.e07.v1', 'fix'),
+      row('korean-rhythm:t1q0:v1:claim1', 'korean-rhythm:t1q0:v1', 'fix'), row('korean-rhythm:t1q0:v1:claim0', 'korean-rhythm:t1q0:v1', 'pass')] }));
+    const unit = (ref, key, familyKey, source) => ({ ref, kind: 'existing', key, source, hash: 'cccccccccccccccc',
+      meta: { itemKey: key, familyKey, skillId: 'ko.reading.grammar', difficulty: 1, responseFormat: 'single-choice' }, view: view(0) });
+    const units = [unit('u001', 'blank-slice.e06.v2', 'blank-slice.e06.v1', 'blank-slice'), unit('u002', 'blank-slice.e07.v2', 'blank-slice.e07.v1', 'blank-slice'),
+      unit('u003', 'korean-rhythm:t1q0:v1:claim1:v2', 'korean-rhythm:t1q0:v1', 'korean-rhythm')];
+    const pass = { outcome: 'pass', claude: { verdict: 'pass', notes: 'ok' }, argon: { verdict: 'pass', notes: 'ok' }, judge: null };
+    applyToExisting(packet(units), { u001: pass, u002: pass, u003: pass }, { dir, at: '2026-10-21T00:00:00.000Z' });
+    const rows = JSON.parse(fs.readFileSync(path.join(dir, 'review/existing-verdicts.json'), 'utf8')).items;
+    assert.deepEqual(rows.map(r => [r.itemKey, r.verdict]), [['blank-slice.e06.v2', 'pass'], ['blank-slice.e07.v2', 'pass'],
+      ['korean-rhythm:t1q0:v1:claim0', 'pass'], ['korean-rhythm:t1q0:v1:claim1:v2', 'pass']]);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
 test('레이싱 그림 낱말: 공식 자리 없이, 들리는 낱말과 그림마다 그 낱말을 붙여 검수자가 대조한다', async () => {
   const { existingItemView } = await tool();
   const item = { source: 'korean-racing', ask: 'picture', label: '사과', skillId: 'ko.listening.word', difficulty: 1, prompt: null, question: '들리는 낱말의 그림을 고르세요.',

@@ -60,7 +60,7 @@ function diagEntryItems(){
   const meta=caseMetadata(item),rules=activeRules(venue,item.at),id=choice=>choice==='pass'?'pass':`reject-${choice}`;
   const bag=(item.items||[]).map(entry=>Array.isArray(entry)?`${BAGGAGE[entry[0]]||entry[0]} ${entry[1]}개`:BAGGAGE[entry]||entry);
   return {...meta,source:'entry-check',audio:null,prompt:null,question:'이 손님을 들여보낼까요?',ask:'entry',
-   card:{notice:{title:venue.notice.title,rules:rules.map(rule=>rule.text)},at:item.at,doc:{title:item.doc.title,rows:item.doc.rows.map(row=>[...row])},
+   card:{notice:{title:venue.notice.title,rules:rules.map(rule=>rule.text)},date:venue.date,at:item.at,doc:{title:item.doc.title,rows:item.doc.rows.map(row=>[...row])},
     bag,line:item.line,who:CAST[item.who]?.name||''},
    choices:choicesFor(venue,item.at).map(choice=>({id:id(choice),label:choice==='pass'?'들여보내기':`돌려보내기 · ${rules.find(rule=>rule.id===choice)?.short||choice}`})),
    correctId:id(item.answer),explanation:item.why,label:`${venue.name} · ${CAST[item.who]?.name||item.id}`};
@@ -86,9 +86,10 @@ function diagRacingItems(){
 // (world-position-kit.mjs — 판정이 없는 바람길 지시문·리듬 O/X는 진단에서 빠졌다). 근거 줄의 문항 첫머리(diagnosticLabel)는 모두에 쓴다.
 export const DIAGNOSTIC_ITEMS=Object.freeze([...diagRunnerItems(),...diagRhythmItems(),...diagBlankItems(),...diagTownItems(),...diagEntryItems(),...diagRacingItems()].map(item=>Object.freeze(item)));
 // 이 묶음이 아직 다루지 못하는 TOPIK I 항목과 까닭(보고용). 2026-10-20에 낱말 듣기(레이싱 그림 단계)와 읽기 이유·핵심
-// (싱크타운 읽기 확인에 새로 쓴 열두 문항)을 채웠고, 10-21 지도에 넣은 듣고 알맞게 대답하기 하나가 남았다.
-// 문항을 새로 쓰면 학습기준 §4·§7 제작 기준을 따른다.
+// (싱크타운 읽기 확인에 새로 쓴 열두 문항)을 채웠고, 10-21 지도에 넣은 듣고 알맞게 대답하기와, 같은 날 문항 검수로 리듬의 두 문항을
+// 세부로 옮긴 듣고 중심 내용 이해하기가 남았다. 문항을 새로 쓰면 학습기준 §4·§7 제작 기준을 따른다.
 export const DIAGNOSTIC_GAPS=Object.freeze({
+ 'ko.listening.main':'듣고 중심 내용 이해하기는 말의 리듬 셋째 곡 두 문항(t2q2·t2q4)이 맡았으나, 2026-10-21 문항 검수가 한 문장을 바꿔 말한 것을 듣는 세부 듣기로 판정해 세부로 옮겼다. 게임 원고에는 중심 생각을 듣는 문항이 없고, WORLD 진단·연습에서는 문항 묶음(experiences/topik-items)의 TI-L-11·22 문항이 이 항목을 맡는다.',
  'ko.listening.response':'듣고 알맞게 대답하기(TI-L-01·05)는 2026-10-21에 지도에 넣은 항목이라 진단 묶음에 아직 문항이 없다. 말 랠리의 대답 카드 46문항이 이 항목이지만 녹음이 그 게임 폴더에만 있고, 문항 묶음(experiences/topik-items)의 대답 고르기는 검수 전 초안이다.',
 });
 const diagByKey=new Map(DIAGNOSTIC_ITEMS.map(item=>[item.itemKey,item]));

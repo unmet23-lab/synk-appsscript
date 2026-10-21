@@ -72,6 +72,7 @@ let wordById = null;
 const wordOf = id => (wordById ??= new Map(readJson(path.join(root, 'strata/topik-i.words.json')).words.map(([wid, word]) => [wid, word]))).get(id) || null;
 function entryText(card) {
   const lines = [`[안내문] ${card.notice.title}`, ...card.notice.rules.map(rule => `- ${rule}`)];
+  if (card.date) lines.push(`[오늘] ${card.date}`); // 게임·WORLD 카드처럼 그날 날짜를 보인다(10-21)
   if (card.at) lines.push(`[지금 시각] ${card.at}`);
   if (card.doc) lines.push(`[손님 서류] ${card.doc.title}`, ...card.doc.rows.map(row => `  ${row.join(': ')}`));
   if (card.bag?.length) lines.push(`[짐] ${card.bag.join(', ')}`);
@@ -374,9 +375,13 @@ export function applyToExisting(packet, merged, { at = new Date().toISOString(),
   if (!packet.units.some(unit => unit.kind === 'existing')) return null; // 기존 문항이 없는 묶음(쓰기만 등)은 허용 목록을 건드리지 않는다
   const file = path.join(dir, 'review/existing-verdicts.json'), doc = readJson(file);
   const rows = new Map((doc.items || []).map(row => [row.itemKey, row]));
+  // 같은 문항의 다른 판: 판 꼬리(.vN·:vN)를 뗀 열쇠가 같고 계열도 같다(blank-slice.e06.v1 → .v2, korean-rhythm:t1q0:v1:claim1 → …:claim1:v2).
+  const itemBase = key => String(key).replace(/[.:]v\d+$/, '');
   for (const unit of packet.units.filter(u => u.kind === 'existing')) {
     const m = merged[unit.ref];
     if (!m || m.outcome === 'incomplete') continue;
+    // 판을 올린 문항은 옛 판 줄을 새 판 줄로 갈아 끼운다 — 게임에 없는 판의 판정을 허용 목록에 남기지 않는다(옛 판정은 보고 폴더에 있다).
+    for (const [key, row] of rows) if (key !== unit.key && row.familyKey === unit.meta.familyKey && itemBase(key) === itemBase(unit.key)) rows.delete(key);
     const suggested = [m.claude.suggestedSkillId, m.argon.suggestedSkillId].find(Boolean) || null;
     let verdict = m.outcome === 'split' ? 'held' : m.outcome;
     // 판정이 pass여도 능력·난도를 바꾸라는 의견이 있으면 원고·메타를 고칠 때까지 내지 않는다(① 세션과의 약속: pass면 메타가 같다).

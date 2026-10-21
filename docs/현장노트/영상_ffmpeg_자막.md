@@ -316,6 +316,18 @@
 - 고침: 자유 받아쓰기로 조사를 판정하지 않는다. faster-whisper의 `model.model.align(인코더 출력, sot_sequence, [후보 토큰], 프레임 수)`가 돌려주는 `text_token_probs`로 「가사 그대로」와 「조사 하나만 바꾼」 문장을 같은 구간에 강제로 맞춰 견준다. 말 편향을 지우려고 같은 곡의 「있으면 은」 줄(정답 은)과 「없으면 는」 줄(정답 는)에서 잰 로그 확률 차이끼리 빼서(Δ) 두 줄을 구별해 불렀는지 본다. 10-21 두 곡에서 가/이는 Δ +16~+27로 뚜렷, 를/을은 +5~+14, 는/은은 +3~+9였다. 같은 방법으로 「있으면↔없으면」도 견줘 한 곡 아웃트로가 규칙을 거꾸로 부른 의심 자리를 찾았다(대조 줄 +10.8, 그 줄 −1.0~−4.1, 받아쓰기 세 번도 「없으면」). 스크립트·결과는 `.tmp/contests-20261019/song/v3_후보/분석/`(`가사확률.py`·`점수요약.py`·`낱말요약.py`).
 - 다시 확인: 판정한 자리를 medium으로도 같은 결과가 나오는지, 그래도 애매하면 시각을 적어 귀로 듣게 한다.
 
+### 미니게임 목소리를 바뀐 줄만 다시 굽기 — 전체 도구는 게임의 모든 줄을 사고, 어댑터는 원고가 아니라 게임 폴더의 작업 목록을 읽는다 (2026-10-21 Claude)
+- 증상: 문항 검수로 대본 몇 줄만 고쳤는데 `tools/미니게임_목소리.cjs`는 게임 단위로만 굽는다. 노트북 교체로 10-07 원본 wav(`Documents/synk-vendor/minigame-voice/raw/`)가 남지 않아 그대로 돌리면 바뀌지 않은 줄까지 다시 산다. 줄만 굽는 스크립트의 미리 보기에는 말의 리듬 고친 줄이 옛 대본으로 나왔다.
+- 원인: 게임 어댑터(`tools/lib/미니게임목소리_게임.cjs`)는 원고(`listening.mjs`·`listening-check.mjs`)가 아니라 게임 폴더의 작업 목록을 읽는다 — 말의 리듬 `audio-source/jobs.json`(원고에서 `scripts/narration-jobs.mjs`가 만든다), 바람길 `assets/voice/jobs.json`.
+- 고침: 원고를 고친 뒤 작업 목록부터 맞춘다(리듬 `node experiences/korean-rhythm/scripts/narration-jobs.mjs`, 바람길은 그 줄의 글). 그다음 줄만 굽는다 — 라이브러리의 `allJobs` → 대상 id만 → 원본 받기 → 어댑터 `process`·`validate` → `install`(제작 기록 `qa/voice.source.json`은 그 줄만 갈아 끼움). 이번에 쓴 스크립트는 공용 작업본 `output/topik-review/existing-fix-tools/voice_subset.cjs`(`node voice_subset.cjs <저장소> <게임> <id,…>`는 어림만, `--buy`를 붙여야 부른다). 목소리는 그 게임이 지금 쓰는 배역 그대로다(바람길 혜리·말의 리듬 하나, `tools/minigame-voice-casting.json`).
+- 다시 확인: 미리 보기 줄의 «…»가 원고와 같고, 설치 뒤 바뀐 것이 그 줄의 MP3(바람길은 wav도)·`manifest.json`·(리듬) `narration.mjs`·`qa/voice.source.json`뿐이다(10-21 바람길 2줄 55자·리듬 4줄 155자 → 6줄 186자).
+
+### 받아쓰기가 「새 방법」을 「세 방법」으로 적는다 — 같은 소리라 대본 대조에서 철자만 갈린다 (2026-10-21 Claude)
+- 증상: 다시 구운 리듬 복습 줄(「직원들은 새 방법이 싫다고 했어요…」)을 faster-whisper small(원음)·medium(원음·폰 대역)이 「세 방법」으로 받아써 일치율 0.963이었다. large-v3·large-v3-turbo는 1.000.
+- 원인: ㅐ·ㅔ는 지금 서울말에서 같은 소리라 녹음에 구별이 없다. 모델이 철자를 고른 것이고 목소리 문제가 아니다.
+- 고침: 소리를 다시 굽지 않는다. 다만 그 동음이 답을 가르는 문항(수·「새/세」가 정답 근거)이면 다른 낱말로 바꾼다 — 이번 줄은 뒤의 「그 방법」과 이어져 뜻이 하나라 그대로 뒀다.
+- 다시 확인: 공용 작업본 `output/topik-review/existing-fix-tools/phoneband_check.py`를 `MODELS=small,medium,large-v3,large-v3-turbo python -I -X utf8 phoneband_check.py <목록.json>`으로 돌려 큰 두 모델이 1.000이고, 작은 모델의 차이가 그 낱말 하나뿐이다(원음·300~3400Hz 폰 대역).
+
 ## 렌더 장비
 
 ### 새 노트북(RTX 5090 24GB)은 블렌더 한 장이 ZeroGPU보다 빠르다

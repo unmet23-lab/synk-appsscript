@@ -36,9 +36,20 @@ export const RULE_GRAMMAR = Object.freeze({
   'concert.date': ['G212', 'G402'], 'concert.chair': ['G505', 'G402'], 'concert.kid': ['G212', 'G403'], 'concert.food': ['S104', 'G402'] });
 const CASE_GRAMMAR = new Map(VENUES.flatMap((v) => v.cases.map((c) => [c.id, [...new Set(c.evidence.flatMap((r) => RULE_GRAMMAR[`${v.id}.${r}`] || []))]])));
 
+// 손님의 서류·짐·말·정답을 바꾸면 그 손님의 판을 올린다(학습기준 §7-2 문항 내용 판). 계열(familyKey)은 v1 그대로 두어
+// 예전 판을 이미 본 사람에게는 새 문항이 아니라 반복으로 남는다. 해설·난도만 고치면 판은 그대로다. 바꾸고 판을 안 올리면 learning.test.mjs가 잡는다.
+// 2026-10-21: 문항 검수 판정대로 고친 둘이 2판 — concert-12(손님 말이 안내문 근거를 먼저 알려 주지 않게), pool-14(손님을 이름이 흔한 등장인물로).
+// 같은 날 재검수: concert-12는 9일 표를 들여보내는 내용이 바뀐 날짜(부정·변경)를 읽는 concert-10과 같아, 짝 concert-03처럼 날짜가 다른
+// 표를 가진 손님(세부, 「표 날짜와 안내문의 허용 날짜 대조」)으로 다시 써서 3판.
+export const ITEM_VERSION = Object.freeze({ 'concert-12': 3, 'pool-14': 2 });
+// 학습 기록의 언어 난도(Core 칸, 작성 기준 §3)는 손님 모두 2다. 어느 손님이든 안내문 세 줄 이상(2단계 문형 -아/어야 하다·-(으)ㄹ 수 없다·
+// -(으)면, 바뀐 날짜·나이 조건)을 손님의 서류·짐·말과 함께 대조하는 글이기 때문이다(2026-10-21 문항 검수 판정, 결정 표 같은 날 판단).
+// 원고의 difficulty는 게임 안 단계로, 첫 근무에 넣을 쉬운 통과 손님(core.mjs composeShift)을 고를 때만 쓴다. 모두 같은 칸이라
+// 다시 확인 손님은 예전처럼 같은 학습 항목의 손님과 짝이 된다(correction.mjs sameMeasure).
+export const LANGUAGE_DIFFICULTY = 2;
 export function caseMetadata(c) {
-  const key = `${GAME_ID}.${c.id}.v1`;
-  return { id: `${GAME_ID}.${c.id}`, itemKey: key, familyKey: key, skillId: c.skill, difficulty: c.difficulty,
+  const family = `${GAME_ID}.${c.id}.v1`, key = `${GAME_ID}.${c.id}.v${ITEM_VERSION[c.id] || 1}`;
+  return { id: `${GAME_ID}.${c.id}`, itemKey: key, familyKey: family, skillId: c.skill, difficulty: LANGUAGE_DIFFICULTY,
     modality: 'reading', responseFormat: FORMAT, audioRequired: false, confounded: false, conceptIds: [...(CASE_GRAMMAR.get(c.id) || [])] };
 }
 export function assignmentCases(cases,target){

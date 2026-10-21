@@ -3,7 +3,7 @@
  "provider": "Typecast",
  "model": "ssfm-v30",
  "post": "앞 0.12초·끝 0.74초 여백, -21.4 LUFS 고정 이득 → wav 22050Hz 16bit mono → 그 wav에서 MP3 64kbps (지금 Windows 음성 파일의 실측과 같게)",
- "updatedAt": "2026-10-07T11:21:58.048Z",
+ "updatedAt": "2026-10-21T10:17:03.723Z",
  "voices": {
   "wind": {
    "label": "바람",
@@ -209,10 +209,10 @@
    "role": "wind",
    "voice": "혜리",
    "tempo": 1,
-   "key": "f4ed27fd46b283d7fdaadeca622f3617",
+   "key": "e79754336046add9fddbb78de0bcf273",
    "sha": {
-    "assets/voice/check-sign-duck.wav": "88a8b0634499b427",
-    "assets/voice/check-sign-duck.mp3": "69ea055a165f2168"
+    "assets/voice/check-sign-duck.wav": "68228d2756b3fcfa",
+    "assets/voice/check-sign-duck.mp3": "0d1707807453efe6"
    }
   },
   "check-not-middle": {
@@ -229,10 +229,10 @@
    "role": "wind",
    "voice": "혜리",
    "tempo": 1,
-   "key": "5a67ad944da68ea5d973942bba3aeef9",
+   "key": "67e31d8ea1221939e89ae2f6992929a8",
    "sha": {
-    "assets/voice/check-no-fence.wav": "13112411913a8d22",
-    "assets/voice/check-no-fence.mp3": "fe19073ace74f4f7"
+    "assets/voice/check-no-fence.wav": "33162950281db771",
+    "assets/voice/check-no-fence.mp3": "b89c5b1c8cf936b1"
    }
   },
   "check-high-sign": {

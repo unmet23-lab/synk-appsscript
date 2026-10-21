@@ -8,21 +8,21 @@ export const LISTENING_CHECKS = Object.freeze([
     choices: ['가운데 길로 가기', '왼쪽 길로 가기', '오른쪽 길로 가기'], correct: 0 },
   { id: 'check-wide-left', text: '왼쪽 길이 넓어요. 넓은 길로 가세요.', skill: '방향', explanation: '넓은 길은 왼쪽이에요.', steps: [lane(0)],
     choices: ['오른쪽 길로 가기', '가운데 길로 가기', '왼쪽 길로 가기'], correct: 2 },
-  { id: 'check-fence-jump', text: '앞에 낮은 울타리가 있어요. 울타리를 넘어가세요.', skill: '동작', explanation: '울타리를 넘어가려면 뛰어넘어요.', steps: [jump()],
-    choices: ['몸을 숙이기', '울타리를 뛰어넘기', '오른쪽 길로 가기'], correct: 1 },
-  { id: 'check-sign-duck', text: '앞에 낮은 표지판이 있어요. 머리를 숙이고 지나가세요.', skill: '위치 · 동작', explanation: '머리를 숙이면 낮은 표지판 아래로 지나갈 수 있어요.', steps: [slide()],
+  { id: 'check-fence-jump', text: '앞에 낮은 울타리가 있어요. 울타리를 넘어가세요.', skill: '동작', explanation: '안내에서 ‘울타리를 넘어가세요’라고 했어요. 그래서 위로 뛰어넘어야 해요. 몸을 숙이면 울타리를 넘을 수 없고, 다른 길로 가라는 말은 없었어요.', steps: [jump()],
+    choices: ['몸을 숙이기', '위로 뛰어넘기', '오른쪽 길로 가기'], correct: 1 },
+  { id: 'check-sign-duck', text: '앞에 표지판이 낮게 걸려 있어요. 머리를 숙이고 지나가세요.', skill: '위치 · 동작', explanation: '‘머리를 숙이고 지나가세요’라고 했어요. 표지판이 낮게 걸려 있으니까 몸을 숙여 아래로 지나가요. 뛰어넘거나 그대로 달리면 표지판에 부딪혀요.', steps: [slide()],
     choices: ['몸을 숙여 지나가기', '뛰어넘기', '그대로 달리기'], correct: 0 },
   { id: 'check-not-middle', text: '가운데로 가지 말고 오른쪽으로 가세요.', skill: '부정 · 방향', explanation: '가운데는 가지 말라고 했어요. 오른쪽으로 가요.', steps: [lane(2)],
     choices: ['가운데로 가기', '왼쪽으로 가기', '오른쪽으로 가기'], correct: 2 },
-  { id: 'check-no-fence', text: '울타리가 없으니까 뛰지 않아도 돼요.', skill: '부정 지시', explanation: '울타리가 없어서 뛸 필요가 없어요. 그냥 달려요.', steps: [stay()],
-    choices: ['뛰지 않고 그냥 달리기', '울타리를 뛰어넘기', '몸을 숙이기'], correct: 0 },
-  { id: 'check-high-sign', text: '표지판이 높아서 숙이지 않아도 돼요.', skill: '부정 지시', explanation: '표지판이 높으니까 그대로 지나가도 돼요.', steps: [stay()],
-    choices: ['몸을 숙여 지나가기', '숙이지 않고 그대로 지나가기', '뛰어넘기'], correct: 1 },
+  { id: 'check-no-fence', text: '울타리가 없으니까 뛰어넘지 않아도 돼요.', skill: '부정 지시', explanation: '‘울타리가 없으니까 뛰어넘지 않아도 돼요’라고 했어요. 울타리가 없어서 뛰어넘거나 옆으로 돌아갈 필요 없이 그냥 앞으로 달리면 돼요.', steps: [stay()],
+    choices: ['그냥 앞으로 달리기', '울타리를 뛰어넘기', '울타리 옆으로 돌아가기'], correct: 0 },
+  { id: 'check-high-sign', text: '표지판이 높아서 숙이지 않아도 돼요.', skill: '부정 지시', explanation: '‘숙이지 않아도 돼요’는 숙일 필요가 없다는 뜻이에요. 표지판이 높으니까 그대로 달려 지나가면 돼요. ‘숙이지’라는 말이 들려도 몸을 숙이라는 부탁이 아니에요.', steps: [stay()],
+    choices: ['몸을 숙여 지나가기', '그대로 달려 지나가기', '위로 뛰어넘어 가기'], correct: 1 },
   { id: 'check-not-left', text: '왼쪽으로 가지 마세요. 오른쪽 길이 좋아요.', skill: '부정 · 방향', explanation: '왼쪽은 가지 말라고 했어요. 좋은 길은 오른쪽이에요.', steps: [lane(2)],
     choices: ['왼쪽 길로 가기', '가운데 길에서 숙이기', '오른쪽 길로 가기'], correct: 2 },
   { id: 'check-duck-jump', text: '먼저 몸을 숙이고, 그다음에 울타리를 뛰어넘으세요.', skill: '순서', explanation: '먼저 숙이고, 그다음에 뛰어넘어요.', steps: [slide(),jump()],
     choices: ['몸을 숙인 뒤 뛰어넘기', '뛰어넘은 뒤 몸을 숙이기', '몸을 숙이기만 하기'], correct: 0 },
-  { id: 'check-middle-left', text: '가운데로 간 다음, 왼쪽으로 가세요.', skill: '순서 · 방향', explanation: '먼저 가운데로 가고, 그다음에 왼쪽으로 가요.', steps: [lane(1),lane(0)],
+  { id: 'check-middle-left', text: '가운데로 간 다음, 왼쪽으로 가세요.', skill: '순서 · 방향', explanation: '‘가운데로 간 다음’이라고 했으니 먼저 가운데로 가고, 그다음에 왼쪽으로 가요. ‘왼쪽으로 간 뒤 가운데로 가기’는 순서가 거꾸로예요.', steps: [lane(1),lane(0)],
     choices: ['왼쪽으로 간 뒤 가운데로 가기', '가운데로만 가기', '가운데로 간 뒤 왼쪽으로 가기'], correct: 2 },
   { id: 'check-right-before-jump', text: '뛰어넘기 전에 오른쪽으로 가세요.', skill: '순서', explanation: '‘뛰어넘기 전에’라고 했으니까 오른쪽으로 먼저 가요.', steps: [lane(2),jump()],
     choices: ['뛰어넘은 뒤 오른쪽으로 가기', '오른쪽으로 간 뒤 뛰어넘기', '오른쪽으로 간 뒤 몸을 숙이기'], correct: 1 },
@@ -36,9 +36,9 @@ const CORRECTIONS = Object.freeze({
   'check-star-middle': [null, '왼쪽이 아니라 별이 있는 가운데 길이에요.', '오른쪽이 아니라 별이 있는 가운데 길이에요.'],
   'check-wide-left': ['오른쪽이 아니라 넓다고 한 왼쪽 길이에요.', '가운데가 아니라 넓다고 한 왼쪽 길이에요.', null],
   'check-fence-jump': ['몸을 숙이면 울타리를 넘을 수 없어요. 울타리는 뛰어넘어요.', null, '길을 바꾸라는 부탁이 아니라 울타리를 넘어가라는 부탁이에요.'],
-  'check-sign-duck': [null, '뛰면 머리가 더 높아져요. 낮은 표지판 아래에서는 머리를 숙여요.', '그대로 달리지 말고 머리를 숙이고 지나가세요.'],
+  'check-sign-duck': [null, '뛰면 머리가 더 높아져요. 낮게 걸린 표지판 아래에서는 머리를 숙여요.', '그대로 달리지 말고 머리를 숙이고 지나가세요.'],
   'check-not-middle': ['가운데로 가지 말라고 했어요. 오른쪽으로 가세요.', '왼쪽이 아니라 오른쪽으로 가라고 했어요.', null],
-  'check-no-fence': [null, '‘뛰지 않아도 돼요’는 뛸 필요가 없다는 뜻이에요.', '숙이라는 부탁은 없어요. 뛰지 않고 그냥 달려도 돼요.'],
+  'check-no-fence': [null, '‘뛰어넘지 않아도 돼요’는 뛰어넘을 필요가 없다는 뜻이에요.', '울타리가 없다고 했어요. 돌아갈 울타리도 없으니 그냥 앞으로 달려요.'],
   'check-high-sign': ['‘숙이지 않아도 돼요’는 숙일 필요가 없다는 뜻이에요.', null, '뛰라는 부탁은 없어요. 높은 표지판 아래로 그대로 지나가도 돼요.'],
   'check-not-left': ['‘왼쪽으로 가지 마세요’라고 했어요. 오른쪽으로 가세요.', '가운데로 가거나 숙이라는 부탁은 없어요. 오른쪽으로 가세요.', null],
   'check-duck-jump': [null, '먼저 숙이고 그다음에 뛰어요. 고른 답은 순서가 반대예요.', '숙인 다음에 뛰어넘는 두 번째 동작도 필요해요.'],
@@ -55,9 +55,18 @@ export function listeningCheckFeedback(item, selected) {
 // The TOPIK I grammar each check sentence uses, as Strata's grammarIn (strata/topik-i-forms.js) reads it.
 // A test keeps this equal to grammarIn (a draft before teacher review).
 export const CHECK_GRAMMAR = Object.freeze({ 'check-star-middle': ['G211'], 'check-wide-left': ['G211'], 'check-fence-jump': ['G211'], 'check-sign-duck': ['G211'], 'check-not-middle': ['S226', 'G211'], 'check-no-fence': ['G410', 'G304', 'G505'], 'check-high-sign': ['G304', 'G505'], 'check-not-left': ['S226', 'G211'], 'check-duck-jump': ['G211'], 'check-middle-left': ['G406', 'G211'], 'check-right-before-jump': ['G406', 'G211'], 'check-left-run': ['G406', 'G211'] });
+// 들리는 문장·보기·정답을 바꾸면 그 확인의 판을 올린다(학습기준 §7-2 문항 내용 판). 계열(familyKey)은 v1 그대로 두어 예전 판을
+// 이미 들은 사람에게는 새 문항이 아니라 반복으로 남는다. 해설·고른 답 피드백·난도만 고치면 판은 그대로다(listening-check.test.mjs가 지문을 본다).
+// 2026-10-21: 문항 검수 판정대로 고친 넷이 2판 — fence-jump·high-sign(정답 보기만 대본의 말을 되풀이하지 않게), no-fence(「뛰다」가
+// 「달리다」와 겹쳐 「뛰어넘다」로, 다시 구움), sign-duck(낮은 표지판이 머리 위에 걸린 것으로 읽히게, 다시 구움).
+export const CHECK_VERSION = Object.freeze({ 'check-fence-jump': 2, 'check-high-sign': 2, 'check-no-fence': 2, 'check-sign-duck': 2 });
+// 언어 난도는 달리기 부탁처럼 동작 수(한 동작 1, 두 동작 2)로 정하되, 문항 검수가 문형으로 다르게 본 둘은 그 값이다(10-21):
+// 「-지 않아도 되다」(2단계)를 들어야 하는 high-sign·no-fence는 2. middle-left는 검수 판정이 1을 냈지만 같은 꼴(「-(으)ㄴ 다음」 두 동작)인
+// left-run·duck-jump가 두 검수자 모두에게 2로 통과했고 Strata 문형 단계도 2(G406)라 순서 확인 넷을 같은 2로 둔다(10-21 판단, 결정 표).
+export const CHECK_DIFFICULTY = Object.freeze({ 'check-high-sign': 2, 'check-no-fence': 2 });
 export function checkMetadata(item) {
-  const key = `korean-runner.listening-check.${item.id}.v1`;
-  return { ...instructionMetadata(item), id: `korean-runner.listening-check.${item.id}`, itemKey: key, familyKey: key,
+  const family = `korean-runner.listening-check.${item.id}.v1`, key = `korean-runner.listening-check.${item.id}.v${CHECK_VERSION[item.id] || 1}`, base = instructionMetadata(item);
+  return { ...base, id: `korean-runner.listening-check.${item.id}`, itemKey: key, familyKey: family, difficulty: CHECK_DIFFICULTY[item.id] ?? base.difficulty,
     responseFormat: 'single-choice', confounded: false, conceptIds: [...(CHECK_GRAMMAR[item.id] || [])] };
 }
 function allowedChecks(assignment) {

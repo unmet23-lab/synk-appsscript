@@ -47,8 +47,8 @@
 
 입구의 ‘듣기 확인 3문제’나 결과의 ‘듣기 확인’으로 연다. 움직이는 코스와 장애물 없이 MP3를 끝까지 듣고, 들은 행동을 보기에서 고른다. 지시문은 답한 뒤 공개한다. 실행 중에는 OS TTS를 쓰지 않고 미리 만든 MP3만 재생한다.
 
-- 확인 문장 12개는 달리기에서 나오지 않는 새 문장이다. 세부 4개, 부정 4개, 순서 4개(순서는 난도 2). 정답 자리는 첫째·둘째·셋째 보기에 고루 나뉜다. 음성은 달리기와 같은 Windows 음성(Microsoft Heami Desktop)이고 `assets/voice/jobs.json` → `scripts/build-voice.ps1` → `scripts/build-voice-manifest.py`로 만든다. 열두 개 모두 로컬 Whisper로 받아 적어 문장과 일치함을 확인했다. 사람의 직접 청취 검수는 아직이다.
-- 각 확인은 자기 계열 `korean-runner.listening-check.<id>.v1`을 가져 달린 뒤 푼 첫 응답도 독립 근거다. 문장의 TOPIK I 문형(`CHECK_GRAMMAR`)을 conceptIds로 남기고 시험이 Strata `grammarIn`과 같게 지킨다.
+- 확인 문장 12개는 달리기에서 나오지 않는 새 문장이다. 세부 4개, 부정 4개, 순서 4개(순서는 난도 2, 10-21 문항 검수로 「-지 않아도 되다」를 듣는 부정 둘도 난도 2 — `CHECK_DIFFICULTY`). 정답 자리는 첫째·둘째·셋째 보기에 고루 나뉜다. 음성은 달리기와 같은 바람 목소리다(아래 「목소리와 소리」). 사람의 직접 청취 검수는 아직이다.
+- 각 확인은 자기 계열 `korean-runner.listening-check.<id>.v1`을 가져 달린 뒤 푼 첫 응답도 독립 근거다. 들리는 문장·보기·정답을 바꾸면 판을 올린다(`CHECK_VERSION`, 계열은 v1 그대로) — 10-21 문항 검수 판정대로 고친 fence-jump·high-sign(정답 보기만 대본의 말을 되풀이하지 않게)·no-fence(「뛰다」→「뛰어넘다」)·sign-duck(표지판이 머리 위에 낮게 걸린 것으로)이 2판이다. 문장의 TOPIK I 문형(`CHECK_GRAMMAR`)을 conceptIds로 남기고 시험이 Strata `grammarIn`과 같게 지킨다.
 - `coach.assignment()`가 있으면(WORLD 안) 서버가 정한 영역·난도·응답 형식·문항/계열 목록 안에서만 최대 3개(또는 `requiredAttempts`)를 고른다. 자유 연습은 Core 추천과 노출 기록으로 고른다.
 - 끝까지 듣기 전에는 답을 막는다. 끝까지 들은 뒤의 재생만 재청취(도움)로 남기고, 그 재생이 끊겨도 답은 열려 있다. 불러오기에 실패한 뒤의 첫 재생은 첫 청취다. 들은 뒤 닫으면 ‘응답 없음’, 소리가 끊기면 다시 들은 뒤 답한다. WORLD 확인 도구가 쓰는 요소 이름(`#listening-check`·`#listening-check-dialog`·`#check-choices button`·`#check-replay`·`#check-next`·`#check-status`·`#check-feedback`·`#sound`)은 그대로 두었다.
 
@@ -80,7 +80,7 @@
 
 ## 목소리와 소리
 
-16개 로컬 MP3(Windows `System.Speech`의 Microsoft Heami Desktop, rate 0)를 시작 단추 뒤 Web Audio로 준비하고, 말하는 동안 배경 가락을 낮춘다. 원고 `instructions.mjs`, 생성 작업 `assets/voice/jobs.json`, 길이·해시 `assets/voice/manifest.json`, 안내 시점 `voice-timing.mjs`. WAV 원본은 로컬 보존용이고 공개 묶음에서 빠진다. 효과음과 배경 가락은 그 자리에서 합성하며 사운드킷 규칙(사인·트라이앵글, 400ms 이하, C 펜타토닉, 실패음 없음)을 따른다. 음질 직접 청취·학생 검수는 별도다.
+부탁 16개·듣기 확인 12개, 모두 28개의 MP3를 시작 단추 뒤 Web Audio로 준비하고, 말하는 동안 배경 가락을 낮춘다. 10-07부터 목소리는 Typecast 「혜리」(배역 바람, 빠르기 1)다 — `tools/미니게임_목소리.cjs`가 굽고, 배역·설정은 `tools/minigame-voice-casting.json`, 줄마다의 제작 기록은 `qa/voice.source.json`(공개 묶음에서 빠짐). 처음 판의 Windows 음성과 `scripts/build-voice.ps1`은 그 전 기록이라 지금 굽는 길이 아니다(같은 게임에 목소리가 섞인다). 10-21 고친 두 줄(no-fence·sign-duck)도 같은 목소리·설정으로 그 줄만 구웠고, 원음·폰 대역(300~3400Hz) 받아쓰기에서 small·large-v3·large-v3-turbo 셋이 대본과 같았다. 원고 `instructions.mjs`, 작업 `assets/voice/jobs.json`, 길이·해시 `assets/voice/manifest.json`, 안내 시점 `voice-timing.mjs`. WAV 원본은 로컬 보존용이고 공개 묶음에서 빠진다. 효과음과 배경 가락은 그 자리에서 합성하며 사운드킷 규칙(사인·트라이앵글, 400ms 이하, C 펜타토닉, 실패음 없음)을 따른다. 음질 직접 청취·학생 검수는 별도다.
 
 ## 실행
 

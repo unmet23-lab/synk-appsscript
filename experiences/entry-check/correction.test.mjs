@@ -128,7 +128,7 @@ test('a helped correct answer can confirm with a fresh item, without relabelling
   assert.equal(supported.assisted, true); assert.equal(supported.independent, false);
   assert.equal(plan.status, 'new'); assert.equal(plan.item.id, 'pool-10');
   const confirmation = exposed(g, plan.item, true); assert.equal(confirmation.independent, true);
-  const cell = g.summary().skills.find(skill => skill.id === item.skill).levels[1].formats['single-choice'];
+  const cell = g.summary().skills.find(skill => skill.id === item.skill).levels[caseMetadata(item).difficulty].formats['single-choice'];
   assert.equal(cell.n, 1, 'only the fresh unassisted confirmation adds independent evidence');
 });
 

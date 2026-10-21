@@ -8,9 +8,18 @@ import { ITEMS, SKILL_LABEL } from './content.mjs';
 export const GAME_ID = 'talk-rally';
 export const FORMAT = 'single-choice';
 
+// 몽글의 말·대답 카드·정답을 바꾸면 그 말의 판을 올린다(학습기준 §7-2 문항 내용 판). 계열(familyKey)은 v1 그대로 두어 예전 판을 이미
+// 들은 사람에게는 새 문항이 아니라 반복으로 남는다. 설명·난도만 고치면 판은 그대로다(learning.test.mjs가 지문을 본다).
+// 2026-10-21: 문항 검수 판정대로 뜻이 어색한 오답 「아니요, 물이 커요」를 「아니요, 물이 있어요」로 바꾼 r01이 2판.
+export const ITEM_VERSION = Object.freeze({ r01: 2 });
+// 학습 기록의 언어 난도(Core 칸, 작성 기준 §3). 원고의 difficulty는 게임 안 단계(처음 판은 쉬운 말부터·공이 오는 시간·「조금 어려운 말」
+// 표시·그날의 판 섞기)이고, 문항 검수가 한마디 인사·물음이라 1급 앞쪽(난도 1)으로 본 열다섯은 학습 기록에 1로 남긴다(2026-10-21 판정,
+// 결정 표 같은 날 판단). 단계 2에서 난도 2로 남는 말은 「-아/어 보다」를 묻는 r08이다.
+export const LANGUAGE_DIFFICULTY = Object.freeze({ r07: 1, r09: 1, w06: 1, w08: 1, w09: 1, w10: 1, w11: 1,
+  f06: 1, f11: 1, f12: 1, f13: 1, f14: 1, f15: 1, f16: 1, f18: 1 });
 export function itemMetadata(item) {
-  const key = `${GAME_ID}.${item.id}.v1`;
-  return { id: `${GAME_ID}.${item.id}`, itemKey: key, familyKey: key, skillId: item.skill, difficulty: item.difficulty,
+  const family = `${GAME_ID}.${item.id}.v1`, key = `${GAME_ID}.${item.id}.v${ITEM_VERSION[item.id] || 1}`;
+  return { id: `${GAME_ID}.${item.id}`, itemKey: key, familyKey: family, skillId: item.skill, difficulty: LANGUAGE_DIFFICULTY[item.id] ?? item.difficulty,
     modality: 'listening', responseFormat: FORMAT, audioRequired: true, confounded: false, conceptIds: [] };
 }
 

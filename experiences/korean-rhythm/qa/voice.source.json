@@ -3,15 +3,15 @@
  "provider": "Typecast",
  "model": "ssfm-v30",
  "post": "앞 0.23초·끝 0.97초 여백(지금 파일 실측) + 지금 build-narration.py와 같은 loudnorm I=-16 TP=-1 LRA=7 → MP3 mono 24kHz 64kbps",
- "updatedAt": "2026-10-09T09:11:01.962Z",
+ "updatedAt": "2026-10-21T11:24:34.274Z",
  "voices": {
   "narrator": {
    "label": "해설",
-   "id": "tc_666a9871abcf27a5169850d0",
-   "name": "소진",
-   "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929141735_666a9871abcf27a5169850d0_SSFM-V3_0.mp3",
-   "measure": "음높이 356Hz · 밝기 1547Hz · 억양 폭 12.6반음 · 빠르기 5.62 · 오디오북·라디오·광고",
-   "why": "높고 밝은 이야기꾼 목소리, 하나보다 15~30% 빨리 읽는다"
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나",
+   "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142725_61659cc118732016a95fe7c6_SSFM-V3_0.mp3",
+   "measure": "음높이 281Hz · 밝기 1433Hz · 억양 폭 17반음 · 빠르기 5.08 · 숏폼",
+   "why": "억양 폭이 가장 넓은 상큼한 목소리, 읽는 속도는 느긋하다"
   }
  },
  "lines": {
@@ -163,9 +163,9 @@
    "role": "narrator",
    "voice": "하나",
    "tempo": 0.92,
-   "key": "450416bb413c4a971c0d89d684c89381",
+   "key": "1765d5ba2173dcabdd3066b68064ff95",
    "sha": {
-    "assets/narration/t1q0v1.mp3": "10e7ee5e67afca74"
+    "assets/narration/t1q0v1.mp3": "c0fab6e405f5320c"
    }
   },
   "t1q0r": {
@@ -343,54 +343,54 @@
    "role": "narrator",
    "voice": "하나",
    "tempo": 0.92,
-   "key": "db7210ec0bf72f1dafe7b5c1d0b5317e",
+   "key": "a8e25e1fa45626b7d2520dbbd0cb8e52",
    "sha": {
-    "assets/narration/t2q2v0.mp3": "ca7bad11c7c76f58"
+    "assets/narration/t2q2v0.mp3": "7e4f9e0cfa130e6d"
    }
   },
   "t2q2v1": {
    "role": "narrator",
    "voice": "하나",
    "tempo": 0.92,
-   "key": "defcaf7303f7ca44c977cb2fafed7465",
+   "key": "be2fa6111a88abd6344bd9f01343afab",
    "sha": {
-    "assets/narration/t2q2v1.mp3": "d087148d7ce40d7e"
+    "assets/narration/t2q2v1.mp3": "1923be27d15cfea6"
    }
   },
   "t2q2r": {
    "role": "narrator",
    "voice": "하나",
    "tempo": 0.92,
-   "key": "d84610ca055c9b2c348262861489e4e3",
+   "key": "211fa2d6be38f9912839b1eb0ac67dd7",
    "sha": {
-    "assets/narration/t2q2r.mp3": "5b37298219f2ffde"
+    "assets/narration/t2q2r.mp3": "e654599b4668213a"
    }
   },
   "t2q3v0": {
    "role": "narrator",
    "voice": "하나",
    "tempo": 0.92,
-   "key": "26c17764072fea3fb6f39c49f7f99340",
+   "key": "cfedda959fc286459a58f9c5eeafad2f",
    "sha": {
-    "assets/narration/t2q3v0.mp3": "9bb8c3d0c0a891cf"
+    "assets/narration/t2q3v0.mp3": "661732deab83a74f"
    }
   },
   "t2q3v1": {
    "role": "narrator",
    "voice": "하나",
    "tempo": 0.92,
-   "key": "97b3bd196ba66f91a101bc64095a8f4b",
+   "key": "31f343a585a83f46bfa7cc29c21c3f77",
    "sha": {
-    "assets/narration/t2q3v1.mp3": "637ec0c880fef06e"
+    "assets/narration/t2q3v1.mp3": "73834c844d40cf6c"
    }
   },
   "t2q3r": {
    "role": "narrator",
    "voice": "하나",
    "tempo": 0.92,
-   "key": "e4ee1125e4666d6d5bc6869482ffb8ea",
+   "key": "1d354d3bd2e7fac0259d3ec50186d8be",
    "sha": {
-    "assets/narration/t2q3r.mp3": "51f7d63a20244c51"
+    "assets/narration/t2q3r.mp3": "c87b47a9b8e39a78"
    }
   },
   "t2q4v0": {

@@ -54,11 +54,11 @@ test('the next-song line takes the particle the title needs: ‘해안선’을 
 // The digest is the first 12 hex of [spoken line, answer]; after raising a version, change both here. A new line joins at version 1.
 const SPOKEN={t0q0v0:[1,'04b61a7678cc'],t0q0v1:[1,'58825513b7a3'],t0q0r:[1,'89b0e1658bca'],t0q1v0:[1,'453c8318ea9a'],t0q1v1:[1,'f177c900b954'],t0q1r:[1,'fd8530fde702'],
   t0q2v0:[1,'84a73eefabf0'],t0q2v1:[1,'005c44fbd8f1'],t0q2r:[1,'62ed46a59329'],t0q3v0:[1,'1a41e5d22e83'],t0q3v1:[1,'aa085b4d0e96'],t0q3r:[1,'6d62dbfaa399'],
-  t0q4v0:[1,'4d99563f2cf1'],t0q4v1:[1,'b3515c69cdaf'],t0q4r:[1,'dad6ed2a0605'],t1q0v0:[1,'6cf60a7fc3a5'],t1q0v1:[1,'d74974e4270d'],t1q0r:[1,'55806fa3eac1'],
+  t0q4v0:[1,'4d99563f2cf1'],t0q4v1:[1,'b3515c69cdaf'],t0q4r:[1,'dad6ed2a0605'],t1q0v0:[1,'6cf60a7fc3a5'],t1q0v1:[2,'7b923f9809d3'],t1q0r:[1,'55806fa3eac1'],
   t1q1v0:[1,'1f05e8fc355f'],t1q1v1:[1,'f761410a5338'],t1q1r:[1,'8c692b1e3899'],t1q2v0:[1,'57a77bf7beb2'],t1q2v1:[1,'2617c50d2f52'],t1q2r:[2,'c4f84e768669'],
   t1q3v0:[1,'aa61fdc9451c'],t1q3v1:[1,'c8a255724efe'],t1q3r:[1,'da85fb82567a'],t1q4v0:[1,'309c0a3a738d'],t1q4v1:[1,'f419f8f8039b'],t1q4r:[1,'9c8996ea5dbb'],
   t2q0v0:[1,'0b30740d128e'],t2q0v1:[1,'9cf4e55278d1'],t2q0r:[1,'cc7e039d6d49'],t2q1v0:[1,'70569198755c'],t2q1v1:[1,'7f142b2c92c1'],t2q1r:[1,'2ac8da599943'],
-  t2q2v0:[1,'bd427efc9d26'],t2q2v1:[1,'ff97fbc893fb'],t2q2r:[1,'059c13eb4177'],t2q3v0:[1,'d768bbaff979'],t2q3v1:[1,'38a52e920880'],t2q3r:[1,'59ce20e03673'],
+  t2q2v0:[3,'27cb7b9c7182'],t2q2v1:[3,'b76a01a5324f'],t2q2r:[3,'f70897ffa6cc'],t2q3v0:[2,'67acb25193f9'],t2q3v1:[2,'a7ef64192337'],t2q3r:[2,'e0b59a594580'],
   t2q4v0:[1,'4fc615c62f5b'],t2q4v1:[1,'211b70564e70'],t2q4r:[1,'c192dc383475']};
 test('item versions: a reworded spoken line raises its version while the family stays',()=>{
   const digest=x=>crypto.createHash('sha256').update(JSON.stringify(x)).digest('hex').slice(0,12),lines=[];

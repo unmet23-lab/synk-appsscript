@@ -70,3 +70,70 @@ test('기록을 못 쓰는 곳에서도 게임은 멈추지 않는다(기록 거
   const x = createExchange(broken, byId('f03'));
   assert.equal(x.heard(true), null); assert.equal(x.help('replay'), null); assert.equal(x.confirm('잘 먹겠습니다.'), null);
 });
+
+// 몽글의 말·대답 카드·정답이 바뀌면 그 말의 판(learning.mjs ITEM_VERSION)을 올려야 한다(학습기준 §7-2). 판을 올린 뒤 이 표의 판과
+// 지문(앞 12자리 해시)을 함께 바꾼다. 새 말은 판 1로 더한다. 설명·난도만 바꾸면 판은 그대로다(10-21 더함).
+const CONTENT = {
+  r01: [2, '1109fcb351b1'],
+  r02: [1, '0a7ca90b22fd'],
+  r03: [1, 'cc8f96192381'],
+  r04: [1, 'a88e3d5e607d'],
+  r05: [1, '7ec3063ee784'],
+  r06: [1, '1b539f2505ea'],
+  w01: [1, 'ecc1642d5265'],
+  w02: [1, '9ac5692bf8e0'],
+  w03: [1, 'd496a40566ff'],
+  w04: [1, 'c44e6693b170'],
+  w05: [1, '34164b1799a7'],
+  w06: [1, '39c249511c7f'],
+  w07: [1, '4fcf0eb91d80'],
+  w08: [1, '67fbc453192d'],
+  f01: [1, 'e543e536586d'],
+  f02: [1, '141682ae6201'],
+  f03: [1, '1a622561f107'],
+  f04: [1, '9fd0c046a142'],
+  f05: [1, '8597cd2e2e55'],
+  f06: [1, 'e724f55a892f'],
+  f07: [1, 'b2d765b7f32a'],
+  f08: [1, 'c063536741ad'],
+  f09: [1, 'e9c6f1725386'],
+  f10: [1, '960f47fd682b'],
+  f11: [1, 'd21c2aae794f'],
+  f12: [1, '28e2a049fa76'],
+  r07: [1, '6fbcc9583420'],
+  r08: [1, '14bac0641ecd'],
+  r09: [1, '9379d5f93c9a'],
+  r10: [1, 'c240e0c58ebf'],
+  w09: [1, '01f19d10e466'],
+  w10: [1, '6aff93e434e8'],
+  w11: [1, '2b2449268a21'],
+  w12: [1, 'fbb22bb1d271'],
+  w13: [1, '5c0de0caad4c'],
+  f13: [1, '2f2ca661e181'],
+  f14: [1, 'cd6621696365'],
+  f15: [1, 'e1e32d264fc9'],
+  f16: [1, 'f07c4e4097f7'],
+  f17: [1, 'ba0926af2956'],
+  f18: [1, '7da38ea80c96'],
+  f19: [1, '501432080d65'],
+  f20: [1, 'bb5ab5adc955'],
+  f21: [1, 'ecafee3dce78'],
+  f22: [1, '367508a9115b'],
+  f23: [1, 'ba603a0b8342'],
+};
+test('문항 판: 말·대답 카드·정답을 바꾸면 판이 올라가고 계열은 그대로다', async () => {
+  const crypto = await import('node:crypto');
+  const digest = (x) => crypto.createHash('sha256').update(JSON.stringify([x.line, x.options, x.answer])).digest('hex').slice(0, 12);
+  assert.deepEqual(Object.keys(CONTENT).sort(), ITEMS.map((x) => x.id).sort(), '새 말은 이 표에 판 1로 더한다');
+  for (const x of ITEMS) {
+    const [version, hash] = CONTENT[x.id];
+    assert.equal(digest(x), hash, `${x.id}: 내용이 바뀌었으면 ITEM_VERSION에서 판을 올리고 이 표를 고친다`);
+    assert.equal(itemMetadata(x).itemKey, `talk-rally.${x.id}.v${version}`, x.id);
+    assert.equal(itemMetadata(x).familyKey, `talk-rally.${x.id}.v1`, x.id);
+  }
+});
+// 학습 기록 난도는 검수 기준 §3의 언어 난도다. 게임 안 단계(원고 difficulty 2 — 처음 판·공 속도·「조금 어려운 말」)와 따로 둔다(10-21).
+test('학습 기록 난도: 한마디 인사·물음은 1, 「-아/어 보다」를 묻는 r08만 2 — 게임 안 단계는 원고 그대로', () => {
+  assert.deepEqual(ITEMS.filter((x) => itemMetadata(x).difficulty === 2).map((x) => x.id), ['r08']);
+  assert.ok(ITEMS.filter((x) => x.difficulty === 2).length >= 15, '게임 안 「조금 어려운 말」 단계는 그대로');
+});

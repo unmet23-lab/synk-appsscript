@@ -149,7 +149,7 @@ test('가짜 Typecast로 처음부터 끝까지: 키 연결 → 샘플 → 다�
     assert.ok(sampled.length >= 1);
     const ask = await b.call('/generate', { mode: 'all', games: ['korean-runner'] });
     assert.equal(ask.data.needConfirm, true, '먼저 어림을 보여 준다');
-    assert.equal(ask.data.lines, fresh); assert.equal(ask.data.chars, 585 - V.chars(sampled)); assert.equal(ask.data.estimate, ask.data.chars);
+    assert.equal(ask.data.lines, fresh); assert.equal(ask.data.chars, 590 - V.chars(sampled)); // 바람길 28줄 590자(10-21 듣기 확인 두 줄 고침 뒤) assert.equal(ask.data.estimate, ask.data.chars);
     assert.equal(mock.calls, callsBefore, '확인 전에는 부르지 않는다');
     assert.equal((await b.call('/generate', { mode: 'all', games: ['korean-runner'], confirmed: true })).data.started, true);
     s = await b.finish();

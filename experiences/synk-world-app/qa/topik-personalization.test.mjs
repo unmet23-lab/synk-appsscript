@@ -365,12 +365,19 @@ test('시험 계획과 함께: 홈 추천의 이유가 이번 주 숙제 항목�
  for(const weak of ['reading','listening']){
   const s=examStudent(weak),plan=planFor(s,{weeks:8,weekly:120});
   const pick=recommend(s,{examPlan:plan});
-  assert.ok(pick.reasons.includes('plan.homework'),`${weak}: ${pick.reason}`);
   const first=firstItem(s,pick.selected),skill=first.skillId||first.skillIds[0];
-  assert.equal(pick.planSkillId,skill,'이유가 말한 항목과 첫 문항의 항목이 같다');
-  assert.ok(plan.homework.some(row=>row.skillId===skill));
+  assert.ok(plan.homework.some(row=>row.skillId===skill),`${weak}: 첫 문항의 항목이 이번 주 숙제 항목이다`);
   const label=s.coach.summary().skills.find(row=>row.id===skill).label;
-  assert.match(pick.reason,new RegExp(`^이번 주 숙제예요\\. ${label}(에서 놓친 답이 있어| 기록이 오래돼) 새 문항으로 다시 확인해요\\.$`));
+  if(weak==='listening')assert.ok(pick.reasons.includes('plan.homework'),`${weak}: ${pick.reason}`);
+  if(pick.reasons.includes('plan.homework')){
+   assert.equal(pick.planSkillId,skill,'이유가 말한 항목과 첫 문항의 항목이 같다');
+   assert.match(pick.reason,new RegExp(`^이번 주 숙제예요\\. ${label}(에서 놓친 답이 있어| 기록이 오래돼) 새 문항으로 다시 확인해요\\.$`));
+  }else{
+   // 고른 새 문항의 칸에 이미 기록이 있으면 Core(Vellum)의 그 칸 까닭이 숙제 문장보다 앞선다(world-learning-plan.mjs hostReason —
+   // 기록에 있는 사실만 말한다). 10-21부터 읽기 조건 문항(입장 검사)은 모두 학습 기록 난도 2라 진단에서 놓친 답과 연습이 같은 칸이다.
+   assert.ok(pick.reasons.some(reason=>reason.startsWith('practice.')&&reason!=='practice.unseen'),`${weak}: ${pick.reason}`);
+   assert.equal(pick.focusSkillId,skill);assert.match(pick.reason,new RegExp(label));
+  }
   assert.equal(skill.split('.')[1],weak,'약한 영역의 항목');
  }
 });

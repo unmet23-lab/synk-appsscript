@@ -18,14 +18,22 @@ test('Town has 30 distinct authored passages and six families per reading skill'
   for (const item of READING_CHECKS) { assert.equal(new Set(item.choices).size, 3); assert.ok(item.choices[item.correct]); assert.ok(item.hint && item.explanation); }
   assert.equal(readingMetadata(READING_CHECKS[0]).familyKey, 'synk-town.reading-check.town-reading-place.v1');
 });
-for (const skill of ['detail', 'negation', 'sequence', 'reason', 'main']) test(`${skill}: first 3 and following 3 use different original passages`, () => {
-  const coach = fixture(), pool = READING_CHECKS.filter(x => x.skill === skill);
-  const first = selectReadingChecks(coach, { assignment: target(pool) }); assert.equal(first.length, 3);
+// A server task aims at one cell (skill × difficulty). Since 10-21 the reason and main checks have two difficulties
+// (understanding.mjs), so each cell is checked on its own: unseen passages come before any repeat.
+const cells = Object.values(Object.groupBy(READING_CHECKS, x => `${x.skill}:${readingMetadata(x).difficulty}`));
+for (const pool of cells) test(`${pool[0].skill} · difficulty ${readingMetadata(pool[0]).difficulty}: the first 3 and the next ones use different original passages`, () => {
+  const coach = fixture(), size = pool.length;
+  const first = selectReadingChecks(coach, { assignment: target(pool) }); assert.equal(first.length, Math.min(3, size));
   for (const item of first) { const pid = coach.present(readingMetadata(item)); assert.equal(coach.answer(pid, readingAnswer(item, item.correct)).independent, true); }
-  const following = selectReadingChecks(coach, { assignment: target(pool) }); assert.equal(following.length, 3);
-  assert.ok(following.every(item => !first.some(old => old.id === item.id)));
-  for (const item of following) { const pid = coach.present(readingMetadata(item)); assert.equal(coach.answer(pid, readingAnswer(item, item.correct)).independent, true); }
-  assert.equal(coach.summary().independent, 6);
+  const following = selectReadingChecks(coach, { assignment: target(pool) }), fresh = following.filter(item => !first.some(old => old.id === item.id));
+  assert.equal(fresh.length, Math.min(3, size - first.length)); assert.deepEqual(following.slice(0, fresh.length), fresh, 'unseen passages first');
+  for (const item of fresh) { const pid = coach.present(readingMetadata(item)); assert.equal(coach.answer(pid, readingAnswer(item, item.correct)).independent, true); }
+  assert.equal(coach.summary().independent, first.length + fresh.length);
+});
+test('every skill still has six passages, and the two-difficulty skills keep both cells', () => {
+  for (const skill of ['detail', 'negation', 'sequence', 'reason', 'main']) assert.equal(cells.filter(pool => pool[0].skill === skill).reduce((n, pool) => n + pool.length, 0), 6);
+  assert.deepEqual(cells.map(pool => `${pool[0].skill}:${readingMetadata(pool[0]).difficulty}:${pool.length}`).sort(),
+    ['detail:1:6', 'main:1:6', 'negation:1:6', 'reason:1:3', 'reason:2:3', 'sequence:1:6']);
 });
 test('Town honors the server exact item/family scope and rejects incompatible targets', () => {
   const coach = fixture(), items = READING_CHECKS.filter(x => x.skill === 'negation').slice(-3), assignment = target(items);
@@ -72,4 +80,51 @@ test('Town never invents a new item when exact assignment is exhausted or histor
   assert.equal(readingFollowUp(coach, first, round, 0).status, 'unavailable');
   delete coach.assignment; coach.exposure = () => ({ seen: null });
   assert.equal(readingFollowUp(coach, first, round, 0).status, 'unavailable');
+});
+
+// A check's passage, question, choices or answer changing must raise its version (understanding.mjs ITEM_VERSION, learning standard §7-2).
+// After raising it, update this table's version and digest (first 12 hex of the hash) together. A new check starts at version 1.
+// Explanations, hints, corrections and difficulty alone keep the version (added 10-21).
+const CONTENT = {
+  'town-reading-place': [2, '499519853756'],
+  'town-reading-negation': [2, 'e12780b128cb'],
+  'town-reading-sequence': [1, '32c3bdf0ca39'],
+  'town-detail-market': [1, 'e86d17d5585e'],
+  'town-detail-library': [1, '470da0a294e2'],
+  'town-detail-lost': [2, 'b86467f402db'],
+  'town-detail-festival': [1, '1cb9063c76b3'],
+  'town-detail-workshop': [1, '194b290c50fd'],
+  'town-negation-flowers': [1, '2d2fa0ed7201'],
+  'town-negation-books': [2, 'e04d7e8c5900'],
+  'town-negation-bike': [1, '983ff85c8248'],
+  'town-negation-desk': [1, '85a5ad465e67'],
+  'town-negation-bus': [2, '0b69fa74eb46'],
+  'town-sequence-borrow': [2, 'd8075f2d7815'],
+  'town-sequence-class': [2, 'c939b2210d51'],
+  'town-sequence-parcel': [1, 'f8945870db81'],
+  'town-sequence-garden': [2, '24c60407a9b5'],
+  'town-sequence-ticket': [2, '37211acc095c'],
+  'town-reason-library': [2, 'e0d38f35c648'],
+  'town-reason-bakery': [1, '8b0ceb2398d2'],
+  'town-reason-walk': [2, '35c110cce0b0'],
+  'town-reason-bus': [2, 'a72f9fcc8614'],
+  'town-reason-florist': [1, 'c332bdcb29db'],
+  'town-reason-quiet': [1, '187bad8a134f'],
+  'town-main-swim': [1, '9819d35a56d7'],
+  'town-main-cup': [2, 'b14a779648dd'],
+  'town-main-post': [1, 'ef89322f8247'],
+  'town-main-cat': [1, '58682232efe9'],
+  'town-main-swap': [2, '0d3341941ebc'],
+  'town-main-thanks': [2, '0a2ce2fe565a'],
+};
+test('content version: changing a passage, question, choice or answer raises the version and keeps the family', async () => {
+  const crypto = await import('node:crypto');
+  const digest = (x) => crypto.createHash('sha256').update(JSON.stringify([x.passage, x.question, x.choices, x.correct])).digest('hex').slice(0, 12);
+  assert.deepEqual(Object.keys(CONTENT).sort(), READING_CHECKS.map((x) => x.id).sort(), 'add a new check here at version 1');
+  for (const x of READING_CHECKS) {
+    const [version, hash] = CONTENT[x.id];
+    assert.equal(digest(x), hash, `${x.id}: the content changed — raise ITEM_VERSION and update this table`);
+    assert.equal(readingMetadata(x).itemKey, `synk-town.reading-check.${x.id}.v${version}`, x.id);
+    assert.equal(readingMetadata(x).familyKey, `synk-town.reading-check.${x.id}.v1`, x.id);
+  }
 });

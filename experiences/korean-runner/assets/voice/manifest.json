@@ -193,10 +193,10 @@
     },
     {
       "id": "check-sign-duck",
-      "text": "앞에 낮은 표지판이 있어요. 머리를 숙이고 지나가세요.",
-      "seconds": 3.580907,
-      "bytes": 29509,
-      "sha256": "69ea055a165f2168fab3802ce141c45430d8792cb77b83b69dac7f5232bd84f5",
+      "text": "앞에 표지판이 낮게 걸려 있어요. 머리를 숙이고 지나가세요.",
+      "seconds": 3.943764,
+      "bytes": 32225,
+      "sha256": "0d1707807453efe652d3c15c5ab439545d59398ee4261d4bfc3cafff8bd65479",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -213,10 +213,10 @@
     },
     {
       "id": "check-no-fence",
-      "text": "울타리가 없으니까 뛰지 않아도 돼요.",
-      "seconds": 2.823356,
-      "bytes": 23448,
-      "sha256": "fe19073ace74f4f7c551d6ebe4068705640428bbad295137a1b05e8fedc93405",
+      "text": "울타리가 없으니까 뛰어넘지 않아도 돼요.",
+      "seconds": 2.860227,
+      "bytes": 23657,
+      "sha256": "b89c5b1c8cf936b140e4a7deecf9562b3a86179d02f958631208878e44cf0aa1",
       "codec": "mp3",
       "sampleRate": 22050,
       "channels": 1
@@ -282,5 +282,5 @@
       "channels": 1
     }
   ],
-  "totalBytes": 659056
+  "totalBytes": 661981
 }
