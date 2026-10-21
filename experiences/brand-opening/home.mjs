@@ -269,7 +269,9 @@ function planLabel(next){
  if(next.route==='game'&&next.gameId)return t(`plan.game.${next.gameId}`);
  if(next.id==='world.resume.review')return t('plan.resumeReview');
  // 10-20 TOPIK 맞춤: 읽기 짧은 연습(그 항목)·짧은 진단·쓰기 연습(51~54)도 화면 언어로.
- if(next.route==='practice'&&next.skillId)return t('plan.practice',{skill:t(`position.skill.${next.skillId}`)});
+ // 10-21: 듣기 짧은 연습(문항 묶음의 듣기)과 시험 형식 연습도.
+ if(next.route==='practice'&&next.skillId)return t(String(next.skillId).split('.')[1]==='listening'?'plan.practice.listening':'plan.practice',{skill:t(`position.skill.${next.skillId}`)});
+ if(next.route==='mock')return t('mock.title');
  // 짧은 진단: 처음 시작점 진단도 이번 주 다시 확인도 같은 이름(계획 판 NOW·한국어 홈과 같다, 10-21 검수).
  if(next.route==='position')return t('position.diagnostic.title');
  if(next.route==='writing'){const type=String(next.routeId||'').split(':')[1];return `${t('writing.title')} · ${type==='mock'?t('writing.mock.title'):t(`writing.type.${type}`)}`;}

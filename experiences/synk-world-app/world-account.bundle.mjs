@@ -7734,18 +7734,18 @@ var require_vellum = __commonJS({
       if (state === "disagreed") return `${fact} \uC774 \uAE30\uB85D\uC744 \uC790\uC2E0\uC758 \uAD00\uC2EC\uC774\uB098 \uC120\uD638\uB85C \uD574\uC11D\uD558\uC9C0 \uC54A\uAE30\uB85C \uD588\uC5B4\uC694.`;
       return `${fact} ${kind === "learning-topic" ? "\uB2E4\uB918\uB2E4\uB294 \uC0AC\uC2E4\uB9CC\uC73C\uB85C \uAD00\uC2EC\uC774\uB77C\uACE0 \uC815\uD558\uC9C0 \uC54A\uC544\uC694." : "\uAE30\uB85D\uB41C \uBC29\uC2DD\uC774\uBA70 \uC120\uD638\uB098 \uD6A8\uACFC\uB97C \uB73B\uD558\uC9C0\uB294 \uC54A\uC544\uC694."}`;
     }
-    function memberUnderstandingSummary({ hasDeclaration, hasFeedback, practice = null, learning, usage, learningAt = null, usageAt = null }) {
-      if (typeof hasDeclaration !== "boolean" || typeof hasFeedback !== "boolean" || !["ready", "disabled", "unavailable"].includes(learning) || !["ready", "disabled", "unavailable"].includes(usage)) throw new TypeError("Vellum: invalid member summary");
+    function memberUnderstandingSummary({ hasDeclaration, hasFeedback, practice = null, learning: learning2, usage, learningAt = null, usageAt = null }) {
+      if (typeof hasDeclaration !== "boolean" || typeof hasFeedback !== "boolean" || !["ready", "disabled", "unavailable"].includes(learning2) || !["ready", "disabled", "unavailable"].includes(usage)) throw new TypeError("Vellum: invalid member summary");
       let observation = "";
-      if (learning === "ready" && practice) {
+      if (learning2 === "ready" && practice) {
         const { answered, independent, assisted, activeDays, to } = practice;
         if (![answered, independent, assisted, activeDays].every((n) => Number.isSafeInteger(n) && n >= 0) || independent + assisted > answered || activeDays > Math.min(answered, 31)) throw new TypeError("Vellum: invalid member practice summary");
         const period = `${memberDate(to)} \uAE30\uC900 \uCD5C\uADFC 30\uC77C`;
         observation = answered ? `\uD559\uC2B5 \uAE30\uB85D\uC740 ${period} \uC911 ${activeDays}\uC77C, \uC751\uB2F5 ${answered}\uAC74\uC774\uC5D0\uC694. \uADF8\uC911 \uB3C4\uC6C0 \uC5C6\uC774 \uB2F5\uD55C \uC751\uB2F5\uC740 ${independent}\uAC74, \uB3C4\uC6C0\uC744 \uBC1B\uC740 \uC751\uB2F5\uC740 ${assisted}\uAC74\uC774\uC5D0\uC694. ${activeDays === 1 ? "\uD558\uB8E8\uC758 \uAE30\uB85D\uB9CC\uC73C\uB85C \uBC18\uBCF5\uB418\uB294 \uACBD\uD5A5\uC774\uB098 \uC120\uD638\uB97C \uC815\uD558\uC9C0 \uC54A\uC544\uC694." : "\uC5F0\uC2B5\uC5D0\uC11C \uC0AC\uC6A9\uD55C \uBC29\uC2DD\uACFC \uBCF8\uC778\uC774 \uC6D0\uD558\uB294 \uBC29\uC2DD\uC740 \uB2E4\uB97C \uC218 \uC788\uC5B4\uC694."}` : `${period}\uC5D0\uB294 \uD559\uC2B5 \uC751\uB2F5 \uAE30\uB85D\uC774 \uC5C6\uC5B4\uC694. \uAE30\uB85D\uC774 \uC5C6\uB2E4\uB294 \uC0AC\uC2E4\uC744 \uAD00\uC2EC\uC774\uB098 \uC2E4\uB825\uC774 \uC5C6\uB2E4\uB294 \uB73B\uC73C\uB85C \uBCF4\uC9C0 \uC54A\uC544\uC694.`;
       }
       const scope = [];
-      if (learning === "disabled") scope.push("\uD559\uC2B5 \uAE30\uB85D \uC5F0\uACB0\uC774 \uAEBC\uC838 \uC788\uC5B4 \uC774\uBC88 \uC124\uBA85\uC5D0 \uC0AC\uC6A9\uD558\uC9C0 \uC54A\uC558\uC5B4\uC694.");
-      else if (learning === "unavailable") scope.push("\uD559\uC2B5 \uAE30\uB85D\uC740 \uC774\uBC88 \uC124\uBA85\uC5D0 \uC5F0\uACB0\uB418\uC9C0 \uC54A\uC558\uC5B4\uC694.");
+      if (learning2 === "disabled") scope.push("\uD559\uC2B5 \uAE30\uB85D \uC5F0\uACB0\uC774 \uAEBC\uC838 \uC788\uC5B4 \uC774\uBC88 \uC124\uBA85\uC5D0 \uC0AC\uC6A9\uD558\uC9C0 \uC54A\uC558\uC5B4\uC694.");
+      else if (learning2 === "unavailable") scope.push("\uD559\uC2B5 \uAE30\uB85D\uC740 \uC774\uBC88 \uC124\uBA85\uC5D0 \uC5F0\uACB0\uB418\uC9C0 \uC54A\uC558\uC5B4\uC694.");
       else if (!practice) scope.push(learningAt ? `\uD559\uC2B5 \uC790\uB8CC\uB294 ${memberDate(learningAt)} \uAE30\uC900\uC774\uBA70, \uAE30\uAC04\uBCC4 \uC751\uB2F5 \uC218\uB97C \uD568\uAED8 \uD655\uC778\uD560 \uC218 \uC5C6\uC5B4 \uC694\uC57D\uD558\uC9C0 \uC54A\uC558\uC5B4\uC694.` : "\uAE30\uAC04\uBCC4 \uD559\uC2B5 \uC751\uB2F5 \uC218\uB97C \uD655\uC778\uD560 \uC218 \uC5C6\uC5B4 \uC694\uC57D\uD558\uC9C0 \uC54A\uC558\uC5B4\uC694.");
       else if (hasDeclaration) scope.push(`\uD559\uC2B5 \uAE30\uB85D\uC740 ${memberDate(practice.to)} \uAE30\uC900 \uCD5C\uADFC 30\uC77C\uC758 \uC790\uB8CC\uC608\uC694. \uC9C1\uC811 \uC54C\uB824\uC900 \uC120\uD638\uC640 \uC5F0\uC2B5\uC5D0\uC11C \uAD00\uCC30\uD55C \uC0AC\uC2E4\uC744 \uAD6C\uBD84\uD574\uC694.`);
       if (usage === "disabled") scope.push("\uC571 \uC774\uC6A9 \uAE30\uB85D \uC5F0\uACB0\uC774 \uAEBC\uC838 \uC788\uC5B4 \uC774\uBC88 \uC124\uBA85\uC5D0 \uC0AC\uC6A9\uD558\uC9C0 \uC54A\uC558\uC5B4\uC694.");
@@ -7985,10 +7985,10 @@ var require_temper = __commonJS({
 var require_learning_ledger = __commonJS({
   "atlas/learning-ledger.js"(exports, module) {
     "use strict";
-    var Trail = require_trail();
+    var Trail2 = require_trail();
     var Temper = require_temper();
     var VERSION = "learning-ledger-1";
-    var BITS = Trail.BITS;
+    var BITS = Trail2.BITS;
     var KEEP = 12;
     var HELP_MS = 30 * 864e5;
     var FOLDABLE = Object.freeze([
@@ -8033,14 +8033,14 @@ var require_learning_ledger = __commonJS({
       const time3 = (e) => Math.max(Date.parse(e.at), Date.parse(e.recordedAt));
       const latest = log.reduce((max, e) => Math.max(max, time3(e)), -Infinity);
       const decisions = events.filter((e) => e.type === "decision.made").map((e) => e.id);
-      const summary = Trail.summarize(log, { scope, asOf: new Date(latest).toISOString(), prior: previous, decisions });
+      const summary = Trail2.summarize(log, { scope, asOf: new Date(latest).toISOString(), prior: previous, decisions });
       const presented = new Map(events.filter((e) => e.type === "practice.presented").map((e) => [e.id, e]));
       for (const e of events) {
         if (e.type !== "practice.helped" && e.type !== "practice.attempted") continue;
         const p = presented.get(e.presentationId);
         if (!p) continue;
         const bit = e.type === "practice.attempted" ? BITS.attempt : e.level === "answer" ? BITS.answer : BITS.help;
-        for (const k of Trail.traceKeys(p)) ledger.keys[k] = (own2(ledger.keys, k) ? ledger.keys[k] : 0) | bit;
+        for (const k of Trail2.traceKeys(p)) ledger.keys[k] = (own2(ledger.keys, k) ? ledger.keys[k] : 0) | bit;
       }
       const shown = new Map(ledger.presented.map(([task, item, family, n]) => [JSON.stringify([task, item, family]), n]));
       for (const p of summary.presentations) {
@@ -8134,7 +8134,7 @@ var require_learning_ledger = __commonJS({
       for (const e of late) {
         if (e.type !== "practice.attempted" && e.type !== "practice.helped") continue;
         const p = find(e.presentationId);
-        if (p) marks.push({ keys: new Set(Trail.traceKeys(p)), at: Date.parse(e.at) });
+        if (p) marks.push({ keys: new Set(Trail2.traceKeys(p)), at: Date.parse(e.at) });
       }
       if (!ledger || !late.length && !gone.size && !strays) return ledger;
       const after = ([eventId, at, , familyKey, itemKey = familyKey]) => gone.has(eventId) || marks.some((m) => (m.keys.has(`item:${itemKey}`) || m.keys.has(`family:${familyKey}`)) && at > m.at);
@@ -10233,7 +10233,7 @@ var require_game_learning = __commonJS({
     "use strict";
     var Atlas = require_engine();
     var Core = require_education();
-    var Trail = require_trail();
+    var Trail2 = require_trail();
     var Learning = require_learning();
     var Temper = require_temper();
     var { createLearningSync, sameEvent } = require_learning_sync();
@@ -10481,26 +10481,26 @@ var require_game_learning = __commonJS({
       if (!initial && readable && storage) persist();
       const practiceSession = { practice: (...args) => session.practice(...args) };
       const VIEW_MS = 6e4;
-      let cached = null, met = null;
+      let cached2 = null, met = null;
       function view() {
         const events = log(), asOf = monotonicClock(), now = Date.parse(asOf);
-        if (cached?.events === events && now - cached.now < VIEW_MS) return cached.summary;
-        cached = { events, now, summary: Trail.summarize(events, { scope, asOf, prior: ledger }), profiles: /* @__PURE__ */ new Map(), counts: null };
-        return cached.summary;
+        if (cached2?.events === events && now - cached2.now < VIEW_MS) return cached2.summary;
+        cached2 = { events, now, summary: Trail2.summarize(events, { scope, asOf, prior: ledger }), profiles: /* @__PURE__ */ new Map(), counts: null };
+        return cached2.summary;
       }
       function profileOf(observed) {
         const ok = complete && readable && writable, flag = String(ok);
-        if (cached?.summary === observed && cached.profiles.has(flag)) return cached.profiles.get(flag);
+        if (cached2?.summary === observed && cached2.profiles.has(flag)) return cached2.profiles.get(flag);
         const profile = {
           ...Learning.summarizeLearning({ summary: observed, map, complete: ok, prior: ledger }),
           concepts: Learning.summarizeConcepts({ summary: observed, map, complete: ok, prior: ledger })
         };
-        if (cached?.summary === observed) cached.profiles.set(flag, profile);
+        if (cached2?.summary === observed) cached2.profiles.set(flag, profile);
         return profile;
       }
       function provenance() {
         const events = log();
-        if (!met || met.session !== session) met = { session, done: 0, index: Trail.createIndex({ scope, prior: ledger }), buckets: /* @__PURE__ */ new Map() };
+        if (!met || met.session !== session) met = { session, done: 0, index: Trail2.createIndex({ scope, prior: ledger }), buckets: /* @__PURE__ */ new Map() };
         for (; met.done < events.length; met.done += 1) {
           const row = met.index.add(events[met.done]);
           if (!row?.measure) continue;
@@ -10527,7 +10527,7 @@ var require_game_learning = __commonJS({
         refresh();
         const observed = view();
         const measured = () => Temper.combine(ledger?.counts || null, Temper.measure(observed));
-        if (cached?.summary === observed && !cached.counts) cached.counts = measured();
+        if (cached2?.summary === observed && !cached2.counts) cached2.counts = measured();
         return {
           ...profileOf(observed),
           storage: {
@@ -10536,7 +10536,7 @@ var require_game_learning = __commonJS({
             warning,
             ...ledger ? { folded: ledger.folded, adjusted: ledger.adjusted || 0 } : {}
           },
-          counts: cached?.summary === observed ? cached.counts : measured()
+          counts: cached2?.summary === observed ? cached2.counts : measured()
         };
       }
       function requireActive(pid) {
@@ -10766,7 +10766,7 @@ var require_game_learning = __commonJS({
         answer(pid, result) {
           const p = requireActive(pid);
           if (!result || ![true, false, null].includes(result.correct) || typeof result.assessable !== "boolean") throw new TypeError("Atlas: answer must identify assessability");
-          const choice = Object.hasOwn(result, "choice") ? Trail.choiceRecord(result.choice) : null;
+          const choice = Object.hasOwn(result, "choice") ? Trail2.choiceRecord(result.choice) : null;
           const attemptNo = result.attemptNo ?? 1;
           if (!Number.isInteger(attemptNo) || attemptNo < 1 || attemptNo > p.results.length + 1) throw new TypeError("Atlas: attempts must be consecutive");
           if (p.results[attemptNo - 1]) {
@@ -11028,7 +11028,7 @@ var require_game_browser = __commonJS({
     "use strict";
     var { createMap } = require_strata();
     var curriculum = require_topik_i2().topikMap();
-    var learning = require_game_learning();
+    var learning2 = require_game_learning();
     var Flow = require_flow();
     var TemperFlow = require_temper_flow();
     var VellumFlow = require_vellum_flow();
@@ -11043,7 +11043,7 @@ var require_game_browser = __commonJS({
       }
       return null;
     }
-    var factory = (config) => learning.createGame({ ...config, map });
+    var factory = (config) => learning2.createGame({ ...config, map });
     var games = /* @__PURE__ */ new Set();
     var flushAll = () => {
       for (const game of games) {
@@ -11060,16 +11060,16 @@ var require_game_browser = __commonJS({
       });
     }
     module.exports = {
-      ...learning,
+      ...learning2,
       Flow,
       TemperFlow,
       VellumFlow,
       Ask,
       SKILLS: map.allNodes(),
-      engine: Object.freeze({ createGame: factory, createLearningSync: learning.createLearningSync, createMemorySync: learning.createMemorySync }),
+      engine: Object.freeze({ createGame: factory, createLearningSync: learning2.createLearningSync, createMemorySync: learning2.createMemorySync }),
       createGame: (options) => {
         const owner = host();
-        const game = owner ? owner.createGame(options, factory, learning.createLearningSync) : factory(options);
+        const game = owner ? owner.createGame(options, factory, learning2.createLearningSync) : factory(options);
         games.add(game);
         return game;
       }
@@ -13567,7 +13567,7 @@ function createWorldGameHost({
   revision,
   connected,
   play,
-  learning,
+  learning: learning2,
   memory,
   guard,
   target = globalThis,
@@ -13596,7 +13596,7 @@ function createWorldGameHost({
     guard: check2,
     engine,
     storage: scopedStorage(storage, accountKey, revision, check2),
-    transport: learning,
+    transport: learning2,
     personalMemory: { accountKey, revision, connected, storage: scopedStorage(storage, accountKey, revision, check2), transport: memory },
     onStatus: () => notify()
   });
@@ -13704,8 +13704,327 @@ function createWorldGameHost({
   }, dispose, importDeviceLearning });
 }
 
-// experiences/synk-world-app/world-account.mjs
+// experiences/synk-world-app/world-learning-map.mjs
+var import_strata = __toESM(require_strata(), 1);
+var import_topik_i = __toESM(require_topik_i2(), 1);
+
+// strata/maps/topik-ii.json
+var topik_ii_default = {
+  map_ver: "topik-ii-practice-1-47d0a0c19158",
+  subject: "ko",
+  sources: {
+    "practice-taxonomy": {
+      path: "strata/topik-ii.skills.json",
+      sha256: "47d0a0c1915834979d4eb07420214da084987699ae2e4c59057b1de4cfb1da8d"
+    }
+  },
+  nodes: [
+    {
+      id: "ko2.listening.response",
+      kind: "skill",
+      label_ko: "\uB4E3\uACE0 \uC54C\uB9DE\uAC8C \uB300\uB2F5\uD558\uAE30",
+      domain: "listening",
+      level: null,
+      difficulty: {
+        authored: null,
+        measured: null,
+        n: 0
+      },
+      source_refs: [
+        {
+          source: "practice-taxonomy",
+          selector: "skills"
+        }
+      ]
+    },
+    {
+      id: "ko2.listening.detail",
+      kind: "skill",
+      label_ko: "\uB4E3\uACE0 \uC138\uBD80 \uB0B4\uC6A9 \uD30C\uC545\uD558\uAE30",
+      domain: "listening",
+      level: null,
+      difficulty: {
+        authored: null,
+        measured: null,
+        n: 0
+      },
+      source_refs: [
+        {
+          source: "practice-taxonomy",
+          selector: "skills"
+        }
+      ]
+    },
+    {
+      id: "ko2.listening.main",
+      kind: "skill",
+      label_ko: "\uB4E3\uACE0 \uC911\uC2EC \uC0DD\uAC01 \uD30C\uC545\uD558\uAE30",
+      domain: "listening",
+      level: null,
+      difficulty: {
+        authored: null,
+        measured: null,
+        n: 0
+      },
+      source_refs: [
+        {
+          source: "practice-taxonomy",
+          selector: "skills"
+        }
+      ]
+    },
+    {
+      id: "ko2.listening.inference",
+      kind: "skill",
+      label_ko: "\uB4E3\uACE0 \uC0C1\uD669 \uC9D0\uC791\uD558\uAE30",
+      domain: "listening",
+      level: null,
+      difficulty: {
+        authored: null,
+        measured: null,
+        n: 0
+      },
+      source_refs: [
+        {
+          source: "practice-taxonomy",
+          selector: "skills"
+        }
+      ]
+    },
+    {
+      id: "ko2.listening.attitude",
+      kind: "skill",
+      label_ko: "\uB4E3\uACE0 \uC758\uB3C4\xB7\uD0DC\uB3C4 \uD30C\uC545\uD558\uAE30",
+      domain: "listening",
+      level: null,
+      difficulty: {
+        authored: null,
+        measured: null,
+        n: 0
+      },
+      source_refs: [
+        {
+          source: "practice-taxonomy",
+          selector: "skills"
+        }
+      ]
+    },
+    {
+      id: "ko2.reading.grammar",
+      kind: "skill",
+      label_ko: "\uBB38\uBC95 \uD45C\uD604 \uC77D\uAE30",
+      domain: "reading",
+      level: null,
+      difficulty: {
+        authored: null,
+        measured: null,
+        n: 0
+      },
+      source_refs: [
+        {
+          source: "practice-taxonomy",
+          selector: "skills"
+        }
+      ]
+    },
+    {
+      id: "ko2.reading.vocabulary",
+      kind: "skill",
+      label_ko: "\uC5B4\uD718\xB7\uAD00\uC6A9 \uD45C\uD604 \uC77D\uAE30",
+      domain: "reading",
+      level: null,
+      difficulty: {
+        authored: null,
+        measured: null,
+        n: 0
+      },
+      source_refs: [
+        {
+          source: "practice-taxonomy",
+          selector: "skills"
+        }
+      ]
+    },
+    {
+      id: "ko2.reading.detail",
+      kind: "skill",
+      label_ko: "\uC77D\uACE0 \uC138\uBD80 \uB0B4\uC6A9 \uD30C\uC545\uD558\uAE30",
+      domain: "reading",
+      level: null,
+      difficulty: {
+        authored: null,
+        measured: null,
+        n: 0
+      },
+      source_refs: [
+        {
+          source: "practice-taxonomy",
+          selector: "skills"
+        }
+      ]
+    },
+    {
+      id: "ko2.reading.main",
+      kind: "skill",
+      label_ko: "\uC77D\uACE0 \uC911\uC2EC \uB0B4\uC6A9 \uD30C\uC545\uD558\uAE30",
+      domain: "reading",
+      level: null,
+      difficulty: {
+        authored: null,
+        measured: null,
+        n: 0
+      },
+      source_refs: [
+        {
+          source: "practice-taxonomy",
+          selector: "skills"
+        }
+      ]
+    },
+    {
+      id: "ko2.reading.context",
+      kind: "skill",
+      label_ko: "\uBB38\uB9E5\uC73C\uB85C \uB0B4\uC6A9 \uC9D0\uC791\uD558\uAE30",
+      domain: "reading",
+      level: null,
+      difficulty: {
+        authored: null,
+        measured: null,
+        n: 0
+      },
+      source_refs: [
+        {
+          source: "practice-taxonomy",
+          selector: "skills"
+        }
+      ]
+    },
+    {
+      id: "ko2.reading.structure",
+      kind: "skill",
+      label_ko: "\uAE00\uC758 \uD750\uB984 \uD30C\uC545\uD558\uAE30",
+      domain: "reading",
+      level: null,
+      difficulty: {
+        authored: null,
+        measured: null,
+        n: 0
+      },
+      source_refs: [
+        {
+          source: "practice-taxonomy",
+          selector: "skills"
+        }
+      ]
+    },
+    {
+      id: "ko2.reading.attitude",
+      kind: "skill",
+      label_ko: "\uD544\uC790\xB7\uC778\uBB3C\uC758 \uD0DC\uB3C4\uC640 \uC2EC\uC815 \uD30C\uC545\uD558\uAE30",
+      domain: "reading",
+      level: null,
+      difficulty: {
+        authored: null,
+        measured: null,
+        n: 0
+      },
+      source_refs: [
+        {
+          source: "practice-taxonomy",
+          selector: "skills"
+        }
+      ]
+    },
+    {
+      id: "ko2.writing.sentence",
+      kind: "skill",
+      label_ko: "\uBB38\uB9E5\uC5D0 \uB9DE\uB294 \uBB38\uC7A5 \uC4F0\uAE30",
+      domain: "writing",
+      level: null,
+      difficulty: {
+        authored: null,
+        measured: null,
+        n: 0
+      },
+      source_refs: [
+        {
+          source: "practice-taxonomy",
+          selector: "skills"
+        }
+      ]
+    },
+    {
+      id: "ko2.writing.description",
+      kind: "skill",
+      label_ko: "\uC790\uB8CC\uB97C \uC124\uBA85\uD558\uB294 \uAE00 \uC4F0\uAE30",
+      domain: "writing",
+      level: null,
+      difficulty: {
+        authored: null,
+        measured: null,
+        n: 0
+      },
+      source_refs: [
+        {
+          source: "practice-taxonomy",
+          selector: "skills"
+        }
+      ]
+    },
+    {
+      id: "ko2.writing.argument",
+      kind: "skill",
+      label_ko: "\uC8FC\uC7A5\uD558\uB294 \uAE00 \uC4F0\uAE30",
+      domain: "writing",
+      level: null,
+      difficulty: {
+        authored: null,
+        measured: null,
+        n: 0
+      },
+      source_refs: [
+        {
+          source: "practice-taxonomy",
+          selector: "skills"
+        }
+      ]
+    }
+  ],
+  edges: [],
+  tag_vocabulary: [],
+  links: {
+    tags: [],
+    goals: []
+  }
+};
+
+// experiences/synk-world-app/world-learning-map.mjs
 var import_game_browser2 = __toESM(require_game_browser(), 1);
+var import_game_learning = __toESM(require_game_learning(), 1);
+var II = "-ii";
+function worldMapData({ base = import_topik_i.default.topikMap(), second = topik_ii_default } = {}) {
+  const rename = (key) => Object.hasOwn(base.sources, key) ? `${key}${II}` : key;
+  const refs = (list) => list.map((ref) => ({ ...ref, source: rename(ref.source) }));
+  return {
+    map_ver: `world:${base.map_ver}:${second.map_ver}`,
+    subject: base.subject,
+    sources: { ...base.sources, ...Object.fromEntries(Object.entries(second.sources).map(([key, value]) => [rename(key), value])) },
+    nodes: [...base.nodes, ...second.nodes.map((node) => ({ ...node, source_refs: refs(node.source_refs) }))],
+    edges: [...base.edges, ...second.edges.map((edge) => ({ ...edge, source_refs: refs(edge.source_refs) }))],
+    tag_vocabulary: [...base.tag_vocabulary, ...second.tag_vocabulary],
+    links: {
+      ...base.links,
+      tags: [...base.links.tags, ...second.links.tags.map((link) => ({ ...link, source_refs: refs(link.source_refs) }))],
+      ...base.links.goals || second.links.goals?.length ? { goals: [...base.links.goals || [], ...(second.links.goals || []).map((link) => ({ ...link, source_refs: refs(link.source_refs) }))] } : {}
+    }
+  };
+}
+var worldMap = import_strata.default.createMap(worldMapData());
+var worldLearning = Object.freeze({
+  ...import_game_browser2.default,
+  SKILLS: worldMap.allNodes(),
+  engine: Object.freeze({ ...import_game_browser2.default.engine, createGame: (config) => import_game_learning.default.createGame({ ...config, map: worldMap }) })
+});
 
 // experiences/synk-world-app/life-content.mjs
 var choices = (texts) => texts.map((text2, index) => ({ id: ["a", "b", "c"][index], text: text2 }));
@@ -14470,7 +14789,11 @@ function lastRecheck({ events = [], before = Infinity } = {}) {
 var WEAK = /* @__PURE__ */ new Set(["practice", "supported", "review"]);
 var weakOf = (skill2) => WEAK.has(skill2.status) || skill2.status === "checking" && skill2.incorrect > 0;
 function domainNeeds(summary, domains, prefix) {
-  const skills = (planRecord(summary) && Array.isArray(summary.skills) ? summary.skills : []).filter((skill2) => prefix.test(skill2?.id || ""));
+  const match = (skill2) => {
+    const rule = prefix instanceof RegExp ? prefix : prefix?.[skill2?.domain];
+    return rule instanceof RegExp && rule.test(skill2?.id || "");
+  };
+  const skills = (planRecord(summary) && Array.isArray(summary.skills) ? summary.skills : []).filter(match);
   const complete = summary?.evidenceComplete === true, needs = {};
   for (const domain of domains) needs[domain] = complete ? skills.filter((skill2) => skill2.domain === domain && weakOf(skill2)).length : 0;
   return { needs, skills, complete };
@@ -14503,12 +14826,18 @@ function buildExamPlan({ exam, summary = null, now = Date.now(), done = null, av
   const pace = exam.weeklyMinutes && policy.weekly[exam.weeklyMinutes] || policy.fallback;
   const topik2 = exam.type === "topik2", domains = topik2 ? ["listening", "reading", "writing"] : ["listening", "reading"];
   const ko2 = planRecord(summary) && Array.isArray(summary.skills) && summary.skills.some((skill2) => /^ko2\./.test(skill2?.id || ""));
-  const { needs, skills, complete } = domainNeeds(summary, domains, topik2 && ko2 ? /^ko2\.(listening|reading|writing)\./ : /^ko\.(listening|reading)\.[a-z]+$/);
+  const two = (domain) => topik2 && ko2 && (domain === "writing" || available.topik2?.[domain] === true);
+  const MAPS = { topik1: { listening: /^ko\.listening\.[a-z]+$/, reading: /^ko\.reading\.[a-z]+$/, writing: /^$/ }, topik2: { listening: /^ko2\.listening\.[a-z]+$/, reading: /^ko2\.reading\.[a-z]+$/, writing: /^ko2\.writing\.[a-z]+$/ } };
+  const prefix = Object.fromEntries(domains.map((domain) => [domain, MAPS[two(domain) ? "topik2" : "topik1"][domain]]));
+  const { needs, skills, complete } = domainNeeds(summary, domains, prefix);
+  const basis = topik2 && ko2 && two("listening") && two("reading") ? "topik2" : "topik1";
   const observed = skills.filter((skill2) => (skill2.n || 0) > 0 || skill2.status !== "unseen");
-  const supply = { reading: planRecord(available.reading) ? available.reading : {}, listening: planRecord(available.listening) ? available.listening : {} };
+  const practice = planRecord(available.practice) ? available.practice : planRecord(available.reading) ? available.reading : {};
+  const supply = { practice, listening: planRecord(available.listening) ? available.listening : {} };
+  const domainOf = (id) => String(id || "").split(".")[1];
   const has = {
-    listening: audioAvailable && Object.values(supply.listening).some((list) => Array.isArray(list) && list.length),
-    reading: Object.values(supply.reading).some((n) => n > 0),
+    listening: audioAvailable && (Object.values(supply.listening).some((list) => Array.isArray(list) && list.length) || Object.entries(practice).some(([id, n]) => domainOf(id) === "listening" && n > 0)),
+    reading: Object.entries(practice).some(([id, n]) => domainOf(id) === "reading" && n > 0),
     writing: Array.isArray(available.writing) && available.writing.length > 0
   };
   const recheckFresh = Number.isInteger(available.recheck) ? available.recheck : 0, lifeOpen = available.life === true;
@@ -14541,8 +14870,16 @@ function buildExamPlan({ exam, summary = null, now = Date.now(), done = null, av
   })).filter((row) => row.planned > 0 || row.done > 0);
   const writingFor = (id) => (Array.isArray(available.writing) ? available.writing : []).filter((row) => Array.isArray(row?.skillIds) && row.skillIds.includes(id) && typeof row.routeId === "string").map((row) => row.routeId);
   const homework = skills.filter(weakOf).map((skill2) => {
-    const reading = skill2.domain === "reading" ? supply.reading[skill2.id] || 0 : 0, games = skill2.domain === "listening" ? supply.listening[skill2.id] || [] : skill2.domain === "writing" ? writingFor(skill2.id) : [];
-    return { skillId: skill2.id, domain: skill2.domain, status: skill2.status, priority: skill2.priority ?? 0, fresh: reading, activities: [...games], shortage: skill2.domain === "reading" ? reading === 0 : skill2.domain === "writing" ? games.length === 0 : games.length === 0 || !audioAvailable };
+    const fresh = skill2.domain === "writing" ? 0 : practice[skill2.id] || 0, games = skill2.domain === "listening" ? supply.listening[skill2.id] || [] : skill2.domain === "writing" ? writingFor(skill2.id) : [];
+    return {
+      skillId: skill2.id,
+      domain: skill2.domain,
+      status: skill2.status,
+      priority: skill2.priority ?? 0,
+      fresh,
+      activities: [...games],
+      shortage: skill2.domain === "reading" ? fresh === 0 : skill2.domain === "writing" ? games.length === 0 : fresh === 0 && games.length === 0 || !audioAvailable
+    };
   }).sort((a, b) => b.priority - a.priority || Number(a.shortage) - Number(b.shortage) || a.skillId.localeCompare(b.skillId)).slice(0, 3).map(({ priority, ...row }) => row);
   const rank = (row) => start && row.area === "recheck" ? 1 : 0;
   const next = areas.filter((row) => row.remaining > 0).sort((a, b) => rank(b) - rank(a) || b.remaining - a.remaining || (needs[b.area] ?? 0) - (needs[a.area] ?? 0) || a.area.localeCompare(b.area))[0] || null;
@@ -14569,6 +14906,10 @@ function buildExamPlan({ exam, summary = null, now = Date.now(), done = null, av
   if (homework.some((row) => row.shortage)) notes.push("shortage");
   const confirmed = skills.filter((skill2) => skill2.status === "recent-independent").length;
   const evidence = skills.reduce((n, skill2) => n + (skill2.n || 0), 0);
+  const progress = Object.fromEntries(domains.filter((domain) => domain !== "writing").map((domain) => {
+    const rows2 = skills.filter((skill2) => skill2.domain === domain);
+    return [domain, { total: rows2.length, checked: rows2.filter((skill2) => skill2.status !== "unseen").length, basis: two(domain) ? "topik2" : "topik1" }];
+  }));
   const sessions = Math.max(total, areas.reduce((n, row) => n + row.planned, 0));
   return {
     policy: policy.version,
@@ -14582,7 +14923,8 @@ function buildExamPlan({ exam, summary = null, now = Date.now(), done = null, av
     next: next ? { area: next.area, skillId: focus?.skillId || null } : null,
     goals,
     checks,
-    reach: { confirmed, observed: observed.length, total: skills.length, evidence, basis: topik2 && ko2 ? "topik2" : "topik1" },
+    reach: { confirmed, observed: observed.length, total: skills.filter((skill2) => skill2.domain !== "writing").length, evidence, basis },
+    progress,
     notes: [...new Set(notes)],
     learningEffectClaim: false,
     abilityClaim: false,
@@ -14857,7 +15199,7 @@ function resumeCandidates(progress, settings, now) {
   return result;
 }
 function extraCandidate(candidate, settings) {
-  if (!record(candidate) || !["practice", "position", "writing"].includes(candidate.route) || typeof candidate.id !== "string") return null;
+  if (!record(candidate) || !["practice", "position", "writing", "mock"].includes(candidate.route) || typeof candidate.id !== "string") return null;
   return {
     ...candidate,
     targets: Array.isArray(candidate.targets) ? candidate.targets : [],
@@ -14879,6 +15221,7 @@ function hostReason(chosen, { history: history2, plan, labels }) {
     const label = homework && labels?.[homework.skillId];
     if (label) return { reason: homework.status === "review" ? `\uC774\uBC88 \uC8FC \uC219\uC81C\uC608\uC694. ${label} \uAE30\uB85D\uC774 \uC624\uB798\uB3FC \uC0C8 \uBB38\uD56D\uC73C\uB85C \uB2E4\uC2DC \uD655\uC778\uD574\uC694.` : `\uC774\uBC88 \uC8FC \uC219\uC81C\uC608\uC694. ${label}\uC5D0\uC11C \uB193\uCE5C \uB2F5\uC774 \uC788\uC5B4 \uC0C8 \uBB38\uD56D\uC73C\uB85C \uB2E4\uC2DC \uD655\uC778\uD574\uC694.`, reasons: ["plan.homework"], focusSkillId: homework.skillId };
   }
+  if (selected.route === "mock") return { reason: "\uC2DC\uD5D8\uCC98\uB7FC \uCC98\uC74C \uBCF4\uB294 \uBB38\uD56D\uC744 \uC815\uD574\uC9C4 \uC2DC\uAC04 \uC548\uC5D0 \uD480\uC5B4 \uBD10\uC694. \uC810\uC218\uB098 \uAE09\uC218\uB85C \uBC14\uAFB8\uC9C0 \uC54A\uC544\uC694.", reasons: ["exam.form"] };
   if (selected.route === "position") return { reason: plan?.notes?.includes("start") ? "\uC2DC\uD5D8 \uBAA9\uD45C\uC5D0 \uB9DE\uCDB0 \uC9E7\uC740 \uC9C4\uB2E8\uC73C\uB85C \uC2DC\uC791\uC810\uC744 \uBA3C\uC800 \uD655\uC778\uD574\uC694." : "\uC774\uBC88 \uC8FC \uACC4\uD68D\uC758 \uB2E4\uC2DC \uD655\uC778\uC774\uC5D0\uC694. \uCC98\uC74C \uBCF4\uB294 \uBB38\uD56D\uC73C\uB85C \uC9C0\uAE08 \uC704\uCE58\uB97C \uD655\uC778\uD574\uC694.", reasons: ["plan.recheck"] };
   const unseen = (chosen.reasons || []).includes("practice.unseen") && !(chosen.reasons || []).includes("goal.declared");
   if (!unseen || !history2 || (selected.targets || []).length) return null;
@@ -15440,13 +15783,13 @@ function guestLifeRecords(storage, { after = 0 } = {}) {
   const counts = { lessons: Object.keys(lessons).length, reviews: Object.keys(reviews).length, days: Object.keys(days).length, profile: !!profile };
   return counts.lessons || counts.reviews || counts.days || counts.profile ? { lessons, reviews, days, profile, counts } : null;
 }
-function planDeviceRecords({ storage = globalThis.localStorage, learning = null, accountAnswer = null, hangulPort = null, accountId = null, life = false, learningLog = false, retryCloud = false } = {}) {
+function planDeviceRecords({ storage = globalThis.localStorage, learning: learning2 = null, accountAnswer = null, hangulPort = null, accountId = null, life = false, learningLog = false, retryCloud = false } = {}) {
   let device, answer, target, accountHas = false, from = HANGUL_DEVICE_KEY;
   const after = accountId ? deviceWatermark(storage, accountId) : 0, hangulAfter = accountId && retryCloud ? deviceWatermark(storage, accountId, { own: false }) : after;
   try {
     device = readHangul(storage, HANGUL_DEVICE_KEY, { after: hangulAfter });
     answer = deviceHangulAnswer(storage, { after });
-    target = hangulAccountKey(learning);
+    target = hangulAccountKey(learning2);
     if (hangulPort) {
       if (target && readHangul(storage, target)) {
         device = readHangul(storage, target);
@@ -15733,15 +16076,415 @@ __export(world_position_exports, {
   ESTIMATE_POLICY: () => ESTIMATE_POLICY,
   POSITION_CELLS: () => POSITION_CELLS,
   POSITION_CORE_POLICY: () => POSITION_CORE_POLICY,
+  POSITION_EXAMS: () => POSITION_EXAMS,
   POSITION_POLICY: () => POSITION_POLICY,
   buildPositionMap: () => buildPositionMap,
   createDiagnosticSession: () => createDiagnosticSession,
   estimateGate: () => estimateGate,
   hangulStageProgress: () => hangulStageProgress,
   positionCell: () => positionCell,
+  positionDomains: () => positionDomains,
+  positionExam: () => positionExam,
   selectDiagnostic: () => selectDiagnostic,
   showsHangulBoard: () => showsHangulBoard
 });
+
+// experiences/synk-world-app/world-exam-form.mjs
+var world_exam_form_exports = {};
+__export(world_exam_form_exports, {
+  MOCK_POLICY: () => MOCK_POLICY,
+  PLAY_POLICY: () => PLAY_POLICY,
+  allowedPlays: () => allowedPlays,
+  createMockSession: () => createMockSession,
+  freshBySet: () => freshBySet,
+  mockEvidence: () => mockEvidence,
+  mockSlots: () => mockSlots,
+  nextPlay: () => nextPlay,
+  presentCondition: () => presentCondition,
+  selectMock: () => selectMock
+});
+var import_trail = __toESM(require_trail(), 1);
+var efRecord = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+var efTime = (value) => typeof value === "string" && Number.isFinite(Date.parse(value));
+var efToken = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
+function efOrder(key) {
+  let h = 2166136261;
+  for (const c of String(key)) h = Math.imul(h ^ c.codePointAt(0), 16777619) >>> 0;
+  return h;
+}
+var PLAY_POLICY = Object.freeze({ version: "world-exam-plays-1", mode: "pbt" });
+function allowedPlays(item) {
+  if (!efRecord(item) || item.source !== "topik-items" || item.modality !== "listening") return null;
+  return Number.isInteger(item.plays) && item.plays > 0 && item.plays <= 3 ? item.plays : null;
+}
+function presentCondition(item, { content = "world-exam", extra = null } = {}) {
+  const plays = allowedPlays(item);
+  if (plays === null && !extra) return void 0;
+  return { flow: {
+    content,
+    policy: extra ? MOCK_POLICY.version : PLAY_POLICY.version,
+    arm: null,
+    mode: PLAY_POLICY.mode,
+    level: null,
+    values: { ...plays !== null ? { plays } : {}, ...extra || {} }
+  } };
+}
+function nextPlay(plays, { heard, exam = false } = {}) {
+  if (!heard) return "first";
+  if (Number.isInteger(plays?.allowed) && plays.completed < plays.allowed) return "allowed";
+  return exam ? "closed" : "extra";
+}
+var MOCK_POLICY = Object.freeze({
+  version: "world-mock-1",
+  mode: "pbt",
+  gameId: "world-mock",
+  composition: "mini-blueprint",
+  // 영역마다 낼 문항 수. 시간은 실제 시험의 문항당 시간(공식 시간 ÷ 공식 문항 수)으로 정한다 — TOPIK I 듣기 10문항 13분 · 읽기 10문항 15분.
+  size: Object.freeze({ listening: 10, reading: 10 }),
+  // 한 영역에서 실제 구성의 이만큼을 못 채우면 그 영역 연습은 열지 않는다(줄인 판이라도 실제 구성이라 부를 수 없다).
+  minShare: 0.6,
+  sections: Object.freeze(["listening", "reading"]),
+  exams: Object.freeze({ topik1: "topik-i", topik2: "topik-ii" })
+});
+function efUnits(types, section) {
+  const out = [], sets = /* @__PURE__ */ new Map();
+  for (const row of types.filter((type) => type.section === section).sort((a, b) => a.from - b.from)) {
+    const weight = Math.max(1, row.to - row.from + 1);
+    if (row.set) {
+      if (!sets.has(row.set)) {
+        const unit2 = { kind: "set", id: row.set, types: [], weight: 0, from: row.from };
+        sets.set(row.set, unit2);
+        out.push(unit2);
+      }
+      const unit = sets.get(row.set);
+      unit.types.push(row.id);
+      unit.weight += weight;
+    } else out.push({ kind: "single", id: row.id, types: [row.id], weight, from: row.from, to: row.to });
+  }
+  return out;
+}
+function mockSlots({ forms, exam, section, size = MOCK_POLICY.size[section] } = {}) {
+  const form = forms?.[exam], official = form?.pbt?.[section];
+  if (!efRecord(form) || !efRecord(official) || !Array.isArray(form.types) || !Number.isInteger(size) || size < 1) return null;
+  const units = efUnits(form.types, section), total = units.reduce((n, unit) => n + unit.weight, 0);
+  if (!total) return null;
+  const sets = units.filter((unit) => unit.kind === "set"), singles = units.filter((unit) => unit.kind === "single");
+  const setShare = sets.reduce((n, unit) => n + size * unit.weight / total, 0), setSize = sets.length ? sets.reduce((n, unit) => n + unit.weight, 0) / sets.length : 0;
+  const setCount = sets.length ? Math.min(sets.length, Math.max(0, Math.ceil(setShare / setSize - 0.5))) : 0;
+  const left = Math.max(0, size - Math.round(setCount * setSize)), singleWeight = singles.reduce((n, unit) => n + unit.weight, 0);
+  const exact = singles.map((unit) => ({ unit, share: singleWeight ? left * unit.weight / singleWeight : 0 }));
+  for (const row of exact) row.count = Math.floor(row.share);
+  let rest = left - exact.reduce((n, row) => n + row.count, 0);
+  for (const row of [...exact].sort((a, b) => b.share - b.count - (a.share - a.count) || a.unit.from - b.unit.from)) {
+    if (rest <= 0) break;
+    row.count += 1;
+    rest -= 1;
+  }
+  return {
+    exam,
+    section,
+    size,
+    official: { items: official.items, minutes: official.minutes },
+    setCount,
+    singles: exact.filter((row) => row.count > 0).map((row) => ({ type: row.unit.id, from: row.unit.from, to: row.unit.to, count: row.count })),
+    sets: sets.map((unit) => ({ id: unit.id, types: [...unit.types], from: unit.from, weight: unit.weight }))
+  };
+}
+function freshBySet(pool, seen) {
+  const read = /* @__PURE__ */ new Map();
+  for (const item of pool) {
+    let value = null;
+    try {
+      value = seen(item);
+    } catch {
+      value = null;
+    }
+    read.set(item.id, value);
+  }
+  const touched = new Set(pool.filter((item) => item.setId && read.get(item.id) !== false).map((item) => item.setId));
+  return pool.filter((item) => read.get(item.id) === false && !(item.setId && touched.has(item.setId)));
+}
+function selectMock({ forms, exam, pool = [], seen, sections = MOCK_POLICY.sections, audioAvailable = true } = {}) {
+  if (typeof seen !== "function" || !Array.isArray(pool)) throw TypeError("WORLD mock needs a pool and an exposure reader");
+  const examId = MOCK_POLICY.exams[exam] || exam, fresh = freshBySet(pool.filter((item) => item.exam === examId), seen);
+  const common = { policy: MOCK_POLICY.version, exam: examId, mode: MOCK_POLICY.mode, composition: MOCK_POLICY.composition, learningEffectClaim: false, grade: null, passClaim: false };
+  const out = [];
+  for (const section of sections) {
+    if (section === "listening" && !audioAvailable) {
+      out.push({ section, status: "audio-off", items: [], missing: [], minutes: 0 });
+      continue;
+    }
+    const plan = mockSlots({ forms, exam: examId, section });
+    if (!plan) {
+      out.push({ section, status: "no-form", items: [], missing: [], minutes: 0 });
+      continue;
+    }
+    const mine = fresh.filter((item) => item.modality === section), used = /* @__PURE__ */ new Set(), items = [], missing = [];
+    const byType = (type) => mine.filter((item) => item.officialType === type && !item.setId && !used.has(item.id)).sort((a, b) => a.difficulty - b.difficulty || efOrder(a.itemKey) - efOrder(b.itemKey) || a.id.localeCompare(b.id));
+    const picks = [];
+    for (const slot of plan.singles) {
+      const rows2 = byType(slot.type), chosen = [];
+      for (const item of rows2) {
+        if (chosen.length >= slot.count) break;
+        if (!chosen.some((row) => row.skillId === item.skillId)) chosen.push(item);
+      }
+      for (const item of rows2) {
+        if (chosen.length >= slot.count) break;
+        if (!chosen.includes(item)) chosen.push(item);
+      }
+      for (const item of chosen) used.add(item.id);
+      picks.push({ from: slot.from, items: chosen });
+      if (chosen.length < slot.count) missing.push({ type: slot.type, from: slot.from, to: slot.to, count: slot.count - chosen.length });
+    }
+    const complete = /* @__PURE__ */ new Map();
+    for (const item of mine.filter((item2) => item2.setId)) {
+      if (!complete.has(item.setId)) complete.set(item.setId, []);
+      complete.get(item.setId).push(item);
+    }
+    const ready2 = [...complete.values()].filter((rows2) => rows2.length === rows2[0].setSize).map((rows2) => rows2.sort((a, b) => a.setOrder - b.setOrder));
+    const unitOf = (rows2) => plan.sets.find((unit) => rows2.every((item) => unit.types.includes(item.officialType)));
+    const seenCount = (unit) => pool.filter((item) => item.exam === examId && unit.types.includes(item.officialType)).length - mine.filter((item) => unit.types.includes(item.officialType)).length;
+    const units = [...plan.sets].sort((a, b) => seenCount(a) - seenCount(b) || a.from - b.from);
+    let sets = 0;
+    for (const unit of units) {
+      if (sets >= plan.setCount) break;
+      const rows2 = ready2.filter((group) => unitOf(group) === unit).sort((a, b) => a[0].difficulty - b[0].difficulty || efOrder(a[0].setId) - efOrder(b[0].setId))[0];
+      if (!rows2) continue;
+      sets += 1;
+      picks.push({ from: unit.from, items: rows2 });
+    }
+    if (sets < plan.setCount) missing.push({ type: "set", count: plan.setCount - sets });
+    for (const pick of picks.sort((a, b) => a.from - b.from)) items.push(...pick.items);
+    const minutes2 = items.length ? Math.max(1, Math.round(items.length * plan.official.minutes / plan.official.items)) : 0;
+    const status = items.length >= Math.ceil(plan.size * MOCK_POLICY.minShare) ? "ready" : items.length ? "short" : "none";
+    out.push({ section, status, items: status === "ready" ? items : [], missing, minutes: status === "ready" ? minutes2 : 0, size: plan.size, official: plan.official, available: items.length });
+  }
+  const ready = out.filter((row) => row.status === "ready");
+  const numbers = Object.fromEntries((forms?.[examId]?.types || []).map((row) => [row.id, [row.from, row.to]]));
+  return { ...common, status: ready.length ? "ready" : "unavailable", sections: out, minutes: ready.reduce((n, row) => n + row.minutes, 0), total: ready.reduce((n, row) => n + row.items.length, 0), numbers };
+}
+var efMeasure = (item) => ({
+  id: item.id,
+  itemKey: item.itemKey,
+  familyKey: item.familyKey || item.itemKey,
+  skillId: item.skillId,
+  modality: item.modality,
+  difficulty: item.difficulty,
+  responseFormat: item.responseFormat ?? "single-choice",
+  audioRequired: item.modality === "listening",
+  confounded: false,
+  ...Array.isArray(item.conceptIds) ? { conceptIds: [...item.conceptIds] } : {}
+});
+function createMockSession({ coach, sections = [], exam, clock: clock2 = () => Date.now() } = {}) {
+  if (!coach || ["present", "delivery", "answer"].some((name) => typeof coach[name] !== "function") || !Array.isArray(sections) || !sections.length) throw TypeError("WORLD mock needs the learning coach and its sections");
+  const parts = sections.map((row) => {
+    if (!MOCK_POLICY.sections.includes(row?.section) || !Array.isArray(row.items) || !row.items.length || !Number.isFinite(row.minutes) || row.minutes <= 0) throw TypeError("WORLD mock: invalid section");
+    for (const item of row.items) if (item?.modality !== row.section || !Array.isArray(item.choices) || !item.choices.some((choice) => choice?.id === item.correctId)) throw TypeError("WORLD mock: an item needs its section, choices and answer");
+    return { section: row.section, items: row.items, minutes: row.minutes, startedAt: null, endedAt: null, ended: null, cells: row.items.map((item) => ({
+      item,
+      pid: null,
+      audio: "none",
+      heard: item.modality !== "listening",
+      plays: { allowed: allowedPlays(item), completed: 0 },
+      choiceId: null,
+      result: null,
+      shownAt: null
+    })) };
+  });
+  const examId = MOCK_POLICY.exams[exam] || exam;
+  let partIndex = 0, cursor = 0, finished = false;
+  const part = () => parts[partIndex] || null;
+  const deadline = (row) => row.startedAt === null ? null : row.startedAt + row.minutes * 6e4;
+  const condition = (row, item) => presentCondition(item, { content: MOCK_POLICY.gameId, extra: { form: examId, composition: MOCK_POLICY.composition, section: row.section, minutes: row.minutes, timed: true } });
+  function show(row, index) {
+    const cell = row.cells[index];
+    if (!cell.pid) {
+      cell.pid = coach.present(efMeasure(cell.item), condition(row, cell.item));
+      cell.shownAt = clock2();
+      if (cell.item.modality === "listening") cell.audio = "pending";
+    }
+    return cell;
+  }
+  function expire() {
+    const row = part();
+    if (row && row.startedAt !== null && row.ended === null && clock2() >= deadline(row)) close(row, "time");
+  }
+  function close(row, reason) {
+    if (row.ended !== null) return;
+    for (const cell of row.cells) if (cell.pid && !cell.result) {
+      cell.result = coach.answer(cell.pid, { correct: null, assessable: false, reason: cell.heard ? "unanswered" : "audio" });
+    }
+    row.ended = reason;
+    row.endedAt = clock2();
+  }
+  const view = () => {
+    expire();
+    const row = part();
+    if (!row || finished) return null;
+    if (row.startedAt === null) return { section: row.section, partIndex, parts: parts.length, between: true, started: false, ended: null, total: row.cells.length, minutes: row.minutes };
+    if (row.ended !== null) return { section: row.section, ended: row.ended, partIndex, parts: parts.length, between: true, started: true };
+    const cell = row.cells[cursor];
+    return {
+      section: row.section,
+      partIndex,
+      parts: parts.length,
+      index: cursor,
+      total: row.cells.length,
+      item: cell.item,
+      heard: cell.heard,
+      audio: cell.audio,
+      plays: { ...cell.plays },
+      answered: !!cell.result,
+      choiceId: cell.choiceId,
+      started: row.startedAt !== null,
+      deadline: deadline(row),
+      remainingMs: row.startedAt === null ? row.minutes * 6e4 : Math.max(0, deadline(row) - clock2()),
+      marks: row.cells.map((entry) => entry.result ? "answered" : entry.pid ? "opened" : "new")
+    };
+  };
+  return Object.freeze({
+    get parts() {
+      return parts.map((row) => ({ section: row.section, total: row.cells.length, minutes: row.minutes, ended: row.ended }));
+    },
+    get current() {
+      return view();
+    },
+    // 영역 시작: 시계를 켜고 첫 문항을 연다.
+    start() {
+      if (finished) return null;
+      const row = part();
+      if (!row || row.startedAt !== null) return view();
+      row.startedAt = clock2();
+      cursor = 0;
+      show(row, 0);
+      return view();
+    },
+    // 같은 영역 안에서 다른 문항으로(번호). 처음 여는 문항은 그때 기록한다.
+    go(index) {
+      expire();
+      const row = part();
+      if (!row || row.startedAt === null || row.ended !== null || !Number.isInteger(index) || index < 0 || index >= row.cells.length) return view();
+      cursor = index;
+      show(row, index);
+      return view();
+    },
+    // 실제 재생기의 결과만 받는다(재생을 눌렀다는 것만으로 들었다고 하지 않는다). 허용 횟수를 넘긴 재생은 받지 않는다.
+    play() {
+      expire();
+      const row = part(), cell = row?.cells[cursor];
+      if (!cell || row.ended !== null || cell.result || cell.item.modality !== "listening") return false;
+      const kind = nextPlay(cell.plays, { heard: cell.heard, exam: true });
+      if (kind === "closed") return false;
+      if (kind === "first") {
+        cell.audio = "pending";
+        coach.delivery(cell.pid, { audio: "pending" });
+      }
+      return kind;
+    },
+    delivery(status) {
+      const row = part(), cell = row?.cells[cursor];
+      if (!cell || row.ended !== null || cell.result || cell.item.modality !== "listening") return false;
+      if (!["completed", "failed"].includes(status)) throw TypeError("WORLD mock: invalid audio state");
+      if (status === "completed") {
+        cell.plays.completed += 1;
+        coach.delivery(cell.pid, { audio: "completed" });
+        cell.heard = true;
+        cell.audio = "completed";
+      } else if (!cell.heard) {
+        cell.audio = "failed";
+        coach.delivery(cell.pid, { audio: "failed" });
+      }
+      return true;
+    },
+    answer(choiceId) {
+      expire();
+      const row = part(), cell = row?.cells[cursor];
+      if (!cell || row.ended !== null || cell.result || !cell.heard) return null;
+      if (!cell.item.choices.some((choice) => choice.id === choiceId)) throw TypeError("WORLD mock: unknown choice");
+      cell.choiceId = choiceId;
+      cell.result = coach.answer(cell.pid, { correct: choiceId === cell.item.correctId, assessable: true, choice: { selectedId: choiceId, correctId: cell.item.correctId } });
+      return { verdict: cell.result.verdict, independent: cell.result.independent === true };
+    },
+    // 영역을 마친다(학생이 「제출」했거나 시간이 다 됐을 때). 다음 영역이 있으면 그 영역은 학생이 시작할 때 시계가 돈다.
+    finishSection() {
+      const row = part();
+      if (!row || finished) return null;
+      if (row.startedAt === null) row.startedAt = clock2();
+      close(row, row.ended ?? "submitted");
+      partIndex += 1;
+      cursor = 0;
+      if (partIndex >= parts.length) finished = true;
+      return view();
+    },
+    // 그만두기: 지금 영역을 닫고(열어 본 문항은 답하지 않음) 남은 영역은 시작하지 않는다.
+    stop() {
+      if (finished) return;
+      const row = part();
+      if (row && row.startedAt !== null) close(row, "stopped");
+      finished = true;
+    },
+    results() {
+      return parts.map((row) => ({
+        section: row.section,
+        minutes: row.minutes,
+        ended: row.ended,
+        startedAt: row.startedAt,
+        endedAt: row.endedAt,
+        items: row.cells.map((cell) => ({
+          itemId: cell.item.id,
+          itemKey: cell.item.itemKey,
+          officialType: cell.item.officialType,
+          skillId: cell.item.skillId,
+          opened: !!cell.pid,
+          choiceId: cell.choiceId,
+          verdict: cell.result?.verdict ?? null,
+          independent: cell.result?.independent === true,
+          eventId: cell.result?.eventId ?? null,
+          plays: { ...cell.plays }
+        }))
+      }));
+    },
+    get finished() {
+      return finished;
+    }
+  });
+}
+function mockEvidence({ events = [], asOf = (/* @__PURE__ */ new Date()).toISOString() } = {}) {
+  const list = Array.isArray(events) ? events : [];
+  const conditions = /* @__PURE__ */ new Map();
+  for (const event of list) {
+    if (event?.type !== "decision.made" || event.experienceId !== MOCK_POLICY.gameId) continue;
+    const flow = Array.isArray(event.candidateSnapshot) ? event.candidateSnapshot[0]?.flow : null;
+    if (efRecord(flow) && flow.content === MOCK_POLICY.gameId && efRecord(flow.values)) conditions.set(event.id, flow.values);
+  }
+  if (!conditions.size || !efTime(asOf)) return [];
+  const scope = list.find((event) => efRecord(event?.scope))?.scope;
+  let summary;
+  try {
+    summary = import_trail.default.summarize(list, { scope, asOf, decisions: [...conditions.keys()] });
+  } catch {
+    return [];
+  }
+  return summary.attempts.filter((row) => row.attemptNo === 1 && efToken(row.eventId)).map((row) => {
+    const values = conditions.get(row.decisionId) || {};
+    return {
+      eventId: row.eventId,
+      at: row.at,
+      domain: row.measure?.modality || null,
+      skillId: row.measure?.skillId || null,
+      firstExposure: row.exposure === "new",
+      independent: row.independent === true,
+      timed: values.timed === true,
+      verdict: row.verdict,
+      form: values.form || null,
+      composition: values.composition || null,
+      mode: MOCK_POLICY.mode,
+      plays: Number.isInteger(values.plays) ? values.plays : null
+    };
+  });
+}
+
+// experiences/synk-world-app/world-position.mjs
 var POSITION_POLICY = Object.freeze({
   version: "world-position-1",
   // 학습기준 §7-3의 여섯 상태 → 학습자에게 보이는 세 칸. 시험이 이 대응을 고정한다.
@@ -15751,7 +16494,9 @@ var POSITION_CELLS = Object.freeze(["independent", "practicing", "notyet"]);
 var posRecord = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 var posOwn = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
 var posTime = (value) => typeof value === "string" && Number.isFinite(Date.parse(value));
-var TOPIK_SKILL = /^ko\.(listening|reading)\.[a-z]+$/;
+var TOPIK_SKILL = /^ko2?\.(listening|reading)\.[a-z]+$/;
+var POSITION_EXAMS = Object.freeze({ topik1: /^ko\.(listening|reading)\.[a-z]+$/, topik2: /^ko2\.(listening|reading)\.[a-z]+$/ });
+var positionExam = (value) => value === "topik2" ? "topik2" : "topik1";
 function positionCell(status) {
   if (typeof status !== "string" || !posOwn(POSITION_POLICY.cells, status)) throw TypeError(`WORLD position: unknown Core state ${status}`);
   return POSITION_POLICY.cells[status];
@@ -15760,7 +16505,7 @@ function posProfile(summary) {
   if (!posRecord(summary) || !Array.isArray(summary.skills) || typeof summary.evidenceComplete !== "boolean") throw TypeError("WORLD position needs a Core learning summary");
   return summary;
 }
-var posTopikSkills = (summary) => posProfile(summary).skills.filter((skill2) => TOPIK_SKILL.test(skill2?.id || "") && ["listening", "reading"].includes(skill2.domain));
+var posTopikSkills = (summary, exam = "topik1") => posProfile(summary).skills.filter((skill2) => POSITION_EXAMS[positionExam(exam)].test(skill2?.id || "") && ["listening", "reading"].includes(skill2.domain));
 function posAttemptIndex(events) {
   const presented = /* @__PURE__ */ new Map(), attempts = /* @__PURE__ */ new Map(), decisions = /* @__PURE__ */ new Map();
   for (const event of Array.isArray(events) ? events : []) {
@@ -15833,11 +16578,11 @@ function posAttention(skills, prefer = null) {
   };
   return skills.filter((skill2) => POS_ATTENTION.has(skill2.status) || skill2.status === "checking" && skill2.incorrect > 0).sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0) || ready(b.id) - ready(a.id) || (Date.parse(b.lastAt || 0) || 0) - (Date.parse(a.lastAt || 0) || 0) || a.id.localeCompare(b.id)).slice(0, 3).map((skill2) => skill2.id);
 }
-function buildPositionMap({ summary, events = [], policy = POSITION_CORE_POLICY, prefer = null } = {}) {
+function buildPositionMap({ summary, events = [], policy = POSITION_CORE_POLICY, prefer = null, exam = "topik1" } = {}) {
   const profile = posProfile(summary), find = posAttemptIndex(events), counts = { independent: 0, practicing: 0, notyet: 0 };
   const rules = { sample: Number.isInteger(policy?.sample) ? policy.sample : POSITION_CORE_POLICY.sample, stableRatio: Number.isFinite(policy?.stableRatio) ? policy.stableRatio : POSITION_CORE_POLICY.stableRatio };
   const helped = posHelpedTries(events, { asOf: profile.asOf });
-  const skills = posTopikSkills(profile).map((skill2) => {
+  const skills = posTopikSkills(profile, exam).map((skill2) => {
     const cell = positionCell(skill2.status), ids = Array.isArray(skill2.reasonEvidence) ? skill2.reasonEvidence : Array.isArray(skill2.evidence) ? skill2.evidence : [];
     const assisted = skill2.status === "supported", found = [], folded = [];
     for (const id of ids) {
@@ -15874,20 +16619,32 @@ function buildPositionMap({ summary, events = [], policy = POSITION_CORE_POLICY,
   });
   return {
     policy: POSITION_POLICY.version,
+    exam: positionExam(exam),
     corePolicy: profile.policy ?? null,
     asOf: profile.asOf ?? null,
     evidenceComplete: profile.evidenceComplete,
     total: skills.length,
     counts,
     skills,
+    domains: positionDomains(skills),
     attention: posAttention(skills, prefer),
     learningEffectClaim: false,
     abilityClaim: false,
     grade: null
   };
 }
+function positionDomains(skills) {
+  const out = {};
+  for (const skill2 of Array.isArray(skills) ? skills : []) {
+    const row = out[skill2.domain] || (out[skill2.domain] = { total: 0, checked: 0, independent: 0, practicing: 0, notyet: 0 });
+    row.total += 1;
+    row[skill2.cell] += 1;
+    if (skill2.cell !== "notyet") row.checked += 1;
+  }
+  return out;
+}
 var DIAGNOSTIC_POLICY = Object.freeze({
-  version: "world-diagnostic-1",
+  version: "world-diagnostic-2",
   perSkill: 1,
   // TOPIK 보기 고르기에 가까운 형식부터. 같은 형식이면 문항 id 순서로 늘 같은 것을 고른다.
   formats: Object.freeze(["single-choice", "binary-choice", "action", "cup-compose", "unknown"])
@@ -15902,7 +16659,7 @@ function posTargetDifficulty(skill2) {
   for (const difficulty of [1, 2, 3]) if (skill2.levels?.[difficulty]?.status !== "recent-independent") return difficulty;
   return 3;
 }
-function selectDiagnostic({ summary, items = [], seen, audioAvailable = true } = {}) {
+function selectDiagnostic({ summary, items = [], seen, audioAvailable = true, exam = "topik1" } = {}) {
   const profile = posProfile(summary);
   if (!Array.isArray(items) || typeof seen !== "function" || typeof audioAvailable !== "boolean") throw TypeError("WORLD diagnostic needs items, an exposure reader and the sound condition");
   const pool = items.map(posDiagnosticItem), ids = /* @__PURE__ */ new Set();
@@ -15910,9 +16667,20 @@ function selectDiagnostic({ summary, items = [], seen, audioAvailable = true } =
     if (ids.has(item.id)) throw TypeError("WORLD diagnostic: duplicate item");
     ids.add(item.id);
   }
-  const skills = posTopikSkills(profile), common = { policy: DIAGNOSTIC_POLICY.version, total: skills.length, learningEffectClaim: false, grade: null };
+  const skills = posTopikSkills(profile, exam), common = { policy: DIAGNOSTIC_POLICY.version, exam: positionExam(exam), total: skills.length, learningEffectClaim: false, grade: null };
   if (!profile.evidenceComplete) return { ...common, status: "unavailable", reason: "history.incomplete", items: [], missing: skills.map((skill2) => ({ skillId: skill2.id, reason: "history" })) };
-  const chosen = [], missing = [];
+  const unknown = /* @__PURE__ */ new Set();
+  const fresh = new Set(freshBySet(pool, (item) => {
+    let value = null;
+    try {
+      value = seen(item);
+    } catch {
+      value = null;
+    }
+    if (value !== true && value !== false) unknown.add(item.id);
+    return value;
+  }).map((item) => item.id));
+  const chosen = [], missing = [], usedSets = /* @__PURE__ */ new Set();
   for (const skill2 of skills) {
     const mine = pool.filter((item) => item.skillId === skill2.id);
     if (!mine.length) {
@@ -15924,23 +16692,15 @@ function selectDiagnostic({ summary, items = [], seen, audioAvailable = true } =
       missing.push({ skillId: skill2.id, reason: "audio" });
       continue;
     }
-    const read = playable.map((item) => {
-      let value = null;
-      try {
-        value = seen(item);
-      } catch {
-        value = null;
-      }
-      return { item, seen: value === true || value === false ? value : null };
-    });
-    const fresh = read.filter((row) => row.seen === false).map((row) => row.item);
-    if (!fresh.length) {
-      missing.push({ skillId: skill2.id, reason: read.some((row) => row.seen === null) ? "unknown" : "all-seen" });
+    const open = playable.filter((item) => fresh.has(item.id) && !(item.setId && usedSets.has(item.setId)));
+    if (!open.length) {
+      missing.push({ skillId: skill2.id, reason: playable.some((item) => unknown.has(item.id)) ? "unknown" : "all-seen" });
       continue;
     }
     const target = posTargetDifficulty(skill2), format = (item) => DIAGNOSTIC_POLICY.formats.indexOf(item.responseFormat ?? "unknown");
-    fresh.sort((a, b) => Math.abs(a.difficulty - target) - Math.abs(b.difficulty - target) || a.difficulty - b.difficulty || format(a) - format(b) || a.id.localeCompare(b.id));
-    chosen.push({ skillId: skill2.id, target, item: fresh[0] });
+    open.sort((a, b) => Math.abs(a.difficulty - target) - Math.abs(b.difficulty - target) || a.difficulty - b.difficulty || format(a) - format(b) || a.id.localeCompare(b.id));
+    if (open[0].setId) usedSets.add(open[0].setId);
+    chosen.push({ skillId: skill2.id, target, item: open[0] });
   }
   return { ...common, status: chosen.length ? "ready" : "unavailable", reason: chosen.length ? null : "diagnostic.none", items: chosen, missing };
 }
@@ -15966,7 +16726,17 @@ function createDiagnosticSession({ coach, items } = {}) {
   const queue = items.map(posPlayableItem), results = [];
   let index = -1, current = null, stopped = false;
   const listening = (item) => item.audioRequired ?? item.modality === "listening";
-  const view = () => current && { index, total: queue.length, item: current.item, heard: current.heard, answered: current.answered, replayed: current.replayed, audio: current.audio };
+  const view = () => current && {
+    index,
+    total: queue.length,
+    item: current.item,
+    heard: current.heard,
+    answered: current.answered,
+    replayed: current.replayed,
+    audio: current.audio,
+    plays: { ...current.plays },
+    next: nextPlay(current.plays, { heard: current.heard })
+  };
   const close = (result, choiceId, skipped) => {
     current.answered = true;
     const row = {
@@ -15978,7 +16748,8 @@ function createDiagnosticSession({ coach, items } = {}) {
       verdict: result.verdict,
       independent: result.independent === true,
       assisted: result.assisted ?? null,
-      eventId: result.eventId ?? null
+      eventId: result.eventId ?? null,
+      plays: { ...current.plays }
     };
     results.push(row);
     return { ...row };
@@ -16005,29 +16776,52 @@ function createDiagnosticSession({ coach, items } = {}) {
         return null;
       }
       const item = queue[index];
-      current = { item, pid: coach.present(posMeasureOf(item)), audio: listening(item) ? "pending" : "none", heard: !listening(item), answered: false, replayed: false };
+      current = {
+        item,
+        pid: coach.present(posMeasureOf(item), presentCondition(item, { content: "world-diagnostic" })),
+        audio: listening(item) ? "pending" : "none",
+        heard: !listening(item),
+        answered: false,
+        replayed: false,
+        plays: { allowed: allowedPlays(item), completed: 0, extra: 0 }
+      };
       return view();
     },
-    // 실제 재생기의 결과만 받는다(재생을 불렀다는 것만으로 들었다고 하지 않는다).
+    // 실제 재생기의 결과만 받는다(재생을 불렀다는 것만으로 들었다고 하지 않는다). 끝까지 들은 재생은 처음이든 다시든 매번 남긴다
+    // (실제 재생 수). 다 들은 뒤의 실패는 앞서 들은 사실을 지우지 않는다.
     delivery(status) {
       if (!current || current.answered || !listening(current.item)) return false;
       if (!["pending", "completed", "failed"].includes(status)) throw TypeError("WORLD diagnostic: invalid audio state");
-      if (current.heard) return true;
+      if (current.heard) {
+        if (status === "completed") {
+          current.plays.completed += 1;
+          coach.delivery(current.pid, { audio: "completed" });
+        }
+        return true;
+      }
       current.audio = status;
-      if (status === "completed") current.heard = true;
+      if (status === "completed") {
+        current.heard = true;
+        current.plays.completed += 1;
+      }
       coach.delivery(current.pid, { audio: status });
       return true;
     },
+    // 듣기 한 번 시작. 돌려주는 값: 'first'(아직 다 못 들음) · 'allowed'(허용 횟수 안 — 도움 아님) · 'extra'(허용을 넘김 — 도움).
     replay() {
       if (!current || current.answered || !listening(current.item)) return false;
-      if (current.heard) {
+      const kind = nextPlay(current.plays, { heard: current.heard });
+      if (kind === "first") {
+        current.audio = "pending";
+        coach.delivery(current.pid, { audio: "pending" });
+        return kind;
+      }
+      if (kind === "extra") {
         coach.help(current.pid, "replay");
         current.replayed = true;
-        return true;
+        current.plays.extra += 1;
       }
-      current.audio = "pending";
-      coach.delivery(current.pid, { audio: "pending" });
-      return true;
+      return kind;
     },
     answer(choiceId) {
       if (!current || current.answered || !current.heard) return null;
@@ -16068,31 +16862,35 @@ function showsHangulBoard({ reading = null, stage = null } = {}) {
   return posRecord(reading) && reading.answer === "new" && !stage?.graduated && !stage?.skipped;
 }
 var ESTIMATE_POLICY = Object.freeze({
-  version: "world-topik-estimate-1",
+  version: "world-topik-estimate-2",
   minEvidence: 30,
   minPerDomain: 10,
   recentDays: 90,
-  forms: Object.freeze(["topik-i"]),
-  compositions: Object.freeze(["official-blueprint"])
+  forms: Object.freeze(["topik-i", "topik-ii"]),
+  compositions: Object.freeze(["official-blueprint", "mini-blueprint"]),
+  modes: Object.freeze(["pbt"])
 });
 var POS_DAY = 864e5;
-function estimateGate({ evidence = [], asOf, policy = ESTIMATE_POLICY } = {}) {
+function estimateGate({ evidence = [], asOf, policy = ESTIMATE_POLICY, form = "topik-i", mode = null } = {}) {
   if (!Array.isArray(evidence) || !posTime(asOf) || !posRecord(policy) || !Number.isInteger(policy.minEvidence) || policy.minEvidence < 1) throw TypeError("WORLD estimate gate needs evidence, a time and a policy");
-  const now = Date.parse(asOf), counted = /* @__PURE__ */ new Map();
+  const now = Date.parse(asOf), counted = /* @__PURE__ */ new Map(), modes = Array.isArray(policy.modes) ? policy.modes : ["pbt"];
   for (const row of evidence) {
     if (!posRecord(row) || !posToken(row.eventId) || !posTime(row.at) || !["listening", "reading"].includes(row.domain)) continue;
     const at = Date.parse(row.at);
     if (at > now || now - at > policy.recentDays * POS_DAY) continue;
     if (row.firstExposure !== true || row.independent !== true || row.timed !== true || !["correct", "incorrect"].includes(row.verdict)) continue;
-    if (!policy.forms.includes(row.form) || !policy.compositions.includes(row.composition)) continue;
+    if (!policy.forms.includes(row.form) || row.form !== form || !policy.compositions.includes(row.composition) || !modes.includes(row.mode ?? "pbt")) continue;
     if (!counted.has(row.eventId)) counted.set(row.eventId, row);
   }
   const rows2 = [...counted.values()], perDomain = { listening: rows2.filter((row) => row.domain === "listening").length, reading: rows2.filter((row) => row.domain === "reading").length };
   const enough = rows2.length >= policy.minEvidence && perDomain.listening >= policy.minPerDomain && perDomain.reading >= policy.minPerDomain;
   const updatedAt = rows2.length ? rows2.map((row) => row.at).sort().at(-1) : null;
+  const ibt = mode === "ibt";
   return {
     policy: policy.version,
-    status: enough ? "no-estimator" : "too-early",
+    form,
+    mode: ibt ? "ibt" : "pbt",
+    status: ibt ? "mode-unsupported" : enough ? "no-estimator" : "too-early",
     visible: false,
     evidence: rows2.length,
     needed: policy.minEvidence,
@@ -17712,8 +18510,15 @@ var POS_LED = { independent: "ok", practicing: "check", notyet: "" };
 var POS_CELLS = Object.freeze(["independent", "practicing", "notyet"]);
 var posLed = (tone) => `<i class="w-led${tone ? ` ${tone}` : ""}" aria-hidden="true"></i>`;
 var posFill = (value, max) => (Math.max(0, Math.min(1, max ? value / max : 0)) * 100).toFixed(1);
-function createPositionView({ t, has = () => true, formatDate = null } = {}) {
+function createPositionView({ t, has = () => true, formatDate = null, lang = () => "ko" } = {}) {
   if (typeof t !== "function") throw TypeError("WORLD position view needs the screen-language t()");
+  const screenLang = () => {
+    try {
+      return lang() || "ko";
+    } catch {
+      return "ko";
+    }
+  };
   const day2 = (value) => {
     const at = Date.parse(value);
     if (!Number.isFinite(at)) return "";
@@ -17723,6 +18528,7 @@ function createPositionView({ t, has = () => true, formatDate = null } = {}) {
   function itemSource(itemKey, experienceId = null) {
     if (experienceId === "world-home") return t("position.source.diagnostic");
     if (experienceId === "world-practice") return t("position.source.practice");
+    if (experienceId === "world-mock") return t("position.source.mock");
     const prefix = String(itemKey || "").split(/[.:]/)[0];
     return prefix && has(`position.source.${prefix}`) ? t(`position.source.${prefix}`) : t("position.source.other");
   }
@@ -17768,6 +18574,7 @@ function createPositionView({ t, has = () => true, formatDate = null } = {}) {
     if (!plan) return "";
     const notes = [], by = (reason) => plan.missing.filter((row) => row.reason === reason).map((row) => row.skillId);
     if (plan.reason === "history.incomplete") notes.push(t("position.diagnostic.history"));
+    else if (!plan.items.length && plan.missing.length && plan.missing.every((row) => row.reason === "no-item")) notes.push(t(map.exam === "topik2" ? "position.diagnostic.noneYet2" : "position.diagnostic.noneYet"));
     else {
       const none = by("no-item"), audio = by("audio"), unknown = by("unknown"), seen = by("all-seen");
       if (none.length) notes.push(t("position.diagnostic.missing", { n: none.length, skills: skillNames(map, none) }));
@@ -17778,20 +18585,25 @@ function createPositionView({ t, has = () => true, formatDate = null } = {}) {
     const ready = plan.status === "ready" && plan.items.length > 0;
     return `<section class="wpos-diagnostic" data-diagnostic="${ready ? "ready" : "unavailable"}"><p class="life-section-label">QUICK CHECK</p><h3>${posEscape(t("position.diagnostic.title"))}</h3>${ready ? `<p>${posEscape(t("position.diagnostic.intro", { n: plan.items.length }))}</p>` : ""}${notes.map((note) => `<p class="wpos-note">${posEscape(note)}</p>`).join("")}${ready ? `<button class="felt-button" type="button" data-position-diagnostic>${posEscape(t(done ? "position.diagnostic.again" : "position.diagnostic.start"))} <span aria-hidden="true">\u2192</span></button>` : ""}</section>`;
   }
-  function estimateBlock(gate) {
+  function estimateBlock(gate, mock = null) {
     if (!gate) return "";
-    const waiting = gate.status === "no-estimator";
-    return `<section class="wpos-estimate" data-estimate="${posEscape(gate.status)}"><p class="life-section-label">ESTIMATE</p><h3>${posEscape(t("position.estimate.title"))}</h3><p class="wpos-estimate-state">${posLed("")}<strong>${posEscape(t(waiting ? "position.estimate.waiting" : "position.estimate.early"))}</strong></p><p class="wpos-note">${posEscape(t("position.estimate.honest"))}</p>${gate.evidence > 0 ? `<p class="wpos-estimate-count"><span>${posEscape(t("position.estimate.count", { n: gate.evidence, needed: gate.needed }))}</span></p>` : ""}</section>`;
+    const state = gate.status === "mode-unsupported" ? "position.estimate.ibt" : gate.status === "no-estimator" ? "position.estimate.waiting" : "position.estimate.early";
+    const ready = mock?.status === "ready";
+    return `<section class="wpos-estimate" data-estimate="${posEscape(gate.status)}"><p class="life-section-label">ESTIMATE</p><h3>${posEscape(t("position.estimate.title"))}</h3><p class="wpos-estimate-state">${posLed("")}<strong>${posEscape(t(state))}</strong></p><p class="wpos-note">${posEscape(t("position.estimate.basis"))}</p>${gate.evidence > 0 ? `<p class="wpos-estimate-count"><span>${posEscape(t("position.estimate.collected", { n: gate.evidence, listening: gate.perDomain?.listening ?? 0, reading: gate.perDomain?.reading ?? 0 }))}</span></p>` : ""}${ready ? `<button class="quiet-button wpos-practice" type="button" data-position-mock>${posEscape(t("mock.open", { minutes: mock.minutes }))} <span aria-hidden="true">\u2192</span></button>` : ""}</section>`;
   }
+  const examSwitch = (exam, exams) => Array.isArray(exams) && exams.length > 1 ? `<div class="wpos-exam" role="group" aria-label="${posEscape(t("position.exam.label"))}">${exams.map((id) => `<button class="wpos-exam-pill" type="button" data-position-exam="${posEscape(id)}" aria-pressed="${id === exam ? "true" : "false"}">${posEscape(t(`goal.exam.type.${id}`))}</button>`).join("")}</div>` : "";
+  const progressLine = (row) => row ? `<p class="wpos-progress"><span>${posEscape(t("position.progress", { checked: row.checked, total: row.total }))}</span><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(row.checked, row.total)}%"></i></span></p>` : "";
   const poster = (word, sub, { print = "position", label = "MY POSITION" } = {}) => `<div class="life-poster wpos-poster"><span class="w-print wpos-print" data-print="${print}" aria-hidden="true"><i></i></span><small class="life-poster-label">${label}</small><strong class="life-poster-word">${posEscape(word)}</strong><p class="life-poster-sub">${posEscape(sub)}</p></div>`;
-  function renderPositionBoard({ map, plan = null, gate = null, catalog = null, diagnosed = false, scope = null, practice = null } = {}) {
-    const summary = t("position.summary", { ...map.counts, total: map.total });
+  function renderPositionBoard({ map, plan = null, gate = null, mock = null, catalog = null, diagnosed = false, scope = null, practice = null, exams = null, writing = false } = {}) {
+    const exam = map.exam === "topik2" ? "topik2" : "topik1";
+    const summary = t(exam === "topik2" ? "position.summary.topik2" : "position.summary", { ...map.counts, total: map.total });
     const groups = ["listening", "reading"].map((domain) => {
       const skills = map.skills.filter((skill2) => skill2.domain === domain);
-      return `<section class="wpos-group" data-domain="${domain}"><h3>${posEscape(t(`position.domain.${domain}`))} <span>${skills.length}</span></h3><div class="wpos-skills">${skills.map((skill2) => skillRow(skill2, catalog, practice)).join("")}</div></section>`;
+      return `<section class="wpos-group" data-domain="${domain}"><h3>${posEscape(t(`position.domain.${domain}`))} <span>${skills.length}</span></h3>${progressLine(map.domains?.[domain])}<div class="wpos-skills">${skills.map((skill2) => skillRow(skill2, catalog, practice)).join("")}</div></section>`;
     }).join("");
+    const writingBlock = exam === "topik2" ? `<section class="wpos-group" data-domain="writing"><h3>${posEscape(t("plan.area.writing"))}</h3><p class="wpos-note">${posEscape(t("position.writing.note"))}</p>${writing ? `<button class="quiet-button wpos-practice" type="button" data-position-writing>${posEscape(t("writing.title"))} <span aria-hidden="true">\u2192</span></button>` : ""}</section>` : "";
     const counts = POS_CELLS.map((cell) => `<li data-cell="${cell}">${posLed(POS_LED[cell])}<strong>${map.counts[cell]}</strong><span>${posEscape(t(`position.cell.${cell}`))}</span></li>`).join("");
-    return `<div class="wpos life-heading" data-position-board tabindex="-1">${poster(t("position.title"), summary)}<ul class="wpos-counts" aria-label="${posEscape(summary)}">${counts}</ul><p class="wpos-intro">${posEscape(t("position.intro"))}</p>${map.evidenceComplete ? "" : `<p class="wpos-note" data-position-incomplete>${posEscape(t("position.incomplete"))}</p>`}${attentionBlock(map, practice)}${diagnosticBlock(map, plan, { done: diagnosed })}${groups}${estimateBlock(gate)}${scope ? `<p class="wpos-scope">${posEscape(t(scope === "account" ? "position.scope.account" : "position.scope.device"))}</p>` : ""}</div>`;
+    return `<div class="wpos life-heading" data-position-board data-exam="${exam}" tabindex="-1">${poster(t("position.title"), summary)}${examSwitch(exam, exams)}<ul class="wpos-counts" aria-label="${posEscape(summary)}">${counts}</ul><p class="wpos-intro">${posEscape(t("position.intro"))}</p>${map.evidenceComplete ? "" : `<p class="wpos-note" data-position-incomplete>${posEscape(t("position.incomplete"))}</p>`}${attentionBlock(map, practice)}${diagnosticBlock(map, plan, { done: diagnosed })}${groups}${writingBlock}${estimateBlock(gate, mock)}${scope ? `<p class="wpos-scope">${posEscape(t(scope === "account" ? "position.scope.account" : "position.scope.device"))}</p>` : ""}</div>`;
   }
   function renderHangulBoard({ stage = null } = {}) {
     const known = !!stage && Number.isInteger(stage.met) && Number.isInteger(stage.total) && stage.total > 0;
@@ -17803,13 +18615,40 @@ function createPositionView({ t, has = () => true, formatDate = null } = {}) {
     const rows2 = card.doc.rows.map(([name, value]) => `<div><dt>${posEscape(name)}</dt><dd>${posEscape(value)}</dd></div>`).join("");
     return `<div class="wpos-card"><section class="wpos-notice" lang="ko"><p class="wpos-notice-title">${posEscape(card.notice.title)}</p><ul>${card.notice.rules.map((rule) => `<li>${posEscape(rule)}</li>`).join("")}</ul></section><section class="wpos-guest"><p class="wpos-guest-time">${posEscape(t("position.diagnostic.time", { at: card.at }))}</p><p class="wpos-notice-title" lang="ko">${posEscape(card.doc.title)}</p><dl lang="ko">${rows2}</dl>${card.bag.length ? `<p class="wpos-bag">${posEscape(t("position.diagnostic.bag"))}: <span lang="ko">${posEscape(card.bag.join(", "))}</span></p>` : ""}<p class="wpos-line" lang="ko"><span>${posEscape(card.who)}</span>\u300C${posEscape(card.line)}\u300D</p></section></div>`;
   }
+  function listenNote(view, playing) {
+    if (playing) return t("position.diagnostic.playing");
+    if (view.audio === "failed" && !view.heard) return t("position.diagnostic.audioFailed");
+    const allowed = view.plays?.allowed;
+    if (Number.isInteger(allowed)) {
+      if (!view.heard) return `${t(allowed === 1 ? "position.plays.once" : "position.plays.twice")} ${t("position.diagnostic.listenFirst")}`;
+      return view.next === "allowed" ? t("position.plays.left", { heard: view.plays.completed, allowed }) : t("position.plays.extra");
+    }
+    return t(view.heard ? "position.diagnostic.replayNote" : "position.diagnostic.listenFirst");
+  }
+  const listenLabel = (view) => t(!view.heard ? "position.diagnostic.listen" : Number.isInteger(view.plays?.allowed) && view.next === "allowed" ? "position.plays.again" : "position.diagnostic.listenAgain");
   function renderDiagnosticItem({ view, skill: skill2 = null, notice = "", playing = false } = {}) {
     const item = view.item, listening = item.audioRequired ?? item.modality === "listening", ready = view.heard && !view.answered;
     const choices2 = item.choices.map((choice) => `<button class="wpos-choice" type="button" data-position-choice="${posEscape(choice.id)}"${ready ? "" : " disabled"}>${posEscape(choice.label)}</button>`).join("");
-    const listenNote = playing ? "position.diagnostic.playing" : view.audio === "failed" && !view.heard ? "position.diagnostic.audioFailed" : view.heard ? "position.diagnostic.replayNote" : "position.diagnostic.listenFirst";
-    return `<div class="wpos wpos-run" data-position-run="${posEscape(item.id)}"><div class="wpos-run-head"><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(view.index, view.total)}%"></i></span><p class="wpos-run-count">${posEscape(t("position.diagnostic.progress", { index: view.index + 1, total: view.total }))}</p></div><p class="life-section-label wpos-run-skill" tabindex="-1">${posEscape(t(`position.domain.${item.modality}`))} \xB7 ${posEscape(skillName(skill2 || { id: item.skillId }))}</p>${item.prompt ? `<p class="wpos-prompt" lang="ko">${posEscape(item.prompt)}</p>` : ""}${item.card ? entryCard(item.card) : ""}${listening ? `<div class="wpos-listen"><button class="quiet-button" type="button" data-position-listen${playing ? ' aria-busy="true"' : ""}>${posEscape(t(view.heard ? "position.diagnostic.listenAgain" : "position.diagnostic.listen"))}</button><p class="wpos-note">${posEscape(t(listenNote))}</p></div>` : ""}${item.question ? item.ask && has(`position.diagnostic.ask.${item.ask}`) ? `<p class="wpos-question">${posEscape(t(`position.diagnostic.ask.${item.ask}`))}</p>` : `<p class="wpos-question" lang="ko">${posEscape(item.question)}</p>` : ""}<div class="wpos-choices${item.ask === "picture" ? " wpos-pictures" : ""}" lang="ko">${choices2}</div><p class="wpos-run-status" role="status">${posEscape(notice)}</p><div class="wpos-run-actions"><button class="quiet-button" type="button" data-position-skip>${posEscape(t("position.diagnostic.skip"))}</button><button class="quiet-button" type="button" data-position-stop>${posEscape(t("position.diagnostic.stop"))}</button></div></div>`;
+    return `<div class="wpos wpos-run" data-position-run="${posEscape(item.id)}"><div class="wpos-run-head"><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(view.index, view.total)}%"></i></span><p class="wpos-run-count">${posEscape(t("position.diagnostic.progress", { index: view.index + 1, total: view.total }))}</p></div><p class="life-section-label wpos-run-skill" tabindex="-1">${posEscape(t(`position.domain.${item.modality}`))} \xB7 ${posEscape(skillName(skill2 || { id: item.skillId }))}</p>${item.prompt ? `<p class="wpos-prompt" lang="ko">${posEscape(item.prompt)}</p>` : ""}${item.card ? entryCard(item.card) : ""}${listening ? `<div class="wpos-listen"><button class="quiet-button" type="button" data-position-listen${playing ? ' aria-busy="true"' : ""}>${posEscape(listenLabel(view))}</button><p class="wpos-note">${posEscape(listenNote(view, playing))}</p></div>` : ""}${item.question ? item.ask && has(`position.diagnostic.ask.${item.ask}`) ? `<p class="wpos-question">${posEscape(t(`position.diagnostic.ask.${item.ask}`))}</p>` : `<p class="wpos-question" lang="ko">${posEscape(item.question)}</p>` : ""}<div class="wpos-choices${item.ask === "picture" ? " wpos-pictures" : ""}" lang="ko">${choices2}</div><p class="wpos-run-status" role="status">${posEscape(notice)}</p><div class="wpos-run-actions"><button class="quiet-button" type="button" data-position-skip>${posEscape(t("position.diagnostic.skip"))}</button><button class="quiet-button" type="button" data-position-stop>${posEscape(t("position.diagnostic.stop"))}</button></div></div>`;
   }
-  const explainBlock = (item) => item?.explanation ? `<details class="wpos-explain"><summary>${posEscape(t("position.diagnostic.explain"))}</summary><p lang="ko">${posEscape(item.explanation)}</p></details>` : "";
+  function explainText(item) {
+    const value = item?.explanation;
+    if (typeof value === "string" && value) return { text: value, lang: "ko" };
+    if (value && typeof value === "object") {
+      const want = screenLang(), text2 = typeof value[want] === "string" && value[want] ? value[want] : value.ko;
+      if (typeof text2 === "string" && text2) return { text: text2, lang: text2 === value[want] ? want : "ko" };
+    }
+    return null;
+  }
+  const scriptBlock = (item) => Array.isArray(item?.script) && item.script.length ? `<div class="wpos-script"><p class="wpos-evidence-title">${posEscape(t("practice.script"))}</p><p lang="ko">${item.script.map((line) => `<span>${posEscape(line.speaker ? `${line.speaker}: ` : "")}${posEscape(line.text)}</span>`).join("")}</p></div>` : "";
+  const explainParagraph = (item) => {
+    const found = explainText(item);
+    return found ? `<p lang="${posEscape(found.lang)}">${posEscape(found.text)}</p>` : "";
+  };
+  const explainBlock = (item) => {
+    const body = explainParagraph(item) + scriptBlock(item);
+    return body ? `<details class="wpos-explain"><summary>${posEscape(t("position.diagnostic.explain"))}</summary>${body}</details>` : "";
+  };
   function renderDiagnosticDone({ map, results = [], items = null, practice = null } = {}) {
     const answered = results.filter((row) => !row.skipped).length, skipped = results.length - answered;
     const itemOf = (id) => items?.get?.(id) || null;
@@ -17820,17 +18659,18 @@ function createPositionView({ t, has = () => true, formatDate = null } = {}) {
     const wrong = results.some((row) => !row.skipped && row.verdict === "incorrect");
     return `<div class="wpos life-heading" data-position-done tabindex="-1">${poster(t("position.diagnostic.doneTitle"), t("position.diagnostic.doneSummary", { answered, skipped }))}${rows2 ? `<ul class="wpos-done-list">${rows2}</ul>` : ""}${wrong ? `<p class="wpos-note">${posEscape(t("position.diagnostic.wrongNote"))}</p>` : ""}<p class="wpos-intro">${posEscape(t("position.diagnostic.doneNote"))}</p><p class="wpos-summary-line">${posEscape(t("position.summary", { ...map.counts, total: map.total }))}</p><button class="felt-button" type="button" data-position-back>${posEscape(t("position.diagnostic.back"))} <span aria-hidden="true">\u2192</span></button></div>`;
   }
-  function renderPracticeItem({ view, skill: skill2 = null, notice = "", feedback = null } = {}) {
-    const item = view.item, done = !!feedback;
+  function renderPracticeItem({ view, skill: skill2 = null, notice = "", feedback = null, playing = false } = {}) {
+    const item = view.item, done = !!feedback, listening = item.audioRequired ?? item.modality === "listening", ready = !done && (view.heard ?? true);
     const choices2 = item.choices.map((choice) => {
       const state = !done ? "" : choice.id === feedback.correctId ? "answer" : choice.id === feedback.choiceId ? "wrong" : "";
-      return `<button class="wpos-choice" type="button" data-practice-choice="${posEscape(choice.id)}"${state ? ` data-state="${state}"` : ""}${done ? " disabled" : ""}>${posEscape(choice.label)}</button>`;
+      return `<button class="wpos-choice" type="button" data-practice-choice="${posEscape(choice.id)}"${state ? ` data-state="${state}"` : ""}${ready ? "" : " disabled"}>${posEscape(choice.label)}</button>`;
     }).join("");
     const ok = feedback?.verdict === "correct";
-    const result = done ? `<div class="wpos-feedback" data-practice-feedback tabindex="-1" data-verdict="${posEscape(feedback.verdict)}" role="status">${posLed(ok ? "ok" : "alert")}<strong>${posEscape(t(ok ? "practice.right" : "practice.wrong"))}</strong>${item.explanation ? `<p lang="ko">${posEscape(item.explanation)}</p>` : ""}</div><button class="felt-button" type="button" data-practice-next>${posEscape(t(view.index + 1 < view.total ? "practice.next" : "practice.finish"))} <span aria-hidden="true">\u2192</span></button>` : "";
-    return `<div class="wpos wpos-run" data-practice-run="${posEscape(item.id)}"><div class="wpos-run-head"><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(view.index, view.total)}%"></i></span><p class="wpos-run-count">${posEscape(t("position.diagnostic.progress", { index: view.index + 1, total: view.total }))}</p></div><p class="life-section-label wpos-run-skill" tabindex="-1">${posEscape(t(`position.domain.${item.modality}`))} \xB7 ${posEscape(skillName(skill2 || { id: item.skillId }))}</p>${item.prompt ? `<p class="wpos-prompt" lang="ko">${posEscape(item.prompt)}</p>` : ""}${item.card ? entryCard(item.card) : ""}${item.question ? item.ask && has(`position.diagnostic.ask.${item.ask}`) ? `<p class="wpos-question">${posEscape(t(`position.diagnostic.ask.${item.ask}`))}</p>` : `<p class="wpos-question" lang="ko">${posEscape(item.question)}</p>` : ""}<div class="wpos-choices" lang="ko">${choices2}</div>${result}<p class="wpos-run-status" role="status">${posEscape(done ? "" : notice)}</p>${done ? "" : `<div class="wpos-run-actions"><button class="quiet-button" type="button" data-practice-skip>${posEscape(t("position.diagnostic.skip"))}</button><button class="quiet-button" type="button" data-practice-stop>${posEscape(t("practice.stop"))}</button></div>`}</div>`;
+    const result = done ? `<div class="wpos-feedback" data-practice-feedback tabindex="-1" data-verdict="${posEscape(feedback.verdict)}" role="status">${posLed(ok ? "ok" : "alert")}<strong>${posEscape(t(ok ? "practice.right" : "practice.wrong"))}</strong>${explainParagraph(item)}${scriptBlock(item)}</div><button class="felt-button" type="button" data-practice-next>${posEscape(t(view.index + 1 < view.total ? "practice.next" : "practice.finish"))} <span aria-hidden="true">\u2192</span></button>` : "";
+    const listen = listening && !done ? `<div class="wpos-listen"><button class="quiet-button" type="button" data-practice-listen${playing ? ' aria-busy="true"' : ""}>${posEscape(listenLabel(view))}</button><p class="wpos-note">${posEscape(listenNote(view, playing))}</p></div>` : "";
+    return `<div class="wpos wpos-run" data-practice-run="${posEscape(item.id)}"><div class="wpos-run-head"><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(view.index, view.total)}%"></i></span><p class="wpos-run-count">${posEscape(t("position.diagnostic.progress", { index: view.index + 1, total: view.total }))}</p></div><p class="life-section-label wpos-run-skill" tabindex="-1">${posEscape(t(`position.domain.${item.modality}`))} \xB7 ${posEscape(skillName(skill2 || { id: item.skillId }))}</p>${item.prompt ? `<p class="wpos-prompt" lang="ko">${posEscape(item.prompt)}</p>` : ""}${item.card ? entryCard(item.card) : ""}${listen}${item.question ? item.ask && has(`position.diagnostic.ask.${item.ask}`) ? `<p class="wpos-question">${posEscape(t(`position.diagnostic.ask.${item.ask}`))}</p>` : `<p class="wpos-question" lang="ko">${posEscape(item.question)}</p>` : ""}<div class="wpos-choices" lang="ko">${choices2}</div>${result}<p class="wpos-run-status" role="status">${posEscape(done ? "" : notice)}</p>${done ? "" : `<div class="wpos-run-actions"><button class="quiet-button" type="button" data-practice-skip>${posEscape(t("position.diagnostic.skip"))}</button><button class="quiet-button" type="button" data-practice-stop>${posEscape(t("practice.stop"))}</button></div>`}</div>`;
   }
-  function renderPracticeDone({ skill: skill2, before = null, after = null, results = [], items = null, more = 0 } = {}) {
+  function renderPracticeDone({ skill: skill2, before = null, after = null, results = [], items = null, more = 0, listening = false } = {}) {
     const answered = results.filter((row) => !row.skipped), right = answered.filter((row) => row.verdict === "correct" && row.independent).length;
     const wrong = answered.filter((row) => row.verdict === "incorrect").length, skipped = results.length - answered.length;
     const changed2 = before && after && before.cell !== after.cell ? t("practice.changed.cell", { from: t(`position.cell.${before.cell}`), to: t(`position.cell.${after.cell}`) }) : after && before && after.n > before.n ? t("practice.changed.more", { n: after.n - before.n }) : t("practice.changed.none");
@@ -17841,7 +18681,60 @@ function createPositionView({ t, has = () => true, formatDate = null } = {}) {
       return item ? `<li><span lang="ko">${posEscape(item.label || item.question || "")}</span>${explainBlock(item)}</li>` : "";
     }).join("");
     const next = more > 0 ? `<button class="felt-button" type="button" data-practice-again>${posEscape(t("practice.again", { n: Math.min(more, 5) }))} <span aria-hidden="true">\u2192</span></button>` : `<p class="wpos-note" data-practice-shortage>${posEscape(t("practice.shortage"))}</p>`;
-    return `<div class="wpos life-heading" data-practice-done tabindex="-1">${poster(t("practice.doneTitle"), t("practice.doneSummary", { right, wrong, skipped }))}<section class="wpos-change"><p class="life-section-label">${posEscape(skillName(skill2 || {}))}</p><p class="wpos-intro">${posEscape(changed2)}</p>${now ? `<p class="wpos-note">${posEscape(now)}</p>` : ""}</section>${misses ? `<section class="wpos-misses"><p class="wpos-evidence-title">${posEscape(t("practice.misses"))}</p><ul>${misses}</ul></section>` : ""}${next}<div class="wpos-run-actions"><button class="quiet-button" type="button" data-practice-position>${posEscape(t("position.open"))}</button><button class="quiet-button" type="button" data-practice-home>${posEscape(t("practice.home"))}</button></div></div>`;
+    return `<div class="wpos life-heading" data-practice-done tabindex="-1">${poster(t(listening ? "practice.doneTitle.listening" : "practice.doneTitle"), t("practice.doneSummary", { right, wrong, skipped }))}<section class="wpos-change"><p class="life-section-label">${posEscape(skillName(skill2 || {}))}</p><p class="wpos-intro">${posEscape(changed2)}</p>${now ? `<p class="wpos-note">${posEscape(now)}</p>` : ""}</section>${misses ? `<section class="wpos-misses"><p class="wpos-evidence-title">${posEscape(t("practice.misses"))}</p><ul>${misses}</ul></section>` : ""}${next}<div class="wpos-run-actions"><button class="quiet-button" type="button" data-practice-position>${posEscape(t("position.open"))}</button><button class="quiet-button" type="button" data-practice-home>${posEscape(t("practice.home"))}</button></div></div>`;
+  }
+  const mockClock = (ms) => {
+    const total = Math.max(0, Math.ceil((Number(ms) || 0) / 1e3));
+    return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+  };
+  const sectionName = (section) => t(`position.domain.${section}`);
+  const examName = (exam) => {
+    const id = exam === "topik2" ? "topik2" : "topik1";
+    return t(`goal.exam.type.${id}`);
+  };
+  const typeLabel = (from, to) => Number.isInteger(from) ? t(to && to !== from ? "mock.type" : "mock.type.one", { from, to }) : "";
+  const missingText = (rows2) => rows2.map((row) => row.type === "set" ? t("mock.missing.set", { n: row.count }) : typeLabel(row.from, row.to)).filter(Boolean).join(" \xB7 ");
+  function renderMockIntro({ plan, exam = "topik1", mode = null } = {}) {
+    const ready = plan.sections.filter((row) => row.status === "ready"), listening = ready.some((row) => row.section === "listening");
+    const parts = ready.map((row) => `<li><span class="wplan-area-name">${posEscape(sectionName(row.section))}</span><span class="wplan-area-count">${posEscape(t("mock.part", { n: row.items.length, minutes: row.minutes }))}</span></li>`).join("");
+    const official = ready.map((row) => t("mock.official.part", { section: sectionName(row.section), n: row.official.items, minutes: row.official.minutes })).join(" \xB7 ");
+    const missing = missingText(ready.flatMap((row) => row.missing || []));
+    const notes = [plan.sections.some((row) => row.status === "audio-off") ? t("mock.audioOff") : "", plan.sections.some((row) => ["short", "none"].includes(row.status)) ? t("mock.sectionShort") : "", missing ? t("mock.missing", { list: missing }) : "", mode === "ibt" ? t("mock.ibtNote") : ""].filter(Boolean);
+    const rules = ["mock.rules.fresh", "mock.rules.time", ...listening ? [exam === "topik2" ? "mock.rules.plays2" : "mock.rules.plays1"] : [], "mock.rules.lock", "mock.rules.review", "mock.rules.noGrade"];
+    return `<div class="wpos life-heading" data-mock-intro tabindex="-1">${poster(t("mock.title"), t("mock.sub", { exam: examName(exam) }), { print: "plan", label: "EXAM FORM" })}<section class="wplan-week"><p class="life-section-label">PBT</p><h3>${posEscape(t("mock.form", { exam: examName(exam) }))}</h3><ul class="wplan-areas">${parts}</ul><p class="wpos-note">${posEscape(t("mock.official", { list: official }))}</p>${notes.map((note) => `<p class="wpos-note">${posEscape(note)}</p>`).join("")}</section><section class="wplan-checks"><p class="life-section-label">RULES</p><h3>${posEscape(t("mock.rules.title"))}</h3><ul>${rules.map((key) => `<li><span>${posEscape(t(key))}</span></li>`).join("")}</ul></section><button class="felt-button" type="button" data-mock-start>${posEscape(t("mock.start", { minutes: plan.minutes }))} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" type="button" data-mock-later>${posEscape(t("mock.later"))}</button></div>`;
+  }
+  function renderMockItem({ view, playing = false, notice = "", confirm = false, parts = [] } = {}) {
+    const item = view.item, listening = item.modality === "listening", last = view.partIndex + 1 >= view.parts;
+    const choices2 = item.choices.map((choice) => `<button class="wpos-choice" type="button" data-mock-choice="${posEscape(choice.id)}"${choice.id === view.choiceId ? ' data-state="chosen" aria-pressed="true"' : ""}${view.heard && !view.answered ? "" : " disabled"}>${posEscape(choice.label)}</button>`).join("");
+    const palette = view.marks.map((mark, index) => `<button type="button" class="wmock-number" data-mock-go="${index}" data-mark="${mark}"${index === view.index ? ' aria-current="step"' : ""} aria-label="${posEscape(t(`mock.mark.${mark}`, { n: index + 1 }))}">${index + 1}</button>`).join("");
+    const allowed = view.plays?.allowed, heard = view.plays?.completed || 0;
+    const playNote = playing ? t("position.diagnostic.playing") : view.audio === "failed" && !view.heard ? t("position.diagnostic.audioFailed") : Number.isInteger(allowed) ? heard >= allowed ? t("mock.plays.done") : t("mock.plays.left", { heard, allowed }) : "";
+    const listen = listening ? `<div class="wpos-listen"><button class="quiet-button" type="button" data-mock-listen${playing ? ' aria-busy="true"' : ""}${view.answered || Number.isInteger(allowed) && heard >= allowed ? " disabled" : ""}>${posEscape(t(view.heard ? "position.diagnostic.listenAgain" : "position.diagnostic.listen"))}</button><p class="wpos-note">${posEscape(playNote)}</p></div>` : "";
+    const left = view.marks.filter((mark) => mark !== "answered").length;
+    const submit = confirm ? `<div class="wmock-confirm" data-mock-confirm tabindex="-1" role="alert"><p>${posEscape(t("mock.confirm", { n: left }))}</p><button class="felt-button" type="button" data-mock-submit>${posEscape(t(last ? "mock.submitLast" : "mock.submit"))}</button><button class="quiet-button" type="button" data-mock-keep>${posEscape(t("mock.keep"))}</button></div>` : `<button class="felt-button" type="button" data-mock-submit>${posEscape(t(last ? "mock.submitLast" : "mock.submit"))} <span aria-hidden="true">\u2192</span></button>`;
+    return `<div class="wpos wpos-run wmock" data-mock-run="${posEscape(item.id)}"><div class="wmock-head"><p class="life-section-label wpos-run-skill" tabindex="-1">${posEscape(sectionName(view.section))} \xB7 ${posEscape(t("position.diagnostic.progress", { index: view.index + 1, total: view.total }))}</p><p class="wmock-clock"><span class="wmock-clock-label">${posEscape(t("mock.timeLeft"))}</span><span data-mock-clock>${posEscape(mockClock(view.remainingMs))}</span></p></div><nav class="wmock-palette" aria-label="${posEscape(t("mock.palette"))}">${palette}</nav>${item.prompt ? `<p class="wpos-prompt" lang="ko">${posEscape(item.prompt)}</p>` : ""}${listen}${item.question ? item.ask && has(`position.diagnostic.ask.${item.ask}`) ? `<p class="wpos-question">${posEscape(t(`position.diagnostic.ask.${item.ask}`))}</p>` : `<p class="wpos-question" lang="ko">${posEscape(item.question)}</p>` : ""}<div class="wpos-choices" lang="ko">${choices2}</div><p class="wpos-run-status" role="status" data-mock-status tabindex="-1">${posEscape(notice)}</p><div class="wpos-run-actions"><button class="quiet-button" type="button" data-mock-go="${Math.max(0, view.index - 1)}"${view.index === 0 ? " disabled" : ""}>${posEscape(t("mock.prev"))}</button><button class="quiet-button" type="button" data-mock-go="${Math.min(view.total - 1, view.index + 1)}"${view.index + 1 >= view.total ? " disabled" : ""}>${posEscape(t("mock.next"))}</button></div>${submit}<button class="quiet-button" type="button" data-mock-stop>${posEscape(t("practice.stop"))}</button></div>`;
+  }
+  function renderMockBetween({ view, parts = [] } = {}) {
+    const next = view.started ? parts[view.partIndex + 1] : parts[view.partIndex];
+    const head = view.started && view.ended === "time" ? t("mock.timeUp", { section: sectionName(view.section) }) : t("mock.partDone");
+    const sub = next ? t("mock.nextPart", { section: sectionName(next.section), n: next.total, minutes: next.minutes }) : t("mock.allDone");
+    return `<div class="wpos life-heading" data-mock-between tabindex="-1">${poster(head, sub, { print: "plan", label: "EXAM FORM" })}<button class="felt-button" type="button" data-mock-next-section>${posEscape(next ? t("mock.startPart", { section: sectionName(next.section) }) : t("practice.finish"))} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" type="button" data-mock-stop>${posEscape(t("practice.stop"))}</button></div>`;
+  }
+  function renderMockDone({ results = [], items = null, plan = null, exam = "topik1", practice = null } = {}) {
+    const itemOf = (id) => items?.get?.(id) || null, numbers = plan?.numbers || {};
+    const rows2 = results.flatMap((part) => part.items);
+    const answered = rows2.filter((row) => ["correct", "incorrect"].includes(row.verdict)).length, total = rows2.length;
+    const sections = results.map((part) => {
+      const right = part.items.filter((row) => row.verdict === "correct").length, wrong = part.items.filter((row) => row.verdict === "incorrect").length;
+      const open = part.items.filter((row) => row.opened && !["correct", "incorrect"].includes(row.verdict)).length, unopened = part.items.filter((row) => !row.opened).length;
+      const list = part.items.map((row) => {
+        const item = itemOf(row.itemId), range = numbers[row.officialType], ok = row.verdict === "correct", miss = row.verdict === "incorrect";
+        const where = range ? typeLabel(range[0], range[1]) : "";
+        return `<li data-verdict="${posEscape(row.verdict || "none")}">${posLed(ok ? "ok" : miss ? "alert" : "")}<span class="wpos-done-copy"><strong>${posEscape([where, skillName({ id: row.skillId })].filter(Boolean).join(" \xB7 "))}</strong><small>${posEscape(t(ok ? "position.evidence.correct" : miss ? "position.evidence.incorrect" : row.opened ? "mock.unanswered" : "mock.unopened"))}</small>${miss ? explainBlock(item) : ""}</span>${miss ? practiceButton(row.skillId, practice) : ""}</li>`;
+      }).join("");
+      return `<section class="wplan-checks" data-mock-section="${posEscape(part.section)}"><p class="life-section-label">${posEscape(part.section.toUpperCase())}</p><h3>${posEscape(sectionName(part.section))}</h3><p class="wpos-intro">${posEscape(t("mock.partSummary", { right, wrong, open, unopened }))}</p>${part.ended === "time" ? `<p class="wpos-note">${posEscape(t("mock.endedByTime"))}</p>` : ""}<ul class="wpos-done-list">${list}</ul></section>`;
+    }).join("");
+    return `<div class="wpos life-heading" data-mock-done tabindex="-1">${poster(t("mock.doneTitle"), t("mock.doneSummary", { answered, total, exam: examName(exam) }), { print: "plan", label: "EXAM FORM" })}${sections}<p class="wpos-note">${posEscape(t("mock.noGradeNote"))}</p><div class="wpos-run-actions"><button class="quiet-button" type="button" data-mock-position>${posEscape(t("position.open"))}</button><button class="quiet-button" type="button" data-mock-home>${posEscape(t("practice.home"))}</button></div></div>`;
   }
   const examDay = (value) => {
     const match = typeof value === "string" && /^(\d{4})-(\d{2})(?:-(\d{2}))?$/.exec(value);
@@ -17861,8 +18754,9 @@ function createPositionView({ t, has = () => true, formatDate = null } = {}) {
   };
   function planTitle(next) {
     const label = String(next.label || next.title || ""), strip = (suffix) => label.endsWith(suffix) ? label.slice(0, -suffix.length) : null;
-    if (next.route === "practice" && next.skillId) return posEscape(t("plan.practice", { skill: skillName({ id: next.skillId }) }));
+    if (next.route === "practice" && next.skillId) return posEscape(t(String(next.skillId).split(".")[1] === "listening" ? "plan.practice.listening" : "plan.practice", { skill: skillName({ id: next.skillId }) }));
     if (next.route === "position") return posEscape(t("position.diagnostic.title"));
+    if (next.route === "mock") return posEscape(t("mock.title"));
     if (next.route === "game" && next.gameId && has(`plan.game.${next.gameId}`)) return posEscape(t(`plan.game.${next.gameId}`));
     if (next.route === "writing" && writingName(next.routeId)) return posEscape(writingName(next.routeId));
     if (next.id === "world.resume.review" && has("plan.resumeReview")) return posEscape(t("plan.resumeReview"));
@@ -17880,15 +18774,32 @@ function createPositionView({ t, has = () => true, formatDate = null } = {}) {
     const gameOf = (id) => String(id || "").split(".").pop();
     const homework = (plan.homework || []).map((row) => {
       const name = skillName({ id: row.skillId }), games = row.activities || [];
-      const action = row.shortage ? `<small class="wplan-shortage">${posEscape(t("plan.homework.shortage"))}</small>` : row.domain === "reading" ? `<button class="quiet-button" type="button" data-plan-practice="${posEscape(row.skillId)}">${posEscape(t("plan.homework.reading", { n: Math.min(row.fresh, 5) }))} <span aria-hidden="true">\u2192</span></button>` : row.domain === "writing" ? `<button class="quiet-button" type="button" data-plan-writing="${posEscape(games[0])}">${posEscape(writingName(games[0]) || t("writing.title"))} <span aria-hidden="true">\u2192</span></button>` : `<button class="quiet-button" type="button" data-plan-game="${posEscape(gameOf(games[0]))}">${posEscape(has(`plan.game.${gameOf(games[0])}`) ? t(`plan.game.${gameOf(games[0])}`) : gameOf(games[0]))} <span aria-hidden="true">\u2192</span></button>`;
+      const action = row.shortage ? `<small class="wplan-shortage">${posEscape(t("plan.homework.shortage"))}</small>` : row.domain !== "writing" && row.fresh > 0 ? `<button class="quiet-button" type="button" data-plan-practice="${posEscape(row.skillId)}">${posEscape(t("plan.homework.reading", { n: Math.min(row.fresh, 5) }))} <span aria-hidden="true">\u2192</span></button>` : row.domain === "writing" ? `<button class="quiet-button" type="button" data-plan-writing="${posEscape(games[0])}">${posEscape(writingName(games[0]) || t("writing.title"))} <span aria-hidden="true">\u2192</span></button>` : `<button class="quiet-button" type="button" data-plan-game="${posEscape(gameOf(games[0]))}">${posEscape(has(`plan.game.${gameOf(games[0])}`) ? t(`plan.game.${gameOf(games[0])}`) : gameOf(games[0]))} <span aria-hidden="true">\u2192</span></button>`;
       return `<li data-skill="${posEscape(row.skillId)}"><span class="wpos-attention-copy"><strong>${posEscape(name)}</strong><small>${posEscape(t(`position.level.${row.status}`))}</small></span>${action}</li>`;
     }).join("");
     const thisWeek = (plan.checks || [])[0]?.weekStart === plan.week?.start ? (plan.checks || [])[0] : null;
     const checks = (plan.checks || []).map((row) => `<li${row.done ? " data-done" : ""}><span>${posEscape(row.weekStart === plan.week?.start ? t("plan.checks.thisWeek") : t("plan.checks.week", { date: day2(new Date(row.weekStart).toISOString()) }))}</span>${row.done ? `<small>${posEscape(t("plan.checks.done"))}</small>` : ""}</li>`).join("");
     const reach = plan.reach || { confirmed: 0, total: 0, evidence: 0 };
-    return `<div class="wpos wplan life-heading" data-plan-board tabindex="-1">${poster(t("plan.week.title"), head, { print: "plan", label: "MY PLAN" })}` + (notes.has("past") ? `<section class="wpos-diagnostic" data-plan-past><p class="wpos-intro">${posEscape(t("goal.exam.past"))}</p><button class="quiet-button" type="button" data-view="study">${posEscape(t("plan.week.setGoal"))}</button></section>` : "") + `<section class="wplan-week"><p class="life-section-label">THIS WEEK</p><h3>${posEscape(t("plan.week.sessions", { n: plan.sessions?.total || 0, minutes: plan.sessions?.minutes || 0 }))}</h3><ul class="wplan-areas">${(plan.areas || []).map(area).join("")}</ul><p class="wpos-note">${posEscape(t("plan.week.rest"))}</p>${notes.has("audio-off") ? `<p class="wpos-note">${posEscape(t("plan.week.audioOff"))}</p>` : ""}${notes.has("reading-unavailable") ? `<p class="wpos-note" data-plan-reading-later>${posEscape(t("plan.week.readingLater"))}</p>` : ""}${notes.has("writing-unavailable") ? `<p class="wpos-note">${posEscape(t("plan.week.writingLater"))}</p>` : ""}${notes.has("no-date") ? `<p class="wpos-note">${posEscape(t("plan.week.noDate"))}</p>` : ""}</section>` + (next ? `<section class="wplan-next"><p class="life-section-label">NOW</p><h3>${nextTitle}</h3>${reason ? `<p class="wpos-note">${posEscape(reason)}</p>` : ""}<button class="felt-button" type="button" data-plan-next>${posEscape(t("plan.week.start"))} <span aria-hidden="true">\u2192</span></button></section>` : "") + (homework ? `<section class="wpos-attention wplan-homework"><p class="life-section-label">HOMEWORK</p><h3>${posEscape(t("plan.homework.title"))}</h3><p class="wpos-note">${posEscape(t("plan.homework.note"))}</p><ul>${homework}</ul></section>` : "") + (checks ? `<section class="wplan-checks"><p class="life-section-label">CHECK</p><h3>${posEscape(t("plan.checks.title"))}</h3><ul>${checks}</ul><p class="wpos-note">${posEscape(t("plan.checks.note"))}</p>${thisWeek && !thisWeek.done && next?.route !== "position" ? `<button class="quiet-button" type="button" data-plan-recheck>${posEscape(t("position.diagnostic.start"))} <span aria-hidden="true">\u2192</span></button>` : ""}</section>` : "") + `<section class="wplan-reach"><p class="life-section-label">SO FAR</p><p class="wpos-intro">${posEscape(t("plan.reach.line", { confirmed: reach.confirmed, total: reach.total, evidence: reach.evidence }))}</p><p class="wpos-note">${posEscape(t("plan.reach.note"))}</p>${reach.basis === "topik1" && exam.type === "topik2" ? `<p class="wpos-note" data-plan-reach-basis>${posEscape(t("plan.reach.topik1Basis"))}</p>` : ""}</section><button class="quiet-button" type="button" data-view="study">${posEscape(t("plan.week.change"))}</button></div>`;
+    return `<div class="wpos wplan life-heading" data-plan-board tabindex="-1">${poster(t("plan.week.title"), head, { print: "plan", label: "MY PLAN" })}` + (notes.has("past") ? `<section class="wpos-diagnostic" data-plan-past><p class="wpos-intro">${posEscape(t("goal.exam.past"))}</p><button class="quiet-button" type="button" data-view="study">${posEscape(t("plan.week.setGoal"))}</button></section>` : "") + `<section class="wplan-week"><p class="life-section-label">THIS WEEK</p><h3>${posEscape(t("plan.week.sessions", { n: plan.sessions?.total || 0, minutes: plan.sessions?.minutes || 0 }))}</h3><ul class="wplan-areas">${(plan.areas || []).map(area).join("")}</ul><p class="wpos-note">${posEscape(t("plan.week.rest"))}</p>${notes.has("audio-off") ? `<p class="wpos-note">${posEscape(t("plan.week.audioOff"))}</p>` : ""}${notes.has("reading-unavailable") ? `<p class="wpos-note" data-plan-reading-later>${posEscape(t("plan.week.readingLater"))}</p>` : ""}${notes.has("writing-unavailable") ? `<p class="wpos-note">${posEscape(t("plan.week.writingLater"))}</p>` : ""}${notes.has("no-date") ? `<p class="wpos-note">${posEscape(t("plan.week.noDate"))}</p>` : ""}</section>` + (next ? `<section class="wplan-next"><p class="life-section-label">NOW</p><h3>${nextTitle}</h3>${reason ? `<p class="wpos-note">${posEscape(reason)}</p>` : ""}<button class="felt-button" type="button" data-plan-next>${posEscape(t("plan.week.start"))} <span aria-hidden="true">\u2192</span></button></section>` : "") + (homework ? `<section class="wpos-attention wplan-homework"><p class="life-section-label">HOMEWORK</p><h3>${posEscape(t("plan.homework.title"))}</h3><p class="wpos-note">${posEscape(t("plan.homework.note"))}</p><ul>${homework}</ul></section>` : "") + (checks ? `<section class="wplan-checks"><p class="life-section-label">CHECK</p><h3>${posEscape(t("plan.checks.title"))}</h3><ul>${checks}</ul><p class="wpos-note">${posEscape(t("plan.checks.note"))}</p>${thisWeek && !thisWeek.done && next?.route !== "position" ? `<button class="quiet-button" type="button" data-plan-recheck>${posEscape(t("position.diagnostic.start"))} <span aria-hidden="true">\u2192</span></button>` : ""}</section>` : "") + (plan.mock?.status === "ready" ? `<section class="wplan-next" data-plan-mock-section><p class="life-section-label">EXAM FORM</p><h3>${posEscape(t("mock.title"))}</h3><p class="wpos-note">${posEscape(t("mock.planNote", { minutes: plan.mock.minutes, n: plan.mock.total }))}</p><button class="quiet-button" type="button" data-plan-mock>${posEscape(t("mock.open", { minutes: plan.mock.minutes }))} <span aria-hidden="true">\u2192</span></button></section>` : "") + `<section class="wplan-reach"><p class="life-section-label">SO FAR</p>${["listening", "reading"].filter((area2) => plan.progress?.[area2]).map((area2) => `<p class="wpos-progress" data-plan-progress="${area2}"><span>${posEscape(t(`plan.area.${area2}`))} \xB7 ${posEscape(t("position.progress", { checked: plan.progress[area2].checked, total: plan.progress[area2].total }))}</span><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(plan.progress[area2].checked, plan.progress[area2].total)}%"></i></span></p>`).join("")}<p class="wpos-intro">${posEscape(t("plan.reach.line", { confirmed: reach.confirmed, total: reach.total, evidence: reach.evidence }))}</p><p class="wpos-note">${posEscape(t("plan.reach.note"))}</p>${reach.basis === "topik1" && exam.type === "topik2" ? `<p class="wpos-note" data-plan-reach-basis>${posEscape(t("plan.reach.topik1Basis"))}</p>` : ""}</section><button class="quiet-button" type="button" data-view="study">${posEscape(t("plan.week.change"))}</button></div>`;
   }
-  return Object.freeze({ skillName, itemSource, noteText, renderPositionBoard, renderHangulBoard, renderDiagnosticItem, renderDiagnosticDone, renderPracticeItem, renderPracticeDone, renderExamPlan });
+  return Object.freeze({
+    skillName,
+    itemSource,
+    noteText,
+    explainText,
+    renderPositionBoard,
+    renderHangulBoard,
+    renderDiagnosticItem,
+    renderDiagnosticDone,
+    renderPracticeItem,
+    renderPracticeDone,
+    renderMockIntro,
+    renderMockItem,
+    renderMockBetween,
+    renderMockDone,
+    mockClock,
+    renderExamPlan
+  });
 }
 
 // experiences/hangul-stage/learning.mjs
@@ -18062,15 +18973,16 @@ var world_reading_practice_exports = {};
 __export(world_reading_practice_exports, {
   PRACTICE_POLICY: () => PRACTICE_POLICY,
   createPracticeSession: () => createPracticeSession,
+  passedItems: () => passedItems,
   practiceCandidates: () => practiceCandidates,
   practicePool: () => practicePool,
   practiceSupply: () => practiceSupply,
   selectPractice: () => selectPractice
 });
 var PRACTICE_POLICY = Object.freeze({
-  version: "world-reading-practice-1",
+  version: "world-practice-2",
   count: 5,
-  // 연습 기록을 남기는 코치(경험) 이름. 내 위치 근거 줄이 「읽기 짧은 연습」으로 읽는다(world-position-ui.mjs itemSource).
+  // 연습 기록을 남기는 코치(경험) 이름. 내 위치 근거 줄이 「짧은 연습」으로 읽는다(world-position-ui.mjs itemSource).
   gameId: "world-practice",
   // 보기 고르기에 가까운 형식부터(진단과 같은 순서).
   formats: Object.freeze(["single-choice", "binary-choice", "action", "cup-compose", "unknown"])
@@ -18078,8 +18990,10 @@ var PRACTICE_POLICY = Object.freeze({
 var VERDICT_VERSION = "topik-existing-verdicts-1";
 var prRecord = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 var prToken = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
-var READING_SKILL = /^ko\.reading\.[a-z]+$/;
-function practicePool({ items = [], verdicts = null } = {}) {
+var PRACTICE_SKILL = /^ko2?\.(listening|reading)\.[a-z]+$/;
+var prListening = (item) => item.audioRequired ?? item.modality === "listening";
+var prChoices = (item) => Array.isArray(item.choices) && item.choices.length >= 2 && item.choices.some((choice) => choice?.id === item.correctId);
+function passedItems({ items = [], verdicts = null, modalities = ["reading"] } = {}) {
   if (!Array.isArray(items) || !prRecord(verdicts) || verdicts.version !== VERDICT_VERSION || !Array.isArray(verdicts.items)) return Object.freeze([]);
   const judged = /* @__PURE__ */ new Map(), conflicted = /* @__PURE__ */ new Set();
   for (const row of verdicts.items) {
@@ -18089,28 +19003,27 @@ function practicePool({ items = [], verdicts = null } = {}) {
   }
   const pool = [];
   for (const item of items) {
-    if (!prRecord(item) || item.modality !== "reading" || !READING_SKILL.test(item.skillId || "") || item.audioRequired === true) continue;
+    if (!prRecord(item) || !modalities.includes(item.modality) || !PRACTICE_SKILL.test(item.skillId || "") || item.skillId.split(".")[1] !== item.modality) continue;
+    if (item.modality === "reading" && item.audioRequired === true) continue;
     const verdict = judged.get(item.itemKey);
     if (!verdict || conflicted.has(item.itemKey) || verdict.verdict !== "pass") continue;
     if (verdict.skillId !== item.skillId || verdict.difficulty !== item.difficulty || (verdict.responseFormat ?? "unknown") !== (item.responseFormat ?? "unknown") || (verdict.familyKey ?? item.itemKey) !== (item.familyKey || item.itemKey)) continue;
-    if (!Array.isArray(item.choices) || item.choices.length < 2 || !item.choices.some((choice) => choice?.id === item.correctId)) continue;
+    if (!prChoices(item)) continue;
     pool.push(item);
   }
   return Object.freeze(pool);
 }
-function freshOf(pool, seen) {
-  const fresh = [];
-  for (const item of pool) {
-    let value = null;
-    try {
-      value = seen(item);
-    } catch {
-      value = null;
-    }
-    if (value === false) fresh.push(item);
+function practicePool({ items = [], verdicts = null, bank = [] } = {}) {
+  const pool = [...passedItems({ items, verdicts })], ids = new Set(pool.map((item) => item.id));
+  for (const item of Array.isArray(bank) ? bank : []) {
+    if (!prRecord(item) || ids.has(item.id) || !PRACTICE_SKILL.test(item.skillId || "") || item.skillId.split(".")[1] !== item.modality || !prChoices(item)) continue;
+    if (prListening(item) && typeof item.audio !== "string") continue;
+    ids.add(item.id);
+    pool.push(item);
   }
-  return fresh;
+  return Object.freeze(pool);
 }
+var freshOf = (pool, seen) => freshBySet(pool, seen);
 function prOrder(key) {
   let h = 2166136261;
   for (const c of String(key)) h = Math.imul(h ^ c.codePointAt(0), 16777619) >>> 0;
@@ -18124,10 +19037,10 @@ function sortFor(items, skill2) {
   const target = prTarget(skill2), format = (item) => PRACTICE_POLICY.formats.indexOf(item.responseFormat ?? "unknown");
   return [...items].sort((a, b) => Math.abs(a.difficulty - target) - Math.abs(b.difficulty - target) || a.difficulty - b.difficulty || format(a) - format(b) || prOrder(a.itemKey) - prOrder(b.itemKey) || a.id.localeCompare(b.id));
 }
-function practiceSupply({ pool = [], seen } = {}) {
+function practiceSupply({ pool = [], seen, audioAvailable = true } = {}) {
   if (typeof seen !== "function") throw TypeError("WORLD practice needs an exposure reader");
   const supply = {};
-  for (const item of freshOf(pool, seen)) supply[item.skillId] = (supply[item.skillId] || 0) + 1;
+  for (const item of freshOf(pool, seen)) if (audioAvailable || !prListening(item)) supply[item.skillId] = (supply[item.skillId] || 0) + 1;
   return supply;
 }
 function practiceCandidates({ pool = [], seen, summary = null, presentation = null, labels = {} } = {}) {
@@ -18139,43 +19052,50 @@ function practiceCandidates({ pool = [], seen, summary = null, presentation = nu
     bySkill.get(item.skillId).push(item);
   }
   return [...bySkill].sort(([a], [b]) => a.localeCompare(b)).map(([skillId, items]) => {
-    const chosen = sortFor(items, skills.get(skillId)).slice(0, PRACTICE_POLICY.count);
+    const modality = skillId.split(".")[1], chosen = sortFor(items, skills.get(skillId)).slice(0, PRACTICE_POLICY.count), listening = modality === "listening";
     return {
       id: `world.practice.${skillId}`,
-      label: `\uC77D\uAE30 \uC9E7\uC740 \uC5F0\uC2B5 \xB7 ${labels[skillId] || skills.get(skillId)?.label || skillId}`,
+      label: `${listening ? "\uB4E3\uAE30" : "\uC77D\uAE30"} \uC9E7\uC740 \uC5F0\uC2B5 \xB7 ${labels[skillId] || skills.get(skillId)?.label || skillId}`,
       route: "practice",
       skillId,
-      minutes: Math.max(2, Math.ceil(chosen.length / 2)),
+      minutes: Math.max(2, Math.ceil(chosen.length * (listening ? 0.8 : 0.5))),
       minutesEstimated: true,
       targets: items.map((item) => ({
         id: item.id,
         skillIds: [item.skillId],
         difficulty: item.difficulty,
-        modality: "reading",
+        modality,
         responseFormat: item.responseFormat ?? "unknown",
         familyKeys: [item.familyKey || item.itemKey],
         itemKey: item.itemKey,
         conceptIds: Array.isArray(item.conceptIds) ? [...item.conceptIds] : []
       })),
-      goals: ["exam", "prepare", "reading", "study"],
+      goals: ["exam", "prepare", modality, "study"],
       supports: ["choose", "step", "independent"],
-      audioRequired: false,
-      modality: "reading",
+      audioRequired: listening,
+      modality,
       fresh: items.length,
       ...presentation ? { presentation: { ...presentation } } : {}
     };
   });
 }
-function selectPractice({ summary = null, pool = [], seen, skillId, count = PRACTICE_POLICY.count } = {}) {
-  if (typeof seen !== "function" || !READING_SKILL.test(skillId || "") || !Number.isInteger(count) || count < 1) throw TypeError("WORLD practice needs a reading skill, a count and an exposure reader");
+function selectPractice({ summary = null, pool = [], seen, skillId, count = PRACTICE_POLICY.count, audioAvailable = true } = {}) {
+  if (typeof seen !== "function" || !PRACTICE_SKILL.test(skillId || "") || !Number.isInteger(count) || count < 1) throw TypeError("WORLD practice needs a skill, a count and an exposure reader");
   const skill2 = (prRecord(summary) && Array.isArray(summary.skills) ? summary.skills : []).find((row) => row.id === skillId) || null;
   const mine = pool.filter((item) => item.skillId === skillId);
   const common = { policy: PRACTICE_POLICY.version, skillId, learningEffectClaim: false, grade: null };
   if (!prRecord(summary) || summary.evidenceComplete !== true) return { ...common, status: "none", reason: "history.incomplete", items: [], fresh: 0 };
   if (!mine.length) return { ...common, status: "none", reason: "no-item", items: [], fresh: 0 };
-  const fresh = freshOf(mine, seen);
+  if (!audioAvailable && mine.every(prListening)) return { ...common, status: "none", reason: "audio", items: [], fresh: 0 };
+  const fresh = freshOf(pool, seen).filter((item) => item.skillId === skillId && (audioAvailable || !prListening(item)));
   if (!fresh.length) return { ...common, status: "none", reason: "all-seen", items: [], fresh: 0 };
-  const items = sortFor(fresh, skill2).slice(0, count);
+  const items = [], sets = /* @__PURE__ */ new Set();
+  for (const item of sortFor(fresh, skill2)) {
+    if (items.length >= count) break;
+    if (item.setId && sets.has(item.setId)) continue;
+    if (item.setId) sets.add(item.setId);
+    items.push(item);
+  }
   return { ...common, status: items.length < count ? "short" : "ready", reason: items.length < count ? "few-items" : null, items, fresh: fresh.length };
 }
 var prMeasure = (item) => ({
@@ -18186,19 +19106,29 @@ var prMeasure = (item) => ({
   modality: item.modality,
   difficulty: item.difficulty,
   responseFormat: item.responseFormat ?? "unknown",
-  audioRequired: false,
+  audioRequired: prListening(item),
   confounded: false,
   ...Array.isArray(item.conceptIds) ? { conceptIds: [...item.conceptIds] } : {}
 });
 function createPracticeSession({ coach, items } = {}) {
-  if (!coach || ["present", "answer", "help"].some((name) => typeof coach[name] !== "function") || !Array.isArray(items) || !items.length) throw TypeError("WORLD practice needs the learning coach and its items");
+  if (!coach || ["present", "answer", "help", "delivery"].some((name) => typeof coach[name] !== "function") || !Array.isArray(items) || !items.length) throw TypeError("WORLD practice needs the learning coach and its items");
   const queue = items.map((item) => {
-    if (!prRecord(item) || item.modality !== "reading" || !READING_SKILL.test(item.skillId || "") || !Array.isArray(item.choices) || !item.choices.some((choice) => choice?.id === item.correctId)) throw TypeError("WORLD practice: an item needs its reading skill, choices and answer");
+    if (!prRecord(item) || !PRACTICE_SKILL.test(item.skillId || "") || item.skillId.split(".")[1] !== item.modality || !prChoices(item) || prListening(item) && typeof item.audio !== "string") throw TypeError("WORLD practice: an item needs its skill, choices and answer");
     return item;
   });
   const results = [];
   let index = -1, current = null, stopped = false;
-  const view = () => current && { index, total: queue.length, item: current.item, answered: current.answered, feedback: current.feedback };
+  const view = () => current && {
+    index,
+    total: queue.length,
+    item: current.item,
+    answered: current.answered,
+    feedback: current.feedback,
+    heard: current.heard,
+    audio: current.audio,
+    plays: { ...current.plays },
+    next: nextPlay(current.plays, { heard: current.heard })
+  };
   const close = (result, choiceId, skipped) => {
     current.answered = true;
     const row = {
@@ -18210,14 +19140,15 @@ function createPracticeSession({ coach, items } = {}) {
       verdict: result.verdict,
       independent: result.independent === true,
       assisted: result.assisted ?? null,
-      eventId: result.eventId ?? null
+      eventId: result.eventId ?? null,
+      plays: { ...current.plays }
     };
     results.push(row);
     return { ...row };
   };
   const skip = () => {
     if (!current || current.answered) return null;
-    return close(coach.answer(current.pid, { correct: null, assessable: false, reason: "unanswered" }), null, true);
+    return close(coach.answer(current.pid, { correct: null, assessable: false, reason: current.heard ? "unanswered" : "audio" }), null, true);
   };
   return Object.freeze({
     get total() {
@@ -18235,12 +19166,53 @@ function createPracticeSession({ coach, items } = {}) {
         current = null;
         return null;
       }
-      current = { item: queue[index], pid: coach.present(prMeasure(queue[index])), answered: false, feedback: null };
+      const item = queue[index], listening = prListening(item);
+      current = {
+        item,
+        pid: coach.present(prMeasure(item), presentCondition(item, { content: "world-practice" })),
+        answered: false,
+        feedback: null,
+        heard: !listening,
+        audio: listening ? "pending" : "none",
+        plays: { allowed: allowedPlays(item), completed: 0, extra: 0 }
+      };
       return view();
+    },
+    // 듣기 한 번 시작: 'first' · 'allowed'(도움 아님) · 'extra'(도움). 진단 실행기와 같다.
+    replay() {
+      if (!current || current.answered || !prListening(current.item)) return false;
+      const kind = nextPlay(current.plays, { heard: current.heard });
+      if (kind === "first") {
+        current.audio = "pending";
+        coach.delivery(current.pid, { audio: "pending" });
+      } else if (kind === "extra") {
+        coach.help(current.pid, "replay");
+        current.plays.extra += 1;
+      }
+      return kind;
+    },
+    // 실제 재생기의 결과만 받는다. 끝까지 들은 재생은 매번 남기고, 다 들은 뒤의 실패는 들은 사실을 지우지 않는다.
+    delivery(status) {
+      if (!current || current.answered || !prListening(current.item)) return false;
+      if (!["pending", "completed", "failed"].includes(status)) throw TypeError("WORLD practice: invalid audio state");
+      if (current.heard) {
+        if (status === "completed") {
+          current.plays.completed += 1;
+          coach.delivery(current.pid, { audio: "completed" });
+        }
+        return true;
+      }
+      current.audio = status;
+      if (status === "completed") {
+        current.heard = true;
+        current.plays.completed += 1;
+      }
+      coach.delivery(current.pid, { audio: status });
+      return true;
     },
     // 답 → 기록 → 맞음·틀림과 정답. 정답·해설을 보인 사실은 그다음에 도움(answer)으로 남긴다.
     answer(choiceId) {
-      if (!current || current.answered) return null;
+      if (!current || current.answered || !current.heard) return null;
       if (!current.item.choices.some((choice) => choice.id === choiceId)) throw TypeError("WORLD practice: unknown choice");
       const result = coach.answer(current.pid, { correct: choiceId === current.item.correctId, assessable: true, choice: { selectedId: choiceId, correctId: current.item.correctId } });
       const row = close(result, choiceId, false);
@@ -18262,18 +19234,161 @@ function createPracticeSession({ coach, items } = {}) {
   });
 }
 
+// experiences/synk-world-app/world-topik-items.mjs
+var tiRecord = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+var tiShort = (text2, max = 26) => {
+  const value = String(text2 || "").replace(/\s+/g, " ").trim();
+  return value.length > max ? `${value.slice(0, max - 1)}\u2026` : value;
+};
+var SKILL = /^ko2?\.(listening|reading)\.[a-z]+$/;
+function bankItem(row) {
+  if (!tiRecord(row) || typeof row.id !== "string" || !Number.isInteger(row.rev) || typeof row.family !== "string" || !SKILL.test(row.skillId || "") || !["listening", "reading"].includes(row.section) || row.skillId.split(".")[1] !== row.section || ![1, 2, 3].includes(row.difficulty) || !Array.isArray(row.choices) || row.choices.length < 2 || !Number.isInteger(row.answer) || row.answer < 0 || row.answer >= row.choices.length) return null;
+  if (row.section === "listening" && (!tiRecord(row.audio) || typeof row.audio.file !== "string")) return null;
+  const itemKey = `topik-items.${row.id}.v${row.rev}`, ids = row.choices.map((_, index) => `${itemKey}.option-${index}`);
+  const opening = row.passage || (Array.isArray(row.script) ? row.script.map((line) => line.text).join(" ") : "") || row.question;
+  return Object.freeze({
+    id: row.id,
+    itemKey,
+    familyKey: `topik-items.${row.family}`,
+    skillId: row.skillId,
+    modality: row.section,
+    difficulty: row.difficulty,
+    responseFormat: row.responseFormat || "single-choice",
+    audioRequired: row.section === "listening",
+    confounded: false,
+    conceptIds: Object.freeze([...row.conceptIds || []]),
+    source: "topik-items",
+    exam: row.exam,
+    form: row.format || "pbt",
+    officialType: row.officialType,
+    targetGrade: row.targetGrade ?? null,
+    setId: row.set?.id || null,
+    setOrder: row.set?.order ?? null,
+    setSize: row.set?.size ?? null,
+    audio: row.section === "listening" ? `topik-items/${row.audio.file}` : null,
+    plays: row.section === "listening" ? row.audio.plays : null,
+    seconds: row.audio?.seconds ?? null,
+    prompt: row.passage || null,
+    script: Array.isArray(row.script) ? Object.freeze(row.script.map((line) => Object.freeze({ speaker: line.speaker, text: line.text }))) : null,
+    question: row.question,
+    choices: Object.freeze(row.choices.map((label, index) => Object.freeze({ id: ids[index], label }))),
+    correctId: ids[row.answer],
+    explanation: Object.freeze({ ...row.explanation }),
+    choiceNotes: Object.freeze([...row.choiceNotes || []]),
+    label: tiShort(opening)
+  });
+}
+function bankItems(bank) {
+  if (!tiRecord(bank) || !Array.isArray(bank.items)) return Object.freeze([]);
+  const out = [], ids = /* @__PURE__ */ new Set();
+  for (const row of bank.items) {
+    const item = bankItem(row);
+    if (item && !ids.has(item.id)) {
+      ids.add(item.id);
+      out.push(item);
+    }
+  }
+  return Object.freeze(out);
+}
+function createTopikBank({ fetcher = (...args) => globalThis.fetch(...args) } = {}) {
+  let state = { bank: null, items: Object.freeze([]), byId: /* @__PURE__ */ new Map(), byKey: /* @__PURE__ */ new Map() }, loading = null;
+  const listeners = /* @__PURE__ */ new Set();
+  function use(bank) {
+    const items = bankItems(bank);
+    state = {
+      bank: tiRecord(bank) ? { version: bank.version || null, contentHash: bank.contentHash || null, forms: tiRecord(bank.forms) ? bank.forms : {} } : null,
+      items,
+      byId: new Map(items.map((item) => [item.id, item])),
+      byKey: new Map(items.map((item) => [item.itemKey, item]))
+    };
+    for (const listener of listeners) {
+      try {
+        listener(state);
+      } catch {
+      }
+    }
+    return items;
+  }
+  function load(url) {
+    if (state.bank) return Promise.resolve(state.items);
+    loading ||= Promise.resolve().then(() => fetcher(url, { cache: "no-cache" })).then((response) => {
+      if (!response?.ok) throw Error("TOPIK_BANK");
+      return response.json();
+    }).then((bank) => {
+      if (!tiRecord(bank) || !Array.isArray(bank.items)) throw Error("TOPIK_BANK");
+      return use(bank);
+    }).catch((error2) => {
+      loading = null;
+      throw error2;
+    });
+    return loading;
+  }
+  return Object.freeze({
+    use,
+    load,
+    get ready() {
+      return !!state.bank;
+    },
+    get items() {
+      return state.items;
+    },
+    get forms() {
+      return state.bank?.forms || {};
+    },
+    byId: (id) => state.byId.get(id) || null,
+    // 근거 줄의 문항 첫머리(판이 달라도 같은 문항이면 찾는다 — itemKey는 topik-items.<id>.v<판>).
+    label(itemKey) {
+      const key = String(itemKey || ""), match = /^topik-items\.(.+)\.v\d+$/.exec(key);
+      return (state.byKey.get(key) || (match ? state.byId.get(match[1]) : null))?.label ?? null;
+    },
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    }
+  });
+}
+
 // experiences/synk-world-app/world-position-kit.mjs
-var itemsById = new Map(DIAGNOSTIC_ITEMS.map((item) => [item.id, item]));
+var topik = createTopikBank();
+var NOT_EXAM_FORM = /* @__PURE__ */ new Set(["korean-runner", "korean-rhythm"]);
+var passed = passedItems({ items: DIAGNOSTIC_ITEMS, verdicts: existing_verdicts_default, modalities: ["listening", "reading"] }).filter((item) => !NOT_EXAM_FORM.has(item.source));
+var asTopik34 = (item) => Object.freeze({ ...item, exam: "topik-i", form: "pbt", officialType: "TI-R-34" });
+var cached = null;
+function pools() {
+  if (cached?.bank === topik.items) return cached;
+  const bank = topik.items, ids = new Set(passed.map((item) => item.id));
+  cached = {
+    bank,
+    diagnostic: Object.freeze([...passed, ...bank.filter((item) => !ids.has(item.id))]),
+    practice: practicePool({ items: DIAGNOSTIC_ITEMS, verdicts: existing_verdicts_default, bank }),
+    mock: Object.freeze([...bank, ...passed.filter((item) => item.source === "blank-slice" && item.choices.length === 4).map(asTopik34)]),
+    byId: new Map([...DIAGNOSTIC_ITEMS, ...bank].map((item) => [item.id, item]))
+  };
+  return cached;
+}
 var worldPosition = Object.freeze({
   ...world_position_exports,
-  items: DIAGNOSTIC_ITEMS,
-  itemsById,
-  label: diagnosticLabel,
+  // 짧은 진단 문항 풀(검수 통과 기존 문항 + 은행). 은행을 불러오면 그 문항이 더해진다.
+  get items() {
+    return pools().diagnostic;
+  },
+  get itemsById() {
+    return pools().byId;
+  },
+  label: (itemKey) => diagnosticLabel(itemKey) ?? topik.label(itemKey),
   createView: createPositionView,
   hangulLayer: Object.freeze({ letters: hangul_default.letters, units: hangul_default.units }),
   hangulProgressKey: progressKey,
-  practice: Object.freeze({ ...world_reading_practice_exports, pool: practicePool({ items: DIAGNOSTIC_ITEMS, verdicts: existing_verdicts_default }) }),
+  topik,
+  practice: Object.freeze({ ...world_reading_practice_exports, get pool() {
+    return pools().practice;
+  } }),
   exam: Object.freeze({ ...world_exam_plan_exports }),
+  mock: Object.freeze({ ...world_exam_form_exports, get pool() {
+    return pools().mock;
+  }, get forms() {
+    return topik.forms;
+  } }),
   checkCandidate: positionCheckCandidate
 });
 
@@ -19082,8 +20197,8 @@ function createWorldAccount({
       if (!owner) throw changed();
     },
     preferences() {
-      const learning = currentAccount?.learning;
-      return learning && typeof learning.enabled === "boolean" && Number.isSafeInteger(learning.revision) ? { enabled: learning.enabled, revision: learning.revision } : null;
+      const learning2 = currentAccount?.learning;
+      return learning2 && typeof learning2.enabled === "boolean" && Number.isSafeInteger(learning2.revision) ? { enabled: learning2.enabled, revision: learning2.revision } : null;
     },
     async setLearning(enabled, expectedRevision) {
       const expected = epoch;
@@ -19119,7 +20234,6 @@ function createWorldAccount({
     }
   });
 }
-var export_worldLearning = import_game_browser2.default;
 export {
   GUEST_TRIAL_GAMES,
   createDeviceRecordsOffer,
@@ -19134,6 +20248,6 @@ export {
   noteDeviceAccount,
   noteDeviceSignOut,
   publicWorldConfig,
-  export_worldLearning as worldLearning,
+  worldLearning,
   worldPosition
 };

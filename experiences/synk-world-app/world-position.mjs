@@ -3,6 +3,8 @@
 // 고르고, 예상 급수를 보여도 되는지 문턱만 판단한다. 상태를 새로 계산하거나 급수·합격·점수 환산을 만들지 않는다(§1).
 // 지금은 WORLD 한 제품만 쓰므로 atlas/가 아니라 제품 폴더에 둔다(docs/아틀라스_설계.md#common-capability-promotion).
 // 화면 글은 없다. 칸·이유는 코드로만 돌려주고 글은 화면 쪽 문자열 표가 맡는다.
+// 10-21 ④: TOPIK II 지도(ko2.* 듣기 5·읽기 7)도 같은 판으로 읽는다(exam:'topik2'). 쓰기 항목은 자동 판정이 없어 판에 넣지 않는다.
+import {allowedPlays,nextPlay,presentCondition,freshBySet} from './world-exam-form.mjs';
 
 export const POSITION_POLICY=Object.freeze({version:'world-position-1',
  // 학습기준 §7-3의 여섯 상태 → 학습자에게 보이는 세 칸. 시험이 이 대응을 고정한다.
@@ -11,7 +13,10 @@ export const POSITION_CELLS=Object.freeze(['independent','practicing','notyet'])
 const posRecord=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
 const posOwn=(value,key)=>Object.prototype.hasOwnProperty.call(value,key);
 const posTime=value=>typeof value==='string'&&Number.isFinite(Date.parse(value));
-const TOPIK_SKILL=/^ko\.(listening|reading)\.[a-z]+$/;
+const TOPIK_SKILL=/^ko2?\.(listening|reading)\.[a-z]+$/;
+// 판이 읽는 시험: TOPIK I(ko.*) · TOPIK II(ko2.*). 그 밖의 값은 TOPIK I.
+export const POSITION_EXAMS=Object.freeze({topik1:/^ko\.(listening|reading)\.[a-z]+$/,topik2:/^ko2\.(listening|reading)\.[a-z]+$/});
+export const positionExam=value=>value==='topik2'?'topik2':'topik1';
 
 export function positionCell(status){
  if(typeof status!=='string'||!posOwn(POSITION_POLICY.cells,status))throw TypeError(`WORLD position: unknown Core state ${status}`);
@@ -21,8 +26,8 @@ function posProfile(summary){
  if(!posRecord(summary)||!Array.isArray(summary.skills)||typeof summary.evidenceComplete!=='boolean')throw TypeError('WORLD position needs a Core learning summary');
  return summary;
 }
-// Strata의 TOPIK I 항목(듣기 8·읽기 8)만, 지도에 나온 순서대로.
-const posTopikSkills=summary=>posProfile(summary).skills.filter(skill=>TOPIK_SKILL.test(skill?.id||'')&&['listening','reading'].includes(skill.domain));
+// Strata의 TOPIK I 항목(듣기 8·읽기 8) 또는 TOPIK II 항목(듣기 5·읽기 7)만, 지도에 나온 순서대로.
+const posTopikSkills=(summary,exam='topik1')=>posProfile(summary).skills.filter(skill=>POSITION_EXAMS[positionExam(exam)].test(skill?.id||'')&&['listening','reading'].includes(skill.domain));
 
 // Trail 로그에서 Core가 근거로 든 시도(eventId)의 사실만 찾는다: 정오·시각·문항·어느 경험에서 냈는지. 도움·첫 노출의 해석은 Core 상태가 이미 했다.
 // experienceId: 그 문항을 낸 결정의 경험(게임이면 그 게임, WORLD 짧은 진단이면 진단을 낸 코치 'world-home').
@@ -99,11 +104,12 @@ function posAttention(skills,prefer=null){
 // 자세한 사실이 없는 근거는 개수로만 남긴다.
 // policy: Core의 판정 문턱(엔진 묶음의 POLICY). 없으면 POSITION_CORE_POLICY.
 // prefer(skillId): 그 항목에 지금 낼 새 문항이 있으면 참 — 「먼저 볼 항목」에서 같은 우선순위끼리만 앞세운다(판정은 바꾸지 않는다).
-export function buildPositionMap({summary,events=[],policy=POSITION_CORE_POLICY,prefer=null}={}){
+// exam: 'topik1'(기본) · 'topik2' — 어느 지도의 항목을 읽을지.
+export function buildPositionMap({summary,events=[],policy=POSITION_CORE_POLICY,prefer=null,exam='topik1'}={}){
  const profile=posProfile(summary),find=posAttemptIndex(events),counts={independent:0,practicing:0,notyet:0};
  const rules={sample:Number.isInteger(policy?.sample)?policy.sample:POSITION_CORE_POLICY.sample,stableRatio:Number.isFinite(policy?.stableRatio)?policy.stableRatio:POSITION_CORE_POLICY.stableRatio};
  const helped=posHelpedTries(events,{asOf:profile.asOf});
- const skills=posTopikSkills(profile).map(skill=>{
+ const skills=posTopikSkills(profile,exam).map(skill=>{
   const cell=positionCell(skill.status),ids=Array.isArray(skill.reasonEvidence)?skill.reasonEvidence:Array.isArray(skill.evidence)?skill.evidence:[];
   const assisted=skill.status==='supported',found=[],folded=[];
   for(const id of ids){const row=find(id);if(row)found.push({...row,assisted,independent:!assisted});else folded.push(id);}
@@ -119,13 +125,25 @@ export function buildPositionMap({summary,events=[],policy=POSITION_CORE_POLICY,
   row.note=posNote(row,{found,tries,levels,policy:rules});
   return row;
  });
- return {policy:POSITION_POLICY.version,corePolicy:profile.policy??null,asOf:profile.asOf??null,evidenceComplete:profile.evidenceComplete,
-  total:skills.length,counts,skills,attention:posAttention(skills,prefer),learningEffectClaim:false,abilityClaim:false,grade:null};
+ return {policy:POSITION_POLICY.version,exam:positionExam(exam),corePolicy:profile.policy??null,asOf:profile.asOf??null,evidenceComplete:profile.evidenceComplete,
+  total:skills.length,counts,skills,domains:positionDomains(skills),attention:posAttention(skills,prefer),learningEffectClaim:false,abilityClaim:false,grade:null};
+}
+// 영역별 진행(10-21 ④ · 최종 제안 §2-2 #11): 「확인한 학습 항목 수」만 — 기록으로 칸이 정해진 항목(혼자 해냄·연습 중) / 그 영역의 항목.
+// 정답률·점수·합격 준비도가 아니다. 칸 수(혼자 해냄·연습 중·아직)는 그대로 함께 둔다.
+export function positionDomains(skills){
+ const out={};
+ for(const skill of Array.isArray(skills)?skills:[]){
+  const row=out[skill.domain]||(out[skill.domain]={total:0,checked:0,independent:0,practicing:0,notyet:0});
+  row.total+=1;row[skill.cell]+=1;if(skill.cell!=='notyet')row.checked+=1;
+ }
+ return out;
 }
 
-// 짧은 진단: 항목(TOPIK I 16개)마다 하나씩, 이 사람이 아직 본 적 없는 계열(familyKey)의 문항. 문항은 제품이 이미 가진
-// TOPIK형 문항에서만 고르고 새로 만들지 않는다. 기록이 불완전하면 「처음 보는 문항」을 약속할 수 없어 열지 않는다.
-export const DIAGNOSTIC_POLICY=Object.freeze({version:'world-diagnostic-1',perSkill:1,
+// 짧은 진단: 항목(TOPIK I 16개 · TOPIK II 12개)마다 하나씩, 이 사람이 아직 본 적 없는 계열(familyKey)의 문항. 문항은 검수를
+// 통과한 것만 호출하는 쪽이 넘긴다(world-position-kit.mjs diagnosticPool — 10-21 ④부터 게임 지시문·질문 없는 O/X는 빠졌다).
+// 기록이 불완전하면 「처음 보는 문항」을 약속할 수 없어 열지 않는다. 세트 문항은 같은 세트의 다른 문항을 이미 봤으면 처음이
+// 아니고(지문을 읽었다), 한 진단에 같은 세트에서 둘을 내지 않는다.
+export const DIAGNOSTIC_POLICY=Object.freeze({version:'world-diagnostic-2',perSkill:1,
  // TOPIK 보기 고르기에 가까운 형식부터. 같은 형식이면 문항 id 순서로 늘 같은 것을 고른다.
  formats:Object.freeze(['single-choice','binary-choice','action','cup-compose','unknown'])});
 const POS_FORMATS=new Set(['binary-choice','single-choice','cup-compose','action','unknown']);
@@ -141,33 +159,37 @@ function posTargetDifficulty(skill){
  for(const difficulty of [1,2,3])if(skill.levels?.[difficulty]?.status!=='recent-independent')return difficulty;
  return 3;
 }
-export function selectDiagnostic({summary,items=[],seen,audioAvailable=true}={}){
+export function selectDiagnostic({summary,items=[],seen,audioAvailable=true,exam='topik1'}={}){
  const profile=posProfile(summary);
  if(!Array.isArray(items)||typeof seen!=='function'||typeof audioAvailable!=='boolean')throw TypeError('WORLD diagnostic needs items, an exposure reader and the sound condition');
  const pool=items.map(posDiagnosticItem),ids=new Set();
  for(const item of pool){if(ids.has(item.id))throw TypeError('WORLD diagnostic: duplicate item');ids.add(item.id);}
- const skills=posTopikSkills(profile),common={policy:DIAGNOSTIC_POLICY.version,total:skills.length,learningEffectClaim:false,grade:null};
+ const skills=posTopikSkills(profile,exam),common={policy:DIAGNOSTIC_POLICY.version,exam:positionExam(exam),total:skills.length,learningEffectClaim:false,grade:null};
  if(!profile.evidenceComplete)return {...common,status:'unavailable',reason:'history.incomplete',items:[],missing:skills.map(skill=>({skillId:skill.id,reason:'history'}))};
- const chosen=[],missing=[];
+ // 본 적 있음(true)과 모름(null)은 둘 다 「처음 보는 문항」이 아니다. 세트는 한 문항이라도 봤으면 세트 전체가 처음이 아니다.
+ const unknown=new Set();
+ const fresh=new Set(freshBySet(pool,item=>{let value=null;try{value=seen(item);}catch{value=null;}if(value!==true&&value!==false)unknown.add(item.id);return value;}).map(item=>item.id));
+ const chosen=[],missing=[],usedSets=new Set();
  for(const skill of skills){
   const mine=pool.filter(item=>item.skillId===skill.id);
   if(!mine.length){missing.push({skillId:skill.id,reason:'no-item'});continue;}
   const playable=audioAvailable?mine:mine.filter(item=>!(item.audioRequired??item.modality==='listening'));
   if(!playable.length){missing.push({skillId:skill.id,reason:'audio'});continue;}
-  // 본 적 있음(true)과 모름(null)은 둘 다 「처음 보는 문항」이 아니다.
-  const read=playable.map(item=>{let value=null;try{value=seen(item);}catch{value=null;}return {item,seen:value===true||value===false?value:null};});
-  const fresh=read.filter(row=>row.seen===false).map(row=>row.item);
-  if(!fresh.length){missing.push({skillId:skill.id,reason:read.some(row=>row.seen===null)?'unknown':'all-seen'});continue;}
+  const open=playable.filter(item=>fresh.has(item.id)&&!(item.setId&&usedSets.has(item.setId)));
+  if(!open.length){missing.push({skillId:skill.id,reason:playable.some(item=>unknown.has(item.id))?'unknown':'all-seen'});continue;}
   const target=posTargetDifficulty(skill),format=item=>DIAGNOSTIC_POLICY.formats.indexOf(item.responseFormat??'unknown');
-  fresh.sort((a,b)=>Math.abs(a.difficulty-target)-Math.abs(b.difficulty-target)||a.difficulty-b.difficulty||format(a)-format(b)||a.id.localeCompare(b.id));
-  chosen.push({skillId:skill.id,target,item:fresh[0]});
+  open.sort((a,b)=>Math.abs(a.difficulty-target)-Math.abs(b.difficulty-target)||a.difficulty-b.difficulty||format(a)-format(b)||a.id.localeCompare(b.id));
+  if(open[0].setId)usedSets.add(open[0].setId);
+  chosen.push({skillId:skill.id,target,item:open[0]});
  }
  return {...common,status:chosen.length?'ready':'unavailable',reason:chosen.length?null:'diagnostic.none',items:chosen,missing};
 }
 
 // 진단 한 바퀴. 문항마다 제시 → (듣기면) 끝까지 들음 → 첫 답, 이 순서로만 기존 코치 계약(atlas/game-learning.js의
 // present·delivery·help·answer)에 남긴다. 그래서 기록은 Trail의 처음 본 문항에 낸 혼자 푼 첫 시도가 된다.
-// 끝까지 듣기 전에는 답을 받지 않고, 다 들은 뒤 다시 듣기는 도움이다(바람길 듣기 확인과 같은 규칙).
+// 끝까지 듣기 전에는 답을 받지 않는다. 다시 듣기: 시험형 문항(문항 묶음의 듣기)은 공식 허용 횟수(TOPIK I 두 번 · TOPIK II
+// 1~20번 한 번·21~50번 두 번)까지 혼자 들은 것이고 그 뒤에 더 들은 것만 도움이다. 게임 원고에서 온 문항은 다 들은 뒤 다시 듣기가
+// 도움이다(바람길 듣기 확인과 같은 규칙). 허용 횟수는 결정 기록에, 끝까지 들은 재생은 매번 소리 전달로 남긴다(world-exam-form.mjs).
 // 건너뛰거나 그만두면 그 문항은 평가할 수 없는 답으로 남는다(본 것은 본 것이다). 이미 낸 답은 그대로다.
 const posMeasureOf=item=>({id:item.id,itemKey:item.itemKey,familyKey:item.familyKey||item.itemKey,skillId:item.skillId,modality:item.modality,
  difficulty:item.difficulty,responseFormat:item.responseFormat??'unknown',audioRequired:item.audioRequired??item.modality==='listening',confounded:false,
@@ -182,9 +204,11 @@ export function createDiagnosticSession({coach,items}={}){
  if(!coach||['present','delivery','help','answer'].some(name=>typeof coach[name]!=='function')||!Array.isArray(items))throw TypeError('WORLD diagnostic needs the learning coach and its items');
  const queue=items.map(posPlayableItem),results=[];let index=-1,current=null,stopped=false;
  const listening=item=>item.audioRequired??item.modality==='listening';
- const view=()=>current&&{index,total:queue.length,item:current.item,heard:current.heard,answered:current.answered,replayed:current.replayed,audio:current.audio};
+ // plays: 허용 재생 수(시험형만, 아니면 null) · 끝까지 들은 재생 수 · 허용을 넘겨 도움으로 들은 수. next: 다음 재생의 성격.
+ const view=()=>current&&{index,total:queue.length,item:current.item,heard:current.heard,answered:current.answered,replayed:current.replayed,audio:current.audio,
+  plays:{...current.plays},next:nextPlay(current.plays,{heard:current.heard})};
  const close=(result,choiceId,skipped)=>{current.answered=true;const row={skillId:current.item.skillId,itemId:current.item.id,itemKey:current.item.itemKey,choiceId,skipped,
-  verdict:result.verdict,independent:result.independent===true,assisted:result.assisted??null,eventId:result.eventId??null};results.push(row);return {...row};};
+  verdict:result.verdict,independent:result.independent===true,assisted:result.assisted??null,eventId:result.eventId??null,plays:{...current.plays}};results.push(row);return {...row};};
  const skip=()=>{
   if(!current||current.answered)return null;
   return close(coach.answer(current.pid,{correct:null,assessable:false,reason:current.heard?'unanswered':'audio'}),null,true);
@@ -198,20 +222,26 @@ export function createDiagnosticSession({coach,items}={}){
    if(stopped)return null;
    if(current&&!current.answered)throw Error('WORLD diagnostic: answer or skip the current item first');
    index+=1;if(index>=queue.length){current=null;return null;}
-   const item=queue[index];current={item,pid:coach.present(posMeasureOf(item)),audio:listening(item)?'pending':'none',heard:!listening(item),answered:false,replayed:false};
+   const item=queue[index];
+   current={item,pid:coach.present(posMeasureOf(item),presentCondition(item,{content:'world-diagnostic'})),audio:listening(item)?'pending':'none',heard:!listening(item),answered:false,replayed:false,
+    plays:{allowed:allowedPlays(item),completed:0,extra:0}};
    return view();
   },
-  // 실제 재생기의 결과만 받는다(재생을 불렀다는 것만으로 들었다고 하지 않는다).
+  // 실제 재생기의 결과만 받는다(재생을 불렀다는 것만으로 들었다고 하지 않는다). 끝까지 들은 재생은 처음이든 다시든 매번 남긴다
+  // (실제 재생 수). 다 들은 뒤의 실패는 앞서 들은 사실을 지우지 않는다.
   delivery(status){
    if(!current||current.answered||!listening(current.item))return false;
    if(!['pending','completed','failed'].includes(status))throw TypeError('WORLD diagnostic: invalid audio state');
-   if(current.heard)return true;
-   current.audio=status;if(status==='completed')current.heard=true;coach.delivery(current.pid,{audio:status});return true;
+   if(current.heard){if(status==='completed'){current.plays.completed+=1;coach.delivery(current.pid,{audio:'completed'});}return true;}
+   current.audio=status;if(status==='completed'){current.heard=true;current.plays.completed+=1;}coach.delivery(current.pid,{audio:status});return true;
   },
+  // 듣기 한 번 시작. 돌려주는 값: 'first'(아직 다 못 들음) · 'allowed'(허용 횟수 안 — 도움 아님) · 'extra'(허용을 넘김 — 도움).
   replay(){
    if(!current||current.answered||!listening(current.item))return false;
-   if(current.heard){coach.help(current.pid,'replay');current.replayed=true;return true;}
-   current.audio='pending';coach.delivery(current.pid,{audio:'pending'});return true;
+   const kind=nextPlay(current.plays,{heard:current.heard});
+   if(kind==='first'){current.audio='pending';coach.delivery(current.pid,{audio:'pending'});return kind;}
+   if(kind==='extra'){coach.help(current.pid,'replay');current.replayed=true;current.plays.extra+=1;}
+   return kind;
   },
   answer(choiceId){
    if(!current||current.answered||!current.heard)return null;
@@ -249,24 +279,28 @@ export function showsHangulBoard({reading=null,stage=null}={}){
 // 예상 급수의 문턱. 「1급 근처 · 근거 30문항 · 갱신일」처럼 범위를 보이려면 TOPIK 형식 연습(처음 보는 문항 · 실제 구성 ·
 // 시간 제한)의 근거가 이 수만큼 쌓여야 한다. 게임 기록·정답률은 근거가 아니다(§1). 근거 수는 판이 있는 정책 설정이고
 // 실제 자료로 조정한다(§7-3). 점수에서 범위를 읽는 검수된 방법이 아직 없어, 문턱을 넘어도 급수는 만들지 않는다.
-export const ESTIMATE_POLICY=Object.freeze({version:'world-topik-estimate-1',minEvidence:30,minPerDomain:10,recentDays:90,
- forms:Object.freeze(['topik-i']),compositions:Object.freeze(['official-blueprint'])});
+// 10-21 ④: 시험 형식 연습(미니 모의 · world-exam-form.mjs)의 줄인 판(mini-blueprint)도 근거로 센다 — 실제 구성의 유형 순서·비율·
+// 문항당 시간을 따른다. 시험마다(TOPIK I·II) 따로 세고, PBT 판만 센다: IBT는 문항 수·시간·척도가 달라 PBT 연습의 답으로 IBT
+// 범위를 읽지 않는다(학생이 IBT로 본다고 했으면 'mode-unsupported').
+export const ESTIMATE_POLICY=Object.freeze({version:'world-topik-estimate-2',minEvidence:30,minPerDomain:10,recentDays:90,
+ forms:Object.freeze(['topik-i','topik-ii']),compositions:Object.freeze(['official-blueprint','mini-blueprint']),modes:Object.freeze(['pbt'])});
 const POS_DAY=86400000;
-// evidence: 호스트가 내놓는 TOPIK 형식 연습의 첫 답. 지금 WORLD에는 이런 연습이 없어 빈 목록이다.
-export function estimateGate({evidence=[],asOf,policy=ESTIMATE_POLICY}={}){
+// evidence: 시험 형식 연습의 첫 답(world-exam-form.mjs mockEvidence). form: 셀 시험('topik-i' 기본) · mode: 학생이 밝힌 방식(pbt·ibt·unknown·null).
+export function estimateGate({evidence=[],asOf,policy=ESTIMATE_POLICY,form='topik-i',mode=null}={}){
  if(!Array.isArray(evidence)||!posTime(asOf)||!posRecord(policy)||!Number.isInteger(policy.minEvidence)||policy.minEvidence<1)throw TypeError('WORLD estimate gate needs evidence, a time and a policy');
- const now=Date.parse(asOf),counted=new Map();
+ const now=Date.parse(asOf),counted=new Map(),modes=Array.isArray(policy.modes)?policy.modes:['pbt'];
  for(const row of evidence){
   if(!posRecord(row)||!posToken(row.eventId)||!posTime(row.at)||!['listening','reading'].includes(row.domain))continue;
   const at=Date.parse(row.at);
   if(at>now||now-at>policy.recentDays*POS_DAY)continue;
   if(row.firstExposure!==true||row.independent!==true||row.timed!==true||!['correct','incorrect'].includes(row.verdict))continue;
-  if(!policy.forms.includes(row.form)||!policy.compositions.includes(row.composition))continue;
+  if(!policy.forms.includes(row.form)||row.form!==form||!policy.compositions.includes(row.composition)||!modes.includes(row.mode??'pbt'))continue;
   if(!counted.has(row.eventId))counted.set(row.eventId,row);
  }
  const rows=[...counted.values()],perDomain={listening:rows.filter(row=>row.domain==='listening').length,reading:rows.filter(row=>row.domain==='reading').length};
  const enough=rows.length>=policy.minEvidence&&perDomain.listening>=policy.minPerDomain&&perDomain.reading>=policy.minPerDomain;
  const updatedAt=rows.length?rows.map(row=>row.at).sort().at(-1):null;
- return {policy:policy.version,status:enough?'no-estimator':'too-early',visible:false,evidence:rows.length,needed:policy.minEvidence,
+ const ibt=mode==='ibt';
+ return {policy:policy.version,form,mode:ibt?'ibt':'pbt',status:ibt?'mode-unsupported':enough?'no-estimator':'too-early',visible:false,evidence:rows.length,needed:policy.minEvidence,
   perDomain,neededPerDomain:policy.minPerDomain,updatedAt,range:null,grade:null,passClaim:false};
 }

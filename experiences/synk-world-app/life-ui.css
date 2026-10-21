@@ -713,6 +713,38 @@ h3.life-poster-sub{margin-bottom:0}
 .wplan-checks li{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--w-line);font-size:15px;line-height:1.4}
 .wplan-checks li small{font-size:13px;color:var(--w-ok-text)}
 .wplan-shortage{flex-basis:100%;font-size:13px;line-height:1.45;color:var(--w-ink-3)}
+/* ── 10-21 ④: 시험 고르기 · 영역별 진행 · 대본 · 시험 형식 연습(남은 시간 · 번호판 · 마치기 확인) ── */
+/* 판의 시험 고르기: 학습 목표 창의 반반 알약(study-segment)과 같은 모양 */
+.wpos-exam{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px;padding:4px;border-radius:999px;background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.wpos-exam-pill{min-height:44px;padding:0 10px;border:0;border-radius:999px;background:transparent;color:var(--w-ink-2);font:inherit;font-size:14px;font-weight:var(--wt-strong);cursor:pointer;transition:background .18s var(--w-ease),color .18s var(--w-ease)}
+.wpos-exam-pill:hover{background:var(--w-s2);color:var(--w-ink)}
+.wpos-exam-pill[aria-pressed=true]{background:var(--w-ink);color:var(--w-on-ink)}
+.wpos-exam-pill:focus-visible{outline:2px solid var(--w-ink);outline-offset:2px}
+/* 영역별 진행: 확인한 항목 수만(칸 이름·색 없이 한 색 막대) */
+.wpos-progress{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:12px;margin:0;font-family:var(--w-mono);font-size:12px;letter-spacing:.04em;color:var(--w-ink-3)}
+.wplan-reach>.wpos-progress{font-family:inherit;font-size:13.5px;letter-spacing:0;color:var(--w-ink-2)}
+/* 듣기 문항의 들은 대화(해설 아래) */
+.wpos-script{display:grid;gap:4px;margin-top:4px}
+.wpos-script>p[lang]{display:grid;gap:3px;margin:0;font-size:15px;line-height:1.55;color:var(--w-ink-2)}
+.wpos-feedback>.wpos-script{grid-column:1 / -1}
+/* 시험 형식 연습 */
+.wmock-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px}
+.wmock-clock{display:grid;justify-items:end;gap:1px;margin:0}
+.wmock-clock-label{font-size:12px;line-height:1.3;color:var(--w-ink-3)}
+.wmock-clock>[data-mock-clock]{font-family:var(--w-mono);font-size:22px;line-height:1.1;font-weight:600;letter-spacing:.02em;color:var(--w-ink);font-variant-numeric:tabular-nums}
+.wmock-palette{display:flex;flex-wrap:wrap;gap:6px}
+.wmock-number{width:40px;height:40px;border:0;border-radius:999px;background:var(--w-s1);box-shadow:inset 0 0 0 1px var(--w-line-2);color:var(--w-ink-2);font-family:var(--w-mono);font-size:13px;font-weight:600;cursor:pointer}
+.wmock-number[data-mark=answered]{background:var(--w-s3);box-shadow:none;color:var(--w-ink)}
+.wmock-number[aria-current=step]{background:var(--w-ink);box-shadow:none;color:var(--w-on-ink)}
+.wmock-number:focus-visible{outline:2px solid var(--w-ink);outline-offset:2px}
+.wmock .wpos-choice[data-state=chosen]{color:var(--w-ink);background:var(--w-s3);box-shadow:inset 0 0 0 2px var(--w-ink)}
+.wmock>.felt-button{width:100%}
+.wmock-confirm{display:grid;gap:10px;padding:14px 16px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge);outline:none}
+.wmock-confirm>p{margin:0;font-size:15px;line-height:1.55;color:var(--w-ink)}
+.wmock-confirm>.felt-button{width:100%}
+.wplan-checks li>span{min-width:0;text-wrap:pretty}
+/* 끝 한 장의 문항 줄은 진단 끝 목록과 같은 세 칸(불 · 글 · 단추) */
+.wplan-checks .wpos-done-list li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--w-line);font-size:inherit}
 /* 학습 목표 창의 시험 칸 */
 .study-form [hidden]{display:none!important}
 .study-exam{display:grid;gap:22px;padding-top:20px;border-top:1px solid var(--w-line)}

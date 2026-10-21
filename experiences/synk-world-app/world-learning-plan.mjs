@@ -170,11 +170,11 @@ function resumeCandidates(progress,settings,now){
  return result;
 }
 
-// 「이번 주 계획」·「내 위치」가 여는 후보: 읽기 짧은 연습(route 'practice', world-reading-practice.mjs가 만든다)과
+// 「이번 주 계획」·「내 위치」가 여는 후보: 짧은 연습(route 'practice', world-reading-practice.mjs가 만든다 — 읽기·듣기)과 시험 형식 연습(route 'mock')과
 // 짧은 진단(route 'position', 학습 항목을 겨누지 않는 넓은 확인 — 급한 연습을 앞지르지 않게 targets를 비운다).
 // 호출하는 쪽(world-learning-ui.mjs)이 그 사람의 노출 기록으로 새 문항이 남은 것만 넘긴다.
 function extraCandidate(candidate,settings){
- if(!record(candidate)||!['practice','position','writing'].includes(candidate.route)||typeof candidate.id!=='string')return null;
+ if(!record(candidate)||!['practice','position','writing','mock'].includes(candidate.route)||typeof candidate.id!=='string')return null;
  return {...candidate,targets:Array.isArray(candidate.targets)?candidate.targets:[],goals:Array.isArray(candidate.goals)?[...candidate.goals]:[],
   supports:Array.isArray(candidate.supports)?[...candidate.supports]:[...supports],presentation:presentationFor(settings)};
 }
@@ -199,6 +199,8 @@ function hostReason(chosen,{history,plan,labels}){
   const label=homework&&labels?.[homework.skillId];
   if(label)return {reason:homework.status==='review'?`이번 주 숙제예요. ${label} 기록이 오래돼 새 문항으로 다시 확인해요.`:`이번 주 숙제예요. ${label}에서 놓친 답이 있어 새 문항으로 다시 확인해요.`,reasons:['plan.homework'],focusSkillId:homework.skillId};
  }
+ // 시험 형식 연습: 실제 구성을 줄인 판을 시간 안에 처음 보는 문항으로(급수는 매기지 않는다).
+ if(selected.route==='mock')return {reason:'시험처럼 처음 보는 문항을 정해진 시간 안에 풀어 봐요. 점수나 급수로 바꾸지 않아요.',reasons:['exam.form']};
  if(selected.route==='position')return {reason:plan?.notes?.includes('start')?'시험 목표에 맞춰 짧은 진단으로 시작점을 먼저 확인해요.':'이번 주 계획의 다시 확인이에요. 처음 보는 문항으로 지금 위치를 확인해요.',reasons:['plan.recheck']};
  const unseen=(chosen.reasons||[]).includes('practice.unseen')&&!(chosen.reasons||[]).includes('goal.declared');
  if(!unseen||!history||(selected.targets||[]).length)return null;

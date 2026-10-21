@@ -186,10 +186,10 @@ test('듣기 문항은 끝까지 들은 뒤에만 답을 받고, 다 들은 뒤 
  session.next();
  assert.equal(session.answer(`${listeningItem.id}.b`),null,'듣기 전');
  assert.equal(session.delivery('failed'),true);assert.equal(session.answer(`${listeningItem.id}.b`),null,'재생 실패');
- assert.equal(session.replay(),true);assert.equal(session.delivery('completed'),true);
+ assert.equal(session.replay(),'first');assert.equal(session.delivery('completed'),true);
  const heard=session.answer(`${listeningItem.id}.a`);
  assert.equal(heard.verdict,'incorrect');assert.equal(heard.independent,true,'실패 뒤 처음 끝까지 들은 것은 아직 도움이 아니다');
- session.next();session.delivery('completed');assert.equal(session.replay(),true);
+ session.next();session.delivery('completed');assert.equal(session.replay(),'extra','게임 원고 문항은 다 들은 뒤 다시 듣기가 도움');
  const helped=session.answer('qa.diag.extra.b');
  assert.equal(helped.verdict,'correct');assert.equal(helped.independent,false);assert.equal(helped.assisted,true);
  assert.deepEqual(session.results().map(row=>[row.verdict,row.independent]),[['incorrect',true],['correct',false]]);

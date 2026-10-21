@@ -88,11 +88,13 @@ const server=http.createServer(async(req,res)=>{
   else if(allowedGames.has(first)){base=path.resolve(root,'..',first);pathname=pathname.slice(first.length+1);}
   // 내 위치 짧은 진단의 낱말 듣기(world-diagnostic-items.mjs): 레이싱은 게임 폴더를 열지 않고 낱말 녹음만 내준다.
   else if(/^\/korean-racing\/assets\/narration\/w\d{4}\.mp3$/.test(pathname)){base=path.resolve(root,'../korean-racing');pathname=pathname.slice('/korean-racing'.length);}
+  // TOPIK 문항 묶음의 듣기 소리(공개 은행 world-topik-items.json의 audio.file): 문항 폴더는 열지 않고 소리만.
+  else if(/^\/topik-items\/audio\/[a-z0-9-]+\.mp3$/.test(pathname)){base=path.resolve(root,'../topik-items');pathname=pathname.slice('/topik-items'.length);}
   else if(pathname.startsWith('/synk-world-home/')){pathname=pathname.slice('/synk-world-home'.length);base=home;}
   else if(pathname==='/enrollment.mjs'){base=path.resolve(root,'../synk-account/src');}
   // Preview-only route (10-14 redesign worktree): the games import ../social-conversion.mjs (shared trial tracking, in progress elsewhere).
   else if(pathname==='/social-conversion.mjs'){base=path.resolve(root,'..');}
-  else if(['/world-bootstrap.js','/app-shell.mjs','/app-shell.css','/world-client.mjs','/world-town-client.mjs','/world-account.bundle.mjs','/life-ui.mjs','/life-story.mjs','/life-ui.css','/life-content.mjs','/life-progress.mjs','/world-learning-ui.mjs','/world-learning-profile.mjs','/world-learning-profile-core.mjs','/tutor-selection-sync.mjs','/display-language-sync.mjs','/life-content-lang.mjs','/cafe-activity.mjs','/cafe-ui.mjs','/classroom-lessons.mjs','/classroom-homework.mjs','/topik4-homework.json','/world-writing-practice.mjs','/world-writing-check.mjs','/world-writing-items.json','/world-writing.css'].includes(pathname))base=root;
+  else if(['/world-bootstrap.js','/app-shell.mjs','/app-shell.css','/world-client.mjs','/world-town-client.mjs','/world-account.bundle.mjs','/life-ui.mjs','/life-story.mjs','/life-ui.css','/life-content.mjs','/life-progress.mjs','/world-learning-ui.mjs','/world-learning-profile.mjs','/world-learning-profile-core.mjs','/tutor-selection-sync.mjs','/display-language-sync.mjs','/life-content-lang.mjs','/cafe-activity.mjs','/cafe-ui.mjs','/classroom-lessons.mjs','/classroom-homework.mjs','/topik4-homework.json','/world-writing-practice.mjs','/world-writing-check.mjs','/world-writing-items.json','/world-writing.css','/world-topik-items.json'].includes(pathname))base=root;
   else if(['/engine/loom-motion.js','/engine/loom-life.js'].includes(pathname)){base=path.resolve(root,'../../tools/lib');pathname='/'+path.basename(pathname);}
   else if(pathname.startsWith('/town/')){
    pathname=pathname.slice(5);base=town;

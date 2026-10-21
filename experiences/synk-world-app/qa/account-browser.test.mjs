@@ -233,7 +233,7 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
   assert.ok(calls.some(c=>c.path.endsWith('/synk-learning')),'enabled consent uses official learning transport');
   assert.ok(playCommands.size>=5);assert.equal(conflictInjected,true);assert.equal(playState.wallet.gameStats.runner.rounds,1);assert.equal(playState.wallet.gameStats.rhythm.rounds,1);
   await page.locator('.world-nav [data-view="packs"]').click();await page.locator('.life-row[data-view="position"]').click();
-  await page.locator('[data-position-board]').waitFor();assert.equal(await page.locator('[data-skill]').count(),15);
+  await page.locator('[data-position-board]').waitFor();assert.equal(await page.locator('.wpos-skill[data-skill]').count(),16);
   await page.locator('[data-position-diagnostic]').click();await page.locator('[data-position-run]').waitFor();
   assert.equal(await page.locator('[data-position-choice]:disabled').count(),await page.locator('[data-position-choice]').count());
   await page.locator('[data-position-listen]').click();await page.locator('[data-position-choice]:not([disabled])').first().waitFor();await page.locator('[data-position-choice]').first().click();
@@ -287,10 +287,10 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
    await other.waitForFunction(owner=>window.__synkWorld?.life()?.owner===owner,A);
    await other.locator('.world-nav [data-view="packs"]').click();await other.locator('.life-row[data-view="position"]').click();
    await other.locator('[data-position-board]:not([data-position-board="hangul"])').waitFor();
-   assert.equal(await other.locator('[data-skill]').count(),15);
+   assert.equal(await other.locator('.wpos-skill[data-skill]').count(),16);
    await page.locator('.world-nav [data-view="packs"]').click();await page.locator('.life-row[data-view="position"]').click();
    await page.locator('[data-position-board]:not([data-position-board="hangul"])').waitFor();
-   assert.equal(await page.locator('[data-skill]').count(),15);
+   assert.equal(await page.locator('.wpos-skill[data-skill]').count(),16);
    await page.screenshot({path:path.join(output,'hangul-graduated-home-other-session.png')});await page.locator('#panel-close').click();
   }finally{await otherContext.close();}
   // Logging out closes account ports. The existing first-round guest trial

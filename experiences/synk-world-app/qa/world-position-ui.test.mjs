@@ -27,7 +27,8 @@ test('화면 글은 화면 언어 표(position.*)에서 읽고 {이름}을 채�
  assert.equal(view.itemSource('korean-rhythm:t0q0:v1:claim0'),'말의 리듬','리듬 문항 열쇠는 쌍점으로 나뉜다');
  assert.equal(view.itemSource('synk-town.reading-check.town-reading-place.v1'),'싱크타운 읽기');
  assert.equal(view.itemSource('blank-slice.p01.v1','world-home'),'짧은 진단','진단에서 푼 답은 진단에서 왔다고 쓴다');
- assert.equal(view.itemSource('blank-slice.p01.v1','world-practice'),'읽기 짧은 연습','읽기 짧은 연습에서 푼 답은 그 연습에서 왔다고 쓴다');
+ assert.equal(view.itemSource('blank-slice.p01.v1','world-practice'),'짧은 연습','짧은 연습(읽기·듣기)에서 푼 답은 그 연습에서 왔다고 쓴다');
+ assert.equal(view.itemSource('topik-items.ti-r-a-001.v1','world-mock'),'시험 형식 연습','시험 형식 연습(미니 모의)에서 푼 답은 그 연습에서 왔다고 쓴다');
  assert.equal(view.itemSource('unknown.thing'),'다른 연습');
  assert.throws(()=>createPositionView({}),TypeError,'t 없이는 그리지 않는다');
 });
@@ -90,11 +91,15 @@ test('진단 칸: 준비된 문항 수, 모자란 항목, 소리 끈 날을 알�
 test('예상 급수는 문턱 전에는 범위 없이 「아직 판단하기 일러요」만, 근거가 없으면 막대·「0 / 30」 없이 지금 할 수 있는 말만',()=>{
  const c=coach(),map=buildPositionMap({summary:c.summary(),events:c.events()});
  const gate=estimateGate({evidence:[],asOf:'2026-10-19T09:00:00.000Z'});
- const html=view.renderPositionBoard({map,gate});
- assert.match(html,/data-estimate="too-early"/);assert.match(html,/아직 판단하기 일러요/);assert.doesNotMatch(html,/지금 근거 0 \/ 30|wpos-estimate-count|class="wpos-bar"/);
- assert.match(html,/시험 형식 연습\(처음 보는 문항·실제 구성·시간 제한\)이 생기면 그 답으로 범위를 알려 드려요/);
+ const html=view.renderPositionBoard({map,gate}),estimate=html.slice(html.indexOf('data-estimate='));
+ assert.match(html,/data-estimate="too-early"/);assert.match(html,/아직 판단하기 일러요/);assert.doesNotMatch(estimate,/0 \/ 30|wpos-estimate-count|class="wpos-bar"/,'예상 급수 칸에 막대·문턱 수가 없다');
+ assert.match(html,/시험 형식 연습\(처음 보는 문항·실제 순서를 줄인 판·시간 제한\)에서 혼자 낸 첫 답만 모아요\. 범위를 읽는 방법을 검증하기 전에는 급수를 보이지 않아요/);
  assert.doesNotMatch(html,/쌓이면|곧 |준비 중/,'일정·출시를 약속하지 않는다');
- assert.match(view.renderPositionBoard({map,gate:{...gate,evidence:4}}),/지금 근거 4 \/ 30/,'형식 연습의 근거가 생기면 그때 개수를 보인다');
+ // 10-21 ④: 시험 형식 연습의 근거가 생기면 모은 수만(문턱 30 없이 — 수를 채우면 곧 급수가 나온다는 인상을 주지 않게, 3차 검수).
+ const counted=view.renderPositionBoard({map,gate:{...gate,evidence:4,perDomain:{listening:1,reading:3}}});
+ assert.match(counted,/모은 답 4개 · 듣기 1 · 읽기 3/);assert.doesNotMatch(counted,/\/ 30/);
+ assert.match(view.renderPositionBoard({map,gate:estimateGate({evidence:[],asOf:'2026-10-19T09:00:00.000Z',mode:'ibt'})}),/data-estimate="mode-unsupported"[\s\S]*IBT는 문항 수·시간·점수 척도가 달라 PBT 형식 연습의 답으로 범위를 읽지 않아요/);
+ assert.match(view.renderPositionBoard({map,gate,mock:{status:'ready',minutes:27}}),/data-position-mock>시험 형식 연습 · 27분/,'시험 형식 연습을 열 수 있으면 그 단추');
  assert.doesNotMatch(html,/[1-6]급(?! 근처)|합격입니다|grade/i,'급수·합격 판정 글이 없다(설명의 예시 「1급 근처」만)');
  assert.doesNotMatch(view.renderPositionBoard({map}),/data-estimate/,'문턱 결과가 없으면 칸이 없다');
 });

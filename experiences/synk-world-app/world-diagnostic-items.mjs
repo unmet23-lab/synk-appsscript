@@ -80,7 +80,8 @@ function diagRacingItems(){
    choices:order,correctId:id,explanation:`들린 낱말은 「${word}」예요.`,label:word};});
 }
 
-// 짧은 진단에서 고를 수 있는 전체 묶음. selectDiagnostic(world-position.mjs)이 항목마다 새 계열 하나를 고른다.
+// 게임 원고에서 온 TOPIK형 문항 전체. 10-21 ④부터 짧은 진단·짧은 연습은 이 가운데 문항 검수 판정이 통과(pass)인 것만 쓴다
+// (world-position-kit.mjs — 판정이 없는 바람길 지시문·리듬 O/X는 진단에서 빠졌다). 근거 줄의 문항 첫머리(diagnosticLabel)는 모두에 쓴다.
 export const DIAGNOSTIC_ITEMS=Object.freeze([...diagRunnerItems(),...diagRhythmItems(),...diagBlankItems(),...diagTownItems(),...diagEntryItems(),...diagRacingItems()].map(item=>Object.freeze(item)));
 // 이 묶음이 아직 다루지 못하는 TOPIK I 항목과 까닭(보고용). 2026-10-20에 낱말 듣기(레이싱 그림 단계)와 읽기 이유·핵심
 // (싱크타운 읽기 확인에 새로 쓴 열두 문항)을 채웠고, 10-21 지도에 넣은 듣고 알맞게 대답하기 하나가 남았다.

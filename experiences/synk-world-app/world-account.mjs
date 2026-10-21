@@ -6,7 +6,8 @@ import {createClassroomTransport} from '../synk-account/src/classroom-client.mjs
 export {mountCourseWritingEntry} from './course-writing-entry.mjs';
 import {createWorldGameHost} from './world-game-host.mjs';
 export {createLocalWorldLearningHost} from './world-game-host.mjs';
-export {default as worldLearning} from '../../atlas/game-browser.js';
+// WORLD 코치는 TOPIK I·II를 합친 지도로(world-learning-map.mjs, 10-21 ④). 게임 엔진(atlas/game-browser.js)은 그대로다.
+export {worldLearning} from './world-learning-map.mjs';
 export {createWorldLearningPlan} from './world-learning-plan.mjs';
 import {worldTopicAnswers} from './world-learning-plan.mjs';
 import {createLifeProgressPort} from './life-progress-port.mjs';

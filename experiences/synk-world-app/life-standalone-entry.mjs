@@ -1,6 +1,7 @@
 import {createLifeProgress} from './life-progress.mjs';
 import {createLifeExperience} from './life-ui.mjs';
-import worldLearning from '../../atlas/game-browser.js';
+// WORLD 코치는 TOPIK I·II를 합친 지도로(world-learning-map.mjs, 10-21 ④).
+import {worldLearning} from './world-learning-map.mjs';
 import {createWorldLearningPlan} from './world-learning-plan.mjs';
 import {createWorldEducation} from './world-learning-ui.mjs';
 import {worldPosition} from './world-position-kit.mjs';

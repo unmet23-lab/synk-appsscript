@@ -424,6 +424,6 @@ test('내 위치: 듣기 게임으로 가는 단추는 게임 이름으로, 읽�
  assert.ok(closed.notes.includes('reading-unavailable'));
  assert.match(view.renderExamPlan({plan:closed}),/data-plan-reading-later>읽기 짧은 연습은 문항을 준비하고 있어서 이번 주 계획에 아직 없어요\./);
  const topik2=exam.buildExamPlan({exam:exam.examInfo({...EXAM,examType:'topik2',targetGrade:4,examDate:'2027-04'}),summary:s.coach.summary(),now:s.now(),available:{recheck:15,life:true}});
- assert.equal(topik2.reach.basis,'topik1');assert.match(view.renderExamPlan({plan:topik2}),/data-plan-reach-basis>TOPIK II 항목 지도가 열리기 전이라/);
+ assert.equal(topik2.reach.basis,'topik1');assert.match(view.renderExamPlan({plan:topik2}),/data-plan-reach-basis>TOPIK II 문항이 검수를 마치기 전이라 듣기·읽기는 지금 TOPIK I 항목으로 세요/);
  assert.doesNotMatch(view.renderExamPlan({plan:closed}),/data-plan-reach-basis/,'TOPIK I 학생에게는 말하지 않는다');
 });
