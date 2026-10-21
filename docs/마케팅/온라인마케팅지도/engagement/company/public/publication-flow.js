@@ -261,7 +261,7 @@ function pfListModel(now=Date.now()){
 function pfCurrentEpisode(){return pf.data?pfListModel().current:null;}
 // 상세가 보여 주는 것에 따라 하위 갈래를 맞춘다: 올리기 전 편 · 새 묶음 폼은 prepare(받는 폴더 새로 읽기), 올린 편 · 게시 기록 폼은 performance(다음 편 실험 새로 읽기).
 function pfSyncView(){if(!pf.data)return;const ep=pfCurrentEpisode();pf.view=pf.form==='package'?'prepare':pf.form==='register'?'performance':ep?.posted?'performance':'prepare';pf.syncedView=pf.view;if(!pf.form)pfPrefillRegistration(ep);}
-// 옛 하위 탭(게시 묶음 준비 · 게시 후 성과)의 뜻을 받는다: 다른 화면(자동화 상태 「게시 후 성과」)이 pf.view를 바꿔 두었거나
+// 옛 하위 탭(게시 묶음 준비 · 게시 후 성과)의 뜻을 받는다: 다른 화면(자동화 상태의 멈춤 경고 「게시 준비·성과 열기」)이 pf.view를 바꿔 두었거나
 // 옛 prepare · performance 동작이 오면 그 절반의 첫 편(내 차례 먼저)을 연다. 그 절반에 편이 없으면 하위 갈래를 상세에 맞춘다.
 function pfHonorView(view=pf.view,asked=view!==pf.syncedView){
   if(!pf.data||pf.form)return;const model=pfListModel(),current=model.current;

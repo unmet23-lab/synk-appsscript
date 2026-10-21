@@ -13,7 +13,7 @@ const ids=Object.keys(numbers);
 const report=()=>({refreshedAt:'2026-10-12T01:00:00.000Z',cards:ids.map((id,index)=>({id,number:numbers[id],title:'자동화 '+numbers[id],mode:(numbers[id]>=11&&numbers[id]<=16)||id==='rights'?'on-demand':'scheduled',status:'idle',statusLabel:'할 일 없음',text:'현재 처리할 대상이 없습니다.',href:'/?tab=workroom&section=tools&tool=publication',checkedAt:'2026-10-12T01:00:00.000Z',lastAttemptAt:null,lastSuccessAt:null,lastSuccessLabel:'최근 성공',lastResultAt:null,nextRunAt:null,nextDueAt:null,counts:{targets:0,issues:0,manual:0,paused:0}})),issues:[],manual:[],counts:{issues:0,manual:0,running:0,paused:0,partial:0},note:'현재 열람할 수 있는 작업만 확인합니다.'});
 const item=(id='issue',automationId='links')=>({id,automationId,kind:'publication_link',status:'failed',statusLabel:'접속 오류',title:'자료 링크',text:'오류 응답을 확인했습니다.',href:'/?tab=workroom&section=tools&tool=publication&publicationAction=link&packageId=owned-package',occurredAt:'2026-10-12T00:00:00Z',dueAt:null});
 // The issue automation-health.mjs adds when the post-performance collector has not finished after a due observation.
-const stale=(extra={})=>({id:'performance:collector-stale:current',automationId:'performance',kind:'collector-stale',status:'delayed',statusLabel:'늦음',title:'게시 숫자 자동 수집 멈춤',text:'게시물 2편이 읽을 시각을 지났는데 자동 수집이 끝나지 않았어요. 서버의 자동 수집을 살펴보고, 급한 숫자는 게시 후 성과에서 직접 넣어 주세요.',href:'/?tab=workroom&section=tools&tool=publication',occurredAt:'2026-10-12T00:30:00.000Z',dueAt:'2026-10-12T00:30:00.000Z',code:'post-performance-collector-stale',since:'2026-10-12T00:30:00.000Z',affectedEntries:['post-1','post-2'],...extra});
+const stale=(extra={})=>({id:'performance:collector-stale:current',automationId:'performance',kind:'collector-stale',status:'delayed',statusLabel:'늦음',title:'게시 숫자 자동 수집 멈춤',text:'게시물 2편이 읽을 시각을 지났는데 자동 수집이 끝나지 않았어요. 서버의 자동 수집을 살펴보고, 급한 숫자는 게시 준비·성과에서 직접 넣어 주세요.',href:'/?tab=workroom&section=tools&tool=publication',occurredAt:'2026-10-12T00:30:00.000Z',dueAt:'2026-10-12T00:30:00.000Z',code:'post-performance-collector-stale',since:'2026-10-12T00:30:00.000Z',affectedEntries:['post-1','post-2'],...extra});
 const staleRow=html=>html.match(/<article class="mt-job is-alert ah-stale"[\s\S]*?<\/article>/)?.[0]||'';
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 function projectGroup({waitingOnly=false}={}){
@@ -223,7 +223,7 @@ test('missing, invalid or empty stopped-collector fields keep the warning withou
   }
 });
 
-test('the stopped-collector link opens 2. 게시 후 성과 while other source links leave the publication tab as it was',async()=>{
+test('the stopped-collector link asks 게시 준비·성과 for a posted episode while other source links leave the publication view as it was',async()=>{
   const f=fixture(),calls=[];f.context.pf={view:'prepare'};f.context.pfIdentity=()=>{calls.push('identity');f.context.pf.view='prepare';};
   const click=dataset=>f.event('click',{target:{closest:selector=>selector==='[data-ah-source]'?{dataset}:null},preventDefault(){},button:0});
   await click({ahSource:'/?tab=workroom&section=tools&tool=publication',ahView:'performance'});assert.equal(f.run('makerTools.view'),'publication');assert.equal(f.context.pf.view,'performance');assert.deepEqual(calls,['identity']);assert.deepEqual(f.links.at(-1),['workspace','workroom','tools']);

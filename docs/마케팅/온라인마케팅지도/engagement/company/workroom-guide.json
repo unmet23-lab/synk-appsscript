@@ -29,15 +29,15 @@
     {"id":"next","phase":"learn","title":"다음 기획을 실제 질문에서 찾기","detail":"저장한 이유, 댓글에 남은 막힘, 되풀이되는 문의에서 다음 시청자 상황을 고르세요. 최신 트렌드와 맞아도 우리 독자에게 도움이 돼야 해요.","example":"예: ‘이 결과에서 뭘 확인하나요?’라는 질문을 다음 편의 첫 장면으로 쓰기.","source":"common"}
   ],
   "review": [
-    {"id":"reason","label":"누가 왜 볼지, 보고 무엇을 얻을지 분명한가?"},
-    {"id":"information","label":"예시·판단 근거·따라 할 행동이 충분한가?"},
-    {"id":"enjoyment","label":"호기심·공감·발견·이해의 즐거움이 있는가?"},
-    {"id":"story","label":"문제·선택·이유·결과가 이야기로 이어지는가?"},
-    {"id":"brand","label":"각자에게 맞는 도움과 우리 관점·승인된 디자인이 드러나는가?"},
-    {"id":"truth","label":"경험·조사·연출, 사실·수치·한계·출처를 확인했는가?"},
-    {"id":"reaction","label":"기대하는 반응과 측정할 지표·조건을 정했는가?"},
-    {"id":"delivery","label":"실제 크기로 읽고 재생·청취했으며, 자막·소리·엔딩 자료가 맞는가?"},
-    {"id":"personal","label":"시청자의 상황에 맞는 선택과 오늘 할 한 가지가 남는가?"}
+    {"id":"reason","label":"누가 왜 볼지, 보고 무엇을 얻을지 분명한가요?"},
+    {"id":"information","label":"예시·판단 근거·따라 할 행동이 충분한가요?"},
+    {"id":"enjoyment","label":"호기심·공감·발견·이해의 즐거움이 있나요?"},
+    {"id":"story","label":"문제·선택·이유·결과가 이야기로 이어지나요?"},
+    {"id":"brand","label":"각자에게 맞는 도움과 우리 관점·승인된 디자인이 드러나나요?"},
+    {"id":"truth","label":"경험·조사·연출, 사실·수치·한계·출처를 확인했나요?"},
+    {"id":"reaction","label":"기대하는 반응과 확인할 지표·조건을 정했나요?"},
+    {"id":"delivery","label":"실제 크기로 읽고 재생해 들어 봤고, 자막·소리·엔딩 자료가 맞나요?"},
+    {"id":"personal","label":"시청자의 상황에 맞는 선택과 오늘 할 한 가지가 남나요?"}
   ],
   "trendLinks": [
     {"title":"TikTok 트렌드 탐색","url":"https://ads.tiktok.com/creative/creativeCenter/trends/hashtag?period=7&region=KR","detail":"한국 최근 7일 해시태그가 먼저 열려요. 우리 시청자에게 맞게 지역과 기간을 바꿔 보세요."},

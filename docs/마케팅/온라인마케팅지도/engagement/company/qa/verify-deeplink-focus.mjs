@@ -13,9 +13,9 @@ const {chromium}=require(process.env.MESSENGER_PLAYWRIGHT||join(homedir(),'.cach
 const temporaryRoot=await realpath(tmpdir()),runDirectory=await mkdtemp(join(temporaryRoot,'synk-deeplink-focus-'));
 const repaint=page=>page.evaluate(()=>render());
 const scenarios=[
-  {name:'workroom answers late',delay:['workroom-guide|content-workspace',800],expect:end=>end.active==='url'&&end.main>0},
-  {name:'publication data answers late',delay:['publication-workspace',900],expect:end=>end.active==='url'&&end.main>0},
-  {name:'a later full repaint puts the target back',act:repaint,expect:end=>end.active==='url'&&end.main>0},
+  {name:'workroom answers late',delay:['workroom-guide|content-workspace',800],expect:end=>end.active==='url'&&end.main>0&&end.inView},
+  {name:'publication data answers late',delay:['publication-workspace',900],expect:end=>end.active==='url'&&end.main>0&&end.inView},
+  {name:'a later full repaint puts the target back',act:repaint,expect:end=>end.active==='url'&&end.main>0&&end.inView},
   {name:'tabbing away is not pulled back',act:async page=>{await page.keyboard.press('Tab');await repaint(page);},expect:end=>end.active!=='url'},
   {name:'an opened dialog keeps its focus',act:async page=>{await page.keyboard.press('Control+K');await page.waitForTimeout(300);await repaint(page);},expect:end=>end.inOverlay===true},
 ];
@@ -25,7 +25,9 @@ try{
   childClosed=new Promise(done=>child.once('close',done));
   const fixture=await new Promise((done,fail)=>{let text='';const timer=setTimeout(()=>fail(new Error('fixture startup timed out')),30000),finish=(callback,value)=>{clearTimeout(timer);callback(value);};child.stdout.setEncoding('utf8').on('data',chunk=>{text+=chunk;const line=text.split(/\r?\n/).find(row=>row.trim().startsWith('{'));if(line)try{finish(done,JSON.parse(line));}catch{}});child.once('error',error=>finish(fail,error));child.once('exit',code=>finish(fail,new Error('fixture exited '+code)));});
   browser=await chromium.launch({channel:'chrome',headless:true});
-  const context=await browser.newContext({viewport:{width:1280,height:900}}),login=await context.newPage();
+  // 13판 puts the register form high in the 게시 준비·성과 detail: at 900px its 주소 칸 is already in view and <main> never scrolls.
+  // At 700px the link has to scroll to the field, so the scenarios can see whether that scroll survives a late repaint.
+  const context=await browser.newContext({viewport:{width:1280,height:700}}),login=await context.newPage();
   await login.goto(fixture.url,{waitUntil:'domcontentloaded'});
   await login.fill('input[placeholder="이메일 또는 기존 아이디"]',fixture.email);await login.fill('input[type="password"]',fixture.password);await login.press('input[type="password"]','Enter');
   await login.waitForURL(/tab=home/,{timeout:15000});await login.close();
@@ -35,7 +37,7 @@ try{
     await page.goto(new URL('/?tab=workroom&section=tools&tool=publication&publicationAction=register',fixture.url).href,{waitUntil:'domcontentloaded'});
     await page.waitForTimeout(ms+1500);
     if(scenario.act){await scenario.act(page);await page.waitForTimeout(300);}
-    const end=await page.evaluate(()=>{const active=document.activeElement;return {active:active?.getAttribute?.('data-pf-register')||active?.tagName||null,main:Math.round(document.querySelector('main')?.scrollTop||0),inOverlay:!!document.getElementById('overlay')?.contains(active)};});
+    const end=await page.evaluate(()=>{const active=document.activeElement,main=document.querySelector('main'),box=active?.getBoundingClientRect?.(),view=main?.getBoundingClientRect?.();return {active:active?.getAttribute?.('data-pf-register')||active?.tagName||null,main:Math.round(main?.scrollTop||0),inView:!!box&&!!view&&box.top>=view.top&&box.bottom<=view.bottom,inOverlay:!!document.getElementById('overlay')?.contains(active)};});
     results.push({name:scenario.name,ok:scenario.expect(end),end});await page.close();
   }
 }finally{

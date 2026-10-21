@@ -119,16 +119,16 @@ export function createAutomationHealthService({store,studio,publicationPackages,
           if(['pending','retry','collecting'].includes(checkpoint.status)&&(instant(checkpoint.nextAttemptAt)===null||instant(checkpoint.nextAttemptAt)<=now))pending.performance++;
           if(checkpoint.status==='collecting'&&instant(checkpoint.attemptedAt)!==null&&now-instant(checkpoint.attemptedAt)<3*MINUTE){byId.performance.status='running';continue;}
           // 「다시 확인합니다」는 수집기가 실제로 다시 볼 때(retry)만 쓴다. 자동 수집이 끝난 기록(manual-required)은 사람이 할 일로 남긴다(10-20: 다시 확인한다고 안내하고 할 일을 지웠다).
-          if(checkpoint.status==='retry'){problem('performance','collection',id,{...data,status:'failed',text:instant(checkpoint.nextAttemptAt)>now?'숫자를 자동으로 받지 못했어요. 정해진 시각에 다시 읽어요.':'숫자를 자동으로 받지 못했어요. 게시 후 성과에서 숫자와 채널 연결을 봐 주세요.'});if(instant(checkpoint.nextAttemptAt)>now)future.push(checkpoint.nextAttemptAt);continue;}
+          if(checkpoint.status==='retry'){problem('performance','collection',id,{...data,status:'failed',text:instant(checkpoint.nextAttemptAt)>now?'숫자를 자동으로 받지 못했어요. 정해진 시각에 다시 읽어요.':'숫자를 자동으로 받지 못했어요. 게시 준비·성과에서 숫자와 채널 연결을 봐 주세요.'});if(instant(checkpoint.nextAttemptAt)>now)future.push(checkpoint.nextAttemptAt);continue;}
           if(checkpoint.status==='manual-required'){
             if(['AUTH_REQUIRED','ACCOUNT_MISMATCH','CONNECTION_CHANGED'].includes(checkpoint.lastErrorCode)){problem('performance','connection',id,{...data,status:'connection',text:'채널 연결이나 권한 문제로 자동 수집이 멈췄어요. 채널을 다시 연결하고, 모을 기간이 끝나기 전에 채널에서 직접 본 숫자를 넣어 주세요.'});continue;}
             human('performance','metric',id,{...data,statusLabel:'빠진 숫자 넣기',text:checkpoint.lastErrorCode?'자동 수집을 끝내지 못했어요. 모을 기간이 끝나기 전에 채널에서 직접 본 숫자를 넣어 주세요.':'자동으로 못 읽은 숫자가 있어요. 채널에서 직접 보고 넣어 주세요.'});continue;}
           const reference=checkpoint.status==='collecting'?checkpoint.attemptedAt||checkpoint.dueAt:checkpoint.nextAttemptAt||checkpoint.dueAt;
-          if(instant(reference)!==null&&now-instant(reference)>15*MINUTE)problem('performance','late',id,{...data,status:'delayed',text:`${checkpoint.hours}시간 숫자가 아직 안 들어왔어요. 모을 기간이 끝나기 전에 게시 후 성과에서 봐 주세요.`});
+          if(instant(reference)!==null&&now-instant(reference)>15*MINUTE)problem('performance','late',id,{...data,status:'delayed',text:`${checkpoint.hours}시간 숫자가 아직 안 들어왔어요. 모을 기간이 끝나기 전에 게시 준비·성과에서 봐 주세요.`});
           else byId.performance.status=rt.performance?.running?'running':'scheduled';
         }
       }
-      if(staleEntries.size){const since=earliest(staleDueAt);problem('performance','collector-stale','current',{code:'post-performance-collector-stale',since,affectedEntries:[...staleEntries],status:'delayed',title:'게시 숫자 자동 수집 멈춤',text:`게시물 ${staleEntries.size}편이 읽을 시각을 지났는데 자동 수집이 끝나지 않았어요. 서버의 자동 수집을 살펴보고, 급한 숫자는 게시 후 성과에서 직접 넣어 주세요.`,href:byId.performance.href,dueAt:since,occurredAt:since});}
+      if(staleEntries.size){const since=earliest(staleDueAt);problem('performance','collector-stale','current',{code:'post-performance-collector-stale',since,affectedEntries:[...staleEntries],status:'delayed',title:'게시 숫자 자동 수집 멈춤',text:`게시물 ${staleEntries.size}편이 읽을 시각을 지났는데 자동 수집이 끝나지 않았어요. 서버의 자동 수집을 살펴보고, 급한 숫자는 게시 준비·성과에서 직접 넣어 주세요.`,href:byId.performance.href,dueAt:since,occurredAt:since});}
       byId.performance.lastResultAt=latest(observations);byId.performance.nextDueAt=earliest(future);
       if(entries.length&&entries.every(row=>store.get('channels',row.channelId)?.collectionDisabled===true))byId.performance.status='paused';
       let inbox=read(['inbox'],()=>publicationInbox.state(user),{available:false,active:false,entries:[]});

@@ -109,7 +109,7 @@ function ahDest(href){
   const tab=params.get('tab')||params.get('view'),tool=params.get('tool');
   return tab==='home'?'홈':tab==='messenger'?'메신저':tab==='content'?'기획':params.get('section')==='clients'?'고객 관리':tool==='weekly'?'주간 정리':tool==='publication'?'게시 준비·성과':'';
 }
-// 2. 게시 후 성과 is a view inside publication-flow.js; switch it the way its own tab button does.
+// 게시 준비·성과 has no performance tab any more: pf.view='performance' asks publication-flow.js (pfHonorView) to open a posted episode.
 function ahShowPerformance(){if(typeof pf==='undefined')return;if(typeof pfIdentity==='function')pfIdentity();pf.view='performance';}
 async function ahOpenSource(value,view=''){
   const href=ahHref(value);if(!href||!state.user)return false;

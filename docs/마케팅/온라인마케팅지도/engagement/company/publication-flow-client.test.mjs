@@ -382,7 +382,7 @@ test('the episode opened by itself stays put when a new arrival comes in, and pi
   f.run('pf.busy=false');assert.equal(f.requests.length,0,'view-only actions never call the server');
 });
 test('an outside request for post performance opens a posted episode, and the old half actions still pick a half',()=>{
-  // 자동화 상태의 「게시 후 성과 열기」는 pf.view='performance'만 바꾼다(automation-health.js ahShowPerformance).
+  // 자동화 상태의 멈춤 경고 「게시 준비·성과 열기」는 pf.view='performance'만 바꾼다(automation-health.js ahShowPerformance).
   const f=fixture(),now=Date.now(),iso=ms=>new Date(ms).toISOString(),click=action=>f.handlers.get('click').forEach(handler=>handler({target:{closest:()=>({disabled:false,dataset:{pfAction:action}})}}));
   f.context.posted={id:'b'.repeat(64),title:'올린 편',channelId:'channel',platform:'youtube',publishedAt:iso(now-3600000),canEdit:true,checkpoints:[{hours:24,status:'pending',dueAt:iso(now+23*3600000),metrics:{}}]};
   f.run('pf.data.inbox={available:true,active:true,entries:[{id:"arrival",status:"ready",title:"올리기 전 편",productionId:"prod",versionId:"v1",createdAt:new Date().toISOString()}]};pf.data.performance.entries=[posted]');
