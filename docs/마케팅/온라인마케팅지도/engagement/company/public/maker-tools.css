@@ -83,7 +83,6 @@
 :root .synk-workspace .mt .mt-poster-stats dd{font-size:22px;line-height:1;font-weight:var(--w-title);letter-spacing:-.02em;color:#fff;white-space:nowrap}
 :root .synk-workspace .mt .mt-poster-word{position:absolute;left:16px;bottom:-.02em;z-index:2;font:900 96px/.9 SUIT,var(--mt-sans);letter-spacing:-.065em;color:var(--mt-on-face);pointer-events:none;user-select:none;white-space:nowrap}
 :root .synk-workspace .mt .mt-poster-art{position:absolute;right:20px;bottom:12px;z-index:3;display:block;width:160px;height:156px;object-fit:contain;object-position:50% 100%;transform:rotate(-3deg);filter:drop-shadow(0 18px 18px rgba(0,0,0,.5)) drop-shadow(0 4px 6px rgba(0,0,0,.35));pointer-events:none;user-select:none}
-:root .synk-workspace .mt .mt-poster[data-mt-poster=automation] .mt-poster-art{right:18px;bottom:auto;top:24px;width:166px;height:112px;object-position:100% 0}
 :root .synk-workspace .mt .mt-poster[data-mt-poster=sources] .mt-poster-art{width:176px;height:150px}
 
 /* ── 단추 · 링크 ── */
@@ -355,7 +354,6 @@
 :root .synk-workspace .mt .mt-now.is-poster .mt-actions .mt-link{color:var(--mt-on-face)}
 :root .synk-workspace .mt .mt-now.is-poster .mt-now-word{position:absolute;right:14px;bottom:-.06em;z-index:1;font:900 92px/.9 SUIT,var(--mt-sans);letter-spacing:-.065em;color:var(--mt-on-face);pointer-events:none;user-select:none;white-space:nowrap}
 :root .synk-workspace .mt .mt-now.is-poster .mt-now-art{position:absolute;right:34px;bottom:74px;z-index:2;width:112px;height:98px;object-fit:contain;object-position:50% 100%;transform:rotate(-3deg);filter:drop-shadow(0 14px 14px rgba(0,0,0,.5)) drop-shadow(0 3px 5px rgba(0,0,0,.35))}
-:root .synk-workspace .mt .mt-now.is-poster[data-mt-poster=automation] .mt-now-art{width:136px;height:94px}
 
 /* ── 입력 칸 ── */
 :root .synk-workspace .mt .mt-form{display:grid;gap:14px}
@@ -419,7 +417,6 @@
 /* ── 좁을 때 ── */
 @container mt (max-width:860px){
   :root .synk-workspace .mt .mt-desk{--mt-list-w:262px}
-  :root .synk-workspace .mt .mt-poster[data-mt-poster=automation] .mt-poster-art{width:128px;height:88px}
   :root .synk-workspace .mt .mt-head{grid-template-columns:minmax(0,1fr) minmax(250px,340px)}
   :root .synk-workspace .mt .mt-poster-word{font-size:80px}
   :root .synk-workspace .mt .mt-poster-art{width:140px;height:132px}
@@ -442,7 +439,7 @@
   :root .synk-workspace .mt .mt-poster-stats{left:16px;top:36px;gap:14px}
   :root .synk-workspace .mt .mt-poster-stats dd{font-size:19px}
   :root .synk-workspace .mt .mt-poster-word{left:12px;font-size:52px}
-  :root .synk-workspace .mt .mt-poster-art,:root .synk-workspace .mt .mt-poster[data-mt-poster] .mt-poster-art{right:12px;bottom:10px;top:auto;width:96px;height:96px;object-position:50% 100%}
+  :root .synk-workspace .mt .mt-poster-art,:root .synk-workspace .mt .mt-poster[data-mt-poster] .mt-poster-art{right:12px;bottom:10px;width:96px;height:96px}
   :root .synk-workspace .mt .mt-meter{margin-bottom:20px}
   :root .synk-workspace .mt .mt-meter>*{padding:10px 6px 11px 9px;gap:7px}
   :root .synk-workspace .mt .mt-meter>:first-child{padding-left:0}
@@ -481,7 +478,7 @@
   :root .synk-workspace .mt .mt-now.is-poster .mt-now-copy{padding-right:92px}
   :root .synk-workspace .mt .mt-now.is-poster h3{font-size:17.5px}
   :root .synk-workspace .mt .mt-now.is-poster .mt-now-word{display:none}
-  :root .synk-workspace .mt .mt-now.is-poster .mt-now-art,:root .synk-workspace .mt .mt-now.is-poster[data-mt-poster=automation] .mt-now-art{top:16px;right:14px;bottom:auto;width:84px;height:74px}
+  :root .synk-workspace .mt .mt-now.is-poster .mt-now-art{top:16px;right:14px;bottom:auto;width:84px;height:74px}
   :root .synk-workspace .mt .mt-steps li{font-size:0}
   :root .synk-workspace .mt .mt-steps li[data-s=now]{font-size:12px;overflow:visible}
   :root .synk-workspace .mt .mt-steps li[data-s=now]:last-child{align-items:flex-end}
