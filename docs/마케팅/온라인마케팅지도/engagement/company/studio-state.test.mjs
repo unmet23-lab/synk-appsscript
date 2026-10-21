@@ -146,9 +146,20 @@ test('same-user role changes reject cached workspace and in-flight detail data',
   assert.equal(f.sw.data,null);assert.equal(f.sw.detail,null);
 });
 
+test('an opened production keeps its place in the list and only a new one goes first',()=>{
+  const f=fixture();
+  f.evaluate(`swAcceptProduction(${JSON.stringify({...production('pB'),title:'바뀐 제목'})})`);
+  assert.deepEqual(plain(f.sw.data.productions.map(row=>[row.id,row.title])),[['pA','작업 pA'],['pB','바뀐 제목']]);
+  f.evaluate(`swAcceptProduction(${JSON.stringify(production('pC'))})`);
+  assert.deepEqual(plain(f.sw.data.productions.map(row=>row.id)),['pC','pA','pB']);
+  assert.equal(f.sw.data.productions.filter(row=>row.id!=='pA').some(row=>'versions' in row||'notes' in row),false,'accepted rows are stored as summaries');
+});
+
 test('opening production tools after loading examples fetches the full workspace once',async()=>{
   const f=fixture();f.context.wr={view:'tools'};f.context.makerTools={view:'productions'};f.context.state.tab='workroom';
   f.evaluate('ensureStudioWorkspace();ensureStudioWorkspace()');assert.equal(f.requests.length,1);
   f.requests[0].resolve(workspace());await f.settle();
-  f.evaluate('ensureStudioWorkspace()');assert.equal(f.requests.length,1);assert.equal(f.sw.workspaceLoaded,true);
+  f.evaluate('ensureStudioWorkspace()');assert.equal(f.requests.filter(row=>row.path==='/api/studio-workspace').length,1);assert.equal(f.sw.workspaceLoaded,true);
+  // 열려 있던 작업 상세는 새 목록과 어긋나지 않게 뒤에서 한 번 새로 받는다.
+  assert.deepEqual(f.requests.slice(1).map(row=>row.path),['/api/studio-productions/pA']);
 });

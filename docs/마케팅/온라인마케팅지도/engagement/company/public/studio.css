@@ -1,3 +1,33 @@
-.sw-tabs{display:flex;gap:26px;border-bottom:1px solid var(--line);margin-bottom:30px;overflow-x:auto;scrollbar-width:thin}.sw-tabs button{background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);font:500 13px var(--font);padding:0 0 15px;white-space:nowrap}.sw-tabs button.active{color:var(--blue);border-bottom-color:var(--blue)}.sw-message{padding:19px 22px;margin-bottom:22px;background:#fcf5e9;border:1px solid #efe5cf;border-radius:7px;font-size:13px;line-height:1.8;color:#836a42}.sw-message .btn{margin-left:12px}.sw-note{font-size:12px;line-height:1.9;color:var(--muted);overflow-wrap:anywhere}.sw-intro{display:flex;justify-content:space-between;gap:25px;align-items:flex-start;margin-bottom:28px}.sw-intro h2{font-size:27px;letter-spacing:-.045em;font-weight:550;line-height:1.5}.sw-intro p{font-size:13px;color:var(--muted);line-height:1.9;margin-top:10px;max-width:650px}.sw-kicker{display:block;font:10px var(--mono);letter-spacing:.1em;color:#68815e;margin-bottom:12px}.sw-section-title{font-size:17px;font-weight:550;letter-spacing:-.02em}.sw-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:4px;background:#f0f5eb;color:#5d7751;font-size:10px;line-height:1.7}.sw-empty{padding:45px 30px;border:1px solid #e2e9db;background:#f8faf5;border-radius:8px;text-align:center}.sw-empty h3{font-size:21px;line-height:1.5;font-weight:500;margin:0 0 10px}.sw-empty p{font-size:13px;color:var(--muted);line-height:1.9;max-width:520px;margin:0 auto 22px}.sw-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:23px}.sw-toolbar input,.sw-toolbar select{border:1px solid var(--line);border-radius:5px;padding:10px 12px;font:12px var(--font);color:var(--ink);background:#fff;max-width:100%;min-width:0}.sw-toolbar label{font-size:11px;color:var(--muted);display:flex;gap:8px;align-items:center}.sw-text{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.95}.sw-caption{font-size:11px;color:var(--muted);line-height:1.8}.sw-action-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.sw-action-row .btn{font-size:12px}.sw-scope-note{padding:13px 16px;border:1px solid #e2e9dc;border-radius:6px;background:#f7faf2;font-size:11px;line-height:1.9;color:#62765a}.sw-status{font-size:11px;color:var(--muted)}.sw-status.review{color:#947139}.sw-status.ready{color:#50784b}.sw-status.published{color:#436a83}.sw-status.archived{color:#7b8176}.sw-divider{border:0;border-top:1px solid var(--line);margin:25px 0}.sw-link{color:var(--blue);font-size:12px;display:inline-flex;gap:7px;align-items:center;overflow-wrap:anywhere}
-@media(max-width:760px){.sw-tabs{gap:21px;margin-bottom:25px}.sw-tabs button{font-size:11px;padding-bottom:13px}.sw-intro{flex-direction:column;gap:18px}.sw-intro h2{font-size:25px}.sw-intro p{font-size:12px}.sw-empty{padding:35px 22px}.sw-empty h3{font-size:20px}.sw-toolbar{gap:10px}.sw-toolbar select{font-size:12px}.sw-toolbar input{font-size:16px}.sw-toolbar label{max-width:100%}.sw-message{padding:17px;font-size:12px}.sw-message .btn{margin:12px 0 0}.sw-action-row .btn{font-size:11px}}
-@media(prefers-reduced-motion:reduce){.sw-tabs{scroll-behavior:auto}}
+/* 제작 상황판(studio.js) — 제작 도구 13판 A 「목록 + 상세」(2026-10-21). 공통 어휘는 maker-tools.css, 여기는 이 탭에만 쓰는 것.
+   소재 데스크 · 소재 모달은 studio-board.css, 검토실 · 예시 · 버전/예시 모달은 studio-review.css에 있다.
+   이 파일은 signal.css보다 앞에 읽히므로 선택자는 :root .synk-workspace .mt 아래로, 모달은 :root #overlay 아래로 둔다(옛 판의 전역 .sw-* 규칙은 걷었다). */
+:root .synk-workspace .mt .sw-views b{font-variant-numeric:tabular-nums}
+/* 「지금 할 일」 제목이 사람이 적은 다음 할 일일 때는 세 줄까지만. */
+:root .synk-workspace .mt [data-sw-now] h3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+/* 작은 고르기(목록의 담당 · 의견을 볼 버전): 알약 모양(게시 전 점검의 형식 고르기와 같은 꼴). */
+:root .synk-workspace .mt .sw-select{display:block;min-width:0}
+:root .synk-workspace .mt .sw-select select{appearance:none;-webkit-appearance:none;display:block;width:100%;height:36px;margin:0;padding:0 34px 0 14px;border:0;border-radius:999px;background:var(--mt-paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2308090C' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") right 13px center/12px no-repeat;box-shadow:inset 0 0 0 1px var(--mt-line-2);font:var(--w-label) 13.5px/1 var(--mt-sans);color:var(--mt-ink);cursor:pointer}
+:root .synk-workspace .mt .sw-select select:focus-visible{outline:2px solid var(--mt-lapis);outline-offset:2px}
+/* 소재 · 예시 줄: 제목이 문장이라 두 줄까지 보이고, 오른쪽 날짜는 위에 붙인다. */
+:root .synk-workspace .mt .mt-item.sw-two{align-items:start}
+:root .synk-workspace .mt .mt-item.sw-two strong{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;line-height:1.38}
+:root .synk-workspace .mt .mt-item.sw-two .mt-item-end{padding-top:2px}
+:root .synk-workspace .mt .sw-next{display:grid;gap:14px}
+:root .synk-workspace .mt .sw-next h4{margin:0 0 4px;font-size:13px;font-weight:var(--w-label);color:var(--mt-ink-3)}
+:root .synk-workspace .mt .sw-next p{font-size:15px;line-height:1.7;white-space:pre-line;overflow-wrap:anywhere}
+:root .synk-workspace .mt .sw-next p.is-empty{color:var(--mt-ink-4)}
+:root .synk-workspace .mt .sw-blocker{padding:12px 14px;border-radius:14px;background:var(--mt-coral-wash)}
+:root .synk-workspace .mt .sw-blocker h4{color:var(--mt-coral-ink)}
+:root .synk-workspace .mt .sw-next .mt-actions{margin-top:2px}
+:root .synk-workspace .mt .sw-foot{margin-top:14px}
+:root .synk-workspace .mt .sw-material-body{display:grid;gap:14px;padding:4px 0 2px;justify-items:start}
+:root .synk-workspace .mt .sw-text{font-size:15.5px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere;word-break:keep-all}
+:root .synk-workspace .mt .sw-tags{display:flex;flex-wrap:wrap;gap:6px}
+:root .synk-workspace .mt .sw-tags li{padding:3px 10px;border-radius:999px;background:var(--mt-surface);font-size:13px;font-weight:var(--w-label);line-height:1.5;color:var(--mt-ink-2);overflow-wrap:anywhere}
+/* 모달 — 작업 정보(새 작업 · 고치기). 기획 화면에서도 열린다. */
+:root #overlay .sw-production-form .sw-note{margin:0;font-size:13px;line-height:1.6;color:var(--sg-ink-3)}
+@container mt (max-width:700px){
+  /* 휴대폰: 보기 캡슐은 한 줄을 다 쓰고, 새로 만들기 · 다시 읽기는 그 아래 한 줄에. */
+  :root .synk-workspace .mt .mt-head .mt-seg.sw-views{display:flex;width:100%}
+  :root .synk-workspace .mt .mt-head .mt-seg.sw-views button{flex:1}
+}

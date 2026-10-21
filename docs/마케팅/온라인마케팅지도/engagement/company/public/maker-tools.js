@@ -2,8 +2,9 @@
 // 제작 도구 8탭의 공통 틀 — 시그널 13판(2026-10-20). 위 절반은 탭들이 같이 쓰는 그리기 도우미(순수 함수)이고,
 // 시험은 아래 「상태와 화면 바꾸기」 표시줄(줄 머리의 주석) 앞까지만 잘라 읽는다. 글은 escape로 넣고, attrs·body·actions처럼 HTML을 받는 칸은 부르는 쪽이 만든다.
 // 탭 성격대로: desk = A 목록+상세(머리 오른쪽 계기판, 포스터는 상세의 「지금 할 일」) · board = B 먼저 할 일 판 · sheet = 도구 한 장(번호 구역만).
-// 끝의 제작 상황판 · 문의 접수(관리자만)는 사업 자동화(10-21 origin aa3224719)가 더한 탭이다 — 화면은 아직 그 판 그대로라 목록 끝에 두고, 13판 문법으로 다시 그리는 것은 후속이다.
-const mtTools=[['publication','게시 준비·성과','desk'],['weekly','주간 정리','board'],['automation','자동화 상태','board'],['publish','게시 전 점검','desk'],['subtitles','자막 검사','sheet'],['sources','승인 제작 자료','sheet'],['brand','브랜드 제작실','desk'],['quality','품질·운영 확인','desk'],['productions','제작 상황판','sheet'],['inquiries','문의 접수','sheet']];
+// 제작 상황판 · 문의 접수(관리자만)는 사업 자동화(10-21 origin aa3224719)가 더한 탭으로, 10-21에 같은 문법(둘 다 A)으로 다시 그렸다.
+// 제작 상황판은 만든 작업이 게시 준비·성과의 묶음으로 넘어가는 흐름의 시작이라 맨 앞에, 문의 접수는 관리자만 보는 받은함이라 맨 끝에 둔다.
+const mtTools=[['productions','제작 상황판','desk'],['publication','게시 준비·성과','desk'],['weekly','주간 정리','board'],['automation','자동화 상태','board'],['publish','게시 전 점검','desk'],['subtitles','자막 검사','sheet'],['sources','승인 제작 자료','sheet'],['brand','브랜드 제작실','desk'],['quality','품질·운영 확인','desk'],['inquiries','문의 접수','desk']];
 const mtSvg=(body,width='2')=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${body}</svg>`;
 const mtIcons={
   refresh:mtSvg('<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/>'),
@@ -20,7 +21,7 @@ const mtIcons={
 };
 function mtIcon(name){return mtIcons[name]||'';}
 function mtToolLabel(tool){return (mtTools.find(row=>row[0]===tool)||[])[1]||'';}
-const mtFeltTools=['publication','weekly','automation','publish','subtitles','sources','brand','quality'];
+const mtFeltTools=['productions','publication','weekly','automation','publish','subtitles','sources','brand','quality','inquiries'];
 function mtFelt(tool){return mtFeltTools.includes(tool)?`/messenger/assets/maker-felt-${tool}.webp`:'';}
 function mtNum(value){if(value===null||value===undefined||value==='')return '—';const number=Number(value);return typeof value!=='boolean'&&Number.isFinite(number)?number.toLocaleString('ko-KR'):String(value);}
 function mtTone(tone){return ['alert','wait','ok','info','off'].includes(tone)?tone:'';}
@@ -71,7 +72,7 @@ function makerToolsList(){return mtTools.filter(row=>row[0]!=='inquiries'||state
 function makerToolsCurrent(){return makerToolsList().some(row=>row[0]===makerTools.view)?makerTools.view:'publish';}
 function makerToolsPanel(){const view=makerToolsCurrent(),panel=view==='productions'&&typeof studioPage==='function'?studioPage():view==='inquiries'&&typeof websiteInquiriesPanel==='function'?websiteInquiriesPanel():view==='automation'?automationHealthPanel():view==='weekly'?weeklySummaryPanel():view==='publication'?publicationFlowPanel():view==='subtitles'?subtitleLabPanel():view==='sources'?creatorSourcesPanel():['brand','quality'].includes(view)?brandQualityPanel(view):publishCheckPanel();if(typeof queueMicrotask==='function')queueMicrotask(makerToolsSyncSwitch);return `<section class="maker-tools mt" data-mt="${view}">${mtSwitch(view)}${panel}</section>`;}
 // 왼쪽 메뉴 하위 줄의 숫자: 그 탭 자료를 이미 불러왔을 때만 탭이 {value,tone,label}을 돌려준다(없으면 숫자 없음). 멈춤 같은 문제만 코랄.
-function makerToolsNavCount(id){const name={publication:'publicationFlowNavCount',weekly:'weeklySummaryNavCount',automation:'automationHealthNavCount',publish:'publishCheckNavCount',subtitles:'subtitleLabNavCount',sources:'creatorSourcesNavCount',brand:'brandQualityNavCount',quality:'brandQualityNavCount'}[id],read=name?globalThis[name]:null;if(typeof read!=='function')return null;try{const count=read(id),value=Number(count?.value);return value>0&&Number.isFinite(value)?{value,tone:count.tone==='alert'?'alert':'',label:String(count.label||'')}:null;}catch{return null;}}
+function makerToolsNavCount(id){const name={productions:'studioNavCount',publication:'publicationFlowNavCount',weekly:'weeklySummaryNavCount',automation:'automationHealthNavCount',publish:'publishCheckNavCount',subtitles:'subtitleLabNavCount',sources:'creatorSourcesNavCount',brand:'brandQualityNavCount',quality:'brandQualityNavCount',inquiries:'websiteInquiriesNavCount'}[id],read=name?globalThis[name]:null;if(typeof read!=='function')return null;try{const count=read(id),value=Number(count?.value);return value>0&&Number.isFinite(value)?{value,tone:count.tone==='alert'?'alert':'',label:String(count.label||'')}:null;}catch{return null;}}
 function makerToolsSubnav(){const view=makerToolsCurrent();return `<div class="mt-subnav" role="group" aria-label="제작 도구">${makerToolsList().map(([id,label])=>{const count=makerToolsNavCount(id);return `<button type="button" data-action="maker-tool" data-maker-tool="${id}" aria-current="${view===id?'page':'false'}"><span>${label}</span>${count?`<b${count.tone?` data-tone="${count.tone}"`:''}>${count.label?`<span class="mt-sr">${escape(count.label)} </span>`:''}${mtNum(count.value)}</b>`:''}</button>`;}).join('')}</div>`;}
 // 휴대폰 캡슐은 세 탭만 보이니, 다시 그린 뒤 고른 탭이 다 보이지 않으면 가운데로 민다(세로 위치는 건드리지 않는다).
 function makerToolsSyncSwitch(){if(typeof document==='undefined'||typeof document.querySelector!=='function')return;const nav=document.querySelector('.mt-switch'),button=nav?.querySelector('[aria-current="page"]');if(!nav||!button||nav.scrollWidth<=nav.clientWidth)return;const left=button.offsetLeft-nav.scrollLeft,right=left+button.offsetWidth;if(left>=0&&right<=nav.clientWidth)return;nav.scrollLeft=Math.max(0,button.offsetLeft-(nav.clientWidth-button.offsetWidth)/2);}

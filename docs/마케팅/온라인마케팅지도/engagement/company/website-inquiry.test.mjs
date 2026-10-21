@@ -1,11 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {mkdtemp,rm,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve,dirname} from 'node:path';
 import {Store} from './store.mjs';
 import {createMessenger} from '../../../../../tools/company-messenger/server.mjs';
-import {createWebsiteInquiryService,classifyWebsiteInquiry} from './website-inquiry-service.mjs';
+import {createWebsiteInquiryService,classifyWebsiteInquiry,websiteInquiryClassificationView} from './website-inquiry-service.mjs';
 import {createGoogleFormsInquiryReader,inquiryQuestionMap,WEBSITE_INQUIRY_FORM_ID} from './website-inquiry-google.mjs';
 import {connectWebsiteInquiry} from './website-inquiry-connect.mjs';
 
@@ -41,7 +42,7 @@ async function fixture(t){
 test('actual messenger lifecycle receives one personal task without copying private customer material',async t=>{
   const f=await fixture(t);await f.enable();assert.equal((await f.service.tick({force:true})).completed,true);
   const view=f.service.workspace(f.users.admin),row=view.items[0];
-  assert.equal(row.email,'synthetic@example.test');assert.equal(row.classification.category,'lab');assert.match(row.classification.reason,/직접 선택/);
+  assert.equal(row.email,'synthetic@example.test');assert.equal(row.classification.category,'lab');assert.match(row.classification.reason,/「LAB · 한국어 교육」 유형을 직접 골랐어요/);assert.doesNotMatch(row.classification.reason,/선택했습니다/);
   assert.equal(row.task.state,'linked');assert.equal(row.status,'new');assert.equal(view.draftOnly,true);
   assert.deepEqual(f.counts(),{messages:1,message_tasks:1,message_send_requests:1});
   const message=f.messenger.db.prepare('SELECT * FROM messages').get();
@@ -95,7 +96,7 @@ test('synthetic checks stay separate, unknown types require review and privacy r
   assert.equal(f.counts().message_tasks,0);assert.equal(f.service.workspace(f.users.admin).items[0].classification.isTest,true);
   assert.equal(classifyWebsiteInquiry(sample({type:'변경된 유형'})).category,'other');
   const privacy=classifyWebsiteInquiry(sample({message:'개인정보 삭제를 요청합니다.'}));
-  assert.equal(privacy.category,'privacy');assert.match(privacy.nextAction,/자동 삭제.*수행하지/);
+  assert.equal(privacy.category,'privacy');assert.match(privacy.nextAction,/자동으로 지우거나 답하지 않아요/);assert.doesNotMatch(privacy.nextAction,/수행하지 않습니다/);
   const row=f.service.workspace(f.users.admin).items[0];
   assert.equal(f.service.update(f.users.admin,row.id,{revision:row.revision,status:'closed',replyDraft:''}).item.status,'closed');
   const health=f.service.health(f.users.admin);assert.equal(health.configured,true);assert.equal(health.status,'ready');
@@ -194,4 +195,253 @@ test('connection verification is read-only and installation stores an encrypted 
   const current=await connectWebsiteInquiry({dataDir,fetchImpl});assert.equal(current.verified,true);assert.equal(current.installed,false);
   assert.equal(store.db.prepare('SELECT COUNT(*) AS n FROM tokens WHERE hash=?').get('synthetic-old').n,1,'read-only verification must not run Store constructor maintenance');
   assert.ok(urls.filter(url=>url.includes('/responses')).every(url=>new URL(url).searchParams.get('fields')==='responses(responseId),nextPageToken'));
+});
+
+// 관리자 화면에 뜨는 서버 글: 10-21 아침(HEAD) 문장 → 지금 문장. 옛 문장은 사라지고 새 문장이 그대로 있다.
+// 옛 분류 글 맵 줄(CLASSIFICATION_COPY_20261021)은 저장된 옛 기록을 보일 때만 쓰므로 옛 문장이 남아 있어 뺀다.
+const COPY_PAIRS_20261021={
+ "website-inquiry-service.mjs": [
+  [
+   "학습 목표·현재 수준·희망 방식을 확인하고 답변을 검토해 주세요.",
+   "학습 목표 · 지금 수준 · 원하는 수업 방식을 보고 초안을 다듬어요."
+  ],
+  [
+   "협업 목적·대상·희망 일정·범위를 확인하고 답변을 검토해 주세요.",
+   "협업 목적 · 대상 · 원하는 일정 · 범위를 보고 초안을 다듬어요."
+  ],
+  [
+   "관심 과정·국가·희망 시기를 확인하고 확정된 안내만 답변에 넣어 주세요.",
+   "관심 과정 · 나라 · 원하는 시기를 보고, 확정된 안내만 초안에 넣어요."
+  ],
+  [
+   "제작물·이용 범위·매체·일정 확인 후 권리와 견적을 검토해 주세요.",
+   "제작물 · 이용 범위 · 매체 · 일정을 보고 권리와 견적을 정해요."
+  ],
+  [
+   "관심 제품과 후속 연락 목적을 확인해 주세요. 자동 홍보 목록에는 추가하지 않습니다.",
+   "관심 제품과 연락받고 싶은 까닭을 봐요. 홍보 목록에 저절로 넣지 않아요."
+  ],
+  [
+   "을 확인해 주세요.",
+   " 칸이 비었거나 형식이 맞지 않아요. Google 원본에서 그 응답을 봐 주세요."
+  ],
+  [
+   "문의의 답변 이메일·접수 시각을 확인해 주세요.",
+   "문의의 답변 이메일이나 접수 시각 형식이 맞지 않아요. Google 원본에서 그 응답을 봐 주세요."
+  ],
+  [
+   "개인정보 동의 답변을 확인할 수 없어 수집을 중단했습니다.",
+   "개인정보 동의 답변이 양식의 동의 문장과 달라 수집을 멈췄어요. 문의 양식의 동의 문장이 바뀌었는지 봐 주세요."
+  ],
+  [
+   "응답 식별자",
+   "응답 번호"
+  ],
+  [
+   "응답 식별자가 올바르지 않습니다.",
+   "응답 번호 형식이 맞지 않아요. Google 원본에서 그 응답을 봐 주세요."
+  ],
+  [
+   "문의 내용에 기존 기능 점검 표식이 있습니다.",
+   "문의 내용에 기능 점검 표식이 있어요."
+  ],
+  [
+   "기능 점검 응답입니다. 고객 문의나 실적으로 집계하지 않습니다.",
+   "기능 점검 응답이라 고객 문의와 실적에서 빠져요."
+  ],
+  [
+   "문의 내용에 개인정보 삭제·열람 또는 동의 철회 표현이 있습니다. 운영자가 원문을 확인해야 합니다.",
+   "문의 내용에 개인정보 삭제 · 열람이나 동의 철회 표현이 있어요. 원문을 직접 읽어 봐야 해요."
+  ],
+  [
+   "원문의 요청 범위와 본인 확인 방법을 검토해 주세요. 자동 삭제·외부 답변은 수행하지 않습니다.",
+   "원문에서 요청 범위와 본인 확인 방법을 보고 답을 정해요. 자동으로 지우거나 답하지 않아요."
+  ],
+  [
+   "등록된 문의 유형과 일치하지 않습니다. 운영자의 확인이 필요합니다.",
+   "등록된 문의 유형과 맞지 않아요. 직접 읽고 분류해야 해요."
+  ],
+  [
+   "문의 원문과 유형을 확인한 뒤 답변을 작성해 주세요.",
+   "원문과 고른 유형을 읽고 초안을 써요."
+  ],
+  [
+   "응답자가 「",
+   "문의 양식에서 「"
+  ],
+  [
+   "」를 직접 선택했습니다.",
+   "」 유형을 직접 골랐어요."
+  ],
+  [
+   "홈페이지 문의는 회사 관리자만 확인할 수 있습니다.",
+   "홈페이지 문의는 회사 관리자만 볼 수 있어요."
+  ],
+  [
+   "관리자의 나에게 대화방을 확인하지 못했습니다.",
+   "할 일을 받을 「나에게」 대화방을 찾지 못했어요. 이 관리자 계정이 메신저 계정과 이어져 있는지 봐 주세요."
+  ],
+  [
+   "문의 기록을 찾을 수 없습니다.",
+   "문의 기록을 찾지 못했어요. 새로 읽어 주세요."
+  ],
+  [
+   "현재 설정을 새로 불러와 주세요.",
+   "그사이 설정이 바뀌었어요. 새로 읽어 주세요."
+  ],
+  [
+   "설정이 변경되었습니다.",
+   "그사이 설정이 바뀌었어요. 새로 읽어 주세요."
+  ],
+  [
+   "문의가 바뀌었습니다. 다시 불러와 주세요.",
+   "그사이 문의가 바뀌었어요. 새로 읽어 주세요."
+  ],
+  [
+   "문의 처리 상태를 확인해 주세요.",
+   "처리 상태 값이 맞지 않아요. 상태를 다시 골라 주세요."
+  ],
+  [
+   "답변 초안을 확인해 주세요.",
+   "답변 초안이 너무 길거나 쓸 수 없는 글자가 있어요. 6,000자 안으로 줄여 주세요."
+  ],
+  [
+   "기존 접수 업무를 생성한 관리자 계정을 확인해 주세요.",
+   "다른 관리자가 이 문의의 할 일을 만들던 중이에요. 그 관리자 계정으로 다시 모아 주세요."
+  ],
+  [
+   "문의 후속 업무의 권한이 변경되었습니다.",
+   "문의 후속 할 일을 받을 대화방이 바뀌었어요. 새로 읽은 뒤 다시 모아 주세요."
+  ],
+  [
+   "문의 원문과 분류 근거를 확인하고 답변 초안을 검토해 주세요.\\n외부 발송은 담당자가 별도로 진행합니다.\\n\\n문의 접수함: ",
+   "문의 원문과 분류 근거를 읽고 답변 초안을 다듬어요.\\n고객에게 보내는 일은 담당자가 따로 해요.\\n\\n문의 접수함: "
+  ],
+  [
+   "후속 업무 등록 결과를 확인하지 못했습니다.",
+   "후속 할 일이 만들어졌는지 확인하지 못했어요. 다음 수집 때 다시 확인해요."
+  ],
+  [
+   "문의 수집기가 종료 중입니다.",
+   "문의 수집을 멈추는 중이에요. 잠시 뒤 다시 해 주세요."
+  ],
+  [
+   "문의 수집 설정이 변경되어 중단했습니다.",
+   "수집하는 동안 설정이 바뀌어 멈췄어요. 새로 읽은 뒤 다시 모아 주세요."
+  ],
+  [
+   "문의 수집 결과 형식을 확인할 수 없습니다.",
+   "Google에서 받은 문의 형식이 맞지 않아 멈췄어요. 잠시 뒤 다시 모아 주세요."
+  ],
+  [
+   "문의 수집 또는 후속 업무 연결을 완료하지 못했습니다. 연결·권한을 확인해 주세요.",
+   "문의 수집이나 후속 할 일 연결을 끝내지 못했어요. 「연결 확인」으로 Google 연결과 권한을 봐 주세요."
+  ]
+ ],
+ "website-inquiry-google.mjs": [
+  [
+   "문의 양식의 질문·응답 읽기 권한으로 Google 계정을 연결해 주세요.",
+   "Google 계정에 문의 양식을 읽을 권한이 없어요. 질문 · 응답 읽기 권한으로 다시 연결해 주세요."
+  ],
+  [
+   "설정된 문의 양식에 접근할 수 없습니다.",
+   "정해 둔 문의 양식을 열 수 없어요. 양식을 가진 계정의 권한을 봐 주세요."
+  ],
+  [
+   "Google 문의 양식을 읽지 못했습니다. 다음 점검에서 다시 확인합니다.",
+   "Google 문의 양식을 읽지 못했어요. 다음 수집 때 다시 읽어요."
+  ],
+  [
+   "홈페이지 문의 양식 식별자가 일치하지 않습니다.",
+   "열린 양식이 홈페이지 문의 양식과 달라요. 「Google 원본 열기」로 양식 주소를 봐 주세요."
+  ],
+  [
+   "문의 양식의 답변받을 이메일 수집 설정을 확인해 주세요. 이메일을 받을 수 있어야 문의 수집을 시작합니다.",
+   "문의 양식이 답변받을 이메일을 모으지 않아요. 양식 설정에서 이메일 모으기를 켜 주세요."
+  ],
+  [
+   "문의 양식 질문이 바뀌었습니다. 문의 유형·내용·동의 질문을 확인해 주세요.",
+   "문의 양식 질문이 바뀌었어요. 문의 유형 · 내용 · 동의 질문이 그대로인지 봐 주세요."
+  ],
+  [
+   "필수 답변이 없는 문의 응답입니다. 원본 양식을 확인해 주세요.",
+   "꼭 받아야 할 답이 빠진 응답이 있어요. Google 원본에서 그 응답을 봐 주세요."
+  ],
+  [
+   "문의 응답의 식별자·시각을 확인해 주세요.",
+   "응답 번호나 접수 시각이 빠진 응답이 있어요. Google 원본에서 그 응답을 봐 주세요."
+  ],
+  [
+   "홈페이지 문의용 Google 읽기 연결이 아직 없습니다.",
+   "홈페이지 문의를 읽을 Google 연결이 아직 없어요. 연결을 마친 뒤 「연결 확인」을 눌러 주세요."
+  ],
+  [
+   "문의 계정 연결이 변경되어 수집을 중단했습니다.",
+   "문의 계정 연결이 바뀌어 수집을 멈췄어요. 「연결 확인」을 다시 눌러 주세요."
+  ],
+  [
+   "Google 인증 서버에 연결하지 못했습니다.",
+   "Google 인증 서버에 연결하지 못했어요. 잠시 뒤 다시 해 주세요."
+  ],
+  [
+   "문의용 Google 읽기 연결을 다시 확인해 주세요.",
+   "Google 읽기 연결이 풀렸어요. 계정을 다시 연결한 뒤 「연결 확인」을 눌러 주세요."
+  ],
+  [
+   "Google 문의 양식에 연결하지 못했습니다.",
+   "Google 문의 양식에 연결하지 못했어요. 잠시 뒤 다시 해 주세요."
+  ],
+  [
+   "문의 응답이 너무 커서 수집을 중단했습니다.",
+   "문의 응답이 너무 커서 수집을 멈췄어요. Google 원본에서 그 응답을 봐 주세요."
+  ],
+  [
+   "Google 문의 응답 형식을 확인할 수 없습니다.",
+   "Google 문의 응답 형식이 맞지 않아요. 잠시 뒤 다시 모아 주세요."
+  ],
+  [
+   "문의 수집 시각이 올바르지 않습니다.",
+   "이어 모을 시각을 읽지 못했어요. 잠시 뒤 다시 모아 주세요."
+  ],
+  [
+   "문의 수집 위치가 올바르지 않습니다.",
+   "이어 모을 자리를 읽지 못했어요. 잠시 뒤 다시 모아 주세요."
+  ],
+  [
+   "Google 문의 목록 형식을 확인해 주세요.",
+   "Google에서 받은 문의 목록 형식이 맞지 않아요. 잠시 뒤 다시 모아 주세요."
+  ]
+ ],
+ "studio-service.mjs": [
+  [
+   "처음 제작할 때만 조사 원문을 함께 저장할 수 있습니다.",
+   "조사 원문은 작업을 처음 만들 때만 함께 저장할 수 있어요."
+  ]
+ ]
+};
+test('admin-facing server copy moved from the 10-21 morning wording to the new wording, pair by pair',()=>{
+  for(const [name,list] of Object.entries(COPY_PAIRS_20261021)){
+    const source=readFileSync(new URL('./'+name,import.meta.url),'utf8').split(/\r?\n/).filter(line=>!line.includes('CLASSIFICATION_COPY_20261021')).join('\n');
+    for(const [old,next] of list){assert.ok(source.includes(`'${next}'`),name+': '+next);assert.ok(!source.includes(`'${old}'`),name+': '+old);}
+  }
+  // 관리자 화면에 뜨는 오류 글 전부: 내부 말 · 「확인해 주세요」 투가 없다.
+  const google=readFileSync(new URL('./website-inquiry-google.mjs',import.meta.url),'utf8'),service=readFileSync(new URL('./website-inquiry-service.mjs',import.meta.url),'utf8');
+  const messages=[...(google+service).matchAll(/fail\('[A-Z_]+',(?:label\+)?'([^']*)'/g)].map(match=>match[1]);assert.ok(messages.length>30,String(messages.length));
+  for(const message of messages)assert.doesNotMatch(message,/식별자|확인해 주세요|다시 이어요|다시 모아요\.$/,message);
+});
+
+test('classification text stored before the 10-21 copy change is shown in the new wording without changing the classification or the customer draft',async t=>{
+  const old={category:'lab',label:'한국어 교육',reason:'응답자가 「LAB · 한국어 교육」를 직접 선택했습니다.',nextAction:'학습 목표·현재 수준·희망 방식을 확인하고 답변을 검토해 주세요.',draft:'한국어 교육 문의를 남겨 주셔서 감사합니다.',isTest:false};
+  const view=websiteInquiryClassificationView(old);
+  assert.equal(view.reason,'문의 양식에서 「LAB · 한국어 교육」 유형을 직접 골랐어요.');assert.equal(view.nextAction,'학습 목표 · 지금 수준 · 원하는 수업 방식을 보고 초안을 다듬어요.');
+  assert.equal(view.category,'lab');assert.equal(view.isTest,false);assert.equal(view.draft,old.draft,'the customer reply draft keeps its formal wording');
+  for(const [reason,nextAction] of [['문의 내용에 기존 기능 점검 표식이 있습니다.','기능 점검 응답입니다. 고객 문의나 실적으로 집계하지 않습니다.'],['문의 내용에 개인정보 삭제·열람 또는 동의 철회 표현이 있습니다. 운영자가 원문을 확인해야 합니다.','원문의 요청 범위와 본인 확인 방법을 검토해 주세요. 자동 삭제·외부 답변은 수행하지 않습니다.'],['등록된 문의 유형과 일치하지 않습니다. 운영자의 확인이 필요합니다.','문의 원문과 유형을 확인한 뒤 답변을 작성해 주세요.']]){
+    const next=websiteInquiryClassificationView({reason,nextAction});assert.doesNotMatch(next.reason+next.nextAction,/습니다|합니다/);
+  }
+  assert.deepEqual({...websiteInquiryClassificationView({reason:'운영자가 직접 적은 근거',nextAction:'그대로 둘 글'})},{reason:'운영자가 직접 적은 근거',nextAction:'그대로 둘 글'},'unknown text passes through');
+  assert.equal(websiteInquiryClassificationView(null),null);
+  // A row imported by the old wording is shown in the new wording through the workspace response.
+  const f=await fixture(t);await f.enable();await f.service.tick({force:true});
+  const stored=f.store.all('websiteInquiries')[0];f.store.put('websiteInquiries',stored.id,{...stored,classification:old});
+  const row=f.service.workspace(f.users.admin).items[0];assert.equal(row.classification.reason,view.reason);assert.equal(f.store.get('websiteInquiries',stored.id).classification.reason,old.reason,'the stored record is not rewritten');
 });

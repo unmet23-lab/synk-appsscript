@@ -7,23 +7,23 @@ const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex
 const iso=value=>typeof value==='string'&&Number.isFinite(Date.parse(value));
 const STATES=new Set(['new','reviewing','replied','closed']);
 const CATEGORIES=[
-  {id:'lab',selected:'LAB · 한국어 교육',label:'한국어 교육',next:'학습 목표·현재 수준·희망 방식을 확인하고 답변을 검토해 주세요.',draft:'한국어 교육 문의를 남겨 주셔서 감사합니다. 원하시는 학습 목표, 현재 한국어 수준, 수업이나 프로그램 이용 희망 방식을 알려 주시면 안내를 준비하는 데 도움이 됩니다.'},
-  {id:'shift-business',selected:'SHIFT · 기관 강의·기업 컨설팅·브랜딩',label:'기관·기업 협업',next:'협업 목적·대상·희망 일정·범위를 확인하고 답변을 검토해 주세요.',draft:'협업 문의를 남겨 주셔서 감사합니다. 진행 목적, 대상, 희망 일정과 범위를 알려 주시면 요청에 맞는 진행 가능 여부를 확인하겠습니다.'},
-  {id:'shift-career',selected:'SHIFT · 유학·취업 연계',label:'유학·취업 연계',next:'관심 과정·국가·희망 시기를 확인하고 확정된 안내만 답변에 넣어 주세요.',draft:'유학·취업 연계에 관해 문의해 주셔서 감사합니다. 관심 있는 과정이나 국가, 희망 시기를 알려 주시면 확인 가능한 안내를 준비하겠습니다.'},
-  {id:'pulse',selected:'PULSE · 제작 협업·작품 이용·광고',label:'제작·작품 이용',next:'제작물·이용 범위·매체·일정 확인 후 권리와 견적을 검토해 주세요.',draft:'제작·작품 이용에 관해 문의해 주셔서 감사합니다. 원하시는 제작물 또는 작품, 이용 매체와 범위, 희망 일정을 알려 주시면 확인 후 안내하겠습니다.'},
-  {id:'release',selected:'출시 소식 문의',label:'출시 소식',next:'관심 제품과 후속 연락 목적을 확인해 주세요. 자동 홍보 목록에는 추가하지 않습니다.',draft:'출시 소식에 관심을 보내 주셔서 감사합니다. 소식을 받고 싶은 제품을 알려 주시면, 요청하신 내용에 대해 확인 가능한 사항을 안내하겠습니다.'},
+  {id:'lab',selected:'LAB · 한국어 교육',label:'한국어 교육',next:'학습 목표 · 지금 수준 · 원하는 수업 방식을 보고 초안을 다듬어요.',draft:'한국어 교육 문의를 남겨 주셔서 감사합니다. 원하시는 학습 목표, 현재 한국어 수준, 수업이나 프로그램 이용 희망 방식을 알려 주시면 안내를 준비하는 데 도움이 됩니다.'},
+  {id:'shift-business',selected:'SHIFT · 기관 강의·기업 컨설팅·브랜딩',label:'기관·기업 협업',next:'협업 목적 · 대상 · 원하는 일정 · 범위를 보고 초안을 다듬어요.',draft:'협업 문의를 남겨 주셔서 감사합니다. 진행 목적, 대상, 희망 일정과 범위를 알려 주시면 요청에 맞는 진행 가능 여부를 확인하겠습니다.'},
+  {id:'shift-career',selected:'SHIFT · 유학·취업 연계',label:'유학·취업 연계',next:'관심 과정 · 나라 · 원하는 시기를 보고, 확정된 안내만 초안에 넣어요.',draft:'유학·취업 연계에 관해 문의해 주셔서 감사합니다. 관심 있는 과정이나 국가, 희망 시기를 알려 주시면 확인 가능한 안내를 준비하겠습니다.'},
+  {id:'pulse',selected:'PULSE · 제작 협업·작품 이용·광고',label:'제작·작품 이용',next:'제작물 · 이용 범위 · 매체 · 일정을 보고 권리와 견적을 정해요.',draft:'제작·작품 이용에 관해 문의해 주셔서 감사합니다. 원하시는 제작물 또는 작품, 이용 매체와 범위, 희망 일정을 알려 주시면 확인 후 안내하겠습니다.'},
+  {id:'release',selected:'출시 소식 문의',label:'출시 소식',next:'관심 제품과 연락받고 싶은 까닭을 봐요. 홍보 목록에 저절로 넣지 않아요.',draft:'출시 소식에 관심을 보내 주셔서 감사합니다. 소식을 받고 싶은 제품을 알려 주시면, 요청하신 내용에 대해 확인 가능한 사항을 안내하겠습니다.'},
 ];
 function text(value,label,max){
-  if(typeof value!=='string'||!value.trim()||value.length>max||/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value))throw fail('INQUIRY_INVALID',label+'을 확인해 주세요.');
+  if(typeof value!=='string'||!value.trim()||value.length>max||/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value))throw fail('INQUIRY_INVALID',label+' 칸이 비었거나 형식이 맞지 않아요. Google 원본에서 그 응답을 봐 주세요.');
   return value.trim();
 }
 function normalize(input){
   const email=text(input.email,'답변 이메일',254);
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||!iso(input.createdAt)||!iso(input.submittedAt))throw fail('INQUIRY_INVALID','문의의 답변 이메일·접수 시각을 확인해 주세요.');
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||!iso(input.createdAt)||!iso(input.submittedAt))throw fail('INQUIRY_INVALID','문의의 답변 이메일이나 접수 시각 형식이 맞지 않아요. Google 원본에서 그 응답을 봐 주세요.');
   const consent=text(input.consent,'개인정보 동의',1000);
-  if(consent!=='위 안내를 읽고, 문의 답변을 위한 개인정보 수집·이용에 동의합니다.')throw fail('INQUIRY_CONSENT_CHANGED','개인정보 동의 답변을 확인할 수 없어 수집을 중단했습니다.',409);
-  const responseId=text(input.responseId,'응답 식별자',200);
-  if(!/^[\w-]+$/.test(responseId))throw fail('INQUIRY_INVALID','응답 식별자가 올바르지 않습니다.');
+  if(consent!=='위 안내를 읽고, 문의 답변을 위한 개인정보 수집·이용에 동의합니다.')throw fail('INQUIRY_CONSENT_CHANGED','개인정보 동의 답변이 양식의 동의 문장과 달라 수집을 멈췄어요. 문의 양식의 동의 문장이 바뀌었는지 봐 주세요.',409);
+  const responseId=text(input.responseId,'응답 번호',200);
+  if(!/^[\w-]+$/.test(responseId))throw fail('INQUIRY_INVALID','응답 번호 형식이 맞지 않아요. Google 원본에서 그 응답을 봐 주세요.');
   return {responseId,email,type:text(input.type,'문의 유형',200),message:text(input.message,'문의 내용',16000),consent,
     createdAt:new Date(input.createdAt).toISOString(),submittedAt:new Date(input.submittedAt).toISOString()};
 }
@@ -31,10 +31,17 @@ export function classifyWebsiteInquiry(input){
   const category=CATEGORIES.find(row=>row.selected===input.type);
   const privacy=/개인정보.{0,12}(삭제|열람|철회)|동의.{0,8}철회/.test(input.message);
   const test=/\[SYNK 기능 점검\s*[·-]\s*실제 문의 아님\]/.test(input.message);
-  if(test)return {category:'test',label:'합성 기능 점검',reason:'문의 내용에 기존 기능 점검 표식이 있습니다.',nextAction:'기능 점검 응답입니다. 고객 문의나 실적으로 집계하지 않습니다.',draft:'',isTest:true};
-  if(privacy)return {category:'privacy',label:'개인정보 요청',reason:'문의 내용에 개인정보 삭제·열람 또는 동의 철회 표현이 있습니다. 운영자가 원문을 확인해야 합니다.',nextAction:'원문의 요청 범위와 본인 확인 방법을 검토해 주세요. 자동 삭제·외부 답변은 수행하지 않습니다.',draft:'개인정보 관련 요청을 보내 주셔서 감사합니다. 요청 범위와 필요한 확인 절차를 검토한 뒤 안내드리겠습니다.',isTest:false};
-  if(!category)return {category:'other',label:'분류 확인',reason:'등록된 문의 유형과 일치하지 않습니다. 운영자의 확인이 필요합니다.',nextAction:'문의 원문과 유형을 확인한 뒤 답변을 작성해 주세요.',draft:'문의해 주셔서 감사합니다. 보내 주신 내용을 확인한 뒤 안내드리겠습니다.',isTest:false};
-  return {category:category.id,label:category.label,reason:'응답자가 「'+category.selected+'」를 직접 선택했습니다.',nextAction:category.next,draft:category.draft,isTest:false};
+  if(test)return {category:'test',label:'합성 기능 점검',reason:'문의 내용에 기능 점검 표식이 있어요.',nextAction:'기능 점검 응답이라 고객 문의와 실적에서 빠져요.',draft:'',isTest:true};
+  if(privacy)return {category:'privacy',label:'개인정보 요청',reason:'문의 내용에 개인정보 삭제 · 열람이나 동의 철회 표현이 있어요. 원문을 직접 읽어 봐야 해요.',nextAction:'원문에서 요청 범위와 본인 확인 방법을 보고 답을 정해요. 자동으로 지우거나 답하지 않아요.',draft:'개인정보 관련 요청을 보내 주셔서 감사합니다. 요청 범위와 필요한 확인 절차를 검토한 뒤 안내드리겠습니다.',isTest:false};
+  if(!category)return {category:'other',label:'분류 확인',reason:'등록된 문의 유형과 맞지 않아요. 직접 읽고 분류해야 해요.',nextAction:'원문과 고른 유형을 읽고 초안을 써요.',draft:'문의해 주셔서 감사합니다. 보내 주신 내용을 확인한 뒤 안내드리겠습니다.',isTest:false};
+  return {category:category.id,label:category.label,reason:'문의 양식에서 「'+category.selected+'」 유형을 직접 골랐어요.',nextAction:category.next,draft:category.draft,isTest:false};
+}
+// 10-21 관리자 화면 글을 해요체로 바꾸기 전에 저장된 분류 글(근거 · 다음 할 일)은 보일 때만 새 글로 바꾼다. 분류(category · isTest)와 고객용 초안은 저장된 그대로다.
+const CLASSIFICATION_COPY_20261021=new Map([["학습 목표·현재 수준·희망 방식을 확인하고 답변을 검토해 주세요.", "학습 목표 · 지금 수준 · 원하는 수업 방식을 보고 초안을 다듬어요."], ["협업 목적·대상·희망 일정·범위를 확인하고 답변을 검토해 주세요.", "협업 목적 · 대상 · 원하는 일정 · 범위를 보고 초안을 다듬어요."], ["관심 과정·국가·희망 시기를 확인하고 확정된 안내만 답변에 넣어 주세요.", "관심 과정 · 나라 · 원하는 시기를 보고, 확정된 안내만 초안에 넣어요."], ["제작물·이용 범위·매체·일정 확인 후 권리와 견적을 검토해 주세요.", "제작물 · 이용 범위 · 매체 · 일정을 보고 권리와 견적을 정해요."], ["관심 제품과 후속 연락 목적을 확인해 주세요. 자동 홍보 목록에는 추가하지 않습니다.", "관심 제품과 연락받고 싶은 까닭을 봐요. 홍보 목록에 저절로 넣지 않아요."], ["문의 내용에 기존 기능 점검 표식이 있습니다.", "문의 내용에 기능 점검 표식이 있어요."], ["기능 점검 응답입니다. 고객 문의나 실적으로 집계하지 않습니다.", "기능 점검 응답이라 고객 문의와 실적에서 빠져요."], ["문의 내용에 개인정보 삭제·열람 또는 동의 철회 표현이 있습니다. 운영자가 원문을 확인해야 합니다.", "문의 내용에 개인정보 삭제 · 열람이나 동의 철회 표현이 있어요. 원문을 직접 읽어 봐야 해요."], ["원문의 요청 범위와 본인 확인 방법을 검토해 주세요. 자동 삭제·외부 답변은 수행하지 않습니다.", "원문에서 요청 범위와 본인 확인 방법을 보고 답을 정해요. 자동으로 지우거나 답하지 않아요."], ["등록된 문의 유형과 일치하지 않습니다. 운영자의 확인이 필요합니다.", "등록된 문의 유형과 맞지 않아요. 직접 읽고 분류해야 해요."], ["문의 원문과 유형을 확인한 뒤 답변을 작성해 주세요.", "원문과 고른 유형을 읽고 초안을 써요."]]);
+export function websiteInquiryClassificationView(classification){
+  if(!classification||typeof classification!=='object')return classification;
+  const selected=/^응답자가 「(.+)」를 직접 선택했습니다\.$/.exec(classification.reason||'');
+  return {...classification,reason:selected?'문의 양식에서 「'+selected[1]+'」 유형을 직접 골랐어요.':CLASSIFICATION_COPY_20261021.get(classification.reason)??classification.reason,nextAction:CLASSIFICATION_COPY_20261021.get(classification.nextAction)??classification.nextAction};
 }
 const sourceHref=id=>'/?tab=workroom&section=tools&tool=inquiries&inquiryId='+encodeURIComponent(id);
 const taskHref=(room,id)=>'/?tab=messenger&panel=tasks&channelId='+encodeURIComponent(room)+'&messageId='+encodeURIComponent(id);
@@ -47,7 +54,7 @@ export function createWebsiteInquiryService({store,reader,tasks,origin='',clock=
   function current(user,context={}){
     context.signal?.throwIfAborted();const authorized=context.authorize?.(),live=store.get('users',user?.id);
     if(!live?.active||authorized&&authorized.id!==live.id)throw fail('INQUIRY_AUTH_REQUIRED','먼저 로그인해 주세요.',401);
-    if(live.role!=='admin')throw fail('INQUIRY_FORBIDDEN','홈페이지 문의는 회사 관리자만 확인할 수 있습니다.',403);
+    if(live.role!=='admin')throw fail('INQUIRY_FORBIDDEN','홈페이지 문의는 회사 관리자만 볼 수 있어요.',403);
     return live;
   }
   const config=()=>store.get('settings',CONFIG)||{enabled:false,actorId:null,intervalMinutes:5,revision:0};
@@ -59,12 +66,12 @@ export function createWebsiteInquiryService({store,reader,tasks,origin='',clock=
     user=current(user);
     const room=(synchronous(tasks.options(user))?.channels||[]).find(row=>row.kind==='self'&&row.companyUserIds?.length===1&&row.companyUserIds[0]===user.id);
     const person=room?.taskAssignees?.find(row=>row.companyUserId===user.id);
-    if(!room||!person)throw fail('INQUIRY_TASK_TARGET','관리자의 나에게 대화방을 확인하지 못했습니다.',409);
+    if(!room||!person)throw fail('INQUIRY_TASK_TARGET','할 일을 받을 「나에게」 대화방을 찾지 못했어요. 이 관리자 계정이 메신저 계정과 이어져 있는지 봐 주세요.',409);
     return {roomId:room.id,taskUserId:person.id};
   }
   function snapshot(row){
     const data=store.decrypt(row.payload);
-    return {id:row.id,revision:row.revision,...data,status:row.status,classification:row.classification,replyDraft:row.replyDraft,draftEdited:row.draftEdited===true,
+    return {id:row.id,revision:row.revision,...data,status:row.status,classification:websiteInquiryClassificationView(row.classification),replyDraft:row.replyDraft,draftEdited:row.draftEdited===true,
       importedAt:row.importedAt,updatedAt:row.updatedAt,sourceHref:sourceHref(row.id),task:row.task?.state==='linked'?{state:'linked',href:taskHref(row.task.roomId,row.task.messageId),id:row.task.taskId}:row.task?{state:row.task.state}:null};
   }
   function workspace(user,context={}){
@@ -74,7 +81,7 @@ export function createWebsiteInquiryService({store,reader,tasks,origin='',clock=
     return {settings,connection:{configured:reader.configured?.()===true,formId:WEBSITE_INQUIRY_FORM_ID,adminUrl:'https://docs.google.com/forms/d/'+WEBSITE_INQUIRY_FORM_ID+'/edit#responses'},
       run,items:rows.map(snapshot),draftOnly:true,categories:CATEGORIES.map(row=>({id:row.id,label:row.label})),canConfigure:true};
   }
-  function get(user,id,context={}){current(user,context);const row=store.get(ROWS,id);if(!row)throw fail('INQUIRY_NOT_FOUND','문의 기록을 찾을 수 없습니다.',404);return snapshot(row);}
+  function get(user,id,context={}){current(user,context);const row=store.get(ROWS,id);if(!row)throw fail('INQUIRY_NOT_FOUND','문의 기록을 찾지 못했어요. 새로 읽어 주세요.',404);return snapshot(row);}
   async function verify(user,context={}){
     current(user,context);const result=await reader.verify({signal:context.signal});current(user,context);
     store.put('settings',STATE,{...state(),connectionVerifiedAt:result.verifiedAt,status:config().enabled?'ready':'paused',errorCode:null,error:null});
@@ -82,19 +89,19 @@ export function createWebsiteInquiryService({store,reader,tasks,origin='',clock=
   }
   async function configure(user,input,context={}){
     user=current(user,context);
-    if(!input||Object.keys(input).some(key=>!['enabled','revision'].includes(key))||typeof input.enabled!=='boolean'||input.revision!==config().revision)throw fail('INQUIRY_CONFIG_CHANGED','현재 설정을 새로 불러와 주세요.',409);
+    if(!input||Object.keys(input).some(key=>!['enabled','revision'].includes(key))||typeof input.enabled!=='boolean'||input.revision!==config().revision)throw fail('INQUIRY_CONFIG_CHANGED','그사이 설정이 바뀌었어요. 새로 읽어 주세요.',409);
     const previous=config();
-    if(input.enabled){personalTarget(user);await reader.verify({signal:context.signal});current(user,context);if(config().revision!==previous.revision)throw fail('INQUIRY_CONFIG_CHANGED','설정이 변경되었습니다.',409);}
+    if(input.enabled){personalTarget(user);await reader.verify({signal:context.signal});current(user,context);if(config().revision!==previous.revision)throw fail('INQUIRY_CONFIG_CHANGED','그사이 설정이 바뀌었어요. 새로 읽어 주세요.',409);}
     const next={enabled:input.enabled,actorId:user.id,intervalMinutes:5,revision:previous.revision+1,updatedAt:now()};
     store.put('settings',CONFIG,next);store.put('settings',STATE,{...state(),status:next.enabled?'ready':'paused',nextCheckAt:next.enabled?now():null,errorCode:null,error:null});
     return {settings:next};
   }
   function update(user,id,input,context={}){
     current(user,context);const row=store.get(ROWS,id);
-    if(!row)throw fail('INQUIRY_NOT_FOUND','문의 기록을 찾을 수 없습니다.',404);
-    if(!input||Object.keys(input).some(key=>!['revision','status','replyDraft'].includes(key))||input.revision!==row.revision)throw fail('INQUIRY_REVISION','문의가 바뀌었습니다. 다시 불러와 주세요.',409);
-    if(input.status!==undefined&&!STATES.has(input.status))throw fail('INQUIRY_STATUS','문의 처리 상태를 확인해 주세요.');
-    if(input.replyDraft!==undefined&&(typeof input.replyDraft!=='string'||input.replyDraft.length>6000||/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(input.replyDraft)))throw fail('INQUIRY_INVALID','답변 초안을 확인해 주세요.');
+    if(!row)throw fail('INQUIRY_NOT_FOUND','문의 기록을 찾지 못했어요. 새로 읽어 주세요.',404);
+    if(!input||Object.keys(input).some(key=>!['revision','status','replyDraft'].includes(key))||input.revision!==row.revision)throw fail('INQUIRY_REVISION','그사이 문의가 바뀌었어요. 새로 읽어 주세요.',409);
+    if(input.status!==undefined&&!STATES.has(input.status))throw fail('INQUIRY_STATUS','처리 상태 값이 맞지 않아요. 상태를 다시 골라 주세요.');
+    if(input.replyDraft!==undefined&&(typeof input.replyDraft!=='string'||input.replyDraft.length>6000||/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(input.replyDraft)))throw fail('INQUIRY_INVALID','답변 초안이 너무 길거나 쓸 수 없는 글자가 있어요. 6,000자 안으로 줄여 주세요.');
     const draft=input.replyDraft===undefined?row.replyDraft:input.replyDraft.trim();
     const next={...row,status:input.status||row.status,replyDraft:draft,draftEdited:row.draftEdited||input.replyDraft!==undefined,revision:row.revision+1,updatedAt:now()};
     store.put(ROWS,id,next);return {item:snapshot(next)};
@@ -118,7 +125,7 @@ export function createWebsiteInquiryService({store,reader,tasks,origin='',clock=
       task={state:'pending',requestId:randomUUID(),actorId:user.id,...target,createdAt:now()};
       row={...row,task};store.put(ROWS,row.id,row);
     }
-    if(task.actorId!==user.id)throw fail('INQUIRY_TASK_ACTOR','기존 접수 업무를 생성한 관리자 계정을 확인해 주세요.',409);
+    if(task.actorId!==user.id)throw fail('INQUIRY_TASK_ACTOR','다른 관리자가 이 문의의 할 일을 만들던 중이에요. 그 관리자 계정으로 다시 모아 주세요.',409);
     let result;
     try{result=synchronous(tasks.find(user,{requestId:task.requestId}));}
     catch(error){
@@ -128,25 +135,25 @@ export function createWebsiteInquiryService({store,reader,tasks,origin='',clock=
     }
     if(!result){
       const target=personalTarget(user);
-      if(target.roomId!==task.roomId||target.taskUserId!==task.taskUserId)throw fail('INQUIRY_TASK_TARGET','문의 후속 업무의 권한이 변경되었습니다.',409);
+      if(target.roomId!==task.roomId||target.taskUserId!==task.taskUserId)throw fail('INQUIRY_TASK_TARGET','문의 후속 할 일을 받을 대화방이 바뀌었어요. 새로 읽은 뒤 다시 모아 주세요.',409);
       // No customer text/email or model-generated claims are copied to chat.
       result=synchronous(tasks.create(user,{requestId:task.requestId,channelId:task.roomId,title:'홈페이지 문의 답변 검토',
-        body:'문의 원문과 분류 근거를 확인하고 답변 초안을 검토해 주세요.\n외부 발송은 담당자가 별도로 진행합니다.\n\n문의 접수함: '+sourceOrigin+sourceHref(row.id),
+        body:'문의 원문과 분류 근거를 읽고 답변 초안을 다듬어요.\n고객에게 보내는 일은 담당자가 따로 해요.\n\n문의 접수함: '+sourceOrigin+sourceHref(row.id),
         assigneeId:task.taskUserId,reviewerId:null,dueDate:null}));
     }
     if(!result?.task?.id||!result.message?.id||result.task.channelId!==task.roomId||String(result.task.messageId)!==String(result.message.id))
-      throw fail('INQUIRY_TASK_RESULT','후속 업무 등록 결과를 확인하지 못했습니다.',502);
+      throw fail('INQUIRY_TASK_RESULT','후속 할 일이 만들어졌는지 확인하지 못했어요. 다음 수집 때 다시 확인해요.',502);
     const latest=store.get(ROWS,row.id);
     store.put(ROWS,row.id,{...latest,task:{...task,state:'linked',taskId:result.task.id,messageId:String(result.message.id),linkedAt:now()}});
   }
   async function scan({force=false,user,context={},signal}={}){
-    if(stopped)throw fail('INQUIRY_STOPPED','문의 수집기가 종료 중입니다.',503);
+    if(stopped)throw fail('INQUIRY_STOPPED','문의 수집을 멈추는 중이에요. 잠시 뒤 다시 해 주세요.',503);
     if(user)current(user,context);
     const initial=config(),before=state(),at=now();
     if(!initial.enabled)return {skipped:true,reason:'paused'};
     if(!force&&before.nextCheckAt&&Date.parse(before.nextCheckAt)>Date.parse(at))return {skipped:true,reason:'not-due'};
     const binding=hash(initial),actor=store.get('users',initial.actorId);
-    const check=()=>{if(stopped)throw fail('INQUIRY_STOPPED','문의 수집기가 종료 중입니다.',503);signal?.throwIfAborted();context.signal?.throwIfAborted();if(hash(config())!==binding)throw fail('INQUIRY_CONFIG_CHANGED','문의 수집 설정이 변경되어 중단했습니다.',409);current(actor);if(user)current(user,context);};
+    const check=()=>{if(stopped)throw fail('INQUIRY_STOPPED','문의 수집을 멈추는 중이에요. 잠시 뒤 다시 해 주세요.',503);signal?.throwIfAborted();context.signal?.throwIfAborted();if(hash(config())!==binding)throw fail('INQUIRY_CONFIG_CHANGED','수집하는 동안 설정이 바뀌어 멈췄어요. 새로 읽은 뒤 다시 모아 주세요.',409);current(actor);if(user)current(user,context);};
     try{
       check();personalTarget(actor);
       store.put('settings',STATE,{...before,status:'running',lastAttemptAt:at,errorCode:null,error:null});
@@ -156,7 +163,7 @@ export function createWebsiteInquiryService({store,reader,tasks,origin='',clock=
       let pages=0,questionMap;
       do{
         const page=await reader.readPage({after:cursor.after,pageToken:cursor.pageToken,questionMap,signal:signal||context.signal});check();questionMap=page.questionMap;
-        if(!Array.isArray(page.items))throw fail('INQUIRY_PROVIDER_INVALID','문의 수집 결과 형식을 확인할 수 없습니다.',502);
+        if(!Array.isArray(page.items))throw fail('INQUIRY_PROVIDER_INVALID','Google에서 받은 문의 형식이 맞지 않아 멈췄어요. 잠시 뒤 다시 모아 주세요.',502);
         // Validate an entire page before committing any of its customer records.
         const normalized=page.items.map(normalize);
         for(const raw of normalized){check();const row=importOne(raw);linkTask(row,actor);if(!cursor.maximum||Date.parse(raw.submittedAt)>Date.parse(cursor.maximum))cursor.maximum=raw.submittedAt;}
@@ -176,7 +183,7 @@ export function createWebsiteInquiryService({store,reader,tasks,origin='',clock=
       // Keep the previous successful cursor. Provider errors never echo raw
       // responses, customer text or credential diagnostics into status.
       if(hash(config())===binding)store.put('settings',STATE,{...state(),status:'failed',errorCode:/^[A-Z_]+$/.test(error.code||'')?error.code:'INQUIRY_SYNC_FAILED',
-        error:'문의 수집 또는 후속 업무 연결을 완료하지 못했습니다. 연결·권한을 확인해 주세요.',nextCheckAt:new Date(Date.parse(now())+300000).toISOString()});
+        error:'문의 수집이나 후속 할 일 연결을 끝내지 못했어요. 「연결 확인」으로 Google 연결과 권한을 봐 주세요.',nextCheckAt:new Date(Date.parse(now())+300000).toISOString()});
       throw error;
     }
   }

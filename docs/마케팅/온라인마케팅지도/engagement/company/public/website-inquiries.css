@@ -1,1 +1,40 @@
-.wi-panel{display:grid;gap:20px}.wi-connection,.wi-detail,.wi-list{border:1px solid var(--line,#deddd9);border-radius:16px;background:var(--panel,#fff);padding:20px;min-width:0}.wi-connection p{margin:8px 0}.wi-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.wi-note{font-size:.88rem;line-height:1.65;color:var(--muted,#64645f)}.wi-workspace{display:grid;grid-template-columns:minmax(220px,30%) minmax(0,1fr);gap:18px;align-items:start}.wi-list{display:grid;gap:8px;max-height:720px;overflow:auto}.wi-list-item{display:grid;gap:7px;width:100%;padding:14px;border:1px solid transparent;border-radius:12px;text-align:left;background:transparent;color:inherit;font:inherit;cursor:pointer;overflow-wrap:anywhere}.wi-list-item.selected,.wi-list-item:hover{border-color:var(--accent,#bf5c44);background:var(--soft,#f8f4f0)}.wi-list-item span,.wi-list-item small,.wi-list-item em{font-size:.8rem}.wi-detail-head{display:flex;justify-content:space-between;gap:12px;align-items:center}.wi-detail h3{margin:0}.wi-detail dl{display:grid;grid-template-columns:130px minmax(0,1fr);gap:8px;margin:20px 0}.wi-detail dd{margin:0;overflow-wrap:anywhere}.wi-detail dt{color:var(--muted,#64645f)}.wi-original{font:inherit;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere;border-radius:12px;padding:16px;background:var(--soft,#f8f4f0);max-height:440px;overflow:auto}.wi-reason{padding:15px;border-left:3px solid var(--accent,#bf5c44);margin:18px 0}.wi-reason p{line-height:1.65;margin:8px 0}.wi-detail form{margin-top:24px}.wi-detail fieldset{border:0;margin:0;padding:0;display:grid;gap:12px;min-width:0}.wi-detail label{display:grid;gap:8px}.wi-detail textarea,.wi-detail select{width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--line,#deddd9);border-radius:10px;font:inherit;color:inherit;background:var(--panel,#fff)}.wi-detail textarea{resize:vertical;min-height:170px}.wi-panel button:focus-visible,.wi-panel a:focus-visible,.wi-panel textarea:focus-visible,.wi-panel select:focus-visible{outline:3px solid var(--accent,#bf5c44);outline-offset:3px}@media(max-width:760px){.wi-workspace{grid-template-columns:1fr}.wi-list{max-height:260px}.wi-detail dl{grid-template-columns:1fr}.wi-detail dt:not(:first-child){margin-top:9px}.wi-detail-head{align-items:start}.wi-connection,.wi-detail,.wi-list{padding:16px}}
+/* 문의 접수(website-inquiries.js) — 제작 도구 13판 A 「목록 + 상세」(2026-10-21). 공통 어휘는 maker-tools.css, 여기는 이 탭에만 쓰는 것.
+   signal.css보다 앞에 읽히므로 선택자는 :root .synk-workspace .mt 아래로 둔다. 인라인 style 없이 클래스 · data 속성만 쓴다. */
+:root .synk-workspace .mt .wi-sync{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 20px;margin:-6px 0 18px}
+:root .synk-workspace .mt .wi-sync .mt-notice{flex:1 1 380px;min-width:0;margin:0}
+:root .synk-workspace .mt .wi-sync .mt-notice strong{font-weight:var(--w-strong);color:var(--mt-ink-2)}
+:root .synk-workspace .mt .wi-sync .mt-notice p{margin-top:3px;font-weight:var(--w-body);color:var(--mt-ink-3)}
+:root .synk-workspace .mt .wi-sync .mt-actions{flex:none}
+/* 수집이 멈추면 줄을 판으로 키운다(평소에는 한 줄로 조용히). */
+:root .synk-workspace .mt .wi-sync[data-tone=alert]{padding:12px 14px;border-radius:16px;background:var(--mt-coral-wash)}
+:root .synk-workspace .mt .wi-sync[data-tone=alert] .mt-notice strong{color:var(--mt-coral-ink)}
+:root .synk-workspace .mt .wi-foot{margin-top:14px}
+:root .synk-workspace .mt .wi-item .mt-item-text{color:var(--mt-ink-3)}
+:root .synk-workspace .mt .wi-item[aria-current=true] .mt-item-text{color:rgba(255,255,255,.74)}
+/* 답변 초안: 메일이 아니라 초안이라는 띠를 위에 두고 옅은 청금석 판에 담는다. */
+:root .synk-workspace .mt .wi-draft{padding:4px;border-radius:16px;background:var(--mt-lapis-wash)}
+:root .synk-workspace .mt .wi-draft-bar{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 12px;margin:0;padding:7px 10px 8px;font-size:13px;font-weight:var(--w-label);line-height:1.4;color:var(--mt-lapis-deep)}
+:root .synk-workspace .mt .wi-draft-bar span:empty{display:none}
+:root .synk-workspace .mt .wi-draft .mt-field textarea{border-color:transparent;border-radius:12px}
+:root .synk-workspace .mt .wi-facts .wi-email{font-size:15px;line-height:1.4;overflow-wrap:anywhere}
+:root .synk-workspace .mt .wi-original{margin:0;max-height:440px;overflow:auto;padding:14px 16px;border-radius:14px;background:var(--mt-surface);font:var(--w-body) 14.5px/1.75 var(--mt-sans);color:var(--mt-ink);white-space:pre-wrap;overflow-wrap:anywhere;word-break:keep-all}
+:root .synk-workspace .mt .wi-hint{margin:0 0 10px;color:var(--mt-ink-2)}
+:root .synk-workspace .mt .wi-sheet .mt-field textarea{min-height:200px}
+:root .synk-workspace .mt .wi-sheet .mt-field+.mt-note,:root .synk-workspace .mt .wi-status-row+.mt-note{margin-top:8px}
+:root .synk-workspace .mt .wi-status-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:16px 0 6px}
+:root .synk-workspace .mt .wi-status-label{font-size:13px;font-weight:var(--w-label);color:var(--mt-ink-2)}
+:root .synk-workspace .mt .wi-status{display:inline-flex;flex-wrap:wrap;gap:2px;max-width:100%;padding:3px;border-radius:19px;background:var(--mt-surface-2)}
+:root .synk-workspace .mt .wi-status label{position:relative;display:inline-flex;align-items:center;min-height:32px;padding:0 13px;border-radius:999px;font:var(--w-label) 13.5px/1 var(--mt-sans);color:var(--mt-ink-2);white-space:nowrap;cursor:pointer}
+:root .synk-workspace .mt .wi-status input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+:root .synk-workspace .mt .wi-status label:has(input:checked){background:var(--mt-paper);color:var(--mt-ink);font-weight:var(--w-strong);box-shadow:0 1px 2px rgba(8,9,12,.12)}
+:root .synk-workspace .mt .wi-status label:focus-within{outline:2px solid var(--mt-lapis);outline-offset:1px}
+:root .synk-workspace .mt .wi-status label:has(input:disabled){opacity:.55;cursor:not-allowed}
+:root .synk-workspace .mt .wi-status input:disabled{cursor:not-allowed}
+:root .synk-workspace .mt .wi-fields:disabled .mt-sec>summary{cursor:default}
+:root .synk-workspace .mt .wi-sheet .mt-sec[data-wi-fold=message][open]>summary .mt-sum{display:none}
+@container mt (max-width:700px){
+  :root .synk-workspace .mt .wi-sync{margin:-4px 0 16px}
+  :root .synk-workspace .mt .wi-sync .mt-actions{width:100%}
+  :root .synk-workspace .mt .wi-status{display:flex;width:100%}
+  :root .synk-workspace .mt .wi-status label{flex:1 1 auto;justify-content:center;padding:0 8px}
+}
