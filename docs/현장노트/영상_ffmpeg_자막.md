@@ -328,6 +328,12 @@
 - 고침: 소리를 다시 굽지 않는다. 다만 그 동음이 답을 가르는 문항(수·「새/세」가 정답 근거)이면 다른 낱말로 바꾼다 — 이번 줄은 뒤의 「그 방법」과 이어져 뜻이 하나라 그대로 뒀다.
 - 다시 확인: 공용 작업본 `output/topik-review/existing-fix-tools/phoneband_check.py`를 `MODELS=small,medium,large-v3,large-v3-turbo python -I -X utf8 phoneband_check.py <목록.json>`으로 돌려 큰 두 모델이 1.000이고, 작은 모델의 차이가 그 낱말 하나뿐이다(원음·300~3400Hz 폰 대역).
 
+### Typecast 도움말은 공모전 수상작에 「Pro 요금제」가 필요하다고 하지만, 그건 스튜디오 요금제 이야기다 (2026-10-21 Claude)
+- 증상: 공모전 출품 영상(내레이션 Typecast 「하나」)의 권리를 볼 때, Typecast 도움말 「Can I use the service for free for contests?」가 수상작을 주최 측 유튜브·웹에 출처 표기 없이 쓰려면 Pro 요금제로 다시 받아야 한다고 적어 출품을 막는 것처럼 보였다.
+- 원인: 그 도움말은 스튜디오(웹) 요금제 기준이다. 우리 내레이션은 API로 굽고, 요금제가 따로다 — 우리 키로 공식 `GET https://api.typecast.ai/v1/users/me/subscription`을 부르면 `plan: "lite"`(유료 API 라이트, 월 200,000 크레딧)다.
+- 고침: API 이용 약관(help.typecast.ai 「타입캐스트 API 서비스 이용 약관」)을 기준으로 본다 — 「이용자는 적법한 상업적 목적을 위해 API를 사용할 수 있으며」, 「이용자는 이용자 콘텐츠에 대한 모든 권리, 소유권 및 이익을 보유합니다」, 상업 이용 금지·출처 표기 의무는 「무료 플랜」에만 있다(API 요금표 typecast.ai/kr/pricing/api/ 도 같은 문구). 그래서 API로 구운 내레이션은 출처 표기 없이 공모전·주최 측 홍보에 쓸 수 있다. 키는 출력하지 말고 응답의 `plan`·`credits`만 본다.
+- 다시 확인: 같은 요청의 `plan`이 `free`가 아닌지, 약관의 「무료 플랜의 이용 제한 및 출처 표기」 조항이 그대로인지(약관이 바뀌면 이 항목을 고친다).
+
 ## 렌더 장비
 
 ### 새 노트북(RTX 5090 24GB)은 블렌더 한 장이 ZeroGPU보다 빠르다
