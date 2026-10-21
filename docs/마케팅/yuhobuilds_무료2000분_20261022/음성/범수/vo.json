@@ -1,0 +1,120 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1017,
+  "lufs": -17
+ },
+ "made": "2026-10-21T22:51:08.975Z",
+ "lines": [
+  {
+   "id": "h1",
+   "text": "깃허브 무료 이천 분이 바닥나자, 자동 검사가 이 초 만에 꺼졌어요.",
+   "dur": 3.342,
+   "syllablesPerSec": 7.78,
+   "src": "h1.wav",
+   "key": "a5643b6c3fc220c5b25a229841bf5e8b",
+   "words": 11
+  },
+  {
+   "id": "h2",
+   "text": "검사를 공짜로 다시 돌리는 길 둘이랑, 남은 시간 보는 곳까지 드릴게요.",
+   "dur": 3.993,
+   "syllablesPerSec": 7.01,
+   "src": "h2.wav",
+   "key": "055b17d91327cd4725748d24d0be378e",
+   "words": 11
+  },
+  {
+   "id": "b1",
+   "text": "빨간불인데, 실패한 단계가 하나도 없었어요. 시작도 못 한 거예요.",
+   "dur": 3.836,
+   "syllablesPerSec": 6.78,
+   "src": "b1.wav",
+   "key": "e359b97e0c9591b0d99e5b62e973aded",
+   "words": 9
+  },
+  {
+   "id": "b2",
+   "text": "메시지는 결제가 실패했거나 한도를 올리라는데, 저는 결제 수단도 안 넣었거든요. 무료 분이 바닥난 거였어요.",
+   "dur": 5.822,
+   "syllablesPerSec": 7.56,
+   "src": "b2.wav",
+   "key": "32e4f521057961b4cb937177a24cb710",
+   "words": 14
+  },
+  {
+   "id": "b3",
+   "text": "하루 넘게, 열여덟 번이 다 그랬어요. 다시 돌려 보니 빨간 시험이 열여섯 개였어요.",
+   "dur": 4.855,
+   "syllablesPerSec": 6.59,
+   "src": "b3.wav",
+   "key": "ee0dabfd7026850543566a5efacff2e3",
+   "words": 13
+  },
+  {
+   "id": "b4",
+   "text": "빨간불이라고 다 코드 탓은 아니더라고요. 이 초 만에 끝났다면, 한도부터 보세요.",
+   "dur": 4.027,
+   "syllablesPerSec": 7.95,
+   "src": "b4.wav",
+   "key": "5794d04ad9c2d7ce30a74c206b7ea123",
+   "words": 11
+  },
+  {
+   "id": "f1",
+   "text": "공짜로 다시 돌리는 첫째 길. 감출 게 없는 저장소라면 공개로. 공개 저장소의 검사는 무료예요.",
+   "dur": 5.154,
+   "syllablesPerSec": 7.18,
+   "src": "f1.wav",
+   "key": "acc6f59a4390b94608b5025cdd9ddec6",
+   "words": 14
+  },
+  {
+   "id": "f2",
+   "text": "둘째 길. 비공개로 둬야 하면 내 피씨를 검사 실행기로. 이건 예산이 영 달러여도 돌아요.",
+   "dur": 5.357,
+   "syllablesPerSec": 6.35,
+   "src": "f2.wav",
+   "key": "d2b2748bc9800bbf38bed2e6351747cc",
+   "words": 14
+  },
+  {
+   "id": "c0",
+   "text": "남은 시간은 깃허브 설정의 빌링 화면에서 볼 수 있어요.",
+   "dur": 2.698,
+   "syllablesPerSec": 8.15,
+   "src": "c0.wav",
+   "key": "cb894e9b67942946b89866723edce45e",
+   "words": 9
+  },
+  {
+   "id": "cta",
+   "text": "에이아이로 코딩하는 친구가 있다면, 보내 주세요.",
+   "dur": 2.44,
+   "syllablesPerSec": 8.2,
+   "src": "cta.wav",
+   "key": "16d995bafdca3fe5c4e7f310465ade46",
+   "words": 6
+  },
+  {
+   "id": "fo",
+   "text": "팔로우하면 다음 편도 보여 드릴게요.",
+   "dur": 2.093,
+   "syllablesPerSec": 7.17,
+   "src": "fo.wav",
+   "key": "e5e603a6e35f2a6e66831f682daa78bf",
+   "words": 5
+  }
+ ]
+}

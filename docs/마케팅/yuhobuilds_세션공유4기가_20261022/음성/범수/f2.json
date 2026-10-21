@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "f2",
+ "text": "둘, 앱이 로그아웃하면 그때 바로 맞추기.",
+ "dur": 2.522,
+ "words": [
+  {
+   "text": "둘,",
+   "start": 0.06,
+   "end": 0.251
+  },
+  {
+   "text": "앱이",
+   "start": 0.805,
+   "end": 0.958
+  },
+  {
+   "text": "로그아웃하면",
+   "start": 1.015,
+   "end": 1.608
+  },
+  {
+   "text": "그때",
+   "start": 1.665,
+   "end": 1.855
+  },
+  {
+   "text": "바로",
+   "start": 1.913,
+   "end": 2.028
+  },
+  {
+   "text": "맞추기.",
+   "start": 2.085,
+   "end": 2.522
+  }
+ ],
+ "source": {
+  "key": "0ede495ea988296b97519f046dc68d8d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

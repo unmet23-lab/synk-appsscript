@@ -1,0 +1,72 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "c0",
+ "text": "남은 시간은 깃허브 설정의 빌링 화면에서 볼 수 있어요.",
+ "dur": 2.698,
+ "words": [
+  {
+   "text": "남은",
+   "start": 0.02,
+   "end": 0.222
+  },
+  {
+   "text": "시간은",
+   "start": 0.257,
+   "end": 0.567
+  },
+  {
+   "text": "깃허브",
+   "start": 0.686,
+   "end": 0.97
+  },
+  {
+   "text": "설정의",
+   "start": 1.006,
+   "end": 1.327
+  },
+  {
+   "text": "빌링",
+   "start": 1.387,
+   "end": 1.624
+  },
+  {
+   "text": "화면에서",
+   "start": 1.66,
+   "end": 1.957
+  },
+  {
+   "text": "볼",
+   "start": 2.005,
+   "end": 2.099
+  },
+  {
+   "text": "수",
+   "start": 2.147,
+   "end": 2.207
+  },
+  {
+   "text": "있어요.",
+   "start": 2.242,
+   "end": 2.693
+  }
+ ],
+ "source": {
+  "key": "cb894e9b67942946b89866723edce45e",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

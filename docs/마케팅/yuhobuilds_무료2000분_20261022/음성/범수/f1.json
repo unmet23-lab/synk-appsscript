@@ -1,0 +1,97 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "f1",
+ "text": "공짜로 다시 돌리는 첫째 길. 감출 게 없는 저장소라면 공개로. 공개 저장소의 검사는 무료예요.",
+ "dur": 5.154,
+ "words": [
+  {
+   "text": "공짜로",
+   "start": 0.02,
+   "end": 0.347
+  },
+  {
+   "text": "다시",
+   "start": 0.388,
+   "end": 0.55
+  },
+  {
+   "text": "돌리는",
+   "start": 0.591,
+   "end": 0.864
+  },
+  {
+   "text": "첫째",
+   "start": 0.905,
+   "end": 1.096
+  },
+  {
+   "text": "길.",
+   "start": 1.177,
+   "end": 1.314
+  },
+  {
+   "text": "감출",
+   "start": 1.695,
+   "end": 1.941
+  },
+  {
+   "text": "게",
+   "start": 1.981,
+   "end": 2.036
+  },
+  {
+   "text": "없는",
+   "start": 2.09,
+   "end": 2.24
+  },
+  {
+   "text": "저장소라면",
+   "start": 2.281,
+   "end": 2.799
+  },
+  {
+   "text": "공개로.",
+   "start": 2.84,
+   "end": 3.194
+  },
+  {
+   "text": "공개",
+   "start": 3.711,
+   "end": 3.916
+  },
+  {
+   "text": "저장소의",
+   "start": 3.957,
+   "end": 4.297
+  },
+  {
+   "text": "검사는",
+   "start": 4.338,
+   "end": 4.665
+  },
+  {
+   "text": "무료예요.",
+   "start": 4.706,
+   "end": 5.154
+  }
+ ],
+ "source": {
+  "key": "acc6f59a4390b94608b5025cdd9ddec6",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

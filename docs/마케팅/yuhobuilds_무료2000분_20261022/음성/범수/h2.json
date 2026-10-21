@@ -1,0 +1,82 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h2",
+ "text": "검사를 공짜로 다시 돌리는 길 둘이랑, 남은 시간 보는 곳까지 드릴게요.",
+ "dur": 3.993,
+ "words": [
+  {
+   "text": "검사를",
+   "start": 0.05,
+   "end": 0.402
+  },
+  {
+   "text": "공짜로",
+   "start": 0.446,
+   "end": 0.799
+  },
+  {
+   "text": "다시",
+   "start": 0.858,
+   "end": 1.048
+  },
+  {
+   "text": "돌리는",
+   "start": 1.107,
+   "end": 1.444
+  },
+  {
+   "text": "길",
+   "start": 1.488,
+   "end": 1.62
+  },
+  {
+   "text": "둘이랑,",
+   "start": 1.664,
+   "end": 2.046
+  },
+  {
+   "text": "남은",
+   "start": 2.486,
+   "end": 2.692
+  },
+  {
+   "text": "시간",
+   "start": 2.736,
+   "end": 2.912
+  },
+  {
+   "text": "보는",
+   "start": 2.957,
+   "end": 3.147
+  },
+  {
+   "text": "곳까지",
+   "start": 3.191,
+   "end": 3.455
+  },
+  {
+   "text": "드릴게요.",
+   "start": 3.5,
+   "end": 3.993
+  }
+ ],
+ "source": {
+  "key": "055b17d91327cd4725748d24d0be378e",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

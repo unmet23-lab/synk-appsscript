@@ -1,0 +1,67 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "q",
+ "text": "여러분 피씨의 일 등은 뭐였나요? 댓글로 알려 주세요.",
+ "dur": 2.669,
+ "words": [
+  {
+   "text": "여러분",
+   "start": 0.02,
+   "end": 0.277
+  },
+  {
+   "text": "피씨의",
+   "start": 0.315,
+   "end": 0.611
+  },
+  {
+   "text": "일",
+   "start": 0.663,
+   "end": 0.714
+  },
+  {
+   "text": "등은",
+   "start": 0.778,
+   "end": 0.946
+  },
+  {
+   "text": "뭐였나요?",
+   "start": 0.984,
+   "end": 1.395
+  },
+  {
+   "text": "댓글로",
+   "start": 1.794,
+   "end": 2.064
+  },
+  {
+   "text": "알려",
+   "start": 2.102,
+   "end": 2.23
+  },
+  {
+   "text": "주세요.",
+   "start": 2.27,
+   "end": 2.669
+  }
+ ],
+ "source": {
+  "key": "6f9cdae0280ae2d098d4bf80cd934e25",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

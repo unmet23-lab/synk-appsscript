@@ -1,0 +1,82 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h1",
+ "text": "깃허브 무료 이천 분이 바닥나자, 자동 검사가 이 초 만에 꺼졌어요.",
+ "dur": 3.342,
+ "words": [
+  {
+   "text": "깃허브",
+   "start": 0.02,
+   "end": 0.306
+  },
+  {
+   "text": "무료",
+   "start": 0.36,
+   "end": 0.523
+  },
+  {
+   "text": "이천",
+   "start": 0.578,
+   "end": 0.741
+  },
+  {
+   "text": "분이",
+   "start": 0.795,
+   "end": 0.931
+  },
+  {
+   "text": "바닥나자,",
+   "start": 0.972,
+   "end": 1.422
+  },
+  {
+   "text": "자동",
+   "start": 1.79,
+   "end": 2.021
+  },
+  {
+   "text": "검사가",
+   "start": 2.061,
+   "end": 2.333
+  },
+  {
+   "text": "이",
+   "start": 2.402,
+   "end": 2.415
+  },
+  {
+   "text": "초",
+   "start": 2.484,
+   "end": 2.565
+  },
+  {
+   "text": "만에",
+   "start": 2.619,
+   "end": 2.755
+  },
+  {
+   "text": "꺼졌어요.",
+   "start": 2.796,
+   "end": 3.342
+  }
+ ],
+ "source": {
+  "key": "a5643b6c3fc220c5b25a229841bf5e8b",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

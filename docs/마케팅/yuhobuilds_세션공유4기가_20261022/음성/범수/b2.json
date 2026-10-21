@@ -1,0 +1,87 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b2",
+ "text": "그런데 앱은 대화가 한 번 오갈 때마다, 그 기록을 통째로 다시 써요.",
+ "dur": 3.673,
+ "words": [
+  {
+   "text": "그런데",
+   "start": 0.02,
+   "end": 0.258
+  },
+  {
+   "text": "앱은",
+   "start": 0.329,
+   "end": 0.581
+  },
+  {
+   "text": "대화가",
+   "start": 0.721,
+   "end": 1.03
+  },
+  {
+   "text": "한",
+   "start": 1.071,
+   "end": 1.142
+  },
+  {
+   "text": "번",
+   "start": 1.184,
+   "end": 1.268
+  },
+  {
+   "text": "오갈",
+   "start": 1.324,
+   "end": 1.45
+  },
+  {
+   "text": "때마다,",
+   "start": 1.506,
+   "end": 1.814
+  },
+  {
+   "text": "그",
+   "start": 2.29,
+   "end": 2.347
+  },
+  {
+   "text": "기록을",
+   "start": 2.417,
+   "end": 2.711
+  },
+  {
+   "text": "통째로",
+   "start": 2.753,
+   "end": 3.062
+  },
+  {
+   "text": "다시",
+   "start": 3.104,
+   "end": 3.286
+  },
+  {
+   "text": "써요.",
+   "start": 3.328,
+   "end": 3.673
+  }
+ ],
+ "source": {
+  "key": "dadcfee47533bff8afc7d3d95d4ee31d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

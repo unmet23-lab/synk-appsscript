@@ -1,0 +1,97 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "f2",
+ "text": "둘째 길. 비공개로 둬야 하면 내 피씨를 검사 실행기로. 이건 예산이 영 달러여도 돌아요.",
+ "dur": 5.357,
+ "words": [
+  {
+   "text": "둘째",
+   "start": 0.02,
+   "end": 0.27
+  },
+  {
+   "text": "길.",
+   "start": 0.318,
+   "end": 0.443
+  },
+  {
+   "text": "비공개로",
+   "start": 1.195,
+   "end": 1.571
+  },
+  {
+   "text": "둬야",
+   "start": 1.618,
+   "end": 1.79
+  },
+  {
+   "text": "하면",
+   "start": 1.838,
+   "end": 2.089
+  },
+  {
+   "text": "내",
+   "start": 2.151,
+   "end": 2.23
+  },
+  {
+   "text": "피씨를",
+   "start": 2.292,
+   "end": 2.574
+  },
+  {
+   "text": "검사",
+   "start": 2.621,
+   "end": 2.841
+  },
+  {
+   "text": "실행기로.",
+   "start": 2.888,
+   "end": 3.232
+  },
+  {
+   "text": "이건",
+   "start": 3.592,
+   "end": 3.75
+  },
+  {
+   "text": "예산이",
+   "start": 3.812,
+   "end": 4.094
+  },
+  {
+   "text": "영",
+   "start": 4.157,
+   "end": 4.282
+  },
+  {
+   "text": "달러여도",
+   "start": 4.345,
+   "end": 4.674
+  },
+  {
+   "text": "돌아요.",
+   "start": 4.721,
+   "end": 5.357
+  }
+ ],
+ "source": {
+  "key": "d2b2748bc9800bbf38bed2e6351747cc",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

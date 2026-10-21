@@ -1,0 +1,92 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b3",
+ "text": "하루 넘게, 열여덟 번이 다 그랬어요. 다시 돌려 보니 빨간 시험이 열여섯 개였어요.",
+ "dur": 4.855,
+ "words": [
+  {
+   "text": "하루",
+   "start": 0.02,
+   "end": 0.166
+  },
+  {
+   "text": "넘게,",
+   "start": 0.21,
+   "end": 0.459
+  },
+  {
+   "text": "열여덟",
+   "start": 1.073,
+   "end": 1.41
+  },
+  {
+   "text": "번이",
+   "start": 1.454,
+   "end": 1.571
+  },
+  {
+   "text": "다",
+   "start": 1.615,
+   "end": 1.689
+  },
+  {
+   "text": "그랬어요.",
+   "start": 1.732,
+   "end": 2.084
+  },
+  {
+   "text": "다시",
+   "start": 2.493,
+   "end": 2.699
+  },
+  {
+   "text": "돌려",
+   "start": 2.743,
+   "end": 2.933
+  },
+  {
+   "text": "보니",
+   "start": 2.977,
+   "end": 3.152
+  },
+  {
+   "text": "빨간",
+   "start": 3.372,
+   "end": 3.635
+  },
+  {
+   "text": "시험이",
+   "start": 3.709,
+   "end": 3.929
+  },
+  {
+   "text": "열여섯",
+   "start": 3.972,
+   "end": 4.28
+  },
+  {
+   "text": "개였어요.",
+   "start": 4.324,
+   "end": 4.855
+  }
+ ],
+ "source": {
+  "key": "ee0dabfd7026850543566a5efacff2e3",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}
