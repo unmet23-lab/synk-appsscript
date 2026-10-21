@@ -1,7 +1,7 @@
 {
   "version": "topik-existing-verdicts-1",
   "rubric": "topik-review-r1",
-  "updatedAt": "2026-10-21T06:00:35.236Z",
+  "updatedAt": "2026-10-21T06:32:18.885Z",
   "note": "기존 게임·진단 문항의 AI 2중 검수 판정(허용 목록). verdict \"pass\"만 연습에 낸다. 첫 판은 비어 있다 — 판정이 나오는 대로 채운다.",
   "items": [
     {
@@ -1837,6 +1837,776 @@
       ]
     },
     {
+      "itemKey": "korean-rhythm:t0q0:v1:claim0",
+      "source": "korean-rhythm",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "binary-choice",
+      "familyKey": "korean-rhythm:t0q0:v1",
+      "officialType": null,
+      "reason": "기존 듣기 O/X 게임 문항이다. 정답 O가 분명하고, 1급 낱말로 시간 세부 정보를 묻는다. 해설도 바르다. 통과. | 시간 세부 정보('내일')를 바르게 파악하는지 묻는 자연스러운 초급 O/X 듣기 문항으로 통과.",
+      "hash": "e3935ba2c443dfbf",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-rhythm:t0q1:v1:claim0",
+      "source": "korean-rhythm",
+      "verdict": "fix",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "binary-choice",
+      "familyKey": "korean-rhythm:t0q1:v1",
+      "officialType": null,
+      "reason": "정답(O)이 분명하고 꼴·급·능력·난도 모두 맞아요. 다만 해설이 대본 문장을 되풀이할 뿐 근거를 짚지 않아서, 해설만 고치면 쓸 수 있어요. | 장소 세부 정보('카페')와 현재 진행 상태를 확인하는 초급 O/X 듣기 문항으로 통과. | I solved the item myself and got O (index 0), which matches the answer key. \"카페에서 … 기다리고 있어요\" clearly means the speaker is at the café now, so no other answer is arguable. The game format, level, skill (ko.listening.detail) and difficulty 1 all fit. Reviewer B is right that the item itself has no defect. However, explanation.ko only copies the script sentence. It never says that this sentence is why O is correct. That falls short of criterion 6, which asks the e",
+      "hash": "0e04a6eb8ce35fb7",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-rhythm:t0q2:v1:claim0",
+      "source": "korean-rhythm",
+      "verdict": "pass",
+      "skillId": "ko.listening.negation",
+      "difficulty": 1,
+      "responseFormat": "binary-choice",
+      "familyKey": "korean-rhythm:t0q2:v1",
+      "officialType": null,
+      "reason": "「-지만」 뒤의 바뀐 날씨를 듣고 O를 고르는 1급 O/X 문항이다. 정답이 유일하고 능력·난도가 맞으며 해설도 정확해 통과한다. | '-지만'을 통해 바뀐 날씨 정보를 파악하는 초급 O/X 듣기 문항으로 통과.",
+      "hash": "34dfd58ea9a391b4",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-rhythm:t0q3:v1:claim0",
+      "source": "korean-rhythm",
+      "verdict": "pass",
+      "skillId": "ko.listening.negation",
+      "difficulty": 1,
+      "responseFormat": "binary-choice",
+      "familyKey": "korean-rhythm:t0q3:v1",
+      "officialType": null,
+      "reason": "「커피 대신 차」의 변경을 묻는 O/X 문항이다. 정답 O가 분명하고 능력과 난도도 맞다. 해설에 「커피는 주문하지 않았어요」를 덧붙이면 더 좋지만 그대로 통과해도 된다. | '대신'을 사용한 선택 변경 정보를 정확히 이해하는지 묻는 O/X 듣기 문항으로 통과.",
+      "hash": "6123f6cc0d7baec8",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-rhythm:t0q4:v1:claim0",
+      "source": "korean-rhythm",
+      "verdict": "fix",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "binary-choice",
+      "familyKey": "korean-rhythm:t0q4:v1",
+      "officialType": null,
+      "suggestedSkillId": "ko.listening.change",
+      "reason": "정답 O는 유일하고 문장과 해설이 바릅니다. 다만 정답을 가르는 정보가 시간 변경이므로 대표 능력을 세부에서 변경으로 고쳐야 합니다(id 확인 필요). | 문항 자체와 해설은 자연스럽고 정확하나, 시간 변경('바뀌었어요')을 핵심으로 묻는 문항이므로 작성 기준(§1·§3)에 맞춰 skillId를 ko.listening.negation으로, difficulty를 2로 수정해야 한다.",
+      "hash": "f5bb70b7496d13fd",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-rhythm:t1q0:v1:claim1",
+      "source": "korean-rhythm",
+      "verdict": "fix",
+      "skillId": "ko.listening.reason",
+      "difficulty": 2,
+      "responseFormat": "binary-choice",
+      "familyKey": "korean-rhythm:t1q0:v1",
+      "officialType": null,
+      "suggestedSkillId": "ko.listening.negation",
+      "reason": "정답 X는 맞습니다. 다만 정답을 가르는 정보가 까닭이 아니라 취소(부정·변경)라서 능력이 맞지 않고, 해설이 묻는 말에 대한 근거를 짚지 않습니다. 능력(또는 묻는 말)과 해설을 고치면 쓸 수 있습니다. | 묻는 말('소풍을 다녀왔나요?')이 이유를 묻지 않고 취소 여부만 묻고 있어 대표 능력(ko.listening.reason) 및 해설과 맞지 않는다. 질문을 이유 확인용으로 고치거나 skillId와 해설을 취소 여부 기준으로 맞춰야 한다.",
+      "hash": "63fae402f178f777",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-rhythm:t1q1:v1:claim1",
+      "source": "korean-rhythm",
+      "verdict": "fix",
+      "skillId": "ko.listening.negation",
+      "difficulty": 2,
+      "responseFormat": "binary-choice",
+      "familyKey": "korean-rhythm:t1q1:v1",
+      "officialType": null,
+      "suggestedSkillId": "ko.listening.detail",
+      "reason": "정답 X는 맞고 문장도 자연스럽다. 다만 해설이 X의 근거(「비싸지만」)를 짚지 않는다. 또 능력은 부정·변경이 아니라 세부(가격)이고, 난도도 1이 맞아 고쳐 쓰면 된다. | 대본에 부정·변경 표현이 없고 가방 가격('비싸다' vs '싸다')이라는 세부 정보를 묻는 문항이므로 skillId를 ko.listening.detail로 바꾸고, 기초 어휘·1문장 구성에 맞춰 difficulty를 1로 낮춰야 한다.",
+      "hash": "4f47aa4deed92bde",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-rhythm:t1q2:v1:claim0",
+      "source": "korean-rhythm",
+      "verdict": "pass",
+      "skillId": "ko.listening.reason",
+      "difficulty": 2,
+      "responseFormat": "binary-choice",
+      "familyKey": "korean-rhythm:t1q2:v1",
+      "officialType": null,
+      "reason": "목적 표현 -(으)려고를 듣고 묻는 말 -(으)러와 맞춰 보는 O/X 게임 문항이에요. 정답이 분명하고 한국어도 자연스러워 그대로 통과예요. 변별력이 낮고 해설이 짧은 점은 사소해요. | 목적·이유를 나타내는 '-(으)려고'와 '-(으)러'의 대응을 묻는 O/X 듣기 문항으로, 대본·정답·해설·대표 능력·난도가 모두 기준에 맞다.",
+      "hash": "73c420c0d2765ff0",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-rhythm:t1q3:v1:claim1",
+      "source": "korean-rhythm",
+      "verdict": "fix",
+      "skillId": "ko.listening.detail",
+      "difficulty": 2,
+      "responseFormat": "binary-choice",
+      "familyKey": "korean-rhythm:t1q3:v1",
+      "officialType": null,
+      "reason": "정답 X는 분명하고 소재도 적절하다. 다만 한 문장·1급 문형뿐이라 난도는 1이 맞고, 해설에 근거 「지금」과 결론을 더하면 쓸 수 있다. | 시제·시간 세부 정보를 묻는 O/X 듣기 문항으로 정답이 명확하고 해설이 적절함(작성 기준 §3 기준 난도는 1에 가까움). | 정답 X는 분명하다. 이야기의 「지금 …듣고 있어요」가 묻는 말의 「어제 들은」과 어긋나서 다툴 여지가 없다. 소재·자연스러움·문화 면에서도 문제가 없다. 다만 두 검수자 모두 난도를 1로 보았다. 한 문장에 1급 문형(-고 있다)만 쓰여 작성 기준 §3의 difficulty 1에 해당하므로, 현재 값 2는 난도 칸에 맞지 않는다. Core 칸 배정에 영향을 주니 고쳐야 한다. 해설도 근거 「지금」만 짚고 왜 X인지 결론이 없다. 이 둘을 고치면 쓸 수 있다.",
+      "hash": "2993e06a1f64c5bd",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-rhythm:t1q4:v1:claim0",
+      "source": "korean-rhythm",
+      "verdict": "pass",
+      "skillId": "ko.listening.reason",
+      "difficulty": 2,
+      "responseFormat": "binary-choice",
+      "familyKey": "korean-rhythm:t1q4:v1",
+      "officialType": null,
+      "reason": "-(으)니까로 이유를 말하는 짧은 문장을 듣고 이유를 O/X로 확인하는 게임 문항입니다. 정답이 분명하고 자연스러우며 능력·난도도 맞아 통과로 판정합니다. | 이유 표현과 화법을 활용한 O/X 듣기 문항으로 모든 기준을 충족함.",
+      "hash": "5c48ef532abd0e2a",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-rhythm:t2q0:v1:claim1",
+      "source": "korean-rhythm",
+      "verdict": "fix",
+      "skillId": "ko.listening.condition",
+      "difficulty": 3,
+      "responseFormat": "binary-choice",
+      "familyKey": "korean-rhythm:t2q0:v1",
+      "officialType": null,
+      "reason": "정답 X가 분명하고 조건 능력에도 맞지만, 난도 3은 정의에 맞지 않으므로 2로 고쳐야 해요. | 문항 내용과 해설은 적절하나, 작성 기준 §3에 비추어 difficulty는 3이 아닌 2가 알맞음(학습자에게 해가 없어 통과 처리). | 정답 X는 분명하고 조건 능력에도 맞아요. 다만 두 검수자 모두 difficulty 3이 틀렸다고 봤고, 이 지적이 맞아요. 작성 기준 §3에서 TOPIK I difficulty 3은 2급 위쪽의 긴 글·넓은 추론을 뜻하고 이번 묶음에서는 쓰지 않는 칸이에요. 이 문항은 한 문장에 문형 2단계 「-아야 하다」를 쓰므로 2가 맞아요. difficulty는 Core가 칸을 나누는 값이라 잘못 두면 배치가 어긋나요. 그래서 그대로 통과시키지 않고 고쳐서 내보내는 것이 맞아요. 해설은 짧아도 근거를 짚고 있지만, 결론까지 말하도록 다듬으면 더 좋아요.",
+      "hash": "572818ec2c4d8b3d",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-rhythm:t2q1:v1:claim0",
+      "source": "korean-rhythm",
+      "verdict": "fix",
+      "skillId": "ko.listening.detail",
+      "difficulty": 3,
+      "responseFormat": "binary-choice",
+      "familyKey": "korean-rhythm:t2q1:v1",
+      "officialType": null,
+      "reason": "정답 O가 유일하고 문장·해설도 바르지만, 난도 3은 정의(2급 위쪽 긴 글)와 맞지 않아요. difficulty를 2로 고치면 쓸 수 있어요. | 문항 내용과 해설은 적절하나, 작성 기준 §3에 비추어 difficulty는 3이 아닌 2가 알맞음(학습자에게 해가 없어 통과 처리). | I solved it as O (index 0), which matches the answer key. The story says 「가격이 지난해보다 올랐어요」, and that directly supports 「더 비싸졌나요?」. The answer is unique, and the Korean sentences and explanation are correct. A Korean-only explanation is allowed for an existing game item. Both reviewers agree, though, that difficulty 3 does not fit the §3 definition. Difficulty 3 means 'upper grade 2, long text, broad inference' and is not used in this ba",
+      "hash": "b492456301655999",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-rhythm:t2q2:v1:claim0",
+      "source": "korean-rhythm",
+      "verdict": "fix",
+      "skillId": "ko.listening.main",
+      "difficulty": 3,
+      "responseFormat": "binary-choice",
+      "familyKey": "korean-rhythm:t2q2:v1",
+      "officialType": null,
+      "suggestedSkillId": "ko.listening.detail",
+      "reason": "정답 O는 맞다. 다만 이야기(과거)와 묻는 말(현재)의 시제를 맞춰야 한다. 또 이 문항은 실제로 「찬성=동의」 낱말 뜻을 묻으므로 대표 능력을 낱말 쪽으로 바꾸는 것이 좋다. | 한 문장 단문이므로 TOPIK I difficulty 3(긴 글·넓은 추론)에 맞지 않으며, '찬성하다·동의하다'는 중급 어휘이고 능력 태그도 detail이 알맞아 수정이 필요함.",
+      "hash": "7cba75fdd2b33cc3",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-rhythm:t2q3:v1:claim0",
+      "source": "korean-rhythm",
+      "verdict": "fix",
+      "skillId": "ko.listening.detail",
+      "difficulty": 3,
+      "responseFormat": "binary-choice",
+      "familyKey": "korean-rhythm:t2q3:v1",
+      "officialType": null,
+      "suggestedSkillId": "ko.vocab.meaning",
+      "reason": "정답 O는 맞다. 다만 이 문항은 세부 정보가 아니라 낱말 바꿔 말하기를 겨누고, 한 문장짜리라 난도 3은 높다. 능력과 난도를 고치고 일정/날짜 표현을 다듬으면 쓸 수 있다. | 문항과 해설은 TOPIK I 2급 수준으로 적절하나, 한 문장 단문이므로 difficulty를 3에서 2로 낮추어야 함.",
+      "hash": "5c1283a7fbd6d404",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-rhythm:t2q4:v1:claim0",
+      "source": "korean-rhythm",
+      "verdict": "fix",
+      "skillId": "ko.listening.main",
+      "difficulty": 3,
+      "responseFormat": "binary-choice",
+      "familyKey": "korean-rhythm:t2q4:v1",
+      "officialType": null,
+      "suggestedSkillId": "ko.listening.detail",
+      "reason": "정답 O는 유일하고 문장도 자연스러워요. 다만 난도 3은 TOPIK I 정의에 맞지 않아 2로 고쳐야 해요. 해설도 바꿔 말한 표현의 근거를 짚도록 보완하면 쓸 수 있어요. | 해설이 정답의 의미적 근거를 설명하지 않고 문장만 반복하고 있으며, 단문 일치 문항이므로 difficulty(2)와 skillId(ko.listening.detail) 수정이 필요함.",
+      "hash": "52472bd8c7f71e36",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-runner.listening-check.check-duck-jump.v1",
+      "source": "korean-runner",
+      "verdict": "pass",
+      "skillId": "ko.listening.sequence",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "korean-runner.listening-check.check-duck-jump.v1",
+      "officialType": null,
+      "reason": "순서 표지 「먼저·그다음에」로 정답이 하나로 정해지는 게임용 순서 듣기 문항으로, 그대로 써도 됩니다. 다만 해설이 짧으므로 다음 판에서 「먼저 몸을 숙이고」를 짚어 늘리고 영어·몽골어 해설을 더하면 좋습니다. | 안내를 듣고 두 행동의 순서를 고르는 기존 게임 문항으로, 정답 유일성·오답 매력도·난도·능력 모두 기준에 맞는다.",
+      "hash": "5a63e44355fb5bc6",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-runner.listening-check.check-fence-jump.v1",
+      "source": "korean-runner",
+      "verdict": "fix",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "korean-runner.listening-check.check-fence-jump.v1",
+      "officialType": null,
+      "reason": "정답이 하나뿐이고 게임 꼴 안에서 쓸 만하다. 다만 해설이 근거를 짚지 않고 오답도 설명하지 않아 해설만 보강하면 된다. | 어휘 수준이 난도 1보다 높고 정답 보기에만 대본 명사('울타리')가 노출되며 해설 문장이 어색하여 수정이 필요함.",
+      "hash": "2c339bdd72f4d6b4",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-runner.listening-check.check-high-sign.v1",
+      "source": "korean-runner",
+      "verdict": "fix",
+      "skillId": "ko.listening.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "korean-runner.listening-check.check-high-sign.v1",
+      "officialType": null,
+      "reason": "부정 「숙이지 않아도 돼요」를 듣고 그대로 지나가기를 고르는 게임 문항으로, 정답이 분명하고 함정 보기도 적절하다. 해설에 근거 문장을 따옴표로 짚으면 좋겠지만 통과에 지장은 없다. | 정답 보기에만 대본의 부정 어구가 그대로 쓰이고 보기 길이가 불균형하며, 어휘·문형이 난도 2 수준이므로 수정이 필요하다. | 정답은 1번(숙이지 않고 그대로 지나가기) 하나로 분명하고, 게임 꼴이라는 점도 문제 삼지 않는다. 다만 B의 지적이 맞다. 정답 보기에만 대본의 「숙이지 않-」이 그대로 들어 있어 소리만 맞춰도 고를 수 있고, 정답 보기가 가장 길다. 「뛰어넘기」는 짧고 동떨어져 쉽게 지워진다. 문형 「-지 않아도 되다」와 낱말 「표지판」「숙이다」는 1급 앞쪽보다 2급에 가까워 난도 칸도 맞지 않는다. 해설도 근거 문장을 따옴표로 짚지 않는다. 학생 화면에 내기 전에 고치는 편이 안전하다.",
+      "hash": "cd1a32f7aba3dc3a",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-runner.listening-check.check-left-run.v1",
+      "source": "korean-runner",
+      "verdict": "pass",
+      "skillId": "ko.listening.sequence",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "korean-runner.listening-check.check-left-run.v1",
+      "officialType": null,
+      "reason": "순서 문형 「-(으)ㄴ 다음」을 듣고 행동 순서를 고르는 게임 문항이다. 정답이 유일하고, 오답은 순서 뒤집기와 행동 바꾸기로 그럴듯하다. 해설이 짧아 「간 다음」 근거와 오답 이유를 덧붙이면 더 좋겠지만, 고치지 않아도 학습자에게 해가 없어 통과로 판정한다. | '-(으)ㄴ 다음'을 듣고 이어질 행동 순서를 고르는 기존 게임 문항으로 모든 검수 기준에 부합한다.",
+      "hash": "928e36b5ae911742",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-runner.listening-check.check-middle-left.v1",
+      "source": "korean-runner",
+      "verdict": "fix",
+      "skillId": "ko.listening.sequence",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "korean-runner.listening-check.check-middle-left.v1",
+      "officialType": null,
+      "reason": "정답이 하나뿐이고 순서 듣기를 잘 겨냥했다. 다만 한 문장에 정보가 둘뿐이라 난도는 1이 맞아 난도 값만 고치면 된다. | '-(으)ㄴ 다음'을 활용한 방향 이동 순서 듣기 게임 문항으로 모든 검수 기준을 통과한다. | 직접 풀어 보면 「가운데로 간 다음, 왼쪽으로 가세요」에서 정답은 2번 「가운데로 간 뒤 왼쪽으로 가기」 하나뿐입니다. 0번은 순서가 거꾸로이고, 1번은 「왼쪽으로」를 빠뜨렸습니다. 정답이 하나뿐이고 순서 능력에도 맞으며, 게임 꼴(보기 셋, 안내 화자, 한국어 해설만 있음)도 허용 범위입니다. 그러나 난도 칸이 맞지 않는다는 A의 지적이 옳습니다. 작성 기준 §3에서 TOPIK I 난도 2는 「글 4~6문장·정보 3개 이상, 바뀐 정보나 조건」입니다. 이 문항은 한 문장에 정보가 둘(가운데→왼쪽)뿐이어서 1에 가깝습니다. 「-(으)ㄴ 다음」이 2단계 문형일 수는 있으나 길이·정보량 기준을 채우지 못합니다. 해설도 근거가 된 말을 「…」로 짚지 않고 오답 설명이 없어서 함께 다듬는 편이 좋습니다. 학생에게 해가 될 오류는 없지만 Core 칸 배정이 틀리므로 pass보다 fix가 맞습니다.",
+      "hash": "c33bccd684803c46",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-runner.listening-check.check-no-fence.v1",
+      "source": "korean-runner",
+      "verdict": "fix",
+      "skillId": "ko.listening.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "korean-runner.listening-check.check-no-fence.v1",
+      "officialType": null,
+      "reason": "정답은 분명하다. 다만 「뛰다」가 '달리다' 뜻과 겹쳐 모순처럼 읽힐 수 있고, 한 오답은 대본과 무관하다. 또 -(으)니까·-지 않아도 되다는 2단계 문형이므로 난도 2로 고쳐 쓰면 된다. | '뛰다'와 '달리다'의 충돌로 어색하고, 정답 보기에만 대본의 부정 표현이 그대로 들어가며, 문형·어휘가 난도 2 수준이므로 수정이 필요하다.",
+      "hash": "f28615fe9503a49d",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-runner.listening-check.check-not-left.v1",
+      "source": "korean-runner",
+      "verdict": "pass",
+      "skillId": "ko.listening.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "korean-runner.listening-check.check-not-left.v1",
+      "officialType": null,
+      "reason": "부정 「가지 마세요」를 듣고 오른쪽 길을 고르는 짧은 게임 문항이다. 정답이 유일하고 급·능력·난도에 맞는다. 「숙이기」 오답은 약하지만 게임 꼴 안에서는 괜찮아 통과로 본다. | 부정 지시('-지 마세요')와 방향 정보를 듣고 알맞은 길을 고르는 게임 문항으로 그대로 사용할 수 있다.",
+      "hash": "2eac49540329915c",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-runner.listening-check.check-not-middle.v1",
+      "source": "korean-runner",
+      "verdict": "pass",
+      "skillId": "ko.listening.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "korean-runner.listening-check.check-not-middle.v1",
+      "officialType": null,
+      "reason": "정답이 유일하고, 부정 지시 「가지 말고」를 겨눈 짧은 게임 문항으로 급·능력·난도가 모두 맞아 통과예요. 해설에 근거 인용을 덧붙이면 더 좋지만 필수는 아니에요. | 부정 지시('-지 말고')를 듣고 올바른 방향을 고르는 게임 문항으로 모든 기준을 충족한다.",
+      "hash": "6a6abd502d35f851",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-runner.listening-check.check-right-before-jump.v1",
+      "source": "korean-runner",
+      "verdict": "pass",
+      "skillId": "ko.listening.sequence",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "korean-runner.listening-check.check-right-before-jump.v1",
+      "officialType": null,
+      "reason": "「뛰어넘기 전에 오른쪽으로 가세요」의 순서를 묻는 게임 문항이에요. 정답은 1번 하나뿐이고 오답도 순서를 뒤집거나 행동을 바꿔 적절해요. 기존 게임 꼴로서 그대로 써도 돼요. | '-기 전에'를 활용해 발화 순서와 다른 실제 행동 순서를 묻는 좋은 문항으로 모든 기준을 충족한다.",
+      "hash": "06cb476147ac07ae",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-runner.listening-check.check-sign-duck.v1",
+      "source": "korean-runner",
+      "verdict": "fix",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "korean-runner.listening-check.check-sign-duck.v1",
+      "officialType": null,
+      "reason": "게임 꼴 안에서 정답이 분명하고 오답도 그럴듯해 통과로 본다. 고치지 않아도 되지만, 「낮은 표지판」을 「낮게 걸린 표지판」으로 바꾸면 더 자연스럽고, 해설에 오답 이유를 한 줄 더하면 좋다. | 문항 자체와 해설은 자연스러우나 '표지판, 숙이다, 뛰어넘다' 등 어휘와 연결 어미 수준이 난도 1보다 높아 difficulty 2로 조정이 필요함. | I solved it independently and chose choice 0. The cue 「머리를 숙이고 지나가세요」 makes this the only answer, and the paraphrase to 「몸을 숙여」 is acceptable. The game format is also fine within its own rules. However, 「낮은 표지판」 is unclear: it can be read as a low sign standing on the ground. Under that reading 「뛰어넘기」 looks plausible from the scene, so clarifying it as something hanging overhead makes the item more na",
+      "hash": "4ad8da40de240325",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-runner.listening-check.check-star-middle.v1",
+      "source": "korean-runner",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "korean-runner.listening-check.check-star-middle.v1",
+      "officialType": null,
+      "reason": "정답이 가운데 길 하나로 분명하고, 1급 앞쪽 낱말과 게임 꼴에 맞는 세부 듣기 문항이에요. 해설에 「별이 있는 길로 가세요」를 덧붙이면 좋지만 고치지 않아도 통과예요. | 기초 어휘와 명확한 단서로 구성된 세부 듣기 게임 문항으로 그대로 사용 가능함.",
+      "hash": "09417ecf94dbdae6",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "korean-runner.listening-check.check-wide-left.v1",
+      "source": "korean-runner",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "korean-runner.listening-check.check-wide-left.v1",
+      "officialType": null,
+      "reason": "넓은 길=왼쪽이라는 한 단계 연결로 정답이 하나뿐인 쉬운 세부 듣기 게임 문항입니다. 해설이 짧은 것 말고는 문제가 없어 통과입니다. | 어휘·문형·오답 구성이 모두 기준에 맞는 세부 듣기 게임 문항임.",
+      "hash": "6bbf45b56a867172",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
       "itemKey": "synk-town.reading-check.town-detail-festival.v1",
       "source": "synk-town",
       "verdict": "pass",
@@ -2673,6 +3443,1293 @@
           "stage": "adjudication",
           "model": "claude-opus-5-5",
           "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.f01.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.f01.v1",
+      "officialType": "TI-L-05",
+      "reason": "축하 인사에 감사로 대답하는 단순하고 정답이 분명한 게임 문항이다. 오답도 적절해 그대로 써도 된다. | 축하 인사에 알맞은 대답을 고르는 TI-L-05 게임 문항으로 모든 기준을 충족함.",
+      "hash": "e8ef703a23442262",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.f02.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.f02.v1",
+      "officialType": "TI-L-05",
+      "reason": "사과 한마디에 「괜찮아요」로 대답하는 기본 문항이에요. 정답이 하나뿐이고 게임 꼴 안에서 TI-L-05에 맞아서 통과예요. | 사과 표현에 알맞은 대답을 고르는 TI-L-05 게임 문항으로 모든 기준을 충족함.",
+      "hash": "cca398491ab94c29",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.f03.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.f03.v1",
+      "officialType": "TI-L-05",
+      "reason": "정답이 하나로 분명하고 오답도 같은 인사말 갈래라 적절합니다. 해설에 오답 이유를 한 줄 더하면 좋겠지만 통과입니다. | 식사 전 인사에 알맞은 대답을 고르는 TI-L-05 게임 문항으로 모든 기준을 충족함.",
+      "hash": "6bfbe5b5f5b9c016",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.f04.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.f04.v1",
+      "officialType": "TI-L-05",
+      "reason": "정답이 유일하고 1급 인사 표현으로 자리와 난도에 맞아요. 해설이 다소 짧은 점만 아쉬운데, 「몽글이 ‘안녕히 가세요’라고 했으니 나는 떠나는 사람이에요. 떠나는 사람은 ‘안녕히 계세요’라고 해요. ‘어서 오세요’는 손님을 맞을 때 하는 말이에요.」처럼 보강하면 더 좋아요. 통과. | 1급 기초 작별 인사에 알맞은 응답을 고르는 기존 게임 문항으로 모든 기준을 충족한다.",
+      "hash": "e8f34b401e604694",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.f05.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.f05.v1",
+      "officialType": "TI-L-05",
+      "reason": "첫 만남 인사에 알맞은 대답을 고르는 기존 게임 문항이에요. 정답이 하나뿐이고, 오답도 1급 인사 표현이라 적절해요. 해설에 오답 설명을 한 줄 더하면 좋지만 고치지 않아도 학습자에게 해가 없어 통과예요. | 첫인사에 이어지는 말을 고르는 1급 기초 문항으로 모든 기준을 충족한다.",
+      "hash": "e93485706282e06c",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.f06.v1",
+      "source": "talk-rally",
+      "verdict": "fix",
+      "skillId": "ko.listening.response",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.f06.v1",
+      "officialType": "TI-L-05",
+      "reason": "정답이 하나로 분명하고 오답도 그럴듯한 기초 인사 문항이에요. 다만 난도는 1이 맞고, 해설에 오답 설명을 보태야 해요. | 문항 내용과 구성은 적절하나, 어휘와 문형이 모두 1급 기초 수준이므로 difficulty를 2에서 1로 조정해야 한다.",
+      "hash": "37f7c48c78bc3dac",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.f07.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.f07.v1",
+      "officialType": "TI-L-05",
+      "reason": "감사 인사에 「천만에요」로 답하는 기본 문항으로, 정답이 유일하고 급·능력·난도가 맞아 통과입니다. 해설에 「아니에요」도 쓸 수 있다는 말을 더하면 좋지만 필수는 아닙니다. | 감사 인사에 알맞은 응답을 고르는 1급 기초 문항으로 모든 기준을 충족한다.",
+      "hash": "1bcb6a4819044b4c",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.f08.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.f08.v1",
+      "officialType": "TI-L-05",
+      "reason": "기본 인사 짝을 묻는 1급 게임 문항입니다. 정답이 하나뿐이고 오답도 적절합니다. 해설 보강은 선택 사항이라 통과로 판정합니다. | 외출 인사에 알맞은 응답을 고르는 1급 수준의 자연스러운 문항으로 통과.",
+      "hash": "166063eb295c3e01",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.f09.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.f09.v1",
+      "officialType": "TI-L-05",
+      "reason": "「잘 자요」에 대한 맞장구를 고르는 기존 게임 문항입니다. 정답이 유일하고 TI-L-05 꼴·1급 난도에 맞아 통과입니다. | 밤 인사에 알맞은 응답을 고르는 1급 기초 문항으로 통과.",
+      "hash": "896e0d1912665394",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.f10.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.f10.v1",
+      "officialType": "TI-L-05",
+      "reason": "선물을 받는 상황에 감사 표현을 고르는 쉬운 게임 문항이에요. 정답이 하나뿐이고 오답도 적절해서 그대로 써도 돼요. 해설에 「죄송합니다」가 왜 틀린지 한 줄을 더하면 더 좋아요(선택 사항). | 선물을 건네는 말에 알맞은 감사 응답을 고르는 1급 문항으로 통과.",
+      "hash": "935b7e08fdbafd53",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.f11.v1",
+      "source": "talk-rally",
+      "verdict": "fix",
+      "skillId": "ko.listening.response",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.f11.v1",
+      "officialType": "TI-L-05",
+      "reason": "정답이 하나뿐이고 표현도 자연스러운 전화 인사 응답 문항입니다. 다만 난도가 1급 앞쪽이라 difficulty를 1로 고쳐야 합니다. | 문항 내용과 해설은 적절하나 1급 기초 단문 인사·응답이므로 difficulty를 2에서 1로 수정 필요.",
+      "hash": "fd30d81d7440ec15",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.f12.v1",
+      "source": "talk-rally",
+      "verdict": "fix",
+      "skillId": "ko.listening.response",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.f12.v1",
+      "officialType": "TI-L-05",
+      "reason": "정답이 유일하고 꼴도 자연스럽지만, 아주 쉬운 1급 인사라서 difficulty를 1로 내려야 합니다. 해설에 근거 말과 오답 설명을 보태면 좋습니다. | 기초 인사 응답을 묻는 자연스럽고 명확한 문항이나, 작성 기준 §3에 비추어 난도 칸은 1이 적합함. | 정답은 0번 하나뿐입니다. 「주말 잘 보내세요」는 헤어질 때 하는 인사이고, 같은 인사로 돌려주는 0번만 맞습니다. 「만나서 반갑습니다」와 「잘 먹겠습니다」는 다른 상황에 쓰는 말이라 분명히 틀립니다. 다만 두 검수자 모두 난도를 1로 보았고, 저도 같습니다. 작성 기준 §3에서 difficulty 2는 2급(연결 어미, 4~6문장, 바뀐 정보나 조건)입니다. 이 문항은 한마디 인사뿐인 1급 앞쪽 수준이므로 칸이 잘못 매겨져 있습니다. 이 값은 Core의 칸 나누기에 쓰이므로 그대로 두면 안 되어 B의 pass 대신 fix로 판정합니다. 해설도 근거 말과 오답 설명이 없어 작성 기준 §6에 못 미치므로 A의 보완안을 받아들입니다.",
+      "hash": "b53f67900c3c9c80",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.f13.v1",
+      "source": "talk-rally",
+      "verdict": "fix",
+      "skillId": "ko.listening.response",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.f13.v1",
+      "officialType": "TI-L-05",
+      "reason": "정답이 분명하고 꼴도 맞아요. 다만 아주 기초적인 인사라 난도를 1로 낮추고, 해설에 오답 설명을 한 줄 더하면 좋아요. | '실례합니다'에 이어지는 인사말을 고르는 문항으로 내용과 해설은 적절하나, 한마디 기초 인사 유형이므로 난도는 1이 알맞음. | 정답은 하나로 분명해요. 「실례합니다」에 「네, 들어오세요」가 이어지고, 「천만에요」(감사에 하는 대답)와 「잘 먹었습니다」(식사 뒤 인사)는 상황에 맞지 않아요. 게임 꼴(보기 셋, 마스코트 화자, 한국어 해설만)은 기존 문항이라 받아들일 수 있어요. 두 검수자 모두 난도를 1로 보았고, 저도 같은 판단이에요. 한마디 기초 인사와 A 낱말뿐이고 정보도 하나라서 작성 기준 §3의 difficulty 1에 해당해요. difficulty 값은 Core가 칸을 나누는 데 쓰이므로 2로 두면 분류가 틀어져요. 그래서 pass가 아니라 fix로 판정해요. 해설도 §6에 따라 오답이 왜 틀린지 한 줄을 더하면 좋아요.",
+      "hash": "7b728eaa75591295",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.f14.v1",
+      "source": "talk-rally",
+      "verdict": "fix",
+      "skillId": "ko.listening.response",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.f14.v1",
+      "officialType": "TI-L-05",
+      "reason": "정답이 분명하고 오답도 적절한 기본 인사 문항입니다. 다만 한 줄 1급 인사라 난도 칸을 1로 낮춰야 합니다. | '오랜만이에요'에 이어지는 안부 인사를 고르는 문항으로 문항과 해설 모두 완성도가 높으며, 작성 기준 §3에 따른 언어 난도는 1이 알맞음. | 정답(0)은 분명하고, 오답 둘도 같은 인사말 갈래라 그럴듯하다. 기존 게임 문항이라 보기 셋과 한국어만 있는 해설도 받아들일 수 있다. 다만 두 검수자 모두 난도를 1로 보았다. 「오랜만이에요」 한마디와 짧은 인사 대답은 작성 기준 §3의 1급 앞쪽(낱말 A, 문형 1단계, 정보 1개)에 해당하는데, 지금 값은 2로 잘못 들어가 있다. difficulty는 Core가 칸을 나누는 값이므로, 이것을 고치지 않고 내보낼 수 없다. B는 이 점을 알고도 pass를 냈으므로 A의 fix를 따른다.",
+      "hash": "5db8b1484b1085db",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.f15.v1",
+      "source": "talk-rally",
+      "verdict": "fix",
+      "skillId": "ko.listening.response",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.f15.v1",
+      "officialType": "TI-L-05",
+      "reason": "정답은 유일하고 오답도 좋다. 다만 한마디 인사 문항이라 난도는 1이 맞으므로 difficulty만 고치면 된다. | 문항과 해설은 타당하나 기초 인사말 한 줄로 구성되어 있어 difficulty를 2에서 1로 낮추는 것이 알맞음.",
+      "hash": "94fce78190e72132",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.f16.v1",
+      "source": "talk-rally",
+      "verdict": "fix",
+      "skillId": "ko.listening.response",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.f16.v1",
+      "officialType": "TI-L-05",
+      "reason": "정답이 하나로 분명하고 오답도 무난하다. 한마디 인사 문항인데 난도가 2로 매겨져 있으니 1로 고치면 바로 쓸 수 있다. | 작별 인사에 알맞은 응답을 고르는 양호한 문항이나, 기초 단문 인사이므로 difficulty를 2에서 1로 낮추는 것이 알맞음.",
+      "hash": "d713a9e154177463",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.f17.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.f17.v1",
+      "officialType": "TI-L-05",
+      "reason": "부탁에 수락하는 대답을 고르는 간단한 기존 게임 문항입니다. 정답이 유일하고 급·능력·난도가 모두 맞아 통과입니다. 해설에 오답 설명을 더하면 더 좋습니다. | 정답 유일성, 오답 구성, 난도(difficulty 1), 해설 모두 기준에 부합함.",
+      "hash": "713d2298ae135982",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.f18.v1",
+      "source": "talk-rally",
+      "verdict": "fix",
+      "skillId": "ko.listening.response",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.f18.v1",
+      "officialType": "TI-L-05",
+      "reason": "정답이 유일하고 꼴도 맞는 사과 맞장구 문항입니다. 다만 한 줄짜리 1급 앞쪽 발화라서 난도 칸을 1로 고쳐야 합니다. | 문항 내용과 오답 구성은 좋으나, 연결 어미 없는 단문 한 마디 문항이므로 작성 기준 §3에 맞추어 difficulty를 2에서 1로 조정하는 것이 알맞음.",
+      "hash": "ec96f7d96722d29b",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.f19.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.f19.v1",
+      "officialType": "TI-L-05",
+      "reason": "부탁에 응답하는 기존 게임 문항이에요. 정답이 하나뿐이고 수준·꼴·해설 모두 알맞아 통과예요. | 부탁 표현 '좀 도와주세요.'에 알맞은 응답을 고르는 TI-L-05 기존 게임 문항으로 모든 기준을 충족한다.",
+      "hash": "659f457a8c7a44cd",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.f20.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.f20.v1",
+      "officialType": "TI-L-05",
+      "reason": "「안녕히 계세요」→「안녕히 가세요」를 고르는 기본 인사 문항입니다. 정답이 하나뿐이고, 오답이 계세요·가세요의 혼동을 잘 노리며, 해설도 정확해서 통과입니다. | 작별 인사 '안녕히 계세요.'에 대한 알맞은 응답을 고르는 TI-L-05 기존 게임 문항으로 문제없이 통과 가능하다.",
+      "hash": "102ca4d635bb7965",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.f21.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.f21.v1",
+      "officialType": "TI-L-05",
+      "reason": "기본 식사 인사에 대한 대답 고르기로, 정답이 분명하고 오답 「잘 먹었습니다」가 적절히 헷갈리게 한다. 게임 꼴 그대로 통과한다. | 식사 전 인사 '잘 먹겠습니다.'에 대한 응답을 묻는 TI-L-05 기존 게임 문항으로 모든 기준에 부합한다.",
+      "hash": "75931bbc27563ebf",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.f22.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.f22.v1",
+      "officialType": "TI-L-05",
+      "reason": "기본 인사 대답 문항으로 정답이 분명하고 오답도 같은 갈래의 인사말이라 적절합니다. 화자가 마스코트인 점과 보기가 셋인 점은 기존 게임 꼴이라 문제 삼지 않습니다. 통과입니다. | 첫인사 '만나서 반가워요.'에 대한 응답을 고르는 TI-L-05 기존 게임 문항으로 모든 기준을 충족한다.",
+      "hash": "3c2fea8b8f114294",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.f23.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.f23.v1",
+      "officialType": "TI-L-05",
+      "reason": "정답이 유일하고 오답도 같은 꼴의 인사말이라 적절합니다. 게임 꼴(보기 셋·마스코트 화자·해설 ko만)은 기존 문항으로서 허용되므로 통과입니다. 오답 설명을 더하면 좋겠습니다. | 외출 인사('잘 다녀오세요.')에 알맞은 대답을 고르는 기존 게임 문항으로, 정답 유일성·오답 매력도·난도·유형 적합성 모두 기준을 충족하여 통과(pass) 판정함.",
+      "hash": "132b740d90b4095e",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.r01.v1",
+      "source": "talk-rally",
+      "verdict": "fix",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.r01.v1",
+      "officialType": "TI-L-01",
+      "reason": "정답이 하나뿐이고 급·유형에도 맞는다. 다만 오답 「아니요, 물이 커요.」는 뜻이 어색해 쉽게 지워진다. 네/아니요가 서술어와 어긋나는 오답으로 바꾸고 해설에 오답 이유 한 줄을 더하면 쓸 수 있다. | 물음과 정답·해설은 1급 수준에 맞으나, 오답 보기 '아니요, 물이 커요.'가 한국어로 성립하지 않는 어색한 표현이므로 자연스러운 오답으로 수정해야 함.",
+      "hash": "aa728432eeabcc01",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.r02.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.r02.v1",
+      "officialType": "TI-L-01",
+      "reason": "「있어요?」→「없어요」 용언 일치를 묻는 전형적인 1~2번형 기존 게임 문항이에요. 정답이 유일하고 오답도 적절해요. 해설에 2번 오답 설명과 영어·몽골어 해설이 없지만 기존 문항이라 사소한 점이므로 통과예요. | '있어요?'에 대한 '없어요' 대답 호응을 묻는 초급 듣기 문항으로, 정답이 유일하고 오답 매력도와 해설 모두 적절함.",
+      "hash": "cdddfc6c1f3cf428",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.r03.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.r03.v1",
+      "officialType": "TI-L-01",
+      "reason": "기초 「-이에요?」 물음에 맞는 대답 고르기로 정답이 유일하고 오답 설계도 전형적입니다. 게임 꼴 안에서 기준을 충족해 통과합니다. | '-이에요?' 의문문에 대한 대답 호응을 묻는 문항으로, 오답 구성과 해설 모두 기준에 부합함.",
+      "hash": "f6d62f3ecc930898",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.r04.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.r04.v1",
+      "officialType": "TI-L-01",
+      "reason": "네/아니요 물음에 용언을 맞춰 답하는 기본 문항이다. 정답이 유일하고 오답도 전형적이다. 게임 꼴(보기 셋, 한국어 해설만)을 감안하면 그대로 써도 된다. | 동사 의문문('마셔요?')에 대한 부정 대답('안 마셔요') 호응을 묻는 문항으로 모든 검수 기준을 충족함.",
+      "hash": "e2b3a020cd61b473",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.r05.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.r05.v1",
+      "officialType": "TI-L-01",
+      "reason": "「오늘 바빠요?」에 맞는 대답은 0번 하나뿐이고, 오답 둘도 꼴을 맞춘 그럴듯한 보기입니다. 게임 꼴 안에서 기준을 모두 충족해 통과입니다. | 형용사 의문문('바빠요?')에 대한 대답 호응을 묻는 문항으로, 매력적인 오답과 명확한 해설을 갖추어 통과함.",
+      "hash": "f6e9ce10cba4b58b",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.r06.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.r06.v1",
+      "officialType": "TI-L-01",
+      "reason": "용언을 맞춰 대답하는 1번형 기초 문항이다. 정답이 하나로 분명하고 오답 설계도 전형적이어서 그대로 써도 된다. | TI-L-01(네/아니요 물음)에 맞는 자연스럽고 명확한 1급 기초 연습 문항으로 통과.",
+      "hash": "78c986d3728a04a8",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.r07.v1",
+      "source": "talk-rally",
+      "verdict": "fix",
+      "skillId": "ko.listening.response",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.r07.v1",
+      "officialType": "TI-L-01",
+      "reason": "정답이 유일하고, 오답 설계와 자연스러움도 좋은 기존 게임 문항입니다. 다만 1급 낱말로 된 물음 한 줄이라 난도는 1이 맞아 difficulty만 고치면 쓸 수 있습니다. 해설에 오답 설명을 보태기를 권합니다. | 완료 질문과 부정 부사('아직 안')의 호응을 잘 묻는 문항이며, 작성 기준 §3 기준 난도 칸은 1이 알맞음. | 정답 0번(‘아니요, 아직 안 했어요.’)은 하나뿐이다. ‘다 했어요?’라는 완료 물음에 맞는 대답은 이것밖에 없다. ‘숙제가 아니에요’와 ‘숙제가 많아요’는 물음의 용언과 맞지 않아 분명히 틀린다. 게임 꼴(보기 셋, 마스코트 화자, 한국어 해설만)은 기존 문항이라 허용된다. 다만 물음이 1급 생활 낱말로 된 한 줄이므로 작성 기준 §3에 따르면 난도는 1이다. 두 검수자 모두 difficulty 1을 제안했고, B도 pass를 내면서 난도 1을 제안했다. difficulty 2는 Core 칸 나누기에 쓰이는 값이라 그대로 두면 문항이 잘못된 칸에 들어간다. 따라서 고친 뒤 내보낸다.",
+      "hash": "5ad151720f74680f",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.r08.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.r08.v1",
+      "officialType": "TI-L-01",
+      "reason": "경험을 묻는 물음에 때가 맞는 대답을 고르는 게임 문항으로, 정답이 하나뿐이고 해설도 바르게 근거를 짚었어요. 3번 오답 「아니요, 부산이 커요.」는 조금 약해요. 「아니요, 작년에 가 봤어요.」처럼 앞뒤가 어긋나는 말로 바꾸면 더 좋지만, 고치지 않아도 학습자에게 해가 없어 통과로 판정해요. | 경험 질문('-아/어 봤어요?')과 미래 시제 오답의 대비가 명확한 좋은 문항이며, 작성 기준 §3 기준 난도 칸은 1이 적합함.",
+      "hash": "266b355e9b12c0ee",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.r09.v1",
+      "source": "talk-rally",
+      "verdict": "fix",
+      "skillId": "ko.listening.response",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.r09.v1",
+      "officialType": "TI-L-01",
+      "reason": "정답이 분명하고 오답도 적절한 권유-대답 문항이다. 다만 물음 한 줄과 아주 쉬운 낱말뿐이라 난도를 1로 낮춰야 하고, 해설에 오답 설명을 더하면 좋다. | 제안 표현('-(으)ㄹ래요?')과 청유 응답의 호응을 묻는 깔끔한 문항이며, 작성 기준 §3 기준 난도 칸은 1이 적합함. | 정답 0(「네, 같이 먹어요.」)은 권유 「같이 점심 먹을래요?」에 맞는 유일한 대답이다. 「점심이 맛있었어요」는 지난 일이고, 「점심이 아니에요」는 물음과 맞지 않는다. 게임 꼴(보기 셋)과 자리의 꼴에도 문제가 없다. 다만 두 검수자 모두 난도 칸을 1로 봤고, 직접 따져 봐도 1이 맞다. 물음 한 줄에 아주 쉬운 생활 낱말만 쓰였고, 조건·바뀐 정보도 없다. 지금 값 2는 Core 칸 나누기를 틀리게 하므로 고쳐야 한다. 해설에는 오답 근거가 없으니 한 줄 더하면 학습자에게 도움이 된다.",
+      "hash": "2ec8c1ca801d80fe",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.r10.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.r10.v1",
+      "officialType": "TI-L-01",
+      "reason": "「집이 멀어요?」에 「아니요, 가까워요」로 답하는 1급 대답 고르기 문항이다. 정답이 하나뿐이고 오답도 적절하며, 기존 게임 꼴 안에서 기준을 모두 지켜 통과로 판정한다. | 1급 기초 형용사 반의어 호응을 묻는 자연스럽고 깔끔한 문항.",
+      "hash": "1538b53b9ce5cb80",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.w01.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.w01.v1",
+      "officialType": "TI-L-01",
+      "reason": "의문사 「어디」에 맞는 장소 대답을 고르는 기초 게임 문항이다. 정답이 하나뿐이고, 오답도 다른 의문사(누구·언제)에 맞는 대답이라 적절하다. 그대로 통과한다. | 의문사 '어디'에 대한 응답을 묻는 깔끔한 TI-L-01 기초 문항으로 통과.",
+      "hash": "7d5832112235e94a",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.w02.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.w02.v1",
+      "officialType": "TI-L-01",
+      "reason": "'언제' 물음에 때로 답하는 보기를 고르는 기초 문항이다. 정답이 하나로 분명하고 오답(장소·사람)도 알맞다. 해설에 오답 설명을 한 줄 더하면 좋겠지만, 기존 게임 문항으로 통과시켜도 된다. | 의문사 '언제'의 의미를 정확히 묻는 TI-L-01 기초 문항으로 통과.",
+      "hash": "42eedc66850a4b76",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.w03.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.w03.v1",
+      "officialType": "TI-L-01",
+      "reason": "의문사 「누구」에 맞는 대답을 고르는 1급 기초 문항이다. 정답이 유일하고 오답도 그럴듯해 그대로 써도 된다. 다만 두 오답이 모두 장소 대답이라 성격이 겹친다. | '누구하고'에 대한 응답을 묻는 적절한 TI-L-01 연습 문항으로 통과.",
+      "hash": "9c0a7ac524776ead",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.w04.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.w04.v1",
+      "officialType": "TI-L-01",
+      "reason": "「몇 시」 물음에 시각과 같은 용언으로 답하는 0번이 유일한 정답이에요. 오답도 때 표현을 섞어 적절해요. 게임 꼴(보기 셋, 마스코트 화자)은 기존 문항이라 허용되므로 통과예요. | 기상 시간을 묻는 의문사 물음에 알맞은 대답을 고르는 문항으로, 정답 유일성·오답 구성·난도 모두 적절함.",
+      "hash": "a84ae4027be02f0c",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.w05.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.w05.v1",
+      "officialType": "TI-L-01",
+      "reason": "의문사 물음 '무슨 음식'에 맞는 대답을 고르는 기존 게임 문항이에요. 정답이 하나로 분명하고 오답도 쓸 만해요. 해설이 짧지만 학습자에게 해가 없어 통과해요. | 좋아하는 음식을 묻는 질문에 알맞은 대답을 고르는 문항으로 모든 기준을 충족함.",
+      "hash": "bf28abe7f7cc3a9f",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.w06.v1",
+      "source": "talk-rally",
+      "verdict": "fix",
+      "skillId": "ko.listening.response",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.w06.v1",
+      "officialType": "TI-L-01",
+      "reason": "정답이 분명하고 오답도 시제와 낱말 되풀이를 노린 그럴듯한 기존 게임 문항이에요. 다만 언어 수준이 1급 앞쪽이므로 난도를 1로 낮춰야 해요. | 문항 자체와 해설은 우수하나, 1급 기초 어휘·기본 시제 단문이므로 difficulty를 2에서 1로 낮추어야 함.",
+      "hash": "2a39ff0c4478ffdc",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.w07.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.w07.v1",
+      "officialType": "TI-L-01",
+      "reason": "「얼마예요?」에 값으로 대답하는 기초 문항으로, 정답이 유일하고 오답도 물음의 낱말을 써서 적절합니다. 게임 꼴(보기 셋, 마스코트 화자, 해설 ko만)은 기존 문항이라 허용 범위라서 통과로 판정합니다. | 물건값을 묻는 질문에 금액으로 답하는 문항으로, 모든 검수 기준을 충족함.",
+      "hash": "59e91deb836265be",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.w08.v1",
+      "source": "talk-rally",
+      "verdict": "fix",
+      "skillId": "ko.listening.response",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.w08.v1",
+      "officialType": "TI-L-01",
+      "reason": "정답이 하나뿐이고 오답도 적절한 좋은 게임 문항이다. 다만 언어 난도가 1급 앞쪽이라 difficulty를 1로 고쳐야 한다. | 문항과 대답·해설은 좋으나, 1급 기초 낱말과 단문 한마디로 이루어져 있어 difficulty를 2에서 1로 조정 필요.",
+      "hash": "1832fd63a0ac2587",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.w09.v1",
+      "source": "talk-rally",
+      "verdict": "fix",
+      "skillId": "ko.listening.response",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.w09.v1",
+      "officialType": "TI-L-01",
+      "reason": "정답이 하나뿐이고 오답도 의문사만 바꿔 잘 짜였어요. 다만 1급 앞쪽 수준이라 difficulty를 1로 낮추고, 해설에 오답 설명 한 줄을 더하면 쓸 수 있어요. | 문항과 해설은 완성도가 높으나 1급 기초 어휘·조사 문답이므로 difficulty 1로 조정 권장. | 정답 유일성은 문제없습니다. 「어떻게 왔어요?」는 방법을 묻고, 보기 가운데 방법으로 대답한 것은 「버스로 왔어요.」 하나뿐입니다. 「어제」는 언제, 「친구가」는 누가에 대한 대답이라 분명히 틀립니다. 「어떻게 오셨어요?」처럼 찾아온 까닭을 묻는 뜻으로 읽힐 수도 있지만, 그 뜻에 맞는 보기는 없어서 다툴 여지는 없습니다. 게임 꼴(보기 셋, 한국어 해설만)은 기존 문항이라 받아들입니다. 다만 두 검수자 모두 짚었듯이 difficulty 2는 작성 기준 §3에 맞지 않습니다. 낱말 A 위주의 1단계 문형이고 물음 한마디뿐이므로 1급 앞쪽, 곧 difficulty 1입니다. 난도 칸은 Core가 칸을 나누는 값이라 그대로 두고 통과시킬 수 없어서 fix로 판정합니다. 해설에는 오답이 왜 틀렸는지가 빠져 있으니 함께 보충합니다.",
+      "hash": "bd0ffc24b66766dc",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.w10.v1",
+      "source": "talk-rally",
+      "verdict": "fix",
+      "skillId": "ko.listening.response",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.w10.v1",
+      "officialType": "TI-L-01",
+      "reason": "정답이 하나뿐이고 오답은 단위(시·개)만 바꾼 좋은 함정이에요. 낱말·꼴·해설도 문제없어요. 다만 물음 한 줄에 1급 표현뿐이라 난도는 1이 맞아 보여서, 난도 값만 고치면 쓸 수 있어요. | 단위명사('분/명/시/개') 변별과 해설이 우수하며, 작성 기준 §3에 맞춰 difficulty는 1로 조정 권장. | I solved it independently and got answer 0. The answer is unique: '몇 분이세요?' asks how many people, so only '두 명이에요.' fits. The distractors are good traps that change only the unit (시·개). Both reviewers agree the wording, form and explanation are fine. Both also suggested difficulty 1. One question line, one piece of information, and Grade 1 words and patterns ('몇 분', '-이에요') fit §3's difficulty-1 definition, not difficulty",
+      "hash": "c6463898b0214e17",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.w11.v1",
+      "source": "talk-rally",
+      "verdict": "fix",
+      "skillId": "ko.listening.response",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.w11.v1",
+      "officialType": "TI-L-01",
+      "reason": "정답이 유일하고 오답도 적절한 게임 꼴 TI-L-01 문항이에요. 다만 낱말과 문형이 1급 앞쪽 수준이므로 difficulty를 1로 낮춰야 해요. | 시제 호응과 오답 설계·해설이 모두 적절하며, 1급 기초 문답이므로 difficulty 1로 조정 권장. | 정답은 0번 하나뿐이다. 「할 거예요?」에는 미래로 대답해야 하므로 「봤어요」(지난 일)는 맞지 않고, 「주말이 좋아요」는 무엇을 할지 말하지 않는다. 게임 꼴의 보기 셋도 TI-L-01 기준에서 받아들일 만하다. 문제는 난도 값이다. 물음 한 줄과 아주 쉬운 생활 낱말(주말·친구·만나다·영화), 1단계 문형 -(으)ㄹ 거예요뿐이라 작성 기준 §3의 difficulty 1(1급 앞쪽)에 해당한다. difficulty 2(2급, 문형 2단계, 정보 3개 이상)와는 맞지 않는다. 두 검수자 모두 1로 보았다. difficulty는 Core가 칸을 나누는 값이므로 그대로 내보내면 안 되고, 고쳐야 한다. B의 pass는 받아들이지 않고 fix로 정한다.",
+      "hash": "171892e7a904238c",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.w12.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.w12.v1",
+      "officialType": "TI-L-01",
+      "reason": "정답이 하나뿐이고 오답도 그럴듯한, 쓸 만한 1급 의문사 응답 문항입니다. 한국어 해설에 정답과 오답 근거를 보태면 됩니다. | 의문사 물음('어디가 아파요?')에 알맞은 대답을 고르는 1급 기초 문항으로 정답 유일성·오답 매력도·난도 모두 적절함. | 직접 풀어 보면 정답은 0번 「머리가 아파요.」입니다. 「어디가 아파요?」는 아픈 곳을 묻는 의문사 물음이므로 아픈 곳을 말한 대답만 맞습니다. 「병원에 가요.」는 '어디'를 가는 곳으로 잘못 들었을 때 고르게 되는 오답이고, 「어디서부터 아파요?」가 아니라 「어제부터 아파요.」는 언제부터 아픈지를 말한 오답입니다. 둘 다 그럴듯하지만 분명히 틀려서 정답은 하나뿐입니다. 낱말과 문형은 1급 앞쪽에 맞고, 난도 1과 skillId도 알맞습니다. 보기가 셋이고 말하는 이가 마스코트인 것은 기존 게임 꼴(existing)이라 허용됩니다. 해설이 한국어만 있는 것도 기존 문항에서는 허용됩니다. 해설이 「몸의 어느 곳이 아픈지 물어요」라고 물음의 뜻을 짚어 주므로 정답의 근거는 전달됩니다. 검수자 A의 보강안(정답 명시, 오답 근거 추가, choiceNotes 추가)은 해설을 더 좋게 만들지만, 지금 상태로도 학습자에",
+      "hash": "311cf26c745da8b8",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "talk-rally.w13.v1",
+      "source": "talk-rally",
+      "verdict": "pass",
+      "skillId": "ko.listening.response",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "talk-rally.w13.v1",
+      "officialType": "TI-L-01",
+      "reason": "'이 옷 어때요?'에 '아주 예뻐요.'가 유일한 정답입니다. 오답은 언제·어디 물음에 맞는 대답이라 적절합니다. 해설 문장이 조금 어색한 것은 사소한 점이라 통과입니다(원하면 '옷이 어떤지 말하는 대답을 골라요. 「어제 샀어요」는 언제, 「옷 가게에 있어요」는 어디에 대한 대답이에요.'로 다듬을 수 있습니다). | '이 옷 어때요?'에 대한 의견·상태 대답을 고르는 1급 기초 문항으로 모든 기준을 충족함.",
+      "hash": "66c6c05706a95e04",
+      "reviewedAt": "2026-10-21T06:32:18.885Z",
+      "rubric": "topik-review-r1",
+      "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
         }
       ]
     }
