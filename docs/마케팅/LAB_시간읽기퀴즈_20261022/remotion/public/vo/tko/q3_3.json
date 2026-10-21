@@ -1,0 +1,32 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "q3_3",
+ "text": "셋!",
+ "dur": 0.331,
+ "words": [
+  {
+   "text": "셋!",
+   "start": 0.03,
+   "end": 0.331
+  }
+ ],
+ "source": {
+  "key": "e6c539d46ee386eb0c044c3d156cb3b2",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "toneup",
+   "intensity": 1,
+   "tempo": 1.15,
+   "seed": 1003,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

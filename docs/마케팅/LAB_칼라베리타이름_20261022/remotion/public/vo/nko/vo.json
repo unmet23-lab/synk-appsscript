@@ -1,0 +1,321 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../나레이션_계획.json",
+ "version": "nko",
+ "voice": {
+  "id": "tc_61659cc118732016a95fe7c6",
+  "name": "하나"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "happy",
+  "intensity": 0.8,
+  "tempo": 1.05,
+  "seed": 1003,
+  "lufs": -17
+ },
+ "made": "2026-10-21T22:49:19.616Z",
+ "lines": [
+  {
+   "id": "q1_title",
+   "text": "이름 퀴즈!",
+   "at": 0.03,
+   "dur": 0.808,
+   "syllablesPerSec": 4.95,
+   "src": "vo/nko/q1_title.wav",
+   "key": "79025e900d356c4cc853614e4db3d2c5",
+   "words": 2
+  },
+  {
+   "id": "q1_guess",
+   "text": "주안?",
+   "at": 1,
+   "dur": 0.426,
+   "syllablesPerSec": 4.69,
+   "src": "vo/nko/q1_guess.wav",
+   "key": "f77b1e1722344cf9d5c12c7213f9467d",
+   "words": 1
+  },
+  {
+   "id": "q1_nope",
+   "text": "땡!",
+   "at": 2.2,
+   "dur": 0.334,
+   "syllablesPerSec": 2.99,
+   "src": "vo/nko/q1_nope.wav",
+   "key": "ee4e72a8a927fdcc3089a275038470ce",
+   "words": 1
+  },
+  {
+   "id": "q1_3",
+   "text": "셋!",
+   "at": 3,
+   "dur": 0.331,
+   "syllablesPerSec": 3.02,
+   "src": "vo/nko/q1_3.wav",
+   "key": "e6c539d46ee386eb0c044c3d156cb3b2",
+   "words": 1
+  },
+  {
+   "id": "q1_2",
+   "text": "둘!",
+   "at": 3.6,
+   "dur": 0.461,
+   "syllablesPerSec": 2.17,
+   "src": "vo/nko/q1_2.wav",
+   "key": "564b6572af9f6e07d3dc4763c6789acb",
+   "words": 1
+  },
+  {
+   "id": "q1_1",
+   "text": "하나!",
+   "at": 4.2,
+   "dur": 0.478,
+   "syllablesPerSec": 4.18,
+   "src": "vo/nko/q1_1.wav",
+   "key": "f6699e5c3673f36c730cd2a7d58c4a8e",
+   "words": 1
+  },
+  {
+   "id": "q1_answer",
+   "text": "딩동댕!",
+   "at": 4.86,
+   "dur": 0.757,
+   "syllablesPerSec": 3.96,
+   "src": "vo/nko/q1_answer.wav",
+   "key": "f2940e3e5d17817b3ea887dab0388ac6",
+   "words": 1
+  },
+  {
+   "id": "q1_name",
+   "text": "후안!",
+   "at": 5.75,
+   "dur": 0.606,
+   "syllablesPerSec": 3.3,
+   "src": "vo/nko/q1_name.wav",
+   "key": "cd0a803e2ea54706a523e42a1a9ea7fa",
+   "words": 1
+  },
+  {
+   "id": "q1_say",
+   "text": "후안이에요.",
+   "at": 6.84,
+   "dur": 0.98,
+   "syllablesPerSec": 5.1,
+   "src": "vo/nko/q1_say.wav",
+   "key": "e3e008527b3675525d0beb405beda87b",
+   "words": 1
+  },
+  {
+   "id": "q2_title",
+   "text": "다음 이름!",
+   "at": 9.63,
+   "dur": 0.826,
+   "syllablesPerSec": 4.84,
+   "src": "vo/nko/q2_title.wav",
+   "key": "24aa7dc2792bce215747f31078fff8ec",
+   "words": 2
+  },
+  {
+   "id": "q2_guess",
+   "text": "레지나?",
+   "at": 10.6,
+   "dur": 0.582,
+   "syllablesPerSec": 5.15,
+   "src": "vo/nko/q2_guess.wav",
+   "key": "c5183de6e504974c8600651a8353595c",
+   "words": 1
+  },
+  {
+   "id": "q2_nope",
+   "text": "땡!",
+   "at": 11.8,
+   "dur": 0.334,
+   "syllablesPerSec": 2.99,
+   "src": "vo/nko/q2_nope.wav",
+   "key": "ee4e72a8a927fdcc3089a275038470ce",
+   "words": 1
+  },
+  {
+   "id": "q2_3",
+   "text": "셋!",
+   "at": 12.6,
+   "dur": 0.331,
+   "syllablesPerSec": 3.02,
+   "src": "vo/nko/q2_3.wav",
+   "key": "e6c539d46ee386eb0c044c3d156cb3b2",
+   "words": 1
+  },
+  {
+   "id": "q2_2",
+   "text": "둘!",
+   "at": 13.2,
+   "dur": 0.461,
+   "syllablesPerSec": 2.17,
+   "src": "vo/nko/q2_2.wav",
+   "key": "564b6572af9f6e07d3dc4763c6789acb",
+   "words": 1
+  },
+  {
+   "id": "q2_1",
+   "text": "하나!",
+   "at": 13.8,
+   "dur": 0.478,
+   "syllablesPerSec": 4.18,
+   "src": "vo/nko/q2_1.wav",
+   "key": "f6699e5c3673f36c730cd2a7d58c4a8e",
+   "words": 1
+  },
+  {
+   "id": "q2_answer",
+   "text": "딩동댕!",
+   "at": 14.46,
+   "dur": 0.757,
+   "syllablesPerSec": 3.96,
+   "src": "vo/nko/q2_answer.wav",
+   "key": "f2940e3e5d17817b3ea887dab0388ac6",
+   "words": 1
+  },
+  {
+   "id": "q2_name",
+   "text": "레히나!",
+   "at": 15.35,
+   "dur": 0.762,
+   "syllablesPerSec": 3.94,
+   "src": "vo/nko/q2_name.wav",
+   "key": "c5bbcc85d49f07d16ec8940b3e717c35",
+   "words": 1
+  },
+  {
+   "id": "q2_say",
+   "text": "레히나예요.",
+   "at": 16.44,
+   "dur": 0.973,
+   "syllablesPerSec": 5.14,
+   "src": "vo/nko/q2_say.wav",
+   "key": "e343865dede7be6c6ed918f4a5b16ea7",
+   "words": 1
+  },
+  {
+   "id": "q3_title",
+   "text": "마지막!",
+   "at": 19.23,
+   "dur": 0.571,
+   "syllablesPerSec": 5.25,
+   "src": "vo/nko/q3_title.wav",
+   "key": "25f344a68dff2d1762e6035a09a1e2bc",
+   "words": 1
+  },
+  {
+   "id": "q3_guess",
+   "text": "구일레르모?",
+   "at": 20.2,
+   "dur": 0.821,
+   "syllablesPerSec": 6.09,
+   "src": "vo/nko/q3_guess.wav",
+   "key": "2824b9766152beb2cb512975f62c1397",
+   "words": 1
+  },
+  {
+   "id": "q3_nope",
+   "text": "땡!",
+   "at": 21.4,
+   "dur": 0.334,
+   "syllablesPerSec": 2.99,
+   "src": "vo/nko/q3_nope.wav",
+   "key": "ee4e72a8a927fdcc3089a275038470ce",
+   "words": 1
+  },
+  {
+   "id": "q3_3",
+   "text": "셋!",
+   "at": 22.2,
+   "dur": 0.331,
+   "syllablesPerSec": 3.02,
+   "src": "vo/nko/q3_3.wav",
+   "key": "e6c539d46ee386eb0c044c3d156cb3b2",
+   "words": 1
+  },
+  {
+   "id": "q3_2",
+   "text": "둘!",
+   "at": 22.8,
+   "dur": 0.461,
+   "syllablesPerSec": 2.17,
+   "src": "vo/nko/q3_2.wav",
+   "key": "564b6572af9f6e07d3dc4763c6789acb",
+   "words": 1
+  },
+  {
+   "id": "q3_1",
+   "text": "하나!",
+   "at": 23.4,
+   "dur": 0.478,
+   "syllablesPerSec": 4.18,
+   "src": "vo/nko/q3_1.wav",
+   "key": "f6699e5c3673f36c730cd2a7d58c4a8e",
+   "words": 1
+  },
+  {
+   "id": "q3_answer",
+   "text": "딩동댕!",
+   "at": 24.06,
+   "dur": 0.757,
+   "syllablesPerSec": 3.96,
+   "src": "vo/nko/q3_answer.wav",
+   "key": "f2940e3e5d17817b3ea887dab0388ac6",
+   "words": 1
+  },
+  {
+   "id": "q3_name",
+   "text": "기예르모!",
+   "at": 24.95,
+   "dur": 0.955,
+   "syllablesPerSec": 4.19,
+   "src": "vo/nko/q3_name.wav",
+   "key": "400a7ca290fa01524493f25cec2786aa",
+   "words": 1
+  },
+  {
+   "id": "q3_say",
+   "text": "기예르모예요.",
+   "at": 26.04,
+   "dur": 1.203,
+   "syllablesPerSec": 4.99,
+   "src": "vo/nko/q3_say.wav",
+   "key": "c967add8d9875057958dd6dcd3871e94",
+   "words": 1
+  },
+  {
+   "id": "end_ask",
+   "text": "여러분 이름은요?",
+   "at": 29.7,
+   "dur": 1.093,
+   "syllablesPerSec": 6.4,
+   "src": "vo/nko/end_ask.wav",
+   "key": "af443c34fabf0f647a121329398e0344",
+   "words": 2
+  },
+  {
+   "id": "end_try",
+   "text": "한국어로 써 보세요!",
+   "at": 30.88,
+   "dur": 1.393,
+   "syllablesPerSec": 5.74,
+   "src": "vo/nko/end_try.wav",
+   "key": "a039554014f652d63d066197b2e511aa",
+   "words": 3
+  },
+  {
+   "id": "end_fighting",
+   "text": "화이팅!",
+   "at": 32.42,
+   "dur": 0.662,
+   "syllablesPerSec": 4.53,
+   "src": "vo/nko/end_fighting.wav",
+   "key": "9aeacf0dcf65b00be9f995a78e504acb",
+   "words": 1
+  }
+ ]
+}

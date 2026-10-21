@@ -1,0 +1,321 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../나레이션_계획.json",
+ "version": "tko",
+ "voice": {
+  "id": "tc_61659cc118732016a95fe7c6",
+  "name": "하나"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "happy",
+  "intensity": 0.8,
+  "tempo": 1.05,
+  "seed": 1003,
+  "lufs": -17
+ },
+ "made": "2026-10-21T23:21:21.380Z",
+ "lines": [
+  {
+   "id": "q1_title",
+   "text": "몇 시예요?",
+   "at": 0.03,
+   "dur": 0.806,
+   "syllablesPerSec": 4.96,
+   "src": "vo/tko/q1_title.wav",
+   "key": "79da11ef4f528f8f1fe4b6b03c9e7b8a",
+   "words": 2
+  },
+  {
+   "id": "q1_guess",
+   "text": "삼 시 삼십 분?",
+   "at": 0.95,
+   "dur": 0.925,
+   "syllablesPerSec": 5.41,
+   "src": "vo/tko/q1_guess.wav",
+   "key": "a6600f01855a0b145f12c4008b9ebb5c",
+   "words": 4
+  },
+  {
+   "id": "q1_nope",
+   "text": "땡!",
+   "at": 2.2,
+   "dur": 0.334,
+   "syllablesPerSec": 2.99,
+   "src": "vo/tko/q1_nope.wav",
+   "key": "ee4e72a8a927fdcc3089a275038470ce",
+   "words": 1
+  },
+  {
+   "id": "q1_3",
+   "text": "셋!",
+   "at": 3,
+   "dur": 0.331,
+   "syllablesPerSec": 3.02,
+   "src": "vo/tko/q1_3.wav",
+   "key": "e6c539d46ee386eb0c044c3d156cb3b2",
+   "words": 1
+  },
+  {
+   "id": "q1_2",
+   "text": "둘!",
+   "at": 3.6,
+   "dur": 0.461,
+   "syllablesPerSec": 2.17,
+   "src": "vo/tko/q1_2.wav",
+   "key": "564b6572af9f6e07d3dc4763c6789acb",
+   "words": 1
+  },
+  {
+   "id": "q1_1",
+   "text": "하나!",
+   "at": 4.2,
+   "dur": 0.478,
+   "syllablesPerSec": 4.18,
+   "src": "vo/tko/q1_1.wav",
+   "key": "f6699e5c3673f36c730cd2a7d58c4a8e",
+   "words": 1
+  },
+  {
+   "id": "q1_answer",
+   "text": "딩동댕!",
+   "at": 4.86,
+   "dur": 0.757,
+   "syllablesPerSec": 3.96,
+   "src": "vo/tko/q1_answer.wav",
+   "key": "f2940e3e5d17817b3ea887dab0388ac6",
+   "words": 1
+  },
+  {
+   "id": "q1_sayit",
+   "text": "따라 해 보세요!",
+   "at": 5.8,
+   "dur": 0.819,
+   "syllablesPerSec": 7.33,
+   "src": "vo/tko/q1_sayit.wav",
+   "key": "cc60c390c23820ff2a773c3d8559a745",
+   "words": 3
+  },
+  {
+   "id": "q1_say",
+   "text": "세 시 삼십 분!",
+   "at": 6.84,
+   "dur": 1.217,
+   "syllablesPerSec": 4.11,
+   "src": "vo/tko/q1_say.wav",
+   "key": "7ecb0e7ce18187aa12d588daba5ba76b",
+   "words": 4
+  },
+  {
+   "id": "q2_title",
+   "text": "이건요?",
+   "at": 9.63,
+   "dur": 0.628,
+   "syllablesPerSec": 4.78,
+   "src": "vo/tko/q2_title.wav",
+   "key": "4162195838f43aaaf1c08ba152b481f8",
+   "words": 1
+  },
+  {
+   "id": "q2_guess",
+   "text": "일 시 열 분?",
+   "at": 10.55,
+   "dur": 0.823,
+   "syllablesPerSec": 4.86,
+   "src": "vo/tko/q2_guess.wav",
+   "key": "bfffedd6272a78391713f701c8e03cae",
+   "words": 4
+  },
+  {
+   "id": "q2_nope",
+   "text": "땡!",
+   "at": 11.8,
+   "dur": 0.334,
+   "syllablesPerSec": 2.99,
+   "src": "vo/tko/q2_nope.wav",
+   "key": "ee4e72a8a927fdcc3089a275038470ce",
+   "words": 1
+  },
+  {
+   "id": "q2_3",
+   "text": "셋!",
+   "at": 12.6,
+   "dur": 0.331,
+   "syllablesPerSec": 3.02,
+   "src": "vo/tko/q2_3.wav",
+   "key": "e6c539d46ee386eb0c044c3d156cb3b2",
+   "words": 1
+  },
+  {
+   "id": "q2_2",
+   "text": "둘!",
+   "at": 13.2,
+   "dur": 0.461,
+   "syllablesPerSec": 2.17,
+   "src": "vo/tko/q2_2.wav",
+   "key": "564b6572af9f6e07d3dc4763c6789acb",
+   "words": 1
+  },
+  {
+   "id": "q2_1",
+   "text": "하나!",
+   "at": 13.8,
+   "dur": 0.478,
+   "syllablesPerSec": 4.18,
+   "src": "vo/tko/q2_1.wav",
+   "key": "f6699e5c3673f36c730cd2a7d58c4a8e",
+   "words": 1
+  },
+  {
+   "id": "q2_answer",
+   "text": "딩동댕!",
+   "at": 14.46,
+   "dur": 0.757,
+   "syllablesPerSec": 3.96,
+   "src": "vo/tko/q2_answer.wav",
+   "key": "f2940e3e5d17817b3ea887dab0388ac6",
+   "words": 1
+  },
+  {
+   "id": "q2_sayit",
+   "text": "따라 해 보세요!",
+   "at": 15.4,
+   "dur": 0.819,
+   "syllablesPerSec": 7.33,
+   "src": "vo/tko/q2_sayit.wav",
+   "key": "cc60c390c23820ff2a773c3d8559a745",
+   "words": 3
+  },
+  {
+   "id": "q2_say",
+   "text": "한 시 십 분!",
+   "at": 16.44,
+   "dur": 1.138,
+   "syllablesPerSec": 3.51,
+   "src": "vo/tko/q2_say.wav",
+   "key": "1b80ef2668556de8373d6d937ba2755a",
+   "words": 4
+  },
+  {
+   "id": "q3_title",
+   "text": "마지막!",
+   "at": 19.23,
+   "dur": 0.571,
+   "syllablesPerSec": 5.25,
+   "src": "vo/tko/q3_title.wav",
+   "key": "25f344a68dff2d1762e6035a09a1e2bc",
+   "words": 1
+  },
+  {
+   "id": "q3_guess",
+   "text": "이 시 삼십 분?",
+   "at": 20.15,
+   "dur": 0.98,
+   "syllablesPerSec": 5.1,
+   "src": "vo/tko/q3_guess.wav",
+   "key": "202e801cf60838c0119e01addc6f0da7",
+   "words": 4
+  },
+  {
+   "id": "q3_nope",
+   "text": "땡!",
+   "at": 21.4,
+   "dur": 0.334,
+   "syllablesPerSec": 2.99,
+   "src": "vo/tko/q3_nope.wav",
+   "key": "ee4e72a8a927fdcc3089a275038470ce",
+   "words": 1
+  },
+  {
+   "id": "q3_3",
+   "text": "셋!",
+   "at": 22.2,
+   "dur": 0.331,
+   "syllablesPerSec": 3.02,
+   "src": "vo/tko/q3_3.wav",
+   "key": "e6c539d46ee386eb0c044c3d156cb3b2",
+   "words": 1
+  },
+  {
+   "id": "q3_2",
+   "text": "둘!",
+   "at": 22.8,
+   "dur": 0.461,
+   "syllablesPerSec": 2.17,
+   "src": "vo/tko/q3_2.wav",
+   "key": "564b6572af9f6e07d3dc4763c6789acb",
+   "words": 1
+  },
+  {
+   "id": "q3_1",
+   "text": "하나!",
+   "at": 23.4,
+   "dur": 0.478,
+   "syllablesPerSec": 4.18,
+   "src": "vo/tko/q3_1.wav",
+   "key": "f6699e5c3673f36c730cd2a7d58c4a8e",
+   "words": 1
+  },
+  {
+   "id": "q3_answer",
+   "text": "딩동댕!",
+   "at": 24.06,
+   "dur": 0.757,
+   "syllablesPerSec": 3.96,
+   "src": "vo/tko/q3_answer.wav",
+   "key": "f2940e3e5d17817b3ea887dab0388ac6",
+   "words": 1
+  },
+  {
+   "id": "q3_sayit",
+   "text": "따라 해 보세요!",
+   "at": 25,
+   "dur": 0.819,
+   "syllablesPerSec": 7.33,
+   "src": "vo/tko/q3_sayit.wav",
+   "key": "cc60c390c23820ff2a773c3d8559a745",
+   "words": 3
+  },
+  {
+   "id": "q3_say",
+   "text": "두 시 반!",
+   "at": 26.04,
+   "dur": 0.845,
+   "syllablesPerSec": 3.55,
+   "src": "vo/tko/q3_say.wav",
+   "key": "f4c57996e6bf9a63232b6304ccb78876",
+   "words": 3
+  },
+  {
+   "id": "end_score",
+   "text": "몇 개 맞혔어요?",
+   "at": 28.86,
+   "dur": 1.113,
+   "syllablesPerSec": 5.39,
+   "src": "vo/tko/end_score.wav",
+   "key": "a324d45e359ef6a2947a55e3f030f051",
+   "words": 3
+  },
+  {
+   "id": "end_comment",
+   "text": "지금 몇 시예요? 댓글로!",
+   "at": 30.3,
+   "dur": 1.653,
+   "syllablesPerSec": 5.44,
+   "src": "vo/tko/end_comment.wav",
+   "key": "a61053a8a94b8e70a85f5b7387a006d2",
+   "words": 4
+  },
+  {
+   "id": "end_fighting",
+   "text": "화이팅!",
+   "at": 32.42,
+   "dur": 0.662,
+   "syllablesPerSec": 4.53,
+   "src": "vo/tko/end_fighting.wav",
+   "key": "9aeacf0dcf65b00be9f995a78e504acb",
+   "words": 1
+  }
+ ]
+}

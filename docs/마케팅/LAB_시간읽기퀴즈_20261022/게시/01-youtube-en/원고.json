@@ -1,0 +1,21 @@
+{
+ "id": "01-youtube-en",
+ "brand": "LAB",
+ "platform": "youtube",
+ "account": "@synkkorean",
+ "format": "shorts",
+ "language": "en",
+ "audioLanguage": "en",
+ "title": "Korean clocks use 2 number systems?! 1 rule fixes it ⏰ Korean time quiz #learnkorean",
+ "caption": "Korean time uses TWO number systems — one for hours, another for minutes. 1 rule fixes it ⏰ Guess all 3 in 3 seconds!\n\n3시 30분 → 세 시 삼십 분 (not 삼 시!)\n1시 10분 → 한 시 십 분 (하나 → 한)\n2시 30분 → 두 시 반 (반 = half)\n\nTHE RULE\n시 (hours) → native Korean numbers: 한 · 두 · 세 · 네\n분 (minutes) → Sino-Korean numbers: 일 · 이 · 삼 · 사\n30분 = 반\n\nWhat time is it for you right now? Write it in Korean in the comments 👇\n\n🎮 Play Korean listening & reading mini games: https://synk.im/try/learning-hub/\n\nSYNK LAB · Korean time quiz with Mongle.\n#learnkorean #koreanlanguage #studykorean #koreannumbers",
+ "pinnedComment": "⏰ Your turn: what time is it where you are? Write it in Korean! (9:30 → 아홉 시 반)\n🎮 Mini games → https://synk.im/try/learning-hub/",
+ "alt": [
+  "Felt mascot Mongle hosts a Korean time quiz. A felt teddy bear gets stuck reading digital clocks showing 3:30, 1:10 and 2:30 — holding an abacus, dizzy among counting blocks, frowning at a whole pizza — then reads them right: meeting a bunny friend at a café at 3:30, cheering out of class at 1:10, and holding up half a pizza at 2:30."
+ ],
+ "madeForKids": false,
+ "alteredContent": false,
+ "category": "Education",
+ "hook": "B",
+ "_비고": "video.mp4 = time-en(100 BPM, 33.5초, 렌더.mjs). 표지 cover.png = 1.3초(2 NUMBER SYSTEMS? 1 RULE. + 3시 30분 + 주판 든 곰 + 삼 시 삼십 분??). 어린이 전용 아님(댓글이 끝 행동). 합성 표시 필수 아님(펠트 그림·특정인이 아닌 TTS 진행자, 관용구 퀴즈와 같음). 동영상 언어 en(영어 진행 + 한국어 읽기), 제목·설명 언어 en. 자동 더빙 꺼짐 확인.",
+ "version": "time-en"
+}

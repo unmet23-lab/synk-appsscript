@@ -1,0 +1,32 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "q1_answer",
+ "text": "딩동댕!",
+ "dur": 0.757,
+ "words": [
+  {
+   "text": "딩동댕!",
+   "start": 0.03,
+   "end": 0.757
+  }
+ ],
+ "source": {
+  "key": "f2940e3e5d17817b3ea887dab0388ac6",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 1.15,
+   "seed": 1003,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

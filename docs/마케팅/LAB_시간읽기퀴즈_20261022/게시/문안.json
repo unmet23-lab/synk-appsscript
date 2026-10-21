@@ -1,0 +1,20 @@
+{
+ "_설명": "「한국어로 시간 읽기」 퀴즈 게시글 정본(10-22, 제작 방식 v2 §4-3 「정본 둘」의 하나). 화면 글 정본은 remotion/src/film/data.ts(한국어·영어)와 remotion/src/kids/i18n.ts(몽골어). 판마다 글 파일은 node remotion/게시묶음.mjs. 학습 허브 링크는 10-22 08:0x 응답 200 확인(synk.im/try/learning-hub/). 첫 125자 안에 훅(v2 §2-4). 인스타 해시태그는 캡션·첫 댓글 합쳐 5개 이하.",
+ "_ko": {
+  "title": "한국어 시계에는 숫자 체계가 둘?! 규칙 하나면 끝 ⏰ 3초 시간 읽기 퀴즈",
+  "caption": "한국어로 몇 시예요? ⏰ 시는 한 가지 숫자, 분은 다른 숫자 — 규칙 하나만 알면 돼! 3문제, 하나에 3초.\n\n3시 30분 → 세 시 삼십 분(「삼 시」 아님!)\n1시 10분 → 한 시 십 분(하나 → 한)\n2시 30분 → 두 시 반(반 = 절반)\n\n규칙\n시 → 고유어 수: 한 · 두 · 세 · 네\n분 → 한자어 수: 일 · 이 · 삼 · 사\n30분 = 반\n\n지금 거기는 몇 시야? 한국어로 댓글에 써 줘 👇",
+  "comment": "🎮 한국어 듣기·읽기 게임(영어·한국어로): synk.im/try/learning-hub/"
+ },
+ "en": {
+  "account": "YouTube @synkkorean",
+  "title": "Korean clocks use 2 number systems?! 1 rule fixes it ⏰ Korean time quiz #learnkorean",
+  "description": "Korean time uses TWO number systems — one for hours, another for minutes. 1 rule fixes it ⏰ Guess all 3 in 3 seconds!\n\n3시 30분 → 세 시 삼십 분 (not 삼 시!)\n1시 10분 → 한 시 십 분 (하나 → 한)\n2시 30분 → 두 시 반 (반 = half)\n\nTHE RULE\n시 (hours) → native Korean numbers: 한 · 두 · 세 · 네\n분 (minutes) → Sino-Korean numbers: 일 · 이 · 삼 · 사\n30분 = 반\n\nWhat time is it for you right now? Write it in Korean in the comments 👇\n\n🎮 Play Korean listening & reading mini games: https://synk.im/try/learning-hub/\n\nSYNK LAB · Korean time quiz with Mongle.\n#learnkorean #koreanlanguage #studykorean #koreannumbers",
+  "pinned_comment": "⏰ Your turn: what time is it where you are? Write it in Korean! (9:30 → 아홉 시 반)\n🎮 Mini games → https://synk.im/try/learning-hub/",
+  "alt": "Felt mascot Mongle hosts a Korean time quiz. A felt teddy bear gets stuck reading digital clocks showing 3:30, 1:10 and 2:30 — holding an abacus, dizzy among counting blocks, frowning at a whole pizza — then reads them right: meeting a bunny friend at a café at 3:30, cheering out of class at 1:10, and holding up half a pizza at 2:30."
+ },
+ "mn": {
+  "account": "Instagram @synk.mn · Facebook synkworld",
+  "caption": "Солонгосоор цаг хэлж чадах уу? ⏰ Цагийг нэг төрлийн тоогоор, минутыг өөр төрлийн тоогоор хэлдэг — ганц дүрэм мэдэхэд л болно! 3 асуулт, тус бүрд 3 секунд.\n\n3시 30분 → 세 시 삼십 분 («삼 시» биш!)\n1시 10분 → 한 시 십 분 (하나 → 한)\n2시 30분 → 두 시 반 (반 = хагас)\n\nДҮРЭМ\n시 (цаг) → цэвэр солонгос тоо: 한 · 두 · 세 · 네\n분 (минут) → хятад гаралтай тоо: 일 · 이 · 삼 · 사\n30분 = 반\n\nТанай тэнд одоо хэдэн цаг болж байна вэ? Солонгосоор сэтгэгдэлд бичээрэй 👇\n\n#солонгосхэл #한국어 #learnkorean #mongolia",
+  "comment": "🎮 Солонгос хэлний сонсгол, уншлагын тоглоом (англи, солонгос хэлээр): synk.im/try/learning-hub/"
+ }
+}

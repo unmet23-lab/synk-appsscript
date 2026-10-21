@@ -1,0 +1,32 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "q3_nope",
+ "text": "Nope!",
+ "dur": 0.6,
+ "words": [
+  {
+   "text": "Nope!",
+   "start": 0.02,
+   "end": 0.564
+  }
+ ],
+ "source": {
+  "key": "6b83bb4ffab861480a428fbf8475fdf5",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "happy",
+   "intensity": 1.3,
+   "tempo": 1.15,
+   "seed": 1003,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1.05,
+  "cut": 0.6
+ }
+}

@@ -1,0 +1,37 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "q1_title",
+ "text": "몇 시예요?",
+ "dur": 0.806,
+ "words": [
+  {
+   "text": "몇",
+   "start": 0.02,
+   "end": 0.223
+  },
+  {
+   "text": "시예요?",
+   "start": 0.324,
+   "end": 0.806
+  }
+ ],
+ "source": {
+  "key": "79da11ef4f528f8f1fe4b6b03c9e7b8a",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 0.8,
+   "tempo": 1.05,
+   "seed": 1003,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

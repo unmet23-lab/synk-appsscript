@@ -1,0 +1,59 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "end_score",
+ "text": "Okay! How many did you get?",
+ "dur": 1.813,
+ "words": [
+  {
+   "text": "Okay!",
+   "start": 0.02,
+   "end": 0.349
+  },
+  {
+   "text": "How",
+   "start": 0.77,
+   "end": 0.88
+  },
+  {
+   "text": "many",
+   "start": 0.935,
+   "end": 1.1
+  },
+  {
+   "text": "did",
+   "start": 1.173,
+   "end": 1.265
+  },
+  {
+   "text": "you",
+   "start": 1.319,
+   "end": 1.411
+  },
+  {
+   "text": "get?",
+   "start": 1.465,
+   "end": 1.813
+  }
+ ],
+ "source": {
+  "key": "a9ad418a73b3c6b63b4f9ce933337ceb",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1.15,
+   "seed": 1003,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6",
+   "prev": "That was the last question of a fun Korean time quiz.",
+   "next": "Comment your time in Korean!"
+  },
+  "speed": 1.1,
+  "cut": null
+ }
+}

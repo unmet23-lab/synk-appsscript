@@ -1,0 +1,37 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "q2_title",
+ "text": "다음 이름!",
+ "dur": 0.826,
+ "words": [
+  {
+   "text": "다음",
+   "start": 0.02,
+   "end": 0.364
+  },
+  {
+   "text": "이름!",
+   "start": 0.425,
+   "end": 0.826
+  }
+ ],
+ "source": {
+  "key": "24aa7dc2792bce215747f31078fff8ec",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 0.8,
+   "tempo": 1.05,
+   "seed": 1003,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

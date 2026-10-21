@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "q3_guess",
+ "text": "이 시 삼십 분?",
+ "dur": 0.98,
+ "words": [
+  {
+   "text": "이",
+   "start": 0.06,
+   "end": 0.077
+  },
+  {
+   "text": "시",
+   "start": 0.166,
+   "end": 0.254
+  },
+  {
+   "text": "삼십",
+   "start": 0.325,
+   "end": 0.625
+  },
+  {
+   "text": "분?",
+   "start": 0.677,
+   "end": 0.98
+  }
+ ],
+ "source": {
+  "key": "202e801cf60838c0119e01addc6f0da7",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.05,
+   "seed": 1003,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1.15,
+  "cut": null
+ }
+}

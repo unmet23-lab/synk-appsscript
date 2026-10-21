@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "q1_title",
+ "text": "Two number systems? One rule!",
+ "dur": 2.163,
+ "words": [
+  {
+   "text": "Two",
+   "start": 0.02,
+   "end": 0.252
+  },
+  {
+   "text": "number",
+   "start": 0.391,
+   "end": 0.654
+  },
+  {
+   "text": "systems?",
+   "start": 0.732,
+   "end": 1.118
+  },
+  {
+   "text": "One",
+   "start": 1.536,
+   "end": 1.675
+  },
+  {
+   "text": "rule!",
+   "start": 1.722,
+   "end": 2.163
+  }
+ ],
+ "source": {
+  "key": "a2c5099a74def56d4ffa579561b3385f",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "happy",
+   "intensity": 1.2,
+   "tempo": 1.15,
+   "seed": 1003,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1.3,
+  "cut": null
+ }
+}

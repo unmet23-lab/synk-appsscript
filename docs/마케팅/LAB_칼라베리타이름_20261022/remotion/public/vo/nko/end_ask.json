@@ -1,0 +1,37 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "end_ask",
+ "text": "여러분 이름은요?",
+ "dur": 1.093,
+ "words": [
+  {
+   "text": "여러분",
+   "start": 0.02,
+   "end": 0.447
+  },
+  {
+   "text": "이름은요?",
+   "start": 0.508,
+   "end": 1.093
+  }
+ ],
+ "source": {
+  "key": "af443c34fabf0f647a121329398e0344",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 0.8,
+   "tempo": 1.05,
+   "seed": 1003,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

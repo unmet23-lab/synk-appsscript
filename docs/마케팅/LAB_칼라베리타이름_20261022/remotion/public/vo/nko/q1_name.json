@@ -1,0 +1,32 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "q1_name",
+ "text": "후안!",
+ "dur": 0.606,
+ "words": [
+  {
+   "text": "후안!",
+   "start": 0.04,
+   "end": 0.606
+  }
+ ],
+ "source": {
+  "key": "cd0a803e2ea54706a523e42a1a9ea7fa",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 0.95,
+   "seed": 1003,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

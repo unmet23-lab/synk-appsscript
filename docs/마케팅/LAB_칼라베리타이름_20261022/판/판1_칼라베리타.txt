@@ -1,0 +1,26 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — six needle-felted wool "calaveritas" (cute Mexican Day of the Dead sugar-skull candies) for a friendly kids' quiz about writing names in Korean, one sheet.
+
+The attached reference photo only shows the felt craft look we want (wool texture, colors, lighting). Do not copy its objects.
+
+Layout: one landscape image, 3 columns × 2 rows, six cells of equal size. One object group per cell, centered, filling about 65–75% of the cell, with wide empty margins so no two cells touch. Seamless pure white background (#FFFFFF), flat even studio light, no floor, no cast shadows, no reflections, no border lines. Absolutely no text, letters, numbers, logos or symbols anywhere. Nothing in the image is white or cream except the background; every outer edge is a clear saturated color or charcoal.
+
+Every calaverita is a cute, rounded, smiling felt skull candy (big round eye sockets with colorful icing flowers around them, a small heart-shaped nose, a stitched smile) — sweet and festive, never scary, no bones, no dark mood. Each one has a WIDE, SMOOTH, completely BLANK shiny gold-foil name strip across its forehead (a flat horizontal band about 70% of the skull's width, facing the camera straight on, nothing written on it).
+
+Column colors (same skull in the top and bottom cell of a column):
+- Column 1: turquoise felt skull with pink and yellow icing flowers.
+- Column 2: hot-pink felt skull with turquoise and orange icing flowers.
+- Column 3: lavender-purple felt skull with green and yellow icing flowers.
+
+Top row = "oops" (the name went wrong):
+1. The turquoise calaverita looks sideways, worried, its blank gold strip stuck on crooked; a small red felt piping bag lies beside it with a messy squiggle of icing on the plate.
+2. The hot-pink calaverita has dizzy swirl eyes; its blank gold strip is peeling off at one corner.
+3. The lavender calaverita squints through a small brown felt magnifying glass, confused; a little icing smudge on the corner of its blank gold strip.
+
+Bottom row = "just right" (proud and festive):
+4. The turquoise calaverita smiling proudly, gold strip perfectly straight and clean, sitting in a small nest of bright orange felt marigold flowers (cempasúchil).
+5. The hot-pink calaverita beaming, gold strip straight and clean, orange marigolds at its base and a tiny string of colorful felt bunting flags (plain flags, no markings) arching above it.
+6. The lavender calaverita smiling with closed happy eyes, gold strip straight and clean, orange marigolds around it and one small felt candle with a yellow-orange flame beside it.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, cute and playful for children, consistent soft lighting across all six cells, saturated but soft colors that will read well on a cobalt blue background. Keep each cell's pieces close together inside the cell but clearly separated from neighboring cells by white space.

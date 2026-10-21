@@ -1,0 +1,285 @@
+{
+ "_설명": "LAB 「칼라베리타에 내 이름을 한글로」(10-22) 나레이션 — 하나 목소리 하나, 한국어로만(스페인어판 화면 글은 스페인어). 대본_name.mjs가 만든다.",
+ "voice": {
+  "id": "tc_61659cc118732016a95fe7c6",
+  "name": "하나"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "tempo": 1.15,
+  "emotion": "smart"
+ },
+ "out": "public/vo",
+ "srcBase": "public",
+ "ts": "src/film/vo.generated.ts",
+ "trim": "both",
+ "limits": [
+  {
+   "from": 0,
+   "to": 9.5
+  },
+  {
+   "from": 9.6,
+   "to": 19.1
+  },
+  {
+   "from": 19.2,
+   "to": 28.7
+  },
+  {
+   "from": 28.8,
+   "to": 33.25
+  }
+ ],
+ "versions": {
+  "nko": {
+   "lines": [
+    {
+     "lang": "ko",
+     "emotion": "happy",
+     "intensity": 0.8,
+     "tempo": 1.05,
+     "id": "q1_title",
+     "at": 0.03,
+     "text": "이름 퀴즈!"
+    },
+    {
+     "lang": "ko",
+     "emotion": "normal",
+     "intensity": 1,
+     "tempo": 1.05,
+     "id": "q1_guess",
+     "at": 1,
+     "text": "주안?",
+     "speed": 1.1
+    },
+    {
+     "id": "q1_nope",
+     "at": 2.2,
+     "lang": "ko",
+     "text": "땡!",
+     "emotion": "happy"
+    },
+    {
+     "id": "q1_3",
+     "at": 3,
+     "lang": "ko",
+     "text": "셋!",
+     "emotion": "toneup"
+    },
+    {
+     "id": "q1_2",
+     "at": 3.6,
+     "lang": "ko",
+     "text": "둘!",
+     "emotion": "toneup"
+    },
+    {
+     "id": "q1_1",
+     "at": 4.2,
+     "lang": "ko",
+     "text": "하나!",
+     "emotion": "toneup"
+    },
+    {
+     "id": "q1_answer",
+     "at": 4.86,
+     "lang": "ko",
+     "text": "딩동댕!",
+     "emotion": "happy"
+    },
+    {
+     "id": "q1_name",
+     "at": 5.75,
+     "lang": "ko",
+     "text": "후안!",
+     "emotion": "normal",
+     "intensity": 1,
+     "tempo": 0.95
+    },
+    {
+     "id": "q1_say",
+     "at": 6.84,
+     "lang": "ko",
+     "text": "후안이에요.",
+     "emotion": "normal",
+     "intensity": 1,
+     "tempo": 0.95
+    },
+    {
+     "lang": "ko",
+     "emotion": "happy",
+     "intensity": 0.8,
+     "tempo": 1.05,
+     "id": "q2_title",
+     "at": 9.63,
+     "text": "다음 이름!"
+    },
+    {
+     "lang": "ko",
+     "emotion": "normal",
+     "intensity": 1,
+     "tempo": 1.05,
+     "id": "q2_guess",
+     "at": 10.6,
+     "text": "레지나?",
+     "speed": 1.1
+    },
+    {
+     "id": "q2_nope",
+     "at": 11.8,
+     "lang": "ko",
+     "text": "땡!",
+     "emotion": "happy"
+    },
+    {
+     "id": "q2_3",
+     "at": 12.6,
+     "lang": "ko",
+     "text": "셋!",
+     "emotion": "toneup"
+    },
+    {
+     "id": "q2_2",
+     "at": 13.2,
+     "lang": "ko",
+     "text": "둘!",
+     "emotion": "toneup"
+    },
+    {
+     "id": "q2_1",
+     "at": 13.8,
+     "lang": "ko",
+     "text": "하나!",
+     "emotion": "toneup"
+    },
+    {
+     "id": "q2_answer",
+     "at": 14.46,
+     "lang": "ko",
+     "text": "딩동댕!",
+     "emotion": "happy"
+    },
+    {
+     "id": "q2_name",
+     "at": 15.35,
+     "lang": "ko",
+     "text": "레히나!",
+     "emotion": "normal",
+     "intensity": 1,
+     "tempo": 0.95
+    },
+    {
+     "id": "q2_say",
+     "at": 16.44,
+     "lang": "ko",
+     "text": "레히나예요.",
+     "emotion": "normal",
+     "intensity": 1,
+     "tempo": 0.95
+    },
+    {
+     "lang": "ko",
+     "emotion": "happy",
+     "intensity": 0.8,
+     "tempo": 1.05,
+     "id": "q3_title",
+     "at": 19.23,
+     "text": "마지막!"
+    },
+    {
+     "lang": "ko",
+     "emotion": "normal",
+     "intensity": 1,
+     "tempo": 1.05,
+     "id": "q3_guess",
+     "at": 20.2,
+     "text": "구일레르모?",
+     "speed": 1.1
+    },
+    {
+     "id": "q3_nope",
+     "at": 21.4,
+     "lang": "ko",
+     "text": "땡!",
+     "emotion": "happy"
+    },
+    {
+     "id": "q3_3",
+     "at": 22.2,
+     "lang": "ko",
+     "text": "셋!",
+     "emotion": "toneup"
+    },
+    {
+     "id": "q3_2",
+     "at": 22.8,
+     "lang": "ko",
+     "text": "둘!",
+     "emotion": "toneup"
+    },
+    {
+     "id": "q3_1",
+     "at": 23.4,
+     "lang": "ko",
+     "text": "하나!",
+     "emotion": "toneup"
+    },
+    {
+     "id": "q3_answer",
+     "at": 24.06,
+     "lang": "ko",
+     "text": "딩동댕!",
+     "emotion": "happy"
+    },
+    {
+     "id": "q3_name",
+     "at": 24.95,
+     "lang": "ko",
+     "text": "기예르모!",
+     "emotion": "normal",
+     "intensity": 1,
+     "tempo": 0.95,
+     "speed": 1.2
+    },
+    {
+     "id": "q3_say",
+     "at": 26.04,
+     "lang": "ko",
+     "text": "기예르모예요.",
+     "emotion": "normal",
+     "intensity": 1,
+     "tempo": 0.95
+    },
+    {
+     "lang": "ko",
+     "emotion": "happy",
+     "intensity": 0.8,
+     "tempo": 1.05,
+     "id": "end_ask",
+     "at": 29.7,
+     "text": "여러분 이름은요?"
+    },
+    {
+     "lang": "ko",
+     "emotion": "happy",
+     "intensity": 0.8,
+     "tempo": 1.05,
+     "id": "end_try",
+     "at": 30.88,
+     "text": "한국어로 써 보세요!",
+     "speed": 1.05
+    },
+    {
+     "id": "end_fighting",
+     "at": 32.42,
+     "lang": "ko",
+     "text": "화이팅!",
+     "tempo": 1.05,
+     "emotion": "happy",
+     "intensity": 1.2
+    }
+   ]
+  }
+ }
+}

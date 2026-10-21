@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "q2_sayit",
+ "text": "따라 해 보세요!",
+ "dur": 0.819,
+ "words": [
+  {
+   "text": "따라",
+   "start": 0.08,
+   "end": 0.228
+  },
+  {
+   "text": "해",
+   "start": 0.283,
+   "end": 0.375
+  },
+  {
+   "text": "보세요!",
+   "start": 0.449,
+   "end": 0.819
+  }
+ ],
+ "source": {
+  "key": "cc60c390c23820ff2a773c3d8559a745",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 1.15,
+   "seed": 1003,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1.1,
+  "cut": null
+ }
+}

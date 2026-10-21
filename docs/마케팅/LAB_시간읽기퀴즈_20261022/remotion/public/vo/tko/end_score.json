@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "end_score",
+ "text": "몇 개 맞혔어요?",
+ "dur": 1.113,
+ "words": [
+  {
+   "text": "몇",
+   "start": 0.02,
+   "end": 0.182
+  },
+  {
+   "text": "개",
+   "start": 0.243,
+   "end": 0.325
+  },
+  {
+   "text": "맞혔어요?",
+   "start": 0.385,
+   "end": 1.113
+  }
+ ],
+ "source": {
+  "key": "a324d45e359ef6a2947a55e3f030f051",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 1.15,
+   "seed": 1003,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

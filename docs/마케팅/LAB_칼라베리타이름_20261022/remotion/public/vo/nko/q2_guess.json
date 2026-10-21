@@ -1,0 +1,32 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "q2_guess",
+ "text": "레지나?",
+ "dur": 0.582,
+ "words": [
+  {
+   "text": "레지나?",
+   "start": 0.02,
+   "end": 0.582
+  }
+ ],
+ "source": {
+  "key": "c5183de6e504974c8600651a8353595c",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.05,
+   "seed": 1003,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1.1,
+  "cut": null
+ }
+}

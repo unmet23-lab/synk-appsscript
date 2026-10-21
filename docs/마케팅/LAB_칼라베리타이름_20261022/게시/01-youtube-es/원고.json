@@ -1,0 +1,21 @@
+{
+ "id": "01-youtube-es",
+ "brand": "LAB",
+ "platform": "youtube",
+ "account": "@synkkorean",
+ "format": "shorts",
+ "language": "es-419",
+ "audioLanguage": "ko",
+ "title": "¿Tu nombre en coreano? 💀 Calaveritas: Juan, Regina, Guillermo #diademuertos",
+ "caption": "¿Cómo se escribe TU nombre en coreano? 💀🌼 En Día de Muertos les ponemos nombre a las calaveritas… ¡ahora en coreano!\n\nJUAN → 후안 (la J se escribe con ㅎ)\nREGINA → 레히나 (GI → 히)\nGUILLERMO → 기예르모 (GUI → 기, LLE → 예)\n\nDilo: 후안이에요 · 레히나예요 · 기예르모예요\n\n¿Y tu nombre? Escríbelo en coreano gratis y sin registro 👉 https://synk.im/nombre\n\nSYNK LAB · Calaverita quiz con Mongle.\n#diademuertos #aprendecoreano #coreano #learnkorean",
+ "pinnedComment": "💀 ¿Cómo quedó tu nombre en coreano? Escríbelo aquí abajo 👇\n👉 https://synk.im/nombre",
+ "alt": [
+  "La mascota de fieltro Mongle presenta un quiz: tres calaveritas de fieltro con una franja dorada en la frente. Primero la franja está chueca o despegada; luego cada calaverita, rodeada de flores de cempasúchil, muestra su nombre escrito en coreano: 후안 (Juan), 레히나 (Regina) y 기예르모 (Guillermo)."
+ ],
+ "madeForKids": false,
+ "alteredContent": false,
+ "category": "Education",
+ "hook": "A",
+ "_비고": "video.mp4 = name-es(100 BPM, 33.5초, 렌더.mjs). 표지 cover.png = 1.3초(¿TU NOMBRE EN COREANO? + JUAN + 띠가 비뚤어진 칼라베리타 + 주안??). 어린이 전용 아님. 합성 표시 필수 아님(펠트 그림·특정인이 아닌 TTS 진행자). 동영상 언어 ko(목소리가 한국어뿐), 제목·설명 언어 스페인어(라틴아메리카, es-419) — 10-12 「내 이름 한국어로」처럼 스페인어 제목으로 올린다. 자동 더빙 꺼짐 확인. 끝 행동 링크 synk.im/nombre는 설명란·고정 댓글.",
+ "version": "name-es"
+}

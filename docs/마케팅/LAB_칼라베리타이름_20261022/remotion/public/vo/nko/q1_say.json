@@ -1,0 +1,32 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "q1_say",
+ "text": "후안이에요.",
+ "dur": 0.98,
+ "words": [
+  {
+   "text": "후안이에요.",
+   "start": 0.04,
+   "end": 0.98
+  }
+ ],
+ "source": {
+  "key": "e3e008527b3675525d0beb405beda87b",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 0.95,
+   "seed": 1003,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

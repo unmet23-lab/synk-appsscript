@@ -1,0 +1,281 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../나레이션_계획.json",
+ "version": "ten",
+ "voice": {
+  "id": "tc_61659cc118732016a95fe7c6",
+  "name": "하나"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "en",
+  "emotion": "happy",
+  "intensity": 1.2,
+  "tempo": 1.15,
+  "seed": 1003,
+  "lufs": -17
+ },
+ "made": "2026-10-21T23:21:18.924Z",
+ "lines": [
+  {
+   "id": "q1_title",
+   "text": "Two number systems? One rule!",
+   "at": 0.03,
+   "dur": 2.163,
+   "syllablesPerSec": null,
+   "src": "vo/ten/q1_title.wav",
+   "key": "a2c5099a74def56d4ffa579561b3385f",
+   "words": 5
+  },
+  {
+   "id": "q1_nope",
+   "text": "Nope!",
+   "at": 2.36,
+   "dur": 0.6,
+   "syllablesPerSec": null,
+   "src": "vo/ten/q1_nope.wav",
+   "key": "6b83bb4ffab861480a428fbf8475fdf5",
+   "words": 1
+  },
+  {
+   "id": "q1_3",
+   "text": "Three!",
+   "at": 3,
+   "dur": 0.58,
+   "syllablesPerSec": null,
+   "src": "vo/ten/q1_3.wav",
+   "key": "75fe818205f5acf3e698c8be944d6de0",
+   "words": 1
+  },
+  {
+   "id": "q1_2",
+   "text": "Two!",
+   "at": 3.6,
+   "dur": 0.544,
+   "syllablesPerSec": null,
+   "src": "vo/ten/q1_2.wav",
+   "key": "7e93ad00e384fbd8e21f99cc5fb267b1",
+   "words": 1
+  },
+  {
+   "id": "q1_1",
+   "text": "One!",
+   "at": 4.2,
+   "dur": 0.611,
+   "syllablesPerSec": null,
+   "src": "vo/ten/q1_1.wav",
+   "key": "4c807d562736e66335c59b8ab3fbc6d9",
+   "words": 1
+  },
+  {
+   "id": "q1_answer",
+   "text": "Native Korean for hours!",
+   "at": 5.04,
+   "dur": 1.806,
+   "syllablesPerSec": null,
+   "src": "vo/ten/q1_answer.wav",
+   "key": "bf626c8cea9431747b328c4a76be1a8a",
+   "words": 4
+  },
+  {
+   "id": "q1_say",
+   "text": "세 시 삼십 분!",
+   "at": 7.25,
+   "dur": 1.217,
+   "syllablesPerSec": 4.11,
+   "src": "vo/ten/q1_say.wav",
+   "key": "7ecb0e7ce18187aa12d588daba5ba76b",
+   "words": 4
+  },
+  {
+   "id": "q2_title",
+   "text": "And this one?",
+   "at": 9.63,
+   "dur": 1.177,
+   "syllablesPerSec": null,
+   "src": "vo/ten/q2_title.wav",
+   "key": "5259b0bdadf0d451770682f37733f960",
+   "words": 3
+  },
+  {
+   "id": "q2_guess",
+   "text": "일 시 열 분?",
+   "at": 10.8,
+   "dur": 0.823,
+   "syllablesPerSec": 4.86,
+   "src": "vo/ten/q2_guess.wav",
+   "key": "bfffedd6272a78391713f701c8e03cae",
+   "words": 4
+  },
+  {
+   "id": "q2_nope",
+   "text": "Nope!",
+   "at": 11.96,
+   "dur": 0.6,
+   "syllablesPerSec": null,
+   "src": "vo/ten/q2_nope.wav",
+   "key": "6b83bb4ffab861480a428fbf8475fdf5",
+   "words": 1
+  },
+  {
+   "id": "q2_3",
+   "text": "Three!",
+   "at": 12.6,
+   "dur": 0.58,
+   "syllablesPerSec": null,
+   "src": "vo/ten/q2_3.wav",
+   "key": "75fe818205f5acf3e698c8be944d6de0",
+   "words": 1
+  },
+  {
+   "id": "q2_2",
+   "text": "Two!",
+   "at": 13.2,
+   "dur": 0.544,
+   "syllablesPerSec": null,
+   "src": "vo/ten/q2_2.wav",
+   "key": "7e93ad00e384fbd8e21f99cc5fb267b1",
+   "words": 1
+  },
+  {
+   "id": "q2_1",
+   "text": "One!",
+   "at": 13.8,
+   "dur": 0.611,
+   "syllablesPerSec": null,
+   "src": "vo/ten/q2_1.wav",
+   "key": "4c807d562736e66335c59b8ab3fbc6d9",
+   "words": 1
+  },
+  {
+   "id": "q2_answer",
+   "text": "Hana becomes han!",
+   "at": 14.64,
+   "dur": 1.504,
+   "syllablesPerSec": null,
+   "src": "vo/ten/q2_answer.wav",
+   "key": "0b26f0496927c5d4385f96dc0ff587e6",
+   "words": 3
+  },
+  {
+   "id": "q2_say",
+   "text": "한 시 십 분!",
+   "at": 16.85,
+   "dur": 1.138,
+   "syllablesPerSec": 3.51,
+   "src": "vo/ten/q2_say.wav",
+   "key": "1b80ef2668556de8373d6d937ba2755a",
+   "words": 4
+  },
+  {
+   "id": "q3_title",
+   "text": "Last one!",
+   "at": 19.23,
+   "dur": 1.169,
+   "syllablesPerSec": null,
+   "src": "vo/ten/q3_title.wav",
+   "key": "3d56e5e79e7fc0cb6cd87cccec31df5e",
+   "words": 2
+  },
+  {
+   "id": "q3_guess",
+   "text": "이 시 삼십 분?",
+   "at": 20.4,
+   "dur": 0.98,
+   "syllablesPerSec": 5.1,
+   "src": "vo/ten/q3_guess.wav",
+   "key": "202e801cf60838c0119e01addc6f0da7",
+   "words": 4
+  },
+  {
+   "id": "q3_nope",
+   "text": "Nope!",
+   "at": 21.56,
+   "dur": 0.6,
+   "syllablesPerSec": null,
+   "src": "vo/ten/q3_nope.wav",
+   "key": "6b83bb4ffab861480a428fbf8475fdf5",
+   "words": 1
+  },
+  {
+   "id": "q3_3",
+   "text": "Three!",
+   "at": 22.2,
+   "dur": 0.58,
+   "syllablesPerSec": null,
+   "src": "vo/ten/q3_3.wav",
+   "key": "75fe818205f5acf3e698c8be944d6de0",
+   "words": 1
+  },
+  {
+   "id": "q3_2",
+   "text": "Two!",
+   "at": 22.8,
+   "dur": 0.544,
+   "syllablesPerSec": null,
+   "src": "vo/ten/q3_2.wav",
+   "key": "7e93ad00e384fbd8e21f99cc5fb267b1",
+   "words": 1
+  },
+  {
+   "id": "q3_1",
+   "text": "One!",
+   "at": 23.4,
+   "dur": 0.611,
+   "syllablesPerSec": null,
+   "src": "vo/ten/q3_1.wav",
+   "key": "4c807d562736e66335c59b8ab3fbc6d9",
+   "words": 1
+  },
+  {
+   "id": "q3_answer",
+   "text": "Ban means half!",
+   "at": 24.24,
+   "dur": 1.235,
+   "syllablesPerSec": null,
+   "src": "vo/ten/q3_answer.wav",
+   "key": "17f068d902d8c3cbc886331739dad6bb",
+   "words": 3
+  },
+  {
+   "id": "q3_say",
+   "text": "두 시 반!",
+   "at": 26.45,
+   "dur": 0.845,
+   "syllablesPerSec": 3.55,
+   "src": "vo/ten/q3_say.wav",
+   "key": "f4c57996e6bf9a63232b6304ccb78876",
+   "words": 3
+  },
+  {
+   "id": "end_score",
+   "text": "Okay! How many did you get?",
+   "at": 28.86,
+   "dur": 1.813,
+   "syllablesPerSec": null,
+   "src": "vo/ten/end_score.wav",
+   "key": "a9ad418a73b3c6b63b4f9ce933337ceb",
+   "words": 6
+  },
+  {
+   "id": "end_comment",
+   "text": "Comment your time in Korean!",
+   "at": 30.7,
+   "dur": 1.618,
+   "syllablesPerSec": null,
+   "src": "vo/ten/end_comment.wav",
+   "key": "0878fcc1a53833682a7ba2ab575a22c6",
+   "words": 5
+  },
+  {
+   "id": "end_fighting",
+   "text": "화이팅!",
+   "at": 32.42,
+   "dur": 0.662,
+   "syllablesPerSec": 4.53,
+   "src": "vo/ten/end_fighting.wav",
+   "key": "9aeacf0dcf65b00be9f995a78e504acb",
+   "words": 1
+  }
+ ]
+}

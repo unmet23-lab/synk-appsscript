@@ -1,0 +1,25 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — six needle-felted wool scenes for a kids' Korean quiz about READING THE CLOCK in Korean, one sheet.
+
+The attached reference photo only shows the felt craft look we want (wool texture, colors, lighting). Do not copy its objects.
+
+Layout: one landscape image, 3 columns × 2 rows, six cells of equal size. One object group per cell, centered, filling about 65–75% of the cell, with wide empty margins so no two cells touch. Seamless pure white background (#FFFFFF), flat even studio light, no floor, no cast shadows, no reflections, no border lines. Nothing in the image is white or cream except the background; every outer edge is a clear saturated color or charcoal.
+
+Text rule: the ONLY characters allowed anywhere are the digits on the six small digital clocks described below (exactly "3:30", "1:10", "2:30"). No other letters, numbers, logos or symbols anywhere — not on books, signs, cups or bags.
+
+Each cell has one small chunky felt DIGITAL clock: a rounded navy-blue felt box with a black display window, and the time written in big blocky bright-yellow felt digits with a colon. Make the digits large, flat-on to the camera and perfectly readable.
+
+The learner in every cell is the SAME cute caramel-brown felt teddy bear (round ears, small black bead eyes, a little red felt scarf), like a classic plush bear.
+
+Top row = the learner gets it WRONG (confused, funny):
+1. Clock shows "3:30". The bear wears round glasses and holds a wooden abacus up like a math problem, staring at the clock, puzzled, one big light-blue felt sweat drop on its forehead.
+2. Clock shows "1:10". The bear sits dizzy with swirly eyes, juggling a messy pile of colorful felt counting blocks (blank blocks, no markings) that tumble around it.
+3. Clock shows "2:30". The bear holds up two paws and frowns at a WHOLE round felt pizza (red sauce, yellow cheese, green pepper bits) that sits uncut on a mustard-yellow plate next to the clock.
+
+Bottom row = the learner gets it RIGHT (happy, proud):
+4. Clock shows "3:30" on a little stand. The bear and a pink felt bunny friend sit at a tiny round mint-green café table with two orange felt cups, waving hello to each other, both smiling.
+5. Clock shows "1:10" on the wall-like stand. The bear wears a small red felt backpack and jumps with both arms up, cheering, a tiny green felt school door half open behind it.
+6. Clock shows "2:30". The same pizza now cut exactly in HALF: one half eaten away (only crumbs), the bear proudly holding up the remaining half pizza with a big happy grin.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, cute and playful for children, consistent soft lighting across all six cells, saturated but soft colors that will read well on a cobalt blue background. Keep each cell's pieces close together inside the cell but clearly separated from neighboring cells by white space.

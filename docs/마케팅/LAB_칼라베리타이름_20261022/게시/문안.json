@@ -1,0 +1,15 @@
+{
+ "_설명": "「칼라베리타에 내 이름을 한글로」 게시글 정본(10-22, 제작 방식 v2 §4-3 「정본 둘」의 하나). 화면 글 정본은 remotion/src/film/data.ts(이름·한국어)와 remotion/src/kids/i18n.ts(스페인어). 판 글 파일은 node remotion/게시묶음.mjs. 끝 행동 링크 synk.im/nombre는 10-22 08:0x 응답 200 확인. 첫 125자 안에 훅(v2 §2-4). 제목·설명 언어 스페인어(es-419), 동영상 언어는 실제 말소리 한국어.",
+ "_ko": {
+  "title": "네 이름, 한국어로는? 💀 이름 쓴 칼라베리타: 후안·레히나·기예르모 #죽은자의날",
+  "description": "네 이름은 한국어로 어떻게 써? 💀🌼 죽은 자의 날에는 칼라베리타에 이름을 쓰잖아… 이번엔 한국어로!\n\nJUAN → 후안 (J는 ㅎ으로 써)\nREGINA → 레히나 (GI → 히)\nGUILLERMO → 기예르모 (GUI → 기, LLE → 예)\n\n말해 봐: 후안이에요 · 레히나예요 · 기예르모예요\n\n네 이름은? 한국어로 무료로, 가입 없이 써 봐 👉 https://synk.im/nombre\n\nSYNK LAB · 몽글과 함께하는 칼라베리타 퀴즈.",
+  "pinned_comment": "💀 네 이름은 한국어로 어떻게 나왔어? 여기 아래에 써 줘 👇\n👉 https://synk.im/nombre"
+ },
+ "es": {
+  "account": "YouTube @synkkorean",
+  "title": "¿Tu nombre en coreano? 💀 Calaveritas: Juan, Regina, Guillermo #diademuertos",
+  "description": "¿Cómo se escribe TU nombre en coreano? 💀🌼 En Día de Muertos les ponemos nombre a las calaveritas… ¡ahora en coreano!\n\nJUAN → 후안 (la J se escribe con ㅎ)\nREGINA → 레히나 (GI → 히)\nGUILLERMO → 기예르모 (GUI → 기, LLE → 예)\n\nDilo: 후안이에요 · 레히나예요 · 기예르모예요\n\n¿Y tu nombre? Escríbelo en coreano gratis y sin registro 👉 https://synk.im/nombre\n\nSYNK LAB · Calaverita quiz con Mongle.\n#diademuertos #aprendecoreano #coreano #learnkorean",
+  "pinned_comment": "💀 ¿Cómo quedó tu nombre en coreano? Escríbelo aquí abajo 👇\n👉 https://synk.im/nombre",
+  "alt": "La mascota de fieltro Mongle presenta un quiz: tres calaveritas de fieltro con una franja dorada en la frente. Primero la franja está chueca o despegada; luego cada calaverita, rodeada de flores de cempasúchil, muestra su nombre escrito en coreano: 후안 (Juan), 레히나 (Regina) y 기예르모 (Guillermo)."
+ }
+}

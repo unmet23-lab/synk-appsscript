@@ -1,0 +1,32 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "end_fighting",
+ "text": "화이팅!",
+ "dur": 0.662,
+ "words": [
+  {
+   "text": "화이팅!",
+   "start": 0.04,
+   "end": 0.662
+  }
+ ],
+ "source": {
+  "key": "9aeacf0dcf65b00be9f995a78e504acb",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 1.2,
+   "tempo": 1.05,
+   "seed": 1003,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

@@ -1,0 +1,110 @@
+// 키즈판 끝: STAGE CLEAR! → 별 셋 + 복습(시각·읽기) → 규칙 카드(시 · 분 · 반) + 댓글 부탁 → 연재 이름 + 화이팅 + 진행자 몽글 + 로고.
+// 10-20 퀴즈 #4 마감 점검: 끝 전체 4.5초(100 BPM). 규칙 카드는 1.2초부터 화이팅 카드 앞(약 3.5초)까지, 화이팅 카드는 마지막 약 0.9초에 한꺼번에(조금씩 어긋나게) 뜬다.
+import React from 'react';
+import { AbsoluteFill, Img, spring, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
+import { Burst, ramp } from '../lib/anim';
+import { EN, KO, MONO } from '../lib/fonts';
+import { QUESTIONS } from '../film/data';
+import { E } from '../film/timeline';
+import { HOST_END } from './art';
+import { hostBreath } from './motion';
+import { END_START } from '../film/timeline';
+import { kidsRecap, kidsUi, type KidsLang } from './i18n';
+import { Star } from './Cartoon';
+import { K, panel, textSpan, toon } from './theme';
+
+/** 키즈판 끝 구간의 자리(끝 시작에서 프레임). 별 셋(E.recap)과 로고(E.logo)는 프리미엄판과 같다. */
+export const KE = { comment: E.comment, cheer: E.cheer } as const; // 박 단위라 템포가 바뀌면 같이 늘어난다
+
+const pop = (f: number, at: number, fps: number) => spring({ frame: f - at, fps, config: { damping: 10, stiffness: 190, mass: 0.6 } });
+const settle = (f: number, at: number, fps: number, len = 10) => spring({ frame: f - at, fps, config: { damping: 200 }, durationInFrames: len });
+
+export const KidsEnd: React.FC<{ lang?: KidsLang; motion?: boolean; order?: number[]; handle?: string }> = ({ lang = 'en', motion = false, order = [0, 1, 2], handle }) => {
+  const ui = kidsUi(lang);
+  const recap = kidsRecap(lang);
+  const f = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const swap = ramp(f, KE.cheer - 4, 6);
+
+  return (
+    <AbsoluteFill>
+      {/* 1부: 클리어 + 별 셋(복습) + 댓글 */}
+      <AbsoluteFill style={{ opacity: 1 - swap, scale: `${1 - 0.08 * swap}` }}>
+        <div style={{ position: 'absolute', left: 0, right: 0, top: 410, display: 'flex', justifyContent: 'center', scale: `${pop(f, 0, fps)}`, rotate: '-3deg' }}>
+          <span style={toon(Math.min(132, Math.floor(1000 / (textSpan(ui.stageClear) * 0.62))), { font: 'en', color: K.butter })}>{ui.stageClear}</span>
+        </div>
+        <div style={{ position: 'absolute', left: 0, right: 0, top: 590, display: 'flex', justifyContent: 'center', gap: 10 }}>
+          {E.recap.map((t, i) => (
+            <div key={i} style={{ width: 250, display: 'flex', flexDirection: 'column', alignItems: 'center', scale: `${pop(f, t, fps)}` }}>
+              <div style={{ rotate: `${(i - 1) * 10}deg`, translate: `0 ${i === 1 ? -24 : 0}px` }}>
+                <Star size={180} />
+              </div>
+              <span style={{ marginTop: 6, wordBreak: 'keep-all', textAlign: 'center', ...toon(40) }}>{QUESTIONS[order[i]].idiom}</span>
+              <span style={{ marginTop: 4, maxWidth: 240, textAlign: 'center', textWrap: 'balance', ...toon(30, { font: 'en', color: K.butter, stroke: 6, drop: 3 }) }}>{recap[order[i]]}</span>
+            </div>
+          ))}
+        </div>
+        <Burst at={E.recap[2] + 1} x={540} y={690} colors={[K.coral, K.butter, K.meadow, K.pop, K.white]} seed="kidsend" count={50} spread={640} dur={42} />
+        {/* 시간 읽기(10-22): 점수 칸 대신 0초에 약속한 규칙 한 장 — 시 → 고유어 · 분 → 한자어 · 30분 = 반, 끝에 댓글 부탁(역할 육성) */}
+        <div style={{ position: 'absolute', left: 90, right: 90, top: 930, ...panel(40, 14), padding: '22px 34px 26px', scale: `${pop(f, KE.comment - 2, fps)}` }}>
+          <div style={{ position: 'absolute', left: 0, right: 0, top: -30, display: 'flex', justifyContent: 'center' }}>
+            <div style={{ ...panel(999, 6, K.coral), padding: '4px 26px' }}>
+              <span style={{ font: `900 34px ${EN}`, color: K.white, letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>{ui.rule.title}</span>
+            </div>
+          </div>
+          {ui.rule.rows.map((r, i) => (
+            <div key={r.ko} style={{ display: 'flex', alignItems: 'center', gap: 18, marginTop: i === 0 ? 14 : 12, scale: `${pop(f, KE.comment + 2 + i * 4, fps)}`, transformOrigin: 'left center' }}>
+              <div style={{ ...panel(22, 6, i === 0 ? K.butter : K.sky), width: 92, height: 82, flex: '0 0 92px', display: 'grid', placeItems: 'center' }}>
+                <span style={{ font: `900 50px ${KO}`, color: K.navy }}>{r.ko}</span>
+              </div>
+              <span style={{ width: 150, font: `800 30px ${EN}`, color: '#4A5680', whiteSpace: 'nowrap' }}>{r.what} →</span>
+              <span style={{ font: `900 50px ${KO}`, color: K.navy, whiteSpace: 'nowrap' }}>{r.nums}</span>
+            </div>
+          ))}
+          <div style={{ marginTop: 14, display: 'flex', justifyContent: 'center', scale: `${pop(f, KE.comment + 10, fps)}` }}>
+            <span style={{ font: `900 44px ${KO}`, color: K.navy, background: K.butter, borderRadius: 12, padding: '2px 16px', whiteSpace: 'nowrap' }}>{ui.rule.bonus}</span>
+          </div>
+          <div style={{ marginTop: 16, font: `900 ${ui.commentSize}px/1.15 ${EN}`, color: K.coral, textAlign: 'center', textWrap: 'balance', opacity: ramp(f, KE.comment + 14, 5) }}>{ui.comment}</div>
+        </div>
+      </AbsoluteFill>
+
+      {/* 2부: 연재 이름 + 화이팅 + 진행자 몽글 + 로고 */}
+      <AbsoluteFill style={{ opacity: swap }}>
+        <div style={{ position: 'absolute', left: 0, right: 0, top: 420, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+          <div style={{ ...panel(999, 8, K.coral), padding: '8px 30px', scale: `${pop(f, KE.cheer - 4, fps)}` }}>
+            <span style={{ font: `${ui.monoFallback ? 700 : 500} 34px ${ui.monoFallback ? EN : MONO}`, color: K.white, letterSpacing: '0.06em' }}>{ui.exam}</span>
+          </div>
+          <div style={{ marginTop: 18, scale: `${pop(f, KE.cheer - 3, fps)}`, rotate: '-4deg' }}>
+            <span style={toon(190, { color: K.butter })}>화이팅!</span>
+          </div>
+          <div style={{ marginTop: 6, scale: `${pop(f, KE.cheer - 1, fps)}` }}>
+            <span style={toon(70, { font: 'en' })}>{ui.gotThis}</span>
+          </div>
+        </div>
+        {/* 진행자 몽글(이 편을 위해 구운 응원 표정 — 색종이 펠트까지 한 장) — 한 번 자리 잡고 멈춤 */}
+        <Img
+          src={staticFile(HOST_END)}
+          style={{
+            position: 'absolute',
+            left: 320,
+            top: 880,
+            width: 440,
+            height: 'auto',
+            opacity: settle(f, KE.cheer - 4, fps, 8) > 0.01 ? 1 : 0,
+            scale: `${0.7 + 0.3 * settle(f, KE.cheer - 4, fps, 8)}`,
+            transformOrigin: '50% 100%',
+            filter: 'drop-shadow(0 14px 0 rgba(27,42,90,0.35))',
+            // v2: 자리 잡은 뒤(10프레임)부터 숨쉬기
+            ...(motion && f >= KE.cheer + 12 ? { transform: hostBreath(f, END_START).transform } : {}),
+          }}
+        />
+        <div style={{ position: 'absolute', left: 0, right: 0, top: 1360, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 22, opacity: ramp(f, E.logo, 8), translate: `0 ${(1 - ramp(f, E.logo, 10)) * 30}px` }}>
+          <div style={{ ...panel(22, 8), padding: '12px 22px' }}>
+            <Img src={staticFile('img/logo-lab.webp')} style={{ height: 64, width: 'auto', display: 'block' }} />
+          </div>
+          <span style={{ ...toon(40, { font: 'en', stroke: 7, drop: 4 }) }}>{handle ?? ui.handle}</span>
+        </div>
+      </AbsoluteFill>
+    </AbsoluteFill>
+  );
+};

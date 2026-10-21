@@ -1,0 +1,32 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "q1_guess",
+ "text": "주안?",
+ "dur": 0.426,
+ "words": [
+  {
+   "text": "주안?",
+   "start": 0,
+   "end": 0.426
+  }
+ ],
+ "source": {
+  "key": "f77b1e1722344cf9d5c12c7213f9467d",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.05,
+   "seed": 1003,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1.1,
+  "cut": null
+ }
+}

@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "q1_say",
+ "text": "세 시 삼십 분!",
+ "dur": 1.217,
+ "words": [
+  {
+   "text": "세",
+   "start": 0.06,
+   "end": 0.181
+  },
+  {
+   "text": "시",
+   "start": 0.302,
+   "end": 0.402
+  },
+  {
+   "text": "삼십",
+   "start": 0.482,
+   "end": 0.844
+  },
+  {
+   "text": "분!",
+   "start": 0.904,
+   "end": 1.217
+  }
+ ],
+ "source": {
+  "key": "7ecb0e7ce18187aa12d588daba5ba76b",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 0.8,
+   "tempo": 1.05,
+   "seed": 1003,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

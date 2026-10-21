@@ -1,0 +1,521 @@
+{
+ "_설명": "LAB 「한국어로 시간 읽기」(10-22) 나레이션 — 하나 목소리 하나(LAB 낱말 기준, 관용구 퀴즈 연재와 같은 요청은 캐시). ten = 영어판(영어 진행 + 한국어 읽기), tko = 몽골어판(한국어로만). 대본_time.mjs가 만든다.",
+ "voice": {
+  "id": "tc_61659cc118732016a95fe7c6",
+  "name": "하나"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "tempo": 1.15,
+  "emotion": "smart"
+ },
+ "out": "public/vo",
+ "srcBase": "public",
+ "ts": "src/film/vo.generated.ts",
+ "trim": "both",
+ "limits": [
+  {
+   "from": 0,
+   "to": 9.5
+  },
+  {
+   "from": 9.6,
+   "to": 19.1
+  },
+  {
+   "from": 19.2,
+   "to": 28.7
+  },
+  {
+   "from": 28.8,
+   "to": 33.25
+  }
+ ],
+ "versions": {
+  "ten": {
+   "lines": [
+    {
+     "id": "q1_title",
+     "at": 0.03,
+     "lang": "en",
+     "text": "Two number systems? One rule!",
+     "emotion": "happy",
+     "intensity": 1.2,
+     "speed": 1.3
+    },
+    {
+     "id": "q1_nope",
+     "at": 2.36,
+     "lang": "en",
+     "text": "Nope!",
+     "emotion": "happy",
+     "intensity": 1.3,
+     "speed": 1.05,
+     "cut": 0.6
+    },
+    {
+     "id": "q1_3",
+     "at": 3,
+     "lang": "en",
+     "text": "Three!",
+     "emotion": "toneup",
+     "intensity": 1.2,
+     "speed": 1.05,
+     "cut": 0.58
+    },
+    {
+     "id": "q1_2",
+     "at": 3.6,
+     "lang": "en",
+     "text": "Two!",
+     "emotion": "toneup",
+     "intensity": 1.2
+    },
+    {
+     "id": "q1_1",
+     "at": 4.2,
+     "lang": "en",
+     "text": "One!",
+     "emotion": "toneup",
+     "intensity": 1.2,
+     "speed": 1.05
+    },
+    {
+     "id": "q1_answer",
+     "at": 5.04,
+     "lang": "en",
+     "text": "Native Korean for hours!",
+     "emotion": "happy",
+     "intensity": 1.2,
+     "speed": 1.2
+    },
+    {
+     "lang": "ko",
+     "emotion": "happy",
+     "intensity": 0.8,
+     "tempo": 1.05,
+     "id": "q1_say",
+     "at": 7.25,
+     "text": "세 시 삼십 분!"
+    },
+    {
+     "id": "q2_title",
+     "at": 9.63,
+     "lang": "en",
+     "text": "And this one?",
+     "emotion": "happy",
+     "intensity": 1.2
+    },
+    {
+     "lang": "ko",
+     "emotion": "normal",
+     "intensity": 1,
+     "tempo": 1.05,
+     "id": "q2_guess",
+     "at": 10.8,
+     "text": "일 시 열 분?",
+     "speed": 1.15
+    },
+    {
+     "id": "q2_nope",
+     "at": 11.96,
+     "lang": "en",
+     "text": "Nope!",
+     "emotion": "happy",
+     "intensity": 1.3,
+     "speed": 1.05,
+     "cut": 0.6
+    },
+    {
+     "id": "q2_3",
+     "at": 12.6,
+     "lang": "en",
+     "text": "Three!",
+     "emotion": "toneup",
+     "intensity": 1.2,
+     "speed": 1.05,
+     "cut": 0.58
+    },
+    {
+     "id": "q2_2",
+     "at": 13.2,
+     "lang": "en",
+     "text": "Two!",
+     "emotion": "toneup",
+     "intensity": 1.2
+    },
+    {
+     "id": "q2_1",
+     "at": 13.8,
+     "lang": "en",
+     "text": "One!",
+     "emotion": "toneup",
+     "intensity": 1.2,
+     "speed": 1.05
+    },
+    {
+     "id": "q2_answer",
+     "at": 14.64,
+     "lang": "en",
+     "text": "Hana becomes han!",
+     "emotion": "happy",
+     "intensity": 1.2,
+     "speed": 1.2
+    },
+    {
+     "lang": "ko",
+     "emotion": "happy",
+     "intensity": 0.8,
+     "tempo": 1.05,
+     "id": "q2_say",
+     "at": 16.85,
+     "text": "한 시 십 분!"
+    },
+    {
+     "id": "q3_title",
+     "at": 19.23,
+     "lang": "en",
+     "text": "Last one!",
+     "emotion": "happy",
+     "intensity": 1.2,
+     "speed": 1.3
+    },
+    {
+     "lang": "ko",
+     "emotion": "normal",
+     "intensity": 1,
+     "tempo": 1.05,
+     "id": "q3_guess",
+     "at": 20.4,
+     "text": "이 시 삼십 분?",
+     "speed": 1.15
+    },
+    {
+     "id": "q3_nope",
+     "at": 21.56,
+     "lang": "en",
+     "text": "Nope!",
+     "emotion": "happy",
+     "intensity": 1.3,
+     "speed": 1.05,
+     "cut": 0.6
+    },
+    {
+     "id": "q3_3",
+     "at": 22.2,
+     "lang": "en",
+     "text": "Three!",
+     "emotion": "toneup",
+     "intensity": 1.2,
+     "speed": 1.05,
+     "cut": 0.58
+    },
+    {
+     "id": "q3_2",
+     "at": 22.8,
+     "lang": "en",
+     "text": "Two!",
+     "emotion": "toneup",
+     "intensity": 1.2
+    },
+    {
+     "id": "q3_1",
+     "at": 23.4,
+     "lang": "en",
+     "text": "One!",
+     "emotion": "toneup",
+     "intensity": 1.2,
+     "speed": 1.05
+    },
+    {
+     "id": "q3_answer",
+     "at": 24.24,
+     "lang": "en",
+     "text": "Ban means half!",
+     "emotion": "happy",
+     "intensity": 1.2,
+     "speed": 1.2
+    },
+    {
+     "lang": "ko",
+     "emotion": "happy",
+     "intensity": 0.8,
+     "tempo": 1.05,
+     "id": "q3_say",
+     "at": 26.45,
+     "text": "두 시 반!"
+    },
+    {
+     "id": "end_score",
+     "at": 28.86,
+     "lang": "en",
+     "text": "Okay! How many did you get?",
+     "prev": "That was the last question of a fun Korean time quiz.",
+     "next": "Comment your time in Korean!",
+     "speed": 1.1
+    },
+    {
+     "id": "end_comment",
+     "at": 30.7,
+     "lang": "en",
+     "text": "Comment your time in Korean!",
+     "emotion": "happy",
+     "intensity": 1.2,
+     "speed": 1.1
+    },
+    {
+     "id": "end_fighting",
+     "at": 32.42,
+     "lang": "ko",
+     "text": "화이팅!",
+     "tempo": 1.05,
+     "emotion": "happy",
+     "intensity": 1.2
+    }
+   ]
+  },
+  "tko": {
+   "lines": [
+    {
+     "lang": "ko",
+     "emotion": "happy",
+     "intensity": 0.8,
+     "tempo": 1.05,
+     "id": "q1_title",
+     "at": 0.03,
+     "text": "몇 시예요?"
+    },
+    {
+     "lang": "ko",
+     "emotion": "normal",
+     "intensity": 1,
+     "tempo": 1.05,
+     "id": "q1_guess",
+     "at": 0.95,
+     "text": "삼 시 삼십 분?",
+     "speed": 1.15
+    },
+    {
+     "id": "q1_nope",
+     "at": 2.2,
+     "lang": "ko",
+     "text": "땡!",
+     "emotion": "happy"
+    },
+    {
+     "id": "q1_3",
+     "at": 3,
+     "lang": "ko",
+     "text": "셋!",
+     "emotion": "toneup"
+    },
+    {
+     "id": "q1_2",
+     "at": 3.6,
+     "lang": "ko",
+     "text": "둘!",
+     "emotion": "toneup"
+    },
+    {
+     "id": "q1_1",
+     "at": 4.2,
+     "lang": "ko",
+     "text": "하나!",
+     "emotion": "toneup"
+    },
+    {
+     "id": "q1_answer",
+     "at": 4.86,
+     "lang": "ko",
+     "text": "딩동댕!",
+     "emotion": "happy"
+    },
+    {
+     "id": "q1_sayit",
+     "at": 5.8,
+     "lang": "ko",
+     "text": "따라 해 보세요!",
+     "emotion": "happy",
+     "speed": 1.1
+    },
+    {
+     "lang": "ko",
+     "emotion": "happy",
+     "intensity": 0.8,
+     "tempo": 1.05,
+     "id": "q1_say",
+     "at": 6.84,
+     "text": "세 시 삼십 분!"
+    },
+    {
+     "lang": "ko",
+     "emotion": "happy",
+     "intensity": 0.8,
+     "tempo": 1.05,
+     "id": "q2_title",
+     "at": 9.63,
+     "text": "이건요?"
+    },
+    {
+     "lang": "ko",
+     "emotion": "normal",
+     "intensity": 1,
+     "tempo": 1.05,
+     "id": "q2_guess",
+     "at": 10.55,
+     "text": "일 시 열 분?",
+     "speed": 1.15
+    },
+    {
+     "id": "q2_nope",
+     "at": 11.8,
+     "lang": "ko",
+     "text": "땡!",
+     "emotion": "happy"
+    },
+    {
+     "id": "q2_3",
+     "at": 12.6,
+     "lang": "ko",
+     "text": "셋!",
+     "emotion": "toneup"
+    },
+    {
+     "id": "q2_2",
+     "at": 13.2,
+     "lang": "ko",
+     "text": "둘!",
+     "emotion": "toneup"
+    },
+    {
+     "id": "q2_1",
+     "at": 13.8,
+     "lang": "ko",
+     "text": "하나!",
+     "emotion": "toneup"
+    },
+    {
+     "id": "q2_answer",
+     "at": 14.46,
+     "lang": "ko",
+     "text": "딩동댕!",
+     "emotion": "happy"
+    },
+    {
+     "id": "q2_sayit",
+     "at": 15.4,
+     "lang": "ko",
+     "text": "따라 해 보세요!",
+     "emotion": "happy",
+     "speed": 1.1
+    },
+    {
+     "lang": "ko",
+     "emotion": "happy",
+     "intensity": 0.8,
+     "tempo": 1.05,
+     "id": "q2_say",
+     "at": 16.44,
+     "text": "한 시 십 분!"
+    },
+    {
+     "lang": "ko",
+     "emotion": "happy",
+     "intensity": 0.8,
+     "tempo": 1.05,
+     "id": "q3_title",
+     "at": 19.23,
+     "text": "마지막!"
+    },
+    {
+     "lang": "ko",
+     "emotion": "normal",
+     "intensity": 1,
+     "tempo": 1.05,
+     "id": "q3_guess",
+     "at": 20.15,
+     "text": "이 시 삼십 분?",
+     "speed": 1.15
+    },
+    {
+     "id": "q3_nope",
+     "at": 21.4,
+     "lang": "ko",
+     "text": "땡!",
+     "emotion": "happy"
+    },
+    {
+     "id": "q3_3",
+     "at": 22.2,
+     "lang": "ko",
+     "text": "셋!",
+     "emotion": "toneup"
+    },
+    {
+     "id": "q3_2",
+     "at": 22.8,
+     "lang": "ko",
+     "text": "둘!",
+     "emotion": "toneup"
+    },
+    {
+     "id": "q3_1",
+     "at": 23.4,
+     "lang": "ko",
+     "text": "하나!",
+     "emotion": "toneup"
+    },
+    {
+     "id": "q3_answer",
+     "at": 24.06,
+     "lang": "ko",
+     "text": "딩동댕!",
+     "emotion": "happy"
+    },
+    {
+     "id": "q3_sayit",
+     "at": 25,
+     "lang": "ko",
+     "text": "따라 해 보세요!",
+     "emotion": "happy",
+     "speed": 1.1
+    },
+    {
+     "lang": "ko",
+     "emotion": "happy",
+     "intensity": 0.8,
+     "tempo": 1.05,
+     "id": "q3_say",
+     "at": 26.04,
+     "text": "두 시 반!"
+    },
+    {
+     "id": "end_score",
+     "at": 28.86,
+     "lang": "ko",
+     "text": "몇 개 맞혔어요?",
+     "emotion": "happy"
+    },
+    {
+     "lang": "ko",
+     "emotion": "happy",
+     "intensity": 0.8,
+     "tempo": 1.05,
+     "id": "end_comment",
+     "at": 30.3,
+     "text": "지금 몇 시예요? 댓글로!",
+     "speed": 1.1
+    },
+    {
+     "id": "end_fighting",
+     "at": 32.42,
+     "lang": "ko",
+     "text": "화이팅!",
+     "tempo": 1.05,
+     "emotion": "happy",
+     "intensity": 1.2
+    }
+   ]
+  }
+ }
+}
