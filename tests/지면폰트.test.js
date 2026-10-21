@@ -99,6 +99,10 @@ const 제외 = [
     + 'manual 도구를 만들 때 이 파일을 도구 폴더 밖(`outside` → `dist/builds/index.html`)으로 내보내고, 서체는 manual 도구가 '
     + '줄인 SUIT(`/builds/manual/assets/SUIT-subset.woff2`)를 사이트 절대 경로로 부른다 — build.mjs 가 이 원고 글자도 그 줄인 서체에 '
     + '함께 싣는다(10-17 노트북 이사 편 `e82791890`). 줄인 서체는 빌드 산출물이라 저장소 안에서는 잴 수 없다.'],
+  [/^experiences\/lab-topik4\/안내문\/flyer\.html$/, '종이 한 장 안내문(몽골어) 원고다. 같은 폴더의 `build.mjs` 가 원고가 부르는 '
+    + 'css·글꼴·그림을 안에 싣고 Chrome 으로 PNG·A4 PDF 를 찍으며, 글꼴이 다 들어왔는지까지 확인한다. 글꼴은 신청 페이지 빌드'
+    + '(`experiences/lab-topik4/build.mjs`)가 쓰는 글자만 남긴 줄인 SUIT(`dist/lab/topik4/assets/SUIT-subset.woff2`)라 '
+    + '정본과 바이트가 다르다 — 위 허브 원고와 같은 꼴이다(10-21 `3a669019e` 이 지면이 들어오자 master CI 가 빨개졌다).'],
 ];
 
 const 제외사유 = (rel) => (제외.find(([re]) => re.test(rel)) || [])[1] || null;
