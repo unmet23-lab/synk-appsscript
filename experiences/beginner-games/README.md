@@ -79,7 +79,9 @@
 기존 Typecast 도구의 월 크레딧 확인·캐시·중단 정책을 재사용한다. 여기서 별도 결제나 합성을 실행하지 않는다.
 원본·제작 설정은 저장소 밖 캐시와 `qa/voice.source.json`, 게임용 파일에는 문구·경로·길이만 둔다.
 
-세 게임 목록(`word-magic/audio/manifest.json`·`order-rush/assets/beginner/voices.json`·`spaceship-coop/assets/audio/manifest.json`)은 synk.im에 그대로 공개되므로 승인 칸 `provider`에 만든 서비스 이름 대신 중립 값 `approved-voice-v1`을 둔다(2026-10-19, 옛 값은 서비스 이름 `typecast`). 만든 길: Typecast API로 해설(10-08 서현)을 `tools/미니게임_목소리.cjs`로 굽고, `node experiences/beginner-games/sync-banks.cjs`가 세 게임에 복사하며 이 값을 쓴다. 이 값을 승인 조건으로 보는 곳은 주문 폭주 입문 `beginner-core.mjs`(`validateVoiceManifest`)·우주선 `audio.mjs`·SYNK-website 출시 도구 `prepare-play-candidate.mjs`(`inspectVoices`)라, 바꿀 때는 목록과 함께 셋을 같이 바꾼다. `voice.test.cjs`가 세 목록의 값과 도구·목소리 이름이 없음을 본다.
+세 게임 목록(`word-magic/audio/manifest.json`·`order-rush/assets/beginner/voices.json`·`spaceship-coop/assets/audio/manifest.json`)은 synk.im에 그대로 공개되므로 승인 칸 `provider`에 만든 서비스 이름 대신 중립 값 `approved-voice-v1`을 둔다(2026-10-19, 옛 값은 서비스 이름 `typecast`). 만든 길: Typecast API로 해설(10-21 하나 — 10-08 서현 판을 10-17 「해설은 하나」에 맞춰 다시 구움)을 `tools/미니게임_목소리.cjs`로 굽고, `node experiences/beginner-games/sync-banks.cjs`가 세 게임에 복사하며 이 값을 쓴다. 이 값을 승인 조건으로 보는 곳은 주문 폭주 입문 `beginner-core.mjs`(`validateVoiceManifest`)·우주선 `audio.mjs`·SYNK-website 출시 도구 `prepare-play-candidate.mjs`(`inspectVoices`)라, 바꿀 때는 목록과 함께 셋을 같이 바꾼다. `voice.test.cjs`가 세 목록의 값과 도구·목소리 이름이 없음을 본다.
+
+10-21 하나 판의 읽기: 끝에 문장부호가 없는 낱말·짧은 말 17줄은 Typecast에 보내는 글에만 마침표를 붙인다(레이싱 낱말과 같은 까닭 — 마침표가 없으면 외치듯 읽어 흐려진다). 세 게임이 목록 `text`를 화면 글과 맞춰 보므로 목록에는 화면 글을 그대로 둔다(`tools/lib/미니게임목소리_게임.cjs`의 `beginnerSpoken`). 굽고 나서 로컬 받아쓰기(medium·large-v3-turbo × 앞뒤 무음 다섯 가지)로 서현 판보다 흐린 줄을 찾아, 같은 글에 시드만 바꾼 판 가운데 가장 또렷한 것을 `tools/minigame-voice-casting.json` `lines`의 `beginner-games/<id>` seed로 남긴다(「사과 주세요.」·「사과 세 개 주세요.」 2001). 한 음절·동음어 줄(「빵」, 「한 개」↔「한계」)은 문맥 없는 받아쓰기가 흔들려 장면 문맥 한 줄과 `temperature=0`으로 판끼리만 견줬다. 「한 개」는 seed·빠르기·마침표를 바꿔도 반쯤 「한계」로 들려(서현 판은 10/10), 레이싱 「년」처럼 「빵 한 개.」로 구워 받은 낱말 시각으로 「한」부터 잘라 쓴다(`BEGINNER_KEEP`, 문맥 받아쓰기 10/10). 받아쓰기는 사람의 청취 확인을 대신하지 않는다.
 
 ## 로컬 실행
 

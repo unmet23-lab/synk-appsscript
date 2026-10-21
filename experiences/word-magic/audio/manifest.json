@@ -6,38 +6,38 @@
     "grow": {
       "text": "커져요",
       "file": "grow.mp3",
-      "durationSeconds": 0.936,
-      "sha256": "92fdcd3236376bc9ca8ed63095beadce0e6e4aac2a43a719428b09d3c049f391"
+      "durationSeconds": 1.245,
+      "sha256": "016c753cbd4818fc51e12fc946e4e2fbdb8932b7305f5210004118b8cd08d727"
     },
     "shrink": {
       "text": "작아져요",
       "file": "shrink.mp3",
-      "durationSeconds": 1.093,
-      "sha256": "8b6e13f62abe34b1139aead3ffb5fc553112499cf772cf1e0c76c4bbfeb1e572"
+      "durationSeconds": 1.169,
+      "sha256": "7866493e084bdae7c58330bcd69b401fd8b10af4217edc7898eda585680024d0"
     },
     "open": {
       "text": "열어요",
       "file": "open.mp3",
-      "durationSeconds": 1.246,
-      "sha256": "8ae2ba80ef76527efcdc56dc79273a9a1cc68156a39a997fa6ed3c9f4bed98be"
+      "durationSeconds": 0.985,
+      "sha256": "89da3519939eed32b508eddbe17d748bb2afe0b38ecc91c4ee0b8f43b009685c"
     },
     "close": {
       "text": "닫아요",
       "file": "close.mp3",
-      "durationSeconds": 1.088,
-      "sha256": "08de1e4cf263bca4b2f7d1ad57763f97ae20670f99a6f3f90b3bf404d08d2c17"
+      "durationSeconds": 1.132,
+      "sha256": "7c877e9a208fac2d6532fe265ac98e022b93e1aab26068ddfdaf8842617a3ae6"
     },
     "up": {
       "text": "위",
       "file": "up.mp3",
-      "durationSeconds": 0.65,
-      "sha256": "a0e93cdf40769fcda7d1147ac6c0f096fb7222c43994fe9717a8d7251c4aedea"
+      "durationSeconds": 0.642,
+      "sha256": "b195d71c4181fcc4c25072ff4f7ecafb2c0509e3edbf42153a0ab7c2e51ba56a"
     },
     "down": {
       "text": "아래",
       "file": "down.mp3",
-      "durationSeconds": 1.483,
-      "sha256": "72f21491333cfbffddda211710bc566b5c13a259bed9f0268b1509d278aab761"
+      "durationSeconds": 0.801,
+      "sha256": "d8344d9cc209e3c704b3545531ac181569478da23e0ae88b3c84dbd71bb9143b"
     }
   }
 }

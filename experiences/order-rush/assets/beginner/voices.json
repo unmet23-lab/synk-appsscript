@@ -6,92 +6,92 @@
     "water": {
       "text": "물",
       "file": "audio/water.mp3",
-      "durationSeconds": 1.086,
-      "sha256": "b41c780afe03810bbd8101ddfa89d54ecafcb3b824e3fbbad254b7618d9168ae"
+      "durationSeconds": 0.651,
+      "sha256": "64b00b66f4d37204a6637cbfe3e0459ef3ff20393b4773ce64d7a4d1c3821e6f"
     },
     "bread": {
       "text": "빵",
       "file": "audio/bread.mp3",
-      "durationSeconds": 0.662,
-      "sha256": "c5e47a840964b03c9f99987aedc12f7476a7d847d0774c657bd6bfc86f11657a"
+      "durationSeconds": 0.663,
+      "sha256": "c5b4bcd204d199af92f78d974e734cd8b90b3eda2308066d4b5953ba6b84d330"
     },
     "apple": {
       "text": "사과",
       "file": "audio/apple.mp3",
-      "durationSeconds": 0.871,
-      "sha256": "292f05a2b923ad6e8b9373a7a772aeeb782355db3c78f1ab5c785f994f648a14"
+      "durationSeconds": 0.863,
+      "sha256": "f91f59f07fb1a0714dc11ae980a62b6f26b4d6509f857a00645ca8ceb1a42a57"
     },
     "count-1": {
       "text": "한 개",
       "file": "audio/count-1.mp3",
-      "durationSeconds": 1.093,
-      "sha256": "65b40effbef8f334f58b3e2b10ca3a8e44ae5d169d63ca1427582f80dd5c7928"
+      "durationSeconds": 0.781,
+      "sha256": "260e448db7bf44c08a05b9721e8e7903bbf8d83a8c8386565a035f63b2abe275"
     },
     "count-2": {
       "text": "두 개",
       "file": "audio/count-2.mp3",
-      "durationSeconds": 0.923,
-      "sha256": "a38dcd0a0a68fafe5d5d603c7bfd1fa3e64dffb93fb02eda617daf33ad64f908"
+      "durationSeconds": 0.781,
+      "sha256": "a9a72965f9f7613edbc4511a881135165e6bf6f5c7644812003a94cc4151290e"
     },
     "count-3": {
       "text": "세 개",
       "file": "audio/count-3.mp3",
-      "durationSeconds": 1.372,
-      "sha256": "d8405c81124df9dc86d4f8f7547081f8b989ddd6fe374b66bd92f567f50d4932"
+      "durationSeconds": 0.847,
+      "sha256": "c9166c27b80df1be8684e61438dd9b3e1d2e4bc45c64a9dc0fff613cd00eaa42"
     },
     "water-please": {
       "text": "물 주세요.",
       "file": "audio/water-please.mp3",
-      "durationSeconds": 1.347,
-      "sha256": "a6c57c38a637899020034a23e0a8eed19359c4bbbe75ee2a989e52a95026e34b"
+      "durationSeconds": 1.122,
+      "sha256": "1fabaf0b03a1c4f7b64fb5921e2ad1de2fc7e5a083f59f6cfb65de3c70a65de4"
     },
     "bread-please": {
       "text": "빵 주세요.",
       "file": "audio/bread-please.mp3",
-      "durationSeconds": 1.282,
-      "sha256": "c0f26219c38ae305af1ba332c802ebb8089c08d084cc2c5d19deea5900e0ddf3"
+      "durationSeconds": 1.158,
+      "sha256": "a06ba1c0eaafa3a0410f2ad592043916dd1ab6c7ccd84787847a8610926b9529"
     },
     "apple-please": {
       "text": "사과 주세요.",
       "file": "audio/apple-please.mp3",
-      "durationSeconds": 1.189,
-      "sha256": "4a130e3779ef235ae249a47bc87b320ace0b122ec4df73fe5d42ee360d98f56b"
+      "durationSeconds": 1.166,
+      "sha256": "b04733f684d757eb8a93d0f1b7cba49d8ad435ba5c7a5b7dce8437544de2ff5c"
     },
     "bread-1": {
       "text": "빵 한 개 주세요.",
       "file": "audio/bread-1.mp3",
-      "durationSeconds": 1.296,
-      "sha256": "c1c6368b686f19deb58d286532ed53b81752b15ccea0503fc90649a68f053894"
+      "durationSeconds": 1.591,
+      "sha256": "a130bfd6162e58e12336c2f8535e0c7964a7dc8ce2edb9d1315973bb725033aa"
     },
     "bread-2": {
       "text": "빵 두 개 주세요.",
       "file": "audio/bread-2.mp3",
-      "durationSeconds": 1.442,
-      "sha256": "73558e4db43625b607a8c1f060b8088648690b6b747ec0da53e6928002cb3a5c"
+      "durationSeconds": 1.481,
+      "sha256": "8273b5ba914813b90456d2f2a99c908a5586eabd239cee45e142f69114ee4e90"
     },
     "bread-3": {
       "text": "빵 세 개 주세요.",
       "file": "audio/bread-3.mp3",
-      "durationSeconds": 1.399,
-      "sha256": "a4ae23b4b54e55eeb231bbb6ad7f5216c8b8cb616d013e01bb359c3653c4f6d4"
+      "durationSeconds": 1.446,
+      "sha256": "6b53ac274451f673950154a1f6cd97c52f62076265b55fe58e97726c3aeef405"
     },
     "apple-1": {
       "text": "사과 한 개 주세요.",
       "file": "audio/apple-1.mp3",
-      "durationSeconds": 1.308,
-      "sha256": "926fd9bc88bba1e4e608ce6a8a84ff8ae75919610ed1ee4ee211d3fe0ecda597"
+      "durationSeconds": 1.64,
+      "sha256": "13e5c71996f5b2a825a718174ee2c110f95830acea4b716cb6e2741608b5d18e"
     },
     "apple-2": {
       "text": "사과 두 개 주세요.",
       "file": "audio/apple-2.mp3",
-      "durationSeconds": 1.677,
-      "sha256": "06d580c74f0fc70c0d2090df1cae547a0465bfd2ce33ebc52ac4dd1b98c06528"
+      "durationSeconds": 1.648,
+      "sha256": "2c0e9cb624fdcd3ed1568277e14e575c8456114647063e60aaceda8651c54e59"
     },
     "apple-3": {
       "text": "사과 세 개 주세요.",
       "file": "audio/apple-3.mp3",
-      "durationSeconds": 1.619,
-      "sha256": "936ca857b73b8569360bedd72d5c101982301c9d272ae24340cb365d9da99a76"
+      "durationSeconds": 1.717,
+      "sha256": "771dbe1096fe4bf4eb5b99fb3dfe98a0c07daf7e7d5fc1ed7d6755e50919bc3f"
     }
   }
 }

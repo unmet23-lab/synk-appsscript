@@ -6,44 +6,44 @@
     "red": {
       "text": "빨간색",
       "src": "red.mp3",
-      "durationSeconds": 1.104,
-      "sha256": "7c30f846c15f0bfbc779b515991d665097d6dbdf74b80bb8996ad2d0843c0a75"
+      "durationSeconds": 0.907,
+      "sha256": "9c6ece85b288b10a4552d6ed068b793bcc8a7f6cfe563db7cd65080d460d59c7"
     },
     "blue": {
       "text": "파란색",
       "src": "blue.mp3",
-      "durationSeconds": 0.941,
-      "sha256": "78ef880f626eddddece4fb64f2846f4affcc3a586883060163d03951b4d50e2e"
+      "durationSeconds": 0.943,
+      "sha256": "d3771cb2d06616c785e678c3d8e9d2bf75cac75429d2dcf3f61452e25daa22bb"
     },
     "up": {
       "text": "위",
       "src": "up.mp3",
-      "durationSeconds": 0.65,
-      "sha256": "a0e93cdf40769fcda7d1147ac6c0f096fb7222c43994fe9717a8d7251c4aedea"
+      "durationSeconds": 0.642,
+      "sha256": "b195d71c4181fcc4c25072ff4f7ecafb2c0509e3edbf42153a0ab7c2e51ba56a"
     },
     "down": {
       "text": "아래",
       "src": "down.mp3",
-      "durationSeconds": 1.483,
-      "sha256": "72f21491333cfbffddda211710bc566b5c13a259bed9f0268b1509d278aab761"
+      "durationSeconds": 0.801,
+      "sha256": "d8344d9cc209e3c704b3545531ac181569478da23e0ae88b3c84dbd71bb9143b"
     },
     "one": {
       "text": "한 번",
       "src": "one.mp3",
-      "durationSeconds": 1.179,
-      "sha256": "b3ac93d2139f8743e2f7a4e0f1a3e449c6f039b0ce3d192795a5a0a864598b8c"
+      "durationSeconds": 0.855,
+      "sha256": "477b5a623eadf0facc9f77c540ea723ef41e3ed9a6419289021c67f40b4e5786"
     },
     "two": {
       "text": "두 번",
       "src": "two.mp3",
-      "durationSeconds": 0.863,
-      "sha256": "e727dc460968c0d6d5be3d89fb4337ade8120088abd2f50ab2288e49fc4f5239"
+      "durationSeconds": 0.881,
+      "sha256": "9dd7bd1f22fabc7433b08d6b54286161f25e5f6ef899c49cad486df5badd10ed"
     },
     "three": {
       "text": "세 번",
       "src": "three.mp3",
-      "durationSeconds": 0.842,
-      "sha256": "cd5d859b72764e72e178643ac347139d6c666893a217a233782c3db933625f3e"
+      "durationSeconds": 0.912,
+      "sha256": "88a3c3b017b67bcb48f23b9d1b72e7c99e903ba412fbea0246937796fde31e65"
     }
   }
 }

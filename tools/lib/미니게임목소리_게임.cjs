@@ -531,25 +531,33 @@ const orderRush = {
 };
 
 // Three beginner games share one small narration bank and the existing credit/cache safeguards.
+// 낱말·짧은 말(끝에 문장부호가 없는 줄)은 레이싱 낱말처럼 끝에 마침표를 붙여 읽는다(10-21 하나로 다시 구울 때) — 마침표가 없으면 외치듯 읽어 흐려진다.
+// 세 게임이 목록의 text를 화면 글과 맞춰 보니(word-magic SPELLS·spaceship WORDS·order-rush VOICE_LINES) 목록에는 화면 글을 그대로 둔다.
+// 「한 개」만 따로 읽으면 받아쓰기가 seed·빠르기·마침표와 상관없이 반쯤 「한계」로 듣는다(10-21, 문장 속 「한 개」와 서현 판은 맞게 들음).
+// 레이싱 「년」처럼 「빵 한 개.」로 구워 받은 원본의 낱말 시각으로 「한」부터 잘라 쓴다(keepWord).
+const BEGINNER_KEEP = { 'count-1': { text: '빵 한 개.', keep: '한' } };
+const beginnerSpoken = row => BEGINNER_KEEP[row.id]?.text || (/[.!?…]$/.test(row.text) ? row.text : row.text + '.');
 const beginnerGames = {
   id: 'beginner-games', label: '완전 입문 게임 3종', newBank: true,
   post: 'MP3 mono 44.1 kHz · 96 kbps · -17 LUFS · 앞 0.08/뒤 0.18초',
   async jobs(repo = REPO) {
     return readJson(path.join(gameDir(this.id, repo), 'voice-request.json')).lines.map(row =>
-      job(this.id, row.id, 'narrator', row.text, [`audio/${row.id}.mp3`]));
+      job(this.id, row.id, 'narrator', beginnerSpoken(row), [`audio/${row.id}.mp3`],
+        { ...(beginnerSpoken(row) === row.text ? {} : { display: row.text }), ...(BEGINNER_KEEP[row.id] ? { keep: BEGINNER_KEEP[row.id].keep } : {}) }));
   },
   current(repo = REPO) { return listFiles(path.join(gameDir(this.id, repo), 'audio'), /\.mp3$/).map(f => 'audio/' + f); },
-  shipped(repo = REPO) { return readJson(path.join(gameDir(this.id, repo), 'voice-request.json')).lines; },
+  shipped(repo = REPO) { return readJson(path.join(gameDir(this.id, repo), 'voice-request.json')).lines.map(row => ({ ...row, text: beginnerSpoken(row) })); },
   async process(j, raw, stage) {
     const mp3 = abs(stage, j.outputs[0]), wav = mp3 + '.wav';
     fs.mkdirSync(path.dirname(mp3), { recursive: true });
-    await matchedWav(raw, wav, { edges: { lead: 0.08, tail: 0.18 }, lufs: -17, rate: 44100 });
+    const src = j.keep ? await keepWord(raw, j.keep, stage) : raw;
+    await matchedWav(src, wav, { edges: { lead: 0.08, tail: 0.18 }, lufs: -17, rate: 44100 });
     await ff(['-i', wav, '-ac', '1', '-ar', '44100', '-codec:a', 'libmp3lame', '-b:a', '96k', mp3]);
     return { files: { [j.outputs[0]]: mp3 }, metrics: await inspect(mp3, { minDuration: 0.12 }) };
   },
   validate(j, metrics) { return metrics.durationSeconds > 8 ? ['입문 낱말·짧은 부탁이 8초보다 김'] : []; },
   finalize(results, dir) {
-    const clips = Object.fromEntries(results.map(r => [r.job.id, { text: r.job.text,
+    const clips = Object.fromEntries(results.map(r => [r.job.id, { text: r.job.display ?? r.job.text,
       file: r.job.outputs[0], durationSeconds: r.metrics.durationSeconds }]));
     fs.writeFileSync(path.join(dir, 'audio/manifest.json'), JSON.stringify({ version: 1, approved: true, clips }, null, 2) + '\n');
     return ['audio/manifest.json'];
