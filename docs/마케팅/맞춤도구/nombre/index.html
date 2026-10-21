@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tu nombre en coreano — la regla oficial · SYNK LAB</title>
+<meta name="description" content="Escribe tu nombre y míralo en hangul con la regla oficial coreana — sin inventar un nombre nuevo. Español, português y English. Sin registro.">
+<meta property="og:title" content="Tu nombre en coreano — la regla oficial">
+<meta property="og:description" content="Your name in Korean the official way · Seu nome em coreano · Sin registro.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://synk.im/nombre/">
+<link rel="canonical" href="https://synk.im/nombre/">
+<link rel="preload" href="assets/fonts/SUIT-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400..800&family=DM+Mono:wght@500&display=swap">
+<style>
+  @font-face{font-family:'SUIT Variable';src:url('assets/fonts/SUIT-Variable.woff2') format('woff2');font-weight:100 900;font-display:swap}
+  :root{
+    --paper:#FBF7F0; --ink:#2B2320; --stitch:#F0E3C8;
+    --oat:#EDE7DC; --stone:#C7BFB2; --ash:#8D857A; --deepwool:#575046;
+    --coral:#F96859; --coral-wash:#FEF0E9; --rim:#941F19;
+    --kr:'SUIT Variable','SUIT',system-ui,sans-serif;
+    --en:'Inter Tight','SUIT Variable',system-ui,sans-serif;
+    --mono:'DM Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--en); font-weight:500;
+    letter-spacing:-0.015em; line-height:1.65; -webkit-font-smoothing:antialiased}
+  .kr{font-family:var(--kr); letter-spacing:-0.03em}
+  a{color:var(--rim)}
+  .bar{position:sticky; top:0; z-index:9; background:rgba(251,247,240,.94); backdrop-filter:blur(8px); border-bottom:1px solid var(--stitch)}
+  .bar .inner{max-width:720px; margin:0 auto; padding:10px 20px; display:flex; justify-content:space-between; align-items:center; gap:8px}
+  .home{font-size:15px; font-weight:750; letter-spacing:-0.03em; color:var(--ink); text-decoration:none}
+  .home b{color:var(--coral)}
+  .langbtns{display:flex; gap:6px}
+  .langbtn{font-family:var(--en); font-size:13px; font-weight:650; color:var(--deepwool); background:transparent;
+    border:1px solid var(--stitch); border-radius:99px; padding:5px 13px; cursor:pointer}
+  .langbtn[aria-pressed="true"]{background:var(--coral); border-color:var(--coral); color:#fff}
+  .wrap{max-width:720px; margin:0 auto; padding:0 20px}
+  section{padding:40px 0; border-bottom:1px solid var(--stitch)}
+  section:last-of-type{border-bottom:0}
+  h1{font-size:clamp(30px,7vw,44px); line-height:1.15; margin:0 0 12px; font-weight:800; letter-spacing:-0.04em}
+  h2{font-size:clamp(19px,4.2vw,23px); line-height:1.3; margin:0 0 12px; font-weight:780; letter-spacing:-0.03em}
+  p{margin:0 0 12px}
+  .lead{font-size:clamp(15px,3.6vw,17px); color:var(--deepwool)}
+  .fine{font-size:13.5px; color:var(--ash); line-height:1.6}
+  .box{background:#fff; border:1px solid var(--stitch); border-radius:18px; padding:20px;
+    box-shadow:0 1px 2px rgba(43,35,32,.04), 0 10px 28px -18px rgba(43,35,32,.22)}
+  .label{display:block; font-size:13.5px; font-weight:700; color:var(--deepwool); margin:0 0 8px}
+  .seg{display:flex; flex-wrap:wrap; gap:7px; margin-bottom:14px}
+  .seg button{font-family:var(--en); font-size:14px; font-weight:650; color:var(--deepwool); background:var(--paper);
+    border:1.5px solid var(--stitch); border-radius:12px; padding:7px 12px; cursor:pointer}
+  .seg button[aria-pressed="true"]{border-color:var(--coral); background:var(--coral-wash); color:var(--rim)}
+  input[type=text]{width:100%; font-family:var(--en); font-size:22px; font-weight:650; letter-spacing:-0.01em;
+    padding:13px 16px; border:1.5px solid var(--stitch); border-radius:12px; background:var(--paper); color:var(--ink)}
+  input[type=text]:focus{border-color:var(--coral); outline:none}
+  .chips{display:flex; flex-wrap:wrap; gap:7px; margin-top:12px}
+  .chip{font-family:var(--en); font-size:13.5px; font-weight:650; color:var(--deepwool); background:var(--oat);
+    border:1px solid var(--stitch); border-radius:99px; padding:5px 13px; cursor:pointer}
+  .chip:hover,.chip:focus-visible{background:var(--coral-wash); border-color:var(--coral); color:var(--rim); outline:none}
+  .out{margin-top:20px; padding-top:20px; border-top:1px solid var(--stitch)}
+  .out[hidden]{display:none}
+  .hangul{font-family:var(--kr); font-size:clamp(40px,11vw,60px); font-weight:800; letter-spacing:-0.04em; line-height:1.15; word-break:keep-all}
+  .read{font-family:var(--mono); font-size:14px; color:var(--ash); margin-top:6px}
+  .src{display:inline-block; margin-top:10px; font-size:12.5px; font-weight:650; color:var(--deepwool); background:var(--oat); border-radius:8px; padding:3px 9px}
+  .alts{margin-top:16px; padding:14px 16px; background:var(--coral-wash); border:1px solid rgba(249,104,89,.3); border-radius:12px; font-size:14.5px}
+  .alts[hidden]{display:none}
+  .alts .opts{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px}
+  .alts button{font-family:var(--kr); font-size:20px; font-weight:800; letter-spacing:-0.03em; background:#fff; color:var(--ink);
+    border:1.5px solid rgba(249,104,89,.45); border-radius:12px; padding:6px 14px; cursor:pointer}
+  .alts button[aria-pressed="true"]{background:var(--coral); color:#fff; border-color:var(--coral)}
+  .alts small{display:block; font-family:var(--en); font-size:12px; font-weight:600; letter-spacing:0; opacity:.85}
+  .why{list-style:none; margin:16px 0 0; padding:0; display:grid; gap:7px}
+  .why li{background:var(--paper); border:1px solid var(--stitch); border-radius:12px; padding:10px 13px; font-size:14.5px}
+  .why b{font-weight:750}
+  .ar{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; font-weight:600}
+  .lt{font-family:var(--mono); font-weight:700; letter-spacing:0}
+  .other{margin-top:14px; font-size:14px; color:var(--deepwool)}
+  .other .kr{font-weight:750}
+  .intro{margin-top:18px; padding:16px; background:var(--ink); color:var(--paper); border-radius:16px}
+  .intro .ko{font-family:var(--kr); font-size:24px; font-weight:800; letter-spacing:-0.03em}
+  .intro .tr{font-size:14px; color:#D8D0C6; margin-top:4px}
+  .intro .rd{font-family:var(--mono); font-size:12.5px; color:#bdb3a6; margin-top:6px}
+  .actions{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px}
+  .btn{font-family:var(--en); font-size:14px; font-weight:650; border-radius:99px; padding:9px 17px; cursor:pointer;
+    border:1px solid var(--stitch); background:#fff; color:var(--deepwool)}
+  .btn.primary{background:var(--coral); border-color:var(--coral); color:#fff}
+  .btn:disabled{opacity:.5; cursor:default}
+  .missing{margin-top:16px; padding:14px 16px; background:var(--oat); border-radius:12px; font-size:14.5px}
+  .missing[hidden]{display:none}
+  .card{margin-top:20px}
+  .card[hidden]{display:none}
+  .card .pic{display:block; width:100%; max-width:380px; height:auto; border-radius:16px; background:var(--paper); border:1px solid var(--stitch); aspect-ratio:4/5}
+  .card .pic.wait{opacity:.5}
+  .mist{display:grid; gap:10px; margin-top:12px}
+  .mist div{background:#fff; border:1px solid var(--stitch); border-radius:14px; padding:12px 14px; font-size:14.5px}
+  .mist .kr{font-weight:800}
+  .mist s{color:var(--ash)}
+  .srcs{font-size:13px; color:var(--ash); line-height:1.6; padding-left:18px}
+  .srcs li{margin:3px 0}
+  .btn:focus-visible,.langbtn:focus-visible,.seg button:focus-visible,input:focus-visible,a:focus-visible,.alts button:focus-visible{outline:2px solid var(--coral); outline-offset:2px}
+  @media (prefers-reduced-motion:reduce){*{transition:none !important}}
+</style>
+</head>
+<body data-ui="es">
+<div class="bar"><div class="inner">
+  <a class="home" href="https://synk.im/lab/">SYNK <b>LAB</b></a>
+  <div class="langbtns" role="group" aria-label="Language">
+    <button class="langbtn" data-ui="es" aria-pressed="true">ES</button>
+    <button class="langbtn" data-ui="pt" aria-pressed="false">PT</button>
+    <button class="langbtn" data-ui="en" aria-pressed="false">EN</button>
+  </div>
+</div></div>
+
+<main class="wrap">
+  <section>
+    <h1 data-t="title">Tu nombre en coreano</h1>
+    <p class="lead" data-t="lead">Escribe tu nombre y míralo en hangul con la regla oficial coreana. Es tu nombre, sin inventar uno nuevo.</p>
+    <div class="box">
+      <p class="label" data-t="askLang">¿En qué idioma se dice tu nombre?</p>
+      <div class="seg" id="langs" role="group">
+        <button type="button" data-lang="es" aria-pressed="true">Español</button>
+        <button type="button" data-lang="br" aria-pressed="false">Português (Brasil)</button>
+        <button type="button" data-lang="pt" aria-pressed="false">Português (Portugal)</button>
+        <button type="button" data-lang="en" aria-pressed="false">English</button>
+      </div>
+      <label class="label" for="src" data-t="askName">Tu nombre</label>
+      <input id="src" type="text" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="María José">
+      <div class="chips" id="ex"></div>
+
+      <div class="out" id="out" hidden>
+        <div class="hangul" id="outk" aria-live="polite"></div>
+        <div class="read" id="outr"></div>
+        <span class="src" id="outs"></span>
+        <div class="alts" id="alts" hidden></div>
+        <div class="missing" id="miss" hidden></div>
+        <ul class="why" id="why"></ul>
+        <p class="other" id="other"></p>
+        <div class="intro" id="intro">
+          <div class="ko" id="introk"></div>
+          <div class="tr" id="introt"></div>
+          <div class="rd" id="intror"></div>
+        </div>
+        <div class="actions">
+          <button class="btn primary" id="copy" type="button" data-t="copy">Copiar</button>
+          <button class="btn" id="copys" type="button" data-t="copyIntro">Copiar la frase</button>
+        </div>
+        <div class="card" id="card" hidden>
+          <img class="pic wait" id="cardimg" alt="" width="1080" height="1350">
+          <div class="actions"><button class="btn primary" id="save" type="button" disabled data-t="save">Guardar imagen</button></div>
+          <p class="fine" data-t="cardNote">La imagen se hace aquí mismo, en tu navegador. No se envía a ningún lado.</p>
+        </div>
+      </div>
+    </div>
+    <p class="fine" style="margin-top:12px" data-t="privacy">Sin registro. Nada de lo que escribes sale de tu dispositivo.</p>
+  </section>
+
+  <section>
+    <h2 data-t="mistTitle">Cuatro errores que ves en internet</h2>
+    <div class="mist" id="mist"></div>
+  </section>
+
+  <section>
+    <h2 data-t="srcTitle">De dónde sale la regla</h2>
+    <ul class="srcs">
+      <li><a href="https://korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0003" rel="noopener">외래어 표기법 (Instituto Nacional de la Lengua Coreana)</a> — <span data-t="srcEs">español: tabla 2 y cap. 3 §4; portugués: tabla 17 y cap. 3 §19.</span></li>
+      <li data-t="srcEn">English names: the spelling doesn't tell the sound, so we only use the official list of names already decided in Korea (157 names).</li>
+    </ul>
+    <p class="fine" data-t="checked">Probamos la herramienta con los 231 ejemplos oficiales (60 en español, 171 en portugués) y 250 nombres comunes de México, Brasil y Portugal.</p>
+    <p class="fine" data-t="review">⚠ Los textos en español y portugués aún no los revisa una persona nativa. Los corregiremos cuando los revisen.</p>
+    <p class="fine">SYNK LAB · <a href="https://synk.im/lab/">synk.im/lab</a></p>
+  </section>
+</main>
+
+<script src="names.js"></script>
+<script src="rules.js"></script>
+<script>
+(function(){
+  'use strict';
+  var N = window.SynkName, D = window.SynkNames;
+
+  /* ── 화면 글 ── */
+  var T = {
+    es: {
+      title: 'Tu nombre en coreano', lead: 'Escribe tu nombre y míralo en hangul con la regla oficial coreana. Es tu nombre, sin inventar uno nuevo.',
+      askLang: '¿En qué idioma se dice tu nombre?', askName: 'Tu nombre', copy: 'Copiar', copyIntro: 'Copiar la frase', save: 'Guardar imagen',
+      cardNote: 'La imagen se hace aquí mismo, en tu navegador. No se envía a ningún lado.', privacy: 'Sin registro. Nada de lo que escribes sale de tu dispositivo.',
+      mistTitle: 'Cuatro errores que ves en internet', srcTitle: 'De dónde sale la regla',
+      srcEs: 'español: tabla 2 y cap. 3 §4; portugués: tabla 17 y cap. 3 §19.',
+      srcEn: 'Nombres en inglés: la ortografía no dice cómo suenan, así que solo usamos la lista oficial de nombres ya decididos en Corea (157 nombres).',
+      checked: 'Probamos la herramienta con los 231 ejemplos oficiales (60 en español, 171 en portugués) y 250 nombres comunes de México, Brasil y Portugal.',
+      review: '⚠ Los textos en español y portugués aún no los revisa una persona nativa. Los corregiremos cuando los revisen.',
+      ph: 'María José', copied: '✓ Copiado',
+      src: { rule: 'Regla oficial (외래어 표기법)', usage: 'Forma ya fijada en Corea (용례)', list: 'Lista oficial de nombres (용례)', estimated: 'Estimado con la regla — no está en la lista', mixed: 'Regla oficial y lista de nombres' },
+      altsTitle: 'Hay dos formas. ¿Cómo lo dices tú?',
+      alt: { 'x-mexico': 'x como j (México)', 'tz-sound': 'tz como ts', 'll-italian': 'll como l', rule: 'solo la regla', 'e-initial': 'con e', common: 'forma común' },
+      altRuleFirst: 'regla oficial', altUsageFirst: 'forma fijada', altListFirst: 'lista oficial',
+      other: { es: 'En español', br: 'En portugués de Brasil', pt: 'En portugués de Portugal' }, otherLead: 'El mismo nombre en otro idioma: ',
+      missing: function (w) { return '«' + w + '» no está en nuestra lista de nombres en inglés. La ortografía inglesa no dice cómo suena. Si lo dices en español o portugués, elige ese idioma arriba.'; },
+      intro: function (src) { return 'Me llamo ' + src + '.'; },
+      mist: [
+        ['Pablo', '<span class="kr">파블로</span>, no <s class="kr">빠블로</s>', 'En nombres extranjeros no se usan ㅃ ㄸ ㄲ ㅆ ㅉ (regla general, art. 4).'],
+        ['Miguel', '<span class="kr">미겔</span>, no <s class="kr">미구엘</s>', 'En gue y gui la u no suena.'],
+        ['Jennifer (inglés) · Vanessa', '<span class="kr">제니퍼 · 바네사</span>, no <s class="kr">젠니퍼 · 바넷사</s>', 'Las letras dobles se escriben una vez.'],
+        ['José', '<span class="kr">호세</span> (español) · <span class="kr">조제</span> (portugués)', 'Primero el idioma: la misma letra suena distinto.']
+      ]
+    },
+    pt: {
+      title: 'Seu nome em coreano', lead: 'Digite seu nome e veja em hangul pela regra oficial coreana. É o seu nome, sem inventar outro.',
+      askLang: 'Em que língua se diz o seu nome?', askName: 'Seu nome', copy: 'Copiar', copyIntro: 'Copiar a frase', save: 'Salvar imagem',
+      cardNote: 'A imagem é feita aqui mesmo, no seu navegador. Não é enviada a lugar nenhum.', privacy: 'Sem cadastro. Nada do que você digita sai do seu aparelho.',
+      mistTitle: 'Quatro erros que você vê na internet', srcTitle: 'De onde vem a regra',
+      srcEs: 'espanhol: tabela 2 e cap. 3 §4; português: tabela 17 e cap. 3 §19.',
+      srcEn: 'Nomes em inglês: a grafia não diz o som, então usamos só a lista oficial de nomes já decididos na Coreia (157 nomes).',
+      checked: 'Testamos a ferramenta com os 231 exemplos oficiais (60 em espanhol, 171 em português) e 250 nomes comuns do México, do Brasil e de Portugal.',
+      review: '⚠ Os textos em espanhol e português ainda não foram revisados por um falante nativo. Vamos corrigir quando forem.',
+      ph: 'João Pedro', copied: '✓ Copiado',
+      src: { rule: 'Regra oficial (외래어 표기법)', usage: 'Forma já fixada na Coreia (용례)', list: 'Lista oficial de nomes (용례)', estimated: 'Estimado pela regra — não está na lista', mixed: 'Regra oficial e lista de nomes' },
+      altsTitle: 'Existem duas formas. Como você diz?',
+      alt: { 'x-mexico': 'x como o j espanhol (México)', 'tz-sound': 'tz como ts', 'll-italian': 'll como l', rule: 'só a regra', 'e-initial': 'com e', common: 'forma comum' },
+      altRuleFirst: 'regra oficial', altUsageFirst: 'forma fixada', altListFirst: 'lista oficial',
+      other: { es: 'Em espanhol', br: 'No português do Brasil', pt: 'No português de Portugal' }, otherLead: 'O mesmo nome em outra língua: ',
+      missing: function (w) { return '“' + w + '” não está na nossa lista de nomes em inglês. A grafia inglesa não diz o som. Se você diz em português ou espanhol, escolha essa língua acima.'; },
+      intro: function (src) { return 'Meu nome é ' + src + '.'; },
+      mist: [
+        ['Pedro', '<span class="kr">페드루</span>, não <s class="kr">뻬드로</s>', 'Em nomes estrangeiros não se usa ㅃ ㄸ ㄲ ㅆ ㅉ (regra geral, art. 4).'],
+        ['Ronaldo', '<span class="kr">호나우두</span> (Brasil) · <span class="kr">호날두</span> (Portugal)', 'O país muda a regra: r inicial → ㅎ, l antes de consoante → 우 no Brasil.'],
+        ['Larissa · Giovanna', '<span class="kr">라리사 · 지오바나</span>, não <s class="kr">라릿사 · 지오반나</s>', 'Letras dobradas se escrevem uma vez (menos rr e ss).'],
+        ['José', '<span class="kr">조제</span> (português) · <span class="kr">호세</span> (espanhol)', 'Primeiro a língua: a mesma letra soa diferente.']
+      ]
+    },
+    en: {
+      title: 'Your name in Korean', lead: 'Type your name and see it in Hangul the official Korean way. Your own name, not a made-up Korean one.',
+      askLang: 'What language is your name in?', askName: 'Your name', copy: 'Copy', copyIntro: 'Copy the sentence', save: 'Save image',
+      cardNote: 'The picture is made right here in your browser and sent nowhere.', privacy: 'No sign-up. Nothing you type leaves your device.',
+      mistTitle: 'Four mistakes you see online', srcTitle: 'Where the rule comes from',
+      srcEs: 'Spanish: table 2 and ch. 3 §4; Portuguese: table 17 and ch. 3 §19.',
+      srcEn: 'English names: the spelling doesn’t tell the sound, so we only use the official list of names already decided in Korea (157 names).',
+      checked: 'We tested the tool on all 231 official examples (60 Spanish, 171 Portuguese) and 250 common names from Mexico, Brazil and Portugal.',
+      review: '⚠ The Spanish and Portuguese text hasn’t been checked by a native speaker yet. We’ll fix it once it is.',
+      ph: 'Jennifer', copied: '✓ Copied',
+      src: { rule: 'Official rule (외래어 표기법)', usage: 'Form already set in Korea (용례)', list: 'Official name list (용례)', estimated: 'Estimated by the rule — not in the list', mixed: 'Official rule and name list' },
+      altsTitle: 'Two ways to write it. How do you say it?',
+      alt: { 'x-mexico': 'x sounds like h (Mexico)', 'tz-sound': 'tz like ts', 'll-italian': 'll like l', rule: 'rule only', 'e-initial': 'with e', common: 'common spelling' },
+      altRuleFirst: 'official rule', altUsageFirst: 'set form', altListFirst: 'official list',
+      other: { es: 'In Spanish', br: 'In Brazilian Portuguese', pt: 'In European Portuguese' }, otherLead: 'The same name in another language: ',
+      missing: function (w) { return '“' + w + '” isn’t in our list of English names yet. English spelling doesn’t tell the sound. If you say it the Spanish or Portuguese way, pick that language above.'; },
+      intro: function (src) { return 'My name is ' + src + '.'; },
+      mist: [
+        ['Sarah', '<span class="kr">세라</span> (official) · often <span class="kr">사라</span>', 'English is written by sound, not spelling.'],
+        ['Jennifer', '<span class="kr">제니퍼</span>, not <s class="kr">젠니퍼</s>', 'Double letters don’t double the sound.'],
+        ['Thomas · Carol', '<span class="kr">토머스 · 캐럴</span>, not <s class="kr">토마스 · 캐롤</s>', 'The weak “uh” sound is ㅓ.'],
+        ['David', '<span class="kr">데이비드</span>, not <s class="kr">데이빗</s>', 'A final d gets a soft 드.']
+      ]
+    }
+  };
+
+  /* 규칙 설명 — 이름에 실제로 쓰인 규칙만, 처음 나온 순서대로 */
+  var WHY = {
+    'j': { es: '<b>j → ㅎ</b> · José <span class="kr">호세</span>, Juan <span class="kr">후안</span>', en: '<b>Spanish j → ㅎ</b> (a breathy h) · José <span class="kr">호세</span>', pt: '<b>j do espanhol → ㅎ</b> · José <span class="kr">호세</span>' },
+    'j-pt': { es: '<b>j del portugués → ㅈ</b> · José <span class="kr">조제</span>', en: '<b>Portuguese j → ㅈ</b> · José <span class="kr">조제</span>', pt: '<b>j → ㅈ</b> · José <span class="kr">조제</span>' },
+    'g-soft': { es: '<b>g + e/i → ㅎ</b> (en portugués ㅈ) · Jorge <span class="kr">호르헤</span>', en: '<b>g before e/i</b> → ㅎ in Spanish, ㅈ in Portuguese · Jorge <span class="kr">호르헤 / 조르지</span>', pt: '<b>g + e/i → ㅈ</b> (no espanhol ㅎ) · Jorge <span class="kr">조르지</span>' },
+    'c-soft': { es: '<b>c + e/i → ㅅ</b> · Lucía <span class="kr">루시아</span>', en: '<b>c before e/i → ㅅ</b> · Lucía <span class="kr">루시아</span>', pt: '<b>c + e/i → ㅅ</b> · Cecília <span class="kr">세실리아</span>' },
+    'gu-ei': { es: '<b>gue, gui: la u no suena</b> · Miguel <span class="kr">미겔</span>', en: '<b>gue, gui: the u is silent</b> · Miguel <span class="kr">미겔</span>', pt: '<b>gue, gui: o u não soa</b> · Guilherme <span class="kr">길례르미</span>' },
+    'qu-ei': { es: '<b>que, qui → 케, 키</b> · Enrique <span class="kr">엔리케</span>', en: '<b>que, qui → 케, 키</b> · Enrique <span class="kr">엔리케</span>', pt: '<b>que, qui → 케, 키</b> · Henrique <span class="kr">엔히키</span>' },
+    'gu-a': { es: '<b>gua → 과</b> · Guadalupe <span class="kr">과달루페</span> (no 구아달루페)', en: '<b>gua → 과</b> · Guadalupe <span class="kr">과달루페</span>', pt: '<b>gua (espanhol) → 과</b> · Guadalupe <span class="kr">과달루페</span>' },
+    'qu-a': { es: '<b>qua, cua → 콰</b>', en: '<b>qua → 콰</b>', pt: '<b>qua (espanhol) → 콰</b>' },
+    'h': { es: '<b>la h no suena</b> · Héctor <span class="kr">엑토르</span>', en: '<b>h is silent</b> · Héctor <span class="kr">엑토르</span>', pt: '<b>o h não soa</b> · Helena <span class="kr">엘레나</span>' },
+    'l-double': { es: '<b><span class="lt">l</span> entre vocales → ㄹㄹ</b> · Camila <span class="kr">카밀라</span>', en: '<b><span class="lt">l</span> between vowels → ㄹㄹ</b> · Camila <span class="kr">카밀라</span>', pt: '<b><span class="lt">l</span> entre vogais → ㄹㄹ</b> · Manuela <span class="kr">마누엘라</span>' },
+    'll': { es: '<b><span class="lt">ll</span> + vocal → 야, 예, 요, 유</b> · Guillermo <span class="kr">기예르모</span>', en: '<b><span class="lt">ll</span> + vowel → 야, 예, 요, 유</b> · Castillo <span class="kr">카스티요</span>', pt: '<b><span class="lt">ll</span> (espanhol) → 야, 예…</b> · Castillo <span class="kr">카스티요</span>' },
+    'y': { es: '<b>y + vocal → 야, 예, 요, 유</b> · Reyes <span class="kr">레예스</span>', en: '<b>y + vowel → 야, 예, 요, 유</b> · Reyes <span class="kr">레예스</span>', pt: '<b>y + vogal → 야, 예…</b>' },
+    'enye': { es: '<b>ñ + vocal → 냐, 녜, 뇨, 뉴</b> · Peña <span class="kr">페냐</span>', en: '<b>ñ + vowel → 냐, 녜, 뇨, 뉴</b> · Peña <span class="kr">페냐</span>', pt: '<b>ñ → 냐, 녜…</b>' },
+    'rr': { es: '<b>rr → ㄹ (una sola)</b> · Gutiérrez <span class="kr">구티에레스</span>', en: '<b>rr</b> → ㄹ in Spanish, ㅎ in Portuguese', pt: '<b>rr → ㅎ</b> · Ferreira <span class="kr">페헤이라</span>' },
+    'r-h': { es: '<b>r al inicio (portugués) → ㅎ</b> · Rafael <span class="kr">하파엘</span>', en: '<b>Portuguese r at the start (or after n, l, s) → ㅎ</b> · Rafael <span class="kr">하파엘</span>', pt: '<b>r no início (ou depois de n, l, s) → ㅎ</b> · Rafael <span class="kr">하파엘</span>' },
+    'z': { es: '<b>z → ㅅ (nunca ㅈ)</b> · González <span class="kr">곤살레스</span>', en: '<b>Spanish z → ㅅ</b> · Díaz <span class="kr">디아스</span>', pt: '<b>z do espanhol → ㅅ</b> · Díaz <span class="kr">디아스</span>' },
+    'z-pt': { es: '<b>z (portugués) → ㅈ antes de vocal</b> · Luíza <span class="kr">루이자</span>', en: '<b>Portuguese z → ㅈ before a vowel</b> · Luíza <span class="kr">루이자</span>', pt: '<b>z antes de vogal → ㅈ, no fim → 스</b> · Luíza <span class="kr">루이자</span>' },
+    's-between': { es: '<b>s entre vocales (portugués) → ㅈ</b> · José <span class="kr">조제</span>', en: '<b>Portuguese s between vowels → ㅈ</b> · José <span class="kr">조제</span>', pt: '<b>s entre vogais → ㅈ</b> · Teresa <span class="kr">테레자</span>' },
+    'x-initial': { es: '<b>x al inicio → ㅅ</b> (regla oficial) · Ximena <span class="kr">시메나</span>', en: '<b>x at the start → ㅅ</b> (official rule)', pt: '<b>x no início (espanhol) → ㅅ</b>' },
+    'x': { es: '<b>x → ㄱ + ㅅ</b> · Félix <span class="kr">펠릭스</span>', en: '<b>x → ㄱ + ㅅ</b> · Félix <span class="kr">펠릭스</span>', pt: '<b>x (espanhol) → ㄱ + ㅅ</b>' },
+    'x-pt': { es: '<b>x (portugués) → 시</b> · Alexandre <span class="kr">알레샨드리</span>', en: '<b>Portuguese x → 시</b> (sh) · Alexandre <span class="kr">알레샨드리</span>', pt: '<b>x → 시</b> · Alexandre <span class="kr">알레샨드리</span>' },
+    'n-velar': { es: '<b>n antes de k o g → ㅇ</b> · Ángel <span class="kr">앙헬</span>', en: '<b>n before a k or g sound → ㅇ</b> · Franco <span class="kr">프랑코</span>', pt: '<b>n antes de k ou g → ㅇ</b> · Branco <span class="kr">브랑쿠</span>' },
+    'mn-final': { es: '<b>m, n al final (portugués) → ㅇ</b> · Joaquim <span class="kr">조아킹</span>', en: '<b>Portuguese final m, n → ㅇ</b> · Joaquim <span class="kr">조아킹</span>', pt: '<b>m, n no fim → ㅇ</b> · Joaquim <span class="kr">조아킹</span>' },
+    'nasal': { es: '<b>ão, ã → 앙</b> · João <span class="kr">주앙</span>', en: '<b>ão, ã → 앙</b> · João <span class="kr">주앙</span>', pt: '<b>ão, ã → 앙</b> · Sebastião <span class="kr">세바스치앙</span>' },
+    'o-final': { es: '<b>o final (portugués) → 우</b> · Paulo <span class="kr">파울루</span>', en: '<b>Portuguese final o → 우</b> · Paulo <span class="kr">파울루</span>', pt: '<b>o final → 우</b> · Paulo <span class="kr">파울루</span>' },
+    'e-final': { es: '<b>e final (portugués) → 으 / 이 (Brasil)</b> · Felipe <span class="kr">펠리피</span>', en: '<b>Portuguese final e → 으, or 이 in Brazil</b> · Felipe <span class="kr">펠리피</span>', pt: '<b>e final → 으 (Portugal) / 이 (Brasil)</b> · Felipe <span class="kr">펠리프 / 펠리피</span>' },
+    'es-final': { es: '<b>-es final (portugués) → 으스 / 이스 (Brasil)</b>', en: '<b>Portuguese final -es → 으스, or 이스 in Brazil</b>', pt: '<b>-es final → 으스 (Portugal) / 이스 (Brasil)</b> · Rodrigues <span class="kr">호드리기스</span>' },
+    'es-final-e': { es: '<b>-pes, -bes, -mes… → 에스</b> · Lopes <span class="kr">로페스</span>', en: '<b>-pes, -mes… → 에스</b> · Lopes <span class="kr">로페스</span>', pt: '<b>depois de p, b, m, f, v: -es → 에스</b> · Lopes <span class="kr">로페스</span>' },
+    'dt-br': { es: '<b>Brasil: d, t + i → 지, 치</b> · Thiago <span class="kr">치아구</span>', en: '<b>Brazil: d, t before i (or a final e) → 지, 치</b> · Thiago <span class="kr">치아구</span>', pt: '<b>Brasil: d, t + i (ou e final) → 지, 치</b> · Thiago <span class="kr">치아구</span>' },
+    'l-br': { es: '<b>Brasil: <span class="lt">l</span> antes de consonante o al final → 우</b> · Silva <span class="kr">시우바</span>', en: '<b>Brazil: <span class="lt">l</span> before a consonant or at the end → 우</b> · Silva <span class="kr">시우바</span>', pt: '<b>Brasil: <span class="lt">l</span> antes de consoante ou no fim → 우</b> · Silva <span class="kr">시우바</span>' },
+    'lh': { es: '<b><span class="lt">lh</span> → ㄹ + 리</b> · Coelho <span class="kr">코엘류</span>', en: '<b><span class="lt">lh</span> → ㄹ + 리</b> · Coelho <span class="kr">코엘류</span>', pt: '<b><span class="lt">lh</span> → ㄹ + 리</b> · Coelho <span class="kr">코엘류</span>' },
+    'nh': { es: '<b>nh → 냐, 녜, 뇨, 뉴</b>', en: '<b>nh → 냐, 녜, 뇨, 뉴</b>', pt: '<b>nh → 냐, 녜, 뇨, 뉴</b> · Marinha <span class="kr">마리냐</span>' },
+    'ch': { es: '<b>ch → ㅊ</b> (en portugués 시)', en: '<b>ch</b> → ㅊ in Spanish, 시 (sh) in Portuguese', pt: '<b>ch → 시</b> (sh) · Chaves <span class="kr">샤베스</span>' },
+    'e-initial': { es: '<b>e inicial sin acento (portugués) → 이</b>, aunque muchos nombres usan 에', en: '<b>Portuguese unstressed first e → 이</b>, though many names keep 에', pt: '<b>e inicial átono → 이</b> (regra), mas muitos nomes usam 에' },
+    'double': { es: '<b>letras dobles → una vez</b> · Anna <span class="kr">아나</span>', en: '<b>double letters → once</b> · Vanessa <span class="kr">바네사</span>', pt: '<b>letras dobradas → uma vez</b> · Larissa <span class="kr">라리사</span>' },
+    'eu': { es: '<b>consonante sin vocal → con 으</b> (르, 스, 드): en coreano la sílaba solo termina en 7 sonidos', en: '<b>A consonant with no vowel after it gets a soft 으</b> (르, 스, 드): Korean syllables end in only 7 sounds', pt: '<b>consoante sem vogal → com 으</b> (르, 스, 드): em coreano a sílaba só termina em 7 sons' },
+    'particle': { es: '<b>de, del se unen al apellido</b> · Felipe de Jesús <span class="kr">펠리페 데헤수스</span>', en: '<b>de, da, dos join the next name</b> · da Silva <span class="kr">다시우바</span>', pt: '<b>da, de, dos se juntam ao nome seguinte</b> · da Silva <span class="kr">다시우바</span>' },
+    'v': { es: '<b>v → ㅂ</b> (el coreano no tiene v) · Valeria <span class="kr">발레리아</span>', en: '<b>v → ㅂ</b> (Korean has no v) · Valeria <span class="kr">발레리아</span>', pt: '<b>v → ㅂ</b> (o coreano não tem v) · Vitória <span class="kr">비토리아</span>' },
+    'f': { es: '<b>f → ㅍ</b> (nunca ㅎ) · Fernanda <span class="kr">페르난다</span>', en: '<b>f → ㅍ</b> (never ㅎ) · Fernanda <span class="kr">페르난다</span>', pt: '<b>f → ㅍ</b> (nunca ㅎ) · Fernanda <span class="kr">페르난다</span>' }
+  };
+  var SKIP = { vowel: 1, c: 1, k: 1, g: 1, l: 1, r: 1, n: 1, m: 1, p: 1, b: 1, d: 1, s: 1, t: 1, ss: 1, 'y-vowel': 1, 'y-and': 1, ou: 1, ae: 1, oe: 1, cedilla: 1, sc: 1, 's-voiced': 1, 'che-final': 1, 'x-ex': 1, 'w-pt': 1, 'j-final': 1, cc: 1, 'qu-o': 1, w: 1 };
+
+  var ui = 'es', lang = 'es', choice = null, lastResult = null;
+  var $ = function (id) { return document.getElementById(id); };
+  var $src = $('src'), $out = $('out');
+  var EX = { es: ['María José', 'Jorge', 'Guadalupe', 'Ximena', 'Santiago', 'Valentina', 'Itzel'], br: ['João Pedro', 'Ana Clara', 'Thiago', 'Gabriel', 'Larissa', 'Ronaldo'], pt: ['João', 'Inês', 'Tiago', 'Rodrigo', 'Beatriz'], en: ['Jennifer', 'Michael', 'Sarah', 'Emily', 'Daniel', 'Olivia'] };
+
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function setText() {
+    var t = T[ui];
+    document.documentElement.lang = ui;
+    document.querySelectorAll('[data-t]').forEach(function (el) { var v = t[el.getAttribute('data-t')]; if (typeof v === 'string') el.textContent = v; });
+    $src.placeholder = EX[lang][0];
+    $('mist').innerHTML = t.mist.map(function (m) { return '<div><b>' + esc(m[0]) + '</b> <span class="ar">→</span> ' + m[1] + '<br><span class="fine">' + esc(m[2]) + '</span></div>'; }).join('');
+    document.querySelectorAll('.langbtn').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.ui === ui)); });
+  }
+  function setExamples() {
+    $('ex').innerHTML = EX[lang].map(function (n) { return '<button class="chip" type="button">' + esc(n) + '</button>'; }).join('');
+  }
+
+  function render() {
+    var raw = $src.value.trim();
+    if (!raw) { $out.hidden = true; card.clear(); return; }
+    var r = N.lookup(raw, lang, D);
+    lastResult = r;
+    var t = T[ui];
+    $out.hidden = false;
+    // 두 가지로 쓰는 이름 — 첫 번째 대안 하나를 고르게 한다
+    var wAlt = r.words.filter(function (w) { return w.alts && w.alts.length; })[0];
+    var main = r.text.trim();
+    if (choice && wAlt && choice.src === wAlt.src) main = r.words.map(function (w) { return w === wAlt ? choice.ko : w.ko; }).join(' ').trim();
+    $('outk').textContent = main || '—';
+    $('outr').textContent = main ? N.readAloud(main) : '';
+    var kinds = r.words.map(function (w) { return w.source; }).filter(function (s) { return s !== 'missing'; });
+    var srcKey = kinds.length && kinds.every(function (k) { return k === kinds[0]; }) ? kinds[0] : (kinds.length ? 'mixed' : null);
+    $('outs').textContent = srcKey ? t.src[srcKey] : ''; $('outs').hidden = !srcKey;
+    if (wAlt) {
+      var opts = [{ ko: wAlt.ko, label: wAlt.source === 'usage' ? t.altUsageFirst : (lang === 'en' ? t.altListFirst : t.altRuleFirst) }].concat(wAlt.alts.map(function (a) { return { ko: a.ko, label: t.alt[a.why] || a.why }; }));
+      var cur = choice && choice.src === wAlt.src ? choice.ko : wAlt.ko;
+      $('alts').innerHTML = '<b>' + esc(t.altsTitle) + '</b><div class="opts">' + opts.map(function (o) {
+        return '<button type="button" data-ko="' + esc(o.ko) + '" data-src="' + esc(wAlt.src) + '" aria-pressed="' + (o.ko === cur) + '">' + esc(o.ko) + '<small>' + esc(o.label) + '</small></button>';
+      }).join('') + '</div>';
+      $('alts').hidden = false;
+    } else $('alts').hidden = true;
+    var miss = r.words.filter(function (w) { return w.source === 'missing'; });
+    $('miss').hidden = !miss.length;
+    if (miss.length) $('miss').textContent = t.missing(miss.map(function (w) { return w.src; }).join(' '));
+    // 이 이름에 쓰인 규칙
+    var seen = {}, items = [];
+    r.words.forEach(function (w) { (w.rules || []).forEach(function (k) {
+      if (seen[k] || SKIP[k]) return; seen[k] = 1;
+      var key = (k === 'z' && lang !== 'es') ? 'z-pt' : k;
+      if (WHY[key]) items.push('<li>' + WHY[key][ui].replace(/→/g, '<span class="ar">→</span>') + '</li>');
+    }); });
+    if (lang === 'en' && r.words.some(function (w) { return w.source === 'list' || w.source === 'estimated'; })) items.push('<li>' + T[ui].srcEn + '</li>');
+    $('why').innerHTML = items.slice(0, 7).join('');
+    var o = Object.keys(r.other || {});
+    $('other').innerHTML = o.length ? esc(t.otherLead) + o.map(function (k) { return t.other[k] + ': <span class="kr">' + esc(r.other[k]) + '</span>'; }).join(' · ') : '';
+    // 자기소개
+    var ok = !!main && !miss.length;
+    $('intro').hidden = !ok;
+    if (ok) { var s = N.intro(main); $('introk').textContent = s; $('introt').textContent = t.intro(raw); $('intror').textContent = N.readAloud(s.replace(/\.$/, '')); }
+    $('copys').disabled = !ok;
+    if (ok) card.schedule(main); else card.clear();
+  }
+
+  $('alts').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-ko]'); if (!b) return;
+    choice = { ko: b.getAttribute('data-ko'), src: b.getAttribute('data-src') }; render();
+  });
+  $src.addEventListener('input', function () { choice = null; render(); });
+  $('ex').addEventListener('click', function (e) { var b = e.target.closest('.chip'); if (!b) return; $src.value = b.textContent; choice = null; render(); });
+  $('langs').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-lang]'); if (!b) return;
+    lang = b.dataset.lang; choice = null;
+    document.querySelectorAll('#langs button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+    setExamples(); $src.placeholder = EX[lang][0]; render();
+  });
+  document.querySelectorAll('.langbtn').forEach(function (b) { b.addEventListener('click', function () { ui = b.dataset.ui; try { localStorage.setItem('synk.nombre.ui', ui); } catch (e) {} setText(); render(); }); });
+
+  function copyText(text, btn) {
+    var old = btn.textContent;
+    var done = function () { btn.textContent = T[ui].copied; setTimeout(function () { btn.textContent = old; }, 1200); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, done);
+    else { var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta); done(); }
+  }
+  $('copy').addEventListener('click', function () { var t = $('outk').textContent; if (t && t !== '—') copyText(t, $('copy')); });
+  $('copys').addEventListener('click', function () { var t = $('introk').textContent; if (t) copyText(t, $('copys')); });
+
+  /* ── 펠트 명찰(synk.im/name과 같은 재료) — 이 화면 안에서만 그린다 ── */
+  var card = (function () {
+    var W = 1080, H = 1350, INNER = { x: 0.249, y: 0.243, w: 0.499, h: 0.486 };
+    var SRC = { tag: 'assets/tag.webp', mascot: 'assets/monggeul.webp', ink: 'assets/ink_felt.webp', sand: 'assets/sand_felt.webp' };
+    var IMG = {}, loading = null, timer = null, blob = null, url = null, seq = 0;
+    var $card = $('card'), $img = $('cardimg'), $save = $('save');
+    function load() {
+      if (loading) return loading;
+      var imgs = Object.keys(SRC).map(function (k) { return new Promise(function (res, rej) { var im = new Image(); im.onload = function () { IMG[k] = im; res(); }; im.onerror = function () { rej(new Error(k)); }; im.src = SRC[k]; }); });
+      var font = document.fonts && document.fonts.load ? document.fonts.load('800 100px "SUIT Variable"').catch(function () {}) : Promise.resolve();
+      loading = Promise.all(imgs.concat([font])); return loading;
+    }
+    function cover(g, im, x, y, w, h) { var s = Math.max(w / im.width, h / im.height); g.drawImage(im, x + (w - im.width * s) / 2, y + (h - im.height * s) / 2, im.width * s, im.height * s); }
+    function tile(im, k) { var c = document.createElement('canvas'); c.width = Math.max(1, Math.round(im.width * k)); c.height = Math.max(1, Math.round(im.height * k)); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); return c; }
+    function lines(t) { var p = t.trim().split(/\s+/); if (p.length === 1 || t.length <= 6) return [t]; var best = null; for (var i = 1; i < p.length; i++) { var a = p.slice(0, i).join(' '), b = p.slice(i).join(' '), d = Math.abs(a.length - b.length); if (!best || d < best.d) best = { a: a, b: b, d: d }; } return [best.a, best.b]; }
+    function felt(g, text, ax, ay, aw, ah) {
+      var ls = lines(text), font = function (px) { return '800 ' + px + 'px "SUIT Variable","SUIT",system-ui,sans-serif'; };
+      var m = document.createElement('canvas'); m.width = W; m.height = H; var mg = m.getContext('2d');
+      var size = Math.floor(ah / (ls.length === 1 ? 1.25 : 2.35)); mg.font = font(size);
+      var widest = Math.max.apply(null, ls.map(function (l) { return mg.measureText(l).width; }));
+      if (widest > aw) { size = Math.floor(size * aw / widest); mg.font = font(size); }
+      var lh = size * 1.14, y0 = ay + (ah - lh * ls.length) / 2 + lh / 2;
+      mg.textAlign = 'center'; mg.textBaseline = 'middle'; mg.fillStyle = '#000';
+      ls.forEach(function (l, i) { mg.fillText(l, ax + aw / 2, y0 + i * lh); });
+      mg.globalCompositeOperation = 'source-in'; mg.fillStyle = mg.createPattern(tile(IMG.ink, 0.6), 'repeat'); mg.fillRect(0, 0, W, H); mg.globalCompositeOperation = 'source-over';
+      g.save(); g.shadowColor = 'rgba(43,35,32,.30)'; g.shadowBlur = 14; g.shadowOffsetY = 6; g.drawImage(m, 0, 0); g.restore();
+      g.save(); g.globalAlpha = 0.16; [[2, 0], [-2, 0], [0, 2], [0, -2], [1.5, 1.5], [-1.5, -1.5], [1.5, -1.5], [-1.5, 1.5]].forEach(function (o) { g.drawImage(m, o[0], o[1]); }); g.restore();
+      g.drawImage(m, 0, 0);
+    }
+    function draw(name) {
+      var c = document.createElement('canvas'); c.width = W; c.height = H; var g = c.getContext('2d');
+      g.fillStyle = '#FBF7F0'; g.fillRect(0, 0, W, H); g.globalAlpha = 0.30; cover(g, IMG.sand, 0, 0, W, H); g.globalAlpha = 1;
+      var tw = 860, th = Math.round(tw * IMG.tag.height / IMG.tag.width), tx = (W - tw) / 2, ty = 150;
+      g.drawImage(IMG.tag, tx, ty, tw, th);
+      var ix = tx + tw * INNER.x, iy = ty + th * INNER.y, iw = tw * INNER.w, ih = th * INNER.h, pad = 0.09;
+      felt(g, name, ix + iw * pad, iy + ih * pad, iw * (1 - 2 * pad), ih * (1 - 2 * pad));
+      var mw = 430, mh = Math.round(mw * IMG.mascot.height / IMG.mascot.width); g.drawImage(IMG.mascot, W - mw - 30, H - mh - 40, mw, mh);
+      g.font = '500 26px "Inter Tight",system-ui,sans-serif'; g.fillStyle = 'rgba(43,35,32,.55)'; g.textAlign = 'left'; g.fillText('synk.im/nombre', 64, H - 64);
+      return c;
+    }
+    function show(name) {
+      var my = ++seq; $card.hidden = false; $img.classList.add('wait'); $save.disabled = true;
+      load().then(function () {
+        if (my !== seq) return;
+        var c = draw(name);
+        c.toBlob(function (b) { if (my !== seq) return; if (url) URL.revokeObjectURL(url); blob = b; url = URL.createObjectURL(b); $img.src = url; $img.alt = name; $img.classList.remove('wait'); $save.disabled = !b; }, 'image/png');
+      }).catch(function () { if (my === seq) $card.hidden = true; });
+    }
+    function schedule(name) { clearTimeout(timer); timer = setTimeout(function () { show(name); }, 350); }
+    function clear() { clearTimeout(timer); seq++; $card.hidden = true; $save.disabled = true; if (url) { URL.revokeObjectURL(url); url = null; } blob = null; $img.removeAttribute('src'); }
+    $save.addEventListener('click', function () {
+      if (!blob) return; var file = null; try { file = new File([blob], 'synk-nombre.png', { type: 'image/png' }); } catch (e) {}
+      if (file && navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) { navigator.share({ files: [file], title: 'SYNK LAB' }).catch(function () {}); return; }
+      var a = document.createElement('a'); a.href = url; a.download = 'synk-nombre.png'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    });
+    return { schedule: schedule, clear: clear };
+  })();
+
+  // 시작: 저장한 화면 언어 → 브라우저 언어 → 스페인어. 이름 언어는 화면 언어를 따른다(포르투갈어 화면은 브라질)
+  try { var saved = localStorage.getItem('synk.nombre.ui'); if (saved && T[saved]) ui = saved; } catch (e) {}
+  if (!saved) { var nl = (navigator.language || 'es').slice(0, 2); if (T[nl]) ui = nl; }
+  var q = new URLSearchParams(location.search);
+  if (T[q.get('ui')]) ui = q.get('ui');
+  lang = ({ es: 'es', pt: 'br', en: 'en' })[ui];
+  if (['es', 'br', 'pt', 'en'].indexOf(q.get('lang')) >= 0) lang = q.get('lang');
+  document.querySelectorAll('#langs button').forEach(function (x) { x.setAttribute('aria-pressed', String(x.dataset.lang === lang)); });
+  setText(); setExamples();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ㄹ — R or L? Check any Korean word · SYNK LAB</title>
+<meta name="description" content="Type any Korean word and see how every ㄹ sounds: a quick tap (r), a clear L, a double L, an N, or silent. Based on the official Korean pronunciation rules. No sign-up.">
+<meta property="og:title" content="ㄹ — R or L? Check any Korean word">
+<meta property="og:description" content="See how every ㄹ in your word sounds — tap, L, double L, N or silent. Official rules, no sign-up.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://synk.im/rl/">
+<link rel="canonical" href="https://synk.im/rl/">
+<link rel="preload" href="assets/fonts/SUIT-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400..800&family=DM+Mono:wght@500&display=swap">
+<style>
+  @font-face{font-family:'SUIT Variable';src:url('assets/fonts/SUIT-Variable.woff2') format('woff2');font-weight:100 900;font-display:swap}
+  :root{
+    --paper:#FBF7F0; --ink:#2B2320; --stitch:#F0E3C8;
+    --oat:#EDE7DC; --stone:#C7BFB2; --ash:#8D857A; --deepwool:#575046;
+    --coral:#F96859; --coral-wash:#FEF0E9; --rim:#941F19;
+    --kr:'SUIT Variable','SUIT',system-ui,sans-serif;
+    --en:'Inter Tight','SUIT Variable',system-ui,sans-serif;
+    --mono:'DM Mono',ui-monospace,monospace;
+    /* ㄹ 소리별 색 — 코랄 계열 안에서 명도로 가른다(새 색을 들이지 않는다) */
+    --k-tap:#AE322A; --k-l:#2B2320; --k-ll:#575046; --k-n:#8D857A; --k-silent:#C7BFB2;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--en); font-weight:500;
+    letter-spacing:-0.015em; line-height:1.65; -webkit-font-smoothing:antialiased}
+  .kr{font-family:var(--kr); letter-spacing:-0.03em}
+  a{color:var(--rim)}
+  .bar{position:sticky; top:0; z-index:9; background:rgba(251,247,240,.94); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--stitch)}
+  .bar .inner{max-width:720px; margin:0 auto; padding:10px 20px; display:flex; justify-content:space-between; align-items:center}
+  .home{font-size:15px; font-weight:750; letter-spacing:-0.03em; color:var(--ink); text-decoration:none}
+  .home b{color:var(--coral)}
+  .tag{font-family:var(--mono); font-size:12px; color:var(--ash)}
+  .wrap{max-width:720px; margin:0 auto; padding:0 20px}
+  section{padding:40px 0; border-bottom:1px solid var(--stitch)}
+  section:last-of-type{border-bottom:0}
+  .hero{display:flex; gap:18px; align-items:flex-end}
+  .hero img{width:96px; height:auto; flex:none; margin-bottom:6px}
+  h1{font-size:clamp(30px,7vw,44px); line-height:1.15; margin:0 0 12px; font-weight:800; letter-spacing:-0.04em}
+  h1 .kr{color:var(--coral)}
+  h2{font-size:clamp(19px,4.2vw,23px); line-height:1.3; margin:0 0 12px; font-weight:780; letter-spacing:-0.03em}
+  p{margin:0 0 12px}
+  .lead{font-size:clamp(15px,3.6vw,17px); color:var(--deepwool)}
+  .fine{font-size:13.5px; color:var(--ash); line-height:1.6}
+  .box{background:#fff; border:1px solid var(--stitch); border-radius:18px; padding:20px;
+    box-shadow:0 1px 2px rgba(43,35,32,.04), 0 10px 28px -18px rgba(43,35,32,.22)}
+  label{display:block; font-size:13.5px; font-weight:700; color:var(--deepwool); margin-bottom:8px}
+  input[type=text]{width:100%; font-family:var(--kr); font-size:24px; font-weight:700; letter-spacing:-0.02em;
+    padding:13px 16px; border:1.5px solid var(--stitch); border-radius:12px; background:var(--paper); color:var(--ink)}
+  input[type=text]:focus{border-color:var(--coral); outline:none}
+  .chips{display:flex; flex-wrap:wrap; gap:7px; margin-top:12px}
+  .chip{font-family:var(--kr); font-size:15px; font-weight:700; color:var(--deepwool); background:var(--oat);
+    border:1px solid var(--stitch); border-radius:99px; padding:5px 13px; cursor:pointer}
+  .chip:hover,.chip:focus-visible{background:var(--coral-wash); border-color:var(--coral); color:var(--rim); outline:none}
+  .out{margin-top:18px}
+  .empty{color:var(--ash); font-size:14.5px}
+  .word{margin-top:16px; padding-top:16px; border-top:1px dashed var(--stitch)}
+  .word:first-child{border-top:0; margin-top:0; padding-top:0}
+  .tiles{display:flex; flex-wrap:wrap; gap:0 2px; align-items:flex-start; padding:0 22px 4px}
+  .tile{display:flex; flex-direction:column; align-items:center}
+  .syl{font-family:var(--kr); font-size:clamp(38px,11vw,54px); font-weight:800; letter-spacing:-0.03em; line-height:1.15;
+    padding:2px 3px 4px; border-radius:12px}
+  .tile.has .syl{background:var(--coral-wash); box-shadow:inset 0 -4px 0 var(--coral)}
+  .badges{display:flex; flex-direction:column; gap:3px; margin-top:6px; align-items:center; width:0} /* 배지가 글자 칸 폭을 넓히지 않게 — 가운데에서 양옆으로 넘친다 */
+  .badge{font-family:var(--mono); font-size:12px; font-weight:500; letter-spacing:0; white-space:nowrap;
+    padding:2px 8px; border-radius:99px; color:#fff; background:var(--k-l)}
+  .badge.tap,.badge.start{background:var(--k-tap)} .badge.ll{background:var(--k-ll)}
+  .badge.n{background:var(--k-n)} .badge.silent{background:var(--k-silent); color:var(--ink)}
+  .badge.maybe,.badge.other{background:#fff; color:var(--ink); border:1px solid var(--stone)}
+  .wordtools{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; align-items:center}
+  .btn{font-family:var(--en); font-size:14px; font-weight:650; border-radius:99px; padding:8px 16px; cursor:pointer;
+    border:1px solid var(--stitch); background:#fff; color:var(--deepwool)}
+  .btn:hover{border-color:var(--stone)}
+  .btn.primary{background:var(--coral); border-color:var(--coral); color:#fff}
+  .btn:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--coral); outline-offset:2px}
+  .notes{list-style:none; margin:12px 0 0; padding:0; display:grid; gap:8px}
+  .note{background:var(--paper); border:1px solid var(--stitch); border-radius:12px; padding:11px 14px; font-size:14.5px}
+  .note b{font-weight:750}
+  .note .pair{font-family:var(--kr); font-weight:750}
+  .note .roman{font-family:var(--mono); font-size:12.5px; color:var(--ash); display:block; margin-top:4px}
+  .rules{display:grid; gap:10px; margin-top:14px}
+  .rule{display:grid; grid-template-columns:72px 1fr; gap:12px; align-items:start; background:#fff;
+    border:1px solid var(--stitch); border-radius:14px; padding:12px 14px}
+  .rule .ex{font-family:var(--kr); font-size:24px; font-weight:800; letter-spacing:-0.03em; text-align:center}
+  .rule .ex small{display:block; font-family:var(--mono); font-size:12px; font-weight:500; color:var(--ash); letter-spacing:0}
+  .rule p{margin:0; font-size:14.5px}
+  .mine{display:flex; flex-wrap:wrap; gap:7px; margin-top:10px}
+  .src{font-size:13px; color:var(--ash); line-height:1.6; padding-left:18px}
+  .src li{margin:3px 0}
+  @media (max-width:420px){ .hero img{width:72px} .rule{grid-template-columns:58px 1fr} }
+</style>
+</head>
+<body>
+<div class="bar"><div class="inner">
+  <a class="home" href="https://synk.im/lab/">SYNK <b>LAB</b></a>
+  <span class="tag">free · no sign-up</span>
+</div></div>
+
+<main class="wrap">
+  <section>
+    <div class="hero">
+      <div>
+        <h1><span class="kr">ㄹ</span> — R or L?</h1>
+        <p class="lead">Type any Korean word. See how every <span class="kr">ㄹ</span> in it sounds: a quick tap (r), a clear L, a double L — or even an N, or nothing at all.</p>
+      </div>
+      <img src="img/mongle-curious.webp" alt="Felt mascot Mongle, curious" width="96" height="96">
+    </div>
+
+    <div class="box">
+      <label for="src">Your Korean word (Hangul)</label>
+      <input id="src" type="text" lang="ko" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="사랑해요">
+      <div class="chips" id="chips" aria-label="Try these">
+        <button class="chip" type="button">사랑</button><button class="chip" type="button">물</button>
+        <button class="chip" type="button">빨리</button><button class="chip" type="button">서울</button>
+        <button class="chip" type="button">서울에</button><button class="chip" type="button">신라</button>
+        <button class="chip" type="button">종로</button><button class="chip" type="button">닭</button>
+        <button class="chip" type="button">사랑해요</button>
+      </div>
+      <div class="out" id="out" aria-live="polite"></div>
+    </div>
+    <div id="minebox" hidden>
+      <p class="fine" style="margin-top:14px">Your recent words — saved only on this device. <button class="btn" type="button" id="clear" style="padding:3px 10px;font-size:12.5px">Clear</button></p>
+      <div class="mine" id="mine"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The three rules you'll use every day</h2>
+    <p class="lead">Korean has one letter, <span class="kr">ㄹ</span>. Where it sits in the word decides the sound.</p>
+    <div class="rules">
+      <div class="rule"><div class="ex">사랑<small>sa·<b>r</b>ang</small></div>
+        <p><b>Before a vowel: a quick tap.</b> The tongue tip flicks the ridge behind your top teeth once — like the <i>tt</i> in American “better”, or the <i>r</i> in Spanish “pero”. It is not the English R.</p></div>
+      <div class="rule"><div class="ex">물<small>mu<b>l</b></small></div>
+        <p><b>End of a syllable: a clear L.</b> Before a consonant or at the end of the word, keep the tongue tip touching behind your top teeth.</p></div>
+      <div class="rule"><div class="ex">빨리<small>ppa<b>ll</b>i</small></div>
+        <p><b><span class="kr">ㄹ</span> + <span class="kr">ㄹ</span>: a double L.</b> Hold one long L across the two syllables.</p></div>
+    </div>
+    <p class="fine" style="margin-top:14px">The official romanization follows the same idea: <span class="kr">ㄹ</span> is written <b>r</b> before a vowel, <b>l</b> before a consonant or at the end, and <b>ll</b> for <span class="kr">ㄹㄹ</span> — Guri (구리), Imsil (임실), Ulleung (울릉).</p>
+    <h2 style="margin-top:26px">…and the surprises</h2>
+    <div class="rules">
+      <div class="rule"><div class="ex">서울에<small>[서우레]</small></div>
+        <p><b>An ending ㄹ slides over.</b> 서울 ends with L, but add a vowel and the ㄹ moves to the next syllable — now it's a tap.</p></div>
+      <div class="rule"><div class="ex">신라<small>Si<b>ll</b>a</small></div>
+        <p><b><span class="kr">ㄴ</span> next to <span class="kr">ㄹ</span> becomes <span class="kr">ㄹ</span>.</b> 신라 sounds like [실라], 설날 like [설랄].</p></div>
+      <div class="rule"><div class="ex">종로<small>Jong<b>n</b>o</small></div>
+        <p><b>After ㅁ, ㅇ, ㄱ or ㅂ, ㄹ turns into ㄴ.</b> 종로 sounds like [종노], 국립 like [궁닙].</p></div>
+      <div class="rule"><div class="ex">닭<small>[닥]</small></div>
+        <p><b>Sometimes it's silent.</b> In ㄺ, ㄻ and ㄿ at the end of a word, the ㄹ drops: 닭 sounds like [닥], 삶 like [삼].</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Where these rules come from</h2>
+    <ul class="src">
+      <li>National Institute of Korean Language, <a href="https://korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0002" rel="noopener">Standard Pronunciation (표준 발음법)</a> — Art. 10–13, 19, 20, 29.</li>
+      <li>Ministry of Culture, Sports and Tourism, <a href="https://korean.go.kr/kornorms/regltn/regltnView.do?regltn_code=0004" rel="noopener">Revised Romanization of Korean (국어의 로마자 표기법)</a>, Notice 2014-42 — Ch. 2 Art. 2 Note 2, Ch. 3 Art. 1.</li>
+    </ul>
+    <p class="fine">This page checks spelling with fixed rules. Some words follow word-specific patterns (for example compound words like 서울역 [서울력]); we show the common case and say so when a word can go either way. Nothing you type leaves your device.</p>
+    <p class="fine">Made by <a href="https://synk.im/lab/">SYNK LAB</a>. Audio: SYNK LAB voice.</p>
+  </section>
+</main>
+
+<script src="rules.js"></script>
+<script>
+(function(){
+  'use strict';
+  var RL = window.SynkRL;
+  var $src = document.getElementById('src'), $out = document.getElementById('out');
+  var $mine = document.getElementById('mine'), $minebox = document.getElementById('minebox');
+  var clips = {};
+  fetch('voice/clips.json').then(function(r){ return r.ok ? r.json() : null; }).then(function(j){ if (j && j.clips) { clips = j.clips; render(); } }).catch(function(){});
+
+  var LABEL = { tap:'R · tap', start:'R · tap', l:'L', ll:'LL', n:'N', silent:'silent', maybe:'depends', other:'check' };
+  var ROMAN = { tap:'r', start:'r', l:'l', ll:'ll', n:'n', silent:'not written', maybe:'l or not written', other:'—' };
+
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function k(s){ return '<span class="pair kr">' + esc(s) + '</span>'; }
+
+  function explain(m, word){
+    var w = word.word;
+    switch (m.rule) {
+      case 'between-vowels': return '<b>Tap.</b> ' + k(w[m.i - 1] + w[m.i]) + ' — the ㄹ sits between two vowels, so the tongue flicks once (like the tt in “better”).';
+      case 'start': return '<b>Word start.</b> ' + k(w[m.i]) + ' — written r. Most speakers use a light tap; some sound closer to L. Both are understood.';
+      case 'slides': {
+        var nx = RL._parts(w[m.i + 1]);
+        var yv = [2, 6, 12, 17, 20].indexOf(nx.jung) >= 0; // ㅑ ㅕ ㅛ ㅠ ㅣ
+        return '<b>Slides over: tap.</b> ' + k(w[m.i] + w[m.i + 1]) + ' sounds like [' + k(m.heard) + ']. The ending ㄹ moves to the next syllable.' +
+          (yv ? ' <span class="fine">In a few compound words an extra sound appears instead: 서울역 sounds like [서울력].</span>' : '');
+      }
+      case 'lh-slides': return '<b>Slides over: tap.</b> ' + k(w[m.i] + w[m.i + 1]) + ' sounds like [' + k(m.heard) + '] — the ㅎ goes quiet and the ㄹ moves over.';
+      case 'end': return '<b>Clear L.</b> ' + k(w[m.i]) + ' — the ㄹ ends the word.';
+      case 'before-consonant': return '<b>Clear L.</b> ' + k(w[m.i] + w[m.i + 1]) + ' — the ㄹ ends a syllable, right before a consonant.';
+      case 'before-h': return '<b>Clear L.</b> ' + k(w[m.i] + w[m.i + 1]) + ' — in fast speech the ㅎ can fade and this ㄹ may sound like a tap.';
+      case 'double-l': return '<b>Double L.</b> ' + k(m.heard) + ' — ㄹ meets ㄹ: hold one long L.';
+      case 'n-to-l': return '<b>Double L.</b> ' + k(w[m.i - 1] + w[m.i]) + ' sounds like [' + k(m.heard) + '] — ㄴ next to ㄹ turns into ㄹ.';
+      case 'l-n-to-ll': return '<b>Double L.</b> ' + k(w[m.i] + w[m.i + 1]) + ' sounds like [' + k(m.heard) + '] — the ㄴ after ㄹ turns into ㄹ.';
+      case 'l-insert': return '<b>Double L.</b> ' + k(w[m.i] + w[m.i + 1]) + ' sounds like [' + k(m.heard) + '] — in this compound word an extra sound appears and becomes ㄹ.';
+      case 'n-exception': return '<b>N.</b> ' + k(w[m.i - 1] + w[m.i]) + ' sounds like [' + k(m.heard) + '] — one of the listed exceptions where ㄹ is said as ㄴ.';
+      case 'after-m-ng': return '<b>N.</b> ' + k(w[m.i - 1] + w[m.i]) + ' sounds like [' + k(m.heard) + '] — after ㅁ or ㅇ, ㄹ is said as ㄴ.';
+      case 'after-k': return '<b>N.</b> ' + k(w[m.i - 1] + w[m.i]) + ' sounds like [' + k(m.heard) + '] — after ㄱ, ㄹ becomes ㄴ and the ㄱ becomes ㅇ.';
+      case 'after-p': return '<b>N.</b> ' + k(w[m.i - 1] + w[m.i]) + ' sounds like [' + k(m.heard) + '] — after ㅂ, ㄹ becomes ㄴ and the ㅂ becomes ㅁ.';
+      case 'lp-silent': return '<b>Silent.</b> ' + k(w[m.i]) + ' sounds like [' + k(m.heard) + '] — in ㄿ the ㄹ drops before a consonant or at the end.';
+      case 'lg-silent': return '<b>Silent.</b> ' + k(w[m.i]) + ' sounds like [' + k(m.heard) + '] — in ㄺ the ㄹ drops before a consonant or at the end.';
+      case 'lm-silent': return '<b>Silent.</b> ' + k(w[m.i]) + ' sounds like [' + k(m.heard) + '] — in ㄻ the ㄹ drops before a consonant or at the end.';
+      case 'lb-silent': return '<b>Silent.</b> ' + k(w[m.i]) + ' sounds like [' + k(m.heard) + '] — a listed exception (밟-, 넓죽-, 넓적-).';
+      case 'lb-l': case 'cluster-l': return '<b>Clear L.</b> ' + k(w[m.i]) + ' sounds like [' + k(m.heard) + '] — in this double final the L is the one you hear.';
+      case 'cluster-before-vowel': return '<b>Clear L.</b> ' + k(w[m.i] + w[m.i + 1]) + ' sounds like [' + k(m.heard) + '] — the ㄹ stays, the other letter moves to the next syllable.';
+      case 'lg-before-g': return '<b>Depends.</b> ' + k(w[m.i] + w[m.i + 1]) + ' — in verbs the ㄹ stays (읽고 [일꼬]); in nouns it drops (닭고기 [닥꼬기]).';
+      default: return '<b>Unusual.</b> ' + k(w[m.i - 1] + w[m.i]) + ' — this pair is rare inside one word. Check a dictionary.';
+    }
+  }
+
+  function wordHtml(r){
+    var bySyl = {};
+    r.marks.forEach(function(m){
+      // 겹 L의 둘째 쪽(첫소리)은 받침 쪽에서 이미 설명했다
+      if (m.kind === 'll' && m.part === 'onset' && m.with !== undefined) return;
+      (bySyl[m.i] = bySyl[m.i] || []).push(m);
+    });
+    var tiles = Array.prototype.map.call(r.word, function(ch, i){
+      var ms = bySyl[i] || [];
+      var marked = r.marks.some(function(m){ return m.i === i; });
+      return '<div class="tile' + (marked ? ' has' : '') + '"><span class="syl kr">' + esc(ch) + '</span>' +
+        (ms.length ? '<span class="badges">' + ms.map(function(m){ return '<span class="badge ' + m.kind + '">' + LABEL[m.kind] + '</span>'; }).join('') + '</span>' : '') + '</div>';
+    }).join('');
+    var notes = [];
+    Object.keys(bySyl).sort(function(a,b){return a-b;}).forEach(function(i){
+      bySyl[i].forEach(function(m){
+        notes.push('<li class="note">' + explain(m, r) + '<span class="roman">In English letters: ' + ROMAN[m.kind] + '</span></li>');
+      });
+    });
+    var tools = '';
+    if (clips[r.word]) tools += '<button class="btn primary" type="button" data-play="' + esc(clips[r.word]) + '">▶ Listen</button>';
+    var body = r.marks.length ? '<ul class="notes">' + notes.join('') + '</ul>' : '<p class="empty">No ㄹ in this word.</p>';
+    return '<div class="word">' + '<div class="tiles">' + tiles + '</div>' + (tools ? '<div class="wordtools">' + tools + '</div>' : '') + body + '</div>';
+  }
+
+  var audio = null;
+  $out.addEventListener('click', function(e){
+    var b = e.target.closest('[data-play]'); if (!b) return;
+    try { if (audio) audio.pause(); audio = new Audio('voice/' + b.getAttribute('data-play')); audio.play(); } catch (err) {}
+  });
+
+  function load(){ try { return JSON.parse(localStorage.getItem('synk.rl.words.v1') || '[]'); } catch (e) { return []; } }
+  function save(list){ try { localStorage.setItem('synk.rl.words.v1', JSON.stringify(list)); } catch (e) {} }
+  function remember(text){
+    var t = text.trim(); if (!t || !/[가-힣]/.test(t)) return;
+    var list = load().filter(function(x){ return x !== t; }); list.unshift(t); save(list.slice(0, 8)); showMine();
+  }
+  function showMine(){
+    var list = load(); $minebox.hidden = !list.length;
+    $mine.innerHTML = list.map(function(w){ return '<button class="chip" type="button">' + esc(w) + '</button>'; }).join('');
+  }
+
+  function render(){
+    var words = RL.analyze($src.value);
+    if (!words.length) { $out.innerHTML = $src.value.trim() ? '<p class="empty">Type a word in Hangul, like 사랑.</p>' : ''; return; }
+    $out.innerHTML = words.slice(0, 6).map(wordHtml).join('');
+  }
+
+  var timer = null;
+  $src.addEventListener('input', function(){ render(); clearTimeout(timer); timer = setTimeout(function(){ remember($src.value); }, 1200); });
+  function pick(e){ var b = e.target.closest('.chip'); if (!b) return; $src.value = b.textContent; render(); remember($src.value); }
+  document.getElementById('chips').addEventListener('click', pick);
+  $mine.addEventListener('click', pick);
+  document.getElementById('clear').addEventListener('click', function(){ save([]); showMine(); });
+
+  function fromHash() {
+    var w = ''; try { w = decodeURIComponent((location.hash.match(/^#w=(.+)$/) || [, ''])[1] || ''); } catch (e) {}
+    return /[가-힣]/.test(w) ? w.slice(0, 40) : '';
+  }
+  $src.value = fromHash() || '사랑';
+  window.addEventListener('hashchange', function () { var w = fromHash(); if (w) { $src.value = w; render(); } });
+  render(); showMine();
+})();
+</script>
+</body>
+</html>
