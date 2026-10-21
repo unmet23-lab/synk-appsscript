@@ -14366,7 +14366,7 @@ var progressLine = (done, total) => `<span class="life-progress" aria-hidden="tr
 var meter = (done, total, label = `${done} / ${total}`) => `<span class="life-meter" aria-hidden="true"><span><i style="width:${percent(done, total)}%"></i></span><b>${label}</b></span>`;
 var expressionOf = (lesson2, q2) => lesson2?.expressions.find((e) => e.id === q2?.expressionId) || { korean: q2?.choices?.find((c) => c.id === q2.answerId)?.text || "", meaning: "" };
 function createLifeExperience({ home, getProgress, show = (title, html, options) => home.showPanel(title, html, options), asset, onSummary = () => {
-}, onNext = null, presentation = null, moreRows = null }) {
+}, onNext = null, presentation = null, moreRows = null, positionTotal = null }) {
   const panel = document.querySelector("#world-panel"), content = document.querySelector("#panel-content");
   let lastPoint = null, justChose = false, barMemo = { key: "", value: -1 };
   content?.addEventListener("pointerdown", (event) => {
@@ -14424,6 +14424,14 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     } catch {
     }
     return { ...values, ...chosen };
+  };
+  const positionCount = () => {
+    let n = null;
+    try {
+      n = positionTotal?.();
+    } catch {
+    }
+    return Number.isInteger(n) && n > 0 ? n : 15;
   };
   const photo = (speaker, size = "") => friends[speaker] ? `<img class="life-friend ${size}" src="${asset("home/" + friends[speaker].file)}" alt="${friends[speaker].name}" width="384" height="384">` : "";
   const cut = (speaker) => friends[speaker] ? `<img class="life-friend" src="${asset("tutors/" + friends[speaker].cut + "-\uAE30\uBCF8.webp")}" alt="${friends[speaker].name}" width="480" height="480" decoding="async">` : "";
@@ -14683,7 +14691,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const episodes = PACKS.filter((p) => p.lessons.some((l) => l.type === "story")).length;
     const rows2 = [`<button class="life-row" data-life-stories>${print("stories", "life-row-print")}<span class="life-row-copy"><strong>${t("life.stories")}</strong><small>${t("life.storiesCount", { n: episodes })}</small></span></button>`];
     if (now.kind === "lesson" && hasReviews) rows2.push(reviewRow(s));
-    rows2.push(`<button class="life-row" data-view="position">${print(now.kind === "rest" ? "goals" : "complete", "life-row-print")}<span class="life-row-copy"><strong>${t("position.title")}</strong><small>${t("position.row")}</small></span></button>`);
+    rows2.push(`<button class="life-row" data-view="position">${print(now.kind === "rest" ? "goals" : "complete", "life-row-print")}<span class="life-row-copy"><strong>${t("position.title")}</strong><small>${t("position.row", { total: positionCount() })}</small></span></button>`);
     if (typeof moreRows === "function") {
       const extra = moreRows(print);
       if (extra) rows2.push(extra);
@@ -16936,7 +16944,7 @@ function createWorldEducation({
     const done = (plan.areas || []).reduce((n, row) => n + Math.min(row.done, row.planned), 0), total = (plan.areas || []).reduce((n, row) => n + row.planned, 0);
     return `<button class="life-row" data-view="plan">${print("goals", "life-row-print")}<span class="life-row-copy"><strong>${t2("plan.week.title")}</strong><small>${escape3(t2("plan.week.row", { done, total }))}</small></span></button>`;
   }
-  return { next, open, refresh, applyPreferences, planRow, ...position ? { position: openPosition, practice: startPractice, plan: openPlan } : {}, presentation() {
+  return { next, open, refresh, applyPreferences, planRow, positionTotal: topikTotal, ...position ? { position: openPosition, practice: startPractice, plan: openPlan } : {}, presentation() {
     check3();
     const values = settingsFor(getProgress().learningProfileValues());
     return Object.fromEntries(["support", "explanation"].filter((k) => values[k]).map((k) => [k, values[k]]));
@@ -19507,7 +19515,7 @@ var worldPosition = Object.freeze({
 function setupLife(home, asset) {
   let ui, education;
   const progress2 = createLifeProgress({ owner: "guest", now: () => Date.now(), onChange: () => ui?.refresh() });
-  ui = createLifeExperience({ home, getProgress: () => progress2, asset, onSummary: () => education?.refresh(), onNext: () => education?.next(), presentation: () => education?.presentation() });
+  ui = createLifeExperience({ home, getProgress: () => progress2, asset, onSummary: () => education?.refresh(), onNext: () => education?.next(), presentation: () => education?.presentation(), positionTotal: () => education?.positionTotal?.() });
   education = createWorldEducation({
     home,
     getProgress: () => progress2,

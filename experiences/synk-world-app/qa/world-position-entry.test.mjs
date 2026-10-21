@@ -69,6 +69,7 @@ test('학습 목표 창: 「연습에서 본 것」 대신 「내 위치 보기�
  assert.match(goal,/<button type="button" class="life-row study-position-row" data-view="position">/);
  assert.match(goal,/내 위치 보기[\s\S]*TOPIK I 15개 항목: 혼자 해냄 0 · 연습 중 0 · 아직 15/);
  assert.doesNotMatch(goal,/study-understanding|연습에서 본 것/);
+ assert.equal(education.positionTotal(),15,'「배우기」 목록의 내 위치 줄(life-ui.mjs)도 같은 항목 수를 받는다');
 });
 
 test('묶음을 받지 않은 화면은 내 위치를 열지 않는다',()=>{

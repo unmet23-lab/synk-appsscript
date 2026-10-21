@@ -35,7 +35,7 @@ const progressLine=(done,total)=>`<span class="life-progress" aria-hidden="true"
 const meter=(done,total,label=`${done} / ${total}`)=>`<span class="life-meter" aria-hidden="true"><span><i style="width:${percent(done,total)}%"></i></span><b>${label}</b></span>`;
 // 문제의 표현: 문제가 가리키는 레슨 표현(없으면 정답 문장).
 const expressionOf=(lesson,q)=>lesson?.expressions.find(e=>e.id===q?.expressionId)||{korean:q?.choices?.find(c=>c.id===q.answerId)?.text||'',meaning:''};
-export function createLifeExperience({home,getProgress,show=(title,html,options)=>home.showPanel(title,html,options),asset,onSummary=()=>{},onNext=null,presentation=null,moreRows=null}){
+export function createLifeExperience({home,getProgress,show=(title,html,options)=>home.showPanel(title,html,options),asset,onSummary=()=>{},onNext=null,presentation=null,moreRows=null,positionTotal=null}){
  const panel=document.querySelector('#world-panel'),content=document.querySelector('#panel-content');
  // 10-17 움직임: 고른 답의 초록이 손끝 자리에서 번지도록 마지막으로 누른 자리를 기억한다. 진행 막대는 같은 레슨에서 늘 때만 움직인다.
  let lastPoint=null,justChose=false,barMemo={key:'',value:-1};
@@ -65,6 +65,8 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  // Help style and explanation length come from the account's choice when the host gives one
  // (world-learning-ui.mjs presentation()); the rest of WORLD's own answers stay as they are.
  const preferences=()=>{let values={},chosen={};try{values=getProgress().learningProfileValues?.()||{};}catch{}try{chosen=presentation?.()||{};}catch{}return {...values,...chosen};};
+ // 「내 위치」 줄의 항목 수: 호스트가 Strata 지도에서 센 값(world-learning-ui.mjs positionTotal). 아직 못 받으면 TOPIK I 15개.
+ const positionCount=()=>{let n=null;try{n=positionTotal?.();}catch{}return Number.isInteger(n)&&n>0?n:15;};
  const photo=(speaker,size='')=>friends[speaker]?`<img class="life-friend ${size}" src="${asset('home/'+friends[speaker].file)}" alt="${friends[speaker].name}" width="384" height="384">`:'';
  const cut=speaker=>friends[speaker]?`<img class="life-friend" src="${asset('tutors/'+friends[speaker].cut+'-기본.webp')}" alt="${friends[speaker].name}" width="480" height="480" decoding="async">`:'';
  function updateHome(){if(ended)return;try{const value=summary();home.updateLearning?.(value,{snapshot:getProgress().exportSnapshot(),lessons:LESSONS,preparePractice:prepareHomePractice,completePractice:completeTutorPractice,finishDay:finishTutorDay});onSummary(value);}catch{}}
@@ -216,7 +218,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   const rows=[`<button class="life-row" data-life-stories>${print('stories','life-row-print')}<span class="life-row-copy"><strong>${t('life.stories')}</strong><small>${t('life.storiesCount',{n:episodes})}</small></span></button>`];
   if(now.kind==='lesson'&&hasReviews)rows.push(reviewRow(s));
   // 내 위치(10-19 결정): TOPIK I 항목 지도와 짧은 진단. 홈이 그 판을 연다(data-view). 다 마친 포스터가 채운 칸 판을 쓰면 나침반으로.
-  rows.push(`<button class="life-row" data-view="position">${print(now.kind==='rest'?'goals':'complete','life-row-print')}<span class="life-row-copy"><strong>${t('position.title')}</strong><small>${t('position.row')}</small></span></button>`);
+  rows.push(`<button class="life-row" data-view="position">${print(now.kind==='rest'?'goals':'complete','life-row-print')}<span class="life-row-copy"><strong>${t('position.title')}</strong><small>${t('position.row',{total:positionCount()})}</small></span></button>`);
   // 호스트가 더하는 줄(app-shell의 TOPIK II 쓰기 연습 등). 호스트가 없는 화면에는 없다 — 누를 곳이 없는 단추를 두지 않는다.
   if(typeof moreRows==='function'){const extra=moreRows(print);if(extra)rows.push(extra);}
   paint(t('life.learn'),`<div class="life-hub life-heading" tabindex="-1">${now.html}<section class="life-pack-section" aria-label="${t('life.packsSection')}"><div class="life-section-head"><p class="life-section-label">LIFE PACKS</p><small class="life-library-note">${s.completed?t('life.lessonsDone',{done:s.completed,total:s.total}):t('life.packsAndLessons',{packs:PACKS.length,lessons:LESSONS.length})}</small></div><div class="life-pack-grid">${PACKS.map((p,i)=>packCard(p,i,now.kind==='lesson'?now.packId:null)).join('')}</div></section><section class="life-rows" aria-label="${t('life.more')}"><p class="life-section-label">MORE</p>${rows.join('')}</section></div>`);}

@@ -228,10 +228,10 @@ test('표의 한국어가 원문과 같다(설정 스위치·튜터 카드·생�
  for(const lesson of PACKS.find(pack=>pack.id==='greetings').lessons)assert.ok(STRINGS[`life.lessonGoal.${lesson.id}`],lesson.id);
 });
 
+const SCREEN_FILES=['../home.mjs','../first-run.mjs','../opening.mjs','../tutor-onboarding.mjs','../home-tutor.mjs','../home-town.mjs','../life-tutor.mjs','../lang-picker.mjs','../../synk-world-app/app-shell.mjs','../../synk-world-app/world-learning-ui.mjs','../../synk-world-app/life-ui.mjs','../../synk-world-app/world-position-ui.mjs','../../synk-world-app/world-writing-practice.mjs'];
 test('화면 파일이 t()로 부르는 키는 모두 표에 있다(삼항의 두 키 포함)',()=>{
- const files=['../home.mjs','../first-run.mjs','../opening.mjs','../tutor-onboarding.mjs','../home-tutor.mjs','../home-town.mjs','../life-tutor.mjs','../lang-picker.mjs','../../synk-world-app/app-shell.mjs','../../synk-world-app/world-learning-ui.mjs','../../synk-world-app/life-ui.mjs','../../synk-world-app/world-position-ui.mjs','../../synk-world-app/world-writing-practice.mjs'];
  const used=new Map();
- for(const file of files){
+ for(const file of SCREEN_FILES){
   const source=read(file);
   for(const [,key]of source.matchAll(/\b(?:t|tr)\('([a-zA-Z][\w.-]*)'/g))used.set(key,file);
   for(const [,a,b]of source.matchAll(/\b(?:t|tr)\([^()]*?\?\s*'([a-zA-Z][\w.-]*)'\s*:\s*'([a-zA-Z][\w.-]*)'/g)){used.set(a,file);used.set(b,file);}
@@ -240,6 +240,16 @@ test('화면 파일이 t()로 부르는 키는 모두 표에 있다(삼항의 �
  const missing=[...used].filter(([key])=>!Object.hasOwn(STRINGS,key)).map(([key,file])=>`${file}: ${key}`);
  assert.deepEqual(missing,[]);
  assert.ok(used.size>250,`부르는 키 ${used.size}개`);
+});
+
+// 값 자리({total} 등)가 있는 줄을 값 없이 부르면 그 자리가 빈칸으로 보인다(10-21 「배우기」의 내 위치 줄이 「TOPIK I 개 항목」으로 보일 뻔했다).
+test('값 자리가 있는 줄은 값 없이 부르지 않는다',()=>{
+ const bare=[];
+ for(const file of SCREEN_FILES)for(const [,key]of read(file).matchAll(/\b(?:t|tr)\('([a-zA-Z][\w.-]*)'\)/g)){
+  const entry=STRINGS[key];
+  if(entry&&Object.values(entry).some(value=>forms(value).some(text=>slots(text))))bare.push(`${file}: ${key}`);
+ }
+ assert.deepEqual(bare,[]);
 });
 
 test('한글 만나기의 언어 모듈은 같은 저장 키·언어 목록을 쓴다',async()=>{
