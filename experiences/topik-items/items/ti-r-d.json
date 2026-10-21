@@ -396,14 +396,14 @@
     },
     {
       "id": "ti-r-d-007",
-      "rev": 1,
+      "rev": 2,
       "family": "ti-r-d-007",
       "exam": "topik-i",
       "format": "pbt",
       "section": "reading",
       "officialType": "TI-R-43",
       "targetGrade": 2,
-      "skillId": "ko.reading.detail",
+      "skillId": "ko.reading.negation",
       "difficulty": 2,
       "responseFormat": "single-choice",
       "set": null,
@@ -431,7 +431,7 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -465,6 +465,16 @@
           "rev": 1,
           "hash": "eb70a8002bf6b0ae",
           "packet": "expand-reading"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:41:16.332Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "a561f303b8f95293",
+          "notes": "expand-reading 판정대로 — 대표 능력 ko.reading.detail → ko.reading.negation(정답이 「3층 회의실이 아니라 5층 회의실」이라는 바뀐 장소로 갈림). 글·보기·해설은 그대로."
         }
       ]
     },
@@ -598,14 +608,14 @@
     },
     {
       "id": "ti-r-d-010",
-      "rev": 1,
+      "rev": 2,
       "family": "ti-r-d-010",
       "exam": "topik-i",
       "format": "pbt",
       "section": "reading",
       "officialType": "TI-R-43",
       "targetGrade": 2,
-      "skillId": "ko.reading.reason",
+      "skillId": "ko.reading.detail",
       "difficulty": 2,
       "responseFormat": "single-choice",
       "set": null,
@@ -616,11 +626,11 @@
         "새 이웃은 어제 이사를 왔습니다.",
         "저는 새 이웃에게 떡을 가지고 갔습니다.",
         "저는 고마워서 새 이웃에게 과일을 드렸습니다.",
-        "다음 주말에 이웃 집에 가서 저녁을 먹을 겁니다."
+        "다음 주말에 이웃집에 가서 저녁을 먹을 겁니다."
       ],
       "answer": 2,
       "explanation": {
-        "ko": "글에서 「저는 고마워서 우리 집에 있는 과일을 조금 드렸습니다」라고 했어요. 이웃이 떡을 가지고 와서 고마운 마음에 과일을 드린 거예요. 떡은 이웃이 「떡을 가지고 우리 집에 왔습니다」라서 내가 떡을 가지고 갔다는 보기는 틀려요.",
+        "ko": "글에서 「저는 고마워서 우리 집에 있는 과일을 조금 드렸습니다」라고 했어요. 이웃이 떡을 가지고 와서 고마운 마음에 과일을 드린 거예요. 글에서 이웃이 「떡을 가지고 우리 집에 왔습니다」라고 했으니까 제가 떡을 가지고 갔다는 보기는 틀려요.",
         "en": "The text says 「저는 고마워서 우리 집에 있는 과일을 조금 드렸습니다」 (I was grateful, so I gave them some of the fruit we had at home). The writer gave fruit because they were thankful for the rice cake. It was the neighbor who 「떡을 가지고 우리 집에 왔습니다」 (came to our home with rice cake), so the option saying the writer took rice cake to them is wrong.",
         "mn": "Бичвэрт 「저는 고마워서 우리 집에 있는 과일을 조금 드렸습니다」 гэжээ. Хөрш нь 떡 буюу будааны бялуу авчирсанд талархсан учраас гэртээ байсан жимснээс бага зэрэг өгсөн гэсэн үг. Будааны бялууг хөрш нь 「떡을 가지고 우리 집에 왔습니다」 (бялуу бариад манай гэрт ирсэн) тул би бялуу аваад очсон гэсэн сонголт буруу."
       },
@@ -635,7 +645,7 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -669,6 +679,16 @@
           "rev": 1,
           "hash": "fc0d57eea647328d",
           "packet": "expand-reading"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:41:16.332Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "da2a6b3c81e0a7e9",
+          "notes": "expand-reading 판정대로 — 대표 능력 ko.reading.reason → ko.reading.detail(오답 셋이 때·사람·곳으로 지워짐), 보기 ④ 「이웃 집」을 「이웃집」으로, 해설 ko 셋째 문장의 「…라서」 연결을 「…라고 했으니까」로."
         }
       ]
     },

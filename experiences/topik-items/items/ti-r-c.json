@@ -137,7 +137,7 @@
     },
     {
       "id": "ti-r-c-003",
-      "rev": 1,
+      "rev": 2,
       "family": "ti-r-c-003",
       "exam": "topik-i",
       "format": "pbt",
@@ -161,7 +161,7 @@
       "explanation": {
         "ko": "혼자 달릴 때는 춥거나 피곤한 날에 자주 쉬었지만, 모임에 들어간 뒤에는 사람들이 기다리니까 「비가 오는 날에도 나가게 됩니다」라고 했어요. 그래서 중심 생각은 다른 사람과 같이 운동하자는 ④예요. ③은 「혼자」라는 말 때문에 헷갈리기 쉽지만, 혼자 할 때 「자주 쉬었습니다」라고 했으니 글과 반대예요.",
         "en": "Running alone, the writer often skipped cold or tiring days, but after joining a group, people wait for them, so 「비가 오는 날에도 나가게 됩니다」 (“I end up going out even on rainy days”). So the main idea is ④: it is good to exercise with other people. ③ uses the word 「혼자」 (“alone”), but running alone is exactly when the writer 「자주 쉬었습니다」 (“often took breaks”).",
-        "mn": "Зохиогч ганцаараа гүйдэг байхдаа хүйтэн, ядарсан өдөр байнга амардаг байсан. Харин гүйлтийн бүлэгт орсны дараа хүмүүс хүлээж байдаг тул 「비가 오는 날에도 나가게 됩니다」 («бороотой өдөр ч гарч гүйдэг болсон») гэжээ. Тиймээс зөв хариулт нь ④. ③ хувилбарт 「혼자」 («ганцаараа») гэж байгаа ч зохиогч ганцаараа гүйхдээ л 「자주 쉬었습니다」 («байнга амарч алгасдаг байсан»)."
+        "mn": "Зохиогч ганцаараа гүйдэг байхдаа хүйтэн, ядарсан өдөр байнга амардаг байсан. Харин гүйлтийн бүлэгт орсны дараа хүмүүс хүлээж байдаг тул 「비가 오는 날에도 나가게 됩니다」 («бороотой өдөр ч гарч гүйдэг болсон») гэжээ. Тиймээс гол санаа нь ④: бусад хүмүүстэй хамт дасгал хийх нь сайн. ③ хувилбарт 「혼자」 («ганцаараа») гэж байгаа ч зохиогч ганцаараа гүйхдээ л 「자주 쉬었습니다」 («байнга амарч алгасдаг байсан») гэсэн тул ③ буруу."
       },
       "choiceNotes": [
         "모임에 들어간 뒤로는 「비가 오는 날에도」 나가서 달려요.",
@@ -175,7 +175,7 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -209,6 +209,16 @@
           "rev": 1,
           "hash": "40a30fdf03c40c57",
           "packet": "expand-reading"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:41:16.332Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "1efc7e63e11591ce",
+          "notes": "expand-reading 판정대로 — 몽골어 해설에 중심 생각의 내용(「бусад хүмүүстэй хамт дасгал хийх нь сайн」)을 넣고, ③을 설명하는 끝 문장에 서술어(「гэсэн тул ③ буруу」)를 붙여 완결함."
         }
       ]
     },
@@ -1349,7 +1359,7 @@
     },
     {
       "id": "ti-r-c-021",
-      "rev": 1,
+      "rev": 2,
       "family": "ti-r-c-021",
       "exam": "topik-i",
       "format": "pbt",
@@ -1371,9 +1381,9 @@
       ],
       "answer": 0,
       "explanation": {
-        "ko": "(가)의 「그곳」, (나)의 「마지막으로」, (다)의 「그래서」를 보면 이 세 문장은 처음에 올 수 없어요. 친구에게 선물을 보내고 싶어서(라) 「그래서」 우체국에 갔고(다), 「그곳」 직원에게 상자를 받아 선물을 넣고(가), 「마지막으로」 주소를 쓰고 돈을 냈으니(나) ①이 맞아요. ②는 상자를 받기 전에 상자 위에 주소를 쓰게 되어 틀려요.",
-        "en": "(가) refers to 「그곳」 (“that place”), (나) begins with 「마지막으로」 (“finally”), and (다) with 「그래서」 (“so”), so none of them can come first. The writer wanted to send a gift (라), so went to the post office (다), got a box from the staff at 「그곳」 and packed the gift (가), and 「마지막으로」 wrote the address and paid (나): ①. In ②, the address would be written on a box the writer doesn’t have yet.",
-        "mn": "(가)-ийн 「그곳」 («тэнд»), (나)-ийн 「마지막으로」 («эцэст нь»), (다)-ийн 「그래서」 («тиймээс»)-ийг харвал эдгээр гурав эхэнд орж чадахгүй. Найздаа бэлэг илгээмээр байсан (라) тул шуудан руу явсан (다), 「그곳」-ийн ажилтнаас хайрцаг аваад бэлгээ хийсэн (가), 「마지막으로」 хаягаа бичээд мөнгөө төлсөн (나) тул ① зөв. ② хувилбарт хайрцаг авахаасаа өмнө хайрцаг дээр хаяг бичсэн болж буруу."
+        "ko": "(가)의 「그곳」, (나)의 「마지막으로」, (다)의 「그래서」를 보면 이 세 문장은 처음에 올 수 없어요. 친구에게 선물을 보내고 싶어서(라) 「그래서」 우체국에 갔고(다), 「그곳」 직원에게 상자를 받아 선물을 넣고(가), 「마지막으로」 친구의 주소를 쓰고 돈을 냈으니(나) ①이 맞아요. ②는 상자를 받기 전에 상자 위에 주소를 쓰게 되어 틀려요.",
+        "en": "(가) refers to 「그곳」 (“that place”), (나) begins with 「마지막으로」 (“finally”), and (다) with 「그래서」 (“so”), so none of them can come first. The writer wanted to send a gift (라), so went to the post office (다), got a box from the staff at 「그곳」 and packed the gift (가), and 「마지막으로」 wrote the friend’s address and paid (나): ①. In ②, the address would be written on a box the writer doesn’t have yet.",
+        "mn": "(가)-ийн 「그곳」 («тэнд»), (나)-ийн 「마지막으로」 («эцэст нь»), (다)-ийн 「그래서」 («тиймээс»)-ийг харвал эдгээр гурав эхэнд орж чадахгүй. Найздаа бэлэг илгээмээр байсан (라) тул шуудангийн газар руу явсан (다), 「그곳」-ийн ажилтнаас хайрцаг аваад бэлгээ хийсэн (가), 「마지막으로」 найзынхаа хаягийг бичээд мөнгө төлсөн (나) тул ① зөв. ② хувилбарт хайрцаг авахаасаа өмнө хайрцаг дээр найзынхаа хаягийг бичсэн болж буруу."
       },
       "choiceNotes": [
         "보내고 싶음(라) → 「그래서」 우체국(다) → 「그곳」 직원의 상자(가) → 「마지막으로」 주소와 돈(나).",
@@ -1384,7 +1394,7 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -1418,6 +1428,16 @@
           "rev": 1,
           "hash": "431a71e2f63297f5",
           "packet": "expand-reading"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:41:16.332Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "17f255aad65cc636",
+          "notes": "expand-reading 판정대로 — 몽골어 해설의 「хаягаа」(자기 주소로 읽힘)를 「найзынхаа хаягийг」로 두 곳, 「шуудан」을 「шуудангийн газар」로 고치고, 영어·한국어 해설도 「친구의 주소」로 맞춤."
         }
       ]
     },

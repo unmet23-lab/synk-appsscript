@@ -339,7 +339,7 @@
     },
     {
       "id": "ti-r-b-006",
-      "rev": 1,
+      "rev": 2,
       "family": "ti-r-b-006",
       "exam": "topik-i",
       "format": "pbt",
@@ -357,19 +357,19 @@
       "script": null,
       "question": "이 글의 내용과 같은 것을 고르십시오.",
       "choices": [
-        "비가 오는 날에는 바람이 잘 통해서 빨래가 빨리 마릅니다.",
+        "옷과 옷 사이를 넓게 두면 바람이 잘 통하지 않습니다.",
         "빨래는 옷과 옷 사이를 좁게 두고 말리는 것이 좋습니다.",
         "비가 오는 날에는 공기 속에 물이 많아서 빨래가 잘 마르지 않습니다.",
         "빨래가 끝나도 세탁기에서 바로 꺼내지 않는 것이 좋습니다."
       ],
       "answer": 2,
       "explanation": {
-        "ko": "글의 처음에 「비가 오는 날에는 빨래가 잘 마르지 않습니다. 공기 속에 물이 많기 때문입니다」라고 했어요. 그래서 공기 속에 물이 많아서 잘 마르지 않는다는 것이 맞아요. 비 오는 날에 빨래가 빨리 마른다는 것은 첫 문장과 반대예요.",
-        "en": "The text begins: 「비가 오는 날에는 빨래가 잘 마르지 않습니다. 공기 속에 물이 많기 때문입니다」 (on rainy days laundry does not dry well, because there is a lot of water in the air). So the answer is the choice giving that reason. The choice saying laundry dries quickly on rainy days says the opposite of the first sentence.",
-        "mn": "Эхний хэсэгт 「비가 오는 날에는 빨래가 잘 마르지 않습니다. 공기 속에 물이 많기 때문입니다」 (бороотой өдөр угаасан хувцас сайн хатдаггүй, учир нь агаарт ус их байдаг) гэжээ. Тиймээс агаарт ус ихтэй учраас сайн хатдаггүй гэсэн хариулт зөв. Бороотой өдөр хурдан хатдаг гэсэн сонголт эхний өгүүлбэрийн эсрэг."
+        "ko": "글의 처음에 「비가 오는 날에는 빨래가 잘 마르지 않습니다. 공기 속에 물이 많기 때문입니다」라고 했어요. 그래서 공기 속에 물이 많아서 잘 마르지 않는다는 것이 맞아요. 옷 사이를 넓게 두면 바람이 잘 안 통한다는 것은 마지막 문장과 반대예요.",
+        "en": "The text begins: 「비가 오는 날에는 빨래가 잘 마르지 않습니다. 공기 속에 물이 많기 때문입니다」 (on rainy days laundry does not dry well, because there is a lot of water in the air). So the answer is the choice giving that reason. The choice saying air does not flow well when clothes are spaced apart says the opposite of the last sentence.",
+        "mn": "Эхний хэсэгт 「비가 오는 날에는 빨래가 잘 마르지 않습니다. 공기 속에 물이 많기 때문입니다」 (бороотой өдөр угаасан хувцас сайн хатдаггүй, учир нь агаарт ус их байдаг) гэжээ. Тиймээс агаарт ус ихтэй учраас сайн хатдаггүй гэсэн хариулт зөв. Хувцасны хоорондыг өргөн зайтай тавихад салхи сайн нэвтэрдэггүй гэсэн сонголт сүүлийн өгүүлбэрийн эсрэг."
       },
       "choiceNotes": [
-        "비가 오는 날에는 빨래가 「잘 마르지 않습니다」라고 했어요.",
+        "옷 사이를 넓게 두면 「바람이 잘 통해서」 빨리 마른다고 했어요.",
         "옷과 옷 사이를 「넓게」 두라고 했어요.",
         "「공기 속에 물이 많기 때문입니다」라는 까닭과 같아요.",
         "빨래가 끝나면 「바로 세탁기에서 꺼내십시오」라고 했어요."
@@ -379,7 +379,7 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -413,12 +413,22 @@
           "rev": 1,
           "hash": "49cff7752de69a16",
           "packet": "expand-reading"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:41:16.332Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "44ee3a6e7c148d3b",
+          "notes": "expand-reading 판정대로 — 마지막 문장을 거의 그대로 옮겨 맞다고 다툴 여지가 있던 보기 ①을 「옷과 옷 사이를 넓게 두면 바람이 잘 통하지 않습니다.」로 바꾸고 메모·해설 세 언어 끝 문장을 맞춤. 세트 글은 그대로."
         }
       ]
     },
     {
       "id": "ti-r-b-007",
-      "rev": 1,
+      "rev": 2,
       "family": "ti-r-b-007",
       "exam": "topik-i",
       "format": "pbt",
@@ -436,19 +446,19 @@
       "script": null,
       "question": "(   )에 들어갈 알맞은 말을 고르십시오.",
       "choices": [
-        "그래서",
+        "그러면",
         "그러니까",
         "하지만",
         "그런데"
       ],
       "answer": 1,
       "explanation": {
-        "ko": "앞 문장 「어두운 산길은 걷기 힘들고 위험합니다」가 까닭이고, 뒤 문장은 「내려오기 시작하십시오」라는 명령이에요. 까닭 뒤에 명령이나 권유가 올 때는 「그러니까」를 써요. 「그래서」도 까닭을 나타내지만 뒤에 「-(으)십시오」 같은 명령이 올 수 없어요.",
-        "en": "「어두운 산길은 걷기 힘들고 위험합니다」 (dark mountain paths are hard to walk and dangerous) is the reason, and the next sentence is an instruction, 「내려오기 시작하십시오」 (start coming down). When a reason is followed by an instruction or suggestion, use 「그러니까」 (so / that is why). 「그래서」 also shows a reason, but it cannot be followed by an instruction like 「-(으)십시오」.",
-        "mn": "「어두운 산길은 걷기 힘들고 위험합니다」 (харанхуй уулын замаар алхахад хэцүү, аюултай) гэдэг нь шалтгаан, дараагийн өгүүлбэр 「내려오기 시작하십시오」 (буугаад эхлээрэй) гэсэн тушаал байна. Шалтгааны дараа тушаал, зөвлөгөө ирэх үед 「그러니까」 (тийм болохоор) хэрэглэдэг. 「그래서」 ч шалтгааныг заадаг ч ард нь 「-(으)십시오」 шиг тушаал ирж болохгүй."
+        "ko": "앞 문장 「어두운 산길은 걷기 힘들고 위험합니다」는 까닭이고, 뒤 문장 「내려오기 시작하십시오」는 그 까닭에 따른 당부예요. 까닭 뒤에 명령이나 당부가 올 때는 「그러니까」를 써요. 「그러면」은 「그렇게 하면」이라는 뜻으로 앞 문장이 조건일 때 쓰는데, 이 글의 앞 문장은 조건이 아니라 까닭이라서 맞지 않아요.",
+        "en": "「어두운 산길은 걷기 힘들고 위험합니다」 (dark mountain paths are hard to walk and dangerous) is a reason, and the next sentence, 「내려오기 시작하십시오」 (start coming down), is advice based on that reason. When a reason is followed by an instruction or advice, use 「그러니까」 (so / that is why). 「그러면」 means “if you do that, then” and is used after a condition, but here the first sentence gives a reason, not a condition, so it does not fit.",
+        "mn": "「어두운 산길은 걷기 힘들고 위험합니다」 (харанхуй уулын замаар алхахад хэцүү, аюултай) гэдэг нь шалтгаан, дараагийн өгүүлбэр 「내려오기 시작하십시오」 (буугаад эхлээрэй) нь тэр шалтгаанаас үүдсэн зөвлөгөө. Шалтгааны дараа тушаал, зөвлөгөө ирэх үед 「그러니까」 (тийм болохоор) хэрэглэдэг. 「그러면」 (тэгвэл) нь «тэгж хийвэл» гэсэн утгатай бөгөөд өмнөх өгүүлбэр нөхцөл байх үед хэрэглэдэг. Энд өмнөх өгүүлбэр нөхцөл биш, шалтгаан учраас тохирохгүй."
       },
       "choiceNotes": [
-        "까닭을 나타내지만 뒤에 「-(으)십시오」 같은 명령이 오면 쓸 수 없어요.",
+        "「그러면」은 앞 문장이 조건일 때 써요 — 「위험합니다」는 조건이 아니라 까닭이라서 틀려요.",
         "「위험합니다」라는 까닭 뒤에 「내려오기 시작하십시오」라는 명령이 이어지므로 맞아요.",
         "위험하다는 말과 일찍 내려오라는 말은 반대가 아니어서 틀려요.",
         "앞뒤가 반대이거나 화제가 바뀌는 내용이 아니어서 틀려요."
@@ -456,7 +466,7 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -479,6 +489,16 @@
           "rev": 1,
           "hash": "f62a169ffdcf6951",
           "packet": "expand-reading"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:41:16.332Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "afd4a66a5e13f65b",
+          "notes": "expand-reading 판정대로 — (두 검수 일치) 명령 앞에서도 실제 글에서는 맞다고 다툴 여지가 있던 보기 ① 「그래서」를 「그러면」으로 바꾸고, 해설 세 언어·메모를 「그러면」은 조건 뒤에 쓰는 말이라는 근거로 고침. 세트 글은 그대로."
         }
       ]
     },
@@ -752,7 +772,7 @@
     },
     {
       "id": "ti-r-b-012",
-      "rev": 1,
+      "rev": 2,
       "family": "ti-r-b-012",
       "exam": "topik-i",
       "format": "pbt",
@@ -779,7 +799,7 @@
       "explanation": {
         "ko": "글에 「화요일에는 회사 일이 늦게 끝나서 세탁소에 가지 못했습니다」라고 했으니까 화요일에는 코트를 찾지 못했어요. 코트는 「오늘 아침 출근하기 전에」 찾아왔으니까 퇴근한 후라고 한 것은 틀려요.",
         "en": "The text says 「화요일에는 회사 일이 늦게 끝나서 세탁소에 가지 못했습니다」 (on Tuesday I finished work late and could not go to the cleaner's), so I could not pick up the coat on Tuesday. I got it 「오늘 아침 출근하기 전에」 (this morning before work), so the choice saying after work is wrong.",
-        "mn": "Эхэд 「화요일에는 회사 일이 늦게 끝나서 세탁소에 가지 못했습니다」 (мягмар гарагт ажил оройтож дуусаад хими цэвэрлэгээнд очиж чадаагүй) гэсэн тул мягмарт пальтогоо авч чадаагүй. Пальтогоо 「오늘 아침 출근하기 전에」 (өнөө өглөө ажилдаа явахаасаа өмнө) авчирсан тул ажлаа тараад гэсэн сонголт буруу."
+        "mn": "Бичвэрт 「화요일에는 회사 일이 늦게 끝나서 세탁소에 가지 못했습니다」 (мягмар гарагт ажил оройтож дуусаад хими цэвэрлэгээнд очиж чадаагүй) гэсэн тул мягмарт пальтогоо авч чадаагүй. Пальтогоо 「오늘 아침 출근하기 전에」 (өнөө өглөө ажилдаа явахаасаа өмнө) авчирсан тул ажлаа тараад гэсэн сонголт буруу."
       },
       "choiceNotes": [
         "세탁소는 아파트 「1층」에 있어요.",
@@ -792,7 +812,7 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -826,6 +846,16 @@
           "rev": 1,
           "hash": "3085095084fcca54",
           "packet": "expand-reading"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:41:16.332Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "9fc54513f58c6376",
+          "notes": "expand-reading 판정대로 — 몽골어 해설 첫머리 「Эхэд」(「처음에·어머니에게」로 읽힐 수 있음)를 「Бичвэрт」로. 세트 글은 그대로."
         }
       ]
     },
@@ -1033,7 +1063,7 @@
     },
     {
       "id": "ti-r-b-016",
-      "rev": 1,
+      "rev": 2,
       "family": "ti-r-b-016",
       "exam": "topik-i",
       "format": "pbt",
@@ -1053,19 +1083,19 @@
       "choices": [
         "동생이 식당 음식을 더 좋아해서 식당에서 점심을 먹습니다.",
         "저는 아침에 수업이 있어서 졸업식에 늦게 갑니다.",
-        "저는 아침에 수업이 없어서 졸업식에 일찍 갑니다.",
-        "어머니께서 바쁘셔서 아버지가 요리를 하실 겁니다."
+        "저는 꽃을 사 와야 해서 졸업식에 늦게 갑니다.",
+        "어머니가 바쁘셔서 아버지가 요리를 하실 겁니다."
       ],
       "answer": 1,
       "explanation": {
         "ko": "글에 「저는 그날 아침에 수업이 있어서 졸업식에 조금 늦게 갑니다」라고 했으니까 수업 때문에 늦게 가요. 가족이 집에서 먹는 까닭은 「동생이 어머니가 만드신 음식을 더 좋아해서」예요. 그러니까 동생이 식당 음식을 더 좋아한다는 것은 틀려요.",
         "en": "The text says 「저는 그날 아침에 수업이 있어서 졸업식에 조금 늦게 갑니다」 (I have class that morning, so I will be a little late to the graduation). So I am late because of class. The family eats at home because 「동생이 어머니가 만드신 음식을 더 좋아해서」 (my younger sibling prefers Mom's cooking), so the choice about preferring restaurant food is wrong.",
-        "mn": "Эхэд 「저는 그날 아침에 수업이 있어서 졸업식에 조금 늦게 갑니다」 (тэр өглөө хичээлтэй тул төгсөлтийн ёслолд жаахан хоцорч очно) гэсэн тул хичээлийн улмаас хоцорно. Гэр бүлээрээ гэртээ хооллох шалтгаан нь 「동생이 어머니가 만드신 음식을 더 좋아해서」 (дүү ээжийн хийсэн хоолонд илүү дуртай учраас) тул дүү ресторанны хоолонд илүү дуртай гэсэн нь буруу."
+        "mn": "Бичвэрт 「저는 그날 아침에 수업이 있어서 졸업식에 조금 늦게 갑니다」 (тэр өглөө хичээлтэй тул төгсөлтийн ёслолд жаахан хоцорч очно) гэсэн тул хичээлийн улмаас хоцорно. Гэр бүлээрээ гэртээ хооллох шалтгаан нь 「동생이 어머니가 만드신 음식을 더 좋아해서」 (дүү ээжийн хийсэн хоолонд илүү дуртай учраас) тул дүү ресторанны хоолонд илүү дуртай гэсэн нь буруу."
       },
       "choiceNotes": [
         "동생은 「어머니가 만드신 음식」을 더 좋아해서 집에서 먹어요.",
         "「수업이 있어서 졸업식에 조금 늦게」 간다는 까닭과 같아요.",
-        "저는 그날 아침에 「수업이 있어서」 늦게 가요.",
+        "꽃은 「아버지」가 사 오시고, 저는 「수업이 있어서」 늦게 가요.",
         "요리는 「어머니」가 하시고 아버지는 「꽃을 사 오실」 거예요."
       ],
       "conceptIds": [
@@ -1073,7 +1103,7 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -1107,6 +1137,16 @@
           "rev": 1,
           "hash": "6f31e58fa767121e",
           "packet": "expand-reading"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:41:16.332Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "318c7be4d2f4e16a",
+          "notes": "expand-reading 판정대로 — 정답과 거울 짝이던 보기 ③을 까닭을 바꾼 「저는 꽃을 사 와야 해서 졸업식에 늦게 갑니다.」로 바꾸고 메모를 맞춤, 보기 ④ 「어머니께서」를 「어머니가」로, 몽골어 해설 첫머리 「Эхэд」를 「Бичвэрт」로. 세트 글은 그대로."
         }
       ]
     },
@@ -1380,7 +1420,7 @@
     },
     {
       "id": "ti-r-b-021",
-      "rev": 1,
+      "rev": 2,
       "family": "ti-r-b-021",
       "exam": "topik-i",
       "format": "pbt",
@@ -1407,10 +1447,10 @@
       "explanation": {
         "ko": "글에 「갑자기 비가 많이 왔습니다」와 「우산이 없어서」라는 말이 있어요. 비를 맞아 옷에 물이 묻은 것을 「젖다」라고 하니까 「젖었습니다」가 맞아요. 「말랐습니다」는 물기가 없어진다는 반대 뜻이에요.",
         "en": "The text says 「갑자기 비가 많이 왔습니다」 (suddenly it rained hard) and 「우산이 없어서」 (I had no umbrella). When clothes take in rainwater, we say 「젖다」 (to get wet), so 「젖었습니다」 (got wet) is right. 「말랐습니다」 (dried) means the opposite.",
-        "mn": "Эхэд 「갑자기 비가 많이 왔습니다」 (гэнэт бороо их орсон), 「우산이 없어서」 (шүхэргүй байсан учраас) гэжээ. Бороонд хувцас норохыг 「젖다」 гэдэг тул 「젖었습니다」 (норсон) зөв. 「말랐습니다」 (хатсан) нь эсрэг утгатай."
+        "mn": "Бичвэрт 「갑자기 비가 많이 왔습니다」 (гэнэт бороо их орсон), 「우산이 없어서」 (шүхэргүй байсан учраас) гэжээ. Бороонд хувцас норохыг 「젖다」 гэдэг тул 「젖었습니다」 (норсон) зөв. 「말랐습니다」 (хатсан) нь эсрэг утгатай."
       },
       "choiceNotes": [
-        "비가 많이 오는데 우산이 없었으니 옷에 물이 묻어 맞아요.",
+        "비가 많이 오는데 우산이 없었으니 옷이 젖은 것이 맞아요.",
         "비를 맞고 뛰어갔으니 옷이 마를 수 없어요.",
         "비를 맞는 것은 옷이 따뜻해지는 까닭이 아니에요.",
         "비를 맞고 뛰어간 것과 옷이 깨끗해지는 것은 이어지지 않아요."
@@ -1418,7 +1458,7 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -1452,6 +1492,16 @@
           "rev": 1,
           "hash": "c8c950c4a682369e",
           "packet": "expand-reading"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:41:16.332Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "c7a7613ec7ac0d40",
+          "notes": "expand-reading 판정대로 — 몽골어 해설 첫머리 「Эхэд」를 「Бичвэрт」로, 보기 ① 메모를 「…옷이 젖은 것이 맞아요.」로 다듬음. 세트 글은 그대로."
         }
       ]
     },
@@ -1725,7 +1775,7 @@
     },
     {
       "id": "ti-r-b-026",
-      "rev": 1,
+      "rev": 2,
       "family": "ti-r-b-026",
       "exam": "topik-i",
       "format": "pbt",
@@ -1752,7 +1802,7 @@
       "explanation": {
         "ko": "글에 바트 씨는 「학교 앞」에서 아르바이트를 한다고 했으니까 일하는 곳은 학교 근처에 있어요. 「처음에는 토요일에만 일했지만 지금은 일요일에도 일합니다」라고 했으니 지금도 토요일에만 일한다는 것은 틀려요.",
         "en": "The text says Bat works part-time 「학교 앞」 (in front of the school), so his workplace is near the school. It also says 「처음에는 토요일에만 일했지만 지금은 일요일에도 일합니다」 (at first he worked only on Saturdays, but now he also works on Sundays), so the choice saying he still works only on Saturdays is wrong.",
-        "mn": "Эхэд Бат 「학교 앞」 (сургуулийн урд) цагийн ажил хийдэг гэсэн тул ажилладаг газар нь сургуулийн ойролцоо. Мөн 「처음에는 토요일에만 일했지만 지금은 일요일에도 일합니다」 (эхэндээ зөвхөн бямба гарагт ажилладаг байсан ч одоо ням гарагт ч ажилладаг) гэсэн тул одоо ч зөвхөн бямбад ажилладаг гэсэн нь буруу."
+        "mn": "Бичвэрт Бат 「학교 앞」 (сургуулийн урд) цагийн ажил хийдэг гэсэн тул ажилладаг газар нь сургуулийн ойролцоо. Мөн 「처음에는 토요일에만 일했지만 지금은 일요일에도 일합니다」 (эхэндээ зөвхөн бямба гарагт ажилладаг байсан ч одоо ням гарагт ч ажилладаг) гэсэн тул одоо ч зөвхөн бямбад ажилладаг гэсэн нь буруу."
       },
       "choiceNotes": [
         "바트 씨는 대학원에서 「한국 역사」를 공부해요.",
@@ -1763,7 +1813,7 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -1797,12 +1847,22 @@
           "rev": 1,
           "hash": "d161d049b2cdb1ed",
           "packet": "expand-reading"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:41:16.332Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "d6f1528c52ebd7cb",
+          "notes": "expand-reading 판정대로 — 몽골어 해설 첫머리 「Эхэд」(「처음에」로 읽혀 글의 「처음에는」과 헷갈림)를 「Бичвэрт」로. 세트 글은 그대로."
         }
       ]
     },
     {
       "id": "ti-r-b-027",
-      "rev": 1,
+      "rev": 2,
       "family": "ti-r-b-027",
       "exam": "topik-i",
       "format": "pbt",
@@ -1820,19 +1880,19 @@
       "script": null,
       "question": "(   )에 들어갈 알맞은 말을 고르십시오.",
       "choices": [
-        "지칩니다",
+        "피곤합니다",
         "웃습니다",
         "놀랍니다",
         "기뻐합니다"
       ],
       "answer": 0,
       "explanation": {
-        "ko": "「하루에 200개가 넘는 상자를 배달하는 날도 있어서」 저녁에는 몸이 아주 힘들어요. 일을 많이 해서 힘이 없을 때 「지치다」를 쓰니까 「지칩니다」가 맞아요. 다음 문장이 「그래도」로 시작해서 힘이 난다고 했으니, 빈칸에는 힘이 없다는 말이 와야 해요.",
-        "en": "「하루에 200개가 넘는 상자를 배달하는 날도 있어서」 (there are days he delivers more than 200 boxes), so by evening he is worn out. 「지치다」 means to be exhausted after a lot of work, so 「지칩니다」 is right. The next sentence starts with 「그래도」 (even so) and says he gets his energy back, so the blank has to be about having no energy.",
-        "mn": "「하루에 200개가 넘는 상자를 배달하는 날도 있어서」 (өдөрт 200 гаруй хайрцаг хүргэх өдөр ч байдаг учраас) орой нь бие нь их ядардаг. Их ажил хийгээд хүч тэнхээгүй болохыг 「지치다」 гэдэг тул 「지칩니다」 зөв. Дараагийн өгүүлбэр 「그래도」 (тэгсэн ч гэсэн)-оор эхэлж хүч орж ирдэг гэсэн тул хоосон зайд хүч тэнхээгүй болсон тухай үг орох ёстой."
+        "ko": "「하루에 200개가 넘는 상자를 배달하는 날도 있어서」 저녁에는 몸이 아주 힘들어요. 일을 많이 해서 힘이 없을 때 「피곤하다」를 쓰니까 「피곤합니다」가 맞아요. 다음 문장이 「그래도」로 시작해서 힘이 난다고 했으니, 빈칸에는 힘이 없다는 말이 와야 해요.",
+        "en": "「하루에 200개가 넘는 상자를 배달하는 날도 있어서」 (there are days he delivers more than 200 boxes), so by evening he is worn out. 「피곤하다」 means to be tired after a lot of work, so 「피곤합니다」 is right. The next sentence starts with 「그래도」 (even so) and says he gets his energy back, so the blank has to be about having no energy.",
+        "mn": "「하루에 200개가 넘는 상자를 배달하는 날도 있어서」 (өдөрт 200 гаруй хайрцаг хүргэх өдөр ч байдаг учраас) орой нь бие нь их ядардаг. Их ажил хийгээд ядрахыг 「피곤하다」 гэдэг тул 「피곤합니다」 зөв. Дараагийн өгүүлбэр 「그래도」 (тэгсэн ч гэсэн)-оор эхэлж хүч орж ирдэг гэсэн тул хоосон зайд хүч тэнхээгүй болсон тухай үг орох ёстой."
       },
       "choiceNotes": [
-        "상자를 많이 배달해 힘이 없다는 뜻이고 「그래도 … 힘이 납니다」와 이어져요.",
+        "상자를 많이 배달해 몸이 힘들다는 뜻이고 「그래도 … 힘이 납니다」와 이어져요.",
         "웃는 사람은 손님들이고, 일이 많아서 웃는다는 것은 까닭이 맞지 않아요.",
         "상자를 많이 배달한 것은 놀랄 까닭이 되지 않아요.",
         "뒤 문장이 「그래도」로 이어지므로 빈칸에는 힘든 상태가 와야 해요."
@@ -1840,7 +1900,7 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "held",
+      "reviewStatus": "draft",
       "review": [
         {
           "stage": "claude",
@@ -1874,6 +1934,16 @@
           "rev": 1,
           "hash": "2e11b3930cf3f147",
           "packet": "expand-reading"
+        },
+        {
+          "stage": "author-fix",
+          "model": "claude-opus-5-5",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T02:41:16.332Z",
+          "verdict": "fix",
+          "rev": 2,
+          "hash": "4dc45001813bc356",
+          "notes": "expand-reading 판정대로 — 정답 보기 ① 「지칩니다」를 「피곤합니다」로 바꾸고 해설 세 언어·메모를 맞춤. 「싣다」는 TOPIK I 낱말 목록(B)에 있어 세트 글은 그대로."
         }
       ]
     },
