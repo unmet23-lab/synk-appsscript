@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="mn">
+<head>
+<meta charset="utf-8">
+<title>TOPIK 4 · SYNK LAB</title>
+<style>
+/* 몽골어 한 장 안내문(1240×1754 = A4 비율) — 대학 국제처가 공지·단체 대화방에 그대로 올리고 인쇄도 하는 판.
+   build.mjs가 QR 자리를 채우고 글꼴·그림을 data:로 실은 뒤 Chrome으로 찍는다. 이 파일을 바로 열어도 모양은 보인다(QR 자리만 빔).
+   글은 신청 페이지 copy.js의 몽골어(몽골어 검문 정상)를 그대로 쓴다. 포스터는 시그널 2판 .poster 문법(코랄 판·펠트 물건·큰 낱말)을
+   종이 크기로 옮겼다. 글꼴은 신청 페이지 빌드(dist)의 줄인 판이라 한글은 페이지에 쓰인 글자만 있다. */
+@font-face{font-family:'SUIT Variable';font-weight:100 900;src:url(../dist/lab/topik4/assets/SUIT-subset.woff2) format('woff2')}
+@font-face{font-family:'Inter Tight';font-weight:400;src:url(../dist/lab/topik4/assets/InterTight-400.woff2) format('woff2')}
+@font-face{font-family:'Inter Tight';font-weight:500 600;src:url(../dist/lab/topik4/assets/InterTight-500.woff2) format('woff2')}
+@font-face{font-family:'Inter Tight';font-weight:700 900;src:url(../dist/lab/topik4/assets/InterTight-700.woff2) format('woff2')}
+@font-face{font-family:'DM Mono';font-weight:500;src:url(../dist/lab/topik4/assets/DMMono-500.woff2) format('woff2')}
+@page{size:A4;margin:0}
+:root{--paper:#FFFFFF;--ink:#08090C;--ink-2:rgba(8,9,12,.72);--ink-3:rgba(8,9,12,.56);--line:rgba(8,9,12,.14);--face:#F96859;--on-face:#1E0E0A;
+  --studio:radial-gradient(120% 85% at 28% -10%,rgba(255,255,255,.16),transparent 58%),linear-gradient(180deg,transparent 55%,rgba(0,0,0,.1));
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .7 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{width:1240px;height:1754px;overflow:hidden;font-family:'Inter Tight','SUIT Variable',system-ui,sans-serif;font-kerning:normal}
+.page{display:flex;flex-direction:column;height:100%;padding:60px 72px 52px}
+.nw{white-space:nowrap}
+
+.poster{position:relative;isolation:isolate;overflow:hidden;flex:none;height:620px;border-radius:40px;background:var(--studio),var(--face);color:var(--on-face);box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
+.poster::before{content:"";position:absolute;inset:0;z-index:1;background:var(--grain);background-size:240px;opacity:.22;mix-blend-mode:overlay;pointer-events:none}
+@media print{.poster::before{display:none}}
+.poster::after{content:attr(data-word);position:absolute;z-index:2;left:40px;bottom:30px;font-family:'SUIT Variable';font-size:360px;font-weight:900;line-height:.84;letter-spacing:-.065em;white-space:pre}
+.poster .label{position:absolute;z-index:3;left:44px;top:40px;font:500 20px/1 'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase;opacity:.82}
+.poster .chip{position:absolute;z-index:3;left:40px;top:84px;display:inline-flex;align-items:center;gap:12px;height:50px;padding:0 24px 0 20px;border-radius:999px;background:rgba(8,9,12,.62);color:#fff;font-size:23px;font-weight:600;white-space:nowrap}
+.poster .chip::before{content:"";flex:none;width:11px;height:11px;border-radius:50%;background:#F5C445;box-shadow:0 0 0 5px rgba(245,196,69,.25)}
+.poster .cut{position:absolute;z-index:2;top:74px;right:64px;width:490px;height:auto;transform:rotate(-3deg);filter:drop-shadow(0 30px 34px rgba(0,0,0,.3)) drop-shadow(0 6px 8px rgba(0,0,0,.18))}
+
+.eyebrow{margin:46px 0 0;font-size:24px;font-weight:600;line-height:1.3;color:var(--ink-2)}
+.eyebrow::before{content:"";display:inline-block;width:11px;height:11px;margin:0 14px 2px 0;border-radius:50%;background:var(--face);box-shadow:0 0 0 5px rgba(249,104,89,.24);vertical-align:middle}
+h1{margin:18px 0 0;font-size:62px;font-weight:700;line-height:1.13;letter-spacing:-.028em;text-wrap:balance}
+.lead{margin:22px 0 0;font-size:27px;line-height:1.56;color:var(--ink-2);text-wrap:pretty}
+
+.facts{display:grid;grid-template-columns:repeat(3,1fr);margin:38px 0 0;border-top:2px solid var(--ink);border-bottom:1px solid var(--line)}
+.facts div{padding:24px 24px 26px 0}
+.facts div+div{padding-left:26px;border-left:1px solid var(--line)}
+.facts b{display:block;font-size:40px;font-weight:700;line-height:1.1;letter-spacing:-.02em}
+.facts span{display:block;margin-top:10px;font-size:21px;line-height:1.45;color:var(--ink-2)}
+
+.cta{display:grid;grid-template-columns:1fr 288px;gap:48px;align-items:end;margin-top:auto}
+.cta .go{margin:0;font-size:46px;font-weight:700;line-height:1.1;letter-spacing:-.02em}
+.cta .go::after{content:"\2009→";color:var(--face)}
+.cta .note{margin:18px 0 0;font-size:24px;line-height:1.5;color:var(--ink-2)}
+.cta .url{margin:30px 0 0;padding-top:22px;border-top:1px solid var(--line);font-size:38px;font-weight:600;line-height:1;letter-spacing:-.015em}
+.cta .qr{width:288px;height:288px;border:1px solid var(--line);border-radius:22px;overflow:hidden;background:#fff}
+.cta .qr svg{display:block;width:100%;height:100%;shape-rendering:crispEdges}
+
+.foot{display:flex;justify-content:space-between;gap:32px;margin-top:30px;padding-top:20px;border-top:1px solid var(--line);font-size:19px;line-height:1.45;color:var(--ink-3)}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="poster" data-word="4급">
+    <span class="label">SYNK LAB · CLASS 01</span>
+    <span class="chip">Урьдчилсан бүртгэл явагдаж байна</span>
+    <img class="cut" src="../src/art/topik4-art-cap.webp" alt="">
+  </div>
+  <p class="eyebrow">TOPIK II · <span class="nw">4-р</span> түвшний онлайн анги</p>
+  <h1>Төгсөхөд хэрэгтэй TOPIK <span class="nw">4-р</span> түвшинд <span class="nw">8 долоо хоног</span> хамтдаа бэлдье</h1>
+  <p class="lead">Солонгосын их сургуульд суралцаж буй монгол оюутнуудад зориулсан онлайн анги. Бямба гараг бүр 90 минутын шууд хичээлд сууж, долоо хоног бүр уншлагын 5 даалгавар, бичгийн 1 даалгавар хийж илгээхэд багш засаад буцааж өгнө.</p>
+  <div class="facts">
+    <div><b>8 долоо хоног</b><span>Бямба гараг бүр 90 минутын шууд хичээл</span></div>
+    <div><b>300,000 вон</b><span>8 долоо хоногийн нийт төлбөр · НӨАТ багтсан</span></div>
+    <div><b>10 хүн</b><span>Урьдчилан бүртгүүлэгч 10 хүрвэл анги нээгдэнэ</span></div>
+  </div>
+  <div class="cta">
+    <div>
+      <p class="go">Урьдчилан бүртгүүлэх</p>
+      <p class="note">Одоо төлбөр авахгүй. Эхний ангийг 2027 оны <span class="nw">3-р</span> сард эхлүүлэхээр бэлдэж байна.</p>
+      <p class="url">synk.im/lab/topik4</p>
+    </div>
+    <div class="qr" role="img" aria-label="synk.im/lab/topik4">{{QR}}</div>
+  </div>
+  <div class="foot">
+    <span>Шалгалтад тэнцэх эсвэл тодорхой түвшин авахыг амлахгүй.</span>
+    <span class="nw">Instagram @synk.mn</span>
+  </div>
+</div>
+</body>
+</html>
