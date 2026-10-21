@@ -1,0 +1,78 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b01",
+ "text": "AI 유료 구독, 딱 하나만 한다면? 질문 세 개면 골라져요.",
+ "show": "AI 유료 구독, 딱 하나만 한다면? 질문 세 개면 골라져요.",
+ "dur": 3.527,
+ "words": [
+  {
+   "text": "AI",
+   "start": 0.02,
+   "end": 0.339
+  },
+  {
+   "text": "유료",
+   "start": 0.418,
+   "end": 0.593
+  },
+  {
+   "text": "구독,",
+   "start": 0.641,
+   "end": 0.88
+  },
+  {
+   "text": "딱",
+   "start": 1.039,
+   "end": 1.23
+  },
+  {
+   "text": "하나만",
+   "start": 1.278,
+   "end": 1.517
+  },
+  {
+   "text": "한다면?",
+   "start": 1.58,
+   "end": 1.93
+  },
+  {
+   "text": "질문",
+   "start": 2.217,
+   "end": 2.487
+  },
+  {
+   "text": "세",
+   "start": 2.535,
+   "end": 2.615
+  },
+  {
+   "text": "개면",
+   "start": 2.678,
+   "end": 2.885
+  },
+  {
+   "text": "골라져요.",
+   "start": 2.933,
+   "end": 3.527
+  }
+ ],
+ "source": {
+  "key": "2b3e12221ea765f96fd2069a9a8c1c1f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

@@ -1,0 +1,83 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v08",
+ "text": "질문 셋은 글에 정리해 뒀어요. 지금 AI 구독, 몇 개 쓰세요?",
+ "show": "질문 셋은 글에 정리해 뒀어요. 지금 AI 구독, 몇 개 쓰세요?",
+ "dur": 3.523,
+ "words": [
+  {
+   "text": "질문",
+   "start": 0.01,
+   "end": 0.268
+  },
+  {
+   "text": "셋은",
+   "start": 0.31,
+   "end": 0.539
+  },
+  {
+   "text": "글에",
+   "start": 0.611,
+   "end": 0.739
+  },
+  {
+   "text": "정리해",
+   "start": 0.782,
+   "end": 1.068
+  },
+  {
+   "text": "뒀어요.",
+   "start": 1.111,
+   "end": 1.44
+  },
+  {
+   "text": "지금",
+   "start": 1.883,
+   "end": 2.111
+  },
+  {
+   "text": "AI",
+   "start": 2.168,
+   "end": 2.44
+  },
+  {
+   "text": "구독,",
+   "start": 2.512,
+   "end": 2.74
+  },
+  {
+   "text": "몇",
+   "start": 2.826,
+   "end": 2.94
+  },
+  {
+   "text": "개",
+   "start": 2.983,
+   "end": 3.026
+  },
+  {
+   "text": "쓰세요?",
+   "start": 3.069,
+   "end": 3.523
+  }
+ ],
+ "source": {
+  "key": "e19be10b63f19c3b4fbe096e990d077d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

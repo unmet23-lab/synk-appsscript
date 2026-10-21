@@ -85,6 +85,12 @@
 - 고침: 자른 줄의 길이를 재서 `afade=t=out:st=<길이-0.04>:d=0.04`로 끝만 줄인다(`hwaseong/가편집/만들기_CF.py`). 보내기 전에 소리 트랙을 두 가지로 확인한다 — 1초마다 RMS(내레이션 구간이 −20dB 안팎인지)와 faster-whisper `vad_filter=True` 받아쓰기. 받아쓰기가 「한글자막 by」류 헛말이면 목소리가 없는 것부터 의심한다.
 - 다시 확인: 렌더한 mp4에서 내레이션 줄 시각의 RMS와 받아쓰기 글이 대본과 맞는지.
 
+### ffmpeg 내장 AAC는 384k를 줘도 실제 305~320kbps라 영상사전검사가 「검토」로 잡는다 (2026-10-21 Claude)
+- 증상: 10-21 synkbrief 두 편 원본을 `node tools/영상사전검사.mjs --video … --out …`로 보니 「소리 비트레이트가 313kbps입니다. 올림 기준은 스테레오 384kbps입니다」(needs-review). 마감 스크립트를 `-b:a 384k`로 바꿔도 320kbps, 같은 렌더에서 소리만 384k·448k·512k로 뽑아도 305~306kbps였다.
+- 원인: ffmpeg 내장 `aac` 인코더는 목표 비트레이트를 주어도 내용(말 + 낮게 깐 배경음)에 필요한 만큼만 쓰고 그 위로 채우지 않는다. 이 PC의 다른 AAC 인코더는 `aac_mf`(MediaFoundation, 192k까지)뿐이라 384k를 실제로 채울 길이 없다.
+- 고침: 품질 문제는 아니라 그대로 올린다(`-b:a 384k`는 두고, 검토 사항 하나로 보고). 기준을 꼭 채워야 하면 libfdk_aac가 든 ffmpeg가 필요하다 — 아직 시험하지 않았다.
+- 다시 확인: `ffmpeg -i <렌더.mp4> -vn -c:a aac -b:a 384k -ar 48000 t.m4a` 뒤 `ffprobe -show_entries format=bit_rate t.m4a`가 384000 근처면 이 항목은 낡았다.
+
 ### 다빈치 리졸브 무료판(21.1)은 파이썬 스크립트로 조종할 수 없다
 - 증상: 10-19 「편집·소리·색을 다빈치에서 끝낼지, 스크립트로 할지」를 따지려고 보니 이 PC의 리졸브는 무료판 21.1(`Resolve.exe` 제품 이름 「DaVinci Resolve」, Studio 아님)이고 스크립트 안내 파일(Developer/Scripting README)도 없었다.
 - 원인: 블랙매직이 21.1 업데이트에서 「We have moved the ability to script in Python to the Studio version」으로 무료판의 파이썬 스크립트를 뺐다(Puget Systems 2026-09-10). 그 전에도 무료판은 바깥 프로그램에서 부르는 스크립트가 안 되고 프로그램 안 콘솔에서만 됐다(블랙매직 포럼 2018).

@@ -1,0 +1,83 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "a01",
+ "text": "AI 구독 세 곳, 값은 거의 같아요. 그래서 고르는 질문 셋.",
+ "show": "AI 구독 세 곳, 값은 거의 같아요. 그래서 고르는 질문 셋.",
+ "dur": 3.521,
+ "words": [
+  {
+   "text": "AI",
+   "start": 0.02,
+   "end": 0.301
+  },
+  {
+   "text": "구독",
+   "start": 0.361,
+   "end": 0.542
+  },
+  {
+   "text": "세",
+   "start": 0.602,
+   "end": 0.662
+  },
+  {
+   "text": "곳,",
+   "start": 0.722,
+   "end": 0.883
+  },
+  {
+   "text": "값은",
+   "start": 1.123,
+   "end": 1.364
+  },
+  {
+   "text": "거의",
+   "start": 1.424,
+   "end": 1.544
+  },
+  {
+   "text": "같아요.",
+   "start": 1.605,
+   "end": 1.925
+  },
+  {
+   "text": "그래서",
+   "start": 2.387,
+   "end": 2.647
+  },
+  {
+   "text": "고르는",
+   "start": 2.708,
+   "end": 2.968
+  },
+  {
+   "text": "질문",
+   "start": 3.028,
+   "end": 3.229
+  },
+  {
+   "text": "셋.",
+   "start": 3.289,
+   "end": 3.521
+  }
+ ],
+ "source": {
+  "key": "1df5181c1efbcd7e522998cb1827bf8f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

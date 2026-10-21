@@ -1,0 +1,24 @@
+{
+  "브랜드": "synkbrief",
+  "날짜": "2026-10-21",
+  "슬롯": "2026-10-22",
+  "성격": "상시",
+  "시한": null,
+  "상태": "올릴 준비",
+  "제목": "남이 보면 곤란한 ChatGPT 대화, 잠그는 법",
+  "최종본": ["docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/lock-a_master.mp4", "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/lock-b_master.mp4"],
+  "판": [
+    { "계정": "synkbrief-instagram", "파일": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/lock-a_upload.mp4", "원본": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/lock-a_master.mp4", "표지": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/표지_A.jpg", "시각": "2026-10-22T21:00:00+09:00", "게시글": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/README.md", "AI표시": true },
+    { "계정": "synkbrief-youtube", "파일": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/lock-b_master.mp4", "표지": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/표지_B.jpg", "시각": "2026-10-22T21:00:00+09:00", "게시글": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/README.md", "AI표시": true, "아동용": false, "언어": "ko" },
+    { "계정": "shift-naverblog", "파일": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/blog/원고.md", "시각": "2026-10-22T21:10:00+09:00", "게시글": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/blog/원고.md" }
+  ],
+  "끝행동링크": null,
+  "미룰편": [],
+  "남은위험": [
+    "OpenAI 도움말 「Using locked chats in ChatGPT」(10-21 새벽 수정본)이 바뀌었을 수 있다 — 게시 전날·직전에 「1분」·「재설정하면 잠긴 대화 전부 삭제」·「Free·Go·Plus·Pro」·「모델 개선 설정 그대로」를 다시 확인한다.",
+    "한국어 앱의 메뉴 이름은 확인하지 못했다 — 화면·글은 도움말 영문 표기(Lock chat · Projects › Locked chats) + 뜻 괄호 + 「한국어 화면은 조금 다를 수 있어요」.",
+    "순차 배포라 시청자 일부는 아직 메뉴가 없다 — 끝 질문(떴다 O · 아직 X)이 그 반응을 받는다.",
+    "네이버 블로그는 10-20 Claude in Chrome이 blog.naver.com을 막았다 — 유호님 직접 올리기 또는 사이트 허용 뒤 게시.",
+    "AI 표시는 목소리(Typecast)만 AI라 보수적으로 켠 것."
+  ]
+}
