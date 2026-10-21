@@ -215,8 +215,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 ③이 유일하고 오답·해설·난도가 기준에 맞다. 기출 유사도는 흔한 화제라 의심 수준으로만 적고, 고칠 곳 없이 통과한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "e4f0c7b98b687d5d",
+          "packet": "pilot-new"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "중심 생각이 명확히 드러나며 보기 구성과 3개 국어 해설 모두 기준에 부합한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "e4f0c7b98b687d5d",
+          "packet": "pilot-new"
+        }
+      ]
     },
     {
       "id": "ti-r-c-006",
@@ -258,8 +281,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 ①이 유일하고 오답은 글과 분명히 어긋나며, 급·꼴·해설이 모두 기준에 맞아요. 몽골어 해설에 ①의 뜻을 한 줄 덧붙이면 더 좋지만 통과예요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "a13a4daa726fbeac",
+          "packet": "pilot-new"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TOPIK I 2급 중심 생각 고르기(TI-R-46) 문항으로 지문·보기·해설 모두 기준에 부합한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "a13a4daa726fbeac",
+          "packet": "pilot-new"
+        }
+      ]
     },
     {
       "id": "ti-r-c-007",
@@ -612,8 +658,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 ①이 유일하고, 오답이 글의 낱말을 써서 그럴듯하며, 급과 난도에 맞는 자연스러운 문항입니다. 해설이 51번 빈칸 답을 살짝 드러내는 점만 사소하게 남아 통과로 판정합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "52e3d8f8c0c1be57",
+          "packet": "pilot-new"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TOPIK I 2급 세트 문항 중 중심 화제 고르기(TI-R-52)로 지문 구성과 보기 설계가 적절하다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "52e3d8f8c0c1be57",
+          "packet": "pilot-new"
+        }
+      ]
     },
     {
       "id": "ti-r-c-015",
@@ -1171,8 +1240,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 ㉣이 유일하고 오답 ㉢도 적당히 그럴듯하다. 급·꼴·해설 세 언어가 모두 기준에 맞아 통과다. 기출 유사도는 흔한 소재라 가볍게 확인만 하면 된다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "7db89c2753020af3",
+          "packet": "pilot-new"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TOPIK I 2급 문장 넣기(TI-R-59) 문항으로 시간 순서와 인과 단서가 명확하여 완성도가 높다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "7db89c2753020af3",
+          "packet": "pilot-new"
+        }
+      ]
     },
     {
       "id": "ti-r-c-028",

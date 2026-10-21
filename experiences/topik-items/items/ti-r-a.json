@@ -748,8 +748,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고 급·꼴에 맞는 무난한 문항이다. 정답이 글 문장을 거의 그대로 옮긴 점(예: 「과일이 싸고 맛있어서 시장에 자주 갑니다」로 바꿔 쓰기)과 1·2번 오답이 단순 부정인 점은 사소한 약점이라 통과로 본다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "013c6251097d5037",
+          "packet": "pilot-new"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "1급 수준에 맞는 자연스러운 글과 보기로 구성된 이유 파악 내용 일치 문항으로 모든 기준을 통과함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "013c6251097d5037",
+          "packet": "pilot-new"
+        }
+      ]
     },
     {
       "id": "ti-r-a-019",
@@ -916,8 +939,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "순서를 묻는 1급 내용 일치 문항이다. 정답이 하나뿐이고 오답이 그럴듯하며, 해설 세 언어가 정확하다. 그대로 써도 된다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "9e2e067fc58a93d4",
+          "packet": "pilot-new"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "장소 이동과 행동 순서를 명확히 묻는 1급 내용 일치 문항으로 모든 검수 기준을 충족함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "9e2e067fc58a93d4",
+          "packet": "pilot-new"
+        }
+      ]
     },
     {
       "id": "ti-r-a-023",
@@ -1042,8 +1088,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "순서 읽기를 겨눈 1급 내용 일치 문항이에요. 정답이 하나뿐이고 오답이 순서·장소를 바꿔 그럴듯하며, 해설 세 언어가 정확해서 그대로 써도 돼요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "ded51afa98369cde",
+          "packet": "pilot-new"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "학교 일과 순서를 묻는 1급 내용 일치 문항으로 지문·보기·해설 모두 기준에 맞아 통과함.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "ded51afa98369cde",
+          "packet": "pilot-new"
+        }
+      ]
     },
     {
       "id": "ti-r-a-026",

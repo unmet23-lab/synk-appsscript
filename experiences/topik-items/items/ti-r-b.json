@@ -43,8 +43,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 「하지만」이 분명하고 유일합니다. 꼴·급·해설이 모두 기준에 맞습니다. 몽골어 표현이 조금 어색한 점은 사소하므로 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "14e24beb0eda1118",
+          "packet": "pilot-new"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "TI-R-55 유형과 2급 난도에 잘 맞고 정답 유일성과 다국어 해설 모두 정확한 문항이다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "14e24beb0eda1118",
+          "packet": "pilot-new"
+        }
+      ]
     },
     {
       "id": "ti-r-b-002",
@@ -131,8 +154,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "이음말 「그래서」가 하나뿐인 정답으로 분명합니다. 오답도 이음말끼리 고르게 짜였고, 해설 세 언어가 정확하여 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "a470f5c13ea6bc13",
+          "packet": "pilot-new"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "인과 관계 접속부사 빈칸 문항으로 지문 완성도와 해설 번역 품질이 모두 우수하다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "a470f5c13ea6bc13",
+          "packet": "pilot-new"
+        }
+      ]
     },
     {
       "id": "ti-r-b-004",
@@ -440,8 +486,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 0번이 유일하고, 오답은 때·수를 바꾼 그럴듯한 보기예요. 2급 수준과 자리 꼴에도 맞아서 통과예요. 몽골어 해설의 낱말 하나만 다듬으면 더 좋아요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "f5c2882635af6b5e",
+          "packet": "pilot-new"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "세트 지문 규칙과 세부 정보 일치 유형(TI-R-50)을 잘 지켰으며 오답 구성과 다국어 해설 모두 정확하다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "f5c2882635af6b5e",
+          "packet": "pilot-new"
+        }
+      ]
     },
     {
       "id": "ti-r-b-011",
@@ -837,8 +906,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고, 꼴·급·해설이 모두 기준에 맞아 통과입니다. 오답이 모두 순한 바람 쪽이라 다소 쉽다는 점만 참고하면 됩니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "e36aee3cc6d3877f",
+          "packet": "pilot-new"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "경험담 맥락에서 배가 출발하지 못한 이유에 맞는 부사 어휘(강하게)를 고르는 문항으로 모든 기준을 충족한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "e36aee3cc6d3877f",
+          "packet": "pilot-new"
+        }
+      ]
     },
     {
       "id": "ti-r-b-020",
@@ -970,8 +1062,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답이 고르게 설계되었습니다. 2급 수준과 이유 능력에도 맞습니다. 몽골어 표현 하나가 사소하게 아쉬울 뿐이라 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "5eb9fb5b445695a3",
+          "packet": "pilot-new"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "비 오는 날 편의점 직원에게 우산을 빌린 경험담의 내용 일치 문항으로, 이유 파악 능력과 난도 기준에 잘 맞는다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "5eb9fb5b445695a3",
+          "packet": "pilot-new"
+        }
+      ]
     },
     {
       "id": "ti-r-b-023",
@@ -1013,8 +1128,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "역접 흐름으로 「포기하고」가 유일한 정답인 자연스러운 2급 낱말 빈칸 문항입니다. 「응원하고」 함정도 적절하고 해설 세 언어가 일치하므로 통과입니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "29563f35b9c561df",
+          "packet": "pilot-new"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "달리기 대회 경험담의 역접 맥락을 통해 빈칸 어휘(포기하고)를 고르는 문항으로 모든 기준을 통과한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "29563f35b9c561df",
+          "packet": "pilot-new"
+        }
+      ]
     },
     {
       "id": "ti-r-b-024",
@@ -1232,8 +1370,31 @@
       ],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답이 고르게 설계된 2급 내용 일치 문항입니다. 몽골어 해설의 「Эхэд」를 「Бичвэрт」로 바꾸면 더 자연스럽겠지만 고치지 않아도 학습자에게 해가 없어 통과로 봅니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "6670dd82a507f911",
+          "packet": "pilot-new"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "지문·보기·해설 모두 기준에 맞고 정답이 유일하다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "6670dd82a507f911",
+          "packet": "pilot-new"
+        }
+      ]
     },
     {
       "id": "ti-r-b-029",
@@ -1451,8 +1612,31 @@
       "conceptIds": [],
       "audio": null,
       "origin": "synk-original",
-      "reviewStatus": "draft",
-      "review": []
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 꼴·난도·해설이 모두 기준에 맞습니다. 오답이 약간 쉽지만 통과로 판정합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "4e4e6cb1c286b4b5",
+          "packet": "pilot-new"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "빈칸 전후의 대조 단서가 명확하고 오답의 품사·어미 꼴이 잘 통일되어 있다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-10-21T00:54:31.125Z",
+          "rev": 1,
+          "hash": "4e4e6cb1c286b4b5",
+          "packet": "pilot-new"
+        }
+      ]
     },
     {
       "id": "ti-r-b-034",
