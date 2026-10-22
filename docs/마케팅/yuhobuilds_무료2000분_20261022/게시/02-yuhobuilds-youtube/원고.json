@@ -1,0 +1,15 @@
+{
+ "id": "02-yuhobuilds-youtube",
+ "brand": "yuhobuilds",
+ "platform": "youtube",
+ "account": "@yuhobuilds",
+ "format": "shorts",
+ "language": "ko",
+ "audioLanguage": "ko",
+ "title": "GitHub 무료 2,000분이 바닥나자, 자동 검사가 2초 만에 꺼졌어요 — 공짜로 다시 돌리는 길 둘 #Shorts",
+ "caption": "비공개 저장소의 GitHub Actions 무료 분(Free 계정 한 달 2,000분)을 다 쓰자, 검사가 \"실패\"가 아니라 시작도 못 하고 1~3초 만에 끝났어요. 10월 20일 19:20부터 하루 넘게 18번. 다시 돌려 보니 그사이 올린 코드에서 빨간 시험 16개(그중 3개는 PC 설정 탓).\n\n메시지 원문: \"The job was not started because recent account payments have failed or your spending limit needs to be increased.\" 결제 수단이 없는 계정이라면 뒤쪽 — 무료 분 소진이에요.\n\n빨간불 읽는 법\n· 단계에서 실패 → 코드부터\n· 단계 0개 · 몇 초 만에 끝 → 한도·결제부터\n\n공짜로 다시 돌리는 길 둘\n1. 감출 게 없는 저장소라면 공개로. 공개 저장소의 표준 실행기는 무료예요(공개 전에 비밀값·개인정보 확인).\n2. 비공개로 둬야 하면 내 PC를 자체 실행기(self-hosted runner)로. 예산 $0에도 잡을 받아 돌았어요. 공개 저장소에는 붙이지 마세요 — 남이 보낸 PR 코드가 내 PC에서 돌 수 있어요.\n\n남은 시간: GitHub에 로그인한 뒤 설정의 빌링 화면(주소 끝이 settings/billing). 조직 계정은 조직 설정의 Billing & Licensing. 매달 1일 다시 2,000분.\n보는 법(GitHub 문서): https://docs.github.com/en/billing/how-tos/products/view-productlicense-use\n\n근거(10월 22일 확인): https://docs.github.com/en/billing/concepts/product-billing/github-actions\n자체 실행기 보안: https://docs.github.com/en/actions/reference/security/secure-use\n제가 만든 도구들: https://synk.im/builds/\n내레이션은 AI 음성이에요.",
+ "pinnedComment": "여러분 Actions 무료 분, 지금 몇 분 남았어요? AI로 코딩하는 친구에게도 보내 주세요.",
+ "alteredContent": true,
+ "madeForKids": false,
+ "_비고": "올라가는 글의 정본. 사람이 읽는 판은 ../게시글.md."
+}

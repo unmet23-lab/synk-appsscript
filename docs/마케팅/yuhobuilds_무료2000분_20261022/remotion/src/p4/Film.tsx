@@ -69,7 +69,7 @@ const slideIn = (f: number, a: number, dist = 12): React.CSSProperties => ({ opa
 /** 1. 훅: 0단계로 끝난 실행 18줄이 위에서 쌓이며 흐른다. */
 const ROW_H = 56;
 const RunRow: React.FC<{ when: string; sec: number; top: number; style?: React.CSSProperties }> = ({ when, sec, top, style }) => (
-  <div style={{ position: 'absolute', left: 24, right: 24, top, height: ROW_H - 8, borderRadius: 12, background: '#1C1B19', display: 'flex', alignItems: 'center', gap: 18, padding: '0 18px', ...style }}>
+  <div style={{ position: 'absolute', left: 24, right: 112, top, height: ROW_H - 8, borderRadius: 12, background: '#1C1B19', display: 'flex', alignItems: 'center', gap: 18, padding: '0 18px', ...style }}>
     <XMark />
     <span style={{ fontFamily: MONO, fontSize: 24, color: INK, width: 110 }}>verify</span>
     <span style={{ fontFamily: KO, fontWeight: 650, fontSize: 24, color: INK, width: 130 }}>단계 0개</span>
@@ -84,7 +84,7 @@ const Runs: React.FC<{ f: number }> = ({ f }) => {
   const visible = 10;
   return (
     <>
-      <WinBar text="코드 올릴 때마다 도는 자동 검사 · 실제 기록을 다시 그림" right="저장소 이름은 가림" />
+      <WinBar text="코드 올릴 때마다 도는 자동 검사 · 기록을 다시 그림 · 저장소 이름 가림" />
       <div style={{ position: 'absolute', left: 0, right: 0, top: BAR + 12, bottom: 0, overflow: 'hidden' }}>
         {D.DEAD_RUNS.slice(0, n).map(([when, sec], i) => {
           const fromTop = n - 1 - i; // 새 줄이 맨 위, 오래된 줄은 아래로 밀려 나간다
@@ -308,7 +308,7 @@ const Path2: React.FC<{ f: number; sceneStart: number }> = ({ f, sceneStart }) =
   return (
   <>
     <WinBar text="둘째 길 · 비공개 저장소는 내 PC를 실행기로 · 실제 기록을 다시 그림" />
-    <div style={{ position: 'absolute', left: 24, right: 24, top: BAR + 30, height: 64, borderRadius: 12, background: '#2A2925', overflow: 'hidden', display: 'flex', alignItems: 'center', gap: 18, padding: '0 18px', ...slideIn(f, sceneStart + 4, 20) }}>
+    <div style={{ position: 'absolute', left: 24, right: 112, top: BAR + 30, height: 64, borderRadius: 12, background: '#2A2925', overflow: 'hidden', display: 'flex', alignItems: 'center', gap: 18, padding: '0 18px', ...slideIn(f, sceneStart + 4, 20) }}>
       <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${run * 100}%`, background: '#4A4843' }} />
       {run >= 1 ? <span style={{ position: 'relative', display: 'flex' }}><Check size={28} /></span> : <div style={{ position: 'relative', width: 28, height: 28, borderRadius: 14, border: '2.5px solid #8E8B84' }} />}
       <span style={{ position: 'relative', fontFamily: MONO, fontSize: 25, color: INK, width: 110 }}>verify</span>
@@ -316,7 +316,7 @@ const Path2: React.FC<{ f: number; sceneStart: number }> = ({ f, sceneStart }) =
       <span style={{ position: 'relative', marginLeft: 'auto', fontFamily: MONO, fontSize: 23, color: '#8E8B84' }}>{D.SELF_RUN.at}</span>
     </div>
     {/* 잡이 GitHub에서 내 PC 실행기로 건너가는 흐름(그림): 「내 피씨를」부터 점이 계속 건너간다 */}
-    <div style={{ position: 'absolute', left: 32, right: 32, top: BAR + 112, height: 96, ...slideIn(f, sceneStart + 6, 16) }}>
+    <div style={{ position: 'absolute', left: 32, right: 112, top: BAR + 112, height: 96, ...slideIn(f, sceneStart + 6, 16) }}>
       <div style={{ position: 'absolute', left: 0, top: 18, width: 210, height: 60, borderRadius: 14, background: '#2A2925', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: EN, fontWeight: 650, fontSize: 26, color: INK }}>GitHub</div>
       <div style={{ position: 'absolute', right: 0, top: 18, width: 330, height: 60, borderRadius: 14, background: '#2A2925', boxShadow: f >= at('f2', '내') ? 'inset 0 0 0 2px #D9D6CE' : undefined, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: KO, fontWeight: 700, fontSize: 26, color: INK }}>내 PC · 실행기(이름 가림)</div>
       <div style={{ position: 'absolute', left: 226, right: 346, top: 46, height: 4, borderRadius: 2, background: '#3A3934' }} />
@@ -502,7 +502,7 @@ const Heads: React.FC = () => {
   return (
     <>
       {hs.map((h, i) => (
-        <Line key={i} lines={h.lines} accent={h.accent} at={h.at} until={i + 1 < hs.length ? hs[i + 1].at : S.end} fade={i + 1 === hs.length} size={h.size} top={h.lines.length > 2 ? 250 : undefined} />
+        <Line key={i} lines={h.lines} accent={h.accent} at={h.at} until={i + 1 < hs.length ? hs[i + 1].at : S.end} fade={i + 1 === hs.length} size={h.size} top={h.lines.length > 2 ? 264 : undefined} />
       ))}
     </>
   );

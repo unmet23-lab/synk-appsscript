@@ -133,8 +133,8 @@ const HookGrid: React.FC<{ f: number }> = ({ f }) => (
     band={
       <>
         <Stat label="디스크에 쓴 양 · 1시간 꼴" value="4,279" unit="MB" left={40} />
-        <Stat label="CPU 코어 하나" value="23.6" unit="%" left={430} />
-        <Stat label="상태 파일" value="328" unit="번/시간" left={700} />
+        <Stat label="CPU 코어 하나" value="23.6" unit="%" left={380} />
+        <Stat label="상태 파일" value="328" unit="번/시간" left={600} />
       </>
     }
   />
@@ -715,7 +715,7 @@ const Heads: React.FC = () => {
   return (
     <>
       {hs.map((h, i) => (
-        <Line key={i} lines={h.lines} accent={h.accent} at={h.at} until={i + 1 < hs.length ? hs[i + 1].at : S.end} fade={i + 1 === hs.length} size={h.size} top={h.lines.length > 2 ? 250 : undefined} />
+        <Line key={i} lines={h.lines} accent={h.accent} at={h.at} until={i + 1 < hs.length ? hs[i + 1].at : S.end} fade={i + 1 === hs.length} size={h.size} top={h.lines.length > 2 ? 264 : undefined} />
       ))}
     </>
   );

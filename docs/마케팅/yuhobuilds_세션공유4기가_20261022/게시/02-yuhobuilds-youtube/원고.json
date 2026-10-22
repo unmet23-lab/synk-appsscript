@@ -1,0 +1,15 @@
+{
+ "id": "02-yuhobuilds-youtube",
+ "brand": "yuhobuilds",
+ "platform": "youtube",
+ "account": "@yuhobuilds",
+ "format": "shorts",
+ "language": "ko",
+ "audioLanguage": "ko",
+ "title": "제가 나눠 드린 도구가 한 시간에 4.3GB를 쓰고 있었어요 — 고친 셋과 내 PC에서 찾는 법 #Shorts",
+ "caption": "Claude 데스크톱 세션 공유 도구(공개 저장소)가 제 PC에서 한 시간에 4,279MB를 쓰고 CPU 코어 하나의 23.6%를 먹고 있었어요. 지금 판은 94MB · 0.26%예요.\n(계정·조직 폴더 29곳, 세션 여럿을 동시에 돌리던 바쁠 때 4분 잰 값을 1시간으로. 계정이 둘셋이면 훨씬 적어요.)\n\n어디서 샜나\n· 세션 기록이 바뀌면 0.15초 안에 다른 폴더 28곳에 복사\n· 앱은 대화가 한 번 오갈 때마다 기록(약 113KB, 대부분 도구 목록)을 통째로 다시 씀\n· 한 시간에 복사 34,664번\n\n고친 셋\n1. 고쳐 쓴 기록은 5분씩 모아서(새 파일·지운 파일은 바로)\n2. 로그아웃이 보이면 그때 바로 맞추기 — 실제 계정 전환에서 0.13초 뒤에 맞춤\n3. 안 쓰는 폴더는 쉬게(지우지 않고 백업 폴더로) — 29곳 중 진짜는 7곳\n\n내 PC에서 찾기: 작업 관리자(Ctrl+Shift+Esc) → 세부 정보 → 열 이름 줄 오른쪽 클릭 → 열 선택 → 「I/O 쓰기 바이트」 체크 → 그 열을 눌러 큰 순서로. 켜진 뒤 쓴 양의 합이라, 빨리 느는 것을 보세요.\n\n도구 받으신 분 업데이트(PowerShell, 설치 줄과 같음):\nirm https://raw.githubusercontent.com/unmet23-lab/claude-session-share/main/install.ps1 | iex\n저장소: https://github.com/unmet23-lab/claude-session-share\n제가 만든 도구들: https://synk.im/builds/\n내레이션은 AI 음성이에요.",
+ "pinnedComment": "여러분 PC의 I/O 쓰기 바이트 1등은 뭐였나요? 댓글로 알려 주세요.",
+ "alteredContent": true,
+ "madeForKids": false,
+ "_비고": "올라가는 글의 정본. 사람이 읽는 판은 ../게시글.md."
+}
