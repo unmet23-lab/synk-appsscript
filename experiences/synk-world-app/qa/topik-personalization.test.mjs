@@ -595,3 +595,72 @@ test('말하기: 남은 횟수가 같으면 안 해 본 유형이 많은 말하�
  assert.match(view.renderExamPlan({plan:speakingPlan(s,{chosen:true,needs:0})}),/data-plan-speaking-section[\s\S]*이번 주에 모든 유형을 한 번씩 말해 봤어요\. 같은 유형을 다시 해 봐도 좋아요\./);
  assert.equal((view.renderExamPlan({plan,next:pick.selected}).match(/class="felt-button"/g)||[]).length,1,'흰 알약은 「지금 할 것」 하나');
 });
+
+// ── TOPIK II 쓰기 한 칸(10-22): 첫 연락 메일·신청 페이지가 「TOPIK II 쓰기 51~54번 무료 연습」을 약속하는데, 주간 시간을 정하지 않았거나
+// 1시간 이하인 TOPIK II 학생의 계획에는 쓰기가 없었다(쓰기는 자동 판정이 없어 필요가 늘 0이라 듣기·읽기에 밀렸다) ──
+const WRITING=[{id:'topik2-writing-51',routeId:'writing:51',skillIds:['ko2.writing.sentence']},{id:'topik2-writing-54',routeId:'writing:54',skillIds:['ko2.writing.argument']}];
+function topik2Plan(s,{weekly=null,date=null,audio=true,writing=WRITING,classwork=[]}={}){
+ const summary=s.coach.summary(),seen=item=>s.coach.exposure(item).seen;
+ return exam.buildExamPlan({exam:exam.examInfo({...EXAM,examType:'topik2',targetGrade:4,examDate:date,weeklyMinutes:weekly}),summary,now:s.now(),audioAvailable:audio,classwork,
+  done:exam.weekActivity({events:s.coach.events(),progress:s.life.exportSnapshot(),week:exam.examWeek(s.now())}),
+  available:{reading:practice.practiceSupply({pool:POOL,seen}),listening:{'ko.listening.detail':['world.play.runner']},recheck:15,life:true,writing}});
+}
+test('TOPIK II 쓰기: 쓰기 연습이 열려 있으면 주간 시간·시험까지 남은 때·기록·소리와 상관없이 이번 주 계획에 쓰기 한 번이 늘 있고, 이번 주 횟수는 늘지 않는다',()=>{
+ const fresh=student({start:KST_MONDAY+DAY}),clean=student({start:KST_MONDAY+DAY});diagnose(clean);diagnose(clean);
+ const students=[['처음',fresh],['모두 맞힘',clean],['읽기 약',examStudent('reading')],['듣기 약',examStudent('listening')]];
+ const examDay=(s,days)=>new Date(s.now()+days*DAY+9*3600000).toISOString().slice(0,10);
+ const PACE={0:3,30:2,60:3,120:5,180:6};
+ let checked=0;
+ for(const [who,s]of students)for(const weekly of [0,30,60,120,180])for(const [phase,days]of [['none',null],['far',120],['mid',60],['near',20],['final',5]])for(const audio of [true,false]){
+  const options={weekly:weekly||null,date:days===null?null:examDay(s,days),audio},label=`${who} · 주 ${weekly||'안 정함'} · ${phase} · 소리 ${audio}`;
+  const plan=topik2Plan(s,options);
+  assert.equal(plan.phase,phase,label);
+  assert.ok(planned(plan,'writing')>=1,`${label}: 쓰기 한 번`);
+  assert.equal(plannedSum(plan),PACE[weekly],`${label}: 영역 합은 주간 시간의 횟수 그대로(쓰기 때문에 늘지 않는다)`);
+  assert.equal(plan.sessions.total,PACE[weekly],label);
+  // 쓰기 문항을 아직 못 읽었으면(닫힌 쓰기) 쓰기 칸 없이 까닭만 — 빈 연습으로 가는 칸을 두지 않는다.
+  const closed=topik2Plan(s,{...options,writing:[]});
+  assert.equal(planned(closed,'writing'),0,label);assert.ok(closed.notes.includes('writing-unavailable'),label);assert.equal(plannedSum(closed),PACE[weekly],label);
+  checked++;
+ }
+ assert.equal(checked,4*5*5*2);
+ // 메일에서 온 처음 학생(시간·시험일을 정하지 않음): 짧은 진단(시작점) · 듣기 · 쓰기. 주 30분이면 짧은 진단 · 쓰기, 2시간이면 모든 영역과 생활 레슨.
+ const rows=plan=>plan.areas.map(row=>[row.area,row.planned]);
+ assert.deepEqual(rows(topik2Plan(fresh)),[['recheck',1],['listening',1],['writing',1]]);
+ assert.deepEqual(rows(topik2Plan(fresh,{weekly:30})),[['recheck',1],['writing',1]]);
+ assert.deepEqual(rows(topik2Plan(fresh,{weekly:120})),[['recheck',1],['listening',1],['reading',1],['writing',1],['life',1]]);
+ // 남는 자리는 지금처럼 필요대로: 듣기가 약한 학생의 주 1시간은 쓰기 · 듣기, 읽기가 약하면 쓰기 · 읽기.
+ for(const weak of ['listening','reading']){
+  const plan=topik2Plan(examStudent(weak),{weekly:60,date:examDay(fresh,120)}),other=weak==='listening'?'reading':'listening';
+  assert.equal(planned(plan,'writing'),1);assert.ok(planned(plan,weak)>=planned(plan,other),`${weak} 약: 약한 영역이 남는 자리를 먼저`);
+ }
+ // 다음 연습의 초점은 그대로 필요가 정한다(쓰기는 필요가 0이라 초점을 빼앗지 않는다) — 처음 학생은 짧은 진단부터.
+ assert.equal(topik2Plan(fresh).next.area,'recheck');
+ // 반 과제 쓰기는 그 한 칸을 채운다(따로 하나 더 내지 않는다).
+ const withClass=topik2Plan(fresh,{weekly:30,classwork:[{kind:'writing',done:false}]});
+ assert.deepEqual(rows(withClass),[['recheck',1],['writing',1]]);assert.equal(withClass.areas.find(row=>row.area==='writing').classwork.length,1);
+ // TOPIK I 학생에게는 쓰기 영역이 없다(쓰기 후보가 와도).
+ const one=exam.buildExamPlan({exam:exam.examInfo({...EXAM,examType:'topik1',targetGrade:2}),summary:fresh.coach.summary(),now:fresh.now(),available:{reading:{'ko.reading.detail':3},listening:{},recheck:15,life:true,writing:WRITING}});
+ assert.ok(!one.areas.some(row=>row.area==='writing'));
+});
+test('TOPIK II 쓰기: 계획 판의 쓰기 칸에서 「TOPIK II 쓰기 연습」 목록을 바로 연다 — 화면 언어로, 쓰기가 닫힌 주·TOPIK I 판에는 없다',()=>{
+ const s=student({start:KST_MONDAY+DAY}),plan=topik2Plan(s);
+ for(const code of ['ko','en','mn']){
+  const v=code==='ko'?view:createPositionView({t:(key,values)=>t(key,values,code),has:hasString,formatDate:(at,options)=>formatDate(at,options,code)});
+  const html=v.renderExamPlan({plan,next:{route:'position',label:'짧은 진단'}});
+  const row=(html.match(/<li data-area="writing">[\s\S]*?<\/li>/)||[])[0]||'';
+  assert.ok(row.includes(`<span class="wplan-area-name">${t('plan.area.writing',undefined,code)}</span>`),`${code}: 쓰기 칸`);
+  assert.ok(row.includes(`<button class="quiet-button wplan-area-open" type="button" data-plan-writing="writing">${t('writing.row.title',undefined,code)} <span aria-hidden="true">→</span></button>`),`${code}: 쓰기 칸 안의 여는 단추`);
+  assert.equal((html.match(/data-plan-writing="writing"/g)||[]).length,1,`${code}: 여는 단추는 쓰기 칸에 하나`);
+  if(code!=='ko')assert.doesNotMatch(html.replace(/<span lang="ko">[^<]*<\/span>/g,''),/[가-힣]/,`${code}: lang="ko" 칸 밖에 한글이 없다`);
+ }
+ // 이번 주에 쓰기를 이미 했어도 칸과 단추는 그대로(더 써 봐도 된다).
+ const done={...plan,areas:plan.areas.map(row=>row.area==='writing'?{...row,done:1,remaining:0}:row)};
+ assert.match(view.renderExamPlan({plan:done}),/<li data-area="writing">[\s\S]*?data-plan-writing="writing"/);
+ // 쓰기가 닫힌 주: 칸이 없거나(한 것도 없음) 한 것만 남은 칸이라도 단추가 없다 — 빈 목록으로 가지 않는다.
+ const closed=topik2Plan(s,{writing:[]});
+ assert.doesNotMatch(view.renderExamPlan({plan:closed}),/data-plan-writing/);
+ assert.doesNotMatch(view.renderExamPlan({plan:{...closed,areas:[...closed.areas,{area:'writing',planned:0,done:1,remaining:0,classwork:[]}]}}),/data-plan-writing="writing"/);
+ const one=exam.buildExamPlan({exam:exam.examInfo({...EXAM,examType:'topik1',targetGrade:2}),summary:s.coach.summary(),now:s.now(),available:{reading:{'ko.reading.detail':3},listening:{},recheck:15,life:true}});
+ assert.doesNotMatch(view.renderExamPlan({plan:one}),/data-plan-writing/);
+});

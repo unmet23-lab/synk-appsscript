@@ -270,7 +270,10 @@ function initializeLife(){
 }
 function mountLifeLearning(){
  education?.dispose();education=null;
- lifeUI=createLifeExperience({home,getProgress:()=>lifeProgress,asset:path=>worldUrl('brand-opening/assets/'+path),show:(title,html,options)=>show(title,html,options.type,{eyebrow:options.eyebrow,nav:options.nav}),onSummary:()=>education?.refresh(),onNext:()=>education?.next(),presentation:()=>education?.presentation(),moreRows:print=>[education?.planRow?.(print),writingRow(print),speakingModule?.speakingRow?.(print),reminders?.askMarkup()].filter(Boolean).join(''),positionTotal:()=>education?.positionTotal?.()});
+ lifeUI=createLifeExperience({home,getProgress:()=>lifeProgress,asset:path=>worldUrl('brand-opening/assets/'+path),show:(title,html,options)=>show(title,html,options.type,{eyebrow:options.eyebrow,nav:options.nav}),onSummary:()=>{education?.refresh();queueMicrotask(repaintWritingRow);},onNext:()=>education?.next(),presentation:()=>education?.presentation(),
+  // TOPIK II를 목표로 저장한 학생(이번 주 계획이 TOPIK II)은 쓰기 연습 줄이 생활 팩 위에 온다(10-22 — 첫 연락 메일·신청 페이지가 약속하는 무료 연습). 그 밖에는 아래 줄 그대로.
+  leadRows:print=>education?.examType?.()==='topik2'?writingRow(print):'',
+  moreRows:print=>[education?.planRow?.(print),education?.examType?.()==='topik2'?'':writingRow(print),speakingModule?.speakingRow?.(print),reminders?.askMarkup()].filter(Boolean).join(''),positionTotal:()=>education?.positionTotal?.()});
  // 공개판(계정 모드)의 손님은 GUEST_GAMES와 체험이 남은 게임만 바로 열고 나머지는 로그인부터 연다(launchGame). 추천도 같은 목록을 써야 로그인 창을 맴돌지 않는다.
  const createPlan=options=>createWorldLearningPlan({...options,answers:topicAnswers&&topicAnswers.owner===lifeOwner?topicAnswers:null,openGames:operating&&!client.snapshot?guestGames():null});
  // 내 위치(10-19 결정): 짧은 진단 듣기 문항의 녹음은 게임 폴더(korean-runner·korean-rhythm)에서 부른다.
@@ -348,12 +351,20 @@ async function classworkThisWeek(){
 // 계정이 바뀌면 새로 만든다(쓰던 글·코치는 계정별). 계획 카드는 data-writing-route(예: writing:54)로 그 과제를 연다.
 const writingOwnerId=()=>client?.snapshot?.accountId||'guest';
 // 배우기 판의 쓰기 줄은 열린 문항이 있을 때만 보이므로 문항 은행을 미리 읽어 둔다(작은 JSON 하나).
-const repaintWritingRow=()=>{if(writingReady()&&lifeUI&&document.querySelector('#world-panel[open] #panel-content .life-hub')&&!document.querySelector('#panel-content [data-world="writing"]'))lifeUI.packs();};
+// 줄의 자리(생활 팩 위 EXAM · 아래 MORE)는 그리는 순간의 이번 주 계획으로 정하므로, 학습 기록을 읽는 사이(계획 없음)에 연 판은
+// 계획이 선 뒤(생활 진도가 바뀔 때마다 onSummary) 자리가 다르면 다시 그린다(10-22 Fable P3). 앞에서 부르므로 함수 선언으로 둔다.
+function repaintWritingRow(){
+ if(!writingReady()||!lifeUI||!document.querySelector('#world-panel[open] #panel-content .life-hub'))return;
+ const row=document.querySelector('#panel-content [data-world="writing"]');
+ if(!row||!!row.closest('.life-lead-rows')!==(education?.examType?.()==='topik2'))lifeUI.packs();
+}
 void loadWritingBank().then(repaintWritingRow).catch(()=>{});
 window.addEventListener('synk-writing-ready',repaintWritingRow);
 // 시험 계획(TOPIK II)의 쓰기 칸은 열린 문항이 있을 때만 생기므로, 은행이 늦게 열리면 추천·계획을 다시 세운다(10-21 검수).
-void loadWritingBank().then(()=>{if(writingReady())education?.refresh();}).catch(()=>{});
-window.addEventListener('synk-writing-ready',()=>education?.refresh());
+// 열려 있는 이번 주 계획·내 위치 판도 다시 그린다(10-22 — 바로가기로 계획이 문항보다 먼저 열리면 쓰기 칸이 빠진 채 남았다).
+const writingBankReady=()=>{education?.refresh();education?.repaint?.();};
+void loadWritingBank().then(()=>{if(writingReady())writingBankReady();}).catch(()=>{});
+window.addEventListener('synk-writing-ready',writingBankReady);
 function openWriting(button){
  const owner=writingOwnerId();
  if(!writing||writingOwner!==owner){

@@ -310,7 +310,10 @@ export function createPositionView({t,has=()=>true,formatDate=null,lang=()=>'ko'
   const exam=plan.exam||{},parts=[exam.type?t(`goal.exam.type.${exam.type}`):'',exam.grade?t('plan.week.grade',{n:exam.grade}):'',exam.date?t('plan.week.date',{date:examDay(exam.date)}):'',exam.mode&&exam.mode!=='unknown'?t(`goal.exam.mode.${exam.mode}`):''].filter(Boolean);
   const head=parts.length?parts.join(' · '):t('plan.week.noExam');
   const notes=new Set(plan.notes||[]);
-  const area=row=>`<li data-area="${posEscape(row.area)}"><span class="wplan-area-name">${posEscape(t(`plan.area.${row.area}`))}</span>${dots(row.planned,row.done)}<span class="wplan-area-count">${posEscape(t('plan.area.count',{done:row.done,planned:row.planned}))}</span>${row.classwork?.length?`<small class="wplan-classwork">${row.classwork.map(task=>posEscape(t(task.done?'plan.classwork.done':'plan.classwork.todo',{kind:t(`plan.area.${task.kind}`)}))).join(' · ')}</small>`:''}</li>`;
+  // 쓰기 칸(10-22): TOPIK II 쓰기 연습(51~54) 목록을 그 칸에서 바로 연다 — 쓰기는 숙제·다시 확인으로 이어지지 않아(자동 판정이 없다) 여기 말고는 여는 곳이 없다.
+  // 쓰기 연습이 열려 있을 때만(문항을 못 읽어 닫힌 주에는 「한 것」만 남은 칸일 수 있다).
+  const writingOpen=exam.type==='topik2'&&!notes.has('writing-unavailable');
+  const area=row=>`<li data-area="${posEscape(row.area)}"><span class="wplan-area-name">${posEscape(t(`plan.area.${row.area}`))}</span>${dots(row.planned,row.done)}<span class="wplan-area-count">${posEscape(t('plan.area.count',{done:row.done,planned:row.planned}))}</span>${row.classwork?.length?`<small class="wplan-classwork">${row.classwork.map(task=>posEscape(t(task.done?'plan.classwork.done':'plan.classwork.todo',{kind:t(`plan.area.${task.kind}`)}))).join(' · ')}</small>`:''}${row.area==='writing'&&writingOpen?`<button class="quiet-button wplan-area-open" type="button" data-plan-writing="writing">${posEscape(t('writing.row.title'))} <span aria-hidden="true">→</span></button>`:''}</li>`;
   // NOW 제목: 홈(home.mjs planLabel)과 같은 이름. 화면 언어로 바꿀 수 있는 것은 바꾸고, 레슨 제목처럼 한국어 학습 내용은 lang="ko" 칸에 둔다.
   const nextTitle=next?planTitle(next):'';
   const gameOf=id=>String(id||'').split('.').pop();

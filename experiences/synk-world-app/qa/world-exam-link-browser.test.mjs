@@ -13,6 +13,8 @@ import {createLifeProgress} from '../life-progress.mjs';
 //    (열기만으로는 저장 안 됨) → 스위치 없이 누르면 안내만 → 「이 기기에 저장」을 켜고 저장 → 이번 주 계획.
 // B. 같은 기기에서 같은 주소를 다시 열면 목표 창 없이 이번 주 계획. C. 「아직 못 읽어요」를 고른 기기, D. 주소 값이 없는 기기는 목표 창을 열지 않는다.
 // E. 한국어 1280 첫 실행도 같은 창. 운영 계정·서버를 쓰지 않는다(손님 = 이 기기 기록, 바깥 주소는 막는다).
+// 쓰기 한 칸(10-22): 375·1280 × 한국어·몽골어 모두 저장 뒤 이번 주 계획에 쓰기 칸과 그 칸의 「TOPIK II 쓰기 연습」(첫 화면) → 쓰기 목록,
+// 배우기 판에서는 쓰기 줄이 생활 팩 위(EXAM)에 하나. 목표를 정하지 않은 학생은 지금처럼 아래(MORE)에.
 // 캡처와 result.json은 SYNK_EXAM_LINK_QA_OUT(기본 qa/world-exam-link-20261022/)에 쓴다(그림은 git 밖).
 const root=fileURLToPath(new URL('../../../',import.meta.url));
 const require=createRequire(import.meta.url);let playwright;try{playwright=require('playwright');if(!playwright.chromium)throw Error('no chromium');}catch{playwright=require(path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));}
@@ -24,14 +26,16 @@ const config={version:1,supabaseUrl:'https://identity.example.test',supabasePubl
 const VIEWPORTS={phone:{width:375,height:812},desk:{width:1280,height:800}};
 
 // 첫 실행을 마친 손님 기기의 생활 진도(실제 createLifeProgress로 만든 값): 한글 답과 튜터만 골라 두었다.
-function seeded({reading='reads'}={}){
+// goal: 이미 저장한 학습 목표 값(돌아온 학생).
+function seeded({reading='reads',goal=null}={}){
  const values=new Map(),storage={getItem:k=>values.get(k)??null,setItem:(k,v)=>values.set(k,String(v)),removeItem:k=>values.delete(k)};
  const life=createLifeProgress({storage,owner:'guest',now:()=>Date.parse('2026-10-22T01:00:00Z')});
  life.setHangulReading(reading,{via:'question'});life.selectTutor('mongle');
+ if(goal)life.updateLearningProfile({consent:true,expectedRevision:life.learningProfile().profile.revision,values:goal});
  return Object.fromEntries(values);
 }
 
-test('WORLD ?exam=topik2: 첫 실행 뒤 TOPIK II를 채운 목표 창 → 켜고 저장 → 이번 주 계획, 다시 열면 계획, 한글 단계·주소 없음은 그대로 (375 몽골어 · 1280 한국어)',{timeout:600000,skip:!talkRoot&&'형제 저장소 SYNK-talk이 없다(SYNK_TALK_ROOT로 알려 준다)'},async t=>{
+test('WORLD ?exam=topik2: 첫 실행 뒤 TOPIK II를 채운 목표 창 → 켜고 저장 → 이번 주 계획(쓰기 칸 → 쓰기 목록 · 배우기 판 생활 팩 위 쓰기 줄), 다시 열면 계획, 한글 단계·주소 없음은 그대로 (375·1280 × 몽골어·한국어)',{timeout:600000,skip:!talkRoot&&'형제 저장소 SYNK-talk이 없다(SYNK_TALK_ROOT로 알려 준다)'},async t=>{
  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'synk-world-exam-link-'));fs.writeFileSync(path.join(directory,'config.json'),JSON.stringify(config));
  fs.mkdirSync(out,{recursive:true});for(const name of fs.readdirSync(out))if(/\.png$/.test(name))fs.rmSync(path.join(out,name));
  const socket=net.createServer();await new Promise(r=>socket.listen(0,'127.0.0.1',r));const port=socket.address().port;await new Promise(r=>socket.close(r));
@@ -94,6 +98,43 @@ test('WORLD ?exam=topik2: 첫 실행 뒤 TOPIK II를 채운 목표 창 → 켜�
   const shoot=async(page,name,selector=null)=>{await page.evaluate(()=>document.fonts.ready);if(selector)await page.evaluate(s=>document.querySelector(s)?.scrollIntoView({block:'center'}),selector);
    const file=path.join(out,`${name}.png`);await page.locator('#world-panel').screenshot({path:file});shots.push(path.basename(file));};
   const settleQuiet=page=>page.waitForTimeout(1500);
+  // 채운 목표 창에서 「저장」 스위치를 켜고 저장 → 이번 주 계획.
+  const saveGoal=async page=>{await page.locator('#world-study-form .study-consent:has(input[name="consent"])').click();await page.locator('#world-study-form button[type="submit"]').click();await page.waitForSelector('#panel-content [data-plan-board]');};
+  // 스크롤하지 않은 채 보이는가: 창과 그 줄을 품은 스크롤 상자(배우기 판은 #panel-content, 다른 판은 #world-panel 등) 모두의 안에 다 든다
+  // (10-22 Fable P2 — 창 높이로만 재면 판 바닥 아래로 잘린 줄도 참이었다).
+  const inFirstView=(page,selector)=>page.evaluate(selector=>{const el=document.querySelector(selector);if(!el)return false;const r=el.getBoundingClientRect();let top=0,bottom=innerHeight;
+   for(let n=el.parentElement;n;n=n.parentElement)if(/auto|scroll/.test(getComputedStyle(n).overflowY)){const box=n.getBoundingClientRect();top=Math.max(top,box.top);bottom=Math.min(bottom,box.bottom);}
+   return r.top>=top&&r.bottom<=bottom;},selector);
+  // 10-22 쓰기 한 칸: 이번 주 계획에 쓰기 칸과 그 칸의 「TOPIK II 쓰기 연습」 단추(첫 화면) → 누르면 쓰기 연습 목록(51~54) →
+  // 배우기 판에서는 쓰기 줄이 생활 팩 위(EXAM)에 하나만. tag는 캡처·측정 이름(375-mn 등).
+  async function writingFlow(page,tag){
+   const plan=await page.evaluate(()=>{const board=document.querySelector('#panel-content [data-plan-board]'),button=board.querySelector('li[data-area="writing"] [data-plan-writing="writing"]');
+    return {areas:[...board.querySelectorAll('.wplan-areas li')].map(li=>[li.dataset.area,li.querySelector('.wplan-area-count')?.textContent]),button:button?.textContent.replace('→','').trim()||null,height:button?Math.round(button.getBoundingClientRect().height):0};});
+   checks[`${tag}-plan`]={...plan,firstView:await inFirstView(page,'#panel-content li[data-area="writing"] [data-plan-writing="writing"]')};
+   assert.ok(plan.areas.some(([area])=>area==='writing'),`${tag}: 계획에 쓰기 칸 ${JSON.stringify(plan.areas)}`);
+   assert.equal(plan.button,(await page.evaluate(()=>document.documentElement.lang))==='mn'?'TOPIK II бичгийн дасгал':'TOPIK II 쓰기 연습',`${tag}: 쓰기 칸의 단추`);
+   assert.ok(plan.height>=44,`${tag}: 단추 높이 ${plan.height}`);assert.equal(checks[`${tag}-plan`].firstView,true,`${tag}: 쓰기 칸 단추가 첫 화면에`);
+   measures[`${tag}-plan`]=await measure(page,'#panel-content [data-plan-board]');await shoot(page,`${tag}-plan`);
+   await page.locator('#panel-content li[data-area="writing"] [data-plan-writing="writing"]').click();
+   await page.waitForSelector('#panel-content .ww-list-view');
+   checks[`${tag}-writingList`]=await page.locator('#panel-content [data-ww-open]').count();assert.ok(checks[`${tag}-writingList`]>=4,`${tag}: 쓰기 연습 목록`);
+   await shoot(page,`${tag}-writing-list`);
+   await page.locator('#panel-close').click();
+   await page.locator('nav [data-view="packs"], [data-view="packs"][data-life-library]').last().click();
+   await page.waitForSelector('#panel-content .life-hub .life-lead-rows [data-world="writing"]');
+   checks[`${tag}-learn`]=await page.evaluate(()=>{const hub=document.querySelector('#panel-content .life-hub'),lead=hub.querySelector('.life-lead-rows'),packs=hub.querySelector('.life-pack-section');
+    return {leadAbovePacks:!!(lead.compareDocumentPosition(packs)&Node.DOCUMENT_POSITION_FOLLOWING),writingRows:hub.querySelectorAll('[data-world="writing"]').length,label:lead.querySelector('.life-section-label')?.textContent,aria:lead.getAttribute('aria-label')};});
+   assert.deepEqual({...checks[`${tag}-learn`],aria:undefined},{leadAbovePacks:true,writingRows:1,label:'EXAM',aria:undefined},`${tag}: 배우기 판 쓰기 줄은 생활 팩 위에 하나`);
+   checks[`${tag}-learn`].firstView=await inFirstView(page,'#panel-content .life-lead-rows [data-world="writing"]');
+   assert.equal(checks[`${tag}-learn`].firstView,true,`${tag}: 배우기 판 쓰기 줄이 첫 화면에`);
+   measures[`${tag}-learn`]=await measure(page,'#panel-content .life-hub .life-lead-rows');await shoot(page,`${tag}-learn`);
+   // 학습 기록을 읽는 사이(계획 없음)에 연 판처럼 쓰기 줄이 아래(MORE)에 그려져 있어도, 생활 진도가 바뀌면(onSummary) 계획대로
+   // 생활 팩 위로 다시 그린다(10-22 Fable P3). 줄을 MORE로 옮겨 그 상태를 만들고 생활 진도 갱신을 부른다.
+   await page.evaluate(()=>{const hub=document.querySelector('#panel-content .life-hub');hub.querySelector('.life-rows:not(.life-lead-rows)').append(hub.querySelector('.life-lead-rows [data-world="writing"]'));hub.querySelector('.life-lead-rows').remove();window.__synkLife.refresh();});
+   await page.waitForSelector('#panel-content .life-hub .life-lead-rows [data-world="writing"]');
+   checks[`${tag}-learnRepaint`]=await page.evaluate(()=>document.querySelectorAll('#panel-content .life-hub [data-world="writing"]').length);
+   assert.equal(checks[`${tag}-learnRepaint`],1,`${tag}: 아래에 그려진 쓰기 줄은 생활 팩 위로 다시 그려져 하나`);
+  }
 
   // ── A. 처음 온 기기 · 몽골어 · 375 ──
   const first=await device();
@@ -121,9 +162,8 @@ test('WORLD ?exam=topik2: 첫 실행 뒤 TOPIK II를 채운 목표 창 → 켜�
    assert.equal(checks.savedProfile.status,'active');assert.equal(checks.savedProfile.values.examType,'topik2');assert.equal(checks.savedProfile.values.primaryReason,'exam');
    checks.planHead=await page.locator('#panel-content [data-plan-board] .life-poster-sub').innerText();assert.match(checks.planHead,/^TOPIK II/);
    checks.planText=await page.locator('#panel-content [data-plan-board]').innerText();
-   measures['375-mn-plan']=await measure(page,'#panel-content [data-plan-board]');
-   await shoot(page,'375-mn-plan');
    checks.firstGoalSeen=await page.evaluate(()=>window.__qaGoalSeen>0);
+   await writingFlow(page,'375-mn');
   }
   // ── B. 같은 기기에서 같은 주소를 다시 열면 목표 창 없이 이번 주 계획 ──
   {const {page}=first;
@@ -142,6 +182,14 @@ test('WORLD ?exam=topik2: 첫 실행 뒤 TOPIK II를 채운 목표 창 → 켜�
    checks[`${name}GoalSeen`]=await page.evaluate(()=>window.__qaGoalSeen);
    assert.equal(checks[`${name}GoalSeen`],0,`${name}: 목표 창을 열지 않는다`);
    assert.equal(await page.locator('#panel-content [data-plan-board]').count(),0,`${name}: 계획도 열지 않는다`);
+   // 목표를 정하지 않은 학생의 배우기 판: 쓰기 줄은 지금처럼 아래(MORE)에 하나, 생활 팩 위 줄은 없다.
+   if(name==='no-param'){
+    if(await page.evaluate(()=>document.querySelector('#world-panel')?.open))await page.locator('#panel-close').click();
+    await page.locator('nav [data-view="packs"], [data-view="packs"][data-life-library]').last().click();
+    await page.waitForSelector('#panel-content .life-hub [data-world="writing"]');
+    checks.noGoalLearn=await page.evaluate(()=>{const hub=document.querySelector('#panel-content .life-hub');return {lead:hub.querySelectorAll('.life-lead-rows').length,more:hub.querySelectorAll('.life-rows:not(.life-lead-rows) [data-world="writing"]').length};});
+    assert.deepEqual(checks.noGoalLearn,{lead:0,more:1});
+   }
    await context.close();
   }
   // ── E. 한국어 · 1280 첫 실행 ──
@@ -153,6 +201,30 @@ test('WORLD ?exam=topik2: 첫 실행 뒤 TOPIK II를 채운 목표 창 → 켜�
    checks.deskView=await firstView(page);assert.deepEqual({...checks.deskView,topik2:undefined},{title:true,close:true,exam:true,topik2:undefined},'1280 첫 화면에도 제목·닫기와 「시험·자격 준비」');
    measures['1280-ko-goal']=await measure(page,'#panel-content #world-study-form');
    await shoot(page,'1280-ko-goal-first');await shoot(page,'1280-ko-goal-exam','#panel-content [data-study-exam]');
+   await saveGoal(page);await writingFlow(page,'1280-ko');
+   await context.close();
+  }
+  // ── G. 나머지 두 판(375 한국어 · 1280 몽골어)도 바로가기 → 첫 실행 → 목표 저장 → 계획의 쓰기 칸 → 쓰기 목록 → 배우기 판 ──
+  for(const [tag,viewport,query,pick] of [['375-ko',VIEWPORTS.phone,'&exam=topik2','ko'],['1280-mn',VIEWPORTS.desk,'&exam=topik2&lang=mn',null]]){
+   const {context,page}=await device({viewport});
+   await enter(page,query,{pick});
+   await page.waitForSelector('#panel-content #world-study-form');
+   await saveGoal(page);await writingFlow(page,tag);
+   await context.close();
+  }
+  // ── H. 돌아온 TOPIK II 학생: 쓰기 문항 파일보다 계획이 먼저 열려도, 문항을 다 읽으면 열린 계획에 쓰기 칸이 생긴다(375 몽골어) ──
+  {const {context,page}=await device({seed:seeded({goal:{reasons:['exam'],primaryReason:'exam',examType:'topik2',targetGrade:4}}),lang:'mn'});
+   let release;const gate=new Promise(resolve=>release=resolve);
+   await context.route('**/world-writing-items.json',async route=>{await gate;await route.continue();});
+   await enter(page,'&exam=topik2&lang=mn');
+   await page.waitForSelector('#panel-content [data-plan-board]');
+   checks.lateBankBefore=await page.evaluate(()=>({writing:!!document.querySelector('#panel-content li[data-area="writing"]'),goalSeen:window.__qaGoalSeen}));
+   assert.deepEqual(checks.lateBankBefore,{writing:false,goalSeen:0},'문항을 읽기 전에는 쓰기 칸이 없다(목표 창 없이 바로 계획)');
+   release();
+   await page.waitForSelector('#panel-content [data-plan-board] li[data-area="writing"] [data-plan-writing="writing"]');
+   checks.lateBankAfter=await page.evaluate(()=>[...document.querySelectorAll('#panel-content .wplan-areas li')].map(li=>li.dataset.area));
+   assert.ok(checks.lateBankAfter.includes('writing'));
+   await shoot(page,'375-mn-plan-late-bank');
    await context.close();
   }
   // ── F. 채운 창에서 「건너뛰기」 — 목표 값은 저장하지 않고(건너뜀만), 첫 실행 창처럼 다음 연습이 열린다 ──

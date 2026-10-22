@@ -697,5 +697,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const done=(plan.areas||[]).reduce((n,row)=>n+Math.min(row.done,row.planned),0),total=(plan.areas||[]).reduce((n,row)=>n+row.planned,0);
   return `<button class="life-row" data-view="plan">${print('goals','life-row-print')}<span class="life-row-copy"><strong>${t('plan.week.title')}</strong><small>${escape(t('plan.week.row',{done,total}))}</small></span></button>`;
  }
- return {next,open,examLink,refresh,applyPreferences,planRow,positionTotal:topikTotal,...(position?{position:openPosition,practice:startPractice,plan:openPlan,mock:openMock}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),dispose(){stopped=true;coach?.disconnect?.();practiceCoach?.disconnect?.();mockCoach?.disconnect?.();target.removeEventListener?.('focus',onFocus);}};
+ // 이번 주 계획의 시험(배우기 판이 TOPIK II 학생의 쓰기 연습 줄을 위로 올릴 때 읽는다). 시험 계획이 없으면 null.
+ const examType=()=>current?.examPlan?.exam?.type||null;
+ return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,...(position?{position:openPosition,practice:startPractice,plan:openPlan,mock:openMock}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),dispose(){stopped=true;coach?.disconnect?.();practiceCoach?.disconnect?.();mockCoach?.disconnect?.();target.removeEventListener?.('focus',onFocus);}};
 }

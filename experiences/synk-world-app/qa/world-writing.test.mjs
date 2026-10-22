@@ -121,6 +121,10 @@ test('연결: 개발 서버·공개 빌드 목록, 앱 셸 명령·배우기 줄
  for(const name of ['world-writing-practice.mjs','world-writing-check.mjs','world-writing-items.json','world-writing.css']){assert.ok(server.includes(`'/${name}'`),name);assert.ok(build.includes(`'${name}'`),name);}
  const shell=read('experiences/synk-world-app/app-shell.mjs');
  assert.match(shell,/writing:openWriting/);assert.match(shell,/moreRows:print=>[^\n]*writingRow\(print\)/);assert.match(shell,/'world-writing':'WRITING'/);
+ // 10-22: TOPIK II를 목표로 저장한 학생은 쓰기 줄이 생활 팩 위(leadRows)로 — 두 곳에 함께 나오지 않는다(실제 화면은 world-exam-link-browser).
+ assert.match(shell,/leadRows:print=>education\?\.examType\?\.\(\)==='topik2'\?writingRow\(print\):''/);
+ assert.match(shell,/moreRows:print=>\[[^\n]*education\?\.examType\?\.\(\)==='topik2'\?'':writingRow\(print\)/);
+ assert.match(read('experiences/synk-world-app/life-ui.mjs'),/\$\{now\.html\}\$\{lead\?`<section class="life-rows life-lead-rows"[^`]*`:''\}<section class="life-pack-section"/,'생활 팩 위');
  assert.match(read('experiences/brand-opening/home.mjs'),/hanger-list\|writing\|game-/);
  const account=read('experiences/synk-world-app/world-account.mjs');
  assert.match(account,/\['writing','POST'\]/);assert.match(account,/path==='writing'\?'world-writing'/);assert.match(account,/get supportsWriting\(\)\{return !native;\}/);

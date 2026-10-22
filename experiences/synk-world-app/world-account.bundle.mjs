@@ -14674,7 +14674,7 @@ __export(world_exam_plan_exports, {
 var DAY = 864e5;
 var KST = 9 * 36e5;
 var EXAM_PLAN_POLICY = Object.freeze({
-  version: "world-exam-plan-1",
+  version: "world-exam-plan-2",
   // 주당 쓸 수 있는 시간(계약 r2 시험정보 주당시간) → 이번 주 연습 횟수와 한 번 길이(분). 고르지 않으면 3번 · 15분.
   weekly: Object.freeze({ 30: Object.freeze({ sessions: 2, minutes: 15 }), 60: Object.freeze({ sessions: 3, minutes: 20 }), 120: Object.freeze({ sessions: 5, minutes: 24 }), 180: Object.freeze({ sessions: 6, minutes: 30 }) }),
   fallback: Object.freeze({ sessions: 3, minutes: 15 }),
@@ -14802,11 +14802,11 @@ function domainNeeds(summary, domains, prefix) {
   for (const domain of domains) needs[domain] = complete ? skills.filter((skill2) => skill2.domain === domain && weakOf(skill2)).length : 0;
   return { needs, skills, complete };
 }
-function split(total, needs, boost = {}) {
+function split(total, needs, boost = {}, first = []) {
   const open = Object.keys(needs).filter((key) => needs[key] != null), out = Object.fromEntries(Object.keys(needs).map((key) => [key, 0]));
   if (total <= 0 || !open.length) return out;
   const weight = (key) => (needs[key] + 0.5) * (boost[key] || 1);
-  const order = [...open].sort((a, b) => weight(b) - weight(a) || a.localeCompare(b));
+  const order = [...open].sort((a, b) => Number(first.includes(b)) - Number(first.includes(a)) || weight(b) - weight(a) || a.localeCompare(b));
   if (total < open.length) {
     for (const key of order.slice(0, total)) out[key] = 1;
     return out;
@@ -14868,7 +14868,7 @@ function buildExamPlan({ exam, summary = null, now = Date.now(), done = null, av
   const speakingNeed = speakingOpen ? Math.min(speakingList.length, Number.isInteger(speakingNeeds) && speakingNeeds > 0 ? speakingNeeds : 0) : null;
   if (speakingChosen && !speakingOpen) notes.push(audioAvailable ? "speaking-unavailable" : "speaking-audio-off");
   const boost = ["near", "final"].includes(phase) ? { reading: 1.25, writing: 1.25 } : {};
-  const planned = { ...split(Math.max(0, total - recheck - life), open, boost), recheck, life, ...speakingOpen ? { speaking: 1 } : {} };
+  const planned = { ...split(Math.max(0, total - recheck - life), open, boost, topik2 ? ["writing"] : []), recheck, life, ...speakingOpen ? { speaking: 1 } : {} };
   for (const kind of ["reading", "writing"]) planned[kind] = Math.max(planned[kind] || 0, classCount(kind));
   const areas = ["recheck", ...domains, ...speakingChosen ? ["speaking"] : [], "life"].map((area) => ({
     area,
@@ -18848,7 +18848,8 @@ function createPositionView({ t, has = () => true, formatDate = null, lang = () 
     const exam = plan.exam || {}, parts = [exam.type ? t(`goal.exam.type.${exam.type}`) : "", exam.grade ? t("plan.week.grade", { n: exam.grade }) : "", exam.date ? t("plan.week.date", { date: examDay(exam.date) }) : "", exam.mode && exam.mode !== "unknown" ? t(`goal.exam.mode.${exam.mode}`) : ""].filter(Boolean);
     const head = parts.length ? parts.join(" \xB7 ") : t("plan.week.noExam");
     const notes = new Set(plan.notes || []);
-    const area = (row) => `<li data-area="${posEscape(row.area)}"><span class="wplan-area-name">${posEscape(t(`plan.area.${row.area}`))}</span>${dots(row.planned, row.done)}<span class="wplan-area-count">${posEscape(t("plan.area.count", { done: row.done, planned: row.planned }))}</span>${row.classwork?.length ? `<small class="wplan-classwork">${row.classwork.map((task) => posEscape(t(task.done ? "plan.classwork.done" : "plan.classwork.todo", { kind: t(`plan.area.${task.kind}`) }))).join(" \xB7 ")}</small>` : ""}</li>`;
+    const writingOpen = exam.type === "topik2" && !notes.has("writing-unavailable");
+    const area = (row) => `<li data-area="${posEscape(row.area)}"><span class="wplan-area-name">${posEscape(t(`plan.area.${row.area}`))}</span>${dots(row.planned, row.done)}<span class="wplan-area-count">${posEscape(t("plan.area.count", { done: row.done, planned: row.planned }))}</span>${row.classwork?.length ? `<small class="wplan-classwork">${row.classwork.map((task) => posEscape(t(task.done ? "plan.classwork.done" : "plan.classwork.todo", { kind: t(`plan.area.${task.kind}`) }))).join(" \xB7 ")}</small>` : ""}${row.area === "writing" && writingOpen ? `<button class="quiet-button wplan-area-open" type="button" data-plan-writing="writing">${posEscape(t("writing.row.title"))} <span aria-hidden="true">\u2192</span></button>` : ""}</li>`;
     const nextTitle = next ? planTitle(next) : "";
     const gameOf = (id) => String(id || "").split(".").pop();
     const bridgeName = (id) => exam.type === "topik2" && /^ko\.(listening|reading)\./.test(String(id || "")) ? `${t("goal.exam.type.topik1")} \xB7 ` : "";

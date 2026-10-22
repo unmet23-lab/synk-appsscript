@@ -11,7 +11,7 @@
 // 지금은 WORLD 한 제품만 쓰므로 제품 폴더에 둔다(docs/아틀라스_설계.md#common-capability-promotion). 화면 글은 없다(코드만 돌려준다).
 
 const DAY=86400000,KST=9*3600000;
-export const EXAM_PLAN_POLICY=Object.freeze({version:'world-exam-plan-1',
+export const EXAM_PLAN_POLICY=Object.freeze({version:'world-exam-plan-2',
  // 주당 쓸 수 있는 시간(계약 r2 시험정보 주당시간) → 이번 주 연습 횟수와 한 번 길이(분). 고르지 않으면 3번 · 15분.
  weekly:Object.freeze({30:Object.freeze({sessions:2,minutes:15}),60:Object.freeze({sessions:3,minutes:20}),120:Object.freeze({sessions:5,minutes:24}),180:Object.freeze({sessions:6,minutes:30})}),
  fallback:Object.freeze({sessions:3,minutes:15}),
@@ -147,11 +147,12 @@ function domainNeeds(summary,domains,prefix){
 }
 // 남은 횟수 나누기: 연습할 거리가 있는 영역마다 먼저 한 번씩(잘하는 영역도 아주 빼지 않는다 · 학습기준 §7-3), 남는 횟수는 다시 볼
 // 항목이 많은 영역에 더 준다(큰 나머지 순). 횟수가 영역 수보다 적으면 더 필요한 영역부터 한 번씩. needs[영역]이 null이면 닫힌 영역이다.
-function split(total,needs,boost={}){
+// first: 횟수가 영역 수보다 적어도 필요와 상관없이 먼저 한 번을 받는 영역(TOPIK II 쓰기 — 아래 buildExamPlan).
+function split(total,needs,boost={},first=[]){
  const open=Object.keys(needs).filter(key=>needs[key]!=null),out=Object.fromEntries(Object.keys(needs).map(key=>[key,0]));
  if(total<=0||!open.length)return out;
  const weight=key=>(needs[key]+.5)*(boost[key]||1);
- const order=[...open].sort((a,b)=>weight(b)-weight(a)||a.localeCompare(b));
+ const order=[...open].sort((a,b)=>Number(first.includes(b))-Number(first.includes(a))||weight(b)-weight(a)||a.localeCompare(b));
  if(total<open.length){for(const key of order.slice(0,total))out[key]=1;return out;}
  for(const key of open)out[key]=1;
  let left=total-open.length;
@@ -224,7 +225,10 @@ export function buildExamPlan({exam,summary=null,now=Date.now(),done=null,availa
  if(speakingChosen&&!speakingOpen)notes.push(audioAvailable?'speaking-unavailable':'speaking-audio-off');
  // 시험이 가까우면 시험형 문항이 있는 읽기·쓰기를 조금 더(듣기는 지금 게임 연습이라 비중을 키우지 않는다).
  const boost=['near','final'].includes(phase)?{reading:1.25,writing:1.25}:{};
- const planned={...split(Math.max(0,total-recheck-life),open,boost),recheck,life,...(speakingOpen?{speaking:1}:{})};
+ // TOPIK II 쓰기(10-22): 쓰기 연습이 열려 있으면 이번 주에 한 번은 늘 둔다. 쓰기는 자동 판정이 없어 다시 볼 항목(필요)이 늘 0이라,
+ // 횟수가 영역 수보다 적은 주(주 1시간 이하·시간을 정하지 않음)에는 듣기·읽기에 밀려 빠졌다 — 첫 연락 메일·신청 페이지가 약속하는 연습이다.
+ // 늘어나는 횟수는 없다: 주간 시간 안에서 쓰기가 첫 한 번을 먼저 받고, 남는 자리를 듣기·읽기가 필요대로 나눈다.
+ const planned={...split(Math.max(0,total-recheck-life),open,boost,topik2?['writing']:[]),recheck,life,...(speakingOpen?{speaking:1}:{})};
  // 반 과제가 있는 갈래: 계획 횟수를 반 과제 수 이상으로 두고 반 과제로 먼저 채운다(반 과제를 빼거나 따로 하나 더 내지 않는다).
  for(const kind of ['reading','writing'])planned[kind]=Math.max(planned[kind]||0,classCount(kind));
  const areas=['recheck',...domains,...(speakingChosen?['speaking']:[]),'life'].map(area=>({area,planned:planned[area]||0,done:did[area]||0,
