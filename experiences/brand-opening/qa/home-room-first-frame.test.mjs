@@ -5,13 +5,16 @@ import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {createRequire} from 'node:module';
 import path from 'node:path';
+import os from 'node:os';
 
 // 우리 집 3D 방의 첫 그림(synk-world-home/living-home-scene.mjs, 10-17 4차)을 실제 장면으로 본다.
 // 창밖 한강 그림은 첫 그림에 함께 올라가고, 셰이더는 미리 엮어(compile + KHR_parallel_shader_compile) 다 될 때까지 그리지 않으며, 그사이 닫으면 오류 없이 접힌다.
 // 이 PC의 GPU(ANGLE d3d11)로 띄운다 — 소프트웨어 WebGL(SwiftShader)에는 KHR_parallel_shader_compile이 없어 미리 엮기 확인을 건너뛴다.
 // 계정·저장·네트워크는 쓰지 않고 이 저장소의 파일만 내준다.
 const require=createRequire(import.meta.url);
-const {chromium}=require('C:/Users/q1212/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const {chromium}=(()=>{try{return require('playwright');}catch{return require(path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));}})();
+// 이 PC는 Edge로, Linux CI는 러너에 깔린 Chrome으로 띄운다.
+const channel=process.platform==='win32'?'msedge':'chrome';
 const root=path.resolve(fileURLToPath(new URL('../../../',import.meta.url)));
 const types={'.html':'text/html; charset=utf-8','.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg','.mjs':'text/javascript; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json','.glb':'model/gltf-binary'};
 const fixture='<!doctype html><meta charset="utf-8"><style>html,body{margin:0;background:#000}#room{width:390px;height:700px}</style><div id="room"></div>';
@@ -25,7 +28,8 @@ before(async()=>{
   res.setHeader('Content-Type',types[path.extname(name)]||'application/octet-stream');res.end(await readFile(name));
  }catch{res.statusCode=404;res.end();}});
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));base=`http://127.0.0.1:${server.address().port}`;
- browser=await chromium.launch({channel:'msedge',headless:true,args:['--enable-gpu','--use-angle=d3d11','--ignore-gpu-blocklist']});
+ // 셰이더 미리 엮기는 GPU(ANGLE D3D11)에서만 확장이 있다 — Linux CI는 소프트웨어 WebGL이라 그 확인만 건너뛴다(현장노트 「소프트웨어 WebGL에는 KHR_parallel_shader_compile이 없다」).
+ browser=await chromium.launch({channel,headless:true,args:process.platform==='win32'?['--enable-gpu','--use-angle=d3d11','--ignore-gpu-blocklist']:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
 });
 after(async()=>{await browser?.close();if(server)await new Promise(resolve=>server.close(resolve));});
 // 기록: 셰이더가 다 됐는지 묻기(ready/busy)와 그 뒤의 그리기(draw)·새 셰이더 만들기(new)를 차례로, 창 그림이 GPU로 올라간 횟수를 센다.

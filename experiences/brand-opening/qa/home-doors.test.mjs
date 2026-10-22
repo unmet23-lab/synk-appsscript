@@ -5,11 +5,14 @@ import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {createRequire} from 'node:module';
 import path from 'node:path';
+import os from 'node:os';
 
 // 우리 동네 ↔ 우리 집 문 열림(home.mjs go → world-motion.mjs doors, 10-17 팁 장부 7행)을 실제 홈 화면으로 본다.
 // 3D 방은 가짜 엔진으로 바꿔 첫 그림이 늦는 느린 기기를 흉내 낸다. 계정·저장·네트워크는 쓰지 않고 이 저장소의 파일만 내준다.
 const require=createRequire(import.meta.url);
-const {chromium}=require('C:/Users/q1212/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const {chromium}=(()=>{try{return require('playwright');}catch{return require(path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));}})();
+// 이 PC는 Edge로, Linux CI는 러너에 깔린 Chrome으로 띄운다.
+const channel=process.platform==='win32'?'msedge':'chrome';
 const root=path.resolve(fileURLToPath(new URL('../../../',import.meta.url)));
 const types={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg','.woff2':'font/woff2','.mp3':'audio/mpeg','.mjs':'text/javascript; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json'};
 // 가짜 3D 방: window.__stubFirstFrame ms 뒤에 첫 그림이 된다.
@@ -25,7 +28,7 @@ before(async()=>{
   res.setHeader('Content-Type',types[path.extname(name)]||'application/octet-stream');res.end(await readFile(name));
  }catch{res.statusCode=404;res.end();}});
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));base=`http://127.0.0.1:${server.address().port}`;
- browser=await chromium.launch({channel:'msedge',headless:true});
+ browser=await chromium.launch({channel,headless:true});
 });
 after(async()=>{await browser?.close();if(server)await new Promise(resolve=>server.close(resolve));});
 async function homePage(t,{reducedMotion='no-preference',worldReduced=false,firstFrame=0}={}){

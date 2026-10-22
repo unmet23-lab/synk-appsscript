@@ -544,9 +544,9 @@ test('browser and native reject invalid save capabilities and markers on load or
 
 test('both save capabilities are restricted to the care client, care endpoint and null resource together', async t => {
   for (const config of [
-    { clientKey: 'path' }, { clientKey: 'rehearsal' }, { clientKey: 'family-album' },
+    { clientKey: 'path' }, { clientKey: 'path-travel' },
     { endpoint: 'synk-personal' }, { resource: 'path' },
-    { clientKey: 'family-album', endpoint: 'synk-personal', resource: 'family-album' },
+    { clientKey: 'path', endpoint: 'synk-personal', resource: 'path' },
   ]) {
     const f = nativeFixture(config), account = f.create(); t.after(() => account.dispose());
     assert.equal((await account.start()).signedIn, true);
@@ -556,4 +556,6 @@ test('both save capabilities are restricted to the care client, care endpoint an
     await account.request('careSave', { expected_revision: 0, state: emptyState() });
     assert.equal(Object.hasOwn(f.calls.at(-1).body, 'messageLibraryVersion'), false);
   }
+  // 10-18에 은퇴한 혜택(리허설·가족 앨범)은 계정 자체를 만들 수 없다.
+  for (const clientKey of ['rehearsal', 'family-album']) assert.throws(() => nativeFixture({ clientKey }).create(), TypeError);
 });

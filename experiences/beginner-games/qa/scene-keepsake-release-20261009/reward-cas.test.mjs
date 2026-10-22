@@ -4,7 +4,10 @@ import vm from 'node:vm';
 import fs from 'node:fs';
 import {createWorldPlayHost} from '../../../play-common/account-host.mjs';
 import {emptyPlayState,validatePlayChanges} from '../../../play-common/play-data.mjs';
-const source=fs.readFileSync(new URL('../../../play-common/collection.js',import.meta.url),'utf8'),old=fs.readFileSync(new URL('./collection.before-read-record.js',import.meta.url),'utf8'),key='synk.order-rush.beginner.v1';
+// 10-09 출시 때의 사본(공개 변환·옛 모듈)은 이 출시 증거 폴더에만 있다(git 밖) — CI 체크아웃에서는 그 사본을 쓰는 시험을 이름 대고 건너뛴다.
+const gitOutside=rel=>Boolean(process.env.CI)&&!fs.existsSync(new URL(rel,import.meta.url))&&`CI 체크아웃에는 없다 — ${rel} (git 밖 10-09 출시 사본)`;
+const before={skip:gitOutside('./collection.before-read-record.js')};
+const source=fs.readFileSync(new URL('../../../play-common/collection.js',import.meta.url),'utf8'),old=before.skip?null:fs.readFileSync(new URL('./collection.before-read-record.js',import.meta.url),'utf8'),key='synk.order-rush.beginner.v1';
 function storage(){const data=new Map();return {get length(){return data.size;},key:i=>[...data.keys()][i]??null,getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,String(v)),removeItem:k=>data.delete(k)};}
 function setup(code){let revision=0,state=emptyPlayState(),writes=0;const original=JSON.stringify({version:1,seed:411,completed:[],records:[],roundId:'order-rush:cas-story'});state.records[key]=original;const response=()=>({ok:true,scope:'synk-play',accountId:'reward-reader',revision,state:structuredClone(state)}),client={load:async()=>response(),mutate:async body=>{assert.equal(body.action,'progress');const changes=validatePlayChanges(body.changes);for(const c of changes)if((state.records[c.key]??null)!==c.previous)throw Object.assign(Error('conflict'),{code:'REVISION_CONFLICT'});for(const c of changes)state.records[c.key]=c.value;revision++;writes++;return response();}};
  const host=createWorldPlayHost({accountId:'reward-reader',client,guard(){},storage:storage()}),context=vm.createContext({SYNKPlayHost:host,localStorage:storage(),location:{pathname:'/try/order-rush/'}});vm.runInContext(code,context);
@@ -14,7 +17,7 @@ test('reward guidance cannot change the running first-shop game’s CAS observat
  const b=setup(source);t.after(()=>b.host.stop());await b.context.SynkPlayAccount.ready();const game=b.context.SynkPlayAccount.storage(),cached=game.getItem(key);b.remoteProgress();await b.host.retry();
  assert.equal((await b.context.SynkPlayCollection.beginnerRewardRoute('order-rush')).kind,'first-shop');game.setItem(key,JSON.stringify({...JSON.parse(cached),stage:0,language:'ko'}));await assert.rejects(b.host.flush(),{code:'REVISION_CONFLICT'});assert.deepEqual(b.latest().completed,[0]);assert.equal(b.writes(),0);
 });
-test('the prior guidance read reproduces a silently accepted stale first-shop overwrite',async t=>{
+test('the prior guidance read reproduces a silently accepted stale first-shop overwrite',before,async t=>{
  const b=setup(old);t.after(()=>b.host.stop());await b.context.SynkPlayAccount.ready();const game=b.context.SynkPlayAccount.storage(),cached=game.getItem(key);b.remoteProgress();await b.host.retry();await b.context.SynkPlayCollection.beginnerRewardRoute('order-rush');game.setItem(key,cached);await b.host.flush();assert.deepEqual(b.latest().completed,[]);assert.equal(b.writes(),1);
 });
 test('read-only account records exclude unknown keys and become unavailable after logout',async t=>{

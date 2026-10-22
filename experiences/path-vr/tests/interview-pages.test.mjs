@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
+import { existsSync } from 'node:fs';
 import { readFile, writeFile, unlink, access } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
@@ -11,6 +12,10 @@ import { whisperModelBases } from '../interview/whisper-worker.mjs';
 import { CLIPS, selectRehearsalMedia } from '../interview/film/rehearsal-session.mjs';
 const repo = fileURLToPath(new URL('../../../', import.meta.url));
 const sourceRoot = path.join(repo, 'experiences/path-vr');
+// PATH 면접 영상(*.mp4)·음성 모델(*.tar.gz)은 .gitignore에 걸려 공용 작업본에만 있다 — CI 체크아웃에서는 그 파일을 재는 시험을 이름 대고 건너뛴다.
+// 공개 판 만들기는 승인된 공개 영상이 다 있어야 하고, 뒤의 셋은 그 판(.tmp/path-interview-pages)을 읽는다.
+const gitOutside = (file) => Boolean(process.env.CI) && !existsSync(path.join(sourceRoot, file)) && `CI 체크아웃에는 없다 — experiences/path-vr/${file} (git 밖 PATH 면접 미디어)`;
+const filmMedia = { skip: gitOutside('assets/interview/film/strict-question-4k.mp4') };
 const sha = (bytes) => createHash('sha256').update(bytes).digest('hex');
 const missing = async (file) => { await assert.rejects(access(file), { code: 'ENOENT' }); };
 
@@ -38,7 +43,7 @@ test('Pages transform refuses ambiguous or pre-existing policy and development p
   assert.throws(() => pagesRuntimeFile('index.html', Buffer.from('')), /Not part/);
 });
 
-test('public manifest preserves exact continuity, clip hashes and both qualities', async () => {
+test('public manifest preserves exact continuity, clip hashes and both qualities', filmMedia, async () => {
   const source = await readFile(path.join(sourceRoot, 'interview/film/strict-manifest.json'));
   const original = JSON.parse(source), { data, transform } = pagesRuntimeFile('interview/film/strict-manifest.json', source), manifest = JSON.parse(data);
   assert.equal(transform, 'public-runtime-video-manifest-v3');
@@ -70,7 +75,7 @@ test('public manifest preserves exact continuity, clip hashes and both qualities
   }
 });
 
-test('Pages overlay is minimal, deterministic and source-audited', async () => {
+test('Pages overlay is minimal, deterministic and source-audited', filmMedia, async () => {
   const first = await preparePagesInterview(), reportBytes = await readFile(first.manifest), report = JSON.parse(reportBytes);
   const verification = await verifyPagesInterview();
   assert.equal(verification.checksumFiles, first.files);
@@ -127,7 +132,7 @@ test('Pages overlay is minimal, deterministic and source-audited', async () => {
   assert.deepEqual(await readFile(second.manifest), reportBytes);
 });
 
-test('Pages rebuild refuses to overwrite an unexpected PATH introduction', async () => {
+test('Pages rebuild refuses to overwrite an unexpected PATH introduction', filmMedia, async () => {
   const target = path.join(PAGES_OUTPUT, 'public/path/index.html');
   const marker = 'Existing PATH introduction must remain untouched';
   await writeFile(target, marker, { flag: 'wx' });
@@ -138,7 +143,7 @@ test('Pages rebuild refuses to overwrite an unexpected PATH introduction', async
   assert.equal((await verifyPagesInterview()).preservedIntroduction, true);
 });
 
-test('published imports, stylesheet URLs and fixed room textures resolve inside the minimal overlay', async () => {
+test('published imports, stylesheet URLs and fixed room textures resolve inside the minimal overlay', filmMedia, async () => {
   const report = JSON.parse(await readFile(path.join(PAGES_OUTPUT, 'pages-manifest.json'))), files = new Set(report.files.map((row) => row.file));
   function present(ref, from) {
     const url = new URL(ref, 'https://synk.im/' + from);
@@ -162,7 +167,7 @@ test('published imports, stylesheet URLs and fixed room textures resolve inside 
   }
 });
 
-test('Pages verification detects changed published bytes', async () => {
+test('Pages verification detects changed published bytes', filmMedia, async () => {
   const target = path.join(PAGES_OUTPUT, 'public/path/interview/film/strict-manifest.json');
   const original = await readFile(target);
   await writeFile(target, Buffer.concat([original, Buffer.from(' ')]));

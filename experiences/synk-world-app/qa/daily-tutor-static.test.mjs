@@ -2,16 +2,18 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import http from 'node:http';
 import {createRequire} from 'node:module';
 import {emptyPlayState} from '../../play-common/play-data.mjs';
 import {lessonById} from '../life-content.mjs';
 
-const require=createRequire(import.meta.url),{chromium}=require('C:/Users/q1212/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const require=createRequire(import.meta.url),{chromium}=(()=>{try{return require('playwright');}catch{return require(path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));}})();
+// 지난 출시의 고정 /world 판(.tmp/world-app-daily-tutor-20261011/world)은 git 밖 빌드 산출물이다 — CI 체크아웃에는 없어 이름 대고 건너뛴다.
+const payload=path.resolve(process.env.SYNK_DAILY_TUTOR_STATIC_PAYLOAD||'.tmp/world-app-daily-tutor-20261011/world'),frozen={skip:Boolean(process.env.CI)&&!fs.existsSync(path.join(payload,'world-config.json'))&&'CI 체크아웃에는 없다 — .tmp/world-app-daily-tutor-20261011/world (git 밖 고정 /world 판)'};
 const A='11111111-1111-4111-8111-111111111111',LIFE='synk.life-korean.progress.v1';
 
-test('frozen /world daily tutor stores assisted practice and recap, resumes on a fresh visit and isolates owner history',{timeout:120000},async()=>{
- const payload=path.resolve(process.env.SYNK_DAILY_TUTOR_STATIC_PAYLOAD||'.tmp/world-app-daily-tutor-20261011/world');
+test('frozen /world daily tutor stores assisted practice and recap, resumes on a fresh visit and isolates owner history',{timeout:120000,...frozen},async()=>{
  const config=JSON.parse(fs.readFileSync(path.join(payload,'world-config.json'),'utf8')).account;
  const out=path.resolve('experiences/synk-world-app/qa/daily-tutor-20261011',process.env.SYNK_DAILY_TUTOR_STATIC_QA_RUN||'account');fs.mkdirSync(out,{recursive:true});
  const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.json':'application/json','.mp3':'audio/mpeg','.mp4':'video/mp4','.wav':'audio/wav','.webp':'image/webp','.png':'image/png','.woff2':'font/woff2'};

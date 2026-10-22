@@ -20,8 +20,8 @@ const desired = [
 function authoredCandidates() {
   return desired.map(([contentId, skillId]) => {
     const content = GAME_CONTENT.find(row => row.id === contentId);
-    const profile = gameProfiles(content).find(row => row.skillIds[0] === skillId
-      && row.difficulty === 1 && row.responseFormat === 'single-choice');
+    const profile = gameProfiles(content).filter(row => row.skillIds[0] === skillId && row.responseFormat === 'single-choice')
+      .sort((a, b) => a.difficulty - b.difficulty)[0];
     if (!profile) throw new Error(`Missing authored candidate: ${contentId}/${skillId}`);
     const items = gameItems(content).filter(row => tuple(row) === tuple(profile));
     if (!items.length) throw new Error(`No authored items: ${profile.id}`);

@@ -2,13 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import http from 'node:http';
 import {createRequire} from 'node:module';
 import {emptyPlayState} from '../../play-common/play-data.mjs';
-const require=createRequire(import.meta.url),{chromium}=require('C:/Users/q1212/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const require=createRequire(import.meta.url),{chromium}=(()=>{try{return require('playwright');}catch{return require(path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));}})();
+// 지난 출시의 고정 /world 판(.tmp/world-app-cafe-20261010-r2/world)은 git 밖 빌드 산출물이다 — CI 체크아웃에는 없어 이름 대고 건너뛴다.
+const payload=path.resolve(process.env.SYNK_CAFE_PUBLIC_PAYLOAD||'.tmp/world-app-cafe-20261010-r2/world'),frozen={skip:Boolean(process.env.CI)&&!fs.existsSync(path.join(payload,'world-config.json'))&&'CI 체크아웃에는 없다 — .tmp/world-app-cafe-20261010-r2/world (git 밖 고정 /world 판)'};
 const A='11111111-1111-4111-8111-111111111111';
-test('frozen /world cafe completes and restores the physical checkpoint through the official account transport',{timeout:90000},async()=>{
- const payload=path.resolve(process.env.SYNK_CAFE_PUBLIC_PAYLOAD||'.tmp/world-app-cafe-20261010-r2/world');
+test('frozen /world cafe completes and restores the physical checkpoint through the official account transport',{timeout:90000,...frozen},async()=>{
  const config=JSON.parse(fs.readFileSync(path.join(payload,'world-config.json'),'utf8')).account;
  const output=path.resolve('experiences/synk-world-app/qa/cafe-pack-20261010',process.env.SYNK_CAFE_STATIC_QA_RUN||'account-static-r3');fs.mkdirSync(output,{recursive:true});
  const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.json':'application/json','.png':'image/png','.webp':'image/webp','.woff2':'font/woff2','.mp4':'video/mp4','.wav':'audio/wav'};

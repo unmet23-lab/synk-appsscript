@@ -156,7 +156,8 @@ function parseLedger(text,{root=ROOT,ledger=path.join(root,LEDGER)}={}){
           if(fs.existsSync(child)&&!SECRET.test(child))Object.assign(resolved,{absolute:child,unresolved:false});
         }
         if(/처음엔[^)]*$/.test(line.slice(0,token.index))){delete resolved.absolute;resolved.unresolved=true;resolved.reason='historical_path_not_specified';}
-        if(resolved.absolute&&(/^(?:\[|[A-Za-z]:[\\/]|docs\/|tools\/|experiences\/|\.tmp\/)/.test(token.raw)||token.markdown)){
+        // 기준 폴더는 이 기기의 절대 경로 꼴(Windows는 드라이브 문자, Linux는 /)이나 저장소 경로로만 잡는다.
+        if(resolved.absolute&&(/^(?:\[|[A-Za-z]:[\\/]|docs\/|tools\/|experiences\/|\.tmp\/)/.test(token.raw)||(path.sep==='/'&&token.raw.startsWith('/'))||token.markdown)){
           const suffix=/[\\/]$/.test(token.raw);base=suffix?resolved.absolute:path.dirname(resolved.absolute);
         }
         if(resolved.absolute)lastDirectory=/[\\/]$/.test(token.raw)?resolved.absolute:path.dirname(resolved.absolute);

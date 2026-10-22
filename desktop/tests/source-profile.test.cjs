@@ -48,8 +48,11 @@ function run(file,{stubs,process}){
   vm.runInNewContext(fs.readFileSync(filename,'utf8'),{require:id=>Object.hasOwn(stubs,id)?stubs[id]:id.startsWith('./')?require(path.join(SRC,id)):require(id),__dirname:SRC,process,console,Buffer,setTimeout,clearTimeout},{filename});
 }
 
+// 가짜 process는 Windows다. 설치 위치 뿌리(program-root.cjs)는 Windows 꼴 홈만 받으니 Linux에서 돌 때도 홈은 그 꼴로 준다(그 자리에는 아무것도 쓰지 않는다).
+const home=process.platform==='win32'?path.join(root,'Home'):'C:\\Users\\synk-source-profile';
+
 async function runMain({packaged,clientId,mode='development',argv=[]}){
-  const seen=record(),handlers=new Map(),paths={appData,home:path.join(root,'Home'),temp:path.join(root,'Temp'),downloads:path.join(root,'Downloads')};
+  const seen=record(),handlers=new Map(),paths={appData,home,temp:path.join(root,'Temp'),downloads:path.join(root,'Downloads')};
   const entry=mode==='release'?RELEASE_ENTRIES[clientId]:DEV_URLS[clientId],runtime={clientId,mode,entry,auth:raw},frame={url:entry};
   const app=electronApp({packaged,seen,paths}),contents=Object.assign(new EventEmitter(),{mainFrame:frame,getURL:()=>frame.url,setWindowOpenHandler(){},setZoomFactor(){},send(){}});
   class Window extends EventEmitter{constructor(options){super();this.options=options;this.webContents=contents;seen.titles.push(options.title);}isDestroyed(){return false;}isMinimized(){return false;}isMaximized(){return false;}isVisible(){return false;}getNormalBounds(){return {x:0,y:0,width:this.options.width,height:this.options.height};}show(){}focus(){}}

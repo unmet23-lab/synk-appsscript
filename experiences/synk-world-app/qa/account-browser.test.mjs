@@ -17,7 +17,10 @@ const require=createRequire(import.meta.url);let playwright;try{playwright=requi
 const A='11111111-1111-4111-8111-111111111111',C='22222222-2222-4222-8222-222222222222';
 const config={version:1,supabaseUrl:'https://identity.example.test',supabasePublishableKey:'sb_publishable_browser_fixture',accountApiUrl:'https://identity.example.test',portalUrl:'https://identity.example.test/',clients:{world:{clientId:'world-browser',redirectUri:'https://world.example.test/world/'}}};
 const sanitized=value=>Array.isArray(value)?value.map(sanitized):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).map(([key,item])=>[key,/token|authorization|secret|password/i.test(key)?'[redacted test credential]':sanitized(item)])):value;
-test('actual Chromium account-mode Maru preserves life progress, guarded games, Town, enrollment and logout',{timeout:180000},async t=>{
+// 실제 WORLD 서버는 형제 저장소 SYNK-talk(lib/world-v1-server.js)를 쓰고, 끝의 자산 검사는 git 밖 옷감 그림과 구운 마을(synk-policy에만 있다)을 연다 — CI 체크아웃에서는 이름 대고 건너뛴다.
+const gitOutside=['experiences/synk-world-home/assets/avatar-textiles-v1','experiences/synk-town/assets/district/townwide-merged.json'].filter(rel=>!fs.existsSync(path.join(root,rel)));
+const ciSkip=Boolean(process.env.CI)&&gitOutside.length>0&&`CI 체크아웃에는 없다 — ${gitOutside.join(' · ')} (git 밖 WORLD 자산) · WORLD 서버의 SYNK-talk lib/world-v1-server.js`;
+test('actual Chromium account-mode Maru preserves life progress, guarded games, Town, enrollment and logout',{timeout:180000,skip:ciSkip},async t=>{
  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'synk-world-account-browser-'));fs.writeFileSync(path.join(directory,'config.json'),JSON.stringify(config));
  const socket=net.createServer();await new Promise(r=>socket.listen(0,'127.0.0.1',r));const port=socket.address().port;await new Promise(r=>socket.close(r));
  const publicPayload=process.env.SYNK_WORLD_PUBLIC_PAYLOAD?path.resolve(process.env.SYNK_WORLD_PUBLIC_PAYLOAD):null;

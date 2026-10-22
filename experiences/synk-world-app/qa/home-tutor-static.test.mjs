@@ -2,17 +2,19 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import http from 'node:http';
 import {createRequire} from 'node:module';
 import {emptyPlayState} from '../../play-common/play-data.mjs';
 import {lessonById} from '../life-content.mjs';
 
-const require=createRequire(import.meta.url),{chromium}=require('C:/Users/q1212/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const require=createRequire(import.meta.url),{chromium}=(()=>{try{return require('playwright');}catch{return require(path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));}})();
+// 지난 출시의 고정 /world 판(.tmp/world-app-home-tutor-20261011/world)은 git 밖 빌드 산출물이다 — CI 체크아웃에는 없어 이름 대고 건너뛴다.
+const payload=path.resolve(process.env.SYNK_HOME_TUTOR_STATIC_PAYLOAD||'.tmp/world-app-home-tutor-20261011/world'),frozen={skip:Boolean(process.env.CI)&&!fs.existsSync(path.join(payload,'world-config.json'))&&'CI 체크아웃에는 없다 — .tmp/world-app-home-tutor-20261011/world (git 밖 고정 /world 판)'};
 const A='11111111-1111-4111-8111-111111111111',LIFE='synk.life-korean.progress.v1';
 const core=value=>JSON.stringify({owner:value.owner,version:value.version,lessons:value.lessons,reviews:value.reviews,activeLessonId:value.activeLessonId,activeReview:value.activeReview});
 
-test('frozen /world home tutor uses actual owner history, preserves guided progress and clears it on logout',{timeout:120000},async()=>{
- const payload=path.resolve(process.env.SYNK_HOME_TUTOR_STATIC_PAYLOAD||'.tmp/world-app-home-tutor-20261011/world');
+test('frozen /world home tutor uses actual owner history, preserves guided progress and clears it on logout',{timeout:120000,...frozen},async()=>{
  const standaloneHtml=path.resolve(process.env.SYNK_HOME_TUTOR_STANDALONE_HTML||'experiences/brand-opening/home.html');
  const config=JSON.parse(fs.readFileSync(path.join(payload,'world-config.json'),'utf8')).account;
  const out=path.resolve('experiences/synk-world-app/qa/home-tutor-20261011',process.env.SYNK_HOME_TUTOR_STATIC_RUN||'account');fs.mkdirSync(out,{recursive:true});

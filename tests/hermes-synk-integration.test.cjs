@@ -123,5 +123,7 @@ test('ignored new agent source is held before preparation',async t=>{
 });
 test('mode-only agent changes require review instead of quiet no-changes',async t=>{
   const f=fixture(t),work=await f.workspace();execFileSync('git',['update-index','--chmod=+x','docs/task.md'],{cwd:work,windowsHide:true,stdio:'pipe'});
+  // core.fileMode=false(Windows)인 git은 작업본 모드를 색인에서 읽고, Linux git은 파일 자체의 실행 비트를 읽는다 — 둘 다 같은 모드 변경으로 만든다.
+  if(process.platform!=='win32')fs.chmodSync(path.join(work,'docs/task.md'),0o755);
   const result=await prepareIntegration(f.options);assert.equal(result.code,'FILE_MODE_REVIEW_REQUIRED');
 });

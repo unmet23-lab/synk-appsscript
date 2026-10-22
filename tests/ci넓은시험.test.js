@@ -52,7 +52,7 @@ test('견주기 — 기준선 밖 실패만 새 실패, 기준선에 있는데 �
   assert.deepEqual(r.새, [{ 파일: 'tests/new.test.mjs', 시험: 'C' }]);
   assert.deepEqual(r.남은, [{ 파일: 'tests/pg.test.mjs', 시험: 'A' }]);
   assert.deepEqual(r.풀린.map((x) => x.시험), ['B']);
-  assert.deepEqual(넓은.견주기([], null), { 새: [], 남은: [], 풀린: [] });
+  assert.deepEqual(넓은.견주기([], null), { 새: [], 남은: [], 풀린: [], 좁힐: [] });
 });
 
 test('기준선읽기 — 까닭 없는 줄은 받지 않고, 파일이 없으면 null', () => {
@@ -107,5 +107,80 @@ test('기준선줄이기 — 그 run에서 통과한 줄만 빠지고, 새 실�
     assert.deepEqual(새.묶음.회사.map((x) => x.시험), ['C'], '후보가 없는 묶음은 못 본 것이라 그대로');
     assert.equal(새.묶음.루트[0].까닭, 'ffmpeg 없음', '남는 줄의 까닭은 그대로');
     assert.equal(새.줄인run, 7);
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
+
+test('파일째 죽은 시험 — 그 파일 앞에 찍힌 stderr에서 오류 줄을 찾아 오류로 삼고 출력으로 붙인다', () => {
+  const root = path.join(os.tmpdir(), '저장소');
+  const tap = [
+    'TAP version 13',
+    '# a의 잡음',
+    '# Subtest: 잘 도는 시험',
+    'ok 1 - 잘 도는 시험',
+    '# node:internal/modules/cjs/loader:1564',
+    "# Error: Cannot find module '../../SYNK-talk/lib/x.js'",
+    '#     at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)',
+    '# Node.js v24.21.0',
+    '# Subtest: tests/b.test.mjs',
+    'not ok 2 - tests/b.test.mjs',
+    '  ---', "  error: 'test failed'", '  ...',
+    '# tests 2', '# pass 1', '# fail 1',
+  ].join('\n');
+  const [x] = 넓은.실패읽기(tap, root).실패;
+  assert.equal(x.시험, 'tests/b.test.mjs');
+  assert.equal(x.오류, "Error: Cannot find module '../../SYNK-talk/lib/x.js'");
+  assert.deepEqual(x.출력, ['node:internal/modules/cjs/loader:1564', "Error: Cannot find module '../../SYNK-talk/lib/x.js'"], '앞 파일의 잡음·스택·Node 판 줄은 빼고');
+  const 그냥 = 넓은.실패읽기(['not ok 1 - tests/c.test.mjs', '  ---', "  error: 'test failed'", '  ...', '# tests 1', '# fail 1'].join('\n'), root).실패[0];
+  assert.equal(그냥.오류, 'test failed', 'stderr가 없으면 그대로');
+  assert.equal(그냥.출력, undefined);
+});
+
+test('파일째 기준선 줄은 그 파일의 실패를 모두 덮고, 파일이 안 죽고 안의 시험만 깨지면 좁힐 줄로 알린다', () => {
+  const 기준 = [{ 파일: 'tests/b.test.mjs', 시험: 'tests/b.test.mjs', 까닭: '형제 저장소 없음' }, { 파일: 'tests/c.test.mjs', 시험: 'tests/c.test.mjs', 까닭: '포트' }];
+  const r = 넓은.견주기([{ 파일: 'tests/b.test.mjs', 시험: '안의 시험' }, { 파일: 'tests/d.test.mjs', 시험: 'tests/d.test.mjs' }], 기준);
+  assert.deepEqual(r.새.map((x) => x.파일), ['tests/d.test.mjs'], '파일째 줄이 없는 파일은 그대로 새 실패');
+  assert.deepEqual(r.남은.map((x) => x.시험), ['안의 시험']);
+  assert.deepEqual(r.좁힐.map((x) => x.파일), ['tests/b.test.mjs']);
+  assert.deepEqual(r.풀린.map((x) => x.파일), ['tests/c.test.mjs'], '실패가 하나도 없는 파일만 풀린다');
+  assert.deepEqual(넓은.견주기([{ 파일: 'tests/b.test.mjs', 시험: 'tests/b.test.mjs' }], 기준).좁힐, [], '여전히 파일째 죽으면 좁히지 않는다');
+});
+
+test('기준선줄이기 — 파일째 줄은 그 run에서 실제로 깨진 안의 시험으로 좁히고, 다른 파일의 새 실패는 들이지 않는다', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-ci넓은시험-'));
+  try {
+    const 파일 = path.join(방, '기준선.json');
+    fs.writeFileSync(파일, JSON.stringify({ 묶음: { 루트: [
+      { 파일: 'tests/b.test.mjs', 시험: 'tests/b.test.mjs', 까닭: '형제 저장소 없음' },
+      { 파일: 'tests/c.test.mjs', 시험: 'tests/c.test.mjs', 까닭: '포트' },
+      { 파일: 'tests/e.test.mjs', 시험: 'tests/e.test.mjs', 까닭: '모듈 없음' },
+    ] } }));
+    const 받은 = { 루트: [{ 파일: 'tests/b.test.mjs', 시험: '안의 시험', 오류: 'Expected 1' }, { 파일: 'tests/e.test.mjs', 시험: 'tests/e.test.mjs' }, { 파일: 'tests/새.test.mjs', 시험: '새 실패' }] };
+    const r = 넓은.기준선줄이기(9, { 받은, 파일, 날: '2026-10-22' });
+    assert.deepEqual(r.뺀, { 루트: 1 });
+    assert.deepEqual(r.좁힌, { 루트: 1 });
+    const 새 = JSON.parse(fs.readFileSync(파일, 'utf8')).묶음.루트;
+    assert.deepEqual(새.map((x) => `${x.파일} ${x.시험}`), ['tests/b.test.mjs 안의 시험', 'tests/e.test.mjs tests/e.test.mjs']);
+    assert.equal(새[0].까닭, '2026-10-22 run 9에서 파일째 죽던 것이 풀린 뒤 남은 실패 — Expected 1');
+    assert.equal(새[1].까닭, '모듈 없음', '여전히 파일째 죽는 줄은 까닭 그대로');
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
+
+test('자산받기 — 출시 목록의 해시·크기와 맞을 때만 놓고, 있는 파일은 건드리지 않고, 다르면 놓지 않는다', async () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-ci넓은시험-'));
+  try {
+    const 바이트 = Buffer.from('glTF 가짜'), 해시 = require('node:crypto').createHash('sha256').update(바이트).digest('hex');
+    const 목록 = path.join(방, 'experiences/korean-racing/qa/package-manifest.json');
+    fs.mkdirSync(path.dirname(목록), { recursive: true });
+    fs.writeFileSync(목록, JSON.stringify({ files: [{ path: 'assets/car.glb', bytes: 바이트.length, sha256: 해시 }, { path: 'assets/coastal-rocks-v6.glb', bytes: 3, sha256: 'a'.repeat(64) }] }));
+    const 부른 = [];
+    const 받기 = async (url) => { 부른.push(url); return { ok: true, status: 200, arrayBuffer: async () => 바이트 }; };
+    const 줄들 = await 넓은.공개자산받기('experiences', { root: 방, 받기 });
+    assert.match(줄들[0], /^받음 — experiences\/korean-racing\/assets\/car\.glb/);
+    assert.match(줄들[1], /^✗ 못 받음 — .*coastal-rocks-v6\.glb: 출시 목록과 다르다/);
+    assert.deepEqual(fs.readFileSync(path.join(방, 'experiences/korean-racing/assets/car.glb')), 바이트);
+    assert.equal(fs.existsSync(path.join(방, 'experiences/korean-racing/assets/coastal-rocks-v6.glb')), false);
+    assert.ok(부른.every((url) => url.startsWith('https://raw.githubusercontent.com/unmet23-lab/synk-policy/main/try/racing/assets/')));
+    assert.match((await 넓은.공개자산받기('experiences', { root: 방, 받기 }))[0], /^있음/, '있는 파일은 다시 받지 않는다');
+    assert.deepEqual(await 넓은.공개자산받기('회사', { root: 방, 받기 }), [], '받을 것이 없는 묶음');
   } finally { fs.rmSync(방, { recursive: true, force: true }); }
 });

@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {existsSync} from 'node:fs';
 import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {CASTING_MODELS} from './public/pulse-app/casting-catalog.mjs';
@@ -7,6 +8,9 @@ import {CASTING_OPTIONS,castingFromForm,takeCastingValues,castingSummary,casting
 import {normalizeCastingSelection} from './pulse-strategy.mjs';
 import {strategyView,strategyHistory} from './public/pulse-app/strategy-view.mjs';
 import {createDemoSession} from './public/pulse-app/demo.mjs';
+
+// 출시 영상 몇 개(*.mp4)는 .gitignore에 걸려 공용 작업본에만 있다 — CI 체크아웃에서는 그 파일만 빼고 재고, 뺀 것을 진단으로 남긴다.
+const present=(t,file)=>{if(!process.env.CI||!/\.mp4$/.test(file)||existsSync(new URL('./public/pulse-app/assets/casting/video/'+file,import.meta.url)))return true;t.diagnostic(`CI 체크아웃에는 없다 — public/pulse-app/assets/casting/video/${file} (git 밖 출시 영상)`);return false;};
 
 test('demo casting and server use matching options and reject invalid combinations',()=>{
   for(const model of CASTING_MODELS)for(const voice of ['','A','B','C']){
@@ -90,14 +94,14 @@ test('restored samples retain exact approved portrait and canonical per-model A/
 });
 
 // 10-20 하린 아이스커피 광고(콘티 v5 최종본)를 메인 광고 칸에 「표정 참고용 시안」으로 올렸다(유호님 10-18 「모델 표정 참고용이라는 느낌을 같이 게시」).
-test('Harin shows the finished iced-coffee ad as an expression reference with a poster and keeps the runway motion sample in editable and saved casting views',async()=>{
+test('Harin shows the finished iced-coffee ad as an expression reference with a poster and keeps the runway motion sample in editable and saved casting views',async t=>{
   const model=CASTING_MODELS.find(item=>item.id==='F02'),base='./assets/casting/video/F02-';
   assert.deepEqual(model.videos.map(({kind,label,src,poster,aspectRatio,sampleType})=>({kind,label,src,poster,aspectRatio,sampleType})),[
     {kind:'ad',label:'아이스커피 광고 · 20초',src:base+'ad-iced-coffee-20s-v1.mp4',poster:base+'ad-iced-coffee-20s-v1-poster.webp',aspectRatio:'9:16',sampleType:'expression'},
     {kind:'runway',label:'런웨이 · 5초 움직임 샘플',src:base+'runway-motion-5s-v1.mp4',poster:undefined,aspectRatio:'9:16',sampleType:'motion'},
   ]);
   assert.equal(CASTING_MODELS.flatMap(item=>item.videos).filter(video=>video.src).length,2);
-  for(const [file,digest]of[['ad-iced-coffee-20s-v1.mp4','b6b47293bcec453c111f75c71790f3705d9b7d09b31a4abf95500383c261f8f3'],['ad-iced-coffee-20s-v1-poster.webp','dc63a3a1542d42438743b5276db851c81eef4ce5d7069c6480c3f84320fb36ea']]){
+  for(const [file,digest]of[['ad-iced-coffee-20s-v1.mp4','b6b47293bcec453c111f75c71790f3705d9b7d09b31a4abf95500383c261f8f3'],['ad-iced-coffee-20s-v1-poster.webp','dc63a3a1542d42438743b5276db851c81eef4ce5d7069c6480c3f84320fb36ea']].filter(([file])=>present(t,'F02-'+file))){
     const bytes=await readFile(new URL('./public/pulse-app/assets/casting/video/F02-'+file,import.meta.url));
     assert.equal(createHash('sha256').update(bytes).digest('hex'),digest,file);
   }

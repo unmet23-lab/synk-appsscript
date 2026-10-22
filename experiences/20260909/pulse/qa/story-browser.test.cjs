@@ -1,6 +1,6 @@
 const fs=require('node:fs'),path=require('node:path'),os=require('node:os'),assert=require('node:assert/strict');
-const {chromium}=require('C:/Users/q1212/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
-const canonical='C:/Users/q1212/Documents/SYNK-appsscript';
+let chromium;try{({chromium}=require('playwright'));}catch{({chromium}=require(path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright')));}
+const canonical=path.resolve(__dirname,'../../../..'); // 이 저장소 뿌리(공용 작업본 절대 경로를 박지 않는다)
 const {createExperienceServer}=require(path.join(canonical,'experiences/20260909/server.cjs'));
 const staticRoot=path.resolve(__dirname,'../..');
 const screenshots=path.join(os.tmpdir(),'pulse-story-20260910');fs.mkdirSync(screenshots,{recursive:true});

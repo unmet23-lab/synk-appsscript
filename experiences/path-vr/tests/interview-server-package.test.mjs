@@ -6,10 +6,13 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
+import { existsSync } from 'node:fs';
 import { access, mkdtemp, open, readFile, rmdir, unlink } from 'node:fs/promises';
 import { createServer, parseRange } from '../server.mjs';
 import { isPackageRuntime, hostingHeaders, packageInterview, verifyPackage, OUTPUT, ENTRYPOINT } from '../../../tools/package-path-interview.mjs';
 const execute = promisify(execFile);
+// PATH 면접 영상(*.mp4)·음성 모델(*.tar.gz)은 .gitignore에 걸려 공용 작업본에만 있다 — CI 체크아웃에서는 그 파일을 재는 시험을 이름 대고 건너뛴다.
+const gitOutside = (file) => Boolean(process.env.CI) && !existsSync(new URL(`../${file}`, import.meta.url)) && `CI 체크아웃에는 없다 — experiences/path-vr/${file} (git 밖 PATH 면접 미디어)`;
 
 function request(server, pathname, { method = 'GET', headers = {}, secure = false } = {}) {
   return new Promise((resolve, reject) => {
@@ -34,7 +37,7 @@ test('Range parsing bounds large media without interpreting multipart or unsafe 
   assert.equal(parseRange('bytes=0-', 0), false);
 });
 
-test('model GET and HEAD ranges return exact bytes and denied sources stay private', async () => {
+test('model GET and HEAD ranges return exact bytes and denied sources stay private', { skip: gitOutside('models/vosk-model-small-ko-0.22.tar.gz') }, async () => {
   const server = createServer({ port: 0 }); await server.start();
   try {
     const model = '/models/vosk-model-small-ko-0.22.tar.gz';
@@ -189,7 +192,7 @@ test('hosting file grants unsafe-eval to the worker only without overlapping wil
   assert.match(headers, /\/models\/whisper-base\/onnx\/encoder_model_quantized\.onnx\n[^\n]*\n  Content-Type: application\/octet-stream/);
 });
 
-test('standalone package copies current runtime exactly, keeps credit files, and excludes private artifacts', async () => {
+test('standalone package copies current runtime exactly, keeps credit files, and excludes private artifacts', { skip: gitOutside('assets/interview/film/strict-question-4k.mp4') }, async () => {
   const output = await packageInterview();
   const verified = await verifyPackage();
   assert.equal(output.deployed, false);

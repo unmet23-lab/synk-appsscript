@@ -65,7 +65,8 @@ test('the WORLD page sends changed memory when it goes to the background and rea
   show('visible');await settle();
   assert.deepEqual(game.presentation(), { support: 'independent' });
   assert.equal(help.getAttribute('aria-pressed'),'true','the existing control updates after a remote memory import');
-  assert.deepEqual(memoryCalls, ['get', 'post', 'get']);
+  // A fresh edit reads the server once more before it receives its upload time (atlas/memory-sync.js, 10-19).
+  assert.deepEqual(memoryCalls, ['get', 'get', 'post', 'get']);
   rows.set('presentation|chosen', { kind:'presentation',key:'chosen',value:{support:'step'},at:new Date(Date.now()+120000).toISOString() });
   const restoreConnection=windowListeners.get('online');assert.equal(typeof restoreConnection,'function');restoreConnection();await settle();
   assert.deepEqual(game.presentation(),{support:'step'},'network restoration imports account memory without changing tabs');

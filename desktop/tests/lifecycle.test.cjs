@@ -79,7 +79,8 @@ test('catalog loader ignores missing, unapproved and mismatched platform manifes
   await fs.writeFile(target,JSON.stringify({version:1,approved:true,source:'verified-local-builds',releases:[f.release]}));assert.equal(loadDevelopmentReleases({root:f.root,platform:'win32',arch:'x64'}).length,1);assert.deepEqual(loadDevelopmentReleases({root:f.root,platform:'win32',arch:'arm64'}),[]);
 });
 
-test('newer launch-only pins preserve available installers without offering a downgrade as an update',async t=>{
+// 설치판 자리를 path.win32로 만들어 실제 파일을 쓴다 — Linux에서는 그 경로가 역슬래시 든 파일 이름이 되어 cwd에 남고 설치판을 못 찾는다.
+test('newer launch-only pins preserve available installers without offering a downgrade as an update',{skip:process.platform!=='win32'&&'설치판 경로가 Windows 꼴(path.win32)이라 Windows에서만 실제 파일로 잰다'},async t=>{
   const f=await fixture(t),legacy={...f.release,version:'0.4.2'};delete legacy.installer;
   const options={...f.opts,releases:[legacy,f.release]},locations=installationPaths('world',options);
   await fs.mkdir(path.dirname(locations.asar),{recursive:true});await fs.writeFile(locations.executable,'exe');await fs.writeFile(locations.asar,'asar');

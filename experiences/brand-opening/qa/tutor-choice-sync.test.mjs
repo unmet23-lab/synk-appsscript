@@ -5,9 +5,12 @@ import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {createRequire} from 'node:module';
 import path from 'node:path';
+import os from 'node:os';
 
 const require=createRequire(import.meta.url);
-const {chromium}=require('C:/Users/q1212/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const {chromium}=(()=>{try{return require('playwright');}catch{return require(path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));}})();
+// 이 PC는 Edge로, Linux CI는 러너에 깔린 Chrome으로 띄운다.
+const channel=process.platform==='win32'?'msedge':'chrome';
 const root=path.resolve(fileURLToPath(new URL('../../../',import.meta.url)));
 let server,browser,base;
 const fixture=`<!doctype html><div id="world-panel"><div id="panel-content"></div></div><script type="module">
@@ -29,7 +32,7 @@ before(async()=>{
   res.setHeader('Content-Type','text/javascript; charset=utf-8');res.end(await readFile(name));
  }catch{res.statusCode=404;res.end();}});
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));base=`http://127.0.0.1:${server.address().port}`;
- browser=await chromium.launch({channel:'msedge',headless:true});
+ browser=await chromium.launch({channel,headless:true});
 });
 after(async()=>{await browser?.close();if(server)await new Promise(resolve=>server.close(resolve));});
 async function pageFor(t,options={}){

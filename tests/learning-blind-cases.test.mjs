@@ -6,6 +6,8 @@ import { GAME_CONTENT, gameProfiles, gameItems } from '../experiences/teacher-wo
 const data = buildCases();
 const group = id => data.cases.filter(row => row.groupId === id);
 const observation = (row, skillId) => row.input.observations.find(item => item.skillId === skillId);
+// 관측 요약은 학습 항목 × 난도 칸마다 하나다. 한 항목의 이력이 여러 난도 칸에 걸치면 칸을 더해 센다.
+const skillTotal = (row, skillId, key) => row.input.observations.filter(item => item.skillId === skillId).reduce((sum, item) => sum + item[key], 0);
 const candidate = row => row.input.candidates.find(item => item.id === row.baseline.candidateId);
 
 test('18 deterministic development cases keep provider input apart from baseline and rubric', () => {
@@ -93,9 +95,13 @@ test('eight right repeated responses preserve one original independent error and
 test('real new item success changes Core baseline while same item retries do not fabricate progress', () => {
   const stages = group('recovered-new-items');
   assert.equal(observation(stages[1], 'ko.reading.detail').independentCorrect, 0);
-  const last = observation(stages[2], 'ko.reading.detail');
-  assert.equal(last.firstIndependentAttempts, 10); assert.equal(last.independentCorrect, 8); assert.equal(last.independentIncorrect, 2);
-  assert.equal(last.uniquePresentedFamilies, 10);
+  const last = key => skillTotal(stages[2], 'ko.reading.detail', key);
+  assert.equal(last('firstIndependentAttempts'), 10); assert.equal(last('independentCorrect'), 8); assert.equal(last('independentIncorrect'), 2);
+  assert.equal(last('uniquePresentedFamilies'), 10);
+  // 입장 검사 읽기가 10-21부터 2단계 칸이라 새 문항 열 개가 1단계(싱크타운)·2단계(입장 검사) 두 칸으로 나뉘어 제공자에게 간다.
+  // 합계가 이 사례의 뜻이고, 칸 나눔도 적어 둔다 — 원고 난도가 또 바뀌면 여기서 드러난다.
+  assert.deepEqual(stages[2].input.observations.filter(item => item.skillId === 'ko.reading.detail')
+    .map(item => [item.difficulty, item.firstIndependentAttempts, item.independentCorrect, item.independentIncorrect]), [[1, 6, 4, 2], [2, 4, 4, 0]]);
   assert.notEqual(candidate(stages[2]).skillId, 'ko.reading.detail');
   assert.equal(stages[2].rubric.acceptableCandidateIds.length, 0);
 });

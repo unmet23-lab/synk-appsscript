@@ -175,6 +175,9 @@ test('failure journal stores only safe status metadata and does not silently ret
 });
 
 test('existing Fortune and unrelated mapping source order survive the full workflow', async () => {
+  // Fortune 기존 등록이 없을 때 같은 전체 흐름이 만드는 수가 기준이다(등록부가 바뀌어도 숫자를 다시 박지 않는다 — 10-18 혜택 둘 은퇴).
+  const plain = fixture(); await provision({ ...plain.options(), apply: true });
+  assert.equal(plain.calls.create.filter(row => /fortune/.test(row.client_name)).length, 2);
   const f = fixture(), bindings = {};
   for (const registration of ['fortune-native', 'fortune-browser']) {
     const wanted = CLIENTS.find(row => row.id === registration), id = 'existing-' + registration;
@@ -183,7 +186,7 @@ test('existing Fortune and unrelated mapping source order survive the full workf
   const original = { ...f.mapping, 'existing-fortune-native': 'platform', 'existing-fortune-browser': 'platform', 'other-service': 'world' }; f.setMapping(original);
   await provision({ ...f.options(), apply: true, existingMapping: original, bindings });
   assert.deepEqual(Object.entries(f.mapping).slice(0, Object.keys(original).length), Object.entries(original));
-  assert.equal(f.calls.create.length, 17); assert.equal(f.calls.create.some(row => /fortune/.test(row.client_name)), false);
+  assert.equal(f.calls.create.length, plain.calls.create.length - 2); assert.equal(f.calls.create.some(row => /fortune/.test(row.client_name)), false);
 });
 
 async function updateProviderFixture(t, apply) {

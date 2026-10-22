@@ -40,6 +40,33 @@ jobs:
         with:
           fetch-depth: 1
           path: SYNK-appsscript
+      # 형제 저장소 SYNK-talk에서 시험이 읽는 파일만 받는다(syntax-check.yml과 같은 읽기 열쇠, 2026-10-22). 형제를 쓰는 시험은
+      # 저마다 특정 파일이 있을 때만 켜진다 — 이 목록에 없는 파일(예: lib/world-v1-server.js)을 찾는 WORLD 실제 브라우저 시험은 그대로 건너뛴다.
+      - name: checkout SYNK-talk test inputs
+        if: ${{ vars.SYNK_TALK_CI == 'on' && (matrix.bundle == '루트' || matrix.bundle == 'desktop' || matrix.bundle == 'experiences') }}
+        uses: actions/checkout@v5
+        with:
+          repository: unmet23-lab/SYNK-talk
+          ref: master
+          ssh-key: ${{ secrets.SYNK_TALK_READ_SSH_KEY }}
+          ssh-strict: true
+          persist-credentials: false
+          path: SYNK-talk
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /package.json
+            /package-lock.json
+            /lib/synk-account-lifecycle.js
+            /lib/synk-account-restore-export.js
+            /lib/synk-care-push-worker.js
+            /lib/world-v1-catalog.js
+            /lib/자격증명.js
+            /supabase/functions/_shared/synk-play-runtime.js
+            /supabase/migrations/
+            /tests/lib/account-lifecycle-fixture.js
+            /tests/lib/play-fixture.js
+            /tests/lib/postgres-json-fixture.js
+            /tools/synk-account-restore-export.js
       - uses: actions/setup-node@v5
         with:
           node-version: 24
@@ -52,7 +79,37 @@ jobs:
           if [ "$BUNDLE" = "desktop" ]; then (cd desktop && npm ci --ignore-scripts --no-audit --no-fund); fi
           if [ "$BUNDLE" = "experiences" ]; then (cd experiences/synk-account && npm ci --ignore-scripts --no-audit --no-fund); fi
           # 영상·납품 묶음 시험이 ffmpeg를 부른다 — 10-21 첫 실행에서 회사 19·루트 5개가 「spawn ffmpeg ENOENT」였다.
-          if [ "$BUNDLE" = "회사" ] || [ "$BUNDLE" = "루트" ]; then sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends ffmpeg; fi
+          # 경험 앱은 초보 게임 음성 시험이 후처리 도구(ffmpeg·ffprobe)를 확인한다(10-22).
+          if [ "$BUNDLE" = "회사" ] || [ "$BUNDLE" = "루트" ] || [ "$BUNDLE" = "experiences" ]; then sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends ffmpeg; fi
+      # 형제 저장소 자리의 시험 도구 — PC에서 형제 저장소의 node_modules가 하는 몫을 시험이 쓰는 꾸러미만으로 채운다(앱 의존성 Expo 등은 받지 않는다).
+      # SYNK-talk 쪽(PGlite·postgres·postcss)은 그 저장소 lock의 판 그대로, parse5는 PC의 SYNK-website 판이다.
+      - name: sibling repository test tools
+        if: ${{ matrix.bundle == '루트' || matrix.bundle == 'desktop' || matrix.bundle == 'experiences' }}
+        env:
+          BUNDLE: ${{ matrix.bundle }}
+        run: |
+          set -euo pipefail
+          deps="$RUNNER_TEMP/sibling-deps"; mkdir -p "$deps"
+          # SYNK-talk lock에 있으면 그 판, 없으면(SYNK-talk을 못 받은 run) 이 PC의 판 — postcss·parse5는 형제 저장소를 못 받아도 깐다.
+          talk() { node -e "const f='../SYNK-talk/package-lock.json',p=require('fs').existsSync(f)?require(f).packages||{}:{},v=(p['node_modules/'+process.argv[1]]||{}).version;console.log(v?process.argv[1]+'@'+v:process.argv[2])" "$1" "$2"; }
+          pkgs="parse5@8.0.1 $(talk postcss postcss@8.5.28)"
+          if [ -f ../SYNK-talk/package-lock.json ]; then pkgs="$pkgs $(talk @electric-sql/pglite '') $(talk postgres '')"; fi
+          (cd "$deps" && npm init -y >/dev/null && npm install --no-audit --no-fund --ignore-scripts $pkgs)
+          if [ -d ../SYNK-talk ] || [ "$BUNDLE" = "루트" ]; then mkdir -p ../SYNK-talk && ln -s "$deps/node_modules" ../SYNK-talk/node_modules; fi
+          if [ "$BUNDLE" = "루트" ]; then
+            mkdir -p ../SYNK-website && ln -s "$deps/node_modules" ../SYNK-website/node_modules
+            # 헤르메스 검증 도구(tools/hermes-synk/validation-*.cjs — 운영 감시가 해시로 묶은 계약 파일이라 고치지 않는다)는 PC 배치에서
+            # 실행 도구를 찾는다: ajv·typescript·react는 영상/node_modules, source-map(0.5 동기 API)은 저장소 node_modules,
+            # Playwright는 Codex 런타임 자리, parse5·postcss는 형제 저장소 자리. CI가 그 배치를 흉내 낸다.
+            (cd 영상 && npm ci --ignore-scripts --no-audit --no-fund)
+            npm install --no-save --no-audit --no-fund --ignore-scripts source-map@0.5.7
+            codex="$HOME/.cache/codex-runtimes/codex-primary-runtime/dependencies/node"
+            mkdir -p "$codex" && ln -s "$PWD/node_modules" "$codex/node_modules"
+          fi
+      - name: public release assets
+        env:
+          BUNDLE: ${{ matrix.bundle }}
+        run: node tools/ci넓은시험.js 자산받기 "$BUNDLE"
       - name: run tests (기준선보다 늘어난 실패만 빨강)
         env:
           BUNDLE: ${{ matrix.bundle }}
