@@ -801,6 +801,23 @@ p.doneline span{color:var(--ink-2)}
 .t4-card h3{margin:0 0 6px;font-size:17px;font-weight:650;line-height:1.35;letter-spacing:-.01em}
 .t4-card p:last-child{margin:0;font-size:15.5px;line-height:1.62;color:var(--ink-2)}
 
+/* 첨삭 맛보기: 과제 → 학생 글 → 표시한 곳 → 한마디 세 줄을 판 하나씩. 학생 글은 읽기 좋게 줄 간격을 넉넉히 */
+.t4-sample-lead{margin:0 0 14px;font-size:15.5px;line-height:1.62;color:var(--ink-2)}
+.t4-sample{display:grid;gap:10px}
+.t4-sample>div,.t4-sample>figure{margin:0;padding:16px 18px;border-radius:16px;background:var(--surface-1);box-shadow:inset 0 0 0 1px var(--line)}
+.t4-sample .t4-k{margin:0 0 8px}
+.t4-sample-task p:last-child{margin:0;font-size:15px;line-height:1.62;color:var(--ink-2)}
+.t4-sample-draft blockquote{margin:0;font-size:16px;line-height:1.85}
+.t4-sample-marks ul{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.t4-sample-marks li{display:grid;grid-template-columns:2.7em minmax(0,1fr);column-gap:8px;row-gap:1px;align-items:baseline}
+.t4-code{grid-row:1/span 2;font-size:15px;font-weight:650;color:var(--tint)}
+.t4-q{font-size:15.5px;font-weight:600;line-height:1.5}
+.t4-mean{font-size:14px;line-height:1.5;color:var(--ink-3)}
+.t4-sample-comment dl{display:grid;gap:12px;margin:0}
+.t4-sample-comment dt{margin:0 0 3px;font-size:13px;font-weight:600;color:var(--ink-2)}
+.t4-sample-comment dd{margin:0;font-size:15.5px;line-height:1.62}
+.t4-tr{display:block;margin-top:4px;font-size:14px;line-height:1.55;color:var(--ink-3)}
+
 .t4-weeks{display:grid;margin:0;padding:0;list-style:none;border-top:1px solid var(--line)}
 .t4-weeks li{display:grid;grid-template-columns:86px minmax(0,1fr) minmax(0,.9fr);gap:14px;align-items:baseline;padding:13px 2px;border-bottom:1px solid var(--line)}
 .t4-wk{font:500 11.5px/1.4 var(--mono);letter-spacing:.08em;color:var(--ink-3)}

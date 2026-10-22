@@ -96,6 +96,7 @@ test('묶음: 「·」 말과 몽골어 서수 「4-р」는 줄이 갈리지 �
   assert.equal(A.keepDots('부가세·포함'), '<span class="nw">부가세·포함</span>');
   assert.match(A.keepDots('TOPIK 4-р түвшин'), /<span class="nw">4-р<\/span>/);
   assert.match(A.keepDots('51–54-р даалгавар'), /<span class="nw">51–54-р<\/span>/);
+  assert.match(A.keepDots('оюутан 48%-иас 63%'), /<span class="nw">48%-иас<\/span>/);
   assert.equal(A.keepDots('<b>'), '&lt;b&gt;');
 });
 
@@ -124,6 +125,19 @@ test('화면 글 약속: 보장·할인·AI 도구 이름·「AI 생성」이 �
   for (const must of ['имэйл', 'нэр', 'хариулт', 'холбоосны тэмдэглэгээ', 'дэлгэцийн хэл', 'hello@synk.im']) assert.ok(C.mn.notice.includes(must), must);
   // 화면 글은 해요체 한 목소리 — 합쇼체는 동의 문장(폼에 기록되는 글)만
   for (const [k, v] of Object.entries(C.ko)) if (typeof v === 'string' && k !== 'consent') assert.doesNotMatch(v, /(니다|십시오)[.!]?$|니다\. /, k);
+});
+
+test('첨삭 맛보기: 수업 자료 W3의 가상 학생 초안·기호 표시·한마디 세 줄과 글자 하나 다르지 않다', () => {
+  const doc = fs.readFileSync(path.join(__dirname, '../../docs/온라인반_TOPIK4급/쓰기과제.md'), 'utf8');
+  assert.ok(doc.includes(C.SAMPLE.draft));
+  for (const m of C.SAMPLE.marks) assert.ok(doc.includes(`「${m.q}」〔${m.code}〕`), m.q);
+  for (const c of C.SAMPLE.comment) assert.ok(doc.includes(c.ko), c.ko);
+  // 첨삭 기준: 고칠 곳은 다섯 곳까지, 잘 쓴 곳〔+〕은 한 곳 이상, 한마디는 세 줄
+  assert.ok(C.SAMPLE.marks.filter(m => m.code !== '+').length <= 5);
+  assert.ok(C.SAMPLE.marks.some(m => m.code === '+'));
+  assert.equal(C.SAMPLE.comment.length, 3);
+  for (const m of C.SAMPLE.marks) assert.ok(m.ko && m.mn, m.q);
+  for (const c of C.SAMPLE.comment) assert.ok(c.mn, c.ko);
 });
 
 test('빌드 원고: 화면이 쓰는 그림이 원고 폴더에 있다', () => {

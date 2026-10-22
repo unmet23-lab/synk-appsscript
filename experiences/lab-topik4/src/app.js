@@ -15,10 +15,10 @@
 
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   // 「·」로 이은 말은 한 덩어리로(word-break:keep-all이 「·」 앞뒤에서 줄을 가른다 — 시그널 도구와 같은 규칙).
-  // 몽골어 서수 「4-р」·「51–54-р」도 하이픈에서 갈리지 않게 묶는다.
+  // 몽골어 서수 「4-р」·「51–54-р」와 퍼센트 격 어미 「48%-иас」도 하이픈에서 갈리지 않게 묶는다.
   const keepDots = s => esc(s)
     .replace(/[^\s·]+(?:·[^\s·]+)+/g, m => `<span class="nw">${m}</span>`)
-    .replace(/\d+(?:[–-]\d+)?-[а-яёөү]+/gi, m => `<span class="nw">${m}</span>`);
+    .replace(/\d+(?:[–-]\d+)?%?-[а-яёөү]+/gi, m => `<span class="nw">${m}</span>`);
 
   /** 화면 언어: 주소의 ?lang이 먼저, 없으면 기기 언어에 몽골어가 있으면 몽골어, 아니면 한국어. */
   function pickLang(search, navLangs) {
@@ -132,6 +132,13 @@
     $('#facts').innerHTML = t.facts.map(([b, s]) => `<li><b>${keepDots(b)}</b><span>${keepDots(s)}</span></li>`).join('');
     $('#who-list').innerHTML = t.who.map(x => `<li>${keepDots(x)}</li>`).join('');
     $('#what-list').innerHTML = t.what.map(x => `<article class="t4-card"><p class="t4-k">${keepDots(x.k)}</p><h3>${keepDots(x.t)}</h3><p>${keepDots(x.d)}</p></article>`).join('');
+    // 첨삭 맛보기: 학생 글·표시한 곳·한마디는 한국어 그대로(배우는 대상), 몽골어 화면은 기호 뜻과 한마디 풀이를 몽골어로.
+    const S = C.SAMPLE;
+    $('#sample-box').innerHTML =
+      `<div class="t4-sample-task"><p class="t4-k">${esc(t.sampleTaskLabel)}</p><p>${keepDots(t.sampleTask)}</p></div>` +
+      `<figure class="t4-sample-draft"><figcaption class="t4-k">${esc(t.sampleDraftLabel)}</figcaption><blockquote lang="ko">${esc(S.draft)}</blockquote></figure>` +
+      `<div class="t4-sample-marks"><p class="t4-k">${esc(t.sampleMarksLabel)}</p><ul>${S.marks.map(m => `<li><span class="t4-code" lang="ko">〔${esc(m.code)}〕</span><span class="t4-q" lang="ko">「${esc(m.q)}」</span><span class="t4-mean">${keepDots(m[state.lang])}</span></li>`).join('')}</ul></div>` +
+      `<div class="t4-sample-comment"><p class="t4-k">${esc(t.sampleCommentLabel)}</p><dl>${S.comment.map((c, i) => `<div><dt>${keepDots(t.sampleCommentKeys[i])}</dt><dd><span lang="ko">${esc(c.ko).replace(/(\S+〔[^〕]+〕)$/, '<span class="nw">$1</span>')}</span>${state.lang === 'mn' ? `<span class="t4-tr" lang="mn">${keepDots(c.mn)}</span>` : ''}</dd></div>`).join('')}</dl></div>`;
     $('#weeks-list').innerHTML = C.WEEKS.map((w, i) => `<li><span class="t4-wk">${esc(t.weekLabel)} ${String(i + 1).padStart(2, '0')}</span><span class="t4-wt">${keepDots(w[state.lang])}</span><span class="t4-wg"><span class="sr">${esc(t.grammarLabel)}: </span><span lang="ko">${keepDots(w.grammar)}</span></span></li>`).join('');
     $('#terms-list').innerHTML = t.terms.map(x => `<div class="t4-term"><dt>${keepDots(x.b)}</dt><dd>${keepDots(x.d)}</dd></div>`).join('');
     $('#free-list').innerHTML = t.free.map(x => `<a class="t4-free-card" href="${esc(x.href)}" target="_blank" rel="noopener"><h3>${keepDots(x.t)}</h3><p>${keepDots(x.d)}</p><span class="t4-go">${esc(x.go)} <span aria-hidden="true">→</span></span></a>`).join('');
