@@ -33,7 +33,7 @@ sudo systemctl status synk-company.service synk-company-health.timer synk-compan
 
 ## 복구·백업·알림
 
-- 상태 검사는 1분마다 컨테이너 안의 `healthcheck.mjs`를 실행한다. 이 검사는 loopback에 공개 Host를 보내고 `ok`, `ready`, 회사 앱 식별을 확인한다. 모델 호출·쓰기 작업은 없다.
+- 상태 검사는 이미지 HEALTHCHECK(30초마다 컨테이너 안의 `healthcheck.mjs`, 3번 연속 실패면 unhealthy)가 맡는다. 이 검사는 loopback에 공개 Host를 보내고 `ok`, `ready`, 회사 앱 식별을 확인한다. 모델 호출·쓰기 작업은 없다. 1분 타이머(`company-health.sh`)는 같은 검사를 다시 띄우지 않고 `docker inspect`로 그 판정만 읽는다(2026-10-22 — 전에는 매분 `docker compose exec`로 두 번째 검사를 띄웠다). `healthy`가 아니면(시작 중·멈춤·읽기 실패 포함) 실패 한 번으로 센다.
 - 연속 3회 실패했을 때 회사 컨테이너만 재시작하며, **1시간에 최대 2회 시도**한다. 재시작 명령이 실패해도 시도 횟수는 소비한다. 다음 검사에서 정상 응답을 확인하기 전까지 복구 성공으로 보고하지 않는다. 직접 중지한 스택은 타이머도 중지되므로 다시 켜지 않는다.
 - 매일 한국 시각 03:30 이후 최대 15분 안에 자동 백업을 시도한다. 누락된 예약은 다음 부팅 뒤 실행된다. `SYNK_BACKUP_UPLOAD_ENABLED=1`과 검증된 비공개 `SYNK_BACKUP_GCS_DESTINATION`이 없으면 외부 전송하지 않고 실패를 기록한다.
 - 백업은 실행 컨테이너의 기존 `workspace-backup.mjs /backups`를 사용한다. `COMPLETE` 확인 뒤 호스트 전용 `COMPANY_ARCHIVE_DIR`에 tar와 SHA256을 만들고, 기존 GCS 객체를 덮어쓰지 않는 업로드를 수행한다. archive·중간 파일·해시·성공 표시가 이미 있거나 끊어진 링크이면 쓰기를 거절한다. 성공 뒤 호스트 전용 위치에 `.uploaded` 표시를 남기며 성공·실패 모두 로컬 사본은 유지한다. 컨테이너 침해 시 원본 스냅샷을 변조할 수 있다는 한계는 남으므로, 호스트의 성공 표시만으로 백업 내용의 신뢰성까지 보장하지 않는다. **온라인 두 DB는 순차 스냅샷이므로 하나의 동일 시점이 아니다. 최종 이전 백업은 모든 writer를 멈춘 상태로 수행해야 한다.**

@@ -69,7 +69,7 @@ async function fixture(t) {
   if [[ "$4" = "$COMPANY_ARCHIVE_DIR" ]]; then printf '%s\\n' "\${MOCK_ARCHIVE_META:-0:700}"; else printf '%s\\n' "\${MOCK_PARENT_META:-0:755}"; fi
 else printf '%s\\n' "\${MOCK_ENV_MODE:-600}"; fi`,
     docker: `printf 'docker %s\n' "$*" >> "$MOCK_CALLS"
-if [[ "$*" = *healthcheck.mjs* ]]; then [[ "\${MOCK_HEALTH:-failed}" = ready ]]; exit; fi
+if [[ "$1" = inspect ]]; then case "\${MOCK_HEALTH:-failed}" in ready) printf 'healthy\\n' ;; starting|stopped) printf '%s\\n' "$MOCK_HEALTH" ;; inspect-failed) exit 1 ;; *) printf 'unhealthy\\n' ;; esac; exit 0; fi
 if [[ "$*" = *'restart --timeout 60 company'* ]]; then [[ "\${MOCK_RESTART_FAIL:-0}" = 0 ]]; exit; fi
 if [[ "$*" = *workspace-backup.mjs* ]]; then
   [[ "\${MOCK_BACKUP_FAIL:-0}" = 0 ]] || exit 1
@@ -157,6 +157,9 @@ test('recovery waits for three failed probes and never exceeds two attempts per 
   assert.equal(recovered.status, 0); assert.match(recovered.stdout, /HEALTH_READY/);
   const current = await readFile(join(f.root, 'state/health.state'), 'utf8');
   assert.match(current, /^0 [0-9]+ 2\n$/);
+  // The timer reads the image HEALTHCHECK verdict; it never starts a second probe.
+  assert.doesNotMatch(await f.calls(), /healthcheck\.mjs| exec /);
+  assert.match(await f.calls(), /^docker inspect --format .*\.State\.Health\.Status.* synk-company-company-1$/m);
   await writeFile(join(f.root, 'state/health.state'), `0 ${Math.floor(Date.now() / 1000) - 3601} 2\n`);
   for (let i = 0; i < 3; i++) f.run('company-health');
   assert.equal(((await f.calls()).match(/restart --timeout 60 company/g) || []).length, 3);
@@ -172,6 +175,18 @@ test('failed restart consumes its attempt, busy backup lock skips recovery, corr
   await writeFile(join(f.root, 'state/health.state'), 'bad state\n');
   assert.match(f.run('company-health').stderr, /HEALTH_STATE_INVALID/);
   assert.equal(((await f.calls()).match(/restart --timeout 60 company/g) || []).length, 1);
+});
+
+test('a starting, stopped or unreadable container is a failed probe and a healthy verdict resets it', { skip }, async t => {
+  const f = await fixture(t);
+  for (const health of ['starting', 'stopped', 'inspect-failed']) {
+    const result = f.run('company-health', { MOCK_HEALTH: health });
+    assert.equal(result.status, 1, health); assert.match(result.stdout, /HEALTH_FAILED/, health);
+  }
+  assert.equal(((await f.calls()).match(/restart --timeout 60 company/g) || []).length, 1);
+  const ready = f.run('company-health', { MOCK_HEALTH: 'ready' });
+  assert.equal(ready.status, 0, ready.stderr); assert.match(ready.stdout, /HEALTH_READY/);
+  assert.match(await readFile(join(f.root, 'state/health.state'), 'utf8'), /^0 [0-9]+ 1\n$/);
 });
 
 

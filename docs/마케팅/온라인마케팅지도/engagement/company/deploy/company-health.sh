@@ -12,7 +12,11 @@ if [[ -f "$state" ]]; then
 fi
 if (( now - window >= 3600 )); then window="$now"; restarts=0; fi
 save_state() { printf '%s %s %s\n' "$failures" "$window" "$restarts" > "$state.tmp"; mv -- "$state.tmp" "$state"; }
-if compose exec -T company node "$COMPANY_PATH/deploy/healthcheck.mjs" >/dev/null 2>&1; then
+# The image HEALTHCHECK already runs deploy/healthcheck.mjs every 30 seconds and
+# marks the container unhealthy after three failures. Read that verdict instead of
+# starting a second probe; a stopped container or failed read counts as a failure.
+health="$(docker inspect --format '{{if .State.Running}}{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}{{else}}stopped{{end}}' synk-company-company-1 2>/dev/null || true)"
+if [[ "$health" = healthy ]]; then
   failures=0; save_state; event HEALTH_READY; exit 0
 fi
 failures=$((failures + 1)); save_state; event HEALTH_FAILED

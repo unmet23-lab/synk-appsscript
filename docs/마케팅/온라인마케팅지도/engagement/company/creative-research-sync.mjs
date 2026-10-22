@@ -2,8 +2,10 @@ import {createHash,randomUUID} from 'node:crypto';
 import {validateResearchReport,normalizeProducerPublicationDates} from './creative-research.mjs';
 
 const SETTINGS='creative-research-sync',PROGRESS='creative-research-sync-state',LEASE='creative-research-sync-lease';
-const INTERVAL_MS=30*1000,LEASE_MS=2*60*1000,MAX_DOCUMENT_BYTES=2*1024*1024;
-const MAX_RETRY_MS=5*60*1000,FRESHNESS_LIMIT_HOURS=36;
+// Argon finishes a document a few times a day; each check refreshes a token and
+// reads Drive metadata. Failures retry after 1, 2, 4, 8 minutes, then every interval.
+const INTERVAL_MS=10*60*1000,LEASE_MS=2*60*1000,MAX_DOCUMENT_BYTES=2*1024*1024;
+const RETRY_BASE_MS=60*1000,MAX_RETRY_MS=INTERVAL_MS,FRESHNESS_LIMIT_HOURS=36;
 export const CREATIVE_RESEARCH_COMPLETE='SYNK_CREATIVE_RESEARCH_COMPLETE';
 const messages={SYNC_CONFIG_INVALID:'자동 반영 설정의 켜짐 여부와 저장 계정 식별자를 확인해 주세요.',SYNC_DOCUMENT_ADDRESS_INVALID:'Google 문서 주소나 문서 ID를 넣어 주세요. 계정 정보나 추적값이 붙은 주소는 쓸 수 없어요.',SYNC_READ_FAILED:'조사 문서를 읽지 못했어요. 문서 공유와 Google Drive 연결을 확인해 주세요. 있던 자료는 그대로예요.',SYNC_READ_TIMEOUT:'조사 문서를 읽는 데 너무 오래 걸렸어요. 다음 확인 때 다시 읽을게요.',SYNC_DOCUMENT_INVALID:'끝난 조사 문서에는 JSON 보고서 하나와 맨 끝 완료 표시만 있어야 해요. 문서를 정리해 주세요.',SYNC_DOCUMENT_TOO_LARGE:'조사 문서가 2MB를 넘어 읽지 않았어요. 예약 조사가 적는 보고서를 줄여 주세요. 있던 자료는 그대로예요.',SYNC_REPORT_INVALID:'끝난 보고서의 날짜·출처·자료 형식이 맞지 않아요. 보고서를 고쳐 주세요. 있던 자료는 그대로예요.',SYNC_IMPORT_FAILED:'끝난 보고서를 저장하지 못했어요. 다음 확인 때 다시 해 볼게요. 있던 자료는 그대로예요.',SYNC_OWNER_UNAVAILABLE:'자동 반영을 연결한 관리자 계정을 쓸 수 없어요. 다른 관리자가 문서를 다시 연결해 주세요.',SYNC_AUTHORITY_CHANGED:'읽는 사이 문서나 연결 설정이 바뀌어 이번 결과는 넣지 않았어요.',SYNC_STOPPED:'서버를 다시 시작하는 중이라 자동 반영을 잠시 멈췄어요.'};
 const failure=(code,status=400)=>Object.assign(new Error(messages[code]||'자동 반영 입력을 확인해 주세요.'),{code,status});
@@ -130,7 +132,7 @@ export function createCreativeResearchSyncService({store,research,reader,clock=(
       try{result=research.importReport(owner,{...completed.report,visibility:'company',shareConfirmed:true},{automaticSourceId:claim.source.documentId,automaticSourcePoolIds:claim.current.sources.map(source=>source.documentId),originalInputHash:completed.originalInputHash,publicationDateNormalizations:completed.publicationDateNormalizations,assertSession:()=>authority(claim)});}catch(error){if(Object.hasOwn(messages,error?.code))throw error;throw failure('SYNC_IMPORT_FAILED');}
       const importedAt=instant(clock()),stored=finish(claim,{status:'imported',lastError:null,lastErrorCode:null,lastReadAt,consecutiveFailures:0,lastReport:result.report,lastSeenHash:hash,lastSeenSourceKey:key,lastSeenStatus:'imported',lastModifiedTime:modifiedTime,...(!result.existing?{lastImportedAt:importedAt}:{})});
       if(stored&&!result.existing&&onImported){try{Promise.resolve(onImported({report:result.report,existing:false})).catch(()=>{});}catch{}}
-    }catch(error){const code=Object.hasOwn(messages,error?.code)?error.code:'SYNC_READ_FAILED',consecutiveFailures=Math.min(100,Math.max(0,Number(progress(claim.source).consecutiveFailures)||0)+1),retryMs=Math.min(MAX_RETRY_MS,INTERVAL_MS*2**Math.min(4,consecutiveFailures-1));finish(claim,{status:stopped?'disabled':'error',lastError:messages[code],lastErrorCode:code,consecutiveFailures,nextCheckAt:stopped?null:plus(instant(clock()),retryMs),...(lastReadAt?{lastReadAt}:{})});}
+    }catch(error){const code=Object.hasOwn(messages,error?.code)?error.code:'SYNC_READ_FAILED',consecutiveFailures=Math.min(100,Math.max(0,Number(progress(claim.source).consecutiveFailures)||0)+1),retryMs=Math.min(MAX_RETRY_MS,RETRY_BASE_MS*2**Math.min(4,consecutiveFailures-1));finish(claim,{status:stopped?'disabled':'error',lastError:messages[code],lastErrorCode:code,consecutiveFailures,nextCheckAt:stopped?null:plus(instant(clock()),retryMs),...(lastReadAt?{lastReadAt}:{})});}
   }
   async function tick(at=clock(),{force=false}={}){
     if(typeof force!=='boolean')return Promise.reject(failure('SYNC_DOCUMENT_INVALID'));if(stopped)return Promise.resolve(state());at=instant(at);
