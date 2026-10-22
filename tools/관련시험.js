@@ -15,7 +15,12 @@
  *   ① 바꾼 경로가 CI가 도는 시험 파일이면 그 시험.
  *   ② 지도: 그 시험(과 그 시험이 띄운 자식)이 바꾼 파일을 읽거나 쟀거나, 그 파일이 든 폴더를 나열했거나, `git ls-files`의 무늬에 걸리면.
  *   ③ 글: 시험 글에 바꾼 경로나 파일 이름이 적혀 있으면(흔한 이름은 빼고) — 지도에 없는 새 시험과 지도를 못 받았을 때를 덮는다.
- *   기록 전용 경로(트랙·결정·현장노트 …)만 바꾼 push는 고르지 않는다 — CI도 그 push에는 무거운 검사를 안 띄운다(records-check가 돈다).
+ *      기록 전용 경로(트랙·결정·현장노트 …)는 글로 고르지 않는다(10-22). 내커밋·바로올리기·짝검사 시험은 트랙 경로를 가짜 저장소의
+ *      파일 이름으로만 적는데도 트랙을 같이 올리는 push마다 이 규칙에 붙었고, PC가 바쁠 때 내커밋·바로올리기는 각 11분 남짓 걸렸다
+ *      (현장노트 시험_화면확인).
+ *      그 경로는 ② 지도의 「읽음」과, 지도가 모르는 시험(지도를 못 받았거나 지도 뒤에 생긴 시험)이면 records-check.yml이 도는
+ *      시험으로 고른다 — 기록 전용 경로를 실제로 읽는 시험은 그 목록에 있어야 CI가 초록이다(읽기 대조 ②, tools/ci읽기대조.cjs).
+ *   기록 전용 경로만 바꾼 push는 고르지 않는다 — CI도 그 push에는 무거운 검사를 안 띄운다(records-check가 돈다).
  * 돌리기: node --test --test-reporter=tap. 워크트리에서는 CI=1이다(git 밖 로컬 자료를 읽는 시험이 건너뛴다 — 현장노트 시험_화면확인).
  *   공용 작업본에서는 주지 않는다. 이번 push로 처음 들어가는 파일은 SYNK_새파일로 넘긴다(git ls-files로 훑는 시험이 보게, 10-22).
  *   한 PC에서 동시에 도는 관련 시험은 자리 파일로 둘까지다(아래 「자리」 — 기다린 시간은 15분 한도에 안 든다, 10-22).
@@ -30,6 +35,7 @@ const path = require('node:path');
 const { tap실패 } = require('./lib/tap실패.js');
 
 const 무거운 = '.github/workflows/syntax-check.yml';
+const 기록흐름 = '.github/workflows/records-check.yml';
 const 지도이름 = 'test-read-map';
 const 지도파일이름 = 'test-read-map.json';
 const 받기간격ms = 6 * 3600e3;
@@ -66,13 +72,27 @@ function CI시험목록(root) {
   return (목록 || '').split('\0').filter((p) => p && 식들.some((식) => 식.test(p)) && fs.existsSync(path.join(root, p)));
 }
 
-/** 기록 전용 경로뿐인가 — syntax-check.yml의 paths-ignore에 모두 걸리면 CI도 무거운 검사를 안 띄운다. */
-function 기록전용인가(root, 바뀐) {
+/** 경로 하나가 기록 전용인가를 가르는 함수 — 그 경로만 바꾼 push가 무거운 검사를 안 띄우면(syntax-check.yml paths-ignore)
+ *  기록 전용이다(ci읽기대조.cjs와 같은 판정). 목록을 못 읽으면 모두 기록 밖으로 본다(넓게 고른다). */
+function 기록경로판정(root) {
   try {
     const { 푸시필터, 걸리나 } = require('./원격ci.js');
     const 필터 = 푸시필터(fs.readFileSync(path.join(root, 무거운), 'utf8'));
-    return 바뀐.length > 0 && 걸리나(필터, 바뀐) === false;
-  } catch { return false; }
+    return (p) => 걸리나(필터, [p]) === false;
+  } catch { return () => false; }
+}
+
+/** 기록 전용 경로뿐인가 — syntax-check.yml의 paths-ignore에 모두 걸리면 CI도 무거운 검사를 안 띄운다. */
+function 기록전용인가(root, 바뀐) {
+  return 바뀐.length > 0 && 바뀐.every(기록경로판정(root));
+}
+
+/** records-check.yml이 도는 시험 — 기록 전용 경로를 실제로 읽는 시험은 모두 여기 있어야 한다(CI 읽기 대조 ②가 그 목록을 같은 식으로 읽는다). */
+function 기록시험목록(root) {
+  try {
+    const { 시험목록 } = require('./ci읽기대조.cjs');
+    return 시험목록(fs.readFileSync(path.join(root, 기록흐름), 'utf8'));
+  } catch { return []; }
 }
 
 // ── 지도 만들기(CI) ────────────────────────────────────────────────────────────
@@ -234,7 +254,15 @@ function 고르기({ root, 바뀐, 지도 = undefined, 받기 = true }) {
       }
     }
   }
-  const 이름들 = 경로들.map((p) => [p, path.posix.basename(p)]).filter(([, b]) => !흔한이름.has(b));
+  // 기록 전용 경로는 글로 고르지 않는다(머리 주석 ③). 지도가 모르는 시험은 records-check.yml 목록으로 덮는다.
+  const 기록인가 = 기록경로판정(root);
+  const 기록경로들 = 경로들.filter(기록인가);
+  if (기록경로들.length) {
+    for (const t of 기록시험목록(root)) {
+      if (시험들.includes(t) && !(쓸지도 && 쓸지도.시험[t])) 고름(t, `기록 시험(records-check.yml)·지도에 없음: ${기록경로들[0]}`);
+    }
+  }
+  const 이름들 = 경로들.filter((p) => !기록인가(p)).map((p) => [p, path.posix.basename(p)]).filter(([, b]) => !흔한이름.has(b));
   for (const t of 시험들) {
     if (까닭[t]) continue;
     let 글;
@@ -410,4 +438,4 @@ function main(argv = process.argv.slice(2)) {
 
 if (require.main === module) process.exitCode = main();
 
-module.exports = { 고르기, 돌리기, 자리잡기, 자리글, 지도만들기, 지도읽기, 지도받기, 기록전용인가, CI시험목록, CI시험무늬, tap읽기, git무늬, git무늬식, 읽나, 지도이름, 지도파일이름 };
+module.exports = { 고르기, 돌리기, 자리잡기, 자리글, 지도만들기, 지도읽기, 지도받기, 기록전용인가, 기록경로판정, 기록시험목록, CI시험목록, CI시험무늬, tap읽기, git무늬, git무늬식, 읽나, 지도이름, 지도파일이름 };

@@ -73,6 +73,67 @@ test('고르기 — 지도: 읽은 파일 · 나열한 폴더(새 파일) · git
   assert.equal(고름(['docs/가/쪽.html']).지도, 42);
 });
 
+// 기록 전용 경로를 실제로 읽는 시험 목록 — CI 읽기 대조 ②가 지키는 records-check.yml의 node --test 줄
+const 기록흐름 = `name: records-check
+on:
+  push:
+    paths:
+      - 'docs/_ops/트랙.md'
+      - 'docs/현장노트/**'
+jobs:
+  records:
+    steps:
+      - run: node --test --test-reporter=tap tests/트랙읽기.test.js tests/결정읽기.test.js
+`;
+// 내커밋·바로올리기·짝검사 시험처럼 트랙 경로를 mkdtemp 가짜 저장소의 파일 이름으로만 적는 시험
+const 이름만시험 = "const 트랙 = 'docs/_ops/트랙.md'; // 가짜 저장소 파일 이름 · docs/현장노트/윈도우_셸.md\nrequire('../tools/가나다라.js');\n";
+
+test('고르기 — 기록 전용 경로는 글로 고르지 않는다: 트랙 글자만 적은 시험은 안 고르고, 지도에서 트랙을 읽은 시험은 고른다(10-22)', (t) => {
+  const root = 저장소(t, {
+    '.github/workflows/records-check.yml': 기록흐름,
+    'tests/이름만.test.js': 이름만시험,
+    'tests/트랙읽기.test.js': "fs.readFileSync(path.join(루트, 'docs', '_ops', '트랙.md'), 'utf8');\n",
+    'tests/결정읽기.test.js': "fs.readFileSync(path.join(루트, 'docs', '_ops', '결정.md'), 'utf8');\n",
+    'tools/가나다라.js': '',
+  });
+  const 지도 = { run: 7, 시험: {
+    'tests/이름만.test.js': { 읽음: ['tools/가나다라.js'], 폴더: [], 무늬: [] },
+    'tests/트랙읽기.test.js': { 읽음: ['docs/_ops/트랙.md'], 폴더: [], 무늬: [] },
+    'tests/결정읽기.test.js': { 읽음: ['docs/_ops/결정.md'], 폴더: [], 무늬: [] },
+  } };
+  const r = 관련.고르기({ root, 바뀐: ['docs/_ops/트랙.md', 'docs/현장노트/윈도우_셸.md', 'tools/나머지.js'], 지도 });
+  assert.deepEqual(r.시험, ['tests/트랙읽기.test.js'], '글에 트랙·현장노트 경로만 적은 시험과 트랙을 안 읽는 기록 시험은 안 고른다');
+  assert.equal(r.까닭['tests/트랙읽기.test.js'], '읽음: docs/_ops/트랙.md');
+  const 섞임 = 관련.고르기({ root, 바뀐: ['docs/_ops/트랙.md', 'tools/가나다라.js'], 지도: null });
+  assert.equal(섞임.까닭['tests/이름만.test.js'], '글에 경로: tools/가나다라.js', '기록 밖 경로는 여전히 글로 고른다');
+  fs.rmSync(path.join(root, '.github/workflows/syntax-check.yml'));
+  assert.equal(관련.고르기({ root, 바뀐: ['docs/_ops/트랙.md', 'tools/나머지.js'], 지도 }).까닭['tests/이름만.test.js'], '글에 경로: docs/_ops/트랙.md',
+    'paths-ignore 목록을 못 읽으면 기록 경로를 가르지 못하니 예전처럼 넓게 고른다');
+});
+
+test('고르기 — 지도가 모르는 시험(지도를 못 받음·지도 뒤에 생김)은 기록 경로가 섞이면 records-check.yml 목록으로 고른다(10-22)', (t) => {
+  const root = 저장소(t, {
+    '.github/workflows/records-check.yml': 기록흐름,
+    'tests/이름만.test.js': 이름만시험,
+    'tests/트랙읽기.test.js': '// 지도 뒤에 생긴 시험\n',
+    'tests/결정읽기.test.js': '//\n',
+    'tools/가나다라.js': '',
+  });
+  const 바뀐 = ['docs/_ops/트랙.md', 'tools/나머지.js'];
+  const 없음 = 관련.고르기({ root, 바뀐, 지도: null });
+  assert.deepEqual(없음.시험, ['tests/결정읽기.test.js', 'tests/트랙읽기.test.js'], '지도가 없으면 목록 전부 — 이름만 적은 시험은 안 고른다');
+  assert.equal(없음.까닭['tests/트랙읽기.test.js'], '기록 시험(records-check.yml)·지도에 없음: docs/_ops/트랙.md');
+  const 지도 = { run: 8, 시험: {
+    'tests/이름만.test.js': { 읽음: ['tools/가나다라.js'], 폴더: [], 무늬: [] },
+    'tests/결정읽기.test.js': { 읽음: ['docs/_ops/결정.md'], 폴더: [], 무늬: [] },
+  } };
+  assert.deepEqual(관련.고르기({ root, 바뀐, 지도 }).시험, ['tests/트랙읽기.test.js'], '지도가 아는 시험은 지도대로 — 결정만 읽는 시험은 트랙 push에 안 붙는다');
+  assert.deepEqual(관련.고르기({ root, 바뀐: ['tools/나머지.js'], 지도: null }).시험, [], '기록 경로가 없으면 목록을 보지 않는다');
+  assert.deepEqual(관련.기록시험목록(root), ['tests/트랙읽기.test.js', 'tests/결정읽기.test.js']);
+  fs.rmSync(path.join(root, '.github/workflows/records-check.yml'));
+  assert.deepEqual(관련.기록시험목록(root), []);
+});
+
 test('지도만들기 — 시험 프로세스(자식 포함)가 읽은 추적 파일·폴더·git 무늬만 남기고 node_modules·추적 밖은 뺀다', () => {
   const root = path.join(os.tmpdir(), '가상저장소');
   const 절대 = (p) => path.join(root, ...p.split('/'));
