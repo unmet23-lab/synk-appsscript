@@ -68,7 +68,7 @@ namespace Synk.SignalInstaller
                     {
                         if(stopping!=null)stopping();
                         finished=Stop(job);
-                        throw new InstallFailure("설치 제한 시간("+TimeSpan.FromMilliseconds(deadline).TotalMinutes.ToString("0.##",System.Globalization.CultureInfo.InvariantCulture)+"분)을 넘겼습니다. "+(finished?"설치 작업을 중단했습니다.":"설치 작업의 종료를 확인하지 못했습니다."),finished,finished);
+                        throw new InstallFailure("설치 제한 시간("+TimeSpan.FromMilliseconds(deadline).TotalMinutes.ToString("0.##",System.Globalization.CultureInfo.InvariantCulture)+"분)을 넘겼어요. "+(finished?"설치를 멈췄어요.":"설치가 끝났는지 확인하지 못했어요."),finished,finished);
                     }
                     Thread.Sleep(50);
                 }
@@ -76,7 +76,7 @@ namespace Synk.SignalInstaller
             }
             catch(Exception error)
             {
-                if(!finished&&assigned) { finished=Stop(job);if(!finished)throw new InstallFailure("설치 작업의 종료를 확인하지 못했습니다. 복구와 재시도를 중단합니다.\n"+error.Message,false,false); }
+                if(!finished&&assigned) { finished=Stop(job);if(!finished)throw new InstallFailure("설치가 끝났는지 확인하지 못해 되돌리기와 재시도를 멈췄어요.\n"+error.Message,false,false); }
                 throw;
             }
             finally

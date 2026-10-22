@@ -8,7 +8,7 @@ test('initial and interim signed-out account states remain loading until start c
   for (const account of [{ configured: false, status: 'loading' }, { configured: true, status: 'signed-out' }]) {
     const view = careAccountView({ starting: true, account });
     assert.equal(view.loading, true);assert.equal(view.locked, true);assert.equal(view.concealNotebook, true);assert.equal(view.signInDisabled, true);
-    assert.doesNotMatch(view.title, /설정이 아직|0명|등록한 사람이 없/);
+    assert.doesNotMatch(view.title, /로그인을 쓸 수 없|0명|등록한 사람이 없/);
   }
 });
 test('account restoration and the gap before notebook loading conceal an empty replacement state', () => {
@@ -18,7 +18,7 @@ test('account restoration and the gap before notebook loading conceal an empty r
 });
 test('final unconfigured, signed-out and failed states unlock the local notebook with accurate copy', () => {
   const absent = careAccountView({ account: { configured: false, status: 'unconfigured' } });
-  assert.equal(absent.loading, false);assert.equal(absent.locked, false);assert.match(absent.title, /설정/);
+  assert.equal(absent.loading, false);assert.equal(absent.locked, false);assert.match(absent.title, /로그인을 쓸 수 없/);
   const guest = careAccountView({ account: { configured: true, status: 'signed-out' } });
   assert.equal(guest.signInDisabled, false);assert.equal(guest.concealNotebook, false);
   const failed = careAccountView({ account: { configured: true, status: 'error', error: { message: '연결 응답이 없어요.' } } });
@@ -39,8 +39,8 @@ test('received revision zero and selected local notebooks stay usable while save
 
 test('temporary configuration failures expose a working reconnect action without claiming missing setup', () => {
   const view = careAccountView({ account: { configured: false, status: 'error', error: { code: 'NETWORK', retryable: true, message: '연결이 돌아오면 다시 확인해 주세요.' } } });
-  assert.equal(view.signInDisabled, false); assert.equal(view.signInLabel, '계정 연결 다시 확인');
-  assert.equal(view.kind, 'error'); assert.doesNotMatch(view.title, /설정이 아직/);
+  assert.equal(view.signInDisabled, false); assert.equal(view.signInLabel, '다시 로그인');
+  assert.equal(view.kind, 'error'); assert.doesNotMatch(view.title, /로그인을 쓸 수 없/);
 });
 
 test('temporary loss of account verification conceals retained notebook data and offers only connection recovery', () => {

@@ -38,7 +38,7 @@ export function createDraftRecovery({bridge,slot,getContext,getDraft,onCandidate
       // A hidden draft remains protected until its app access is restored.
       protectedDraft=draft!==null&&draft!==undefined;
       if(draft&&getContext().appIds.includes(draft.appId))present({draft,updatedAt:result.updatedAt});
-    }catch(result){if(matches(expected,next)){enabled=false;readReady=false;failure(result,'초안 복구 상태를 확인하지 못했어요. 작성 내용은 이 창에 남아 있어요.');}}
+    }catch(result){if(matches(expected,next)){enabled=false;readReady=false;failure(result,'임시 저장 상태를 확인하지 못했어요. 쓰던 내용은 이 창에 그대로 있어요.');}}
     finally{if(matches(expected,next)){loading=false;notify();if(readReady&&enabled&&!protectedDraft&&getDraft())changed();}}
   }
   async function persist(expected,k,payload){
@@ -46,9 +46,9 @@ export function createDraftRecovery({bridge,slot,getContext,getDraft,onCandidate
     try{
       const result=await bridge.draftRecoverySave(slot,payload,getContext().owner);
       if(!matches(expected,k))return false;
-      if(result?.ok!==true){failure(result,'초안 복구본을 보관하지 못했어요. 창을 닫기 전에 메모를 저장해 주세요.');return false;}
+      if(result?.ok!==true){failure(result,'임시 저장을 하지 못했어요. 창을 닫기 전에 메모를 저장해 주세요.');return false;}
       error=null;notify();return true;
-    }catch(result){if(matches(expected,k))failure(result,'초안 복구본을 보관하지 못했어요. 창을 닫기 전에 메모를 저장해 주세요.');return false;}
+    }catch(result){if(matches(expected,k))failure(result,'임시 저장을 하지 못했어요. 창을 닫기 전에 메모를 저장해 주세요.');return false;}
   }
   function changed(){
     cancel();if(!enabled||!readReady||loading||protectedDraft||!key||contextKey()!==key)return;
@@ -68,9 +68,9 @@ export function createDraftRecovery({bridge,slot,getContext,getDraft,onCandidate
     try{
       const result=await bridge.draftRecoveryClear?.(slot,getContext().owner);
       if(!matches(expected,k))return false;
-      if(result?.ok!==true){failure(result,'복구본을 지우지 못했어요. 다시 확인한 뒤 시도해 주세요.');return false;}
+      if(result?.ok!==true){failure(result,'임시 저장본을 지우지 못했어요. 다시 눌러 주세요.');return false;}
       enabled=result.available===true&&result.enabled===true;readReady=true;protectedDraft=false;error=null;present(null);notify();return true;
-    }catch(result){if(matches(expected,k))failure(result,'복구본을 지우지 못했어요. 다시 확인한 뒤 시도해 주세요.');return false;}
+    }catch(result){if(matches(expected,k))failure(result,'임시 저장본을 지우지 못했어요. 다시 눌러 주세요.');return false;}
   }
   function take(){
     if(!candidate||!enabled||!readReady||loading||!key||key!==contextKey())return null;

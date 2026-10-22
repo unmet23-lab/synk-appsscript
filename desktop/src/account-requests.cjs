@@ -6,18 +6,18 @@ function requestSpec(operation,params={},appVersion='0.1.0',product,clientKey){
   if(operation==='worldRequest')return worldRequestSpec(params,product,clientKey);
   // WORLD reads the person's 「내 성향」 answers to choose practice: a read of the same document, never a write.
   if(operation==='understandingLoad'&&product==='world'&&clientKey==='world'){
-    if(!params||typeof params!=='object'||Array.isArray(params)||Object.keys(params).length)throw Object.assign(new Error('요청 형식을 확인해 주세요.'),{code:'INVALID_REQUEST'});
+    if(!params||typeof params!=='object'||Array.isArray(params)||Object.keys(params).length)throw Object.assign(new Error('요청을 처리하지 못했어요. 다시 해 주세요.'),{code:'INVALID_REQUEST'});
     return {path:'synk-personal?resource=member-understanding'};
   }
   if(Object.hasOwn(PLATFORM_OPERATIONS,operation)){
-    if(product!=='platform'||clientKey!=='platform')throw Object.assign(new Error('플랫폼 계정 연결을 확인해 주세요.'),{code:'INVALID_REQUEST'});
+    if(product!=='platform'||clientKey!=='platform')throw Object.assign(new Error('플랫폼에 로그인돼 있지 않아요. 다시 로그인해 주세요.'),{code:'INVALID_REQUEST'});
     return personalRequestSpec(operation.replace(/^(platform|insight|understanding)/,'personal'),params,product,PLATFORM_OPERATIONS[operation]);
   }
   if(PERSONAL_OPERATIONS.includes(operation)){
-    if(['member-insight','member-understanding'].includes(clientKey))throw Object.assign(new Error('플랫폼 계정 연결을 확인해 주세요.'),{code:'INVALID_REQUEST'});
+    if(['member-insight','member-understanding'].includes(clientKey))throw Object.assign(new Error('플랫폼에 로그인돼 있지 않아요. 다시 로그인해 주세요.'),{code:'INVALID_REQUEST'});
     return personalRequestSpec(operation,params,product,clientKey);
   }
-  const invalid=()=>{throw Object.assign(new Error('요청 형식을 확인해 주세요.'),{code:'INVALID_REQUEST'});};
+  const invalid=()=>{throw Object.assign(new Error('요청을 처리하지 못했어요. 다시 해 주세요.'),{code:'INVALID_REQUEST'});};
   if(!params||typeof params!=='object'||Array.isArray(params))invalid();
   const keys=(allowed)=>{if(Object.keys(params).some(k=>!allowed.includes(k)))invalid();};
   const integer=(v,min=0)=>{if(!Number.isSafeInteger(v)||v<min)invalid();return v;};

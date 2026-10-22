@@ -8,7 +8,7 @@ const dayNumber = value => Date.parse(`${value}T00:00:00Z`);
 const moveDay = (value, count) => new Date(dayNumber(value) + count * DAY).toISOString().slice(0, 10);
 function koreanDate(now = new Date()) {
   const date = new Date(now);
-  if (!Number.isFinite(date.getTime())) throw new Error('기준 날짜를 확인해 주세요.');
+  if (!Number.isFinite(date.getTime())) throw new Error('날짜를 읽지 못했어요.');
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
 }
 function validSolarDate(value) {
@@ -17,7 +17,7 @@ function validSolarDate(value) {
   return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value && value >= '1900-01-01' && value <= '2199-12-31';
 }
 function monthParts(value) {
-  if (!/^\d{4}-\d{2}$/u.test(String(value))) throw new Error('달은 YYYY-MM 형식으로 입력해 주세요.');
+  if (!/^\d{4}-\d{2}$/u.test(String(value))) throw new Error('달은 2026-10처럼 적어 주세요.');
   const [year, month] = value.split('-').map(Number);
   if (year < 1900 || year > 2199 || month < 1 || month > 12) throw new Error('1900~2199년 사이의 달을 골라 주세요.');
   return { year, month };
@@ -25,7 +25,7 @@ function monthParts(value) {
 
 /** 직접 고른 분류만 사용한다. 관계 문구로 가족이나 친구를 자동 추정하지 않는다. */
 export function filterPeople(people = [], { query = '', group = 'all' } = {}) {
-  if (group !== 'all' && !Object.hasOwn(PEOPLE_GROUPS, group)) throw new Error('사람 분류를 확인해 주세요.');
+  if (group !== 'all' && !Object.hasOwn(PEOPLE_GROUPS, group)) throw new Error('사람 분류를 다시 골라 주세요.');
   const words = normalize(query).split(' ').filter(Boolean);
   return people.filter(person => {
     const savedGroup = Object.hasOwn(PEOPLE_GROUPS, person.group) ? person.group : 'other';
@@ -38,7 +38,7 @@ export function filterPeople(people = [], { query = '', group = 'all' } = {}) {
 
 export function shiftMonth(month, delta) {
   const { year, month: index } = monthParts(month);
-  if (!Number.isInteger(delta) || Math.abs(delta) > 3600) throw new Error('이동할 달을 확인해 주세요.');
+  if (!Number.isInteger(delta) || Math.abs(delta) > 3600) throw new Error('옮겨 갈 달을 다시 골라 주세요.');
   const target = new Date(Date.UTC(year, index - 1 + delta, 1)).toISOString().slice(0, 7);
   monthParts(target);
   return target;
@@ -110,10 +110,10 @@ function readTime(text) {
   if (!match) return { time: '', caution: '' };
   const [raw, period, hour, minuteColon, minuteKorean, half] = match;
   let h = Number(hour); const m = Number(minuteColon ?? minuteKorean ?? (half ? 30 : 0));
-  if (h > 23 || m > 59 || (period && (h < 1 || h > 12))) return { time: '', caution: `시간 표현 “${raw}”을 직접 확인해 주세요.` };
+  if (h > 23 || m > 59 || (period && (h < 1 || h > 12))) return { time: '', caution: `시간으로 읽지 못한 표현이 있어요(“${raw}”). 시간을 직접 적어 주세요.` };
   if (period && ['오후', '저녁', '밤', '낮'].includes(period)) h = h === 12 ? 12 : h + 12;
   if (period && ['오전', '아침'].includes(period)) h = h === 12 ? 0 : h;
-  return { time: `${pad(h)}:${pad(m)}`, caution: !period && h >= 1 && h <= 12 ? `오전·오후가 없는 “${raw}”은 ${pad(h)}시로 표시했어요. 시간을 확인해 주세요.` : '' };
+  return { time: `${pad(h)}:${pad(m)}`, caution: !period && h >= 1 && h <= 12 ? `오전·오후가 없어 ${pad(h)}시로 넣었어요(“${raw}”). 오후라면 시간을 고쳐 주세요.` : '' };
 }
 function readLocation(text) {
   const explicit = text.match(/(?:장소|위치|예식장|빈소)\s*[:：]\s*([^\n]+)/u);
@@ -128,7 +128,7 @@ function dateMentions(text, current) {
   for (const match of text.matchAll(/(\d{4})\s*[-/.]\s*(\d{1,2})\s*[-/.]\s*(\d{1,2})|(?:(\d{4})\s*년\s*)?(\d{1,2})\s*월\s*(\d{1,2})\s*일/gu)) {
     const year = match[1] ?? match[4] ?? current.slice(0, 4);
     const month = match[2] ?? match[5]; const day = match[3] ?? match[6];
-    add(match, `${year}-${pad(month)}-${pad(day)}`, !match[1] && !match[4] ? `연도가 없어 ${year}년으로 표시했어요. 날짜를 확인해 주세요.` : '');
+    add(match, `${year}-${pad(month)}-${pad(day)}`, !match[1] && !match[4] ? `연도가 없어 ${year}년으로 넣었어요. 다른 해라면 고쳐 주세요.` : '');
   }
   for (const match of text.matchAll(/(?:이번\s*주|다음\s*주)\s*[월화수목금토일]요일|오늘|내일|모레/gu)) {
     if (taken.some(([start, end]) => match.index >= start && match.index < end)) continue;
@@ -140,14 +140,14 @@ function dateMentions(text, current) {
       const target = '월화수목금토일'.indexOf(match[0].match(/([월화수목금토일])요일/u)[1]);
       date = moveDay(monday, target + (/다음/u.test(match[0]) ? 7 : 0));
     }
-    add(match, date, `“${match[0]}”은 오늘(${current}) 기준으로 풀었어요. 원문을 받은 날짜가 다르면 고쳐 주세요.`);
+    add(match, date, `오늘(${current})을 기준으로 「${match[0]}」의 날짜를 넣었어요. 글을 받은 날이 다르면 고쳐 주세요.`);
   }
   return mentions.sort((a, b) => a.index - b.index);
 }
 
 /** 문장에 드러난 날짜·종류·선호를 후보로만 정리한다. 모든 후보는 원문과 함께 사람이 확인한다. */
 export function captureCandidates(text, { person = null, now = new Date() } = {}) {
-  if (typeof text !== 'string' || text.length > 50000) throw new Error('가져올 대화는 5만 자 이내의 글로 입력해 주세요.');
+  if (typeof text !== 'string' || text.length > 50000) throw new Error('글은 5만 자까지 넣을 수 있어요.');
   const source = text.trim();
   if (!source) return { events: [], memories: [], warnings: ['먼저 대화나 안내 문자를 붙여넣어 주세요.'] };
   const current = koreanDate(now);
@@ -164,12 +164,12 @@ export function captureCandidates(text, { person = null, now = new Date() } = {}
       const lunarLeapMonth = /윤달|윤\s*\d{1,2}\s*월/u.test(line) || (mentions.length === 1 && /윤달|윤\s*\d{1,2}\s*월/u.test(block));
       const calendar = lunarLeapMonth || /음력/u.test(line) || (/음력/u.test(block) && !/양력/u.test(block)) ? 'lunar' : 'solar';
       const cautions = [mention.caution].filter(Boolean);
-      if (calendar === 'solar' && !validSolarDate(mention.date)) { warnings.push(`“${mention.raw}”은 실제 날짜인지 확인해 주세요. 일정 후보에서 뺐어요.`); continue; }
-      if (calendar === 'lunar') cautions.push('음력 표현을 찾았어요. 윤달과 실제 음력 날짜를 저장 전에 확인해 주세요.');
+      if (calendar === 'solar' && !validSolarDate(mention.date)) { warnings.push(`달력에 없는 날짜라 일정에서 뺐어요(“${mention.raw}”).`); continue; }
+      if (calendar === 'lunar') cautions.push('음력 날짜예요. 윤달인지 보고 저장해 주세요.');
       const time = readTime(mentions.length === 1 ? block : line);
       if (time.caution) cautions.push(time.caution);
-      if (mentions.length > 1) cautions.push('날짜가 여러 개 있어요. 이 날짜의 행사 종류·시간·장소를 원문과 대조해 주세요.');
-      if (type === 'anniversary' && !/기념일|주년/u.test(block)) cautions.push('행사 종류가 명확하지 않아 기념일로 표시했어요. 종류를 직접 골라 주세요.');
+      if (mentions.length > 1) cautions.push('날짜가 여러 개 있어요. 이 날짜의 종류와 시간, 장소가 맞는지 글과 견줘 보세요.');
+      if (type === 'anniversary' && !/기념일|주년/u.test(block)) cautions.push('어떤 날인지 알 수 없어 기념일로 넣었어요. 종류를 골라 주세요.');
       const title = `${person?.name ? `${person.name} ` : ''}${EVENT_TYPES[type]}`;
       const quoteStart = Math.max(0, mention.index - 1500);
       events.push({ personId: person?.id ?? '', type, title, date: mention.date, time: time.time, location, calendar, lunarLeapMonth, sourceQuote: block.slice(quoteStart, quoteStart + 4000), cautions });
@@ -184,6 +184,6 @@ export function captureCandidates(text, { person = null, now = new Date() } = {}
   }
   const uniqueEvents = events.filter((item, index) => events.findIndex(other => other.type === item.type && other.date === item.date && other.time === item.time && other.calendar === item.calendar) === index);
   const uniqueMemories = memories.filter((item, index) => memories.findIndex(other => other.text === item.text) === index);
-  if (!uniqueEvents.length && !uniqueMemories.length && !warnings.length) warnings.push('날짜나 명시적인 선호 표현을 찾지 못했어요. 직접 기억을 추가하거나 날짜를 적어 다시 정리해 주세요.');
+  if (!uniqueEvents.length && !uniqueMemories.length && !warnings.length) warnings.push('날짜나 좋아하고 싫어하는 표현을 찾지 못했어요. 아래에 기억을 직접 적거나 날짜를 넣어 다시 찾아보세요.');
   return { events: uniqueEvents.slice(0, 40), memories: uniqueMemories.slice(0, 40), warnings: [...new Set(warnings)] };
 }

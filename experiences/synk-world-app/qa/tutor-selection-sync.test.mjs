@@ -70,7 +70,7 @@ test('connected commit updates the cache only after account persistence and inva
 test('a durable offline queue permits continuing but is not labelled account-saved',async t=>{
  const f=await fixture({tutor:'marin',mutate:()=>{throw failure('NETWORK');}});t.after(()=>f.port.dispose());
  saveTutorChoice(f.cache,OWNER,'marin');const result=await commitTutorSelection(f.args('mongle'));
- assert.equal(result.saved,true);assert.equal(result.mode,'account');assert.match(result.message,/이 기기에 보관/);
+ assert.equal(result.saved,true);assert.equal(result.mode,'account');assert.match(result.message,/이 기기에 두었/);
  assert.equal(f.progress.status().saved,false);assert.equal(f.progress.status().pending,1);
  assert.equal(JSON.parse(f.state.records[LIFE_PROGRESS_KEY]).tutor.selected,'marin');assert.equal(readTutorChoice(f.cache,OWNER),'mongle');
 });

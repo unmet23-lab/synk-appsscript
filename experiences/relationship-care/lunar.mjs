@@ -125,12 +125,12 @@ export function solarToLunar(date) {
 
 /** 입력 저장용 검증. 음력 2월 30일을 양력 Date로 검사하지 않는다. */
 export function normalizeLunarDate(date, leapMonth = false) {
-  if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error('음력 날짜는 YYYY-MM-DD 형식으로 입력해 주세요.');
-  if (typeof leapMonth !== 'boolean') throw new Error('음력 윤달 여부를 확인해 주세요.');
-  if (date < LUNAR_RANGE.minDate || date > LUNAR_RANGE.maxDate) throw new Error('음력은 1900-01-01~2050-11-18 사이만 지원해요.');
+  if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error('음력 날짜를 다시 골라 주세요.');
+  if (typeof leapMonth !== 'boolean') throw new Error('윤달인지 다시 골라 주세요.');
+  if (date < LUNAR_RANGE.minDate || date > LUNAR_RANGE.maxDate) throw new Error('음력은 1900년 1월 1일부터 2050년 11월 18일까지 고를 수 있어요.');
   const [year, month, day] = date.split('-').map(Number);
   const value = { year, month, day, leapMonth };
-  if (!lunarToSolar(value)) throw new Error('실제로 존재하는 음력 날짜와 윤달 여부를 확인해 주세요.');
+  if (!lunarToSolar(value)) throw new Error('그해 음력에 없는 날짜예요. 날짜나 윤달 표시를 고쳐 주세요.');
   return { date, ...value };
 }
 
@@ -144,8 +144,8 @@ export function lunarDateInYear(input, targetYear) {
   const original = normalizeLunarDate(input?.date, input?.leapMonth ?? false);
   const leapPolicy = input?.leapPolicy ?? 'regular';
   const shortMonthPolicy = input?.shortMonthPolicy ?? 'last-day';
-  if (!['regular', 'leap-only'].includes(leapPolicy)) throw new Error('음력 윤달 반복 방법을 확인해 주세요.');
-  if (!['last-day', 'skip'].includes(shortMonthPolicy)) throw new Error('음력 30일이 없는 해의 처리 방법을 확인해 주세요.');
+  if (!['regular', 'leap-only'].includes(leapPolicy)) throw new Error('윤달이 없는 해에 챙길 방법을 골라 주세요.');
+  if (!['last-day', 'skip'].includes(shortMonthPolicy)) throw new Error('30일이 없는 달에 챙길 방법을 골라 주세요.');
   if (!validYear(targetYear) || targetYear < original.year) return null;
   let leapMonth = original.leapMonth;
   if (leapMonth && leapMonthInYear(targetYear) !== original.month) {

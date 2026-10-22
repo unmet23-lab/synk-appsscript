@@ -21,15 +21,15 @@ function createMacApplicationLocationGate({app,dialog,platform=process.platform,
       ? 'Applications 폴더의 같은 이름 앱이 실행 중이라 옮기지 않았어요. 그 앱을 완전히 종료한 뒤 다시 실행해 옮겨 주세요.'
       : status==='move-failed'||status==='location-unavailable'
         ? '앱을 Applications 폴더로 옮기지 못했어요. Finder에서 이 앱을 Applications 폴더로 옮긴 뒤 다시 열어 주세요.'
-        : '현재 위치에서 계속 열어요. 다음에 실행할 때 다시 옮길 수 있어요.';
-    try{await dialog.showMessageBox({type:'warning',title:productName,message:'현재 사본에 업데이트가 적용되지 않을 수 있어요.',detail:detail+'\n\nMac 업데이트는 Applications 폴더의 앱을 바꾸는 방식이에요. DMG나 다운로드 폴더의 사본을 계속 열면 이전 버전으로 실행될 수 있어요. 계정과 저장된 기록은 그대로 유지돼요.',buttons:['계속 열기'],defaultId:0,cancelId:0,noLink:true});}catch{}
+        : '지금 위치에서 열어요. 다음에 열 때 다시 옮길 수 있어요.';
+    try{await dialog.showMessageBox({type:'warning',title:productName,message:'지금 연 사본은 업데이트되지 않을 수 있어요.',detail:detail+'\n\nMac 업데이트는 Applications 폴더의 앱을 바꾸는 방식이에요. DMG나 다운로드 폴더의 사본을 계속 열면 이전 버전으로 실행될 수 있어요. 계정과 저장된 기록은 그대로 유지돼요.',buttons:['계속 열기'],defaultId:0,cancelId:0,noLink:true});}catch{}
     return {continueStartup:true,status};
   }
   async function check(){
     if(platform!=='darwin'||!packaged||smoke)return {continueStartup:true,status:'not-required'};
     try{if(app.isInApplicationsFolder())return {continueStartup:true,status:'in-applications'};}catch{return warn('location-unavailable');}
     let choice;
-    try{choice=await dialog.showMessageBox({type:'question',title:productName,message:productName+'을(를) Applications 폴더로 옮길까요?',detail:'Applications 폴더에서 열면 다음 업데이트도 같은 앱에 적용돼요. 옮기면 앱이 다시 열리고, 계정과 저장된 기록은 그대로 유지돼요.',buttons:['Applications로 옮기기','현재 위치에서 열기'],defaultId:0,cancelId:1,noLink:true});}catch{return warn('move-failed');}
+    try{choice=await dialog.showMessageBox({type:'question',title:productName,message:productName+' 앱을 Applications 폴더로 옮길까요?',detail:'Applications 폴더에서 열면 다음 업데이트도 같은 앱에 적용돼요. 옮기면 앱이 다시 열리고, 계정과 저장된 기록은 그대로 유지돼요.',buttons:['Applications로 옮기기','지금 위치에서 열기'],defaultId:0,cancelId:1,noLink:true});}catch{return warn('move-failed');}
     if(choice.response!==0)return warn('declined');
     let conflict=null;
     try{

@@ -1,0 +1,6 @@
+{
+ "//": "08의 새 글을 시험에 맞춘다 — 뜻(계정 저장으로 표시하지 않고 이 기기에 둔다)은 그대로.",
+ "experiences/synk-world-app/qa/tutor-selection-sync.test.mjs": [
+  ["assert.match(result.message,/이 기기에 보관/)", "assert.match(result.message,/이 기기에 두었/)"]
+ ]
+}

@@ -38,6 +38,8 @@
 .game-tutor[data-tutor-game]:not(.home-tutor-companion) .game-tutor-message b:not(.w-name){color:#08090C}
 .game-tutor[data-tutor-game]:not(.home-tutor-companion) .game-tutor-line{position:relative;margin-top:1px;min-height:2.9em;font-size:15.5px;font-weight:var(--wt-strong);color:#08090C}
 .game-tutor[data-tutor-game]:not(.home-tutor-companion) .game-tutor-message small::before{background:rgba(8,9,12,.22)}
+/* 잘린 말풍선을 누르면 전체(game-tutor.mjs가 data-expanded를 단다). 새 말이 오면 다시 접는다. */
+.game-tutor[data-tutor-game]:not(.home-tutor-companion) .game-tutor-message[data-expanded=true] .game-tutor-line{display:block;-webkit-line-clamp:unset;overflow:visible}
 .game-tutor[data-tutor-game]:not(.home-tutor-companion) .game-tutor-help{align-self:center}
 /* 조작법 · 힌트 · 표현 도움: 1px 선 알약 */
 .game-tutor-help{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px;padding:0 16px;border:0;border-radius:999px;background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line-2);font-size:14px;font-weight:var(--wt-strong);line-height:normal;letter-spacing:-.005em;cursor:pointer;transition:background .18s var(--w-ease),transform .12s var(--w-ease)}
@@ -113,6 +115,14 @@
 /* ── 휴대폰 세로: 안내 창은 아래에서 올라오는 판 ── */
 @media(max-width:599px) and (min-height:501px){
  .game-tutor-guide{width:100%;max-width:100%;max-height:calc(100dvh - 12px - env(safe-area-inset-top,0px));margin:auto 0 0;border-radius:var(--w-r-xl) var(--w-r-xl) 0 0;padding:22px 20px calc(18px + env(safe-area-inset-bottom,0px))}
+ /* 말풍선이 좁아 힌트 대사가 두 줄에서 잘려 끝(「같이 다시 찾아보자!」)이 안 보였다(10-21) — 휴대폰 세로에서는 세 줄까지 */
+ .game-tutor[data-tutor-game]:not(.home-tutor-companion) .game-tutor-line{-webkit-line-clamp:3}
+ /* 놀이 판(아래가 iframe)에서는 세 줄 말이 와도 놀이 화면이 밀리지 않게(리듬 노래 도중에도 힌트가 온다) 띠 높이를 두 줄 말풍선에 고정하고, 셋째 줄은 말풍선이 위(머리 띠의 빈자리)로 자란다.
+    띠 높이 = 위 여백 4 + 말풍선 안쪽 8·9 + 이름표 22(world-ui.css .w-name) + 줄 위 1 + 두 줄(15.5px × 2.9) — 이 값들을 바꾸면 같이 고친다. */
+ .game-panel #panel-content.has-game-tutor>.game-tutor[data-tutor-game]{height:calc(4px + 8px + 9px + 22px + 1px + 15.5px*2.9)}
+ .game-panel #panel-content.has-game-tutor>.game-tutor[data-tutor-game] .game-tutor-message{align-self:flex-end}
+ /* 눌러 펼친 말(세 줄을 넘는 좁은 화면)은 아래로 펼쳐 놀이 위에 잠깐 겹친다 — 위로 자라면 화면 위로 잘리고 제목을 가린다 */
+ .game-panel #panel-content.has-game-tutor>.game-tutor[data-tutor-game] .game-tutor-message[data-expanded=true]{align-self:flex-start}
 }
 @media(max-width:359px){
  .game-tutor{gap:10px;padding:7px}
@@ -127,6 +137,10 @@
  .game-tutor-guide-top h3{font-size:20px}
  .game-tutor-guide li{grid-template-columns:54px minmax(0,1fr);gap:12px}
  .game-tutor-key{font-size:14px}
+}
+/* 좁은 휴대폰 세로: 말풍선 안쪽이 7·8이라 놀이 판에 고정한 띠 높이도 그만큼(위 휴대폰 세로 규칙과 같은 식) */
+@media(max-width:359px) and (min-height:501px){
+ .game-panel #panel-content.has-game-tutor>.game-tutor[data-tutor-game]{height:calc(4px + 7px + 8px + 22px + 1px + 15.5px*2.9)}
 }
 /* ── 낮은 가로 화면: 띠는 한 줄, 닫기 원은 띠 오른쪽 위 ── */
 @media(max-height:500px){

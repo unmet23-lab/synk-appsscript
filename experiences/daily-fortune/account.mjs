@@ -3,18 +3,18 @@ import { emptyState, validateState } from './account-state.mjs';
 import { createPlatformEntry } from '../synk-account/src/platform-entry.mjs';
 
 const changed = () => Object.assign(new Error('로그인 계정이 바뀌었어요. 다시 불러와 주세요.'), { code: 'ACCOUNT_CHANGED' });
-const networkFailure = () => Object.assign(new Error('계정 서버에 연결하지 못했어요. 연결이 돌아오면 다시 확인해 주세요.'), { code: 'NETWORK', retryable: true });
+const networkFailure = () => Object.assign(new Error('계정 서버에 연결하지 못했어요. 인터넷 연결을 확인한 뒤 다시 해 주세요.'), { code: 'NETWORK', retryable: true });
 const messages = {
   REVISION_CONFLICT: '다른 화면에서 저장한 변경이 있어요. 최신 기록을 다시 불러온 뒤 저장해 주세요.',
-  AUTH_REQUIRED: 'SYNK ID로 다시 로그인해 주세요.', SESSION_REVOKED: '로그인이 종료됐어요. 다시 연결해 주세요.',
+  AUTH_REQUIRED: 'SYNK ID로 다시 로그인해 주세요.', SESSION_REVOKED: '로그인이 끝났어요. SYNK ID로 다시 로그인해 주세요.',
   ACCOUNT_DELETION_PENDING: '삭제 요청 중인 계정에는 새 기록을 저장할 수 없어요.',
-  FORTUNE_UNAVAILABLE: '운세 계정 저장 서비스가 아직 준비되지 않았어요. 연결 후 다시 불러와 주세요.',
+  FORTUNE_UNAVAILABLE: '운세 기록 저장은 아직 준비 중이에요. 운세 보기는 그대로 할 수 있어요.',
 };
 export function createFortuneAccount({ native = globalThis.window?.synkFortuneAccount, fetcher = globalThis.fetch,
   storage, location = globalThis.location, replaceURL = value => history.replaceState(null, '', value),
   onState = () => {}, onReset = () => {} } = {}) {
   let config, session, account, document = emptyState(), revision = null, epoch = 0, refreshPromise, unsubscribe, disposed = false, loading, nativeAuthenticated = false, nativeGeneration = -1, starting = null, pendingExchange = null;
-  let state = { status: 'loading', configured: false, account: null, ready: false, retryable: false, message: '계정 연결을 확인하고 있어요.' };
+  let state = { status: 'loading', configured: false, account: null, ready: false, retryable: false, message: '로그인 상태를 확인하고 있어요.' };
   const key = 'synk.oauth.session.fortune';
   const platformEntry = native ? null : createPlatformEntry({ clientKey: 'fortune', getUrl: () => location.href, replaceUrl: replaceURL });
   let automaticNavigations = 0;
@@ -22,15 +22,15 @@ export function createFortuneAccount({ native = globalThis.window?.synkFortuneAc
   const guard = expected => { if (disposed || expected !== epoch) throw changed(); };
   const binding = () => [config.supabaseUrl, config.accountApiUrl, config.clients.platform.clientId, config.clients.platform.redirectUri].join('|');
   const reset = () => { epoch++;loading = null;account = null;revision = null;document = emptyState();onReset(); };
-  function expire(message = '로그인 연결이 바뀌었어요. SYNK ID로 다시 연결해 주세요.') {
+  function expire(message = '로그인 상태가 바뀌었어요. SYNK ID로 다시 로그인해 주세요.') {
     nativeAuthenticated = false;session = null;pendingExchange = null;
     if (!native) { try { storage?.removeItem(key); } catch {} }
     reset();emit({ status: 'signed-out', account: null, ready: false, retryable: false, message });
   }
   const errorFor = (data, status) => Object.assign(new Error(
     data?.error?.code === 'ACCOUNT_UNAVAILABLE' && status === 403
-      ? '이 계정 상태에서는 운세 정보를 이용할 수 없어요. SYNK 계정 화면에서 삭제 요청 등 계정 상태를 확인한 뒤 다시 불러와 주세요.'
-      : messages[data?.error?.code] || (status === 404 ? '운세 계정 저장 서비스가 아직 연결되지 않았어요.' : '계정 저장을 완료하지 못했어요. 연결을 확인하고 다시 시도해 주세요.')),
+      ? '지금 계정 상태로는 운세 기록을 쓸 수 없어요. SYNK 계정 화면에서 삭제 요청이 있는지 본 뒤 다시 불러와 주세요.'
+      : messages[data?.error?.code] || (status === 404 ? '운세 기록 저장은 아직 준비 중이에요.' : '계정에 저장하지 못했어요. 인터넷 연결을 확인한 뒤 다시 해 주세요.')),
   { code: data?.error?.code || (status === 404 ? 'SERVICE_UNAVAILABLE' : 'ACCOUNT_UNAVAILABLE'), status, retryable: data?.error?.retryable === true || status === 429 || status >= 500 });
   async function refresh() {
     if (refreshPromise) return refreshPromise;
@@ -134,7 +134,7 @@ export function createFortuneAccount({ native = globalThis.window?.synkFortuneAc
       epoch++;loading = null;revision = null;
     }
     emit({ configured: next.configured, status: next.signedIn ? 'signed-in' : next.status, account: next.account, sessionGeneration: nextGeneration, ready: revision !== null, retryable: false,
-      message: next.signedIn ? 'SYNK 계정에 연결됐어요.' : next.configured ? '로그인하면 내 정보와 보관함을 이어갈 수 있어요.' : '계정 연결 설정 전이에요. 운세는 바로 볼 수 있어요.' });
+      message: next.signedIn ? 'SYNK ID로 로그인했어요.' : next.configured ? '로그인하면 내 정보와 담은 운세를 계정에 보관할 수 있어요.' : '이 화면에서는 아직 로그인할 수 없어요. 운세는 바로 볼 수 있어요.' });
     if (next.signedIn && (different || revision === null)) await load();
   }
   async function begin() {
@@ -156,8 +156,8 @@ export function createFortuneAccount({ native = globalThis.window?.synkFortuneAc
     guard(expected);
     config = readConfig(raw || { version: 1 }, location.href);
     const client = config.clients.platform;
-    if (!config.configured || !client.clientId || !client.redirectUri) { pendingExchange = null;emit({ status: 'unconfigured', configured: false, retryable: false, message: '계정 연결 설정 전이에요. 운세는 바로 볼 수 있어요.' });return snapshot(); }
-    try { storage ||= globalThis.sessionStorage;if (!storage) throw new Error(); } catch { throw new Error('브라우저의 로그인 저장을 사용할 수 없어요. 저장 권한을 확인해 주세요.'); }
+    if (!config.configured || !client.clientId || !client.redirectUri) { pendingExchange = null;emit({ status: 'unconfigured', configured: false, retryable: false, message: '이 화면에서는 아직 로그인할 수 없어요. 운세는 바로 볼 수 있어요.' });return snapshot(); }
+    try { storage ||= globalThis.sessionStorage;if (!storage) throw new Error(); } catch { throw new Error('이 브라우저에서 로그인 정보를 저장할 수 없어요. 사생활 보호 창이라면 일반 창에서 열어 주세요.'); }
     const callback = new URL(client.redirectUri), here = new URL(location.href);
     const directory = new URL('./', here).pathname;
     if (callback.origin !== here.origin || ![directory, directory + 'index.html'].includes(callback.pathname) || callback.search || callback.hash) throw new Error('이 운세 화면에 등록된 로그인 도착 주소가 필요해요.');
@@ -173,10 +173,10 @@ export function createFortuneAccount({ native = globalThis.window?.synkFortuneAc
     if (pendingExchange) {
       // Retain only a validated exchange in this instance after the one-time
       // PKCE record and URL have been consumed. Never reuse it for new settings.
-      if (pendingExchange.binding !== binding()) throw Object.assign(new Error('계정 연결 설정이 바뀌었어요. 다시 로그인해 주세요.'), { code: 'AUTH_REQUIRED' });
+      if (pendingExchange.binding !== binding()) throw Object.assign(new Error('로그인 설정이 바뀌었어요. 다시 로그인해 주세요.'), { code: 'AUTH_REQUIRED' });
       const tokens = await tokenRequest(config, pendingExchange.fields, fetcher);guard(expected);pendingExchange = null;session = tokens;storage.setItem(key, JSON.stringify(session));
     } else if (!session) { try { session = JSON.parse(storage.getItem(key) || 'null'); } catch { storage.removeItem(key); } }
-    if (!session?.access_token) { session = null;if (await automaticSignIn(expected)) return snapshot();emit({ status: 'signed-out', retryable: false, message: '로그인하면 내 정보와 보관함을 이어갈 수 있어요.' });return snapshot(); }
+    if (!session?.access_token) { session = null;if (await automaticSignIn(expected)) return snapshot();emit({ status: 'signed-out', retryable: false, message: '로그인하면 내 정보와 담은 운세를 계정에 보관할 수 있어요.' });return snapshot(); }
     try { const result = await load();guard(expected);platformEntry.stop();return result; }
     catch (error) {
       guard(expected);
@@ -188,7 +188,7 @@ export function createFortuneAccount({ native = globalThis.window?.synkFortuneAc
   }
   async function automaticSignIn(expected) {
     if (!platformEntry.beginAttempt()) return false;
-    emit({ status: 'signing-in', account: null, ready: false, retryable: false, message: '플랫폼의 SYNK ID로 연결하고 있어요.' });
+    emit({ status: 'signing-in', account: null, ready: false, retryable: false, message: 'SYNK ID로 로그인하고 있어요.' });
     const destination = await beginOAuth({ config, product: 'platform', storage });guard(expected);automaticNavigations++;location.assign(destination);return true;
   }
   function start() {
@@ -220,7 +220,7 @@ export function createFortuneAccount({ native = globalThis.window?.synkFortuneAc
     emit({ status: 'signed-out', account: null, ready: false, retryable: false, message: entryError?.message || '이 화면에서 로그아웃했어요.' });
     if (native) {
       const result = await native.authSignOut();
-      if (!account && (result?.ok === false || result?.serverRevoked === false)) emit({ message: '이 화면에서 로그아웃했어요. 기기 저장과 서버의 로그인 종료는 다시 확인해 주세요.' });
+      if (!account && (result?.ok === false || result?.serverRevoked === false)) emit({ message: '이 화면에서는 로그아웃했지만, 이 PC의 로그인 기록이나 서버 쪽 로그인 종료는 확인하지 못했어요. SYNK 앱의 계정 창에서 한 번 더 로그아웃해 주세요.' });
       return result;
     }
     try { storage.removeItem(key); } catch { emit({ message: '브라우저의 로그인 저장을 지우지 못했어요. 이 창을 닫아 주세요.' }); }
@@ -228,7 +228,7 @@ export function createFortuneAccount({ native = globalThis.window?.synkFortuneAc
       try {
         const response = await fetcher(new URL('/auth/v1/logout?scope=local', config.supabaseUrl), { method: 'POST', credentials: 'omit', redirect: 'error', signal: AbortSignal.timeout(12000), headers: { apikey: config.supabasePublishableKey, Authorization: `Bearer ${previous.access_token}` } });
         if (!response.ok) throw new Error();
-      } catch { emit({ message: '이 화면에서 로그아웃했어요. 서버의 로그인 종료는 다시 확인해 주세요.' }); }
+      } catch { emit({ message: '이 화면에서는 로그아웃했어요. 서버 쪽 로그인 종료는 확인하지 못했으니, 공용 기기라면 브라우저를 닫아 주세요.' }); }
     }
     if (entryError) { emit({ message: entryError.message });return { ok: false, error: { code: entryError.code, message: entryError.message } }; }
   }

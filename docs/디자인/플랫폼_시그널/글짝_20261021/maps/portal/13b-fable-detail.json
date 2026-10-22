@@ -1,0 +1,11 @@
+{
+  "//": "Fable P2 ① 마저: 계정 저장을 켜기 전인데 수첩 안내 줄이 「로그인한 계정에 저장해요」라고 하던 것(after4 A3에서 확인). statusLabel과 같은 꼴의 detailLabel 선택지를 더하고 계정 라이브러리만 씀. 다른 화면(PATH 여행·PATH VR)은 기본값이라 그대로",
+  "experiences/synk-account/src/account-notebook.mjs": [
+    ["statusLabel = text => text, pendingDescription = '',", "statusLabel = text => text, detailLabel = text => text, pendingDescription = '',", {"n": 1}],
+    ["    mount.querySelector('[data-notebook-detail]').textContent = problem || auth.error?.message || saved.error?.message || (active ? loading ?", "    mount.querySelector('[data-notebook-detail]').textContent = detailLabel(problem || auth.error?.message || saved.error?.message || (active ? loading ?", {"n": 1}],
+    ["'SYNK ID 하나로 로그인해요. 로그인 전의 기기 기록은 직접 옮길 때만 계정에 저장해요.');", "'SYNK ID 하나로 로그인해요. 로그인 전의 기기 기록은 직접 옮길 때만 계정에 저장해요.'), { active, status: saved.status, problem: !!(problem || auth.error?.message || saved.error?.message) });", {"n": 1}]
+  ],
+  "experiences/synk-account/src/platform-library-view.mjs": [
+    ["statusLabel: (text, { active, status }) => active && status === \"synced\" && !doc.consent ? \"계정 저장 꺼짐\" : text,", "statusLabel: (text, { active, status }) => active && status === \"synced\" && !doc.consent ? \"계정 저장 꺼짐\" : text, detailLabel: (text, { active, status, problem }) => active && !problem && status === \"synced\" && !doc.consent ? \"아직 이 계정에는 저장하지 않았어요. 아래에서 「계정 저장 켜기」를 누르면 저장해요.\" : text,", {"n": 1}]
+  ]
+}

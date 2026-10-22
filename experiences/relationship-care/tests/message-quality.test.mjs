@@ -59,7 +59,7 @@ test('조문·기일에는 평소 축하 맺음말과 호칭을 자동으로 붙
     const draft = draftMessage(p, event(type), { approach: 'warm' });
     assert.doesNotMatch(draft.text, /민수야|맛있는|즐거운|명복|천국|축하|[ㅋㅎ]|\p{Extended_Pictographic}/u);
     assert.match(draft.text, /위로/u);
-    assert.match(draft.cautions.join(' '), /평소 호칭과 덧붙일 말을 자동으로 연결하지/u);
+    assert.match(draft.cautions.join(' '), /평소 호칭과 끝인사는 넣지 않았어요/u);
     assert.doesNotMatch(draft.basis.join(' '), /직접 정한 호칭을 사용/u);
   }
   const birthday = draftMessage(p, event('birthday'), { approach: 'warm' });
@@ -86,7 +86,7 @@ test('기억한 안부는 새 목적 때문에 다시 쓰지 않으며 답장 �
     const draft = generateCheckinDraft(p, { approach: 'saved', checkinIntent });
     assert.equal(draft.text, originalText);
     assert.equal(draft.method, 'saved');
-    assert.match(draft.cautions.join(' '), /안부 목적에 맞춰 문구를 자동으로 바꾸지/u);
+    assert.match(draft.cautions.join(' '), /이번에 고른 상황에 맞게 고쳐/u);
   }
   const pressure = person({ noReplyPressure: true }, { savedMessages: { checkin: saved('고마웠어. 답장 꼭 해줘.') } });
   const draft = generateCheckinDraft(pressure, { approach: 'saved', checkinIntent: 'thanks' });
@@ -104,7 +104,7 @@ test('기억한 문구에서 직접 뺀 평소 맺음말을 재사용 때 되붙
   assert.doesNotMatch(remembered.basis.join(' '), /덧붙일 말을 연결/u);
   const fresh = generateCheckinDraft(p, { approach: 'short', checkinIntent: 'thanks' });
   assert.match(fresh.text, /즐거운 하루 보내세요!/u);
-  assert.match(fresh.basis.join(' '), /직접 쓴 덧붙일 말을 연결/u);
+  assert.match(fresh.basis.join(' '), /정해 둔 끝인사를 붙였어요/u);
 });
 
 test('새 목적의 초안에도 확인한 피할 표현·답장 선호가 적용되고 전부 지워지면 직접 작성을 알린다', () => {
@@ -145,7 +145,7 @@ test('선택한 기억의 정확한 인용과 철회 검증을 유지하며 목�
   assert.match(draft.text, /“지난봄 강변 산책”/u);
   assert.deepEqual(draft.memory.appliedTo, ['message']);
   assert.equal(JSON.stringify(state), before);
-  assert.throws(() => generateCheckinDraft(p, { state: { ...state, memories: [] }, memorySelection, checkinIntent: 'thanks' }), /기억과 원문/u);
+  assert.throws(() => generateCheckinDraft(p, { state: { ...state, memories: [] }, memorySelection, checkinIntent: 'thanks' }), /지워졌거나 바뀌었어요/u);
   const backup = exportBackup(state, now);
   assert.equal(backup.version, 1);
   assert.doesNotMatch(JSON.stringify(backup), /checkinIntent/u);

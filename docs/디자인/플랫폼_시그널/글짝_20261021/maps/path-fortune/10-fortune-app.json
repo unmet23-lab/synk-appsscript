@@ -1,0 +1,23 @@
+{
+  "//": "무료 운세 화면 머리 제목·안내(app.mjs, index.html). 쉼표로 끊은 슬로건 제목을 그 탭에서 보는 내용으로 바꾸고, 가운뎃점 넷 나열을 셋으로, 「확인 필요」류 꼬리표를 사용자 말로. 운세 풀이 본문은 그대로.",
+  "experiences/daily-fortune/app.mjs": [
+    ["<h1 tabindex=\"-1\">오늘의 좋은 기운,<br><span class=\"hl\">내 방식으로.</span></h1>", "<h1 tabindex=\"-1\">오늘 운세를<br><span class=\"hl\">별자리나 사주로 봐요.</span></h1>", {"n": 1}],
+    ["별자리나 한국 사주로 오늘의 기운을 가볍게 읽어요. 궁합과 올해의 흐름도 보고, 맞았는지 남겨 두면 다음에 더 재밌어져요.", "오늘의 기운과 해 보면 좋은 일, 행운의 색을 알려 줘요. 이번 달 흐름과 궁합, 올해 운세도 볼 수 있어요.", {"n": 1}],
+    ["무료 · 광고 없음 · 비회원도 바로 · 로그인하면 기록 보관", "무료 · 광고 없음 · 로그인 없이 바로", {"n": 1}],
+    ["me.dayMaster || '확인 필요'", "me.dayMaster || '알 수 없음'", {"n": 1}],
+    ["<span class=\"small muted\">시각 확인 필요</span>", "<span class=\"small muted\">시간을 알면 나와요</span>", {"n": 1}],
+    ["'한 달의 흐름을<br><span class=\"hl\">미리 살펴봐요.</span>'", "'앞으로 30일의<br><span class=\"hl\">좋은 날을 찾아 줘요.</span>'", {"n": 1}],
+    ["한 달의 흐름,<br><span class=\"hl\">가볍게 미리.</span>", "앞으로 30일 중<br><span class=\"hl\">좋은 날과 천천히 갈 날</span>", {"n": 1}],
+    ["우리 둘은<br><span class=\"hl\">어떤 결일까요?</span>", "두 사람이<br><span class=\"hl\">얼마나 잘 맞을까요?</span>", {"n": 1}],
+    ["`${year}년,<br><span class=\"hl\">나의 한 해.</span>`", "`${year}년<br><span class=\"hl\">한 해 운세</span>`", {"n": 1}],
+    ["맞았는지,<br><span class=\"hl\">남겨 두면 재밌어요.</span>", "담아 둔 운세가<br><span class=\"hl\">맞았는지 표시해요.</span>", {"n": 1}],
+    ["data-action=\"account\">SYNK ID로 이어가기</button>", "data-action=\"account\">SYNK ID로 로그인</button>", {"n": 1}],
+    ["비회원 입력은 이 화면 메모리에만 있어요. 출생정보는 저장 단추를 누를 때만 계정으로 보내요.", "로그인하지 않고 입력한 정보는 이 화면에만 있어요. 출생정보는 저장 단추를 눌러야 계정에 보내요.", {"n": 1}],
+    ["error(err.message || '입력을 확인해 주세요.')", "error(err.message || '입력한 날짜와 시간을 다시 적어 주세요.')", {"n": 1}],
+    ["toast(err.message || '계정 연결을 확인해 주세요.')", "toast(err.message || '계정에 연결하지 못했어요. 잠시 뒤 다시 해 주세요.')", {"n": 1}]
+  ],
+  "experiences/daily-fortune/index.html": [
+    ["<h2 id=\"account-title\">내 운세 이어가기</h2>", "<h2 id=\"account-title\">로그인과 내 기록</h2>", {"n": 1}],
+    ["content=\"별자리와 한국 사주로 보는 오늘의 기운, 궁합, 올해의 흐름. SYNK 회원 무료 혜택.\"", "content=\"별자리나 한국 사주로 오늘의 기운과 궁합, 올해 운세를 무료로 봐요.\"", {"n": 1}]
+  ]
+}

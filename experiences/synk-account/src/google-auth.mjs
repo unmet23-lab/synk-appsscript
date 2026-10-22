@@ -15,20 +15,20 @@ export function registrationFields(value) {
   if (!['female', 'male', 'other', 'unspecified'].includes(value.gender)) throw fault('GENDER_REQUIRED', '성별을 선택해 주세요. 응답하지 않음도 선택할 수 있어요.');
   const genderText = value.gender === 'other' ? String(value.genderText || '').trim() : '';
   if (value.gender === 'other' && (!genderText || genderText.length > 60 || /[\u0000-\u001f\u007f]/.test(genderText))) throw fault('GENDER_INVALID', '직접 입력하는 성별은 60자 이내로 적어 주세요.');
-  if (value.privacyAccepted !== true) throw fault('PRIVACY_REQUIRED', '가입 정보의 수집·이용 안내를 확인해 주세요.');
+  if (value.privacyAccepted !== true) throw fault('PRIVACY_REQUIRED', '개인정보 수집·이용 안내에 체크해 주세요.');
   return { action: 'complete-google-registration', country: value.country, age, gender: value.gender, genderText,
     privacyAccepted: true, privacyVersion: 'google-registration-1', learning: value.learning === true };
 }
 export function beginGoogleFlow({ config, storage, authorizationId = null, subject = null, action = 'login', now = Date.now(), nonce = crypto.randomUUID() }) {
-  if (!['login', 'link'].includes(action) || !/^[a-zA-Z0-9_-]{20,100}$/.test(nonce) || action === 'link' && !subject) throw fault('GOOGLE_FLOW_INVALID', 'Google 연결 요청을 확인하지 못했어요.');
+  if (!['login', 'link'].includes(action) || !/^[a-zA-Z0-9_-]{20,100}$/.test(nonce) || action === 'link' && !subject) throw fault('GOOGLE_FLOW_INVALID', 'Google 로그인 요청이 올바르지 않아요. 다시 시도해 주세요.');
   const callback = new URL(config.portalUrl);
-  if (callback.protocol !== 'https:' && !['localhost', '127.0.0.1', '[::1]'].includes(callback.hostname) || callback.username || callback.password) throw fault('GOOGLE_FLOW_INVALID', '로그인 복귀 주소를 확인해 주세요.');
+  if (callback.protocol !== 'https:' && !['localhost', '127.0.0.1', '[::1]'].includes(callback.hostname) || callback.username || callback.password) throw fault('GOOGLE_FLOW_INVALID', '로그인 뒤 돌아올 주소가 맞지 않아요.');
   callback.search = '';callback.hash = '';
   if (authorizationId) callback.searchParams.set('authorization_id', authorizationId);
   callback.searchParams.set('google_flow', nonce);
   const pending = { version: 1, action, nonce, createdAt: now, authorizationId, subject: action === 'link' ? subject : null };
   try { storage.setItem(FLOW_KEY, JSON.stringify(pending));if (storage.getItem(FLOW_KEY) !== JSON.stringify(pending)) throw new Error('storage'); }
-  catch { throw fault('GOOGLE_STORAGE_UNAVAILABLE', '이 브라우저에 로그인 요청을 보관할 수 없어요. 브라우저의 저장 설정을 확인해 주세요.'); }
+  catch { throw fault('GOOGLE_STORAGE_UNAVAILABLE', '브라우저가 저장을 막아 Google 로그인을 시작할 수 없어요. 사이트 데이터 저장을 허용해 주세요.'); }
   return { pending, redirectTo: callback.href };
 }
 export function consumeGoogleFlow({ storage, url, now = Date.now() }) {
@@ -71,8 +71,8 @@ export function createGoogleAccess({ config, sdk, enabled = false, phoneEnabled 
   let closed = false, busy = false, operationSequence = 0, user = null, required = false, phoneRequired = true, accountVisible = false, confirmedPhone = null, sentPhone = null, sendAfter = 0, flow = null, flowError = null, checkedSubject = null;
   try { flow = consumeGoogleFlow({ storage, url: initialUrl, now: now() }); } catch (error) { flowError = error; }
   const check = (token, subject) => { if (closed || generation() !== token || getSession()?.user?.id !== subject) throw fault('ACCOUNT_CHANGED', '로그인 상태가 바뀌었어요.'); };
-  const errorMessage = error => ({ ONBOARDING_REQUIRED: phoneRequired ? '휴대폰 인증과 가입 정보를 먼저 완료해 주세요.' : '가입 정보를 먼저 완료해 주세요.', PHONE_UNVERIFIED: '휴대폰 번호를 먼저 인증해 주세요.', PHONE_VERIFICATION_REQUIRED: '서버에서 휴대폰 인증을 확인하지 못했어요. 번호를 다시 인증해 주세요.', INVALID_REGISTRATION: '국가·나이·성별과 개인정보 안내 확인을 다시 확인해 주세요.', GOOGLE_FLOW_INVALID: error?.message,
-    phone_exists: '다른 계정에서 사용하는 휴대폰 번호예요. 사용하던 SYNK 계정으로 로그인하거나 계정 지원에 문의해 주세요.', over_sms_send_rate_limit: '인증번호 요청이 잠시 제한됐어요. 잠시 뒤 직접 다시 요청해 주세요.', otp_expired: '인증번호가 만료되었거나 맞지 않아요. 확인한 뒤 다시 입력해 주세요.', manual_linking_disabled: 'Google 계정 연결 설정을 준비하고 있어요.', REGISTRATION_CONFLICT: '이미 가입을 마친 계정이에요. 계정을 다시 확인해 주세요.' }[error?.code] || (/[가-힣]/.test(error?.message || '') ? error.message : '요청을 완료하지 못했어요. 입력 내용과 연결 상태를 확인해 주세요.'));
+  const errorMessage = error => ({ ONBOARDING_REQUIRED: phoneRequired ? '휴대폰 인증과 가입 정보를 먼저 완료해 주세요.' : '가입 정보를 먼저 완료해 주세요.', PHONE_UNVERIFIED: '휴대폰 번호를 먼저 인증해 주세요.', PHONE_VERIFICATION_REQUIRED: '서버에서 휴대폰 인증을 확인하지 못했어요. 번호를 다시 인증해 주세요.', INVALID_REGISTRATION: '국가·나이·성별을 다시 보고, 개인정보 안내에 체크해 주세요.', GOOGLE_FLOW_INVALID: error?.message,
+    phone_exists: '다른 계정에서 쓰는 휴대폰 번호예요. 그 SYNK 계정으로 로그인하거나 hello@synk.im으로 문의해 주세요.', over_sms_send_rate_limit: '인증번호를 너무 자주 요청했어요. 잠시 뒤 다시 요청해 주세요.', otp_expired: '인증번호가 만료됐거나 맞지 않아요. 문자를 다시 보고 입력해 주세요.', manual_linking_disabled: '지금은 Google 계정을 연결할 수 없어요. 이메일로 로그인해 주세요.', REGISTRATION_CONFLICT: '이미 가입을 마친 계정이에요. 그 계정으로 로그인해 주세요.' }[error?.code] || (/[가-힣]/.test(error?.message || '') ? error.message : '요청을 마치지 못했어요. 입력한 내용을 다시 보고 시도해 주세요.'));
   const text = (id, value) => { const target = node(id);if (target && target.textContent !== value) target.textContent = value; };
   const confirmedNumber = owner => {
     // Auth/server time is authoritative; a slow device clock must not require a paid re-send.
@@ -81,7 +81,7 @@ export function createGoogleAccess({ config, sdk, enabled = false, phoneEnabled 
   };
   function render() {
     if (button) { button.disabled = !enabled || busy || hostBusy();text('google-login-label', busy ? 'Google 연결을 확인하고 있어요…' : 'Google로 계속하기'); }
-    text('google-availability', enabled ? '처음이라면 Google 계정으로 가입할 수 있어요.' : 'Google 로그인·가입을 준비하고 있어요. 이메일 로그인은 계속 사용할 수 있어요.');
+    text('google-availability', enabled ? '처음이라면 Google 계정으로 가입할 수 있어요.' : '지금은 Google 로그인을 쓸 수 없어요. 이메일로 로그인해 주세요.');
     if (node('google-linking')) node('google-linking').hidden = !enabled || !accountVisible || required;
     if (link) link.disabled = !enabled || busy || hostBusy() || !user;
     for (const id of ['google-phone-send', 'google-phone-verify']) if (node(id)) node(id).disabled = busy || hostBusy() || !phoneRequired || !phoneEnabled;
@@ -98,8 +98,8 @@ export function createGoogleAccess({ config, sdk, enabled = false, phoneEnabled 
     text('google-privacy-fields', phoneRequired ? '휴대폰 번호·국가·나이·성별' : '국가·나이·성별');
     text('google-privacy-action-note', phoneRequired ? '번호를 보내기 전에' : '가입을 완료하기 전에');
     if (node('google-cancel-phone-note')) node('google-cancel-phone-note').hidden = !phoneRequired;
-    text('google-phone-status', !phoneEnabled ? '문자 인증 서비스 연결을 준비하고 있어요.' : confirmedPhone ? '휴대폰 번호 인증을 확인했어요.' : sentPhone ? '문자로 받은 인증번호를 입력해 주세요.' : '국가번호를 포함한 휴대폰 번호로 인증번호를 보내 주세요.');
-    text('google-link-status', user?.identities?.some(identity => identity.provider === 'google') ? '이 SYNK 계정에 Google이 연결되어 있어요.' : '사용하던 SYNK 계정에 Google 로그인을 추가해요. 기존 기록은 유지돼요.');
+    text('google-phone-status', !phoneEnabled ? '문자 인증은 아직 쓸 수 없어요.' : confirmedPhone ? '휴대폰 번호 인증을 확인했어요.' : sentPhone ? '문자로 받은 인증번호를 입력해 주세요.' : '국가번호를 포함한 휴대폰 번호로 인증번호를 보내 주세요.');
+    text('google-link-status', user?.identities?.some(identity => identity.provider === 'google') ? '이 SYNK 계정에 Google이 연결돼 있어요.' : '지금 계정에 Google 로그인을 더해요. 기록은 그대로예요.');
     if (link) link.hidden = !!user?.identities?.some(identity => identity.provider === 'google');
   }
   const countries = node('google-country');
@@ -115,7 +115,7 @@ export function createGoogleAccess({ config, sdk, enabled = false, phoneEnabled 
     let attribution={};try { if(body?.action==='complete-google-registration')attribution=registrationHeaders(); } catch {}
     const response = await bounded(fetcher(url, { method: body ? 'POST' : 'GET', credentials: 'omit', cache: 'no-store', headers: { ...attribution, apikey: config.supabasePublishableKey, Authorization: `Bearer ${active.access_token}`, 'x-synk-contract': '1', 'x-synk-product': 'platform', 'x-synk-app-version': '0.2.0', ...(body ? { 'content-type': 'application/json' } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) }));check(token, subject);
     const value = await bounded(response.json());check(token, subject);
-    if (!response.ok || value?.ok !== true) throw fault(value?.error?.code || 'REGISTRATION_UNAVAILABLE', '가입 정보를 확인하지 못했어요. 연결 후 다시 시도해 주세요.');
+    if (!response.ok || value?.ok !== true) throw fault(value?.error?.code || 'REGISTRATION_UNAVAILABLE', '가입 정보를 불러오지 못했어요. 인터넷이 연결되면 다시 시도해 주세요.');
     return value;
   }
   async function action(operation) {
@@ -145,7 +145,7 @@ export function createGoogleAccess({ config, sdk, enabled = false, phoneEnabled 
   if (node('google-phone-send')) node('google-phone-send').onclick = () => action(async () => {
     if (!required || !phoneRequired || !phoneEnabled) return;
     const phone = normalizePhone(node('google-phone').value), token = generation(), subject = user.id;
-    if (!node('google-privacy').checked) throw fault('PRIVACY_REQUIRED', '번호를 보내기 전에 개인정보 수집·이용 안내를 확인해 주세요.');
+    if (!node('google-privacy').checked) throw fault('PRIVACY_REQUIRED', '번호를 보내기 전에 개인정보 수집·이용 안내에 체크해 주세요.');
     if (phone === confirmedPhone || phone === confirmedNumber(user)) { confirmedPhone = phone;node('google-phone').value = phone;notice('이미 인증한 휴대폰 번호예요. 가입 정보를 입력해 주세요.');return; }
     if (now() < sendAfter) throw fault('PHONE_WAIT', '인증번호를 이미 요청했어요. 1분 뒤 직접 다시 요청해 주세요.');
     const result = await bounded(sdk.auth.updateUser({ phone }));check(token, subject);if (result.error) throw result.error;
@@ -153,18 +153,18 @@ export function createGoogleAccess({ config, sdk, enabled = false, phoneEnabled 
     if (owner?.id === subject) user = verifiedGoogleUser(owner, flow);
     if (owner?.id === subject && confirmedNumber(owner) === phone) { confirmedPhone = phone;node('google-phone').value = phone;notice('이미 인증한 휴대폰 번호예요. 가입 정보를 입력해 주세요.');return; }
     if (owner?.id === subject && owner.new_phone && '+' + String(owner.phone || '').replace(/^\+/, '') === phone)
-      throw fault('PHONE_CHANGE_PENDING', '다른 번호의 인증이 진행 중이에요. 인증번호를 요청했던 번호로 확인하거나 계정 지원에 문의해 주세요.');
+      throw fault('PHONE_CHANGE_PENDING', '다른 번호로 인증을 하던 중이에요. 그 번호로 받은 인증번호를 넣거나 hello@synk.im으로 문의해 주세요.');
     node('google-phone').value = phone;sentPhone = phone;confirmedPhone = null;sendAfter = now() + 60000;notice('인증번호를 요청했어요. 문자를 확인한 뒤 입력해 주세요.');
   });
   if (node('google-phone-verify')) node('google-phone-verify').onclick = () => action(async () => {
     if (!required || !phoneRequired || !phoneEnabled) return;
     const phone = normalizePhone(node('google-phone').value), code = node('google-phone-code').value.trim(), token = generation(), subject = user.id;
-    if (phone !== sentPhone || !/^\d{6}$/.test(code)) throw fault('PHONE_CODE_REQUIRED', '인증번호를 요청한 번호와 문자로 받은 6자리 번호를 확인해 주세요.');
+    if (phone !== sentPhone || !/^\d{6}$/.test(code)) throw fault('PHONE_CODE_REQUIRED', '인증번호를 받은 휴대폰 번호와 문자로 온 6자리 번호를 다시 넣어 주세요.');
     try {
       const result = await bounded(sdk.auth.verifyOtp({ phone, token: code, type: 'phone_change' }));check(token, subject);if (result.error) throw result.error;
       const verified = await bounded(sdk.auth.getUser());check(token, subject);if (verified.error) throw verified.error;
       const owner = verifiedGoogleUser(verified.data?.user, flow);
-      if (owner.id !== subject || confirmedNumber(owner) !== phone) throw fault('PHONE_UNVERIFIED', '휴대폰 인증 결과를 확인하지 못했어요. 다시 확인해 주세요.');
+      if (owner.id !== subject || confirmedNumber(owner) !== phone) throw fault('PHONE_UNVERIFIED', '휴대폰 인증 결과를 받지 못했어요. 「인증번호 확인」을 다시 눌러 주세요.');
       user = owner;confirmedPhone = phone;notice('휴대폰 번호 인증을 확인했어요. 가입 정보를 입력해 주세요.');
     } finally { if (!closed && token === generation() && getSession()?.user?.id === subject) node('google-phone-code').value = ''; }
   });
@@ -186,7 +186,7 @@ export function createGoogleAccess({ config, sdk, enabled = false, phoneEnabled 
       if (flow && checkedSubject !== verified.id) { verifiedGoogleUser(verified, flow);checkedSubject = verified.id;flow = null; }
       if (!verified.identities?.some(identity => identity.provider === 'google')) { required = false;if (section) section.hidden = true;return true; }
       const result = await request();guard();
-      if (typeof result.registration?.required !== 'boolean') throw fault('REGISTRATION_UNAVAILABLE', '가입 연결을 확인하지 못했어요. 다시 시도해 주세요.');
+      if (typeof result.registration?.required !== 'boolean') throw fault('REGISTRATION_UNAVAILABLE', '가입을 마쳤는지 확인하지 못했어요. 다시 시도해 주세요.');
       required = result.registration.required;
       // Only an explicit policy from the authenticated server may defer SMS.
       // Missing/malformed policy remains strict for older servers and callers.

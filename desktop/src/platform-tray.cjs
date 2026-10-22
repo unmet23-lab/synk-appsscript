@@ -1,6 +1,6 @@
 'use strict';
 
-const TRAY_APPS=Object.freeze({world:'SYNK WORLD',messenger:'SYNK Workspace',teacher:'SYNK 선생님',path:'SYNK PATH',pulse:'SYNK PULSE',partners:'SYNK Partners',care:'SYNK 플레저',fortune:'SYNK 무료 운세'});
+const TRAY_APPS=Object.freeze({world:'SYNK WORLD',messenger:'SYNK Workspace',teacher:'SYNK Workspace · 내 수업',path:'SYNK PATH',pulse:'SYNK PULSE',partners:'SYNK Partners',care:'SYNK 플레저',fortune:'SYNK 무료 운세'});
 function createPlatformTray({app,Tray,Menu,icon,productName,getWindow,createWindow,enabled=true,shouldHide=()=>true,onAction=()=>{},onShow=null}){
   let tray=null,quitting=false,shortcuts=[];
   const bindings=new Map();
@@ -46,7 +46,7 @@ function createPlatformTray({app,Tray,Menu,icon,productName,getWindow,createWind
     if(!isActive())return;
     const entries=shortcuts.map(item=>({label:TRAY_APPS[item.id],click:()=>{show();onAction({type:'open-app',id:item.id});}}));
     tray.setContextMenu(Menu.buildFromTemplate([
-      {label:'SYNK 플랫폼 열기',click:show},
+      {label:'SYNK Platform 열기',click:show},
       ...(entries.length?[{type:'separator'},...entries]:[]),
       {type:'separator'},
       {label:'완전히 종료',click:()=>app.quit()},

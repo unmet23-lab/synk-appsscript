@@ -16,7 +16,7 @@ export function confirmedAppearance(snapshot) {
 export async function connectTownWorld({onAppearance=()=>{},onError=()=>{},client=new WorldClient({broadcastAppearance:false})}={}) {
   if(globalThis.__SYNK_WORLD_TOWN__?.mode==='account') {
     let host;try{if(window.parent!==window&&window.parent.location.origin===location.origin)host=window.parent.SYNKWorldTownHost;}catch{}
-    if(!host)throw Object.assign(Error('SYNK WORLD 홈에서 동네를 다시 열어 주세요.'),{code:'AUTH_REQUIRED',status:401});
+    if(!host)throw Object.assign(Error('SYNK WORLD에서 싱크타운을 다시 열어 주세요.'),{code:'AUTH_REQUIRED',status:401});
     let disposed=false;
     const publish=value=>{if(!disposed)onAppearance(value);};
     const unsubscribe=host.subscribe(publish);
@@ -28,7 +28,7 @@ export async function connectTownWorld({onAppearance=()=>{},onError=()=>{},clien
   }
   let disposed=false,ended=false,refreshing=null,refreshAgain=false,channel=null,authGeneration=0;
   const entryTab=client.tabId;
-  const authError=()=>Object.assign(Error('홈에서 계정을 다시 연결한 뒤 동네를 열어 주세요.'),{code:'AUTH_REQUIRED',status:401});
+  const authError=()=>Object.assign(Error('SYNK WORLD에서 다시 로그인한 뒤 싱크타운을 열어 주세요.'),{code:'AUTH_REQUIRED',status:401});
   const publish=()=>{if(!disposed)onAppearance(confirmedAppearance(ended?null:client.snapshot));};
   function endSession(error=authError()){
     if(ended||disposed)return;ended=true;authGeneration++;client.generation++;client.snapshot=null;client.accessToken=null;publish();onError(error);
@@ -86,7 +86,7 @@ export function createTownWorldHost(client) {
   const owner=client.snapshot?.accountId,generation=client.generation;
   if(!owner)throw Object.assign(Error('AUTH_REQUIRED'),{code:'AUTH_REQUIRED',status:401});
   const listeners=new Set();let ended=false;
-  const guard=()=>{if(ended||client.generation!==generation||client.snapshot?.accountId!==owner)throw Object.assign(Error('계정 연결이 바뀌었어요. 홈에서 동네를 다시 열어 주세요.'),{code:'ACCOUNT_CHANGED',status:401});};
+  const guard=()=>{if(ended||client.generation!==generation||client.snapshot?.accountId!==owner)throw Object.assign(Error('로그인한 계정이 바뀌었어요. SYNK WORLD에서 싱크타운을 다시 열어 주세요.'),{code:'ACCOUNT_CHANGED',status:401});};
   const appearance=()=>confirmedAppearance(ended||client.generation!==generation?null:client.snapshot);
   const publish=()=>{for(const fn of listeners)fn(appearance());};
   const notify=()=>{if(client.generation!==generation){ended=true;publish();}else publish();};

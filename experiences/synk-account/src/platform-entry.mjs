@@ -1,7 +1,7 @@
 const PARAM = 'synk-platform-account';
 const CANCEL = 'synk-platform-cancelled';
 const validId = value => typeof value === 'string' && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value);
-const mismatch = () => Object.assign(new Error('플랫폼에서 선택한 SYNK ID와 로그인 계정이 달라요. 플랫폼 계정을 확인한 뒤 다시 열어 주세요.'), { code: 'PLATFORM_ACCOUNT_MISMATCH' });
+const mismatch = () => Object.assign(new Error('플랫폼에서 로그인한 SYNK ID와 이 화면의 계정이 달라요. 같은 계정으로 로그인한 뒤 다시 열어 주세요.'), { code: 'PLATFORM_ACCOUNT_MISMATCH' });
 
 // This is a tab-local account match condition, never a credential or permission.
 // Only the existing OAuth exchange and server response establish identity.
@@ -19,7 +19,7 @@ export function createPlatformEntry({ clientKey, getUrl, replaceUrl }) {
     // storage failure leaves the fragment for a fail-closed reload; malformed
     // input becomes a durable rejection instead of disappearing on reload.
     try { storage = typeof value === 'function' ? value() : value;storage.setItem(key, JSON.stringify(next)); }
-    catch { throw Object.assign(new Error('플랫폼의 계정 연결을 이 탭에 보관하지 못했어요. 브라우저 저장 설정을 확인한 뒤 다시 시도해 주세요.'), { code: 'PLATFORM_ENTRY_STORAGE', retryable: true }); }
+    catch { throw Object.assign(new Error('브라우저가 저장을 막아 플랫폼의 로그인을 이어받지 못했어요. 사이트 데이터 저장을 허용한 뒤 다시 열어 주세요.'), { code: 'PLATFORM_ENTRY_STORAGE', retryable: true }); }
     intent = next;invalid = next.invalid === true;
     params.delete(PARAM);url.hash = params.toString();replaceUrl(url.href);
     captured = true;
@@ -72,12 +72,12 @@ export function createPlatformEntry({ clientKey, getUrl, replaceUrl }) {
       if (!durable) params.set(CANCEL, clientKey);
       url.hash = params.toString();
       try { if (url.href !== getUrl()) replaceUrl(url.href); }
-      catch { throw Object.assign(new Error('화면의 로그인은 종료했지만 자동 연결 취소를 저장하지 못했어요. 이 창을 닫아 주세요.'), { code: 'PLATFORM_ENTRY_STORAGE', retryable: false }); }
+      catch { throw Object.assign(new Error('로그아웃은 했지만 자동 로그인 끄기를 저장하지 못했어요. 이 창을 닫아 주세요.'), { code: 'PLATFORM_ENTRY_STORAGE', retryable: false }); }
     },
   };
 }
 
-const PUBLIC = Object.freeze({ world: 'https://synk.im/account/client.html?product=world&play=learning-hub', care: 'https://synk.im/care/', fortune: 'https://synk.im/fortune/' });
+const PUBLIC = Object.freeze({ world: 'https://synk.im/world/', care: 'https://synk.im/care/', fortune: 'https://synk.im/fortune/' });
 const COMPANY = 'https://workspace.synk.im/';
 export function platformCompanyEntry(href, identity) {
   let url;try { url = new URL(href); } catch { return href; }

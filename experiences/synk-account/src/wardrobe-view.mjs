@@ -26,7 +26,7 @@ function installStyle() {
   const link = node('link');link.id = 'world-wardrobe-style';link.rel = 'stylesheet';link.href = './wardrobe.css';document.head.append(link);
 }
 function loadImage(url) {
-  return new Promise((resolve, reject) => { const img = new Image();img.onload = () => resolve(img);img.onerror = () => reject(new Error('사진에 쓸 그림을 불러오지 못했어요. 연결을 확인하고 다시 눌러 주세요.'));img.src = url; });
+  return new Promise((resolve, reject) => { const img = new Image();img.onload = () => resolve(img);img.onerror = () => reject(new Error('사진에 쓸 그림을 못 불러왔어요. 인터넷 연결을 본 뒤 다시 눌러 주세요.'));img.src = url; });
 }
 function fit(ctx, img, x, y, width, height) {
   const ratio = Math.min(width / img.width, height / img.height), w = img.width * ratio, h = img.height * ratio;
@@ -35,7 +35,7 @@ function fit(ctx, img, x, y, width, height) {
 
 /** Export the same reviewed image, with a light matte on every photo background. */
 export async function createCostumePhotoBlob(photo) {
-  if (!costumeById(photo.costumeId)) throw new Error('사진의 차림을 확인해 주세요.');
+  if (!costumeById(photo.costumeId)) throw new Error('사진에 넣을 차림을 골라 주세요.');
   const [mascot, felt] = await Promise.all([loadImage(source(photo.costumeId)), loadImage(texture(photo.backgroundId))]);
   await document.fonts?.ready;
   const canvas = document.createElement('canvas');canvas.width = 1200;canvas.height = 1500;
@@ -147,9 +147,9 @@ export function createWardrobeView({ owner, client, guard = () => {}, preview = 
     rememberFocus();
     const wardrobe = state.wardrobe, selected = costumeById(candidate?.costumeId) || COSTUMES[0], current = costumeById(wardrobe.equipped.costumeId) || COSTUMES[0];
     const busy = blocked(), owned = owns(selected.id), isCurrent = sameOutfit(candidate, wardrobe.equipped);
-    const header = node('div', null, 'wardrobe-heading');header.append(node('p', 'WORLD · MY WARDROBE', 'wardrobe-eyebrow'), node('h2', '오늘은 어떤 차림?'), node('p', '마음에 드는 옷을 입고, 오늘의 모습을 남겨요.'));
+    const header = node('div', null, 'wardrobe-heading');header.append(node('p', 'WORLD · MY WARDROBE', 'wardrobe-eyebrow'), node('h2', '오늘은 어떤 차림?'), node('p', '마스코트에게 옷을 입히고 사진으로 남겨요.'));
     const worn = node('div', null, 'wardrobe-worn');worn.append(image(current.id, '', ''), node('span', `지금 입은 차림 · ${current.name}`));header.append(worn);
-    const sync = node('div', null, 'wardrobe-sync');const syncText = node('p', preview ? '미리보기 옷장이에요. 실제 계정에 저장하지 않아요.' : state.notice || (!state.ready ? state.phase === 'error' ? '옷장 기록 확인이 필요해요.' : '옷장을 불러오고 있어요.' : state.busy ? '옷장의 저장 상태를 확인하고 있어요.' : state.phase === 'account' && !state.pending ? '계정에 옷장을 저장했어요.' : '이 계정의 차림을 이 기기에 보관해요.'));
+    const sync = node('div', null, 'wardrobe-sync');const syncText = node('p', preview ? '예시 옷장이라 계정에 저장하지 않아요.' : state.notice || (!state.ready ? state.phase === 'error' ? '옷장을 못 불러왔어요. 「옷장 다시 확인」을 눌러 주세요.' : '옷장을 불러오고 있어요.' : state.busy ? '옷장을 저장하고 있어요.' : state.phase === 'account' && !state.pending ? '계정에 옷장을 저장했어요.' : '이 계정의 차림을 이 기기에 보관해요.'));
     syncText.setAttribute('aria-live', 'polite');sync.append(syncText);
     if (!preview) sync.append(button('옷장 다시 확인', () => void run(() => controller.refresh()), 'wardrobe-button wardrobe-button-small', busy));
     if (state.conflict) {
@@ -160,7 +160,7 @@ export function createWardrobeView({ owner, client, guard = () => {}, preview = 
     const stage = picture(candidate);stage.dataset.costumeId = selected.id;
     threePreview.update({ ...candidate, name: selected.name, owned: owned && !busy }, stage);
     if (reactionId === selected.id) { stage.className += ' wardrobe-react';threePreview.react();reactionId = ''; }
-    fitting.append(node('p', isCurrent ? '지금 함께하는 차림' : owned ? '미리 입어 보는 중' : '선물을 미리 입어 보는 중', 'wardrobe-stage-label'), threePreview.element, node('h3', selected.name), node('p', selected.story, 'wardrobe-story'));
+    fitting.append(node('p', isCurrent ? '지금 입은 차림' : owned ? '미리 입어 보는 중' : '선물을 미리 입어 보는 중', 'wardrobe-stage-label'), threePreview.element, node('h3', selected.name), node('p', selected.story, 'wardrobe-story'));
     const grant = selectedGrant();
     fitting.append(node('p', owned ? `${selected.requiredActivities ? '연습하고 받은 선물' : '첫 옷장 선물'}${grant?.earnedAt ? ` · ${shortDate(grant.earnedAt)}` : ''}` : grantText(selected), 'wardrobe-acquired'));
     const backgrounds = node('div', null, 'wardrobe-backgrounds');backgrounds.setAttribute('role', 'group');backgrounds.setAttribute('aria-label', '사진 배경');
@@ -186,7 +186,7 @@ export function createWardrobeView({ owner, client, guard = () => {}, preview = 
       const link = node('a', 'PNG 파일 저장', 'wardrobe-button wardrobe-button-small');link.href = preparedPhoto.url;link.download = preparedPhoto.filename;link.dataset.wardrobeFocus = 'photo-file';
       downloadPanel.append(thumb, link);fitting.append(downloadPanel);
     }
-    const closet = node('div', null, 'wardrobe-closet');closet.append(sectionTitle('나의 옷장', `${wardrobe.grants.length}개 차림과 함께하고 있어요.`));
+    const closet = node('div', null, 'wardrobe-closet');closet.append(sectionTitle('나의 옷장', `받은 차림 ${wardrobe.grants.length}개`));
     const filters = node('div', null, 'wardrobe-filters');filters.setAttribute('role', 'group');filters.setAttribute('aria-label', '마스코트 고르기');
     for (const character of ['모두', '몽글', '까몽', '마린']) { const b = button(character, () => { selectedCharacter = character;render(); }, 'wardrobe-button wardrobe-button-small');b.setAttribute('aria-pressed', String(selectedCharacter === character));filters.append(b); }closet.append(filters);
     const items = node('div', null, 'wardrobe-items');
@@ -199,10 +199,10 @@ export function createWardrobeView({ owner, client, guard = () => {}, preview = 
     }
     closet.append(items);
     const progress = node('div', null, 'wardrobe-progress');
-    progress.append(node('h4', '연습이 차림으로 남아요'), node('p', state.phase === 'account' ? `계정에서 확인한 서로 다른 연습 ${state.progress?.completedActivities || 0}개` : '연습 선물은 계정에 저장된 기록을 확인한 뒤 받을 수 있어요.'));
+    progress.append(node('h4', '연습하면 받는 차림'), node('p', state.phase === 'account' ? `계정에 저장한 서로 다른 연습 ${state.progress?.completedActivities || 0}개` : '연습 선물은 학습 기록을 계정에 저장해야 받아요.'));
     for (const item of COSTUMES.filter(row => row.requiredActivities)) progress.append(node('p', `${owns(item.id) ? '받았어요' : `연습 ${item.requiredActivities}개`} · ${item.name}`, 'wardrobe-milestone'));
     closet.append(progress);layout.append(fitting, closet);
-    const saved = node('section', null, 'wardrobe-saved');saved.append(sectionTitle('좋아하는 차림', '이름을 붙여 두고, 다시 꺼내 입어요.'));
+    const saved = node('section', null, 'wardrobe-saved');saved.append(sectionTitle('좋아하는 차림', '이름을 붙여 저장하고 다시 입어요.'));
     const form = node('form', null, 'wardrobe-save-form'), label = node('label', '차림 이름');const input = node('input');input.type = 'text';input.maxLength = 30;input.value = lookName;input.placeholder = '예: 포근한 오후';input.dataset.wardrobeFocus = 'look-name';input.oninput = () => { lookName = input.value; };label.append(input);
     const save = button('차림 저장', null, 'wardrobe-button', busy || !owned || wardrobe.looks.length >= 12);save.type = 'submit';save.dataset.wardrobeFocusFallback = 'look-name';form.append(label, save);
     form.onsubmit = event => { event.preventDefault();if (busy || !owned || wardrobe.looks.length >= 12) return;void run(async () => { await controller.save({ looks: [...state.wardrobe.looks, { id: crypto.randomUUID(), name: lookName.trim() || selected.name, ...copy(candidate) }] });lookName = '';feedback = '좋아하는 차림에 보관했어요.'; }); };saved.append(form);
@@ -215,7 +215,7 @@ export function createWardrobeView({ owner, client, guard = () => {}, preview = 
       entry.append(wearLook, removeLook);lookGrid.append(entry);
     }
     saved.append(wardrobe.looks.length ? lookGrid : node('p', '마음에 드는 첫 차림을 저장해 보세요.', 'wardrobe-empty'));
-    const album = node('section', null, 'wardrobe-album');album.append(sectionTitle('나의 차림 앨범', '원본 그림으로 남긴 사진이에요. 3D 사진은 별도 PNG로 내려받아요.'));
+    const album = node('section', null, 'wardrobe-album');album.append(sectionTitle('나의 차림 앨범', '원본 그림으로 남긴 사진이에요. 3D 사진은 앨범에 넣지 않고 PNG로만 내려받아요.'));
     if (wardrobe.photos.length >= 30) album.append(node('p', '사진 30장을 보관 중이에요. 하나를 지우면 새 사진을 남길 수 있어요.', 'wardrobe-small'));
     const photos = node('div', null, 'wardrobe-memory-grid');
     for (const photo of [...wardrobe.photos].reverse()) {

@@ -2,7 +2,7 @@
 const {redact}=require('./account-requests.cjs');
 function createCompanyRequests({entry,clientId,session,auth}){
   return async function companyRequest(operation,params={}){
-    const bad=()=>{throw Object.assign(new Error('회사 연결 요청을 확인해 주세요.'),{code:'INVALID_REQUEST'});};
+    const bad=()=>{throw Object.assign(new Error('회사 요청을 처리하지 못했어요. 다시 해 주세요.'),{code:'INVALID_REQUEST'});};
     try{if(clientId!=='messenger'||!params||typeof params!=='object'||Array.isArray(params))bad();
       const operations={status:[],challenge:['action','currentPassword','csrfToken','confirm'],exchange:['challenge','confirm'],renew:['csrfToken'],logout:['csrfToken']};
       if(typeof operation!=='string'||!Object.hasOwn(operations,operation))bad();
@@ -16,9 +16,9 @@ function createCompanyRequests({entry,clientId,session,auth}){
       if(operation!=='status')headers['Content-Type']='application/json';
       const response=await session.fetch(url,{method:operation==='status'?'GET':'POST',headers,credentials:'include',redirect:'error',signal:AbortSignal.timeout(12000),...(operation==='status'?{}:{body:JSON.stringify(body)})});
       const raw=await response.text();if(raw.length>1048576)bad();const data=JSON.parse(raw);
-      if(!response.ok)return {ok:false,error:{code:typeof data.code==='string'&&/^[A-Z_]{1,80}$/.test(data.code)?data.code:'COMPANY_UNAVAILABLE',message:typeof data.error==='string'?data.error.slice(0,500):'회사 연결 요청을 완료하지 못했어요.',status:response.status}};
+      if(!response.ok)return {ok:false,error:{code:typeof data.code==='string'&&/^[A-Z_]{1,80}$/.test(data.code)?data.code:'COMPANY_UNAVAILABLE',message:typeof data.error==='string'?data.error.slice(0,500):'회사 서버에 요청하지 못했어요. 잠시 뒤 다시 해 주세요.',status:response.status}};
       return redact(data);
-    }catch(error){return {ok:false,error:{code:error.code||'COMPANY_UNAVAILABLE',message:'회사 연결 요청을 완료하지 못했어요.'}};}
+    }catch(error){return {ok:false,error:{code:error.code||'COMPANY_UNAVAILABLE',message:'회사 서버에 요청하지 못했어요. 잠시 뒤 다시 해 주세요.'}};}
   };
 }
 module.exports={createCompanyRequests};

@@ -17,7 +17,7 @@ test('seven apps preserve two packages, four local previews and the bundled PULS
 test('PULSE opens the independent app even when stale incoming state claims an installer',async()=>{
   const {primaryAction,statusLabel}=await mod,bad={id:'pulse',canLaunch:true,installer:{canPrepare:true,canOpen:true}};
   assert.deepEqual(primaryAction(bad),{label:'PULSE 열기',action:'pulse-app',disabled:false});
-  assert.equal(primaryAction(bad,{native:false}).action,'pulse-app');assert.equal(primaryAction(bad,{busy:true}).disabled,true);assert.equal(statusLabel(bad),'모델·제작 진행');
+  assert.equal(primaryAction(bad,{native:false}).action,'pulse-app');assert.equal(primaryAction(bad,{busy:true}).disabled,true);assert.equal(statusLabel(bad),'전용 창');
 });
 test('PATH requires exact source-mode capability and never masquerade as installed packages',async()=>{
   const {primaryAction,clientRows,statusLabel}=await mod;
@@ -30,19 +30,19 @@ test('PATH requires exact source-mode capability and never masquerade as install
     assert.equal(primaryAction(bad,{native:false,productPreviewsAvailable:[id]}).disabled,true);
     assert.equal(primaryAction(bad,{productPreviewsAvailable:[id]}).action,'product-preview');
     assert.equal(primaryAction(bad,{busy:true,productPreviewsAvailable:[id]}).disabled,true);
-    assert.match(statusLabel(row),id==='path'?/실사 면접실 · 공개 MVP/:/로컬 MVP/);assert.doesNotMatch(statusLabel(row),/교사/);
+    assert.match(statusLabel(row),id==='path'?/웹에서 연습/:/웹에서 열림/);assert.doesNotMatch(statusLabel(row),/교사/);
   }
 });
 test('PATH HTTPS interview takes priority over the legacy local campus only with the native public capability',async()=>{
   const {primaryAction,statusLabel,APPS}=await mod;
   const client={id:'path',status:'preview'},capability={publicAppsAvailable:['path'],productPreviewsAvailable:['path']};
-  assert.deepEqual(primaryAction(client,capability),{label:'실사 면접실 열기',action:'public-web',disabled:false});
+  assert.deepEqual(primaryAction(client,capability),{label:'면접 연습 열기',action:'public-web',disabled:false});
   assert.equal(primaryAction(client,{...capability,busy:true}).disabled,true);
   assert.equal(primaryAction(client,{...capability,native:false}).disabled,true);
   for(const publicAppsAvailable of [null,'path',['PATH'],['care'],[]])assert.equal(primaryAction(client,{publicAppsAvailable}).disabled,true);
-  assert.equal(statusLabel({...client,publicWebAvailable:true}),'웹에서 이용 가능');
-  assert.match(APPS.path.boundary,/답변은 계정에 저장하지 않습니다/);
-  assert.match(APPS.path.boundary,/Quest 착용·멀미 검증/);
+  assert.equal(statusLabel({...client,publicWebAvailable:true}),'웹에서 열림');
+  assert.match(APPS.path.boundary,/답은 계정에 저장하지 않아요/);
+  assert.match(APPS.path.boundary,/Quest 브라우저에서는 VR로/);
 });
 test('teacher preview needs explicit native capability and never reuses package launch',async()=>{
   const {primaryAction}=await mod;

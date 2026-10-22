@@ -11138,7 +11138,7 @@ async function createPKCE(cryptoAPI = globalThis.crypto) {
 }
 async function beginOAuth({ config, product, storage, now = Date.now(), cryptoAPI }) {
   const client = config.clients[product];
-  if (!config.configured || !client?.clientId || !client.redirectUri) throw new Error("\uC774 \uC81C\uD488\uC758 SSO \uC5F0\uACB0 \uC124\uC815\uC774 \uC544\uC9C1 \uC900\uBE44\uB418\uC9C0 \uC54A\uC558\uC5B4\uC694.");
+  if (!config.configured || !client?.clientId || !client.redirectUri) throw new Error("\uC774 \uD654\uBA74\uC758 \uB85C\uADF8\uC778 \uC124\uC815\uC774 \uC544\uC9C1 \uC5C6\uC5B4\uC694.");
   const pkce = await createPKCE(cryptoAPI), transaction = { ...pkce, product, clientId: client.clientId, redirectUri: client.redirectUri, createdAt: now };
   storage.setItem(`synk.oauth.pending.${product}`, JSON.stringify(transaction));
   const url = new URL("/auth/v1/oauth/authorize", config.supabaseUrl);
@@ -11159,11 +11159,11 @@ function consumeCallback({ config, product, url, storage, now = Date.now() }) {
   const pending = JSON.parse(raw), client = config.clients[product];
   if (!pending || pending.product !== product || pending.clientId !== client?.clientId || pending.redirectUri !== client?.redirectUri || params.get("state") !== pending.state || now - pending.createdAt > 6e5 || now < pending.createdAt) throw new Error("\uB85C\uADF8\uC778 \uC694\uCCAD\uC774 \uB9CC\uB8CC\uB418\uC5C8\uAC70\uB098 \uC0C1\uD0DC\uAC00 \uB2EC\uB77C\uC84C\uC5B4\uC694. \uB2E4\uC2DC \uC2DC\uC791\uD574 \uC8FC\uC138\uC694.");
   const actual = new URL(url), expected = new URL(client.redirectUri);
-  if (!callbackMatches(actual, expected)) throw new Error("\uB4F1\uB85D\uD55C \uB85C\uADF8\uC778 \uB3C4\uCC29 \uC8FC\uC18C\uC640 \uB2EC\uB77C\uC694.");
+  if (!callbackMatches(actual, expected)) throw new Error("\uB85C\uADF8\uC778 \uB4A4 \uB3CC\uC544\uC628 \uC8FC\uC18C\uAC00 \uB2EC\uB77C\uC694. \uB2E4\uC2DC \uB85C\uADF8\uC778\uD574 \uC8FC\uC138\uC694.");
   storage.removeItem(key);
   if (params.has("error")) throw new Error(params.get("error") === "access_denied" ? "\uC81C\uD488 \uC5F0\uACB0\uC744 \uCDE8\uC18C\uD588\uC5B4\uC694." : "\uB85C\uADF8\uC778\uC744 \uB9C8\uCE58\uC9C0 \uBABB\uD588\uC5B4\uC694. \uB2E4\uC2DC \uC2DC\uC791\uD574 \uC8FC\uC138\uC694.");
   const code = params.get("code");
-  if (!code) throw new Error("\uB85C\uADF8\uC778 \uCF54\uB4DC\uAC00 \uC5C6\uC5B4\uC694.");
+  if (!code) throw new Error("\uB85C\uADF8\uC778 \uC751\uB2F5\uC774 \uBE44\uC5B4 \uC788\uC5B4\uC694. \uB2E4\uC2DC \uB85C\uADF8\uC778\uD574 \uC8FC\uC138\uC694.");
   return { grant_type: "authorization_code", client_id: client.clientId, redirect_uri: client.redirectUri, code, code_verifier: pending.verifier };
 }
 async function tokenRequest(config, fields2, fetcher = fetch) {
@@ -11180,18 +11180,18 @@ async function tokenRequest(config, fields2, fetcher = fetch) {
         cache: "no-store"
       });
     } catch {
-      throw Object.assign(new Error("\uB85C\uADF8\uC778 \uC11C\uBC84\uC5D0 \uC5F0\uACB0\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC5F0\uACB0\uC774 \uB3CC\uC544\uC624\uBA74 \uB2E4\uC2DC \uD655\uC778\uD574 \uC8FC\uC138\uC694."), { code: "NETWORK", retryable: true });
+      throw Object.assign(new Error("\uC778\uD130\uB137 \uC5F0\uACB0\uC774 \uB04A\uACA8 \uB85C\uADF8\uC778 \uC11C\uBC84\uC5D0 \uB2FF\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC5F0\uACB0\uB418\uBA74 \uB2E4\uC2DC \uC2DC\uB3C4\uD574 \uC8FC\uC138\uC694."), { code: "NETWORK", retryable: true });
     }
     let data;
     try {
       data = await response.json();
     } catch (error2) {
-      if (response.ok && error2?.name !== "SyntaxError") throw Object.assign(new Error("\uB85C\uADF8\uC778 \uC751\uB2F5\uC744 \uB05D\uAE4C\uC9C0 \uBC1B\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC5F0\uACB0\uC774 \uB3CC\uC544\uC624\uBA74 \uB2E4\uC2DC \uD655\uC778\uD574 \uC8FC\uC138\uC694."), { code: "NETWORK", retryable: true });
+      if (response.ok && error2?.name !== "SyntaxError") throw Object.assign(new Error("\uB85C\uADF8\uC778 \uC751\uB2F5\uC744 \uB05D\uAE4C\uC9C0 \uBC1B\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC5F0\uACB0\uB418\uBA74 \uB2E4\uC2DC \uC2DC\uB3C4\uD574 \uC8FC\uC138\uC694."), { code: "NETWORK", retryable: true });
       data = null;
     }
     if (!response.ok) {
       const retryable = response.status === 429 || response.status >= 500;
-      throw Object.assign(new Error(retryable ? "\uB85C\uADF8\uC778 \uC11C\uBC84\uAC00 \uC7A0\uC2DC \uC751\uB2F5\uD558\uC9C0 \uC54A\uC544\uC694. \uC7A0\uC2DC \uB4A4 \uB2E4\uC2DC \uD655\uC778\uD574 \uC8FC\uC138\uC694." : "\uB85C\uADF8\uC778 \uC5F0\uACB0\uC744 \uB9C8\uCE58\uC9C0 \uBABB\uD588\uC5B4\uC694. \uB2E4\uC2DC \uB85C\uADF8\uC778\uD574 \uC8FC\uC138\uC694."), { code: retryable ? "AUTH_UNAVAILABLE" : "AUTH_REQUIRED", status: response.status, retryable });
+      throw Object.assign(new Error(retryable ? "\uB85C\uADF8\uC778 \uC11C\uBC84\uAC00 \uC7A0\uC2DC \uC751\uB2F5\uD558\uC9C0 \uC54A\uC544\uC694. \uC7A0\uC2DC \uB4A4 \uB2E4\uC2DC \uC2DC\uB3C4\uD574 \uC8FC\uC138\uC694." : "\uB85C\uADF8\uC778 \uC5F0\uACB0\uC744 \uB9C8\uCE58\uC9C0 \uBABB\uD588\uC5B4\uC694. \uB2E4\uC2DC \uB85C\uADF8\uC778\uD574 \uC8FC\uC138\uC694."), { code: retryable ? "AUTH_UNAVAILABLE" : "AUTH_REQUIRED", status: response.status, retryable });
     }
     if (!data || typeof data.access_token !== "string" || !data.access_token) throw Object.assign(new Error("\uB85C\uADF8\uC778 \uC751\uB2F5\uC744 \uD655\uC778\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uB2E4\uC2DC \uB85C\uADF8\uC778\uD574 \uC8FC\uC138\uC694."), { code: "INVALID_RESPONSE" });
     return { access_token: data.access_token, refresh_token: data.refresh_token || null, expires_at: Date.now() + Number(data.expires_in || 3600) * 1e3 };
@@ -11211,7 +11211,7 @@ function scopedStorage(storage, accountKey, revision, guard) {
 var PARAM = "synk-platform-account";
 var CANCEL = "synk-platform-cancelled";
 var validId = (value) => typeof value === "string" && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value);
-var mismatch = () => Object.assign(new Error("\uD50C\uB7AB\uD3FC\uC5D0\uC11C \uC120\uD0DD\uD55C SYNK ID\uC640 \uB85C\uADF8\uC778 \uACC4\uC815\uC774 \uB2EC\uB77C\uC694. \uD50C\uB7AB\uD3FC \uACC4\uC815\uC744 \uD655\uC778\uD55C \uB4A4 \uB2E4\uC2DC \uC5F4\uC5B4 \uC8FC\uC138\uC694."), { code: "PLATFORM_ACCOUNT_MISMATCH" });
+var mismatch = () => Object.assign(new Error("\uD50C\uB7AB\uD3FC\uC5D0\uC11C \uB85C\uADF8\uC778\uD55C SYNK ID\uC640 \uC774 \uD654\uBA74\uC758 \uACC4\uC815\uC774 \uB2EC\uB77C\uC694. \uAC19\uC740 \uACC4\uC815\uC73C\uB85C \uB85C\uADF8\uC778\uD55C \uB4A4 \uB2E4\uC2DC \uC5F4\uC5B4 \uC8FC\uC138\uC694."), { code: "PLATFORM_ACCOUNT_MISMATCH" });
 function createPlatformEntry({ clientKey, getUrl, replaceUrl }) {
   const key = `synk.platform.entry.${clientKey}`;
   let captured = false, restored = false, invalid = false, cancelled = false, intent = null, storage;
@@ -11232,7 +11232,7 @@ function createPlatformEntry({ clientKey, getUrl, replaceUrl }) {
       storage = typeof value === "function" ? value() : value;
       storage.setItem(key, JSON.stringify(next));
     } catch {
-      throw Object.assign(new Error("\uD50C\uB7AB\uD3FC\uC758 \uACC4\uC815 \uC5F0\uACB0\uC744 \uC774 \uD0ED\uC5D0 \uBCF4\uAD00\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uBE0C\uB77C\uC6B0\uC800 \uC800\uC7A5 \uC124\uC815\uC744 \uD655\uC778\uD55C \uB4A4 \uB2E4\uC2DC \uC2DC\uB3C4\uD574 \uC8FC\uC138\uC694."), { code: "PLATFORM_ENTRY_STORAGE", retryable: true });
+      throw Object.assign(new Error("\uBE0C\uB77C\uC6B0\uC800\uAC00 \uC800\uC7A5\uC744 \uB9C9\uC544 \uD50C\uB7AB\uD3FC\uC758 \uB85C\uADF8\uC778\uC744 \uC774\uC5B4\uBC1B\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC0AC\uC774\uD2B8 \uB370\uC774\uD130 \uC800\uC7A5\uC744 \uD5C8\uC6A9\uD55C \uB4A4 \uB2E4\uC2DC \uC5F4\uC5B4 \uC8FC\uC138\uC694."), { code: "PLATFORM_ENTRY_STORAGE", retryable: true });
     }
     intent = next;
     invalid = next.invalid === true;
@@ -11323,12 +11323,12 @@ function createPlatformEntry({ clientKey, getUrl, replaceUrl }) {
       try {
         if (url.href !== getUrl()) replaceUrl(url.href);
       } catch {
-        throw Object.assign(new Error("\uD654\uBA74\uC758 \uB85C\uADF8\uC778\uC740 \uC885\uB8CC\uD588\uC9C0\uB9CC \uC790\uB3D9 \uC5F0\uACB0 \uCDE8\uC18C\uB97C \uC800\uC7A5\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC774 \uCC3D\uC744 \uB2EB\uC544 \uC8FC\uC138\uC694."), { code: "PLATFORM_ENTRY_STORAGE", retryable: false });
+        throw Object.assign(new Error("\uB85C\uADF8\uC544\uC6C3\uC740 \uD588\uC9C0\uB9CC \uC790\uB3D9 \uB85C\uADF8\uC778 \uB044\uAE30\uB97C \uC800\uC7A5\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC774 \uCC3D\uC744 \uB2EB\uC544 \uC8FC\uC138\uC694."), { code: "PLATFORM_ENTRY_STORAGE", retryable: false });
       }
     }
   };
 }
-var PUBLIC = Object.freeze({ world: "https://synk.im/account/client.html?product=world&play=learning-hub", care: "https://synk.im/care/", fortune: "https://synk.im/fortune/" });
+var PUBLIC = Object.freeze({ world: "https://synk.im/world/", care: "https://synk.im/care/", fortune: "https://synk.im/fortune/" });
 
 // experiences/synk-world-app/world-account.mjs
 var import_account_client = __toESM(require_account_client(), 1);
@@ -11815,7 +11815,7 @@ function mountCourseWritingEntry({ container, transport, guard = () => {
 } }) {
   const doc2 = container.ownerDocument, root = doc2.createElement("section"), label = doc2.createElement("label"), select = doc2.createElement("select"), body = doc2.createElement("div"), status = doc2.createElement("p");
   root.className = "ws-class";
-  label.textContent = "\uACFC\uC81C\uB97C \uBCFC \uC218\uC5C5 ";
+  label.textContent = "\uACFC\uC81C\uB97C \uBCFC \uBC18 ";
   label.append(select);
   root.append(label, status, body);
   container.append(root);
@@ -11826,7 +11826,7 @@ function mountCourseWritingEntry({ container, transport, guard = () => {
   };
   const paths = { "/api/course": "courseRead", "/api/course/submit": "courseSubmit", "/api/course/group-sharing": "courseGroupSharing" };
   function choose() {
-    if (view?.hasDraft() && !doc2.defaultView?.confirm("\uC791\uC131 \uC911\uC778 \uAE00\uC744 \uB2EB\uACE0 \uB2E4\uB978 \uBC18 \uACFC\uC81C\uB97C \uC5F4\uAE4C\uC694?")) {
+    if (view?.hasDraft() && !doc2.defaultView?.confirm("\uC4F0\uB358 \uAE00\uC744 \uB2EB\uACE0 \uB2E4\uB978 \uBC18 \uACFC\uC81C\uB97C \uC5F4\uAE4C\uC694? \uC4F0\uB358 \uAE00\uC740 \uC0AC\uB77C\uC838\uC694.")) {
       select.value = selected;
       return;
     }
@@ -11874,7 +11874,7 @@ function mountCourseWritingEntry({ container, transport, guard = () => {
     }
     choose();
   }).catch((error2) => {
-    if (!stopped && error2.code !== "ACCOUNT_CHANGED") status.textContent = "\uACFC\uC81C \uC5F0\uACB0\uC744 \uD655\uC778\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uACC4\uC815\uC744 \uB2E4\uC2DC \uC5F4\uC5B4 \uC8FC\uC138\uC694.";
+    if (!stopped && error2.code !== "ACCOUNT_CHANGED") status.textContent = "\uACFC\uC81C \uBAA9\uB85D\uC744 \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC5B4\uC694. \uB0B4 \uACC4\uC815\uC744 \uB2EB\uC558\uB2E4\uAC00 \uB2E4\uC2DC \uC5F4\uC5B4 \uC8FC\uC138\uC694.";
   });
   return { hasDraft: () => !!view?.hasDraft(), dispose() {
     stopped = true;
@@ -13097,7 +13097,7 @@ var day = (v) => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v);
 var fields = (v, allowed) => object2(v) && Object.keys(v).every((key) => allowed.includes(key));
 var states = /* @__PURE__ */ new Set(["unmet", "met", "learning", "mastered"]);
 var failure2 = () => {
-  throw Object.assign(Error("\uD55C\uAE00 \uC9C4\uB3C4\uC758 \uD310\uC774\uB098 \uB0B4\uC6A9\uC744 \uD655\uC778\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uAE30\uC874 \uAE30\uB85D\uC740 \uADF8\uB300\uB85C \uBCF4\uC874\uD588\uC5B4\uC694."), { code: "HANGUL_PROGRESS_UNREADABLE" });
+  throw Object.assign(Error("\uD55C\uAE00 \uC9C4\uB3C4\uB97C \uC77D\uC9C0 \uBABB\uD588\uC5B4\uC694. \uAE30\uC874 \uAE30\uB85D\uC740 \uC9C0\uC6B0\uC9C0 \uC54A\uC558\uC5B4\uC694."), { code: "HANGUL_PROGRESS_UNREADABLE" });
 };
 function validateHangulProgress(value) {
   if (!fields(value, ["v", "core", "letters", "pairs", "recent", "sessions", "difficulty", "trend", "amount", "skipped", "demoSeen", "wordStreak", "graduated"]) || value.v !== 1 || !["hangul-core-1", "hangul-core-2"].includes(value.core) || !object2(value.letters) || Object.keys(value.letters).length > 64 || !object2(value.pairs) || Object.keys(value.pairs).length > 4096 || ![1, 2, 3].includes(value.difficulty) || !Number.isSafeInteger(value.trend) || ![5, 10, 15].includes(value.amount) || typeof value.skipped !== "boolean" || !integer2(value.wordStreak) || !Array.isArray(value.recent) || value.recent.length > 20 || value.recent.some((v) => !fields(v, ["ok"]) || typeof v.ok !== "boolean") || !Array.isArray(value.sessions) || value.sessions.length > 60 || !Array.isArray(value.demoSeen) || value.demoSeen.length > 7 || value.demoSeen.some((v) => !["listen_pick", "see_pick", "build", "match", "pair", "teach", "build_final"].includes(v))) failure2();
@@ -13226,7 +13226,7 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
   let stopped = false, loaded = false, revision = 0, state = emptyPlayState(), phase = "loading", lastError = null, inflight = null, timer = null, initial = null;
   function check2() {
     guard();
-    if (stopped) throw error("PLAY_SESSION_ENDED", "\uC774 \uACC4\uC815\uC758 \uAC8C\uC784 \uC5F0\uACB0\uC774 \uC885\uB8CC\uB410\uC5B4\uC694.");
+    if (stopped) throw error("PLAY_SESSION_ENDED", "\uB85C\uADF8\uC778\uC774 \uB05D\uB098 \uC774 \uACC4\uC815\uC5D0 \uAC8C\uC784 \uAE30\uB85D\uC744 \uC800\uC7A5\uD560 \uC218 \uC5C6\uC5B4\uC694.");
   }
   function pending() {
     check2();
@@ -13238,7 +13238,7 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
       try {
         value = JSON.parse(storage.getItem(key));
       } catch {
-        throw error("PLAY_PENDING_UNREADABLE", "\uC804\uC1A1 \uB300\uAE30 \uAE30\uB85D\uC744 \uD655\uC778\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC6D0\uBCF8\uC744 \uBCF4\uC874\uD588\uC5B4\uC694.");
+        throw error("PLAY_PENDING_UNREADABLE", "\uC800\uC7A5\uC744 \uAE30\uB2E4\uB9AC\uB358 \uAE30\uB85D\uC744 \uC77D\uC9C0 \uBABB\uD588\uC5B4\uC694. \uADF8 \uAE30\uB85D\uC740 \uC9C0\uC6B0\uC9C0 \uC54A\uC558\uC5B4\uC694.");
       }
       if (value?.accountId !== accountId || key !== prefix + value?.body?.id || !Number.isSafeInteger(value.at)) throw error("PLAY_PENDING_UNREADABLE");
       result.push(value);
@@ -13266,7 +13266,7 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
     if (!raw) return null;
     const value = JSON.parse(raw);
     if (value.accountId !== accountId || value.entry?.body?.id !== id || !rejectedCommands.has(value.code)) throw error("PLAY_PENDING_UNREADABLE");
-    return Object.assign(error(value.code, "\uC774 \uC694\uCCAD\uC740 \uACC4\uC815\uC5D0\uC11C \uCC98\uB9AC\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC6D0\uBCF8\uC740 \uC774 \uAE30\uAE30\uC5D0 \uBCF4\uAD00\uD588\uACE0 \uB2E4\uB978 \uAC8C\uC784\uC740 \uACC4\uC18D\uD560 \uC218 \uC788\uC5B4\uC694."), { rejected: true });
+    return Object.assign(error(value.code, "\uC774 \uAE30\uB85D\uC740 \uACC4\uC815\uC5D0 \uC800\uC7A5\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC774 \uAE30\uAE30\uC5D0 \uB0A8\uACA8 \uB480\uACE0, \uB2E4\uB978 \uAC8C\uC784\uC740 \uACC4\uC18D\uD560 \uC218 \uC788\uC5B4\uC694."), { rejected: true });
   }
   function preserveRejected(entry, cause) {
     check2();
@@ -13275,7 +13275,7 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
       storage.setItem(rejectedPrefix + entry.body.id, JSON.stringify(saved));
       storage.removeItem(prefix + entry.body.id);
     } catch {
-      throw error("PLAY_STORAGE_UNAVAILABLE", "\uCC98\uB9AC\uD558\uC9C0 \uBABB\uD55C \uAE30\uB85D\uC758 \uC6D0\uBCF8\uC744 \uBCF4\uAD00\uD560 \uACF5\uAC04\uC774 \uC5C6\uC5B4\uC694. \uC804\uC1A1 \uB300\uAE30 \uAE30\uB85D\uC740 \uC720\uC9C0\uD588\uC5B4\uC694.");
+      throw error("PLAY_STORAGE_UNAVAILABLE", "\uC800\uC7A5\uD558\uC9C0 \uBABB\uD55C \uAE30\uB85D\uC744 \uC774 \uAE30\uAE30\uC5D0 \uB0A8\uAE38 \uACF5\uAC04\uC774 \uC5C6\uC5B4\uC694. \uC800\uC7A5\uC744 \uAE30\uB2E4\uB9AC\uB358 \uAE30\uB85D\uC740 \uADF8\uB300\uB85C \uC788\uC5B4\uC694.");
     }
     const rejected = rejectedError(entry.body.id);
     if (waitingWallets.has(entry.body.id)) waitingWallets.set(entry.body.id, { rejected });
@@ -13287,7 +13287,7 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
       rejected = rejectionCount();
     } catch {
     }
-    return { accountId, phase, pending: count, rejected, revision, canImport: loaded && revision === 0 && hasLegacy(), message: phase === "synced" ? rejected ? `\uACC4\uC815\uC5D0 \uC5F0\uACB0\uB410\uC5B4\uC694. \uCC98\uB9AC\uD558\uC9C0 \uBABB\uD55C \uC694\uCCAD ${rejected}\uAC1C\uC758 \uC6D0\uBCF8\uC740 \uC774 \uAE30\uAE30\uC5D0 \uBCF4\uAD00\uD588\uC5B4\uC694. \uB2E4\uB978 \uAE30\uB85D\uC740 \uACC4\uC18D \uC800\uC7A5\uB3FC\uC694.` : "\uAC8C\uC784 \uAE30\uB85D\uACFC \uAD6C\uB9E4\uD488\uC774 SYNK \uACC4\uC815\uC5D0 \uC800\uC7A5\uB410\uC5B4\uC694." : phase === "loading" ? "\uACC4\uC815\uC758 \uAC8C\uC784 \uAE30\uB85D\uC744 \uBD88\uB7EC\uC624\uACE0 \uC788\uC5B4\uC694." : phase === "saving" ? "\uACC4\uC815\uC5D0 \uAC8C\uC784 \uAE30\uB85D\uC744 \uC800\uC7A5\uD558\uACE0 \uC788\uC5B4\uC694." : phase === "conflict" ? "\uB2E4\uB978 \uAE30\uAE30\uC5D0\uC11C\uB3C4 \uC9C4\uB3C4\uAC00 \uBC14\uB00C\uC5C8\uC5B4\uC694. \uC0AC\uC6A9\uD560 \uC9C4\uB3C4\uB97C \uACE8\uB77C \uC8FC\uC138\uC694." : phase === "stopped" ? "\uACC4\uC815 \uC5F0\uACB0\uC774 \uC885\uB8CC\uB410\uC5B4\uC694." : lastError?.message || "\uC544\uC9C1 \uACC4\uC815\uC5D0 \uC800\uC7A5\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uB2E4\uC2DC \uC5F0\uACB0\uD558\uBA74 \uC7AC\uC2DC\uB3C4\uD574\uC694.", code: lastError?.code };
+    return { accountId, phase, pending: count, rejected, revision, canImport: loaded && revision === 0 && hasLegacy(), message: phase === "synced" ? rejected ? `\uACC4\uC815\uC5D0 \uC800\uC7A5\uD588\uC5B4\uC694. \uAE30\uB85D ${rejected}\uAC1C\uB294 \uC800\uC7A5\uD558\uC9C0 \uBABB\uD574 \uC774 \uAE30\uAE30\uC5D0 \uB0A8\uACA8 \uB480\uC5B4\uC694.` : "\uAC8C\uC784 \uAE30\uB85D\uACFC \uC0B0 \uBB3C\uAC74\uC774 SYNK \uACC4\uC815\uC5D0 \uC800\uC7A5\uB410\uC5B4\uC694." : phase === "loading" ? "\uACC4\uC815\uC758 \uAC8C\uC784 \uAE30\uB85D\uC744 \uBD88\uB7EC\uC624\uACE0 \uC788\uC5B4\uC694." : phase === "saving" ? "\uACC4\uC815\uC5D0 \uAC8C\uC784 \uAE30\uB85D\uC744 \uC800\uC7A5\uD558\uACE0 \uC788\uC5B4\uC694." : phase === "conflict" ? "\uB2E4\uB978 \uAE30\uAE30\uC5D0\uC11C\uB3C4 \uC9C4\uB3C4\uAC00 \uBC14\uB00C\uC5C8\uC5B4\uC694. \uC0AC\uC6A9\uD560 \uC9C4\uB3C4\uB97C \uACE8\uB77C \uC8FC\uC138\uC694." : phase === "stopped" ? "\uB85C\uADF8\uC778\uC774 \uB05D\uB0AC\uC5B4\uC694." : lastError?.message || "\uC544\uC9C1 \uACC4\uC815\uC5D0 \uC800\uC7A5\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC778\uD130\uB137\uC774 \uC5F0\uACB0\uB418\uBA74 \uB2E4\uC2DC \uC800\uC7A5\uD574\uC694.", code: lastError?.code };
   }
   function emit(next, reason = null) {
     phase = next;
@@ -13302,7 +13302,7 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
   }
   function accept(value) {
     check2();
-    if (value?.ok !== true || value.scope !== PLAY_SCOPE || value.accountId !== accountId || !Number.isSafeInteger(value.revision) || value.revision < 0) throw error("PLAY_ACCOUNT_MISMATCH", "\uACC4\uC815\uC5D0\uC11C \uBC1B\uC740 \uAC8C\uC784 \uAE30\uB85D\uC744 \uD655\uC778\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694.");
+    if (value?.ok !== true || value.scope !== PLAY_SCOPE || value.accountId !== accountId || !Number.isSafeInteger(value.revision) || value.revision < 0) throw error("PLAY_ACCOUNT_MISMATCH", "\uACC4\uC815\uC5D0\uC11C \uBC1B\uC740 \uAC8C\uC784 \uAE30\uB85D\uC744 \uC77D\uC9C0 \uBABB\uD588\uC5B4\uC694.");
     if (value.revision >= revision) {
       state = validatePlayState(value.state);
       revision = value.revision;
@@ -13342,7 +13342,7 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
       storage.setItem(prefix + entry.body.id, JSON.stringify(entry));
       return entry;
     } catch (cause) {
-      emit("offline", error("PLAY_STORAGE_UNAVAILABLE", "\uC774 \uAE30\uAE30\uC5D0 \uC804\uC1A1 \uB300\uAE30 \uAE30\uB85D\uC744 \uBCF4\uAD00\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC800\uC7A5 \uACF5\uAC04\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694."));
+      emit("offline", error("PLAY_STORAGE_UNAVAILABLE", "\uC800\uC7A5\uC744 \uAE30\uB2E4\uB9AC\uB294 \uAE30\uB85D\uC744 \uC774 \uAE30\uAE30\uC5D0 \uB0A8\uAE30\uC9C0 \uBABB\uD588\uC5B4\uC694. \uAE30\uAE30 \uC800\uC7A5 \uACF5\uAC04\uC744 \uBE44\uC6B4 \uB4A4 \uB2E4\uC2DC \uD574 \uC8FC\uC138\uC694."));
       throw cause;
     }
   }
@@ -15314,7 +15314,7 @@ async function createLifeProgressPort({ accountId: id, client, guard, storage: c
   let disposed = false;
   const check2 = () => {
     guard();
-    if (disposed) throw Object.assign(Error("\uC774 \uACC4\uC815\uC758 \uC0DD\uD65C \uD55C\uAD6D\uC5B4 \uC5F0\uACB0\uC774 \uB05D\uB0AC\uC5B4\uC694."), { code: "ACCOUNT_CHANGED" });
+    if (disposed) throw Object.assign(Error("\uB85C\uADF8\uC778\uC774 \uB05D\uB098 \uC0DD\uD65C \uD55C\uAD6D\uC5B4 \uC9C4\uB3C4\uB97C \uC800\uC7A5\uD560 \uC218 \uC5C6\uC5B4\uC694."), { code: "ACCOUNT_CHANGED" });
   };
   const resolvedKey = `${LIFE_PROGRESS_KEY}:resolved:${encodeURIComponent(id)}`;
   function recoveredEntries() {
@@ -15346,7 +15346,7 @@ async function createLifeProgressPort({ accountId: id, client, guard, storage: c
   function lifeStatus() {
     const value = host.status(), prefix = `synk.play.account.v1:${encodeURIComponent(id)}:`;
     let pending = 0, rejected = 0, code;
-    if (disposed) return { ...value, phase: "stopped", pending: 0, rejected: 0, message: "\uC774 \uACC4\uC815\uC758 \uC0DD\uD65C \uD55C\uAD6D\uC5B4 \uC5F0\uACB0\uC774 \uB05D\uB0AC\uC5B4\uC694." };
+    if (disposed) return { ...value, phase: "stopped", pending: 0, rejected: 0, message: "\uB85C\uADF8\uC778\uC774 \uB05D\uB098 \uC0DD\uD65C \uD55C\uAD6D\uC5B4 \uC9C4\uB3C4\uB97C \uC800\uC7A5\uD560 \uC218 \uC5C6\uC5B4\uC694." };
     for (let index = 0; index < cache.length; index++) {
       const recordKey = cache.key(index);
       if (!recordKey?.startsWith(prefix)) continue;
@@ -16046,7 +16046,7 @@ function createDeviceRecordsOffer({
     }
     status(T.moving, true);
     const guard = () => {
-      if (current !== job || hangulPort() !== job.port || accountOwner && accountOwner() !== job.owner) throw Error("\uACC4\uC815 \uC5F0\uACB0\uC774 \uBC14\uB00C\uC5C8\uC5B4\uC694.");
+      if (current !== job || hangulPort() !== job.port || accountOwner && accountOwner() !== job.owner) throw Error("\uB85C\uADF8\uC778\uD55C \uACC4\uC815\uC774 \uBC14\uB00C\uC5C8\uC5B4\uC694.");
     };
     const result = await applyDeviceRecords(job.plan, { storage, accountAnswer, setAccountAnswer, hangulPort: job.port, guard, importLife, importLearning });
     if (current !== job) return null;
@@ -19642,7 +19642,7 @@ async function loadWorldConfig({ value = globalThis.__SYNK_WORLD_CONFIG__, base 
 }
 
 // experiences/synk-world-app/world-account.mjs
-var changed = () => Object.assign(Error("\uACC4\uC815 \uC5F0\uACB0\uC774 \uBC14\uB00C\uC5C8\uC5B4\uC694."), { code: "ACCOUNT_CHANGED" });
+var changed = () => Object.assign(Error("\uB85C\uADF8\uC778\uD55C \uACC4\uC815\uC774 \uBC14\uB00C\uC5C8\uC5B4\uC694."), { code: "ACCOUNT_CHANGED" });
 var authErrors = /* @__PURE__ */ new Set(["AUTH_REQUIRED", "AUTH_SESSION_MISSING", "SESSION_REVOKED", "UNAUTHORIZED", "ACCOUNT_UNAVAILABLE", "PRODUCT_FORBIDDEN", "PLATFORM_ACCOUNT_MISMATCH"]);
 var routes2 = /* @__PURE__ */ new Map([["bootstrap", "GET"], ["play/start", "POST"], ["play/complete", "POST"], ["avatar/outfit", "PUT"], ["wardrobe/looks", "PUT"], ["town/entry", "GET"], ["town/state", "GET"], ["town/sharing", "POST"], ["town/command", "POST"], ["town/presence", "POST"], ["enrollment/preview", "POST"], ["enrollment/claim", "POST"], ["homework", "GET"], ["homework/submit", "POST"], ["homework/key", "POST"], ["writing", "POST"], ["speaking", "POST"]]);
 function createWorldAccount({
@@ -19730,10 +19730,10 @@ function createWorldAccount({
     if (nativeReady) return nativeReady;
     const expected = epoch;
     const pending = (async () => {
-      if (typeof bridge.getEnvironment !== "function" || typeof bridge.onAuthChanged !== "function" || typeof bridge.authSignIn !== "function" || typeof bridge.authSignOut !== "function") throw Object.assign(Error("WORLD \uC571\uC758 \uACC4\uC815 \uC5F0\uACB0\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694."), { code: "INVALID_BRIDGE" });
+      if (typeof bridge.getEnvironment !== "function" || typeof bridge.onAuthChanged !== "function" || typeof bridge.authSignIn !== "function" || typeof bridge.authSignOut !== "function") throw Object.assign(Error("PC \uC571\uC744 \uCD5C\uC2E0 \uBC84\uC804\uC73C\uB85C \uC5C5\uB370\uC774\uD2B8\uD55C \uB4A4 \uB2E4\uC2DC \uC5F4\uC5B4 \uC8FC\uC138\uC694."), { code: "INVALID_BRIDGE" });
       const environment = await bridge.getEnvironment();
       guard(expected);
-      if (environment?.clientId !== "world") throw Object.assign(Error("WORLD \uC571\uC758 \uACC4\uC815 \uC5F0\uACB0\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694."), { code: "INVALID_BRIDGE" });
+      if (environment?.clientId !== "world") throw Object.assign(Error("PC \uC571\uC744 \uCD5C\uC2E0 \uBC84\uC804\uC73C\uB85C \uC5C5\uB370\uC774\uD2B8\uD55C \uB4A4 \uB2E4\uC2DC \uC5F4\uC5B4 \uC8FC\uC138\uC694."), { code: "INVALID_BRIDGE" });
       nativeClassroom = Array.isArray(environment.worldRoutes) && environment.worldRoutes.includes("classroom");
       nativeHomework = Array.isArray(environment.worldRoutes) && ["homework", "homework/submit"].every((route) => environment.worldRoutes.includes(route));
       unsubscribe = bridge.onAuthChanged((state) => {
@@ -19790,7 +19790,7 @@ function createWorldAccount({
     guard(expected);
     if (read !== verification) throw changed();
     const id = data.account?.synk_user_id;
-    if (data.ok !== true || typeof id !== "string" || !id || data.account.status !== "active") throw Object.assign(Error("\uD65C\uC131\uD654\uB41C SYNK ID\uB97C \uD655\uC778\uD574 \uC8FC\uC138\uC694."), { code: "ACCOUNT_UNAVAILABLE" });
+    if (data.ok !== true || typeof id !== "string" || !id || data.account.status !== "active") throw Object.assign(Error("\uC774 SYNK ID\uB294 \uC9C0\uAE08 \uC4F8 \uC218 \uC5C6\uC5B4\uC694. \uB2E4\uB978 \uACC4\uC815\uC73C\uB85C \uB85C\uADF8\uC778\uD574 \uC8FC\uC138\uC694."), { code: "ACCOUNT_UNAVAILABLE" });
     if (!native) entry.assertAccount(id);
     if (owner && id !== owner || native && id !== nativeAccountId) {
       clear();
@@ -19824,7 +19824,7 @@ function createWorldAccount({
     entry.restore(storage);
     guard(expected);
     if (entry.isCancelled()) return false;
-    if (!config.configured || !config.clients.world.clientId || !config.clients.world.redirectUri) throw Object.assign(Error("\uC774 WORLD\uC758 SYNK ID \uACF5\uAC1C \uC5F0\uACB0 \uC124\uC815\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694."), { code: "AUTH_CONFIG" });
+    if (!config.configured || !config.clients.world.clientId || !config.clients.world.redirectUri) throw Object.assign(Error("\uC9C0\uAE08\uC740 \uB85C\uADF8\uC778\uC744 \uC2DC\uC791\uD560 \uC218 \uC5C6\uC5B4\uC694. \uC7A0\uC2DC \uB4A4 \uB2E4\uC2DC \uC2DC\uB3C4\uD574 \uC8FC\uC138\uC694."), { code: "AUTH_CONFIG" });
     const url = new URL(getUrl());
     if (url.searchParams.has("code") || url.searchParams.has("error")) {
       try {
@@ -20081,7 +20081,7 @@ function createWorldAccount({
         clear();
         forgetSession();
       }
-      if (ok && path !== "town/sharing" && !path.startsWith("enrollment/") && data?.accountId !== owner) throw Object.assign(Error("\uB2E4\uB978 \uACC4\uC815\uC758 \uC751\uB2F5\uC744 \uC801\uC6A9\uD558\uC9C0 \uC54A\uC558\uC5B4\uC694."), { code: "ACCOUNT_MISMATCH" });
+      if (ok && path !== "town/sharing" && !path.startsWith("enrollment/") && data?.accountId !== owner) throw Object.assign(Error("\uB2E4\uB978 \uACC4\uC815\uC758 \uC815\uBCF4\uB77C\uC11C \uBC18\uC601\uD558\uC9C0 \uC54A\uC558\uC5B4\uC694."), { code: "ACCOUNT_MISMATCH" });
       if (ok && data.binding) {
         const next = data.binding;
         if (townBinding && (next.classId !== townBinding.classId || Number(next.sharing?.revision) < Number(townBinding.sharing?.revision) || Number(next.membershipRevision) < Number(townBinding.membershipRevision) || next.sharing?.revision === townBinding.sharing?.revision && townBinding.sharing?.enabled === false && next.sharing?.enabled === true)) throw Object.assign(Error("TOWN_SNAPSHOT_CHANGED"), { code: "TOWN_SNAPSHOT_CHANGED" });
@@ -20182,9 +20182,9 @@ function createWorldAccount({
     }
   }
   async function readHomeworkKey({ classId, week, kind }) {
-    if (!/^[0-9a-f-]{36}$/i.test(classId || "") || !Number.isInteger(week) || week < 1 || week > 8 || !["reading", "writing"].includes(kind)) throw new TypeError("\uACFC\uC81C \uC815\uB2F5 \uC694\uCCAD\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+    if (!/^[0-9a-f-]{36}$/i.test(classId || "") || !Number.isInteger(week) || week < 1 || week > 8 || !["reading", "writing"].includes(kind)) throw new TypeError("\uACFC\uC81C \uC815\uB2F5\uC744 \uC5F4 \uC218 \uC5C6\uC5B4\uC694. \uACFC\uC81C\uB97C \uB2E4\uC2DC \uC5F4\uC5B4 \uC8FC\uC138\uC694.");
     const response = await request("homework/key", { method: "POST", body: JSON.stringify({ classId, week, kind }) }), data = await response.json();
-    if (!response.ok || data.ok !== true) throw Object.assign(Error("\uC81C\uCD9C\uD55C \uACFC\uC81C\uC758 \uC815\uB2F5\uC744 \uD655\uC778\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694."), { code: data.error?.code || "HOMEWORK_KEY_UNAVAILABLE", status: response.status });
+    if (!response.ok || data.ok !== true) throw Object.assign(Error("\uB0B8 \uACFC\uC81C\uC758 \uC815\uB2F5\uC744 \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC7A0\uC2DC \uB4A4 \uB2E4\uC2DC \uC5F4\uC5B4 \uC8FC\uC138\uC694."), { code: data.error?.code || "HOMEWORK_KEY_UNAVAILABLE", status: response.status });
     return data.key;
   }
   async function courseRequest(operation, params = {}) {
@@ -20307,7 +20307,7 @@ function createWorldAccount({
       if (!["preview", "claim"].includes(operation)) throw new TypeError("Unknown enrollment operation");
       const response = await request(`enrollment/${operation}`, { method: "POST", body: JSON.stringify(body) });
       const data = await response.json();
-      if (!response.ok || data.ok === false) throw Object.assign(Error(data.error?.message || "\uAD50\uC2E4 \uC5F0\uACB0\uC744 \uD655\uC778\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694."), { code: data.error?.code || "ENROLLMENT_UNAVAILABLE", status: response.status });
+      if (!response.ok || data.ok === false) throw Object.assign(Error(data.error?.message || "\uBC18 \uC815\uBCF4\uB97C \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC7A0\uC2DC \uB4A4 \uB2E4\uC2DC \uC5F4\uC5B4 \uC8FC\uC138\uC694."), { code: data.error?.code || "ENROLLMENT_UNAVAILABLE", status: response.status });
       return data;
     },
     stop() {

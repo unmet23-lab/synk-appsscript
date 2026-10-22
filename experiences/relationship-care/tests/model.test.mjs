@@ -142,7 +142,7 @@ test('확인한 호칭·덧붙일 말·답장 부담만 반영하며 금지 표�
   assert.match(draft.text, /답장은 편할 때/);
   assert.doesNotMatch(draft.text, /나이|비밀|야근/);
   assert.deepEqual(draft.removedPhrases, ['나이']);
-  assert.match(draft.cautions.join(' '), /자유롭게 적은 선호 메모는 문구에 자동 반영되지/);
+  assert.match(draft.cautions.join(' '), /「함께 기억할 메모」는 문구에 넣지 않아요/);
   const notConfirmed = draftMessage(person({ recipientPreference: { ...preferences, confirmed: false } }), event());
   assert.doesNotMatch(notConfirmed.text, /지훈아|어제|답장/);
   const empty = draftMessage(person({ recipientPreference: { confirmed: true, avoidPhrases: ['생일'] } }), event());
@@ -177,7 +177,7 @@ test('기억한 위로 문구도 이모지·웃음 표지·금지 표현을 통�
   assert.doesNotMatch(draft.text, /[ㅋㅎ]|농담|명복|꼭|\p{Extended_Pictographic}/u);
   assert.match(draft.text, /위로의 마음/);
   assert.doesNotMatch(draft.text, /답장은 편하실 때/);
-  assert.match(draft.cautions.join(' '), /숨은 뜻이나 농담을 판별하는 기능은 아니/);
+  assert.match(draft.cautions.join(' '), /연락을 반기지 않는 분도/);
 });
 
 test('타임라인은 복사·실제 연락·조용히 기억하기를 구분하고 과거 행사 이름을 보존한다', () => {

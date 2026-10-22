@@ -42,7 +42,7 @@ test('일정은 행사 날짜 대신 직접 완료한 날을, 후속 챙김은 �
   state.followups = [followup('done', '2026-12-01', { status: 'done', updatedAt: '2026-10-07T04:00:00.000Z' })];
   result = context(importBackup(state));
   assert.equal(result.lastCare.id, 'done'); assert.equal(result.lastCare.date, TODAY);
-  assert.equal(result.lastCare.label, '후속 챙김 완료');
+  assert.equal(result.lastCare.label, '다시 챙긴 일');
   assert.equal(result.followups.length, 0);
 });
 

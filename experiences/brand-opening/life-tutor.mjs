@@ -97,7 +97,7 @@ export function createLifeTutor({tutorId,container,state={},snapshot,lessons=[],
    practice.querySelectorAll('[data-expression-choice]').forEach(b=>{b.classList.toggle('is-chosen',b===button);b.disabled=correct;});
    const back=practice.querySelector('.life-expression-return');back.disabled=!correct;if(correct)back.focus({preventScroll:true});
    if(correct&&onPracticeSuccess){
-    let message;try{const result=onPracticeSuccess(exercise.id);message=result?.status?.message;}catch{message='연습 결과를 저장하지 못했어요. 연결 상태를 확인해 주세요.';}
+    let message;try{const result=onPracticeSuccess(exercise.id);message=result?.status?.message;}catch{message='연습 결과를 저장하지 못했어요. 잠시 뒤 다시 연습해 봐요.';}
     if(message&&practice){const notice=document.createElement('p');notice.className='life-expression-save';notice.setAttribute('role','status');notice.textContent=message;practice.querySelector('.life-expression-feedback').append(notice);}
    }
   }));

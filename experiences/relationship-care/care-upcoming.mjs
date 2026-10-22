@@ -114,7 +114,7 @@ function describe(event, person, occurrence, today, completion) {
  */
 export function upcomingDays(state, { now = new Date(), days = 30, types = null, personId = null, includeCompleted = true } = {}) {
   if (!Number.isInteger(days) || days < 0 || days > 730) throw new Error('다가오는 날은 0~730일 범위로 살펴볼 수 있어요.');
-  if (types !== null && (!Array.isArray(types) || types.some(type => !Object.hasOwn(EVENT_TYPES, type)))) throw new Error('살펴볼 일정 종류를 확인해 주세요.');
+  if (types !== null && (!Array.isArray(types) || types.some(type => !Object.hasOwn(EVENT_TYPES, type)))) throw new Error('일정 종류를 읽지 못했어요.');
   const current = importBackup(state), today = koreanDate(now);
   const end = moveDay(today, days) > '2199-12-31' ? '2199-12-31' : moveDay(today, days);
   const people = new Map(current.people.map(person => [person.id, person]));

@@ -13,7 +13,7 @@ export function createPlatformAccount({ config, storage, onStatus = () => {},
   let accountId=null, authenticatedClient=null, learningSync=false;
   const listeners=new Set();
   const identity=()=>({configured:!!config?.configured,signedIn:snapshot.status==='signed-in',status:snapshot.status==='loading'?'restoring':snapshot.status,accountId,sessionGeneration:generation,learningSync:snapshot.status==='signed-in'&&learningSync,error:snapshot.status==='error'?{message:snapshot.message,retryable:true}:null});
-  let snapshot = { status: 'loading', displayName: '', message: '계정을 확인하고 있어요.' };
+  let snapshot = { status: 'loading', displayName: '', message: '로그인 상태를 확인하고 있어요.' };
   const status = () => ({ ...snapshot });
   const emit = (phase, message = '', displayName = '') => {
     snapshot = { status: phase, displayName, message };
@@ -23,18 +23,18 @@ export function createPlatformAccount({ config, storage, onStatus = () => {},
   };
   function invalidate() {
     generation++;controller?.abort();controller = null;accountId=null;authenticatedClient=null;learningSync=false;
-    if (!disposed) emit('loading', '계정을 다시 확인하고 있어요.');
+    if (!disposed) emit('loading', '로그인 상태를 확인하고 있어요.');
   }
   async function load() {
     if (disposed) return status();
     invalidate();const expected = generation;
     if (!config?.configured || !config.clients?.platform?.clientId || !config.clients.platform.redirectUri)
-      return emit('unconfigured', '이 화면의 계정 연결 설정을 확인해 주세요.');
+      return emit('unconfigured', '이 화면에는 로그인 설정이 아직 없어요. 앱과 혜택은 로그인 없이 볼 수 있어요.');
     let raw, session;
     try { raw = storage.getItem(SESSION_KEY);session = JSON.parse(raw || 'null'); }
-    catch { return emit('error', '브라우저의 로그인 정보를 읽지 못했어요. 계정 관리에서 확인해 주세요.'); }
+    catch { return emit('error', '브라우저가 저장 공간을 막아 로그인 정보를 못 읽었어요. 사이트 데이터 저장을 허용한 뒤 다시 시도해 주세요.'); }
     if (!session?.access_token || typeof session.access_token !== 'string')
-      return emit('signed-out', 'SYNK ID로 로그인하면 계정과 연결된 기록을 확인할 수 있어요.');
+      return emit('signed-out', '로그인하면 즐겨찾기를 계정에 저장하고 내 성향 요약도 볼 수 있어요.');
     const abort = controller = new AbortController();
     const guard = () => {
       if (disposed || expected !== generation || storage.getItem(SESSION_KEY) !== raw) throw changed();
@@ -57,14 +57,14 @@ export function createPlatformAccount({ config, storage, onStatus = () => {},
         throw new Error('Invalid account response');
       const name = result.account.profile?.display_name;
       accountId=result.account.synk_user_id;authenticatedClient=client;learningSync=result.capabilities?.learningSync===true;
-      return emit('signed-in', '서버에서 확인한 SYNK ID예요. 기록의 저장·동의 상태는 계정 관리에서 확인해요.', typeof name === 'string' ? name.trim().slice(0, 80) : '');
+      return emit('signed-in', '「학습 기록 연결」은 「내 계정 관리」에서 켜고 꺼요.', typeof name === 'string' ? name.trim().slice(0, 80) : '');
     } catch (error) {
       if (disposed || expected !== generation) return status();
       // A logout or replacement in the same tab always wins over a late reply.
       if (error?.code === 'ACCOUNT_CHANGED') return load();
-      if (AUTH_ERRORS.has(error?.code)) return emit('signed-out', '이 탭의 로그인을 다시 확인해야 해요. SYNK ID 계정 관리에서 연결해 주세요.');
+      if (AUTH_ERRORS.has(error?.code)) return emit('signed-out', '로그인이 끝났어요. 다시 로그인해 주세요.');
       // A failed read does not revoke or erase the existing session.
-      return emit('error', '계정 서버에 연결하지 못했어요. 로그인 정보는 유지했으니 다시 확인해 주세요.');
+      return emit('error', '계정 서버에 닿지 못했어요. 로그인은 그대로이니 잠시 뒤 「다시 시도」를 눌러 주세요.');
     } finally { if (controller === abort) controller = null; }
   }
   function refresh() {
@@ -80,7 +80,7 @@ export function createPlatformAccount({ config, storage, onStatus = () => {},
       if(!['platformLoad','platformSave','platformDelete','atlasSummary','insightLoad','insightSave','insightDelete','understandingLoad','understandingSave','understandingDelete','memoryGet','memoryPost'].includes(operation)||!authenticatedClient||snapshot.status!=='signed-in')throw changed();
       if(operation==='atlasSummary'&&params&&Object.keys(params).length)throw changed();
       // Learning memory (the chosen presentation 「내 성향」 saves): the same SDK routes WORLD uses.
-      if(operation.startsWith('memory')&&(!Number.isSafeInteger(params?.revision)||operation==='memoryPost'&&(!Array.isArray(params.entries)||!params.entries.length||params.entries.length>100)))throw Object.assign(new Error('요청 형식을 확인해 주세요.'),{code:'INVALID_REQUEST'});
+      if(operation.startsWith('memory')&&(!Number.isSafeInteger(params?.revision)||operation==='memoryPost'&&(!Array.isArray(params.entries)||!params.entries.length||params.entries.length>100)))throw Object.assign(new Error('요청 형식이 맞지 않아요.'),{code:'INVALID_REQUEST'});
       const expected=generation,owner=accountId,result=await(operation==='memoryGet'?authenticatedClient.memory.get({revision:params.revision}):operation==='memoryPost'?authenticatedClient.memory.post({revision:params.revision,entries:params.entries}):authenticatedClient[operation](params));
       if(expected!==generation||disposed)throw changed();
       if(operation.startsWith('insight')&&result?.ok===true&&(result.scope!=='synk-personal'||result.resource!=='member-insight'||result.accountId!==owner)){invalidate();throw changed();}

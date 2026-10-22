@@ -30,8 +30,8 @@ export function rehearsalMediaQualities(manifest) {
  * transitions belong to the same generated performance in both resolutions. */
 export function selectRehearsalMedia(manifest, quality = '4k') {
   const available = rehearsalMediaQualities(manifest);
-  if (!available.length && manifest.clips.some((clip) => clip.variants && Object.keys(clip.variants).length)) throw new RangeError('모든 장면이 같은 화질로 준비되어야 합니다.');
-  if (available.length && !available.includes(quality)) throw new RangeError('준비된 영상 화질을 선택해 주세요.');
+  if (!available.length && manifest.clips.some((clip) => clip.variants && Object.keys(clip.variants).length)) throw new RangeError('모든 장면이 같은 화질로 준비돼 있어야 해요.');
+  if (available.length && !available.includes(quality)) throw new RangeError('준비된 영상 화질 중에서 골라 주세요.');
   return { ...manifest, clips: manifest.clips.map((clip) => {
     const media = available.length ? clip.variants?.[quality] : null;
     return media ? { ...clip, ...Object.fromEntries(MEDIA_FIELDS.map((key) => [key, media[key]])) } : { ...clip };
@@ -52,9 +52,9 @@ export const REHEARSAL_DURATION_PROFILES = Object.freeze({
 
 function durationOptions(durationProfile, limits) {
   const profile = REHEARSAL_DURATION_PROFILES[durationProfile];
-  if (!profile) throw new RangeError('지원하는 면접 시간 프로필이 필요합니다.');
+  if (!profile) throw new RangeError('지원하는 면접 시간 설정이 필요해요.');
   const answerLimitsMs = limits ?? profile.answerLimitsMs;
-  if (!Array.isArray(answerLimitsMs) || answerLimitsMs.length !== 2 || answerLimitsMs.some((n) => !Number.isFinite(n) || n < 1000 || n > 120000)) throw new RangeError('답변 시간 두 개가 필요합니다. 각 시간은 1~120초여야 합니다.');
+  if (!Array.isArray(answerLimitsMs) || answerLimitsMs.length !== 2 || answerLimitsMs.some((n) => !Number.isFinite(n) || n < 1000 || n > 120000)) throw new RangeError('답변 시간 두 개가 필요해요. 각각 1~120초여야 해요.');
   return { profile, answerLimitsMs: [...answerLimitsMs] };
 }
 
@@ -66,11 +66,11 @@ function durationOptions(durationProfile, limits) {
  * finalization add unbounded time. Early answers remove unused answer time. */
 export function rehearsalDurationBudget({ durationProfile = 'quest', limits, followup = 'experience', manifest } = {}) {
   const { profile, answerLimitsMs } = durationOptions(durationProfile, limits);
-  if (!['experience', 'plan'].includes(followup)) throw new RangeError('실제 후속 질문 분기가 필요합니다.');
+  if (!['experience', 'plan'].includes(followup)) throw new RangeError('후속 질문 갈래(경험·준비)를 정해야 해요.');
   const questionClips = [CLIPS.question, CLIPS[followup]].map((id) => manifest?.clips?.find((clip) => clip.id === id));
   const legacyCues = [3.75, followup === 'experience' ? 4.85 : 4.8];
   const speechCuesMs = questionClips.map((clip, index) => (clip?.answerStartSeconds ?? legacyCues[index]) * 1000);
-  if (speechCuesMs.some((cue) => !Number.isFinite(cue) || cue < 0)) throw new RangeError('검수한 질문 종료 시간이 필요합니다.');
+  if (speechCuesMs.some((cue) => !Number.isFinite(cue) || cue < 0)) throw new RangeError('질문이 끝나는 시점 값이 필요해요.');
   const dissolveMs = 150 * 2;
   const minimumFullAnswerMs = profile.leadInMs + profile.closingMs + speechCuesMs.reduce((sum, value) => sum + value, 0) + answerLimitsMs.reduce((sum, value) => sum + value, 0) + dissolveMs;
   const listeningClips = manifest?.clips?.filter((clip) => clip.id === CLIPS.listening || clip.kind === 'listening' && clip.status === 'ready') || [];
@@ -91,10 +91,10 @@ export function rehearsalDurationBudget({ durationProfile = 'quest', limits, fol
 /** Safe exits are reviewed for each performance, including a speaking clip's
  * silent tail. At clip end, its neutral final frame is also safe to leave. */
 function checkedExitWindows(windows, duration) {
-  if (!Array.isArray(windows)) throw new RangeError('검수한 장면 전환 구간이 필요합니다.');
+  if (!Array.isArray(windows)) throw new RangeError('장면을 넘길 구간 값이 필요해요.');
   let previous = -Infinity;
   for (const pair of windows) {
-    if (!Array.isArray(pair) || pair.length !== 2 || !pair.every(Number.isFinite) || pair[0] < 0 || pair[1] < pair[0] || pair[0] < previous || pair[1] > duration + .1) throw new RangeError('장면 전환 구간은 영상 길이 안에서 순서대로 지정해야 합니다.');
+    if (!Array.isArray(pair) || pair.length !== 2 || !pair.every(Number.isFinite) || pair[0] < 0 || pair[1] < pair[0] || pair[0] < previous || pair[1] > duration + .1) throw new RangeError('장면 전환 구간은 영상 길이 안에서 순서대로 정해야 해요.');
     previous = pair[1];
   }
   return windows;
@@ -120,14 +120,17 @@ export function safeExitWaitMs(time, duration = 10, windows = SAFE_EXIT_WINDOWS)
 }
 
 const repairMessages = Object.freeze({
-  empty: '답변이 확인되지 않았습니다. 직접 입력하거나 다시 답변해 주세요.',
-  recognition: '음성을 정확히 확인하지 못했습니다. 내용을 직접 입력하거나 다시 답변해 주세요.',
-  repeat: '질문을 다시 들으려면 ‘질문 다시 듣기’를 선택해 주세요.',
-  uncertain: '답변을 이어서 준비하거나 질문을 다시 들을 수 있습니다.',
-  length: '답변은 2,000자 이내로 입력해 주세요.',
-  'off-topic': '지원 이유나 직접 해 본 일, 준비 중인 내용을 말씀해 주세요.',
-  detail: '직접 해 본 일이나 준비할 일을 한 가지 더 구체적으로 말씀해 주세요.',
-  media: '이 답변에 이어질 질문 영상을 준비하지 못했습니다. 처음부터 다시 시작해 주세요.',
+  empty: '답이 들어오지 않았어요. 다시 답해 주세요.',
+  recognition: '말을 제대로 알아듣지 못했어요. 「다시 답변」을 눌러 한 번 더 말해 주세요.',
+  repeat: '질문을 다시 들으려면 「질문 다시 듣기」를 눌러 주세요.',
+  uncertain: '천천히 생각해도 괜찮아요. 떠오른 계기 하나로 다시 답하거나 질문을 다시 들어 보세요.',
+  length: '답은 2,000자 안으로 줄여 주세요.',
+  'off-topic': '지원한 이유나 직접 해 본 일, 준비하고 있는 것을 넣어 다시 답해 주세요.',
+  detail: '직접 해 본 일이나 준비할 일을 하나 골라 조금 더 자세히 답해 주세요.',
+  // 음성 갈래는 말을 듣기 전에 막힌 것이라 「알아듣지 못했어요」와 따로 말한다.
+  'voice-unprepared': '말로 답하려면 먼저 「1. 한국어 음성 준비」를 눌러 주세요. 그동안 「직접 입력」으로 바꿔 답해도 돼요.',
+  microphone: '마이크를 켜지 못했어요. 마이크 권한을 허용한 뒤 「다시 답변」을 누르거나, 「직접 입력」으로 바꿔 답해 주세요.',
+  media: '이 답에 이어질 질문 영상을 불러오지 못했어요. 「종료」를 누른 뒤 처음부터 다시 해 주세요.',
 });
 
 /** Session data exists only in memory. This router selects one of two prepared
@@ -154,6 +157,7 @@ export function createRehearsalSession({ durationProfile = 'quest', limits: cust
     if (state.phase !== 'listening' || state.paused) return snapshot();
     // Only these two spoken performances are ready. Planned scripts must never
     // become the question shown to a user before the matching video exists.
+    if (options.repairReason && Object.hasOwn(repairMessages, options.repairReason)) { state.phase = 'repair'; state.repair = { reason: options.repairReason, message: repairMessages[options.repairReason] }; return snapshot(); }
     const meaning = state.turn === 1 ? planAnswerFollowup(text, { ...options, availableClipIds: [CLIPS.experience, CLIPS.plan] }) : classifyAnswer(text, options);
     if (meaning.kind === 'repair') {
       state.phase = 'repair'; state.repair = { reason: meaning.reason, message: repairMessages[meaning.reason] || repairMessages.recognition }; return snapshot();

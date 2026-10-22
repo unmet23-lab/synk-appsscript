@@ -35,7 +35,7 @@ async function fixture(t){
  await mountPortal({config:{configured:true,supabaseUrl:'https://synthetic-auth.invalid',accountApiUrl:'https://synthetic-auth.invalid',supabasePublishableKey:'synthetic-public-only',portalUrl:'https://synthetic-id.invalid/id/',learningUrl:'/'},sdk,cooldownClock:clock,loginSettings:{google:false,phone:false}});
  t.after(()=>{events.get('pagehide')?.({});for(const[key,descriptor]of old){if(descriptor)Object.defineProperty(globalThis,key,descriptor);else delete globalThis[key];}});
  const walk=node=>[node,...node.children.flatMap(walk)];
- const button=text=>walk(get('account')).find(node=>node.tagName==='button'&&node.textContent===text),logout=button('이 제품에서 로그아웃'),allLogout=button('모든 제품의 로그인 종료');
+ const button=text=>walk(get('account')).find(node=>node.tagName==='button'&&node.textContent===text),logout=button('로그아웃'),allLogout=button('모든 SYNK 앱에서 로그아웃');
  return {get,calls,replies,events,clock,logout:()=>logout.onclick(),allLogout:()=>allLogout.onclick(),emit:async(event,value)=>{if(value)authActive=true;emit(event,value);await settle();}};
 }
 test('central revocation is authenticated before SDK logout invalidates the shared session',async t=>{

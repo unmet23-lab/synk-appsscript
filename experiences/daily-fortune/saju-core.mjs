@@ -25,7 +25,7 @@ function pillar(id, label, pair) {
   const [gan, zhi] = [...pair];
   const stemElement = elementByHanja[LunarUtil.WU_XING_GAN[gan]];
   const branchElement = elementByHanja[LunarUtil.WU_XING_ZHI[zhi]];
-  if (!stemElement || !branchElement) throw new Error('사주 간지를 계산하지 못했습니다.');
+  if (!stemElement || !branchElement) throw new Error('사주 간지를 계산하지 못했어요. 생년월일을 다시 골라 주세요.');
   const stem = { hanja: gan, hangul: stemNames[gan], element: stemElement.label };
   const branch = { hanja: zhi, hangul: branchNames[zhi], element: branchElement.label };
   return { id, label, known: true, hanja: pair, hangul: stem.hangul + branch.hangul, stem, branch };

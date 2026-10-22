@@ -256,7 +256,7 @@ function floor(vm, state) {
 
 function poster(value) {
   const art = value && typeof value.art === 'string' ? value.art : '';
-  return `<header class="mi2-poster">${art ? `<img class="mi2-object" src="${escape(art)}" alt="">` : ''}<div class="mi2-poster-top"><span class="mi2-eyebrow">${escape(text(value?.label, 'SYNK FOR YOU'))}</span>${value?.badge ? `<span class="mi2-badge${value.status === 'integrated' ? ' is-integrated' : ''}"><span class="mi2-badge-led" aria-hidden="true"></span>${escape(value.badge)}</span>` : ''}</div><div class="mi2-poster-title"><h1 id="benefit-title" tabindex="-1">내 성향</h1><p>내가 고른 것과 해본 것에서 발견하는 나.</p></div></header>`;
+  return `<header class="mi2-poster">${art ? `<img class="mi2-object" src="${escape(art)}" alt="">` : ''}<div class="mi2-poster-top"><span class="mi2-eyebrow">${escape(text(value?.label, 'SYNK FOR YOU'))}</span>${value?.badge ? `<span class="mi2-badge${value.status === 'integrated' ? ' is-integrated' : ''}"><span class="mi2-badge-led" aria-hidden="true"></span>${escape(value.badge)}</span>` : ''}</div><div class="mi2-poster-title"><h1 id="benefit-title" tabindex="-1">내 성향</h1><p>내가 고른 것과 실제로 한 것을 나눠서 봐요.</p></div></header>`;
 }
 
 function notice(state, report) {
@@ -280,9 +280,9 @@ function nowBlock(vm, state) {
 function pendingBody(state, head) {
   const status = state.status;
   const block = status === 'loading' ? `<section class="mi2-now mi2-state" role="status" aria-live="polite"><span class="mi2-label">지금의 나</span><h2>내 기록을 살펴보고 있어요.</h2><p class="mi2-support">내가 고른 것과 연결한 연습 기록을 정리하고 있어요.</p></section>`
-    : status === 'signed-out' ? `<section class="mi2-now mi2-state"><span class="mi2-label">SYNK ID</span><h2>내 계정으로 이어서 볼 수 있어요.</h2><p class="mi2-support">로그인하면 내가 알려 준 것과 연결한 연습 기록을 한곳에서 봐요.</p><div class="mi2-actions">${pill('account', '로그인하기')}</div></section>`
+    : status === 'signed-out' ? `<section class="mi2-now mi2-state"><span class="mi2-label">SYNK ID</span><h2>내 계정으로 이어서 볼 수 있어요.</h2><p class="mi2-support">로그인하면 내가 알려 준 것과 연결한 연습 기록을 함께 볼 수 있어요.</p><div class="mi2-actions">${pill('account', '로그인하기')}</div></section>`
       : status === 'unconfigured' ? `<section class="mi2-now mi2-state" role="status"><span class="mi2-label">계정 연결</span><h2>지금은 내 기록을 연결할 수 없어요.</h2><p class="mi2-support">이 환경에서 SYNK ID 연결이 준비되면 내 성향을 볼 수 있어요.</p><div class="mi2-actions">${pill('account', '계정 확인하기')}</div></section>`
-        : `<section class="mi2-now mi2-state" role="alert"><span class="mi2-label">다시 확인</span><h2>기록을 불러오지 못했어요.</h2><p class="mi2-support">${escape(text(state.message, '잠시 뒤 다시 확인해 주세요. 연결한 기록을 가져와야 내 성향을 보여 드릴 수 있어요.'))}</p><div class="mi2-actions">${pill('refresh', '다시 불러오기')}</div></section>`;
+        : `<section class="mi2-now mi2-state" role="alert"><span class="mi2-label">불러오기 실패</span><h2>기록을 불러오지 못했어요.</h2><p class="mi2-support">${escape(text(state.message, '잠시 뒤 「다시 불러오기」를 눌러 주세요. 연결한 기록을 가져와야 내 성향을 보여 드릴 수 있어요.'))}</p><div class="mi2-actions">${pill('refresh', '다시 불러오기')}</div></section>`;
   return `<div class="mi2-top">${head}${block}</div>`;
 }
 

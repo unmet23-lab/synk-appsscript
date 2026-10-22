@@ -16,7 +16,7 @@
     const button = document.getElementById('theme-toggle');
     if (button) {
       button.dataset.choice = value;
-      button.setAttribute('aria-label', '화면 테마: ' + LABEL[value] + '. 누르면 ' + LABEL[next(value)] + '(으)로 바꿉니다');
+      button.setAttribute('aria-label', '화면 테마: ' + LABEL[value] + '. 누르면 ' + LABEL[next(value)] + '(으)로 바꿔요');
       button.title = '화면 테마: ' + LABEL[value];
     }
   }

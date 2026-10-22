@@ -48,7 +48,7 @@ export function createTownSharingControl({root, client, classId, learnerId, guar
       membership = validateTownMembership(result, {classId, learnerId});
     } catch (error) {
       if (stopped || version !== generation || error.code === 'ACCOUNT_CHANGED') return;
-      status.textContent = '마을 연결을 확인하지 못했어요. 활동 요약 공유 상태는 연결 후 확인할 수 있어요.';
+      status.textContent = '마을 연결을 못 불러왔어요. 공유 상태는 다시 연결된 뒤에 보여요.';
       retry.hidden = false;
     } finally {
       if (!stopped && version === generation) {busy = false; paint();}
@@ -67,8 +67,8 @@ export function createTownSharingControl({root, client, classId, learnerId, guar
       notice(membership.townSharing.enabled ? '이 반 선생님에게 앞으로의 TOWN 활동 요약을 공유해요.' : 'TOWN 활동 요약 공유를 껐어요.');
     } catch (error) {
       if (stopped || version !== generation || error.code === 'ACCOUNT_CHANGED') return;
-      membership = null; input.checked = false; status.textContent = '공유 변경 결과를 확인하지 못했어요. 마을 연결을 다시 확인해 주세요.'; retry.hidden = false;
-      notice('TOWN 활동 공유 상태를 다시 확인해 주세요.', true);
+      membership = null; input.checked = false; status.textContent = '공유 설정이 저장됐는지 모르겠어요. 「마을 연결 다시 확인」을 눌러 주세요.'; retry.hidden = false;
+      notice('「마을 연결 다시 확인」을 눌러 공유 상태를 다시 불러와 주세요.', true);
     } finally {if (!stopped && version === generation) {busy = false; paint();}}
   };
   retry.onclick = () => {void load();};

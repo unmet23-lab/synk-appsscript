@@ -6,7 +6,7 @@ const LIFE_PROGRESS_KEY='synk.life-korean.progress.v1';
 export async function createLifeProgressPort({accountId:id,client,guard,storage:cache=globalThis.localStorage,onStatus=()=>{},target=globalThis,onDispose=()=>{}}={}){
  if(typeof id!=='string'||!id||typeof guard!=='function')throw TypeError('Verified life progress owner required');
  let disposed=false;
- const check=()=>{guard();if(disposed)throw Object.assign(Error('이 계정의 생활 한국어 연결이 끝났어요.'),{code:'ACCOUNT_CHANGED'});};
+ const check=()=>{guard();if(disposed)throw Object.assign(Error('로그인이 끝나 생활 한국어 진도를 저장할 수 없어요.'),{code:'ACCOUNT_CHANGED'});};
   const resolvedKey=`${LIFE_PROGRESS_KEY}:resolved:${encodeURIComponent(id)}`;
   function recoveredEntries(){
    check();const prefix=`synk.play.account.v1:${encodeURIComponent(id)}:rejected:`,entries=[];let resolved=[];
@@ -22,7 +22,7 @@ export async function createLifeProgressPort({accountId:id,client,guard,storage:
   }
   function lifeStatus(){
    const value=host.status(),prefix=`synk.play.account.v1:${encodeURIComponent(id)}:`;let pending=0,rejected=0,code;
-   if(disposed)return {...value,phase:'stopped',pending:0,rejected:0,message:'이 계정의 생활 한국어 연결이 끝났어요.'};
+   if(disposed)return {...value,phase:'stopped',pending:0,rejected:0,message:'로그인이 끝나 생활 한국어 진도를 저장할 수 없어요.'};
    // A rejected command from another game must not relabel this lesson. Equally,
    // a rejected life record must never look saved merely because the host loaded.
    for(let index=0;index<cache.length;index++){const recordKey=cache.key(index);if(!recordKey?.startsWith(prefix))continue;

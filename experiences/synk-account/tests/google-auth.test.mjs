@@ -114,7 +114,7 @@ test('unavailable pending storage stops OAuth before the SDK or browser is calle
   for (const storage of [{ setItem() { throw new Error('Synthetic blocked storage'); }, getItem() { return null; } }, { setItem() {}, getItem() { return null; } }])
     assert.throws(() => beginGoogleFlow({ config, storage, nonce: NONCE }), { code: 'GOOGLE_STORAGE_UNAVAILABLE' });
   const f = fixture(t, { storage: { setItem() { throw new Error('Synthetic quota'); }, getItem() { return null; }, removeItem() {} } });
-  await f.click('google-login');assert.equal(f.calls.length, 0);assert.equal(f.redirects.length, 0);assert.match(f.notices.at(-1)[0], /보관할 수 없/);
+  await f.click('google-login');assert.equal(f.calls.length, 0);assert.equal(f.redirects.length, 0);assert.match(f.notices.at(-1)[0], /시작할 수 없어요/);
 });
 
 test('disabled Google and unavailable public settings fail closed without OAuth', async t => {
@@ -241,7 +241,7 @@ test('restoring the old confirmed phone while another change is pending does not
   f.replies.updateUser = async () => ({ data: { user: { ...confirmedUser('synthetic-a'), new_phone: SECOND_PHONE.slice(1) } } });
   f.get('google-phone').value = SECOND_PHONE;f.get('google-phone').oninput();await f.click('google-phone-send');f.advance(60000);
   f.get('google-phone').value = PHONE;f.get('google-phone').oninput();await f.click('google-phone-send');
-  assert.match(f.notices.at(-1)[0], /다른 번호의 인증/);assert.doesNotMatch(f.notices.at(-1)[0], /요청했어요/);
+  assert.match(f.notices.at(-1)[0], /다른 번호로 인증을/);assert.doesNotMatch(f.notices.at(-1)[0], /요청했어요/);
   await f.submit();assert.equal(f.calls.filter(call => call.method === 'POST').length, 0);
 });
 

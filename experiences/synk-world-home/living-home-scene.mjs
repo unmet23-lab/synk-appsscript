@@ -153,11 +153,11 @@ export async function mountLivingHomeScene(container,{selectedTutor='mongle',onI
     const memoryCanvas=document.createElement('canvas');memoryCanvas.width=768;memoryCanvas.height=512;const memoryTexture=canvasTexture(memoryCanvas);extraTextures.add(memoryTexture);
     const memoryMaterial=new THREE.MeshBasicMaterial({map:memoryTexture,toneMapped:false});extraMaterials.add(memoryMaterial);
     const memory=new THREE.Group();scene.add(memory);interactive(memory,'memory',[0,-.33,.15]);rounded(memory,[1.72,1.18,.13],oak,[0,0,0]);mesh(memory,new THREE.PlaneGeometry(1.50,.97),memoryMaterial,[0,0,.12]);
-    let memoryData={text:'오늘의 작은 장면이\n여기에 쌓여요.',photoUrl:null},memoryImage=null;
+    let memoryData={text:'배운 표현과 사진이\n여기 걸려요.',photoUrl:null},memoryImage=null;
     function drawMemory(){
-      const ctx=memoryCanvas.getContext('2d');ctx.fillStyle='#faf7ee';ctx.fillRect(0,0,768,512);ctx.fillStyle='#708272';ctx.font='600 40px "Noto Sans KR",sans-serif';ctx.fillText('우리의 기억',38,59);
+      const ctx=memoryCanvas.getContext('2d');ctx.fillStyle='#faf7ee';ctx.fillRect(0,0,768,512);ctx.fillStyle='#708272';ctx.font='600 40px "Noto Sans KR",sans-serif';ctx.fillText('기억 액자',38,59);
       let textX=38,textWidth=690;if(memoryImage){const x=34,y=87,w=333,h=355;ctx.fillStyle='#e7e2d5';ctx.fillRect(x,y,w,h);const scale=Math.min(w/memoryImage.width,h/memoryImage.height),iw=memoryImage.width*scale,ih=memoryImage.height*scale;ctx.drawImage(memoryImage,x+(w-iw)/2,y+(h-ih)/2,iw,ih);textX=399;textWidth=327;}
-      ctx.fillStyle='#354942';ctx.font=`500 ${memoryImage?60:66}px "Noto Sans KR",sans-serif`;let line='',y=memoryImage?216:235,row=0;const chars=Array.from(String(memoryData.text||(memoryImage?'함께한 순간':'첫 표현을 기다려요.')).slice(0,180));
+      ctx.fillStyle='#354942';ctx.font=`500 ${memoryImage?60:66}px "Noto Sans KR",sans-serif`;let line='',y=memoryImage?216:235,row=0;const chars=Array.from(String(memoryData.text||(memoryImage?'앨범 사진':'오늘 배운 표현이\n아직 없어요.')).slice(0,180));
       for(let i=0;i<chars.length;i++){const char=chars[i];if(char==='\n'||ctx.measureText(line+char).width>textWidth){if(row===1){while(line&&ctx.measureText(line+'…').width>textWidth)line=line.slice(0,-1);line+='…';break;}ctx.fillText(line,textX,y);line=char==='\n'?'':char;y+=88;row++;}else line+=char;}ctx.fillText(line,textX,y);memoryTexture.needsUpdate=true;schedule();
     }
     function setMemory(value={}){

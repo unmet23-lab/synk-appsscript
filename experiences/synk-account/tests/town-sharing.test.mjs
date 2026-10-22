@@ -37,7 +37,7 @@ test('a failed change response never displays an unconfirmed consent; refresh re
   let value=member();
   const page=control({client:{townMembership:async()=>value,townSharing:async()=>{value=member(true,2);throw new TypeError('network interrupted after commit');}}});
   await page.view.load();page.input().checked=true;await page.input().onchange();
-  assert.equal(page.input().checked,false);assert.equal(page.input().disabled,true);assert.match(page.status().textContent,/確認|확인하지 못/);
+  assert.equal(page.input().checked,false);assert.equal(page.input().disabled,true);assert.match(page.status().textContent,/저장됐는지 모르겠어요/);
   await page.view.load();assert.equal(page.input().checked,true);assert.equal(page.input().disabled,false);
 });
 

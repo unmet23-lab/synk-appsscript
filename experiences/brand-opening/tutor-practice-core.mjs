@@ -11,9 +11,9 @@ export const PRACTICES={
   {id:'listen',title:'끝까지 듣고 움직이기',action:'left',audio:'runner'}
  ]},
  rhythm:{title:'말의 리듬',steps:[
-  {id:'left',title:'왼쪽 단추 만나기',action:'left'},
-  {id:'right',title:'오른쪽 단추 만나기',action:'right'},
-  {id:'beat',title:'듣고, O를 선에서 누르기',action:'left',audio:'rhythm',timed:true},
+  {id:'left',title:'왼쪽 단추 눌러 보기',action:'left'},
+  {id:'right',title:'오른쪽 단추 눌러 보기',action:'right'},
+  {id:'beat',title:'듣고 O를 선에서 누르기',action:'left',audio:'rhythm',timed:true},
   {id:'beat-x',title:'이번에는 X로 고르기',action:'right',audio:'rhythm',timed:true}
  ]},
  hangul:{title:'한글 만나기',steps:[
@@ -26,7 +26,7 @@ export const PRACTICES={
  ]}
 };
 export const BEAT_PERIOD=2600,BEAT_AT=2100,BEAT_WINDOW=360;
-const EXTRAS={runner:{middle:{id:'middle',title:'가운데로 한 칸',action:'right',startPose:'left',pose:'middle'},stay:{id:'stay',title:'그대로 기다리기',action:'stay',quiet:2100}},rhythm:{'beat-left':{id:'beat-left',title:'왼쪽 단추, 선에서 누르기',action:'left',timed:true},'beat-right':{id:'beat-right',title:'오른쪽 단추, 선에서 누르기',action:'right',timed:true},'hold-left':{id:'hold-left',title:'왼쪽 긴 노트 끝까지',action:'left',hold:1200},'hold-right':{id:'hold-right',title:'오른쪽 긴 노트 끝까지',action:'right',hold:1200}}};
+const EXTRAS={runner:{middle:{id:'middle',title:'가운데로 한 칸',action:'right',startPose:'left',pose:'middle'},stay:{id:'stay',title:'그대로 기다리기',action:'stay',quiet:2100}},rhythm:{'beat-left':{id:'beat-left',title:'왼쪽 단추를 선에서 누르기',action:'left',timed:true},'beat-right':{id:'beat-right',title:'오른쪽 단추를 선에서 누르기',action:'right',timed:true},'hold-left':{id:'hold-left',title:'왼쪽 긴 노트 끝까지',action:'left',hold:1200},'hold-right':{id:'hold-right',title:'오른쪽 긴 노트 끝까지',action:'right',hold:1200}}};
 export function practiceStep(game,id){return PRACTICES[game]?.steps.find(s=>s.id===id)||Object.hasOwn(EXTRAS[game]||{},id)&&EXTRAS[game][id]||null;}
 export function beatPosition(now,start){return ((Math.max(0,now-start)%BEAT_PERIOD)/BEAT_PERIOD);}
 export function inputForKey(game,code){

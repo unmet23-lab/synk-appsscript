@@ -20,7 +20,7 @@ export function createProductAccount({
   navigate = url => globalThis.location.assign(url),
   loadCore = () => import('./core.mjs'), now = Date.now, cryptoAPI,
 } = {}) {
-  if (!['care', 'path', 'path-travel'].includes(clientKey) || !['synk-care', 'synk-personal'].includes(endpoint) || typeof validateState !== 'function') throw new TypeError('제품 계정 계약을 확인해 주세요.');
+  if (!['care', 'path', 'path-travel'].includes(clientKey) || !['synk-care', 'synk-personal'].includes(endpoint) || typeof validateState !== 'function') throw new TypeError('앱 계정 설정 형식이 맞지 않아요.');
   const LIMIT = 4 * 1024 * 1024 + 32768;
   const SESSION_KEY = `synk.oauth.session.${clientKey}`;
   const OPERATIONS = new Set(Object.values(operations));
@@ -87,8 +87,8 @@ export function createProductAccount({
     const careLibrarySave = clientKey === 'care' && endpoint === 'synk-care' && resource === null && operation === operations.save;
     const allowed = operation === operations.load ? [] : operation === operations.save ? ['expected_revision', 'state', ...(careLibrarySave ? ['messageLibraryVersion', 'checkinPreferenceVersion'] : [])] : ['expected_revision'];
     if (Object.keys(values).some(key => !allowed.includes(key))) throw fault('INVALID_REQUEST', '제품 계정 요청을 확인해 주세요.');
-    if (Object.hasOwn(values, 'messageLibraryVersion') && (!careLibrarySave || values.messageLibraryVersion !== 1)) throw fault('INVALID_REQUEST', '문구 보관함의 저장 계약을 확인해 주세요.');
-    if (Object.hasOwn(values, 'checkinPreferenceVersion') && (!careLibrarySave || values.checkinPreferenceVersion !== 1)) throw fault('INVALID_REQUEST', '안부 설정의 저장 계약을 확인해 주세요.');
+    if (Object.hasOwn(values, 'messageLibraryVersion') && (!careLibrarySave || values.messageLibraryVersion !== 1)) throw fault('INVALID_REQUEST', '문구 보관함 자료 형식이 맞지 않아요.');
+    if (Object.hasOwn(values, 'checkinPreferenceVersion') && (!careLibrarySave || values.checkinPreferenceVersion !== 1)) throw fault('INVALID_REQUEST', '안부 설정 자료 형식이 맞지 않아요.');
     if (operation === operations.load) return undefined;
     if (!Number.isSafeInteger(values.expected_revision) || values.expected_revision < 0) throw fault('INVALID_REQUEST', '저장할 자료의 버전을 확인해 주세요.');
     return { action: operation === operations.save ? 'save' : 'delete', expected_revision: values.expected_revision, ...(operation === operations.save ? { state: validateState(values.state) } : {}), ...(Object.hasOwn(values, 'messageLibraryVersion') ? { messageLibraryVersion: 1 } : {}), ...(Object.hasOwn(values, 'checkinPreferenceVersion') ? { checkinPreferenceVersion: 1 } : {}) };
@@ -118,7 +118,7 @@ export function createProductAccount({
       }
       if (!result.response.ok || result.data?.ok !== true) {
         const code = result.data?.error?.code || (result.response.status === 401 ? 'AUTH_REQUIRED' : 'ACCOUNT_UNAVAILABLE');
-        throw fault(code, code === 'REVISION_CONFLICT' ? '다른 기기에서 자료가 바뀌었어요. 계정 자료를 다시 확인해 주세요.' : '계정 요청을 완료하지 못했어요. 현재 자료는 그대로 유지해 주세요.', { status: result.response.status, revision: result.data?.revision, retryable: result.response.status === 429 || result.response.status >= 500, ...missingAsset(result.data?.error) });
+        throw fault(code, code === 'REVISION_CONFLICT' ? '다른 기기에서 자료가 바뀌었어요. 계정 자료를 다시 불러와 주세요.' : '계정 요청을 마치지 못했어요. 지금 화면의 자료는 그대로예요.', { status: result.response.status, revision: result.data?.revision, retryable: result.response.status === 429 || result.response.status >= 500, ...missingAsset(result.data?.error) });
       }
       data = result.data;
     }
@@ -163,7 +163,7 @@ export function createProductAccount({
       return nativeStatus(source);
     }
     try { core = await loadCore(); }
-    catch { throw fault('NETWORK', '로그인 연결을 불러오지 못했어요. 연결이 돌아오면 다시 확인해 주세요.', { retryable: true }); }
+    catch { throw fault('NETWORK', '로그인 설정을 못 불러왔어요. 인터넷이 연결되면 다시 시도해 주세요.', { retryable: true }); }
     guard(expected);
     let raw;
     const configEndpoint = new URL(configUrl, getUrl());
@@ -172,9 +172,9 @@ export function createProductAccount({
     try {
       const response = await fetcher(configEndpoint.href, { cache: 'no-store', credentials: 'omit', signal: abort.signal, redirect: 'error' });
       if (response.ok) raw = await response.json();
-      else if (response.status !== 404) throw fault('AUTH_CONFIG', '계정 연결 설정을 불러오지 못했어요. 다시 확인해 주세요.', { status: response.status, retryable: response.status === 429 || response.status >= 500 });
+      else if (response.status !== 404) throw fault('AUTH_CONFIG', '로그인 설정을 못 불러왔어요. 잠시 뒤 다시 시도해 주세요.', { status: response.status, retryable: response.status === 429 || response.status >= 500 });
     }
-    catch (error) { if (error.code) throw error; throw fault('NETWORK', '계정 연결 설정을 불러오지 못했어요. 연결이 돌아오면 다시 확인해 주세요.', { retryable: true }); }
+    catch (error) { if (error.code) throw error; throw fault('NETWORK', '로그인 설정을 못 불러왔어요. 인터넷이 연결되면 다시 시도해 주세요.', { retryable: true }); }
     finally { clearTimeout(timer); controllers.delete(abort); }
     guard(expected); config = core.readConfig(raw || { version: 1 }, getUrl());
     const configured = !!(config.configured && config.clients[clientKey]?.clientId && config.clients[clientKey]?.redirectUri);
@@ -256,7 +256,7 @@ export function createProductAccount({
       // authSignIn would discard that token and start a new OAuth transaction.
       let result;
       try { result = await bridgeRequest.call(bridge, 'load', {}); }
-      catch { result = { ok: false, error: { code: 'NETWORK', message: '계정 연결을 다시 확인하지 못했어요. 잠시 뒤 다시 시도해 주세요.', retryable: true } }; }
+      catch { result = { ok: false, error: { code: 'NETWORK', message: '계정을 다시 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.', retryable: true } }; }
       if (disposed || intent !== loginIntent) throw fault('ACCOUNT_CHANGED', '계정 연결이 바뀌었어요.');
       const source = await bridge.authStatus();
       if (disposed || intent !== loginIntent) throw fault('ACCOUNT_CHANGED', '계정 연결이 바뀌었어요.');
@@ -268,7 +268,7 @@ export function createProductAccount({
       throw Object.assign(new Error(error.message), error);
     }
     if (snapshot.error?.retryable) throw Object.assign(new Error(snapshot.error.message), snapshot.error);
-    if (!snapshot.configured) throw fault('AUTH_CONFIG', 'SYNK ID 연결 설정을 준비하고 있어요. 지금은 이 기기의 수첩을 사용할 수 있어요.');
+    if (!snapshot.configured) throw fault('AUTH_CONFIG', 'SYNK ID 로그인 설정이 아직 없어요. 지금은 이 기기의 수첩을 쓸 수 있어요.');
     if (native) { const result = await bridge.authSignIn(); if (disposed || intent !== loginIntent) throw fault('ACCOUNT_CHANGED', '계정 연결이 바뀌었어요.'); if (result?.ok === false) throw Object.assign(new Error(result.error?.message), result.error); return nativeStatus(result); }
     const expected = epoch;
     platformEntry.resume();
@@ -312,12 +312,12 @@ export function createProductAccount({
     if (clientKey !== 'care' || endpoint !== 'synk-care' || native) throw fault('PUSH_UNSUPPORTED', '예약 알림은 플레저 웹에서 설정해 주세요.');
     if (!snapshot.signedIn || !snapshot.accountId) throw fault('AUTH_REQUIRED', 'SYNK ID로 로그인한 뒤 알림을 설정해 주세요.');
     const allowed = { status: ['endpoint'], subscribe: ['subscription', 'hour', 'minute'], update: ['endpoint', 'hour', 'minute'], unsubscribe: ['endpoint'] };
-    if (!Object.hasOwn(allowed, action) || !values || typeof values !== 'object' || Array.isArray(values) || Object.keys(values).some(key => !allowed[action].includes(key))) throw fault('INVALID_REQUEST', '알림 설정을 확인해 주세요.');
-    if (['subscribe', 'update'].includes(action) && (!Number.isInteger(values.hour) || values.hour < 0 || values.hour > 23 || !Number.isInteger(values.minute) || values.minute < 0 || values.minute > 59)) throw fault('INVALID_REQUEST', '알림 시간을 확인해 주세요.');
-    if ((action === 'update' || action === 'unsubscribe' || Object.hasOwn(values, 'endpoint')) && (typeof values.endpoint !== 'string' || values.endpoint.length > 2048 || !values.endpoint.startsWith('https://'))) throw fault('INVALID_REQUEST', '이 기기의 알림 연결을 확인해 주세요.');
-    if (action === 'subscribe' && (!values.subscription || typeof values.subscription !== 'object' || Array.isArray(values.subscription))) throw fault('INVALID_REQUEST', '이 기기의 알림 연결을 확인해 주세요.');
+    if (!Object.hasOwn(allowed, action) || !values || typeof values !== 'object' || Array.isArray(values) || Object.keys(values).some(key => !allowed[action].includes(key))) throw fault('INVALID_REQUEST', '알림 설정 형식이 맞지 않아요.');
+    if (['subscribe', 'update'].includes(action) && (!Number.isInteger(values.hour) || values.hour < 0 || values.hour > 23 || !Number.isInteger(values.minute) || values.minute < 0 || values.minute > 59)) throw fault('INVALID_REQUEST', '알림 시간이 맞지 않아요. 다시 골라 주세요.');
+    if ((action === 'update' || action === 'unsubscribe' || Object.hasOwn(values, 'endpoint')) && (typeof values.endpoint !== 'string' || values.endpoint.length > 2048 || !values.endpoint.startsWith('https://'))) throw fault('INVALID_REQUEST', '이 기기의 알림 연결이 끊겼어요. 알림을 다시 켜 주세요.');
+    if (action === 'subscribe' && (!values.subscription || typeof values.subscription !== 'object' || Array.isArray(values.subscription))) throw fault('INVALID_REQUEST', '이 기기의 알림 연결이 끊겼어요. 알림을 다시 켜 주세요.');
     const body = { action, ...values };
-    if (new TextEncoder().encode(JSON.stringify(body)).byteLength > 8192) throw fault('INVALID_REQUEST', '알림 설정의 크기를 확인해 주세요.');
+    if (new TextEncoder().encode(JSON.stringify(body)).byteLength > 8192) throw fault('INVALID_REQUEST', '알림 설정이 너무 커서 저장할 수 없어요.');
     const expected = epoch, ownerId = snapshot.accountId;
     try {
       guard(expected);
@@ -334,7 +334,7 @@ export function createProductAccount({
       const data = result.data;
       if (!result.response.ok || data?.ok !== true) throw fault(data?.error?.code || (result.response.status === 401 ? 'AUTH_REQUIRED' : 'PUSH_UNAVAILABLE'), '예약 알림을 설정하지 못했어요. 잠시 뒤 다시 시도해 주세요.', { status: result.response.status, retryable: result.response.status === 429 || result.response.status >= 500 });
       if (data.accountId !== ownerId) throw fault('ACCOUNT_CHANGED', '계정이 바뀌어 알림 설정을 적용하지 않았어요.');
-      if (data.scope !== 'synk-care-push' || typeof data.enabled !== 'boolean' || data.timeZone !== 'Asia/Seoul' || !Number.isInteger(data.hour) || data.hour < 0 || data.hour > 23 || !Number.isInteger(data.minute) || data.minute < 0 || data.minute > 59 || typeof data.publicKey !== 'string' || !/^[A-Za-z0-9_-]{87}$/.test(data.publicKey)) throw fault('INVALID_RESPONSE', '알림 서버의 응답을 확인하지 못했어요.');
+      if (data.scope !== 'synk-care-push' || typeof data.enabled !== 'boolean' || data.timeZone !== 'Asia/Seoul' || !Number.isInteger(data.hour) || data.hour < 0 || data.hour > 23 || !Number.isInteger(data.minute) || data.minute < 0 || data.minute > 59 || typeof data.publicKey !== 'string' || !/^[A-Za-z0-9_-]{87}$/.test(data.publicKey)) throw fault('INVALID_RESPONSE', '알림 서버의 응답을 받지 못했어요. 잠시 뒤 다시 시도해 주세요.');
       return { ok: true, scope: data.scope, accountId: ownerId, enabled: data.enabled, hour: data.hour, minute: data.minute, timeZone: data.timeZone, publicKey: data.publicKey, ...(typeof data.deviceId === 'string' ? { deviceId: data.deviceId } : {}) };
     } catch (error) { if (expected === epoch && (AUTH_ERRORS.has(error.code) || error.code === 'ACCOUNT_CHANGED')) clearSession(error); throw error; }
   }

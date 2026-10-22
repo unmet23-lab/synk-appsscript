@@ -39,7 +39,7 @@ export function createTutorPractice({tutor,game,container,reduced=()=>false,getS
   const s=run.step;dialog.dataset.step=s.id;
   const next=s.id==='next';
   $('.practice-controls').innerHTML=(next?[['next','다음','']]:buttons[game]).map(([action,key,label])=>`<button type="button" class="practice-pad" data-practice-input="${action}" aria-label="${escape(label?key+' '+label:key)}"><b>${escape(key)}</b>${label?`<small>${escape(label)}</small>`:''}</button>`).join('');
-  $('.practice-example').textContent=game==='rhythm'&&s.timed?(s.action==='left'?'왼쪽으로 가라는 말인가요?':'오른쪽으로 가라는 말인가요?'):game==='first'&&!next?'친구를 만났어요. 어떤 인사를 할까요?':game==='hangul'&&!next?'소리를 듣고, 글자를 골라요.':'';
+  $('.practice-example').textContent=game==='rhythm'&&s.timed?(s.action==='left'?'왼쪽으로 가라는 말인가요?':'오른쪽으로 가라는 말인가요?'):game==='first'&&!next?'친구를 만났어요. 어떤 인사를 할까요?':game==='hangul'&&!next?'소리를 듣고 글자를 골라요.':'';
   $('.practice-key-hint').textContent=game==='runner'?'키보드 ← → 이동 · ↑ 또는 Space 점프 · ↓ 숙이기. 화면을 밀어도 돼요.':game==='rhythm'?'키보드 F 또는 ← · J 또는 →':'';
   $('.practice-stage').dataset.scene=next?'next':game;
   dialog.dataset.timed=String(!!s.timed);

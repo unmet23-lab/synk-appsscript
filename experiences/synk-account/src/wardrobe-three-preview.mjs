@@ -74,11 +74,11 @@ export function createWardrobeThreePreview({ load = loadRenderer, onPhoto = () =
     root.dataset.renderMode = active ? 'three' : 'image';
     original.setAttribute('aria-pressed', String(mode === 'image'));three.setAttribute('aria-pressed', String(mode === 'three'));
     fallback.hidden = active;host.hidden = !active;controls.hidden = !active;
-    status.textContent = mode === 'image' ? '' : !supported ? '이 차림은 아직 3D 모델이 없어 원본 그림으로 보여요.' : fault || (pending ? '3D 차림을 준비하고 있어요…' : '까몽 3D 시제품 · 최종 외형은 다듬는 중이에요.');
+    status.textContent = mode === 'image' ? '' : !supported ? '이 차림은 아직 3D 모델이 없어 원본 그림으로 보여요.' : fault || (pending ? '3D 차림을 준비하고 있어요…' : '까몽 3D는 아직 다듬는 중이에요.');
     status.hidden = !status.textContent;
     for (const [b, selected] of buttons) b.setAttribute('aria-pressed', String(selected()));
     qualityButton.textContent = `품질 · ${quality === 'low' ? '균형' : '경험'}`;
-    photo.disabled = !outfit?.owned;photo.title = outfit?.owned ? '현재 각도와 배경으로 PNG 저장 · 앨범에는 추가하지 않아요.' : '받은 차림만 사진으로 저장할 수 있어요.';
+    photo.disabled = !outfit?.owned;photo.title = outfit?.owned ? '지금 각도와 배경으로 PNG를 저장해요. 앨범에는 넣지 않아요.' : '받은 차림만 사진으로 저장할 수 있어요.';
   }
   function update() {
     if (disposed) return;
@@ -91,7 +91,7 @@ export function createWardrobeThreePreview({ load = loadRenderer, onPhoto = () =
       if (disposed || token !== generation) return;
       engine = module.createThreeLab(host);pending = false;
       engine.setQuality(quality);engine.setView('full');engine.setAngle(angle);engine.setMotion(motion);fit();syncPause();
-      engine.canvas.addEventListener('webglcontextlost', () => { if (!disposed && token === generation) { fault = '3D 연결이 끊겨 원본 그림으로 보여요. 복구를 기다리거나 원본 그림을 선택해 주세요.';paint(); } });
+      engine.canvas.addEventListener('webglcontextlost', () => { if (!disposed && token === generation) { fault = '3D 화면이 멈춰 원본 그림으로 바꿨어요. 잠시 뒤 「3D 시험 보기」를 다시 눌러 주세요.';paint(); } });
       engine.canvas.addEventListener('webglcontextrestored', () => { if (!disposed && token === generation) { fault = '';syncPause();paint(); } });
       paint();
     }).catch(() => {

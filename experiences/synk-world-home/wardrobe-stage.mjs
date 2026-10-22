@@ -110,7 +110,7 @@ export async function mountWardrobeStage(host,{slots={},dyes={},reducedMotion=fa
   let light='daylight',angle=-.17,targetAngle=-.17,detail=false,zoom=0,pose='neutral',background='room',drag=null,pinch=null,currentSlots=slotsForOutfit(slots),size={width:1,height:1},renderMs=0;
   const pointers=new Map();
   const motionQuery=matchMedia('(prefers-reduced-motion: reduce)');
-  renderer.debug.onShaderError=()=>{lost=true;cancelAnimationFrame(frame);frame=0;onError('3D 표현을 준비하지 못했어요. 다시 열어 주세요.');};
+  renderer.debug.onShaderError=()=>{lost=true;cancelAnimationFrame(frame);frame=0;onError('3D 화면을 준비하지 못했어요. 옷장을 다시 열어 주세요.');};
   // 살아 있는 무대와 사진은 머리 위로 여백을 두어 몽글이 무대의 60~70%를 차지하게 한다(옷 썸네일 촬영은 정본 구도 그대로).
   function fit(width=size.width,height=size.height,{live=true}={}){camera.aspect=width/height;camera.fov=36;const scale=1/(1+zoom*.75),room=live&&!detail?1.16:1;target.set(0,detail?.73:(live?.88:.91),0);camera.position.set(0,target.y+(detail?.27:.42)*scale,(detail?2.33:4.03)*scale*room);if(camera.aspect<.8)camera.position.z*=.8/camera.aspect;camera.lookAt(target);camera.updateProjectionMatrix();}
   function render(){if(preparing||disposed||lost||!active||!inView||document.hidden)return;avatar.group.rotation.y=angle;const before=performance.now();contactLight.render();renderMs=performance.now()-before;frameCount++;}
@@ -129,7 +129,7 @@ export async function mountWardrobeStage(host,{slots={},dyes={},reducedMotion=fa
   function wheel(e){if(disposed||lost)return;e.preventDefault();const delta=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?size.height:1);setZoom(zoom-delta*.0012);}
   function keys(e){if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','+','=','-'].includes(e.key))return;e.preventDefault();if(['ArrowUp','ArrowDown','+','=','-'].includes(e.key))setZoom(zoom+(['ArrowDown','-'].includes(e.key)?-.07:.07));else setAngle(e.key==='Home'?0:targetAngle+(e.key==='ArrowLeft'?-.24:.24));}
   function visibility(){if(document.hidden){cancelAnimationFrame(frame);frame=0;}else schedule();}
-  function contextLost(e){e.preventDefault();if(disposed)return;lost=true;cancelAnimationFrame(frame);frame=0;onError('3D 화면이 잠시 쉬고 있어요. 고른 옷은 남아 있어요. 다시 열어 주세요.');}
+  function contextLost(e){e.preventDefault();if(disposed)return;lost=true;cancelAnimationFrame(frame);frame=0;onError('3D 화면이 멈췄어요. 고른 옷은 남아 있어요. 옷장을 다시 열어 주세요.');}
   const resizeObserver=new ResizeObserver(resize);resizeObserver.observe(host);
   const intersection=new IntersectionObserver(entries=>{inView=entries.at(-1)?.isIntersecting!==false;if(!inView){cancelAnimationFrame(frame);frame=0;}else schedule();},{rootMargin:'100px'});intersection.observe(host);
   const events=[['pointerdown',down],['pointermove',move],['pointerup',up],['pointercancel',up],['lostpointercapture',up],['keydown',keys],['webglcontextlost',contextLost]];

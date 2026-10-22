@@ -1,0 +1,333 @@
+{
+  "//": "Claude가 쓴 모듈에서 원칙에 어긋나는 곳만: 「확인해 주세요」 끝맺음, 방어 문장, 장부 머리의 쉼표 슬로건(「주고받은 마음, 한눈에.」)·영어 문구 라벨, 「날짜을」 같은 깨진 조사. 기일 안내는 살아 있는 사람에게 단 「아버님 기일」을 그 사람의 기일로 말하던 오류를 고침",
+  "experiences/relationship-care/care-today.mjs": [
+    [
+      "throw new Error(`${label}의 형식을 확인해 주세요.`);",
+      "throw new Error(`${label}의 형식이 맞지 않아요.`);",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error('기준 시간을 확인해 주세요.');",
+      "throw new Error('날짜를 읽지 못했어요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "'지금 권할 사람이 없어요. 모든 챙김을 마쳤다는 뜻은 아니에요.'",
+      "'지금 먼저 챙길 사람은 없어요. 다가오는 날은 아래에서 볼 수 있어요.'",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error('사람을 다시 선택해 주세요.');",
+      "throw new Error('사람을 다시 골라 주세요.');",
+      {
+        "n": 3
+      }
+    ],
+    [
+      "throw new Error('일정과 회차를 함께 확인해 주세요.');",
+      "throw new Error('일정을 다시 골라 주세요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error('완료할 후속 챙김이 없어요. 목록을 다시 확인해 주세요.');",
+      "throw new Error('이미 끝냈거나 지운 일이에요. 화면을 새로 열어 주세요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error('미룰 후속 챙김이 없어요. 목록을 다시 확인해 주세요.');",
+      "throw new Error('이미 끝냈거나 지운 일이라 미룰 수 없어요. 화면을 새로 열어 주세요.');",
+      {
+        "n": 1
+      }
+    ]
+  ],
+  "experiences/relationship-care/care-upcoming.mjs": [
+    [
+      "throw new Error('살펴볼 일정 종류를 확인해 주세요.');",
+      "throw new Error('일정 종류를 읽지 못했어요.');",
+      {
+        "n": 1
+      }
+    ]
+  ],
+  "experiences/relationship-care/care-memorial.mjs": [
+    [
+      "throw new Error(`${label}을 YYYY-MM-DD로 확인해 주세요.`);",
+      "throw new Error(`${label}${josa(label, '을', '를')} 다시 골라 주세요.`);",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error('기준 시간을 확인해 주세요.');",
+      "throw new Error('날짜를 읽지 못했어요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "  if (kind === 'memorial') return `${when} ${who}의 ${nth ? `${nth}주기 ` : ''}기일이에요. ${JESA_NOTE}${left}`;",
+      "  if (kind === 'memorial') { /* 고인으로 표시하지 않은 사람에게 단 기일(예: 「아버님 기일」)은 그 사람 본인의 기일이 아니다. */ const name = String(person?.name ?? '').trim(), label = String(title ?? '').trim(), named = (name && label.startsWith(name) && label.slice(name.length).replace(/^[\\s·:,-]+/u, '')) || label; if (!isDeceased(person) && named && named !== '기일') return `${when} ${who}의 ${named}${copula(named)}. ${JESA_NOTE}${left}`; return `${when} ${who}의 ${nth ? `${nth}주기 ` : ''}기일이에요. ${JESA_NOTE}${left}`; }",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error('돌아가신 날이 오늘보다 뒤예요. 날짜를 확인해 주세요.')",
+      "throw new Error('돌아가신 날이 오늘보다 뒤예요. 날짜를 다시 골라 주세요.')",
+      {
+        "n": 2
+      }
+    ],
+    [
+      "throw new Error('사람을 다시 선택해 주세요.');",
+      "throw new Error('사람을 다시 골라 주세요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error('고른 일정이 이미 있거나 날짜가 지났어요. 목록을 다시 확인해 주세요.');",
+      "throw new Error('고른 일정이 이미 있거나 날짜가 지났어요. 창을 닫았다가 다시 열어 주세요.');",
+      {
+        "n": 1
+      }
+    ]
+  ],
+  "experiences/relationship-care/care-ledger.mjs": [
+    [
+      "throw new Error('연도를 확인해 주세요.');",
+      "throw new Error('연도를 다시 골라 주세요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error('행사 종류를 확인해 주세요.');",
+      "throw new Error('행사 종류를 다시 골라 주세요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error('보냄·받음을 확인해 주세요.');",
+      "throw new Error('보냄·받음을 다시 골라 주세요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error('CSV의 따옴표와 쉼표 구분을 확인해 주세요.');",
+      "throw new Error('CSV의 따옴표와 쉼표가 어긋나 있어요. 엑셀에서 「CSV UTF-8」로 다시 저장해 주세요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error('CSV의 닫히지 않은 따옴표를 확인해 주세요.');",
+      "throw new Error('CSV에 닫히지 않은 따옴표가 있어요. 엑셀에서 「CSV UTF-8」로 다시 저장해 주세요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "errors.push('열 개수가 첫 줄보다 많아요. 쉼표와 따옴표를 확인해 주세요.');",
+      "errors.push('열 개수가 첫 줄보다 많아요. 칸 안의 쉼표는 따옴표로 감싸 주세요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "errors.push('이름을 80자 이내로 확인해 주세요.');",
+      "errors.push('이름은 80자까지 적을 수 있어요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "errors.push('금액을 숫자로 확인해 주세요. 「100000」이나 「10만」처럼 적을 수 있어요.');",
+      "errors.push('금액은 「100000」이나 「10만」처럼 숫자로 적어 주세요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "if (!Number.isFinite(at.getTime())) throw new Error('기준 시간을 확인해 주세요.');",
+      "if (!Number.isFinite(at.getTime())) throw new Error('날짜를 읽지 못했어요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error('고른 줄의 형식을 확인해 주세요.');",
+      "throw new Error('고른 줄을 읽지 못했어요. 다시 미리 봐 주세요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error('고른 줄을 다시 확인해 주세요.');",
+      "throw new Error('고른 줄을 읽지 못했어요. 다시 미리 봐 주세요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "번째 줄은 이미 같은 기록이 있어요. 그래도 더하려면 다시 확인해 주세요.`",
+      "번째 줄은 이미 같은 기록이 있어요. 그래도 더하려면 그 줄에 체크해 주세요.`",
+      {
+        "n": 1
+      }
+    ]
+  ],
+  "experiences/relationship-care/care-gift.mjs": [
+    [
+      "throw new Error('사람을 다시 선택해 주세요.');",
+      "throw new Error('사람을 다시 골라 주세요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error('고칠 항목을 확인해 주세요.');",
+      "throw new Error('고칠 항목을 읽지 못했어요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error('선물 기록의 항목을 확인해 주세요.');",
+      "throw new Error('선물 기록의 항목이 맞지 않아요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error('행사 종류를 확인해 주세요.');",
+      "throw new Error('행사 종류를 다시 골라 주세요.');",
+      {
+        "n": 1
+      }
+    ]
+  ],
+  "experiences/relationship-care/care-contact-import.mjs": [
+    [
+      "throw Error('CSV의 따옴표와 쉼표 구분을 확인해 주세요.');",
+      "throw Error('CSV의 따옴표와 쉼표가 어긋나 있어요. 엑셀에서 「CSV UTF-8」로 다시 저장해 주세요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw Error('CSV의 닫히지 않은 따옴표를 확인해 주세요.');",
+      "throw Error('CSV에 닫히지 않은 따옴표가 있어요. 엑셀에서 「CSV UTF-8」로 다시 저장해 주세요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw Error('CSV의 열 개수가 첫 줄과 달라요. 쉼표와 따옴표를 확인해 주세요.');",
+      "throw Error('CSV의 열 개수가 첫 줄과 달라요. 칸 안의 쉼표는 따옴표로 감싸 주세요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw Error('이름이 담긴 UTF-8 CSV 또는 플레저 JSON 백업 파일을 선택해 주세요.');",
+      "throw Error('이름이 담긴 UTF-8 CSV나 플레저 백업(JSON) 파일을 골라 주세요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw Error('이름·관계의 줄바꿈이나 깨진 글자를 확인해 주세요. CSV는 UTF-8로 저장해 주세요.');",
+      "throw Error('이름이나 관계에 줄바꿈이나 깨진 글자가 있어요. CSV를 UTF-8로 다시 저장해 주세요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw Error('추가할 사람을 직접 선택해 주세요.');",
+      "throw Error('추가할 사람을 골라 주세요.');",
+      {
+        "n": 1
+      }
+    ]
+  ],
+  "experiences/relationship-care/care-amount.mjs": [
+    [
+      "throw new Error('받은 날짜를 확인해 주세요.');",
+      "throw new Error('받은 날짜를 다시 골라 주세요.');",
+      {
+        "n": 1
+      }
+    ]
+  ],
+  "experiences/relationship-care/care-signal-view.mjs": [
+    [
+      "<p class=\"kicker\">LEDGER · 경조사 장부</p><h2 id=\"ledger-title\" class=\"page-title\" tabindex=\"-1\">주고받은 마음,<br><span class=\"hl\">한눈에.</span></h2><p class=\"lead\">축의금·조의금·선물·참석을 사람별로 모아요. 다음에 얼마가 좋을지 정할 때 지난 기록을 함께 봐요.</p>",
+      "<p class=\"kicker\">PLEASURE · LEDGER</p><h2 id=\"ledger-title\" class=\"page-title\" tabindex=\"-1\">보내고 받은<br><span class=\"hl\">경조사 장부</span></h2><p class=\"lead\">축의금과 조의금, 선물, 참석 기록을 사람별로 모아요. 다음에 얼마를 할지 정할 때 지난 기록을 함께 봐요.</p>",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "<span class=\"label\">GIVE &amp; TAKE</span>",
+      "<span class=\"label\">02 / LEDGER</span>",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "<li><small class=\"ko\">보낸 마음</small>",
+      "<li><small class=\"ko\">보낸 것</small>",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "<li><small class=\"ko\">받은 마음</small>",
+      "<li><small class=\"ko\">받은 것</small>",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "<small class=\"ko\">기록 해</small>",
+      "<small class=\"ko\">기록한 해</small>",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "data-amount-open=\"${esc(row.personId)}\">얼마?</button>",
+      "data-amount-open=\"${esc(row.personId)}\">금액 보기</button>",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "<strong>아직 장부에 적은 마음이 없어요.</strong>",
+      "<strong>아직 장부에 적은 기록이 없어요.</strong>",
+      {
+        "n": 1
+      }
+    ]
+  ],
+  "experiences/relationship-care/tests/care-memorial.test.mjs": [
+    [
+      "/YYYY-MM-DD/",
+      "/돌아가신 날을 다시 골라/"
+    ]
+  ]
+}

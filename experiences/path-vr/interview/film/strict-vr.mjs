@@ -28,29 +28,29 @@ const BUTTONS = [
 ];
 
 export function getStrictVRGate(state = {}) {
-  if (state.mode !== 'voice') return 'VR에서는 음성 답변을 사용합니다. 화면에서 음성 모드를 선택해 주세요.';
-  if (!state.voiceReady) return 'VR에 들어가기 전에 화면에서 음성 인식을 준비해 주세요.';
+  if (state.mode !== 'voice') return 'VR에서는 음성으로 답해요. 먼저 「마이크로 답변」을 골라 주세요.';
+  if (!state.voiceReady) return 'VR에 들어가기 전에 화면에서 「한국어 음성 준비」와 「마이크 확인」을 마쳐 주세요.';
   return '';
 }
 
 export function getStrictVRControls(state = {}) {
   const primary = state.paused
-    ? { action: 'resume', label: '계속하기', enabled: true }
+    ? { action: 'resume', label: '이어서 진행', enabled: true }
     : state.phase === 'confirming'
       ? { action: state.reviewPage < (state.reviewPages?.length || 1) - 1 ? 'reviewNext' : 'confirm', label: state.reviewPage < (state.reviewPages?.length || 1) - 1 ? '다음 부분 확인' : state.partialReview ? '이 부분이 맞아요' : '이 내용으로 답변', enabled: !!state.canConfirm }
     : state.phase === 'repair'
       ? { action: 'retry', label: '다시 답변', enabled: true }
     : state.canStart
       ? { action: 'start', label: '면접 시작', enabled: true }
-      : { action: 'submit', label: state.canSubmit ? '답변 마침' : '질문을 듣고 답변하세요', enabled: !!state.canSubmit };
+      : { action: 'submit', label: '답변 완료', enabled: !!state.canSubmit };
   return [
     { ...BUTTONS[0], ...primary },
     { ...BUTTONS[1], ...(state.phase === 'confirming' && !state.paused
       ? { action: 'retry', label: state.partialReview ? '이 부분만 다시 말하기' : '다시 말하기', enabled: !!state.canConfirm }
       : state.phase === 'repair' && !state.paused
       ? { action: 'repeat', label: '질문 다시 듣기', enabled: true }
-      : { action: state.paused ? 'resume' : 'pause', label: state.paused ? '계속하기' : '일시정지', enabled: !state.canStart }) },
-    { ...BUTTONS[2], action: 'exit', label: 'VR 나가기', enabled: true },
+      : state.paused ? { action: 'pause', label: '일시 정지 중', enabled: false } : { action: 'pause', label: '일시 정지', enabled: !state.canStart }) },
+    { ...BUTTONS[2], action: 'exit', label: '나가기', enabled: true },
   ];
 }
 
@@ -89,12 +89,12 @@ export function paintStrictVRHUD(context, state = {}) {
   };
   context.fillStyle = '#EDEDEB'; context.fillRect(0, 0, HUD_WIDTH, HUD_HEIGHT);
   context.textAlign = 'left'; context.textBaseline = 'top';
-  const status = state.paused ? '일시정지 · 마이크 꺼짐'
+  const status = state.paused ? '일시 정지 · 마이크 꺼짐'
     : state.phase === 'confirming' ? `애매한 부분 확인 · ${(state.reviewPage || 0) + 1}/${state.reviewPages?.length || 1} · 마이크 꺼짐`
-    : state.phase === 'reviewing' ? '면접관이 답변을 검토하고 있습니다'
-    : state.phase === 'repair' ? '답변을 확인하지 못했습니다'
+    : state.phase === 'reviewing' ? '면접관이 답변을 검토하고 있어요'
+    : state.phase === 'repair' ? '다시 답해 주세요'
     : state.canSubmit ? `답변 중${seconds === null ? '' : ` · ${seconds}초`}`
-    : state.settling ? '자리에 앉아 정면을 바라보세요'
+    : state.settling ? '자리에 앉아 정면을 봐 주세요'
     : state.canStart ? '면접 준비' : '질문을 듣는 중';
   const dot = state.paused || state.canStart && !state.settling ? '#8A8F98'
     : state.phase === 'confirming' || state.phase === 'repair' || state.settling ? '#D9A21B'
@@ -107,12 +107,12 @@ export function paintStrictVRHUD(context, state = {}) {
     pill(1320, 24, Math.max(15, 160 * micLevel), 15, '#526956');
   }
   context.fillStyle = '#08090C'; context.font = '700 36px "PATH Sans", SUIT, sans-serif';
-  lines(state.phase === 'confirming' ? state.reviewPages?.[state.reviewPage || 0] || state.transcript : state.clarificationPrompt || state.question || '세 면접관의 질문에 소리 내어 답변하세요.', 36, 70, 1460, 46, state.phase === 'confirming' ? 4 : 2);
+  lines(state.phase === 'confirming' ? state.reviewPages?.[state.reviewPage || 0] || state.transcript : state.clarificationPrompt || state.question || '세 면접관의 질문에 소리 내어 답해 주세요.', 36, 70, 1460, 46, state.phase === 'confirming' ? 4 : 2);
   context.fillStyle = '#4A4E55'; context.font = '500 29px "PATH Sans", SUIT, sans-serif';
   const transcript = String(state.transcript || '');
   const answerContext = answerQuote && ['reviewing', 'followup'].includes(state.phase) ? `첫 답변: “${answerQuote.slice(0, 100)}”` : '';
-  if (state.phase !== 'confirming') lines(state.phase === 'repair' ? '다시 답변하거나 질문을 다시 들으세요.' : answerContext || (transcript ? `인식: ${transcript.slice(-120)}` : state.canSubmit ? state.automaticEnd ? '답변을 마치면 이어집니다. 애매한 부분만 확인합니다.' : '답변을 마치면 아래에서 완료하세요.' : '선택 버튼으로 시작합니다.'), 36, 184, 1460, 38, 2);
-  else { context.font = '500 24px "PATH Sans", SUIT, sans-serif'; context.fillText(state.reviewPrompt || '틀리면 이 부분만 다시 말하세요. 나머지 답변은 유지됩니다.', 36, 266, 1460); }
+  if (state.phase !== 'confirming') lines(state.phase === 'repair' ? state.repair?.message || '다시 답하거나 질문을 다시 들어 보세요.' : answerContext || (transcript ? `들린 말: ${transcript.slice(-120)}` : state.canSubmit ? state.automaticEnd ? '말을 마치면 알아서 넘어가요. 애매하게 들린 부분만 다시 물어요.' : '답을 마치면 아래 「답변 완료」를 눌러 주세요.' : state.paused ? '계속하려면 아래 「이어서 진행」을 눌러 주세요.' : state.phase === 'complete' ? '다시 해 보려면 아래 「면접 시작」을 눌러 주세요.' : state.canStart ? '준비되면 아래 「면접 시작」을 눌러 주세요.' : '질문이 끝나면 바로 답할 수 있어요.'), 36, 184, 1460, 38, 2);
+  else { context.font = '500 24px "PATH Sans", SUIT, sans-serif'; context.fillText(state.reviewPrompt || '틀리게 들렸다면 이 부분만 다시 말해 주세요. 나머지 답은 그대로예요.', 36, 266, 1460); }
   getStrictVRControls(state).forEach((control, index) => {
     const exit = control.action === 'exit', primary = index === 0;
     if (!control.enabled) pill(control.x, control.y, control.w, control.h, '#E3E3E1');
@@ -136,7 +136,7 @@ async function buildStage({ mount, getFrameState, getState, onAction, onClosePre
   renderer.xr.enabled = true;
   renderer.xr.setReferenceSpaceType('local');
   renderer.xr.setFramebufferScaleFactor(1);
-  renderer.domElement.setAttribute('aria-label', '실사 면접실 · 좌우 버튼으로 30도씩 둘러보기');
+  renderer.domElement.setAttribute('aria-label', '면접실 · 좌우 단추로 30°씩 둘러보기');
   renderer.domElement.tabIndex = 0;
   mount.append(renderer.domElement);
 
@@ -151,7 +151,7 @@ async function buildStage({ mount, getFrameState, getState, onAction, onClosePre
   const canvas = document.createElement('canvas');
   canvas.width = HUD_WIDTH; canvas.height = HUD_HEIGHT;
   const context = canvas.getContext('2d');
-  if (!context) { room.dispose(); renderer.dispose(); renderer.domElement.remove(); throw new Error('VR 안내판을 준비하지 못했습니다.'); }
+  if (!context) { room.dispose(); renderer.dispose(); renderer.domElement.remove(); throw new Error('VR 안내판을 준비하지 못했어요.'); }
   const hudTexture = new THREE.CanvasTexture(canvas);
   hudTexture.colorSpace = THREE.SRGBColorSpace;
   const hudMaterial = new THREE.MeshBasicMaterial({ map: hudTexture, toneMapped: false });
@@ -168,7 +168,7 @@ async function buildStage({ mount, getFrameState, getState, onAction, onClosePre
   let look = { yaw: 0, pitch: 0 };
   // Glass controls over the room preview. Their look lives in rehearsal.css.
   const closeButton = document.createElement('button');
-  closeButton.textContent = '화면 연습으로 돌아가기'; closeButton.type = 'button'; closeButton.hidden = true; closeButton.className = 'preview-close';
+  closeButton.textContent = '둘러보기 닫기'; closeButton.type = 'button'; closeButton.hidden = true; closeButton.className = 'preview-close';
   closeButton.addEventListener('click', onClosePreview); mount.append(closeButton);
   const previewHint = document.createElement('p'); previewHint.textContent = '좌우 30°씩 · Home 정면 · Esc 닫기'; previewHint.hidden = true; previewHint.className = 'preview-hint';
   mount.append(previewHint);
@@ -188,7 +188,7 @@ async function buildStage({ mount, getFrameState, getState, onAction, onClosePre
     const button = previewButtons[3].button;
     button.textContent = freeDrag ? '드래그 끄기' : '드래그 켜기'; button.setAttribute('aria-pressed', String(freeDrag));
     renderer.domElement.style.cursor = freeDrag ? 'grab' : 'default';
-    renderer.domElement.setAttribute('aria-label', freeDrag ? '실사 면접실 · 천천히 드래그하여 둘러보기' : '실사 면접실 · 좌우 버튼으로 30도씩 둘러보기');
+    renderer.domElement.setAttribute('aria-label', freeDrag ? '면접실 · 천천히 드래그해서 둘러보기' : '면접실 · 좌우 단추로 30°씩 둘러보기');
   }
   function resizePreview() {
     if (!previewing) return;
@@ -249,7 +249,7 @@ async function buildStage({ mount, getFrameState, getState, onAction, onClosePre
     const seconds = Number.isFinite(state.remainingSeconds) ? Math.max(0, Math.ceil(state.remainingSeconds)) : null;
     const micLevel = Math.round(Math.max(0, Math.min(1, Number(state.micLevel) || 0)) * 8) / 8;
     const answerQuote = String(state.branch?.evidence?.quote || '');
-    const key = JSON.stringify([state.phase, state.question, state.transcript, state.reviewPrompt, state.clarificationPrompt, answerQuote, seconds, state.paused, state.canStart, state.canSubmit, state.canConfirm, state.reviewPage, state.settling, state.micActive, micLevel, state.automaticEnd]);
+    const key = JSON.stringify([state.phase, state.repair?.message, state.question, state.transcript, state.reviewPrompt, state.clarificationPrompt, answerQuote, seconds, state.paused, state.canStart, state.canSubmit, state.canConfirm, state.reviewPage, state.settling, state.micActive, micLevel, state.automaticEnd]);
     if (key === lastHUDKey) return;
     lastHUDKey = key;
     paintStrictVRHUD(context, state);
@@ -326,8 +326,8 @@ export function createStrictVR({ mount, getFrameState = () => [], getState = () 
   const emit = (status, message) => { if (!disposed) onStatus({ status, message }); };
   function act(action) {
     if (action === 'exit') { void exit(); return; }
-    try { Promise.resolve(onAction(action)).catch(() => emit('active', '조작을 완료하지 못했습니다. 일시정지 후 다시 시도해 주세요.')); }
-    catch { emit('active', '조작을 완료하지 못했습니다. 일시정지 후 다시 시도해 주세요.'); }
+    try { Promise.resolve(onAction(action)).catch(() => emit('active', '방금 누른 단추가 처리되지 않았어요. 일시 정지한 뒤 다시 눌러 주세요.')); }
+    catch { emit('active', '방금 누른 단추가 처리되지 않았어요. 일시 정지한 뒤 다시 눌러 주세요.'); }
   }
   async function ensureStage() {
     if (stage) return stage;
@@ -343,15 +343,15 @@ export function createStrictVR({ mount, getFrameState = () => [], getState = () 
     if (disposed) return false;
     if (stage && supported === true) return true;
     if (checkTask) return checkTask;
-    if (!secure || !xr?.isSessionSupported || !xr?.requestSession) { emit('unsupported', 'PC에서는 화면으로 연습할 수 있습니다. VR은 Quest의 HTTPS 환경에서 지원 여부를 확인합니다.'); return false; }
+    if (!secure || !xr?.isSessionSupported || !xr?.requestSession) { emit('unsupported', 'PC에서는 화면으로 연습해요. VR은 Quest 브라우저에서 이 페이지를 열면 쓸 수 있어요.'); return false; }
     checkTask = (async () => {
       try {
         supported = await xr.isSessionSupported('immersive-vr');
-        if (!supported) { emit('unsupported', '이 브라우저에서 VR 기기를 찾지 못했습니다. 화면에서 방을 둘러볼 수 있습니다.'); return false; }
+        if (!supported) { emit('unsupported', '이 브라우저에서는 VR을 쓸 수 없어요. 「방 둘러보기」로 화면에서 면접실을 볼 수 있어요.'); return false; }
         if (!await ensureStage() || disposed) return false;
-        emit('ready', 'VR 사용 가능 · 주변 방은 공간 기하, 면접관은 원본 단안 영상으로 표현합니다.');
+        emit('ready', 'VR을 쓸 수 있어요. 「한국어 음성 준비」와 「마이크 확인」을 마치면 입장 단추가 켜져요.');
         return true;
-      } catch { emit('unsupported', 'VR 화면을 준비하지 못했습니다. 화면에서 면접을 이어갈 수 있습니다.'); return false; }
+      } catch { emit('unsupported', 'VR 화면을 준비하지 못했어요. 화면에서는 그대로 면접할 수 있어요.'); return false; }
       finally { checkTask = null; }
     })();
     return checkTask;
@@ -360,12 +360,12 @@ export function createStrictVR({ mount, getFrameState = () => [], getState = () 
     if (disposed || pending || session) return false;
     const gate = getStrictVRGate(getState());
     if (gate) { emit('ready', gate); return false; }
-    if (!stage || !supported || !secure || !xr?.requestSession) { emit('unsupported', 'VR 준비가 끝난 뒤 다시 시도해 주세요. 화면 연습은 사용할 수 있습니다.'); return false; }
+    if (!stage || !supported || !secure || !xr?.requestSession) { emit('unsupported', 'VR이 아직 준비되지 않았어요. 잠시 뒤 다시 눌러 주세요. 화면에서는 바로 연습할 수 있어요.'); return false; }
     closePreview();
     pending = true;
     const ticket = ++requestTicket;
     let requested;
-    emit('starting', 'VR을 연결합니다. 앉은 상태에서 정면을 바라보세요.');
+    emit('starting', 'VR을 연결하고 있어요. 의자에 앉아 정면을 봐 주세요.');
     try {
       // Keep requestSession on the original click/select activation, before any await.
       requested = await xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor'] });
@@ -378,32 +378,32 @@ export function createStrictVR({ mount, getFrameState = () => [], getState = () 
         if (session !== requested) return;
         session = null; finishSession = null; stage?.stop(); if (mount) mount.hidden = true;
         try { Promise.resolve(onExit()).catch(() => {}); } catch {}
-        emit('ready', 'VR을 종료했습니다. 연습과 마이크가 일시정지됩니다.');
+        emit('ready', 'VR에서 나왔어요. 면접은 일시 정지했고 마이크도 껐어요.');
       };
       finishSession = finish;
       requested.addEventListener('end', finish, { once: true });
       await stage.renderer.xr.setSession(requested);
       if (disposed || session !== requested || ticket !== requestTicket) { try { await requested.end(); } catch {} return false; }
       if (mount) mount.hidden = false;
-      stage.start(); emit('active', '좌석 주변을 둘러볼 수 있습니다. 책상 위 안내판을 컨트롤러로 선택하세요.');
+      stage.start(); emit('active', '고개를 돌려 방을 둘러볼 수 있어요. 책상 위 안내판의 단추를 컨트롤러로 가리켜 눌러 주세요.');
       return true;
     } catch {
       if (requested) { try { await requested.end(); } catch {} }
       if (session === requested) finishSession?.();
-      emit('ready', 'VR을 시작하지 못했습니다. 기기 연결과 브라우저 권한을 확인해 주세요.');
+      emit('ready', 'VR을 시작하지 못했어요. 브라우저가 VR 권한을 물으면 허용하고 다시 눌러 주세요.');
       return false;
     } finally { pending = false; }
   }
   async function exit() {
     requestTicket++;
     if (previewing) { closePreview(); return; }
-    if (session) { try { await session.end(); } catch { act('pause'); emit('active', '연습을 일시정지했습니다. 기기의 VR 종료 버튼으로 나가 주세요.'); } }
+    if (session) { try { await session.end(); } catch { act('pause'); emit('active', '면접을 일시 정지했어요. 헤드셋의 종료 단추로 VR에서 나가 주세요.'); } }
   }
   async function preview() {
     if (disposed || session || pending) return false;
     if (previewing) return true;
     const ticket = ++previewRequest;
-    emit('preview-loading', '좌석 주변 공간을 준비하고 있습니다.');
+    emit('preview-loading', '면접실을 불러오고 있어요.');
     try {
       const prepared = await ensureStage();
       if (!prepared || disposed || ticket !== previewRequest || session || pending) return false;
@@ -416,8 +416,8 @@ export function createStrictVR({ mount, getFrameState = () => [], getState = () 
         mount.hidden = false; mount.setAttribute?.('aria-hidden', 'false');
       }
       prepared.startPreview();
-      emit('preview', '좌우 버튼으로 30도씩 둘러보세요. 정면으로 바로 돌아올 수 있습니다.'); return true;
-    } catch { closePreview(); emit('unsupported', '방 미리보기를 준비하지 못했습니다. 기존 화면으로 연습할 수 있습니다.'); return false; }
+      emit('preview', '좌우 단추로 30°씩 돌아볼 수 있어요. 「정면」을 누르면 바로 앞으로 돌아와요.'); return true;
+    } catch { closePreview(); emit('unsupported', '방 둘러보기를 열지 못했어요. 화면에서는 그대로 연습할 수 있어요.'); return false; }
   }
   function closePreview() {
     previewRequest++;
@@ -428,7 +428,7 @@ export function createStrictVR({ mount, getFrameState = () => [], getState = () 
     previewFocus?.focus?.({ preventScroll: true }); previewFocus = null;
     if (mount?.contains?.(globalThis.document?.activeElement)) globalThis.document.activeElement.blur?.();
     if (mount) { mount.hidden = true; if (mount.style) mount.style.cssText = previewStyle; mount.setAttribute?.('aria-hidden', 'true'); }
-    emit(supported ? 'ready' : 'unsupported', supported ? 'VR 사용 가능 · 음성 입력을 준비한 뒤 들어가세요.' : '화면에서 면접을 계속할 수 있습니다.');
+    emit(supported ? 'ready' : 'unsupported', supported ? 'VR을 쓸 수 있어요. 「한국어 음성 준비」와 「마이크 확인」을 마치면 들어갈 수 있어요.' : '이 브라우저에서는 VR을 쓸 수 없어요. 화면에서 그대로 연습할 수 있어요.');
   }
   async function dispose() {
     if (disposed) return;
@@ -454,7 +454,7 @@ export function createStrictVR({ mount, getFrameState = () => [], getState = () 
     // finishes a headset check or build already under way and starts nothing.
     if (onlyIfStarted) { await checkTask; if (disposed || !stage && !stageTask) return false; }
     try { return !!await ensureStage(); }
-    catch { emit('unsupported', '방 둘러보기를 준비하지 못했습니다. 화면에서 연습할 수 있습니다.'); return false; }
+    catch { emit('unsupported', '방 둘러보기를 준비하지 못했어요. 화면에서는 그대로 연습할 수 있어요.'); return false; }
   }
   return Object.freeze({ check, enter, exit, preview, closePreview, warmVideoFrames, prepareRoom, dispose, get active() { return !!session; }, get pending() { return pending; }, get previewing() { return previewing; }, get roomReady() { return !!stage; } });
 }

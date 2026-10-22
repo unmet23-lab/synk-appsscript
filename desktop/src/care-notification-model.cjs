@@ -362,20 +362,20 @@ function solarToLunar(date) {
   return null;
 }
 function normalizeLunarDate(date, leapMonth = false) {
-  if (typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("\uC74C\uB825 \uB0A0\uC9DC\uB294 YYYY-MM-DD \uD615\uC2DD\uC73C\uB85C \uC785\uB825\uD574 \uC8FC\uC138\uC694.");
-  if (typeof leapMonth !== "boolean") throw new Error("\uC74C\uB825 \uC724\uB2EC \uC5EC\uBD80\uB97C \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
-  if (date < LUNAR_RANGE.minDate || date > LUNAR_RANGE.maxDate) throw new Error("\uC74C\uB825\uC740 1900-01-01~2050-11-18 \uC0AC\uC774\uB9CC \uC9C0\uC6D0\uD574\uC694.");
+  if (typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("\uC74C\uB825 \uB0A0\uC9DC\uB97C \uB2E4\uC2DC \uACE8\uB77C \uC8FC\uC138\uC694.");
+  if (typeof leapMonth !== "boolean") throw new Error("\uC724\uB2EC\uC778\uC9C0 \uB2E4\uC2DC \uACE8\uB77C \uC8FC\uC138\uC694.");
+  if (date < LUNAR_RANGE.minDate || date > LUNAR_RANGE.maxDate) throw new Error("\uC74C\uB825\uC740 1900\uB144 1\uC6D4 1\uC77C\uBD80\uD130 2050\uB144 11\uC6D4 18\uC77C\uAE4C\uC9C0 \uACE0\uB97C \uC218 \uC788\uC5B4\uC694.");
   const [year, month, day] = date.split("-").map(Number);
   const value = { year, month, day, leapMonth };
-  if (!lunarToSolar(value)) throw new Error("\uC2E4\uC81C\uB85C \uC874\uC7AC\uD558\uB294 \uC74C\uB825 \uB0A0\uC9DC\uC640 \uC724\uB2EC \uC5EC\uBD80\uB97C \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+  if (!lunarToSolar(value)) throw new Error("\uADF8\uD574 \uC74C\uB825\uC5D0 \uC5C6\uB294 \uB0A0\uC9DC\uC608\uC694. \uB0A0\uC9DC\uB098 \uC724\uB2EC \uD45C\uC2DC\uB97C \uACE0\uCCD0 \uC8FC\uC138\uC694.");
   return { date, ...value };
 }
 function lunarDateInYear(input, targetYear) {
   const original = normalizeLunarDate(input?.date, input?.leapMonth ?? false);
   const leapPolicy = input?.leapPolicy ?? "regular";
   const shortMonthPolicy = input?.shortMonthPolicy ?? "last-day";
-  if (!["regular", "leap-only"].includes(leapPolicy)) throw new Error("\uC74C\uB825 \uC724\uB2EC \uBC18\uBCF5 \uBC29\uBC95\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
-  if (!["last-day", "skip"].includes(shortMonthPolicy)) throw new Error("\uC74C\uB825 30\uC77C\uC774 \uC5C6\uB294 \uD574\uC758 \uCC98\uB9AC \uBC29\uBC95\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+  if (!["regular", "leap-only"].includes(leapPolicy)) throw new Error("\uC724\uB2EC\uC774 \uC5C6\uB294 \uD574\uC5D0 \uCC59\uAE38 \uBC29\uBC95\uC744 \uACE8\uB77C \uC8FC\uC138\uC694.");
+  if (!["last-day", "skip"].includes(shortMonthPolicy)) throw new Error("30\uC77C\uC774 \uC5C6\uB294 \uB2EC\uC5D0 \uCC59\uAE38 \uBC29\uBC95\uC744 \uACE8\uB77C \uC8FC\uC138\uC694.");
   if (!validYear(targetYear) || targetYear < original.year) return null;
   let leapMonth = original.leapMonth;
   if (leapMonth && leapMonthInYear(targetYear) !== original.month) {
@@ -393,18 +393,18 @@ function lunarDateInYear(input, targetYear) {
 var MEMORY_USES = Object.freeze({ "shared-memory": "\uD568\uAED8\uD55C \uAE30\uC5B5", "gift-preference": "\uC120\uBB3C \uCDE8\uD5A5" });
 function resolveCareMemory({ state, personId, eventType = "checkin", memorySelection = null } = {}) {
   if (memorySelection === null || memorySelection === void 0) return null;
-  if (!memorySelection || typeof memorySelection !== "object" || Array.isArray(memorySelection) || Object.keys(memorySelection).some((key) => !["memoryId", "use", "confirmed"].includes(key)) || memorySelection.confirmed !== true || !Object.hasOwn(MEMORY_USES, memorySelection.use) || typeof memorySelection.memoryId !== "string" || !memorySelection.memoryId) throw new Error("\uC774\uBC88\uC5D0 \uC4F8 \uAE30\uC5B5\uACFC \uC6A9\uB3C4\uB97C \uC9C1\uC811 \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+  if (!memorySelection || typeof memorySelection !== "object" || Array.isArray(memorySelection) || Object.keys(memorySelection).some((key) => !["memoryId", "use", "confirmed"].includes(key)) || memorySelection.confirmed !== true || !Object.hasOwn(MEMORY_USES, memorySelection.use) || typeof memorySelection.memoryId !== "string" || !memorySelection.memoryId) throw new Error("\uC774\uBC88\uC5D0 \uC4F8 \uAE30\uC5B5\uACFC \uC4F0\uB294 \uBC29\uBC95\uC744 \uACE8\uB77C \uC8FC\uC138\uC694.");
   const person = state?.people?.find((item) => item.id === personId);
   const memory = state?.memories?.find((item) => item.id === memorySelection.memoryId);
   const source = state?.sources?.find((item) => item.id === memory?.sourceId);
-  if (!person || !memory || memory.personId !== personId || !source || source.personId !== personId || typeof memory.text !== "string" || !memory.text.trim() || typeof memory.sourceQuote !== "string" || !memory.sourceQuote || typeof source.text !== "string" || !source.text.includes(memory.sourceQuote)) throw new Error("\uC774 \uC0AC\uB78C\uC758 \uD604\uC7AC \uAE30\uC5B5\uACFC \uC6D0\uBB38\uC744 \uB2E4\uC2DC \uC120\uD0DD\uD574 \uC8FC\uC138\uC694. \uC0AD\uC81C\uD558\uAC70\uB098 \uBC14\uB010 \uADFC\uAC70\uB294 \uC0AC\uC6A9\uD560 \uC218 \uC5C6\uC5B4\uC694.");
+  if (!person || !memory || memory.personId !== personId || !source || source.personId !== personId || typeof memory.text !== "string" || !memory.text.trim() || typeof memory.sourceQuote !== "string" || !memory.sourceQuote || typeof source.text !== "string" || !source.text.includes(memory.sourceQuote)) throw new Error("\uACE0\uB978 \uAE30\uC5B5\uC774 \uC9C0\uC6CC\uC84C\uAC70\uB098 \uBC14\uB00C\uC5C8\uC5B4\uC694. \uAE30\uC5B5\uC744 \uB2E4\uC2DC \uACE8\uB77C \uC8FC\uC138\uC694.");
   const sensitive = ["condolence", "memorial"].includes(eventType);
   const pref = person.recipientPreference ?? {};
   const blockedReasons = [];
-  if (pref.confirmed && (pref.avoidPhrases ?? []).some((phrase) => memory.text.includes(phrase))) blockedReasons.push("\uC9C1\uC811 \uC815\uD55C \uD53C\uD560 \uD45C\uD604\uC774 \uAE30\uC5B5\uC5D0 \uC788\uC5B4 \uC790\uB3D9\uC73C\uB85C \uB123\uC9C0 \uC54A\uC558\uC5B4\uC694.");
-  if (pref.confirmed && pref.noReplyPressure && /(?:꼭|반드시|빨리|바로)[^.!?\n]{0,12}(?:답장|연락|회신)|(?:답장|연락|회신)[^.!?\n]{0,12}(?:꼭|반드시|빨리|바로|해\s?줘|주세요|부탁)/u.test(memory.text)) blockedReasons.push("\uB2F5\uC7A5\uC744 \uC7AC\uCD09\uD560 \uC218 \uC788\uB294 \uD45C\uD604\uC774 \uC788\uC5B4 \uAE30\uC5B5\uC744 \uC790\uB3D9\uC73C\uB85C \uB123\uC9C0 \uC54A\uC558\uC5B4\uC694.");
-  if (sensitive && /[\p{Extended_Pictographic}\p{Regional_Indicator}\p{Emoji_Modifier}\uFE0F\u200D\u20E3]|[ㅋㅎ]{2,}|농담|장난|웃겨|웃기지|웃기네|(?:ha){2,}|lol/iu.test(memory.text)) blockedReasons.push("\uC870\uC2EC\uC2A4\uB7EC\uC6B4 \uB0A0\uC5D0 \uB9DE\uC9C0 \uC54A\uC744 \uC218 \uC788\uB294 \uC774\uBAA8\uC9C0\xB7\uC6C3\uC74C\xB7\uB18D\uB2F4 \uD45C\uC9C0\uAC00 \uC788\uC5B4 \uAE30\uC5B5\uC744 \uC790\uB3D9\uC73C\uB85C \uB123\uC9C0 \uC54A\uC558\uC5B4\uC694.");
-  if (memorySelection.use === "gift-preference" && (sensitive || eventType === "checkin")) blockedReasons.push("\uC774\uBC88 \uC5F0\uB77D\uC5D0\uB294 \uC120\uBB3C \uCDE8\uD5A5\uC744 \uC790\uB3D9\uC73C\uB85C \uC0AC\uC6A9\uD558\uC9C0 \uC54A\uC544\uC694. \uD568\uAED8\uD55C \uAE30\uC5B5\uC744 \uACE0\uB974\uAC70\uB098 \uC120\uD0DD \uC5C6\uC774 \uC900\uBE44\uD574 \uC8FC\uC138\uC694.");
+  if (pref.confirmed && (pref.avoidPhrases ?? []).some((phrase) => memory.text.includes(phrase))) blockedReasons.push("\uD53C\uD558\uAE30\uB85C \uD55C \uD45C\uD604\uC774 \uB4E4\uC5B4 \uC788\uC5B4 \uC774 \uAE30\uC5B5\uC740 \uB123\uC9C0 \uC54A\uC558\uC5B4\uC694.");
+  if (pref.confirmed && pref.noReplyPressure && /(?:꼭|반드시|빨리|바로)[^.!?\n]{0,12}(?:답장|연락|회신)|(?:답장|연락|회신)[^.!?\n]{0,12}(?:꼭|반드시|빨리|바로|해\s?줘|주세요|부탁)/u.test(memory.text)) blockedReasons.push("\uB2F5\uC7A5\uC744 \uC7AC\uCD09\uD558\uB294 \uB9D0\uB85C \uB4E4\uB9B4 \uC218 \uC788\uC5B4 \uC774 \uAE30\uC5B5\uC740 \uB123\uC9C0 \uC54A\uC558\uC5B4\uC694.");
+  if (sensitive && /[\p{Extended_Pictographic}\p{Regional_Indicator}\p{Emoji_Modifier}\uFE0F\u200D\u20E3]|[ㅋㅎ]{2,}|농담|장난|웃겨|웃기지|웃기네|(?:ha){2,}|lol/iu.test(memory.text)) blockedReasons.push("\uC870\uC2EC\uC2A4\uB7EC\uC6B4 \uB0A0\uC5D0 \uC5B4\uC6B8\uB9AC\uC9C0 \uC54A\uB294 \uC774\uBAA8\uC9C0\uB098 \uC6C3\uC74C \uD45C\uD604\uC774 \uC788\uC5B4 \uC774 \uAE30\uC5B5\uC740 \uB123\uC9C0 \uC54A\uC558\uC5B4\uC694.");
+  if (memorySelection.use === "gift-preference" && (sensitive || eventType === "checkin")) blockedReasons.push("\uC774\uBC88 \uC5F0\uB77D\uC5D0\uB294 \uC120\uBB3C \uCDE8\uD5A5\uC744 \uC4F0\uC9C0 \uC54A\uC544\uC694. \u300C\uD568\uAED8\uD55C \uAE30\uC5B5\uC73C\uB85C \uC778\uC6A9\u300D\uC744 \uACE0\uB974\uAC70\uB098 \uAE30\uC5B5 \uC5C6\uC774 \uC900\uBE44\uD574 \uC8FC\uC138\uC694.");
   return {
     memoryId: memory.id,
     use: memorySelection.use,
@@ -432,11 +432,11 @@ var choose = (value, options, fallback, label) => {
 };
 function clean(value, label, max = 2e3, required = false) {
   if (value === void 0 || value === null) value = "";
-  if (typeof value !== "string") throw new Error(`${label}\uC740 \uAE00\uC790\uB85C \uC785\uB825\uD574 \uC8FC\uC138\uC694.`);
+  if (typeof value !== "string") throw new Error(`${label}\uC5D0\uB294 \uAE00\uC790\uB9CC \uC801\uC744 \uC218 \uC788\uC5B4\uC694.`);
   if (/\u0000|[\uD800-\uDFFF]/u.test(value)) throw new Error(`${label}\uC5D0 \uC800\uC7A5\uD560 \uC218 \uC5C6\uB294 \uBB38\uC790\uAC00 \uC788\uC5B4\uC694. \uD574\uB2F9 \uAE00\uC790\uB97C \uACE0\uCCD0 \uC8FC\uC138\uC694.`);
   const result = value.trim();
-  if (required && !result) throw new Error(`${label}\uC744 \uC785\uB825\uD574 \uC8FC\uC138\uC694.`);
-  if (result.length > max) throw new Error(`${label}\uC740 ${max.toLocaleString("ko-KR")}\uC790 \uC774\uB0B4\uB85C \uC785\uB825\uD574 \uC8FC\uC138\uC694.`);
+  if (required && !result) throw new Error(`${label} \uCE78\uC744 \uCC44\uC6CC \uC8FC\uC138\uC694.`);
+  if (result.length > max) throw new Error(`${label}\uC5D0\uB294 ${max.toLocaleString("ko-KR")}\uC790\uAE4C\uC9C0 \uC801\uC744 \uC218 \uC788\uC5B4\uC694.`);
   return result;
 }
 function id(value, prefix) {
@@ -448,10 +448,10 @@ function id(value, prefix) {
   return `${prefix}_${globalThis.crypto?.randomUUID?.() ?? `${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`}`;
 }
 function dateParts(value) {
-  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new Error("\uB0A0\uC9DC\uB294 YYYY-MM-DD \uD615\uC2DD\uC73C\uB85C \uC785\uB825\uD574 \uC8FC\uC138\uC694.");
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new Error("\uB0A0\uC9DC\uB294 2026-10-21\uCC98\uB7FC \uC801\uC5B4 \uC8FC\uC138\uC694.");
   const [year, month, day] = value.split("-").map(Number);
   const parsed = new Date(Date.UTC(year, month - 1, day));
-  if (year < 1900 || year > 2199 || parsed.getUTCFullYear() !== year || parsed.getUTCMonth() !== month - 1 || parsed.getUTCDate() !== day) throw new Error("1900~2199\uB144 \uC0AC\uC774\uC758 \uC2E4\uC81C \uB0A0\uC9DC\uB97C \uC785\uB825\uD574 \uC8FC\uC138\uC694.");
+  if (year < 1900 || year > 2199 || parsed.getUTCFullYear() !== year || parsed.getUTCMonth() !== month - 1 || parsed.getUTCDate() !== day) throw new Error("1900~2199\uB144 \uC0AC\uC774\uC5D0 \uC788\uB294 \uB0A0\uC9DC\uB97C \uC801\uC5B4 \uC8FC\uC138\uC694.");
   return { year, month, day };
 }
 var dateString2 = (year, month, day) => `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
@@ -477,7 +477,7 @@ function emptyState() {
   return { version: 1, people: [], events: [], completions: [], drafts: [], sources: [], memories: [], activities: [], followups: [], preparations: [] };
 }
 function analyzeTone(text) {
-  const sample = clean(text, "\uBCF8\uC778 \uBC1C\uD654", MAX_TEXT, true);
+  const sample = clean(text, "\uB0B4\uAC00 \uD55C \uB9D0", MAX_TEXT, true);
   const sentences = sample.split(/[.!?。！？\n]+/u).map((item) => item.trim()).filter(Boolean);
   const endings = sentences.map((item) => item.replace(/[\p{Extended_Pictographic}\uFE0F\u200Dㅋㅎㅠㅜ~…\s]+$/gu, ""));
   const polite = endings.filter((item) => /(?:요|니다|시오|십시오)$/.test(item)).length;
@@ -487,10 +487,10 @@ function analyzeTone(text) {
   const sentenceLength = average <= 24 ? "short" : average <= 55 ? "balanced" : "long";
   const hasLaughter = /[ㅋㅎ]{2,}/.test(sample);
   const hasEmoji = new RegExp("\\p{Extended_Pictographic}", "u").test(sample);
-  const labels = { polite: "\uC874\uB313\uB9D0 \uD45C\uD604\uC774 \uBCF4\uC600\uC5B4\uC694", casual: "\uD3B8\uD55C \uB9D0\uD22C\uAC00 \uBCF4\uC600\uC5B4\uC694", mixed: "\uC874\uB313\uB9D0\uACFC \uD3B8\uD55C \uB9D0\uD22C\uAC00 \uD568\uAED8 \uBCF4\uC5EC\uC694", unknown: "\uB9D0\uD22C\uB97C \uC815\uD558\uAE30\uC5D0\uB294 \uB2E8\uC11C\uAC00 \uBD80\uC871\uD574\uC694" };
-  const observations = [labels[formality], `${sentences.length}\uAC1C \uBB38\uC7A5\uC5D0\uC11C ${sentenceLength === "short" ? "\uC9E7\uC740" : sentenceLength === "long" ? "\uAE34" : "\uC911\uAC04 \uAE38\uC774\uC758"} \uBB38\uC7A5\uC774 \uC8FC\uB85C \uBCF4\uC600\uC5B4\uC694.`];
+  const labels = { polite: "\uC874\uB313\uB9D0\uC744 \uC8FC\uB85C \uC368\uC694", casual: "\uBC18\uB9D0\uC744 \uC8FC\uB85C \uC368\uC694", mixed: "\uC874\uB313\uB9D0\uACFC \uBC18\uB9D0\uC744 \uC11E\uC5B4 \uC368\uC694", unknown: "\uB9D0\uD22C\uB97C \uC54C\uAE30\uC5D4 \uBB38\uC7A5\uC774 \uBD80\uC871\uD574\uC694" };
+  const observations = [labels[formality], `\uBB38\uC7A5 ${sentences.length}\uAC1C \uAC00\uC6B4\uB370 ${sentenceLength === "short" ? "\uC9E7\uC740" : sentenceLength === "long" ? "\uAE34" : "\uC911\uAC04 \uAE38\uC774"} \uBB38\uC7A5\uC774 \uB9CE\uC544\uC694.`];
   if (hasLaughter) observations.push("\u314B\u314B\xB7\u314E\u314E \uAC19\uC740 \uC6C3\uC74C \uD45C\uD604\uC774 \uC788\uC5B4\uC694.");
-  if (hasEmoji) observations.push("\uC774\uBAA8\uC9C0\uAC00 \uC788\uC5B4\uC694.");
+  if (hasEmoji) observations.push("\uC774\uBAA8\uC9C0\uB97C \uC368\uC694.");
   return {
     source: "rule-based",
     label: labels[formality],
@@ -500,7 +500,7 @@ function analyzeTone(text) {
     hasEmoji,
     observations,
     sampleCount: sentences.length,
-    limits: ["\uC120\uD0DD\uD55C \uBCF8\uC778 \uBC1C\uD654\uC758 \uD45C\uBA74 \uD2B9\uC9D5\uC744 \uADDC\uCE59\uC73C\uB85C \uC0B4\uD3B4\uBCF8 \uACB0\uACFC\uC608\uC694.", "\uC0C1\uB300\uAC00 \uC120\uD638\uD558\uB294 \uB9D0\uD22C\uB098 \uC131\uACA9\uC744 \uD310\uB2E8\uD55C \uACB0\uACFC\uAC00 \uC544\uB2C8\uC5D0\uC694.", "\uC801\uC740 \uC608\uC2DC\uB098 \uB300\uD654 \uB9E5\uB77D\uC5D0 \uB530\uB77C \uACB0\uACFC\uAC00 \uB2EC\uB77C\uC9C8 \uC218 \uC788\uC5B4\uC694."]
+    limits: ["\uB0B4\uAC00 \uD55C \uB9D0\uC758 \uB05D\uB9FA\uC74C\uACFC \uAE38\uC774, \uC774\uBAA8\uC9C0\uB9CC \uC0B4\uD3B4\uBD24\uC5B4\uC694.", "\uC0C1\uB300\uAC00 \uC88B\uC544\uD558\uB294 \uB9D0\uD22C\uB098 \uC131\uACA9\uC744 \uC54C\uC544\uB0B8 \uACB0\uACFC\uB294 \uC544\uB2C8\uC5D0\uC694.", "\uBB38\uC7A5\uC774 \uC801\uC73C\uBA74 \uACB0\uACFC\uAC00 \uB2EC\uB77C\uC9C8 \uC218 \uC788\uC5B4\uC694."]
   };
 }
 function preference(input = {}) {
@@ -520,10 +520,10 @@ function preference(input = {}) {
   };
 }
 function savedMessages(input = {}) {
-  if (!input || typeof input !== "object" || Array.isArray(input)) throw new Error("\uAE30\uC5B5\uD55C \uBB38\uAD6C\uC758 \uD615\uC2DD\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+  if (!input || typeof input !== "object" || Array.isArray(input)) throw new Error("\uAE30\uC5B5\uD55C \uBB38\uAD6C\uB97C \uC77D\uC9C0 \uBABB\uD588\uC5B4\uC694.");
   const result = {};
   for (const [type, item] of Object.entries(input)) {
-    if (!Object.hasOwn(MESSAGE_TYPES, type) || !item || typeof item !== "object") throw new Error("\uAE30\uC5B5\uD55C \uBB38\uAD6C\uC758 \uC885\uB958\uB97C \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+    if (!Object.hasOwn(MESSAGE_TYPES, type) || !item || typeof item !== "object") throw new Error("\uAE30\uC5B5\uD55C \uBB38\uAD6C\uC758 \uC885\uB958\uB97C \uC77D\uC9C0 \uBABB\uD588\uC5B4\uC694.");
     result[type] = { text: clean(item.text, "\uAE30\uC5B5\uD55C \uBB38\uAD6C", 5e3, true), savedAt: timestamp(item.savedAt, "\uBB38\uAD6C\uB97C \uAE30\uC5B5\uD55C \uC2DC\uAC04") };
   }
   return result;
@@ -532,7 +532,7 @@ function messageLibrary(input) {
   const seen = /* @__PURE__ */ new Set();
   return backupList(input, 100, "\uD55C \uC0AC\uB78C\uC758 \uBCF4\uAD00 \uBB38\uAD6C").map((value) => {
     exactKeys(value, ["id", "type", "checkinIntent", "text", "savedAt", "favorite"], "\uBCF4\uAD00 \uBB38\uAD6C");
-    if (!Object.hasOwn(MESSAGE_TYPES, value.type)) throw new Error("\uBCF4\uAD00 \uBB38\uAD6C\uC758 \uC885\uB958\uB97C \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+    if (!Object.hasOwn(MESSAGE_TYPES, value.type)) throw new Error("\uBCF4\uAD00 \uBB38\uAD6C\uC758 \uC885\uB958\uB97C \uC77D\uC9C0 \uBABB\uD588\uC5B4\uC694.");
     const item = {
       id: requireId(value.id, "\uBCF4\uAD00 \uBB38\uAD6C \uC2DD\uBCC4\uC790"),
       type: value.type,
@@ -541,7 +541,7 @@ function messageLibrary(input) {
       favorite: value.favorite === true
     };
     uniqueId(item.id, seen, "\uBCF4\uAD00 \uBB38\uAD6C");
-    if (value.favorite !== void 0 && typeof value.favorite !== "boolean") throw new Error("\uBB38\uAD6C \uC990\uACA8\uCC3E\uAE30 \uC5EC\uBD80\uB97C \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+    if (value.favorite !== void 0 && typeof value.favorite !== "boolean") throw new Error("\uBB38\uAD6C \uC990\uACA8\uCC3E\uAE30 \uD45C\uC2DC\uB97C \uC77D\uC9C0 \uBABB\uD588\uC5B4\uC694.");
     if (item.type === "checkin") item.checkinIntent = choose(value.checkinIntent, Object.keys(CHECKIN_INTENTS), "unspecified", "\uBCF4\uAD00\uD55C \uC548\uBD80\uC758 \uBAA9\uC801");
     else if (value.checkinIntent !== void 0) throw new Error("\uD589\uC0AC \uBB38\uAD6C\uC5D0\uB294 \uC548\uBD80 \uBAA9\uC801\uC744 \uC800\uC7A5\uD560 \uC218 \uC5C6\uC5B4\uC694.");
     return item;
@@ -573,21 +573,21 @@ function sortedMessages(items, favoritesFirst = true) {
 }
 function listSavedMessages(personInput, { type, checkinIntent } = {}) {
   const person = makePerson(personInput);
-  if (type !== void 0 && !Object.hasOwn(MESSAGE_TYPES, type)) throw new Error("\uBCF4\uAD00 \uBB38\uAD6C\uC758 \uC885\uB958\uB97C \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
-  if (checkinIntent !== void 0 && (type !== "checkin" || !Object.hasOwn(CHECKIN_INTENTS, checkinIntent))) throw new Error("\uBCF4\uAD00\uD55C \uC548\uBD80\uC758 \uBAA9\uC801\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+  if (type !== void 0 && !Object.hasOwn(MESSAGE_TYPES, type)) throw new Error("\uBCF4\uAD00 \uBB38\uAD6C\uC758 \uC885\uB958\uB97C \uC77D\uC9C0 \uBABB\uD588\uC5B4\uC694.");
+  if (checkinIntent !== void 0 && (type !== "checkin" || !Object.hasOwn(CHECKIN_INTENTS, checkinIntent))) throw new Error("\uBCF4\uAD00\uD55C \uC548\uBD80\uC758 \uBAA9\uC801\uC744 \uC77D\uC9C0 \uBABB\uD588\uC5B4\uC694.");
   return sortedMessages(personMessageLibrary(person).filter(
     (item) => (type === void 0 || item.type === type) && (checkinIntent === void 0 || item.checkinIntent === checkinIntent || item.checkinIntent === "unspecified")
   ));
 }
 function timestamp(value, label) {
   const text = clean(value, label, 40, true);
-  if (!/^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d{1,3})?(?:Z|[+-](?:0\d|1[0-4]):[0-5]\d)$/.test(text)) throw new Error(`${label}\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694.`);
+  if (!/^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d{1,3})?(?:Z|[+-](?:0\d|1[0-4]):[0-5]\d)$/.test(text)) throw new Error(`${label} \uC815\uBCF4\uB97C \uC77D\uC9C0 \uBABB\uD588\uC5B4\uC694.`);
   dateParts(text.slice(0, 10));
   return clock(text).toISOString();
 }
 function tone(input) {
   if (!input) return null;
-  if (input.source !== "rule-based") throw new Error("\uD655\uC778\uD560 \uC218 \uC5C6\uB294 \uB9D0\uD22C \uAD00\uCC30\uC774\uC5D0\uC694.");
+  if (input.source !== "rule-based") throw new Error("\uB9D0\uD22C \uAE30\uB85D\uC744 \uC77D\uC9C0 \uBABB\uD588\uC5B4\uC694.");
   const formality = choose(input.formality, ["polite", "casual", "mixed", "unknown"], "unknown", "\uAD00\uCC30 \uB9D0\uD22C");
   return {
     source: "rule-based",
@@ -608,7 +608,7 @@ function wishList(input) {
     exactKeys(value, ["id", "text", "notedOn", "given"], "\uAC16\uACE0 \uC2F6\uB2E4\uACE0 \uB9D0\uD55C \uAC83");
     const notedOn = clean(value.notedOn, "\uB4E4\uC740 \uB0A0\uC9DC", 10);
     if (notedOn) dateParts(notedOn);
-    if (value.given !== void 0 && typeof value.given !== "boolean") throw new Error("\uC774\uBBF8 \uB4DC\uB838\uB294\uC9C0 \uC5EC\uBD80\uB97C \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+    if (value.given !== void 0 && typeof value.given !== "boolean") throw new Error("\uB4DC\uB838\uB294\uC9C0 \uD45C\uC2DC\uB97C \uC77D\uC9C0 \uBABB\uD588\uC5B4\uC694.");
     const item = { id: requireId(value.id, "\uAC16\uACE0 \uC2F6\uC740 \uAC83 \uC2DD\uBCC4\uC790"), text: clean(value.text, "\uAC16\uACE0 \uC2F6\uB2E4\uACE0 \uB9D0\uD55C \uAC83", 200, true), notedOn, given: value.given === true };
     uniqueId(item.id, seen, "\uAC16\uACE0 \uC2F6\uB2E4\uACE0 \uB9D0\uD55C \uAC83");
     return item;
@@ -624,7 +624,7 @@ function careSnooze(input) {
   return { on, until };
 }
 function makePerson(input = {}) {
-  if (Object.hasOwn(input, "checkinIntervalDays") && (!Number.isInteger(input.checkinIntervalDays) || input.checkinIntervalDays < 0 || input.checkinIntervalDays > 365)) throw new Error("\uC548\uBD80 \uC8FC\uAE30\uB294 0~365\uC77C \uC0AC\uC774\uC758 \uC815\uC218\uB85C \uACE8\uB77C \uC8FC\uC138\uC694. 0\uC77C\uC740 \uC77C\uBC18 \uC548\uBD80 \uCD94\uCC9C \uB044\uAE30\uC608\uC694.");
+  if (Object.hasOwn(input, "checkinIntervalDays") && (!Number.isInteger(input.checkinIntervalDays) || input.checkinIntervalDays < 0 || input.checkinIntervalDays > 365)) throw new Error("\uC548\uBD80 \uC8FC\uAE30\uB294 0~365\uC77C \uC0AC\uC774\uB85C \uACE8\uB77C \uC8FC\uC138\uC694. 0\uC77C\uC740 \uCD94\uCC9C \uB044\uAE30\uC608\uC694.");
   if (present(input, "deceased") && typeof input.deceased !== "boolean") throw new Error("\uACE0\uC778 \uD45C\uC2DC\uB294 \uC608\xB7\uC544\uB2C8\uC624\uB85C \uACE8\uB77C \uC8FC\uC138\uC694.");
   const deceased = input.deceased === true;
   const diedOn = present(input, "diedOn") ? clean(input.diedOn, "\uB3CC\uC544\uAC00\uC2E0 \uB0A0", 10) : "";
@@ -653,19 +653,19 @@ function makeEvent(input = {}) {
   const type = choose(input.type, Object.keys(EVENT_TYPES), "birthday", "\uC77C\uC815 \uC885\uB958");
   const date = clean(input.date, "\uB0A0\uC9DC", 10, true);
   const calendar = choose(input.calendar, ["solar", "lunar"], "solar", "\uB2EC\uB825 \uC885\uB958");
-  if (input.lunarLeapMonth !== void 0 && typeof input.lunarLeapMonth !== "boolean") throw new Error("\uC724\uB2EC \uC5EC\uBD80\uB97C \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+  if (input.lunarLeapMonth !== void 0 && typeof input.lunarLeapMonth !== "boolean") throw new Error("\uC724\uB2EC \uD45C\uC2DC\uB97C \uC77D\uC9C0 \uBABB\uD588\uC5B4\uC694.");
   const lunarLeapMonth = calendar === "lunar" && input.lunarLeapMonth === true;
   if (calendar === "lunar") normalizeLunarDate(date, lunarLeapMonth);
   else dateParts(date);
   const time = clean(input.time, "\uC2DC\uAC04", 5);
-  if (time && !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) throw new Error("\uC2DC\uAC04\uC740 00:00~23:59 \uC0AC\uC774\uB85C \uC785\uB825\uD574 \uC8FC\uC138\uC694.");
+  if (time && !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) throw new Error("\uC2DC\uAC04\uC740 00:00~23:59 \uC0AC\uC774\uB85C \uC801\uC5B4 \uC8FC\uC138\uC694.");
   const personId = clean(input.personId, "\uC0AC\uB78C \uC2DD\uBCC4\uC790", 100, true);
   if (!/^[a-zA-Z0-9_-]+$/.test(personId)) throw new Error("\uC0AC\uB78C \uC2DD\uBCC4\uC790\uAC00 \uC62C\uBC14\uB974\uC9C0 \uC54A\uC544\uC694.");
   const repeat = choose(input.repeat, ["none", "yearly"], ["birthday", "memorial", "anniversary"].includes(type) ? "yearly" : "none", "\uBC18\uBCF5");
-  if (["wedding", "condolence"].includes(type) && repeat !== "none") throw new Error("\uACB0\uD63C\xB7\uBD80\uACE0\uB294 \uC77C\uD68C\uC131 \uC77C\uC815\uC73C\uB85C \uC800\uC7A5\uD574 \uC8FC\uC138\uC694.");
+  if (["wedding", "condolence"].includes(type) && repeat !== "none") throw new Error("\uACB0\uD63C\xB7\uBD80\uACE0\uB294 \uBC18\uBCF5\uC744 \u300C\uC774\uBC88 \uD55C \uBC88\u300D\uC73C\uB85C \uACE8\uB77C \uC8FC\uC138\uC694.");
   const days = input.reminderDays ?? (type === "condolence" ? [0] : [7, 1, 0]);
-  if (!Array.isArray(days) || days.length > 12 || days.some((day) => !Number.isInteger(day) || day < 0 || day > 365)) throw new Error("\uBBF8\uB9AC \uC54C\uB9BC\uC740 0~365\uC77C \uC0AC\uC774\uC758 \uC815\uC218\uB85C \uCD5C\uB300 12\uAC1C\uAE4C\uC9C0 \uC124\uC815\uD574 \uC8FC\uC138\uC694.");
-  if (present(input, "yearKnown") && typeof input.yearKnown !== "boolean") throw new Error("\uC5F0\uB3C4\uB97C \uC544\uB294\uC9C0 \uC5EC\uBD80\uB97C \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+  if (!Array.isArray(days) || days.length > 12 || days.some((day) => !Number.isInteger(day) || day < 0 || day > 365)) throw new Error("\uBBF8\uB9AC \uC54C\uB9BC\uC740 0~365\uC77C \uC804 \uC0AC\uC774\uB85C 12\uAC1C\uAE4C\uC9C0 \uACE0\uB97C \uC218 \uC788\uC5B4\uC694.");
+  if (present(input, "yearKnown") && typeof input.yearKnown !== "boolean") throw new Error("\uC5F0\uB3C4\uB97C \uC544\uB294\uC9C0 \uD45C\uC2DC\uB97C \uC77D\uC9C0 \uBABB\uD588\uC5B4\uC694.");
   return {
     id: id(input.id, "event"),
     personId,
@@ -688,7 +688,7 @@ function makeEvent(input = {}) {
 }
 function amount(value) {
   if (value === void 0 || value === null || value === "") return null;
-  if (!Number.isSafeInteger(value) || value < 0 || value > 1e9) throw new Error("\uAE08\uC561\uC740 0~10\uC5B5 \uC6D0 \uC0AC\uC774\uC758 \uC815\uC218\uB85C \uC785\uB825\uD574 \uC8FC\uC138\uC694.");
+  if (!Number.isSafeInteger(value) || value < 0 || value > 1e9) throw new Error("\uAE08\uC561\uC740 0\uC6D0\uBD80\uD130 10\uC5B5 \uC6D0\uAE4C\uC9C0 \uC22B\uC790\uB85C \uC801\uC5B4 \uC8FC\uC138\uC694.");
   return value;
 }
 function carePlan(input = {}) {
@@ -701,51 +701,51 @@ function exactKeys(input, keys, label) {
   if (Object.keys(input).some((key) => !keys.includes(key))) throw new Error(`${label}\uC5D0 \uC9C0\uC6D0\uD558\uC9C0 \uC54A\uB294 \uD56D\uBAA9\uC774 \uC788\uC5B4\uC694.`);
 }
 function makeFollowup(input) {
-  exactKeys(input, ["id", "personId", "title", "dueOn", "status", "sourceId", "sourceQuote", "createdAt", "updatedAt"], "\uD6C4\uC18D \uCC59\uAE40");
+  exactKeys(input, ["id", "personId", "title", "dueOn", "status", "sourceId", "sourceQuote", "createdAt", "updatedAt"], "\uB2E4\uC2DC \uCC59\uAE38 \uC77C");
   const dueOn = clean(input.dueOn, "\uB2E4\uC2DC \uCC59\uAE38 \uB0A0\uC9DC", 10, true);
   dateParts(dueOn);
-  const createdAt = timestamp(input.createdAt, "\uD6C4\uC18D \uCC59\uAE40 \uC800\uC7A5 \uC2DC\uAC04");
-  const updatedAt = timestamp(input.updatedAt, "\uD6C4\uC18D \uCC59\uAE40 \uC218\uC815 \uC2DC\uAC04");
-  if (updatedAt < createdAt) throw new Error("\uD6C4\uC18D \uCC59\uAE40 \uC218\uC815 \uC2DC\uAC04\uC774 \uC800\uC7A5 \uC2DC\uAC04\uBCF4\uB2E4 \uBE68\uB77C\uC694.");
-  const sourceId = input.sourceId === void 0 || input.sourceId === null || input.sourceId === "" ? "" : requireId(input.sourceId, "\uADFC\uAC70 \uC6D0\uBB38");
+  const createdAt = timestamp(input.createdAt, "\uB2E4\uC2DC \uCC59\uAE38 \uC77C \uC800\uC7A5 \uC2DC\uAC04");
+  const updatedAt = timestamp(input.updatedAt, "\uB2E4\uC2DC \uCC59\uAE38 \uC77C \uC218\uC815 \uC2DC\uAC04");
+  if (updatedAt < createdAt) throw new Error("\uB2E4\uC2DC \uCC59\uAE38 \uC77C\uC758 \uC218\uC815 \uC2DC\uAC04\uC774 \uC800\uC7A5 \uC2DC\uAC04\uBCF4\uB2E4 \uBE68\uB77C\uC694.");
+  const sourceId = input.sourceId === void 0 || input.sourceId === null || input.sourceId === "" ? "" : requireId(input.sourceId, "\uC6D0\uB798 \uAE00");
   const sourceQuote = clean(input.sourceQuote, "\uADFC\uAC70 \uBB38\uC7A5", 5e3);
-  if (Boolean(sourceId) !== Boolean(sourceQuote)) throw new Error("\uD6C4\uC18D \uCC59\uAE40\uC758 \uADFC\uAC70 \uC6D0\uBB38\uACFC \uBB38\uC7A5\uC744 \uD568\uAED8 \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
-  if (!["pending", "done", "dismissed"].includes(input.status)) throw new Error("\uD6C4\uC18D \uCC59\uAE40 \uC0C1\uD0DC\uB97C \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
-  return { id: requireId(input.id, "\uD6C4\uC18D \uCC59\uAE40 \uC2DD\uBCC4\uC790"), personId: requireId(input.personId, "\uC0AC\uB78C \uC2DD\uBCC4\uC790"), title: clean(input.title, "\uB2E4\uC2DC \uCC59\uAE38 \uC77C", 120, true), dueOn, status: input.status, sourceId, sourceQuote, createdAt, updatedAt };
+  if (Boolean(sourceId) !== Boolean(sourceQuote)) throw new Error("\uB2E4\uC2DC \uCC59\uAE38 \uC77C\uC758 \uC6D0\uB798 \uAE00\uACFC \uBB38\uC7A5\uC774 \uB9DE\uC9C0 \uC54A\uC544\uC694.");
+  if (!["pending", "done", "dismissed"].includes(input.status)) throw new Error("\uB2E4\uC2DC \uCC59\uAE38 \uC77C\uC758 \uC0C1\uD0DC\uB97C \uC77D\uC9C0 \uBABB\uD588\uC5B4\uC694.");
+  return { id: requireId(input.id, "\uB2E4\uC2DC \uCC59\uAE38 \uC77C \uC2DD\uBCC4\uC790"), personId: requireId(input.personId, "\uC0AC\uB78C \uC2DD\uBCC4\uC790"), title: clean(input.title, "\uB2E4\uC2DC \uCC59\uAE38 \uC77C", 120, true), dueOn, status: input.status, sourceId, sourceQuote, createdAt, updatedAt };
 }
 function nullableInteger(value, min, max, label) {
   if (value === void 0 || value === null) return null;
-  if (!Number.isSafeInteger(value) || value < min || value > max) throw new Error(`${label}\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694.`);
+  if (!Number.isSafeInteger(value) || value < min || value > max) throw new Error(`${label} \uC815\uBCF4\uB97C \uC77D\uC9C0 \uBABB\uD588\uC5B4\uC694.`);
   return value;
 }
 function makePreparation(input) {
   exactKeys(input, ["id", "personId", "eventId", "recommendedAction", "chosenAction", "shownAt", "selectedAt", "elapsedSeconds", "satisfaction", "satisfactionAt"], "\uC900\uBE44 \uAE30\uB85D");
   const shownAt = timestamp(input.shownAt, "\uC900\uBE44\uB97C \uBCF4\uC5EC\uC900 \uC2DC\uAC04");
   const chosenAction = input.chosenAction === null || input.chosenAction === void 0 ? null : input.chosenAction;
-  if (!CARE_ACTIONS.includes(input.recommendedAction) || chosenAction !== null && !CARE_ACTIONS.includes(chosenAction)) throw new Error("\uCD94\uCC9C\uD55C \uC900\uBE44\uC640 \uC120\uD0DD\uD55C \uC900\uBE44\uB97C \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+  if (!CARE_ACTIONS.includes(input.recommendedAction) || chosenAction !== null && !CARE_ACTIONS.includes(chosenAction)) throw new Error("\uC900\uBE44 \uAE30\uB85D\uC744 \uC77D\uC9C0 \uBABB\uD588\uC5B4\uC694.");
   const selectedAt = input.selectedAt === null || input.selectedAt === void 0 ? null : timestamp(input.selectedAt, "\uC900\uBE44\uB97C \uC120\uD0DD\uD55C \uC2DC\uAC04");
   const elapsedSeconds = nullableInteger(input.elapsedSeconds, 0, 86400, "\uC900\uBE44\uC5D0 \uC4F4 \uC2DC\uAC04");
   const satisfaction = nullableInteger(input.satisfaction, 1, 5, "\uC9C1\uC811 \uB2F5\uD55C \uB9CC\uC871\uB3C4");
   const satisfactionAt = input.satisfactionAt === null || input.satisfactionAt === void 0 ? null : timestamp(input.satisfactionAt, "\uB9CC\uC871\uB3C4\uB97C \uB2F5\uD55C \uC2DC\uAC04");
-  if (Boolean(chosenAction) !== Boolean(selectedAt) || selectedAt && selectedAt < shownAt) throw new Error("\uC120\uD0DD\uD55C \uC900\uBE44\uC640 \uC120\uD0DD \uC2DC\uAC04\uC744 \uD568\uAED8 \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+  if (Boolean(chosenAction) !== Boolean(selectedAt) || selectedAt && selectedAt < shownAt) throw new Error("\uC900\uBE44 \uAE30\uB85D\uC758 \uC120\uD0DD \uC2DC\uAC04\uC774 \uB9DE\uC9C0 \uC54A\uC544\uC694.");
   if (!chosenAction && (elapsedSeconds !== null || satisfaction !== null)) throw new Error("\uC900\uBE44\uB97C \uC120\uD0DD\uD55C \uB4A4 \uC2DC\uAC04\uACFC \uB9CC\uC871\uB3C4\uB97C \uAE30\uB85D\uD574 \uC8FC\uC138\uC694.");
-  if (satisfaction !== null !== Boolean(satisfactionAt) || satisfactionAt && satisfactionAt < selectedAt) throw new Error("\uB9CC\uC871\uB3C4\uC640 \uB2F5\uD55C \uC2DC\uAC04\uC744 \uD568\uAED8 \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+  if (satisfaction !== null !== Boolean(satisfactionAt) || satisfactionAt && satisfactionAt < selectedAt) throw new Error("\uC900\uBE44 \uAE30\uB85D\uC758 \uB9CC\uC871\uB3C4 \uC2DC\uAC04\uC774 \uB9DE\uC9C0 \uC54A\uC544\uC694.");
   if (elapsedSeconds !== null && elapsedSeconds > Math.floor((Date.parse(selectedAt) - Date.parse(shownAt)) / 1e3)) throw new Error("\uC900\uBE44\uC5D0 \uC4F4 \uC2DC\uAC04\uC774 \uD45C\uC2DC\uBD80\uD130 \uC120\uD0DD\uAE4C\uC9C0\uC758 \uC2DC\uAC04\uBCF4\uB2E4 \uAE38\uC5B4\uC694.");
   const eventId = input.eventId === "" ? "" : requireId(input.eventId, "\uC77C\uC815 \uC2DD\uBCC4\uC790");
   if (!eventId && (![null, "contact", "remember"].includes(chosenAction) || !["contact", "remember"].includes(input.recommendedAction))) throw new Error("\uC77C\uC815 \uC5C6\uB294 \uC548\uBD80\uB294 \uC5F0\uB77D\uC774\uB098 \uC870\uC6A9\uD788 \uAE30\uC5B5\uD558\uAE30\uB85C \uC900\uBE44\uD574 \uC8FC\uC138\uC694.");
   return { id: requireId(input.id, "\uC900\uBE44 \uAE30\uB85D \uC2DD\uBCC4\uC790"), personId: requireId(input.personId, "\uC0AC\uB78C \uC2DD\uBCC4\uC790"), eventId, recommendedAction: input.recommendedAction, chosenAction, shownAt, selectedAt, elapsedSeconds, satisfaction, satisfactionAt };
 }
 function addFollowup(state, input, now = /* @__PURE__ */ new Date()) {
-  exactKeys(input, ["personId", "title", "dueOn", "sourceId", "sourceQuote"], "\uC0C8 \uD6C4\uC18D \uCC59\uAE40");
+  exactKeys(input, ["personId", "title", "dueOn", "sourceId", "sourceQuote"], "\uC0C8\uB85C \uB354\uD560 \uB2E4\uC2DC \uCC59\uAE38 \uC77C");
   const at = clock(now).toISOString();
   const item = makeFollowup({ ...input, id: id(void 0, "followup"), status: "pending", createdAt: at, updatedAt: at });
   return importBackup({ ...state, followups: [...state.followups ?? [], item] });
 }
 function updateFollowup(state, followupId, patch, now = /* @__PURE__ */ new Date()) {
-  exactKeys(patch, ["title", "dueOn", "status", "sourceId", "sourceQuote"], "\uD6C4\uC18D \uCC59\uAE40 \uC218\uC815");
+  exactKeys(patch, ["title", "dueOn", "status", "sourceId", "sourceQuote"], "\uB2E4\uC2DC \uCC59\uAE38 \uC77C \uC218\uC815");
   const current = importBackup(state);
   const old = current.followups.find((item) => item.id === followupId);
-  if (!old) throw new Error("\uC218\uC815\uD560 \uD6C4\uC18D \uCC59\uAE40\uC774 \uC5C6\uC5B4\uC694.");
+  if (!old) throw new Error("\uACE0\uCE60 \uC77C\uC774 \uC9C0\uC6CC\uC84C\uC5B4\uC694. \uD654\uBA74\uC744 \uC0C8\uB85C \uC5F4\uC5B4 \uC8FC\uC138\uC694.");
   const updated = makeFollowup({ ...old, ...patch, updatedAt: clock(now).toISOString() });
   return importBackup({ ...current, followups: current.followups.map((item) => item.id === followupId ? updated : item) });
 }
@@ -766,25 +766,25 @@ function updatePreparation(state, preparationId, patch, now = /* @__PURE__ */ ne
   const old = current.preparations.find((item) => item.id === preparationId);
   if (!old) throw new Error("\uC218\uC815\uD560 \uC900\uBE44 \uAE30\uB85D\uC774 \uC5C6\uC5B4\uC694.");
   const at = clock(now).toISOString();
-  if (at < (old.satisfactionAt ?? old.selectedAt ?? old.shownAt)) throw new Error("\uC900\uBE44 \uAE30\uB85D\uC758 \uC218\uC815 \uC2DC\uAC04\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+  if (at < (old.satisfactionAt ?? old.selectedAt ?? old.shownAt)) throw new Error("\uC900\uBE44 \uAE30\uB85D\uC758 \uC218\uC815 \uC2DC\uAC04\uC774 \uB9DE\uC9C0 \uC54A\uC544\uC694.");
   const selecting = Object.hasOwn(patch, "chosenAction");
   if (selecting && (!CARE_ACTIONS.includes(patch.chosenAction) || old.chosenAction !== null)) throw new Error("\uC900\uBE44 \uC120\uD0DD\uC740 \uD55C \uBC88\uB9CC \uAE30\uB85D\uD574 \uC8FC\uC138\uC694.");
   const updated = makePreparation({ ...old, ...patch, selectedAt: selecting ? at : old.selectedAt, satisfactionAt: Object.hasOwn(patch, "satisfaction") ? patch.satisfaction === null ? null : at : old.satisfactionAt });
   return importBackup({ ...current, preparations: current.preparations.map((item) => item.id === preparationId ? updated : item) });
 }
 function makeSource(input) {
-  return { id: requireId(input.id, "\uC6D0\uBB38 \uC2DD\uBCC4\uC790"), personId: requireId(input.personId, "\uC0AC\uB78C \uC2DD\uBCC4\uC790"), title: clean(input.title, "\uC6D0\uBB38 \uC81C\uBAA9", 120, true), text: clean(input.text, "\uBCF4\uAD00\uD560 \uC6D0\uBB38", MAX_TEXT, true), kind: choose(input.kind, ["text", "transcript"], "text", "\uC6D0\uBB38 \uC885\uB958"), createdAt: timestamp(input.createdAt, "\uC6D0\uBB38 \uC800\uC7A5 \uC2DC\uAC04") };
+  return { id: requireId(input.id, "\uC800\uC7A5\uD55C \uAE00 \uC2DD\uBCC4\uC790"), personId: requireId(input.personId, "\uC0AC\uB78C \uC2DD\uBCC4\uC790"), title: clean(input.title, "\uC800\uC7A5\uD55C \uAE00 \uC81C\uBAA9", 120, true), text: clean(input.text, "\uC800\uC7A5\uD560 \uAE00", MAX_TEXT, true), kind: choose(input.kind, ["text", "transcript"], "text", "\uC790\uB8CC \uC885\uB958"), createdAt: timestamp(input.createdAt, "\uC790\uB8CC \uC800\uC7A5 \uC2DC\uAC04") };
 }
 function makeMemory(input) {
-  return { id: requireId(input.id, "\uAE30\uC5B5 \uC2DD\uBCC4\uC790"), personId: requireId(input.personId, "\uC0AC\uB78C \uC2DD\uBCC4\uC790"), kind: choose(input.kind, ["preference", "memory"], "memory", "\uAE30\uC5B5 \uC885\uB958"), text: clean(input.text, "\uAE30\uC5B5\uD560 \uB0B4\uC6A9", 2e3, true), sourceId: requireId(input.sourceId, "\uADFC\uAC70 \uC6D0\uBB38"), sourceQuote: clean(input.sourceQuote, "\uADFC\uAC70 \uBB38\uC7A5", 5e3, true), createdAt: timestamp(input.createdAt, "\uAE30\uC5B5 \uC800\uC7A5 \uC2DC\uAC04") };
+  return { id: requireId(input.id, "\uAE30\uC5B5 \uC2DD\uBCC4\uC790"), personId: requireId(input.personId, "\uC0AC\uB78C \uC2DD\uBCC4\uC790"), kind: choose(input.kind, ["preference", "memory"], "memory", "\uAE30\uC5B5 \uC885\uB958"), text: clean(input.text, "\uAE30\uC5B5\uD560 \uB0B4\uC6A9", 2e3, true), sourceId: requireId(input.sourceId, "\uC6D0\uB798 \uAE00"), sourceQuote: clean(input.sourceQuote, "\uADFC\uAC70 \uBB38\uC7A5", 5e3, true), createdAt: timestamp(input.createdAt, "\uAE30\uC5B5 \uC800\uC7A5 \uC2DC\uAC04") };
 }
 function makeActivity(input) {
   const occurredOn = clean(input.occurredOn, "\uCC59\uAE34 \uB0A0\uC9DC", 10, true);
   dateParts(occurredOn);
   const createdAt = timestamp(input.createdAt, "\uCC59\uAE34 \uAE30\uB85D \uC2DC\uAC04");
-  if (occurredOn > today(createdAt)) throw new Error("\uC2E4\uC81C\uB85C \uCC59\uAE34 \uAE30\uB85D\uC758 \uB0A0\uC9DC\uAC00 \uAE30\uB85D\uD55C \uB0A0\uBCF4\uB2E4 \uBBF8\uB798\uC608\uC694.");
+  if (occurredOn > today(createdAt)) throw new Error("\uAE30\uB85D\uD55C \uB0A0\uBCF4\uB2E4 \uBBF8\uB798\uC758 \uB0A0\uC9DC\uB294 \uCC59\uAE34 \uB0A0\uB85C \uB0A8\uAE38 \uC218 \uC5C6\uC5B4\uC694.");
   const kind = choose(input.kind, ["contact", "attend", "gift", "money", "remember"], "contact", "\uCC59\uAE34 \uBC29\uBC95");
-  if (present(input, "attended") && typeof input.attended !== "boolean") throw new Error("\uCC38\uC11D \uC5EC\uBD80\uB97C \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+  if (present(input, "attended") && typeof input.attended !== "boolean") throw new Error("\uCC38\uC11D \uC5EC\uBD80\uB97C \uC77D\uC9C0 \uBABB\uD588\uC5B4\uC694.");
   const item = present(input, "item") ? clean(input.item, "\uBB3C\uD488\xB7\uC120\uBB3C \uC774\uB984", 120) : "";
   const channel = present(input, "channel") && input.channel !== "" ? choose(input.channel, Object.keys(CONTACT_CHANNELS), "", "\uC5F0\uB77D \uBC29\uBC95") : "";
   if (channel && kind !== "contact") throw new Error("\uC5F0\uB77D \uBC29\uBC95\uC740 \uC5F0\uB77D \uAE30\uB85D\uC5D0\uB9CC \uB0A8\uAE38 \uC218 \uC788\uC5B4\uC694.");
@@ -810,12 +810,12 @@ function captureSource(state, input, now = /* @__PURE__ */ new Date()) {
   const memories = (input.memories ?? []).map((item) => makeMemory({ ...item, id: id(void 0, "memory"), personId: source.personId, sourceId: source.id, createdAt }));
   const events = (input.events ?? []).map((item) => makeEvent({ ...item, id: void 0, personId: source.personId, notes: [item.notes, `\uBCF4\uAD00\uD55C \uC6D0\uBB38: ${source.title}`].filter(Boolean).join("\n") }));
   const duplicate = events.find((item, index) => [...state.events, ...events.slice(0, index)].some((old) => old.personId === item.personId && old.type === item.type && old.date === item.date && old.calendar === item.calendar));
-  if (duplicate) throw new Error(`${duplicate.title}\uC740 \uAC19\uC740 \uB0A0\uC9DC\uC5D0 \uC774\uBBF8 \uC788\uC5B4\uC694. \uC120\uD0DD\uC5D0\uC11C \uBE7C\uAC70\uB098 \uAE30\uC874 \uC77C\uC815\uC744 \uC218\uC815\uD574 \uC8FC\uC138\uC694.`);
+  if (duplicate) throw new Error(`\uAC19\uC740 \uB0A0\uC9DC\uC5D0 \uC774\uBBF8 \uC788\uB294 \uC77C\uC815\uC774\uC5D0\uC694(${duplicate.title}). \uC120\uD0DD\uC5D0\uC11C \uBE7C\uAC70\uB098 \uAE30\uC874 \uC77C\uC815\uC744 \uACE0\uCCD0 \uC8FC\uC138\uC694.`);
   return importBackup({ ...state, sources: [...state.sources ?? [], source], memories: [...state.memories ?? [], ...memories], events: [...state.events, ...events] });
 }
 function recordCareAction(state, input, now = /* @__PURE__ */ new Date()) {
   const activity = makeActivity({ ...input, id: id(void 0, "activity"), createdAt: clock(now).toISOString() });
-  if (activity.occurredOn > today(now)) throw new Error("\uC2E4\uC81C\uB85C \uCC59\uAE34 \uAE30\uB85D\uC740 \uC624\uB298\uAE4C\uC9C0\uC758 \uB0A0\uC9DC\uB85C \uB0A8\uACA8 \uC8FC\uC138\uC694. \uC55E\uC73C\uB85C \uD560 \uC77C\uC740 \uC77C\uC815\uC758 \uACC4\uD68D\uC5D0 \uC801\uC5B4 \uC8FC\uC138\uC694.");
+  if (activity.occurredOn > today(now)) throw new Error("\uCC59\uAE34 \uB0A0\uC740 \uC624\uB298\uC774\uB098 \uADF8 \uC804 \uB0A0\uC9DC\uB85C \uC801\uC5B4 \uC8FC\uC138\uC694. \uC55E\uC73C\uB85C \uD560 \uC77C\uC740 \uC77C\uC815\uC758 \u300C\uCC59\uAE38 \uACC4\uD68D \uC801\uC5B4 \uB450\uAE30\u300D\uC5D0 \uC801\uC5B4 \uC8FC\uC138\uC694.");
   return importBackup({ ...state, activities: [...state.activities ?? [], activity] });
 }
 function occurrenceInYear(event, year) {
@@ -910,7 +910,7 @@ function draftMessage(personInput, eventInput, options = {}) {
     const current = importBackup(options.state);
     person = current.people.find((item) => item.id === person.id);
     event = current.events.find((item) => item.id === event.id);
-    if (!person || !event || event.personId !== person.id) throw new Error("\uD604\uC7AC \uC218\uCCA9\uC5D0\uC11C \uC0AC\uB78C\uACFC \uC77C\uC815\uC744 \uB2E4\uC2DC \uC120\uD0DD\uD574 \uC8FC\uC138\uC694.");
+    if (!person || !event || event.personId !== person.id) throw new Error("\uC0AC\uB78C\uACFC \uC77C\uC815\uC744 \uB2E4\uC2DC \uACE8\uB77C \uC8FC\uC138\uC694.");
     options = { ...options, state: current };
   }
   return composeDraft(person, event.type, options);
@@ -920,7 +920,7 @@ function generateCheckinDraft(personInput, options = {}) {
   if (options.memorySelection != null || options.savedMessageId != null && options.state != null) {
     const current = importBackup(options.state);
     person = current.people.find((item) => item.id === person.id);
-    if (!person) throw new Error("\uD604\uC7AC \uC218\uCCA9\uC5D0\uC11C \uC0AC\uB78C\uC744 \uB2E4\uC2DC \uC120\uD0DD\uD574 \uC8FC\uC138\uC694.");
+    if (!person) throw new Error("\uC0AC\uB78C\uC744 \uB2E4\uC2DC \uACE8\uB77C \uC8FC\uC138\uC694.");
     options = { ...options, state: current };
   }
   const checkinIntent = choose(options.checkinIntent, ["everyday", "reconnect", "thanks"], "everyday", "\uC548\uBD80\uC758 \uBAA9\uC801");
@@ -928,7 +928,7 @@ function generateCheckinDraft(personInput, options = {}) {
 }
 function defaultDraftApproach(personInput, type, { preferSaved = true, checkinIntent = "everyday" } = {}) {
   const person = makePerson(personInput);
-  if (!Object.hasOwn(MESSAGE_TYPES, type)) throw new Error("\uCD08\uC548\uC758 \uC885\uB958\uB97C \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+  if (!Object.hasOwn(MESSAGE_TYPES, type)) throw new Error("\uCD08\uC548 \uC885\uB958\uB97C \uC77D\uC9C0 \uBABB\uD588\uC5B4\uC694.");
   const available = listSavedMessages(person, { type, ...type === "checkin" ? { checkinIntent } : {} });
   if (preferSaved && available.some((item) => type !== "checkin" || item.checkinIntent === checkinIntent)) return "saved";
   return person.recipientPreference.confirmed && person.recipientPreference.length === "short" ? "short" : "warm";
@@ -953,18 +953,18 @@ function composeDraft(person, type, options) {
     thanks: casual ? `${casualName}, \uACE0\uB9C8\uC6CC.${longer ? " \uC774 \uB9D0\uC740 \uAF2D \uC804\uD558\uACE0 \uC2F6\uC5C8\uC5B4." : ""}` : `${honorific}, \uAC10\uC0AC\uD569\uB2C8\uB2E4.${longer ? " \uAC10\uC0AC\uD55C \uB9C8\uC74C\uC744 \uAF2D \uC804\uD558\uACE0 \uC2F6\uC5C8\uC5B4\uC694." : ""}`
   };
   const texts = {
-    birthday: casual ? `${casualName}, \uC0DD\uC77C \uCD95\uD558\uD574!${longer ? " \uC88B\uC544\uD558\uB294 \uAC83\uB4E4\uB85C \uAC00\uB4DD\uD55C \uD558\uB8E8 \uBCF4\uB0B4." : ""}` : `${honorific}, \uC0DD\uC77C \uCD95\uD558\uB4DC\uB824\uC694.${longer ? " \uAE30\uBD84 \uC88B\uC740 \uC77C\uB4E4\uC774 \uAC00\uB4DD\uD55C \uD558\uB8E8 \uBCF4\uB0B4\uC138\uC694." : ""}`,
-    wedding: casual ? `\uACB0\uD63C \uC9C4\uC2EC\uC73C\uB85C \uCD95\uD558\uD574!${longer ? " \uB450 \uC0AC\uB78C\uC758 \uC55E\uB0A0\uC5D0 \uD589\uBCF5\uC774 \uAC00\uB4DD\uD558\uAE38 \uBC14\uB77C." : ""}` : `\uACB0\uD63C \uC9C4\uC2EC\uC73C\uB85C \uCD95\uD558\uB4DC\uB824\uC694.${longer ? " \uB450 \uBD84\uC758 \uC55E\uB0A0\uC5D0 \uD589\uBCF5\uC774 \uAC00\uB4DD\uD558\uAE38 \uBC14\uB78D\uB2C8\uB2E4." : ""}`,
-    condolence: `\uAE4A\uC740 \uC704\uB85C\uC758 \uB9C8\uC74C\uC744 \uC804\uD569\uB2C8\uB2E4.${longer ? " \uB9C8\uC74C\uC73C\uB85C \uD568\uAED8\uD558\uACA0\uC2B5\uB2C8\uB2E4." : ""}`,
-    memorial: `\uACE0\uC778\uC744 \uAE30\uC5B5\uD558\uBA70 \uB9C8\uC74C\uC744 \uD568\uAED8\uD569\uB2C8\uB2E4.${longer ? " \uC870\uC6A9\uD788 \uC704\uB85C\uC758 \uB9C8\uC74C\uC744 \uC804\uD569\uB2C8\uB2E4." : ""}`,
+    birthday: casual ? `${casualName}, \uC0DD\uC77C \uCD95\uD558\uD574!${longer ? " \uC990\uAC70\uC6B4 \uD558\uB8E8 \uBCF4\uB0B4." : ""}` : `${honorific}, \uC0DD\uC77C \uCD95\uD558\uB4DC\uB824\uC694.${longer ? " \uC88B\uC740 \uC77C \uAC00\uB4DD\uD55C \uD558\uB8E8 \uBCF4\uB0B4\uC138\uC694." : ""}`,
+    wedding: casual ? `\uACB0\uD63C \uC9C4\uC2EC\uC73C\uB85C \uCD95\uD558\uD574!${longer ? " \uB450 \uC0AC\uB78C\uC758 \uC55E\uB0A0\uC5D0 \uD589\uBCF5\uC774 \uAC00\uB4DD\uD558\uAE38 \uBC14\uB77C." : ""}` : `\uACB0\uD63C \uC9C4\uC2EC\uC73C\uB85C \uCD95\uD558\uB4DC\uB824\uC694.${longer ? " \uB450 \uBD84 \uC55E\uB0A0\uC5D0 \uB298 \uD589\uBCF5\uC774 \uAC00\uB4DD\uD558\uAE38 \uBC14\uB77C\uC694." : ""}`,
+    condolence: `\uAE4A\uC740 \uC704\uB85C\uC758 \uB9C8\uC74C\uC744 \uC804\uD569\uB2C8\uB2E4.${longer ? " \uACBD\uD669\uC774 \uC5C6\uC73C\uC2DC\uACA0\uC9C0\uB9CC \uBD80\uB514 \uBAB8 \uC798 \uCC59\uAE30\uC2DC\uAE38 \uBC14\uB78D\uB2C8\uB2E4." : ""}`,
+    memorial: `\uACE0\uC778\uC744 \uAE30\uB9AC\uB294 \uB0A0\uC774\uB77C \uC870\uC6A9\uD788 \uC704\uB85C\uC758 \uB9C8\uC74C\uC744 \uC804\uD569\uB2C8\uB2E4.${longer ? " \uB9C8\uC74C \uB9CE\uC774 \uC4F0\uC774\uC2E4 \uD150\uB370 \uB108\uBB34 \uD798\uB4E4\uC9C0 \uC54A\uC73C\uC2DC\uAE38 \uBC14\uB78D\uB2C8\uB2E4." : ""}`,
     anniversary: casual ? `${casualName}, \uAE30\uB150\uC77C \uCD95\uD558\uD574!${longer ? " \uC88B\uC740 \uAE30\uC5B5\uC774 \uB0A8\uB294 \uD558\uB8E8 \uBCF4\uB0B4." : ""}` : `${honorific}, \uAE30\uB150\uC77C \uCD95\uD558\uB4DC\uB824\uC694.${longer ? " \uC18C\uC911\uD55C \uAE30\uC5B5\uC774 \uB0A8\uB294 \uD558\uB8E8 \uBCF4\uB0B4\uC138\uC694." : ""}`,
     checkin: checkinTexts[checkinIntent]
   };
   if (deceased) Object.assign(texts, {
-    birthday: `\uC0DD\uC804 \uC0DD\uC2E0\uC744 \uB9DE\uC544 \uACE0\uC778\uC744 \uD568\uAED8 \uAE30\uC5B5\uD569\uB2C8\uB2E4.${longer ? " \uC870\uC6A9\uD788 \uB9C8\uC74C\uC744 \uBAA8\uC74D\uB2C8\uB2E4." : ""}`,
-    anniversary: `\uACE0\uC778\uACFC \uD568\uAED8\uD55C \uB0A0\uC744 \uAE30\uC5B5\uD558\uBA70 \uB9C8\uC74C\uC744 \uD568\uAED8\uD569\uB2C8\uB2E4.${longer ? " \uC870\uC6A9\uD788 \uC704\uB85C\uC758 \uB9C8\uC74C\uC744 \uC804\uD569\uB2C8\uB2E4." : ""}`,
-    wedding: `\uACE0\uC778\uC744 \uAE30\uC5B5\uD558\uBA70 \uB9C8\uC74C\uC744 \uD568\uAED8\uD569\uB2C8\uB2E4.${longer ? " \uC870\uC6A9\uD788 \uC704\uB85C\uC758 \uB9C8\uC74C\uC744 \uC804\uD569\uB2C8\uB2E4." : ""}`,
-    checkin: `\uBB38\uB4DD \uACE0\uC778\uC774 \uC0DD\uAC01\uB098 \uB9C8\uC74C\uC744 \uD568\uAED8 \uC804\uD569\uB2C8\uB2E4.${longer ? " \uB2F5\uC7A5\uC740 \uD3B8\uD558\uC2E4 \uB54C \uD558\uC154\uB3C4 \uAD1C\uCC2E\uC544\uC694." : ""}`
+    birthday: `\uACE0\uC778\uC758 \uC0DD\uC2E0\uC744 \uB9DE\uC544 \uD568\uAED8 \uAE30\uC5B5\uD558\uACE0 \uC788\uC2B5\uB2C8\uB2E4.${longer ? " \uADF8\uB9AC\uC6B4 \uB9C8\uC74C\uC744 \uC870\uC6A9\uD788 \uD568\uAED8\uD569\uB2C8\uB2E4." : ""}`,
+    anniversary: `\uACE0\uC778\uACFC \uD568\uAED8\uD55C \uB0A0\uC744 \uAE30\uC5B5\uD558\uBA70 \uC870\uC6A9\uD788 \uB9C8\uC74C\uC744 \uC804\uD569\uB2C8\uB2E4.${longer ? " \uB9C8\uC74C \uB9CE\uC774 \uC4F0\uC774\uC2E4 \uD150\uB370 \uB108\uBB34 \uD798\uB4E4\uC9C0 \uC54A\uC73C\uC2DC\uAE38 \uBC14\uB78D\uB2C8\uB2E4." : ""}`,
+    wedding: `\uACE0\uC778\uC744 \uAE30\uC5B5\uD558\uBA70 \uC870\uC6A9\uD788 \uB9C8\uC74C\uC744 \uC804\uD569\uB2C8\uB2E4.${longer ? " \uB9C8\uC74C \uB9CE\uC774 \uC4F0\uC774\uC2E4 \uD150\uB370 \uB108\uBB34 \uD798\uB4E4\uC9C0 \uC54A\uC73C\uC2DC\uAE38 \uBC14\uB78D\uB2C8\uB2E4." : ""}`,
+    checkin: `\uBB38\uB4DD \uACE0\uC778\uC774 \uC0DD\uAC01\uB098 \uC548\uBD80 \uC804\uD569\uB2C8\uB2E4.${longer ? " \uB2F5\uC7A5\uC740 \uD3B8\uD558\uC2E4 \uB54C \uD558\uC154\uB3C4 \uAD1C\uCC2E\uC544\uC694." : ""}`
   });
   const available = approach === "saved" ? listSavedMessages(person, { type, ...type === "checkin" ? { checkinIntent } : {} }) : [];
   const saved = selectedId ? available.find((item) => item.id === selectedId) : available.find((item) => type !== "checkin" || item.checkinIntent === checkinIntent) || available[0];
@@ -972,18 +972,18 @@ function composeDraft(person, type, options) {
   const method = saved ? "saved" : "template";
   let text = saved ? saved.text : texts[type];
   if (!saved && !sensitive && customSalutation && !["birthday", "anniversary", "checkin"].includes(type)) text = `${customSalutation}, ${text}`;
-  const basis = saved ? ["\uC774 \uC0AC\uB78C\uC758 \uAC19\uC740 \uC885\uB958 \uC77C\uC815\uC5D0 \uC9C1\uC811 \uAE30\uC5B5\uD574 \uB454 \uBB38\uAD6C\uB97C \uAC00\uC838\uC654\uC5B4\uC694. \uC790\uB3D9\uC73C\uB85C \uD559\uC2B5\uD55C \uACB0\uACFC\uAC00 \uC544\uB2C8\uC5D0\uC694."] : [deceased ? "\uACE0\uC778\uC73C\uB85C \uD45C\uC2DC\uD55C \uBD84\uC774\uB77C \uCD95\uD558 \uD45C\uD604\uACFC \uC774\uBAA8\uC9C0\uB97C \uB123\uC9C0 \uC54A\uC558\uC5B4\uC694." : sensitive ? "\uBD80\uACE0\xB7\uAE30\uC77C\uC5D0\uB294 \uCC28\uBD84\uD558\uACE0 \uC815\uC911\uD55C \uD45C\uD604\uC744 \uC0AC\uC6A9\uD588\uC5B4\uC694." : pref.confirmed && pref.formality !== "auto" ? "\uC9C1\uC811 \uD655\uC778\uD55C \uC0C1\uB300\uC758 \uB9D0\uD22C \uC120\uD638\uB97C \uBC18\uC601\uD588\uC5B4\uC694." : observedCasual ? "\uBCF8\uC778 \uBC1C\uD654\uC5D0\uC11C \uAD00\uCC30\uD55C \uD3B8\uD55C \uB9D0\uD22C\uB97C \uCC38\uACE0\uD588\uC5B4\uC694." : "\uD655\uC778\uB41C \uB2E8\uC11C\uAC00 \uBD80\uC871\uD574 \uC815\uC911\uD55C \uD45C\uD604\uC744 \uC0AC\uC6A9\uD588\uC5B4\uC694.", "\uB9CC\uB0A8\xB7\uC120\uBB3C\xB7\uC1A1\uAE08 \uC57D\uC18D\uC740 \uC784\uC758\uB85C \uB123\uC9C0 \uC54A\uC558\uC5B4\uC694."];
-  const cautions = [saved ? "\uC9C0\uB09C \uBB38\uAD6C\uC758 \uD638\uCE6D\xB7\uB0A0\uC9DC\xB7\uC57D\uC18D\uC774 \uC9C0\uAE08\uB3C4 \uB9DE\uB294\uC9C0 \uD655\uC778\uD574 \uC8FC\uC138\uC694." : "\uADDC\uCE59\uACFC \uBB38\uAD6C \uD2C0\uB85C \uB9CC\uB4E0 \uCD08\uC548\uC774\uC5D0\uC694. \uBCF4\uB0B4\uAE30 \uC804\uC5D0 \uC9C1\uC811 \uD655\uC778\uD574 \uC8FC\uC138\uC694."];
-  if (approach === "saved" && !saved) cautions.push("\uC774 \uC885\uB958\uC758 \uC77C\uC815\uC5D0 \uAE30\uC5B5\uD574 \uB454 \uBB38\uAD6C\uAC00 \uC5C6\uC5B4 \uC9E7\uC740 \uCD08\uC548\uBD80\uD130 \uC900\uBE44\uD588\uC5B4\uC694.");
-  if (customSalutation && !saved && !sensitive) basis.push("\uC9C1\uC811 \uC815\uD55C \uD638\uCE6D\uC744 \uC0AC\uC6A9\uD588\uC5B4\uC694.");
+  const basis = saved ? ["\uC774 \uC0AC\uB78C\uC5D0\uAC8C \uAC19\uC740 \uB0A0 \uC4F0\uB824\uACE0 \uAE30\uC5B5\uD574 \uB454 \uBB38\uAD6C\uB97C \uAC00\uC838\uC654\uC5B4\uC694."] : [deceased ? "\uACE0\uC778\uC73C\uB85C \uD45C\uC2DC\uD55C \uBD84\uC774\uB77C \uCD95\uD558 \uD45C\uD604\uACFC \uC774\uBAA8\uC9C0\uB97C \uB123\uC9C0 \uC54A\uC558\uC5B4\uC694." : sensitive ? "\uBD80\uACE0\xB7\uAE30\uC77C\uC774\uB77C \uCC28\uBD84\uD558\uACE0 \uC815\uC911\uD558\uAC8C \uC37C\uC5B4\uC694." : pref.confirmed && pref.formality !== "auto" ? "\uC815\uD574 \uB454 \uB9D0 \uB192\uC784\uC5D0 \uB9DE\uCDB0 \uC37C\uC5B4\uC694." : observedCasual ? "\uB0B4 \uB300\uD654\uC5D0\uC11C \uBC18\uB9D0\uC744 \uC8FC\uB85C \uC368\uC11C \uBC18\uB9D0\uB85C \uC37C\uC5B4\uC694." : "\uB9D0\uD22C\uB97C \uC815\uD574 \uB450\uC9C0 \uC54A\uC544 \uC874\uB313\uB9D0\uB85C \uC37C\uC5B4\uC694.", "\uB9CC\uB098\uC790\uAC70\uB098 \uC120\uBB3C\xB7\uC1A1\uAE08\uD558\uACA0\uB2E4\uB294 \uC57D\uC18D\uC740 \uB123\uC9C0 \uC54A\uC558\uC5B4\uC694."];
+  const cautions = [saved ? "\uC608\uC804\uC5D0 \uC4F4 \uBB38\uAD6C\uB77C \uD638\uCE6D\uACFC \uB0A0\uC9DC\uAC00 \uC9C0\uAE08\uB3C4 \uB9DE\uB294\uC9C0 \uD55C \uBC88 \uB354 \uBD10 \uC8FC\uC138\uC694." : "\uC815\uD574\uC9C4 \uBB38\uAD6C \uD2C0\uB85C \uB9CC\uB4E0 \uCD08\uC548\uC774\uC5D0\uC694. \uB0B4 \uB9D0\uB85C \uD55C \uC904 \uB354\uD574 \uBCF4\uB0B4 \uC8FC\uC138\uC694."];
+  if (approach === "saved" && !saved) cautions.push("\uAE30\uC5B5\uD574 \uB454 \uBB38\uAD6C\uAC00 \uC5C6\uC5B4 \uC9E7\uC740 \uAE30\uBCF8 \uBB38\uAD6C\uB85C \uC900\uBE44\uD588\uC5B4\uC694.");
+  if (customSalutation && !saved && !sensitive) basis.push("\uC815\uD574 \uB454 \uD638\uCE6D\uC744 \uB123\uC5C8\uC5B4\uC694.");
   if (type === "checkin") {
-    if (saved) cautions.push("\uAE30\uC5B5\uD574 \uB454 \uC548\uBD80 \uBB38\uAD6C\uB97C \uAC00\uC838\uC654\uC5B4\uC694. \uC774\uBC88\uC5D0 \uACE0\uB978 \uC548\uBD80 \uBAA9\uC801\uC5D0 \uB9DE\uCDB0 \uBB38\uAD6C\uB97C \uC790\uB3D9\uC73C\uB85C \uBC14\uAFB8\uC9C0 \uC54A\uC558\uC5B4\uC694.");
-    else if (checkinIntent !== "everyday") basis.push(checkinIntent === "reconnect" ? "\uC774\uBC88\uC5D0 \uC9C1\uC811 \uACE0\uB978 \uC624\uB79C\uB9CC\uC758 \uC548\uBD80\uB97C \uBC18\uC601\uD588\uC5B4\uC694. \uB9C8\uC9C0\uB9C9 \uC5F0\uB77D\uC77C\uC744 \uCD94\uC815\uD55C \uACB0\uACFC\uAC00 \uC544\uB2C8\uC5D0\uC694." : "\uC774\uBC88\uC5D0 \uC9C1\uC811 \uACE0\uB978 \uAC10\uC0AC \uC778\uC0AC\uB97C \uBC18\uC601\uD588\uC5B4\uC694. \uACE0\uB9C8\uC6E0\uB358 \uC774\uC720\uB294 \uC784\uC758\uB85C \uB123\uC9C0 \uC54A\uC558\uC5B4\uC694.");
+    if (saved) cautions.push("\uAE30\uC5B5\uD574 \uB454 \uC548\uBD80 \uBB38\uAD6C\uB97C \uADF8\uB300\uB85C \uAC00\uC838\uC654\uC5B4\uC694. \uC774\uBC88\uC5D0 \uACE0\uB978 \uC0C1\uD669\uC5D0 \uB9DE\uAC8C \uACE0\uCCD0 \uC8FC\uC138\uC694.");
+    else if (checkinIntent !== "everyday") basis.push(checkinIntent === "reconnect" ? "\u300C\uC624\uB79C\uB9CC\uC5D0 \uC5F0\uB77D\uD558\uAE30\u300D\uC5D0 \uB9DE\uCDB0 \uC37C\uC5B4\uC694." : "\u300C\uACE0\uB9C8\uC6B4 \uB9C8\uC74C \uC804\uD558\uAE30\u300D\uC5D0 \uB9DE\uCDB0 \uC37C\uC5B4\uC694. \uACE0\uB9C8\uC6B4 \uC774\uC720\uB294 \uC9C1\uC811 \uB354\uD574 \uC8FC\uC138\uC694.");
   }
-  if (sensitive && (customSalutation || pref.confirmed && pref.closingLine)) cautions.push("\uC870\uC2EC\uC2A4\uB7EC\uC6B4 \uB0A0\uC5D0\uB294 \uD3C9\uC18C \uD638\uCE6D\uACFC \uB367\uBD99\uC77C \uB9D0\uC744 \uC790\uB3D9\uC73C\uB85C \uC5F0\uACB0\uD558\uC9C0 \uC54A\uC558\uC5B4\uC694. \uC0C1\uD669\uC5D0 \uB9DE\uB294 \uD45C\uD604\uC744 \uC9C1\uC811 \uB354\uD574 \uC8FC\uC138\uC694.");
+  if (sensitive && (customSalutation || pref.confirmed && pref.closingLine)) cautions.push("\uC870\uC2EC\uC2A4\uB7EC\uC6B4 \uB0A0\uC774\uB77C \uD3C9\uC18C \uD638\uCE6D\uACFC \uB05D\uC778\uC0AC\uB294 \uB123\uC9C0 \uC54A\uC558\uC5B4\uC694. \uD544\uC694\uD558\uBA74 \uC9C1\uC811 \uB354\uD574 \uC8FC\uC138\uC694.");
   const append = (addition, explanation) => {
     if (text.length + addition.length > 5e3) {
-      cautions.push("5,000\uC790\uB97C \uB118\uB294 \uB367\uBD99\uC784\uC740 \uB123\uC9C0 \uC54A\uC558\uC5B4\uC694. \uBB38\uAD6C\uB97C \uC904\uC778 \uB4A4 \uB2E4\uC2DC \uC900\uBE44\uD574 \uC8FC\uC138\uC694.");
+      cautions.push("5,000\uC790\uB97C \uB118\uC5B4\uC11C \uB367\uBD99\uC77C \uB9D0\uC740 \uB123\uC9C0 \uC54A\uC558\uC5B4\uC694. \uBB38\uAD6C\uB97C \uC904\uC778 \uB4A4 \uB2E4\uC2DC \uC900\uBE44\uD574 \uC8FC\uC138\uC694.");
       return false;
     }
     text += addition;
@@ -991,14 +991,14 @@ function composeDraft(person, type, options) {
     return true;
   };
   if (!saved && !sensitive && pref.confirmed && pref.closingLine && !text.includes(pref.closingLine)) append(`
-${pref.closingLine}`, "\uC9C1\uC811 \uC4F4 \uB367\uBD99\uC77C \uB9D0\uC744 \uC5F0\uACB0\uD588\uC5B4\uC694.");
-  if (!saved && !sensitive && pref.confirmed && pref.allowEmoji) append(type === "birthday" ? " \u{1F382}" : type === "checkin" ? " \u{1F642}" : " \u{1F490}", "\uC9C1\uC811 \uD655\uC778\uD55C \uC774\uBAA8\uC9C0 \uC120\uD638\uB97C \uBC18\uC601\uD588\uC5B4\uC694.");
+${pref.closingLine}`, "\uC815\uD574 \uB454 \uB05D\uC778\uC0AC\uB97C \uBD99\uC600\uC5B4\uC694.");
+  if (!saved && !sensitive && pref.confirmed && pref.allowEmoji) append(type === "birthday" ? " \u{1F382}" : type === "checkin" ? " \u{1F642}" : " \u{1F490}", "\uC774\uBAA8\uC9C0\uB97C \uC4F0\uAE30\uB85C \uD574\uC11C \uC774\uBAA8\uC9C0\uB97C \uB123\uC5C8\uC5B4\uC694.");
   if (pref.confirmed && pref.noReplyPressure) {
     const replyLine = casual ? "\uB2F5\uC7A5\uC740 \uD3B8\uD560 \uB54C \uD574\uB3C4 \uAD1C\uCC2E\uC544." : "\uB2F5\uC7A5\uC740 \uD3B8\uD558\uC2E4 \uB54C \uD558\uC154\uB3C4 \uAD1C\uCC2E\uC544\uC694.";
     const pressure = [...new Set(text.match(/(?:꼭|반드시|빨리|바로)[^.!?\n]{0,12}(?:답장|연락|회신)|(?:답장|연락|회신)[^.!?\n]{0,12}(?:꼭|반드시|빨리|바로|해\s?줘|주세요|부탁)/gu) ?? [])];
     if (pressure.length) {
       text = removeSentences(text, pressure).text;
-      cautions.push("\uB2F5\uC7A5\uC744 \uC7AC\uCD09\uD558\uB294 \uD45C\uD604\uC774 \uC788\uB294 \uBB38\uC7A5\uC744 \uC81C\uC678\uD588\uC5B4\uC694. \uBB38\uB9E5\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+      cautions.push("\uB2F5\uC7A5\uC744 \uC7AC\uCD09\uD558\uB294 \uD45C\uD604\uC774 \uB4E0 \uBB38\uC7A5\uC740 \uBE90\uC5B4\uC694. \uB0A8\uC740 \uBB38\uC7A5\uC774 \uC790\uC5F0\uC2A4\uB7EC\uC6B4\uC9C0 \uBD10 \uC8FC\uC138\uC694.");
     }
     if (!saved && !text.includes(replyLine)) append(`
 ${replyLine}`, "\uB2F5\uC7A5\uC744 \uC7AC\uCD09\uD558\uC9C0 \uC54A\uB294 \uD55C \uC904\uC744 \uB354\uD588\uC5B4\uC694.");
@@ -1006,15 +1006,15 @@ ${replyLine}`, "\uB2F5\uC7A5\uC744 \uC7AC\uCD09\uD558\uC9C0 \uC54A\uB294 \uD55C 
   if (sensitive) {
     const quiet = quietText(text);
     text = quiet.text;
-    if (quiet.changed) cautions.push("\uC704\uB85C \uBB38\uAD6C\uC5D0\uC11C \uC774\uBAA8\uC9C0\uC640 \uC6C3\uC74C\xB7\uB18D\uB2F4 \uD45C\uC9C0\uAC00 \uC788\uB294 \uBB38\uC7A5\uC744 \uC81C\uC678\uD588\uC5B4\uC694.");
-    cautions.push("\uC0C1\uB300\uC758 \uC0C1\uD669\uACFC \uC885\uAD50\uC5D0 \uB9DE\uB294 \uD45C\uD604\uC778\uC9C0 \uD655\uC778\uD574 \uC8FC\uC138\uC694. \uAE30\uC77C\uC740 \uC5F0\uB77D \uC790\uCCB4\uAC00 \uD3B8\uD55C\uC9C0\uB3C4 \uC0B4\uD3B4 \uC8FC\uC138\uC694. \uBB38\uC7A5\uC758 \uC228\uC740 \uB73B\uC774\uB098 \uB18D\uB2F4\uC744 \uD310\uBCC4\uD558\uB294 \uAE30\uB2A5\uC740 \uC544\uB2C8\uC5D0\uC694.");
+    if (quiet.changed) cautions.push("\uC704\uB85C \uBB38\uAD6C\uB77C \uC774\uBAA8\uC9C0\uC640 \uC6C3\uC74C\uC774 \uB4E0 \uBB38\uC7A5\uC740 \uBE90\uC5B4\uC694.");
+    cautions.push("\uC0C1\uB300\uC758 \uC0C1\uD669\uACFC \uC885\uAD50\uC5D0 \uB9DE\uB294 \uD45C\uD604\uC778\uC9C0 \uD55C \uBC88 \uB354 \uBD10 \uC8FC\uC138\uC694. \uAE30\uC77C\uC5D0\uB294 \uC5F0\uB77D\uC744 \uBC18\uAE30\uC9C0 \uC54A\uB294 \uBD84\uB3C4 \uC788\uC5B4\uC694.");
   }
   const filtered = removeSentences(text, pref.confirmed ? pref.avoidPhrases : []);
   text = filtered.text;
   const removedPhrases = [...filtered.removedPhrases];
   if (filtered.removedPhrases.length) {
-    basis.push("\uC9C1\uC811 \uC815\uD55C \uD53C\uD560 \uD45C\uD604\uC774 \uB4E4\uC5B4\uAC04 \uBB38\uC7A5\uC744 \uC81C\uC678\uD588\uC5B4\uC694.");
-    cautions.push("\uC81C\uC678\uD55C \uBB38\uC7A5 \uB54C\uBB38\uC5D0 \uC758\uBBF8\uAC00 \uB2EC\uB77C\uC9C0\uC9C0 \uC54A\uC558\uB294\uC9C0 \uC9C1\uC811 \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+    basis.push("\uD53C\uD558\uAE30\uB85C \uD55C \uD45C\uD604\uC774 \uB4E0 \uBB38\uC7A5\uC740 \uBE90\uC5B4\uC694.");
+    cautions.push("\uBB38\uC7A5\uC744 \uBE7C\uC11C \uB73B\uC774 \uC5B4\uC0C9\uD574\uC9C0\uC9C0 \uC54A\uC558\uB294\uC9C0 \uBD10 \uC8FC\uC138\uC694.");
   }
   if (memory) {
     if (!memory.blockedReasons.length && memory.use === "shared-memory") {
@@ -1022,21 +1022,21 @@ ${replyLine}`, "\uB2F5\uC7A5\uC744 \uC7AC\uCD09\uD558\uC9C0 \uC54A\uB294 \uD55C 
       const quietLine = sensitive ? quietText(line).text : line;
       const reviewed = removeSentences(quietLine, pref.confirmed ? pref.avoidPhrases : []);
       removedPhrases.push(...reviewed.removedPhrases.filter((phrase) => !removedPhrases.includes(phrase)));
-      if (reviewed.text !== line) memory.blockedReasons.push("\uAE30\uC5B5\uC744 \uC787\uB294 \uBB38\uC7A5\uC774 \uD45C\uD604 \uAC80\uC0AC\uB97C \uD1B5\uACFC\uD558\uC9C0 \uBABB\uD574 \uC778\uC6A9 \uC804\uCCB4\uB97C \uB123\uC9C0 \uC54A\uC558\uC5B4\uC694.");
+      if (reviewed.text !== line) memory.blockedReasons.push("\uAE30\uC5B5\uC744 \uB123\uC740 \uBB38\uC7A5\uC5D0 \uAC78\uB9AC\uB294 \uD45C\uD604\uC774 \uC788\uC5B4 \uC774 \uAE30\uC5B5\uC740 \uB123\uC9C0 \uC54A\uC558\uC5B4\uC694.");
       else if (text.includes(`\u201C${memory.text}\u201D`)) {
         memory.appliedTo.push("message");
-        basis.push("\uACE0\uB978 \uAE30\uC5B5\uC758 \uC778\uC6A9\uC774 \uAE30\uC874 \uBB38\uAD6C\uC5D0 \uC788\uC5B4 \uD55C \uBC88\uB9CC \uC720\uC9C0\uD588\uC5B4\uC694.");
-      } else if (text.length + line.length + 1 > 5e3) memory.blockedReasons.push("\uCD5C\uC885 \uBB38\uAD6C\uC640 \uD569\uD558\uBA74 5,000\uC790\uB97C \uB118\uC5B4 \uAE30\uC5B5\uC744 \uB123\uC9C0 \uC54A\uC558\uC5B4\uC694. \uC9E7\uC740 \uCD08\uC548\uC73C\uB85C \uB2E4\uC2DC \uC900\uBE44\uD574 \uC8FC\uC138\uC694.");
+        basis.push("\uACE0\uB978 \uAE30\uC5B5\uC774 \uC774\uBBF8 \uBB38\uAD6C\uC5D0 \uC788\uC5B4 \uD55C \uBC88\uB9CC \uB123\uC5C8\uC5B4\uC694.");
+      } else if (text.length + line.length + 1 > 5e3) memory.blockedReasons.push("\uAE30\uC5B5\uAE4C\uC9C0 \uB123\uC73C\uBA74 5,000\uC790\uB97C \uB118\uC5B4\uC11C \uC774 \uAE30\uC5B5\uC740 \uB123\uC9C0 \uC54A\uC558\uC5B4\uC694. \u300C\uC9E7\uC740 \uD55C\uB9C8\uB514\u300D\uB85C \uB2E4\uC2DC \uC900\uBE44\uD574 \uC8FC\uC138\uC694.");
       else {
         text += `${text ? "\n" : ""}${line}`;
         memory.appliedTo.push("message");
-        basis.push("\uC774\uBC88\uC5D0 \uD568\uAED8\uD55C \uAE30\uC5B5\uC73C\uB85C \uC9C1\uC811 \uACE0\uB978 \uAE00\uC744 \uC778\uC6A9\uD588\uC5B4\uC694. \uC790\uC720 \uAE00\uC758 \uB73B\uC744 \uD574\uC11D\uD55C \uACB0\uACFC\uAC00 \uC544\uB2C8\uC5D0\uC694.");
+        basis.push("\uACE0\uB978 \uAE30\uC5B5\uC744 \uB530\uC634\uD45C\uB85C \uB123\uC5C8\uC5B4\uC694.");
       }
-    } else if (!memory.blockedReasons.length) cautions.push("\uC120\uBB3C \uCDE8\uD5A5\uC740 \uC900\uBE44 \uC21C\uC11C\uC5D0\uC11C \uCC38\uACE0\uD558\uACE0, \uC5F0\uB77D \uBB38\uAD6C\uC5D0 \uC120\uBB3C \uC57D\uC18D\uC744 \uB123\uC9C0 \uC54A\uC558\uC5B4\uC694.");
+    } else if (!memory.blockedReasons.length) cautions.push("\uC120\uBB3C \uCDE8\uD5A5\uC740 \uC900\uBE44\uD560 \uB54C\uB9CC \uCC38\uACE0\uD558\uACE0, \uBB38\uAD6C\uC5D0\uB294 \uC120\uBB3C \uC57D\uC18D\uC744 \uB123\uC9C0 \uC54A\uC558\uC5B4\uC694.");
     cautions.push(...memory.blockedReasons);
   }
   if (!text) cautions.push("\uB0A8\uC740 \uBB38\uAD6C\uAC00 \uC5C6\uC5B4\uC694. \uC0C1\uD669\uC5D0 \uB9DE\uB294 \uB9D0\uC744 \uC9C1\uC811 \uC801\uC5B4 \uC8FC\uC138\uC694.");
-  if (pref.note) cautions.push("\uC790\uC720\uB86D\uAC8C \uC801\uC740 \uC120\uD638 \uBA54\uBAA8\uB294 \uBB38\uAD6C\uC5D0 \uC790\uB3D9 \uBC18\uC601\uB418\uC9C0 \uC54A\uC544\uC694. \uC9C1\uC811 \uB300\uC870\uD574 \uC8FC\uC138\uC694.");
+  if (pref.note) cautions.push("\u300C\uD568\uAED8 \uAE30\uC5B5\uD560 \uBA54\uBAA8\u300D\uB294 \uBB38\uAD6C\uC5D0 \uB123\uC9C0 \uC54A\uC544\uC694. \uBA54\uBAA8\uB97C \uBCF4\uBA70 \uC9C1\uC811 \uB2E4\uB4EC\uC5B4 \uC8FC\uC138\uC694.");
   return { text, basis, cautions, needsReview: true, needsComposition: !text, method, approach, savedMessageId: saved?.id ?? null, removedPhrases, memory };
 }
 function completeEvent(state, eventId, now = /* @__PURE__ */ new Date(), occurrenceId, options = {}) {
@@ -1050,8 +1050,8 @@ function completeEvent(state, eventId, now = /* @__PURE__ */ new Date(), occurre
     const date = validateOccurrenceId(occurrenceId, event.id).slice(event.id.length + 1);
     if (date <= today(now)) occurrence = nextOccurrence(event, `${date}T00:00:00+09:00`);
   }
-  if (!occurrence) throw new Error("\uC644\uB8CC\uD560 \uC608\uC815 \uC77C\uC815\uC774 \uC5C6\uC5B4\uC694.");
-  if (occurrenceId && occurrence.occurrenceId !== occurrenceId) throw new Error("\uC77C\uC815\uC774 \uBC14\uB00C\uC5C8\uC5B4\uC694. \uBAA9\uB85D\uC5D0\uC11C \uB2E4\uC2DC \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+  if (!occurrence) throw new Error("\uC644\uB8CC\uD560 \uC77C\uC815\uC774 \uC5C6\uC5B4\uC694.");
+  if (occurrenceId && occurrence.occurrenceId !== occurrenceId) throw new Error("\uC77C\uC815\uC774 \uBC14\uB00C\uC5C8\uC5B4\uC694. \uBAA9\uB85D\uC5D0\uC11C \uB2E4\uC2DC \uACE8\uB77C \uC8FC\uC138\uC694.");
   if ((state.completions ?? []).some((item) => item.occurrenceId === occurrence.occurrenceId)) return state;
   return { ...state, completions: [...state.completions ?? [], { eventId: event.id, personId: event.personId, eventType: event.type, eventTitle: event.title, action, occurrenceId: occurrence.occurrenceId, date: occurrence.date, completedAt: clock(now).toISOString() }] };
 }
@@ -1059,7 +1059,7 @@ function recordDraft(state, input, now = /* @__PURE__ */ new Date()) {
   const person = (state.people ?? []).find((item) => item.id === input.personId);
   const event = (state.events ?? []).find((item) => item.id === input.eventId);
   const checkin = input.eventId === "" && input.eventType === "checkin";
-  if (!person || !checkin && (!event || event.personId !== person.id) || event && input.eventType === "checkin") throw new Error("\uCD08\uC548\uC744 \uC800\uC7A5\uD560 \uC0AC\uB78C\uACFC \uC77C\uC815\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+  if (!person || !checkin && (!event || event.personId !== person.id) || event && input.eventType === "checkin") throw new Error("\uC0AC\uB78C\uACFC \uC77C\uC815\uC744 \uB2E4\uC2DC \uACE8\uB77C \uC8FC\uC138\uC694.");
   if (checkin && input.occurrenceId != null && input.occurrenceId !== "") throw new Error("\uC77C\uC815 \uC5C6\uB294 \uC548\uBD80\uC5D0\uB294 \uD589\uC0AC \uD68C\uCC28\uB97C \uC800\uC7A5\uD560 \uC218 \uC5C6\uC5B4\uC694.");
   if (input.memorySelection != null) resolveCareMemory({ state: importBackup(state), personId: person.id, eventType: checkin ? "checkin" : event.type, memorySelection: input.memorySelection });
   const entry = {
@@ -1081,7 +1081,7 @@ function rememberDraft(state, input, now = /* @__PURE__ */ new Date()) {
   const person = current.people.find((item) => item.id === input.personId);
   const event = current.events.find((item) => item.id === input.eventId);
   const checkin = input.eventId === "" && input.eventType === "checkin";
-  if (!person || !checkin && (!event || event.personId !== person.id) || event && input.eventType === "checkin") throw new Error("\uBB38\uAD6C\uB97C \uAE30\uC5B5\uD560 \uC0AC\uB78C\uACFC \uC77C\uC815\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+  if (!person || !checkin && (!event || event.personId !== person.id) || event && input.eventType === "checkin") throw new Error("\uC0AC\uB78C\uACFC \uC77C\uC815\uC744 \uB2E4\uC2DC \uACE8\uB77C \uC8FC\uC138\uC694.");
   if (input.memorySelection != null) resolveCareMemory({ state: current, personId: person.id, eventType: checkin ? "checkin" : event.type, memorySelection: input.memorySelection });
   const type = checkin ? "checkin" : event.type;
   const checkinIntent = checkin ? choose(input.checkinIntent, ["everyday", "reconnect", "thanks"], "everyday", "\uC548\uBD80\uC758 \uBAA9\uC801") : void 0;
@@ -1124,7 +1124,7 @@ function removeSavedMessage(state, input) {
 }
 function revokeCareMemory(state, { sourceId, memoryId }) {
   const current = importBackup(state);
-  if (Boolean(sourceId) === Boolean(memoryId)) throw new Error("\uC0AD\uC81C\uD560 \uC6D0\uBB38\uC774\uB098 \uAE30\uC5B5 \uD558\uB098\uB97C \uACE8\uB77C \uC8FC\uC138\uC694.");
+  if (Boolean(sourceId) === Boolean(memoryId)) throw new Error("\uC9C0\uC6B8 \uC790\uB8CC\uB098 \uAE30\uC5B5\uC744 \uD558\uB098 \uACE8\uB77C \uC8FC\uC138\uC694.");
   const target = sourceId ? current.sources.find((item) => item.id === sourceId) : current.memories.find((item) => item.id === memoryId);
   if (!target) throw new Error("\uC0AD\uC81C\uD560 \uAE30\uB85D\uC774 \uC5C6\uC5B4\uC694.");
   const removed = current.memories.filter((item) => sourceId ? item.sourceId === sourceId : item.id === memoryId);
@@ -1175,12 +1175,12 @@ function requireId(value, label) {
   return id(clean(value, label, 100, true), label);
 }
 function recordObject(value, label) {
-  if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error(`${label}\uC758 \uD615\uC2DD\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694.`);
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error(`${label} \uC790\uB8CC\uB97C \uC77D\uC9C0 \uBABB\uD588\uC5B4\uC694.`);
   return value;
 }
 function backupList(value, limit, label, optional = false) {
   if (optional && value === void 0) return [];
-  if (!Array.isArray(value) || value.length > limit) throw new Error(`${label}\uC740 \uCD5C\uB300 ${limit.toLocaleString("ko-KR")}\uAC1C\uAE4C\uC9C0 \uAC00\uC838\uC62C \uC218 \uC788\uC5B4\uC694.`);
+  if (!Array.isArray(value) || value.length > limit) throw new Error(`${label} \uD56D\uBAA9\uC740 \uCD5C\uB300 ${limit.toLocaleString("ko-KR")}\uAC1C\uAE4C\uC9C0 \uAC00\uC838\uC62C \uC218 \uC788\uC5B4\uC694.`);
   return value;
 }
 function uniqueId(value, seen, label) {
@@ -1190,11 +1190,11 @@ function uniqueId(value, seen, label) {
 function importBackup(raw) {
   let data = raw;
   if (typeof raw === "string") {
-    if (new TextEncoder().encode(raw).byteLength > 4 * 1024 * 1024) throw new Error("\uBC31\uC5C5 \uD30C\uC77C\uC740 4 MB \uC774\uB0B4\uB85C \uAC00\uC838\uC640 \uC8FC\uC138\uC694.");
+    if (new TextEncoder().encode(raw).byteLength > 4 * 1024 * 1024) throw new Error("\uBC31\uC5C5 \uD30C\uC77C\uC740 4 MB\uAE4C\uC9C0 \uAC00\uC838\uC62C \uC218 \uC788\uC5B4\uC694.");
     try {
       data = JSON.parse(raw);
     } catch {
-      throw new Error("JSON \uBC31\uC5C5 \uD30C\uC77C\uC744 \uC77D\uC9C0 \uBABB\uD588\uC5B4\uC694.");
+      throw new Error("\uBC31\uC5C5 \uD30C\uC77C\uC744 \uC77D\uC9C0 \uBABB\uD588\uC5B4\uC694. \uD50C\uB808\uC800\uC5D0\uC11C \uB0B4\uBCF4\uB0B8 JSON \uD30C\uC77C\uC744 \uACE8\uB77C \uC8FC\uC138\uC694.");
     }
   }
   recordObject(data, "\uBC31\uC5C5");
@@ -1221,7 +1221,7 @@ function importBackup(raw) {
     recordObject(input, "\uBCF5\uC0AC \uAE30\uB85D");
     const event = byEvent.get(input.eventId);
     const checkin = input.eventId === "" && input.eventType === "checkin";
-    if (!peopleIds.has(input.personId) || !checkin && (!event || event.personId !== input.personId) || event && input.eventType === "checkin") throw new Error("\uBCF5\uC0AC \uAE30\uB85D\uC758 \uC0AC\uB78C\uACFC \uC77C\uC815\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+    if (!peopleIds.has(input.personId) || !checkin && (!event || event.personId !== input.personId) || event && input.eventType === "checkin") throw new Error("\uBCF5\uC0AC \uAE30\uB85D\uC758 \uC0AC\uB78C\uACFC \uC77C\uC815\uC774 \uB9DE\uC9C0 \uC54A\uC544\uC694.");
     if (checkin && input.occurrenceId !== void 0) throw new Error("\uC77C\uC815 \uC5C6\uB294 \uC548\uBD80\uC5D0\uB294 \uD589\uC0AC \uD68C\uCC28\uB97C \uC800\uC7A5\uD560 \uC218 \uC5C6\uC5B4\uC694.");
     const item = {
       id: requireId(input.id, "\uBCF5\uC0AC \uAE30\uB85D \uC2DD\uBCC4\uC790"),
@@ -1241,7 +1241,7 @@ function importBackup(raw) {
   const completions = backupList(data.completions, 1e4, "\uCC59\uAE40 \uAE30\uB85D", true).map((input) => {
     recordObject(input, "\uCC59\uAE40 \uAE30\uB85D");
     const event = byEvent.get(input.eventId);
-    if (!event || input.personId !== void 0 && input.personId !== event.personId) throw new Error("\uCC59\uAE40 \uAE30\uB85D\uC758 \uC0AC\uB78C\uACFC \uC77C\uC815\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+    if (!event || input.personId !== void 0 && input.personId !== event.personId) throw new Error("\uCC59\uAE40 \uAE30\uB85D\uC758 \uC0AC\uB78C\uACFC \uC77C\uC815\uC774 \uB9DE\uC9C0 \uC54A\uC544\uC694.");
     const occurrenceId = validateOccurrenceId(input.occurrenceId, event.id);
     uniqueId(occurrenceId, occurrenceIds, "\uCC59\uAE40 \uAE30\uB85D");
     const date = clean(input.date, "\uCC59\uAE34 \uC77C\uC815 \uB0A0\uC9DC", 10, true);
@@ -1259,11 +1259,11 @@ function importBackup(raw) {
     };
   });
   const sourceIds = /* @__PURE__ */ new Set(), memoryIds = /* @__PURE__ */ new Set(), activityIds = /* @__PURE__ */ new Set();
-  const sources = backupList(data.sources, 1e3, "\uBCF4\uAD00\uD55C \uC6D0\uBB38", true).map((input) => {
-    recordObject(input, "\uBCF4\uAD00\uD55C \uC6D0\uBB38");
+  const sources = backupList(data.sources, 1e3, "\uC800\uC7A5\uD55C \uAE00", true).map((input) => {
+    recordObject(input, "\uC800\uC7A5\uD55C \uAE00");
     const item = makeSource(input);
-    uniqueId(item.id, sourceIds, "\uBCF4\uAD00\uD55C \uC6D0\uBB38");
-    if (!peopleIds.has(item.personId)) throw new Error("\uC6D0\uBB38\uC5D0 \uC5F0\uACB0\uB41C \uC0AC\uB78C\uC774 \uC5C6\uC5B4\uC694.");
+    uniqueId(item.id, sourceIds, "\uC800\uC7A5\uD55C \uAE00");
+    if (!peopleIds.has(item.personId)) throw new Error("\uC800\uC7A5\uD55C \uAE00\uC5D0 \uC5F0\uACB0\uB41C \uC0AC\uB78C\uC774 \uC5C6\uC5B4\uC694.");
     return item;
   });
   const bySource = new Map(sources.map((item) => [item.id, item]));
@@ -1272,29 +1272,29 @@ function importBackup(raw) {
     const item = makeMemory(input);
     uniqueId(item.id, memoryIds, "\uD655\uC778\uD55C \uAE30\uC5B5");
     const source = bySource.get(item.sourceId);
-    if (!source || source.personId !== item.personId || !source.text.includes(item.sourceQuote)) throw new Error("\uAE30\uC5B5\uC758 \uADFC\uAC70 \uBB38\uC7A5\uC774 \uBCF4\uAD00\uD55C \uC6D0\uBB38\uACFC \uC77C\uCE58\uD558\uC9C0 \uC54A\uC544\uC694.");
+    if (!source || source.personId !== item.personId || !source.text.includes(item.sourceQuote)) throw new Error("\uAE30\uC5B5\uC758 \uADFC\uAC70 \uBB38\uC7A5\uC774 \uBCF4\uAD00\uD55C \uC790\uB8CC\uC640 \uB9DE\uC9C0 \uC54A\uC544\uC694.");
     return item;
   });
   const activities = backupList(data.activities, 1e4, "\uC8FC\uACE0\uBC1B\uC740 \uAE30\uB85D", true).map((input) => {
     recordObject(input, "\uC8FC\uACE0\uBC1B\uC740 \uAE30\uB85D");
     const item = makeActivity(input);
     uniqueId(item.id, activityIds, "\uC8FC\uACE0\uBC1B\uC740 \uAE30\uB85D");
-    if (!peopleIds.has(item.personId) || item.eventId && byEvent.get(item.eventId)?.personId !== item.personId) throw new Error("\uC8FC\uACE0\uBC1B\uC740 \uAE30\uB85D\uC758 \uC0AC\uB78C\uACFC \uC77C\uC815\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+    if (!peopleIds.has(item.personId) || item.eventId && byEvent.get(item.eventId)?.personId !== item.personId) throw new Error("\uC8FC\uACE0\uBC1B\uC740 \uAE30\uB85D\uC758 \uC0AC\uB78C\uACFC \uC77C\uC815\uC774 \uB9DE\uC9C0 \uC54A\uC544\uC694.");
     return item;
   });
   const followupIds = /* @__PURE__ */ new Set(), preparationIds = /* @__PURE__ */ new Set();
-  const followups = backupList(data.followups, 1e3, "\uD6C4\uC18D \uCC59\uAE40", true).map((input) => {
+  const followups = backupList(data.followups, 1e3, "\uB2E4\uC2DC \uCC59\uAE38 \uC77C", true).map((input) => {
     const item = makeFollowup(input);
-    uniqueId(item.id, followupIds, "\uD6C4\uC18D \uCC59\uAE40");
-    if (!peopleIds.has(item.personId)) throw new Error("\uD6C4\uC18D \uCC59\uAE40\uC5D0 \uC5F0\uACB0\uB41C \uC0AC\uB78C\uC774 \uC5C6\uC5B4\uC694.");
+    uniqueId(item.id, followupIds, "\uB2E4\uC2DC \uCC59\uAE38 \uC77C");
+    if (!peopleIds.has(item.personId)) throw new Error("\uB2E4\uC2DC \uCC59\uAE38 \uC77C\uC5D0 \uC5F0\uACB0\uB41C \uC0AC\uB78C\uC774 \uC5C6\uC5B4\uC694.");
     const source = item.sourceId ? bySource.get(item.sourceId) : null;
-    if (item.sourceId && (!source || source.personId !== item.personId || !source.text.includes(item.sourceQuote))) throw new Error("\uD6C4\uC18D \uCC59\uAE40\uC758 \uADFC\uAC70 \uBB38\uC7A5\uC774 \uBCF4\uAD00\uD55C \uC6D0\uBB38\uACFC \uC77C\uCE58\uD558\uC9C0 \uC54A\uC544\uC694.");
+    if (item.sourceId && (!source || source.personId !== item.personId || !source.text.includes(item.sourceQuote))) throw new Error("\uB2E4\uC2DC \uCC59\uAE38 \uC77C\uC758 \uADFC\uAC70 \uBB38\uC7A5\uC774 \uBCF4\uAD00\uD55C \uC790\uB8CC\uC640 \uB9DE\uC9C0 \uC54A\uC544\uC694.");
     return item;
   });
   const preparations = backupList(data.preparations, 500, "\uC900\uBE44 \uAE30\uB85D", true).map((input) => {
     const item = makePreparation(input);
     uniqueId(item.id, preparationIds, "\uC900\uBE44 \uAE30\uB85D");
-    if (!peopleIds.has(item.personId) || item.eventId !== "" && byEvent.get(item.eventId)?.personId !== item.personId) throw new Error("\uC900\uBE44 \uAE30\uB85D\uC758 \uC0AC\uB78C\uACFC \uC77C\uC815\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+    if (!peopleIds.has(item.personId) || item.eventId !== "" && byEvent.get(item.eventId)?.personId !== item.personId) throw new Error("\uC900\uBE44 \uAE30\uB85D\uC758 \uC0AC\uB78C\uACFC \uC77C\uC815\uC774 \uB9DE\uC9C0 \uC54A\uC544\uC694.");
     return item;
   });
   const result = { version: 1, people, events, drafts, completions, sources, memories, activities, followups, preparations };
@@ -1328,8 +1328,8 @@ function toICS(eventInput, personInput, now = /* @__PURE__ */ new Date(), occurr
   if (person.id !== event.personId) throw new Error("\uC77C\uC815\uACFC \uC0AC\uB78C\uC774 \uC77C\uCE58\uD558\uC9C0 \uC54A\uC544\uC694.");
   if (occurrenceDate) dateParts(occurrenceDate);
   const occurrence = nextOccurrence(event, occurrenceDate ? `${occurrenceDate}T00:00:00+09:00` : now);
-  if (!occurrence) throw new Error("\uCE98\uB9B0\uB354\uC5D0 \uC800\uC7A5\uD560 \uC608\uC815 \uC77C\uC815\uC774 \uC5C6\uC5B4\uC694.");
-  if (occurrenceDate && (occurrence.date !== occurrenceDate || occurrenceDate < today(now))) throw new Error("\uCE98\uB9B0\uB354\uC5D0 \uC800\uC7A5\uD560 \uB0A0\uC9DC\uB97C \uB2E4\uC2DC \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+  if (!occurrence) throw new Error("\uB2EC\uB825\uC5D0 \uC800\uC7A5\uD560 \uB2E4\uAC00\uC624\uB294 \uC77C\uC815\uC774 \uC5C6\uC5B4\uC694.");
+  if (occurrenceDate && (occurrence.date !== occurrenceDate || occurrenceDate < today(now))) throw new Error("\uB2EC\uB825\uC5D0 \uC800\uC7A5\uD560 \uB0A0\uC9DC\uAC00 \uBC14\uB00C\uC5C8\uC5B4\uC694. \uB2E4\uC2DC \uB20C\uB7EC \uC8FC\uC138\uC694.");
   const stamp = clock(now).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
   const day = occurrence.date.replace(/-/g, "");
   const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//SYNK//Relationship Care//KO", "CALSCALE:GREGORIAN", "METHOD:PUBLISH"];
@@ -1339,22 +1339,22 @@ function toICS(eventInput, personInput, now = /* @__PURE__ */ new Date(), occurr
   else lines.push(`DTSTART;VALUE=DATE:${day}`, `DTEND;VALUE=DATE:${shiftDate(occurrence.date, 1).replace(/-/g, "")}`);
   lines.push(`SUMMARY:${escapeICS(`${person.name} \xB7 ${event.title}`)}`);
   if (event.location) lines.push(`LOCATION:${escapeICS(event.location)}`);
-  const calendarNote = event.calendar === "lunar" ? `\uC74C\uB825 ${event.lunarLeapMonth ? "\uC724\uB2EC " : ""}${event.date}\uC758 \uB2E4\uC74C \uD68C\uCC28\uB97C \uC591\uB825\uC73C\uB85C \uBC14\uAFD4 \uC800\uC7A5\uD588\uC2B5\uB2C8\uB2E4. \uB2E4\uC74C \uD574 \uC77C\uC815\uC740 \uC571\uC5D0\uC11C \uB2E4\uC2DC \uB0B4\uBCF4\uB0B4 \uC8FC\uC138\uC694.` : "\uC591\uB825 \uC77C\uC815\uC785\uB2C8\uB2E4.";
-  lines.push(`DESCRIPTION:${escapeICS(["SYNK \uD50C\uB808\uC800\uC5D0\uC11C \uC800\uC7A5\uD55C \uB2E4\uC74C 1\uD68C \uC77C\uC815\uC785\uB2C8\uB2E4. \uD55C\uAD6D \uC2DC\uAC04 \uAE30\uC900\uC785\uB2C8\uB2E4.", calendarNote, event.notes].filter(Boolean).join("\n"))}`);
+  const calendarNote = event.calendar === "lunar" ? `\uC74C\uB825 ${event.lunarLeapMonth ? "\uC724\uB2EC " : ""}${event.date} \uC77C\uC815\uC744 \uB2E4\uAC00\uC624\uB294 \uC591\uB825 \uB0A0\uC9DC\uB85C \uBC14\uAFD4 \uB123\uC5C8\uC5B4\uC694. \uADF8\uB2E4\uC74C \uD574 \uC77C\uC815\uC740 \uD50C\uB808\uC800\uC5D0\uC11C \uB2E4\uC2DC \uC800\uC7A5\uD574 \uC8FC\uC138\uC694.` : "\uC591\uB825 \uC77C\uC815\uC774\uC5D0\uC694.";
+  lines.push(`DESCRIPTION:${escapeICS(["SYNK \uD50C\uB808\uC800\uC5D0\uC11C \uC800\uC7A5\uD55C \uC77C\uC815 \uD55C \uBC88\uC774\uC5D0\uC694. \uD55C\uAD6D \uC2DC\uAC04 \uAE30\uC900\uC774\uC5D0\uC694.", calendarNote, event.notes].filter(Boolean).join("\n"))}`);
   for (const days of event.reminderDays) lines.push("BEGIN:VALARM", `TRIGGER:${days === 0 ? "PT0M" : `-P${days}D`}`, "ACTION:DISPLAY", `DESCRIPTION:${escapeICS(`${person.name} \xB7 ${event.title}`)}`, "END:VALARM");
   lines.push("END:VEVENT", "END:VCALENDAR");
   return `${lines.map(foldLine).join("\r\n")}\r
 `;
 }
 function toFollowupICS(state, followupId, options = {}, now = /* @__PURE__ */ new Date()) {
-  exactKeys(options, ["time", "reminderMinutes"], "\uD6C4\uC18D \uCC59\uAE40 \uB2EC\uB825 \uC124\uC815");
+  exactKeys(options, ["time", "reminderMinutes"], "\uB2EC\uB825 \uC800\uC7A5 \uC124\uC815");
   const current = importBackup(state);
   const followup = current.followups.find((item) => item.id === followupId);
-  if (!followup || followup.status !== "pending") throw new Error("\uC608\uC815\uB41C \uD6C4\uC18D \uCC59\uAE40\uB9CC \uB2EC\uB825\uC5D0 \uC800\uC7A5\uD560 \uC218 \uC788\uC5B4\uC694.");
-  if (followup.dueOn < today(now)) throw new Error("\uC9C0\uB09C \uD6C4\uC18D \uCC59\uAE40\uC740 \uB2E4\uC2DC \uCC59\uAE38 \uB0A0\uC9DC\uB97C \uACE0\uB978 \uB4A4 \uB2EC\uB825\uC5D0 \uC800\uC7A5\uD574 \uC8FC\uC138\uC694.");
+  if (!followup || followup.status !== "pending") throw new Error("\uB05D\uB098\uC9C0 \uC54A\uC740 \uB2E4\uC2DC \uCC59\uAE38 \uC77C\uB9CC \uB2EC\uB825\uC5D0 \uC800\uC7A5\uD560 \uC218 \uC788\uC5B4\uC694.");
+  if (followup.dueOn < today(now)) throw new Error("\uB0A0\uC9DC\uAC00 \uC9C0\uB09C \uC77C\uC740 \uB2E4\uC2DC \uCC59\uAE38 \uB0A0\uC744 \uC0C8\uB85C \uACE0\uB978 \uB4A4 \uB2EC\uB825\uC5D0 \uC800\uC7A5\uD574 \uC8FC\uC138\uC694.");
   const person = current.people.find((item) => item.id === followup.personId);
   const time = clean(options.time, "\uB2E4\uC2DC \uCC59\uAE38 \uC2DC\uAC01", 5);
-  if (time && !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) throw new Error("\uC2DC\uAC01\uC740 00:00~23:59 \uC0AC\uC774\uB85C \uC9C1\uC811 \uACE8\uB77C \uC8FC\uC138\uC694.");
+  if (time && !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) throw new Error("\uC2DC\uAC01\uC740 00:00~23:59 \uC0AC\uC774\uB85C \uACE8\uB77C \uC8FC\uC138\uC694.");
   const minutes = options.reminderMinutes ?? [];
   if (!Array.isArray(minutes) || minutes.length > 12 || minutes.some((value) => !Number.isSafeInteger(value) || value < 0 || value > 525600)) throw new Error("\uB2EC\uB825 \uC54C\uB9BC\uC740 0~525,600\uBD84 \uC804 \uC0AC\uC774 \uC815\uC218\uB85C \uCD5C\uB300 12\uAC1C\uAE4C\uC9C0 \uACE8\uB77C \uC8FC\uC138\uC694.");
   if (!time && minutes.length) throw new Error("\uC54C\uB9BC\uC744 \uB123\uC73C\uB824\uBA74 \uB2E4\uC2DC \uCC59\uAE38 \uC2DC\uAC01\uC744 \uBA3C\uC800 \uACE8\uB77C \uC8FC\uC138\uC694. \uC885\uC77C \uC77C\uC815\uC5D0\uB294 \uC54C\uB9BC\uC744 \uC790\uB3D9\uC73C\uB85C \uB123\uC9C0 \uC54A\uC544\uC694.");
@@ -1372,7 +1372,7 @@ function toFollowupICS(state, followupId, options = {}, now = /* @__PURE__ */ ne
   lines.push("BEGIN:VEVENT", `UID:${followup.id}@care-followup.synk.local`, `DTSTAMP:${stamp}`);
   if (time) lines.push(`DTSTART;TZID=Asia/Seoul:${day}T${time.replace(":", "")}00`);
   else lines.push(`DTSTART;VALUE=DATE:${day}`, `DTEND;VALUE=DATE:${shiftDate(followup.dueOn, 1).replace(/-/g, "")}`);
-  lines.push(`SUMMARY:${escapeICS(`${person.name} \xB7 ${followup.title}`)}`, `DESCRIPTION:${escapeICS("SYNK \uD50C\uB808\uC800\uC5D0\uC11C \uB0B4\uAC00 \uC815\uD55C \uD6C4\uC18D \uCC59\uAE40 \uD55C \uBC88\uC744 \uC800\uC7A5\uD588\uC5B4\uC694. \uD55C\uAD6D \uC2DC\uAC04 \uAE30\uC900\uC774\uBA70 \uBC18\uBCF5\uD558\uC9C0 \uC54A\uC544\uC694. \uC571\uC5D0\uC11C \uB0A0\uC9DC\uB97C \uBC14\uAFB8\uAC70\uB098 \uC644\uB8CC\uD574\uB3C4 \uB2EC\uB825\uC740 \uC790\uB3D9\uC73C\uB85C \uBC14\uB00C\uC9C0 \uC54A\uC73C\uB2C8 \uC9C1\uC811 \uD655\uC778\uD574 \uC8FC\uC138\uC694.")}`);
+  lines.push(`SUMMARY:${escapeICS(`${person.name} \xB7 ${followup.title}`)}`, `DESCRIPTION:${escapeICS("SYNK \uD50C\uB808\uC800\uC5D0\uC11C \uB2E4\uC2DC \uCC59\uAE30\uAE30\uB85C \uD55C \uC77C\uC774\uC5D0\uC694. \uD55C\uAD6D \uC2DC\uAC04 \uAE30\uC900\uC774\uACE0 \uBC18\uBCF5\uD558\uC9C0 \uC54A\uC544\uC694. \uD50C\uB808\uC800\uC5D0\uC11C \uB0A0\uC9DC\uB97C \uBC14\uAFB8\uAC70\uB098 \uC644\uB8CC\uD574\uB3C4 \uB2EC\uB825\uC740 \uC790\uB3D9\uC73C\uB85C \uBC14\uB00C\uC9C0 \uC54A\uC544\uC694.")}`);
   for (const value of alarms) lines.push("BEGIN:VALARM", `TRIGGER:${value === 0 ? "PT0M" : `-PT${value}M`}`, "ACTION:DISPLAY", `DESCRIPTION:${escapeICS(`${person.name} \xB7 ${followup.title}`)}`, "END:VALARM");
   lines.push("END:VEVENT", "END:VCALENDAR");
   return `${lines.map(foldLine).join("\r\n")}\r

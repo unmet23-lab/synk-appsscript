@@ -14,7 +14,7 @@ namespace Synk.SignalInstaller
         {
             RejectReparsePoints(Path.GetDirectoryName(PendingPath));
             if(File.Exists(PendingPath)&&activeTransaction==null)
-                throw new InstallFailure("이전 설치의 복구 확인이 필요합니다. 다시 설치하지 말고 지원을 요청해 주세요.\n복구 안내: "+PendingPath,false,true);
+                throw new InstallFailure("지난번 설치를 되돌렸는지 아직 확인하지 못했어요. 다시 설치하지 말고 SYNK에 알려 주세요.\n되돌리기 안내: "+PendingPath,false,true);
         }
         void BeginTransaction(UpdateBackup backup)
         {
@@ -41,7 +41,7 @@ namespace Synk.SignalInstaller
             if(backup!=null&&!File.Exists(PendingPath))
                 try { using(var writer=new StreamWriter(new FileStream(PendingPath,FileMode.CreateNew,FileAccess.Write,FileShare.Read)))writer.Write(backup.Directory); }catch(IOException){}
             activeTransaction=null;
-            return new InstallFailure("설치가 끝나지 않았습니다. 앱 파일이 일부 바뀐 상태일 수 있어 재시도를 막았습니다. 계정·사용자 기록은 건드리지 않았습니다.\n복구 원본: "+(backup==null?"생성 전":backup.Directory)+"\n지원에 이 내용을 알려 주세요.\n"+error.Message,false,!(error is InstallFailure)||((InstallFailure)error).BackendStopped);
+            return new InstallFailure("설치가 끝나지 않았어요. 앱 파일이 일부 바뀌었을 수 있어 다시 설치하지 못하게 막았어요. 계정과 앱 기록은 건드리지 않았어요.\n되돌릴 원본: "+(backup==null?"생성 전":backup.Directory)+"\nSYNK에 이 내용을 알려 주세요.\n"+error.Message,false,!(error is InstallFailure)||((InstallFailure)error).BackendStopped);
         }
         public string Install(Action<string,string,int?> progress) { return InstallWithDeadline(progress,BackendProcess.DeadlineMilliseconds); }
         internal string InstallWithDeadline(Action<string,string,int?> progress,int deadline)
@@ -65,7 +65,7 @@ namespace Synk.SignalInstaller
                     EndTransaction(backup,"restored");TryCleanupBackupPayload(backup);
                 }
                 catch(Exception recoveryError) { throw RecoveryRequired(backup,recoveryError); }
-                throw new InstallFailure(error.Message+"\n"+(backup.DirectoryExisted?"이전 앱 파일·설치 등록·바로가기를 복구했습니다.":"부분 설치 파일·설치 등록·바로가기를 정리했습니다.")+" 계정·사용자 기록은 그대로입니다. 다시 시도하거나 닫아도 됩니다.",true,true);
+                throw new InstallFailure(error.Message+"\n"+(backup.DirectoryExisted?"이전 앱 파일·설치 등록·바로가기를 되돌렸어요.":"덜 설치된 파일·설치 등록·바로가기를 지웠어요.")+" 계정과 앱 기록은 그대로예요. 다시 해 보거나 닫아도 돼요.",true,true);
             }
         }
     }

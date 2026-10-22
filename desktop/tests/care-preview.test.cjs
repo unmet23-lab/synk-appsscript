@@ -30,7 +30,7 @@ test('care is a local MVP with capability checks, personalizable without unrelat
   assert.equal(matchesLibrary('care',{search:'경조사'}),true);
   assert.equal(primaryAction({id:'care',canLaunch:true}).disabled,true);
   assert.equal(primaryAction({id:'care'},{productPreviewsAvailable:['path']}).disabled,true);
-  assert.deepEqual(primaryAction({id:'care'},{productPreviewsAvailable:['care']}),{label:'플레저 MVP 열기',action:'product-preview',disabled:false});
+  assert.deepEqual(primaryAction({id:'care'},{productPreviewsAvailable:['care']}),{label:'플레저 열기',action:'product-preview',disabled:false});
   assert.deepEqual(resolveLibrary({status:'signed-in',signedIn:true,account:{synk_user_id:'care-user'},library:{status:'ready',appIds:['care','unknown']}}).appIds,['care']);
   const {createPlatformPersonalization}=await import('../renderer/personalization.mjs'),engine=require('../../atlas/personalization'),map=new Map();
   const host=createPlatformPersonalization(engine,{getItem:key=>map.get(key),setItem:(key,value)=>map.set(key,value),removeItem:key=>map.delete(key)});

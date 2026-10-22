@@ -56,7 +56,7 @@ export function suggestAmounts({ occasion, relation, attending = true, venue = '
   if (typeof attending !== 'boolean') throw new Error('참석 여부를 골라 주세요.');
   if (!Object.hasOwn(AMOUNT_VENUES, venue)) throw new Error('장소·식사를 골라 주세요.');
   if (receivedWon !== null && (!Number.isSafeInteger(receivedWon) || receivedWon <= 0 || receivedWon > 100000000)) throw new Error('받은 금액은 1억 원 이하의 원 단위 숫자로 적어 주세요.');
-  if (receivedOn && (!/^\d{4}-\d{2}-\d{2}$/.test(receivedOn) || receivedOn > koreanDate(now))) throw new Error('받은 날짜를 확인해 주세요.');
+  if (receivedOn && (!/^\d{4}-\d{2}-\d{2}$/.test(receivedOn) || receivedOn > koreanDate(now))) throw new Error('받은 날짜를 다시 골라 주세요.');
   const cautions = ['참고용이에요. 사이와 형편, 지역과 집안 기준에 맞게 정해 주세요.'];
   let middle = BASE[occasion][relation];
   const notes = [];

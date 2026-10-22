@@ -32,5 +32,5 @@ test('exit wording preserves saved records and describes only the last opted-in 
   const contents=new EventEmitter(),shown=[];let available=false;
   installDraftExitGuard({contents,window:{isDestroyed:()=>false},dialog:{showMessageBoxSync(_window,value){shown.push(value);return 0;}},getRecoveryAvailable:()=>available});
   contents.emit('will-prevent-unload',{preventDefault(){}});available=true;contents.emit('will-prevent-unload',{preventDefault(){}});
-  assert.doesNotMatch(shown[0].detail,/복구본|버리고/);assert.match(shown[1].detail,/초안 복구를 켰다면 마지막 복구본/);assert.doesNotMatch(shown[1].detail,/버리고/);
+  assert.doesNotMatch(shown[0].detail,/복구본|버리고/);assert.match(shown[1].detail,/쓰던 메모 되살리기」를 켜 두었다면/);assert.doesNotMatch(shown[1].detail,/버리고/);
 });

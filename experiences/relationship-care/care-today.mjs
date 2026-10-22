@@ -20,7 +20,7 @@ const moveDay = (value, days) => new Date(dayNumber(value) + days * DAY).toISOSt
 const between = (from, to) => Math.round((dayNumber(to) - dayNumber(from)) / DAY);
 const keyDay = value => koreanDate(value);
 function exact(input, keys, label) {
-  if (!input || typeof input !== 'object' || Array.isArray(input) || Object.keys(input).some(key => !keys.includes(key))) throw new Error(`${label}의 형식을 확인해 주세요.`);
+  if (!input || typeof input !== 'object' || Array.isArray(input) || Object.keys(input).some(key => !keys.includes(key))) throw new Error(`${label}의 형식이 맞지 않아요.`);
 }
 
 /** 사람별 마지막 챙김(내가 한 것만): 보낸 기록·일정 완료·직접 완료한 후속. 미래 시계 기록은 빼고 본다. */
@@ -56,7 +56,7 @@ function actionsFor(quiet) {
 export function todayCards({ state, now = new Date(), limit = TODAY_LIMIT } = {}) {
   if (!Number.isInteger(limit) || limit < 1 || limit > 5) throw new Error('오늘 카드는 1~5명 사이로 골라 주세요.');
   const current = importBackup(state), at = new Date(now);
-  if (!Number.isFinite(at.getTime())) throw new Error('기준 시간을 확인해 주세요.');
+  if (!Number.isFinite(at.getTime())) throw new Error('날짜를 읽지 못했어요.');
   const today = koreanDate(at);
   const focus = recommendCareFocus({ state: current, now: at });
   const base = { version: CARE_TODAY_VERSION, date: today, dateLabel: dateLabel(today), basisPolicy: focus.basisPolicy, limit };
@@ -101,7 +101,7 @@ export function todayCards({ state, now = new Date(), limit = TODAY_LIMIT } = {}
     .filter(item => item.personName);
   const status = cards.length ? 'ready' : handledList.length ? 'done-for-today' : 'caught-up';
   const message = status === 'ready' ? '' : status === 'done-for-today' ? '오늘 챙길 사람은 여기까지예요. 내일 다시 골라 드릴게요.'
-    : '지금 권할 사람이 없어요. 모든 챙김을 마쳤다는 뜻은 아니에요.';
+    : '지금 먼저 챙길 사람은 없어요. 다가오는 날은 아래에서 볼 수 있어요.';
   return { ...base, status, cards, handled: handledList, snoozed, message, waiting: Math.max(0, others.length - room) };
 }
 
@@ -114,16 +114,16 @@ export function recordTodayContact(state, input, now = new Date()) {
   exact(input, ['personId', 'how', 'eventId', 'occurrenceId', 'followupId', 'note', 'item', 'amountWon'], '연락 기록');
   if (!Object.hasOwn(TODAY_ACTIONS, input.how)) throw new Error('어떻게 챙겼는지 골라 주세요.');
   const current = importBackup(state), person = current.people.find(item => item.id === input.personId);
-  if (!person) throw new Error('사람을 다시 선택해 주세요.');
+  if (!person) throw new Error('사람을 다시 골라 주세요.');
   const today = koreanDate(now), how = input.how;
   const eventId = input.eventId || '', occurrenceId = input.occurrenceId || '', followupId = input.followupId || '';
-  if (Boolean(eventId) !== Boolean(occurrenceId)) throw new Error('일정과 회차를 함께 확인해 주세요.');
+  if (Boolean(eventId) !== Boolean(occurrenceId)) throw new Error('일정을 다시 골라 주세요.');
   // 두 번 누른 경우: 이미 완료한 회차·후속이면 기록을 더하지 않고 그대로 돌려준다.
   if (eventId && current.completions.some(item => item.occurrenceId === occurrenceId && item.eventId === eventId)) return current;
   if (followupId) {
     const followup = current.followups.find(item => item.id === followupId);
     if (followup?.personId === person.id && followup.status === 'done') return current;
-    if (!followup || followup.personId !== person.id || followup.status !== 'pending') throw new Error('완료할 후속 챙김이 없어요. 목록을 다시 확인해 주세요.');
+    if (!followup || followup.personId !== person.id || followup.status !== 'pending') throw new Error('이미 끝냈거나 지운 일이에요. 화면을 새로 열어 주세요.');
   }
   const kind = Object.hasOwn(CONTACT_CHANNELS, how) ? 'contact' : how;
   let next = recordCareAction(current, {
@@ -148,13 +148,13 @@ export function snoozeTodayCard(state, input, now = new Date()) {
   const days = input.days ?? SNOOZE_DAYS;
   if (!Number.isInteger(days) || days < 1 || days > 14) throw new Error('미루기는 1~14일 사이로 골라 주세요.');
   const current = importBackup(state), person = current.people.find(item => item.id === input.personId);
-  if (!person) throw new Error('사람을 다시 선택해 주세요.');
+  if (!person) throw new Error('사람을 다시 골라 주세요.');
   const today = koreanDate(now), until = moveDay(today, days);
   if (input.occurrenceId && String(input.occurrenceId).endsWith(`:${today}`)) throw new Error('오늘이 그날이라 미룰 수 없어요. 「조용히 기억했어요」나 연락 기록으로 남길 수 있어요.');
   let next = { ...current, people: current.people.map(item => item.id === person.id ? makePerson({ ...item, careSnooze: { on: today, until } }) : item) };
   if (input.followupId) {
     const followup = current.followups.find(item => item.id === input.followupId);
-    if (!followup || followup.personId !== person.id || followup.status !== 'pending') throw new Error('미룰 후속 챙김이 없어요. 목록을 다시 확인해 주세요.');
+    if (!followup || followup.personId !== person.id || followup.status !== 'pending') throw new Error('이미 끝냈거나 지운 일이라 미룰 수 없어요. 화면을 새로 열어 주세요.');
     if (followup.dueOn < until) next = updateFollowup(next, followup.id, { dueOn: until }, now);
   }
   return importBackup(next);
@@ -163,7 +163,7 @@ export function snoozeTodayCard(state, input, now = new Date()) {
 /** 미뤄 둔 사람을 오늘 다시 보기. */
 export function clearTodaySnooze(state, personId) {
   const current = importBackup(state);
-  if (!current.people.some(item => item.id === personId)) throw new Error('사람을 다시 선택해 주세요.');
+  if (!current.people.some(item => item.id === personId)) throw new Error('사람을 다시 골라 주세요.');
   return importBackup(clearSnooze(current, personId));
 }
 

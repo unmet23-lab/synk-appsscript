@@ -1,0 +1,38 @@
+{
+  "//": "아르곤 A묶음 지적 반영(P1 5 · P2 6, P2 7의 상태 줄 「시험판」은 좁은 자리라 그대로)",
+  "desktop/renderer/library.mjs": [
+    ["바로 열 수 있는 앱과 준비 중인 앱을 함께 보여요.", "바로 열 수 있는 앱과 준비 중인 앱이 함께 보여요.", {"n": 1}],
+    ["{caption:'앱 목록 없음',note:'앱 목록을 불러오지 못했어요.',", "{caption:'불러오기 실패',note:'인터넷 연결을 확인한 뒤 다시 불러와 주세요.',", {"n": 1}]
+  ],
+  "desktop/renderer/index.html": [
+    ["<p class=\"fine-print\">실력이나 회사 권한을 판단하는 데 쓰지 않아요. 학습 기록·회사 자료는 가져오지 않고, 언제든 지울 수 있어요.</p>", "<p class=\"fine-print\">실력이나 회사 권한을 판단하는 데 쓰지 않고, 학습 기록·회사 자료도 가져오지 않아요. 저장한 설정은 언제든 지울 수 있어요.</p>", {"n": 1}],
+    ["<p id=\"personal-settings-summary\">아직 고르지 않았어요.</p></div><button class=\"ghost-button\" id=\"personal-settings-open\">바꾸기</button>", "<p id=\"personal-settings-summary\">아직 고르지 않음</p></div><button class=\"ghost-button\" id=\"personal-settings-open\">고르기</button>", {"n": 1}],
+    ["</span>이 PC 설정 · 고르지 않아도 돼요</span>", "</span>이 PC 설정 · 선택 사항</span>", {"n": 1}],
+    ["<span>고른 내용을 이 PC에 저장하고 앱 순서를 정하는 데 쓰는 것에 동의해요.</span>", "<span>고른 내용을 이 PC에 저장해 앱 순서와 보기에 반영하는 데 동의해요.</span>", {"n": 1}],
+    ["<span class=\"led\" aria-hidden=\"true\"></span>네 가지 모두 무료</span>", "<span class=\"led\" aria-hidden=\"true\"></span>플레저·운세는 로그인 없이도 돼요</span>", {"n": 1}]
+  ],
+  "desktop/renderer/launcher.mjs": [
+    ["toast('즐겨찾기와 실행 기록을 저장하는 중이에요. 끝나면 다시 닫아 주세요.')", "toast('즐겨찾기와 실행 기록을 저장하는 중이에요. 끝난 뒤 다시 해 주세요.')", {"n": 2}],
+    ["AUTH_NOT_CONFIGURED:'이 실행본에는 로그인 설정이 없어요.'", "AUTH_NOT_CONFIGURED:'로그인 설정을 찾지 못해 로그인할 수 없어요. synk.im에서 PC 앱을 다시 받아 설치해 주세요.'", {"n": 1}],
+    ["PREVIEW_DEVELOPMENT_ONLY:'개발용 실행에서만 열 수 있어요.'", "PREVIEW_DEVELOPMENT_ONLY:'이 판에서는 열 수 없어요. 웹에서 열어 주세요.'", {"n": 1}],
+    ["(bridge?'창이 따로 열려요.':'PC 앱의 개발용 실행에서만 열려요.')", "(bridge?'창이 따로 열려요.':'SYNK Platform PC 앱에서 열려요.')", {"n": 1}],
+    ["!auth.configured?'이 실행본에는 로그인 설정이 없어요.':", "!auth.configured?'로그인 설정을 찾지 못해 로그인할 수 없어요. synk.im에서 PC 앱을 다시 받아 설치해 주세요.':", {"n": 1}],
+    ["PREVIEW_NOT_IN_LIBRARY:'이 계정에서는 이 앱을 쓸 수 없어요.',UNKNOWN_CLIENT:'알 수 없는 앱이에요.'", "PREVIEW_NOT_IN_LIBRARY:'이 계정에는 이 앱이 열려 있지 않아요. 학교나 회사 담당자에게 물어봐 주세요.',UNKNOWN_CLIENT:'알 수 없는 앱이에요. 플랫폼을 다시 열어 주세요.'", {"n": 1}],
+    ["toast('이 계정에서 쓸 수 없거나 아직 설치하지 않은 앱이에요.')", "toast('아직 설치하지 않았거나 이 계정에서 쓸 수 없는 앱이에요. 「설치·업데이트」에서 설치 상태를 봐 주세요.')", {"n": 2}],
+    [":'아직 고르지 않았어요.';", ":'아직 고르지 않음';", {"n": 1}],
+    ["$('personal-settings-open').disabled=!library.owner;", "$('personal-settings-open').textContent=state.active?'바꾸기':'고르기';$('personal-settings-open').disabled=!library.owner;", {"n": 1}],
+    ["auth.configured?'로그인하면 내 앱이 나와요.':'로그인 설정이 없어요';", "auth.configured?'로그인하지 않음':'로그인 설정 없음';", {"n": 1}],
+    ["escape(item.name)+' PC 창으로 열기'", "escape(item.name)+' PC 앱에서 열기'", {"n": 1}]
+  ],
+  "desktop/renderer/state.mjs": [
+    ["{label:native?'준비 중':'PC 앱에서 열기',action:'none'", "{label:native?'준비 중':'PC 앱에서만',action:'none'", {"n": 1}],
+    ["idle:'설치할 수 있어요',preparing:'설치 파일 준비 중'", "idle:'설치 가능',preparing:'설치 파일 준비 중'", {"n": 1}],
+    ["'installer-opened':'설치 파일을 열었어요',cancelled:'준비를 취소했어요',error:'설치 파일을 준비하지 못했어요',unavailable:'아직 설치 파일이 없어요'})[installer.status]||'아직 설치 파일이 없어요'", "'installer-opened':'설치 창 열림',cancelled:'준비 취소됨',error:'설치 파일 준비 실패',unavailable:'설치 파일 없음'})[installer.status]||'설치 파일 없음'", {"n": 1}]
+  ],
+  "desktop/renderer/update-view.mjs": [
+    ["'이 실행본은 업데이트를 받을 수 없어요. 지금 앱은 그대로 쓸 수 있어요.'", "'여기서는 업데이트를 받을 수 없어요. 지금 앱은 그대로 쓸 수 있어요.'", {"n": 1}]
+  ],
+  "desktop/src/auth-service.cjs": [
+    ["AUTH_CONFIG:'이 실행본에는 로그인 설정이 없어요.'", "AUTH_CONFIG:'로그인 설정을 찾지 못해 로그인할 수 없어요. synk.im에서 PC 앱을 다시 받아 설치해 주세요.'", {"n": 1}]
+  ]
+}

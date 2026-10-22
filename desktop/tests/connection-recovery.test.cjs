@@ -135,7 +135,7 @@ const CLOUD_ENTRY='https://workspace.synk.im/?tab=messenger';
 test('main accepts explicit cloud Messenger and passes opt-in to its real fallback and fixed retry',async()=>{
   const f=await mainFixture({clientId:'messenger',mode:'development',entry:CLOUD_ENTRY,messengerCloudPreview:true,auth:null});
   assert.equal(f.contents.loads[0].url,CLOUD_ENTRY);await offline(f);
-  const html=await (await f.content({url:STATUS,method:'GET'})).text();assert.ok(html.includes('href="'+CLOUD_ENTRY+'"'));assert.match(html,/인터넷 연결/);assert.doesNotMatch(html,/이 기기의 앱 서비스/);
+  const html=await (await f.content({url:STATUS,method:'GET'})).text();assert.ok(html.includes('href="'+CLOUD_ENTRY+'"'));assert.match(html,/인터넷 연결/);assert.doesNotMatch(html,/이 PC에서 앱 서비스/);
   const click=f.contents.click(CLOUD_ENTRY);assert.equal(click.defaultPrevented,true);await settle();assert.equal(f.contents.loads[2].url,CLOUD_ENTRY);f.contents.success(2);await settle();
 });
 test('main rejects cloud runtime without exact boolean, client, mode and fixed entry before creating a window',async()=>{

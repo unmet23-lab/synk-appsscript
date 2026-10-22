@@ -14,7 +14,7 @@ test('home folds Messenger teaching favorites and recents while keeping the late
 test('grouped teacher notes preserve their original key and disappear when the teacher permission is revoked',async()=>{
   const {createHomeStore,HOME_KEY}=await loaded,storage=memory(),store=createHomeStore(storage,{clock:()=>100}),library=member('a',['messenger','teacher']);
   const row=store.add(library,{...input,appId:'teacher'});assert.deepEqual(store.list(library),[{...row,appId:'messenger',entryId:'teacher'}]);
-  assert.equal(JSON.parse(storage.getItem(HOME_KEY+':account:a')).records[0].appId,'teacher');assert.deepEqual(store.list(member('a',['messenger'])),[]);assert.throws(()=>store.change(member('a',['messenger']),row.id,'toggle'),/권한/);
+  assert.equal(JSON.parse(storage.getItem(HOME_KEY+':account:a')).records[0].appId,'teacher');assert.deepEqual(store.list(member('a',['messenger'])),[]);assert.throws(()=>store.change(member('a',['messenger']),row.id,'toggle'),/더는 쓸 수 없어요/);
 });
 
 test('Partners notes remain intact through PULSE display and unrelated writes, with explicit PULSE access',async()=>{
@@ -23,7 +23,7 @@ test('Partners notes remain intact through PULSE display and unrelated writes, w
   const key=HOME_KEY+':account:member-a';storage.setItem(key,JSON.stringify({version:1,owner:'member-a',records:[original]}));
   const store=createHomeStore(storage,{clock:()=>200}),withPulse=member('member-a',['pulse','world']);
   assert.deepEqual(store.list(member('member-a',['partners'])),[]);
-  assert.throws(()=>store.change(member('member-a',['partners']),original.id,'toggle'),/권한/);
+  assert.throws(()=>store.change(member('member-a',['partners']),original.id,'toggle'),/더는 쓸 수 없어요/);
   assert.deepEqual(store.list(withPulse),[{...original,appId:'pulse'}]);
   assert.deepEqual(JSON.parse(storage.getItem(key)).records,[original]);
   store.add(withPulse,input);assert.deepEqual(JSON.parse(storage.getItem(key)).records[1],original);
@@ -35,14 +35,14 @@ test('home records require a confirmed member, an allowed app and explicit stora
   const {createHomeStore}=await loaded,storage=memory(),store=createHomeStore(storage,{clock:()=>100});
   for(const library of [{owner:'anonymous-local',status:'guest',appIds:['world']},{owner:null,status:'loading',appIds:[]},{...member(),status:'unavailable'}])assert.throws(()=>store.add(library,input),/로그인/);
   assert.throws(()=>store.add(member(),{...input,consent:false}),/동의/);
-  assert.throws(()=>store.add(member(),{...input,appId:'pulse'}),/이용 가능한 앱/);
+  assert.throws(()=>store.add(member(),{...input,appId:'pulse'}),/연결할 앱을 골라/);
   assert.equal(storage.values.size,0);
 });
 test('saved records restore only to their owner and hide immediately when entitlement is revoked',async()=>{
   const {createHomeStore}=await loaded,storage=memory(),store=createHomeStore(storage,{clock:()=>100});
   const row=store.add(member(),input);assert.equal(createHomeStore(storage).list(member())[0].title,'다음 연습');
   assert.deepEqual(store.list(member('member-b')),[]);assert.deepEqual(store.list(member('member-a',['messenger'])),[]);
-  assert.throws(()=>store.change(member('member-a',['messenger']),row.id,'remove'),/권한/);
+  assert.throws(()=>store.change(member('member-a',['messenger']),row.id,'remove'),/더는 쓸 수 없어요/);
   assert.equal(store.list(member()).length,1);
 });
 test('task completion, reopen and deletion persist without changing other records',async()=>{
@@ -116,7 +116,7 @@ test('valid notes, tasks, hidden apps and legacy Partners rows survive every unr
   const added=store.add(library,input);assert.deepEqual(read().slice(1),rows);
   store.change(library,'task','toggle');assert.deepEqual(read(),[added,{...rows[0],done:false},...rows.slice(1)]);
   store.change(library,added.id,'remove');assert.deepEqual(read(),[{...rows[0],done:false},...rows.slice(1)]);
-  const beforeDenied=storage.getItem(key);assert.throws(()=>store.change(library,'hidden','remove'),/권한/);assert.equal(storage.getItem(key),beforeDenied);
+  const beforeDenied=storage.getItem(key);assert.throws(()=>store.change(library,'hidden','remove'),/더는 쓸 수 없어요/);assert.equal(storage.getItem(key),beforeDenied);
   assert.equal(store.list(member('member-a',['pulse']))[0].appId,'pulse');assert.equal(read().at(-1).appId,'partners');
 });
 test('a missing store starts normally and storage status neither exposes read errors nor reads for an unverified account',async()=>{
@@ -178,8 +178,8 @@ test('home distinguishes checking, retry, guest and a member with no connected a
   const home=mountMemberHome(fixture.root,{storage:memory(),getSnapshot:()=>({library,personal:{},prefs:{}}),onRetry:()=>retried++});
   home.render();assert.match(fixture.root.innerHTML,/aria-busy="true"/);assert.doesNotMatch(fixture.root.innerHTML,/data-member-retry/);
   library={status:'unavailable',owner:'a',appIds:[]};home.render();assert.match(fixture.root.innerHTML,/data-member-retry/);fixture.click({memberRetry:''});assert.equal(retried,1);
-  library={status:'guest',owner:'anonymous-local',appIds:['world']};home.render();assert.match(fixture.root.innerHTML,/로그인하고 내 공간 연결/);
-  library=member('a',[]);home.render();assert.match(fixture.root.innerHTML,/아직 연결된 앱이 없어요/);assert.doesNotMatch(fixture.root.innerHTML,/id="member-record-form"/);
+  library={status:'guest',owner:'anonymous-local',appIds:['world']};home.render();assert.match(fixture.root.innerHTML,/로그인하고 내 앱 보기/);
+  library=member('a',[]);home.render();assert.match(fixture.root.innerHTML,/아직 쓸 수 있는 앱이 없어요/);assert.doesNotMatch(fixture.root.innerHTML,/id="member-record-form"/);
 });
 
 test('purpose changes are temporary until the separate remember action is chosen',async()=>{
@@ -220,7 +220,7 @@ test('saving a draft clears the leave guard only after storage succeeds',async()
   const {mountMemberHome}=await loaded,fixture=homeFixture(),storage=memory();
   const home=mountMemberHome(fixture.root,{storage,getSnapshot:()=>({library:member(),personal:{},prefs:{}})});
   home.render();fixture.click({memberAdd:''});fixture.field('title').value='안전하게 저장';fixture.field('consent').checked=true;fixture.submit();
-  assert.equal(home.hasUnsavedChanges(),false);assert.equal(storage.values.size,1);assert.match(fixture.root.innerHTML,/다음에 같은 계정으로 열면/);
+  assert.equal(home.hasUnsavedChanges(),false);assert.equal(storage.values.size,1);assert.match(fixture.root.innerHTML,/같은 계정으로 열면 다시 볼 수/);
   fixture.click({memberAdd:''});fixture.field('title').value='저장 실패 내용';fixture.field('consent').checked=true;storage.setItem=()=>{throw Error('storage full');};fixture.submit();
   assert.equal(home.hasUnsavedChanges(),true);assert.equal(fixture.field('title').value,'저장 실패 내용');
 });

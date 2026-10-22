@@ -1,0 +1,143 @@
+{
+ "//": "시험 파일 짝(자동) — 소스 맵에서 뽑아 시험 파일에 실제로 있는 옛 조각만",
+ "desktop/tests/ai-subscriptions.test.cjs": [
+  [
+   "다시 확인",
+   "다시 읽기"
+  ]
+ ],
+ "desktop/tests/care-preview.test.cjs": [
+  [
+   " MVP 열기",
+   " 열기"
+  ]
+ ],
+ "desktop/tests/development-catalog.test.cjs": [
+  [
+   "웹에서 이용 가능",
+   "웹에서 열림"
+  ],
+  [
+   "{label:'실사 면접실 열기',action:'public-web'",
+   "{label:'면접 연습 열기',action:'public-web'"
+  ],
+  [
+   "실사 면접실 열기",
+   "면접 연습 열기"
+  ],
+  [
+   "{label:'웹으로 열기',action:'public-web'",
+   "{label:'웹에서 열기',action:'public-web'"
+  ],
+  [
+   "웹으로 열기",
+   "웹에서 열기"
+  ],
+  [
+   "지원 앱 ",
+   "앱 "
+  ]
+ ],
+ "desktop/tests/member-home.test.cjs": [
+  [
+   "아직 연결된 앱이 없어요",
+   "아직 쓸 수 있는 앱이 없어요"
+  ],
+  [
+   "로그인하고 내 공간 연결",
+   "로그인하고 내 앱 보기"
+  ]
+ ],
+ "desktop/tests/member-insight-view.test.cjs": [
+  [
+   "title: '직접 밝힌 관심과 목표'",
+   "title: '직접 고른 관심과 목표'"
+  ],
+  [
+   "직접 밝힌 관심과 목표",
+   "직접 고른 관심과 목표"
+  ]
+ ],
+ "desktop/tests/platform-tray.test.cjs": [
+  [
+   "'SYNK 플랫폼 열기'",
+   "'SYNK Platform 열기'"
+  ],
+  [
+   "SYNK 플랫폼 열기",
+   "SYNK Platform 열기"
+  ]
+ ],
+ "desktop/tests/renderer-auth.test.cjs": [
+  [
+   "개발 미리보기",
+   "시험판(Preview)"
+  ],
+  [
+   "독립 클라이언트",
+   "앱마다 따로 열림"
+  ],
+  [
+   "로그인 연결 중",
+   "로그인 중"
+  ],
+  [
+   "공개 웹에서 시작하기",
+   "웹에서 열기"
+  ],
+  [
+   " 개발 미리보기 열기",
+   " PC 창으로 열기"
+  ],
+  [
+   "공개 웹 · PC 개발판",
+   "웹에서 무료"
+  ],
+  [
+   "AI 업무 연습",
+   "회사 업무"
+  ],
+  [
+   "다시 확인",
+   "다시 읽기"
+  ],
+  [
+   "앱 종료 후 설치 파일 열기",
+   "앱 끄고 설치 파일 열기"
+  ]
+ ],
+ "desktop/tests/renderer-personalization.test.cjs": [
+  [
+   "교사·교육기관",
+   "수업 준비(교사·기관)"
+  ]
+ ],
+ "desktop/tests/renderer-state.test.cjs": [
+  [
+   "실사 면접실 · 공개 MVP",
+   "웹에서 연습"
+  ],
+  [
+   "모델·제작 진행",
+   "전용 창"
+  ],
+  [
+   "웹에서 이용 가능",
+   "웹에서 열림"
+  ],
+  [
+   "{label:'실사 면접실 열기',action:'public-web'",
+   "{label:'면접 연습 열기',action:'public-web'"
+  ],
+  [
+   "실사 면접실 열기",
+   "면접 연습 열기"
+  ]
+ ],
+ "desktop/tests/subscriptions-view.test.cjs": [
+  [
+   "다시 확인",
+   "다시 읽기"
+  ]
+ ]
+}

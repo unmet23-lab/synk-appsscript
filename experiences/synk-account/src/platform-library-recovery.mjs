@@ -42,7 +42,7 @@ export function createLibraryRecovery({ getHost, getOwner, canUse, getPayload, o
       candidate=present(saved) && !present(getPayload()) ? saved : null;
       error=''; changed();
       if (!candidate && present(getPayload())) schedule();
-    } catch { if (current(expected,account)) { status=null; error='기기의 초안 복구 상태를 확인하지 못했어요. 현재 입력은 이 화면에 유지돼요.'; changed(); } }
+    } catch { if (current(expected,account)) { status=null; error='이 기기의 임시 저장본을 확인하지 못했어요. 지금 입력은 이 화면에 그대로 있어요.'; changed(); } }
   }
   function persist() {
     clearTimeout(timer); timer=null;
@@ -55,7 +55,7 @@ export function createLibraryRecovery({ getHost, getOwner, canUse, getPayload, o
         if (!current(expected,account)) return;
         if (result.ok !== true) throw new Error('save');
         if (error) { error=''; changed(); }
-      } catch { if (current(expected,account)) { error='기기에 초안을 보관하지 못했어요. 창을 닫기 전에 계정에 메모를 저장해 주세요.'; changed(); } }
+      } catch { if (current(expected,account)) { error='이 기기에 임시 저장본을 만들지 못했어요. 창을 닫기 전에 계정에 메모를 저장해 주세요.'; changed(); } }
     });
     return write;
   }
@@ -87,7 +87,7 @@ export function createLibraryRecovery({ getHost, getOwner, canUse, getPayload, o
         if (typeof result.enabled === 'boolean') status=result;
         return true;
       } catch {
-        if (current(expected,account)) { removalFailed=true; error='기기에 보관한 초안을 지우지 못했어요. 창을 열어 둔 채 다시 시도해 주세요.'; changed(); }
+        if (current(expected,account)) { removalFailed=true; error='이 기기의 임시 저장본을 지우지 못했어요. 창을 열어 둔 채 다시 시도해 주세요.'; changed(); }
         return false;
       }
     });

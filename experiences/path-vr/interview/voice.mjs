@@ -7,14 +7,14 @@ const noop = () => {};
 export function voiceError(error) {
   const raw = String(error?.message || error || 'unknown');
   const name = error?.name || '';
-  if (name === 'NotAllowedError' || name === 'SecurityError') return { code: 'microphone-denied', message: '마이크 사용이 허용되지 않았어요. 브라우저의 마이크 권한을 확인해 주세요.' };
-  if (name === 'NotFoundError') return { code: 'microphone-missing', message: '사용할 수 있는 마이크가 없어요. 헤드셋 마이크를 확인해 주세요.' };
+  if (name === 'NotAllowedError' || name === 'SecurityError') return { code: 'microphone-denied', message: '마이크 권한이 꺼져 있어요. 주소창의 사이트 설정에서 마이크를 허용한 뒤 다시 눌러 주세요.' };
+  if (name === 'NotFoundError') return { code: 'microphone-missing', message: '쓸 수 있는 마이크를 찾지 못했어요. 마이크나 헤드셋을 연결한 뒤 다시 눌러 주세요.' };
   if (name === 'NotReadableError') return { code: 'microphone-busy', message: '마이크를 열지 못했어요. 다른 앱의 마이크 사용을 끝낸 뒤 다시 시도해 주세요.' };
   if (/memory|allocation|out of bounds|wasm trap/i.test(raw)) return { code: 'memory', message: '음성 모델을 실행할 메모리가 부족해요. 다른 브라우저 탭을 닫고 다시 시도해 주세요.' };
-  if (/404|not found|Failed to fetch|NetworkError|HTTP error/i.test(raw)) return { code: 'model-download', message: '한국어 음성 모델을 불러오지 못했어요. 연결과 모델 파일을 확인한 뒤 다시 시도해 주세요.' };
+  if (/404|not found|Failed to fetch|NetworkError|HTTP error/i.test(raw)) return { code: 'model-download', message: '한국어 음성 모델을 내려받지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.' };
   if (/timeout/i.test(raw)) return { code: 'timeout', message: '음성 처리 시간이 길어지고 있어요. 다시 시도해 주세요.' };
   if (name === 'AbortError') return { code: 'cancelled', message: '음성 입력을 종료했어요.' };
-  return { code: 'voice-unavailable', message: '음성 입력을 시작하지 못했어요. 브라우저와 헤드셋을 확인한 뒤 다시 시도해 주세요.' };
+  return { code: 'voice-unavailable', message: '음성 입력을 시작하지 못했어요. 페이지를 새로 고쳐 다시 해 보거나 「직접 입력」으로 답해 주세요.' };
 }
 
 function abortError() { return new DOMException('Voice input cancelled', 'AbortError'); }

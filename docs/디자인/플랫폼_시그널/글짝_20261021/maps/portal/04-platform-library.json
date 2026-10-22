@@ -1,0 +1,41 @@
+{
+  "//": "웹 플랫폼 맨 위 계정 라이브러리(즐겨찾기·최근 기록·할 일 메모를 계정에 저장) — PC 앱 묶음(platform-continuity)도 이 원천을 쓴다",
+  "experiences/synk-account/src/platform-library-view.mjs": [
+    ["const names = { world: \"WORLD\", messenger: \"워크스페이스\", teacher: \"워크스페이스 · 내 수업\", path: \"PATH\", pulse: \"PULSE\", partners: \"PULSE · 이전 Partners 기록\", care: \"플레저\", fortune: \"운세\" };", "const names = { world: \"WORLD\", messenger: \"Workspace\", teacher: \"Workspace 내 수업\", path: \"PATH\", pulse: \"PULSE\", partners: \"PULSE의 옛 메모\", care: \"플레저\", fortune: \"무료 운세\" };", {"n": 1}],
+    ["<h2 data-library-title>계정으로 이어가기</h2><p data-library-detail>즐겨찾기와 다음에 할 일을 같은 SYNK ID로 이어가세요.</p>", "<h2 data-library-title>계정 라이브러리</h2><p data-library-detail>로그인하면 즐겨찾기와 할 일 메모를 계정에 저장해 다른 기기에서도 봐요.</p>", {"n": 1}],
+    ["message = '연결 복구로 재로그인이 필요하다는 안내라면 플랫폼 상단 계정 메뉴의 “새로 로그인”을 선택하세요. 기기 저장 문제라면 저장된 로그인을 유지하고 PC 저장공간·접근 권한을 확인한 뒤 재확인해 주세요.';", "message = '다시 로그인하라는 안내가 보이면 위 계정 메뉴에서 「새로 로그인」을 눌러 주세요. 기기 저장 문제라면 PC 저장 공간을 비운 뒤 다시 눌러 주세요.';", {"n": 1}],
+    ["message = error.message || '계정 연결을 다시 확인하지 못했어요.';", "message = error.message || '계정을 다시 불러오지 못했어요.';", {"n": 1}],
+    ["note2?.title || (recent ? \"다시 \" + names[recent.id] + \"에서\" : \"계정으로 이어가기\");", "note2?.title || (recent ? \"최근에 연 \" + names[recent.id] : \"계정 라이브러리\");", {"n": 1}],
+    ["recent ? \"최근 열었던 공간을 바로 열 수 있어요.\" : available ? \"다음에 할 일을 남겨 두면 여기서 바로 이어갈 수 있어요.\" : \"즐겨찾기와 다음에 할 일을 같은 SYNK ID로 이어가세요.\");", "recent ? \"「이어서 열기」를 누르면 바로 열려요.\" : available ? \"다음에 할 일을 메모로 남기면 여기서 바로 이어 가요.\" : \"로그인하면 즐겨찾기와 할 일 메모를 계정에 저장해 다른 기기에서도 봐요.\");", {"n": 1}],
+    ["<label>이어 쓸 공간<select name=\"appId\">", "<label>이어 쓸 앱<select name=\"appId\">", {"n": 1}],
+    ["placeholder=\"메모 내용이나 공간 이름\"", "placeholder=\"메모 내용이나 앱 이름\"", {"n": 1}],
+    ["content.innerHTML = active ? '<h2>내 계정의 이어쓰기</h2>", "content.innerHTML = active ? '<h2>계정에 저장한 즐겨찾기와 메모</h2>", {"n": 1}],
+    ["'<p>계정 연결을 켜면 지금부터 선택한 즐겨찾기와 최근 열기를 계정에 저장해요. 기존 기기 목록은 위의 옮기기 버튼으로 직접 가져올 수 있어요.</p><button data-cloud=\"enable\">계정 저장 켜기</button>'", "'<p>켜면 지금부터 고르는 즐겨찾기와 최근 기록을 계정에 저장해요. 이 기기에 있던 목록은 위의 「기기 기록을 계정으로 옮기기」로 가져와요.</p><button data-cloud=\"enable\">계정 저장 켜기</button>'", {"n": 1}],
+    ["'> 최근 열기 시각도 계정에 보관</label>", "'> 최근에 연 시각도 계정에 저장</label>", {"n": 1}],
+    ["<p>최근 열기는 실제 작업 완료나 학습 성과를 뜻하지 않아요.</p>\") : \"<p>계정에 로그인한 뒤 라이브러리를 연결할 수 있어요. 기기의 바로가기는 그대로 유지됩니다.</p>\";", "<p>최근 기록은 앱을 연 시각일 뿐, 학습 결과가 아니에요.</p>\") : \"<p>로그인하면 계정 라이브러리를 켤 수 있어요. 이 기기의 바로가기는 그대로 남아요.</p>\";", {"n": 1}],
+    ["throw new Error(\"계정 연결과 저장 상태를 먼저 확인해 주세요.\");", "throw new Error(\"계정 라이브러리가 아직 준비되지 않았어요. 잠시 뒤 다시 해 주세요.\");", {"n": 1}],
+    ["throw new Error(\"변경을 보관하지 못했어요. 저장 상태를 확인해 주세요.\");", "throw new Error(\"변경을 보관하지 못했어요. 「저장 다시 시도」를 눌러 주세요.\");", {"n": 1}],
+    ["throw new Error(\"계정 연결 설정을 불러오지 못했어요. 다시 연결을 눌러 주세요.\");", "throw new Error(\"로그인 설정을 못 불러왔어요. 「계정 라이브러리 연결」을 다시 눌러 주세요.\");", {"n": 1}],
+    ["description: \"즐겨찾기·최근 열기·직접 적은 메모만 연결합니다. 앱 원문과 이용 권한은 각 앱에서 확인해요.\",", "description: \"즐겨찾기, 최근 기록, 직접 적은 메모만 계정에 저장해요. 앱 안의 기록은 각 앱에 남아요.\",", {"n": 1}],
+    ["deleteLabel: \"계정 라이브러리 삭제·저장 끄기\",", "deleteLabel: \"계정 라이브러리 지우고 끄기\",", {"n": 1}],
+    ["deleteConfirmation: \"이 계정의 즐겨찾기·최근 열기·이어쓰기 메모를 삭제하고 저장을 끌까요? 다른 기기에서도 이 목록을 다시 불러올 수 없어요. 각 앱의 원본 기록은 유지돼요.\",", "deleteConfirmation: \"이 계정의 즐겨찾기, 최근 기록, 할 일 메모를 지우고 저장을 끌까요? 다른 기기에서도 다시 불러올 수 없어요. 각 앱 안의 기록은 그대로예요.\",", {"n": 1}],
+    ["globalThis.confirm(\"작성 중인 이어쓰기 메모를 닫을까요?\")", "globalThis.confirm(\"작성 중인 메모를 닫을까요?\")", {"n": 1}],
+    ["message = error.message || \"계정 연결을 마치지 못했어요. 다시 연결해 주세요.\";", "message = error.message || \"계정 라이브러리를 켜지 못했어요. 다시 눌러 주세요.\";", {"n": 1}],
+    ["globalThis.confirm(\"작성 중인 이어쓰기 메모를 닫고 이동할까요?\")", "globalThis.confirm(\"작성 중인 메모를 닫고 이동할까요?\")", {"n": 1}]
+  ],
+  "experiences/synk-account/tests/platform-library-view.test.mjs": [
+    ["/워크스페이스 · 내 수업/", "/Workspace 내 수업/"],
+    ["/PULSE · 이전 Partners 기록/", "/PULSE의 옛 메모/"],
+    ["/즐겨찾기·최근 열기·이어쓰기 메모/", "/즐겨찾기, 최근 기록, 할 일 메모/"]
+  ],
+  "experiences/synk-account/src/platform-library-account.mjs": [
+    ["throw Object.assign(new Error('저장된 계정 연결을 확인하지 못했어요. 잠시 뒤 다시 시도해 주세요.'),{code:'AUTH_REQUEST_UNAVAILABLE',retryable:true});", "throw Object.assign(new Error('저장된 로그인을 확인하지 못했어요. 잠시 뒤 다시 시도해 주세요.'),{code:'AUTH_REQUEST_UNAVAILABLE',retryable:true});", {"n": 1}],
+    ["throw Object.assign(new Error('플랫폼 계정 연결을 다시 확인해 주세요.'),{code:'AUTH_REQUIRED'});", "throw Object.assign(new Error('로그인이 끝났어요. 다시 로그인해 주세요.'),{code:'AUTH_REQUIRED'});", {"n": 1}],
+    ["new Error(result.error?.message||'계정 연결을 확인해 주세요.')", "new Error(result.error?.message||'계정 서버가 요청을 처리하지 못했어요. 잠시 뒤 다시 시도해 주세요.')", {"n": 1}],
+    ["return {ok:false,message:'계정 관리에서 로그아웃을 완료해 주세요.'};", "return {ok:false,message:'로그아웃은 「SYNK ID 관리」 화면에서 해 주세요.'};", {"n": 1}]
+  ],
+  "experiences/synk-account/src/platform-library-data.mjs": [
+    ["new TypeError('플랫폼 기록 형식을 확인해 주세요.')", "new TypeError('라이브러리 기록 형식이 맞지 않아요.')", {"n": 1}],
+    ["throw new Error('계정에 저장할 항목을 확인하고 연결을 켜 주세요.');", "throw new Error('「계정 저장 켜기」를 먼저 눌러 주세요.');", {"n": 1}]
+  ]
+}

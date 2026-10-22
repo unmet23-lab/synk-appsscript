@@ -42,9 +42,9 @@ export function seoulDateKey(now = Date.now()) {
 }
 
 export function validateDateKey(date) {
-  if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new TypeError('날짜 형식이 올바르지 않습니다.');
+  if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new TypeError('날짜 형식이 맞지 않아요. 날짜를 다시 골라 주세요.');
   const parsed = new Date(`${date}T00:00:00Z`);
-  if (!Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date) throw new TypeError('존재하지 않는 날짜입니다.');
+  if (!Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date) throw new TypeError('없는 날짜예요. 날짜를 다시 골라 주세요.');
   return date;
 }
 

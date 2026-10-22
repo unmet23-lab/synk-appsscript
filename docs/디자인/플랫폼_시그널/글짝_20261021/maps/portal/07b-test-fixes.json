@@ -1,0 +1,19 @@
+{
+  "//": "짧은 정규식으로 옛 글을 잡던 시험을 새 글에 맞춘다(뜻은 그대로: 설정 실패·설정 없음·준비 안 됨·다른 번호 인증·저장 미확인·3D 멈춤)",
+  "experiences/synk-account/tests/client-recovery.test.mjs": [
+    ["assert.match(page.notice(), /설정을 불러오지 못/);", "assert.match(page.notice(), /설정을 못 불러왔어요/);"],
+    ["assert.match(page.notice(), /SSO 설정 전/);", "assert.match(page.notice(), /로그인 설정이 아직 없어요/);"]
+  ],
+  "experiences/synk-account/tests/desktop-account.test.mjs": [
+    ["assert.match(authMessage({ configured: false }), /준비/);", "assert.match(authMessage({ configured: false }), /로그인 설정이 아직 없어요/);"]
+  ],
+  "experiences/synk-account/tests/google-auth.test.mjs": [
+    ["assert.match(f.notices.at(-1)[0], /다른 번호의 인증/);", "assert.match(f.notices.at(-1)[0], /다른 번호로 인증을/);"]
+  ],
+  "experiences/synk-account/tests/town-sharing.test.mjs": [
+    ["assert.match(page.status().textContent,/確認|확인하지 못/);", "assert.match(page.status().textContent,/저장됐는지 모르겠어요/);"]
+  ],
+  "experiences/synk-account/tests/wardrobe-three-preview.test.mjs": [
+    ["assert.match(f.status().textContent, /3D 연결이 끊겨/);", "assert.match(f.status().textContent, /3D 화면이 멈춰/);"]
+  ]
+}

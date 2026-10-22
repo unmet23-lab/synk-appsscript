@@ -23,7 +23,7 @@ function recoveryControl() {
 }
 function reportConnectionError(error) {
   if (closed || error?.code === 'ACCOUNT_CHANGED') return;
-  recoveryNeeded = true;let text = error.message || '계정 연결을 확인하지 못했어요. 다시 확인해 주세요.';
+  recoveryNeeded = true;let text = error.message || '계정 연결을 확인하지 못했어요. 「연결 다시 확인」을 눌러 주세요.';
   const revoked = AUTH_ERRORS.has(error?.code);
   if (error?.code === 'PLATFORM_ACCOUNT_MISMATCH') {
     generation++;view?.stop();view = null;session = null;verification = null;pendingExchange = null;
@@ -32,7 +32,7 @@ function reportConnectionError(error) {
     generation++;view?.stop();view = null;session = null;verification = null;pendingExchange = null;
     try { sessionStorage.removeItem(`synk.oauth.session.${browserProduct}`); }
     catch { text = '현재 화면의 연결은 종료했지만 브라우저 저장을 지우지 못했어요. 이 창을 닫아 주세요.'; }
-  } else if (session?.access_token && error.retryable !== false) text += ' 로그인 정보는 유지했으니 연결을 다시 확인해 주세요.';
+  } else if (session?.access_token && error.retryable !== false) text += ' 로그인 정보는 유지했으니 「연결 다시 확인」을 눌러 주세요.';
   notice(text, true);
   const configured = browserConfig?.configured && browserConfig.clients[browserProduct]?.clientId && browserConfig.clients[browserProduct]?.redirectUri;
   $('connect').hidden = !configured || !!session?.access_token;$('connect').disabled = false;
@@ -43,13 +43,13 @@ async function startDesktop(product, bridge) {
   if (closed) return;
   if (environment.clientId !== product) throw new Error('이 앱에 맞는 계정 화면으로 이동해 주세요.');
   const accountLink = document.querySelector('footer a');
-  accountLink.href = '#notice';accountLink.textContent = '이 앱의 SYNK ID';
+  accountLink.href = '#notice';accountLink.textContent = '이 앱의 로그인 상태';
   if (product === 'platform') {
     const worldLink = document.querySelector('header a[href="./client.html?product=world"]');
     worldLink.onclick = async event => {
       event.preventDefault();
-      try { const result = await bridge.launch('world');notice(result.ok ? '별도 WORLD 앱을 열었어요.' : '플랫폼 라이브러리에서 WORLD 설치 상태를 확인해 주세요.', !result.ok); }
-      catch { notice('WORLD 앱을 열지 못했어요. 플랫폼 라이브러리에서 확인해 주세요.', true); }
+      try { const result = await bridge.launch('world');notice(result.ok ? 'WORLD 앱을 열었어요.' : 'WORLD를 열지 못했어요. 「설치·업데이트」에서 WORLD 설치 상태를 봐 주세요.', !result.ok); }
+      catch { notice('WORLD 앱을 열지 못했어요. 잠시 뒤 WORLD를 다시 눌러 주세요.', true); }
     };
   }
   let identity = null, activeSessionGeneration = null, unsubscribe, disposed = false, revision = 0;
@@ -115,10 +115,10 @@ async function startDesktop(product, bridge) {
         const incomplete = result.serverRevoked === false || request.scope === 'all' && !allResult?.ok;
         notice(note || result.message || (!result.ok ? '기기 로그인 저장을 지우지 못했어요. 다시 로그아웃해 주세요.' : incomplete ? '이 앱에서 로그아웃했어요. 서버의 로그인 종료는 연결 후 다시 확인해 주세요.' : request.scope === 'all' ? '모든 제품에 로그인 종료를 요청하고 이 앱에서 로그아웃했어요.' : '이 앱에서 로그아웃했어요.'), !result.ok || incomplete);
       } catch (error) {
-        if (current()) notice('현재 화면은 닫았지만 기기의 로그인 종료를 확인하지 못했어요. 이 창을 닫고 다시 확인해 주세요.', true);
+        if (current()) notice('화면은 닫았지만 이 기기의 로그아웃을 확인하지 못했어요. 이 창을 닫았다가 다시 열어 로그아웃됐는지 봐 주세요.', true);
       } finally { if (current() && !newerLogin()) $('connect').disabled = false; }
     } });
-    try { await view.load();guard();if (entry === revision) notice(`${PRODUCTS[product]}에 연결했어요. 모바일과 PC에서 같은 SYNK ID를 사용해요.`); }
+    try { await view.load();guard();if (entry === revision) notice(`${PRODUCTS[product]}에 로그인했어요. 휴대폰과 PC에서 같은 SYNK ID로 이어 써요.`); }
     catch (error) { if (token === generation) { clear();notice(error.message, true);$('connect').hidden = false; } }
   }
   const report = error => { if (!disposed && !closed) notice(error.message || '연결을 확인하지 못했어요.', true); };
@@ -142,12 +142,12 @@ async function startDesktop(product, bridge) {
 async function start(attempt) {
   const checkEntry = () => { if (closed || attempt !== entry) throw accountChanged(); };
   checkEntry();generation++;view?.stop();view = null;session = null;verification = null;browserConfig = null;
-  $('setup').hidden = true;$('connect').hidden = true;notice('계정 연결을 확인하고 있어요…');
+  $('setup').hidden = true;$('connect').hidden = true;notice('로그인 상태를 확인하고 있어요…');
   const product = new URL(location.href).searchParams.get('product') || 'platform';if (!PRODUCTS[product]) throw new Error('등록된 SYNK 제품 주소를 확인해 주세요.');
-  $('product-label').textContent = PRODUCTS[product];$('product-copy').textContent = product === 'world' ? 'SYNK ID로 연결한 뒤 게임과 학습을 이어가요.' : 'SYNK ID로 연결한 뒤 내 소속과 이용 권한을 확인해요.';
+  $('product-label').textContent = PRODUCTS[product];$('product-copy').textContent = product === 'world' ? '로그인하면 게임 진도와 코인을 다른 기기에서도 이어 써요.' : '로그인하면 내 소속과 이용 권한, 로그인한 기기를 볼 수 있어요.';
   document.getElementById('app-manifest').href = product === 'world' ? './world.webmanifest' : './platform.webmanifest';
   document.querySelector('link[rel="apple-touch-icon"]').href = product === 'world' ? './assets/app-world.png' : './assets/app-platform.png';
-  if (product === 'messenger') throw new Error('사내 메신저의 로그인 입구에서 연결해 주세요.');
+  if (product === 'messenger') throw new Error('SYNK Workspace는 Workspace 로그인 화면에서 들어가 주세요.');
   if (typeof window.synkDesktop?.authStatus === 'function') { await startDesktop(product, window.synkDesktop);return; }
   browserProduct = product;recoveryControl().hidden = true;
   if (product === 'world') {
@@ -161,12 +161,12 @@ async function start(attempt) {
     else if (response.status !== 404) throw new Error('Configuration unavailable');
     checkEntry();
   } catch (error) {
-    checkEntry();throw Object.assign(new Error('계정 연결 설정을 불러오지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.'), { code: 'NETWORK', retryable: true });
+    checkEntry();throw Object.assign(new Error('인터넷 연결이 불안정해 로그인 설정을 못 불러왔어요. 연결되면 「연결 다시 확인」을 눌러 주세요.'), { code: 'NETWORK', retryable: true });
   } finally { clearTimeout(timer); }
   const config = readConfig(raw || { version: 1 }, location.href), key = `synk.oauth.session.${product}`;
   browserConfig = config;
   $('learning-link').href = config.learningUrl;
-  if (!config.configured || !config.clients[product].clientId || !config.clients[product].redirectUri) { $('setup').hidden = false;recoveryNeeded = true;recoveryControl().hidden = false;notice('제품 SSO 설정 전 · 실제 로그인 연결은 아직 시작하지 않아요.');return; }
+  if (!config.configured || !config.clients[product].clientId || !config.clients[product].redirectUri) { $('setup').hidden = false;recoveryNeeded = true;recoveryControl().hidden = false;notice('이 화면의 로그인 설정이 아직 없어요. 기본 학습은 로그인 없이 할 수 있어요.');return; }
   const connect = async (explicit = true) => {
     const intent = ++generation;view?.stop();view = null;session = null;verification = null;
     $('connect').disabled = true;recoveryControl().hidden = true;pendingExchange = null;
@@ -175,7 +175,7 @@ async function start(attempt) {
     catch (error) { if (!closed && attempt === entry && intent === generation) { notice(error.message, true);$('connect').hidden = false;$('connect').disabled = false; } }
   };
   $('connect').onclick = () => connect(true);
-  if (platformEntry?.isCancelled()) { $('connect').hidden = false;$('connect').disabled = false;notice('WORLD 연결을 종료했어요. 다시 연결하려면 SYNK ID로 로그인해 주세요.');return; }
+  if (platformEntry?.isCancelled()) { $('connect').hidden = false;$('connect').disabled = false;notice('WORLD에서 로그아웃했어요. 다시 쓰려면 SYNK ID로 로그인해 주세요.');return; }
   const params = new URL(location.href).searchParams;
   if (!callbackHandled && (params.has('code') || params.has('error'))) {
     callbackHandled = true;
@@ -183,8 +183,8 @@ async function start(attempt) {
     finally { const clean = new URL(location.href);for (const name of ['code', 'state', 'error', 'error_description']) clean.searchParams.delete(name);history.replaceState(null, '', clean); }
   }
   if (pendingExchange) { session = await tokenRequest(config, pendingExchange);checkEntry();sessionStorage.setItem(key, JSON.stringify(session));pendingExchange = null; }
-  else { try { session = JSON.parse(sessionStorage.getItem(key) || 'null'); } catch { throw Object.assign(new Error('이 탭의 로그인 정보를 읽지 못했어요. 브라우저 저장 설정을 확인해 주세요.'), { code: 'STORAGE' }); } }
-  if (!session?.access_token) { if (platformEntry?.beginAttempt()) { await connect(false);return; }$('connect').hidden = false;notice('SYNK ID에서 로그인하면 이 제품으로 돌아와요.');return; }
+  else { try { session = JSON.parse(sessionStorage.getItem(key) || 'null'); } catch { throw Object.assign(new Error('브라우저가 저장 공간을 막아 로그인 정보를 못 읽었어요. 사이트 데이터 저장을 허용한 뒤 다시 열어 주세요.'), { code: 'STORAGE' }); } }
+  if (!session?.access_token) { if (platformEntry?.beginAttempt()) { await connect(false);return; }$('connect').hidden = false;notice('SYNK ID로 로그인하면 이 화면으로 돌아와요.');return; }
   const token = ++generation, guard = () => { if (closed || attempt !== entry || token !== generation || !session) throw accountChanged(); };
   async function logout(note, request = {}) {
     let logoutSession = session ? { ...session } : null;
@@ -231,7 +231,7 @@ async function start(attempt) {
   record.signatureFor = signature;
   const client = { ...baseClient, load: async () => { record.viewLoads++;const result = firstAccount || await loadAccount();firstAccount = null;guard();record.signature = signature(result);return result; } };
   const transport=product==='world'?createClassroomTransport({url:config.accountApiUrl,anonKey:config.supabasePublishableKey,product,guard,getAccessToken:()=>session?.access_token,refresh}):null;
-  view = (product==='world'?createAccountWorkspace:createAccountView)({ client, transport, product, guard, notice, logout });await view.load();guard();verification = record;recoveryNeeded = false;recoveryControl().hidden = true;$('connect').hidden = true;notice(`${PRODUCTS[product]}에서 서버가 확인한 계정으로 연결했어요.`);
+  view = (product==='world'?createAccountWorkspace:createAccountView)({ client, transport, product, guard, notice, logout });await view.load();guard();verification = record;recoveryNeeded = false;recoveryControl().hidden = true;$('connect').hidden = true;notice(`${PRODUCTS[product]}에 로그인했어요.`);
 }
 async function reconnect() {
   if (closed || checking) return;checking = true;const attempt = ++entry;

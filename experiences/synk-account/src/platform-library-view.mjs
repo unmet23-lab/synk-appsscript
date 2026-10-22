@@ -4,7 +4,7 @@ import { validatePlatformLibraryState } from './platform-library-state.mjs';
 import { platformLibraryAccount } from './platform-library-account.mjs';
 import { createLibraryRecovery } from './platform-library-recovery.mjs';
 
-const names = { world: "WORLD", messenger: "워크스페이스", teacher: "워크스페이스 · 내 수업", path: "PATH", pulse: "PULSE", partners: "PULSE · 이전 Partners 기록", care: "플레저", fortune: "운세" };
+const names = { world: "WORLD", messenger: "Workspace", teacher: "Workspace 내 수업", path: "PATH", pulse: "PULSE", partners: "PULSE의 옛 메모", care: "플레저", fortune: "무료 운세" };
 const esc = (value) => String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
 let librarySequence = 0;
 export function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
@@ -41,7 +41,7 @@ export function mountPlatformLibrary(root, { getHost, ensureReady = async () => 
   }
   const panelId = "synk-library-panel-" + ++librarySequence;
   root.classList.add("platform-continuity");
-  root.innerHTML = '<header class="continuity-overview"><div class="continuity-preview"><p class="continuity-eyebrow">MY LIBRARY</p><h2 data-library-title>계정으로 이어가기</h2><p data-library-detail>즐겨찾기와 다음에 할 일을 같은 SYNK ID로 이어가세요.</p><span class="continuity-status" data-library-status></span></div><div class="continuity-overview-actions"><span data-connect><button type="button" data-connect-button>계정 라이브러리 연결</button></span><button type="button" data-resume hidden>이어서 열기</button><button type="button" data-panel-toggle hidden aria-expanded="false" aria-controls="' + panelId + '">메모·계정 설정</button></div></header><div id="' + panelId + '" data-library-panel hidden><section data-notebook-mount hidden></section><section data-cloud-content hidden></section></div>';
+  root.innerHTML = '<header class="continuity-overview"><div class="continuity-preview"><p class="continuity-eyebrow">MY LIBRARY</p><h2 data-library-title>계정 라이브러리</h2><p data-library-detail>로그인하면 즐겨찾기와 할 일 메모를 계정에 저장해 다른 기기에서도 봐요.</p><span class="continuity-status" data-library-status role="status" aria-live="polite"></span></div><div class="continuity-overview-actions"><span data-connect><button type="button" data-connect-button>계정 라이브러리 연결</button></span><button type="button" data-resume hidden>이어서 열기</button><button type="button" data-panel-toggle hidden aria-expanded="false" aria-controls="' + panelId + '">메모·계정 설정</button></div></header><div id="' + panelId + '" data-library-panel hidden><section data-notebook-mount hidden></section><section data-cloud-content hidden></section></div>';
   const mount = root.querySelector("[data-notebook-mount]"), content = root.querySelector("[data-cloud-content]"), panel = root.querySelector("[data-library-panel]"), toggle = root.querySelector("[data-panel-toggle]"), connect = root.querySelector("[data-connect-button]"), resumeButton = root.querySelector("[data-resume]");
   function verifyNativeConnection(event) {
     const target = event.target?.closest?.('button[data-notebook="signin"]'), identity = accountAdapter?.status();
@@ -59,11 +59,11 @@ export function mountPlatformLibrary(root, { getHost, ensureReady = async () => 
         const verified = accountAdapter.status();
         const sameIdentity = Number.isSafeInteger(identity.sessionGeneration) && verified.sessionGeneration === identity.sessionGeneration && verified.accountId === identity.accountId;
         if (!disposed && (expected === modeVersion || sameIdentity) && !verified.signedIn && verified.error?.code === 'SUITE_UNAVAILABLE') {
-          message = '연결 복구로 재로그인이 필요하다는 안내라면 플랫폼 상단 계정 메뉴의 “새로 로그인”을 선택하세요. 기기 저장 문제라면 저장된 로그인을 유지하고 PC 저장공간·접근 권한을 확인한 뒤 재확인해 주세요.';
+          message = '다시 로그인하라는 안내가 보이면 위 계정 메뉴에서 「새로 로그인」을 눌러 주세요. 기기 저장 문제라면 PC 저장 공간을 비운 뒤 다시 눌러 주세요.';
           nativeVerificationNotice = { text: message, accountId: verified.accountId, generation: verified.sessionGeneration };
         }
       }
-      catch (error) { if (!disposed && expected === modeVersion) message = error.message || '계정 연결을 다시 확인하지 못했어요.'; }
+      catch (error) { if (!disposed && expected === modeVersion) message = error.message || '계정을 다시 불러오지 못했어요.'; }
       finally {
         if (nativeVerification === task) nativeVerification = null;
         if (!disposed) {
@@ -85,12 +85,20 @@ export function mountPlatformLibrary(root, { getHost, ensureReady = async () => 
     toggle.setAttribute("aria-expanded", String(value));
     toggle.textContent = value ? "접어두기" : "메모·계정 설정";
   }
+  // 아직 계정에 저장하지 않을 때 다음 한 걸음: 로그인 전 / 로그인했지만 연결 전 / 연결했지만 계정 저장을 켜기 전.
+  function nextStep() {
+    const signedIn = !!(accountAdapter?.status?.()?.signedIn ?? getHost?.()?.identity?.()?.signedIn);
+    if (notebook?.active && !doc.consent) return "「계정 저장 켜기」를 누르면 즐겨찾기와 최근 기록을 계정에 저장해 다른 기기에서도 봐요.";
+    if (signedIn && !notebook?.active) return "「계정 라이브러리 연결」을 누르면 즐겨찾기와 할 일 메모를 계정에 저장해 다른 기기에서도 봐요.";
+    if (signedIn) return "즐겨찾기와 할 일 메모를 계정에 저장해 다른 기기에서도 봐요.";
+    return "로그인하면 즐겨찾기와 할 일 메모를 계정에 저장해 다른 기기에서도 봐요.";
+  }
   function summary() {
     const available = !pageSuspended && !disposed && !!notebook?.active && notebook.canEdit && doc.consent;
     const note2 = available ? doc.notes.find((row) => !row.done && ACTIVE_PLATFORM_APP_IDS.includes(platformAppId(row.appId))) : null, recent = available ? projectPlatformLibrary(doc, { appIds: entryIds() }).recent[0] : null, hasDraft = available && (!!draft.title.trim() || !!parkedDraft?.title.trim());
     resumeId = note2?.appId || recent?.entryId || recent?.id || null;
-    root.querySelector("[data-library-title]").textContent = hasDraft ? editing ? "수정 중인 메모가 있어요" : "작성 중인 메모가 있어요" : note2?.title || (recent ? "다시 " + names[recent.id] + "에서" : "계정으로 이어가기");
-    root.querySelector("[data-library-detail]").textContent = message || (hasDraft ? "접어두어도 이 화면의 입력은 유지돼요." : note2 ? (names[note2.appId] || "이전 앱의 메모") + " · 남겨 둔 다음 할 일" : recent ? "최근 열었던 공간을 바로 열 수 있어요." : available ? "다음에 할 일을 남겨 두면 여기서 바로 이어갈 수 있어요." : "즐겨찾기와 다음에 할 일을 같은 SYNK ID로 이어가세요.");
+    root.querySelector("[data-library-title]").textContent = hasDraft ? editing ? "수정 중인 메모가 있어요" : "작성 중인 메모가 있어요" : note2?.title || (recent ? "최근에 연 " + names[recent.id] : "계정 라이브러리");
+    root.querySelector("[data-library-detail]").textContent = message || (hasDraft ? "접어두어도 이 화면의 입력은 유지돼요." : note2 ? (names[note2.appId] || "이전 앱의 메모") + " · 남겨 둔 다음 할 일" : recent ? "「이어서 열기」를 누르면 바로 열려요." : available ? "다음에 할 일을 메모로 남기면 여기서 바로 이어 가요." : nextStep());
     root.querySelector("[data-library-status]").textContent = connecting ? "연결 준비 중…" : hasDraft && notebook.status.status === "synced" && !notebook.status.error && !notebook.pending ? "메모는 아직 계정에 저장하지 않았어요" : mount.querySelector("[data-notebook-status]")?.textContent || "";
     resumeButton.hidden = !available || !resumeId && !hasDraft;
     resumeButton.textContent = hasDraft ? "계속 작성" : "이어서 열기";
@@ -195,11 +203,11 @@ export function mountPlatformLibrary(root, { getHost, ensureReady = async () => 
     if (!banner) return;
     const state = recovery.state();
     banner.hidden = !state.candidate && !state.error;
-    banner.querySelector("[data-recovery-detail]").textContent = state.error || "이 기기에 보관한 작성 중 메모가 있어요. 복구하면 내용을 확인한 뒤 계정에 저장할 수 있어요.";
+    banner.querySelector("[data-recovery-detail]").textContent = state.error || "이 기기에 쓰던 메모의 임시 저장본이 있어요. 되살리면 내용을 확인한 뒤 계정에 저장할 수 있어요.";
     banner.querySelector('[data-cloud="recover-draft"]').hidden = !state.candidate;
     const discard = banner.querySelector('[data-cloud="discard-recovery"]');
     discard.hidden = !state.candidate && !state.removalFailed;
-    discard.textContent = state.removalFailed ? "초안 삭제 다시 시도" : "보관한 초안 버리기";
+    discard.textContent = state.removalFailed ? "임시 저장본 지우기 다시 시도" : "임시 저장본 버리기";
   }
   function noteControls(editable) {
     const submit = content.querySelector("[data-note-submit]");
@@ -241,7 +249,7 @@ export function mountPlatformLibrary(root, { getHost, ensureReady = async () => 
       if (nextNotes !== renderedNotes) content.querySelector(".continuity-notes").innerHTML = nextNotes;
       if (nextFavorites !== renderedFavorites) content.querySelector("[data-favorite-order]").innerHTML = nextFavorites;
     } else {
-      content.innerHTML = active ? '<h2>내 계정의 이어쓰기</h2><p role="status" data-cloud-message>' + esc(message) + "</p>" + (!doc.consent ? '<p>계정 연결을 켜면 지금부터 선택한 즐겨찾기와 최근 열기를 계정에 저장해요. 기존 기기 목록은 위의 옮기기 버튼으로 직접 가져올 수 있어요.</p><button data-cloud="enable">계정 저장 켜기</button>' : '<label><input type="checkbox" data-cloud="remember" ' + (doc.rememberRecent ? "checked" : "") + '> 최근 열기 시각도 계정에 보관</label><div class="continuity-apps">' + displayIds().map((id2) => '<button type="button" data-cloud="favorite" data-id="' + id2 + '" aria-pressed="' + favoriteSelected(id2) + '">' + (favoriteSelected(id2) ? "★ " : "☆ ") + names[id2] + "</button>").join("") + '</div><section data-favorite-order>' + nextFavorites + '</section><section data-note-recovery class="continuity-undo" hidden><p data-recovery-detail role="status"></p><button type="button" data-cloud="recover-draft">초안 복구</button><button type="button" data-cloud="discard-recovery">보관한 초안 버리기</button></section><form data-note-form><h3 data-editor-heading>새 메모</h3><p data-edit-detail hidden></p><p id="' + panelId + '-capacity" data-note-capacity role="status"></p><label>이어 쓸 공간<select name="appId">' + editorOptions(draft.appId) + '</select></label><label>다음에 할 일<input name="title" maxlength="240" required aria-describedby="' + panelId + '-capacity" value="' + esc(draft.title) + '" placeholder="예: 다음 학습에서 확인할 내용 정리하기"></label><button type="submit" data-note-submit>계정에 메모 남기기</button><button type="button" data-cloud="cancel-edit" hidden>수정 취소</button></form><div class="continuity-undo" data-note-undo hidden><p role="status" data-note-undo-message></p><button type="button" data-cloud="undo-note">삭제 되돌리기</button><p data-note-undo-detail></p></div><div class="continuity-note-tools"><label>메모 검색<input type="search" data-note-search placeholder="메모 내용이나 공간 이름" aria-label="메모 검색"></label><label>메모 상태<select data-note-filter><option value="all">모두</option><option value="pending">미완료</option><option value="done">완료</option></select></label></div><div class="continuity-notes">' + nextNotes + "</div><p>최근 열기는 실제 작업 완료나 학습 성과를 뜻하지 않아요.</p>") : "<p>계정에 로그인한 뒤 라이브러리를 연결할 수 있어요. 기기의 바로가기는 그대로 유지됩니다.</p>";
+      content.innerHTML = active ? '<h2>계정에 저장한 즐겨찾기와 메모</h2><p role="status" data-cloud-message>' + esc(message) + "</p>" + (!doc.consent ? '<p>켜면 지금부터 고르는 즐겨찾기와 최근 기록을 계정에 저장해요. 이 기기에 있던 목록은 위의 「기기 기록을 계정으로 옮기기」로 가져와요.</p><button data-cloud="enable">계정 저장 켜기</button>' : '<label><input type="checkbox" data-cloud="remember" ' + (doc.rememberRecent ? "checked" : "") + '> 최근에 연 시각도 계정에 저장</label><div class="continuity-apps">' + displayIds().map((id2) => '<button type="button" data-cloud="favorite" data-id="' + id2 + '" aria-pressed="' + favoriteSelected(id2) + '">' + (favoriteSelected(id2) ? "★ " : "☆ ") + names[id2] + "</button>").join("") + '</div><section data-favorite-order>' + nextFavorites + '</section><section data-note-recovery class="continuity-undo" hidden><p data-recovery-detail role="status"></p><button type="button" data-cloud="recover-draft">쓰던 메모 되살리기</button><button type="button" data-cloud="discard-recovery">임시 저장본 버리기</button></section><form data-note-form><h3 data-editor-heading>새 메모</h3><p data-edit-detail hidden></p><p id="' + panelId + '-capacity" data-note-capacity role="status"></p><label>이어 쓸 앱<select name="appId">' + editorOptions(draft.appId) + '</select></label><label>다음에 할 일<input name="title" maxlength="240" required aria-describedby="' + panelId + '-capacity" value="' + esc(draft.title) + '" placeholder="예: 다음 학습에서 확인할 내용 정리하기"></label><button type="submit" data-note-submit>계정에 메모 남기기</button><button type="button" data-cloud="cancel-edit" hidden>수정 취소</button></form><div class="continuity-undo" data-note-undo hidden><p role="status" data-note-undo-message></p><button type="button" data-cloud="undo-note">삭제 되돌리기</button><p data-note-undo-detail></p></div><div class="continuity-note-tools"><label>메모 검색<input type="search" data-note-search placeholder="메모 내용이나 앱 이름" aria-label="메모 검색"></label><label>메모 상태<select data-note-filter><option value="all">모두</option><option value="pending">미완료</option><option value="done">완료</option></select></label></div><div class="continuity-notes">' + nextNotes + "</div><p>최근 기록은 앱을 연 시각일 뿐, 학습 결과가 아니에요.</p>") : "<p>로그인하면 계정 라이브러리를 켤 수 있어요. 이 기기의 바로가기는 그대로 남아요.</p>";
     }
     renderedNotes = nextNotes;
     renderedCatalog = catalog;
@@ -258,7 +266,7 @@ export function mountPlatformLibrary(root, { getHost, ensureReady = async () => 
     void recovery.refresh();
   }
   async function change(action) {
-    if (!notebook?.canEdit) throw new Error("계정 연결과 저장 상태를 먼저 확인해 주세요.");
+    if (!notebook?.canEdit) throw new Error("계정 라이브러리가 아직 준비되지 않았어요. 잠시 뒤 다시 해 주세요.");
     const expected = modeVersion, next = updatePlatformLibrary(doc, action, Date.now(), entryIds());
     const favoriteChange = ['favorite', 'move-favorite'].includes(action.type) && favoriteSignature(next) !== favoriteSignature(doc)
       ? { version: expected, owner: documentOwner, signature: favoriteSignature(next) } : null;
@@ -270,7 +278,7 @@ export function mountPlatformLibrary(root, { getHost, ensureReady = async () => 
     if (!await result) {
       if (favoriteIntent === favoriteChange) favoriteIntent = null;
       if (expected !== modeVersion) return false;
-      throw new Error("변경을 보관하지 못했어요. 저장 상태를 확인해 주세요.");
+      throw new Error("변경을 보관하지 못했어요. 「저장 다시 시도」를 눌러 주세요.");
     }
     return true;
   }
@@ -290,7 +298,7 @@ export function mountPlatformLibrary(root, { getHost, ensureReady = async () => 
         return;
       }
       const host = getHost();
-      if (!host || !native && !host.identity()?.configured) throw new Error("계정 연결 설정을 불러오지 못했어요. 다시 연결을 눌러 주세요.");
+      if (!host || !native && !host.identity()?.configured) throw new Error("로그인 설정을 못 불러왔어요. 「계정 라이브러리 연결」을 다시 눌러 주세요.");
       const device = getDevice(), favorites = (device.favorites || []).filter((id2) => PLATFORM_APP_IDS.includes(id2));
       doc = validatePlatformLibrary({ ...emptyPlatformLibrary(), consent: true, favorites: [...new Set(favorites)], recent: (device.recent || []).filter((row) => PLATFORM_APP_IDS.includes(row.id)), rememberRecent: device.rememberRecent !== false });
       mount.hidden = false;
@@ -303,7 +311,7 @@ export function mountPlatformLibrary(root, { getHost, ensureReady = async () => 
         preferRemoteOnOpen: true,
         mount,
         content,
-        description: "즐겨찾기·최근 열기·직접 적은 메모만 연결합니다. 앱 원문과 이용 권한은 각 앱에서 확인해요.",
+        description: "즐겨찾기, 최근 기록, 직접 적은 메모만 계정에 저장해요. 앱 안의 기록은 각 앱에 남아요.",
         getState: () => doc,
         applyState: (value, { guest = false } = {}) => {
           favoriteIntent = null;
@@ -316,9 +324,9 @@ export function mountPlatformLibrary(root, { getHost, ensureReady = async () => 
         emptyDocument: emptyPlatformLibrary,
         storage,
         signOutLabel: native ? "로그아웃" : "계정 관리로 이동",
-        deleteLabel: "계정 라이브러리 삭제·저장 끄기",
-        deleteConfirmation: "이 계정의 즐겨찾기·최근 열기·이어쓰기 메모를 삭제하고 저장을 끌까요? 다른 기기에서도 이 목록을 다시 불러올 수 없어요. 각 앱의 원본 기록은 유지돼요.",
-        onStatusChange: () => queueMicrotask(render),
+        deleteLabel: "계정 라이브러리 지우고 끄기",
+        deleteConfirmation: "이 계정의 즐겨찾기, 최근 기록, 할 일 메모를 지우고 저장을 끌까요? 다른 기기에서도 다시 불러올 수 없어요. 각 앱 안의 기록은 그대로예요.",
+        onStatusChange: () => queueMicrotask(render), statusLabel: (text, { active, status }) => active && status === "synced" && !doc.consent ? "계정 저장 꺼짐" : text, detailLabel: (text, { active, status, problem }) => active && !problem && status === "synced" && !doc.consent ? "아직 이 계정에는 저장하지 않았어요. 아래에서 「계정 저장 켜기」를 누르면 저장해요." : text,
         // change() only queues the edit. Observe the validated server ACK, and
         // only the latest still-visible choice in the same account generation.
         onDocumentSaved: value => {
@@ -333,7 +341,7 @@ export function mountPlatformLibrary(root, { getHost, ensureReady = async () => 
         onDocumentRemoved: () => { favoriteIntent = null;void recovery.clear(); },
         beforeNavigate: () => {
           if (!hasUnsavedDraft()) return true;
-          if (!globalThis.confirm("작성 중인 이어쓰기 메모를 닫을까요?")) return false;
+          if (!globalThis.confirm("작성 중인 메모를 닫을까요?")) return false;
           discardDraft();
           return true;
         },
@@ -354,7 +362,7 @@ export function mountPlatformLibrary(root, { getHost, ensureReady = async () => 
         } })),
         onMode: () => queueMicrotask(render)
       });
-      await notebook.start();
+      mount.querySelector("[data-notebook-status]").hidden = true;await notebook.start();
       if (!notebook.active) {
         initialExpansionPending = false;
         expand(true);
@@ -362,7 +370,7 @@ export function mountPlatformLibrary(root, { getHost, ensureReady = async () => 
       render();
     } catch (error) {
       if (!disposed) {
-        message = error.message || "계정 연결을 마치지 못했어요. 다시 연결해 주세요.";
+        message = error.message || "계정 라이브러리를 켜지 못했어요. 다시 눌러 주세요.";
         summary();
       }
     } finally {
@@ -422,20 +430,20 @@ export function mountPlatformLibrary(root, { getHost, ensureReady = async () => 
     if (!button || button.disabled) return;
     const action = button.dataset.cloud, id2 = button.dataset.id;
     if (action === "open") {
-      if (hasUnsavedDraft() && !globalThis.confirm("작성 중인 이어쓰기 메모를 닫고 이동할까요?")) return;
+      if (hasUnsavedDraft() && !globalThis.confirm("작성 중인 메모를 닫고 이동할까요?")) return;
       onOpen(platformAppId(id2));
       return;
     }
     if (!notebook?.canEdit) return;
     if (action === "recover-draft") {
-      if (hasUnsavedDraft() && !globalThis.confirm("현재 작성 중인 내용을 닫고 기기에 보관한 초안을 열까요?")) return;
+      if (hasUnsavedDraft() && !globalThis.confirm("지금 쓰는 내용을 닫고 이 기기의 임시 저장본을 열까요?")) return;
       const saved = recovery.take();
       if (!saved) return;
       const original = saved.editing && doc.notes.find((row) => row.id === saved.editing.id);
       editing = original && original.title === saved.editing.title && original.appId === saved.editing.appId ? { ...original } : null;
       parkedDraft = saved.parkedDraft;
       setEditorDraft(saved.draft);
-      message = saved.editing && !editing ? "원래 메모가 바뀌어 복구한 내용을 새 메모로 열었어요. 확인한 뒤 저장해 주세요." : "작성 중이던 메모를 복구했어요. 확인한 뒤 계정에 저장해 주세요.";
+      message = saved.editing && !editing ? "원래 메모가 바뀌어 되살린 내용을 새 메모로 열었어요. 확인한 뒤 저장해 주세요." : "쓰던 메모를 되살렸어요. 확인한 뒤 계정에 저장해 주세요.";
       render();
       focusDraft();
       void recovery.persist();

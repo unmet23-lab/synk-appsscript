@@ -2,21 +2,22 @@ const STATES=new Set(['checking','downloading','installing','error','ready']);
 const METHODS={retry:'retry',current:'openCurrent',install:'install'};
 const cleanVersion=value=>typeof value==='string'&&/^\d+\.\d+\.\d+$/.test(value)?value:null;
 function errorMessage(code){
-  if(code==='UPDATE_BRIDGE_FAILED')return '업데이트 창을 불러오지 못했어요. 앱을 종료한 뒤 다시 열어 주세요.';
-  if(code==='UPDATE_RECOVERED')return '업데이트를 마치지 못해 이전 버전으로 돌아왔어요. 다시 시도하거나 현재 버전을 열 수 있어요.';
-  if(code==='UPDATE_RECOVERY_INVALID')return '업데이트 복구 정보를 확인하지 못했어요. 다시 시도하거나 현재 버전을 열어 주세요.';
-  if(code==='UPDATE_STORAGE_FAILED')return 'PC 저장 공간과 파일 권한을 확인한 뒤 다시 시도해 주세요.';
-  if(code==='UPDATE_BUILD_MISMATCH')return '현재 앱과 배포된 버전의 구성이 달라요. 현재 버전을 연 뒤 홈페이지의 최신 설치 파일을 확인해 주세요.';
-  if(/INTEGRITY|INVALID|UNTRUSTED|DOWNGRADE/.test(code))return '업데이트 파일을 확인하지 못했어요. 다시 시도해 주세요.';
-  if(/INSTALL|OPEN|HANDOFF/.test(code))return '업데이트 설치를 마치지 못했어요. 다시 시도하거나 현재 버전을 열 수 있어요.';
-  return '인터넷 연결을 확인한 뒤 다시 시도해 주세요. 현재 버전을 열어 계속 사용할 수도 있어요.';
+  if(code==='UPDATE_BRIDGE_FAILED')return '업데이트 창을 불러오지 못했어요. 앱을 끈 뒤 다시 열어 주세요.';
+  if(code==='UPDATE_RECOVERED')return '업데이트를 마치지 못해 이전 버전으로 돌아왔어요. 다시 해 보거나 지금 버전을 열 수 있어요.';
+  if(code==='UPDATE_RECOVERY_INVALID')return '업데이트를 되돌린 기록을 읽지 못했어요. 다시 해 보거나 지금 버전을 열어 주세요.';
+  if(code==='UPDATE_STORAGE_FAILED')return 'PC 저장 공간을 비운 뒤 다시 해 주세요.';
+  if(code==='UPDATE_BUILD_MISMATCH')return '지금 앱과 올라온 버전이 맞지 않아요. 지금 버전을 연 뒤 synk.im에서 최신 설치 파일을 받아 주세요.';
+  if(/INTEGRITY|INVALID|UNTRUSTED|DOWNGRADE/.test(code))return '받은 업데이트 파일이 온전하지 않아요. 다시 해 주세요.';
+  if(/INSTALL|OPEN|HANDOFF/.test(code))return '업데이트 설치를 마치지 못했어요. 다시 해 보거나 지금 버전을 열 수 있어요.';
+  return '인터넷 연결을 확인한 뒤 다시 해 주세요. 지금 버전을 열어 그대로 써도 돼요.';
 }
 function copy(snapshot){
-  const latest=cleanVersion(snapshot.latestVersion),target=latest?'v'+latest+' Preview':'새 버전';
-  if(snapshot.state==='checking')return ['시작 준비','최신 버전을 확인하고 있어요','잠시만 기다려 주세요. 확인이 끝나면 이어서 시작합니다.'];
-  if(snapshot.state==='downloading')return ['업데이트 중','새 버전을 다운로드하고 있어요',target+'를 준비하고 있어요. 다운로드가 끝나면 다음 단계로 넘어갑니다.'];
-  if(snapshot.state==='installing')return snapshot.platform==='darwin'?['설치 준비','설치 파일을 열고 있어요','열린 파일의 안내에 따라 업데이트해 주세요.']:['업데이트 중','업데이트를 설치하고 있어요','완료되면 자동으로 열립니다. 설치가 끝날 때까지 기다려 주세요.'];
-  if(snapshot.state==='ready')return snapshot.code==='UPDATE_MANUAL_INSTALL'?['설치 준비','설치 파일을 열었어요','SYNK를 종료한 뒤 열린 파일의 앱을 Applications 폴더로 옮겨 교체해 주세요.']:['설치 준비','Mac 업데이트 파일이 준비됐어요','설치 파일을 연 뒤 SYNK를 종료하고, 앱을 Applications 폴더로 옮겨 교체해 주세요.'];
+  // 버전이 없을 때 「새 버전를」처럼 조사가 틀리던 것을, 버전을 앞에 따로 적는 꼴로 바꿨다.
+  const latest=cleanVersion(snapshot.latestVersion),target=latest?'v'+latest+' · ':'';
+  if(snapshot.state==='checking')return ['시작 준비','최신 버전을 확인하고 있어요','잠시만 기다려 주세요. 확인이 끝나면 바로 열려요.'];
+  if(snapshot.state==='downloading')return ['업데이트 중','새 버전을 받고 있어요',target+'다 받으면 바로 설치로 넘어가요.'];
+  if(snapshot.state==='installing')return snapshot.platform==='darwin'?['설치 준비','설치 파일을 열고 있어요','열린 창의 안내대로 업데이트해 주세요.']:['업데이트 중','업데이트를 설치하고 있어요','끝나면 저절로 열려요. 조금만 기다려 주세요.'];
+  if(snapshot.state==='ready')return snapshot.code==='UPDATE_MANUAL_INSTALL'?['설치 준비','설치 파일을 열었어요','SYNK를 끈 뒤 열린 창의 앱을 Applications 폴더로 옮겨 바꿔 주세요.']:['설치 준비','Mac 업데이트 파일이 준비됐어요','설치 파일을 연 뒤 SYNK를 끄고, 앱을 Applications 폴더로 옮겨 바꿔 주세요.'];
   return ['확인이 필요해요','업데이트를 진행하지 못했어요',errorMessage(typeof snapshot.code==='string'?snapshot.code:'')];
 }
 export function mountStartupUpdate({bridge=globalThis.synkStartupUpdate,document=globalThis.document}={}){
@@ -34,7 +35,7 @@ export function mountStartupUpdate({bridge=globalThis.synkStartupUpdate,document
     nodes.steps.hidden=['error','ready'].includes(snapshot.state);const active=['checking','downloading','installing'].indexOf(snapshot.state);
     steps.forEach((step,index)=>{if(index===active)step.setAttribute('aria-current','step');else step.removeAttribute('aria-current');step.dataset.complete=String(index<active);});
     for(const action of Object.keys(METHODS)){nodes[action].hidden=!allowed(action);nodes[action].disabled=!!pending||!allowed(action);}
-    nodes.retry.textContent=pending==='retry'?'다시 확인 중…':'다시 시도';nodes.current.textContent=pending==='current'?'열고 있어요…':'현재 버전 열기';nodes.install.textContent=pending==='install'?'파일 여는 중…':'설치 파일 열기';
+    nodes.retry.textContent=pending==='retry'?'다시 확인 중…':'다시 시도';nodes.current.textContent=pending==='current'?'열고 있어요…':'지금 버전 열기';nodes.install.textContent=pending==='install'?'파일 여는 중…':'설치 파일 열기';
     nodes.actions.hidden=Object.keys(METHODS).every(action=>nodes[action].hidden);
     document.documentElement.dataset.startupReady='true';
   }

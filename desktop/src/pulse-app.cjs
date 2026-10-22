@@ -19,7 +19,7 @@ const DEMO_MEDIA=/^\/pulse-app\/demo-assets\/preview-v[12]\.mp4$/,DEMO_MEDIA_TYP
 // files under /pulse-app/assets/. The shell never leaves: its fragment can
 // carry an invite.
 const PULSE_LIBRARY='/pulse-app/production-library/',LIBRARY_QUERY=/^\?model=[A-Z][0-9]{2}$/,PUBLIC_ASSET=/^\/pulse-app\/assets\/(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_-]+\.(?:mp4|webp|png|jpe?g|mp3)$/;
-const PULSE_EXIT_TEXT={title:'SYNK PULSE',message:'아직 저장하거나 보내지 않은 내용이 있어요.',detail:'돌아가서 마저 저장하거나 보낼 수 있어요. 이미 저장하거나 보낸 내용은 그대로 남습니다.'};
+const PULSE_EXIT_TEXT={title:'SYNK PULSE',message:'아직 저장하거나 보내지 않은 내용이 있어요.',detail:'돌아가서 마저 저장하거나 보낼 수 있어요. 이미 저장하거나 보낸 내용은 그대로 남아요.'};
 function fixedUrl(value){try{if(typeof value!=='string'||value.length>4096)return null;const url=new URL(value);return url.protocol==='https:'&&!url.username&&!url.password?url:null;}catch{return null;}}
 function pulseAppNavigationAllowed(value){const url=fixedUrl(value);return !!url&&url.origin===PULSE_APP_ORIGIN&&url.pathname==='/pulse-app/'&&(!url.search||url.search===PULSE_DEMO_SEARCH);}
 function pulseAppResourceAllowed(value){const url=fixedUrl(value);return !!url&&url.origin===PULSE_APP_ORIGIN&&(url.pathname.startsWith('/pulse-app/')||url.pathname.startsWith('/pulse/api/')||url.pathname.startsWith('/messenger/assets/')||['/wordmark.svg','/font.woff2'].includes(url.pathname));}

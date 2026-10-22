@@ -1,0 +1,9 @@
+{
+  "//": "계정 영역이 같은 작업본에서 document-sync.mjs의 CARE_CLIENT_UPDATE_REQUIRED 글을 「백업한 뒤 새로고침」→「파일로 내보낸 뒤 페이지를 새로 고쳐」로 바꿔 플레저 시험 둘이 깨짐 — 뜻(내보내고 새로 고치라는 안내)은 그대로 보되 옛·새 글 둘 다 받게",
+  "experiences/relationship-care/tests/message-library-sync.test.mjs": [
+    ["assert.match(c.status().error.message, /백업.*새로고침/u);", "assert.match(c.status().error.message, /(?:백업|내보낸).*(?:새로고침|새로 고쳐)/u);"]
+  ],
+  "experiences/relationship-care/tests/checkin-interval-sync.test.mjs": [
+    ["/문구 보관함.*안부 설정.*백업.*새로고침/u", "/문구 보관함.*안부 설정.*(?:백업|내보낸).*(?:새로고침|새로 고쳐)/u"]
+  ]
+}

@@ -80,14 +80,14 @@ test('연도 없는 날짜·내일·다음 주 토요일은 기준과 확인 사
   assert.match(monthDay.events[0].cautions.join(' '), /연도가 없어/u);
   const tomorrow = captureCandidates('내일 생일이야.', { now: '2026-12-31T01:00:00Z' });
   assert.equal(tomorrow.events[0].date, '2027-01-01');
-  assert.match(tomorrow.events[0].cautions.join(' '), /원문을 받은 날짜/u);
+  assert.match(tomorrow.events[0].cautions.join(' '), /글을 받은 날이/u);
   assert.equal(captureCandidates('다음 주 토요일에 결혼해.', { now }).events[0].date, '2026-10-17');
 });
 
 test('잘못된 날짜는 후보에서 제외하고 애매한 시각은 확인 필요로 남긴다', () => {
   const invalid = captureCandidates('결혼식은 2026-02-30이야.', { now });
   assert.equal(invalid.events.length, 0);
-  assert.match(invalid.warnings.join(' '), /실제 날짜/u);
+  assert.match(invalid.warnings.join(' '), /달력에 없는 날짜/u);
   const ambiguous = captureCandidates('생일 10월 10일 3시', { now });
   assert.equal(ambiguous.events[0].time, '03:00');
   assert.match(ambiguous.events[0].cautions.join(' '), /오전·오후/u);

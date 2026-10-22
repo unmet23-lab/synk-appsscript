@@ -117,16 +117,16 @@ namespace Synk.SignalInstaller
         internal static bool IsCloudPlaceholderTag(uint tag) { return (tag & 0xffff0fffu) == 0x9000001au; }
         internal static void ValidateShortcutEntryAttributes(FileAttributes attributes, uint tag)
         {
-            if ((attributes & FileAttributes.ReparsePoint) != 0 && !IsCloudPlaceholderTag(tag)) throw new IOException("바로가기 경로의 연결을 확인할 수 없습니다.");
+            if ((attributes & FileAttributes.ReparsePoint) != 0 && !IsCloudPlaceholderTag(tag)) throw new IOException("바로가기가 가리키는 곳을 확인하지 못했어요.");
         }
         string[] KnownShortcutPaths()
         {
-            if (String.IsNullOrWhiteSpace(spec.ShortcutName) || Path.GetFileName(spec.ShortcutName) != spec.ShortcutName) throw new IOException("바로가기 이름이 올바르지 않습니다.");
+            if (String.IsNullOrWhiteSpace(spec.ShortcutName) || Path.GetFileName(spec.ShortcutName) != spec.ShortcutName) throw new IOException("바로가기 이름이 맞지 않아요.");
             return new [] { Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs),spec.ShortcutName+".lnk"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),spec.ShortcutName+".lnk") };
         }
         internal void ValidateShortcutPath(string shortcut)
         {
-            if (!KnownShortcutPaths().Any(known=>SamePath(known,shortcut))) throw new IOException("바로가기 위치가 올바르지 않습니다.");
+            if (!KnownShortcutPaths().Any(known=>SamePath(known,shortcut))) throw new IOException("바로가기 위치가 맞지 않아요.");
             for (string current=Path.GetFullPath(shortcut); current!=null; )
             {
                 FileAttributes attributes=0;
@@ -137,7 +137,7 @@ namespace Synk.SignalInstaller
                 if ((attributes & FileAttributes.ReparsePoint) != 0)
                 {
                     ShortcutFindData data; IntPtr handle=FindFirstFileW(current,out data);
-                    if (handle == new IntPtr(-1)) throw new IOException("바로가기 경로의 연결 정보를 확인할 수 없습니다.");
+                    if (handle == new IntPtr(-1)) throw new IOException("바로가기 연결 정보를 확인하지 못했어요.");
                     try { tag=data.ReparseTag; }
                     finally { FindClose(handle); }
                 }
@@ -151,14 +151,14 @@ namespace Synk.SignalInstaller
         static Version StrictVersion(string text)
         {
             Version version;
-            if (text == null || !Regex.IsMatch(text, @"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$") || !Version.TryParse(text, out version)) throw new InvalidOperationException("앱 버전을 확인할 수 없습니다.");
+            if (text == null || !Regex.IsMatch(text, @"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$") || !Version.TryParse(text, out version)) throw new InvalidOperationException("앱 버전을 확인하지 못했어요.");
             return version;
         }
         static string Inside(string root, string relative)
         {
-            if (String.IsNullOrWhiteSpace(relative) || Path.IsPathRooted(relative)) throw new IOException("업데이트 파일 경로가 올바르지 않습니다.");
+            if (String.IsNullOrWhiteSpace(relative) || Path.IsPathRooted(relative)) throw new IOException("업데이트 파일 경로가 맞지 않아요.");
             string full = Path.GetFullPath(Path.Combine(root, relative.Replace('/', '\\')));
-            if (!full.StartsWith(Path.GetFullPath(root).TrimEnd('\\') + "\\", StringComparison.OrdinalIgnoreCase)) throw new IOException("업데이트 파일 경로가 올바르지 않습니다.");
+            if (!full.StartsWith(Path.GetFullPath(root).TrimEnd('\\') + "\\", StringComparison.OrdinalIgnoreCase)) throw new IOException("업데이트 파일 경로가 맞지 않아요.");
             return full;
         }
         static List<BackupFile> Inventory(string root)
@@ -172,9 +172,9 @@ namespace Synk.SignalInstaller
                 foreach (string file in System.IO.Directory.GetFiles(directory))
                 {
                     var info = new FileInfo(file);
-                    if ((info.Attributes & FileAttributes.ReparsePoint) != 0) throw new IOException("연결된 파일은 업데이트할 수 없습니다.");
+                    if ((info.Attributes & FileAttributes.ReparsePoint) != 0) throw new IOException("바로가기로 연결된 파일은 업데이트할 수 없어요.");
                     files.Add(new BackupFile { RelativePath=file.Substring(root.TrimEnd('\\').Length + 1).Replace('\\','/'), Bytes=info.Length, SHA256=HashFile(file), LastWriteTicks=info.LastWriteTimeUtc.Ticks, Attributes=(int)info.Attributes });
-                    if (files.Count > 100000) throw new IOException("설치 폴더의 파일 수를 확인해 주세요.");
+                    if (files.Count > 100000) throw new IOException("설치 폴더의 파일 수가 맞지 않아요.");
                 }
             }
             return files.OrderBy(item => item.RelativePath, StringComparer.Ordinal).ToList();
@@ -187,23 +187,23 @@ namespace Synk.SignalInstaller
             // An unresolved previous transaction must be rejected before READY,
             // while the caller still owns its normal quit/save decision.
             CheckPendingTransaction();
-            if (parentPid <= 0 || parentPid == Process.GetCurrentProcess().Id || !Regex.IsMatch(nonce ?? "", "^[a-f0-9]{64}$") || !Regex.IsMatch(installerSHA256 ?? "", "^[a-f0-9]{64}$")) throw new ArgumentException("자동 업데이트 실행 정보를 확인할 수 없습니다.");
-            if (!Regex.IsMatch(spec.AppId ?? "", "^[A-Za-z0-9][A-Za-z0-9.-]{1,127}$") || Path.GetFileName(spec.ShortcutName) != spec.ShortcutName) throw new InvalidOperationException("자동 업데이트 제품 정보가 올바르지 않습니다.");
+            if (parentPid <= 0 || parentPid == Process.GetCurrentProcess().Id || !Regex.IsMatch(nonce ?? "", "^[a-f0-9]{64}$") || !Regex.IsMatch(installerSHA256 ?? "", "^[a-f0-9]{64}$")) throw new ArgumentException("자동 업데이트 실행 정보를 확인하지 못했어요.");
+            if (!Regex.IsMatch(spec.AppId ?? "", "^[A-Za-z0-9][A-Za-z0-9.-]{1,127}$") || Path.GetFileName(spec.ShortcutName) != spec.ShortcutName) throw new InvalidOperationException("자동 업데이트할 앱 정보가 맞지 않아요.");
             string registered = ReadRegistry(RegistryHive.CurrentUser, RegistryKey, "InstallLocation");
             string expected = Path.GetFullPath(Environment.ExpandEnvironmentVariables(spec.InstallDirectory));
-            if (String.IsNullOrWhiteSpace(registered) || !SamePath(registered, expected) || !Directory.Exists(expected)) throw new InvalidOperationException("설치된 SYNK의 위치를 확인할 수 없습니다.");
+            if (String.IsNullOrWhiteSpace(registered) || !SamePath(registered, expected) || !Directory.Exists(expected)) throw new InvalidOperationException("설치된 SYNK의 위치를 찾지 못했어요.");
             RejectReparsePoints(expected);
             var identity = ReadJson<InstalledIdentity>(Path.Combine(expected,"resources","synk-install.json"));
             string currentVersion = ReadRegistry(RegistryHive.CurrentUser, UninstallKey,"DisplayVersion");
-            if (identity.AppId != spec.AppId || identity.ClientId != "platform" || identity.Mode != "development" || identity.Platform != "win32" || identity.Arch != "x64" || identity.Version != currentVersion || StrictVersion(spec.Version) <= StrictVersion(currentVersion)) throw new InvalidOperationException("설치된 앱과 업데이트 버전이 일치하지 않습니다.");
-            if (!String.IsNullOrWhiteSpace(ReadRegistry(RegistryHive.LocalMachine, RegistryKey,"InstallLocation")) || !String.IsNullOrWhiteSpace(ReadRegistry(RegistryHive.LocalMachine,UninstallKey,"UninstallString"))) throw new InvalidOperationException("현재 사용자용 설치만 자동 업데이트할 수 있습니다.");
+            if (identity.AppId != spec.AppId || identity.ClientId != "platform" || identity.Mode != "development" || identity.Platform != "win32" || identity.Arch != "x64" || identity.Version != currentVersion || StrictVersion(spec.Version) <= StrictVersion(currentVersion)) throw new InvalidOperationException("설치된 앱과 업데이트 버전이 맞지 않아요.");
+            if (!String.IsNullOrWhiteSpace(ReadRegistry(RegistryHive.LocalMachine, RegistryKey,"InstallLocation")) || !String.IsNullOrWhiteSpace(ReadRegistry(RegistryHive.LocalMachine,UninstallKey,"UninstallString"))) throw new InvalidOperationException("지금 Windows 계정에 설치한 앱만 자동 업데이트할 수 있어요.");
             string executable = Path.Combine(expected,spec.ExecutableName), archive = Path.Combine(expected,"resources","app.asar");
             RejectReparsePoints(Path.GetDirectoryName(archive));
-            if ((File.GetAttributes(executable) & FileAttributes.ReparsePoint) != 0 || (File.GetAttributes(archive) & FileAttributes.ReparsePoint) != 0) throw new IOException("설치 파일 연결을 확인할 수 없습니다.");
+            if ((File.GetAttributes(executable) & FileAttributes.ReparsePoint) != 0 || (File.GetAttributes(archive) & FileAttributes.ReparsePoint) != 0) throw new IOException("설치 파일을 확인하지 못했어요.");
             Process parent = Process.GetProcessById(parentPid);
             try
             {
-                if (parent.HasExited || !SamePath(parent.MainModule.FileName,executable)) throw new InvalidOperationException("업데이트를 요청한 앱을 확인할 수 없습니다.");
+                if (parent.HasExited || !SamePath(parent.MainModule.FileName,executable)) throw new InvalidOperationException("업데이트를 요청한 앱을 확인하지 못했어요.");
                 return new AutomaticUpdateSession { Parent=parent, Directory=expected.TrimEnd('\\'), Version=currentVersion, ExecutableSHA256=HashFile(executable), AsarSHA256=HashFile(archive), Nonce=nonce, InstallerSHA256=installerSHA256 };
             }
             catch { parent.Dispose(); throw; }
@@ -213,17 +213,17 @@ namespace Synk.SignalInstaller
         {
             return InstallAutomaticUpdateCore(session, progress, InstallPayload, delegate(string executable,string arguments) {
                 InstallFile incoming = spec.Files.Find(item => String.Equals(item.Path,spec.ExecutableName,StringComparison.OrdinalIgnoreCase));
-                if(incoming==null)throw new IOException("업데이트 실행 파일 정보가 없습니다.");
+                if(incoming==null)throw new IOException("업데이트 실행 파일 정보가 없어요.");
                 StartVerifiedProcess(executable,arguments,arguments.Length==0 ? incoming.SHA256 : session.ExecutableSHA256);
             });
         }
 
         internal AutomaticUpdateResult InstallAutomaticUpdateCore(AutomaticUpdateSession session, Action<string,string,int?> progress, Func<Action<string,string,int?>,string> install, Action<string,string> launch)
         {
-            if (session == null || session.Used || session.Parent == null) throw new InvalidOperationException("자동 업데이트 요청은 한 번만 실행할 수 있습니다.");
+            if (session == null || session.Used || session.Parent == null) throw new InvalidOperationException("자동 업데이트는 한 번에 하나만 할 수 있어요.");
             session.Used = true;
-            progress("앱을 닫는 중", "저장된 작업을 확인하고 앱이 종료되기를 기다립니다.", null);
-            if (!session.Parent.WaitForExit(60000)) throw new InvalidOperationException("SYNK가 아직 실행 중입니다. 작업을 저장하고 앱을 종료한 뒤 다시 시도해 주세요.");
+            progress("앱을 닫는 중", "저장할 작업이 있는지 보고 앱이 꺼지기를 기다려요.", null);
+            if (!session.Parent.WaitForExit(60000)) throw new InvalidOperationException("SYNK가 아직 켜져 있어요. 작업을 저장하고 앱을 끈 뒤 다시 해 주세요.");
             UpdateBackup backup = null;
             bool mutationStarted = false;
             try
@@ -240,7 +240,7 @@ namespace Synk.SignalInstaller
                 // Retain the compact transaction receipt. Verified old application
                 // files are removed only from this invocation's private cache.
                 TryCleanupBackupPayload(backup);
-                return new AutomaticUpdateResult { Updated=true, Relaunched=true, Message="업데이트를 완료하고 앱을 다시 열었습니다." };
+                return new AutomaticUpdateResult { Updated=true, Relaunched=true, Message="업데이트를 마치고 앱을 다시 열었어요." };
             }
             catch (Exception failure)
             {
@@ -255,7 +255,7 @@ namespace Synk.SignalInstaller
                     if (backup != null&&mutationStarted) EndTransaction(backup,"restored");
                     launch(Path.Combine(session.Directory,spec.ExecutableName),"--synk-update-recovery="+session.Nonce);
                     if (backup != null) TryCleanupBackupPayload(backup);
-                    return new AutomaticUpdateResult { Restored=true, Relaunched=true, RecoveryFile=marker, Message="업데이트를 마치지 못해 이전 버전을 다시 열었습니다. 앱에서 다시 시도할 수 있습니다.\n"+failure.Message };
+                    return new AutomaticUpdateResult { Restored=true, Relaunched=true, RecoveryFile=marker, Message="업데이트를 마치지 못해 이전 버전을 다시 열었어요. 앱에서 다시 해 볼 수 있어요.\n"+failure.Message };
                 }
                 catch (Exception recoveryFailure)
                 {
@@ -266,20 +266,20 @@ namespace Synk.SignalInstaller
 
         void VerifyPrevious(AutomaticUpdateSession session)
         {
-            if (!SamePath(ResolveDirectory(),session.Directory) || ReadRegistry(RegistryHive.CurrentUser,UninstallKey,"DisplayVersion") != session.Version || HashFile(Path.Combine(session.Directory,spec.ExecutableName)) != session.ExecutableSHA256 || HashFile(Path.Combine(session.Directory,"resources","app.asar")) != session.AsarSHA256) throw new IOException("이전 앱 상태를 확인할 수 없습니다.");
+            if (!SamePath(ResolveDirectory(),session.Directory) || ReadRegistry(RegistryHive.CurrentUser,UninstallKey,"DisplayVersion") != session.Version || HashFile(Path.Combine(session.Directory,spec.ExecutableName)) != session.ExecutableSHA256 || HashFile(Path.Combine(session.Directory,"resources","app.asar")) != session.AsarSHA256) throw new IOException("이전 앱 상태를 확인하지 못했어요.");
             var identity = ReadJson<InstalledIdentity>(Path.Combine(session.Directory,"resources","synk-install.json"));
-            if (identity.AppId != spec.AppId || identity.Version != session.Version) throw new IOException("이전 앱의 설치 정보를 확인할 수 없습니다.");
+            if (identity.AppId != spec.AppId || identity.Version != session.Version) throw new IOException("이전 앱의 설치 정보를 확인하지 못했어요.");
         }
 
         UpdateBackup BackupPrevious(AutomaticUpdateSession session, Action<string,string,int?> progress)
         {
-            progress("복구 파일을 준비합니다", "기존 앱과 설치 정보를 보존합니다.", 0);
+            progress("되돌릴 파일을 준비해요", "지금 앱과 설치 정보를 그대로 보관해요.", 0);
             bool existed=Directory.Exists(session.Directory);
             var files = existed?Inventory(session.Directory):new List<BackupFile>();
             long bytes = files.Sum(item => item.Bytes), reserve = spec.MinFreeBytes > 0 ? spec.MinFreeBytes : 3L*1024*1024*1024;
             long required = checked(reserve + bytes + spec.BackendBytes + 16L*1024*1024);
             foreach (string drive in new HashSet<string>(new [] { Path.GetPathRoot(session.Directory),Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)),Path.GetPathRoot(Path.GetTempPath()) },StringComparer.OrdinalIgnoreCase))
-                if (new DriveInfo(drive).AvailableFreeSpace < required) throw new IOException("자동 업데이트와 복구를 위한 여유 공간이 부족합니다. 기존 앱을 다시 엽니다.");
+                if (new DriveInfo(drive).AvailableFreeSpace < required) throw new IOException("업데이트하고 되돌릴 공간이 모자라요. 지금 앱을 다시 열게요.");
             var backup = new UpdateBackup { Directory=CreatePrivateCache(), OriginalDirectory=session.Directory, DirectoryExisted=existed, State="preparing", Files=files, Registry=new List<RegistrySnapshot>(), Shortcuts=new List<ShortcutSnapshot>() };
             using (var hive = Microsoft.Win32.RegistryKey.OpenBaseKey(RegistryHive.CurrentUser,RegistryView.Registry64))
                 foreach (string key in new [] { RegistryKey,UninstallKey,"Software\\Classes\\AppUserModelId\\"+spec.AppId }) backup.Registry.Add(ReadRegistryTree(hive,key));
@@ -288,14 +288,14 @@ namespace Synk.SignalInstaller
             foreach (var file in files)
             {
                 string target=Inside(Path.Combine(backup.Directory,"application"),file.RelativePath); Directory.CreateDirectory(Path.GetDirectoryName(target)); File.Copy(Inside(session.Directory,file.RelativePath),target,false);
-                if (HashFile(target)!=file.SHA256) throw new IOException("복구 파일 확인에 실패했습니다.");
-                progress("복구 파일을 준비합니다","기존 앱을 보존합니다.",++done*100/files.Count);
+                if (HashFile(target)!=file.SHA256) throw new IOException("되돌릴 파일을 확인하지 못했어요.");
+                progress("되돌릴 파일을 준비해요","지금 앱을 그대로 보관해요.",++done*100/files.Count);
             }
             foreach (string shortcut in KnownShortcutPaths())
             {
                 ValidateShortcutPath(shortcut);
                 var item = new ShortcutSnapshot { Path=shortcut, Exists=File.Exists(shortcut), BackupPath=Path.Combine(backup.Directory,"shortcut-"+backup.Shortcuts.Count+".lnk") };
-                if (item.Exists) { VerifyShortcut(shortcut,Path.Combine(session.Directory,spec.ExecutableName)); item.SHA256=HashFile(shortcut); File.Copy(shortcut,item.BackupPath,false); if (HashFile(item.BackupPath)!=item.SHA256) throw new IOException("바로가기 보존에 실패했습니다."); }
+                if (item.Exists) { VerifyShortcut(shortcut,Path.Combine(session.Directory,spec.ExecutableName)); item.SHA256=HashFile(shortcut); File.Copy(shortcut,item.BackupPath,false); if (HashFile(item.BackupPath)!=item.SHA256) throw new IOException("바로가기를 보관하지 못했어요."); }
                 backup.Shortcuts.Add(item);
             }
             backup.State="prepared";WriteJson(Path.Combine(backup.Directory,"transaction.json"),backup);return backup;
@@ -303,21 +303,21 @@ namespace Synk.SignalInstaller
 
         void RestorePrevious(UpdateBackup backup, Action<string,string,int?> progress)
         {
-            if (backup == null || activeTransaction!=backup.Directory) throw new IOException("복구 위치가 올바르지 않습니다.");
-            var running=Process.GetProcessesByName(Path.GetFileNameWithoutExtension(spec.ExecutableName));try { if (running.Length!=0) throw new IOException("앱이 실행 중이어서 복구 파일을 보존했습니다. 앱을 닫아 주세요."); } finally { foreach (var process in running) process.Dispose(); }
+            if (backup == null || activeTransaction!=backup.Directory) throw new IOException("되돌릴 파일 위치가 맞지 않아요.");
+            var running=Process.GetProcessesByName(Path.GetFileNameWithoutExtension(spec.ExecutableName));try { if (running.Length!=0) throw new IOException("앱이 켜져 있어 되돌릴 파일을 남겨 뒀어요. 앱을 닫아 주세요."); } finally { foreach (var process in running) process.Dispose(); }
             RejectReparsePoints(backup.OriginalDirectory);RejectReparsePoints(backup.Directory);
-            foreach (var file in backup.Files) if (HashFile(Inside(Path.Combine(backup.Directory,"application"),file.RelativePath))!=file.SHA256) throw new IOException("복구 원본을 확인할 수 없습니다.");
-            progress("이전 버전으로 복구합니다","앱 파일과 설치 정보를 되돌립니다.",null);
+            foreach (var file in backup.Files) if (HashFile(Inside(Path.Combine(backup.Directory,"application"),file.RelativePath))!=file.SHA256) throw new IOException("되돌릴 원본을 확인하지 못했어요.");
+            progress("이전 버전으로 되돌려요","앱 파일과 설치 정보를 되돌려요.",null);
             var old = new HashSet<string>(backup.Files.Select(item=>item.RelativePath),StringComparer.OrdinalIgnoreCase);
             var permittedNew = new HashSet<string>(spec.Files.Select(item=>item.Path),StringComparer.OrdinalIgnoreCase); permittedNew.Add("Uninstall "+Path.GetFileNameWithoutExtension(spec.ExecutableName)+".exe");
-            if (Directory.Exists(backup.OriginalDirectory)) foreach (var item in Inventory(backup.OriginalDirectory)) if (!old.Contains(item.RelativePath)) { if (!permittedNew.Contains(item.RelativePath)) throw new IOException("설치 폴더에 알 수 없는 파일이 있어 복구 원본을 보존했습니다."); File.Delete(Inside(backup.OriginalDirectory,item.RelativePath)); }
+            if (Directory.Exists(backup.OriginalDirectory)) foreach (var item in Inventory(backup.OriginalDirectory)) if (!old.Contains(item.RelativePath)) { if (!permittedNew.Contains(item.RelativePath)) throw new IOException("설치 폴더에 모르는 파일이 있어 되돌릴 원본을 남겨 뒀어요."); File.Delete(Inside(backup.OriginalDirectory,item.RelativePath)); }
             foreach (var file in backup.Files) { string target=Inside(backup.OriginalDirectory,file.RelativePath);Directory.CreateDirectory(Path.GetDirectoryName(target));if(File.Exists(target))File.SetAttributes(target,FileAttributes.Normal);File.Copy(Inside(Path.Combine(backup.Directory,"application"),file.RelativePath),target,true);File.SetLastWriteTimeUtc(target,new DateTime(file.LastWriteTicks,DateTimeKind.Utc));File.SetAttributes(target,(FileAttributes)file.Attributes); }
             using (var hive=Microsoft.Win32.RegistryKey.OpenBaseKey(RegistryHive.CurrentUser,RegistryView.Registry64)) foreach (var key in backup.Registry) { hive.DeleteSubKeyTree(key.Name,false); if(key.Exists)WriteRegistryTree(hive,key); }
-            foreach(var shortcut in backup.Shortcuts) { ValidateShortcutPath(shortcut.Path);if(shortcut.Exists) { if(HashFile(shortcut.BackupPath)!=shortcut.SHA256)throw new IOException("바로가기 복구 원본을 확인할 수 없습니다.");Directory.CreateDirectory(Path.GetDirectoryName(shortcut.Path));File.Copy(shortcut.BackupPath,shortcut.Path,true); } else if(File.Exists(shortcut.Path)) File.Delete(shortcut.Path); }
-            var restored=Directory.Exists(backup.OriginalDirectory)?Inventory(backup.OriginalDirectory):new List<BackupFile>();if(restored.Count!=backup.Files.Count||restored.Where((item,index)=>item.RelativePath!=backup.Files[index].RelativePath||item.SHA256!=backup.Files[index].SHA256).Any())throw new IOException("이전 앱 파일 복구를 확인할 수 없습니다.");
+            foreach(var shortcut in backup.Shortcuts) { ValidateShortcutPath(shortcut.Path);if(shortcut.Exists) { if(HashFile(shortcut.BackupPath)!=shortcut.SHA256)throw new IOException("바로가기를 되돌릴 원본을 확인하지 못했어요.");Directory.CreateDirectory(Path.GetDirectoryName(shortcut.Path));File.Copy(shortcut.BackupPath,shortcut.Path,true); } else if(File.Exists(shortcut.Path)) File.Delete(shortcut.Path); }
+            var restored=Directory.Exists(backup.OriginalDirectory)?Inventory(backup.OriginalDirectory):new List<BackupFile>();if(restored.Count!=backup.Files.Count||restored.Where((item,index)=>item.RelativePath!=backup.Files[index].RelativePath||item.SHA256!=backup.Files[index].SHA256).Any())throw new IOException("이전 앱 파일을 되돌렸는지 확인하지 못했어요.");
             if(!backup.DirectoryExisted&&Directory.Exists(backup.OriginalDirectory))RemoveEmptyDirectories(backup.OriginalDirectory);
-            using(var hive=Microsoft.Win32.RegistryKey.OpenBaseKey(RegistryHive.CurrentUser,RegistryView.Registry64))foreach(var key in backup.Registry)if(RegistryDigest(ReadRegistryTree(hive,key.Name))!=RegistryDigest(key))throw new IOException("설치 등록 복구를 확인할 수 없습니다.");
-            foreach(var shortcut in backup.Shortcuts)if(File.Exists(shortcut.Path)!=shortcut.Exists||shortcut.Exists&&HashFile(shortcut.Path)!=shortcut.SHA256)throw new IOException("바로가기 복구를 확인할 수 없습니다.");
+            using(var hive=Microsoft.Win32.RegistryKey.OpenBaseKey(RegistryHive.CurrentUser,RegistryView.Registry64))foreach(var key in backup.Registry)if(RegistryDigest(ReadRegistryTree(hive,key.Name))!=RegistryDigest(key))throw new IOException("설치 등록을 되돌렸는지 확인하지 못했어요.");
+            foreach(var shortcut in backup.Shortcuts)if(File.Exists(shortcut.Path)!=shortcut.Exists||shortcut.Exists&&HashFile(shortcut.Path)!=shortcut.SHA256)throw new IOException("바로가기를 되돌렸는지 확인하지 못했어요.");
         }
 
         static void RemoveEmptyDirectories(string root)
@@ -329,7 +329,7 @@ namespace Synk.SignalInstaller
         static RegistrySnapshot ReadRegistryTree(Microsoft.Win32.RegistryKey parent,string name)
         {
             var result=new RegistrySnapshot { Name=name };using(var key=parent.OpenSubKey(name)) { if(key==null)return result;result.Exists=true;
-                foreach(string valueName in key.GetValueNames().OrderBy(value=>value,StringComparer.Ordinal)) { var value=new RegistryValueSnapshot { Name=valueName,Kind=(int)key.GetValueKind(valueName) };object raw=key.GetValue(valueName,null,RegistryValueOptions.DoNotExpandEnvironmentNames);switch((RegistryValueKind)value.Kind){case RegistryValueKind.String:case RegistryValueKind.ExpandString:value.Text=(string)raw;break;case RegistryValueKind.DWord:value.Integer=(int)raw;break;case RegistryValueKind.QWord:value.Long=(long)raw;break;case RegistryValueKind.MultiString:value.Strings=(string[])raw;break;case RegistryValueKind.Binary:case RegistryValueKind.None:value.Binary=(byte[])raw;break;default:throw new IOException("설치 등록을 보존할 수 없습니다.");}result.Values.Add(value); }
+                foreach(string valueName in key.GetValueNames().OrderBy(value=>value,StringComparer.Ordinal)) { var value=new RegistryValueSnapshot { Name=valueName,Kind=(int)key.GetValueKind(valueName) };object raw=key.GetValue(valueName,null,RegistryValueOptions.DoNotExpandEnvironmentNames);switch((RegistryValueKind)value.Kind){case RegistryValueKind.String:case RegistryValueKind.ExpandString:value.Text=(string)raw;break;case RegistryValueKind.DWord:value.Integer=(int)raw;break;case RegistryValueKind.QWord:value.Long=(long)raw;break;case RegistryValueKind.MultiString:value.Strings=(string[])raw;break;case RegistryValueKind.Binary:case RegistryValueKind.None:value.Binary=(byte[])raw;break;default:throw new IOException("설치 등록을 보관하지 못했어요.");}result.Values.Add(value); }
                 foreach(string child in key.GetSubKeyNames().OrderBy(value=>value,StringComparer.Ordinal))result.Children.Add(ReadRegistryTree(key,child));
             }return result;
         }
@@ -352,16 +352,16 @@ namespace Synk.SignalInstaller
             string root=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"SYNK","Installer","Recovery");RejectReparsePoints(root);Directory.CreateDirectory(root);
             var security=new DirectorySecurity();security.SetAccessRuleProtection(true,false);var sid=WindowsIdentity.GetCurrent().User;security.SetOwner(sid);security.AddAccessRule(new FileSystemAccessRule(sid,FileSystemRights.FullControl,InheritanceFlags.ContainerInherit|InheritanceFlags.ObjectInherit,PropagationFlags.None,AccessControlType.Allow));new DirectoryInfo(root).SetAccessControl(security);
             string destination=Path.Combine(root,spec.AppId+".json"),temporary=Path.Combine(root,session.Nonce+".tmp");DateTime now=DateTime.UtcNow;
-            if(File.Exists(temporary))throw new IOException("복구 실행 정보가 이미 사용되었습니다.");
+            if(File.Exists(temporary))throw new IOException("되돌리기 실행 정보를 이미 썼어요.");
             WriteJson(temporary,new RecoveryMarker { AppId=spec.AppId,Nonce=session.Nonce,FromVersion=session.Version,ToVersion=spec.Version,ExecutablePath=Path.Combine(session.Directory,spec.ExecutableName),ExecutableSHA256=session.ExecutableSHA256,AsarSHA256=session.AsarSHA256,InstallerSHA256=session.InstallerSHA256,CreatedAt=now.ToString("o",CultureInfo.InvariantCulture),ExpiresAt=now.AddMinutes(10).ToString("o",CultureInfo.InvariantCulture),Status=status });
             if(File.Exists(destination))File.Replace(temporary,destination,null);else File.Move(temporary,destination);return destination;
         }
         void StartVerifiedProcess(string executable,string arguments,string expectedHash)
         {
             using(var held=new FileStream(executable,FileMode.Open,FileAccess.Read,FileShare.Read)) {
-                if(HashFile(executable)!=expectedHash)throw new IOException("다시 열 앱의 실행 파일을 확인하지 못했습니다.");
+                if(HashFile(executable)!=expectedHash)throw new IOException("다시 열 앱의 실행 파일을 확인하지 못했어요.");
                 Process child=Process.Start(new ProcessStartInfo(executable,arguments) { WorkingDirectory=Path.GetDirectoryName(executable),UseShellExecute=false });
-                if(child==null)throw new IOException("앱을 다시 열 수 없습니다.");using(child){if(child.WaitForExit(2000)&&child.ExitCode!=0)throw new IOException("새 앱 실행을 완료하지 못했습니다.");}
+                if(child==null)throw new IOException("앱을 다시 열지 못했어요.");using(child){if(child.WaitForExit(2000)&&child.ExitCode!=0)throw new IOException("새 버전 앱을 열지 못했어요.");}
             }
         }
     }

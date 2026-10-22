@@ -75,12 +75,12 @@ export function lifeTutorKind(state={}){
  return state.scope==='cafe'?'cafe':'library';
 }
 const cues={
- 'cafe-order':'음료 종류·온도·잔 수를 함께', 'cafe-compose':'음료 종류·온도·잔 수를 함께',
+ 'cafe-order':'음료 종류·온도·잔 수를', 'cafe-compose':'음료 종류·온도·잔 수를',
  'cafe-here':'안에서 마시는지, 밖으로 가져가는지', 'cafe-takeout':'안에서 마시는지, 밖으로 가져가는지',
  'cafe-preference':'친구가 원하는 음료와 온도를', 'cafe-soldout':'품절된 음료와 주문할 수 있는 음료를',
  'cafe-change':'바꾸려는 음료의 종류와 온도를', 'cafe-add':'원래 잔 수에 몇 잔을 더하는지',
  'greet-hello':'누구를 처음 만났는지', 'greet-thanks':'어떤 도움을 받았는지', 'greet-name':'소개하는 사람의 이름을',
- 'plans-time':'날짜와 시간을 함께', 'plans-place':'만날 장소를', 'plans-delay':'도착이 늦어진다는 말을',
+ 'plans-time':'날짜와 시간을', 'plans-place':'만날 장소를', 'plans-delay':'도착이 늦어진다는 말을',
  'directions-right':'왼쪽과 오른쪽을', 'directions-beside':'장소의 옆과 안을', 'directions-where':'찾고 있는 장소를',
  'transit-alight':'지금과 다음 정류장을', 'transit-destination':'버스의 목적지를', 'transit-card':'카드를 어디에 대는지',
  'store-price':'가격을 묻는 말을', 'store-bag':'봉투가 필요한 상황을', 'store-card':'계산하는 방법을'

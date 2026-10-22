@@ -13,7 +13,7 @@ test('a signed-in account with no menu grants sees all development apps without 
   assert.deepEqual(library.appIds,APP_IDS);assert.equal(library.owner,'member-with-no-grants');assert.equal(library.status,'ready');
   // Every catalogue app gets a card except teacher, which opens inside Messenger's; a fixed count broke whenever a benefit was added or retired.
   const cards=APP_IDS.filter(id=>id!=='teacher');
-  assert.equal(library.developmentCatalog,true);assert.deepEqual(displayLibraryAppIds(library),cards);assert.ok(libraryCopy(library).note.includes('지원 앱 '+cards.length+'개'));
+  assert.equal(library.developmentCatalog,true);assert.deepEqual(displayLibraryAppIds(library),cards);assert.ok(libraryCopy(library).note.includes('앱 '+cards.length+'개'));
   assert.equal(JSON.stringify(auth),before);assert.deepEqual(auth.library.appIds,[]);
 });
 
@@ -53,15 +53,15 @@ test('public apps offer a usable browser action while packaged and unsupported a
   const publicAppsAvailable=['care','fortune'];
   for(const id of publicAppsAvailable){
     const action=primaryAction({id},{native:true,publicAppsAvailable});
-    assert.deepEqual(action,{label:'웹으로 열기',action:'public-web',disabled:false});
+    assert.deepEqual(action,{label:'웹에서 열기',action:'public-web',disabled:false});
     assert.equal(canOpenFromHome(action),true);
-    assert.equal(statusLabel({id,publicWebAvailable:true}),'웹에서 이용 가능');
+    assert.equal(statusLabel({id,publicWebAvailable:true}),'웹에서 열림');
     assert.equal(primaryAction({id},{native:false,publicAppsAvailable}).disabled,true);
     assert.equal(primaryAction({id},{busy:true,publicAppsAvailable}).disabled,true);
     assert.equal(primaryAction({id},{publicAppsAvailable,productPreviewsAvailable:[id]}).action,'product-preview');
   }
   const pathAction=primaryAction({id:'path'},{native:true,publicAppsAvailable:['path'],productPreviewsAvailable:['path']});
-  assert.deepEqual(pathAction,{label:'실사 면접실 열기',action:'public-web',disabled:false});assert.equal(canOpenFromHome(pathAction),true);
+  assert.deepEqual(pathAction,{label:'면접 연습 열기',action:'public-web',disabled:false});assert.equal(canOpenFromHome(pathAction),true);
   for(const id of ['teacher','family-album','partners','unknown']){
     assert.equal(primaryAction({id},{publicAppsAvailable:[...publicAppsAvailable,id]}).disabled,true);
   }

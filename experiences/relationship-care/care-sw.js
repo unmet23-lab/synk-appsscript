@@ -7,7 +7,7 @@ self.addEventListener('push', event => {
   try { payload = event.data?.json(); } catch { return; }
   if (payload?.type !== 'synk-care-digest') return;
   event.waitUntil(self.registration.showNotification('SYNK 플레저', {
-    body: '오늘 챙길 일이 있어요. 수첩에서 확인해 주세요.',
+    body: '오늘 챙길 일이 있어요. 수첩을 열어 보세요.',
     icon: new URL('assets/sticker-envelope.webp', self.registration.scope).href,
     tag: 'synk-care-daily', renotify: false,
   }));

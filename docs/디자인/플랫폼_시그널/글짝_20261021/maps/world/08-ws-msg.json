@@ -1,0 +1,434 @@
+{
+ "//": "world-strings 묶인 상태 글(msg.*)과 「계정 연결」→「로그인」 화면 글 — ko·en·mn을 함께 바꾸고, tMessage가 글자로 찾는 원천의 같은 한국어도 같이. 몽골어는 qa/mn-check-20261021-copy-audit 검문.",
+ "experiences/brand-opening/world-strings.mjs": [
+  [
+   "'msg.accountChanged':{ko:'계정 연결이 바뀌었어요.',en:'Your account connection changed.',mn:'Бүртгэлийн холболт өөрчлөгдсөн.'},",
+   "'msg.accountChanged':{ko:'로그인한 계정이 바뀌었어요.',en:'The signed-in account changed.',mn:'Нэвтэрсэн бүртгэл өөрчлөгдсөн.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'msg.accountChangedChoose':{ko:'계정 연결이 바뀌었어요. 다시 골라 주세요.',en:'Your account connection changed. Please choose again.',mn:'Бүртгэлийн холболт өөрчлөгдсөн. Дахин сонгоно уу.'},",
+   "'msg.accountChangedChoose':{ko:'로그인한 계정이 바뀌었어요. 다시 골라 주세요.',en:'The signed-in account changed. Please choose again.',mn:'Нэвтэрсэн бүртгэл өөрчлөгдсөн. Дахин сонгоно уу.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'msg.authEnded':{ko:'계정 연결이 끝났어요. 다시 연결해 주세요.',en:'Your account connection ended. Please connect again.',mn:'Бүртгэлийн холболт дууссан. Дахин холбоно уу.'},",
+   "'msg.authEnded':{ko:'로그인이 끝났어요. 다시 로그인해 주세요.',en:'You’re signed out. Please sign in again.',mn:'Нэвтрэлт дууссан. Дахин нэвтэрнэ үү.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'msg.learningChanged':{ko:'학습 연결이 바뀌었어요.',en:'Your learning connection changed.',mn:'Сургалтын холболт өөрчлөгдсөн.'},",
+   "'msg.learningChanged':{ko:'로그인한 계정이 바뀌어 저장하지 못했어요. 다시 시도해 주세요.',en:'The signed-in account changed, so this wasn’t saved. Please try again.',mn:'Нэвтэрсэн бүртгэл өөрчлөгдсөн тул хадгалж чадсангүй. Дахин оролдоно уу.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'msg.lifeAccountChanged':{ko:'생활 한국어 계정 연결이 바뀌었어요.',en:'The Everyday Korean account connection changed.',mn:'Өдөр тутмын солонгос хэлний бүртгэлийн холболт өөрчлөгдсөн.'},",
+   "'msg.lifeAccountChanged':{ko:'로그인한 계정이 바뀌었어요. 생활 한국어를 다시 열어 주세요.',en:'The signed-in account changed. Please open Everyday Korean again.',mn:'Нэвтэрсэн бүртгэл өөрчлөгдсөн. Өдөр тутмын солонгос хэлийг дахин нээнэ үү.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'msg.lifeEnded':{ko:'이 계정의 생활 한국어 연결이 끝났어요.',en:'Everyday Korean for this account is disconnected.',mn:'Энэ бүртгэлийн өдөр тутмын солонгос хэлний холболт дууссан.'},",
+   "'msg.lifeEnded':{ko:'로그인이 끝나 생활 한국어 진도를 저장할 수 없어요.',en:'You’re signed out, so Everyday Korean progress can’t be saved.',mn:'Нэвтрэлт дууссан тул өдөр тутмын солонгос хэлний явцыг хадгалах боломжгүй.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'msg.entryAccount':{ko:'계정 연결을 확인하지 못했어요. 다시 연결해 주세요.',en:'Couldn’t check your account connection. Please reconnect.',mn:'Бүртгэлийн холболтыг шалгаж чадсангүй. Дахин холбоно уу.'},",
+   "'msg.entryAccount':{ko:'로그인 상태를 확인하지 못했어요. 다시 로그인해 주세요.',en:'Couldn’t check your sign-in. Please sign in again.',mn:'Нэвтрэлтийн төлөвийг шалгаж чадсангүй. Дахин нэвтэрнэ үү.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'msg.worldAccount':{ko:'WORLD 앱의 계정 연결을 확인해 주세요.',en:'Please check the WORLD app’s account connection.',mn:'WORLD аппын бүртгэлийн холболтыг шалгана уу.'},",
+   "'msg.worldAccount':{ko:'PC 앱을 최신 판으로 업데이트한 뒤 다시 열어 주세요.',en:'Update the PC app to the latest version, then open it again.',mn:'Компьютерын аппыг хамгийн сүүлийн хувилбарт шинэчлээд дахин нээнэ үү.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'msg.activeId':{ko:'활성화된 SYNK ID를 확인해 주세요.',en:'Please check that your SYNK ID is active.',mn:'SYNK ID тань идэвхтэй эсэхийг шалгана уу.'},",
+   "'msg.activeId':{ko:'이 SYNK ID는 지금 쓸 수 없어요. 다른 계정으로 로그인해 주세요.',en:'This SYNK ID can’t be used right now. Please sign in with another account.',mn:'Энэ SYNK ID-г одоогоор ашиглах боломжгүй. Өөр бүртгэлээр нэвтэрнэ үү.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'msg.idSettings':{ko:'이 WORLD의 SYNK ID 공개 연결 설정을 확인해 주세요.',en:'Please check this WORLD’s SYNK ID connection settings.',mn:'Энэ WORLD-ийн SYNK ID холболтын тохиргоог шалгана уу.'},",
+   "'msg.idSettings':{ko:'지금은 로그인을 시작할 수 없어요. 잠시 뒤 다시 시도해 주세요.',en:'Sign-in can’t start right now. Please try again in a moment.',mn:'Одоогоор нэвтрэлтийг эхлүүлэх боломжгүй. Түр хүлээгээд дахин оролдоно уу.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'msg.otherAccount':{ko:'다른 계정의 응답을 적용하지 않았어요.',en:'A response for another account wasn’t applied.',mn:'Өөр бүртгэлийн хариуг ашиглаагүй.'},",
+   "'msg.otherAccount':{ko:'다른 계정의 정보라서 반영하지 않았어요.',en:'That was for another account, so it wasn’t applied.',mn:'Өөр бүртгэлийн мэдээлэл байсан тул ашиглаагүй.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'msg.classroom':{ko:'교실 연결을 확인하지 못했어요.',en:'Couldn’t check the classroom connection.',mn:'Ангийн холболтыг шалгаж чадсангүй.'},",
+   "'msg.classroom':{ko:'반 정보를 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.',en:'Couldn’t load your class information. Please open it again in a moment.',mn:'Ангийн мэдээллийг ачаалж чадсангүй. Түр хүлээгээд дахин нээнэ үү.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'msg.tutorAccountFirst':{ko:'계정에 연결한 뒤 다시 골라 주세요. 기존 튜터는 그대로 두었어요.',en:'Connect your account and choose again. Your current tutor is unchanged.',mn:'Бүртгэлээ холбоод дахин сонгоно уу. Одоогийн багш тань хэвээр байна.'},",
+   "'msg.tutorAccountFirst':{ko:'계정 저장이 준비된 뒤 다시 골라 주세요. 지금 튜터는 그대로예요.',en:'Choose again once saving to your account is ready. Your current tutor stays the same.',mn:'Бүртгэлд хадгалахад бэлэн болсны дараа дахин сонгоно уу. Одоогийн багш тань хэвээр байна.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'msg.tutorAfterConnect':{ko:'계정 연결을 다시 확인한 뒤 선택을 저장해요.',en:'Your choice will be saved after the account connection is checked.',mn:'Бүртгэлийн холболтыг шалгасны дараа сонголтыг хадгална.'},",
+   "'msg.tutorAfterConnect':{ko:'계정 저장이 준비되면 고른 튜터를 저장해요.',en:'Your tutor will be saved once your account is ready.',mn:'Бүртгэл бэлэн болмогц сонгосон багшийг хадгална.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'msg.tutorDevice':{ko:'선택은 이 기기에 기억해요.',en:'Your choice is remembered on this device.',mn:'Сонголтыг энэ төхөөрөмжид хадгална.'},",
+   "'msg.tutorDevice':{ko:'고른 튜터는 이 기기에 저장돼요.',en:'Your tutor is saved on this device.',mn:'Сонгосон багш энэ төхөөрөмжид хадгалагдана.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'tutor.status.device':{ko:'선택은 이 기기에 기억해요.',en:'Your choice is remembered on this device.',mn:'Сонголтыг энэ төхөөрөмжид хадгална.'},",
+   "'tutor.status.device':{ko:'고른 튜터는 이 기기에 저장돼요.',en:'Your tutor is saved on this device.',mn:'Сонгосон багш энэ төхөөрөмжид хадгалагдана.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'msg.tutorSynced':{ko:'선택은 SYNK 계정에 기억해요. 다른 기기에서도 함께해요.',en:'Your choice is remembered in your SYNK account, on every device.',mn:'Сонголтыг тань SYNK бүртгэлд хадгална. Бусад төхөөрөмж дээр ч адилхан харагдана.'},",
+   "'msg.tutorSynced':{ko:'고른 튜터는 SYNK 계정에 저장돼요. 다른 기기에서도 같은 튜터예요.',en:'Your tutor is saved to your SYNK account, so it’s the same on other devices.',mn:'Сонгосон багш SYNK бүртгэлд хадгалагдана. Бусад төхөөрөмж дээр ч ижил багш байна.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'msg.tutorKeptDevice':{ko:'선택은 이 기기에 보관했어요. 다시 연결되면 계정에 저장해요.',en:'Your choice is kept on this device and will be saved to your account when you’re back online.',mn:'Сонголтыг энэ төхөөрөмжид хадгаллаа. Дахин холбогдоход бүртгэлд хадгална.'},",
+   "'msg.tutorKeptDevice':{ko:'고른 튜터는 이 기기에 두었어요. 인터넷이 연결되면 계정에 저장해요.',en:'Your tutor is kept on this device and will be saved to your account when you’re back online.',mn:'Сонгосон багшийг энэ төхөөрөмжид түр хадгаллаа. Дахин холбогдоход бүртгэлд хадгална.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'msg.tutorNotSynced':{ko:'선택을 아직 계정에 저장하지 못했어요. 연결되면 다시 시도해요.',en:'Your choice isn’t saved to your account yet. It will try again once connected.',mn:'Сонголтыг бүртгэлд хараахан хадгалж чадаагүй. Холбогдоход дахин оролдоно.'},",
+   "'msg.tutorNotSynced':{ko:'고른 튜터를 아직 계정에 저장하지 못했어요. 인터넷이 연결되면 다시 저장해요.',en:'Your tutor isn’t saved to your account yet. It will be saved once you’re back online.',mn:'Сонгосон багшийг бүртгэлд хараахан хадгалж чадаагүй байна. Дахин холбогдоход хадгална.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'msg.tutorSaving':{ko:'선택과 학습 기록을 계정에 저장하고 있어요.',en:'Saving your choice and learning records to your account.',mn:'Сонголт, сургалтын мэдээллийг бүртгэлд хадгалж байна.'},",
+   "'msg.tutorSaving':{ko:'고른 튜터와 학습 기록을 계정에 저장하고 있어요.',en:'Saving your tutor and learning records to your account.',mn:'Сонгосон багш, сургалтын мэдээллийг бүртгэлд хадгалж байна.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'msg.recordsChanged':{ko:'다른 화면에서도 기록이 바뀌었어요. 저장 확인에서 사용할 기록을 골라 주세요.',en:'Your records changed on another screen too. Choose which records to use in the save check.',mn:'Таны мэдээлэл өөр дэлгэц дээр ч өөрчлөгдсөн. Хадгалалтыг шалгах хэсгээс ашиглах мэдээллээ сонгоно уу.'},",
+   "'msg.recordsChanged':{ko:'다른 화면에서 기록이 바뀌었어요. 이어 갈 기록을 먼저 골라 주세요.',en:'Your records changed on another screen. First choose which records to continue with.',mn:'Өөр дэлгэц дээр мэдээлэл өөрчлөгдсөн. Эхлээд аль мэдээллээр үргэлжлүүлэхээ сонгоно уу.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'msg.recordsCheckFirst':{ko:'기록을 확인한 뒤 다시 골라 주세요.',en:'Check your records, then choose again.',mn:'Мэдээллээ шалгаад дахин сонгоно уу.'},",
+   "'msg.recordsCheckFirst':{ko:'기록을 읽지 못해 튜터를 저장하지 못했어요. 잠시 뒤 다시 골라 주세요.',en:'Couldn’t read your records, so the tutor wasn’t saved. Please choose again in a moment.',mn:'Мэдээллийг уншиж чадаагүй тул багшийг хадгалж чадсангүй. Түр хүлээгээд дахин сонгоно уу.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'msg.chooseInSaveCheck':{ko:'저장 확인에서 사용할 기록을 골라 주세요.',en:'Choose which records to use in the save check.',mn:'Хадгалалтыг шалгах хэсгээс ашиглах мэдээллээ сонгоно уу.'},",
+   "'msg.chooseInSaveCheck':{ko:'이어 갈 기록을 먼저 골라 주세요.',en:'First choose which records to continue with.',mn:'Эхлээд аль мэдээллээр үргэлжлүүлэхээ сонгоно уу.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'msg.keptFirst':{ko:'보관된 진도를 먼저 확인해 주세요.',en:'Please check the kept progress first.',mn:'Хадгалсан явцаа эхлээд шалгана уу.'},",
+   "'msg.keptFirst':{ko:'저장하지 못한 진도가 있어요. 이어 갈 기록을 먼저 골라 주세요.',en:'Some progress wasn’t saved. First choose which records to continue with.',mn:'Хадгалж чадаагүй явц байна. Эхлээд аль мэдээллээр үргэлжлүүлэхээ сонгоно уу.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'msg.chooseProgressFirst':{ko:'사용할 진도를 먼저 선택해 주세요.',en:'Please choose which progress to use first.',mn:'Ашиглах явцаа эхлээд сонгоно уу.'},",
+   "'msg.chooseProgressFirst':{ko:'진도가 두 곳에서 달라요. 이어 갈 기록을 먼저 골라 주세요.',en:'Your progress differs in two places. First choose which records to continue with.',mn:'Явц хоёр газарт өөр байна. Эхлээд аль мэдээллээр үргэлжлүүлэхээ сонгоно уу.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'msg.checkExistingFirst':{ko:'기존 진도를 먼저 확인해 주세요.',en:'Please check your existing progress first.',mn:'Өмнөх явцаа эхлээд шалгана уу.'},",
+   "'msg.checkExistingFirst':{ko:'기존 진도를 읽지 못해 지금은 저장할 수 없어요. 잠시 뒤 다시 열어 주세요.',en:'Couldn’t read your existing progress, so it can’t be saved now. Please open it again in a moment.',mn:'Өмнөх явцыг уншиж чадаагүй тул одоо хадгалах боломжгүй. Түр хүлээгээд дахин нээнэ үү.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'account.title':{ko:'계정 연결',en:'Connect an account',mn:'Бүртгэл холбох'},",
+   "'account.title':{ko:'로그인',en:'Sign in',mn:'Нэвтрэх'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'home.account.connect':{ko:'계정 연결하기',en:'Connect an account',mn:'Бүртгэл холбох'},",
+   "'home.account.connect':{ko:'로그인하기',en:'Sign in',mn:'Нэвтрэх'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'home.account.connected':{ko:'계정 연결됨',en:'Account connected',mn:'Бүртгэл холбогдсон'},",
+   "'home.account.connected':{ko:'로그인됨',en:'Signed in',mn:'Нэвтэрсэн'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'home.account.test':{ko:'시험 계정 연결됨',en:'Test account connected',mn:'Туршилтын бүртгэл холбогдсон'},",
+   "'home.account.test':{ko:'시험 계정 로그인됨',en:'Signed in with a test account',mn:'Туршилтын бүртгэлээр нэвтэрсэн'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'account.oneIdBody':{ko:'학원에 공유하는 기록은 내 계정의 동의 설정을 따라요. 타운 활동 공유는 따로 고를 수 있어요.',en:'What you share with your academy follows your account’s consent settings. Sharing Town activity is a separate choice.',mn:'Сургалтын төвтэй хуваалцах мэдээлэл таны бүртгэлийн зөвшөөрлийн тохиргоог дагана. Таун дахь үйл ажиллагааг хуваалцах эсэхийг тусад нь сонгоно.'},",
+   "'account.oneIdBody':{ko:'반에 공유하는 기록은 내 계정의 동의 설정을 따라요. 타운 활동 공유는 따로 고를 수 있어요.',en:'What you share with your class follows your account’s consent settings. Sharing Town activity is a separate choice.',mn:'Ангитайгаа хуваалцах мэдээлэл таны бүртгэлийн зөвшөөрлийн тохиргоог дагана. Таун дахь үйл ажиллагааг хуваалцах эсэхийг тусад нь сонгоно.'},",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/synk-world-app/app-shell.mjs": [
+  [
+   "'계정 연결이 바뀌었어요.'",
+   "'로그인한 계정이 바뀌었어요.'",
+   {
+    "n": 2
+   }
+  ],
+  [
+   "'계정 연결이 바뀌었어요. 다시 골라 주세요.'",
+   "'로그인한 계정이 바뀌었어요. 다시 골라 주세요.'",
+   {
+    "n": 3
+   }
+  ],
+  [
+   "'생활 한국어 계정 연결이 바뀌었어요.'",
+   "'로그인한 계정이 바뀌었어요. 생활 한국어를 다시 열어 주세요.'",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/synk-world-app/world-account.mjs": [
+  [
+   "'계정 연결이 바뀌었어요.'",
+   "'로그인한 계정이 바뀌었어요.'",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'WORLD 앱의 계정 연결을 확인해 주세요.'",
+   "'PC 앱을 최신 판으로 업데이트한 뒤 다시 열어 주세요.'",
+   {
+    "n": 2
+   }
+  ],
+  [
+   "'활성화된 SYNK ID를 확인해 주세요.'",
+   "'이 SYNK ID는 지금 쓸 수 없어요. 다른 계정으로 로그인해 주세요.'",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'이 WORLD의 SYNK ID 공개 연결 설정을 확인해 주세요.'",
+   "'지금은 로그인을 시작할 수 없어요. 잠시 뒤 다시 시도해 주세요.'",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'다른 계정의 응답을 적용하지 않았어요.'",
+   "'다른 계정의 정보라서 반영하지 않았어요.'",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'교실 연결을 확인하지 못했어요.'",
+   "'반 정보를 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.'",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/synk-world-app/device-records.mjs": [
+  [
+   "'계정 연결이 바뀌었어요.'",
+   "'로그인한 계정이 바뀌었어요.'",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/synk-world-app/tutor-selection-sync.mjs": [
+  [
+   "'계정 연결을 확인하지 못했어요. 다시 연결해 주세요.'",
+   "'로그인 상태를 확인하지 못했어요. 다시 로그인해 주세요.'",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'계정에 연결한 뒤 다시 골라 주세요. 기존 튜터는 그대로 두었어요.'",
+   "'계정 저장이 준비된 뒤 다시 골라 주세요. 지금 튜터는 그대로예요.'",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'계정 연결을 다시 확인한 뒤 선택을 저장해요.'",
+   "'계정 저장이 준비되면 고른 튜터를 저장해요.'",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'선택은 이 기기에 기억해요.'",
+   "'고른 튜터는 이 기기에 저장돼요.'",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'선택은 SYNK 계정에 기억해요. 다른 기기에서도 함께해요.'",
+   "'고른 튜터는 SYNK 계정에 저장돼요. 다른 기기에서도 같은 튜터예요.'",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'선택은 이 기기에 보관했어요. 다시 연결되면 계정에 저장해요.'",
+   "'고른 튜터는 이 기기에 두었어요. 인터넷이 연결되면 계정에 저장해요.'",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'선택을 아직 계정에 저장하지 못했어요. 연결되면 다시 시도해요.'",
+   "'고른 튜터를 아직 계정에 저장하지 못했어요. 인터넷이 연결되면 다시 저장해요.'",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'선택과 학습 기록을 계정에 저장하고 있어요.'",
+   "'고른 튜터와 학습 기록을 계정에 저장하고 있어요.'",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'다른 화면에서도 기록이 바뀌었어요. 저장 확인에서 사용할 기록을 골라 주세요.'",
+   "'다른 화면에서 기록이 바뀌었어요. 이어 갈 기록을 먼저 골라 주세요.'",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'기록을 확인한 뒤 다시 골라 주세요.'",
+   "'기록을 읽지 못해 튜터를 저장하지 못했어요. 잠시 뒤 다시 골라 주세요.'",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'저장 확인에서 사용할 기록을 골라 주세요.'",
+   "'이어 갈 기록을 먼저 골라 주세요.'",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/synk-world-app/life-progress.mjs": [
+  [
+   "'이 계정의 생활 한국어 연결이 끝났어요.'",
+   "'로그인이 끝나 생활 한국어 진도를 저장할 수 없어요.'",
+   {
+    "n": 2
+   }
+  ],
+  [
+   "'보관된 진도를 먼저 확인해 주세요.'",
+   "'저장하지 못한 진도가 있어요. 이어 갈 기록을 먼저 골라 주세요.'",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'사용할 진도를 먼저 선택해 주세요.'",
+   "'진도가 두 곳에서 달라요. 이어 갈 기록을 먼저 골라 주세요.'",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'기존 진도를 먼저 확인해 주세요.'",
+   "'기존 진도를 읽지 못해 지금은 저장할 수 없어요. 잠시 뒤 다시 열어 주세요.'",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/synk-world-app/life-progress-port.mjs": [
+  [
+   "'이 계정의 생활 한국어 연결이 끝났어요.'",
+   "'로그인이 끝나 생활 한국어 진도를 저장할 수 없어요.'",
+   {
+    "n": 2
+   }
+  ]
+ ],
+ "experiences/synk-world-app/life-ui.mjs": [
+  [
+   "'학습 연결이 바뀌었어요.'",
+   "'로그인한 계정이 바뀌어 저장하지 못했어요. 다시 시도해 주세요.'",
+   {
+    "n": 3
+   }
+  ]
+ ],
+ "experiences/synk-world-home/wardrobe-studio.mjs": [
+  [
+   "'계정 연결이 끝났어요. 다시 연결해 주세요.'",
+   "'로그인이 끝났어요. 다시 로그인해 주세요.'",
+   {
+    "n": 1
+   }
+  ]
+ ]
+}

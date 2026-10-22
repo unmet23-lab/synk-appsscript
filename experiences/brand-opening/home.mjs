@@ -459,7 +459,7 @@ function showMemory(){
  const data=memory.snapshot();
  openPanel('기억 액자','<section class="memory-detail"><small class="memory-date"></small><h3 class="memory-expression"></h3><p class="memory-note"></p><img class="memory-photo" alt="내 앨범에 저장한 사진" hidden><p class="memory-photo-label"></p><div class="panel-actions"><button class="felt-button" data-memory-review>오늘 배운 표현 보기</button><button class="quiet-button" data-memory-photo>방 사진 찍기</button><button class="quiet-button" data-view="wardrobe">앨범 열기</button></div></section>',{type:'memory',eyebrow:'MEMORY'});
  content.querySelector('.memory-date').textContent=data.date||'아직 기록이 없어요';
- content.querySelector('.memory-expression').textContent=data.text||'아직 배운 표현이 없어요';
+ content.querySelector('.memory-expression').textContent=data.text||'오늘 배운 표현이 아직 없어요';
  content.querySelector('.memory-note').textContent=data.text?data.label:'레슨을 하나 끝내면 배운 표현이 여기에 걸려요.';
  const img=content.querySelector('.memory-photo');if(data.photoUrl){img.src=data.photoUrl;img.hidden=false;}
  content.querySelector('.memory-photo-label').textContent=data.photoUrl?`${data.photoDate} · ${data.photoLabel} · ${data.photoMode==='session'?'이 창에 임시 보관':'이 기기에 보관'}`:'';

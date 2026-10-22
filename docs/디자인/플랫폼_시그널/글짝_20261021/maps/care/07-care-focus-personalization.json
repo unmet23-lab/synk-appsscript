@@ -1,0 +1,140 @@
+{
+  "//": "오늘의 한 사람(care-focus.mjs, 지금은 CSS로 숨은 판)과 기억 고르기(care-personalization.mjs). 날짜 뒤 「이에요」 조사 문제 피함, 기억을 못 넣은 이유는 혼자 읽혀도 되는 한 문장으로",
+  "experiences/relationship-care/care-focus.mjs": [
+    [
+      "export const FOCUS_POLICY = '오늘 일정 → 내가 정한 후속 챙김 → 7일 안 일정 → 최근 챙김 기록을 기준으로 살펴봐요.';",
+      "export const FOCUS_POLICY = '오늘 일정, 다시 챙기기로 정한 날, 7일 안의 일정, 마지막 챙김 기록 순서로 골라요.';",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error('추천의 기준 시간을 확인해 주세요.');",
+      "throw new Error('날짜를 읽지 못했어요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error('1900~2199년 사이의 기준 날짜를 확인해 주세요.');",
+      "throw new Error('1900~2199년 사이 날짜만 쓸 수 있어요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "'준비 화면에서 내 말투로 다듬어 주세요. 연락과 기록은 직접 선택해요.'",
+      "'문구는 내 말투로 다듬고, 보낸 뒤 기록을 남겨 주세요.'",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "`${occurrence.daysUntil}일 뒤(${monthDay(occurrence.date)})로 남겨 둔 일정이에요.`",
+      "`${occurrence.daysUntil}일 뒤(${monthDay(occurrence.date)})예요.`",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "reason: `내가 다시 챙기기로 정한 날은 ${followup.dueOn}이에요.${followup.daysUntil < 0 ? ' 지금도 필요한지 먼저 확인해 주세요.' : ''}`",
+      "reason: `${followup.dueOn}에 다시 챙기기로 했어요.${followup.daysUntil < 0 ? ' 날짜가 지났으니 지금도 챙길 일인지 먼저 떠올려 보세요.' : ''}`",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "'남겨 둔 내용과 지난 이야기를 보며 안부를 준비해요. 날짜를 바꾸거나 그만 챙기려면 우리의 기록을 열어 주세요.'",
+      "'남겨 둔 내용과 지난 이야기를 보며 안부를 준비해요. 날짜를 바꾸거나 그만 챙기려면 「우리의 기록」을 열어 주세요.'",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "` 직접 정한 ${interval}일 간격으로 안부를 살펴보고 있어요.`",
+      "` ${interval}일마다 안부를 챙기기로 했어요.`",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "`수첩에 마지막으로 남긴 챙김은 ${last}(${days}일 전)이에요. 실제로 나눈 연락과 다를 수 있어요.` : '아직 이 사람의 챙김 기록을 남기지 않았어요. 첫 안부부터 준비해 볼 수 있어요.'",
+      "`마지막 챙김 기록은 ${last}(${days}일 전)이에요.` : '아직 챙김 기록이 없어요. 첫 안부를 준비해 보세요.'",
+      {
+        "n": 1
+      }
+    ]
+  ],
+  "experiences/relationship-care/care-personalization.mjs": [
+    [
+      "throw new Error('이번에 쓸 기억과 용도를 직접 확인해 주세요.');",
+      "throw new Error('이번에 쓸 기억과 쓰는 방법을 골라 주세요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error('이 사람의 현재 기억과 원문을 다시 선택해 주세요. 삭제하거나 바뀐 근거는 사용할 수 없어요.');",
+      "throw new Error('고른 기억이 지워졌거나 바뀌었어요. 기억을 다시 골라 주세요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "blockedReasons.push('직접 정한 피할 표현이 기억에 있어 자동으로 넣지 않았어요.');",
+      "blockedReasons.push('피하기로 한 표현이 들어 있어 이 기억은 넣지 않았어요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "blockedReasons.push('답장을 재촉할 수 있는 표현이 있어 기억을 자동으로 넣지 않았어요.');",
+      "blockedReasons.push('답장을 재촉하는 말로 들릴 수 있어 이 기억은 넣지 않았어요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "blockedReasons.push('조심스러운 날에 맞지 않을 수 있는 이모지·웃음·농담 표지가 있어 기억을 자동으로 넣지 않았어요.');",
+      "blockedReasons.push('조심스러운 날에 어울리지 않는 이모지나 웃음 표현이 있어 이 기억은 넣지 않았어요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "blockedReasons.push('이번 연락에는 선물 취향을 자동으로 사용하지 않아요. 함께한 기억을 고르거나 선택 없이 준비해 주세요.');",
+      "blockedReasons.push('이번 연락에는 선물 취향을 쓰지 않아요. 「함께한 기억으로 인용」을 고르거나 기억 없이 준비해 주세요.');",
+      {
+        "n": 1
+      }
+    ]
+  ],
+  "experiences/relationship-care/tests/message-quality.test.mjs": [
+    [
+      "/기억과 원문/u",
+      "/지워졌거나 바뀌었어요/u"
+    ]
+  ],
+  "experiences/relationship-care/tests/checkin-interval.test.mjs": [
+    [
+      "`수첩에 마지막으로 남긴 챙김은 ${day(-30)}(30일 전)이에요. 실제로 나눈 연락과 다를 수 있어요.`",
+      "`마지막 챙김 기록은 ${day(-30)}(30일 전)이에요.`"
+    ],
+    [
+      "'아직 이 사람의 챙김 기록을 남기지 않았어요. 첫 안부부터 준비해 볼 수 있어요.'",
+      "'아직 챙김 기록이 없어요. 첫 안부를 준비해 보세요.'"
+    ],
+    [
+      "includes(`직접 정한 ${checkinIntervalDays}일 간격`)",
+      "includes(`${checkinIntervalDays}일마다 안부를 챙기기로`)"
+    ],
+    [
+      "/아직 이 사람의 챙김 기록/u",
+      "/아직 챙김 기록이 없어요/u"
+    ],
+    [
+      "includes(`${checkinIntervalDays}일 간격`)",
+      "includes(`${checkinIntervalDays}일마다`)"
+    ]
+  ]
+}

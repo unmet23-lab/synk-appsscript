@@ -1,0 +1,20 @@
+{
+ "experiences/synk-account/src/enrollment.mjs": [
+  [
+   "학습 기록 공유와 TOWN 생활 공유는 따로 켜요.",
+   "학습 기록 연결과 TOWN 생활 공유는 따로 켜요.",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/synk-account/theme.js": [
+  [
+   "(으)로 바꿉니다",
+   "(으)로 바꿔요",
+   {
+    "n": 1
+   }
+  ]
+ ]
+}

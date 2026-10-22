@@ -21,7 +21,7 @@ const POSES=[['neutral','편안하게'],['wave','손 인사'],['tilt','갸웃']]
 let soundModule=null;
 import(new URL('../brand-opening/world-sound.mjs',import.meta.url).href).then(module=>{soundModule=module;}).catch(()=>{});
 const sound=name=>{try{soundModule?.play?.(name);}catch{}};
-const giftLabel=item=>item?.gift&&item.gift!=='옷장 첫 선물'?item.gift:'레슨 보상';
+const giftLabel=item=>item?.gift&&item.gift!=='옷장 첫 선물'?item.gift:'로그인하면 받아요';
 let nextStudioId=0;
 function installStyle(){if(document.getElementById('wardrobe-studio-style'))return;const link=document.createElement('link');link.id='wardrobe-studio-style';link.rel='stylesheet';link.href=new URL('./wardrobe-studio.css',import.meta.url).href;document.head.append(link);}
 
@@ -129,7 +129,7 @@ export function createWardrobeStudio({snapshot,onEquip=async()=>{},onSaveLooks=a
     const earn=$('[data-studio="earn"]');earn.hidden=available||preview;earn.disabled=busy();
     root.dataset.outfit=comparing?'compare':same?'worn':available?'draft':'locked';
     $('.atelier-outfit-state').textContent=comparing?'입은 차림을 보는 중':same?'지금 입고 있는 차림':available?'미리 입어 보는 차림':'아직 없는 옷을 입어 보는 중';
-    $('.atelier-sync-note').textContent=(preview?'브라우저 미리보기 · ':serverStatus==='offline'?'연결을 기다려요 · ':pending?'저장 요청이 남아 있어요 · ':serverBusy?'저장 상태를 확인하는 중 · ':'')+(store.status.mode==='device'?'고르던 차림은 이 기기에 남아요':'고르던 차림은 이번 실행에만 남아요');
+    $('.atelier-sync-note').textContent=(preview?'브라우저 미리보기 · ':serverStatus==='offline'?'연결을 기다려요 · ':pending?'저장 요청이 남아 있어요 · ':serverBusy?'저장 상태를 확인하는 중 · ':'')+(store.status.mode==='device'?'고르던 차림은 이 기기에 남아요':'고르던 차림은 창을 닫으면 사라져요');
     $('.atelier-feedback').textContent=missingEditingLook?'고치던 차림이 다른 화면에서 지워졌어요. 입어 보던 옷과 이름은 남아 있어요. 「새 차림으로 저장하기」로 새로 저장할 수 있어요.':message;$('.atelier-look-count').textContent=`${looks().length} / 12`;$('.atelier-undo-save').hidden=!undoLooks;$('.atelier-undo-photo').hidden=!undoPhoto;
     $('[data-studio="undo"]').disabled=!history.canUndo; $('[data-studio="redo"]').disabled=!history.canRedo;
     $('[data-studio="save-look"]').disabled=busy()||!available||missingEditingLook;$('[data-studio="save-look"]').textContent=editingLook?'이름·차림 고치기':'지금 차림 저장하기';editorSummary.textContent=editingLook?`${looks().find(look=>look.id===editingLook)?.name||'고른 차림'} · 이름·차림 고치기`:'지금 차림 저장하기';
@@ -139,12 +139,12 @@ export function createWardrobeStudio({snapshot,onEquip=async()=>{},onSaveLooks=a
     $$('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===ws.viewFilter)));$$('[data-category]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.category===ws.category)));
     $('[data-studio="owned"]').setAttribute('aria-pressed',String(ws.ownedOnly));
     $$('[data-filter-kind]').forEach(b=>b.setAttribute('aria-pressed',String(ws.filter[b.dataset.filterKind].includes(b.dataset.filterId))));
-    const holder=$('.atelier-pending');holder.hidden=!pending;if(pending){holder.innerHTML=`<p>${serverStatus==='conflict'?'다른 화면에서 저장한 차림이 바뀌었어요. 최신 기록을 확인한 뒤 다시 입어 주세요.':'아직 저장하지 못했어요. 고른 차림은 그대로예요.'}</p><div>${serverStatus==='conflict'?'':button('retry','같은 요청 다시 저장하기')}${button('discard','계정의 최신 기록 보기')}</div>`;holder.querySelectorAll('button').forEach(b=>b.disabled=localBusy||serverBusy);}
+    const holder=$('.atelier-pending');holder.hidden=!pending;if(pending){holder.innerHTML=`<p>${serverStatus==='conflict'?'다른 화면에서 차림이 바뀌었어요. 「계정의 최신 기록 보기」를 누른 뒤 다시 입어 주세요.':'아직 저장하지 못했어요. 고른 차림은 그대로예요.'}</p><div>${serverStatus==='conflict'?'':button('retry','같은 요청 다시 저장하기')}${button('discard','계정의 최신 기록 보기')}</div>`;holder.querySelectorAll('button').forEach(b=>b.disabled=localBusy||serverBusy);}
     renderDetails();setDefaults();
   }
   function itemCard(item){
     const state=!owns(item.id)?'locked':confirmed.slots[item.slot]===item.id?'worn':draft.slots[item.slot]===item.id?'trying':'owned',chosen=draft.slots[item.slot]===item.id,fav=ws.favorites.includes(item.id);
-    return `<article class="atelier-item-card" data-state="${state}"><button type="button" class="atelier-item ${chosen?'is-chosen':''}" data-pick="${item.id}" aria-pressed="${chosen}" aria-label="${esc(item.name)} · ${owns(item.id)?'입어 보기':esc(giftLabel(item))}"><span class="atelier-item-art"><img data-thumb-item="${item.id}" src="${thumb({slots:{[item.slot]:item.id},dyes:{}})}" alt="" width="256" height="256">${chosen?`<span class="atelier-item-check">${icon('check')}</span>`:''}</span><strong>${esc(item.name)}</strong><span class="atelier-item-material">${state==='locked'?esc(giftLabel(item)):state==='worn'?'입는 중':state==='trying'?'입어 보는 중':esc(item.material)}${ws.unseen.includes(item.id)?' · 새 옷':''}</span></button><div class="atelier-item-tools"><button type="button" data-favorite="${item.id}" aria-pressed="${fav}" aria-label="${esc(item.name)} 즐겨찾기"></button><details><summary aria-label="${esc(item.name)} 관리"><span class="atelier-sr">관리</span></summary><button type="button" data-hide="${item.id}">${ws.hidden.includes(item.id)?'다시 보이기':'숨기기'}</button>${ws.groups.map(g=>`<button type="button" data-group-item="${item.id}" data-group-target="${esc(g.id)}" aria-pressed="${g.itemIds.includes(item.id)}">${esc(g.icon)} ${esc(g.name)} ${g.itemIds.includes(item.id)?'에서 빼기':'에 담기'}</button>`).join('')}</details></div></article>`;
+    return `<article class="atelier-item-card" data-state="${state}"><button type="button" class="atelier-item ${chosen?'is-chosen':''}" data-pick="${item.id}" aria-pressed="${chosen}" aria-label="${esc(item.name)} · ${owns(item.id)?'입어 보기':esc(giftLabel(item))}"><span class="atelier-item-art"><img data-thumb-item="${item.id}" src="${thumb({slots:{[item.slot]:item.id},dyes:{}})}" alt="" width="256" height="256">${chosen?`<span class="atelier-item-check">${icon('check')}</span>`:''}</span><strong>${esc(item.name)}</strong><span class="atelier-item-material">${state==='locked'?esc(giftLabel(item)):state==='worn'?'입는 중':state==='trying'?'고르는 중':esc(item.material)}${ws.unseen.includes(item.id)?' · 새 옷':''}</span></button><div class="atelier-item-tools"><button type="button" data-favorite="${item.id}" aria-pressed="${fav}" aria-label="${esc(item.name)} 즐겨찾기"></button><details><summary aria-label="${esc(item.name)} 관리"><span class="atelier-sr">관리</span></summary><button type="button" data-hide="${item.id}">${ws.hidden.includes(item.id)?'다시 보이기':'숨기기'}</button>${ws.groups.map(g=>`<button type="button" data-group-item="${item.id}" data-group-target="${esc(g.id)}" aria-pressed="${g.itemIds.includes(item.id)}">${esc(g.icon)} ${esc(g.name)} ${g.itemIds.includes(item.id)?'에서 빼기':'에 담기'}</button>`).join('')}</details></div></article>`;
   }
   function renderItems(){
     const focused=document.activeElement?.dataset?.pick||document.activeElement?.dataset?.favorite,focusedType=document.activeElement?.dataset?.favorite?'favorite':'pick',scroll=$('.atelier-items'),left=scroll.scrollLeft,top=scroll.scrollTop;
@@ -190,7 +190,7 @@ export function createWardrobeStudio({snapshot,onEquip=async()=>{},onSaveLooks=a
     if(disposed||localBusy||serverBusy||(pending&&!recovery))return;localBusy=true;message='';renderChrome();
     const completion=onSuccess||(recovery?serverCompletion:null);if(onSuccess)serverCompletion=onSuccess;
     try{const result=await action();if(disposed)return;if(result?.accountId)adopt(result);if(!disposed&&result&&completion&&serverCompletion===completion){serverCompletion=null;completion(result);}return result;}
-    catch(error){if(!pending)serverCompletion=null;if(!disposed)message={NETWORK_UNAVAILABLE:'연결이 끊겼어요. 초안과 같은 저장 요청이 남아 있어요.',REVISION_CONFLICT:'다른 화면의 최신 차림을 먼저 확인해 주세요.',ITEM_NOT_OWNED:'아직 없는 옷은 입거나 저장할 수 없어요.',INVALID_DYES:'색을 다시 골라 주세요.',INVALID_LOOKS:'이름과 저장한 차림을 확인해 주세요.',AUTH_REQUIRED:'계정 연결이 끝났어요. 다시 연결해 주세요.'}[error.code]||error.message||'완료하지 못했어요. 다시 시도해 주세요.';}
+    catch(error){if(!pending)serverCompletion=null;if(!disposed)message={NETWORK_UNAVAILABLE:'인터넷 연결이 끊겼어요. 고른 차림은 남아 있으니 연결되면 다시 저장해 주세요.',REVISION_CONFLICT:'다른 화면에서 차림이 바뀌었어요. 옷장을 다시 열어 최신 차림에서 골라 주세요.',ITEM_NOT_OWNED:'아직 없는 옷은 입거나 저장할 수 없어요.',INVALID_DYES:'색을 다시 골라 주세요.',INVALID_LOOKS:'차림 이름을 고친 뒤 다시 저장해 주세요.',AUTH_REQUIRED:'로그인이 끝났어요. 다시 로그인해 주세요.'}[error.code]||error.message||'완료하지 못했어요. 다시 시도해 주세요.';}
     finally{localBusy=false;if(!disposed){render();remember();}}
   }
   function adopt(next,{busy:isBusy=false,pending:nextPending=null,status='ready'}={}){
@@ -203,7 +203,7 @@ export function createWardrobeStudio({snapshot,onEquip=async()=>{},onSaveLooks=a
   async function wear(edit){
     if(busy()||!ownsEdit(edit))return;
     selectEdit(edit,null,{keepEditing:false});
-    await run(()=>onEquip(clone(edit.slots),clone(edit.dyes)),{onSuccess:()=>{for(const id of Object.values(edit.slots).filter(Boolean))ws.recent[id]=Date.now();message='새 차림을 입었어요. 홈과 동네에도 같은 색으로 이어져요.';}});
+    await run(()=>onEquip(clone(edit.slots),clone(edit.dyes)),{onSuccess:()=>{for(const id of Object.values(edit.slots).filter(Boolean))ws.recent[id]=Date.now();message='새 차림을 입었어요. 우리 동네와 싱크타운에서도 이 차림이에요.';}});
   }
   async function saveLooks(next,label,{keepUndo=true,onSaved}={}){
     if(busy())return;const previous=clone(looks()),revision=snap?.revision,formVersion=lookFormVersion,formTarget=editingLook,formName=$('.atelier-name').value,formDraft=clone(draft);
@@ -212,7 +212,7 @@ export function createWardrobeStudio({snapshot,onEquip=async()=>{},onSaveLooks=a
   async function saveLook({replace=false}={}){
     if(busy()||!ownsEdit(draft)||missingEditingLook)return;
     if(!editingLook&&looks().length>=12&&!replace){lookEditor.open=true;$('.atelier-replace').hidden=false;message='12개가 가득 찼어요. 바꿀 차림을 골라 주세요.';renderChrome();return;}
-    const name=$('.atelier-name').value.trim()||`${shownItem().collection}의 나`,id=replace?$('[data-field="replace-look"]').value:editingLook||crypto.randomUUID();
+    const name=$('.atelier-name').value.trim()||`${shownItem().name} 차림`,id=replace?$('[data-field="replace-look"]').value:editingLook||crypto.randomUUID();
     const record={id,name,slots:clone(draft.slots),dyes:clone(draft.dyes)},next=looks().some(l=>l.id===id)?looks().map(l=>l.id===id?record:l):[...looks(),record];
     const formVersion=lookFormVersion,formName=$('.atelier-name').value,formDraft=clone(draft);
     await saveLooks(next,'차림과 색을 저장했어요.',{onSaved:()=>{if(lookFormVersion===formVersion&&$('.atelier-name').value===formName&&equal(draft,formDraft)){$('.atelier-name').value='';$('.atelier-replace').hidden=true;lookEditor.open=false;}}});
@@ -246,7 +246,7 @@ export function createWardrobeStudio({snapshot,onEquip=async()=>{},onSaveLooks=a
       const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0);ctx.fillStyle='rgba(255,255,255,.93)';ctx.fillRect(0,height-114,width,114);await document.fonts?.ready;if(disposed)return;
       const caption=!preview&&equal(edit,confirmed)?'저장한 차림':'입어 본 차림',createdAt=new Date().toISOString(),filename=`SYNK-WORLD-${createdAt.replace(/[:.]/g,'-')}-${format}.png`;
       ctx.fillStyle='#262b36';ctx.font='700 28px SUIT, sans-serif';ctx.fillText(outfitLabel(edit.slots),56,height-66,1088);ctx.font='500 21px SUIT, sans-serif';ctx.fillStyle='#656d78';ctx.fillText(`${caption} · ${shortDate(createdAt)}`,56,height-29);ctx.textAlign='right';ctx.fillText('SYNK WORLD',width-56,height-29);
-      const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('PNG를 준비하지 못했어요.')),'image/png'));if(disposed)return;
+      const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('사진 파일을 만들지 못했어요. 다시 찍어 주세요.')),'image/png'));if(disposed)return;
       const result=await album.add(blob,{slots:edit.slots,dyes:edit.dyes,preview:caption!=='저장한 차림',caption,createdAt,filename,width,height,format,view:engine.getView?.(),light:ws.light,pose:ws.pose,background:ws.background});
       if(disposed)return;let record;if(result.photo)record=await album.get(result.photo.id);
       if(!record){record={id:crypto.randomUUID(),blob,slots:edit.slots,dyes:edit.dyes,caption,createdAt,filename,width,height};message=result.message||'앨범에 저장하지 못했어요. PNG 파일로 먼저 받아 주세요.';}else message=result.mode==='session'?'기기 앨범을 쓸 수 없어 이번 실행에만 저장했어요. PNG로도 받아 두세요.':'사진을 앨범에 저장했어요.';
@@ -259,7 +259,7 @@ export function createWardrobeStudio({snapshot,onEquip=async()=>{},onSaveLooks=a
       $('[data-studio="more-photos"]').hidden=rows.length<=albumPage;
       const active=new Set(rows.slice(0,albumPage).map(r=>r.id));if(photo)active.add(photo.id);for(const [id,url]of urls)if(!active.has(id)){URL.revokeObjectURL(url);urls.delete(id);}
       for(const row of rows.slice(0,albumPage)){const record=await album.get(row.id);if(disposed||token!==albumToken)return;const image=$$('[data-album-image]').find(i=>i.dataset.albumImage===row.id);if(record&&image)image.src=photoUrl(record);}
-    }catch(error){if(!disposed)$('.atelier-album-status').textContent='앨범을 읽지 못했어요. 촬영 결과의 PNG는 따로 받을 수 있어요.';}
+    }catch(error){if(!disposed)$('.atelier-album-status').textContent='앨범을 열지 못했어요. 방금 찍은 사진은 PNG로 받을 수 있어요.';}
   }
   function queueThumbnail(target){
     if(!engine||fault||wardrobeThumbnailCache.get(target.key))return;
@@ -291,7 +291,7 @@ export function createWardrobeStudio({snapshot,onEquip=async()=>{},onSaveLooks=a
     const token=++generation;thumbQueue.clear();stageAbort?.abort();stageAbort=new AbortController();engine?.dispose();engine=null;fault='';root.dataset.stage='loading';$('.atelier-scene').setAttribute('aria-busy','true');
     const fail=text=>{if(disposed||token!==generation)return;fault=text;$('.atelier-scene').setAttribute('aria-busy','false');let box=$('.atelier-stage-error');if(!box){box=document.createElement('div');box.className='atelier-stage-error';$('.atelier-scene-wrap').append(box);}box.innerHTML=`<p>${esc(text)}</p>${button('retry-stage','3D 다시 열기')}`;renderChrome();};
     try{const {mountWardrobeStage}=await import('./wardrobe-stage.mjs');if(disposed||token!==generation)return;const stage=await mountWardrobeStage($('.atelier-scene'),{slots:draft.slots,reducedMotion:reducedMotion||ws.preferences.reducedMotion,signal:stageAbort.signal,onError:fail,onView:view=>{if(disposed||token!==generation)return;ws.view=view;$('[data-field="zoom"]').value=view.zoom;soonRemember();},onAngle:a=>{if(disposed||token!==generation)return;$$('[data-angle]').forEach(b=>b.setAttribute('aria-pressed',String(Math.abs(Number(b.dataset.angle)-a)<.02)));}});if(disposed||token!==generation){stage.dispose();return;}engine=stage;engine.setLight(ws.light);engine.setView?.(ws.view);engine.setPose?.(ws.pose);engine.setBackground?.(ws.background);engine.setDyes?.(draft.dyes);$('.atelier-stage-error')?.remove();$('.atelier-scene').setAttribute('aria-busy','false');root.dataset.stage='ready';render();remember();}
-    catch{fail('3D 화면을 불러오지 못했어요. 초안은 남아 있어요. 다시 열어 주세요.');}
+    catch{fail('3D 화면을 불러오지 못했어요. 고르던 차림은 남아 있어요. 옷장을 다시 열어 주세요.');}
   }
   function toggle(array,id){return array.includes(id)?array.filter(v=>v!==id):[...array,id];}
   async function clicked(event){
@@ -345,7 +345,7 @@ export function createWardrobeStudio({snapshot,onEquip=async()=>{},onSaveLooks=a
     else if(action==='earn'){remember();if(!busy())onPlay();}
     else if(action==='capture'||action==='capture-save')await capture(action==='capture-save');
     else if(action==='more-photos'){albumPage+=12;await refreshAlbum();}
-    else if(action==='retry-photo'){if(photo?.blob&&!localBusy){localBusy=true;renderChrome();try{const record=photo;await album.retry();let result=await album.persist(record.id);if(result.error==='PHOTO_NOT_FOUND')result=await album.add(record.blob,record);if(!disposed){message=result.message;if(result.ok&&result.photo){const saved=await album.get(result.photo.id);if(saved&&!disposed)showPhoto(saved);}await refreshAlbum();}}catch{if(!disposed)message='앨범 저장을 다시 시도하지 못했어요. PNG로 보관해 주세요.';}finally{localBusy=false;if(!disposed)renderChrome();}}}
+    else if(action==='retry-photo'){if(photo?.blob&&!localBusy){localBusy=true;renderChrome();try{const record=photo;await album.retry();let result=await album.persist(record.id);if(result.error==='PHOTO_NOT_FOUND')result=await album.add(record.blob,record);if(!disposed){message=result.message;if(result.ok&&result.photo){const saved=await album.get(result.photo.id);if(saved&&!disposed)showPhoto(saved);}await refreshAlbum();}}catch{if(!disposed)message='앨범에 다시 저장하지 못했어요. 사진을 PNG로 받아 두세요.';}finally{localBusy=false;if(!disposed)renderChrome();}}}
     else if(action==='retry')await run(onRetry,{recovery:true});
     else if(action==='discard'){serverCompletion=null;await run(async()=>{const result=await onDiscard();if(!disposed)message='최신 차림을 불러왔어요. 입어 보던 차림은 남아 있어요.';return result;},{recovery:true});}
     else if(action==='retry-stage')await mountStage();

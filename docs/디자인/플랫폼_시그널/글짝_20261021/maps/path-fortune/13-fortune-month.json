@@ -1,0 +1,10 @@
+{
+  "//": "이번 달 「기운이 좋은 날」 목록이 별자리에서는 날마다 같은 꼬리표(「같은 기운이 도는 날」)만 여섯 번 되풀이했다. 흐름 항목에 그날 카드 제목(headline)을 함께 넣고, 목록에는 제목을 보인다(없으면 예전 꼬리표). 30일 동안 제목이 겹치지 않는 것은 daily 시험이 이미 지킨다.",
+  "experiences/daily-fortune/flow.mjs": [
+    ["tagLabel: card.tagLabel, label: card.label };", "tagLabel: card.tagLabel, label: card.label, headline: card.headline };", {"n": 1}],
+    ["map(({ date, weekday, overall, label, tagLabel }) => ({ date, weekday, overall, label, tagLabel }));", "map(({ date, weekday, overall, label, tagLabel, headline }) => ({ date, weekday, overall, label, tagLabel, headline }));", {"n": 1}]
+  ],
+  "experiences/daily-fortune/app.mjs": [
+    ["<span class=\"small muted\">${esc(d.label || '')}</span>", "<span class=\"small muted\">${esc(d.headline || d.label || '')}</span>", {"n": 2}]
+  ]
+}

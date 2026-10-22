@@ -84,7 +84,7 @@ export function createMemberInsight({ getIdentity, request, activity = null, und
         if (current()) {response=result;projection=null;project();}
       } catch {
         // A quiet read that fails keeps what is on screen; the saved setting is already stored.
-        if (current() && !keep) {response=null;projection=null;emit({ status: 'error', report: null, message: '내 기록을 불러오지 못했어요. 계정 연결을 확인하거나 다시 불러와 주세요.' });}
+        if (current() && !keep) {response=null;projection=null;emit({ status: 'error', report: null, message: '인터넷 연결을 보고 「다시 불러오기」를 눌러 주세요. 계속 안 되면 로그아웃했다가 다시 로그인해 주세요.' });}
       } finally {
         clearTimeout(timer);
         if (pending === job) pending = null;

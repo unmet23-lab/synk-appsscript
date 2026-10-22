@@ -13,7 +13,7 @@ const report = (patch = {}) => ({
   settingChoices: { support: [{ id: 'step', label: '단계별로 도와줘요' }, { id: 'choose', label: '그때그때 맞춰 줘요' }, { id: 'independent', label: '혼자 해 볼게요' }],
     explanation: [{ id: 'brief', label: '짧은 설명' }, { id: 'standard', label: '보통 설명' }, { id: 'detailed', label: '자세한 설명' }] },
   reasonIds: ['travel'], worldReadsAnswers: false, usageLine: '',
-  personal: [{ id: 'reasons', title: '직접 밝힌 관심과 목표', value: '한국 여행', basis: 'self-declared' }, { id: 'support', title: '편한 도움 방식', value: '단계별로 도와줘요', basis: 'self-declared' }],
+  personal: [{ id: 'reasons', title: '직접 고른 관심과 목표', value: '한국 여행', basis: 'self-declared' }, { id: 'support', title: '편한 도움 방식', value: '단계별로 도와줘요', basis: 'self-declared' }],
   learning: { answered: 8, independent: 5, assisted: 3, empty: false,
     skills: [{ id: 'listen', label: '짧은 지시 듣기', status: 'practice', line: '최근 놓친 짧은 지시 듣기를 조금 더 연습해 봐요.', recent: 4, correct: 3, assisted: 1, fact: '이 연습에서 최근 혼자 답한 4번 중 3번 맞혔어요. 도움 받고 맞힌 건 1번이에요.' },
       { id: 'read', label: '안내문 읽기', status: 'recent-independent', line: '', recent: 5, correct: 5, assisted: 0, fact: '이 연습에서 최근 혼자 답한 5번 중 5번 맞혔어요.' }],

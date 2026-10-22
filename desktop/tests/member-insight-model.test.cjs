@@ -24,7 +24,7 @@ function practiced() {
 test('empty history stays empty without inventing a trait, score, or growth', async () => {
   const { buildMemberInsightReport } = await model, result = buildMemberInsightReport(fixture());
   assert.deepEqual(result.personal, []);assert.deepEqual(result.reasons, []);assert.equal(result.learning.empty, true);
-  assert.equal(result.lastAt, null);assert.equal(result.asOf, asOf);assert.match(result.description, /아직 정리할 정보가 없/);
+  assert.equal(result.lastAt, null);assert.equal(result.asOf, asOf);assert.match(result.description, /아직 보여 줄 정보가 없/);
   assert.deepEqual(Object.keys(result).sort(), ['asOf', 'description', 'headline', 'lastAt', 'learning', 'limits', 'personal', 'reasons', 'shared', 'activity', 'understanding', 'now', 'settings', 'settingChoices', 'reasonIds', 'worldReadsAnswers', 'worldFollowsSettings', 'usageLine', 'learningRevision', 'learningEnabled'].sort());
   assert.equal(result.worldReadsAnswers, true);assert.equal(result.worldFollowsSettings, true, 'both are true now that the server read path and that WORLD are live');
   // Nothing is said beyond an honest empty state, and no setting is invented.
@@ -41,8 +41,8 @@ test('projects only declared settings and actual practice counts, including wron
   assert.equal(result.learning.independent, 7);assert.equal(result.learning.skills[0].correct, 1);
   assert.equal(result.learning.answered, 8);assert.equal(result.learning.assisted, 1);assert.equal(result.learning.empty, false);
   assert.deepEqual(result.reasons, [{ label: '한국 여행', line: '여행에서 쓸 말을 연습해요.' }]);
-  assert.equal(result.lastAt, lastAt);assert.match(result.limits.join(' '), /오답도 포함/);assert.match(result.limits.join(' '), /최근 30일/);
-  assert.match(result.limits.join(' '), /최대 12개/);assert.match(result.limits.join(' '), /한 시점/);
+  assert.equal(result.lastAt, lastAt);assert.match(result.limits.join(' '), /틀린 답도 들어가요/);assert.match(result.limits.join(' '), /최근 30일/);
+  assert.match(result.limits.join(' '), /12개까지/);assert.match(result.limits.join(' '), /한 시점의 기록/);
 });
 
 test('either consent boundary hides mixed-in settings and practice, even malformed ones', async () => {

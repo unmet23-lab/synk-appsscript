@@ -19,7 +19,7 @@ test('checking, real download progress and installation never expose a skip or r
     if(state==='downloading'){assert.equal(f.element('startup-progress').value,42.8);assert.equal(f.element('startup-percent').textContent,'42%');assert.equal(f.element('startup-progress-wrap').hidden,false);}
     else assert.equal(f.element('startup-progress-wrap').hidden,true);
   }
-  assert.match(f.element('startup-description').textContent,/완료되면 자동으로 열립니다/);assert.deepEqual(f.calls,[]);
+  assert.match(f.element('startup-description').textContent,/끝나면 저절로 열려요/);assert.deepEqual(f.calls,[]);
 });
 test('download progress is bounded and only validated versions are presented',async()=>{
   const f=await fixture();await f.controller.ready;
@@ -45,7 +45,7 @@ test('subscription precedes initial request, ignores stale initial data and stop
 });
 test('safe errors never show raw messages, paths or account fields',async()=>{
   const f=await fixture();await f.controller.ready;
-  for(const [code,expected] of [['UPDATE_NETWORK_FAILED',/인터넷 연결/],['UPDATE_STORAGE_FAILED',/저장 공간과 파일 권한/],['UPDATE_INTEGRITY_FAILED',/파일을 확인하지/],['UPDATE_INSTALL_FAILED',/설치를 마치지/],['UPDATE_HANDOFF_TIMEOUT',/설치를 마치지/],['UPDATE_RECOVERED',/이전 버전으로 돌아왔/],['UPDATE_RECOVERY_INVALID',/복구 정보를 확인하지/],['UPDATE_BUILD_MISMATCH',/구성이 달라/]]){
+  for(const [code,expected] of [['UPDATE_NETWORK_FAILED',/인터넷 연결/],['UPDATE_STORAGE_FAILED',/PC 저장 공간을 비운 뒤/],['UPDATE_INTEGRITY_FAILED',/온전하지 않아요/],['UPDATE_INSTALL_FAILED',/설치를 마치지/],['UPDATE_HANDOFF_TIMEOUT',/설치를 마치지/],['UPDATE_RECOVERED',/이전 버전으로 돌아왔/],['UPDATE_RECOVERY_INVALID',/되돌린 기록을 읽지 못했어요/],['UPDATE_BUILD_MISMATCH',/버전이 맞지 않아요/]]){
     f.emit({state:'error',code,canRetry:true,canOpenCurrent:true,message:'private-auth-token',path:'C:/private',account:{display_name:'private-person'}});
     assert.match(f.element('startup-description').textContent,expected);assert.doesNotMatch(f.element('startup-description').textContent,/private/);
   }
@@ -58,7 +58,7 @@ test('Mac ready opens only the installer bridge and clearly explains manual repl
   f.emit({state:'ready',platform:'win32',canInstall:true});await f.click('install');assert.deepEqual(f.calls,['install']);
 });
 test('missing or failing startup capability gives a safe closed fallback',async()=>{
-  const f=await fixture({native:false});await f.controller.ready;assert.equal(f.element('startup-actions').hidden,true);assert.match(f.element('startup-description').textContent,/앱을 종료한 뒤/);
+  const f=await fixture({native:false});await f.controller.ready;assert.equal(f.element('startup-actions').hidden,true);assert.match(f.element('startup-description').textContent,/앱을 끈 뒤/);
   const g=await fixture({overrides:{getStatus:async()=>{throw Error('private failure');}}});await g.controller.ready;assert.equal(g.element('startup-update').dataset.state,'error');assert.doesNotMatch(g.element('startup-description').textContent,/private/);assert.deepEqual(g.calls,[]);
 });
 test('startup preload has five fixed operations without auth, raw IPC or renderer arguments',async()=>{

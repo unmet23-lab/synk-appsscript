@@ -1,18 +1,18 @@
 {
  "createdAt": "2026-10-19T12:36:26.286Z",
  "tool": "node tools/몽골어대조.js --파일 <묶음> --구독 (문법 gemini-4-argon high · 직역 역번역 gemini-3.8-flash high · 맞춤법 spellcheck.mn)",
- "batches": "experiences/brand-opening/qa/mn-check-20261019/ (batch-NN 첫 검문 · recheck*-NN 고친 줄 재검문 · final-NN 첫 검문 뒤 한 번도 다시 재지 않은 줄의 마지막 재검문 · recheck7~9 Fable 교정과 origin 새 문장을 넣은 뒤의 재검문 · recheck10~13 origin 703eab740 로그인 흐름 새 줄(account.trial* · records.*) · fable-20261019.json Fable 지적과 처리 · ../mn-check-20261020/ 10-20 고장 묶음의 한글부터 추천 이유(msg.hangulFirstReason) 한 줄 — hangul-first-01.txt 검문 · check-20261020.json 세 겹 확인) · mn-check-20261020-position/(내 위치 position.* 10-20 — position-NN 첫 검문 · recheck-NN 고친 줄과 새 줄 · final-NN 고친 표 전체의 마지막 재검문, 줄마다 기록은 final 묶음) · mn-check-20261020-vellum/(이름이 든 추천 이유 msg.vellum.*·관심 이유 msg.reasonInterest*·한글 만나기 항목 이름 position.skill.ko.hangul.* 10-20 — 틀은 이름을 넣은 실물 문장으로 잼: vellum-NN 첫 검문 · recheck*-NN·named*-NN 고친 줄 재검문 · final-NN·final-named-01 고친 표의 마지막 재검문, 줄마다 기록은 final 묶음 · manifest-*.json 줄마다 키·예시 · fable-20261020.json Fable 지적과 처리 · check-20261020.json 세 겹 확인) · mn-check-20261020-gaps/(내 위치 빈 항목 채우기 10-20 — 그림 고르기 지시 한 줄, 형제 지시 둘과 함께 잼) · mn-check-20261021-response/(듣기 새 항목 이름 position.skill.ko.listening.response 10-21 — 이름 한 줄을 형제 이름 한 줄, 이름이 든 실물 문장 둘(추천 이유 msg.vellum.checking · 진단 모자람 position.diagnostic.missing)과 함께 잼: check-01) · mn-check-20261021-exam-form/(④ 10-21 TOPIK II 항목 이름·시험형 재생 안내·시험 형식 연습·영역별 진행 — check-NN 첫 검문(어색 13줄 고침, 맞춤법은 글자 수 한도로 둘 미측정) · recheck-NN 600자 안팎으로 나눈 전체 재검문 8묶음 모두 문법 정상·맞춤법 의심 0(recheck-07은 두 번 고쳐 다시), 틀은 값을 넣은 실물 문장으로 잼, 뜻은 Claude가 역번역과 원문을 줄마다 견줌 · manifest-recheck.json 줄마다 키·묶음) · mn-check-20261021-reminders/(학습 알림 reminder.* 10-21 — reminders-NN 첫 검문 · recheck-01 고친 다섯 줄 · final-NN 고친 줄이 든 묶음의 마지막 재검문 · recheck-02 시험 점검 시트 글 세 줄, manifest*.json 줄마다 키·예시, 판정 요약은 README.md) · mn-check-20261021-exam-form/review-01~05(④ 10-21 화면 검수 반영 10줄 — 학생 글의 「검수」를 「준비」로 다섯 줄 · TOPIK II 판 다리 안내 둘 · 시험 형식 연습 세트 안내 둘 · plan.week.writingLater: 라틴 이름 TOPIK II 뒤 격어미를 떼고 다음 낱말이 속격을 받는 꼴(③ 「TOPIK II бичгийн дасгал」과 같다). 다섯째 판 문법 정상·맞춤법 의심 0, 뜻은 Claude가 역번역과 원문을 줄마다 견줌 · manifest-review.json) · mn-check-20261021-exam-form/review-06~08(Fable 검수 반영 셋 — 시험 형식 연습의 모자람 틀 문장(「…хэсгийг хассан: {list}」)·세트 조각 「{n} багц асуулт」·IBT 학생 끝 안내 mock.noGradeNote.ibt. 셋째 판 문법 정상·맞춤법 의심 0, 뜻은 Claude가 역번역과 원문을 견줌) · mn-check-20261021-exam-form/review-09~10(Fable 재확인 반영 — 시험 형식 연습에서 다른 문항의 소리가 날 때·안 날 때 「n번 소리」 두 줄. 둘째 판 문법 정상·맞춤법 의심 0, 뜻은 Claude가 역번역과 원문을 견줌)",
+ "batches": "experiences/brand-opening/qa/mn-check-20261019/ (batch-NN 첫 검문 · recheck*-NN 고친 줄 재검문 · final-NN 첫 검문 뒤 한 번도 다시 재지 않은 줄의 마지막 재검문 · recheck7~9 Fable 교정과 origin 새 문장을 넣은 뒤의 재검문 · recheck10~13 origin 703eab740 로그인 흐름 새 줄(account.trial* · records.*) · fable-20261019.json Fable 지적과 처리 · ../mn-check-20261020/ 10-20 고장 묶음의 한글부터 추천 이유(msg.hangulFirstReason) 한 줄 — hangul-first-01.txt 검문 · check-20261020.json 세 겹 확인) · mn-check-20261020-position/(내 위치 position.* 10-20 — position-NN 첫 검문 · recheck-NN 고친 줄과 새 줄 · final-NN 고친 표 전체의 마지막 재검문, 줄마다 기록은 final 묶음) · mn-check-20261020-vellum/(이름이 든 추천 이유 msg.vellum.*·관심 이유 msg.reasonInterest*·한글 만나기 항목 이름 position.skill.ko.hangul.* 10-20 — 틀은 이름을 넣은 실물 문장으로 잼: vellum-NN 첫 검문 · recheck*-NN·named*-NN 고친 줄 재검문 · final-NN·final-named-01 고친 표의 마지막 재검문, 줄마다 기록은 final 묶음 · manifest-*.json 줄마다 키·예시 · fable-20261020.json Fable 지적과 처리 · check-20261020.json 세 겹 확인) · mn-check-20261020-gaps/(내 위치 빈 항목 채우기 10-20 — 그림 고르기 지시 한 줄, 형제 지시 둘과 함께 잼) · mn-check-20261021-response/(듣기 새 항목 이름 position.skill.ko.listening.response 10-21 — 이름 한 줄을 형제 이름 한 줄, 이름이 든 실물 문장 둘(추천 이유 msg.vellum.checking · 진단 모자람 position.diagnostic.missing)과 함께 잼: check-01) · mn-check-20261021-exam-form/(④ 10-21 TOPIK II 항목 이름·시험형 재생 안내·시험 형식 연습·영역별 진행 — check-NN 첫 검문(어색 13줄 고침, 맞춤법은 글자 수 한도로 둘 미측정) · recheck-NN 600자 안팎으로 나눈 전체 재검문 8묶음 모두 문법 정상·맞춤법 의심 0(recheck-07은 두 번 고쳐 다시), 틀은 값을 넣은 실물 문장으로 잼, 뜻은 Claude가 역번역과 원문을 줄마다 견줌 · manifest-recheck.json 줄마다 키·묶음) · mn-check-20261021-reminders/(학습 알림 reminder.* 10-21 — reminders-NN 첫 검문 · recheck-01 고친 다섯 줄 · final-NN 고친 줄이 든 묶음의 마지막 재검문 · recheck-02 시험 점검 시트 글 세 줄, manifest*.json 줄마다 키·예시, 판정 요약은 README.md) · mn-check-20261021-exam-form/review-01~05(④ 10-21 화면 검수 반영 10줄 — 학생 글의 「검수」를 「준비」로 다섯 줄 · TOPIK II 판 다리 안내 둘 · 시험 형식 연습 세트 안내 둘 · plan.week.writingLater: 라틴 이름 TOPIK II 뒤 격어미를 떼고 다음 낱말이 속격을 받는 꼴(③ 「TOPIK II бичгийн дасгал」과 같다). 다섯째 판 문법 정상·맞춤법 의심 0, 뜻은 Claude가 역번역과 원문을 줄마다 견줌 · manifest-review.json) · mn-check-20261021-exam-form/review-06~08(Fable 검수 반영 셋 — 시험 형식 연습의 모자람 틀 문장(「…хэсгийг хассан: {list}」)·세트 조각 「{n} багц асуулт」·IBT 학생 끝 안내 mock.noGradeNote.ibt. 셋째 판 문법 정상·맞춤법 의심 0, 뜻은 Claude가 역번역과 원문을 견줌) · mn-check-20261021-exam-form/review-09~10(Fable 재확인 반영 — 시험 형식 연습에서 다른 문항의 소리가 날 때·안 날 때 「n번 소리」 두 줄. 둘째 판 문법 정상·맞춤법 의심 0, 뜻은 Claude가 역번역과 원문을 견줌) · mn-check-20261021-copy-audit/(10-21 플랫폼 글 전수조사 — 「계정 연결」→「로그인」과 튜터·진도 저장 상태 글 msg.* 31줄 + 옛 글 별칭 msg.accountChangedLegacy: check-NN 첫 검문 · recheck-NN 고친 줄 · final-NN 고친 표의 마지막 재검문, 줄마다 기록은 final 묶음과 check-03)",
  "meaning": "세 겹 확인(결정 표 10-19 「현지어판 확인」): ① 직역 역번역을 Claude Opus가 원문과 줄마다 견줬다 ② Fable이 915줄을 교정했다(지적 26건 → 반영 17 · 고쳐 반영 8 · 그대로 둠 1, fable-20261019.json) ③ 제미나이 아르곤이 문법을 채점했다(tools/몽골어대조.js --구독, 맞춤법 층 spellcheck.mn 포함). 원어민 검수는 같은 결정에 따라 계획에 없다. 10-20 내 위치 position.* 95줄도 같은 세 겹으로 쟀다(① Opus 역번역 대조 ② Fable 교정 11곳 반영, mn-check-20261020-position/fable-20261020.json ③ 아르곤 문법·맞춤법 — 고친 줄은 다시 쟀다). 10-20 이름이 든 추천 이유 틀과 한글 만나기 항목 이름 11줄도 같은 세 겹으로 쟀다(① Opus 역번역 대조 ② Fable 22항목 교정 + 고친 다섯 줄 재검토 ③ 아르곤 문법·맞춤법 — 고친 줄은 다시 쟀고 마지막에 표 전체를 한 번 더 쟀다). 관심 이유의 {label}(«교통» 같은 학습 내용)은 한국어 그대로다. 「내 위치」 공개(10-20) 뒤 옛 학습 목표 창 「연습에서 본 것」의 goal.seen·goal.state.* 8줄은 표에서 지웠고 기록 줄도 뺐다. 10-20 그림 고르기 지시 position.diagnostic.ask.picture도 세 겹으로 쟀다(아르곤 정상·맞춤법 0, Fable 「그대로」, 역번역 대조). 10-21 듣기 새 항목 이름 position.skill.ko.listening.response는 아르곤 문법 정상·맞춤법 0이고, 직역 역번역(「듣고 적합한 답변 주기」)을 Claude Opus가 원문과 견줬다. Fable 교정도 「그대로」(10-21, 위치판 진단 공백 문장 n=1과 함께). 10-21 학습 알림 reminder.* 40줄도 같은 세 겹으로 쟀다(① Opus 역번역 대조 — 모두 뜻이 같음 ② Fable 교정 — 화면 최종 검수에서 exam.start 한 줄을 고치고, 재확인에서 바꾼 세 줄은 그대로 ③ 아르곤 문법·맞춤법 — 첫 검문에서 어색 다섯 줄(товч·Дээд тал нь·харин·Давтамж)을 고쳐 recheck-01 정상, 그 줄이 든 둘째·셋째 묶음 final 재검문 정상, 시험 점검 시트 글을 바꾼 세 줄(exam.body·exam.mock·exam.start) recheck-02 정상). 「reminder.push.title」(SYNK WORLD)·「reminder.when」(날짜·시각 꼴)은 몽골어 낱말이 없어 재지 않았다. 묶음·결과 파일은 qa 결과 규칙(10-20)대로 이 PC에만 두고, 묶음마다의 판정은 그 폴더 README.md에 적었다.",
  "names": "까몽·몽글·마린 → Камон · Монгль · Марин(09-20 카드와 같은 표기), 싱크타운 → SYNK Таун, 수진·지훈 → Сүжин · Жихүн. 맞춤법 층은 이 이름들, 라틴 글자에 붙인 격 어미(WORLD-ийн · ID-д), 한글 낱자에 붙인 어미(ㄱ-г 같은 것), 들어온 말(рамён · апп · Вэб · Мини)을 늘 의심으로 낸다. 상태(status)에서는 이것들을 뺐고 spelling 칸에는 그대로 남겼다. 「Монгль」은 문법 층이 「Монгол의 오타처럼 보인다」고 여러 번 짚었지만, 유호님이 10-19 그대로 두기로 정했다(결정 표 10-19 「몽글 몽골어 이름」). 그 지목(named)은 고칠 문장이 아니다.",
  "summary": {
-  "lines": 1157,
+  "lines": 1158,
   "unchecked": 0,
-  "grammarOk": 774,
-  "grammarAwkwardBatch": 383,
+  "grammarOk": 794,
+  "grammarAwkwardBatch": 364,
   "grammarBrokenBatch": 0,
   "namedProblem": 3,
   "spellingUnmeasured": 0,
-  "clean": 774
+  "clean": 794
  },
  "lines": [
   {
@@ -422,29 +422,29 @@
   {
    "source": "world-strings",
    "key": "home.account.connected",
-   "mnHash": "60ea8449d8",
-   "batch": "final-02.txt",
-   "grammar": "어색",
+   "mnHash": "a345c659fd",
+   "batch": "mn-check-20261021-copy-audit/check-03.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
    "key": "home.account.test",
-   "mnHash": "2d2d6c341b",
-   "batch": "final-02.txt",
-   "grammar": "어색",
+   "mnHash": "bf1a4090b7",
+   "batch": "mn-check-20261021-copy-audit/check-03.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
    "key": "home.account.connect",
-   "mnHash": "2c12e7bc5f",
-   "batch": "final-10.txt",
-   "grammar": "어색",
+   "mnHash": "22fc10be78",
+   "batch": "mn-check-20261021-copy-audit/check-03.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
@@ -1773,11 +1773,11 @@
   {
    "source": "world-strings",
    "key": "tutor.status.device",
-   "mnHash": "7d1618f1b2",
-   "batch": "recheck-02.txt",
-   "grammar": "어색",
+   "mnHash": "61f954fa6a",
+   "batch": "mn-check-20261021-copy-audit/final-02.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
@@ -5108,11 +5108,11 @@
   {
    "source": "world-strings",
    "key": "account.title",
-   "mnHash": "2c12e7bc5f",
-   "batch": "final-10.txt",
-   "grammar": "어색",
+   "mnHash": "22fc10be78",
+   "batch": "mn-check-20261021-copy-audit/check-03.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
@@ -5137,8 +5137,8 @@
   {
    "source": "world-strings",
    "key": "account.oneIdBody",
-   "mnHash": "bb61a973f5",
-   "batch": "recheck-05.txt",
+   "mnHash": "8e9919022c",
+   "batch": "mn-check-20261021-copy-audit/check-03.txt",
    "grammar": "정상",
    "spelling": [
     "Таун"
@@ -5998,8 +5998,8 @@
   {
    "source": "world-strings",
    "key": "msg.authEnded",
-   "mnHash": "0ce23c6fdc",
-   "batch": "final-11.txt",
+   "mnHash": "19f827acdd",
+   "batch": "mn-check-20261021-copy-audit/final-01.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -6142,8 +6142,8 @@
   {
    "source": "world-strings",
    "key": "msg.accountChangedChoose",
-   "mnHash": "88c18414a7",
-   "batch": "final-12.txt",
+   "mnHash": "3034cb1bdf",
+   "batch": "mn-check-20261021-copy-audit/final-01.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -6151,8 +6151,8 @@
   {
    "source": "world-strings",
    "key": "msg.lifeAccountChanged",
-   "mnHash": "505dff34a7",
-   "batch": "final-12.txt",
+   "mnHash": "c6c4107d8f",
+   "batch": "mn-check-20261021-copy-audit/final-01.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -6178,8 +6178,8 @@
   {
    "source": "world-strings",
    "key": "msg.tutorAccountFirst",
-   "mnHash": "f8e5a10735",
-   "batch": "final-12.txt",
+   "mnHash": "43c7c0661b",
+   "batch": "mn-check-20261021-copy-audit/final-02.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -6187,20 +6187,20 @@
   {
    "source": "world-strings",
    "key": "msg.recordsChanged",
-   "mnHash": "bf3330b559",
-   "batch": "recheck-07.txt",
-   "grammar": "어색",
+   "mnHash": "aa1f1274bc",
+   "batch": "mn-check-20261021-copy-audit/final-02.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
    "key": "msg.recordsCheckFirst",
-   "mnHash": "56c4cb0e80",
-   "batch": "recheck-07.txt",
-   "grammar": "어색",
+   "mnHash": "a838fd4a54",
+   "batch": "mn-check-20261021-copy-audit/final-02.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
@@ -6223,8 +6223,8 @@
   {
    "source": "world-strings",
    "key": "msg.tutorKeptDevice",
-   "mnHash": "5d801242d4",
-   "batch": "final-12.txt",
+   "mnHash": "4c2eae41f7",
+   "batch": "mn-check-20261021-copy-audit/final-02.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -6232,11 +6232,11 @@
   {
    "source": "world-strings",
    "key": "msg.tutorDevice",
-   "mnHash": "7d1618f1b2",
-   "batch": "recheck-02.txt",
-   "grammar": "어색",
+   "mnHash": "61f954fa6a",
+   "batch": "mn-check-20261021-copy-audit/final-02.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
@@ -6250,17 +6250,17 @@
   {
    "source": "world-strings",
    "key": "msg.chooseInSaveCheck",
-   "mnHash": "f3b9e2c3c6",
-   "batch": "recheck-07.txt",
-   "grammar": "어색",
+   "mnHash": "8c2203448a",
+   "batch": "mn-check-20261021-copy-audit/final-02.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
    "key": "msg.tutorAfterConnect",
-   "mnHash": "238c5c0e39",
-   "batch": "final-12.txt",
+   "mnHash": "d706a58e14",
+   "batch": "mn-check-20261021-copy-audit/final-02.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -6268,26 +6268,26 @@
   {
    "source": "world-strings",
    "key": "msg.tutorSynced",
-   "mnHash": "7cadee67cb",
-   "batch": "recheck-07.txt",
-   "grammar": "어색",
+   "mnHash": "c7947025c1",
+   "batch": "mn-check-20261021-copy-audit/final-02.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
    "key": "msg.tutorSaving",
-   "mnHash": "189bb2a19b",
-   "batch": "recheck-07.txt",
-   "grammar": "어색",
+   "mnHash": "ee263a6240",
+   "batch": "mn-check-20261021-copy-audit/final-02.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
    "key": "msg.tutorNotSynced",
-   "mnHash": "f9ff657849",
-   "batch": "final-12.txt",
+   "mnHash": "ad99817aaa",
+   "batch": "mn-check-20261021-copy-audit/final-02.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -6304,8 +6304,8 @@
   {
    "source": "world-strings",
    "key": "msg.entryAccount",
-   "mnHash": "2955d3e9bf",
-   "batch": "final-12.txt",
+   "mnHash": "a3f9c5c09e",
+   "batch": "mn-check-20261021-copy-audit/final-01.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -6313,8 +6313,8 @@
   {
    "source": "world-strings",
    "key": "msg.lifeEnded",
-   "mnHash": "9f7adb0bd5",
-   "batch": "final-12.txt",
+   "mnHash": "b5fa814215",
+   "batch": "mn-check-20261021-copy-audit/final-01.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -6385,8 +6385,17 @@
   {
    "source": "world-strings",
    "key": "msg.accountChanged",
-   "mnHash": "6c9fd0572b",
-   "batch": "final-12.txt",
+   "mnHash": "9da55737ae",
+   "batch": "mn-check-20261021-copy-audit/final-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "msg.accountChangedLegacy",
+   "mnHash": "9da55737ae",
+   "batch": "mn-check-20261021-copy-audit/final-01.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -6394,33 +6403,33 @@
   {
    "source": "world-strings",
    "key": "msg.worldAccount",
-   "mnHash": "3eb2bba3af",
-   "batch": "final-13.txt",
-   "grammar": "어색",
+   "mnHash": "368a4c54aa",
+   "batch": "mn-check-20261021-copy-audit/final-01.txt",
+   "grammar": "정상",
    "spelling": [
-    "аппын"
+    "аппыг"
    ],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
    "key": "msg.activeId",
-   "mnHash": "c4ccde6af6",
-   "batch": "final-13.txt",
-   "grammar": "어색",
-   "spelling": [],
-   "status": "묶음 판정 어색"
+   "mnHash": "9b8e54009d",
+   "batch": "mn-check-20261021-copy-audit/final-01.txt",
+   "grammar": "정상",
+   "spelling": [
+    "ID-г"
+   ],
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
    "key": "msg.idSettings",
-   "mnHash": "45ac1997b3",
-   "batch": "final-13.txt",
-   "grammar": "어색",
-   "spelling": [
-    "WORLD-ийн"
-   ],
-   "status": "묶음 판정 어색"
+   "mnHash": "dec7545ddf",
+   "batch": "mn-check-20261021-copy-audit/final-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
@@ -6479,8 +6488,8 @@
   {
    "source": "world-strings",
    "key": "msg.otherAccount",
-   "mnHash": "3fa9a512fe",
-   "batch": "recheck4-02.txt",
+   "mnHash": "eb091dd40d",
+   "batch": "mn-check-20261021-copy-audit/final-01.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -6488,11 +6497,11 @@
   {
    "source": "world-strings",
    "key": "msg.classroom",
-   "mnHash": "6a8618422e",
-   "batch": "final-13.txt",
-   "grammar": "어색",
+   "mnHash": "c2383e91ae",
+   "batch": "mn-check-20261021-copy-audit/final-01.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
@@ -6542,11 +6551,11 @@
   {
    "source": "world-strings",
    "key": "msg.keptFirst",
-   "mnHash": "4e4570a9ac",
-   "batch": "recheck-08.txt",
-   "grammar": "어색",
+   "mnHash": "c9d396378c",
+   "batch": "mn-check-20261021-copy-audit/final-02.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
@@ -6560,20 +6569,20 @@
   {
    "source": "world-strings",
    "key": "msg.chooseProgressFirst",
-   "mnHash": "8675672218",
-   "batch": "recheck-08.txt",
-   "grammar": "어색",
+   "mnHash": "ceaa0a8a98",
+   "batch": "mn-check-20261021-copy-audit/final-02.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
    "key": "msg.checkExistingFirst",
-   "mnHash": "5ad5f14196",
-   "batch": "recheck-08.txt",
-   "grammar": "어색",
+   "mnHash": "b4256d3e73",
+   "batch": "mn-check-20261021-copy-audit/final-02.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
@@ -6641,11 +6650,11 @@
   {
    "source": "world-strings",
    "key": "msg.learningChanged",
-   "mnHash": "7be3fb2a59",
-   "batch": "final-13.txt",
-   "grammar": "어색",
+   "mnHash": "394c4ccf5f",
+   "batch": "mn-check-20261021-copy-audit/final-01.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",

@@ -7,7 +7,7 @@ const date=v=>typeof v==='string'&&v.length<=40&&Number.isFinite(Date.parse(v));
 const day=v=>typeof v==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v);
 const fields=(v,allowed)=>object(v)&&Object.keys(v).every(key=>allowed.includes(key));
 const states=new Set(['unmet','met','learning','mastered']);
-const failure=()=>{throw Object.assign(Error('한글 진도의 판이나 내용을 확인하지 못했어요. 기존 기록은 그대로 보존했어요.'),{code:'HANGUL_PROGRESS_UNREADABLE'});};
+const failure=()=>{throw Object.assign(Error('한글 진도를 읽지 못했어요. 기존 기록은 지우지 않았어요.'),{code:'HANGUL_PROGRESS_UNREADABLE'});};
 export function validateHangulProgress(value){
  if(!fields(value,['v','core','letters','pairs','recent','sessions','difficulty','trend','amount','skipped','demoSeen','wordStreak','graduated'])
   ||value.v!==1||!['hangul-core-1','hangul-core-2'].includes(value.core)||!object(value.letters)||Object.keys(value.letters).length>64

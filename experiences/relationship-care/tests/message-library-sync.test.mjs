@@ -119,7 +119,7 @@ test('a client-upgrade rejection is actionable error rather than offline and pre
 
   assert.equal(c.status().status, 'error');
   assert.equal(c.status().error.code, 'CARE_CLIENT_UPDATE_REQUIRED');
-  assert.match(c.status().error.message, /백업.*새로고침/u);
+  assert.match(c.status().error.message, /(?:백업|내보낸).*(?:새로고침|새로 고쳐)/u);
   assert.equal(c.status().pending, true);
   assert.equal(c.saved.length, 0, 'a rejected save must never acknowledge success');
   assert.equal(remote.state, null);

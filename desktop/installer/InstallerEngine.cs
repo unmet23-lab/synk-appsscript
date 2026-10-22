@@ -53,7 +53,7 @@ namespace Synk.SignalInstaller
             System.Guid parsed;
             if (spec == null || !System.Guid.TryParse(spec.Guid, out parsed) || spec.Files == null || spec.Files.Count == 0 ||
                 String.IsNullOrEmpty(spec.ExecutableName) || System.IO.Path.GetFileName(spec.ExecutableName) != spec.ExecutableName)
-                throw new InvalidOperationException("설치 정보가 올바르지 않습니다. 설치 파일을 다시 받아 주세요.");
+                throw new InvalidOperationException("설치 정보가 맞지 않아요. 설치 파일을 다시 받아 주세요.");
         }
 
         string ReadRegistry(RegistryHive hive, string key, string value)
@@ -67,7 +67,7 @@ namespace Synk.SignalInstaller
         {
             string registered = ReadRegistry(RegistryHive.CurrentUser, RegistryKey, "InstallLocation");
             if (String.IsNullOrWhiteSpace(registered)) registered = spec.InstallDirectory;
-            if (String.IsNullOrWhiteSpace(registered)) throw new InvalidOperationException("설치 위치를 확인할 수 없습니다.");
+            if (String.IsNullOrWhiteSpace(registered)) throw new InvalidOperationException("설치 위치를 확인하지 못했어요.");
             return System.IO.Path.GetFullPath(Environment.ExpandEnvironmentVariables(registered)).TrimEnd('\\');
         }
 
@@ -77,7 +77,7 @@ namespace Synk.SignalInstaller
             while (directory != null)
             {
                 if (directory.Exists && (directory.Attributes & FileAttributes.ReparsePoint) != 0)
-                    throw new IOException("연결된 폴더에는 설치할 수 없습니다. 일반 폴더를 사용해 주세요.");
+                    throw new IOException("바로가기로 연결된 폴더에는 설치할 수 없어요. 일반 폴더를 골라 주세요.");
                 directory = directory.Parent;
             }
         }
@@ -99,35 +99,35 @@ namespace Synk.SignalInstaller
         public string Preflight()
         {
             CheckPendingTransaction();
-            if (!Environment.Is64BitOperatingSystem) throw new InvalidOperationException("Windows 64비트에서 설치할 수 있습니다.");
+            if (!Environment.Is64BitOperatingSystem) throw new InvalidOperationException("64비트 Windows에서만 설치할 수 있어요.");
             Process[] running = Process.GetProcessesByName(System.IO.Path.GetFileNameWithoutExtension(spec.ExecutableName));
             try
             {
-                if (running.Length != 0) throw new InvalidOperationException(Short + "가 실행 중입니다. 작업을 저장하고 " + Short + "를 닫은 뒤 다시 설치해 주세요.");
+                if (running.Length != 0) throw new InvalidOperationException(Short + "가 켜져 있어요. 작업을 저장하고 " + Short + "를 닫은 뒤 다시 설치해 주세요.");
             }
             finally { foreach (Process p in running) p.Dispose(); }
             if (!String.IsNullOrWhiteSpace(ReadRegistry(RegistryHive.LocalMachine, RegistryKey, "InstallLocation")) ||
                 !String.IsNullOrWhiteSpace(ReadRegistry(RegistryHive.LocalMachine, UninstallKey, "UninstallString")))
-                throw new InvalidOperationException("모든 사용자용 " + Short + "가 설치되어 있습니다. 해당 설치를 정리한 뒤 현재 사용자용으로 설치해 주세요.");
+                throw new InvalidOperationException("모든 Windows 계정용 " + Short + "가 이미 설치돼 있어요. 그 설치를 지운 뒤 지금 계정용으로 설치해 주세요.");
             Version existing, incoming;
             string current = ReadRegistry(RegistryHive.CurrentUser, UninstallKey, "DisplayVersion");
             if (Version.TryParse(current, out existing) && Version.TryParse(spec.Version, out incoming) && existing > incoming)
-                throw new InvalidOperationException("더 최신 버전이 설치되어 있습니다. 홈페이지에서 최신 설치 파일을 받아 주세요.");
+                throw new InvalidOperationException("이미 더 새 버전이 설치돼 있어요. synk.im에서 최신 설치 파일을 받아 주세요.");
             string directory = ResolveDirectory();
             RejectReparsePoints(directory);
             foreach (InstallFile item in spec.Files)
             {
                 if (String.IsNullOrWhiteSpace(item.Path) || System.IO.Path.IsPathRooted(item.Path) ||
                     !System.IO.Path.GetFullPath(System.IO.Path.Combine(directory, item.Path.Replace('/', '\\'))).StartsWith(directory + "\\", StringComparison.OrdinalIgnoreCase))
-                    throw new IOException("설치 파일 경로가 올바르지 않습니다.");
+                    throw new IOException("설치 파일 경로가 맞지 않아요.");
             }
             string root = System.IO.Path.GetPathRoot(directory);
             if (String.Equals(root.TrimEnd('\\'), directory, StringComparison.OrdinalIgnoreCase))
-                throw new InvalidOperationException("설치 위치가 올바르지 않습니다.");
+                throw new InvalidOperationException("설치 위치가 맞지 않아요.");
             long required = spec.MinFreeBytes > 0 ? spec.MinFreeBytes : 3L * 1024 * 1024 * 1024;
             foreach (string drive in new HashSet<string>(new [] { root, System.IO.Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)), System.IO.Path.GetPathRoot(System.IO.Path.GetTempPath()) }, StringComparer.OrdinalIgnoreCase))
                 if (new DriveInfo(drive).AvailableFreeSpace < required)
-                    throw new IOException("설치할 공간이 부족합니다. 드라이브에 약 " + Math.Ceiling(required / (1024.0 * 1024 * 1024)).ToString("0", System.Globalization.CultureInfo.InvariantCulture) + " GB의 여유 공간을 확보해 주세요.");
+                    throw new IOException("설치할 공간이 모자라요. 드라이브에서 약 " + Math.Ceiling(required / (1024.0 * 1024 * 1024)).ToString("0", System.Globalization.CultureInfo.InvariantCulture) + " GB를 비워 주세요.");
             return directory;
         }
 
@@ -146,11 +146,11 @@ namespace Synk.SignalInstaller
             try
             {
                 string backend = System.IO.Path.Combine(cache, "setup.exe");
-                progress("설치를 준비합니다", "설치 파일을 확인하고 있습니다.", 0);
+                progress("설치를 준비해요", "설치 파일을 확인하고 있어요.", 0);
                 using (Stream source = backendFactory())
                 using (FileStream target = new FileStream(backend, FileMode.CreateNew, FileAccess.Write, FileShare.None))
                 {
-                    if (source == null) throw new IOException("설치 파일이 없습니다. 홈페이지에서 다시 받아 주세요.");
+                    if (source == null) throw new IOException("설치 파일이 없어요. synk.im에서 다시 받아 주세요.");
                     byte[] buffer = new byte[1024*1024];
                     long written = 0;
                     int count, last = -1;
@@ -159,19 +159,19 @@ namespace Synk.SignalInstaller
                         target.Write(buffer, 0, count);
                         written += count;
                         int percent = (int)(written * 100 / Math.Max(1, spec.BackendBytes));
-                        if (percent != last) { last = percent; progress("설치를 준비합니다", "설치 파일을 준비하고 있습니다.", Math.Min(100, percent)); }
+                        if (percent != last) { last = percent; progress("설치를 준비해요", "설치 파일을 준비하고 있어요.", Math.Min(100, percent)); }
                     }
                 }
                 // Keep a no-write/no-delete handle until the verified child has exited.
                 using (FileStream held = new FileStream(backend, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     if (held.Length != spec.BackendBytes || !String.Equals(HashFile(backend), spec.BackendSHA256, StringComparison.OrdinalIgnoreCase))
-                        throw new IOException("설치 파일 확인에 실패했습니다. 홈페이지에서 다시 받아 주세요.");
+                        throw new IOException("설치 파일이 온전하지 않아요. synk.im에서 다시 받아 주세요.");
                     Preflight();
-                    progress(Short + "를 설치합니다", "잠시만 기다려 주세요. 설치 중에는 창을 닫을 수 없습니다.", null);
-                    int exitCode=BackendProcess.Run(backend,cache,deadline,delegate { progress("설치 작업을 중단합니다","제한 시간을 넘겼습니다. 설치 작업을 멈춘 뒤 이전 상태를 확인합니다.",null); });
-                    if (exitCode == 20) throw new InvalidOperationException(Short + "가 실행 중이거나 실행 상태를 확인할 수 없습니다. " + Short + "를 닫고 다시 시도해 주세요.");
-                    if (exitCode != 0) throw new IOException("설치가 완료되지 않았습니다. 다시 시도해 주세요. (코드 " + exitCode + ")");
+                    progress(Short + "를 설치해요", "잠시만 기다려 주세요. 설치하는 동안에는 창을 닫을 수 없어요.", null);
+                    int exitCode=BackendProcess.Run(backend,cache,deadline,delegate { progress("설치를 멈춰요","정한 시간을 넘겼어요. 설치를 멈추고 이전 상태로 되돌렸는지 확인해요.",null); });
+                    if (exitCode == 20) throw new InvalidOperationException(Short + "가 켜져 있거나, 켜져 있는지 확인하지 못했어요. " + Short + "를 닫고 다시 해 주세요.");
+                    if (exitCode != 0) throw new IOException("설치를 마치지 못했어요. 다시 해 주세요. (코드 " + exitCode + ")");
                 }
                 return VerifyInstalled(progress);
             }
@@ -189,17 +189,17 @@ namespace Synk.SignalInstaller
             RejectReparsePoints(directory);
             if (String.IsNullOrWhiteSpace(ReadRegistry(RegistryHive.CurrentUser, RegistryKey, "InstallLocation")) ||
                 ReadRegistry(RegistryHive.CurrentUser, UninstallKey, "DisplayVersion") != spec.Version)
-                throw new IOException("설치 등록을 확인하지 못했습니다. 다시 설치해 주세요.");
+                throw new IOException("설치 등록을 확인하지 못했어요. 다시 설치해 주세요.");
             int done = 0;
             foreach (InstallFile item in spec.Files)
             {
                 string file = System.IO.Path.GetFullPath(System.IO.Path.Combine(directory, item.Path.Replace('/', '\\')));
-                if (!file.StartsWith(directory + "\\", StringComparison.OrdinalIgnoreCase)) throw new IOException("설치 파일 경로가 올바르지 않습니다.");
+                if (!file.StartsWith(directory + "\\", StringComparison.OrdinalIgnoreCase)) throw new IOException("설치 파일 경로가 맞지 않아요.");
                 FileInfo info = new FileInfo(file);
                 if (!info.Exists || (info.Attributes & FileAttributes.ReparsePoint) != 0 || info.Length != item.Bytes ||
                     !String.Equals(HashFile(file), item.SHA256, StringComparison.OrdinalIgnoreCase))
-                    throw new IOException("설치 파일을 확인하지 못했습니다: " + item.Path + ". 다시 설치해 주세요.");
-                progress("설치를 확인합니다", Short + "를 열기 전에 설치된 파일을 확인합니다.", ++done * 100 / spec.Files.Count);
+                    throw new IOException("설치된 파일을 확인하지 못했어요: " + item.Path + ". 다시 설치해 주세요.");
+                progress("설치를 확인해요", Short + "를 열기 전에 설치된 파일을 확인해요.", ++done * 100 / spec.Files.Count);
             }
             string uninstall = ReadRegistry(RegistryHive.CurrentUser, UninstallKey, "UninstallString");
             string uninstallFile = null;
@@ -209,7 +209,7 @@ namespace Synk.SignalInstaller
                 if (closing > 1) uninstallFile = uninstall.Substring(1, closing - 1);
             }
             if (uninstallFile == null || !uninstallFile.StartsWith(directory + "\\", StringComparison.OrdinalIgnoreCase) || !File.Exists(uninstallFile))
-                throw new IOException("제거 프로그램을 확인하지 못했습니다. 다시 설치해 주세요.");
+                throw new IOException("제거 프로그램을 확인하지 못했어요. 다시 설치해 주세요.");
             string shortcut = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), spec.ShortcutName + ".lnk");
             if (File.Exists(shortcut)) VerifyShortcut(shortcut, System.IO.Path.Combine(directory, spec.ExecutableName));
             verifiedDirectory = directory;
@@ -224,7 +224,7 @@ namespace Synk.SignalInstaller
                 shell = Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell"));
                 link = shell.GetType().InvokeMember("CreateShortcut", BindingFlags.InvokeMethod, null, shell, new object[] { shortcut });
                 string target = (string)link.GetType().InvokeMember("TargetPath", BindingFlags.GetProperty, null, link, null);
-                if (!String.Equals(target, expected, StringComparison.OrdinalIgnoreCase)) throw new IOException("바로가기 확인에 실패했습니다. 다시 설치해 주세요.");
+                if (!String.Equals(target, expected, StringComparison.OrdinalIgnoreCase)) throw new IOException("바로가기를 확인하지 못했어요. 다시 설치해 주세요.");
             }
             finally
             {
@@ -235,11 +235,11 @@ namespace Synk.SignalInstaller
 
         public void Launch()
         {
-            if (verifiedDirectory == null) throw new InvalidOperationException("설치 완료 후 " + Short + "를 열 수 있습니다.");
+            if (verifiedDirectory == null) throw new InvalidOperationException("설치 완료 후 " + Short + "를 열 수 있어요.");
             string executable = System.IO.Path.Combine(verifiedDirectory, spec.ExecutableName);
             InstallFile expected = spec.Files.Find(delegate(InstallFile item) { return String.Equals(item.Path, spec.ExecutableName, StringComparison.OrdinalIgnoreCase); });
             if (expected == null || !String.Equals(HashFile(executable), expected.SHA256, StringComparison.OrdinalIgnoreCase))
-                throw new IOException(Short + " 실행 파일을 확인하지 못했습니다. 다시 설치해 주세요.");
+                throw new IOException(Short + " 실행 파일을 확인하지 못했어요. 다시 설치해 주세요.");
             Process.Start(new ProcessStartInfo(executable) { WorkingDirectory = verifiedDirectory, UseShellExecute = true });
         }
     }

@@ -437,7 +437,7 @@ test('실제 운세 화면은 같은 계정 재인증 때 미저장 메모를 �
   assert.deepEqual(unexpected, [], 'This scenario must not save or delete records');
 });
 
-for (const phase of ['config', 'token']) test(`실제 운세 화면은 ${phase} 일시 실패 뒤 계정 연결 다시 확인으로 같은 로그인을 복구한다`, async t => {
+for (const phase of ['config', 'token']) test(`실제 운세 화면은 ${phase} 일시 실패 뒤 「로그인 다시 확인」으로 같은 로그인을 복구한다`, async t => {
   const config = { version: 1, supabaseUrl: 'https://auth.fortune-test.invalid', accountApiUrl: 'https://account.fortune-test.invalid', portalUrl: 'https://portal.fortune-test.invalid', supabasePublishableKey: 'sb_publishable_synthetic_fortune', clients: { platform: { clientId: 'synthetic-client', redirectUri: 'http://127.0.0.1:4299/' } } };
   const values = new Map(), here = { href: 'http://127.0.0.1:4299/', assign() { throw new Error('Retry must not begin a new OAuth flow'); } };
   if (phase === 'token') {
@@ -456,7 +456,7 @@ for (const phase of ['config', 'token']) test(`실제 운세 화면은 ${phase} 
   });
   const login = () => page.$('#account-body [data-acct="login"]');
   assert.ok(login()); assert.equal(login().disabled, false);
-  assert.equal(login().textContent, '계정 연결 다시 확인');
+  assert.equal(login().textContent, '로그인 다시 확인');
   assert.equal(page.$('#account-body [data-acct="save-profile"]'), null, '계정이 준비되기 전에는 내 정보 저장을 열지 않는다');
   fail = false; page.click(login()); await settle();
   assert.equal(page.connection.snapshot().ready, true); assert.equal(login(), null);

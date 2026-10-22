@@ -53,13 +53,13 @@ export function createDesktopClassroomClient({bridge,product,guard}) {
 }
 
 export function authMessage(state) {
-  if (!state?.configured) return '이 앱의 SYNK ID 연결 설정을 준비하고 있어요. 기본 학습은 계속 이용할 수 있어요.';
+  if (!state?.configured) return '이 앱에는 SYNK ID 로그인 설정이 아직 없어요. 기본 학습은 로그인 없이 할 수 있어요.';
   if (state.error?.message) return state.error.message;
   return ({
-    restoring: '저장된 로그인을 안전하게 확인하고 있어요.',
+    restoring: '저장된 로그인을 확인하고 있어요.',
     'signing-in': '브라우저에서 SYNK ID 로그인을 마치면 이 앱으로 연결돼요.',
-    'signed-in': 'SYNK ID로 연결했어요. 이 앱의 계정 정보를 확인하고 있어요.',
-    'signed-out': 'SYNK ID로 로그인하면 모바일과 PC에서 같은 계정으로 이어갈 수 있어요.',
+    'signed-in': 'SYNK ID로 로그인했어요. 계정 정보를 불러오고 있어요.',
+    'signed-out': 'SYNK ID로 로그인하면 휴대폰과 PC에서 같은 계정을 써요.',
     error: '로그인을 확인하지 못했어요. 다시 시도해 주세요.',
-  })[state.status] || '계정 연결 상태를 확인하고 있어요.';
+  })[state.status] || '로그인 상태를 확인하고 있어요.';
 }

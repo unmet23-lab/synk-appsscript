@@ -35,9 +35,9 @@ function entryOf(item, person, event) {
 
 /** 장부 줄 목록(최근 날짜 먼저). filters: year·personId·occasion·direction */
 export function ledgerEntries(state, { year = null, personId = null, occasion = null, direction = null } = {}) {
-  if (year !== null && !Number.isInteger(year)) throw new Error('연도를 확인해 주세요.');
-  if (occasion !== null && !Object.hasOwn(OCCASION_TYPES, occasion)) throw new Error('행사 종류를 확인해 주세요.');
-  if (direction !== null && !Object.hasOwn(LEDGER_DIRECTION_LABELS, direction)) throw new Error('보냄·받음을 확인해 주세요.');
+  if (year !== null && !Number.isInteger(year)) throw new Error('연도를 다시 골라 주세요.');
+  if (occasion !== null && !Object.hasOwn(OCCASION_TYPES, occasion)) throw new Error('행사 종류를 다시 골라 주세요.');
+  if (direction !== null && !Object.hasOwn(LEDGER_DIRECTION_LABELS, direction)) throw new Error('보냄·받음을 다시 골라 주세요.');
   const current = importBackup(state);
   const people = new Map(current.people.map(item => [item.id, item])), events = new Map(current.events.map(item => [item.id, item]));
   return current.activities.filter(inLedger).map(item => entryOf(item, people.get(item.personId), events.get(item.eventId)))
@@ -130,9 +130,9 @@ function csvRows(text) {
     } else if (c === ',') field();
     else if (c === '\r' || c === '\n') { if (c === '\r' && text[i + 1] === '\n') i++; line(); }
     else if (c === '"' && !cell && !endedQuote) quoted = true;
-    else { if (endedQuote || c === '"') throw new Error('CSV의 따옴표와 쉼표 구분을 확인해 주세요.'); cell += c; }
+    else { if (endedQuote || c === '"') throw new Error('CSV의 따옴표와 쉼표가 어긋나 있어요. 엑셀에서 「CSV UTF-8」로 다시 저장해 주세요.'); cell += c; }
   }
-  if (quoted) throw new Error('CSV의 닫히지 않은 따옴표를 확인해 주세요.');
+  if (quoted) throw new Error('CSV에 닫히지 않은 따옴표가 있어요. 엑셀에서 「CSV UTF-8」로 다시 저장해 주세요.');
   if (cell || row.length || endedQuote) line();
   return rows;
 }
@@ -210,7 +210,7 @@ const sameEntry = (a, b) => a.date === b.date && a.direction === b.direction && 
  * rows[].duplicate: existing(이미 같은 기록이 있음) · file(파일 안에서 겹침) · null
  */
 export function previewLedgerCsv(state, text, { now = new Date() } = {}) {
-  if (typeof text !== 'string' || new TextEncoder().encode(text).byteLength > LEDGER_FILE_LIMIT) throw new Error('파일은 4 MB 이내로 준비해 주세요.');
+  if (typeof text !== 'string' || new TextEncoder().encode(text).byteLength > LEDGER_FILE_LIMIT) throw new Error('파일은 4 MB까지 가져올 수 있어요.');
   if (text.includes('�')) throw new Error('글자가 깨져 있어요. 엑셀에서 「CSV UTF-8」로 다시 저장해 주세요.');
   const current = importBackup(state), today = koreanDate(now);
   const parsed = csvRows(text.replace(/^﻿/u, ''));
@@ -226,16 +226,16 @@ export function previewLedgerCsv(state, text, { now = new Date() } = {}) {
   const rows = parsed.map((cells, index) => {
     const cell = field => column[field] >= 0 ? String(cells[column[field]] ?? '').trim() : '';
     const errors = [];
-    if (cells.slice(headers.length).some(value => value.trim())) errors.push('열 개수가 첫 줄보다 많아요. 쉼표와 따옴표를 확인해 주세요.');
+    if (cells.slice(headers.length).some(value => value.trim())) errors.push('열 개수가 첫 줄보다 많아요. 칸 안의 쉼표는 따옴표로 감싸 주세요.');
     const name = cell('name').replace(/\s+/gu, ' ');
     if (!name) errors.push('이름이 비어 있어요.');
-    else if (name.length > 80 || /[\x00-\x1f\x7f]/u.test(name)) errors.push('이름을 80자 이내로 확인해 주세요.');
+    else if (name.length > 80 || /[\x00-\x1f\x7f]/u.test(name)) errors.push('이름은 80자까지 적을 수 있어요.');
     const date = parseLedgerDate(cell('date'));
     if (!date) errors.push('날짜를 2026-05-01처럼 적어 주세요.');
     else if (date > today) errors.push('오늘보다 뒤의 날짜는 장부에 넣을 수 없어요.');
     let amountWon = column.amount >= 0 ? parseWon(cell('amount')) : null;
     const sent = column.sentAmount >= 0 ? parseWon(cell('sentAmount')) : null, received = column.receivedAmount >= 0 ? parseWon(cell('receivedAmount')) : null;
-    if ([amountWon, sent, received].includes(undefined)) errors.push('금액을 숫자로 확인해 주세요. 「100000」이나 「10만」처럼 적을 수 있어요.');
+    if ([amountWon, sent, received].includes(undefined)) errors.push('금액은 「100000」이나 「10만」처럼 숫자로 적어 주세요.');
     let direction = parseDirection(cell('direction'));
     if (direction === undefined) { errors.push('방향은 「보냄」이나 「받음」으로 적어 주세요.'); direction = null; }
     if (sent && received) errors.push('한 줄에 보낸 금액과 받은 금액이 함께 있어요. 두 줄로 나눠 주세요.');
@@ -288,15 +288,15 @@ export function applyLedgerImport(state, preview, choices, now = new Date()) {
   if (!preview || !Array.isArray(preview.rows)) throw new Error('먼저 CSV를 미리 봐 주세요.');
   if (!Array.isArray(choices) || !choices.length) throw new Error('더할 줄을 직접 골라 주세요.');
   const current = importBackup(state), at = new Date(now);
-  if (!Number.isFinite(at.getTime())) throw new Error('기준 시간을 확인해 주세요.');
+  if (!Number.isFinite(at.getTime())) throw new Error('날짜를 읽지 못했어요.');
   const createdAt = at.toISOString(), today = koreanDate(at);
   const people = new Map(current.people.map(person => [person.id, person]));
   const existing = ledgerEntries(current), created = new Map(), activities = [], usedIndexes = new Set();
   const newId = prefix => `${prefix}_${globalThis.crypto?.randomUUID?.() ?? `${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`}`;
   for (const choice of choices) {
-    if (!choice || typeof choice !== 'object' || Object.keys(choice).some(key => !['index', 'personId', 'newPerson', 'allowDuplicate'].includes(key))) throw new Error('고른 줄의 형식을 확인해 주세요.');
+    if (!choice || typeof choice !== 'object' || Object.keys(choice).some(key => !['index', 'personId', 'newPerson', 'allowDuplicate'].includes(key))) throw new Error('고른 줄을 읽지 못했어요. 다시 미리 봐 주세요.');
     const row = preview.rows[choice.index];
-    if (!Number.isSafeInteger(choice.index) || !row || usedIndexes.has(choice.index)) throw new Error('고른 줄을 다시 확인해 주세요.');
+    if (!Number.isSafeInteger(choice.index) || !row || usedIndexes.has(choice.index)) throw new Error('고른 줄을 읽지 못했어요. 다시 미리 봐 주세요.');
     usedIndexes.add(choice.index);
     if (row.errors.length) throw new Error(`${row.line}번째 줄을 먼저 고쳐 주세요: ${row.errors[0]}`);
     if (row.date > today) throw new Error(`${row.line}번째 줄의 날짜가 오늘보다 뒤예요.`);
@@ -314,7 +314,7 @@ export function applyLedgerImport(state, preview, choices, now = new Date()) {
     const record = { date: row.date, direction: row.direction, kind: row.kind, amountWon: row.amountWon, item: row.item };
     const repeated = existing.some(entry => entry.personId === personId && sameEntry(entry, record))
       || activities.some(item => item.personId === personId && sameEntry({ date: item.occurredOn, direction: item.direction, kind: item.kind, amountWon: item.amountWon, item: item.item ?? '' }, record));
-    if (repeated && choice.allowDuplicate !== true) throw new Error(`${row.line}번째 줄은 이미 같은 기록이 있어요. 그래도 더하려면 다시 확인해 주세요.`);
+    if (repeated && choice.allowDuplicate !== true) throw new Error(`${row.line}번째 줄은 이미 같은 기록이 있어요. 그래도 더하려면 그 줄에 체크해 주세요.`);
     activities.push({ id: newId('activity'), personId, eventId: '', kind: row.kind, occurredOn: row.date, amountWon: row.amountWon, direction: row.direction,
       note: row.note, createdAt, ...(row.occasion ? { occasion: row.occasion } : {}), ...(row.attended !== null ? { attended: row.attended } : {}), ...(row.item ? { item: row.item } : {}) });
   }

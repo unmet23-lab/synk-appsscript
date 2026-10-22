@@ -70,8 +70,8 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  const photo=(speaker,size='')=>friends[speaker]?`<img class="life-friend ${size}" src="${asset('home/'+friends[speaker].file)}" alt="${friends[speaker].name}" width="384" height="384">`:'';
  const cut=speaker=>friends[speaker]?`<img class="life-friend" src="${asset('tutors/'+friends[speaker].cut+'-기본.webp')}" alt="${friends[speaker].name}" width="480" height="480" decoding="async">`:'';
  function updateHome(){if(ended)return;try{const value=summary();home.updateLearning?.(value,{snapshot:getProgress().exportSnapshot(),lessons:LESSONS,preparePractice:prepareHomePractice,completePractice:completeTutorPractice,finishDay:finishTutorDay});onSummary(value);}catch{}}
- function completeTutorPractice(questionId,tutorId){if(ended)throw Error('학습 연결이 바뀌었어요.');return getProgress().recordGuidedPractice({questionId,tutorId});}
- function finishTutorDay(){if(ended)throw Error('학습 연결이 바뀌었어요.');return getProgress().markDayComplete();}
+ function completeTutorPractice(questionId,tutorId){if(ended)throw Error('로그인한 계정이 바뀌어 저장하지 못했어요. 다시 시도해 주세요.');return getProgress().recordGuidedPractice({questionId,tutorId});}
+ function finishTutorDay(){if(ended)throw Error('로그인한 계정이 바뀌어 저장하지 못했어요. 다시 시도해 주세요.');return getProgress().markDayComplete();}
  function prepareHomePractice(id){
   if(ended)return false;
   try{
@@ -442,6 +442,6 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  timer=setInterval(updateHome,15000);updateHome();
  // 첫 실행 「한글을 읽을 수 있어요?」의 답: 이 진도 기록(계정이면 계정, 손님이면 이 기기)에 읽고 쓴다.
  function hangulReading(){try{return getProgress().hangulReading();}catch{return null;}}
- async function setHangulReading(answer,options){if(ended)throw Error('학습 연결이 바뀌었어요.');const p=getProgress(),result=p.setHangulReading(answer,options);updateHome();await p.flush();return result;}
+ async function setHangulReading(answer,options){if(ended)throw Error('로그인한 계정이 바뀌어 저장하지 못했어요. 다시 시도해 주세요.');const p=getProgress(),result=p.setHangulReading(answer,options);updateHome();await p.flush();return result;}
  return {packs,stories,review,reviewStart,next,pack,start,cafe:()=>pack('cafe'),summary,refresh:updateHome,hangulReading,setHangulReading,metrics:()=>({shown,lessonId:context?.lessonId||null,phase:context?.phase||null,step:context?.questionIndex??null,cafe:isCafeLesson(context?.lessonId)?cafeRun:null,speech:speech.metrics(),tutor:companion?.metrics()||null,owner:getProgress().owner,progress:getProgress().exportSnapshot()}),dispose(){ended=true;speech.dispose();story.dispose();clearInterval(timer);document.removeEventListener('click',click);document.removeEventListener('visibilitychange',sitting);if(shown)home.closePanel();}};
 }

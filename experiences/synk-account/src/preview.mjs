@@ -37,10 +37,10 @@ const accountFactory = () => ({
 });
 const notice = text => { document.getElementById('notice').textContent = `합성 화면 예시 · ${text}`; };
 document.getElementById('preview-banner').hidden = false;
-document.getElementById('preview-banner').textContent = '합성 화면 예시 — 실제 로그인·가입·서버 저장·권한 변경은 일어나지 않습니다.';
+document.getElementById('preview-banner').textContent = '합성 화면 예시예요. 실제 로그인·가입·서버 저장은 일어나지 않아요.';
 async function main() { if (params.get('account') === 'world') {
   document.getElementById('auth-panel').hidden = true;
   const view = createAccountView({ client: accountFactory(), product: 'world', guard: () => {}, notice, preview: true, logout: async (note, { scope } = {}) => { view.stop();notice(note || (scope === 'all' ? '예시 계정을 닫았어요. 실제 다른 제품의 로그인은 종료하지 않았어요.' : '예시 계정을 닫았어요.')); } });
-  await view.load();notice('WORLD의 계정과 학습 입구를 보여 줍니다.');
+  await view.load();notice('WORLD 계정 화면을 보여 줘요.');
 } else await mountPortal({ config, sdk, accountFactory, preview: true }); }
 main().catch(error => notice(error.message));

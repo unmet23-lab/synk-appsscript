@@ -1,22 +1,22 @@
 const PUSH_TIME_ZONE = 'Asia/Seoul';
-const SIGNED_OUT_NOTICE = '이 기기의 알림 설정은 로그인 후 확인할 수 있어요. 이미 허용한 알림은 계속 받을 수 있어요. 바로 끄려면 브라우저의 사이트 설정에서 알림을 차단해 주세요.';
+const SIGNED_OUT_NOTICE = '로그인하면 이 기기 알림을 켜거나 끌 수 있어요. 이미 켠 알림을 지금 끄려면 브라우저 사이트 설정에서 알림을 차단해 주세요.';
 const busyPhases = new Set(['preparing', 'enabling', 'saving', 'disabling']);
 const errors = {
-  CARE_DATA_REQUIRED: '계정에 수첩을 먼저 저장해 주세요. 사람이나 일정을 추가하고 계정 저장이 끝나면 알림을 켤 수 있어요.',
-  PUSH_DEVICE_LIMIT: '이미 10개 기기에 알림이 켜져 있어요. 사용하지 않는 기기에서 알림을 끈 뒤 다시 시도해 주세요.',
-  PUSH_DAILY_LIMIT: '오늘 새 기기 알림을 등록한 횟수가 많아요. 한국 시간으로 내일 다시 시도해 주세요.',
-  INVALID_SUBSCRIPTION: '이 브라우저의 알림 연결을 사용할 수 없어요. 최신 브라우저에서 다시 열거나 달력 저장을 이용해 주세요.',
-  PUSH_LOCAL_CLEANUP: '이전 기기 알림을 해제하지 못했어요. 다시 확인을 누르거나 브라우저 사이트 설정에서 알림을 끈 뒤 확인해 주세요.',
-  ACCOUNT_CHANGED: '계정이 바뀌었어요. 현재 계정에서 알림을 다시 확인해 주세요.',
+  CARE_DATA_REQUIRED: '계정에 저장된 일정이 아직 없어요. 사람이나 일정을 더해 계정에 저장되면 알림을 켤 수 있어요.',
+  PUSH_DEVICE_LIMIT: '알림은 기기 10개까지 켤 수 있어요. 쓰지 않는 기기에서 알림을 끈 뒤 다시 켜 주세요.',
+  PUSH_DAILY_LIMIT: '오늘은 새 기기에 알림을 더 켤 수 없어요. 한국 시간으로 내일 다시 켜 주세요.',
+  INVALID_SUBSCRIPTION: '이 브라우저에서는 알림을 켤 수 없어요. 최신 브라우저로 열거나 일정을 달력에 저장해 주세요.',
+  PUSH_LOCAL_CLEANUP: '이 기기에 남은 이전 알림을 끄지 못했어요. 「다시 확인」을 누르거나 브라우저 사이트 설정에서 알림을 꺼 주세요.',
+  ACCOUNT_CHANGED: '계정이 바뀌었어요. 바뀐 계정에서 알림을 다시 켜 주세요.',
 };
-const errorMessage = error => errors[error?.code] || (error?.name === 'NotAllowedError' ? '알림 권한을 받지 못했어요. 브라우저의 사이트 설정에서 허용한 뒤 다시 확인해 주세요.' : '알림 서버에 연결하지 못했어요. 잠시 뒤 다시 확인해 주세요.');
+const errorMessage = error => errors[error?.code] || (error?.name === 'NotAllowedError' ? '알림 권한을 받지 못했어요. 브라우저 사이트 설정에서 알림을 허용한 뒤 다시 켜 주세요.' : '알림 서버에 연결하지 못했어요. 잠시 뒤 다시 시도해 주세요.');
 
 export function pushCapability(env = globalThis) {
-  if (env.synkProduct?.authStatus) return { supported: false, phase: 'unsupported', message: '이 앱의 알림은 웹 브라우저에서 설정해 주세요. 알림 설정을 닫고 브라우저에서 열기를 눌러 주세요.' };
+  if (env.synkProduct?.authStatus) return { supported: false, phase: 'unsupported', message: 'PC 앱 창에서는 여기서 알림을 켤 수 없어요. PC 앱 설정의 「플레저 PC 알림」을 켜거나, 알림 창을 닫고 아래 「브라우저에서 열기」를 눌러 주세요.' };
   const nav = env.navigator, standalone = nav?.standalone === true || env.matchMedia?.('(display-mode: standalone)')?.matches === true;
   const ios = /iPad|iPhone|iPod/.test(nav?.userAgent || '') || nav?.platform === 'MacIntel' && nav?.maxTouchPoints > 1;
-  if (ios && !standalone) return { supported: false, phase: 'needs-install', message: 'iPhone·iPad에서는 Safari의 공유 메뉴 → 홈 화면에 추가를 누른 뒤, 홈 화면의 플레저에서 알림을 켜 주세요.' };
-  if (!env.isSecureContext || !nav?.serviceWorker || !env.PushManager || !env.Notification) return { supported: false, phase: 'unsupported', message: '이 브라우저는 닫힌 앱 알림을 지원하지 않아요. 최신 브라우저에서 열거나 일정의 달력 저장을 이용해 주세요.' };
+  if (ios && !standalone) return { supported: false, phase: 'needs-install', message: 'iPhone·iPad에서는 Safari 공유 메뉴의 「홈 화면에 추가」를 누른 뒤, 홈 화면에 생긴 플레저를 열어 알림을 켜 주세요.' };
+  if (!env.isSecureContext || !nav?.serviceWorker || !env.PushManager || !env.Notification) return { supported: false, phase: 'unsupported', message: '이 브라우저에서는 앱을 닫았을 때 알림을 받을 수 없어요. 최신 브라우저로 열거나 일정을 달력에 저장해 주세요.' };
   return { supported: true };
 }
 
@@ -29,7 +29,7 @@ export function decodePushKey(value, decode = globalThis.atob) {
 }
 
 function timeParts(hour, minute) {
-  if (!Number.isInteger(hour) || hour < 0 || hour > 23 || !Number.isInteger(minute) || minute < 0 || minute > 59) throw new Error('알림 시간을 확인해 주세요.');
+  if (!Number.isInteger(hour) || hour < 0 || hour > 23 || !Number.isInteger(minute) || minute < 0 || minute > 59) throw new Error('알림 시간을 다시 골라 주세요.');
   return { hour, minute };
 }
 
@@ -40,10 +40,10 @@ export function carePushAccountIdentity(status, starting = false) {
 
 export function careLogoutNotice(accountResult, pushResult) {
   const warnings = [];
-  if (accountResult?.ok === false) warnings.push('이 기기의 로그인 정보 삭제를 확인하지 못했어요. 브라우저나 앱의 저장 정보를 확인해 주세요.');
-  if (accountResult?.serverRevoked === false) warnings.push('서버의 세션 종료는 확인하지 못했어요.');
-  if (pushResult?.ok === false) warnings.push('기기 알림 해제를 확인하지 못했으니 브라우저 사이트 설정에서 알림을 꺼 주세요.');
-  return warnings.length ? `${accountResult?.ok === false ? '로그아웃을 완전히 확인하지 못했어요.' : '이 기기의 로그인은 종료했어요.'} ${warnings.join(' ')}` : '';
+  if (accountResult?.ok === false) warnings.push('이 기기에서 로그인 정보가 지워졌는지 알 수 없어요. 브라우저 사이트 데이터를 지우면 확실히 로그아웃돼요.');
+  if (accountResult?.serverRevoked === false) warnings.push('서버 쪽 로그아웃은 확인하지 못했어요.');
+  if (pushResult?.ok === false) warnings.push('이 기기 알림이 꺼졌는지 알 수 없으니 브라우저 사이트 설정에서 알림을 꺼 주세요.');
+  return warnings.length ? `${accountResult?.ok === false ? '로그아웃이 끝까지 됐는지 확인하지 못했어요.' : '이 기기에서는 로그아웃했어요.'} ${warnings.join(' ')}` : '';
 }
 
 function bounded(promise, ms = 12000) {
@@ -116,7 +116,7 @@ export function createCarePush({ request, onState = () => {}, env = globalThis, 
         const result = await call('status', candidate ? { endpoint: candidate.endpoint } : {}, expected);
         publicKey = decodePushKey(result.publicKey, env.atob || globalThis.atob);
         if (env.Notification.permission === 'denied') {
-          emit({ phase: 'denied', enabled: false, message: '브라우저에서 알림이 차단돼 있어요. 사이트 알림을 허용한 뒤 다시 확인해 주세요.' }); return snapshot();
+          emit({ phase: 'denied', enabled: false, message: '브라우저에서 이 사이트의 알림이 막혀 있어요. 사이트 설정에서 알림을 허용한 뒤 「다시 확인」을 눌러 주세요.' }); return snapshot();
         }
         if (candidate && !result.enabled) { const removed = await removeLocal(candidate); guard(expected); if (!removed) { publicKey = null; throw Object.assign(new Error('기기 알림 해제 실패'), { code: 'PUSH_LOCAL_CLEANUP' }); } }
         return applyStatus(result, !!candidate && result.enabled === true && env.Notification.permission === 'granted');
@@ -132,7 +132,7 @@ export function createCarePush({ request, onState = () => {}, env = globalThis, 
     const previous = owner, expected = ++epoch, running = mutation, clearing = cleanup;
     owner = next; suspended = false; preparation = null; publicKey = null;
     timeDraft = null;
-    emit({ phase: next ? permissionAttempt ? 'permission-pending' : 'preparing' : 'signed-out', enabled: false, scheduleKnown: true, hour: 9, minute: 0, message: next ? permissionAttempt ? '이전 알림 연결을 정리하고 있어요. 브라우저에 남아 있는 알림 허용 창을 닫아 주세요. 수첩은 계속 이용할 수 있어요.' : '이 기기의 알림 연결을 확인하고 있어요.' : SIGNED_OUT_NOTICE });
+    emit({ phase: next ? permissionAttempt ? 'permission-pending' : 'preparing' : 'signed-out', enabled: false, scheduleKnown: true, hour: 9, minute: 0, message: next ? permissionAttempt ? '이전 알림 연결을 정리하고 있어요. 브라우저에 남은 알림 허용 창을 닫아 주세요. 수첩은 그대로 쓸 수 있어요.' : '이 기기의 알림 연결을 확인하고 있어요.' : SIGNED_OUT_NOTICE });
     // A subscribe prompt can finish after a sign-out. That mutation removes its own
     // subscription; wait before preparing a new account so it cannot remove theirs.
     if (running) { try { await running; } catch { /* The stale mutation cleans up below. */ } }
@@ -143,11 +143,11 @@ export function createCarePush({ request, onState = () => {}, env = globalThis, 
     if (previous) {
       let reg, old = subscription;
       try { reg = await existing(); if (expected !== epoch) return snapshot(); old ||= await bounded(reg?.pushManager?.getSubscription()); }
-      catch { return expected !== epoch ? snapshot() : emit({ phase: 'unavailable', enabled: false, message: '이전 계정의 기기 알림을 확인하지 못했어요. 사이트 설정에서 알림을 끈 뒤 다시 확인해 주세요.' }); }
+      catch { return expected !== epoch ? snapshot() : emit({ phase: 'unavailable', enabled: false, message: '이전 계정의 알림이 이 기기에 남았는지 알 수 없어요. 사이트 설정에서 알림을 끈 뒤 「다시 확인」을 눌러 주세요.' }); }
       if (expected !== epoch) return snapshot();
       const removed = await removeLocal(old, reg);
       if (expected !== epoch) return snapshot();
-      if (!removed) return emit({ phase: 'unavailable', enabled: false, message: '이전 계정의 기기 알림을 해제하지 못했어요. 브라우저 사이트 설정에서 알림을 끈 뒤 다시 확인해 주세요.' });
+      if (!removed) return emit({ phase: 'unavailable', enabled: false, message: '이전 계정의 알림을 이 기기에서 끄지 못했어요. 브라우저 사이트 설정에서 알림을 끈 뒤 「다시 확인」을 눌러 주세요.' });
     }
     return next ? prepare() : snapshot();
   }
@@ -155,17 +155,17 @@ export function createCarePush({ request, onState = () => {}, env = globalThis, 
     const attempt = permissionAttempt;
     if (!attempt?.waiting || attempt.cancelled || !current(attempt.epoch)) return snapshot();
     attempt.cancelled = true; clearTimeout(attempt.timer);
-    return emit({ phase: 'permission-pending', enabled: false, message: `${timedOut ? '알림 허용 응답이 없어 연결을 멈췄어요.' : '앱의 알림 연결을 취소했어요.'} 브라우저의 허용 창은 직접 닫아 주세요. 창을 닫으면 다시 연결할 수 있고, 수첩은 계속 이용할 수 있어요.` });
+    return emit({ phase: 'permission-pending', enabled: false, message: `${timedOut ? '알림 허용 응답이 없어 연결을 멈췄어요.' : '알림 켜기를 취소했어요.'} 브라우저에 뜬 허용 창은 직접 닫아 주세요. 창을 닫으면 다시 켤 수 있어요.` });
   }
   function enable(hour = state.hour, minute = state.minute) {
     const time = timeParts(hour, minute), expected = epoch;
     guard(expected);
     if (mutation || !registration || !publicKey || !['ready', 'error'].includes(state.phase)) return Promise.resolve(snapshot());
-    if (env.Notification.permission === 'denied') return Promise.resolve(emit({ phase: 'denied', enabled: false, message: '브라우저 사이트 설정에서 알림을 허용한 뒤 다시 확인해 주세요.' }));
+    if (env.Notification.permission === 'denied') return Promise.resolve(emit({ phase: 'denied', enabled: false, message: '브라우저 사이트 설정에서 알림을 허용한 뒤 「다시 확인」을 눌러 주세요.' }));
     timeDraft = time;
     const attempt = { epoch: expected, waiting: true, cancelled: false, timer: null };
     permissionAttempt = attempt;
-    emit({ phase: 'enabling', enabled: false, message: '브라우저의 알림 허용 창을 확인해 주세요. 지금 연결하지 않으려면 아래에서 취소할 수 있어요.' });
+    emit({ phase: 'enabling', enabled: false, message: '브라우저에 뜬 알림 허용 창에서 「허용」을 눌러 주세요. 그만두려면 아래 「켜기 취소」를 누르면 돼요.' });
     let prompt;
     try {
       // Keep this call in the original click task. Awaiting a request first loses
@@ -181,7 +181,7 @@ export function createCarePush({ request, onState = () => {}, env = globalThis, 
         guard(expected);
         if (attempt.cancelled) throw Object.assign(new Error('알림 연결 취소'), { code: 'PUSH_CANCELLED' });
         subscription = candidate;
-        emit({ message: '허용을 확인했어요. 선택한 시간으로 알림을 연결하고 있어요.' });
+        emit({ message: '허용됐어요. 고른 시간으로 알림을 켜고 있어요.' });
         const result = await call('subscribe', { subscription: { endpoint: candidate.endpoint, keys: candidate.toJSON().keys }, ...time }, expected);
         if (result.enabled !== true) throw new Error('알림 등록을 확인하지 못했어요.');
         return applyStatus(result, true, true);
@@ -191,7 +191,7 @@ export function createCarePush({ request, onState = () => {}, env = globalThis, 
         // longer display an unintended notification even if the server accepted it.
         const removed = await removeLocal(candidate);
         if (!removed) publicKey = null;
-        if (current(expected)) emit({ phase: !removed ? 'unavailable' : env.Notification.permission === 'denied' ? 'denied' : attempt.cancelled ? 'ready' : 'error', enabled: false, message: !removed ? '기기 알림 해제를 확인하지 못했어요. 알림 연결 다시 확인을 누르거나 사이트 설정에서 알림을 끈 뒤 확인해 주세요.' : attempt.cancelled ? env.Notification.permission === 'denied' ? '알림 연결을 취소했어요. 다시 켜려면 브라우저 사이트 설정에서 알림을 허용해 주세요.' : '알림 연결을 취소했어요. 선택한 시간은 유지했으니 원할 때 다시 켤 수 있어요.' : errorMessage(error) });
+        if (current(expected)) emit({ phase: !removed ? 'unavailable' : env.Notification.permission === 'denied' ? 'denied' : attempt.cancelled ? 'ready' : 'error', enabled: false, message: !removed ? '이 기기 알림이 꺼졌는지 알 수 없어요. 「다시 확인」을 누르거나 사이트 설정에서 알림을 꺼 주세요.' : attempt.cancelled ? env.Notification.permission === 'denied' ? '알림 켜기를 취소했어요. 다시 켜려면 브라우저 사이트 설정에서 알림을 허용해 주세요.' : '알림 켜기를 취소했어요. 고른 시간은 그대로 두었으니 언제든 다시 켤 수 있어요.' : errorMessage(error) });
         return snapshot();
       } finally {
         clearTimeout(attempt.timer);
@@ -209,7 +209,7 @@ export function createCarePush({ request, onState = () => {}, env = globalThis, 
     emit({ phase: 'saving', message: '알림 시간을 저장하고 있어요.' });
     const pending = (async () => {
       try { const result = await call('update', { endpoint: subscription.endpoint, ...time }, expected); return applyStatus(result, result.enabled === true, true); }
-      catch (error) { if (current(expected)) emit({ phase: 'unavailable', scheduleKnown: false, message: '알림 시간의 저장 결과를 확인하지 못했어요. 알림 연결 다시 확인을 눌러 실제 저장된 시간을 확인해 주세요.' }); return snapshot(); }
+      catch (error) { if (current(expected)) emit({ phase: 'unavailable', scheduleKnown: false, message: '알림 시간이 저장됐는지 확인하지 못했어요. 「다시 확인」을 누르면 저장된 시간을 다시 불러와요.' }); return snapshot(); }
       finally { if (mutation === pending) mutation = null; }
     })();
     mutation = pending; return pending;
@@ -233,7 +233,7 @@ export function createCarePush({ request, onState = () => {}, env = globalThis, 
     // checks the epoch before writing and unsubscribes any late subscription.
     cancelEnable();
     ++epoch; suspended = true; publicKey = null; preparation = null;
-    emit({ phase: 'disabling', enabled: false, message: '이 기기의 계정 알림을 해제하고 있어요.' });
+    emit({ phase: 'disabling', enabled: false, message: '이 기기 알림을 끄고 있어요.' });
     const captured = subscription;
     const pending = (async () => {
       let reg, candidate = captured;

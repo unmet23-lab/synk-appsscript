@@ -17,7 +17,7 @@ const QUIET_BEFORE_NOTE_SECONDS = 4.5;
  * may recur: two existing short quiet performances cannot create infinite
  * original motion. Preserve the last writing choice across question turns. */
 export function createListeningSequence({ availableClipIds = LISTENING_CLIP_IDS } = {}) {
-  if (!Array.isArray(availableClipIds) || availableClipIds.some((id) => typeof id !== 'string')) throw new TypeError('사용 가능한 경청 영상 ID 배열이 필요합니다.');
+  if (!Array.isArray(availableClipIds) || availableClipIds.some((id) => typeof id !== 'string')) throw new TypeError('쓸 수 있는 경청 영상 ID 배열이 필요해요.');
   const available = LISTENING_VARIANTS.filter(({ id }) => availableClipIds.includes(id));
   let round = -1, roundSource = null, quietSeconds = 0, notePlayed = false, lastNoteId = null, lastPlaybackId = null, lastId = null, history = [];
   function resetSession() { round = -1; roundSource = null; quietSeconds = 0; notePlayed = false; lastNoteId = null; lastPlaybackId = null; lastId = null; history = []; }

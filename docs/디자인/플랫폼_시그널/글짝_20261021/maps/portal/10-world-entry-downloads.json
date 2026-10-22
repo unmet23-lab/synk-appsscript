@@ -1,0 +1,36 @@
+{
+  "//": "총괄 후속(10-21): ④-1 웹 WORLD 입구를 지금 WORLD(synk.im/world/)로, ④-3 공개 판 표를 못 읽으면 낡은 판 번호 대신 synk.im 다운로드로, ④-4 다운로드 포스터 큰 글자 「PC 앱」, ④-5 둘러보기 순서(앱 → 최근 → 회원 혜택 → 새소식). 둘러보기 줄 바꾸기는 자리표(__PORTAL_SWAP_*__)로 하고 10b가 채운다",
+  "experiences/synk-account/src/platform-entry.mjs": [
+    ["const PUBLIC = Object.freeze({ world: 'https://synk.im/account/client.html?product=world&play=learning-hub',", "const PUBLIC = Object.freeze({ world: 'https://synk.im/world/',", {"n": 1}]
+  ],
+  "experiences/synk-account/tests/platform-entry.test.mjs": [
+    ["['world', 'https://synk.im/account/client.html?product=world&play=learning-hub']", "['world', 'https://synk.im/world/']"]
+  ],
+  "experiences/synk-account/src/platform-downloads.mjs": [
+    ["// 아래 파일 값은 그 표를 읽지 못할 때 쓰는 판이다(이 표를 바꿀 당시 공개 판).", "// 표를 읽기 전이나 못 읽었을 때 화면은 판 번호·파일을 보이지 않고 synk.im 다운로드(RELEASE_PAGE)로 보낸다. 아래 값은 표의 모양을 정하는 기본값이다.", {"n": 1}],
+    ["export const RELEASE_FEED = '/desktop/releases/preview.json';", "export const RELEASE_FEED = '/desktop/releases/preview.json', RELEASE_PAGE = 'https://synk.im/#platform-get';", {"n": 1}],
+    ["export const DOWNLOAD_OS = ['windows', 'mac-arm64', 'mac-x64'];", "export const DOWNLOAD_OS = ['windows', 'mac-arm64', 'mac-x64'];let feedState = 'loading';export const downloadsState = () => feedState;const feedFailed = () => { if (feedState !== 'ready') feedState = 'failed'; };", {"n": 1}],
+    ["// 공개 판 표를 읽어 PLATFORM_DOWNLOADS를 그 판으로 맞춘다. 표가 바뀌었으면 true, 못 읽었거나 같으면 false.", "// 공개 판 표를 읽어 PLATFORM_DOWNLOADS를 그 판으로 맞춘다. 표가 바뀌었으면 true, 못 읽었거나 같으면 false. 읽은 결과는 downloadsState(): 'loading' → 'ready' | 'failed'(한 번 읽은 뒤에는 'ready'를 지킨다).", {"n": 1}],
+    ["    if (!response.ok) return false;", "    if (!response.ok) { feedFailed();return false; }", {"n": 1}],
+    ["    if (!release) return false;", "    if (!release) { feedFailed();return false; }", {"n": 1}],
+    ["    return changed;", "    feedState = 'ready';return changed;", {"n": 1}],
+    ["  } catch { return false; }", "  } catch { feedFailed();return false; }", {"n": 1}]
+  ],
+  "experiences/synk-account/src/platform.mjs": [
+    ["import { PLATFORM_DOWNLOADS, DOWNLOAD_OS, DOWNLOAD_STEPS, downloadHref, checksumHref, downloadSize, detectDownloadOS, refreshPlatformDownloads } from './platform-downloads.mjs';", "import { PLATFORM_DOWNLOADS, DOWNLOAD_OS, DOWNLOAD_STEPS, RELEASE_PAGE, downloadHref, checksumHref, downloadSize, downloadsState, detectDownloadOS, refreshPlatformDownloads } from './platform-downloads.mjs';", {"n": 1}],
+    [" const os=downloadOS,d=PLATFORM_DOWNLOADS[os],mac=os!=='windows',started=downloadStarted===os;", " const os=downloadOS,d=PLATFORM_DOWNLOADS[os],mac=os!=='windows',feed=downloadsState(),ready=feed==='ready',started=ready&&downloadStarted===os;", {"n": 1}],
+    ["<section class=\"detail-hero dl-hero\" aria-label=\"SYNK 플랫폼 ${esc(d.tab)} 다운로드\">", "<section class=\"detail-hero dl-hero\" aria-label=\"SYNK PC 앱 ${esc(d.tab)} 다운로드\">", {"n": 1}],
+    ["<p class=\"sb-eyebrow\">SYNK · PLATFORM · PREVIEW ${PLATFORM_DOWNLOADS.version}</p>", "<p class=\"sb-eyebrow\">SYNK · PLATFORM${ready?` · PREVIEW ${PLATFORM_DOWNLOADS.version}`:''}</p>", {"n": 1}],
+    ["const readouts=`<dl class=\"dl-readouts\"><div><dt>파일</dt><dd>${esc(d.file)}</dd></div><div><dt>크기</dt><dd>${downloadSize(d.bytes)}</dd></div>", "const readouts=`<dl class=\"dl-readouts\">${ready?`<div><dt>파일</dt><dd>${esc(d.file)}</dd></div><div><dt>크기</dt><dd>${downloadSize(d.bytes)}</dd></div>`:''}", {"n": 1}],
+    [" const actions=`<div class=\"dl-actions\"><a class=\"sb-btn dl-get\" href=\"${downloadHref(os)}\"", " const actions=ready?`<div class=\"dl-actions\"><a class=\"sb-btn dl-get\" href=\"${downloadHref(os)}\"", {"n": 1}],
+    ["target=\"_blank\" rel=\"noopener\">파일 확인값(SHA-256) ↗</a></div>`;", "target=\"_blank\" rel=\"noopener\">파일 확인값(SHA-256) ↗</a></div>`:`<div class=\"dl-actions\"><a class=\"sb-btn dl-get\" href=\"${RELEASE_PAGE}\" target=\"_blank\" rel=\"noopener\">synk.im에서 받기 ↗</a></div><p class=\"small dl-feed-note\" role=\"status\">${feed==='loading'?'지금 공개된 판을 확인하고 있어요.':'공개된 판 정보를 불러오지 못했어요. synk.im에서 지금 판을 받아 주세요.'}</p>`;", {"n": 1}],
+    ["void refreshPlatformDownloads().then(changed=>{if(changed&&route().page==='downloads')render();});", "void refreshPlatformDownloads().then(()=>{if(route().page==='downloads')render();});", {"n": 1}],
+    [" return (!query?accountPanel():'')+(query ? heading('SEARCH','검색 결과','앱과 회원 혜택에서 함께 찾았어요.') : benefitHero({home:true})+'<div class=\"benefit-home-strip\"><span>한국어를 배우는 앱은 SYNK WORLD예요</span><a href=\"#app/world\">WORLD 소개 →</a></div>')", " return (!query?accountPanel():'')+(query ? heading('SEARCH','검색 결과','앱과 회원 혜택에서 함께 찾았어요.') : heading('DISCOVER','둘러보기','지금 쓸 수 있는 SYNK 앱과 회원 혜택이에요.'))", {"n": 1}],
+    [" + '<section class=\"benefit-home-collection\"><div class=\"section-heading\"><div><p class=\"sb-eyebrow\">SYNK FOR YOU</p><h2>'+(query?'찾은 회원 혜택':'네 가지 회원 혜택')+'</h2></div><a href=\"#benefits\">회원 혜택 모두 보기 →</a></div>'+benefitCards(query)+'</section>'", " + __PORTAL_SWAP_APPS__", {"n": 1}],
+    [" + '<section><div class=\"section-heading\"><div><p class=\"sb-eyebrow\">APPS</p><h2>SYNK 앱</h2></div><a href=\"#library\">내 라이브러리 →</a></div>'+shelf()+'</section>'", " + __PORTAL_SWAP_BENEFITS__", {"n": 1}]
+  ],
+  "experiences/synk-account/platform.css": [
+    ["/* 다운로드(2026-10-13): 홈페이지 다운로드 창과 같은 「플랫폼」 포스터", "/* 다운로드(2026-10-13, 10-21 큰 글자 「PC 앱」): 홈페이지 다운로드 창과 같은 포스터", {"n": 1}],
+    [".detail-hero.dl-hero{--word:'플랫폼';--len:3;", ".detail-hero.dl-hero{--word:'PC 앱';--len:3;", {"n": 1}]
+  ]
+}

@@ -8,7 +8,7 @@ try{let parent=global;for(let i=0;i<6;i++){if(parent.SYNKPlayHost){host=parent.S
 const accountPath=global.location?.pathname?.startsWith('/try/')?'/account/client.html':'/synk-account/client.html';
 const loginHref=`${accountPath}?product=world&play=learning-hub`;
 const listeners=new Set();
-let current=host?.status()||{phase:'guest',pending:0,message:'계정에 이어 저장하려면 SYNK ID로 연결해 주세요. 현재는 이 브라우저의 체험 기록이에요.'};
+let current=host?.status()||{phase:'guest',pending:0,message:'기록을 계정에 남기려면 SYNK ID로 로그인해 주세요. 지금 기록은 이 기기에만 있어요.'};
 let readyPromise=null,accountStorage=null;
 const guest=()=>global.localStorage;
 const keyAllowed=key=>key===PLAY_WALLET_KEY||isPlayRecordKey(key);
@@ -30,10 +30,10 @@ function render(){
   }
   panel.dataset.phase=current.phase;
   const english={guest:'Sign in to keep your progress across devices.',synced:'Saved to your SYNK account.',saving:'Saving to your account…',loading:'Loading your account…',offline:'Not saved to your account yet. Retry when connected.',conflict:'Choose which progress to keep on your account page.',stopped:'Account connection ended.'};
-  label.textContent=current.message+' / '+(current.phase==='synced'&&current.rejected?'Connected. Unprocessed requests are kept on this device; other progress can still be saved.':english[current.phase]||'');
+  label.textContent=current.message+' / '+(current.phase==='synced'&&current.rejected?`Saved to your account. ${current.rejected} record${current.rejected===1?'':'s'} couldn’t be saved and stay on this device.`:english[current.phase]||'');
   action.hidden=false;
-  if(!host){action.textContent='SYNK ID로 이어 하기 · Sign in';action.href=loginHref;action.target='_top';action.onclick=null;}
-  else if(['offline','conflict','stopped'].includes(current.phase)){action.textContent=current.phase==='offline'?'저장 다시 시도':'계정에서 저장 상태 확인';action.href=loginHref;action.target='_top';action.onclick=current.phase==='offline'?event=>{event.preventDefault();void host.retry().then(()=>update(host.status())).catch(()=>update(host.status()));}:null;}
+  if(!host){action.textContent='SYNK ID로 로그인 · Sign in';action.href=loginHref;action.target='_top';action.onclick=null;}
+  else if(['offline','conflict','stopped'].includes(current.phase)){action.textContent=current.phase==='offline'?'저장 다시 시도':'계정 페이지 열기';action.href=loginHref;action.target='_top';action.onclick=current.phase==='offline'?event=>{event.preventDefault();void host.retry().then(()=>update(host.status())).catch(()=>update(host.status()));}:null;}
   else{action.hidden=true;action.removeAttribute('href');action.onclick=null;}
 }
 global.SynkPlayAccount=Object.freeze({ready,storage(){if(blocked)throw Error('PLAY_SESSION_ENDED');return host?(accountStorage||=host.storage()):guestStorage;},readRecord(key){if(blocked)throw Error('PLAY_SESSION_ENDED');if(!keyAllowed(key))throw Error('INVALID_PLAY_KEY');return host?(host.snapshot().state.records[key]??null):guestStorage.getItem(key);},status:state,subscribe(fn){listeners.add(fn);fn(state());return()=>listeners.delete(fn);},loginHref,
@@ -42,7 +42,7 @@ global.SynkPlayAccount=Object.freeze({ready,storage(){if(blocked)throw Error('PL
 });
 let unsubscribe=host?.subscribe(update);
 global.addEventListener?.('pagehide',()=>{unsubscribe?.();unsubscribe=null;});
-global.addEventListener?.('pageshow',()=>{if(host&&!unsubscribe)try{unsubscribe=host.subscribe(update);}catch{update({phase:'stopped',message:'계정 연결이 종료됐어요. SYNK ID로 다시 연결해 주세요.'});}});
+global.addEventListener?.('pageshow',()=>{if(host&&!unsubscribe)try{unsubscribe=host.subscribe(update);}catch{update({phase:'stopped',message:'로그인이 끝났어요. SYNK ID로 다시 로그인해 주세요.'});}});
 if(global.document?.readyState==='loading')document.addEventListener('DOMContentLoaded',render,{once:true});else render();
 global.addEventListener?.('online',()=>{if(host)void host.retry().catch(()=>{});});
 void ready().catch(()=>{});

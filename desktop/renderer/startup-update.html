@@ -17,11 +17,11 @@
     <div class="status-label"><span class="led" aria-hidden="true"></span><span id="startup-stage">시작 준비</span></div>
     <div class="message" aria-live="polite" aria-atomic="true">
       <h1 id="startup-title">최신 버전을 확인하고 있어요</h1>
-      <p id="startup-description">잠시만 기다려 주세요. 확인이 끝나면 이어서 시작합니다.</p>
+      <p id="startup-description">잠시만 기다려 주세요. 확인이 끝나면 바로 열려요.</p>
     </div>
     <div class="download" id="startup-progress-wrap" hidden>
       <div class="download-label"><span>다운로드</span><span class="percent" id="startup-percent">0%</span></div>
-      <progress id="startup-progress" max="100" value="0" aria-label="업데이트 다운로드"></progress>
+      <progress id="startup-progress" max="100" value="0" aria-label="업데이트 받는 중"></progress>
     </div>
     <ol class="steps" id="startup-steps" aria-label="업데이트 단계">
       <li id="startup-step-checking" aria-current="step"><span>01</span>확인</li>
@@ -31,7 +31,7 @@
     <div class="actions" id="startup-actions" hidden>
       <button class="primary" id="startup-retry" type="button" hidden>다시 시도</button>
       <button class="primary" id="startup-install" type="button" hidden>설치 파일 열기</button>
-      <button class="secondary" id="startup-open-current" type="button" hidden>현재 버전 열기</button>
+      <button class="secondary" id="startup-open-current" type="button" hidden>지금 버전 열기</button>
     </div>
   </main>
 </body>

@@ -19,7 +19,7 @@ export {createDeviceRecordsOffer,noteDeviceSignOut,noteDeviceAccount} from './de
 export {worldPosition} from './world-position-kit.mjs';
 import {classroomEndpoint,classroomReply,requestClassrooms} from './classroom-client.mjs';
 import {homeworkReply,homeworkSubmission,homeworkUnavailable} from './homework-client.mjs';
-const changed=()=>Object.assign(Error('계정 연결이 바뀌었어요.'),{code:'ACCOUNT_CHANGED'});
+const changed=()=>Object.assign(Error('로그인한 계정이 바뀌었어요.'),{code:'ACCOUNT_CHANGED'});
 const authErrors=new Set(['AUTH_REQUIRED','AUTH_SESSION_MISSING','SESSION_REVOKED','UNAUTHORIZED','ACCOUNT_UNAVAILABLE','PRODUCT_FORBIDDEN','PLATFORM_ACCOUNT_MISMATCH']);
 const routes=new Map([['bootstrap','GET'],['play/start','POST'],['play/complete','POST'],['avatar/outfit','PUT'],['wardrobe/looks','PUT'],['town/entry','GET'],['town/state','GET'],['town/sharing','POST'],['town/command','POST'],['town/presence','POST'],['enrollment/preview','POST'],['enrollment/claim','POST'],['homework','GET'],['homework/submit','POST'],['homework/key','POST'],['writing','POST'],['speaking','POST']]);
 
@@ -59,9 +59,9 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   if(nativeReady)return nativeReady;
   const expected=epoch;
   const pending=(async()=>{
-   if(typeof bridge.getEnvironment!=='function'||typeof bridge.onAuthChanged!=='function'||typeof bridge.authSignIn!=='function'||typeof bridge.authSignOut!=='function')throw Object.assign(Error('WORLD 앱의 계정 연결을 확인해 주세요.'),{code:'INVALID_BRIDGE'});
+   if(typeof bridge.getEnvironment!=='function'||typeof bridge.onAuthChanged!=='function'||typeof bridge.authSignIn!=='function'||typeof bridge.authSignOut!=='function')throw Object.assign(Error('PC 앱을 최신 버전으로 업데이트한 뒤 다시 열어 주세요.'),{code:'INVALID_BRIDGE'});
    const environment=await bridge.getEnvironment();guard(expected);
-   if(environment?.clientId!=='world')throw Object.assign(Error('WORLD 앱의 계정 연결을 확인해 주세요.'),{code:'INVALID_BRIDGE'});
+   if(environment?.clientId!=='world')throw Object.assign(Error('PC 앱을 최신 버전으로 업데이트한 뒤 다시 열어 주세요.'),{code:'INVALID_BRIDGE'});
    // 「우리 반 수업」은 본체가 classroom 경로를 알릴 때만 연다. 그 경로가 없는 옛 PC 앱에서는 칸을 숨긴다.
    nativeClassroom=Array.isArray(environment.worldRoutes)&&environment.worldRoutes.includes('classroom');
    // 「이번 주 과제」도 같다: 본체가 읽기·내기 두 경로를 다 알릴 때만 칸을 연다.
@@ -85,7 +85,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   const client=clientFor(expected);
   const data=await client.load();guard(expected);if(read!==verification)throw changed();
   const id=data.account?.synk_user_id;
-  if(data.ok!==true||typeof id!=='string'||!id||data.account.status!=='active')throw Object.assign(Error('활성화된 SYNK ID를 확인해 주세요.'),{code:'ACCOUNT_UNAVAILABLE'});
+  if(data.ok!==true||typeof id!=='string'||!id||data.account.status!=='active')throw Object.assign(Error('이 SYNK ID는 지금 쓸 수 없어요. 다른 계정으로 로그인해 주세요.'),{code:'ACCOUNT_UNAVAILABLE'});
   if(!native)entry.assertAccount(id);if(owner&&id!==owner||native&&id!==nativeAccountId){clear();throw changed();}owner=id;
   if(currentAccount&&gameBinding(currentAccount)!==gameBinding(data))stopGames();
   currentSessionId=data.sessions?.find(s=>s.current&&!s.revoked)?.id||null;currentAccount=data;verifiedClient=client;return true;
@@ -100,7 +100,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   }
   const expected=epoch;entry.capture(storage);entry.restore(storage);guard(expected);
   if(entry.isCancelled())return false;
-  if(!config.configured||!config.clients.world.clientId||!config.clients.world.redirectUri)throw Object.assign(Error('이 WORLD의 SYNK ID 공개 연결 설정을 확인해 주세요.'),{code:'AUTH_CONFIG'});
+  if(!config.configured||!config.clients.world.clientId||!config.clients.world.redirectUri)throw Object.assign(Error('지금은 로그인을 시작할 수 없어요. 잠시 뒤 다시 시도해 주세요.'),{code:'AUTH_CONFIG'});
   const url=new URL(getUrl());
   if(url.searchParams.has('code')||url.searchParams.has('error')){
    try{pendingExchange=consumeCallback({config,product:'world',url:url.href,storage,now:now()});}
@@ -196,7 +196,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   const accept=(data,ok,status)=>{
    guard(expected);
    if(status===401||authErrors.has(data?.error?.code)){clear();forgetSession();}
-   if(ok&&path!=='town/sharing'&&!path.startsWith('enrollment/')&&data?.accountId!==owner)throw Object.assign(Error('다른 계정의 응답을 적용하지 않았어요.'),{code:'ACCOUNT_MISMATCH'});
+   if(ok&&path!=='town/sharing'&&!path.startsWith('enrollment/')&&data?.accountId!==owner)throw Object.assign(Error('다른 계정의 정보라서 반영하지 않았어요.'),{code:'ACCOUNT_MISMATCH'});
    if(ok&&data.binding){const next=data.binding;if(townBinding&&(next.classId!==townBinding.classId||Number(next.sharing?.revision)<Number(townBinding.sharing?.revision)||Number(next.membershipRevision)<Number(townBinding.membershipRevision)||next.sharing?.revision===townBinding.sharing?.revision&&townBinding.sharing?.enabled===false&&next.sharing?.enabled===true))throw Object.assign(Error('TOWN_SNAPSHOT_CHANGED'),{code:'TOWN_SNAPSHOT_CHANGED'});townBinding=next;}
    if(ok&&path.startsWith('town/')&&Number.isSafeInteger(data.state?.revision)){if(data.state.revision<townStateRevision)throw Object.assign(Error('TOWN_SNAPSHOT_CHANGED'),{code:'TOWN_SNAPSHOT_CHANGED'});townStateRevision=data.state.revision;}
    return {ok,status,json:async()=>{guard(expected);return data;}};
@@ -245,9 +245,9 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   try{return homeworkReply(data,response.status);}catch(error){if(homeworkUnavailable(error))return {classes:[],emptyReason:'UNAVAILABLE'};throw error;}
  }
  async function readHomeworkKey({classId,week,kind}){
-  if(!/^[0-9a-f-]{36}$/i.test(classId||'')||!Number.isInteger(week)||week<1||week>8||!['reading','writing'].includes(kind))throw new TypeError('과제 정답 요청을 확인해 주세요.');
+  if(!/^[0-9a-f-]{36}$/i.test(classId||'')||!Number.isInteger(week)||week<1||week>8||!['reading','writing'].includes(kind))throw new TypeError('과제 정답을 열 수 없어요. 과제를 다시 열어 주세요.');
   const response=await request('homework/key',{method:'POST',body:JSON.stringify({classId,week,kind})}),data=await response.json();
-  if(!response.ok||data.ok!==true)throw Object.assign(Error('제출한 과제의 정답을 확인하지 못했어요.'),{code:data.error?.code||'HOMEWORK_KEY_UNAVAILABLE',status:response.status});
+  if(!response.ok||data.ok!==true)throw Object.assign(Error('낸 과제의 정답을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.'),{code:data.error?.code||'HOMEWORK_KEY_UNAVAILABLE',status:response.status});
   return data.key;
  }
  async function courseRequest(operation,params={}){
@@ -295,7 +295,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
    const client=clientFor(expected);
    try{await client.setLearning(enabled,expectedRevision);guard(expected);await verify(expected);guard(expected);return this.preferences();}
    catch(error){if(authErrors.has(error.code)){clear();forgetSession();}throw error;}},
-  async enrollmentRequest(operation,body){if(!['preview','claim'].includes(operation))throw new TypeError('Unknown enrollment operation');const response=await request(`enrollment/${operation}`,{method:'POST',body:JSON.stringify(body)});const data=await response.json();if(!response.ok||data.ok===false)throw Object.assign(Error(data.error?.message||'교실 연결을 확인하지 못했어요.'),{code:data.error?.code||'ENROLLMENT_UNAVAILABLE',status:response.status});return data;},
+  async enrollmentRequest(operation,body){if(!['preview','claim'].includes(operation))throw new TypeError('Unknown enrollment operation');const response=await request(`enrollment/${operation}`,{method:'POST',body:JSON.stringify(body)});const data=await response.json();if(!response.ok||data.ok===false)throw Object.assign(Error(data.error?.message||'반 정보를 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.'),{code:data.error?.code||'ENROLLMENT_UNAVAILABLE',status:response.status});return data;},
   stop(){clear();closed=true;unsubscribe?.();unsubscribe=null;}});
 }
 

@@ -1,0 +1,6 @@
+{
+  "//": "총괄의 P1 고침(nextStep)이 늦게 정해진 로그인 상태를 놓치던 것(after4 A1·A8: 로그인됐는데 「로그인하면…」) — 플랫폼이 로그인 상태를 새로 받으면 계정 라이브러리도 다시 그리게 한다. summary()·nextStep()은 손대지 않음",
+  "experiences/synk-account/src/platform.mjs": [
+    ["entry.setAttribute('aria-label',state.status==='signed-in'?'SYNK ID 계정 관리':'SYNK ID로 로그인');render();", "entry.setAttribute('aria-label',state.status==='signed-in'?'SYNK ID 계정 관리':'SYNK ID로 로그인');render();continuity?.render?.();", {"n": 1}]
+  ]
+}

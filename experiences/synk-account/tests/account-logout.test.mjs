@@ -47,20 +47,20 @@ async function viewFixture(t, { current = true, oldCallback = false, otherFailur
 }
 
 test('current logout delegates to the host without requiring successful server revocation', async t => {
-  const page = await viewFixture(t);page.button('이 제품에서 로그아웃').onclick();await settle();
+  const page = await viewFixture(t);page.button('로그아웃').onclick();await settle();
   assert.deepEqual(page.calls, [['load'], ['logout', undefined, { scope: 'current', sessionId: 'synthetic-current' }]]);
   assert.equal(page.root.hidden, true);assert.deepEqual(page.notices, [['local closed; server status belongs to host']]);
 });
 test('current session row and all-products exit use the same host contract', async t => {
   const page = await viewFixture(t);page.button('종료').onclick();await settle();
   assert.equal(page.calls[1][2].scope, 'current');assert.equal(page.root.hidden, true);
-  const all = await viewFixture(t);all.button('모든 제품의 로그인 종료').onclick();await settle();
+  const all = await viewFixture(t);all.button('모든 SYNK 앱에서 로그아웃').onclick();await settle();
   assert.equal(all.calls[1][2].scope, 'all');assert.equal(all.root.hidden, true);
 });
 test('missing server session and legacy preview callbacks still close locally', async t => {
-  const page = await viewFixture(t, { current: false });page.button('이 제품에서 로그아웃').onclick();await settle();
+  const page = await viewFixture(t, { current: false });page.button('로그아웃').onclick();await settle();
   assert.equal(page.calls[1][2].sessionId, null);assert.equal(page.root.hidden, true);
-  const legacy = await viewFixture(t, { oldCallback: true });legacy.button('모든 제품의 로그인 종료').onclick();await settle();
+  const legacy = await viewFixture(t, { oldCallback: true });legacy.button('모든 SYNK 앱에서 로그아웃').onclick();await settle();
   assert.deepEqual(legacy.calls[1], ['legacy-logout', undefined]);assert.equal(legacy.root.hidden, true);
 });
 test('ending another device keeps this account open and reports remote failure', async t => {
@@ -100,7 +100,7 @@ async function clientFixture({ reply = 'offline', sessions = fixture().sessions,
     emit: async next => { state = next;if (state.signedIn && state.account) account.account = state.account;listener?.(state);await settle(); } };
 }
 test('actual web client clears local credentials when current/all server logout is offline', async () => {
-  for (const label of ['이 제품에서 로그아웃', '모든 제품의 로그인 종료']) {
+  for (const label of ['로그아웃', '모든 SYNK 앱에서 로그아웃']) {
     const page = await clientFixture();page.button(label).onclick();await settle();
     assert.equal(page.values.has('synk.oauth.session.platform'), false);assert.equal(page.root.hidden, true);
     assert.match(page.notice().textContent, /서버의 로그인 종료는 연결 후 다시 확인/);assert.match(page.notice().className, /error/);
@@ -108,20 +108,20 @@ test('actual web client clears local credentials when current/all server logout 
 });
 test('actual web client distinguishes incomplete Auth revocation and no current server session', async () => {
   for (const options of [{ reply: 'partial' }, { sessions: [] }]) {
-    const page = await clientFixture(options);page.button('이 제품에서 로그아웃').onclick();await settle();
+    const page = await clientFixture(options);page.button('로그아웃').onclick();await settle();
     assert.equal(page.values.has('synk.oauth.session.platform'), false);assert.match(page.notice().textContent, /서버의 로그인 종료는 연결 후 다시 확인/);
   }
 });
 test('actual web client keeps storage failure visible and reports completed revocation accurately', async () => {
-  const blocked = await clientFixture({ removeFailure: true });blocked.button('이 제품에서 로그아웃').onclick();await settle();
+  const blocked = await clientFixture({ removeFailure: true });blocked.button('로그아웃').onclick();await settle();
   assert.equal(blocked.root.hidden, true);assert.equal(blocked.values.has('synk.oauth.session.platform'), true);assert.match(blocked.notice().textContent, /브라우저 저장을 지우지 못/);
-  const complete = await clientFixture({ reply: 'complete' });complete.button('모든 제품의 로그인 종료').onclick();await settle();
+  const complete = await clientFixture({ reply: 'complete' });complete.button('모든 SYNK 앱에서 로그아웃').onclick();await settle();
   assert.equal(complete.root.hidden, true);assert.match(complete.notice().textContent, /모든 제품에 로그인 종료를 요청/);assert.doesNotMatch(complete.notice().className, /error/);
 });
 test('actual desktop client delegates current logout and clears locally after a thrown global request', async () => {
-  const current = await clientFixture({ desktop: true });current.button('이 제품에서 로그아웃').onclick();await settle();
+  const current = await clientFixture({ desktop: true });current.button('로그아웃').onclick();await settle();
   assert.deepEqual(current.calls, ['load', 'atlasSummary', 'authSignOut']);assert.equal(current.root.hidden, true);assert.match(current.notice().textContent, /서버의 로그인 종료는 연결 후 다시 확인/);
-  const all = await clientFixture({ desktop: true, bridgeThrow: true });all.button('모든 제품의 로그인 종료').onclick();await settle();
+  const all = await clientFixture({ desktop: true, bridgeThrow: true });all.button('모든 SYNK 앱에서 로그아웃').onclick();await settle();
   assert.deepEqual(all.calls, ['load', 'atlasSummary', 'revokeAll', 'authSignOut']);assert.equal(all.root.hidden, true);assert.match(all.notice().textContent, /서버의 로그인 종료는 연결 후 다시 확인/);
 });
 
@@ -181,20 +181,20 @@ async function portalFixture(t, { server = 'offline', clear = true, preview = fa
   return { ...page, calls, cleanupAccounts, saved: () => saved, notice: () => page.document.getElementById('notice') };
 }
 test('actual portal forwards global revocation but SDK local cleanup still runs when server is offline', async t => {
-  const page = await portalFixture(t);page.button('모든 제품의 로그인 종료').onclick();await settle();
+  const page = await portalFixture(t);page.button('모든 SYNK 앱에서 로그아웃').onclick();await settle();
   assert.deepEqual(page.calls, ['all', 'sdk:local']);assert.equal(page.saved(), null);assert.equal(page.root.hidden, true);
   assert.match(page.notice().textContent, /서버의 로그인 종료는 연결 후 다시 확인/);
 });
 test('actual portal separates server completion, local storage failure and synthetic preview', async t => {
-  const complete = await portalFixture(t, { server: 'complete' });complete.button('모든 제품의 로그인 종료').onclick();await settle();
+  const complete = await portalFixture(t, { server: 'complete' });complete.button('모든 SYNK 앱에서 로그아웃').onclick();await settle();
   assert.match(complete.notice().textContent, /모든 제품에 로그인 종료를 요청/);assert.doesNotMatch(complete.notice().className, /error/);
-  const blocked = await portalFixture(t, { clear: false });blocked.button('이 제품에서 로그아웃').onclick();await settle();
+  const blocked = await portalFixture(t, { clear: false });blocked.button('로그아웃').onclick();await settle();
   assert.notEqual(blocked.saved(), null);assert.match(blocked.notice().textContent, /로그인 저장이 지워졌는지 확인하지 못/);
-  const example = await portalFixture(t, { preview: true });example.button('모든 제품의 로그인 종료').onclick();await settle();
+  const example = await portalFixture(t, { preview: true });example.button('모든 SYNK 앱에서 로그아웃').onclick();await settle();
   assert.match(example.notice().textContent, /실제 다른 제품의 로그인은 종료하지 않았/);
 });
 test('portal logout cannot clear a newer account received while revocation was pending', async t => {
-  const page = await portalFixture(t, { switchAccount: true });page.button('모든 제품의 로그인 종료').onclick();await settle();
+  const page = await portalFixture(t, { switchAccount: true });page.button('모든 SYNK 앱에서 로그아웃').onclick();await settle();
   assert.deepEqual(page.calls, ['all']);assert.deepEqual(page.cleanupAccounts, [], 'SDK cleanup must not sign out the newer account received during revocation');
   assert.equal(page.saved().user.id, 'synthetic-new-user');assert.equal(page.root.hidden, false);
   const text = node => [node.textContent, ...node.children.map(text)].join(' ');

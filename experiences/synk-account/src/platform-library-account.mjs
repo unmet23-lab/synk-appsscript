@@ -22,7 +22,7 @@ export function platformLibraryAccount({ host, native=false, onLogin=()=>{}, onM
   async function retryNativeIdentity(){
     if(closed)return {...current};
     if(nativeRetry)return nativeRetry;
-    if(typeof host.accountRequest!=='function')throw Object.assign(new Error('저장된 계정 연결을 확인하지 못했어요. 잠시 뒤 다시 시도해 주세요.'),{code:'AUTH_REQUEST_UNAVAILABLE',retryable:true});
+    if(typeof host.accountRequest!=='function')throw Object.assign(new Error('저장된 로그인을 확인하지 못했어요. 잠시 뒤 다시 시도해 주세요.'),{code:'AUTH_REQUEST_UNAVAILABLE',retryable:true});
     const task=nativeAction(()=>host.accountRequest('load',{}),true);nativeRetry=task;
     try{return await task;}finally{if(nativeRetry===task)nativeRetry=null;}
   }
@@ -37,11 +37,11 @@ export function platformLibraryAccount({ host, native=false, onLogin=()=>{}, onM
     status:()=>({...current}),
     async request(operation,params){
       const mapped={personalLoad:'platformLoad',personalSave:'platformSave',personalDelete:'platformDelete'}[operation];
-      if(!mapped||closed||!current.signedIn)throw Object.assign(new Error('플랫폼 계정 연결을 다시 확인해 주세요.'),{code:'AUTH_REQUIRED'});
+      if(!mapped||closed||!current.signedIn)throw Object.assign(new Error('로그인이 끝났어요. 다시 로그인해 주세요.'),{code:'AUTH_REQUIRED'});
       const owner=current.accountId,generation=current.sessionGeneration;
       const result=await (native?host.accountRequest(mapped,params):host.request(mapped,params));
       if(closed||!current.signedIn||owner!==current.accountId||generation!==current.sessionGeneration)throw Object.assign(new Error('계정 연결이 바뀌었어요.'),{code:'ACCOUNT_CHANGED'});
-      if(result?.ok===false)throw Object.assign(new Error(result.error?.message||'계정 연결을 확인해 주세요.'),result.error||{},Number.isSafeInteger(result.revision)?{revision:result.revision}:{});
+      if(result?.ok===false)throw Object.assign(new Error(result.error?.message||'계정 서버가 요청을 처리하지 못했어요. 잠시 뒤 다시 시도해 주세요.'),result.error||{},Number.isSafeInteger(result.revision)?{revision:result.revision}:{});
       return result?.data||result;
     },
     async signIn(){
@@ -52,7 +52,7 @@ export function platformLibraryAccount({ host, native=false, onLogin=()=>{}, onM
       onLogin();return {...current};
     },
     async retryConnection(){if(!native||closed||current.signedIn||current.error?.retryable!==true)return {...current};return retryNativeIdentity();},
-    async signOut(){if(native)return nativeAction(()=>host.authSignOut());onManage();return {ok:false,message:'계정 관리에서 로그아웃을 완료해 주세요.'};},
+    async signOut(){if(native)return nativeAction(()=>host.authSignOut());onManage();return {ok:false,message:'로그아웃은 「SYNK ID 관리」 화면에서 해 주세요.'};},
     dispose(){closed=true;epoch++;unsubscribe?.();},
   };
 }

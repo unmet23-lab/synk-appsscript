@@ -288,7 +288,7 @@ export function createDeviceRecordsOffer({storage=globalThis.localStorage,learni
    saveDeviceRecordsDecision(storage,job.owner,'kept',now(),{through:job.startedAt});
    return done(job,'kept',lifeNonzero(carry.pending.life)||carry.pending.learning>0?T.pendingKept:T.kept);}
   status(T.moving,true);
-  const guard=()=>{if(current!==job||hangulPort()!==job.port||accountOwner&&accountOwner()!==job.owner)throw Error('계정 연결이 바뀌었어요.');};
+  const guard=()=>{if(current!==job||hangulPort()!==job.port||accountOwner&&accountOwner()!==job.owner)throw Error('로그인한 계정이 바뀌었어요.');};
   const result=await applyDeviceRecords(job.plan,{storage,accountAnswer,setAccountAnswer,hangulPort:job.port,guard,importLife,importLearning});
   if(current!==job)return null;
   // 「이미 있음」이 앞 시도 몫이면(앞에서 옮겼거나, 더하고 확인만 못 했다가 이번에 오류 없이 끝났다) 옮긴 것으로 본다.

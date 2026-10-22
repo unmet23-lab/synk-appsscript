@@ -9,28 +9,28 @@ const RATE_ACTIONS = { login: '로그인', signup: '가입 메일', recover: '�
 const RATE_CODES = new Set(['over_email_send_rate_limit', 'over_sms_send_rate_limit', 'over_request_rate_limit', 'rate_limit_exceeded']);
 export function authErrorMessage(error) {
   if (error?.code === 'GOOGLE_CALLBACK_INCOMPLETE' && error.reason === 'identity_already_exists')
-    return '이 Google 계정은 다른 SYNK 계정에 연결되어 있어요. 사용하던 계정으로 로그인하거나 계정 지원에 문의해 주세요.';
+    return '이 Google 계정은 다른 SYNK 계정에 연결돼 있어요. 그 계정으로 로그인하거나 hello@synk.im으로 문의해 주세요.';
   const messages = {
-    invalid_credentials: '이메일 또는 비밀번호가 맞지 않아요. 입력 내용을 확인해 주세요.',
+    invalid_credentials: '이메일 또는 비밀번호가 맞지 않아요. 다시 입력해 주세요.',
     email_not_confirmed: '이메일 확인이 아직 끝나지 않았어요. 받은 메일의 확인 버튼을 누른 뒤 다시 로그인해 주세요.',
     weak_password: '비밀번호가 너무 단순해요. 8자 이상으로 영문·숫자·기호를 섞어 주세요.',
     same_password: '현재 비밀번호와 다른 새 비밀번호를 입력해 주세요.',
-    email_address_invalid: '이메일 주소의 형식을 확인해 주세요.',
+    email_address_invalid: '이메일 주소 형식이 맞지 않아요. 다시 입력해 주세요.',
     user_already_exists: '이미 가입한 이메일이에요. 로그인하거나 비밀번호 찾기를 이용해 주세요.',
     email_exists: '이미 가입한 이메일이에요. 로그인하거나 비밀번호 찾기를 이용해 주세요.',
-    signup_disabled: '지금은 새 계정 가입을 받지 못하고 있어요. 잠시 후 다시 확인해 주세요.',
+    signup_disabled: '지금은 새 가입을 받지 않아요. 잠시 뒤 다시 시도해 주세요.',
     AUTH_RECOVERY_REQUIRED: '비밀번호 재설정 링크를 먼저 열어 주세요. 새 링크가 필요하면 가입한 이메일로 요청해 주세요.',
     AUTH_RECOVERY_CALLBACK: '이 재설정 링크는 만료됐거나 이 브라우저에서 열 수 없어요. 아래에서 재설정 메일을 다시 요청해 주세요.',
-    GOOGLE_CALLBACK_INCOMPLETE: 'Google 로그인을 완료하지 못했어요. 취소했다면 원할 때 Google로 다시 계속해 주세요.',
+    GOOGLE_CALLBACK_INCOMPLETE: 'Google 로그인을 마치지 못했어요. 취소했다면 원할 때 「Google로 계속하기」를 다시 눌러 주세요.',
   };
   if (messages[error?.code]) return messages[error.code];
   if (['otp_expired', 'flow_state_expired', 'flow_state_not_found', 'bad_code_verifier', 'AUTH_CALLBACK_INCOMPLETE'].includes(error?.code))
-    return '확인 링크가 만료되었거나 이 브라우저에서 처리할 수 없어요. 가입을 시작한 브라우저에서 메일을 열어 주세요. 이메일 확인을 이미 마쳤다면 이메일과 비밀번호로 로그인해 주세요.';
+    return '확인 링크가 만료됐거나 이 브라우저에서 열 수 없어요. 가입을 시작한 브라우저에서 메일을 열어 주세요. 이메일 확인을 이미 마쳤다면 이메일과 비밀번호로 로그인해 주세요.';
   const message = typeof error?.message === 'string' ? error.message : '';
   if (/invalid login credentials/i.test(message)) return messages.invalid_credentials;
   if (/email not confirmed/i.test(message)) return messages.email_not_confirmed;
-  if (/fetch|network|timeout|timed out/i.test(message)) return '연결 응답을 받지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.';
-  if (error?.status >= 500) return '계정 서버가 잠시 응답하지 못하고 있어요. 잠시 후 다시 시도해 주세요.';
+  if (/fetch|network|timeout|timed out/i.test(message)) return '인터넷 연결이 불안정해 응답을 못 받았어요. 연결되면 다시 시도해 주세요.';
+  if (error?.status >= 500) return '계정 서버가 잠시 응답하지 않아요. 잠시 뒤 다시 시도해 주세요.';
   return /[가-힣]/.test(message) ? message : '요청을 마치지 못했어요. 입력 내용을 확인하고 다시 시도해 주세요.';
 }
 export function cleanAuthCallbackUrl(value) {
@@ -60,7 +60,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   };
   if (preview) $('preview-banner').hidden = false;
   $('learning-link').href = config.learningUrl;
-  if (!config.configured) { $('setup').hidden = false;notice('계정 서비스 설정 전 · 기본 학습은 계속 사용할 수 있어요.');return; }
+  if (!config.configured) { $('setup').hidden = false;notice('지금은 로그인할 수 없어요. 기본 학습은 로그인 없이 할 수 있어요.');return; }
   let mode = new URL(location.href).searchParams.get('view') === 'reset' ? 'reset' : 'login', session = null, generation = 0, entryId = 0, authOperation = false, consentOperation = null, view = null, details = null, subject = null, closed = false, initializing = true, authVersion = 0, callbackBlocked = false;
   const cooldowns = new Map(), feedbacks = new Map();let cooldownTimer = null, logoutPending = null, signedOutSubject = null;
   let automaticAuthorizationAttempted = false;
@@ -94,7 +94,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     if ([...cooldowns.keys()].some(scope => remaining(scope) > 0)) cooldownTimer = cooldownClock.setTimeout(tickCooldowns, 1000);
   }
   function clearCooldowns() { if (cooldownTimer !== null) cooldownClock.clearTimeout(cooldownTimer);cooldownTimer = null;cooldowns.clear();feedbacks.clear();noticeScope = null;authFeedback.hidden = consentFeedback.hidden = true;renderControls(); }
-  const bounded = async promise => { let timer;try { return await Promise.race([promise, new Promise((_, reject) => { timer = cooldownClock.setTimeout(() => reject(Object.assign(new Error('연결을 확인하는 데 시간이 걸려요. 페이지를 새로고침한 뒤 다시 확인해 주세요.'), { code: 'AUTH_TIMEOUT' })), 12000); })]); } finally { cooldownClock.clearTimeout(timer); } };
+  const bounded = async promise => { let timer;try { return await Promise.race([promise, new Promise((_, reject) => { timer = cooldownClock.setTimeout(() => reject(Object.assign(new Error('연결을 확인하는 데 시간이 걸려요. 페이지를 새로 고친 뒤 다시 시도해 주세요.'), { code: 'AUTH_TIMEOUT' })), 12000); })]); } finally { cooldownClock.clearTimeout(timer); } };
   const report = (error, scope = mode) => {
     if (closed || error?.code === 'ACCOUNT_CHANGED') return;
     const limited = authRateLimit(error);
@@ -124,8 +124,8 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     feedbacks.set(mode, { text: callbackWaitText, kind: 'pending' });notice(callbackWaitText, false, reveal, 'pending');renderControls();
   };
   const setMode = value => {
-    mode = value;$('auth-heading').textContent = ({ login: '다시 만나서 반가워요.', signup: '나만의 SYNK를 시작해요.', recover: '비밀번호를 다시 정해요.', reset: '새 비밀번호를 정해 주세요.' })[mode];
-    $('auth-copy').textContent = mode === 'recover' ? '가입한 이메일로 재설정 링크를 보내 드려요.' : mode === 'signup' ? '이메일로 일반 계정을 만들어요. 학생 권한은 소속 확인 뒤 연결돼요.' : mode === 'reset' ? '새 비밀번호를 저장하면 내 계정으로 계속 이용할 수 있어요.' : '한 번 로그인하면 등록된 SYNK 서비스에 같은 계정으로 연결해요. 서비스별 이용 권한은 따로 확인해요.';
+    mode = value;$('auth-heading').textContent = ({ login: '다시 만나서 반가워요.', signup: 'SYNK 계정을 만들어요.', recover: '비밀번호를 다시 정해요.', reset: '새 비밀번호를 정해 주세요.' })[mode];
+    $('auth-copy').textContent = mode === 'recover' ? '가입한 이메일로 재설정 링크를 보내 드려요.' : mode === 'signup' ? '이메일과 비밀번호로 가입해요. 비밀번호는 8자 이상이에요.' : mode === 'reset' ? '새 비밀번호를 저장하면 내 계정으로 계속 이용할 수 있어요.' : '이메일과 비밀번호, 또는 Google 계정으로 로그인해요.';
     $('password-label').hidden = mode === 'recover';$('password').required = mode !== 'recover';$('password').autocomplete = mode === 'login' ? 'current-password' : 'new-password';
     $('email').closest('label').hidden = mode === 'reset';$('email').required = mode !== 'reset';$('signup-choices').hidden = mode !== 'signup';
     google?.authMode(mode);
@@ -144,7 +144,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     $('consent-name').textContent = destination.origin === 'https://synk.im' && destination.pathname === '/care/' ? 'SYNK 플레저' : PRODUCTS[product] || 'SYNK 서비스';
     $('consent-destination').textContent = details.redirect_uri;
     $('scopes').replaceChildren(...(details.scope || '').split(' ').filter(Boolean).map(scope => { const li = document.createElement('li');li.textContent = ({ openid: '계정을 구분하는 정보', email: '이메일 주소', profile: '기본 프로필' })[scope] || scope;return li; }));
-    $('consent').hidden = false;notice(preview ? '제품과 연결할 정보를 확인한 뒤 선택해 주세요.' : automaticAuthorizationAttempted ? '계정과 연결할 서비스를 확인한 뒤 다시 연결하거나 취소해 주세요.' : '로그인한 SYNK 계정으로 서비스를 연결하고 있어요…');
+    $('consent').hidden = false;notice(preview ? '제품과 연결할 정보를 확인한 뒤 선택해 주세요.' : automaticAuthorizationAttempted ? '연결할 앱을 보고 「연결하기」나 「취소」를 눌러 주세요.' : '로그인한 계정으로 앱에 연결하고 있어요…');
     // Only the registered first-party request may proceed without a second click.
     // A failure, account change or duplicate SDK event never starts an auto-retry.
     if (!preview && !automaticAuthorizationAttempted) {
@@ -177,7 +177,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     // An old stored session cannot authorize a callback whose exchange is still unresolved.
     if (hadCallback && !initializationFinished) { callbackEntryPending = true;$('auth-panel').hidden = false;setMode(mode);return; }
     callbackEntryPending = false;
-    if (!session || mode === 'reset') { $('auth-panel').hidden = false;setMode(mode);notice(mode === 'reset' ? '메일에서 확인한 계정의 새 비밀번호를 저장해 주세요.' : '이메일로 로그인하거나 처음이라면 가입해 주세요.');return; }
+    if (!session || mode === 'reset') { $('auth-panel').hidden = false;setMode(mode);notice(mode === 'reset' ? '메일에서 확인한 계정의 새 비밀번호를 저장해 주세요.' : '로그인하거나, 처음이라면 회원가입해 주세요.');return; }
     $('auth-panel').hidden = true;
     notice('로그인 정보를 확인하고 내 계정을 불러오고 있어요…', false, false, 'pending');
     try {
@@ -194,7 +194,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
           const accountGet=target.origin===expected.origin&&target.pathname==='/functions/v1/synk-account'&&!target.search&&(!options.method||options.method==='GET');
           return fetch(url,accountGet?{...options,headers:{...options.headers,...conversionHeaders}}:options);
         } });
-      view = createAccountView({ client, product: 'platform', guard: check, notice, preview, logout: (note, request) => logout(note, request, check) });await view.load();check();notice(preview ? '합성 계정 화면 예시 · 실제 로그인이나 서버 연결이 아닙니다.' : '로그인됐어요. 아래에서 서비스를 이어 쓰거나 내 계정을 관리할 수 있어요.', false, false, 'success');
+      view = createAccountView({ client, product: 'platform', guard: check, notice, preview, logout: (note, request) => logout(note, request, check) });await view.load();check();notice(preview ? '합성 계정 화면 예시 · 실제 로그인이나 서버 연결이 아니에요.' : '로그인됐어요. 아래에서 내 계정을 관리할 수 있어요.', false, false, 'success');
       if ($('account-next')) $('account-next').hidden = preview || callbackBlocked;
       google.showAccount(!preview);
     } catch (error) {
@@ -238,7 +238,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
         result => { sdkSettled = true;return result; }, error => { sdkSettled = true;throw error; });
       // Keep this tab's sign-in locked until the actual SDK promise settles, even after a timeout.
       try { await bounded(sdkCleanup); } catch {
-        if (!sdkSettled && current()) notice('현재 화면은 닫았지만 브라우저의 로그인 종료가 아직 끝나지 않았어요. 이 창을 닫고 연결 후 다시 확인해 주세요.', true);
+        if (!sdkSettled && current()) notice('현재 화면은 닫았지만 브라우저의 로그인 종료가 아직 끝나지 않았어요. 이 창을 닫았다가 다시 열어 로그아웃됐는지 봐 주세요.', true);
         await sdkCleanup.catch(() => {});
       }
       if (current()) {
@@ -263,7 +263,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     setMode(button.dataset.view);
     if (hadCallback && !initializationFinished) { showCallbackWaiting();return; }
     if (cooldowns.has(mode)) { notice(cooldownMessage(mode), true);noticeScope = mode;tickCooldowns(); }
-    else notice('입력 내용을 확인한 뒤 원하는 요청을 선택해 주세요.');
+    else notice(({ signup: '가입할 이메일과 비밀번호를 넣어 주세요.', recover: '가입한 이메일을 넣으면 비밀번호 재설정 메일을 보내요.' })[mode] || '이메일과 비밀번호를 넣어 주세요.');
   }; });
   $('auth-form').onsubmit = async event => {
     event.preventDefault();if (closed || authOperation || remaining(mode) > 0) return;
@@ -289,7 +289,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       if (requestMode === 'signup') void signupConversion?.rememberEmail(result, requestStartedAt);
       $('password').value = '';
       if (requestMode === 'recover' || requestMode === 'signup' && !result.data?.session) {
-        const text = `${requestMode === 'signup' ? '가입 확인 메일을 요청했어요.' : '비밀번호 재설정 메일을 요청했어요.'} 메일함에서 안내를 확인해 주세요. 메일이 보이지 않으면 스팸함도 확인해 주세요.`;
+        const text = `${requestMode === 'signup' ? '가입 확인 메일을 요청했어요.' : '비밀번호 재설정 메일을 요청했어요.'} 메일함에서 메일을 열고 안에 있는 단추를 눌러 주세요. 안 보이면 스팸함도 봐 주세요.`;
         feedbacks.set(requestMode, { text, kind: 'success' });notice(text, false, true, 'success');
       }
       else if (requestMode === 'reset') {

@@ -14,13 +14,13 @@ test('no desktop updater capability hides both entry points without requests',as
 });
 test('settings and downloads share current version, available release and bounded progress',async()=>{
   const f=await fixture();await f.controller.ready;
-  for(const view of ['settings','downloads'])assert.equal(f.element('platform-update-'+view+'-version').textContent,'현재 v0.4.4 · Preview');
+  for(const view of ['settings','downloads'])assert.equal(f.element('platform-update-'+view+'-version').textContent,'지금 v0.4.4 · 시험판');
   f.emit({ok:true,state:'available',currentVersion:'0.4.4',latestVersion:'0.4.5'});
-  assert.match(f.element('platform-update-settings-status').textContent,/v0.4.5 Preview/);assert.equal(f.element('platform-update-downloads-download').hidden,false);
+  assert.match(f.element('platform-update-settings-status').textContent,/v0\.4\.5/);assert.equal(f.element('platform-update-downloads-download').hidden,false);
   f.emit({ok:true,state:'downloading',progress:39.8});assert.equal(f.element('platform-update-settings-percent').textContent,'40%');assert.equal(f.element('platform-update-downloads-progress').value,39.8);assert.equal(f.element('platform-update-settings-check').disabled,true);
   await f.click('check');await f.click('download');assert.deepEqual(f.calls,[]);
   f.emit({ok:true,state:'downloading',progress:500});assert.equal(f.element('platform-update-settings-progress').value,100);
-  f.emit({ok:true,state:'current'});assert.equal(f.element('platform-update-settings-progress-wrap').hidden,true);assert.match(f.element('platform-update-settings-status').textContent,/최신 Preview/);
+  f.emit({ok:true,state:'current'});assert.equal(f.element('platform-update-settings-progress-wrap').hidden,true);assert.match(f.element('platform-update-settings-status').textContent,/최신 버전이에요/);
 });
 test('subscription state wins over a stale initial status and late action replies',async()=>{
   const initial=deferred(),check=deferred(),f=await fixture({overrides:{updateStatus:()=>initial.promise,checkForUpdate:()=>check.promise}});
@@ -43,31 +43,31 @@ test('installation requires ready status and explicit draft-exit acceptance befo
 });
 test('safe retry copy covers offline and package errors without rendering raw service messages',async()=>{
   const f=await fixture({overrides:{checkForUpdate:async()=>{throw Error('private network details');}}});await f.controller.ready;await f.click('check');
-  assert.match(f.element('platform-update-settings-status').textContent,/인터넷 연결/);assert.match(f.element('platform-update-settings-status').textContent,/현재 앱은 계속/);assert.doesNotMatch(f.element('platform-update-settings-status').textContent,/private/);assert.equal(f.element('platform-update-settings-check').disabled,false);
-  for(const [code,expected] of [['UPDATE_STORAGE_FAILED',/저장 공간과 파일 권한/],['SAME_VERSION_BUILD_MISMATCH',/다시 설치/],['PACKAGE_HASH_MISMATCH',/파일을 확인하지/],['INSTALL_OPEN_FAILED',/파일을 열지/]]){f.emit({state:'error',code,message:'private network details'});assert.match(f.element('platform-update-settings-status').textContent,expected);assert.doesNotMatch(f.element('platform-update-settings-status').textContent,/private/);}
+  assert.match(f.element('platform-update-settings-status').textContent,/인터넷 연결/);assert.match(f.element('platform-update-settings-status').textContent,/지금 앱은 그대로 쓸 수 있어요/);assert.doesNotMatch(f.element('platform-update-settings-status').textContent,/private/);assert.equal(f.element('platform-update-settings-check').disabled,false);
+  for(const [code,expected] of [['UPDATE_STORAGE_FAILED',/PC 저장 공간을 비운 뒤/],['SAME_VERSION_BUILD_MISMATCH',/다시 설치/],['PACKAGE_HASH_MISMATCH',/온전하지 않아요/],['INSTALL_OPEN_FAILED',/파일을 열지/]]){f.emit({state:'error',code,message:'private network details'});assert.match(f.element('platform-update-settings-status').textContent,expected);assert.doesNotMatch(f.element('platform-update-settings-status').textContent,/private/);}
 });
 test('Mac ready state explains Applications installation without claiming automatic installation',async()=>{
   const f=await fixture({initial:{state:'ready'},platform:'darwin'});await f.controller.ready;assert.match(f.element('platform-update-settings-status').textContent,/Applications 폴더/);assert.equal(f.element('platform-update-settings-install').textContent,'설치 파일 열기');
   f.emit({state:'ready',code:'UPDATE_MANUAL_INSTALL'});assert.match(f.element('platform-update-settings-status').textContent,/설치 파일을 열었어요/);
-  const g=await fixture({initial:{state:'ready',code:'UPDATE_EXIT_CANCELLED'}});await g.controller.ready;assert.match(g.element('platform-update-settings-status').textContent,/앱 종료를 취소/);assert.equal(g.element('platform-update-settings-install').disabled,false);
+  const g=await fixture({initial:{state:'ready',code:'UPDATE_EXIT_CANCELLED'}});await g.controller.ready;assert.match(g.element('platform-update-settings-status').textContent,/앱 끄기를 취소/);assert.equal(g.element('platform-update-settings-install').disabled,false);
 });
 test('idle and current explain automatic checks without changing manual installation controls',async()=>{
   const f=await fixture();await f.controller.ready;
-  assert.match(f.element('platform-update-settings-status').textContent,/시작할 때와 사용 중에.*자동으로 확인/);
+  assert.match(f.element('platform-update-settings-status').textContent,/켤 때와 쓰는 동안.*저절로 확인/);
   assert.doesNotMatch(f.element('platform-update-settings-status').textContent,/직접 시작/);
-  f.emit({state:'current'});assert.match(f.element('platform-update-settings-status').textContent,/최신 Preview.*사용 중에도.*자동으로 확인/);
+  f.emit({state:'current'});assert.match(f.element('platform-update-settings-status').textContent,/최신 버전이에요.*쓰는 동안에도.*저절로 확인/);
   f.emit({state:'ready',automatic:false});assert.equal(f.element('platform-update-settings-install').hidden,false);
-  assert.match(f.element('platform-update-settings-status').textContent,/앱을 종료하고 설치 파일을/);
-  f.emit({state:'opening',automatic:false});assert.match(f.element('platform-update-settings-status').textContent,/열린 설치 파일에서 계속/);
+  assert.match(f.element('platform-update-settings-status').textContent,/앱을 끄고 설치 파일을/);
+  f.emit({state:'opening',automatic:false});assert.match(f.element('platform-update-settings-status').textContent,/열린 설치 파일에서 이어서/);
 });
 test('Windows automatic progress explains restart and prevents manual duplicate actions until cancellation',async()=>{
   const f=await fixture({initial:{state:'downloading',automatic:true,progress:42,latestVersion:'0.4.6'}});await f.controller.ready;
-  assert.match(f.element('platform-update-settings-status').textContent,/v0.4.6.*자동으로 다시 열/);assert.equal(f.element('platform-update-settings-percent').textContent,'42%');
+  assert.match(f.element('platform-update-settings-status').textContent,/v0.4.6.*다시 열어요/);assert.equal(f.element('platform-update-settings-percent').textContent,'42%');
   f.emit({state:'ready',automatic:true,latestVersion:'0.4.6'});
-  for(const view of ['settings','downloads']){assert.equal(f.element('platform-update-'+view+'-install').hidden,true);assert.equal(f.element('platform-update-'+view+'-check').disabled,true);assert.match(f.element('platform-update-'+view+'-status').textContent,/작성 중인 내용을 확인.*자동으로 다시 열/);}
+  for(const view of ['settings','downloads']){assert.equal(f.element('platform-update-'+view+'-install').hidden,true);assert.equal(f.element('platform-update-'+view+'-check').disabled,true);assert.match(f.element('platform-update-'+view+'-status').textContent,/쓰던 내용이 있는지 확인한 뒤.*다시 열어요/);}
   await f.click('install');await f.click('check');assert.deepEqual(f.calls,[]);
-  f.emit({state:'opening',automatic:true});assert.match(f.element('platform-update-settings-status').textContent,/완료되면 자동으로 다시 열립니다/);assert.doesNotMatch(f.element('platform-update-settings-status').textContent,/계속 진행/);
-  f.emit({state:'ready',automatic:false,code:'UPDATE_EXIT_CANCELLED'});assert.equal(f.element('platform-update-settings-install').hidden,false);assert.equal(f.element('platform-update-settings-check').disabled,false);assert.match(f.element('platform-update-settings-status').textContent,/앱 종료를 취소/);
+  f.emit({state:'opening',automatic:true});assert.match(f.element('platform-update-settings-status').textContent,/끝나면 다시 열려요/);assert.doesNotMatch(f.element('platform-update-settings-status').textContent,/계속 진행/);
+  f.emit({state:'ready',automatic:false,code:'UPDATE_EXIT_CANCELLED'});assert.equal(f.element('platform-update-settings-install').hidden,false);assert.equal(f.element('platform-update-settings-check').disabled,false);assert.match(f.element('platform-update-settings-status').textContent,/앱 끄기를 취소/);
   await f.click('install');assert.deepEqual(f.calls,['install']);
 });
 test('Mac never promises automatic installation or restart even if automatic is set',async()=>{

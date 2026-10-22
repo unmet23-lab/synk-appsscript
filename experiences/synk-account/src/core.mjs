@@ -57,7 +57,7 @@ export async function createPKCE(cryptoAPI = globalThis.crypto) {
 }
 export async function beginOAuth({ config, product, storage, now = Date.now(), cryptoAPI }) {
   const client = config.clients[product];
-  if (!config.configured || !client?.clientId || !client.redirectUri) throw new Error('이 제품의 SSO 연결 설정이 아직 준비되지 않았어요.');
+  if (!config.configured || !client?.clientId || !client.redirectUri) throw new Error('이 화면의 로그인 설정이 아직 없어요.');
   const pkce = await createPKCE(cryptoAPI), transaction = { ...pkce, product, clientId: client.clientId, redirectUri: client.redirectUri, createdAt: now };
   storage.setItem(`synk.oauth.pending.${product}`, JSON.stringify(transaction));
   const url = new URL('/auth/v1/oauth/authorize', config.supabaseUrl);
@@ -72,10 +72,10 @@ export function consumeCallback({ config, product, url, storage, now = Date.now(
   if (!pending || pending.product !== product || pending.clientId !== client?.clientId || pending.redirectUri !== client?.redirectUri
     || params.get('state') !== pending.state || now - pending.createdAt > 600000 || now < pending.createdAt) throw new Error('로그인 요청이 만료되었거나 상태가 달라졌어요. 다시 시작해 주세요.');
   const actual = new URL(url), expected = new URL(client.redirectUri);
-  if (!callbackMatches(actual, expected)) throw new Error('등록한 로그인 도착 주소와 달라요.');
+  if (!callbackMatches(actual, expected)) throw new Error('로그인 뒤 돌아온 주소가 달라요. 다시 로그인해 주세요.');
   storage.removeItem(key);
   if (params.has('error')) throw new Error(params.get('error') === 'access_denied' ? '제품 연결을 취소했어요.' : '로그인을 마치지 못했어요. 다시 시작해 주세요.');
-  const code = params.get('code');if (!code) throw new Error('로그인 코드가 없어요.');
+  const code = params.get('code');if (!code) throw new Error('로그인 응답이 비어 있어요. 다시 로그인해 주세요.');
   return { grant_type: 'authorization_code', client_id: client.clientId, redirect_uri: client.redirectUri, code, code_verifier: pending.verifier };
 }
 export async function tokenRequest(config, fields, fetcher = fetch) {
@@ -84,18 +84,18 @@ export async function tokenRequest(config, fields, fetcher = fetch) {
     let response;
     try { response = await fetcher(new URL('/auth/v1/oauth/token', config.supabaseUrl), { method: 'POST', signal: abort.signal,
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(fields), credentials: 'omit', cache: 'no-store' }); }
-    catch { throw Object.assign(new Error('로그인 서버에 연결하지 못했어요. 연결이 돌아오면 다시 확인해 주세요.'), { code: 'NETWORK', retryable: true }); }
+    catch { throw Object.assign(new Error('인터넷 연결이 끊겨 로그인 서버에 닿지 못했어요. 연결되면 다시 시도해 주세요.'), { code: 'NETWORK', retryable: true }); }
     let data;
     try { data = await response.json(); }
     catch (error) {
       // A response body can still lose its connection after successful headers.
       // Only a completed but malformed JSON document is an invalid response.
-      if (response.ok && error?.name !== 'SyntaxError') throw Object.assign(new Error('로그인 응답을 끝까지 받지 못했어요. 연결이 돌아오면 다시 확인해 주세요.'), { code: 'NETWORK', retryable: true });
+      if (response.ok && error?.name !== 'SyntaxError') throw Object.assign(new Error('로그인 응답을 끝까지 받지 못했어요. 연결되면 다시 시도해 주세요.'), { code: 'NETWORK', retryable: true });
       data = null;
     }
     if (!response.ok) {
       const retryable = response.status === 429 || response.status >= 500;
-      throw Object.assign(new Error(retryable ? '로그인 서버가 잠시 응답하지 않아요. 잠시 뒤 다시 확인해 주세요.' : '로그인 연결을 마치지 못했어요. 다시 로그인해 주세요.'), { code: retryable ? 'AUTH_UNAVAILABLE' : 'AUTH_REQUIRED', status: response.status, retryable });
+      throw Object.assign(new Error(retryable ? '로그인 서버가 잠시 응답하지 않아요. 잠시 뒤 다시 시도해 주세요.' : '로그인 연결을 마치지 못했어요. 다시 로그인해 주세요.'), { code: retryable ? 'AUTH_UNAVAILABLE' : 'AUTH_REQUIRED', status: response.status, retryable });
     }
     if (!data || typeof data.access_token !== 'string' || !data.access_token) throw Object.assign(new Error('로그인 응답을 확인하지 못했어요. 다시 로그인해 주세요.'), { code: 'INVALID_RESPONSE' });
     return { access_token: data.access_token, refresh_token: data.refresh_token || null, expires_at: Date.now() + Number(data.expires_in || 3600) * 1000 };

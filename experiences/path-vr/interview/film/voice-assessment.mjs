@@ -81,18 +81,18 @@ export function assessVoiceAnswer(result, { turn = 1, availableClipIds = DEFAULT
   const basis = proposedBranch.evidence && typeof proposedBranch.evidence === 'object' ? proposedBranch.evidence
     : shortSpan(wordList, 0, firstClauseEnd >= 0 ? firstClauseEnd + 1 : rawText.length);
   const excerpt = shortSpan(wordList, basis.start, basis.end);
-  if (!rawText.trim()) return output('retry', issue('empty', { start: 0, end: rawText.length }, '말소리를 확인하지 못했습니다. 다시 답변해 주세요.'));
-  if (result?.truncated) return output('retry', issue('truncated', shortSpan(wordList, Math.max(0, rawText.length - 120)), '답변 끝까지 인식하지 못했습니다. 짧게 나누어 다시 말해 주세요.'));
+  if (!rawText.trim()) return output('retry', issue('empty', { start: 0, end: rawText.length }, '말소리가 들리지 않았어요. 다시 답해 주세요.'));
+  if (result?.truncated) return output('retry', issue('truncated', shortSpan(wordList, Math.max(0, rawText.length - 120)), '답이 길어서 끝까지 알아듣지 못했어요. 짧게 나눠 다시 말해 주세요.'));
   const damaged = [...rawText.matchAll(DAMAGED)][0];
   if (damaged) {
     const span = shortSpan(wordList, damaged.index, damaged.index + damaged[0].length);
-    return output(confirmed(span) ? 'retry' : 'clarify', issue('damaged', span, '이 부분의 글자가 제대로 인식되지 않았습니다. 고치거나 다시 말해 주세요.'));
+    return output(confirmed(span) ? 'retry' : 'clarify', issue('damaged', span, '이 부분이 말한 그대로 적혔나요?'));
   }
   const ambiguity = ranges(rawText, AMBIGUOUS, 'meaning', wordList).find(span => !confirmed(span));
-  if (ambiguity) return output('clarify', issue('meaning', ambiguity, '이 표현이 말한 뜻과 맞는지 확인해 주세요. 다르면 이 부분만 고쳐 주세요.'));
+  if (ambiguity) return output('clarify', issue('meaning', ambiguity, '이 말이 하려던 뜻과 맞나요?'));
   if (proposedBranch.kind !== 'usable') {
     const candidate = ranges(rawText, OTHER, 'actor', wordList)[0] || excerpt;
-    return output(confirmed(candidate) ? 'retry' : 'clarify', issue('semantic', candidate, '본인이 직접 한 일이나 준비에 관한 답변인지 확인하고, 다르면 고쳐 주세요.'));
+    return output(confirmed(candidate) ? 'retry' : 'clarify', issue('semantic', candidate, '내가 직접 한 일이나 준비한 일을 말한 게 맞나요?'));
   }
   const actors = ranges(rawText, SELF, 'actor', wordList).filter(span => span.end <= basis.end);
   const actions = ranges(rawText, ACTION, 'action', wordList).filter(span => span.start >= basis.start && span.end <= basis.end);
@@ -113,11 +113,11 @@ export function assessVoiceAnswer(result, { turn = 1, availableClipIds = DEFAULT
   }
   criticalSpans.push(...experienceClaims);
   const uncheckedClaim = experienceClaims.find(span => !confirmed(span));
-  if (uncheckedClaim) return output('clarify', issue('experience-polarity', uncheckedClaim, '본인의 경험이 있는지 없는지를 이 부분만 확인해 주세요. 반대로 들렸다면 고쳐 주세요.'));
-  if (!actors.length && !confirmed(excerpt) && !experienceClaims.some(confirmed)) return output('clarify', issue('actor', excerpt, '이 부분은 본인이 직접 한 일이나 준비를 말한 건가요? 다르면 고쳐 주세요.'));
-  if (!actions.length && !(experience.length && polarity.length) && !experienceClaims.length) return output(confirmed(excerpt) ? 'retry' : 'clarify', issue('detail', excerpt, '직접 한 일이나 준비한 내용을 이 부분에 구체적으로 말씀해 주세요.'));
+  if (uncheckedClaim) return output('clarify', issue('experience-polarity', uncheckedClaim, '경험이 있다고 했는지, 없다고 했는지 맞게 들렸나요?'));
+  if (!actors.length && !confirmed(excerpt) && !experienceClaims.some(confirmed)) return output('clarify', issue('actor', excerpt, '이 부분은 내가 직접 한 일이나 준비를 말한 건가요?'));
+  if (!actions.length && !(experience.length && polarity.length) && !experienceClaims.length) return output(confirmed(excerpt) ? 'retry' : 'clarify', issue('detail', excerpt, '이 부분에 직접 한 일이나 준비한 일이 맞게 적혔나요?'));
   const other = ranges(rawText, OTHER, 'actor', wordList).find(span => !confirmed(span));
-  if (other) return output('clarify', issue('actor', other, '누가 한 일인지 이 부분을 확인해 주세요. 다르면 고쳐 주세요.'));
+  if (other) return output('clarify', issue('actor', other, '이 일을 한 사람이 맞게 들렸나요?'));
   for (const span of [actors.at(-1), ...actions, ...experience, ...polarity, ...care].filter(Boolean)) {
     if (!criticalSpans.some(item => item.start === span.start && item.end === span.end)) criticalSpans.push(span);
   }
@@ -130,7 +130,7 @@ export function assessVoiceAnswer(result, { turn = 1, availableClipIds = DEFAULT
       const knownEngine = ENGINES.has(result?.engine);
       if (!knownEngine || !Number.isFinite(word.conf) || word.conf < minConfidence) {
         return output('clarify', issue(!knownEngine ? 'engine' : Number.isFinite(word.conf) ? 'confidence' : 'metadata', word,
-          '다음 질문에 영향을 주는 이 부분이 맞는지 확인해 주세요. 다르면 이 부분만 고쳐 주세요.'));
+          '다음 질문을 고를 때 쓰는 부분이에요. 맞게 들렸나요?'));
       }
     }
   }

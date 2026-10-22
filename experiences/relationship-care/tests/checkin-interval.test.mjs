@@ -44,8 +44,8 @@ test('설정하지 않은 사람은 기존 30일 기준과 추천 이유 문구�
   assert.equal(focus(activity(fixture(), -29)).status, 'caught-up');
   const result = focus(activity(fixture(), -30));
   assert.equal(result.recommendation.kind, 'checkin');
-  assert.equal(result.recommendation.reason, `수첩에 마지막으로 남긴 챙김은 ${day(-30)}(30일 전)이에요. 실제로 나눈 연락과 다를 수 있어요.`);
-  assert.equal(focus(fixture()).recommendation.reason, '아직 이 사람의 챙김 기록을 남기지 않았어요. 첫 안부부터 준비해 볼 수 있어요.');
+  assert.equal(result.recommendation.reason, `마지막 챙김 기록은 ${day(-30)}(30일 전)이에요.`);
+  assert.equal(focus(fixture()).recommendation.reason, '아직 챙김 기록이 없어요. 첫 안부를 준비해 보세요.');
 });
 
 test('7·14·30·90·365일 주기는 실제 챙김 날짜의 직전·당일·다음날 경계를 정확하게 적용한다', () => {
@@ -57,7 +57,7 @@ test('7·14·30·90·365일 주기는 실제 챙김 날짜의 직전·당일·�
       if (result.recommendation) {
         assert.equal(result.recommendation.kind, 'checkin');
         assert.ok(result.recommendation.reason.includes(`${elapsed}일 전`));
-        assert.ok(result.recommendation.reason.includes(`직접 정한 ${checkinIntervalDays}일 간격`));
+        assert.ok(result.recommendation.reason.includes(`${checkinIntervalDays}일마다 안부를 챙기기로`));
       }
       assert.equal(JSON.stringify(state), before);
     }
@@ -78,8 +78,8 @@ test('챙김 기록이 없으면 켜진 주기는 첫 안부를 제안하고 끈
   for (const checkinIntervalDays of [1, 7, 365]) {
     const result = focus(fixture({ checkinIntervalDays }));
     assert.equal(result.recommendation.kind, 'checkin');
-    assert.match(result.recommendation.reason, /아직 이 사람의 챙김 기록/u);
-    assert.ok(result.recommendation.reason.includes(`${checkinIntervalDays}일 간격`));
+    assert.match(result.recommendation.reason, /아직 챙김 기록이 없어요/u);
+    assert.ok(result.recommendation.reason.includes(`${checkinIntervalDays}일마다`));
   }
   for (const state of [fixture({ checkinIntervalDays: 0 }), activity(fixture({ checkinIntervalDays: 0 }), -400)]) {
     assert.equal(focus(state).status, 'caught-up');

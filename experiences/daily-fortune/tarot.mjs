@@ -102,7 +102,7 @@ function blockOrder(seed, block) {
  * @returns {{ date, id, number, name, english, keywords, meaning, practice, upright, note }} 하루 동안 같은 카드.
  */
 export function drawCard({ seed, date = seoulDateKey() } = {}) {
-  if (typeof seed !== 'string' || !seed.trim() || [...seed].length > 200) throw new TypeError('카드를 뽑을 사람 정보를 확인해 주세요.');
+  if (typeof seed !== 'string' || !seed.trim() || [...seed].length > 200) throw new TypeError('카드를 뽑을 정보가 없어요. 별자리나 생년월일을 먼저 골라 주세요.');
   assertSupportedDate(date);
   const day = dayNumber(date), block = Math.floor(day / BLOCK);
   const card = MAJOR_ARCANA[blockOrder(seed, block)[mod(day, BLOCK)]];

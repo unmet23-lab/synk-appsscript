@@ -132,9 +132,9 @@ export function planAnswerFollowup(text, { availableClipIds = DEFAULT_CLIPS, ...
   let selected = selfExperience || relevant[0] || parts[0];
   let desiredId, reason, ruleId;
   if (selectedResult && directAction) {
-    selected = selectedResult; desiredId = 'evidence'; reason = '답변에 명시된 행동의 결과와 확인 근거를 이어 묻습니다.'; ruleId = 'stated-result';
+    selected = selectedResult; desiredId = 'evidence'; reason = '결과를 말해서, 그 결과를 무엇으로 확인했는지 물어요.'; ruleId = 'stated-result';
   } else if (otherExperience && !selfExperience && !preparation) {
-    selected = otherExperience; desiredId = 'role'; reason = '타인의 경험을 본인의 경험으로 단정하지 않고 본인 역할을 확인합니다.'; ruleId = 'other-person';
+    selected = otherExperience; desiredId = 'role'; reason = '다른 사람이 한 일을 말해서, 그중 내가 맡은 일을 물어요.'; ruleId = 'other-person';
   } else {
     const refusal = relevant.find((part) => /거부|싫어|원하지|거절/u.test(part.value) && /어르신|환자|돌봄|식사|목욕/u.test(part.value));
     const mobility = relevant.find((part) => /이동|휠체어|부축|낙상|보행/u.test(part.value));
@@ -142,14 +142,14 @@ export function planAnswerFollowup(text, { availableClipIds = DEFAULT_CLIPS, ...
     const meal = relevant.find((part) => part.subject === 'self' && part.action && part.polarity === 'affirmed' && /식사|섭취|식단|수저|삼킴/u.test(part.value));
     const family = relevant.find((part) => part.subject === 'self' && part.action && part.polarity === 'affirmed' && /가족|할머니|할아버지|부모|아버지|어머니|엄마|아빠/u.test(part.value));
     const learning = relevant.find((part) => LEARNING.test(part.value) && STUDIED.test(part.value) && part.subject === 'self' && part.polarity === 'affirmed');
-    if (refusal) { selected = refusal; desiredId = 'refusal'; reason = '돌봄 거부 상황에 어떻게 대응할지 이어 묻습니다.'; ruleId = 'refusal-topic'; }
-    else if (mobility) { selected = mobility; desiredId = 'mobility'; reason = '언급한 이동 보조에서 먼저 확인할 점을 묻습니다.'; ruleId = 'mobility-topic'; }
-    else if (handoff) { selected = handoff; desiredId = 'handoff'; reason = '언급한 협업 상황에서 보고 시점과 내용을 묻습니다.'; ruleId = 'handoff-topic'; }
-    else if (meal) { selected = meal; desiredId = 'meal'; reason = '직접 했다고 말한 식사 보조를 구체적으로 묻습니다.'; ruleId = 'meal-action'; }
-    else if (family) { selected = family; desiredId = 'family'; reason = '직접 했다고 말한 가족 돌봄의 어려움과 대응을 묻습니다.'; ruleId = 'family-action'; }
-    else if (learning) { selected = learning; desiredId = 'learning'; reason = '언급한 학습과 현장 적용을 연결합니다.'; ruleId = 'learning-topic'; }
-    else if (selfExperience) { selected = selfExperience; desiredId = 'experience'; reason = '본인이 경험했다고 말한 내용을 구체적으로 묻습니다.'; ruleId = 'past-action'; }
-    else { selected = preparation; desiredId = 'plan'; reason = '답변에서 밝힌 준비나 앞으로의 행동을 구체적으로 묻습니다.'; ruleId = denied ? 'no-experience' : selected.polarity === 'hypothetical' ? 'hypothetical' : 'preparation-plan'; }
+    if (refusal) { selected = refusal; desiredId = 'refusal'; reason = '돌봄을 거부하는 상황을 말해서, 그때 어떻게 할지 물어요.'; ruleId = 'refusal-topic'; }
+    else if (mobility) { selected = mobility; desiredId = 'mobility'; reason = '이동을 돕는 일을 말해서, 먼저 확인할 것을 물어요.'; ruleId = 'mobility-topic'; }
+    else if (handoff) { selected = handoff; desiredId = 'handoff'; reason = '보고나 함께 일하는 상황을 말해서, 언제 무엇을 보고할지 물어요.'; ruleId = 'handoff-topic'; }
+    else if (meal) { selected = meal; desiredId = 'meal'; reason = '식사를 도운 일을 말해서, 그 일을 자세히 물어요.'; ruleId = 'meal-action'; }
+    else if (family) { selected = family; desiredId = 'family'; reason = '가족을 돌본 일을 말해서, 어려웠던 점과 대처를 물어요.'; ruleId = 'family-action'; }
+    else if (learning) { selected = learning; desiredId = 'learning'; reason = '배운 것을 말해서, 현장에서 어떻게 쓸지 물어요.'; ruleId = 'learning-topic'; }
+    else if (selfExperience) { selected = selfExperience; desiredId = 'experience'; reason = '직접 해 본 일을 말해서, 그 일을 자세히 물어요.'; ruleId = 'past-action'; }
+    else { selected = preparation; desiredId = 'plan'; reason = '직접 해 본 일이 답에 없어서, 현장에 나가기 전 준비를 물어요.'; ruleId = denied ? 'no-experience' : selected.polarity === 'hypothetical' ? 'hypothetical' : 'preparation-plan'; }
   }
   const available = new Set(Array.isArray(availableClipIds) || availableClipIds instanceof Set ? availableClipIds : []);
   const desired = FOLLOWUP_CATALOG[desiredId];
@@ -164,7 +164,7 @@ export function planAnswerFollowup(text, { availableClipIds = DEFAULT_CLIPS, ...
   const category = selfExperience ? 'experience' : denied || LEARNING.test(compact(text)) ? 'preparation' : meaning.category === 'experience' ? 'preparation' : meaning.category;
   return {
     kind: 'usable', ...chosen, category,
-    evidence: evidence(selected), reason: fallback ? (selfExperience ? '답변에서 본인이 경험했다고 말한 내용을 바탕으로 준비된 경험 질문을 골랐습니다.' : '본인의 실제 경험으로 단정하지 않고 현장 투입 전 준비를 묻습니다.') : reason,
+    evidence: evidence(selected), reason: fallback ? (selfExperience ? '직접 해 본 일을 말해서, 그 일을 자세히 물어요.' : '직접 해 본 일이 답에 없어서, 현장에 나가기 전 준비를 물어요.') : reason,
     ruleId: denied && !selfExperience && chosen.id === 'plan' ? 'no-experience' : ruleId,
     negatedExperience: !!denied && !selfExperience,
     desiredId, fallback,

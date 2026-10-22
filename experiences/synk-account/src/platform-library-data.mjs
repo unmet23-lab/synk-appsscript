@@ -10,7 +10,7 @@ export const platformDisplayAppIds = (appIds=ACTIVE_PLATFORM_APP_IDS) => [...new
 export const PLATFORM_NOTE_LIMIT = 60;
 export const PLATFORM_LIBRARY_LIMITS = Object.freeze({ maxBytes: 64 * 1024 });
 const object = value => value && typeof value === 'object' && !Array.isArray(value);
-const invalid = () => { throw Object.assign(new TypeError('플랫폼 기록 형식을 확인해 주세요.'), { code:'INVALID_PERSONAL_STATE' }); };
+const invalid = () => { throw Object.assign(new TypeError('라이브러리 기록 형식이 맞지 않아요.'), { code:'INVALID_PERSONAL_STATE' }); };
 const noteLimit = () => { throw Object.assign(new Error('메모는 최대 '+PLATFORM_NOTE_LIMIT+'개까지 보관할 수 있어요. 필요 없는 메모를 삭제한 뒤 다시 시도해 주세요.'), { code:'NOTE_LIMIT' }); };
 const exact = (value, keys) => object(value) && Object.keys(value).every(key => keys.includes(key)) && keys.every(key => Object.hasOwn(value,key));
 const stamp = value => Number.isSafeInteger(value) && value > 0 && value <= 8640000000000000;
@@ -38,7 +38,7 @@ export function projectPlatformLibrary(value,{appIds=ACTIVE_PLATFORM_APP_IDS}={}
 export function updatePlatformLibrary(value, action, now = Date.now(),appIds=ACTIVE_PLATFORM_APP_IDS) {
   const next = validatePlatformLibrary(value);
   if (action.type === 'consent') { if (action.value !== true) return emptyPlatformLibrary(); next.consent=true; return next; }
-  if (!next.consent) throw new Error('계정에 저장할 항목을 확인하고 연결을 켜 주세요.');
+  if (!next.consent) throw new Error('「계정 저장 켜기」를 먼저 눌러 주세요.');
   if (['favorite','launch','note'].includes(action.type) && !ACTIVE_PLATFORM_APP_IDS.includes(action.id)) invalid();
   if (action.type === 'favorite') next.favorites = next.favorites.some(id=>platformDisplayAppId(id,appIds)===platformDisplayAppId(action.id,appIds)) ? next.favorites.filter(id=>platformDisplayAppId(id,appIds)!==platformDisplayAppId(action.id,appIds)) : [...next.favorites,action.id];
   else if (action.type === 'move-favorite') {

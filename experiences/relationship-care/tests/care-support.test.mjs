@@ -13,14 +13,14 @@ test('visible edits need explicit confirmation and preserve the existing prefere
   const candidates = compareDraftEdits({ before, after: '다온아, 생일 축하해!' });
   assert.ok(candidates.every(item => item.requiresConfirmation));
   const short = candidates.find(item => item.kind === 'shorter'), noEmoji = candidates.find(item => item.kind === 'no-emoji');
-  assert.throws(() => applyPreferenceCandidate(person, short), /확인/);
+  assert.throws(() => applyPreferenceCandidate(person, short), /기억해 두기/);
   const applied = applyPreferenceCandidate(person, short, { confirmed: true });
   assert.equal(applied.recipientPreference.length, 'short');
   assert.equal(applied.recipientPreference.closingLine, person.recipientPreference.closingLine);
   assert.equal(applied.recipientPreference.noReplyPressure, true);
   assert.equal(applyPreferenceCandidate(applied, noEmoji, { confirmed: true }).recipientPreference.allowEmoji, false);
   assert.equal(person.recipientPreference.length, 'balanced');
-  assert.throws(() => applyPreferenceCandidate(person, { ...short, patch: { allowEmoji: true } }, { confirmed: true }), /후보/);
+  assert.throws(() => applyPreferenceCandidate(person, { ...short, patch: { allowEmoji: true } }, { confirmed: true }), /문구가 바뀌었어요/);
   assert.equal(SUPPORT_ENGINES.expression, 'vellum-expression-1');
 });
 
@@ -43,7 +43,7 @@ test('confirming one candidate cannot activate or discard other unconfirmed sett
   for (const preference of savedSettings) {
     const unconfirmed = makePerson({ id: 'new-person', name: '다온', recipientPreference: { ...preference, confirmed: false } });
     const original = structuredClone(unconfirmed);
-    assert.throws(() => applyPreferenceCandidate(unconfirmed, candidate, { confirmed: true }), /대화와 말투에서 기존 표현 설정을 먼저 확인/);
+    assert.throws(() => applyPreferenceCandidate(unconfirmed, candidate, { confirmed: true }), /「대화와 말투」 탭의 표현 설정을 먼저 저장/);
     assert.deepEqual(unconfirmed, original, 'the unconfirmed values and flag remain unchanged');
   }
 });
@@ -104,7 +104,7 @@ test('review returns exact evidence for saved phrases, another name, date mismat
   assert.equal(result.issues.find(item => item.kind === 'date-mismatch').evidence.expected, '2026-10-10');
   assert.equal(result.needsReview, true);
   assert.equal(result.limits.length, 2);
-  assert.ok(result.limits.some(line => line.includes('표시가 없어도')));
+  assert.ok(result.limits.some(line => line.includes('걸린 곳이 없어도')));
 });
 
 test('date checks distinguish invalid solar days, ambiguous relative dates and lunar 2/30', () => {
@@ -159,7 +159,7 @@ test('polite future actions are exact review cues without changing the draft or 
     const issue = result.issues[0];
     assert.equal(issue.evidence.quote, quote, text);
     assert.equal(text.slice(issue.evidence.start, issue.evidence.end), quote);
-    assert.match(issue.message, /표면 표현/);
+    assert.match(issue.message, /약속하는 말/);
     assert.equal(result.method, 'surface-rules');
     assert.equal(result.needsReview, true);
     assert.deepEqual(input, original);
@@ -187,8 +187,8 @@ test('quoted future wording remains a source cue and does not identify who promi
   assert.equal(result.issues[0].kind, 'promise-confirmation');
   assert.equal(result.issues[0].evidence.quote, '찾아뵙겠습니다');
   assert.equal(result.method, 'surface-rules');
-  assert.ok(result.limits.some(line => line.includes('뜻·상황·상대의 기분을 이해한 결과가 아니에요')));
-  assert.ok(result.limits.some(line => line.includes('직접 확인')));
+  assert.ok(result.limits.some(line => line.includes('상대의 기분까지 읽지는 못해요')));
+  assert.ok(result.limits.some(line => line.includes('한 번 더 읽어')));
 });
 
 test('promise patterns require complete endings and retain the 5000-character input limit', () => {

@@ -23,7 +23,7 @@ export function mountListeningCheck({ coach, beforeOpen, onClose = () => {}, onF
     epoch++; pending = false; bank?.stop();
     const now = check?.current;
     if (!now) return;
-    if (now.answered) { reviewReady('다시 듣기를 멈췄어요. 정답과 해설을 확인한 뒤 다음으로 갈 수 있어요.'); return; }
+    if (now.answered) { reviewReady('다시 듣기를 멈췄어요. 정답과 해설을 읽고 다음으로 가요.'); return; }
     if (now.audio === 'completed') { ready(); return; }
     check.delivery(now.token, 'failed'); choicesDisabled(true); phase('stopped'); status('소리가 멈췄어요. 다시 들은 뒤 답해 주세요.'); $('check-replay').disabled = false;
   }

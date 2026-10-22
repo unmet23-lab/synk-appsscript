@@ -69,7 +69,7 @@ export function createGameTutor({tutorId,game,container,frame=null,reduced=()=>f
    let detail=row;
    if(preferences.explanation!=='standard'){
     detail=document.createElement('details');detail.className='game-tutor-explanation';detail.open=preferences.explanation==='detailed';
-    const summary=document.createElement('summary');summary.textContent='힌트와 근거 더 보기';detail.append(summary);row.append(detail);
+    const summary=document.createElement('summary');summary.textContent='자세히 보기';detail.append(summary);row.append(detail);
    }
    detail.append(fact);
    if(entry.review){const quote=document.createElement('blockquote');quote.textContent=entry.review.prompt;detail.append(quote);}
@@ -83,6 +83,9 @@ export function createGameTutor({tutorId,game,container,frame=null,reduced=()=>f
   next.dataset.next='true';return next.querySelector('.tutor-support-retry');
  }
  const face=element.querySelector('.game-tutor-face'),line=element.querySelector('.game-tutor-line'),label=element.querySelector('.game-tutor-label');
+ // 말풍선이 줄 수 제한으로 잘렸으면 누를 때 전체를 보인다(10-21 — 휴대폰에서 긴 힌트 끝이 안 보였다). 새 말이 오면 다시 접는다.
+ const bubble=element.querySelector('.game-tutor-message');
+ bubble.addEventListener('click',()=>{if(bubble.dataset.expanded==='true'){delete bubble.dataset.expanded;return;}if(line.scrollHeight>line.clientHeight+1)bubble.dataset.expanded='true';});
  const body=element.querySelector('.game-tutor-portrait');
  const setFace=emotion=>{face.src=photo(emotion);element.dataset.face=emotion;};
  // 10-17 움직임(10-15 유호님이 움직임 금지를 지움): 사진은 천천히 숨 쉬고, 놀이 중이 아닐 때는 3~5초마다 눈을 감았다 뜬다(타이머 하나).
@@ -105,7 +108,7 @@ export function createGameTutor({tutorId,game,container,frame=null,reduced=()=>f
   const pose=REACTIONS.has(next)&&reactionsOn();
   if(pose){setFace(tutorFace(tutor.id,next));if(!reduced())body.dataset.reaction=next;}
   else if(!REACTIONS.has(next))setFace(tutorFace(tutor.id,next));
-  later(()=>{talk(line,support?supportLine(tutor.id,support):tutorLine(tutor.id,next,index),tutor.id);label.textContent=support?supportLabel(support,game):labels[next]||labels.ready;playSound(['success','combo','finish'].includes(next)?'기쁨':next==='retry'?'안심':'기본');},reduced()?0:delays[tutor.id]);
+  later(()=>{delete bubble.dataset.expanded;talk(line,support?supportLine(tutor.id,support):tutorLine(tutor.id,next,index),tutor.id);label.textContent=support?supportLabel(support,game):labels[next]||labels.ready;playSound(['success','combo','finish'].includes(next)?'기쁨':next==='retry'?'안심':'기본');},reduced()?0:delays[tutor.id]);
   if(pose)later(()=>{setFace('기본');delete body.dataset.reaction;},1800);
  }
  function react(event,detail={}){

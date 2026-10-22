@@ -11,7 +11,7 @@ const labels = { loading: '계정 기록 불러오는 중', saving: '계정에 �
  * screen does not bundle every other product's validator. */
 export function createAccountNotebook({ resource, validateState, mount, content, description, getState, applyState, emptyDocument,
   toDocument = value => value, fromDocument = value => value, onMode = () => {}, beforeNavigate = () => true,
-  prepareRetry = () => false, onDocumentSaved = () => {}, onDocumentRemoved = () => {}, onStatusChange = () => {}, pendingDescription = '', deleteLabel = '', signOutLabel = '로그아웃',
+  prepareRetry = () => false, onDocumentSaved = () => {}, onDocumentRemoved = () => {}, onStatusChange = () => {}, statusLabel = text => text, detailLabel = text => text, pendingDescription = '', deleteLabel = '', signOutLabel = '로그아웃',
   deleteConfirmation = '이 계정의 앨범 전체와 보관한 사진·음성 원본을 삭제할까요? 다른 기기에서도 다시 불러올 수 없어요. 보관할 앨범은 먼저 파일로 내보내 주세요.',
   bridge = globalThis.synkPersonalAccount, accountFactory = createProductAccount, syncFactory = createDocumentSync, preferRemoteOnOpen = false,
   storage = { getItem: key => globalThis.localStorage.getItem(key), setItem: (key, value) => globalThis.localStorage.setItem(key, value), removeItem: key => globalThis.localStorage.removeItem(key), key: index => globalThis.localStorage.key(index), get length() { return globalThis.localStorage.length; } },
@@ -22,7 +22,7 @@ export function createAccountNotebook({ resource, validateState, mount, content,
   let closed = false, switching = false, hydrating = false, converting = false, deleting = false, unsent = null, problem = '', suspended = false, hydrationFailure = null, incomingDocument = null;
   let pageSuspended = false, reconnecting = false, resumePromise = null, resumeVersion = 0, resumeMessage = '', contentWasHidden = false, contentConcealed = false;
   mount.classList.add('account-notebook');
-  mount.innerHTML = '<div class="notebook-heading"><div><p class="notebook-eyebrow">SYNK ID</p><h2>내 계정으로 이어가기</h2></div><strong data-notebook-status role="status" aria-live="polite"></strong></div><p data-notebook-detail></p><p class="notebook-description"></p><div class="notebook-actions"><button type="button" data-notebook="signin">SYNK ID로 로그인</button><button type="button" data-notebook="refresh" hidden>다시 불러오기</button><button type="button" data-notebook="retry" hidden>저장 다시 시도</button><button type="button" data-notebook="import" hidden>기기 기록을 계정으로 옮기기</button><button type="button" data-notebook="signout" hidden>로그아웃</button></div><div class="notebook-conflict" hidden><p>서로 다른 기록을 자동으로 합치지 않아요. 사용할 기록을 직접 골라 주세요.</p><button type="button" data-notebook="remote">계정의 기록 사용</button><button type="button" data-notebook="local">이 화면의 기록으로 저장</button></div>';
+  mount.innerHTML = '<div class="notebook-heading"><div><p class="notebook-eyebrow">SYNK ID</p><h2>계정 저장</h2></div><strong data-notebook-status role="status" aria-live="polite"></strong></div><p data-notebook-detail></p><p class="notebook-description"></p><div class="notebook-actions"><button type="button" data-notebook="signin">SYNK ID로 로그인</button><button type="button" data-notebook="refresh" hidden>다시 불러오기</button><button type="button" data-notebook="retry" hidden>저장 다시 시도</button><button type="button" data-notebook="import" hidden>기기 기록을 계정으로 옮기기</button><button type="button" data-notebook="signout" hidden>로그아웃</button></div><div class="notebook-conflict" hidden><p>서로 다른 기록을 자동으로 합치지 않아요. 사용할 기록을 직접 골라 주세요.</p><button type="button" data-notebook="remote">계정의 기록 사용</button><button type="button" data-notebook="local">이 화면의 기록으로 저장</button></div>';
   mount.querySelector('.notebook-description').textContent = description;
   mount.querySelector('[data-notebook="signout"]').textContent = signOutLabel;
   if (preferRemoteOnOpen) mount.querySelector('[data-notebook="remote"]').textContent = '미저장 기록 남기고 계정 기록 열기';
@@ -50,15 +50,15 @@ export function createAccountNotebook({ resource, validateState, mount, content,
       else if (contentConcealed) content.hidden = contentWasHidden;
       contentConcealed = conceal;
     }
-    mount.querySelector('[data-notebook-status]').textContent = deleting ? '계정 기록 삭제 중' : authPending ? '로그인 다시 확인 필요' : suspended ? problem ? '기록을 다시 불러와 주세요' : '로그인 다시 확인 중' : converting ? '원본을 계정에 보관 중' : hydrating ? '보관한 원본을 불러오는 중' : active ? loading ? labels.loading : problem ? labels.error : saveInProgress ? labels.saving : labels[saved.status] || '계정 기록 연결 중' : auth.status === 'unconfigured' ? '이 기기에서 사용 중' : ['restoring', 'signing-in'].includes(auth.status) ? '로그인 확인 중' : '로그인 전';
-    mount.querySelector('[data-notebook-detail]').textContent = problem || auth.error?.message || saved.error?.message || (active ? loading ? '계정 기록을 불러오고 있어요. 잠시만 기다려 주세요.' : saveInProgress ? '계정에 저장하고 있어요. 저장이 끝나면 알려 드려요.' : pending ? '아직 계정 저장을 마치지 못했어요. 연결이 돌아오면 다시 시도할 수 있어요.' : '로그인한 계정에 저장해요. 다른 기기에서는 다시 불러오기로 최신 기록을 확인하세요.' : auth.status === 'unconfigured' ? '이 실행 환경의 계정 연결 설정을 준비하고 있어요. 기기 기록은 계속 사용할 수 있어요.' : 'SYNK ID 하나로 로그인해요. 로그인 전의 기기 기록은 직접 옮길 때만 계정에 저장해요.');
+    mount.querySelector('[data-notebook-status]').textContent = statusLabel(deleting ? '계정 기록 삭제 중' : authPending ? '로그인 다시 확인 필요' : suspended ? problem ? '기록을 다시 불러와 주세요' : '로그인 다시 확인 중' : converting ? '원본을 계정에 보관 중' : hydrating ? '보관한 원본을 불러오는 중' : active ? loading ? labels.loading : problem ? labels.error : saveInProgress ? labels.saving : labels[saved.status] || '계정 기록 연결 중' : auth.status === 'unconfigured' ? '이 기기에서 사용 중' : ['restoring', 'signing-in'].includes(auth.status) ? '로그인 확인 중' : '로그인 전', { active, status: saved.status });
+    mount.querySelector('[data-notebook-detail]').textContent = detailLabel(problem || auth.error?.message || saved.error?.message || (active ? loading ? '계정 기록을 불러오고 있어요. 잠시만 기다려 주세요.' : saveInProgress ? '계정에 저장하고 있어요. 저장이 끝나면 알려 드려요.' : pending ? '아직 계정 저장을 마치지 못했어요. 연결이 돌아오면 다시 시도할 수 있어요.' : '로그인한 계정에 저장해요. 다른 기기에서는 다시 불러오기로 최신 기록을 확인하세요.' : auth.status === 'unconfigured' ? '이 실행 환경의 계정 연결 설정을 준비하고 있어요. 기기 기록은 계속 사용할 수 있어요.' : 'SYNK ID 하나로 로그인해요. 로그인 전의 기기 기록은 직접 옮길 때만 계정에 저장해요.'), { active, status: saved.status, problem: !!(problem || auth.error?.message || saved.error?.message) });
     if (missingPendingMedia) mount.querySelector('[data-notebook-detail]').textContent = '미저장 앨범에 필요한 원본을 찾지 못했어요. 파일이 있는 기기나 내보낸 앨범에서 다시 저장하거나, 미저장 기록을 기기에 남기고 마지막 계정 저장본을 열 수 있어요.';
     if (deleting) mount.querySelector('[data-notebook-detail]').textContent = '계정의 삭제 결과를 확인하고 있어요. 결과가 확인될 때까지 새 기록을 입력할 수 없어요.';
-    if (authPending) mount.querySelector('[data-notebook-detail]').textContent = auth.error?.message || '현재 기록을 유지하고 있어요. 계정 연결을 다시 확인해 주세요.';
+    if (authPending) mount.querySelector('[data-notebook-detail]').textContent = auth.error?.message || '지금 기록은 그대로예요. 「계정 연결 다시 확인」을 눌러 주세요.';
     pendingNote.hidden = !active || !pending || !pendingDescription;
     const localNoticeCode = saved.warning?.code || (local.corrupt ? 'INVALID_LOCAL_CACHE' : null);
     localNote.hidden = !local.count && !local.unknown && !saved.warning || !local.unknown && !!localNoticeCode && saved.error?.code === localNoticeCode;
-    localNote.textContent = (saved.warning?.message || (local.corrupt ? '읽지 못한 이 계정의 임시기록 원본을 보존했어요. 복구 파일로 내보낸 뒤 직접 지울 수 있어요.' : active ? preferRemoteOnOpen && !pending && saved.localDrafts?.length ? '계정 기록을 열었어요. 이전 미저장 기록은 이 기기에 따로 보관했으며 필요할 때 아래에서 열 수 있어요.' : '계정에 보내지 못한 변경만 이 기기에 임시 보관해요. 저장이 끝나면 기기 사본을 지워요.' : `미저장 계정 임시기록 ${local.count}개가 이 기기에 남아 있어요. 기록을 남긴 계정으로 로그인하면 이어 사용할 기록을 고르거나 복구 파일로 내보내고 지울 수 있어요.`)) + (local.unknown ? ' 계정을 확인할 수 없는 손상 원본은 그대로 보존하며 이 화면에서 내보내거나 지우지 않아요.' : '');
+    localNote.textContent = (saved.warning?.message || (local.corrupt ? '읽지 못한 이 계정의 임시기록 원본을 보존했어요. 복구 파일로 내보낸 뒤 직접 지울 수 있어요.' : active ? preferRemoteOnOpen && !pending && saved.localDrafts?.length ? '계정 기록을 열었어요. 저장 안 된 이전 기록은 이 기기에 따로 보관했어요. 필요하면 아래에서 열어요.' : '계정에 보내지 못한 변경만 이 기기에 임시 보관해요. 저장이 끝나면 기기 사본을 지워요.' : `미저장 계정 임시기록 ${local.count}개가 이 기기에 남아 있어요. 기록을 남긴 계정으로 로그인하면 이어 사용할 기록을 고르거나 복구 파일로 내보내고 지울 수 있어요.`)) + (local.unknown ? ' 계정을 확인할 수 없는 손상 원본은 그대로 보존하며 이 화면에서 내보내거나 지우지 않아요.' : '');
     element('export-local').hidden = !active || authPending || !local.exportable;
     element('export-local').disabled = !active || authPending || pageSuspended;
     element('clear-local').hidden = !active || !local.exportable;
@@ -104,7 +104,7 @@ export function createAccountNotebook({ resource, validateState, mount, content,
   function preserveInterruptedRead() {
     if (hydrating && incomingDocument && !unsent) {
       hydrationFailure = { code: 'AUTH_RESTORING', document: incomingDocument };
-      problem = '로그인 연결을 다시 확인하는 동안 기록 읽기가 멈췄어요. 저장 다시 시도로 보관한 기록을 다시 열어 주세요.';
+      problem = '로그인을 다시 확인하는 동안 기록 읽기가 멈췄어요. 「저장 다시 시도」를 눌러 보관한 기록을 다시 열어 주세요.';
     }
     incomingDocument = null;
   }
@@ -123,7 +123,7 @@ export function createAccountNotebook({ resource, validateState, mount, content,
       preserveInterruptedRead(); generation++; stateVersion++; conversionVersion++; hydrating = false; converting = false;
       owner = nextOwner; authPaused = false;
       suspended = !!hydrationFailure;
-      if (unsent) problem = '같은 계정으로 다시 연결했어요. 보내지 못한 원본과 기록을 유지하고 있으니 저장 다시 시도로 이어가 주세요.';
+      if (unsent) problem = '같은 계정으로 다시 연결했어요. 못 보낸 기록은 그대로 있으니 「저장 다시 시도」를 눌러 주세요.';
       paint(); return;
     }
     if (nextOwner === owner) { paint(); return; }
@@ -160,7 +160,7 @@ export function createAccountNotebook({ resource, validateState, mount, content,
   }
   account = accountFactory({ clientKey: resource, endpoint: 'synk-personal', scope: 'synk-personal', resource, validateState, operations, bridge, onStatus: onAuth });
   sync = syncFactory({ validateState, emptyState: emptyDocument, scope: 'synk-personal', resource, preferRemoteOnOpen, cachePrefix: `synk.personal.${resource}.v1.`, operations, transport: async (operation, values) => {
-    if (pageSuspended || authPaused || !auth.signedIn) throw Object.assign(new Error('계정 연결을 다시 확인한 뒤 기록을 저장해 주세요. 현재 기록은 유지하고 있어요.'), { code: 'AUTH_RESTORING' });
+    if (pageSuspended || authPaused || !auth.signedIn) throw Object.assign(new Error('「계정 연결 다시 확인」을 누른 뒤 저장해 주세요. 지금 기록은 그대로예요.'), { code: 'AUTH_RESTORING' });
     const expected = generation, inputVersion = conversionVersion, read = operation === operations.load ? { generation: expected } : null;
     // A local-storage warning may replace the sync status while a read is still
     // running. Keep its interaction lock separate from those warnings.
@@ -209,8 +209,8 @@ export function createAccountNotebook({ resource, validateState, mount, content,
       const result = await operation;
       if (!current()) return;
       const warnings = [];
-      if (result?.ok === false) warnings.push('이 기기의 로그인 정보 삭제를 확인하지 못했어요. 공유 기기라면 브라우저나 앱의 저장 정보를 확인해 주세요.');
-      if (result?.serverRevoked === false) warnings.push('서버의 세션 종료는 확인하지 못했어요. 연결이 돌아오면 SYNK ID의 로그인 기기에서 이 세션을 종료해 주세요.');
+      if (result?.ok === false) warnings.push('이 기기에서 로그인 정보가 지워졌는지 모르겠어요. 함께 쓰는 기기라면 브라우저의 사이트 데이터를 지워 주세요.');
+      if (result?.serverRevoked === false) warnings.push('서버에서 로그인을 끝냈는지는 확인하지 못했어요. 인터넷이 연결되면 SYNK ID 관리의 「로그인한 곳」에서 이 기기를 종료해 주세요.');
       if (warnings.length) problem = warnings.join(' ');
     } catch (error) { if (current()) problem = documentSyncErrorMessage(error); }
   }

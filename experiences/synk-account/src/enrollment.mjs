@@ -9,21 +9,21 @@ export function mountEnrollment({container,request,guard=()=>{},beforeClaim=()=>
   input.name='invite';input.maxLength=128;input.autocomplete='off';input.spellcheck=false;input.required=true;input.setAttribute('aria-label','학생 연결 코드');
   const previewButton=node('button','이름과 반 확인');previewButton.type='submit';previewButton.className='felt-button';
   const details=node('div'),confirmButton=node('button','이 계정으로 내 반 연결');confirmButton.type='button';confirmButton.className='felt-button primary';confirmButton.hidden=true;
-  const consent=node('p','계정 연결 후에도 학습 기록 공유와 TOWN 생활 공유는 각각 직접 선택해요.');consent.className='help';
+  const consent=node('p','반에 연결한 뒤에도 학습 기록 연결과 TOWN 생활 공유는 따로 켜요.');consent.className='help';
   const status=node('p');status.setAttribute('role','status');status.setAttribute('aria-live','polite');
   label.append(input);form.append(label,previewButton);panel.append(heading,help,form,details,confirmButton,consent,status);container.append(panel);
   let epoch=0,disposed=false,busy=false,verifiedToken=null;
   const current=version=>{guard();if(disposed||version!==epoch)throw Object.assign(new Error('계정 연결이 바뀌었어요.'),{code:'ACCOUNT_CHANGED'});};
   const controls=value=>{busy=value;input.disabled=value;previewButton.disabled=value;confirmButton.disabled=value;};
   function clearPreview(){verifiedToken=null;confirmButton.hidden=true;details.replaceChildren();}
-  function report(error,version){if(disposed||version!==epoch||error.code==='ACCOUNT_CHANGED')return;status.textContent=error.message||'연결 코드를 다시 확인해 주세요.';status.className='error';}
+  function report(error,version){if(disposed||version!==epoch||error.code==='ACCOUNT_CHANGED')return;status.textContent=error.message||'연결 코드가 맞지 않아요. 선생님께 받은 코드를 다시 넣어 주세요.';status.className='error';}
   input.addEventListener('input',()=>{epoch++;clearPreview();status.textContent='';});
   form.addEventListener('submit',async event=>{
     event.preventDefault();if(busy||disposed)return;const token=input.value.trim(),version=++epoch;clearPreview();status.textContent='';
     if(!/^[A-Za-z0-9_-]{22,128}$/.test(token)){status.textContent='선생님이 준 연결 코드를 그대로 입력해 주세요.';return;}
     controls(true);
     try{current(version);const result=await request('preview',{token});current(version);
-      if(!result?.invite||typeof result.invite.className!=='string'||typeof result.invite.learnerLabel!=='string')throw new Error('학생 연결 정보를 확인하지 못했어요.');
+      if(!result?.invite||typeof result.invite.className!=='string'||typeof result.invite.learnerLabel!=='string')throw new Error('반 정보를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.');
       details.append(node('p',result.invite.className+' · '+result.invite.learnerLabel));
       const expires=Date.parse(result.invite.expiresAt);if(Number.isFinite(expires))details.append(node('p','코드 만료: '+new Date(expires).toLocaleString('ko-KR')));
       verifiedToken=token;confirmButton.hidden=false;status.className='help';status.textContent='본인의 이름과 반이 맞을 때만 연결해 주세요.';
@@ -32,8 +32,8 @@ export function mountEnrollment({container,request,guard=()=>{},beforeClaim=()=>
   confirmButton.addEventListener('click',async()=>{
     if(busy||disposed||!verifiedToken)return;const token=verifiedToken,version=++epoch;controls(true);status.textContent='';
     try{current(version);if(await beforeClaim()===false)return;current(version);const result=await request('claim',{token,confirm:true});current(version);
-      if(result?.linked!==true)throw new Error('계정 연결 결과를 확인하지 못했어요.');
-      input.value='';clearPreview();status.className='help';status.textContent='내 계정과 반을 연결했어요. 학습 기록과 TOWN 공유는 별도로 선택해 주세요.';
+      if(result?.linked!==true)throw new Error('반에 연결됐는지 확인하지 못했어요. 잠시 뒤 다시 시도해 주세요.');
+      input.value='';clearPreview();status.className='help';status.textContent='내 계정과 반을 연결했어요. 학습 기록 연결과 TOWN 생활 공유는 따로 켜 주세요.';
       await onLinked(result);current(version);
     }catch(error){report(error,version);}finally{if(!disposed&&version===epoch)controls(false);}
   });

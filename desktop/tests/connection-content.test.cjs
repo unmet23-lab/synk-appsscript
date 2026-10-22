@@ -15,7 +15,7 @@ test('Messenger teaching cold start accepts only the fixed cloud retry entry',as
 });
 test('connection page links only to the configured entry, loads packaged brand assets and contains no script',async()=>{
   const serve=createConnectionContent(options),response=await serve('synk-desktop://status/'),html=await response.text();
-  assert.equal(response.status,200);assert.match(html,/href="http:\/\/127\.0\.0\.1:4280\/synk-account\/client\.html\?product=world"/);assert.match(html,/다시 연결/);assert.match(html,/이 기기의 앱 서비스/);assert.doesNotMatch(html,/<script|onclick=|onload=/);
+  assert.equal(response.status,200);assert.match(html,/href="http:\/\/127\.0\.0\.1:4280\/synk-account\/client\.html\?product=world"/);assert.match(html,/다시 연결/);assert.match(html,/이 PC에서 앱 서비스/);assert.doesNotMatch(html,/<script|onclick=|onload=/);
   for(const [asset,mime] of [['synk.svg','image/svg+xml'],['button.webp','image/webp'],['SUIT.woff2','font/woff2'],['InterTight.woff2','font/woff2']]){const r=await serve('synk-desktop://status/assets/'+asset);assert.equal(r.status,200);assert.equal(r.headers.get('content-type'),mime);assert.ok((await r.arrayBuffer()).byteLength>100);}
   assert.match(response.headers.get('content-security-policy'),/script-src 'none'/);assert.match(response.headers.get('content-security-policy'),/connect-src 'none'/);
 });

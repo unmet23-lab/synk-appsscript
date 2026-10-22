@@ -1,0 +1,244 @@
+{
+ "experiences/relationship-care/index.html": [
+  [
+   "<span>이 기기에 저장</span>",
+   "<span>이 브라우저에 저장</span>",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "<p class=\"helper\">누르면 이 기억으로 초안을 새로 만들어요. 사람이나 기억이 바뀌면 다시 골라야 해요.</p>",
+   "<p class=\"helper\">「이 기억으로 준비」를 누르면 초안을 새로 만들어요. 사람이나 기억이 바뀌면 다시 골라야 해요.</p>",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "받아쓰기를 쓸 수 있는지 확인하고 있어요.",
+   "녹음을 글로 바꿀 수 있는지 확인하고 있어요.",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "녹음은 이 기기에서 재생하고, 글로 바꿀 때만 이 PC의 받아쓰기 프로그램에 보내요.",
+   "녹음은 이 PC에서 재생하고, 글로 바꿀 때도 이 PC 안에서만 처리해요.",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "파일을 고르면 추가할 사람을 고를 수 있어요.",
+   "파일을 불러오면 추가할 사람을 고를 수 있어요.",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/relationship-care/app.mjs": [
+  [
+   "'이 수첩은 SYNK 계정에 저장돼요.",
+   "'이 수첩은 로그인한 SYNK ID에 저장돼요.",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "throw Error('카드 사진은 10MB 이하로 골라 주세요.');",
+   "throw Error('카드 사진은 10 MB까지 가져올 수 있어요.');",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "if (!text || text.length > 50000) throw Error('글을 붙여 넣어 주세요. 50,000자까지 넣을 수 있어요.');",
+   "if (!text) throw Error('글을 붙여 넣어 주세요.'); if (text.length > 50000) throw Error('글은 50,000자까지 넣을 수 있어요. 나눠서 넣어 주세요.');",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'이전 녹음의 받아쓰기는 멈췄어요. 새 녹음을 골라 다시 해 주세요.'",
+   "'이전 녹음을 글로 바꾸던 것은 멈췄어요. 새 녹음을 골라 다시 해 주세요.'",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "`이 글과, 여기서 찾은 기억과 다시 챙길 일을 지울까요?",
+   "`이 글과 여기서 찾은 기억, 다시 챙길 일을 지울까요?",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "throw Error('받아 적은 대화가 비어 있어요.');",
+   "throw Error('받아 적은 대화가 비어 있어요. 녹음을 글로 바꾸거나 대화를 직접 적어 주세요.');",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "$('contact-import-status').textContent = '파일을 고르면 추가할 사람을 고를 수 있어요.';",
+   "$('contact-import-status').textContent = '파일을 불러오면 추가할 사람을 고를 수 있어요.';",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "<span>이 브라우저에 저장</span>(PC 앱 창)",
+   "<span>이 PC 앱에 저장</span>",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/relationship-care/server.mjs": [
+  [
+   "'이전 녹음의 받아쓰기를 마친 뒤 다시 시도해 주세요.'",
+   "'이전 녹음을 글로 바꾸는 중이에요. 끝난 뒤 다시 해 주세요.'",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'이 PC에서는 아직 받아쓰기를 쓸 수 없어요. 대화를 직접 적어 넣어 주세요.'",
+   "'이 PC에서는 아직 녹음을 글로 바꿀 수 없어요. 대화를 직접 적어 넣어 주세요.'",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'받아쓰기를 끝내지 못했어요. 더 짧은 녹음으로 다시 해 보거나 대화를 직접 적어 주세요.'",
+   "'녹음을 글로 다 바꾸지 못했어요. 더 짧은 녹음으로 다시 해 보거나 대화를 직접 적어 주세요.'",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/relationship-care/model.mjs": [
+  [
+   "birthday: `고인의 생신이라 오늘 함께 기억하고 있습니다.",
+   "birthday: `고인의 생신을 맞아 함께 기억하고 있습니다.",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "throw new Error(`${label}은 최대 ${limit.toLocaleString('ko-KR')}개까지 가져올 수 있어요.`);",
+   "throw new Error(`${label} 항목은 최대 ${limit.toLocaleString('ko-KR')}개까지 가져올 수 있어요.`);",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "clean(text, '내가 말한 문장', MAX_TEXT, true)",
+   "clean(text, '내가 한 말', MAX_TEXT, true)",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "requireId(input.sourceId, '근거 자료')",
+   "requireId(input.sourceId, '원래 글')",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'다시 챙길 일의 근거 자료와 문장이 맞지 않아요.'",
+   "'다시 챙길 일의 원래 글과 문장이 맞지 않아요.'",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "requireId(input.id, '자료 식별자')",
+   "requireId(input.id, '저장한 글 식별자')",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "clean(input.title, '자료 이름', 120, true)",
+   "clean(input.title, '저장한 글 제목', 120, true)",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/relationship-care/memory-card.mjs": [
+  [
+   "throw new Error(`${label}을 읽지 못했어요.`);",
+   "throw new Error(`${label} 칸을 읽지 못했어요.`);",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "throw new Error(`${label}은 ${max}자까지 담을 수 있어요. 조금 줄여 주세요.`);",
+   "throw new Error(`${label} 칸에는 ${max}자까지 담을 수 있어요. 조금 줄여 주세요.`);",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "throw new Error(`${label}을 적어 주세요.`);",
+   "throw new Error(`${label} 칸을 채워 주세요.`);",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'사진은 PNG·JPG·WebP 형식의 10MB 이하 파일로 골라 주세요.'",
+   "'사진은 PNG·JPG·WebP 파일을 10 MB까지 가져올 수 있어요.'",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/relationship-care/care-planner.mjs": [
+  [
+   "throw new Error(`${label}은 0부터 ${max.toLocaleString('ko-KR')}까지 숫자로 적어 주세요.`);",
+   "throw new Error(`${label}에는 0부터 ${max.toLocaleString('ko-KR')}까지 숫자를 적어 주세요.`);",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/relationship-care/care-push.mjs": [
+  [
+   "'PC 앱 창에서는 여기서 알림을 켤 수 없어요. SYNK 설정의 「플레저 PC 알림」을 켜거나, 이 창을 닫고 아래 「브라우저에서 열기」를 눌러 주세요.'",
+   "'PC 앱 창에서는 여기서 알림을 켤 수 없어요. PC 앱 설정의 「플레저 PC 알림」을 켜거나, 알림 창을 닫고 아래 「브라우저에서 열기」를 눌러 주세요.'",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/relationship-care/care-account-view.mjs": [
+  [
+   "계정 판의 「계정 자료 다시 불러오기」를 눌러",
+   "아래 「계정 자료 다시 불러오기」를 눌러",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "수첩은 이 기기에서만 쓸 수 있어요.'",
+   "지금은 이 기기에서만 수첩을 쓸 수 있어요.'",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/relationship-care/care-features.mjs": [
+  [
+   "날짜를 넣어 다시 정리해 보세요.",
+   "날짜를 넣어 다시 찾아보세요.",
+   {
+    "n": 1
+   }
+  ]
+ ]
+}

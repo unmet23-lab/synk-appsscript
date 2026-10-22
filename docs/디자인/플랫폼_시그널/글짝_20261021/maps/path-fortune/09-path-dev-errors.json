@@ -1,0 +1,9 @@
+{
+  "//": "개발용 점검 오류(보통 화면에 안 나온다). 해요체로만 맞춘다.",
+  "experiences/path-vr/interview/film/listening-sequence.mjs": [
+    ["'사용 가능한 경청 영상 ID 배열이 필요합니다.'", "'쓸 수 있는 경청 영상 ID 배열이 필요해요.'", {"n": 1}]
+  ],
+  "experiences/path-vr/interview/film/room-space.mjs": [
+    ["'면접 공간을 연결할 장면이 필요합니다.'", "'면접 공간을 붙일 장면이 필요해요.'", {"n": 1}]
+  ]
+}

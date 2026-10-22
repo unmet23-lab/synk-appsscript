@@ -154,7 +154,7 @@ test('일상 안부는 연락·기억 준비만 고르고 참석·예산을 묻�
   assert.equal(result.recommendation.action, 'contact'); assert.equal(result.occurrenceId, null);
   assert.equal(result.question, null);
   assert.deepEqual(result.alternatives.map(item => item.action), ['remember']);
-  assert.ok(!result.recommendation.steps.join(' ').includes('날짜를 확인'));
+  assert.ok(!result.recommendation.steps.join(' ').includes('날짜를 기억해'));
   const gift = prepared(state, selected(state, 'gift-preference'), { eventId: '', timeMinutes: 15 });
   assert.ok(gift.memory.blockedReasons.length);
   let logged = recordPreparation(state, { personId: 'p', eventId: '', recommendedAction: 'contact' }, now);
@@ -257,5 +257,5 @@ test('기억을 잇는 문장 자체가 금지 표현이면 일부만 남기거�
   assert.deepEqual(draft.memory.appliedTo, []);
   assert.ok(draft.memory.blockedReasons.length);
   assert.ok(draft.removedPhrases.includes('이 기억이'));
-  assert.ok(!draft.basis.some(line => line.includes('고른 글을 인용')));
+  assert.ok(!draft.basis.some(line => line.includes('고른 기억을 따옴표로')));
 });

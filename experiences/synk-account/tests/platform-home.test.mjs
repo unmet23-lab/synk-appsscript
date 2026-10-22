@@ -27,20 +27,20 @@ test('recent web selections keep the web entry, while an installed favorite open
 
 test('teacher shortcut opens the teaching view of the configured Messenger without becoming a company client launch',()=>{
   const options={base:'https://platform.example.invalid/',messengerUrl:'https://workspace.example.invalid/?tab=messenger',clients:[{id:'messenger',canLaunch:true}]};
-  assert.deepEqual(shortcutDestination('teacher',options),{kind:'web',href:'https://workspace.example.invalid/?tab=teaching',label:'워크스페이스 · 내 수업 열기 ↗'});
+  assert.deepEqual(shortcutDestination('teacher',options),{kind:'web',href:'https://workspace.example.invalid/?tab=teaching',label:'Workspace 내 수업 열기 ↗'});
   assert.equal(shortcutDestination('teacher',{base:options.base}),null);
   assert.equal(shortcutDestination('teacher',{base:'http://127.0.0.1:4280/'}).href,'http://127.0.0.1:4191/?tab=teaching');
 });
 
 test('PATH always opens its fixed standalone HTTPS interview instead of company or installed-client routes',()=>{
  for(const options of [{},{base:'http://127.0.0.1:4280/'},{base:'https://synk.im/account/platform.html',messengerUrl:'https://workspace.synk.im/?tab=messenger',clients:[{id:'path',canLaunch:true}],preferredMode:'client'}]){
-  assert.deepEqual(shortcutDestination('path',options),{kind:'web',href:'https://synk.im/path/interview/film/rehearsal.html',label:'실사 면접실 열기 ↗'});
+  assert.deepEqual(shortcutDestination('path',options),{kind:'web',href:'https://synk.im/path/interview/film/rehearsal.html',label:'면접 연습 열기 ↗'});
  }
 });
 
 test('missing and local-only entries fall back to their detail without inventing production access', () => {
   const publicOptions={base:'https://platform.example.invalid/',clients:[]};
-  assert.deepEqual(shortcutDestination('messenger',publicOptions),{kind:'detail',href:'#app/messenger',label:'이용 방법 보기 →'});
+  assert.deepEqual(shortcutDestination('messenger',publicOptions),{kind:'detail',href:'#app/messenger',label:'여는 방법 보기 →'});
   assert.equal(shortcutDestination('care',publicOptions).kind,'web');
   assert.match(shortcutDestination('care',publicOptions).href,/^https:\/\//);
   // The catalog owns current public URLs; any local preview must stay loopback-only.

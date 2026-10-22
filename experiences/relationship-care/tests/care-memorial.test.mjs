@@ -27,7 +27,7 @@ test('돌아가신 바로 그날은 1주기가 아니라 다음 해를 기일로
   assert.deepEqual([sameDay.solar.date, sameDay.solar.nth, sameDay.fortyNinth.date], ['2027-10-14', 1, '2026-12-01']);
   assert.equal(sameDay.lunar.next.nth, 1);
   assert.throws(() => memorialSchedule({ diedOn: '2026-10-15', now: NOW }), /오늘보다 뒤/);
-  assert.throws(() => memorialSchedule({ diedOn: '2026-02-30', now: NOW }), /YYYY-MM-DD/);
+  assert.throws(() => memorialSchedule({ diedOn: '2026-02-30', now: NOW }), /돌아가신 날을 다시 골라/);
 });
 
 test('윤달에 돌아가신 경우 음력 기일은 윤달로 기록하고 평달로 지내는 안내를 붙인다', () => {
@@ -83,7 +83,7 @@ test('고인의 생일·기념일 문구에는 축하와 이모지를 넣지 않
   const birthday = makeEvent({ id: 'b', personId: 'p', type: 'birthday', date: '1940-03-01' });
   const draft = draftMessage(person, birthday, { approach: 'warm' });
   assert.doesNotMatch(draft.text, /축하|🎂|🙂|💐|!|사랑해/u);
-  assert.match(draft.text, /^생전 생신을 맞아 고인을 함께 기억합니다\./);
+  assert.match(draft.text, /^고인의 생신을 맞아 함께 기억하고 있습니다\./);
   assert.match(draft.basis[0], /고인으로 표시한 분/);
   const anniversary = draftMessage(person, makeEvent({ id: 'a', personId: 'p', type: 'anniversary', date: '1960-05-05' }));
   assert.doesNotMatch(anniversary.text, /축하/);
@@ -103,7 +103,7 @@ test('오늘의 한 사람: 고인에게는 일반 안부를 권하지 않고 �
 
 test('조용한 안내 문장은 날짜 머리말과 받침을 맞추고 축하 표현을 쓰지 않는다', () => {
   const today = '2026-10-14';
-  assert.equal(memorialNotice({ person: { name: '김영희' }, kind: 'memorial', date: '2026-10-14', today, nth: 2 }),
+  assert.equal(memorialNotice({ person: { name: '김영희', deceased: true }, kind: 'memorial', date: '2026-10-14', today, nth: 2 }),
     '오늘은 김영희 님의 2주기 기일이에요. 제사는 집안에 따라 기일 전날 밤이나 기일 저녁에 지내요.');
   assert.equal(memorialNotice({ person: { name: '할아버지' }, kind: 'forty-ninth', date: '2026-10-15', today }), '내일은 할아버지의 49재예요. 조용히 마음을 모아도 괜찮아요.');
   assert.equal(memorialNotice({ person: { name: '김영희' }, kind: 'other', date: '2026-10-20', today, title: '결혼기념일' }),
@@ -113,4 +113,12 @@ test('조용한 안내 문장은 날짜 머리말과 받침을 맞추고 축하 
   for (const kind of ['memorial', 'forty-ninth', 'birthday', 'condolence', 'other']) {
     assert.doesNotMatch(memorialNotice({ person: { name: '누군가' }, kind, date: '2026-10-16', today }), /축하|!|\p{Extended_Pictographic}/u);
   }
+});
+
+test('고인으로 표시하지 않은 사람에게 단 기일은 제목 앞 이름을 떼고, 주기가 있으면 「아버님 3주기」로 읽는다', () => {
+  const today = '2026-10-14';
+  assert.equal(memorialNotice({ person: { name: '지민' }, kind: 'memorial', date: today, today, title: '지민 님 아버님 기일' }), '오늘은 지민 님의 아버님 기일이에요. 제사는 집안에 따라 기일 전날 밤이나 기일 저녁에 지내요.');
+  assert.equal(memorialNotice({ person: { name: '지민' }, kind: 'memorial', date: today, today, title: '지민의 아버님 기일', nth: 3 }), '오늘은 지민 님의 아버님 3주기예요. 제사는 집안에 따라 기일 전날 밤이나 기일 저녁에 지내요.');
+  assert.equal(memorialNotice({ person: { name: '지민' }, kind: 'memorial', date: today, today, title: '지민 기일' }), '오늘은 지민 님 수첩에 적어 둔 기일이에요. 제사는 집안에 따라 기일 전날 밤이나 기일 저녁에 지내요.');
+  assert.equal(memorialNotice({ person: { name: '지' }, kind: 'memorial', date: today, today, title: '지민이 할머니 기일' }), '오늘은 지 님의 지민이 할머니 기일이에요. 제사는 집안에 따라 기일 전날 밤이나 기일 저녁에 지내요.');
 });

@@ -101,5 +101,5 @@ test('rejected downloads report failure and retain clear advice before local del
   handler({preventDefault:()=>{prevented=true;}},item,wc);assert.equal(prevented,true);assert.equal(configured,false);assert.deepEqual(denied,['type']);
   item.getFilename=()=> 'synk-care-local-recovery.json';let received=0,canceled=0;item.getReceivedBytes=()=>received;item.cancel=()=>canceled++;
   handler({preventDefault:()=>assert.fail('valid file')},item,wc);received=64*1024*1024+1;item.emit('updated');item.emit('updated');assert.equal(canceled,1);assert.deepEqual(denied,['type','size']);
-  for(const reason of denied){const notice=productDownloadNotice(reason);assert.equal(notice.type,'warning');assert.match(notice.detail,/저장되지 않았어요/);assert.match(notice.detail,/지우지 마세요/);}
+  for(const reason of denied){const notice=productDownloadNotice(reason);assert.equal(notice.type,'warning');assert.match(notice.detail,/파일을 저장하지 못했어요/);assert.match(notice.detail,/지우지 마세요/);}
 });

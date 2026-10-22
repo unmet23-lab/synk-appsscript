@@ -69,9 +69,9 @@ export function createMemberUnderstanding({ getIdentity, request, now = Date.now
         if (current(owner, token)) {
           error = failure?.code === 'UNDERSTANDING_CONFLICT' ? 'conflict' : failure?.code === 'PERSONAL_DOCUMENT_VERSION_CONFLICT' ? 'version-conflict' : 'save-failed';
           if (!document) status = 'error';
-          message = error === 'conflict' ? '다른 곳에서 이 내용을 바꿨어요. 최신 내용을 확인한 뒤 다시 수정해 주세요.'
+          message = error === 'conflict' ? '그사이 다른 곳에서 이 내용을 바꿨어요. 새 내용을 불러왔으니 다시 고쳐 주세요.'
             : error === 'version-conflict' ? '저장 형식이 업데이트됐어요. 최신 플랫폼에서 다시 열어 주세요.'
-            : mutation ? '저장하지 못했어요. 입력한 내용은 그대로 있으니 다시 시도해 주세요.' : '고친 내역을 불러오지 못했어요. 다시 불러와 주세요.';
+            : mutation ? '저장하지 못했어요. 쓴 내용은 그대로 있으니 다시 눌러 주세요.' : '고친 내역을 불러오지 못했어요. 다시 불러와 주세요.';
         }
       } finally { if (current(owner, token)) { if (mutation) pending--; emit(); } }
       return read();
@@ -174,7 +174,7 @@ export function createMemberUnderstanding({ getIdentity, request, now = Date.now
       statementEditor.previewInput = { text: statementEditor.text, at: statementEditor.preview.at, clarifications: clone(statementEditor.clarifications) };
       statementEditor.acceptedIds = []; statementEditor.stage = 'preview'; statementEditor.submission = null;
       error = null; message = '';
-    } catch { error = 'interpretation'; message = '해석할 내용을 확인해 주세요. 500자 안에서 현재 원하는 방식을 적어 주세요.'; }
+    } catch { error = 'interpretation'; message = '원하는 방식을 500자 안으로 적어 주세요.'; }
     emit(); return error === null;
   }
   function editStatementText() {
@@ -241,7 +241,7 @@ export function createMemberUnderstanding({ getIdentity, request, now = Date.now
   function confirmStatement() {
     sync(); if (!hasCurrentPreview() || pending) return Promise.resolve(read());
     if (statementEditor.preview.question) {
-      error = 'interpretation'; message = '추가 질문을 먼저 확인해 주세요. 아직 모르겠다면 건너뛸 수 있어요.'; emit(); return Promise.resolve(read());
+      error = 'interpretation'; message = '더 물어본 것에 먼저 답해 주세요. 잘 모르겠으면 건너뛰어도 돼요.'; emit(); return Promise.resolve(read());
     }
     let value;
     try {

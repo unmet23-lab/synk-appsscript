@@ -201,7 +201,7 @@ test('account favorites group teaching into Messenger while teacher-only still o
   assert.equal(both.content.querySelectorAll('[data-cloud="favorite"]').length,1);assert.equal(both.content.querySelector('[data-cloud="favorite"][data-id="teacher"]'),null);
   both.root.querySelector('[data-resume]').onclick();assert.deepEqual(both.opened,['teacher']);assert.equal(both.writes().length,0);
   const teacher=await fixture(t,{records:new Map([['A',{revision:1,state:state(['teacher'])}]]),getAppIds:()=>['teacher']});await teacher.connect();
-  assert.equal(teacher.content.querySelectorAll('[data-cloud="favorite"]').length,1);assert.match(teacher.content.querySelector('[data-cloud="favorite"][data-id="teacher"]').textContent,/워크스페이스 · 내 수업/);assert.equal(teacher.content.querySelector('[data-cloud="favorite"][data-id="messenger"]'),null);
+  assert.equal(teacher.content.querySelectorAll('[data-cloud="favorite"]').length,1);assert.match(teacher.content.querySelector('[data-cloud="favorite"][data-id="teacher"]').textContent,/Workspace 내 수업/);assert.equal(teacher.content.querySelector('[data-cloud="favorite"][data-id="messenger"]'),null);
 });
 
 test('merged account choices show one PULSE shortcut and preserve previous Partners notes on open and edit',async t=>{
@@ -210,7 +210,7 @@ test('merged account choices show one PULSE shortcut and preserve previous Partn
   assert.equal(f.content.querySelectorAll('[data-cloud="favorite"]').length,6);assert.equal(f.content.querySelector('[data-cloud="favorite"][data-id="partners"]'),null);
   assert.equal(f.content.querySelector('[data-cloud="favorite"][data-id="pulse"]').getAttribute('aria-pressed'),'true');
   assert.equal(f.content.querySelectorAll('[name=appId] option').length,6);assert.equal(f.content.querySelector('option[value="partners"]'),null);
-  assert.match(f.content.querySelector('[data-note-id="legacy"]').textContent,/PULSE · 이전 Partners 기록/);
+  assert.match(f.content.querySelector('[data-note-id="legacy"]').textContent,/PULSE의 옛 메모/);
   assert.deepEqual(f.view.projection().favorites,['pulse']);assert.deepEqual(f.view.projection().recent,[{id:'pulse',at:20,mode:'web'}]);assert.deepEqual(f.view.projection().notes,[legacy]);
   f.root.querySelector('[data-resume]').onclick();clickCloud(f,'open','partners');assert.deepEqual(f.opened,['pulse','pulse']);assert.equal(f.writes().length,0);
   clickCloud(f,'edit-note','legacy');assert.equal(f.content.querySelector('[name=appId]').value,'partners');assert.equal(f.content.querySelectorAll('[name=appId] option').length,7);
@@ -548,7 +548,7 @@ test('authentication uncertainty hides the note, blocks new writes and restores 
 test('delete waits for its tombstone then turns account capture off and prevents later launcher writes', async t => {
   const f = await fixture(t,{ records:new Map([['A',{revision:4,state:state(['world'])}]]) }); await f.connect();
   const gate = f.hold('platformDelete'); await f.click('delete');
-  assert.match(f.confirms.at(-1),/즐겨찾기·최근 열기·이어쓰기 메모/);assert.doesNotMatch(f.confirms.at(-1),/앨범 전체/);
+  assert.match(f.confirms.at(-1),/즐겨찾기, 최근 기록, 할 일 메모/);assert.doesNotMatch(f.confirms.at(-1),/앨범 전체/);
   assert.equal(f.content.inert,true); await assert.rejects(f.view.dispatch({type:'favorite',id:'care'}));
   gate.resolve(); await settle(); assert.equal(f.records.get('A').state,null); assert.equal(f.view.connected(),false); assert.equal(f.view.projection(),null);
   assert.equal(await f.view.dispatch({type:'launch',id:'world',mode:'client'}),false); assert.equal(f.writes().length,0);

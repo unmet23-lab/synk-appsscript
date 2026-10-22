@@ -58,7 +58,7 @@ function harness(people = [], events = []) {
     currentDraft: null, memoryChoice: null, followupContext: null, checkinMode: false, logOccurrence: null,
     activeView: 'person', activeTab: 'events', preparationKey: '', persist: false, accountId: null, sampleMode: false, saveFailed: false,
     sessionDrafts: new Map(), notified: new Set(), STORAGE_KEY: 'onboarding-test', storageFails: false, failWriteAt: 0, writeAttempts: 0, locked: false,
-    $: element, makePerson, makeEvent, emptyState, defaultDraftApproach, draftMessage, generateCheckinDraft,
+    $: element, PEOPLE_GROUPS: { family: '가족', friend: '친구', work: '직장·업무', other: '기타' }, makePerson, makeEvent, emptyState, defaultDraftApproach, draftMessage, generateCheckinDraft,
     notebookView: () => ({ locked: context.locked }),
     hasPersonalizationInput: () => !!context.memoryChoice || !!element('personal-memory').value || (context.currentDraft?.eventType === 'checkin' && !!element('draft-text').value.trim()),
     on: (id, type, handler) => handlers.set(`${id}:${type}`, handler), notify: text => notices.push(text), confirmDelete: async () => true,
@@ -99,15 +99,15 @@ test('신규 등록은 상세와 선택 날짜가 접히고 첫 안부 힌트가
   assert.equal(element('person-details').open, true);
   assert.equal(element('person-start-hint').hidden, true);
   assert.equal(element('quick-event-fields').hidden, true);
-  assert.equal(element('person-submit').textContent, '수정 내용 저장');
+  assert.equal(element('person-submit').textContent, '저장');
   start();
   assert.equal(element('person-details').open, false);
   assert.equal(element('quick-event-fields').open, false);
   assert.equal(element('quick-event-fields').hidden, false);
   assert.equal(element('person-start-hint').hidden, false);
-  assert.equal(element('person-submit').textContent, '기억하고 첫 안부 준비');
+  assert.equal(element('person-submit').textContent, '저장하고 안부 준비');
   start('새 친구', 'birthday', '2026-10-10');
-  assert.equal(element('person-submit').textContent, '기억하고 마음 준비');
+  assert.equal(element('person-submit').textContent, '저장하고 문구 준비');
 });
 
 test('이름만 등록하면 해당 사람의 첫 일상 안부를 바로 열고 행사·복사·완료 기록은 만들지 않는다', async () => {
@@ -126,7 +126,7 @@ test('이름만 등록하면 해당 사람의 첫 일상 안부를 바로 열고
   assert.equal(calls.filter(item => item.name === 'beginCheckin').length, 1);
   assert.equal(calls.filter(item => item.name === 'prepareEvent').length, 0);
   assert.equal(context.state.events.length + context.state.drafts.length + context.state.completions.length + context.state.activities.length, 0);
-  assert.match(notices.at(-1), /첫 문구를 준비했어요/u);
+  assert.match(notices.at(-1), /첫 문구를 만들었어요/u);
 });
 
 test('선택 날짜를 함께 등록하면 다른 사람의 일정 대신 새 사람의 해당 행사 초안을 연다', async () => {
@@ -154,8 +154,8 @@ test('지난 일회성 결혼·부고는 저장만 하고 다른 상황의 첫 �
     assert.equal(context.currentDraft, null);
     assert.equal(element('draft-text').value, '');
     assert.equal(calls.filter(item => item.name === 'generateDraft').length, 0);
-    assert.match(notices.at(-1), /지난 일정/u);
-    assert.ok(notices.every(text => !/첫 문구를 준비했어요/u.test(text)));
+    assert.match(notices.at(-1), /지난 날짜/u);
+    assert.ok(notices.every(text => !/첫 문구를 만들었어요/u.test(text)));
     assert.equal(await context.prepareEvent(context.state.events[0].id), false);
   }
 });
@@ -193,8 +193,8 @@ test('새 사람 저장 뒤 전환을 취소하면 기존 글을 유지하고 �
   assert.equal(context.currentDraft, draft);
   assert.equal(element('draft-text').value, '지금 작성 중인 글');
   assert.equal(calls.filter(item => ['beginCheckin', 'prepareEvent', 'generateDraft'].includes(item.name)).length, 0);
-  assert.match(notices.at(-1), /사람 목록에서 새 수첩/u);
-  assert.ok(notices.every(text => !/첫 문구를 준비했어요/u.test(text)));
+  assert.match(notices.at(-1), /사람 목록에서 열 수 있어요/u);
+  assert.ok(notices.every(text => !/첫 문구를 만들었어요/u.test(text)));
 });
 
 test('저장 뒤 사람 전환을 기다리다가 계정이 바뀌면 첫 준비와 성공 안내를 중단한다', async () => {
@@ -220,7 +220,7 @@ test('첫 저장 또는 사람 전환 때 저장이 실패하면 메모리에 �
     assert.equal(context.personDialogContext, null);
     assert.equal(calls.filter(item => ['beginCheckin', 'prepareEvent', 'generateDraft'].includes(item.name)).length, 0);
     assert.ok(notices.some(text => /저장하지 못했어요/u.test(text)));
-    assert.ok(notices.every(text => !/첫 문구를 준비했어요|수첩에 기억했어요/u.test(text)));
+    assert.ok(notices.every(text => !/첫 문구를 만들었어요|수첩에 저장했어요/u.test(text)));
   }
 });
 

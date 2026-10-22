@@ -1,0 +1,214 @@
+{
+ "//": "WORLD·플랫폼 로그인 입구(client.html?product=world|platform)와 공통 로그인 오류(core.mjs), PC 앱 로그인 상태 글(desktop-account.mjs)",
+ "experiences/synk-account/client.html": [
+  [
+   "<h1>나의 계정으로,<br><span class=\"sb-mark\">이어서 시작해요.</span></h1><p id=\"product-copy\">SYNK ID에서 로그인한 뒤 이 제품으로 돌아와요.</p>",
+   "<h1>SYNK ID로 로그인하고<br><span class=\"sb-mark\">기록을 이어 가요.</span></h1><p id=\"product-copy\">SYNK ID로 로그인한 뒤 이 화면으로 돌아와요.</p>",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "aria-live=\"polite\">연결 설정을 확인하고 있어요.</p>",
+   "aria-live=\"polite\">로그인 상태를 확인하고 있어요.</p>",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "<h2>이 제품의 로그인 연결은 준비 중이에요</h2><p>실제 SSO 서비스와 제품별 주소 등록이 필요해요. 기본 학습은 사용할 수 있어요.</p>",
+   "<h2>이 화면에서는 아직 로그인할 수 없어요</h2><p>로그인 설정이 아직 연결되지 않았어요. 기본 학습은 로그인 없이 할 수 있어요.</p>",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "<p>계정 연결과 학습 기록 저장은 각각 선택해요.</p>",
+   "<p>로그인과 학습 기록 저장은 따로 정해요.</p>",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/synk-account/src/client.mjs": [
+  [
+   "try { const result = await bridge.launch('world');notice(result.ok ? '별도 WORLD 앱을 열었어요.' : '플랫폼 라이브러리에서 WORLD 설치 상태를 확인해 주세요.', !result.ok); }",
+   "try { const result = await bridge.launch('world');notice(result.ok ? 'WORLD 앱을 열었어요.' : 'WORLD를 열지 못했어요. 플랫폼의 「설치·업데이트」에서 설치 상태를 봐 주세요.', !result.ok); }",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "catch { notice('WORLD 앱을 열지 못했어요. 플랫폼 라이브러리에서 확인해 주세요.', true); }",
+   "catch { notice('WORLD 앱을 열지 못했어요. 플랫폼에서 WORLD를 다시 눌러 주세요.', true); }",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "accountLink.href = '#notice';accountLink.textContent = '이 앱의 SYNK ID';",
+   "accountLink.href = '#notice';accountLink.textContent = '이 앱의 로그인 상태';",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "if (entry === revision) notice(`${PRODUCTS[product]}에 연결했어요. 모바일과 PC에서 같은 SYNK ID를 사용해요.`);",
+   "if (entry === revision) notice(`${PRODUCTS[product]}에 로그인했어요. 휴대폰과 PC에서 같은 SYNK ID로 이어 써요.`);",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "$('setup').hidden = true;$('connect').hidden = true;notice('계정 연결을 확인하고 있어요…');",
+   "$('setup').hidden = true;$('connect').hidden = true;notice('로그인 상태를 확인하고 있어요…');",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "$('product-copy').textContent = product === 'world' ? 'SYNK ID로 연결한 뒤 게임과 학습을 이어가요.' : 'SYNK ID로 연결한 뒤 내 소속과 이용 권한을 확인해요.';",
+   "$('product-copy').textContent = product === 'world' ? '로그인하면 게임 진도와 코인을 다른 기기에서도 이어 써요.' : '로그인하면 내 소속과 이용 권한, 로그인한 기기를 볼 수 있어요.';",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "if (product === 'messenger') throw new Error('사내 메신저의 로그인 입구에서 연결해 주세요.');",
+   "if (product === 'messenger') throw new Error('SYNK Workspace는 Workspace 로그인 화면에서 들어가 주세요.');",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "throw Object.assign(new Error('계정 연결 설정을 불러오지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.'), { code: 'NETWORK', retryable: true });",
+   "throw Object.assign(new Error('인터넷 연결이 불안정해 로그인 설정을 못 불러왔어요. 연결되면 「연결 다시 확인」을 눌러 주세요.'), { code: 'NETWORK', retryable: true });",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "notice('제품 SSO 설정 전 · 실제 로그인 연결은 아직 시작하지 않아요.');return; }",
+   "notice('이 화면의 로그인 설정이 아직 없어요. 기본 학습은 로그인 없이 할 수 있어요.');return; }",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "notice('WORLD 연결을 종료했어요. 다시 연결하려면 SYNK ID로 로그인해 주세요.');return; }",
+   "notice('WORLD에서 로그아웃했어요. 다시 쓰려면 SYNK ID로 로그인해 주세요.');return; }",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "throw Object.assign(new Error('이 탭의 로그인 정보를 읽지 못했어요. 브라우저 저장 설정을 확인해 주세요.'), { code: 'STORAGE' });",
+   "throw Object.assign(new Error('브라우저가 저장 공간을 막아 로그인 정보를 못 읽었어요. 사이트 데이터 저장을 허용한 뒤 다시 열어 주세요.'), { code: 'STORAGE' });",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "$('connect').hidden = false;notice('SYNK ID에서 로그인하면 이 제품으로 돌아와요.');return; }",
+   "$('connect').hidden = false;notice('SYNK ID로 로그인하면 이 화면으로 돌아와요.');return; }",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "notice(`${PRODUCTS[product]}에서 서버가 확인한 계정으로 연결했어요.`);",
+   "notice(`${PRODUCTS[product]}에 로그인했어요.`);",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/synk-account/tests/client-recovery.test.mjs": [
+  [
+   "/서버가 확인한 계정으로 연결했어요/",
+   "/에 로그인했어요\\./"
+  ]
+ ],
+ "experiences/synk-account/src/core.mjs": [
+  [
+   "if (!config.configured || !client?.clientId || !client.redirectUri) throw new Error('이 제품의 SSO 연결 설정이 아직 준비되지 않았어요.');",
+   "if (!config.configured || !client?.clientId || !client.redirectUri) throw new Error('이 화면의 로그인 설정이 아직 없어요.');",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "if (!callbackMatches(actual, expected)) throw new Error('등록한 로그인 도착 주소와 달라요.');",
+   "if (!callbackMatches(actual, expected)) throw new Error('로그인 뒤 돌아온 주소가 달라요. 다시 로그인해 주세요.');",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "if (!code) throw new Error('로그인 코드가 없어요.');",
+   "if (!code) throw new Error('로그인 응답이 비어 있어요. 다시 로그인해 주세요.');",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "new Error('로그인 서버에 연결하지 못했어요. 연결이 돌아오면 다시 확인해 주세요.')",
+   "new Error('인터넷 연결이 끊겨 로그인 서버에 닿지 못했어요. 연결되면 다시 시도해 주세요.')",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "new Error('로그인 응답을 끝까지 받지 못했어요. 연결이 돌아오면 다시 확인해 주세요.')",
+   "new Error('로그인 응답을 끝까지 받지 못했어요. 연결되면 다시 시도해 주세요.')",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'로그인 서버가 잠시 응답하지 않아요. 잠시 뒤 다시 확인해 주세요.'",
+   "'로그인 서버가 잠시 응답하지 않아요. 잠시 뒤 다시 시도해 주세요.'",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/synk-account/src/desktop-account.mjs": [
+  [
+   "if (!state?.configured) return '이 앱의 SYNK ID 연결 설정을 준비하고 있어요. 기본 학습은 계속 이용할 수 있어요.';",
+   "if (!state?.configured) return '이 앱에는 SYNK ID 로그인 설정이 아직 없어요. 기본 학습은 로그인 없이 할 수 있어요.';",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "restoring: '저장된 로그인을 안전하게 확인하고 있어요.',",
+   "restoring: '저장된 로그인을 확인하고 있어요.',",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'signed-in': 'SYNK ID로 연결했어요. 이 앱의 계정 정보를 확인하고 있어요.',",
+   "'signed-in': 'SYNK ID로 로그인했어요. 계정 정보를 불러오고 있어요.',",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "'signed-out': 'SYNK ID로 로그인하면 모바일과 PC에서 같은 계정으로 이어갈 수 있어요.',",
+   "'signed-out': 'SYNK ID로 로그인하면 휴대폰과 PC에서 같은 계정을 써요.',",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "})[state.status] || '계정 연결 상태를 확인하고 있어요.';",
+   "})[state.status] || '로그인 상태를 확인하고 있어요.';",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "//keep": "client.mjs의 「등록된 SYNK 제품 주소를 확인해 주세요.」 줄은 tools/synk-id/prepare-world-play-public.cjs가 글자 그대로 찾아 바꾸므로 두었다."
+}

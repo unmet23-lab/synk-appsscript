@@ -1,0 +1,27 @@
+{
+ "//": "아르곤 WORLD A묶음(10-22) 처리 — 실제 코드에서 그 글이 나오는 조건을 보고 맞는 것만. ① msg.worldAccount는 PC 앱 다리(globalThis.synkDesktop)가 있을 때만 나오는 갈래라 「PC 앱」은 그대로, 「최신 판」만 PC 앱 화면의 말(「최신 버전 확인」)에 맞춰 「최신 버전」(en·mn은 이미 version이라 그대로). ② account-host 'synced'는 저장 대기가 비어 끝난 뒤라 진행형을 끝난 말로. ③ 보상 안내 막힘은 저장된 기록을 못 읽은 경우(저장 공간 부족이 아님) + 다음 행동. ④ 기억 액자 빈 글은 오늘 기록만 보므로 「오늘」을 넣고 캔버스가 글자 단위로 끊으니 줄을 직접 나눈다(자세한 창도 같은 말). ⑤ 옷 카드 trying 상태는 지금 고르고 있는 옷(저장 전) — 「입는 중」과 짝인 「고르는 중」(390 한 줄).",
+ "experiences/brand-opening/world-strings.mjs": [
+  ["'msg.worldAccount':{ko:'PC 앱을 최신 판으로 업데이트한 뒤 다시 열어 주세요.',", "'msg.worldAccount':{ko:'PC 앱을 최신 버전으로 업데이트한 뒤 다시 열어 주세요.',", {"n":1}]
+ ],
+ "experiences/synk-world-app/world-account.mjs": [
+  ["Error('PC 앱을 최신 판으로 업데이트한 뒤 다시 열어 주세요.')", "Error('PC 앱을 최신 버전으로 업데이트한 뒤 다시 열어 주세요.')", {"n":2}]
+ ],
+ "experiences/play-common/account-host.mjs": [
+  ["`계정에 저장하고 있어요. 저장하지 못한 기록 ${rejected}개는 이 기기에 남겨 뒀어요.`", "`계정에 저장했어요. 기록 ${rejected}개는 저장하지 못해 이 기기에 남겨 뒀어요.`", {"n":1}]
+ ],
+ "experiences/play-common/account-client.mjs": [
+  ["'Connected. Unprocessed requests are kept on this device; other progress can still be saved.'", "`Saved to your account. ${current.rejected} record${current.rejected===1?'':'s'} couldn’t be saved and stay on this device.`", {"n":1}]
+ ],
+ "experiences/play-common/collection-adapter.js": [
+  ["'저장 공간을 쓸 수 없어 보상 안내를 못 불러왔어요. 배우는 건 언제나 무료예요.','Couldn’t load reward guidance because saving isn’t available. Learning stays free.'", "'저장된 기록을 읽지 못해 보상 안내를 못 불러왔어요. 잠시 뒤 다시 열어 주세요. 배우는 건 언제나 무료예요.','Couldn’t read your saved records, so reward guidance didn’t load. Please open it again later. Learning stays free.'", {"n":2}]
+ ],
+ "experiences/synk-world-home/living-home-scene.mjs": [
+  ["(memoryImage?'앨범 사진':'아직 배운 표현이 없어요.')", "(memoryImage?'앨범 사진':'오늘 배운 표현이\\n아직 없어요.')", {"n":1}]
+ ],
+ "experiences/brand-opening/home.mjs": [
+  ["textContent=data.text||'아직 배운 표현이 없어요';", "textContent=data.text||'오늘 배운 표현이 아직 없어요';", {"n":1}]
+ ],
+ "experiences/synk-world-home/wardrobe-studio.mjs": [
+  ["state==='trying'?'입어 봄'", "state==='trying'?'고르는 중'", {"n":1}]
+ ]
+}

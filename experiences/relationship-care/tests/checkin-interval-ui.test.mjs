@@ -74,12 +74,12 @@ test('새 사람의 기본 30일 선택은 명시 필드를 만들지 않고 실
   await submit();
   assert.equal(context.state.people.length, 1);
   assert.equal(Object.hasOwn(context.state.people[0], 'checkinIntervalDays'), false);
-  assert.equal(context.checkinSummary(context.state.people[0]), '안부 추천 기준 · 마지막 챙김 후 30일');
+  assert.equal(context.checkinSummary(context.state.people[0]), '마지막 챙김 30일 뒤 안부 추천');
   assert.equal(JSON.parse(writes.at(-1).value).people[0].name, '새 친구');
   assert.equal(Object.hasOwn(JSON.parse(writes.at(-1).value).people[0], 'checkinIntervalDays'), false);
   assert.equal(element('person-dialog').open, false);
   assert.equal(context.personDialogContext, null);
-  assert.match(notices.at(-1), /수첩에 기억했어요/u);
+  assert.match(notices.at(-1), /수첩에 저장했어요/u);
 });
 
 test('기존 사람의 기본값 부재와 명시적 추천 끄기는 다른 정보 수정 후에도 각각 유지된다', async () => {
@@ -94,7 +94,7 @@ test('기존 사람의 기본값 부재와 명시적 추천 끄기는 다른 정
     assert.equal(Object.hasOwn(context.state.people[0], 'checkinIntervalDays'), Object.hasOwn(extra, 'checkinIntervalDays'));
     if (Object.hasOwn(extra, 'checkinIntervalDays')) {
       assert.equal(context.state.people[0].checkinIntervalDays, 0);
-      assert.equal(context.checkinSummary(context.state.people[0]), '일반 안부 추천 꺼짐');
+      assert.equal(context.checkinSummary(context.state.people[0]), '안부 추천 꺼짐');
     }
   }
 });
@@ -116,7 +116,7 @@ test('직접 정한 45일을 다시 열어 편집하고 각 미리 정한 간격
     assert.equal(context.state.people[0].checkinIntervalDays, Number(selected));
     assert.equal(element('new-person-checkin-days').disabled, true);
   }
-  assert.equal(context.checkinSummary(context.state.people[0]), '안부 추천 기준 · 마지막 챙김 후 30일');
+  assert.equal(context.checkinSummary(context.state.people[0]), '마지막 챙김 30일 뒤 안부 추천');
 });
 
 test('직접 입력의 1일·45일·365일을 저장하고 기본값 부재인 사람의 30일 복귀는 부재로 남긴다', async () => {
@@ -140,7 +140,7 @@ test('직접 입력의 빈칸·0·소수·지수표기·범위초과는 저장 �
     const before = JSON.stringify(context.state);
     context.openPersonDialog(true); change('custom', invalid);
     element('new-person-name').value = '저장되면 안 되는 이름';
-    await assert.rejects(submit(), /1일부터 365일까지 정수/u, invalid);
+    await assert.rejects(submit(), /1일부터 365일까지/u, invalid);
     assert.equal(JSON.stringify(context.state), before, invalid);
     assert.equal(writes.length, 0, invalid);
     assert.equal(notices.length, 0, invalid);
@@ -227,8 +227,8 @@ test('기기 저장 실패 때 변경은 메모리에 남기고 저장 완료 �
   assert.equal(context.state.people[0].checkinIntervalDays, 45);
   assert.equal(context.saveFailed, true);
   assert.equal(writes.length, 0);
-  assert.ok(notices.some(message => /브라우저에 저장하지 못했어요/u.test(message)));
-  assert.ok(notices.every(message => !/사람 정보를 수정했어요|수첩에 기억했어요|이름과 날짜를 기억했어요/u.test(message)));
+  assert.ok(notices.some(message => /이 (?:브라우저|PC 앱)에 저장하지 못했어요/u.test(message)));
+  assert.ok(notices.every(message => !/사람 정보를 고쳤어요|수첩에 저장했어요|이름과 날짜를 저장했어요/u.test(message)));
 });
 
 test('저장 뒤 화면을 여는 사이 계정이 바뀌면 예전 계정의 성공 토스트를 남기지 않는다', async () => {

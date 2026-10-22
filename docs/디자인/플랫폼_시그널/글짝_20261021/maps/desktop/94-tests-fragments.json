@@ -1,0 +1,15 @@
+{
+ "//": "시험 기대 조각 손질(수동 짝)",
+ "desktop/tests/startup-update-view.test.cjs": [
+  [
+   "/구성이 달라/",
+   "/버전이 맞지 않아요/"
+  ]
+ ],
+ "desktop/tests/update-view.test.cjs": [
+  [
+   "/열린 설치 파일에서 계속/",
+   "/열린 설치 파일에서 이어서/"
+  ]
+ ]
+}

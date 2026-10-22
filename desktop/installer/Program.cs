@@ -38,7 +38,7 @@ namespace Synk.SignalInstaller
                         try { created = mutex.WaitOne(10000); }
                         catch (AbandonedMutexException) { created = true; }
                     }
-                    if (!created) { MessageBox.Show("이미 " + product.ShortName + " 설치 화면이 열려 있습니다.", product.WindowTitle); return 1; }
+                    if (!created) { MessageBox.Show("이미 " + product.ShortName + " 설치 화면이 열려 있어요.", product.WindowTitle); return 1; }
                     try
                     {
                         cache = InstallerEngine.CreatePrivateCache();
@@ -57,7 +57,7 @@ namespace Synk.SignalInstaller
                             window.Loaded += async delegate
                             {
                                 if (started) return; started = true;
-                                window.ShowProgress("자동 업데이트를 준비합니다", "설치된 앱을 확인합니다.", null);
+                                window.ShowProgress("자동 업데이트를 준비해요", "설치된 앱을 확인해요.", null);
                                 try
                                 {
                                     AutomaticUpdateResult result = await Task.Run(delegate
@@ -87,7 +87,7 @@ namespace Synk.SignalInstaller
                         }
                         window.InstallRequested += async delegate
                         {
-                            window.ShowProgress("설치를 준비합니다", "설치할 수 있는지 확인합니다.", null);
+                            window.ShowProgress("설치를 준비해요", "설치할 수 있는지 확인해요.", null);
                             try
                             {
                                 await Task.Run(delegate
@@ -110,7 +110,7 @@ namespace Synk.SignalInstaller
                     finally { mutex.ReleaseMutex(); }
                 }
             }
-            catch (Exception error) { MessageBox.Show("설치 화면을 열 수 없습니다.\n" + error.Message, "SYNK 설치", MessageBoxButton.OK, MessageBoxImage.Error); return 1; }
+            catch (Exception error) { MessageBox.Show("설치 화면을 열지 못했어요.\n" + error.Message, "SYNK 설치", MessageBoxButton.OK, MessageBoxImage.Error); return 1; }
             finally { if (cache != null) try { Directory.Delete(cache, true); } catch (IOException) { } catch (UnauthorizedAccessException) { } }
         }
 
@@ -118,17 +118,17 @@ namespace Synk.SignalInstaller
         internal static AutomaticArguments ParseAutomaticArguments(string[] args)
         {
             if (Array.IndexOf(args,"--auto-update") < 0) return null;
-            if (args.Length != 3) throw new ArgumentException("자동 업데이트 실행 정보를 확인할 수 없습니다.");
+            if (args.Length != 3) throw new ArgumentException("자동 업데이트 실행 정보를 확인하지 못했어요.");
             var result = new AutomaticArguments();
             bool mode=false,pid=false,token=false;
             foreach(string value in args)
             {
                 if(value=="--auto-update"&&!mode)mode=true;
-                else if(value.StartsWith("--wait-pid=",StringComparison.Ordinal)&&!pid) { pid=true;if(!Int32.TryParse(value.Substring(11),out result.ParentId)||result.ParentId<=0||result.ParentId==Process.GetCurrentProcess().Id)throw new ArgumentException("업데이트할 앱을 확인할 수 없습니다."); }
-                else if(value.StartsWith("--handoff-token=",StringComparison.Ordinal)&&!token) { token=true;result.Token=value.Substring(16);if(!Regex.IsMatch(result.Token,"^[a-f0-9]{64}$"))throw new ArgumentException("업데이트 요청을 확인할 수 없습니다."); }
-                else throw new ArgumentException("자동 업데이트 실행 정보를 확인할 수 없습니다.");
+                else if(value.StartsWith("--wait-pid=",StringComparison.Ordinal)&&!pid) { pid=true;if(!Int32.TryParse(value.Substring(11),out result.ParentId)||result.ParentId<=0||result.ParentId==Process.GetCurrentProcess().Id)throw new ArgumentException("업데이트할 앱을 확인하지 못했어요."); }
+                else if(value.StartsWith("--handoff-token=",StringComparison.Ordinal)&&!token) { token=true;result.Token=value.Substring(16);if(!Regex.IsMatch(result.Token,"^[a-f0-9]{64}$"))throw new ArgumentException("업데이트 요청을 확인하지 못했어요."); }
+                else throw new ArgumentException("자동 업데이트 실행 정보를 확인하지 못했어요.");
             }
-            if(!mode||!pid||!token)throw new ArgumentException("자동 업데이트 실행 정보를 확인할 수 없습니다.");
+            if(!mode||!pid||!token)throw new ArgumentException("자동 업데이트 실행 정보를 확인하지 못했어요.");
             return result;
         }
 
@@ -140,7 +140,7 @@ namespace Synk.SignalInstaller
             int pid;
             if (args.Length != 1 || !args[0].StartsWith("--wait-pid=", StringComparison.Ordinal) ||
                 !Int32.TryParse(args[0].Substring(11), out pid) || pid <= 0 || pid == Process.GetCurrentProcess().Id)
-                throw new ArgumentException("설치 실행 정보를 확인할 수 없습니다.");
+                throw new ArgumentException("설치 실행 정보를 확인하지 못했어요.");
             Process previous;
             try { previous = Process.GetProcessById(pid); }
             catch (ArgumentException) { return; }
@@ -150,9 +150,9 @@ namespace Synk.SignalInstaller
                 try { previousName = previous.ProcessName; }
                 catch (InvalidOperationException) { if (previous.HasExited) return; throw; }
                 if (!String.Equals(previousName, Path.GetFileNameWithoutExtension(executableName), StringComparison.OrdinalIgnoreCase))
-                    throw new InvalidOperationException("업데이트할 SYNK 앱을 확인할 수 없습니다.");
+                    throw new InvalidOperationException("업데이트할 SYNK 앱을 찾지 못했어요.");
                 if (!previous.WaitForExit(60000))
-                    throw new InvalidOperationException("SYNK가 아직 실행 중입니다. 작업을 저장하고 앱을 종료한 뒤 설치 파일을 다시 열어 주세요.");
+                    throw new InvalidOperationException("SYNK가 아직 켜져 있어요. 작업을 저장하고 앱을 끈 뒤 설치 파일을 다시 열어 주세요.");
             }
         }
 

@@ -35,7 +35,7 @@ test('logout reports unknown notification cleanup when registration lookup fails
   const result = await f.controller.logout({ localOnly: true });
   assert.equal(result.ok, false); assert.equal(result.deviceRemoved, false);
   assert.ok(f.state.browserSub);
-  assert.match(careLogoutNotice({ ok: true, serverRevoked: true }, result), /기기 알림 해제를 확인하지 못했/);
+  assert.match(careLogoutNotice({ ok: true, serverRevoked: true }, result), /이 기기 알림이 꺼졌는지 알 수 없/);
 });
 
 test('logout accepts verified absence of a service worker registration', async () => {
@@ -174,7 +174,7 @@ test('invalid time never touches browser permission or server', async () => {
   assert.throws(() => f.controller.enable(24, 0)); assert.throws(() => f.controller.enable(9, NaN)); assert.equal(f.log.length, before);
 });
 test('first-data, device quota and invalid endpoint errors give actionable explanations', async () => {
-  for (const [code, pattern] of [['CARE_DATA_REQUIRED', /수첩을 먼저 저장/], ['PUSH_DEVICE_LIMIT', /10개/], ['PUSH_DAILY_LIMIT', /내일/], ['INVALID_SUBSCRIPTION', /브라우저/]]) {
+  for (const [code, pattern] of [['CARE_DATA_REQUIRED', /저장된 일정이 아직/], ['PUSH_DEVICE_LIMIT', /10개/], ['PUSH_DAILY_LIMIT', /내일/], ['INVALID_SUBSCRIPTION', /브라우저/]]) {
     const f = fixture(); const controller = createCarePush({ env: f.env, scopeUrl, request: (action, body) => action === 'subscribe' ? Promise.reject(Object.assign(new Error(code), { code })) : f.request(action, body) });
     await controller.setAccount('A'); await controller.enable(); assert.match(controller.snapshot().message, pattern); assert.equal(f.state.browserSub, null);
   }
@@ -190,8 +190,8 @@ test('logout removes existing generic notification from the device display', asy
 });
 test('logout notice preserves both server revocation and device notification failure warnings', () => {
   assert.equal(careLogoutNotice({ serverRevoked: true }, { ok: true }), '');
-  const combined = careLogoutNotice({ serverRevoked: false }, { ok: false }); assert.match(combined, /서버의 세션 종료/); assert.match(combined, /기기 알림 해제/); assert.match(combined, /사이트 설정/);
-  assert.doesNotMatch(careLogoutNotice({ serverRevoked: true }, { ok: false }), /서버의 세션 종료/);
+  const combined = careLogoutNotice({ serverRevoked: false }, { ok: false }); assert.match(combined, /서버 쪽 로그아웃/); assert.match(combined, /알림이 꺼졌는지/); assert.match(combined, /사이트 설정/);
+  assert.doesNotMatch(careLogoutNotice({ serverRevoked: true }, { ok: false }), /서버 쪽 로그아웃/);
 });
 
 test('local-only logout does not need live account credentials and still removes the device subscription', async () => {
@@ -215,7 +215,7 @@ test('a new account cannot prepare notifications ahead of an old logout cleanup'
 });
 test('failed credential cleanup cannot be described as completed local logout', () => {
   const message=careLogoutNotice({ok:false,serverRevoked:true},{ok:true});
-  assert.match(message,/로그인 정보 삭제를 확인하지 못/);assert.doesNotMatch(message,/이 기기의 로그인은 종료했어요/);
+  assert.match(message,/로그인 정보가 지워졌는지 알 수 없/);assert.doesNotMatch(message,/이 기기에서는 로그아웃했어요/);
 });
 
 async function workerFixture(workerScope = scopeUrl) {
@@ -227,7 +227,7 @@ async function workerFixture(workerScope = scopeUrl) {
 }
 test('worker only displays generic fixed text, ignoring names, story and malicious payload URL', async () => {
   const w = await workerFixture(); await w.dispatch('push', { data: { json: () => ({ type: 'synk-care-digest', title: 'PRIVATE NAME', body: 'PRIVATE STORY', url: 'https://evil.example' }) } });
-  assert.equal(w.shown.length, 1); assert.equal(w.shown[0].title, 'SYNK 플레저'); assert.equal(w.shown[0].body, '오늘 챙길 일이 있어요. 수첩에서 확인해 주세요.'); assert.equal(w.shown[0].tag, 'synk-care-daily');
+  assert.equal(w.shown.length, 1); assert.equal(w.shown[0].title, 'SYNK 플레저'); assert.equal(w.shown[0].body, '오늘 챙길 일이 있어요. 수첩을 열어 보세요.'); assert.equal(w.shown[0].tag, 'synk-care-daily');
   assert.doesNotMatch(JSON.stringify(w.shown), /PRIVATE|evil|url/);
   await w.dispatch('push', { data: { json: () => ({ type: 'other' }) } }); await w.dispatch('push', { data: { json() { throw new Error('bad JSON'); } } }); assert.equal(w.shown.length, 1);
 });

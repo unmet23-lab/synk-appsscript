@@ -32,7 +32,7 @@ test('desktop service rejection and cancellation preserve their meaning for offl
   await assert.rejects(client.load(), { code: 'NETWORK', retryable: true });
   await assert.rejects(client.learning.get({ after: 0, revision: 1, signal: AbortSignal.abort() }), { code: 'ABORTED' });
   assert.match(authMessage({ configured: true, status: 'signing-in' }), /브라우저/);
-  assert.match(authMessage({ configured: false }), /준비/);
+  assert.match(authMessage({ configured: false }), /로그인 설정이 아직 없어요/);
 });
 test('mobile home entries remain separate products with no authentication tokens or offline promise', async () => {
   const manifests = await Promise.all(['platform', 'world'].map(async id => JSON.parse(await readFile(new URL(`../${id}.webmanifest`, import.meta.url), 'utf8'))));

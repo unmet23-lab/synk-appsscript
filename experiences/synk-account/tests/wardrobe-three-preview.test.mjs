@@ -157,7 +157,7 @@ test('photo permission is checked at click time and renderer errors do not claim
 test('context loss shows the fallback, blocks photos, and restoration reuses the canvas', async t => {
   const f = fixture(t, { initialMode: 'three' }); f.update(outfit()); await settle(); const engine = f.engines[0];
   engine.canvas.emit('webglcontextlost'); assert.equal(f.view.element.dataset.renderMode, 'image');
-  assert.match(f.status().textContent, /3D 연결이 끊겨/); f.button('3D 사진 내려받기').onclick(); assert.equal(engine.snapshots, 0);
+  assert.match(f.status().textContent, /3D 화면이 멈춰/); f.button('3D 사진 내려받기').onclick(); assert.equal(engine.snapshots, 0);
   engine.canvas.emit('webglcontextrestored'); assert.equal(f.view.element.dataset.renderMode, 'three'); assert.equal(f.engines.length, 1);
   f.button('원본 그림').click(); engine.canvas.emit('webglcontextrestored'); engine.canvas.emit('webglcontextlost');
   assert.equal(f.view.element.dataset.renderMode, 'image'); assert.equal(f.status().textContent, ''); assert.equal(engine.disposed, 1);

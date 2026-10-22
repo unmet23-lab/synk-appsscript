@@ -1,0 +1,173 @@
+{
+  "//": "지난 기록 꺼내기(care-context)·음력 오류(lunar)·기억 카드(memory-card). 후속 챙김은 화면 전체에서 「다시 챙길 일」로 부름. 카드 아래 꾸밈 문구는 앱 이름만",
+  "experiences/relationship-care/care-context.mjs": [
+    [
+      "throw new Error('맥락을 살펴볼 한국 날짜를 확인해 주세요.');",
+      "throw new Error('한국 날짜를 읽지 못했어요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error('맥락을 살펴볼 일정 종류를 확인해 주세요.');",
+      "throw new Error('일정 종류를 읽지 못했어요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "label: item.action === 'remembered' ? '조용히 기억한 날' : '직접 챙김 완료',",
+      "label: item.action === 'remembered' ? '조용히 기억한 날' : '챙김 완료',",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "label: '후속 챙김 완료', title: item.title, dueOn: item.dueOn,",
+      "label: '다시 챙긴 일', title: item.title, dueOn: item.dueOn,",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "label: '직접 정한 다음 챙김',",
+      "label: '다시 챙길 일',",
+      {
+        "n": 1
+      }
+    ]
+  ],
+  "experiences/relationship-care/tests/care-context.test.mjs": [
+    [
+      "assert.equal(result.lastCare.label, '후속 챙김 완료');",
+      "assert.equal(result.lastCare.label, '다시 챙긴 일');"
+    ]
+  ],
+  "experiences/relationship-care/lunar.mjs": [
+    [
+      "throw new Error('음력 날짜는 YYYY-MM-DD 형식으로 입력해 주세요.');",
+      "throw new Error('음력 날짜를 다시 골라 주세요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error('음력 윤달 여부를 확인해 주세요.');",
+      "throw new Error('윤달인지 다시 골라 주세요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error('음력은 1900-01-01~2050-11-18 사이만 지원해요.');",
+      "throw new Error('음력은 1900년 1월 1일부터 2050년 11월 18일까지 고를 수 있어요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error('실제로 존재하는 음력 날짜와 윤달 여부를 확인해 주세요.');",
+      "throw new Error('그해 음력에 없는 날짜예요. 날짜나 윤달 표시를 고쳐 주세요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error('음력 윤달 반복 방법을 확인해 주세요.');",
+      "throw new Error('윤달이 없는 해에 챙길 방법을 골라 주세요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error('음력 30일이 없는 해의 처리 방법을 확인해 주세요.');",
+      "throw new Error('30일이 없는 달에 챙길 방법을 골라 주세요.');",
+      {
+        "n": 1
+      }
+    ]
+  ],
+  "experiences/relationship-care/tests/lunar.test.mjs": [
+    [
+      "/1900-01-01~2050-11-18/",
+      "/2050년 11월 18일/"
+    ],
+    [
+      "/실제로 존재/",
+      "/음력에 없는 날짜/"
+    ],
+    [
+      "/YYYY-MM-DD/",
+      "/음력 날짜를 다시/"
+    ],
+    [
+      "/윤달 여부/",
+      "/윤달인지/"
+    ],
+    [
+      "/반복 방법/",
+      "/윤달이 없는 해/"
+    ],
+    [
+      "/처리 방법/",
+      "/30일이 없는 달/"
+    ]
+  ],
+  "experiences/relationship-care/memory-card.mjs": [
+    [
+      "throw new Error(`${label}을 확인해 주세요.`);",
+      "throw new Error(`${label}을 읽지 못했어요.`);",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error(`${label}은 ${max}자까지 담을 수 있어요. 짧게 발췌해 주세요.`);",
+      "throw new Error(`${label}은 ${max}자까지 담을 수 있어요. 조금 줄여 주세요.`);",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error('카드를 전할 사람을 선택해 주세요.');",
+      "throw new Error('카드를 전할 사람을 골라 주세요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error('다른 사람의 기억이 섞여 있어요. 선택을 확인해 주세요.');",
+      "throw new Error('다른 사람의 기억이 섞여 있어요. 다시 골라 주세요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "throw new Error('챙긴 날짜를 확인해 주세요.');",
+      "throw new Error('챙긴 날짜를 읽지 못했어요.');",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "|| '함께한 순간을 기억해요',",
+      "|| '함께한 날을 기억해요',",
+      {
+        "n": 1
+      }
+    ],
+    [
+      "context.fillText('기억을 꺼내 전하는 마음 · SYNK 플레저', margin, height - 73);",
+      "context.fillText('SYNK 플레저', margin, height - 73);",
+      {
+        "n": 1
+      }
+    ]
+  ],
+  "experiences/relationship-care/tests/memory-card.test.mjs": [
+    [
+      "text: 'x'.repeat(241) }] }), /발췌/);",
+      "text: 'x'.repeat(241) }] }), /240자/);"
+    ]
+  ]
+}

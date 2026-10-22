@@ -67,13 +67,13 @@ export function createServer({ port = 4296, transcriber = createLocalTranscriber
     }
     if (req.method === 'POST' && pathname === '/api/transcribe') {
       // Custom header prevents ambient form requests; no cross-origin CORS permission is granted.
-      if (req.headers['x-synk-care'] !== '1' || req.headers.origin !== origin) return send(403, { error: '앱의 받아쓰기 버튼으로 요청해 주세요.' });
+      if (req.headers['x-synk-care'] !== '1' || req.headers.origin !== origin) return send(403, { error: '「녹음을 글로 바꾸기」 단추로 다시 해 주세요.' });
       const mimeType = String(req.headers['content-type'] || '').split(';')[0].trim().toLowerCase();
       if (!AUDIO_TYPES.has(mimeType)) return send(415, { error: 'MP3, M4A, WAV 등 음성 파일을 골라 주세요.' });
-      if (busy) { req.resume(); return send(409, { error: '이전 녹음의 받아쓰기를 마친 뒤 다시 시도해 주세요.' }); }
+      if (busy) { req.resume(); return send(409, { error: '이전 녹음을 글로 바꾸는 중이에요. 끝난 뒤 다시 해 주세요.' }); }
       busy = true; let bytes;
       try {
-        if (!(await transcriber.status()).available) { req.resume(); return send(503, { error: '이 PC의 받아쓰기가 준비되지 않았어요. 녹취 텍스트를 직접 넣을 수 있어요.' }); }
+        if (!(await transcriber.status()).available) { req.resume(); return send(503, { error: '이 PC에서는 아직 녹음을 글로 바꿀 수 없어요. 대화를 직접 적어 넣어 주세요.' }); }
         bytes = await readAudio(req);
         const result = await transcriber.transcribe({ bytes, mimeType });
         send(200, {
@@ -82,7 +82,7 @@ export function createServer({ port = 4296, transcriber = createLocalTranscriber
           mode: 'local-whisper', speakerSeparation: false, needsReview: true,
         });
       } catch (error) {
-        send(error.status || 422, { error: error.status ? error.message : '받아쓰기를 완료하지 못했어요. 짧은 녹음으로 다시 시도하거나 녹취 텍스트를 넣어 주세요.' });
+        send(error.status || 422, { error: error.status ? error.message : '녹음을 글로 다 바꾸지 못했어요. 더 짧은 녹음으로 다시 해 보거나 대화를 직접 적어 주세요.' });
       } finally { bytes?.fill(0); bytes = null; busy = false; }
       return;
     }

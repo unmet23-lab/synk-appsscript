@@ -108,7 +108,7 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
  const key=scoped?LIFE_PROGRESS_KEY:`${LIFE_PROGRESS_KEY}:${encodeURIComponent(owner)}`;
  let state=empty(owner),stopped=false,readError=null,writeError=null,saving=null;
  const lessons=new Map(),questions=new Map();
- const check=()=>{guard();if(stopped)throw fail('ACCOUNT_CHANGED','이 계정의 생활 한국어 연결이 끝났어요.');};
+ const check=()=>{guard();if(stopped)throw fail('ACCOUNT_CHANGED','로그인이 끝나 생활 한국어 진도를 저장할 수 없어요.');};
  try{const raw=storage.getItem(key);if(raw!==null){state=validate(raw,owner);backfillDaily(state);}}catch(error){readError=error?.code?error:fail('LIFE_PROGRESS_UNREADABLE','이 기기의 진도를 확인하지 못했어요. 기존 기록은 보존했어요.');}
  function status(){
   let transport=null;try{transport=getSaveStatus?.();}catch{}
@@ -121,11 +121,11 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   check();if(readError)throw readError;
   const value=status();let transport;try{transport=getSaveStatus?.();}catch{}
   if(transport?.phase)value.phase=transport.phase;
-  if(value.rejected)throw fail('LIFE_PROGRESS_REJECTED','보관된 진도를 먼저 확인해 주세요.');
+  if(value.rejected)throw fail('LIFE_PROGRESS_REJECTED','저장하지 못한 진도가 있어요. 이어 갈 기록을 먼저 골라 주세요.');
   if(value.phase==='loading')throw fail('LIFE_PROGRESS_LOADING','진도를 불러오고 있어요.');
-  if(value.phase==='conflict')throw fail('REVISION_CONFLICT','사용할 진도를 먼저 선택해 주세요.');
-  if(value.phase==='unreadable')throw fail('LIFE_PROGRESS_UNREADABLE','기존 진도를 먼저 확인해 주세요.');
-  if(value.phase==='stopped')throw fail('ACCOUNT_CHANGED','이 계정의 생활 한국어 연결이 끝났어요.');
+  if(value.phase==='conflict')throw fail('REVISION_CONFLICT','진도가 두 곳에서 달라요. 이어 갈 기록을 먼저 골라 주세요.');
+  if(value.phase==='unreadable')throw fail('LIFE_PROGRESS_UNREADABLE','기존 진도를 읽지 못해 지금은 저장할 수 없어요. 잠시 뒤 다시 열어 주세요.');
+  if(value.phase==='stopped')throw fail('ACCOUNT_CHANGED','로그인이 끝나 생활 한국어 진도를 저장할 수 없어요.');
  }
  function commit(next,{preserveDaily=false}={}){
   check();if(readError)throw fail('LIFE_PROGRESS_UNREADABLE','기존 진도를 확인하지 못했어요. 원본을 덮어쓰지 않았어요.');

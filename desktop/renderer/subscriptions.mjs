@@ -494,7 +494,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     return `<button type="button" class="ms-back" data-view="benefits">${arrowBack}회원 혜택 모두 보기</button>
       <header class="ms-hero${poster?.art ? ' has-art' : ''}">${poster?.art ? `<img class="ms-object" src="${esc(poster.art)}" alt="">` : ''}
         <div class="ms-hero-top"><span class="ms-eyebrow">${esc(poster?.label || 'SYNK FOR YOU / AI SUBSCRIPTIONS')}</span>${poster?.badge ? `<span class="ms-badge${poster.status === 'integrated' ? ' is-integrated' : ''}"><span class="ms-led" aria-hidden="true"></span>${esc(poster.badge)}</span>` : ''}</div>
-        <div class="ms-hero-title"><h1 id="benefit-title" tabindex="-1">구독</h1><p>흩어진 AI 구독,<br>이번 주 얼마나 썼는지 한 번에.</p></div>
+        <div class="ms-hero-title"><h1 id="benefit-title" tabindex="-1">구독</h1><p>AI 구독마다<br>이번 주에 남은 양을 보여 줘요.</p></div>
         <div class="ms-hero-note"><span class="ms-note">${note}</span><div class="ms-hero-actions">${actions}</div></div>
       </header>`;
   }

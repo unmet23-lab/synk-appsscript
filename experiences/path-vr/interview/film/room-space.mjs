@@ -150,7 +150,7 @@ function photographMaterial(THREE, texture, { video = false, stabilizeBackground
 }
 
 export async function createInterviewSpace(THREE, { parent, loadTexture, maxAnisotropy = 4 } = {}) {
-  if (!parent?.add) throw new TypeError('면접 공간을 연결할 장면이 필요합니다.');
+  if (!parent?.add) throw new TypeError('면접 공간을 붙일 장면이 필요해요.');
   const load = loadTexture || ((url) => new THREE.TextureLoader().loadAsync(url));
   const group = new THREE.Group(); group.name = 'seated-interview-space'; parent.add(group);
   const resources = new Set(), geometries = new Set(), videoTextures = new Map(), projectedMaterials = [];

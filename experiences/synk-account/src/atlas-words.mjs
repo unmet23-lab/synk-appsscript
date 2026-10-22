@@ -14,7 +14,7 @@ export const WORLD_GAMES = Object.freeze([
   { path: 'learning-hub', slug: 'learning-hub', label: '모든 미니게임과 상점', situations: [] },
   { path: 'korean-racing', slug: 'racing', label: '한국어 레이싱', situations: [] },
   { path: 'korean-runner', slug: 'runner', label: '바람길', situations: ['sit-travel-directions', 'sit-work-instructions'] },
-  { path: 'korean-rhythm', slug: 'rhythm', label: '한국어 리듬', situations: [] },
+  { path: 'korean-rhythm', slug: 'rhythm', label: '말의 리듬', situations: [] },
   { path: 'order-rush', slug: 'order-rush', label: '주문 폭주', situations: ['sit-travel-order'] },
   { path: 'entry-check', slug: 'entry-check', label: '입장 검사', situations: ['sit-life-notice'] },
   { path: 'story-classroom', slug: 'story-classroom', label: '선생님이 돌아왔다', situations: [] },

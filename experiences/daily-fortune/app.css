@@ -7,6 +7,8 @@
 @media (max-width:560px){.signs{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .sign{min-height:84px;align-items:start}
 .sign .tag{align-self:start}
+/* 휴대폰 두 칸에서는 영어 이름이 옆자리를 차지해 「사수자리」가 한 글자씩 꺾였다. 영어 이름을 위 줄로 올린다. */
+@media (max-width:560px){.sign{grid-template-columns:minmax(0,1fr);gap:6px}.sign .tag{grid-row:1;justify-self:start}}
 .find-sign{max-width:520px;margin-top:22px}
 .inline{display:flex;gap:8px}
 .inline input{flex:1}

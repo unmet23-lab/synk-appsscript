@@ -18,12 +18,12 @@ const FAMILY_WORD = /^(?:어머니|아버지|어머님|아버님|엄마|아빠|�
 
 function validDate(value, label) {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value) || value < '1900-01-01' || value > '2199-12-31'
-    || new Date(`${value}T00:00:00Z`).toISOString().slice(0, 10) !== value) throw new Error(`${label}을 YYYY-MM-DD로 확인해 주세요.`);
+    || new Date(`${value}T00:00:00Z`).toISOString().slice(0, 10) !== value) throw new Error(`${label}${josa(label, '을', '를')} 다시 골라 주세요.`);
   return value;
 }
 export function koreanDate(now = new Date()) {
   const date = new Date(now);
-  if (!Number.isFinite(date.getTime())) throw new Error('기준 시간을 확인해 주세요.');
+  if (!Number.isFinite(date.getTime())) throw new Error('날짜를 읽지 못했어요.');
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
 }
 
@@ -62,7 +62,7 @@ export function memorialNotice({ person, kind, date, today, nth = null, title = 
   validDate(date, '날짜'); validDate(today, '오늘 날짜');
   const who = callName(person), when = whenPhrase(date, today), left = tail(date, today);
   if (kind === 'forty-ninth') return `${when} ${who}의 49재예요. 조용히 마음을 모아도 괜찮아요.${left}`;
-  if (kind === 'memorial') return `${when} ${who}의 ${nth ? `${nth}주기 ` : ''}기일이에요. ${JESA_NOTE}${left}`;
+  if (kind === 'memorial') { /* 고인으로 표시하지 않은 사람에게 단 기일(예: 「아버님 기일」)은 그 사람 본인의 기일이 아니다. 제목 앞의 그 사람 이름(「지민 님의」 등)은 떼고 읽는다. */ const name = String(person?.name ?? '').trim(), label = String(title ?? '').trim(), rest = name && label.startsWith(name) ? label.slice(name.length) : null, named = rest !== null && /^(?:$|[\s·:,-]|님|의)/u.test(rest) ? rest.replace(/^\s*(?:님\s*)?(?:의\s*)?[\s·:,-]*/u, '').trim() : label; if (!isDeceased(person) && named && named !== '기일') { const what = nth && /기일$/u.test(named) ? `${named.replace(/\s*기일$/u, '')} ${nth}주기`.trim() : named; return `${when} ${who}의 ${what}${copula(what)}. ${JESA_NOTE}${left}`; } if (!isDeceased(person)) return `${when} ${who} 수첩에 적어 둔 ${nth ? `${nth}주기 ` : ''}기일이에요. ${JESA_NOTE}${left}`; return `${when} ${who}의 ${nth ? `${nth}주기 ` : ''}기일이에요. ${JESA_NOTE}${left}`; }
   if (kind === 'birthday') return `${when} ${who}의 생전 생신이에요. 조용히 기억해도 괜찮아요.${left}`;
   if (kind === 'condolence') return `${when} 기억해 둔 ${title || '부고'} 날이에요. 위로는 짧고 차분하게 전해도 충분해요.${left}`;
   const what = title || '날';
@@ -82,7 +82,7 @@ function nextYearly(event, today, diedOn) {
 export function memorialSchedule({ diedOn, now = new Date() } = {}) {
   validDate(diedOn, '돌아가신 날');
   const today = koreanDate(now);
-  if (diedOn > today) throw new Error('돌아가신 날이 오늘보다 뒤예요. 날짜를 확인해 주세요.');
+  if (diedOn > today) throw new Error('돌아가신 날이 오늘보다 뒤예요. 날짜를 다시 골라 주세요.');
   const fortyNinth = moveDay(diedOn, 48);
   const solarEvent = makeEvent({ personId: 'memorial', type: 'memorial', date: diedOn, repeat: 'yearly', yearKnown: true });
   const solarNext = nextYearly(solarEvent, today, diedOn);
@@ -113,7 +113,7 @@ export function memorialSchedule({ diedOn, now = new Date() } = {}) {
 
 function personOf(state, personId) {
   const person = state.people.find(item => item.id === personId);
-  if (!person) throw new Error('사람을 다시 선택해 주세요.');
+  if (!person) throw new Error('사람을 다시 골라 주세요.');
   return person;
 }
 
@@ -124,7 +124,7 @@ function personOf(state, personId) {
 export function markDeceased(state, personId, { diedOn } = {}, now = new Date()) {
   const current = importBackup(state), person = personOf(current, personId);
   if (diedOn === undefined) diedOn = person.diedOn ?? '';
-  if (diedOn) { validDate(diedOn, '돌아가신 날'); if (diedOn > koreanDate(now)) throw new Error('돌아가신 날이 오늘보다 뒤예요. 날짜를 확인해 주세요.'); }
+  if (diedOn) { validDate(diedOn, '돌아가신 날'); if (diedOn > koreanDate(now)) throw new Error('돌아가신 날이 오늘보다 뒤예요. 날짜를 다시 골라 주세요.'); }
   const { careSnooze: _snooze, diedOn: _diedOn, ...rest } = person;
   const updated = makePerson({ ...rest, deceased: true, ...(diedOn ? { diedOn } : {}) });
   return importBackup({ ...current, people: current.people.map(item => item.id === personId ? updated : item) });
@@ -171,7 +171,7 @@ export function addMemorialEvents(state, personId, keys, { calendar = 'lunar', n
   const current = importBackup(state);
   const { events } = suggestMemorialEvents(current, personId, { calendar, now });
   const chosen = events.filter(item => keys.includes(item.key));
-  if (chosen.length !== new Set(keys).size) throw new Error('고른 일정이 이미 있거나 날짜가 지났어요. 목록을 다시 확인해 주세요.');
+  if (chosen.length !== new Set(keys).size) throw new Error('고른 일정이 이미 있거나 날짜가 지났어요. 창을 닫았다가 다시 열어 주세요.');
   const added = chosen.map(({ key, preview, ...input }) => makeEvent(input));
   return importBackup({ ...current, events: [...current.events, ...added] });
 }

@@ -18,16 +18,16 @@ function csvRows(text) {
     } else if (c === ',') field();
     else if (c === '\r' || c === '\n') { if (c === '\r' && text[i + 1] === '\n') i++; line(); }
     else if (c === '"' && !cell && !endedQuote) quoted = true;
-    else { if (endedQuote || c === '"') throw Error('CSV의 따옴표와 쉼표 구분을 확인해 주세요.'); cell += c; }
+    else { if (endedQuote || c === '"') throw Error('CSV의 따옴표와 쉼표가 어긋나 있어요. 엑셀에서 「CSV UTF-8」로 다시 저장해 주세요.'); cell += c; }
   }
-  if (quoted) throw Error('CSV의 닫히지 않은 따옴표를 확인해 주세요.');
+  if (quoted) throw Error('CSV에 닫히지 않은 따옴표가 있어요. 엑셀에서 「CSV UTF-8」로 다시 저장해 주세요.');
   if (cell || row.length || endedQuote) line();
   return rows;
 }
 
 /** Read only the minimum contact fields. Phone numbers, emails and source notes never enter the result. */
 export function parseContactFile(text, filename = '') {
-  if (typeof text !== 'string' || new TextEncoder().encode(text).byteLength > CONTACT_FILE_LIMIT) throw Error('파일은 4 MB 이내로 준비해 주세요.');
+  if (typeof text !== 'string' || new TextEncoder().encode(text).byteLength > CONTACT_FILE_LIMIT) throw Error('파일은 4 MB까지 가져올 수 있어요.');
   text = text.replace(/^\uFEFF/, '');
   let rows;
   if (/\.json$/i.test(filename)) rows = importBackup(text).people.map(({ name, relationship, group }) => ({ name, relationship, group }));
@@ -40,14 +40,14 @@ export function parseContactFile(text, filename = '') {
     if (name < 0 && first < 0 && last < 0) throw Error('첫 줄에 이름 또는 Name 열을 넣어 주세요. First Name·Last Name 열도 사용할 수 있어요.');
     if (new Set(headers).size !== headers.length) throw Error('CSV에 같은 이름의 열이 있어요. 중복된 열을 정리해 주세요.');
     rows = parsed.map(row => {
-      if (row.length > headers.length) throw Error('CSV의 열 개수가 첫 줄과 달라요. 쉼표와 따옴표를 확인해 주세요.');
+      if (row.length > headers.length) throw Error('CSV의 열 개수가 첫 줄과 달라요. 칸 안의 쉼표는 따옴표로 감싸 주세요.');
       return { name: name >= 0 ? row[name] || '' : [first, middle, last].filter(i => i >= 0).map(i => row[i] || '').filter(Boolean).join(' '), relationship: relation >= 0 ? row[relation] || '' : '', group: GROUPS[(group >= 0 ? row[group] || '' : '').trim().toLowerCase()] || 'other' };
     });
-  } else throw Error('이름이 담긴 UTF-8 CSV 또는 플레저 JSON 백업 파일을 선택해 주세요.');
+  } else throw Error('이름이 담긴 UTF-8 CSV나 플레저 백업(JSON) 파일을 골라 주세요.');
   const contacts = []; let skipped = 0;
   for (const row of rows) {
     if (!row.name?.trim()) { skipped++; continue; }
-    if (/[\x00-\x1f\x7f\uFFFD]/.test(row.name + row.relationship)) throw Error('이름·관계의 줄바꿈이나 깨진 글자를 확인해 주세요. CSV는 UTF-8로 저장해 주세요.');
+    if (/[\x00-\x1f\x7f\uFFFD]/.test(row.name + row.relationship)) throw Error('이름이나 관계에 줄바꿈이나 깨진 글자가 있어요. CSV를 UTF-8로 다시 저장해 주세요.');
     const person = makePerson({ name: row.name, relationship: row.relationship, group: row.group });
     contacts.push({ name: person.name, relationship: person.relationship, group: person.group });
   }
@@ -65,7 +65,7 @@ export function previewContacts(state, contacts) {
 
 /** Selection is mandatory; create fresh person IDs and preserve every existing record. */
 export function addSelectedContacts(state, contacts, selected) {
-  if (!Array.isArray(selected) || !selected.length || selected.some(index => !Number.isSafeInteger(index) || index < 0 || index >= contacts.length)) throw Error('추가할 사람을 직접 선택해 주세요.');
+  if (!Array.isArray(selected) || !selected.length || selected.some(index => !Number.isSafeInteger(index) || index < 0 || index >= contacts.length)) throw Error('추가할 사람을 골라 주세요.');
   const wanted = new Set(selected), planned = previewContacts(state, contacts);
   const additions = planned.filter(item => wanted.has(item.index) && !item.duplicate).map(({ name, relationship, group }) => makePerson({ name, relationship, group }));
   if (state.people.length + additions.length > 1000) throw Error('수첩에는 최대 1,000명을 보관할 수 있어요. 추가할 사람 수를 줄여 주세요.');

@@ -1,0 +1,15 @@
+{
+  "//": "모델 오류 꼬리표에 남은 안쪽 말(발화·원문) — 빈 칸 오류(「… 칸을 채워 주세요」)에 그대로 붙어 보이므로 화면 이름과 같게",
+  "experiences/relationship-care/model.mjs": [
+    ["const sample = clean(text, '본인 발화', MAX_TEXT, true);", "const sample = clean(text, '내가 말한 문장', MAX_TEXT, true);", {"n": 1}],
+    ["requireId(input.sourceId, '근거 원문')", "requireId(input.sourceId, '근거 자료')", {"n": 2}],
+    ["requireId(input.id, '원문 식별자')", "requireId(input.id, '자료 식별자')", {"n": 1}],
+    ["clean(input.title, '원문 제목', 120, true)", "clean(input.title, '자료 이름', 120, true)", {"n": 1}],
+    ["clean(input.text, '보관할 원문', MAX_TEXT, true)", "clean(input.text, '저장할 글', MAX_TEXT, true)", {"n": 1}],
+    ["'text', '원문 종류')", "'text', '자료 종류')", {"n": 1}],
+    ["timestamp(input.createdAt, '원문 저장 시간')", "timestamp(input.createdAt, '자료 저장 시간')", {"n": 1}],
+    ["backupList(data.sources, 1000, '보관한 원문', true)", "backupList(data.sources, 1000, '저장한 글', true)", {"n": 1}],
+    ["recordObject(input, '보관한 원문'); const item = makeSource(input); uniqueId(item.id, sourceIds, '보관한 원문');", "recordObject(input, '저장한 글'); const item = makeSource(input); uniqueId(item.id, sourceIds, '저장한 글');", {"n": 1}],
+    ["throw new Error('원문에 연결된 사람이 없어요.');", "throw new Error('저장한 글에 연결된 사람이 없어요.');", {"n": 1}]
+  ]
+}

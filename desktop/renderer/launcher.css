@@ -508,10 +508,12 @@ dialog .fine-print{margin-top:18px;font-size:.75rem;color:var(--ink-3)}
 .leave-dialog{width:440px}
 .leave-dialog h2{font-size:1.625rem}
 .leave-dialog .leave-actions .solid-button,.leave-dialog .leave-actions .ghost-button{flex:1;width:auto;margin:0;height:46px}
-.content-dialog{width:860px;border-radius:var(--r-xl);overflow:hidden;background:var(--surface-1);border:1px solid var(--line-2);box-shadow:var(--shadow)}
-.content-dialog>img{width:100%;max-height:420px;object-fit:cover;background:#000}
-.content-dialog .dialog-close{background:rgba(8,9,12,.6);color:#fff;border-color:rgba(255,255,255,.25)}
-.content-dialog-copy{padding:26px 30px 28px}
+/* 게임 화면은 휴대폰 세로 캡처라 그림을 왼쪽에 세우고 글을 옆에 둔다. */
+.content-dialog{width:720px;border-radius:var(--r-xl);overflow:hidden;background:var(--surface-1);border:1px solid var(--line-2);box-shadow:var(--shadow)}
+.content-dialog[open]{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center}
+.content-dialog>form{display:contents}
+.content-dialog>img{display:block;height:min(540px,calc(100dvh - 96px));width:auto;max-width:none;aspect-ratio:540/1169;object-fit:cover;margin:24px 0 24px 24px;border-radius:22px;border:1px solid var(--line-2);background:#000}
+.content-dialog-copy{padding:30px 32px 30px 28px}
 .content-dialog-copy h2{margin:4px 0 8px}
 .content-dialog-copy .ghost-button{width:auto}
 .personal-dialog .label .atlas-dot{width:16px;height:16px;box-shadow:none}

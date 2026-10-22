@@ -62,7 +62,7 @@ async function fixture({ initial = signedIn(), initialStatus, product = 'platfor
 
 test('native global logout closes immediately and blocks late export while revocation waits', async () => {
   const page = await fixture(), exporting = deferred(), revoking = deferred();page.waits.export = exporting;page.waits.revoke = revoking;
-  page.button('연결된 연습 기록 내려받기').onclick();await settle();page.button('모든 제품의 로그인 종료').onclick();
+  page.button('연습 기록 내려받기').onclick();await settle();page.button('모든 SYNK 앱에서 로그아웃').onclick();
   assert.equal(page.get('account').hidden, true);assert.equal(page.get('account').children.length, 0);
   exporting.resolve({ ok: true, events: [], cursor: 0, until: 0, hasMore: false });await settle();assert.equal(page.downloads(), 0);
   revoking.resolve({ ok: false, error: { code: 'NETWORK' } });await settle();
@@ -79,7 +79,7 @@ for (const snapshotGeneration of [1, 2]) test(`a late initial native auth snapsh
 
 test('an old global logout failure cannot sign out a newer native account', async () => {
   const page = await fixture(), pending = deferred();page.waits.revoke = pending;
-  page.button('모든 제품의 로그인 종료').onclick();await settle();await page.emit(signedIn('synthetic-b', 2));
+  page.button('모든 SYNK 앱에서 로그아웃').onclick();await settle();await page.emit(signedIn('synthetic-b', 2));
   const notice = page.notice();pending.resolve({ ok: false, error: { code: 'NETWORK' } });await settle();
   assert.equal(page.state().account.synk_user_id, 'synthetic-b');assert.equal(page.get('account').hidden, false);
   assert.equal(page.calls.includes('authSignOut'), false);assert.equal(page.notice(), notice);
@@ -96,7 +96,7 @@ test('native login cancellation rejects its older in-flight sign-in snapshot', a
 test('global WORLD logout stops the game host and same-session refresh cannot reopen it', async () => {
   const page = await fixture({ product: 'world' }), pending = deferred();page.waits.revoke = pending;
   page.button('한국어 레이싱').onclick();await settle();const host = page.window.SYNKLearningHost;
-  page.button('모든 제품의 로그인 종료').onclick();assert.equal(page.window.SYNKLearningHost, undefined);
+  page.button('모든 SYNK 앱에서 로그아웃').onclick();assert.equal(page.window.SYNKLearningHost, undefined);
   assert.equal(page.get('world-games').children.length, 0);assert.throws(() => host.retry(), /바뀌|ended/);
   await page.emit({ ...signedIn(), status: 'restoring', signedIn: false, account: null });await page.emit(signedIn());
   assert.equal(page.get('account').hidden, true);assert.equal(page.window.SYNKLearningHost, undefined);

@@ -125,7 +125,7 @@ test('signup age validation still prevents sending and preserves optional learni
 test('an in-flight request cannot be sent twice or reassigned to another form mode', async t => {
   const page = await fixture(t), pending = deferred();page.mode('signup');page.replies.signUp = () => pending.promise;
   const first = page.submit();await page.submit();page.mode('recover');
-  assert.equal(page.get('auth-heading').textContent, '나만의 SYNK를 시작해요.');assert.equal(page.calls.length, 1);assert.equal(page.get('auth-submit').disabled, true);
+  assert.equal(page.get('auth-heading').textContent, 'SYNK 계정을 만들어요.');assert.equal(page.calls.length, 1);assert.equal(page.get('auth-submit').disabled, true);
   assert.equal(page.notice['data-kind'], 'pending');assert.equal(page.feedback['data-kind'], 'pending');assert.equal(page.feedback.hidden, false);
   assert.match(page.feedback.textContent, /요청을 보내고 있어요/);
   pending.resolve({ data: { session: null } });await first;assert.match(page.notice.textContent, /^가입 확인 메일/);assert.equal(page.get('auth-submit').disabled, false);
@@ -247,7 +247,7 @@ const syntheticAccount = id => ({ ok: true, account: { synk_user_id: id, status:
 test('auth errors explain credentials, confirmation, expired links and connection failures in Korean', () => {
   for (const [error, expected] of [
     [{ code: 'invalid_credentials' }, /이메일 또는 비밀번호가 맞지 않아요/],
-    [{ message: 'Invalid login credentials' }, /입력 내용을 확인/],
+    [{ message: 'Invalid login credentials' }, /다시 입력해 주세요/],
     [{ code: 'email_not_confirmed' }, /이메일 확인이 아직 끝나지/],
     [{ message: 'Email not confirmed' }, /받은 메일의 확인 버튼/],
     [{ code: 'weak_password' }, /비밀번호.*8자/],

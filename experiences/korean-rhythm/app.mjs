@@ -515,7 +515,7 @@ async function playReview(voice) {
 /** 새 문장 확인: 수나 시간만 바꾼 새 문장을 먼저 소리로 듣고 O·X로 답한 뒤 글을 본다(원문과 같은 문항군의 연습). */
 async function recall() {
   const questions = state.round.questions;
-  if (state.recallIndex >= questions.length) { $('recall-feedback').textContent = '다른 문장도 확인했어요. 다음 곡에서 다시 만나요.'; $('recall-button').hidden = true; return; }
+  if (state.recallIndex >= questions.length) { $('recall-feedback').textContent = '준비한 문장을 다 들었어요. 다음 곡에서 또 만나요.'; $('recall-button').hidden = true; return; }
   const source = questions[state.recallIndex], q = source.recall;
   if (source.recallPresentationId) learn((c) => c.help(source.recallPresentationId, 'replay'));
   else source.recallPresentationId = learn((c) => c.present(rhythmItem(state.round.track.id, source, { recall: true })));

@@ -19,9 +19,9 @@ export function getMonthFlow({ mode, signId, saju, startDate = seoulDateKey(), d
     const reason = date > SAJU_MAX_DATE || date < SAJU_MIN_DATE ? '계산 지원 범위 밖의 날짜예요.' : null;
     if (reason) return { date, weekday: weekdayOf(date), available: false, overall: null, tag: null, tagLabel: null, label: reason };
     const card = index === 0 ? first : getDailyCard({ mode, signId, saju, date });
-    return { date, weekday: weekdayOf(date), available: true, overall: card.levels.overall, tag: card.tag, tagLabel: card.tagLabel, label: card.label };
+    return { date, weekday: weekdayOf(date), available: true, overall: card.levels.overall, tag: card.tag, tagLabel: card.tagLabel, label: card.label, headline: card.headline };
   });
-  const pick = tag => items.filter(item => item.tag === tag).map(({ date, weekday, overall, label, tagLabel }) => ({ date, weekday, overall, label, tagLabel }));
+  const pick = tag => items.filter(item => item.tag === tag).map(({ date, weekday, overall, label, tagLabel, headline }) => ({ date, weekday, overall, label, tagLabel, headline }));
   const goodDays = pick('good'), calmDays = pick('calm'), careDays = pick('care');
   const parts = [];
   if (goodDays.length) parts.push(`${TAGS.good}은 ${goodDays.length}일`);

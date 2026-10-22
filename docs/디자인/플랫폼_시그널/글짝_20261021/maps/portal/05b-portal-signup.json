@@ -1,0 +1,6 @@
+{
+  "//": "가입 화면에서 Google 안내가 두 번 나오던 것을 줄이고 비밀번호 조건(8자 이상, index.html minlength=8)을 알린다",
+  "experiences/synk-account/src/portal.mjs": [
+    ["mode === 'signup' ? '이메일과 비밀번호로 가입해요. Google 계정으로도 가입할 수 있어요.'", "mode === 'signup' ? '이메일과 비밀번호로 가입해요. 비밀번호는 8자 이상이에요.'", {"n": 1}]
+  ]
+}

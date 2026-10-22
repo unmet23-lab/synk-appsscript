@@ -1,0 +1,205 @@
+{
+ "//": "포털 Fable 최종 검수 P2 여덟과 P3 하나(내 성향 오류 글). P1(계정 라이브러리 상자 설명)은 총괄이 summary()·nextStep()에서 고쳐 그 부분은 손대지 않음. 처리 표 scratchpad/fable/portal-handling.md",
+ "experiences/synk-account/src/account-notebook.mjs": [
+  [
+   "onStatusChange = () => {}, pendingDescription = '',",
+   "onStatusChange = () => {}, statusLabel = text => text, pendingDescription = '',",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "<h2>내 계정으로 이어가기</h2>",
+   "<h2>계정 저장</h2>",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "mount.querySelector('[data-notebook-status]').textContent = deleting ? '계정 기록 삭제 중'",
+   "mount.querySelector('[data-notebook-status]').textContent = statusLabel(deleting ? '계정 기록 삭제 중'",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "['restoring', 'signing-in'].includes(auth.status) ? '로그인 확인 중' : '로그인 전';",
+   "['restoring', 'signing-in'].includes(auth.status) ? '로그인 확인 중' : '로그인 전', { active, status: saved.status });",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/synk-account/src/platform-library-view.mjs": [
+  [
+   "        onStatusChange: () => queueMicrotask(render),",
+   "        onStatusChange: () => queueMicrotask(render), statusLabel: (text, { active, status }) => active && status === \"synced\" && !doc.consent ? \"계정 저장 꺼짐\" : text,",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "<span class=\"continuity-status\" data-library-status></span>",
+   "<span class=\"continuity-status\" data-library-status role=\"status\" aria-live=\"polite\"></span>",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "      await notebook.start();",
+   "      mount.querySelector(\"[data-notebook-status]\").hidden = true;await notebook.start();",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "banner.querySelector(\"[data-recovery-detail]\").textContent = state.error || \"이 기기에 보관한 작성 중 메모가 있어요. 복구하면 내용을 확인한 뒤 계정에 저장할 수 있어요.\"",
+   "banner.querySelector(\"[data-recovery-detail]\").textContent = state.error || \"이 기기에 쓰던 메모의 임시 저장본이 있어요. 되살리면 내용을 확인한 뒤 계정에 저장할 수 있어요.\"",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "discard.textContent = state.removalFailed ? \"초안 삭제 다시 시도\" : \"보관한 초안 버리기\";",
+   "discard.textContent = state.removalFailed ? \"임시 저장본 지우기 다시 시도\" : \"임시 저장본 버리기\";",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "<button type=\"button\" data-cloud=\"recover-draft\">초안 복구</button><button type=\"button\" data-cloud=\"discard-recovery\">보관한 초안 버리기</button>",
+   "<button type=\"button\" data-cloud=\"recover-draft\">쓰던 메모 되살리기</button><button type=\"button\" data-cloud=\"discard-recovery\">임시 저장본 버리기</button>",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "globalThis.confirm(\"현재 작성 중인 내용을 닫고 기기에 보관한 초안을 열까요?\")",
+   "globalThis.confirm(\"지금 쓰는 내용을 닫고 이 기기의 임시 저장본을 열까요?\")",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "message = saved.editing && !editing ? \"원래 메모가 바뀌어 복구한 내용을 새 메모로 열었어요. 확인한 뒤 저장해 주세요.\" : \"작성 중이던 메모를 복구했어요. 확인한 뒤 계정에 저장해 주세요.\";",
+   "message = saved.editing && !editing ? \"원래 메모가 바뀌어 되살린 내용을 새 메모로 열었어요. 확인한 뒤 저장해 주세요.\" : \"쓰던 메모를 되살렸어요. 확인한 뒤 계정에 저장해 주세요.\";",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/synk-account/src/platform.mjs": [
+  [
+   "notice('연결이 불안정해 화면 설정을 못 불러왔어요. 잠시 뒤 다시 시도해 주세요.');}",
+   "notice('연결이 불안정해 로그인 설정을 못 불러왔어요. 잠시 뒤 다시 시도해 주세요.');}",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "item.category==='learn'?'한국어 미니게임':'회사 초대 필요'",
+   "item.category==='learn'?'한국어 게임과 TOPIK 연습':'회사 초대 필요'",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "<p>SYNK 앱과 회원 혜택을 여는 PC 앱이에요. WORLD와 Workspace도 이 앱 안에서 설치해요.</p>",
+   "<p>SYNK 앱과 회원 혜택을 여는 PC 앱이에요.</p>",
+   {
+    "n": 1
+   }
+  ],
+  [
+   ":environment?'설치 안 됨':'PC 앱에서 설치'}",
+   ":environment?'설치 안 됨':app.id==='world'?'웹에서도 열려요':'회사 초대 필요'}",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/synk-account/platform.html": [
+  [
+   "<span>WORLD와 Workspace는 웹에서 열거나 PC 앱에서 설치해요</span>",
+   "<span>같은 SYNK ID로 웹과 PC 앱에서 써요</span>",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/synk-account/src/applications.mjs": [
+  [
+   "description: 'SYNK 팀이 대화하고 일하는 업무 앱이에요. 교사는 「내 수업」에서 맡은 반을 챙겨요.'",
+   "description: '채널 대화와 회사 자료, 작업실이 한 앱에 있어요. 교사는 「내 수업」에서 맡은 반을 챙겨요.'",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/synk-account/client.html": [
+  [
+   "<title>SYNK · 계정 연결</title>",
+   "<title>SYNK ID 로그인</title>",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "desktop/renderer/benefits.mjs": [
+  [
+   "    name: '내 성향 확인하기',",
+   "    name: '내 성향',",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "desktop/renderer/member-insight.mjs": [
+  [
+   "message: '내 기록을 불러오지 못했어요. 계정 연결을 확인하거나 다시 불러와 주세요.'",
+   "message: '인터넷 연결을 보고 「다시 불러오기」를 눌러 주세요. 계속 안 되면 로그아웃했다가 다시 로그인해 주세요.'",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "desktop/renderer/member-insight-view.mjs": [
+  [
+   "'잠시 뒤 다시 확인해 주세요. 연결한 기록을 가져와야 내 성향을 보여 드릴 수 있어요.'",
+   "'잠시 뒤 「다시 불러오기」를 눌러 주세요. 연결한 기록을 가져와야 내 성향을 보여 드릴 수 있어요.'",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "<span class=\"mi2-label\">다시 확인</span><h2>기록을 불러오지 못했어요.</h2>",
+   "<span class=\"mi2-label\">불러오기 실패</span><h2>기록을 불러오지 못했어요.</h2>",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/synk-account/src/platform-library-recovery.mjs": [
+  [
+   "error='기기의 초안 복구 상태를 확인하지 못했어요. 현재 입력은 이 화면에 유지돼요.'",
+   "error='이 기기의 임시 저장본을 확인하지 못했어요. 지금 입력은 이 화면에 그대로 있어요.'",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "error='기기에 초안을 보관하지 못했어요. 창을 닫기 전에 계정에 메모를 저장해 주세요.'",
+   "error='이 기기에 임시 저장본을 만들지 못했어요. 창을 닫기 전에 계정에 메모를 저장해 주세요.'",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "error='기기에 보관한 초안을 지우지 못했어요. 창을 열어 둔 채 다시 시도해 주세요.'",
+   "error='이 기기의 임시 저장본을 지우지 못했어요. 창을 열어 둔 채 다시 시도해 주세요.'",
+   {
+    "n": 1
+   }
+  ]
+ ]
+}

@@ -197,7 +197,7 @@ internal static class SignalInstallerTests
                     try { Task.Run(delegate { return timed.InstallWithDeadline(Progress,1500); }).GetAwaiter().GetResult(); }
                     catch(InstallFailure error) { failure=error; }
                     Assert(failure!=null&&failure.CanRetry&&failure.BackendStopped,"Timed-out partial install was not safely retryable.");
-                    Assert(failure.Message.Contains("복구했습니다"),"Failure did not disclose rollback status.");
+                    Assert(failure.Message.Contains("되돌렸어요"),"Failure did not disclose rollback status.");
                     Assert(elapsed.ElapsedMilliseconds<20000,"Timeout did not return within the bounded stop grace.");
                     Assert(File.Exists(pulse),"Fixture descendant did not run.");
                     string prior=File.ReadAllText(pulse);Thread.Sleep(400);

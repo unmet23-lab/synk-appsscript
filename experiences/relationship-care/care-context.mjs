@@ -35,8 +35,8 @@ const recent = (a, b) => compare(b.date, a.date) || Date.parse(b.recordedAt) - D
  */
 export function buildCareContext(state, { personId, today, eventType = 'checkin', followupId = '' } = {}) {
   const currentDay = dayNumber(today);
-  if (!Number.isFinite(currentDay)) throw new Error('맥락을 살펴볼 한국 날짜를 확인해 주세요.');
-  if (!Object.hasOwn(MESSAGE_TYPES, eventType)) throw new Error('맥락을 살펴볼 일정 종류를 확인해 주세요.');
+  if (!Number.isFinite(currentDay)) throw new Error('한국 날짜를 읽지 못했어요.');
+  if (!Object.hasOwn(MESSAGE_TYPES, eventType)) throw new Error('일정 종류를 읽지 못했어요.');
   const who = list(state?.people).find(item => item?.id === personId);
   const result = { personId: who?.id ?? null, today, lastCare: null, selectedFollowup: null, followups: [], memories: [], exchanges: [], previousDraft: null };
   if (!who) return result;
@@ -68,7 +68,7 @@ export function buildCareContext(state, { personId, today, eventType = 'checkin'
     && !activityReceipts.has(`${item.eventId}:${Date.parse(item.completedAt)}:${item.action}`)).map(item => ({
     sourceKind: 'completion', id: item.occurrenceId, personId, kind: item.action,
     date: koreanDay(item.completedAt), recordedAt: item.completedAt,
-    label: item.action === 'remembered' ? '조용히 기억한 날' : '직접 챙김 완료',
+    label: item.action === 'remembered' ? '조용히 기억한 날' : '챙김 완료',
     eventId: item.eventId, eventTitle: text(item.eventTitle) || text(events.get(item.eventId)?.title), scheduledDate: item.date,
   }));
   const followups = list(state.followups).filter(item => item?.personId === personId && observed(item.createdAt)
@@ -77,14 +77,14 @@ export function buildCareContext(state, { personId, today, eventType = 'checkin'
     .filter(({ source }) => source !== null);
   const done = followups.filter(({ item }) => item.status === 'done').map(({ item }) => ({
     sourceKind: 'followup', id: item.id, personId, kind: 'done', date: koreanDay(item.updatedAt), recordedAt: item.updatedAt,
-    label: '후속 챙김 완료', title: item.title, dueOn: item.dueOn,
+    label: '다시 챙긴 일', title: item.title, dueOn: item.dueOn,
   }));
   result.lastCare = [...activities, ...completions, ...done].sort(recent)[0] ?? null;
   result.exchanges = activities.filter(item => item.kind === 'gift' || item.kind === 'money').sort(recent).slice(0, 3);
 
   const pending = followups.filter(({ item }) => item.status === 'pending').map(({ item, source }) => {
     const daysUntil = Math.round((dayNumber(item.dueOn) - currentDay) / DAY);
-    return { sourceKind: 'followup', id: item.id, personId, kind: 'pending', label: '직접 정한 다음 챙김',
+    return { sourceKind: 'followup', id: item.id, personId, kind: 'pending', label: '다시 챙길 일',
       title: item.title, date: item.dueOn, dueOn: item.dueOn, recordedAt: item.updatedAt,
       phase: daysUntil < 0 ? 'overdue' : daysUntil === 0 ? 'today' : 'upcoming', daysUntil,
       selected: item.id === followupId, ...source };

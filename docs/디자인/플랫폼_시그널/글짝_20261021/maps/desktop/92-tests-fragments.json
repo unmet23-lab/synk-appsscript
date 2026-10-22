@@ -1,0 +1,55 @@
+{
+ "//": "시험 기대 조각 손질(수동 짝)",
+ "desktop/tests/member-insight-model.test.cjs": [
+  [
+   "/최대 12개/",
+   "/12개까지/"
+  ]
+ ],
+ "desktop/tests/renderer-auth.test.cjs": [
+  [
+   "/별도 창/",
+   "/창을 열었어요/"
+  ],
+  [
+   "/서버 세션 종료는 연결 후/",
+   "/서버 쪽 로그인은 인터넷이 연결된 뒤/"
+  ]
+ ],
+ "desktop/tests/renderer-personalization.test.cjs": [
+  [
+   "assert.match(result.reason,/수업 준비\\(교사·기관\\)/);assert.match(result.reason,/수업과 설명/);",
+   "assert.match(result.reason,/수업 준비/);assert.doesNotMatch(result.reason,/수업 준비[\\s\\S]*수업 준비/);"
+  ]
+ ],
+ "desktop/tests/renderer-state.test.cjs": [
+  [
+   "/Quest 착용·멀미 검증/",
+   "/Quest 브라우저에서는 VR로/"
+  ]
+ ],
+ "desktop/tests/startup-update-view.test.cjs": [
+  [
+   "/파일을 확인하지/",
+   "/온전하지 않아요/"
+  ]
+ ],
+ "desktop/tests/update-view.test.cjs": [
+  [
+   "/파일을 확인하지/",
+   "/온전하지 않아요/"
+  ],
+  [
+   "/v0.4.5 Preview/",
+   "/v0\\.4\\.5/"
+  ],
+  [
+   "/최신 Preview.*사용 중에도.*자동으로 확인/",
+   "/최신 버전이에요.*쓰는 동안에도.*저절로 확인/"
+  ],
+  [
+   "/작성 중인 내용을 확인.*자동으로 다시 열/",
+   "/쓰던 내용이 있는지 확인한 뒤.*다시 열어요/"
+  ]
+ ]
+}

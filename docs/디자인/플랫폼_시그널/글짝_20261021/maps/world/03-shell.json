@@ -1,0 +1,25 @@
+{
+ "//": "WORLD 앱 껍데기 — world-strings(msg.*)에 묶이지 않은 한국어 글만. 묶인 글(계정·진도·튜터 저장 상태 등)은 tMessage가 정확히 같은 한국어로 찾기 때문에 바꾸지 않고 보고서에 제안만 적는다.",
+ "experiences/synk-world-app/app-shell.mjs": [
+  ["window.confirm('아직 제출하지 않은 글이 있어요. 이 화면을 닫으면 작성 중인 글이 사라져요. 닫을까요?')", "window.confirm('아직 내지 않은 글이 있어요. 닫으면 쓰던 글이 사라져요. 닫을까요?')", {"n":1}],
+  ["'TOPIK 1급 이상 확인과 타운 이용권이 필요해요','내 계정의 입장 권한을 확인한 뒤 다시 열어 주세요.'", "'TOPIK 1급 이상 확인과 타운 이용권이 필요해요','둘 다 갖추면 여기서 바로 열려요.'", {"n":1}],
+  [">내 계정 확인하기</button>", ">내 계정 열기</button>", {"n":1}],
+  ["`개인 기록은 내 계정으로 이어져요.${", "`다른 기기에서 로그인해도 이어져요.${", {"n":1}],
+  ["home.toast('차림을 서버에 저장했어요.')", "home.toast('차림을 저장했어요.')", {"n":1}],
+  ["home.toast('한글 기록 옮기기는 계정 저장 연결을 확인한 뒤 다시 안내할게요.')", "home.toast('한글 기록 옮기기는 계정 저장이 준비되면 다시 물어볼게요.')", {"n":1}]
+ ],
+ "experiences/synk-world-app/course-writing-entry.mjs": [
+  ["label.textContent='과제를 볼 수업 '", "label.textContent='과제를 볼 반 '", {"n":1}],
+  ["confirm('작성 중인 글을 닫고 다른 반 과제를 열까요?')", "confirm('쓰던 글을 닫고 다른 반 과제를 열까요? 쓰던 글은 사라져요.')", {"n":1}],
+  ["status.textContent='과제 연결을 확인하지 못했어요. 계정을 다시 열어 주세요.'", "status.textContent='과제 목록을 불러오지 못했어요. 내 계정을 닫았다가 다시 열어 주세요.'", {"n":1}]
+ ],
+ "experiences/synk-world-app/world-town-client.mjs": [
+  ["Error('SYNK WORLD 홈에서 동네를 다시 열어 주세요.')", "Error('SYNK WORLD에서 싱크타운을 다시 열어 주세요.')", {"n":1}],
+  ["Error('홈에서 계정을 다시 연결한 뒤 동네를 열어 주세요.')", "Error('SYNK WORLD에서 다시 로그인한 뒤 싱크타운을 열어 주세요.')", {"n":1}],
+  ["Error('계정 연결이 바뀌었어요. 홈에서 동네를 다시 열어 주세요.')", "Error('로그인한 계정이 바뀌었어요. SYNK WORLD에서 싱크타운을 다시 열어 주세요.')", {"n":1}]
+ ],
+ "experiences/synk-world-app/world-account.mjs": [
+  ["TypeError('과제 정답 요청을 확인해 주세요.')", "TypeError('과제 정답을 열 수 없어요. 과제를 다시 열어 주세요.')", {"n":1}],
+  ["Error('제출한 과제의 정답을 확인하지 못했어요.')", "Error('낸 과제의 정답을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.')", {"n":1}]
+ ]
+}

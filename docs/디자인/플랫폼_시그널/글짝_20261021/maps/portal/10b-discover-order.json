@@ -1,0 +1,7 @@
+{
+  "//": "10의 자리표를 채워 둘러보기 순서를 앱 → (최근에 연 앱) → 회원 혜택 → 새소식으로 맞춘다",
+  "experiences/synk-account/src/platform.mjs": [
+    [" + __PORTAL_SWAP_APPS__", " + '<section><div class=\"section-heading\"><div><p class=\"sb-eyebrow\">APPS</p><h2>SYNK 앱</h2></div><a href=\"#library\">내 라이브러리 →</a></div>'+shelf()+'</section>'", {"n": 1}],
+    [" + __PORTAL_SWAP_BENEFITS__", " + '<section class=\"benefit-home-collection\"><div class=\"section-heading\"><div><p class=\"sb-eyebrow\">SYNK FOR YOU</p><h2>'+(query?'찾은 회원 혜택':'네 가지 회원 혜택')+'</h2></div><a href=\"#benefits\">회원 혜택 모두 보기 →</a></div>'+benefitCards(query)+'</section>'", {"n": 1}]
+  ]
+}

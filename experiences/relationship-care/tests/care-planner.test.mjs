@@ -18,7 +18,7 @@ test('Core 선언 근거로 참석·준비시간·예산 조건을 적용하고 
   assert.equal(result.decision.calibrated, false);
   assert.equal(result.decision.selected.reasons.find(item => item.field === 'timeMinutes').value, 15);
   assert.equal(result.decision.selected.reasons.find(item => item.field === 'attendance').value, 'attend');
-  assert.match(result.recommendation.reason.join(' '), /이동·참석/);
+  assert.match(result.recommendation.reason.join(' '), /오가는 시간/);
   assert.equal(result.occurrenceId, 'e:2026-10-07');
   assert.equal(JSON.stringify(state), before);
 });
@@ -51,7 +51,7 @@ test('선물은 사용자가 정한 예산만 쓰고 물가나 선호를 추정�
   const result = plan({ attendance: 'not-attend', timeMinutes: 15, budgetWon: 12345 }, fixture('birthday'));
   assert.equal(result.recommendation.action, 'gift');
   assert.equal(result.recommendation.amountWon, 12345);
-  assert.match(result.recommendation.reason.join(' '), /내 예산/);
+  assert.match(result.recommendation.reason.join(' '), /내가 정한 예산/);
   assert.match(result.recommendation.steps.join(' '), /12,345/);
   assert.ok(!JSON.stringify(result).includes('비싼 선물'));
   const withoutBudget = plan({ timeMinutes: 15 }, fixture('birthday'));

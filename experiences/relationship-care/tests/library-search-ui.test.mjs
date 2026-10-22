@@ -94,7 +94,7 @@ test('full-text search uses NFC, case-insensitive trimmed literal matching, incl
   assert.deepEqual(ids(), []);
   search('keyword');
   assert.deepEqual(ids(), ['long'], 'search the entire message, not its 32-character option label');
-  assert.equal(element('library-result-count').textContent, '이 범위의 4개 중 1개');
+  assert.equal(element('library-result-count').textContent, '4개 중 1개');
 });
 
 test('search and favorites intersect with the existing purpose and event-type scopes', () => {
@@ -104,11 +104,11 @@ test('search and favorites intersect with the existing purpose and event-type sc
   element('library-scope').value = 'type'; handlers.get('library-scope:change')();
   assert.deepEqual(new Set(ids()), new Set(['favorite', 'thanks']));
   assert.equal(element('library-search').value, 'CAFÉ', 'widening the search scope keeps the search');
-  assert.equal(element('library-result-count').textContent, '이 범위의 5개 중 2개');
+  assert.equal(element('library-result-count').textContent, '5개 중 2개');
   element('draft-event').value = event.id; context.renderSavedDraft();
   assert.deepEqual(ids(), ['birthday']);
   assert.equal(element('library-scope-wrap').hidden, true);
-  assert.equal(element('library-result-count').textContent, '이 범위의 1개 중 1개');
+  assert.equal(element('library-result-count').textContent, '1개 중 1개');
 });
 
 test('search, favorites, scope and reset never save or change the draft, confirmation or durable state', () => {
@@ -141,16 +141,16 @@ test('empty results distinguish no library, no purpose entries, search misses an
   assert.equal(element('saved-draft-text').textContent, '');
   assert.equal(element('library-meta').textContent, '');
   favorites(true);
-  assert.match(element('library-empty').textContent, /즐겨찾기한 문구 중 검색어/u);
+  assert.match(element('library-empty').textContent, /즐겨찾기한 문구 가운데 맞는 것이 없어요/u);
   const plain = harness([person('a', [row('plain', '아직 별을 붙이지 않은 문구')])]);
   plain.favorites(true);
-  assert.match(plain.element('library-empty').textContent, /이 범위에 즐겨찾기한 문구가 없어요/u);
+  assert.match(plain.element('library-empty').textContent, /즐겨찾기만 보기」를 끄면/u);
   const empty = harness([person('a')]);
   empty.search('무엇이든');
-  assert.match(empty.element('library-empty').textContent, /다듬은 문구를 기억하면/u);
+  assert.match(empty.element('library-empty').textContent, /저장한 문구가 아직 없어요/u);
   const thanksOnly = harness([person('a', [row('thanks', '고마워요', { checkinIntent: 'thanks' })])]);
   thanksOnly.search('고마워요');
-  assert.match(thanksOnly.element('library-empty').textContent, /이 목적에 보관한 문구가 없어요/u);
+  assert.match(thanksOnly.element('library-empty').textContent, /이 안부에 저장한 문구가 없어요/u);
 });
 
 test('changing person, account, event type or intent clears filters before rendering the new context', () => {
@@ -212,7 +212,7 @@ test('removing a favorite immediately refreshes the filtered list without changi
   assert.equal(updated.text, original.text);
   assert.equal(updated.savedAt, original.savedAt);
   assert.deepEqual(h.ids(), []);
-  assert.equal(h.element('library-result-count').textContent, '이 범위의 4개 중 0개');
+  assert.equal(h.element('library-result-count').textContent, '4개 중 0개');
   assert.equal(h.element('library-actions').hidden, true);
   assert.equal(h.context.currentDraft, originalDraft);
   assert.equal(h.element('draft-text').value, '직접 편집 중인 초안');

@@ -98,7 +98,7 @@ async function openAccountSignUp(){
 }
 async function signOutAccount(){
   const owner=accountStatus()?.account?.synk_user_id;
-  if(suitePublisher&&!suitePublisher.signOut())return {ok:false,status:accountStatus(),error:{code:'SUITE_UNAVAILABLE',message:'앱 계정 연결을 저장하지 못해 로그아웃을 완료하지 못했어요.'}};
+  if(suitePublisher&&!suitePublisher.signOut())return {ok:false,status:accountStatus(),error:{code:'SUITE_UNAVAILABLE',message:'로그인 기록을 지우지 못해 로그아웃을 마치지 못했어요. 다시 해 주세요.'}};
   const result=await auth.signOut();
   // Authentication has its own confirmed result. An encrypted draft cleanup
   // failure must not discard its server flags or become an auth failure.
@@ -237,7 +237,7 @@ function createWindow(){
       if(smoke){const dir=smokeArtifacts;fs.mkdirSync(dir,{recursive:true});item.setSavePath(path.join(dir,runtime.clientId+'-synthetic-export.'+spec.extension));item.once('done',(_event,state)=>{smokeDownload={state,mime:item.getMimeType(),size:item.getReceivedBytes()};});return;}
       item.setSaveDialogOptions({title:'SYNK 기록 저장',defaultPath:path.join(app.getPath('downloads'),item.getFilename()),filters:[{name:spec.filterName,extensions:[spec.extension]}]});
     },
-    onDenied(reason){if(smoke||!window||window.isDestroyed())return;dialog.showMessageBox(window,{type:'info',title:'SYNK 기록 저장',message:reason==='session'?'회사 로그인을 확인한 뒤 다시 저장해 주세요.':'이 파일은 앱에서 저장할 수 없어요.',detail:runtime.clientId==='messenger'?'내 작업실의 AI 업무 연습 TXT 기록만 최대 64 KiB까지 저장할 수 있어요.':'연결된 JSON 기록만 최대 32 MiB까지 저장할 수 있어요. 더 큰 기록은 웹에서 내보내 주세요.'});},
+    onDenied(reason){if(smoke||!window||window.isDestroyed())return;dialog.showMessageBox(window,{type:'info',title:'SYNK 기록 저장',message:reason==='session'?'회사 계정으로 로그인한 뒤 다시 저장해 주세요.':'이 파일은 앱에서 저장할 수 없어요.',detail:runtime.clientId==='messenger'?'작업실의 AI 업무 연습 기록(TXT)만 64KB까지 저장할 수 있어요.':'JSON 기록은 32MB까지만 저장할 수 있어요. 더 큰 기록은 웹에서 내보내 주세요.'});},
   }));
   if(!protocolRegistered){const nativeContent=createNativeContent({appRoot:app.getAppPath()}),connectionContent=createConnectionContent({appRoot:app.getAppPath(),clientId:runtime.clientId,mode:runtime.mode,entry,messengerCloudPreview:runtime.messengerCloudPreview,worldCloudPreview:runtime.worldCloudPreview,productName:current.productName});ownSession.protocol.handle('synk-desktop',request=>request.url.startsWith('synk-desktop://platform/')&&runtime.clientId==='platform'?nativeContent(request):connectionContent(request));}
   protocolRegistered=true;

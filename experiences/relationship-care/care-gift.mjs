@@ -14,7 +14,7 @@ const words = value => String(value ?? '').normalize('NFKC').toLocaleLowerCase('
 
 function personOf(state, personId) {
   const person = state.people.find(item => item.id === personId);
-  if (!person) throw new Error('사람을 다시 선택해 주세요.');
+  if (!person) throw new Error('사람을 다시 골라 주세요.');
   return person;
 }
 function replacePerson(state, person) {
@@ -34,7 +34,7 @@ export function addWish(state, { personId, text, notedOn = '' } = {}, now = new 
 
 /** 글·날짜·「이미 드렸어요」를 고친다. patch: { text?, notedOn?, given? } */
 export function updateWish(state, { personId, wishId, ...patch } = {}) {
-  if (Object.keys(patch).some(key => !['text', 'notedOn', 'given'].includes(key))) throw new Error('고칠 항목을 확인해 주세요.');
+  if (Object.keys(patch).some(key => !['text', 'notedOn', 'given'].includes(key))) throw new Error('고칠 항목을 읽지 못했어요.');
   const current = importBackup(state), person = personOf(current, personId), wishes = person.wishes ?? [];
   if (!wishes.some(item => item.id === wishId)) throw new Error('메모가 지워졌거나 사람이 바뀌었어요.');
   return replacePerson(current, { ...person, wishes: wishes.map(item => item.id === wishId ? { ...item, ...patch } : item) });
@@ -53,9 +53,9 @@ export function removeWish(state, { personId, wishId } = {}) {
  */
 export function recordGift(state, { wishId = '', ...input } = {}, now = new Date()) {
   const allowed = ['personId', 'direction', 'item', 'occurredOn', 'amountWon', 'note', 'occasion', 'eventId'];
-  if (Object.keys(input).some(key => !allowed.includes(key))) throw new Error('선물 기록의 항목을 확인해 주세요.');
+  if (Object.keys(input).some(key => !allowed.includes(key))) throw new Error('선물 기록의 항목이 맞지 않아요.');
   if (!String(input.item ?? '').trim()) throw new Error('어떤 선물인지 적어 주세요.');
-  if (input.occasion && !Object.hasOwn(OCCASION_TYPES, input.occasion)) throw new Error('행사 종류를 확인해 주세요.');
+  if (input.occasion && !Object.hasOwn(OCCASION_TYPES, input.occasion)) throw new Error('행사 종류를 다시 골라 주세요.');
   let next = recordCareAction(importBackup(state), { direction: 'sent', occurredOn: koreanDate(now), ...input, kind: 'gift' }, now);
   if (wishId) {
     const person = personOf(next, input.personId);

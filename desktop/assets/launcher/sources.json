@@ -45,7 +45,7 @@
     },
     {
       "name": "laptop.webp",
-      "source": "experiences/synk-account/assets/laptop-felt.webp",
+      "source": "docs/디자인/SNS키트/assets/felt-laptop.webp",
       "bytes": 95412,
       "sha256": "e7fec4f0b240f1d440041bb39cae6adec4784f0624f911605e119abc2d0e1689"
     },
@@ -146,36 +146,6 @@
       "sha256": "1527974a05a2814457ecc92735e22959d8378c032a80c7c682ced57d7f329f8e"
     },
     {
-      "name": "engine.js",
-      "source": "atlas/engine.js",
-      "bytes": 38293,
-      "sha256": "7f7fd88706995da822f59a011cb4a6ce14117336e26766c3520b829c2c980af1"
-    },
-    {
-      "name": "personalization.js",
-      "source": "atlas/personalization.js",
-      "bytes": 35397,
-      "sha256": "00e1694c6713d4340dba6f0f9c5ffc417129726820ba4005a13c20092f3ea8a4"
-    },
-    {
-      "name": "racing.jpg",
-      "source": "experiences/korean-racing/qa/ui-refinement-playing-20261002.jpg",
-      "bytes": 759220,
-      "sha256": "e7ae9d3a64b3286ea21ffc058d5f7f7417ac4362ecec4aa93d9d301d36aee7f5"
-    },
-    {
-      "name": "runner.jpg",
-      "source": "experiences/korean-runner/qa/v6-run-blossom-mobile.jpg",
-      "bytes": 36259,
-      "sha256": "48cf6034157d9945dfef6561bd996775fe57b64d67fecf6ed29c7b0b8101cc83"
-    },
-    {
-      "name": "rhythm.jpg",
-      "source": "experiences/korean-rhythm/qa/listening-20261001/play-desktop.jpg",
-      "bytes": 86548,
-      "sha256": "32b41b20ab95126acee32c617c2c72bd2bf7db0d98f2f3f1bd47d0b102360551"
-    },
-    {
       "name": "benefit-gift.webp",
       "source": "docs/디자인/플랫폼_시그널/혜택물건/benefit-gift.webp",
       "bytes": 281176,
@@ -204,6 +174,36 @@
       "source": "docs/디자인/플랫폼_시그널/혜택물건/benefit-fortune.webp",
       "bytes": 277358,
       "sha256": "0cbc7f01325679e4103b846ba88f2f6bf55cc8954f6f3ccf708f80404e33ec22"
+    },
+    {
+      "name": "engine.js",
+      "source": "atlas/engine.js",
+      "bytes": 38293,
+      "sha256": "7f7fd88706995da822f59a011cb4a6ce14117336e26766c3520b829c2c980af1"
+    },
+    {
+      "name": "personalization.js",
+      "source": "atlas/personalization.js",
+      "bytes": 35397,
+      "sha256": "00e1694c6713d4340dba6f0f9c5ffc417129726820ba4005a13c20092f3ea8a4"
+    },
+    {
+      "name": "runner.jpg",
+      "source": "docs/디자인/플랫폼_시그널/WORLD게임화면/runner.jpg",
+      "bytes": 82719,
+      "sha256": "6040d495fc64800882f0d6141348fe428cd97c1f50dced5b86f157d0e3869453"
+    },
+    {
+      "name": "rhythm.jpg",
+      "source": "docs/디자인/플랫폼_시그널/WORLD게임화면/rhythm.jpg",
+      "bytes": 55649,
+      "sha256": "605eabcf3351b3f309029158cbbe0b584ec652e3ed3b29c1526bb3098ee3e238"
+    },
+    {
+      "name": "hangul.jpg",
+      "source": "docs/디자인/플랫폼_시그널/WORLD게임화면/hangul.jpg",
+      "bytes": 39068,
+      "sha256": "3eb792070181a8d0409b1dfc68632971dab077283453d13f26df1dc7f75433ad"
     }
   ]
 }

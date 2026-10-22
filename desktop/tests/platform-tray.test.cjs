@@ -58,7 +58,7 @@ test('a quit prevented for installer READY keeps the tray alive when the handoff
 
 for(const action of ['click','double-click','menu'])test(action+' restores and focuses a minimized tray window',()=>{
   const f=fixture(),window=f.window;window.close();window.minimized=true;
-  if(action==='menu')f.trays[0].menu.find(item=>item.label==='SYNK 플랫폼 열기').click();else f.trays[0].emit(action);
+  if(action==='menu')f.trays[0].menu.find(item=>item.label==='SYNK Platform 열기').click();else f.trays[0].emit(action);
   assert.equal(window.visible,true);assert.equal(window.minimized,false);assert.equal(window.calls.restore,1);assert.equal(window.calls.focus,1);assert.equal(f.created,1);assert.equal(window.draft,'작성 중인 메모');
   f.controller.dispose();
 });

@@ -38,7 +38,7 @@ function productPolicy(){return "default-src 'self'; script-src 'self'; style-sr
 function assertProductSender(event,window,id){if(!window||window.isDestroyed()||event.sender!==window.webContents||event.senderFrame!==window.webContents.mainFrame||!productDocument(id,event.senderFrame?.url))throw Error('UNTRUSTED_SENDER');}
 const FORTUNE_OPERATIONS=new Set(['load','fortuneGet','fortunePut','fortuneDelete']);
 function fortuneAccountRequest(auth,operation,params={}){
-  if(!FORTUNE_OPERATIONS.has(operation))return Promise.resolve({ok:false,error:{code:'INVALID_REQUEST',message:'운세 앱에서 지원하는 계정 요청을 확인해 주세요.',retryable:false}});
+  if(!FORTUNE_OPERATIONS.has(operation))return Promise.resolve({ok:false,error:{code:'INVALID_REQUEST',message:'무료 운세에서 처리할 수 없는 요청이에요. 다시 해 주세요.',retryable:false}});
   return auth.accountRequest(operation,params);
 }
 function bindFortuneIPC({ipcMain,getWindow,auth}){
@@ -66,7 +66,7 @@ function productDownload({id,url,mime,filename,size,sourceUrl}={}){
   };
   if(['care','path'].includes(id)) {
     formats[id]||={};
-    formats[id][`synk-${id}-local-recovery.json`]={mime:'application/json',extension:'json',filterName:'내 계정의 기기 임시기록 복구 파일',maxBytes:64*1024*1024};
+    formats[id][`synk-${id}-local-recovery.json`]={mime:'application/json',extension:'json',filterName:'이 PC 임시 기록 보관 파일',maxBytes:64*1024*1024};
   }
   const format=Object.hasOwn(formats,id)&&Object.hasOwn(formats[id],filename)?formats[id][filename]:null;
   const kind=format?.mime===mime?{extension:format.extension,filterName:format.filterName,maxBytes:format.maxBytes}:null;
@@ -82,7 +82,7 @@ function createProductDownloadHandler({id,getWindow,configureSave,onDenied=()=>{
     configureSave(item,spec);
   };
 }
-function productDownloadNotice(reason){return {type:'warning',title:'파일을 저장하지 못했어요',message:reason==='size'?'파일이 이 앱의 저장 크기 한도를 넘었어요.':'이 앱에서 허용한 형식이나 크기의 파일인지 확인하지 못했어요.',detail:'파일은 저장되지 않았어요. 복구 파일을 확인하기 전에는 기기 임시기록을 지우지 마세요.',buttons:['확인']};}
+function productDownloadNotice(reason){return {type:'warning',title:'파일을 저장하지 못했어요',message:reason==='size'?'파일이 이 앱의 저장 크기 한도를 넘었어요.':'이 앱에서 저장할 수 있는 형식이나 크기가 아니에요.',detail:'파일을 저장하지 못했어요. 보관 파일을 따로 저장하기 전에는 이 PC의 임시 기록을 지우지 마세요.',buttons:['확인']};}
 function createProductBrowser({id,openExternal,now=Date.now,enabled=true}){
   let pending=null,lastOpened=-Infinity;
   return ()=>{

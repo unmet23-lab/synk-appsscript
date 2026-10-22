@@ -11,7 +11,7 @@ const ORIGIN_FALLBACK = 'https://path.invalid/interview/';
 // GitHub Pages empties its cache on every site deploy. Only this fixed https prefix is accepted
 // besides the page's own origin; the bucket answers synk.im with CORS so the room can draw frames.
 export const TRUSTED_FILM_PREFIXES = Object.freeze(['https://storage.googleapis.com/synk-path-media/path/']);
-const abortError = () => new DOMException('영상 작업이 취소되었습니다.', 'AbortError');
+const abortError = () => new DOMException('영상 작업을 취소했어요.', 'AbortError');
 function filmError(code, message) { const error = new Error(message); error.name = 'FilmPlaybackError'; error.code = code; return error; }
 const playbackStart = (clip) => clip.playbackStartSeconds === undefined ? 0 : clip.playbackStartSeconds;
 function startFrameTolerance(clip) {
@@ -60,37 +60,37 @@ export async function chooseFilmSources(manifest, { fetchImpl = globalThis.fetch
 
 export function evaluateFilmReadiness(manifest, requiredIds) {
   const errors = [], missing = [];
-  if (!manifest || typeof manifest !== 'object') return { ready: false, missing: [...new Set(requiredIds || [])], errors: ['실제 영상 목록이 없습니다.'] };
-  if (manifest.status !== 'ready') errors.push('영상 제작·검수가 완료되지 않았습니다.');
-  if (manifest.projection !== 'rectilinear-mono' || manifest.stereo !== false) errors.push('이 재생기는 평면 단안 영상(rectilinear-mono)만 지원합니다.');
-  if (manifest.source?.status !== 'verified' || typeof manifest.source?.provider !== 'string' || !manifest.source.provider.trim()) errors.push('영상 원본의 출처·검수 상태가 확인되지 않았습니다.');
+  if (!manifest || typeof manifest !== 'object') return { ready: false, missing: [...new Set(requiredIds || [])], errors: ['영상 목록이 없어요.'] };
+  if (manifest.status !== 'ready') errors.push('영상 제작·검수가 끝나지 않았어요.');
+  if (manifest.projection !== 'rectilinear-mono' || manifest.stereo !== false) errors.push('이 재생기는 평면 단안 영상(rectilinear-mono)만 지원해요.');
+  if (manifest.source?.status !== 'verified' || typeof manifest.source?.provider !== 'string' || !manifest.source.provider.trim()) errors.push('영상 원본의 출처·검수 상태를 확인하지 못했어요.');
   const clips = Array.isArray(manifest.clips) ? manifest.clips : [];
-  if (!Array.isArray(manifest.clips)) errors.push('영상 목록 형식이 올바르지 않습니다.');
+  if (!Array.isArray(manifest.clips)) errors.push('영상 목록 형식이 맞지 않아요.');
   const ids = requiredIds === undefined ? clips.map((clip) => clip?.id) : requiredIds;
-  if (!Array.isArray(ids) || !ids.length) return { ready: false, missing, errors: [...errors, '준비할 영상 ID가 없습니다.'] };
+  if (!Array.isArray(ids) || !ids.length) return { ready: false, missing, errors: [...errors, '준비할 영상 ID가 없어요.'] };
   const seen = new Set();
   for (const clip of clips) {
-    if (!clip || !/^[a-z0-9-]+$/.test(clip.id || '') || seen.has(clip.id)) errors.push('잘못되거나 중복된 영상 ID가 있습니다.');
+    if (!clip || !/^[a-z0-9-]+$/.test(clip.id || '') || seen.has(clip.id)) errors.push('잘못됐거나 겹치는 영상 ID가 있어요.');
     if (clip) seen.add(clip.id);
   }
   for (const id of new Set(ids)) {
     const clip = clips.find((candidate) => candidate?.id === id);
     if (!clip || !clip.src || clip.status !== 'ready') { missing.push(id); continue; }
-    if (!clipUrl(clip.src)) errors.push(`${id}: 같은 출처나 PATH 영상 저장소의 MP4/WebM 원본이 필요합니다.`);
+    if (!clipUrl(clip.src)) errors.push(`${id}: 같은 출처나 PATH 영상 저장소의 MP4/WebM 원본이 필요해요.`);
     if (!['speaking', 'listening'].includes(clip.kind)) errors.push(`${id}: 영상 종류를 확인해 주세요.`);
-    if (clip.audio !== (clip.kind === 'listening' ? 'silent' : 'native')) errors.push(`${id}: 질문은 원본 음성, 경청은 무음이어야 합니다.`);
+    if (clip.audio !== (clip.kind === 'listening' ? 'silent' : 'native')) errors.push(`${id}: 질문은 원본 음성, 경청은 무음이어야 해요.`);
     const start = playbackStart(clip);
-    if (!Number.isFinite(start) || start < 0 || (start !== 0 && clip.kind !== 'listening')) errors.push(`${id}: 시작 위치는 경청 영상의 0초 이상 시점만 지정할 수 있습니다.`);
+    if (!Number.isFinite(start) || start < 0 || (start !== 0 && clip.kind !== 'listening')) errors.push(`${id}: 시작 위치는 경청 영상의 0초 이상 시점만 정할 수 있어요.`);
     const transition = clip.transition;
-    if (clip.reviewed !== true || transition?.validated !== true || !Number.isFinite(transition?.headHoldMs) || transition.headHoldMs < 100 || !Number.isFinite(transition?.tailHoldMs) || transition.tailHoldMs < 100) errors.push(`${id}: 시작·끝의 무음 중립 프레임과 연결 검수가 필요합니다.`);
+    if (clip.reviewed !== true || transition?.validated !== true || !Number.isFinite(transition?.headHoldMs) || transition.headHoldMs < 100 || !Number.isFinite(transition?.tailHoldMs) || transition.tailHoldMs < 100) errors.push(`${id}: 시작·끝의 무음 중립 프레임과 연결 검수가 필요해요.`);
   }
   return { ready: errors.length === 0 && missing.length === 0, missing, errors };
 }
 
 export function createFilmPlayer({ mount, manifest, onState = () => {}, onEnded = () => {}, prepareTimeoutMs = 15000, startTimeoutMs = 8000, stallTimeoutMs = 8000, transitionMs = 0 } = {}) {
-  if (!mount?.ownerDocument?.createElement || !mount.appendChild) throw new TypeError('영상 재생 영역이 필요합니다.');
-  for (const value of [prepareTimeoutMs, startTimeoutMs, stallTimeoutMs]) if (!Number.isFinite(value) || value <= 0) throw new RangeError('영상 제한 시간은 양수여야 합니다.');
-  if (!Number.isFinite(transitionMs) || transitionMs < 0 || transitionMs > 1000) throw new RangeError('영상 전환 시간은 0~1000ms여야 합니다.');
+  if (!mount?.ownerDocument?.createElement || !mount.appendChild) throw new TypeError('영상 재생 영역이 필요해요.');
+  for (const value of [prepareTimeoutMs, startTimeoutMs, stallTimeoutMs]) if (!Number.isFinite(value) || value <= 0) throw new RangeError('영상 제한 시간은 양수여야 해요.');
+  if (!Number.isFinite(transitionMs) || transitionMs < 0 || transitionMs > 1000) throw new RangeError('영상 전환 시간은 0~1000ms여야 해요.');
   const document = mount.ownerDocument, stage = document.createElement('div');
   stage.className = 'film-player'; stage.hidden = true;
   Object.assign(stage.style, { position: 'relative', width: '100%', height: '100%', minHeight: '1px', background: '#000' });
@@ -114,27 +114,27 @@ export function createFilmPlayer({ mount, manifest, onState = () => {}, onEnded 
   const jobs = new Set();
   const snapshot = () => active ? Object.freeze({ id: active.clip.id, playbackId: active.playbackId, kind: active.clip.kind, loop: active.loop, ended: active.ended, time: active.slot.video.currentTime, duration: active.slot.video.duration }) : null;
   const emit = (next, extra = {}) => { state = next; onState({ state, current: snapshot(), queued: queued?.clip.id || deferredQueue?.id || null, ...extra }); };
-  const checkLive = () => { if (disposed) throw filmError('disposed', '종료된 영상 재생기입니다.'); };
+  const checkLive = () => { if (disposed) throw filmError('disposed', '종료된 영상 재생기예요.'); };
   function validated(ids) {
     checkLive();
     const readiness = evaluateFilmReadiness(manifest, ids);
     if (!readiness.ready) {
       emit('blocked', { readiness });
-      const error = filmError('film-not-ready', '실제 면접 영상이 아직 준비되지 않았습니다.'); error.readiness = readiness; throw error;
+      const error = filmError('film-not-ready', '면접 영상이 아직 준비되지 않았어요. 잠시 뒤 다시 열어 주세요.'); error.readiness = readiness; throw error;
     }
     if (slots.some(({ video }) => typeof video.requestVideoFrameCallback !== 'function' || typeof video.cancelVideoFrameCallback !== 'function')) {
-      emit('blocked'); throw filmError('decoded-frame-unsupported', '이 브라우저는 영상 프레임 확인을 지원하지 않습니다.');
+      emit('blocked'); throw filmError('decoded-frame-unsupported', '이 브라우저에서는 면접 영상을 재생할 수 없어요. 최신 Chrome이나 Safari에서 다시 열어 주세요.');
     }
     return ids.map((id) => manifest.clips.find((clip) => clip.id === id));
   }
   function loopOption(clip, options) {
     const loop = options.loop ?? clip.kind === 'listening';
-    if (loop && clip.kind !== 'listening') throw filmError('speaking-loop', '질문 영상은 반복 재생하지 않습니다.');
+    if (loop && clip.kind !== 'listening') throw filmError('speaking-loop', '질문 영상은 반복 재생하지 않아요.');
     return !!loop;
   }
   function task(timeout, code) {
     const controller = new AbortController(), token = generation;
-    const timer = setTimeout(() => controller.abort(filmError(code, '영상 응답 시간이 초과되었습니다.')), timeout);
+    const timer = setTimeout(() => controller.abort(filmError(code, '영상을 불러오는 데 너무 오래 걸려요. 인터넷 연결을 확인하고 「처음부터 다시」를 눌러 주세요.')), timeout);
     const job = { signal: controller.signal, token, abort: () => controller.abort(abortError()), finish() { clearTimeout(timer); controller.abort(abortError()); jobs.delete(job); } };
     jobs.add(job); return job;
   }
@@ -150,7 +150,7 @@ export function createFilmPlayer({ mount, manifest, onState = () => {}, onEnded 
       if (done) cleanup();
     });
   }
-  const mediaError = () => filmError('media-error', '영상 파일을 읽거나 재생하지 못했습니다. 실제 MP4/WebM 파일을 확인해 주세요.');
+  const mediaError = () => filmError('media-error', '면접 영상을 재생하지 못했어요. 인터넷 연결을 확인하고 「처음부터 다시」를 눌러 주세요.');
   function frame(slot, job, accepts = () => true) {
     return wait(job, (resolve, reject) => {
       const video = slot.video;
@@ -239,7 +239,7 @@ export function createFilmPlayer({ mount, manifest, onState = () => {}, onEnded 
     const next = () => {
       if (disposed || paused || active !== record || record.ended) return;
       clearTimeout(slot.watch);
-      slot.watch = setTimeout(() => { if (active === record && !paused && !record.ended) fail(filmError('stall-timeout', '영상 재생이 멈췄습니다. 다시 준비해 주세요.')); }, stallTimeoutMs);
+      slot.watch = setTimeout(() => { if (active === record && !paused && !record.ended) fail(filmError('stall-timeout', '영상 재생이 멈췄어요. 「처음부터 다시」를 눌러 주세요.')); }, stallTimeoutMs);
       slot.frame = slot.video.requestVideoFrameCallback(next);
     };
     next();
@@ -261,7 +261,7 @@ export function createFilmPlayer({ mount, manifest, onState = () => {}, onEnded 
     try {
       await decodedData(slot, job); guard(job);
       const start = playbackStart(clip);
-      if ((video.duration - start) * 1000 <= clip.transition.headHoldMs + clip.transition.tailHoldMs) throw filmError('invalid-hold-duration', '영상의 남은 길이보다 시작·끝 여유 구간이 깁니다.');
+      if ((video.duration - start) * 1000 <= clip.transition.headHoldMs + clip.transition.tailHoldMs) throw filmError('invalid-hold-duration', '영상의 남은 길이보다 시작·끝 여유 구간이 길어요.');
       const first = frame(slot, job);
       // Register before play; loadedmetadata alone is never a decoded-frame proof.
       let [, metadata] = await Promise.all([started(slot, job), first]); guard(job); video.pause();
@@ -269,7 +269,7 @@ export function createFilmPlayer({ mount, manifest, onState = () => {}, onEnded 
         const rewound = frame(slot, job, (metadata) => inHead(video, clip, metadata)); video.currentTime = start;
         metadata = await rewound; guard(job);
       }
-      if (!inHead(video, clip, metadata)) throw filmError('invalid-first-frame', '영상 시작 프레임을 확인하지 못했습니다.');
+      if (!inHead(video, clip, metadata)) throw filmError('invalid-first-frame', '영상 첫 장면을 불러오지 못했어요. 「처음부터 다시」를 눌러 주세요.');
       slot.headFrame = { version, src: clipUrl(clip.src), metadata };
       slot.primed = true;
     } finally { if (slot.version === version) { video.pause(); video.muted = true; } }
@@ -283,7 +283,7 @@ export function createFilmPlayer({ mount, manifest, onState = () => {}, onEnded 
       // one-use proof BEFORE starting its clock, in this same JS turn. Waiting
       // for another play promise/RVFC while hidden can consume the entire
       // neutral handle on a busy device and must never cause a late unmute.
-      if (!hasPausedHead(slot, clip)) throw filmError('invalid-first-frame', '영상 시작 프레임을 확인하지 못했습니다.');
+      if (!hasPausedHead(slot, clip)) throw filmError('invalid-first-frame', '영상 첫 장면을 불러오지 못했어요. 「처음부터 다시」를 눌러 주세요.');
       slot.primed = false; slot.headFrame = null;
       finishBlend();
       const previous = active;
@@ -295,7 +295,7 @@ export function createFilmPlayer({ mount, manifest, onState = () => {}, onEnded 
       await started(slot, job); guard(job);
       // An unresolved start cannot silently consume a whole question. Keep the
       // original finite deadline and report failure instead of a false start.
-      if (record.ended) throw filmError('start-timeout', '영상 시작 확인 전에 재생이 끝났습니다. 다시 준비해 주세요.');
+      if (record.ended) throw filmError('start-timeout', '영상이 제대로 시작되지 않았어요. 「처음부터 다시」를 눌러 주세요.');
       active = record; pendingStart = null;
       paused = false; transitioning = false; transitionOwner = null; emit('playing'); watch(active);
       if (loop) automaticLoop();

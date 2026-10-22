@@ -86,7 +86,7 @@ async function createPKCE(cryptoAPI = globalThis.crypto) {
 }
 async function beginOAuth({ config, product, storage, now = Date.now(), cryptoAPI }) {
   const client = config.clients[product];
-  if (!config.configured || !client?.clientId || !client.redirectUri) throw new Error("이 제품의 SSO 연결 설정이 아직 준비되지 않았어요.");
+  if (!config.configured || !client?.clientId || !client.redirectUri) throw new Error("이 화면의 로그인 설정이 아직 없어요.");
   const pkce = await createPKCE(cryptoAPI), transaction = { ...pkce, product, clientId: client.clientId, redirectUri: client.redirectUri, createdAt: now };
   storage.setItem(`synk.oauth.pending.${product}`, JSON.stringify(transaction));
   const url = new URL("/auth/v1/oauth/authorize", config.supabaseUrl);
@@ -107,11 +107,11 @@ function consumeCallback({ config, product, url, storage, now = Date.now() }) {
   const pending = JSON.parse(raw), client = config.clients[product];
   if (!pending || pending.product !== product || pending.clientId !== client?.clientId || pending.redirectUri !== client?.redirectUri || params.get("state") !== pending.state || now - pending.createdAt > 6e5 || now < pending.createdAt) throw new Error("로그인 요청이 만료되었거나 상태가 달라졌어요. 다시 시작해 주세요.");
   const actual = new URL(url), expected = new URL(client.redirectUri);
-  if (!callbackMatches(actual, expected)) throw new Error("등록한 로그인 도착 주소와 달라요.");
+  if (!callbackMatches(actual, expected)) throw new Error("로그인 뒤 돌아온 주소가 달라요. 다시 로그인해 주세요.");
   storage.removeItem(key);
   if (params.has("error")) throw new Error(params.get("error") === "access_denied" ? "제품 연결을 취소했어요." : "로그인을 마치지 못했어요. 다시 시작해 주세요.");
   const code = params.get("code");
-  if (!code) throw new Error("로그인 코드가 없어요.");
+  if (!code) throw new Error("로그인 응답이 비어 있어요. 다시 로그인해 주세요.");
   return { grant_type: "authorization_code", client_id: client.clientId, redirect_uri: client.redirectUri, code, code_verifier: pending.verifier };
 }
 async function tokenRequest(config, fields, fetcher = fetch) {
@@ -128,18 +128,18 @@ async function tokenRequest(config, fields, fetcher = fetch) {
         cache: "no-store"
       });
     } catch {
-      throw Object.assign(new Error("로그인 서버에 연결하지 못했어요. 연결이 돌아오면 다시 확인해 주세요."), { code: "NETWORK", retryable: true });
+      throw Object.assign(new Error("인터넷 연결이 끊겨 로그인 서버에 닿지 못했어요. 연결되면 다시 시도해 주세요."), { code: "NETWORK", retryable: true });
     }
     let data;
     try {
       data = await response.json();
     } catch (error) {
-      if (response.ok && error?.name !== "SyntaxError") throw Object.assign(new Error("로그인 응답을 끝까지 받지 못했어요. 연결이 돌아오면 다시 확인해 주세요."), { code: "NETWORK", retryable: true });
+      if (response.ok && error?.name !== "SyntaxError") throw Object.assign(new Error("로그인 응답을 끝까지 받지 못했어요. 연결되면 다시 시도해 주세요."), { code: "NETWORK", retryable: true });
       data = null;
     }
     if (!response.ok) {
       const retryable = response.status === 429 || response.status >= 500;
-      throw Object.assign(new Error(retryable ? "로그인 서버가 잠시 응답하지 않아요. 잠시 뒤 다시 확인해 주세요." : "로그인 연결을 마치지 못했어요. 다시 로그인해 주세요."), { code: retryable ? "AUTH_UNAVAILABLE" : "AUTH_REQUIRED", status: response.status, retryable });
+      throw Object.assign(new Error(retryable ? "로그인 서버가 잠시 응답하지 않아요. 잠시 뒤 다시 시도해 주세요." : "로그인 연결을 마치지 못했어요. 다시 로그인해 주세요."), { code: retryable ? "AUTH_UNAVAILABLE" : "AUTH_REQUIRED", status: response.status, retryable });
     }
     if (!data || typeof data.access_token !== "string" || !data.access_token) throw Object.assign(new Error("로그인 응답을 확인하지 못했어요. 다시 로그인해 주세요."), { code: "INVALID_RESPONSE" });
     return { access_token: data.access_token, refresh_token: data.refresh_token || null, expires_at: Date.now() + Number(data.expires_in || 3600) * 1e3 };
@@ -197,7 +197,7 @@ var init_core = __esm({
 var PARAM = "synk-platform-account";
 var CANCEL = "synk-platform-cancelled";
 var validId = (value) => typeof value === "string" && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value);
-var mismatch = () => Object.assign(new Error("플랫폼에서 선택한 SYNK ID와 로그인 계정이 달라요. 플랫폼 계정을 확인한 뒤 다시 열어 주세요."), { code: "PLATFORM_ACCOUNT_MISMATCH" });
+var mismatch = () => Object.assign(new Error("플랫폼에서 로그인한 SYNK ID와 이 화면의 계정이 달라요. 같은 계정으로 로그인한 뒤 다시 열어 주세요."), { code: "PLATFORM_ACCOUNT_MISMATCH" });
 function createPlatformEntry({ clientKey, getUrl, replaceUrl }) {
   const key = `synk.platform.entry.${clientKey}`;
   let captured = false, restored = false, invalid3 = false, cancelled = false, intent = null, storage;
@@ -218,7 +218,7 @@ function createPlatformEntry({ clientKey, getUrl, replaceUrl }) {
       storage = typeof value === "function" ? value() : value;
       storage.setItem(key, JSON.stringify(next));
     } catch {
-      throw Object.assign(new Error("플랫폼의 계정 연결을 이 탭에 보관하지 못했어요. 브라우저 저장 설정을 확인한 뒤 다시 시도해 주세요."), { code: "PLATFORM_ENTRY_STORAGE", retryable: true });
+      throw Object.assign(new Error("브라우저가 저장을 막아 플랫폼의 로그인을 이어받지 못했어요. 사이트 데이터 저장을 허용한 뒤 다시 열어 주세요."), { code: "PLATFORM_ENTRY_STORAGE", retryable: true });
     }
     intent = next;
     invalid3 = next.invalid === true;
@@ -309,12 +309,12 @@ function createPlatformEntry({ clientKey, getUrl, replaceUrl }) {
       try {
         if (url.href !== getUrl()) replaceUrl(url.href);
       } catch {
-        throw Object.assign(new Error("화면의 로그인은 종료했지만 자동 연결 취소를 저장하지 못했어요. 이 창을 닫아 주세요."), { code: "PLATFORM_ENTRY_STORAGE", retryable: false });
+        throw Object.assign(new Error("로그아웃은 했지만 자동 로그인 끄기를 저장하지 못했어요. 이 창을 닫아 주세요."), { code: "PLATFORM_ENTRY_STORAGE", retryable: false });
       }
     }
   };
 }
-var PUBLIC = Object.freeze({ world: "https://synk.im/account/client.html?product=world&play=learning-hub", care: "https://synk.im/care/", fortune: "https://synk.im/fortune/" });
+var PUBLIC = Object.freeze({ world: "https://synk.im/world/", care: "https://synk.im/care/", fortune: "https://synk.im/fortune/" });
 
 // experiences/synk-account/src/product-account.mjs
 var AUTH_ERRORS = /* @__PURE__ */ new Set(["AUTH_REQUIRED", "AUTH_SESSION_MISSING", "SESSION_REVOKED"]);
@@ -341,7 +341,7 @@ function createProductAccount({
   now = Date.now,
   cryptoAPI
 } = {}) {
-  if (!["care", "path", "path-travel"].includes(clientKey) || !["synk-care", "synk-personal"].includes(endpoint) || typeof validateState !== "function") throw new TypeError("제품 계정 계약을 확인해 주세요.");
+  if (!["care", "path", "path-travel"].includes(clientKey) || !["synk-care", "synk-personal"].includes(endpoint) || typeof validateState !== "function") throw new TypeError("앱 계정 설정 형식이 맞지 않아요.");
   const LIMIT = 4 * 1024 * 1024 + 32768;
   const SESSION_KEY = `synk.oauth.session.${clientKey}`;
   const OPERATIONS = new Set(Object.values(operations2));
@@ -467,8 +467,8 @@ function createProductAccount({
     const careLibrarySave = clientKey === "care" && endpoint === "synk-care" && resource === null && operation === operations2.save;
     const allowed = operation === operations2.load ? [] : operation === operations2.save ? ["expected_revision", "state", ...careLibrarySave ? ["messageLibraryVersion", "checkinPreferenceVersion"] : []] : ["expected_revision"];
     if (Object.keys(values).some((key) => !allowed.includes(key))) throw fault("INVALID_REQUEST", "제품 계정 요청을 확인해 주세요.");
-    if (Object.hasOwn(values, "messageLibraryVersion") && (!careLibrarySave || values.messageLibraryVersion !== 1)) throw fault("INVALID_REQUEST", "문구 보관함의 저장 계약을 확인해 주세요.");
-    if (Object.hasOwn(values, "checkinPreferenceVersion") && (!careLibrarySave || values.checkinPreferenceVersion !== 1)) throw fault("INVALID_REQUEST", "안부 설정의 저장 계약을 확인해 주세요.");
+    if (Object.hasOwn(values, "messageLibraryVersion") && (!careLibrarySave || values.messageLibraryVersion !== 1)) throw fault("INVALID_REQUEST", "문구 보관함 자료 형식이 맞지 않아요.");
+    if (Object.hasOwn(values, "checkinPreferenceVersion") && (!careLibrarySave || values.checkinPreferenceVersion !== 1)) throw fault("INVALID_REQUEST", "안부 설정 자료 형식이 맞지 않아요.");
     if (operation === operations2.load) return void 0;
     if (!Number.isSafeInteger(values.expected_revision) || values.expected_revision < 0) throw fault("INVALID_REQUEST", "저장할 자료의 버전을 확인해 주세요.");
     return { action: operation === operations2.save ? "save" : "delete", expected_revision: values.expected_revision, ...operation === operations2.save ? { state: validateState(values.state) } : {}, ...Object.hasOwn(values, "messageLibraryVersion") ? { messageLibraryVersion: 1 } : {}, ...Object.hasOwn(values, "checkinPreferenceVersion") ? { checkinPreferenceVersion: 1 } : {} };
@@ -503,7 +503,7 @@ function createProductAccount({
       }
       if (!result.response.ok || result.data?.ok !== true) {
         const code = result.data?.error?.code || (result.response.status === 401 ? "AUTH_REQUIRED" : "ACCOUNT_UNAVAILABLE");
-        throw fault(code, code === "REVISION_CONFLICT" ? "다른 기기에서 자료가 바뀌었어요. 계정 자료를 다시 확인해 주세요." : "계정 요청을 완료하지 못했어요. 현재 자료는 그대로 유지해 주세요.", { status: result.response.status, revision: result.data?.revision, retryable: result.response.status === 429 || result.response.status >= 500, ...missingAsset(result.data?.error) });
+        throw fault(code, code === "REVISION_CONFLICT" ? "다른 기기에서 자료가 바뀌었어요. 계정 자료를 다시 불러와 주세요." : "계정 요청을 마치지 못했어요. 지금 화면의 자료는 그대로예요.", { status: result.response.status, revision: result.data?.revision, retryable: result.response.status === 429 || result.response.status >= 500, ...missingAsset(result.data?.error) });
       }
       data = result.data;
     }
@@ -564,7 +564,7 @@ function createProductAccount({
     try {
       core = await loadCore();
     } catch {
-      throw fault("NETWORK", "로그인 연결을 불러오지 못했어요. 연결이 돌아오면 다시 확인해 주세요.", { retryable: true });
+      throw fault("NETWORK", "로그인 설정을 못 불러왔어요. 인터넷이 연결되면 다시 시도해 주세요.", { retryable: true });
     }
     guard(expected);
     let raw;
@@ -575,10 +575,10 @@ function createProductAccount({
     try {
       const response = await fetcher(configEndpoint.href, { cache: "no-store", credentials: "omit", signal: abort.signal, redirect: "error" });
       if (response.ok) raw = await response.json();
-      else if (response.status !== 404) throw fault("AUTH_CONFIG", "계정 연결 설정을 불러오지 못했어요. 다시 확인해 주세요.", { status: response.status, retryable: response.status === 429 || response.status >= 500 });
+      else if (response.status !== 404) throw fault("AUTH_CONFIG", "로그인 설정을 못 불러왔어요. 잠시 뒤 다시 시도해 주세요.", { status: response.status, retryable: response.status === 429 || response.status >= 500 });
     } catch (error) {
       if (error.code) throw error;
-      throw fault("NETWORK", "계정 연결 설정을 불러오지 못했어요. 연결이 돌아오면 다시 확인해 주세요.", { retryable: true });
+      throw fault("NETWORK", "로그인 설정을 못 불러왔어요. 인터넷이 연결되면 다시 시도해 주세요.", { retryable: true });
     } finally {
       clearTimeout(timer);
       controllers.delete(abort);
@@ -687,7 +687,7 @@ function createProductAccount({
       try {
         result = await bridgeRequest.call(bridge, "load", {});
       } catch {
-        result = { ok: false, error: { code: "NETWORK", message: "계정 연결을 다시 확인하지 못했어요. 잠시 뒤 다시 시도해 주세요.", retryable: true } };
+        result = { ok: false, error: { code: "NETWORK", message: "계정을 다시 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.", retryable: true } };
       }
       if (disposed || intent !== loginIntent) throw fault("ACCOUNT_CHANGED", "계정 연결이 바뀌었어요.");
       const source = await bridge.authStatus();
@@ -700,7 +700,7 @@ function createProductAccount({
       throw Object.assign(new Error(error.message), error);
     }
     if (snapshot.error?.retryable) throw Object.assign(new Error(snapshot.error.message), snapshot.error);
-    if (!snapshot.configured) throw fault("AUTH_CONFIG", "SYNK ID 연결 설정을 준비하고 있어요. 지금은 이 기기의 수첩을 사용할 수 있어요.");
+    if (!snapshot.configured) throw fault("AUTH_CONFIG", "SYNK ID 로그인 설정이 아직 없어요. 지금은 이 기기의 수첩을 쓸 수 있어요.");
     if (native) {
       const result = await bridge.authSignIn();
       if (disposed || intent !== loginIntent) throw fault("ACCOUNT_CHANGED", "계정 연결이 바뀌었어요.");
@@ -768,12 +768,12 @@ function createProductAccount({
     if (clientKey !== "care" || endpoint !== "synk-care" || native) throw fault("PUSH_UNSUPPORTED", "예약 알림은 플레저 웹에서 설정해 주세요.");
     if (!snapshot.signedIn || !snapshot.accountId) throw fault("AUTH_REQUIRED", "SYNK ID로 로그인한 뒤 알림을 설정해 주세요.");
     const allowed = { status: ["endpoint"], subscribe: ["subscription", "hour", "minute"], update: ["endpoint", "hour", "minute"], unsubscribe: ["endpoint"] };
-    if (!Object.hasOwn(allowed, action) || !values || typeof values !== "object" || Array.isArray(values) || Object.keys(values).some((key) => !allowed[action].includes(key))) throw fault("INVALID_REQUEST", "알림 설정을 확인해 주세요.");
-    if (["subscribe", "update"].includes(action) && (!Number.isInteger(values.hour) || values.hour < 0 || values.hour > 23 || !Number.isInteger(values.minute) || values.minute < 0 || values.minute > 59)) throw fault("INVALID_REQUEST", "알림 시간을 확인해 주세요.");
-    if ((action === "update" || action === "unsubscribe" || Object.hasOwn(values, "endpoint")) && (typeof values.endpoint !== "string" || values.endpoint.length > 2048 || !values.endpoint.startsWith("https://"))) throw fault("INVALID_REQUEST", "이 기기의 알림 연결을 확인해 주세요.");
-    if (action === "subscribe" && (!values.subscription || typeof values.subscription !== "object" || Array.isArray(values.subscription))) throw fault("INVALID_REQUEST", "이 기기의 알림 연결을 확인해 주세요.");
+    if (!Object.hasOwn(allowed, action) || !values || typeof values !== "object" || Array.isArray(values) || Object.keys(values).some((key) => !allowed[action].includes(key))) throw fault("INVALID_REQUEST", "알림 설정 형식이 맞지 않아요.");
+    if (["subscribe", "update"].includes(action) && (!Number.isInteger(values.hour) || values.hour < 0 || values.hour > 23 || !Number.isInteger(values.minute) || values.minute < 0 || values.minute > 59)) throw fault("INVALID_REQUEST", "알림 시간이 맞지 않아요. 다시 골라 주세요.");
+    if ((action === "update" || action === "unsubscribe" || Object.hasOwn(values, "endpoint")) && (typeof values.endpoint !== "string" || values.endpoint.length > 2048 || !values.endpoint.startsWith("https://"))) throw fault("INVALID_REQUEST", "이 기기의 알림 연결이 끊겼어요. 알림을 다시 켜 주세요.");
+    if (action === "subscribe" && (!values.subscription || typeof values.subscription !== "object" || Array.isArray(values.subscription))) throw fault("INVALID_REQUEST", "이 기기의 알림 연결이 끊겼어요. 알림을 다시 켜 주세요.");
     const body = { action, ...values };
-    if (new TextEncoder().encode(JSON.stringify(body)).byteLength > 8192) throw fault("INVALID_REQUEST", "알림 설정의 크기를 확인해 주세요.");
+    if (new TextEncoder().encode(JSON.stringify(body)).byteLength > 8192) throw fault("INVALID_REQUEST", "알림 설정이 너무 커서 저장할 수 없어요.");
     const expected = epoch, ownerId = snapshot.accountId;
     try {
       guard(expected);
@@ -793,7 +793,7 @@ function createProductAccount({
       const data = result.data;
       if (!result.response.ok || data?.ok !== true) throw fault(data?.error?.code || (result.response.status === 401 ? "AUTH_REQUIRED" : "PUSH_UNAVAILABLE"), "예약 알림을 설정하지 못했어요. 잠시 뒤 다시 시도해 주세요.", { status: result.response.status, retryable: result.response.status === 429 || result.response.status >= 500 });
       if (data.accountId !== ownerId) throw fault("ACCOUNT_CHANGED", "계정이 바뀌어 알림 설정을 적용하지 않았어요.");
-      if (data.scope !== "synk-care-push" || typeof data.enabled !== "boolean" || data.timeZone !== "Asia/Seoul" || !Number.isInteger(data.hour) || data.hour < 0 || data.hour > 23 || !Number.isInteger(data.minute) || data.minute < 0 || data.minute > 59 || typeof data.publicKey !== "string" || !/^[A-Za-z0-9_-]{87}$/.test(data.publicKey)) throw fault("INVALID_RESPONSE", "알림 서버의 응답을 확인하지 못했어요.");
+      if (data.scope !== "synk-care-push" || typeof data.enabled !== "boolean" || data.timeZone !== "Asia/Seoul" || !Number.isInteger(data.hour) || data.hour < 0 || data.hour > 23 || !Number.isInteger(data.minute) || data.minute < 0 || data.minute > 59 || typeof data.publicKey !== "string" || !/^[A-Za-z0-9_-]{87}$/.test(data.publicKey)) throw fault("INVALID_RESPONSE", "알림 서버의 응답을 받지 못했어요. 잠시 뒤 다시 시도해 주세요.");
       return { ok: true, scope: data.scope, accountId: ownerId, enabled: data.enabled, hour: data.hour, minute: data.minute, timeZone: data.timeZone, publicKey: data.publicKey, ...typeof data.deviceId === "string" ? { deviceId: data.deviceId } : {} };
     } catch (error) {
       if (expected === epoch && (AUTH_ERRORS.has(error.code) || error.code === "ACCOUNT_CHANGED")) clearSession(error);
@@ -817,7 +817,7 @@ function createProductAccount({
 var validRevision = (value) => Number.isSafeInteger(value) && value >= 0;
 var failure = (code, revision) => Object.assign(new Error(code), { code, ...validRevision(revision) ? { revision } : {} });
 var messages = {
-  CARE_CLIENT_UPDATE_REQUIRED: "더 새로운 앱에서 저장한 문구 보관함이나 안부 설정이 있어요. 현재 자료를 백업한 뒤 새로고침해 주세요.",
+  CARE_CLIENT_UPDATE_REQUIRED: "더 새 판의 앱에서 저장한 문구 보관함이나 안부 설정이 있어요. 지금 자료를 파일로 내보낸 뒤 페이지를 새로 고쳐 주세요.",
   CARE_LIBRARY_RECOVERY_REVIEW: "계정 보관함의 이전 문구·즐겨찾기 또는 안부 주기 설정이 이 임시기록에는 없어요. 임시기록을 복구 파일로 백업한 뒤 계정 수첩을 선택해 주세요.",
   REVISION_CONFLICT: "다른 기기에서 기록이 바뀌었어요. 어느 기록을 사용할지 골라 주세요.",
   LOCAL_CHANGED_DURING_REFRESH: "가져오는 동안 새로 수정한 내용이 있어요. 기록을 다시 골라 주세요.",
@@ -1426,6 +1426,8 @@ function createAccountNotebook({
   },
   onStatusChange = () => {
   },
+  statusLabel = (text2) => text2,
+  detailLabel = (text2) => text2,
   pendingDescription = "",
   deleteLabel = "",
   signOutLabel = "로그아웃",
@@ -1444,7 +1446,7 @@ function createAccountNotebook({
   let closed = false, switching = false, hydrating = false, converting = false, deleting = false, unsent = null, problem = "", suspended = false, hydrationFailure = null, incomingDocument = null;
   let pageSuspended = false, reconnecting = false, resumePromise = null, resumeVersion = 0, resumeMessage = "", contentWasHidden = false, contentConcealed = false;
   mount.classList.add("account-notebook");
-  mount.innerHTML = '<div class="notebook-heading"><div><p class="notebook-eyebrow">SYNK ID</p><h2>내 계정으로 이어가기</h2></div><strong data-notebook-status role="status" aria-live="polite"></strong></div><p data-notebook-detail></p><p class="notebook-description"></p><div class="notebook-actions"><button type="button" data-notebook="signin">SYNK ID로 로그인</button><button type="button" data-notebook="refresh" hidden>다시 불러오기</button><button type="button" data-notebook="retry" hidden>저장 다시 시도</button><button type="button" data-notebook="import" hidden>기기 기록을 계정으로 옮기기</button><button type="button" data-notebook="signout" hidden>로그아웃</button></div><div class="notebook-conflict" hidden><p>서로 다른 기록을 자동으로 합치지 않아요. 사용할 기록을 직접 골라 주세요.</p><button type="button" data-notebook="remote">계정의 기록 사용</button><button type="button" data-notebook="local">이 화면의 기록으로 저장</button></div>';
+  mount.innerHTML = '<div class="notebook-heading"><div><p class="notebook-eyebrow">SYNK ID</p><h2>계정 저장</h2></div><strong data-notebook-status role="status" aria-live="polite"></strong></div><p data-notebook-detail></p><p class="notebook-description"></p><div class="notebook-actions"><button type="button" data-notebook="signin">SYNK ID로 로그인</button><button type="button" data-notebook="refresh" hidden>다시 불러오기</button><button type="button" data-notebook="retry" hidden>저장 다시 시도</button><button type="button" data-notebook="import" hidden>기기 기록을 계정으로 옮기기</button><button type="button" data-notebook="signout" hidden>로그아웃</button></div><div class="notebook-conflict" hidden><p>서로 다른 기록을 자동으로 합치지 않아요. 사용할 기록을 직접 골라 주세요.</p><button type="button" data-notebook="remote">계정의 기록 사용</button><button type="button" data-notebook="local">이 화면의 기록으로 저장</button></div>';
   mount.querySelector(".notebook-description").textContent = description;
   mount.querySelector('[data-notebook="signout"]').textContent = signOutLabel;
   if (preferRemoteOnOpen) mount.querySelector('[data-notebook="remote"]').textContent = "미저장 기록 남기고 계정 기록 열기";
@@ -1495,15 +1497,15 @@ function createAccountNotebook({
       else if (contentConcealed) content.hidden = contentWasHidden;
       contentConcealed = conceal;
     }
-    mount.querySelector("[data-notebook-status]").textContent = deleting ? "계정 기록 삭제 중" : authPending ? "로그인 다시 확인 필요" : suspended ? problem ? "기록을 다시 불러와 주세요" : "로그인 다시 확인 중" : converting ? "원본을 계정에 보관 중" : hydrating ? "보관한 원본을 불러오는 중" : active ? loading ? labels.loading : problem ? labels.error : saveInProgress ? labels.saving : labels[saved.status] || "계정 기록 연결 중" : auth.status === "unconfigured" ? "이 기기에서 사용 중" : ["restoring", "signing-in"].includes(auth.status) ? "로그인 확인 중" : "로그인 전";
-    mount.querySelector("[data-notebook-detail]").textContent = problem || auth.error?.message || saved.error?.message || (active ? loading ? "계정 기록을 불러오고 있어요. 잠시만 기다려 주세요." : saveInProgress ? "계정에 저장하고 있어요. 저장이 끝나면 알려 드려요." : pending ? "아직 계정 저장을 마치지 못했어요. 연결이 돌아오면 다시 시도할 수 있어요." : "로그인한 계정에 저장해요. 다른 기기에서는 다시 불러오기로 최신 기록을 확인하세요." : auth.status === "unconfigured" ? "이 실행 환경의 계정 연결 설정을 준비하고 있어요. 기기 기록은 계속 사용할 수 있어요." : "SYNK ID 하나로 로그인해요. 로그인 전의 기기 기록은 직접 옮길 때만 계정에 저장해요.");
+    mount.querySelector("[data-notebook-status]").textContent = statusLabel(deleting ? "계정 기록 삭제 중" : authPending ? "로그인 다시 확인 필요" : suspended ? problem ? "기록을 다시 불러와 주세요" : "로그인 다시 확인 중" : converting ? "원본을 계정에 보관 중" : hydrating ? "보관한 원본을 불러오는 중" : active ? loading ? labels.loading : problem ? labels.error : saveInProgress ? labels.saving : labels[saved.status] || "계정 기록 연결 중" : auth.status === "unconfigured" ? "이 기기에서 사용 중" : ["restoring", "signing-in"].includes(auth.status) ? "로그인 확인 중" : "로그인 전", { active, status: saved.status });
+    mount.querySelector("[data-notebook-detail]").textContent = detailLabel(problem || auth.error?.message || saved.error?.message || (active ? loading ? "계정 기록을 불러오고 있어요. 잠시만 기다려 주세요." : saveInProgress ? "계정에 저장하고 있어요. 저장이 끝나면 알려 드려요." : pending ? "아직 계정 저장을 마치지 못했어요. 연결이 돌아오면 다시 시도할 수 있어요." : "로그인한 계정에 저장해요. 다른 기기에서는 다시 불러오기로 최신 기록을 확인하세요." : auth.status === "unconfigured" ? "이 실행 환경의 계정 연결 설정을 준비하고 있어요. 기기 기록은 계속 사용할 수 있어요." : "SYNK ID 하나로 로그인해요. 로그인 전의 기기 기록은 직접 옮길 때만 계정에 저장해요."), { active, status: saved.status, problem: !!(problem || auth.error?.message || saved.error?.message) });
     if (missingPendingMedia) mount.querySelector("[data-notebook-detail]").textContent = "미저장 앨범에 필요한 원본을 찾지 못했어요. 파일이 있는 기기나 내보낸 앨범에서 다시 저장하거나, 미저장 기록을 기기에 남기고 마지막 계정 저장본을 열 수 있어요.";
     if (deleting) mount.querySelector("[data-notebook-detail]").textContent = "계정의 삭제 결과를 확인하고 있어요. 결과가 확인될 때까지 새 기록을 입력할 수 없어요.";
-    if (authPending) mount.querySelector("[data-notebook-detail]").textContent = auth.error?.message || "현재 기록을 유지하고 있어요. 계정 연결을 다시 확인해 주세요.";
+    if (authPending) mount.querySelector("[data-notebook-detail]").textContent = auth.error?.message || "지금 기록은 그대로예요. 「계정 연결 다시 확인」을 눌러 주세요.";
     pendingNote.hidden = !active || !pending || !pendingDescription;
     const localNoticeCode = saved.warning?.code || (local.corrupt ? "INVALID_LOCAL_CACHE" : null);
     localNote.hidden = !local.count && !local.unknown && !saved.warning || !local.unknown && !!localNoticeCode && saved.error?.code === localNoticeCode;
-    localNote.textContent = (saved.warning?.message || (local.corrupt ? "읽지 못한 이 계정의 임시기록 원본을 보존했어요. 복구 파일로 내보낸 뒤 직접 지울 수 있어요." : active ? preferRemoteOnOpen && !pending && saved.localDrafts?.length ? "계정 기록을 열었어요. 이전 미저장 기록은 이 기기에 따로 보관했으며 필요할 때 아래에서 열 수 있어요." : "계정에 보내지 못한 변경만 이 기기에 임시 보관해요. 저장이 끝나면 기기 사본을 지워요." : `미저장 계정 임시기록 ${local.count}개가 이 기기에 남아 있어요. 기록을 남긴 계정으로 로그인하면 이어 사용할 기록을 고르거나 복구 파일로 내보내고 지울 수 있어요.`)) + (local.unknown ? " 계정을 확인할 수 없는 손상 원본은 그대로 보존하며 이 화면에서 내보내거나 지우지 않아요." : "");
+    localNote.textContent = (saved.warning?.message || (local.corrupt ? "읽지 못한 이 계정의 임시기록 원본을 보존했어요. 복구 파일로 내보낸 뒤 직접 지울 수 있어요." : active ? preferRemoteOnOpen && !pending && saved.localDrafts?.length ? "계정 기록을 열었어요. 저장 안 된 이전 기록은 이 기기에 따로 보관했어요. 필요하면 아래에서 열어요." : "계정에 보내지 못한 변경만 이 기기에 임시 보관해요. 저장이 끝나면 기기 사본을 지워요." : `미저장 계정 임시기록 ${local.count}개가 이 기기에 남아 있어요. 기록을 남긴 계정으로 로그인하면 이어 사용할 기록을 고르거나 복구 파일로 내보내고 지울 수 있어요.`)) + (local.unknown ? " 계정을 확인할 수 없는 손상 원본은 그대로 보존하며 이 화면에서 내보내거나 지우지 않아요." : "");
     element("export-local").hidden = !active || authPending || !local.exportable;
     element("export-local").disabled = !active || authPending || pageSuspended;
     element("clear-local").hidden = !active || !local.exportable;
@@ -1562,7 +1564,7 @@ function createAccountNotebook({
   function preserveInterruptedRead() {
     if (hydrating && incomingDocument && !unsent) {
       hydrationFailure = { code: "AUTH_RESTORING", document: incomingDocument };
-      problem = "로그인 연결을 다시 확인하는 동안 기록 읽기가 멈췄어요. 저장 다시 시도로 보관한 기록을 다시 열어 주세요.";
+      problem = "로그인을 다시 확인하는 동안 기록 읽기가 멈췄어요. 「저장 다시 시도」를 눌러 보관한 기록을 다시 열어 주세요.";
     }
     incomingDocument = null;
   }
@@ -1598,7 +1600,7 @@ function createAccountNotebook({
       owner = nextOwner;
       authPaused = false;
       suspended = !!hydrationFailure;
-      if (unsent) problem = "같은 계정으로 다시 연결했어요. 보내지 못한 원본과 기록을 유지하고 있으니 저장 다시 시도로 이어가 주세요.";
+      if (unsent) problem = "같은 계정으로 다시 연결했어요. 못 보낸 기록은 그대로 있으니 「저장 다시 시도」를 눌러 주세요.";
       paint();
       return;
     }
@@ -1688,7 +1690,7 @@ function createAccountNotebook({
     cachePrefix: `synk.personal.${resource}.v1.`,
     operations,
     transport: async (operation, values) => {
-      if (pageSuspended || authPaused || !auth.signedIn) throw Object.assign(new Error("계정 연결을 다시 확인한 뒤 기록을 저장해 주세요. 현재 기록은 유지하고 있어요."), { code: "AUTH_RESTORING" });
+      if (pageSuspended || authPaused || !auth.signedIn) throw Object.assign(new Error("「계정 연결 다시 확인」을 누른 뒤 저장해 주세요. 지금 기록은 그대로예요."), { code: "AUTH_RESTORING" });
       const expected = generation, inputVersion = conversionVersion, read = operation === operations.load ? { generation: expected } : null;
       if (read) {
         reading = read;
@@ -1769,8 +1771,8 @@ function createAccountNotebook({
       const result = await operation;
       if (!current()) return;
       const warnings = [];
-      if (result?.ok === false) warnings.push("이 기기의 로그인 정보 삭제를 확인하지 못했어요. 공유 기기라면 브라우저나 앱의 저장 정보를 확인해 주세요.");
-      if (result?.serverRevoked === false) warnings.push("서버의 세션 종료는 확인하지 못했어요. 연결이 돌아오면 SYNK ID의 로그인 기기에서 이 세션을 종료해 주세요.");
+      if (result?.ok === false) warnings.push("이 기기에서 로그인 정보가 지워졌는지 모르겠어요. 함께 쓰는 기기라면 브라우저의 사이트 데이터를 지워 주세요.");
+      if (result?.serverRevoked === false) warnings.push("서버에서 로그인을 끝냈는지는 확인하지 못했어요. 인터넷이 연결되면 SYNK ID 관리의 「로그인한 곳」에서 이 기기를 종료해 주세요.");
       if (warnings.length) problem = warnings.join(" ");
     } catch (error) {
       if (current()) problem = documentSyncErrorMessage(error);
@@ -1985,7 +1987,7 @@ var PLATFORM_NOTE_LIMIT = 60;
 var PLATFORM_LIBRARY_LIMITS = Object.freeze({ maxBytes: 64 * 1024 });
 var object = (value) => value && typeof value === "object" && !Array.isArray(value);
 var invalid = () => {
-  throw Object.assign(new TypeError("플랫폼 기록 형식을 확인해 주세요."), { code: "INVALID_PERSONAL_STATE" });
+  throw Object.assign(new TypeError("라이브러리 기록 형식이 맞지 않아요."), { code: "INVALID_PERSONAL_STATE" });
 };
 var noteLimit = () => {
   throw Object.assign(new Error("메모는 최대 " + PLATFORM_NOTE_LIMIT + "개까지 보관할 수 있어요. 필요 없는 메모를 삭제한 뒤 다시 시도해 주세요."), { code: "NOTE_LIMIT" });
@@ -2032,7 +2034,7 @@ function updatePlatformLibrary(value, action, now = Date.now(), appIds = ACTIVE_
     next.consent = true;
     return next;
   }
-  if (!next.consent) throw new Error("계정에 저장할 항목을 확인하고 연결을 켜 주세요.");
+  if (!next.consent) throw new Error("「계정 저장 켜기」를 먼저 눌러 주세요.");
   if (["favorite", "launch", "note"].includes(action.type) && !ACTIVE_PLATFORM_APP_IDS.includes(action.id)) invalid();
   if (action.type === "favorite") next.favorites = next.favorites.some((id) => platformDisplayAppId(id, appIds) === platformDisplayAppId(action.id, appIds)) ? next.favorites.filter((id) => platformDisplayAppId(id, appIds) !== platformDisplayAppId(action.id, appIds)) : [...next.favorites, action.id];
   else if (action.type === "move-favorite") {
@@ -2161,7 +2163,7 @@ function platformLibraryAccount({ host, native = false, onLogin = () => {
   async function retryNativeIdentity() {
     if (closed) return { ...current };
     if (nativeRetry) return nativeRetry;
-    if (typeof host.accountRequest !== "function") throw Object.assign(new Error("저장된 계정 연결을 확인하지 못했어요. 잠시 뒤 다시 시도해 주세요."), { code: "AUTH_REQUEST_UNAVAILABLE", retryable: true });
+    if (typeof host.accountRequest !== "function") throw Object.assign(new Error("저장된 로그인을 확인하지 못했어요. 잠시 뒤 다시 시도해 주세요."), { code: "AUTH_REQUEST_UNAVAILABLE", retryable: true });
     const task = nativeAction(() => host.accountRequest("load", {}), true);
     nativeRetry = task;
     try {
@@ -2189,11 +2191,11 @@ function platformLibraryAccount({ host, native = false, onLogin = () => {
     status: () => ({ ...current }),
     async request(operation, params) {
       const mapped = { personalLoad: "platformLoad", personalSave: "platformSave", personalDelete: "platformDelete" }[operation];
-      if (!mapped || closed || !current.signedIn) throw Object.assign(new Error("플랫폼 계정 연결을 다시 확인해 주세요."), { code: "AUTH_REQUIRED" });
+      if (!mapped || closed || !current.signedIn) throw Object.assign(new Error("로그인이 끝났어요. 다시 로그인해 주세요."), { code: "AUTH_REQUIRED" });
       const owner = current.accountId, generation = current.sessionGeneration;
       const result = await (native ? host.accountRequest(mapped, params) : host.request(mapped, params));
       if (closed || !current.signedIn || owner !== current.accountId || generation !== current.sessionGeneration) throw Object.assign(new Error("계정 연결이 바뀌었어요."), { code: "ACCOUNT_CHANGED" });
-      if (result?.ok === false) throw Object.assign(new Error(result.error?.message || "계정 연결을 확인해 주세요."), result.error || {}, Number.isSafeInteger(result.revision) ? { revision: result.revision } : {});
+      if (result?.ok === false) throw Object.assign(new Error(result.error?.message || "계정 서버가 요청을 처리하지 못했어요. 잠시 뒤 다시 시도해 주세요."), result.error || {}, Number.isSafeInteger(result.revision) ? { revision: result.revision } : {});
       return result?.data || result;
     },
     async signIn() {
@@ -2210,7 +2212,7 @@ function platformLibraryAccount({ host, native = false, onLogin = () => {
     async signOut() {
       if (native) return nativeAction(() => host.authSignOut());
       onManage();
-      return { ok: false, message: "계정 관리에서 로그아웃을 완료해 주세요." };
+      return { ok: false, message: "로그아웃은 「SYNK ID 관리」 화면에서 해 주세요." };
     },
     dispose() {
       closed = true;
@@ -2286,7 +2288,7 @@ function createLibraryRecovery({ getHost, getOwner, canUse, getPayload, onChange
     } catch {
       if (current(expected, account)) {
         status = null;
-        error = "기기의 초안 복구 상태를 확인하지 못했어요. 현재 입력은 이 화면에 유지돼요.";
+        error = "이 기기의 임시 저장본을 확인하지 못했어요. 지금 입력은 이 화면에 그대로 있어요.";
         changed();
       }
     }
@@ -2309,7 +2311,7 @@ function createLibraryRecovery({ getHost, getOwner, canUse, getPayload, onChange
         }
       } catch {
         if (current(expected, account)) {
-          error = "기기에 초안을 보관하지 못했어요. 창을 닫기 전에 계정에 메모를 저장해 주세요.";
+          error = "이 기기에 임시 저장본을 만들지 못했어요. 창을 닫기 전에 계정에 메모를 저장해 주세요.";
           changed();
         }
       }
@@ -2361,7 +2363,7 @@ function createLibraryRecovery({ getHost, getOwner, canUse, getPayload, onChange
       } catch {
         if (current(expected, account)) {
           removalFailed = true;
-          error = "기기에 보관한 초안을 지우지 못했어요. 창을 열어 둔 채 다시 시도해 주세요.";
+          error = "이 기기의 임시 저장본을 지우지 못했어요. 창을 열어 둔 채 다시 시도해 주세요.";
           changed();
         }
         return false;
@@ -2378,7 +2380,7 @@ function createLibraryRecovery({ getHost, getOwner, canUse, getPayload, onChange
 }
 
 // experiences/synk-account/src/platform-library-view.mjs
-var names = { world: "WORLD", messenger: "워크스페이스", teacher: "워크스페이스 · 내 수업", path: "PATH", pulse: "PULSE", partners: "PULSE · 이전 Partners 기록", care: "플레저", fortune: "운세" };
+var names = { world: "WORLD", messenger: "Workspace", teacher: "Workspace 내 수업", path: "PATH", pulse: "PULSE", partners: "PULSE의 옛 메모", care: "플레저", fortune: "무료 운세" };
 var esc = (value) => String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
 var librarySequence = 0;
 function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
@@ -2414,7 +2416,7 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
   }
   const panelId = "synk-library-panel-" + ++librarySequence;
   root.classList.add("platform-continuity");
-  root.innerHTML = '<header class="continuity-overview"><div class="continuity-preview"><p class="continuity-eyebrow">MY LIBRARY</p><h2 data-library-title>계정으로 이어가기</h2><p data-library-detail>즐겨찾기와 다음에 할 일을 같은 SYNK ID로 이어가세요.</p><span class="continuity-status" data-library-status></span></div><div class="continuity-overview-actions"><span data-connect><button type="button" data-connect-button>계정 라이브러리 연결</button></span><button type="button" data-resume hidden>이어서 열기</button><button type="button" data-panel-toggle hidden aria-expanded="false" aria-controls="' + panelId + '">메모·계정 설정</button></div></header><div id="' + panelId + '" data-library-panel hidden><section data-notebook-mount hidden></section><section data-cloud-content hidden></section></div>';
+  root.innerHTML = '<header class="continuity-overview"><div class="continuity-preview"><p class="continuity-eyebrow">MY LIBRARY</p><h2 data-library-title>계정 라이브러리</h2><p data-library-detail>로그인하면 즐겨찾기와 할 일 메모를 계정에 저장해 다른 기기에서도 봐요.</p><span class="continuity-status" data-library-status role="status" aria-live="polite"></span></div><div class="continuity-overview-actions"><span data-connect><button type="button" data-connect-button>계정 라이브러리 연결</button></span><button type="button" data-resume hidden>이어서 열기</button><button type="button" data-panel-toggle hidden aria-expanded="false" aria-controls="' + panelId + '">메모·계정 설정</button></div></header><div id="' + panelId + '" data-library-panel hidden><section data-notebook-mount hidden></section><section data-cloud-content hidden></section></div>';
   const mount = root.querySelector("[data-notebook-mount]"), content = root.querySelector("[data-cloud-content]"), panel = root.querySelector("[data-library-panel]"), toggle = root.querySelector("[data-panel-toggle]"), connect = root.querySelector("[data-connect-button]"), resumeButton = root.querySelector("[data-resume]");
   function verifyNativeConnection(event) {
     const target = event.target?.closest?.('button[data-notebook="signin"]'), identity = accountAdapter?.status();
@@ -2432,11 +2434,11 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
         const verified = accountAdapter.status();
         const sameIdentity = Number.isSafeInteger(identity.sessionGeneration) && verified.sessionGeneration === identity.sessionGeneration && verified.accountId === identity.accountId;
         if (!disposed && (expected === modeVersion || sameIdentity) && !verified.signedIn && verified.error?.code === "SUITE_UNAVAILABLE") {
-          message = "연결 복구로 재로그인이 필요하다는 안내라면 플랫폼 상단 계정 메뉴의 “새로 로그인”을 선택하세요. 기기 저장 문제라면 저장된 로그인을 유지하고 PC 저장공간·접근 권한을 확인한 뒤 재확인해 주세요.";
+          message = "다시 로그인하라는 안내가 보이면 위 계정 메뉴에서 「새로 로그인」을 눌러 주세요. 기기 저장 문제라면 PC 저장 공간을 비운 뒤 다시 눌러 주세요.";
           nativeVerificationNotice = { text: message, accountId: verified.accountId, generation: verified.sessionGeneration };
         }
       } catch (error) {
-        if (!disposed && expected === modeVersion) message = error.message || "계정 연결을 다시 확인하지 못했어요.";
+        if (!disposed && expected === modeVersion) message = error.message || "계정을 다시 불러오지 못했어요.";
       } finally {
         if (nativeVerification === task) nativeVerification = null;
         if (!disposed) {
@@ -2461,12 +2463,19 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
     toggle.setAttribute("aria-expanded", String(value));
     toggle.textContent = value ? "접어두기" : "메모·계정 설정";
   }
+  function nextStep() {
+    const signedIn = !!(accountAdapter?.status?.()?.signedIn ?? getHost?.()?.identity?.()?.signedIn);
+    if (notebook?.active && !doc.consent) return "「계정 저장 켜기」를 누르면 즐겨찾기와 최근 기록을 계정에 저장해 다른 기기에서도 봐요.";
+    if (signedIn && !notebook?.active) return "「계정 라이브러리 연결」을 누르면 즐겨찾기와 할 일 메모를 계정에 저장해 다른 기기에서도 봐요.";
+    if (signedIn) return "즐겨찾기와 할 일 메모를 계정에 저장해 다른 기기에서도 봐요.";
+    return "로그인하면 즐겨찾기와 할 일 메모를 계정에 저장해 다른 기기에서도 봐요.";
+  }
   function summary() {
     const available = !pageSuspended && !disposed && !!notebook?.active && notebook.canEdit && doc.consent;
     const note2 = available ? doc.notes.find((row) => !row.done && ACTIVE_PLATFORM_APP_IDS.includes(platformAppId(row.appId))) : null, recent = available ? projectPlatformLibrary(doc, { appIds: entryIds() }).recent[0] : null, hasDraft = available && (!!draft.title.trim() || !!parkedDraft?.title.trim());
     resumeId = note2?.appId || recent?.entryId || recent?.id || null;
-    root.querySelector("[data-library-title]").textContent = hasDraft ? editing ? "수정 중인 메모가 있어요" : "작성 중인 메모가 있어요" : note2?.title || (recent ? "다시 " + names[recent.id] + "에서" : "계정으로 이어가기");
-    root.querySelector("[data-library-detail]").textContent = message || (hasDraft ? "접어두어도 이 화면의 입력은 유지돼요." : note2 ? (names[note2.appId] || "이전 앱의 메모") + " · 남겨 둔 다음 할 일" : recent ? "최근 열었던 공간을 바로 열 수 있어요." : available ? "다음에 할 일을 남겨 두면 여기서 바로 이어갈 수 있어요." : "즐겨찾기와 다음에 할 일을 같은 SYNK ID로 이어가세요.");
+    root.querySelector("[data-library-title]").textContent = hasDraft ? editing ? "수정 중인 메모가 있어요" : "작성 중인 메모가 있어요" : note2?.title || (recent ? "최근에 연 " + names[recent.id] : "계정 라이브러리");
+    root.querySelector("[data-library-detail]").textContent = message || (hasDraft ? "접어두어도 이 화면의 입력은 유지돼요." : note2 ? (names[note2.appId] || "이전 앱의 메모") + " · 남겨 둔 다음 할 일" : recent ? "「이어서 열기」를 누르면 바로 열려요." : available ? "다음에 할 일을 메모로 남기면 여기서 바로 이어 가요." : nextStep());
     root.querySelector("[data-library-status]").textContent = connecting ? "연결 준비 중…" : hasDraft && notebook.status.status === "synced" && !notebook.status.error && !notebook.pending ? "메모는 아직 계정에 저장하지 않았어요" : mount.querySelector("[data-notebook-status]")?.textContent || "";
     resumeButton.hidden = !available || !resumeId && !hasDraft;
     resumeButton.textContent = hasDraft ? "계속 작성" : "이어서 열기";
@@ -2571,11 +2580,11 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
     if (!banner) return;
     const state = recovery.state();
     banner.hidden = !state.candidate && !state.error;
-    banner.querySelector("[data-recovery-detail]").textContent = state.error || "이 기기에 보관한 작성 중 메모가 있어요. 복구하면 내용을 확인한 뒤 계정에 저장할 수 있어요.";
+    banner.querySelector("[data-recovery-detail]").textContent = state.error || "이 기기에 쓰던 메모의 임시 저장본이 있어요. 되살리면 내용을 확인한 뒤 계정에 저장할 수 있어요.";
     banner.querySelector('[data-cloud="recover-draft"]').hidden = !state.candidate;
     const discard = banner.querySelector('[data-cloud="discard-recovery"]');
     discard.hidden = !state.candidate && !state.removalFailed;
-    discard.textContent = state.removalFailed ? "초안 삭제 다시 시도" : "보관한 초안 버리기";
+    discard.textContent = state.removalFailed ? "임시 저장본 지우기 다시 시도" : "임시 저장본 버리기";
   }
   function noteControls(editable) {
     const submit = content.querySelector("[data-note-submit]");
@@ -2617,7 +2626,7 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
       if (nextNotes !== renderedNotes) content.querySelector(".continuity-notes").innerHTML = nextNotes;
       if (nextFavorites !== renderedFavorites) content.querySelector("[data-favorite-order]").innerHTML = nextFavorites;
     } else {
-      content.innerHTML = active ? '<h2>내 계정의 이어쓰기</h2><p role="status" data-cloud-message>' + esc(message) + "</p>" + (!doc.consent ? '<p>계정 연결을 켜면 지금부터 선택한 즐겨찾기와 최근 열기를 계정에 저장해요. 기존 기기 목록은 위의 옮기기 버튼으로 직접 가져올 수 있어요.</p><button data-cloud="enable">계정 저장 켜기</button>' : '<label><input type="checkbox" data-cloud="remember" ' + (doc.rememberRecent ? "checked" : "") + '> 최근 열기 시각도 계정에 보관</label><div class="continuity-apps">' + displayIds().map((id2) => '<button type="button" data-cloud="favorite" data-id="' + id2 + '" aria-pressed="' + favoriteSelected(id2) + '">' + (favoriteSelected(id2) ? "★ " : "☆ ") + names[id2] + "</button>").join("") + "</div><section data-favorite-order>" + nextFavorites + '</section><section data-note-recovery class="continuity-undo" hidden><p data-recovery-detail role="status"></p><button type="button" data-cloud="recover-draft">초안 복구</button><button type="button" data-cloud="discard-recovery">보관한 초안 버리기</button></section><form data-note-form><h3 data-editor-heading>새 메모</h3><p data-edit-detail hidden></p><p id="' + panelId + '-capacity" data-note-capacity role="status"></p><label>이어 쓸 공간<select name="appId">' + editorOptions(draft.appId) + '</select></label><label>다음에 할 일<input name="title" maxlength="240" required aria-describedby="' + panelId + '-capacity" value="' + esc(draft.title) + '" placeholder="예: 다음 학습에서 확인할 내용 정리하기"></label><button type="submit" data-note-submit>계정에 메모 남기기</button><button type="button" data-cloud="cancel-edit" hidden>수정 취소</button></form><div class="continuity-undo" data-note-undo hidden><p role="status" data-note-undo-message></p><button type="button" data-cloud="undo-note">삭제 되돌리기</button><p data-note-undo-detail></p></div><div class="continuity-note-tools"><label>메모 검색<input type="search" data-note-search placeholder="메모 내용이나 공간 이름" aria-label="메모 검색"></label><label>메모 상태<select data-note-filter><option value="all">모두</option><option value="pending">미완료</option><option value="done">완료</option></select></label></div><div class="continuity-notes">' + nextNotes + "</div><p>최근 열기는 실제 작업 완료나 학습 성과를 뜻하지 않아요.</p>") : "<p>계정에 로그인한 뒤 라이브러리를 연결할 수 있어요. 기기의 바로가기는 그대로 유지됩니다.</p>";
+      content.innerHTML = active ? '<h2>계정에 저장한 즐겨찾기와 메모</h2><p role="status" data-cloud-message>' + esc(message) + "</p>" + (!doc.consent ? '<p>켜면 지금부터 고르는 즐겨찾기와 최근 기록을 계정에 저장해요. 이 기기에 있던 목록은 위의 「기기 기록을 계정으로 옮기기」로 가져와요.</p><button data-cloud="enable">계정 저장 켜기</button>' : '<label><input type="checkbox" data-cloud="remember" ' + (doc.rememberRecent ? "checked" : "") + '> 최근에 연 시각도 계정에 저장</label><div class="continuity-apps">' + displayIds().map((id2) => '<button type="button" data-cloud="favorite" data-id="' + id2 + '" aria-pressed="' + favoriteSelected(id2) + '">' + (favoriteSelected(id2) ? "★ " : "☆ ") + names[id2] + "</button>").join("") + "</div><section data-favorite-order>" + nextFavorites + '</section><section data-note-recovery class="continuity-undo" hidden><p data-recovery-detail role="status"></p><button type="button" data-cloud="recover-draft">쓰던 메모 되살리기</button><button type="button" data-cloud="discard-recovery">임시 저장본 버리기</button></section><form data-note-form><h3 data-editor-heading>새 메모</h3><p data-edit-detail hidden></p><p id="' + panelId + '-capacity" data-note-capacity role="status"></p><label>이어 쓸 앱<select name="appId">' + editorOptions(draft.appId) + '</select></label><label>다음에 할 일<input name="title" maxlength="240" required aria-describedby="' + panelId + '-capacity" value="' + esc(draft.title) + '" placeholder="예: 다음 학습에서 확인할 내용 정리하기"></label><button type="submit" data-note-submit>계정에 메모 남기기</button><button type="button" data-cloud="cancel-edit" hidden>수정 취소</button></form><div class="continuity-undo" data-note-undo hidden><p role="status" data-note-undo-message></p><button type="button" data-cloud="undo-note">삭제 되돌리기</button><p data-note-undo-detail></p></div><div class="continuity-note-tools"><label>메모 검색<input type="search" data-note-search placeholder="메모 내용이나 앱 이름" aria-label="메모 검색"></label><label>메모 상태<select data-note-filter><option value="all">모두</option><option value="pending">미완료</option><option value="done">완료</option></select></label></div><div class="continuity-notes">' + nextNotes + "</div><p>최근 기록은 앱을 연 시각일 뿐, 학습 결과가 아니에요.</p>") : "<p>로그인하면 계정 라이브러리를 켤 수 있어요. 이 기기의 바로가기는 그대로 남아요.</p>";
     }
     renderedNotes = nextNotes;
     renderedCatalog = catalog;
@@ -2634,7 +2643,7 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
     void recovery.refresh();
   }
   async function change(action) {
-    if (!notebook?.canEdit) throw new Error("계정 연결과 저장 상태를 먼저 확인해 주세요.");
+    if (!notebook?.canEdit) throw new Error("계정 라이브러리가 아직 준비되지 않았어요. 잠시 뒤 다시 해 주세요.");
     const expected = modeVersion, next = updatePlatformLibrary(doc, action, Date.now(), entryIds());
     const favoriteChange = ["favorite", "move-favorite"].includes(action.type) && favoriteSignature(next) !== favoriteSignature(doc) ? { version: expected, owner: documentOwner, signature: favoriteSignature(next) } : null;
     if (favoriteChange) favoriteIntent = favoriteChange;
@@ -2645,7 +2654,7 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
     if (!await result) {
       if (favoriteIntent === favoriteChange) favoriteIntent = null;
       if (expected !== modeVersion) return false;
-      throw new Error("변경을 보관하지 못했어요. 저장 상태를 확인해 주세요.");
+      throw new Error("변경을 보관하지 못했어요. 「저장 다시 시도」를 눌러 주세요.");
     }
     return true;
   }
@@ -2665,7 +2674,7 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
         return;
       }
       const host = getHost();
-      if (!host || !native && !host.identity()?.configured) throw new Error("계정 연결 설정을 불러오지 못했어요. 다시 연결을 눌러 주세요.");
+      if (!host || !native && !host.identity()?.configured) throw new Error("로그인 설정을 못 불러왔어요. 「계정 라이브러리 연결」을 다시 눌러 주세요.");
       const device = getDevice(), favorites = (device.favorites || []).filter((id2) => PLATFORM_APP_IDS.includes(id2));
       doc = validatePlatformLibrary({ ...emptyPlatformLibrary(), consent: true, favorites: [...new Set(favorites)], recent: (device.recent || []).filter((row) => PLATFORM_APP_IDS.includes(row.id)), rememberRecent: device.rememberRecent !== false });
       mount.hidden = false;
@@ -2678,7 +2687,7 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
         preferRemoteOnOpen: true,
         mount,
         content,
-        description: "즐겨찾기·최근 열기·직접 적은 메모만 연결합니다. 앱 원문과 이용 권한은 각 앱에서 확인해요.",
+        description: "즐겨찾기, 최근 기록, 직접 적은 메모만 계정에 저장해요. 앱 안의 기록은 각 앱에 남아요.",
         getState: () => doc,
         applyState: (value, { guest = false } = {}) => {
           favoriteIntent = null;
@@ -2691,9 +2700,11 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
         emptyDocument: emptyPlatformLibrary,
         storage,
         signOutLabel: native ? "로그아웃" : "계정 관리로 이동",
-        deleteLabel: "계정 라이브러리 삭제·저장 끄기",
-        deleteConfirmation: "이 계정의 즐겨찾기·최근 열기·이어쓰기 메모를 삭제하고 저장을 끌까요? 다른 기기에서도 이 목록을 다시 불러올 수 없어요. 각 앱의 원본 기록은 유지돼요.",
+        deleteLabel: "계정 라이브러리 지우고 끄기",
+        deleteConfirmation: "이 계정의 즐겨찾기, 최근 기록, 할 일 메모를 지우고 저장을 끌까요? 다른 기기에서도 다시 불러올 수 없어요. 각 앱 안의 기록은 그대로예요.",
         onStatusChange: () => queueMicrotask(render),
+        statusLabel: (text2, { active, status }) => active && status === "synced" && !doc.consent ? "계정 저장 꺼짐" : text2,
+        detailLabel: (text2, { active, status, problem }) => active && !problem && status === "synced" && !doc.consent ? "아직 이 계정에는 저장하지 않았어요. 아래에서 「계정 저장 켜기」를 누르면 저장해요." : text2,
         // change() only queues the edit. Observe the validated server ACK, and
         // only the latest still-visible choice in the same account generation.
         onDocumentSaved: (value) => {
@@ -2711,7 +2722,7 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
         },
         beforeNavigate: () => {
           if (!hasUnsavedDraft()) return true;
-          if (!globalThis.confirm("작성 중인 이어쓰기 메모를 닫을까요?")) return false;
+          if (!globalThis.confirm("작성 중인 메모를 닫을까요?")) return false;
           discardDraft();
           return true;
         },
@@ -2735,6 +2746,7 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
         } }),
         onMode: () => queueMicrotask(render)
       });
+      mount.querySelector("[data-notebook-status]").hidden = true;
       await notebook.start();
       if (!notebook.active) {
         initialExpansionPending = false;
@@ -2743,7 +2755,7 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
       render();
     } catch (error) {
       if (!disposed) {
-        message = error.message || "계정 연결을 마치지 못했어요. 다시 연결해 주세요.";
+        message = error.message || "계정 라이브러리를 켜지 못했어요. 다시 눌러 주세요.";
         summary();
       }
     } finally {
@@ -2809,20 +2821,20 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
     if (!button || button.disabled) return;
     const action = button.dataset.cloud, id2 = button.dataset.id;
     if (action === "open") {
-      if (hasUnsavedDraft() && !globalThis.confirm("작성 중인 이어쓰기 메모를 닫고 이동할까요?")) return;
+      if (hasUnsavedDraft() && !globalThis.confirm("작성 중인 메모를 닫고 이동할까요?")) return;
       onOpen(platformAppId(id2));
       return;
     }
     if (!notebook?.canEdit) return;
     if (action === "recover-draft") {
-      if (hasUnsavedDraft() && !globalThis.confirm("현재 작성 중인 내용을 닫고 기기에 보관한 초안을 열까요?")) return;
+      if (hasUnsavedDraft() && !globalThis.confirm("지금 쓰는 내용을 닫고 이 기기의 임시 저장본을 열까요?")) return;
       const saved = recovery.take();
       if (!saved) return;
       const original = saved.editing && doc.notes.find((row) => row.id === saved.editing.id);
       editing = original && original.title === saved.editing.title && original.appId === saved.editing.appId ? { ...original } : null;
       parkedDraft = saved.parkedDraft;
       setEditorDraft(saved.draft);
-      message = saved.editing && !editing ? "원래 메모가 바뀌어 복구한 내용을 새 메모로 열었어요. 확인한 뒤 저장해 주세요." : "작성 중이던 메모를 복구했어요. 확인한 뒤 계정에 저장해 주세요.";
+      message = saved.editing && !editing ? "원래 메모가 바뀌어 되살린 내용을 새 메모로 열었어요. 확인한 뒤 저장해 주세요." : "쓰던 메모를 되살렸어요. 확인한 뒤 계정에 저장해 주세요.";
       render();
       focusDraft();
       void recovery.persist();

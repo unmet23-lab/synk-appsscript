@@ -99,7 +99,7 @@ async function fixture({initialAuth=signedOut,initialClients=[waitingClient],bri
     async click(id){const callback=element(id).handlers.get('click');assert.equal(typeof callback,'function');await callback();},
     async action(dataset){await documentHandlers.get('click')({target:{closest:()=>({dataset})}});},
     publicBenefitControl(){
-      const match=element('benefit-detail').innerHTML.match(/<(a|button)\b([^>]+)>(?:공개 웹에서 시작하기|여는 중…)[\s\S]*?<\/\1>/);
+      const match=element('benefit-detail').innerHTML.match(/<(a|button)\b([^>]+)>(?:웹에서 열기|여는 중…)[\s\S]*?<\/\1>/);
       assert.ok(match,'rendered public benefit control must exist');const [,tag,attrs]=match,dataset={};
       for(const [,key,value] of attrs.matchAll(/data-([\w-]+)="([^"]*)"/g))dataset[key.replace(/-([a-z])/g,(_,letter)=>letter.toUpperCase())]=value;
       return {tag,dataset,disabled:/(?:^|\s)disabled(?:\s|$)/.test(attrs),href:attrs.match(/href="([^"]*)"/)?.[1]};
@@ -228,7 +228,7 @@ test('failed automatic hydration does not silently save an account action into d
   const f=await autoLibraryFixture(t,{bridgeOverrides:{getClients:async()=>[installedClient],launch:async()=>{launches++;return {ok:true};}},request:async operation=>{assert.equal(operation,'platformLoad');await gate.promise;return {ok:false,error:{code:'NETWORK_FAILED'}};}});
   await f.ready;await settleLibrary();const actions=Promise.all([f.click('favorite'),f.click('primary-action')]);actions.catch(()=>{});await settleLibrary();gate.resolve();await actions;await settleLibrary();
   assert.equal(launches,1);assert.equal(f.continuity().projection(),null);assert.equal(f.storage.get(viewKey('student-a')),null);
-  assert.deepEqual(f.calls.map(({operation,owner})=>[operation,owner]),[['platformLoad','student-a'],['insightLoad','student-a']]);assert.match(f.element('toast').textContent,/계정 기록을 확인하지 못했어요/);
+  assert.deepEqual(f.calls.map(({operation,owner})=>[operation,owner]),[['platformLoad','student-a'],['insightLoad','student-a']]);assert.match(f.element('toast').textContent,/계정 기록을 불러오지 못해/);
 });
 
 for(const succeeds of [true,false])test('pending library action blocks close and releases it after '+(succeeds?'successful hydration':'failed hydration'),async t=>{
@@ -250,8 +250,8 @@ for(const id of ['path'])test(id+' native preview invokes only its dedicated bri
   const calls=[];
   const f=await fixture({initialAuth:account(id+'-member',[id]),bridgeOverrides:{getEnvironment:async()=>({...environment,productPreviewsAvailable:[id]}),openProductPreview:async value=>{calls.push(value);return {ok:true};},launch:async()=>assert.fail('preview must not use installer launch')}});
   assert.equal(await f.ready,'true');assert.deepEqual(f.ids(),[id]);assert.equal(f.element('primary-action').dataset.action,'product-preview');assert.equal(f.element('primary-action').disabled,false);
-  assert.match(f.element('detail-content').innerHTML,/공개 MVP/);assert.doesNotMatch(f.element('detail-content').innerHTML,/사내 대화/);
-  await f.click('primary-action');assert.deepEqual(calls,[id]);assert.match(f.element('toast').textContent,/별도 창/);
+  assert.match(f.element('detail-content').innerHTML,/웹에서 연습/);assert.doesNotMatch(f.element('detail-content').innerHTML,/사내 대화/);
+  await f.click('primary-action');assert.deepEqual(calls,[id]);assert.match(f.element('toast').textContent,/창을 열었어요/);
   f.emit('auth',account('unrelated',['world']));await f.action({command:'product-preview',client:id});assert.deepEqual(calls,[id]);
 });
 test('product preview stays unavailable without source capability and ignores late completion for another account',async()=>{
@@ -283,7 +283,7 @@ test('signup controls stay unavailable while sessions change or the bridge is un
 test('launcher mounts shared update controls and explicitly opens a ready installer without auth calls',async()=>{
   let installs=0;const status={ok:true,state:'ready',currentVersion:'0.4.4',latestVersion:'0.4.5'};
   const f=await fixture({bridgeOverrides:{updateStatus:async()=>status,checkForUpdate:async()=>status,downloadUpdate:async()=>status,installUpdate:async()=>{installs++;return {...status,state:'opening'};},onUpdateChanged:()=>()=>{},authSignIn:async()=>assert.fail('update must not authenticate'),authSignOut:async()=>assert.fail('update must not sign out')}});await f.ready;
-  assert.equal(f.element('platform-update-settings-install').hidden,false);assert.equal(f.element('platform-update-downloads-install').textContent,'앱 종료 후 설치 파일 열기');
+  assert.equal(f.element('platform-update-settings-install').hidden,false);assert.equal(f.element('platform-update-downloads-install').textContent,'앱 끄고 설치 파일 열기');
   await f.click('platform-update-settings-install');assert.equal(installs,1);assert.equal(f.element('platform-update-downloads').dataset.updateState,'opening');assert.deepEqual(f.ids(),['world']);
 });
 
@@ -312,7 +312,7 @@ test('granted PULSE launches the independent window and keeps prior local drafts
   let called=0,opened=0;const f=await fixture({initialAuth:account('customer',['pulse']),initialClients:[{id:'pulse',canLaunch:true,installer:{canPrepare:true}}],bridgeOverrides:{launch:async()=>{called++;return {ok:true};},openPulseApp:async()=>{opened++;return {ok:true};}}});assert.equal(await f.ready,'true');assert.equal(f.element('primary-action').disabled,false);assert.equal(f.element('primary-action').dataset.action,'pulse-app');assert.doesNotMatch(f.element('download-list').innerHTML,/SYNK PULSE/);assert.equal(f.element('pulse-client').hidden,true);await f.click('primary-action');assert.equal(called,0);assert.equal(opened,1);assert.deepEqual(f.ids(),['pulse']);await f.action({pulseLegacy:'open'});assert.equal(f.element('pulse-client').hidden,false);assert.match(f.element('pulse-client').innerHTML,/모델 캐스팅/);assert.match(f.element('pulse-client').innerHTML,/포트폴리오/);
   // Progress and approval moved to the PULSE window; the old lounge tab and its invite form are gone.
   const legacy=f.element('pulse-client');assert.doesNotMatch(legacy.innerHTML,/data-pulse-tab="progress"|초대 링크|workspace\.synk\.im\/pulse\//);assert.match(legacy.innerHTML,/<button data-pulse-open-app>제작 진행·승인 <span>PULSE 창 ↗<\/span><\/button>/);
-  legacy.contains=()=>true;await legacy.handlers.get('click')({target:{closest:()=>({dataset:{pulseOpenApp:''}})}});await settleLibrary();assert.equal(opened,2);assert.equal(called,0);assert.match(f.element('toast').textContent,/PULSE를 별도 창으로 열었어요/);
+  legacy.contains=()=>true;await legacy.handlers.get('click')({target:{closest:()=>({dataset:{pulseOpenApp:''}})}});await settleLibrary();assert.equal(opened,2);assert.equal(called,0);assert.match(f.element('toast').textContent,/PULSE 창을 열었어요/);
 });
 test('an unsaved PULSE brief still brings the owner back to the local brief instead of closing',async()=>{
   let closed=0;const f=await fixture({initialAuth:account('customer',['pulse']),bridgeOverrides:{windowAction:async action=>{if(action==='close')closed++;return {ok:true};}}});assert.equal(await f.ready,'true');
@@ -341,7 +341,7 @@ test('late launch success cannot write previous run into next account',async()=>
   const launch=deferred();const f=await fixture({initialAuth:signedIn,initialClients:[installedClient],bridgeOverrides:{launch:()=>launch.promise}});assert.equal(await f.ready,'true');const pending=f.click('primary-action');f.emit('auth',account('student-b',['world'],{sessionGeneration:2}));launch.resolve({ok:true});await pending;assert.equal(f.element('last-launch').textContent,'기록 없음');assert.ok(!f.storage.get(viewKey('student-b'))||!JSON.parse(f.storage.get(viewKey('student-b'))).lastLaunch?.world);
 });
 test('revocation closes content dialog and clears recommendation and action',async()=>{
-  const f=await fixture({initialAuth:signedIn});assert.equal(await f.ready,'true');await savePersonal(f,{context:'student'});await f.action({game:'racing'});assert.equal(f.element('content-dialog').open,true);f.emit('auth',account('student-a',[],{library:{status:'unavailable',appIds:[]}}));assert.deepEqual(f.ids(),[]);assert.equal(f.element('content-dialog').open,false);assert.equal(f.element('recommendation').hidden,true);assert.equal(f.element('app-detail').hidden,true);assert.equal(f.element('primary-action').disabled,true);
+  const f=await fixture({initialAuth:signedIn});assert.equal(await f.ready,'true');await savePersonal(f,{context:'student'});await f.action({game:'runner'});assert.equal(f.element('content-dialog').open,true);f.emit('auth',account('student-a',[],{library:{status:'unavailable',appIds:[]}}));assert.deepEqual(f.ids(),[]);assert.equal(f.element('content-dialog').open,false);assert.equal(f.element('recommendation').hidden,true);assert.equal(f.element('app-detail').hidden,true);assert.equal(f.element('primary-action').disabled,true);
 });
 test('temporary library refresh preserves the same account selection and search',async()=>{
   const member=account('team-refresh',['world','messenger']);const f=await fixture({initialAuth:member});assert.equal(await f.ready,'true');await f.action({app:'messenger'});await f.click('favorite');f.input('search','Studio');const stored=f.storage.get(viewKey('team-refresh'));
@@ -354,15 +354,15 @@ test('late authentication completions and errors cannot overwrite a newer accoun
   }
 });
 for(const [label,result,pattern]of [
-  ['failed local deletion',{ok:false,serverRevoked:true,serverSessionRevoked:true,error:{code:'AUTH_FAILED'}},/로그아웃을 완료하지 못했어요/],
-  ['local-only revocation',{ok:true,serverRevoked:false,serverSessionRevoked:false},/이 기기에서 로그아웃/],
+  ['failed local deletion',{ok:false,serverRevoked:true,serverSessionRevoked:true,error:{code:'AUTH_FAILED'}},/로그아웃하지 못했어요/],
+  ['local-only revocation',{ok:true,serverRevoked:false,serverSessionRevoked:false},/이 PC에서는 로그아웃/],
   ['fully confirmed logout',{ok:true,serverRevoked:true,serverSessionRevoked:true},/^로그아웃했어요\.$/],
 ])for(const emitEvent of [false,true])test(label+' retains honest account feedback '+(emitEvent?'after native signed-out event':'without event'),async()=>{const f=await fixture({initialAuth:signedIn});assert.equal(await f.ready,'true');f.bridge.authSignOut=async()=>{const out={...signedOut,sessionGeneration:signedIn.sessionGeneration+1};if(emitEvent)f.emit('auth',out);else f.setAuth(out);return result;};await f.click('sign-out');assert.match(f.element('toast').textContent,pattern);assert.equal(f.element('sign-out').disabled,false);assert.deepEqual(f.ids(),['world']);});
 
 for(const [label,result,pattern]of [
-  ['confirmed logout with failed draft cleanup',{ok:true,serverRevoked:true,serverSessionRevoked:true,draftRecoveryCleanup:{ok:false,code:'DRAFT_STORAGE_FAILED'}},/^로그아웃했어요\.[\s\S]*암호화된 초안 복구본[\s\S]*같은 SYNK ID/],
-  ['incomplete server logout with failed draft cleanup',{ok:true,serverRevoked:false,serverSessionRevoked:false,draftRecoveryCleanup:{ok:false,code:'DRAFT_STORAGE_FAILED'}},/이 기기에서 로그아웃[\s\S]*서버 세션 종료[\s\S]*암호화된 초안 복구본/],
-  ['failed authentication cleanup with failed draft cleanup',{ok:false,serverRevoked:true,serverSessionRevoked:true,draftRecoveryCleanup:{ok:false,code:'DRAFT_STORAGE_FAILED'}},/로그아웃을 완료하지 못했어요[\s\S]*암호화된 초안 복구본/],
+  ['confirmed logout with failed draft cleanup',{ok:true,serverRevoked:true,serverSessionRevoked:true,draftRecoveryCleanup:{ok:false,code:'DRAFT_STORAGE_FAILED'}},/^로그아웃했어요\.[\s\S]*임시 저장한 메모를 지우지 못했어요[\s\S]*같은 SYNK ID/],
+  ['incomplete server logout with failed draft cleanup',{ok:true,serverRevoked:false,serverSessionRevoked:false,draftRecoveryCleanup:{ok:false,code:'DRAFT_STORAGE_FAILED'}},/이 PC에서는 로그아웃[\s\S]*서버 쪽 로그인[\s\S]*임시 저장한 메모를 지우지 못했어요/],
+  ['failed authentication cleanup with failed draft cleanup',{ok:false,serverRevoked:true,serverSessionRevoked:true,draftRecoveryCleanup:{ok:false,code:'DRAFT_STORAGE_FAILED'}},/로그아웃하지 못했어요[\s\S]*임시 저장한 메모를 지우지 못했어요/],
   ['truthy draft cleanup flag is not a failure',{ok:true,serverRevoked:true,serverSessionRevoked:true,draftRecoveryCleanup:{ok:'false'}},/^로그아웃했어요\.$/],
 ])for(const emitEvent of [false,true])test(label+' reports distinct outcomes '+(emitEvent?'after native event':'without event'),async()=>{
   const f=await fixture({initialAuth:signedIn});assert.equal(await f.ready,'true');
@@ -397,7 +397,7 @@ test('logout status refresh cannot close a fresh sign-in dialog or publish an ol
   try{
     assert.equal(f.element('account-dialog').open,true,'the fresh sign-in dialog must stay open');
     assert.equal(f.element('toast').hidden,true,'an old logout cleanup warning must not enter the new sign-in');
-    assert.equal(f.element('account-label').textContent,'로그인 연결 중');
+    assert.equal(f.element('account-label').textContent,'로그인 중');
     assert.equal(f.element('cancel-sign-in').hidden,false);
   }finally{f.bridge.authStatus=async()=>account('fresh-after-logout',['teacher'],{sessionGeneration:3});signIn.resolve({ok:true});await signing;}
 });
@@ -405,9 +405,9 @@ test('logout status refresh cannot close a fresh sign-in dialog or publish an ol
 test('accepted logout closes the account modal before its outcome while sign-in cancellation keeps the dialog',async()=>{
   for(const [result,pattern]of [
     [{ok:true,serverRevoked:true,serverSessionRevoked:true},/^로그아웃했어요\.$/],
-    [{ok:false,serverRevoked:true,serverSessionRevoked:true,error:{code:'AUTH_FAILED'}},/로그아웃을 완료하지 못했어요/],
-    [{ok:true,serverRevoked:false,serverSessionRevoked:false},/서버 세션 종료는 연결 후/],
-    [{ok:true,serverRevoked:true,serverSessionRevoked:true,draftRecoveryCleanup:{ok:false,code:'DRAFT_STORAGE_FAILED'}},/암호화된 초안 복구본[\s\S]*같은 SYNK ID/],
+    [{ok:false,serverRevoked:true,serverSessionRevoked:true,error:{code:'AUTH_FAILED'}},/로그아웃하지 못했어요/],
+    [{ok:true,serverRevoked:false,serverSessionRevoked:false},/서버 쪽 로그인은 인터넷이 연결된 뒤/],
+    [{ok:true,serverRevoked:true,serverSessionRevoked:true,draftRecoveryCleanup:{ok:false,code:'DRAFT_STORAGE_FAILED'}},/임시 저장한 메모를 지우지 못했어요[\s\S]*같은 SYNK ID/],
   ]){
     const f=await fixture({initialAuth:signedIn});await f.ready;await f.click('account-button');assert.equal(f.element('account-dialog').open,true);
     f.bridge.authSignOut=async()=>{f.setAuth({...signedOut,sessionGeneration:signedIn.sessionGeneration+1});return result;};
@@ -449,7 +449,7 @@ test('benefit preview needs both native capability and current server entitlemen
 test('benefit search opens a public detail without replacing authorized app selections',async()=>{
   const f=await fixture({initialAuth:account('student-search',['world'])});assert.equal(await f.ready,'true');
   f.input('search','운세');assert.equal(f.element('benefits-search').hidden,false);assert.match(f.element('benefits-search').innerHTML,/data-benefit="fortune"/);
-  await f.action({benefit:'fortune'});assert.equal(f.element('view-benefits').hidden,false);assert.match(f.element('benefit-detail').innerHTML,/오늘의 기운부터 궁합과 올해까지/);assert.equal(f.element('breadcrumb-app').textContent,'SYNK WORLD');
+  await f.action({benefit:'fortune'});assert.equal(f.element('view-benefits').hidden,false);assert.match(f.element('benefit-detail').innerHTML,/오늘 운세부터 궁합, 올해 흐름까지/);assert.equal(f.element('breadcrumb-app').textContent,'SYNK WORLD');
   f.input('search','');assert.equal(f.element('benefits-search').hidden,true);assert.deepEqual(f.ids(),['world']);
 });
 
@@ -458,7 +458,7 @@ test('member benefit clients launch only their own local preview after exact ent
     const calls=[],f=await fixture({initialAuth:account('benefit-'+id,[id]),bridgeOverrides:{getEnvironment:async()=>({...environment,productPreviewsAvailable:[id]}),openProductPreview:async actual=>{calls.push(actual);return {ok:true};},launch:async()=>assert.fail('must not use package launch')}});
     assert.equal(await f.ready,'true');assert.deepEqual(f.ids(),[]);assert.equal(f.element('primary-action').dataset.action,'product-preview');
     await f.action({benefit:id});assert.match(f.element('benefit-detail').innerHTML,new RegExp('data-benefit-preview="'+id+'"'));
-    assert.doesNotMatch(f.element('benefit-detail').innerHTML,/플레저 개발 미리보기 열기/);
+    assert.doesNotMatch(f.element('benefit-detail').innerHTML,/플레저 PC 창으로 열기/);
     await f.action({benefitPreview:id});assert.deepEqual(calls,[id]);
     const other='care';await f.action({benefit:other});assert.doesNotMatch(f.element('benefit-detail').innerHTML,/data-benefit-preview/);await f.action({benefitPreview:other});assert.deepEqual(calls,[id]);
     f.emit('auth',account('benefit-'+id,[],{sessionGeneration:2}));await f.action({benefitPreview:id});assert.deepEqual(calls,[id]);
@@ -490,7 +490,7 @@ test('failed, revoked and previous-account preview responses cannot add launch h
 test('refresh recovers preview actions after an initial environment lookup failure',async()=>{
   let calls=0;const f=await fixture({initialAuth:account('environment-retry',['fortune']),bridgeOverrides:{getEnvironment:async()=>{if(++calls===1)throw Error('temporary');return {...environment,productPreviewsAvailable:['fortune']};},openProductPreview:async()=>({ok:true})}});
   assert.equal(await f.ready,'true');assert.equal(f.element('primary-action').disabled,true);await f.click('refresh');
-  assert.equal(calls,2);assert.equal(f.element('primary-action').dataset.action,'product-preview');assert.equal(f.element('primary-action').disabled,false);assert.match(f.element('diagnostics').innerHTML,/독립 클라이언트/);assert.match(f.element('runtime-label').textContent,/Windows · x64/);
+  assert.equal(calls,2);assert.equal(f.element('primary-action').dataset.action,'product-preview');assert.equal(f.element('primary-action').disabled,false);assert.match(f.element('diagnostics').innerHTML,/앱마다 따로 열림/);assert.match(f.element('runtime-label').textContent,/Windows · x64/);
 });
 
 test('a late startup environment result cannot remove a recovered preview capability',async()=>{
@@ -507,7 +507,7 @@ test('preview app information uses its own published availability instead of den
 test('browser-only benefit previews retain public anchors and create no native launch history',async()=>{
   for(const id of ['care','fortune']){
     const f=await fixture({initialAuth:signedOut,native:false});assert.equal(await f.ready,'true');await f.action({benefit:id});
-    const detail=f.element('benefit-detail').innerHTML;assert.ok(detail.includes(`href="https://synk.im/${id}/" target="_blank" rel="noopener noreferrer"`));assert.match(detail,/공개 웹에서 시작하기/);assert.match(detail,/공개 웹 · PC 개발판/);assert.doesNotMatch(detail,/data-benefit-preview/);assert.doesNotMatch(detail,/회원 무료 제공 예정/);assert.equal(f.storage.get(viewKey()),null);
+    const detail=f.element('benefit-detail').innerHTML;assert.ok(detail.includes(`href="https://synk.im/${id}/" target="_blank" rel="noopener noreferrer"`));assert.match(detail,/웹에서 열기/);assert.match(detail,/웹에서 무료/);assert.doesNotMatch(detail,/data-benefit-preview/);assert.doesNotMatch(detail,/회원 무료 제공 예정/);assert.equal(f.storage.get(viewKey()),null);
   }
 });
 
@@ -573,7 +573,7 @@ test('sign-in from a connection error restores the confirmed account library thr
 test('a failed old library retry cannot replace a new account or expose its saved history',async()=>{
   const retry=deferred(),f=await fixture({initialAuth:account('old-retry',['fortune'],{library:{status:'unavailable',appIds:[]}}),initialPreferences:JSON.stringify({selected:'fortune',favorites:['fortune'],lastLaunch:{fortune:123}}),bridgeOverrides:{accountRequest:()=>retry.promise}});
   assert.equal(await f.ready,'true');const pending=f.click('library-retry');f.emit('auth',account('new-member',['world'],{sessionGeneration:2}));retry.reject(Error('old connection'));await pending;
-  assert.deepEqual(f.ids(),['world']);assert.equal(f.element('account-label').textContent,'합성 new-member');assert.equal(f.element('last-launch').textContent,'기록 없음');assert.equal(f.element('favorite').attributes.get('aria-pressed'),'false');assert.doesNotMatch(f.element('account-state').textContent,/다시 확인/);
+  assert.deepEqual(f.ids(),['world']);assert.equal(f.element('account-label').textContent,'합성 new-member');assert.equal(f.element('last-launch').textContent,'기록 없음');assert.equal(f.element('favorite').attributes.get('aria-pressed'),'false');assert.doesNotMatch(f.element('account-state').textContent,/다시 읽기/);
 });
 
 const retryableConnectionError=()=>({...signedOut,status:'error',error:{code:'AUTH_SERVER_UNAVAILABLE',message:'연결을 잠시 확인하지 못했어요.',retryable:true}});
@@ -604,7 +604,7 @@ test('account dialog distinguishes preserving retry from a fresh OAuth choice on
   const retry=await fixture({initialAuth:retryableConnectionError(),bridgeOverrides:{accountRequest:async()=>({ok:true})}});await retry.ready;
   assert.equal(retry.element('account-retry').hidden,false);assert.equal(retry.element('account-retry').disabled,false);
   assert.equal(retry.element('sign-in').textContent,'새로 로그인');
-  assert.match(retry.element('account-description').textContent,/연결을 다시 확인/);
+  assert.match(retry.element('account-description').textContent,/저장된 로그인을 다시 불러오/);
   for(const [initial,native]of [[signedOut,true],[{...signedOut,status:'error',error:{code:'AUTH_REQUIRED',retryable:false}},true],[signedIn,true],[{...signedOut,status:'restoring'},true],[retryableConnectionError(),false]]){
     const f=await fixture({initialAuth:initial,native,bridgeOverrides:{accountRequest:async()=>assert.fail('hidden retry must not run')}});await f.ready;
     assert.equal(f.element('account-retry').hidden,true);await f.click('account-retry');
@@ -636,7 +636,7 @@ for(const outcome of ['resolve','reject'])test('account dialog late retry '+outc
   const pending=deferred();pending.promise.catch(()=>{});let oauth=0;const f=await fixture({initialAuth:retryableConnectionError(),storageEntries:[[viewKey('earlier-account'),JSON.stringify({selected:'fortune',lastLaunch:{fortune:123}})]],bridgeOverrides:{accountRequest:()=>pending.promise,authSignIn:async()=>{oauth++;return {ok:true};}}});await f.ready;
   const retry=f.click('account-retry');f.emit('auth',account('dialog-new-account',['world'],{sessionGeneration:9}));
   if(outcome==='reject')pending.reject(Error('old connection'));else pending.resolve({ok:true,account:{synk_user_id:'earlier-account'}});await retry;
-  assert.equal(oauth,0);assert.deepEqual(f.ids(),['world']);assert.equal(f.element('account-label').textContent,'합성 dialog-new-account');assert.equal(f.element('account-retry').hidden,true);assert.equal(f.element('toast').hidden,true);assert.equal(f.element('last-launch').textContent,'기록 없음');assert.doesNotMatch(f.element('account-state').textContent,/다시 확인/);
+  assert.equal(oauth,0);assert.deepEqual(f.ids(),['world']);assert.equal(f.element('account-label').textContent,'합성 dialog-new-account');assert.equal(f.element('account-retry').hidden,true);assert.equal(f.element('toast').hidden,true);assert.equal(f.element('last-launch').textContent,'기록 없음');assert.doesNotMatch(f.element('account-state').textContent,/다시 읽기/);
 });
 test('account dialog explicit fresh login still invokes OAuth once without a preserving load',async()=>{
   let loads=0,oauth=0;const f=await fixture({initialAuth:retryableConnectionError(),bridgeOverrides:{accountRequest:async()=>{loads++;return {ok:true};},authSignIn:async()=>{oauth++;f.setAuth(account('dialog-explicit-login',['fortune']));return {ok:true};}}});await f.ready;

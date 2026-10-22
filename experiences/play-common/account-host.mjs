@@ -11,11 +11,11 @@ export function createWorldPlayHost({accountId,client,guard,onStatus=()=>{},stor
   if(typeof accountId!=='string'||!accountId||typeof guard!=='function'||typeof client?.load!=='function'||typeof client?.mutate!=='function')throw TypeError('Verified WORLD play account required');
   const prefix=`synk.play.account.v1:${encodeURIComponent(accountId)}:pending:`,rejectedPrefix=`synk.play.account.v1:${encodeURIComponent(accountId)}:rejected:`,listeners=new Set(),waitingWallets=new Map();
   let stopped=false,loaded=false,revision=0,state=emptyPlayState(),phase='loading',lastError=null,inflight=null,timer=null,initial=null;
-  function check(){guard();if(stopped)throw error('PLAY_SESSION_ENDED','이 계정의 게임 연결이 종료됐어요.');}
+  function check(){guard();if(stopped)throw error('PLAY_SESSION_ENDED','로그인이 끝나 이 계정에 게임 기록을 저장할 수 없어요.');}
   function pending(){
     check();const result=[];
     for(let i=0;i<storage.length;i++){const key=storage.key(i);if(!key?.startsWith(prefix))continue;
-      let value;try{value=JSON.parse(storage.getItem(key));}catch{throw error('PLAY_PENDING_UNREADABLE','전송 대기 기록을 확인하지 못했어요. 원본을 보존했어요.');}
+      let value;try{value=JSON.parse(storage.getItem(key));}catch{throw error('PLAY_PENDING_UNREADABLE','저장을 기다리던 기록을 읽지 못했어요. 그 기록은 지우지 않았어요.');}
       if(value?.accountId!==accountId||key!==prefix+value?.body?.id||!Number.isSafeInteger(value.at))throw error('PLAY_PENDING_UNREADABLE');
       result.push(value);
     }
@@ -24,19 +24,19 @@ export function createWorldPlayHost({accountId,client,guard,onStatus=()=>{},stor
   function legacy(){try{return readLegacyPlay(storage);}catch{return null;}}
   function hasLegacy(){const old=legacy();return !!old&&(Object.keys(old.records).length>0||old.wallet.totalEarned>0||old.wallet.owned.length>emptyPlayState().wallet.owned.length);}
   function rejectionCount(){let count=0;for(let i=0;i<storage.length;i++)if(storage.key(i)?.startsWith(rejectedPrefix))count++;return count;}
-  function rejectedError(id){const raw=storage.getItem(rejectedPrefix+id);if(!raw)return null;const value=JSON.parse(raw);if(value.accountId!==accountId||value.entry?.body?.id!==id||!rejectedCommands.has(value.code))throw error('PLAY_PENDING_UNREADABLE');return Object.assign(error(value.code,'이 요청은 계정에서 처리하지 못했어요. 원본은 이 기기에 보관했고 다른 게임은 계속할 수 있어요.'),{rejected:true});}
+  function rejectedError(id){const raw=storage.getItem(rejectedPrefix+id);if(!raw)return null;const value=JSON.parse(raw);if(value.accountId!==accountId||value.entry?.body?.id!==id||!rejectedCommands.has(value.code))throw error('PLAY_PENDING_UNREADABLE');return Object.assign(error(value.code,'이 기록은 계정에 저장하지 못했어요. 이 기기에 남겨 뒀고, 다른 게임은 계속할 수 있어요.'),{rejected:true});}
   function preserveRejected(entry,cause){
     check();const saved={accountId,at:now(),code:cause.code,entry};
     // Persist the complete rejected command before removing it from the outbox.
     // A full disk must leave the original command available for recovery.
     try{storage.setItem(rejectedPrefix+entry.body.id,JSON.stringify(saved));storage.removeItem(prefix+entry.body.id);}
-    catch{throw error('PLAY_STORAGE_UNAVAILABLE','처리하지 못한 기록의 원본을 보관할 공간이 없어요. 전송 대기 기록은 유지했어요.');}
+    catch{throw error('PLAY_STORAGE_UNAVAILABLE','저장하지 못한 기록을 이 기기에 남길 공간이 없어요. 저장을 기다리던 기록은 그대로 있어요.');}
     const rejected=rejectedError(entry.body.id);if(waitingWallets.has(entry.body.id))waitingWallets.set(entry.body.id,{rejected});
   }
-  function status(){let count=0,rejected=0;try{count=pending().length;rejected=rejectionCount();}catch{}return {accountId,phase,pending:count,rejected,revision,canImport:loaded&&revision===0&&hasLegacy(),message:phase==='synced'?rejected?`계정에 연결됐어요. 처리하지 못한 요청 ${rejected}개의 원본은 이 기기에 보관했어요. 다른 기록은 계속 저장돼요.`:'게임 기록과 구매품이 SYNK 계정에 저장됐어요.':phase==='loading'?'계정의 게임 기록을 불러오고 있어요.':phase==='saving'?'계정에 게임 기록을 저장하고 있어요.':phase==='conflict'?'다른 기기에서도 진도가 바뀌었어요. 사용할 진도를 골라 주세요.':phase==='stopped'?'계정 연결이 종료됐어요.':lastError?.message||'아직 계정에 저장하지 못했어요. 다시 연결하면 재시도해요.',code:lastError?.code};}
+  function status(){let count=0,rejected=0;try{count=pending().length;rejected=rejectionCount();}catch{}return {accountId,phase,pending:count,rejected,revision,canImport:loaded&&revision===0&&hasLegacy(),message:phase==='synced'?rejected?`계정에 저장했어요. 기록 ${rejected}개는 저장하지 못해 이 기기에 남겨 뒀어요.`:'게임 기록과 산 물건이 SYNK 계정에 저장됐어요.':phase==='loading'?'계정의 게임 기록을 불러오고 있어요.':phase==='saving'?'계정에 게임 기록을 저장하고 있어요.':phase==='conflict'?'다른 기기에서도 진도가 바뀌었어요. 사용할 진도를 골라 주세요.':phase==='stopped'?'로그인이 끝났어요.':lastError?.message||'아직 계정에 저장하지 못했어요. 인터넷이 연결되면 다시 저장해요.',code:lastError?.code};}
   function emit(next,reason=null){phase=next;lastError=reason;const value=status();onStatus(value);for(const fn of listeners)try{fn(value);}catch{}return value;}
   function accept(value){
-    check();if(value?.ok!==true||value.scope!==PLAY_SCOPE||value.accountId!==accountId||!Number.isSafeInteger(value.revision)||value.revision<0)throw error('PLAY_ACCOUNT_MISMATCH','계정에서 받은 게임 기록을 확인하지 못했어요.');
+    check();if(value?.ok!==true||value.scope!==PLAY_SCOPE||value.accountId!==accountId||!Number.isSafeInteger(value.revision)||value.revision<0)throw error('PLAY_ACCOUNT_MISMATCH','계정에서 받은 게임 기록을 읽지 못했어요.');
     // A late read must never roll the confirmed wallet back.
     if(value.revision>=revision){state=validatePlayState(value.state);revision=value.revision;}loaded=true;return value;
   }
@@ -48,7 +48,7 @@ export function createWorldPlayHost({accountId,client,guard,onStatus=()=>{},stor
   }
   async function receive(request){try{return accept(await request());}catch(cause){reportFailure(cause);throw cause;}}
   function records(){const result={...state.records};for(const entry of pending())if(entry.body.action==='progress')for(const change of entry.body.changes){if(change.value===null)delete result[change.key];else result[change.key]=change.value;}return result;}
-  function queue(body){check();try{const entry={accountId,at:pending().reduce((at,x)=>Math.max(at,x.at+1),now()),body:{...body,id:body.id||uuid()}};storage.setItem(prefix+entry.body.id,JSON.stringify(entry));return entry;}catch(cause){emit('offline',error('PLAY_STORAGE_UNAVAILABLE','이 기기에 전송 대기 기록을 보관하지 못했어요. 저장 공간을 확인해 주세요.'));throw cause;}}
+  function queue(body){check();try{const entry={accountId,at:pending().reduce((at,x)=>Math.max(at,x.at+1),now()),body:{...body,id:body.id||uuid()}};storage.setItem(prefix+entry.body.id,JSON.stringify(entry));return entry;}catch(cause){emit('offline',error('PLAY_STORAGE_UNAVAILABLE','저장을 기다리는 기록을 이 기기에 남기지 못했어요. 기기 저장 공간을 비운 뒤 다시 해 주세요.'));throw cause;}}
   const serial=task=>locks?.request?locks.request(`synk-play-account:${accountId}`,task):task();
   async function flush(){
     check();if(inflight)return inflight;

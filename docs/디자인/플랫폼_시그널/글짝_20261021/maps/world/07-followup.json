@@ -1,0 +1,13 @@
+{
+ "//": "총괄 후속(10-21 밤) — ④-7 잠긴 옷 「레슨 보상」은 사실이 아니다(SYNK-talk lib/world-v1-catalog.js·world-v1-domain.js: 목도리 말고 13벌은 로그인하면 받는 첫 선물 source:'starter', 목도리는 첫 문장 놀이 보상). ④-8 카드 상태 「입어 보는 중」 390 두 줄 → 한 줄. ④-10 리듬 난이도 「리드미컬」 → 「보통」.",
+ "experiences/synk-world-home/wardrobe-studio.mjs": [
+  ["item.gift!=='옷장 첫 선물'?item.gift:'레슨 보상'", "item.gift!=='옷장 첫 선물'?item.gift:'로그인하면 받아요'", {"n":1}],
+  ["state==='trying'?'입어 보는 중'", "state==='trying'?'입어 봄'", {"n":1}]
+ ],
+ "experiences/korean-rhythm/core.mjs": [
+  ["normal: {label:'리드미컬',", "normal: {label:'보통',", {"n":1}]
+ ],
+ "experiences/korean-rhythm/index.html": [
+  ["data-level=\"normal\" aria-pressed=\"false\">리드미컬</button>", "data-level=\"normal\" aria-pressed=\"false\">보통</button>", {"n":1}]
+ ]
+}

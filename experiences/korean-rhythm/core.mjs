@@ -3,7 +3,7 @@ import {LISTENING} from './listening.mjs';
 import {NARRATION} from './narration.mjs';
 export const LEVELS = {
   easy: {label:'편하게', step:1, window:.28, perfect:.115, great:.195, approach:3.5},
-  normal: {label:'리드미컬', step:.5, window:.23, perfect:.085, great:.155, approach:2.9},
+  normal: {label:'보통', step:.5, window:.23, perfect:.085, great:.155, approach:2.9},
   hard: {label:'도전', step:.5, window:.20, perfect:.065, great:.125, approach:2.55},
 };
 export const TRACKS=SUNO_RECORDINGS.map((recording,id)=>({id,...recording,
@@ -30,7 +30,7 @@ export function buildChart(track,levelName='easy',seed=1){
     const variant=allowed?.length&&!allowed.includes(variants[i])?allowed[0]:variants[i],voice=NARRATION[`t${track.id}q${i}v${variant}`],recallVoice=NARRATION[`t${track.id}q${i}r`];
     const at=gates[i],time=timeAtBeat(track,at),lead=Math.max(voice.duration+3.5,12);
     const showTime=time-lead,voiceEnd=showTime+voice.duration,answerOpen=time-Math.max(2,3*beat);
-    if(showTime<1||voiceEnd>answerOpen-.4)throw Error('음성 문항의 듣기 시간이 부족합니다.');
+    if(showTime<1||voiceEnd>answerOpen-.4)throw Error('이 곡의 문제를 준비하지 못했어요. 다른 곡을 골라 주세요.');
     return {...q,...q.claims[variant],id:`t${track.id}q${i}v${variant}`,sourceIndex:i,variant,beat:at,time,showTime,voiceEnd,answerOpen,closeTime:time+.65,voice,
       recall:{...q.recall,options:['O','X'],voice:recallVoice},options:['O','X'],intent:null,response:null,quality:0,state:'pending'};
   });

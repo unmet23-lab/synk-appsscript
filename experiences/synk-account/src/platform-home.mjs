@@ -19,12 +19,12 @@ export function searchRoute(page, query) {
 // Resolve from the current catalog and installation state, never a saved URL.
 // The library stores selections, not application progress or authorization.
 export function shortcutDestination(id, { base, clients = [], learningUrl, messengerUrl, preferredMode } = {}) {
-  if(id==='path')return {kind:'web',href:PATH_INTERVIEW_URL,label:'실사 면접실 열기 ↗'};
+  if(id==='path')return {kind:'web',href:PATH_INTERVIEW_URL,label:'면접 연습 열기 ↗'};
   if(id==='teacher'){
     const destination=messengerDestination(messengerUrl,base);
     if(!destination)return null;
     const url=new URL(destination);url.search='';url.searchParams.set('tab','teaching');url.hash='';
-    return {kind:'web',href:url.href,label:'워크스페이스 · 내 수업 열기 ↗'};
+    return {kind:'web',href:url.href,label:'Workspace 내 수업 열기 ↗'};
   }
   const item = LIBRARY_ITEMS.find(value => value.id === id);
   if (!item) return null;
@@ -33,6 +33,6 @@ export function shortcutDestination(id, { base, clients = [], learningUrl, messe
   const preview = item.kind === 'benefit' && !publicEntry ? localBenefitPreview(id, base) : null;
   const web = item.kind === 'benefit' ? publicEntry || preview : id === 'world' ? platformPublicEntry('world') : messengerUrl;
   if (client && (preferredMode !== 'web' || !web)) return { kind: 'client', label: '앱 열기 ↗' };
-  if (web) return { kind: 'web', href: web, label: preview ? '개발 미리보기 ↗' : id === 'world' ? '웹 WORLD 열기 ↗' : '웹에서 열기 ↗' };
-  return { kind: 'detail', href: libraryItemRoute(id), label: '이용 방법 보기 →' };
+  if (web) return { kind: 'web', href: web, label: preview ? '이 PC에서 열기 ↗' : id === 'world' ? '웹 WORLD 열기 ↗' : '웹에서 열기 ↗' };
+  return { kind: 'detail', href: libraryItemRoute(id), label: '여는 방법 보기 →' };
 }

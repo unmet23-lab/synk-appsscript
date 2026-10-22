@@ -26,7 +26,7 @@ try {
   const page = await context.newPage();
   await page.goto('http://127.0.0.1:4280/synk-account/index.html');
   await page.locator('#setup').waitFor({ state: 'visible' });assert.equal(await page.locator('#auth-panel').isVisible(), false);
-  assert.equal(await page.locator('#notice').innerText(), '계정 서비스 설정 전 · 기본 학습은 계속 사용할 수 있어요.');
+  assert.equal(await page.locator('#notice').innerText(), '지금은 로그인할 수 없어요. 기본 학습은 로그인 없이 할 수 있어요.');
   await page.goto('http://127.0.0.1:4280/synk-account/preview.html');await page.locator('#auth-panel').waitFor({ state: 'visible' });
   await page.getByRole('button', { name: '처음이에요 · 가입' }).click();assert.equal(await page.locator('#auth-submit').innerText(), '이메일로 가입');
   await page.getByRole('button', { name: '비밀번호 찾기' }).click();assert.equal(await page.locator('#password-label').isVisible(), false);
@@ -46,10 +46,10 @@ try {
   await page.setViewportSize({ width: 1440, height: 1000 });await page.goto('http://127.0.0.1:4280/synk-account/preview.html');await page.locator('#auth-panel').waitFor({ state: 'visible' });await page.screenshot({ path: path.join(root, 'qa/preview-login-desktop.png'), fullPage: true });
   await page.goto('http://127.0.0.1:4280/synk-account/preview.html?account=world&disabled&rollout-off');await page.locator('#account').waitFor({ state: 'visible' });assert.equal(await page.locator('#account .toggle input').isDisabled(), true);
   await page.goto('http://127.0.0.1:4280/synk-account/preview.html?account=world&rollout-off');await page.locator('#account').waitFor({ state: 'visible' });assert.equal(await page.locator('#account .toggle input').isDisabled(), false);await page.locator('#account .toggle input').uncheck();assert.equal(await page.locator('#account .toggle input').isDisabled(), true);
-  await page.goto('http://127.0.0.1:4280/synk-account/preview.html?account=world');await page.locator('#account').waitFor({ state: 'visible' });await page.getByRole('button', { name: '계정 삭제 요청', exact: true }).click();await page.getByRole('button', { name: '삭제 요청 보내기' }).click();await page.getByRole('button', { name: '계정 삭제 요청 접수됨' }).waitFor();assert.equal(await page.locator('#account .toggle input').isDisabled(), true);assert.match(await page.locator('#notice').innerText(), /\d+월 \d+일 \d{2}:\d{2}까지는 이 화면에서 취소할 수 있어요/);
+  await page.goto('http://127.0.0.1:4280/synk-account/preview.html?account=world');await page.locator('#account').waitFor({ state: 'visible' });await page.getByRole('button', { name: '계정 삭제 요청', exact: true }).click();await page.getByRole('button', { name: '삭제 요청 보내기' }).click();await page.getByRole('button', { name: '계정 삭제를 요청했어요' }).waitFor();assert.equal(await page.locator('#account .toggle input').isDisabled(), true);assert.match(await page.locator('#notice').innerText(), /\d+월 \d+일 \d{2}:\d{2}까지는 이 화면에서 취소할 수 있어요/);
   await page.getByRole('button', { name: '삭제 요청 취소' }).click();await page.getByRole('button', { name: '계정 삭제 요청', exact: true }).waitFor();assert.match(await page.locator('#notice').innerText(), /삭제 요청을 취소했어요/);
   assert.equal(await page.locator('#account .toggle input').isDisabled(), false);assert.equal(await page.locator('#account .toggle input').isChecked(), false);
-  await page.getByRole('button', { name: '모든 제품의 로그인 종료' }).click();assert.match(await page.locator('#notice').innerText(), /실제 다른 제품의 로그인은 종료하지 않았/);assert.doesNotMatch(await page.locator('#notice').innerText(), /상태가 바뀌/);
+  await page.getByRole('button', { name: '모든 SYNK 앱에서 로그아웃' }).click();assert.match(await page.locator('#notice').innerText(), /실제 다른 제품의 로그인은 종료하지 않았/);assert.doesNotMatch(await page.locator('#notice').innerText(), /상태가 바뀌/);
   await page.goto('http://127.0.0.1:4280/synk-account/preview.html?account=platform&fail-user');await page.locator('#auth-panel').waitFor({ state: 'visible' });assert.match(await page.locator('#notice').innerText(), /로그인 상태를 확인하지 못/);
   await page.goto('http://127.0.0.1:4280/synk-account/client.html?product=world');await page.locator('#setup').waitFor({ state: 'visible' });
   assert.match(await page.locator('#notice').innerText(), /SSO 설정 전/);assert.deepEqual(errors, []);

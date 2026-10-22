@@ -2,7 +2,7 @@
 const validRevision = value => Number.isSafeInteger(value) && value >= 0;
 const failure = (code, revision) => Object.assign(new Error(code), { code, ...(validRevision(revision) ? { revision } : {}) });
 const messages = {
-  CARE_CLIENT_UPDATE_REQUIRED: '더 새로운 앱에서 저장한 문구 보관함이나 안부 설정이 있어요. 현재 자료를 백업한 뒤 새로고침해 주세요.',
+  CARE_CLIENT_UPDATE_REQUIRED: '더 새 판의 앱에서 저장한 문구 보관함이나 안부 설정이 있어요. 지금 자료를 파일로 내보낸 뒤 페이지를 새로 고쳐 주세요.',
   CARE_LIBRARY_RECOVERY_REVIEW: '계정 보관함의 이전 문구·즐겨찾기 또는 안부 주기 설정이 이 임시기록에는 없어요. 임시기록을 복구 파일로 백업한 뒤 계정 수첩을 선택해 주세요.',
   REVISION_CONFLICT: '다른 기기에서 기록이 바뀌었어요. 어느 기록을 사용할지 골라 주세요.',
   LOCAL_CHANGED_DURING_REFRESH: '가져오는 동안 새로 수정한 내용이 있어요. 기록을 다시 골라 주세요.',

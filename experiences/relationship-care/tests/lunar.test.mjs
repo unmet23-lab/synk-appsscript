@@ -113,7 +113,7 @@ test('정확한 지원 경계를 포함하고 그 밖은 계산하지 않는다'
   for (const date of ['1899-12-31', '1900-01-30', '2051-01-01', '2199-01-01']) assert.equal(solarToLunar(date), null);
   for (const date of ['1899-12-30', '2050-11-19', '2050-12-01', '2051-01-01']) {
     assert.equal(lunarToSolar(lunarParts(date)), null);
-    assert.throws(() => normalizeLunarDate(date), /1900-01-01~2050-11-18/);
+    assert.throws(() => normalizeLunarDate(date), /2050년 11월 18일/);
   }
   assert.equal(lunarDateInYear({ date: '2026-12-01' }, 2050), null);
 });
@@ -125,10 +125,10 @@ test('음력 2월 30일은 허용하고 없는 날짜·윤달·잘못된 자료�
   assert.equal(lunarToSolar(lunarParts('2026-06-01', true)), null);
   for (const input of [null, undefined, [], {}, { year: '2026', month: 1, day: 1 }, { year: 2026, month: 1, day: 1.5 }, { year: 2026, month: 1, day: 0 }, { year: 2026, month: 13, day: 1 }, { year: 2026, month: 1, day: 31 }, { year: 2026, month: 1, day: 1, leapMonth: 'false' }]) assert.equal(lunarToSolar(input), null);
   for (const input of [null, undefined, '', '2026-2-17', '2026-02-29', '2026-04-31', '2026-00-01', '2026-13-01', '2026-01-00', '2026-02-17T00:00:00Z']) assert.equal(solarToLunar(input), null);
-  assert.throws(() => normalizeLunarDate('2026-06-01', true), /실제로 존재/);
-  assert.throws(() => normalizeLunarDate('2026-02-30'), /실제로 존재/);
-  assert.throws(() => normalizeLunarDate('2026-2-01'), /YYYY-MM-DD/);
-  assert.throws(() => normalizeLunarDate('2026-02-01', 'true'), /윤달 여부/);
+  assert.throws(() => normalizeLunarDate('2026-06-01', true), /음력에 없는 날짜/);
+  assert.throws(() => normalizeLunarDate('2026-02-30'), /음력에 없는 날짜/);
+  assert.throws(() => normalizeLunarDate('2026-2-01'), /음력 날짜를 다시/);
+  assert.throws(() => normalizeLunarDate('2026-02-01', 'true'), /윤달인지/);
 });
 
 test('윤달 반복은 윤달 유지·평달 대체·해당 해 건너뛰기를 구분한다', () => {
@@ -140,7 +140,7 @@ test('윤달 반복은 윤달 유지·평달 대체·해당 해 건너뛰기를 
   assert.equal(lunarDateInYear({ ...input, leapMonth: false }, 2025).date, '2025-06-25');
   assert.equal(lunarDateInYear(input, 2024), null);
   assert.equal(lunarDateInYear(input, 2051), null);
-  assert.throws(() => lunarDateInYear({ ...input, leapPolicy: 'guess' }, 2026), /반복 방법/);
+  assert.throws(() => lunarDateInYear({ ...input, leapPolicy: 'guess' }, 2026), /윤달이 없는 해/);
 });
 
 test('작은달 30일 반복의 마지막 날·건너뛰기 정책이 저장 날짜를 훼손하지 않는다', () => {
@@ -149,8 +149,8 @@ test('작은달 30일 반복의 마지막 날·건너뛰기 정책이 저장 날
   assert.equal(lunarDateInYear({ ...input, shortMonthPolicy: 'skip' }, 2025), null);
   assert.deepEqual(lunarDateInYear(input, 2027), { date: '2027-04-06', lunarDate: '2027-02-30', leapMonth: false });
   assert.equal(input.date, '2023-02-30');
-  assert.throws(() => lunarDateInYear({ ...input, shortMonthPolicy: 'guess' }, 2025), /처리 방법/);
-  assert.throws(() => lunarDateInYear({ date: '2026-02-30' }, 2027), /실제로 존재/);
+  assert.throws(() => lunarDateInYear({ ...input, shortMonthPolicy: 'guess' }, 2025), /30일이 없는 달/);
+  assert.throws(() => lunarDateInYear({ date: '2026-02-30' }, 2027), /음력에 없는 날짜/);
   assert.equal(lunarMonthDays(2025, 2), 29);
   assert.equal(lunarMonthDays(2023, 2), 30);
   assert.equal(lunarMonthDays(2026, 6, true), null);

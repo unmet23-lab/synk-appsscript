@@ -66,8 +66,8 @@ async function fixture(t) {
 test('logout immediately closes the account and fences a pending export while SDK and revocation wait', async t => {
   const page = await fixture(t), exporting = deferred(), cleanup = deferred(), revoking = deferred();
   page.replies.export = () => exporting.promise;page.replies.cleanup = () => cleanup.promise;page.replies.revoke = () => revoking.promise;
-  const exportButton = page.button('연결된 연습 기록 내려받기'), deleteButton = page.button('계정 삭제 요청');
-  exportButton.onclick();await settled();page.button('이 제품에서 로그아웃').onclick();
+  const exportButton = page.button('연습 기록 내려받기'), deleteButton = page.button('계정 삭제 요청');
+  exportButton.onclick();await settled();page.button('로그아웃').onclick();
   assert.equal(page.get('account').hidden, true);assert.equal(page.get('account').children.length, 0);
   await settled();assert.equal(page.calls.filter(call => call.method === 'signOut').length, 0);
   assert.equal(page.get('auth-submit').disabled, true);
@@ -85,7 +85,7 @@ test('logout immediately closes the account and fences a pending export while SD
 
 test('server revocation failure still clears the SDK session and reports its incomplete server result', async t => {
   const page = await fixture(t), revoking = deferred();page.replies.revoke = () => revoking.promise;
-  page.button('모든 제품의 로그인 종료').onclick();await settled();
+  page.button('모든 SYNK 앱에서 로그아웃').onclick();await settled();
   assert.equal(page.get('account').hidden, true);assert.equal(page.get('auth-submit').disabled, true);
   revoking.reject(new Error('synthetic unavailable'));await settled();
   assert.equal(page.get('auth-submit').disabled, false);
@@ -96,7 +96,7 @@ test('server revocation failure still clears the SDK session and reports its inc
 
 test('an SDK cleanup timeout keeps this tab sign-in locked until the real cleanup settles', async t => {
   const page = await fixture(t), cleanup = deferred();page.replies.cleanup = () => cleanup.promise;
-  page.button('이 제품에서 로그아웃').onclick();await settled();page.time.advance(12000);await settled();
+  page.button('로그아웃').onclick();await settled();page.time.advance(12000);await settled();
   assert.equal(page.get('auth-submit').disabled, true);assert.match(page.notice(), /브라우저의 로그인 종료가 아직 끝나지/);
   await page.submit();assert.equal(page.calls.some(call => call.method === 'signIn'), false);
   page.clearSdk();cleanup.resolve({});await settled();assert.equal(page.get('auth-submit').disabled, false);
@@ -104,7 +104,7 @@ test('an SDK cleanup timeout keeps this tab sign-in locked until the real cleanu
 
 test('a different SDK account arriving after central revocation during cleanup owns the screen afterwards', async t => {
   const page = await fixture(t), cleanup = deferred(), revoking = deferred();page.replies.cleanup = () => cleanup.promise;page.replies.revoke = () => revoking.promise;
-  page.button('이 제품에서 로그아웃').onclick();await settled();revoking.resolve({ refreshRevoked: true });await settled();
+  page.button('로그아웃').onclick();await settled();revoking.resolve({ refreshRevoked: true });await settled();
   await page.emit('SIGNED_IN', syntheticSession('synthetic-b'));
   cleanup.resolve({});await settled();
   assert.equal(page.get('account').hidden, false);const notice = page.notice();
@@ -116,7 +116,7 @@ test('a different SDK account arriving after central revocation during cleanup o
 
 test('a newer sign-in intent keeps its pending notice when a timed-out old revocation later completes', async t => {
   const page = await fixture(t), revoking = deferred(), login = deferred();page.replies.revoke = () => revoking.promise;page.replies.login = () => login.promise;
-  page.button('이 제품에서 로그아웃').onclick();await settled();page.time.advance(12000);await settled();
+  page.button('로그아웃').onclick();await settled();page.time.advance(12000);await settled();
   const signingIn = page.submit();await settled();
   const notice = page.notice();revoking.resolve({ refreshRevoked: true });await settled();
   assert.equal(page.notice(), notice);assert.equal(page.get('auth-submit').disabled, true);
@@ -126,7 +126,7 @@ test('a newer sign-in intent keeps its pending notice when a timed-out old revoc
 
 test('unconfirmed SDK storage cleanup reports a warning without reopening the old account', async t => {
   const page = await fixture(t);page.replies.cleanup = async () => { throw new Error('synthetic storage unavailable'); };
-  page.button('이 제품에서 로그아웃').onclick();await settled();
+  page.button('로그아웃').onclick();await settled();
   assert.equal(page.get('account').hidden, true);assert.match(page.notice(), /로그인 저장이 지워졌는지 확인하지 못했어요/);
   const notice = page.notice();await page.emit('SIGNED_IN', syntheticSession('synthetic-a'));await page.emit('TOKEN_REFRESHED', syntheticSession('synthetic-a'));
   assert.equal(page.get('account').hidden, true);assert.equal(page.notice(), notice);
@@ -138,7 +138,7 @@ test('unconfirmed SDK storage cleanup reports a warning without reopening the ol
 
 test('leaving during logout prevents late notices and account reads', async t => {
   const page = await fixture(t), cleanup = deferred(), revoking = deferred();page.replies.cleanup = () => cleanup.promise;page.replies.revoke = () => revoking.promise;
-  page.button('이 제품에서 로그아웃').onclick();await settled();const notice = page.notice(), reads = page.calls.filter(call => call.method === 'getSession').length;
+  page.button('로그아웃').onclick();await settled();const notice = page.notice(), reads = page.calls.filter(call => call.method === 'getSession').length;
   page.events.get('pagehide')({});cleanup.resolve({});revoking.resolve({ refreshRevoked: true });await settled();
   assert.equal(page.notice(), notice);assert.equal(page.calls.filter(call => call.method === 'getSession').length, reads);
 });

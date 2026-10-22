@@ -16,7 +16,7 @@ test('card rejects foreign, empty, duplicated or overflowing selected records', 
   assert.throws(() => memoryCardContent({ person }), /1~3개/);
   assert.throws(() => memoryCardContent({ person, memories: [{ ...memory, personId: 'other' }] }), /다른 사람/);
   assert.throws(() => memoryCardContent({ person, memories: [memory, memory] }), /한 번/);
-  assert.throws(() => memoryCardContent({ person, memories: [{ ...memory, text: 'x'.repeat(241) }] }), /발췌/);
+  assert.throws(() => memoryCardContent({ person, memories: [{ ...memory, text: 'x'.repeat(241) }] }), /240자/);
   assert.throws(() => memoryCardContent({ person, memories: [memory], message: 'x'.repeat(301) }), /300자/);
 });
 test('activity export uses actual selected date and note, omits financial details', () => {

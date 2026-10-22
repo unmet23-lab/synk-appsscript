@@ -14,19 +14,19 @@ export async function loadRecording(track, context, signal) {
   const bytes = await response.arrayBuffer();
   if (signal?.aborted) throw new DOMException('Cancelled', 'AbortError');
   const buffer = await context.decodeAudioData(bytes);
-  if (!Number.isFinite(buffer.duration) || Math.abs(buffer.duration - track.duration) > 0.15) throw new Error('음원과 노트의 길이가 달라요. 새로고침한 뒤 다시 시작해 주세요.');
+  if (!Number.isFinite(buffer.duration) || Math.abs(buffer.duration - track.duration) > 0.15) throw new Error('곡을 제대로 불러오지 못했어요. 새로고침한 뒤 다시 시작해 주세요.');
   cache.clear(); cache.set(key, buffer);
   return buffer;
 }
 
 export async function loadNarration(voice, context, signal) {
-  if (!voice?.url || !(voice.duration > 0)) throw new Error('이 문항의 나레이션을 찾지 못했어요.');
+  if (!voice?.url || !(voice.duration > 0)) throw new Error('이 문장의 소리 파일을 찾지 못했어요. 새로고침해 주세요.');
   const key = voice.url + '@' + context.sampleRate;
   if (voiceCache.has(key)) return voiceCache.get(key);
   const response = await fetch(voice.url, { signal });
-  if (!response.ok) throw new Error('나레이션을 불러오지 못했어요. 다시 시작해 주세요.');
+  if (!response.ok) throw new Error('문장 소리를 불러오지 못했어요. 다시 시작해 주세요.');
   const buffer = await context.decodeAudioData(await response.arrayBuffer());
-  if (Math.abs(buffer.duration - voice.duration) > 0.15) throw new Error('나레이션의 길이가 달라요. 새로고침해 주세요.');
+  if (Math.abs(buffer.duration - voice.duration) > 0.15) throw new Error('문장 소리를 제대로 불러오지 못했어요. 새로고침해 주세요.');
   voiceCache.set(key, buffer);
   return buffer;
 }

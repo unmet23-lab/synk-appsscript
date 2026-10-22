@@ -23,7 +23,7 @@ const plain = (value, max) => typeof value === 'string' && [...value].length <= 
 const personName = value => typeof value === 'string' && value === value.trim() && [...value].length >= 1 && [...value].length <= 20 && !/[\u0000-\u001f\u007f]/u.test(value);
 const exact = (value, keys) => value && typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length === keys.length && keys.every(key => Object.hasOwn(value, key));
 const bytes = value => new TextEncoder().encode(JSON.stringify(value)).length;
-const fail = () => { throw new Error('저장할 운세 정보의 형식을 확인해 주세요.'); };
+const fail = () => { throw new Error('저장할 운세 정보가 형식에 맞지 않아요. 생년월일과 시간을 다시 골라 주세요.'); };
 const full = () => { throw new Error('보관함 용량이 가득 찼어요. 내보낸 뒤 오래된 기록을 정리해 주세요.'); };
 export function birthProfile(birthDate, birthTime = null, today = seoulDateKey()) {
   validateDateKey(birthDate);
@@ -126,7 +126,7 @@ export function setVerdict(state, entryId, verdict, { now = new Date().toISOStri
  * 가족·친구 한 사람을 추가하거나(id 없음) 고친다(id 있음). 이름은 앞뒤 빈칸을 지우고 1~20자, 시간 모름은 null.
  */
 export function savePerson(state, person, { id = crypto.randomUUID(), today = seoulDateKey() } = {}) {
-  if (!person || typeof person !== 'object' || Array.isArray(person)) throw new TypeError('저장할 사람 정보를 확인해 주세요.');
+  if (!person || typeof person !== 'object' || Array.isArray(person)) throw new TypeError('저장할 사람 정보가 비어 있어요. 이름과 생년월일을 적어 주세요.');
   const base = validateState(state, today);
   const name = typeof person.name === 'string' ? person.name.trim() : person.name;
   if (!personName(name)) throw new TypeError('이름은 1~20자로 적어 주세요.');

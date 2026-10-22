@@ -1,31 +1,31 @@
 import { memoryTheme as theme } from './memory-theme.mjs';
 
 const text = (value, max, label, required = false) => {
-  if (value != null && typeof value !== 'string') throw new Error(`${label}을 확인해 주세요.`);
+  if (value != null && typeof value !== 'string') throw new Error(`${label} 칸을 읽지 못했어요.`);
   const result = (value || '').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '').trim();
-  if (result.length > max) throw new Error(`${label}은 ${max}자까지 담을 수 있어요. 짧게 발췌해 주세요.`);
-  if (required && !result) throw new Error(`${label}을 적어 주세요.`);
+  if (result.length > max) throw new Error(`${label} 칸에는 ${max}자까지 담을 수 있어요. 조금 줄여 주세요.`);
+  if (required && !result) throw new Error(`${label} 칸을 채워 주세요.`);
   return result;
 };
 const actions = { contact: '연락한 날', attend: '함께한 날', gift: '선물을 나눈 날', money: '마음을 나눈 날', remember: '기억한 날' };
 
 /** A deliberate, bounded export. Never serializes the person, sources or account. */
 export function memoryCardContent({ person, memories = [], activities = [], title = '', message = '' } = {}) {
-  if (!person?.id) throw new Error('카드를 전할 사람을 선택해 주세요.');
+  if (!person?.id) throw new Error('카드를 전할 사람을 골라 주세요.');
   if (!Array.isArray(memories) || !Array.isArray(activities) || memories.length + activities.length < 1 || memories.length + activities.length > 3) throw new Error('카드에 담을 기억을 1~3개 골라 주세요.');
   const seen = new Set();
   const items = [
     ...memories.map(item => ({ item, kind: 'memory', label: '남겨 둔 기억', body: item?.text })),
     ...activities.map(item => ({ item, kind: 'activity', label: `${item?.occurredOn || ''} · ${actions[item?.kind] || '함께한 기록'}`, body: item?.note })),
   ].map(({ item, kind, label, body }) => {
-    if (!item?.id || item.personId !== person.id) throw new Error('다른 사람의 기억이 섞여 있어요. 선택을 확인해 주세요.');
+    if (!item?.id || item.personId !== person.id) throw new Error('다른 사람의 기억이 섞여 있어요. 다시 골라 주세요.');
     const key = `${kind}:${item.id}`;
     if (seen.has(key)) throw new Error('같은 기억은 한 번만 담아 주세요.');
     seen.add(key);
-    if (kind === 'activity' && !/^\d{4}-\d{2}-\d{2}$/.test(item.occurredOn)) throw new Error('챙긴 날짜를 확인해 주세요.');
+    if (kind === 'activity' && !/^\d{4}-\d{2}-\d{2}$/.test(item.occurredOn)) throw new Error('챙긴 날짜를 읽지 못했어요.');
     return { label, text: text(body, 240, '카드에 담을 기억', true) };
   });
-  return { name: text(person.name, 80, '이름', true), title: text(title, 60, '제목') || '함께한 순간을 기억해요', message: text(message, 300, '전하고 싶은 말'), items };
+  return { name: text(person.name, 80, '이름', true), title: text(title, 60, '제목') || '함께한 날을 기억해요', message: text(message, 300, '전하고 싶은 말'), items };
 }
 
 function linesFor(context, value, maxWidth) {
@@ -53,7 +53,7 @@ function asset(name) {
 
 async function readPhoto(file) {
   if (!file) return null;
-  if (!(file instanceof Blob) || !['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 10 * 1024 * 1024) throw new Error('사진은 PNG·JPG·WebP 형식의 10MB 이하 파일로 골라 주세요.');
+  if (!(file instanceof Blob) || !['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 10 * 1024 * 1024) throw new Error('사진은 PNG·JPG·WebP 파일을 10 MB까지 가져올 수 있어요.');
   let bitmap;
   try { bitmap = await createImageBitmap(file); } catch { throw new Error('사진을 읽지 못했어요. 다른 사진을 골라 주세요.'); }
   if (!bitmap.width || !bitmap.height || bitmap.width * bitmap.height > 24_000_000) { bitmap.close(); throw new Error('사진은 2,400만 화소 이하로 골라 주세요.'); }
@@ -118,7 +118,7 @@ export async function createMemoryCard(input) {
     }
     stitchLine(height - 128);
     context.font = '500 23px SUIT, sans-serif'; context.fillStyle = theme.colors.accent;
-    context.fillText('기억을 꺼내 전하는 마음 · SYNK 플레저', margin, height - 73);
+    context.fillText('SYNK 플레저', margin, height - 73);
     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
     if (!blob) throw new Error('카드를 저장하지 못했어요. 다시 시도해 주세요.');
     return { blob, filename: 'synk-care-memory.png', width, height };

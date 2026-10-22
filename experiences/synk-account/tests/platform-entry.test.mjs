@@ -189,7 +189,7 @@ for (const product of ['care', 'fortune']) {
 }
 
 test('web Platform app destinations carry only a verified account ID and remain fixed public URLs', () => {
-  for (const [id, plain] of [['world', 'https://synk.im/account/client.html?product=world&play=learning-hub'], ...['care', 'fortune'].map(id => [id, `https://synk.im/${id}/`])]) {
+  for (const [id, plain] of [['world', 'https://synk.im/world/'], ...['care', 'fortune'].map(id => [id, `https://synk.im/${id}/`])]) {
     assert.equal(platformPublicEntry(id, { signedIn: true, status: 'signed-in', accountId: A }), `${plain}#synk-platform-account=${A}`);
     for (const identity of [null, { signedIn: false, status: 'signed-in', accountId: A }, { signedIn: true, status: 'restoring', accountId: A }, { signedIn: true, status: 'signed-in', accountId: 'invalid' }]) assert.equal(platformPublicEntry(id, identity), plain);
   }

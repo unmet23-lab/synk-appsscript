@@ -289,7 +289,7 @@ test('a successful clipboard write followed by storage failure remains a storage
   assert.equal(context.state.activities.length, 0);
   assert.equal(element('draft-text').value, '복사해서 직접 전할 인사');
   assert.match(notices.at(-1), /복사했지만.*저장하지 못했어요/u);
-  assert.doesNotMatch(notices.at(-1), /기억했어요|완료를 표시/u);
+  assert.doesNotMatch(notices.at(-1), /보관함에도 저장했어요|완료 단추/u);
 });
 
 

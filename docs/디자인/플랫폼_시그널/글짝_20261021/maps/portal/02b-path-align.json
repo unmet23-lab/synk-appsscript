@@ -1,0 +1,11 @@
+{
+  "//": "PATH를 PC 앱·공개 PATH 화면과 같은 말로: 카드 「세 면접관 앞에서 미리 해 보는 60~90초 면접 연습」, 단추 「면접 연습 열기」, 상태 「웹에서 연습」 (공개 PATH 화면의 「생성 영상」 고지는 이 영역 밖이라 건드리지 않음)",
+  "experiences/synk-account/src/applications.mjs": [
+    ["subtitle: '세 면접관 앞에서 미리 해 보는 면접 연습', audience: '한국 유학·진로·취업을 준비하는 학습자'", "subtitle: '세 면접관 앞에서 미리 해 보는 60~90초 면접 연습', audience: '한국 유학·진로·취업을 준비하는 학습자'", {"n": 1}],
+    ["description: '진지한 면접실에서 질문에 말로 답하면, 듣고 받아 적던 면접관이 내 답에 맞춰 다음 질문을 해요.'", "description: '질문에 말로 답하면, 듣고 받아 적던 면접관이 내 답에 맞춰 다음 질문을 해요.'", {"n": 1}]
+  ],
+  "experiences/synk-account/src/platform.mjs": [
+    ["function status(app) { if(app.webOnly)return '웹에서 바로';", "function status(app) { if(app.webOnly)return '웹에서 연습';", {"n": 1}],
+    ["<div class=\"launch-bar\"><div><strong>웹에서 바로</strong><p>설치하거나 로그인하지 않아도 돼요</p></div>", "<div class=\"launch-bar\"><div><strong>웹에서 연습</strong><p>설치하거나 로그인하지 않아도 돼요</p></div>", {"n": 1}]
+  ]
+}

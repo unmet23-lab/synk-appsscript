@@ -1,0 +1,30 @@
+{
+  "//": "계정 판(care-account-view.mjs) — 「계정 연결」(로그인을 뜻할 때)→로그인·SYNK ID, 「이 환경」 개발 말 빼기. 계정 칩 경고 정규식(필요|확인해 주세요|다시)에 걸리던 제목은 그대로 걸리게, 안 걸리던 제목은 안 걸리게 맞춤",
+  "experiences/relationship-care/care-account-view.mjs": [
+    ["title: '계정 연결을 다시 확인해 주세요.',", "title: '로그인을 다시 확인해야 해요.',", {"n": 1}],
+    ["'열어 둔 수첩과 아직 저장하지 않은 입력은 이 화면에 보관하고 있어요. 아래의 ‘계정 연결 다시 확인’을 누르면 같은 계정인지 확인한 뒤 이어 쓸 수 있어요. 화면을 닫거나 새로고침하면 보관하지 않은 입력은 사라져요.'", "'열어 둔 수첩과 저장하지 않은 입력은 이 화면에 그대로 있어요. 아래 「다시 로그인」을 누르면 같은 계정인지 확인한 뒤 이어서 쓸 수 있어요. 화면을 닫거나 새로고침하면 저장하지 않은 입력은 사라져요.'", {"n": 1}],
+    ["signInLabel: '계정 연결 다시 확인', signInDisabled: false, canReconnect: true,", "signInLabel: '다시 로그인', signInDisabled: false, canReconnect: true,", {"n": 1}],
+    ["'같은 계정의 연결을 다시 확인하고 있어요.'", "'같은 계정인지 다시 확인하고 있어요.'", {"n": 1}],
+    ["'계정 수첩의 새 내용을 확인하고 있어요.'", "'계정 수첩의 새 내용을 불러오고 있어요.'", {"n": 1}],
+    ["'SYNK 로그인으로 이동하고 있어요.'", "'SYNK ID 로그인 화면으로 이동하고 있어요.'", {"n": 1}],
+    ["'계정 연결 상태를 확인하고 있어요.'", "'로그인 상태를 확인하고 있어요.'", {"n": 1}],
+    ["'열어 둔 수첩과 입력은 그대로예요. 확인이 끝나면 계속 편집할 수 있어요.'", "'열어 둔 수첩과 입력은 그대로예요. 확인이 끝나면 이어서 쓸 수 있어요.'", {"n": 1}],
+    ["'저장한 수첩을 확인하는 동안 잠시 기다려 주세요. 불러오기가 끝나면 사람과 기록이 나타나요.'", "'계정에 저장한 수첩을 불러오고 있어요. 다 불러오면 사람과 기록이 보여요.'", {"n": 1}],
+    ["signInLabel: '계정 확인 중…', signInDisabled: true,", "signInLabel: '확인 중…', signInDisabled: true,", {"n": 1}],
+    ["'위 계정 영역에서 미저장 기록을 선택하면 사람과 일정을 보여드려요. 선택하지 않은 기록도 보존돼요.'", "'「계정 상태 보기」에서 이어 쓸 기록을 고르면 사람과 일정이 보여요. 고르지 않은 기록도 그대로 남아요.'", {"n": 1}],
+    ["signInLabel: 'SYNK 계정 연결', signInDisabled: false,", "signInLabel: 'SYNK ID로 로그인', signInDisabled: false,", {"n": 2}],
+    ["title: '계정 수첩을 아직 불러오지 못했어요.',", "title: '계정 수첩을 불러오지 못했어요.',", {"n": 1}],
+    ["|| '계정 연결을 확인해 주세요.'} 수첩을 확인하기 전에는 내용을 바꾸거나 기기 수첩을 옮기지 않아요. 위의 ‘계정 자료 다시 불러오기’를 눌러 다시 시도해 주세요.`", "|| '계정 수첩에 연결하지 못했어요.'} 수첩을 불러오기 전에는 내용을 바꾸거나 이 기기 수첩을 옮기지 않아요. 계정 판의 「계정 자료 다시 불러오기」를 눌러 주세요.`", {"n": 1}],
+    ["title: error ? '계정 연결을 확인하지 못했어요.' : returned ? '계정 연결을 다시 시작할 수 있어요.' : account.configured ? 'SYNK 계정으로 수첩 이어 보기' : '이 환경의 SYNK 로그인 설정이 아직 준비되지 않았어요',", "title: error ? '로그인 상태를 확인하지 못했어요.' : returned ? '로그인을 다시 시작할 수 있어요.' : account.configured ? 'SYNK ID로 로그인하면 수첩을 계정에 저장해요' : '지금은 로그인을 쓸 수 없어요',", {"n": 1}],
+    ["'아직 이 화면에서 계정 연결 완료를 확인하지 못했어요. 계속하려면 SYNK 계정 연결을 눌러 주세요. 기기의 수첩은 그대로예요.'", "'이 화면에서는 로그인 완료를 확인하지 못했어요. 이어서 하려면 「SYNK ID로 로그인」을 눌러 주세요. 이 기기의 수첩은 그대로예요.'", {"n": 1}],
+    ["'연결 후에는 계정 수첩을 불러와요. 지금 기기의 수첩은 직접 골라 옮길 수 있어요.'", "'로그인하면 계정에 저장한 수첩을 불러와요. 지금 이 기기의 수첩은 골라서 옮길 수 있어요.'", {"n": 1}],
+    ["'지금은 이 기기에서 수첩을 사용할 수 있어요. 계정 연결 설정을 확인한 뒤 다시 연결해 주세요.'", "'수첩은 이 기기에서만 쓸 수 있어요.'", {"n": 1}],
+    ["signInLabel: account.error?.retryable ? '계정 연결 다시 확인' : account.configured ? 'SYNK 계정 연결' : '계정 연결 준비 중',", "signInLabel: account.error?.retryable ? '다시 로그인' : account.configured ? 'SYNK ID로 로그인' : '로그인 준비 중',", {"n": 1}]
+  ],
+  "experiences/relationship-care/tests/care-account-view.test.mjs": [
+    ["assert.doesNotMatch(view.title, /설정이 아직|0명|등록한 사람이 없/);", "assert.doesNotMatch(view.title, /로그인을 쓸 수 없|0명|등록한 사람이 없/);"],
+    ["assert.match(absent.title, /설정/);", "assert.match(absent.title, /로그인을 쓸 수 없/);"],
+    ["assert.equal(view.signInLabel, '계정 연결 다시 확인');", "assert.equal(view.signInLabel, '다시 로그인');"],
+    ["assert.equal(view.kind, 'error'); assert.doesNotMatch(view.title, /설정이 아직/);", "assert.equal(view.kind, 'error'); assert.doesNotMatch(view.title, /로그인을 쓸 수 없/);"]
+  ]
+}

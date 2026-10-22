@@ -5,7 +5,7 @@ test('a missing recording fails instead of falling back to generated music',asyn
  await assert.rejects(loadRecording({duration:60},{sampleRate:44100}),/음원 파일/);
 });
 test('missing narration blocks listening play instead of silently becoming reading',async()=>{
- await assert.rejects(loadNarration(null,{sampleRate:44100}),/나레이션/);
+ await assert.rejects(loadNarration(null,{sampleRate:44100}),/소리 파일/);
 });
 test('narration and music are scheduled on one clock with music ducking',()=>{
  const player=new MusicPlayer(),starts=[],ramps=[];

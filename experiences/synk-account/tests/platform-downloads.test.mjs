@@ -62,3 +62,21 @@ test('an unreadable or doubtful feed keeps the table as it is', async () => {
   assert.equal(await m.refreshPlatformDownloads(undefined), false);
   assert.deepEqual(m.PLATFORM_DOWNLOADS, before);
 });
+
+// 화면은 공개 판 표를 읽은 뒤에만 판 번호·파일을 보이고, 읽기 전·실패 때는 synk.im 다운로드로 보낸다(2026-10-21).
+test('a version shows only after the shared feed was read; otherwise the page sends people to synk.im', async () => {
+  const fresh = await load();
+  assert.equal(fresh.downloadsState(), 'loading');
+  assert.equal(fresh.RELEASE_PAGE, 'https://synk.im/#platform-get');
+  assert.equal(await fresh.refreshPlatformDownloads(async () => { throw new TypeError('offline'); }), false);
+  assert.equal(fresh.downloadsState(), 'failed');
+  const same = await load();
+  assert.equal(await same.refreshPlatformDownloads(fetcherFor(feed(same.PLATFORM_DOWNLOADS.version))), false);
+  assert.equal(same.downloadsState(), 'ready');
+  // A later failed check does not hide a release that was already read.
+  assert.equal(await same.refreshPlatformDownloads(fetcherFor(feed('0.4.9'), { ok: false })), false);
+  assert.equal(same.downloadsState(), 'ready');
+  const doubtful = await load();
+  assert.equal(await doubtful.refreshPlatformDownloads(fetcherFor(feed('0.4.9', { product: 'world' }))), false);
+  assert.equal(doubtful.downloadsState(), 'failed');
+});

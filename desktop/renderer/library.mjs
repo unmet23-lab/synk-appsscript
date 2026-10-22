@@ -48,9 +48,9 @@ export function projectLibraryPreferences(prefs,library){
 }
 
 export function libraryCopy(library){
-  if(library.developmentCatalog===true)return {caption:'개발 중인 앱 모두 보기',note:'지원 앱 '+displayLibraryAppIds(library).length+'개 · 실행 가능한 앱과 준비 중인 앱을 함께 표시해요.',title:'SYNK 앱을 둘러보세요',description:'앱마다 현재 준비 상태와 여는 방법을 확인할 수 있어요.'};
-  if(library.status==='guest')return {caption:'WORLD 둘러보기',note:'로그인하면 내 계정에 연결된 앱만 표시돼요.',title:'SYNK에 로그인',description:'같은 SYNK ID로 나에게 필요한 앱을 연결하세요.'};
-  if(library.status==='loading')return {caption:'계정 확인 중',note:'이 계정의 앱을 확인하고 있어요.',title:'내 앱을 확인하고 있어요',description:'계정 연결을 마치면 이용할 수 있는 앱이 나타납니다.'};
-  if(library.status==='unavailable')return {caption:'앱 목록 확인 필요',note:'계정 연결을 다시 확인해 주세요.',title:'앱 목록을 확인하지 못했어요',description:'계정 상태를 확인한 뒤 다시 불러와 주세요.'};
-  return {caption:'내 라이브러리',note:'이 계정에 연결된 '+displayLibraryAppIds(library).length+'개 앱',title:'아직 연결된 앱이 없어요',description:'기관이나 회사에서 이 계정에 앱 이용을 연결하면 여기에 표시됩니다.'};
+  if(library.developmentCatalog===true)return {caption:'모든 앱',note:'앱 '+displayLibraryAppIds(library).length+'개 · 바로 열 수 있는 앱과 준비 중인 앱이 함께 보여요.',title:'SYNK 앱',description:'앱을 고르면 하는 일과 여는 방법이 나와요.'};
+  if(library.status==='guest')return {caption:'WORLD 둘러보기',note:'로그인하면 내 계정에서 쓸 수 있는 앱이 나와요.',title:'SYNK에 로그인',description:'SYNK ID 하나로 WORLD, Workspace, 회원 혜택을 써요.'};
+  if(library.status==='loading')return {caption:'불러오는 중',note:'이 계정에서 쓸 수 있는 앱을 불러오고 있어요.',title:'내 앱을 불러오고 있어요',description:'잠시만 기다려 주세요.'};
+  if(library.status==='unavailable')return {caption:'불러오기 실패',note:'인터넷 연결을 확인한 뒤 다시 불러와 주세요.',title:'앱 목록을 불러오지 못했어요',description:'인터넷 연결을 보고 「다시 불러오기」를 눌러 주세요.'};
+  return {caption:'내 라이브러리',note:'이 계정의 앱 '+displayLibraryAppIds(library).length+'개',title:'아직 쓸 수 있는 앱이 없어요',description:'학교나 회사에서 이 계정에 앱을 열어 주면 여기에 나와요.'};
 }

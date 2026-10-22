@@ -1,7 +1,7 @@
 'use strict';
 const fs=require('node:fs/promises'),path=require('node:path'),crypto=require('node:crypto');
-const TITLE='SYNK 플레저',BODY='오늘 챙길 일이 있어요. 수첩에서 확인해 주세요.';
-const TEST_BODY='이 PC의 알림 연결을 확인했어요. Chrome을 종료해도 SYNK가 알려드려요.';
+const TITLE='SYNK 플레저',BODY='오늘 챙길 일이 있어요. 수첩을 열어 보세요.';
+const TEST_BODY='시험 알림이에요. 브라우저를 닫아도 SYNK가 이렇게 알려 드려요.';
 const WINDOW_MINUTES=90;
 function koreaTime(value){const date=new Date(value);if(!Number.isFinite(date.getTime()))throw Error('INVALID_CLOCK');const text=new Date(date.getTime()+9*3600000).toISOString();return {day:text.slice(0,10),minute:Number(text.slice(11,13))*60+Number(text.slice(14,16))};}
 function validPatch(value){return value&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).every(key=>['enabled','hour','minute'].includes(key))&&(!Object.hasOwn(value,'enabled')||typeof value.enabled==='boolean')&&(!Object.hasOwn(value,'hour')||Number.isInteger(value.hour)&&value.hour>=0&&value.hour<24)&&(!Object.hasOwn(value,'minute')||Number.isInteger(value.minute)&&value.minute>=0&&value.minute<60);}

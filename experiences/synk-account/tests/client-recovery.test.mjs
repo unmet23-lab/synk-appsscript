@@ -74,13 +74,13 @@ async function fixture(options = {}) {
 
 test('temporary configuration failure exposes recovery and preserves the existing login', async () => {
   const page = await fixture({ config: 'offline' }), before = page.values.get(KEY);
-  assert.equal(page.get('setup').hidden, true);assert.equal(page.get('retry-connect').hidden, false);assert.match(page.notice(), /설정을 불러오지 못/);
+  assert.equal(page.get('setup').hidden, true);assert.equal(page.get('retry-connect').hidden, false);assert.match(page.notice(), /설정을 못 불러왔어요/);
   page.state.config = 'ok';await page.retry();
   assert.equal(page.get('account').hidden, false);assert.equal(page.values.get(KEY), before);assert.equal(page.calls.token, 0);assert.deepEqual(page.navigations, []);
 });
 
 test('real missing configuration stays a setup state and can be retried after registration', async () => {
-  const page = await fixture({ config: 'missing' });assert.equal(page.get('setup').hidden, false);assert.match(page.notice(), /SSO 설정 전/);
+  const page = await fixture({ config: 'missing' });assert.equal(page.get('setup').hidden, false);assert.match(page.notice(), /로그인 설정이 아직 없어요/);
   page.state.config = 'ok';await page.retry();assert.equal(page.get('setup').hidden, true);assert.equal(page.get('account').hidden, false);
 });
 
@@ -94,7 +94,7 @@ test('initial account read failure retries the saved session without starting OA
 test('pagehide during the first account read prevents a late response from opening the account', async () => {
   const pending = deferred(), page = await fixture({ accountWait: pending });assert.equal(page.calls.account, 1);
   await page.fireWindow('pagehide');pending.resolve();await settle();
-  assert.equal(page.get('account').hidden, true);assert.equal(page.calls.atlas, 0);assert.doesNotMatch(page.notice(), /서버가 확인한 계정으로 연결했어요/);
+  assert.equal(page.get('account').hidden, true);assert.equal(page.calls.atlas, 0);assert.doesNotMatch(page.notice(), /에 로그인했어요\./);
 });
 
 test('temporary callback exchange failure can retry the same in-memory PKCE fields', async () => {
@@ -142,28 +142,28 @@ test('temporary return verification failure preserves the session and can be rec
 
 test('logout closes the device before a delayed server reply and cannot delete a later tab session', async () => {
   const pending = deferred(), page = await fixture({ revokeWait: pending });
-  page.button('이 제품에서 로그아웃').onclick();await settle();
+  page.button('로그아웃').onclick();await settle();
   assert.equal(page.get('account').hidden, true);assert.equal(page.values.has(KEY), false);assert.match(page.notice(), /이 기기에서 로그아웃/);
   await page.fireWindow('pagehide');const nextSession = JSON.stringify({ access_token: 'synthetic-other', refresh_token: 'synthetic-other-refresh' });page.values.set(KEY, nextSession);
   pending.resolve();await settle();assert.equal(page.values.get(KEY), nextSession);
 });
 
 test('logout token refresh never writes credentials back into the cleared device session', async () => {
-  const page = await fixture({ revocationNeedsRefresh: true });page.button('이 제품에서 로그아웃').onclick();await settle();
+  const page = await fixture({ revocationNeedsRefresh: true });page.button('로그아웃').onclick();await settle();
   assert.equal(page.calls.token, 1);assert.equal(page.calls.revoke, 2);assert.equal(page.values.has(KEY), false);assert.equal(page.get('account').hidden, true);
   assert.match(page.notice(), /이 브라우저에서 로그아웃했어요/);
 });
 
 test('logout immediately fences a pending record export while its own server request is still pending', async () => {
   const exported = deferred(), revoked = deferred(), page = await fixture({ exportWait: exported, revokeWait: revoked });
-  page.button('연결된 연습 기록 내려받기').onclick();await settle();assert.equal(page.calls.export, 1);
-  page.button('이 제품에서 로그아웃').onclick();await settle();assert.equal(page.get('account').hidden, true);
+  page.button('연습 기록 내려받기').onclick();await settle();assert.equal(page.calls.export, 1);
+  page.button('로그아웃').onclick();await settle();assert.equal(page.get('account').hidden, true);
   exported.resolve();await settle();assert.equal(page.downloads(), 0);assert.doesNotMatch(page.notice(), /기록을 내려받았어요/);
   revoked.resolve();await settle();assert.equal(page.values.has(KEY), false);
 });
 
 test('starting a new login fences the old pending logout notice before navigation completes', async () => {
-  const pending = deferred(), page = await fixture({ revokeWait: pending });page.button('이 제품에서 로그아웃').onclick();await settle();
+  const pending = deferred(), page = await fixture({ revokeWait: pending });page.button('로그아웃').onclick();await settle();
   await page.get('connect').onclick();await settle();assert.equal(page.navigations.length, 1);assert.equal(new URL(page.navigations[0]).pathname, '/auth/v1/oauth/authorize');
   const message = page.notice();assert.match(message, /로그인 화면으로 이동/);
   pending.resolve();await settle();assert.equal(page.notice(), message);assert.equal(page.get('connect').disabled, true);

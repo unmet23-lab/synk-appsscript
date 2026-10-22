@@ -1,0 +1,9 @@
+{
+  "//": "총괄의 PC 앱 글(회원 혜택 SYNK FOR YOU 라벨 유지, 면접 연습 열기, 시험판)과 같은 말로 맞추기 — 01을 적용한 뒤의 글에서 바꾼다",
+  "experiences/synk-account/src/platform.mjs": [
+    ["<span>${benefit?'MEMBER BENEFIT':app.id==='world'?'KOREAN LEARNING'", "<span>${benefit?'SYNK FOR YOU':app.id==='world'?'KOREAN LEARNING'", {"n": 1}],
+    ["<p class=\"sb-eyebrow\">MEMBER BENEFITS</p><h2>'+(query?'찾은 회원 혜택':'무료 회원 혜택 네 가지')+'</h2>", "<p class=\"sb-eyebrow\">SYNK FOR YOU</p><h2>'+(query?'찾은 회원 혜택':'네 가지 회원 혜택')+'</h2>", {"n": 1}],
+    ["${app.id==='path'?'면접 연습 시작':app.id==='world'?'웹 WORLD 열기':'Workspace 웹 열기'} ↗</a>", "${app.id==='path'?'면접 연습 열기':app.id==='world'?'웹 WORLD 열기':'Workspace 웹 열기'} ↗</a>", {"n": 1}],
+    ["${env.mode==='development'?'개발 실행':'PC 앱'}", "${env.mode==='development'?'시험판':'PC 앱'}", {"n": 1}]
+  ]
+}

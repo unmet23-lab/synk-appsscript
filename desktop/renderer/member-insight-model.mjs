@@ -29,7 +29,7 @@ const ACTIVITY_TARGETS = Object.freeze({ world: 'WORLD에서 연습 고르기', 
 const PERIOD_MS = 30 * 24 * 60 * 60 * 1000;
 const own = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
 const record = value => value !== null && typeof value === 'object' && !Array.isArray(value);
-const invalid = () => { throw Object.assign(new TypeError('내 성향 요약의 형식을 확인하지 못했어요. 다시 불러와 주세요.'), { code: 'INVALID_INSIGHT_SUMMARY' }); };
+const invalid = () => { throw Object.assign(new TypeError('내 성향 요약을 읽지 못했어요. 다시 불러와 주세요.'), { code: 'INVALID_INSIGHT_SUMMARY' }); };
 const count = value => Number.isSafeInteger(value) && value >= 0 ? value : invalid();
 const text = (value, max = 500) => typeof value === 'string' && value.trim() && value.length <= max && !/[<>\x00-\x1f\x7f]/.test(value) ? value : invalid();
 // A user's explicit explanation is literal text, including angle brackets and
@@ -233,7 +233,7 @@ export function buildMemberInsightReport(result, { activity = null, activityStat
   const declared = summary.reasons || [];
   // Both flags must allow practice. An inconsistent or stale response never reveals it.
   const shared = result.learning.enabled && result.shared === 'practice-and-settings' ? 'practice-and-settings' : 'declared-only';
-  const personal = declared.length ? [{ id: 'reasons', title: '직접 밝힌 관심과 목표', value: declared.map(reason => REASONS[reason]).join(' · '), basis: 'self-declared', detail: '한국어를 배우는 이유로 직접 고른 내용이에요. 다른 관심사나 성격까지 뜻하지는 않아요.' }] : [];
+  const personal = declared.length ? [{ id: 'reasons', title: '직접 고른 관심과 목표', value: declared.map(reason => REASONS[reason]).join(' · '), basis: 'self-declared', detail: '한국어를 배우는 이유로 직접 고른 거예요. 다른 관심이나 성격까지 뜻하지는 않아요.' }] : [];
   let practice = { answered: 0, independent: 0, assisted: 0, skills: [], content: [], topics: [], empty: true, lastAt: null, periods: null };
   // The chosen values themselves, for editing them in place (the learning memory's presentation).
   const settings = Object.fromEntries(Object.keys(SETTINGS).map(field => [field, null]));
@@ -244,7 +244,7 @@ export function buildMemberInsightReport(result, { activity = null, activityStat
     }
     for (const [field, setting] of Object.entries(SETTINGS)) {
       const value = summary.presentation?.[field];
-      if (value !== undefined) { settings[field] = value; personal.push({ id: field, title: setting.title, value: setting.values[value], basis: 'self-declared', detail: '직접 고른 이용 설정이에요. 실제 수행 능력이나 고정된 성향을 판단한 결과는 아니에요.' }); }
+      if (value !== undefined) { settings[field] = value; personal.push({ id: field, title: setting.title, value: setting.values[value], basis: 'self-declared', detail: '직접 고른 이용 설정이에요. 실력이나 성향을 판단한 결과는 아니에요.' }); }
     }
     practice = practiceOf(summary.practice, asOf);
   }
@@ -298,17 +298,17 @@ export function buildMemberInsightReport(result, { activity = null, activityStat
     asOf, lastAt, shared, now, settings, settingChoices, reasonIds: [...declared], worldReadsAnswers: WORLD_READS_ANSWERS, worldFollowsSettings: WORLD_FOLLOWS_SETTINGS, usageLine,
     // The learning memory's fence (synk-learning ?view=memory) for saving a setting from here.
     learningRevision: result.learning.revision, learningEnabled: result.learning.enabled,
-    headline: '내가 고른 방향과 실제 이용에서 보인 모습',
+    headline: '내가 고른 것과 실제로 한 것',
     description: personal.length || !learning.empty || activityReport.interests.length
-      ? '직접 밝힌 관심과 이용 방식, 연결을 허용한 앱 이용·연습 기록을 두 영역으로 정리했어요.'
-      : '아직 정리할 정보가 없어요. 배우는 이유를 고르거나 계정에 연결해 연습하면 이곳에서 확인할 수 있어요.',
+      ? '직접 고른 관심·이용 방식과, 공유를 허락한 앱 이용·연습 기록을 나눠 정리했어요.'
+      : '아직 보여 줄 정보가 없어요. 배우는 이유를 고르거나, 로그인한 채로 WORLD에서 연습하면 여기에 나와요.',
     personal, learning, reasons, activity: activityReport, understanding: understandingReport,
     limits: [
-      ...(shared === 'declared-only' ? ['학습 기록 연결이 꺼져 있거나 공유되지 않아, 학습 정보는 직접 밝힌 배우는 이유만 보여요. 앱 이용 기록 연결은 별도예요.'] : []),
-      '독립 응답은 도움 없이 처음 답한 기록이며 오답도 포함해요. 전체 응답 수와 도움받은 응답 수는 누적 기록이에요.',
-      '항목별 최근 응답·정답 수는 최근 30일 중 선택된 난이도·응답 형식의 독립 첫 응답 최대 12개예요. 도움받은 정답 수는 같은 범위의 별도 기록이에요.',
-      '요약 확인 시각과 마지막 연습 시각을 구분해요. 관심·설정을 선택한 날짜는 현재 요약에 포함되지 않아요.',
-      '한 시점의 기록과 기간별 활동 횟수를 정리해요. 횟수 차이는 성격 유형, 관심의 강도, 전체 실력·TOPIK 급수나 학습 효과를 뜻하지 않아요.',
+      ...(shared === 'declared-only' ? ['학습 기록 연결이 꺼져 있어서 직접 고른 배우는 이유만 보여요. 앱 이용 기록 공유는 따로 켜고 꺼요.'] : []),
+      '혼자 푼 답은 도움 없이 처음 낸 답이에요. 틀린 답도 들어가요. 전체 답 수와 도움받은 답 수는 처음부터 모두 센 수예요.',
+      '항목별 최근 답·정답 수는 최근 30일 동안 같은 난이도·답 형식에서 혼자 처음 낸 답을 12개까지 센 거예요. 도움받은 정답은 따로 세요.',
+      '요약을 만든 시각과 마지막으로 연습한 시각은 따로 적어요. 관심·설정을 고른 날짜는 요약에 넣지 않아요.',
+      '한 시점의 기록과 기간별 횟수를 모은 거예요. 횟수가 다르다고 성격·관심의 크기·실력·TOPIK 급수·학습 효과가 다르다는 뜻은 아니에요.',
     ],
   };
 }

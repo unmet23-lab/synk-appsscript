@@ -153,7 +153,7 @@ test('a server upgrade rejection keeps pending preferences and explains settings
   await c.sync.open('account-a'); const state = notebook(0); c.sync.change(state);
   assert.equal(await c.sync.flush(), false);
   assert.equal(c.status().status, 'error');
-  assert.match(c.status().error.message, /문구 보관함.*안부 설정.*백업.*새로고침/u);
+  assert.match(c.status().error.message, /문구 보관함.*안부 설정.*(?:백업|내보낸).*(?:새로고침|새로 고쳐)/u);
   assert.equal(c.status().pending, true);
   assert.deepEqual(JSON.parse(c.sync.exportLocalRecords().entries[0].raw).state, importBackup(state));
 });

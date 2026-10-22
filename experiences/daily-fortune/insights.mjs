@@ -103,7 +103,7 @@ export function getActionCard(fortune) {
   const profileKey = isSaju
     ? fortune.pillars.map(item => item.known ? item.hanja : '_').join('-')
     : fortune.signId;
-  if (typeof profileKey !== 'string' || !profileKey) throw new TypeError('선택한 운세 정보를 확인해 주세요.');
+  if (typeof profileKey !== 'string' || !profileKey) throw new TypeError('고른 운세 정보가 맞지 않아요. 별자리나 생년월일을 다시 골라 주세요.');
   return deepFreeze({
     key: `${fortune.mode}:${fortune.date}:${profileKey}`, date: fortune.date, mode: fortune.mode,
     text: fortune.action, reflectionPrompt: '해 보니 어땠나요? 해낸 점이나 다음에 바꿔 보고 싶은 점을 한 줄로 남겨 보세요.',

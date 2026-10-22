@@ -416,12 +416,12 @@ body.launcher .platform-continuity :is(.continuity-notes article,.continuity-und
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.topbar,.launcher dialog{background:var(--glass-strong)}}
 @media (prefers-reduced-motion:reduce){.launcher *,.launcher *::before,.launcher *::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 
-/* 다운로드(2026-10-13): 홈페이지 다운로드 창과 같은 「플랫폼」 포스터 → 1px 계기판 → 흰 알약 받기 → 받은 뒤 01·02·03.
+/* 다운로드(2026-10-13, 10-21 큰 글자 「PC 앱」): 홈페이지 다운로드 창과 같은 포스터 → 1px 계기판 → 흰 알약 받기 → 받은 뒤 01·02·03.
    WORLD·워크스페이스는 플랫폼 안에서 설치하므로 아래 줄은 안내와 설치 상태만 둔다. */
 .os-tabs .filter-chip .dl-here{display:inline-flex;align-items:center;gap:5px;margin-left:8px;font-size:.6875rem;font-weight:800;opacity:.78}
 .os-tabs .filter-chip .dl-here::before{content:"";width:6px;height:6px;border-radius:50%;background:#7DB45A;box-shadow:0 0 0 3px rgba(125,180,90,.22)}
 .dl-hint{margin:-4px 0 14px;font-size:.8125rem;color:var(--ink-3)}
-.detail-hero.dl-hero{--word:'플랫폼';--len:3;min-height:clamp(300px,34vh,360px)}
+.detail-hero.dl-hero{--word:'PC 앱';--len:3;min-height:clamp(300px,34vh,360px)}
 .detail-hero.dl-hero>img{inset:14% 5% 20% auto;width:30%;max-height:60%}
 .dl-sticker{position:absolute;top:20px;right:20px;z-index:3;display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 13px 0 11px;border-radius:999px;background:#FAFAF9;color:#08090C;font-size:.78125rem;font-weight:800;letter-spacing:-.01em;transform:rotate(-2.5deg);box-shadow:0 8px 22px rgba(0,0,0,.24)}
 .dl-sticker::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--face);box-shadow:0 0 0 3px color-mix(in srgb,var(--face) 25%,transparent)}
