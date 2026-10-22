@@ -2,7 +2,7 @@
 // Six portraits are unchanged copies of desktop/assets/pulse/models/*.webp;
 // their public-source provenance and hashes are in desktop/assets/pulse/sources.json.
 // F04 was restored from PC_백업_20261003/복원목록.json on 2026-10-12 (SHA-256 checked).
-// Voice samples: six models use the casting book's Typecast takes (2026-10-18,
+// Voice samples: six models use the casting book's voice takes (2026-10-18,
 // docs/마케팅/PULSE_AI모델_캐스팅_20260930/voices.json → site/voice), copied on
 // 2026-10-19 so the client room and the casting book play the same voices. M03 keeps
 // the founder's interview audio.

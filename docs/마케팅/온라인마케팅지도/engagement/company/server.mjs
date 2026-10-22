@@ -1754,8 +1754,9 @@ export function createCompanyApp(options={}) {
     for(const id of ['M01','F01','F02','F03','M02','F04','M03'])for(const sample of [1,2,3])files['/pulse-app/assets/casting/voice/'+id+'-'+sample+'.mp3']=['public/pulse-app/assets/casting/voice/'+id+'-'+sample+'.mp3','audio/mpeg'];
     // 10-22 모델은 사진만: 영상 칸·기획 모음(production-library)·하린 영상은 공개 목록에서 뺀다(파일은 저장소에 그대로). 모델마다 사진 넉 장.
     for(const id of ['m01','f01','f02','f03','m02','f04','m03'])for(const shot of ['fullbody','look-1','look-2','context'])files['/pulse-app/assets/casting/photos/'+id+'-'+shot+'.webp']=['public/pulse-app/assets/casting/photos/'+id+'-'+shot+'.webp','image/webp'];
-    // 완성 광고(films-view.mjs): 갱스터 뮤직비디오.
+    // 완성 광고(films-view.mjs): 갱스터 뮤직비디오와 화성 세 편(10-22 더함, 1분 안쪽이라 발췌 없이 포스터·본편만 — mp4는 git 밖).
     for(const file of ['M03-mv-happy-gangster-poster-v1.webp','M03-mv-happy-gangster-excerpt-20s-v1.mp4','M03-mv-happy-gangster-full-v1.mp4'])files['/pulse-app/assets/casting/video/'+file]=['public/pulse-app/assets/casting/video/'+file,file.endsWith('.webp')?'image/webp':'video/mp4'];
+    for(const name of ['hwaseong-cf-light','hwaseong-short-first','hwaseong-cm-song'])for(const [file,mime] of [[name+'-poster-v1.webp','image/webp'],[name+'-v1.mp4','video/mp4']])files['/pulse-app/assets/films/'+file]=['public/pulse-app/assets/films/'+file,mime];
     files['/pulse-app/manifest.webmanifest']=['public/pulse-app/manifest.webmanifest','application/manifest+json; charset=utf-8'];
     for(const file of ['scrapbook.css','brand-pulse.webp','thread-pulse.webp','SUIT.woff2','InterTight.woff2','SYNKLatin-Regular.woff2','SYNKLatin-SemiBold.woff2','SYNKLatin-Bold.woff2','DMMono.ttf','studio-camera.webp','sticker-check.webp'])files['/pulse-app/assets/'+file]=['public/pulse-app/assets/'+file,file.endsWith('.css')?'text/css; charset=utf-8':file.endsWith('.woff2')?'font/woff2':file.endsWith('.ttf')?'font/ttf':'image/webp'];
     for(const file of ['hero-camera','stage-strategy','stage-direction','stage-concepts','stage-storyboard','stage-review','stage-history'])files['/pulse-app/assets/stage/'+file+'.webp']=['public/pulse-app/assets/stage/'+file+'.webp','image/webp'];

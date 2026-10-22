@@ -54,6 +54,26 @@ test('HTTP anonymous casting photos and the films module return exact MIME, nosn
   }
 });
 
+// 10-22 화성 세 편: 포스터(git 추적)와 본편(mp4, git 밖)만 낸다 — 1분 안쪽이라 발췌가 없다.
+test('HTTP the Hwaseong finished films serve their posters and full films with exact MIME, bytes and byte ranges, and nothing else in the films folder',async t=>{
+  for(const name of ['hwaseong-cf-light','hwaseong-short-first','hwaseong-cm-song'])for(const [file,mime]of [[name+'-poster-v1.webp','image/webp'],[name+'-v1.mp4','video/mp4']]){
+    const path='assets/films/'+file;
+    if(mime==='video/mp4'&&process.env.CI&&!existsSync(appFile(path))){t.diagnostic('CI 체크아웃에는 없다 — public/pulse-app/'+path+' (git 밖 출시 영상)');continue;}
+    const response=await fetch(fixture.base+'/pulse-app/'+path),bytes=Buffer.from(await response.arrayBuffer());
+    assert.equal(response.status,200,path);
+    assert.equal(response.headers.get('content-type'),mime,path);
+    assert.equal(response.headers.get('x-content-type-options'),'nosniff',path);
+    assert.equal(sha(bytes),sha(await readFile(appFile(path))),path+' bytes');
+    if(mime==='image/webp'){assert.equal(bytes.subarray(0,4).toString(),'RIFF',path);assert.equal(bytes.subarray(8,12).toString(),'WEBP',path);continue;}
+    assert.equal(bytes.subarray(4,8).toString(),'ftyp',path);
+    const part=await rawGet('/pulse-app/'+path,{Range:'bytes=0-7'});
+    assert.equal(part.status,206,path);
+    assert.equal(part.headers['content-range'],`bytes 0-7/${bytes.length}`,path);
+    assert.deepEqual(part.bytes,bytes.subarray(0,8),path);
+  }
+  for(const path of ['/pulse-app/assets/films/hwaseong-cf-light-v2.mp4','/pulse-app/assets/films/hwaseong-cf-light.mp4','/pulse-app/assets/films/hwaseong-cf-light-excerpt-v1.mp4','/pulse-app/assets/films/hwaseong-cf-light-poster-v1.png','/pulse-app/assets/films/','/pulse-app/assets/films/../casting/video/F02-ad-iced-coffee-20s-v1.mp4','/pulse-app/assets/films/%2e%2e%2fcasting%2fvideo%2fF02-ad-iced-coffee-20s-v1.mp4'])assert.equal((await rawGet(path)).status,404,path);
+});
+
 test('HTTP withdrawn reference films, the plan library, its boards, full-body references and plan module are not served although the files stay',async()=>{
   for(const path of WITHDRAWN){
     // 출시 영상(*.mp4)은 .gitignore라 CI 체크아웃에는 없다 — 파일이 남아 있음은 있는 곳에서만 잰다.

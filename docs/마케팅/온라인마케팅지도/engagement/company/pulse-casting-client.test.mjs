@@ -191,6 +191,6 @@ test('browser casting modules name no generation tools, even in comments',async(
   // The browser downloads these modules as-is, so even comments must not name the generation tools.
   for(const file of ['casting-catalog.mjs','casting-view.mjs','casting.css','films-view.mjs']){
     const source=await readFile(new URL('./public/pulse-app/'+file,import.meta.url),'utf8');
-    assert.doesNotMatch(source,/\b(?:Kling|Wan ?\d|Seedance|Higgsfield|Nano ?Banana|Veo)\b/i,file);
+    assert.doesNotMatch(source,/\b(?:Kling|Wan ?\d|Seedance|Higgsfield|Nano ?Banana|Veo|Suno|Typecast|Omni)\b|타입캐스트/i,file);
   }
 });

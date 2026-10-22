@@ -1056,4 +1056,9 @@ body:has(.approval-card.is-floating) .notice{bottom:112px}
 .film-facts dt{min-width:44px;font-size:var(--t-label);font-weight:var(--w-label);color:var(--ink-3)}
 .film-facts dd{margin:0;font-size:14px;color:var(--ink-2)}
 .film-full{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:0 18px;border-radius:999px;background:var(--ink);color:var(--on-ink);font-size:14px;font-weight:var(--w-strong);text-decoration:none}
-@media (max-width:860px){.film-card{grid-template-columns:minmax(0,1fr);gap:16px;padding:14px}.film-full{width:100%}}
+.film-credits{display:flex;gap:12px;margin:0 0 16px;font-size:12.5px;line-height:1.55;color:var(--ink-3)}
+.film-credits>span{flex:none;min-width:44px;font-weight:var(--w-label)}
+.film-credits ul{margin:0;padding:0;list-style:none}
+.film-card--portrait{grid-template-columns:minmax(0,300px) minmax(0,1fr)}
+.film-card--portrait .film-media video{aspect-ratio:9/16}
+@media (max-width:860px){.film-card{grid-template-columns:minmax(0,1fr);gap:16px;padding:14px}.film-full{width:100%}.film-card--portrait .film-media{width:min(100%,340px);justify-self:center}}
