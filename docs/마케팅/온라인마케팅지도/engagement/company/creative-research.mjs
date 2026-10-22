@@ -430,7 +430,7 @@ export function createCreativeResearchService({store,clock=()=>new Date().toISOS
   function archive(user,id,input={archived:true}){object(input);return update(user,id,{archived:input.archived??true});}
   function emptyUsageInput(input){object(input);if(Object.keys(input).length)throw fail('가이드 선택·해제는 빈 요청으로 보내 주세요.');}
   function claim(user,id,input={}){
-    user=writable(user);emptyUsageInput(input);return store.transaction(()=>{user=writable(user);const row=find(user,id);if(!productionReady(row))throw fail('회사에 공유된 제작 양식만 맡을 수 있어요.',409);const saved=usageFor(row);if(saved&&saved.userId!==user.id)throw fail('다른 크루가 이미 맡은 양식이에요.',409);if(!saved)usagePut.run(row.id,guideIdentity(row),user.id,instant(clock()));return {entry:view(user,row)};});
+    user=writable(user);emptyUsageInput(input);return store.transaction(()=>{user=writable(user);const row=find(user,id);if(!productionReady(row))throw fail('회사에 공유된 제작 양식만 맡을 수 있으니 다른 양식을 골라 주세요.',409);const saved=usageFor(row);if(saved&&saved.userId!==user.id)throw fail('다른 크루가 이미 맡은 양식이라 다른 양식을 골라 주세요.',409);if(!saved)usagePut.run(row.id,guideIdentity(row),user.id,instant(clock()));return {entry:view(user,row)};});
   }
   // One transaction owns both reservations and the downstream production rows.
   // The callback is an in-process service, never supplied by an HTTP request.
@@ -441,8 +441,8 @@ export function createCreativeResearchService({store,clock=()=>new Date().toISOS
       user=writable(user);
       const rows=ids.map(id=>{
         const row=find(user,id),saved=usageFor(row);
-        if(!productionReady(row))throw fail('현재 공유된 준비 가이드만 선택할 수 있습니다.',409);
-        if(saved&&saved.userId!==user.id)throw fail('다른 직원이 이미 사용 중인 가이드입니다.',409);
+        if(!productionReady(row))throw fail('회사에 공유된 제작 양식만 맡을 수 있으니 다른 양식을 골라 주세요.',409);
+        if(saved&&saved.userId!==user.id)throw fail('다른 크루가 이미 맡은 양식이라 다른 양식을 골라 주세요.',409);
         return row;
       });
       for(const row of rows)if(!usageFor(row))usagePut.run(row.id,guideIdentity(row),user.id,instant(clock()));

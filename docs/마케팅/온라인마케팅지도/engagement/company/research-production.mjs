@@ -53,7 +53,7 @@ export function createResearchProductionService({store,research,studio,clock=()=
   function create(user,input){
     user=store.get('users',user?.id);
     if(!user?.active)throw fail('먼저 로그인해 주세요.',401);
-    if(user.role==='viewer')throw fail('열람 계정은 제작 건을 만들 수 없습니다.',403);
+    if(user.role==='viewer')throw fail('보기 전용 계정은 제작 건을 만들 수 없어요.',403);
     if(!input||!Array.isArray(input.items)||input.items.length<1||input.items.length>7||
       Object.keys(input).some(k=>!['items','revision'].includes(k)))throw fail('이번에 제작할 양식을 1~7개 선택해 주세요.');
     const items=input.items.map(item=>{
@@ -70,7 +70,7 @@ export function createResearchProductionService({store,research,studio,clock=()=
       if(items.some(i=>!source.entries.some(e=>e.id===i.entryId)))throw fail('조사 자료를 다시 확인해 주세요.',404);
       return {productions:replay.map(r=>studio.production(user,r.productionId).production),existing:true};
     }
-    if(typeof input.revision!=='string'||research.revision(user)!==input.revision)throw fail('조사 자료가 갱신됐습니다. 최신 내용을 읽고 다시 선택해 주세요.',409);
+    if(typeof input.revision!=='string'||research.revision(user)!==input.revision)throw fail('그사이 조사 자료가 바뀌었으니 창을 닫았다가 다시 열어 골라 주세요.',409);
     return research.selectForProduction(user,items.map(i=>i.entryId),(rows,liveUser)=>{
       const productions=rows.map((row,index)=>{
         const item=items[index],id=key(liveUser.id,row.id,item.applicationIndex),saved=store.get(KIND,id);
@@ -78,7 +78,7 @@ export function createResearchProductionService({store,research,studio,clock=()=
         const brief=researchProductionBrief(row,item.applicationIndex),application=row.research.applications[item.applicationIndex];
         const result=studio.saveProduction(liveUser,{
           title:application.idea.slice(0,200),stage:'idea',
-          nextAction:'준비 원문의 자료를 확인하고 첫 제작안을 만든 뒤 실제 시청·사용을 검증한다.',
+          nextAction:'제작 준비 원문을 살펴보고 첫 제작안을 만든 뒤, 시청자가 실제로 보고 쓰는지 확인하기',
           initialBrief:brief,
         });
         store.put(KIND,id,{id,ownerId:liveUser.id,entryId:row.id,applicationIndex:item.applicationIndex,
