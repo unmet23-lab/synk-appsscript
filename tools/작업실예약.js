@@ -11,6 +11,7 @@
  *   node tools/작업실예약.js 상태 <편 폴더>                 서버에 직접 물어 맞춘다(--저장안함)
  *   node tools/작업실예약.js 취소 <편 폴더>                 등록을 거둔다(원고 취소·예약 작업 취소·검토 링크 폐기) — 고쳐서 다시 올릴 때 먼저
  *   node tools/작업실예약.js 자격                          작업실 자동화 계정(이메일·비밀번호)을 Windows 자격 보관소에 넣는다 — 유호님이 직접 입력
+ *   영어 이름도 받는다: credential(자격) · status(상태) · cancel(취소). 명령도 편 폴더도 아니면 자격을 읽기 전에 받은 글자를 보이고 멈춘다.
  *   공통: --주소 <작업실 주소>(기본 https://workspace.synk.im) · --언어없이 · --AI표시없이 · --첫댓글빼고 · --json
  *
  * 등록 순서(관문이 늘 먼저): 원본 영상 올리기 → 원고 저장(판마다 계정·제목·문구·옵션) → 「잠금」 필수 검토 링크 → 사내 승인 → 시각별 예약
@@ -410,6 +411,14 @@ function printPlan(bundle, rows) {
 
 const FLAGS = new Set(['--실행', '--텔레그램', '--json', '--대기열', '--저장안함', '--언어없이', '--AI표시없이', '--첫댓글빼고', '--캐시', '--주소']);
 
+// 첫 인자를 명령 이름으로 맞춘다. 터미널에 따라 한글이 다른 꼴(NFD)로 넘어올 수 있어 NFC로 맞추고, 치기 쉬운 영어 이름도 받는다.
+const 명령별칭 = { credential: '자격', status: '상태', cancel: '취소' };
+function 명령이름(arg) {
+  const s = String(arg ?? '').normalize('NFC');
+  return 명령별칭[s.toLowerCase()] || s;
+}
+const 코드포인트 = (s) => [...String(s)].map((c) => `U+${c.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}`).join(' ');
+
 function args(argv) {
   const unknown = argv.filter((a) => a.startsWith('--') && !FLAGS.has(a));
   if (unknown.length) throw Object.assign(new Error(`모르는 인자: ${unknown.join(' ')}`), { code: 'USAGE' });
@@ -417,7 +426,8 @@ function args(argv) {
   if (at > -1 && (!argv[at + 1] || argv[at + 1].startsWith('--') || !/^https?:\/\//.test(argv[at + 1]))) throw Object.assign(new Error('--주소 뒤에는 작업실 주소(https://…)를 준다'), { code: 'USAGE' });
   return { run: argv.includes('--실행'), telegram: argv.includes('--텔레그램'), json: argv.includes('--json'), queue: argv.includes('--대기열'), noSave: argv.includes('--저장안함'),
     withoutLanguage: argv.includes('--언어없이'), withoutAiLabel: argv.includes('--AI표시없이'), withoutFirstComment: argv.includes('--첫댓글빼고'),
-    origin: at > -1 ? argv[at + 1] : ORIGIN, rest: argv.filter((a, i) => !a.startsWith('--') && i !== at + 1) };
+    // --주소 값만 뺀다. 10-22까지는 --주소가 없을 때(at = -1) 첫 인자(0번)를 늘 빼서 「자격」·「상태」·편 폴더가 사라졌다.
+    origin: at > -1 ? argv[at + 1] : ORIGIN, rest: argv.filter((a, i) => !a.startsWith('--') && !(at > -1 && i === at + 1)) };
 }
 
 async function handleOne(dir, ws, o) {
@@ -471,8 +481,9 @@ async function resendPending() {
 async function main() {
   const argv = process.argv.slice(2);
   const o = args(argv);
-  if (o.rest[0] === '자격') { saveCredentialInteractive(); return; }
-  if (o.rest[0] === '상태' && argv.includes('--캐시')) {
+  const 명령 = 명령이름(o.rest[0]);
+  if (명령 === '자격') { saveCredentialInteractive(); return; }
+  if (명령 === '상태' && argv.includes('--캐시')) {
     const cached = cachedJobs();
     if (!cached) { console.log('예약큐 서버 캐시가 없다 — 정기 작업 「SYNK 예약큐」가 아직 안 돌았다'); process.exitCode = 1; return; }
     const r = await status(묶음.load(o.rest[1]), null, { save: !o.noSave, jobs: cached.jobs });
@@ -480,15 +491,19 @@ async function main() {
     for (const row of r.rows) console.log(`  ${row.계정} · ${row.상태} · ${kst(row.시각)}${row.주소 ? ` · ${row.주소}` : ''}`);
     return;
   }
+  // 명령도 편 폴더도 아니면 자격을 읽기 전에 멈춘다 — 그대로 가면 「자격이 없습니다」로 보여 까닭을 가렸다.
+  if (!o.queue && o.rest[0] && !['상태', '취소'].includes(명령) && !fs.existsSync(o.rest[0])) {
+    throw Object.assign(new Error(`모르는 명령이거나 없는 편 폴더다: ${JSON.stringify(o.rest[0])} (${코드포인트(o.rest[0])}) — 자격은 \`node tools/작업실예약.js credential\``), { code: 'USAGE' });
+  }
   const ws = await connect({ origin: o.origin });
-  if (o.rest[0] === '상태') {
+  if (명령 === '상태') {
     const bundle = 묶음.load(o.rest[1]);
     const r = await status(bundle, ws, { save: !o.noSave });
     if (!r) { console.log('작업실에 등록한 기록이 없다'); return; }
     for (const row of r.rows) console.log(`  ${row.계정} · ${row.상태} · ${kst(row.시각)}${row.주소 ? ` · ${row.주소}` : ''}`);
     return;
   }
-  if (o.rest[0] === '취소') {
+  if (명령 === '취소') {
     const r = await cancel(묶음.load(o.rest[1]), ws);
     console.log(r ? `  작업실 원고 ${r.postId}의 예약과 검토 링크를 거뒀다 — 고친 뒤 다시 등록한다` : '작업실에 등록한 기록이 없다');
     return;
@@ -512,4 +527,4 @@ async function main() {
 
 if (require.main === module) main().catch((error) => { console.error(error.message); process.exitCode = error.code === 'NO_CREDENTIAL' ? 3 : error.code === 'USAGE' ? 2 : 1; });
 
-module.exports = { Workspace, connect, planBundle, register, status, cancel, matchChannel, checkedFile, readyFolders, cachedJobs, sendLink, resendPending, STATUS, LOCAL_DIR };
+module.exports = { Workspace, connect, planBundle, register, status, cancel, matchChannel, checkedFile, readyFolders, cachedJobs, sendLink, resendPending, 명령이름, STATUS, LOCAL_DIR };

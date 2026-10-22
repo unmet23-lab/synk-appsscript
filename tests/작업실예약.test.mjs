@@ -191,3 +191,21 @@ test('검사 뒤 영상이 바뀌거나 「고칠 것」이 남으면 등록하�
   fs.writeFileSync(prepFile, JSON.stringify({ ...prep, 검사: { ...prep.검사, 파일: [{ ...prep.검사.파일[0], 바이트: 1 }] } }));
   assert.match(f.예약.planBundle(묶음.load(f.dir), workspace, {})[0].reasons.join(' '), /다시 검사/);
 });
+
+test('첫 인자(명령·편 폴더)가 빠지지 않고, 명령 이름은 NFC·영어 이름도 받으며, 명령도 폴더도 아니면 자격을 읽기 전에 멈춘다(10-22 「자격」이 사라짐)', () => {
+  const { 명령이름 } = require('../tools/작업실예약.js');
+  assert.equal(명령이름('자격'.normalize('NFD')), '자격');
+  assert.equal(명령이름('credential'), '자격');
+  assert.equal(명령이름('Status'), '상태');
+  assert.equal(명령이름('cancel'), '취소');
+  assert.equal(명령이름('docs/마케팅/어느편'), 'docs/마케팅/어느편');
+  const tool = path.join(here, '..', 'tools', '작업실예약.js');
+  let out = '';
+  try { execFileSync(process.execPath, [tool, '없는편_시험_20261022'], { encoding: 'utf8', stdio: 'pipe' }); assert.fail('멈춰야 한다'); } catch (error) {
+    assert.equal(error.status, 2);
+    out = String(error.stderr);
+  }
+  assert.match(out, /모르는 명령이거나 없는 편 폴더다/);
+  assert.match(out, /credential/);
+  assert.doesNotMatch(out, /자격이 없습니다/);
+});
