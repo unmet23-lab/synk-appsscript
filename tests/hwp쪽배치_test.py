@@ -448,6 +448,22 @@ class 실행준비(unittest.TestCase):
                     self.assertRaisesRegex(M.쪽배치오류, 'olefile'):
                 M.start(str(f), os.path.join(d, 'w'))
 
+    def test_흔들_글꼴이_없거나_파일이_깨졌거나_제목_꼴이_틀리면_재기_전에_종료_1(self):
+        self.assertEqual(M.shape_fonts(streams(table_body())), {'휴먼명조', '맑은 고딕'})
+        broken = dict(streams(table_body()), **{'BodyText/Section0': b'not deflate'})
+        fake = {'exe': 'rhwp.exe', 'version': M.RHWP_VERSION, 'sha256': M.RHWP_SHA256, 'pinned': True}
+        for args, source, why in [(['--흔들기', '바탕'], streams(table_body()), '흔들 글꼴 「바탕」'),
+                                  ([], broken, 'invalid|incorrect|Error'), (['--제목', '('], streams(table_body()), 'missing|unterminated')]:
+            with self.subTest(args=args), tempfile.TemporaryDirectory() as d, \
+                    mock.patch.object(M, 'find_rhwp', return_value=fake), mock.patch.object(M, 'check_jar'), \
+                    mock.patch.object(M, 'read_source', return_value=(Path('x.hwp'), source)), \
+                    mock.patch.object(M, 'prepare_work', return_value=Path(d)) as work, \
+                    mock.patch('sys.stderr', new_callable=__import__('io').StringIO) as err:
+                self.assertEqual(M.main(['재기', 'x.hwp', *args]), 1)
+                self.assertRegex(err.getvalue(), why)
+                if args:  # 흔들 글꼴·제목 꼴은 작업 폴더를 만들기 전에 멈춘다
+                    work.assert_not_called()
+
     def test_사용법_오류는_종료_2_잴_수_없으면_1(self):
         with self.assertRaises(SystemExit) as e, mock.patch('sys.stderr'):
             M.main(['재기'])

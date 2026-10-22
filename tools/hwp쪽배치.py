@@ -38,6 +38,7 @@ import struct
 import subprocess
 import sys
 import tempfile
+import zlib
 from pathlib import Path
 
 LIB = Path(__file__).resolve().parent / 'lib' / 'hwp'
@@ -192,13 +193,8 @@ def section_names(streams):
     return sorted(names, key=lambda n: int(n[len(SECTION):]))
 
 
-def calibrate(streams, rules=None, scale=None, strip_line_seg=False):
-    """측정용 사본에서 바꿀 스트림 {경로: 원본처럼 눌린 바이트}과 셈. 바꿀 것이 없으면 빈 사전이다.
-    rules {글꼴: {코드: %}} — 그 글꼴(글자 모양의 한글 글꼴) 글자에만 장평을 곱한 글자 모양을 새로 붙인다.
-    scale (글꼴, %) — 그 글꼴 글자 모양 전부의 장평을 곱한다(흔들기). strip_line_seg — 모든 문단의 줄 배치를 뺀다(대조)."""
-    rules = rules or {}
-    unz, zz = _codec(streams)
-    doc = H.parse(unz(streams['DocInfo']))
+def _char_shapes(doc):
+    """DocInfo 레코드 → (ID_MAPPINGS 자리, ID_MAPPINGS 값, 글자 모양 자리들, 글자 모양마다 한글 글꼴 이름)."""
     idm_i = next((i for i, r in enumerate(doc) if r.tag == ID_MAPPINGS), None)
     cs_idx = [i for i, r in enumerate(doc) if r.tag == CHAR_SHAPE]
     if idm_i is None or not cs_idx or idm_i > cs_idx[0]:
@@ -207,11 +203,28 @@ def calibrate(streams, rules=None, scale=None, strip_line_seg=False):
     if len(cs_idx) != idm[IDM_CHAR_SHAPE]:
         raise 쪽배치오류('글자 모양 수가 ID_MAPPINGS와 다르다')
     faces = [face_name(r) for r in doc if r.tag == FACE_NAME][:idm[IDM_FACE_HANGUL]]
+    fonts = []
+    for i in cs_idx:
+        f = struct.unpack_from('<H', doc[i].data, 0)[0]
+        fonts.append(faces[f] if f < len(faces) else '')
+    return idm_i, idm, cs_idx, fonts
+
+
+def shape_fonts(streams):
+    """글자 모양들이 쓰는 한글 글꼴 이름(빈 이름 뺌) — 흔들 글꼴을 재기 전에 확인한다."""
+    unz, _ = _codec(streams)
+    return {f for f in _char_shapes(H.parse(unz(streams['DocInfo'])))[3] if f}
+
+
+def calibrate(streams, rules=None, scale=None, strip_line_seg=False):
+    """측정용 사본에서 바꿀 스트림 {경로: 원본처럼 눌린 바이트}과 셈. 바꿀 것이 없으면 빈 사전이다.
+    rules {글꼴: {코드: %}} — 그 글꼴(글자 모양의 한글 글꼴) 글자에만 장평을 곱한 글자 모양을 새로 붙인다.
+    scale (글꼴, %) — 그 글꼴 글자 모양 전부의 장평을 곱한다(흔들기). strip_line_seg — 모든 문단의 줄 배치를 뺀다(대조)."""
+    rules = rules or {}
+    unz, zz = _codec(streams)
+    doc = H.parse(unz(streams['DocInfo']))
+    idm_i, idm, cs_idx, shape_font = _char_shapes(doc)
     cs_data = [doc[i].data for i in cs_idx]
-    shape_font = []
-    for d in cs_data:
-        f = struct.unpack_from('<H', d, 0)[0]
-        shape_font.append(faces[f] if f < len(faces) else '')
     scaled = 0
     if scale:
         for n, d in enumerate(cs_data):
@@ -916,24 +929,36 @@ def format_compare(res):
 
 
 # ── 명령 ────────────────────────────────────────────────────────────────
-def start(hwp, work_arg):
+def read_source(hwp):
     src = Path(hwp)
     if not src.is_file():
         raise 쪽배치오류(f'파일이 없다: {src}')
     try:
-        streams = H.read_streams(str(src))
+        return src.resolve(), H.read_streams(str(src))
     except ImportError as e:
         raise 쪽배치오류('파이썬 olefile이 필요하다(python -m pip install olefile)') from e
+
+
+def prepare_work(src, work_arg):
     work = make_work(work_arg)
     shutil.copyfile(src, work / 'source.hwp')
-    return src.resolve(), streams, work
+    return work
+
+
+def start(hwp, work_arg):
+    src, streams = read_source(hwp)
+    return src, streams, prepare_work(src, work_arg)
 
 
 def cmd_measure(o):
     rhwp = find_rhwp(o.다른판)
     check_jar()
     rules = None if o.보정없이 else parse_rules(o.규칙)
-    src, streams, work = start(o.hwp, o.작업)
+    re.compile(o.제목)  # 꼴이 틀리면 재기 전에 멈춘다
+    src, streams = read_source(o.hwp)
+    if o.흔들기 and o.흔들기 not in shape_fonts(streams):
+        raise 쪽배치오류(f"흔들 글꼴 「{o.흔들기}」을 쓰는 글자 모양이 없다 — 이 문서 글꼴: {', '.join(sorted(shape_fonts(streams)))}")
+    work = prepare_work(src, o.작업)
     paras = paragraphs(streams)
     res = measure_once(work / 'measure', streams, paras, rhwp, rules, None, o.제목, o.pdf)
     if o.흔들기:
@@ -1034,7 +1059,7 @@ def main(argv=None):
             sys.stdout.write(blob.decode('utf-8'))
         else:
             print(fmt(res))
-    except (쪽배치오류, ValueError, OSError) as e:
+    except (쪽배치오류, ValueError, OSError, struct.error, zlib.error, re.error) as e:  # 깨진 파일·틀린 꼴도 「잴 수 없음」
         print(f'hwp쪽배치: {e}', file=sys.stderr)
         return 1
     return 0
