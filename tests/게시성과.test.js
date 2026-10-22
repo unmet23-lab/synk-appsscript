@@ -240,6 +240,25 @@ test('--실행은 편 폴더(성과.json 자동판정 칸·기획.md 끝 묶음)
   assert.equal(도구.readLedger(path.join(dir, 'docs', '_ops', '게시성과.jsonl')).length, ledger.length);
 });
 
+test('줄끝만 다른 요약·장부는 다시 쓰지 않고, 덧붙일 때는 그 파일의 줄끝을 따른다(공용 작업본은 CRLF로 꺼낸다)', async t => {
+  const { dir } = tempRepo(t);
+  const server = data({ entries: [1, 2, 3, 4, 5].map(n => igEntry(n, n * 10)) });
+  const now = T0 + 9 * 24 * H;
+  await 도구.run({ 실행: true, 저장소: dir, 값들: [] }, { now, data: server, shorts: new Map() });
+  const summary = path.join(dir, 'docs', '마케팅', '게시성과.md');
+  const ledger = path.join(dir, 'docs', '_ops', '게시성과.jsonl');
+  // 공용 작업본처럼 CRLF로 바꿔 둔다
+  fs.writeFileSync(summary, fs.readFileSync(summary, 'utf8').replace(/\n/g, '\r\n'));
+  fs.writeFileSync(ledger, fs.readFileSync(ledger, 'utf8').replace(/\n/g, '\r\n'));
+  const r = await 도구.run({ 실행: true, 저장소: dir, 값들: [] }, { now, data: server, shorts: new Map() });
+  assert.ok(!r.쓴파일?.includes('docs/마케팅/게시성과.md'), '줄끝만 다르면 요약을 다시 쓰지 않는다');
+  // 화면 값을 덧붙이면 장부는 CRLF 그대로
+  await 도구.run({ 실행: true, 저장소: dir, 적기: 'https://www.instagram.com/reel/CODE5x/', 값들: ['팔로우=3'] }, { now, data: server, shorts: new Map() });
+  const text = fs.readFileSync(ledger, 'utf8');
+  assert.ok(!/[^\r]\n/.test(text), '장부에 LF만 있는 줄이 섞이지 않는다');
+  assert.equal(도구.readLedger(ledger).filter(l => l.kind === '화면').length, 1);
+});
+
 test('남의 미커밋이 있는 기획.md는 건드리지 않는다(이 도구 묶음만 바뀐 것은 내 것)', async t => {
   const { dir, folder } = tempRepo(t);
   const server = data({ entries: [1, 2, 3, 4, 5].map(n => igEntry(n, n * 10)) });

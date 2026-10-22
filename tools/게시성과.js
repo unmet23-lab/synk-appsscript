@@ -70,6 +70,30 @@ function readLedger(file) {
   });
 }
 
+/*
+ * 줄끝 — 공용 작업본은 core.autocrlf=true라 꺼낸 파일이 CRLF다. LF로 만든 글과 그대로 견주면 내용이 같아도 「바뀜」이 되어
+ * 줄끝만 다른 파일을 다시 쓰고 미커밋으로 남긴다(10-22 12:34 회차, 올리기는 「올릴 것 없음」). 견줄 때는 줄끝을 맞추고,
+ * 쓸 때·덧붙일 때는 그 파일이 쓰던 줄끝을 따른다.
+ */
+const eolOf = text => (/\r\n/.test(text || '') ? '\r\n' : '\n');
+const withEol = (text, eol) => text.replace(/\r?\n/g, eol);
+
+function appendLines(file, lines) {
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  const eol = fs.existsSync(file) ? eolOf(fs.readFileSync(file, 'utf8').slice(0, 4096)) : '\n';
+  fs.appendFileSync(file, lines.map(l => JSON.stringify(l)).join(eol) + eol, 'utf8');
+}
+
+/** 요약을 쓴다 — 줄끝만 다르면 쓰지 않는다. 바뀌었으면 true */
+function writeSummary(file, text) {
+  const before = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : null;
+  if (before !== null && withEol(before, '\n') === withEol(text, '\n')) return false;
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file + '.tmp', withEol(text, before === null ? '\n' : eolOf(before)), 'utf8');
+  fs.renameSync(file + '.tmp', file);
+  return true;
+}
+
 /** 화면 읽기 — post → {metrics(칸마다 가장 늦은 값), ageHours, at} */
 function screensOf(ledger) {
   const out = new Map();
@@ -402,7 +426,7 @@ async function run(o, { now = Date.now(), shorts = null, data = null } = {}) {
 
   if (o.요약) {
     const text = summarize({ ledger, now });
-    if (o.실행) fs.writeFileSync(summaryFile, text + '\n', 'utf8');
+    if (o.실행) writeSummary(summaryFile, text + '\n');
     report.결과 = o.실행 ? '요약 다시 만듦' : '미리 보기';
     report.요약 = text;
     return report;
@@ -420,10 +444,7 @@ async function run(o, { now = Date.now(), shorts = null, data = null } = {}) {
     const ageHours = Number.isFinite(o.나이) ? o.나이 : Math.round((now - Date.parse(entry.publishedAt)) / 3_600_000);
     const line = { at: new Date(now).toISOString(), kind: '화면', post: id.key, url: entry.url, ageHours, metrics: 화면값(o.값들) };
     report.화면줄 = line;
-    if (o.실행) {
-      fs.mkdirSync(path.dirname(ledgerFile), { recursive: true });
-      fs.appendFileSync(ledgerFile, JSON.stringify(line) + '\n', 'utf8');
-    }
+    if (o.실행) appendLines(ledgerFile, [line]);
     // 미리 보기에서도 이 값이 들어간 판정을 보인다(장부 파일에는 --실행일 때만 쓴다)
     ledger.push(line);
     screens = screensOf(ledger);
@@ -469,8 +490,7 @@ async function run(o, { now = Date.now(), shorts = null, data = null } = {}) {
   // 쓰기 — 장부(바뀐 판정만) → 편 폴더 → 요약 → 올리기
   const written = new Set();
   if (newLines.length) {
-    fs.mkdirSync(path.dirname(ledgerFile), { recursive: true });
-    fs.appendFileSync(ledgerFile, newLines.map(l => JSON.stringify(l)).join('\n') + '\n', 'utf8');
+    appendLines(ledgerFile, newLines);
     ledger.push(...newLines);
     written.add(LEDGER);
   }
@@ -491,14 +511,7 @@ async function run(o, { now = Date.now(), shorts = null, data = null } = {}) {
       if (r.changed) { written.add(relPlan); report.편쓰기.push(relPlan); } else if (r.skipped) report.건너뜀.push(`${relPlan}: ${r.skipped}`);
     } else report.건너뜀.push(`${relPlan}: 남의 미커밋이 있어 다음에 쓴다`);
   }
-  const text = summarize({ ledger, now, unregistered, unmapped }) + '\n';
-  const before = fs.existsSync(summaryFile) ? fs.readFileSync(summaryFile, 'utf8') : null;
-  if (before !== text) {
-    fs.mkdirSync(path.dirname(summaryFile), { recursive: true });
-    fs.writeFileSync(summaryFile + '.tmp', text, 'utf8');
-    fs.renameSync(summaryFile + '.tmp', summaryFile);
-    written.add(SUMMARY);
-  }
+  if (writeSummary(summaryFile, summarize({ ledger, now, unregistered, unmapped }) + '\n')) written.add(SUMMARY);
   report.결과 = written.size ? '씀' : '바뀐 것 없음';
   report.쓴파일 = [...written];
   if (written.size) {

@@ -152,7 +152,9 @@ function writeResultJson(dir, payload) {
   const after = JSON.stringify(payload);
   if (before === after) return { changed: false, file };
   data.자동판정 = payload;
-  writeAtomic(file, JSON.stringify(data, null, 2) + '\n');
+  // 그 파일이 쓰던 줄끝을 따른다(공용 작업본은 CRLF로 꺼낸다 — 줄끝만 바뀐 파일이 미커밋으로 남지 않게)
+  const eol = raw !== null && /\r\n/.test(raw) ? '\r\n' : '\n';
+  writeAtomic(file, (JSON.stringify(data, null, 2) + '\n').replace(/\n/g, eol));
   return { changed: true, file };
 }
 
