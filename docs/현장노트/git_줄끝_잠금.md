@@ -592,6 +592,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: `tools/운영사본.js` 갱신의 「고친 파일」 판정은 작업본 내용이 origin 판과 다른 경로만 센다(`git diff --name-only <origin> -- <경로…>`). origin 판과 같은 자국은 다음 따라가기가 3방향(작업본 = origin 판)으로 그대로 맞춘다. 인덱스까지 새 판이고 HEAD만 옛 판인 끊김(시간 한도로 죽음)은 인덱스 트리와 같은 커밋으로 HEAD만 옮긴다(끊긴 따라가기 마무리).
 - 다시 확인: `node --test --test-name-pattern="중간에 끊겨|끊겼으면" tests/운영사본.test.js`.
 
+### `가볍게 --되살림 <경로>`에 파일을 주면 「되살림」으로 끝나도 그 파일이 돌아오지 않는다 — 폴더 무늬만 더한다 (2026-10-22 Claude)
+- 증상: 가볍게 한 WORLD 글 손질 워크트리에서 튜터 소개 정본을 읽는 시험이 ENOENT였다. `node tools/바로올리기.js 가볍게 --되살림 docs/캐릭터/소개글_정본.json --실행`이 「되살림」으로 끝났는데 파일은 그대로 없었다.
+- 원인: 되살림은 받은 경로마다 `/<경로>/`(끝 빗금 = 폴더에만 맞는 무늬)를 `git sparse-checkout add --stdin`에 넣는다. 파일 경로는 그 무늬에 맞지 않는다(쓰는 법도 「<폴더…>」다).
+- 고침: 파일 하나면 끝 빗금 없는 무늬를 stdin으로 직접 넣는다 — `printf '/docs/캐릭터/소개글_정본.json\n' | git sparse-checkout add --stdin`(Git Bash는 「/docs/…」 인자를 프로그램 폴더 경로로 바꾼다). 폴더째 되살려도 되지만 `docs/캐릭터`는 크다.
+- 다시 확인: `git ls-files -t <파일>`이 `S`(건너뜀)가 아니라 `H`이고 파일이 작업본에 있다. 먼저 더해진 폴더 무늬 줄은 해가 없다.
+
 ## 이력 훑기
 
 ### 큰 blob을 거른 클론에서 `git log -S`·`--find-object`가 「could not fetch」로 끝난다
