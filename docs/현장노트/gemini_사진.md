@@ -20,6 +20,7 @@
 - 비슷한 컷끼리는 지문도 헷갈린다 → `--시험`으로 차이를 보고 눈으로 확인해 `_taken.json`에 적는다 ([자세히](#지문으로-받아도-같은-비율의-비슷한-컷끼리는-헷갈린다))
 - ego(lite)에서는 메뉴 항목이 div · gem-menu-item이고 받기 사건이 안 잡힌다 → 가장 안쪽 글 요소를 실제 클릭, 원본은 성능 기록의 rd-gg 주소를 `page.fetch`로 ([자세히](#egolite로-돌리면-gemini-메뉴-찾기--원본-받기가-크롬-확장-때와-다르다-2026-10-21-claude))
 - 로컬 GPU · CPU가 꽉 차면 크롬 그리기가 멈춰 메뉴가 안 뜨고 보내기가 늦게 두 번 간다 → 시작 전 requestAnimationFrame 한 번이 100ms 아래인지 잰다 ([자세히](#로컬-gpu가-100밤샘-학습면-크롬-그리기가-멈춰-메뉴--업로드--보내기가-늦게-먹는다--그리기-주기부터-잰다))
+- ego lite로 구울 때는 원본 받기에 다운로드 이벤트가 안 온다 → 네트워크의 원본 주소를 `page.fetch`로 받고, 창이 최소화돼 있으면 먼저 띄운다 ([자세히](#ego-lite에서-원본-크기-이미지-다운로드를-눌러도-다운로드-이벤트가-안-온다--네트워크에서-원본-주소를-잡아-받는다-2026-10-21-claude))
 
 ## 목차
 
@@ -241,6 +242,18 @@
 - 원인: ① 비율 메뉴 항목은 div이고, 모드 메뉴는 `.cdk-overlay-container`가 아니라 입력창 안 `bard-mode-switcher`의 `gem-menu-item`이다. 사고 수준 하위 메뉴(「낮음 · 보통 · 높음」)는 「사고 수준」을 누르기 전엔 폭이 0이다 ② Gemini는 원본을 `lh3.googleusercontent.com/rd-gg/…`에서 fetch한 뒤 내려받기를 만드는데, ego는 그 내려받기를 이 페이지 사건으로 잡지 못하고 기본 내려받기 폴더로 보낸다 ③ 받기는 실제 입력 클릭만 받는다.
 - 고침: ① 메뉴 항목은 문서 전체에서 글이 맞는 가장 안쪽 요소를 찾아 그 가운데를 실제 클릭한다 — 「사고 수준」을 누르고 1.3초 쉰 뒤 「높음」. 보내기 전 aria-label 「현재 Argon 높음 모드 사용 중」 · 「가로세로 비율, 16:9」를 읽는다 ② 받기 단추를 실제 클릭한 뒤 `performance.getEntriesByType("resource")`에 새로 생긴 `googleusercontent.com/rd-gg/` 큰 항목(2.6MB)의 주소를 읽어 `page.fetch(주소, { saveAs })`로 같은 페이지에서 받는다 — 남의 그림과 섞일 일이 없어 지문 고르기가 필요 없다. 자원 기록 칸은 기본 250개라 오래 쓴 페이지에선 꽉 차 받기 요청이 안 남는다 — 누르기 직전에 `performance.setResourceTimingBufferSize(20000)` · `clearResourceTimings()`. 막 만든 페이지에서는 그래도 못 찾는 때가 많아(10-21 일괄 12컷 모두) 만들기와 받기를 나눈다: 만들 때 대화 주소를 적고, 받기는 그 주소를 새로 열어 그림 · 단추가 뜬 뒤 누른다(컷당 21초, 14컷 모두 됨). 누를 때마다 내려받기 폴더에도 사본이 떨어지니 끝나면 해시가 같은 사본을 옮긴다. 실행기 `synk-vendor/homeshopping-horror-20261021/ego/gen.mjs`(만들기) · `round-12.mjs`(대화 주소로 받기).
 - 다시 확인: 받은 파일 머리가 JPEG(FF D8)이고 16:9면 2752×1536인지.
+
+### ego lite에서 「원본 크기 이미지 다운로드」를 눌러도 다운로드 이벤트가 안 온다 — 네트워크에서 원본 주소를 잡아 받는다 (2026-10-21 Claude)
+- 증상: 10-21 LAB 「달리며 건너뛰는 한국」 하린 키프레임을 ego lite(0.6.0.16)로 구울 때, 결과 그림에 마우스를 올리고 「원본 크기 이미지 다운로드」를 실제로 눌렀는데 `page.waitForEvent("download")`가 60초 동안 오지 않았고 다운로드 폴더에도 새 파일이 없었다.
+- 원인: 단추가 원본을 페이지 `fetch`로 받아 내려 주는데, ego의 다운로드 이벤트가 이 받기를 잡지 못했다(까닭은 모름). 네트워크에는 `lh3.googleusercontent.com/rd-gg/…`의 `image/jpeg` 약 2.2MB 응답이 찍혔고, `Network.getResponseBody`는 빈 본문을 돌려줬다.
+- 고침: 누르기 전에 `page.cdp("Network.enable", {})` → 누른 뒤 `page.events()`의 `Network.responseReceived` 가운데 `image/*`이고 300KB를 넘는 응답 주소를 잡아 `page.fetch(주소, { saveAs })`로 저장했다. 원본(9:16 1536×2752)이 바로 받아지고, 다운로드 폴더를 거치지 않아 같은 계정 다른 세션의 그림과 섞이지 않는다(위 「다른 세션이 같은 시각에 받은 Gemini 그림을 집는다」가 생기지 않음). 한 장 전체(새 `/images` → 비율 → Argon 높음 → 참조 `setInputFiles` → `keyboard.insertText` → 보내기 실제 클릭 → 결과 → 받기)를 한 라운드로 돈 실행기는 `%USERPROFILE%/Documents/synk-vendor/korea-run-montage-20261021/ego/gem.mjs`, 한 장 80~110초.
+- 다시 확인: 받은 JPEG가 그 비율의 원본 크기인지.
+
+### ego 창이 최소화돼 있으면 새 입력창이 펼쳐지지 않아 「모드 단추 없음」으로 멈춘다 (2026-10-21 Claude)
+- 증상: 같은 날 대합실 컷 다음 장에서 실행기가 「모드 단추가 없음」으로 멈췄다. ego 창이 최소화(`Browser.getWindowForTarget` → `windowState: "minimized"`)로 돌아가 있었고, `/u/4/images`가 새 간단 입력창(채팅 · 작업)인 채 「업로드 및 도구」(+)를 눌러도 옛 입력창(Argon · 사고 수준)이 펼쳐지지 않았다. 스크린샷은 「Cannot capture a screenshot while the window is minimized」, requestAnimationFrame 한 번은 450~560ms였다.
+- 원인: 최소화된 창은 그리기가 멈춰 메뉴가 그려지지 않는다(위 「로컬 GPU가 100%면」 항목과 같은 결). 창을 누가 다시 최소화했는지는 모른다.
+- 고침: 컷마다 시작할 때 `task.cdp("Browser.setWindowBounds", { windowId, bounds: { windowState: "normal" } })`로 띄운 뒤 `/images`를 열고, 비율을 먼저 고른 다음 「+」 → Escape를 세 번까지 되풀이해 모드 단추가 생겼는지 본다.
+- 다시 확인: 컷마다 `windowState`가 `normal`이고 모드 단추 aria-label이 「현재 Argon 높음 모드 사용 중」인지.
 
 ## 결과물
 
