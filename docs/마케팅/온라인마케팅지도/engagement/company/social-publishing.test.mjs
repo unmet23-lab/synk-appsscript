@@ -23,6 +23,14 @@ async function fixture(t,providerOptions={}){
   return {directory,store,users,service,provider,input,create,approve,schedule,sends,outcomes,setTime:value=>time=value,now:()=>time};
 }
 
+test('YouTube 제목·설명 언어·영상 언어·카테고리 옵션은 언어 코드·숫자 ID로만 받는다(2026-10-21)',async t=>{
+  const f=await fixture(t),yt=options=>({variants:[{channelId:'yt',format:'shorts',text:'문구',options:{privacy:'public',madeForKids:false,...options}}]});
+  const post=f.create(yt({language:'ko',audioLanguage:'en',categoryId:'22'}));
+  assert.deepEqual([post.variants[0].options.language,post.variants[0].options.audioLanguage,post.variants[0].options.categoryId],['ko','en','22']);
+  assert.equal(f.create(yt({categoryId:27})).variants[0].options.categoryId,'27','숫자로 와도 글자 ID로 둔다');
+  for(const bad of [{language:'Korean'},{audioLanguage:'ko_KR'},{categoryId:'abc'},{categoryId:'0'}])assert.throws(()=>f.create(yt(bad)),{status:400},JSON.stringify(bad));
+});
+
 test('new drafts canonicalize omitted performance formats and preserve explicit package detail on edits',async t=>{
   const f=await fixture(t);
   for(const [channelId,format,expected] of [['yt','video','youtube-video'],['yt','shorts','youtube-shorts'],['ig','reel','instagram-reels'],['ig','image','image']]){

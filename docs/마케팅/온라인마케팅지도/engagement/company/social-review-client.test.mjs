@@ -6,7 +6,7 @@ import vm from 'node:vm';
 const source=readFileSync(new URL('./public/social-review.js',import.meta.url),'utf8'),html=readFileSync(new URL('./public/social-review.html',import.meta.url),'utf8');
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
 const token='a'.repeat(43);
-function fixture(hash='#token='+token){
+function fixture(hash='#token='+token,globals={}){
   class Element{
     constructor(tag){this.tagName=tag;this.children=[];this.handlers={};this.textContent='';this.hidden=false;this.disabled=false;this.value='';}
     append(...children){for(const child of children){child.parent=this;this.children.push(child);}}
@@ -20,7 +20,7 @@ function fixture(hash='#token='+token){
   const ids={},requests=[],revoked=[],windows={};for(const id of ['review-notice','review-error','review-content','review-feedback','review-form','review-name','review-comment','review-retry','review-result'])ids[id]=new Element(id==='review-name'?'input':id==='review-comment'?'textarea':id==='review-retry'?'button':'div');
   ids['review-form'].append(ids['review-name'],ids['review-comment'],ids['review-retry'],new Element('button'));
   let uuid=0;class SafeURL extends URL{static createObjectURL(){return 'blob:local-'+(++uuid);}static revokeObjectURL(value){revoked.push(value);}}
-  const sandbox=vm.createContext({URL:SafeURL,URLSearchParams,Intl,Date,location:{hash},crypto:{randomUUID:()=>`request-client-${++uuid}`},document:{getElementById:id=>ids[id],createElement:tag=>new Element(tag)},window:{addEventListener:(name,fn)=>windows[name]=fn},fetch:(path,options)=>new Promise((resolve,reject)=>requests.push({path,options,resolve,reject})),console});
+  const sandbox=vm.createContext({URL:SafeURL,URLSearchParams,Intl,Date,location:{hash},crypto:{randomUUID:()=>`request-client-${++uuid}`},document:{getElementById:id=>ids[id],createElement:tag=>new Element(tag)},window:{addEventListener:(name,fn)=>windows[name]=fn},fetch:(path,options)=>new Promise((resolve,reject)=>requests.push({path,options,resolve,reject})),console,...globals});
   vm.runInContext(source,sandbox);
   const resolveRequest=(index,data,status=200)=>requests[index].resolve({ok:status<400,status,json:async()=>data,blob:async()=>data});
   const text=element=>[element.textContent,...element.children.map(text)].join('\n');
@@ -53,6 +53,28 @@ test('stale feedback refreshes current revision and revoked links hide the post 
 
 test('reject and comment require text before sending',async()=>{
   const f=fixture();f.resolveRequest(0,opened);await flush();f.submit('reject');assert.equal(f.requests.length,1);assert.equal(f.ids['review-comment'].focused,true);f.submit('comment');assert.equal(f.requests.length,1);
+});
+test('daily-content options read as names, not raw keys or codes, and unknown values stay as sent (2026-10-22)',async()=>{
+  const youtube={account:{platform:'youtube',name:'유튜브 계정',profile:'@yt'},title:'쇼츠 제목',text:'설명',format:'shorts',options:{privacy:'public',madeForKids:false,notifySubscribers:true,madeWithAi:true,language:'ko',audioLanguage:'mn',categoryId:'27'},copyVariants:[],media:[]};
+  const instagram={account:{platform:'instagram',name:'인스타 계정',profile:'@ig'},text:'캡션',format:'reel',options:{shareToFeed:true,madeWithAi:true,thumbnailTimestamp:1500,privacy:'constructor',categoryId:'999',language:'not a language code'},copyVariants:[],media:[]};
+  const f=fixture();f.resolveRequest(0,{...opened,review:{...opened.review,snapshot:{...opened.review.snapshot,variants:[youtube,instagram]}}});await flush();const text=f.text(f.ids['review-content']);
+  for(const pattern of [/공개 범위\n전체 공개/,/아동용\n아니요/,/구독자에게 알림\n예/,/AI 제작 표시\n예/,/제목·설명 언어\n한국어/,/영상 언어\n몽골어/,/YouTube 카테고리\n교육/,/피드에도 공유\n예/,/표지 시각\(ms\)\n1500/,/공개 범위\nconstructor/,/YouTube 카테고리\n999/,/제목·설명 언어\nnot a language code/])assert.match(text,pattern);
+  assert.doesNotMatch(text,/notifySubscribers|audioLanguage|categoryId|shareToFeed|function/);
+});
+test('every option key the server keeps has a review-page name, so new keys never show raw (2026-10-22)',()=>{
+  const server=readFileSync(new URL('./social-publishing.mjs',import.meta.url),'utf8'),allowed=server.match(/function options\(raw=\{\}\)\{object\(raw\);const allowed=new Set\(\[([^\]]+)\]\)/);assert.ok(allowed,'social-publishing.mjs options() allowed list');
+  const names=source.match(/const optionNames=\{([^}]+)\}/);assert.ok(names,'social-review.js optionNames');const named=new Set([...names[1].matchAll(/(\w+):'/g)].map(m=>m[1]));
+  for(const key of allowed[1].match(/'(\w+)'/g).map(k=>k.slice(1,-1)))assert.ok(named.has(key),key);
+});
+test('prototype keys, object values, partial language codes and missing Intl.DisplayNames never print code or a guessed name (2026-10-22)',async()=>{
+  const options=JSON.parse('{"__proto__":"toString","constructor":"toString","utm":{"source":"ig"},"hashtags":["#a","#b"],"language":"ko-123","audioLanguage":"und"}');
+  const variant={account:{platform:'youtube',name:'유튜브 계정',profile:'@yt'},text:'설명',format:'shorts',options,copyVariants:[],media:[]};
+  const snapshot={...opened.review.snapshot,variants:[variant]},data={...opened,review:{...opened.review,snapshot}};
+  const f=fixture();f.resolveRequest(0,data);await flush();const text=f.text(f.ids['review-content']);
+  for(const pattern of [/__proto__\ntoString/,/constructor\ntoString/,/UTM\n\{"source":"ig"\}/,/해시태그\n\["#a","#b"\]/,/제목·설명 언어\nko-123/,/영상 언어\nund/])assert.match(text,pattern);
+  assert.doesNotMatch(text,/function|native code|\[object Object\]|root|\(123\)/);
+  const old=fixture(undefined,{Intl:{DateTimeFormat:Intl.DateTimeFormat}});old.resolveRequest(0,{...data,review:{...data.review,snapshot:{...snapshot,variants:[{...variant,options:{language:'ko'}}]}}});await flush();
+  assert.match(old.text(old.ids['review-content']),/제목·설명 언어\nko/);assert.equal(old.ids['review-content'].hidden,false);
 });
 test('a link that expires during the conflict refresh keeps the expiry reason instead of the conflict message',async()=>{
   const f=fixture();f.resolveRequest(0,opened);await flush();f.submit('approve');f.resolveRequest(1,{error:'다른 검토 의견이 먼저 등록됐어요.'},409);await flush();assert.equal(f.requests[2].path,'/api/social-review/open');

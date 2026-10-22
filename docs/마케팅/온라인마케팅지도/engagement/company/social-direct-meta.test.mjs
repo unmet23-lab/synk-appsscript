@@ -76,6 +76,15 @@ test('Facebook photo verifies returned post ID rather than assuming photo ID is 
 test('Facebook photo-only ID uses photo proof fields and remote link',async()=>{
   const f=fixture({platform:'facebook',format:'image',media:[asset()],handler:call=>call.path==='100/photos'?json({id:'800'}):undefined});const response=await f.provider.publish(f.input);assert.equal(response.status,'published');assert.equal(response.providerId,'800');assert.ok(response.url.includes('fbid=800'));
 });
+test('AI 정보 표시를 고른 Instagram 릴스·사진은 준비 요청에 is_ai_generated를 싣고, 고르지 않으면 싣지 않는다(2026-10-21)',async()=>{
+  const reel=fixture({format:'reel',media:[asset('video',MP4)],options:{madeWithAi:true}});
+  assert.equal(reel.provider.preflight(reel.input).valid,true);
+  await reel.provider.publish(reel.input);
+  assert.equal(reel.posts()[0].params.get('media_type'),'REELS');assert.equal(reel.posts()[0].params.get('is_ai_generated'),'true');
+  const photo=fixture({options:{madeWithAi:false}});await photo.provider.publish(photo.input);
+  assert.equal(photo.posts()[0].params.get('is_ai_generated'),null);
+  assert.equal(fixture({platform:'facebook',options:{madeWithAi:true}}).provider.preflight(fixture({platform:'facebook',options:{madeWithAi:true}}).input).valid,false,'Facebook 페이지 글은 이 표시를 직접 보내지 않는다');
+});
 test('pending Reel resumes from persisted container after restart with continuation authorization',async()=>{
   let finished=false;const f=fixture({format:'reel',media:[asset('video',MP4)],options:{thumbnailTimestamp:1000,shareToFeed:false},handler:call=>call.path==='601'?json({id:'601',status_code:finished?'FINISHED':'IN_PROGRESS'}):undefined});
   assert.equal((await f.provider.publish(f.input)).status,'processing');assert.equal(f.posts().length,1);assert.equal(f.posts()[0].params.get('media_type'),'REELS');assert.equal(f.posts()[0].params.get('share_to_feed'),'false');

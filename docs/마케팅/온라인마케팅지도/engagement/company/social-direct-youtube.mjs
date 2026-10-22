@@ -24,7 +24,7 @@ const videoId=value=>typeof value==='string'&&/^[A-Za-z0-9_-]{11}$/.test(value);
 const scopes=credentials=>new Set(String(credentials?.scope||'').split(/[ ,]+/).filter(Boolean));
 const credentialFingerprint=credentials=>hash(['authType','accountId','accessToken','refreshToken','scope','expiresAt','refreshExpiresAt','permissionsVerifiedAt'].map(key=>credentials?.[key]??null));
 const filled=value=>value!==undefined&&value!==null&&value!==''&&value!==false&&!(Array.isArray(value)&&!value.length);
-const SPEC={formats:['video','shorts','youtube-video','youtube-shorts'],maxTextLength:5000,maxMediaCount:1,mediaTypes:['video/mp4'],maxVideoBytes:MAX_BYTES,options:['privacy','madeForKids','hashtags','madeWithAi','notifySubscribers'],requiredOptions:['privacy','madeForKids']};
+const SPEC={formats:['video','shorts','youtube-video','youtube-shorts'],maxTextLength:5000,maxMediaCount:1,mediaTypes:['video/mp4'],maxVideoBytes:MAX_BYTES,options:['privacy','madeForKids','hashtags','madeWithAi','notifySubscribers','language','audioLanguage','categoryId'],requiredOptions:['privacy','madeForKids']};
 const result=(status,message,extra={})=>({provider:PROVIDER,status,message,retryable:false,definitive:false,publicVerified:false,...extra});
 function sessionUrl(raw){
   let url;try{url=new URL(raw);}catch{throw fail('YOUTUBE_SESSION_INVALID','YouTube 업로드 연결 주소를 확인하지 못했어요.');}
@@ -62,6 +62,8 @@ export function createSocialDirectYouTube({store,fetchImpl=globalThis.fetch,cloc
     if(typeof title!=='string'||!title.trim()||[...title].length>100||/[<>]/.test(title))throw fail('YOUTUBE_TITLE_REQUIRED','YouTube 제목을 1~100자로 입력하고 꺾쇠 문자를 빼 주세요.');
     if(!['public','unlisted','private'].includes(options.privacy)||typeof options.madeForKids!=='boolean')throw fail('YOUTUBE_DECLARATION_REQUIRED','공개 범위와 아동용 콘텐츠 여부를 직접 선택해 주세요.');
     for(const key of ['madeWithAi','notifySubscribers'])if(options[key]!==undefined&&typeof options[key]!=='boolean')throw fail('INVALID_OPTIONS','YouTube 게시 옵션을 확인해 주세요.');
+    for(const key of ['language','audioLanguage'])if(options[key]!==undefined&&(typeof options[key]!=='string'||!/^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$/.test(options[key])))throw fail('INVALID_OPTIONS','YouTube 언어 코드를 확인해 주세요.');
+    if(options.categoryId!==undefined&&(typeof options.categoryId!=='string'||!/^[1-9]\d{0,2}$/.test(options.categoryId)))throw fail('INVALID_OPTIONS','YouTube 카테고리 ID를 확인해 주세요.');
     const tags=options.hashtags;if(tags!==undefined&&typeof tags!=='string'&&(!Array.isArray(tags)||tags.some(value=>typeof value!=='string')))throw fail('INVALID_HASHTAGS','해시태그를 글자나 글자 목록으로 입력해 주세요.');
     const description=String(variant.text??post.body??'')+(filled(tags)?'\n\n'+(Array.isArray(tags)?tags.join(' '):tags):'');
     if(Buffer.byteLength(description)>5000||/[<>]/.test(description))throw fail('TEXT_TOO_LONG','YouTube 설명은 5,000바이트 이내로 준비하고 꺾쇠 문자를 빼 주세요.');
@@ -71,7 +73,9 @@ export function createSocialDirectYouTube({store,fetchImpl=globalThis.fetch,cloc
       const duration=ref.duration??ref.durationSeconds;
       if(!Number.isFinite(ref.width)||!Number.isFinite(ref.height)||ref.width<=0||ref.height<ref.width||!Number.isFinite(duration)||duration<=0||duration>180)throw fail('YOUTUBE_SHORTS_FORMAT','쇼츠는 실측한 정사각형·세로 영상이고 길이가 3분 이하여야 해요. 다른 영상은 동영상 형식을 선택해 주세요.');
     }
-    return {ref,metadata:{snippet:{title,description},status:{privacyStatus:options.privacy,selfDeclaredMadeForKids:options.madeForKids,...(options.madeWithAi===undefined?{}:{containsSyntheticMedia:options.madeWithAi})}},notifySubscribers:options.notifySubscribers!==false};
+    // 제목·설명 언어, 영상(말하는) 언어, 카테고리는 넣은 판만 보낸다(2026-10-21 — 비우면 YouTube의 동영상 언어 칸이 빈 채로 올라간다).
+    const languages={...(options.language?{defaultLanguage:options.language}:{}),...(options.audioLanguage?{defaultAudioLanguage:options.audioLanguage}:{}),...(options.categoryId?{categoryId:options.categoryId}:{})};
+    return {ref,metadata:{snippet:{title,description,...languages},status:{privacyStatus:options.privacy,selfDeclaredMadeForKids:options.madeForKids,...(options.madeWithAi===undefined?{}:{containsSyntheticMedia:options.madeWithAi})}},notifySubscribers:options.notifySubscribers!==false};
   }
   function preflight(input){try{validate(input);return {valid:true,errors:[],warnings:['shorts','youtube-shorts'].includes(input.variant.format)?[{code:'SHORTS_CLASSIFICATION',message:'쇼츠 분류는 업로드한 영상 조건에 따라 YouTube가 결정해요.'}]:[]};}catch(error){return {valid:false,errors:[{code:error.code||'YOUTUBE_PREPARATION_FAILED',message:error.providerSafe?error.message:'YouTube 게시 정보를 확인해 주세요.'}],warnings:[]};}}
   function reserve(channel){transaction(()=>{const key=PROVIDER+':'+channel.id,row=store.get(REQUESTS,key)||{},times=(row.times||[]).filter(value=>value>stamp()-3600000);if(times.length>=120||row.retryAt>stamp())throw fail('YOUTUBE_RATE_LIMIT','YouTube 연결 요청이 많아요. 잠시 후 다시 확인해 주세요.',429);store.put(REQUESTS,key,{provider:PROVIDER,channelId:channel.id,times:[...times,stamp()],retryAt:row.retryAt||null});});}

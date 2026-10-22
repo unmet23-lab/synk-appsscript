@@ -40,6 +40,16 @@ test('checkConnection reads exact authenticated channel without enabling or uplo
   f.setHook(r=>r.url.includes('/channels?')?f.json({items:[{id:'UCabcdefghijklmnopqrstuv'}]}):null);await assert.rejects(()=>f.adapter.checkConnection(f.input.channel),e=>e.code==='ACCOUNT_MISMATCH');
 });
 
+test('제목·설명 언어·영상 언어·카테고리는 넣은 판만 업로드 요청 snippet에 싣는다(2026-10-21)',async()=>{
+  const f=fixture();Object.assign(f.input.variant.options,{language:'ko',audioLanguage:'en',categoryId:'22'});
+  assert.equal((await f.adapter.publish(f.input)).status,'published');
+  const sent=JSON.parse(f.requests.find(r=>r.method==='POST').body);
+  assert.deepEqual([sent.snippet.defaultLanguage,sent.snippet.defaultAudioLanguage,sent.snippet.categoryId],['ko','en','22']);
+  const plain=fixture();await plain.adapter.publish(plain.input);
+  const bare=JSON.parse(plain.requests.find(r=>r.method==='POST').body);
+  assert.deepEqual(['defaultLanguage','defaultAudioLanguage','categoryId'].filter(key=>key in bare.snippet),[]);
+  for(const bad of [{language:'Korean'},{audioLanguage:1},{categoryId:'x'}]){const input=structuredClone(plain.input);Object.assign(input.variant.options,bad);assert.equal(plain.adapter.preflight(input).valid,false,JSON.stringify(bad));}
+});
 test('Shorts requires measured square or portrait media of at most three minutes',()=>{
   const f=fixture();for(const format of ['shorts','youtube-shorts']){
     const input=structuredClone(f.input);input.variant.format=format;

@@ -97,6 +97,12 @@
 - 고침: 편집 · 소리 · 색은 파이썬 + ffmpeg 스크립트로 한다(하린 `편집_Wan.py` · `믹스.py` · `엔드카드.py`, 지유 `본편_편집.py`, PULSE `색감.py`). 다빈치에서 손으로 다듬어야 할 때는 색감을 `.cube`로 내보내 쓴다(`색감.py 큐브`). 다빈치를 스크립트로 몰려면 Studio(영구 295달러)가 필요하다.
 - 다시 확인: `(Get-Item 'C:\Program Files\Blackmagic Design\DaVinci Resolve\Resolve.exe').VersionInfo.ProductName`이 「DaVinci Resolve Studio」면 스크립트 길이 열린다.
 
+### ffmpeg가 「Error opening input: Illegal byte sequence」를 내면 한글 경로의 파일이 없는 것이다 (2026-10-21 Claude)
+- 증상: 10-21 올리기 전 검사를 만들며 편 영상을 `ffmpeg -i "…/yuhobuilds_멈춘시간재기_20261021/out/still-v6_final.mp4"`로 열자 「Illegal byte sequence」. 처음에는 Git Bash·한글 인코딩 탓으로 봤지만, node `spawnSync`로 같은 경로를 넘겨도 같았고 다른 한글 경로 영상은 열렸다.
+- 원인: 경로가 틀렸다(실제는 `remotion/out/…`). 이 PC의 ffmpeg는 한글이 든 경로의 파일이 없으면 「No such file or directory」 대신 「Illegal byte sequence」를 낸다(영문 경로면 「No such file」).
+- 고침: 이 오류가 나면 인코딩을 의심하기 전에 그 경로가 있는지(`fs.existsSync`·`Test-Path -LiteralPath`)부터 본다. 준비.json 경로는 저장소·편 폴더·게시 폴더 기준이 섞여 있으니 `tools/lib/게시묶음.js`의 `resolve`로 푼다.
+- 다시 확인: `node -e "require('child_process').spawnSync('ffmpeg',['-i','C:/없는폴더/없는.mp4'],{stdio:'inherit'})"`가 「Illegal byte sequence」를 찍는다.
+
 ## 색 맞춤(LUT·bt709 표시)
 
 ### `-color_primaries bt709 -color_trc bt709`를 줘도 원색·감마가 unknown으로 남는다

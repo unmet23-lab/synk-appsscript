@@ -1,5 +1,16 @@
 # 회사 워크스페이스와 고객 상담의 상시 서버 운영
 
+<a id="next-company-release-sns-language-ai-20261021"></a>
+## 다음 회사 릴리스 후보 — SNS 직접 게시: 유튜브 언어·카테고리, 인스타 AI 정보 표시, 검토 링크 옵션 이름 (2026-10-21~22 Claude 준비 · 운영 전)
+
+1일 1편 게시를 크롬 손 조작에서 작업실 예약으로 옮기는 작업([작업실 예약 등록](WORKSPACE.md#daily-content-workspace-booking-20261021) · 결정 표 10-22 「1일 1편 · 게시 길」)이 쓰는 서버 옵션과, 유호님이 휴대폰으로 여는 검토 링크 화면의 옵션 이름이다. 반영 전에는 PC 도구(`tools/작업실예약.js`)가 이 칸이 필요한 판 — 모든 유튜브 판과 AI 목소리가 든 인스타 판 — 을 「서버가 아직 … 못 보낸다」며 등록하지 않으므로, 1일 1편의 유튜브 판이 작업실 길로 가려면 이 반영이 있어야 한다.
+
+- **바뀌는 것(원문 4·시험 4, 새 파일·지운 파일 0):** `social-publishing.mjs`의 판 옵션 정리(`options()`)가 `language`·`audioLanguage`(BCP-47 꼴만)·`categoryId`(1~3자리 숫자, 글로 저장)를 받고 이름표(「제목·설명 언어」·「영상 언어」·「YouTube 카테고리」)를 단다. `social-direct-youtube.mjs`는 옵션 표에 셋을 더하고 넣은 판만 `snippet.defaultLanguage`·`defaultAudioLanguage`·`categoryId`로 보낸다. `social-direct-meta.mjs`는 인스타 옵션 표에 `madeWithAi`를 더하고 `true`면 릴스·사진 컨테이너와 캐러셀 부모 컨테이너에 `is_ai_generated: true`를 붙인다(게시 뒤에는 못 붙인다 — Instagram 공식 변경 기록 「AI Info Label」, 10-21 확인). `public/social-review.js`(검토 링크 화면)는 옵션 이름표 다섯(위 셋과, 원래부터 키 그대로 보이던 `notifySubscribers`·`shareToFeed`)과 값 이름(공개 범위, YouTube 카테고리 번호, 언어 코드 → 한국어 이름 — 온전히 맞지 않는 코드와 `Intl.DisplayNames`가 없는 브라우저는 코드 그대로)을 보이고, 이름표 조회를 자기 속성으로만 한다. 시험은 `social-publishing`·`social-direct-youtube`·`social-direct-meta`·`social-review-client`(.test.mjs)에 더했다 — 서버 `options()`가 남기는 키마다 검토 화면 이름표가 있는지 맞춰 보는 짝 시험 포함. 저장 스키마·API 경로·OAuth 권한·환경 변수·`Dockerfile`·정적 파일 목록 그대로. 작업실 편집 화면 코드는 그대로지만 옵션 표에서 그리는 칸이라 반영 뒤 인스타 판에도 「AI로 만든 콘텐츠 표시」가 보인다. 언어·카테고리는 편집 화면에 입력 칸이 없다(도구가 넣는다).
+- **운영 판에 얹기:** 지금 운영 이력 21(가볍게 전환 판)의 후보 원문(`.tmp/light-release-21-candidate-20261021/candidate`, 전체 사본)에 master 대비 diff 8파일이 충돌 없이 얹힌다 — `social-publishing.mjs`·`social-direct-youtube.mjs`·`social-publishing.test.mjs`는 운영과 master가 이미 다른 파일인데도 깨끗이 적용됐다. 그 사본의 SNS 시험 805/805, master 작업본 SNS 시험 40파일 820/820.
+- **검수:** 아르곤 백엔드 검수(서버 3파일·시험, 반영 전) 지적 0. 검토 화면은 아르곤 P1 2·P2 1 — 프로토타입 키·객체 값 표시(서버 `options()`가 키·값 꼴을 막아 지금 길로는 생기지 않지만 조회를 단단히 함), `ko-123`이 「한국어(123)」로 보이던 것(`fallback:'none'`), 시험 부족 — 을 반영한 뒤 Fable 최종 P0~P3 0 「그대로 운영 후보로」.
+- **반영:** 이 세션은 릴리스하지 않았다. 회사 HA 이력 22~25가 차례를 잡고 있어 그 뒤 줄(또는 함께 묶을 판)에 싣는다 — 번호는 릴리스 세션이 붙인다. 검토 화면 이름표는 서버 옵션과 함께 쓰이므로 같은 릴리스에 싣는다.
+- **반영 뒤 확인:** 작업실 SNS 운영에서 유튜브 연결의 옵션에 `language`·`audioLanguage`·`categoryId`, 인스타 연결에 `madeWithAi`가 보이고, `node tools/작업실예약.js <편 폴더>` 미리 보기에서 유튜브 판이 「서버가 아직 유튜브 언어 칸을 못 보낸다」 없이 계획에 든다. 첫 유튜브 판이 나간 뒤 스튜디오에서 동영상 언어·카테고리, 인스타 릴스에서 「AI 정보」 표시를 확인한다.
+
 <a id="light-release-production-20261022"></a>
 ## 회사 릴리스 가볍게 — 전환 판 · 2026-10-22 (이력 21)
 

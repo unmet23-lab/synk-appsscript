@@ -111,3 +111,85 @@ test('비축 일수는 그대로 내일부터 이어진 「채움」만 센다',
 test('--오늘 값이 실제 있는 날짜가 아니면 멈춘다', () => {
   for (const day of ['1026', '2026-13-45', '2026-02-29']) assert.equal(돌리기(root, '--오늘', day).status, 2, day);
 });
+
+// ── 서버 대조·계정별 칸·알림(10-21) ──
+// 작업실 캐시(tools/lib/작업실읽기.cjs 모양)를 임시 파일로 넣어 대조를 본다. 텔레그램은 SYNK_HERMES_EXE=file:로 파일에 적는다.
+const 대조 = fs.mkdtempSync(path.join(os.tmpdir(), '예약큐-대조-'));
+test.after(() => fs.rmSync(대조, { recursive: true, force: true }));
+fs.writeFileSync(path.join(대조, 'sns-계정.json'), JSON.stringify({ accounts: {
+  'yuhobuilds-instagram': { platform: 'instagram', handle: '@yuhobuilds' }, 'yuhobuilds-youtube': { platform: 'youtube', handle: '@yuhobuilds' },
+  'lab-youtube': { platform: 'youtube', handle: '@synkkorean', expectedChannelId: 'UClab' } } }));
+const 서버 = { checkedAt: '2026-10-21T02:00:00Z', channels: [
+  { id: 'ch-ig', platform: 'instagram', handle: 'yuhobuilds' }, { id: 'ch-yt', platform: 'youtube', handle: '@yuhobuilds' },
+  { id: 'ch-lab', platform: 'youtube', handle: '@synkkorean', externalId: 'UClab' }],
+jobs: [
+  { id: 'job-ig', channelId: 'ch-ig', status: 'scheduled', reviewWaiting: true, scheduledAt: '2026-10-22T12:00:00Z' },
+  { id: 'job-yt', channelId: 'ch-yt', status: 'scheduled', reviewWaiting: false, scheduledAt: '2026-10-22T12:00:00Z' }],
+posts: [{ channelId: 'ch-lab', url: 'https://www.youtube.com/shorts/seen', publishedAt: '2026-10-19T12:05:00Z' }] };
+const 캐시 = path.join(대조, '서버.json');
+fs.writeFileSync(캐시, JSON.stringify(서버));
+// 작업실로 건 편(인스타는 유호님 승인 전, 유튜브는 승인 뒤) · 서버에서 사라진 작업 · 크롬으로 건 편 둘(하나는 실제로 나갔고 하나는 안 나감) · 검사 「고칠 것」
+편('yuho-server', { 브랜드: 'yuhobuilds', 슬롯: '2026-10-22', 성격: '상시', 역할: '권위', 제목: '작업실 편', 판: [
+  { 계정: 'yuhobuilds-instagram', 시각: '2026-10-22T21:00+09:00' }, { 계정: 'yuhobuilds-youtube', 시각: '2026-10-22T21:00+09:00' }] },
+{ 판: [{ 계정: 'yuhobuilds-instagram', 상태: '승인 대기', 방법: '작업실', 작업: 'job-ig' }, { 계정: 'yuhobuilds-youtube', 상태: '승인 대기', 방법: '작업실', 작업: 'job-yt' }] }, 대조);
+편('yuho-gone', { 브랜드: 'yuhobuilds', 슬롯: '2026-10-23', 성격: '상시', 제목: '사라진 예약', 판: [{ 계정: 'yuhobuilds-youtube', 시각: '2026-10-23T21:00+09:00' }] },
+  { 판: [{ 계정: 'yuhobuilds-youtube', 상태: '예약됨', 방법: '작업실', 작업: 'job-없음' }] }, 대조);
+편('lab-seen', { 브랜드: 'LAB', 슬롯: '2026-10-19', 성격: '상시', 제목: '나간 편', 판: [{ 계정: 'lab-youtube', 시각: '2026-10-19T21:00+09:00' }] },
+  { 판: [{ 계정: 'lab-youtube', 상태: '예약됨' }] }, 대조);
+편('lab-missing', { 브랜드: 'LAB', 슬롯: '2026-10-20', 성격: '상시', 제목: '안 나간 편', 판: [{ 계정: 'lab-youtube', 시각: '2026-10-20T21:00+09:00' }] },
+  { 판: [{ 계정: 'lab-youtube', 상태: '예약됨' }] }, 대조);
+편('lab-fix', { 브랜드: 'LAB', 슬롯: '2026-10-23', 성격: '상시', 제목: '고칠 편', 판: [{ 계정: 'lab-youtube', 시각: '2026-10-23T21:00+09:00' }], 검사: { 결과: '고칠 것', 파일: [] } }, null, 대조);
+
+function 대조큐(...args) {
+  const r = spawnSync(process.execPath, [tool, '--폴더', 대조, '--서버캐시', 캐시, '--오늘', '2026-10-21', ...args],
+    { encoding: 'utf8', env: { ...process.env, SYNK_QUEUE_DIR: path.join(대조, '상태'), SYNK_HERMES_EXE: 'file:' + path.join(대조, '보낸글.txt') } });
+  assert.equal(r.status, 0, r.stderr);
+  return r.stdout;
+}
+
+test('작업실 판은 서버 작업 상태로 — 유호님 승인 전은 채움이 아니고, 서버에서 사라진 예약은 경고', () => {
+  const r = JSON.parse(대조큐('--json'));
+  const day = r.brands.yuhobuilds.byDay['2026-10-22'][0];
+  assert.deepEqual(day.plates.map((p) => [p.account, p.state]), [['yuhobuilds-instagram', '승인 대기'], ['yuhobuilds-youtube', '예약됨']]);
+  assert.equal(day.state, '일부');
+  assert.equal(r.brands.yuhobuilds.byDay['2026-10-23'][0].plates[0].state, '서버에 없음');
+  assert.ok(r.warnings.some((w) => w.startsWith('예약됨인데 서버에 없음: yuhobuilds-youtube · yuho-gone')));
+  assert.equal(r.server.checkedAt, '2026-10-21T02:00:00.000Z');
+});
+
+test('크롬으로 건 판은 슬롯 2시간 뒤 실제 공개 게시물로 대조한다 — 있으면 게시됨, 없으면 「슬롯이 지났는데 나가지 않음」', () => {
+  const r = JSON.parse(대조큐('--json', '--일수', '3'));
+  assert.ok(r.warnings.some((w) => w.startsWith('슬롯이 지났는데 나가지 않음: lab-youtube · 2026-10-20 · lab-missing')));
+  assert.ok(!r.warnings.some((w) => w.includes('lab-seen')));
+});
+
+test('계정별 줄·검사 「고칠 것」 표시', () => {
+  const r = JSON.parse(대조큐('--json'));
+  const yt = r.accounts.find((a) => a.account === 'yuhobuilds-youtube');
+  assert.deepEqual(yt.byDay['2026-10-22'].map((p) => p.state), ['예약됨']);
+  assert.equal(yt.reserve, 1, '내일(10-22) 예약됨, 10-23은 서버에 없음');
+  assert.equal(r.accounts.find((a) => a.account === 'yuhobuilds-instagram').reserve, 0);
+  assert.deepEqual(r.fix.map((x) => x.folder), ['lab-fix']);
+  const out = 대조큐();
+  assert.match(out, /^LAB {9}· {6}· {6}✗/m, '10-23 LAB 칸이 ✗');
+  assert.match(out, /^yuhobuilds-youtube +· +● +○ +· +· +1일$/m);
+  assert.match(out, /lab-fix · 검사 고칠 것/);
+  assert.match(out, /! 예약됨인데 서버에 없음/);
+});
+
+test('--알림은 비축 2일 아래·대조 문제를 텔레그램 한 통으로, 같은 날 같은 내용은 다시 보내지 않는다', () => {
+  const sentFile = path.join(대조, '보낸글.txt');
+  fs.rmSync(sentFile, { force: true });
+  fs.rmSync(path.join(대조, '상태'), { recursive: true, force: true });
+  const first = JSON.parse(대조큐('--json', '--알림'));
+  assert.equal(first.alert.sent, true);
+  const text = fs.readFileSync(sentFile, 'utf8');
+  // 브랜드 비축은 그 편의 판이 모두 예약돼야 센다 — 10-22 yuhobuilds는 인스타가 유호님 승인 전이라 0일
+  assert.match(text, /^\[예약 비축\] 2026-10-21 · LAB 0일 · synkbrief 0일 · yuhobuilds 0일 \(목표 4일\)/);
+  assert.match(text, /비축 부족: LAB · synkbrief · yuhobuilds/);
+  assert.match(text, /작업실 승인 대기 계정: yuhobuilds-instagram/);
+  assert.match(text, /! 예약됨인데 서버에 없음/);
+  const again = JSON.parse(대조큐('--json', '--알림'));
+  assert.deepEqual(again.alert, { sent: false, reason: 'same-today' });
+  assert.equal(fs.readFileSync(sentFile, 'utf8').split('---').length, 2, '한 통만');
+});

@@ -68,7 +68,7 @@ function specification(platform){
   return platform==='instagram'?{
     formats:['image','carousel','reel','instagram-reels','feed','post'],maxTextLength:2200,maxMediaCount:10,
     mediaTypes:['image/jpeg','video/mp4'],maxImageBytes:8*1000*1000,maxVideoBytes:100*1024*1024,
-    options:['hashtags','altText','thumbnailTimestamp','shareToFeed'],requiredOptions:[],
+    options:['hashtags','altText','thumbnailTimestamp','shareToFeed','madeWithAi'],requiredOptions:[],
     formatRules:{image:{minMediaCount:1,maxMediaCount:1,mediaKind:'image',requiresMediaMetadata:true},carousel:{minMediaCount:2,maxMediaCount:10,mediaKind:'image',requiresMediaMetadata:true},reel:{minMediaCount:1,maxMediaCount:1,mediaKind:'video',maxDurationSeconds:900,requiresMediaMetadata:true},'instagram-reels':{minMediaCount:1,maxMediaCount:1,mediaKind:'video',maxDurationSeconds:900,requiresMediaMetadata:true},feed:{minMediaCount:1,maxMediaCount:10,mediaKind:'image'},post:{minMediaCount:1,maxMediaCount:10,mediaKind:'image'}}
   }:{
     formats:['text','image','feed','post'],maxTextLength:63206,maxMediaCount:1,
@@ -255,7 +255,7 @@ export function createSocialDirectMeta({store,fetchImpl=globalThis.fetch,clock=(
       for(const childId of row.childIds){const state=await settled(()=>api(childId,{fields:'id,status_code'}));if(state.id!==childId)throw fail('META_INVALID_RESPONSE','캐러셀 파일 처리 결과의 ID가 맞지 않아요.');if(['ERROR','EXPIRED'].includes(state.status_code))throw fail('MEDIA_PROCESSING_FAILED','Meta가 캐러셀 파일을 처리하지 못했어요. 파일을 확인하고 새로 예약해 주세요.');if(state.status_code!=='FINISHED')return view(update(id,{status:'processing',message:'Meta가 캐러셀 파일을 처리하고 있어요.',processingChecks:(row.processingChecks||0)+1}));}
       await authorize(input,continuation);sessionValue.check();
       const claim=randomUUID(),won=transaction(()=>{const live=store.get(JOBS,id);if(live.status!=='processing'||live.containerId||live.updatedAt!==row.updatedAt)return false;store.put(JOBS,id,{...live,status:'creating',claimToken:claim,updatedAt:now()});return true;});if(!won)return view(store.get(JOBS,id));
-      const parent=await api(channel.externalId+'/media',{media_type:'CAROUSEL',children:row.childIds.join(','),caption:row.content},'POST');if(!graphId(parent.id))throw fail('CONTAINER_ID_MISSING','캐러셀 준비 ID를 받지 못했어요. 공개 게시 요청은 보내지 않았어요.');
+      const parent=await api(channel.externalId+'/media',{media_type:'CAROUSEL',children:row.childIds.join(','),caption:row.content,...(input.variant?.options?.madeWithAi===true?{is_ai_generated:true}:{})},'POST');if(!graphId(parent.id))throw fail('CONTAINER_ID_MISSING','캐러셀 준비 ID를 받지 못했어요. 공개 게시 요청은 보내지 않았어요.');
       row=update(id,{status:'processing',containerId:parent.id},claim);
     }
     if(!row.containerId)throw fail('CONTAINER_ID_MISSING','Instagram 준비 ID를 찾지 못했어요.');
@@ -296,7 +296,8 @@ export function createSocialDirectMeta({store,fetchImpl=globalThis.fetch,clock=(
         }
         const childIds=[];
         if(prepared.media.length>1){for(let n=0;n<urls.length;n++){await authorize(input,continuation);account.check();const created=await account.api(channel.externalId+'/media',{image_url:urls[n],is_carousel_item:true,...(prepared.media[n].alt||prepared.options.altText?{alt_text:prepared.media[n].alt||prepared.options.altText}:{})},'POST');if(!graphId(created.id))throw fail('CONTAINER_ID_MISSING','사진 준비 ID를 받지 못했어요. 공개 게시 요청은 보내지 않았어요.');childIds.push(created.id);update(id,{childIds:[...childIds]},initial.claimToken);}update(id,{status:'processing',childIds},initial.claimToken);}
-        else{const params=prepared.reel?{media_type:'REELS',video_url:urls[0],caption:prepared.content,share_to_feed:prepared.options.shareToFeed!==false,...(prepared.options.thumbnailTimestamp!==undefined?{thumb_offset:prepared.options.thumbnailTimestamp}:{})}:{image_url:urls[0],caption:prepared.content,...(prepared.media[0]?.alt||prepared.options.altText?{alt_text:prepared.media[0]?.alt||prepared.options.altText}:{})};await authorize(input,continuation);account.check();const created=await account.api(channel.externalId+'/media',params,'POST');if(!graphId(created.id))throw fail('CONTAINER_ID_MISSING','사진·릴스 준비 ID를 받지 못했어요. 공개 게시 요청은 보내지 않았어요.');update(id,{status:'processing',containerId:created.id},initial.claimToken);}
+        // AI 정보 표시는 준비(컨테이너) 때만 붙일 수 있고 게시 뒤에는 못 붙인다(Instagram 공식 변경 기록 「AI Info Label」, 2026-10-21 확인).
+        else{const ai=prepared.options.madeWithAi===true?{is_ai_generated:true}:{},params=prepared.reel?{media_type:'REELS',video_url:urls[0],caption:prepared.content,share_to_feed:prepared.options.shareToFeed!==false,...(prepared.options.thumbnailTimestamp!==undefined?{thumb_offset:prepared.options.thumbnailTimestamp}:{}),...ai}:{image_url:urls[0],caption:prepared.content,...(prepared.media[0]?.alt||prepared.options.altText?{alt_text:prepared.media[0]?.alt||prepared.options.altText}:{}),...ai};await authorize(input,continuation);account.check();const created=await account.api(channel.externalId+'/media',params,'POST');if(!graphId(created.id))throw fail('CONTAINER_ID_MISSING','사진·릴스 준비 ID를 받지 못했어요. 공개 게시 요청은 보내지 않았어요.');update(id,{status:'processing',containerId:created.id},initial.claimToken);}
         return await advance(input,{continuation});
       }catch(error){
         // 준비 파일을 이미 만든 뒤의 일시 오류·중단은 이어받기와 똑같이 「처리 중」으로 두고 다음 확인에서 이어 간다(10-20: 첫 실행에서만 확정 실패가 됐다).
