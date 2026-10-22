@@ -120,6 +120,7 @@
 - 10-19 14:2x 탭 하나로도 떴다: PULSE 1차 후보 20장 + 고침 1장 + 소연 세트 14장(대화 35개쯤, 13:05~14:25, 사이드바 SPA 이동 + 장마다 같은 참조 파일 올림 + 장마다 원본 받기)을 만든 뒤, 참조 업로드가 연달아 실패했다(첨부 칩에 빨간 !, 「제출하려면 업로드에 실패한 파일을 삭제하세요」, `첨부파일 닫기` 0개). 칩을 지우고 주소를 다시 열자 `google.com/sorry`. **업로드 실패가 앞선 신호였다.** 다음부터는 20~30장마다 10분 쉬고, 업로드 실패가 두 번 이어지면 그 자리에서 멈춘다(다시 열지 않는다).
 - 10-19 14:3x 한강 v41 고침: 대화 탭 넷에 고침을 보내고 결과 넷을 연달아 받으려 하자, 받기가 모두 실패했다. 보기 화면 내려받기를 누르면 왼쪽 아래에 「이미지를 다운로드할 수 없습니다.」가 뜨고, 네트워크에는 `www.google.com/sorry/index` OPTIONS 405 하나만 찍혔다. 이어서 대화 탭 둘(K20·K35a)을 더 열자 바로 `google.com/sorry`로 넘어갔다. **알림이 「다운로드할 수 없습니다」면 이 막힘이고**, 크롬의 여러 파일 받기 막기(위 항목 — 알림 없이 조용히 안 온다)와 다르다. 탭을 몇 초 사이에 여럿 열지 말고, 받기는 한 장씩 사이를 두고 한다. 풀리기 전까지 생성 화면은 그대로 두고(지문은 처음 뜬 것을 파일에 적어 둠) 유호님께 확인을 부탁한다.
 - 10-19 19:36 · 19:48 지유 세트 B안: 이 세션은 한 시간 동안 대화 넷(셋은 위 항목의 중복)만 썼는데도 참조 5장 업로드가 빨간 !로 연달아 두 번 실패했다(10분 쉰 뒤 같은 페이지에서 다시 올려도). 같은 시각 다른 세션들이 같은 계정으로 그림을 받고 있어서(Downloads에 19:30~19:32 남의 원본 여럿) 계정 단위로 걸린 것으로 보인다. 규칙대로 그 자리에서 멈추고 주소를 다시 열지 않았다. 내 사용량이 적어도 계정이 같으면 같이 막힌다.
+- 10-22 17:2x 「달리며 건너뛰는 한국」 v2(ego): 한 시간 남짓 대화 25개쯤을 연달아 굽는 동안 같은 계정 · 같은 PC에서 다른 세션(홈쇼핑 공포 스틸, ego 작업 공간 따로)도 Gemini로 굽고 있었다. 앞선 신호는 업로드 실패가 아니라 큐의 실패 셋(`CDP request timed out: Runtime.callFunctionOn` · 결과 그림 hover 시간 초과 · 「비율 단추를 못 찾음」)이었고, 끊긴 그림을 받으려 대화 주소를 열자 `google.com/sorry`. 유호님이 ego 창에서 확인을 누른 뒤에는 그 작업 공간(20번)이 목록에서 사라져 있어, 같은 이름으로 `taskSpace(…)`를 다시 잡자(47번, 새 탭) 대화 받기 · 굽기가 그대로 됐다. 그 뒤로는 컷 사이에 60초를 쉬었다. **큐에서 실패가 셋 이어지면 받기 · 다시 굽기 전에 멈추고 화면부터 찍어 본다.**
 
 ### 받아 둔 키프레임을 다시 올리면 「hard links」로 거절된다
 - 증상: 10-18 지유 컷 7(`키프레임_A/컷7_v4.jpg`)을 새 대화에 편집용으로 올리자 「the file has multiple hard links … Copy the file and upload the copy」로 거절됐다.
@@ -255,6 +256,7 @@
 - 원인: 최소화된 창은 그리기가 멈춰 메뉴가 그려지지 않는다(위 「로컬 GPU가 100%면」 항목과 같은 결). 창을 누가 다시 최소화했는지는 모른다.
 - 고침: 컷마다 시작할 때 `task.cdp("Browser.setWindowBounds", { windowId, bounds: { windowState: "normal" } })`로 띄운 뒤 `/images`를 열고, 비율을 먼저 고른 다음 「+」 → Escape를 세 번까지 되풀이해 모드 단추가 생겼는지 본다.
 - 다시 확인: 컷마다 `windowState`가 `normal`이고 모드 단추 aria-label이 「현재 Argon 높음 모드 사용 중」인지.
+- 10-22 저녁 다시 겪음: 로봇 확인 뒤 같은 이름으로 새로 잡은 작업 공간의 창이 최소화로 떠 있어 「비율 단추를 못 찾음」으로 멈췄다(`gem_pro.mjs`는 시작 때 `page.cdp`로 띄우게 돼 있는데도). 큐를 걸기 전에 `task.cdp("Browser.getWindowForTarget", …)` → `minimized`면 `task.cdp("Browser.setWindowBounds", …normal…)`로 띄우자 다음 굽기는 바로 됐다. 「비율 단추 · 모드 단추를 못 찾음」이 나오면 먼저 창 상태부터 본다.
 
 ### ego로 여러 장을 한 라운드에 돌리면 — `-e` import는 중간에 끝나고, 막 그린 페이지 받기는 빠지고, 다음 장 이동이 끊긴다 (2026-10-22 Claude)
 - 증상: 10-22 「매진 임박」 개그 모델 후보 여덟(3:4, 참조 없음)을 실행기 `synk-vendor/homeshopping-horror-20261021/ego/gen.mjs`로 차례로 돌렸다. ① Git Bash `ego-browser nodejs -e "await import('file:///…/round-20.mjs')" > round-20.log`는 첫 장을 그린 뒤(63초) 출력 없이 종료 코드 0으로 끝났다(로그 0바이트, 받기 없음). ② 표준 입력으로 돌리자 끝까지 갔지만, 막 그린 페이지에서 「원본 크기 이미지 다운로드」를 눌러도 원본 요청이 성능 기록에 안 남아 그린 일곱 장 모두 「원본 주소를 못 찾음」이었고, 받기가 실패한 바로 다음 장들의 `page.goto(…/images)`가 `net::ERR_ABORTED`로 셋 연달아 끊겼다. ③ 왼쪽 대화 목록에서 제목으로 대화를 다시 열려 했더니 `a[href*='/app/']`는 0개, 제목 글(SPAN)은 찾았지만 눌러도 주소가 `/app/<id>`로 바뀌지 않았다.
@@ -426,8 +428,8 @@
 - 고침: 「The front panels of the jacket are plain light-wash denim; only the two sleeves … and the whole back panel are jogakbo patchwork」처럼 남는 부분까지 적자 다시 구운 판에서 맞았다. 반지는 받은 그림을 Image 1로 「Change only one thing: remove the ring from his finger」 편집으로 뺐고(한 번에 됨, 다른 데는 그대로), 다음 굽기부터 몸 문장에 「no rings, no jewelry」를 넣는다.
 - 다시 확인: 손 · 재킷 앞판 확대.
 
-### 옆얼굴을 새로 구우면 컷마다 다른 사람이 된다 — 얼굴이 맞은 컷에서 장소만 바꾸고, 빛을 바꿀 땐 「얼굴은 다시 그리지 말 것」 (2026-10-22 Claude)
-- 증상: v2 S07(진해) · S18(유채 달리기)을 확정 얼굴 B · C + 실제 사진 + 실제 오른쪽 옆얼굴 사진으로 새로 굽자 Fable은 같은 사람으로 봤지만 유호님은 「진해랑 유채 달리기 이거는 내 얼굴이 아냐」. 같은 참고 · 같은 문장의 S04 · S05 옆얼굴은 짚지 않으셨다.
-- 원인: 새 생성은 옆얼굴을 컷마다 다시 짜서 닮음이 들쭉날쭉하다(추정). 얼굴 메모에도 각도 사진에 B · C 크롭을 앞에 넣으면 「약간은 다르다」였다는 기록이 있다.
-- 고침: 짚지 않으신 컷(S05)을 Image 1로 두고 「Edit the first attached photo (Image 1). Keep him exactly as he is in Image 1 — the same face, hair, clothes, running pose, size and position … Change only the place around him: …」 + 장소 실제 사진(Image 2) + 얼굴 참고(B 정면 · 실제 옆얼굴, Image 3 · 4)로 보내자 진해는 한 번에 S05와 같은 얼굴이 됐다(매치 컷도 정확). 유채는 햇빛으로 바꾸며 얼굴을 다시 그려 이가 보였다 — 빛 문장 뒤에 「Do not redraw his face: it stays exactly as in Image 1 — the same profile, nose, chin, eye and the same small closed-mouth smile with no teeth visible. Only adjust the light on him to the sunny day.」를 붙이자 맞았다. 같은 문장에서 얼굴 참고 두 장을 빼자 귀에 귀걸이가 생겼다. 받기 단계에서 `<img> intercepts pointer events`로 끊긴 판은 `ego/take.mjs`로 그 대화에서 받았다.
-- 다시 확인: 고친 판과 Image 1의 머리를 같은 상자로 잘라 나란히 놓고(입 · 코 · 턱 · 귀), 유호님 확인을 받는다.
+### 정면 참고만으로 90° 옆얼굴을 그리게 하면 얼굴을 지어낸다 — 승인 각도 사진을 참고로, 고개를 카메라 쪽 45°로 (2026-10-22 Claude)
+- 증상: v2 달리기 컷(S02 · S04 · S05 · S07 · S18)을 「seen exactly from his right side」로 굽자, 처음엔 진해 · 유채만 「내 얼굴이 아냐」였고, 둘을 S05에서 장소만 바꾼 판으로 고치자 「앞모습은 괜찮은데 옆모습이 너무 기괴해진느낌」 — 옆모습 다섯 컷 모두 코 · 턱이 튀어나온 낯선 옆얼굴이었다. Fable은 매번 같은 사람으로 봤다.
+- 원인: 참고가 확정 얼굴 B · C 정면 크롭과 정면 실제 사진뿐이고 옆얼굴은 흐린 인터뷰 장면 한 장이라, 모델이 그의 90° 옆얼굴을 지어냈다. 그렇게 나온 S04 얼굴을 편집(순간만 · 장소만)으로 S05 · 진해 · 유채에 옮겨 틀린 얼굴이 번졌다 — 편집은 얼굴을 잘 지키므로, 바탕 컷의 얼굴이 틀리면 틀린 채로 퍼진다. 얼굴 메모(10-01)에도 각도 사진은 「B · C 크롭을 앞에 넣으면 약간은 다르다」, 실제 옆모습 사진만으로 만든 판이 「전부 다 완전 나같아」였다.
+- 고침: 10-01 승인 각도 사진(`Videos/한강2126_새판_20261009/재촬영_v40/기준그림/얼굴세트/각도_R45_B방식_a.png`, `승인_얼굴_전방향.jpg`의 오른쪽 70° 칸)과 실제 오른쪽 옆모습 영상 장면(`옆얼굴_실제사진/인터뷰_콘로우_R_17.5s.png`)을 Image 2~4로, 고칠 컷을 Image 1로 두고 「change only his head and face: he turns his head about 45 degrees toward the camera — exactly the head angle of Image 2 … his face must be exactly the face in Images 2 and 3」로 보냈다. 원본 릴스도 달리면서 카메라(폰) 쪽을 본다. 표정은 승인 사진처럼 「calm and relaxed — lips closed, corners only slightly lifted, eyes open normally (not squinting)」 — 눈웃음을 넣은 판은 얼굴이 또 바뀌었다(승인된 웃는 판이 없다). 기준 컷(S05) 하나를 이렇게 고친 뒤, 진해 · 유채는 그 컷에서 장소만 바꾸고(「Do not redraw his face … Only adjust the light」), 장면이 다른 S02 · S04는 그 장면에서 고개만 돌렸다. 받기 단계에서 `<img> intercepts pointer events`로 끊긴 판은 `ego/take.mjs`로 그 대화에서 받았다.
+- 다시 확인: 고친 머리를 확정 B · 승인 45° · 실제 옆모습 장면과 같은 크기로 잘라 나란히 놓고, 유호님 확인을 받는다(얼굴은 유호님이 최종 판단 — Fable의 ✓로 넘어가지 않는다).
