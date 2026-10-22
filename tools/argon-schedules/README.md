@@ -13,7 +13,7 @@
   1. 77yuhbs HOME에서 `agy -p /usage`(모델 토큰 0)로 몫을 본다. Gemini 주간 남은 몫(5시간 칸이 있으면 그것도)이 10% 이상이면 77yuhbs로 돈다.
   2. 아니거나 확인이 실패하면 unmet25를 본다. 권한이 같고, 유료 크레딧이 꺼져 있고, 실제 로그인이 unmet25이고, 몫이 10% 이상이고, **`agy models`에 회차 모델(`gemini-4-argon-high`)이 있을 때만** unmet25로 돈다.
   3. 그 밖의 경우와 예외는 모두 77yuhbs다.
-- **unmet25에는 아직 Argon이 없다(10-22 확인).** 로그인 뒤 서버 agy에서 unmet25의 `agy models`는 gemini-3.8-flash(high·medium·low)·claude-sonnet-4-6·claude-opus-4-6-thinking·gpt-oss-120b뿐이었다. `/usage`도 주간 칸만 있었다(5시간 칸 없음). Ultra 가족 혜택이 공식 CLI에 아직 반영되지 않은 것인지, 가족 계정에는 따라오지 않는 것인지는 모른다. 그래서 위 2번의 모델 확인을 넣었다. 지금은 unmet25가 골라지지 않고(`*_UNMET25_NO_MODEL`), 목록에 Argon이 생기면 고치지 않아도 저절로 쓰인다. 다시 볼 때는 `status --usage`의 계정별 `runModelListed`를 본다.
+- **unmet25에는 아직 Argon이 없다(10-22 확인).** 로그인 뒤 서버 agy에서 unmet25의 `agy models`는 gemini-3.8-flash(high·medium·low)·claude-sonnet-4-6·claude-opus-4-6-thinking·gpt-oss-120b뿐이었다. `/usage`도 주간 칸만 있었다(5시간 칸 없음). 같은 날 17시 Gemini 웹에서도 unmet25는 Ultra가 아니었다(요금제 배지 없음, 「업그레이드」 권유, 4 Argon·3.1 Pro 잠김, Deep Think 없음). 가족 계정에 AI 혜택이 아직 붙지 않은 것이고, 공유 설정·초대 수락·반영 지연 가운데 무엇인지는 모른다. 그래서 위 2번의 모델 확인을 넣었다. 지금은 unmet25가 골라지지 않고(`*_UNMET25_NO_MODEL`), 목록에 Argon이 생기면 고치지 않아도 저절로 쓰인다. 다시 볼 때는 `status --usage`의 계정별 `runModelListed`를 본다.
 
   결정은 `run-status/ROLE.agy-account.json`과 stderr 한 줄, run-check 상태·영수증의 `agyAccount`에 남는다.
 - **바꾸는 명령(서버 root).** 모드는 다음 회차부터 적용되고 daemon-reload가 필요 없다.

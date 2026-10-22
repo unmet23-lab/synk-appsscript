@@ -189,7 +189,7 @@
 
 ### Ultra 가족 계정(unmet25)으로 agy에 로그인해도 모델 목록에 Argon이 없고, `/usage`에 5시간 칸이 없다 (2026-10-22 Claude)
 - 증상: 10-22 16:55 KST 무렵 서버 agy 1.4.0에 unmet25(그날 Google AI Ultra 가족 계정으로 들어감)로 로그인했다. `agy models`에는 gemini-3.8-flash high·medium·low, claude-sonnet-4-6, claude-opus-4-6-thinking, gpt-oss-120b-medium만 있었다. 같은 서버의 77yuhbs(Ultra 본 계정)에는 gemini-4-argon low·medium·high와 Claude 5.5가 있다. `/usage`도 무리마다 주간 칸 하나뿐이었다(100%, 다음 초기화 10-29). 예약은 모두 `--model gemini-4-argon-high`라 unmet25로 돌면 시작부터 실패한다.
-- 원인: 확인하지 못했다. 가족 혜택이 공식 CLI에 아직 반영되지 않은 것일 수도 있고, 가족 계정에는 CLI Argon이 따라오지 않는 것일 수도 있다. 로그인한 지 몇 분 뒤에 본 것이라 시간이 지나면 바뀔 수 있다. 10-18 Pro 계정(unmet23)에 Argon이 없던 일(아래 「Pro 구독 표시만으로…」)과 같은 꼴이다.
+- 원인: CLI만의 일이 아니었다. 같은 날 17시 Gemini 웹에서도 unmet25는 Ultra가 아니었다(요금제 배지 없음, 「업그레이드」 권유, 모드 메뉴의 4 Argon·3.1 Pro가 `upsell_` 잠김, Deep Think 없음). 77yuhbs는 Ultra 배지와 4 Argon이 열려 있었다. 가족 계정에 AI 혜택이 아직 붙지 않은 것이고, 공유 설정·초대 수락·반영 지연 가운데 무엇인지는 확인하지 못했다. 10-18 Pro 계정(unmet23)에 Argon이 없던 일(아래 「Pro 구독 표시만으로…」)과 같은 꼴이다.
 - 고침: 서버 계정 고르기(`tools/argon-schedules/agy-account.py`)는 unmet25로 넘기기 전에 `agy models`에 회차 모델이 있는지 본다. 없으면 77yuhbs로 남는다(`*_UNMET25_NO_MODEL`). 5시간 칸은 있을 때만 본다. PC agy도 같은 공식 CLI라, 77yuhbs가 다 돼 갈 때 unmet25로 바꿔도 Argon 검수는 안 될 수 있다 — 바꾸기 전에 `agy models`부터 본다.
 - 다시 확인: 서버 `sudo python3 /opt/synk-argon-77yuhbs/agy-account.py status --usage`의 unmet25 `runModelListed`가 true가 됐는지 본다. PC에서는 unmet25로 로그인한 뒤 PowerShell `agy models`에 gemini-4-argon-high가 있는지 본다.
 
