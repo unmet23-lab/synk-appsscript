@@ -12,7 +12,8 @@
     "리4_얼굴": "Use the four attached photos (Images 1 to 4) only as identity references for one Korean woman about 27 years old. Keep her face exactly the same: her round face, her black bowl-cut bob with straight blunt bangs just above the eyebrows, her large round tortoiseshell glasses with clean clear lenses, and the small mole on her cheek exactly where it is in the reference photos. Ignore the backgrounds, clothing and lighting of the reference photos. Do not add other moles, freckles, marks, tattoos, text, logos or watermarks.",
     "리4_옷": "She wears a sage-green knit sweater over a white collared shirt.",
     "사진": "Photorealistic film still, natural skin texture with visible pores, realistic individual hair strands, natural proportions. She is the only person in the frame.",
-    "우는_연기": "This is a horror-film parody, so the crying is big and dramatic — but she must stay unmistakably the same woman as in Images 1 to 4."
+    "우는_연기": "This is a horror-film parody, so the crying is big and dramatic — but she must stay unmistakably the same woman as in Images 1 to 4.",
+    "통2_장면참조": "Image 5 shows her in this same room a moment earlier: keep exactly her short, tightly curled dark-brown permed bob (tight springy curls, no loose waves, no visible side parting), her lavender polka-dot pajama top and the light as in Image 5 — but not its pose or framing."
   },
   "컷": [
     {
@@ -56,9 +57,10 @@
       "who": "yuho",
       "refs": [
         "유호x5",
-        "C11"
+        "C02"
       ],
-      "text": "{유호_장면참조} Close-up of his face from forehead to chin, the black hood framing it, the phone still at his ear — the cold blue-white phone glow from one side, red light behind him. Deadpan, completely polite and serious, as if ordering something on the phone. Shallow depth of field, 85mm. {유호_얼굴} {유호_옷} {사진남}"
+      "text": "{유호_장면참조} Close-up of his face from forehead to chin, the black hood pulled up exactly as deep as in Image 6, framing his face. He holds a black smartphone to his ear with his gloved right hand (on the left side of the picture); the cold blue-white phone glow lights one side of his face, red light behind him. Deadpan, completely polite and serious, lips slightly parted as if ordering something on the phone. Shallow depth of field, 85mm. {유호_얼굴} {유호_옷} {사진남}",
+      "메모": "10-22 Fable P2: C11을 장면 참조로 굽은 첫 판은 눈이 둥글어 확정 얼굴과 닮음 약~중 → 얼굴이 가장 닮은 C02를 여섯째로. 생김새는 글로 쓰지 않는다(장부 S02 「얼굴 생김새를 글로 묘사 → 못생기게」)."
     },
     {
       "id": "C03",
@@ -92,9 +94,10 @@
       "who": "통2",
       "refs": [
         "통2x4",
-        "C01"
+        "C07"
       ],
-      "text": "{세트} {세트_참조:5} Tight close-up: her head and the top of her shoulders fill the frame. She has stopped crying and stares, frozen and completely bewildered, at something off-screen to the right; tear tracks still wet on her cheeks, mouth slightly open, eyebrows slightly raised — pure confusion. Red light from the left, candlelight from below, fairy-light bokeh behind her. 85mm, shallow depth of field. {통2_얼굴} {통2_옷} {사진}"
+      "text": "{세트} {통2_장면참조} Tight close-up: her head and the top of her shoulders fill the frame. She has stopped crying and stares, frozen and completely bewildered, at something off-screen to the right; tear tracks still wet on her cheeks, mouth slightly open, eyebrows slightly raised — pure confusion. Red light from the left, candlelight from below, fairy-light bokeh behind her. 85mm, shallow depth of field. {통2_얼굴} {통2_옷} {사진}",
+      "메모": "10-22 Fable P2: C01만 세트 참조로 굽은 첫 판은 머리가 느슨한 웨이브(가르마 보임) → 같은 장면의 C07을 다섯째로."
     },
     {
       "id": "C12b",
