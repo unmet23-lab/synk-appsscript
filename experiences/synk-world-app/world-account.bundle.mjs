@@ -13579,7 +13579,7 @@ function createWorldGameHost({
   let disposed = false, installed = false;
   const check2 = () => {
     guard();
-    if (disposed) throw Object.assign(Error("\uAC8C\uC784 \uACC4\uC815 \uC5F0\uACB0\uC774 \uB05D\uB0AC\uC5B4\uC694."), { code: "ACCOUNT_CHANGED" });
+    if (disposed) throw Object.assign(Error("\uC774 \uB180\uC774\uB294 \uB2EB\uD614\uC5B4\uC694. \uB180\uC774\uB97C \uB2E4\uC2DC \uC5F4\uC5B4 \uC8FC\uC138\uC694."), { code: "ACCOUNT_CHANGED" });
   };
   const accountKey = connected ? accountId : `local:${accountId}`;
   const notify = () => {
@@ -15914,7 +15914,7 @@ var DEVICE_RECORDS_TEXT = Object.freeze({
   snapshot: "\uACC4\uC815 \uAE30\uB85D\uC740 \uB36E\uC9C0 \uC54A\uC544\uC694",
   snapshotBody: "\uACC4\uC815\uC5D0 \uC774\uBBF8 \uC788\uB294 \uAE30\uB85D\uC740 \uADF8\uB300\uB85C \uB450\uACE0, \uACC4\uC815\uC5D0 \uC5C6\uB294 \uAC83\uB9CC \uB354\uD574\uC694. \uC774 \uAE30\uAE30\uC758 \uAE30\uB85D\uC740 \uC9C0\uC6B0\uC9C0 \uC54A\uC544\uC694.",
   moving: "\uACC4\uC815\uC73C\uB85C \uC62E\uAE30\uACE0 \uC788\uC5B4\uC694.",
-  failed: "\uC62E\uAE30\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC5F0\uACB0\uC744 \uD655\uC778\uD55C \uB4A4 \uB2E4\uC2DC \uACE8\uB77C \uC8FC\uC138\uC694.",
+  failed: "\uC62E\uAE30\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC7A0\uC2DC \uB4A4 \u300C\uC62E\uAE30\uAE30\u300D\uB97C \uB2E4\uC2DC \uB20C\uB7EC \uC8FC\uC138\uC694.",
   moved: "\uC774 \uAE30\uAE30\uC758 \uD559\uC2B5\uC744 \uB0B4 \uACC4\uC815\uC73C\uB85C \uC62E\uACBC\uC5B4\uC694.",
   partly: "\uC62E\uAE38 \uC218 \uC788\uB294 \uAE30\uB85D\uB9CC \uB0B4 \uACC4\uC815\uC73C\uB85C \uC62E\uACBC\uC5B4\uC694.",
   kept: "\uACC4\uC815\uC740 \uC774 \uAE30\uAE30\uC758 \uD559\uC2B5 \uC5C6\uC774 \uC774\uC5B4 \uAC00\uC694. \uC774 \uAE30\uAE30\uC758 \uAE30\uB85D\uC740 \uADF8\uB300\uB85C \uB0A8\uC544 \uC788\uC5B4\uC694.",
@@ -20075,7 +20075,7 @@ function createWorldAccount({
       guard(expected);
       if (launch !== gameLaunch) throw changed();
       const id = owner, bound = gameBinding(currentAccount), client = verifiedClient, prefs = currentAccount.learning;
-      if (!client?.play || !prefs || typeof prefs.enabled !== "boolean" || !Number.isSafeInteger(prefs.revision) || prefs.revision < 1) throw Object.assign(Error("\uACC4\uC815\uC758 \uAC8C\uC784 \uC800\uC7A5\uACFC \uD559\uC2B5 \uC124\uC815\uC744 \uB2E4\uC2DC \uD655\uC778\uD574 \uC8FC\uC138\uC694."), { code: "PLAY_NOT_READY" });
+      if (!client?.play || !prefs || typeof prefs.enabled !== "boolean" || !Number.isSafeInteger(prefs.revision) || prefs.revision < 1) throw Object.assign(Error("\uACC4\uC815\uC758 \uAC8C\uC784 \uC800\uC7A5\uC774 \uC544\uC9C1 \uC900\uBE44\uB418\uC9C0 \uC54A\uC558\uC5B4\uC694. \uC7A0\uC2DC \uB4A4 \uB180\uC774\uB97C \uB2E4\uC2DC \uC5F4\uC5B4 \uC8FC\uC138\uC694."), { code: "PLAY_NOT_READY" });
       const check2 = () => {
         guard(expected);
         if (launch !== gameLaunch || owner !== id || gameBinding(currentAccount) !== bound) throw changed();
@@ -20155,7 +20155,7 @@ function createWorldAccount({
       throw error2;
     }
     const id = owner, client = verifiedClient;
-    if (typeof client?.play?.load !== "function" || typeof client?.play?.mutate !== "function") throw Object.assign(Error("\uACC4\uC815\uC758 \uC0DD\uD65C \uD55C\uAD6D\uC5B4 \uC800\uC7A5 \uC5F0\uACB0\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694."), { code: "PLAY_NOT_READY" });
+    if (typeof client?.play?.load !== "function" || typeof client?.play?.mutate !== "function") throw Object.assign(Error("\uACC4\uC815\uC758 \uC0DD\uD65C \uD55C\uAD6D\uC5B4 \uC800\uC7A5\uC774 \uC544\uC9C1 \uC900\uBE44\uB418\uC9C0 \uC54A\uC558\uC5B4\uC694. \uC7A0\uC2DC \uB4A4 \uB2E4\uC2DC \uC5F4\uC5B4 \uC8FC\uC138\uC694."), { code: "PLAY_NOT_READY" });
     const check2 = () => {
       guard(expected);
       if (launch !== lifeLaunch || owner !== id) throw changed();

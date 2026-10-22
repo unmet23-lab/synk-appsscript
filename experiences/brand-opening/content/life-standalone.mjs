@@ -14684,7 +14684,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   function ensureReadable() {
     const s = getProgress().status();
     if (s.phase !== "unreadable") return true;
-    paint(t("life.checkProgress"), `<p class="panel-description">${escape2(tMessage(s.message))}</p><p class="dialog-note">${t("life.checkProgress.note")}</p>`);
+    paint(t("life.checkProgress"), `<p class="panel-description">${escape2(tMessage(s.message))}</p>${s.scoped ? `<p class="dialog-note">${t("life.checkProgress.note")}</p>` : ""}`);
     return false;
   }
   const stateOf = (id) => {
@@ -16787,7 +16787,7 @@ function createWorldEducation({
       return;
     }
     if (applyPreferences() === false) {
-      home.toast("\uB3C4\uC6C0 \uBC29\uC2DD \uC800\uC7A5\uC744 \uB2E4\uC2DC \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+      home.toast("\uB3C4\uC6C0 \uBC29\uC2DD\uC744 \uC800\uC7A5\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC7A0\uC2DC \uB4A4 \uB2E4\uC2DC \uC800\uC7A5\uD574 \uC8FC\uC138\uC694.");
       return;
     }
     return launch(selected);
@@ -16912,7 +16912,7 @@ function createWorldEducation({
           } catch {
           }
           valid();
-          if (applyPreferences({ explicit: true }) === false) throw Error("\uB3C4\uC6C0 \uBC29\uC2DD \uC800\uC7A5\uC744 \uB2E4\uC2DC \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+          if (applyPreferences({ explicit: true }) === false) throw Error("\uB3C4\uC6C0 \uBC29\uC2DD\uC744 \uC800\uC7A5\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC7A0\uC2DC \uB4A4 \uB2E4\uC2DC \uC800\uC7A5\uD574 \uC8FC\uC138\uC694.");
         }
         refresh();
         home.closePanel();

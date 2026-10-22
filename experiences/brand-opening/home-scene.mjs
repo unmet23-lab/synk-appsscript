@@ -56,7 +56,7 @@ export function createHomeScene({container,onAction=()=>{},onStatus=()=>{}}){
     if(disposed)return;
     const scene=await mountLivingHomeScene(canvasHost,{selectedTutor:tutor,slots,dyes,reducedMotion:reduced,quality:container.clientWidth<600?'low':'balanced',signal:abort.signal,onInteract:interact,onError:()=>{showStatus('방을 다시 열어 주세요.',true);onStatus('error');}});
     if(disposed){scene.dispose();return;}engine=scene;engine.setTutor(tutor);engine.setEquipment(slots,dyes);engine.setMemory(memory);engine.setReducedMotion(reduced);engine.setActive(active);anchors();showStatus('');onStatus('ready');
-   }catch(error){if(!disposed){showStatus('방을 불러오지 못했어요. 연결을 확인한 뒤 다시 열어 주세요.',true);onStatus('error');}}
+   }catch(error){if(!disposed){showStatus('방을 불러오지 못했어요. 「방 다시 열기」를 눌러 주세요.',true);onStatus('error');}}
    finally{loading=null;}
   })();return loading;
  }

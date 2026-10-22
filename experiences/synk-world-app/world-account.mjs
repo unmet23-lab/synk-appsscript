@@ -131,7 +131,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   try{
    await verify(expected);guard(expected);if(launch!==gameLaunch)throw changed();
    const id=owner,bound=gameBinding(currentAccount),client=verifiedClient,prefs=currentAccount.learning;
-   if(!client?.play||!prefs||typeof prefs.enabled!=='boolean'||!Number.isSafeInteger(prefs.revision)||prefs.revision<1)throw Object.assign(Error('계정의 게임 저장과 학습 설정을 다시 확인해 주세요.'),{code:'PLAY_NOT_READY'});
+   if(!client?.play||!prefs||typeof prefs.enabled!=='boolean'||!Number.isSafeInteger(prefs.revision)||prefs.revision<1)throw Object.assign(Error('계정의 게임 저장이 아직 준비되지 않았어요. 잠시 뒤 놀이를 다시 열어 주세요.'),{code:'PLAY_NOT_READY'});
    const check=()=>{guard(expected);if(launch!==gameLaunch||owner!==id||gameBinding(currentAccount)!==bound)throw changed();};
    const wrap=port=>port&&Object.freeze(Object.fromEntries(Object.entries(port).filter(([,fn])=>typeof fn==='function').map(([name,fn])=>[name,async(...args)=>{
     check();try{const value=await fn(...args);check();return value;}catch(error){if(expected===epoch&&authErrors.has(error.code)){clear();forgetSession();}throw error;}
@@ -164,7 +164,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   try{await verify(expected);guard(expected);if(launch!==lifeLaunch)throw changed();}
   catch(error){if(expected===epoch&&authErrors.has(error.code)){clear();forgetSession();}throw error;}
   const id=owner,client=verifiedClient;
-  if(typeof client?.play?.load!=='function'||typeof client?.play?.mutate!=='function')throw Object.assign(Error('계정의 생활 한국어 저장 연결을 확인해 주세요.'),{code:'PLAY_NOT_READY'});
+  if(typeof client?.play?.load!=='function'||typeof client?.play?.mutate!=='function')throw Object.assign(Error('계정의 생활 한국어 저장이 아직 준비되지 않았어요. 잠시 뒤 다시 열어 주세요.'),{code:'PLAY_NOT_READY'});
   const check=()=>{guard(expected);if(launch!==lifeLaunch||owner!==id)throw changed();};
   const wrap=fn=>async(...args)=>{check();try{const value=await fn(...args);check();return value;}catch(error){if(expected===epoch&&authErrors.has(error.code)){clear();forgetSession();}throw error;}};
   const port=await createLifeProgressPort({accountId:id,client:{load:wrap(()=>client.play.load()),mutate:wrap(body=>client.play.mutate(body))},guard:check,storage:cache,target,onStatus,

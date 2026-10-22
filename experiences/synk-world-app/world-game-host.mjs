@@ -18,7 +18,7 @@ export function createLocalWorldLearningHost({owner,guard=()=>{},target=globalTh
 export function createWorldGameHost({accountId,revision,connected,play,learning,memory,guard,
  target=globalThis,storage=globalThis.localStorage,onStatus=()=>{},engine=learningBrowser.engine}){
  let disposed=false,installed=false;
- const check=()=>{guard();if(disposed)throw Object.assign(Error('게임 계정 연결이 끝났어요.'),{code:'ACCOUNT_CHANGED'});};
+ const check=()=>{guard();if(disposed)throw Object.assign(Error('이 놀이는 닫혔어요. 놀이를 다시 열어 주세요.'),{code:'ACCOUNT_CHANGED'});};
  const accountKey=connected?accountId:`local:${accountId}`;
  const notify=()=>{try{onStatus(status());}catch{/* Observers cannot change save ownership. */}};
  const playHost=createWorldPlayHost({accountId,client:play,guard:check,storage,locks:target.navigator?.locks,onStatus:()=>notify()});

@@ -133,7 +133,7 @@ test('a failed move keeps the sheet open to retry and records nothing',async()=>
  f.storage.setItem(`synk.account.${ACCOUNT}.r2.hangul-stage.v1`,JSON.stringify({...emptyProgress(),skipped:true}));
  const pending=f.offer.offer({owner:ACCOUNT}),statuses=[];
  assert.equal(await f.offer.choose('move',{owner:ACCOUNT,status:(text,busy)=>statuses.push([text,busy])}),null);
- assert.deepEqual(statuses.at(-1),['옮기지 못했어요. 연결을 확인한 뒤 다시 골라 주세요.',false]);
+ assert.deepEqual(statuses.at(-1),['옮기지 못했어요. 잠시 뒤 「옮기기」를 다시 눌러 주세요.',false]);
  assert.equal(deviceRecordsDecision(f.storage,ACCOUNT),null);assert.ok(f.shown(),'the sheet stays');
  fail=false;assert.equal(await f.offer.choose('move',{owner:ACCOUNT}),'moved');assert.equal(await pending,'moved');
  assert.ok(f.log.includes('toast:이 기기의 학습을 내 계정으로 옮겼어요.'),'the sheet already said the account keeps its own 한글 만나기 progress');
@@ -219,7 +219,7 @@ test('the sheet says moved only after the account confirms; an unconfirmed uploa
  const pending=offer.offer({owner:ACCOUNT}),statuses=[];
  assert.ok(pending);
  assert.equal(await offer.choose('move',{owner:ACCOUNT,status:(text,busy)=>statuses.push([text,busy])}),null,'not confirmed by the server: not moved');
- assert.deepEqual(statuses.at(-1),['옮기지 못했어요. 연결을 확인한 뒤 다시 골라 주세요.',false]);
+ assert.deepEqual(statuses.at(-1),['옮기지 못했어요. 잠시 뒤 「옮기기」를 다시 눌러 주세요.',false]);
  assert.equal(deviceRecordsDecision(storage,ACCOUNT),null);
  confirmed=true;assert.equal(await offer.choose('move',{owner:ACCOUNT}),'moved');assert.equal(await pending,'moved');
  const entry=JSON.parse(storage.getItem(DEVICE_RECORDS_KEY)).accounts[ACCOUNT];

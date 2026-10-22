@@ -1,0 +1,417 @@
+{
+ "//": "WORLD Fable 최종 검수 P2 일곱 처리(10-22, 검수/Fable_WORLD.md) — ① 싱크타운 시트·표의 「학원」을 로그인 시트와 같은 「반」으로 ② 입장 준비 실패는 원인을 모르는 갈래라 시트 단추 이름(「다시 불러오기」)으로, 로그인이 끝난 오류만 로그인 안내(tutor-selection-sync.mjs 코드 고침은 짝 밖) ③ 옷장 충돌은 대기 상자와 같은 말·같은 단추 이름(「최신 차림 불러오기」), 상자가 보이면 피드백 줄은 비움(wardrobe-studio.mjs 코드 고침은 짝 밖) ④ 「확인해 주세요」로 끝나거나 「연결」이 로그인·저장·불러오기를 뜻하던 오류·상태 글을 원인 + 다음 행동(무엇을 어디서)으로 — 원천이 던지는 글은 표 msg.*의 한국어와 글자까지 같게, 던지는 곳이 없어진 msg.entryAccount는 지우고 msg.entryRetry·msg.gameClosed를 더함(msg.tutorConnect는 home.mjs가 키로 불러 글만 바꿈) ⑦ 게임 계정 띠 영어 짝을 「로그인이 끝났어요」에 맞춤. ⑤⑥ 몽골어 잘림·겹침은 CSS(짝 밖). 몽골어 검문(brand-opening/qa/mn-check-20261022-fable-p2) 뒤 「로그인이 끝났어요」 몽골어를 기존 msg.authEnded·msg.lifeEnded까지 Нэвтрэх хугацаа дууссан으로 맞췄다. Fable 최종 검수(검수/Fable_WORLD_P2.md) 반영: msg.outfitConflict는 옷장 상자와 같은 문장(대기 시트 단추 「최신 차림 불러오기」), 「내 계정 열기」 몽골어는 기존 홈 단추와 같은 Миний бүртгэлийг нээх, 코드 고침(짝 밖)으로 app-shell prepareWorldTutor가 준비 안 됨을 ENTRY_NOT_READY로 던지고 resolve-play 충돌 토스트는 account.conflictNotice. 이 짝 맵의 글 표 칸은 따라가기(9a2d4347b → e0dead54f) 뒤 바탕 판 → 마지막 판의 줄 차이로 다시 뽑았다.",
+ "experiences/brand-opening/world-strings.mjs": [
+  [
+   " 'home.entryError':{ko:'연결을 다시 확인해 주세요.',en:'Please check your connection.',mn:'Холболтоо шалгана уу.'},",
+   " 'home.entryError':{ko:'WORLD를 열지 못했어요. 「다시 불러오기」를 눌러 주세요.',en:'Couldn’t open WORLD. Tap “Load again” to try once more.',mn:'WORLD-ийг нээж чадсангүй. «Дахин ачаалах» дээр дарна уу.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'home.next.connecting':{ko:'내 진도를 연결하고 있어요',en:'Connecting your progress',mn:'Таны явцыг бүртгэлтэй холбож байна'},",
+   " 'home.next.connecting':{ko:'내 진도를 불러오고 있어요',en:'Loading your progress',mn:'Таны явцыг ачаалж байна'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'wardrobe.note':{ko:'계정을 연결하면 가진 옷과 차림이 저장돼요.',en:'Connect an account to save your clothes and outfits.',mn:'Бүртгэлээ холбовол хувцас, хослол тань хадгалагдана.'},",
+   " 'wardrobe.note':{ko:'로그인하면 가진 옷과 차림이 저장돼요.',en:'Sign in to save your clothes and outfits.',mn:'Нэвтэрвэл хувцас, хослол тань хадгалагдана.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'me.guest':{ko:'지금은 계정 없이 둘러보는 중이에요. 계정을 연결하면 진도·차림·놀이 기록이 저장돼요.',en:'You’re looking around without an account. Connect one to save your progress, outfits and game records.',mn:'Та одоо бүртгэлгүйгээр үзэж байна. Бүртгэлээ холбовол явц, хувцас, тоглоомын үр дүн тань хадгалагдана.'},",
+   " 'me.guest':{ko:'지금은 계정 없이 둘러보는 중이에요. 로그인하면 진도·차림·놀이 기록이 저장돼요.',en:'You’re looking around without an account. Sign in to save your progress, outfits and game records.',mn:'Та одоо бүртгэлгүйгээр үзэж байна. Нэвтэрвэл явц, хувцас, тоглоомын үр дүн тань хадгалагдана.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'homeTutor.status':{ko:'연결 상태 보기',en:'See connection status',mn:'Холболтын төлөв харах'},",
+   " 'homeTutor.status':{ko:'내 계정 열기',en:'Open my account',mn:'Миний бүртгэлийг нээх'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'goal.retry':{ko:'저장을 확인한 뒤 다시 시도해 주세요.',en:'Please check that it saved, then try again.',mn:'Хадгалагдсан эсэхийг шалгаад дахин оролдоно уу.'},",
+   " 'goal.retry':{ko:'저장하지 못했어요. 잠시 뒤 다시 저장해 주세요.',en:'Couldn’t save. Please save again in a moment.',mn:'Хадгалж чадсангүй. Түр хүлээгээд дахин хадгална уу.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'life.checkProgress':{ko:'진도를 확인해 주세요',en:'Please check your progress',mn:'Явцаа шалгана уу'},",
+   " 'life.checkProgress':{ko:'생활 한국어를 열지 못했어요',en:'Couldn’t open Everyday Korean',mn:'«Өдөр тутмын солонгос хэл» хичээлийг нээж чадсангүй'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'life.checkProgress.note':{ko:'기록은 지우지 않았어요. 내 계정에서 연결 상태를 확인해 주세요.',en:'Your records weren’t deleted. Please check the connection in your account.',mn:'Мэдээллийг устгаагүй. Бүртгэлийнхээ холболтыг шалгана уу.'},",
+   " 'life.checkProgress.note':{ko:'홈의 「학습 기록 저장 확인하기」에서 이어 갈 기록을 골라 주세요.',en:'Choose which records to continue with from “Check saved learning records” on the home screen.',mn:'Нүүр дэлгэцийн «Сургалтын мэдээллийн хадгалалтыг шалгах» товчийг дарж, аль мэдээллээр үргэлжлүүлэхээ сонгоно уу.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'life.restart':{ko:'진도를 확인한 뒤 다시 시작해 주세요.',en:'Please check your progress and start again.',mn:'Явцаа шалгаад дахин эхлүүлнэ үү.'},",
+   " 'life.restart':{ko:'시작하지 못했어요. 한 번 더 눌러 주세요.',en:'That didn’t start. Please tap it once more.',mn:'Эхлүүлж чадсангүй. Дахин нэг удаа дарна уу.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'account.connected':{ko:'SYNK 계정으로 연결했어요.',en:'Connected with your SYNK account.',mn:'SYNK бүртгэлээр холбогдлоо.'},",
+   " 'account.connected':{ko:'SYNK ID로 로그인했어요.',en:'Signed in with your SYNK ID.',mn:'SYNK ID-гаар нэвтэрлээ.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'account.entryTitle':{ko:'연결을 다시 확인해 주세요',en:'Please check your connection',mn:'Холболтоо шалгана уу'},",
+   " 'account.entryTitle':{ko:'WORLD를 열지 못했어요',en:'Couldn’t open WORLD',mn:'WORLD-ийг нээж чадсангүй'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'account.entryNotice':{ko:'튜터 정보를 불러오지 못했어요',en:'Couldn’t load your tutor information',mn:'Багшийн мэдээллийг ачаалж чадсангүй'},",
+   " 'account.entryNotice':{ko:'튜터와 학습 기록을 불러오지 못했어요',en:'Couldn’t load your tutor and learning records',mn:'Багш болон сургалтын мэдээллийг ачаалж чадсангүй'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'account.entryBody':{ko:'계정과 함께할 튜터를 확인하지 못했어요. 연결을 확인한 뒤 다시 시작해 주세요.',en:'Couldn’t check your account and tutor. Check your connection and start again.',mn:'Бүртгэлтэй холбоотой багшийг шалгаж чадсангүй. Холболтоо шалгаад дахин эхлүүлнэ үү.'},",
+   " 'account.entryBody':{ko:'인터넷이 잠깐 끊겼거나 로그인이 끝났을 수 있어요. 「다시 불러오기」를 눌러 주세요.',en:'Your internet may have dropped for a moment, or you may have been signed out. Tap “Load again” to try once more.',mn:'Интернэт түр тасарсан эсвэл нэвтрэх хугацаа дууссан байж магадгүй. «Дахин ачаалах» дээр дарна уу.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'account.reconnect':{ko:'다시 연결하기',en:'Reconnect',mn:'Дахин холбох'},",
+   " 'account.reconnect':{ko:'다시 불러오기',en:'Load again',mn:'Дахин ачаалах'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'account.recoveryRejected':{ko:'기록 저장을 확인해 주세요',en:'Please check how your records were saved',mn:'Мэдээллийн хадгалалтыг шалгана уу'},",
+   " 'account.recoveryRejected':{ko:'이어 갈 기록을 골라 주세요',en:'Choose which records to continue with',mn:'Аль мэдээллээр үргэлжлүүлэхээ сонгоно уу'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'account.learningNote':{ko:'켠 뒤에 한 첫 문장 놀이 답만 저장해요. 학원 공유와 타운 활동 공유는 내 수업에서 따로 정해요.',en:'Only First Sentences answers given after you turn this on are saved. Academy and Town sharing are set separately in My classes.',mn:'Асаасны дараах «Анхны өгүүлбэр»-ийн хариултыг л хадгална. Сургалтын төв болон Таунтай хуваалцахыг «Миний хичээл» хэсэгт тусад нь тохируулна.'},",
+   " 'account.learningNote':{ko:'켠 뒤에 한 첫 문장 놀이 답만 저장해요. 반에 공유하는 것과 타운 활동 공유는 내 수업에서 따로 정해요.',en:'Only First Sentences answers given after you turn this on are saved. Sharing with your class and Town sharing are set separately in My classes.',mn:'Асаасны дараах «Анхны өгүүлбэр»-ийн хариултыг л хадгална. Ангитайгаа болон Таунтай хуваалцахыг «Миний хичээл» хэсэгт тусад нь тохируулна.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'account.logoutFailed':{ko:'이 화면은 로그아웃했어요. 서버 연결을 다시 확인해 주세요.',en:'This screen is signed out. Please check the server connection.',mn:'Энэ дэлгэцээс гарлаа. Серверийн холболтоо шалгана уу.'},",
+   " 'account.logoutFailed':{ko:'이 화면에서는 로그아웃했어요. 서버에는 알리지 못했어요.',en:'You’re signed out on this screen, but the server couldn’t be told.',mn:'Энэ дэлгэцээс гарлаа, гэхдээ серверт мэдэгдэж чадсангүй.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'account.about2':{ko:'학습 기록과 학원에 보여 줄 타운 활동은 각각 따로 동의해요. 응답 기록은 연습 근거일 뿐, TOPIK 급수나 학습 효과를 판정한 점수가 아니에요.',en:'You agree separately to learning records and to the Town activity shown to your academy. Answer records are only evidence of practice, not a TOPIK level or a score of learning results.',mn:'Сургалтын мэдээлэл болон сургалтын төвд харуулах Тауны үйл ажиллагааг тус тусад нь зөвшөөрнө. Хариултын мэдээлэл бол зөвхөн дасгалын нотолгоо бөгөөд TOPIK-ийн түвшин эсвэл сургалтын үр дүнгийн оноо биш.'},",
+   " 'account.about2':{ko:'학습 기록과 반에 보여 줄 타운 활동은 각각 따로 동의해요. 응답 기록은 연습 근거일 뿐, TOPIK 급수나 학습 효과를 판정한 점수가 아니에요.',en:'You agree separately to learning records and to the Town activity shown to your class. Answer records are only evidence of practice, not a TOPIK level or a score of learning results.',mn:'Сургалтын мэдээлэл болон ангидаа харуулах Тауны үйл ажиллагааг тус тусад нь зөвшөөрнө. Хариултын мэдээлэл бол зөвхөн дасгалын нотолгоо бөгөөд TOPIK-ийн түвшин эсвэл сургалтын үр дүнгийн оноо биш.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'account.gameStopped':{ko:'놀이 연결이 끊겼어요',en:'The game connection dropped',mn:'Тоглоомын холболт тасарлаа'},",
+   " 'account.gameStopped':{ko:'로그인이 끝났어요',en:'You’re signed out',mn:'Нэвтрэх хугацаа дууссан'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'account.gameStoppedNotice':{ko:'놀이 기록 연결이 멈췄어요',en:'The game record connection stopped',mn:'Тоглоомын мэдээллийн холболт зогслоо'},",
+   " 'account.gameStoppedNotice':{ko:'이 계정에 놀이 기록을 저장할 수 없어요',en:'Game records can’t be saved to this account',mn:'Энэ бүртгэлд тоглоомын мэдээллийг хадгалах боломжгүй'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'account.gameStoppedBody':{ko:'내 계정의 연결 상태를 확인한 뒤 다시 들어와 주세요.',en:'Check your account connection, then come back in.',mn:'Бүртгэлийнхээ холболтыг шалгаад дахин орно уу.'},",
+   " 'account.gameStoppedBody':{ko:'「내 계정 열기」에서 다시 로그인한 뒤 놀이를 다시 열어 주세요.',en:'Sign in again from “Open my account”, then open the game again.',mn:'«Миний бүртгэлийг нээх» дээр дарж дахин нэвтэрсний дараа тоглоомоо дахин нээнэ үү.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'account.checkMine':{ko:'내 계정 확인하기',en:'Check my account',mn:'Бүртгэлээ шалгах'},",
+   " 'account.checkMine':{ko:'내 계정 열기',en:'Open my account',mn:'Миний бүртгэлийг нээх'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'account.gameCheck':{ko:'놀이 연결을 확인해 주세요',en:'Please check the game connection',mn:'Тоглоомын холболтоо шалгана уу'},",
+   " 'account.gameCheck':{ko:'놀이를 열지 못했어요',en:'Couldn’t open the game',mn:'Тоглоомыг нээж чадсангүй'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'account.gameCheckNotice':{ko:'놀이 기록에 연결하지 못했어요',en:'Couldn’t connect to your game records',mn:'Тоглоомын мэдээлэлд холбогдож чадсангүй'},",
+   " 'account.gameCheckNotice':{ko:'계정의 놀이 기록을 불러오지 못했어요',en:'Couldn’t load the game records in your account',mn:'Бүртгэл дэх тоглоомын мэдээллийг ачаалж чадсангүй'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'records.failed':{ko:'옮기지 못했어요. 연결을 확인한 뒤 다시 골라 주세요.',en:'Couldn’t move it. Check your connection and choose again.',mn:'Шилжүүлж чадсангүй. Холболтоо шалгаад дахин сонгоно уу.'},",
+   " 'records.failed':{ko:'옮기지 못했어요. 잠시 뒤 「옮기기」를 다시 눌러 주세요.',en:'Couldn’t move it. Please tap “Move it” again in a moment.',mn:'Шилжүүлж чадсангүй. Түр хүлээгээд «Шилжүүлэх» дээр дахин дарна уу.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'msg.outfitConflict':{ko:'다른 화면에서 차림이 바뀌었어요. 최신 차림을 확인한 뒤 다시 골라주세요.',en:'Your outfit changed on another screen. Check the latest outfit and choose again.',mn:'Таны хувцас өөр дэлгэц дээр өөрчлөгдсөн. Сүүлийн хувцсаа шалгаад дахин сонгоно уу.'},",
+   " 'msg.outfitConflict':{ko:'다른 화면에서 차림이 바뀌었어요. 「최신 차림 불러오기」를 누른 뒤 다시 입어 주세요.',en:'Your outfit changed on another screen. Tap “Load the latest outfit”, then wear it again.',mn:'Таны хувцас өөр дэлгэц дээр өөрчлөгдсөн байна. «Сүүлийн хувцсыг ачаалах» дээр дараад дахин өмсөнө үү.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'msg.authEnded':{ko:'로그인이 끝났어요. 다시 로그인해 주세요.',en:'You’re signed out. Please sign in again.',mn:'Нэвтрэлт дууссан. Дахин нэвтэрнэ үү.'},",
+   " 'msg.authEnded':{ko:'로그인이 끝났어요. 다시 로그인해 주세요.',en:'You’re signed out. Please sign in again.',mn:'Нэвтрэх хугацаа дууссан. Дахин нэвтэрнэ үү.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'msg.tutorConnect':{ko:'튜터 연결을 다시 확인해 주세요.',en:'Please check the tutor connection.',mn:'Багшийн холболтыг дахин шалгана уу.'},",
+   " 'msg.tutorConnect':{ko:'튜터 고르기를 열지 못했어요. 잠시 뒤 다시 눌러 주세요.',en:'Couldn’t open the tutor choice. Please tap it again in a moment.',mn:'Багш сонгох хэсгийг нээж чадсангүй. Түр хүлээгээд дахин дарна уу.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'msg.helpSaveCheck':{ko:'도움 방식 저장을 다시 확인해 주세요.',en:'Please check that your help style was saved.',mn:'Тусламжийн хэлбэр хадгалагдсан эсэхийг дахин шалгана уу.'},",
+   " 'msg.helpSaveCheck':{ko:'도움 방식을 저장하지 못했어요. 잠시 뒤 다시 저장해 주세요.',en:'Couldn’t save your help style. Please save again in a moment.',mn:'Тусламжийн хэлбэрийг хадгалж чадсангүй. Түр хүлээгээд дахин хадгална уу.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'msg.cafeCheck':{ko:'카페 연결을 확인한 뒤 다시 열어 주세요.',en:'Please check the café connection and open it again.',mn:'Кафены холболтыг шалгаад дахин нээнэ үү.'},",
+   " 'msg.cafeCheck':{ko:'카페를 열지 못했어요. 우리 동네에서 카페를 다시 눌러 주세요.',en:'Couldn’t open the café. Please tap the café in Our town again.',mn:'Кафег нээж чадсангүй. Манай хотхон дахь кафе дээр дахин дарна уу.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'msg.accountProgressDevice':{ko:'계정 진도에 연결하지 못해 이 기기의 기록으로 이어가요.',en:'Couldn’t connect to your account progress, so you’ll continue with this device’s records.',mn:'Бүртгэлд холбогдож чадаагүй тул энэ төхөөрөмжид хадгалсан явцаар үргэлжлүүлнэ.'},",
+   " 'msg.accountProgressDevice':{ko:'계정 진도를 불러오지 못해 이 기기의 기록으로 이어 가요.',en:'Couldn’t load your account progress, so you’ll continue with this device’s records.',mn:'Бүртгэлийн явцыг ачаалж чадаагүй тул энэ төхөөрөмжид хадгалсан явцаар үргэлжлүүлнэ.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'msg.entryTutor':{ko:'계정의 튜터 기록을 확인한 뒤 이어갈 수 있어요.',en:'You can continue once the tutor record in your account is checked.',mn:'Бүртгэлийн багшийн мэдээллийг шалгасны дараа үргэлжлүүлж болно.'},",
+   " 'msg.entryTutor':{ko:'들어가기 전에 고를 것이 있어요. 열린 창에서 골라 주세요.',en:'There’s something to choose before you go in. Choose it in the open panel.',mn:'Орохоос өмнө сонгох зүйл байна. Нээлттэй цонхноос сонгоно уу.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'msg.entryAccount':{ko:'로그인 상태를 확인하지 못했어요. 다시 로그인해 주세요.',en:'Couldn’t check your sign-in. Please sign in again.',mn:'Нэвтрэлтийн төлөвийг шалгаж чадсангүй. Дахин нэвтэрнэ үү.'},",
+   " 'msg.entryRetry':{ko:'WORLD를 열지 못했어요. 「다시 불러오기」를 눌러 주세요.',en:'Couldn’t open WORLD. Tap “Load again” to try once more.',mn:'WORLD-ийг нээж чадсангүй. «Дахин ачаалах» дээр дарна уу.'},\n 'msg.gameClosed':{ko:'이 놀이는 닫혔어요. 놀이를 다시 열어 주세요.',en:'This game was closed. Please open it again.',mn:'Энэ тоглоом хаагдсан. Тоглоомоо дахин нээнэ үү.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'msg.lifeEnded':{ko:'로그인이 끝나 생활 한국어 진도를 저장할 수 없어요.',en:'You’re signed out, so Everyday Korean progress can’t be saved.',mn:'Нэвтрэлт дууссан тул өдөр тутмын солонгос хэлний явцыг хадгалах боломжгүй.'},",
+   " 'msg.lifeEnded':{ko:'로그인이 끝나 생활 한국어 진도를 저장할 수 없어요.',en:'You’re signed out, so Everyday Korean progress can’t be saved.',mn:'Нэвтрэх хугацаа дууссан тул өдөр тутмын солонгос хэлний хичээлийн явцыг хадгалах боломжгүй.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'msg.gameSaveCheck':{ko:'계정의 게임 저장과 학습 설정을 다시 확인해 주세요.',en:'Please check your account’s game saves and learning settings.',mn:'Бүртгэлийн тоглоомын хадгалалт, сургалтын тохиргоог дахин шалгана уу.'},",
+   " 'msg.gameSaveCheck':{ko:'계정의 게임 저장이 아직 준비되지 않았어요. 잠시 뒤 놀이를 다시 열어 주세요.',en:'Game saving isn’t ready on your account yet. Please open the game again in a moment.',mn:'Бүртгэлд тоглоомын мэдээллийг хадгалахад хараахан бэлэн болоогүй байна. Түр хүлээгээд тоглоомоо дахин нээнэ үү.'},",
+   {
+    "n": 1
+   }
+  ],
+  [
+   " 'msg.lifeSaveConnection':{ko:'계정의 생활 한국어 저장 연결을 확인해 주세요.',en:'Please check your account’s Everyday Korean save connection.',mn:'Өдөр тутмын солонгос хэлний явц бүртгэлд хадгалагдаж байгаа эсэхийг шалгана уу.'},",
+   " 'msg.lifeSaveConnection':{ko:'계정의 생활 한국어 저장이 아직 준비되지 않았어요. 잠시 뒤 다시 열어 주세요.',en:'Everyday Korean saving isn’t ready on your account yet. Please open it again in a moment.',mn:'Бүртгэлд өдөр тутмын солонгос хэлний хичээлийн явцыг хадгалахад хараахан бэлэн болоогүй байна. Түр хүлээгээд дахин нээнэ үү.'},",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/synk-world-app/app-shell.mjs": [
+  [
+   "' 학원에 보여 줄 활동은 아래에서 따로 골라요.'",
+   "' 반에 보여 줄 활동은 아래에서 따로 골라요.'",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "' 학원 공유는 소속 반이 연결되면 고를 수 있어요.'",
+   "' 반에 들어가면 반에 공유할지 고를 수 있어요.'",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "> 타운 활동을 학원에 공유하기</span>",
+   "> 타운 활동을 반에 공유하기</span>",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "client.status==='conflict'?'다른 화면에서 바뀐 내용을 확인해 주세요.'",
+   "client.status==='conflict'?'다른 화면에서 차림이 바뀌었어요. 「저장 확인」을 눌러 이어 갈 차림을 골라 주세요.'",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "notice='계정 진도에 연결하지 못해 이 기기의 기록으로 이어가요.';",
+   "notice='계정 진도를 불러오지 못해 이 기기의 기록으로 이어 가요.';",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "<p class=\"panel-description\">연결을 확인한 뒤 다시 열어 주세요.</p><div class=\"world-actions\"><button class=\"felt-button\" data-world=\"wardrobe\">다시 열기</button>",
+   "<p class=\"panel-description\">인터넷이 잠깐 끊겼을 수 있어요. 「다시 열기」를 눌러 주세요.</p><div class=\"world-actions\"><button class=\"felt-button\" data-world=\"wardrobe\">다시 열기</button>",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "throw Error('도움 방식 저장을 다시 확인해 주세요.');",
+   "throw Error('도움 방식을 저장하지 못했어요. 잠시 뒤 다시 저장해 주세요.');",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "home.toast('카페 연결을 확인한 뒤 다시 열어 주세요.')",
+   "home.toast('카페를 열지 못했어요. 우리 동네에서 카페를 다시 눌러 주세요.')",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/synk-world-app/world-learning-ui.mjs": [
+  [
+   "'도움 방식 저장을 다시 확인해 주세요.'",
+   "'도움 방식을 저장하지 못했어요. 잠시 뒤 다시 저장해 주세요.'",
+   {
+    "n": 2
+   }
+  ]
+ ],
+ "experiences/synk-world-app/world-account.mjs": [
+  [
+   "Error('계정의 게임 저장과 학습 설정을 다시 확인해 주세요.')",
+   "Error('계정의 게임 저장이 아직 준비되지 않았어요. 잠시 뒤 놀이를 다시 열어 주세요.')",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "Error('계정의 생활 한국어 저장 연결을 확인해 주세요.')",
+   "Error('계정의 생활 한국어 저장이 아직 준비되지 않았어요. 잠시 뒤 다시 열어 주세요.')",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/synk-world-app/world-game-host.mjs": [
+  [
+   "Error('게임 계정 연결이 끝났어요.')",
+   "Error('이 놀이는 닫혔어요. 놀이를 다시 열어 주세요.')",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/synk-world-app/device-records.mjs": [
+  [
+   "failed:'옮기지 못했어요. 연결을 확인한 뒤 다시 골라 주세요.'",
+   "failed:'옮기지 못했어요. 잠시 뒤 「옮기기」를 다시 눌러 주세요.'",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/synk-world-app/qa/device-records.test.mjs": [
+  [
+   "['옮기지 못했어요. 연결을 확인한 뒤 다시 골라 주세요.',false]",
+   "['옮기지 못했어요. 잠시 뒤 「옮기기」를 다시 눌러 주세요.',false]",
+   {
+    "n": 2
+   }
+  ]
+ ],
+ "experiences/synk-world-home/wardrobe-studio.mjs": [
+  [
+   "message=requestConfirmed?label:'저장은 됐지만 다른 화면에서 차림 목록이 다시 바뀌었어요. 최신 목록을 확인해 주세요.';",
+   "message=requestConfirmed?label:'저장은 됐지만 그사이 다른 화면에서도 차림 목록을 바꿨어요. 지금 보이는 목록이 저장된 목록이에요.';",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "message='저장한 차림이 바뀌었어요. 바뀔 내용을 다시 확인해 주세요.';",
+   "message='그사이 저장한 차림이 바뀌었어요. 「바뀔 내용 보기」를 다시 눌러 주세요.';",
+   {
+    "n": 1
+   }
+  ],
+  [
+   "message='다른 변경이 있어 바로 되돌릴 수 없어요. 최신 차림을 먼저 확인해 주세요.';",
+   "message='그사이 차림이 또 바뀌어 바로 되돌릴 수 없어요. 목록에서 차림을 직접 고쳐 주세요.';",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/korean-runner/listening-check-ui.mjs": [
+  [
+   "status('이 목표에 맞는 문항을 준비하지 못했어요. WORLD에서 학습 목표를 다시 확인해 주세요.');",
+   "status('이 목표에 맞는 듣기 문항을 준비하지 못했어요. WORLD 홈의 「학습 목표 · 도움 방식」에서 목표를 바꿔 볼 수 있어요.');",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/brand-opening/home-scene.mjs": [
+  [
+   "showStatus('방을 불러오지 못했어요. 연결을 확인한 뒤 다시 열어 주세요.',true)",
+   "showStatus('방을 불러오지 못했어요. 「방 다시 열기」를 눌러 주세요.',true)",
+   {
+    "n": 1
+   }
+  ]
+ ],
+ "experiences/play-common/account-client.mjs": [
+  [
+   "stopped:'Account connection ended.'",
+   "stopped:'You’re signed out. Sign in again on your account page.'",
+   {
+    "n": 1
+   }
+  ]
+ ]
+}

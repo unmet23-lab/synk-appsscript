@@ -10,6 +10,8 @@ const equalLooks=(a,b)=>JSON.stringify((a||[]).map(look=>({id:look.id,name:look.
 // 24 격자 · 1.8 선(굵기는 wardrobe-studio.css). 홈 탭 막대와 같은 옷걸이·책 모양.
 const icon=name=>`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${{hanger:'M12 7.6V7a2.2 2.2 0 1 1 2.2-2.2M12 7.6 3.6 13.4a1.6 1.6 0 0 0 .9 2.9h15a1.6 1.6 0 0 0 .9-2.9z',camera:'M4 8.7A1.7 1.7 0 0 1 5.7 7h2.1l1.5-2.2h5.4L16.2 7h2.1A1.7 1.7 0 0 1 20 8.7v8.8a1.7 1.7 0 0 1-1.7 1.7H5.7A1.7 1.7 0 0 1 4 17.5zM8.6 12.9a3.4 3.4 0 1 0 6.8 0 3.4 3.4 0 1 0-6.8 0',book:'M12 6.5C10.2 5 7.6 4.6 4 5v13c3.6-.4 6.2 0 8 1.5 1.8-1.5 4.4-1.9 8-1.5V5c-3.6-.4-6.2 0-8 1.5zM12 6.5v13',turn:'M4.4 12.6c.9 3.1 3.9 5.4 7.6 5.4 3.4 0 6.2-1.9 7.3-4.6M19.6 11.4C18.7 8.3 15.7 6 12 6 8.6 6 5.8 7.9 4.7 10.6M2.9 9.2l1.8 1.6 1.6-1.9M21.1 14.8l-1.8-1.6-1.6 1.9',check:'m5 12.6 4.4 4.4L19 7.4',close:'m6.6 6.6 10.8 10.8M17.4 6.6 6.6 17.4'}[name]||''}"/></svg>`;
 const button=(action,label,extra='')=>`<button type="button" class="atelier-soft" data-studio="${action}" ${extra}>${label}</button>`;
+// 차림 저장이 다른 화면의 변경과 부딪혔을 때: 대기 상자와 피드백 줄이 같은 말·같은 단추 이름을 쓴다(상자가 보이면 피드백 줄은 비운다).
+const CONFLICT='다른 화면에서 차림이 바뀌었어요. 「최신 차림 불러오기」를 누른 뒤 다시 입어 주세요.';
 const slotLabel=slot=>slot==='body'?'옷':'목도리';
 const shortDate=value=>new Date(value).toLocaleDateString('ko-KR',{month:'long',day:'numeric',timeZone:'Asia/Seoul'});
 const GRAPHICS_REVISION='costume-workbench-v7';
@@ -130,7 +132,7 @@ export function createWardrobeStudio({snapshot,onEquip=async()=>{},onSaveLooks=a
     root.dataset.outfit=comparing?'compare':same?'worn':available?'draft':'locked';
     $('.atelier-outfit-state').textContent=comparing?'입은 차림을 보는 중':same?'지금 입고 있는 차림':available?'미리 입어 보는 차림':'아직 없는 옷을 입어 보는 중';
     $('.atelier-sync-note').textContent=(preview?'브라우저 미리보기 · ':serverStatus==='offline'?'연결을 기다려요 · ':pending?'저장 요청이 남아 있어요 · ':serverBusy?'저장 상태를 확인하는 중 · ':'')+(store.status.mode==='device'?'고르던 차림은 이 기기에 남아요':'고르던 차림은 창을 닫으면 사라져요');
-    $('.atelier-feedback').textContent=missingEditingLook?'고치던 차림이 다른 화면에서 지워졌어요. 입어 보던 옷과 이름은 남아 있어요. 「새 차림으로 저장하기」로 새로 저장할 수 있어요.':message;$('.atelier-look-count').textContent=`${looks().length} / 12`;$('.atelier-undo-save').hidden=!undoLooks;$('.atelier-undo-photo').hidden=!undoPhoto;
+    $('.atelier-feedback').textContent=missingEditingLook?'고치던 차림이 다른 화면에서 지워졌어요. 입어 보던 옷과 이름은 남아 있어요. 「새 차림으로 저장하기」로 새로 저장할 수 있어요.':pending&&serverStatus==='conflict'&&message===CONFLICT?'':message;$('.atelier-look-count').textContent=`${looks().length} / 12`;$('.atelier-undo-save').hidden=!undoLooks;$('.atelier-undo-photo').hidden=!undoPhoto;
     $('[data-studio="undo"]').disabled=!history.canUndo; $('[data-studio="redo"]').disabled=!history.canRedo;
     $('[data-studio="save-look"]').disabled=busy()||!available||missingEditingLook;$('[data-studio="save-look"]').textContent=editingLook?'이름·차림 고치기':'지금 차림 저장하기';editorSummary.textContent=editingLook?`${looks().find(look=>look.id===editingLook)?.name||'고른 차림'} · 이름·차림 고치기`:'지금 차림 저장하기';
     $('[data-studio="capture"]').disabled=!engine||!!fault||localBusy;$('[data-studio="capture-save"]').disabled=!engine||!!fault||localBusy;
@@ -139,7 +141,7 @@ export function createWardrobeStudio({snapshot,onEquip=async()=>{},onSaveLooks=a
     $$('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===ws.viewFilter)));$$('[data-category]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.category===ws.category)));
     $('[data-studio="owned"]').setAttribute('aria-pressed',String(ws.ownedOnly));
     $$('[data-filter-kind]').forEach(b=>b.setAttribute('aria-pressed',String(ws.filter[b.dataset.filterKind].includes(b.dataset.filterId))));
-    const holder=$('.atelier-pending');holder.hidden=!pending;if(pending){holder.innerHTML=`<p>${serverStatus==='conflict'?'다른 화면에서 차림이 바뀌었어요. 「계정의 최신 기록 보기」를 누른 뒤 다시 입어 주세요.':'아직 저장하지 못했어요. 고른 차림은 그대로예요.'}</p><div>${serverStatus==='conflict'?'':button('retry','같은 요청 다시 저장하기')}${button('discard','계정의 최신 기록 보기')}</div>`;holder.querySelectorAll('button').forEach(b=>b.disabled=localBusy||serverBusy);}
+    const holder=$('.atelier-pending');holder.hidden=!pending;if(pending){holder.innerHTML=`<p>${serverStatus==='conflict'?CONFLICT:'아직 저장하지 못했어요. 고른 차림은 그대로예요.'}</p><div>${serverStatus==='conflict'?'':button('retry','같은 요청 다시 저장하기')}${button('discard','최신 차림 불러오기')}</div>`;holder.querySelectorAll('button').forEach(b=>b.disabled=localBusy||serverBusy);}
     renderDetails();setDefaults();
   }
   function itemCard(item){
@@ -190,7 +192,7 @@ export function createWardrobeStudio({snapshot,onEquip=async()=>{},onSaveLooks=a
     if(disposed||localBusy||serverBusy||(pending&&!recovery))return;localBusy=true;message='';renderChrome();
     const completion=onSuccess||(recovery?serverCompletion:null);if(onSuccess)serverCompletion=onSuccess;
     try{const result=await action();if(disposed)return;if(result?.accountId)adopt(result);if(!disposed&&result&&completion&&serverCompletion===completion){serverCompletion=null;completion(result);}return result;}
-    catch(error){if(!pending)serverCompletion=null;if(!disposed)message={NETWORK_UNAVAILABLE:'인터넷 연결이 끊겼어요. 고른 차림은 남아 있으니 연결되면 다시 저장해 주세요.',REVISION_CONFLICT:'다른 화면에서 차림이 바뀌었어요. 옷장을 다시 열어 최신 차림에서 골라 주세요.',ITEM_NOT_OWNED:'아직 없는 옷은 입거나 저장할 수 없어요.',INVALID_DYES:'색을 다시 골라 주세요.',INVALID_LOOKS:'차림 이름을 고친 뒤 다시 저장해 주세요.',AUTH_REQUIRED:'로그인이 끝났어요. 다시 로그인해 주세요.'}[error.code]||error.message||'완료하지 못했어요. 다시 시도해 주세요.';}
+    catch(error){if(!pending)serverCompletion=null;if(!disposed)message={NETWORK_UNAVAILABLE:'인터넷 연결이 끊겼어요. 고른 차림은 남아 있으니 연결되면 다시 저장해 주세요.',REVISION_CONFLICT:CONFLICT,ITEM_NOT_OWNED:'아직 없는 옷은 입거나 저장할 수 없어요.',INVALID_DYES:'색을 다시 골라 주세요.',INVALID_LOOKS:'차림 이름을 고친 뒤 다시 저장해 주세요.',AUTH_REQUIRED:'로그인이 끝났어요. 다시 로그인해 주세요.'}[error.code]||error.message||'완료하지 못했어요. 다시 시도해 주세요.';}
     finally{localBusy=false;if(!disposed){render();remember();}}
   }
   function adopt(next,{busy:isBusy=false,pending:nextPending=null,status='ready'}={}){
@@ -207,7 +209,7 @@ export function createWardrobeStudio({snapshot,onEquip=async()=>{},onSaveLooks=a
   }
   async function saveLooks(next,label,{keepUndo=true,onSaved}={}){
     if(busy())return;const previous=clone(looks()),revision=snap?.revision,formVersion=lookFormVersion,formTarget=editingLook,formName=$('.atelier-name').value,formDraft=clone(draft);
-    return run(()=>onSaveLooks(next),{onSuccess:result=>{const requestConfirmed=equalLooks(result.looks,next);undoLooks=keepUndo&&requestConfirmed?{looks:previous,revision:result?.revision??revision}:null;message=requestConfirmed?label:'저장은 됐지만 다른 화면에서 차림 목록이 다시 바뀌었어요. 최신 목록을 확인해 주세요.';if(requestConfirmed&&lookFormVersion===formVersion&&editingLook===formTarget&&$('.atelier-name').value===formName&&equal(draft,formDraft)){editingLook='';missingEditingLook=false;}if(requestConfirmed)onSaved?.(result);}});
+    return run(()=>onSaveLooks(next),{onSuccess:result=>{const requestConfirmed=equalLooks(result.looks,next);undoLooks=keepUndo&&requestConfirmed?{looks:previous,revision:result?.revision??revision}:null;message=requestConfirmed?label:'저장은 됐지만 그사이 다른 화면에서도 차림 목록을 바꿨어요. 지금 보이는 목록이 저장된 목록이에요.';if(requestConfirmed&&lookFormVersion===formVersion&&editingLook===formTarget&&$('.atelier-name').value===formName&&equal(draft,formDraft)){editingLook='';missingEditingLook=false;}if(requestConfirmed)onSaved?.(result);}});
   }
   async function saveLook({replace=false}={}){
     if(busy()||!ownsEdit(draft)||missingEditingLook)return;
@@ -230,7 +232,7 @@ export function createWardrobeStudio({snapshot,onEquip=async()=>{},onSaveLooks=a
   }
   async function applyBatch(){
     const edit=normalizeEditState(JSON.parse($('.atelier-batch-confirm').dataset.edit)),slot=$('.atelier-batch-confirm').dataset.slot;
-    if(!owns(edit.slots[slot])){message='아직 없는 옷은 저장한 차림에 넣을 수 없어요.';renderChrome();return;}if(String(snap?.revision)!==$('.atelier-batch-confirm').dataset.revision){message='저장한 차림이 바뀌었어요. 바뀔 내용을 다시 확인해 주세요.';renderChrome();return;}const ids=new Set(JSON.parse($('.atelier-batch-confirm').dataset.ids));const next=looks().map(l=>{if(!ids.has(l.id))return l;const dyes=clone(l.dyes||{});if(edit.dyes[slot])dyes[slot]=clone(edit.dyes[slot]);else delete dyes[slot];return {...l,slots:{...l.slots,[slot]:edit.slots[slot]},dyes};});
+    if(!owns(edit.slots[slot])){message='아직 없는 옷은 저장한 차림에 넣을 수 없어요.';renderChrome();return;}if(String(snap?.revision)!==$('.atelier-batch-confirm').dataset.revision){message='그사이 저장한 차림이 바뀌었어요. 「바뀔 내용 보기」를 다시 눌러 주세요.';renderChrome();return;}const ids=new Set(JSON.parse($('.atelier-batch-confirm').dataset.ids));const next=looks().map(l=>{if(!ids.has(l.id))return l;const dyes=clone(l.dyes||{});if(edit.dyes[slot])dyes[slot]=clone(edit.dyes[slot]);else delete dyes[slot];return {...l,slots:{...l.slots,[slot]:edit.slots[slot]},dyes};});
     await saveLooks(next,'고른 차림에 같은 옷을 넣었어요. 되돌릴 수 있어요.',{onSaved:()=>{$('.atelier-batch-confirm').hidden=true;}});
   }
   function photoUrl(record){if(!urls.has(record.id))urls.set(record.id,URL.createObjectURL(record.blob));return urls.get(record.id);}
@@ -349,7 +351,7 @@ export function createWardrobeStudio({snapshot,onEquip=async()=>{},onSaveLooks=a
     else if(action==='retry')await run(onRetry,{recovery:true});
     else if(action==='discard'){serverCompletion=null;await run(async()=>{const result=await onDiscard();if(!disposed)message='최신 차림을 불러왔어요. 입어 보던 차림은 남아 있어요.';return result;},{recovery:true});}
     else if(action==='retry-stage')await mountStage();
-    else if(action==='undo-save'){if(undoLooks&&snap?.revision!==undoLooks.revision){message='다른 변경이 있어 바로 되돌릴 수 없어요. 최신 차림을 먼저 확인해 주세요.';renderChrome();}else if(undoLooks){const previous=undoLooks;const result=await saveLooks(previous.looks,'마지막 차림 변경을 되돌렸어요.',{keepUndo:false});if(result)undoLooks=null;renderChrome();}}
+    else if(action==='undo-save'){if(undoLooks&&snap?.revision!==undoLooks.revision){message='그사이 차림이 또 바뀌어 바로 되돌릴 수 없어요. 목록에서 차림을 직접 고쳐 주세요.';renderChrome();}else if(undoLooks){const previous=undoLooks;const result=await saveLooks(previous.looks,'마지막 차림 변경을 되돌렸어요.',{keepUndo:false});if(result)undoLooks=null;renderChrome();}}
     else if(action==='undo-photo'){if(undoPhoto){const record=undoPhoto,result=await album.add(record.blob,record);if(result.ok)undoPhoto=null;message=result.ok?'지운 사진을 되돌렸어요.':result.message;await refreshAlbum();renderChrome();}}
     else if(action==='create-group'){const name=$('[data-field="group-name"]').value.trim();if(name&&ws.groups.length<16){ws.groups.push({id:crypto.randomUUID(),name,icon:$('[data-field="group-icon"]').value,itemIds:[]});$('[data-field="group-name"]').value='';renderGroups();renderItems();remember();}}
     else if(action==='prepare-batch')prepareBatch();

@@ -208,7 +208,7 @@ export function saveDeviceRecordsDecision(storage,accountId,decision,at=Date.now
 export const DEVICE_RECORDS_TEXT=Object.freeze({
  title:'이 기기의 학습 옮기기',lead:'이 기기에서 한 학습을 이 계정으로 옮길까요?',move:'옮기기',keep:'이 기기에만 두기',
  snapshot:'계정 기록은 덮지 않아요',snapshotBody:'계정에 이미 있는 기록은 그대로 두고, 계정에 없는 것만 더해요. 이 기기의 기록은 지우지 않아요.',
- moving:'계정으로 옮기고 있어요.',failed:'옮기지 못했어요. 연결을 확인한 뒤 다시 골라 주세요.',
+ moving:'계정으로 옮기고 있어요.',failed:'옮기지 못했어요. 잠시 뒤 「옮기기」를 다시 눌러 주세요.',
  moved:'이 기기의 학습을 내 계정으로 옮겼어요.',partly:'옮길 수 있는 기록만 내 계정으로 옮겼어요.',kept:'계정은 이 기기의 학습 없이 이어 가요. 이 기기의 기록은 그대로 남아 있어요.',
  pendingKept:'옮기던 기록 일부는 이미 내 계정에 더했어요. 다음에 저장할 때 함께 저장돼요. 나머지는 이 기기에만 둬요.',
  hangulRow:'한글 만나기',answerRow:'처음 고른 답',answerNew:'한글을 아직 못 읽어요',answerReads:'한글을 읽을 수 있어요',

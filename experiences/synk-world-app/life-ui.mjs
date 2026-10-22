@@ -186,7 +186,8 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   const top=(content.querySelector('.life-session-meta')||content).getBoundingClientRect().bottom;
   content.scrollTop+=Math.max(0,Math.min(need,box.top-top-10));
  }
- function ensureReadable(){const s=getProgress().status();if(s.phase!=='unreadable')return true;paint(t('life.checkProgress'),`<p class="panel-description">${escape(tMessage(s.message))}</p><p class="dialog-note">${t('life.checkProgress.note')}</p>`);return false;}
+ // 'unreadable'은 이 기기에 남은 진도·복구 기록을 못 읽은 것이라 기다려도 같다. 계정이면 홈의 복구 단추(이어 갈 기록 고르기)로 보내고, 손님은 고를 곳이 없어 사실만 둔다.
+ function ensureReadable(){const s=getProgress().status();if(s.phase!=='unreadable')return true;paint(t('life.checkProgress'),`<p class="panel-description">${escape(tMessage(s.message))}</p>${s.scoped?`<p class="dialog-note">${t('life.checkProgress.note')}</p>`:''}`);return false;}
  const stateOf=id=>{const status=getProgress().lessonState(id).status;return status==='completed'?'completed':status==='started'?'started':'new';};
  const packDone=pack=>pack.lessons.filter(l=>getProgress().lessonState(l.id).status==='completed').length;
  // 허브의 팩 카드: 어두운 카드 + 흰 인화지 + 큰 한 낱말 + 1px 진행선. 시작 전에는 진행선 대신 레슨 수만.

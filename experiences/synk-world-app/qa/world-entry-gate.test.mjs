@@ -64,6 +64,29 @@ test('conflicted or unreadable tutor records keep home closed for explicit recov
  await f.gate.start();assert.equal(f.gate.state().phase,'error');assert.equal(f.choices.length,0);assert.equal(f.entries.length,0);
 });
 
+// 입장 준비 실패의 상태 줄(10-22 Fable P2): 원인을 모르는 오류는 함께 뜨는 복구 창의 단추 이름으로, 로그인이 끝난 오류만 로그인 안내로,
+// 고를 창이 열린 채 멈춘 경우는 그 창으로 안내한다. 세 글 모두 번역 표의 msg 줄과 글자까지 같아야 영어·몽골어 화면에서 바뀐다.
+test('entry failures name the next step and every status line has a translated msg row',async()=>{
+ const {default:STRINGS}=await import('../../brand-opening/world-strings.mjs');
+ const messages=[];
+ const run=async options=>{
+  const gate=createWorldEntryGate({restore:()=>Promise.resolve(),prepare:()=>Promise.resolve(true),read:()=>({owner:'account-a',generation:1,tutor:'mongle'}),choose:()=>{},
+   onState:value=>{if(value.phase==='error')messages.push(value.message);},...options});
+  await gate.start();return messages.at(-1);
+ };
+ const offline=await run({restore:()=>Promise.reject(Object.assign(Error('offline'),{code:'NETWORK_UNAVAILABLE'}))});
+ const signedOut=await run({restore:()=>Promise.reject(Object.assign(Error('401'),{code:'AUTH_REQUIRED'}))});
+ const blocked=await run({prepare:()=>Promise.resolve(false)});
+ assert.equal(offline,'WORLD를 열지 못했어요. 「다시 불러오기」를 눌러 주세요.');
+ assert.equal(signedOut,'로그인이 끝났어요. 다시 로그인해 주세요.');
+ assert.equal(blocked,'들어가기 전에 고를 것이 있어요. 열린 창에서 골라 주세요.');
+ assert.equal(STRINGS['account.reconnect'].ko,'다시 불러오기','상태 줄이 부르는 단추 이름이 복구 창의 단추와 같다');
+ for(const text of [offline,signedOut,blocked]){
+  const row=Object.entries(STRINGS).find(([key,entry])=>key.startsWith('msg.')&&entry.ko===text);
+  assert.ok(row,`msg 줄 없음: ${text}`);assert.ok(row[1].en&&row[1].mn,`번역 없음: ${row[0]}`);
+ }
+});
+
 test('newer entry requests supersede older restores without duplicate selection',async()=>{
  const slow=deferred();let reads=0;const f=fixture({restore:()=>++reads===1?slow.promise:Promise.resolve()});
  const first=f.gate.start();await f.gate.start();slow.resolve();await first;

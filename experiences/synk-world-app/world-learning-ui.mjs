@@ -217,7 +217,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   try{await target.SYNKLearningHost?.ready?.();}catch{/* the launcher reports account problems */}
   check();const plan=refresh(),selected=plan?.selected;
   if(!selected){home.toast(plan?.reason||'지금 조건에 맞는 연습이 없어요. 학습 목표에서 시간과 소리를 바꿔 보세요.');return;}
-  if(applyPreferences()===false){home.toast('도움 방식 저장을 다시 확인해 주세요.');return;}
+  if(applyPreferences()===false){home.toast('도움 방식을 저장하지 못했어요. 잠시 뒤 다시 저장해 주세요.');return;}
   return launch(selected);
  }
  // 고른 활동 열기: 게임·복습·레슨, 짧은 연습(그 항목), 짧은 진단(내 위치에서 바로 시작), 시험 형식 연습, 쓰기·말하기 연습(호스트가 연다).
@@ -295,7 +295,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   form.addEventListener('change',event=>{if(['reason','examType','examMonth'].includes(event.target?.name))sync();});sync();
   const valid=()=>{check();if(progress!==getProgress()||!form.isConnected)throw Error('설정을 다시 열어 주세요.');};
   // after: 저장한 뒤 갈 곳(주소로 연 창의 「저장하고 시작하기」만 넘긴다). 없으면 처음 실행은 다음 연습, 그 밖에는 저장 알림.
-  const run=async(operation,after=null)=>{if(busy)return;busy=true;form.querySelectorAll('button').forEach(b=>b.disabled=true);try{valid();operation();boardExam=null;revision=progress.learningProfile().profile.revision;await progress.flush();valid();if(progress.learningProfile().profile.status!=='skipped'){await prepare();valid();try{await target.SYNKLearningHost?.ready?.();}catch{/* the save still goes to this device */}valid();if(applyPreferences({explicit:true})===false)throw Error('도움 방식 저장을 다시 확인해 주세요.');}refresh();home.closePanel();if(after)await after();else if(continueAfter)await next();else home.toast(t('goal.saved'));}catch(error){if(form.isConnected)status.textContent=tMessage(error.message)||t('goal.retry');}finally{busy=false;if(form.isConnected)form.querySelectorAll('button').forEach(b=>b.disabled=false);}};
+  const run=async(operation,after=null)=>{if(busy)return;busy=true;form.querySelectorAll('button').forEach(b=>b.disabled=true);try{valid();operation();boardExam=null;revision=progress.learningProfile().profile.revision;await progress.flush();valid();if(progress.learningProfile().profile.status!=='skipped'){await prepare();valid();try{await target.SYNKLearningHost?.ready?.();}catch{/* the save still goes to this device */}valid();if(applyPreferences({explicit:true})===false)throw Error('도움 방식을 저장하지 못했어요. 잠시 뒤 다시 저장해 주세요.');}refresh();home.closePanel();if(after)await after();else if(continueAfter)await next();else home.toast(t('goal.saved'));}catch(error){if(form.isConnected)status.textContent=tMessage(error.message)||t('goal.retry');}finally{busy=false;if(form.isConnected)form.querySelectorAll('button').forEach(b=>b.disabled=false);}};
   // 고른 시험 정보: 시험을 고르지 않았으면 모두 지운다(다른 이유로 바꾸면 시험 계획도 끝난다). 날은 그 달에 있는 날만.
   const examValues=reason=>{
    if(reason!=='exam'||!exam)return {examType:null,targetGrade:null,examDate:null,examMode:null,weeklyMinutes:null};

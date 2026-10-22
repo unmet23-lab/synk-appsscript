@@ -1,6 +1,8 @@
 import {readTutorChoice,saveTutorChoice} from '../brand-opening/tutor-choice.mjs';
 
 const error=(code,message)=>Object.assign(new Error(message),{code});
+// 로그인이 끝났다는 뜻의 계정 오류(world-account.mjs authErrors 가운데 세션이 끝난 것).
+const SIGNED_OUT=new Set(['AUTH_REQUIRED','AUTH_SESSION_MISSING','SESSION_REVOKED','UNAUTHORIZED']);
 // The selected companion shares the curriculum's existing account record and
 // writer. Old clients preserve this optional field; a new Play key would make
 // their strict account-state reader reject all progress.
@@ -57,7 +59,7 @@ export function createWorldEntryGate({restore,prepare,read,choose,offer=null,onS
    for(;;){
     const before=read(),ready=await prepare();if(ticket!==revision)return false;
     value=read();if(identity(before)!==identity(value))continue;
-    if(!ready){state('error',{message:'계정의 튜터 기록을 확인한 뒤 이어갈 수 있어요.'});return false;}
+    if(!ready){state('error',{message:'들어가기 전에 고를 것이 있어요. 열린 창에서 골라 주세요.'});return false;}
     break;
    }
    selectedOwner=identity(value);
@@ -81,7 +83,9 @@ export function createWorldEntryGate({restore,prepare,read,choose,offer=null,onS
    state('choosing');await choose(enter);return phase==='ready';
   }catch(error){
    if(ticket!==revision)return false;
-   state('error',{message:'로그인 상태를 확인하지 못했어요. 다시 로그인해 주세요.'});onError(error);return false;
+   // 입장 준비(되살리기·튜터·진도 읽기)의 모든 오류가 여기로 온다. 원인을 아는 것은 로그인이 끝난 경우뿐이고,
+   // 나머지(인터넷 끊김·서버 오류·이 기기 저장소)는 함께 뜨는 복구 창의 단추 이름으로 안내한다.
+   state('error',{message:SIGNED_OUT.has(error?.code)?'로그인이 끝났어요. 다시 로그인해 주세요.':'WORLD를 열지 못했어요. 「다시 불러오기」를 눌러 주세요.'});onError(error);return false;
   }
  }
  return Object.freeze({start,invalidate,cancel:()=>invalidate('idle'),state:()=>({phase,identity:selectedOwner})});

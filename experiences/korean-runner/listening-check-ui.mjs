@@ -120,7 +120,7 @@ export function mountListeningCheck({ coach, beforeOpen, onClose = () => {}, onF
       check ||= createListeningCheck(coach);
       round = createListeningCheckRound(coach); index = 0;
       const plan = round.next();
-      if (plan.status !== 'ready') { $('check-choices').replaceChildren(); $('check-feedback').textContent = ''; $('check-plan').textContent = ''; $('check-count').textContent = ''; $('check-next').hidden = true; $('check-replay').hidden = true; status('이 목표에 맞는 문항을 준비하지 못했어요. WORLD에서 학습 목표를 다시 확인해 주세요.'); dialog.showModal(); return; }
+      if (plan.status !== 'ready') { $('check-choices').replaceChildren(); $('check-feedback').textContent = ''; $('check-plan').textContent = ''; $('check-count').textContent = ''; $('check-next').hidden = true; $('check-replay').hidden = true; status('이 목표에 맞는 듣기 문항을 준비하지 못했어요. WORLD 홈의 「학습 목표 · 도움 방식」에서 목표를 바꿔 볼 수 있어요.'); dialog.showModal(); return; }
       $('check-replay').hidden = false;
       dialog.showModal(); question(plan);
     } catch { close(); }

@@ -85,6 +85,8 @@ svg{width:24px;height:24px;flex-shrink:0}
 /* 추천 이유 한 줄(Core·Vellum이 고른 까닭, 10-20 검수 #6·#17): 튜터 말 아래 작게, 두 줄까지. */
 #home-tutor .home-tutor-context{margin:4px 0 0;font-size:13px;line-height:1.45;font-weight:var(--wt-label);color:var(--w-ink-3);text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 #home-tutor .home-tutor-context:empty{display:none}
+/* 영어·몽골어는 같은 이유 문장이 한국어보다 길어 세 줄까지(10-22 — 몽골어 「…танд тааруулж өгнө.」가 두 줄에서 잘렸다). */
+html[lang=en] #home-tutor .home-tutor-context,html[lang=mn] #home-tutor .home-tutor-context{-webkit-line-clamp:3}
 #home-tutor .game-tutor-help,#home-tutor .home-tutor-action,.home-tutor-choose{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;margin:4px 0 2px;padding:0 22px;border-radius:999px;background:var(--w-ink);color:var(--w-on-ink);font-size:16px;font-weight:var(--wt-strong);letter-spacing:-.01em;box-shadow:inset 0 -2px 0 rgba(0,0,0,.12);transition:transform .12s var(--w-ease),box-shadow .2s var(--w-ease)}
 #home-tutor .home-tutor-action::after,.home-tutor-choose::after{content:'';width:16px;height:16px;background:currentColor;-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
 #home-tutor .home-tutor-action:active,.home-tutor-choose:active{transform:scale(.98)}
@@ -189,7 +191,10 @@ dialog .home-toast{position:sticky;bottom:12px;left:auto;transform:none;margin:1
 .play-list button:not(:first-child) .play-label{color:var(--w-ink-3)}
 .play-list button:not(:first-child) .play-copy strong{font-size:22px;line-height:1.15;font-weight:var(--wt-display);letter-spacing:var(--track-title)}
 .play-list button:not(:first-child) .play-copy small:last-child{color:var(--w-ink-3)}
-.play-list button:not(:first-child) .play-art{top:16px;right:16px;width:70px}
+/* 작은 카드의 그림은 글과 같은 흐름(위·오른쪽)에 둔다 — 몽골어·영어 제목이 두세 줄이 되어도 머리글·제목이 그림 밑에 깔리지 않고 카드가 자란다(10-22). */
+.play-list button:not(:first-child) .play-art{position:relative;top:auto;right:auto;align-self:flex-end;margin:0 0 auto;width:70px}
+/* 큰 카드도 영어·몽골어 제목(Wind Run · Салхин зам)은 그림 모서리에 걸린다 — 한국어가 아니면 그림을 같은 흐름에 두어 제목이 그림 아래로 온다. 자리(위 18 · 오른쪽 20)는 그대로. */
+html:not([lang=ko]) .play-list button:first-child .play-art{position:relative;top:auto;right:auto;align-self:flex-end;margin:2px 4px auto 0}
 .play-list button:nth-child(3) .play-art{transform:rotate(3deg)}
 .play-list button:not(:first-child) .arrow{background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line)}
 .play-list button:not(:first-child):hover{box-shadow:var(--w-card-edge),0 0 0 4px var(--w-line)}

@@ -137,7 +137,7 @@ function renderStatus(){
  else {home.setEquipment({});$('.page-heading h1').textContent='첫 문장 놀이부터 시작해요';$('.hero-copy .felt-button').innerHTML='첫 놀이 시작하기 <span aria-hidden="true">→</span>';}
  }
  if(home.isMaru){home.setEquipment(snap?.avatar?.slots||{},snap?.avatar?.dyes||{});home.updateAccount({snapshot:snap,status:client.status,pending:!!client.pending,busy:client.busy,operating});}
- const status=client.status==='offline'?'연결을 기다리고 있어요. 저장 전 내용은 아직 확정되지 않았어요.':client.status==='conflict'?'다른 화면에서 바뀐 내용을 확인해 주세요.':client.pending?'아직 저장하지 못한 차림이 있어요.':snap?`내 차림과 옷을 ${operating?'SYNK 계정':'로컬 서버'}에서 불러왔어요.`:'로그인하지 않아도 홈을 둘러볼 수 있어요.';
+ const status=client.status==='offline'?'연결을 기다리고 있어요. 저장 전 내용은 아직 확정되지 않았어요.':client.status==='conflict'?'다른 화면에서 차림이 바뀌었어요. 「저장 확인」을 눌러 이어 갈 차림을 골라 주세요.':client.pending?'아직 저장하지 못한 차림이 있어요.':snap?`내 차림과 옷을 ${operating?'SYNK 계정':'로컬 서버'}에서 불러왔어요.`:'로그인하지 않아도 홈을 둘러볼 수 있어요.';
  stateLine.innerHTML=`<span class="status-dot"></span><span>${status}</span>${client.pending?'<button data-world="pending">저장 확인</button>':client.status==='offline'?'<button data-world="refresh">다시 연결</button>':''}`;
  stateLine.dataset.state=client.status;
  document.querySelectorAll('[data-world-submit]').forEach(el=>{el.disabled=client.busy||client.status==='loading';});
@@ -184,7 +184,9 @@ function showEntryRecovery(){
 async function prepareWorldTutor(){
  if(client.snapshot&&tutorReady&&!lifePort)await initializeLife();
  if(!await prepareTutor())return false;
- if(!tutorReady||client.snapshot&&!lifeProgress?.status().scoped){showEntryRecovery();return false;}
+ // 계정 진도를 못 읽었거나 튜터 화면이 준비되지 않았으면 들어가지 않는다 — 오류로 던져 관문이 상태 줄에 「다시 불러오기」를 적고
+ // onError(showEntryRecovery)로 그 창을 띄운다. false는 이어 갈 기록을 고르는 창을 띄운 갈래(prepareTutor)에만 쓴다.
+ if(!tutorReady||client.snapshot&&!lifeProgress?.status().scoped)throw Object.assign(Error('WORLD를 열지 못했어요. 「다시 불러오기」를 눌러 주세요.'),{code:'ENTRY_NOT_READY'});
  return true;
 }
 async function beginAccountLogin(){
@@ -251,7 +253,7 @@ function initializeLife(){
    try{
     port=operating?await account.prepareLifeProgress({storage:localStorage,onStatus}):await createLifeProgressPort({accountId:owner,guard,storage:localStorage,onStatus,client:{load:()=>client.request('life-progress'),mutate:body=>client.request('life-progress',{method:'POST',body})}});
     guard();mode='account';lifePort=port;
-   }catch(error){if(epoch!==lifeEpoch){port?.dispose();return;}notice='계정 진도에 연결하지 못해 이 기기의 기록으로 이어가요.';}
+   }catch(error){if(epoch!==lifeEpoch){port?.dispose();return;}notice='계정 진도를 불러오지 못해 이 기기의 기록으로 이어 가요.';}
   }
   guard();
   const getSaveStatus=()=>lifeSaveStatus(port);
@@ -490,7 +492,7 @@ function townPlacement(){
 async function town(){if(operating){if(!client.snapshot)return signIn();try{let entry=await client.request('town/entry'),opened=false;townEntry=entry;
  // 학습 동기화를 켠 계정은 서버에 모인 첫 답으로 먼저 확인한다(답을 싣지 않는다). 동기화를 끈 계정은 시트에서 알린 뒤 시작 단추로 보낸다.
  if(!entry.allowed&&entry.reason==='learning-check'&&account.supportsTownCheck&&account.preferences()?.enabled===true){try{const checked=await client.request('town/check',{method:'POST',body:{bankHash:worldPosition?.topik?.hash||null,sound:townSound()}});townEntry=checked;opened=checked.allowed===true;if(opened)entry=checked;}catch{/* the sheet still offers the ready check */}}
- if(!entry.allowed){townLocked(townEntry);return;}const state=await client.request('town/state'),binding=state.binding,sharing=binding?.sharing;show('싱크타운',townSheet({chip:{tone:'ok',text:'내 차림 그대로'},lead:TOWN_LEAD,blocks:`${opened?notice('READY','ok','마을이 열렸어요','싱크타운에서 첫 이야기가 기다려요.'):''}${notice('MY TOWN','ok','타운 기록은 SYNK ID에 저장돼요',`다른 기기에서 로그인해도 이어져요.${binding?.kind==='academy'?' 학원에 보여 줄 활동은 아래에서 따로 골라요.':' 학원 공유는 소속 반이 연결되면 고를 수 있어요.'}`)}${binding?.classId?`<label class="world-notice" data-label="SHARING"><span><input type="checkbox" data-town-sharing data-revision="${Number(sharing?.revision)||0}" ${sharing?.enabled?'checked':''} ${sharing?.blockedByLearningSharing?'disabled':''}> 타운 활동을 학원에 공유하기</span><span>${sharing?.blockedByLearningSharing?'학습 공유를 켠 뒤에 타운 공유를 고를 수 있어요.':'켠 뒤에 새로 한 타운 활동만 공유해요. 꺼도 내 기록은 남아요.'}</span></label>`:''}`,actions:'<button class="felt-button" data-world="town-preview">내 차림으로 동네 열기 <span aria-hidden="true">→</span></button>'}),'world-town');}catch(error){home.toast(errorText(error));}return;}show('싱크타운',townSheet({chip:{tone:'info',text:'테스트 계정 미리보기'},lead:TOWN_LEAD,blocks:notice('PREVIEW','info','차림 연결만 확인하는 미리보기예요','실제 타운의 TOPIK 1급+ 조건·이용권·입장 권한은 주지 않아요.'),actions:`<button class="felt-button" data-world="town-preview">${client.snapshot?'내 차림으로 동네 열기':'테스트 계정 연결하기'} <span aria-hidden="true">→</span></button><button class="quiet-button" data-action="hangul">한글부터 배우기</button>`}),'world-town');}
+ if(!entry.allowed){townLocked(townEntry);return;}const state=await client.request('town/state'),binding=state.binding,sharing=binding?.sharing;show('싱크타운',townSheet({chip:{tone:'ok',text:'내 차림 그대로'},lead:TOWN_LEAD,blocks:`${opened?notice('READY','ok','마을이 열렸어요','싱크타운에서 첫 이야기가 기다려요.'):''}${notice('MY TOWN','ok','타운 기록은 SYNK ID에 저장돼요',`다른 기기에서 로그인해도 이어져요.${binding?.kind==='academy'?' 반에 보여 줄 활동은 아래에서 따로 골라요.':' 반에 들어가면 반에 공유할지 고를 수 있어요.'}`)}${binding?.classId?`<label class="world-notice" data-label="SHARING"><span><input type="checkbox" data-town-sharing data-revision="${Number(sharing?.revision)||0}" ${sharing?.enabled?'checked':''} ${sharing?.blockedByLearningSharing?'disabled':''}> 타운 활동을 반에 공유하기</span><span>${sharing?.blockedByLearningSharing?'학습 공유를 켠 뒤에 타운 공유를 고를 수 있어요.':'켠 뒤에 새로 한 타운 활동만 공유해요. 꺼도 내 기록은 남아요.'}</span></label>`:''}`,actions:'<button class="felt-button" data-world="town-preview">내 차림으로 동네 열기 <span aria-hidden="true">→</span></button>'}),'world-town');}catch(error){home.toast(errorText(error));}return;}show('싱크타운',townSheet({chip:{tone:'info',text:'테스트 계정 미리보기'},lead:TOWN_LEAD,blocks:notice('PREVIEW','info','차림 연결만 확인하는 미리보기예요','실제 타운의 TOPIK 1급+ 조건·이용권·입장 권한은 주지 않아요.'),actions:`<button class="felt-button" data-world="town-preview">${client.snapshot?'내 차림으로 동네 열기':'테스트 계정 연결하기'} <span aria-hidden="true">→</span></button><button class="quiet-button" data-action="hangul">한글부터 배우기</button>`}),'world-town');}
 function townPreview(){if(!client.snapshot)return signIn();townSession?.dispose();townSession=operating?createTownWorldHost(client,{placement:townPlacement()}):null;if(townSession)window.SYNKWorldTownHost=townSession;show(operating?'싱크타운':'싱크타운 · 미리보기',`<iframe class="game-frame" title="내 차림으로 걷는 싱크타운" src="${worldUrl('town/day.html')}?play=walk" allow="autoplay; fullscreen" allowfullscreen></iframe>`,'game');}
 // 「이번 주 과제」 자료(tools/build-topik4-homework.mjs가 만든 JSON). 공개본에서도 WORLD 경로 아래에 있다.
 const homeworkJson=name=>fetch(worldUrl(name),{cache:'no-cache',credentials:'omit'}).then(response=>{if(!response.ok)throw Object.assign(Error('과제 자료를 읽지 못했어요.'),{code:'HOMEWORK_CONTENT',status:response.status});return response.json();});
@@ -510,7 +512,7 @@ async function wardrobe(){
  const ticket=gameLaunch,owner=client.snapshot.accountId,generation=client.generation;
  let createWardrobeStudio;
  try{({createWardrobeStudio}=await import('../synk-world-home/wardrobe-studio.mjs'));}
- catch{if(ticket===gameLaunch&&screen==='world-wardrobe')show('옷장을 열지 못했어요','<p class="panel-description">연결을 확인한 뒤 다시 열어 주세요.</p><div class="world-actions"><button class="felt-button" data-world="wardrobe">다시 열기</button></div>','world-wardrobe');return;}
+ catch{if(ticket===gameLaunch&&screen==='world-wardrobe')show('옷장을 열지 못했어요','<p class="panel-description">인터넷이 잠깐 끊겼을 수 있어요. 「다시 열기」를 눌러 주세요.</p><div class="world-actions"><button class="felt-button" data-world="wardrobe">다시 열기</button></div>','world-wardrobe');return;}
  if(ticket!==gameLaunch||screen!=='world-wardrobe'||!worldPanel.open||client.generation!==generation||client.snapshot?.accountId!==owner)return;
  wardrobeStudio=createWardrobeStudio({snapshot:client.snapshot,reducedMotion:home.state.reduced,
   onEquip:(slots,dyes)=>client.equip(slots,dyes),onSaveLooks:looks=>client.saveLooks(looks),
@@ -592,7 +594,7 @@ async function launchGame(id){
   if(ticket!==gameLaunch||!worldPanel.open||home.isMaru&&home.openPanel()!=='world-game-loading'||client.snapshot?.accountId!==accountId){session.dispose();return;}
   if(session.status().play.phase==='conflict'){showGameConflict(id,session);return;}
  }
- if(education?.applyPreferences()===false)throw Error('도움 방식 저장을 다시 확인해 주세요.');
+ if(education?.applyPreferences()===false)throw Error('도움 방식을 저장하지 못했어요. 잠시 뒤 다시 저장해 주세요.');
  // 체험 판의 틀은 메모리 호스트를 받는다: 판이 끝나면 그 게임의 체험을 닫고 추천을 다시 고르며, 결과의 로그인 단추는 계정 연결을 연다.
  if(trial){trialHost=createGuestTrialPlayHost({game:id,onRound:()=>{guestTrials.finish(id);education?.refresh();},signIn:()=>setTimeout(()=>{if(client.snapshot)return;close();signIn(id);},0)});window.SYNKPlayHost=trialHost;}
  show(game.title,`<iframe class="game-frame" title="${game.title}" src="${worldUrl(game.path)}" allow="autoplay; fullscreen" allowfullscreen></iframe>`,'game');
@@ -607,7 +609,7 @@ function playSong(id){const song=learningSongs[id];if(!song)return;show(song.tit
 const commands={
  'life-resolve':resolveLife,'life-recovery':showLifeRecovery,
  'entry-retry':()=>{sessionConfirmed=false;close();return entryGate.start();},'entry-title':()=>{close();return startOpening(true);},
- 'resolve-play':async button=>{const recovery=gameRecovery;if(!recovery||recovery.busy)return;recovery.busy=true;document.querySelectorAll('[data-world="resolve-play"]').forEach(b=>b.disabled=true);try{await recovery.session.resolve(button.dataset.choice);if(gameRecovery===recovery&&screen==='world-game-conflict'&&worldPanel.open&&(!home.isMaru||home.openPanel()==='world-game-conflict'))await launchGame(recovery.id);}catch(error){if(gameRecovery===recovery&&worldPanel.open&&(!home.isMaru||home.openPanel()==='world-game-conflict')){home.toast(errorText(error));recovery.busy=false;document.querySelectorAll('[data-world="resolve-play"]').forEach(b=>b.disabled=false);}}},
+ 'resolve-play':async button=>{const recovery=gameRecovery;if(!recovery||recovery.busy)return;recovery.busy=true;document.querySelectorAll('[data-world="resolve-play"]').forEach(b=>b.disabled=true);try{await recovery.session.resolve(button.dataset.choice);if(gameRecovery===recovery&&screen==='world-game-conflict'&&worldPanel.open&&(!home.isMaru||home.openPanel()==='world-game-conflict'))await launchGame(recovery.id);}catch(error){if(gameRecovery===recovery&&worldPanel.open&&(!home.isMaru||home.openPanel()==='world-game-conflict')){home.toast(error?.code==='REVISION_CONFLICT'?t('account.conflictNotice'):errorText(error));recovery.busy=false;document.querySelectorAll('[data-world="resolve-play"]').forEach(b=>b.disabled=false);}}},
  writing:openWriting,'sign-in':signIn,'account-login':beginAccountLogin,'guest':()=>{try{localStorage.setItem('synk-world-v1-welcomed','1');}catch{}close();if(worldRequested)return entryGate.start();},'login-a':()=>login('player-a'),'login-b':()=>login('player-b'),profile,wardrobe,pending,play,finish,home:()=>{close();home.goTown?.();},town,songs,'town-preview':townPreview,'town-check':()=>education?.townCheck?.(),
  pause:()=>{saveDraft();close();home.toast('고른 답은 그대로 두었어요. 나중에 이어서 해요.');},
  answer:button=>{const q=draftRun.questions[questionIndex];answers=answers.filter(a=>a.questionId!==q.questionId);answers.push({questionId:q.questionId,optionId:button.dataset.option});saveDraft();playSound('select');showQuestion();},
@@ -700,7 +702,7 @@ entryGate=createWorldEntryGate({
   queueMicrotask(()=>{
    if(entryGate.state().phase!=='ready'||identity.owner!==(client.snapshot?.accountId||'guest')||identity.generation!==client.generation)return;
    if(wardrobeRequested){if(client.snapshot)void wardrobe();else signIn();}
-   else if(new URLSearchParams(location.search).get('cafe')==='1')void openLife('cafe').catch(()=>home.toast('카페 연결을 확인한 뒤 다시 열어 주세요.'));
+   else if(new URLSearchParams(location.search).get('cafe')==='1')void openLife('cafe').catch(()=>home.toast('카페를 열지 못했어요. 우리 동네에서 카페를 다시 눌러 주세요.'));
    // 한 번만 도는 바로가기라 계정이 바뀌어 멈춘 것(코드 없는 오류)은 알리지 않는다 — 「다시 시도」할 일이 아니다.
    else if(examRequested)void openExamLink().catch(error=>{if(error?.code)home.toast(errorText(error));});
   });

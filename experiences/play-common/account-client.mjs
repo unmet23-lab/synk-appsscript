@@ -29,7 +29,7 @@ function render(){
     const style=document.createElement('style');style.textContent='.synk-play-account{position:relative;z-index:50;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px 18px;padding:8px 16px;background:#f9f4e9;color:#403e38;border-bottom:1px solid #dacfb9;font:500 12px/1.5 system-ui,sans-serif}.synk-play-account a{font-weight:700;color:#315e55;text-decoration:underline;text-underline-offset:3px;cursor:pointer}.synk-play-account[data-phase="offline"],.synk-play-account[data-phase="conflict"]{background:#fff0d7}.synk-play-account a[hidden]{display:none}';document.head.append(style);
   }
   panel.dataset.phase=current.phase;
-  const english={guest:'Sign in to keep your progress across devices.',synced:'Saved to your SYNK account.',saving:'Saving to your account…',loading:'Loading your account…',offline:'Not saved to your account yet. Retry when connected.',conflict:'Choose which progress to keep on your account page.',stopped:'Account connection ended.'};
+  const english={guest:'Sign in to keep your progress across devices.',synced:'Saved to your SYNK account.',saving:'Saving to your account…',loading:'Loading your account…',offline:'Not saved to your account yet. Retry when connected.',conflict:'Choose which progress to keep on your account page.',stopped:'You’re signed out. Sign in again on your account page.'};
   label.textContent=current.message+' / '+(current.phase==='synced'&&current.rejected?`Saved to your account. ${current.rejected} record${current.rejected===1?'':'s'} couldn’t be saved and stay on this device.`:english[current.phase]||'');
   action.hidden=false;
   if(!host){action.textContent='SYNK ID로 로그인 · Sign in';action.href=loginHref;action.target='_top';action.onclick=null;}
