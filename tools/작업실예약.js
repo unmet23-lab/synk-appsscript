@@ -32,6 +32,7 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { Readable } = require('node:stream');
 const 묶음 = require('./lib/게시묶음.js');
+const 헤르메스 = require('./lib/헤르메스보내기.js');
 
 const ORIGIN = 'https://workspace.synk.im';
 const CREDENTIAL = 'SYNK/SNS/workspace-automation';
@@ -259,12 +260,9 @@ function mergeResults(bundle, rows) {
 }
 
 async function sendTelegram(text) {
-  const file = path.join(os.tmpdir(), `작업실예약-${Date.now()}.txt`);
-  fs.writeFileSync(file, text);
-  try {
-    const r = spawnSync(HERMES, ['send', '-t', TELEGRAM, '-f', file], { encoding: 'utf8', windowsHide: true, timeout: 60000 });
-    if (r.status !== 0) throw new Error('텔레그램 보내기 실패: ' + String(r.stderr || r.stdout || r.status).trim().slice(0, 200));
-  } finally { fs.rmSync(file, { force: true }); }
+  const r = 헤르메스.보내기(HERMES, TELEGRAM, text);
+  if (!r.ok) throw new Error('텔레그램 보내기 실패: ' + r.error);
+  if (r.note) console.error(r.note);
 }
 
 const kst = (iso) => new Date(Date.parse(iso) + 9 * 3600000).toISOString().slice(5, 16).replace('T', ' ');

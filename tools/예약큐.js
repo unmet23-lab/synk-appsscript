@@ -28,7 +28,6 @@
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { spawnSync } = require('node:child_process');
 
 const REPO = path.resolve(__dirname, '..');
 const argValue = (name) => { const i = process.argv.indexOf(name); return i > -1 ? process.argv[i + 1] : null; };
@@ -95,6 +94,7 @@ function checkOf(prep) {
 }
 
 const { handleOf } = require('./lib/게시묶음.js');
+const 헤르메스 = require('./lib/헤르메스보내기.js');
 
 // 판 계정 키(sns-계정.json) → 서버 채널 id들. 핸들이나 유튜브 채널 ID로 맞춘다.
 function channelsFor(account, accounts, server) {
@@ -311,12 +311,9 @@ function alert(report) {
   if (last.key === key) return { sent: false, reason: 'same-today' };
   if (HERMES.startsWith('file:')) fs.appendFileSync(HERMES.slice(5), text + '\n---\n');
   else {
-    const file = path.join(os.tmpdir(), `예약큐-알림-${Date.now()}.txt`);
-    fs.writeFileSync(file, text);
-    try {
-      const r = spawnSync(HERMES, ['send', '-t', TELEGRAM, '-f', file], { encoding: 'utf8', windowsHide: true, timeout: 60000 });
-      if (r.status !== 0) throw new Error('텔레그램 보내기 실패: ' + String(r.stderr || r.stdout || r.status).trim().slice(0, 200));
-    } finally { fs.rmSync(file, { force: true }); }
+    const r = 헤르메스.보내기(HERMES, TELEGRAM, text);
+    if (!r.ok) throw new Error('텔레그램 보내기 실패: ' + r.error);
+    if (r.note) console.error(r.note);
   }
   fs.mkdirSync(STATE_DIR, { recursive: true });
   fs.writeFileSync(stateFile, JSON.stringify({ key, sentAt: new Date().toISOString() }));
