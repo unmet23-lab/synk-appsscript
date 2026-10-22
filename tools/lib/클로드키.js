@@ -17,6 +17,9 @@
  *                       한도USD(그 키로 쓸 추정 비용 합의 상한) · 한도시작(합을 셀 때부터, ISO 날짜) ·
  *                       만료일(YYYY-MM-DD — 그날까지 쓰고 다음 날 0시부터 뺀다). 한도는 이 도구의 사용 기록으로 세므로,
  *                       한도를 건 키는 기록이 남는 보내기·일괄에만 쓰고 키 값을 다른 프로그램에 넘기는 키고르기에는 내주지 않는다.
+ *                       한도를 건 키는 「키」가 아니라 「한도키」 배열에 둔다 — 한도 칸을 모르는 옛 판(10-22 e57d4126b 앞)은
+ *                       「키」만 읽어 그 키를 아예 보지 못한다(한도 없이 쓰지 않는다).
+ *                       {"키":[…],"한도키":[{"이름":"프로모","키파일":"…","갱신일":null,"한도USD":140,"한도시작":"…","만료일":"2026-11-20"}]}
  *   클로드_키상태.json  소진·키오류 표시(이 도구가 씀)
  *   클로드_사용기록.jsonl  호출마다 키 이름·모델·토큰·추정 비용(이 도구가 씀)
  *
@@ -89,8 +92,9 @@ function 목록읽기(목록경로) {
   if (!목록) throw new Error(`키 목록이 없다: ${목록경로}`);
   // 빈 배열은 오류가 아니라 「지금 쓸 크레딧 키 없음」이다(새 조직 키를 넣기 전) — 고르기는 null, 보내기는 키 없음으로 멈춘다.
   if (!Array.isArray(목록.키)) throw new Error('키 목록에 「키」 배열이 없다');
+  if (목록.한도키 != null && !Array.isArray(목록.한도키)) throw new Error('키 목록의 「한도키」는 배열이어야 한다');
   const 이름들 = new Set();
-  return 목록.키.map((항목, i) => {
+  return [...목록.키.map((항목) => [항목, false]), ...(목록.한도키 || []).map((항목) => [항목, true])].map(([항목, 한도칸], i) => {
     if (!항목 || typeof 항목.이름 !== 'string' || !항목.이름.trim()) throw new Error(`키 ${i + 1}번에 이름이 없다`);
     if (이름들.has(항목.이름)) throw new Error(`키 이름이 겹친다: ${항목.이름}`);
     이름들.add(항목.이름);
@@ -99,6 +103,8 @@ function 목록읽기(목록경로) {
     if (갱신일 !== null && !(Number.isInteger(갱신일) && 갱신일 >= 1 && 갱신일 <= 31)) throw new Error(`${항목.이름}: 갱신일은 1~31 또는 null`);
     const 한도USD = 항목.한도USD ?? null;
     if (한도USD !== null && !(typeof 한도USD === 'number' && Number.isFinite(한도USD) && 한도USD > 0)) throw new Error(`${항목.이름}: 한도USD는 0보다 큰 수 또는 null`);
+    if (한도칸 && 한도USD === null) throw new Error(`${항목.이름}: 「한도키」 배열의 키에는 한도USD가 있어야 한다`);
+    if (!한도칸 && 한도USD !== null) throw new Error(`${항목.이름}: 한도를 건 키는 「한도키」 배열에 둔다(옛 판이 한도 없이 쓰지 않게)`);
     const 한도시작 = 항목.한도시작 == null ? null : new Date(항목.한도시작);
     if (한도시작 !== null && Number.isNaN(+한도시작)) throw new Error(`${항목.이름}: 한도시작은 날짜(ISO) 또는 null`);
     return { 순번: i, 이름: 항목.이름, 키파일: path.resolve(path.dirname(목록경로), 항목.키파일), 갱신일,

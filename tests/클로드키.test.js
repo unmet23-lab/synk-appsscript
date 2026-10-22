@@ -15,7 +15,8 @@ function 방만들기(키들) {
   for (const [이름, 갱신일, 값, 덧붙임 = {}] of 키들) {
     const 파일 = `${이름}.txt`;
     if (값 !== null) fs.writeFileSync(path.join(방, 파일), 값 + '\r\n');
-    목록.키.push({ 이름, 키파일: 파일, 갱신일, ...덧붙임 });
+    // 한도를 건 키는 「한도키」 배열에 둔다(옛 판이 못 보게).
+    (덧붙임.한도USD != null ? (목록.한도키 ||= []) : 목록.키).push({ 이름, 키파일: 파일, 갱신일, ...덧붙임 });
   }
   fs.writeFileSync(path.join(방, '목록.json'), JSON.stringify(목록));
   return {
@@ -472,9 +473,9 @@ test('한도에 딱 닿은 키는 상태 표에서도 「한도도달」이고, 
   try {
     클로드.기록남기기({ 키이름: '프로모', 추정USD: 0.5 }, { ...t.옵션, 지금 });
     클로드.소진표시('옛것', { ...t.옵션, 지금 });
-    assert.deepEqual(클로드.상태보기({ ...t.옵션, 지금 }).map((k) => [k.이름, k.상태, k.쓰는순서]), [['프로모', '한도도달', null], ['옛것', '만료', null]]);
+    assert.deepEqual(클로드.상태보기({ ...t.옵션, 지금 }).map((k) => [k.이름, k.상태, k.쓰는순서]), [['옛것', '만료', null], ['프로모', '한도도달', null]]);
     const 안됨 = async () => { throw new Error('호출되면 안 됨'); };
-    await assert.rejects(클로드.보내기(본문, { ...t.옵션, fetch: 안됨, 지금 }), (e) => e.뺀키.map((k) => k.이름).join() === '프로모,옛것');
+    await assert.rejects(클로드.보내기(본문, { ...t.옵션, fetch: 안됨, 지금 }), (e) => e.뺀키.map((k) => k.이름).join() === '옛것,프로모');
   } finally { t.지우기(); }
 });
 
@@ -651,4 +652,22 @@ test('잠금 없이: 금액 칸의 꼴이 어긋난 줄은 깨진 줄로 건너�
     클로드.기록남기기({ 키이름: '프로모', 단계: '끝', 예약: 'r1', 추정USD: { 키이름: '프로모' }, 어림USD: { 예약: 'r2' } }, { ...t.옵션, 지금 });
     assert.equal(클로드.상태보기({ ...t.옵션, 지금 })[0].한도쓴양USD, 0.3);
   } finally { t.지우기(); }
+});
+
+test('한도를 건 키는 「한도키」 배열에만 둔다 — 옛 판이 읽는 「키」 배열에 한도USD가 있거나, 「한도키」에 한도USD가 없으면 막는다', async () => {
+  const 안됨 = async () => { throw new Error('호출되면 안 됨'); };
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-claude-keys-'));
+  try {
+    fs.writeFileSync(path.join(방, 'A.txt'), 'sk-ant-test-aaaa');
+    const 옵션 = { 목록경로: path.join(방, '목록.json'), 상태경로: path.join(방, '상태.json'), 기록경로: path.join(방, '기록.jsonl') };
+    const 키 = { 이름: 'A', 키파일: 'A.txt', 갱신일: null };
+    for (const [목록, 문구] of [[{ 키: [{ ...키, 한도USD: 1 }] }, /한도키/], [{ 키: [], 한도키: [키] }, /한도USD가 있어야/],
+      [{ 키: [], 한도키: { A: 키 } }, /배열/], [{ 키: [키], 한도키: [{ ...키, 한도USD: 1 }] }, /겹친다/]]) {
+      fs.writeFileSync(옵션.목록경로, JSON.stringify(목록));
+      await assert.rejects(클로드.보내기(본문, { ...옵션, fetch: 안됨, 지금 }), 문구);
+    }
+    // 「한도키」의 키는 일괄 결과를 받을 때처럼 이름으로도 찾는다.
+    fs.writeFileSync(옵션.목록경로, JSON.stringify({ 키: [], 한도키: [{ ...키, 한도USD: 1 }] }));
+    assert.deepEqual(클로드.상태보기({ ...옵션, 지금 }).map((k) => [k.이름, k.한도USD]), [['A', 1]]);
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
 });
