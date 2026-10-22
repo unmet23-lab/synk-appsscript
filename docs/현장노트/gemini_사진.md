@@ -302,6 +302,12 @@
 - 덧붙임(10-22 17시): 다른 세션은 라운드를 잇달아 돌려(TOPIK 장면 round-48 등) 0개인 틈이 몇 초뿐일 때가 있다. 그래서 대기 스크립트를 배경으로 걸어 10초마다 개수를 보고 **세 번 연속 0개**일 때 시작한다(bash 고리에서 `powershell -NoProfile -Command "@(Get-Process ego-browser -ErrorAction SilentlyContinue).Count"`가 0인 횟수를 세고, 라운드 기록 첫 줄에 몇 번째 확인에서 시작했는지 남긴다). 세션이 다시 시작되면 이 대기 스크립트는 시작 전에 사라질 수 있다 — 다시 시작한 뒤에는 라운드 기록 파일(`ego/round-NN.log`)이 생겼는지부터 보고, 없으면 시작도 안 한 것이니 다시 건다.
 - 덧붙임(10-22 18시): 기다렸다 시작한 35차는 `ego-browser nodejs`가 3분 반 만에 돌아왔는데 기록에 ego 출력이 한 줄도 없었다(같은 시각 다른 세션이 새 ego 실행을 시작했다). 그런데 스크립트는 ego 안에서 계속 돌아 3분 뒤 둘째 장(C11)을 `받음/`에 저장했다. 덧붙이기 리디렉션(`>>`)은 원인이 아니다(작은 시험에서 `>` · `>>` 모두 출력이 남았다). 라운드가 끝났는지는 기록의 `BATCH DONE` 줄로 보고, 그 줄 없이 끝났으면 `받음/` 폴더를 시각순으로 몇 분 더 본다 — 「멈췄다」고 적기 전에.
 
+### PC가 바쁘면(CPU 90%+) 결과 그림 받기가 「element is not visible in the viewport」로 끊긴다 — 그 대화에서 `take.mjs`로 받는다 (2026-10-22 Claude)
+- 증상: 10-22 18~19시 「달리며 건너뛰는 한국」 v2 시험 컷마다 그림은 만들어졌는데(기록에 「sent」) 받기에서 `page.click … element is not visible in the viewport`, `CDP request timed out: Runtime.callFunctionOn`, `page.evaluate timed out … Page is still unresponsive`로 끊겼다. CPU는 89~99%로, Windows 보안(MsMpEng)이 3~9코어어치를 쓰고 다른 세션의 python · git도 돌았다. requestAnimationFrame 한 번이 1.4초였다.
+- 원인: 위 「로컬 GPU가 100%면」 · 「다른 세션이 같은 Gemini 계정 · ego 브라우저를 같이 쓰면」과 같은 결 — 그리기가 늦어 단추가 화면 밖에 있다고 읽히거나 응답이 끊긴다. 보안 검사는 여러 세션이 그림 · 영상 · 저장소 파일을 한꺼번에 쓸 때 몰린다(끄지 않는다 — 10-22 유호님이 「windows 보안 끌까?」 물었을 때 끄지 말자고 했다).
+- 고침: 큐 앞에 CPU 평균(`Get-Counter '\Processor(_Total)\% Processor Time'` 3번 평균 — `.ps1`은 `-ExecutionPolicy Bypass`로 불러야 값이 나온다)이 70% 밑으로 내려갈 때까지 기다리고, 받기가 끊긴 장은 기록의 마지막 「sent」 대화 주소로 `ego/take.mjs`를 돌려 받는다(이렇게 다섯 번 모두 받았다). 이 순서를 묶은 실행 꼴은 `Documents/synk-vendor/korea-run-montage-20261021/ego/v2/run_k.sh`(waitcpu · winup · bake → 실패 시 회수, CPU 재기는 같은 폴더 `cpu.ps1`).
+- 다시 확인: 장마다 기록에 「done」이 있거나, 없으면 회수 결과 `ok:true`가 남는지.
+
 ## 결과물
 
 ### 프로가 참조 얼굴에서 더 멀어진다
@@ -430,8 +436,9 @@
 - 고침: 「The front panels of the jacket are plain light-wash denim; only the two sleeves … and the whole back panel are jogakbo patchwork」처럼 남는 부분까지 적자 다시 구운 판에서 맞았다. 반지는 받은 그림을 Image 1로 「Change only one thing: remove the ring from his finger」 편집으로 뺐고(한 번에 됨, 다른 데는 그대로), 다음 굽기부터 몸 문장에 「no rings, no jewelry」를 넣는다.
 - 다시 확인: 손 · 재킷 앞판 확대.
 
-### 정면 참고만으로 90° 옆얼굴을 그리게 하면 얼굴을 지어낸다 — 승인 각도 사진을 참고로, 고개를 카메라 쪽 45°로 (2026-10-22 Claude)
+### 정면 참고만으로 90° 옆얼굴을 그리게 하면 얼굴을 지어낸다 — 승인 옆얼굴 사진으로 얼굴만 다시 그리고, 카메라를 볼 땐 상체째 돌린다 (2026-10-22 Claude)
 - 증상: v2 달리기 컷(S02 · S04 · S05 · S07 · S18)을 「seen exactly from his right side」로 굽자, 처음엔 진해 · 유채만 「내 얼굴이 아냐」였고, 둘을 S05에서 장소만 바꾼 판으로 고치자 「앞모습은 괜찮은데 옆모습이 너무 기괴해진느낌」 — 옆모습 다섯 컷 모두 코 · 턱이 튀어나온 낯선 옆얼굴이었다. Fable은 매번 같은 사람으로 봤다.
 - 원인: 참고가 확정 얼굴 B · C 정면 크롭과 정면 실제 사진뿐이고 옆얼굴은 흐린 인터뷰 장면 한 장이라, 모델이 그의 90° 옆얼굴을 지어냈다. 그렇게 나온 S04 얼굴을 편집(순간만 · 장소만)으로 S05 · 진해 · 유채에 옮겨 틀린 얼굴이 번졌다 — 편집은 얼굴을 잘 지키므로, 바탕 컷의 얼굴이 틀리면 틀린 채로 퍼진다. 얼굴 메모(10-01)에도 각도 사진은 「B · C 크롭을 앞에 넣으면 약간은 다르다」, 실제 옆모습 사진만으로 만든 판이 「전부 다 완전 나같아」였다.
 - 고침: 10-01 승인 각도 사진(`Videos/한강2126_새판_20261009/재촬영_v40/기준그림/얼굴세트/각도_R45_B방식_a.png`, `승인_얼굴_전방향.jpg`의 오른쪽 70° 칸)과 실제 오른쪽 옆모습 영상 장면(`옆얼굴_실제사진/인터뷰_콘로우_R_17.5s.png`)을 Image 2~4로, 고칠 컷을 Image 1로 두고 「change only his head and face: he turns his head about 45 degrees toward the camera — exactly the head angle of Image 2 … his face must be exactly the face in Images 2 and 3」로 보냈다. 원본 릴스도 달리면서 카메라(폰) 쪽을 본다. 표정은 승인 사진처럼 「calm and relaxed — lips closed, corners only slightly lifted, eyes open normally (not squinting)」 — 눈웃음을 넣은 판은 얼굴이 또 바뀌었다(승인된 웃는 판이 없다). 기준 컷(S05) 하나를 이렇게 고친 뒤, 진해 · 유채는 그 컷에서 장소만 바꾸고(「Do not redraw his face … Only adjust the light」), 장면이 다른 S02 · S04는 그 장면에서 고개만 돌렸다. 받기 단계에서 `<img> intercepts pointer events`로 끊긴 판은 `ego/take.mjs`로 그 대화에서 받았다.
-- 다시 확인: 고친 머리를 확정 B · 승인 45° · 실제 옆모습 장면과 같은 크기로 잘라 나란히 놓고, 유호님 확인을 받는다(얼굴은 유호님이 최종 판단 — Fable의 ✓로 넘어가지 않는다).
+- 그다음 유호님: 「셀카 · 테이프는 진짜 닮았는데 45도에서 카메라 보는 건 좀 어색」 — 몸은 옆으로 달리는데 **고개만** 45° 돌려 붙여 목이 비틀린 얼굴처럼 보였고, 사진관 같은 차분한 미소가 질주와 안 맞았다(테이프 컷은 서 있는 상체가 이미 비스듬해 고개를 돌려도 자연스러웠다). 원본 릴스는 손 흔들며 걸을 땐 **어깨 · 가슴까지** 카메라 쪽(10.5~11.5초), 질주 땐 몸 · 고개 모두 달리는 방향(14~16.5초)이다. 그래서 ① 카메라를 보는 컷(S04)은 「his shoulders and chest turn about 45 degrees toward the camera together with his head … the front of his jacket now shows: plain denim front panels」로 상체째 돌리고, ② 옆으로 달리는 컷(S05)은 옛 옆모습 판을 Image 1로 두고 「change only his face. The face in Image 1 is not his real face: redraw it as his real face, seen from his right side at the same angle」 + 승인 옆얼굴(70°) · 45° · 실제 옆모습 장면을 Image 2~4로, 표정은 「focused on running, lips closed, no smile」로 했다. 진해 · 유채는 그 S05에서 장소만.
+- 다시 확인: 고친 머리를 확정 B · 승인 45° · 실제 옆모습 장면과 같은 크기로 잘라 나란히 놓고, 유호님 확인을 받는다(얼굴은 유호님이 최종 판단 — Fable의 ✓로 넘어가지 않는다). 카메라를 보는 컷은 어깨선과 얼굴 방향이 같은 쪽인지 본다.
