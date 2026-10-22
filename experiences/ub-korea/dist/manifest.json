@@ -1,0 +1,70 @@
+{
+  "app.css": {
+    "bytes": 85172,
+    "sha256": "53a9138d684a8c1abefebd9b567b7a6df6dd7694ae931d012cae06f78ce19ce2"
+  },
+  "app.js": {
+    "bytes": 23528,
+    "sha256": "fb6313319263336f907b0da645c7b81abc580e85620fb2e205a6dbe9547d8324"
+  },
+  "assets/DMMono-400.woff2": {
+    "bytes": 5896,
+    "sha256": "499891840ea2e5a85ed10ab59b4a5385846fe00e016d90ae05f16871bdf34f6e"
+  },
+  "assets/DMMono-500.woff2": {
+    "bytes": 5968,
+    "sha256": "a4e145a400524ba31da2b348bcd23d69d43a02f09155b184a652714d08648e07"
+  },
+  "assets/InterTight-400.woff2": {
+    "bytes": 28808,
+    "sha256": "d650f70550d1f2fa504b35a2fa60a9dabecf77c7084232e46013939fdcfa2090"
+  },
+  "assets/InterTight-500.woff2": {
+    "bytes": 29868,
+    "sha256": "64bd724a92f15e7cee8a825ceaba9f1eedbebbd83a1d7d26ca2761d1147bfb66"
+  },
+  "assets/InterTight-700.woff2": {
+    "bytes": 30056,
+    "sha256": "a1f8ef8722cee826313d0b56816757e4afef9bf37d77a1a8eb42055792a137ac"
+  },
+  "assets/SUIT-subset.woff2": {
+    "bytes": 102280,
+    "sha256": "ded5a2c76d4d5afd6308a7de7b2e74e8bd6225acdce0a1f12206356d2360f25a"
+  },
+  "assets/favicon-32.png": {
+    "bytes": 2310,
+    "sha256": "b8c3f86ea746b58ef3fc4110755453c426db133aff38c5a4df9649b2487419f9"
+  },
+  "assets/logo-synk.webp": {
+    "bytes": 4872,
+    "sha256": "00e1e9f2af9934730196f72044619de9b04491fa4baedc990460db21197535e1"
+  },
+  "assets/ub-art-books.webp": {
+    "bytes": 100192,
+    "sha256": "09d3e35497b8845c3dfb517434c02ea5d0ff44b8461b67b381a9987d75a233eb"
+  },
+  "assets/ub-art-envelope.webp": {
+    "bytes": 40550,
+    "sha256": "81ff397eeccd5bf71893a23c8dcb592620c939b495bf8ba48e228585b8eafe9a"
+  },
+  "assets/ub-art-folder.webp": {
+    "bytes": 61688,
+    "sha256": "6bf795b8b959ead301f2fe037f8614f10a84c6ba7b7dcb917455a16758d398f3"
+  },
+  "assets/ub-art-suitcase.webp": {
+    "bytes": 82164,
+    "sha256": "bc36599de82539b7ddea7e75c4c114f2217b736ff0c41b07adc8d9165818cca8"
+  },
+  "copy.js": {
+    "bytes": 24053,
+    "sha256": "4430e9938d835f9e2d3f8d1a1924b4dbd45181914a92feca229f8fac65cbe66f"
+  },
+  "index.html": {
+    "bytes": 16304,
+    "sha256": "0a2e6d0e09ee856e566259b504ddf320ecb2f414e403eddced7dd9e5278ac39f"
+  },
+  "og.png": {
+    "bytes": 351806,
+    "sha256": "2196813b8df862efceeb4f152e9e64926ce8c99b17a6d036c04970194b8b52b8"
+  }
+}

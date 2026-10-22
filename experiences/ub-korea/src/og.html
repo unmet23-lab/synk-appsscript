@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="mn" data-theme="night">
+<head>
+<meta charset="utf-8">
+<title>og</title>
+<link rel="stylesheet" href="app.css">
+<style>
+/* 링크 미리보기(1200×630) — 빌드가 Chrome으로 찍고 이 파일은 싣지 않는다. 몽골어가 먼저, 한국어가 둘째 줄. */
+html,body{margin:0;width:1200px;height:630px;overflow:hidden;background:var(--bg)}
+.og{display:grid;grid-template-columns:720px 1fr;gap:20px;height:630px;padding:30px;box-sizing:border-box}
+.og-text{display:flex;flex-direction:column;justify-content:center;padding:40px 44px;border-radius:28px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line)}
+.og-text .ub-eyebrow{font-size:19px}
+.og-text h1{margin:16px 0 20px;font-size:40px;font-weight:680;line-height:1.16;letter-spacing:-.03em}
+.og-text p{margin:0;font-size:21px;line-height:1.5;color:var(--ink-2)}
+.og-text p[lang=ko]{margin-top:14px;font-size:20px;color:var(--ink-3)}
+.og .poster{min-height:0;height:570px;--word-scale:74cqw}
+.og .poster .cut{top:12%;right:12%;width:52%}
+</style>
+</head>
+<body class="biz-path">
+<div class="og">
+  <div class="og-text">
+    <p class="ub-eyebrow">SYNK · Улаанбаатар</p>
+    <h1>Улаанбаатарт солонгос хэлний сургалтын төв нээж, Солонгост суралцах зөвлөгөө өгөхөөр бэлтгэж байна</h1>
+    <p>Урьдчилсан бүртгэл үнэгүй · нээлтийн өдөр тодорхой болмогц түрүүлж мэдэгдэнэ</p>
+    <p lang="ko">울란바토르 한국어 학원 · 한국 유학 상담 관심 등록</p>
+  </div>
+  <div class="poster tall" data-word="유학" style="--len:2"><span class="label">SYNK · ULAANBAATAR</span><img class="cut" src="assets/ub-art-suitcase.webp" alt=""></div>
+</div>
+</body>
+</html>
