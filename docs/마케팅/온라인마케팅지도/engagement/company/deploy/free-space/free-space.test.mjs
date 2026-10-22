@@ -1,0 +1,193 @@
+// 옛 판(secure_delete 끔)이 남긴 문의 잔여가 새 판 지우기 뒤에도 남고, vacuum.mjs가 그것을 0으로 만드는지(README).
+// vacuum.mjs의 멈춤 길(STOP·예산 넘김·앞 WAL 막힘)이 DB를 그대로 두는지, free-space-node.py가 실제 파일의 옛 페이지까지 세는지.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {DatabaseSync} from 'node:sqlite';
+import {spawn,spawnSync} from 'node:child_process';
+import {mkdtempSync,mkdirSync,readFileSync,existsSync,rmSync} from 'node:fs';
+import {join} from 'node:path';
+import {tmpdir} from 'node:os';
+import {randomBytes} from 'node:crypto';
+import {fileURLToPath} from 'node:url';
+
+const here=fileURLToPath(new URL('.',import.meta.url));
+const VACUUM=join(here,'vacuum.mjs'),NODE_SCAN=join(here,'free-space-node.py');
+const base=mkdtempSync(join(tmpdir(),'synk-free-space-'));
+test.after(()=>rmSync(base,{recursive:true,force:true}));
+
+function open(dir){
+  const db=new DatabaseSync(join(dir,'company.sqlite'));
+  db.exec('PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;');
+  db.exec(`CREATE TABLE IF NOT EXISTS documents (kind TEXT NOT NULL, id TEXT NOT NULL, body TEXT NOT NULL, PRIMARY KEY(kind,id));
+    CREATE TABLE IF NOT EXISTS credentials (id TEXT PRIMARY KEY, ciphertext TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS tokens (hash TEXT PRIMARY KEY, purpose TEXT NOT NULL, userId TEXT, body TEXT NOT NULL, expiresAt TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS sessions_wr (token TEXT NOT NULL, userId TEXT NOT NULL, PRIMARY KEY(token)) WITHOUT ROWID;
+    CREATE INDEX IF NOT EXISTS token_expiry ON tokens(expiresAt);`);
+  for(const f of ['postId','status','channelId'])db.exec(`CREATE INDEX IF NOT EXISTS documents_socialPublishJobs_${f} ON documents(json_extract(body,'$.${f}')) WHERE kind='socialPublishJobs'`);
+  return db;
+}
+const put=(db,kind,id,body)=>db.prepare('INSERT INTO documents(kind,id,body) VALUES (?,?,?) ON CONFLICT(kind,id) DO UPDATE SET body=excluded.body').run(kind,id,JSON.stringify(body));
+const hits=(dir,marker)=>{const m=Buffer.from(marker);let n=0;for(const f of ['company.sqlite','company.sqlite-wal']){const p=join(dir,f);if(!existsSync(p))continue;const b=readFileSync(p);for(let i=b.indexOf(m);i>=0;i=b.indexOf(m,i+1))n++;}return n;};
+const inquiry=(id,payload,replyDraft)=>({id,payload,fingerprint:'f'.repeat(64),classification:{category:'lab',isTest:false},replyDraft,draftEdited:true,status:'new',revision:1});
+const MARK={long:'긴옛초안LONGOLD',growPayload:'GROWPAY',live:'산줄초안LIVEDRAFT'};
+const pragma=(dir,name)=>{const db=new DatabaseSync(join(dir,'company.sqlite'));try{return Object.values(db.prepare('PRAGMA '+name).get())[0];}finally{db.close();}};
+
+// 옛 판 두 경로: (1) 짧은 초안 → 더 긴 초안 — 옛 칸이 페이지 안 빈 칸으로 가고, 새 칸은 그 칸 끝부터 덮어 옛 칸의 앞머리
+// (암호문 자리)가 남는다. (2) 긴 초안 → 짧은 초안 — 넘침 페이지가 빈 목록으로 간다(긴 초안 글이 그대로).
+// 그 뒤 새 판 방식(secure_delete ON 지우기 + WAL TRUNCATE)으로 두 줄을 지운다. 산 줄 하나는 남긴다.
+function oldVersionThenNewErase(dir){
+  mkdirSync(dir,{recursive:true});
+  const db=open(dir);
+  db.prepare('INSERT INTO sessions_wr VALUES (?,?)').run('t-b','u2');db.prepare('INSERT INTO sessions_wr VALUES (?,?)').run('t-a','u1');
+  const grow=inquiry('R2',MARK.growPayload+randomBytes(60).toString('base64'),'자라기 전 초안 연락처 확인');
+  const long=inquiry('R1','LONGPAY'+randomBytes(1500).toString('base64'),Array.from({length:400},(_,i)=>MARK.long+' 문장 '+i).join(' '));
+  put(db,'websiteInquiries','R2',grow);
+  put(db,'tasks','t1',{id:'t1',note:'짧은 줄'});put(db,'tasks','t2',{id:'t2',note:'짧은 줄'});
+  put(db,'websiteInquiries','L1',inquiry('L1','LIVEPAY'+randomBytes(60).toString('base64'),MARK.live));
+  put(db,'websiteInquiries','R2',{...grow,replyDraft:'다시 쓴 초안 '.repeat(30),revision:2});
+  put(db,'websiteInquiries','R1',long);
+  put(db,'websiteInquiries','R1',{...long,replyDraft:'짧은 새 초안',revision:2});
+  db.prepare('PRAGMA wal_checkpoint(TRUNCATE)').get();
+  db.exec('PRAGMA secure_delete=ON');
+  db.exec('BEGIN IMMEDIATE');
+  for(const id of ['R1','R2']){db.prepare("DELETE FROM documents WHERE kind='websiteInquiries' AND id=?").run(id);put(db,'websiteInquiryErasures',id,{id,erasedAt:'2026-10-22T00:00:00.000Z'});}
+  db.exec('COMMIT');
+  db.exec('PRAGMA secure_delete=OFF');
+  db.prepare('PRAGMA wal_checkpoint(TRUNCATE)').get();
+  return db;
+}
+function runVacuum(dir,{input='GO\n',env={}}={}){
+  const p=spawnSync(process.execPath,[VACUUM],{encoding:'utf8',timeout:60000,input,env:{...process.env,SYNK_FREE_SPACE_DIR:dir,...env}});
+  const lines=p.stdout.trim().split('\n').filter(line=>line.startsWith('{')).map(line=>JSON.parse(line));
+  return {status:p.status,ready:lines[0],result:lines.at(-1),stderr:p.stderr};
+}
+const python=(()=>{for(const cmd of ['python3','python']){const p=spawnSync(cmd,['-c','import sys;print(sys.version_info>=(3,11))'],{encoding:'utf8'});if(p.status===0&&p.stdout.trim()==='True')return cmd;}return null;})();
+const nodeScan=file=>{const p=spawnSync(python,['-B',NODE_SCAN,'--db',file],{encoding:'utf8',timeout:60000});assert.equal(p.status,0,p.stderr);return JSON.parse(p.stdout);};
+const residue=(scan,parts=['freelist','inPage','logical','dbFile','walFile'])=>parts.reduce((n,k)=>n+scan.residue[k].payloadResidue+scan.residue[k].draftResidue,0);
+
+test('옛 판 잔여는 새 판 지우기 뒤에도 남고, vacuum.mjs(GO) 뒤에는 DB·WAL 어디에도 없다', ()=>{
+  const dir=join(base,'old');const db=oldVersionThenNewErase(dir);
+  const rows=db.prepare('SELECT rowid,kind,id,body FROM documents ORDER BY rowid').all();db.close();
+  assert.ok(hits(dir,MARK.long)>0,'긴 옛 초안이 빈 페이지에 남아 있다(GA2)');
+  assert.ok(hits(dir,MARK.growPayload)>0,'지운 줄의 옛 칸 앞머리(암호문 자리)가 페이지 안 빈 칸에 남아 있다');
+  const run=runVacuum(dir);
+  assert.equal(run.status,0,run.stderr);
+  assert.equal(run.ready.ready,true);
+  assert.equal(run.result.quickCheck,'ok');
+  assert.equal(run.result.logical,'same','다른 연결이 쓰지 않았으니 논리 내용 지문이 같다(WITHOUT ROWID 표 포함)');
+  assert.equal(run.result.after.freePages,0);
+  assert.equal(run.result.walTruncated,true);
+  for(const marker of [MARK.long,MARK.growPayload,'LONGPAY'])assert.equal(hits(dir,marker),0,marker+' 바이트가 0이어야 한다');
+  assert.equal(hits(dir,MARK.live),1,'산 줄은 그대로');
+  const after=open(dir);
+  assert.deepEqual(after.prepare('SELECT rowid,kind,id,body FROM documents ORDER BY rowid').all(),rows,'rowid 순서·본문 그대로');
+  after.close();
+});
+
+test('빈 페이지 덮기(채웠다 secure_delete로 지우기)는 페이지 안 빈 칸 잔여를 지우지 못한다 — 그래서 VACUUM', ()=>{
+  const dir=join(base,'fill');const db=oldVersionThenNewErase(dir);
+  const page=db.prepare('PRAGMA page_size').get().page_size;
+  db.exec('PRAGMA secure_delete=ON');
+  for(let i=0;db.prepare('PRAGMA freelist_count').get().freelist_count>0;i++)put(db,'__freePageWipe','w'+i,{z:'0'.repeat(page*4)});
+  db.prepare("DELETE FROM documents WHERE kind='__freePageWipe'").run();
+  db.prepare('PRAGMA wal_checkpoint(TRUNCATE)').get();db.close();
+  assert.equal(hits(dir,MARK.long),0,'빈 목록의 넘침 잔여는 덮인다');
+  assert.ok(hits(dir,MARK.growPayload)>0,'페이지 안 빈 칸 잔여는 남는다');
+});
+
+test('STOP·예산 넘김·앞 WAL 막힘이면 vacuum.mjs는 DB를 그대로 둔다', ()=>{
+  const stop=join(base,'stop');oldVersionThenNewErase(stop).close();
+  const free=pragma(stop,'freelist_count');
+  const stopped=runVacuum(stop,{input:'STOP\n'});
+  assert.equal(stopped.status,5);assert.equal(stopped.result.error,'STOPPED');
+  assert.equal(pragma(stop,'freelist_count'),free);assert.ok(hits(stop,MARK.growPayload)>0);
+  const silent=runVacuum(stop,{input:''});
+  assert.equal(silent.status,5,'GO가 없으면 멈춘다');
+  const capped=runVacuum(stop,{env:{SYNK_FREE_SPACE_MAX_BYTES:'4096'}});
+  assert.equal(capped.status,6);assert.equal(capped.result.error,'TOO_LARGE_FOR_ONLINE_VACUUM','앞 WAL을 비운 뒤 논리 크기가 상한을 넘으면 시작하지 않는다');
+  assert.equal(pragma(stop,'freelist_count'),free);
+
+  // 예산 넘김: 자식 프로세스를 SIGKILL로 끝내 커밋 전에 버린다(워커 스레드는 process.exit이 VACUUM 끝까지 기다렸다).
+  // VACUUM이 예산(1ms)보다 확실히 오래 걸리게 몇 MB짜리 DB로 본다.
+  const big=join(base,'over');const bigDb=oldVersionThenNewErase(big);
+  bigDb.exec('BEGIN');for(let i=0;i<4000;i++)put(bigDb,'runs','r'+i,{id:'r'+i,x:randomBytes(1500).toString('base64')});bigDb.exec('COMMIT');
+  bigDb.exec('BEGIN');for(let i=0;i<2000;i++)bigDb.prepare("DELETE FROM documents WHERE kind='runs' AND id=?").run('r'+i);bigDb.exec('COMMIT');
+  bigDb.prepare('PRAGMA wal_checkpoint(TRUNCATE)').get();bigDb.close();
+  const bigFree=pragma(big,'freelist_count'),bigPages=pragma(big,'page_count');
+  assert.ok(bigFree>500,'정리할 빈 페이지가 많다');
+  const over=runVacuum(big,{env:{SYNK_FREE_SPACE_LOCK_WAIT_MS:'0',SYNK_FREE_SPACE_BUDGET_MS:'1'}});
+  assert.equal(over.status,3,JSON.stringify(over.result));assert.equal(over.result.error,'VACUUM_OVER_BUDGET');
+  assert.equal(over.result.quickCheck,'ok');
+  assert.equal(pragma(big,'quick_check'),'ok');
+  assert.equal(pragma(big,'freelist_count'),bigFree,'끊긴 VACUUM은 커밋되지 않았다');
+  assert.equal(pragma(big,'page_count'),bigPages);
+  const redo=runVacuum(big);
+  assert.equal(redo.status,0,'끊긴 뒤 다시 하면 끝난다');assert.equal(pragma(big,'freelist_count'),0);
+
+  // 앞 WAL을 못 비우면(옛 스냅숏을 쥔 읽는 연결) 시작하지 않는다.
+  const writer=new DatabaseSync(join(stop,'company.sqlite'));put(writer,'audit','a1',{n:1});
+  const reader=new DatabaseSync(join(stop,'company.sqlite'));reader.exec('BEGIN');reader.prepare('SELECT count(*) FROM documents').get();
+  put(writer,'audit','a2',{n:2});
+  const busy=runVacuum(stop);
+  reader.exec('COMMIT');reader.close();writer.close();
+  assert.equal(busy.status,2);assert.equal(busy.result.error,'WAL_BUSY_BEFORE');
+  assert.equal(pragma(stop,'freelist_count'),free);
+});
+
+test('free-space-node.py가 정리 전 잔여를 세고 정리 뒤 0으로 센다 — 빈 칸의 산 줄 사본도', {skip:!python&&'python 3.11+ 없음'}, ()=>{
+  const dir=join(base,'scan');oldVersionThenNewErase(dir).close();
+  const before=nodeScan(join(dir,'company.sqlite'));
+  // 넘침 페이지에는 표식이 없어(초안 글의 이어지는 부분) 잔여 수로는 못 센다 — 빈 페이지 수와 0 아닌 바이트로 본다(README).
+  assert.ok(before.pragma.freelist_count>0&&before.residue.freelist.nonzeroBytes>0,'빈 페이지에 0 아닌 바이트');
+  assert.ok(before.residue.inPage.payloadResidue>=1,'페이지 안 빈 칸의 옛 칸 앞머리(암호문)');
+  assert.ok(before.residue.dbFile.payloadResidue>=1,'실제 DB 파일에서도 보인다');
+  assert.equal(before.residue.logical.payloadLive,1,'산 줄은 산 것으로 센다');
+  runVacuum(dir);
+  const after=nodeScan(join(dir,'company.sqlite'));
+  assert.equal(after.pragma.freelist_count,0);
+  assert.equal(residue(after),0);
+  assert.equal(after.residue.freelist.payloadLive+after.residue.inPage.payloadLive+after.residue.inPage.draftLive,0,'빈 칸에 산 줄 사본도 없다');
+  assert.equal(after.residue.logical.payloadLive,1);
+  assert.equal(JSON.stringify(after).includes(MARK.live),false,'결과에 글이 나오지 않는다');
+});
+
+test('free-space-node.py는 체크포인트 전 실제 DB 파일의 옛 페이지를 세고, 넘침으로 이어지는 산 긴 초안은 잔여로 세지 않는다', {skip:!python&&'python 3.11+ 없음'}, ()=>{
+  const dir=join(base,'stale');mkdirSync(dir);const db=open(dir);
+  put(db,'websiteInquiries','L2',inquiry('L2','LIVE2PAY'+randomBytes(900).toString('base64'),Array.from({length:300},(_,i)=>'산 긴 초안 '+i).join(' ')));
+  put(db,'websiteInquiries','R3',inquiry('R3','STALEPAY'+randomBytes(60).toString('base64'),'곧 지울 줄의 초안입니다'));
+  db.prepare('PRAGMA wal_checkpoint(TRUNCATE)').get();
+  // 읽는 연결이 체크포인트를 막는 동안 지우면, 0으로 덮인 새 페이지는 WAL에만 있고 DB 파일에는 옛 페이지가 남는다.
+  const reader=new DatabaseSync(join(dir,'company.sqlite'));reader.exec('BEGIN');reader.prepare('SELECT count(*) FROM documents').get();
+  db.exec('PRAGMA secure_delete=ON');db.prepare("DELETE FROM documents WHERE kind='websiteInquiries' AND id='R3'").run();
+  const scan=nodeScan(join(dir,'company.sqlite'));
+  reader.exec('COMMIT');reader.close();db.close();
+  assert.equal(scan.residue.logical.payloadResidue,0,'논리 스냅샷에는 지운 모습만 있다');
+  assert.ok(scan.residue.dbFile.payloadResidue>=1,'실제 DB 파일에 남은 옛 페이지를 센다(A1·GA1)');
+  assert.equal(scan.residue.logical.draftResidue+scan.residue.walFile.draftResidue,0,'넘침으로 이어지는 산 긴 초안은 잔여가 아니다(GA7)');
+  assert.equal(scan.residue.dbFile.draftResidue,1,'DB 파일의 옛 페이지에는 지운 줄의 초안 하나만 잔여다');
+  assert.ok(scan.residue.logical.draftLive>=1,'산 긴 초안은 산 것으로 센다');
+});
+
+test('앱이 계속 쓰는 동안에도 VACUUM이 끝나고 쓰기는 실패 없이 잠깐 기다린다', async()=>{
+  const dir=join(base,'busy');mkdirSync(dir);const db=open(dir);
+  db.exec('BEGIN');for(let i=0;i<3000;i++)put(db,i%2?'runs':'hypeObservations','r'+i,{id:'r'+i,x:randomBytes(300+(i*7919)%1200).toString('base64')});db.exec('COMMIT');
+  db.exec('BEGIN');for(let i=0;i<3000;i+=3)put(db,'runs','r'+i,{id:'r'+i,x:'kept'});db.exec('COMMIT');db.close();
+  const writerCode=`import {DatabaseSync} from 'node:sqlite';const db=new DatabaseSync(process.argv[1]);db.exec('PRAGMA busy_timeout=5000');
+    const put=db.prepare('INSERT INTO documents(kind,id,body) VALUES (?,?,?) ON CONFLICT(kind,id) DO UPDATE SET body=excluded.body');
+    const end=Date.now()+Number(process.argv[2]),pause=new Int32Array(new SharedArrayBuffer(4));let n=0,fail=0,max=0;
+    while(Date.now()<end){const t=performance.now();try{put.run('audit','w'+(n%50),'{"n":'+n+'}');}catch{fail++;}max=Math.max(max,performance.now()-t);n++;Atomics.wait(pause,0,0,15);}
+    console.log(JSON.stringify({n,fail,maxMs:Math.round(max)}));db.close();`;
+  const writer=spawn(process.execPath,['--input-type=module','-e',writerCode,join(dir,'company.sqlite'),'3000'],{stdio:['ignore','pipe','pipe']});
+  let text='';writer.stdout.on('data',chunk=>text+=chunk);
+  await new Promise(resolve=>setTimeout(resolve,400));
+  const run=runVacuum(dir);
+  await new Promise(resolve=>writer.on('close',resolve));
+  const stats=JSON.parse(text.trim());
+  assert.equal(run.status,0,run.stderr+JSON.stringify(run.result));
+  assert.equal(run.result.quickCheck,'ok');
+  assert.notEqual(run.result.logical,'DIFFERENT');
+  assert.equal(run.result.after.freePages,0);
+  assert.equal(stats.fail,0,'앱 쓰기 실패 없음');
+  assert.ok(stats.n>20,'VACUUM 앞뒤로 계속 썼다');
+  assert.ok(stats.maxMs<5000,'busy_timeout 안에서 기다렸다');
+});
