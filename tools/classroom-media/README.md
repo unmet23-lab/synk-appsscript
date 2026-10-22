@@ -2,6 +2,8 @@
 
 **현재 상태: 2026-10-09 리허설·운영 DB 및 수업 API 반영 완료, 교실 프로그램은 로컬 검증 단계.** 실제 SYNK LAB 채널의 생성·업로드·송출, 학생 재생, OBS 실기기 이벤트는 아직 실행하지 않았다. 서버의 반 영상 설정·이용권·전용 sync 비밀도 아직 없으며, 학생 앱과 교실 프로그램 설치가 남았다. [배포·검증 기록](../../docs/_ops/qa/classroom-release-20261009/README.md)에 완료 범위를 구분했다. 추가 유료 서비스 가입이나 결제가 없다. Node 22 이상, OBS 29 이상과 기존 YouTube OAuth 자격을 사용한다. 이전 버전의 시험 통과를 새 버전의 운영 검증으로 사용하지 않는다.
 
+2026-10-22 반 리허설([첫 연락 준비 목록 4절](../../experiences/lab-topik4/첫연락_준비목록.md#rehearsal))에서 온라인 반 예시 설정으로 이 도구에 가짜 YouTube만 끼워 운영 판 classroom-sync까지 예정 → live → processing → ready를 보냈고, WORLD 「우리 반 수업」이 그대로 따라 바뀌었다(순번 1~4). 실제 채널·OBS·학생 재생은 그 확인에 들지 않는다.
+
 장비 선정·스마트폰·착용 마이크·OBS 설정·교사 운영 순서는 [교실 세팅 안내](교실세팅.md)를 따른다. 사용자 확인상 장비는 아직 미정이며 원격 학생은 영상과 소리만 시청하므로 이번 운영에는 화상회의가 필요 없다.
 
 ## 동작
@@ -193,7 +195,7 @@ Lua 회귀시험은 `SYNK_LUA_BIN`에 Lua 실행 파일 또는 `fengari-node-cli
 
 ## 서버 계약과 근거
 
-`POST /functions/v1/classroom-sync`: `apikey`는 공개키, `x-classroom-key`는 반별 비밀. body는 `class_id`, `session_key`, `title`, `starts_at`, `ends_at`, `status`, `playback_blocked`, `youtube_video_id`, `youtube_playlist_id`, `youtube_channel_id`, `youtube_privacy_status`, `source`이며 명시적 완본 교체에는 `replace_replay=true`를 사용한다. status는 `scheduled/live/processing/ready/failed`, source는 `live/upload`다. 서버는 활성 반·채널·목록·공개설정을 다시 대조하고 `(class_id, session_key)`로 upsert한다. 실패한 live→upload fallback 또는 종료된 live의 명시적 완본 교체일 때 영상 ID 변경을 허용하며, 새 영상의 초대 확인은 초기화한다. 새 worker·서버 계약·마이그레이션을 함께 검증·배포하기 전에는 운영에 적용하지 않는다.
+`POST /functions/v1/classroom-sync`: `apikey`는 공개키, `x-classroom-key`는 반별 비밀. body는 `class_id`, `session_key`, `title`, `starts_at`, `ends_at`, `status`, `playback_blocked`, `youtube_video_id`, `youtube_playlist_id`, `youtube_channel_id`, `youtube_privacy_status`, `source`, `sync_sequence`(수업마다 하나씩 늘어나는 양의 정수 — 서버는 마지막으로 반영한 번호 이하를 거절한다, 아래 「장애 복구와 검증」)이며 명시적 완본 교체에는 `replace_replay=true`를 사용한다. status는 `scheduled/live/processing/ready/failed`, source는 `live/upload`다. 서버는 활성 반·채널·목록·공개설정을 다시 대조하고 `(class_id, session_key)`로 upsert한다. 실패한 live→upload fallback 또는 종료된 live의 명시적 완본 교체일 때 영상 ID 변경을 허용하며, 새 영상의 초대 확인은 초기화한다. 새 worker·서버 계약·마이그레이션을 함께 검증·배포하기 전에는 운영에 적용하지 않는다.
 
 - [YouTube 방송 옵션](https://developers.google.com/youtube/v3/live/docs/liveBroadcasts): DVR, 시작부터 녹화, 자동 시작·종료.
 - [YouTube resumable upload](https://developers.google.com/youtube/v3/guides/using_resumable_upload_protocol): 서버 offset 조회, 308 재개, 만료 처리.

@@ -89,6 +89,8 @@ test('계정 모드 WORLD 내 계정 시트의 「우리 반 수업」: 상태�
     else if(target.pathname.endsWith('/synk-personal')){status=403;data={ok:false,error:{code:'PRODUCT_FORBIDDEN'}};}
     // 「이번 주 과제」(같은 시트, 수업 아래): 이 시험의 합성 반에는 과제 계획이 없어 빈 목록이다(칸은 숨는다. 과제 칸은 classroom-homework-browser.test.mjs가 본다).
     else if(target.pathname==='/functions/v1/synk-classroom/api/world/homework')data={ok:true,mode:'account-linked',accountId:A,classes:[],emptyReason:'NO_HOMEWORK_PLAN'};
+    // 「우리 반 수업」 아래 과정 쓰기 입구(course-writing-entry.mjs): 과정 과제가 없는 계정이라 입구가 숨는다(classroom-homework-browser.test.mjs와 같은 빈 답).
+    else if(target.pathname==='/functions/v1/synk-classroom/api/classes')data={ok:true,mode:'account-linked',classes:[],learnerId:null,staffId:null};
     else if(target.pathname.startsWith('/auth/v1/logout'))data={};
     else{unexpected.push(target.pathname);status=404;data={ok:false,error:{code:'NOT_IN_FIXTURE'}};}
    }catch(error){unexpected.push('fixture-error '+target.pathname+' '+error.message);status=500;data={ok:false,error:{code:'FIXTURE_ERROR'}};}
@@ -106,7 +108,7 @@ test('계정 모드 WORLD 내 계정 시트의 「우리 반 수업」: 상태�
   if(await page.locator('dialog[open] [data-first-hangul="reads"]').count()){await page.locator('dialog[open] [data-first-hangul="reads"]').click();await page.waitForFunction(()=>!document.querySelector('dialog[open] [data-first-hangul]'));}
   await page.waitForFunction(()=>document.querySelector('dialog[open] .tutor-option')||document.querySelector('.world-shell')?.dataset.entry==='ready');
   if(await page.locator('dialog[open] .tutor-option[data-tutor-id="mongle"]').count()){await page.locator('.tutor-option[data-tutor-id="mongle"]').click();await page.locator('.tutor-primary').click();await page.locator('.tutor-primary[data-tutor-action="finish"]').click();await page.waitForFunction(()=>document.querySelector('.world-shell')?.dataset.entry==='ready');}
-  const section=page.locator('#world-classroom-lessons .ws-class');
+  const section=page.locator('#world-classroom-lessons .ws-class[data-label="CLASS"]');
   const state=()=>section.evaluate(el=>el.hidden?'closed':el.dataset.state);
   async function openProfile(){
    if(await page.evaluate(()=>document.querySelector('#world-panel')?.open))await page.locator('#panel-close').click();
@@ -116,10 +118,10 @@ test('계정 모드 WORLD 내 계정 시트의 「우리 반 수업」: 상태�
   async function settle(name,before){
    for(let i=0;i<200&&classroomCalls.length<=before;i++)await new Promise(r=>setTimeout(r,25));
    assert.ok(classroomCalls.length>before,name+': 수업 요청이 나가지 않았다');
-   await page.waitForFunction(expected=>document.querySelector('#world-classroom-lessons .ws-class')?.dataset.state===expected,SCENARIOS[name].state);
+   await page.waitForFunction(expected=>document.querySelector('#world-classroom-lessons .ws-class[data-label="CLASS"]')?.dataset.state===expected,SCENARIOS[name].state);
   }
   const measure=()=>page.evaluate(()=>{
-   const el=document.querySelector('#world-classroom-lessons .ws-class'),content=document.querySelector('#panel-content'),box=el.getBoundingClientRect();
+   const el=document.querySelector('#world-classroom-lessons .ws-class[data-label="CLASS"]'),content=document.querySelector('#panel-content'),box=el.getBoundingClientRect();
    const shown=node=>node.getClientRects().length>0;
    const overflowing=[...el.querySelectorAll('*')].filter(n=>shown(n)&&(n.getBoundingClientRect().right>box.right+.5||n.getBoundingClientRect().left<box.left-.5)).map(n=>n.className||n.tagName);
    const small=[],walker=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);
@@ -133,10 +135,10 @@ test('계정 모드 WORLD 내 계정 시트의 「우리 반 수업」: 상태�
   // 칸 안 위치대로 이어 붙인다. 화면 배치·글자는 그 크기 그대로다.
   async function shoot(tag,name){
    await page.evaluate(()=>document.fonts.ready);
-   await page.evaluate(()=>{document.querySelector('#world-panel').style.scrollBehavior='auto';document.querySelector('#world-classroom-lessons .ws-class').scrollIntoView({block:'start'});});await page.waitForTimeout(120);
+   await page.evaluate(()=>{document.querySelector('#world-panel').style.scrollBehavior='auto';document.querySelector('#world-classroom-lessons .ws-class[data-label="CLASS"]').scrollIntoView({block:'start'});});await page.waitForTimeout(120);
    const total=await section.evaluate(el=>Math.round(el.getBoundingClientRect().height)),parts=[];let covered=0;
    for(let i=0;i<20&&covered<total;i++){
-    const g=await page.evaluate(()=>{const panel=document.querySelector('#world-panel'),r=document.querySelector('#world-classroom-lessons .ws-class').getBoundingClientRect(),p=panel.getBoundingClientRect();
+    const g=await page.evaluate(()=>{const panel=document.querySelector('#world-panel'),r=document.querySelector('#world-classroom-lessons .ws-class[data-label="CLASS"]').getBoundingClientRect(),p=panel.getBoundingClientRect();
      const top=Math.max(r.top,p.top+panel.clientTop),bottom=Math.min(r.bottom,p.top+panel.clientTop+panel.clientHeight);return {x:Math.round(r.left),width:Math.round(r.width),top:Math.ceil(top),bottom:Math.floor(bottom),offset:Math.ceil(top-r.top)};});
     const height=g.bottom-g.top;if(height<=0)break;
     parts.push({offset:g.offset,width:g.width,buffer:await page.screenshot({clip:{x:g.x,y:g.top,width:g.width,height}})});covered=g.offset+height;
@@ -158,7 +160,7 @@ test('계정 모드 WORLD 내 계정 시트의 「우리 반 수업」: 상태�
      scenario='loading';await settle(name,opened);
      assert.equal(await section.locator('.ws-class-status').isVisible(),true);assert.equal(await section.locator('.ws-class-body a').count(),0);
      measures[`${tag}-${name}`]=await measure();await shoot(tag,name);
-     scenario='live';hold.resolve();await page.waitForFunction(()=>document.querySelector('#world-classroom-lessons .ws-class')?.dataset.state==='ready');continue;
+     scenario='live';hold.resolve();await page.waitForFunction(()=>document.querySelector('#world-classroom-lessons .ws-class[data-label="CLASS"]')?.dataset.state==='ready');continue;
     }
     scenario=name;await section.locator('[data-classroom-key="refresh"]').click();await settle(name,before);
     const view=await section.evaluate(el=>({
@@ -182,7 +184,9 @@ test('계정 모드 WORLD 내 계정 시트의 「우리 반 수업」: 상태�
      await section.locator('.ws-class-open').waitFor();assert.equal(await section.locator('.ws-class-open').textContent(),'링크를 열지 못했어요. 잠시 뒤 다시 눌러 주세요.');
     }
     if(['empty','not-linked'].includes(name)){
-     assert.match(view.text,/아직 연결된 수업이 없어요/);assert.equal(view.lead,'none');assert.equal(view.note,'none');
+     // 반에 연결한(명부에 있는) 학생의 빈 목록은 서버가 NO_ACTIVE_CLASS_ACCESS로 가른다 — 반 연결을 확인하라고 하지 않는다(10-22 반 리허설).
+     if(name==='empty'){assert.match(view.text,/반에 연결됐어요/);assert.doesNotMatch(view.text,/반 연결을 확인해/);}else assert.match(view.text,/아직 연결된 수업이 없어요/);
+     assert.equal(view.lead,'none');assert.equal(view.note,'none');
      assert.equal(await page.evaluate(()=>window.__synkWorld.client.snapshot?.accountId),A,'반이 없는 계정의 401에도 로그인은 그대로다');
      assert.ok(await page.evaluate(()=>!!sessionStorage.getItem('synk.oauth.session.world')));
     }
@@ -195,7 +199,7 @@ test('계정 모드 WORLD 내 계정 시트의 「우리 반 수업」: 상태�
    await section.evaluate(el=>el.scrollIntoView({block:'start'}));await page.waitForTimeout(150);const file=path.join(out,`${tag}-sheet.png`);await page.screenshot({path:file});shots.push(path.relative(out,file));
   }
   // 탭을 떠나면 옛 링크를 지우고, 돌아오면 다시 묻는다(학생 앱의 앱 복귀와 같은 뜻).
-  await page.setViewportSize(VIEWPORTS[0].size);await openProfile();await page.waitForFunction(()=>document.querySelector('#world-classroom-lessons .ws-class')?.dataset.state==='ready');
+  await page.setViewportSize(VIEWPORTS[0].size);await openProfile();await page.waitForFunction(()=>document.querySelector('#world-classroom-lessons .ws-class[data-label="CLASS"]')?.dataset.state==='ready');
   await page.evaluate(()=>{Object.defineProperty(document,'visibilityState',{configurable:true,get:()=>'hidden'});document.dispatchEvent(new Event('visibilitychange'));});
   assert.equal(await state(),'loading');assert.equal(await section.locator('.ws-class-body a').count(),0);
   const hidden=classroomCalls.length;
