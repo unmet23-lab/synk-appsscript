@@ -18,6 +18,7 @@
  *   기록 전용 경로(트랙·결정·현장노트 …)만 바꾼 push는 고르지 않는다 — CI도 그 push에는 무거운 검사를 안 띄운다(records-check가 돈다).
  * 돌리기: node --test --test-reporter=tap. 워크트리에서는 CI=1이다(git 밖 로컬 자료를 읽는 시험이 건너뛴다 — 현장노트 시험_화면확인).
  *   공용 작업본에서는 주지 않는다. 이번 push로 처음 들어가는 파일은 SYNK_새파일로 넘긴다(git ls-files로 훑는 시험이 보게, 10-22).
+ *   한 PC에서 동시에 도는 관련 시험은 자리 파일로 둘까지다(아래 「자리」 — 기다린 시간은 15분 한도에 안 든다, 10-22).
  *   원천과 짝 파일(생성물·사본)이 어긋난 push는 이 시험이 아니라 tools/짝검사.js가 먼저 막는다(CI의 시험 밖 단계까지).
  * 지도는 공용 git 폴더 안(<git-common-dir>/synk-관련시험/지도.json)에 두어 저장소에는 안 들어간다. 경로는 모두 저장소 기준이다.
  */
@@ -256,9 +257,88 @@ function tap읽기(글, root = null) {
   return { 시험: r.시험, 통과: r.통과, 실패수: r.실패수, 취소: r.취소, 실패: r.실패.map((x) => ({ 이름: x.시험, 위치: x.위치, 파일: x.파일, ...(x.안내 && x.안내.length ? { 안내: x.안내 } : {}) })) };
 }
 
+// ── 자리(한 PC에서 동시에 도는 push 전 관련 시험 수, 2026-10-22) ─────────────────────────────
+// 10-22 13시 여러 세션의 push 전 관련 시험이 한꺼번에 돌아 CPU 100%·`--test` 프로세스 29개가 되자 모두 15분 한도에 걸렸다
+// (시험 내용이 아니라 동시에 도는 양 탓). 공용 git 폴더(<git-common-dir>/synk-관련시험/자리/ — 이 저장소 워크트리 모두가 같이 본다)에
+// 자리를 쥔 프로세스만 표(<시각>-<pid>-<임의>.lock)를 두고, 표가 수만큼 있으면 기다린다. 기다린 시간은 15분 한도에 안 든다
+// (자리를 잡은 뒤에 시계를 켠다). 「주인이 없거나 멈춘 표 치우기 → 표 세기 → 내 표 두기」는 짧은 전체 잠금(.고르는중 폴더 — mkdir가
+// 원자적이다) 안에서만 한다 — 버려진 자리를 둘이 같이 보고 하나가 지운 뒤 새로 잡은 남의 자리를 다른 하나가 또 지우거나(아르곤 10-22 P1),
+// 같은 밀리초에 뽑은 표끼리 순서가 뒤바뀌어 자리가 넘치는 일이 없다. 표 이름도 하나뿐이라 치울 때 그 이름만 지운다.
+// 자리를 쥔 표는 그대로 두어 30분(한도의 두 배)이 지나면 멈춘 것으로 본다. 고르다 죽은 프로세스의 전체 잠금은 10초 뒤 치운다.
+// 자리 수는 SYNK_관련시험_자리(기본 2, 「끔」이면 안 잡는다), 한 번에 도는 시험 파일은 CPU의 3분의 1.
+const 기본자리 = 2;
+const 자리낡음ms = 30 * 60e3; // 한도 15분의 두 배 — 이보다 오래 그대로인 표는 주인이 멈춘 것이다
+const 고르는중 = '.고르는중';
+const 잠깐 = (ms) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+const 표식 = /^\d{15}-(\d+)-[0-9a-z]+\.lock$/;
+
+function 살아있나(pid) {
+  try { process.kill(pid, 0); return true; } catch (e) { return e.code === 'EPERM'; }
+}
+
+/** 짧은 전체 잠금 — 쥐고 있는 동안만 표를 치우고 센다. 풀기 함수를 돌려준다. */
+function 잠그기(폴더) {
+  const 잠금 = path.join(폴더, 고르는중);
+  for (;;) {
+    try {
+      fs.mkdirSync(잠금);
+      return () => { try { fs.rmdirSync(잠금); } catch { /* 이미 없다 */ } };
+    } catch (e) {
+      if (e.code !== 'EEXIST') throw e;
+      try { if (Date.now() - fs.statSync(잠금).mtimeMs > 10e3) fs.rmdirSync(잠금); } catch { /* 그새 풀렸다 */ }
+      잠깐(20);
+    }
+  }
+}
+
+/** 자리 하나를 잡는다 → { 번호(먼저 쥔 수), 수, 기다린초, 놓기() }. 기다림ms 안에 못 잡으면 번호 null(자리 없이 돈다 — 막지는 않는다). */
+function 자리잡기(폴더, { 수 = 기본자리, 기다림ms = 30 * 60e3, 간격ms = 2000 } = {}) {
+  const 시작 = Date.now();
+  const 초 = () => Math.round((Date.now() - 시작) / 1000);
+  fs.mkdirSync(폴더, { recursive: true });
+  for (;;) {
+    let 내자리 = null, 쥔수 = 0;
+    const 풀기 = 잠그기(폴더);
+    try {
+      const 지금 = Date.now();
+      for (const 이름 of fs.readdirSync(폴더)) {
+        const m = 표식.exec(이름);
+        if (!m) continue;
+        let 수정ms;
+        try { 수정ms = fs.statSync(path.join(폴더, 이름)).mtimeMs; } catch { continue; } // 그새 놓은 표
+        if (!살아있나(Number(m[1])) || 지금 - 수정ms > 자리낡음ms) { try { fs.rmSync(path.join(폴더, 이름), { force: true }); } catch { /* 다음 바퀴 */ } continue; }
+        쥔수++;
+      }
+      if (쥔수 < 수) {
+        내자리 = path.join(폴더, `${String(지금).padStart(15, '0')}-${process.pid}-${Math.random().toString(36).slice(2, 8) || '0'}.lock`);
+        fs.writeFileSync(내자리, '', { flag: 'wx' });
+      }
+    } finally { 풀기(); }
+    if (내자리) {
+      const 놓을곳 = 내자리;
+      return { 번호: 쥔수, 수, 기다린초: 초(), 놓기: () => { try { fs.rmSync(놓을곳, { force: true }); } catch { /* 이미 없다 */ } } };
+    }
+    if (Date.now() - 시작 >= 기다림ms) return { 번호: null, 수, 기다린초: 초(), 놓기: () => {} };
+    잠깐(Math.max(10, 간격ms)); // 0이면 CPU를 헛돈다
+  }
+}
+
+/** 자리 설정 — 시험이 폴더·수·기다림·간격을 준다(0도 그 값 그대로). SYNK_관련시험_자리=끔이면 null(안 잡는다). */
+function 자리설정(root, 자리) {
+  if (자리 === false || process.env.SYNK_관련시험_자리 === '끔') return null;
+  const 준 = 자리 || {};
+  const 폴더 = 준.폴더 || (지도자리(root) && path.join(지도자리(root), '자리'));
+  if (!폴더) return null;
+  const 수 = Number(준.수 || process.env.SYNK_관련시험_자리) || 기본자리;
+  const 값 = (v) => (Number.isFinite(v) && v >= 0 ? v : undefined);
+  return { 폴더, 수: Math.max(1, Math.floor(수)),
+    ...(값(준.기다림ms) !== undefined ? { 기다림ms: 준.기다림ms } : {}), ...(값(준.간격ms) !== undefined ? { 간격ms: 준.간격ms } : {}) };
+}
+
 /** 새파일: 이번 push로 처음 들어가는 경로 — SYNK_새파일(JSON 배열)로 넘긴다. push 전 작업본에서는 아직 추적 밖이라
- *  git ls-files로 훑는 시험이 못 본다(10-21 지면폰트 ⑦ 빨강 두 번이 모두 새 지면이었다 — tests/_git밖.js 이번push새파일). */
-function 돌리기({ root, 시험, 워크트리 = false, 한도ms = 15 * 60e3, 새파일 = [] }) {
+ *  git ls-files로 훑는 시험이 못 본다(10-21 지면폰트 ⑦ 빨강 두 번이 모두 새 지면이었다 — tests/_git밖.js 이번push새파일).
+ *  자리: 위 「자리」 — 시험이 { 폴더, 수, 기다림ms, 간격ms }를 주거나 false로 끈다. 결과의 자리 = { 번호, 수, 기다린초 }. */
+function 돌리기({ root, 시험, 워크트리 = false, 한도ms = 15 * 60e3, 새파일 = [], 자리 = undefined }) {
   if (!시험.length) return { 통과함: true, 시험: 0, 통과: 0, 실패수: 0, 실패: [], 초: 0 };
   const tap = path.join(os.tmpdir(), `synk-관련시험-${process.pid}-${Date.now()}.tap`);
   const env = { ...process.env };
@@ -266,14 +346,30 @@ function 돌리기({ root, 시험, 워크트리 = false, 한도ms = 15 * 60e3, �
   delete env.NODE_TEST_CONTEXT;
   if (워크트리) env.CI = '1';
   if (새파일.length) env.SYNK_새파일 = JSON.stringify(새파일);
+  const 설정 = 자리설정(root, 자리);
+  const 잡음 = 설정 ? 자리잡기(설정.폴더, 설정) : null;
+  // 한 번에 도는 시험 파일 수 — 기본(CPU-1)이면 자리 둘이 함께 돌 때 CPU를 넘겨 서로 느려진다(현장노트 시험_화면확인 동시 실행).
+  const 동시 = Math.max(2, Math.floor((os.availableParallelism ? os.availableParallelism() : os.cpus().length) / 3));
   const 시작 = Date.now();
-  const r = spawnSync(process.execPath, ['--test', '--test-reporter=tap', `--test-reporter-destination=${tap}`, ...시험],
-    { cwd: root, env, encoding: 'utf8', windowsHide: true, timeout: 한도ms, maxBuffer: 64 << 20 });
+  let r;
+  try {
+    r = spawnSync(process.execPath, ['--test', `--test-concurrency=${동시}`, '--test-reporter=tap', `--test-reporter-destination=${tap}`, ...시험],
+      { cwd: root, env, encoding: 'utf8', windowsHide: true, timeout: 한도ms, maxBuffer: 64 << 20 });
+  } finally {
+    if (잡음) 잡음.놓기();
+  }
   let 글 = '';
   try { 글 = fs.readFileSync(tap, 'utf8'); } catch { /* 아래 */ } finally { fs.rmSync(tap, { force: true }); }
-  const 결과 = { ...tap읽기(글, root), 초: Math.round((Date.now() - 시작) / 1000) };
+  const 결과 = { ...tap읽기(글, root), 초: Math.round((Date.now() - 시작) / 1000), ...(잡음 ? { 자리: { 번호: 잡음.번호, 수: 잡음.수, 기다린초: 잡음.기다린초 } } : {}) };
   if (r.error && r.error.code === 'ETIMEDOUT') return { ...결과, 통과함: false, 이유: `${Math.round(한도ms / 60e3)}분 안에 끝나지 않았다` };
   return { ...결과, 통과함: r.status === 0 && 결과.실패수 === 0, ...(r.status !== 0 && !결과.실패수 ? { 이유: `node --test 종료 ${r.status}` } : {}) };
+}
+
+/** 결과 줄에 붙일 자리 글 — 기다렸거나 못 잡았을 때만. */
+function 자리글(자리) {
+  if (!자리) return '';
+  if (자리.번호 === null) return ` · 자리 ${자리.수}개가 ${자리.기다린초}초 동안 안 비어 자리 없이 돌았다`;
+  return 자리.기다린초 ? ` · 자리 기다림 ${자리.기다린초}초` : '';
 }
 
 // ── 명령줄 ──────────────────────────────────────────────────────────────────
@@ -307,11 +403,11 @@ function main(argv = process.argv.slice(2)) {
   const g = git(root, ['rev-parse', '--path-format=absolute', '--git-dir', '--git-common-dir']);
   const [gd, cd] = (g || '').trim().split('\n');
   const r = 돌리기({ root, 시험: 고름.시험, 워크트리: Boolean(gd && cd && path.resolve(gd) !== path.resolve(cd)) });
-  console.log(`${r.통과함 ? '통과' : '깨짐'} — ${r.통과}/${r.시험} · ${r.초}초${r.이유 ? ` · ${r.이유}` : ''}`);
+  console.log(`${r.통과함 ? '통과' : '깨짐'} — ${r.통과}/${r.시험} · ${r.초}초${자리글(r.자리)}${r.이유 ? ` · ${r.이유}` : ''}`);
   for (const x of r.실패) console.log(`  ✗ ${x.이름}${x.위치 ? ` (${x.위치})` : ''}`);
   return r.통과함 ? 0 : 1;
 }
 
 if (require.main === module) process.exitCode = main();
 
-module.exports = { 고르기, 돌리기, 지도만들기, 지도읽기, 지도받기, 기록전용인가, CI시험목록, CI시험무늬, tap읽기, git무늬, git무늬식, 읽나, 지도이름, 지도파일이름 };
+module.exports = { 고르기, 돌리기, 자리잡기, 자리글, 지도만들기, 지도읽기, 지도받기, 기록전용인가, CI시험목록, CI시험무늬, tap읽기, git무늬, git무늬식, 읽나, 지도이름, 지도파일이름 };

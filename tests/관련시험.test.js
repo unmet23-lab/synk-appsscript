@@ -6,7 +6,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { execFileSync } = require('node:child_process');
+const { execFileSync, spawn, spawnSync } = require('node:child_process');
 
 const 관련 = require('../tools/관련시험.js');
 
@@ -161,4 +161,127 @@ test('git 무늬 — `.`·`dir/.`·`dir/`은 그 폴더 전부, 저장소 맨 �
   assert.deepEqual(무늬(['ls-files', '.'], path.join(root, 'tests')), ['tests']);
   assert.deepEqual(무늬(['ls-files', '--', 'docs/']), ['docs']);
   assert.equal(관련.git무늬식(무늬(['ls-files', '.'], path.join(root, 'tests'))[0]).test('tests/a.test.js'), true);
+});
+
+// ── 자리(한 PC에서 동시에 도는 push 전 관련 시험 수, 10-22) ─────────────────────────────────────
+
+const 자리폴더 = (t) => {
+  const 폴더 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-관련시험-자리-'));
+  t.after(() => fs.rmSync(폴더, { recursive: true, force: true }));
+  return 폴더;
+};
+const 표들 = (폴더) => fs.readdirSync(폴더).filter((f) => f.endsWith('.lock')).sort();
+const 표이름 = (ms, pid) => `${String(ms).padStart(15, '0')}-${pid}-시험.lock`.replace('시험', 'aa11');
+
+test('자리 — 수만큼만 잡히고, 기다림이 지나면 자리 없이 돈다(막지 않는다) · 기다리는 쪽은 표를 안 둔다 · 놓으면 다음이 바로 잡는다 · 놓기는 제 표만 지운다', (t) => {
+  const 폴더 = 자리폴더(t);
+  const 가 = 관련.자리잡기(폴더, { 수: 2 });
+  const 나 = 관련.자리잡기(폴더, { 수: 2 });
+  assert.deepEqual([가.번호, 나.번호], [0, 1]);
+  assert.equal(표들(폴더).length, 2);
+  const 앞 = Date.now();
+  const 다 = 관련.자리잡기(폴더, { 수: 2, 기다림ms: 300, 간격ms: 50 });
+  assert.equal(다.번호, null, '두 자리를 살아 있는 주인(이 프로세스)이 쥐었다');
+  assert.ok(Date.now() - 앞 >= 300, '기다림만큼은 기다렸다');
+  assert.equal(표들(폴더).length, 2, '기다리는 쪽은 표를 두지 않는다');
+  가.놓기();
+  const 라 = 관련.자리잡기(폴더, { 수: 2, 기다림ms: 1000, 간격ms: 50 });
+  assert.equal(라.번호, 1, '먼저 쥔 나 하나 다음이다');
+  assert.equal(라.기다린초, 0);
+  나.놓기(); 라.놓기(); 다.놓기();
+  assert.deepEqual(표들(폴더), []);
+
+  const 마 = 관련.자리잡기(폴더, { 수: 1 });
+  const 남 = 표이름(Date.now() + 1000, process.pid);
+  fs.writeFileSync(path.join(폴더, 남), '');
+  마.놓기();
+  assert.deepEqual(표들(폴더), [남], '놓기는 제 이름의 표만 지운다');
+});
+
+test('자리 — 주인이 없거나 30분 넘게 그대로인 표는 치우고, 그 이름의 표만 지운다(새로 뽑은 남의 표는 안 지운다 · 아르곤 10-22 P1)', (t) => {
+  const 폴더 = 자리폴더(t);
+  const 죽은pid = spawnSync(process.execPath, ['-e', '']).pid;
+  const 죽은표 = 표이름(Date.now() - 5000, 죽은pid);
+  fs.writeFileSync(path.join(폴더, 죽은표), '');
+  const 가 = 관련.자리잡기(폴더, { 수: 1, 기다림ms: 500, 간격ms: 50 });
+  assert.equal(가.번호, 0, '주인이 없는 앞 표는 치우고 잡는다');
+  assert.ok(!표들(폴더).includes(죽은표));
+  가.놓기();
+
+  const 멈춘표 = 표이름(Date.now() - 3600e3, process.pid);
+  fs.writeFileSync(path.join(폴더, 멈춘표), '');
+  const 옛 = (Date.now() - 3600e3) / 1000;
+  fs.utimesSync(path.join(폴더, 멈춘표), 옛, 옛);
+  const 나 = 관련.자리잡기(폴더, { 수: 1, 기다림ms: 500, 간격ms: 50 });
+  assert.equal(나.번호, 0, '30분 넘게 그대로인 표는 주인이 살아 있어도 멈춘 것으로 본다');
+  나.놓기();
+
+  // 같은 pid로 다시 뽑은 새 표는 이름(뽑은 시각)이 달라 옛 표를 치울 때 같이 지워지지 않는다
+  const 새표 = 표이름(Date.now(), process.pid);
+  fs.writeFileSync(path.join(폴더, 새표), '');
+  const 다 = 관련.자리잡기(폴더, { 수: 1, 기다림ms: 200, 간격ms: 50 });
+  assert.equal(다.번호, null, '살아 있는 새 표가 자리를 쥐었다');
+  assert.deepEqual(표들(폴더), [새표]);
+});
+
+test('자리 — 고르다 죽은 프로세스의 전체 잠금(.고르는중)은 10초가 지나면 치우고 잡는다', (t) => {
+  const 폴더 = 자리폴더(t);
+  const 잠금 = path.join(폴더, '.고르는중');
+  fs.mkdirSync(잠금);
+  const 옛 = (Date.now() - 60e3) / 1000;
+  fs.utimesSync(잠금, 옛, 옛);
+  const 앞 = Date.now();
+  const 가 = 관련.자리잡기(폴더, { 수: 1, 기다림ms: 2000, 간격ms: 50 });
+  assert.equal(가.번호, 0);
+  assert.ok(Date.now() - 앞 < 5000, '낡은 전체 잠금에서 오래 기다리지 않았다');
+  assert.equal(fs.existsSync(잠금), false, '잡은 뒤에는 전체 잠금을 푼다');
+  가.놓기();
+});
+
+test('자리 — 다른 프로세스가 쥔 자리는 놓을 때까지 기다린다', async (t) => {
+  const 폴더 = 자리폴더(t);
+  const 도구 = path.join(__dirname, '..', 'tools', '관련시험.js');
+  const 쥔이 = spawn(process.execPath, ['-e', `
+    const 관련 = require(${JSON.stringify(도구)});
+    const 자리 = 관련.자리잡기(${JSON.stringify(폴더)}, { 수: 1 });
+    console.log('잡음 ' + 자리.번호);
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1500);
+    자리.놓기();
+  `], { stdio: ['ignore', 'pipe', 'inherit'] });
+  t.after(() => { try { 쥔이.kill(); } catch { /* 이미 끝남 */ } });
+  await new Promise((resolve, reject) => {
+    쥔이.stdout.on('data', (d) => { if (String(d).includes('잡음 0')) resolve(); });
+    쥔이.on('exit', () => reject(new Error('자리를 잡기 전에 끝났다')));
+  });
+  const 앞 = Date.now();
+  const 내 = 관련.자리잡기(폴더, { 수: 1, 간격ms: 100 });
+  assert.equal(내.번호, 0);
+  assert.ok(Date.now() - 앞 >= 800, '쥔이가 놓을 때까지 기다렸다');
+  내.놓기();
+  assert.deepEqual(표들(폴더), []);
+});
+
+test('돌리기 — 공용 git 폴더에서 자리를 잡고 돌고 놓는다 · 결과에 자리 · 기다림 0은 바로 자리 없이 · 끄기 · 자리글', (t) => {
+  const root = 저장소(t, { 'tests/됨.test.js': "require('node:test')('됨', () => {});\n" });
+  const 자리곳 = path.join(root, '.git', 'synk-관련시험', '자리');
+  const r = 관련.돌리기({ root, 시험: ['tests/됨.test.js'] });
+  assert.equal(r.통과함, true, JSON.stringify(r));
+  assert.deepEqual(r.자리, { 번호: 0, 수: 2, 기다린초: 0 });
+  assert.deepEqual(표들(자리곳), [], '돌고 나면 자리를 놓는다');
+
+  // 기다림 0을 주면 기본 30분으로 바뀌지 않고 그 값 그대로다(아르곤 10-22 P2)
+  const 쥠 = 관련.자리잡기(자리곳, { 수: 1 });
+  const 앞 = Date.now();
+  const 바로 = 관련.돌리기({ root, 시험: ['tests/됨.test.js'], 자리: { 수: 1, 기다림ms: 0 } });
+  assert.equal(바로.자리.번호, null);
+  assert.ok(Date.now() - 앞 < 60e3, '30분을 기다리지 않았다');
+  쥠.놓기();
+
+  assert.equal(관련.돌리기({ root, 시험: ['tests/됨.test.js'], 자리: false }).자리, undefined);
+  process.env.SYNK_관련시험_자리 = '끔';
+  try { assert.equal(관련.돌리기({ root, 시험: ['tests/됨.test.js'] }).자리, undefined); } finally { delete process.env.SYNK_관련시험_자리; }
+  assert.equal(관련.자리글({ 번호: 0, 수: 2, 기다린초: 0 }), '');
+  assert.equal(관련.자리글({ 번호: 1, 수: 2, 기다린초: 5 }), ' · 자리 기다림 5초');
+  assert.match(관련.자리글({ 번호: null, 수: 2, 기다린초: 1800 }), /자리 2개가 1800초 동안 안 비어 자리 없이 돌았다/);
+  assert.equal(관련.자리글(undefined), '');
 });
