@@ -43,7 +43,7 @@ class Measure
             for(int i=bootstrapped?1:0;i<2;i++)
             {
                 var engine=new InstallerEngine(spec,delegate{return File.OpenRead(args[1]);});var total=Stopwatch.StartNew();long backendStart=0,backendEnd=0;
-                engine.Install(delegate(string title,string detail,int? percent){if(title=="SYNK 측정를 설치합니다")backendStart=total.ElapsedMilliseconds;if(backendEnd==0&&title=="설치를 확인합니다")backendEnd=total.ElapsedMilliseconds;});
+                engine.Install(delegate(string title,string detail,int? percent){if(title=="SYNK 측정를 설치해요")backendStart=total.ElapsedMilliseconds;if(backendEnd==0&&title=="설치를 확인해요")backendEnd=total.ElapsedMilliseconds;});
                 long elapsed=total.ElapsedMilliseconds;engine.VerifyInstalled();
                 if(digest!=InstallerEngine.HashFile(sentinel))throw new Exception("Profile sentinel changed");
                 runs.Add(new {kind=i==0&&!existing?"fresh":"reinstall",totalMilliseconds=elapsed,backendAndFirstVerificationMilliseconds=backendEnd-backendStart,payloadFiles=spec.Files.Count,payloadVerified=true,profileSentinelUnchanged=true});

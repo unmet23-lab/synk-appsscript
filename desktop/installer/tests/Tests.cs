@@ -123,7 +123,7 @@ internal static class SignalInstallerTests
                 limited.Files.Add(new InstallFile { Path="update-only.txt",Bytes=0,SHA256=new string('0',64) });
                 var timed=new InstallerEngine(limited,delegate { return File.OpenRead(backend); });InstallFailure failure=null;
                 try { Task.Run(delegate { return timed.InstallWithDeadline(Progress,1500); }).GetAwaiter().GetResult(); }catch(InstallFailure error){failure=error;}
-                Assert(failure!=null&&failure.CanRetry&&failure.BackendStopped&&failure.Message.Contains("부분 설치"),"Fresh timeout state was not safely explained.");
+                Assert(failure!=null&&failure.CanRetry&&failure.BackendStopped&&failure.Message.Contains("덜 설치된"),"Fresh timeout state was not safely explained.");
                 Assert(!Directory.Exists(Spec.InstallDirectory),"Fresh partial installation remains.");
                 Assert(!File.Exists(StartMenuShortcut())&&!File.Exists(DesktopShortcut()),"Fresh partial shortcuts remain.");
                 using(var hive=RegistryKey.OpenBaseKey(RegistryHive.CurrentUser,RegistryView.Registry64))Assert(hive.OpenSubKey(UninstallKey())==null,"Fresh partial uninstall registration remains.");
@@ -219,7 +219,7 @@ internal static class SignalInstallerTests
                             bool relaunched=false;var blocked=Engine(ReadSpec());
                             var result=Task.Run(delegate { return blocked.InstallAutomaticUpdateCore(session,Progress,delegate(Action<string,string,int?> progress) { throw new InstallFailure("Synthetic stop confirmation failure",false,false); },delegate(string executable,string arguments){relaunched=true;}); }).GetAwaiter().GetResult();
                             Assert(!result.Restored&&!result.Updated&&!relaunched,"Unconfirmed stop attempted recovery or launch.");
-                            Assert(result.Message.Contains("일부 바뀐 상태")&&result.Message.Contains("복구 원본"),"Uncertain state not disclosed.");
+                            Assert(result.Message.Contains("일부 바뀌었을 수")&&result.Message.Contains("되돌릴 원본"),"Uncertain state not disclosed.");
                             InstallFailure failure=null;try { Engine(ReadSpec()).Preflight(); }catch(InstallFailure error){failure=error;}
                             Assert(failure!=null&&!failure.CanRetry,"New installer did not respect unresolved transaction barrier.");
                             failure=null;try { Engine(ReadSpec()).PrepareAutomaticUpdate(exited.Id,new string('a',64),new string('b',64)); }catch(InstallFailure error){failure=error;}

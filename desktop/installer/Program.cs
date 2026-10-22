@@ -71,7 +71,10 @@ namespace Synk.SignalInstaller
                                     if (result.Updated) { window.ShowComplete(); window.Close(); }
                                     else
                                     {
-                                        window.ShowAutomaticFailure(result.Message);
+                                        // Not updated. Unless restored and relaunched (closed
+                                        // below), the files may have changed, so the window
+                                        // must not promise a retry.
+                                        window.ShowAutomaticFailure(result.Message, false);
                                         // The restored app owns the failure/retry
                                         // gate. Release this installer's mutex so
                                         // retry does not require closing two UIs.
@@ -81,7 +84,8 @@ namespace Synk.SignalInstaller
                                 catch (Exception error)
                                 {
                                     Console.WriteLine("SYNK_UPDATE_FAILED " + automatic.Token); Console.Out.Flush();
-                                    window.ShowAutomaticFailure(error.Message);
+                                    // Thrown before any file changed: the running app stays as it was.
+                                    window.ShowAutomaticFailure(error.Message, true);
                                 }
                             };
                         }
@@ -152,7 +156,7 @@ namespace Synk.SignalInstaller
                 if (!String.Equals(previousName, Path.GetFileNameWithoutExtension(executableName), StringComparison.OrdinalIgnoreCase))
                     throw new InvalidOperationException("업데이트할 SYNK 앱을 찾지 못했어요.");
                 if (!previous.WaitForExit(60000))
-                    throw new InvalidOperationException("SYNK가 아직 켜져 있어요. 작업을 저장하고 앱을 끈 뒤 설치 파일을 다시 열어 주세요.");
+                    throw new InvalidOperationException("SYNK가 아직 켜져 있어요.\n작업을 저장하고 앱을 끈 뒤 설치 파일을 다시 열어 주세요.");
             }
         }
 

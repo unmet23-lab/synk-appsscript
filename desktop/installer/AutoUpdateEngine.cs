@@ -223,7 +223,7 @@ namespace Synk.SignalInstaller
             if (session == null || session.Used || session.Parent == null) throw new InvalidOperationException("자동 업데이트는 한 번에 하나만 할 수 있어요.");
             session.Used = true;
             progress("앱을 닫는 중", "저장할 작업이 있는지 보고 앱이 꺼지기를 기다려요.", null);
-            if (!session.Parent.WaitForExit(60000)) throw new InvalidOperationException("SYNK가 아직 켜져 있어요. 작업을 저장하고 앱을 끈 뒤 다시 해 주세요.");
+            if (!session.Parent.WaitForExit(60000)) throw new InvalidOperationException("SYNK가 아직 켜져 있어요.\n작업을 저장하고 앱을 끈 뒤 다시 해 주세요.");
             UpdateBackup backup = null;
             bool mutationStarted = false;
             try

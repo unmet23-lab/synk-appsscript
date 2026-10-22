@@ -49,7 +49,7 @@ namespace Synk.SignalInstaller
                 // 큰 한글: 자간은 플랫폼 규칙 −.085em + 글자 수(3) × .01em
                 Word = "플랫폼", WordSize = 86, WordLineHeight = 70, WordTracking = -.055,
                 Lead = "앱을 설치하고 여는 SYNK PC 앱.", PosterResource = "art.poster-platform.png", PosterLabel = "청금석 면 위에 선 흰 펠트 synk 로고",
-                Intro = "WORLD·Workspace를 설치하고 열고, 회원 혜택을 쓰는 SYNK Platform이에요.\n지금 쓰는 Windows 계정에 바로 설치해요.",
+                Intro = "WORLD·Workspace를 설치하고 열고,\n회원 혜택을 쓰는 SYNK Platform이에요.\n지금 쓰는 Windows 계정에 바로 설치해요.",
                 CompleteText = "SYNK 열기를 누르면 플랫폼이 열려요.\n다음부터는 시작 메뉴에서도 열 수 있어요.", NextStep = "SYNK ID 로그인",
                 OnFace = Colors.White, Accent = Hex("#3D6BC9")
             };
@@ -442,9 +442,9 @@ namespace Synk.SignalInstaller
             retryAllowed = canRetry;
             clock.Stop();
             SetHeadline("설치를\n마치지 못했어요.");
-            description.Text = canRetry?"아래 내용을 확인한 뒤 다시 시도해 주세요.\n이 설치 파일은 나중에 다시 열어도 돼요.":"복구 확인이 끝날 때까지 다시 설치하지 마세요.\n아래에 남은 상태와 복구 위치를 적어 두었어요.";
+            description.Text = canRetry?"아래 내용을 확인한 뒤 다시 시도해 주세요.\n이 설치 파일은 나중에 다시 열어도 돼요.":"되돌리기 확인이 끝날 때까지 다시 설치하지 마세요.\n아래에 남은 상태와 되돌릴 원본 위치를 적어 두었어요.";
             SetSticker("확인 필요", Coral);
-            failureText.Text = String.IsNullOrWhiteSpace(message) ? "설치 파일을 다시 실행해 주세요." : message.Trim();
+            failureText.Text = String.IsNullOrWhiteSpace(message) ? "설치 파일을 다시 열어 주세요." : message.Trim();
             failureText.ToolTip = failureText.Text;
             AutomationProperties.SetName(failureText, failureText.Text);
             ShowBlock(failureBlock);
@@ -453,11 +453,16 @@ namespace Synk.SignalInstaller
             Announce(failureText);
         }
 
-        public void ShowAutomaticFailure(string message)
+        // unchanged: 파일을 바꾸기 전에 멈춤(켜진 앱 그대로) · 아니면 앱 파일 상태를 확인하지 못해 멈춤(앱이 꺼진 채, 다시 설치하지 않게 안내).
+        // 사용자가 설치를 누른 것이 아니라 앱이 스스로 업데이트하다 멈춘 창이라 제목도 업데이트로 바꾼다.
+        public void ShowAutomaticFailure(string message, bool unchanged)
         {
             ShowFailure(message,false);
             retryAllowed = false;
-            description.Text = "아래에서 이전 앱과 복구 상태를 확인해 주세요.\n자동 업데이트는 복구가 끝난 뒤 앱에서 다시 시도해요.";
+            SetHeadline("업데이트를\n마치지 못했어요.");
+            description.Text = unchanged
+                ? "지금 쓰던 앱은 그대로예요.\n자동 업데이트는 나중에 앱에서 다시 시도해요."
+                : "앱 파일이 어떤 상태인지 확인하지 못해 업데이트를 멈췄어요.\n다시 설치하지 말고 아래 내용을 SYNK에 알려 주세요.";
             SetButtons("닫기", "닫기", true);
         }
 
@@ -632,7 +637,7 @@ namespace Synk.SignalInstaller
             statusMeter.Text = "경과 " + ((int)spent.TotalMinutes).ToString(CultureInfo.InvariantCulture) + ":" + spent.Seconds.ToString("00", CultureInfo.InvariantCulture);
             // 실제 진행 여부를 추측하지 않는다. 엔진이 한계 시각에 중단·복구 후 실패 상태를 보낸다.
             if (step == 2 && spent.TotalSeconds >= 30 && detail.Text == StepDetail(2, null))
-                detail.Text = "조금 더 걸리고 있어요. 설치 단계가 10분을 넘기면 중단하고 이전 상태를 확인해요.";
+                detail.Text = "조금 더 걸리고 있어요.\n설치 단계가 10분을 넘기면 멈추고 이전 상태를 확인해요.";
         }
 
         // ── 부품 ─────────────────────────────────────────

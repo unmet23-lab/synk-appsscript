@@ -103,7 +103,7 @@ namespace Synk.SignalInstaller
             Process[] running = Process.GetProcessesByName(System.IO.Path.GetFileNameWithoutExtension(spec.ExecutableName));
             try
             {
-                if (running.Length != 0) throw new InvalidOperationException(Short + "가 켜져 있어요. 작업을 저장하고 " + Short + "를 닫은 뒤 다시 설치해 주세요.");
+                if (running.Length != 0) throw new InvalidOperationException(Short + "가 켜져 있어요.\n작업을 저장하고 " + Short + "를 닫은 뒤 다시 설치해 주세요.");
             }
             finally { foreach (Process p in running) p.Dispose(); }
             if (!String.IsNullOrWhiteSpace(ReadRegistry(RegistryHive.LocalMachine, RegistryKey, "InstallLocation")) ||
@@ -169,7 +169,7 @@ namespace Synk.SignalInstaller
                         throw new IOException("설치 파일이 온전하지 않아요. synk.im에서 다시 받아 주세요.");
                     Preflight();
                     progress(Short + "를 설치해요", "잠시만 기다려 주세요. 설치하는 동안에는 창을 닫을 수 없어요.", null);
-                    int exitCode=BackendProcess.Run(backend,cache,deadline,delegate { progress("설치를 멈춰요","정한 시간을 넘겼어요. 설치를 멈추고 이전 상태로 되돌렸는지 확인해요.",null); });
+                    int exitCode=BackendProcess.Run(backend,cache,deadline,delegate { progress("설치를 멈춰요","설치 제한 시간을 넘겼어요. 설치를 멈춘 뒤 이전 상태를 확인해요.",null); });
                     if (exitCode == 20) throw new InvalidOperationException(Short + "가 켜져 있거나, 켜져 있는지 확인하지 못했어요. " + Short + "를 닫고 다시 해 주세요.");
                     if (exitCode != 0) throw new IOException("설치를 마치지 못했어요. 다시 해 주세요. (코드 " + exitCode + ")");
                 }

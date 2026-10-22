@@ -86,7 +86,7 @@ The checks cover read-only preflight, damaged-engine rejection, manifest travers
 
 ## Check the window
 
-The window can be checked without building the full installer or installing anything. Compile the window with the render check and pass the font directory and an output directory; it writes each state (ready, reinstall, preparing, 64 %, 42 s without a percentage, verifying, complete, failure, long failure) at 100 %, 150 % and 200 % and fails on any font fallback.
+The window can be checked without building the full installer or installing anything. Compile the window with the render check and pass the font directory and an output directory; it writes each state (ready, reinstall, preparing, 64 %, 42 s without a percentage, verifying, complete, failure, long failure, timeout restored, timeout recovery required, restoring, automatic-update failure before any file changed, automatic-update recovery required) at 100 %, 150 % and 200 % and fails on any font fallback. The public CI runs the same check for all three products before building. The progress and failure texts it renders are the engine's own texts; change them here when the engine copy changes, and run `tests/test.cjs` locally as well — `Tests.cs` asserts parts of the engine's failure texts (`Message.Contains`), and only the public CI runs it.
 
 ```powershell
 $fw = "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319"

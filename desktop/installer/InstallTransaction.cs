@@ -41,7 +41,7 @@ namespace Synk.SignalInstaller
             if(backup!=null&&!File.Exists(PendingPath))
                 try { using(var writer=new StreamWriter(new FileStream(PendingPath,FileMode.CreateNew,FileAccess.Write,FileShare.Read)))writer.Write(backup.Directory); }catch(IOException){}
             activeTransaction=null;
-            return new InstallFailure("설치가 끝나지 않았어요. 앱 파일이 일부 바뀌었을 수 있어 다시 설치하지 못하게 막았어요. 계정과 앱 기록은 건드리지 않았어요.\n되돌릴 원본: "+(backup==null?"생성 전":backup.Directory)+"\nSYNK에 이 내용을 알려 주세요.\n"+error.Message,false,!(error is InstallFailure)||((InstallFailure)error).BackendStopped);
+            return new InstallFailure("설치가 끝나지 않았어요. 앱 파일이 일부 바뀌었을 수 있어 다시 설치하지 못하게 막았어요. 계정과 앱 기록은 그대로예요.\n되돌릴 원본: "+(backup==null?"생성 전":backup.Directory)+"\nSYNK에 이 내용을 알려 주세요.\n"+error.Message,false,!(error is InstallFailure)||((InstallFailure)error).BackendStopped);
         }
         public string Install(Action<string,string,int?> progress) { return InstallWithDeadline(progress,BackendProcess.DeadlineMilliseconds); }
         internal string InstallWithDeadline(Action<string,string,int?> progress,int deadline)
