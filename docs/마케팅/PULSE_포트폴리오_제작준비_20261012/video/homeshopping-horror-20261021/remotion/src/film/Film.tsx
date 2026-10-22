@@ -3,7 +3,7 @@
 // 홈쇼핑 컷에서만 들린다(들어가는 프레임에 터지고 나오는 프레임에 끊긴다). 모든 소리 크기에 MASTER 0.8(현장 노트 — Remotion은 0dBFS 넘는 표본을 자른다).
 import React from 'react';
 import { AbsoluteFill, Audio, Img, Sequence, interpolate, staticFile, useCurrentFrame } from 'remotion';
-import { H1, H2, H3, HE } from '../hs/scenes';
+import { H1, H2, H3, HE, SceneProps } from '../hs/scenes';
 import { FPS, sec } from '../hs/parts';
 
 const MASTER = 0.8;
@@ -30,7 +30,7 @@ export const CUTS: Cut[] = [
   { id: 'C14', t0: 33.0, t1: 34.5, move: [1.0, 1.02] },
   { id: 'HE', t0: 34.5, t1: 38.5, hs: true },
 ];
-const HS_SCENE: Record<string, React.FC> = { H1, H2, H3, HE };
+const HS_SCENE: Record<string, React.FC<SceneProps>> = { H1, H2, H3, HE };
 
 // 목소리: [파일, 시작 초, 크기]
 const VO: [string, number, number][] = [
@@ -69,13 +69,14 @@ const SfxAt: React.FC<{ t: number; src: string; vol: number; len?: number; from?
   </Sequence>
 );
 
-export const Film: React.FC = () => (
+// p: 홈쇼핑 제품(product.ts) — 없으면 1안. 공포 컷 · 소리는 두 안이 같다
+export const Film: React.FC<SceneProps> = ({ p }) => (
   <AbsoluteFill style={{ background: '#000' }}>
     {CUTS.map((c) => {
       const Scene = c.hs ? HS_SCENE[c.id] : null;
       return (
         <Sequence key={c.id} from={sec(c.t0)} durationInFrames={sec(c.t1) - sec(c.t0)}>
-          {Scene ? <Scene /> : <StillCut c={c} />}
+          {Scene ? <Scene p={p} /> : <StillCut c={c} />}
         </Sequence>
       );
     })}
@@ -101,14 +102,14 @@ export const Film: React.FC = () => (
 );
 
 // 9:16 띠판: 가운데 16:9 띠(1080×608, y 656) + 위 검정에 고정 머리글(장르를 처음부터 알린다 — 카드 「가져올 것 3」)
-export const Band916: React.FC = () => {
+export const Band916: React.FC<SceneProps> = ({ p }) => {
   const f = useCurrentFrame();
   const end = f >= sec(34.5);
   const lines = end ? ['제품 광고 문의', 'PULSE'] : ['강도가 들었는데', '홈쇼핑이 자꾸 끼어든다'];
   return (
     <AbsoluteFill style={{ background: '#000' }}>
       <div style={{ position: 'absolute', left: 0, top: 656, width: 1920, height: 1080, transform: 'scale(0.5625)', transformOrigin: '0 0' }}>
-        <Film />
+        <Film p={p} />
       </div>
       <div style={{ position: 'absolute', left: 0, right: 0, top: 452, textAlign: 'center', fontFamily: "'SUIT', sans-serif", fontWeight: 700, fontSize: 54, lineHeight: 1.32, color: '#FFFFFF', letterSpacing: -0.5 }}>
         {lines.map((l) => <div key={l}>{l}</div>)}

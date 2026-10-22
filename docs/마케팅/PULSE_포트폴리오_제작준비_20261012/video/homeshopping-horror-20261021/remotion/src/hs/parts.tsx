@@ -3,6 +3,7 @@
 import React from 'react';
 import { AbsoluteFill, Audio, Img, Sequence, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
 import { HS, HS_EN, KO } from '../lib/fonts';
+import { P1, Seq } from './product';
 
 export const FPS = 24;
 export const sec = (s: number) => Math.round(s * FPS);
@@ -80,17 +81,18 @@ export const Sunburst: React.FC<{ palette: Palette; cx?: number; cy?: number }> 
   );
 };
 
-// ── 회전 받침 위 병(블렌더 알파 120장, -60°→+60°) ─────────────────────────────
-// 1080² 프레임에서 받침 · 병은 x 298~781 · y 262~908(가운데 x 540). cx · bottom = 화면에서 받침 밑이 놓일 자리, h = 병+받침 높이(px)
-export const Turntable: React.FC<{ cx: number; bottom: number; h: number; first: number; dim?: number }> = ({ cx, bottom, h, first, dim = 0 }) => {
+// ── 회전 받침 위 제품(블렌더 알파 렌더 프레임 열 — product.ts의 Seq) ───────────────
+// 1안 병은 120장(-60°→+60°)이고 1080² 프레임에서 받침 · 병이 x 298~781 · y 262~908(가운데 x 540).
+// cx · bottom = 화면에서 받침 밑이 놓일 자리, h = 제품+받침 높이(px)
+export const Turntable: React.FC<{ cx: number; bottom: number; h: number; first: number; dim?: number; seq?: Seq; shadow?: number }> = ({ cx, bottom, h, first, dim = 0, seq = P1.main, shadow = 0.38 }) => {
   const f = useCurrentFrame();
-  const idx = Math.max(1, Math.min(120, first + f));
-  const s = h / 646;
+  const idx = Math.max(1, Math.min(seq.n, first + f));
+  const s = h / (seq.bottom - seq.top);
   const size = 1080 * s;
   return (
     <Img
-      src={staticFile(`bottle/full_${String(idx).padStart(4, '0')}.png`)}
-      style={{ position: 'absolute', width: size, height: size, left: cx - 540 * s, top: bottom - 908 * s, filter: `drop-shadow(0 ${(16 * s).toFixed(1)}px ${(34 * s).toFixed(1)}px rgba(0,24,80,0.38))${dim ? ` brightness(${1 - dim})` : ''}` }}
+      src={staticFile(`${seq.dir}/${seq.prefix}_${String(idx).padStart(4, '0')}.png`)}
+      style={{ position: 'absolute', width: size, height: size, left: cx - seq.cx * s, top: bottom - seq.bottom * s, filter: `drop-shadow(0 ${(16 * s).toFixed(1)}px ${(34 * s).toFixed(1)}px rgba(0,24,80,${shadow}))${dim ? ` brightness(${1 - dim})` : ''}` }}
     />
   );
 };
@@ -297,14 +299,14 @@ export const shakeAt = (f: number, at: number, amp = 18) => {
 };
 
 // ── 아래 주문 띠(전화번호 + 흐르는 글) ────────────────────────────────────────
-export const OrderBar: React.FC = () => {
+export const OrderBar: React.FC<{ phone?: string }> = ({ phone = P1.phone }) => {
   const f = useCurrentFrame();
   const ticker = '  ARS 주문 시 추가 할인  ·  무이자 10개월  ·  지금 이 구성 마지막  ·  방송 중 주문 폭주  ·  ARS 주문 시 추가 할인  ·  무이자 10개월  ·  지금 이 구성 마지막  ·  방송 중 주문 폭주  ·';
   return (
     <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 104, background: 'linear-gradient(#13286E, #08143D)', borderTop: '6px solid #FFE14A', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
       <div style={{ zIndex: 2, height: '100%', display: 'flex', alignItems: 'center', gap: 18, padding: '0 34px', background: '#E4001B', boxShadow: '10px 0 20px rgba(0,0,0,0.4)' }}>
         <span style={{ fontFamily: HS, fontSize: 40, color: '#FFFFFF' }}>주문 전화</span>
-        <span style={{ fontFamily: HS, fontSize: 66, color: '#FFE14A', textShadow: ol('#7A0010', 4) }}>1577-맑음</span>
+        <span style={{ fontFamily: HS, fontSize: 66, color: '#FFE14A', textShadow: ol('#7A0010', 4) }}>{phone}</span>
       </div>
       <div style={{ position: 'relative', flex: 1, height: '100%' }}>
         <div style={{ position: 'absolute', top: 24, left: 40 - ((f * 9) % 1300), fontFamily: HS, fontSize: 48, color: '#FFFFFF', whiteSpace: 'nowrap' }}>{ticker}</div>

@@ -28,6 +28,11 @@ const 목록 = [
     return [path.join(V, '블렌더', 'full', n), `bottle/${n}`];
   }),
   [path.join(V, '블렌더', 'pedestal', 'pedestal_0001.png'), 'bottle/pedestal.png'],
+  // 2안 꽉 진공 밀폐용기(블렌더/밀폐용기.py) — 쌓은 탑 · 뚜껑 하나, 96장씩
+  ...['stack', 'lid'].flatMap((what) => Array.from({ length: 96 }, (_, i) => {
+    const n = `${what}_${String(i + 1).padStart(4, '0')}.png`;
+    return [path.join(V, '블렌더', '2안', what, n), `kkwak/${n}`];
+  })),
   // 정지컷(고른 판에 붉은밤 색감을 입힌 것 — 정지컷/색감/<컷>.jpg)
   ...['C01', 'C02', 'C03', 'C04', 'C05', 'C06', 'C07', 'C08', 'C09', 'C10', 'C11', 'C12', 'C13', 'C14'].map((c) => [path.join(V, '정지컷', '색감', `${c}.jpg`), `stills/${c}.jpg`]),
   // 목소리(나레이션굽기.mjs 출력)
