@@ -56,6 +56,8 @@ jobs:
           sparse-checkout: |
             /package.json
             /package-lock.json
+            /lib/sha256.js
+            /lib/플래그.js
             /lib/synk-account-lifecycle.js
             /lib/synk-account-restore-export.js
             /lib/synk-care-push-worker.js

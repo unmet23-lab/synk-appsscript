@@ -76,9 +76,9 @@
     <section id="story-panel" class="story-panel surface" hidden tabindex="-1" aria-label="우리의 이야기">
       <div class="panel-top"><div><span id="chapter" class="eyebrow">PROLOGUE</span><h2 id="panel-title">이 밤의 동료들</h2></div><button id="panel-collapse" class="icon-button" aria-label="이야기 패널 접기" aria-expanded="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 14 6-6 6 6"/></svg></button></div>
       <div id="panel-body">
-        <div id="role-switch" class="role-switch" hidden aria-label="한 기기 체험 역할 전환"></div>
+        <div id="role-switch" class="role-switch" hidden role="group" aria-label="한 기기 체험 역할 전환"></div>
         <p id="objective" class="objective"></p>
-        <div id="journey" class="journey" hidden aria-label="우리가 되찾은 것"><span id="power-progress">전원 연결</span><span id="radio-progress">방송 수신</span><span id="choice-progress">불빛 보내기</span></div>
+        <div id="journey" class="journey" hidden role="list" aria-label="우리가 되찾은 것"><span id="power-progress" role="listitem">전원 연결</span><span id="radio-progress" role="listitem">방송 수신</span><span id="choice-progress" role="listitem">불빛 보내기</span></div>
         <div id="players" class="players"></div>
         <div id="lobby-actions" class="lobby-actions" hidden>
           <button id="invite-copy" class="button ghost">초대 링크 복사 <span aria-hidden="true">↗</span></button>
@@ -93,7 +93,7 @@
           <section id="power-workshop" class="workshop" hidden aria-labelledby="power-title">
             <div class="workshop-heading"><span class="eyebrow">전차 · 비상 배전함</span><h3 id="power-title">끊긴 길을 이어 주세요.</h3></div>
             <p class="workshop-copy">연결부를 누르면 90도씩 돌아갑니다. 전원은 1번의 왼쪽, 배전판은 오른쪽 아래에 있어요.</p>
-            <div class="circuit-grid" aria-label="세 연결부가 있는 배전함">
+            <div class="circuit-grid" role="group" aria-label="세 연결부가 있는 배전함">
               <button id="circuit-0" class="circuit-tile" data-index="0" type="button"><span class="tile-number">01</span><svg viewBox="0 0 80 80" aria-hidden="true"><path d="M40 0V40H80"/></svg><span class="tile-direction"></span></button>
               <button id="circuit-1" class="circuit-tile" data-index="1" type="button"><span class="tile-number">02</span><svg viewBox="0 0 80 80" aria-hidden="true"><path d="M40 0V40H80"/></svg><span class="tile-direction"></span></button>
               <button id="circuit-2" class="circuit-tile" data-index="2" type="button"><span class="tile-number">03</span><svg viewBox="0 0 80 80" aria-hidden="true"><path d="M40 0V40H80"/></svg><span class="tile-direction"></span></button>

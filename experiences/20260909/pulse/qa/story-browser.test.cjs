@@ -9,10 +9,12 @@ const phase=(p,v)=>p.waitForFunction(v=>document.querySelector('#experience').da
 const check=(name)=>{checks.push(name);console.log('PASS '+name);};
 async function keyButton(p,locator){for(let i=0;i<100;i++){if(await locator.isDisabled()){await p.waitForTimeout(25);continue;}if(await locator.evaluate(el=>el===document.activeElement)){await p.keyboard.press('Enter');return;}await p.keyboard.press('Tab');}throw new Error('Keyboard could not reach a device control');}
 async function rotate(p,index,times){for(let i=0;i<times;i++){const before=await p.locator('#circuit-'+index).getAttribute('aria-label');await p.locator('#circuit-'+index).click();await p.waitForFunction(([id,label])=>document.getElementById(id).getAttribute('aria-label')!==label,['circuit-'+index,before]);}}
-async function audit(p,name){await p.addScriptTag({path:path.join(canonical,'tools/vendor/axe.min.js')});const issues=await p.evaluate(async()=>{const result=await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}});return result.violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))}));});if(issues.length)console.log(JSON.stringify({name,issues}));assert.equal(issues.length,0,name+' axe');check(name+' axe 0');}
+async function audit(p,name){await p.addScriptTag({path:path.join(canonical,'tools/vendor/axe.min.js')});const issues=await p.evaluate(async()=>{const result=await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}});return [...result.violations,...result.incomplete.filter(v=>v.id==='aria-prohibited-attr')].map(v=>({id:v.id,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))}));});if(issues.length)console.log(JSON.stringify({name,issues}));assert.equal(issues.length,0,name+' axe');check(name+' axe 0');}
 (async()=>{
  app=createExperienceServer({root:staticRoot});await new Promise(r=>app.server.listen(0,'127.0.0.1',r));
- browser=await chromium.launch({channel:'chrome',headless:true});
+ // GPU 없는 Linux 러너는 3D 장면을 소프트웨어로 그리느라 첫 캡처가 30초를 넘긴다(10-22 wide-tests) — 그곳에서는 WebGL을 끄고
+ // 대체 화면 경로(app.js useFallback)로 같은 흐름·접근성을 잰다. 이 PC(Windows)는 3D 장면 그대로.
+ browser=await chromium.launch({channel:'chrome',headless:true,...(process.platform==='win32'?{}:{args:['--disable-3d-apis']})});
  for(const width of [1440,390,320]){
    const c=await browser.newContext({viewport:{width,height:960},reducedMotion:'reduce'}),p=await c.newPage(),errors=[];
    // The separately owned AI surface is integration-tested by the main agent.

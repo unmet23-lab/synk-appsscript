@@ -6,7 +6,7 @@ async function listen(server){await new Promise(r=>server.listen(0,'127.0.0.1',r
 const close=server=>new Promise(r=>{server.closeAllConnections();server.close(r);});
 const secure={isEncryptionAvailable:()=>true,encryptString:text=>{const cipher=crypto.createCipheriv('aes-256-gcm',Buffer.alloc(32,7),Buffer.alloc(12,9));return Buffer.concat([cipher.update(text),cipher.final(),cipher.getAuthTag()]);},decryptString:data=>{const decipher=crypto.createDecipheriv('aes-256-gcm',Buffer.alloc(32,7),Buffer.alloc(12,9));decipher.setAuthTag(data.subarray(-16));return Buffer.concat([decipher.update(data.subarray(0,-16)),decipher.final()]).toString();}};
 async function fixture(t,{product='platform',secureStorage=secure,openFail=false}={}){
-  const directory=await fs.mkdtemp(path.join(os.tmpdir(),'synk-auth-test-'));const portProbe=http.createServer(),callbackPort=await listen(portProbe);await close(portProbe);
+  const directory=await fs.mkdtemp(path.join(os.tmpdir(),'synk-auth-test-'));const portProbe=http.createServer(),callbackPort=await listen(portProbe);
   let opened,clock=1000000,serial=0,codeCount=0,refreshCount=0,logoutCount=0,delayToken=null,tokenStatus=200,wrongSubject=false,accountStatus=200,userStatus=200,nonJson=false,accountPayload={account:{synk_user_id:'stable-synthetic-id',status:'active',profile:{display_name:'합성 계정'}},memberships:[],entitlements:[]};const requests=[],codes=new Map(),active=new Set(),userResponses=[],accountResponses=[],classroomResponses=[],fortuneResponses=[],careResponses=[],personalResponses=[],playResponses=[],worldResponses=[],lessonResponses=[];
   const server=http.createServer(async(req,res)=>{
     const u=new URL(req.url,'http://127.0.0.1');let body='';for await(const chunk of req)body+=chunk;
@@ -35,6 +35,8 @@ async function fixture(t,{product='platform',secureStorage=secure,openFail=false
     reply(404,{ok:false});
   });
   const serverPort=await listen(server),origin='http://127.0.0.1:'+serverPort,raw={version:1,supabaseUrl:origin,accountApiUrl:origin,supabasePublishableKey:'sb_publishable_synthetic',clients:{[product]:{clientId:'synthetic-client-'+product,redirectUri:`http://127.0.0.1:${callbackPort}/synk/oauth/${product}/callback`}}};
+  // 탐지 서버는 가짜 서버가 자리를 잡은 뒤에 닫는다 — 먼저 닫으면 OS가 방금 비운 그 번호를 가짜 서버에 다시 줄 수 있다(10-22 Linux CI의 CALLBACK_UNAVAILABLE).
+  await close(portProbe);
   const config=configuration(raw,product,'development');const store=()=>createTokenStore({directory,safeStorage:secureStorage,scope:product,configFingerprint:config.fingerprint,platform:'win32'});const services=[];
   const create=()=>{const service=createAuthService({config,store:store(),now:()=>clock,openExternal:async url=>{if(openFail)throw Error('SYNTHETIC_OPEN_FAILED');opened=url;},timeoutMs:3000});services.push(service);return service;};
   const service=create();t.after(async()=>{for(const s of services)s.dispose();await close(server);await fs.rm(directory,{recursive:true,force:true});});
