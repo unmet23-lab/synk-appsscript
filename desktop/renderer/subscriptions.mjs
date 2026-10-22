@@ -560,7 +560,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
         ${valueHtml(g, now, stale)}${chevron}
       </button>${open ? detailHtml(g, now) : ''}</div>`;
   }
-  // 펼친 줄의 보조 글: 오른쪽 값(덜 남은 창)은 빼고 나머지 창 — 주간, 모델별 주간(Fable 등), 5시간 순 — 의 쓴 %와 주간 초기화 때.
+  // 펼친 줄의 보조 글: 오른쪽 값(덜 남은 창)은 빼고 나머지 창 — 주간, 모델별 주간(Gemini의 Claude·GPT 모델 — Claude의 Fable 주간은 본체가 읽지 않는다), 5시간 순 — 의 쓴 %와 주간 초기화 때.
   function windowsText(a, now) {
     const { g } = a, parts = [];
     if (g.weekly && a.focus !== 'weekly') parts.push(useText('주간', 100 - g.weekly.left));

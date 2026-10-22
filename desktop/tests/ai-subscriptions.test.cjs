@@ -25,7 +25,8 @@ test('reads the official Claude Code usage text without touching credentials',()
   assert.equal(new Date(usage.weekly.resetsAt).getDate(),22);
   assert.equal(new Date(usage.weekly.resetsAt).getHours(),10);
   assert.equal(new Date(usage.weekly.resetsAt).getMinutes(),59);
-  assert.deepEqual(usage.models.map(m=>[m.name,m.usedPercent]),[['Fable',17]]);
+  // 모델별 주간 줄(Fable 17%)은 읽지 않는다 — 계정판에는 전체 주간 31%만 남는다(10-22).
+  assert.deepEqual(usage.models,[]);
   assert.equal(new Date(parseResetText('Jan 3, 9am',new Date(2026,11,30))).getFullYear(),2027);
   assert.equal(parseClaudeUsage('Not logged in · Please run /login').weekly,null);
   assert.equal(claudeNeedsLogin('Not logged in · Please run /login'),true);

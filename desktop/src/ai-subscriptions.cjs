@@ -104,6 +104,7 @@ function parseResetText(text,now=new Date()){
   if(date.getTime()<now.getTime()-2*864e5)date.setFullYear(date.getFullYear()+1);
   return date.getTime();
 }
+// 모델별 주간 줄(「Current week (Fable)」 등)은 읽지 않는다 — 계정판은 전체 주간·5시간만 본다(2026-10-22 유호님). models는 Gemini와 모양을 맞춘 빈 목록.
 function parseClaudeUsage(output,now=new Date()){
   const lines=stripAnsi(output).split(/\r?\n/).map(line=>line.trim()).filter(Boolean);
   const result={session:null,weekly:null,models:[]};
@@ -113,7 +114,6 @@ function parseClaudeUsage(output,now=new Date()){
     const window={usedPercent:Number(m[3]),resetsAt:parseResetText(m[4],now)};
     if(m[1].toLowerCase()==='session')result.session=window;
     else if(!m[2]||/all models/i.test(m[2]))result.weekly=window;
-    else if(result.models.length<6)result.models.push({name:cleanText(m[2],40),...window});
   }
   return result;
 }
