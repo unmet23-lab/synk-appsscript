@@ -99,11 +99,15 @@
 .member-subs .ms-dot[data-state=out]{background:transparent;box-shadow:inset 0 0 0 1.5px var(--ink-3,rgba(250,250,249,.52))}
 .member-subs .ms-dot[data-state=login]{background:var(--ms-alert)}
 .member-subs .ms-dot[data-state=error]{background:transparent;box-shadow:inset 0 0 0 2px var(--ms-warn)}
+/* 지금 로그인되지 않은 Gemini 계정(마지막으로 읽은 값만 있음): 점선 테두리 */
+.member-subs .ms-dot[data-state=away]{box-sizing:border-box;border:1.5px dashed var(--ink-3,rgba(250,250,249,.52));background:transparent}
 .member-subs .ms-chip{display:inline-flex;align-items:center;justify-self:start;gap:7px;height:26px;padding:0 10px;border-radius:999px;background:var(--surface-3,#222329);color:var(--ink,#FAFAF9);font-size:.8125rem;font-weight:550;white-space:nowrap}
 .member-subs .ms-chip::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--ink-3,rgba(250,250,249,.52))}
 .member-subs .ms-chip-warn::before{background:var(--ms-warn)}
 .member-subs .ms-chip-alert::before{background:var(--ms-alert)}
 .member-subs .ms-chip-manual{color:var(--ink-2,rgba(250,250,249,.72))}
+.member-subs .ms-chip-away{color:var(--ink-2,rgba(250,250,249,.72))}
+.member-subs .ms-chip-away::before{box-sizing:border-box;border:1.5px dashed var(--ink-3,rgba(250,250,249,.52));background:transparent}
 .member-subs .ms-ok-mark{display:inline-flex;align-items:center;justify-self:start;height:26px;padding-left:2px}
 
 /* 손볼 계정 띠(있을 때만): 계정마다 한 줄과 그 줄의 단추 */
@@ -177,7 +181,7 @@
 .member-subs .ms-acc-when b{color:var(--ink,#FAFAF9)}
 .member-subs .ms-acc-msg{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .member-subs .ms-acc-act{grid-column:5;justify-self:end}
-.member-subs .ms-acc[data-row]:has(.ms-dot[data-state=projected]) :is(.ms-bar>i,.ms-acc-val b){opacity:.7}
+.member-subs .ms-acc[data-row]:has(.ms-dot:is([data-state=projected],[data-state=away])) :is(.ms-bar>i,.ms-acc-val b){opacity:.7}
 
 /* 02 다음에 풀려요: 한 줄 목록(01보다 한 단계 낮게). 「모두 보기」는 그 자리에서 초기화·결제까지 펼친다. */
 .member-subs .ms-next{display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--line,rgba(255,255,255,.075));border-radius:18px;background:var(--surface-1,#121317)}
@@ -290,6 +294,8 @@
 .member-subs .ms-step p+p{margin-top:6px}
 .member-subs .ms-guide ol.ms-mini-steps{display:flex;flex-direction:column;gap:6px;margin:10px 0;padding-left:1.4em;list-style:decimal;color:var(--ink-2,rgba(250,250,249,.72));font-size:.875rem}
 .member-subs .ms-mini-steps b{color:var(--ink,#FAFAF9);font-weight:650}
+/* 가이드 글 안에서 그대로 칠 명령(/logout · /login) */
+.member-subs .ms-guide :is(p,li) code{padding:1px 6px;border-radius:6px;background:var(--surface-2,#191A1F);color:var(--ink,#FAFAF9);font-family:var(--mono,monospace);font-size:.8125rem;white-space:nowrap}
 .member-subs .ms-code{margin-top:12px}
 .member-subs .ms-code label{display:block;margin-bottom:2px;color:var(--ink-2,rgba(250,250,249,.72));font-size:.8125rem;font-weight:650}
 .member-subs .ms-code input{flex:1 1 280px;font-family:var(--mono,monospace)}

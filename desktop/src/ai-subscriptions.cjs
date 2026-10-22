@@ -3,7 +3,8 @@
 // - Claude: Claude Code `claude -p /usage` · `claude auth status --json`
 // - GPT: Codex app-server `account/read` · `account/rateLimits/read`(한도와 초기화권 개수·만료일. 초기화권을 쓰는 요청은 보내지 않는다)
 // - Higgsfield: `higgsfield account status --json` (계정마다 홈 폴더를 나눠 여러 계정)
-// - Gemini: Antigravity CLI `agy -p /usage --output-format json`(모델 호출 없음, 토큰 0)
+// - Gemini: Antigravity CLI `agy -p /usage --output-format json --log-file <임시>`(모델 호출 없음, 토큰 0). 지금 로그인된 계정 메일은
+//   그 실행이 남긴 CLI 기록의 `OAuth: authenticated successfully as <메일>` 줄에서 읽고 기록은 바로 지운다
 // - Typecast: 공식 API `GET /v1/users/me/subscription` — 회원이 넣은 API 키로만, 키는 이 PC에 암호화해 둔다
 // 토큰·자격 파일은 열지 않는다. 실행 대상과 인자는 고정이며, 화면에서 받은 값은 검증한 이메일과
 // 로그인 코드(표준입력)·회원이 붙여 넣은 API 키뿐이다. 기록은 이 PC의 앱 데이터 폴더에만 둔다.
@@ -19,7 +20,8 @@ const SERVICES=Object.freeze({
   gpt:Object.freeze({label:'GPT',kind:'weekly',bin:'codex',home:'CODEX_HOME',folders:true}),
   // Higgsfield CLI는 폴더를 고르는 설정이 없고 홈 폴더의 .config/higgsfield만 본다. 계정마다 홈을 그 계정 폴더로 바꾼다(10-17 실측).
   higgsfield:Object.freeze({label:'Higgsfield',kind:'credit',bin:'higgsfield',home:null,profileHome:true,folders:true}),
-  // agy는 계정 폴더를 바꾸는 설정이 없어 PC당 한 계정이고, 로그인은 키 입력 화면이라 검은 창에서만 한다.
+  // agy는 계정 폴더를 바꾸는 설정이 없어 한 번에 한 계정만 로그인되고(Windows 자격 증명), 로그인은 키 입력 화면이라 검은 창에서만 한다.
+  // 줄은 계정 메일마다 두고, 읽은 값은 지금 로그인된 계정의 줄에만 넣는다(applyGemini).
   gemini:Object.freeze({label:'Gemini',kind:'weekly',bin:'agy',home:null,folders:false,consoleLogin:true}),
   // 설치할 프로그램이 없다. 회원이 붙여 넣은 API 키로 공식 API만 부른다.
   typecast:Object.freeze({label:'Typecast',kind:'credit',bin:null,home:null,folders:true,apiKey:true}),
@@ -77,6 +79,14 @@ const FOLDER=/^(claude|gpt|higgsfield|typecast)-[a-z0-9]{8}$/;
 const EMAIL=/^[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,24}$/;
 const MONTHS={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
 const LOGIN_TIMEOUT=10*60*1000,READ_TIMEOUT=60*1000,OUTPUT_LIMIT=512*1024;
+// agy 임시 기록: 이 혜택 데이터 폴더에 읽기마다 새 이름으로 만들고 읽은 뒤 지운다. 앱이 읽는 사이에 꺼져 남은 것은 10분 뒤 다음 읽기가 지운다.
+const AGY_LOG=/^agy-[a-z0-9]{8}\.log$/,AGY_AUTH=/OAuth: authenticated successfully as (\S+)/g,AGY_LOG_LIMIT=16*1024*1024,AGY_LOG_STALE=10*60*1000;
+// 지금 로그인되지 않은 Gemini 계정 줄(state 'elsewhere')의 안내. 마지막으로 읽은 값은 그대로 둔다.
+// awayReason 'none'은 agy가 「로그인 필요」로 답해 지금 아무 계정도 로그인돼 있지 않은 때(Fable 10-22 P2-1).
+const GEMINI_AWAY='지금 이 PC의 Antigravity에는 다른 계정이 로그인돼 있어요 — 마지막으로 읽은 값이에요.';
+const GEMINI_NOBODY='지금 이 PC의 Antigravity에 로그인된 계정이 없어요 — 마지막으로 읽은 값이에요.';
+// 회원이 지운 Gemini 계정 메일(소문자, 최근 것부터 20개). 그 계정이 agy에 로그인돼 있어도 자동 줄을 다시 만들지 않는다(Fable 10-22 P2-2).
+const GEMINI_HIDDEN_MAX=20;
 
 const stripAnsi=text=>String(text||'').replace(/\u001b\[[0-9;?]*[ -/]*[@-~]/g,'').replace(/\u001b\][^\u0007]*\u0007/g,'');
 const isoOrNull=value=>{if(value==null||value==='')return null;const t=typeof value==='number'?(value<1e12?value*1000:value):Date.parse(value);return Number.isFinite(t)?t:null;};
@@ -263,6 +273,8 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     if(!row||typeof row!=='object'||typeof row.id!=='string')return null;
     const service=cleanText(row.service,40).toLowerCase()||'custom',known=SERVICES[service];
     const source=row.source==='auto'&&known?'auto':'manual';
+    // elsewhere: 지금 PC의 agy에 다른 계정이 로그인돼 있거나(awayReason 없음) 아무도 로그인돼 있지 않아(awayReason 'none') 마지막으로 읽은 값만 있는 Gemini 줄.
+    const state=['ok','needs-login','error','unknown'].includes(row.state)||row.state==='elsewhere'&&source==='auto'&&service==='gemini'?row.state:'unknown';
     return {
       id:cleanText(row.id,40),service,source,
       label:cleanText(row.label,40)||known?.label||service,
@@ -281,7 +293,7 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
       keyId:source==='auto'&&known?.apiKey&&/^[0-9a-f]{16}$/.test(row.keyId||'')?row.keyId:null,
       keyHint:source==='auto'&&known?.apiKey?cleanText(row.keyHint,8)||null:null,
       live:row.live&&typeof row.live==='object'?row.live:null,
-      state:['ok','needs-login','error','unknown'].includes(row.state)?row.state:'unknown',stateMessage:cleanText(row.stateMessage,200),stateAt:clampNumber(row.stateAt,0,9e15),
+      state,awayReason:state==='elsewhere'&&row.awayReason==='none'?'none':null,stateMessage:cleanText(row.stateMessage,200),stateAt:clampNumber(row.stateAt,0,9e15),
     };
   }
   // seq: 화면은 알림(send)과 응답(invoke)을 따로 받아 도착 순서가 바뀔 수 있다. 번호가 작은 옛 스냅숏은 버리게 한다.
@@ -487,14 +499,31 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     if(!data||typeof data!=='object'||data.credits===undefined)return /auth|login|expired|token/i.test(r.out+r.err)?{state:'needs-login',message:'Higgsfield 로그인이 필요해요. 다시 연결해 주세요.'}:{state:'error',message:'Higgsfield 계정 상태를 읽지 못했어요.'};
     return {state:'ok',email:typeof data.email==='string'?data.email:null,plan:typeof data.subscription_plan_type==='string'?data.subscription_plan_type:null,live:{readAt:now(),credits:clampNumber(data.credits,-1e9,1e12)}};
   }
+  // 지금 로그인된 계정은 /usage가 메일을 주지 않아, 같은 실행이 공식 `--log-file`(CLI 기록 위치 바꾸기)로 남긴 기록에서 읽는다.
+  // 기록에는 토큰이 없다(10-22 1.4.4·1.4.5 실측, 인증 줄은 `OAuth: authenticated successfully as <메일>`). 마지막 인증 줄의 메일 꼴 하나만 받고 기록은 바로 지운다.
+  function takeAgyAccount(file){
+    let text='';
+    try{if(fs.statSync(file).size<=AGY_LOG_LIMIT)text=fs.readFileSync(file,'utf8');}catch{}
+    try{fs.unlinkSync(file);}catch{}
+    const all=[...text.matchAll(AGY_AUTH)],value=all.length?all[all.length-1][1].replace(/[.,;:)\]}'"]+$/,''):'';
+    return EMAIL.test(value)?value:null;
+  }
+  function sweepAgyLogs(){
+    try{for(const name of fs.readdirSync(root)){if(!AGY_LOG.test(name))continue;const file=path.join(root,name);try{if(Date.now()-fs.statSync(file).mtimeMs>AGY_LOG_STALE)fs.unlinkSync(file);}catch{}}}catch{}
+  }
   async function readGemini(){
-    const r=await runTool(tools.gemini.path,['-p','/usage','--output-format','json'],{timeout:45000,cwd:agyCwd()});
+    const cwd=agyCwd(),log=cwd?path.join(cwd,`agy-${randomId()}.log`):null,args=['-p','/usage','--output-format','json'];
+    sweepAgyLogs();
+    let r=await runTool(tools.gemini.path,log?[...args,'--log-file',log]:args,{timeout:45000,cwd});
+    let email=log?takeAgyAccount(log):null;
+    // `--log-file`을 모르는 옛 판이면 그 인자 없이 한 번 더 읽는다(계정 메일은 모른 채).
+    if(log&&/log-file/i.test(r.err+'\n'+r.out)&&/unknown (flag|option|argument)|flag provided but not defined/i.test(r.err+'\n'+r.out)){r=await runTool(tools.gemini.path,args,{timeout:45000,cwd});email=null;}
     const usage=parseAgyUsage(r.out);
     if(!usage||!usage.weekly&&!usage.session){
-      if(agyNeedsLogin(r.out+'\n'+r.err))return {state:'needs-login',message:'Gemini(Antigravity) 로그인이 필요해요. 다시 연결해 주세요.'};
-      return {state:'error',message:r.code===-2?'Antigravity CLI가 제때 답하지 않았어요. 잠시 뒤 다시 확인해 주세요.':'Antigravity CLI의 사용량을 읽지 못했어요.'};
+      if(agyNeedsLogin(r.out+'\n'+r.err))return {state:'needs-login',email,message:'Gemini(Antigravity) 로그인이 필요해요. 다시 연결해 주세요.'};
+      return {state:'error',email,message:r.code===-2?'Antigravity CLI가 제때 답하지 않았어요. 잠시 뒤 다시 확인해 주세요.':'Antigravity CLI의 사용량을 읽지 못했어요.'};
     }
-    return {state:'ok',live:{readAt:now(),session:usage.session,weekly:usage.weekly,models:usage.models}};
+    return {state:'ok',email,live:{readAt:now(),session:usage.session,weekly:usage.weekly,models:usage.models}};
   }
   /* Typecast: 공식 API에 회원의 키로 이번 달 남은 크레딧을 묻는다 */
   const secretsReady=()=>{try{return !!secrets&&secrets.available()===true;}catch{return false;}};
@@ -551,7 +580,8 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
   }
   function applyRead(row,result){
     if(!result)return;
-    row.state=result.state;row.stateMessage=result.state==='ok'?'':cleanText(result.message,200);row.stateAt=now();
+    // 읽은 결과가 들어오면 그 줄은 더는 「지금 로그인 안 됨」이 아니다(awayReason은 elsewhere 줄에만 둔다).
+    row.state=result.state;row.awayReason=null;row.stateMessage=result.state==='ok'?'':cleanText(result.message,200);row.stateAt=now();
     if(result.email)row.email=cleanText(result.email,254);
     // Claude Max 등급(max_5x·max_20x)을 알던 줄에 이번 읽기만 등급 없이 「max」가 오면(설정 파일을 그 순간 못 읽음) 알던 등급을 지킨다.
     // 덮으면 기록에 무게가 다른 읽기가 섞여 사용량 막대가 부푼다(Fable 2차 검수 P1-4). 다른 요금제로 바뀐 것은 그대로 따른다.
@@ -564,6 +594,36 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     if(weekly&&Number.isFinite(weekly.usedPercent))row.usedUpAt=weekly.usedPercent>=100?now():null;
     if(result.live.credits!==undefined&&result.live.credits!==null){row.credits=result.live.credits;row.creditsAt=now();}
     remember(row);
+  }
+  // 회원이 지운 Gemini 계정 메일(소문자). 판 설정에 두고, 그 계정을 다시 연결하면(addRow) 뺀다.
+  const geminiHidden=()=>{const list=load().settings?.geminiHidden;return Array.isArray(list)?list.filter(e=>typeof e==='string'&&EMAIL.test(e)).map(e=>e.toLowerCase()).slice(0,GEMINI_HIDDEN_MAX):[];};
+  function setGeminiHidden(list){const b=load();b.settings={...b.settings,geminiHidden:[...new Set(list)].slice(0,GEMINI_HIDDEN_MAX)};}
+  // Gemini 한 번 읽은 결과를 줄에 나눈다. agy에는 한 번에 한 계정만 로그인돼 있다.
+  //  · 메일을 읽었으면 그 메일의 줄에만 넣는다(처음 보는 메일이면 줄을 새로 만들고, 메일이 빈 옛 줄은 그 메일을 받는다 — addRow).
+  //    회원이 지운 계정이면 줄을 다시 만들지 않는다. 나머지 Gemini 줄은 마지막으로 읽은 값을 지킨 채 「다른 계정이 로그인돼 있음」(elsewhere)으로 둔다.
+  //  · 메일을 못 읽었으면(옛 판·기록 실패) 어느 계정의 숫자인지 모른다. 숫자는 지금 계정일 수 있는 줄(elsewhere가 아닌 줄)이 Gemini 줄의 전부이고
+  //    하나일 때만 넣는다 — 옛 판과 같은 「이 PC의 한 계정」 전제라 기록 모양이 바뀌어도 계정판이 멈추지 않는다(Fable 10-22 P3-1). 아니면 넣지 않고 알린다.
+  //  · 로그인 필요(메일 없음)는 지금 계정일 수 있는 줄에 적고, elsewhere 줄은 「로그인된 계정이 없음」으로 안내를 바꾼다(Fable 10-22 P2-1).
+  //    읽기 실패는 지금 계정일 수 있는 줄에만 적는다(그런 줄이 없으면 지금 계정이 목록에 없는 것이라 아무 줄도 바꾸지 않는다).
+  function applyGemini(result){
+    if(!result)return;
+    const rows=()=>load().rows.filter(row=>row.source==='auto'&&row.service==='gemini');
+    const away=(row,reason)=>{row.state='elsewhere';row.awayReason=reason;row.stateMessage=reason==='none'?GEMINI_NOBODY:GEMINI_AWAY;row.stateAt=now();};
+    if(result.email){
+      const lower=String(result.email).toLowerCase(),known=rows().find(row=>String(row.email||'').toLowerCase()===lower);
+      const target=known||(geminiHidden().includes(lower)?null:addRow('gemini',null,{email:result.email}));
+      if(target)applyRead(target,result);
+      for(const row of rows())if(row!==target)away(row,null);
+      return;
+    }
+    const all=rows(),maybe=all.filter(row=>row.state!=='elsewhere');
+    if(result.state==='ok'){
+      if(all.length===1&&maybe.length===1){applyRead(all[0],result);return;}
+      for(const row of maybe)applyRead(row,{state:'error',message:'Antigravity CLI에 어느 계정이 로그인돼 있는지 확인하지 못해 이번 값은 넣지 않았어요. 잠시 뒤 다시 확인해 주세요.'});
+      return;
+    }
+    for(const row of maybe)applyRead(row,result);
+    if(result.state==='needs-login')for(const row of all)if(row.state==='elsewhere')away(row,'none');
   }
   // 돌려주는 스냅숏은 `checking`을 비운 뒤에 만든다. 안에서 만들면 「확인 중」인 채로 마지막 알림보다 늦게 도착해 화면이 멈춘다.
   // 확인 중에 들어온 확인은 끝나기를 기다린 뒤, 그 확인이 읽지 않은 줄(도는 사이 새로 연결한 계정 등)만 이어서 읽는다.
@@ -578,16 +638,21 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     }
     checkQuiet=!!quiet;
     const full=!Array.isArray(ids),b=load(),targets=b.rows.filter(row=>row.source==='auto'&&(full||ids.includes(row.id)));
-    checkingIds=new Set(targets.map(row=>row.id));checkProgress={done:0,total:targets.length};
+    // Gemini는 agy를 한 번 불러 지금 로그인된 계정 하나를 읽고 그 결과를 Gemini 줄 모두에 나누므로(applyGemini), 줄이 여럿이어도 한 번만 부르고
+    // 이 확인이 Gemini 줄 전부를 맡는다. 순서는 판의 첫 Gemini 줄 자리다.
+    const geminiRows=targets.filter(row=>row.service==='gemini');
+    checkingIds=new Set([...targets,...(geminiRows.length?b.rows.filter(row=>row.source==='auto'&&row.service==='gemini'):[])].map(row=>row.id));checkProgress={done:0,total:targets.length};
     checking=(async()=>{
       // `checking`에 담긴 뒤에 알려야 첫 알림부터 「확인 중」이다(먼저 알리면 잠깐 확인이 끝난 것처럼 보인다).
       await null;emit();
       await detectTools(true);
-      const queue=[...targets];
-      const worker=async()=>{for(let row=queue.shift();row;row=queue.shift()){if(!b.rows.includes(row))continue;applyRead(row,await readConfirmed(row));checkProgress.done++;emit();}};
+      const queue=targets.filter(row=>row.service!=='gemini'||row===geminiRows[0]);
+      const readGeminiRows=async()=>{const live=b.rows.find(row=>row.source==='auto'&&row.service==='gemini');if(live)applyGemini(await readConfirmed(live));checkProgress.done+=geminiRows.length;emit();};
+      const worker=async()=>{for(let row=queue.shift();row;row=queue.shift()){if(row.service==='gemini'){await readGeminiRows();continue;}if(!b.rows.includes(row))continue;applyRead(row,await readConfirmed(row));checkProgress.done++;emit();}};
       await Promise.all([worker(),worker()]);
       // 요약은 지금 판 전체로 센다. 한 줄만 다시 읽었을 때는 「마지막 확인」 시각을 전체 확인 때 것으로 둔다.
-      const autos=b.rows.filter(row=>row.source==='auto');
+      // 지금 로그인되지 않은 Gemini 계정(elsewhere)은 읽을 수 없는 게 맞아 「못 읽음」으로 세지 않는다.
+      const autos=b.rows.filter(row=>row.source==='auto'&&row.state!=='elsewhere');
       b.check={at:full||!b.check?.at?now():b.check.at,total:autos.length,ok:autos.filter(row=>row.state==='ok').length};
       persist();
     })();
@@ -600,16 +665,22 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
   async function verifyLogin(service,folder){
     if(service==='claude'){const a=await claudeAccount(folder);return a.loggedIn?{ok:true,email:a.email,plan:a.plan}:{ok:false};}
     if(service==='gpt'){const r=await codexSession(folder,[{method:'account/read',params:{}}]);const acc=r.results[0]?.account;return acc?{ok:true,email:acc.email||null,plan:acc.planType||null}:{ok:false};}
-    // agy는 계정 이메일을 공식 출력으로 내주지 않는다. 사용량이 읽히면 연결된 것으로 본다.
-    if(service==='gemini'){const g=await readGemini();return g.state==='ok'?{ok:true,email:null,plan:null}:{ok:false};}
+    // agy는 사용량이 읽히면 연결된 것으로 보고, 계정 메일은 그 실행의 CLI 기록에서 읽는다(못 읽으면 비운다).
+    if(service==='gemini'){const g=await readGemini();return g.state==='ok'?{ok:true,email:g.email||null,plan:null}:{ok:false,state:g.state};}
     const h=await readHiggsfield(folder);return h.state==='ok'?{ok:true,email:h.email,plan:h.plan}:{ok:false,code:h.code};
   }
   // 같은 계정(이메일은 대소문자 무시)이면 줄을 새로 만들지 않는다. 새 계정 폴더로 다시 로그인했으면 그 폴더로 옮기고 옛 폴더를 지운다.
   // 「기존 로그인 가져오기」(folder 없음)는 이미 자기 폴더로 읽던 줄을 기본 로그인으로 옮기지 않는다(옮기면 로그인 파일이 든 폴더가 주인 없이 남는다).
+  // 계정 폴더가 없는 Gemini(agy는 한 번에 한 계정)는 메일이 빈 옛 줄이 처음 읽힌 계정의 메일을 받고, 처음 보는 메일이면 줄을 새로 만든다.
+  // 메일을 못 읽었을 때는 메일 없는 줄(없으면 첫 Gemini 줄)을 그대로 쓴다.
   function addRow(service,folder,info){
     const b=load(),spec=SERVICES[service],email=info.email?String(info.email).toLowerCase():null;
-    const same=b.rows.find(row=>row.source==='auto'&&row.service===service&&(email&&String(row.email||'').toLowerCase()===email||!email&&row.folder===folder));
-    if(same){if(folder&&same.folder!==folder){removeFolder(same.folder);same.folder=folder;}same.state='unknown';if(info.plan)same.plan=info.plan;persist();return same;}
+    // 지운 뒤 다시 연결한 Gemini 계정은 「지운 계정」 목록에서 뺀다(그다음부터는 자동 확인이 그 줄에 넣는다).
+    if(service==='gemini'&&email&&geminiHidden().includes(email))setGeminiHidden(geminiHidden().filter(e=>e!==email));
+    const mine=row=>row.source==='auto'&&row.service===service;
+    const same=b.rows.find(row=>mine(row)&&(email&&String(row.email||'').toLowerCase()===email||!email&&row.folder===folder&&(spec.folders||!row.email)))
+      ||(!spec.folders?b.rows.find(row=>mine(row)&&!row.email)||(!email?b.rows.find(mine):null):null);
+    if(same){if(folder&&same.folder!==folder){removeFolder(same.folder);same.folder=folder;}if(email&&!same.email)same.email=cleanText(info.email,254);same.state='unknown';if(info.plan)same.plan=info.plan;persist();return same;}
     const row=normalizeRow({id:'r-'+randomId(),service,source:'auto',label:spec.label,kind:spec.kind,folder,email:info.email,plan:info.plan});
     b.rows.push(row);persist();return row;
   }
@@ -655,6 +726,10 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     const args=service==='claude'?['auth','login',...(email?['--email',String(email)]:[])]:service==='gpt'?['login']:service==='gemini'?[]:['auth','login'];
     const current={id:'l-'+randomId(),service,folder,email:email?String(email):null,stage:'starting',url:null,needsCode:false,message:'',console:useConsole,child:null,startedAt:now(),output:''};
     login=current;
+    // Gemini 계정 바꾸기: 창이 뜨는 동안 지금 로그인된 계정을 먼저 읽어 두고, 기다리는 동안에는 다른 계정이 로그인됐을 때만 연결로 본다
+    // (이미 로그인된 채 창을 열면 바꾸기 전 계정이 곧바로 읽힌다). 창에서 /logout → /login을 하는 데는 이 읽기(몇 초)보다 오래 걸린다.
+    // 창을 닫으면 그때 로그인된 계정으로 마친다.
+    if(service==='gemini')current.before=verifyLogin('gemini',null).catch(()=>({ok:false}));
     const cwd=service==='gemini'?agyCwd():undefined;
     try{
       if(useConsole&&platform==='darwin')current.child=spawnMacTerminal(tools[service].path,args,homeEnv(service,folder),cwd);
@@ -703,15 +778,30 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
         else finishLogin(current,'error',code===0?'로그인을 확인하지 못했어요. 브라우저에서 연결할 계정이 맞는지 보고 다시 시도해 주세요.':'로그인을 마치지 못했어요. 가이드의 「막혔을 때」를 확인해 주세요.');
       });
     }
-    current.timer=setTimeout(()=>{if(!['done','error','cancelled'].includes(current.stage)){stopProcess(current.child,current.pid||current.child?.pid);finishLogin(current,'error','10분 동안 로그인이 끝나지 않아 멈췄어요. 다시 시도해 주세요.');}},LOGIN_TIMEOUT);
+    // Gemini 계정 바꾸기를 연 채 같은 계정으로 두면 기다림이 끝나지 않는다. 10분이 지났을 때 로그인이 살아 있으면 그 계정으로 마치고,
+    // 창은 회원이 agy를 쓰는 중일 수 있어 닫지 않는다(Fable 10-22 P3-2). 로그인이 없을 때만 지금처럼 창을 닫고 알린다.
+    current.timer=setTimeout(async()=>{
+      if(['done','error','cancelled'].includes(current.stage))return;
+      if(service==='gemini'){const v=await verifyLogin(service,folder).catch(()=>({ok:false}));if(v.ok){connected(current,v);return;}if(['done','error','cancelled'].includes(current.stage))return;}
+      stopProcess(current.child,current.pid||current.child?.pid);finishLogin(current,'error','10분 동안 로그인이 끝나지 않아 멈췄어요. 다시 시도해 주세요.');
+    },LOGIN_TIMEOUT);
     emit();
     return {ok:true,id:current.id};
+  }
+  // 기다리는 동안의 확인. Gemini는 처음에 로그인돼 있던 계정과 다른 계정(메일로 가림)이 읽히거나, 기다리는 사이 「로그인 필요」를 한 번 본 뒤
+  // (창에서 /logout을 했다) 다시 읽히면 연결로 본다 — 메일을 못 읽는 옛 agy도 /logout → /login으로 마칠 수 있게(Fable 10-22 P3-2). 처음에 로그인이 없었으면 어느 계정이든.
+  async function switched(current,v){
+    if(!current.before)return true;
+    const before=await current.before,lower=value=>String(value||'').toLowerCase();
+    return !before.ok||!!current.sawLogout||!!before.email&&!!v.email&&lower(before.email)!==lower(v.email);
   }
   function pollLogin(current){
     const tick=async()=>{
       if(login!==current||['done','error','cancelled'].includes(current.stage))return;
       const v=await verifyLogin(current.service,current.folder);
-      if(v.ok){connected(current,v);return;}
+      if(!v.ok&&v.state==='needs-login')current.sawLogout=true;
+      if(v.ok&&await switched(current,v)){connected(current,v);return;}
+      if(login!==current||['done','error','cancelled'].includes(current.stage))return;
       current.poll=setTimeout(tick,4000);
     };
     current.poll=setTimeout(tick,6000);
@@ -841,6 +931,8 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     if(typeof patch.remove==='string'){
       const index=b.rows.findIndex(r=>r.id===patch.remove);if(index<0)return {ok:false,code:'UNKNOWN_ROW'};
       const [row]=b.rows.splice(index,1);if(row.folder&&!b.rows.some(r=>r.folder===row.folder))removeFolder(row.folder);
+      // 지운 Gemini 계정은 agy에 로그인돼 있어도 자동 확인이 줄을 다시 만들지 않게 적어 둔다(「이 PC의 기존 로그인 쓰기」·로그인으로 다시 더하면 풀린다).
+      if(row.source==='auto'&&row.service==='gemini'&&row.email){const lower=String(row.email).toLowerCase();setGeminiHidden([lower,...geminiHidden().filter(e=>e!==lower)]);}
       // 지운 계정의 사용 기록도 이 PC에서 지운다.
       compactHistory();
     }
@@ -872,7 +964,8 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     const morning=new Date(at);morning.setHours(BILL_HOUR,0,0,0);
     const billToday=day=>{const d=new Date(at),lastDay=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();return d.getDate()===Math.min(Number(day),lastDay);};
     if(at>=morning.getTime()&&last<morning.getTime()&&b.rows.some(row=>row.billDay&&billToday(row.billDay)))return {};
-    const pre=autos.filter(row=>{const reset=row.live?.weekly?.resetsAt;return reset&&at>=reset-PRE_RESET&&at<reset&&(row.stateAt||0)<reset-PRE_RESET;}).map(row=>row.id);
+    // 지금 로그인되지 않은 Gemini 계정(elsewhere)은 읽어도 다른 계정이 읽히므로 초기화 전 읽기를 하지 않는다.
+    const pre=autos.filter(row=>{const reset=row.live?.weekly?.resetsAt;return row.state!=='elsewhere'&&reset&&at>=reset-PRE_RESET&&at<reset&&(row.stateAt||0)<reset-PRE_RESET;}).map(row=>row.id);
     return pre.length?{ids:pre}:null;
   }
   async function autoTick(){

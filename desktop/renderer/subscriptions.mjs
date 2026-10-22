@@ -15,7 +15,7 @@ const AUTO = {
   claude: { label: 'Claude', short: 'Claude', tool: 'Claude Code', plan: 'Claude Pro·Max 이상 요금제가 필요해요. 무료 요금제는 Claude Code를 쓸 수 없어요.', planLink: 'claude-plans', install: 'irm https://claude.ai/install.ps1 | iex', installLink: 'claude-install', email: true },
   gpt: { label: 'ChatGPT · Codex', short: 'GPT', tool: 'Codex', plan: 'ChatGPT 계정으로 로그인해요. 요금제마다 Codex 한도가 달라요.', planLink: 'chatgpt-plans', install: 'powershell -ExecutionPolicy ByPass -c "irm https://chatgpt.com/codex/install.ps1 | iex"', installLink: 'codex-install', email: false },
   higgsfield: { label: 'Higgsfield', short: 'Higgsfield', tool: 'Higgsfield CLI', plan: 'Higgsfield 계정의 남은 크레딧을 읽어요. 계정 여러 개를 하나씩 연결할 수 있어요.', planLink: null, install: 'npm install -g @higgsfield/cli', installLink: 'higgsfield-install', email: false, node: true },
-  gemini: { label: 'Gemini', short: 'Gemini', tool: 'Antigravity CLI', plan: 'Antigravity CLI에 로그인한 Google 계정의 한도를 읽어요. Gemini 모델 한도와 Claude·GPT 모델 한도가 따로 보여요. 이 PC에는 Google 계정 하나만 연결돼요.', planLink: 'gemini-plans', install: 'irm https://antigravity.google/cli/install.ps1 | iex', installLink: 'antigravity-install', email: false, single: true },
+  gemini: { label: 'Gemini', short: 'Gemini', tool: 'Antigravity CLI', plan: 'Antigravity CLI에 로그인한 Google 계정의 한도를 읽어요. Gemini 모델 한도와 Claude·GPT 모델 한도가 따로 보여요. Antigravity CLI에는 한 번에 계정 하나만 로그인돼요. 계정을 바꾸면 계정마다 줄이 따로 생기고, 지금 로그인되지 않은 계정은 마지막으로 읽은 값을 보여 줘요.', planLink: 'gemini-plans', install: 'irm https://antigravity.google/cli/install.ps1 | iex', installLink: 'antigravity-install', email: false, single: true },
   // 설치할 프로그램 없이 회원이 붙여 넣은 API 키로 읽는다(키는 본체가 이 PC에 암호화해 둔다).
   typecast: { label: 'Typecast', short: 'Typecast', tool: 'Typecast API 키', plan: 'Typecast API 요금제(API Lite 등)의 이번 달 남은 크레딧을 읽어요. 설치할 프로그램은 없고, 키는 이 PC에만 암호화해 보관해요.', planLink: 'typecast-api', key: true },
 };
@@ -92,7 +92,7 @@ const HELP = [
   ['코드를 붙여 넣어도 넘어가지 않아요', '코드 앞뒤 공백 없이 한 번에 붙여 넣어 주세요. 계속 안 되면 「검은 창으로 로그인하기」를 눌러 검은 창에 직접 붙여 넣어 주세요(오른쪽 클릭으로 붙여넣기).'],
   ['「구독 한도가 없어요」라고 나와요', 'Claude Code는 Pro·Max 이상 요금제에서만 쓸 수 있어요. 무료 요금제 계정은 자동으로 읽을 수 없으니 「구독 직접 넣기」로 결제일만 챙겨 주세요.'],
   ['ChatGPT가 휴대폰 인증을 요구해요', 'OpenAI의 보안 절차예요. 브라우저 안내대로 휴대폰 인증을 마치면 Codex 로그인이 이어져요.'],
-  ['Gemini 검은 창에서 막혔어요', '검은 창을 한 번 눌러 고른 뒤 Enter를 눌러요. 코드는 Ctrl+V 대신 검은 창 안에서 오른쪽 클릭으로 붙여 넣어요. 브라우저에서 계정을 고를 때 연결할 Google 계정을 눌러 주세요. 이 PC에는 Gemini 계정 하나만 연결돼요.'],
+  ['Gemini 검은 창에서 막혔어요', '검은 창을 한 번 눌러 고른 뒤 Enter를 눌러요. 코드는 Ctrl+V 대신 검은 창 안에서 오른쪽 클릭으로 붙여 넣어요. 브라우저에서 계정을 고를 때 연결할 Google 계정을 눌러 주세요. 이미 다른 계정으로 로그인된 창이면 /logout을 치고 Enter, 이어서 /login을 치고 Enter를 누르면 로그인 화면이 나와요.'],
   ['연결을 끊고 싶어요', '계정 줄의 ⋯을 누르고 「지우기」를 두 번 누르면 이 앱이 만든 로그인 폴더까지 지워요. 기존 로그인을 가져온 계정은 목록에서만 빠져요.'],
 ];
 
@@ -168,15 +168,19 @@ const PLAN = { max20x: 'Max 20x', max5x: 'Max 5x', max: 'Max', ultra: 'Ultra', p
 const TIER = { max20x: 8, max5x: 7, max: 6, ultra: 5, pro: 4, plus: 3, prolite: 2, lite: 1 };
 const planKey = plan => String(plan || '').toLowerCase().replace(/[\s_-]/g, '');
 export const planName = plan => (plan ? PLAN[planKey(plan)] || String(plan) : '');
-// 계정 이름: 메일 앞부분 → API 키 끝 네 글자(서비스가 이미 Typecast라 「키」는 붙이지 않는다) → 메일을 못 읽는 Gemini는 이 PC 로그인 → 직접 넣은 구독 이름.
+// 계정 이름: 메일 앞부분(Gemini도 — 본체가 agy 기록에서 지금 로그인된 계정 메일을 읽는다, 10-22) → API 키 끝 네 글자(서비스가 이미 Typecast라
+// 「키」는 붙이지 않는다) → 아직 메일을 못 읽은 Gemini 줄(새 판으로 처음 읽기 전)은 이 PC 로그인 → 직접 넣은 구독 이름.
 export const nameOf = row => (row?.email ? row.email.split('@')[0] : row?.keyHint ? row.keyHint : row?.source === 'auto' && row.service === 'gemini' ? '이 PC 로그인' : row?.label || '');
 
 // 계정 하나의 지금 상태.
 //  ok 넉넉 · low 10% 이하 남음이나 크레딧 부족 · out 다 씀(unblock = 다시 열리는 때) · login 다시 로그인 ·
 //  error 읽기 실패(또는 이번 확인에서 못 읽어 옛 값만 있음) · manual 직접 넣어 한도 숫자가 없음 · unknown 아직 안 읽음.
 //  projected: 마지막으로 읽은 뒤 초기화 시각이 지나 「다시 찼을 것」으로 보는 때(그사이 쓴 양은 모른다).
+//  away: 지금 PC의 Antigravity에 다른 계정이 로그인돼 있어 마지막으로 읽은 값만 있는 Gemini 계정(본체 state 'elsewhere', 10-22).
+//    값은 마지막으로 읽은 그대로 보이되(오래돼도 「못 읽음」으로 바꾸지 않는다) 바로 쓸 계정·손볼 계정으로 세지 않는다.
 export function accountState(row, now, checkAt = null) {
   const auto = row?.source === 'auto', readAt = row?.live?.readAt || 0;
+  if (auto && row.state === 'elsewhere') return { ...accountState({ ...row, state: 'ok' }, now, null), away: true, readAt };
   if (auto && row.state === 'needs-login') return { state: 'login' };
   if (auto && (row.state === 'error' || (readAt && checkAt && checkAt - readAt > OLD_READ_MS))) return { state: 'error', readAt };
   if (row?.kind === 'credit') {
@@ -223,7 +227,8 @@ export function serviceGroups(rows, now, checkAt = null) {
   const amount = a => a.credits ?? a.left ?? -1, tier = a => TIER[planKey(a.row.plan)] || 0;
   const rank = (a, b) => amount(b) - amount(a) || tier(b) - tier(a);
   const groups = [...map.values()].map(g => {
-    const by = states => g.accounts.filter(a => states.includes(a.state));
+    // 지금 로그인되지 않은 Gemini 계정(away)은 아래 묶음 어디에도 넣지 않고 따로 둔다(추천·바로 쓸 수·손볼 것에서 빠진다).
+    const here = g.accounts.filter(a => !a.away), by = states => here.filter(a => states.includes(a.state));
     const live = by(['ok', 'low']), usable = live.filter(a => !a.projected).sort(rank), projected = live.filter(a => a.projected).sort(rank);
     const out = by(['out']).sort((a, b) => (a.unblock ?? Infinity) - (b.unblock ?? Infinity));
     // 크레딧은 부족한 계정을 「넉넉」에서 뺀다. 주간 한도는 10% 이하도 지금 쓸 수 있다.
@@ -234,7 +239,7 @@ export function serviceGroups(rows, now, checkAt = null) {
     // 초기화로 사라지기 전에 그 계정을 먼저 권한다(먼저 초기화되는 것부터). 그 계정을 읽은 지 1시간이 넘은 값으로는 권하지 않는다.
     const fresh = a => now - (a.row.live?.readAt || 0) <= STALE_MS;
     const today = g.kind === 'weekly' ? plenty.filter(a => fresh(a) && a.g?.weekly?.resetsAt > now && a.g.weekly.resetsAt - now <= DAY_MS && a.g.weekly.left >= 20 && (!a.g.session || a.g.session.left >= 20)).sort((a, b) => a.g.weekly.resetsAt - b.g.weekly.resetsAt)[0] || null : null;
-    return { ...g, usable, projected, manual: by(['manual']), out, error: by(['error']), login: by(['login']), pending: by(['unknown']), ready, today, best: today || plenty[0] || projected[0] || usable[0] || by(['manual'])[0] || null };
+    return { ...g, usable, projected, manual: by(['manual']), out, error: by(['error']), login: by(['login']), pending: by(['unknown']), away: g.accounts.filter(a => a.away), ready, today, best: today || plenty[0] || projected[0] || usable[0] || by(['manual'])[0] || null };
   });
   const order = g => (g.service ? ORDER.indexOf(g.service) : ORDER.length);
   return groups.sort((a, b) => order(a) - order(b) || a.label.localeCompare(b.label, 'ko'));
@@ -466,7 +471,8 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     if (name === 'edit') { const id = form.dataset.id, row = rowById(id); if (!row) return; const v = formValues(form); const patch = { id, price: v.price, currency: v.currency, billDay: v.billDay, note: v.note, cycle: v.cycle }; if (row.source === 'manual') Object.assign(patch, { label: v.label || row.label, kind: v.kind, resetDay: v.resetDay, resetHour: v.resetHour, resetMinute: v.resetMinute }); if ((row.kind === 'credit' || v.kind === 'credit') && row.source === 'manual') Object.assign(patch, { credits: v.credits, lowAt: v.lowAt }); else if (row.kind === 'credit') patch.lowAt = v.lowAt; return void act('edit', async () => { const r = await api.save({ row: patch }); if (r?.rows) { ui.editing = null; toast('저장했어요.'); } return r; }); }
   }
   const rowById = id => snapshot?.rows?.find(row => row.id === id) || null;
-  const reloginLabel = row => (row && AUTO[row.service]?.key ? '키 다시 넣기' : '다시 로그인');
+  // 지금 로그인되지 않은 Gemini 계정은 「다시 로그인」이 아니라 PC의 Antigravity를 그 계정으로 바꾸는 일이다(가이드가 /logout → /login을 안내한다).
+  const reloginLabel = row => (row && AUTO[row.service]?.key ? '키 다시 넣기' : row?.state === 'elsewhere' ? (row.awayReason === 'none' ? '이 계정으로 로그인' : '이 계정으로 바꾸기') : '다시 로그인');
 
   /* 포스터(다른 혜택 소개 머리와 같은 틀) */
   function hero(now, groups) {
@@ -517,10 +523,10 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const passes = g.accounts.reduce((sum, a) => sum + (a.pass?.count || 0), 0), passWord = passes ? `초기화권 ${passes}장` : '';
     if (n === 1) {
       const a = g.accounts[0], unit = g.service === 'typecast' ? '키' : g.service ? '계정' : '구독';
-      const word = [a.projected ? '풀렸을 거예요' : { low: credit ? '부족' : '거의 다 씀', out: '다 씀', error: '못 읽음', login: '다시 로그인', unknown: waiting }[a.state], passWord].filter(Boolean).join(' · ');
+      const word = [a.away ? '지금 로그인 안 됨' : a.projected ? '풀렸을 거예요' : { low: credit ? '부족' : '거의 다 씀', out: '다 씀', error: '못 읽음', login: '다시 로그인', unknown: waiting }[a.state], passWord].filter(Boolean).join(' · ');
       return `${unit} 1개${word ? ` <span class="ms-soft">${word}</span>` : ''}`;
     }
-    const tail = [credit ? (low ? `${low}개 부족` : '') : (low ? `${low}개 거의 다 씀` : ''), g.projected.length ? `${g.projected.length}개 풀렸을 거예요` : '', g.out.length ? `${g.out.length}개 다 씀` : '', g.error.length ? `${g.error.length}개 못 읽음` : '', g.login.length ? `${g.login.length}개 다시 로그인` : '', g.pending.length ? `${g.pending.length}개 ${waiting}` : '', passWord].filter(Boolean).join(' · ');
+    const tail = [credit ? (low ? `${low}개 부족` : '') : (low ? `${low}개 거의 다 씀` : ''), g.projected.length ? `${g.projected.length}개 풀렸을 거예요` : '', g.out.length ? `${g.out.length}개 다 씀` : '', g.error.length ? `${g.error.length}개 못 읽음` : '', g.login.length ? `${g.login.length}개 다시 로그인` : '', g.pending.length ? `${g.pending.length}개 ${waiting}` : '', g.away.length ? `${g.away.length}개 지금 로그인 안 됨` : '', passWord].filter(Boolean).join(' · ');
     return `${n}개 중 <em>${g.ready.length}개</em> ${credit ? '넉넉' : '바로 써요'}${tail ? ` <span class="ms-soft">${tail}</span>` : ''}`;
   }
   function valueHtml(g, now, stale) {
@@ -533,21 +539,24 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     if (first?.unblock) return wait(`<span class="ms-num">${esc(soon(first.unblock, now))}</span>`, '가장 먼저 풀려요');
     if (first) return wait('다 썼어요', '풀리는 때를 몰라요');
     if (g.login.length || g.error.length) return wait('손볼 것', g.login.length ? '다시 로그인이 필요해요' : '읽지 못했어요');
+    if (!g.pending.length && g.away.length) return wait('다른 계정', '지금 로그인돼 있어요');
     return wait(snapshot?.checking ? '확인 중' : '확인 전', snapshot?.checking ? '읽는 중이에요' : '「지금 확인」을 눌러요');
   }
   function groupRow(g, now, stale) {
     const id = 'g-' + g.key, open = ui.open.has(id), n = g.accounts.length;
-    const order = [...g.usable, ...g.projected, ...g.manual, ...g.out, ...g.error, ...g.login, ...g.pending];
-    const dots = order.map(a => `<i class="ms-dot" data-state="${a.projected ? 'projected' : a.state}"></i>`).join('');
-    // 여러 계정인데 추천이 거의 다 쓴 계정뿐이면 라벨로도 말한다.
-    const pick = n > 1 ? (g.today ? '오늘은 이 계정부터' : g.best && !g.best.projected && g.best.state === 'low' ? '남은 건 이것뿐' : '추천') : g.service === 'typecast' ? '연결한 키' : g.service ? '연결한 계정' : '직접 넣은 구독';
+    const order = [...g.usable, ...g.projected, ...g.manual, ...g.out, ...g.error, ...g.login, ...g.pending, ...g.away];
+    const dots = order.map(a => `<i class="ms-dot" data-state="${a.away ? 'away' : a.projected ? 'projected' : a.state}"></i>`).join('');
+    // 여러 계정인데 추천이 거의 다 쓴 계정뿐이면 라벨로도 말한다. 지금 로그인되지 않은 Gemini 계정(away)은 고를 수 있는 계정으로 세지 않고,
+    // 있으면 남은 하나를 「지금 로그인된 계정」이라 부른다(「남은 건 이것뿐」은 다른 계정에 여유가 있을 수 있어 쓰지 않는다).
+    const here = n - g.away.length;
+    const pick = here > 1 ? (g.today ? '오늘은 이 계정부터' : g.best && !g.best.projected && g.best.state === 'low' ? '남은 건 이것뿐' : '추천') : g.away.length ? '지금 로그인된 계정' : g.service === 'typecast' ? '연결한 키' : g.service ? '연결한 계정' : '직접 넣은 구독';
     const plan = g.best && g.service ? planName(g.best.row.plan) : '';
     // 초기화 때와 쓴 %(고리와 같은 숫자 하나 — 「남음」은 쓰지 않는다). 한 덩이 안은 줄이 갈리지 않게 붙인다.
     const todayNote = g.today ? `<span class="ms-pick-note">${esc(soon(g.today.g.weekly.resetsAt, now)).replace(/ /g, '\u00a0')}\u00a0초기화 · 아직\u00a0${100 - g.today.g.weekly.left}%만\u00a0썼어요</span>` : '';
     return `<div class="ms-svc${open ? ' open' : ''} ${svcClass(g.service)}">
       <button type="button" class="ms-svc-row" data-subs="toggle" data-id="${esc(id)}" aria-expanded="${open}">
         <span class="ms-pool"><span class="ms-pool-top"><span class="ms-tag">${esc(g.label)}</span><span class="ms-count">${countText(g)}</span></span><span class="ms-dots" aria-hidden="true">${dots}</span></span>
-        <span class="ms-pick"><span class="ms-pick-label${g.today && n > 1 ? ' is-today' : ''}">${pick}</span><span class="ms-pick-name${g.best ? '' : ' is-none'}">${g.best ? `<span>${esc(g.best.name)}</span>${plan ? `<small>${esc(plan)}</small>` : ''}` : '지금은 없어요'}</span>${todayNote}</span>
+        <span class="ms-pick"><span class="ms-pick-label${g.today && here > 1 ? ' is-today' : ''}">${pick}</span><span class="ms-pick-name${g.best ? '' : ' is-none'}">${g.best ? `<span>${esc(g.best.name)}</span>${plan ? `<small>${esc(plan)}</small>` : ''}` : '지금은 없어요'}</span>${todayNote}</span>
         ${valueHtml(g, now, stale)}${chevron}
       </button>${open ? detailHtml(g, now) : ''}</div>`;
   }
@@ -564,7 +573,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const credit = g.kind === 'credit';
     // 계정 이름 옆에 요금제(Max 5x·Max 20x·Pro Lite 등)를 작게 붙여 계정마다 등급이 보이게 한다.
     const tierOf = a => (a.row.source === 'auto' ? planName(a.row.plan) : '');
-    const line = (a, body, action = '') => `<div class="ms-acc" data-row="${esc(a.row.id)}"><i class="ms-dot" data-state="${a.projected ? 'projected' : a.state}" aria-hidden="true"></i><span class="ms-acc-name">${esc(a.name)}${tierOf(a) ? `<small>${esc(tierOf(a))}</small>` : ''}</span>${body}${action ? `<span class="ms-acc-act">${action}</span>` : ''}</div>`;
+    const line = (a, body, action = '') => `<div class="ms-acc" data-row="${esc(a.row.id)}"><i class="ms-dot" data-state="${a.away ? 'away' : a.projected ? 'projected' : a.state}" aria-hidden="true"></i><span class="ms-acc-name">${esc(a.name)}${tierOf(a) ? `<small>${esc(tierOf(a))}</small>` : ''}</span>${body}${action ? `<span class="ms-acc-act">${action}</span>` : ''}</div>`;
     // 막대·값은 쓴 만큼 찬다(꽉 차면 그 창은 다 씀).
     const value = a => `<span class="ms-acc-val"><b class="ms-num">${100 - a.left}%</b><small>${WINDOW_NAME[a.focus]} 사용</small></span>`;
     const bar = a => `<span class="ms-bar" data-state="${a.state}" aria-hidden="true"><i style="width:${100 - a.left}%"></i></span>`;
@@ -579,8 +588,13 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const error = g.error.map(a => line(a, `<span class="ms-acc-when ms-acc-msg" title="${esc(reason(a))}">${esc(reason(a))}</span>`, `<button type="button" class="ms-button ms-button-small" data-subs="reread" data-id="${esc(a.row.id)}" ${checkBusy() ? 'disabled' : ''}>다시 읽기</button>`)).join('');
     const login = g.login.map(a => line(a, '<span class="ms-acc-when">다시 로그인이 필요해요</span>', `<button type="button" class="ms-button ms-button-small ms-button-primary" data-subs="relogin" data-id="${esc(a.row.id)}">${reloginLabel(a.row)}</button>`)).join('');
     const pending = g.pending.map(a => line(a, `<span class="ms-acc-when">${snapshot?.checking ? '읽는 중이에요' : '아직 읽지 않았어요 · 「지금 확인」을 누르면 읽어요'}</span>`)).join('');
+    // 지금 로그인되지 않은 Gemini 계정: 마지막으로 읽은 값(막대·%)과 읽은 때. 그 사이 초기화가 지났으면 풀렸을 것으로, 다 쓴 채면 풀리는 때를 말한다.
+    // 본체가 「로그인된 계정이 없음」(awayReason 'none')으로 알리면 그렇게 말한다(Fable 10-22 P2-1).
+    const awayWhy = a => (a.row.awayReason === 'none' ? 'Antigravity에 로그인된 계정이 없어' : 'Antigravity에 다른 계정이 로그인돼 있어');
+    const awayWhen = a => [a.readAt ? `${awayWhy(a)} ${stamp(a.readAt, now)}에 마지막으로 읽은 값이에요` : `${awayWhy(a)} 아직 읽은 값이 없어요`, a.projected ? `${stamp(a.projected, now)}에 풀렸을 거예요` : a.state === 'out' && a.unblock ? `${soon(a.unblock, now)}에 풀려요` : ''].filter(Boolean).join(' · ');
+    const away = g.away.map(a => line(a, `<span class="ms-acc-sub">${esc(awayWhen(a))}</span>${a.g ? `${bar(a)}${value(a)}` : ''}`)).join('');
     const part = (title, body) => (body ? `<div class="ms-acc-group"><h3>${title}</h3>${body}</div>` : '');
-    return `<div class="ms-detail">${part(credit ? '남은 크레딧' : '바로 쓸 수 있어요', usable)}${part('풀렸을 거예요', projected)}${part('직접 넣은 구독', manual)}${part('막혀 있어요', out)}${part('손볼 것', error + login)}${part('확인 전', pending)}</div>`;
+    return `<div class="ms-detail">${part(credit ? '남은 크레딧' : '바로 쓸 수 있어요', usable)}${part('풀렸을 거예요', projected)}${part('직접 넣은 구독', manual)}${part('막혀 있어요', out)}${part('손볼 것', error + login)}${part('확인 전', pending)}${part('지금 로그인 안 됨', away)}</div>`;
   }
   const usedButton = (row, now) => `<button type="button" class="ms-button ms-button-small" data-subs="used" data-id="${esc(row.id)}">${isUsedUp(row, now) ? '다 씀 풀기' : '다 씀 표시'}</button>`;
   // 초기화권 한 덩이(만료 때가 있으면 붙인다). 쓰는 곳: Claude는 웹 설정 › 사용량, GPT는 Codex 공식 안내.
@@ -712,7 +726,8 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     if (rate <= 0 || !releases.length) return null;
     const blockedAt = now + (left / rate) * DAY_MS, release = Math.min(...releases);
     if (blockedAt > release - PACE_MARGIN) return null;
-    const many = g.accounts.length > 1;
+    // 지금 로그인되지 않은 Gemini 계정은 「모두 막혀요」에 세지 않는다(그 계정으로 바꾸면 이어서 쓸 수 있다).
+    const many = g.accounts.length - g.away.length > 1;
     return {
       key: `pace:${g.service}`, link: null, items: [], at: blockedAt, kind: 'smooth',
       head: many ? `이 속도면 <b class="ms-num">${whenText(blockedAt, now, true)}쯤</b> ${esc(g.label)} 계정이 모두 막혀요. 가장 먼저 풀리는 건 ${whenText(release, now)}예요.` : `이 속도면 <b class="ms-num">${whenText(blockedAt, now, true)}쯤</b> 주간 한도를 다 써요. 초기화는 ${whenText(release, now)}예요.`,
@@ -1023,6 +1038,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     if (row.state === 'ok') return '<span class="ms-ok-mark"><i class="ms-dot" data-state="ok" title="연결됨" aria-hidden="true"></i><span class="ms-sr">연결됨</span></span>';
     if (row.state === 'needs-login') return '<span class="ms-chip ms-chip-alert">다시 로그인</span>';
     if (row.state === 'error') return '<span class="ms-chip ms-chip-warn">읽기 실패</span>';
+    if (row.state === 'elsewhere') return '<span class="ms-chip ms-chip-away">지금 로그인 안 됨</span>';
     return '<span class="ms-chip">확인 전</span>';
   }
   function manageRow(row, now) {
@@ -1042,7 +1058,10 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const pay = [price, row.billDay && row.cycle !== 'annual' ? `매월 ${row.billDay}일 결제(${billWord(dd)})` : ''].filter(Boolean).join(' · ');
     // 연간 결제로 표시한 계정(3차)은 그 사실과 되돌리는 길을 같이 둔다.
     const yearly = row.cycle === 'annual' ? `<p class="ms-soft">연간 결제로 표시했어요 · 연간 결제 팁과 결제 전 알림을 드리지 않아요. <button type="button" class="ms-link" data-subs="cycle" data-id="${esc(row.id)}" data-cycle="">월 결제로 바꾸기</button></p>` : '';
-    const facts = [row.state && !['ok', 'unknown'].includes(row.state) && row.stateMessage ? `<p class="ms-warn-text">${esc(row.stateMessage)}</p>` : '', `<p>${pay ? esc(pay) : '요금·결제일을 아직 넣지 않았어요.'}</p>`, yearly, passFact(row, now), row.note ? `<p class="ms-soft">${esc(row.note)}</p>` : ''].join('');
+    // 지금 로그인되지 않은 Gemini 계정의 안내는 경고가 아니라 사실이라 흐리게, 바꾸는 길과 같이 둔다.
+    const nobody = row.awayReason === 'none';
+    const awayFact = row.state === 'elsewhere' ? `<p class="ms-soft">${esc(row.stateMessage || (nobody ? '지금 이 PC의 Antigravity에 로그인된 계정이 없어요 — 마지막으로 읽은 값이에요.' : '지금 이 PC의 Antigravity에는 다른 계정이 로그인돼 있어요 — 마지막으로 읽은 값이에요.'))} ${nobody ? 'Antigravity에 이 계정으로 로그인하면 이어서 읽어요.' : 'Antigravity를 이 계정으로 바꾸면 이어서 읽어요.'}</p>` : '';
+    const facts = [awayFact || (row.state && !['ok', 'unknown'].includes(row.state) && row.stateMessage ? `<p class="ms-warn-text">${esc(row.stateMessage)}</p>` : ''), `<p>${pay ? esc(pay) : '요금·결제일을 아직 넣지 않았어요.'}</p>`, yearly, passFact(row, now), row.note ? `<p class="ms-soft">${esc(row.note)}</p>` : ''].join('');
     const claude = auto && row.service === 'claude', passOpen = ui.passEditing === row.id;
     const buttons = [
       auto ? `<button type="button" class="ms-button ms-button-small${row.state === 'needs-login' ? ' ms-button-primary' : ''}" data-subs="relogin" data-id="${esc(row.id)}">${reloginLabel(row)}</button>` : '',
@@ -1167,6 +1186,11 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     if (info.key) return keyGuide(key);
     const tool = snapshot?.tools?.[key], login = snapshot?.login && snapshot.login.service === key ? snapshot.login : null, otherLogin = snapshot?.login && snapshot.login.service !== key && !['done', 'error', 'cancelled'].includes(snapshot.login.stage);
     const installed = !!tool?.installed;
+    // Gemini 계정 바꾸기: 이미 연결한 Gemini 계정이 있으면 검은 창(agy)에서 /logout → /login으로 바꾼다는 것을 함께 말한다(10-22).
+    // 마지막 읽기에서 agy에 로그인된 계정이 없었으면(다시 로그인·「로그인된 계정 없음」 줄만 있음) 창이 바로 로그인 화면이라 그렇게 말한다(Fable 재확인 P3).
+    const geminiRows = key === 'gemini' ? (snapshot?.rows || []).filter(r => r.source === 'auto' && r.service === 'gemini') : [];
+    const switching = geminiRows.length > 0;
+    const signedOut = switching && !geminiRows.some(r => r.state === 'ok') && geminiRows.some(r => r.state === 'needs-login' || r.awayReason === 'none');
     const check = step(1, '요금제 확인', 'done', `<p>${esc(info.plan)}</p>${info.planLink ? `<button type="button" class="ms-link" data-subs="help" data-link="${info.planLink}">요금제 보기</button>` : ''}`);
     const install = step(2, `${info.tool} 설치`, installed ? 'done' : 'now', installed
       ? `<p>이 PC에 설치돼 있어요${tool.version ? ` (${esc(shortVersion(tool.version))})` : ''}.</p>`
@@ -1179,12 +1203,13 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     else if (login && !['done', 'error', 'cancelled'].includes(login.stage) && key === 'gemini') {
       loginBody = `<p>검은 창이 열렸어요. 아래 순서대로 하면 돼요. 창이 안 보이면 아래쪽 작업 표시줄에서 찾아 주세요.</p>
         <ol class="ms-mini-steps">
-          <li>검은 창에서 <b>Enter</b>를 눌러 「1. Google OAuth」를 골라요.</li>
-          <li>열린 브라우저에서 연결할 Google 계정을 고르고 「로그인」을 눌러요.</li>
+          ${switching ? '<li>이미 다른 계정으로 로그인된 창이면 <code>/logout</code>을 치고 <b>Enter</b>, 이어서 <code>/login</code>을 치고 <b>Enter</b>를 눌러요. 폴더를 믿겠냐고 먼저 물으면 아무거나 골라도 돼요.</li>' : ''}
+          <li>${switching ? '로그인 화면에서' : '검은 창에서'} <b>Enter</b>를 눌러 「1. Google OAuth」를 골라요.</li>
+          <li>열린 브라우저에서 ${switching ? '바꿀' : '연결할'} Google 계정을 고르고 「로그인」을 눌러요.</li>
           <li>브라우저에 나온 코드를 「클립보드에 복사」하고, 검은 창 안에서 <b>오른쪽 클릭</b>(붙여넣기) 뒤 <b>Enter</b>를 눌러요.</li>
-          <li>폴더를 믿겠냐고 물으면 아무거나 골라도 돼요. 로그인은 이미 끝났어요.</li>
+          ${switching ? '' : '<li>폴더를 믿겠냐고 물으면 아무거나 골라도 돼요. 로그인은 이미 끝났어요.</li>'}
         </ol>
-        <p class="ms-soft">연결되면 이 화면이 저절로 넘어가요. 그다음 검은 창은 닫아도 돼요.</p>
+        <p class="ms-soft">${switching ? '로그인까지 마치면 이 화면이 저절로 넘어가요. 계정을 바꾸지 않을 거면 검은 창을 닫으면 돼요. 앞 계정 줄은 마지막으로 읽은 값으로 남아요.' : '연결되면 이 화면이 저절로 넘어가요. 그다음 검은 창은 닫아도 돼요.'}</p>
         <div class="ms-inline"><button type="button" class="ms-link" data-subs="cancel-login">로그인 취소</button></div>`;
     } else if (login && !['done', 'error', 'cancelled'].includes(login.stage)) {
       loginBody = `<p>${esc(login.message || '로그인을 준비하고 있어요.')}</p>
@@ -1194,7 +1219,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
         <div class="ms-inline"><button type="button" class="ms-link" data-subs="cancel-login">로그인 취소</button>${key === 'claude' && !login.console ? '<button type="button" class="ms-link" data-subs="console-login">코드가 안 들어가면 · 검은 창으로 로그인하기</button>' : ''}</div>`;
     } else {
       const last = login && ['done', 'error'].includes(login.stage) ? `<p class="${login.stage === 'done' ? 'ms-ok-text' : 'ms-warn-text'}">${esc(login.message)}</p>` : '';
-      loginBody = `${last}<p>이미 이 PC에서 ${esc(info.tool)}에 로그인해 쓰고 있다면 그 계정을 바로 가져올 수 있어요. ${info.single ? `처음이라면 「${esc(info.label)} 로그인」을 눌러요.` : '다른 계정은 「새 계정 연결」로 하나씩 더해요.'}</p>
+      loginBody = `${last}<p>이미 이 PC에서 ${esc(info.tool)}에 로그인해 쓰고 있다면 그 계정을 바로 가져올 수 있어요. ${signedOut ? `지금은 이 PC의 ${esc(info.tool)}에 로그인된 계정이 없어요. 「${esc(info.label)} 로그인」을 누르면 바로 로그인 화면이 나와요. 계정마다 줄이 따로 생기고, 지금 로그인되지 않은 계정은 마지막으로 읽은 값으로 남아요.` : switching ? `다른 Google 계정으로 바꾸려면 「${esc(info.label)} 로그인」을 눌러 열린 검은 창(agy)에서 <code>/logout</code> → <code>/login</code> 순서로 쳐요. 계정마다 줄이 따로 생기고, 지금 로그인되지 않은 계정은 마지막으로 읽은 값으로 남아요.` : info.single ? `처음이라면 「${esc(info.label)} 로그인」을 눌러요.` : '다른 계정은 「새 계정 연결」로 하나씩 더해요.'}</p>
         ${info.email ? `<label class="ms-field" for="ms-email">연결할 이메일 (선택)<input id="ms-email" type="email" autocomplete="email" value="${esc(ui.email)}" placeholder="name@example.com"><small>로그인 화면에 미리 채워져요. 다만 브라우저에 다른 Claude 계정이 이미 로그인돼 있으면 그 계정으로 연결되니, 먼저 브라우저(claude.ai)에서 연결할 계정으로 바꿔 두세요.</small></label>` : ''}
         <div class="ms-inline"><button type="button" class="ms-button" data-subs="existing" data-service="${key}" ${busy || otherLogin ? 'disabled' : ''}>이 PC의 기존 로그인 쓰기</button><button type="button" class="ms-button ms-button-primary" data-subs="login" data-service="${key}" ${busy || otherLogin ? 'disabled' : ''}>${info.single ? `${esc(info.label)} 로그인` : '새 계정 연결'}</button></div>
         ${otherLogin ? '<p class="ms-soft">다른 서비스의 로그인이 진행 중이에요. 끝난 뒤 이어서 해 주세요.</p>' : ''}`;
