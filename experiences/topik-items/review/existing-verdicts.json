@@ -1,7 +1,7 @@
 {
   "version": "topik-existing-verdicts-1",
   "rubric": "topik-review-r1",
-  "updatedAt": "2026-10-21T14:16:41.521Z",
+  "updatedAt": "2026-10-22T03:29:07.465Z",
   "note": "기존 게임·진단 문항의 AI 2중 검수 판정(허용 목록). verdict \"pass\"만 연습에 낸다. 첫 판은 비어 있다 — 판정이 나오는 대로 채운다.",
   "items": [
     {
@@ -1120,11 +1120,11 @@
       "responseFormat": "single-choice",
       "familyKey": "entry-check.library-10.v1",
       "officialType": "TI-R-40",
-      "reason": "본인 카드, 책만 가짐, 16:59 입장으로 모든 규칙을 충족하므로 정답 '들여보내기'가 유일하다. 오답 셋은 규칙별로 그럴듯하게 짜였고, 해설도 근거를 바르게 짚는다. 통과. | 도서관 이용 안내문과 손님 정보를 대조하는 기존 게임 문항으로, 조건과 세부 정보 설정이 명확하고 해설이 정확하여 통과한다.",
-      "hash": "5ad90f745a6bfd8a",
-      "reviewedAt": "2026-10-21T14:16:41.521Z",
+      "reason": "정답이 유일하고 오답이 그럴듯해요. 기존 게임 꼴 안에서 기준을 충족하므로 통과예요. | 도서관 안내문 규칙과 손님 정보를 대조하는 기존 게임 문항으로 모든 기준을 충족함.",
+      "hash": "747d8af58c03f445",
+      "reviewedAt": "2026-10-22T03:29:07.465Z",
       "rubric": "topik-review-r1",
-      "packet": "existing-fix-r3c",
+      "packet": "existing-fix-r4",
       "by": [
         {
           "stage": "claude",
@@ -1174,11 +1174,11 @@
       "responseFormat": "single-choice",
       "familyKey": "entry-check.museum-09.v1",
       "officialType": "TI-R-40",
-      "reason": "정답이 유일하고, 조건 대조로 풀리는 게임형 기존 문항입니다. 안내문의 세 조건을 오답 셋이 고르게 겨누고 해설도 근거를 모두 짚어 그대로 통과입니다. | 미술관 안내문의 세 조건과 손님 정보(시각·짐·나이)가 모두 명시되어 정답이 유일하고 해설도 정확하다.",
-      "hash": "390dc9482acd862c",
-      "reviewedAt": "2026-10-21T13:32:57.532Z",
+      "reason": "정답은 들여보내기 하나뿐입니다. 입장 시각·카메라·표 조건을 모두 통과하고, 오답은 조건별 거절 까닭이라 그럴듯합니다. 게임형 꼴 안에서 기준을 모두 충족해 통과입니다. | 미술관 안내문의 입장·소지품·연령 조건을 확인하는 기존 게임 문항으로 이상 없음.",
+      "hash": "dc66253d1972aa33",
+      "reviewedAt": "2026-10-22T03:29:07.465Z",
       "rubric": "topik-review-r1",
-      "packet": "existing-fix-r3a",
+      "packet": "existing-fix-r4",
       "by": [
         {
           "stage": "claude",
@@ -1201,11 +1201,11 @@
       "responseFormat": "single-choice",
       "familyKey": "entry-check.museum-10.v1",
       "officialType": "TI-R-40",
-      "reason": "카메라 금지 조건으로 정답이 하나로 정해지는 기존 게임형 문항입니다. 함정(5시 마감 직전, 나이·표)이 적절하고 해설도 정확해 통과입니다. | 안내문의 금지 규정('카메라는 가지고 들어갈 수 없습니다')을 근거로 거절 사유를 고르는 문항으로 모든 기준을 충족한다.",
-      "hash": "72a44c39933c15ed",
-      "reviewedAt": "2026-10-21T13:32:57.532Z",
+      "reason": "정답 '돌려보내기 · 카메라'가 유일합니다. 시간·나이 경계를 이용한 오답도 잘 짜여 있어 기존 게임 문항으로 통과입니다. | 카메라 반입 금지 규칙 위반을 찾아내는 기존 게임 문항으로 모든 기준을 충족함.",
+      "hash": "8b3c83edd55c1299",
+      "reviewedAt": "2026-10-22T03:29:07.465Z",
       "rubric": "topik-review-r1",
-      "packet": "existing-fix-r3a",
+      "packet": "existing-fix-r4",
       "by": [
         {
           "stage": "claude",
@@ -1228,11 +1228,11 @@
       "responseFormat": "single-choice",
       "familyKey": "entry-check.museum-11.v1",
       "officialType": "TI-R-40",
-      "reason": "조건 셋을 모두 충족해 「들여보내기」가 유일한 정답입니다. 게임 꼴 안에서 보기와 해설이 바르므로 통과입니다. | 기존 게임(entry-check) 문항으로 안내문의 세 가지 입장 조건과 손님 정보를 대조하는 구성이 명확하고, 어휘·난도·해설 모두 기준에 부합하여 통과(pass) 판정함.",
-      "hash": "a285e141d404efe4",
-      "reviewedAt": "2026-10-21T13:36:34.684Z",
+      "reason": "세 조건을 모두 만족해 '들여보내기'가 유일한 정답입니다. 오답이 각 조건에 대응해 그럴듯하고 해설도 정확해 통과입니다. | 미술관 관람권 연령 조건과 입장 조건을 확인하는 기존 게임 문항으로 모든 기준을 충족함.",
+      "hash": "c3c13c903ecfd9d7",
+      "reviewedAt": "2026-10-22T03:29:07.465Z",
       "rubric": "topik-review-r1",
-      "packet": "existing-fix-r3b",
+      "packet": "existing-fix-r4",
       "by": [
         {
           "stage": "claude",

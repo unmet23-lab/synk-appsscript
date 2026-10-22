@@ -18384,6 +18384,12 @@ var minutes = (t) => {
   const [h, m] = String(t).split(":").map(Number);
   return h * 60 + m;
 };
+function koreanTime(t) {
+  const [h, m] = String(t).split(":").map(Number);
+  const half = h < 12 ? "\uC624\uC804" : "\uC624\uD6C4";
+  const hour = h % 12 || 12;
+  return `${half} ${hour}\uC2DC${m ? ` ${m}\uBD84` : ""}`;
+}
 var memoActive = (venue, at) => !!venue.memo && minutes(at) >= minutes(venue.memo.at);
 function activeRules(venue, at) {
   return memoActive(venue, at) ? [...venue.notice.rules, venue.memo.rule] : [...venue.notice.rules];
@@ -18512,6 +18518,7 @@ function diagEntryItems() {
         notice: { title: venue.notice.title, rules: rules.map((rule) => rule.text) },
         date: venue.date,
         at: item.at,
+        time: koreanTime(item.at),
         doc: { title: item.doc.title, rows: item.doc.rows.map((row) => [...row]) },
         bag,
         line: item.line,
@@ -18679,7 +18686,7 @@ function createPositionView({ t, has = () => true, formatDate = null, lang = () 
   }
   function entryCard(card) {
     const rows2 = card.doc.rows.map(([name, value]) => `<div><dt>${posEscape(name)}</dt><dd>${posEscape(value)}</dd></div>`).join("");
-    return `<div class="wpos-card"><section class="wpos-notice" lang="ko"><p class="wpos-notice-title">${posEscape(card.notice.title)}</p><ul>${card.notice.rules.map((rule) => `<li>${posEscape(rule)}</li>`).join("")}</ul></section><section class="wpos-guest"><p class="wpos-guest-time">${card.date ? `<span lang="ko">${posEscape(card.date)}</span> \xB7 ` : ""}${posEscape(t("position.diagnostic.time", { at: card.at }))}</p><p class="wpos-notice-title" lang="ko">${posEscape(card.doc.title)}</p><dl lang="ko">${rows2}</dl><p class="wpos-bag">${posEscape(t("position.diagnostic.bag"))}: <span lang="ko">${posEscape(card.bag.length ? card.bag.join(", ") : "\uC5C6\uC74C")}</span></p><p class="wpos-line" lang="ko"><span>${posEscape(card.who)}</span>\u300C${posEscape(card.line)}\u300D</p></section></div>`;
+    return `<div class="wpos-card"><section class="wpos-notice" lang="ko"><p class="wpos-notice-title">${posEscape(card.notice.title)}</p><ul>${card.notice.rules.map((rule) => `<li>${posEscape(rule)}</li>`).join("")}</ul></section><section class="wpos-guest"><p class="wpos-guest-time">${card.date ? `<span lang="ko">${posEscape(card.date)}</span> \xB7 ` : ""}${posEscape(t("position.diagnostic.time", { at: "\0" })).replace("\0", `<span lang="ko">${posEscape(card.time || card.at)}</span>`)}</p><p class="wpos-notice-title" lang="ko">${posEscape(card.doc.title)}</p><dl lang="ko">${rows2}</dl><p class="wpos-bag">${posEscape(t("position.diagnostic.bag"))}: <span lang="ko">${posEscape(card.bag.length ? card.bag.join(", ") : "\uC5C6\uC74C")}</span></p><p class="wpos-line" lang="ko"><span>${posEscape(card.who)}</span>\u300C${posEscape(card.line)}\u300D</p></section></div>`;
   }
   function listenNote(view, playing) {
     if (playing) return t("position.diagnostic.playing");

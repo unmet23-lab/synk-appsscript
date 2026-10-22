@@ -142,7 +142,7 @@ test('입장 검사 문항은 안내문·날짜와 시각·표·짐·손님 말�
  const html=view.renderDiagnosticItem({view:shown,skill:{id:'ko.reading.detail'}});
  assert.match(html,/하늘 수영장 이용 안내/);assert.match(html,/<li>수영 모자를 꼭 써야 합니다\.<\/li>/);
  // 날짜는 게임 화면처럼 그날의 한국어 날짜(읽을 글)다 — 음악회 안내문은 날짜가 바뀐 날이 오늘인지가 판단 근거다(10-21 문항 검수).
- assert.match(html,/<p class="wpos-guest-time"><span lang="ko">8월 6일 수요일<\/span> · 지금 14:04<\/p>/);assert.match(html,/<dt>구분<\/dt><dd>학생 · 15살<\/dd>/);assert.match(html,/짐: <span lang="ko">수건, 물병<\/span>/);
+ assert.match(html,/<p class="wpos-guest-time"><span lang="ko">8월 6일 수요일<\/span> · 지금 <span lang="ko">오후 2시 4분<\/span><\/p>/);assert.match(html,/<dt>구분<\/dt><dd>학생 · 15살<\/dd>/);assert.match(html,/짐: <span lang="ko">수건, 물병<\/span>/);
  assert.match(html,/이단비<\/span>「수건과 물은 있어요\. 수영 모자는 없어요\.」/);
  // 짐이 빈 손님(museum-11)도 「짐: 없음」을 보인다 — 게임처럼 없다는 것을 글로 보여야 카메라 규칙을 가를 수 있다(10-21 재검수).
  const empty=DIAGNOSTIC_ITEMS.find(row=>row.itemKey==='entry-check.museum-11.v1');
@@ -153,7 +153,7 @@ test('입장 검사 문항은 안내문·날짜와 시각·표·짐·손님 말�
  assert.doesNotMatch(html,/data-position-listen/);
  // 영어 화면에서도 안내문·손님·보기는 한국어 원문, 화면 글만 영어다.
  const en=english.renderDiagnosticItem({view:shown,skill:{id:'ko.reading.detail'}});
- assert.match(en,/Now 14:04/);assert.match(en,/Bag: <span lang="ko">수건, 물병<\/span>/);assert.match(en,/Skip this question/);assert.match(en,/>들여보내기</);
+ assert.match(en,/Now <span lang="ko">오후 2시 4분<\/span>/);assert.match(en,/Bag: <span lang="ko">수건, 물병<\/span>/);assert.match(en,/Skip this question/);assert.match(en,/>들여보내기</);
  // 할 일을 말하는 지시(손님 들이기·빈칸 고르기)는 화면 언어로, 싱크타운 읽기의 물음은 읽을 내용이라 한국어 그대로.
  assert.match(html,/<p class="wpos-question">이 손님을 들여보낼까요\?<\/p>/);assert.match(en,/<p class="wpos-question">Should this guest come in\?<\/p>/);
  const town=DIAGNOSTIC_ITEMS.find(row=>row.source==='synk-town'),townView=createDiagnosticSession({coach:coach(),items:[town]}).next();

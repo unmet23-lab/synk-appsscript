@@ -12,7 +12,7 @@ import {itemMetadata as blankMetadata} from '../blank-slice/learning.mjs';
 import {READING_CHECKS,readingMetadata} from '../synk-town/understanding.mjs';
 import {VENUES,ITEMS as BAGGAGE,CAST} from '../entry-check/content.mjs';
 import {caseMetadata} from '../entry-check/learning.mjs';
-import {activeRules,choicesFor} from '../entry-check/core.mjs';
+import {activeRules,choicesFor,koreanTime} from '../entry-check/core.mjs';
 import {DIAG_RACING_WORDS,racingWordAudio} from './world-diagnostic-racing.mjs';
 
 // ask: 문항 내용이 아니라 할 일을 말하는 지시(빈칸 고르기·손님 들이기). 화면이 화면 언어로 보인다(position.diagnostic.ask.*,
@@ -60,7 +60,7 @@ function diagEntryItems(){
   const meta=caseMetadata(item),rules=activeRules(venue,item.at),id=choice=>choice==='pass'?'pass':`reject-${choice}`;
   const bag=(item.items||[]).map(entry=>Array.isArray(entry)?`${BAGGAGE[entry[0]]||entry[0]} ${entry[1]}개`:BAGGAGE[entry]||entry);
   return {...meta,source:'entry-check',audio:null,prompt:null,question:'이 손님을 들여보낼까요?',ask:'entry',
-   card:{notice:{title:venue.notice.title,rules:rules.map(rule=>rule.text)},date:venue.date,at:item.at,doc:{title:item.doc.title,rows:item.doc.rows.map(row=>[...row])},
+   card:{notice:{title:venue.notice.title,rules:rules.map(rule=>rule.text)},date:venue.date,at:item.at,time:koreanTime(item.at),doc:{title:item.doc.title,rows:item.doc.rows.map(row=>[...row])},
     bag,line:item.line,who:CAST[item.who]?.name||''},
    choices:choicesFor(venue,item.at).map(choice=>({id:id(choice),label:choice==='pass'?'들여보내기':`돌려보내기 · ${rules.find(rule=>rule.id===choice)?.short||choice}`})),
    correctId:id(item.answer),explanation:item.why,label:`${venue.name} · ${CAST[item.who]?.name||item.id}`};

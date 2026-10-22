@@ -135,9 +135,10 @@ export function createPositionView({t,has=()=>true,formatDate=null,lang=()=>'ko'
  // 입장 검사처럼 안내문을 읽고 손님에게 적용하는 문항: 안내문 · 날짜와 시각 · 손님의 표 · 짐 · 손님의 말을 글로 보인다.
  // 날짜는 게임 화면처럼 그날의 한국어 날짜(읽을 글)다 — 음악회 안내문은 날짜가 바뀐 날이 오늘인지가 판단 근거다(10-21 문항 검수).
  // 짐이 없으면 「짐: 없음」 — 게임의 「보여 준 짐이 없어요.」처럼 없다는 것을 글로 보여야 카메라·음식 규칙을 글로 가를 수 있다(10-21 재검수).
+ // 시각도 게임 시계·해설과 같은 「오후 4시 29분」 꼴의 한국어 글이다(card.time, 10-22 화면 검수) — 「지금」 같은 틀 글만 화면 언어를 따른다.
  function entryCard(card){
   const rows=card.doc.rows.map(([name,value])=>`<div><dt>${posEscape(name)}</dt><dd>${posEscape(value)}</dd></div>`).join('');
-  return `<div class="wpos-card"><section class="wpos-notice" lang="ko"><p class="wpos-notice-title">${posEscape(card.notice.title)}</p><ul>${card.notice.rules.map(rule=>`<li>${posEscape(rule)}</li>`).join('')}</ul></section><section class="wpos-guest"><p class="wpos-guest-time">${card.date?`<span lang="ko">${posEscape(card.date)}</span> · `:''}${posEscape(t('position.diagnostic.time',{at:card.at}))}</p><p class="wpos-notice-title" lang="ko">${posEscape(card.doc.title)}</p><dl lang="ko">${rows}</dl><p class="wpos-bag">${posEscape(t('position.diagnostic.bag'))}: <span lang="ko">${posEscape(card.bag.length?card.bag.join(', '):'없음')}</span></p><p class="wpos-line" lang="ko"><span>${posEscape(card.who)}</span>「${posEscape(card.line)}」</p></section></div>`;
+  return `<div class="wpos-card"><section class="wpos-notice" lang="ko"><p class="wpos-notice-title">${posEscape(card.notice.title)}</p><ul>${card.notice.rules.map(rule=>`<li>${posEscape(rule)}</li>`).join('')}</ul></section><section class="wpos-guest"><p class="wpos-guest-time">${card.date?`<span lang="ko">${posEscape(card.date)}</span> · `:''}${posEscape(t('position.diagnostic.time',{at:'\u0000'})).replace('\u0000',`<span lang="ko">${posEscape(card.time||card.at)}</span>`)}</p><p class="wpos-notice-title" lang="ko">${posEscape(card.doc.title)}</p><dl lang="ko">${rows}</dl><p class="wpos-bag">${posEscape(t('position.diagnostic.bag'))}: <span lang="ko">${posEscape(card.bag.length?card.bag.join(', '):'없음')}</span></p><p class="wpos-line" lang="ko"><span>${posEscape(card.who)}</span>「${posEscape(card.line)}」</p></section></div>`;
  }
  // 듣기 칸 한 줄: 재생 중 · 재생 실패 · 시험형(허용 횟수까지 혼자 — 「두 번까지 들을 수 있어요 · 들은 횟수 1」, 넘기면 도움) ·
  // 게임 원고 문항(다 들은 뒤 다시 듣기는 도움). view.plays: {allowed, completed, extra} · view.next: 다음 재생의 성격.
