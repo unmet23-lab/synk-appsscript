@@ -981,7 +981,7 @@ const sens = [
   ['유호님 회화 반이 정규 시간대를 씀(위성 시간을 못 받음)', {}, (inp) => { inp.lab.premiumUsesRegularSlots = true; }],
   ['메인만 + 대표 생활비를 2028년 말까지 받지 않음', { scOverride: { subVolume: 0 }, leadPlanned: null }, (inp) => { inp.shift.voucher.perYear['기본'] = {}; inp.online.topik4Cohort.size['기본'] = 0; inp.online.worldB2C.m12.base = 0; inp.online.worldB2C.m36.base = 0; inp.online.worldCorporateMN.companies['기본'] = []; inp.online.textbookLicense.academies['기본'] = 0; inp.company.founderPayKRW = [ { from: '2029-01', v: 3_000_000 } ]; }],
   ['한국 담당자를 뽑았는데 PULSE·SHIFT가 계획의 25%만 옴', { scOverride: { subVolume: 0.25 } }, null],
-  ['AI바우처 0건(공급기업 POOL 등록·선정이 안 되면)', {}, (inp) => { inp.shift.voucher.perYear['기본'] = {}; }],
+  ['AI바우처 2028년 한 건(2027년 등록 뒤 첫 과제를 따면)', {}, (inp) => { inp.shift.voucher.perYear['기본'] = { 2028: 1 }; }],
   ['TOPIK 4급 온라인 반·SHIFT 반나절 진단을 둘 다 열지 않음', {}, (inp) => { inp.online.topik4Cohort.size['기본'] = 0; inp.shift.entry.orders = [ { from: '2027-02', v: 0 } ]; }],
   ['다시 열기 ① TOPIK 4급 온라인 반만 열지 않음', {}, (inp) => { inp.online.topik4Cohort.size['기본'] = 0; }],
   ['SHIFT 반나절 진단(둘째 BM의 입구)을 팔지 않음', {}, (inp) => { inp.shift.entry.orders = [ { from: '2027-02', v: 0 } ]; }],
