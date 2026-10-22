@@ -6,7 +6,11 @@
 
 2026-10-18 계정 통일: 아르곤을 사용하는 모든 작업(딥리서치·예약 조사·블렌더 등)은 웹·앱·공식 CLI 모두 Google AI Ultra 계정 `77yuhbs@gmail.com`으로 실행한다. 작업을 시작할 때 해당 서비스의 실제 인증 계정을 확인한다. 업무 Google Docs/Sheets와 조사 결과 문서는 `unmet23@gmail.com`의 기존 연결·문서 ID·공유 범위를 유지한다. Chrome의 기본 계정과 Docs 계정을 일괄 전환하지 않고 아르곤 작업 세션에서 77yuhbs를 선택한다. 한도·인증·모델 접근 실패 시 unmet23이나 다른 모델·추가 결제·유료 API로 자동 대체하지 않는다. 기존 조사 4종(전체·YouTube/TikTok·Meta/브랜드·synkbrief)은 별도 서버의 공식 Antigravity CLI `gemini-4-argon-high`와 기존 예약 시각을 유지한다. 예약·복원 원문은 [Argon 예약 운영 소스](../tools/argon-schedules/README.md), 현재 결과는 [트랙](_ops/트랙.md)에 둔다.
 
-2026-10-22 둘째 Ultra 계정: `unmet25`를 Google AI Ultra 가족 계정으로 더했다(Gemini 한도가 77yuhbs와 따로 돈다). 77yuhbs의 Gemini 주간 몫이 다 돼 가면(PowerShell `agy -p "/usage" --output-format json`의 주간 남은 비율이 10% 아래이거나 막힐 때) unmet25로 바꿔 쓴다. Gemini 웹·Flow는 Chrome에서 계정만 바꾼다. PC의 공식 CLI(agy)는 Windows 자격 증명에 계정이 하나뿐이고 계정별 프로필 설정이 없어(1.4.4 확인), agy 창에서 `/logout` → `/login`으로 바꾸고 브라우저의 계정 고르기·승인은 사용자가 한다. 바꾼 뒤에는 `~/.gemini/antigravity-cli/cli.log`의 `authenticated successfully as` 줄로 실제 계정을 확인한다. 이 PC의 모든 세션이 같은 agy 로그인을 쓰고, 쓰던 계정이 다 돼 갈 때만 다른 쪽으로 바꾼다(초기화됐다고 되돌리지 않는다). 서버 예약 조사는 아직 77yuhbs만 로그인돼 있다. 이 두 Ultra 계정 말고 unmet23·다른 모델·추가 결제·유료 API로 자동 대체하지 않는 것은 그대로다.
+2026-10-22 둘째 Ultra 계정: `unmet25`를 Google AI Ultra 가족 계정으로 더했다(Gemini 한도가 77yuhbs와 따로 돈다). 77yuhbs의 Gemini 주간 몫이 다 돼 가면(PowerShell `agy -p "/usage" --output-format json`의 주간 남은 비율이 10% 아래이거나 막힐 때) unmet25로 바꿔 쓴다. Gemini 웹·Flow는 Chrome에서 계정만 바꾼다. PC의 공식 CLI(agy)는 Windows 자격 증명에 계정이 하나뿐이고 계정별 프로필 설정이 없어(1.4.4 확인), agy 창에서 `/logout` → `/login`으로 바꾸고 브라우저의 계정 고르기·승인은 사용자가 한다. 바꾼 뒤에는 `~/.gemini/antigravity-cli/cli.log`의 `authenticated successfully as` 줄로 실제 계정을 확인한다. 이 PC의 모든 세션이 같은 agy 로그인을 쓰고, 쓰던 계정이 다 돼 갈 때만 다른 쪽으로 바꾼다(초기화됐다고 되돌리지 않는다).
+
+서버 예약 조사(10-22)는 같은 실행 사용자 안에 agy HOME을 계정마다 따로 둔다(77yuhbs = 예약 작업 폴더, unmet25 = `/var/lib/synk-argon-unmet25`). 회차를 시작할 때 `agy-account.py`가 계정을 고른다. 77yuhbs의 Gemini 주간·5시간 남은 몫이 10% 아래이거나 확인이 실패한 회차만, unmet25가 같은 권한·유료 끔·실제 로그인·10% 이상일 때 unmet25로 돈다. 서버는 로그인이 둘 다 있어 바꾸는 데 다시 로그인할 일이 없으므로, PC와 달리 77yuhbs가 회복되면 곧바로 77yuhbs로 돌아간다. 고정이 필요하면 `mode unmet25`·`mode 77yuhbs`를 쓴다. 서버 unmet25 로그인은 PC 터미널의 `node tools/argon-schedules/agy-login.cjs unmet25`로 띄우고, 승인은 사용자가 한다. 쓰는 법과 확인은 [Argon 예약 운영 소스](../tools/argon-schedules/README.md)에 있다.
+
+이 두 Ultra 계정 말고 unmet23·다른 모델·추가 결제·유료 API로 자동 대체하지 않는 것은 그대로다.
 
 ## GPT
 

@@ -38,7 +38,7 @@ const MARKER = 'SYNK_WEEKLY_SCAN_COMPLETE';
 const REMOTE = String.raw`
 import json, subprocess
 roles = ${JSON.stringify(ROLES)}
-keep = ('status', 'startedAt', 'completedAt', 'error', 'model')
+keep = ('status', 'startedAt', 'completedAt', 'error', 'model', 'agyAccount')
 out = {}
 for r in roles:
     p = subprocess.run(['sudo', '-n', '-u', 'synk-argon-ultra', 'env', '-i', 'HOME=/var/lib/synk-argon-77yuhbs',
@@ -174,4 +174,6 @@ async function main() {
   if (!Object.values(summary.roles).every((x) => x.fresh)) process.exitCode = 3;
 }
 
-main().catch((e) => { console.error(e.message); process.exitCode = 1; });
+// agy-login.cjs(10-22)가 같은 주소 읽기·SSH 신원을 쓴다 — 바로 실행할 때만 읽기를 돈다.
+module.exports = { currentAddress, KEY, KNOWN, ALIAS };
+if (require.main === module) main().catch((e) => { console.error(e.message); process.exitCode = 1; });

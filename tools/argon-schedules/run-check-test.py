@@ -208,6 +208,32 @@ class RunCheckTest(unittest.TestCase):
         self.assertEqual(receipt_path.read_bytes(), saved)
         self.assertEqual(json.loads(self.record.read_text())['status'], 'running')
 
+    def test_receipt_records_launcher_account_only_for_same_invocation(self):
+        # agy-account.py (10-22) writes ROLE.agy-account.json before agy starts; stale or foreign records are ignored.
+        decision = self.home / 'run-status' / (ROLE + '.agy-account.json')
+        cases = [({'role': ROLE, 'account': 'unmet25'}, 'complete', 'unmet25'),
+                 ({'role': ROLE, 'account': '77yuhbs'}, 'failed', '77yuhbs'),
+                 ({'role': ROLE, 'account': 'unmet25', 'invocationId': 'f' * 32}, 'complete', None),
+                 ({'role': 'full', 'account': 'unmet25'}, 'complete', None),
+                 ({'role': ROLE, 'account': 'unmet23'}, 'complete', None),
+                 ('not json', 'complete', None)]
+        for number, (value, expected_status, expected) in enumerate(cases, 1):
+            with self.subTest(value=value):
+                invocation = format(number, 'x') * 32
+                self.run_checker('begin', invocation=invocation)
+                if isinstance(value, dict):
+                    value = json.dumps({'invocationId': invocation, **value})
+                decision.write_text(value)
+                response = 'SYNK_RUN_COMPLETE: synkbrief : ' + NEW
+                denied = ['synthetic-denial'] if expected_status == 'failed' else None
+                with self.log.open('ab') as handle:
+                    for item in events(response, denied=denied):
+                        handle.write((json.dumps(item) + '\n').encode())
+                _, state, _ = self.run_checker('end', NEW, invocation=invocation)
+                self.assertEqual((state['status'], state.get('agyAccount')), (expected_status, expected))
+                receipt = json.loads((self.home / 'run-status' / 'history' / (ROLE + '-' + invocation + '.json')).read_text())
+                self.assertEqual(receipt.get('agyAccount'), expected)
+
     def test_invalid_invocation_is_safe_failure_without_doc_read(self):
         code, state, calls = self.run_checker('begin', invocation='../SECRET_INVOCATION')
         self.assertEqual((code, state['error'], len(calls)), (1, 'BEGIN_INVOCATION_ID_INVALID', 0))

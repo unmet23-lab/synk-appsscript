@@ -64,7 +64,9 @@
     "deny": [
       "read_file(/var/lib/synk-argon-77yuhbs/.config/gws-docs)",
       "read_file(/var/lib/synk-argon-77yuhbs/.gemini/antigravity-cli/antigravity-oauth-token)",
-      "read_file(/var/lib/synk-argon-77yuhbs/.gemini/antigravity-cli/settings.json)"
+      "read_file(/var/lib/synk-argon-77yuhbs/.gemini/antigravity-cli/settings.json)",
+      "read_file(/var/lib/synk-argon-unmet25/.gemini/antigravity-cli/antigravity-oauth-token)",
+      "read_file(/var/lib/synk-argon-unmet25/.gemini/antigravity-cli/settings.json)"
     ]
   }
 }

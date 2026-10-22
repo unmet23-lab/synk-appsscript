@@ -1,7 +1,7 @@
 # 현장 노트 · AI CLI·구독 통로
 
 > 판: Antigravity CLI `agy` 1.4.2(Windows winget, 10-18 코드 검수 비교에서 확인)·1.4.0(Linux 별도 사용자) · Gemini API 무료 몫 · `tools/몽골어대조.js`·`tools/lib/제미나이구독호출.js` · Hermes Agent v0.22.2(`%LOCALAPPDATA%\hermes`, 텔레그램 팁 봇 게이트웨이) · Codex 세션 기록(`~/.codex/sessions`·`~/.codex/archived_sessions`)
-> 마지막 확인: 2026-10-19(조사 예약의 작업 파일 읽기·명령 거절 실패 — 원인 조회·고침·고친 뒤 첫 회차 complete), 2026-10-18(Linux 파일 인증 복원·실제 timer Argon 실행·계정별 모델 목록·headless 도구 권한, 기존 노트북 항목은10-17)
+> 마지막 확인: 2026-10-22(서버 agy 두 계정 HOME·SSH 로그인 60초·settings 기본값 키), 2026-10-19(조사 예약의 작업 파일 읽기·명령 거절 실패 — 원인 조회·고침·고친 뒤 첫 회차 complete), 2026-10-18(Linux 파일 인증 복원·실제 timer Argon 실행·계정별 모델 목록·headless 도구 권한, 기존 노트북 항목은10-17)
 > 쓴 AI: Claude Code·GPT(Codex) — 누가 언제 무엇을 더했는지는 [지난 기록](지난기록/AI_CLI.md#쓴-기록)에 있다.
 
 어느 AI·계정이 무엇을 맡는지는 [AI 운영 원칙 · 역할](../AI_운영원칙.md#역할), 유료 호출 승인은 [비용과 권한](../AI_운영원칙.md#비용과-권한)이 정한다. GPT 그림 굽기의 주간 한도와 계정 돌려쓰기는 [그림 굽기·오리기](그림_굽기_오리기.md#gpt-그림-굽기)에 있다. 여기는 AI CLI·구독 통로·세션 기록이 예상과 다르게 움직인 함정이다. 틀은 [README](README.md)를 따른다.
@@ -24,6 +24,7 @@
 - 스크립트에서 `hermes send`는 뜨는 데 40초쯤 걸려 60초 한도면 보내 놓고 끊긴다 → 종료 코드 말고 `--json` 결과로 판정하고 한도는 넉넉히(`tools/lib/헤르메스보내기.js`) ([자세히](#hermes-send는-뜨는-데-40초쯤-걸려-60초-한도로-부르면-보내-놓고-끊겨-실패로-친다--다음-회차가-같은-글을-또-보낸다-2026-10-22-claude))
 - 조사 예약 timer 시각을 바꾸고 `systemctl restart <timer>`를 하면 그 자리에서 회차가 돌고, 둘을 함께 재시작하면 잠금에 진 쪽이 실패 알림을 보낸다 → `daemon-reload`만 하고 `list-timers` NEXT를 본다 ([자세히](#조사-예약-timer의-시각을-바꾸고-systemctl-restart-timer를-하면-그-자리에서-회차가-돌고-둘을-함께-재시작하면-공용-잠금에-진-쪽이-실패-알림을-보낸다-2026-10-22-claude))
 - 유호님 손일을 GPT에 넘길 땐 `node tools/GPT인계.mjs 준비`로 카드를 클립보드에 올리고(유호님은 붙여 넣기만) `기다리기`를 백그라운드로 — 결과는 파일·Codex 대화 기록에서 저절로 온다 ([자세히](#유호님-손일을-gpt에-넘길-때-됐어를-기다리면-결과가-유호님을-거쳐-온다--카드를-붙여-넣게-하고-결과는-파일대화-기록에서-저절로-받는다-2026-10-22-claude))
+- 서버 agy를 SSH로 로그인시킬 때 `-p`로 띄우면 60초 안에 코드를 붙여 넣어야 한다 → 사람을 기다릴 땐 인자 없는 `agy`(대화형)로, 다른 계정 HOME은 가리고 띄운다. settings.json에 `useG1Credits`가 없으면 꺼진 것이다(agy가 기본값 키를 지운다) ([로그인](#ssh로-띄운-agy-로그인은-print-모드에서-60초만-기다리고-대화형-화면은-기다린다--run의-스크립트는-sh로-읽어야-돈다-2026-10-22-claude), [설정](#서버-agy가-settingsjson을-다시-쓰며-기본값인-useg1credits-false를-지운다--키가-없으면-꺼진-것이다-2026-10-22-claude))
 - GPT 사용량은 Pro 계정 둘(본 계정 unmet23 · 예비 synk.yuh)을 나눠 본다 — 백엔드 검수는 주간 90% 아래 계정으로(`검수묶음.mjs GPT`가 고른다) ([자세히](#gpt-검수를-본-계정codex으로만-돌리면-gpt-앱-백엔드가-쓴-주간-몫에-닿는다--계정판의-gpt-1는-다른-pro-계정이었다-2026-10-22-claude))
 - 서류를 아르곤에 글자로만 넘기면 PDF 글자 층 착시·그림 서명·학습 시점 뒤 모델 이름을 문제로 짚고 등급도 부풀린다(10-22 18건 중 7건 헛지적) → 지적마다 원본·쪽 그림·기록에 대조해 고르고, 반영한 곳만 Fable이 다시 본다 ([자세히](#서류-검수를-아르곤에-글자로만-넘기면-그림pdf-글자-층새-모델-이름을-문제로-짚는다--18건-중-7건이-헛지적-2026-10-22-claude))
 - 카드가 붙은 조직의 키는 크레딧을 다 써도 거절 없이 산 잔액·카드로 넘어간다 → 키 목록의 「한도키」 배열에 넣고 `한도USD`·`한도시작`·`만료일`을 둔다(옛 판은 그 배열을 못 본다, 한도 키는 예약 줄을 먼저 덧붙이고 내 줄 앞만 본다) ([자세히](#카드가-붙은-조직에-한-번-들어온-크레딧은-다-써도-credit-balance-is-too-low로-멈추지-않는다--키-목록의-한도만료로-막는다-2026-10-22-claude))
@@ -165,6 +166,18 @@
 - 원인: 도구는 기본으로 저장소 `docs/_ops/몽골어검문.jsonl`에 한 줄(대상 경로·지문·판정, 글은 없음)을 쓰고 공용 작업본이면 바로 올린다.
 - 고침: 공개하지 않을 원고는 `SYNK_MN_LEDGER=<비공개 폴더>/몽골어검문.jsonl`을 붙여 돌린다(장부도 그 파일에만 남고 올리지 않는다). 공개 화면 글은 지금처럼 공개 장부에 남긴다.
 - 다시 확인: 출력의 「장부:」 줄이 비공개 경로를 가리키고 「origin」 줄이 없다.
+
+### 서버 agy가 settings.json을 다시 쓰며 기본값인 `useG1Credits: false`를 지운다 — 키가 없으면 꺼진 것이다 (2026-10-22 Claude)
+- 증상: 10-22 서버 77yuhbs의 settings.json에 `useG1Credits` 키가 없었다(README와 10-18 설치 기록은 false로 적었다). 두 계정 settings에 false를 넣었지만, 그 HOME에서 agy를 한 번 돌리자(`/usage`, 로그인 시도) 두 파일 모두 키가 다시 없어졌다. `permissions`는 그대로였다.
+- 원인: agy가 실행 때 settings.json을 다시 쓰면서 기본값과 같은 키를 빼는 것으로 보인다. [공식 설정 표](https://antigravity.google/docs/cli/reference)에서 `useG1Credits`의 기본값은 false다.
+- 고침: 「키가 없거나 false」를 꺼짐으로 본다. true일 때만 막는다(`tools/argon-schedules/agy-account.py`의 unmet25 점검). 설정이 맞는지 볼 때는 키가 있는지가 아니라 값이 true인지를 본다.
+- 다시 확인: 서버에서 `sudo python3 /opt/synk-argon-77yuhbs/agy-account.py status`의 `spareSettingsOk`가 true인지, 두 settings.json에 `useG1Credits: true`나 `modelProvider`가 없는지 본다.
+
+### SSH로 띄운 agy 로그인은 print 모드에서 60초만 기다리고, 대화형 화면은 기다린다 — `/run`의 스크립트는 `sh`로 읽어야 돈다 (2026-10-22 Claude)
+- 증상: 10-22 서버 unmet25 로그인을 앱 터미널 탭에 `agy -p /usage`로 띄우고 주소를 채팅으로 알렸는데, 유호님이 보기 전에 `Waiting for authentication (timeout 60s)`가 끝나 `authentication failed or timed out`이 됐다. 그 전에는 `sudo /run/synk-argon-unmet25-login.sh`가 `Permission denied`였다. 앱이 다시 켜지면 그 탭도 닫힌다.
+- 원인: 공식 원격 SSH OAuth 흐름은 인증 URL을 찍고, 브라우저가 보여 준 코드를 그 터미널에 붙여 넣는 방식이다([설치 및 인증](https://antigravity.google/docs/install/#remote-ssh-oauth-flow)). print 모드는 60초만 기다린다. 서버 `/run`은 실행 금지(noexec)로 마운트돼 있다.
+- 고침: 사람이 언제 볼지 모를 때는 인자 없는 `agy`(대화형)로 띄운다. 「Select login method」에서 「1. Google OAuth」 → 주소 → 코드 붙여넣기 순서로 기다린다. 스크립트는 `sudo /bin/sh /run/…`로 띄운다. 로그인 창은 다른 계정 HOME을 가린 `systemd-run --pty --property=InaccessiblePaths=<다른 HOME>` 안에서 띄워 두 로그인이 섞이지 않게 한다. 지금은 PC 터미널의 `node tools/argon-schedules/agy-login.cjs <계정>` 한 줄이 이 꼴로 띄운다(서버 `agy-account.py login`). 카페 망 같은 곳에서는 서버가 연달아 붙는 SSH를 한동안 막는 것처럼 보였다(붙은 직후 다음 접속이 시간 초과·`Connection reset`, 다른 곳 22번은 열림). 긴 서버 작업은 접속 한 번에 올리기·실행을 묶고 `systemd-run`으로 서버 쪽에서 돌게 한다.
+- 다시 확인: 로그인 뒤 그 HOME의 `log/cli-*.log`에 `authenticated successfully as <계정>`이 있고, 다른 계정 HOME의 토큰 파일 크기·수정 시각이 그대로인지 본다.
 
 ## Claude API
 

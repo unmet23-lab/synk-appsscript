@@ -30,6 +30,7 @@ def terminal_receipt(d):
  invocation=d.get('invocationId') or os.environ.get('INVOCATION_ID','')
  if isinstance(invocation,str) and re.fullmatch(r'[a-f0-9]{32}',invocation):receipt['invocationId']=invocation
  if d.get('model')=='gemini-4-argon-high':receipt['model']=d['model']
+ if d.get('agyAccount') in ('77yuhbs','unmet25'):receipt['agyAccount']=d['agyAccount']
  if isinstance(d.get('cliStatus'),str) and re.fullmatch(r'[A-Z_]{1,32}',d['cliStatus']):receipt['cliStatus']=d['cliStatus']
  if d['status']=='failed':receipt['error']=d.get('error') if isinstance(d.get('error'),str) and d['error'] in SAFE_ERRORS else 'RUN_CHECK_FAILED'
  return receipt
@@ -58,6 +59,12 @@ def archive(d):
 def save(d):
  p=record.with_suffix('.next');p.write_text(json.dumps(d,ensure_ascii=False,indent=2));os.chmod(p,0o600);p.replace(record)
  archive(d)
+def agy_account(d):
+ """Login agy-account.py chose for this same invocation (2026-10-22); None for runs without it."""
+ try:v=json.loads((state/(role+'.agy-account.json')).read_text())
+ except (OSError,ValueError):return None
+ if isinstance(v,dict) and v.get('role')==role and d.get('invocationId') and v.get('invocationId')==d['invocationId'] and v.get('account') in ('77yuhbs','unmet25'):return v['account']
+ return None
 def read_doc():
  r=subprocess.run(['/usr/bin/python3','/opt/synk-argon-77yuhbs/docs-io.py','read',role],capture_output=True,text=True,timeout=100)
  assert r.returncode==0,'DOC_READ_FAILED'
@@ -73,6 +80,8 @@ if sys.argv[1]=='begin':
  raise SystemExit(0)
 try:
  d=json.loads(record.read_text());assert d['status']=='running'
+ account=agy_account(d)
+ if account:d['agyAccount']=account
  with log.open('rb') as f:f.seek(d['offset']);raw=f.read(20*1024*1024)
  events=[json.loads(x) for x in raw.decode().splitlines() if x.strip()]
  init=[x for x in events if x.get('event')=='init'];res=[x['result'] for x in events if x.get('event')=='result']
