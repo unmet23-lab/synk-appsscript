@@ -1,0 +1,15 @@
+{
+  "//": "Fable 배포 뒤 검수(검수/Fable_포털_공개뒤.md) P2-1·P2-3과 같은 줄의 P3-2·P3-3 — Workspace 소개가 회사 초대만 말하던 이웃 글에 교사 문을 더하고, WORLD 「할 수 있는 것」 첫 줄에 TOPIK(PC 앱 state.mjs와 같은 문장), 교사를 부르는 말 하나로, 검색 키워드를 지금 놀이·옛 이름으로. P2-2(라이브러리 이름표)는 master에 이미 있어 공개본에만 얹었다.",
+  "experiences/synk-account/src/platform.mjs": [
+    ["'회사에서 초대받은 계정으로 써요'", "'회사 초대를 받은 계정이나 반을 맡은 교사 계정으로 써요'", {"n": 1}],
+    ["'회사 초대를 받은 계정으로 로그인해요. SYNK ID만으로는 들어갈 수 없어요.'", "'회사 일은 회사 초대를 받은 계정으로, 내 수업은 반을 맡은 교사로 등록된 SYNK ID로 로그인해요. 가입만 한 SYNK ID로는 들어갈 수 없어요.'", {"n": 1}],
+    ["'회사에서 안내받은 Workspace 주소로 열어요.'", "'회사에서 안내받은 Workspace 주소로 열어요. 교사는 같은 주소의 「내 수업」으로 들어가요.'", {"n": 1}],
+    ["'회사 초대 필요'", "'회사 초대·교사 등록 필요'", {"n": 2}],
+    ["'학원 교사 권한과 회사 직원 권한은 따로 받아요.'", "'교사 권한과 회사 직원 권한은 따로 받아요.'", {"n": 1}],
+    ["<ul class=\"feature-list\"><li><strong>미니게임</strong>", "<ul class=\"feature-list\"><li><strong>TOPIK 준비</strong><span>TOPIK I 짧은 진단으로 내 위치를 보고, 듣기·읽기 연습과 TOPIK II 쓰기 연습을 해요.</span></li><li><strong>미니게임</strong>", {"n": 1}]
+  ],
+  "experiences/synk-account/src/applications.mjs": [
+    ["keywords: ['레이싱', '리듬', '주문 폭주', '바람길', '싱크 타운']", "keywords: ['한글 만나기', '바람길', '리듬', 'TOPIK', '싱크 타운']", {"n": 1}],
+    ["{ id: 'messenger', name: 'SYNK Workspace', category: 'work', subtitle:", "{ id: 'messenger', name: 'SYNK Workspace', category: 'work', keywords: ['메신저', '사내 메신저', 'Workspace'], subtitle:", {"n": 1}]
+  ]
+}
