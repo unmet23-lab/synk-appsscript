@@ -77,7 +77,8 @@ test('붙이기 규칙: 모르는 원인·배달 충돌·판 불일치·허락 �
   for (const type of ['life.corrected', 'life.knowledge']) assert.throws(() => admit(index, { type, seq: 9 }), /facts and deliveries only/);
 });
 
-test('복원은 로그를 한 번 읽어 색인을 다시 짓고(저장된 색인은 믿지 않음), RESET 뒤에도 사건 순번은 이어진다', async () => {
+// 로그를 상태 밖 갈래에 두는 세계는 색인을 믿는다 — tests/town-fold.test.js 「사건 갈래」.
+test('로그를 품은 상태의 복원은 로그를 한 번 읽어 색인을 다시 짓고(그때 저장된 색인은 믿지 않음), RESET 뒤에도 사건 순번은 이어진다', async () => {
   const { core, state, run } = await playedState();
   const tampered = { ...structuredClone(state), trail: { ...state.trail, facts: {} } };
   const restored = core.restoreState(tampered, { lifeEnabled: true });

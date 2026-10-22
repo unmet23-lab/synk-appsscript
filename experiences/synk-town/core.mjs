@@ -6,13 +6,13 @@
 import Trail from '../../atlas/trail-life.js';
 import Vellum from '../../atlas/vellum-life.js';
 import Loom from '../../tools/lib/loom-life.js';
-import { initialLife, assertLife, advanceLife, commandLife, viewLife, LifeError } from './life.mjs';
-import { initialDay, assertDay, advanceDay, commandDay, viewDay, DayError } from './day.mjs';
+import { initialLife, assertLife, advanceLife, commandLife, viewLife, LifeError, liveSourceKey as lifeLiveKey, foldLife } from './life.mjs';
+import { initialDay, assertDay, advanceDay, commandDay, viewDay, DayError, liveSourceKey as dayLiveKey, foldDay } from './day.mjs';
 import { initialBazaar, assertBazaar, advanceBazaar, commandBazaar, viewBazaar, BazaarError } from './bazaar.mjs';
-import { initialSupport, assertSupport, commandSupport, viewSupport, snapshotSupport, SupportError } from './support.mjs';
+import { initialSupport, assertSupport, commandSupport, viewSupport, snapshotSupport, SupportError, foldSupport } from './support.mjs';
 import { nearbyPlace } from './walk.mjs';
 import { FT_SEATS, SIGN_SLOTS as SIGN_SPOTS } from './town/places.mjs';
-import { emptyIndex, admit, record, indexLog, isFact, projection } from './town/trail-index.mjs';
+import { emptyIndex, admit, record, indexLog, isFact, projection, validIndex, foldIndex } from './town/trail-index.mjs';
 
 export const SCOPE = Object.freeze({ domain: 'LAB', workspace: 'synk-town', subject: 'preview-local' });
 // FT10/FT51 keep their old 2D cafe-screen points; the spots live in town/data/places.json.
@@ -57,12 +57,55 @@ export function restoreState(saved, { lifeEnabled = false } = {}) {
   // Saves from before the two counters: every save so far was a write, and nothing is unsettled.
   if (state && !Object.hasOwn(state, 'writeSeq')) state.writeSeq = state.revision;
   if (state && !Object.hasOwn(state, 'settledU')) state.settledU = 0;
-  // The life log is read whole once, here; afterwards the world's index answers (W2 plan D7).
+  // A log kept in the state (an old save, the linked teacher fixture, the old talk row) is read
+  // whole once, here. A world whose log lives in the event branch carries none, and its index is
+  // the record: it is trusted once its shape holds (W2 plan D7).
   if (state?.schema === 1 && state.scope && Array.isArray(state.events)) {
-    const seq = Number.isSafeInteger(state.trail?.seq) && state.trail.seq >= 0 ? state.trail.seq : 0;
-    delete state.trail; state.trail = trailOf(state, { seq });
+    const saved = state.trail, number = value => Number.isSafeInteger(value) && value >= 0;
+    if (state.events.length || !saved) {
+      const seq = number(saved?.seq) ? saved.seq : 0;
+      const archivedBelow = number(saved?.archivedBelow) && saved.archivedBelow < (state.events[0]?.seq ?? Infinity) ? saved.archivedBelow : 0;
+      delete state.trail; state.trail = trailOf(state, { seq, archivedBelow });
+    } else {
+      ensure(validIndex(saved), 'invalid-save', '체험 기록을 확인할 수 없어요.', 503);
+      saved.archivedBelow ??= 0; saved.folded ??= {};
+    }
   }
   return assertState(state);
+}
+/** Fold limits (vertical slice §14-5, W2 plan D7·D8): a world folds an array once it passes its
+ * limit, back to what its readers can still reach — so a world's size follows its content, not
+ * the length of play. The store folds before it saves; the whole lines stay in the event branch. */
+export const FOLD_LIMITS = Object.freeze({ facts: 256, deliveries: 64, dayHistory: 32, keepDayHistory: 16,
+  dayEmitted: 256, keepDayEmitted: 32, lifeHistory: 32, keepLifeHistory: 16, presentations: 64, keepPresentations: 4 });
+const over = (state, limits) => Object.keys(state.trail?.facts || {}).length > limits.facts
+  || Object.keys(state.trail?.deliveries || {}).length > limits.deliveries
+  || !!state.lifeFactIds && Object.keys(state.lifeFactIds).length > limits.facts
+  || !!state.day && (state.day.history.length > limits.dayHistory || state.day.emitted.length > limits.dayEmitted)
+  || !!state.life && state.life.history.length > limits.lifeHistory
+  || !!state.support && state.support.presentations.length > limits.presentations;
+/** The world folded to its limits: the same state when nothing is over one, otherwise a folded
+ * copy that reads the same — the same reactions, contacts, scenes and readings, and the same
+ * events from every later step (tests/town-fold.test.js holds this against an unfolded world). */
+export function foldWorld(state, limits = FOLD_LIMITS) {
+  if (!over(state, limits)) return state;
+  const world = copy(state);
+  if (world.day) foldDay(world.day, limits);
+  if (world.life) foldLife(world.life, limits);
+  if (world.support) foldSupport(world.support, limits);
+  const trail = trailOf(world);
+  // Facts the state can still point to or name as a cause: the FT10/FT51 pointers, the last
+  // placement, and the module keys that are still live (a bazaar's keys all are — F8).
+  const live = new Set([world.goals.inside, world.goals.outside, world.currentUseId, world.sign.placedId,
+    world.sign.currentUseId, world.sign.goalId, world.pendingUse?.cause, trail.lastSeatPlaced].filter(Boolean));
+  if (world.lifeFactIds) {
+    const lifeKey = world.life ? lifeLiveKey(world.life) : () => false, dayKey = world.day ? dayLiveKey(world.day) : () => false;
+    world.lifeFactIds = Object.fromEntries(Object.entries(world.lifeFactIds)
+      .filter(([key]) => key.startsWith('BAZAAR:') || lifeKey(key) || dayKey(key)));
+    for (const id of Object.values(world.lifeFactIds)) live.add(id);
+  }
+  foldIndex(trail, live, { current: ['FT10', 'FT51'].map(kind => `${kind}:${world.worldRevision}:${world.visit}:delivery`) });
+  return assertState(world);
 }
 export function assertState(state) {
   ensure(state?.schema === 1 && state.scope?.domain === SCOPE.domain && state.scope?.workspace === SCOPE.workspace && /^(preview-local|linked-[a-zA-Z0-9_-]{1,100})$/.test(state.scope?.subject), 'invalid-save', '체험 기록을 확인할 수 없어요.', 503);
@@ -219,12 +262,12 @@ export function advanceLivingState(previous, host) {
   return { state, changed };
 }
 /** The world's Trail index; a state made before the index (or by hand) gets one from its whole log. */
-function trailOf(state, { seq = 0 } = {}) {
+function trailOf(state, { seq = 0, archivedBelow = 0 } = {}) {
   if (state.trail) return state.trail;
   ensure(state.events.every(event => canonical(event?.scope) === canonical(state.scope)), 'invalid-save', '다른 사람의 체험 기록을 섞을 수 없어요.', 503);
   try { Trail.summarize(state.events, { scope: state.scope }); }
   catch { throw new TownError('invalid-save', '체험 기록을 확인할 수 없어요.', 503); }
-  return indexLog(state.events, { seq });
+  return indexLog(state.events, { seq, archivedBelow });
 }
 /** Append to the life log, checked against the index in constant time (Trail.append's rules). */
 function append(state, type, fields) {

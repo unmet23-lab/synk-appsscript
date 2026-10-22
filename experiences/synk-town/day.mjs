@@ -95,6 +95,50 @@ export function assertDay(day) {
     || !integer(j.readyAt) || j.readyAt !== j.startedAt + 30000 || j.startedAt > day.hostNowMs
     || !(j.collectedAt === null || integer(j.collectedAt) && j.collectedAt >= j.readyAt && j.collectedAt <= day.hostNowMs)
     || (j.status === 'collected') !== (j.collectedAt !== null))) throw bad();
+  if (day.folded !== undefined && !(day.folded && integer(day.folded.emitted) && day.folded.history && typeof day.folded.history === 'object'
+    && Object.entries(day.folded.history).every(([k, n]) => kinds.includes(k) && integer(n)))) throw bad();
+  return day;
+}
+/** The source keys the module can still name as a cause or emit again: this visit's routine, the
+ * current episode, the job and the agreement. Other keys only grow (sequence, visit, home revision). */
+export function liveSourceKey(day) {
+  const prefixes = [`DAY:routine:${day.visit}:`, day.episode && `${day.episode.id}:`, day.job && `${day.job.id}:`].filter(Boolean);
+  const keys = new Set([day.agreement?.resultId, day.episode?.resultId].filter(Boolean));
+  return k => keys.has(k) || prefixes.some(prefix => k.startsWith(prefix));
+}
+/** Fold the first day's growing arrays in place (W2 plan D8, F18), counting what goes by kind.
+ * history keeps the newest rows and every row a reader picks out of the whole list: the rows the
+ * state points to, each place's last row (the map's visited places) and last row that earns a
+ * memory marker (day-scene.mjs updateMemories), each resident's last shared row (memoryLine) and the
+ * last help (the support's direction). roleEvidence follows history. emitted keeps the keys the
+ * module can still emit or check (liveSourceKey) and the newest. */
+export function foldDay(day, { dayHistory = 32, keepDayHistory = 16, dayEmitted = 256, keepDayEmitted = 32 } = {}) {
+  if (day.history.length <= dayHistory && day.emitted.length <= dayEmitted) return day;
+  const counts = () => (day.folded ||= { history: {}, emitted: 0 });
+  if (day.history.length > dayHistory) {
+    const keep = new Set([day.agreement?.resultId, day.episode?.resultId].filter(Boolean));
+    const last = test => { const row = day.history.findLast(test); if (row) keep.add(row.resultId); };
+    for (const place of places) {
+      last(h => h.location === place);
+      last(h => h.location === place && ['planner', 'delegated'].includes(h.role) && !(h.kind === 'help' && h.choice === 'alone'));
+    }
+    for (const npc of ids) last(h => h.knownBy.includes(npc) && h.kind !== 'help');
+    last(h => h.kind === 'help');
+    const from = day.history.length - keepDayHistory;
+    day.history = day.history.filter((h, index) => {
+      if (index >= from || keep.has(h.resultId)) return true;
+      const c = counts(); c.history[h.kind] = (c.history[h.kind] || 0) + 1;
+      return false;
+    });
+    const kept = new Set(day.history.map(h => h.resultId));
+    day.roleEvidence = day.roleEvidence.filter(e => kept.has(e.resultId));
+  }
+  if (day.emitted.length > dayEmitted) {
+    const live = liveSourceKey(day), from = day.emitted.length - keepDayEmitted;
+    const before = day.emitted.length;
+    day.emitted = day.emitted.filter((k, index) => index >= from || live(k));
+    if (day.emitted.length < before) counts().emitted += before - day.emitted.length;
+  }
   return day;
 }
 

@@ -37,7 +37,13 @@ export function assertSupport(s) {
     || s.attempts.length > s.presentations.length || !s.selection || !modes.includes(s.selection.mode)
     || !['default', 'explicit', 'accepted-proposal'].includes(s.selection.source)
     || (s.selection.source === 'accepted-proposal' ? !validBasis(s.selection.basis) : s.selection.basis !== null)) throw invalid();
-  const presented = new Map(), answered = new Set(), families = new Set(); let lastAt = -Infinity;
+  const f = s.folded;
+  if (f !== undefined && !(f && f.presented && typeof f.presented === 'object' && !Array.isArray(f.presented)
+    && Object.entries(f.presented).every(([id, n]) => itemFor(id) && Number.isSafeInteger(n) && n > 0)
+    && Array.isArray(f.firstSeen) && new Set(f.firstSeen).size === f.firstSeen.length
+    && f.firstSeen.every(key => READING_CHECKS.some(item => readingMetadata(item).familyKey === key)))) throw invalid();
+  // A family whose first presentation was folded away has been seen before every kept one.
+  const presented = new Map(), answered = new Set(), families = new Set(f?.firstSeen); let lastAt = -Infinity;
   for (const p of s.presentations) {
     const item = itemFor(p?.itemId), n = Number(p?.id?.replace('support-presentation-', ''));
     if (!item || p.id !== `support-presentation-${n}` || !Number.isSafeInteger(n) || n <= 0 || n > s.sequence
@@ -68,18 +74,46 @@ function summaryFor(s, nowMs) {
 function presentationHistory(s) {
   return s.presentations.map(p => { const m = readingMetadata(itemFor(p.itemId)); return { taskId: m.id, itemKey: m.itemKey, measure: { familyKey: m.familyKey } }; });
 }
+/** Folded presentations, read by the recommendation as counted history (atlas/learning.js prior). */
+function priorOf(s) {
+  return s.folded ? { presented: Object.entries(s.folded.presented).map(([itemId, n]) => {
+    const m = readingMetadata(itemFor(itemId)); return [m.id, m.itemKey, m.familyKey, n]; }) } : null;
+}
 function openItem(s, payload, nowMs) {
   check(s.presentations.length < 10000, 'support-history-full', '이 체험의 읽기 기록이 가득 찼어요. 읽기 기록을 지운 뒤 다시 시작할 수 있어요.', 409);
   check(payload.skill === undefined || skills.includes(payload.skill), 'invalid-reading-skill', '읽기 영역을 다시 골라 주세요.');
   const candidates = READING_CHECKS.filter(item => payload.skill === undefined || item.skill === payload.skill)
     .map(item => { const m = readingMetadata(item); return { ...m, skillIds: [m.skillId] }; });
-  const result = Learning.recommend({ profile: summaryFor(s, nowMs), candidates, presentations: presentationHistory(s) });
+  const result = Learning.recommend({ profile: summaryFor(s, nowMs), candidates, presentations: presentationHistory(s), prior: priorOf(s) });
   check(result.selected, 'reading-unavailable', '지금 열 수 있는 안내문이 없어요.', 409);
   const item = itemFor(result.selected.id), family = readingMetadata(item).familyKey;
   const id = `support-presentation-${++s.sequence}`;
   s.presentations.push({ id, itemId: item.id, itemVersion: 'v1', atMs: nowMs, hinted: false,
-    firstExposure: !s.presentations.some(p => readingMetadata(itemFor(p.itemId)).familyKey === family) });
+    firstExposure: !s.folded?.firstSeen.includes(family) && !s.presentations.some(p => readingMetadata(itemFor(p.itemId)).familyKey === family) });
   s.active = { presentationId: id, open: true };
+}
+/** Fold old presentations and answers, in place (W2 plan D8, F19), keeping exactly what later
+ * readings need: the newest presentations (the recommendation's immediate window is four), every
+ * independent answer (one per family at most), helped correct answers that can still be recent,
+ * the accepted proposal's evidence, and each kept answer's presentation. The rest become counts per
+ * item (recommendation history) and the families whose first presentation went (first exposure). */
+export function foldSupport(s, { presentations = 64, keepPresentations = 4 } = {}) {
+  if (s.presentations.length <= presentations) return s;
+  const latest = Math.max(0, ...s.presentations.map(p => p.atMs), ...s.attempts.map(a => a.atMs));
+  const basis = new Set([...(s.selection.basis?.evidence || []), ...(s.selection.basis?.supportingEvidence || [])]);
+  const newest = new Set(s.presentations.slice(-Math.max(4, keepPresentations)).map(p => p.id));
+  const attempts = s.attempts.filter(a => a.independent || basis.has(a.id) || newest.has(a.presentationId)
+    || a.assisted && a.correct && latest - a.atMs <= Learning.POLICY.recentDays * 86400000);
+  const keep = new Set([...newest, ...attempts.map(a => a.presentationId)]);
+  s.presentations = s.presentations.filter(p => {
+    if (keep.has(p.id)) return true;
+    const folded = s.folded ||= { presented: {}, firstSeen: [] };
+    folded.presented[p.itemId] = (folded.presented[p.itemId] || 0) + 1;
+    if (p.firstExposure) folded.firstSeen.push(readingMetadata(itemFor(p.itemId)).familyKey);
+    return false;
+  });
+  s.attempts = attempts;
+  return s;
 }
 function current(s, payload, { unanswered = false } = {}) {
   check(s.active?.open && payload.presentationId === s.active.presentationId, 'stale-reading', '지금 열린 안내문을 다시 확인해 주세요.', 409);
@@ -137,7 +171,7 @@ export function commandSupport(s, type, payload = {}, { nowMs, kind = 'tea' } = 
       s.selection = { mode: accepted, source: 'accepted-proposal', basis }; break;
     }
     case 'SUPPORT_CLEAR': {
-      const revision = s.revision; Object.assign(s, initialSupport(), { revision }); break;
+      const revision = s.revision; delete s.folded; Object.assign(s, initialSupport(), { revision }); break;
     }
     default: throw new SupportError('unknown-support-command', '읽기와 설명 설정을 다시 확인해 주세요.');
   }

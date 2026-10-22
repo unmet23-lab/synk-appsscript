@@ -68,6 +68,31 @@ export function assertLife(life) {
     || !['near', 'clear'].includes(agreement.direction) || !integer(agreement.worldRevision)
     || !Object.hasOwn(placements, agreement.placement)
     || agreement.worldRevision !== life.environment.worldRevision || agreement.placement !== life.environment.placement)) throw invalid();
+  if (life.folded !== undefined && !(life.folded && typeof life.folded.history === 'object'
+    && Object.entries(life.folded.history).every(([role, n]) => roles.includes(role) && integer(n)))) throw invalid();
+  return life;
+}
+/** The source keys the module can still name as a cause, or point to: the current episode's and
+ * routine's keys, every contact (each is the cause of its own delivery) and the current agreement.
+ * Every other key it never emits again — episode, contact and routine keys only grow. */
+export function liveSourceKey(life) {
+  const prefixes = [life.episode && `${life.episode.id}:`,
+    life.routine.worldRevision !== null && `C1:routine:${life.routine.worldRevision}:${life.routine.placement}:`].filter(Boolean);
+  const keys = new Set([...life.contacts.map(c => c.id), life.currentAgreement?.resultId].filter(Boolean));
+  return key => keys.has(key) || prefixes.some(prefix => key.startsWith(prefix));
+}
+/** Fold the recollections to the newest (the view reads six) and the rows the state points to,
+ * counting the rest by role, in place (W2 plan D8). */
+export function foldLife(life, { lifeHistory = 32, keepLifeHistory = 16 } = {}) {
+  if (life.history.length <= lifeHistory) return life;
+  const pointed = new Set([life.currentAgreement?.resultId, life.episode?.resultId].filter(Boolean));
+  const from = life.history.length - Math.max(6, keepLifeHistory);
+  life.history = life.history.filter((row, index) => {
+    if (index >= from || pointed.has(row.resultId)) return true;
+    life.folded ||= { history: {} };
+    life.folded.history[row.role] = (life.folded.history[row.role] || 0) + 1;
+    return false;
+  });
   return life;
 }
 function contextFor(context = {}) {

@@ -5,10 +5,14 @@
  * fact are its knownBy; the index refuses the other two kinds (F6). The sequence goes on across a
  * reset, so an event id is never reused (F7). Plain module, no imports: the caller validates each
  * event with Trail first.
- * Shape: { seq, facts: { id: [factType, knownBy] }, deliveries: { deliveryId: { npcId, semanticKey,
- *   sourceIds, sig } }, npcs: [every resident a fact ever named], lastSeatPlaced }
+ * Shape: { seq, archivedBelow, facts: { id: [factType, knownBy] }, deliveries: { deliveryId: { npcId,
+ *   semanticKey, sourceIds, sig } }, npcs: [every resident a fact ever named], lastSeatPlaced,
+ *   folded: { factType: count } }
+ * archivedBelow is where the world's epoch began (a reset archives everything at or below it).
+ * The world keeps only the facts its state can still point to (W2 plan D7·F9): foldIndex counts the
+ * rest by type, and the whole lines stay in the event branch.
  */
-export const emptyIndex = (seq = 0) => ({ seq, facts: {}, deliveries: {}, npcs: [], lastSeatPlaced: null });
+export const emptyIndex = (seq = 0) => ({ seq, archivedBelow: seq, facts: {}, deliveries: {}, npcs: [], lastSeatPlaced: null, folded: {} });
 
 const object = value => !!value && typeof value === 'object' && !Array.isArray(value);
 const canonical = value => JSON.stringify(value, (_key, entry) => object(entry)
@@ -54,10 +58,48 @@ export function record(index, event) {
 }
 
 /** The index of a whole log Trail has already validated (a restore reads the log once). */
-export function indexLog(events, { seq = 0 } = {}) {
-  const index = emptyIndex();
+export function indexLog(events, { seq = 0, archivedBelow = 0 } = {}) {
+  const index = emptyIndex(archivedBelow);
   for (const event of events) record(index, event);
   index.seq = Math.max(index.seq, seq);
+  return index;
+}
+
+const count = value => Number.isSafeInteger(value) && value >= 0;
+const names = value => Array.isArray(value) && value.every(item => typeof item === 'string');
+/** Whether a stored index is whole enough to trust without its log. */
+export function validIndex(index) {
+  if (!object(index) || !count(index.seq) || !count(index.archivedBelow ?? 0) || (index.archivedBelow ?? 0) > index.seq
+    || !object(index.facts) || !object(index.deliveries) || !names(index.npcs) || new Set(index.npcs).size !== index.npcs.length
+    || !(index.folded === undefined || object(index.folded) && Object.values(index.folded).every(count))) return false;
+  for (const [id, entry] of Object.entries(index.facts)) {
+    const n = Number(id.slice(5));
+    if (!id.startsWith('life:') || !Number.isSafeInteger(n) || n <= (index.archivedBelow ?? 0) || n > index.seq
+      || !Array.isArray(entry) || entry.length !== 2 || typeof entry[0] !== 'string' || !names(entry[1])) return false;
+  }
+  return Object.values(index.deliveries).every(item => object(item) && typeof item.npcId === 'string'
+    && typeof item.semanticKey === 'string' && names(item.sourceIds) && typeof item.sig === 'string')
+    && (index.lastSeatPlaced === null || isFact(index, index.lastSeatPlaced, ['seat.placed']));
+}
+
+/** Fold the index to the facts the world can still point to (live), in place: the rest are counted
+ * by type. A delivery stays while all its sources are live — Vellum's once rule reads only those —
+ * and one per (resident, meaning, sources) is enough, keeping the current receipt so the same
+ * acknowledgement stays an exact repeat (F9). */
+export function foldIndex(index, live, { current = [] } = {}) {
+  const fold = type => { index.folded[type] = (index.folded[type] || 0) + 1; };
+  index.folded ||= {};
+  for (const [id, [factType]] of Object.entries(index.facts)) if (!live.has(id)) { delete index.facts[id]; fold(factType); }
+  const kept = new Map();
+  for (const [deliveryId, item] of Object.entries(index.deliveries)) {
+    const key = canonical([item.npcId, item.semanticKey, [...item.sourceIds].sort()]);
+    const earlier = kept.get(key);
+    if (!item.sourceIds.every(id => Object.hasOwn(index.facts, id))) { delete index.deliveries[deliveryId]; fold('life.delivered'); continue; }
+    if (earlier === undefined) { kept.set(key, deliveryId); continue; }
+    const drop = current.includes(earlier) && !current.includes(deliveryId) ? deliveryId : earlier;
+    delete index.deliveries[drop]; fold('life.delivered');
+    kept.set(key, drop === earlier ? deliveryId : earlier);
+  }
   return index;
 }
 

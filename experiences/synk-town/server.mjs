@@ -3,12 +3,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { initialState, restoreState, reduceCommand, snapshot, stepLiving, assertState, TownError } from './core.mjs';
+import { initialState, restoreState, reduceCommand, snapshot, stepLiving, assertState, foldWorld, FOLD_LIMITS, TownError } from './core.mjs';
 import { initialPresence, commandPresence, initialLease, pulseLease, boundaryPresence } from './presence.mjs';
 import { settle } from './town/settle.mjs';
 
 /** A screen may open a safe boundary at most once in this long (vertical slice §14-3). */
 export const BOUNDARY_GAP_MS = 20000;
+/** Receipts the world itself keeps, and the movement receipts the store keeps (talk's limits). */
+export const COMMAND_WINDOW = 32, WALK_RECEIPTS = 512;
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(root, '../..');
@@ -70,20 +72,55 @@ function atomicSave(file, state) {
  * Four requests (vertical slice §14-3): pulse moves only the lease; boundary settles the world
  * and may issue a contact; read settles and saves what changed; execute settles, applies and
  * saves together. presence is the old pulse — pulse, a boundary when every window is safe, and a
- * read, published together only after the save. peek answers errors without settling. */
-export function createStore({ file, save, now = () => Date.now(), lifeEnabled = true, observe = null } = {}) {
-  let state = initialState({ lifeEnabled }), loadError = null;
-  if (file && fs.existsSync(file)) {
-    try { state = restoreState(JSON.parse(fs.readFileSync(file, 'utf8')), { lifeEnabled }); }
-    catch { loadError = new TownError('invalid-save', '저장 기록을 읽지 못했어요. 원본을 보존하고 확인해 주세요.', 503); }
+ * read, published together only after the save. peek answers errors without settling.
+ * The world keeps no log and only the newest command receipts (W2 plan D7, talk's rule): a commit
+ * moves the lines a step appended to the event branch and every receipt to the store's receipts,
+ * and folds the world to its limits (fold: false keeps every row — tests compare with it). An
+ * older command still answers from its receipt. Until the branches have their own files (D9) the
+ * save holds the world with this epoch's lines and every receipt inline, the old one-file shape;
+ * answers show them as state.events and state.commands (F11). */
+export function createStore({ file, save, now = () => Date.now(), lifeEnabled = true, observe = null, fold = FOLD_LIMITS } = {}) {
+  let state = initialState({ lifeEnabled }), log = [], loadError = null;
+  const receipts = new Map(), walks = [];
+  function remember(records) {
+    for (const record of records) {
+      if (receipts.has(record.id)) continue;
+      receipts.set(record.id, record);
+      // Movement receipts retire in a rolling window, as talk's do; a retired step's
+      // expectedRevision can no longer run against the newer world.
+      if (/"type":"DAY_WALK/.test(record.signature) && walks.push(record.id) > WALK_RECEIPTS) receipts.delete(walks.shift());
+    }
   }
-  const persist = save || (file ? next => atomicSave(file, next) : () => {});
-  const current = () => ({ ...snapshot(state), capabilities: { life: !!state.life && lifeEnabled, day: !!state.day && lifeEnabled } });
+  if (file && fs.existsSync(file)) {
+    try {
+      const saved = JSON.parse(fs.readFileSync(file, 'utf8'));
+      if (saved?.trail && Array.isArray(saved.events)) {
+        // The index is the record; the lines beside it are the branch.
+        state = restoreState({ ...saved, events: [] }, { lifeEnabled });
+        log = saved.events.filter(event => event?.seq > state.trail.archivedBelow && event.seq <= state.trail.seq);
+      } else {
+        const restored = restoreState(saved, { lifeEnabled });
+        log = restored.events; state = { ...restored, events: [] };
+      }
+      remember(state.commands); state = { ...state, commands: state.commands.slice(-COMMAND_WINDOW) };
+      if (fold) state = foldWorld(state, fold);
+    } catch { loadError = new TownError('invalid-save', '저장 기록을 읽지 못했어요. 원본을 보존하고 확인해 주세요.', 503); }
+  }
+  const persist = save || (file ? next => atomicSave(file, next) : null);
+  const current = () => {
+    const shown = snapshot(state);
+    shown.state.events = log.slice(); shown.state.commands = [...receipts.values()];
+    return { ...shown, capabilities: { life: !!state.life && lifeEnabled, day: !!state.day && lifeEnabled } };
+  };
   function commit(next) {
-    const written = { ...next, writeSeq: (state.writeSeq ?? 0) + 1 };
-    try { persist(written); }
+    let world = { ...next, events: [], commands: next.commands.slice(-COMMAND_WINDOW), writeSeq: (state.writeSeq ?? 0) + 1 };
+    if (fold) world = foldWorld(world, fold);
+    // A reset starts a new epoch: the branch's earlier lines are archived, never shown again.
+    const kept = world.trail.archivedBelow > state.trail.archivedBelow ? [] : log, lines = next.events;
+    const fresh = next.commands.filter(record => !receipts.has(record.id));
+    try { if (persist) persist({ ...world, events: [...kept, ...lines], commands: [...receipts.values(), ...fresh] }); }
     catch { throw new TownError('save-failed', '저장하지 못했어요. 진행은 그대로예요. 다시 시도해 주세요.', 503); }
-    state = written;
+    state = world; log = kept; log.push(...lines); remember(fresh);
   }
   // Only a host timestamp survives for the 30-minute logical-visit boundary;
   // foreground leases and unsettled play time never survive a restart.
@@ -112,6 +149,8 @@ export function createStore({ file, save, now = () => Date.now(), lifeEnabled = 
   const hostNow = () => Math.max(now(), lease.presence.at ?? 0);
   return {
     observation: observe,
+    /** Sizes for benches and tests: the world as saved, and the two branches beside it. */
+    stats() { return { worldBytes: Buffer.byteLength(JSON.stringify(state)), lines: log.length, receipts: receipts.size }; },
     peek() { if (loadError) throw loadError; return current(); },
     read() {
       if (loadError) throw loadError;
@@ -153,8 +192,10 @@ export function createStore({ file, save, now = () => Date.now(), lifeEnabled = 
         surfaceId: presence.owner, fence: presence.fence, nowMs: at,
         surface: presence.surfaces[presence.owner]?.surface || 'classic' };
       // An already committed request can be recovered after a lease expired.
-      // The reducer still compares the entire signed request before returning.
-      const recorded = state.commands.some(item => item.id === command?.id);
+      // The reducer still compares the entire signed request before returning;
+      // one older than the world's window is compared with its receipt.
+      const receipt = receipts.get(command?.id), recorded = !!receipt;
+      const base = recorded && !state.commands.some(item => item.id === command.id) ? { ...state, commands: [receipt] } : state;
       if (!recorded && typeof command?.type === 'string' && /^(LIFE_|DAY_|BAZAAR_|SUPPORT_)/.test(command.type)) {
         host = commandPresence(presence, command.payload, at);
         if (!host) throw new TownError('stale-surface', '이 창의 연결 상태를 다시 확인해 주세요.', 409);
@@ -166,7 +207,7 @@ export function createStore({ file, save, now = () => Date.now(), lifeEnabled = 
         host.walkElapsedMs = elapsed >= 0 ? Math.min(250, elapsed) : 0;
       }
       // A command settles first and is saved with what the settlement changed (§14-3).
-      const result = reduceCommand((!recorded && settledTo(lease, { nowMs: at })) || state, command, host);
+      const result = reduceCommand((!recorded && settledTo(lease, { nowMs: at })) || base, command, host);
       if (!result.duplicate) {
         commit(result.state);
         if (['DAY_WALK_ENABLE', 'DAY_WALK'].includes(command.type)) lease = { ...lease, walkClock: { at: host.nowMs, surfaceId: host.surfaceId, fence: host.fence } };
