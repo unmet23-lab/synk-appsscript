@@ -49,13 +49,14 @@
 .world-notice a.felt-button span[aria-hidden]{display:none}
 /* 10-22 「내 계정」의 「내가 남긴 응답」(WORLD 학습자 응답 설계 §3): 안내 블록과 같은 카드, 줄마다 응답 이름과 [빼기] */
 .ws-responses{display:grid;gap:8px;margin:22px 0 0;padding:16px 18px 17px;border-radius:var(--w-r-lg);background:var(--w-s1);box-shadow:var(--w-card-edge);text-align:left}
+.ws-responses::before{content:attr(data-label);justify-self:start;margin-bottom:2px;padding-right:38px;background:linear-gradient(var(--w-line-2),var(--w-line-2)) right 55%/28px 1px no-repeat;font-family:var(--w-mono);font-size:var(--t-mono);font-weight:500;line-height:1.4;letter-spacing:var(--track-mono);text-transform:uppercase;color:var(--w-ink-3)}
 .ws-responses h3{margin:0;font-size:15.5px;line-height:1.4;font-weight:var(--wt-title);letter-spacing:var(--track-title);color:var(--w-ink)}
 .ws-responses-note{margin:0;font-size:13.5px;line-height:1.55;color:var(--w-ink-3);text-wrap:pretty}
 .ws-responses ul{display:grid;margin:0;padding:0;list-style:none}
-.ws-responses li{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;border-top:1px solid var(--w-line);font-size:15px;line-height:1.4;color:var(--w-ink)}
+.ws-responses li{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;padding:6px 0;border-top:1px solid var(--w-line);font-size:15px;line-height:1.4;color:var(--w-ink)}
 .ws-responses li[hidden]{display:none}
 .ws-responses li>span{min-width:0;overflow-wrap:anywhere}
-.ws-responses li>.quiet-button,.ws-responses-more{flex-shrink:0;min-height:44px}
+.ws-responses li>.quiet-button,.ws-responses-more{flex-shrink:0;min-width:44px;min-height:44px}
 .ws-responses-more{justify-self:start}
 .world-notice a.felt-button::after{content:'';width:15px;height:15px;background:currentColor;-webkit-mask:var(--w-arrow-up-right) center/contain no-repeat;mask:var(--w-arrow-up-right) center/contain no-repeat}
 .world-notice .plain-button{margin-top:10px}
