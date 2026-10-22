@@ -83,9 +83,11 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
     // the rest would leave the server's history quietly incomplete.
     if (typeof port.partial === 'function' && port.partial()) throw failure('HISTORY_FOLDED', 'Atlas sync: this log summarised entries no server received; it cannot be sent');
     const local = port.events(), localIds = new Set(local.map(event => event.id));
-    if (state.pending.some(eventId => !localIds.has(eventId))) throw failure('STORAGE_ERROR', 'Atlas sync: queued history does not match its account log');
-    // Entries the log folded away are on the server: they are no longer expected locally.
+    // Entries the log folded away are on the server: they are no longer expected locally. One still queued was
+    // dropped as an orphan (its item folded in another tab, game-learning.js refresh) and can no longer be sent.
     const folded = new Set(typeof port.dropped === 'function' ? port.dropped() : []);
+    state.pending = state.pending.filter(eventId => localIds.has(eventId) || !folded.has(eventId));
+    if (state.pending.some(eventId => !localIds.has(eventId))) throw failure('STORAGE_ERROR', 'Atlas sync: queued history does not match its account log');
     // Any other acknowledged entry the log no longer has was lost here (an older history
     // written over a newer one): fetch it from the server again.
     const lost = state.acknowledged.filter(eventId => !localIds.has(eventId) && !folded.has(eventId));

@@ -228,7 +228,7 @@ test('another tab folded a responded set: the response and a late exclusion of i
   const response = a.game.feedback(set, 'helpful');
   // Tab B reads the log now and works on; its write lands later, over A's (tabs see each other's writes late).
   const late = memory(); for (const [k, v] of shared.data) late.setItem(k, v);
-  const b = player({ storage: late, fold }); b.at(a.now + 31 * DAY);
+  const b = player({ storage: late, fold }); b.at(a.now + 32 * DAY);
   for (let i = 0; i < 80; i += 1) practise(b);
   assert.ok(!b.game.events().some(e => e.id === set.completionId), 'B folded the set past its response window');
   // A excludes the response after B folded but before B's write reached A.
@@ -266,9 +266,9 @@ test('a set this tab just finished waits for its response before it may fold her
 });
 
 test('set entries leave item cells, exposure and recommendations as they were', () => {
-  const plain = player({ fold: false }), withSets = player({ fold: false });
+  const plain = player({ fold: false }), withSets = player({ fold: false }), keys = [];
   for (let i = 0; i < 12; i += 1) {
-    const it = item();
+    const it = item(); keys.push(it.itemKey);
     for (const p of [plain, withSets]) { p.at(START + i * 60000); const pid = p.game.present(it); p.tick(500); p.game.answer(pid, { correct: i % 3 !== 0, assessable: true }); }
     if (i % 4 === 3) { const set = withSets.game.finishSet({ kind: ['short', 'diagnostic', 'mock'][i % 3] }); withSets.tick(500); withSets.game.feedback(set, 'not_fit'); }
   }
@@ -279,9 +279,96 @@ test('set entries leave item cells, exposure and recommendations as they were', 
   assert.ok(JSON.stringify(anon(b.skills)) === JSON.stringify(anon(a.skills)), 'item cells unchanged');
   assert.ok(JSON.stringify(anon(b.concepts)) === JSON.stringify(anon(a.concepts)), 'content cells unchanged');
   assert.ok(JSON.stringify(anon(b.counts)) === JSON.stringify(anon(a.counts)), 'counts unchanged');
-  assert.deepEqual(withSets.game.exposure({ itemKey: 'item.1' }), plain.game.exposure({ itemKey: 'item.1' }));
+  // Items this test presented (first and last) and one it never did.
+  for (const itemKey of [keys[0], keys.at(-1), 'never.shown']) assert.deepEqual(withSets.game.exposure({ itemKey }), plain.game.exposure({ itemKey }));
+  assert.deepEqual(plain.game.exposure({ itemKey: keys[0] }), { seen: true });
   const candidates = [{ id: 'c1', itemKey: 'new.1', skillIds: ['ko.reading.detail'], modality: 'reading', difficulty: 1, responseFormat: 'single-choice' }];
   const strip = ({ storage, ...rest }) => JSON.stringify(anon(rest));
   assert.ok(strip(withSets.game.recommend(candidates)) === strip(plain.game.recommend(candidates)), 'recommendation unchanged');
   assert.deepEqual(kinds(withSets.game.events())['practice.presented'], kinds(plain.game.events())['practice.presented']);
+});
+
+// Backend review 10-22 (Argon A1·A2): the folded-or-not reading and the synchroniser's view of what this log dropped.
+const SCOPE = { domain: 'LAB', workspace: 'learning', subject: 'device' };
+const copyOf = storage => { const copy = memory(); for (const [k, v] of storage.data) copy.setItem(k, v); return copy; };
+test('a synchronised store lists the responses it drops as orphans among its dropped entries, so a sync never takes them for lost', () => {
+  const shared = memory(), opts = { storageScope: 'account', accountKey: 'account-1', fold: { remote: true, max: 60, keep: 30, ageMs: 0 } };
+  const a = player({ storage: shared, ...opts });
+  for (let i = 0; i < 5; i += 1) practise(a);
+  const set = a.game.finishSet({ kind: 'short' }); a.tick(1000);
+  const response = a.game.feedback(set, 'helpful');
+  a.game.syncPort.settle(a.game.syncPort.ids());
+  const late = copyOf(shared), b = player({ storage: late, ...opts }); b.at(a.now + 32 * DAY);
+  for (let i = 0; i < 80; i += 1) { practise(b); b.game.syncPort.settle(b.game.syncPort.ids()); }
+  assert.ok(!b.game.events().some(e => e.id === set.completionId), 'B folded the set past its response window');
+  a.at(b.now + 3600000);
+  const exclusion = a.game.exclude(response.id);
+  for (const [k, v] of late.data) shared.setItem(k, v);
+  assert.equal(a.game.summary().storage.available, true);
+  assert.ok(!a.game.events().some(e => e.id === exclusion.id));
+  assert.ok(a.game.syncPort.dropped().includes(exclusion.id), 'the dropped orphan is not a lost entry');
+});
+
+test('an old entry of a set the other tab still keeps is not taken for folded there: items fold whole', () => {
+  const shared = memory(), fold = { max: 60, keep: 30, ageMs: 0 };
+  const a = player({ storage: shared, fold });
+  for (let i = 0; i < 5; i += 1) practise(a);
+  const set = a.game.finishSet({ kind: 'short' }); a.tick(1000);
+  const first = a.game.feedback(set, 'helpful');
+  // B works on and folds the later items; the responded set stays in its log, behind its cutoff.
+  const late = copyOf(shared), b = player({ storage: late, fold }); b.at(a.now + 2 * DAY);
+  for (let i = 0; i < 80; i += 1) practise(b);
+  assert.ok(b.game.events().some(e => e.id === set.completionId), 'B keeps the responded set');
+  // Meanwhile A takes another device's change of that answer from the server: an old entry, half a minute after the first.
+  const at = new Date(Date.parse(first.at) + 30000).toISOString();
+  a.game.syncPort.importEvents([{ schema: 1, scope: SCOPE, id: 'other-device-change', type: 'feedback.given', completionId: set.completionId, decisionId: set.decisionId, value: 'too_much', at, recordedAt: at }]);
+  for (const [k, v] of late.data) shared.setItem(k, v);
+  a.at(b.now + 1000);
+  assert.deepEqual(a.game.setFeedback().map(f => [f.id, f.value]), [['other-device-change', 'too_much']]);
+});
+
+test('a set takes a response for a day after it ends', () => {
+  const p = player();
+  practise(p);
+  const set = p.game.finishSet({ kind: 'mock' });
+  p.tick(DAY - 1000); assert.ok(p.game.feedback(set, 'helpful'));
+  p.tick(2000); assert.throws(() => p.game.feedback(set, 'not_fit'), e => e.code === 'SET_UNAVAILABLE');
+});
+
+// Backend review 10-22, second round (Argon A1·A2).
+test('the synchroniser lets go of a queued entry the log dropped as an orphan instead of blocking', () => {
+  const { createLearningSync } = require('../atlas/learning-sync');
+  let events = [{ id: 'kept-entry' }, { id: 'orphan-response' }], dropped = [], listener = null, forgotten = [];
+  const port = { scope: 'account', accountKey: 'account-1', events: () => events, ids: () => events.map(e => e.id), partial: () => false,
+    dropped: () => dropped, forget: ids => { forgotten.push(...ids); dropped = dropped.filter(id => !ids.includes(id)); return true; },
+    subscribe: fn => { listener = fn; return () => {}; }, markComplete() {}, importEvents: () => ({ added: 0, skipped: [] }), settle: () => true };
+  const transport = { get: async () => assert.fail('no pull here'), post: async () => assert.fail('no upload here') };
+  const sync = createLearningSync({ adapter: { syncPort: port }, accountKey: 'account-1', revision: 1, storage: memory(), transport, auto: false });
+  assert.equal(sync.status().queued, 2);
+  // Another tab folded the set: the log dropped the queued response as an orphan and says so.
+  events = [{ id: 'kept-entry' }]; dropped = ['orphan-response'];
+  listener({ kind: 'append' });
+  assert.notEqual(sync.status().phase, 'blocked');
+  assert.equal(sync.status().queued, 1);
+  assert.deepEqual(forgotten, ['orphan-response']);
+});
+
+test('items fold whole down a chain: an older answer and its exclusion stay with a set the other tab keeps', () => {
+  const shared = memory(), fold = { max: 60, keep: 30, ageMs: 0 };
+  const a = player({ storage: shared, fold });
+  for (let i = 0; i < 5; i += 1) practise(a);
+  const set = a.game.finishSet({ kind: 'short' }); a.tick(1000);
+  const first = a.game.feedback(set, 'helpful');
+  const late = copyOf(shared), b = player({ storage: late, fold }); b.at(a.now + 2 * DAY);
+  for (let i = 0; i < 80; i += 1) practise(b);
+  // A takes from the server an older app's answer to that set (no decisionId — it belongs to the completion) and its exclusion.
+  const at = s => new Date(Date.parse(first.at) + s * 1000).toISOString();
+  a.game.syncPort.importEvents([
+    { schema: 1, scope: SCOPE, id: 'older-app-answer', type: 'feedback.given', completionId: set.completionId, value: 'too_much', at: at(10), recordedAt: at(10) },
+    { schema: 1, scope: SCOPE, id: 'older-app-exclusion', type: 'record.excluded', targetId: 'older-app-answer', at: at(20), recordedAt: at(20) }]);
+  assert.deepEqual(a.game.setFeedback(), [], 'the latest answer is excluded');
+  for (const [k, v] of late.data) shared.setItem(k, v);
+  a.at(b.now + 1000);
+  assert.deepEqual(a.game.setFeedback(), [], 'the exclusion stays with its answer after the merge');
+  assert.ok(a.game.events().some(e => e.id === 'older-app-exclusion'));
 });

@@ -7689,7 +7689,7 @@ var require_learning_ledger = __commonJS({
       }
       return next;
     }
-    module.exports = { VERSION, BITS, FOLDABLE, empty: empty2, validate: validate2, before, rows: rows2, cellOf, contentOf, fold, plan, folded, stray, compare, demote };
+    module.exports = { VERSION, BITS, FOLDABLE, empty: empty2, validate: validate2, before, rows: rows2, cellOf, contentOf, fold, plan, folded, stray, compare, demote, reference };
   }
 });
 
@@ -8249,8 +8249,9 @@ var require_learning_sync = __commonJS({
       const collect = () => {
         if (typeof port.partial === "function" && port.partial()) throw failure("HISTORY_FOLDED", "Atlas sync: this log summarised entries no server received; it cannot be sent");
         const local = port.events(), localIds = new Set(local.map((event) => event.id));
-        if (state.pending.some((eventId) => !localIds.has(eventId))) throw failure("STORAGE_ERROR", "Atlas sync: queued history does not match its account log");
         const folded = new Set(typeof port.dropped === "function" ? port.dropped() : []);
+        state.pending = state.pending.filter((eventId) => localIds.has(eventId) || !folded.has(eventId));
+        if (state.pending.some((eventId) => !localIds.has(eventId))) throw failure("STORAGE_ERROR", "Atlas sync: queued history does not match its account log");
         const lost = state.acknowledged.filter((eventId) => !localIds.has(eventId) && !folded.has(eventId));
         if (lost.length) {
           if (lost.some((eventId) => !state.missing.includes(eventId))) state.recoveryCursor = 0;
@@ -9788,6 +9789,7 @@ var require_game_learning = __commonJS({
     var KEY = "synk.atlas.learning.v1";
     var SET_KINDS = ["short", "diagnostic", "mock"];
     var RESPONSES = ["helpful", "not_fit", "too_much", "want_more"];
+    var SET_OPEN_MS = 864e5;
     var RESPONSE_MS = 30 * 864e5;
     var identifier = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
     var uid = () => `l${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
@@ -9911,9 +9913,10 @@ var require_game_learning = __commonJS({
         }
         const theirs = stored.ledger || null, order2 = Ledger.compare(ledger, theirs), mine = log();
         const storedIds = new Set(stored.events.map((e) => e.id)), mineIds = new Set(mine.map((e) => e.id));
-        const combined = mine.filter((e) => order2 >= 0 || storedIds.has(e.id) || !Ledger.folded(theirs, e)), known = new Map(combined.map((e) => [e.id, e]));
+        const kept = /* @__PURE__ */ new Set(), keeps = (e, ids) => ids.has(e.id) || ids.has(Ledger.reference(e)) || kept.has(Ledger.reference(e));
+        const combined = mine.filter((e) => (order2 >= 0 || keeps(e, storedIds) || !Ledger.folded(theirs, e)) && kept.add(e.id)), known = new Map(combined.map((e) => [e.id, e]));
         for (const e of stored.events) {
-          if (order2 > 0 && !mineIds.has(e.id) && Ledger.folded(ledger, e)) continue;
+          if (order2 > 0 && !keeps(e, mineIds) && Ledger.folded(ledger, e)) continue;
           if (known.has(e.id)) {
             if (!sameEvent(known.get(e.id), e)) {
               readable = false;
@@ -9925,6 +9928,7 @@ var require_game_learning = __commonJS({
           } else {
             known.set(e.id, e);
             combined.push(e);
+            kept.add(e.id);
           }
         }
         if (order2 < 0) ledger = theirs;
@@ -9932,6 +9936,11 @@ var require_game_learning = __commonJS({
         for (const e of combined) if (e.type === "feedback.given" && !known.has(e.completionId) || e.type === "record.excluded" && !known.has(e.targetId) && types.get(e.targetId) === "feedback.given") known.delete(e.id);
         settle([...settled, ...stored.settled || []], known);
         takeDropped(stored.dropped || [], order2 > 0);
+        const orphans = combined.filter((e) => !known.has(e.id));
+        if (folding?.remote && orphans.length) {
+          for (const e of orphans) dropped.add(e.id);
+          droppedVersion += 1;
+        }
         session = newSession(combined.filter((e) => known.has(e.id)));
         for (const pid of active.keys()) if (!known.has(pid)) active.delete(pid);
       }
@@ -9961,7 +9970,7 @@ var require_game_learning = __commonJS({
         if (events.length <= folding.max) return;
         if (retryFold && retryFold.settled === settledVersion && now < retryFold.at) return;
         const open = [...active].filter(([, item]) => !item.results.length).map(([pid]) => pid);
-        for (const [id, at] of sets) if (now - at < 864e5) open.push(id);
+        for (const [id, at] of sets) if (now - at < SET_OPEN_MS) open.push(id);
         else sets.delete(id);
         if (folding.remote) {
           for (const e of events) if (!settled.has(e.id)) open.push(e.id);
@@ -9971,7 +9980,7 @@ var require_game_learning = __commonJS({
           olderThan: now - folding.ageMs,
           open,
           unfinishedBefore: folding.remote ? now - 30 * 864e5 : now - folding.ageMs,
-          respondedBefore: now - RESPONSE_MS
+          respondedBefore: now - RESPONSE_MS - SET_OPEN_MS
         });
         const batch = Math.max(1, Math.floor((folding.max - folding.keep) / 2));
         if (!planned || planned.folded.length < batch && events.length < 2 * folding.max) {
@@ -10367,7 +10376,7 @@ var require_game_learning = __commonJS({
           refresh();
           if (!RESPONSES.includes(value) || !identifier(set?.completionId) || !identifier(set?.decisionId)) throw new TypeError("Atlas: invalid set response");
           const done = log().find((e) => e.id === set.completionId);
-          if (done?.type !== "experience.completed" || done.experienceId !== `${gameId}.set` || done.decisionId !== set.decisionId) throw Object.assign(new Error("Atlas: this practice set no longer takes a response"), { code: "SET_UNAVAILABLE" });
+          if (done?.type !== "experience.completed" || done.experienceId !== `${gameId}.set` || done.decisionId !== set.decisionId || Date.parse(monotonicClock()) - Date.parse(done.at) > SET_OPEN_MS) throw Object.assign(new Error("Atlas: this practice set no longer takes a response"), { code: "SET_UNAVAILABLE" });
           if (session.state().feedback.find((f) => f.completionId === done.id)?.value === value) return null;
           const event = session.feedback(done.id, value, done.decisionId);
           persist();

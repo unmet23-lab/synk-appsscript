@@ -216,4 +216,4 @@ function demote(ledger, { late = [], excluded = [], strays = 0 }, find) {
   return next;
 }
 
-module.exports = { VERSION, BITS, FOLDABLE, empty, validate, before, rows, cellOf, contentOf, fold, plan, folded, stray, compare, demote };
+module.exports = { VERSION, BITS, FOLDABLE, empty, validate, before, rows, cellOf, contentOf, fold, plan, folded, stray, compare, demote, reference };

@@ -14,8 +14,10 @@ const Ledger = require('./learning-ledger');
 const { createPages, THRESHOLD } = require('./learning-pages');
 const { createFlowPort, createLive } = require('./game-flow');
 const KEY = 'synk.atlas.learning.v1';
-// A finished practice set (finishSet) and a response to it in Core's four values, read for 30 days (engine.js RECENT).
-const SET_KINDS = ['short', 'diagnostic', 'mock'], RESPONSES = ['helpful', 'not_fit', 'too_much', 'want_more'], RESPONSE_MS = 30 * 86400000;
+// A finished practice set (finishSet) takes a response in Core's four values for a day (a synchronised store folds a
+// set only after a day idle). Core reads a response for 30 days (engine.js RECENT); its set folds a day after that,
+// so a list of 30 days never removes a response being folded.
+const SET_KINDS = ['short', 'diagnostic', 'mock'], RESPONSES = ['helpful', 'not_fit', 'too_much', 'want_more'], SET_OPEN_MS = 86400000, RESPONSE_MS = 30 * 86400000;
 const identifier = value => typeof value === 'string' && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
 const uid = () => `l${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
 /* `fold`: the store keeps its recent entries in full and folds older, finished items into a
@@ -118,15 +120,17 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     // its own entries (a synchronised log may keep a late entry from before the cutoff).
     const theirs = stored.ledger || null, order = Ledger.compare(ledger, theirs), mine = log();
     const storedIds = new Set(stored.events.map(e => e.id)), mineIds = new Set(mine.map(e => e.id));
-    const combined = mine.filter(e => order >= 0 || storedIds.has(e.id) || !Ledger.folded(theirs, e)), known = new Map(combined.map(e => [e.id, e]));
+    // Items fold whole: an entry whose item a side still keeps (its parent, or a parent kept here) was not folded there.
+    const kept = new Set(), keeps = (e, ids) => ids.has(e.id) || ids.has(Ledger.reference(e)) || kept.has(Ledger.reference(e));
+    const combined = mine.filter(e => (order >= 0 || keeps(e, storedIds) || !Ledger.folded(theirs, e)) && kept.add(e.id)), known = new Map(combined.map(e => [e.id, e]));
     for (const e of stored.events) {
-      if (order > 0 && !mineIds.has(e.id) && Ledger.folded(ledger, e)) continue;
+      if (order > 0 && !keeps(e, mineIds) && Ledger.folded(ledger, e)) continue;
       if (known.has(e.id)) { if (!sameEvent(known.get(e.id), e)) {
         readable = false; complete = false; warning = '기록 내용이 서로 달라 연결을 중단했어요. 기존 기록은 보존해요.';
         notify('storage-error', 'STORAGE_ERROR');
         throw Object.assign(new Error('Atlas: conflicting stored event'), { code: 'STORAGE_ERROR' });
       } }
-      else { known.set(e.id, e); combined.push(e); }
+      else { known.set(e.id, e); combined.push(e); kept.add(e.id); }
     }
     if (order < 0) ledger = theirs;
     // A response whose set the other side folded leaves here with any exclusion of it (it stays there and on the server).
@@ -134,6 +138,8 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     for (const e of combined) if (e.type === 'feedback.given' && !known.has(e.completionId) || e.type === 'record.excluded' && !known.has(e.targetId) && types.get(e.targetId) === 'feedback.given') known.delete(e.id);
     settle([...settled, ...(stored.settled || [])], known);
     takeDropped(stored.dropped || [], order > 0);
+    const orphans = combined.filter(e => !known.has(e.id)); // on the server once sent: never taken for lost entries
+    if (folding?.remote && orphans.length) { for (const e of orphans) dropped.add(e.id); droppedVersion += 1; }
     session = newSession(combined.filter(e => known.has(e.id)));
     // A presentation folded in another tab has ended here too.
     for (const pid of active.keys()) if (!known.has(pid)) active.delete(pid);
@@ -169,10 +175,10 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     // the server has not sent back yet, and unanswered items for 30 days: their answer may
     // still come from another device.
     const open = [...active].filter(([, item]) => !item.results.length).map(([pid]) => pid);
-    for (const [id, at] of sets) if (now - at < 86400000) open.push(id); else sets.delete(id);
+    for (const [id, at] of sets) if (now - at < SET_OPEN_MS) open.push(id); else sets.delete(id);
     if (folding.remote) for (const e of events) if (!settled.has(e.id)) open.push(e.id);
     const planned = Ledger.plan(events, { keep: folding.keep, olderThan: now - folding.ageMs, open,
-      unfinishedBefore: folding.remote ? now - 30 * 86400000 : now - folding.ageMs, respondedBefore: now - RESPONSE_MS });
+      unfinishedBefore: folding.remote ? now - 30 * 86400000 : now - folding.ageMs, respondedBefore: now - RESPONSE_MS - SET_OPEN_MS });
     // Fold in batches: rewriting the summary for one item at a time costs more than it saves.
     const batch = Math.max(1, Math.floor((folding.max - folding.keep) / 2));
     if (!planned || planned.folded.length < batch && events.length < 2 * folding.max) { retryFold = { settled: settledVersion, at: now + 60000 }; return; }
@@ -470,7 +476,8 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     feedback(set, value) {
       refresh(); if (!RESPONSES.includes(value) || !identifier(set?.completionId) || !identifier(set?.decisionId)) throw new TypeError('Atlas: invalid set response');
       const done = log().find(e => e.id === set.completionId);
-      if (done?.type !== 'experience.completed' || done.experienceId !== `${gameId}.set` || done.decisionId !== set.decisionId) throw Object.assign(new Error('Atlas: this practice set no longer takes a response'), { code: 'SET_UNAVAILABLE' });
+      if (done?.type !== 'experience.completed' || done.experienceId !== `${gameId}.set` || done.decisionId !== set.decisionId
+        || Date.parse(monotonicClock()) - Date.parse(done.at) > SET_OPEN_MS) throw Object.assign(new Error('Atlas: this practice set no longer takes a response'), { code: 'SET_UNAVAILABLE' });
       if (session.state().feedback.find(f => f.completionId === done.id)?.value === value) return null;
       const event = session.feedback(done.id, value, done.decisionId); persist(); return event;
     },
