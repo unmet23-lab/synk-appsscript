@@ -39,13 +39,15 @@ const keys = (opt('--from') || 'flyer').split(',').map(s => s.trim()).filter(Boo
 const outDir = path.resolve(opt('--out') || HERE);
 if (!keys.length) throw new Error('--from에 키가 없어요');
 for (const k of keys) if (!KEY.test(k)) throw new Error(`들어온 곳 키 꼴이 아니에요(영소문자·숫자·하이픈 40자): ${k}`);
-if (perKey && !path.relative(path.resolve(HERE, '../../..'), outDir).startsWith('..')) throw new Error(`학교별 판은 저장소 밖 폴더에 굽는다(--out): ${outDir}`);
+const relOut = path.relative(path.resolve(HERE, '../../..'), outDir);
+// 다른 드라이브면 relative가 절대 경로를 돌려준다 — 그것도 저장소 밖이다.
+if (perKey && !relOut.startsWith('..') && !path.isAbsolute(relOut)) throw new Error(`학교별 판은 저장소 밖 폴더에 굽는다(--out): ${outDir}`);
 if (!fs.existsSync(path.join(HERE, '../dist/lab/topik4/assets/SUIT-subset.woff2'))) throw new Error('글꼴이 없어요 — 먼저 node experiences/lab-topik4/build.mjs');
 
 const work = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-t4-print-'));
 const python = (code, ...rest) => {
-  // -E -P: 환경 변수와 현재 폴더를 모듈 경로에 넣지 않는다. 사용자 site(segno·OpenCV)는 남긴다.
-  const r = spawnSync('python', ['-E', '-P', '-c', code, ...rest], { cwd: work, encoding: 'utf8', env: { ...process.env, PYTHONIOENCODING: 'utf-8' } });
+  // -E -P: 환경 변수와 현재 폴더를 모듈 경로에 넣지 않는다. 사용자 site(segno·OpenCV)는 남긴다. -E가 PYTHONIOENCODING도 무시하니 출력 인코딩은 -X utf8로.
+  const r = spawnSync('python', ['-E', '-P', '-X', 'utf8', '-c', code, ...rest], { cwd: work, encoding: 'utf8' });
   if (r.status !== 0) throw new Error(`python 실패(${r.status}): ${(r.stderr || r.stdout || '').slice(0, 800)}`);
   return r.stdout;
 };
@@ -84,7 +86,8 @@ async function shoot(browser, html, name) {
   await page.goto(pathToFileURL(tmp).href, { waitUntil: 'load' });
   const check = await page.evaluate(async () => {
     await document.fonts.ready;
-    const fam = [...document.fonts].filter(f => f.status !== 'loaded').map(f => `${f.family} ${f.weight}`);
+    // 쓰이지 않은 @font-face는 unloaded로 남으니, 읽다 실패한 것(error)만 잡는다.
+    const fam = [...document.fonts].filter(f => f.status === 'error').map(f => `${f.family} ${f.weight}`);
     const img = [...document.images].filter(i => !i.complete || !i.naturalWidth).map(i => i.src.slice(0, 40));
     const box = document.querySelector('.page');
     // 마지막 덩이가 아래 여백 안쪽에서 끝나야 한다(여백까지 밀려도 종이 안이라 scrollHeight로는 안 잡힌다).
