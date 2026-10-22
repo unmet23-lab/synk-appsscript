@@ -1,0 +1,31 @@
+{
+  "$comment": "Parameter versions (vertical slice design §20-6). Every 〔초기값〕 the town code needs is read by name from one version here through town/params.mjs; code never writes these numbers. A version that has run never changes: a new value is a new version, and old ones stay for simulation and replay. Multipliers and weights are per-mille integers (§2-4). Data tables (archetypes, residents, routines) keep their own values.",
+  "versions": [
+    {
+      "paramsVer": "town-params-1",
+      "planner": {
+        "residentSpeed": 1.2,
+        "pauseMinutes": [3, 5],
+        "recentWindow": 3,
+        "habitWeight": 300,
+        "habitMultiplier": 1500,
+        "placesPerDay": 3,
+        "eveningPull": 3000,
+        "eveningPullLastHour": 20000,
+        "lastHourMinutes": 60,
+        "repeatMultiplier": 500,
+        "coldHandsMultiplier": 500,
+        "tomorrowClearMultiplier": 2000,
+        "firstAromaWeight": 300,
+        "bringInWeight": 400
+      },
+      "seen": { "countMax": 99, "perRequest": 50, "familiarAfter": 3 },
+      "prefs": { "notFitMultiplier": 500, "lessOftenMultiplier": 300, "feedbackLifeDays": 30 },
+      "observe": { "recentUses": 20, "window": 5, "needed": 4 },
+      "asks": { "perLifeDay": 1, "sameQuestionLifeDays": 7, "quietAfterVisitSeconds": 45 },
+      "gather": { "quota": { "leaf-young": 3, "leaf-dew": 1, "mint": 2, "chrysanthemum": 2, "petal-rain": 2 } },
+      "eval": { "retainLifeDays": 180, "minGroup": 30 },
+      "brake": { "minArms": 100, "minDays": 7, "dropPoints": 5 }
+    }
+  ]
+}

@@ -17,7 +17,7 @@ const DATA = path.join(ROOT, 'experiences/synk-town/town/data');
 export const TARGET = path.join(ROOT, 'experiences/synk-town/town/data.gen.mjs');
 
 const OWNERS = ['player', 'public', 'cafe-owner', 'workshop-owner', 'researcher'];
-const SPOT_KINDS = ['sit', 'work', 'entrance', 'sign', 'walk', 'display', 'stand'];
+const SPOT_KINDS = ['sit', 'work', 'entrance', 'sign', 'walk', 'display', 'stand', 'gather'];
 const fail = message => { throw new Error(`town data: ${message}`); };
 const point = (value, where) => {
   if (!value || !Number.isFinite(value.x) || !Number.isFinite(value.z) || Object.keys(value).some(k => !['x', 'z'].includes(k))) fail(`${where}는 { x, z } 좌표여야 해요.`);
@@ -29,6 +29,8 @@ export function validatePlaces(data) {
   for (const place of data.places) {
     if (!/^[a-z][a-z0-9-]*$/.test(place.id ?? '') || places.has(place.id)) fail(`장소 ID ${place.id}`);
     places.add(place.id);
+    // A region is loaded on its own, one at a time (§20-9); code never assumes every place is in one scene.
+    if (!/^[a-z][a-z0-9-]*$/.test(place.area ?? '')) fail(`${place.id}.area`);
     if (typeof place.player !== 'boolean') fail(`${place.id}.player`);
     if (!['text', 'scene', 'map'].every(k => typeof place.labels?.[k] === 'string' && place.labels[k])) fail(`${place.id}.labels`);
     point(place.center, `${place.id}.center`);
@@ -48,6 +50,8 @@ export function validatePlaces(data) {
     if (spot.legacy2d && (!Number.isFinite(spot.legacy2d.x) || !Number.isFinite(spot.legacy2d.y))) fail(`${id}.legacy2d`);
     if (spot.ftSeat !== undefined && (!['inside', 'outside'].includes(spot.branch) || !spot.legacy2d || spot.branch !== (spot.sheltered ? 'inside' : 'outside'))) fail(`${id}: FT 자리는 branch(비를 피하면 inside)와 legacy2d가 있어요.`);
     if (spot.signSlot !== undefined && !spot.legacy2d) fail(`${id}: 안내판 자리는 legacy2d가 있어요.`);
+    // Gather spots are the player's own anchors (§20-8); residents' picking keeps its own spot.
+    if (spot.kind === 'gather' && (spot.owner !== 'player' || spot.ftSeat !== undefined || spot.signSlot !== undefined)) fail(`${id}: 채집 자리는 플레이어 자리예요.`);
   }
   for (const spot of data.spots) for (const other of spot.rainAltFor || []) {
     if (!spots.has(other)) fail(`${spot.id}.rainAltFor ${other}`);
@@ -134,6 +138,28 @@ export function validateRoutines(data, places, archetypes, residents) {
   return { rainAlt: data.rainAlt || {}, routines: resolved };
 }
 
+/** Parameter versions (§20-6): every version carries the same names, so code reads any of them by name. */
+export function validateParams(data) {
+  if (!Array.isArray(data?.versions) || !data.versions.length) fail('params.json에는 versions가 있어요.');
+  // The names (keys and array lengths) a version must have, without the values.
+  const names = value => (Array.isArray(value) ? value.map(names) : value && typeof value === 'object'
+    ? Object.fromEntries(Object.keys(value).sort().map(k => [k, names(value[k])])) : typeof value);
+  const leaves = (value, where) => {
+    if (Array.isArray(value) || (value && typeof value === 'object')) { for (const [k, x] of Object.entries(value)) leaves(x, `${where}.${k}`); return; }
+    // Values are non-negative integers (per-mille for multipliers, §2-4); only a speed in m/s may be a fraction.
+    if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || (!Number.isSafeInteger(value) && !where.endsWith('Speed'))) fail(`${where}`);
+  };
+  const seen = new Set(), first = JSON.stringify(names({ ...data.versions[0], paramsVer: null }));
+  for (const version of data.versions) {
+    const { paramsVer, ...values } = version;
+    if (!/^town-params-[1-9][0-9]*$/.test(paramsVer ?? '') || seen.has(paramsVer)) fail(`판 이름 ${paramsVer}`);
+    seen.add(paramsVer);
+    leaves(values, paramsVer);
+    if (JSON.stringify(names({ ...version, paramsVer: null })) !== first) fail(`${paramsVer}의 이름이 첫 판과 달라요.`);
+  }
+  return data;
+}
+
 const read = name => JSON.parse(fs.readFileSync(path.join(DATA, name), 'utf8'));
 
 export function build() {
@@ -142,10 +168,12 @@ export function build() {
   const { archetypes } = validateArchetypes(read('archetypes.json'), placesData);
   const residentsData = validateResidents(read('residents.json'), placesData);
   const { rainAlt, routines } = validateRoutines(read('routines.json'), placesData, { archetypes }, residentsData);
+  const { versions: params } = validateParams(read('params.json'));
   // One record per line keeps the generated diff as readable as the source.
   const rows = list => `[\n${list.map(item => `    ${JSON.stringify(item)}`).join(',\n')},\n  ]`;
   const body = `{\n  places: ${rows(places)},\n  spots: ${rows(spots)},\n  groups: ${JSON.stringify(groups)},\n`
-    + `  archetypes: ${rows(archetypes)},\n  residents: ${rows(residentsData.residents)},\n  routines: ${rows(routines)},\n  rainAlt: ${JSON.stringify(rainAlt)},\n}`;
+    + `  archetypes: ${rows(archetypes)},\n  residents: ${rows(residentsData.residents)},\n  routines: ${rows(routines)},\n  rainAlt: ${JSON.stringify(rainAlt)},\n`
+    + `  params: ${rows(params)},\n}`;
   return [
     '// Generated by tools/town-data-build.mjs from experiences/synk-town/town/data. Do not edit; run the tool.',
     'const freeze = value => { if (value && typeof value === \'object\') { Object.values(value).forEach(freeze); Object.freeze(value); } return value; };',
@@ -157,6 +185,7 @@ export function build() {
     'export const RESIDENTS = data.residents;',
     'export const ROUTINES = data.routines;',
     'export const RAIN_ALT = data.rainAlt;',
+    'export const PARAMS = data.params;',
     '',
   ].join('\n');
 }

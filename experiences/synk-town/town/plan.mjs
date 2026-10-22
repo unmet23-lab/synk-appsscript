@@ -9,23 +9,22 @@
  * personality, repetition) and from the chosen scores (those times weather, state and
  * card) — so a change of mind can be told from a routine choice (§7-3, attribution in W4).
  * The planner only describes the band; results (wear, habit uses, state) are applied when
- * the band closes (§14-4).
+ * the band closes (§14-4). Its 〔초기값〕 come by name from a parameter version (§20-6):
+ * input.params, or the first version.
  */
 import { ARCHETYPES, RESIDENTS, ROUTINES, RAIN_ALT } from './data.gen.mjs';
 import { SPOT_BY_ID, SPOT_GROUPS, FT_SEATS } from './places.mjs';
 import { createRng, pickByWeight } from './rng.mjs';
 import { dayKindOf, weatherAt as clockWeatherAt, weatherChangesBetween, MINUTE } from './clock.mjs';
+import { paramsFor } from './params.mjs';
 
 export const ARCHETYPE_BY_ID = Object.freeze(Object.fromEntries(ARCHETYPES.map(a => [a.id, a])));
 export const RESIDENT_BY_ID = Object.freeze(Object.fromEntries(RESIDENTS.map(r => [r.id, r])));
 export const RESIDENT_IDS = Object.freeze(RESIDENTS.map(r => r.id));
 const ROUTINE_BY_KEY = Object.freeze(Object.fromEntries(ROUTINES.map(r => [`${r.npc}|${r.dayKind}|${r.band}`, r])));
 
-/** Residents walk slower than the player (m/s). */
-export const RESIDENT_SPEED = 1.2;
 /** Stand-in when nothing in the pool can be done: a short pause at home (§6-4 막힘, NPC:397). */
-const PAUSE = Object.freeze({ id: 'pause', kind: 'rest', pose: 'standing', length: [3, 5], energy: 0, chores: 0, social: 0 });
-const HABIT_WEIGHT = 300, HABIT_MULTIPLIER = 1500;
+const PAUSE = Object.freeze({ id: 'pause', kind: 'rest', pose: 'standing', energy: 0, chores: 0, social: 0 });
 const mul = (score, perMille) => Math.floor(score * perMille / 1000);
 const order = npc => RESIDENT_IDS.indexOf(npc);
 
@@ -58,7 +57,8 @@ export function agreementSpot(agreement) {
 const spotList = name => SPOT_GROUPS[name] || [name];
 const placeOf = spotId => SPOT_BY_ID[spotId].place;
 const distance = (a, b) => (a && b ? Math.hypot(SPOT_BY_ID[a].at.x - SPOT_BY_ID[b].at.x, SPOT_BY_ID[a].at.z - SPOT_BY_ID[b].at.z) : 0);
-export const travelMs = (from, to) => Math.ceil(distance(from, to) / RESIDENT_SPEED) * 1000;
+/** Walking time between spots; residents walk slower than the player (planner.residentSpeed, m/s). */
+export const travelMs = (from, to, planner = paramsFor().planner) => Math.ceil(distance(from, to) / planner.residentSpeed) * 1000;
 const sheltered = name => spotList(name).every(id => SPOT_BY_ID[id].sheltered);
 
 /** Spots of a name a resident may take at t: capacity minus what others hold then (travel included). */
@@ -88,16 +88,18 @@ function rainyChoice(item) {
  *   weatherTomorrow, season, visitHabit, residents: { npc: { recent, placesToday, lastSpot, firstOfDay } },
  *   reservations: [{ id, npc, fromMs, toMs|null, spot? }], promises: [{ id, npc, archetype, spot }],
  *   habits: { npc: [{ spot, archetype }] }, objects: { id: { spot } },
- *   occupied: [{ spot, fromMs, toMs }] — spots held by something that is not a resident (an FT10 guest) } */
+ *   occupied: [{ spot, fromMs, toMs }] — spots held by something that is not a resident (an FT10 guest),
+ *   params? — a parameter version from paramsFor (§20-6), the first version when absent } */
 export function planBand(input) {
   const { villageSeed, lifeDay, band, startMs, endMs, dayStartMs, planCmdRev } = input;
   if (!Number.isSafeInteger(planCmdRev)) throw new TypeError('planBand needs planCmdRev');
+  const P = (input.params ?? paramsFor()).planner;
   const weatherAt = input.weatherAt || (ms => clockWeatherAt(villageSeed, ms));
   // Rain starting inside the band is a decision point for whoever is outside then (§6-4).
   const rainStarts = input.weatherAt ? scanRainStarts(weatherAt, startMs, endMs)
     : weatherChangesBetween(villageSeed, startMs, endMs).filter(c => c.to === 'rain').map(c => c.atMs);
   const fixed = (input.occupied || []).map(o => ({ npc: 'guest', spot: o.spot, startMs: o.fromMs, endMs: o.toMs, archetype: 'guest' }));
-  const ctx = { input, weatherAt, rainStarts };
+  const ctx = { input, weatherAt, rainStarts, P };
   const reservations = [...(input.reservations || [])].sort((a, b) => a.fromMs - b.fromMs || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 
   // Pass one: the band as it would go with no one held.
@@ -112,14 +114,14 @@ export function planBand(input) {
     if (to <= s.t) continue;
     const before = segments.filter(x => x.npc === npc && x.startMs < from).map(x => (x.endMs > from ? { ...x, endMs: from, arriveMs: Math.min(x.arriveMs, from) } : x));
     const others = segments.filter(x => x.npc !== npc);
-    const prior = summarize(npc, before, input.residents?.[npc]);
+    const prior = summarize(before, input.residents?.[npc], P);
     const holding = { npc, startMs: from, arriveMs: from, endMs: to, archetype: 'reserved', spot: hold.spot ?? prior.lastSpot ?? RESIDENT_BY_ID[npc].home, cause: 'reservation', reservation: hold.id, base: null };
     const after = to < s.end ? planRange([npc], { [npc]: { ...s, t: to, prior: { ...prior, lastSpot: holding.spot } } }, [...fixed, ...others, ...before, holding], ctx,
       () => createRng(villageSeed, 'replan', lifeDay, band, npc, planCmdRev, Math.floor((to - startMs) / MINUTE), hold.id)) : [];
     segments = [...others, ...before, holding, ...after];
   }
   segments.sort((a, b) => a.startMs - b.startMs || order(a.npc) - order(b.npc));
-  const residents = Object.fromEntries(RESIDENT_IDS.map(npc => [npc, summarize(npc, segments.filter(x => x.npc === npc), input.residents?.[npc])]));
+  const residents = Object.fromEntries(RESIDENT_IDS.map(npc => [npc, summarize(segments.filter(x => x.npc === npc), input.residents?.[npc], P)]));
   return { segments, residents, objects: objectsAfter(input.objects, segments), deferredPromises: deferred };
 }
 
@@ -129,11 +131,11 @@ function startOf(npc, input) {
   return t < end ? { t, end, prior: input.residents?.[npc] || {} } : null;
 }
 
-/** What a resident carries into the next band: last three archetypes, places today, last spot. */
-function summarize(npc, mine, prior = {}) {
+/** What a resident carries into the next band: the last few archetypes, places today, last spot. */
+function summarize(mine, prior = {}, P) {
   let recent = [...(prior.recent || [])], places = [...(prior.placesToday || [])], lastSpot = prior.lastSpot ?? null, firstOfDay = prior.firstOfDay !== false;
   for (const s of mine) {
-    if (s.archetype !== 'reserved') recent = [...recent, s.archetype].slice(-3);
+    if (s.archetype !== 'reserved') recent = [...recent, s.archetype].slice(-P.recentWindow);
     if (!places.includes(placeOf(s.spot))) places.push(placeOf(s.spot));
     lastSpot = s.spot; firstOfDay = false;
   }
@@ -181,21 +183,23 @@ function planRange(npcs, starts, fixed, ctx, rngFor) {
   let live = [...fixed];
 
   // Put one chosen item on the timeline at the resident's next decision time.
+  const P = ctx.P;
+  const pause = { ...PAUSE, length: P.pauseMinutes };
   const place = (npc, picked, raining) => {
     const p = people[npc], t = p.t;
-    const archetype = ARCHETYPE_BY_ID[picked.chosen.archetype] || PAUSE;
+    const archetype = ARCHETYPE_BY_ID[picked.chosen.archetype] || pause;
     const options = picked.chosen.spots || spotList(picked.chosen.spot);
     const free = freeSpots(picked.chosen.spot, t, live, npc).filter(id => options.includes(id));
     // Blocked: stay put a few minutes where one already is (§6-4 막힘 — the stand-still alternative, NPC:397).
     const stay = p.lastSpot && !(raining && !SPOT_BY_ID[p.lastSpot].sheltered) ? p.lastSpot : RESIDENT_BY_ID[npc].home;
     const spot = picked.chosen.cause === 'blocked' ? stay : free.length ? free[p.rng.below(free.length)] : RESIDENT_BY_ID[npc].home;
     const lengthMs = p.rng.between(archetype.length[0], archetype.length[1]) * MINUTE;
-    let end = Math.min(t + travelMs(p.lastSpot, spot) + lengthMs, p.end);
+    let end = Math.min(t + travelMs(p.lastSpot, spot, P) + lengthMs, p.end);
     // Someone outside when rain begins stops there and decides again (§6-4).
     const rainCut = !SPOT_BY_ID[spot].sheltered ? ctx.rainStarts.find(w => w > t && w < end) : undefined;
     if (rainCut !== undefined) end = rainCut;
     if (end <= t) end = Math.min(t + MINUTE, p.end);
-    const arriveMs = Math.min(t + travelMs(p.lastSpot, spot), end);
+    const arriveMs = Math.min(t + travelMs(p.lastSpot, spot, P), end);
     const cause = picked.chosen.cause || 'routine';
     const previous = made.findLast(x => x.npc === npc);
     if (previous && previous.endMs === t && previous.archetype === archetype.id && previous.spot === spot && previous.cause === cause) {
@@ -208,7 +212,7 @@ function planRange(npcs, starts, fixed, ctx, rngFor) {
         base: picked.base ? { archetype: picked.base.archetype, spot: picked.base.spot } : null };
       made.push(segment); live.push(segment);
     }
-    p.recent = [...p.recent, archetype.id].slice(-3);
+    p.recent = [...p.recent, archetype.id].slice(-P.recentWindow);
     if (!p.placesToday.includes(placeOf(spot))) p.placesToday.push(placeOf(spot));
     p.lastSpot = spot; p.firstOfDay = false; p.t = end; p.rainMoved = null;
     if (archetype.moves) {
@@ -239,29 +243,30 @@ function planRange(npcs, starts, fixed, ctx, rngFor) {
     const p = people[npc], t = p.t;
     live = live.filter(x => x.endMs >= t);
     const raining = ctx.weatherAt(t) === 'rain';
-    place(npc, scoreAndPick(npc, p, t, raining, input, live, objects), raining);
+    place(npc, scoreAndPick(npc, p, t, raining, input, live, objects, P), raining);
   }
   made.deferred = deferred;
   return made;
 }
 
-function scoreAndPick(npc, p, t, raining, input, live, objects) {
+function scoreAndPick(npc, p, t, raining, input, live, objects, P) {
   const resident = RESIDENT_BY_ID[npc], band = input.band;
   const pool = routineCell(npc, input.lifeDay, band, { visitHabit: input.visitHabit }).map(item => ({ ...item }));
-  for (const habit of input.habits?.[npc] || []) pool.push({ archetype: habit.archetype, spot: habit.spot, weight: HABIT_WEIGHT, habit: true });
+  for (const habit of input.habits?.[npc] || []) pool.push({ archetype: habit.archetype, spot: habit.spot, weight: P.habitWeight, habit: true });
   // Three places a day (§6-2): the evening pulls toward a place not yet visited, harder in its last hour.
-  const unvisited = band === 'evening' && p.placesToday.length < 3 ? (p.end - t <= 60 * MINUTE ? 20000 : 3000) : 0;
+  const unvisited = band === 'evening' && p.placesToday.length < P.placesPerDay
+    ? (p.end - t <= P.lastHourMinutes * MINUTE ? P.eveningPullLastHour : P.eveningPull) : 0;
   const base = pool.map(item => {
     const archetype = ARCHETYPE_BY_ID[item.archetype];
     // Talk needs a neighbour awake at that place right now; full pair scenes arrive with W5.
     if (archetype.kind === 'talk' && !neighbourAt(npc, placeOf(spotList(item.spot)[0]), t, live)) return { item, score: 0 };
     let score = freeSpots(item.spot, t, live, npc).length ? item.weight : 0;
-    if (item.habit) score = mul(score, HABIT_MULTIPLIER);
+    if (item.habit) score = mul(score, P.habitMultiplier);
     if (Object.hasOwn(resident.multipliers, archetype.id)) score = mul(score, resident.multipliers[archetype.id]);
     const last = p.recent.at(-1);
     const repeatable = archetype.kind === 'rest' || p.rainMoved === archetype.id;
     if (!repeatable && last === archetype.id) score = 0;
-    else if (!repeatable && p.recent.includes(archetype.id)) score = mul(score, 500);
+    else if (!repeatable && p.recent.includes(archetype.id)) score = mul(score, P.repeatMultiplier);
     if (unvisited && spotList(item.spot).every(id => !p.placesToday.includes(placeOf(id)))) score = mul(score, unvisited);
     return { item, score };
   });
@@ -272,18 +277,18 @@ function scoreAndPick(npc, p, t, raining, input, live, objects) {
     if (next.spots) s = next.spots.some(id => freeSpots(item.spot, t, live, npc).includes(id)) ? s : 0;
     else if (next.spot !== item.spot && !freeSpots(next.spot, t, live, npc).length) s = 0;
     // Cold hands on a wet or winter morning slow the workshop owner's work (§7-3 cold-hands).
-    if (npc === 'workshop-owner' && band === 'morning' && (raining || input.season === 'winter') && ARCHETYPE_BY_ID[item.archetype].kind === 'work') { s = mul(s, 500); next = { ...next, cause: 'weather', reason: 'cold-hands' }; }
+    if (npc === 'workshop-owner' && band === 'morning' && (raining || input.season === 'winter') && ARCHETYPE_BY_ID[item.archetype].kind === 'work') { s = mul(s, P.coldHandsMultiplier); next = { ...next, cause: 'weather', reason: 'cold-hands' }; }
     // A clear tomorrow: the researcher tidies the board for it (§7-3 tomorrow-clear).
-    if (npc === 'researcher' && band === 'evening' && input.weatherTomorrow === 'clear' && item.archetype === 'board-fold') { s = mul(s, 2000); next = { ...next, cause: 'weather', reason: 'tomorrow-clear' }; }
+    if (npc === 'researcher' && band === 'evening' && input.weatherTomorrow === 'clear' && item.archetype === 'board-fold') { s = mul(s, P.tomorrowClearMultiplier); next = { ...next, cause: 'weather', reason: 'tomorrow-clear' }; }
     return { item: next, score: s };
   });
   // Candidates the weather adds on the chosen side only (§6-4 더한 후보).
   if (npc === 'cafe-owner' && band === 'morning' && p.firstOfDay && !raining) {
-    chosen.push({ item: { archetype: 'eaves-tea', spot: 'cafe.eaves', cause: 'weather', reason: 'first-aroma' }, score: freeSpots('cafe.eaves', t, live, npc).length ? 300 : 0 });
+    chosen.push({ item: { archetype: 'eaves-tea', spot: 'cafe.eaves', cause: 'weather', reason: 'first-aroma' }, score: freeSpots('cafe.eaves', t, live, npc).length ? P.firstAromaWeight : 0 });
   }
   const tray = objects['cafe-tray']?.spot;
   if (npc === 'cafe-owner' && band === 'evening' && input.weatherTomorrow === 'rain' && tray && !SPOT_BY_ID[tray].sheltered) {
-    chosen.push({ item: { archetype: 'bring-in', spot: 'cafe.eaves', cause: 'weather', reason: 'tomorrow-rain' }, score: freeSpots('cafe.eaves', t, live, npc).length ? 400 : 0 });
+    chosen.push({ item: { archetype: 'bring-in', spot: 'cafe.eaves', cause: 'weather', reason: 'tomorrow-rain' }, score: freeSpots('cafe.eaves', t, live, npc).length ? P.bringInWeight : 0 });
   }
   const u = p.rng.next();
   const pickedChosen = pickByWeight(u, chosen.map(c => c.score));

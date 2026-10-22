@@ -2,11 +2,11 @@
 const freeze = value => { if (value && typeof value === 'object') { Object.values(value).forEach(freeze); Object.freeze(value); } return value; };
 const data = freeze({
   places: [
-    {"id":"home","player":true,"labels":{"text":"집","scene":"우리 집","map":"나의 집"},"center":{"x":-6,"z":0},"spawn":{"x":-6,"z":1.7}},
-    {"id":"cafe","player":true,"labels":{"text":"찻집","scene":"찻집","map":"찻집"},"center":{"x":0,"z":0},"spawn":{"x":0,"z":2.5}},
-    {"id":"workshop","player":true,"labels":{"text":"공방","scene":"공방","map":"공방"},"center":{"x":6,"z":0},"spawn":{"x":6,"z":1.7}},
-    {"id":"greenhouse","player":true,"labels":{"text":"온실","scene":"온실","map":"온실"},"center":{"x":0,"z":-6},"spawn":{"x":0,"z":-4}},
-    {"id":"lane","player":false,"labels":{"text":"골목","scene":"골목","map":"골목"},"center":{"x":3,"z":2.5},"spawn":null},
+    {"id":"home","area":"cafe-alley","player":true,"labels":{"text":"집","scene":"우리 집","map":"나의 집"},"center":{"x":-6,"z":0},"spawn":{"x":-6,"z":1.7}},
+    {"id":"cafe","area":"cafe-alley","player":true,"labels":{"text":"찻집","scene":"찻집","map":"찻집"},"center":{"x":0,"z":0},"spawn":{"x":0,"z":2.5}},
+    {"id":"workshop","area":"cafe-alley","player":true,"labels":{"text":"공방","scene":"공방","map":"공방"},"center":{"x":6,"z":0},"spawn":{"x":6,"z":1.7}},
+    {"id":"greenhouse","area":"cafe-alley","player":true,"labels":{"text":"온실","scene":"온실","map":"온실"},"center":{"x":0,"z":-6},"spawn":{"x":0,"z":-4}},
+    {"id":"lane","area":"cafe-alley","player":false,"labels":{"text":"골목","scene":"골목","map":"골목"},"center":{"x":3,"z":2.5},"spawn":null},
   ],
   spots: [
     {"id":"home.window","place":"home","kind":"sit","capacity":1,"sheltered":true,"owner":"player","at":{"x":-6.7,"z":-0.2},"measured":true,"homeSlot":"window"},
@@ -30,6 +30,9 @@ const data = freeze({
     {"id":"greenhouse.board","place":"greenhouse","kind":"display","capacity":1,"sheltered":true,"owner":"researcher","at":{"x":0.3,"z":-6},"measured":true},
     {"id":"greenhouse.bench","place":"greenhouse","kind":"sit","capacity":1,"sheltered":true,"owner":"researcher","at":{"x":1.3,"z":-5.3},"measured":false},
     {"id":"greenhouse.door","place":"greenhouse","kind":"stand","capacity":2,"sheltered":false,"owner":"public","at":{"x":0,"z":-4.6},"measured":false},
+    {"id":"greenhouse.bed-edge","place":"greenhouse","kind":"gather","capacity":1,"sheltered":true,"owner":"player","at":{"x":-0.9,"z":-6.6},"measured":false},
+    {"id":"cafe.pots","place":"cafe","kind":"gather","capacity":1,"sheltered":false,"owner":"player","at":{"x":-1.5,"z":2.2},"measured":false},
+    {"id":"lane.wall","place":"lane","kind":"gather","capacity":1,"sheltered":false,"owner":"player","at":{"x":3.6,"z":3.1},"measured":false},
   ],
   groups: {"cafe.seats":["cafe.garden","cafe.garden-right","cafe.eaves-left","cafe.eaves-right"],"cafe.eaves":["cafe.eaves-left","cafe.eaves-right"],"cafe.outside":["cafe.garden","cafe.garden-right"]},
   archetypes: [
@@ -99,6 +102,9 @@ const data = freeze({
     {"npc":"researcher","dayKind":"off","band":"night","pool":[{"archetype":"star-watch","spot":"greenhouse.door","weight":450},{"archetype":"notes","spot":"greenhouse.bench","weight":300},{"archetype":"observe","spot":"greenhouse.board","weight":250}]},
   ],
   rainAlt: {"cafe.seats":"cafe.eaves","cafe.outside":"cafe.eaves","cafe.front":"cafe.eaves","workshop.door":"workshop.inside","greenhouse.door":"greenhouse.bed"},
+  params: [
+    {"paramsVer":"town-params-1","planner":{"residentSpeed":1.2,"pauseMinutes":[3,5],"recentWindow":3,"habitWeight":300,"habitMultiplier":1500,"placesPerDay":3,"eveningPull":3000,"eveningPullLastHour":20000,"lastHourMinutes":60,"repeatMultiplier":500,"coldHandsMultiplier":500,"tomorrowClearMultiplier":2000,"firstAromaWeight":300,"bringInWeight":400},"seen":{"countMax":99,"perRequest":50,"familiarAfter":3},"prefs":{"notFitMultiplier":500,"lessOftenMultiplier":300,"feedbackLifeDays":30},"observe":{"recentUses":20,"window":5,"needed":4},"asks":{"perLifeDay":1,"sameQuestionLifeDays":7,"quietAfterVisitSeconds":45},"gather":{"quota":{"leaf-young":3,"leaf-dew":1,"mint":2,"chrysanthemum":2,"petal-rain":2}},"eval":{"retainLifeDays":180,"minGroup":30},"brake":{"minArms":100,"minDays":7,"dropPoints":5}},
+  ],
 });
 export const PLACES = data.places;
 export const SPOTS = data.spots;
@@ -107,3 +113,4 @@ export const ARCHETYPES = data.archetypes;
 export const RESIDENTS = data.residents;
 export const ROUTINES = data.routines;
 export const RAIN_ALT = data.rainAlt;
+export const PARAMS = data.params;
