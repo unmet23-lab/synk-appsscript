@@ -105,6 +105,13 @@ const data = freeze({
   params: [
     {"paramsVer":"town-params-1","planner":{"residentSpeed":1.2,"pauseMinutes":[3,5],"recentWindow":3,"habitWeight":300,"habitMultiplier":1500,"placesPerDay":3,"eveningPull":3000,"eveningPullLastHour":20000,"lastHourMinutes":60,"repeatMultiplier":500,"coldHandsMultiplier":500,"tomorrowClearMultiplier":2000,"firstAromaWeight":300,"bringInWeight":400},"seen":{"countMax":99,"perRequest":50,"familiarAfter":3},"prefs":{"notFitMultiplier":500,"lessOftenMultiplier":300,"feedbackLifeDays":30},"observe":{"recentUses":20,"window":5,"needed":4},"asks":{"perLifeDay":1,"sameQuestionLifeDays":7,"quietAfterVisitSeconds":45},"gather":{"quota":{"leaf-young":3,"leaf-dew":1,"mint":2,"chrysanthemum":2,"petal-rain":2}},"eval":{"retainLifeDays":180,"minGroup":30},"brake":{"minArms":100,"minDays":7,"dropPoints":5}},
   ],
+  items: [
+    {"id":"leaf-young","kind":"material","storage":"basket","stackMax":999,"sources":["gather"],"uses":["give"],"spot":"greenhouse.bed-edge","tea":"green"},
+    {"id":"leaf-dew","kind":"material","storage":"basket","stackMax":999,"sources":["gather"],"uses":["give"],"spot":"greenhouse.bed-edge","tea":"green"},
+    {"id":"mint","kind":"material","storage":"basket","stackMax":999,"sources":["gather"],"uses":["give"],"spot":"cafe.pots","tea":"mint"},
+    {"id":"chrysanthemum","kind":"material","storage":"basket","stackMax":999,"sources":["gather"],"uses":["give"],"spot":"cafe.pots","tea":"chrysanthemum"},
+    {"id":"petal-rain","kind":"material","storage":"basket","stackMax":999,"sources":["gather"],"uses":["give"],"spot":"lane.wall","tea":"petal"},
+  ],
 });
 export const PLACES = data.places;
 export const SPOTS = data.spots;
@@ -114,3 +121,4 @@ export const RESIDENTS = data.residents;
 export const ROUTINES = data.routines;
 export const RAIN_ALT = data.rainAlt;
 export const PARAMS = data.params;
+export const ITEMS = data.items;

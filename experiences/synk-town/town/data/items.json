@@ -1,0 +1,10 @@
+{
+  "$comment": "Things the account ledger holds (vertical slice design §20-7 ①, §20-8). One definition per item: kind (material, product, tool, decor, currency), where it is kept, the most one line may hold, where it comes from and what it is for. This slice has the five gathered materials only; spot is the gather spot that yields it and tea the cafe's tea of the day once it is given. When each one grows is the clock's and weather's (§20-8), not data.",
+  "items": [
+    { "id": "leaf-young", "kind": "material", "storage": "basket", "stackMax": 999, "sources": ["gather"], "uses": ["give"], "spot": "greenhouse.bed-edge", "tea": "green" },
+    { "id": "leaf-dew", "kind": "material", "storage": "basket", "stackMax": 999, "sources": ["gather"], "uses": ["give"], "spot": "greenhouse.bed-edge", "tea": "green" },
+    { "id": "mint", "kind": "material", "storage": "basket", "stackMax": 999, "sources": ["gather"], "uses": ["give"], "spot": "cafe.pots", "tea": "mint" },
+    { "id": "chrysanthemum", "kind": "material", "storage": "basket", "stackMax": 999, "sources": ["gather"], "uses": ["give"], "spot": "cafe.pots", "tea": "chrysanthemum" },
+    { "id": "petal-rain", "kind": "material", "storage": "basket", "stackMax": 999, "sources": ["gather"], "uses": ["give"], "spot": "lane.wall", "tea": "petal" }
+  ]
+}
