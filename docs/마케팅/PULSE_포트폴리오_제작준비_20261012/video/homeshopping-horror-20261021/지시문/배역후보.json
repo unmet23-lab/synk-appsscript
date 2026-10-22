@@ -1,0 +1,61 @@
+{
+  "메모": "「매진 임박」 새 개그 모델 후보 지시문(2026-10-22). 유호님 「피해자 셋으로 가자. 새 개그 모델 둘(통 큰 언니 · 리액션 장인) + 지유, 후보부터 뽑아줘」. PULSE 모델 확장 로드맵 7절 「한 명 만드는 순서」 1단계 그대로 — Gemini Ultra(구독) 「4 Argon」 + 사고 수준 높음, 참조 없이 글로만(참조를 넣으면 참조 인물을 닮는다), 키 · 체형 · 지킬 특징 2개를 숫자와 명사로, 3:4, 후보마다 새 대화. 통 큰 언니는 로드맵 2차 「보라」(플러스 사이즈 20대 후반, 77~88) 자리를 이 영상 때문에 앞당긴 것이다. 웃음은 체형이 아니라 표정 · 성격에서 나오게 한다. 실행은 synk-vendor/homeshopping-horror-20261021/ego/(ego lite). 「설명」은 받은 그림 실물 기준(10-22 Fable — 통1 점은 콧방울 옆, 리2 코는 들린 코로 안 읽힘, 리3 눈은 크고 둥근 쌍꺼풀)이고, 「text」는 그때 보낸 지시문 그대로다.",
+  "공통": {
+    "사진": "Casting-agency headshot of one ordinary, non-celebrity Korean woman, 3:4 portrait frame. Plain light-grey seamless studio backdrop. She wears a plain black crew-neck cotton T-shirt, no jewellery, no logo, no makeup beyond a natural everyday look. Large soft key light from the front, gentle fill, 85mm lens at chest height, sharp focus on the eyes.",
+    "현실": "Real-person photographic realism: natural skin texture with fine visible detail, natural facial asymmetry, not airbrushed, not retouched, no beauty filter, no plastic look. She must not resemble any real celebrity, comedian, actress or influencer — an everyday person you would meet at a neighbourhood market. Exactly one person in the picture. No text, no watermark, no frame.",
+    "통몸": "BODY: 163 cm tall, plus-size (Korean clothing size 88, about US 16–18) — a full round face with soft cheeks and a soft double chin, full soft arms, broad soft shoulders, a full bust and a round belly that show naturally under the T-shirt. Framed from the waist up so her body type reads clearly. She looks healthy, comfortable and confident in her body.",
+    "통표정": "EXPRESSION: a big, warm, confident open-mouthed laugh — the funny, generous big sister of the neighbourhood — eyes crinkled, cheeks lifted, head tipped slightly back. Charming and likeable, never mocked.",
+    "리몸": "BODY: 160 cm tall, average build (Korean clothing size 66). Framed from the chest up so her face is large in the frame.",
+    "리표정": "EXPRESSION: a comically exaggerated reaction frozen mid-moment, like a natural-born sitcom actress — eyes popped wide open, eyebrows shot up high, mouth dropped open in a big shocked 'O', both hands pressed flat against her cheeks. Funny and lovable, the face is fully readable."
+  },
+  "후보": [
+    {
+      "id": "통1",
+      "who": "통 큰 언니",
+      "text": "{사진} She is 28 years old. HAIR: shoulder-length warm-brown hair with soft see-through bangs. TWO FEATURES TO KEEP: deep dimples on both cheeks; a small beauty mark just above the right corner of her lips. {통몸} {통표정} {현실}",
+      "설명": "28세 · 어깨 길이 갈색 머리, 시스루 앞머리 | 지킬 특징: 양 볼 보조개 · 콧방울 옆 작은 점"
+    },
+    {
+      "id": "통2",
+      "who": "통 큰 언니",
+      "text": "{사진} She is 30 years old. HAIR: a short, tightly curled permed bob in dark brown (a classic Korean neighbourhood perm). TWO FEATURES TO KEEP: thick, straight dark eyebrows; a slight gap between her two front teeth. {통몸} {통표정} {현실}",
+      "설명": "30세 · 짧은 뽀글 파마 | 지킬 특징: 짙은 일자 눈썹 · 앞니 사이 틈"
+    },
+    {
+      "id": "통3",
+      "who": "통 큰 언니",
+      "text": "{사진} She is 27 years old. HAIR: long straight black hair pulled into a high ponytail. TWO FEATURES TO KEEP: round thin black-rimmed glasses; light freckles across her nose and cheeks. {통몸} {통표정} {현실}",
+      "설명": "27세 · 긴 생머리 하이 포니테일 | 지킬 특징: 얇은 동그란 뿔테 안경 · 코와 볼 주근깨"
+    },
+    {
+      "id": "통4",
+      "who": "통 큰 언니",
+      "text": "{사진} She is 32 years old. HAIR: a chin-length straight black bob with blunt full bangs. TWO FEATURES TO KEEP: single eyelids that close into bright crescent shapes when she laughs; rosy round cheeks. {통몸} {통표정} {현실}",
+      "설명": "32세 · 턱선 단발, 일자 앞머리 | 지킬 특징: 웃으면 반달 되는 홑꺼풀 눈 · 발그레한 둥근 볼"
+    },
+    {
+      "id": "리1",
+      "who": "리액션 장인",
+      "text": "{사진} She is 26 years old. HAIR: a very short boyish black pixie cut. TWO FEATURES TO KEEP: very large round eyes; a wide mouth with full lips. {리몸} {리표정} {현실}",
+      "설명": "26세 · 아주 짧은 픽시 컷 | 지킬 특징: 아주 큰 동그란 눈 · 넓은 입"
+    },
+    {
+      "id": "리2",
+      "who": "리액션 장인",
+      "text": "{사진} She is 29 years old. HAIR: a messy low bun in dark brown with loose flyaway strands around her face. TWO FEATURES TO KEEP: thick, very mobile dark eyebrows; a small upturned nose. {리몸} {리표정} {현실}",
+      "설명": "29세 · 헝클어진 낮은 똥머리 | 지킬 특징: 잘 움직이는 짙은 눈썹 · 도톰한 코끝"
+    },
+    {
+      "id": "리3",
+      "who": "리액션 장인",
+      "text": "{사진} She is 31 years old. HAIR: shoulder-length loose waves clipped back with a big tortoiseshell claw clip. TWO FEATURES TO KEEP: long narrow single-eyelid eyes; high round cheekbones. {리몸} {리표정} {현실}",
+      "설명": "31세 · 집게 핀으로 올린 어깨 웨이브 | 지킬 특징: 크고 둥근 쌍꺼풀 눈 · 둥근 광대"
+    },
+    {
+      "id": "리4",
+      "who": "리액션 장인",
+      "text": "{사진} She is 27 years old. HAIR: a black bowl-cut bob with straight bangs just above the eyebrows. TWO FEATURES TO KEEP: large round tortoiseshell glasses; a small mole on her left cheek. {리몸} {리표정} {현실}",
+      "설명": "27세 · 바가지 단발, 일자 앞머리 | 지킬 특징: 동그란 호피 뿔테 안경 · 왼쪽 볼 점"
+    }
+  ]
+}
