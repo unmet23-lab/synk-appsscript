@@ -133,13 +133,14 @@ function renderBlock(it, b, j) {
   const id = `${it.id}-${j + 1}`;
   const head = `<div class="block-head"><div><h3 id="${id}-h">${esc(b.종류)}</h3><p class="where">넣는 곳 · ${esc(b['넣는 곳'])}</p></div>`;
   const memo = b.메모 ? `<p class="memo">${esc(b.메모)}</p>` : '';
+  // 블록은 영역(landmark)이 아니다 — 이름 붙은 section으로 두면 「프롬프트」 영역이 여럿 겹친다(배포 점검 axe landmark-unique, 10-22).
   if (b.종류 === '체크리스트') {
     const steps = String(b.본문).split('\n').filter((l) => l.trim()).map((l) => `<li>${withBlanks(l.trim())}</li>`).join('');
-    return `<section class="block list" aria-labelledby="${id}-h">${head}</div><ol class="steps">${steps}</ol>${memo}</section>`;
+    return `<div class="block list">${head}</div><ol class="steps">${steps}</ol>${memo}</div>`;
   }
   const copy = `<button class="copy" type="button" data-for="${id}" aria-label="${esc(it.제목)} — ${esc(b.종류)} 복사"><span>복사</span></button>`;
-  return `<section class="block" aria-labelledby="${id}-h">${head}${copy}</div>`
-    + `<pre class="text${b.종류 === '명령' ? ' cmd' : ''}" id="${id}" tabindex="0">${withBlanks(b.본문)}</pre>${memo}</section>`;
+  return `<div class="block">${head}${copy}</div>`
+    + `<pre class="text${b.종류 === '명령' ? ' cmd' : ''}" id="${id}" tabindex="0">${withBlanks(b.본문)}</pre>${memo}</div>`;
 }
 
 function renderItem(it, links, soon) {
