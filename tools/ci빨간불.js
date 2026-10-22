@@ -8,7 +8,8 @@
  *
  *   node tools/ci빨간불.js                    지금 master 상태(워크플로마다 초록·빨강, 빨강이면 언제부터·첫 빨강 커밋·깨진 시험)
  *   node tools/ci빨간불.js --json
- *   node tools/ci빨간불.js --알림             바뀐 것이 있으면 텔레그램 한 통(빨개짐 · 3시간째 · 다시 초록). 작업 스케줄러가 10분마다
+ *   node tools/ci빨간불.js --알림             바뀐 것이 있으면 텔레그램 한 통(빨개짐 · 3시간째 · 다시 초록). 작업 스케줄러가 10분마다.
+ *                                            같은 회차에 앱 예약 작업 감시(tools/예약멈춤.js --알림)도 돈다 — 예약을 따로 늘리지 않으려고(10-22)
  *   node tools/ci빨간불.js 예약등록 [--실행]  그 예약을 Windows 작업 스케줄러에 건다(기본은 미리 보기). 공용 작업본 경로로 건다
  *
  * 읽는 법: `gh run list --branch master`로 워크플로마다 최근 run을 읽는다. 끝난 run 가운데 success는 초록, failure·timed_out·
@@ -349,6 +350,18 @@ function 예약명령({ sh = 실행기() } = {}) {
 
 // ── 명령줄 ──────────────────────────────────────────────────────────────────
 
+/** 같은 10분 예약에 얹은 앱 예약 작업 감시 — CI를 못 읽은 회차에도 돌고, 이쪽이 깨져도 CI 알림은 그대로다. */
+function 예약멈춤알림() {
+  try {
+    const r = require('./예약멈춤.js').알림();
+    console.log(`[예약 작업 ${r.결과}]${r.이유 ? ` ${r.이유}` : ''}${r.글 ? `\n${r.글}` : ''}`);
+    return r.결과 === '보냄' || r.결과 === '바뀐 것 없음';
+  } catch (e) {
+    console.log(`[예약 작업 감시 오류] ${e && e.message}`);
+    return false;
+  }
+}
+
 function main(argv = process.argv.slice(2)) {
   const 옵션 = new Set(argv);
   if (argv[0] === '예약등록') {
@@ -365,7 +378,8 @@ function main(argv = process.argv.slice(2)) {
   if (옵션.has('--알림')) {
     const r = 알림();
     console.log(`[${r.결과}]${r.이유 ? ` ${r.이유}` : ''}${r.글 ? `\n${r.글}` : ''}`);
-    return r.결과 === '보냄' || r.결과 === '바뀐 것 없음' ? 0 : 1;
+    const 예약 = 예약멈춤알림();
+    return (r.결과 === '보냄' || r.결과 === '바뀐 것 없음') && 예약 ? 0 : 1;
   }
   const r = 지금읽기();
   console.log(옵션.has('--json') ? JSON.stringify(r, null, 2) : 상태글(r));

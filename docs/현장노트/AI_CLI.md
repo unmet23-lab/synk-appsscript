@@ -284,6 +284,12 @@
 - 고침: 고정된 세션의 원문이 끊김 없이 끝났고 곁 세션 쪽지도 없으면 `고정` 칸(보고 「고정 — 그대로 둠」 한 줄)에 둔다. 깨우지도 보관하지도 핀을 풀지도 않는다. 한도·재시작으로 끊긴 고정 세션은 지금처럼 깨우고, 유호님 지시를 기다리면 유호님차례다. 앱은 부모를 보관할 때 고정된 곁 세션은 남기지만 그 아래 쉬는 곁 세션은 같이 보관할 목록에 넣으므로(app.asar `sideSessionsAtArchive`), 고정된 곁 세션이 있는 부모도 바로 보관하지 않는다.
 - 다시 확인: 다음 /이어서 출력에서 921b9169가 `고정` 칸에 있는지 본다. 앱이 바뀌면 `get_session`의 `pinned`와 그 세션 기록의 `isStarred`가 같은지 본다.
 
+### 세션 기록의 `lastActivityAt`은 차례 도중에 안 바뀐다 — 멈췄는지는 원문 마지막 줄 시각과 `~/.claude/sessions`의 busy로 가른다 (2026-10-22 Claude)
+- 증상: 10-22 예약 멈춤 감시를 만들다 보니 일하는 중인 세션의 기록(`local_<id>.json`)이 11:06:51에 멈춰 있는데 11:12에도 그 세션은 일하고 있었다. 기록만 보면 세 시간 렌더하는 예약 회차와 멈춘 회차가 똑같이 「오래 조용함」이다. 원문 파일 수정 시각도 마지막 활동이 아니다 — 07시 yuhobuilds 회차는 마지막 메시지 08:47, 파일 수정 09:17이었다.
+- 원인: 앱은 차례가 시작·끝날 무렵에만 기록을 고쳐 쓴다(`lastTurnEdgeAt`·`latestUserFrameAt`도 그때). 원문 jsonl은 메시지마다 붙지만, 차례가 끝난 뒤 `last-prompt`·`custom-title`·`cost-state` 같은 시각 없는 메타 줄이 더 붙는다.
+- 고침: 마지막 활동은 원문 마지막 user·assistant 줄의 `timestamp`(서브에이전트는 `<cliSessionId>/subagents/agent-*.jsonl` 수정 시각)로 본다. 지금 차례를 도는지는 `~/.claude/sessions/<pid>.json`(살아 있는 CLI마다 하나 — `hostSessionId`·`status` busy|idle, ListAgents가 읽는 곳)과 `process.kill(pid, 0)`으로 본다. 예약 작업 정의(cron·fireAt·enabled·lastScheduledFor)는 같은 계정 폴더의 `scheduled-tasks.json`, 실행 세션은 기록의 `scheduledTaskId`다. 이렇게 AI 없이 읽는 감시가 `tools/예약멈춤.js`다.
+- 다시 확인: 일하는 세션 하나의 기록 `lastActivityAt`과 원문 마지막 줄 시각을 함께 읽고, 그 세션의 `~/.claude/sessions` 파일 `status`가 busy인지 본다.
+
 ## Claude 서브에이전트
 
 ### 병렬 서브에이전트가 같은 scratchpad에 같은 이름의 보조 파일을 써서 남의 묶음 글을 읽는다 (2026-10-19 Claude)
