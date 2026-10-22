@@ -92,7 +92,7 @@
     ],
     "기록": ".tmp/올리기전검사/yuhobuilds_세션공유4기가_20261022"
   },
-  "작업실등록": true,
+  "작업실등록": false,
   "프롬프트": {
     "id": "disk-writes",
     "주소": "https://synk.im/prompts/#disk-writes",
