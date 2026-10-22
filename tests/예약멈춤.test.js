@@ -395,3 +395,59 @@ test('앱이 건너뛴 기록이 있으면 뒤 회차를 띄운 뒤에도 그 �
   assert.deepEqual(회차.map((x) => [회차때표(x), x.판정.종류, x.판정.까닭 || '']), [
     ['10-22 07:00 회차', '시작 안 함', '시작하지 않았습니다 — 앱이 건너뜀: 로그인이 필요했다'], ['10-23 07:00 회차', '끝남', '']]);
 });
+
+// ── 운영 사본에서 돌 때(10-22 18:28 「git 폴더를 못 찾았다」) ─────────────────────
+
+test('공용 git 폴더 — git을 부르지 않고 찾는다: 메인 작업본은 .git 폴더, 워크트리(운영 사본)는 .git 파일 → gitdir → commondir', () => {
+  const 뿌리 = fs.mkdtempSync(path.join(os.tmpdir(), '예약멈춤-git-'));
+  const 메인 = path.join(뿌리, '메인');
+  const 작업gitdir = path.join(메인, '.git', 'worktrees', '사본1');
+  fs.mkdirSync(작업gitdir, { recursive: true });
+  fs.writeFileSync(path.join(작업gitdir, 'commondir'), '../..\n');
+  const 사본 = path.join(뿌리, 'ops', 'SYNK-appsscript');
+  fs.mkdirSync(사본, { recursive: true });
+  fs.writeFileSync(path.join(사본, '.git'), `gitdir: ${작업gitdir.split(path.sep).join('/')}\n`);
+  assert.equal(path.resolve(멈춤.공용git폴더(메인)), path.resolve(메인, '.git'));
+  assert.equal(path.resolve(멈춤.공용git폴더(사본)), path.resolve(메인, '.git'));
+});
+
+test('못 읽는 회차가 6회(약 1시간) 내리 이어지면 감시가 멈췄다고 한 통, 그 뒤로는 안 보내고, 다시 읽히면 「다시 읽습니다」 한 줄', () => {
+  const p = 판();
+  const 없는앱 = { ...p.환경, SYNK_CLAUDE_SESSIONS: path.join(p.뿌리, '없는-앱-데이터') };
+  const 처음 = KST('2026-10-22T18:30:00');
+  for (let i = 0; i < 5; i++) assert.equal(알리기(p, 처음 + i * 10 * 분, { 환경: 없는앱 }).결과, '모름');
+  assert.deepEqual(보낸것(p), []);
+  const 여섯째 = 알리기(p, 처음 + 50 * 분, { 환경: 없는앱 });
+  assert.equal(여섯째.못읽음.회수, 6);
+  assert.equal(보낸것(p).length, 1);
+  assert.match(보낸것(p)[0], /^⚠ 앱 예약 작업 감시가 6회\(50분\) 내리 앱 기록을 못 읽었습니다 — 앱 세션 기록 폴더/);
+  알리기(p, 처음 + 60 * 분, { 환경: 없는앱 });
+  assert.equal(보낸것(p).length, 1, '「멈췄다」는 한 번만');
+  정의쓰기(p, [{ id: 'synk-daily-lab', createdAt: KST('2026-10-22T12:00:00') }]); // 앱 기록이 다시 보인다(오늘 낮에 만든 작업이라 기다릴 회차는 없다)
+  const 다시 = 알리기(p, 처음 + 70 * 분);
+  assert.equal(다시.결과, '보냄');
+  assert.match(보낸것(p)[1], /✅ 앱 예약 작업 감시가 다시 앱 기록을 읽습니다\(7회 못 읽은 뒤\)/);
+  assert.equal(fs.existsSync(path.join(path.dirname(p.상태), '못읽음.json')), false);
+  assert.equal(알리기(p, 처음 + 80 * 분).결과, '바뀐 것 없음');
+});
+
+test('「다시 읽습니다」 보내기가 실패해도 읽힌 회차에서 「내리」 셈은 끊긴다 — 새 장애는 새로 세어 다시 알리고, 못 보낸 「다시 읽습니다」는 다음에 보낸다(GPT 10-22 P1)', () => {
+  const p = 판();
+  const 없는앱 = { ...p.환경, SYNK_CLAUDE_SESSIONS: path.join(p.뿌리, '없는-앱-데이터') };
+  const 처음 = KST('2026-10-22T18:30:00');
+  for (let i = 0; i < 6; i++) 알리기(p, 처음 + i * 10 * 분, { 환경: 없는앱 });
+  assert.equal(보낸것(p).length, 1, '첫 장애 「멈췄다」');
+  정의쓰기(p, [{ id: 'synk-daily-lab', createdAt: KST('2026-10-22T12:00:00') }]);
+  const 실패 = 알리기(p, 처음 + 60 * 분, { 보내는일: () => ({ ok: false, error: '네트워크' }) });
+  assert.equal(실패.결과, '못 보냄');
+  const 셈 = JSON.parse(fs.readFileSync(path.join(path.dirname(p.상태), '못읽음.json'), 'utf8'));
+  assert.equal(셈.회수, 0);
+  assert.equal(셈.빚, true);
+  for (let i = 0; i < 6; i++) 알리기(p, 처음 + (70 + i * 10) * 분, { 환경: 없는앱 }); // 또 못 읽는다
+  assert.equal(보낸것(p).length, 2, '새 장애도 「멈췄다」 한 통');
+  assert.match(보낸것(p)[1], /6회\(50분\) 내리 앱 기록을 못 읽었습니다/);
+  정의쓰기(p, [{ id: 'synk-daily-lab', createdAt: KST('2026-10-22T12:00:00') }]);
+  assert.equal(알리기(p, 처음 + 130 * 분).결과, '보냄');
+  assert.match(보낸것(p)[2], /✅ 앱 예약 작업 감시가 다시 앱 기록을 읽습니다\(6회 못 읽은 뒤\)/);
+  assert.equal(fs.existsSync(path.join(path.dirname(p.상태), '못읽음.json')), false);
+});

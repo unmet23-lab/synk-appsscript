@@ -34,7 +34,9 @@
  *   「시작 안 함」은 알리지 않고, 「시작 안 함」을 알린 뒤 그날 직접 돌린 회차가 멈추면 한 번 더 알리며, 그날 뒤에 다시 돌린 회차가
  *   잘 돌았으면 앞 회차는 알리지 않는다.
  *   보내기에 실패하면 알림 기록을 안 남겨 다음 회차에 다시 보낸다. 못 읽은 회차(원문 없음 등)는 「모름」이고 멈춤으로 적지 않는다.
- * 상태 파일은 공용 git 폴더 안(<git-common-dir>/synk-예약멈춤/상태.json)이라 워크트리·공용 작업본이 같이 보고, 저장소에는 안 들어간다.
+ * 상태 파일은 공용 git 폴더 안(<git-common-dir>/synk-예약멈춤/상태.json)이라 워크트리·운영 사본·공용 작업본이 같이 보고, 저장소에는
+ *   안 들어간다. 그 폴더는 git을 부르지 않고 .git 파일·commondir로 찾는다(바쁜 PC에서 git이 늦어 회차가 멈췄다, 10-22).
+ *   앱 기록을 못 읽는 회차가 한 시간(6회) 내리 이어지면 감시가 멈췄다고 한 통, 다시 읽히면 「다시 읽습니다」 한 줄(<같은 폴더>/못읽음.json).
  * 시험·재현: SYNK_TG_DRYRUN_DIR(텔레그램 대신 그 폴더에 글 — 텔레그램승인.js와 같다) · SYNK_예약멈춤_상태(상태 파일) ·
  *   SYNK_CLAUDE_SESSIONS(계정 폴더들의 뿌리) · SYNK_CLAUDE_REGISTRY(실행 중 CLI 폴더) · SYNK_APPROVAL_DIR(승인 훅 기록) ·
  *   SYNK_예약멈춤_마케팅(편 폴더들) · CLAUDE_CONFIG_DIR(원문 projects·지시문 scheduled-tasks의 뿌리).
@@ -60,6 +62,7 @@ const 보고없음ms = 2 * 시간;
 const 확인ms = 9 * 분;
 const 이어짐ms = 15 * 분;
 const 알림보관ms = 4 * 24 * 시간;
+const 못읽음한도 = 6; // 10분 회차로 약 1시간 내리 못 읽으면 감시가 멈춘 것을 한 번 알린다(ci빨간불과 같다)
 const 알릴종류 = new Set(['멈춤', '보고 없음', '시작 안 함']);
 const 잘돈종류 = new Set(['끝남', '도는 중', '쉬는 중', '보관됨']);
 const 텔레그램꼴 = /hermes(?:\.exe)?[\\"'`]*\s+send\b/i;
@@ -518,14 +521,48 @@ function 알림계획(앞, 지금, 지금ms = Date.now()) {
   return { 글: 새것들.length ? 알림글(새것들, 지금.오프셋분) : null, 새상태: { ...바탕, 알림: 알린뒤 }, 못보낸상태: { ...바탕, 알림 }, 새것들 };
 }
 
-function 공용git폴더(cwd = ROOT) {
-  const r = spawnSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], { cwd, encoding: 'utf8', windowsHide: true, timeout: 10000 });
+/**
+ * 공용 git 폴더 — git을 부르지 않고 .git 파일·commondir로 먼저 찾는다(lib/공용작업본.js). 10-22 18:28 운영 사본 회차가 바쁜 PC에서
+ * 10초 한도의 rev-parse를 넘겨 「git 폴더를 못 찾았다」로 끝났다. 그래도 못 찾으면 git에 60초까지 묻는다(ci빨간불과 같은 한도).
+ */
+function 공용git폴더(root = ROOT) {
+  const 곁 = path.join(공용작업본(root), '.git');
+  if (폴더인가(곁)) return 곁;
+  const r = spawnSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], { cwd: root, encoding: 'utf8', windowsHide: true, timeout: 60000 });
   return r.status === 0 ? String(r.stdout).trim() : null;
 }
 function 상태파일(환경 = process.env) {
   if (환경.SYNK_예약멈춤_상태) return 환경.SYNK_예약멈춤_상태;
   const g = 공용git폴더();
   return g ? path.join(g, 'synk-예약멈춤', '상태.json') : null;
+}
+
+/**
+ * 못 읽은 회차(앱 기록을 못 찾음 등)를 센다 — 못읽음한도(약 1시간) 내리 못 읽으면 감시가 멈췄다고 한 번 보낸다. 감시가 조용히 못 도는 것도
+ * 막으려던 꼴이다. 셈 파일 { 처음, 회수(이번에 내리 못 읽은 수 — 0이면 그사이 읽힌 회차가 있었다), 알림(이번 줄에 「멈췄다」를 보냈나),
+ * 빚(「다시 읽습니다」를 아직 못 보냈나) }. 읽힌 회차가 끼면 새 줄로 세서 새 장애도 알린다(GPT 10-22 P1).
+ */
+function 못읽음세기(파일, 이유, { 환경, 보내는일, 지금ms }) {
+  let 앞 = {};
+  try { 앞 = JSON.parse(fs.readFileSync(파일, 'utf8')); } catch { 앞 = {}; }
+  const 이어짐 = (앞.회수 || 0) > 0;
+  const 회수 = (이어짐 ? 앞.회수 : 0) + 1, 처음 = 이어짐 && 앞.처음 ? 앞.처음 : new Date(지금ms).toISOString();
+  let 알림 = 이어짐 && Boolean(앞.알림), 빚 = Boolean(앞.빚);
+  if (회수 >= 못읽음한도 && !알림) {
+    const 글 = `⚠ 앱 예약 작업 감시가 ${회수}회(${동안(지금ms - Date.parse(처음))}) 내리 앱 기록을 못 읽었습니다 — ${이유}\n`
+      + '그동안 예약 작업이 끝 보고 없이 멈춰도 알림이 가지 않습니다. 확인: node tools/예약멈춤.js';
+    const r = (보내는일 || require('./텔레그램승인.js').보내기)(글, 환경);
+    알림 = Boolean(r && r.ok);
+    if (알림) 빚 = true;
+  }
+  셈쓰기(파일, { 처음, 회수, 마지막이유: 이유, 알림, 빚 });
+  return { 회수, 알림 };
+}
+function 셈쓰기(파일, 값) {
+  try {
+    fs.mkdirSync(path.dirname(파일), { recursive: true });
+    fs.writeFileSync(파일, JSON.stringify(값));
+  } catch { /* 셈을 못 남겨도 이번 회차 결과는 그대로 */ }
 }
 function 상태읽기(파일) { try { return JSON.parse(fs.readFileSync(파일, 'utf8')); } catch { return null; } }
 function 상태쓰기(파일, 값) {
@@ -537,19 +574,28 @@ function 상태쓰기(파일, 값) {
 
 function 알림({ 환경 = process.env, 지금ms = Date.now(), 보내는일 = null, ...읽기옵션 } = {}) {
   const 파일 = 상태파일(환경);
-  if (!파일) return { 결과: '모름', 이유: 'git 폴더를 못 찾았다' };
+  if (!파일) return { 결과: '모름', 이유: 'git 폴더를 못 찾았다' }; // 셀 곳도 없다 — .git 폴더도 git도 답이 없을 때뿐
+  const 못읽음파일 = path.join(path.dirname(파일), '못읽음.json');
   const 지금 = 지금읽기({ 환경, 지금ms, ...읽기옵션 });
-  if (지금.상태 === '모름') return { 결과: '모름', 이유: 지금.이유 }; // 상태를 바꾸지 않는다
+  if (지금.상태 === '모름') return { 결과: '모름', 이유: 지금.이유, 못읽음: 못읽음세기(못읽음파일, 지금.이유, { 환경, 보내는일, 지금ms }) }; // 상태는 안 바꾼다
   const 계획 = 알림계획(상태읽기(파일), 지금, 지금ms);
-  if (계획.글) {
-    const 보냄 = (보내는일 || require('./텔레그램승인.js').보내기)(계획.글, 환경);
+  // 다시 읽혔다 — 「멈췄다」를 보냈었으면(빚) 이 회차 글에 「다시 읽습니다」를 붙이고, 아니면 셈을 바로 지운다
+  let 못읽음 = null;
+  try { 못읽음 = JSON.parse(fs.readFileSync(못읽음파일, 'utf8')); } catch { 못읽음 = null; }
+  if (못읽음 && !못읽음.빚) { fs.rmSync(못읽음파일, { force: true }); 못읽음 = null; }
+  const 다시읽음 = 못읽음 ? `✅ 앱 예약 작업 감시가 다시 앱 기록을 읽습니다${못읽음.회수 ? `(${못읽음.회수}회 못 읽은 뒤)` : ''}.` : null;
+  const 글 = [계획.글, 다시읽음].filter(Boolean).join('\n\n') || null;
+  if (글) {
+    const 보냄 = (보내는일 || require('./텔레그램승인.js').보내기)(글, 환경);
     if (!보냄.ok) {
       상태쓰기(파일, 계획.못보낸상태); // 알림 기록은 안 남겨 다음 회차에 다시 보낸다
-      return { 결과: '못 보냄', 이유: 보냄.error || '보내기 실패', 글: 계획.글 };
+      if (못읽음) 셈쓰기(못읽음파일, { ...못읽음, 회수: 0, 알림: false }); // 「내리」 셈은 끊고 빚만 남긴다 — 새 장애는 새로 센다
+      return { 결과: '못 보냄', 이유: 보냄.error || '보내기 실패', 글 };
     }
   }
   상태쓰기(파일, 계획.새상태);
-  return { 결과: 계획.글 ? '보냄' : '바뀐 것 없음', 글: 계획.글, 상태파일: 파일, 회차: 지금.회차들.length };
+  if (못읽음) fs.rmSync(못읽음파일, { force: true });
+  return { 결과: 글 ? '보냄' : '바뀐 것 없음', 글, 상태파일: 파일, 회차: 지금.회차들.length };
 }
 
 // ── 명령줄 ──────────────────────────────────────────────────────────────────
@@ -568,4 +614,4 @@ function main(argv = process.argv.slice(2)) {
 
 if (require.main === module) process.exitCode = main();
 
-module.exports = { cron읽기, 예정들, 회차모으기, 회차판정, 지금읽기, 알림계획, 알림, 상태글, 텔레그램보냈나, 편목록, 실행기록읽기, 알릴종류 };
+module.exports = { cron읽기, 예정들, 회차모으기, 회차판정, 지금읽기, 알림계획, 알림, 상태글, 텔레그램보냈나, 편목록, 실행기록읽기, 공용git폴더, 알릴종류 };
