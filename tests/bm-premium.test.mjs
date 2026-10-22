@@ -39,7 +39,11 @@ test('premium revenue excludes light and weekend learners and respects stage cap
   close(labPremium(inp, sc, 'v23', 8, 4), 80);
   close(labPremium(inp, sc, 'v23', 80, 40), 200);
   close(labPremium(inp, sc, 'v23', 80, 40, 1.3), 260);
+  // Other stages cap at 16 seats per conversation class (one class since 10-22, two before).
+  inp.company.premiumClasses = 2;
   close(labPremium(inp, sc, 'host', 100, 0), 32 * 40);
+  inp.company.premiumClasses = 1;
+  close(labPremium(inp, sc, 'host', 100, 0), 16 * 40);
   inp.lab.premiumSeats.v23 = 0;
   close(labPremium(inp, sc, 'v23', 80, 40), 0);
   close(labSaturdaySeats(inp, 'host', 80, 16), 0);

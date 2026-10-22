@@ -100,7 +100,8 @@ const wsum = (s, y, f) => R.withLead[s].rows.filter((r) => r.m.startsWith(String
 const LHr = (rows, y) => { const rs = rows.filter((r) => r.m.startsWith(String(y)) && r.capacity && r.capacity.lead); const S = (f) => rs.reduce((a, r) => a + f(r.capacity.lead), 0); const v = { months: rs.length, cap: S((l) => l.cap), pulse: S((l) => l.pulse), shift: S((l) => l.shift), lecAg: S((l) => l.lectureAgency) }; v.idle = Math.max(0, v.cap - v.pulse - v.shift - v.lecAg); return v; };
 const LH = (s, y) => LHr(R.scenarios[s].rows, y);
 const LHW = (s, y) => LHr(R.withLead[s].rows, y);
-const names = { R, I, man, eok, mnt, n0, n1, pct, pct1, DY, AY, core, Dm, Am, SC, row, sens, ad, deal, dl, gate, hit, move, B, CAP, LTV, SUB, pay, ysum, toKRW, hrs, PY, Pm, DP, FN, rooms, U, MK, PT, prow, pysum, pcore, PL, PN, CF, PU, cname, PLANS, jo, PC, PCL, pct2, HY, LY, OP, ON, OG, OGc, LH, LHW, wsum };
+const LHX = (s, y) => { const b = LH(s, y); return b.cap > 0 ? b : LHW(s, y); };
+const names = { R, I, man, eok, mnt, n0, n1, pct, pct1, DY, AY, core, Dm, Am, SC, row, sens, ad, deal, dl, gate, hit, move, B, CAP, LTV, SUB, pay, ysum, toKRW, hrs, PY, Pm, DP, FN, rooms, U, MK, PT, prow, pysum, pcore, PL, PN, CF, PU, cname, PLANS, jo, PC, PCL, pct2, HY, LY, OP, ON, OG, OGc, LH, LHW, LHX, wsum };
 const keys = Object.keys(names); const vals = Object.values(names);
 
 const tplRoot = path.join(here, '틀');

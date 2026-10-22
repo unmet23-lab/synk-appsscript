@@ -1010,7 +1010,7 @@ const sens = [
   ['수강료 부가세 비면제(10%)', { vatOnTuition: true }, null],
   ['정부 지원금 0원(협약이 없어 담당자도 안 뽑음)', { scOverride: { grantKRW: 0 } }, null],
   ['정부 지원금 0원이어도 매출 조건만 채우면 담당자를 뽑음', { scOverride: { grantKRW: 0 }, gateNoGrant: true }, null],
-  ['유호님 회화 수업 2반 → 1반(그 시간을 PULSE·SHIFT로)', {}, (inp) => { setPremiumClasses(inp, 1); }],
+  ['유호님 회화 수업 두 반(10-22 전 — 그 시간이 PULSE·SHIFT로 가지 않아 담당자 조건이 안 채워지는 판)', {}, (inp) => { setPremiumClasses(inp, 2); }],
   ['한국 담당자를 2027-07에 바로 뽑으면(10-22 전 계획)', { leadPlanned: '2027-07' }, null],
   ['한국 법인 청년 감면 50%', {}, (inp) => { inp.company.krTaxRelief = 0.5; }],
   ['사회보험 0(옛 모델 가정)', {}, (inp) => { inp.lab.socialInsurance = 0; }],
@@ -1455,9 +1455,10 @@ for (const s of scenarioNames) {
 const leadCheck = Object.fromEntries(scenarioNames.map((s) => { const rs = results[s].rows.filter((r) => r.m >= '2027-04' && r.m <= '2027-06'); return [s, rs.reduce((a, r) => a + r.pulse.ads + r.shift.revenue, 0) / (rs.length || 1)]; }));
 // [10-22 유호님] 담당자 채용 조건 점검 — 2027-04~06부터 석 달씩 이어 잰 PULSE 광고·SHIFT 매출 월평균의 가장 높은 값과 그 창, 뽑는 달
 const LGt = base.company.krLead.gate;
-const leadGate = Object.fromEntries(scenarioNames.map((s) => { const rs = results[s].rows; let best = 0; let win = null;
-  rs.forEach((r, i) => { if (r.m < LGt.from || i < LGt.months) return; const w = rs.slice(i - LGt.months, i); const v = w.reduce((a, x) => a + x.pulse.ads + x.shift.revenue, 0) / LGt.months; if (v > best) { best = v; win = w[0].m + '~' + w[w.length - 1].m; } });
-  return [s, { leadFrom: results[s].leadFrom, best, bestWindow: win, avgKRW: LGt.avgKRW, grant: (base.scenarios[s].grantKRW || 0) > 0 }]; }));
+//   best = 뽑기 전까지(못 뽑으면 끝까지) 잰 창 가운데 가장 높은 값, hit = 조건을 넘긴 창(뽑은 달 바로 앞 석 달)
+const leadGate = Object.fromEntries(scenarioNames.map((s) => { const rs = results[s].rows; const lf = results[s].leadFrom; let best = 0; let win = null; let hit = null;
+  rs.forEach((r, i) => { if (r.m < LGt.from || i < LGt.months || (lf && r.m > lf)) return; const w = rs.slice(i - LGt.months, i); const v = w.reduce((a, x) => a + x.pulse.ads + x.shift.revenue, 0) / LGt.months; const wn = w[0].m + '~' + w[w.length - 1].m; if (v > best) { best = v; win = wn; } if (lf && r.m === lf) hit = { avg: v, window: wn }; });
+  return [s, { leadFrom: lf, best, bestWindow: win, hitAvg: hit ? hit.avg : null, hitWindow: hit ? hit.window : null, avgKRW: LGt.avgKRW, grant: (base.scenarios[s].grantKRW || 0) > 0 }]; }));
 // [10-22] 비교 판: 담당자를 2027-07에 뽑았다면(10-22 전 계획) — 강의·에이전시·담당자 시간을 이 판으로 보인다
 const withLead = Object.fromEntries(scenarioNames.map((s) => { const r = run(base, s, { ...MAIN, leadPlanned: '2027-07' }); const sm = summarize(r);
   return [s, { leadFrom: r.leadFrom, minCash: sm.minCash, minCashMonth: sm.minCashMonth, years: Object.fromEntries([2027, 2028, 2029].map((y) => [y, { revenue: sm.years[y].revenue, ebitda: sm.years[y].ebitda, shift: sm.years[y].shift, pulseAdsProfit: sm.years[y].pulseAds.profit }])),

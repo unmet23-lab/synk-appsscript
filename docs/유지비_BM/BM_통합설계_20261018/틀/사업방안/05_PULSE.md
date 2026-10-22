@@ -24,7 +24,7 @@
 
 광고 제작은 계획한 고객 수의 절반(보수 25% · 상방 100%)만 셌다. WORLD는 BM 목록 6-2의 보수·기본·상방 매출 곡선이다.
 
-**담당자가 없으면 이주 뒤 광고 제작이 거의 멈춘다:** 10-22 유호님 결정으로 한국 담당자는 조건(PULSE 광고·SHIFT 석 달 월평균 {{man(I.company.krLead.gate.avgKRW)}} + 지원금 협약)이 채워질 때까지 뽑지 않는다. {{R.leadGate['기본'].leadFrom ? `계산에서 기본 가정은 ${R.leadGate['기본'].leadFrom}에 뽑는다.` : `계산에서는 2029-12까지 채워지지 않는다(석 달 월평균은 가장 높을 때 기본 ${man(R.leadGate['기본'].best)}).`}} 이주(2027-07) 뒤 유호님 시간은 고정 일로 거의 다 차서 광고 제작은 남는 시간이 생기는 달에만 돈다([06](06_SHIFT.md) 8절). 담당자를 2027-07에 뽑았다면(비교 판) 담당자 인건비와 전주 사무실(월 {{man(I.company.krLead.officeKRW)}})을 PULSE와 SHIFT가 일한 시간대로 나눠 져 광고 제작 줄이 초반에 마이너스이고, 2029 영업이익은 {{eok(R.withLead['기본'].years[2029].ebitda)}}(지금 {{eok(DY('기본',2029).ebitda)}}), PULSE 광고 이익은 2029년 {{eok(R.withLead['기본'].years[2029].pulseAdsProfit)}}(지금 {{eok(DY('기본',2029).pulseAds.profit)}})이다. PULSE 광고만 0원이면 2029 영업이익이 {{eok(sens('PULSE 광고만 0원').ebitda2029)}}이다.
+**{{R.leadGate['기본'].leadFrom ? '한국 담당자는 조건이 채워진 달부터' : '담당자가 없으면 이주 뒤 광고 제작이 거의 멈춘다'}}:** 10-22 유호님 결정으로 한국 담당자는 조건(PULSE 광고·SHIFT 석 달 월평균 {{man(I.company.krLead.gate.avgKRW)}} + 지원금 협약)이 채워질 때까지 뽑지 않는다. {{R.leadGate['기본'].leadFrom ? `유호님이 회화 수업을 한 반으로 줄여(10-22) 이주 뒤 광고 제작·SHIFT에 쓸 시간이 생기면서, 기본 가정은 ${R.leadGate['기본'].hitWindow} 석 달 월평균 ${jo(man(R.leadGate['기본'].hitAvg), '으로')} 조건을 넘어 ${R.leadGate['기본'].leadFrom}에 뽑는다. 그 전 이주 뒤 몇 달은 광고 제작이 유호님 남는 시간만큼만 돈다([06](06_SHIFT.md) 8절).` : `계산에서는 2029-12까지 채워지지 않는다(석 달 월평균은 가장 높을 때 기본 ${man(R.leadGate['기본'].best)}). 이주(2027-07) 뒤 유호님 시간은 고정 일로 거의 다 차서 광고 제작은 남는 시간이 생기는 달에만 돈다([06](06_SHIFT.md) 8절).`}} 담당자 인건비와 전주 사무실(월 {{man(I.company.krLead.officeKRW)}})은 PULSE와 SHIFT가 일한 시간대로 나눠 진다. 담당자를 2027-07에 바로 뽑았다면(비교 판) 광고 제작 줄 이익은 2027년 {{eok(R.withLead['기본'].years[2027].pulseAdsProfit)}}이고, 2029 영업이익은 {{Math.abs(R.withLead['기본'].years[2029].ebitda - DY('기본',2029).ebitda) < 1e6 ? `지금과 거의 같은 ${eok(R.withLead['기본'].years[2029].ebitda)}` : `${eok(R.withLead['기본'].years[2029].ebitda)}(지금 ${eok(DY('기본',2029).ebitda)})`}}, PULSE 광고 이익은 2029년 {{eok(R.withLead['기본'].years[2029].pulseAdsProfit)}}(지금 {{eok(DY('기본',2029).pulseAds.profit)}})이다. PULSE 광고만 0원이면 2029 영업이익이 {{eok(sens('PULSE 광고만 0원').ebitda2029)}}이다(그때 담당자 {{sens('PULSE 광고만 0원').leadFrom || '안 뽑힘'}}).
 
 **가장 큰 손잡이는 월 정기 묶음이다.** 시험 묶음·전속 없이 입구 상품과 프로젝트만 하면 2029 영업이익이 {{eok(DY('기본',2029).ebitda - sens('PULSE 정기 묶음').ebitda2029)}} 준다.
 
@@ -74,7 +74,7 @@
 
 - 대표 몫은 일의 30%(연출·고객 소통)로 봤다. 나머지는 한국 프리랜서(2027-07 전)와 울란바토르 제작팀(2027-10~)에 맡긴다.
 - 일의 양: 시험 묶음 한 고객 월 20시간, 브랜드필름 한 건 30시간, 입구 상품 한 건 2.5시간.
-- 한국 담당자는 조건이 채워질 때까지 뽑지 않는다(10-22 유호님, README 9절·13절): 2027-04~06부터 석 달씩 이어 재서 PULSE 광고·SHIFT 매출 월평균 {{man(I.company.krLead.gate.avgKRW)}}을 넘고 2027 상반기 지원금 협약이 됐으면 그다음 달에 뽑는다. 2027-04~06 월평균은 기본 가정 약 {{man(R.leadCheck['기본'])}}이다. 뽑기 전에는 PULSE를 유호님 남는 시간(대표 몫 30%)과 울란바토르 제작팀(맡길 수 있는 70%)으로만 하고, 뽑은 뒤에는 담당자가 맡는다. 이 조건은 광고 제작·SHIFT 매출로만 잰다(WORLD는 빼고).
+- 한국 담당자는 조건이 채워질 때까지 뽑지 않는다(10-22 유호님, README 9절·13절): 2027-04~06부터 석 달씩 이어 재서 PULSE 광고·SHIFT 매출 월평균 {{man(I.company.krLead.gate.avgKRW)}}을 넘고 2027 상반기 지원금 협약이 됐으면 그다음 달에 뽑는다. 2027-04~06 월평균은 기본 가정 약 {{man(R.leadCheck['기본'])}}이라 첫 점검은 못 넘고, {{R.leadGate['기본'].leadFrom ? `회화를 한 반으로 줄인 뒤(10-22) ${R.leadGate['기본'].leadFrom}에 뽑는다` : '2029-12까지 못 뽑는다'}}. 뽑기 전에는 PULSE를 유호님 남는 시간(대표 몫 30%)과 울란바토르 제작팀(맡길 수 있는 70%)으로만 하고, 뽑은 뒤에는 담당자가 맡는다. 이 조건은 광고 제작·SHIFT 매출로만 잰다(WORLD는 빼고).
 - WORLD 개발은 대표 시간의 고정 일(월 30~50시간)로 셌다.
 
 ## 6. WORLD 구독(#30)
