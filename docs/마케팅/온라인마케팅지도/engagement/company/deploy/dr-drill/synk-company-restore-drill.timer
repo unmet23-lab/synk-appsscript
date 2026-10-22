@@ -1,0 +1,10 @@
+[Unit]
+Description=Check the company restore drill every 15 minutes (it restores once a week, after Monday 10:00 KST)
+
+[Timer]
+OnCalendar=*:07/15
+AccuracySec=30s
+Unit=synk-company-restore-drill.service
+
+[Install]
+WantedBy=timers.target

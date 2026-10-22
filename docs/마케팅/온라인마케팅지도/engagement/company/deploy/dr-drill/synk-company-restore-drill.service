@@ -1,0 +1,22 @@
+[Unit]
+Description=SYNK company weekly isolated restore drill on the standby node
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+UMask=0077
+StateDirectory=synk-restore-drill
+StateDirectoryMode=0700
+# The script takes /var/lib/synk-restore-drill/run.lock itself, so a stop signal reaches it (KillMode=mixed).
+ExecStart=/usr/bin/python3 -I -B /opt/synk/restore-drill/restore-drill.py tick
+TimeoutStartSec=2h
+KillMode=mixed
+TimeoutStopSec=120
+Nice=15
+IOSchedulingClass=idle
+CPUQuota=50%
+MemoryMax=1G
+PrivateTmp=true
+NoNewPrivileges=true
