@@ -554,6 +554,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 다시 확인: 후보마다 `git -C <경로> status --porcelain`이 비고, `git -C <경로> log origin/master..HEAD`의 제목이 origin 기록에 있다. 10-21 유호님 「지워」 뒤에는 같은 `git worktree remove`가 통과했다. 하나는 안을 다 지우고도 폴더만 「Permission denied」로 남았는데, 다른 프로세스가 그 빈 폴더를 열어 둔 것이었다(`[System.IO.Directory]::Delete`도 「being used by another process」). 등록은 풀렸고 0바이트라 그대로 둔다.
 - 놓친 것(10-21 저녁, 효율 점검 세션): 지운 넷 중 `ci-backup-incremental`은 보관 전인 「CI·백업은 바뀐 것만」 세션이 20:56 기록을 올리려 남겨 둔 자리였고, 「다른 프로세스가 연 빈 폴더」는 그 세션 셸의 자리였다(커밋은 origin에 있어 잃은 것은 없고, 그 세션은 origin 최신에서 새 가지로 옮겼다). 깨끗함·origin 커밋만으로는 「아직 쓰는 중」을 가르지 못한다. 세션이 손으로 만든 작업트리(`git worktree add -b <가지> .claude/worktrees/<이름>`)는 앱이 주인을 모르니, 고르기 전에 `search_session_transcripts`로 그 이름을 찾는다 — `git worktree list` 출력에만 나온 세션은 빼고, 보관 전 세션이 그 경로에서 일한 흔적(`cd`·`-C <경로>`·cwd)이 있으면 후보에서 빼거나 그 세션에 먼저 묻는다. 손으로 만든 세션은 다 쓰면 그 자리에서 지운다.
 
+### 「가볍게」로 미디어 폴더를 뺀 워크트리는 앱 바탕 맞추기가 「sparse checkout이라 합치지 않는다」로 거절한다 — 내 커밋이 다 올라갔으면 fast-forward로 (2026-10-22 Claude)
+- 증상: 기존 게임 문항 고침 67 마감에서 트랙·결정을 고치기 전에 origin을 받으려고 `sync_with_base_branch`(base master)를 부르자 「The worktree is a sparse checkout … so the app won't merge into it. Merge yourself」로 거절됐다.
+- 원인: 워크트리 시작 때 `node tools/바로올리기.js 가볍게 --실행`이 큰 미디어 폴더를 sparse checkout으로 뺀다. 앱은 희소 작업본에는 병합하지 않는다.
+- 고침: 바로올리기로 올린 뒤라 가지 머리가 origin/master의 조상이고 작업본이 깨끗하면(`git merge-base --is-ancestor HEAD origin/master`, `git status --short`가 빔) `git merge --ff-only origin/master`로 옮긴다. 공용 문서는 그다음에 고친다. 내 커밋이 origin에 없으면 이 길을 쓰지 않는다.
+- 다시 확인: `git log -1`이 origin/master 머리와 같고 `git status --short`가 비어 있다(10-22 `a93a305ac`).
+
 ## 이력 훑기
 
 ### 큰 blob을 거른 클론에서 `git log -S`·`--find-object`가 「could not fetch」로 끝난다
