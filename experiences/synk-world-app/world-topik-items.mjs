@@ -52,6 +52,8 @@ export function createTopikBank({fetcher=(...args)=>globalThis.fetch(...args)}={
  }
  return Object.freeze({use,load,
   get ready(){return !!state.bank;},
+  // 은행 판 지문(contentHash) — 싱크타운 입장 확인이 서버 사본과 같은 판인지 견줄 때 보낸다.
+  get hash(){return state.bank?.contentHash||null;},
   get items(){return state.items;},
   get forms(){return state.bank?.forms||{};},
   byId:id=>state.byId.get(id)||null,

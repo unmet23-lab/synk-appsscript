@@ -2,7 +2,7 @@ import {WorldClient} from './world-client.mjs';
 import {mountEnrollment} from './enrollment.mjs';
 import {mountClassroomLessons} from './classroom-lessons.mjs';
 import {mountClassroomHomework,homeworkWeek} from './classroom-homework.mjs';
-import {createWorldAccount,loadWorldConfig,createLifeProgressPort,createLocalWorldLearningHost,worldLearning,createWorldLearningPlan,GUEST_TRIAL_GAMES,createGuestTrials,createGuestTrialPlayHost,createDeviceRecordsOffer,noteDeviceSignOut,noteDeviceAccount,worldPosition,mountCourseWritingEntry} from './world-account.bundle.mjs';
+import {createWorldAccount,loadWorldConfig,createLifeProgressPort,createLocalWorldLearningHost,worldLearning,createWorldLearningPlan,GUEST_TRIAL_GAMES,createGuestTrials,createGuestTrialPlayHost,createDeviceRecordsOffer,noteDeviceSignOut,noteDeviceAccount,worldPosition,worldTownCheck,mountCourseWritingEntry} from './world-account.bundle.mjs';
 import {createWorldEducation} from './world-learning-ui.mjs';
 import {PACKS,LESSONS} from './life-content.mjs';
 import {createLifeProgress} from './life-progress.mjs';
@@ -291,7 +291,10 @@ function mountLifeLearning(){
   speakingPractice:{available:()=>!!speakingModule?.speakingReady(),candidates:()=>speakingModule?.speakingReady()?speakingModule.SPEAKING_CANDIDATES.filter(row=>row.exam==='speaking'):[],
    chosen:owner=>!!speakingModule&&speakingModule.readSpeakingExam({storage:localStorage,owner}),choose:(owner,on)=>!!speakingModule&&speakingModule.writeSpeakingExam({storage:localStorage,owner,on}),
    week:(owner,week)=>speakingModule?speakingModule.speakingWeek({storage:localStorage,owner,week}):null,open:route=>openSpeaking({dataset:{speakingRoute:route}})},
-  prepare:async()=>{if(operating&&client.snapshot&&!window.SYNKLearningHost)await account.prepareGame({target:window});}});
+  prepare:async()=>{if(operating&&client.snapshot&&!window.SYNKLearningHost)await account.prepareGame({target:window});},
+  // 싱크타운 「마을 준비 확인」(학습·개인화 다리 §4-2): 판정은 서버(town/check), 판은 진단과 같다. 계정 모드에서만.
+  town:operating&&lifeOwner!=='guest'?{kit:worldTownCheck,check:body=>client.request('town/check',{method:'POST',body}),open:()=>town(),
+   passed:result=>{townEntry=result;},evidence:()=>quietTownCheck()}:null});
  home.connectEducation?.(education);window.__synkEducation=education;
  // 학습 알림(10-19 결정 · 1단 기기 예약, world-reminder-device.mjs): 주인마다 이 기기에 따로 두고, 무엇을 알릴지는 복습 일정·이번 주 시험 계획·Core 추천에서 읽는다.
  disposeReminders();
@@ -452,8 +455,43 @@ async function photo(){
 // 동네 입구: 미리보기 그림(위 모노 라벨·LED 칩) + 한 줄 + LED 블록 + 흰 알약 하나. PC 가운데 넓은 판에서는 그림 왼쪽·글 오른쪽.
 function townSheet({chip,lead,blocks,actions}){return `<div class="ws-wrap"><div class="ws-town"><figure class="ws-town-art"><img class="town-preview" src="assets/town.webp" alt="싱크타운 광장 그림"><figcaption><span class="ws-town-label">SYNK TOWN</span><span class="ws-chip"><i class="ws-led" data-tone="${chip.tone}"></i>${chip.text}</span></figcaption></figure><div class="ws-town-side"><p class="ws-lead">${lead}</p>${blocks}<div class="world-actions">${actions}</div></div></div></div>`;}
 const TOWN_LEAD='내 차림 그대로 동네를 걸어요. 찻집·공방·온실에 들러 이웃과 이야기해요.';
-async function town(){if(operating){if(!client.snapshot)return signIn();try{const entry=await client.request('town/entry');if(!entry.allowed){show('싱크타운',townSheet({chip:{tone:'check',text:'입장 확인 필요'},lead:'동네는 입장 조건을 확인한 뒤에 열려요.',blocks:notice('ENTRY','check','TOPIK 1급 이상 확인과 타운 이용권이 필요해요','둘 다 갖추면 여기서 바로 열려요.'),actions:'<button class="plain-button" data-world="profile">내 계정 열기</button>'}),'world-town');return;}const state=await client.request('town/state'),binding=state.binding,sharing=binding?.sharing;show('싱크타운',townSheet({chip:{tone:'ok',text:'내 차림 그대로'},lead:TOWN_LEAD,blocks:`${notice('MY TOWN','ok','타운 기록은 SYNK ID에 저장돼요',`다른 기기에서 로그인해도 이어져요.${binding?.kind==='academy'?' 학원에 보여 줄 활동은 아래에서 따로 골라요.':' 학원 공유는 소속 반이 연결되면 고를 수 있어요.'}`)}${binding?.classId?`<label class="world-notice" data-label="SHARING"><span><input type="checkbox" data-town-sharing data-revision="${Number(sharing?.revision)||0}" ${sharing?.enabled?'checked':''} ${sharing?.blockedByLearningSharing?'disabled':''}> 타운 활동을 학원에 공유하기</span><span>${sharing?.blockedByLearningSharing?'학습 공유를 켠 뒤에 타운 공유를 고를 수 있어요.':'켠 뒤에 새로 한 타운 활동만 공유해요. 꺼도 내 기록은 남아요.'}</span></label>`:''}`,actions:'<button class="felt-button" data-world="town-preview">내 차림으로 동네 열기 <span aria-hidden="true">→</span></button>'}),'world-town');}catch(error){home.toast(errorText(error));}return;}show('싱크타운',townSheet({chip:{tone:'info',text:'테스트 계정 미리보기'},lead:TOWN_LEAD,blocks:notice('PREVIEW','info','차림 연결만 확인하는 미리보기예요','실제 타운의 TOPIK 1급+ 조건·이용권·입장 권한은 주지 않아요.'),actions:`<button class="felt-button" data-world="town-preview">${client.snapshot?'내 차림으로 동네 열기':'테스트 계정 연결하기'} <span aria-hidden="true">→</span></button><button class="quiet-button" data-action="hangul">한글부터 배우기</button>`}),'world-town');}
-function townPreview(){if(!client.snapshot)return signIn();townSession?.dispose();townSession=operating?createTownWorldHost(client):null;if(townSession)window.SYNKWorldTownHost=townSession;show(operating?'싱크타운':'싱크타운 · 미리보기',`<iframe class="game-frame" title="내 차림으로 걷는 싱크타운" src="${worldUrl('town/day.html')}?play=walk" allow="autoplay; fullscreen" allowfullscreen></iframe>`,'game');}
+// 입장 조회(town/entry)의 이유: learning-check(마을 준비 확인이 아직) · access(확인은 마쳤는데 체험·이용권이 없음).
+// 이용권이 없다는 것을 한국어 미통과로 보이지 않는다(학습·개인화 다리 §4-2 · 마을 설계 §1-2). 급수·점수를 보이지 않는다.
+let townEntry=null,quietTown=null;
+const townSound=()=>{try{return lifeProgress?.learningProfileValues?.().audio!=='off';}catch{return true;}};
+function townLocked(entry){
+ if(entry.reason==='access'){show('싱크타운',townSheet({chip:{tone:'info',text:'이용권 확인'},lead:'마을 준비 확인은 마쳤어요.',blocks:notice('ACCESS','info','체험이나 이용권으로 열리는 곳이에요','이용권 안내는 준비하고 있어요. 열리면 여기에서 알려 드릴게요.'),actions:'<button class="plain-button" data-world="profile">내 계정 열기</button>'}),'world-town');return;}
+ // 동기화를 끈 계정은 판정 창의 답을 그때 한 번 보낸다 — 시작 단추 옆에 그렇게 알린다(다리 §5-2). PC 앱은 본체가 그 경로를 알릴 때만 연다.
+ const ready=account.supportsTownCheck&&typeof education?.townCheck==='function',synced=account.preferences()?.enabled===true;
+ const blocks=notice('READY','check','마을 준비 확인','지금까지 푼 TOPIK 연습 답과 짧은 확인 문제로 마을을 즐길 준비가 됐는지 봐요. 점수나 급수는 보이지 않고, 몇 번이든 다시 할 수 있어요.')
+  +(!account.supportsTownCheck?notice('PC','info','PC 앱에서는 아직 마을 준비 확인을 열 수 없어요','synk.im/world에서 확인을 마치면 여기서도 열려요.')
+   :synced?'':notice('ANSWERS','info','확인에 쓰는 연습 답만 보내요','이 기기에서 푼 TOPIK 연습 답 가운데 확인에 쓰는 것만 이번에 한 번 보내요. 학습 기록 동기화는 지금처럼 꺼져 있고, 보낸 답은 확인에만 쓰고 저장하지 않아요.'));
+ show('싱크타운',townSheet({chip:{tone:'check',text:'준비 확인'},lead:'짧은 확인으로 열 수 있어요.',blocks,actions:ready?'<button class="felt-button" data-world="town-check">마을 준비 확인 시작 <span aria-hidden="true">→</span></button>':'<button class="plain-button" data-world="profile">내 계정 열기</button>'}),'world-town');
+}
+// 진단·짧은 연습·시험 형식 연습이 끝났을 때(다리 §5-2 (나)): 이번에 본 입장 이유가 학습 확인이고 학습 동기화를 켠 계정만, 답을 싣지 않고
+// 서버에 모인 사건으로 확인한다. 방금 낸 답이 서버에 닿도록 동기화를 잠깐 기다린다. 열리면 한 줄로 알린다.
+function quietTownCheck(){
+ if(!operating||townEntry?.reason!=='learning-check'||!account.supportsTownCheck||account.preferences()?.enabled!==true||quietTown)return;
+ quietTown=(async()=>{
+  for(const until=Date.now()+15000;Date.now()<until;){const state=window.SYNKLearningHost?.status?.();if(!state||!state.queued&&['synced','idle'].includes(state.phase))break;await new Promise(resolve=>setTimeout(resolve,500));}
+  const body={bankHash:worldPosition?.topik?.hash||null,sound:townSound()};let result=await client.request('town/check',{method:'POST',body});
+  // 30초 안이라 서버가 지난 결과와 retryAfterMs를 주면 그만큼 기다려 한 번 더 묻는다 — 낡은 결과로 「열렸어요」를 놓치지 않게(Fable F5).
+  if(Number.isFinite(result?.retryAfterMs)&&result.retryAfterMs>0&&result.retryAfterMs<=30000){await new Promise(resolve=>setTimeout(resolve,result.retryAfterMs+300));result=await client.request('town/check',{method:'POST',body});}
+  townEntry=result;if(result.allowed)home.toast('마을이 열렸어요. 싱크타운에서 들어갈 수 있어요.');
+ })().catch(()=>{}).finally(()=>{quietTown=null;});
+}
+// 첫 장면 배치의 재료(다리 §4-3) — 타운이 첫 대화 전에 묻는다. 제안은 이 계정 학습 기록(내 기기)에서 한 번 셈하고, 고른 값은 입장 조회가 돌려준 것.
+function townPlacement(){
+ if(!townEntry?.allowed)return null;let suggestion=null;
+ const suggest=()=>suggestion||=(()=>{let evidence=null;try{evidence=education?.townEvidence?.()||null;}catch{evidence=null;}
+  return worldTownCheck.placeTownLevels({events:evidence?.events||[],evidenceComplete:evidence?.evidenceComplete===true});})();
+ return {chosen:townEntry.placement||null,suggest,ask:worldTownCheck.placementAsk,choose:worldTownCheck.placementChoice};
+}
+async function town(){if(operating){if(!client.snapshot)return signIn();try{let entry=await client.request('town/entry'),opened=false;townEntry=entry;
+ // 학습 동기화를 켠 계정은 서버에 모인 첫 답으로 먼저 확인한다(답을 싣지 않는다). 동기화를 끈 계정은 시트에서 알린 뒤 시작 단추로 보낸다.
+ if(!entry.allowed&&entry.reason==='learning-check'&&account.supportsTownCheck&&account.preferences()?.enabled===true){try{const checked=await client.request('town/check',{method:'POST',body:{bankHash:worldPosition?.topik?.hash||null,sound:townSound()}});townEntry=checked;opened=checked.allowed===true;if(opened)entry=checked;}catch{/* the sheet still offers the ready check */}}
+ if(!entry.allowed){townLocked(townEntry);return;}const state=await client.request('town/state'),binding=state.binding,sharing=binding?.sharing;show('싱크타운',townSheet({chip:{tone:'ok',text:'내 차림 그대로'},lead:TOWN_LEAD,blocks:`${opened?notice('READY','ok','마을이 열렸어요','싱크타운에서 첫 이야기가 기다려요.'):''}${notice('MY TOWN','ok','타운 기록은 SYNK ID에 저장돼요',`다른 기기에서 로그인해도 이어져요.${binding?.kind==='academy'?' 학원에 보여 줄 활동은 아래에서 따로 골라요.':' 학원 공유는 소속 반이 연결되면 고를 수 있어요.'}`)}${binding?.classId?`<label class="world-notice" data-label="SHARING"><span><input type="checkbox" data-town-sharing data-revision="${Number(sharing?.revision)||0}" ${sharing?.enabled?'checked':''} ${sharing?.blockedByLearningSharing?'disabled':''}> 타운 활동을 학원에 공유하기</span><span>${sharing?.blockedByLearningSharing?'학습 공유를 켠 뒤에 타운 공유를 고를 수 있어요.':'켠 뒤에 새로 한 타운 활동만 공유해요. 꺼도 내 기록은 남아요.'}</span></label>`:''}`,actions:'<button class="felt-button" data-world="town-preview">내 차림으로 동네 열기 <span aria-hidden="true">→</span></button>'}),'world-town');}catch(error){home.toast(errorText(error));}return;}show('싱크타운',townSheet({chip:{tone:'info',text:'테스트 계정 미리보기'},lead:TOWN_LEAD,blocks:notice('PREVIEW','info','차림 연결만 확인하는 미리보기예요','실제 타운의 TOPIK 1급+ 조건·이용권·입장 권한은 주지 않아요.'),actions:`<button class="felt-button" data-world="town-preview">${client.snapshot?'내 차림으로 동네 열기':'테스트 계정 연결하기'} <span aria-hidden="true">→</span></button><button class="quiet-button" data-action="hangul">한글부터 배우기</button>`}),'world-town');}
+function townPreview(){if(!client.snapshot)return signIn();townSession?.dispose();townSession=operating?createTownWorldHost(client,{placement:townPlacement()}):null;if(townSession)window.SYNKWorldTownHost=townSession;show(operating?'싱크타운':'싱크타운 · 미리보기',`<iframe class="game-frame" title="내 차림으로 걷는 싱크타운" src="${worldUrl('town/day.html')}?play=walk" allow="autoplay; fullscreen" allowfullscreen></iframe>`,'game');}
 // 「이번 주 과제」 자료(tools/build-topik4-homework.mjs가 만든 JSON). 공개본에서도 WORLD 경로 아래에 있다.
 const homeworkJson=name=>fetch(worldUrl(name),{cache:'no-cache',credentials:'omit'}).then(response=>{if(!response.ok)throw Object.assign(Error('과제 자료를 읽지 못했어요.'),{code:'HOMEWORK_CONTENT',status:response.status});return response.json();});
 // 계정 머리의 초상은 내가 고른 튜터의 계정 사진(왼쪽 위 캡슐과 같은 사진). 고른 튜터가 없으면 기본 몽글 사진.
@@ -570,7 +608,7 @@ const commands={
  'life-resolve':resolveLife,'life-recovery':showLifeRecovery,
  'entry-retry':()=>{sessionConfirmed=false;close();return entryGate.start();},'entry-title':()=>{close();return startOpening(true);},
  'resolve-play':async button=>{const recovery=gameRecovery;if(!recovery||recovery.busy)return;recovery.busy=true;document.querySelectorAll('[data-world="resolve-play"]').forEach(b=>b.disabled=true);try{await recovery.session.resolve(button.dataset.choice);if(gameRecovery===recovery&&screen==='world-game-conflict'&&worldPanel.open&&(!home.isMaru||home.openPanel()==='world-game-conflict'))await launchGame(recovery.id);}catch(error){if(gameRecovery===recovery&&worldPanel.open&&(!home.isMaru||home.openPanel()==='world-game-conflict')){home.toast(errorText(error));recovery.busy=false;document.querySelectorAll('[data-world="resolve-play"]').forEach(b=>b.disabled=false);}}},
- writing:openWriting,'sign-in':signIn,'account-login':beginAccountLogin,'guest':()=>{try{localStorage.setItem('synk-world-v1-welcomed','1');}catch{}close();if(worldRequested)return entryGate.start();},'login-a':()=>login('player-a'),'login-b':()=>login('player-b'),profile,wardrobe,pending,play,finish,home:()=>{close();home.goTown?.();},town,songs,'town-preview':townPreview,
+ writing:openWriting,'sign-in':signIn,'account-login':beginAccountLogin,'guest':()=>{try{localStorage.setItem('synk-world-v1-welcomed','1');}catch{}close();if(worldRequested)return entryGate.start();},'login-a':()=>login('player-a'),'login-b':()=>login('player-b'),profile,wardrobe,pending,play,finish,home:()=>{close();home.goTown?.();},town,songs,'town-preview':townPreview,'town-check':()=>education?.townCheck?.(),
  pause:()=>{saveDraft();close();home.toast('고른 답은 그대로 두었어요. 나중에 이어서 해요.');},
  answer:button=>{const q=draftRun.questions[questionIndex];answers=answers.filter(a=>a.questionId!==q.questionId);answers.push({questionId:q.questionId,optionId:button.dataset.option});saveDraft();playSound('select');showQuestion();},
  next:()=>{if(questionIndex<draftRun.questions.length-1){questionIndex++;showQuestion();}else finish();},

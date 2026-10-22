@@ -140,7 +140,7 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
   await page.getByRole('button',{name:/내 차림으로 동네 열기/}).click();await page.waitForFunction(()=>!!document.querySelector('iframe'));
   const frame=()=>page.frames().find(f=>f.url().includes('/town/day.html'));await page.waitForFunction(()=>document.querySelector('iframe')?.contentWindow?.SYNKTownDay?.metrics().connected);
   assert.equal(await frame().evaluate(()=>SYNKTownDay.metrics().worldLinked),true);assert.ok(calls.some(c=>c.path.endsWith('/synk-town/state')));assert.ok(calls.some(c=>c.path.endsWith('/synk-town/presence')&&c.classId===C));
-  const exposed=await page.evaluate(()=>Object.keys(window.SYNKWorldTownHost));assert.deepEqual(exposed,['appearance','subscribe','refresh','request','dispose']);
+  const exposed=await page.evaluate(()=>Object.keys(window.SYNKWorldTownHost));assert.deepEqual(exposed,['appearance','subscribe','refresh','request','placement','choosePlacement','dispose']);
   await page.screenshot({path:path.join(output,'town-mobile.png')});
   await page.evaluate(()=>window.__synkWorld.client.logout());assert.equal(await page.locator('iframe').count(),0);assert.equal(await page.evaluate(()=>window.__synkWorld.client.snapshot),null);assert.equal(await page.evaluate(()=>window.SYNKWorldTownHost),undefined);
   // Restore an actual verified browser account after sign-out, including a historical stale marker.
@@ -240,7 +240,8 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
   await page.locator('[data-position-diagnostic]').click();await page.locator('[data-position-run]').waitFor();
   assert.equal(await page.locator('[data-position-choice]:disabled').count(),await page.locator('[data-position-choice]').count());
   await page.locator('[data-position-listen]').click();await page.locator('[data-position-choice]:not([disabled])').first().waitFor();await page.locator('[data-position-choice]').first().click();
-  for(let i=0;i<14;i++)await page.locator('[data-position-skip]').click();
+  // 진단 문항 수는 지도 능력 수를 따른다(10-21부터 TOPIK I 16) — 끝 화면이 나올 때까지 건너뛴다.
+  for(let i=0;i<40&&!await page.locator('[data-position-done]').count();i++)await page.locator('[data-position-skip]').click();
   await page.locator('[data-position-done]').waitFor();await page.screenshot({path:path.join(output,'position-diagnostic-done.png')});
   await page.locator('#panel-close').click();
   // Progress belongs to the account; optional learning-event sharing is separate.

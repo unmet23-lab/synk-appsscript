@@ -16451,6 +16451,7 @@ function createWorldEducation({
   writingPractice = null,
   speakingPractice = null,
   topikBankUrl = null,
+  town = null,
   target = globalThis
 }) {
   let stopped = false, coach = null, coachHost = null, practiceCoach = null, practiceHost = null, mockCoach = null, mockHost = null, current = null, refreshing = false, classwork = { at: 0, rows: [], pending: null };
@@ -17206,7 +17207,23 @@ function createWorldEducation({
   function startDiagnostic(coachNow, plan, map) {
     check3();
     if (!coachNow || plan?.status !== "ready" || !plan.items.length) return;
-    const session = position.createDiagnosticSession({ coach: coachNow, items: plan.items });
+    runDiagnostic({ coachNow, items: plan.items, map, title: t2("position.diagnostic.title"), eyebrow: "QUICK CHECK", done: ({ box, results }) => {
+      refresh();
+      const routes = practiceRoutes(coachNow);
+      let after = map;
+      try {
+        after = position.buildPositionMap({ summary: coachNow.summary(), events: coachNow.events?.() || [], policy: engine.POLICY, prefer: (id) => routes.has(id) });
+      } catch {
+        after = map;
+      }
+      box.innerHTML = view.renderDiagnosticDone({ map: after, results, items: position.itemsById, practice: (id) => routes.get(id) || null });
+      bindPractice(box, routes);
+      box.querySelector("[data-position-done]")?.focus?.({ preventScroll: true });
+      evidenced();
+    } });
+  }
+  function runDiagnostic({ coachNow, items, map, title, eyebrow, done, stopLabel = null, onStop = null }) {
+    const session = position.createDiagnosticSession({ coach: coachNow, items });
     const skillOf = (id) => map.skills.find((skill2) => skill2.id === id) || { id };
     let clip = null, playing = false, notice = "", ended = false;
     const silence = () => {
@@ -17233,7 +17250,7 @@ function createWorldEducation({
       if (session.results().length) diagnosed = true;
       queueMicrotask(() => refresh());
     };
-    home.showPanel(t2("position.diagnostic.title"), '<div class="wpos-stage" data-position-stage></div>', { ...PANEL, eyebrow: "QUICK CHECK" });
+    home.showPanel(title, '<div class="wpos-stage" data-position-stage></div>', { ...PANEL, eyebrow });
     home.attachPanelResource?.({ dispose: stop });
     const box = panelNode("[data-position-stage]");
     if (!box) {
@@ -17249,7 +17266,7 @@ function createWorldEducation({
         finish();
         return;
       }
-      box.innerHTML = view.renderDiagnosticItem({ view: now, skill: skillOf(now.item.skillId), notice, playing });
+      box.innerHTML = view.renderDiagnosticItem({ view: now, skill: skillOf(now.item.skillId), notice, playing, stopLabel });
       if (focus) box.querySelector(focus)?.focus?.({ preventScroll: true });
     }
     function advance(message = "") {
@@ -17271,17 +17288,7 @@ function createWorldEducation({
       }
       const results = session.results();
       if (results.length) diagnosed = true;
-      refresh();
-      const routes = practiceRoutes(coachNow);
-      let after = map;
-      try {
-        after = position.buildPositionMap({ summary: coachNow.summary(), events: coachNow.events?.() || [], policy: engine.POLICY, prefer: (id) => routes.has(id) });
-      } catch {
-        after = map;
-      }
-      box.innerHTML = view.renderDiagnosticDone({ map: after, results, items: position.itemsById, practice: (id) => routes.get(id) || null });
-      bindPractice(box, routes);
-      box.querySelector("[data-position-done]")?.focus?.({ preventScroll: true });
+      done({ box, results, top });
       top();
     }
     function listen() {
@@ -17300,7 +17307,7 @@ function createWorldEducation({
       clip = sound;
       playing = true;
       paint("[data-position-listen]");
-      const done = (status) => {
+      const done2 = (status) => {
         if (clip !== sound) return;
         clip = null;
         playing = false;
@@ -17311,9 +17318,9 @@ function createWorldEducation({
         }
         paint(status === "completed" ? ".wpos-choice:not([disabled])" : "[data-position-listen]");
       };
-      sound.addEventListener("ended", () => done("completed"), { once: true });
-      sound.addEventListener("error", () => done("failed"), { once: true });
-      Promise.resolve(sound.play()).catch(() => done("failed"));
+      sound.addEventListener("ended", () => done2("completed"), { once: true });
+      sound.addEventListener("error", () => done2("failed"), { once: true });
+      Promise.resolve(sound.play()).catch(() => done2("failed"));
     }
     box.addEventListener("click", (event) => {
       const button = event.target.closest?.("button");
@@ -17331,7 +17338,8 @@ function createWorldEducation({
           advance("");
         } else if (button.hasAttribute("data-position-stop")) {
           stop();
-          showBoard(readCoach());
+          if (onStop) onStop();
+          else showBoard(readCoach());
         } else if (button.hasAttribute("data-position-back")) showBoard(readCoach());
       } catch (error2) {
         stop();
@@ -17339,6 +17347,179 @@ function createWorldEducation({
       }
     });
     advance("");
+  }
+  const evidenced = () => {
+    try {
+      town?.evidence?.();
+    } catch {
+    }
+  };
+  let townOpen = 0;
+  async function townCheck() {
+    if (!position || !view || !town?.kit || typeof town.check !== "function") return;
+    check3();
+    const ticket = ++townOpen;
+    try {
+      await prepare();
+    } catch {
+    }
+    check3();
+    try {
+      await target.SYNKLearningHost?.ready?.();
+    } catch {
+    }
+    check3();
+    try {
+      await bankReady(8e3);
+    } catch {
+    }
+    check3();
+    if (ticket !== townOpen) return;
+    const coachNow = readCoach();
+    if (!coachNow) {
+      home.toast(t2("practice.unavailable"));
+      return;
+    }
+    if (!coachNow.summary().evidenceComplete) {
+      home.toast(t2("position.diagnostic.history"));
+      return;
+    }
+    home.showPanel("\uB9C8\uC744 \uC900\uBE44 \uD655\uC778", '<div class="wpos-stage" data-town-stage></div>', { ...PANEL, eyebrow: "TOWN CHECK" });
+    const box = panelNode("[data-town-stage]");
+    if (!box) return;
+    box.innerHTML = view.renderTownCheckWait();
+    box.querySelector("[data-town-wait]")?.focus?.({ preventScroll: true });
+    let first;
+    try {
+      first = await townSend(coachNow, { wait: false });
+    } catch (error2) {
+      if (ticket === townOpen) failed(error2);
+      return;
+    }
+    if (ticket !== townOpen || !box.isConnected) return;
+    if (town.kit.townOutcome({ result: first }) !== "not-yet") {
+      townDone({ box, coachNow, result: first, results: [] });
+      return;
+    }
+    let audioAvailable = true;
+    try {
+      audioAvailable = getProgress().learningProfileValues().audio !== "off";
+    } catch {
+    }
+    const missing = Array.isArray(first?.missing) && first.missing.length ? first.missing : ["reading", "listening"];
+    let plan = null;
+    try {
+      plan = town.kit.selectTownCheck({ summary: coachNow.summary(), items: position.topik?.items || [], seen: seenBy(coachNow), audioAvailable, missing });
+    } catch {
+      plan = null;
+    }
+    if (plan?.status !== "ready") {
+      townDone({ box, coachNow, result: first, results: [], short: true });
+      return;
+    }
+    let map;
+    try {
+      map = position.buildPositionMap({ summary: coachNow.summary(), events: coachNow.events?.() || [], policy: engine.POLICY });
+    } catch {
+      map = { skills: [] };
+    }
+    runDiagnostic({ coachNow, items: plan.items, map, title: "\uB9C8\uC744 \uC900\uBE44 \uD655\uC778", eyebrow: "TOWN CHECK", stopLabel: "\uD655\uC778 \uADF8\uB9CC\uD558\uAE30", onStop: () => {
+      try {
+        town.open?.();
+      } catch (error2) {
+        failed(error2);
+      }
+    }, done: ({ box: stage, results, top }) => {
+      stage.innerHTML = view.renderTownCheckWait({ after: true });
+      stage.querySelector("[data-town-wait]")?.focus?.({ preventScroll: true });
+      void (async () => {
+        let result;
+        try {
+          result = await townSend(coachNow);
+        } catch {
+          result = { outcome: "later" };
+        }
+        if (!stage.isConnected) return;
+        townDone({ box: stage, coachNow, result, results, map, short: plan.short === true });
+        top();
+      })();
+    } });
+  }
+  async function townSend(coachNow, { wait = true } = {}) {
+    const byKey = new Map((position.items || []).map((item) => [item.itemKey, item]));
+    let answers = [];
+    try {
+      answers = town.kit.townCheckAnswers({ events: coachNow.events?.() || [], items: byKey, now: Date.now() });
+    } catch {
+      answers = [];
+    }
+    let sound = true;
+    try {
+      sound = getProgress().learningProfileValues().audio !== "off";
+    } catch {
+    }
+    const body = { bankHash: position.topik?.hash || null, sound, answers };
+    let result = await town.check(body);
+    check3();
+    if (wait && Number.isFinite(result?.retryAfterMs) && result.retryAfterMs > 0 && result.retryAfterMs <= 3e4) {
+      await new Promise((resolve) => setTimeout(resolve, result.retryAfterMs + 300));
+      check3();
+      result = await town.check(body);
+      check3();
+    }
+    return result;
+  }
+  function townDone({ box, coachNow, result, results, map = null, short = false }) {
+    const outcome = town.kit.townOutcome({ result, short });
+    refresh();
+    const routes = practiceRoutes(coachNow);
+    const wrong = results.find((row) => !row.skipped && row.verdict === "incorrect" && routes.has(row.skillId));
+    const area = (result?.missing || [])[0], other = [...routes.keys()].find((id) => /^ko\./.test(id) && (!area || id.split(".")[1] === area));
+    const recommend = ["passed", "access", "held", "deferred", "later"].includes(outcome) ? null : wrong ? { skillId: wrong.skillId } : other ? { skillId: other } : null;
+    box.innerHTML = view.renderTownCheckDone({ outcome, results, map, items: position.itemsById, recommend, practice: (id) => routes.get(id) || null });
+    bindPractice(box, routes);
+    box.querySelector("[data-town-open]")?.addEventListener("click", () => {
+      try {
+        check3();
+        town.open?.();
+      } catch (error2) {
+        failed(error2);
+      }
+    }, { once: true });
+    box.querySelector("[data-town-recheck]")?.addEventListener("click", () => {
+      try {
+        check3();
+        void Promise.resolve(townCheck()).catch(failed);
+      } catch (error2) {
+        failed(error2);
+      }
+    }, { once: true });
+    box.querySelector("[data-town-position]")?.addEventListener("click", () => {
+      try {
+        check3();
+        void openPosition();
+      } catch (error2) {
+        failed(error2);
+      }
+    }, { once: true });
+    box.querySelector("[data-town-done]")?.focus?.({ preventScroll: true });
+    if (outcome === "passed" || outcome === "access") {
+      try {
+        town.passed?.(result);
+      } catch {
+      }
+    }
+  }
+  function townEvidence() {
+    check3();
+    const coachNow = readCoach();
+    if (!coachNow) return null;
+    try {
+      const summary = coachNow.summary();
+      return { events: coachNow.events?.() || [], evidenceComplete: summary?.evidenceComplete === true };
+    } catch {
+      return null;
+    }
   }
   function soundPlayer({ session, url, onChange }) {
     let clip = null, playing = false;
@@ -17500,6 +17681,7 @@ function createWorldEducation({
       box.querySelector("[data-practice-done]")?.focus?.({ preventScroll: true });
       top();
       queueMicrotask(() => refresh());
+      evidenced();
     }
     box.addEventListener("click", (event) => {
       const button = event.target.closest?.("button");
@@ -17691,6 +17873,7 @@ function createWorldEducation({
       bindPractice(box, routes);
       box.querySelector("[data-mock-done]")?.focus?.({ preventScroll: true });
       top();
+      evidenced();
     }
     box.addEventListener("click", (event) => {
       const button = event.target.closest?.("button");
@@ -17840,7 +18023,7 @@ function createWorldEducation({
     return `<button class="life-row" data-view="plan">${print("goals", "life-row-print")}<span class="life-row-copy"><strong>${t2("plan.week.title")}</strong><small>${escape3(t2("plan.week.row", { done, total }))}</small></span></button>`;
   }
   const examType = () => current?.examPlan?.exam?.type || null;
-  return { next, open, examLink, refresh, repaint, applyPreferences, planRow, examType, positionTotal: topikTotal, ...position ? { position: openPosition, practice: startPractice, plan: openPlan, mock: openMock } : {}, presentation() {
+  return { next, open, examLink, refresh, repaint, applyPreferences, planRow, examType, positionTotal: topikTotal, ...position ? { position: openPosition, practice: startPractice, plan: openPlan, mock: openMock, townCheck, townEvidence } : {}, presentation() {
     check3();
     const values = settingsFor(getProgress().learningProfileValues());
     return Object.fromEntries(["support", "explanation"].filter((k) => values[k]).map((k) => [k, values[k]]));
@@ -20468,10 +20651,10 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
     return t3(view.heard ? "position.diagnostic.replayNote" : "position.diagnostic.listenFirst");
   }
   const listenLabel = (view) => t3(!view.heard ? "position.diagnostic.listen" : Number.isInteger(view.plays?.allowed) && view.next === "allowed" ? "position.plays.again" : "position.diagnostic.listenAgain");
-  function renderDiagnosticItem({ view, skill: skill2 = null, notice = "", playing = false } = {}) {
+  function renderDiagnosticItem({ view, skill: skill2 = null, notice = "", playing = false, stopLabel = null } = {}) {
     const item = view.item, listening = item.audioRequired ?? item.modality === "listening", ready = view.heard && !view.answered;
     const choices2 = item.choices.map((choice) => `<button class="wpos-choice" type="button" data-position-choice="${posEscape(choice.id)}"${ready ? "" : " disabled"}>${posEscape(choice.label)}</button>`).join("");
-    return `<div class="wpos wpos-run" data-position-run="${posEscape(item.id)}"><div class="wpos-run-head"><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(view.index, view.total)}%"></i></span><p class="wpos-run-count">${posEscape(t3("position.diagnostic.progress", { index: view.index + 1, total: view.total }))}</p></div><p class="life-section-label wpos-run-skill" tabindex="-1">${posEscape(t3(`position.domain.${item.modality}`))} \xB7 ${posEscape(skillName(skill2 || { id: item.skillId }))}</p>${item.prompt ? `<p class="wpos-prompt" lang="ko">${posEscape(item.prompt)}</p>` : ""}${item.card ? entryCard(item.card) : ""}${listening ? `<div class="wpos-listen"><button class="quiet-button" type="button" data-position-listen${playing ? ' aria-busy="true"' : ""}>${posEscape(listenLabel(view))}</button><p class="wpos-note">${posEscape(listenNote(view, playing))}</p></div>` : ""}${item.question ? item.ask && has(`position.diagnostic.ask.${item.ask}`) ? `<p class="wpos-question">${posEscape(t3(`position.diagnostic.ask.${item.ask}`))}</p>` : `<p class="wpos-question" lang="ko">${posEscape(item.question)}</p>` : ""}<div class="wpos-choices${item.ask === "picture" ? " wpos-pictures" : ""}" lang="ko">${choices2}</div><p class="wpos-run-status" role="status">${posEscape(notice)}</p><div class="wpos-run-actions"><button class="quiet-button" type="button" data-position-skip>${posEscape(t3("position.diagnostic.skip"))}</button><button class="quiet-button" type="button" data-position-stop>${posEscape(t3("position.diagnostic.stop"))}</button></div></div>`;
+    return `<div class="wpos wpos-run" data-position-run="${posEscape(item.id)}"><div class="wpos-run-head"><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(view.index, view.total)}%"></i></span><p class="wpos-run-count">${posEscape(t3("position.diagnostic.progress", { index: view.index + 1, total: view.total }))}</p></div><p class="life-section-label wpos-run-skill" tabindex="-1">${posEscape(t3(`position.domain.${item.modality}`))} \xB7 ${posEscape(skillName(skill2 || { id: item.skillId }))}</p>${item.prompt ? `<p class="wpos-prompt" lang="ko">${posEscape(item.prompt)}</p>` : ""}${item.card ? entryCard(item.card) : ""}${listening ? `<div class="wpos-listen"><button class="quiet-button" type="button" data-position-listen${playing ? ' aria-busy="true"' : ""}>${posEscape(listenLabel(view))}</button><p class="wpos-note">${posEscape(listenNote(view, playing))}</p></div>` : ""}${item.question ? item.ask && has(`position.diagnostic.ask.${item.ask}`) ? `<p class="wpos-question">${posEscape(t3(`position.diagnostic.ask.${item.ask}`))}</p>` : `<p class="wpos-question" lang="ko">${posEscape(item.question)}</p>` : ""}<div class="wpos-choices${item.ask === "picture" ? " wpos-pictures" : ""}" lang="ko">${choices2}</div><p class="wpos-run-status" role="status">${posEscape(notice)}</p><div class="wpos-run-actions"><button class="quiet-button" type="button" data-position-skip>${posEscape(t3("position.diagnostic.skip"))}</button><button class="quiet-button" type="button" data-position-stop>${posEscape(stopLabel || t3("position.diagnostic.stop"))}</button></div></div>`;
   }
   function explainText(item) {
     const value = item?.explanation;
@@ -20491,15 +20674,30 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
     const body = explainParagraph(item) + scriptBlock(item);
     return body ? `<details class="wpos-explain"><summary>${posEscape(t3("position.diagnostic.explain"))}</summary>${body}</details>` : "";
   };
+  function doneRows({ map, results = [], items = null, practice = null, checking = true } = {}) {
+    const itemOf = (id) => items?.get?.(id) || null;
+    return results.filter((row) => !row.skipped).map((row) => {
+      const skill2 = map?.skills?.find((s) => s.id === row.skillId) || { id: row.skillId }, ok = row.verdict === "correct";
+      return `<li data-verdict="${posEscape(row.verdict)}" data-skill="${posEscape(row.skillId)}">${posLed(ok ? "ok" : "alert")}<span class="wpos-done-copy"><strong>${posEscape(skillName(skill2))}</strong><small>${posEscape(t3(ok ? "position.evidence.correct" : "position.evidence.incorrect"))}${row.assisted ? ` \xB7 ${posEscape(t3("position.evidence.assisted"))}` : ""}${checking ? ` \xB7 ${posEscape(t3("position.diagnostic.checking"))}` : ""}</small>${ok ? "" : explainBlock(itemOf(row.itemId))}</span>${practiceButton(row.skillId, practice)}</li>`;
+    }).join("");
+  }
   function renderDiagnosticDone({ map, results = [], items = null, practice = null } = {}) {
     const answered = results.filter((row) => !row.skipped).length, skipped = results.length - answered;
-    const itemOf = (id) => items?.get?.(id) || null;
-    const rows2 = results.filter((row) => !row.skipped).map((row) => {
-      const skill2 = map.skills.find((s) => s.id === row.skillId) || { id: row.skillId }, ok = row.verdict === "correct";
-      return `<li data-verdict="${posEscape(row.verdict)}" data-skill="${posEscape(row.skillId)}">${posLed(ok ? "ok" : "alert")}<span class="wpos-done-copy"><strong>${posEscape(skillName(skill2))}</strong><small>${posEscape(t3(ok ? "position.evidence.correct" : "position.evidence.incorrect"))}${row.assisted ? ` \xB7 ${posEscape(t3("position.evidence.assisted"))}` : ""} \xB7 ${posEscape(t3("position.diagnostic.checking"))}</small>${ok ? "" : explainBlock(itemOf(row.itemId))}</span>${practiceButton(row.skillId, practice)}</li>`;
-    }).join("");
+    const rows2 = doneRows({ map, results, items, practice });
     const wrong = results.some((row) => !row.skipped && row.verdict === "incorrect");
     return `<div class="wpos life-heading" data-position-done tabindex="-1">${poster(t3("position.diagnostic.doneTitle"), t3("position.diagnostic.doneSummary", { answered, skipped }))}${rows2 ? `<ul class="wpos-done-list">${rows2}</ul>` : ""}${wrong ? `<p class="wpos-note">${posEscape(t3("position.diagnostic.wrongNote"))}</p>` : ""}<p class="wpos-intro">${posEscape(t3("position.diagnostic.doneNote"))}</p><p class="wpos-summary-line">${posEscape(t3("position.summary", { ...map.counts, total: map.total }))}</p><button class="felt-button" type="button" data-position-back>${posEscape(t3("position.diagnostic.back"))} <span aria-hidden="true">\u2192</span></button></div>`;
+  }
+  const TOWN_POSTER = { print: "position", label: "TOWN CHECK" };
+  function renderTownCheckWait({ after = false } = {}) {
+    return `<div class="wpos life-heading" data-town-wait tabindex="-1" aria-busy="true">${poster("\uC7A0\uC2DC\uB9CC \uAE30\uB2E4\uB824 \uC8FC\uC138\uC694", after ? "\uBC29\uAE08 \uD47C \uB2F5\uAE4C\uC9C0 \uBAA8\uC544 \uD655\uC778\uD558\uACE0 \uC788\uC5B4\uC694." : "\uC774\uBBF8 \uD47C TOPIK \uC5F0\uC2B5 \uB2F5\uC73C\uB85C \uBA3C\uC800 \uD655\uC778\uD558\uACE0 \uC788\uC5B4\uC694.", TOWN_POSTER)}</div>`;
+  }
+  function renderTownCheckDone({ outcome = "not-yet", results = [], map = null, items = null, recommend = null, practice = null } = {}) {
+    const rows2 = doneRows({ map, results, items, checking: false });
+    const head = outcome === "passed" ? poster("\uB9C8\uC744\uC774 \uC5F4\uB838\uC5B4\uC694", "\uC2F1\uD06C\uD0C0\uC6B4\uC5D0\uC11C \uCCAB \uC774\uC57C\uAE30\uAC00 \uAE30\uB2E4\uB824\uC694.", TOWN_POSTER) : outcome === "access" ? poster("\uB9C8\uC744 \uC900\uBE44 \uD655\uC778\uC740 \uB9C8\uCCE4\uC5B4\uC694", "\uCCB4\uD5D8\uC774\uB098 \uC774\uC6A9\uAD8C\uC73C\uB85C \uC5F4\uB9AC\uB294 \uACF3\uC774\uC5D0\uC694. \uC774\uC6A9\uAD8C \uC548\uB0B4\uB294 \uC900\uBE44\uD558\uACE0 \uC788\uC5B4\uC694.", TOWN_POSTER) : outcome === "held" ? poster("\uD655\uC778\uC740 \uB9C8\uCCE4\uC9C0\uB9CC \uC9C0\uAE08\uC740 \uB9C8\uC744\uC774 \uB2EB\uD600 \uC788\uC5B4\uC694", "\uB2E4\uC2DC \uD655\uC778\uD558\uC9C0 \uC54A\uC544\uB3C4 \uB3FC\uC694. \uB2E4\uC2DC \uC5F4\uB9AC\uBA74 \uC2F1\uD06C\uD0C0\uC6B4\uC5D0\uC11C \uB4E4\uC5B4\uAC08 \uC218 \uC788\uC5B4\uC694.", TOWN_POSTER) : outcome === "deferred" ? poster("\uD655\uC778 \uBB38\uC81C\uB97C \uC0C8 \uD310\uC73C\uB85C \uB9DE\uCD94\uACE0 \uC788\uC5B4\uC694", "\uC900\uBE44\uAC00 \uB05D\uB098\uBA74 \uB2E4\uC2DC \uD655\uC778\uD560 \uC218 \uC788\uC5B4\uC694. \uC9C0\uAE08\uAE4C\uC9C0 \uD47C \uB2F5\uC740 \uADF8\uB300\uB85C \uB0A8\uC544\uC694.", TOWN_POSTER) : outcome === "later" ? poster("\uC9C0\uAE08\uC740 \uD655\uC778\uC744 \uB9C8\uCE58\uC9C0 \uBABB\uD588\uC5B4\uC694", "\uC7A0\uC2DC \uB4A4 \uB2E4\uC2DC \uD655\uC778\uD574 \uC8FC\uC138\uC694. \uC9C0\uAE08\uAE4C\uC9C0 \uD47C \uB2F5\uC740 \uADF8\uB300\uB85C \uB0A8\uC544\uC694.", TOWN_POSTER) : poster("\uC870\uAE08 \uB354 \uC5F0\uC2B5\uD55C \uB4A4\uC5D0 \uB2E4\uC2DC \uC5F4\uC5B4 \uBCFC \uC218 \uC788\uC5B4\uC694", outcome === "short" ? "\uC9C0\uAE08\uC740 \uB0BC \uC0C8 \uD655\uC778 \uBB38\uC81C\uAC00 \uBAA8\uC790\uB77C\uC694. \uC5F0\uC2B5\uC744 \uC870\uAE08 \uB354 \uD55C \uB4A4\uC5D0 \uB2E4\uC2DC \uC5F4\uC5B4 \uC8FC\uC138\uC694." : "\uB2E4\uC2DC \uD655\uC778\uD558\uB294 \uD69F\uC218\uC5D0\uB294 \uC81C\uD55C\uC774 \uC5C6\uC5B4\uC694. \uB2E4\uC74C \uD655\uC778\uC740 \uC0C8 \uBB38\uC81C\uB85C \uB098\uC640\uC694.", TOWN_POSTER);
+    const skill2 = recommend && (map?.skills?.find((s) => s.id === recommend.skillId) || { id: recommend.skillId });
+    const back = `<button class="quiet-button" type="button" data-town-open>\uC2F1\uD06C\uD0C0\uC6B4\uC73C\uB85C \uB3CC\uC544\uAC00\uAE30</button><button class="quiet-button" type="button" data-town-position>\uB0B4 \uC704\uCE58 \uBCF4\uAE30</button>`;
+    const next = outcome === "passed" ? `<button class="felt-button" type="button" data-town-open>\uB3D9\uB124 \uC5F4\uAE30 <span aria-hidden="true">\u2192</span></button>` : ["access", "held"].includes(outcome) ? back : `${skill2 && practice?.(skill2.id) ? `<section class="wpos-attention" data-town-recommend><p class="life-section-label">NEXT</p><h3>${posEscape(skillName(skill2))}</h3><p class="wpos-note">\uC774 \uD56D\uBAA9\uC744 \uC870\uAE08 \uB354 \uC5F0\uC2B5\uD558\uBA74 \uB2E4\uC74C \uD655\uC778\uC5D0 \uB3C4\uC6C0\uC774 \uB3FC\uC694.</p>${practiceButton(skill2.id, practice)}</section>` : ""}<button class="felt-button" type="button" data-town-recheck>\uB2E4\uC2DC \uD655\uC778\uD558\uAE30 <span aria-hidden="true">\u2192</span></button>${back}`;
+    return `<div class="wpos life-heading" data-town-done="${posEscape(outcome)}" tabindex="-1" role="status">${head}${next}${rows2 ? `<p class="wpos-evidence-title">\uC774\uBC88\uC5D0 \uD47C \uBB38\uC81C</p><ul class="wpos-done-list">${rows2}</ul>` : ""}</div>`;
   }
   function renderPracticeItem({ view, skill: skill2 = null, notice = "", feedback = null, playing = false } = {}) {
     const item = view.item, done = !!feedback, listening = item.audioRequired ?? item.modality === "listening", ready = !done && (view.heard ?? true);
@@ -20642,6 +20840,8 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
     renderHangulBoard,
     renderDiagnosticItem,
     renderDiagnosticDone,
+    renderTownCheckWait,
+    renderTownCheckDone,
     renderPracticeItem,
     renderPracticeDone,
     renderMockIntro,
@@ -21179,6 +21379,10 @@ function createTopikBank({ fetcher = (...args) => globalThis.fetch(...args) } = 
     load,
     get ready() {
       return !!state.bank;
+    },
+    // 은행 판 지문(contentHash) — 싱크타운 입장 확인이 서버 사본과 같은 판인지 견줄 때 보낸다.
+    get hash() {
+      return state.bank?.contentHash || null;
     },
     get items() {
       return state.items;

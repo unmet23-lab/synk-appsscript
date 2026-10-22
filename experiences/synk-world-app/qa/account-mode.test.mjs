@@ -67,7 +67,7 @@ test('Town commands pin actual academy class and reject sharing/membership metad
 });
 test('Town iframe host exposes methods, never credentials, and rejects a command after logout',async()=>{
  const f=fixture();await f.client.restore();const host=createTownWorldHost(f.client);
- assert.deepEqual(Object.keys(host),['appearance','subscribe','refresh','request','dispose']);assert.equal(JSON.stringify(host).includes('token-a'),false);
+ assert.deepEqual(Object.keys(host),['appearance','subscribe','refresh','request','placement','choosePlacement','dispose']);assert.equal(JSON.stringify(host).includes('token-a'),false);
  await f.client.logout();const sent=f.calls.length;await assert.rejects(host.request('command',{id:'old'}),{code:'ACCOUNT_CHANGED'});assert.equal(f.calls.length,sent);assert.equal(host.appearance().verified,false);host.dispose();
 });
 test('enrollment only calls fixed preview/claim route and never treats a token as automatic enrollment',async()=>{

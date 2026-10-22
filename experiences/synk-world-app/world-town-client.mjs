@@ -24,6 +24,9 @@ export async function connectTownWorld({onAppearance=()=>{},onError=()=>{},clien
     return {appearance:()=>disposed?confirmedAppearance(null):host.appearance(),subscribe(fn){onAppearance=fn;publish(host.appearance());return()=>{onAppearance=()=>{};};},
       async refresh(){try{const value=await host.refresh();publish(host.appearance());return value;}catch(error){if(!disposed)onError(error);return false;}},
       async request(operation,body){if(disposed)throw Object.assign(Error('AUTH_REQUIRED'),{code:'AUTH_REQUIRED',status:401});try{return await host.request(operation,body);}catch(error){if(!disposed&&(error.status===401||['ACCOUNT_CHANGED','AUTH_REQUIRED','ACCOUNT_MISMATCH'].includes(error.code)))onError(error);throw error;}},
+      // 첫 장면 배치(학습·개인화 다리 §4-3): 타운이 첫 대화 전에 묻는다 — placement().ask면 내 마스코트가 「처음 이야기는 이 말로 해 볼까요?」.
+      placement(){if(disposed)throw Object.assign(Error('AUTH_REQUIRED'),{code:'AUTH_REQUIRED',status:401});return host.placement?.()||{suggested:{reading:'L1',listening:'L1'},chosen:null,ask:false};},
+      async choosePlacement(answer){if(disposed||typeof host.choosePlacement!=='function')throw Object.assign(Error('AUTH_REQUIRED'),{code:'AUTH_REQUIRED',status:401});return host.choosePlacement(answer);},
       dispose(){disposed=true;unsubscribe();}};
   }
   let disposed=false,ended=false,refreshing=null,refreshAgain=false,channel=null,authGeneration=0;
@@ -82,8 +85,11 @@ export async function connectTownWorld({onAppearance=()=>{},onError=()=>{},clien
   };
 }
 
-export function createTownWorldHost(client) {
+// placement: 첫 장면 배치의 재료(app-shell이 계정 묶음의 worldTownCheck로 채운다) — {chosen: 입장 조회가 돌려준 고른 값,
+// suggest(): 자리별 제안 {reading, listening}, ask({suggested,chosen}), choose(suggested,answer)}. 없으면(미리 보기) 묻지 않는다.
+export function createTownWorldHost(client,{placement=null}={}) {
   const owner=client.snapshot?.accountId,generation=client.generation;
+  let chosen=placement?.chosen??null;
   if(!owner)throw Object.assign(Error('AUTH_REQUIRED'),{code:'AUTH_REQUIRED',status:401});
   const listeners=new Set();let ended=false;
   const guard=()=>{if(ended||client.generation!==generation||client.snapshot?.accountId!==owner)throw Object.assign(Error('로그인한 계정이 바뀌었어요. SYNK WORLD에서 싱크타운을 다시 열어 주세요.'),{code:'ACCOUNT_CHANGED',status:401});};
@@ -94,5 +100,9 @@ export function createTownWorldHost(client) {
   return Object.freeze({appearance,subscribe(fn){listeners.add(fn);fn(appearance());return()=>listeners.delete(fn);},
     async refresh(){guard();const result=await client.refresh();guard();publish();return result;},
     async request(operation,body){guard();if(!['state','command','presence'].includes(operation))throw new TypeError('Unknown town operation');const result=await client.request(`town/${operation}`,body?{method:'POST',body}:{method:'GET'});guard();return result;},
+    placement(){guard();if(!placement)return {suggested:{reading:'L1',listening:'L1'},chosen,ask:false};const {reading,listening}=placement.suggest();const suggested={reading,listening};return {suggested,chosen,ask:placement.ask({suggested,chosen})};},
+    // answer: 'keep'(이대로) · 'easier'(더 쉬운 말로 — 두 자리 모두 한 단계 아래). 고른 값은 서버(town/placement)에 남고 입장 조회가 돌려준다.
+    async choosePlacement(answer){guard();if(!placement)throw new TypeError('Town placement unavailable');const {reading,listening}=placement.suggest(),suggested={reading,listening};
+      const result=await client.request('town/placement',{method:'POST',body:{...placement.choose(suggested,answer),suggested}});guard();chosen=result.placement;return chosen;},
     dispose(){ended=true;publish();listeners.clear();globalThis.removeEventListener?.('synk-world-session',notify);}});
 }

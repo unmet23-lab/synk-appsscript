@@ -365,7 +365,7 @@ var require_world_learning_host = __commonJS({
         }) : () => {
         };
         const logIds = () => typeof coach.syncPort.ids === "function" ? coach.syncPort.ids() : coach.syncPort.events().map((event) => event.id);
-        const record2 = (before) => {
+        const record3 = (before) => {
           try {
             own2(logIds(), before, context);
           } catch (error2) {
@@ -381,7 +381,7 @@ var require_world_learning_host = __commonJS({
           try {
             return method(...args);
           } finally {
-            record2(before);
+            record3(before);
           }
         };
         const guarded = (value, closing) => typeof value === "function" ? (...args) => call(value, args, closing) : value;
@@ -6857,11 +6857,11 @@ var require_trail = __commonJS({
         };
       }
       const RECORD = ["itemKey", "conceptIds", "at", "verdict"];
-      const record2 = (r) => !!r && typeof r === "object" && Object.keys(r).length === RECORD.length && RECORD.every((k) => Object.hasOwn(r, k)) && id(r.itemKey) && uniqueList(r.conceptIds, id, 32) && typeof r.at === "string" && Number.isFinite(Date.parse(r.at)) && (r.verdict === null || VERDICTS.includes(r.verdict));
+      const record3 = (r) => !!r && typeof r === "object" && Object.keys(r).length === RECORD.length && RECORD.every((k) => Object.hasOwn(r, k)) && id(r.itemKey) && uniqueList(r.conceptIds, id, 32) && typeof r.at === "string" && Number.isFinite(Date.parse(r.at)) && (r.verdict === null || VERDICTS.includes(r.verdict));
       const frozen = (r) => Object.freeze({ ...copy2(r), conceptIds: Object.freeze([...r.conceptIds]) });
       function openHistory(stored, pending = []) {
-        const readable = !!stored && typeof stored === "object" && Array.isArray(stored.records) && typeof stored.partial === "boolean" && stored.records.every(record2) && new Set(stored.records.map((r) => r.itemKey)).size === stored.records.length;
-        const pendingOk = Array.isArray(pending) && pending.every(record2);
+        const readable = !!stored && typeof stored === "object" && Array.isArray(stored.records) && typeof stored.partial === "boolean" && stored.records.every(record3) && new Set(stored.records.map((r) => r.itemKey)).size === stored.records.length;
+        const pendingOk = Array.isArray(pending) && pending.every(record3);
         const records = [], index = /* @__PURE__ */ new Set();
         if (readable) {
           for (const r of [...stored.records, ...pendingOk ? pending : []]) if (!index.has(r.itemKey)) {
@@ -6877,13 +6877,13 @@ var require_trail = __commonJS({
           firstExposure: (itemKey) => !readable || !id(itemKey) ? null : index.has(itemKey) ? false : partial ? null : true
         });
       }
-      const opened = (history2) => !!history2 && typeof history2.firstExposure === "function" && typeof history2.readable === "boolean" && Array.isArray(history2.records) && typeof history2.partial === "boolean" && history2.records.every(record2);
+      const opened = (history2) => !!history2 && typeof history2.firstExposure === "function" && typeof history2.readable === "boolean" && Array.isArray(history2.records) && typeof history2.partial === "boolean" && history2.records.every(record3);
       function remember(history2, summary) {
         if (!opened(history2)) throw new TypeError("Trail: open the history first");
         if (!summary || summary.version !== VERSION || !Array.isArray(summary.met)) throw new TypeError("Trail: use a practice summary");
         if (!history2.readable) return null;
         const known = new Set(history2.records.map((r) => r.itemKey));
-        const added = summary.met.filter((r) => record2(r) && !known.has(r.itemKey));
+        const added = summary.met.filter((r) => record3(r) && !known.has(r.itemKey));
         return { records: [...history2.records, ...added].map(copy2), partial: history2.partial };
       }
       function createPracticeOutcomeIndex(summary) {
@@ -6948,7 +6948,7 @@ var require_engine = __commonJS({
       "use strict";
       const VERSION = "atlas-2.4.0";
       const POLICIES = ["atlas-1.0.0", "atlas-2.0.0", "atlas-2.1.0", "atlas-2.2.0", "atlas-2.3.0", VERSION];
-      const trail = () => {
+      const trail2 = () => {
         const module2 = getTrail();
         if (!module2 || typeof module2.validate !== "function" || typeof module2.checkLink !== "function" || typeof module2.summarize !== "function") throw new Error("Atlas: Trail practice module unavailable");
         return module2;
@@ -6967,7 +6967,7 @@ var require_engine = __commonJS({
       const UNMEASURED = ["not_due", "no_sample", "unmeasurable"];
       const LEVER_CLASSES = ["shape", "content"];
       const ARMS = ["adapted", "baseline"];
-      const DAY2 = 864e5, RECENT = 30 * DAY2;
+      const DAY3 = 864e5, RECENT = 30 * DAY3;
       const copy2 = (value) => JSON.parse(JSON.stringify(value));
       const canonical = (value) => JSON.stringify(value, (_key, entry) => entry && typeof entry === "object" && !Array.isArray(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key) => [key, entry[key]])) : entry);
       const freeze = (value) => {
@@ -7011,7 +7011,7 @@ var require_engine = __commonJS({
         ms(event.recordedAt);
         if (ms(event.recordedAt) < ms(event.at)) throw new TypeError("Atlas: recorded before occurrence");
         if (event.scope.domain === "PULSE" && (isPractice(event) || ["signal.observed", "estimate.responded", "outcome.observed"].includes(event.type))) throw new TypeError("Atlas: PULSE keeps no personal observations");
-        if (isPractice(event)) return trail().validate(event);
+        if (isPractice(event)) return trail2().validate(event);
         if (event.type === "context.set") {
           if (!Object.hasOwn(CONTEXT, event.field) || !(event.value === null || CONTEXT[event.field].includes(event.value))) throw new TypeError("Atlas: invalid context");
           if (event.until != null && ms(event.until) <= ms(event.at)) throw new TypeError("Atlas: invalid expiry");
@@ -7066,7 +7066,7 @@ var require_engine = __commonJS({
           return false;
         }
         if (isPractice(event)) {
-          const t = trail();
+          const t = trail2();
           if (typeof t.link === "function") t.link(event, lookup.byId(event.type === "practice.presented" ? event.decisionId : event.presentationId), lookup.attempts(event.presentationId));
           else t.checkLink(lookup.events, event);
         }
@@ -7125,7 +7125,7 @@ var require_engine = __commonJS({
           if (event.type !== "practice.attempted" || !needs.presentations.includes(event.presentationId) || stats.has(event.presentationId) || scopeKey(event.scope) !== key) throw new TypeError("Atlas: invalid attempt lookup");
           stats.set(event.presentationId, { count: event.attemptNo, latest: ms(event.at) });
         }
-        if (typeof trail().link !== "function") throw new Error("Atlas: indexed Trail validation unavailable");
+        if (typeof trail2().link !== "function") throw new Error("Atlas: indexed Trail validation unavailable");
         const fresh = /* @__PURE__ */ new Map(), lookup = {
           byId: (id) => fresh.get(id) || parents.get(id),
           attempts: (id) => stats.get(id) || { count: 0, latest: -Infinity }
@@ -7274,7 +7274,7 @@ var require_engine = __commonJS({
         const last = mine.at(-1) ? view.decisions.get(mine.at(-1).decisionId) : null;
         let performance = false;
         const performanceProof = [];
-        const outcomeEvidence = state.outcomes.some((o) => o.attemptId) ? trail().createPracticeOutcomeIndex(trail().summarize(events, { scope, asOf: at, recordedAsOf: recordedAt })) : null;
+        const outcomeEvidence = state.outcomes.some((o) => o.attemptId) ? trail2().createPracticeOutcomeIndex(trail2().summarize(events, { scope, asOf: at, recordedAsOf: recordedAt })) : null;
         const improved = (leverId, optionId, line) => {
           for (const outcome of state.outcomes) {
             if (outcome.value == null || outcome.value < 0.8 || picked(view.decisions.get(outcome.decisionId), leverId) !== optionId) continue;
@@ -7467,7 +7467,7 @@ var require_engine = __commonJS({
         }
         let sequence = 0;
         const nextId = id || (() => `a${Date.now().toString(36)}-${(++sequence).toString(36)}-${Math.random().toString(36).slice(2, 10)}`);
-        const record2 = (body) => {
+        const record3 = (body) => {
           const at = clock2(), event = { ...body, schema: 1, scope: copy2(scope), id: nextId(), at, recordedAt: at };
           if (admitWith(lookup, event)) store(event);
           return copy2(event);
@@ -7475,14 +7475,14 @@ var require_engine = __commonJS({
         return {
           events: () => copy2(log),
           snapshot: () => frozen || (frozen = Object.freeze(log.slice())),
-          set: (field, value, until = null) => record2({ type: "context.set", field, value, until }),
-          observe: (signal) => record2({ type: "signal.observed", kind: signal?.kind, key: signal?.key, strength: signal?.strength, n: signal?.n, assisted: signal?.assisted ?? null, until: signal?.until ?? null, refs: signal?.refs ?? [] }),
-          respond: (line, value) => record2({ type: "estimate.responded", line, value }),
+          set: (field, value, until = null) => record3({ type: "context.set", field, value, until }),
+          observe: (signal) => record3({ type: "signal.observed", kind: signal?.kind, key: signal?.key, strength: signal?.strength, n: signal?.n, assisted: signal?.assisted ?? null, until: signal?.until ?? null, refs: signal?.refs ?? [] }),
+          respond: (line, value) => record3({ type: "estimate.responded", line, value }),
           plan: (experienceId, candidates, options = {}) => {
             const levers = options.levers || [];
             const decision = decide({ events: log, scope, at: clock2(), experienceId, candidates, levers, explore });
             if (decision.status !== "ready") return decision;
-            const recorded = record2({
+            const recorded = record3({
               type: "decision.made",
               experienceId,
               variant: decision.selected.id,
@@ -7505,14 +7505,14 @@ var require_engine = __commonJS({
           complete: (decision) => {
             if (!decision || decision.status !== "ready" || scopeKey(decision.scope) !== scopeKey(scope)) throw new Error("Atlas: invalid decision");
             const existing = completions.get(decision.id);
-            return existing ? copy2(existing) : record2({ type: "experience.completed", decisionId: decision.id, experienceId: decision.experienceId, variant: decision.selected.id });
+            return existing ? copy2(existing) : record3({ type: "experience.completed", decisionId: decision.id, experienceId: decision.experienceId, variant: decision.selected.id });
           },
-          feedback: (completionId, value) => record2({ type: "feedback.given", completionId, value }),
+          feedback: (completionId, value) => record3({ type: "feedback.given", completionId, value }),
           practice: (kind, fields2) => {
             if (!fields2 || typeof fields2 !== "object" || Array.isArray(fields2) || typeof kind !== "string") throw new TypeError("Atlas: invalid practice fields");
-            return record2({ ...fields2, type: kind.startsWith("practice.") ? kind : `practice.${kind}` });
+            return record3({ ...fields2, type: kind.startsWith("practice.") ? kind : `practice.${kind}` });
           },
-          outcome: (decisionId, result) => record2({
+          outcome: (decisionId, result) => record3({
             type: "outcome.observed",
             decisionId,
             measure: result?.measure,
@@ -7522,7 +7522,7 @@ var require_engine = __commonJS({
             assisted: result?.assisted ?? null,
             ...result?.attemptId != null || result?.targetLine != null ? { attemptId: result?.attemptId, targetLine: result?.targetLine } : {}
           }),
-          exclude: (targetId) => record2({ type: "record.excluded", targetId }),
+          exclude: (targetId) => record3({ type: "record.excluded", targetId }),
           clear: () => {
             log = [];
             frozen = null;
@@ -7816,7 +7816,7 @@ var require_temper = __commonJS({
         if (b.evaluated) b.accuracy = b.correct / b.evaluated;
         return b;
       };
-      const counted = (a) => a.independent === true && !a.exclusionReason && a.assisted === false && a.exposure === "new" && ["correct", "incorrect"].includes(a.verdict) && (!a.measure || !a.measure.confounded && (!a.measure.audioRequired || a.audio === "completed"));
+      const counted2 = (a) => a.independent === true && !a.exclusionReason && a.assisted === false && a.exposure === "new" && ["correct", "incorrect"].includes(a.verdict) && (!a.measure || !a.measure.confounded && (!a.measure.audioRequired || a.audio === "completed"));
       function measure(input) {
         const rows2 = summaries(input);
         const result = {
@@ -7848,7 +7848,7 @@ var require_temper = __commonJS({
             else if (a.exposure === "unknown") result.unknownExposure += 1;
             if (a.verdict === "unassessed") result.unassessed += 1;
             if (a.verdict === "skipped") result.skipped += 1;
-            if (!counted(a)) continue;
+            if (!counted2(a)) continue;
             const slot = (table, name) => table[name] || (table[name] = bucket());
             const targets = [result.independent, ...a.conceptIds.map((id) => slot(result.byConcept, id)), slot(result.byArm, a.arm || "unrecorded")];
             for (const b of targets) {
@@ -7934,7 +7934,7 @@ var require_temper = __commonJS({
           const tally = { [baseline]: [0, 0], [candidate]: [0, 0] };
           for (const a of row.attempts) {
             const arm = a.arm || "unrecorded";
-            if (!Object.hasOwn(tally, arm) || !counted(a)) continue;
+            if (!Object.hasOwn(tally, arm) || !counted2(a)) continue;
             tally[arm][0] += 1;
             if (a.verdict === "correct") tally[arm][1] += 1;
           }
@@ -8157,18 +8157,18 @@ var require_learning = __commonJS({
     var RESPONSE_FORMATS = Object.freeze(["binary-choice", "single-choice", "cup-compose", "action", "unknown"]);
     var { learningReason, activityReason, SUPPORTS } = require_vellum();
     var Ledger = require_learning_ledger();
-    var DAY2 = 864e5;
+    var DAY3 = 864e5;
     function formatEvidence(rows2, { now, complete, difficulty, responseFormat, base = null }) {
       if (base) rows2 = [...base.rows, ...rows2];
       const unique = /* @__PURE__ */ new Map();
       for (const a of rows2) if (complete && a.independent && !unique.has(a.measure.familyKey)) unique.set(a.measure.familyKey, a);
       const valid = [...unique.values()].filter((a) => Date.parse(a.at) <= now).sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
-      const recent = valid.filter((a) => now - Date.parse(a.at) <= POLICY.recentDays * DAY2).slice(-12);
+      const recent = valid.filter((a) => now - Date.parse(a.at) <= POLICY.recentDays * DAY3).slice(-12);
       const n = recent.length, correct = recent.filter((a) => a.verdict === "correct").length, incorrect = n - correct;
       const lastAt = valid.at(-1)?.at || null;
-      const helped = rows2.filter((a) => !a.exclusionReason && a.assisted === true && a.verdict === "correct" && Date.parse(a.at) <= now && now - Date.parse(a.at) <= POLICY.recentDays * DAY2);
+      const helped = rows2.filter((a) => !a.exclusionReason && a.assisted === true && a.verdict === "correct" && Date.parse(a.at) <= now && now - Date.parse(a.at) <= POLICY.recentDays * DAY3);
       let status = "unseen", priority = 0.65;
-      if (lastAt && now - Date.parse(lastAt) > POLICY.reviewDays * DAY2) {
+      if (lastAt && now - Date.parse(lastAt) > POLICY.reviewDays * DAY3) {
         status = "review";
         priority = 0.8;
       } else if (n >= POLICY.sample && correct / n >= POLICY.stableRatio) {
@@ -8337,7 +8337,7 @@ var require_learning = __commonJS({
         const fresh = targets.filter((row) => !row.exhausted), spent = targets.length > 0 && !fresh.length;
         const target = fresh[0] || targets[0] || null, state = target?.focus.status || "unseen";
         const due = candidate.reviewAt != null && Date.parse(candidate.reviewAt) <= Date.parse(at);
-        const hostNeed = candidate.practiceNeed && Date.parse(at) - Date.parse(candidate.practiceNeed.at) <= POLICY.recentDays * DAY2 ? candidate.practiceNeed : null;
+        const hostNeed = candidate.practiceNeed && Date.parse(at) - Date.parse(candidate.practiceNeed.at) <= POLICY.recentDays * DAY3 ? candidate.practiceNeed : null;
         const urgent = due || hostNeed || !spent && ["practice", "supported", "review"].includes(state);
         const tier = urgent ? 0 : spent || state === "recent-independent" ? 2 : 1;
         const matchedGoals = (candidate.goals || []).filter((goal) => goals.has(goal));
@@ -9412,7 +9412,7 @@ var require_flow = __commonJS({
       const MODES = ["auto", "fixed", "easier", "harder"];
       const CONDITIONS = ["good", "okay", "tired", "no_time"];
       const DIMENSIONS = ["content", "pace"];
-      const DAY2 = 864e5, RETURN_AFTER = 14 * DAY2, LATENCIES = 20;
+      const DAY3 = 864e5, RETURN_AFTER = 14 * DAY3, LATENCIES = 20;
       const RATE = Object.freeze({ max: 1.2, half: 3, min: 0.3, recover: 4 });
       const STREAK = 4;
       const DEADBAND = 0.75;
@@ -9813,7 +9813,7 @@ var require_vellum_flow = __commonJS({
     })(typeof globalThis !== "undefined" ? globalThis : exports, function() {
       "use strict";
       const VERSION = "vellum-flow-1";
-      const DAY2 = 864e5;
+      const DAY3 = 864e5;
       const STUCK = Object.freeze({ afterMs: 4e4, misses: 2 });
       const within = (value, min, max) => typeof value === "number" && Number.isFinite(value) && value >= min && value <= max;
       const time3 = (value) => {
@@ -9835,7 +9835,7 @@ var require_vellum_flow = __commonJS({
         if (declared) return { offer: false, reason: "declared" };
         if (at >= last) return { offer: false, reason: "least-help" };
         if (streak < need && steady < need + 1) return { offer: false, reason: "not-yet" };
-        if (declinedAt !== null && time3(now) - time3(declinedAt) < quietDays * DAY2) return { offer: false, reason: "declined-recently" };
+        if (declinedAt !== null && time3(now) - time3(declinedAt) < quietDays * DAY3) return { offer: false, reason: "declined-recently" };
         return { offer: true, from: at, to: at + 1, reason: streak >= need ? "quiet-streak" : "steady-with-help" };
       }
       const WORDS = Object.freeze({
@@ -10877,7 +10877,7 @@ var require_ask = __commonJS({
       const VERSION = "ask-1.1";
       const MAX_OPTIONS = 64;
       const KINDS = ["setting", "confirm", "choice", "refresh", "follow_up"];
-      const DAY2 = 864e5;
+      const DAY3 = 864e5;
       const id = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
       const canonical = (value) => JSON.stringify(value, (_key, entry) => entry && typeof entry === "object" && !Array.isArray(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key) => [key, entry[key]])) : entry);
       const time3 = (value) => {
@@ -10940,7 +10940,7 @@ var require_ask = __commonJS({
             result.push({ id: q.id, kind: q.kind ?? "setting", about, impact: 0, skippable: true, reason: "denied" });
             continue;
           }
-          if (Object.hasOwn(asked, q.id) && now !== null && time3(now) - time3(asked[q.id]) < quietDays * DAY2) {
+          if (Object.hasOwn(asked, q.id) && now !== null && time3(now) - time3(asked[q.id]) < quietDays * DAY3) {
             result.push({ id: q.id, kind: q.kind ?? "setting", about, impact: 0, skippable: true, reason: "asked-recently" });
             continue;
           }
@@ -11531,13 +11531,13 @@ function mountCourseWriting({ root, request, guard = () => {
     if (stopped || version !== generation) throw Object.assign(Error("ACCOUNT_CHANGED"), { code: "ACCOUNT_CHANGED" });
   };
   const feedback = (v) => v.feedback.map((f) => `<article class="course-feedback"><strong>\uCCA8\uC0AD ${f.revision} \xB7 ${esc(time(f.at))}</strong><p>\uC798\uB41C \uC810: ${esc(f.good)}</p><p>\uACE0\uCE60 \uD575\uC2EC: ${esc(f.focus)}</p><p>\uB2E4\uC2DC \uC368 \uBCFC \uACF3: ${esc(f.retry)}</p><p>${f.tags.map((t) => "\u3014" + esc(t) + "\u3015").join(" ")}</p></article>`).join("");
-  function history2(record2) {
-    return record2?.versions.map((v) => `<details ${v === record2.versions.at(-1) ? "open" : ""}><summary>${v.version === 1 ? "\uCC98\uC74C \uB0B8 \uAE00" : v.version + "\uBC88\uC9F8 \uC6D0\uACE0"} \xB7 ${esc(time(v.submittedAt))}${v.late ? " \xB7 \uB9C8\uAC10 \uB4A4 \uC81C\uCD9C" : ""}</summary><pre style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(v.text)}</pre>${v.reflection ? `<p>\uACE0\uCE5C \uC774\uC720: ${esc(v.reflection)}</p>` : ""}${feedback(v)}${v === record2.versions[0] ? `<details><summary>\uC77D\uAE30 \uACB0\uACFC \xB7 ${v.reading.filter((q) => q.correct).length}/5</summary>${v.reading.map((q) => `<p>${esc(q.id)} \xB7 \uB0B4 \uB2F5 ${q.chosen} \xB7 \uC815\uB2F5 ${q.answer}</p>${courseMaterial(q.explanation)}`).join("")}</details>` : ""}</details>`).join("") || "";
+  function history2(record3) {
+    return record3?.versions.map((v) => `<details ${v === record3.versions.at(-1) ? "open" : ""}><summary>${v.version === 1 ? "\uCC98\uC74C \uB0B8 \uAE00" : v.version + "\uBC88\uC9F8 \uC6D0\uACE0"} \xB7 ${esc(time(v.submittedAt))}${v.late ? " \xB7 \uB9C8\uAC10 \uB4A4 \uC81C\uCD9C" : ""}</summary><pre style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(v.text)}</pre>${v.reflection ? `<p>\uACE0\uCE5C \uC774\uC720: ${esc(v.reflection)}</p>` : ""}${feedback(v)}${v === record3.versions[0] ? `<details><summary>\uC77D\uAE30 \uACB0\uACFC \xB7 ${v.reading.filter((q) => q.correct).length}/5</summary>${v.reading.map((q) => `<p>${esc(q.id)} \xB7 \uB0B4 \uB2F5 ${q.chosen} \xB7 \uC815\uB2F5 ${q.answer}</p>${courseMaterial(q.explanation)}`).join("")}</details>` : ""}</details>`).join("") || "";
   }
   function studentTask(task) {
-    const historyRecords = data.records.filter((r) => r.taskId === task.id), record2 = historyRecords.find((r) => !r.readOnly), last = record2?.versions.at(-1);
+    const historyRecords = data.records.filter((r) => r.taskId === task.id), record3 = historyRecords.find((r) => !r.readOnly), last = record3?.versions.at(-1);
     return `<section class="course-task" data-task="${esc(task.id)}"><h4>${esc(task.material.title)}</h4><p>\uB9C8\uAC10 ${esc(time(task.dueAt))} \xB7 \uB2A6\uC5B4\uB3C4 \uC81C\uCD9C\uD560 \uC218 \uC788\uC5B4\uC694.</p><details><summary>\uC4F0\uAE30 \uACFC\uC81C \uC77D\uAE30</summary>${courseMaterial(task.material.prompt)}</details>${historyRecords.map((r) => (r.readOnly ? "<p>\uC774\uC804 \uC81C\uCD9C \uC774\uB825 \xB7 \uB098\uB9CC \uC77D\uAE30</p>" : "") + history2(r)).join("")}
-  ${record2 ? `<label><input type="checkbox" data-course-group="${esc(task.id)}" ${record2.groupConsent ? "checked" : ""}> \uB0B4 \uC6D0\uBB38\uC744 \uACF5\uC720\uD558\uC9C0 \uC54A\uACE0 \uCCA8\uC0AD \uAE30\uD638\uB97C \uC774 \uBC18 \uC218\uC5C5 \uC900\uBE44\uC758 \uC9D1\uACC4\uC5D0 \uC4F0\uAE30(\uC120\uD0DD\xB7\uC5B8\uC81C\uB4E0 \uB044\uAE30)</label>` : ""}
+  ${record3 ? `<label><input type="checkbox" data-course-group="${esc(task.id)}" ${record3.groupConsent ? "checked" : ""}> \uB0B4 \uC6D0\uBB38\uC744 \uACF5\uC720\uD558\uC9C0 \uC54A\uACE0 \uCCA8\uC0AD \uAE30\uD638\uB97C \uC774 \uBC18 \uC218\uC5C5 \uC900\uBE44\uC758 \uC9D1\uACC4\uC5D0 \uC4F0\uAE30(\uC120\uD0DD\xB7\uC5B8\uC81C\uB4E0 \uB044\uAE30)</label>` : ""}
   ${data.canSubmit && (!last || last.feedback.length) ? `<form data-course-submit="${esc(task.id)}" data-sharing-revision="${esc(data.sharing.revision)}" data-base-version="${last?.version || 0}">${!last ? task.material.reading.map((q) => `<fieldset><legend>${esc(q.id)} \xB7 ${esc(q.title)}</legend>${courseMaterial(q.prompt)}${[1, 2, 3, 4].map((n) => `<label><input type="radio" name="${esc(q.id)}" value="${n}" required> ${n}</label>`).join("")}</fieldset>`).join("") : ""}<label>${last ? "\uACE0\uCCD0 \uC4F4 \uAE00" : "\uB0B4\uAC00 \uC4F4 \uAE00"}<textarea name="text" required maxlength="12000" rows="10" style="width:100%">${esc(last?.text || "")}</textarea></label>${last ? '<label>\uBB34\uC5C7\uC744 \uC65C \uACE0\uCCE4\uB098\uC694?<textarea name="reflection" required maxlength="2000" rows="3"></textarea></label>' : ""}<p>\uC6D0\uBB38\uACFC \uC218\uC815 \uC774\uB825\uC744 \uB2F4\uB2F9 \uC120\uC0DD\uB2D8\uC5D0\uAC8C \uBCF4\uB0C5\uB2C8\uB2E4. \uAE00\uC744 \uC790\uB3D9 \uCC44\uC810\uD558\uAC70\uB098 \uAE09\uC218\uB85C \uBC14\uAFB8\uC9C0 \uC54A\uC544\uC694.</p><button type="submit" class="felt-button">${last ? "\uC218\uC815\uBCF8 \uC81C\uCD9C" : "\uC77D\uAE30\xB7\uC4F0\uAE30 \uC81C\uCD9C"}</button></form>` : last ? "<p>\uC120\uC0DD\uB2D8\uC758 \uCCA8\uC0AD\uC744 \uAE30\uB2E4\uB9AC\uACE0 \uC788\uC5B4\uC694.</p>" : "<p>\uACC4\uC815 \uC124\uC815\uC5D0\uC11C \uD559\uC2B5 \uAE30\uB85D \uC800\uC7A5\uACFC \uC774 \uBC18 \uC120\uC0DD\uB2D8 \uACF5\uC720\uB97C \uCF20 \uB4A4 \uC81C\uCD9C\uD560 \uC218 \uC788\uC5B4\uC694.</p>"}</section>`;
   }
   function groupMaterial(group) {
@@ -11706,7 +11706,7 @@ function mountCourseWriting({ root, request, guard = () => {
       route = "/api/course/assign";
       payload = { week: Number(values.get("week")), dueAt: new Date(values.get("dueAt")).toISOString(), idempotencyKey };
     } else if (form.hasAttribute("data-course-submit")) {
-      const taskId = form.dataset.courseSubmit, record2 = data.records.find((r) => r.taskId === taskId && !r.readOnly);
+      const taskId = form.dataset.courseSubmit, record3 = data.records.find((r) => r.taskId === taskId && !r.readOnly);
       route = "/api/course/submit";
       payload = { taskId, sharingRevision: data.sharing.revision, baseVersion: Number(form.dataset.baseVersion), text: values.get("text"), reflection: values.get("reflection") || "", reading: Object.fromEntries([...values].filter(([k]) => /^R\d-\d$/.test(k)).map(([k, v]) => [k, Number(v)])), idempotencyKey };
     } else if (form.hasAttribute("data-course-feedback")) {
@@ -11746,9 +11746,9 @@ function mountCourseWriting({ root, request, guard = () => {
           guard();
           const current = await request("/api/course");
           check2(version);
-          const record2 = current.records.find((item) => item.taskId === r.taskId && !item.readOnly);
-          if (!record2) throw Error("CONSENT_UNAVAILABLE");
-          Object.assign(r, { groupConsent: record2.groupConsent, consentRevision: record2.consentRevision });
+          const record3 = current.records.find((item) => item.taskId === r.taskId && !item.readOnly);
+          if (!record3) throw Error("CONSENT_UNAVAILABLE");
+          Object.assign(r, { groupConsent: record3.groupConsent, consentRevision: record3.consentRevision });
           input2.checked = r.groupConsent;
           status.textContent = "\uC11C\uBC84\uC5D0 \uC800\uC7A5\uB41C \uC9D1\uACC4 \uB3D9\uC758\uB97C \uB2E4\uC2DC \uD45C\uC2DC\uD588\uC5B4\uC694.";
         } catch {
@@ -15330,16 +15330,16 @@ async function createLifeProgressPort({ accountId: id, client, guard, storage: c
     for (let index = 0; index < cache.length; index++) {
       const recordKey = cache.key(index);
       if (!recordKey?.startsWith(prefix)) continue;
-      let record2;
+      let record3;
       try {
-        record2 = JSON.parse(cache.getItem(recordKey));
+        record3 = JSON.parse(cache.getItem(recordKey));
       } catch {
         throw Object.assign(Error("\uC0DD\uD65C \uC9C4\uB3C4 \uC6D0\uBCF8\uC744 \uC77D\uC9C0 \uBABB\uD588\uC5B4\uC694."), { code: "LIFE_PROGRESS_UNREADABLE" });
       }
-      if (record2.accountId !== id || recordKey !== prefix + record2.entry?.body?.id) throw Object.assign(Error("\uC0DD\uD65C \uC9C4\uB3C4 \uC6D0\uBCF8\uC758 \uACC4\uC815\uC744 \uD655\uC778\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694."), { code: "LIFE_PROGRESS_UNREADABLE" });
-      if (resolved.includes(record2.entry.body.id)) continue;
-      const change = record2.entry.body.action === "progress" && record2.entry.body.changes.find((change2) => change2.key === LIFE_PROGRESS_KEY);
-      if (change) entries.push({ ...record2, change });
+      if (record3.accountId !== id || recordKey !== prefix + record3.entry?.body?.id) throw Object.assign(Error("\uC0DD\uD65C \uC9C4\uB3C4 \uC6D0\uBCF8\uC758 \uACC4\uC815\uC744 \uD655\uC778\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694."), { code: "LIFE_PROGRESS_UNREADABLE" });
+      if (resolved.includes(record3.entry.body.id)) continue;
+      const change = record3.entry.body.action === "progress" && record3.entry.body.changes.find((change2) => change2.key === LIFE_PROGRESS_KEY);
+      if (change) entries.push({ ...record3, change });
     }
     return entries.sort((a, b) => a.entry.at - b.entry.at || a.entry.body.id.localeCompare(b.entry.body.id));
   }
@@ -15351,7 +15351,7 @@ async function createLifeProgressPort({ accountId: id, client, guard, storage: c
       const recordKey = cache.key(index);
       if (!recordKey?.startsWith(prefix)) continue;
       try {
-        const record2 = JSON.parse(cache.getItem(recordKey)), body = record2.entry?.body || record2.body;
+        const record3 = JSON.parse(cache.getItem(recordKey)), body = record3.entry?.body || record3.body;
         if (body?.action !== "progress" || !body.changes?.some((change) => change.key === LIFE_PROGRESS_KEY)) continue;
         if (recordKey.startsWith(prefix + "pending:")) pending++;
       } catch {
@@ -15444,7 +15444,7 @@ async function createLifeProgressPort({ accountId: id, client, guard, storage: c
         if (lifeStatus().rejected) return lifeStatus();
       }
       const resolved = JSON.parse(cache.getItem(resolvedKey) || "[]");
-      cache.setItem(resolvedKey, JSON.stringify([.../* @__PURE__ */ new Set([...resolved, ...entries.map((record2) => record2.entry.body.id)])]));
+      cache.setItem(resolvedKey, JSON.stringify([.../* @__PURE__ */ new Set([...resolved, ...entries.map((record3) => record3.entry.body.id)])]));
       return lifeStatus();
     },
     subscribe: (fn) => host.subscribe(() => fn(lifeStatus())),
@@ -16910,16 +16910,16 @@ var ESTIMATE_POLICY = Object.freeze({
 var POS_DAY = 864e5;
 function estimateGate({ evidence = [], asOf, policy = ESTIMATE_POLICY, form = "topik-i", mode = null } = {}) {
   if (!Array.isArray(evidence) || !posTime(asOf) || !posRecord(policy) || !Number.isInteger(policy.minEvidence) || policy.minEvidence < 1) throw TypeError("WORLD estimate gate needs evidence, a time and a policy");
-  const now = Date.parse(asOf), counted = /* @__PURE__ */ new Map(), modes = Array.isArray(policy.modes) ? policy.modes : ["pbt"];
+  const now = Date.parse(asOf), counted2 = /* @__PURE__ */ new Map(), modes = Array.isArray(policy.modes) ? policy.modes : ["pbt"];
   for (const row of evidence) {
     if (!posRecord(row) || !posToken(row.eventId) || !posTime(row.at) || !["listening", "reading"].includes(row.domain)) continue;
     const at = Date.parse(row.at);
     if (at > now || now - at > policy.recentDays * POS_DAY) continue;
     if (row.firstExposure !== true || row.independent !== true || row.timed !== true || !["correct", "incorrect"].includes(row.verdict)) continue;
     if (!policy.forms.includes(row.form) || row.form !== form || !policy.compositions.includes(row.composition) || !modes.includes(row.mode ?? "pbt")) continue;
-    if (!counted.has(row.eventId)) counted.set(row.eventId, row);
+    if (!counted2.has(row.eventId)) counted2.set(row.eventId, row);
   }
-  const rows2 = [...counted.values()], perDomain = { listening: rows2.filter((row) => row.domain === "listening").length, reading: rows2.filter((row) => row.domain === "reading").length };
+  const rows2 = [...counted2.values()], perDomain = { listening: rows2.filter((row) => row.domain === "listening").length, reading: rows2.filter((row) => row.domain === "reading").length };
   const enough = rows2.length >= policy.minEvidence && perDomain.listening >= policy.minPerDomain && perDomain.reading >= policy.minPerDomain;
   const updatedAt = rows2.length ? rows2.map((row) => row.at).sort().at(-1) : null;
   const ibt = mode === "ibt";
@@ -18699,10 +18699,10 @@ function createPositionView({ t, has = () => true, formatDate = null, lang = () 
     return t(view.heard ? "position.diagnostic.replayNote" : "position.diagnostic.listenFirst");
   }
   const listenLabel = (view) => t(!view.heard ? "position.diagnostic.listen" : Number.isInteger(view.plays?.allowed) && view.next === "allowed" ? "position.plays.again" : "position.diagnostic.listenAgain");
-  function renderDiagnosticItem({ view, skill: skill2 = null, notice = "", playing = false } = {}) {
+  function renderDiagnosticItem({ view, skill: skill2 = null, notice = "", playing = false, stopLabel = null } = {}) {
     const item = view.item, listening = item.audioRequired ?? item.modality === "listening", ready = view.heard && !view.answered;
     const choices2 = item.choices.map((choice) => `<button class="wpos-choice" type="button" data-position-choice="${posEscape(choice.id)}"${ready ? "" : " disabled"}>${posEscape(choice.label)}</button>`).join("");
-    return `<div class="wpos wpos-run" data-position-run="${posEscape(item.id)}"><div class="wpos-run-head"><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(view.index, view.total)}%"></i></span><p class="wpos-run-count">${posEscape(t("position.diagnostic.progress", { index: view.index + 1, total: view.total }))}</p></div><p class="life-section-label wpos-run-skill" tabindex="-1">${posEscape(t(`position.domain.${item.modality}`))} \xB7 ${posEscape(skillName(skill2 || { id: item.skillId }))}</p>${item.prompt ? `<p class="wpos-prompt" lang="ko">${posEscape(item.prompt)}</p>` : ""}${item.card ? entryCard(item.card) : ""}${listening ? `<div class="wpos-listen"><button class="quiet-button" type="button" data-position-listen${playing ? ' aria-busy="true"' : ""}>${posEscape(listenLabel(view))}</button><p class="wpos-note">${posEscape(listenNote(view, playing))}</p></div>` : ""}${item.question ? item.ask && has(`position.diagnostic.ask.${item.ask}`) ? `<p class="wpos-question">${posEscape(t(`position.diagnostic.ask.${item.ask}`))}</p>` : `<p class="wpos-question" lang="ko">${posEscape(item.question)}</p>` : ""}<div class="wpos-choices${item.ask === "picture" ? " wpos-pictures" : ""}" lang="ko">${choices2}</div><p class="wpos-run-status" role="status">${posEscape(notice)}</p><div class="wpos-run-actions"><button class="quiet-button" type="button" data-position-skip>${posEscape(t("position.diagnostic.skip"))}</button><button class="quiet-button" type="button" data-position-stop>${posEscape(t("position.diagnostic.stop"))}</button></div></div>`;
+    return `<div class="wpos wpos-run" data-position-run="${posEscape(item.id)}"><div class="wpos-run-head"><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(view.index, view.total)}%"></i></span><p class="wpos-run-count">${posEscape(t("position.diagnostic.progress", { index: view.index + 1, total: view.total }))}</p></div><p class="life-section-label wpos-run-skill" tabindex="-1">${posEscape(t(`position.domain.${item.modality}`))} \xB7 ${posEscape(skillName(skill2 || { id: item.skillId }))}</p>${item.prompt ? `<p class="wpos-prompt" lang="ko">${posEscape(item.prompt)}</p>` : ""}${item.card ? entryCard(item.card) : ""}${listening ? `<div class="wpos-listen"><button class="quiet-button" type="button" data-position-listen${playing ? ' aria-busy="true"' : ""}>${posEscape(listenLabel(view))}</button><p class="wpos-note">${posEscape(listenNote(view, playing))}</p></div>` : ""}${item.question ? item.ask && has(`position.diagnostic.ask.${item.ask}`) ? `<p class="wpos-question">${posEscape(t(`position.diagnostic.ask.${item.ask}`))}</p>` : `<p class="wpos-question" lang="ko">${posEscape(item.question)}</p>` : ""}<div class="wpos-choices${item.ask === "picture" ? " wpos-pictures" : ""}" lang="ko">${choices2}</div><p class="wpos-run-status" role="status">${posEscape(notice)}</p><div class="wpos-run-actions"><button class="quiet-button" type="button" data-position-skip>${posEscape(t("position.diagnostic.skip"))}</button><button class="quiet-button" type="button" data-position-stop>${posEscape(stopLabel || t("position.diagnostic.stop"))}</button></div></div>`;
   }
   function explainText(item) {
     const value = item?.explanation;
@@ -18722,15 +18722,30 @@ function createPositionView({ t, has = () => true, formatDate = null, lang = () 
     const body = explainParagraph(item) + scriptBlock(item);
     return body ? `<details class="wpos-explain"><summary>${posEscape(t("position.diagnostic.explain"))}</summary>${body}</details>` : "";
   };
+  function doneRows({ map, results = [], items = null, practice = null, checking = true } = {}) {
+    const itemOf = (id) => items?.get?.(id) || null;
+    return results.filter((row) => !row.skipped).map((row) => {
+      const skill2 = map?.skills?.find((s) => s.id === row.skillId) || { id: row.skillId }, ok = row.verdict === "correct";
+      return `<li data-verdict="${posEscape(row.verdict)}" data-skill="${posEscape(row.skillId)}">${posLed(ok ? "ok" : "alert")}<span class="wpos-done-copy"><strong>${posEscape(skillName(skill2))}</strong><small>${posEscape(t(ok ? "position.evidence.correct" : "position.evidence.incorrect"))}${row.assisted ? ` \xB7 ${posEscape(t("position.evidence.assisted"))}` : ""}${checking ? ` \xB7 ${posEscape(t("position.diagnostic.checking"))}` : ""}</small>${ok ? "" : explainBlock(itemOf(row.itemId))}</span>${practiceButton(row.skillId, practice)}</li>`;
+    }).join("");
+  }
   function renderDiagnosticDone({ map, results = [], items = null, practice = null } = {}) {
     const answered = results.filter((row) => !row.skipped).length, skipped = results.length - answered;
-    const itemOf = (id) => items?.get?.(id) || null;
-    const rows2 = results.filter((row) => !row.skipped).map((row) => {
-      const skill2 = map.skills.find((s) => s.id === row.skillId) || { id: row.skillId }, ok = row.verdict === "correct";
-      return `<li data-verdict="${posEscape(row.verdict)}" data-skill="${posEscape(row.skillId)}">${posLed(ok ? "ok" : "alert")}<span class="wpos-done-copy"><strong>${posEscape(skillName(skill2))}</strong><small>${posEscape(t(ok ? "position.evidence.correct" : "position.evidence.incorrect"))}${row.assisted ? ` \xB7 ${posEscape(t("position.evidence.assisted"))}` : ""} \xB7 ${posEscape(t("position.diagnostic.checking"))}</small>${ok ? "" : explainBlock(itemOf(row.itemId))}</span>${practiceButton(row.skillId, practice)}</li>`;
-    }).join("");
+    const rows2 = doneRows({ map, results, items, practice });
     const wrong = results.some((row) => !row.skipped && row.verdict === "incorrect");
     return `<div class="wpos life-heading" data-position-done tabindex="-1">${poster(t("position.diagnostic.doneTitle"), t("position.diagnostic.doneSummary", { answered, skipped }))}${rows2 ? `<ul class="wpos-done-list">${rows2}</ul>` : ""}${wrong ? `<p class="wpos-note">${posEscape(t("position.diagnostic.wrongNote"))}</p>` : ""}<p class="wpos-intro">${posEscape(t("position.diagnostic.doneNote"))}</p><p class="wpos-summary-line">${posEscape(t("position.summary", { ...map.counts, total: map.total }))}</p><button class="felt-button" type="button" data-position-back>${posEscape(t("position.diagnostic.back"))} <span aria-hidden="true">\u2192</span></button></div>`;
+  }
+  const TOWN_POSTER = { print: "position", label: "TOWN CHECK" };
+  function renderTownCheckWait({ after = false } = {}) {
+    return `<div class="wpos life-heading" data-town-wait tabindex="-1" aria-busy="true">${poster("\uC7A0\uC2DC\uB9CC \uAE30\uB2E4\uB824 \uC8FC\uC138\uC694", after ? "\uBC29\uAE08 \uD47C \uB2F5\uAE4C\uC9C0 \uBAA8\uC544 \uD655\uC778\uD558\uACE0 \uC788\uC5B4\uC694." : "\uC774\uBBF8 \uD47C TOPIK \uC5F0\uC2B5 \uB2F5\uC73C\uB85C \uBA3C\uC800 \uD655\uC778\uD558\uACE0 \uC788\uC5B4\uC694.", TOWN_POSTER)}</div>`;
+  }
+  function renderTownCheckDone({ outcome = "not-yet", results = [], map = null, items = null, recommend = null, practice = null } = {}) {
+    const rows2 = doneRows({ map, results, items, checking: false });
+    const head = outcome === "passed" ? poster("\uB9C8\uC744\uC774 \uC5F4\uB838\uC5B4\uC694", "\uC2F1\uD06C\uD0C0\uC6B4\uC5D0\uC11C \uCCAB \uC774\uC57C\uAE30\uAC00 \uAE30\uB2E4\uB824\uC694.", TOWN_POSTER) : outcome === "access" ? poster("\uB9C8\uC744 \uC900\uBE44 \uD655\uC778\uC740 \uB9C8\uCCE4\uC5B4\uC694", "\uCCB4\uD5D8\uC774\uB098 \uC774\uC6A9\uAD8C\uC73C\uB85C \uC5F4\uB9AC\uB294 \uACF3\uC774\uC5D0\uC694. \uC774\uC6A9\uAD8C \uC548\uB0B4\uB294 \uC900\uBE44\uD558\uACE0 \uC788\uC5B4\uC694.", TOWN_POSTER) : outcome === "held" ? poster("\uD655\uC778\uC740 \uB9C8\uCCE4\uC9C0\uB9CC \uC9C0\uAE08\uC740 \uB9C8\uC744\uC774 \uB2EB\uD600 \uC788\uC5B4\uC694", "\uB2E4\uC2DC \uD655\uC778\uD558\uC9C0 \uC54A\uC544\uB3C4 \uB3FC\uC694. \uB2E4\uC2DC \uC5F4\uB9AC\uBA74 \uC2F1\uD06C\uD0C0\uC6B4\uC5D0\uC11C \uB4E4\uC5B4\uAC08 \uC218 \uC788\uC5B4\uC694.", TOWN_POSTER) : outcome === "deferred" ? poster("\uD655\uC778 \uBB38\uC81C\uB97C \uC0C8 \uD310\uC73C\uB85C \uB9DE\uCD94\uACE0 \uC788\uC5B4\uC694", "\uC900\uBE44\uAC00 \uB05D\uB098\uBA74 \uB2E4\uC2DC \uD655\uC778\uD560 \uC218 \uC788\uC5B4\uC694. \uC9C0\uAE08\uAE4C\uC9C0 \uD47C \uB2F5\uC740 \uADF8\uB300\uB85C \uB0A8\uC544\uC694.", TOWN_POSTER) : outcome === "later" ? poster("\uC9C0\uAE08\uC740 \uD655\uC778\uC744 \uB9C8\uCE58\uC9C0 \uBABB\uD588\uC5B4\uC694", "\uC7A0\uC2DC \uB4A4 \uB2E4\uC2DC \uD655\uC778\uD574 \uC8FC\uC138\uC694. \uC9C0\uAE08\uAE4C\uC9C0 \uD47C \uB2F5\uC740 \uADF8\uB300\uB85C \uB0A8\uC544\uC694.", TOWN_POSTER) : poster("\uC870\uAE08 \uB354 \uC5F0\uC2B5\uD55C \uB4A4\uC5D0 \uB2E4\uC2DC \uC5F4\uC5B4 \uBCFC \uC218 \uC788\uC5B4\uC694", outcome === "short" ? "\uC9C0\uAE08\uC740 \uB0BC \uC0C8 \uD655\uC778 \uBB38\uC81C\uAC00 \uBAA8\uC790\uB77C\uC694. \uC5F0\uC2B5\uC744 \uC870\uAE08 \uB354 \uD55C \uB4A4\uC5D0 \uB2E4\uC2DC \uC5F4\uC5B4 \uC8FC\uC138\uC694." : "\uB2E4\uC2DC \uD655\uC778\uD558\uB294 \uD69F\uC218\uC5D0\uB294 \uC81C\uD55C\uC774 \uC5C6\uC5B4\uC694. \uB2E4\uC74C \uD655\uC778\uC740 \uC0C8 \uBB38\uC81C\uB85C \uB098\uC640\uC694.", TOWN_POSTER);
+    const skill2 = recommend && (map?.skills?.find((s) => s.id === recommend.skillId) || { id: recommend.skillId });
+    const back = `<button class="quiet-button" type="button" data-town-open>\uC2F1\uD06C\uD0C0\uC6B4\uC73C\uB85C \uB3CC\uC544\uAC00\uAE30</button><button class="quiet-button" type="button" data-town-position>\uB0B4 \uC704\uCE58 \uBCF4\uAE30</button>`;
+    const next = outcome === "passed" ? `<button class="felt-button" type="button" data-town-open>\uB3D9\uB124 \uC5F4\uAE30 <span aria-hidden="true">\u2192</span></button>` : ["access", "held"].includes(outcome) ? back : `${skill2 && practice?.(skill2.id) ? `<section class="wpos-attention" data-town-recommend><p class="life-section-label">NEXT</p><h3>${posEscape(skillName(skill2))}</h3><p class="wpos-note">\uC774 \uD56D\uBAA9\uC744 \uC870\uAE08 \uB354 \uC5F0\uC2B5\uD558\uBA74 \uB2E4\uC74C \uD655\uC778\uC5D0 \uB3C4\uC6C0\uC774 \uB3FC\uC694.</p>${practiceButton(skill2.id, practice)}</section>` : ""}<button class="felt-button" type="button" data-town-recheck>\uB2E4\uC2DC \uD655\uC778\uD558\uAE30 <span aria-hidden="true">\u2192</span></button>${back}`;
+    return `<div class="wpos life-heading" data-town-done="${posEscape(outcome)}" tabindex="-1" role="status">${head}${next}${rows2 ? `<p class="wpos-evidence-title">\uC774\uBC88\uC5D0 \uD47C \uBB38\uC81C</p><ul class="wpos-done-list">${rows2}</ul>` : ""}</div>`;
   }
   function renderPracticeItem({ view, skill: skill2 = null, notice = "", feedback = null, playing = false } = {}) {
     const item = view.item, done = !!feedback, listening = item.audioRequired ?? item.modality === "listening", ready = !done && (view.heard ?? true);
@@ -18873,6 +18888,8 @@ function createPositionView({ t, has = () => true, formatDate = null, lang = () 
     renderHangulBoard,
     renderDiagnosticItem,
     renderDiagnosticDone,
+    renderTownCheckWait,
+    renderTownCheckDone,
     renderPracticeItem,
     renderPracticeDone,
     renderMockIntro,
@@ -19411,6 +19428,10 @@ function createTopikBank({ fetcher = (...args) => globalThis.fetch(...args) } = 
     get ready() {
       return !!state.bank;
     },
+    // 은행 판 지문(contentHash) — 싱크타운 입장 확인이 서버 사본과 같은 판인지 견줄 때 보낸다.
+    get hash() {
+      return state.bank?.contentHash || null;
+    },
     get items() {
       return state.items;
     },
@@ -19473,6 +19494,157 @@ var worldPosition = Object.freeze({
   } }),
   checkCandidate: positionCheckCandidate
 });
+
+// experiences/synk-world-app/world-town-check.mjs
+var world_town_check_exports = {};
+__export(world_town_check_exports, {
+  PLACEMENT_COPY: () => PLACEMENT_COPY,
+  PLACEMENT_LEVELS: () => PLACEMENT_LEVELS,
+  TOWN_CHECK_POLICY: () => TOWN_CHECK_POLICY,
+  placeTownLevels: () => placeTownLevels,
+  placementAsk: () => placementAsk,
+  placementChoice: () => placementChoice,
+  selectTownCheck: () => selectTownCheck,
+  townCheckAnswers: () => townCheckAnswers,
+  townOutcome: () => townOutcome
+});
+var import_trail2 = __toESM(require_trail(), 1);
+var SCOPE = Object.freeze({ domain: "LAB", workspace: "learning", subject: "device" });
+var DAY2 = 864e5;
+var TOWN_CHECK_POLICY = Object.freeze({
+  version: "town-ready-check-1",
+  // 판정 창을 새로 채울 만큼: 읽기 6·듣기 4, 소리를 쓰지 않으면 읽기 10(서버 town-entry-r1과 같은 수).
+  reading: 6,
+  listening: 4,
+  readingOnly: 10,
+  minChoices: 4,
+  windowDays: 90,
+  // 그때 한 번 보내는 답의 영역별 상한 — 서버 판정 창보다 넉넉히(도움 받은 답처럼 서버가 빼는 답이 섞여도 창이 찬다).
+  send: Object.freeze({ reading: 14, listening: 8, topik2: 10 }),
+  maxEvents: 200
+});
+var record2 = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+var counted = (item) => record2(item) && Array.isArray(item.choices) && item.choices.length >= TOWN_CHECK_POLICY.minChoices && item.choices.some((choice) => choice?.id === item.correctId);
+function selectTownCheck({ summary, items = [], seen, audioAvailable = true, missing = ["reading", "listening"] } = {}) {
+  const sound = audioAvailable !== false, pool = (Array.isArray(items) ? items : []).filter((item) => item?.exam === "topik-i" && counted(item));
+  const plan = selectDiagnostic({ summary, items: pool, seen, audioAvailable: sound, exam: "topik1" });
+  if (plan.status !== "ready") return { policy: TOWN_CHECK_POLICY.version, status: "unavailable", reason: plan.reason || "diagnostic.none", items: [] };
+  const status = new Map(summary.skills.map((skill2) => [skill2.id, skill2.status])), order = new Map(summary.skills.map((skill2, index) => [skill2.id, index]));
+  const rank = (row) => (status.get(row.skillId) === "recent-independent" ? 1 : 0) * 1e3 + (order.get(row.skillId) ?? 999);
+  const area = (name) => plan.items.filter((row) => row.item.modality === name).sort((a, b) => rank(a) - rank(b));
+  const want = sound ? { reading: missing.includes("reading") ? TOWN_CHECK_POLICY.reading : 0, listening: missing.includes("listening") ? TOWN_CHECK_POLICY.listening : 0 } : { reading: missing.includes("reading") ? TOWN_CHECK_POLICY.readingOnly : 0, listening: 0 };
+  const reading = area("reading").slice(0, want.reading), listening = area("listening").slice(0, want.listening);
+  if (reading.length < want.reading) {
+    const families = new Set(reading.map((row) => row.item.familyKey || row.item.itemKey)), sets = new Set(reading.map((row) => row.item.setId).filter(Boolean));
+    const rest = pool.filter((item) => item.modality === "reading" && !families.has(item.familyKey || item.itemKey) && !(item.setId && sets.has(item.setId)));
+    const fresh = new Set(freshBySet(rest, (item) => {
+      let value = null;
+      try {
+        value = seen(item);
+      } catch {
+        value = null;
+      }
+      return value;
+    }).map((item) => item.id));
+    for (const row of area("reading").sort((a, b) => (order.get(a.skillId) ?? 999) - (order.get(b.skillId) ?? 999))) {
+      if (reading.length >= want.reading) break;
+      const next = rest.filter((item) => item.skillId === row.skillId && fresh.has(item.id) && !families.has(item.familyKey || item.itemKey) && !(item.setId && sets.has(item.setId))).sort((a, b) => Math.abs(a.difficulty - row.target) - Math.abs(b.difficulty - row.target) || a.difficulty - b.difficulty || a.id.localeCompare(b.id))[0];
+      if (!next) continue;
+      families.add(next.familyKey || next.itemKey);
+      if (next.setId) sets.add(next.setId);
+      reading.push({ skillId: next.skillId, target: row.target, item: next });
+    }
+  }
+  const chosen = [...reading, ...listening];
+  return {
+    policy: TOWN_CHECK_POLICY.version,
+    status: chosen.length ? "ready" : "unavailable",
+    reason: chosen.length ? null : "diagnostic.none",
+    short: reading.length < want.reading || listening.length < want.listening,
+    items: chosen.map((row) => row.item)
+  };
+}
+function townOutcome({ result = null, short = false } = {}) {
+  if (result?.allowed === true) return "passed";
+  if (result?.reason === "access") return "access";
+  if (["held", "deferred", "later"].includes(result?.outcome)) return result.outcome;
+  return short ? "short" : "not-yet";
+}
+function townCheckAnswers({ events = [], items, now = Date.now() } = {}) {
+  const know = (itemKey) => {
+    const item = typeof items?.get === "function" ? items.get(itemKey) : null;
+    return counted(item) ? item : null;
+  };
+  const list = (Array.isArray(events) ? events : []).filter((event) => record2(event) && record2(event.scope) && event.scope.domain === SCOPE.domain && event.scope.workspace === SCOPE.workspace && event.scope.subject === SCOPE.subject);
+  const shown = /* @__PURE__ */ new Map(), children = /* @__PURE__ */ new Map(), exclusions = [];
+  for (const event of list) {
+    if (event.type === "practice.presented") shown.set(event.id, event);
+    else if (["practice.delivery", "practice.helped", "practice.attempted"].includes(event.type)) {
+      if (!children.has(event.presentationId)) children.set(event.presentationId, []);
+      children.get(event.presentationId).push(event);
+    } else if (event.type === "record.excluded") exclusions.push(event);
+  }
+  const since = now - TOWN_CHECK_POLICY.windowDays * DAY2, groups = { reading: [], listening: [], topik2: [] };
+  for (const [pid, rows2] of children) {
+    const first = rows2.find((row) => row.type === "practice.attempted" && row.attemptNo === 1), presented = shown.get(pid);
+    if (!first || !presented || !record2(first.choice)) continue;
+    const at = Date.parse(first.at);
+    if (!(at >= since && at <= now)) continue;
+    const item = know(presented.itemKey);
+    if (!item) continue;
+    groups[String(presented.measure?.skillId || item.skillId).startsWith("ko2.") ? "topik2" : item.modality]?.push({ at, presented, rows: rows2 });
+  }
+  const picked = Object.entries(groups).flatMap(([name, rows2]) => rows2.sort((a, b) => b.at - a.at || b.presented.id.localeCompare(a.presented.id)).slice(0, TOWN_CHECK_POLICY.send[name]));
+  const out = [], ids = /* @__PURE__ */ new Set();
+  const add = (event) => {
+    if (!ids.has(event.id) && out.length < TOWN_CHECK_POLICY.maxEvents) {
+      ids.add(event.id);
+      out.push(event);
+    }
+  };
+  for (const { presented, rows: rows2 } of picked.sort((a, b) => Date.parse(a.presented.at) - Date.parse(b.presented.at))) {
+    add(presented);
+    for (const row of rows2) add(row);
+    const targets = /* @__PURE__ */ new Set([presented.id, presented.decisionId, ...rows2.map((row) => row.id)]);
+    for (const exclusion of exclusions) if (targets.has(exclusion.targetId)) add(exclusion);
+  }
+  return out;
+}
+var PLACEMENT_LEVELS = Object.freeze(["L1", "L2", "L3", "L4"]);
+function placeTownLevels({ events = [], evidenceComplete = false, now = Date.now() } = {}) {
+  const flat = { reading: "L1", listening: "L1" };
+  if (evidenceComplete !== true) return { ...flat, basis: "history.incomplete" };
+  const index = import_trail2.default.createIndex({ scope: SCOPE }), rows2 = [], since = now - TOWN_CHECK_POLICY.windowDays * DAY2;
+  const ordered = (Array.isArray(events) ? events : []).map((event, order) => ({ event, order, at: Date.parse(event?.at) })).filter((row) => record2(row.event) && Number.isFinite(row.at)).sort((a, b) => a.at - b.at || a.order - b.order);
+  for (const { event } of ordered) {
+    let row = null;
+    try {
+      row = index.add(event);
+    } catch {
+      row = null;
+    }
+    if (row) rows2.push(row);
+  }
+  const used = rows2.filter((row) => !row.omitted && row.independent === true && row.attemptNo === 1 && row.measure && Date.parse(row.at) >= since && Date.parse(row.at) <= now);
+  const share = (list, n, ratio) => list.length >= n && list.filter((row) => row.verdict === "correct").length * ratio[1] >= list.length * ratio[0];
+  const level = (channel) => {
+    const mine = used.filter((row) => row.measure.modality === channel), two = mine.filter((row) => row.measure.skillId.startsWith("ko2.")), one = mine.filter((row) => row.measure.skillId.startsWith("ko."));
+    if (share(two, 3, [2, 3])) return share(two.filter((row) => row.measure.difficulty >= 2), 3, [2, 3]) ? "L4" : "L3";
+    return share(one.filter((row) => row.measure.difficulty >= 2), 3, [2, 3]) || share(one, 6, [5, 6]) ? "L2" : "L1";
+  };
+  return { reading: level("reading"), listening: level("listening"), basis: "first-answers" };
+}
+var PLACEMENT_COPY = Object.freeze({ ask: "\uCC98\uC74C \uC774\uC57C\uAE30\uB294 \uC774 \uB9D0\uB85C \uD574 \uBCFC\uAE4C\uC694?", keep: "\uC774\uB300\uB85C", easier: "\uB354 \uC26C\uC6B4 \uB9D0\uB85C" });
+var placementAsk = ({ suggested, chosen } = {}) => !chosen && record2(suggested) && ["reading", "listening"].some((channel) => PLACEMENT_LEVELS.indexOf(suggested[channel]) > 0);
+function placementChoice(suggested, answer) {
+  if (!record2(suggested) || !["keep", "easier"].includes(answer)) throw new TypeError("town placement: suggestion and answer required");
+  const step = (channel) => {
+    const at = PLACEMENT_LEVELS.indexOf(suggested[channel]);
+    if (at < 0) throw new TypeError("town placement: unknown level");
+    return PLACEMENT_LEVELS[answer === "easier" ? Math.max(0, at - 1) : at];
+  };
+  return { reading: step("reading"), listening: step("listening") };
+}
 
 // experiences/synk-world-app/classroom-client.mjs
 var CLASSROOM_CONTRACT_VER = "c16";
@@ -19652,7 +19824,8 @@ async function loadWorldConfig({ value = globalThis.__SYNK_WORLD_CONFIG__, base 
 // experiences/synk-world-app/world-account.mjs
 var changed = () => Object.assign(Error("\uB85C\uADF8\uC778\uD55C \uACC4\uC815\uC774 \uBC14\uB00C\uC5C8\uC5B4\uC694."), { code: "ACCOUNT_CHANGED" });
 var authErrors = /* @__PURE__ */ new Set(["AUTH_REQUIRED", "AUTH_SESSION_MISSING", "SESSION_REVOKED", "UNAUTHORIZED", "ACCOUNT_UNAVAILABLE", "PRODUCT_FORBIDDEN", "PLATFORM_ACCOUNT_MISMATCH"]);
-var routes2 = /* @__PURE__ */ new Map([["bootstrap", "GET"], ["play/start", "POST"], ["play/complete", "POST"], ["avatar/outfit", "PUT"], ["wardrobe/looks", "PUT"], ["town/entry", "GET"], ["town/state", "GET"], ["town/sharing", "POST"], ["town/command", "POST"], ["town/presence", "POST"], ["enrollment/preview", "POST"], ["enrollment/claim", "POST"], ["homework", "GET"], ["homework/submit", "POST"], ["homework/key", "POST"], ["writing", "POST"], ["speaking", "POST"]]);
+var TOWN_ACCOUNT_ROUTES = /* @__PURE__ */ new Set(["town/entry", "town/check", "town/placement"]);
+var routes2 = /* @__PURE__ */ new Map([["bootstrap", "GET"], ["play/start", "POST"], ["play/complete", "POST"], ["avatar/outfit", "PUT"], ["wardrobe/looks", "PUT"], ["town/entry", "GET"], ["town/state", "GET"], ["town/sharing", "POST"], ["town/command", "POST"], ["town/presence", "POST"], ["town/check", "POST"], ["town/placement", "POST"], ["enrollment/preview", "POST"], ["enrollment/claim", "POST"], ["homework", "GET"], ["homework/submit", "POST"], ["homework/key", "POST"], ["writing", "POST"], ["speaking", "POST"]]);
 function createWorldAccount({
   config: raw,
   storage = globalThis.sessionStorage,
@@ -19674,7 +19847,7 @@ function createWorldAccount({
   const binding = [config.supabaseUrl, config.accountApiUrl, config.clients.world.clientId, config.clients.world.redirectUri].join("|");
   const entry = createPlatformEntry({ clientKey: "world", getUrl, replaceUrl });
   let session = null, rawSession = null, owner = null, currentSessionId = null, currentAccount = null, epoch = 0, closed = false, refreshing = null, pendingExchange = null, townBinding = null, townStateRevision = -1, verifiedClient = null, gameHost = null, gameLaunch = 0, lifeHost = null, lifeLaunch = 0, verification = 0;
-  let nativeIdentity = null, nativeAccountId = null, nativeGeneration = -1, signedOutGeneration = -1, nativeEvents = 0, nativeReady = null, unsubscribe = null, nativeClassroom = false, nativeHomework = false, hangulHost = null, hangulLaunch = 0;
+  let nativeIdentity = null, nativeAccountId = null, nativeGeneration = -1, signedOutGeneration = -1, nativeEvents = 0, nativeReady = null, unsubscribe = null, nativeClassroom = false, nativeHomework = false, nativeTownCheck = false, hangulHost = null, hangulLaunch = 0;
   const controllers = /* @__PURE__ */ new Set();
   const guard = (expected) => {
     if (closed || expected !== epoch) throw changed();
@@ -19744,6 +19917,7 @@ function createWorldAccount({
       if (environment?.clientId !== "world") throw Object.assign(Error("PC \uC571\uC744 \uCD5C\uC2E0 \uBC84\uC804\uC73C\uB85C \uC5C5\uB370\uC774\uD2B8\uD55C \uB4A4 \uB2E4\uC2DC \uC5F4\uC5B4 \uC8FC\uC138\uC694."), { code: "INVALID_BRIDGE" });
       nativeClassroom = Array.isArray(environment.worldRoutes) && environment.worldRoutes.includes("classroom");
       nativeHomework = Array.isArray(environment.worldRoutes) && ["homework", "homework/submit"].every((route) => environment.worldRoutes.includes(route));
+      nativeTownCheck = Array.isArray(environment.worldRoutes) && ["town/check", "town/placement"].every((route) => environment.worldRoutes.includes(route));
       unsubscribe = bridge.onAuthChanged((state) => {
         const before = nativeIdentity;
         nativeEvents++;
@@ -20083,6 +20257,7 @@ function createWorldAccount({
       townStateRevision = -1;
     }
     if (path === "town/sharing" && !townBinding?.classId) throw Object.assign(Error("CLASSROOM_FORBIDDEN"), { code: "CLASSROOM_FORBIDDEN", status: 403 });
+    if ((path === "town/check" || path === "town/placement") && native && !nativeTownCheck) throw Object.assign(Error("PC \uC571\uC5D0\uC11C\uB294 \uC544\uC9C1 \uB9C8\uC744 \uC900\uBE44 \uD655\uC778\uC744 \uC5F4 \uC218 \uC5C6\uC5B4\uC694."), { code: "TOWN_CHECK_UNSUPPORTED" });
     const accept = (data, ok, status) => {
       guard(expected);
       if (status === 401 || authErrors.has(data?.error?.code)) {
@@ -20107,7 +20282,7 @@ function createWorldAccount({
     if (native) {
       const body = options.body === void 0 ? void 0 : JSON.parse(options.body);
       if (body !== void 0 && (!body || typeof body !== "object" || Array.isArray(body))) throw new TypeError("Invalid WORLD request body");
-      const data = await bridge.accountRequest("worldRequest", { route: path, ...body === void 0 ? {} : { body }, ...path.startsWith("town/") && path !== "town/entry" && townBinding?.classId ? { classId: townBinding.classId } : {}, ...path === "homework/submit" || path === "homework/key" ? { classId: body.classId } : {} });
+      const data = await bridge.accountRequest("worldRequest", { route: path, ...body === void 0 ? {} : { body }, ...path.startsWith("town/") && !TOWN_ACCOUNT_ROUTES.has(path) && townBinding?.classId ? { classId: townBinding.classId } : {}, ...path === "homework/submit" || path === "homework/key" ? { classId: body.classId } : {} });
       return accept(data, data?.ok === true, data?.ok === true ? 200 : data?.error?.status || 503);
     }
     const homework = path === "homework" || path.startsWith("homework/");
@@ -20116,7 +20291,7 @@ function createWorldAccount({
     url.pathname = url.pathname.replace(/\/$/, "").replace(/\/functions\/v1(?:\/synk-(?:account|world-v1|town))?$/, "") + `/functions/v1/${endpoint}/${suffix}`;
     url.search = "";
     url.hash = "";
-    if (path.startsWith("town/") && path !== "town/entry" && townBinding?.classId) url.searchParams.set("classId", townBinding.classId);
+    if (path.startsWith("town/") && !TOWN_ACCOUNT_ROUTES.has(path) && townBinding?.classId) url.searchParams.set("classId", townBinding.classId);
     if (path === "homework/submit" || path === "homework/key") url.searchParams.set("classId", JSON.parse(options.body).classId);
     const controller = new AbortController(), timer = setTimeout(() => controller.abort(), path === "writing" || path === "speaking" ? 95e3 : 12e3);
     controllers.add(controller);
@@ -20283,6 +20458,9 @@ function createWorldAccount({
     get supportsHomework() {
       return !native || nativeHomework;
     },
+    get supportsTownCheck() {
+      return !native || nativeTownCheck;
+    },
     identity: () => ({ accountId: owner, generation: epoch }),
     assertActive() {
       guard(epoch);
@@ -20341,5 +20519,6 @@ export {
   noteDeviceSignOut,
   publicWorldConfig,
   worldLearning,
-  worldPosition
+  worldPosition,
+  world_town_check_exports as worldTownCheck
 };

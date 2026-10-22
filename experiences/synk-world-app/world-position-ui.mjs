@@ -154,10 +154,11 @@ export function createPositionView({t,has=()=>true,formatDate=null,lang=()=>'ko'
  }
  const listenLabel=view=>t(!view.heard?'position.diagnostic.listen':Number.isInteger(view.plays?.allowed)&&view.next==='allowed'?'position.plays.again':'position.diagnostic.listenAgain');
  // 진단 한 문항. view: createDiagnosticSession().current · skill: 그 항목(이름) · notice: 상태 한 줄 · playing: 소리가 나는 중
- function renderDiagnosticItem({view,skill=null,notice='',playing=false}={}){
+ // stopLabel: 그만두기 단추 글(마을 준비 확인은 「확인 그만하기」 — 타운 화면 글은 2판까지 한국어). 없으면 진단 글.
+ function renderDiagnosticItem({view,skill=null,notice='',playing=false,stopLabel=null}={}){
   const item=view.item,listening=item.audioRequired??item.modality==='listening',ready=view.heard&&!view.answered;
   const choices=item.choices.map(choice=>`<button class="wpos-choice" type="button" data-position-choice="${posEscape(choice.id)}"${ready?'':' disabled'}>${posEscape(choice.label)}</button>`).join('');
-  return `<div class="wpos wpos-run" data-position-run="${posEscape(item.id)}"><div class="wpos-run-head"><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(view.index,view.total)}%"></i></span><p class="wpos-run-count">${posEscape(t('position.diagnostic.progress',{index:view.index+1,total:view.total}))}</p></div><p class="life-section-label wpos-run-skill" tabindex="-1">${posEscape(t(`position.domain.${item.modality}`))} · ${posEscape(skillName(skill||{id:item.skillId}))}</p>${item.prompt?`<p class="wpos-prompt" lang="ko">${posEscape(item.prompt)}</p>`:''}${item.card?entryCard(item.card):''}${listening?`<div class="wpos-listen"><button class="quiet-button" type="button" data-position-listen${playing?' aria-busy="true"':''}>${posEscape(listenLabel(view))}</button><p class="wpos-note">${posEscape(listenNote(view,playing))}</p></div>`:''}${item.question?item.ask&&has(`position.diagnostic.ask.${item.ask}`)?`<p class="wpos-question">${posEscape(t(`position.diagnostic.ask.${item.ask}`))}</p>`:`<p class="wpos-question" lang="ko">${posEscape(item.question)}</p>`:''}<div class="wpos-choices${item.ask==='picture'?' wpos-pictures':''}" lang="ko">${choices}</div><p class="wpos-run-status" role="status">${posEscape(notice)}</p><div class="wpos-run-actions"><button class="quiet-button" type="button" data-position-skip>${posEscape(t('position.diagnostic.skip'))}</button><button class="quiet-button" type="button" data-position-stop>${posEscape(t('position.diagnostic.stop'))}</button></div></div>`;
+  return `<div class="wpos wpos-run" data-position-run="${posEscape(item.id)}"><div class="wpos-run-head"><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(view.index,view.total)}%"></i></span><p class="wpos-run-count">${posEscape(t('position.diagnostic.progress',{index:view.index+1,total:view.total}))}</p></div><p class="life-section-label wpos-run-skill" tabindex="-1">${posEscape(t(`position.domain.${item.modality}`))} · ${posEscape(skillName(skill||{id:item.skillId}))}</p>${item.prompt?`<p class="wpos-prompt" lang="ko">${posEscape(item.prompt)}</p>`:''}${item.card?entryCard(item.card):''}${listening?`<div class="wpos-listen"><button class="quiet-button" type="button" data-position-listen${playing?' aria-busy="true"':''}>${posEscape(listenLabel(view))}</button><p class="wpos-note">${posEscape(listenNote(view,playing))}</p></div>`:''}${item.question?item.ask&&has(`position.diagnostic.ask.${item.ask}`)?`<p class="wpos-question">${posEscape(t(`position.diagnostic.ask.${item.ask}`))}</p>`:`<p class="wpos-question" lang="ko">${posEscape(item.question)}</p>`:''}<div class="wpos-choices${item.ask==='picture'?' wpos-pictures':''}" lang="ko">${choices}</div><p class="wpos-run-status" role="status">${posEscape(notice)}</p><div class="wpos-run-actions"><button class="quiet-button" type="button" data-position-skip>${posEscape(t('position.diagnostic.skip'))}</button><button class="quiet-button" type="button" data-position-stop>${posEscape(stopLabel||t('position.diagnostic.stop'))}</button></div></div>`;
  }
 
  // 해설: 게임 원고 문항은 한국어 원문 한 줄, 문항 묶음 문항은 화면 언어별 해설({ko,en,mn})에서 화면 언어 하나(한 자리 한 언어 —
@@ -174,13 +175,46 @@ export function createPositionView({t,has=()=>true,formatDate=null,lang=()=>'ko'
  const explainBlock=item=>{const body=explainParagraph(item)+scriptBlock(item);return body?`<details class="wpos-explain"><summary>${posEscape(t('position.diagnostic.explain'))}</summary>${body}</details>`:'';};
  // 진단 끝 한 장: 이번에 푼 것과 바뀐 지도. results: createDiagnosticSession().results()
  // items: 문항 id → 문항(해설), practice(skillId): 「이 항목 연습하기」를 달 수 있는지(10-20 검수 #2·#7). 한 문항이라 칸은 모두 「확인 중」이다.
+ // 이번에 푼 문항 줄(맞음·틀림 · 틀린 문항은 해설을 접어서) — 진단 끝 화면과 마을 준비 확인 끝 화면이 함께 쓴다.
+ // checking: 줄 끝의 「확인 중」(내 위치 판의 칸 상태) — 그 판이 없는 마을 준비 확인 끝 화면은 뺀다.
+ function doneRows({map,results=[],items=null,practice=null,checking=true}={}){
+  const itemOf=id=>items?.get?.(id)||null;
+  return results.filter(row=>!row.skipped).map(row=>{const skill=map?.skills?.find(s=>s.id===row.skillId)||{id:row.skillId},ok=row.verdict==='correct';
+   return `<li data-verdict="${posEscape(row.verdict)}" data-skill="${posEscape(row.skillId)}">${posLed(ok?'ok':'alert')}<span class="wpos-done-copy"><strong>${posEscape(skillName(skill))}</strong><small>${posEscape(t(ok?'position.evidence.correct':'position.evidence.incorrect'))}${row.assisted?` · ${posEscape(t('position.evidence.assisted'))}`:''}${checking?` · ${posEscape(t('position.diagnostic.checking'))}`:''}</small>${ok?'':explainBlock(itemOf(row.itemId))}</span>${practiceButton(row.skillId,practice)}</li>`;}).join('');
+ }
  function renderDiagnosticDone({map,results=[],items=null,practice=null}={}){
   const answered=results.filter(row=>!row.skipped).length,skipped=results.length-answered;
-  const itemOf=id=>items?.get?.(id)||null;
-  const rows=results.filter(row=>!row.skipped).map(row=>{const skill=map.skills.find(s=>s.id===row.skillId)||{id:row.skillId},ok=row.verdict==='correct';
-   return `<li data-verdict="${posEscape(row.verdict)}" data-skill="${posEscape(row.skillId)}">${posLed(ok?'ok':'alert')}<span class="wpos-done-copy"><strong>${posEscape(skillName(skill))}</strong><small>${posEscape(t(ok?'position.evidence.correct':'position.evidence.incorrect'))}${row.assisted?` · ${posEscape(t('position.evidence.assisted'))}`:''} · ${posEscape(t('position.diagnostic.checking'))}</small>${ok?'':explainBlock(itemOf(row.itemId))}</span>${practiceButton(row.skillId,practice)}</li>`;}).join('');
+  const rows=doneRows({map,results,items,practice});
   const wrong=results.some(row=>!row.skipped&&row.verdict==='incorrect');
   return `<div class="wpos life-heading" data-position-done tabindex="-1">${poster(t('position.diagnostic.doneTitle'),t('position.diagnostic.doneSummary',{answered,skipped}))}${rows?`<ul class="wpos-done-list">${rows}</ul>`:''}${wrong?`<p class="wpos-note">${posEscape(t('position.diagnostic.wrongNote'))}</p>`:''}<p class="wpos-intro">${posEscape(t('position.diagnostic.doneNote'))}</p><p class="wpos-summary-line">${posEscape(t('position.summary',{...map.counts,total:map.total}))}</p><button class="felt-button" type="button" data-position-back>${posEscape(t('position.diagnostic.back'))} <span aria-hidden="true">→</span></button></div>`;
+ }
+
+ // ── 마을 준비 확인(싱크타운 학습·개인화 다리 §4-2) ──
+ // 싱크타운 화면 글은 2판까지 한국어다(app-shell의 타운 시트와 같다). 문항 판은 진단과 같은 판(renderDiagnosticItem)이라 화면 언어 그대로다.
+ // 급수·점수·맞힌 수를 보이지 않는다 — 「마을이 열렸어요」 또는 「조금 더 연습한 뒤에…」와 연습 추천 하나. 이번에 푼 문항의 맞음·틀림과
+ // 해설은 진단 끝 화면과 같은 줄로 보인다(WORLD가 원래 보이는 결과).
+ const TOWN_POSTER={print:'position',label:'TOWN CHECK'};
+ // 머리(패널 제목)가 이미 「마을 준비 확인」이라 본문은 기다림만 말한다. after: 확인 문항을 다 푼 뒤.
+ function renderTownCheckWait({after=false}={}){
+  return `<div class="wpos life-heading" data-town-wait tabindex="-1" aria-busy="true">${poster('잠시만 기다려 주세요',after?'방금 푼 답까지 모아 확인하고 있어요.':'이미 푼 TOPIK 연습 답으로 먼저 확인하고 있어요.',TOWN_POSTER)}</div>`;
+ }
+ // outcome: 'passed' · 'access'(확인은 마쳤고 체험·이용권이 없음 — 학습 미통과로 보이지 않는다) · 'held'(통과했지만 입장이 열리지 않음 —
+ // 같은 확인을 다시 권하지 않는다) · 'deferred'(확인 문제 판을 맞추는 중) · 'not-yet' · 'short'(낼 새 문항이 모자람) · 'later'(지금은 확인을 마치지 못함).
+ // recommend: {skillId}(연습 추천 하나) 또는 null. 학습자는 싱크타운 시트에서 왔으니 끝 화면에서 시트로 돌아가는 길을 늘 둔다.
+ function renderTownCheckDone({outcome='not-yet',results=[],map=null,items=null,recommend=null,practice=null}={}){
+  const rows=doneRows({map,results,items,checking:false});
+  const head=outcome==='passed'?poster('마을이 열렸어요','싱크타운에서 첫 이야기가 기다려요.',TOWN_POSTER)
+   :outcome==='access'?poster('마을 준비 확인은 마쳤어요','체험이나 이용권으로 열리는 곳이에요. 이용권 안내는 준비하고 있어요.',TOWN_POSTER)
+   :outcome==='held'?poster('확인은 마쳤지만 지금은 마을이 닫혀 있어요','다시 확인하지 않아도 돼요. 다시 열리면 싱크타운에서 들어갈 수 있어요.',TOWN_POSTER)
+   :outcome==='deferred'?poster('확인 문제를 새 판으로 맞추고 있어요','준비가 끝나면 다시 확인할 수 있어요. 지금까지 푼 답은 그대로 남아요.',TOWN_POSTER)
+   :outcome==='later'?poster('지금은 확인을 마치지 못했어요','잠시 뒤 다시 확인해 주세요. 지금까지 푼 답은 그대로 남아요.',TOWN_POSTER)
+   :poster('조금 더 연습한 뒤에 다시 열어 볼 수 있어요',outcome==='short'?'지금은 낼 새 확인 문제가 모자라요. 연습을 조금 더 한 뒤에 다시 열어 주세요.':'다시 확인하는 횟수에는 제한이 없어요. 다음 확인은 새 문제로 나와요.',TOWN_POSTER);
+  const skill=recommend&&(map?.skills?.find(s=>s.id===recommend.skillId)||{id:recommend.skillId});
+  const back=`<button class="quiet-button" type="button" data-town-open>싱크타운으로 돌아가기</button><button class="quiet-button" type="button" data-town-position>내 위치 보기</button>`;
+  const next=outcome==='passed'?`<button class="felt-button" type="button" data-town-open>동네 열기 <span aria-hidden="true">→</span></button>`
+   :['access','held'].includes(outcome)?back
+   :`${skill&&practice?.(skill.id)?`<section class="wpos-attention" data-town-recommend><p class="life-section-label">NEXT</p><h3>${posEscape(skillName(skill))}</h3><p class="wpos-note">이 항목을 조금 더 연습하면 다음 확인에 도움이 돼요.</p>${practiceButton(skill.id,practice)}</section>`:''}<button class="felt-button" type="button" data-town-recheck>다시 확인하기 <span aria-hidden="true">→</span></button>${back}`;
+  return `<div class="wpos life-heading" data-town-done="${posEscape(outcome)}" tabindex="-1" role="status">${head}${next}${rows?`<p class="wpos-evidence-title">이번에 푼 문제</p><ul class="wpos-done-list">${rows}</ul>`:''}</div>`;
  }
 
  // ── 짧은 연습(world-reading-practice.mjs, 10-20 검수 #1 읽기 · 10-21 ④ 듣기) ──
@@ -347,6 +381,6 @@ export function createPositionView({t,has=()=>true,formatDate=null,lang=()=>'ko'
    +`<section class="wplan-reach"><p class="life-section-label">SO FAR</p>${['listening','reading'].filter(area=>plan.progress?.[area]).map(area=>`<p class="wpos-progress" data-plan-progress="${area}"><span>${posEscape(t(`plan.area.${area}`))}${bridged.includes(area)?` · ${posEscape(t('goal.exam.type.topik1'))}`:''} · ${posEscape(t('position.progress',{checked:plan.progress[area].checked,total:plan.progress[area].total}))}</span><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(plan.progress[area].checked,plan.progress[area].total)}%"></i></span></p>`).join('')}<p class="wpos-intro">${posEscape(t('plan.reach.line',{confirmed:reach.confirmed,total:reach.total,evidence:reach.evidence}))}</p><p class="wpos-note">${posEscape(t('plan.reach.note'))}</p>${bridged.length?`<p class="wpos-note" data-plan-reach-basis>${posEscape(t(bridged.length>1?'plan.reach.topik1Basis':bridged[0]==='listening'?'plan.reach.topik1Basis.listening':'plan.reach.topik1Basis.reading'))}</p>`:''}</section>`
    +`<button class="quiet-button" type="button" data-view="study">${posEscape(t('plan.week.change'))}</button></div>`;
  }
- return Object.freeze({skillName,itemSource,noteText,explainText,renderPositionBoard,renderHangulBoard,renderDiagnosticItem,renderDiagnosticDone,renderPracticeItem,renderPracticeDone,
+ return Object.freeze({skillName,itemSource,noteText,explainText,renderPositionBoard,renderHangulBoard,renderDiagnosticItem,renderDiagnosticDone,renderTownCheckWait,renderTownCheckDone,renderPracticeItem,renderPracticeDone,
   renderMockIntro,renderMockItem,renderMockBetween,renderMockDone,mockClock,renderExamPlan});
 }
