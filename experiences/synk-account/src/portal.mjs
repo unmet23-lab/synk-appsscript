@@ -3,6 +3,7 @@ import { PRODUCTS, firstPartyAuthorization, trustedConsentRedirect } from './cor
 import { createAccountView } from './account-view.mjs';
 import { createGoogleAccess } from './google-auth.mjs';
 import { createSignupConversion } from './social-signup-conversion.mjs';
+import { createPortalSecurity, passwordProblem } from './portal-security.mjs';
 const $ = id => document.getElementById(id);
 const AUTH_LABELS = { login: '로그인', signup: '이메일로 가입', recover: '재설정 메일 보내기', reset: '새 비밀번호 저장' };
 const RATE_ACTIONS = { login: '로그인', signup: '가입 메일', recover: '비밀번호 재설정 메일', reset: '비밀번호 변경', consent: '계정 연결' };
@@ -35,9 +36,9 @@ export function authErrorMessage(error) {
 }
 export function cleanAuthCallbackUrl(value) {
   const url = new URL(value);
-  for (const key of ['code', 'sb_flow_id', 'error', 'error_code', 'error_description', 'google_flow']) url.searchParams.delete(key);
+  for (const key of ['code', 'sb_flow_id', 'error', 'error_code', 'error_description', 'google_flow', 'message']) url.searchParams.delete(key);
   const fragment = new URLSearchParams(url.hash.slice(1));
-  if (['error', 'error_code', 'error_description', 'access_token', 'refresh_token'].some(key => fragment.has(key))) url.hash = '';
+  if (['error', 'error_code', 'error_description', 'access_token', 'refresh_token', 'message'].some(key => fragment.has(key))) url.hash = '';
   return url.href;
 }
 export function authRateLimit(error) {
@@ -61,7 +62,27 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   if (preview) $('preview-banner').hidden = false;
   $('learning-link').href = config.learningUrl;
   if (!config.configured) { $('setup').hidden = false;notice('지금은 로그인할 수 없어요. 기본 학습은 로그인 없이 할 수 있어요.');return; }
-  let mode = new URL(location.href).searchParams.get('view') === 'reset' ? 'reset' : 'login', session = null, generation = 0, entryId = 0, authOperation = false, consentOperation = null, view = null, details = null, subject = null, closed = false, initializing = true, authVersion = 0, callbackBlocked = false;
+  const requestedView = new URL(location.href).searchParams.get('view');
+  let mode = requestedView === 'reset' ? 'reset' : requestedView === 'signup' ? 'signup' : 'login', session = null, generation = 0, entryId = 0, authOperation = false, consentOperation = null, view = null, details = null, subject = null, closed = false, initializing = true, authVersion = 0, callbackBlocked = false;
+  // A reset mail's token-hash link works in any browser or device. Its one-time token is used only after a
+  // tap here, so a mail scanner that opens links cannot use it up. The new-password form opens only after
+  // such a link (or the SDK's own PASSWORD_RECOVERY) on this page; a plain signed-in ?view=reset gets the
+  // 「로그인과 보안」 card, which asks for the current password.
+  const linkParams = new URL(location.href).searchParams;
+  let recoveryLink = mode === 'reset' && linkParams.get('type') === 'recovery' && /^[A-Za-z0-9_-]{16,200}$/.test(linkParams.get('token_hash') || '') ? linkParams.get('token_hash') : null;
+  // The token stays in memory only: off the address bar, history and anything shared from this page.
+  if (linkParams.has('token_hash')) { const clean = new URL(location.href);clean.searchParams.delete('token_hash');clean.searchParams.delete('type');window.history?.replaceState(window.history.state, '', clean.href); }
+  // An e-mail change has two confirmations; the first returns here with only a message (query or fragment).
+  const linkFragment = new URLSearchParams(new URL(location.href).hash.slice(1)), emailChangeHalf = requestedView === 'security' && (linkParams.has('message') || linkFragment.has('message')) && !linkParams.has('code');
+  if (emailChangeHalf) { const clean = cleanAuthCallbackUrl(location.href);if (clean !== location.href) window.history?.replaceState(window.history.state, '', clean); }
+  let recoveryReady = false, recoveredOver = null, focusSecurity = requestedView === 'security';
+  let landingNotice = emailChangeHalf ? { text: '한 주소의 확인이 끝났어요. 다른 주소로 간 메일의 「변경 확인하기」도 눌러 주세요. 둘 다 누르면 로그인 이메일이 바뀌어요.', error: false } : null;
+  const resetLinkStep = () => mode === 'reset' && !!recoveryLink && !recoveryReady;
+  // After a confirmed reset link a reload keeps the new-password form for ten minutes, for that account only.
+  const RECOVERY_KEY = 'synk.id.recovery.v1', RECOVERY_GRACE = 600000;
+  let recoveryStorage = null;try { recoveryStorage = window.sessionStorage; } catch { /* The form then needs the link again. */ }
+  const rememberRecovery = userId => { try { if (userId) recoveryStorage?.setItem(RECOVERY_KEY, JSON.stringify({ userId, until: Date.now() + RECOVERY_GRACE }));else recoveryStorage?.removeItem(RECOVERY_KEY); } catch { /* best effort */ } };
+  const recoveryGrace = userId => { try { const value = JSON.parse(recoveryStorage?.getItem(RECOVERY_KEY) || 'null');return !!userId && value?.userId === userId && Number.isFinite(value.until) && value.until > Date.now(); } catch { return false; } };
   const cooldowns = new Map(), feedbacks = new Map();let cooldownTimer = null, logoutPending = null, signedOutSubject = null;
   let automaticAuthorizationAttempted = false;
   let google = null;
@@ -77,7 +98,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   function renderControls() {
     const authSeconds = remaining(mode), consentSeconds = remaining('consent'), callbackWaiting = hadCallback && !initializationFinished;
     $('auth-submit').disabled = callbackWaiting || authOperation || authSeconds > 0;
-    setText($('auth-submit'), callbackWaiting ? '확인 링크 처리 중…' : authOperation ? '요청을 보내고 있어요…' : authSeconds ? `${authSeconds}초 뒤 다시 요청` : AUTH_LABELS[mode]);
+    setText($('auth-submit'), callbackWaiting ? '확인 링크 처리 중…' : authOperation ? '요청을 보내고 있어요…' : authSeconds ? `${authSeconds}초 뒤 다시 요청` : resetLinkStep() ? '링크 확인하고 계속' : AUTH_LABELS[mode]);
     document.querySelectorAll('[data-view]').forEach(button => { button.disabled = authOperation; });
     $('approve').disabled = $('deny').disabled = !!consentOperation || consentSeconds > 0;
     setText($('approve'), consentSeconds ? `${consentSeconds}초 뒤 다시 요청` : '연결하기');
@@ -115,6 +136,26 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     storage: pendingGoogleStorage, getSession: () => session, generation: () => generation,
     setBusy: value => { authOperation = value;renderControls(); }, hostBusy: () => authOperation || hadCallback && !initializationFinished, notice, bounded, authorizationId,
     continuePortal: () => enter(), registrationHeaders: () => signupConversion?.registrationHeaders() || {}, onRegistrationCompleted: result => signupConversion?.googleCompleted(result), endSession: async () => { authOperation = false;await logout('가입을 완료하지 않고 이 브라우저에서 로그아웃했어요.', {}, guarded(generation)); } });
+  const security = createPortalSecurity({ config, sdk, bounded, notice, preview, errorMessage: authErrorMessage, rateLimit: authRateLimit,
+    setBusy: value => { authOperation = value;renderControls(); }, hostBusy: () => authOperation || hadCallback && !initializationFinished,
+    onPasswordChanged: () => tidySessions(generation) });
+  // Auth ends every other session when a password changes; the account server's list learns it here.
+  async function tidySessions(token) {
+    const stale = (view?.sessions?.() || []).filter(row => !row.current && !row.revoked);
+    if (preview || !stale.length) return;
+    try {
+      const check = guarded(token), client = accountFactory({ url: config.accountApiUrl, anonKey: config.supabasePublishableKey, product: 'platform', guard: check, getAccessToken: () => session?.access_token });
+      for (const row of stale) { try { await client.revokeSession(row.id);check(); } catch (error) { if (error?.code === 'ACCOUNT_CHANGED') throw error; } }
+      await view?.load({ preserveWorld: true });
+    } catch { /* The list catches up on the next visit. */ }
+  }
+  // A used or expired reset link: a signed-in browser gets the card's own reset mail, anyone else the recover form.
+  async function recoveryLinkFailed() {
+    recoveryLink = null;feedbacks.delete('reset');
+    if (session) { mode = 'login';focusSecurity = true;landingNotice = { text: `이 재설정 링크는 이미 썼거나 만료됐어요. 이 브라우저에는 ${session.user?.email || '다른'} 계정이 로그인돼 있어요 — 이 계정이면 아래 「로그인과 보안」에서 재설정 메일을 다시 받고, 다른 계정이면 로그아웃한 뒤 「비밀번호 찾기」로 새 메일을 받아 주세요.`, error: true };await enter();return; }
+    setMode('recover');const text = '이 재설정 링크는 이미 썼거나 만료됐어요. 가입한 이메일을 넣으면 새 링크를 보내 드려요.';
+    feedbacks.set('recover', { text, kind: 'error' });notice(text, true, true);renderControls();
+  }
   // Provider discovery must not hold up email login or the SDK's PKCE callback.
   if (typeof loginSettings?.then === 'function') void Promise.resolve(loginSettings).then(
     value => { if (!closed) google.settings(preview ? { google: false, phone: false } : value); },
@@ -123,10 +164,19 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   const showCallbackWaiting = (reveal = false) => {
     feedbacks.set(mode, { text: callbackWaitText, kind: 'pending' });notice(callbackWaitText, false, reveal, 'pending');renderControls();
   };
+  const resetCopy = () => {
+    if (resetLinkStep()) return '메일에서 연 재설정 링크예요. 아래 단추를 누르면 링크를 확인하고 새 비밀번호 칸이 열려요.';
+    const email = session?.user?.email;
+    return `${email ? `${email} 계정의 새 비밀번호예요. ` : ''}${recoveredOver ? `이 브라우저에 로그인돼 있던 ${recoveredOver} 계정은 로그아웃했어요. ` : ''}저장하면 이 브라우저를 뺀 다른 기기와 앱에서는 로그아웃돼요.`;
+  };
   const setMode = value => {
     mode = value;$('auth-heading').textContent = ({ login: '다시 만나서 반가워요.', signup: 'SYNK 계정을 만들어요.', recover: '비밀번호를 다시 정해요.', reset: '새 비밀번호를 정해 주세요.' })[mode];
-    $('auth-copy').textContent = mode === 'recover' ? '가입한 이메일로 재설정 링크를 보내 드려요.' : mode === 'signup' ? '이메일과 비밀번호로 가입해요. 비밀번호는 8자 이상이에요.' : mode === 'reset' ? '새 비밀번호를 저장하면 내 계정으로 계속 이용할 수 있어요.' : '이메일과 비밀번호, 또는 Google 계정으로 로그인해요.';
-    $('password-label').hidden = mode === 'recover';$('password').required = mode !== 'recover';$('password').autocomplete = mode === 'login' ? 'current-password' : 'new-password';
+    $('auth-copy').textContent = mode === 'recover' ? '가입한 이메일로 재설정 링크를 보내 드려요.' : mode === 'signup' ? '이메일과 비밀번호로 가입해요. 비밀번호는 8자 이상이에요.' : mode === 'reset' ? resetCopy() : '이메일과 비밀번호, 또는 Google 계정으로 로그인해요.';
+    const linkStep = resetLinkStep(), newPassword = mode === 'reset' && !linkStep;
+    $('password-label').hidden = mode === 'recover' || linkStep;$('password').required = mode !== 'recover' && !linkStep;$('password').autocomplete = mode === 'login' ? 'current-password' : 'new-password';
+    // The label's own text node (the input sits inside the label).
+    const labelText = $('password-label').firstChild;if (labelText?.nodeType === 3) labelText.textContent = newPassword ? '새 비밀번호' : '비밀번호';
+    $('password-confirm-label').hidden = !newPassword;$('password-confirm').required = newPassword;if (!newPassword) $('password-confirm').value = '';
     $('email').closest('label').hidden = mode === 'reset';$('email').required = mode !== 'reset';$('signup-choices').hidden = mode !== 'signup';
     google?.authMode(mode);
     renderControls();
@@ -170,14 +220,23 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   async function enter() {
     if (closed) return;
     view?.stop();view = null;$('consent').hidden = true;$('account').hidden = true;
-    google?.showAccount(false);
+    google?.showAccount(false);security?.hide();
     if ($('account-next')) $('account-next').hidden = true;
     const token = generation, entry = ++entryId;
     const check = () => { guarded(token)();if (entry !== entryId) throw Object.assign(new Error('로그인 화면이 바뀌었어요.'), { code: 'ACCOUNT_CHANGED' }); };
     // An old stored session cannot authorize a callback whose exchange is still unresolved.
     if (hadCallback && !initializationFinished) { callbackEntryPending = true;$('auth-panel').hidden = false;setMode(mode);return; }
     callbackEntryPending = false;
-    if (!session || mode === 'reset') { $('auth-panel').hidden = false;setMode(mode);notice(mode === 'reset' ? '메일에서 확인한 계정의 새 비밀번호를 저장해 주세요.' : '로그인하거나, 처음이라면 회원가입해 주세요.');return; }
+    if (mode === 'reset' && session && !recoveryLink && !recoveryReady) {
+      if (recoveryGrace(session.user?.id)) recoveryReady = true;
+      else { mode = 'login';focusSecurity = true; }
+    }
+    if (!session || mode === 'reset') {
+      $('auth-panel').hidden = false;setMode(mode);
+      if (mode !== 'reset' && landingNotice) { const { text, error } = landingNotice;landingNotice = null;notice(text + ' 이 기기에서 로그인하지 않아도 돼요.', error, true, error ? 'error' : 'success');return; }
+      notice(mode !== 'reset' ? '로그인하거나, 처음이라면 회원가입해 주세요.' : resetLinkStep() ? '메일의 재설정 링크를 열었어요. 「링크 확인하고 계속」을 눌러 주세요.' : '두 칸에 같은 비밀번호를 넣고 새 비밀번호를 저장해 주세요.');
+      return;
+    }
     $('auth-panel').hidden = true;
     notice('로그인 정보를 확인하고 내 계정을 불러오고 있어요…', false, false, 'pending');
     try {
@@ -197,9 +256,11 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       view = createAccountView({ client, product: 'platform', guard: check, notice, preview, logout: (note, request) => logout(note, request, check) });await view.load();check();notice(preview ? '합성 계정 화면 예시 · 실제 로그인이나 서버 연결이 아니에요.' : '로그인됐어요. 아래에서 내 계정을 관리할 수 있어요.', false, false, 'success');
       if ($('account-next')) $('account-next').hidden = preview || callbackBlocked;
       google.showAccount(!preview);
+      security.show(checked.data.user, { focus: focusSecurity });focusSecurity = false;
+      if (landingNotice) { const { text, error } = landingNotice;landingNotice = null;notice(text, error, true, error ? 'error' : 'success'); }
     } catch (error) {
       if (token !== generation || entry !== entryId || error.code === 'ACCOUNT_CHANGED') return;
-      view?.stop();view = null;mode = 'login';setMode(mode);$('auth-panel').hidden = false;report(error);
+      view?.stop();view = null;security.hide();mode = 'login';setMode(mode);$('auth-panel').hidden = false;report(error);
     }
   }
   async function logout(note, request = {}, check) {
@@ -268,11 +329,13 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   $('auth-form').onsubmit = async event => {
     event.preventDefault();if (closed || authOperation || remaining(mode) > 0) return;
     if (hadCallback && !initializationFinished) { showCallbackWaiting(true);return; }
-    const requestMode = mode, token = ++generation, requestStartedAt = Date.now();
+    const requestMode = mode, token = ++generation, requestStartedAt = Date.now(), verifying = resetLinkStep(), previous = session?.user || null;
     authOperation = true;cooldowns.delete(requestMode);feedbacks.set(requestMode, { text: '요청을 보내고 있어요. 잠시만 기다려 주세요.', kind: 'pending' });renderControls();notice('요청을 보내고 있어요. 잠시만 기다려 주세요.', false, false, 'pending');
     try {
       let result;
       const email = $('email').value.trim(), password = $('password').value;
+      const resetProblem = requestMode === 'reset' && !verifying ? passwordProblem({ next: password, confirm: $('password-confirm').value, needsCurrent: false }) : null;
+      if (resetProblem) throw new Error(resetProblem);
       const callback = new URL(config.portalUrl);if (authorizationId) callback.searchParams.set('authorization_id', authorizationId);
       // The sign-up choices travel with the account (user_metadata.synk_signup): the account server starts
       // learning storage on the first sign-in only when the person ticked it here (SYNK-talk synk-auth.js).
@@ -280,29 +343,41 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       if (requestMode === 'signup') result = await sdk.auth.signUp({ email, password, options: { emailRedirectTo: callback.href,
         data: { synk_signup: { version: 'synk-signup-1', learning: $('signup-learning').checked, age14: true } } } });
       else if (requestMode === 'recover') { callback.searchParams.set('view', 'reset');result = await sdk.auth.resetPasswordForEmail(email, { redirectTo: callback.href }); }
+      // This tab may have just signed this account out; its recovery link still opens it.
+      else if (verifying) { signedOutSubject = null;result = await sdk.auth.verifyOtp({ type: 'recovery', token_hash: recoveryLink }); }
       else if (requestMode === 'reset') result = await sdk.auth.updateUser({ password });
       else result = await sdk.auth.signInWithPassword({ email, password });
       if (closed) return;
       if (mode !== requestMode || token !== generation && (!result.data?.session?.user?.id || result.data.session.user.id !== subject)) { await enter();return; }
+      // An expired or used link ends here; a network failure keeps the link for another tap.
+      if (verifying && result.error && !authRateLimit(result.error) && result.error.status >= 400 && result.error.status < 500) { await recoveryLinkFailed();return; }
       if (result.error) throw result.error;
       callbackBlocked = false;callbackError = null;google?.clearCallback();
       if (requestMode === 'signup') void signupConversion?.rememberEmail(result, requestStartedAt);
-      $('password').value = '';
-      if (requestMode === 'recover' || requestMode === 'signup' && !result.data?.session) {
+      $('password').value = '';$('password-confirm').value = '';
+      if (verifying) {
+        const recovered = result.data?.session?.user;
+        if (result.data?.session?.access_token) { if (recovered?.id !== subject) generation++;session = result.data.session;subject = recovered?.id || null; }
+        recoveryReady = true;recoveryLink = null;rememberRecovery(recovered?.id);feedbacks.delete('reset');
+        recoveredOver = previous?.id && previous.id !== recovered?.id ? previous.email || '다른' : null;
+        mode = 'reset';await enter();$('password').focus?.();
+      }
+      else if (requestMode === 'recover' || requestMode === 'signup' && !result.data?.session) {
         const text = `${requestMode === 'signup' ? '가입 확인 메일을 요청했어요.' : '비밀번호 재설정 메일을 요청했어요.'} 메일함에서 메일을 열고 안에 있는 단추를 눌러 주세요. 안 보이면 스팸함도 봐 주세요.`;
         feedbacks.set(requestMode, { text, kind: 'success' });notice(text, false, true, 'success');
       }
       else if (requestMode === 'reset') {
-        mode = 'login';feedbacks.delete('reset');
+        mode = 'login';feedbacks.delete('reset');recoveryReady = false;recoveredOver = null;rememberRecovery(null);
         const clean = new URL(location.href);clean.searchParams.delete('view');window.history?.replaceState(window.history.state, '', clean.href);
-        await enter();if (!$('account').hidden) notice('새 비밀번호를 저장했어요. 내 계정으로 계속 이용할 수 있어요.', false, true, 'success');
+        await enter();if (!$('account').hidden) notice('새 비밀번호를 저장했어요. 다른 기기와 앱(PC 앱·WORLD 포함)에서는 새 비밀번호로 다시 로그인해 주세요.', false, true, 'success');
+        void tidySessions(generation);
       }
       else { signedOutSubject = null;session = result.data.session;generation++;subject = session?.user?.id;clearCooldowns();await enter(); }
     } catch (error) { if (token === generation && mode === requestMode) report(error, requestMode);else if (!closed) await enter(); }
     finally { authOperation = false;renderControls(); }
   };
   for (const [id, method] of [['approve', 'approveAuthorization'], ['deny', 'denyAuthorization']]) $(id).onclick = () => respondToAuthorization(method);
-  window.addEventListener('pagehide', () => { closed = true;generation++;google?.stop();view?.stop();consentOperation = null;clearCooldowns(); });
+  window.addEventListener('pagehide', () => { closed = true;generation++;google?.stop();security.stop();view?.stop();consentOperation = null;clearCooldowns(); });
   window.addEventListener('pageshow', event => { if(event.persisted) location.reload(); });
   const showStartupError = error => {
     if (hadCallback && !initializationFinished) { showCallbackWaiting(true);return; }
@@ -310,6 +385,10 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     const retained = !$('account').hidden;
     const text = error?.code === 'GOOGLE_CALLBACK_INCOMPLETE'
       ? authErrorMessage(error) + (retained ? ' 현재 로그인된 SYNK 계정은 유지했어요.' : '')
+      : error?.code === 'AUTH_RECOVERY_CALLBACK' && retained
+      ? '이 재설정 링크는 만료됐거나 다른 브라우저에서 요청한 링크예요. 아래 「로그인과 보안」에서 재설정 메일을 다시 받아 주세요.'
+      : requestedView === 'security' && hadCallback
+      ? '이메일 변경 확인 링크를 이 브라우저에서 마무리하지 못했어요. 두 메일의 단추를 모두 눌렀다면 변경은 이미 끝났을 수 있어요. 로그인해서 「로그인과 보안」의 이메일을 확인해 주세요.'
       : hadCallback && retained
       ? '확인 링크가 만료되었거나 이 브라우저에서 처리할 수 없어요. 현재 로그인된 계정을 확인해 주세요. 다른 계정으로 로그인하려면 아래에서 먼저 로그아웃해 주세요.'
       : authErrorMessage(error) + (retained ? ' 현재 로그인된 계정은 유지했어요.' : '');
@@ -321,8 +400,8 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     // A successful new sign-in request can authorize this account again.
     if (signedOutSubject && value?.user?.id === signedOutSubject) return;
     authVersion++;const next = value?.user?.id || null, changed = next !== subject;
-    if (changed) { generation++;subject = next;google?.reset();view?.stop();consentOperation = null;clearCooldowns(); }session = value;
-    if (event === 'PASSWORD_RECOVERY') mode = 'reset';
+    if (changed) { generation++;subject = next;google?.reset();security.hide();view?.stop();consentOperation = null;clearCooldowns(); }session = value;
+    if (event === 'PASSWORD_RECOVERY') { mode = 'reset';recoveryReady = true;rememberRecovery(next); }
     const version = authVersion, token = generation, awaitingCallback = hadCallback && !initializationFinished;
     // SIGNED_IN may precede the SDK's URL cleanup. Judge only its final initialize result.
     if (awaitingCallback) await initializationPromise;
@@ -344,7 +423,10 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       // An explicit failed exchange cannot authorize an app. Keep a separately
       // verified existing session usable; successful callbacks still validate the nonce/owner.
       if (callbackError.code === 'GOOGLE_CALLBACK_INCOMPLETE') google.clearCallback();
+      if (callbackError.code === 'AUTH_RECOVERY_CALLBACK' || requestedView === 'security') focusSecurity = true;
     }
+    // The second e-mail-change confirmation returns here and signs this browser in with the changed address.
+    else if (hadCallback && requestedView === 'security') landingNotice = { text: '이메일 변경 확인을 마쳤어요. 아래 「로그인과 보안」에서 지금 로그인 이메일을 확인해 주세요.', error: false };
     if (hadCallback) {
       const clean = cleanAuthCallbackUrl(location.href);if (clean !== location.href) window.history?.replaceState(window.history.state, '', clean);
       for (const [scope, feedback] of feedbacks) if (feedback.text === callbackWaitText) feedbacks.delete(scope);
@@ -363,7 +445,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   } catch (error) { startupError = error; }
   if (closed) return;
   if (startupError) mode = recoveryRequested && callbackBlocked && !session ? 'recover' : 'login';
-  else if (mode === 'reset' && !session) { mode = 'recover';startupError = { code: 'AUTH_RECOVERY_REQUIRED' }; }
+  else if (mode === 'reset' && !session && !recoveryLink) { mode = 'recover';startupError = { code: 'AUTH_RECOVERY_REQUIRED' }; }
   initializing = false;setMode(mode);
   await enter().catch(report);
   if (startupError) showStartupError(startupError);

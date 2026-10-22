@@ -253,5 +253,7 @@ export function createAccountView({ client, product, guard, notice, logout, prev
     if(classConnection)url.pathname=run.gameId==='synk-town'?new URL('../synk-town/linked.html',location.href).pathname:new URL(worldGameHref(run.gameId)).pathname;
     gameFrame.src=url.href;gameFrame.hidden=false;world.hidden=false;gameFrame.scrollIntoView?.({behavior:'smooth',block:'start'});
   }
-  return { load,applyAccount,launchRun,closeGame, stop() { ended = true;loadVersion++;document.body.classList.remove('account-open');stopWorld();root.replaceChildren();root.hidden = true; } };
+  // The SYNK ID page tidies this list after a password change ends the other sessions in Auth.
+  const sessions = () => (data?.sessions || []).map(session => ({ ...session }));
+  return { load,applyAccount,launchRun,closeGame,sessions, stop() { ended = true;loadVersion++;document.body.classList.remove('account-open');stopWorld();root.replaceChildren();root.hidden = true; } };
 }

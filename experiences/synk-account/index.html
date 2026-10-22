@@ -14,6 +14,7 @@
     <p id="email-divider" class="email-divider">또는 이메일로</p>
     <label>이메일<input id="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" required></label>
     <label id="password-label">비밀번호<input id="password" type="password" autocomplete="current-password" minlength="8" required></label>
+    <label id="password-confirm-label" hidden>새 비밀번호 확인<input id="password-confirm" type="password" autocomplete="new-password" minlength="8"></label>
     <div id="signup-choices" class="signup-choices" hidden>
       <label class="toggle"><input id="signup-age" type="checkbox"><span>만 14세 이상이에요 <span class="muted">(필수)</span></span></label>
       <label class="toggle"><input id="signup-learning" type="checkbox" aria-describedby="learning-summary"><span>학습 기록을 계정에 저장할게요 <span class="muted">(선택)</span></span></label>
@@ -57,6 +58,35 @@
   </form>
 </section>
 <section id="consent" hidden class="sb-card consent"><p class="sb-eyebrow">CONNECT</p><h2><span id="consent-name"></span>에 연결할까요?</h2><p>아래 정보를 이 앱에 넘겨요. 「학습 기록 연결」은 계정 화면에서 따로 정해요.</p><ul id="scopes"></ul><p class="small">돌아갈 곳: <span id="consent-destination"></span></p><div class="actions"><button id="approve" class="sb-btn">연결하기</button><button id="deny" class="sb-btn soft">취소</button></div></section>
+<section id="account-security" class="sb-card account-security" aria-labelledby="account-security-heading" hidden>
+  <div class="security-head"><p class="sb-eyebrow">SIGN-IN &amp; SECURITY</p><h2 id="account-security-heading" tabindex="-1">로그인과 보안</h2><p>이 브라우저에 로그인된 계정이에요. 비밀번호와 로그인 이메일은 여기서 바꿔요.</p></div>
+  <dl class="security-facts"><dt>로그인 이메일</dt><dd id="security-email"></dd><dt>로그인 방법</dt><dd id="security-methods"></dd></dl>
+  <p id="security-pending-email" class="small security-pending" hidden></p>
+  <p id="security-status" class="small security-status" role="status" aria-live="polite" aria-atomic="true"></p>
+  <div class="security-grid">
+    <div class="security-block">
+      <h3>비밀번호 바꾸기</h3>
+      <button id="password-form-toggle" class="sb-btn soft" type="button" hidden>이미 만든 비밀번호 바꾸기</button>
+      <form id="password-change-form" class="security-form">
+        <label>현재 비밀번호<input id="current-password" type="password" autocomplete="current-password" required></label>
+        <label>새 비밀번호 <span class="muted">(8자 이상)</span><input id="new-password" type="password" autocomplete="new-password" minlength="8" required></label>
+        <label>새 비밀번호 확인<input id="new-password-confirm" type="password" autocomplete="new-password" minlength="8" required></label>
+        <label class="toggle"><input id="password-visible" type="checkbox"><span>입력한 비밀번호 보기</span></label>
+        <p class="small">바꾸면 이 브라우저를 뺀 다른 기기와 앱(PC 앱·WORLD 포함)에서는 로그아웃돼요. 그곳에서는 새 비밀번호로 다시 로그인해 주세요.</p>
+        <button id="password-change-submit" class="sb-btn" type="submit">비밀번호 바꾸기</button>
+      </form>
+      <div class="security-mail"><h4 id="password-mail-heading">현재 비밀번호를 모르겠어요</h4><p id="password-mail-copy" class="small"></p><button id="password-mail" class="sb-btn soft" type="button">재설정 메일 보내기</button></div>
+    </div>
+    <div class="security-block">
+      <h3>로그인 이메일 바꾸기</h3>
+      <form id="email-change-form" class="security-form">
+        <label>새 이메일<input id="new-email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" required></label>
+        <p class="small">지금 주소와 새 주소 두 곳에 확인 메일을 보내요. 두 메일의 단추를 모두 눌러야 바뀌고, 그때까지는 지금 이메일로 로그인해요.</p>
+        <button id="email-change-submit" class="sb-btn soft" type="submit">확인 메일 보내기</button>
+      </form>
+    </div>
+  </div>
+</section>
 <section id="google-linking" class="sb-card google-linking" aria-labelledby="google-linking-heading" hidden><div><h2 id="google-linking-heading">Google로도 로그인할 수 있어요.</h2><p>지금 계정에 Google을 연결하면 다음부터 Google로 로그인해도 같은 계정이 열려요.</p></div><button id="google-link" class="google-btn" type="button" aria-describedby="google-link-status"><span class="google-mark" aria-hidden="true"></span><span>Google 계정 연결</span></button><p id="google-link-status" class="small" role="status" aria-live="polite" aria-atomic="true"></p></section>
 <section id="account-next" class="sb-card account-next" aria-labelledby="account-next-heading" hidden><div><h2 id="account-next-heading">플레저도 같은 계정으로 열려요</h2><p>챙길 사람과 다가오는 날을 플레저 수첩에 적어 두세요.</p></div><div class="actions"><a class="sb-btn" href="https://synk.im/care/">플레저 수첩 열기</a><a class="sb-btn soft" href="https://synk.im/">SYNK 홈</a></div></section>
 <section id="account" hidden></section><section id="world-games" hidden></section>

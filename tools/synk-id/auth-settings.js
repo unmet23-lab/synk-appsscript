@@ -19,10 +19,14 @@ const muted = 'color:#565a61;font-size:13px';
 const foot = `<p style="${muted}">SYNK · <a href="https://synk.im/">synk.im</a> · 문의 hello@synk.im<br>`
   + '비밀번호나 인증번호는 누구에게도 알려 주지 마세요.</p>';
 // keep-all wraps Korean at spaces (a phone otherwise leaves 「요」 alone on the last line); long addresses still break.
-const mail = (title, lines, button, english, mongolian) => `<div style="max-width:520px;color:#10131a;line-height:1.6;word-break:keep-all;overflow-wrap:break-word">\n`
+// The reset mail links straight to the SYNK ID page with a token hash, which works in any browser or device;
+// the PKCE {{ .ConfirmationURL }} needed the browser that asked (10-22 「비번 까먹으면 아예 방법이 없네」).
+// The page uses the one-time token only after a tap, so a mail scanner opening links cannot spend it.
+const RECOVERY_LINK = '{{ .SiteURL }}/id/?view=reset&token_hash={{ .TokenHash }}&type=recovery';
+const mail = (title, lines, button, english, mongolian, href = '{{ .ConfirmationURL }}') => `<div style="max-width:520px;color:#10131a;line-height:1.6;word-break:keep-all;overflow-wrap:break-word">\n`
   + `<h2 style="font-size:20px;line-height:1.4">${title}</h2>\n`
   + `${lines.map(line => `<p>${line}</p>`).join('\n')}\n`
-  + `<p><a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:12px 20px;border-radius:10px;background:#3d6bc9;color:#ffffff;text-decoration:none;font-weight:700">${button}</a></p>\n`
+  + `<p><a href="${href}" style="display:inline-block;padding:12px 20px;border-radius:10px;background:#3d6bc9;color:#ffffff;text-decoration:none;font-weight:700">${button}</a></p>\n`
   + `<p lang="en" style="${muted}">${english}</p>\n<p lang="mn" style="${muted}">${mongolian}</p>\n${foot}\n</div>`;
 const MAILS = {
   mailer_subjects_confirmation: 'SYNK 가입을 확인해 주세요 · Confirm your SYNK sign-up',
@@ -34,7 +38,7 @@ const MAILS = {
   mailer_templates_recovery_content: mail('SYNK 비밀번호를 다시 정해 주세요',
     ['{{ .Email }} 계정의 비밀번호를 다시 정하는 요청을 받았어요. 아래 단추를 눌러 새 비밀번호를 정해 주세요.', '직접 요청하지 않았다면 이 메일은 무시해 주세요. 비밀번호는 바뀌지 않아요. 링크는 1시간 뒤 만료돼요.'],
     '새 비밀번호 정하기', 'Reset the password for {{ .Email }} with the button above. If you did not ask for this, ignore this email; nothing changes. The link expires in an hour.',
-    'Дээрх товчийг дарж {{ .Email }} хаягтай бүртгэлийн нууц үгээ шинээр тохируулна уу. Хэрэв та энэ хүсэлтийг гаргаагүй бол энэ имэйлийг үл тоомсорлож болно. Таны нууц үг өөрчлөгдөхгүй. Холбоос 1 цагийн дараа хүчингүй болно.'),
+    'Дээрх товчийг дарж {{ .Email }} хаягтай бүртгэлийн нууц үгээ шинээр тохируулна уу. Хэрэв та энэ хүсэлтийг гаргаагүй бол энэ имэйлийг үл тоомсорлож болно. Таны нууц үг өөрчлөгдөхгүй. Холбоос 1 цагийн дараа хүчингүй болно.', RECOVERY_LINK),
   // Secure email change is on (mailer_secure_email_change_enabled), so this mail goes to both addresses
   // and the change completes only after both are confirmed.
   mailer_subjects_email_change: 'SYNK 이메일 변경을 확인해 주세요 · Confirm your SYNK email change',

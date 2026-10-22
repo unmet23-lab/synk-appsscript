@@ -26,6 +26,8 @@ export function createDesktopAccountClient({ bridge, product, guard }) {
     updateProfile: (profile, expected_profile_revision) => request('updateProfile', { profile, expected_profile_revision }),
     revokeSession: session_id => request('revokeSession', { session_id }),
     revokeAll: () => request('revokeAll'), requestDeletion: request_id => request('requestDeletion', { request_id }),
+    // The account screen offers this while a deletion is still inside its 7-day grace (account-view.mjs).
+    cancelDeletion: request_id => request('cancelDeletion', { request_id }),
     exportPage: ({ after = 0, until } = {}) => request('exportPage', { after, ...(until == null ? {} : { until }) }),
     learning: Object.freeze({
       get: ({ after, revision, signal }) => request('learningGet', { after, revision }, signal),

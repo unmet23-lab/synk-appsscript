@@ -73,11 +73,11 @@ async function fixture({initialAuth=signedOut,initialClients=[waitingClient],bri
   if(!libraryDOM){const request=bridge.accountRequest;bridge.accountRequest=async(operation,params)=>['platformLoad','insightLoad'].includes(operation)?{ok:true,scope:'synk-personal',resource:operation==='platformLoad'?'platform-library':'member-insight',accountId:currentAuth.account?.synk_user_id,revision:0,updatedAt:null,state:null}:request?.(operation,params);}
   const owner=initialAuth.signedIn?initialAuth.account?.synk_user_id:null;
   const storage=new Map([[viewKey(owner),initialPreferences],[personalKey(owner),personalPreferences],...storageEntries]);
-  const modules={};for(const file of ['state','personalization','library','benefits','member-insight','member-activity-controller','member-understanding-controller','member-settings','member-understanding-host','member-insight-view','subscriptions','member-home','pulse-client','update-view'])modules[file]=await import('../renderer/'+file+'.mjs');
+  const modules={};for(const file of ['state','personalization','library','benefits','member-insight','member-activity-controller','member-understanding-controller','member-settings','member-understanding-host','member-insight-view','subscriptions','member-home','pulse-client','update-view','account-page'])modules[file]=await import('../renderer/'+file+'.mjs');
   // This auth fixture owns no layout. Navigation still invokes the real launcher's
   // applyRoute; the separately exercised convenience UI is not a second fake DOM.
   modules.convenience={mountConvenience:options=>({navigate:route=>options.applyRoute(route),refresh(){},capture(){},clientsChanged(){}})};
-  const source=fs.readFileSync(path.join(__dirname,'../renderer/launcher.mjs'),'utf8').replace(/^import \{([^}]+)\} from '\.\/(state|personalization|library|benefits|member-insight|member-activity-controller|member-understanding-controller|member-settings|member-understanding-host|member-insight-view|subscriptions|member-home|platform-continuity|convenience|pulse-client|update-view)\.mjs';/gm,(_all,names,file)=>'const {'+names+'}=globalThis.rendererModules["'+file+'"];');
+  const source=fs.readFileSync(path.join(__dirname,'../renderer/launcher.mjs'),'utf8').replace(/^import \{([^}]+)\} from '\.\/(state|personalization|library|benefits|member-insight|member-activity-controller|member-understanding-controller|member-settings|member-understanding-host|member-insight-view|subscriptions|member-home|platform-continuity|convenience|pulse-client|update-view|account-page)\.mjs';/gm,(_all,names,file)=>'const {'+names+'}=globalThis.rendererModules["'+file+'"];');
   // Execute the shipped continuity bundle in the same realm as the renderer.
   // Only its ESM export is adapted; mount/projection/dispatch remain real code.
   const continuity=fs.readFileSync(path.join(__dirname,'../renderer/platform-continuity.mjs'),'utf8').replace(/export \{\s*mountPlatformLibrary\s*\};\s*$/, 'globalThis.rendererModules["platform-continuity"]={mountPlatformLibrary};');
@@ -375,7 +375,8 @@ for(const [label,result,pattern]of [
 test('late draft cleanup warning cannot overwrite a different account or the same account with a new generation',async()=>{
   for(const id of ['student-a','new-teacher']){
     const operation=deferred(),f=await fixture({initialAuth:signedIn,bridgeOverrides:{authSignOut:()=>operation.promise}});assert.equal(await f.ready,'true');
-    await f.click('account-button');assert.equal(f.element('account-dialog').open,true);
+    // Signed in, the title-bar account opens 「내 계정」; the dialog stays the sign-in surface it closes.
+    f.element('account-dialog').showModal();assert.equal(f.element('account-dialog').open,true);
     const pending=f.click('sign-out'),next=account(id,['teacher'],{sessionGeneration:9});f.emit('auth',next);
     operation.resolve({ok:true,serverRevoked:true,serverSessionRevoked:true,draftRecoveryCleanup:{ok:false,code:'DRAFT_STORAGE_FAILED'}});await pending;
     assert.deepEqual(f.ids(),['teacher']);assert.equal(f.element('account-label').textContent,'합성 '+id);assert.equal(f.element('toast').hidden,true);
@@ -386,7 +387,7 @@ test('late draft cleanup warning cannot overwrite a different account or the sam
 test('logout status refresh cannot close a fresh sign-in dialog or publish an old cleanup warning',async t=>{
   const status=deferred(),statusEntered=deferred(),signIn=deferred();let signInCalls=0;
   const f=await fixture({initialAuth:signedIn,bridgeOverrides:{authSignIn:()=>{signInCalls++;return signIn.promise;}}});await f.ready;
-  await f.click('account-button');
+  f.element('account-dialog').showModal();
   f.bridge.authSignOut=async()=>{f.emit('auth',{...signedOut,sessionGeneration:2});return {ok:true,serverRevoked:true,serverSessionRevoked:true,draftRecoveryCleanup:{ok:false,code:'DRAFT_STORAGE_FAILED'}};};
   f.bridge.authStatus=()=>{statusEntered.resolve();return status.promise;};
   const logout=f.click('sign-out');await statusEntered.promise;
@@ -409,7 +410,7 @@ test('accepted logout closes the account modal before its outcome while sign-in 
     [{ok:true,serverRevoked:false,serverSessionRevoked:false},/서버 쪽 로그인은 인터넷이 연결된 뒤/],
     [{ok:true,serverRevoked:true,serverSessionRevoked:true,draftRecoveryCleanup:{ok:false,code:'DRAFT_STORAGE_FAILED'}},/임시 저장한 메모를 지우지 못했어요[\s\S]*같은 SYNK ID/],
   ]){
-    const f=await fixture({initialAuth:signedIn});await f.ready;await f.click('account-button');assert.equal(f.element('account-dialog').open,true);
+    const f=await fixture({initialAuth:signedIn});await f.ready;f.element('account-dialog').showModal();assert.equal(f.element('account-dialog').open,true);
     f.bridge.authSignOut=async()=>{f.setAuth({...signedOut,sessionGeneration:signedIn.sessionGeneration+1});return result;};
     await f.click('sign-out');assert.equal(f.element('account-dialog').open,false,'the warning cannot remain behind the account modal');
     assert.equal(f.element('toast').hidden,false);assert.match(f.element('toast').textContent,pattern);assert.deepEqual(f.ids(),['world']);

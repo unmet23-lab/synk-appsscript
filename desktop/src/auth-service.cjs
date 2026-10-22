@@ -148,6 +148,11 @@ function createAuthService({config,store,openExternal,fetcher=globalThis.fetch,a
         // An older token's response must neither discard it nor replace the new verified rights.
         if(status==='signed-in'&&session?.verified&&session.accessToken===token){account=data.account;librarySource=data;emit();}
       }
+      // A saved name shows in the title bar at once; a full reload would empty the library meanwhile.
+      if(operation==='updateProfile'||operation==='accountView'){
+        if(typeof data.account?.synk_user_id!=='string'||data.account.synk_user_id!==ownerId){await discard('AUTH_REQUIRED');return {ok:false,error:publicError(fault('AUTH_REQUIRED'))};}
+        if(status==='signed-in'&&session?.verified&&session.accessToken===token){account=data.account;if(librarySource)librarySource={...librarySource,account:data.account};emit();}
+      }
       if(operation==='revokeAll'||operation==='revokeSession'&&(data.current===true||data.currentRevoked===true))await discard();return data;
     }catch(error){
       // Token rotation can keep the same account epoch. A rejected old request
@@ -156,6 +161,28 @@ function createAuthService({config,store,openExternal,fetcher=globalThis.fetch,a
       if(requestEpoch===epoch&&loadSequence===accountLoadSequence){librarySource=null;emit();}return {ok:false,error:publicError(error)};
     }
   }
-  return {status:snapshot,initialize,signIn,bindPlatform,cancel:async()=>{if(pending||starting?.expected===epoch)await discard('AUTH_CANCELLED');return snapshot();},signOut,accountRequest,getAccessToken,dispose:()=>{epoch++;accountLoadSequence++;closePending();for(const c of controllers)c.abort();session=null;account=null;librarySource=null;}};
+  // The member's own sign-in facts for the platform's account screen: e-mail, a pending e-mail change,
+  // sign-up date and linked providers, read from Auth with this app's token. The account server does not
+  // return e-mail (C0 contract); the platform's OAuth consent already includes 「이메일 주소」.
+  async function identity(){
+    let requestEpoch,requestToken;
+    try{
+      if(config?.clientKey!=='platform')throw fault('INVALID_REQUEST');
+      const expected=epoch;requestEpoch=expected;let token=await getAccessToken();check(expected);
+      const send=t=>{requestToken=t;return json(config.supabaseUrl+'/auth/v1/user',{headers:headers(t)},65536);};
+      let result=await send(token);check(expected);requireBindingAccess();
+      if(result.response.status===401){token=session.accessToken===token?await refresh():session.accessToken;check(expected);requireBindingAccess();result=await send(token);check(expected);requireBindingAccess();}
+      if(!result.response.ok||typeof result.data?.id!=='string'){if(session?.accessToken!==token)throw fault('AUTH_CHANGED');if([401,403].includes(result.response.status)){await discard('AUTH_REQUIRED');throw fault('AUTH_REQUIRED',result.response.status);}throw fault('AUTH_SERVER_UNAVAILABLE',result.response.status,true);}
+      if(!session?.verified||result.data.id!==session.subject){await discard('AUTH_REQUIRED');throw fault('AUTH_REQUIRED');}
+      const email=value=>typeof value==='string'&&value.length<=254&&/^[^\s@]+@[^\s@]+$/.test(value)?value:null,instant=value=>typeof value==='string'&&Number.isFinite(Date.parse(value))?value:null;
+      const identities=(Array.isArray(result.data.identities)?result.data.identities:[]).filter(row=>typeof row?.provider==='string'&&/^[a-z0-9_-]{1,32}$/.test(row.provider)).slice(0,10)
+        .map(row=>({provider:row.provider,email:email(row.identity_data?.email)??email(row.email),createdAt:instant(row.created_at)}));
+      return {ok:true,accountId:session.accountId,email:email(result.data.email),newEmail:email(result.data.new_email),createdAt:instant(result.data.created_at),identities};
+    }catch(error){
+      if(requestEpoch===epoch&&requestToken&&session?.accessToken!==requestToken&&error.code!=='AUTH_REQUIRED')return {ok:false,error:publicError(fault('AUTH_CHANGED'))};
+      return {ok:false,error:publicError(error)};
+    }
+  }
+  return {status:snapshot,initialize,signIn,bindPlatform,identity,cancel:async()=>{if(pending||starting?.expected===epoch)await discard('AUTH_CANCELLED');return snapshot();},signOut,accountRequest,getAccessToken,dispose:()=>{epoch++;accountLoadSequence++;closePending();for(const c of controllers)c.abort();session=null;account=null;librarySource=null;}};
 }
 module.exports={createAuthService,publicError};

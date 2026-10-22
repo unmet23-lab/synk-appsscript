@@ -41,6 +41,8 @@ function requestSpec(operation,params={},appVersion='0.1.0',product,clientKey){
     }
     case 'classroom':return classroomRequestSpec(params,product);
     case 'load':keys([]);return {path:'synk-account'};
+    // The same account read for the 「내 계정」 screen; unlike `load` it leaves the verified library as it is.
+    case 'accountView':keys([]);if(product!=='platform'||clientKey!=='platform')invalid();return {path:'synk-account'};
     case 'atlasSummary':keys([]);return {path:'synk-account?view=atlas'};
     case 'release':keys([]);return {path:'release-policy?app_version='+encodeURIComponent(appVersion)};
     case 'setLearning':keys(['enabled','expected_revision']);if(typeof params.enabled!=='boolean')invalid();return action('learning-consent',{enabled:params.enabled,expected_revision:integer(params.expected_revision)});
@@ -55,6 +57,8 @@ function requestSpec(operation,params={},appVersion='0.1.0',product,clientKey){
     case 'revokeSession':keys(['session_id']);return action('revoke-session',{session_id:uuid(params.session_id)});
     case 'revokeAll':keys([]);return action('revoke-all-sessions',{});
     case 'requestDeletion':keys(['request_id']);return action('delete-request',{request_id:uuid(params.request_id)});
+    // A pending deletion stays cancellable for 7 days; the server refuses any other request id.
+    case 'cancelDeletion':keys(['request_id']);return action('delete-cancel',{request_id:uuid(params.request_id)});
     case 'exportPage':{keys(['after','until']);const after=integer(params.after??0),until=params.until==null?null:integer(params.until);return {path:`synk-account?view=export&after=${after}`+(until==null?'':`&until=${until}`)};}
     case 'learningGet':keys(['after','revision']);return {path:`synk-learning?after=${integer(params.after)}&revision=${integer(params.revision)}`};
     case 'learningPost':keys(['revision','events']);if(!Array.isArray(params.events)||params.events.length>256||Buffer.byteLength(JSON.stringify({revision:params.revision,events:params.events}))>262144)invalid();return {path:'synk-learning',body:{revision:integer(params.revision),events:params.events}};

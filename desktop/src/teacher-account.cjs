@@ -1,7 +1,7 @@
 'use strict';
 const {assertTeacherSender,teacherDocument,TEACHER}=require('./teacher-preview.cjs');
 const {publicError}=require('./auth-service.cjs');
-const ACCOUNT=new Set(['load','release','updateProfile','revokeSession','revokeAll','requestDeletion','exportPage']);
+const ACCOUNT=new Set(['load','release','updateProfile','revokeSession','revokeAll','requestDeletion','cancelDeletion','exportPage']);
 const CLASSROOM=new Set(['classes','teacherOverview','coursePlan','courseRead','courseAssign','courseFeedback','workspace','care','careSave','homework','homeworkSave','homeworkKey','enrollmentInvite','assignments','assignmentUpdate','assignmentCancel','observations']);
 function teacherAccountRequest(auth,operation,params={}){
   if(!ACCOUNT.has(operation)&&!(operation==='classroom'&&params&&CLASSROOM.has(params.operation)))

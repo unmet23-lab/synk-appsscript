@@ -8,7 +8,7 @@ const { MAILS } = require('../tools/synk-id/auth-settings.js');
 
 const KINDS = ['confirmation', 'recovery', 'email_change'];
 // Supabase 메일 틀이 이 세 메일에 주는 값 중 우리가 쓰는 것만.
-const FIELDS = new Set(['.ConfirmationURL', '.Email', '.NewEmail']);
+const FIELDS = new Set(['.ConfirmationURL', '.Email', '.NewEmail', '.SiteURL', '.TokenHash']);
 
 test('세 메일마다 제목과 본문이 있고, 칸 이름은 Supabase 템플릿 칸뿐이다', () => {
   assert.deepEqual(Object.keys(MAILS).sort(), KINDS.flatMap(k => [`mailer_subjects_${k}`, `mailer_templates_${k}_content`]).sort());
@@ -28,7 +28,10 @@ test('세 메일마다 제목과 본문이 있고, 칸 이름은 Supabase 템플
 test('본문은 확인 단추 하나로 이어지고, 한국어·영어·몽골어가 다 있다', () => {
   for (const kind of KINDS) {
     const body = MAILS[`mailer_templates_${kind}_content`], subject = MAILS[`mailer_subjects_${kind}`];
-    assert.equal(body.match(/href="{{ \.ConfirmationURL }}"/g)?.length, 1, `${kind}: 확인 링크는 단추 하나`);
+    // 재설정 메일은 어느 브라우저·기기에서나 열리는 token-hash 링크(PKCE 확인 링크는 요청한 브라우저에서만 열렸다).
+    const link = kind === 'recovery' ? 'href="{{ .SiteURL }}/id/?view=reset&token_hash={{ .TokenHash }}&type=recovery"' : 'href="{{ .ConfirmationURL }}"';
+    assert.equal(body.split(link).length - 1, 1, `${kind}: 확인 링크는 단추 하나`);assert.equal((body.match(/href=/g) || []).length, 2, `${kind}: 단추와 synk.im 줄 말고 다른 링크 없음`);
+    assert.ok(kind !== 'recovery' || !body.includes('.ConfirmationURL'), 'recovery: PKCE 확인 링크를 쓰지 않는다');
     assert.match(subject, /^SYNK [가-힣 ]+ · [A-Za-z ]*SYNK[A-Za-z -]*$/, `${kind}: 제목은 한국어 · 영어`);
     assert.match(body, /<p lang="en"[^>]*>[A-Za-z]/, `${kind}: 영어 줄`);
     assert.match(body, /<p lang="mn"[^>]*>[^<]*[А-Яа-яӨөҮү]/, `${kind}: 몽골어 줄`);

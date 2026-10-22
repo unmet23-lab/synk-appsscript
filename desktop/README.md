@@ -2,6 +2,12 @@
 
 > 현재 제품 연결과 릴리스 결과는 [플랫폼 계정·연결 원문](../docs/SYNK_플랫폼_계정과_연결_설계.md)을 따른다. 아래는 날짜별 구현·검증 이력이며 ‘현재 PC’, 앱 수, 미실행 항목은 해당 날짜의 범위다. 10-15 후속 0.4.16 기록도 그 원문에 있으므로 이 문서의 0.4.15나 더 오래된 파일을 최신 배포판으로 지정하지 않는다. 이사는 새 기기의 설치·로그인·효과 재검증을 뜻하지 않는다. 현재 공통 릴리스 재현은 [LIFECYCLE](LIFECYCLE.md#platform-release-reproduction)을 사용한다.
 
+<a id="account-page-20261022"></a>
+
+## 2026-10-22 · 「내 계정」 — 다음 PC 판에 실림
+
+머리 계정 단추·설정 「SYNK ID」 줄·라이브러리·내 홈·내 성향의 계정 입구가 로그인 상태면 「내 계정」(`renderer/account-page.mjs`)을 연다. 이름 바꾸기, 로그인 이메일·로그인 방법·가입일(본체 `identity` — 자기 토큰으로 `/auth/v1/user`를 읽어 추림), 소속, 로그인한 곳·모두 로그아웃, 학습 기록 연결, 기록 내려받기, 계정 지우기 요청·취소, 작업실 크루의 「작업실 비밀번호는 작업실 설정에서」 안내. 비밀번호·로그인 이메일·Google 연결은 본체 `synk:auth-security`가 기본 브라우저의 `https://synk.im/id/?view=security`를 연다(이 앱은 비밀번호를 받지 않는다). 읽기는 `accountView`(`load`와 달리 확인된 라이브러리를 비우지 않음), 허용 목록에 `cancelDeletion`(PC·WORLD·교사)을 더했다. 확인: `node --test tests/account-page.test.cjs tests/auth.test.cjs tests/renderer-auth.test.cjs`, 크롬 합성 브리지 `node tools/account-page-browser-qa.cjs <playwright 폴더> <출력>`(1440·390). 설계·벤치마킹은 [플랫폼 계정 원문](../docs/SYNK_플랫폼_계정과_연결_설계.md#member-info-20261022).
+
 ## 2026-10-15 · 0.4.15 성향 보완·최적화 — 공개·PC 설치와 실계정 재실행 완료
 
 기존 Atlas의 상황별 설명·자유서술 확인 반영과 입력/이력 표시 최적화를 **0.4.15 / build20261015.2**로 공개하고 현재 PC에 설치했다. 공개 세 설치파일 SHA·PC75파일·동결 소스142파일이 일치하며 기존 프로필319+Suite1파일은 설치 직후 모두 보존됐다. 실제 계정의 자동 연결·정상 종료 후 재실행·성향 화면과 기존 기록 유지를 확인했고 `closeToTray=true`로 원복했다. WORLD·Workspace 자식 설치파일은 0.4.11이다. [범위·검사·최종 공개 상태](../docs/SYNK_플랫폼_계정과_연결_설계.md#member-insight-optimization-20261015). 아래 PC 중단은 당시 이력이며 이번 사용자 재개 요청과 완료가 후속 상태다. 푸시는 보류한다.

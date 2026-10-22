@@ -313,6 +313,44 @@ test('native account contract enforces server learning and profile limits',()=>{
   assert.throws(()=>requestSpec('learningPost',{revision:1,events:Array(257).fill({})}));assert.throws(()=>requestSpec('learningPost',{revision:1,events:[{content:'x'.repeat(262144)}]}));
   assert.throws(()=>requestSpec('updateProfile',{profile:{display_name:'x'.repeat(61)},expected_profile_revision:1}));
   assert.deepEqual(requestSpec('updateProfile',{profile:{locale:'ko',time_zone:'Asia/Seoul'},expected_profile_revision:1}).body.profile,{locale:'ko',time_zone:'Asia/Seoul'});
+  // The 7-day deletion grace: the same fixed account route, a request id only.
+  assert.deepEqual(requestSpec('cancelDeletion',{request_id:'00000000-0000-4000-8000-0000000000aa'}),{path:'synk-account',body:{action:'delete-cancel',request_id:'00000000-0000-4000-8000-0000000000aa'}});
+  for(const params of [{},{request_id:'not-a-uuid'},{request_id:'00000000-0000-4000-8000-0000000000aa',action:'delete-request'}])assert.throws(()=>requestSpec('cancelDeletion',params),{code:'INVALID_REQUEST'});
+});
+test('platform account screen reads its own e-mail and linked providers from Auth, without tokens or metadata',async t=>{
+  const f=await fixture(t);await f.login();
+  f.queueUser({data:{id:'synthetic-auth-user',email:'member@synthetic.invalid',new_email:'next@synthetic.invalid',created_at:'2026-10-01T00:00:00Z',phone:'01000000000',user_metadata:{synk_signup:{version:'synk-signup-1'}},app_metadata:{provider:'email'},
+    identities:[{provider:'email',identity_data:{email:'member@synthetic.invalid',sub:'synthetic-sub'},created_at:'2026-10-01T00:00:00Z'},{provider:'google',identity_data:{email:'google@synthetic.invalid'},created_at:'2026-10-02T00:00:00Z',access_token:'must-not-pass'},{provider:'Bad Provider'},null]}});
+  const result=await f.service.identity();
+  assert.deepEqual(result,{ok:true,accountId:'stable-synthetic-id',email:'member@synthetic.invalid',newEmail:'next@synthetic.invalid',createdAt:'2026-10-01T00:00:00Z',
+    identities:[{provider:'email',email:'member@synthetic.invalid',createdAt:'2026-10-01T00:00:00Z'},{provider:'google',email:'google@synthetic.invalid',createdAt:'2026-10-02T00:00:00Z'}]});
+  assert.match(f.requests.filter(row=>row.path==='/auth/v1/user').at(-1).headers.authorization,/^Bearer synthetic-access-\d+$/);
+  // A rejected token renews once; a different Auth subject ends this app's session instead of showing it.
+  f.queueUser({status:401,data:{error:'expired'}});const renewed=await f.service.identity();assert.equal(renewed.ok,true);assert.equal(renewed.email,null);assert.equal(f.refreshCount,1);
+  f.queueUser({data:{id:'different-user',email:'other@synthetic.invalid'}});assert.equal((await f.service.identity()).error.code,'AUTH_REQUIRED');assert.equal(f.service.status().signedIn,false);
+  assert.equal((await f.service.identity()).error.code,'AUTH_REQUIRED');
+});
+test('only the platform window can read sign-in identity',async t=>{
+  const f=await fixture(t,{product:'world'});await f.login();const reads=f.requests.length;
+  assert.equal((await f.service.identity()).error.code,'INVALID_REQUEST');assert.equal(f.requests.length,reads);
+});
+test('a saved display name updates the title-bar account at once and keeps the library; another owner signs out',async t=>{
+  const f=await fixture(t);f.accountPayload({memberships:[{kind:'learner',role:'student',learner_id:'synthetic-learner'}]});await f.login();const library=f.service.status().library;
+  f.queueAccount({data:{ok:true,account:{synk_user_id:'stable-synthetic-id',status:'active',profile:{display_name:'새 이름'},profile_revision:2}}});
+  const saved=await f.service.accountRequest('updateProfile',{profile:{display_name:'새 이름'},expected_profile_revision:1});
+  assert.equal(saved.ok,true);assert.equal(f.service.status().account.display_name,'새 이름');assert.deepEqual(f.service.status().library,library);
+  assert.deepEqual(JSON.parse(f.requests.at(-1).body),{action:'profile-update',profile:{display_name:'새 이름'},expected_profile_revision:1});
+  f.queueAccount({data:{ok:true,account:{synk_user_id:'another-synthetic-id',status:'active',profile:{display_name:'남'},profile_revision:3}}});
+  assert.equal((await f.service.accountRequest('updateProfile',{profile:{display_name:'남'},expected_profile_revision:2})).error.code,'AUTH_REQUIRED');assert.equal(f.service.status().signedIn,false);
+});
+test('the 「내 계정」 read keeps the verified library while it is in flight and is platform-only',async t=>{
+  const f=await fixture(t);f.accountPayload({memberships:[{kind:'learner',role:'student',learner_id:'synthetic-learner'}]});await f.login();const library=f.service.status().library,events=[];
+  let release;f.queueAccount({wait:new Promise(resolve=>{release=resolve;}),data:{ok:true,account:{synk_user_id:'stable-synthetic-id',status:'active',profile:{display_name:'바뀐 이름'},profile_revision:4},memberships:[],sessions:[]}});
+  const pending=f.service.accountRequest('accountView');await new Promise(resolve=>setTimeout(resolve,20));events.push(f.service.status().library);release();const result=await pending;
+  assert.equal(result.ok,true);assert.deepEqual(events[0],library);assert.deepEqual(f.service.status().library,library);assert.equal(f.service.status().account.display_name,'바뀐 이름');
+  assert.equal(f.requests.at(-1).path,'/functions/v1/synk-account');assert.equal(f.requests.at(-1).method,'GET');
+  assert.throws(()=>requestSpec('accountView',{},'0.4.42','world','world'),{code:'INVALID_REQUEST'});assert.throws(()=>requestSpec('accountView',{x:1},'0.4.42','platform','platform'),{code:'INVALID_REQUEST'});
+  f.queueAccount({data:{ok:true,account:{synk_user_id:'another-synthetic-id',status:'active',profile:{}},sessions:[]}});assert.equal((await f.service.accountRequest('accountView')).error.code,'AUTH_REQUIRED');assert.equal(f.service.status().signedIn,false);
 });
 test('company HTTP denial is an error envelope instead of a successful exchange result',async()=>{
   const handler=createCompanyRequests({entry:'http://127.0.0.1:4191/?tab=messenger',clientId:'messenger',auth:{getAccessToken:async()=> 'synthetic-main-token'},session:{fetch:async()=>new Response(JSON.stringify({error:'직원 연결이 필요해요.',code:'SYNK_LINK_REQUIRED'}),{status:403})}});

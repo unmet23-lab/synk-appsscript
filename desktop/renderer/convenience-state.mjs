@@ -1,4 +1,4 @@
-export const VIEWS=['home','library','benefits','downloads','settings'];
+export const VIEWS=['home','library','benefits','downloads','settings','account'];
 export function normalizeRoute(value={},appIds=[]){
   const view=VIEWS.includes(value?.view)?value.view:'home';
   return {view,appId:appIds.includes(value?.appId)?value.appId:null,detail:['overview','content','info'].includes(value?.detail)?value.detail:'overview',benefitId:['insight','subscriptions','care','fortune'].includes(value?.benefitId)?value.benefitId:null,scroll:Math.max(0,Math.min(Number(value?.scroll)||0,100000)),pageScroll:Math.max(0,Math.min(Number(value?.pageScroll)||0,100000))};

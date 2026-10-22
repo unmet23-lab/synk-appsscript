@@ -3,7 +3,7 @@ import {mountCareNotifications} from './care-notifications.mjs';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const svg=name=>`<svg class="i" aria-hidden="true"><use href="#i-${name}"/></svg>`;
-const VIEW_NAMES={home:'내 홈',library:'라이브러리',benefits:'회원 혜택',downloads:'설치·업데이트',settings:'설정'};
+const VIEW_NAMES={home:'내 홈',library:'라이브러리',benefits:'회원 혜택',downloads:'설치·업데이트',settings:'설정',account:'내 계정'};
 
 export function mountConvenience({bridge,storage,apps,getSnapshot,readRoute,applyRoute,launchApp,onToast,getNotes,openNote,onFavorite,onMoveFavorite,onLibrarySearch,onDesktopPreferences=()=>{}}){
   const $=id=>document.getElementById(id),main=$('main');

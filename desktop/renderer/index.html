@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="./pulse-client.css">
   <link rel="stylesheet" href="./member-insight.css">
   <link rel="stylesheet" href="./subscriptions.css">
+  <link rel="stylesheet" href="./account-page.css">
   <script src="/assets/launcher/engine.js"></script>
   <script src="/assets/launcher/personalization.js"></script>
   <script type="module" src="./launcher.mjs"></script>
@@ -133,12 +134,13 @@
           <div class="setting-row"><div><h2>화면 밀도</h2><p>라이브러리와 앱 화면의 간격을 바꿔요.</p></div><select id="density" aria-label="화면 밀도"><option value="comfortable">기본</option><option value="compact">촘촘하게</option></select></div>
         </div>
         <div class="settings-group">
-          <div class="setting-row"><div><h2>SYNK ID</h2><p id="settings-account">계정 상태 확인 중</p></div><button class="ghost-button" id="settings-login">계정 관리</button></div>
+          <div class="setting-row"><div><h2>SYNK ID</h2><p id="settings-account">계정 상태 확인 중</p></div><button class="ghost-button" id="settings-login">내 계정</button></div>
           <div class="setting-row"><div><h2>버전</h2><p>WORLD와 Workspace는 따로 설치하는 앱이에요.</p></div><span class="mono version-tag" id="platform-version">—</span></div>
           <div class="setting-row"><div><h2>보기 설정 되돌리기</h2><p>즐겨찾기, 화면 밀도, 마지막 실행 기록을 처음 상태로 되돌려요.</p></div><button class="ghost-button" id="reset-preferences">되돌리기</button></div>
         </div>
         <div class="quiet-note"><strong>연결 상태</strong><dl id="diagnostics"></dl></div>
       </section>
+      <section id="view-account" class="view padded-view" aria-labelledby="account-page-title" hidden></section>
     </main>
   </div>
   <footer class="statusbar">
