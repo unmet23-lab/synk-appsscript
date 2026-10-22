@@ -194,6 +194,11 @@ class 측정용사본(unittest.TestCase):
         with self.assertRaisesRegex(M.쪽배치오류, '암호'):
             M.calibrate(streams(table_body(), password=True), M.parse_rules('·=152'))
 
+    def test_HWP가_아닌_OLE_파일은_잴_수_없다(self):
+        not_hwp = {k: v for k, v in streams(table_body()).items() if k != 'FileHeader'}  # .doc처럼 FileHeader가 없다
+        with self.assertRaisesRegex(ValueError, 'HWP 5 파일이 아니다'):
+            M.calibrate(not_hwp, M.parse_rules('·=152'))
+
     def test_문단_글과_쪽_나눔_줄_배치_없는_문단(self):
         body = paragraph(0, ' 1. 개요 ', [(0, 0)], divide=M.PAGE_BREAK) + paragraph(0, '본문', [(0, 0)], seg=False)
         st = streams(body)
@@ -323,11 +328,22 @@ class 묶음과_흠(unittest.TestCase):
         self.assertEqual(M.tree_lines(TREES[2]), [(5, 100.0, '줄1'), (5, 125.6, '줄2'), (5, 151.2, '줄3')])
         self.assertIsNone(M.line_pitch_pt([M.tree_lines(t) for t in TREES[:2]]))
 
+    def test_표_캡션_줄은_재기에서_빼고_대조에서는_옛_셈대로_문단_0에(self):
+        t = tree((0, 90.0, '표 문단'), (5, 100.0, '줄1'))
+        col = t['children'][1]['children'][0]['children']
+        col.insert(1, {'type': 'TextLine', 'pi': 0, 'bbox': {'y': 95.0}, 'children': [{'type': 'TextRun', 'text': '< 매출 >'}],
+                       'captionOwner': {'secIdx': 0, 'paraIdx': 4, 'controlIdx': 0, 'captionOrdinal': 0}})
+        self.assertEqual([t2 for _, _, t2 in M.tree_lines(t)], ['표 문단', '줄1'])  # 흠의 줄 글·줄 간격을 흐리지 않는다
+        paras, _ = M.tree_paragraph_lines([(1, t)])
+        self.assertEqual(paras[(0, ('P', 0))], ['표문단', '<매출>'])  # 옛 rt_lines.py와 같다 — 10-21 기록과 견주려고
+
     def test_사람용_글이_깨지지_않는다(self):
         res = dict(self.res, file='x.hwp', rhwp={'version': M.RHWP_VERSION, 'pinned': True}, json='result.json',
                    calibration={'rule': M.DEFAULT_RULE, 'chars': 3, 'byChar': {'휴먼명조 ·': 3}, 'shapes': 2, 'clones': 1, 'scale': None},
-                   shake=[{'font': '휴먼명조', 'percent': 101, 'pageCount': 6, 'strong': 2, 'smallest': self.res['bundles'][1]}])
+                   shake=[{'font': '휴먼명조', 'percent': 101, 'pageCount': 6, 'strong': 2, 'smallest': self.res['bundles'][1]}],
+                   warnings=['render tree 5쪽 · dump-pages 6쪽이 달라 쪽 끝 흠의 줄 글이 빌 수 있다'])
         text = M.format_measure(res)
+        self.assertIn('⚠ render tree 5쪽', text)
         self.assertIn('묶음  1  2~5쪽', text)
         self.assertIn('268.8pt (14.0줄)', text)
         self.assertIn('강한 흠 2곳 · 약한 흠 1곳', text)
@@ -382,6 +398,11 @@ class 쪽끝대조(unittest.TestCase):
         b = [[(500.0, 'x')], [(690.0, 'A')], [(700.0, 'B')], [(700.0, 'C')]]
         self.assertEqual(M.align_pages(a, b), [(0, 1), (1, 2), (2, 3), (3, None)])
 
+    def test_끝_줄이_같은_쪽이_여럿이면_첫_줄도_같은_쪽(self):
+        a = [[(100.0, '첫'), (700.0, '합계')]]
+        b = [[(100.0, '다른'), (700.0, '합계')], [(100.0, '첫'), (700.0, '합계')]]
+        self.assertEqual(M.align_pages(a, b), [(0, 1)])
+
     def test_쪽마다_높이_차와_밀림(self):
         hancom = [pdf_page((100.0, '첫'), (700.0, '끝일')), pdf_page((100.0, '둘'), (650.0, '끝이'))]
         rhwp = [pdf_page((100.0, '표')), pdf_page((100.0, '첫'), (700.05, '끝일')), pdf_page((100.0, '둘'), (641.0, '끝이'))]
@@ -408,6 +429,7 @@ class 글자폭대조(unittest.TestCase):
                             {('·', 12): (0.25, 115), ('가', 12): (1.0, 880)}, {('·', 12): (0.38, 115)})
         self.assertEqual([(r['char'], r['differs']) for r in rows], [('가', False), ('·', True)])  # 한 번만 나온 x는 뺀다
         self.assertIsNone(rows[0]['cal'])
+        self.assertEqual([(r['count'], r['rawCount'], r['calCount']) for r in rows], [(900, 880, 0), (117, 115, 115)])
 
 
 class 실행준비(unittest.TestCase):
@@ -449,10 +471,12 @@ class 실행준비(unittest.TestCase):
                 M.start(str(f), os.path.join(d, 'w'))
 
     def test_흔들_글꼴이_없거나_파일이_깨졌거나_제목_꼴이_틀리면_재기_전에_종료_1(self):
-        self.assertEqual(M.shape_fonts(streams(table_body())), {'휴먼명조', '맑은 고딕'})
+        self.assertEqual(M.font_char_counts(streams(table_body())), {'휴먼명조': 9, '맑은 고딕': 3})  # 제어 글자(문단 끝) 뺌
+        defined_only = streams(table_body(), shapes=((0, 100), (1, 100), (2, 100)), faces=('휴먼명조', '맑은 고딕', '바탕'))
+        self.assertNotIn('바탕', M.font_char_counts(defined_only))  # 글자 모양에만 있고 쓰인 글자가 없다
         broken = dict(streams(table_body()), **{'BodyText/Section0': b'not deflate'})
         fake = {'exe': 'rhwp.exe', 'version': M.RHWP_VERSION, 'sha256': M.RHWP_SHA256, 'pinned': True}
-        for args, source, why in [(['--흔들기', '바탕'], streams(table_body()), '흔들 글꼴 「바탕」'),
+        for args, source, why in [(['--흔들기', '바탕'], defined_only, '흔들 글꼴 「바탕」로 쓰인 글자가 없다 — .*휴먼명조 9자'),
                                   ([], broken, 'invalid|incorrect|Error'), (['--제목', '('], streams(table_body()), 'missing|unterminated')]:
             with self.subTest(args=args), tempfile.TemporaryDirectory() as d, \
                     mock.patch.object(M, 'find_rhwp', return_value=fake), mock.patch.object(M, 'check_jar'), \

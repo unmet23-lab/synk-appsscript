@@ -210,10 +210,34 @@ def _char_shapes(doc):
     return idm_i, idm, cs_idx, fonts
 
 
-def shape_fonts(streams):
-    """글자 모양들이 쓰는 한글 글꼴 이름(빈 이름 뺌) — 흔들 글꼴을 재기 전에 확인한다."""
+def font_char_counts(streams):
+    """한글 글꼴마다 실제로 쓰인 글자 수(본문·표 칸, 제어 글자 뺌) — 흔들 글꼴을 재기 전에 확인한다.
+    글자 모양에만 있고 쓰인 글자가 없는 글꼴(10-22 그림판의 「바탕」)을 흔들면 결과가 늘 같다(Fable 검수)."""
     unz, _ = _codec(streams)
-    return {f for f in _char_shapes(H.parse(unz(streams['DocInfo'])))[3] if f}
+    fonts = _char_shapes(H.parse(unz(streams['DocInfo'])))[3]
+    count = collections.Counter()
+    kids_tags = (H.PARA_TEXT, H.PARA_CHAR_SHAPE, H.PARA_LINE_SEG, H.PARA_RANGE_TAG)
+    for name in section_names(streams):
+        recs = H.parse(unz(streams[name]))
+        for i, r in enumerate(recs):
+            if r.tag != H.PARA_HEADER:
+                continue
+            j, kids = i + 1, {}
+            while j < len(recs) and recs[j].level == r.level + 1 and recs[j].tag in kids_tags:
+                kids.setdefault(recs[j].tag, j)
+                j += 1
+            if H.PARA_TEXT not in kids or H.PARA_CHAR_SHAPE not in kids:
+                continue
+            codes, _ = text_positions(recs[kids[H.PARA_TEXT]].data)
+            d = recs[kids[H.PARA_CHAR_SHAPE]].data
+            runs = [struct.unpack_from('<II', d, o) for o in range(0, len(d) - 7, 8)]
+            k = 0
+            for p, c in codes:
+                while k + 1 < len(runs) and runs[k + 1][0] <= p:
+                    k += 1
+                if c > 31 and runs and runs[k][0] <= p and runs[k][1] < len(fonts):
+                    count[fonts[runs[k][1]]] += 1
+    return count
 
 
 def calibrate(streams, rules=None, scale=None, strip_line_seg=False):
@@ -336,7 +360,8 @@ def run_text(node):
 
 
 def tree_lines(tree):
-    """render tree 한 쪽의 본문 줄(단에 바로 놓인 줄 — 표·머리말·꼬리말 줄은 뺀다): [(문단, y px, 글)]."""
+    """render tree 한 쪽의 본문 줄(단에 바로 놓인 줄 — 표·머리말·꼬리말 줄은 뺀다): [(문단, y px, 글)].
+    표 캡션 줄도 단에 바로 놓이지만 pi가 0이고 captionOwner(표를 품은 문단)를 달고 와서 뺀다(10-22 Fable 검수)."""
     out = []
     for body in tree.get('children') or []:
         if body.get('type') != 'Body':
@@ -345,7 +370,7 @@ def tree_lines(tree):
             if col.get('type') != 'Column':
                 continue
             for ln in col.get('children') or []:
-                if ln.get('type') == 'TextLine':
+                if ln.get('type') == 'TextLine' and 'captionOwner' not in ln:
                     out.append((ln.get('pi'), (ln.get('bbox') or {}).get('y', 0.0), run_text(ln)))
     return out
 
@@ -496,6 +521,8 @@ def tree_paragraph_lines(trees, sections=None):
             elif ty == 'Cell':
                 path = path + (('C', node.get('row'), node.get('col')),)
             elif ty == 'TextLine':
+                # 표 캡션 줄(captionOwner)은 pi 0이라 문단 0 줄로 섞인다. 옛 rt_lines.py와 같게 그대로 둔다 — 정답·시험이
+                # 똑같이 섞여 일치 판정은 그대로고, 따로 세면 10-21 기록(392/396·84/88)이 397·87로 바뀌어 견줄 수 없다.
                 key = (sec,) + path + (('P', node.get('pi')),)
                 paras.setdefault(key, []).append(re.sub(r'\s+', '', run_text(node)))
                 first_page.setdefault(key, page_no)
@@ -569,18 +596,18 @@ def text_rows(chars, tol=1.0):
 
 
 def align_pages(a_rows, b_rows, reach=2):
-    """정답 쪽마다 끝 줄 글이 같은 시험 쪽을 앞에서 찾은 밀림 근처(±reach)에서 찾는다 → [(정답 쪽 자리, 시험 쪽 자리 | None)]."""
+    """정답 쪽마다 끝 줄 글이 같은 시험 쪽을 앞에서 찾은 밀림 근처(±reach)에서 찾는다 → [(정답 쪽 자리, 시험 쪽 자리 | None)].
+    끝 줄이 같은 쪽이 여럿이면(「합계」처럼 짧은 끝 줄) 첫 줄도 같은 쪽, 그다음 가까운 쪽을 고른다."""
     last_b = [r[-1][1] if r else None for r in b_rows]
     out, shift = [], 0
     for i, ra in enumerate(a_rows):
         want = ra[-1][1] if ra else None
         j = None
         if want:
-            for d in sorted(range(-reach, reach + 1), key=abs):
-                k = i + shift + d
-                if 0 <= k < len(b_rows) and last_b[k] == want:
-                    j = k
-                    break
+            hits = [i + shift + d for d in range(-reach, reach + 1)
+                    if 0 <= i + shift + d < len(b_rows) and last_b[i + shift + d] == want]
+            if hits:
+                j = min(hits, key=lambda k: (b_rows[k][0][1] != ra[0][1], abs(k - i - shift)))
         if j is not None:
             shift = j - i
         out.append((i, j))
@@ -657,10 +684,11 @@ def width_rows(hancom, raw, cal, min_count=2):
     for key, (h, n) in sorted(hancom.items(), key=lambda kv: -kv[1][1]):
         if n < min_count:
             continue
-        r = raw.get(key, (None, 0))[0]
-        c = cal.get(key, (None, 0))[0]
+        r, rn = raw.get(key, (None, 0))
+        c, cn = cal.get(key, (None, 0))
         flag = any(v is not None and abs(v - h) >= WIDE_EM for v in (r, c))
-        rows.append({'char': key[0], 'size': key[1], 'hancom': h, 'raw': r, 'cal': c, 'count': n, 'differs': flag})
+        rows.append({'char': key[0], 'size': key[1], 'hancom': h, 'raw': r, 'cal': c, 'count': n,
+                     'rawCount': rn, 'calCount': cn, 'differs': flag})
     return rows
 
 
@@ -819,6 +847,9 @@ def measure_once(folder, streams, paras, rhwp, rules=None, scale=None, heading=H
     trees = export_tree(rhwp, folder)
     res = analyze(pages_json, paras, trees_in_page_order(pages_json, trees), heading)
     res['calibration'] = stats
+    n_pages = len(pages_json.get('pages') or [])
+    res['warnings'] = [] if len(trees) == n_pages else [
+        f'render tree {len(trees)}쪽 · dump-pages {n_pages}쪽이 달라 쪽 끝 흠의 줄 글이 빌 수 있다']
     if pdf:
         res['pdf'] = str(export_pdf(rhwp, folder))
     return res
@@ -845,6 +876,7 @@ def format_measure(res):
     out = [f"{Path(res['file']).name} — {res['pageCount']}쪽 ({res['rhwp']['version']} --compat {COMPAT}"
            + ('' if res['rhwp']['pinned'] else ', 고정 판 아님') + ')',
            calibration_line(res['calibration'])]
+    out += [f'⚠ {w}' for w in res.get('warnings') or []]
     pitch = res['linePitchPt']
     out.append('묶음(강제 쪽 나눔)마다 끝 쪽 여유' + (f' — 한 줄 {pitch:g}pt' if pitch else '') + ', 마지막 줄 뒤 간격까지 센 값:')
     for b in res['bundles']:
@@ -917,13 +949,14 @@ def format_compare(res):
     flagged = [w for w in res['widths'] if w['differs']]
     out.append(f'글자 폭(em, 줄 글자 크기로 나눈 이웃 글자까지 거리의 중앙값) — 한컴과 {WIDE_EM}em 넘게 다른 것 {len(flagged)}줄:')
     if flagged:
-        out.append('  글자   크기    한컴   보정 전  보정 뒤  개수')
+        out.append('  글자   크기    한컴   보정 전  보정 뒤  개수(한컴/보정 전/보정 뒤)')
 
         def f3(v):
             return '   —  ' if v is None else f'{v:6.3f}'
 
         for w in flagged:
-            out.append(f"  {w['char']:<4} {w['size']:>5g}pt {w['hancom']:6.3f}  {f3(w['raw'])}  {f3(w['cal'])}  {w['count']:>4}")
+            out.append(f"  {w['char']:<4} {w['size']:>5g}pt {w['hancom']:6.3f}  {f3(w['raw'])}  {f3(w['cal'])}"
+                       f"  {w['count']}/{w['rawCount']}/{w['calCount']}")
     out.append(f"결과 JSON: {res['json']}")
     return '\n'.join(out)
 
@@ -956,8 +989,11 @@ def cmd_measure(o):
     rules = None if o.보정없이 else parse_rules(o.규칙)
     re.compile(o.제목)  # 꼴이 틀리면 재기 전에 멈춘다
     src, streams = read_source(o.hwp)
-    if o.흔들기 and o.흔들기 not in shape_fonts(streams):
-        raise 쪽배치오류(f"흔들 글꼴 「{o.흔들기}」을 쓰는 글자 모양이 없다 — 이 문서 글꼴: {', '.join(sorted(shape_fonts(streams)))}")
+    if o.흔들기:
+        used = font_char_counts(streams)
+        if not used.get(o.흔들기):
+            listed = ' · '.join(f'{f} {n:,}자' for f, n in used.most_common() if f)
+            raise 쪽배치오류(f'흔들 글꼴 「{o.흔들기}」로 쓰인 글자가 없다 — 이 문서 글꼴(글자 수): {listed}')
     work = prepare_work(src, o.작업)
     paras = paragraphs(streams)
     res = measure_once(work / 'measure', streams, paras, rhwp, rules, None, o.제목, o.pdf)

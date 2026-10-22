@@ -65,7 +65,7 @@ def read_streams(path):
 
 
 def file_flags(streams):
-    fh = streams['FileHeader']
+    fh = streams.get('FileHeader', b'')  # .doc처럼 OLE 상자이지만 HWP가 아닌 파일에는 없다
     if not fh.startswith(b'HWP Document File'):
         raise ValueError('HWP 5 파일이 아니다')
     flags = struct.unpack_from('<I', fh, 36)[0]
