@@ -82,13 +82,15 @@ export function practiceSupply({pool=[],seen,audioAvailable=true}={}){
 // Core에 넘길 후보: 새 문항이 하나라도 남은 항목마다 하나. targets는 그 항목의 새 문항(Core 문항 정책이 형식·난도·노출을 본다).
 // label은 한국어 이름(홈이 화면 언어로 바꾼다 · home.mjs planLabel). goals: 시험·영역 목표와 이어진다(exam·prepare는 한 목표의 두 표현,
 // 이중 가산은 world-learning-plan.mjs worldLearningSettings가 막는다). 듣기 후보는 소리가 있어야 한다(audioRequired).
-export function practiceCandidates({pool=[],seen,summary=null,presentation=null,labels={}}={}){
+// count: 한 판의 문항 수(학습자 응답이 3·5·7로 정한다 — 시간 어림에만 쓴다).
+export function practiceCandidates({pool=[],seen,summary=null,presentation=null,labels={},count=PRACTICE_POLICY.count}={}){
  if(typeof seen!=='function')throw TypeError('WORLD practice needs an exposure reader');
+ const size=Number.isInteger(count)&&count>0?count:PRACTICE_POLICY.count;
  const skills=new Map((prRecord(summary)&&Array.isArray(summary.skills)?summary.skills:[]).map(skill=>[skill.id,skill]));
  const bySkill=new Map();
  for(const item of freshOf(pool,seen)){if(!bySkill.has(item.skillId))bySkill.set(item.skillId,[]);bySkill.get(item.skillId).push(item);}
  return [...bySkill].sort(([a],[b])=>a.localeCompare(b)).map(([skillId,items])=>{
-  const modality=skillId.split('.')[1],chosen=sortFor(items,skills.get(skillId)).slice(0,PRACTICE_POLICY.count),listening=modality==='listening';
+  const modality=skillId.split('.')[1],chosen=sortFor(items,skills.get(skillId)).slice(0,size),listening=modality==='listening';
   return {id:`world.practice.${skillId}`,label:`${listening?'듣기':'읽기'} 짧은 연습 · ${labels[skillId]||skills.get(skillId)?.label||skillId}`,route:'practice',skillId,
    minutes:Math.max(2,Math.ceil(chosen.length*(listening?.8:.5))),minutesEstimated:true,
    targets:items.map(item=>({id:item.id,skillIds:[item.skillId],difficulty:item.difficulty,modality,responseFormat:item.responseFormat??'unknown',

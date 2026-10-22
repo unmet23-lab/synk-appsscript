@@ -99,8 +99,12 @@ export function guestLearningEvents(storage,{after=0}={}){
   if(event.decisionId&&byId.get(event.decisionId)?.type!=='decision.made')continue;
   shown.add(event.id);if(event.decisionId)decisions.add(event.decisionId);
  }
+ // 연습 한 판의 결정(코치 finishSet — 경험 이름 `<게임>.set`, 제시가 없다)도 기준 시각 뒤면 옮기고, 그 마침과 마침에 남긴 응답이 따라간다
+ // (WORLD 학습자 응답 설계 §4). 손님은 응답을 남기지 않아 지금은 빈 길이다.
+ for(const event of events)if(event.type==='decision.made'&&/\.set$/.test(event.experienceId||'')&&isoTime(event.at)>after)decisions.add(event.id);
  const keep=new Set([...shown,...decisions]);
  for(const event of events)if(event.presentationId&&shown.has(event.presentationId)||event.type==='experience.completed'&&decisions.has(event.decisionId))keep.add(event.id);
+ for(const event of events)if(event.type==='feedback.given'&&keep.has(event.completionId))keep.add(event.id);
  for(const event of events)if(event.type==='record.excluded'&&keep.has(event.targetId))keep.add(event.id);
  const moved=events.filter(event=>keep.has(event.id));
  return {events:moved,attempts:moved.filter(event=>event.type==='practice.attempted'&&event.attemptNo===1).length};

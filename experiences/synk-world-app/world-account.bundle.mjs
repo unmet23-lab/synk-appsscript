@@ -7023,6 +7023,7 @@ var require_engine = __commonJS({
           if (!validId2(event.decisionId) || !validId2(event.experienceId) || !validId2(event.variant)) throw new TypeError("Atlas: invalid completion");
         } else if (event.type === "feedback.given") {
           if (!validId2(event.completionId) || !["helpful", "too_much", "want_more", "not_fit"].includes(event.value)) throw new TypeError("Atlas: invalid feedback");
+          if (event.decisionId !== void 0 && !validId2(event.decisionId)) throw new TypeError("Atlas: invalid feedback");
         } else if (event.type === "signal.observed") {
           if (!SIGNALS.includes(event.kind) || !validId2(event.key) || !unit(event.strength) || !Number.isInteger(event.n) || event.n < 0 || !flag(event.assisted)) throw new TypeError("Atlas: invalid signal");
           if (event.until != null && ms(event.until) <= ms(event.at)) throw new TypeError("Atlas: invalid expiry");
@@ -7073,6 +7074,7 @@ var require_engine = __commonJS({
         if (event.type === "feedback.given") {
           const completion = find(event.completionId, "experience.completed");
           if (!completion || scopeKey(completion.scope) !== scopeKey(event.scope) || ms(completion.at) > ms(event.at)) throw new Error("Atlas: feedback requires a prior completion in the same scope");
+          if (event.decisionId !== void 0 && event.decisionId !== completion.decisionId) throw new Error("Atlas: feedback names another decision than its completion");
         }
         if (event.type === "experience.completed") {
           const decision = find(event.decisionId, "decision.made");
@@ -7507,7 +7509,7 @@ var require_engine = __commonJS({
             const existing = completions.get(decision.id);
             return existing ? copy2(existing) : record3({ type: "experience.completed", decisionId: decision.id, experienceId: decision.experienceId, variant: decision.selected.id });
           },
-          feedback: (completionId, value) => record3({ type: "feedback.given", completionId, value }),
+          feedback: (completionId, value, decisionId) => record3({ type: "feedback.given", completionId, value, ...decisionId !== void 0 ? { decisionId } : {} }),
           practice: (kind, fields2) => {
             if (!fields2 || typeof fields2 !== "object" || Array.isArray(fields2) || typeof kind !== "string") throw new TypeError("Atlas: invalid practice fields");
             return record3({ ...fields2, type: kind.startsWith("practice.") ? kind : `practice.${kind}` });
@@ -7995,6 +7997,7 @@ var require_learning_ledger = __commonJS({
       "decision.made",
       "experience.completed",
       "record.excluded",
+      "feedback.given",
       "practice.presented",
       "practice.helped",
       "practice.attempted",
@@ -8075,16 +8078,17 @@ var require_learning_ledger = __commonJS({
       if (local) ledger.local = true;
       return ledger;
     }
-    function plan(events, { keep, olderThan, unfinishedBefore = olderThan, open = [] }) {
+    function plan(events, { keep, olderThan, unfinishedBefore = olderThan, respondedBefore = -Infinity, open = [] }) {
       if (events.length <= keep) return null;
       const groupOf = /* @__PURE__ */ new Map(), groups = /* @__PURE__ */ new Map();
       const join = (id, event) => {
-        if (!groups.has(id)) groups.set(id, { id, events: [], max: -Infinity, open: false, done: false });
+        if (!groups.has(id)) groups.set(id, { id, events: [], max: -Infinity, open: false, done: false, responded: -Infinity });
         const g = groups.get(id);
         g.events.push(event);
         g.max = Math.max(g.max, Date.parse(event.at), Date.parse(event.recordedAt));
         groupOf.set(event.id, id);
         if (event.type === "experience.completed") g.done = true;
+        if (event.type === "feedback.given") g.responded = Math.max(g.responded, Date.parse(event.at));
       };
       const pinned = /* @__PURE__ */ new Set();
       for (const e of events) {
@@ -8109,7 +8113,7 @@ var require_learning_ledger = __commonJS({
       const folded2 = /* @__PURE__ */ new Set();
       for (const g of order) {
         if (remaining <= keep || g.max >= olderThan) break;
-        if (g.open || !g.done && g.max >= unfinishedBefore) continue;
+        if (g.open || !g.done && g.max >= unfinishedBefore || g.responded > -Infinity && g.responded >= respondedBefore) continue;
         for (const e of g.events) folded2.add(e.id);
         remaining -= g.events.length;
         cutoff = g.max;
@@ -8118,7 +8122,7 @@ var require_learning_ledger = __commonJS({
       return { cutoff, folded: events.filter((e) => folded2.has(e.id)), kept: events.filter((e) => !folded2.has(e.id)) };
     }
     var folded = (ledger, event) => !!ledger && ledger.cutoff !== null && FOLDABLE.includes(event.type) && Date.parse(event.at) <= ledger.cutoff;
-    var reference = (e) => e?.type === "decision.made" ? void 0 : e?.decisionId ?? e?.presentationId ?? e?.targetId;
+    var reference = (e) => e?.type === "decision.made" ? void 0 : e?.decisionId ?? e?.presentationId ?? e?.targetId ?? e?.completionId;
     var stray = (event, known) => {
       const ref = reference(event);
       return typeof ref === "string" && !known.has(ref);
@@ -10242,6 +10246,9 @@ var require_game_learning = __commonJS({
     var { createPages, THRESHOLD } = require_learning_pages();
     var { createFlowPort, createLive } = require_game_flow();
     var KEY = "synk.atlas.learning.v1";
+    var SET_KINDS = ["short", "diagnostic", "mock"];
+    var RESPONSES = ["helpful", "not_fit", "too_much", "want_more"];
+    var RESPONSE_MS = 30 * 864e5;
     var identifier = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
     var uid = () => `l${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
     function createGame({
@@ -10273,7 +10280,7 @@ var require_game_learning = __commonJS({
       const UNCHANGED = /* @__PURE__ */ Symbol("unchanged-history");
       let lastStoredRaw = /* @__PURE__ */ Symbol("unread-history");
       let lastTime = 0;
-      const active = /* @__PURE__ */ new Map();
+      const active = /* @__PURE__ */ new Map(), sets = /* @__PURE__ */ new Map();
       const listeners = /* @__PURE__ */ new Set();
       const notify = (kind, code) => {
         for (const listener of listeners) {
@@ -10355,6 +10362,7 @@ var require_game_learning = __commonJS({
           ledger = stored.ledger || null;
           session = newSession(stored.events);
           active.clear();
+          sets.clear();
           settled.clear();
           settledVersion += 1;
           settle(stored.settled || [], new Set(stored.events.map((e) => e.id)));
@@ -10380,9 +10388,11 @@ var require_game_learning = __commonJS({
           }
         }
         if (order < 0) ledger = theirs;
+        const types = new Map([...mine, ...stored.events].map((e) => [e.id, e.type]));
+        for (const e of combined) if (e.type === "feedback.given" && !known.has(e.completionId) || e.type === "record.excluded" && !known.has(e.targetId) && types.get(e.targetId) === "feedback.given") known.delete(e.id);
         settle([...settled, ...stored.settled || []], known);
         takeDropped(stored.dropped || [], order > 0);
-        session = newSession(combined);
+        session = newSession(combined.filter((e) => known.has(e.id)));
         for (const pid of active.keys()) if (!known.has(pid)) active.delete(pid);
       }
       const serialised = /* @__PURE__ */ new WeakMap();
@@ -10411,6 +10421,8 @@ var require_game_learning = __commonJS({
         if (events.length <= folding.max) return;
         if (retryFold && retryFold.settled === settledVersion && now < retryFold.at) return;
         const open = [...active].filter(([, item]) => !item.results.length).map(([pid]) => pid);
+        for (const [id, at] of sets) if (now - at < 864e5) open.push(id);
+        else sets.delete(id);
         if (folding.remote) {
           for (const e of events) if (!settled.has(e.id)) open.push(e.id);
         }
@@ -10418,7 +10430,8 @@ var require_game_learning = __commonJS({
           keep: folding.keep,
           olderThan: now - folding.ageMs,
           open,
-          unfinishedBefore: folding.remote ? now - 30 * 864e5 : now - folding.ageMs
+          unfinishedBefore: folding.remote ? now - 30 * 864e5 : now - folding.ageMs,
+          respondedBefore: now - RESPONSE_MS
         });
         const batch = Math.max(1, Math.floor((folding.max - folding.keep) / 2));
         if (!planned || planned.folded.length < batch && events.length < 2 * folding.max) {
@@ -10796,6 +10809,35 @@ var require_game_learning = __commonJS({
           persist();
           return event;
         },
+        // A practice set ended (short practice, quick check, exam-form practice): a `<gameId>.set` decision and completion, so a
+        // response is about the set, not its last item. One 5-minute candidate, so a short-time setting never blocks it.
+        finishSet({ kind } = {}) {
+          refresh();
+          if (!SET_KINDS.includes(kind)) throw new TypeError("Atlas: invalid practice set");
+          const decision = session.plan(`${gameId}.set`, [{ id: kind, minutes: 5, pace: "standard" }]);
+          if (decision.status !== "ready") throw new Error("Atlas: practice set could not be recorded");
+          const completion = session.complete(decision);
+          sets.set(decision.id, Date.parse(completion.at));
+          persist();
+          return { decisionId: decision.id, completionId: completion.id };
+        },
+        // A response to a finished set. It names the set's decision too, so a store folding by the older reference() keeps the
+        // set with it. The same value again adds nothing; another value replaces it.
+        feedback(set, value) {
+          refresh();
+          if (!RESPONSES.includes(value) || !identifier(set?.completionId) || !identifier(set?.decisionId)) throw new TypeError("Atlas: invalid set response");
+          const done = log().find((e) => e.id === set.completionId);
+          if (done?.type !== "experience.completed" || done.experienceId !== `${gameId}.set` || done.decisionId !== set.decisionId) throw Object.assign(new Error("Atlas: this practice set no longer takes a response"), { code: "SET_UNAVAILABLE" });
+          if (session.state().feedback.find((f) => f.completionId === done.id)?.value === value) return null;
+          const event = session.feedback(done.id, value, done.decisionId);
+          persist();
+          return event;
+        },
+        // Responses to this game's sets that Core still reads (30 days, not excluded), oldest first.
+        setFeedback() {
+          refresh();
+          return session.state().feedback.filter((f) => f.experienceId === `${gameId}.set`).map((f) => ({ id: f.id, completionId: f.completionId, decisionId: f.decisionId ?? null, value: f.value, kind: f.variant, at: f.at }));
+        },
         events() {
           refresh();
           return session.events();
@@ -10816,6 +10858,7 @@ var require_game_learning = __commonJS({
           takeDropped([], false);
           session = newSession([]);
           active.clear();
+          sets.clear();
           readable = true;
           writable = !!storage;
           complete = historyComplete;
@@ -15767,8 +15810,10 @@ function guestLearningEvents(storage, { after = 0 } = {}) {
     shown.add(event.id);
     if (event.decisionId) decisions.add(event.decisionId);
   }
+  for (const event of events) if (event.type === "decision.made" && /\.set$/.test(event.experienceId || "") && isoTime(event.at) > after) decisions.add(event.id);
   const keep = /* @__PURE__ */ new Set([...shown, ...decisions]);
   for (const event of events) if (event.presentationId && shown.has(event.presentationId) || event.type === "experience.completed" && decisions.has(event.decisionId)) keep.add(event.id);
+  for (const event of events) if (event.type === "feedback.given" && keep.has(event.completionId)) keep.add(event.id);
   for (const event of events) if (event.type === "record.excluded" && keep.has(event.targetId)) keep.add(event.id);
   const moved = events.filter((event) => keep.has(event.id));
   return { events: moved, attempts: moved.filter((event) => event.type === "practice.attempted" && event.attemptNo === 1).length };
@@ -18667,6 +18712,15 @@ function createPositionView({ t, has = () => true, formatDate = null, lang = () 
   }
   const examSwitch = (exam, exams) => Array.isArray(exams) && exams.length > 1 ? `<div class="wpos-exam" role="group" aria-label="${posEscape(t("position.exam.label"))}">${exams.map((id) => `<button class="wpos-exam-pill" type="button" data-position-exam="${posEscape(id)}" aria-pressed="${id === exam ? "true" : "false"}">${posEscape(t(`goal.exam.type.${id}`))}</button>`).join("")}</div>` : "";
   const progressLine = (row) => row ? `<p class="wpos-progress"><span>${posEscape(t("position.progress", { checked: row.checked, total: row.total }))}</span><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(row.checked, row.total)}%"></i></span></p>` : "";
+  const RESPONSE_VALUES = Object.freeze(["helpful", "not_fit", "too_much", "want_more"]);
+  function renderSetResponse(response) {
+    if (!response || !["short", "diagnostic", "mock"].includes(response.kind)) return "";
+    const chosen = RESPONSE_VALUES.includes(response.value) ? response.value : null;
+    const effect = response.kind !== "short" || response.failed ? null : chosen === "too_much" ? "response.shorter" : chosen === "want_more" ? "response.longer" : null;
+    const status = response.failed ? t("response.failed") : effect ? t(effect) : "";
+    const pills = RESPONSE_VALUES.map((value) => `<button class="wpos-response-choice" type="button" data-set-response="${value}" aria-pressed="${value === chosen ? "true" : "false"}">${posEscape(t(`response.value.${value}`))}</button>`).join("");
+    return `<section class="wpos-response" data-set-response-box data-kind="${posEscape(response.kind)}"><p class="wpos-response-ask" id="wpos-response-ask" role="status">${posEscape(t(chosen && !response.failed ? "response.thanks" : "response.ask"))}</p><div class="wpos-response-choices" role="group" aria-labelledby="wpos-response-ask">${pills}</div><p class="wpos-note" data-set-response-status role="status">${posEscape(status)}</p></section>`;
+  }
   const poster = (word, sub, { print = "position", label = "MY POSITION" } = {}) => `<div class="life-poster wpos-poster"><span class="w-print wpos-print" data-print="${print}" aria-hidden="true"><i></i></span><small class="life-poster-label">${label}</small><strong class="life-poster-word">${posEscape(word)}</strong><p class="life-poster-sub">${posEscape(sub)}</p></div>`;
   function renderPositionBoard({ map, plan = null, gate = null, mock = null, catalog = null, diagnosed = false, scope = null, practice = null, exams = null, writing = false, bridged = [] } = {}) {
     const exam = map.exam === "topik2" ? "topik2" : "topik1";
@@ -18731,11 +18785,11 @@ function createPositionView({ t, has = () => true, formatDate = null, lang = () 
       return `<li data-verdict="${posEscape(row.verdict)}" data-skill="${posEscape(row.skillId)}">${posLed(ok ? "ok" : "alert")}<span class="wpos-done-copy"><strong>${posEscape(skillName(skill2))}</strong><small>${posEscape(t(ok ? "position.evidence.correct" : "position.evidence.incorrect"))}${row.assisted ? ` \xB7 ${posEscape(t("position.evidence.assisted"))}` : ""}${checking ? ` \xB7 ${posEscape(t("position.diagnostic.checking"))}` : ""}</small>${ok ? "" : explainBlock(itemOf(row.itemId))}</span>${practiceButton(row.skillId, practice)}</li>`;
     }).join("");
   }
-  function renderDiagnosticDone({ map, results = [], items = null, practice = null } = {}) {
+  function renderDiagnosticDone({ map, results = [], items = null, practice = null, response = null } = {}) {
     const answered = results.filter((row) => !row.skipped).length, skipped = results.length - answered;
     const rows2 = doneRows({ map, results, items, practice });
     const wrong = results.some((row) => !row.skipped && row.verdict === "incorrect");
-    return `<div class="wpos life-heading" data-position-done tabindex="-1">${poster(t("position.diagnostic.doneTitle"), t("position.diagnostic.doneSummary", { answered, skipped }))}${rows2 ? `<ul class="wpos-done-list">${rows2}</ul>` : ""}${wrong ? `<p class="wpos-note">${posEscape(t("position.diagnostic.wrongNote"))}</p>` : ""}<p class="wpos-intro">${posEscape(t("position.diagnostic.doneNote"))}</p><p class="wpos-summary-line">${posEscape(t("position.summary", { ...map.counts, total: map.total }))}</p><button class="felt-button" type="button" data-position-back>${posEscape(t("position.diagnostic.back"))} <span aria-hidden="true">\u2192</span></button></div>`;
+    return `<div class="wpos life-heading" data-position-done tabindex="-1">${poster(t("position.diagnostic.doneTitle"), t("position.diagnostic.doneSummary", { answered, skipped }))}${rows2 ? `<ul class="wpos-done-list">${rows2}</ul>` : ""}${wrong ? `<p class="wpos-note">${posEscape(t("position.diagnostic.wrongNote"))}</p>` : ""}<p class="wpos-intro">${posEscape(t("position.diagnostic.doneNote"))}</p><p class="wpos-summary-line">${posEscape(t("position.summary", { ...map.counts, total: map.total }))}</p>${renderSetResponse(response)}<button class="felt-button" type="button" data-position-back>${posEscape(t("position.diagnostic.back"))} <span aria-hidden="true">\u2192</span></button></div>`;
   }
   const TOWN_POSTER = { print: "position", label: "TOWN CHECK" };
   function renderTownCheckWait({ after = false } = {}) {
@@ -18760,7 +18814,7 @@ function createPositionView({ t, has = () => true, formatDate = null, lang = () 
     const listen = listening && !done ? `<div class="wpos-listen"><button class="quiet-button" type="button" data-practice-listen${playing ? ' aria-busy="true"' : ""}>${posEscape(listenLabel(view))}</button><p class="wpos-note">${posEscape(listenNote(view, playing))}</p></div>` : "";
     return `<div class="wpos wpos-run" data-practice-run="${posEscape(item.id)}"><div class="wpos-run-head"><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(view.index, view.total)}%"></i></span><p class="wpos-run-count">${posEscape(t("position.diagnostic.progress", { index: view.index + 1, total: view.total }))}</p></div><p class="life-section-label wpos-run-skill" tabindex="-1">${posEscape(t(`position.domain.${item.modality}`))} \xB7 ${posEscape(skillName(skill2 || { id: item.skillId }))}</p>${item.prompt ? `<p class="wpos-prompt" lang="ko">${posEscape(item.prompt)}</p>` : ""}${item.card ? entryCard(item.card) : ""}${listen}${item.question ? item.ask && has(`position.diagnostic.ask.${item.ask}`) ? `<p class="wpos-question">${posEscape(t(`position.diagnostic.ask.${item.ask}`))}</p>` : `<p class="wpos-question" lang="ko">${posEscape(item.question)}</p>` : ""}<div class="wpos-choices" lang="ko">${choices2}</div>${result}<p class="wpos-run-status" role="status">${posEscape(done ? "" : notice)}</p>${done ? "" : `<div class="wpos-run-actions"><button class="quiet-button" type="button" data-practice-skip>${posEscape(t("position.diagnostic.skip"))}</button><button class="quiet-button" type="button" data-practice-stop>${posEscape(t("practice.stop"))}</button></div>`}</div>`;
   }
-  function renderPracticeDone({ skill: skill2, before = null, after = null, results = [], items = null, more = 0, listening = false } = {}) {
+  function renderPracticeDone({ skill: skill2, before = null, after = null, results = [], items = null, more = 0, listening = false, count = 5, response = null } = {}) {
     const answered = results.filter((row) => !row.skipped), right = answered.filter((row) => row.verdict === "correct" && row.independent).length;
     const wrong = answered.filter((row) => row.verdict === "incorrect").length, skipped = results.length - answered.length;
     const changed2 = before && after && before.cell !== after.cell ? t("practice.changed.cell", { from: t(`position.cell.${before.cell}`), to: t(`position.cell.${after.cell}`) }) : after && before && after.n > before.n ? t("practice.changed.more", { n: after.n - before.n }) : t("practice.changed.none");
@@ -18770,8 +18824,8 @@ function createPositionView({ t, has = () => true, formatDate = null, lang = () 
       const item = itemOf(row.itemId);
       return item ? `<li><span lang="ko">${posEscape(item.label || item.question || "")}</span>${explainBlock(item)}</li>` : "";
     }).join("");
-    const next = more > 0 ? `<button class="felt-button" type="button" data-practice-again>${posEscape(t("practice.again", { n: Math.min(more, 5) }))} <span aria-hidden="true">\u2192</span></button>` : `<p class="wpos-note" data-practice-shortage>${posEscape(t("practice.shortage"))}</p>`;
-    return `<div class="wpos life-heading" data-practice-done tabindex="-1">${poster(t(listening ? "practice.doneTitle.listening" : "practice.doneTitle"), t("practice.doneSummary", { right, wrong, skipped }))}<section class="wpos-change"><p class="life-section-label">${posEscape(skillName(skill2 || {}))}</p><p class="wpos-intro">${posEscape(changed2)}</p>${now ? `<p class="wpos-note">${posEscape(now)}</p>` : ""}</section>${misses ? `<section class="wpos-misses"><p class="wpos-evidence-title">${posEscape(t("practice.misses"))}</p><ul>${misses}</ul></section>` : ""}${next}<div class="wpos-run-actions"><button class="quiet-button" type="button" data-practice-position>${posEscape(t("position.open"))}</button><button class="quiet-button" type="button" data-practice-home>${posEscape(t("practice.home"))}</button></div></div>`;
+    const next = more > 0 ? `<button class="felt-button" type="button" data-practice-again>${posEscape(t("practice.again", { n: Math.min(more, Number.isInteger(count) && count > 0 ? count : 5) }))} <span aria-hidden="true">\u2192</span></button>` : `<p class="wpos-note" data-practice-shortage>${posEscape(t("practice.shortage"))}</p>`;
+    return `<div class="wpos life-heading" data-practice-done tabindex="-1">${poster(t(listening ? "practice.doneTitle.listening" : "practice.doneTitle"), t("practice.doneSummary", { right, wrong, skipped }))}<section class="wpos-change"><p class="life-section-label">${posEscape(skillName(skill2 || {}))}</p><p class="wpos-intro">${posEscape(changed2)}</p>${now ? `<p class="wpos-note">${posEscape(now)}</p>` : ""}</section>${misses ? `<section class="wpos-misses"><p class="wpos-evidence-title">${posEscape(t("practice.misses"))}</p><ul>${misses}</ul></section>` : ""}${renderSetResponse(response)}${next}<div class="wpos-run-actions"><button class="quiet-button" type="button" data-practice-position>${posEscape(t("position.open"))}</button><button class="quiet-button" type="button" data-practice-home>${posEscape(t("practice.home"))}</button></div></div>`;
   }
   const mockClock = (ms) => {
     const total = Math.max(0, Math.ceil((Number(ms) || 0) / 1e3));
@@ -18811,7 +18865,7 @@ function createPositionView({ t, has = () => true, formatDate = null, lang = () 
     const sub = next ? t("mock.nextPart", { section: sectionName(next.section), n: next.total, minutes: next.minutes }) : t("mock.allDone");
     return `<div class="wpos life-heading" data-mock-between tabindex="-1">${poster(head, sub, { print: "plan", label: "EXAM FORM" })}<button class="felt-button" type="button" data-mock-next-section>${posEscape(next ? t("mock.startPart", { section: sectionName(next.section) }) : t("practice.finish"))} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" type="button" data-mock-stop>${posEscape(t("practice.stop"))}</button></div>`;
   }
-  function renderMockDone({ results = [], items = null, plan = null, exam = "topik1", mode = null, practice = null } = {}) {
+  function renderMockDone({ results = [], items = null, plan = null, exam = "topik1", mode = null, practice = null, response = null } = {}) {
     const itemOf = (id) => items?.get?.(id) || null, numbers = plan?.numbers || {};
     const rows2 = results.flatMap((part) => part.items);
     const answered = rows2.filter((row) => ["correct", "incorrect"].includes(row.verdict)).length, total = rows2.length;
@@ -18825,7 +18879,7 @@ function createPositionView({ t, has = () => true, formatDate = null, lang = () 
       }).join("");
       return `<section class="wplan-checks" data-mock-section="${posEscape(part.section)}"><p class="life-section-label">${posEscape(part.section.toUpperCase())}</p><h3>${posEscape(sectionName(part.section))}</h3><p class="wpos-intro">${posEscape(t("mock.partSummary", { right, wrong, open, unopened }))}</p>${part.ended === "time" ? `<p class="wpos-note">${posEscape(t("mock.endedByTime"))}</p>` : ""}<ul class="wpos-done-list">${list}</ul></section>`;
     }).join("");
-    return `<div class="wpos life-heading" data-mock-done tabindex="-1">${poster(t("mock.doneTitle"), t("mock.doneSummary", { answered, total, exam: examName(exam) }), { print: "plan", label: "EXAM FORM" })}${sections}<p class="wpos-note">${posEscape(t(mode === "ibt" ? "mock.noGradeNote.ibt" : "mock.noGradeNote"))}</p><div class="wpos-run-actions"><button class="quiet-button" type="button" data-mock-position>${posEscape(t("position.open"))}</button><button class="quiet-button" type="button" data-mock-home>${posEscape(t("practice.home"))}</button></div></div>`;
+    return `<div class="wpos life-heading" data-mock-done tabindex="-1">${poster(t("mock.doneTitle"), t("mock.doneSummary", { answered, total, exam: examName(exam) }), { print: "plan", label: "EXAM FORM" })}${sections}<p class="wpos-note">${posEscape(t(mode === "ibt" ? "mock.noGradeNote.ibt" : "mock.noGradeNote"))}</p>${renderSetResponse(response)}<div class="wpos-run-actions"><button class="quiet-button" type="button" data-mock-position>${posEscape(t("position.open"))}</button><button class="quiet-button" type="button" data-mock-home>${posEscape(t("practice.home"))}</button></div></div>`;
   }
   const examDay = (value) => {
     const match = typeof value === "string" && /^(\d{4})-(\d{2})(?:-(\d{2}))?$/.exec(value);
@@ -18861,7 +18915,8 @@ function createPositionView({ t, has = () => true, formatDate = null, lang = () 
     if (reviewed !== null) return withKo("plan.review", reviewed);
     return koSpan(label);
   }
-  function renderExamPlan({ plan, next = null, reason = "" } = {}) {
+  function renderExamPlan({ plan, next = null, reason = "", count = 5 } = {}) {
+    const practiceCount = Number.isInteger(count) && count > 0 ? count : 5;
     const exam = plan.exam || {}, parts = [exam.type ? t(`goal.exam.type.${exam.type}`) : "", exam.grade ? t("plan.week.grade", { n: exam.grade }) : "", exam.date ? t("plan.week.date", { date: examDay(exam.date) }) : "", exam.mode && exam.mode !== "unknown" ? t(`goal.exam.mode.${exam.mode}`) : ""].filter(Boolean);
     const head = parts.length ? parts.join(" \xB7 ") : t("plan.week.noExam");
     const notes = new Set(plan.notes || []);
@@ -18872,7 +18927,7 @@ function createPositionView({ t, has = () => true, formatDate = null, lang = () 
     const bridgeName = (id) => exam.type === "topik2" && /^ko\.(listening|reading)\./.test(String(id || "")) ? `${t("goal.exam.type.topik1")} \xB7 ` : "";
     const homework = (plan.homework || []).map((row) => {
       const name = bridgeName(row.skillId) + skillName({ id: row.skillId }), games = row.activities || [];
-      const action = row.shortage ? `<small class="wplan-shortage">${posEscape(t(row.blocked === "audio" ? "practice.audioOff" : "plan.homework.shortage"))}</small>` : row.domain !== "writing" && row.fresh > 0 ? `<button class="quiet-button" type="button" data-plan-practice="${posEscape(row.skillId)}">${posEscape(t("plan.homework.reading", { n: Math.min(row.fresh, 5) }))} <span aria-hidden="true">\u2192</span></button>` : row.domain === "writing" ? `<button class="quiet-button" type="button" data-plan-writing="${posEscape(games[0])}">${posEscape(writingName(games[0]) || t("writing.title"))} <span aria-hidden="true">\u2192</span></button>` : `<button class="quiet-button" type="button" data-plan-game="${posEscape(gameOf(games[0]))}">${posEscape(has(`plan.game.${gameOf(games[0])}`) ? t(`plan.game.${gameOf(games[0])}`) : gameOf(games[0]))} <span aria-hidden="true">\u2192</span></button>`;
+      const action = row.shortage ? `<small class="wplan-shortage">${posEscape(t(row.blocked === "audio" ? "practice.audioOff" : "plan.homework.shortage"))}</small>` : row.domain !== "writing" && row.fresh > 0 ? `<button class="quiet-button" type="button" data-plan-practice="${posEscape(row.skillId)}">${posEscape(t("plan.homework.reading", { n: Math.min(row.fresh, practiceCount) }))} <span aria-hidden="true">\u2192</span></button>` : row.domain === "writing" ? `<button class="quiet-button" type="button" data-plan-writing="${posEscape(games[0])}">${posEscape(writingName(games[0]) || t("writing.title"))} <span aria-hidden="true">\u2192</span></button>` : `<button class="quiet-button" type="button" data-plan-game="${posEscape(gameOf(games[0]))}">${posEscape(has(`plan.game.${gameOf(games[0])}`) ? t(`plan.game.${gameOf(games[0])}`) : gameOf(games[0]))} <span aria-hidden="true">\u2192</span></button>`;
       return `<li data-skill="${posEscape(row.skillId)}"><span class="wpos-attention-copy"><strong>${posEscape(name)}</strong><small>${posEscape(t(`position.level.${row.status}`))}</small></span>${action}</li>`;
     }).join("");
     const thisWeek = (plan.checks || [])[0]?.weekStart === plan.week?.start ? (plan.checks || [])[0] : null;
@@ -18894,6 +18949,7 @@ function createPositionView({ t, has = () => true, formatDate = null, lang = () 
     renderTownCheckDone,
     renderPracticeItem,
     renderPracticeDone,
+    renderSetResponse,
     renderMockIntro,
     renderMockItem,
     renderMockBetween,
@@ -19144,8 +19200,9 @@ function practiceSupply({ pool = [], seen, audioAvailable = true } = {}) {
   for (const item of freshOf(pool, seen)) if (audioAvailable || !prListening(item)) supply[item.skillId] = (supply[item.skillId] || 0) + 1;
   return supply;
 }
-function practiceCandidates({ pool = [], seen, summary = null, presentation = null, labels = {} } = {}) {
+function practiceCandidates({ pool = [], seen, summary = null, presentation = null, labels = {}, count = PRACTICE_POLICY.count } = {}) {
   if (typeof seen !== "function") throw TypeError("WORLD practice needs an exposure reader");
+  const size = Number.isInteger(count) && count > 0 ? count : PRACTICE_POLICY.count;
   const skills = new Map((prRecord(summary) && Array.isArray(summary.skills) ? summary.skills : []).map((skill2) => [skill2.id, skill2]));
   const bySkill = /* @__PURE__ */ new Map();
   for (const item of freshOf(pool, seen)) {
@@ -19153,7 +19210,7 @@ function practiceCandidates({ pool = [], seen, summary = null, presentation = nu
     bySkill.get(item.skillId).push(item);
   }
   return [...bySkill].sort(([a], [b]) => a.localeCompare(b)).map(([skillId, items]) => {
-    const modality = skillId.split(".")[1], chosen = sortFor(items, skills.get(skillId)).slice(0, PRACTICE_POLICY.count), listening = modality === "listening";
+    const modality = skillId.split(".")[1], chosen = sortFor(items, skills.get(skillId)).slice(0, size), listening = modality === "listening";
     return {
       id: `world.practice.${skillId}`,
       label: `${listening ? "\uB4E3\uAE30" : "\uC77D\uAE30"} \uC9E7\uC740 \uC5F0\uC2B5 \xB7 ${labels[skillId] || skills.get(skillId)?.label || skillId}`,
@@ -19806,15 +19863,20 @@ function homeworkSubmission({ classId, week, kind, requestId, expectedRevision, 
 }
 
 // experiences/synk-world-app/operating-mode.mjs
+var FEATURES = Object.freeze(["worldFeedback"]);
+function publicFeatures(value) {
+  const on = FEATURES.filter((name) => value?.features?.[name] === true);
+  return on.length ? { features: Object.fromEntries(on.map((name) => [name, true])) } : {};
+}
 function publicWorldConfig(value, base) {
   if (!value || !["rehearsal", "account"].includes(value.mode)) throw new TypeError("WORLD connection mode is required");
   const basePath = value.basePath || "/";
   if (!/^\/(?:[a-zA-Z0-9_-]+\/)*$/.test(basePath)) throw new TypeError("Invalid WORLD base path");
-  if (value.mode === "rehearsal") return { mode: "rehearsal", basePath };
+  if (value.mode === "rehearsal") return { mode: "rehearsal", basePath, ...publicFeatures(value) };
   const account = readConfig(value.account, base);
   if (!account.configured || !account.clients.world.clientId || !account.clients.world.redirectUri) throw new TypeError("Configured public WORLD account is required");
   const { configured, ...publicAccount } = account;
-  return { mode: "account", basePath, account: publicAccount };
+  return { mode: "account", basePath, account: publicAccount, ...publicFeatures(value) };
 }
 async function loadWorldConfig({ value = globalThis.__SYNK_WORLD_CONFIG__, base = globalThis.location.href, fetcher = (...args) => globalThis.fetch(...args) } = {}) {
   if (value) return publicWorldConfig(value, base);

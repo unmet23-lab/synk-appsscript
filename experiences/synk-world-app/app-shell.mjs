@@ -25,6 +25,8 @@ const $=s=>document.querySelector(s);
 window.addEventListener('pageshow',event=>{if(event.persisted)location.reload();});
 const connection=await loadWorldConfig();
 const operating=connection.mode==='account';
+// 학습자 응답(WORLD 학습자 응답 설계 §6): 설정값 worldFeedback이 켜졌을 때만 연습 끝 화면의 「이번 연습 어땠어요?」와 「내 계정」의 응답 목록이 있다(기본 꺼짐).
+const responsesOn=connection.features?.worldFeedback===true;
 // 10-19 결정 「WORLD 손님」(공개판 설계 §2): 손님(로그인 전)에게 한글 만나기를 연다 — 진도는 그 기기에 남는다.
 // 바람길·말의 리듬은 한 판씩 체험으로 연다(guest-trial.mjs, 기록·코인은 로그인 뒤). 체험을 마친 게임은 로그인부터 열고, 추천도 같은 목록을 쓴다.
 const GUEST_GAMES=new Set(['hangul']);
@@ -279,7 +281,7 @@ function mountLifeLearning(){
  // 공개판(계정 모드)의 손님은 GUEST_GAMES와 체험이 남은 게임만 바로 열고 나머지는 로그인부터 연다(launchGame). 추천도 같은 목록을 써야 로그인 창을 맴돌지 않는다.
  const createPlan=options=>createWorldLearningPlan({...options,answers:topicAnswers&&topicAnswers.owner===lifeOwner?topicAnswers:null,openGames:operating&&!client.snapshot?guestGames():null});
  // 내 위치(10-19 결정): 짧은 진단 듣기 문항의 녹음은 게임 폴더(korean-runner·korean-rhythm)에서 부른다.
- education=createWorldEducation({home,getProgress:()=>lifeProgress,engine:worldLearning,createPlan,target:window,position:worldPosition,audioUrl:worldUrl,
+ education=createWorldEducation({home,getProgress:()=>lifeProgress,engine:worldLearning,createPlan,target:window,position:worldPosition,audioUrl:worldUrl,responses:responsesOn,
   readHangulProgress:operating&&lifeOwner!=='guest'?async()=>{
    const port=await account.prepareHangulProgress({storage:localStorage,target:window});
    try{return port.read();}finally{port.dispose();}
@@ -499,7 +501,38 @@ const homeworkJson=name=>fetch(worldUrl(name),{cache:'no-cache',credentials:'omi
 // 계정 머리의 초상은 내가 고른 튜터의 계정 사진(왼쪽 위 캡슐과 같은 사진). 고른 튜터가 없으면 기본 몽글 사진.
 const TUTOR_NAMES={mongle:'몽글',kkamong:'까몽',marin:'마린'};
 function profilePortrait(){const id=home.tutor?.()?.tutor;return profilePhoto(['mongle','kkamong','marin'].includes(id)?id:'default');}
-function profile(){if(!client.snapshot)return signIn();const tutorId=home.tutor?.()?.tutor,tutorName=TUTOR_NAMES[tutorId]?t(`tutor.name.${tutorId}`):null;show(t('account.meTitle'),`<div class="ws-me"><div class="ws-me-id"><span class="ws-me-portrait"><img src="${profilePortrait()}" alt=""></span><div><p class="ws-me-name">${tutorName?t('account.learningWith',{name:tutorName}):t('account.learningTogether')}</p><p class="ws-me-sub">${t('account.savedTo',{where:t(operating?'account.whereId':'account.whereTest')})}</p></div></div>${notice('SAVE',client.pending?'check':'ok',t(client.pending?'account.savePending':'account.saveOk'),t('account.revision',{revision:escape(client.snapshot.revision),kind:t(operating?'account.kindId':'account.kindTest')}))}${operating?`<section class="world-notice" data-tone="info" data-label="LEARNING"><strong>${t('account.learningRecords')}</strong>${account.preferences()?`<label><input type="checkbox" data-world-learning data-revision="${account.preferences().revision}" ${account.preferences().enabled?'checked':''}> ${t('account.learningSave')}</label><span>${t('account.learningNote')}</span>`:`<span>${t('account.learningElsewhere')}</span>`}<a class="felt-button" href="https://synk.im/account/client.html?product=world">${t('account.classSettings')} <span aria-hidden="true">→</span></a></section>`:''}<div id="world-classroom-lessons"></div><div id="world-classroom-homework"></div><div id="world-classroom-entry"></div><div class="world-actions"><button class="felt-button" data-world="wardrobe">${t('wardrobe.open')}</button><button class="quiet-button" data-world="logout">${t('account.logout')}</button></div></div>`,'world-profile');if(home.isMaru){const actions=$('#panel-content .ws-me>.world-actions');if(actions)actions.before(hanger);else $('#panel-content').append(hanger);renderHomeHanger(client.snapshot);}if(operating){const generation=client.generation,owner=client.snapshot.accountId,guard=()=>{account.assertActive();if(generation!==client.generation||client.snapshot?.accountId!==owner)throw Object.assign(Error('ACCOUNT_CHANGED'),{code:'ACCOUNT_CHANGED'});};
+// 「내가 남긴 응답」(WORLD 학습자 응답 설계 §3): 연습을 마친 뒤 고른 응답(30일 안·뺀 것 제외)을 새것부터, 여섯 개 넘으면 「더 보기」. 시각은 보이지 않는다.
+// [빼기]는 그 응답을 기록에서 빼(record.excluded) 목록과 쓰임에서 빠지게 한다. 학습 기록 연결이 꺼져 있으면 이 기기에만 있다고 덧붙인다.
+// 설정값이 꺼졌거나, 학습 화면이 이 계정 것이 아니거나, 남긴 응답이 없으면 그리지 않는다.
+const RESPONSE_PAGE=6;
+function responsesSection(){
+ if(!responsesOn||!operating||typeof education?.responses!=='function'||education.metrics?.().owner!==client.snapshot?.accountId)return '';
+ let rows=null;try{rows=education.responses();}catch{rows=null;}
+ if(!Array.isArray(rows)||!rows.length)return '';
+ let local=false;try{local=account.preferences()?.enabled===false;}catch{local=false;}
+ const name=row=>[t(`response.kind.${row.kind}`),t(`response.value.${row.value}`)];
+ const item=(row,index)=>{const [kind,value]=name(row);return `<li${index>=RESPONSE_PAGE?' data-response-later hidden':''}><span>${escape(kind)} · ${escape(value)}</span><button class="quiet-button" type="button" data-response-remove="${escape(row.id)}" aria-label="${escape(t('response.removeLabel',{kind,value}))}">${escape(t('response.remove'))}</button></li>`;};
+ return `<section class="ws-responses" data-world-responses aria-labelledby="ws-responses-title"><h3 id="ws-responses-title">${escape(t('response.mine'))}</h3><p class="ws-responses-note">${escape(t('response.note30'))}</p><ul>${rows.map(item).join('')}</ul>${rows.length>RESPONSE_PAGE?`<button class="quiet-button ws-responses-more" type="button" data-responses-more>${escape(t('life.more'))}</button>`:''}<p class="ws-responses-note">${escape(t('response.removeNote'))}${local?` ${escape(t('response.deviceOnly'))}`:''}</p></section>`;
+}
+function mountResponses(){
+ const box=$('#panel-content [data-world-responses]');if(!box)return;
+ box.addEventListener('click',event=>{
+  const more=event.target.closest?.('[data-responses-more]');
+  if(more){for(const row of box.querySelectorAll('[data-response-later]'))row.hidden=false;more.remove();box.querySelector('[data-response-later] button')?.focus?.();return;}
+  const button=event.target.closest?.('[data-response-remove]');if(!button)return;
+  const rows=[...box.querySelectorAll('[data-response-remove]')],index=rows.indexOf(button);
+  let removed=false;try{removed=education?.removeResponse?.(button.dataset.responseRemove)===true;}catch{removed=false;}
+  home.toast(t(removed?'response.removed':'response.removeFailed'));
+  // 목록을 다시 그리고 초점을 같은 자리(없으면 제목)로 옮긴다. 펼친 「더 보기」는 펼친 채로 둔다.
+  const open=!box.querySelector('[data-responses-more]'),html=responsesSection();
+  if(!html){box.remove();return;}
+  box.outerHTML=html;mountResponses();
+  const next=$('#panel-content [data-world-responses]');if(!next)return;
+  if(open){for(const row of next.querySelectorAll('[data-response-later]'))row.hidden=false;next.querySelector('[data-responses-more]')?.remove();}
+  const buttons=next.querySelectorAll('[data-response-remove]');(buttons[Math.min(index,buttons.length-1)]||next.querySelector('h3'))?.focus?.();
+ });
+}
+function profile(){if(!client.snapshot)return signIn();const tutorId=home.tutor?.()?.tutor,tutorName=TUTOR_NAMES[tutorId]?t(`tutor.name.${tutorId}`):null;show(t('account.meTitle'),`<div class="ws-me"><div class="ws-me-id"><span class="ws-me-portrait"><img src="${profilePortrait()}" alt=""></span><div><p class="ws-me-name">${tutorName?t('account.learningWith',{name:tutorName}):t('account.learningTogether')}</p><p class="ws-me-sub">${t('account.savedTo',{where:t(operating?'account.whereId':'account.whereTest')})}</p></div></div>${notice('SAVE',client.pending?'check':'ok',t(client.pending?'account.savePending':'account.saveOk'),t('account.revision',{revision:escape(client.snapshot.revision),kind:t(operating?'account.kindId':'account.kindTest')}))}${operating?`<section class="world-notice" data-tone="info" data-label="LEARNING"><strong>${t('account.learningRecords')}</strong>${account.preferences()?`<label><input type="checkbox" data-world-learning data-revision="${account.preferences().revision}" ${account.preferences().enabled?'checked':''}> ${t('account.learningSave')}</label><span>${t('account.learningNote')}</span>`:`<span>${t('account.learningElsewhere')}</span>`}<a class="felt-button" href="https://synk.im/account/client.html?product=world">${t('account.classSettings')} <span aria-hidden="true">→</span></a></section>`:''}${responsesSection()}<div id="world-classroom-lessons"></div><div id="world-classroom-homework"></div><div id="world-classroom-entry"></div><div class="world-actions"><button class="felt-button" data-world="wardrobe">${t('wardrobe.open')}</button><button class="quiet-button" data-world="logout">${t('account.logout')}</button></div></div>`,'world-profile');mountResponses();if(home.isMaru){const actions=$('#panel-content .ws-me>.world-actions');if(actions)actions.before(hanger);else $('#panel-content').append(hanger);renderHomeHanger(client.snapshot);}if(operating){const generation=client.generation,owner=client.snapshot.accountId,guard=()=>{account.assertActive();if(generation!==client.generation||client.snapshot?.accountId!==owner)throw Object.assign(Error('ACCOUNT_CHANGED'),{code:'ACCOUNT_CHANGED'});};
  // 「우리 반 수업」은 반 연결 바로 위: 연결하면 이 시트를 다시 그려 같은 자리에 수업이 이어진다. 시트가 열려 있는 동안만 30초마다 묻는다.
  if(account.supportsClassroom){const lessons=mountClassroomLessons({container:$('#world-classroom-lessons'),load:()=>account.readClassrooms(),guard}),course=mountCourseWritingEntry({container:$('#world-classroom-lessons'),transport:account.courseRequest,guard});classroomView={hasDraft:()=>course.hasDraft(),dispose(){lessons.dispose();course.dispose();}};}
  // 기존 주차 과제와 초안을 유지한다. 수정 과제를 시작한 반은 서버가 이전 이력 보기로 전환하고, 정답은 해당 제출 권한을 확인해 전달한다.

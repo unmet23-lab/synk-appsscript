@@ -47,6 +47,16 @@
 .world-notice .felt-button{justify-self:stretch;margin-top:10px;min-height:48px;background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line-2)}
 .world-notice .felt-button:hover{background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line-2)}
 .world-notice a.felt-button span[aria-hidden]{display:none}
+/* 10-22 「내 계정」의 「내가 남긴 응답」(WORLD 학습자 응답 설계 §3): 안내 블록과 같은 카드, 줄마다 응답 이름과 [빼기] */
+.ws-responses{display:grid;gap:8px;margin:22px 0 0;padding:16px 18px 17px;border-radius:var(--w-r-lg);background:var(--w-s1);box-shadow:var(--w-card-edge);text-align:left}
+.ws-responses h3{margin:0;font-size:15.5px;line-height:1.4;font-weight:var(--wt-title);letter-spacing:var(--track-title);color:var(--w-ink)}
+.ws-responses-note{margin:0;font-size:13.5px;line-height:1.55;color:var(--w-ink-3);text-wrap:pretty}
+.ws-responses ul{display:grid;margin:0;padding:0;list-style:none}
+.ws-responses li{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;border-top:1px solid var(--w-line);font-size:15px;line-height:1.4;color:var(--w-ink)}
+.ws-responses li[hidden]{display:none}
+.ws-responses li>span{min-width:0;overflow-wrap:anywhere}
+.ws-responses li>.quiet-button,.ws-responses-more{flex-shrink:0;min-height:44px}
+.ws-responses-more{justify-self:start}
 .world-notice a.felt-button::after{content:'';width:15px;height:15px;background:currentColor;-webkit-mask:var(--w-arrow-up-right) center/contain no-repeat;mask:var(--w-arrow-up-right) center/contain no-repeat}
 .world-notice .plain-button{margin-top:10px}
 /* 학습 알림(world-reminder-device.mjs): 배우기 판 맨 아래의 묻는 카드 · 설정의 「학습 알림」 묶음 · 시험 점검 카드 */

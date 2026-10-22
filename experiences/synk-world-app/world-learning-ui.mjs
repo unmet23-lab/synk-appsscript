@@ -34,8 +34,10 @@ function examMonths(now){
 // topikBankUrl: 공개 TOPIK 은행(world-topik-items.json — 검수 통과 문항)의 주소. 없으면 audioUrl로 WORLD 자리에서 찾는다(10-21 ④).
 // town: 싱크타운 「마을 준비 확인」(학습·개인화 다리 §4-2). {kit: 계정 묶음의 worldTownCheck, check(body): 서버 입장 확인(town/check),
 //  open(): 마을 열기, passed(result): 통과를 알림, evidence(): 진단·연습·시험 형식 연습이 끝났다고 알림(호스트의 조용한 확인)}. 없으면 그 판을 열지 않는다.
+// responses: 학습자 응답(설정값 worldFeedback, WORLD 학습자 응답 설계 — 기본 꺼짐). 켜지면 로그인한 학습자의 연습 끝 화면에 「이번 연습 어땠어요?」를 두고,
+//  짧은 연습의 길이(3·5·7)를 그 응답으로 정하고, 「내 계정」이 응답 목록(responses()·removeResponse())을 읽는다. 꺼지면 판 기록(finishSet)도 남기지 않는다.
 export function createWorldEducation({home,getProgress,engine,createPlan,launchGame,startLesson,startReview,prepare=async()=>{},position=null,audioUrl=path=>path,readHangulProgress=null,
- readClasswork=null,writingPractice=null,speakingPractice=null,topikBankUrl=null,town=null,target=globalThis}){
+ readClasswork=null,writingPractice=null,speakingPractice=null,topikBankUrl=null,town=null,responses=false,target=globalThis}){
  let stopped=false,coach=null,coachHost=null,practiceCoach=null,practiceHost=null,mockCoach=null,mockHost=null,current=null,refreshing=false,classwork={at:0,rows:[],pending:null};
  const owner=getProgress().owner;
  const empty=engine.engine.createGame({gameId:'world-home-empty',storage:null,historyComplete:false}).summary();
@@ -56,6 +58,53 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  const readPracticeCoach=()=>coachFor(position?.practice?.PRACTICE_POLICY?.gameId||'world-practice',()=>[practiceCoach,practiceHost],(a,b)=>{practiceCoach=a;practiceHost=b;});
  // 시험 형식 연습(미니 모의)은 'world-mock' — 근거 집계(world-exam-form.mjs mockEvidence)가 이 경험의 결정 기록만 읽는다.
  const readMockCoach=()=>coachFor(position?.mock?.MOCK_POLICY?.gameId||'world-mock',()=>[mockCoach,mockHost],(a,b)=>{mockCoach=a;mockHost=b;});
+ // ── 연습 한 판의 응답(WORLD 학습자 응답 설계 §2·§3·§5) ──
+ // 기능이 꺼졌거나 손님이면 응답 줄도 판 기록(finishSet)도 없다 — 손님은 「내 계정」을 열 수 없어 본인이 보고 뺄 자리가 없다.
+ const answering=()=>responses===true&&owner!=='guest';
+ // 판 하나를 마칠 때 그 판의 결정·마침 한 쌍(코치 finishSet — 응답은 그 판에 붙는다). 남기지 못하면(옛 코치·저장 실패) 응답 줄을 그리지 않는다.
+ function finishSet(coachNow,kind){
+  if(!answering()||typeof coachNow?.finishSet!=='function'||typeof view?.renderSetResponse!=='function')return null;
+  try{return coachNow.finishSet({kind});}catch{return null;}
+ }
+ // 짧은 연습 한 판의 문항 수: 짧은 연습(코치 world-practice)에 남긴 마지막 응답 하나로 — 많았어요 3, 더 하고 싶어요 7, 그 밖·없음은 연습 규칙 그대로(5).
+ // 따로 저장하는 상태가 없다(Core 분량 규칙과 같은 절대 규칙) — 응답을 빼거나 30일이 지나면 효과도 빠진다. 진단·시험 형식 응답은 길이를 움직이지 않는다.
+ const PRACTICE_LENGTH=Object.freeze({too_much:3,want_more:7});
+ function practiceLength(){
+  const base=position?.practice?.PRACTICE_POLICY?.count||5;
+  if(!answering())return base;
+  try{const last=(readPracticeCoach()?.setFeedback?.()||[]).filter(row=>row.kind==='short').at(-1);return PRACTICE_LENGTH[last?.value]||base;}catch{return base;}
+ }
+ // 끝 화면의 응답 줄 잇기: 고르면 코치에 남기고(같은 값은 그대로, 다른 값은 앞 응답을 대신한다) 그 줄만 다시 그린다.
+ // 짧은 연습이면 길이가 바뀌므로 「새 문항 n개 더 하기」의 n도 고친다(more: 그 항목에 남은 새 문항 수).
+ function bindResponse({box,coachNow,set,kind,more=0}){
+  if(!set||!box?.querySelector?.('[data-set-response-box]'))return;
+  let chosen=null;
+  box.addEventListener('click',event=>{
+   const button=event.target.closest?.('[data-set-response]');if(!button||!box.contains(button))return;
+   const value=button.dataset.setResponse;let failed=false;
+   try{check();coachNow.feedback(set,value);chosen=value;}catch{failed=true;}
+   const node=box.querySelector('[data-set-response-box]');if(!node)return;
+   node.outerHTML=view.renderSetResponse({kind,value:chosen,failed});
+   box.querySelector(`[data-set-response="${value}"]`)?.focus?.({preventScroll:true});
+   const again=kind==='short'?box.querySelector('[data-practice-again]'):null;
+   if(again)again.innerHTML=`${escape(t('practice.again',{n:Math.min(more,practiceLength())}))} <span aria-hidden="true">→</span>`;
+  });
+ }
+ const responseView=(set,kind)=>set?{kind,value:null}:null;
+ // 「내 계정」의 「내가 남긴 응답」: 세 연습(짧은 연습·짧은 진단·시험 형식)의 판 응답(30일 안·뺀 것 제외)을 새것부터. 기능이 꺼졌거나 손님이면 null.
+ // 각 줄 {id, kind, value}. 시각은 보이지 않는다(설계 §3). removeResponse(id): 그 응답을 뺀다(record.excluded — 목록과 쓰임에서 빠진다).
+ const RESPONSE_COACHES=[()=>readPracticeCoach(),()=>readCoach(),()=>readMockCoach()];
+ function responseList(){
+  if(!answering())return null;
+  const rows=[];
+  for(const read of RESPONSE_COACHES){const coach=read();for(const row of coach?.setFeedback?.()||[])rows.push(row);}
+  return rows.sort((a,b)=>Date.parse(b.at)-Date.parse(a.at)).map(row=>({id:row.id,kind:row.kind,value:row.value}));
+ }
+ function removeResponse(id){
+  if(!answering())return false;
+  for(const read of RESPONSE_COACHES){const coach=read();if((coach?.setFeedback?.()||[]).some(row=>row.id===id)){coach.exclude(id);return true;}}
+  return false;
+ }
  // 공개 TOPIK 은행: 처음 추천·판을 열 때 한 번 불러오고(실패하면 다음에 다시), 다 불러오면 추천과 열려 있는 판을 다시 그린다.
  const bankUrl=topikBankUrl||audioUrl('world-topik-items.json');
  let bankWait=null,bankFailedAt=-Infinity;
@@ -152,7 +201,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  function planWith({summary,coachNow,progress,values,recommendActivities}){
   const seen=seenBy(coachNow),extra=[],now=Date.now(),audioAvailable=values.audio!=='off';
   const practice=position?.practice,pool=practiceFor(values);
-  if(practice&&coachNow&&summary.evidenceComplete)extra.push(...practice.practiceCandidates({pool,seen,summary,labels:Object.fromEntries(pool.map(item=>[item.skillId,skillLabel(item.skillId)]))}));
+  if(practice&&coachNow&&summary.evidenceComplete)extra.push(...practice.practiceCandidates({pool,seen,summary,labels:Object.fromEntries(pool.map(item=>[item.skillId,skillLabel(item.skillId)])),count:practiceLength()}));
   const exam=position?.exam?.examInfo(values)||null;
   let diagnostic=null;
   if(exam&&position&&coachNow){try{diagnostic=position.selectDiagnostic({summary,items:position.items,seen,audioAvailable,exam:studentExam(values)});}catch{diagnostic=null;}}
@@ -447,11 +496,12 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   check();
   if(!coachNow||plan?.status!=='ready'||!plan.items.length)return;
   runDiagnostic({coachNow,items:plan.items,map,title:t('position.diagnostic.title'),eyebrow:'QUICK CHECK',done:({box,results})=>{
+   const set=finishSet(coachNow,'diagnostic');
    // 끝 화면의 「이 항목 연습하기」는 새 추천(refresh) 뒤의 후보로 고른다 — 방금 푼 진단 문항은 이제 본 문항이다.
    refresh();const routes=practiceRoutes(coachNow);
    let after=map;try{after=position.buildPositionMap({summary:coachNow.summary(),events:coachNow.events?.()||[],policy:engine.POLICY,prefer:id=>routes.has(id)});}catch{after=map;}
-   box.innerHTML=view.renderDiagnosticDone({map:after,results,items:position.itemsById,practice:id=>routes.get(id)||null});
-   bindPractice(box,routes);
+   box.innerHTML=view.renderDiagnosticDone({map:after,results,items:position.itemsById,practice:id=>routes.get(id)||null,response:responseView(set,'diagnostic')});
+   bindPractice(box,routes);bindResponse({box,coachNow,set,kind:'diagnostic'});
    box.querySelector('[data-position-done]')?.focus?.({preventScroll:true});
    evidenced();
   }});
@@ -613,7 +663,7 @@ async function townSend(coachNow,{wait=true}={}){
   const coachNow=readPracticeCoach();if(!coachNow){home.toast(t('practice.unavailable'));return;}
   let audioAvailable=true;try{audioAvailable=getProgress().learningProfileValues().audio!=='off';}catch{}
   const summary=coachNow.summary(),seen=seenBy(coachNow),exam=skillExam(skillId),listening=String(skillId).split('.')[1]==='listening';
-  const selection=position.practice.selectPractice({summary,pool:position.practice.pool,seen,skillId,audioAvailable});
+  const selection=position.practice.selectPractice({summary,pool:position.practice.pool,seen,skillId,audioAvailable,count:practiceLength()});
   if(selection.status==='none'){home.toast(t(selection.reason==='history.incomplete'?'position.diagnostic.history':selection.reason==='audio'?'practice.audioOff':'practice.shortage'));void openPosition();return;}
   const session=position.practice.createPracticeSession({coach:coachNow,items:selection.items});
   const mapOf=()=>{try{return position.buildPositionMap({summary:coachNow.summary(),events:coachNow.events?.()||[],policy:engine.POLICY,exam});}catch{return null;}};
@@ -638,7 +688,9 @@ async function townSend(coachNow,{wait=true}={}){
    ended=true;player.silence();try{coachNow.flush?.();}catch{}
    const after=mapOf()?.skills.find(row=>row.id===skillId)||null;
    const more=position.practice.practiceSupply({pool:position.practice.pool,seen:seenBy(coachNow),audioAvailable})[skillId]||0;
-   box.innerHTML=view.renderPracticeDone({skill,before,after,results:session.results(),items:position.itemsById,more,listening});
+   const set=finishSet(coachNow,'short');
+   box.innerHTML=view.renderPracticeDone({skill,before,after,results:session.results(),items:position.itemsById,more,listening,count:practiceLength(),response:responseView(set,'short')});
+   bindResponse({box,coachNow,set,kind:'short',more});
    box.querySelector('[data-practice-done]')?.focus?.({preventScroll:true});top();
    queueMicrotask(()=>refresh());evidenced();
   }
@@ -718,9 +770,10 @@ async function townSend(coachNow,{wait=true}={}){
   function finish(){
    if(ended&&!box.isConnected)return;
    ended=true;stopTick();player.silence();try{coachNow.flush?.();}catch{}
+   const set=finishSet(coachNow,'mock');
    refresh();const routes=practiceRoutes(readCoach());
-   box.innerHTML=view.renderMockDone({results:session.results(),items:position.itemsById,plan,exam,mode,practice:id=>routes.get(id)||null});
-   bindPractice(box,routes);
+   box.innerHTML=view.renderMockDone({results:session.results(),items:position.itemsById,plan,exam,mode,practice:id=>routes.get(id)||null,response:responseView(set,'mock')});
+   bindPractice(box,routes);bindResponse({box,coachNow,set,kind:'mock'});
    box.querySelector('[data-mock-done]')?.focus?.({preventScroll:true});top();evidenced();
   }
   box.addEventListener('click',event=>{
@@ -759,7 +812,7 @@ async function townSend(coachNow,{wait=true}={}){
   const plan=refresh(),examPlan=plan?.examPlan;
   if(!examPlan||!view){if(!keepScroll&&!quiet)open();return 'missing';}
   const scroller=keepScroll?panelNode('[data-plan-board]')?.closest?.('#panel-content'):null,scrollTop=scroller?.scrollTop||0;
-  home.showPanel(t('plan.week.title'),view.renderExamPlan({plan:examPlan,next:plan.selected,reason:tMessage(plan.reason||'')}),{type:'life-position',eyebrow:'MY WEEK',nav:'packs'});
+  home.showPanel(t('plan.week.title'),view.renderExamPlan({plan:examPlan,next:plan.selected,reason:tMessage(plan.reason||''),count:practiceLength()}),{type:'life-position',eyebrow:'MY WEEK',nav:'packs'});
   const root=panelNode('[data-plan-board]');if(keepScroll){const node=root?.closest?.('#panel-content');if(node)node.scrollTop=scrollTop;}else root?.focus?.({preventScroll:true});
   root?.querySelector('[data-plan-next]')?.addEventListener('click',()=>{try{check();if(plan.selected)void Promise.resolve(launch(plan.selected)).catch(failed);}catch(error){failed(error);}});
   root?.querySelectorAll('[data-plan-practice]').forEach(button=>button.addEventListener('click',()=>{try{check();void Promise.resolve(startPractice(button.dataset.planPractice)).catch(failed);}catch(error){failed(error);}}));
@@ -780,5 +833,5 @@ async function townSend(coachNow,{wait=true}={}){
  }
  // 이번 주 계획의 시험(배우기 판이 TOPIK II 학생의 쓰기 연습 줄을 위로 올릴 때 읽는다). 시험 계획이 없으면 null.
  const examType=()=>current?.examPlan?.exam?.type||null;
- return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,...(position?{position:openPosition,practice:startPractice,plan:openPlan,mock:openMock,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),dispose(){stopped=true;coach?.disconnect?.();practiceCoach?.disconnect?.();mockCoach?.disconnect?.();target.removeEventListener?.('focus',onFocus);}};
+ return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,...(position?{position:openPosition,practice:startPractice,plan:openPlan,mock:openMock,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),dispose(){stopped=true;coach?.disconnect?.();practiceCoach?.disconnect?.();mockCoach?.disconnect?.();target.removeEventListener?.('focus',onFocus);}};
 }

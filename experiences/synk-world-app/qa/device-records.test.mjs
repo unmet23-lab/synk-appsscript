@@ -179,6 +179,24 @@ test('only guest records made after the last person on this device are offered (
  saveDeviceRecordsDecision(storage,ACCOUNT,'kept',b.end()+1000,{through:b.end()+1000});
  assert.equal(planDeviceRecords({storage,learning,accountId:ACCOUNT,life:true,learningLog:true}),null);
 });
+// WORLD 학습자 응답 설계 §4: 손님은 응답을 남기지 않아 지금은 빈 길이지만, 연습 한 판(.set)의 결정이 기준 시각 뒤면 그 마침·응답·응답 빼기가 함께 간다.
+// 응답만 따로 가면 계정 기록이 받지 않는다(마침이 먼저 있어야 한다).
+test('a finished set moves with its completion, its response and an exclusion of it; a set from before the mark stays',()=>{
+ const storage=memory(),day=guestDay(storage,Date.parse(AT));
+ const early=day.coach.finishSet({kind:'diagnostic'});
+ noteDeviceSignOut(storage,day.end()+1000);
+ let tick=day.end()+60000;
+ const coach=learningBrowser.engine.createGame({gameId:'world-practice',storage,clock:()=>new Date(tick+=1000).toISOString()});
+ const set=coach.finishSet({kind:'short'}),response=coach.feedback(set,'want_more'),exclusion=coach.exclude(response.id);
+ const {events}=guestLearningEvents(storage,{after:deviceWatermark(storage,ACCOUNT)});
+ const ids=new Set(events.map(event=>event.id));
+ for(const id of [set.decisionId,set.completionId,response.id,exclusion.id])assert.ok(ids.has(id),`${id} moves`);
+ for(const id of [early.decisionId,early.completionId])assert.ok(!ids.has(id),'a set from before the mark stays on the device');
+ // 옮기는 묶음만으로 계정 기록이 받는다(부모 없는 사건이 없다).
+ const accountStore=memory(),account=learningBrowser.engine.createGame({gameId:'world-account',storage:accountStore,storageScope:'account',accountKey:ACCOUNT,fold:false});
+ account.syncPort.importEvents(events);
+ assert.deepEqual(account.syncPort.events().filter(event=>ids.has(event.id)).map(event=>event.id).sort(),[...ids].sort());
+});
 test('moving keeps every event as it was (same ids), adds only what the account lacks and never overwrites it',async()=>{
  const storage=memory();guestDay(storage,Date.parse(AT));
  const {events}=guestLearningEvents(storage);

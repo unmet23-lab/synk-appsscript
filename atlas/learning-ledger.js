@@ -31,7 +31,8 @@ const BITS = Trail.BITS;
 // The policy reads at most the newest 12 independent answers of a cell; helped answers
 // older than 30 days never count again.
 const KEEP = 12, HELP_MS = 30 * 86400000;
-const FOLDABLE = Object.freeze(['decision.made', 'experience.completed', 'record.excluded',
+// A response (feedback.given) folds with its set once Core no longer reads it (plan() respondedBefore).
+const FOLDABLE = Object.freeze(['decision.made', 'experience.completed', 'record.excluded', 'feedback.given',
   'practice.presented', 'practice.helped', 'practice.attempted', 'practice.delivery']);
 const MAX_ENTRIES = 200000;
 
@@ -143,16 +144,18 @@ function fold(previous, events, { scope, log = events, local = false }) {
 /* Choose whole, finished items to fold, oldest first, so that at most `keep` entries stay.
  * An item is foldable when all its entries are older than `olderThan`, it is not open here
  * (`open` lists entry ids), and it was completed or its last entry is older than
- * `unfinishedBefore`. An older item that stays is read before the folded ones, as in the
- * whole log; the cutoff is the latest folded entry. */
-function plan(events, { keep, olderThan, unfinishedBefore = olderThan, open = [] }) {
+ * `unfinishedBefore`; one with a response only once its latest response is older than `respondedBefore`
+ * (never without it). An older item that stays is read before the folded ones, as in the whole log;
+ * the cutoff is the latest folded entry. */
+function plan(events, { keep, olderThan, unfinishedBefore = olderThan, respondedBefore = -Infinity, open = [] }) {
   if (events.length <= keep) return null;
   const groupOf = new Map(), groups = new Map();
   const join = (id, event) => {
-    if (!groups.has(id)) groups.set(id, { id, events: [], max: -Infinity, open: false, done: false });
+    if (!groups.has(id)) groups.set(id, { id, events: [], max: -Infinity, open: false, done: false, responded: -Infinity });
     const g = groups.get(id);
     g.events.push(event); g.max = Math.max(g.max, Date.parse(event.at), Date.parse(event.recordedAt)); groupOf.set(event.id, id);
     if (event.type === 'experience.completed') g.done = true;
+    if (event.type === 'feedback.given') g.responded = Math.max(g.responded, Date.parse(event.at));
   };
   const pinned = new Set();
   for (const e of events) {
@@ -169,7 +172,7 @@ function plan(events, { keep, olderThan, unfinishedBefore = olderThan, open = []
   const folded = new Set();
   for (const g of order) {
     if (remaining <= keep || g.max >= olderThan) break;
-    if (g.open || !g.done && g.max >= unfinishedBefore) continue;
+    if (g.open || !g.done && g.max >= unfinishedBefore || g.responded > -Infinity && g.responded >= respondedBefore) continue;
     for (const e of g.events) folded.add(e.id);
     remaining -= g.events.length; cutoff = g.max;
   }
@@ -179,8 +182,9 @@ function plan(events, { keep, olderThan, unfinishedBefore = olderThan, open = []
 // Entries a newer ledger already holds: practice entries at or before its cutoff.
 const folded = (ledger, event) => !!ledger && ledger.cutoff !== null && FOLDABLE.includes(event.type)
   && Date.parse(event.at) <= ledger.cutoff;
-// The decision, presentation or entry an entry belongs to (none for a decision).
-const reference = e => (e?.type === 'decision.made' ? undefined : e?.decisionId ?? e?.presentationId ?? e?.targetId);
+// The decision, presentation, entry or completion an entry belongs to (none for a decision). A
+// response names its set's decision as well; an older one without it belongs to its completion.
+const reference = e => (e?.type === 'decision.made' ? undefined : e?.decisionId ?? e?.presentationId ?? e?.targetId ?? e?.completionId);
 // A synchronised entry whose decision, presentation or target was folded here.
 const stray = (event, known) => { const ref = reference(event); return typeof ref === 'string' && !known.has(ref); };
 // Which of two ledgers folded later: 1 (a), -1 (b) or 0 (the same fold).

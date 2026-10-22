@@ -14,6 +14,8 @@ const Ledger = require('./learning-ledger');
 const { createPages, THRESHOLD } = require('./learning-pages');
 const { createFlowPort, createLive } = require('./game-flow');
 const KEY = 'synk.atlas.learning.v1';
+// A finished practice set (finishSet) and a response to it in Core's four values, read for 30 days (engine.js RECENT).
+const SET_KINDS = ['short', 'diagnostic', 'mock'], RESPONSES = ['helpful', 'not_fit', 'too_much', 'want_more'], RESPONSE_MS = 30 * 86400000;
 const identifier = value => typeof value === 'string' && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
 const uid = () => `l${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
 /* `fold`: the store keeps its recent entries in full and folds older, finished items into a
@@ -50,7 +52,7 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
   const UNCHANGED = Symbol('unchanged-history');
   let lastStoredRaw = Symbol('unread-history');
   let lastTime = 0;
-  const active = new Map();
+  const active = new Map(), sets = new Map(); // sets: finished here in the last day (decision → time), still open to a response
   const listeners = new Set();
   const notify = (kind, code) => { for (const listener of listeners) { try { listener({ kind, ...(code ? { code } : {}) }); } catch { /* Host notifications cannot corrupt learning events. */ } } };
   const monotonicClock = () => { const value = Date.parse(clock()); if (!Number.isFinite(value)) throw new TypeError('Atlas: invalid clock'); lastTime = Math.max(value, lastTime); return new Date(lastTime).toISOString(); };
@@ -108,7 +110,7 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     const stored = readStored();
     if (!stored || stored === UNCHANGED) return;
     if (stored.epoch !== epoch) {
-      epoch = stored.epoch; ledger = stored.ledger || null; session = newSession(stored.events); active.clear();
+      epoch = stored.epoch; ledger = stored.ledger || null; session = newSession(stored.events); active.clear(); sets.clear();
       settled.clear(); settledVersion += 1; settle(stored.settled || [], new Set(stored.events.map(e => e.id)));
       takeDropped(stored.dropped || [], false); return;
     }
@@ -127,9 +129,12 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
       else { known.set(e.id, e); combined.push(e); }
     }
     if (order < 0) ledger = theirs;
+    // A response whose set the other side folded leaves here with any exclusion of it (it stays there and on the server).
+    const types = new Map([...mine, ...stored.events].map(e => [e.id, e.type]));
+    for (const e of combined) if (e.type === 'feedback.given' && !known.has(e.completionId) || e.type === 'record.excluded' && !known.has(e.targetId) && types.get(e.targetId) === 'feedback.given') known.delete(e.id);
     settle([...settled, ...(stored.settled || [])], known);
     takeDropped(stored.dropped || [], order > 0);
-    session = newSession(combined);
+    session = newSession(combined.filter(e => known.has(e.id)));
     // A presentation folded in another tab has ended here too.
     for (const pid of active.keys()) if (!known.has(pid)) active.delete(pid);
   }
@@ -164,9 +169,10 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     // the server has not sent back yet, and unanswered items for 30 days: their answer may
     // still come from another device.
     const open = [...active].filter(([, item]) => !item.results.length).map(([pid]) => pid);
+    for (const [id, at] of sets) if (now - at < 86400000) open.push(id); else sets.delete(id);
     if (folding.remote) for (const e of events) if (!settled.has(e.id)) open.push(e.id);
     const planned = Ledger.plan(events, { keep: folding.keep, olderThan: now - folding.ageMs, open,
-      unfinishedBefore: folding.remote ? now - 30 * 86400000 : now - folding.ageMs });
+      unfinishedBefore: folding.remote ? now - 30 * 86400000 : now - folding.ageMs, respondedBefore: now - RESPONSE_MS });
     // Fold in batches: rewriting the summary for one item at a time costs more than it saves.
     const batch = Math.max(1, Math.floor((folding.max - folding.keep) / 2));
     if (!planned || planned.folded.length < batch && events.length < 2 * folding.max) { retryFold = { settled: settledVersion, at: now + 60000 }; return; }
@@ -450,6 +456,29 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
       p.results.push(recorded); return { ...recorded, ...(recorded.choice ? { choice: { ...recorded.choice } } : {}) };
     },
     exclude(eventId) { refresh(); const event = session.exclude(eventId); persist(); return event; },
+    // A practice set ended (short practice, quick check, exam-form practice): a `<gameId>.set` decision and completion, so a
+    // response is about the set, not its last item. One 5-minute candidate, so a short-time setting never blocks it.
+    finishSet({ kind } = {}) {
+      refresh(); if (!SET_KINDS.includes(kind)) throw new TypeError('Atlas: invalid practice set');
+      const decision = session.plan(`${gameId}.set`, [{ id: kind, minutes: 5, pace: 'standard' }]);
+      if (decision.status !== 'ready') throw new Error('Atlas: practice set could not be recorded');
+      const completion = session.complete(decision); sets.set(decision.id, Date.parse(completion.at)); persist();
+      return { decisionId: decision.id, completionId: completion.id };
+    },
+    // A response to a finished set. It names the set's decision too, so a store folding by the older reference() keeps the
+    // set with it. The same value again adds nothing; another value replaces it.
+    feedback(set, value) {
+      refresh(); if (!RESPONSES.includes(value) || !identifier(set?.completionId) || !identifier(set?.decisionId)) throw new TypeError('Atlas: invalid set response');
+      const done = log().find(e => e.id === set.completionId);
+      if (done?.type !== 'experience.completed' || done.experienceId !== `${gameId}.set` || done.decisionId !== set.decisionId) throw Object.assign(new Error('Atlas: this practice set no longer takes a response'), { code: 'SET_UNAVAILABLE' });
+      if (session.state().feedback.find(f => f.completionId === done.id)?.value === value) return null;
+      const event = session.feedback(done.id, value, done.decisionId); persist(); return event;
+    },
+    // Responses to this game's sets that Core still reads (30 days, not excluded), oldest first.
+    setFeedback() {
+      refresh(); return session.state().feedback.filter(f => f.experienceId === `${gameId}.set`)
+        .map(f => ({ id: f.id, completionId: f.completionId, decisionId: f.decisionId ?? null, value: f.value, kind: f.variant, at: f.at }));
+    },
     events() { refresh(); return session.events(); },
     // Before a tab closes or hides: another tab may have written an older history over this
     // one's entries in the meantime (tabs see each other's writes late), so join and write again.
@@ -460,7 +489,7 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     },
     reset() {
       if (storageScope === 'account') throw Object.assign(new Error('Atlas: account deletion requires the host consent/reset API; local reset cannot delete server records'), { code: 'ACCOUNT_RESET_REQUIRED' });
-      epoch = uid(); ledger = null; settled.clear(); settledVersion += 1; takeDropped([], false); session = newSession([]); active.clear(); readable = true; writable = !!storage; complete = historyComplete; warning = null; persist();
+      epoch = uid(); ledger = null; settled.clear(); settledVersion += 1; takeDropped([], false); session = newSession([]); active.clear(); sets.clear(); readable = true; writable = !!storage; complete = historyComplete; warning = null; persist();
       flowPort.clear();
       return summary();
     },

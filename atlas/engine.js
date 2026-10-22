@@ -79,6 +79,8 @@
       if (!validId(event.decisionId) || !validId(event.experienceId) || !validId(event.variant)) throw new TypeError('Atlas: invalid completion');
     } else if (event.type === 'feedback.given') {
       if (!validId(event.completionId) || !['helpful', 'too_much', 'want_more', 'not_fit'].includes(event.value)) throw new TypeError('Atlas: invalid feedback');
+      // A response may also name its completion's decision, so a store that folds by decision keeps them together.
+      if (event.decisionId !== undefined && !validId(event.decisionId)) throw new TypeError('Atlas: invalid feedback');
     } else if (event.type === 'signal.observed') {
       // An adapter's summary of what was observed. Raw text, audio and identifiers never enter.
       if (!SIGNALS.includes(event.kind) || !validId(event.key) || !unit(event.strength) || !Number.isInteger(event.n) || event.n < 0 || !flag(event.assisted)) throw new TypeError('Atlas: invalid signal');
@@ -131,6 +133,7 @@
     if (event.type === 'feedback.given') {
       const completion = find(event.completionId, 'experience.completed');
       if (!completion || scopeKey(completion.scope) !== scopeKey(event.scope) || ms(completion.at) > ms(event.at)) throw new Error('Atlas: feedback requires a prior completion in the same scope');
+      if (event.decisionId !== undefined && event.decisionId !== completion.decisionId) throw new Error('Atlas: feedback names another decision than its completion');
     }
     if (event.type === 'experience.completed') {
       const decision = find(event.decisionId, 'decision.made');
@@ -497,7 +500,7 @@
         const existing = completions.get(decision.id);
         return existing ? copy(existing) : record({ type: 'experience.completed', decisionId: decision.id, experienceId: decision.experienceId, variant: decision.selected.id });
       },
-      feedback: (completionId, value) => record({ type: 'feedback.given', completionId, value }),
+      feedback: (completionId, value, decisionId) => record({ type: 'feedback.given', completionId, value, ...(decisionId !== undefined ? { decisionId } : {}) }),
       practice: (kind, fields) => {
         if (!fields || typeof fields !== 'object' || Array.isArray(fields) || typeof kind !== 'string') throw new TypeError('Atlas: invalid practice fields');
         return record({ ...fields, type: kind.startsWith('practice.') ? kind : `practice.${kind}` });
