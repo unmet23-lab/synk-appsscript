@@ -181,20 +181,24 @@ test('a reader holding the WAL leaves the erase reported as pending, and the nex
   assert.equal(f.store.db.prepare('PRAGMA busy_timeout').get().timeout,5000);
 });
 
-test('a new erase starts the WAL retries again after an earlier run of tries was used up',async t=>{
-  // 아르곤 델타 검수 A1: the try counter used to stay at its end, so a later busy erase got no retry at all.
+test('a new erase starts the WAL retries again from the shortest wait',async t=>{
+  // 아르곤 델타 검수 A1 · 마지막 델타의 아르곤 A1·GPT GA1: after the waits reached a long one, a new busy erase must not
+  // leave the next try that far away. Here the second wait is a minute, so only a restart truncates within the test.
   const f=await fixture(t),admin=f.users.admin,wal=()=>statSync(join(f.store.directory,'company.sqlite-wal')).size;
   f.items=[sample(),sample({responseId:'synthetic-response-9',createdAt:'2026-10-20T01:30:00.000Z',submittedAt:'2026-10-20T01:30:00.000Z'})];
-  await f.enable();await f.service.tick({force:true});const [first,second]=f.service.workspace(admin).items;
-  const tokens=[];for(const row of [first,second])tokens.push((await f.service.checkErase(admin,row.id,{revision:row.revision})).erasure.token);
+  await f.enable();await f.service.tick({force:true});
+  const service=createWebsiteInquiryService({store:f.store,reader:f.reader,tasks:f.tasks,origin:'https://workspace.example.test',clock:()=>'2026-10-20T02:00:00.000Z',walRetryMs:[30,60000]});
+  t.after(()=>service.close());
+  const [first,second]=service.workspace(admin).items;
+  const tokens=[];for(const row of [first,second])tokens.push((await service.checkErase(admin,row.id,{revision:row.revision})).erasure.token);
   const readerDb=new DatabaseSync(join(f.store.directory,'company.sqlite'),{readOnly:true});readerDb.exec('BEGIN');readerDb.prepare('SELECT COUNT(*) AS n FROM documents').get();
   try{
-    assert.equal(f.service.erase(admin,first.id,{revision:first.revision,token:tokens[0]}).erased.wal,'pending');
-    await new Promise(done=>setTimeout(done,250));assert.ok(wal()>0,'all three tries ran out while the reader stayed open');
-    assert.equal(f.service.erase(admin,second.id,{revision:second.revision,token:tokens[1]}).erased.wal,'pending');
+    assert.equal(service.erase(admin,first.id,{revision:first.revision,token:tokens[0]}).erased.wal,'pending');
+    await new Promise(done=>setTimeout(done,150));assert.ok(wal()>0,'the first try failed and the next one is a minute away');
+    assert.equal(service.erase(admin,second.id,{revision:second.revision,token:tokens[1]}).erased.wal,'pending');
   }finally{readerDb.exec('COMMIT');readerDb.close();}
   for(let i=0;i<40&&wal()>0;i++)await new Promise(done=>setTimeout(done,25));
-  assert.equal(wal(),0,'the later erase scheduled its own tries');
+  assert.equal(wal(),0,'the later erase started the waits again from the shortest');
 });
 
 test('a reader that outlasts every listed wait still gets the WAL truncated once it closes, with no other erase',async t=>{
