@@ -360,9 +360,10 @@ test('old values say when they were read and step back in tone, and a running ch
   assert.match(el.innerHTML,/class="ms-stale-note">.*에 읽은 값 · <button type="button" class="ms-link" data-subs="check" >지금 확인/);
   assert.match(el.innerHTML,/<span>주간 사용 · [\d/: ]+<\/span>/);
   // 20분~1시간은 몇 분 전인지만 붙이고 톤은 그대로, 못 읽은 계정이 있으면 그 수만 붙인다.
+  // 자정 뒤 40분 안에 돌면 40분 전이 전날이라 날짜가 붙는다(stamp: M/D HH:MM) — 10-22 00:07 UTC CI에서 그 꼴로 깨졌다.
   const aging=Date.now()-40*60e3;
   snapshot={...snapshot,seq:2,rows:[{...claude,live:{...claude.live,readAt:aging}}],check:{at:aging,total:2,ok:1}};listeners.forEach(cb=>cb(snapshot));
-  assert.match(el.innerHTML,/마지막 확인 \d\d:\d\d\(40분 전\)/);assert.match(el.innerHTML,/1개 못 읽음/);assert.doesNotMatch(el.innerHTML,/is-stale/);
+  assert.match(el.innerHTML,/마지막 확인 (?:\d{1,2}\/\d{1,2} )?\d\d:\d\d\(40분 전\)/);assert.match(el.innerHTML,/1개 못 읽음/);assert.doesNotMatch(el.innerHTML,/is-stale/);
   snapshot={...snapshot,seq:3,checking:true,progress:{done:3,total:16}};listeners.forEach(cb=>cb(snapshot));
   assert.match(el.innerHTML,/공식 프로그램으로 읽는 중이에요… <b class="ms-num">3\/16<\/b>/);assert.match(el.innerHTML,/확인 중…/);
   board.dispose();
