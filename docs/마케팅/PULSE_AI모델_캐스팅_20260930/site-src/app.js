@@ -1,7 +1,7 @@
 (function () {
   'use strict';
   // PULSE 모델 캐스팅북 2판(10-18). 한 페이지 안에서 주소 뒤 #으로 화면을 바꾼다.
-  // claude.ai 페이지 링크에는 글자·숫자·. _ ~ - 만 넘어오므로 그 글자만 쓴다(1판의 #F02, #/m/F02도 연다).
+  // 아티팩트 보기 링크에는 글자·숫자·. _ ~ - 만 넘어오므로 그 글자만 쓴다(1판의 #F02, #/m/F02도 연다).
   //   #board            모델 보드(광고 내용으로 순서 바꾸기·거르기)   #lineup  키 순서
   //   #m-F02[-탭]       모델 북(북·디지털·장면·움직임·프로필)         #swipe   넘기며 고르기
   //   #pkg[-inq]        패키지(컴프 카드·나란히 비교·문의 글)        #p-F02.1.0~F04.0.2  공유받은 패키지
@@ -70,7 +70,12 @@
     toast.t = setTimeout(() => { try { toastEl.hidePopover(); } catch { toastEl.classList.remove('show'); } }, 2400);
   }
   function copy(text, done) {
-    const fallback = () => { const ta = $('#inq-text'); if (ta) { ta.focus(); ta.select(); } toast('글을 선택해 두었어요. 복사해서 붙여 넣어 주세요.'); };
+    // 클립보드를 막는 브라우저(메신저 앱 안 브라우저 등): 문의 글이면 그 칸을 골라 두고, 공유 링크처럼 화면에 없는 글은 창에 띄워 직접 복사하게 한다
+    const fallback = () => {
+      const ta = $('#inq-text');
+      if (ta && ta.value === text) { ta.focus(); ta.select(); toast('글을 선택해 두었어요. 복사해서 붙여 넣어 주세요.'); return; }
+      try { window.prompt('아래 내용을 복사해 주세요.', text); } catch { toast('복사하지 못했어요. 잠시 뒤 다시 눌러 주세요.'); }
+    };
     try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => toast(done), fallback); else fallback(); } catch { fallback(); }
   }
 
@@ -733,7 +738,7 @@
         <div class="dcard" id="dcard" role="group" aria-label="${E(cur.m.name)}">
           <img src="${E(p.l)}" alt="${E(cur.m.name)}">
           <span class="stamp yes" id="st-yes">담기</span><span class="stamp no" id="st-no">넘기기</span>
-          <div class="meta"><b>${E(cur.m.name)}</b><span>${K(dot(cur.m.height && cur.m.height + 'cm', cur.m.age || cur.m.ageBand, cur.m.concept))}</span>${cur.r ? `<span class="why">${K(whyOf(cur.r))}</span>` : `<span>${K(cur.m.tagline ? `“${cur.m.tagline}”` : cur.m.impression.join(' · '))}</span>`}</div>
+          <div class="meta"><b>${E(cur.m.name)}</b><span>${K(dot(cur.m.height && cur.m.height + 'cm', cur.m.age || cur.m.ageBand, cur.m.concept, cur.m.realPerson && '실제 인물'))}</span>${cur.r ? `<span class="why">${K(whyOf(cur.r))}</span>` : `<span>${K(cur.m.tagline ? `“${cur.m.tagline}”` : cur.m.impression.join(' · '))}</span>`}</div>
         </div>
       </div>
       <div class="deck-acts"><button type="button" class="btn line" data-act="deck-no">넘기기</button><a class="btn line" href="#m-${E(cur.m.code)}">자세히</a><button type="button" class="btn ink" data-act="deck-yes">${inPkg(cur.m.code) ? '담겨 있음 · 다음' : '패키지에 담기'}</button></div>

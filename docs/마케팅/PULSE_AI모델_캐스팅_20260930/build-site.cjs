@@ -147,27 +147,46 @@ fs.writeFileSync(listFile, JSON.stringify(imgJobs));
 execFileSync('python', [path.join(here, 'make-images.py'), listFile], { stdio: 'inherit' });
 
 // 글꼴: SUIT(한글) + SYNK Latin(Inter Tight, 영문·숫자) + DM Mono(영문 라벨). PULSE 고객 앱과 같은 파일을 쓴다.
+// claude.ai 판은 한 파일이라 심고(data:), 홈페이지판은 같은 폴더 assets/의 파일로 싣는다 — 심으면 index.html이 1.4MB가 돼
+// 느린 망에서 첫 화면이 늦다(현장노트 배포_공개 「공개 웹 페이지에 SUIT를 --심기(base64)로 넣으면」).
 const pulseAssets = path.join(root, 'docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets');
+const 브랜드폰트 = require(path.join(root, 'tools/lib/브랜드폰트.js'));
 const LATIN = 'U+0020-007E,U+00A0-00B6,U+00B8-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+2010-2024,U+2026-2027,U+2030-203A,U+20A9,U+20AC,U+2122,U+2212';
-let fonts = require(path.join(root, 'tools/lib/브랜드폰트.js')).면();
-for (const [file, range] of [['SYNKLatin-Regular.woff2', '100 549'], ['SYNKLatin-SemiBold.woff2', '550 649'], ['SYNKLatin-Bold.woff2', '650 1000']]) {
-  fonts += `@font-face{font-family:'SYNK Latin';font-style:normal;font-weight:${range};font-display:swap;unicode-range:${LATIN};src:url(${uri(path.join(pulseAssets, file), 'font/woff2')}) format('woff2');}`;
-}
-fonts += `@font-face{font-family:'DM Mono';font-style:normal;font-weight:400 600;font-display:swap;unicode-range:U+0021-007E,U+00A0-00FF,U+2010-2027;src:url(${uri(path.join(pulseAssets, 'DMMono.ttf'), 'font/ttf')}) format('truetype');}`;
+const fontCss = (suit, src) => {
+  let css = suit;
+  for (const [file, range] of [['SYNKLatin-Regular.woff2', '100 549'], ['SYNKLatin-SemiBold.woff2', '550 649'], ['SYNKLatin-Bold.woff2', '650 1000']]) {
+    css += `@font-face{font-family:'SYNK Latin';font-style:normal;font-weight:${range};font-display:swap;unicode-range:${LATIN};src:url(${src(file, 'font/woff2')}) format('woff2');}`;
+  }
+  return css + `@font-face{font-family:'DM Mono';font-style:normal;font-weight:400 600;font-display:swap;unicode-range:U+0021-007E,U+00A0-00FF,U+2010-2027;src:url(${src('DMMono.ttf', 'font/ttf')}) format('truetype');}`;
+};
+const fonts = fontCss(브랜드폰트.면(), (file, mime) => uri(path.join(pulseAssets, file), mime));
+const homeFonts = fontCss("@font-face{font-family:'SUIT Variable';font-weight:100 900;font-display:swap;src:url(assets/fonts/SUIT-Variable.woff2) format('woff2');}",
+  (file) => `assets/fonts/${file}`);
 
 const pulse = path.join(root, 'docs/마케팅/클라이언트_발주서_20260930/assets');
+const faviconFile = path.join(root, 'docs/마케팅/맞춤도구/assets/favicon-32.png'), logoFile = path.join(pulse, 'brand-pulse.webp');
 const rep = {
-  FAVICON: uri(path.join(root, 'docs/마케팅/맞춤도구/assets/favicon-32.png'), 'image/png'),
-  LOGO: uri(path.join(pulse, 'brand-pulse.webp'), 'image/webp'),
+  FAVICON: uri(faviconFile, 'image/png'),
+  LOGO: uri(logoFile, 'image/webp'),
   FONTS: fonts,
   STYLE: fs.readFileSync(path.join(here, 'site-src/style.css'), 'utf8'),
   DATA: '@@DATA@@',
   LOGIC: fs.readFileSync(path.join(here, 'site-src/casting-logic.js'), 'utf8'),
   APP: fs.readFileSync(path.join(here, 'site-src/app.js'), 'utf8'),
 };
-let page = fs.readFileSync(path.join(here, 'site-src/template.html'), 'utf8');
-for (const [k, v] of Object.entries(rep)) if (k !== 'DATA') page = page.replace(`@@${k}@@`, () => v);
-if (/@@(?!DATA@@)\w+@@/.test(page)) throw Error('채우지 못한 자리표시가 있다');
+const template = fs.readFileSync(path.join(here, 'site-src/template.html'), 'utf8');
+const fill = (r) => {
+  let p = template;
+  for (const [k, v] of Object.entries(r)) if (k !== 'DATA') p = p.replace(`@@${k}@@`, () => v);
+  if (/@@(?!DATA@@)\w+@@/.test(p)) throw Error('채우지 못한 자리표시가 있다');
+  return p;
+};
+const page = fill(rep);
+// 홈페이지판: 글꼴·로고·파비콘은 파일로 싣고, claude.ai에서만 쓰는 머리 표시와 내려받기 기능 요청 줄은 뺀다.
+const appHome = rep.APP.replace(/^.*window\.claude\b.*\r?\n/m, '');
+if (appHome === rep.APP || /claude/i.test(appHome)) throw Error('홈페이지판에서 claude.ai 전용 줄을 빼지 못했다');
+const homePage = fill({ ...rep, FAVICON: 'assets/favicon-32.png', LOGO: 'assets/brand-pulse.webp', FONTS: homeFonts, APP: appHome })
+  .replace(/<meta name="claude:[^>]*>\r?\n?/, '');
 // 「우리 광고 문장으로 듣기」 서버 주소는 홈페이지판(index.html)에만 넣는다. claude.ai 페이지는 다른 주소로 요청을 보낼 수 없다.
 const sayBase = { max: (catalog.say || {}).max || 60, daily: (catalog.say || {}).daily || 10 };
 const dataJson = (d, api) => JSON.stringify({ ...d, say: { ...sayBase, api } }).replace(/</g, '\\u003c');
@@ -191,15 +210,39 @@ const leak = JSON.stringify(data).match(banned);
 if (leak) throw Error('공개 자료에 도구 이름이 들어 있다: ' + leak[0]);
 const licenses = ['SUIT/LICENSE_OFL.txt', 'InterTight/OFL.txt', 'DM_Mono/OFL.txt']
   .map((p) => fs.readFileSync(path.join(root, 'docs/브랜드_폰트', p), 'utf8')).join('\n\n');
-const cut = page.indexOf('</style>') + '</style>'.length;
-const head = page.slice(0, cut), body = page.slice(cut);
+const split = (p) => { const cut = p.indexOf('</style>') + '</style>'.length; return [p.slice(0, cut), p.slice(cut)]; };
+const [head, body] = split(page), [homeHead, homeBody] = split(homePage);
 const lic = `\n<!-- Embedded font licenses\n${licenses}\n-->`;
 const homeApi = process.env.PULSE_SAY_API ?? ((catalog.say || {}).api || '');
 fs.writeFileSync(path.join(out, 'artifact.html'), withData(head + lic + body, '', slim));
 // claude.ai에 함께 올릴 파일 목록(artifact.html이 가리키는 그림·소리·영상)
 const refs = [...new Set((fs.readFileSync(path.join(out, 'artifact.html'), 'utf8').match(/"(?:img|voice|video)\/[^"]+"/g) || []).map((x) => x.slice(1, -1)))].sort();
 fs.writeFileSync(path.join(here, 'jobs', '_publish-files.json'), JSON.stringify(refs.map((p) => ({ path: p }))));
-fs.writeFileSync(path.join(out, 'index.html'), withData(`<!doctype html>\n<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">${head}${lic}</head>\n<body>${body}</body></html>\n`, homeApi));
+
+// 홈페이지판(index.html) — 공개 주소는 synk.im/pulse/casting/(10-22 유호님 「지금 공개해둬야지」). 글꼴·로고·파비콘·공유 그림을 site/assets/에 둔다.
+const HOME_URL = 'https://synk.im/pulse/casting/';
+const homeFiles = {
+  'assets/fonts/SUIT-Variable.woff2': 브랜드폰트.woff2(), // 지문이 다르면 여기서 멈춘다
+  ...Object.fromEntries(['SYNKLatin-Regular.woff2', 'SYNKLatin-SemiBold.woff2', 'SYNKLatin-Bold.woff2', 'DMMono.ttf'].map((f) => [`assets/fonts/${f}`, fs.readFileSync(path.join(pulseAssets, f))])),
+  'assets/brand-pulse.webp': fs.readFileSync(logoFile),
+  'assets/favicon-32.png': fs.readFileSync(faviconFile),
+};
+for (const [rel, buf] of Object.entries(homeFiles)) { fs.mkdirSync(path.dirname(path.join(out, rel)), { recursive: true }); fs.writeFileSync(path.join(out, rel), buf); }
+// 공유 미리보기 그림(1200×630): 열두 명 대표 사진을 명단 순서로 6×2 칸에
+execFileSync('python', [path.join(here, 'make-og.py'), path.join(out, 'assets/og.jpg'), ...data.models.map((m) => path.join(out, m.hero.l || m.hero.s))], { stdio: 'inherit' });
+const ogToken = require('node:crypto').createHash('sha256').update(fs.readFileSync(path.join(out, 'assets/og.jpg'))).digest('hex').slice(0, 12);
+const desc = (template.match(/<meta name="description" content="([^"]*)">/) || [])[1] || '';
+const homeMeta = `<link rel="canonical" href="${HOME_URL}">`
+  + `<meta property="og:type" content="website"><meta property="og:url" content="${HOME_URL}"><meta property="og:title" content="PULSE 모델 캐스팅북">`
+  + `<meta property="og:description" content="${desc}"><meta property="og:image" content="${HOME_URL}assets/og.jpg?v=${ogToken}">`
+  + '<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image">'
+  + '<link rel="preload" href="assets/fonts/SUIT-Variable.woff2" as="font" type="font/woff2" crossorigin>\n';
+const homeLic = `\n<!-- Font licenses (assets/fonts)\n${licenses}\n-->`;
+const homeHtml = withData(`<!doctype html>\n<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">${homeMeta}${homeHead}${homeLic}</head>\n<body>${homeBody}</body></html>\n`, homeApi);
+// 공개 페이지라 글 전체에서 만든 도구 이름·작업 자리 경로를 한 번 더 본다(공개 도구·배포 점검도 보지만 빌드에서 먼저 멈춘다)
+const homeLeak = homeHtml.match(/claude|chat ?gpt|\bgpt|codex|openai|gemini|typecast|타입캐스트|higgsfield|힉스필드|fable|페이블|아르곤|\bargon|\blora\b|comfy|minimax|seedance|\bkling|nano ?banana|지피티|클로드|제미나이|synk-vendor|\.tmp\/|SYNK-LoRA|[A-Z]:[\\/]Users/i);
+if (homeLeak) throw Error('홈페이지판에 만든 도구 이름·작업 경로가 있다: ' + homeLeak[0]);
+fs.writeFileSync(path.join(out, 'index.html'), homeHtml);
 const size = (p) => (fs.statSync(path.join(out, p)).size / 1024 / 1024).toFixed(2) + 'MB';
 console.log('모델', data.models.map((m) => `${m.code} ${m.name} 컷${m.shotCount} 장면${m.scenes.length} 목소리${m.voices.length}${m.voices.some((v) => v.say) ? '(문장 듣기)' : ''}${m.loop ? ' 움직임' : ''}${m.spec ? ' 명세서' : ''}`).join(' / '));
 if (homeApi) console.log('문장 듣기 서버', homeApi);
