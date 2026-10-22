@@ -16,7 +16,7 @@ export function passwordHash(password) {
 const passwordWork=createConcurrencyGuard(4);
 const derive=(password,salt)=>passwordWork(()=>new Promise((resolve,reject)=>scrypt(password,salt,64,(error,key)=>error?reject(error):resolve(key))));
 const inputError=message=>Object.assign(new Error(message),{status:400});
-function validatePassword(password){if(typeof password!=='string'||password.length<12||password.length>256)throw inputError('비밀번호는 12~256자로 입력해 주세요.');}
+function validatePassword(password){if(typeof password!=='string'||password.length<9||password.length>256)throw inputError('비밀번호는 9~256자로 입력해 주세요.');}
 // Synchronous hashing above is for offline setup/fixtures. HTTP mutations use
 // this bounded asynchronous variant and never run scryptSync on a request.
 export async function passwordHashAsync(password){validatePassword(password);const salt=randomBytes(16).toString('hex');return salt+':'+(await derive(password,salt)).toString('hex');}

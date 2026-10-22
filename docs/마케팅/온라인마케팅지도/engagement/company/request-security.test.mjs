@@ -48,3 +48,14 @@ test('real scrypt verification yields to the event loop and caps simultaneous cr
   assert.equal(await passwordMatches(password,await passwordHashAsync(password)),true);
   await assert.rejects(passwordHashAsync('short'),{status:400});
 });
+
+test('workspace passwords accept 9 to 256 characters in both hashing paths',async()=>{
+  for(const value of ['a'.repeat(8),'a'.repeat(257),null]){
+    assert.throws(()=>passwordHash(value),{status:400,message:'비밀번호는 9~256자로 입력해 주세요.'});
+    await assert.rejects(passwordHashAsync(value),{status:400,message:'비밀번호는 9~256자로 입력해 주세요.'});
+  }
+  for(const value of ['ninechars','b'.repeat(256)]){
+    assert.equal(await passwordMatches(value,passwordHash(value)),true);
+    assert.equal(await passwordMatches(value,await passwordHashAsync(value)),true);
+  }
+});
