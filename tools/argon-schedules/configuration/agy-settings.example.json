@@ -2,7 +2,7 @@
   "useG1Credits": false,
   "permissions": {
     "allow": [
-      "command(/usr/bin/date -u +%Y-%m-%dT%H:%M:%SZ)",
+      "command(regex:^/usr/bin/date -u \\+%Y-%m-%dT%H:%M:%SZ$)",
       "command(/opt/synk-google-workspace-cli/0.22.5-musl/bin/gws --version)",
       "read_url(https://antigravity.google/docs/install/)",
       "write_file(/var/lib/synk-argon-77yuhbs/work)",

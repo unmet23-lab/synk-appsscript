@@ -19,7 +19,7 @@ SPEC = importlib.util.spec_from_file_location('agy_account', Path(__file__).with
 agy = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(agy)
 
-PERMISSIONS = {'allow': ['command(/usr/bin/date -u +%Y-%m-%dT%H:%M:%SZ)'],
+PERMISSIONS = {'allow': [r'command(regex:^/usr/bin/date -u \+%Y-%m-%dT%H:%M:%SZ$)'],
                'deny': ['read_file(/var/lib/synk-argon-unmet25/.gemini/antigravity-cli/antigravity-oauth-token)']}
 INVOCATION = '0123456789abcdef' * 2
 ARGON_MODELS = ('gemini-4-argon-medium\tGemini 4 Argon (Medium)\ngemini-4-argon-high\tGemini 4 Argon (High)\n'
