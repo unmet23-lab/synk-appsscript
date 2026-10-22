@@ -1,0 +1,35 @@
+{
+  "read_date": "2026-10-22 (KST)",
+  "scope": "YouTube Shorts 중심, TikTok 일부 크리에이터. 90일 창 = 2026-07-24 ~ 2026-10-22",
+  "files": {
+    "final_outliers_youtube.csv": "보고서 표의 YouTube 30편(주소·채널·구독자·조회·좋아요·댓글·날짜·길이·배수·형식 메모)",
+    "all_rows.json": "meta/에 받은 모든 영상(659편)의 정리본 + 채널 기준선·배수",
+    "meta/<id>.json": "영상별 yt-dlp 메타(제목·설명·조회·좋아요·댓글 수·구독자·날짜·길이)",
+    "chan/*.jsonl": "채널 쇼츠 탭 목록(최신순, 조회 반올림 값). chan_stats.json=기준선",
+    "hash/*.jsonl": "해시태그별 쇼츠 목록(최대 300) — 포화 표본",
+    "tiktok/*.jsonl": "TikTok 크리에이터 최근 40편(조회·좋아요·댓글·공유·날짜). outliers_tt.json=튄 편",
+    "comments/<id>.top.json": "상위 댓글 최대 40개(좋아요순 정렬) — 36편",
+    "thumbs/*.jpg": "썸네일 몽타주(m1~m5, tt1, own) — 영상 파일은 받지 않음",
+    "reddit/*.json": "r/Korean·r/BeginnerKorean 60일 글(Arctic Shift 아카이브), comments/ = 상위 글 댓글 트리, Korean_top_month_rss.json = Reddit RSS 월간 상위",
+    "l30d/": "last30days 엔진 1회 실행 기록(ScrapeCreators 402로 TikTok·Instagram 0건)"
+  },
+  "why_liked_clusters": {
+    "내 얘기(공감)": ["15g7W6qZZUY 손글씨 ㄹ: 한국계 댓글 6000좋아요", "QBeWeCIUYBU 안녕 흘림체", "YK3peqN5Fxw 창피해 죽겠다 569", "_z9ddExksrc 듀오링고 예문 밈 2200"],
+    "웃음+밈 확장": ["7Sakz7p-ERY bery bery/Baseline lady 5400·1800·856", "yrXIWcJpt6A Vaseline→Baseline 531", "Ia6gYNDm-7o 반대로 절하기 3100·360° 2700", "UewCesWOvzU I know, you know, Lee know 1700"],
+    "몰랐다/드라마에서 들은 것 확인": ["yrXIWcJpt6A K드라마에서 들었다 489", "WlP3q0R34Ms 고정댓글 들리면 말해줘", "Ia6gYNDm-7o I'll save this 323"],
+    "참여·점수": ["pLl49nRYYWA 댓글 13000(이름)", "5UhOfe_fy_s 댓글 3300", "UewCesWOvzU 5/5 점수 자랑", "Xp21GH8mQTk pal bal ppal 198"],
+    "내 모국어와 비교": ["WlP3q0R34Ms 힌디 chal chal", "Yl3yMWda5V0 이라크·알제리 '야'", "MvGZhrAZS6k 인도에서 절하면 민망"],
+    "질문": ["앱 이름? (sTgPxK43Xes, hyfwuF8XJEs)", "한국어 배울 앱 추천 158 (yrXIWcJpt6A)", "Part 3 pls (YK3peqN5Fxw)", "마지막 단어는 욕이니 쓰지 마 86 (7Sakz7p-ERY)"],
+    "불만": ["Not everyone has Korean accent 45 (agmnh8XVZGA)", "한국인: 둘 다 발음 틀렸다 16 (YK3peqN5Fxw)", "How to upset Koreans ❌ most Asians ✅ 381 (KtGirLcL58M)", "AI 같다는 의심 (PWE59f8tkBc)"]
+  },
+  "reddit_pain_clusters": {
+    "이해>말하기 격차·실시간 말하기": ["r/Korean 1wy2v70 10-05 102/24", "1vwewd1 08-23 37/19", "1ww0ioj 10-02 21/22"],
+    "포기·정체": ["1x96yva 10-18 79/70", "1whcs5p 09-15 38/46", "r/BeginnerKorean 1x2zqqn 10-11 36/25"],
+    "진짜 쓰는 말·격식·뉘앙스": ["1wgcpgz 09-14 51/33", "1wzsqx6 10-07 88/27", "1wlk95t 09-20 37/18", "1wyo7dw 10-05 30/31", "1x3j2gb(B) 10-11 76/13"],
+    "발음 규칙": ["1vxoxcw 08-25 32/73", "1w90jh4 09-06 34/25", "1wd0l4a 09-11 11/11", "1xa74dp(B) 10-19 124/43", "1x9r49z(B) 10-19 92/14"],
+    "문법 구분": ["1wu1qe7 09-30 43/6", "-아서/-니까/-는데, -(으)ㄹ게요 vs -(으)ㄹ 거예요, 군/구나"],
+    "입문·손글씨·교재": ["1wz9lg3(B) 10-06 209/47", "1wi7g0y(B) 09-16 195/22", "1w1v7o5(B) 08-29 158/55", "1vvdjwt(B) 08-22 378/21 texture words"],
+    "이름 표기": ["1wfnfgp(B) 09-13 51/54"]
+  },
+  "caveat": "Reddit 점수·댓글 수는 Arctic Shift 아카이브 값. 최근 글은 실제보다 낮게 잡혔을 수 있다(월간 상위 RSS 순서와 불일치 확인)."
+}

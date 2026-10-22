@@ -1,0 +1,30 @@
+{
+ "synkbrief": {
+  "search_files": 160,
+  "videos_seen": 4974,
+  "channels_seen": 2435,
+  "channels_selected": 924,
+  "channels_scanned": 924,
+  "channels_with_median(>=8 shorts)": 604,
+  "shorts_rows_total_hangul_title": 10906,
+  "rss_window_shorts": 3255,
+  "flagged": 810,
+  "candidates_in_window": 192,
+  "candidates_strict_topic": 121,
+  "candidate_channels_strict": 52
+ },
+ "yuhobuilds": {
+  "search_files": 160,
+  "videos_seen": 5346,
+  "channels_seen": 3114,
+  "channels_selected": 886,
+  "channels_scanned": 886,
+  "channels_with_median(>=8 shorts)": 503,
+  "shorts_rows_total_hangul_title": 8723,
+  "rss_window_shorts": 2820,
+  "flagged": 695,
+  "candidates_in_window": 179,
+  "candidates_strict_topic": 120,
+  "candidate_channels_strict": 45
+ }
+}
