@@ -3,6 +3,7 @@
 #   python 시트.py 컷 [판]    → synk-vendor/…/v7/블렌더/_컷시트_<판>.jpg (컷마다 콘티 정지컷 | 블렌더 가운데 장, 맨 앞에 A2 시안)
 #   python 시트.py 흐름       → synk-vendor/…/v7/블렌더/_흐름_<컷>.jpg (컷마다 처음 · 1/4 · 가운데 · 3/4 · 끝)
 #   python 시트.py 전후 [판3]  → synk-vendor/…/v7/블렌더/_전후_<판>.jpg (시험/<컷>_<판>_*/ 옛 판과 지금 판의 같은 장, 고친 자리만)
+#   python 시트.py 흐름전후 [판5] → synk-vendor/…/v7/블렌더/_흐름전후_<컷>_<판>.jpg (옛 판 · 지금 판을 같은 여섯 장으로 위아래 — 시간에 따라 바뀐 것)
 # 룩: A2 시안과 정면 · 45도를 같은 높이로, 라벨 원고와 라벨 접사 렌더를 같은 배율로(원고 1px = LABEL_K mm, 접사 1mm = 25.93px),
 # 정면 스틸의 뚜껑 · 라벨 · 바닥을 100%로 잘라 붙인다.
 import glob
@@ -121,7 +122,27 @@ def before_after(tag):
     save(row(pairs, gap=24), os.path.join(V7, "블렌더", f"_전후_{tag}.jpg"))
 
 
+def flow_before_after(tag):
+    """흐름 전후(10-22): 옮겨 둔 옛 판(시험/<컷>_<tag>_*/)과 지금 판을 같은 여섯 장(처음 ~ 끝을 고르게)으로 위아래 두 줄 —
+    P1 판 켜짐처럼 한 장으로는 안 보이고 시간에 따라 바뀐 것을 본다."""
+    for c in CUTS:
+        old = sorted(glob.glob(os.path.join(V7, "블렌더", "시험", f"{c}_{tag}_*")))
+        new = sorted(glob.glob(os.path.join(V7, "블렌더", c, "*.png")))
+        if not old or not new:
+            continue
+        idx = [round(i * (len(new) - 1) / 5) for i in range(6)]
+        rows = []
+        for label, d in (("전", old[0]), ("후", os.path.join(V7, "블렌더", c))):
+            tiles = [fit_h(Image.open(os.path.join(d, os.path.basename(new[i]))).convert("RGB"), 720) for i in idx]
+            rows.append(row(tiles, labels=[f"{c} {label} {i + 1}/{len(new)}" for i in idx]))
+        sheet = Image.new("RGB", (max(r.width for r in rows), rows[0].height + rows[1].height + 12), (18, 18, 18))
+        sheet.paste(rows[0], (0, 0))
+        sheet.paste(rows[1], (0, rows[0].height + 12))
+        save(sheet, os.path.join(V7, "블렌더", f"_흐름전후_{c}_{tag}.jpg"))
+
+
 if __name__ == "__main__":
     mode = sys.argv[1] if len(sys.argv) > 1 else "룩"
     tag = sys.argv[2] if len(sys.argv) > 2 else "판1"
-    {"룩": lambda: look(tag), "컷": lambda: cuts(tag), "흐름": flows, "전후": lambda: before_after(tag)}[mode]()
+    {"룩": lambda: look(tag), "컷": lambda: cuts(tag), "흐름": flows, "전후": lambda: before_after(tag),
+     "흐름전후": lambda: flow_before_after(tag)}[mode]()

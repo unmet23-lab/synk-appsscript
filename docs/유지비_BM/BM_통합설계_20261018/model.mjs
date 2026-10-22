@@ -256,7 +256,7 @@ function run(inp, scName, opts = {}) {
 
   const rows = [];
   let students = 0; let stage = null; let s2Start = null; let triggerRun = 0;
-  let deferredPrev = 0; let maintActive = 0; const diagHist = []; let leadFrom = null; let leadRun = 0; // [10-22] maintActive = 자동화 월 유지 고객, diagHist = 달마다 실제로 판 반나절 진단
+  let deferredPrev = 0; let maintActive = 0; const diagHist = []; const diagPaidHist = []; let leadFrom = null; let leadRun = 0; // [10-22] maintActive = 자동화 월 유지 고객, diagHist = 달마다 실제로 판 반나절 진단
   let directPrepStart = null; let directSwitch = null; let studentsAtSwitch = null;
   let v23Rooms = L.stages.v23 ? (opts.labFill ? L.stages.v23.rooms : L.stages.v23.startRooms) : 0; let v23Run = 0; let v23AddFrom = null; const v23AddMonths = []; // 4실 직영: 지금 연 실 수
   let hostRooms = L.stages.host.rooms; let hostRun = 0; let hostAddFrom = null; let hostFullRun = 0; const hostAddMonths = []; // hostFullRun: 교실을 다 빌린 뒤 정원 85%를 넘긴 달 수
@@ -634,7 +634,8 @@ function run(inp, scName, opts = {}) {
     const vPerYear = CO ? 0 : (SH.voucher.perYear[scName][yearOf(m)] || 0);
     const vCount0 = m >= inp.company.krCorpFrom && mo >= 5 && mo <= 11 ? vPerYear / 7 : 0; // 바우처 과제는 5~11월
     const digitalOn = m >= SH.digital.from;
-    const digitalSales = digitalOn && !CO ? (typeof SH.digital.sales === 'object' ? SH.digital.sales[scName] : SH.digital.sales * subV) : 0;
+    const digitalSales = digitalOn && !CO ? (typeof SH.digital.sales === 'object' ? SH.digital.sales[scName] : SH.digital.sales * subV)
+      + (SH.digital.online && SH.digital.online.from && m >= SH.digital.online.from ? SH.digital.online.sales * subV : 0) : 0; // [10-22] 온라인 유료 강의는 연 달부터 더한다
     // [10-22] SHIFT 강의(SHIFT가 계약하는 출강)와 강사 에이전시(배정 수수료) — 계획 × subVolume. 시간은 아래에서 다른 PULSE·SHIFT 일 다음에 남는 시간으로 잡는다
     const LE = SH.lecture; const AG = SH.agency;
     const lecWant0 = LE && m >= LE.from ? step(LE.perMonth, m) * subV : 0;
@@ -645,8 +646,8 @@ function run(inp, scName, opts = {}) {
     const committedSh = maintActive * AU.maintHours + (digitalOn ? SH.digital.hours : 0);
     const newSh = entryS0 * SH.entry.hours + builds0 * AU.buildHours + vCount0 * SH.voucher.hours;
     const demandKRW = entryOrders0 * PU.entry.avgPrice + adClients0 * (PU.adRetainer.monthly + PU.exclusive.attach * PU.exclusive.monthly) + projects0 * PU.projects.avgPrice + toKRW(mnClients0 * PU.mongoliaContent.monthlyMNT)
-      + entryS0 * SH.entry.avgPrice + builds0 * (AU.buildPrice - (AU.diagCredit ? SH.entry.avgPrice : 0)) + maintActive * AU.monthly + vCount0 * SH.voucher.fee + digitalSales * SH.digital.price
-      + lecWant0 * lecPrice + (AG ? agencyN0 * AG.avgFee * AG.commission : 0);
+      + entryS0 * SH.entry.avgPrice + builds0 * (AU.buildPrice - (AU.diagCredit ? SH.entry.avgPrice * (diagPaidHist[i - AU.lagMonths] ?? 1) : 0)) + maintActive * AU.monthly + vCount0 * SH.voucher.fee + digitalSales * SH.digital.price
+      + lecWant0 * lecPrice + (AG ? agencyN0 * AG.avgFee / (AG.vatIncluded ? 1.1 : 1) * (AG.gross ? 1 : AG.commission) : 0);
 
     // 한국 담당자: 계획한 달이 있으면 그 달부터, 없으면 PULSE·SHIFT 수요가 기준을 석 달 넘긴 다음 달부터
     const plannedLead = CO ? null : (opts.leadPlanned !== undefined ? opts.leadPlanned : (C.krLead.planned || {})[scName]);
@@ -685,8 +686,8 @@ function run(inp, scName, opts = {}) {
     const entryS = entryS0 * kN; const builds = builds0 * kN; const vCount = vCount0 * kN;
     diagHist[i] = entryS;
     sh.maintFee = maintActive * kC * AU.monthly * sc.priceRealization; // 이번 달까지 쌓인 유지 고객
-    sh.entry = entryS * SH.entry.avgPrice * sc.priceRealization;
-    sh.buildFee = builds * (AU.buildPrice - (AU.diagCredit ? SH.entry.avgPrice : 0)) * sc.priceRealization; sh.builds = builds; // 진단비는 구축비에서 뺀다
+    sh.entry = 0; // [10-22] 진단 매출은 강의를 들은 회사의 무료 진단을 뺀 값으로 아래 강의 계산 뒤에 넣는다
+    sh.buildFee = builds * (AU.buildPrice - (AU.diagCredit ? SH.entry.avgPrice * (diagPaidHist[i - AU.lagMonths] ?? 1) : 0)) * sc.priceRealization; sh.builds = builds; // 돈 낸 진단비는 구축비에서 뺀다(무료 진단은 뺄 것이 없다)
     sh.voucher = vCount * SH.voucher.fee;
     sh.digital = digitalSales * kC * SH.digital.price * sc.priceRealization / (SH.digital.vatIncluded ? 1.1 : 1); // [아르곤·페이블 10-18]
     sh.maintClients = maintActive;
@@ -718,19 +719,26 @@ function run(inp, scName, opts = {}) {
     if (rosterReady && agencyN0 > 0) { agencyN = Math.min(agencyN0, lLeft / AG.hours); lLeft -= agencyN * AG.hours; }
     sh.lecture = (lecIn + lecOut) * lecPrice * sc.priceRealization;
     sh.lecturerPay = lecOut * lecPrice * sc.priceRealization * (LE ? LE.lecturerShare : 0); // 외부 강사에게 주는 강사비
-    sh.agency = AG ? agencyN * AG.avgFee * AG.commission * sc.priceRealization : 0; // 에이전시 수수료(강사에게 가는 몫은 지나가는 돈이라 뺌)
+    const agencyFee = AG ? agencyN * AG.avgFee / (AG.vatIncluded ? 1.1 : 1) * sc.priceRealization : 0; // 배정한 강의의 강의료(부가세 뺀 값)
+    sh.agency = AG ? (AG.gross ? agencyFee : agencyFee * AG.commission) : 0; // [10-22 유호님] SYNK가 강의료 전부를 받고 강사에게 (1 − commission)을 준다 → 총액을 매출로
+    sh.agencyPay = AG && AG.gross ? agencyFee * (1 - AG.commission) : 0; // 에이전시 강사에게 주는 몫(원가)
     sh.lectures = lecIn + lecOut; sh.lecturesIn = lecIn; sh.lecturesOut = lecOut; sh.lecturesWanted = lecWant0; sh.agencyN = agencyN; sh.agencyWanted = agencyN0;
     sh.lectureHoursF = lecHoursF; sh.lectureHoursL = lecHoursL + coordL; sh.agencyHours = rosterUsed + agencyN * (AG ? AG.hours : 0);
+    // [10-22 유호님] 강의를 들은 회사는 반나절 진단이 무료 — 이번 달 기업 강의를 산 회사 가운데 freeFromCompanyLecture가 무료 진단을 받는다(계획 진단 건수 안에서)
+    const coLectures = LE && LE.mix && LE.mix['기업'] ? (lecIn + lecOut) * LE.mix['기업'].share : 0;
+    const freeDiag = Math.min(entryS, coLectures * (SH.entry.freeFromCompanyLecture || 0));
+    sh.entry = (entryS - freeDiag) * SH.entry.avgPrice * sc.priceRealization; sh.diagnoses = entryS; sh.freeDiag = freeDiag;
+    diagPaidHist[i] = entryS > 0 ? (entryS - freeDiag) / entryS : 1;
     sh.revenue = sh.entry + sh.buildFee + sh.maintFee + sh.voucher + sh.digital + sh.lecture + sh.agency;
     sh.direct = sh.entry * SH.entry.directRate + (sh.buildFee + sh.maintFee) * AU.directRate + sh.voucher * SH.voucher.directRate + sh.digital * SH.digital.platformFee
-      + (LE ? lecIn * lecPrice * sc.priceRealization * LE.directRate + sh.lecturerPay : 0) + (AG ? sh.agency * AG.directRate : 0);
+      + (LE ? lecIn * lecPrice * sc.priceRealization * LE.directRate + sh.lecturerPay : 0) + (AG ? sh.agencyPay + (sh.agency - sh.agencyPay) * AG.directRate : 0);
 
     const leadDelegCap = Math.max(0, lLeft);
     const paidHours = Math.max(0, delegHours - leadDelegCap);
     const ubProd = Array.isArray(C.ubTeam.productivity) ? step(C.ubTeam.productivity, m, C.ubTeam.productivity[0].v) : C.ubTeam.productivity; // 손이 익을수록 같은 일에 드는 시간이 준다
     const hourRate = m >= C.ubTeam.from ? toKRW(C.ubTeam.hourlyMNT * wageM * si / ubProd) : C.krFreelanceHourlyKRW;
     const production = paidHours * hourRate;
-    const leadCost = leadOn ? C.krLead.costKRW : 0;
+    const leadCost = leadOn ? C.krLead.costKRW + (C.krLead.officeKRW || 0) : 0; // [10-22] 전주 상주 담당자의 공유 오피스 1인실 포함
     const lecLeadCost = leadOn ? (sh.lectureHoursL + sh.agencyHours) * C.krLead.costKRW / C.krLead.capacityHours : 0; // [10-22] 담당자가 강의·에이전시에 쓴 시간만큼의 인건비는 SHIFT 몫
     sh.lectureLeadCost = lecLeadCost;
     const puShare = puHours + shHours > 0 ? puHours / (puHours + shHours) : 0.5;
@@ -973,11 +981,11 @@ const sens = [
   ['유호님 회화 반이 정규 시간대를 씀(위성 시간을 못 받음)', {}, (inp) => { inp.lab.premiumUsesRegularSlots = true; }],
   ['메인만 + 대표 생활비를 2028년 말까지 받지 않음', { scOverride: { subVolume: 0 }, leadPlanned: null }, (inp) => { inp.shift.voucher.perYear['기본'] = {}; inp.online.topik4Cohort.size['기본'] = 0; inp.online.worldB2C.m12.base = 0; inp.online.worldB2C.m36.base = 0; inp.online.worldCorporateMN.companies['기본'] = []; inp.online.textbookLicense.academies['기본'] = 0; inp.company.founderPayKRW = [ { from: '2029-01', v: 3_000_000 } ]; }],
   ['한국 담당자를 뽑았는데 PULSE·SHIFT가 계획의 25%만 옴', { scOverride: { subVolume: 0.25 } }, null],
-  ['AI바우처 2029년 한 건(상방처럼 공급기업 POOL에서 과제를 따면)', {}, (inp) => { inp.shift.voucher.perYear['기본'] = { 2029: 1 }; }],
+  ['AI바우처 2028년 한 건(2027년 등록 뒤 첫 과제를 따면)', {}, (inp) => { inp.shift.voucher.perYear['기본'] = { 2028: 1 }; }],
   ['TOPIK 4급 온라인 반·SHIFT 반나절 진단을 둘 다 열지 않음', {}, (inp) => { inp.online.topik4Cohort.size['기본'] = 0; inp.shift.entry.orders = [ { from: '2027-02', v: 0 } ]; }],
   ['다시 열기 ① TOPIK 4급 온라인 반만 열지 않음', {}, (inp) => { inp.online.topik4Cohort.size['기본'] = 0; }],
   ['SHIFT 반나절 진단(둘째 BM의 입구)을 팔지 않음', {}, (inp) => { inp.shift.entry.orders = [ { from: '2027-02', v: 0 } ]; }],
-  ['SHIFT 디지털 상품에서 온라인 유료 강의를 빼고 전자책·템플릿만(판매 절반으로 어림)', {}, (inp) => { inp.shift.digital.sales = inp.shift.digital.sales / 2; }],
+  ['SHIFT 온라인 유료 강의를 2028-07에 열면(디지털 판매 계획 달 20건 더, 어림)', {}, (inp) => { inp.shift.digital.online.from = '2028-07'; }],
   ['PULSE 광고만 0원(SHIFT·WORLD·담당자는 그대로)', {}, (inp) => { const z = (a) => a.map((x) => ({ ...x, v: 0 })); inp.pulse.entry.orders = z(inp.pulse.entry.orders); inp.pulse.adRetainer.clients = z(inp.pulse.adRetainer.clients); inp.pulse.projects.perQuarter = z(inp.pulse.projects.perQuarter); inp.pulse.mongoliaContent.clients = z(inp.pulse.mongoliaContent.clients); }],
   ['SHIFT만 0원(PULSE·담당자는 그대로)', {}, (inp) => { const z = (a) => a.map((x) => ({ ...x, v: 0 })); inp.shift.entry.orders = z(inp.shift.entry.orders); inp.shift.voucher.perYear['기본'] = {}; inp.shift.digital.sales = 0; noLectures(inp); }],
   ['SHIFT 강의·강사 에이전시를 빼면(둘째 BM·진단·디지털만 남김)', {}, (inp) => { noLectures(inp); }],
@@ -1376,12 +1384,12 @@ md += `\nLAB 교실 이익 + PATH 이익 − 회사 공통비(예비비 제외).
 md += `### 2028년 직접 이익에서 서브가 차지하는 몫\n\n| 가정 | LAB 교실 | PATH | LAB 온라인 | PULSE 광고 | WORLD | SHIFT | PULSE 광고·SHIFT 몫 | 온라인·WORLD까지 더한 몫 |\n|---|---:|---:|---:|---:|---:|---:|---:|---:|\n`;
 for (const s of scenarioNames) { const v = subShare[s]; md += `| ${s} | ${won(v.lab)} | ${won(v.path)} | ${won(v.online)} | ${won(v.pulse)} | ${won(v.world)} | ${won(v.shift)} | ${pct(v.subShare)} | ${pct(v.subOnlineShare)} |\n`; }
 // [10-22] SHIFT 줄별 — 강의·에이전시를 다른 줄과 나란히
-md += `\n### SHIFT 줄별(4실 직영)\n\n| 가정 | 연도 | 자동화 구축(건) | 월 유지 | 반나절 진단 | 바우처 | 디지털 | 강의(가르친 회수 / 계획 × 가정) | 에이전시 수수료(배정) | 매출 | 직접비 | 사람 몫 | 이익 | 담당자 강의 시간 |\n|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|\n`;
+md += `\n### SHIFT 줄별(4실 직영)\n\n| 가정 | 연도 | 자동화 구축(건) | 월 유지 | 반나절 진단 | 바우처 | 디지털 | 강의(가르친 회수 / 계획 × 가정) | 에이전시 강의료 전체(배정) | 매출 | 직접비 | 사람 몫 | 이익 | 담당자 강의 시간 |\n|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|\n`;
 for (const s of scenarioNames) for (const y of [2027, 2028, 2029]) {
   const rs = results[s].rows.filter((r) => yearOf(r.m) === y); const S = (f) => rs.reduce((a, r) => a + (f(r) || 0), 0);
   md += `| ${s} | ${y} | ${won(S((r) => r.shift.buildFee))}(${n1(S((r) => r.shift.builds))}건) | ${won(S((r) => r.shift.maintFee))} | ${won(S((r) => r.shift.entry))} | ${won(S((r) => r.shift.voucher))} | ${won(S((r) => r.shift.digital))} | ${won(S((r) => r.shift.lecture))}(${n1(S((r) => r.shift.lectures))} / ${n1(S((r) => r.shift.lecturesWanted))}회) | ${won(S((r) => r.shift.agency))}(${n1(S((r) => r.shift.agencyN))}건) | ${won(S((r) => r.shift.revenue))} | ${won(S((r) => r.shift.direct))} | ${won(S((r) => r.shift.people))} | ${won(S((r) => r.shift.profit))} | ${Math.round(S((r) => r.shift.lectureHoursL))}h |\n`;
 }
-md += `\n강의는 가르칠 사람이 있는 회수만 셌다(이주 전에는 유호님의 남는 시간, 2027-07부터는 한국 담당자 시간의 ${pct(base.shift.lecture.leadMaxShare)}까지). 에이전시는 강의료의 ${pct(base.shift.agency.commission)}인 수수료만 매출로 셌고 강사에게 가는 몫(강사비)은 넣지 않았다. 사람 몫은 담당자가 강의에 쓴 시간의 인건비와, 남은 담당자·제작 인력 비용 가운데 PULSE와 일 시간으로 나눈 SHIFT 몫이다.\n`;
+md += `\n강의는 가르칠 사람이 있는 회수만 셌다(이주 전에는 유호님의 남는 시간, 2027-07부터는 한국 담당자 시간의 ${pct(base.shift.lecture.leadMaxShare)}까지). 에이전시는 SYNK가 강의료 전부를 받으므로 강의료 전체(부가세 뺀 값)를 매출로, 강사에게 주는 ${pct(1 - base.shift.agency.commission)}를 직접비로 셌다(수수료 ${pct(base.shift.agency.commission)}가 남는다). 반나절 진단은 강의를 들은 회사에 무료라 돈 낸 진단만 매출이다. 사람 몫은 담당자가 강의에 쓴 시간의 인건비와, 남은 담당자·제작 인력 비용 가운데 PULSE와 일 시간으로 나눈 SHIFT 몫이다.\n`;
 md += `\n## 2. 현금과 손익분기 — 4실 직영\n\n| 가정 | 가장 낮은 현금 | 그 달 | 필요 자금(투자·차입) | 계속 흑자가 되는 첫 달 | LAB 교실 첫 흑자 달 | 3실을 연 달 | 4실을 연 달 | 한국 담당자 채용 |\n|---|---:|---|---:|---|---|---|---|---|\n`;
 for (const s of scenarioNames) {
   const sm = summaries[s]; const r = results[s];

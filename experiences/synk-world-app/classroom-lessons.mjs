@@ -22,6 +22,10 @@ export const CLASSROOM_TEXT=Object.freeze({title:'우리 반 수업',lead:'못 �
  privateTeacher:'계정이 맞아도 열리지 않으면 선생님께 반 이름과 수업명을 알려 주세요.',
  playlist:'우리 반 전체 영상 목록',meetingTitle:'화상 참여',meetingBody:'선생님이 안내한 시간에 참여해 주세요.',meeting:'화상 수업 참여',
  note:'수업 영상은 우리 반 학습을 위해 제공해요. 다른 사람에게 공유하지 말아 주세요.'});
+// WORLD만의 빈 상태: 「내 반 연결」로 명부에는 이어졌지만 수업 이용권이 아직 없을 때(서버 empty_reason NO_ACTIVE_CLASS_ACCESS).
+// 학생 앱에는 이 연결 길이 없어 원문이 없다. 위 빈 상태 글은 반 연결을 확인하라고 해서, 방금 연결한 학생을 헷갈리게 했다(10-22 반 리허설).
+// 이용권이 아직 없을 때(개강 전)와 거둔 뒤(기수가 끝남) 모두 이 상태라 두 경우에 다 맞는 말로 둔다.
+export const CLASSROOM_LINKED_EMPTY=Object.freeze({title:'반에 연결됐어요',body:'수업 기간에는 이곳에 실시간 수업과 복습 영상이 열려요. 수업 날인데 보이지 않으면 선생님께 알려 주세요.'});
 const ATTENTION=['interrupted','access_pending','unavailable','failed'];
 const TONES={live:'live',ready:'ok',scheduled:'info',processing:'idle',interrupted:'check',access_pending:'check',unavailable:'check',failed:'check'};
 export const classroomTone=status=>TONES[status]||'idle';
@@ -62,7 +66,7 @@ export function mountClassroomLessons({container,load,guard=()=>{},intervalMs=30
  const body=node('div','ws-class-body');
  root.append(head,node('p','ws-class-lead',T.lead),node('p','ws-class-auto',T.auto),status,alert,openAlert,body,node('p','ws-class-note',T.note));
  container.append(root);
- const model={loading:true,error:false,classes:[]};
+ const model={loading:true,error:false,classes:[],emptyReason:null};
  let disposed=false,cycle=null,signature='';
  const visible=()=>doc.visibilityState!=='hidden';
  function setOpenError(value){openAlert.hidden=!value;openAlert.replaceChildren(...(value?[led('alert'),doc.createTextNode(T.openError)]:[]));}
@@ -101,13 +105,13 @@ export function mountClassroomLessons({container,load,guard=()=>{},intervalMs=30
  // 30초 갱신이 같은 목록을 다시 그리지 않게 서명으로 거르고, 다시 그리면 누르던 단추로 초점을 돌린다.
  function paint(){
   if(disposed)return;
-  const next=JSON.stringify([model.loading,model.error,model.classes]);if(next===signature)return;signature=next;
+  const next=JSON.stringify([model.loading,model.error,model.classes,model.emptyReason]);if(next===signature)return;signature=next;
   const focused=doc.activeElement,focusKey=focused&&root.contains(focused)&&body.contains(focused)?focused.dataset.classroomKey:null;
   root.dataset.state=model.error?'error':model.loading?'loading':model.classes.length?'ready':'empty';
   status.hidden=!model.loading;status.replaceChildren(...(model.loading?[led('idle'),doc.createTextNode(T.loading)]:[]));
   alert.hidden=!model.error;alert.replaceChildren(...(model.error?[node('p','',T.error),button(T.retry,'plain-button','retry',()=>start())]:[]));
   body.replaceChildren();
-  if(!model.loading&&!model.error&&!model.classes.length){const empty=node('div','ws-class-empty');empty.append(node('strong','',T.emptyTitle),node('p','',T.emptyBody));body.append(empty);}
+  if(!model.loading&&!model.error&&!model.classes.length){const linked=model.emptyReason==='NO_ACTIVE_CLASS_ACCESS',empty=node('div','ws-class-empty');empty.append(node('strong','',linked?CLASSROOM_LINKED_EMPTY.title:T.emptyTitle),node('p','',linked?CLASSROOM_LINKED_EMPTY.body:T.emptyBody));body.append(empty);}
   for(const c of model.classes)body.append(room(c));
   if(focusKey)for(const el of body.querySelectorAll('[data-classroom-key]'))if(el.dataset.classroomKey===focusKey){el.focus({preventScroll:true});break;}
  }
@@ -122,7 +126,7 @@ export function mountClassroomLessons({container,load,guard=()=>{},intervalMs=30
   run.inflight=true;const current=++run.generation;
   try{
    guard();const result=await load();guard();
-   if(!run.ended&&current===run.generation){model.classes=result.classes;model.error=false;}
+   if(!run.ended&&current===run.generation){model.classes=result.classes;model.emptyReason=typeof result.emptyReason==='string'?result.emptyReason:null;model.error=false;}
   }catch(error){
    // 계정이 바뀌면 이 칸은 끝난다. 시트를 다시 그리는 쪽이 새 칸을 붙인다(옛 계정의 링크를 보이지 않는다).
    if(error?.code==='ACCOUNT_CHANGED'){run.end();root.hidden=true;return;}

@@ -22,15 +22,16 @@ test('대외 FAQ가 지금 비전 정본과 같다', () => {
   assert.deepEqual(syncVisionSources({ check: true }).changed, []);
 });
 
-test('10-02 개인화 엔진 기업 비전과 10-06 SHIFT 사업 범위를 파생 소개에 전달한다', () => {
+test('10-02 개인화 엔진 기업 비전과 10-22 SHIFT 사업 범위를 파생 소개에 전달한다', () => {
   const visions = loadVisions();
   assert.equal(visions.synk.headline, '누구에게나 확실히 도움이 되는 개인화 엔진을 만듭니다.');
   assert.equal(visions.synk.subtext, 'SYNK는 개인화 엔진 아틀라스를 만드는 기업입니다. 20대부터 60대까지 남녀노소 누구든 게임을 하거나 배우고 공부할 때, 컨설팅을 받을 때 그 사람의 목표와 상황에 맞는 도움을 받게 합니다. 한국어 교육, 기업의 AI 활용, 콘텐츠, 유학·취업 준비는 이 엔진이 쓰이는 분야입니다.');
   assert.equal(visions.lab.headline, '한국어를 배우고, 한국에서의 공부와 생활을 준비하는 교육을 만듭니다.');
   assert.equal(visions.lab.subtext, '');
-  // 10-06 SHIFT 사업·BM 범위 결정의 문장(유호님 10-17 새 문장 확정). 파생 소개에는 서브텍스트 첫 문단만 간다.
+  // 10-22 SHIFT BM 결정(첫째 강의·학교 AI 진로 강의·강사 에이전시, 둘째 AI 업무 자동화 — 10-06 개인화 서비스 도입·운영 대신)의 문장.
+  // 전면 문장은 10-17 확정 그대로다. 파생 소개에는 서브텍스트 첫 문단만 간다.
   assert.equal(visions.shift.headline, '기업이 AI와 개인화 기술을 자기 업무와 고객 서비스에 활용하도록 돕습니다.');
-  assert.equal(visions.shift.subtext, '기업의 특정 업무에 개인화 서비스를 도입하고 운영하는 사업을 준비합니다. 코칭·훈련과 구매·사용 지원에서 적용할 업무를 정하고, 고객사의 자료와 기존 시스템을 연결합니다.');
+  assert.equal(visions.shift.subtext, '학교·기업·기관에서 AI 시대에 필요한 역량을 강의하고, 강의를 들은 기업의 반복 업무를 AI로 자동화해 고정비를 줄입니다. 학교에서는 AI 시대에 진로를 어떻게 맞춰 가고 어떤 소양을 준비할지 다루는 AI 진로 강의도 합니다. 강의가 첫째 사업이고, 강사를 찾아 의뢰에 맞게 배정하는 강사 에이전시도 함께 맡습니다.');
   assert.equal(visions.pulse.headline, '음악과 영상, 캐릭터의 이야기로 다시 찾고 싶은 작품을 만듭니다.');
   assert.equal(visions.pulse.subtext, '');
   const block = withVisionBlock('# LAB\n\n기존 본문', 'lab');

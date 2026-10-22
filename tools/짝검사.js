@@ -150,6 +150,12 @@ function 기본표(root = 뿌리) {
     원천: ['docs/온라인반_TOPIK4급/쓰기과제.md', 'docs/온라인반_TOPIK4급/읽기연습.md'], 낡음: /Stale TOPIK4 course/,
   });
   표.push({
+    // 원고(data/lines)와 허용 목록은 생성물에 들지 않는다 — 검사기(tests/town-content.test.js)만 읽는다.
+    이름: '싱크타운 데이터 생성물', 단계: 'tests/town-places.test.js', 시험: ['tests/town-places.test.js', '^생성물이 원천과 같다'],
+    고침: 'node tools/town-data-build.mjs', 결과물: ['experiences/synk-town/town/data.gen.mjs'],
+    원천: ['experiences/synk-town/town/data/*.json', 'tools/town-data-build.mjs'],
+  });
+  표.push({
     // 지면 하나하나의 판정이라 작업본 대조는 하지 않는다 — 안 올리는 다른 지면은 CI에 안 간다.
     이름: '지면 SUIT 싣기(지면폰트 ⑦)', 단계: 'tests/지면폰트.test.js', 시험: ['tests/지면폰트.test.js', '^⑦'],
     고침: 'node tools/lib/브랜드폰트.js --심기 "<지면>"', 결과물: [], 원천: ['**/*.html'], 작업본대조: false,

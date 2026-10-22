@@ -1,7 +1,7 @@
 # 현장 노트 · AI CLI·구독 통로
 
 > 판: Antigravity CLI `agy` 1.4.2(Windows winget, 10-18 코드 검수 비교에서 확인)·1.4.0(Linux 별도 사용자) · Gemini API 무료 몫 · `tools/몽골어대조.js`·`tools/lib/제미나이구독호출.js` · Hermes Agent v0.22.2(`%LOCALAPPDATA%\hermes`, 텔레그램 팁 봇 게이트웨이) · Codex 세션 기록(`~/.codex/sessions`·`~/.codex/archived_sessions`)
-> 마지막 확인: 2026-10-19(조사 예약의 작업 파일 읽기·명령 거절 실패 — 원인 조회·고침·고친 뒤 첫 회차 complete), 2026-10-18(Linux 파일 인증 복원·실제 timer Argon 실행·계정별 모델 목록·headless 도구 권한, 기존 노트북 항목은10-17)
+> 마지막 확인: 2026-10-22(서버 agy 두 계정 HOME·SSH 로그인 60초·settings 기본값 키), 2026-10-19(조사 예약의 작업 파일 읽기·명령 거절 실패 — 원인 조회·고침·고친 뒤 첫 회차 complete), 2026-10-18(Linux 파일 인증 복원·실제 timer Argon 실행·계정별 모델 목록·headless 도구 권한, 기존 노트북 항목은10-17)
 > 쓴 AI: Claude Code·GPT(Codex) — 누가 언제 무엇을 더했는지는 [지난 기록](지난기록/AI_CLI.md#쓴-기록)에 있다.
 
 어느 AI·계정이 무엇을 맡는지는 [AI 운영 원칙 · 역할](../AI_운영원칙.md#역할), 유료 호출 승인은 [비용과 권한](../AI_운영원칙.md#비용과-권한)이 정한다. GPT 그림 굽기의 주간 한도와 계정 돌려쓰기는 [그림 굽기·오리기](그림_굽기_오리기.md#gpt-그림-굽기)에 있다. 여기는 AI CLI·구독 통로·세션 기록이 예상과 다르게 움직인 함정이다. 틀은 [README](README.md)를 따른다.
@@ -24,8 +24,10 @@
 - 스크립트에서 `hermes send`는 뜨는 데 40초쯤 걸려 60초 한도면 보내 놓고 끊긴다 → 종료 코드 말고 `--json` 결과로 판정하고 한도는 넉넉히(`tools/lib/헤르메스보내기.js`) ([자세히](#hermes-send는-뜨는-데-40초쯤-걸려-60초-한도로-부르면-보내-놓고-끊겨-실패로-친다--다음-회차가-같은-글을-또-보낸다-2026-10-22-claude))
 - 조사 예약 timer 시각을 바꾸고 `systemctl restart <timer>`를 하면 그 자리에서 회차가 돌고, 둘을 함께 재시작하면 잠금에 진 쪽이 실패 알림을 보낸다 → `daemon-reload`만 하고 `list-timers` NEXT를 본다 ([자세히](#조사-예약-timer의-시각을-바꾸고-systemctl-restart-timer를-하면-그-자리에서-회차가-돌고-둘을-함께-재시작하면-공용-잠금에-진-쪽이-실패-알림을-보낸다-2026-10-22-claude))
 - 유호님 손일을 GPT에 넘길 땐 `node tools/GPT인계.mjs 준비`로 카드를 클립보드에 올리고(유호님은 붙여 넣기만) `기다리기`를 백그라운드로 — 결과는 파일·Codex 대화 기록에서 저절로 온다 ([자세히](#유호님-손일을-gpt에-넘길-때-됐어를-기다리면-결과가-유호님을-거쳐-온다--카드를-붙여-넣게-하고-결과는-파일대화-기록에서-저절로-받는다-2026-10-22-claude))
+- 서버 agy를 SSH로 로그인시킬 때 `-p`로 띄우면 60초 안에 코드를 붙여 넣어야 한다 → 사람을 기다릴 땐 인자 없는 `agy`(대화형)로, 다른 계정 HOME은 가리고 띄운다. settings.json에 `useG1Credits`가 없으면 꺼진 것이다(agy가 기본값 키를 지운다) ([로그인](#ssh로-띄운-agy-로그인은-print-모드에서-60초만-기다리고-대화형-화면은-기다린다--run의-스크립트는-sh로-읽어야-돈다-2026-10-22-claude), [설정](#서버-agy가-settingsjson을-다시-쓰며-기본값인-useg1credits-false를-지운다--키가-없으면-꺼진-것이다-2026-10-22-claude))
 - GPT 사용량은 Pro 계정 둘(본 계정 unmet23 · 예비 synk.yuh)을 나눠 본다 — 백엔드 검수는 주간 90% 아래 계정으로(`검수묶음.mjs GPT`가 고른다) ([자세히](#gpt-검수를-본-계정codex으로만-돌리면-gpt-앱-백엔드가-쓴-주간-몫에-닿는다--계정판의-gpt-1는-다른-pro-계정이었다-2026-10-22-claude))
 - 서류를 아르곤에 글자로만 넘기면 PDF 글자 층 착시·그림 서명·학습 시점 뒤 모델 이름을 문제로 짚고 등급도 부풀린다(10-22 18건 중 7건 헛지적) → 지적마다 원본·쪽 그림·기록에 대조해 고르고, 반영한 곳만 Fable이 다시 본다 ([자세히](#서류-검수를-아르곤에-글자로만-넘기면-그림pdf-글자-층새-모델-이름을-문제로-짚는다--18건-중-7건이-헛지적-2026-10-22-claude))
+- 카드가 붙은 조직의 키는 크레딧을 다 써도 거절 없이 산 잔액·카드로 넘어간다 → 키 목록의 「한도키」 배열에 넣고 `한도USD`·`한도시작`·`만료일`을 둔다(옛 판은 그 배열을 못 본다, 한도 키는 예약 줄을 먼저 덧붙이고 내 줄 앞만 본다) ([자세히](#카드가-붙은-조직에-한-번-들어온-크레딧은-다-써도-credit-balance-is-too-low로-멈추지-않는다--키-목록의-한도만료로-막는다-2026-10-22-claude))
 
 ## 목차
 
@@ -165,6 +167,18 @@
 - 고침: 공개하지 않을 원고는 `SYNK_MN_LEDGER=<비공개 폴더>/몽골어검문.jsonl`을 붙여 돌린다(장부도 그 파일에만 남고 올리지 않는다). 공개 화면 글은 지금처럼 공개 장부에 남긴다.
 - 다시 확인: 출력의 「장부:」 줄이 비공개 경로를 가리키고 「origin」 줄이 없다.
 
+### 서버 agy가 settings.json을 다시 쓰며 기본값인 `useG1Credits: false`를 지운다 — 키가 없으면 꺼진 것이다 (2026-10-22 Claude)
+- 증상: 10-22 서버 77yuhbs의 settings.json에 `useG1Credits` 키가 없었다(README와 10-18 설치 기록은 false로 적었다). 두 계정 settings에 false를 넣었지만, 그 HOME에서 agy를 한 번 돌리자(`/usage`, 로그인 시도) 두 파일 모두 키가 다시 없어졌다. `permissions`는 그대로였다.
+- 원인: agy가 실행 때 settings.json을 다시 쓰면서 기본값과 같은 키를 빼는 것으로 보인다. [공식 설정 표](https://antigravity.google/docs/cli/reference)에서 `useG1Credits`의 기본값은 false다.
+- 고침: 「키가 없거나 false」를 꺼짐으로 본다. true일 때만 막는다(`tools/argon-schedules/agy-account.py`의 unmet25 점검). 설정이 맞는지 볼 때는 키가 있는지가 아니라 값이 true인지를 본다.
+- 다시 확인: 서버에서 `sudo python3 /opt/synk-argon-77yuhbs/agy-account.py status`의 `spareSettingsOk`가 true인지, 두 settings.json에 `useG1Credits: true`나 `modelProvider`가 없는지 본다.
+
+### SSH로 띄운 agy 로그인은 print 모드에서 60초만 기다리고, 대화형 화면은 기다린다 — `/run`의 스크립트는 `sh`로 읽어야 돈다 (2026-10-22 Claude)
+- 증상: 10-22 서버 unmet25 로그인을 앱 터미널 탭에 `agy -p /usage`로 띄우고 주소를 채팅으로 알렸는데, 유호님이 보기 전에 `Waiting for authentication (timeout 60s)`가 끝나 `authentication failed or timed out`이 됐다. 그 전에는 `sudo /run/synk-argon-unmet25-login.sh`가 `Permission denied`였다. 앱이 다시 켜지면 그 탭도 닫힌다.
+- 원인: 공식 원격 SSH OAuth 흐름은 인증 URL을 찍고, 브라우저가 보여 준 코드를 그 터미널에 붙여 넣는 방식이다([설치 및 인증](https://antigravity.google/docs/install/#remote-ssh-oauth-flow)). print 모드는 60초만 기다린다. 서버 `/run`은 실행 금지(noexec)로 마운트돼 있다.
+- 고침: 사람이 언제 볼지 모를 때는 인자 없는 `agy`(대화형)로 띄운다. 「Select login method」에서 「1. Google OAuth」 → 주소 → 코드 붙여넣기 순서로 기다린다. 스크립트는 `sudo /bin/sh /run/…`로 띄운다. 로그인 창은 다른 계정 HOME을 가린 `systemd-run --pty --property=InaccessiblePaths=<다른 HOME>` 안에서 띄워 두 로그인이 섞이지 않게 한다. 지금은 PC 터미널의 `node tools/argon-schedules/agy-login.cjs <계정>` 한 줄이 이 꼴로 띄운다(서버 `agy-account.py login`). 카페 망 같은 곳에서는 서버가 연달아 붙는 SSH를 한동안 막는 것처럼 보였다(붙은 직후 다음 접속이 시간 초과·`Connection reset`, 다른 곳 22번은 열림). 긴 서버 작업은 접속 한 번에 올리기·실행을 묶고 `systemd-run`으로 서버 쪽에서 돌게 한다.
+- 다시 확인: 로그인 뒤 그 HOME의 `log/cli-*.log`에 `authenticated successfully as <계정>`이 있고, 다른 계정 HOME의 토큰 파일 크기·수정 시각이 그대로인지 본다.
+
 ## Claude API
 
 ### 새 키의 조직에 월 API 크레딧이 없어 충전 잔액이 나갔다
@@ -190,6 +204,12 @@
 - 원인: Opus 5.5에서 count_tokens는 모델별 생각 규칙 일부를 보지 않는다. 실측(강사 도우미 실제 몸통, synk.yuh 키): `adaptive` 200 · `disabled` 200 · `enabled`+`budget_tokens` 200 · `between_tools` 400(「not supported for this model」) · 없는 값 400. 생성 창구(`/v1/messages`)는 `disabled`를 400(「Use thinking.type.adaptive and output_config.effort」)으로 거절한다. 10-05 Sonnet 5.5 때는 count_tokens도 `disabled`를 400으로 거절해 이 점검이 통했다.
 - 고침: 점검의 틀린 값을 모델마다 표에 두고, 토큰 세기 창구가 그 모델에서 실제로 400을 내는 값으로 고른다(talk `lib/교정엔진.js` `도우미모델표`의 `점검틀린생각`, Opus 5.5는 `between_tools`, 커밋 `20849aa`). 모델을 옮길 때는 count_tokens에 후보 값을 먼저 보내 400이 나는지 본다(무료).
 - 다시 확인: 무료 시험 스크립트 `.tmp/companion-opus-20261019/thinking-variants.cjs`(결과 `thinking-variants-*.json`). 고친 판을 배포한 뒤 `?점검=몸통`이 `ok:true`·`틀린값거절: 400`이다.
+
+### 카드가 붙은 조직에 한 번 들어온 크레딧은 다 써도 「credit balance is too low」로 멈추지 않는다 — 키 목록의 한도·만료로 막는다 (2026-10-22 Claude)
+- 증상: unmet23 조직(카드 연결, talk 운영 키와 같은 조직)에 프로모션 크레딧 $200(11-22 만료)이 들어왔다. 키 통로는 「크레딧 부족 거절이 오면 다음 키로」만 알아서, 이 키를 그냥 넣으면 크레딧을 다 쓴 뒤 산 잔액·카드로 넘어가도 멈출 길이 없었다.
+- 원인: 월·프로모션 크레딧 다음에 산 잔액을 쓰고, 산 잔액이 있으면 거절 없이 청구된다(이 절 첫 항목). 일괄은 결과를 받기 전에 비용을 모르고, 동시 요청·응답 유실은 사용 기록에 늦게 남거나 안 남는다.
+- 고침: 키 목록의 「한도키」 배열에 `한도USD`·`한도시작`·`만료일`을 둔 키를 넣는다(`tools/lib/클로드키.js`) — 한도 칸을 모르는 옛 판(10-22 `e57d4126b` 앞)은 「키」 배열만 읽어 그 키를 아예 보지 못하고, 새 판은 「키」 배열에 한도USD가 있으면 목록 오류로 막는다. 한도 키는 보내기 전에 예약 줄을 먼저 덧붙이고(덧붙이기는 파일 끝에 한 줄씩 차례로 쌓인다), 기록을 다시 읽어 「내 줄 앞까지의 누적 + 내 어림 ≤ 한도」일 때만 보낸다 — 넘으면, 또는 다시 읽은 내 줄이 내가 쓴 글과 다르면 취소 줄을 남기고 물러선다. 셈 칸(금액·개수·키 이름·예약 번호)의 꼴이 어긋난 줄은 깨진 줄로 건너뛰고, 금액은 반올림하지 않고 적는다(일괄 결과를 6자리로 내려 적으면 한도가 조금씩 샌다 — 6차 검수). 파일 잠금은 죽은 잠금을 치우는 사이의 경합이 검수마다 새로 나와 버렸다. 위 어림은 요청 JSON의 UTF-8 바이트(토큰 상한)·캐시 쓰기 2배·max_tokens로 잡고, 비용을 모르는 응답은 어림으로 센다. 한도 키는 `claude -p`·클라우드 실행기처럼 키 값을 넘기는 키고르기에는 내주지 않는다. 같은 조직의 다른 사용분은 이 도구가 모르므로 한도는 크레딧보다 넉넉히 낮게, 만료는 시간대를 몰라 이틀 앞당겨 넣는다.
+- 다시 확인: `node --test tests/클로드키.test.js` — 응답이 요청보다 크지 않은 가짜 서버로 40번 보내며 누적 ≤ 한도, 동시 두 요청·응답 유실·중복 결과·반올림, 프로세스 넷이 2KB 줄을 400개씩 함께 덧붙여도 1,600줄이 온전한지(이 PC에서 1.5초). 실제 키는 `SYNK_CLAUDE_KEYS=<검수 목록> node tools/lib/클로드키.js --상태`의 한도쓴양USD·만료일 칸.
 
 ## Claude Code 자동 모드
 
@@ -530,6 +550,12 @@
 - 원인: 결과가 돌아올 자리가 정해져 있지 않았다.
 - 고침: `node tools/GPT인계.mjs 준비 <이름> --할일 "…" [--대상 "…"]` — 카드(`<공용 작업본>/.tmp/GPT인계/<이름>/지시.md`)에 표(무작위 12자)·결과 파일 경로·끝 표식 줄(`GPT_인계_끝 <표>`)·멈출 화면(비밀번호·인증 코드·2단계·캡차·결제 확인)을 넣고 클립보드에 올린다. 유호님은 Codex 앱 새 대화에 붙여 넣기만 한다. Claude는 곧바로 `기다리기 <이름>`을 백그라운드로 띄운다 — 결과 파일(`결과.md`)을 먼저 보고, 없으면 `~/.codex/sessions`·`archived_sessions`(굽기 장부 계정 폴더까지)에서 카드 표가 든 사용자 말을 찾아 그 턴의 마지막 답을 읽는다(이미 열린 대화에 붙여도 된다 — 열린 기록 파일은 수정 시각이 늦게 바뀌어서, 최근 7일 기록을 크기가 바뀐 것만 다시 읽는다). 끝 표식이 마지막 줄이어야 결과로 치고(종료 0), 끝 표식 없이 턴이 끝났으면 GPT가 유호님 손을 기다리는 것으로 보고 그 말을 찍는다(종료 3) — 그 한 줄을 유호님께 전하고 다시 `기다리기`.
 - 다시 확인: 10-22 실제 Codex(synk.yuh, `codex exec`)로 두 길을 다 봤다 — workspace-write는 `결과.md`를 써서 바로 받았고, read-only는 파일을 못 쓰고 마지막 답으로 남겨 대화 기록에서 받았다. 클립보드는 한글 그대로(`Get-Clipboard`가 `지시.md`와 같음). 시험 `node --test tests/GPT인계.test.js`.
+
+### 검수 묶음을 `cut -c`로 자르면 한글이 바이트로 잘려 Codex가 「input is not valid UTF-8」로 받지 않는다 (2026-10-22 Claude)
+- 증상: 키 통로 검수 묶음(62KB)을 `node tools/codex계정.js exec … -`로 아스트라에 보내자 「Failed to read prompt from stdin: input is not valid UTF-8 (invalid byte at offset 57147)」로 끝났다. 같은 묶음을 받은 아르곤(agy)은 답했다.
+- 원인: 묶음 한 절의 `rg … | cut -c1-240`이 Git Bash에서 바이트 단위로 잘라 한글 한 글자의 UTF-8 바이트가 반만 남았다. Codex CLI는 표준 입력을 엄격히 UTF-8로 읽고, agy는 깨진 글자를 흘려 읽는다.
+- 고침: 묶음에는 `cut -c`를 쓰지 않는다(자를 때는 node로 글자 단위). 보내기 전에 `node -e "new TextDecoder('utf-8',{fatal:true}).decode(require('fs').readFileSync('<묶음>'))"`로 확인한다. 이미 만든 묶음은 깨진 글자(U+FFFD)만 지워 다시 보냈다.
+- 다시 확인: 고친 묶음이 그 검사를 지나고, 같은 명령의 아스트라 답이 끝까지 온다(10-22 다시 보낸 판, 답 6.5KB).
 
 ## Codex 세션 기록
 

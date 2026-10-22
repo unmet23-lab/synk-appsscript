@@ -4,7 +4,7 @@
 
 | 파일 | 내용 |
 |---|---|
-| 이 문서 | 8주 차시표, 토요일 90분 방송 수업의 흐름, 듣기 연습 방법, 쓰는 원칙 |
+| 이 문서 | 8주 차시표, 토요일 90분 방송 수업의 흐름, 듣기 연습 방법, 쓰는 원칙, [개강 준비](#open-class)(운영에 반 한 개 세우기) |
 | [쓰기 과제](쓰기과제.md) | 주마다 하나씩 W1~W8. 51~54번 형식의 창작 문항, 예시답(글자 수 검산), 채점에서 보는 것, 가상 학생 초안의 첨삭 시범 |
 | [첨삭 기준](첨삭기준.md) | 보는 순서(공식 평가 범주), 기호 11개, 한마디 세 줄, 몽골 학습자에게 잦은 오류 12가지, 한 주의 흐름과 시간 어림, 원고지, 학생 글 다루기 |
 | [읽기 연습](읽기연습.md) | 주마다 다섯 문항 R1~R8, 모두 40문항. 정답·근거·오답 이유 |
@@ -56,6 +56,39 @@
 - **쓰기 과제는 PBT 4문항 기준이다.** IBT로 볼 학생은 쓰기 문항의 형식·분량이 다르므로, 응시 회차의 공식 안내를 확인한 뒤 따로 안내한다([학습 설계 §1](../디자인/싱크타운_TOPIK4_학습설계와_원고.md#exam)).
 - **학생 글은 저장소 밖에 둔다.** 이 저장소는 공개 저장소다([첨삭 기준 §8](첨삭기준.md#privacy)).
 - **AI 도구 이름을 학생 자료에 쓰지 않는다.** W7 54번은 「인공지능 도구」라는 일반 낱말만 쓴다.
+
+<a id="open-class"></a>
+## 개강 준비 — 운영에 반 한 개 세우기
+
+2026-10-22 반 리허설([첫 연락 준비 목록 4절](../../experiences/lab-topik4/첫연락_준비목록.md#rehearsal))에서 정리했다. 반·교사 배정·명부를 만드는 화면이나 API는 아직 없다. 그래서 관리자가 운영 DB(talk 프로젝트)에 SQL로 넣고, 학생은 교사가 낸 연결 코드로 WORLD에서 자기 명부 줄에 들어온다. 운영 DB 쓰기라 유호님 허락 뒤 한 트랜잭션으로 한다. 실제 학생 이름·메일은 이 저장소에 적지 않는다.
+
+| 차례 | 누가 | 무엇 |
+|---|---|---|
+| 1 | 학생·교사 | SYNK ID 가입(synk.im/world에서 Google 또는 이메일). 교사는 회사 워크스페이스 「내 수업」(`workspace.synk.im/?tab=teaching`)에 그 SYNK ID로 들어온다 |
+| 2 | 관리자(SQL) | 반(`engine.classes`), 교사(`engine.staff` — 교사 SYNK ID의 `auth.users` id, role `teacher`)와 반 배정(`engine.staff_classes`), 명부(`engine.learners` — 학생마다 한 줄, 계정 칸은 비워 둔다) |
+| 3 | 관리자(SQL) | 수업 영상 문: 반 영상 설정(`engine.classroom_channels`, 일부공개)과 학생마다 이용권(`engine.classroom_access`, 기수 기간). 「내 반 연결」로는 생기지 않는다 |
+| 4 | 관리자 | classroom-sync 비밀 `CLASSROOM_SYNC_KEYS`에 이 반 키(32자 이상)를 더하고, 교실 PC 설정은 [config.online.example.json](../../tools/classroom-media/config.online.example.json)의 `REPLACE_` 값과 환경변수(`SYNK_SUPABASE_ANON_KEY`·반 키)로 채운다([교실 송출 도구](../../tools/classroom-media/README.md#최초-연결)) |
+| 5 | 교사 | 「04 주차 과제 첨삭」에서 반 시작일(1주차 토요일)과 8주로 「과제 열기」 — 그 순간 반 학생 WORLD에 「이번 주 과제」가 열린다 |
+| 6 | 교사 → 학생 | 학생마다 「학생 연결 코드 만들기」(24시간 · 한 번) → 학생에게 전한다 → 학생이 WORLD 내 계정 「내 반 연결」에 넣는다. 운영 교사 화면에 이 단추가 나오는 것은 회사 이력 22(사슬 23)부터다 |
+| 7 | 유호님 | YouTube Studio에서 일부공개 재생목록·재사용 스트림을 만들고 스트림 키를 OBS에 넣는다. 첫 방송을 켠다 |
+
+SQL 꼴(`<…>`를 채운다). `schema_ver`는 그때 운영 DB 최신 조각의 계약판이다(10-22 기준 `c18`). 리허설·시험 반이면 `class_key`를 `test-`로 시작하고 명부를 `is_test=true`로 넣는다. 끝나면 지우지 않고 `active=false`로 닫는다.
+
+```sql
+begin;
+insert into engine.classes(class_key,display_name,active,schema_ver) values('topik4-online-1','TOPIK 4급 온라인 1기',true,'c18') returning class_id;  -- <반>
+insert into engine.staff(auth_user_id,role,display_name) values('<교사 auth id>','teacher','<교사 이름>') on conflict(auth_user_id) do nothing;
+insert into engine.staff_classes(staff_id,class_id,schema_ver) select staff_id,'<반>','c18' from engine.staff where auth_user_id='<교사 auth id>';
+insert into engine.learners(student_code,class_id,active,schema_ver,is_test) values('<학생 이름 · 1기>','<반>',true,'c18',false);  -- 학생마다(student_code는 전체에서 하나)
+insert into engine.classroom_channels(class_id,youtube_channel_id,youtube_playlist_id,video_privacy,enabled) values('<반>','UCmZplYKuNHLPng4iL2AbLLg','<일부공개 재생목록 ID>','unlisted',true);
+insert into engine.classroom_access(learner_id,class_id,starts_at,ends_at,granted_by)
+  select learner_id,class_id,'<개강일>','<마지막 수업 + 복습 기간>','<등록·결제 근거>' from engine.learners where class_id='<반>' and active;
+commit;
+```
+
+- 교사 role은 `teacher`나 `director`여야 반 기능이 열린다. 이미 그 SYNK ID에 직원 줄이 있으면 role만 확인한다.
+- 한 SYNK ID는 명부 한 줄에만 이어진다(`ACCOUNT_ALREADY_ENROLLED`). 다음 기수에 같은 학생이 오면 새 줄이 아니라 그 줄의 `class_id`를 옮길지 그때 정한다.
+- 기수가 끝나면 이용권 `ends_at`이 지난 뒤 [기수 마치기](../../tools/classroom-media/README.md#close-cohort)로 그 반 영상을 비공개로 돌린다.
 
 <a id="check"></a>
 ## 검산

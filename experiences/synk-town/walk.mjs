@@ -1,5 +1,6 @@
 // Shared deterministic ground movement for host authority and browser prediction.
 import { TOWN_LAYOUT, layoutSolids } from './town-layout.mjs';
+import { PLACE_BY_ID, PLAYER_PLACES } from './town/places.mjs';
 export const WALK_SPEED = 3.2;
 // Soft bodies can lean beyond their planted feet; only walls need full-height clearance.
 export const WALK_RADIUS = .34;
@@ -7,8 +8,7 @@ const WALL_CLEARANCE = .42;
 export const WALK_NEAR_RADIUS = 2.15;
 // The level garden loop is shared by authoritative movement and browser prediction.
 export const WALK_BOUNDS = TOWN_LAYOUT.bounds;
-export const WALK_SPAWNS = Object.freeze({ home: Object.freeze({ x: -6, z: 1.7 }), cafe: Object.freeze({ x: 0, z: 2.5 }),
-  workshop: Object.freeze({ x: 6, z: 1.7 }), greenhouse: Object.freeze({ x: 0, z: -4 }) });
+export const WALK_SPAWNS = Object.freeze(Object.fromEntries(PLAYER_PLACES.map(id => [id, PLACE_BY_ID[id].spawn])));
 const rect = (id, x, z, width, depth, radius = WALK_RADIUS) => Object.freeze({ id, radius,
   minX: x - width / 2 - radius, maxX: x + width / 2 + radius,
   minZ: z - depth / 2 - radius, maxZ: z + depth / 2 + radius });

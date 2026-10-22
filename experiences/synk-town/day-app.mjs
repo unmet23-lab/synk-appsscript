@@ -1,10 +1,11 @@
 import { createDayScene } from './day-scene.mjs';
 import { createWalkControls } from './walk-controls.mjs';
 import { movePoint, nearbyPlace, WALK_SPAWNS } from './walk.mjs';
+import { PLACE_BY_ID, PLAYER_PLACES } from './town/places.mjs';
 
 const $ = id => document.getElementById(id);
 const surfaceId = crypto.randomUUID(), reduced = matchMedia('(prefers-reduced-motion: reduce)');
-const names = { home: '나의 집', cafe: '찻집', workshop: '공방', greenhouse: '온실' };
+const names = Object.fromEntries(PLAYER_PLACES.map(id => [id, PLACE_BY_ID[id].labels.map]));
 // 우리 동네 HUD(2026-10-14 3차): 가장 작은 지도 한 장 + 할 일 한 줄. 표시만 하고 이동·저장·권한 논리는 건드리지 않는다.
 const MAP_BOUNDS = { minX: -9, maxX: 9, minZ: -6.5, maxZ: 6 };
 const mapX = x => Math.max(4, Math.min(96, (x - MAP_BOUNDS.minX) / (MAP_BOUNDS.maxX - MAP_BOUNDS.minX) * 100));

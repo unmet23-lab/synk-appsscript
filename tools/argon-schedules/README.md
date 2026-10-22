@@ -2,6 +2,36 @@
 
 2026-10-18 12:12 KST 운영 전환을 마쳤다. 기존 Gemini 예약 4개는 일시중지했고, 서버 타이머 4개는 enabled·active로 확인했다. 전환 뒤 첫 정규 회차인 10-18 14:00 YouTube·TikTok 조사가 실제 타이머로 시작해 Argon 실행과 기존 Google Docs의 새 저장까지 성공했다. 장애 알림 메일 실제 수신도 확인해 요청한 운영 검증 목표를 충족했다. [YouTube·TikTok 결과 문서](https://docs.google.com/document/d/1aYwO_1qBcUs5uzeeRoeePBRo_qkWSFBwjr4Xj-LUXmI/edit), 최신 운영 결과는 [트랙](../../docs/_ops/트랙.md)의 해당 예약 항목과 아래 실행 상태에서 확인한다.
 
+## 2026-10-22 · unmet25 예비 로그인과 회차별 계정 고르기
+
+- **왜.** 유호님이 unmet25를 Google AI Ultra 가족 계정으로 더했다(Gemini 한도가 77yuhbs와 따로 돈다, [결정](../../docs/_ops/결정.md) 10-22). 77yuhbs의 Gemini 주간 남은 몫이 10% 아래이거나 막히면 unmet25로 바꿔 쓴다. 이 두 Ultra 계정 말고 다른 계정·모델·유료 API로는 넘기지 않는다.
+- **로그인 자리.** 실행 사용자는 그대로(`synk-argon-ultra`)이고 agy HOME만 나눴다. unmet25는 `/var/lib/synk-argon-unmet25`(0700, 같은 사용자 소유)다. agy는 D-Bus 없는 Linux에서 자격을 `$HOME/.gemini/antigravity-cli/` 파일로 둔다.
+  - 별도 OS 사용자로 가지 않은 까닭: Docs 쓰기(`docs-io.py` → gws, unmet23)가 agy의 자식으로 같은 사용자에서 돈다. 사용자를 나누면 gws 로그인을 새 사용자에서 다시 해야 하는데, 그러려면 OAuth 클라이언트 파일을 사용자끼리 복사하거나 새로 만들어야 한다. 지시문·로그·상태·잠금·알림(`RUN_UID`)·서버 백업도 두 벌이 된다.
+  - 로그인은 77yuhbs HOME을 가린(`InaccessiblePaths`) `systemd-run --pty` 안에서 한다. 브라우저 승인과 코드 붙여넣기는 유호님이 한다(아래 「로그인」).
+  - 두 settings.json의 `permissions`는 같다. deny에는 두 계정의 토큰·settings와 gws 폴더가 모두 들어 있다(`configuration/agy-settings.example.json`).
+- **고르기.** 7역할 service의 drop-in `production-dropins/60-agy-account.conf`가 `ExecStart`의 agy 앞에 `agy-account.py launch`를 끼운다. 회차를 시작할 때 다음 순서로 계정을 고르고, 같은 agy 명령을 HOME만 바꿔 exec한다.
+  1. 77yuhbs HOME에서 `agy -p /usage`(모델 토큰 0)로 몫을 본다. Gemini 주간·5시간 남은 몫이 둘 다 10% 이상이면 77yuhbs로 돈다.
+  2. 아니거나 확인이 실패하면 unmet25를 본다. 권한이 같고, 유료 크레딧이 꺼져 있고, 실제 로그인이 unmet25이고, 두 몫이 10% 이상일 때만 unmet25로 돈다.
+  3. 그 밖의 경우와 예외는 모두 77yuhbs다.
+
+  결정은 `run-status/ROLE.agy-account.json`과 stderr 한 줄, run-check 상태·영수증의 `agyAccount`에 남는다.
+- **바꾸는 명령(서버 root).** 모드는 다음 회차부터 적용되고 daemon-reload가 필요 없다.
+
+  ```sh
+  sudo python3 /opt/synk-argon-77yuhbs/agy-account.py status --usage   # 모드·두 로그인·몫·역할별 마지막 고르기
+  sudo python3 /opt/synk-argon-77yuhbs/agy-account.py mode unmet25     # unmet25로 고정
+  sudo python3 /opt/synk-argon-77yuhbs/agy-account.py mode auto        # 기본(위 규칙)
+  sudo python3 /opt/synk-argon-77yuhbs/agy-account.py mode 77yuhbs     # 확인 없이 77yuhbs만(이전 동작)
+  ```
+
+  권한 줄을 바꾸면 `sync-settings`로 unmet25 settings에 같은 권한을 옮긴다(옮기기 전 사본은 같은 폴더의 `settings.json.bak-<UTC>`). 권한이 다르면 unmet25를 고르지 않는다. `status`·`sync-settings`는 root로 불러도 실행 사용자로 다시 돌아, root가 실행 사용자 폴더의 링크를 따라가지 않는다. 완전히 되돌릴 때는 7역할 `service.d/60-agy-account.conf`를 지우고 `systemctl daemon-reload`만 한다(timer는 재시작하지 않는다).
+- **로그인(다시 할 때도).** PC 터미널에서 `node tools/argon-schedules/agy-login.cjs unmet25`를 친다. 그러면 서버의 `agy-account.py login unmet25`가 그 계정 HOME에서만 도는 대화형 로그인 화면을 띄운다(77yuhbs HOME은 가림). 「1. Google OAuth」에서 Enter → 뜬 주소에서 unmet25로 허용 → 브라우저에 나온 코드를 붙여 넣고 Enter. 끝나면 Ctrl+D 두 번으로 나온다. `-p`로 띄우면 60초만 기다리므로 쓰지 않는다([현장 노트](../../docs/현장노트/AI_CLI.md)). 확인은 `status --usage`의 `lastSignedIn`·`usage`다.
+- **설치·확인(10-22).**
+  - 준비: 15:12 KST에 설정을 백업했다(`config-backups/20261022T061207Z-unmet25-login`). unmet25 HOME을 만들고 두 settings의 거절 목록을 맞췄으며, 이때 77yuhbs 토큰 파일은 그대로였다.
+  - 설치: 15:53 KST에 실행기와 run-check를 넣고, 16:01 KST에 3차 검수판으로 바꿨다(백업 `config-backups/20261022T065308Z-agy-account-install`·`20261022T070115Z-agy-account-install`, 해시 앞 16자리 agy-account.py `ee643d73cb9ecd5e`·run-check.py `6c88b7fc8cc07b15`). 모드는 auto이고, 7역할 drop-in을 넣었다. `systemd-analyze verify`는 경고 없이 통과했고 daemon-reload만 했다(timer NEXT 그대로). 서버 python 시험 18·18·24·9개가 통과했다.
+  - 끝까지 돌려 보기: 역할 service와 같은 격리의 임시 unit에서 `launch synk-argon-ultra-full -- agy --help`를 돌렸다. 77yuhbs(주간 15.3%·5시간 76.7%, 실제 로그인 77yuhbs)를 골랐고 stdout은 0바이트였으며, 결정 기록은 0600으로 남았다. Docs·모델 토큰은 쓰지 않았다.
+  - 검수: 아르곤·GPT 검수를 세 차례 거쳤다(`.tmp/검수/agy-unmet25-20261022*`). 1차는 아르곤 0건·GPT 3건(P0 1·P2 2, 반영 3)이었다. P0은 root로 돈 `sync-settings`가 실행 사용자 폴더의 링크를 따라 root 파일을 읽고 쓸 수 있던 것이다. 2차는 아르곤 0건·GPT 2건(P2, 반영 2), 3차(로그인 띄우기 추가)는 둘 다 0건이었다.
+
 ## 2026-10-20 · 저장을 끝낸 뒤 연결이 끊긴 회차를 실패로 치던 것 고침
 
 - **증상.** 10-19 고침 뒤에도 yt-tt 20:00·meta-brand 23:00·yt-tt 10-20 08:00(KST)이 `CLI_FAILED_OR_DENIED`로 실패 메일을 냈다. 거절된 도구는 0개였다.
@@ -23,9 +53,11 @@
 
 2026-10-18 사용자 확정: 예약을 포함한 모든 아르곤 실행은 `77yuhbs@gmail.com` Ultra, 업무 문서 저장은 `unmet23@gmail.com`으로 통일한다. 상위 기준은 [AI 운영 원칙](../../docs/AI_운영원칙.md#역할)이다. PC의 웹·앱·CLI에서도 아르곤 작업을 시작할 때 실제 실행 계정을 확인한다. unmet23의 Argon 권한 해결·실행 계정 이전은 현재 후속 작업에서 종료했다.
 
+2026-10-22 사용자 확정으로 Ultra 가족 계정 `unmet25@gmail.com`이 예비로 더해졌다. 예약은 77yuhbs로 돌고, 77yuhbs의 Gemini 주간·5시간 남은 몫이 10% 아래이거나 확인이 실패한 회차만 unmet25로 돈다(위 「2026-10-22」). Docs 저장 계정은 어느 쪽이든 unmet23이다.
+
 ## 실행 구조
 
-- Linux systemd가 **공식 Antigravity CLI `agy`를 직접 실행**한다. 고정 모델은 `gemini-4-argon-high`, 실행 구독은 `77yuhbs@gmail.com`의 Ultra 계정이다. 다른 모델이나 유료 API로 자동 대체하지 않는다.
+- Linux systemd가 **공식 Antigravity CLI `agy`를 실행**한다. 10-22부터는 `agy-account.py launch`가 계정(agy HOME)만 고르고 같은 명령을 exec한다. 고정 모델은 `gemini-4-argon-high`, 실행 구독은 `77yuhbs@gmail.com`의 Ultra 계정이고 규칙에 닿은 회차만 `unmet25@gmail.com` Ultra다. 다른 모델이나 유료 API로 자동 대체하지 않는다.
 - `docs-io.py`는 Google Workspace CLI(`gws`)를 통한 지정 Google Docs의 읽기·백업·revision 충돌 방지·쓰기·본문 재읽기만 처리한다. `snapshot`은 본문을 비공개 작업 파일로 저장하고 짧은 메타데이터를 반환한다. 설치한 `gws` 0.22.5는 자체 버전 출력에 Google의 공식 지원 제품이 아니라고 명시한다. 공식 Antigravity CLI `agy`의 지원 상태와 혼동하지 않는다.
 - 10-18 15:29 보완: 창작 조사 3종의 `validate`와 `write`는 실제 회사 앱에서 가져온 엄격한 `validateResearchReport`를 먼저 실행한다. `/opt/synk-argon-77yuhbs/report-contract/`의 두 회사 모듈·`validate-report.mjs`·SHA manifest가 한 세트다. 77yuhbs 모델 계정과 unmet23 Docs 계정은 그대로이며 새 모델·LLM 호출은 없다. 검사 실패는 기존 Doc에 쓰기 전에 멈추고, producer는 같은 조사 시각·근거를 유지한 로컬 형식 교정만 할 수 있다.
 - `run-check.py`는 시작 시 Docs 기준 해시를 보존하고, 종료 시 실제 모델·대화 ID·도구 거절 여부·완료 표식·Docs 재읽기 해시를 대조한다. 두 Python 파일은 LLM을 실행하지 않는다.
@@ -47,10 +79,13 @@
 | `alert-event.py`, `alert-event-test.py` | `/opt/synk-argon-77yuhbs/`, 오류 고정 코드 전송·비공개 outbox·전송 ack·오프라인 시험 |
 | `alert-units/` | `/etc/systemd/system/`, OnFailure 처리·5분 재전송·수동 합성 시험 unit |
 | `production-dropins/50-failure-alert.conf` | 7개 운영 `synk-argon-ultra-ROLE.service.d/`, 공통 OnFailure 연결 |
+| `production-dropins/60-agy-account.conf` | 7개 운영 `synk-argon-ultra-ROLE.service.d/`, root 소유 0644(10-22). `ExecStart`를 `agy-account.py launch %N -- agy …`로 바꾸고 `ReadWritePaths=-/var/lib/synk-argon-unmet25`를 더한다 |
+| `agy-account.py`, `agy-account-test.py` | `/opt/synk-argon-77yuhbs/agy-account.py`, root 소유 0755(10-22). 회차별 계정 고르기·`status`·`mode`·`sync-settings`. 모드 파일 `/etc/synk-argon-77yuhbs/agy-account.json`은 root 소유 0644(없으면 auto). 시험은 가짜 `/usage` 응답과 임시 폴더만 쓴다 |
 | `alert-policy.json` | 전용 Cloud Monitoring 정책 원문. 같은 이름·ID의 기존 정책을 먼저 조회하고 중복 생성하지 않음 |
 | `configuration/docs.json` | `/etc/synk-argon-77yuhbs/docs.json`, root 소유 0644; 승인된 7개 역할의 문서 ID(10-19 월요일 스캔 셋 추가). `docs-io.py`의 역할 목록, 예비 노드 서버 백업의 `tools/server-backup/argon-capture.py`(`EXPECTED_DOCS`)와 정확히 같아야 하므로 셋은 함께 바꾸고 서버에도 함께 넣는다. 서버 백업 쪽 어긋남은 `node --test tools/server-backup/backup.test.cjs`가 잡는다(10-20 이 셋째를 빠뜨려 07:11 서버 백업이 실패했다). PC 매일 백업의 `Argon백업.js`는 이 파일을 직접 읽는다 |
 | `weekly-scan-prompts.py` | 월요일 스캔 세 역할의 지시문 생성기(저장소에서만 실행, LLM 호출 없음) |
-| `scan-read.cjs` | PC에서 월요일 스캔 결과를 읽는 도구(읽기 전용, SSH) |
+| `scan-read.cjs` | PC에서 월요일 스캔 결과를 읽는 도구(읽기 전용, SSH). 주소 읽기·호스트 키를 `agy-login.cjs`에 내보낸다 |
+| `agy-login.cjs` | PC에서 서버 agy 로그인 화면을 이 터미널에 띄우는 도구(10-22, `node tools/argon-schedules/agy-login.cjs unmet25`). 비밀번호·토큰은 지나가지 않는다 |
 | `configuration/agy-settings.example.json` | 아래 복원 설명에 따라 별도 HOME의 `settings.json`에 반영하는 비밀값 없는 설정 예시 |
 
 예약 시각은 모두 `Asia/Seoul`이다. `Persistent=false`라 서버 중단 중 놓친 실행을 재부팅 때 몰아서 실행하지 않는다.
@@ -112,8 +147,9 @@ journalctl -u synk-argon-ultra-synkbrief.service --since today
 | agy 설정 | `/var/lib/synk-argon-77yuhbs/.gemini/antigravity-cli/settings.json`, `synk-argon-ultra:synk-argon-ultra`, 0600 |
 | Docs 매핑 디렉터리·파일 | `/etc/synk-argon-77yuhbs`는 `root:root`, 0755; 그 안 `docs.json`은 `root:root`, 0644 |
 | 생성되는 계정 인증 파일 | 위 별도 HOME의 승인된 인증 경로에만 보관하고 실행 사용자 소유 0600으로 확인한다. 저장소에 복사하지 않는다. |
+| unmet25 예비 agy HOME(10-22) | `/var/lib/synk-argon-unmet25`와 `.gemini`·`.gemini/antigravity-cli`·`.gemini/config`는 `synk-argon-ultra:synk-argon-ultra` 0700, 그 안 `settings.json`은 0600이고 `permissions`가 77yuhbs와 같다. 서버 백업은 이 로그인을 담지 않으므로, 복원한 서버에서는 unmet25를 새로 로그인한다(그 전까지 `agy-account.py`는 77yuhbs로만 고른다) |
 
-- 예시는 `useG1Credits: false`와 실제 추가된 `permissions.allow`·`permissions.deny`만 담는다. `modelProvider`는 넣지 않았다. 기존 설정이 있다면 먼저 보호된 위치에 보존하고 해당 항목을 대조해 반영한다. 계정 인증이나 다른 설정을 통째로 덮어쓰는 파일로 사용하지 않는다.
+- 예시는 `useG1Credits: false`와 실제 추가된 `permissions.allow`·`permissions.deny`만 담는다. `modelProvider`는 넣지 않았다. agy는 settings.json을 다시 쓰며 기본값(false)인 `useG1Credits` 키를 지우므로(10-22 확인), 서버 파일에 이 키가 없으면 꺼진 것이다. 참(true)이면 꺼야 한다. 기존 설정이 있다면 먼저 보호된 위치에 보존하고 해당 항목을 대조해 반영한다. 계정 인증이나 다른 설정을 통째로 덮어쓰는 파일로 사용하지 않는다.
 - allow에는 UTC 시각, 지정 helper의 역할별 read/snapshot/write, 창작 3역할과 월요일 스캔 3역할의 고정 result 파일에 대한 validate, 작업 폴더 쓰기, 공개 URL 읽기, 도우미 폴더 원문 보기 `read_file(/opt/synk-argon-77yuhbs)`(10-19)와 `gws --version`만 둔다. `validate`는 네트워크와 Docs 쓰기 없이 입력 형식만 확인한다. `read_url(*)`는 당시 공개 원문 읽기 오류를 고친 규칙이다. 셸 명령 전체 허용이나 대화형 브라우저 권한을 뜻하지 않는다. deny에는 Docs 인증 폴더·agy 토큰·agy 설정 파일 읽기 거절을 유지한다.
 - 전역 `/var/lib/synk-argon-77yuhbs/.gemini/config/user_config.json`의 `use_ai_credits`가 없거나 false인지도 별도로 확인한다. 기존 `modelProvider`가 있거나 전역 크레딧이 true이면 활성화하지 않고 승인된 구독 경로를 먼저 확인한다. 모델은 예시 설정의 추정값 대신 각 service의 `--model gemini-4-argon-high`로 고정한다.
 - 실행 계정은 77yuhbs, Docs 저장 계정은 unmet23이다. 인증은 별도 HOME에서 Antigravity 공식 CLI 로그인과 `gws auth login`의 기존 승인된 OAuth 흐름으로 각각 진행한다. PC 앱 로그인·브라우저 기본 계정은 바꾸지 않는다. 새 권한이 필요하면 기존 승인 범위를 확인하고, 예시 파일만 복사해 인증 완료로 보고하지 않는다.
@@ -127,6 +163,7 @@ journalctl -u synk-argon-ultra-synkbrief.service --since today
 python3 tools/argon-schedules/docs-io-test.py
 python3 tools/argon-schedules/run-check-test.py
 python3 tools/argon-schedules/alert-event-test.py
+python3 tools/argon-schedules/agy-account-test.py
 node --test tools/argon-schedules/validate-report.test.mjs
 ```
 

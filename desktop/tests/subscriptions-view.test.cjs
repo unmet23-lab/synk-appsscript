@@ -251,6 +251,113 @@ test('the Gemini row shows both quota groups and its guide walks through the con
   board.dispose();
 });
 
+/* ---------- Gemini 계정별 줄(10-22): agy에는 한 번에 한 계정, 다른 계정 줄은 마지막 값 ---------- */
+const AWAY='지금 이 PC의 Antigravity에는 다른 계정이 로그인돼 있어요 — 마지막으로 읽은 값이에요.';
+test('a Gemini account that is not signed in right now keeps its last value but is not counted as ready or broken',async()=>{
+  const {accountState,serviceGroups,nameOf,upcoming}=await import('../renderer/subscriptions.mjs');
+  const main=row({id:'g-main',service:'gemini',label:'Gemini',email:'77yuhbs@example.com',live:{readAt:NOW,weekly:{usedPercent:82,resetsAt:NOW+2*864e5},session:{usedPercent:10,resetsAt:NOW+3600e3}}});
+  const family=row({id:'g-family',service:'gemini',label:'Gemini',email:'unmet25@example.com',state:'elsewhere',stateMessage:AWAY,live:{readAt:NOW-30*3600e3,weekly:{usedPercent:5,resetsAt:NOW+4*864e5},session:{usedPercent:0,resetsAt:null}}});
+  // 계정 이름은 Gemini도 메일 앞부분이다(아직 메일을 못 읽은 옛 줄만 「이 PC 로그인」).
+  assert.deepEqual([nameOf(main),nameOf(family),nameOf(row({service:'gemini',email:null}))],['77yuhbs','unmet25','이 PC 로그인']);
+  // 마지막으로 읽은 지 12시간이 넘어도 「못 읽음」으로 바꾸지 않고 그 값 그대로(away)다.
+  const a=accountState(family,NOW,NOW);
+  assert.deepEqual([a.away,a.state,a.left,a.readAt],[true,'ok',95,NOW-30*3600e3]);
+  const g=serviceGroups([main,family],NOW,NOW)[0];
+  assert.deepEqual([g.best.row.id,g.ready.map(x=>x.row.id),g.away.map(x=>x.row.id),g.error.length,g.usable.length],['g-main',['g-main'],['g-family'],0,1]);
+  // 다 쓴 채 다른 계정으로 바뀐 계정도 풀리는 때는 「다음에 풀려요」에 남는다.
+  const spent=row({...family,id:'g-spent',usedUpAt:NOW-3600e3,live:{readAt:NOW-3600e3,weekly:{usedPercent:100,resetsAt:NOW+864e5}}});
+  assert.deepEqual(upcoming([spent],NOW).map(i=>[i.type,i.t]),[['unblock',NOW+864e5]]);
+});
+
+test('two Gemini accounts: the signed-in one is the pick, the other shows its last value and how to switch',async()=>{
+  prepare();
+  const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
+  const now=Date.now();
+  const main=row({id:'g-main',service:'gemini',label:'Gemini',email:'77yuhbs@example.com',live:{readAt:now,weekly:{usedPercent:82,resetsAt:now+2*864e5},session:{usedPercent:10,resetsAt:now+3600e3}}});
+  const family=row({id:'g-family',service:'gemini',label:'Gemini',email:'unmet25@example.com',state:'elsewhere',stateMessage:AWAY,live:{readAt:now-20*3600e3,weekly:{usedPercent:5,resetsAt:now+4*864e5},session:{usedPercent:0,resetsAt:null}}});
+  let snapshot={ok:true,tools:{gemini:{installed:true,version:'1.4.5'}},rows:[main,family],settings:{usdKrw:1400},check:{at:now,total:1,ok:1},login:null,checking:false};
+  const listeners=[],logins=[];
+  const bridge={subscriptions:{snapshot:async()=>snapshot,check:async()=>snapshot,onChanged:cb=>{listeners.push(cb);return ()=>{};},install:async()=>({ok:true}),useExisting:async()=>({ok:true}),login:async(service,options)=>{logins.push([service,options]);return {ok:true,id:'l-1'};},save:async()=>snapshot,help:async()=>({ok:true}),submitCode:async()=>({ok:true}),cancel:async()=>({ok:true}),openLoginUrl:async()=>({ok:true})}};
+  const board=createSubscriptionsBoard({bridge});
+  const el=fakeContainer(),{click}=driver(el);
+  board.render(el,{signedIn:true,native:true});
+  await tick();
+  // 한눈에: 지금 로그인된 계정이 그 줄의 계정이고, 다른 계정은 「지금 로그인 안 됨」으로 세며 손볼 것·못 읽음으로 치지 않는다.
+  assert.match(el.innerHTML,/<span class="ms-pick-label">지금 로그인된 계정<\/span><span class="ms-pick-name"><span>77yuhbs<\/span>/);
+  assert.match(el.innerHTML,/2개 중 <em>1개<\/em> 바로 써요 <span class="ms-soft">1개 지금 로그인 안 됨<\/span>/);
+  assert.match(el.innerHTML,/data-roll="r-gemini">82<small>%/);
+  assert.match(el.innerHTML,/<i class="ms-dot" data-state="away"><\/i>/);
+  assert.doesNotMatch(el.innerHTML,/ms-fix-row/);assert.doesNotMatch(el.innerHTML,/못 읽음/);
+  assert.match(el.innerHTML,/지금 바로 쓸 수 있는 계정 <b class="ms-num">1<\/b>개 · 전체 2개/);
+  // 펼치면 다른 계정의 마지막 값과 읽은 때.
+  await click({subs:'toggle',id:'g-gemini'});
+  assert.match(el.innerHTML,/<h3>지금 로그인 안 됨<\/h3><div class="ms-acc" data-row="g-family"><i class="ms-dot" data-state="away" aria-hidden="true"><\/i><span class="ms-acc-name">unmet25<\/span><span class="ms-acc-sub">Antigravity에 다른 계정이 로그인돼 있어 [^<]+에 마지막으로 읽은 값이에요<\/span><span class="ms-bar" data-state="ok" aria-hidden="true"><i style="width:5%"><\/i><\/span><span class="ms-acc-val"><b class="ms-num">5%<\/b><small>주간 사용<\/small><\/span>/);
+  // 계정 관리: 메일 전체, 「지금 로그인 안 됨」 칩, ⋯에 사실(경고 아님)과 바꾸는 길.
+  await click({subs:'manage'});
+  assert.match(el.innerHTML,/<span class="ms-mname">unmet25@example\.com<\/span><span class="ms-mplan"><\/span><span class="ms-chip ms-chip-away">지금 로그인 안 됨<\/span>/);
+  await click({subs:'menu',id:'g-family'});
+  assert.match(el.innerHTML,/<p class="ms-soft">지금 이 PC의 Antigravity에는 다른 계정이 로그인돼 있어요 — 마지막으로 읽은 값이에요\. Antigravity를 이 계정으로 바꾸면 이어서 읽어요\.<\/p>/);
+  assert.doesNotMatch(el.innerHTML,/ms-warn-text/);
+  assert.match(el.innerHTML,/data-subs="relogin" data-id="g-family">이 계정으로 바꾸기<\/button>/);
+  // 바꾸기 가이드: 검은 창(agy)에서 /logout → /login으로 바꾼다는 것을 미리, 창이 열린 뒤에도 말한다.
+  await click({subs:'relogin',id:'g-family'});
+  assert.match(el.innerHTML,/다른 Google 계정으로 바꾸려면 「Gemini 로그인」을 눌러 열린 검은 창\(agy\)에서 <code>\/logout<\/code> → <code>\/login<\/code> 순서로 쳐요/);
+  await click({subs:'login',service:'gemini'});
+  assert.deepEqual(logins,[['gemini',{email:undefined}]]);
+  snapshot={...snapshot,login:{id:'l-1',service:'gemini',stage:'console',console:true,message:'',needsCode:false,url:null}};
+  listeners.forEach(cb=>cb(snapshot));
+  assert.match(el.innerHTML,/이미 다른 계정으로 로그인된 창이면 <code>\/logout<\/code>을 치고 <b>Enter<\/b>, 이어서 <code>\/login<\/code>을 치고 <b>Enter<\/b>를 눌러요/);
+  assert.match(el.innerHTML,/로그인 화면에서 <b>Enter<\/b>를 눌러 「1\. Google OAuth」를 골라요/);
+  assert.match(el.innerHTML,/열린 브라우저에서 바꿀 Google 계정을 고르고/);
+  assert.match(el.innerHTML,/로그인까지 마치면 이 화면이 저절로 넘어가요\. 계정을 바꾸지 않을 거면 검은 창을 닫으면 돼요/);
+  board.dispose();
+});
+
+test('when no Gemini account is signed in, the other account line says so instead of naming another account',async()=>{
+  prepare();
+  const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
+  const now=Date.now();
+  // 본체가 agy 로그인 풀림을 읽으면 지금 계정 줄은 「다시 로그인」, 다른 계정 줄은 awayReason 'none'(Fable 10-22 P2-1).
+  const main=row({id:'g-main',service:'gemini',label:'Gemini',email:'77yuhbs@example.com',state:'needs-login',stateMessage:'Gemini(Antigravity) 로그인이 필요해요. 다시 연결해 주세요.',live:{readAt:now-3600e3,weekly:{usedPercent:82,resetsAt:now+2*864e5}}});
+  const family=row({id:'g-family',service:'gemini',label:'Gemini',email:'unmet25@example.com',state:'elsewhere',awayReason:'none',stateMessage:'지금 이 PC의 Antigravity에 로그인된 계정이 없어요 — 마지막으로 읽은 값이에요.',live:{readAt:now-20*3600e3,weekly:{usedPercent:5,resetsAt:now+4*864e5}}});
+  const snapshot={ok:true,tools:{gemini:{installed:true,version:'1.4.5'}},rows:[main,family],settings:{usdKrw:1400},check:{at:now,total:1,ok:0},login:null,checking:false};
+  const bridge={subscriptions:{snapshot:async()=>snapshot,check:async()=>snapshot,onChanged:()=>()=>{},save:async()=>snapshot,help:async()=>({ok:true})}};
+  const board=createSubscriptionsBoard({bridge});
+  const el=fakeContainer(),{click}=driver(el);
+  board.render(el,{signedIn:true,native:true});
+  await tick();
+  // 손볼 것 띠에는 지금 계정의 「다시 로그인」만, 다른 계정은 「로그인된 계정이 없어」로 마지막 값.
+  assert.match(el.innerHTML,/다시 로그인 필요 · <b>77yuhbs<\/b>\(Gemini\)/);assert.doesNotMatch(el.innerHTML,/다시 로그인 필요 · <b>unmet25<\/b>/);
+  await click({subs:'toggle',id:'g-gemini'});
+  assert.match(el.innerHTML,/<span class="ms-acc-sub">Antigravity에 로그인된 계정이 없어 [^<]+에 마지막으로 읽은 값이에요<\/span>/);
+  assert.doesNotMatch(el.innerHTML,/다른 계정이 로그인돼 있어/);
+  await click({subs:'manage'});
+  await click({subs:'menu',id:'g-family'});
+  assert.match(el.innerHTML,/<p class="ms-soft">지금 이 PC의 Antigravity에 로그인된 계정이 없어요 — 마지막으로 읽은 값이에요\. Antigravity에 이 계정으로 로그인하면 이어서 읽어요\.<\/p>/);
+  assert.match(el.innerHTML,/data-subs="relogin" data-id="g-family">이 계정으로 로그인<\/button>/);
+  // 그 단추가 여는 가이드는 「바꾸려면 /logout → /login」이 아니라 바로 로그인 화면이 나온다고 말한다(Fable 재확인 P3).
+  await click({subs:'relogin',id:'g-family'});
+  assert.match(el.innerHTML,/지금은 이 PC의 Antigravity CLI에 로그인된 계정이 없어요\. 「Gemini 로그인」을 누르면 바로 로그인 화면이 나와요\./);
+  assert.doesNotMatch(el.innerHTML,/다른 Google 계정으로 바꾸려면/);
+  board.dispose();
+});
+
+test('a Gemini pace tip counts only the signed-in account, not the one waiting for a switch',async()=>{
+  prepare();
+  const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
+  const D=864e5,fresh=Date.now();
+  const main=row({id:'g-main',service:'gemini',label:'Gemini',email:'77yuhbs@example.com',live:{readAt:fresh,weekly:{usedPercent:82,resetsAt:fresh+2*D}}});
+  const family=row({id:'g-family',service:'gemini',label:'Gemini',email:'unmet25@example.com',state:'elsewhere',stateMessage:AWAY,live:{readAt:fresh-D,weekly:{usedPercent:5,resetsAt:fresh+4*D}}});
+  const buckets=[0,1,2,3,4].map(i=>({start:fresh-(5-i)*7*D,end:fresh-(4-i)*7*D}));
+  const usage={since:fresh-10*D,buckets,services:{gemini:{kind:'pct',accounts:2,bars:[null,null,{v:40,partial:true},{v:50,partial:false},{v:65,partial:false}],base:50,baseWeeks:1,mixed:false}},accounts:{'g-main':{since:fresh-10*D,used7:40,rate3:30,perDay:6,refillAt:null}}};
+  const snapshot={ok:true,seq:1,tools:{},rows:[main,family],settings:{usdKrw:1400},check:{at:fresh,total:1,ok:1},login:null,checking:false,usage};
+  const el=fakeContainer(),board=createSubscriptionsBoard({bridge:{subscriptions:{snapshot:async()=>snapshot,onChanged:()=>()=>{}}}});
+  board.render(el,{signedIn:true,native:true});await tick();board.dispose();
+  // 남은 18%를 하루 30%p씩 쓰면 하루 안에 막히고 초기화는 이틀 뒤다 — 바꿔 쓸 계정이 있으니 「모두 막혀요」가 아니라 지금 계정 하나의 말로 한다.
+  assert.match(el.innerHTML,/이 속도면 <b class="ms-num">[^<]+(오전|오후)쯤<\/b> 주간 한도를 다 써요\. 초기화는 [^<]+예요\./);
+  assert.doesNotMatch(el.innerHTML,/모두 막혀요/);
+});
+
 test('Typecast connects with a pasted API key and Higgsfield can add more accounts through a private window',async()=>{
   prepare();
   // Node에는 읽기 전용 navigator가 있어 clipboard만 가짜로 붙인다.

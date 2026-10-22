@@ -3,13 +3,14 @@
  * No browser clock, reward, affinity score, language assessment, or LS completion.
  * Mutations and returned fact descriptors must be committed together by core.
  */
+import { FT_SEATS } from './town/places.mjs';
 export class LifeError extends Error {
   constructor(code, message, status = 400) { super(message); this.code = code; this.status = status; }
 }
 const ensure = (ok, code, message, status) => { if (!ok) throw new LifeError(code, message, status); };
 const integer = value => Number.isSafeInteger(value) && value >= 0;
 const identifier = value => typeof value === 'string' && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
-const placements = Object.freeze({ garden: { x: 65, y: 64 }, 'garden-right': { x: 78, y: 68 }, 'eaves-left': { x: 25, y: 54 }, 'eaves-right': { x: 39, y: 54 } });
+const placements = Object.freeze(Object.fromEntries(Object.entries(FT_SEATS).map(([id, seat]) => [id, { x: seat.legacy2d.x, y: seat.legacy2d.y }])));
 const roles = ['planner', 'observer', 'delegated'];
 const stages = ['role', 'direction', 'preview', 'executing', 'result', 'invalid'];
 const contactStates = ['issued', 'delivered', 'detail', 'accepted', 'deferred', 'declined', 'passed', 'cancelled', 'deliveryUnknown'];

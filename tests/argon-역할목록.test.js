@@ -29,6 +29,10 @@ test('조사 서버에 손으로 올리는 파일의 역할 목록이 docs.json�
   assert.ok(runCheck, 'run-check.py 역할 검사 줄');
   assert.deepEqual(sorted(quoted(runCheck[1])), ROLES, 'run-check.py');
 
+  const account = read('tools/argon-schedules/agy-account.py').match(/^ROLES = \(([^)]*)\)/m);
+  assert.ok(account, 'agy-account.py ROLES');
+  assert.deepEqual(sorted(quoted(account[1])), ROLES, 'agy-account.py');
+
   const alert = read('tools/argon-schedules/alert-event.py').match(/for role in \(([^)]*)\)\}/);
   assert.ok(alert, 'alert-event.py UNITS');
   assert.deepEqual(sorted(quoted(alert[1])), ROLES, 'alert-event.py');

@@ -4,20 +4,22 @@
  * There is no new approach budget, economy, friendship score or language assessment.
  */
 import { WALK_SPAWNS, WALK_SPEED, isWalkable, nearbyPlace, movePoint, walkSegments } from './walk.mjs';
+import { PLACE_BY_ID, PLAYER_PLACES, FT_SEATS, HOME_SLOTS } from './town/places.mjs';
 export class DayError extends Error {
   constructor(code, message, status = 400) { super(message); this.code = code; this.status = status; }
 }
 const ensure = (ok, code, message, status) => { if (!ok) throw new DayError(code, message, status); };
 const integer = n => Number.isSafeInteger(n) && n >= 0;
 const ids = ['cafe-owner', 'workshop-owner', 'researcher'];
-const places = ['home', 'cafe', 'workshop', 'greenhouse'];
+const places = PLAYER_PLACES;
 const roles = ['planner', 'observer', 'delegated'];
 const modes = ['demo', 'cooperate', 'plan'];
 const kinds = ['tea', 'coordination', 'help'];
 const stages = ['role', 'choice', 'demonstration', 'awaitContinue', 'preview', 'rehearsal', 'awaitConfirm', 'executing', 'awaitTea', 'awaitFinish', 'explaining', 'result', 'invalid'];
 const choices = { tea: ['sequence', 'separate'], coordination: ['rest', 'separate', 'silent', 'delegate'], help: ['hold', 'prepare', 'alone'] };
-export const DAY_LOCATIONS = Object.freeze({ home: { x: -6, z: 0, label: '집' }, cafe: { x: 0, z: 0, label: '찻집' }, workshop: { x: 6, z: 0, label: '공방' }, greenhouse: { x: 0, z: -6, label: '온실' } });
-const seats = ['garden', 'garden-right', 'eaves-left', 'eaves-right'];
+export const DAY_LOCATIONS = Object.freeze(Object.fromEntries(PLAYER_PLACES.map(id => [id,
+  Object.freeze({ x: PLACE_BY_ID[id].center.x, z: PLACE_BY_ID[id].center.z, label: PLACE_BY_ID[id].labels.text })])));
+const seats = Object.keys(FT_SEATS);
 const enumValue = (value, values) => values.includes(value);
 const key = value => typeof value === 'string' && /^DAY:[a-zA-Z0-9_.:-]{1,130}$/.test(value);
 const action = (type, label, payload = {}, primary = false) => ({ type, label, payload, primary });
@@ -422,8 +424,7 @@ function reservedMembers(day) {
 const mix = (a, b, t) => a + (b - a) * Math.max(0, Math.min(1, t));
 function actor(id, x, z, pose, goal) { return { id, x, z, pose, goal }; }
 function seatPoint(target) {
-  const points = { garden: { x: -.7, z: 2 }, 'garden-right': { x: 1.2, z: 2 }, 'eaves-left': { x: -1.2, z: .4 }, 'eaves-right': { x: .8, z: .4 } };
-  return target?.kind === 'seat' ? points[target.placement] : { x: .4, z: 1.8 };
+  return target?.kind === 'seat' ? { ...FT_SEATS[target.placement].at } : { x: .4, z: 1.8 };
 }
 function sceneFor(day, ctx) {
   const r = day.routine, t = r.workshopMs, pairDone = day.emitted.includes(`DAY:routine:${day.visit}:pair-help`);
@@ -438,14 +439,14 @@ function sceneFor(day, ctx) {
   const researcher = actor('researcher', .3, -6, r.researcherMs < 3000 ? 'working' : 'showing', '자기 관찰판 준비');
   const npcs = [cafe, workshop, researcher];
   const props = [
-    { id: 'home-cushion', kind: 'cushion', x: day.home.slot === 'window' ? -6.7 : -5.5, z: -.2 },
+    { id: 'home-cushion', kind: 'cushion', ...HOME_SLOTS[day.home.slot] },
     { id: 'cafe-tray', kind: 'tray', x: -.7, z: -.65 },
     { id: 'researcher-board', kind: 'board', x: -.3, z: -6.4 },
     { id: 'workshop-support', kind: 'support', x: 6.6, z: .3 },
   ];
   const lastHelp = [...day.history].reverse().find(h => h.kind === 'help');
   if (lastHelp?.direction) Object.assign(props.find(p => p.id === 'workshop-support'), { x: 6.3, z: .8, orientation: lastHelp.direction });
-  if (day.home.previewSlot) props.push({ id: 'home-cushion-preview', kind: 'cushion', x: day.home.previewSlot === 'window' ? -6.7 : -5.5, z: -.2, preview: true });
+  if (day.home.previewSlot) props.push({ id: 'home-cushion-preview', kind: 'cushion', ...HOME_SLOTS[day.home.previewSlot], preview: true });
   if (day.environment.ftReady && day.environment.placement) {
     const pos = seatPoint({ kind: 'seat', placement: day.environment.placement });
     props.push({ id: 'ft-seat', kind: 'chair', ...pos });

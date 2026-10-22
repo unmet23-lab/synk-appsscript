@@ -8,8 +8,50 @@ import { initialPresence, updatePresence, commandPresence, PRESENCE_LEASE_MS } f
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(root, '../..');
-export function defaultSavePath() {
-  return path.join(process.env.LOCALAPPDATA || os.tmpdir(), 'SYNK', 'town-preview', 'ft10-v1.json');
+// Observation runs keep their own save: a shifted clock must never leave
+// future presence stamps in the everyday developer save.
+export function defaultSavePath(observe = null) {
+  return path.join(process.env.LOCALAPPDATA || os.tmpdir(), 'SYNK', 'town-preview', observe?.active ? 'ft10-observe.json' : 'ft10-v1.json');
+}
+/** Observation switches for playtests (vertical slice design §15-6). Local
+ * preview only; the talk runtime has no such input.
+ *   --clock +1d | -3h30m | 2026-10-23T19:00+09:00   shift the town clock or start at a set instant
+ *   --card C4[,R2]                                  raise these cards at once (read by the card runtime, W5) */
+export function parseObservation(argv, { realNow = Date.now() } = {}) {
+  const value = name => {
+    const at = argv.findIndex(arg => arg === name || arg.startsWith(`${name}=`));
+    if (at < 0) return null;
+    const inline = argv[at].slice(name.length + 1);
+    const given = argv[at] === name ? argv[at + 1] : inline;
+    if (!given || given.startsWith('--')) throw new RangeError(`${name} 뒤에 값을 적어 주세요.`);
+    return given;
+  };
+  const clockArg = value('--clock'), cardArg = value('--card');
+  let clock = null;
+  if (clockArg !== null) {
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?(?:Z|[+-]\d{2}:\d{2})$/.test(clockArg)) {
+      const atMs = Date.parse(clockArg);
+      if (!Number.isSafeInteger(atMs)) throw new RangeError('--clock 시각을 읽지 못했어요.');
+      clock = { atMs, startedAtMs: realNow, label: clockArg };
+    } else if (/^[+-](?:\d+[dhms])+$/.test(clockArg)) {
+      const unit = { d: 86400000, h: 3600000, m: 60000, s: 1000 };
+      const offsetMs = (clockArg[0] === '-' ? -1 : 1)
+        * [...clockArg.matchAll(/(\d+)([dhms])/g)].reduce((sum, [, n, u]) => sum + Number(n) * unit[u], 0);
+      if (!Number.isSafeInteger(offsetMs)) throw new RangeError('--clock 값이 너무 커요.');
+      clock = { offsetMs, label: clockArg };
+    } else throw new RangeError('--clock은 +1d·-3h30m 같은 꼴이나 2026-10-23T19:00+09:00 같은 시각이에요.');
+  }
+  const cards = cardArg === null ? [] : [...new Set(cardArg.split(','))];
+  if (cards.some(id => !/^[CWR][1-6]$/.test(id))) throw new RangeError('--card는 C1~C6·W1~W6·R1~R6 가운데에서 골라요.');
+  const label = [clock && `시계 ${clock.label}`, cards.length && `카드 ${cards.join('·')}`].filter(Boolean).join(' · ');
+  return { active: !!clock || cards.length > 0, clock, cards, label };
+}
+/** The host clock a store runs on under the observation switches. */
+export function observationClock(observe, realNow = () => Date.now()) {
+  const clock = observe?.clock;
+  if (!clock) return realNow;
+  if (clock.offsetMs !== undefined) return () => realNow() + clock.offsetMs;
+  return () => clock.atMs + Math.max(0, realNow() - clock.startedAtMs);
 }
 function atomicSave(file, state) {
   fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -21,7 +63,7 @@ function atomicSave(file, state) {
 }
 /** One process owns this developer fixture. Commit to durable storage before
  * publishing its new state. A bad save is blocked, never silently re-created. */
-export function createStore({ file, save, now = () => Date.now(), lifeEnabled = true } = {}) {
+export function createStore({ file, save, now = () => Date.now(), lifeEnabled = true, observe = null } = {}) {
   let state = initialState({ lifeEnabled }), loadError = null, presence = initialPresence(), walkClock = null;
   if (file && fs.existsSync(file)) {
     try { state = restoreState(JSON.parse(fs.readFileSync(file, 'utf8')), { lifeEnabled }); }
@@ -39,6 +81,7 @@ export function createStore({ file, save, now = () => Date.now(), lifeEnabled = 
   if (state.lifeHost?.lastForegroundAt != null) presence.lastActiveAt = state.lifeHost.lastForegroundAt;
   presence.fence = state.lifeHost?.fence || 0;
   return {
+    observation: observe,
     read() { if (loadError) throw loadError; return current(); },
     presence(input) {
       if (loadError) throw loadError;
@@ -107,6 +150,8 @@ function fileFor(route, previewEnabled) {
   if (/^\/assets\/district\/[a-z0-9-]+\.(?:glb|json)$/.test(route)) return path.join(root, route.slice(1));
   if (/^\/rendering\/basis\/basis_transcoder\.(?:js|wasm)$/.test(route)) return path.join(root, route.slice(1));
   if (['/day.html', '/day-app.mjs', '/day-style.css', '/day-scene.mjs', '/day-character.mjs', '/day-residents.mjs', '/day-environment.mjs', '/day-materials.mjs', '/day-rendering.mjs', '/day-district.mjs', '/walk.mjs', '/walk-controls.mjs', '/town-layout.mjs'].includes(route)) return path.join(root, route.slice(1));
+  // The town runtime layer the browser shares with the host (vertical slice §2-5): modules only, never data sources.
+  if (/^\/town\/[a-z0-9-]+(?:\.gen)?\.mjs$/.test(route)) return path.join(root, route.slice(1));
   if (/^\/rendering\/(?:Pass|RenderPass|EffectComposer|ShaderPass|MaskPass|OutputPass|CopyShader|OutputShader|SSAOPass|SSAOShader|SimplexNoise|GLTFLoader|BufferGeometryUtils|KTX2Loader|WorkerPool|ktx-parse\.module|zstddec\.module|ColorSpaces|meshopt_decoder\.module)\.js$/.test(route)) return path.join(root, route.slice(1));
   if (route === '/avatar-v3.mjs') return path.join(repo, 'experiences/synk-world-home/avatar-v3.mjs');
   if (route === '/avatar-textiles.mjs') return path.join(repo, 'experiences/synk-world-home/avatar-textiles.mjs');
@@ -182,7 +227,15 @@ export function createServer({ previewEnabled = false, store = createStore({ fil
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   const previewEnabled = process.argv.includes('--preview');
   const port = Number(process.env.SYNK_TOWN_PORT || 4288);
-  const server = createServer({ previewEnabled });
+  let observe;
+  try { observe = parseObservation(process.argv.slice(2)); }
+  catch (error) { console.error(`관찰 스위치: ${error.message}`); process.exit(2); }
+  if (observe.active && !previewEnabled) { console.error('관찰 스위치는 --preview와 함께만 써요.'); process.exit(2); }
+  const store = createStore({ file: defaultSavePath(observe), now: observationClock(observe), observe });
+  const server = createServer({ previewEnabled, store });
   server.on('error', error => { console.error(`Town server: ${error.code || 'unavailable'}`); process.exitCode = 1; });
-  server.listen(port, '127.0.0.1', () => console.log(`SYNK TOWN ${previewEnabled ? 'developer fixture' : 'locked entry'}: http://127.0.0.1:${port}${previewEnabled ? '/day.html' : '/'}`));
+  server.listen(port, '127.0.0.1', () => {
+    console.log(`SYNK TOWN ${previewEnabled ? 'developer fixture' : 'locked entry'}: http://127.0.0.1:${port}${previewEnabled ? '/day.html' : '/'}`);
+    if (observe.active) console.log(`관찰 스위치: ${observe.label} · 저장 ${defaultSavePath(observe)}`);
+  });
 }
