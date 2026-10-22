@@ -37,8 +37,8 @@ function bind(f,value=message()){f.context.message=value;f.run("openModal('할 �
 test('task classification cites the server date rather than the computer clock',()=>{
   const f=fixture();f.run("Date=(Real=>{const D=function(...args){if(!args.length)throw new Error('computer clock must not classify work');return new Real(...args);};D.now=()=>{throw new Error('computer clock must not classify work');};D.parse=Real.parse;D.UTC=Real.UTC;D.prototype=Real.prototype;return D;})(Date)");
   const value=task({workday:{date:'2035-01-01',todayReasons:['due'],remainingReasons:[]}}),html=basis(f,value);assert.match(html,/2035-01-01/);assert.match(html,/왜 오늘 할 일인가요/);assert.match(html,/기한/);assert.equal(f.requests.length,0);
-  // 상세는 서버가 정한 그날(2035-01-01)을 한국 시간 기준 날짜로 적는다 — 컴퓨터 날짜(2026년)가 아니다.
-  assert.match(basisFold(fixture(),value),/1월 1일[^<]*한국 시간 기준/);
+  // 상세는 서버가 정한 그날(2035-01-01)을 한국 시간 기준 날짜로 적는다 — 컴퓨터 날짜(2026년)가 아니다. 시계를 막은 그 f로 그려서, 상세 HTML이 지금 시각을 읽으면 여기서 던진다.
+  assert.match(basisFold(f,value),/1월 1일[^<]*한국 시간 기준/);
 });
 
 for(const [key,pattern] of [['reply',/수락|응답|수정 요청|요청 확인/],['due',/기한|오늘까지/],['review',/결과물.*검토|검토.*차례/],['recovery',/검토자.*(지정|정해)|검토할 수 없/]]){
