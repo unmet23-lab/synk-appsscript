@@ -13323,7 +13323,7 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
   const lessons = /* @__PURE__ */ new Map(), questions = /* @__PURE__ */ new Map();
   const check3 = () => {
     guard();
-    if (stopped) throw fail("ACCOUNT_CHANGED", "\uC774 \uACC4\uC815\uC758 \uC0DD\uD65C \uD55C\uAD6D\uC5B4 \uC5F0\uACB0\uC774 \uB05D\uB0AC\uC5B4\uC694.");
+    if (stopped) throw fail("ACCOUNT_CHANGED", "\uB85C\uADF8\uC778\uC774 \uB05D\uB098 \uC0DD\uD65C \uD55C\uAD6D\uC5B4 \uC9C4\uB3C4\uB97C \uC800\uC7A5\uD560 \uC218 \uC5C6\uC5B4\uC694.");
   };
   try {
     const raw = storage.getItem(key);
@@ -13368,11 +13368,11 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     } catch {
     }
     if (transport?.phase) value.phase = transport.phase;
-    if (value.rejected) throw fail("LIFE_PROGRESS_REJECTED", "\uBCF4\uAD00\uB41C \uC9C4\uB3C4\uB97C \uBA3C\uC800 \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+    if (value.rejected) throw fail("LIFE_PROGRESS_REJECTED", "\uC800\uC7A5\uD558\uC9C0 \uBABB\uD55C \uC9C4\uB3C4\uAC00 \uC788\uC5B4\uC694. \uC774\uC5B4 \uAC08 \uAE30\uB85D\uC744 \uBA3C\uC800 \uACE8\uB77C \uC8FC\uC138\uC694.");
     if (value.phase === "loading") throw fail("LIFE_PROGRESS_LOADING", "\uC9C4\uB3C4\uB97C \uBD88\uB7EC\uC624\uACE0 \uC788\uC5B4\uC694.");
-    if (value.phase === "conflict") throw fail("REVISION_CONFLICT", "\uC0AC\uC6A9\uD560 \uC9C4\uB3C4\uB97C \uBA3C\uC800 \uC120\uD0DD\uD574 \uC8FC\uC138\uC694.");
-    if (value.phase === "unreadable") throw fail("LIFE_PROGRESS_UNREADABLE", "\uAE30\uC874 \uC9C4\uB3C4\uB97C \uBA3C\uC800 \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
-    if (value.phase === "stopped") throw fail("ACCOUNT_CHANGED", "\uC774 \uACC4\uC815\uC758 \uC0DD\uD65C \uD55C\uAD6D\uC5B4 \uC5F0\uACB0\uC774 \uB05D\uB0AC\uC5B4\uC694.");
+    if (value.phase === "conflict") throw fail("REVISION_CONFLICT", "\uC9C4\uB3C4\uAC00 \uB450 \uACF3\uC5D0\uC11C \uB2EC\uB77C\uC694. \uC774\uC5B4 \uAC08 \uAE30\uB85D\uC744 \uBA3C\uC800 \uACE8\uB77C \uC8FC\uC138\uC694.");
+    if (value.phase === "unreadable") throw fail("LIFE_PROGRESS_UNREADABLE", "\uAE30\uC874 \uC9C4\uB3C4\uB97C \uC77D\uC9C0 \uBABB\uD574 \uC9C0\uAE08\uC740 \uC800\uC7A5\uD560 \uC218 \uC5C6\uC5B4\uC694. \uC7A0\uC2DC \uB4A4 \uB2E4\uC2DC \uC5F4\uC5B4 \uC8FC\uC138\uC694.");
+    if (value.phase === "stopped") throw fail("ACCOUNT_CHANGED", "\uB85C\uADF8\uC778\uC774 \uB05D\uB098 \uC0DD\uD65C \uD55C\uAD6D\uC5B4 \uC9C4\uB3C4\uB97C \uC800\uC7A5\uD560 \uC218 \uC5C6\uC5B4\uC694.");
   }
   function commit(next, { preserveDaily = false } = {}) {
     check3();
@@ -14474,11 +14474,11 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     }
   }
   function completeTutorPractice(questionId, tutorId) {
-    if (ended) throw Error("\uD559\uC2B5 \uC5F0\uACB0\uC774 \uBC14\uB00C\uC5C8\uC5B4\uC694.");
+    if (ended) throw Error("\uB85C\uADF8\uC778\uD55C \uACC4\uC815\uC774 \uBC14\uB00C\uC5B4 \uC800\uC7A5\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uB2E4\uC2DC \uC2DC\uB3C4\uD574 \uC8FC\uC138\uC694.");
     return getProgress().recordGuidedPractice({ questionId, tutorId });
   }
   function finishTutorDay() {
-    if (ended) throw Error("\uD559\uC2B5 \uC5F0\uACB0\uC774 \uBC14\uB00C\uC5C8\uC5B4\uC694.");
+    if (ended) throw Error("\uB85C\uADF8\uC778\uD55C \uACC4\uC815\uC774 \uBC14\uB00C\uC5B4 \uC800\uC7A5\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uB2E4\uC2DC \uC2DC\uB3C4\uD574 \uC8FC\uC138\uC694.");
     return getProgress().markDayComplete();
   }
   function prepareHomePractice(id) {
@@ -15201,7 +15201,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     }
   }
   async function setHangulReading(answer, options) {
-    if (ended) throw Error("\uD559\uC2B5 \uC5F0\uACB0\uC774 \uBC14\uB00C\uC5C8\uC5B4\uC694.");
+    if (ended) throw Error("\uB85C\uADF8\uC778\uD55C \uACC4\uC815\uC774 \uBC14\uB00C\uC5B4 \uC800\uC7A5\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uB2E4\uC2DC \uC2DC\uB3C4\uD574 \uC8FC\uC138\uC694.");
     const p = getProgress(), result = p.setHangulReading(answer, options);
     updateHome();
     await p.flush();
