@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-17T10:21:09.625Z",
+  "generatedAt": "2026-10-22T06:25:22.372Z",
   "sourceAsOf": {
-    "registry": "2026-10-02",
+    "registry": "2026-10-19",
     "social": "2026-09-21",
     "latestContent": "2026-09-27"
   },
@@ -11,8 +11,8 @@
     "plannedCountries": 25,
     "prioritySlots": 50,
     "newSlots": 48,
-    "expansionConfirmed": 26,
-    "expansionUnconfirmed": 22,
+    "expansionConfirmed": 27,
+    "expansionUnconfirmed": 21,
     "channelRows": 74,
     "contents": 25,
     "identities": 6
@@ -36,7 +36,7 @@
     },
     {
       "file": "../콘텐츠_운영체계_20260927.md",
-      "sha256": "bf38910c244265f2df61be92ab5a17efd596e2d60f79431a53af5eb31895e2ff"
+      "sha256": "aaffa1ecec9302b61b8b8d623d8052c9b4e726373be8b288449cacf20173ce2a"
     },
     {
       "file": "account-setup-proposal.json",
@@ -44,11 +44,11 @@
     },
     {
       "file": "../sns-계정.json",
-      "sha256": "828a00abe28e5f45a8bdbee70d0704a4aa7a4d84ed811489b12d985f43a046ed"
+      "sha256": "b465a83e00588fd768441495af95758469fe81e1ac85efcc8e91a3bf36fc8e4c"
     },
     {
       "file": "../SNS_계정_전체목록_20260919.md",
-      "sha256": "8d27e3a149f3438fd162b3d57769963b96176ec0b720c98f4edec161ac6f2d0a"
+      "sha256": "bf95d8aaa196d0e21428a0e8002fc761efbf144ff5fca231148c1af8e048c2b9"
     },
     {
       "file": "../프로필최신화_20260919/반영_v6.json",
@@ -68,7 +68,7 @@
     },
     {
       "file": "../yuhobuilds_1편_쇼츠수정_20260922/README.md",
-      "sha256": "fead93358476eadb6eba4572607536154e0e03357a59f92a0fd7b6d15420f7fa"
+      "sha256": "4f3ce7d06edaf6722314f8b9e613ff2fae6c87f9d82a3be77ff430ea988cad1a"
     },
     {
       "file": "../synkbrief_회의메모_20260921/video-v12/README.md",

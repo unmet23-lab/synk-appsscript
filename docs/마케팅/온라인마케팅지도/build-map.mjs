@@ -52,6 +52,9 @@ const confirmedYouTubeCount = expansion.filter(([,row]) => row.platform === 'you
 const confirmedSocialCount = expansion.length - confirmedYouTubeCount;
 const unconfirmedExpansionCount = proposal.channels.length - expansion.length;
 const socialById = new Map(social.channels.map(row => [row.id,row]));
+// 09-20 국제 SNS 원장 뒤에 개설된 계정(예: 인도네시아 TikTok 10-19)은 레지스트리의 개설 확인 기록을 근거로 센다.
+const ledgerCreated = new Set(social.channels.filter(row => row.created).map(row => row.id));
+const laterSocialIds = new Set(expansion.filter(([id,row]) => row.platform !== 'youtube' && !ledgerCreated.has(id)).map(([id]) => id));
 const youtubeById = new Map([...youtube.channels,...jpVnYoutube.channels,
   ...brMxYoutube.map(row => ({id:row.id,url:row.publicUrl,verifiedAt:row.verifiedAt,publicVerified:String(row.status).startsWith('complete')}))].map(row => [row.id,row]));
 const brMxObserved = new Map(brMx.channels.filter(row => row.platform !== 'youtube').map(row => [row.id,row]));
@@ -92,6 +95,8 @@ const newSlots = proposal.channels.map(slot => {
   const youtubeConfirmed = confirmed && slot.platform === 'YouTube';
   const youtubeUnpublished = youtubeConfirmed && youtubeRecord?.publicVerified === false;
   const rednote = slot.id === 'lab-cn-xiaohongshu';
+  const laterSocial = laterSocialIds.has(slot.id);
+  const avatarPending = laterSocial && account.publicProfileComplete === false && /avatar-not-uploaded/.test(account.profileStatus || '');
   const [unconfirmedStatus,unconfirmedAction] = statusText[observed?.status] || ['개설·생성 미확인','가입·운영 조건과 실제 계정 확인'];
   const sourcePaths = ['docs/마케팅/온라인마케팅지도/account-setup-proposal.json',
     ...(youtubeConfirmed ? ['docs/마케팅/sns-계정.json',brMxSlot ? brMxRecordPath : slot.id === 'lab-jp-youtube' || slot.id === 'lab-vn-youtube' ? 'docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json' : 'docs/마케팅/온라인마케팅지도/intl-youtube/publication.json'] : []),
@@ -101,17 +106,17 @@ const newSlots = proposal.channels.map(slot => {
     handle:account?.handle || (rednote ? `rednote ID ${account.platformDisplayId}` : null),
     publicUrl:account?.publicUrl || youtubeRecord?.url || null,loginAlias:account?.loginAlias || null,
     accountStatus:confirmed ? 'confirmed-expansion' : 'planned',channelScope:confirmed ? '확장 확보' : '확장 미확인',
-    setupStatus:confirmed ? (rednote ? '본인 계정 확인 · LAB 프로필 미완' : youtubeUnpublished ? '채널 생성 확인 · 프로필 미게시' : '계정·프로필 확인') : unconfirmedStatus,
-    profileStatus:confirmed ? (rednote ? 'LAB 소개·사진 미반영' : youtubeUnpublished ? '프로필 게시·공개 미확인' : youtubeConfirmed ? '소개·사진 공개 확인' : '소개·사진 확인 기록') : '계정 미확인',
+    setupStatus:confirmed ? (rednote ? '본인 계정 확인 · LAB 프로필 미완' : youtubeUnpublished ? '채널 생성 확인 · 프로필 미게시' : avatarPending ? '계정 생성 확인 · 프로필 사진 미반영' : '계정·프로필 확인') : unconfirmedStatus,
+    profileStatus:confirmed ? (rednote ? 'LAB 소개·사진 미반영' : youtubeUnpublished ? '프로필 게시·공개 미확인' : youtubeConfirmed ? '소개·사진 공개 확인' : avatarPending ? '이름·소개 공개 확인 · 사진 미반영' : '소개·사진 확인 기록') : '계정 미확인',
     coverStatus:confirmed ? (youtubeUnpublished ? '커버 미확인' : youtubeConfirmed ? '커버 공개 확인' : rednote ? '시안 준비 · 미반영' : '커버 미확인·미반영') : '계정 미확인',
     avatarStatus:account?.avatarStatus || null,profileStatusCode:account?.profileStatus || observed?.status || null,
     priority:'우선 플랫폼',publishStatus:confirmed ? '새 학습 콘텐츠 게시 미확인' : '계정 미확인',publicationEvidence:null,sharedLabel:'',
     channelRole:'현지 한국어 학습 콘텐츠',
-    nextAction:confirmed ? (rednote ? '앱 편집 화면에서 LAB 이름·소개·사진 반영 확인' : youtubeUnpublished ? 'YouTube Studio에서 프로필 게시 후 공개 화면 확인' : youtubeConfirmed ? '원어민 감수와 학습 영상 준비; 게시 시 재확인' : '커버·링크 등 남은 프로필 작업과 학습 콘텐츠 준비') : unconfirmedAction,
-    lastEvidenceAt:account?.avatarVerifiedAt || account?.publicUrlVerifiedAt || youtubeRecord?.verifiedAt || (youtubeConfirmed && jpVnYoutube.verifiedAt) || (confirmed ? registry.updatedAt : observed?.lastAccessAttemptAt || null),
+    nextAction:confirmed ? (rednote ? '앱 편집 화면에서 LAB 이름·소개·사진 반영 확인' : youtubeUnpublished ? 'YouTube Studio에서 프로필 게시 후 공개 화면 확인' : avatarPending ? '프로필 사진을 올린 뒤 공개 화면 확인 · 학습 영상 준비' : youtubeConfirmed ? '원어민 감수와 학습 영상 준비; 게시 시 재확인' : '커버·링크 등 남은 프로필 작업과 학습 콘텐츠 준비') : unconfirmedAction,
+    lastEvidenceAt:(laterSocial && (account.publicBioVerifiedAt || account.loginVerifiedAt)) || account?.avatarVerifiedAt || account?.publicUrlVerifiedAt || youtubeRecord?.verifiedAt || (youtubeConfirmed && jpVnYoutube.verifiedAt) || (confirmed ? registry.updatedAt : observed?.lastAccessAttemptAt || null),
     sourceLabel:sourcePaths.join('\n'),sourcePaths,
     verificationScope:rednote ? '로그인된 본인 프로필 확인 · 비로그인 공개 확인 아님' : youtubeUnpublished ? '생성 기록 · 공개 프로필 미확인' : youtubeConfirmed ? '공개 프로필 확인 기록' : confirmed ? '계정별 점검 기록' : '개설 미확인',
-    observedGate:observed?.status || null,
+    observedGate:laterSocial ? null : observed?.status || null,
     youtubeProfileVerified:Boolean(youtubeRecord && (youtubeRecord.publicVerified || youtubeRecord.publicReloadVerified))
   };
 });
@@ -199,7 +204,7 @@ const assert=(condition,message)=>{if(!condition)throw new Error(message);};
 assert(operating.length===23,'운영 대상 23개 대조 실패');
 assert(countries.length===production.planCounts.countries && newSlots.length===production.planCounts.newChannelSlotsPlanned && newSlots.length===countries.length*2-2,'국가/확장 자리 수 오류');
 assert(proposalIds.size===newSlots.length && expansion.every(([id])=>proposalIds.has(id)),'확장 확보 원장과 제안 자리 불일치');
-assert(social.counts.created+social.counts.notCreated===28 && social.channels.length===28 && confirmedSocialCount===social.counts.created,'국제 SNS 원장 집계 불일치');
+assert(social.counts.created+social.counts.notCreated===28 && social.channels.length===28 && ledgerCreated.size===social.counts.created && confirmedSocialCount===social.counts.created+laterSocialIds.size && [...laterSocialIds].every(id=>registry.accounts[id].creationVerified===true),'국제 SNS 원장 집계 불일치');
 assert(newSlots.filter(row=>row.accountStatus==='confirmed-expansion').length===expansion.length && newSlots.filter(row=>row.accountStatus==='planned').length===unconfirmedExpansionCount,'확장 확보·미확인 집계 불일치');
 assert(channels.filter(row=>row.country==='몽골').length===5,'몽골 기존 5개 보존 실패');
 assert(new Set(channels.map(row=>row.id)).size===channels.length,'채널 ID 중복');
