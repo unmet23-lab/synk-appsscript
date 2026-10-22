@@ -13,6 +13,10 @@
  * 키 값은 출력·기록하지 않는다. 키 목록·상태·사용 기록은 저장소 밖 `~/SYNK_보안/`에 둔다.
  *   클로드_키목록.json  {"키":[{"이름":"유호","키파일":"클로드_API.txt","갱신일":17}]}
  *                       키파일은 목록 파일 기준 상대 경로, 갱신일은 결제일(1~31, 모르면 null)
+ *                       한 번만 들어온 크레딧(프로모션)이나 카드가 붙은 조직의 키에는 선택 칸을 더 둔다:
+ *                       한도USD(그 키로 쓸 추정 비용 합의 상한) · 한도시작(합을 셀 때부터, ISO 날짜) ·
+ *                       만료일(YYYY-MM-DD — 그날까지 쓰고 다음 날 0시부터 뺀다). 한도는 이 도구의 사용 기록으로 세므로,
+ *                       한도를 건 키는 기록이 남는 보내기·일괄에만 쓰고 키 값을 다른 프로그램에 넘기는 키고르기에는 내주지 않는다.
  *   클로드_키상태.json  소진·키오류 표시(이 도구가 씀)
  *   클로드_사용기록.jsonl  호출마다 키 이름·모델·토큰·추정 비용(이 도구가 씀)
  *
@@ -93,8 +97,23 @@ function 목록읽기(목록경로) {
     if (typeof 항목.키파일 !== 'string' || !항목.키파일) throw new Error(`${항목.이름}: 키파일이 없다`);
     const 갱신일 = 항목.갱신일 ?? null;
     if (갱신일 !== null && !(Number.isInteger(갱신일) && 갱신일 >= 1 && 갱신일 <= 31)) throw new Error(`${항목.이름}: 갱신일은 1~31 또는 null`);
-    return { 순번: i, 이름: 항목.이름, 키파일: path.resolve(path.dirname(목록경로), 항목.키파일), 갱신일 };
+    const 한도USD = 항목.한도USD ?? null;
+    if (한도USD !== null && !(typeof 한도USD === 'number' && Number.isFinite(한도USD) && 한도USD > 0)) throw new Error(`${항목.이름}: 한도USD는 0보다 큰 수 또는 null`);
+    const 한도시작 = 항목.한도시작 == null ? null : new Date(항목.한도시작);
+    if (한도시작 !== null && Number.isNaN(+한도시작)) throw new Error(`${항목.이름}: 한도시작은 날짜(ISO) 또는 null`);
+    return { 순번: i, 이름: 항목.이름, 키파일: path.resolve(path.dirname(목록경로), 항목.키파일), 갱신일,
+      한도USD, 한도시작, 만료일: 항목.만료일 ?? null, 만료: 만료시각(항목) };
   });
+}
+
+// 만료일(YYYY-MM-DD)은 그날 하루까지 쓰고, 다음 날 0시(이 PC 시간대)부터 뺀다.
+function 만료시각(항목) {
+  const 만료일 = 항목.만료일 ?? null;
+  if (만료일 === null) return null;
+  const 맞음 = typeof 만료일 === 'string' && /^(\d{4})-(\d{2})-(\d{2})$/.exec(만료일);
+  const 날 = 맞음 && new Date(+맞음[1], +맞음[2] - 1, +맞음[3]);
+  if (!날 || 날.getMonth() !== +맞음[2] - 1 || 날.getDate() !== +맞음[3]) throw new Error(`${항목.이름}: 만료일은 YYYY-MM-DD 또는 null`);
+  return new Date(날.getFullYear(), 날.getMonth(), 날.getDate() + 1);
 }
 
 // 기준 시각 뒤에 오는 첫 갱신일 0시(이 PC 시간대). 짧은 달은 말일로 당긴다.
@@ -120,20 +139,128 @@ function 키값(키) {
   return /^sk-ant-\S+$/.test(값) ? 값 : null;
 }
 
-// 쓸 수 있는 키를 곧 사라질 크레딧부터. 갱신일 모르는 키는 뒤로, 같으면 목록 순서.
-function 순서(키들, 상태, 지금) {
-  const 쓸수있음 = 키들.filter((키) => {
-    const 표시 = 상태[키.이름];
-    if (!표시) return true;
-    if (표시.상태 === '키오류') return false;
-    return 표시.풀림 && new Date(표시.풀림) <= 지금;
-  });
-  const 무한 = 8.64e15;
-  return 쓸수있음.sort((a, b) => {
-    const da = 다음갱신(a.갱신일, 지금), db = 다음갱신(b.갱신일, 지금);
-    return ((da ? +da : 무한) - (db ? +db : 무한)) || (a.순번 - b.순번);
-  });
+// 줄바꿈으로 끝나지 않은 마지막 조각(남이 아직 쓰는 중)과 깨진 줄(쓰다 죽은 실행)은 건너뛴다. 예약은 보내기 전에 쓰므로, 건너뛴 줄이
+// 끝·취소·결과 줄이면 그 예약이 어림으로 남아 넉넉히 세지고, 예약 줄이면 그 요청은 보내지 않았다 — 돈을 덜 세는 쪽으로는 틀리지 않는다.
+// 셈에 쓰는 칸의 꼴이 어긋난 줄(글 칸에 글이 아닌 값, 금액·개수 칸에 0 이상의 수가 아닌 값)도 깨진 줄로 본다.
+const 글칸 = ['시각', '키이름', '단계', '예약', '배치'], 수칸 = ['어림USD', '추정USD', '결과수', '요청수'];
+const 온전한줄 = (r) => r !== null && typeof r === 'object' && !Array.isArray(r)
+  && 글칸.every((k) => r[k] == null || typeof r[k] === 'string')
+  && 수칸.every((k) => r[k] == null || (typeof r[k] === 'number' && Number.isFinite(r[k]) && r[k] >= 0));
+function 기록읽기(기록경로) {
+  let 글;
+  try { 글 = fs.readFileSync(기록경로, 'utf8'); }
+  catch (e) { if (e.code === 'ENOENT') return []; throw e; }
+  const 줄들 = 글.split('\n');
+  줄들.pop();
+  return 줄들.flatMap((줄) => { try { const r = 줄.trim() ? JSON.parse(줄) : null; return 온전한줄(r) ? [r] : []; } catch { return []; } });
 }
+
+/*
+ * 한도를 건 키의 누적 = 한도시작 뒤 그 키의 사용 기록 합. 줄마다 이렇게 센다.
+ *   예약 줄(단계: '예약')        보내기 전에 남긴 위 어림. 같은 예약 번호의 끝·취소 줄이 오면 세지 않는다 —
+ *                                응답을 못 받은 요청(청구됐을 수 있다)은 끝 줄이 없어 어림이 그대로 남는다.
+ *   일괄을 만든 줄(배치, 결과수 없음)  결과를 받기 전까지 만들 때 적은 위 어림(어림USD).
+ *   일괄 결과 줄(배치, 결과수)   일괄마다 마지막 한 줄만(결과를 두 번 받아도 한 번).
+ *   그 밖의 줄                   추정USD.
+ */
+function 누적USD(키, 기록) {
+  const 내것 = 기록.filter((r) => r.키이름 === 키.이름 && (!키.한도시작 || new Date(r.시각) >= 키.한도시작));
+  const 끝난예약 = new Set(내것.filter((r) => r.예약 && r.단계 !== '예약').map((r) => r.예약));
+  const 수 = (v) => (Number.isFinite(Number(v)) && v !== null ? Number(v) : null);
+  const 만든 = new Map(), 결과 = new Map();
+  for (const r of 내것) {
+    if (!r.배치) continue;
+    if (r.결과수 == null) { 만든.set(r.배치, { 어림: 수(r.어림USD) ?? 0, 요청수: Number(r.요청수) || 0 }); continue; }
+    // 같은 일괄을 여러 번 받았으면 가장 큰 값 하나만(뒤에 받은 빈 결과·일부 결과가 앞서 센 비용을 지우지 않게).
+    const 앞 = 결과.get(r.배치);
+    결과.set(r.배치, { 추정: Math.max(앞?.추정 ?? 0, 수(r.추정USD) ?? 0), 결과수: Math.max(앞?.결과수 ?? 0, Number(r.결과수) || 0),
+      모름: Boolean(앞?.모름 || r.추정모름) });
+  }
+  let 합 = 0;
+  for (const r of 내것) {
+    if (r.단계 === '예약') { if (!끝난예약.has(r.예약)) 합 += 수(r.어림USD) ?? 0; continue; }
+    if (r.배치) continue;
+    // 비용을 모르는 응답(usage 없음)은 0이 아니라 보내기 전 위 어림으로 센다.
+    합 += 수(r.추정USD) ?? 수(r.어림USD) ?? 0;
+  }
+  for (const [배치, m] of 만든) {
+    const r = 결과.get(배치);
+    // 결과를 받으면 실제 추정으로 바꾸되, 비용을 모르는 결과가 섞였거나 결과 수가 요청 수보다 적으면 만든 때의 어림보다 작게 세지 않는다.
+    합 += !r ? m.어림 : (r.모름 || r.결과수 < m.요청수) ? Math.max(r.추정, m.어림) : r.추정;
+  }
+  for (const [배치, r] of 결과) if (!만든.has(배치)) 합 += r.추정;
+  return 합;
+}
+
+// 보내기 전의 위 어림. 토큰은 1바이트 이상이므로 요청 JSON의 UTF-8 바이트 수를 입력 토큰의 위 한계로 삼고(도구 정의가 있으면
+// API가 덧붙이는 지시 몫 1,000토큰을 더한다), 캐시 쓰기 할증(1시간 2배·5분 1.25배)을 모두 쓰기로 보고, 출력은 max_tokens까지다.
+// 단가를 모르는 모델, max_tokens가 수가 아닌 요청, 바이트로 가늠할 수 없는 요청 — 그림·문서(base64라도 해상도·쪽으로 매겨진다)·
+// 서버 도구(검색·코드 실행 결과가 다시 입력이 된다)·MCP·컨테이너 — 은 Infinity라 한도 키로 보내지 않는다.
+function 요청어림USD(params) {
+  const 표 = 단가[params?.model];
+  const 출력 = params?.max_tokens;
+  if (!표 || typeof 출력 !== 'number' || !Number.isFinite(출력) || 출력 < 0) return Infinity;
+  const 글 = JSON.stringify(params);
+  if (/"type"\s*:\s*"(url|file|image|document|base64)"/.test(글) || params.mcp_servers != null || params.container != null
+    || (Array.isArray(params.tools) && params.tools.some((도구) => 도구?.type != null && 도구.type !== 'custom'))) return Infinity;
+  const 배수 = /"ttl"\s*:\s*"1h"/.test(글) ? 2 : /"cache_control"/.test(글) ? 1.25 : 1;
+  const 입력 = Buffer.byteLength(글, 'utf8') * 배수 + (Array.isArray(params.tools) && params.tools.length ? 1000 : 0);
+  return (입력 * 표[0] + 출력 * 표[1]) / 1e6;
+}
+
+// 이 키를 지금 쓰지 않는 까닭(쓸 수 있으면 null). 바깥: 키 값을 다른 프로그램에 넘기는 쓰임. 어림USD: 이번에 쓸 위 어림.
+function 뺄까닭(키, 상태, 지금, 기록 = [], { 바깥 = false, 어림USD = 0 } = {}) {
+  const 표시 = 상태[키.이름];
+  if (표시?.상태 === '키오류') return '키오류';
+  if (표시 && !(표시.풀림 && new Date(표시.풀림) <= 지금)) return '소진';
+  if (키.만료 && 지금 >= 키.만료) return '만료';
+  if (키.한도USD != null) {
+    if (바깥) return '한도키(다른 프로그램에는 안 넘김)';
+    const 쓴양 = 누적USD(키, 기록);
+    if (!(쓴양 < 키.한도USD && 쓴양 + 어림USD <= 키.한도USD)) return '한도';
+  }
+  return null;
+}
+
+/*
+ * 한도 키로 보내기 직전의 예약 — 잠금 없이 「먼저 쓰고 앞만 본다」.
+ *   1) 만료·소진 표시와 어림만으로 한도를 넘는지 먼저 본다(이때는 아무것도 쓰지 않는다).
+ *   2) 예약 줄을 덧붙인다. 줄 하나를 한 번에 덧붙이면(Node의 'a' 열기) 여러 프로세스가 함께 써도 파일 끝에 줄이 하나씩
+ *      차례로 쌓이고 서로 섞이지 않는다 — 시험(프로세스 넷이 수백 줄씩 함께 덧붙이기)이 이 PC에서 확인한다.
+ *   3) 기록을 다시 읽어 「내 예약 줄 앞에 쌓인 줄들만」으로 누적을 세고, 거기에 내 어림을 더해 한도를 본다.
+ *      내 줄이 내가 쓴 글 그대로 보이지 않거나(남의 조각이 끼었다) 넘으면 취소 줄을 남기고 null.
+ * 그래서 동시에 덧붙인 둘 가운데 뒤에 쌓인 쪽이 앞의 예약을 보고 물러선다. 받아들인 예약마다 「앞의 누적 + 제 어림 ≤ 한도」가
+ * 성립하고, 받아들인 마지막 예약의 앞에는 받아들인 다른 예약이 모두 들어 있으므로 받아들인 예약의 합은 한도를 넘지 않는다.
+ * 앞의 예약이 아직 끝나지 않았거나 그 끝 줄이 내 줄 뒤에 쌓였으면 어림으로 넉넉히 센다. 물러선 예약이 취소 줄을 쓰기 전에
+ * 남이 읽으면 그 예약도 세어 같이 물러설 수 있다 — 돈이 나가는 쪽이 아니라 덜 쓰는 쪽으로만 틀린다.
+ */
+function 예약하기(키, 어림, { 기록경로, 상태, 시각, 용도, model }) {
+  const 지금 = 시각();
+  if (뺄까닭(키, 상태, 지금, [], { 어림USD: 어림 })) return null;
+  const 예약 = `${지금.getTime().toString(36)}-${process.pid}-${Math.random().toString(36).slice(2, 10)}`;
+  fs.mkdirSync(path.dirname(기록경로), { recursive: true });
+  const 내줄 = JSON.stringify({ 시각: 지금.toISOString(), 키이름: 키.이름, 용도: 용도 ?? null, model, 단계: '예약', 예약, 어림USD: 어림 });
+  fs.appendFileSync(기록경로, 내줄 + '\n');
+  const 기록 = 기록읽기(기록경로);
+  const 내자리 = 기록.findIndex((r) => r.단계 === '예약' && r.예약 === 예약 && JSON.stringify(r) === 내줄);
+  const 앞 = 내자리 < 0 ? Infinity : 누적USD(키, 기록.slice(0, 내자리));
+  if (앞 < 키.한도USD && 앞 + 어림 <= 키.한도USD) return 예약;
+  예약취소(키, 예약, { 기록경로, 지금 });
+  return null;
+}
+
+function 예약취소(키, 예약, { 기록경로, 지금 }) {
+  fs.appendFileSync(기록경로, JSON.stringify({ 시각: 지금.toISOString(), 키이름: 키.이름, 단계: '취소', 예약, 추정USD: 0 }) + '\n');
+}
+
+// 쓸 수 있는 키를 곧 사라질 크레딧부터(다음 갱신일과 만료 가운데 이른 쪽). 둘 다 모르는 키는 뒤로, 같으면 목록 순서.
+function 순서(키들, 상태, 지금, 기록 = [], 옵션 = {}) {
+  const 무한 = 8.64e15;
+  const 끝 = (키) => Math.min(다음갱신(키.갱신일, 지금)?.getTime() ?? 무한, 키.만료?.getTime() ?? 무한);
+  return 키들.filter((키) => !뺄까닭(키, 상태, 지금, 기록, 옵션)).sort((a, b) => (끝(a) - 끝(b)) || (a.순번 - b.순번));
+}
+
+const 한도키있음 = (키들) => 키들.some((키) => 키.한도USD != null);
 
 function 가리기(글, 키들값) {
   let s = String(글 ?? '');
@@ -178,10 +305,17 @@ async function 보내기(본문, 옵션 = {}) {
   const 상태 = JSON읽기(상태경로, {});
   const 건너뛴키 = [];
   const 본문글 = JSON.stringify(본문);
+  const 기록 = 한도키있음(키들) ? 기록읽기(기록경로) : [];
+  const 어림 = 요청어림USD(본문);
 
-  for (const 키 of 순서(키들, 상태, 지금)) {
+  for (const 키 of 순서(키들, 상태, 지금, 기록, { 어림USD: 어림 })) {
     const 값 = 키값(키);
     if (!값) { 건너뛴키.push({ 이름: 키.이름, 이유: '키파일없음' }); continue; }
+    // 앞 키의 응답을 기다리는 사이 날이 바뀌었을 수 있다 — 보내기 직전 만료를 다시 본다.
+    if (키.만료 && (옵션.지금 || new Date()) >= 키.만료) { 건너뛴키.push({ 이름: 키.이름, 이유: '만료' }); continue; }
+    // 한도 키는 예약 줄을 먼저 덧붙이고 앞의 줄만으로 다시 확인한다 — 동시에 도는 다른 요청과 응답을 못 받은 요청까지 한도에 든다.
+    const 예약 = 키.한도USD != null ? 예약하기(키, 어림, { 기록경로, 상태, 시각: () => 옵션.지금 || new Date(), 용도: 옵션.용도, model: 본문.model }) : null;
+    if (키.한도USD != null && !예약) { 건너뛴키.push({ 이름: 키.이름, 이유: '한도' }); continue; }
     let 응답, body, 글;
     try {
       응답 = await 보낼것(주소, {
@@ -196,6 +330,7 @@ async function 보내기(본문, 옵션 = {}) {
     try { body = JSON.parse(글); } catch { body = null; }
 
     if (크레딧부족(응답.status, body) || 응답.status === 401) {
+      if (예약) 예약취소(키, 예약, { 기록경로, 지금 });
       const 키오류 = 응답.status === 401;
       const 다음 = 다음갱신(키.갱신일, 지금);
       상태[키.이름] = 키오류
@@ -207,10 +342,14 @@ async function 보내기(본문, 옵션 = {}) {
     }
 
     const usage = body?.usage ?? null;
+    // 처리 전에 거절된 것이 분명한 4xx(시간 초과 408 제외)에 usage가 없으면 청구가 없다 — 0으로 적어 예약을 끝낸다.
+    // 그 밖에 usage가 없으면(5xx 등) 추정을 비워 두고, 한도 키는 누적에서 보내기 전 위 어림으로 센다.
+    const 거절됨 = !응답.ok && 응답.status >= 400 && 응답.status < 500 && 응답.status !== 408;
+    const 추정 = 추정USD(본문.model, usage) ?? (거절됨 && !usage ? 0 : null);
     fs.mkdirSync(path.dirname(기록경로), { recursive: true });
     fs.appendFileSync(기록경로, JSON.stringify({
       시각: 지금.toISOString(), 키이름: 키.이름, 용도: 옵션.용도 ?? null, model: 본문.model,
-      http: 응답.status, usage, 추정USD: 추정USD(본문.model, usage),
+      http: 응답.status, usage, 추정USD: 추정, ...(예약 ? { 예약, 어림USD: 어림 } : {}),
     }) + '\n');
 
     if (!응답.ok) {
@@ -219,7 +358,14 @@ async function 보내기(본문, 옵션 = {}) {
     }
     return { 응답: body, 키이름: 키.이름, http: 응답.status, 건너뛴키 };
   }
-  throw 오류('클로드키_모두소진', `쓸 수 있는 키가 없다 — ${건너뛴키.map((k) => `${k.이름}:${k.이유}`).join(', ') || (키들.length ? '모두 소진 표시 중' : '목록에 키 없음')}. --상태로 확인`, { 건너뛴키 });
+  const 뺀키 = 뺀키들(키들, 건너뛴키, 상태, 지금, 기록, { 어림USD: 어림 });
+  throw 오류('클로드키_모두소진', `쓸 수 있는 키가 없다 — ${[...건너뛴키, ...뺀키].map((k) => `${k.이름}:${k.이유}`).join(', ') || (키들.length ? '모두 소진 표시 중' : '목록에 키 없음')}. --상태로 확인`, { 건너뛴키, 뺀키 });
+}
+
+// 시도하기 전에 순서에서 빠진 키와 그 까닭(만료·한도·소진 표시 등) — 「쓸 키가 없다」 오류에 함께 싣는다.
+function 뺀키들(키들, 건너뛴키, 상태, 지금, 기록, 옵션) {
+  return 키들.filter((키) => !건너뛴키.some((k) => k.이름 === 키.이름))
+    .map((키) => ({ 이름: 키.이름, 이유: 뺄까닭(키, 상태, 지금, 기록, 옵션) })).filter((k) => k.이유);
 }
 
 function 상태보기(옵션 = {}) {
@@ -227,23 +373,26 @@ function 상태보기(옵션 = {}) {
   const 지금 = 옵션.지금 || new Date();
   const 키들 = 목록읽기(목록경로);
   const 상태 = JSON읽기(상태경로, {});
-  let 기록 = [];
-  try { 기록 = fs.readFileSync(기록경로, 'utf8').split('\n').filter(Boolean).map((줄) => JSON.parse(줄)); }
-  catch (e) { if (e.code !== 'ENOENT') throw e; }
-  const 순번 = new Map(순서(키들, 상태, 지금).map((키, i) => [키.이름, i + 1]));
+  const 기록 = 기록읽기(기록경로);
+  const 순번 = new Map(순서(키들, 상태, 지금, 기록).map((키, i) => [키.이름, i + 1]));
   return 키들.map((키) => {
     const 표시 = 상태[키.이름];
     const 시작 = 이전갱신(키.갱신일, 지금);
     const 이번 = 기록.filter((r) => r.키이름 === 키.이름 && (!시작 || new Date(r.시각) >= 시작));
+    const 까닭 = 뺄까닭(키, 상태, 지금, 기록);
     return {
       이름: 키.이름,
       키파일: 키값(키) ? '있음' : '없음/형식다름',
       갱신일: 키.갱신일,
       다음갱신: 다음갱신(키.갱신일, 지금)?.toISOString().slice(0, 10) ?? null,
-      상태: !표시 ? '사용가능' : 표시.상태 === '키오류' ? '키오류' : new Date(표시.풀림) <= 지금 ? '사용가능(재확인)' : `소진~${표시.풀림.slice(0, 10)}`,
+      상태: 키.만료 && 지금 >= 키.만료 ? '만료' : 까닭 === '한도' ? '한도도달'
+        : !표시 ? '사용가능' : 표시.상태 === '키오류' ? '키오류' : new Date(표시.풀림) <= 지금 ? '사용가능(재확인)' : `소진~${표시.풀림.slice(0, 10)}`,
       쓰는순서: 순번.get(키.이름) ?? null,
       이번주기호출: 이번.length,
       이번주기추정USD: Number(이번.reduce((s, r) => s + (r.추정USD ?? 0), 0).toFixed(6)),
+      한도USD: 키.한도USD,
+      한도쓴양USD: 키.한도USD != null ? Number(누적USD(키, 기록).toFixed(4)) : null,
+      만료일: 키.만료일,
     };
   });
 }
@@ -262,6 +411,8 @@ function 풀기(이름, 옵션 = {}) {
  * 곧 사라질 크레딧부터 1토큰 확인 요청(Haiku 5.5 · 1센트의 만분의 일 수준)을 보내 200이면 그 키다.
  * 크레딧 부족·401은 보내기()와 같은 표시를 남기고 다음 키로, 그 밖의 실패(429·5xx·연결)는 표시 없이 다음 키로 간다.
  * 돌려주는 `값`은 부른 프로세스 안에서만 쓴다(출력·기록 금지). 고를 키가 없으면 { 이름: null, 건너뛴키 }.
+ * 한도를 건 키는 내주지 않는다 — 다른 프로그램이 쓴 양은 이 도구가 미리 세지 못한다. 이 파일의 일괄처럼 쓴 양을
+ * 기록에 남기는 쪽만 옵션 기록되는쓰임: true와 이번 위 어림(어림USD)을 넘겨 한도 안에서 받는다.
  */
 async function 키고르기(옵션 = {}) {
   const { 목록경로, 상태경로, 기록경로 } = 경로들(옵션);
@@ -270,15 +421,21 @@ async function 키고르기(옵션 = {}) {
   const 키들 = 목록읽기(목록경로);
   const 상태 = JSON읽기(상태경로, {});
   const 건너뛴키 = [];
-  for (const 키 of 순서(키들, 상태, 지금)) {
+  const 기록 = 한도키있음(키들) ? 기록읽기(기록경로) : [];
+  // 확인 요청도 그 키로 돈이 나가므로 한도 판정에 그 위 어림을 더한다. 빼고: 부르는 쪽이 이미 해 본 키 이름들.
+  const 판정어림 = (옵션.어림USD ?? 0) + (옵션.한도키는확인없이 ? 0 : 요청어림USD(확인본문));
+  const 빼고 = new Set(옵션.빼고 || []);
+  for (const 키 of 순서(키들, 상태, 지금, 기록, { 바깥: !옵션.기록되는쓰임, 어림USD: 판정어림 }).filter((k) => !빼고.has(k.이름))) {
     const 값 = 키값(키);
     if (!값) { 건너뛴키.push({ 이름: 키.이름, 이유: '키파일없음' }); continue; }
+    // 일괄은 한도 키에 확인 요청을 보내지 않는다 — 예약 없이 나가는 돈이 생기지 않게, 크레딧 확인은 일괄 만들기가 맡는다.
+    if (옵션.한도키는확인없이 && 키.한도USD != null) return { 이름: 키.이름, 값, 건너뛴키 };
     let 응답, body = null;
     try {
       응답 = await 보낼것(주소, {
         method: 'POST', redirect: 'error', signal: AbortSignal.timeout(옵션.시간제한 || 30000),
         headers: { 'content-type': 'application/json', 'anthropic-version': 버전, 'x-api-key': 값 },
-        body: JSON.stringify({ model: 'claude-haiku-5-5', max_tokens: 1, messages: [{ role: 'user', content: '.' }] }),
+        body: JSON.stringify(확인본문),
       });
       try { body = JSON.parse(await 응답.text()); } catch { body = null; }
     } catch (e) {
@@ -298,8 +455,10 @@ async function 키고르기(옵션 = {}) {
     }
     건너뛴키.push({ 이름: 키.이름, 이유: `HTTP ${응답.status}` });
   }
-  return { 이름: null, 값: null, 건너뛴키 };
+  return { 이름: null, 값: null, 건너뛴키,
+    뺀키: 뺀키들(키들, 건너뛴키, 상태, 지금, 기록, { 바깥: !옵션.기록되는쓰임, 어림USD: 판정어림 }) };
 }
+const 확인본문 = Object.freeze({ model: 'claude-haiku-5-5', max_tokens: 1, messages: [{ role: 'user', content: '.' }] });
 
 function 표시하기(키, 종류, { 상태경로, 지금, 상태 = JSON읽기(상태경로, {}) }) {
   const 다음 = 다음갱신(키.갱신일, 지금);
@@ -355,25 +514,55 @@ async function 배치보내기(요청들, 옵션 = {}) {
     아이디.add(r.custom_id);
   }
   const { 기록경로 } = 경로들(옵션);
-  const 고른 = await 키고르기(옵션);
-  if (!고른.이름) throw 오류('클로드키_모두소진', `쓸 수 있는 키가 없다 — ${고른.건너뛴키.map((k) => `${k.이름}:${k.이유}`).join(', ') || '목록에 키 없음'}`, { 건너뛴키: 고른.건너뛴키 });
+  // 일괄은 결과를 받을 때에야 비용을 안다 — 그때까지 한도에는 반값으로 잡은 위 어림을 센다.
+  const 어림 = 요청들.reduce((합, r) => 합 + 요청어림USD(r.params), 0) / 2;
+  // 한도 키는 확인 요청 없이 고르고, 일괄을 만들기 직전 시각을 새로 읽어 예약 줄을 덧붙인 뒤 앞의 줄만으로 다시 확인한다(만든 줄이
+  // 그 예약을 끝낸다 — 응답을 못 받으면 예약이 남아 한도에 든다). 그사이 다른 요청이 한도를 먼저 썼거나 만료됐거나, 일괄 만들기가
+  // 크레딧 부족·401로 거절되면 그 키를 빼고 다음 키를 다시 고른다.
+  const 시각 = () => 옵션.지금 || new Date();
+  const 해본키 = [], 밀린키 = [], 건너뛴것 = [];
   const 보낼것 = 옵션.fetch || globalThis.fetch;
-  let 응답, 글;
-  try {
-    응답 = await 보낼것(배치주소, { method: 'POST', redirect: 'error', signal: AbortSignal.timeout(옵션.시간제한 || 120000),
-      headers: { 'content-type': 'application/json', 'anthropic-version': 버전, 'x-api-key': 고른.값 }, body: JSON.stringify({ requests: 요청들 }) });
-    글 = await 응답.text();
-  } catch (e) {
-    throw 오류('클로드키_결과모름', `${고른.이름}: 일괄을 만들었는지 모른다(목록 조회로 확인) — ${가리기(e.message, [고른.값])}`, { 키이름: 고른.이름, 청구모름: true });
-  }
-  let body = null; try { body = JSON.parse(글); } catch { /* 아래에서 실패로 */ }
-  if (!응답.ok || !body?.id) {
+  let 고른, 키, 예약, 지금, 응답, 글, body;
+  for (;;) {
+    고른 = await 키고르기({ ...옵션, 기록되는쓰임: true, 어림USD: 어림, 빼고: 해본키, 한도키는확인없이: true });
+    건너뛴것.push(...고른.건너뛴키);
+    if (!고른.이름) {
+      // 같은 키를 두 번 적지 않는다(이 고리에서 밀린 키 > 확인에서 건너뛴 키 > 처음부터 뺀 키).
+      const 본 = new Set(), 까닭들 = [...밀린키, ...건너뛴것, ...(고른.뺀키 || [])].filter((k) => !본.has(k.이름) && 본.add(k.이름));
+      const 뺀 = 까닭들.filter((k) => !건너뛴것.includes(k));
+      throw 오류('클로드키_모두소진', `쓸 수 있는 키가 없다 — ${까닭들.map((k) => `${k.이름}:${k.이유}`).join(', ') || '목록에 키 없음'}`, { 건너뛴키: 건너뛴것, 뺀키: 뺀 });
+    }
+    키 = 목록읽기(경로들(옵션).목록경로).find((k) => k.이름 === 고른.이름);
+    예약 = null;
+    if (키?.만료 && 시각() >= 키.만료) { 해본키.push(고른.이름); 밀린키.push({ 이름: 고른.이름, 이유: '만료' }); continue; }
+    if (키?.한도USD != null) {
+      예약 = 예약하기(키, 어림, { 기록경로, 상태: JSON읽기(경로들(옵션).상태경로, {}), 시각, 용도: 옵션.용도, model: 요청들[0].params.model });
+      if (!예약) { 해본키.push(고른.이름); 밀린키.push({ 이름: 고른.이름, 이유: '한도' }); continue; }
+    }
+    try {
+      응답 = await 보낼것(배치주소, { method: 'POST', redirect: 'error', signal: AbortSignal.timeout(옵션.시간제한 || 120000),
+        headers: { 'content-type': 'application/json', 'anthropic-version': 버전, 'x-api-key': 고른.값 }, body: JSON.stringify({ requests: 요청들 }) });
+      글 = await 응답.text();
+    } catch (e) {
+      throw 오류('클로드키_결과모름', `${고른.이름}: 일괄을 만들었는지 모른다(목록 조회로 확인) — ${가리기(e.message, [고른.값])}`, { 키이름: 고른.이름, 청구모름: true });
+    }
+    지금 = 시각();
+    body = null; try { body = JSON.parse(글); } catch { /* 아래에서 실패로 */ }
+    if (응답.ok && body?.id) break;
+    // 처리 전에 거절된 것이 분명한 4xx(시간 초과 408 제외)만 예약을 푼다. 5xx·잘린 본문은 만들어졌을 수 있어 예약을 남긴다.
+    if (예약 && 응답.status >= 400 && 응답.status < 500 && 응답.status !== 408) 예약취소(키, 예약, { 기록경로, 지금 });
+    if (크레딧부족(응답.status, body) || 응답.status === 401) {
+      표시하기(키, 응답.status === 401 ? '키오류' : '소진', { 상태경로: 경로들(옵션).상태경로, 지금 });
+      해본키.push(고른.이름); 밀린키.push({ 이름: 고른.이름, 이유: 응답.status === 401 ? '키오류' : '크레딧소진' });
+      continue;
+    }
     throw 오류('클로드키_요청실패', `${고른.이름}: 일괄 만들기 HTTP ${응답.status} ${가리기(body?.error?.message ?? 글.slice(0, 300), [고른.값])}`, { 키이름: 고른.이름, http: 응답.status });
   }
   fs.mkdirSync(path.dirname(기록경로), { recursive: true });
-  fs.appendFileSync(기록경로, JSON.stringify({ 시각: (옵션.지금 || new Date()).toISOString(), 키이름: 고른.이름, 용도: 옵션.용도 ?? null,
-    model: 요청들[0].params.model, 배치: body.id, 요청수: 요청들.length, http: 응답.status, usage: null, 추정USD: 0 }) + '\n');
-  return { 배치id: body.id, 키이름: 고른.이름, 상태: body.processing_status, 건너뛴키: 고른.건너뛴키 };
+  fs.appendFileSync(기록경로, JSON.stringify({ 시각: 지금.toISOString(), 키이름: 고른.이름, 용도: 옵션.용도 ?? null,
+    model: 요청들[0].params.model, 배치: body.id, 요청수: 요청들.length, http: 응답.status, usage: null, 추정USD: 0,
+    ...(Number.isFinite(어림) ? { 어림USD: 어림 } : {}), ...(예약 ? { 예약 } : {}) }) + '\n');
+  return { 배치id: body.id, 키이름: 고른.이름, 상태: body.processing_status, 건너뛴키: [...건너뛴것, ...밀린키] };
 }
 
 async function 배치가져오기(주소, 값, 옵션) {
@@ -403,9 +592,10 @@ async function 배치결과(배치id, 키이름, 옵션 = {}) {
   const 결과 = 글.split('\n').filter((줄) => 줄.trim()).map((줄) => JSON.parse(줄));
   const 합 = { input_tokens: 0, output_tokens: 0, cache_creation_input_tokens: 0, cache_read_input_tokens: 0,
     cache_creation: { ephemeral_5m_input_tokens: 0, ephemeral_1h_input_tokens: 0 } };
-  let 추정 = 0, 모델 = null, 성공 = 0;
+  let 추정 = 0, 모델 = null, 성공 = 0, 모름 = false;
   for (const r of 결과) {
     const m = r.result?.type === 'succeeded' ? r.result.message : null;
+    if (m && !m.usage) 모름 = true;
     if (!m?.usage) continue;
     성공 += 1; 모델 = 모델 || m.model;
     const u = m.usage;
@@ -414,20 +604,22 @@ async function 배치결과(배치id, 키이름, 옵션 = {}) {
     const 쓰기1h = Number(쓰기.ephemeral_1h_input_tokens) || 0;
     합.cache_creation.ephemeral_1h_input_tokens += 쓰기1h;
     합.cache_creation.ephemeral_5m_input_tokens += Number.isFinite(쓰기.ephemeral_5m_input_tokens) ? 쓰기.ephemeral_5m_input_tokens : Math.max(0, (Number(u.cache_creation_input_tokens) || 0) - 쓰기1h);
-    추정 += 추정USD(m.model, u, { 배치: true }) ?? 0;
+    const 값 = 추정USD(m.model, u, { 배치: true });
+    if (값 === null) 모름 = true; else 추정 += 값;
   }
   const 합계 = { 요청: 결과.length, 성공, usage: 합, 추정USD: Number(추정.toFixed(6)) };
   if (!옵션.기록안함) {
     const { 기록경로 } = 경로들(옵션);
     fs.mkdirSync(path.dirname(기록경로), { recursive: true });
+    // 기록에는 반올림하지 않은 값을 남긴다 — 내려 적으면 한도 셈이 쓴 것보다 작아진다(합계의 6자리는 보기용).
     fs.appendFileSync(기록경로, JSON.stringify({ 시각: (옵션.지금 || new Date()).toISOString(), 키이름, 용도: 옵션.용도 ?? null,
-      model: 모델, 배치: 배치id, 결과수: 결과.length, 성공, http: 200, usage: 합, 추정USD: 합계.추정USD }) + '\n');
+      model: 모델, 배치: 배치id, 결과수: 결과.length, 성공, http: 200, usage: 합, 추정USD: 추정, ...(모름 ? { 추정모름: true } : {}) }) + '\n');
   }
   return { 결과, 합계 };
 }
 
 module.exports = { 보내기, 상태보기, 풀기, 키고르기, 키읽기, 소진표시, 기록남기기, 다음갱신, 순서, 크레딧부족, 추정USD, 단가,
-  배치보내기, 배치보기, 배치결과 };
+  배치보내기, 배치보기, 배치결과, 누적USD, 요청어림USD };
 
 if (require.main === module) {
   const argv = process.argv.slice(2);
