@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2027~2028년 광역형 비자 사업 사회통합·지역정착 지원 협력 제안 — SYNK PATH</title>
+<!--
+  원고: 전북도 광역형 비자 정착 과제 협력 제안서(PDF 판).
+  내용의 정본은 같은 폴더의 전북_광역형비자_정착과제_제안_초안.md 2절이다. 고칠 때는 두 곳을 함께 고치고
+  node docs/PATH_정착관리/제안/굽기.cjs 로 다시 굽는다(가변 SUIT를 얹어 PDF를 뽑는다). [ ] 안은 보내기 전에 채울 자리표다.
+-->
+<style>
+@font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
+
+/*@FONTS@*/
+
+@page { size: A4 portrait; margin: 17mm 17mm 18mm;
+  @bottom-center {
+    content: counter(page) " / " var(--synk-total-pages, "?");
+    font-family:'Inter Tight',system-ui,sans-serif; font-size:2.9mm; font-weight:500;
+    letter-spacing:.06em; color:#666666; margin-top:6mm;
+  }
+}
+:root{
+  --paper:#FFFFFF; --ink:#262626; --ink-2:#373737; --ash:#666666;
+  --coral:#F96859; --coral-3:#AE322A; --coral-wash:#FEF0E9;
+  --hair:rgba(55,55,55,.22); --hair-2:rgba(55,55,55,.12);
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+html,body{
+  background:var(--paper); color:var(--ink);
+  font-family:'SYNK Bracket','Inter Tight','SUIT Variable','SUIT',system-ui,'Malgun Gothic','맑은 고딕',sans-serif;
+  font-weight:400; font-size:3.55mm; line-height:1.62; word-break:keep-all;
+  -webkit-print-color-adjust:exact; print-color-adjust:exact;
+}
+.sheet{ width:auto; padding:0; margin:0; }
+
+/* 머리 */
+.head{ display:flex; justify-content:space-between; align-items:flex-end; padding-bottom:3.2mm; border-bottom:.35mm solid var(--ink); }
+.head .logo svg{ height:9.5mm; width:auto; display:block; }
+.head .meta{ text-align:right; font-size:2.9mm; color:var(--ash); line-height:1.5; }
+.head .meta b{ color:var(--ink); font-weight:600; }
+
+/* 제목 */
+.title{ margin-top:7mm; }
+.title .kicker{ font-size:3.1mm; font-weight:600; color:var(--coral-3); letter-spacing:.02em; }
+.title h1{ font-size:6.6mm; font-weight:800; line-height:1.32; margin-top:1.6mm; letter-spacing:-.01em; }
+.title .sub{ font-size:4.1mm; font-weight:600; color:var(--ink-2); margin-top:2.2mm; }
+.title .rule{ width:22mm; height:.7mm; background:var(--coral); margin-top:4.2mm; }
+
+.to{ margin-top:5mm; display:grid; grid-template-columns:24mm 1fr; row-gap:1.2mm; font-size:3.25mm; }
+.to dt{ color:var(--ash); font-weight:500; }
+.to dd{ color:var(--ink); }
+
+/* 절 */
+h2{ font-size:4.6mm; font-weight:800; margin-top:8.5mm; margin-bottom:2.6mm; break-after:avoid-page; page-break-after:avoid; }
+h2 .n{ color:var(--coral-3); font-family:'Inter Tight','SUIT',sans-serif; font-weight:700; margin-right:2mm; }
+p, li{ orphans:2; widows:2; }
+ul.dots{ list-style:none; }
+ul.dots > li{ position:relative; padding-left:4.2mm; margin-top:1.6mm; }
+ul.dots > li::before{ content:''; position:absolute; left:.6mm; top:2.25mm; width:1.3mm; height:1.3mm; border-radius:50%; background:var(--coral); }
+ul.sub{ list-style:none; margin-top:.8mm; }
+ul.sub > li{ position:relative; padding-left:4mm; margin-top:.6mm; color:var(--ink-2); }
+ul.sub > li::before{ content:''; position:absolute; left:.8mm; top:2.4mm; width:1.6mm; height:.3mm; background:var(--ash); }
+b, strong{ font-weight:700; }
+
+/* 표 */
+table{ width:100%; border-collapse:collapse; font-size:3.2mm; line-height:1.55; margin-top:1mm; }
+thead th{ text-align:left; font-weight:700; color:var(--ink); padding:2mm 2.2mm; border-top:.35mm solid var(--ink); border-bottom:.25mm solid var(--hair); background:transparent; }
+tbody td{ padding:2.2mm 2.2mm; vertical-align:top; border-bottom:.2mm solid var(--hair); }
+tbody tr{ break-inside:avoid; page-break-inside:avoid; }
+tbody td:first-child{ color:var(--ink-2); }
+table.prog td:nth-child(1){ width:31%; }
+table.prog td:nth-child(2){ width:47%; }
+table.prog td:nth-child(3){ width:22%; color:var(--ash); }
+table.plan td:first-child, table.when td:first-child{ width:24%; font-weight:600; color:var(--ink); }
+td .pt{ font-weight:700; color:var(--ink); }
+
+.hold{ background:var(--coral-wash); border-bottom:.25mm dotted var(--coral-3); padding:0 .6mm; }
+.note{ margin-top:2.6mm; font-size:3mm; color:var(--ash); }
+.foot{ margin-top:9mm; padding-top:3mm; border-top:.2mm solid var(--hair); font-size:2.9mm; color:var(--ash); }
+
+@media screen{ body{ background:#EAEAEA; padding:8mm; } .sheet{ background:var(--paper); max-width:210mm; margin:0 auto; padding:17mm; box-shadow:0 3mm 12mm rgba(8,9,12,.18); } }
+</style>
+<!--@PAGED@-->
+</head>
+<body>
+<main class="sheet">
+
+<header class="head">
+  <div class="logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="-14 -8 181 128" role="img" aria-label="SYNK">
+<defs>
+  <path id="sl-syn" d="M35.8 57.9 25.9 58.5Q25.5 56.6 23.8 55.3Q22.1 53.9 19.3 53.9Q16.7 53.9 15.0 55.0Q13.3 56.0 13.3 57.8Q13.3 59.2 14.4 60.2Q15.5 61.2 18.2 61.8L25.4 63.2Q31.1 64.3 33.9 66.9Q36.7 69.5 36.7 73.8Q36.7 77.7 34.5 80.6Q32.2 83.5 28.3 85.1Q24.4 86.8 19.3 86.8Q11.5 86.8 6.8 83.5Q2.2 80.2 1.4 74.6L12.1 74.1Q12.6 76.5 14.5 77.7Q16.3 78.9 19.3 78.9Q22.1 78.9 23.9 77.8Q25.7 76.7 25.7 75.0Q25.7 72.0 20.6 71.0L13.8 69.6Q8.1 68.5 5.3 65.6Q2.5 62.8 2.5 58.4Q2.5 54.6 4.5 51.9Q6.6 49.2 10.4 47.7Q14.1 46.2 19.1 46.2Q26.6 46.2 30.8 49.3Q35.1 52.5 35.8 57.9Z M44.0 100.7Q41.9 100.7 40.1 100.4Q38.3 100.1 37.1 99.6L39.6 91.5L39.9 91.6Q42.7 92.4 44.6 91.9Q46.6 91.5 47.6 88.8L48.2 87.1L34.1 46.7H45.6L53.7 75.6H54.1L62.3 46.7H73.8L58.6 90.3Q57.5 93.4 55.6 95.8Q53.7 98.1 50.9 99.4Q48.0 100.7 44.0 100.7Z M84.0 63.3V86.0H73.1V46.7H83.8V53.7H84.2Q85.5 50.2 88.4 48.2Q91.4 46.2 95.7 46.2Q99.8 46.2 102.9 48.0Q105.9 49.8 107.6 53.1Q109.3 56.4 109.3 61.0V86.0H98.4V62.9Q98.4 59.4 96.6 57.3Q94.7 55.2 91.4 55.2Q89.2 55.2 87.6 56.2Q85.9 57.2 84.9 59.0Q84.0 60.8 84.0 63.3Z"/><path id="sl-k" d="M117.3046875 86.0V33.6171875H126.55078125V62.48046875H127.21875L141.31640625 46.6953125H152.14453125L136.91339111328125 63.68389129638672L153.0234375 86.0H141.94921875L129.9180908203125 69.20931243896484L126.55078125 72.82667541503906V86.0Z"/><path id="sl-chev" d="M146 46.7 L112 66.35 L146 86 L166 86 L132 66.35 L166 46.7 Z"/>
+  <filter id="sl-felt-paper" x="-18%" y="-22%" width="136%" height="144%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.16" numOctaves="3" seed="7" result="w"/>
+    <feDisplacementMap in="SourceGraphic" in2="w" scale="2.2" result="shape"/>
+    <feTurbulence type="fractalNoise" baseFrequency="1.15 0.5" numOctaves="2" seed="13" result="n1"/>
+    <feColorMatrix in="n1" type="matrix" values="0 0 0 0 0.9843  0 0 0 0 0.9686  0 0 0 0 0.9412  0 0 0 0.8 -0.46" result="lf"/>
+    <feComposite in="lf" in2="shape" operator="in" result="lfc"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.8 0.45" numOctaves="3" seed="29" result="n2"/>
+    <feColorMatrix in="n2" type="matrix" values="0 0 0 0 0.7804  0 0 0 0 0.7490  0 0 0 0 0.6980  0 0 0 0.8 -0.37" result="df"/>
+    <feComposite in="df" in2="shape" operator="in" result="dfc"/>
+    <feMerge><feMergeNode in="shape"/><feMergeNode in="dfc"/><feMergeNode in="lfc"/></feMerge>
+  </filter>
+  <filter id="sl-felt-ink" x="-18%" y="-22%" width="136%" height="144%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.16" numOctaves="3" seed="7" result="w"/>
+    <feDisplacementMap in="SourceGraphic" in2="w" scale="2.2" result="shape"/>
+    <feTurbulence type="fractalNoise" baseFrequency="1.15 0.5" numOctaves="2" seed="13" result="n1"/>
+    <feColorMatrix in="n1" type="matrix" values="0 0 0 0 0.3412  0 0 0 0 0.3137  0 0 0 0 0.2745  0 0 0 0.8 -0.46" result="lf"/>
+    <feComposite in="lf" in2="shape" operator="in" result="lfc"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.8 0.45" numOctaves="3" seed="29" result="n2"/>
+    <feColorMatrix in="n2" type="matrix" values="0 0 0 0 0.0314  0 0 0 0 0.0235  0 0 0 0 0.0196  0 0 0 0.8 -0.37" result="df"/>
+    <feComposite in="df" in2="shape" operator="in" result="dfc"/>
+    <feMerge><feMergeNode in="shape"/><feMergeNode in="dfc"/><feMergeNode in="lfc"/></feMerge>
+  </filter>
+  <filter id="sl-felt-coral" x="-18%" y="-22%" width="136%" height="144%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.16" numOctaves="3" seed="7" result="w"/>
+    <feDisplacementMap in="SourceGraphic" in2="w" scale="2.2" result="shape"/>
+    <feTurbulence type="fractalNoise" baseFrequency="1.15 0.5" numOctaves="2" seed="13" result="n1"/>
+    <feColorMatrix in="n1" type="matrix" values="0 0 0 0 0.9843  0 0 0 0 0.7176  0 0 0 0 0.6392  0 0 0 0.8 -0.46" result="lf"/>
+    <feComposite in="lf" in2="shape" operator="in" result="lfc"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.8 0.45" numOctaves="3" seed="29" result="n2"/>
+    <feColorMatrix in="n2" type="matrix" values="0 0 0 0 0.6824  0 0 0 0 0.1961  0 0 0 0 0.1647  0 0 0 0.8 -0.37" result="df"/>
+    <feComposite in="df" in2="shape" operator="in" result="dfc"/>
+    <feMerge><feMergeNode in="shape"/><feMergeNode in="dfc"/><feMergeNode in="lfc"/></feMerge>
+  </filter>
+  <filter id="sl-felt-butter" x="-18%" y="-22%" width="136%" height="144%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.16" numOctaves="3" seed="7" result="w"/>
+    <feDisplacementMap in="SourceGraphic" in2="w" scale="2.2" result="shape"/>
+    <feTurbulence type="fractalNoise" baseFrequency="1.15 0.5" numOctaves="2" seed="13" result="n1"/>
+    <feColorMatrix in="n1" type="matrix" values="0 0 0 0 1.0000  0 0 0 0 0.9216  0 0 0 0 0.6902  0 0 0 0.8 -0.46" result="lf"/>
+    <feComposite in="lf" in2="shape" operator="in" result="lfc"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.8 0.45" numOctaves="3" seed="29" result="n2"/>
+    <feColorMatrix in="n2" type="matrix" values="0 0 0 0 0.4941  0 0 0 0 0.3529  0 0 0 0 0.0627  0 0 0 0.8 -0.37" result="df"/>
+    <feComposite in="df" in2="shape" operator="in" result="dfc"/>
+    <feMerge><feMergeNode in="shape"/><feMergeNode in="dfc"/><feMergeNode in="lfc"/></feMerge>
+  </filter>
+  <filter id="sl-felt-meadow" x="-18%" y="-22%" width="136%" height="144%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.16" numOctaves="3" seed="7" result="w"/>
+    <feDisplacementMap in="SourceGraphic" in2="w" scale="2.2" result="shape"/>
+    <feTurbulence type="fractalNoise" baseFrequency="1.15 0.5" numOctaves="2" seed="13" result="n1"/>
+    <feColorMatrix in="n1" type="matrix" values="0 0 0 0 0.8275  0 0 0 0 0.9098  0 0 0 0 0.7451  0 0 0 0.8 -0.46" result="lf"/>
+    <feComposite in="lf" in2="shape" operator="in" result="lfc"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.8 0.45" numOctaves="3" seed="29" result="n2"/>
+    <feColorMatrix in="n2" type="matrix" values="0 0 0 0 0.2471  0 0 0 0 0.4196  0 0 0 0 0.1804  0 0 0 0.8 -0.37" result="df"/>
+    <feComposite in="df" in2="shape" operator="in" result="dfc"/>
+    <feMerge><feMergeNode in="shape"/><feMergeNode in="dfc"/><feMergeNode in="lfc"/></feMerge>
+  </filter>
+  <filter id="sl-felt-pop" x="-18%" y="-22%" width="136%" height="144%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.16" numOctaves="3" seed="7" result="w"/>
+    <feDisplacementMap in="SourceGraphic" in2="w" scale="2.2" result="shape"/>
+    <feTurbulence type="fractalNoise" baseFrequency="1.15 0.5" numOctaves="2" seed="13" result="n1"/>
+    <feColorMatrix in="n1" type="matrix" values="0 0 0 0 0.9725  0 0 0 0 0.7804  0 0 0 0 0.8706  0 0 0 0.8 -0.46" result="lf"/>
+    <feComposite in="lf" in2="shape" operator="in" result="lfc"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.8 0.45" numOctaves="3" seed="29" result="n2"/>
+    <feColorMatrix in="n2" type="matrix" values="0 0 0 0 0.6000  0 0 0 0 0.1608  0 0 0 0 0.3647  0 0 0 0.8 -0.37" result="df"/>
+    <feComposite in="df" in2="shape" operator="in" result="dfc"/>
+    <feMerge><feMergeNode in="shape"/><feMergeNode in="dfc"/><feMergeNode in="lfc"/></feMerge>
+  </filter>
+  <filter id="sl-cut" x="-14%" y="-18%" width="128%" height="136%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.16" numOctaves="3" seed="7" result="w"/>
+    <feDisplacementMap in="SourceGraphic" in2="w" scale="2.2"/>
+  </filter>
+  <filter id="sl-soft" x="-14%" y="-18%" width="128%" height="136%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.2" numOctaves="2" seed="5" result="w"/>
+    <feDisplacementMap in="SourceGraphic" in2="w" scale="1.2"/>
+  </filter>
+  <filter id="sl-fuzz1" x="-20%" y="-25%" width="140%" height="150%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.55 0.75" numOctaves="2" seed="11" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="6.5"/><feGaussianBlur stdDeviation="0.35"/>
+  </filter>
+  <filter id="sl-fuzz2" x="-24%" y="-30%" width="148%" height="160%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.28 0.4" numOctaves="2" seed="23" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="11"/><feGaussianBlur stdDeviation="0.5"/>
+  </filter>
+  <filter id="sl-contact" x="-20%" y="-25%" width="140%" height="150%"><feGaussianBlur stdDeviation="1.2"/></filter>
+  <linearGradient id="sl-core" x1="0" y1="1" x2="0" y2="0">
+    <stop offset="0" stop-color="#C7BFB2" stop-opacity="0.32"/>
+    <stop offset="0.5" stop-color="#C7BFB2" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="sl-cushion-hi" cx="50%" cy="26%" r="68%">
+    <stop offset="0" stop-color="#FBF7F0" stop-opacity="0.20"/>
+    <stop offset="0.55" stop-color="#FBF7F0" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="sl-cushion-lo" cx="50%" cy="88%" r="72%">
+    <stop offset="0" stop-color="#941F19" stop-opacity="0.30"/>
+    <stop offset="0.6" stop-color="#941F19" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+  <g>
+    <use href="#sl-syn" fill="#080605" opacity="0.5" transform="translate(0.8,1.6)" filter="url(#sl-contact)"/>
+    <use href="#sl-syn" fill="#2B2320" opacity="0.13" filter="url(#sl-fuzz2)"/>
+    <use href="#sl-syn" fill="#2B2320" opacity="0.28" filter="url(#sl-fuzz1)"/>
+    <g filter="url(#sl-cut)"><use href="#sl-syn" fill="#080605" transform="translate(0.4,2.0)"/></g>
+    <g filter="url(#sl-cut)"><use href="#sl-syn" fill="#080605" opacity="0.55" transform="translate(0,1.2)"/></g>
+    <g filter="url(#sl-felt-ink)"><use href="#sl-syn" fill="#2B2320"/></g>
+    <use href="#sl-k" fill="#080605" opacity="0.5" transform="translate(0.8,1.6)" filter="url(#sl-contact)"/>
+    <use href="#sl-k" fill="#2B2320" opacity="0.13" filter="url(#sl-fuzz2)"/>
+    <use href="#sl-k" fill="#2B2320" opacity="0.28" filter="url(#sl-fuzz1)"/>
+    <g filter="url(#sl-cut)"><use href="#sl-k" fill="#080605" transform="translate(0.4,2.0)"/></g>
+    <g filter="url(#sl-cut)"><use href="#sl-k" fill="#080605" opacity="0.55" transform="translate(0,1.2)"/></g>
+    <g filter="url(#sl-felt-ink)"><use href="#sl-k" fill="#2B2320"/></g></g>
+</svg></div>
+  <div class="meta"><b>SYNK PATH</b><br>협력 제안 · 2026년 10월</div>
+</header>
+
+<section class="title">
+  <div class="kicker">「2027~2028년 광역형 비자 사업」 사회통합·지역정착 지원</div>
+  <h1>첫날부터 정착까지 — 광역형 비자 외국인과 가족의 정착 동행 시범</h1>
+  <div class="sub">협력 제안서</div>
+  <div class="rule"></div>
+</section>
+
+<dl class="to">
+  <dt>받는 곳</dt><dd>전북특별자치도 외국인국제정책과(참조: 교육협력과)</dd>
+  <dt>제안 기관</dt><dd>SYNK PATH · 대표 <span class="hold">[이름]</span> · 전북 전주 · <span class="hold">[전화·메일]</span></dd>
+  <dt>근거</dt><dd>법무부 공고 제2026-335호 「2027~2028년 광역형 비자 사업 공모」</dd>
+</dl>
+
+<h2><span class="n">1</span>제안 요지</h2>
+<ul class="dots">
+  <li><b>공고의 요구</b> — 광역지자체는 「광역형 비자 외국인과 가족의 사회통합·지역정착을 위한 추진과제」를 마련하고, 법무부는 성과평가 때 그 이행현황을 점검합니다. 선정 심사 100점 가운데 「사회통합·지역정착 지원」이 20점입니다.</li>
+  <li><b>제안</b> — 법무부 예산 지원이 없는 사업이라(공고 「비예산」), 첫 시범은 저희가 비용을 부담하는 방식을 제안합니다. 광역형 비자 외국인과 가족을 한 사람씩 따라가는 「정착 동행」입니다. 입국하거나 체류자격을 바꾼 첫날부터 지역에 자리 잡을 때까지 함께합니다.</li>
+  <li><b>전북의 맥락</b> — 전북은 2023년 법무부와 「외국인·이민정책 테스트베드」 협약을 맺었습니다. 그 취지에 맞게, 정착 지원도 작게 시험하고 결과를 숫자로 남기려 합니다.</li>
+</ul>
+
+<h2><span class="n">2</span>공고의 정착 과제와 제안 프로그램</h2>
+<table class="prog">
+  <thead><tr><th>공고문의 정착 과제 예시와 관련 요건</th><th>제안 프로그램</th><th>함께할 곳</th></tr></thead>
+  <tbody>
+    <tr><td>초기 생활정보 제공과 교육</td><td><span class="pt">첫 72시간·30일 정착 동행</span> — 쉬운 한국어로 생활 규칙·법·노동권 오리엔테이션(시간제취업 규칙, 「택배만 받아 주면 큰돈」처럼 범죄로 끌어들이는 아르바이트 주의 포함). 외국인등록·계좌·건강보험 같은 할 일과 기한을 알리고, 30일 안에 끝났는지 확인합니다</td><td>대학 국제처, 시·군 외국인주민센터</td></tr>
+    <tr><td>한국어교육 등 사회통합프로그램 참여 지원</td><td><span class="pt">한국어·사회통합 동행</span> — 온라인 TOPIK 준비(SYNK WORLD), 사회통합프로그램 등록 안내와 도내 운영기관 연결, 단계 진도 기록</td><td>도내 사회통합프로그램 운영기관</td></tr>
+    <tr><td>지역기업 취업 연계(본인+배우자)</td><td><span class="pt">취업 준비</span> — 이력서 점검과 면접 연습(지금은 요양보호사 직무 면접 — 광역형 비자 산업·직종용 면접은 시범 중에 만듭니다), 도·대학의 인턴십·현장실습 프로그램 안내와 참여 동행. 직접 알선은 하지 않고 도·대학의 취업 지원을 돕습니다</td><td>도, 대학, 지역기업</td></tr>
+    <tr><td>주거 지원</td><td><span class="pt">첫 숙소와 임대차 안내</span> — 계약 내용을 쉽게 설명하고 숙소 상태를 함께 확인합니다. 가능한 곳은 제휴 숙소로 연결합니다</td><td>도·시군 주거 지원 사업</td></tr>
+    <tr><td>자녀의 보육·지역 공교육 진학 지원, 동반가족 정착(E-7을 설계하면 공고상 반드시 포함)</td><td><span class="pt">가족 정착 안내</span> — 보육·학교 진학 절차 안내와 기관 연결, 배우자의 한국어·취업 준비 안내</td><td>교육지원청, 가족센터</td></tr>
+    <tr><td>지역정착·사회통합을 위한 특화 프로그램 운영</td><td><span class="pt">함께하는 자리</span> — 유학생과 지역 주민이 한 팀으로 섞여 뛰는 운동(풋살 등)과 문화 모임을 한 달에 두 번 엽니다. 모임 뒤 함께 식사하며 먼저 자리 잡은 선배 유학생(또래 리더 — 가능하면 같은 나라 출신)이 생활 고민을 듣고, 필요하면 상담으로 잇습니다. 마음 기댈 곳을 만드는 자리입니다</td><td>대학, 시·군 체육·문화 시설, 지역 주민</td></tr>
+    <tr><td>(선발·전환) E-7 해외 거주자는 입국 전 교육·한국어 사전검증을 갖춰야 하고, D-2 해외 거주자는 일반 D-2로 입학해 1~2학기 뒤 전환</td><td><span class="pt">선발·전환 준비</span> — 입국 전 온라인 생활·법 교육과 한국어 단계 확인, D-2 전환 요건(TOPIK 2·3급 등) 준비. 몽골 울란바토르 교실(2027년 9월 개원 목표)에서 대면 과정도 열 계획입니다</td><td>도의 선발·추천 절차</td></tr>
+    <tr><td>법무부 성과평가의 이행현황 점검</td><td><span class="pt">분기 정착 지표</span> — 첫 30일 필수 행정 완료율, 상담 첫 응답 시간, 사회통합프로그램 등록, 중도 이탈 신호, 지역 정주 의향(개인을 알아볼 수 없는 집계)</td><td>도(성과평가 자료)</td></tr>
+  </tbody>
+</table>
+
+<h2><span class="n">3</span>프로그램이 지키는 원칙</h2>
+<ul class="dots">
+  <li><b>비용</b> — 외국인 본인은 핵심 지원에 비용을 내지 않습니다.</li>
+  <li><b>동의와 정보</b>
+    <ul class="sub">
+      <li>참여는 본인 동의로만 합니다.</li>
+      <li>받는 정보는 이름·연락처·체류자격·학교(학과)·필수 행정 진행 상황까지이고, 외국인등록번호는 받지 않습니다.</li>
+      <li>기록은 한국 서버에 둡니다. 시범 기간(2027년 3~8월)에는 해외로 보내지 않고, 몽골어 원격 상담을 시작할 때는 본인 동의를 받은 뒤 열람만 합니다.</li>
+      <li>도·대학에는 개인을 알아볼 수 없는 집계만 드립니다.</li>
+      <li>시범이 끝나면 본인 요청이 있을 때 또는 1년 뒤에 지웁니다.</li>
+      <li>상담 내용(건강·가족·고민)은 단속 자료로 쓰지 않습니다.</li>
+    </ul>
+  </li>
+  <li><b>법정 신고</b> — 대학·고용주의 법정 신고는 그 기관이 합니다. 저희는 기한을 놓치지 않게 알리되, 신고 전에 본인에게 먼저 연락합니다. 연락이 끊긴 까닭이 임금체불·괴롭힘·안전이면 권리 구제(고용노동부 신고, 외국인종합안내센터 1345)를 먼저 안내합니다.</li>
+  <li><b>하지 않는 일</b> — 서류 작성·제출은 등록 행정사가 하고, 저희는 취업 알선을 하지 않습니다.</li>
+  <li><b>기존 체계와의 관계</b> — 도내 원광대 중심 유학생 통합지원체계, 익산시·원광대 「다이로움 외국인재 정주취업 지원체계」, 전북국제협력진흥원, 시·군 외국인주민센터, 대학 국제처와 겹치지 않게 비어 있는 부분을 보탭니다. 첫 30일 동행, 상담 창구, 정착 지표입니다. 원광대 중심 체계의 운영 파트너로 들어가는 방식도 좋습니다.</li>
+  <li><b>공개</b> — 운영 실적과 비용은 공개합니다.</li>
+</ul>
+
+<h2><span class="n">4</span>시범 계획(2027년 상반기)</h2>
+<table class="plan">
+  <tbody>
+    <tr><td>대상</td><td>전북 소재 대학의 광역형 비자 유학생과 전환 예정자(2025~2026 시범으로 입학한 학생, 일반 D-2로 입학해 광역형 전환을 준비하는 학생 포함) 가운데 참여에 동의한 30~50명. 대학·학과 단위로 협의합니다</td></tr>
+    <tr><td>기간</td><td>2027년 3월 ~ 8월(1학기), 9월에 결과 보고</td></tr>
+    <tr><td>인력</td><td>한국 전담 매니저 1명(한국에서 자리 잡은 유학 졸업생 — 한국어·몽골어)</td></tr>
+    <tr><td>앱</td><td>할 일·기한 알림과 AI 다국어 1차 응답(2027년 2월 공개 목표). 위험 신호는 사람이 확인합니다</td></tr>
+    <tr><td>상담 언어</td><td>광역형 비자 외국인은 한국어 기준(TOPIK 2·3급 등)을 갖추고 있어 쉬운 한국어로 사람이 응답하고, 몽골어는 모국어로 응답합니다. 그 밖의 언어는 AI 다국어 1차 응답으로 돕습니다. 2027년 9월 몽골 교실 개원 뒤 몽골어 원격 상담을, 2028년 하반기에 베트남어 매니저를 더할 계획입니다</td></tr>
+    <tr><td>비용</td><td>시범 비용은 SYNK가 스스로 부담하며, 도·대학·참여 외국인에게 어떤 비용도 청구하지 않습니다. 운영 실적을 만들어 결과를 숫자로 보이려는 것이고, 2028년 이후 도와의 계약은 도의 정식 절차(공모·입찰 등)를 따릅니다</td></tr>
+    <tr><td>결과</td><td>분기 정착 지표와 1학기 결과 보고서. 법무부는 2027년 상반기에 성과지표를 마련하고 2028년 하반기에 평가합니다. 시범의 실측 지표는 도가 성과지표에 의견을 낼 때 쓸 수 있습니다</td></tr>
+  </tbody>
+</table>
+
+<h2><span class="n">5</span>일정</h2>
+<table class="when">
+  <tbody>
+    <tr><td>2026년 10월 말 ~ 11월 첫 주</td><td>실무 협의, 필요하시면 정착 과제 참고 자료(프로그램 설명·지표 예시) 제공</td></tr>
+    <tr><td>2026년 11월 10일</td><td>도의 공모 신청 마감</td></tr>
+    <tr><td>2026년 12월</td><td>선정 결과 발표</td></tr>
+    <tr><td>2027년 1 ~ 2월</td><td>대학·기관 협의, 오리엔테이션 자료와 앱 준비</td></tr>
+    <tr><td>2027년 3 ~ 8월</td><td>시범 운영</td></tr>
+    <tr><td>2027년 9월</td><td>결과 보고, 2028년 운영 협의</td></tr>
+  </tbody>
+</table>
+
+<h2><span class="n">6</span>제안 기관 — SYNK PATH</h2>
+<ul class="dots">
+  <li><b>누구인가</b> — SYNK는 사람마다 맞춘 도움을 주는 개인화 기술을 만드는 창업팀입니다. PATH는 그 가운데 한국 유학부터 취업까지 준비를 돕는 사업입니다.</li>
+  <li><b>대표자·소재지·연락처</b> — <span class="hold">[이름]</span> · 전북 전주 · <span class="hold">[전화·메일]</span></li>
+  <li><b>사업자</b> — 지금은 사업자 등록 전이며, 한국 법인 설립을 준비하고 있습니다(2027년 초 목표).</li>
+  <li><b>운영 중</b> — 한국어 학습 앱 SYNK WORLD(synk.im/world — TOPIK 진단·쓰기 연습·학습 알림), 실사 면접 연습실(synk.im/path — 요양보호사 직무 면접, 음성 답변)</li>
+  <li><b>준비 중</b> — 정착 동행 앱(2027년 2월 공개 목표), 몽골 울란바토르 한국어 교실(2027년 9월 개원 목표)</li>
+  <li><b>아직 없는 것</b> — 정착 동행 운영 실적은 아직 없습니다. 그래서 첫 시범은 저희가 비용을 부담하고, 결과를 숫자로 보고드리려 합니다.</li>
+</ul>
+
+<div class="foot">SYNK PATH · 전북 전주 · synk.im — 이 제안서는 협력 의사를 밝히는 것으로, 구체적인 사항은 사업 선정 뒤 협의로 정합니다.</div>
+
+</main>
+</body>
+</html>
