@@ -46,7 +46,7 @@ export function websiteInquiryClassificationView(classification){
 const sourceHref=id=>'/?tab=workroom&section=tools&tool=inquiries&inquiryId='+encodeURIComponent(id);
 const taskHref=(room,id)=>'/?tab=messenger&panel=tasks&channelId='+encodeURIComponent(room)+'&messageId='+encodeURIComponent(id);
 
-export function createWebsiteInquiryService({store,reader,tasks,origin='',clock=()=>new Date().toISOString(),onChange=()=>{}}={}){
+export function createWebsiteInquiryService({store,reader,tasks,origin='',clock=()=>new Date().toISOString(),onChange=()=>{},walRetryMs=[5000,30000,120000,600000,1800000,3600000]}={}){
   if(!store||!reader||!tasks||['options','create','find','get','remove'].some(key=>typeof tasks[key]!=='function'))throw new TypeError('store, reader and synchronous task adapter are required');
   const sourceOrigin=origin?new URL(origin).origin:'';
   const confirmKey=createHmac('sha256',store.key).update('website-inquiry-erase-confirm\0v1').digest();
@@ -61,6 +61,22 @@ export function createWebsiteInquiryService({store,reader,tasks,origin='',clock=
   const config=()=>store.get('settings',CONFIG)||{enabled:false,actorId:null,intervalMinutes:5,revision:0};
   const state=()=>store.get('settings',STATE)||{status:'not-connected',lastSuccessAt:null,nextCheckAt:null};
   function synchronous(value){if(value&&typeof value.then==='function')throw new TypeError('Task adapter must be synchronous');return value;}
+  // Inquiry rows hold customer text. Every write of one zeroes the cells and pages it frees (secure_delete), so an
+  // older payload or draft never waits in free pages for a later erase. Synchronous, so no other write runs in between.
+  function secure(fn){const before=store.db.prepare('PRAGMA secure_delete').get().secure_delete;store.db.exec('PRAGMA secure_delete=ON');
+    try{return fn();}finally{store.db.exec('PRAGMA secure_delete='+(['OFF','ON','FAST'][before]||'OFF'));}}
+  const putRow=(id,row)=>secure(()=>store.put(ROWS,id,row));
+  // Older frames of a rewritten or erased row wait in the -wal file until it is reset. Truncate it without waiting for a
+  // reader (a backup, a read-only check); while one is open, try again later. Returns whether the file is empty now.
+  let walTimer=null,walTries=0;
+  function truncateWal(){const wait=store.db.prepare('PRAGMA busy_timeout').get().timeout;let done=false;
+    try{store.db.exec('PRAGMA busy_timeout=0');done=store.db.prepare('PRAGMA wal_checkpoint(TRUNCATE)').get()?.busy===0;}catch{}
+    finally{store.db.exec('PRAGMA busy_timeout='+(Number.isInteger(wait)?wait:5000));}
+    return done;}
+  function cleanWal(){
+    if(truncateWal()){walTries=0;return true;}
+    if(!walTimer&&!stopped&&walTries<walRetryMs.length){walTimer=setTimeout(()=>{walTimer=null;if(!stopped)cleanWal();},walRetryMs[walTries++]);walTimer.unref?.();}
+    return false;}
   // A personal room prevents customer information or even source references
   // from reaching unrelated crew through notification previews.
   function personalTarget(user){
@@ -105,7 +121,7 @@ export function createWebsiteInquiryService({store,reader,tasks,origin='',clock=
     if(input.replyDraft!==undefined&&(typeof input.replyDraft!=='string'||input.replyDraft.length>6000||/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(input.replyDraft)))throw fail('INQUIRY_INVALID','답변 초안이 너무 길거나 쓸 수 없는 글자가 있어요. 6,000자 안으로 줄여 주세요.');
     const draft=input.replyDraft===undefined?row.replyDraft:input.replyDraft.trim();
     const next={...row,status:input.status||row.status,replyDraft:draft,draftEdited:row.draftEdited||input.replyDraft!==undefined,revision:row.revision+1,updatedAt:now()};
-    store.put(ROWS,id,next);return {item:snapshot(next)};
+    putRow(id,next);return {item:snapshot(next)};
   }
   // Erasing one inquiry (a deletion request, or the end of a cohort) takes two calls. checkErase() states what
   // will go — and whether Google still holds the response, which should be deleted there first — and returns a
@@ -162,26 +178,20 @@ export function createWebsiteInquiryService({store,reader,tasks,origin='',clock=
     if(!confirmed(user,row,input.token))throw fail('INQUIRY_ERASE_CONFIRM','지우기 확인 시간이 지났거나 확인한 내용과 달라요. 「지우기 전에 확인」을 다시 눌러 주세요.',409);
     // The task goes first. If anything stops here the inquiry is still whole, and the next try finishes.
     const task=eraseTask(row),erasedAt=now();
-    // secure_delete zeroes the freed cells, so the encrypted payload and the plain draft do not linger in free pages.
-    const before=store.db.prepare('PRAGMA secure_delete').get().secure_delete;
-    store.db.exec('PRAGMA secure_delete=ON');
     try{
-      store.transaction(()=>{
+      secure(()=>store.transaction(()=>{
         if(store.get(ROWS,id)?.revision!==row.revision)throw fail('INQUIRY_REVISION','그사이 문의가 바뀌었어요. 새로 읽어 주세요.',409);
         store.remove(ROWS,id);store.put(ERASED,id,{id,erasedAt});
-      });
+      }));
     }catch(error){
       // The task is gone already: mark it, so the screen offers no dead link and the next try goes straight to the row.
-      if(task==='removed'){try{const latest=store.get(ROWS,id);if(latest?.task)store.put(ROWS,id,{...latest,task:{...latest.task,state:'unavailable'}});}catch{}}
+      if(task==='removed'){try{const latest=store.get(ROWS,id);if(latest?.task)putRow(id,{...latest,task:{...latest.task,state:'unavailable'}});}catch{}}
       throw error;
-    }finally{store.db.exec('PRAGMA secure_delete='+(['OFF','ON','FAST'][before]||'OFF'));}
-    // Older frames of this row would otherwise wait in the -wal file until overwritten. Truncate it without waiting:
-    // with a reader open (a backup, a read-only check) the checkpoint does what it can and returns at once.
-    const wait=store.db.prepare('PRAGMA busy_timeout').get().timeout;
-    try{store.db.exec('PRAGMA busy_timeout=0');store.db.prepare('PRAGMA wal_checkpoint(TRUNCATE)').get();}catch{}
-    finally{store.db.exec('PRAGMA busy_timeout='+(Number.isInteger(wait)?wait:5000));}
+    }
+    // 'pending' when a reader kept the -wal file from being truncated; cleanWal() tries again on its own.
+    const storage=cleanWal()?'clean':'pending';
     try{onChange();}catch{}
-    return {erased:{id,erasedAt,task}};
+    return {erased:{id,erasedAt,task,storage}};
   }
   function importOne(raw){
     const data=normalize(raw),id=hash([WEBSITE_INQUIRY_FORM_ID,data.responseId]);
@@ -194,7 +204,7 @@ export function createWebsiteInquiryService({store,reader,tasks,origin='',clock=
     const row={id,payload:store.encrypt(data),fingerprint,classification,replyDraft:prior?.draftEdited?prior.replyDraft:classification.draft,
       draftEdited:prior?.draftEdited===true,status:prior?.status||'new',revision:(prior?.revision||0)+1,
       importedAt:prior?.importedAt||now(),updatedAt:now(),task:prior?.task||null};
-    store.put(ROWS,id,row);return row;
+    putRow(id,row);return row;
   }
   function linkTask(row,user){
     if(row.classification.isTest)return;
@@ -204,14 +214,14 @@ export function createWebsiteInquiryService({store,reader,tasks,origin='',clock=
     if(!task){
       const target=personalTarget(user);
       task={state:'pending',requestId:randomUUID(),actorId:user.id,...target,createdAt:now()};
-      row={...row,task};store.put(ROWS,row.id,row);
+      row={...row,task};putRow(row.id,row);
     }
     if(task.actorId!==user.id)throw fail('INQUIRY_TASK_ACTOR','다른 관리자가 이 문의의 할 일을 만들던 중이에요. 그 관리자 계정으로 다시 모아 주세요.',409);
     let result;
     try{result=synchronous(tasks.find(user,{requestId:task.requestId}));}
     catch(error){
       if(error.status!==410)throw error;
-      store.put(ROWS,row.id,{...store.get(ROWS,row.id),task:{...task,state:'unavailable'}});
+      putRow(row.id,{...store.get(ROWS,row.id),task:{...task,state:'unavailable'}});
       return;
     }
     if(!result){
@@ -225,7 +235,7 @@ export function createWebsiteInquiryService({store,reader,tasks,origin='',clock=
     if(!result?.task?.id||!result.message?.id||result.task.channelId!==task.roomId||String(result.task.messageId)!==String(result.message.id))
       throw fail('INQUIRY_TASK_RESULT','후속 할 일이 만들어졌는지 확인하지 못했어요. 다음 수집 때 다시 확인해요.',502);
     const latest=store.get(ROWS,row.id);
-    store.put(ROWS,row.id,{...latest,task:{...task,state:'linked',taskId:result.task.id,messageId:String(result.message.id),linkedAt:now()}});
+    putRow(row.id,{...latest,task:{...task,state:'linked',taskId:result.task.id,messageId:String(result.message.id),linkedAt:now()}});
   }
   async function scan({force=false,user,context={},signal}={}){
     if(stopped)throw fail('INQUIRY_STOPPED','문의 수집을 멈추는 중이에요. 잠시 뒤 다시 해 주세요.',503);
@@ -278,6 +288,6 @@ export function createWebsiteInquiryService({store,reader,tasks,origin='',clock=
       lastAttemptAt:run.lastAttemptAt||null,lastSuccessAt:run.lastSuccessAt||null,nextCheckAt:settings.enabled?run.nextCheckAt||null:null,
       errorCode:run.errorCode||null,error:run.error||null,href:'/?tab=workroom&section=tools&tool=inquiries'};
   }
-  async function close(){stopped=true;await pending?.catch(()=>{});}
+  async function close(){stopped=true;clearTimeout(walTimer);walTimer=null;await pending?.catch(()=>{});}
   return {workspace,get,verify,configure,update,checkErase,erase,tick,health,close};
 }

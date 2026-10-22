@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync,statSync} from 'node:fs';
+import {DatabaseSync} from 'node:sqlite';
 import {mkdtemp,rm,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve,dirname} from 'node:path';
@@ -33,7 +34,7 @@ async function fixture(t){
   const reader={configured:()=>true,async verify(){await verifyHook?.();return {connected:true,formId:WEBSITE_INQUIRY_FORM_ID,verifiedAt:at};},
     async readPage(input){calls++;await readHook?.(input);return pages?pages(input):{items:structuredClone(items),nextPageToken:null,questionMap:{}};},
     async responseState(input){googleCalls.push(input);await googleHook?.(input);return google;}};
-  const make=()=>createWebsiteInquiryService({store,reader,tasks,origin:integration.origin,clock:()=>at});
+  const make=()=>createWebsiteInquiryService({store,reader,tasks,origin:integration.origin,clock:()=>at,walRetryMs:[30,30,30]});
   let service=make();
   t.after(async()=>{await service.close();await messenger.close();store.close();assert.equal(dirname(resolve(directory)),resolve(tmpdir()));await rm(directory,{recursive:true,force:true});});
   return {store,users,messenger,reader,tasks,googleCalls,get service(){return service;},set items(value){items=value;},set pages(value){pages=value;},set at(value){at=value;},
@@ -141,7 +142,7 @@ test('erasing takes a confirmation, takes back its task and leaves only the row 
   assert.equal(f.store.count('websiteInquiries'),1);assert.equal(f.counts().message_tasks,1);
   f.at='2026-10-20T02:03:00.000Z';
   const done=f.service.erase(admin,row.id,{revision:current.revision,token:erasure.token});
-  assert.deepEqual(done,{erased:{id:row.id,erasedAt:'2026-10-20T02:03:00.000Z',task:'removed'}});
+  assert.deepEqual(done,{erased:{id:row.id,erasedAt:'2026-10-20T02:03:00.000Z',task:'removed',storage:'clean'}});
   assert.equal(f.store.count('websiteInquiries'),0);assert.deepEqual(f.counts(),{messages:0,message_tasks:0,message_send_requests:1},'the task message and its task are gone; the receipt keeps no text');
   assert.deepEqual(f.store.all(ERASED),[{id:row.id,erasedAt:'2026-10-20T02:03:00.000Z'}],'the erasure record is the row number and the time only');
   assert.doesNotMatch(JSON.stringify(f.store.db.prepare("SELECT kind,body FROM documents WHERE kind<>'users'").all()),PRIVATE,'no customer text, email, draft or response number is left in the company store');
@@ -152,6 +153,32 @@ test('erasing takes a confirmation, takes back its task and leaves only the row 
   assert.throws(()=>f.service.get(admin,row.id),{status:404});assert.equal(f.service.workspace(admin).items.length,0);
   assert.deepEqual(f.service.erase(admin,row.id,{revision:current.revision,token:erasure.token}),{erased:{id:row.id,erasedAt:'2026-10-20T02:03:00.000Z',task:'none',repeated:true}},'a repeat answers from the record');
   await assert.rejects(f.service.checkErase(admin,row.id,{revision:current.revision}),{status:404});
+});
+
+test('an older draft freed by a later edit is zeroed at that edit, so an erase leaves no earlier revision in free pages',async t=>{
+  // GPT 2차 검수 GA1: a long draft spills into overflow pages; a shorter one frees them. Every row write zeroes what it frees.
+  const f=await fixture(t),admin=f.users.admin;let row=await collected(f);
+  const long='LONG-DRAFT-SECRET-0042 '.repeat(250);assert.ok(long.length<6000);
+  row=f.service.update(admin,row.id,{revision:row.revision,replyDraft:long}).item;row=f.service.update(admin,row.id,{revision:row.revision,replyDraft:'짧은 초안'}).item;
+  const {erasure}=await f.service.checkErase(admin,row.id,{revision:row.revision});
+  assert.equal(f.service.erase(admin,row.id,{revision:row.revision,token:erasure.token}).erased.storage,'clean');
+  const file=readFileSync(join(f.store.directory,'company.sqlite'));
+  assert.equal(file.includes(Buffer.from('LONG-DRAFT-SECRET-0042')),false,'the long draft of an earlier revision is not left in free pages');
+  assert.equal(file.includes(Buffer.from('짧은 초안')),false);
+});
+
+test('a reader holding the WAL leaves the erase reported as pending, and the next try truncates it',async t=>{
+  // GPT 2차 검수 GA2: with a reader open, wal_checkpoint(TRUNCATE) returns busy instead of waiting.
+  const f=await fixture(t),admin=f.users.admin,row=await collected(f);
+  const {erasure}=await f.service.checkErase(admin,row.id,{revision:row.revision});
+  const readerDb=new DatabaseSync(join(f.store.directory,'company.sqlite'),{readOnly:true});readerDb.exec('BEGIN');readerDb.prepare("SELECT COUNT(*) AS n FROM documents").get();
+  try{
+    assert.equal(f.service.erase(admin,row.id,{revision:row.revision,token:erasure.token}).erased.storage,'pending');
+    assert.ok(statSync(join(f.store.directory,'company.sqlite-wal')).size>0,'the WAL still holds frames while the reader is open');
+  }finally{readerDb.exec('COMMIT');readerDb.close();}
+  for(let i=0;i<40&&statSync(join(f.store.directory,'company.sqlite-wal')).size>0;i++)await new Promise(done=>setTimeout(done,25));
+  assert.equal(statSync(join(f.store.directory,'company.sqlite-wal')).size,0,'the retry truncates the WAL once the reader is gone');
+  assert.equal(f.store.db.prepare('PRAGMA busy_timeout').get().timeout,5000);
 });
 
 test('an erased response never comes back — next run, full re-read or edit — while a new response from the same person does',async t=>{
