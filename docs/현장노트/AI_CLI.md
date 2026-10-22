@@ -52,7 +52,7 @@
 - 증상: `~/.gemini/google_accounts.json`에 적힌 계정과 agy가 실제로 쓰는 계정이 다르다(10-17).
 - 원인: agy 로그인은 Windows 자격 증명(키링)에 있고, 이 파일은 별도 Gemini CLI의 기록이다. 키링에 있으니 `USERPROFILE`을 바꿔도 같은 로그인을 쓴다. 10-17 확인한 [공식 설치 문서](https://antigravity.google/docs/install/)도 한 로컬 제품에서 로그인하면 로컬 환경의 다른 제품과 자격이 공유된다고 명시한다.
 - 고침: 실제 계정은 `~/.gemini/antigravity-cli/cli.log`의 `authenticated successfully as` 줄로 확인한다. `--구독` 통로도 그 계정의 몫을 쓴다. 로컬 프로필 파일이나 홈 경로만 바꾸면 계정이 격리된다고 가정하지 않는다. agy에서는 gemini-4-argon-low/medium/high도 고를 수 있지만, 모델 선택이 계정 격리를 뜻하지 않는다.
-- 다시 확인: 최신 인증 로그와 공식 설치 문서를 함께 확인한다. 10-17 `agy --help`·설치된 공식 문서에서는 계정별 프로필·인증 격리 옵션을 찾지 못했다. 기존 로그인 계정은 바꾸지 않았다.
+- 다시 확인: 최신 인증 로그와 공식 설치 문서를 함께 확인한다. 10-17 `agy --help`·설치된 공식 문서에서는 계정별 프로필·인증 격리 옵션을 찾지 못했다. 기존 로그인 계정은 바꾸지 않았다. 10-22(1.4.4) 다시 봐도 같다 — 변경 기록의 키링 우회는 D-Bus 없는 Linux에만 있고 Windows에서 파일 저장으로 돌리는 설정은 없으며, 이 PC에는 WSL 배포판도 없다. 그래서 둘째 Ultra 계정(unmet25, [AI 계정과 크레딧](../AI_계정과_크레딧.md#아르곤-계정))으로 바꿀 때는 agy 창에서 `/logout` → `/login`(브라우저 승인은 사용자)이다. 실행마다 `--log-file <경로>`를 주면 그 실행의 `authenticated successfully as` 줄만 따로 남아, 여러 세션이 함께 돌 때도 계정을 섞지 않고 읽는다.
 
 ### 아르곤에게 블렌더 실행까지 맡기면 Claude Code가 막을 때가 있다
 - 증상: Claude Code(자동 모드)에서 `agy -p … --dangerously-skip-permissions`로 아르곤이 블렌더를 직접 실행·반복하게 하려 하자 「Create Unsafe Agents」로 거절됐다(10-17 펠트 찻집 실험). 같은 날 15:56 싱크타운 찻집 구역 비교에서는 같은 플래그로 띄운 실행이 막히지 않고 1시간 20분·320단계를 혼자 돌아 GLB까지 냈다.

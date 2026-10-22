@@ -6,6 +6,8 @@
 
 2026-10-18 계정 통일: 아르곤을 사용하는 모든 작업(딥리서치·예약 조사·블렌더 등)은 웹·앱·공식 CLI 모두 Google AI Ultra 계정 `77yuhbs@gmail.com`으로 실행한다. 작업을 시작할 때 해당 서비스의 실제 인증 계정을 확인한다. 업무 Google Docs/Sheets와 조사 결과 문서는 `unmet23@gmail.com`의 기존 연결·문서 ID·공유 범위를 유지한다. Chrome의 기본 계정과 Docs 계정을 일괄 전환하지 않고 아르곤 작업 세션에서 77yuhbs를 선택한다. 한도·인증·모델 접근 실패 시 unmet23이나 다른 모델·추가 결제·유료 API로 자동 대체하지 않는다. 기존 조사 4종(전체·YouTube/TikTok·Meta/브랜드·synkbrief)은 별도 서버의 공식 Antigravity CLI `gemini-4-argon-high`와 기존 예약 시각을 유지한다. 예약·복원 원문은 [Argon 예약 운영 소스](../tools/argon-schedules/README.md), 현재 결과는 [트랙](_ops/트랙.md)에 둔다.
 
+2026-10-22 둘째 Ultra 계정: `unmet25`를 Google AI Ultra 가족 계정으로 더했다(Gemini 한도가 77yuhbs와 따로 돈다). 77yuhbs의 Gemini 주간 몫이 다 돼 가면(PowerShell `agy -p "/usage" --output-format json`의 주간 남은 비율이 10% 아래이거나 막힐 때) unmet25로 바꿔 쓴다. Gemini 웹·Flow는 Chrome에서 계정만 바꾼다. PC의 공식 CLI(agy)는 Windows 자격 증명에 계정이 하나뿐이고 계정별 프로필 설정이 없어(1.4.4 확인), agy 창에서 `/logout` → `/login`으로 바꾸고 브라우저의 계정 고르기·승인은 사용자가 한다. 바꾼 뒤에는 `~/.gemini/antigravity-cli/cli.log`의 `authenticated successfully as` 줄로 실제 계정을 확인한다. 이 PC의 모든 세션이 같은 agy 로그인을 쓰고, 쓰던 계정이 다 돼 갈 때만 다른 쪽으로 바꾼다(초기화됐다고 되돌리지 않는다). 서버 예약 조사는 아직 77yuhbs만 로그인돼 있다. 이 두 Ultra 계정 말고 unmet23·다른 모델·추가 결제·유료 API로 자동 대체하지 않는 것은 그대로다.
+
 ## GPT
 
 GPT 그림 굽기는 2026-10-17 사용자 결정으로 등록한 GPT 보조 계정 사이에서 한도에 막히면 자동으로 바꿔 쓴다(`tools/codex계정.js`). 본 계정(synk.yuh)은 백엔드와 한도를 같이 쓰므로 보조 계정이 모두 막혔을 때만 맨 마지막 예비로 쓴다. GPT 세션도 앱 안의 그림 도구로 바로 굽지 않고 `codex exec` 대신 `node tools/codex계정.js exec <같은 인자>`(지시문은 표준입력)로 굽는다.
