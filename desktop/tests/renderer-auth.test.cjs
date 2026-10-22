@@ -458,7 +458,7 @@ test('member benefit clients launch only their own local preview after exact ent
     const calls=[],f=await fixture({initialAuth:account('benefit-'+id,[id]),bridgeOverrides:{getEnvironment:async()=>({...environment,productPreviewsAvailable:[id]}),openProductPreview:async actual=>{calls.push(actual);return {ok:true};},launch:async()=>assert.fail('must not use package launch')}});
     assert.equal(await f.ready,'true');assert.deepEqual(f.ids(),[]);assert.equal(f.element('primary-action').dataset.action,'product-preview');
     await f.action({benefit:id});assert.match(f.element('benefit-detail').innerHTML,new RegExp('data-benefit-preview="'+id+'"'));
-    assert.doesNotMatch(f.element('benefit-detail').innerHTML,/플레저 PC 창으로 열기/);
+    assert.doesNotMatch(f.element('benefit-detail').innerHTML,/플레저 PC 앱에서 열기/);
     await f.action({benefitPreview:id});assert.deepEqual(calls,[id]);
     const other='care';await f.action({benefit:other});assert.doesNotMatch(f.element('benefit-detail').innerHTML,/data-benefit-preview/);await f.action({benefitPreview:other});assert.deepEqual(calls,[id]);
     f.emit('auth',account('benefit-'+id,[],{sessionGeneration:2}));await f.action({benefitPreview:id});assert.deepEqual(calls,[id]);

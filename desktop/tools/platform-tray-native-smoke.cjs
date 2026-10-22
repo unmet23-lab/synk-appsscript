@@ -63,7 +63,7 @@ if(!process.versions.electron){
       win.webContents.on('will-prevent-unload',()=>{nativeBeforeUnload++;});
       app.on('before-quit',()=>{beforeQuitCount++;});
       check('real-native-tray-and-menu-created',controller.isActive()&&nativeTray instanceof Tray&&nativeMenu instanceof Menu&&!nativeTray.isDestroyed());
-      check('native-menu-has-open-and-explicit-exit',nativeMenu.items[0].label==='SYNK 플랫폼 열기'&&nativeMenu.items.at(-1).label==='완전히 종료');
+      check('native-menu-has-open-and-explicit-exit',nativeMenu.items[0].label==='SYNK Platform 열기'&&nativeMenu.items.at(-1).label==='완전히 종료');
       const html='<!doctype html><html lang="ko"><meta charset="utf-8"><title>합성 초안 검증</title><body><input id="draft"><script>window.__documentToken="synthetic-retained-document";window.__beforeUnloadCount=0;addEventListener("beforeunload",event=>{window.__beforeUnloadCount++;if(document.getElementById("draft").value){event.preventDefault();event.returnValue=false;}});</script></body></html>';
       await win.loadURL('data:text/html;charset=utf-8,'+encodeURIComponent(html));
       const retainedWindow=win,retainedContents=win.webContents,retainedId=win.id,draft='닫기 뒤에도 남아 있어야 하는 합성 초안';

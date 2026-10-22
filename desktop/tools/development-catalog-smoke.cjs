@@ -54,7 +54,7 @@ if(!process.versions.electron){
     try{
       fs.mkdirSync(artifacts,{recursive:true});Menu.setApplicationMenu(null);await createWindow('development');
       check('development-guest-sees-four-catalog-cards',same(await ids(),all),{ids:await ids()});
-      check('guest-home-visible-without-member-write',await run("!document.getElementById('view-home').hidden&&!document.querySelector('[data-member-add]')&&!document.getElementById('view-home').textContent.includes('아직 연결된 앱이 없어요')"));
+      check('guest-home-visible-without-member-write',await run("!document.getElementById('view-home').hidden&&!document.querySelector('[data-member-add]')&&!document.getElementById('view-home').textContent.includes('아직 쓸 수 있는 앱이 없어요')"));
       await click('#app-list [data-app="path"]');await click('#favorite');
       check('guest-favorite-stays-in-device-scope',await run("JSON.parse(localStorage.getItem('synk-launcher-view-v1')).favorites.includes('path')&&!Object.keys(localStorage).some(key=>key.includes(':account:'))"));
       await account('catalog-a');await settle();
@@ -62,7 +62,7 @@ if(!process.versions.electron){
       check('fixture-grants-remain-empty',await run('window.__synkCatalogFixture.snapshot().library.appIds.length===0'));
       await click('#app-list [data-app="path"]');check('guest-favorite-not-imported-to-account',await run("document.getElementById('favorite').getAttribute('aria-pressed')==='false'"));
       await click('[data-view="home"]');await click('[data-member-purpose="student"]');
-      check('home-purpose-works-with-empty-grants',await run("document.querySelector('[data-member-purpose=student]').getAttribute('aria-pressed')==='true'&&!!document.querySelector('.member-next [data-member-launch],.member-next [data-member-app]')&&!document.getElementById('view-home').textContent.includes('아직 연결된 앱이 없어요')"));
+      check('home-purpose-works-with-empty-grants',await run("document.querySelector('[data-member-purpose=student]').getAttribute('aria-pressed')==='true'&&!!document.querySelector('.member-next [data-member-launch],.member-next [data-member-app]')&&!document.getElementById('view-home').textContent.includes('아직 쓸 수 있는 앱이 없어요')"));
       check('home-summary-has-app-and-no-overflow',await run("(()=>{const m=document.getElementById('main');return !!document.querySelector('.member-next h2')&&document.documentElement.scrollWidth<=innerWidth&&m.scrollWidth<=m.clientWidth;})()"),{screenshot:await capture('empty-grant-home-1280')});
       await click('[data-view="library"]');
       for(const [filter,expected]of [['development',all],['planned',[]],['installed',['world','messenger']],['all',all]]){await click('[data-filter="'+filter+'"]');check('catalog-filter-'+filter,same(await ids(),expected),{ids:await ids()});}

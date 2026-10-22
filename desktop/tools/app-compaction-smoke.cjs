@@ -8,7 +8,7 @@ const finalOnly=process.argv.includes('--final-reload-only');
 // 10-09 결정 「SYNK Workspace · 교사 통합」으로 교사 앱은 Workspace에 합쳐져 목록은 여덟 개다.
 const EXPECTED_IDS=['world','messenger','path','pulse','care','fortune'];
 const PULSE_FEATURES=['제작 의뢰','창작자 협업','작품과 권리'];
-const CORE_FEATURES={world:['한국어 놀이','싱크 타운','학습 이어가기'],messenger:['팀 대화','내 업무','제작·AI 실습'],pulse:PULSE_FEATURES};
+const CORE_FEATURES={world:['TOPIK 준비','한국어 놀이','튜터와 옷장'],messenger:['팀 대화','내 업무','작업실'],pulse:PULSE_FEATURES};
 // Companion checks are executed by the parent agent, outside this renderer QA.
 const automatedTests={reportedBy:'parent agent execution',total:240,passed:240,runs:[
   {command:'node --test desktop/tests/renderer-state.test.cjs desktop/tests/renderer-personalization.test.cjs desktop/tests/library-access.test.cjs desktop/tests/renderer-library.test.cjs desktop/tests/member-home.test.cjs desktop/tests/renderer-auth.test.cjs desktop/tests/member-benefit-preview.test.cjs desktop/tests/auth.test.cjs',passed:160,total:160},

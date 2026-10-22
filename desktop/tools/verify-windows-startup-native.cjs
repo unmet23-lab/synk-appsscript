@@ -17,6 +17,7 @@ if(fs.existsSync(out))throw Error('QA output must be new');
 for(const leaf of ['profile/Roaming','profile/Local','profile/Temp','programs'])fs.mkdirSync(path.join(out,leaf),{recursive:true});
 const input={out,archive,version:release.version,buildId:release.buildId,appData:path.join(out,'profile/Roaming'),programs:path.join(out,'programs'),prefix:'SYNK_STARTUP_QA '};
 function observe(config){
+  process.stderr.write('SYNK_QA_TRACE observer-installed\n');
   const {app,shell,BrowserWindow}=require('electron'),fs=require('node:fs'),path=require('node:path');
   app.setPath('appData',config.appData);
   const checks=[],errors=[],requests=[],providerRequests=[],opened=[],forbidden=[],pageErrors=[],states=[],screenshots=[];
@@ -58,10 +59,10 @@ function observe(config){
     setTimeout(()=>app.quit(),100);
   }
   const deadline=setTimeout(()=>{errors.push('QA internal deadline');void finish(false);},65000);
-  // Record startup failures before Electron can block on its native error box.
+  // Surface a packaged startup exception before Electron opens a blocking error dialog.
   process.on('uncaughtException',error=>{errors.push('MAIN_STARTUP_EXCEPTION: '+(error.stack||error.message));void finish(false);});
   process.on('unhandledRejection',error=>{errors.push('MAIN_STARTUP_REJECTION: '+(error?.stack||error));void finish(false);});
-  app.on('browser-window-created',(_event,created)=>{
+  app.on('browser-window-created',(_event,created)=>{process.stderr.write('SYNK_QA_TRACE window-created\n');
     created.show=()=>{};created.showInactive=()=>{};created.focus=()=>{};
     const contents=created.webContents;contents.setBackgroundThrottling(false);contents.setAudioMuted(true);blockNetwork(contents);
     // Windows exposes preloadURL rather than preload in early preferences.
@@ -131,13 +132,15 @@ function observe(config){
 const env={...process.env,APPDATA:input.appData,LOCALAPPDATA:path.join(out,'profile/Local'),TEMP:path.join(out,'profile/Temp'),TMP:path.join(out,'profile/Temp')};delete env.ELECTRON_RUN_AS_NODE;
 const child=spawn(executable,['--inspect-brk=127.0.0.1:0','--log-file='+path.join(out,'electron.log')],{cwd:out,windowsHide:true,env,stdio:['ignore','pipe','pipe']});
 let stdout='',stderr='',ws,connected=false,sequence=0,injected=false,error=null,normalQuit=false;const pending=new Map();
-const rpc=(method,params={})=>new Promise((resolve,reject)=>{const id=++sequence;pending.set(id,{resolve,reject});ws.send(JSON.stringify({id,method,params}));});
-function connect(url){ws=new WebSocket(url);ws.addEventListener('open',async()=>{await rpc('Debugger.enable');await rpc('Runtime.runIfWaitingForDebugger');});ws.addEventListener('message',async event=>{const message=JSON.parse(event.data);if(message.id){const item=pending.get(message.id);if(item){pending.delete(message.id);message.error?item.reject(Error(message.error.message)):item.resolve(message.result);}return;}if(message.method==='Debugger.paused'&&!injected){injected=true;try{const result=await rpc('Debugger.evaluateOnCallFrame',{callFrameId:message.params.callFrames[0].callFrameId,expression:'('+observe.toString()+')('+JSON.stringify(input)+')',returnByValue:true});if(result.exceptionDetails)throw Error(JSON.stringify(result.exceptionDetails));await rpc('Debugger.resume');}catch(e){error=e.message;try{await rpc('Debugger.evaluateOnCallFrame',{callFrameId:message.params.callFrames[0].callFrameId,expression:'require("electron").app.quit()'});await rpc('Debugger.resume');}catch{}ws.close();}}});}
+const trace=(event,detail={})=>process.stderr.write('SYNK_QA_TRACE '+JSON.stringify({event,...detail})+'\n');
+const rpc=(method,params={})=>new Promise((resolve,reject)=>{const id=++sequence;trace('send',{id,method});const timer=setTimeout(()=>{pending.delete(id);reject(Error('INSPECTOR_TIMEOUT_'+method));},10000);pending.set(id,{resolve:v=>{clearTimeout(timer);resolve(v);},reject:e=>{clearTimeout(timer);reject(e);}});ws.send(JSON.stringify({id,method,params}));});
+function connect(url){trace('connect');ws=new WebSocket(url);ws.addEventListener('open',async()=>{trace('open');try{await rpc('Debugger.enable');await rpc('Runtime.runIfWaitingForDebugger');}catch(e){error=e.message;trace('connect-error',{error});ws.close();}});ws.addEventListener('message',async event=>{const message=JSON.parse(event.data);if(message.id||message.method==='Debugger.paused'||message.method==='Debugger.resumed')trace('receive',{id:message.id,method:message.method,reason:message.params?.reason,url:message.params?.callFrames?.[0]?.url});if(message.id){const item=pending.get(message.id);if(item){pending.delete(message.id);message.error?item.reject(Error(message.error.message)):item.resolve(message.result);}return;}if(message.method==='Debugger.paused'&&!injected){injected=true;try{const result=await rpc('Debugger.evaluateOnCallFrame',{callFrameId:message.params.callFrames[0].callFrameId,expression:'('+observe.toString()+')('+JSON.stringify(input)+')',returnByValue:true});if(result.exceptionDetails)throw Error(JSON.stringify(result.exceptionDetails));await rpc('Debugger.resume');}catch(e){error=e.message;try{await rpc('Debugger.evaluateOnCallFrame',{callFrameId:message.params.callFrames[0].callFrameId,expression:'require("electron").app.quit()'});await rpc('Debugger.resume');}catch{}ws.close();}}});}
 const watchdog=setTimeout(async()=>{error='Native QA timeout; requested normal quit of owned QA process';try{await rpc('Runtime.evaluate',{expression:'globalThis.__synkNativeQAQuit?.()'});}catch{}ws?.close();},85000);
+const hardDeadline=setTimeout(()=>{error=error||'Native QA process did not exit after normal quit';trace('owned-qa-final-deadline',{error});ws?.close();child.kill();},105000);
 child.stdout.on('data',data=>{stdout+=data;if(stdout.includes('SYNK_STARTUP_QA_QUIT '))normalQuit=true;if(stdout.includes(input.prefix))ws?.close();});
 child.stderr.on('data',data=>{stderr+=data;const match=stderr.match(/Debugger listening on (ws:\/\/127\.0\.0\.1:\d+\/[^\s]+)/);if(match&&!connected){connected=true;connect(match[1]);}});
 child.on('error',e=>{error=e.message;});
-child.on('close',code=>{clearTimeout(watchdog);ws?.close();let result;try{const line=stdout.split(/\r?\n/).find(line=>line.startsWith(input.prefix));result=JSON.parse(line.slice(input.prefix.length));}catch{}
+child.on('close',code=>{clearTimeout(hardDeadline);clearTimeout(watchdog);ws?.close();let result;try{const line=stdout.split(/\r?\n/).find(line=>line.startsWith(input.prefix));result=JSON.parse(line.slice(input.prefix.length));}catch{}
   const unchanged=sha(archive)===before;
   const report={checkedAt:new Date().toISOString(),ok:code===0&&result?.ok===true&&normalQuit&&!error&&unchanged,code,error,normalQuit,asarSha256:before,packageBytesUnchanged:unchanged,buildSourceHash:release.sourceHash,result,...(!result?.ok?{stderr:stderr.slice(-5000),stdout:stdout.slice(-2000)}:{})};
   fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({ok:report.ok,passed:result?.checks.filter(check=>check.ok).length,checks:result?.checks.length,normalQuit,error:error||result?.errors,report:path.join(out,'report.json')}));if(!report.ok)process.exitCode=1;
