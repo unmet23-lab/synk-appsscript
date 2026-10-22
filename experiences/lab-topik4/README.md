@@ -57,7 +57,7 @@
 | 몽골어 안내문 — 대학 국제처 10곳 메일이 약속한 「몽골어 안내문」, 유학생 모임에도 쓴다 | `flyer.html`(글은 `src/copy.js`의 몽골어 그대로) | `synk-lab-topik4-mn.png·pdf`(QR `from=flyer`) |
 | 통화용 소개 — 통화·화상 대화를 청하는 11통에 붙인다 | `intro-ko.html`·`intro-mn.html`(+ `intro.css`) | `synk-intro-ko.*`·`synk-intro-mn.*` |
 
-학교·모임마다 QR만 다른 안내문은 영업 자료라 저장소 밖에 굽는다: `node experiences/lab-topik4/안내문/build.mjs --from univ-shinhan-qr,club-msu-korea-qr --out <폴더>`. 10-21판 18장(대학 10 · 모임 8)은 `Documents/메일정리/2026-10-21/영업_첫30곳/안내문/`에 있다. 통화용 소개의 사실(문항 수·쓰기 10문항·하루 3번 피드백·4급 반 조건)은 10-21 기준이라, 숫자가 바뀌면 두 판을 함께 고쳐 다시 굽는다.
+학교·모임마다 QR만 다른 안내문은 영업 자료라 저장소 밖에 굽는다: `node experiences/lab-topik4/안내문/build.mjs --from univ-shinhan-qr,club-msu-korea-qr --out <폴더>`. 10-21판 18장(대학 10 · 모임 8)은 `Documents/메일정리/2026-10-21/영업_첫30곳/안내문/`에 있다. 통화용 소개의 사실(문항 수·쓰기 20문항(10-22 고침)·하루 3번 피드백·4급 반 조건)은 10-22 기준이라, 숫자가 바뀌면 두 판을 함께 고쳐 다시 굽는다.
 
 ## 그림
 
