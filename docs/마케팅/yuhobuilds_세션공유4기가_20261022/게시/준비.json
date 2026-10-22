@@ -61,7 +61,7 @@
   ],
   "검사": {
     "도구": "tools/올리기전검사.js",
-    "시각": "2026-10-22T14:36:44+09:00",
+    "시각": "2026-10-22T16:21:35+09:00",
     "결과": "확인할 것",
     "고칠것": [],
     "확인할것": [
@@ -87,10 +87,15 @@
         "봉우리": -1.4,
         "정지": "11% 통과",
         "끝화면": 7,
-        "사전검사": ".tmp/올리기전검사/yuhobuilds_세션공유4기가_20261022/영상사전검사_remotion_out_session-v5_final/inspection-ef72094e-3177-4697-be2b-390ba96bea2f/검사.json"
+        "사전검사": ".tmp/올리기전검사/yuhobuilds_세션공유4기가_20261022/영상사전검사_remotion_out_session-v5_final/inspection-233797ae-c219-4686-a228-ab5498450e7c/검사.json"
       }
     ],
     "기록": ".tmp/올리기전검사/yuhobuilds_세션공유4기가_20261022"
   },
-  "작업실등록": true
+  "작업실등록": true,
+  "프롬프트": {
+    "id": "disk-writes",
+    "주소": "https://synk.im/prompts/#disk-writes",
+    "본문": "docs/마케팅/맞춤도구/prompts/프롬프트.json"
+  }
 }

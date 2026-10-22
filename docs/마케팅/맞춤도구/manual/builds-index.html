@@ -8,6 +8,7 @@
      2026-10-17: 두 번째 도구(내 PC 이사 목록, /builds/move/)가 생겨서, 매뉴얼로 바로 넘기던 페이지를 목록으로 바꿨다(새 편이 위).
      옛 넘김 페이지가 받던 공유 링크(#r=…)는 그대로 매뉴얼로 보낸다.
      글꼴: 이 파일의 글자는 manual 도구의 줄인 SUIT에 함께 실린다(build.mjs가 outside 원고도 글자 목록에 넣는다).
+     2026-10-22: 머리줄 오른쪽에 프롬프트 모음(/prompts/)으로 가는 알약을 더했다(그 글자는 이미 공개된 줄인 SUIT에 있어 이 파일만 올린다).
      그림: 각 도구의 assets를 그대로 가리킨다. 양식은 싱ㅋ 시그널 토큰(core/signal.css)을 이 페이지에 필요한 만큼만 옮겼다. -->
 <title>yuhobuilds 맞춤 프로그램</title>
 <meta name="description" content="yuhobuilds 영상 끝에 나온 맞춤 프로그램 모음. 질문 몇 개에 답하면 내 조건에 맞춘 결과가 나와요. 로그인 없음.">
@@ -55,6 +56,7 @@ img{display:block;max-width:100%}
 .bead{display:grid;place-items:center;height:40px;padding:0 14px;border-radius:999px;background:#FAFAF9}
 .bead img{height:24px;width:auto}
 .crumb{font:500 11.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.bar .to{display:inline-flex;align-items:center;min-height:40px;margin-left:auto;padding:0 16px;border-radius:999px;color:var(--ink);font-size:14.5px;font-weight:600;text-decoration:none;box-shadow:inset 0 0 0 1px var(--line-2)}
 main{padding:clamp(22px,4.2vw,52px);border-radius:28px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line)}
 .eyebrow{display:inline-flex;align-items:center;gap:9px;margin:0;font:500 11.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
 .eyebrow::after{content:"";width:28px;height:1px;background:currentColor;opacity:.6}
@@ -81,13 +83,13 @@ h1 span{color:var(--ink-3)}
 .foot a{color:var(--ink-2)}
 @media(hover:hover){.card:hover{box-shadow:inset 0 0 0 1px var(--ink-4)}}
 @media(max-width:760px){.list{grid-template-columns:minmax(0,1fr)}.face{height:220px}}
-@media(max-width:560px){.wrap{padding:0 8px 28px}main{padding:22px 16px 26px;border-radius:22px}.bar{height:52px;top:8px;margin:8px 0 10px}}
+@media(max-width:560px){.wrap{padding:0 8px 28px}main{padding:22px 16px 26px;border-radius:22px}.bar{height:52px;top:8px;margin:8px 0 10px}.bar .to{padding:0 14px;font-size:14px}.crumb{display:none}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header class="bar"><a class="bead" href="https://synk.im/shift/" aria-label="SYNK SHIFT 홈"><img src="/builds/move/assets/brand-shift.webp" alt="synk SHIFT" width="88" height="24"></a><span class="crumb">yuhobuilds / tools</span></header>
+  <header class="bar"><a class="bead" href="https://synk.im/shift/" aria-label="SYNK SHIFT 홈"><img src="/builds/move/assets/brand-shift.webp" alt="synk SHIFT" width="88" height="24"></a><span class="crumb">yuhobuilds / tools</span><a class="to" href="/prompts/">프롬프트 모음</a></header>
   <main>
     <p class="eyebrow">YUHOBUILDS · TOOLS</p>
     <h1>영상에서 본 그 프로그램,<br><span>내 경우에 맞게</span></h1>

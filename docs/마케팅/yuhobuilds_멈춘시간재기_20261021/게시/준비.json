@@ -49,11 +49,10 @@
   ],
   "검사": {
     "도구": "tools/올리기전검사.js",
-    "시각": "2026-10-22T14:38:48+09:00",
+    "시각": "2026-10-22T16:22:36+09:00",
     "결과": "확인할 것",
     "고칠것": [],
     "확인할것": [
-      "준비.json · 「역할」(유입·육성·권위·전환)이 없다",
       "shift-tistory · 시각 2026-10-22T21:50+09:00이 슬롯 2026-10-24 날이 아니다",
       "remotion/out/still-v6_final.mp4 · 오른쪽 단추 자리 13군데 — 0.0초 「0.5초 간 84개」 오른쪽 끝 985px(안전선 920) · 2.5초 「0.5초 간 84개」 오른쪽 끝 1008px(안전선 920) · 장면표 .tmp/올리기전검사/yuhobuilds_멈춘시간재기_20261021/글자표_remotion_out_still-v6_final.jpg",
       "remotion/out/still-v6_final.mp4 · 왼쪽 가장자리 4군데 — 21.0초 「• 음식 사진 편 • 같은 순간」 왼쪽 끝 58px(안전선 65) · 36.5초 「멈춘시간점검」 왼쪽 끝 56px(안전선 65) · 장면표 .tmp/올리기전검사/yuhobuilds_멈춘시간재기_20261021/글자표_remotion_out_still-v6_final.jpg",
@@ -78,10 +77,15 @@
         "봉우리": -1.3,
         "정지": "10% 통과",
         "끝화면": 3.8,
-        "사전검사": ".tmp/올리기전검사/yuhobuilds_멈춘시간재기_20261021/영상사전검사_remotion_out_still-v6_final/inspection-c5beb7a3-0c9d-4c51-a4c5-6e702aea0bb9/검사.json"
+        "사전검사": ".tmp/올리기전검사/yuhobuilds_멈춘시간재기_20261021/영상사전검사_remotion_out_still-v6_final/inspection-280d577b-2edb-4384-997f-417431e7fbf6/검사.json"
       }
     ],
     "기록": ".tmp/올리기전검사/yuhobuilds_멈춘시간재기_20261021"
   },
-  "작업실등록": true
+  "작업실등록": true,
+  "프롬프트": {
+    "id": "still-time",
+    "주소": "https://synk.im/prompts/#still-time",
+    "본문": "docs/마케팅/맞춤도구/prompts/프롬프트.json"
+  }
 }

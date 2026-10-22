@@ -167,3 +167,26 @@ test('아르곤 검수(10-22)에서 나온 오탐 — 낱말 속 상대 날짜, 
   const md = ['## 인스타 릴스', '', '**캡션**', '', '```', '# 이건 캡션 속 주석', '본문', '```', '', '## 유튜브'].join('\n');
   assert.deepEqual(묶음.parseMarkdown(md, 'instagram'), { caption: '# 이건 캡션 속 주석\n본문' });
 });
+
+test('가져갈 프롬프트(10-22) — yuhobuilds 편만, 칸이 없으면 확인할 것, 있으면 항목·공개 페이지를 본다', async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), '올리기전검사-프롬프트-'));
+  try {
+    const data = path.join(root, 'docs', '마케팅', '맞춤도구', 'prompts');
+    fs.mkdirSync(data, { recursive: true });
+    fs.writeFileSync(path.join(data, '프롬프트.json'), JSON.stringify({ 항목: [{ id: 'still-time' }] }));
+    const page = (status, body) => async () => ({ status, text: async () => body });
+    const ok = { 브랜드: 'yuhobuilds', 슬롯: '2026-10-25', 프롬프트: { id: 'still-time', 주소: 'https://synk.im/prompts/#still-time' } };
+    const run = (prep, fetchImpl, more = {}) => 검사.promptFindings(prep, { repo: root, fetchImpl, ...more }).then(codes);
+
+    assert.deepEqual(await run({ 브랜드: 'LAB' }, page(200, '')), [], 'yuhobuilds 편만 본다');
+    assert.deepEqual(await run({ 브랜드: 'yuhobuilds', 슬롯: '2026-10-25' }, page(200, '')), ['확인할 것:prompt-missing']);
+    assert.deepEqual(await run({ 브랜드: 'yuhobuilds', 슬롯: '2026-10-22' }, page(200, '')), [], '10-23 슬롯 전 편은 짚지 않는다');
+    assert.deepEqual(await run(ok, page(200, '<article class="item" id="still-time">')), []);
+    assert.deepEqual(await run(ok, page(200, '<article id="other">')), ['고칠 것:prompt-unpublished'], '200이어도 그 항목이 공개본에 없으면 고친다');
+    assert.deepEqual(await run(ok, page(404, '')), ['고칠 것:prompt-page']);
+    assert.deepEqual(await run(ok, async () => { throw Object.assign(new Error('끊김'), { name: 'TypeError' }); }), ['확인할 것:prompt-unknown']);
+    assert.deepEqual(await run({ 브랜드: 'yuhobuilds', 슬롯: '2026-10-25', 프롬프트: { id: 'nope', 주소: 'https://synk.im/prompts/#nope' } }, page(200, 'id="nope"')), ['고칠 것:prompt-item']);
+    assert.deepEqual(await run({ 브랜드: 'yuhobuilds', 슬롯: '2026-10-25', 프롬프트: { id: 'still-time', 주소: 'synk.im/prompts' } }, page(200, 'id="still-time"')), ['고칠 것:prompt-url']);
+    assert.deepEqual(await run(ok, page(404, ''), { skipLinks: true }), [], '--링크건너뛰기면 공개 페이지는 열지 않는다');
+  } finally { fs.rmSync(root, { recursive: true, force: true }); }
+});

@@ -60,7 +60,7 @@
   ],
   "검사": {
     "도구": "tools/올리기전검사.js",
-    "시각": "2026-10-22T14:37:17+09:00",
+    "시각": "2026-10-22T16:22:00+09:00",
     "결과": "확인할 것",
     "고칠것": [],
     "확인할것": [
@@ -83,10 +83,15 @@
         "봉우리": -1.5,
         "정지": "14% 통과",
         "끝화면": 3.8,
-        "사전검사": ".tmp/올리기전검사/yuhobuilds_무료2000분_20261022/영상사전검사_remotion_out_minutes-v6_final/inspection-116d067f-b245-47f7-911a-7427992c68a6/검사.json"
+        "사전검사": ".tmp/올리기전검사/yuhobuilds_무료2000분_20261022/영상사전검사_remotion_out_minutes-v6_final/inspection-869d87f3-5bb9-4703-a4a2-1e223ed8b3e7/검사.json"
       }
     ],
     "기록": ".tmp/올리기전검사/yuhobuilds_무료2000분_20261022"
   },
-  "작업실등록": true
+  "작업실등록": true,
+  "프롬프트": {
+    "id": "actions-minutes",
+    "주소": "https://synk.im/prompts/#actions-minutes",
+    "본문": "docs/마케팅/맞춤도구/prompts/프롬프트.json"
+  }
 }

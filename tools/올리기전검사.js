@@ -15,6 +15,7 @@
  *   ⑥ 게시글 규칙(tools/lib/게시글규칙.js) — 첫 125자 훅, 인스타 해시태그 5개, 상대 날짜·내부 번호·도구 이름, 플랫폼 한도,
  *      블로그·링크드인 원고의 숫자가 영상(화면 글·나레이션)·게시글과 맞는지
  *   ⑦ 올릴 칸 — 원본 파일(화질 낮춘 사본 아님), 유튜브 제목·언어·아동용 아님, AI 표시, 시각·슬롯·시한, 글 속 링크 응답 200
+ *   ⑧ 가져갈 프롬프트(10-22, yuhobuilds만) — 준비.json 「프롬프트」가 없으면 확인할 것, 있으면 synk.im/prompts 응답 200과 그 항목이 공개본에 있는지
  *
  * 「고칠 것」은 올리기 전에 꼭 고칠 것(서버·API가 거절하거나 기준을 어김), 「확인할 것」은 기계가 확신하지 못해 눈으로 볼 것이다.
  * 결과는 그 편 게시/준비.json의 「검사」 칸에 남긴다(--저장안함이면 안 남김). 영상마다 크기·수정 시각·SHA-256을 같이 적어 두어,
@@ -260,6 +261,39 @@ async function checkLinks(list) {
   return out;
 }
 
+// ── 가져갈 프롬프트(10-22) ──
+// yuhobuilds 편은 보는 사람이 가져갈 프롬프트를 synk.im/prompts에 한 항목으로 올리고 준비.json 「프롬프트」에 {id, 주소}를 적는다
+// (docs/마케팅/맞춤도구/prompts/README.md). 칸이 없으면 확인할 것(맞지 않는 편이면 까닭을 남은위험에), 있으면 프롬프트.json에
+// 그 항목이 있는지와 공개 페이지가 응답 200이고 그 항목(id="…")을 싣고 있는지 본다 — 주소 뒤 #id는 서버로 가지 않아 200만으로는 모른다.
+const PROMPTS_PAGE = 'https://synk.im/prompts/';
+const PROMPTS_DATA = ['docs', '마케팅', '맞춤도구', 'prompts', '프롬프트.json'];
+const PROMPTS_FROM = '2026-10-23'; // 이 날 슬롯부터 — 그 전 편(이미 올라갔거나 예약된 편)은 칸이 없어도 짚지 않는다
+
+async function promptFindings(prep, { repo, fetchImpl = fetch, skipLinks = false } = {}) {
+  if (prep.브랜드 !== 'yuhobuilds' || !(String(prep.슬롯 || '') >= PROMPTS_FROM)) return [];
+  const out = [];
+  const add = (level, code, message) => out.push({ level, code, where: '프롬프트', message });
+  const p = prep.프롬프트;
+  if (!p || typeof p !== 'object' || !p.id) {
+    add(LOOK, 'prompt-missing', '준비.json 「프롬프트」({"id","주소"})가 없다 — 이 편의 가져갈 프롬프트를 synk.im/prompts에 올려 적는다(프롬프트가 맞지 않는 편이면 까닭을 남은위험에)');
+    return out;
+  }
+  const want = PROMPTS_PAGE + '#' + p.id;
+  if (p.주소 !== want) add(FIX, 'prompt-url', `「주소」가 ${p.주소 || '없음'} — ${want}로 적는다`);
+  let items = null;
+  try { items = JSON.parse(fs.readFileSync(path.join(repo, ...PROMPTS_DATA), 'utf8')).항목 || []; } catch (error) { add(LOOK, 'prompt-data', `프롬프트.json을 읽지 못했다(${error.message})`); }
+  if (items && !items.some((it) => it.id === p.id)) add(FIX, 'prompt-item', `프롬프트.json에 「${p.id}」 항목이 없다 — 항목을 더하고 빌드·공개한다`);
+  if (skipLinks) return out;
+  try {
+    const r = await fetchImpl(PROMPTS_PAGE, { redirect: 'follow', signal: AbortSignal.timeout(15000), headers: { 'user-agent': 'Mozilla/5.0 (SYNK upload check)' } });
+    if (r.status !== 200) add(FIX, 'prompt-page', `${PROMPTS_PAGE} 응답 ${r.status} — 공개 페이지가 열려야 한다`);
+    else if (!(await r.text()).includes(`id="${p.id}"`)) add(FIX, 'prompt-unpublished', `공개된 ${PROMPTS_PAGE}에 「${p.id}」 항목이 아직 없다 — node docs/마케팅/맞춤도구/build.mjs prompts 뒤 tools/공개.js로 올린다`);
+  } catch (error) {
+    add(LOOK, 'prompt-unknown', `${PROMPTS_PAGE} 확인 못 함(${error.name === 'TimeoutError' ? '시간 초과' : error.message}) — 나중에 다시 연다`);
+  }
+  return out;
+}
+
 function kitCheck(bundle, file, out) {
   const r = spawnSync(process.execPath, [path.join(__dirname, 'SNS키트굽기.js'), file, '--out', out], { encoding: 'utf8', windowsHide: true, timeout: 300000 });
   const failed = String(r.stdout || '').split('\n').filter((l) => l.includes('✗')).map((l) => ({ level: FIX, code: 'kit', where: path.basename(file), message: l.trim() }));
@@ -379,6 +413,7 @@ async function run(dir, opts = {}) {
   const script = 묶음.scriptText(bundle);
   findings.push(...규칙.compareNumbers(docs, [...texts, ...screenTexts, script.text]));
   if (!opts.skipLinks) findings.push(...await checkLinks([...links]));
+  findings.push(...await promptFindings(prep, { repo: bundle.repo, skipLinks: opts.skipLinks }));
 
   const fixes = findings.filter((f) => f.level === FIX);
   const looks = findings.filter((f) => f.level === LOOK);
@@ -426,4 +461,4 @@ async function main() {
 
 if (require.main === module) main().catch((error) => { console.error(error.stack || error.message); process.exitCode = 2; });
 
-module.exports = { run, linesOf, problemsOf, SAFE };
+module.exports = { run, linesOf, problemsOf, promptFindings, SAFE };

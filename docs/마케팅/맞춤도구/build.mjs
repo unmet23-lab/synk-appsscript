@@ -49,6 +49,12 @@ const TOOLS = {
   manual: { out: 'builds/manual', files: ['content.js', 'rules.js', 'view.js', 'index.html'], assets: ['favicon-32.png', 'brand-shift.webp', 'hero-manual.webp', 'manual-art-intro.webp', 'manual-art-task.webp', 'manual-art-finish.webp', 'manual-art-checks.webp', 'manual-art-stops.webp', 'manual-art-ai.webp', 'manual-art-result.webp', 'gpt-guide-1-sidebar.webp', 'gpt-guide-2-create.webp', 'gpt-guide-3-menu.webp', 'gpt-guide-4-instructions.webp', 'gemini-guide-1-settings.webp', 'gemini-guide-2-menu.webp', 'gemini-guide-3-skills.webp', 'gemini-guide-4-form.webp', 'gemini-guide-5-slash.webp'], outside: { 'builds-index.html': 'builds/index.html' } },
 };
 
+// 질문 흐름이 없는 한 쪽 페이지. 원고 <이름>/프롬프트.json을 <이름>/page.js가 검사하고 그린다(wizard·Atlas를 싣지 않는다).
+// prompts = synk.im/prompts(10-22 유호님 「우리 프롬프트들 모아놓자」) — yuhobuilds 편마다 「가져갈 프롬프트」 한 항목. 영상·글 주소는 각 편 게시결과.json에서 읽는다.
+const PAGES = {
+  prompts: { out: 'prompts', assets: ['favicon-32.png', 'logo-synk.webp'] },
+};
+
 const sha = file => createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 const run = (cmd, args, opts = {}) => {
   const r = spawnSync(cmd, args, { encoding: 'utf8', env: { ...process.env, PYTHONIOENCODING: 'utf-8' }, ...opts });
@@ -102,9 +108,62 @@ function chrome(args) {
   return true;
 }
 
+function writeManifest(name, out, extra = {}) {
+  const manifest = {};
+  const walk = dir => { for (const e of fs.readdirSync(dir, { withFileTypes: true })) { const p = path.join(dir, e.name); if (e.isDirectory()) walk(p); else manifest[path.relative(out, p).replace(/\\/g, '/')] = { bytes: fs.statSync(p).size, sha256: sha(p) }; } };
+  walk(out);
+  fs.writeFileSync(path.join(HERE, 'dist', `${name}.manifest.json`), JSON.stringify({ tool: name, path: `/${path.relative(path.join(HERE, 'dist'), out).replace(/\\/g, '/')}/`, builtAt: new Date().toISOString(), ...extra, files: manifest }, null, 1) + '\n');
+  return Object.keys(manifest).length;
+}
+
+// 예약 시각이 지난 판의 주소는 실제로 열리는지 본다(예약이 풀리거나 놓칠 수 있다). 블로그 글은 공개면 200(비공개 403),
+// 유튜브는 oEmbed가 공개 영상에만 200을 준다.
+async function opens(href) {
+  const url = /youtube\.com|youtu\.be/.test(href) ? `https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(href)}` : href;
+  try { return (await fetch(url, { redirect: 'follow', signal: AbortSignal.timeout(15000), headers: { 'user-agent': 'Mozilla/5.0 (SYNK build)' } })).status === 200; } catch { return false; }
+}
+
+async function buildPage(name) {
+  const page = PAGES[name];
+  const src = path.join(HERE, name);
+  const out = path.join(HERE, 'dist', page.out);
+  const require = createRequire(import.meta.url);
+  const { checkPrompts, linksOf, withEpisodes, renderPage } = require(path.join(src, 'page.js'));
+  const raw = JSON.parse(fs.readFileSync(path.join(src, '프롬프트.json'), 'utf8'));
+  const problems = checkPrompts(raw, { repo: REPO });
+  if (problems.length) throw new Error(`${name}: 항목 검사에서 ${problems.length}곳이 걸렸어요.\n- ${problems.join('\n- ')}`);
+  // 한 번 공개한 id는 영상 설명·댓글이 가리키므로 빠지면 멈춘다(공개본을 못 읽으면 경고만).
+  try {
+    const r = await fetch(`https://synk.im/${page.out}/`, { signal: AbortSignal.timeout(15000) });
+    if (r.status === 200) {
+      const live = [...(await r.text()).matchAll(/<article class="item" id="([a-z0-9-]+)"/g)].map(m => m[1]);
+      const gone = live.filter(id => !raw.항목.some(it => it.id === id));
+      if (gone.length) throw new Error(`${name}: 공개본에 있던 항목 ${gone.join(', ')}이 프롬프트.json에서 빠졌어요 — 영상 설명이 가리키는 주소라 id를 지우거나 바꾸지 않아요.`);
+    }
+  } catch (error) { if (/빠졌어요/.test(error.message)) throw error; console.warn(`  공개본 id 대조를 건너뜀(${error.message})`); }
+  const data = withEpisodes(raw, REPO);
+  fs.rmSync(out, { recursive: true, force: true });
+  fs.mkdirSync(path.join(out, 'assets'), { recursive: true });
+  const links = {};
+  for (const it of data.항목) {
+    links[it.id] = [];
+    for (const l of linksOf(REPO, it.편)) if (!l.check || await opens(l.href)) links[it.id].push({ href: l.href, label: l.label });
+  }
+  fs.writeFileSync(path.join(out, 'index.html'), renderPage(data, { links }));
+  for (const f of page.assets) fs.copyFileSync(path.join(HERE, 'assets', f), path.join(out, 'assets', f));
+  const og = path.join(src, 'og.html');
+  const font = subsetFont([path.join(out, 'index.html'), og], path.join(out, 'assets/SUIT-subset.woff2'));
+  console.log(`${name}: 글자 ${font.chars}개로 폰트를 줄임${font.missing ? ` (폰트에 없어 시스템 글꼴로 보일 기호: ${font.missing})` : ''}`);
+  subsetLatin(path.join(out, 'assets'));
+  if (fs.existsSync(og) && chrome(['--window-size=1200,630', `--screenshot=${path.join(out, 'og.png')}`, pathToFileURL(og).href])) console.log(`${name}: 링크 미리보기 이미지 생성`);
+  const linked = Object.values(links).filter(l => l.length).length;
+  console.log(`${name}: 항목 ${data.항목.length}개(영상 주소가 붙은 것 ${linked}개) · ${writeManifest(name, out, { items: data.항목.map(it => it.id) })}개 파일 → dist/${page.out}/`);
+}
+
 const pick = process.argv.slice(2).filter(a => !a.startsWith('-'));
-const names = pick.length ? pick : Object.keys(TOOLS);
+const names = pick.length ? pick : [...Object.keys(TOOLS), ...Object.keys(PAGES)];
 for (const name of names) {
+  if (PAGES[name]) { await buildPage(name); continue; }
   const tool = TOOLS[name];
   if (!tool) throw new Error(`모르는 도구: ${name}`);
   const src = path.join(HERE, name);
