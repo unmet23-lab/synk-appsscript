@@ -1,0 +1,71 @@
+/* 전북 협력 제안 문서들의 공통 모양 — 협력제안서 원고의 <style>을 옮긴 것이다. 굽기.cjs가 <!--@공통CSS@--> 자리에 넣는다. */
+@font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
+
+/*@FONTS@*/
+@page { size: A4 portrait; margin: 17mm 17mm 18mm;
+  @bottom-center {
+    content: counter(page) " / " var(--synk-total-pages, "?");
+    font-family:'Inter Tight',system-ui,sans-serif; font-size:2.9mm; font-weight:500;
+    letter-spacing:.06em; color:#666666; margin-top:6mm;
+  }
+}
+:root{
+  --paper:#FFFFFF; --ink:#262626; --ink-2:#373737; --ash:#666666;
+  --coral:#F96859; --coral-3:#AE322A; --coral-wash:#FEF0E9;
+  --hair:rgba(55,55,55,.22); --hair-2:rgba(55,55,55,.12);
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+html,body{
+  background:var(--paper); color:var(--ink);
+  font-family:'SYNK Bracket','Inter Tight','SUIT Variable','SUIT',system-ui,'Malgun Gothic','맑은 고딕',sans-serif;
+  font-weight:400; font-size:3.55mm; line-height:1.62; word-break:keep-all;
+  -webkit-print-color-adjust:exact; print-color-adjust:exact;
+}
+.sheet{ width:auto; padding:0; margin:0; }
+
+/* 머리 */
+.head{ display:flex; justify-content:space-between; align-items:flex-end; padding-bottom:3.2mm; border-bottom:.35mm solid var(--ink); }
+.head .logo svg{ height:9.5mm; width:auto; display:block; }
+.head .meta{ text-align:right; font-size:2.9mm; color:var(--ash); line-height:1.5; }
+.head .meta b{ color:var(--ink); font-weight:600; }
+
+/* 제목 */
+.title{ margin-top:7mm; }
+.title .kicker{ font-size:3.1mm; font-weight:600; color:var(--coral-3); letter-spacing:.02em; }
+.title h1{ font-size:6.6mm; font-weight:800; line-height:1.32; margin-top:1.6mm; letter-spacing:-.01em; }
+.title .sub{ font-size:4.1mm; font-weight:600; color:var(--ink-2); margin-top:2.2mm; }
+.title .rule{ width:22mm; height:.7mm; background:var(--coral); margin-top:4.2mm; }
+
+.to{ margin-top:5mm; display:grid; grid-template-columns:24mm 1fr; row-gap:1.2mm; font-size:3.25mm; }
+.to dt{ color:var(--ash); font-weight:500; }
+.to dd{ color:var(--ink); }
+
+/* 절 */
+h2{ font-size:4.6mm; font-weight:800; margin-top:8.5mm; margin-bottom:2.6mm; break-after:avoid-page; page-break-after:avoid; }
+h2 .n{ color:var(--coral-3); font-family:'Inter Tight','SUIT',sans-serif; font-weight:700; margin-right:2mm; }
+p, li{ orphans:2; widows:2; }
+ul.dots{ list-style:none; }
+ul.dots > li{ position:relative; padding-left:4.2mm; margin-top:1.6mm; }
+ul.dots > li::before{ content:''; position:absolute; left:.6mm; top:2.25mm; width:1.3mm; height:1.3mm; border-radius:50%; background:var(--coral); }
+ul.sub{ list-style:none; margin-top:.8mm; }
+ul.sub > li{ position:relative; padding-left:4mm; margin-top:.6mm; color:var(--ink-2); }
+ul.sub > li::before{ content:''; position:absolute; left:.8mm; top:2.4mm; width:1.6mm; height:.3mm; background:var(--ash); }
+b, strong{ font-weight:700; }
+
+/* 표 */
+table{ width:100%; border-collapse:collapse; font-size:3.2mm; line-height:1.55; margin-top:1mm; }
+thead th{ text-align:left; font-weight:700; color:var(--ink); padding:2mm 2.2mm; border-top:.35mm solid var(--ink); border-bottom:.25mm solid var(--hair); background:transparent; }
+tbody td{ padding:2.2mm 2.2mm; vertical-align:top; border-bottom:.2mm solid var(--hair); }
+tbody tr{ break-inside:avoid; page-break-inside:avoid; }
+tbody td:first-child{ color:var(--ink-2); }
+table.prog td:nth-child(1){ width:31%; }
+table.prog td:nth-child(2){ width:47%; }
+table.prog td:nth-child(3){ width:22%; color:var(--ash); }
+table.plan td:first-child, table.when td:first-child{ width:24%; font-weight:600; color:var(--ink); }
+td .pt{ font-weight:700; color:var(--ink); }
+
+.hold{ background:var(--coral-wash); border-bottom:.25mm dotted var(--coral-3); padding:0 .6mm; }
+.note{ margin-top:2.6mm; font-size:3mm; color:var(--ash); }
+.foot{ margin-top:9mm; padding-top:3mm; border-top:.2mm solid var(--hair); font-size:2.9mm; color:var(--ash); }
+
+@media screen{ body{ background:#EAEAEA; padding:8mm; } .sheet{ background:var(--paper); max-width:210mm; margin:0 auto; padding:17mm; box-shadow:0 3mm 12mm rgba(8,9,12,.18); } }
