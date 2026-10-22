@@ -16800,10 +16800,12 @@ function createWorldEducation({
     if (selected.route === "speaking" && typeof speakingPractice?.open === "function") return speakingPractice.open(selected.routeId);
     return startLesson(selected.lessonId);
   }
-  function open({ continueAfter = false } = {}) {
+  function open({ continueAfter = false, presetExam = null } = {}) {
     check3();
-    const progress2 = getProgress(), saved = progress2.learningProfile(), profile = saved.profile, values = settingsFor(progress2.learningProfileValues());
+    const progress2 = getProgress(), saved = progress2.learningProfile(), profile = saved.profile, stored = settingsFor(progress2.learningProfileValues());
     let revision2 = profile.revision;
+    const preset = position?.exam && Object.hasOwn(EXAM_GRADES2, presetExam) ? presetExam : null;
+    const values = preset ? { ...stored, primaryReason: "exam", examType: preset, targetGrade: EXAM_GRADES2[preset].includes(stored.targetGrade) ? stored.targetGrade : null } : stored;
     let summary = empty2;
     try {
       summary = readCoach()?.summary() || empty2;
@@ -16846,7 +16848,7 @@ function createWorldEducation({
    <p class="study-scope">${t2(scoped ? "goal.scope.account" : "goal.scope.device")}</p>
    <label class="study-consent"><input type="checkbox" name="consent" ${profile.consent ? "checked" : ""}><span><strong>${consentName}</strong><small>${t2("goal.consent.note")}</small></span></label>
    <p class="study-save-status" role="status">${escape3(tMessage2(progress2.status().message))}</p>
-   <div class="life-actions"><button class="felt-button" type="submit">${t2(continueAfter ? "goal.saveStart" : "goal.save")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" type="button" data-study-skip>${t2(profile.status === "new" ? "goal.skip" : "goal.close")}</button></div>
+   <div class="life-actions"><button class="felt-button" type="submit">${t2(continueAfter || preset ? "goal.saveStart" : "goal.save")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" type="button" data-study-skip>${t2(profile.status === "new" ? "goal.skip" : "goal.close")}</button></div>
    ${profile.status === "active" ? `<div class="study-controls"><button type="button" class="quiet-button" data-study-clear="disable">${t2("goal.disable")}</button><button type="button" class="quiet-button" data-study-clear="delete">${t2("goal.delete")}</button></div>` : ""}
   </form>`, { type: "world-study", eyebrow: "GOALS", nav: "me" });
     const form = target.document.querySelector("#world-study-form");
@@ -16889,7 +16891,7 @@ function createWorldEducation({
       check3();
       if (progress2 !== getProgress() || !form.isConnected) throw Error("\uC124\uC815\uC744 \uB2E4\uC2DC \uC5F4\uC5B4 \uC8FC\uC138\uC694.");
     };
-    const run = async (operation) => {
+    const run = async (operation, after = null) => {
       if (busy) return;
       busy = true;
       form.querySelectorAll("button").forEach((b) => b.disabled = true);
@@ -16912,7 +16914,8 @@ function createWorldEducation({
         }
         refresh();
         home.closePanel();
-        if (continueAfter) await next();
+        if (after) await after();
+        else if (continueAfter) await next();
         else home.toast(t2("goal.saved"));
       } catch (error2) {
         if (form.isConnected) status.textContent = tMessage2(error2.message) || t2("goal.retry");
@@ -16941,19 +16944,50 @@ function createWorldEducation({
         return;
       }
       const reason2 = form.elements.reason.value, minutes2 = Number(form.elements.minutes.value);
-      void run(() => {
-        progress2.updateLearningProfile({ consent: true, expectedRevision: revision2, values: { reasons: reason2 ? [reason2] : null, primaryReason: reason2 || null, goal: null, support: form.elements.support.value, explanation: form.elements.explanation.value, ...examValues(reason2) }, today: { ...minutes2 ? { minutes: minutes2 } : {}, audio: form.elements.audio.value } });
-        saveSpeaking(reason2);
-      });
+      void run(
+        () => {
+          progress2.updateLearningProfile({ consent: true, expectedRevision: revision2, values: { reasons: reason2 ? [reason2] : null, primaryReason: reason2 || null, goal: null, support: form.elements.support.value, explanation: form.elements.explanation.value, ...examValues(reason2) }, today: { ...minutes2 ? { minutes: minutes2 } : {}, audio: form.elements.audio.value } });
+          saveSpeaking(reason2);
+        },
+        // 주소로 연 창의 「저장하고 시작하기」: 시험을 고른 채 저장했으면 이번 주 계획, 학생이 이유를 시험 밖으로 바꿨으면 첫 실행처럼 다음 연습.
+        // 계획을 띄우지 못하면(그사이 다른 판을 열었거나 계획이 없음) 저장 알림만, 그사이 계정이 바뀌어 이 화면이 닫혔으면 아무것도.
+        preset ? async () => {
+          if (!position.exam.examInfo(progress2.learningProfileValues())) return next();
+          let shown = "missing";
+          try {
+            shown = await openPlan({ quiet: true });
+          } catch {
+            if (stopped) return;
+          }
+          if (shown !== "shown") home.toast(t2("goal.saved"));
+        } : null
+      );
     });
     form.querySelector("[data-study-skip]").addEventListener("click", () => {
-      if (profile.status === "new") void run(() => progress2.clearLearningProfile({ mode: "skip", expectedRevision: revision2 }));
+      if (profile.status === "new") void run(() => progress2.clearLearningProfile({ mode: "skip", expectedRevision: revision2 }), preset ? next : null);
       else home.closePanel();
     });
     form.querySelectorAll("[data-study-clear]").forEach((button) => button.addEventListener("click", () => void run(() => {
       progress2.clearLearningProfile({ mode: button.dataset.studyClear, expectedRevision: revision2 });
       if (button.dataset.studyClear === "delete" && speakingChosen()) speakingCall("choose", owner, false);
     })));
+  }
+  async function examLink(type) {
+    check3();
+    if (!position?.exam || !Object.hasOwn(EXAM_GRADES2, type) || home.openPanel?.()) return false;
+    const progress2 = getProgress();
+    let reading = null;
+    try {
+      reading = progress2.hangulReading?.()?.answer || null;
+    } catch {
+    }
+    if (reading === "new") return false;
+    if (progress2.learningProfile().profile.status === "active" && position.exam.examInfo(settingsFor(progress2.learningProfileValues()))?.type === type) {
+      const shown = await openPlan({ quiet: true });
+      if (shown !== "missing") return shown === "shown";
+    }
+    open({ presetExam: type });
+    return true;
   }
   let diagnosed = false, positionOpen = 0;
   const PANEL = { type: "life-position", eyebrow: "MY POSITION", nav: "packs" };
@@ -17710,7 +17744,7 @@ function createWorldEducation({
     startSection();
   }
   let planOpen = 0;
-  async function openPlan({ keepScroll = false } = {}) {
+  async function openPlan({ keepScroll = false, quiet = false } = {}) {
     check3();
     const ticket = ++planOpen;
     if (!keepScroll) {
@@ -17725,11 +17759,11 @@ function createWorldEducation({
       }
       check3();
     }
-    if (ticket !== planOpen) return;
+    if (ticket !== planOpen || quiet && home.openPanel?.()) return "skipped";
     const plan = refresh(), examPlan = plan?.examPlan;
     if (!examPlan || !view) {
-      if (!keepScroll) open();
-      return;
+      if (!keepScroll && !quiet) open();
+      return "missing";
     }
     const scroller = keepScroll ? panelNode("[data-plan-board]")?.closest?.("#panel-content") : null, scrollTop = scroller?.scrollTop || 0;
     home.showPanel(t2("plan.week.title"), view.renderExamPlan({ plan: examPlan, next: plan.selected, reason: tMessage2(plan.reason || "") }), { type: "life-position", eyebrow: "MY WEEK", nav: "packs" });
@@ -17794,6 +17828,7 @@ function createWorldEducation({
         failed(error2);
       }
     });
+    return "shown";
   }
   const onFocus = () => refresh();
   target.addEventListener?.("focus", onFocus);
@@ -17803,7 +17838,7 @@ function createWorldEducation({
     const done = (plan.areas || []).reduce((n, row) => n + Math.min(row.done, row.planned), 0), total = (plan.areas || []).reduce((n, row) => n + row.planned, 0);
     return `<button class="life-row" data-view="plan">${print("goals", "life-row-print")}<span class="life-row-copy"><strong>${t2("plan.week.title")}</strong><small>${escape3(t2("plan.week.row", { done, total }))}</small></span></button>`;
   }
-  return { next, open, refresh, applyPreferences, planRow, positionTotal: topikTotal, ...position ? { position: openPosition, practice: startPractice, plan: openPlan, mock: openMock } : {}, presentation() {
+  return { next, open, examLink, refresh, applyPreferences, planRow, positionTotal: topikTotal, ...position ? { position: openPosition, practice: startPractice, plan: openPlan, mock: openMock } : {}, presentation() {
     check3();
     const values = settingsFor(getProgress().learningProfileValues());
     return Object.fromEntries(["support", "explanation"].filter((k) => values[k]).map((k) => [k, values[k]]));

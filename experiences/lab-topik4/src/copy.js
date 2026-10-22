@@ -99,7 +99,7 @@
     ],
     freeTitle: '기다리는 동안 무료로',
     free: [
-      { t: 'SYNK WORLD 쓰기 연습', d: 'TOPIK II 쓰기 51~54번 연습 문제가 있어요. SYNK ID로 로그인하면 쓴 글에 자동 피드백도 받을 수 있어요.', href: 'https://synk.im/world/', go: 'WORLD 열기' },
+      { t: 'SYNK WORLD 쓰기 연습', d: 'TOPIK II 쓰기 51~54번 연습 문제가 있어요. SYNK ID로 로그인하면 쓴 글에 자동 피드백도 받을 수 있어요.', href: 'https://synk.im/world/?exam=topik2', go: 'WORLD 열기' },
       { t: '인스타그램 @synk.mn', d: '한국어 관용구 퀴즈 영상을 몽골어 설명과 함께 올려요. 반 소식도 여기에 함께 올려요.', href: 'https://www.instagram.com/synk.mn/', go: '@synk.mn 보기' },
     ],
     formTitle: '관심 등록',
@@ -181,7 +181,7 @@
     ],
     freeTitle: 'Хүлээх хугацаандаа үнэгүй',
     free: [
-      { t: 'SYNK WORLD бичгийн дадлага', d: 'TOPIK II бичгийн 51–54-р даалгаврын дасгалууд бий. SYNK ID-гаар нэвтэрвэл бичсэн зүйлдээ автомат засвар, зөвлөмж авч болно.', href: 'https://synk.im/world/', go: 'WORLD нээх' },
+      { t: 'SYNK WORLD бичгийн дадлага', d: 'TOPIK II бичгийн 51–54-р даалгаврын дасгалууд бий. SYNK ID-гаар нэвтэрвэл бичсэн зүйлдээ автомат засвар, зөвлөмж авч болно.', href: 'https://synk.im/world/?exam=topik2&lang=mn', go: 'WORLD нээх' },
       { t: 'Instagram @synk.mn', d: 'Солонгос хэлний хэвшмэл хэллэгийн асуулт хариултын бичлэгийг монгол тайлбартай нь оруулдаг. Ангийн мэдээг ч мөн тэнд оруулна.', href: 'https://www.instagram.com/synk.mn/', go: '@synk.mn үзэх' },
     ],
     formTitle: 'Урьдчилан бүртгүүлэх',

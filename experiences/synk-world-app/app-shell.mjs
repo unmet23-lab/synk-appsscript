@@ -55,6 +55,8 @@ const openingReady=startOpening();
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let screen='',draftRun=null,answers=[],questionIndex=0,lastCompletion=null,wardrobeStudio=null,gameLaunch=0,activeGameSession=null,gameRecovery=null;
 const wardrobeRequested=new URLSearchParams(location.search).get('wardrobe')==='1';
+// 주소의 ?exam=topik1|topik2(10-22, 메일·신청 페이지의 무료 연습 링크): 첫 실행을 마치고 들어온 뒤 그 시험을 채운 학습 목표 창(이미 그 목표면 이번 주 계획)을 연다 — openExamLink.
+const examRequested=(value=>['topik1','topik2'].includes(value)?value:null)(new URLSearchParams(location.search).get('exam'));
 async function restoreConnectedHome(){
  try{
   const restored=await restoreSession();
@@ -392,6 +394,15 @@ async function openLife(method,...args){
  if(lifePort&&(lifePort.status().phase==='conflict'||lifePort.status().rejected)){showLifeRecovery();return;}
  lifeUI[method]?.(...args);
 }
+// ?exam= 바로가기: 학습 목표가 사는 생활 진도가 준비된 뒤 연다(저장이 엇갈렸으면 그 확인부터 — openLife와 같다). 저장은 학생이 목표 창에서 할 때만이다.
+async function openExamLink(){
+ if(!lifeReady)initializeLife();
+ const epoch=lifeEpoch;await lifeReady;
+ if(epoch!==lifeEpoch||!education)return;
+ if(lifePort&&(lifePort.status().phase==='conflict'||lifePort.status().rejected)){showLifeRecovery();return;}
+ // 공개 직후 10분 캐시로 옛 목표 창 모듈이 붙어 있으면 examLink가 없다 — 그때는 지금처럼 홈.
+ return education.examLink?.(examRequested);
+}
 async function resolveLife(button){
  const port=lifePort,epoch=lifeEpoch;if(!port)return;
  document.querySelectorAll('[data-world="life-resolve"]').forEach(node=>node.disabled=true);
@@ -641,6 +652,8 @@ entryGate=createWorldEntryGate({
    if(entryGate.state().phase!=='ready'||identity.owner!==(client.snapshot?.accountId||'guest')||identity.generation!==client.generation)return;
    if(wardrobeRequested){if(client.snapshot)void wardrobe();else signIn();}
    else if(new URLSearchParams(location.search).get('cafe')==='1')void openLife('cafe').catch(()=>home.toast('카페 연결을 확인한 뒤 다시 열어 주세요.'));
+   // 한 번만 도는 바로가기라 계정이 바뀌어 멈춘 것(코드 없는 오류)은 알리지 않는다 — 「다시 시도」할 일이 아니다.
+   else if(examRequested)void openExamLink().catch(error=>{if(error?.code)home.toast(errorText(error));});
   });
  },
  onError:showEntryRecovery
