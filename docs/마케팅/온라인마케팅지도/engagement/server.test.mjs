@@ -41,9 +41,9 @@ test('daily post and follower records persist, reject unconfirmed channels, and 
   const { child, base } = await start(port, dataPath);
   try {
     const catalog = await (await fetch(base + '/api/catalog')).json();
-    // 2026-10-02 브라질·멕시코 4자리 추가: 74행, 공개 발행 기존 22곳 + 확장 확보 26곳 = 48곳.
+    // 2026-10-02 브라질·멕시코 4자리 추가, 10-19 인도네시아 TikTok 확보: 74행, 공개 발행 기존 22곳 + 확장 확보 27곳 = 49곳.
     assert.equal(catalog.channels.length, 74);
-    assert.equal(catalog.channels.filter(row => row.ready).length, 48);
+    assert.equal(catalog.channels.filter(row => row.ready).length, 49);
     assert.equal(catalog.staleSources.length, 0);
     const mapPage = await fetch(base + '/map/');
     assert.equal(mapPage.status, 200);
