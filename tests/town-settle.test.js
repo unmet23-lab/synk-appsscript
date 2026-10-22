@@ -110,3 +110,102 @@ test('FT10: 차를 마치고 남은 시간은 이어지는 안내판 이용으�
   assert.ok(runs[0].sign.currentUseId, '안내판 이용까지 마쳤다');
   assert.deepEqual(runs[1], runs[0], '1초씩'); assert.deepEqual(runs[2], runs[0], '0.3초씩');
 });
+
+// ── 맥박은 임대만, 결산은 경계 신호·읽기·명령에서(§14-3, D1~D5) ──────────────────────────
+async function storeFixture() {
+  const { createStore } = await townFile('server.mjs');
+  return (options = {}) => {
+    let at = 100000, n = 0, receipt;
+    const store = createStore({ now: () => at, ...options });
+    const pulseInput = { surfaceId: 'day-a', surface: 'day', foreground: true, safe: false };
+    const f = {
+      store, get at() { return at; },
+      old(ms = 0, extra = {}) { at += ms; const out = store.presence({ ...pulseInput, ...extra }); receipt = out.presence; return out; },
+      pulse(ms = 0, extra = {}) { at += ms; const out = store.pulse({ ...pulseInput, ...extra }); receipt = out.presence; return out; },
+      send(type, payload = {}) {
+        return store.execute({ id: `settle-${++n}`, type, expectedRevision: store.peek().state.revision,
+          payload: { ...(/^(DAY_|LIFE_)/.test(type) ? { surfaceId: receipt.surfaceId, fence: receipt.fence } : {}), ...payload } });
+      },
+      boundary(extra = {}) { return store.boundary({ surfaceId: receipt.surfaceId, fence: receipt.fence, ...extra }); },
+    };
+    return f;
+  };
+}
+const worldOf = snapshot => { const { writeSeq, ...rest } = snapshot.state; return rest; };
+/** 찻집에 자리를 놓아 FT10 차 이용이 흐르게 해 둔 가게 — 맥박 방식만 고른다. */
+function placed(make, mode) {
+  const f = make(); f[mode]();
+  f.send('DAY_MOVE', { location: 'cafe' }); if (f.store.peek().state.day.home.exitTarget) f.send('DAY_EXIT');
+  f.send('CHOOSE', { branch: 'inside' }); f.send('NEXT'); f.send('PLACE', { slot: 'eaves-left' });
+  return f;
+}
+
+test('맥박만 보내고 명령 때 결산한 세계는 1초마다 옛 맥박으로 민 세계와 명령 경계마다 같다', async () => {
+  const make = await storeFixture();
+  const old = placed(make, 'old'), lazy = placed(make, 'pulse');
+  for (let i = 0; i < 20; i++) { old.old(1000); lazy.pulse(1000); }
+  assert.equal(lazy.store.peek().state.settledU < old.store.peek().state.settledU, true, '맥박은 세계를 밀지 않는다');
+  old.send('DAY_MOVE', { location: 'workshop' }); lazy.send('DAY_MOVE', { location: 'workshop' });
+  assert.deepEqual(worldOf(lazy.store.peek()), worldOf(old.store.peek()));
+  assert.ok(old.store.peek().state.writeSeq > lazy.store.peek().state.writeSeq, '옛 맥박은 매번 쓰고, 새 맥박은 쓰지 않는다');
+});
+
+test('나눠 결산해도 한 번에 결산한 것과 같다(걸음 격자 위에서) · peek은 결산하지 않는다', async () => {
+  const make = await storeFixture();
+  const once = placed(make, 'pulse'), split = placed(make, 'pulse');
+  for (let i = 0; i < 10; i++) { once.pulse(1000); split.pulse(1000); }
+  const before = split.store.peek().state.settledU;
+  split.store.read();
+  assert.ok(split.store.peek().state.settledU > before, '읽기는 결산한다');
+  for (let i = 0; i < 10; i++) { once.pulse(1000); split.pulse(1000); }
+  const peeked = once.store.peek().state.settledU;
+  assert.equal(once.store.peek().state.settledU, peeked);
+  once.send('DAY_MOVE', { location: 'workshop' }); split.send('DAY_MOVE', { location: 'workshop' });
+  assert.deepEqual(worldOf(split.store.peek()), worldOf(once.store.peek()));
+});
+
+test('판 둘: 맥박·결산은 명령 판(revision)을 올리지 않고, 쓸 때마다 writeSeq가 오른다 · 맥박 응답은 작다', async () => {
+  const make = await storeFixture();
+  const f = placed(make, 'old'), revision = f.store.peek().state.revision, seq = f.store.peek().state.writeSeq;
+  f.old(1000); f.old(1000);
+  assert.equal(f.store.peek().state.revision, revision);
+  assert.equal(f.store.peek().state.writeSeq, seq + 2);
+  const answer = f.pulse(1000);
+  assert.deepEqual(Object.keys(answer).sort(), ['presence', 'serverNow', 'worldSeq']);
+  assert.ok(JSON.stringify(answer).length < 200, JSON.stringify(answer));
+  f.send('DAY_MOVE', { location: 'workshop' });
+  assert.equal(f.store.peek().state.revision, revision + 1);
+});
+
+test('30분 쉬면 방문 끝 도장이 남고, 결산이 그 U까지 걸은 뒤 방문을 한 번 닫는다', async () => {
+  const { settleSteps } = await townFile('town/settle.mjs');
+  const { initialLease } = await townFile('presence.mjs');
+  const span = { u: 0, surfaceId: 'a', fence: 1, surface: 'classic', canRun: true };
+  const lease = { ...initialLease({ uMs: 4500 }), spans: [span], breaks: [2500] };
+  const steps = settleSteps(0, lease);
+  assert.deepEqual(steps.map(s => [s.u, s.elapsedMs, !!s.visitEnded]), [[0, 1000, false], [1000, 1000, false], [2000, 500, false], [2500, 0, true], [2500, 1000, false], [3500, 1000, false]]);
+  assert.deepEqual(settleSteps(2500, lease).filter(s => s.visitEnded), [], '이미 결산한 도장은 다시 쓰지 않는다');
+  const make = await storeFixture();
+  const f = make(); f.old(); f.old(1000);
+  const visit = f.store.peek().state.life.visitIndex;
+  f.old(31 * 60000); f.old(1000);
+  assert.equal(f.store.peek().state.life.visitIndex, visit + 1, '쉰 뒤 새 방문');
+});
+
+test('경계 신호: 결산 뒤 안전하면 먼저 말 걸기를 낸다 · 화면이 부르는 것은 20초에 한 번 · 주인 창만', async () => {
+  const make = await storeFixture();
+  const f = make(); f.pulse(0, { surface: 'classic' });
+  f.send('CHOOSE', { branch: 'inside' }); f.send('NEXT'); f.send('PLACE', { slot: 'eaves-left' });
+  const ack = () => { const { state, view } = f.store.peek(); return f.send('ACK', { reactionId: view.reaction.id, semanticKey: view.reaction.semanticKey,
+    activity: state.activity, worldRevision: state.worldRevision, mode: 'static', visible: true, assetsReady: true, appliedStepIds: view.committedStepIds }); };
+  ack();
+  for (let i = 0; i < 50; i++) f.pulse(1000, { surface: 'classic' });
+  assert.equal(f.store.peek().state.life.contacts.length, 0, '맥박은 말을 걸지 않는다');
+  assert.throws(() => f.boundary({ fence: 99 }), error => error.code === 'stale-surface');
+  const first = f.boundary();
+  assert.ok(first.issued, JSON.stringify(first));
+  const { contacts, uMs } = f.store.peek().state.life;
+  assert.equal(contacts.length, 1); assert.equal(contacts[0].issuedU, uMs, '발급 U는 경계에서 결산한 U');
+  f.pulse(1000, { surface: 'classic' });
+  assert.deepEqual(f.boundary(), { issued: null, throttled: true, worldSeq: f.store.peek().state.writeSeq });
+});

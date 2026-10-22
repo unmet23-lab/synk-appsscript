@@ -3,8 +3,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { initialState, restoreState, reduceCommand, snapshot, advanceLivingState, TownError } from './core.mjs';
-import { initialPresence, updatePresence, commandPresence, PRESENCE_LEASE_MS } from './presence.mjs';
+import { initialState, restoreState, reduceCommand, snapshot, TownError } from './core.mjs';
+import { initialPresence, commandPresence, initialLease, pulseLease, boundaryPresence } from './presence.mjs';
+import { settle } from './town/settle.mjs';
+
+/** A screen may open a safe boundary at most once in this long (vertical slice §14-3). */
+export const BOUNDARY_GAP_MS = 20000;
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(root, '../..');
@@ -62,9 +66,13 @@ function atomicSave(file, state) {
   fs.renameSync(temporary, file);
 }
 /** One process owns this developer fixture. Commit to durable storage before
- * publishing its new state. A bad save is blocked, never silently re-created. */
+ * publishing its new state. A bad save is blocked, never silently re-created.
+ * Four requests (vertical slice §14-3): pulse moves only the lease; boundary settles the world
+ * and may issue a contact; read settles and saves what changed; execute settles, applies and
+ * saves together. presence is the old pulse — pulse, a boundary when every window is safe, and a
+ * read, published together only after the save. peek answers errors without settling. */
 export function createStore({ file, save, now = () => Date.now(), lifeEnabled = true, observe = null } = {}) {
-  let state = initialState({ lifeEnabled }), loadError = null, presence = initialPresence(), walkClock = null;
+  let state = initialState({ lifeEnabled }), loadError = null;
   if (file && fs.existsSync(file)) {
     try { state = restoreState(JSON.parse(fs.readFileSync(file, 'utf8')), { lifeEnabled }); }
     catch { loadError = new TownError('invalid-save', '저장 기록을 읽지 못했어요. 원본을 보존하고 확인해 주세요.', 503); }
@@ -72,66 +80,100 @@ export function createStore({ file, save, now = () => Date.now(), lifeEnabled = 
   const persist = save || (file ? next => atomicSave(file, next) : () => {});
   const current = () => ({ ...snapshot(state), capabilities: { life: !!state.life && lifeEnabled, day: !!state.day && lifeEnabled } });
   function commit(next) {
-    try { persist(next); }
+    const written = { ...next, writeSeq: (state.writeSeq ?? 0) + 1 };
+    try { persist(written); }
     catch { throw new TownError('save-failed', '저장하지 못했어요. 진행은 그대로예요. 다시 시도해 주세요.', 503); }
-    state = next;
+    state = written;
   }
   // Only a host timestamp survives for the 30-minute logical-visit boundary;
-  // foreground leases and elapsed execution time never survive a restart.
-  if (state.lifeHost?.lastForegroundAt != null) presence.lastActiveAt = state.lifeHost.lastForegroundAt;
-  presence.fence = state.lifeHost?.fence || 0;
+  // foreground leases and unsettled play time never survive a restart.
+  let lease = initialLease({ uMs: state.settledU ?? 0, lastForegroundAt: state.lifeHost?.lastForegroundAt ?? null,
+    presence: { ...initialPresence(), lastActiveAt: state.lifeHost?.lastForegroundAt ?? null, fence: state.lifeHost?.fence || 0 } });
+  const living = () => !!state.life && lifeEnabled;
+  function requireLife(input) {
+    if (loadError) throw loadError;
+    if (!living()) throw new TownError('life-unavailable', '이웃 생활을 열 수 없어요.', 403);
+    if (typeof input?.foreground !== 'boolean') throw new TownError('invalid-presence', '이 창의 연결 상태를 다시 확인해 주세요.');
+  }
+  function pulseOf(input, at) {
+    try { return pulseLease(lease, input, at, { away: state.phase === 'away', settledU: state.settledU }); }
+    catch { throw new TownError('invalid-presence', '이 창의 연결 상태를 다시 확인해 주세요.'); }
+  }
+  /** The world settled to a lease, with the host stamp a pulse leaves; null when nothing changed. */
+  function settledTo(next, { nowMs, canContact = false, touch = false }) {
+    if (!living()) return null;
+    let { state: world, changed } = settle(state, next, { nowMs, canContact, touch });
+    const lifeHost = { lastForegroundAt: next.lastForegroundAt, fence: next.presence.fence };
+    if (next.presence.at !== null && JSON.stringify(lifeHost) !== JSON.stringify(world.lifeHost ?? null)) {
+      world = { ...world, lifeHost }; changed = true;
+    }
+    return changed ? world : null;
+  }
+  const hostNow = () => Math.max(now(), lease.presence.at ?? 0);
   return {
     observation: observe,
-    read() { if (loadError) throw loadError; return current(); },
-    presence(input) {
+    peek() { if (loadError) throw loadError; return current(); },
+    read() {
       if (loadError) throw loadError;
-      if (!state.life || !lifeEnabled) throw new TownError('life-unavailable', '이웃 생활을 열 수 없어요.', 403);
-      if (typeof input?.foreground !== 'boolean') throw new TownError('invalid-presence', '이 창의 연결 상태를 다시 확인해 주세요.');
-      let pulse;
-      try { pulse = updatePresence(presence, { ...input, foreground: input?.foreground === true && state.phase !== 'away' }, now()); }
-      catch { throw new TownError('invalid-presence', '이 창의 연결 상태를 다시 확인해 주세요.'); }
-      const result = advanceLivingState(state, pulse.context);
-      const lifeHost = { lastForegroundAt: input.foreground && state.phase !== 'away'
-        ? pulse.next.at : state.lifeHost?.lastForegroundAt ?? null, fence: pulse.next.fence };
-      if (JSON.stringify(lifeHost) !== JSON.stringify(state.lifeHost)) {
-        result.state.lifeHost = lifeHost;
-        if (!result.changed) result.state.revision++;
-        result.changed = true;
-      }
+      const world = settledTo(lease, { nowMs: hostNow() });
+      if (world) commit(world);
+      return current();
+    },
+    pulse(input) {
+      requireLife(input);
+      const at = now(), pulse = pulseOf(input, at);
+      lease = pulse.lease;
+      return { presence: pulse.receipt, serverNow: at, worldSeq: state.writeSeq };
+    },
+    boundary(input) {
+      if (loadError) throw loadError;
+      if (!living()) throw new TownError('life-unavailable', '이웃 생활을 열 수 없어요.', 403);
+      const at = hostNow(), holder = boundaryPresence(lease.presence, input, at);
+      if (!holder) throw new TownError('stale-surface', '이 창의 연결 상태를 다시 확인해 주세요.', 409);
+      if (lease.boundaryAt !== null && at - lease.boundaryAt < BOUNDARY_GAP_MS) return { issued: null, throttled: true, worldSeq: state.writeSeq };
+      const before = state.life.contacts.length, world = settledTo(lease, { nowMs: at, canContact: holder.canContact, touch: true });
+      if (world) commit(world);
+      lease = { ...lease, boundaryAt: at };
+      const issued = state.life.contacts.length > before ? state.life.contacts.at(-1) : null;
+      return { issued: issued && { id: issued.id, contactKey: issued.contactKey }, worldSeq: state.writeSeq };
+    },
+    presence(input) {
+      requireLife(input);
+      const at = now(), pulse = pulseOf(input, at);
       // Clock, delivery owner and world facts publish together after durability.
-      if (result.changed) commit(result.state);
-      const previousOwner = presence.surfaces[presence.owner];
-      if (pulse.next.owner !== presence.owner || pulse.next.fence !== presence.fence || !pulse.context.canRun
-        || previousOwner && pulse.next.at - previousOwner.at >= PRESENCE_LEASE_MS) walkClock = null;
-      presence = pulse.next;
-      return { ...current(), presence: pulse.receipt };
+      const world = settledTo(pulse.lease, { nowMs: at, canContact: pulse.context.canContact, touch: true });
+      if (world) commit(world);
+      lease = pulse.lease;
+      return { ...current(), presence: pulse.receipt, worldSeq: state.writeSeq };
     },
     execute(command) {
       if (loadError) throw loadError;
+      const at = hostNow(), presence = lease.presence;
       let host = { enabled: lifeEnabled, canContact: false, elapsedMs: 0,
-        surfaceId: presence.owner, fence: presence.fence, nowMs: Math.max(now(), presence.at ?? 0),
+        surfaceId: presence.owner, fence: presence.fence, nowMs: at,
         surface: presence.surfaces[presence.owner]?.surface || 'classic' };
       // An already committed request can be recovered after a lease expired.
       // The reducer still compares the entire signed request before returning.
       const recorded = state.commands.some(item => item.id === command?.id);
       if (!recorded && typeof command?.type === 'string' && /^(LIFE_|DAY_|BAZAAR_|SUPPORT_)/.test(command.type)) {
-        host = commandPresence(presence, command.payload, Math.max(now(), presence.at ?? 0));
+        host = commandPresence(presence, command.payload, at);
         if (!host) throw new TownError('stale-surface', '이 창의 연결 상태를 다시 확인해 주세요.', 409);
         host.ownerSurfaceId = presence.owner;
       }
       if (!recorded && command?.type === 'DAY_WALK') {
-        const elapsed = walkClock && walkClock.surfaceId === host.surfaceId && walkClock.fence === host.fence
-          ? host.nowMs - walkClock.at : 0;
+        const walk = lease.walkClock;
+        const elapsed = walk && walk.surfaceId === host.surfaceId && walk.fence === host.fence ? host.nowMs - walk.at : 0;
         host.walkElapsedMs = elapsed >= 0 ? Math.min(250, elapsed) : 0;
       }
-      const result = reduceCommand(state, command, host);
+      // A command settles first and is saved with what the settlement changed (§14-3).
+      const result = reduceCommand((!recorded && settledTo(lease, { nowMs: at })) || state, command, host);
       if (!result.duplicate) {
         commit(result.state);
-        if (['DAY_WALK_ENABLE', 'DAY_WALK'].includes(command.type)) walkClock = { at: host.nowMs, surfaceId: host.surfaceId, fence: host.fence };
-        if (['DAY_WALK_DISABLE', 'RESET', 'LEAVE'].includes(command.type)) walkClock = null;
-        if (command.type === 'RESET') presence = initialPresence();
-        else if (command.type === 'LEAVE') presence = { ...presence, at: Math.max(now(), presence.at ?? 0),
-          surfaces: {}, owner: null, fence: presence.fence + 1 };
+        if (['DAY_WALK_ENABLE', 'DAY_WALK'].includes(command.type)) lease = { ...lease, walkClock: { at: host.nowMs, surfaceId: host.surfaceId, fence: host.fence } };
+        if (['DAY_WALK_DISABLE', 'RESET', 'LEAVE'].includes(command.type)) lease = { ...lease, walkClock: null };
+        if (command.type === 'RESET') lease = initialLease({ uMs: state.settledU });
+        else if (command.type === 'LEAVE') lease = { ...lease, presence: { ...lease.presence, at: Math.max(now(), lease.presence.at ?? 0),
+          surfaces: {}, owner: null, fence: lease.presence.fence + 1 } };
       }
       return { ...current(), duplicate: result.duplicate };
     },
@@ -196,7 +238,9 @@ export function createServer({ previewEnabled = false, store = createStore({ fil
       if (!previewEnabled) return json(res, 403, { error: 'preview-disabled' });
       try {
         if (route === '/api/preview/state' && req.method === 'GET') return json(res, 200, store.read());
-        if (!['/api/preview/command', '/api/preview/presence'].includes(route)) return json(res, 404, { error: 'not-found' });
+        const operation = { '/api/preview/command': 'execute', '/api/preview/presence': 'presence',
+          '/api/preview/pulse': 'pulse', '/api/preview/boundary': 'boundary' }[route];
+        if (!operation) return json(res, 404, { error: 'not-found' });
         if (req.method !== 'POST') return json(res, 405, { error: 'method-not-allowed' });
         if (req.headers.origin !== `http://${req.headers.host}`) return json(res, 403, { error: 'same-origin-required' });
         if (!req.headers['content-type']?.startsWith('application/json')) return json(res, 415, { error: 'json-required' });
@@ -208,10 +252,11 @@ export function createServer({ previewEnabled = false, store = createStore({ fil
         }
         let command;
         try { command = JSON.parse(body); } catch { return json(res, 400, { error: 'invalid-json' }); }
-        return json(res, 200, route.endsWith('/presence') ? store.presence(command) : store.execute(command));
+        return json(res, 200, store[operation](command));
       } catch (error) {
         let current = {};
-        try { current = store.read(); } catch { /* Preserve corrupt save, fail closed. */ }
+        // An error answer shows the world as it is; it never settles or saves.
+        try { current = (store.peek || store.read).call(store); } catch { /* Preserve corrupt save, fail closed. */ }
         return json(res, error instanceof TownError ? error.status : 503,
           { error: error.code || 'unavailable', message: error instanceof TownError ? error.message : '기록을 확인할 수 없어요.', ...current });
       }

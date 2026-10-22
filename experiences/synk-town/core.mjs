@@ -28,8 +28,11 @@ export class TownError extends Error {
   constructor(code, message, status = 400) { super(message); this.code = code; this.status = status; }
 }
 const ensure = (condition, code, message, status) => { if (!condition) throw new TownError(code, message, status); };
+// Two counters (vertical slice §14-4, W2 plan D4): revision is the command revision — it rises only
+// when a command is confirmed, and commands compare against it; writeSeq rises on every save, so a
+// screen knows when to read again. settledU is the effective play time the world is settled to.
 export function initialState({ scope = SCOPE, lifeEnabled = false } = {}) {
-  return { schema: 1, scope: { ...scope }, revision: 0, worldRevision: 0, visit: 1,
+  return { schema: 1, scope: { ...scope }, revision: 0, writeSeq: 0, settledU: 0, worldRevision: 0, visit: 1,
     phase: 'choose', branch: null, inventory: { wood: 0, cloth: 0, canopy: 0 },
     canopyOwned: false, color: null, placement: null, previewSlot: null,
     materialsGranted: false, served: false, delivered: false, currentUseId: null,
@@ -50,13 +53,18 @@ export function restoreState(saved, { lifeEnabled = false } = {}) {
   if (lifeEnabled && !Object.hasOwn(state, 'day')) state.day = initialDay();
   if (lifeEnabled && !Object.hasOwn(state, 'bazaar')) state.bazaar = initialBazaar();
   if (lifeEnabled && !Object.hasOwn(state, 'support')) state.support = initialSupport();
+  // Saves from before the two counters: every save so far was a write, and nothing is unsettled.
+  if (state && !Object.hasOwn(state, 'writeSeq')) state.writeSeq = state.revision;
+  if (state && !Object.hasOwn(state, 'settledU')) state.settledU = 0;
   return assertState(state);
 }
 export function assertState(state) {
   ensure(state?.schema === 1 && state.scope?.domain === SCOPE.domain && state.scope?.workspace === SCOPE.workspace && /^(preview-local|linked-[a-zA-Z0-9_-]{1,100})$/.test(state.scope?.subject), 'invalid-save', '체험 기록을 확인할 수 없어요.', 503);
   ensure(Number.isSafeInteger(state.revision) && state.revision >= 0
     && Number.isSafeInteger(state.worldRevision) && state.worldRevision >= 0
-    && Number.isSafeInteger(state.visit) && state.visit > 0, 'invalid-save', '체험 기록을 확인할 수 없어요.', 503);
+    && Number.isSafeInteger(state.visit) && state.visit > 0
+    && ['writeSeq', 'settledU'].every(key => !Object.hasOwn(state, key) || Number.isSafeInteger(state[key]) && state[key] >= 0),
+  'invalid-save', '체험 기록을 확인할 수 없어요.', 503);
   ensure(['choose', 'outside-preview', 'inside-preview', 'color', 'place', 'ready', 'away', 'sign-intro', 'sign-picture', 'sign-place'].includes(state.phase)
     && [null, 'outside', 'inside'].includes(state.branch)
     && [null, 'green', 'yellow'].includes(state.color)
@@ -182,14 +190,20 @@ function runLife(state, operation) {
     throw error;
   }
 }
-export function advanceLivingState(previous, host) {
-  assertState(previous);
-  ensure(previous.life && host?.enabled === true, 'life-unavailable', '이 체험에서는 이웃 생활을 열 수 없어요.', 403);
-  const state = copy(previous);
+/** One step of the living modules on a state, in place: the chain one old pulse ran. Settlement
+ * (town/settle.mjs) walks unsettled time in steps of this, checking the state once around them. */
+export function stepLiving(state, host) {
+  ensure(state.life && host?.enabled === true, 'life-unavailable', '이 체험에서는 이웃 생활을 열 수 없어요.', 403);
   advanceUse(state, host);
   runLife(state, () => advanceLife(state.life, livingContext(state, host)));
   if (state.day) runLife(state, () => advanceDay(state.day, dayContext(state, host)));
   if (state.bazaar) runLife(state, () => advanceBazaar(state.bazaar, bazaarContext(state, host)));
+  return state;
+}
+/** The old pulse path, kept for callers that have not moved to the lease (talk until W2b). */
+export function advanceLivingState(previous, host) {
+  assertState(previous);
+  const state = stepLiving(copy(previous), host);
   const changed = canonical(state) !== canonical(previous);
   if (changed) state.revision++;
   assertState(state);
@@ -531,6 +545,8 @@ export function reduceCommand(previous, command, host = {}) {
     }
     case 'RESET': {
       const old = state; state = initialState({ scope: old.scope, lifeEnabled: !!old.life }); state.revision = old.revision; state.worldRevision = old.worldRevision + 1;
+      // The counters and the settled play time go on: a reset never replays or rewinds time.
+      state.writeSeq = old.writeSeq ?? old.revision; state.settledU = old.settledU ?? 0;
       state.commands = old.commands; break;
     }
     default:
