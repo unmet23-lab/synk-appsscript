@@ -27,11 +27,12 @@ const NODE = { name: 'synk-company-2', zone: 'asia-northeast3-b', id: '831814642
 const KEY = path.join(os.homedir(), '.ssh', 'synk_company_20261008');
 const KNOWN = path.join(os.homedir(), '.ssh', 'known_hosts_synk_argon');
 const ALIAS = 'synk-argon-standby';
-const WEEKLY_ROLES = ['scan-lab', 'scan-ai', 'scan-platform'];
-const DAILY_ROLES = ['full', 'yt-tt', 'meta-brand', 'synkbrief'];
+const DOCS = JSON.parse(fs.readFileSync(path.join(__dirname, 'configuration', 'docs.json'), 'utf8'));
+// 역할은 docs.json 한 곳에서만 읽는다(10-22) — 월요일 스캔은 scan- 로 시작하는 역할, 나머지는 매일 조사.
+const WEEKLY_ROLES = Object.keys(DOCS).filter(role => role.startsWith('scan-'));
+const DAILY_ROLES = Object.keys(DOCS).filter(role => !role.startsWith('scan-'));
 const DAILY = process.argv.includes('--매일');
 const ROLES = DAILY ? DAILY_ROLES : WEEKLY_ROLES;
-const DOCS = JSON.parse(fs.readFileSync(path.join(__dirname, 'configuration', 'docs.json'), 'utf8'));
 const MARKER = 'SYNK_WEEKLY_SCAN_COMPLETE';
 
 const REMOTE = String.raw`

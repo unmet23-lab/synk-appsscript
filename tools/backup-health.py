@@ -509,6 +509,22 @@ def gather(root, lib, config, tasks, now, sleep_record=lambda: None):
             'scope': '예약·최근 실행·원격 검증 영수증. 실제 복호화·전체 복원 성공과 구분한다.'}
 
 
+# The Hermes monitor (tools/hermes-synk, 5-minute rounds on this PC) sends these same failures to Telegram, the one
+# place the owner reads (10-22). The Windows notification is only the fallback while that monitor is not running.
+HERMES_HEALTH = Path(os.environ.get('LOCALAPPDATA') or Path.home() / 'AppData' / 'Local') / 'hermes' / 'runtime' / 'synk-automation' / 'health.json'
+HERMES_FRESH = dt.timedelta(minutes=20)
+
+
+def hermes_watching(now, path=HERMES_HEALTH):
+    try:
+        record = json.loads(Path(path).read_text(encoding='utf-8'))
+        checked = dt.datetime.fromisoformat(record['checkedAt'])
+    except (OSError, ValueError, KeyError, TypeError):
+        return False
+    if checked.tzinfo is None or record.get('status') != 'ok': return False
+    return -dt.timedelta(minutes=5) <= now - checked <= HERMES_FRESH
+
+
 def choose_event(summary, previous, now, lib):
     bad = [x for x in summary['components'] if x['status'] in BAD]
     signature = [(x['id'], x['status'], x['codes']) for x in bad]
@@ -555,7 +571,7 @@ def last_delivered(root, state, lib):
     return event.get('status') if isinstance(event, dict) else None
 
 
-def update_notifications(root, summary, lib, now, sender=deliver):
+def update_notifications(root, summary, lib, now, sender=deliver, hermes=False):
     path = root / 'backup-notification-state.json'
     try:
         previous = lib.read_json(path) or {}
@@ -569,6 +585,15 @@ def update_notifications(root, summary, lib, now, sender=deliver):
         previous['hasUnresolved'] = False
     previous['schemaVersion'] = 2
     event, digest, unresolved = choose_event(summary, previous, now, lib)
+    # Telegram carries it. While a problem is open the old fingerprint stays, so the fallback notice still comes if the
+    # monitor stops before it is solved. A solved state is only recorded, unless a fallback notice was shown: then its
+    # recovery notice still follows below, so the PC does not keep an unanswered warning.
+    if hermes and (unresolved or not previous.get('hasUnresolved')):
+        if not unresolved: previous.update(fingerprint=digest, hasUnresolved=False)
+        notification = {'channel': 'hermes-telegram', 'accepted': None, 'newEvent': bool(event), 'skipped': 'HERMES_WATCHING'}
+        previous.update(checkedAt=lib.stamp(now), pendingEvent=None, delivery=notification)
+        lib.atomic_json(path, previous)
+        return notification
     pending = previous.get('pendingEvent')
     # A changed/recovered state supersedes an undelivered obsolete failure.
     if event: pending = event
@@ -635,7 +660,7 @@ def main():
                 if asleep is None or later is None or later - asleep < 1: raise
                 now = lib.utcnow()
                 summary = check(root, lib, now)
-            if args.notify: summary['notification'] = update_notifications(root, summary, lib, now)
+            if args.notify: summary['notification'] = update_notifications(root, summary, lib, now, hermes=hermes_watching(now))
             lib.atomic_json(root / 'backup-health.json', summary)
             if sys.stdout: print(json.dumps(summary, ensure_ascii=False))
             return 1 if summary['status'] == 'attention' or summary.get('notification', {}).get('accepted') is False else 0
@@ -658,7 +683,7 @@ def main():
         if not code: monitor['error'] = type(error).__name__  # the kind of failure, never its text
         summary = {'schemaVersion': 1, 'checkedAt': lib.stamp(now), 'status': 'attention', 'components': [monitor],
                    'issues': [{'component': 'monitor', 'code': x} for x in monitor['codes']]}
-        if args.notify: summary['notification'] = update_notifications(root, summary, lib, now)
+        if args.notify: summary['notification'] = update_notifications(root, summary, lib, now, hermes=hermes_watching(now))
         lib.atomic_json(root / 'backup-health.json', summary)
         if sys.stdout: print(json.dumps(summary, ensure_ascii=False))
         return 1

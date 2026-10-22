@@ -270,12 +270,14 @@ class HealthTests(unittest.TestCase):
     def notified_main(self, outcome, at, sent):
         # main() --notify once at `at`, with check() raising or returning `outcome`; delivered titles go to `sent`.
         real = health.update_notifications
-        def notify(root, summary, lib_, now):
-            return real(root, summary, lib_, now, lambda r, event, l: sent.append(event['title']) or {'accepted': True})
+        def notify(root, summary, lib_, now, hermes=False):
+            return real(root, summary, lib_, now, lambda r, event, l: sent.append(event['title']) or {'accepted': True}, hermes=hermes)
         def check(*_):
             if isinstance(outcome, Exception): raise outcome
             return json.loads(json.dumps(outcome))
-        with patch.object(health, 'load_legacy', return_value=lib), patch.object(health, 'check', side_effect=check), \
+        # This PC's real Hermes monitor must not decide the result: without it the PC notice is sent.
+        with patch.object(health, 'hermes_watching', return_value=False), \
+             patch.object(health, 'load_legacy', return_value=lib), patch.object(health, 'check', side_effect=check), \
              patch.object(lib, 'utcnow', return_value=at), patch.object(health, 'suspended_seconds', return_value=5.0), \
              patch.object(health, 'update_notifications', side_effect=notify), \
              patch.object(sys, 'argv', ['backup-health.py', '--root', str(self.root), '--notify']), contextlib.redirect_stdout(io.StringIO()):
@@ -448,6 +450,43 @@ class HealthTests(unittest.TestCase):
         self.assertEqual(len(calls),2)
         state=lib.read_json(self.root/'backup-notification-state.json')
         self.assertIsNone(state['pendingEvent'])
+
+    def test_hermes_watching_sends_nothing_and_the_fallback_comes_once_it_stops(self):
+        calls=[];sender=lambda *_:calls.append(1) or {'accepted':True}
+        result=health.update_notifications(self.root,self.summary(),lib,self.now,sender,hermes=True)
+        self.assertEqual((calls,result['skipped'],result['accepted']),([],'HERMES_WATCHING',None))
+        health.update_notifications(self.root,self.summary(),lib,self.now+dt.timedelta(minutes=15),sender,hermes=True)
+        self.assertEqual(calls,[])
+        # The monitor stopped while the same failure is still open: the PC notice is the fallback, once.
+        health.update_notifications(self.root,self.summary(),lib,self.now+dt.timedelta(minutes=30),sender)
+        health.update_notifications(self.root,self.summary(),lib,self.now+dt.timedelta(minutes=45),sender)
+        self.assertEqual(len(calls),1)
+
+    def test_failure_solved_while_hermes_watched_gets_a_recovery_notice_only_if_a_warning_was_shown(self):
+        calls=[];sender=lambda *_:calls.append(1) or {'accepted':True}
+        # Never shown on the PC (Telegram had it): solving it shows nothing there, now or later.
+        health.update_notifications(self.root,self.summary(),lib,self.now,sender,hermes=True)
+        health.update_notifications(self.root,self.summary('healthy'),lib,self.now+dt.timedelta(minutes=15),sender,hermes=True)
+        health.update_notifications(self.root,self.summary('healthy'),lib,self.now+dt.timedelta(minutes=30),sender)
+        self.assertEqual(calls,[])
+        self.assertFalse(lib.read_json(self.root/'backup-notification-state.json')['hasUnresolved'])
+        # A fallback warning was shown while the monitor was stopped: its recovery notice still comes.
+        other=self.root/'shown';other.mkdir()
+        health.update_notifications(other,self.summary(),lib,self.now,sender)
+        health.update_notifications(other,self.summary('healthy'),lib,self.now+dt.timedelta(minutes=15),sender,hermes=True)
+        health.update_notifications(other,self.summary('healthy'),lib,self.now+dt.timedelta(minutes=30),sender,hermes=True)
+        self.assertEqual(len(calls),2)
+        self.assertFalse(lib.read_json(other/'backup-notification-state.json')['hasUnresolved'])
+
+    def test_hermes_watching_needs_a_recent_ok_round(self):
+        path=self.root/'health.json'
+        self.assertFalse(health.hermes_watching(self.now,path))
+        for checked,state,expected in ((self.now-dt.timedelta(minutes=6),'ok',True),(self.now-dt.timedelta(minutes=25),'ok',False),
+                                       (self.now-dt.timedelta(minutes=1),'source_contract_changed',False),(self.now+dt.timedelta(hours=2),'ok',False)):
+            path.write_text(json.dumps({'checkedAt':checked.isoformat(),'status':state,'noAgent':True}),encoding='utf-8')
+            self.assertEqual(health.hermes_watching(self.now,path),expected,(checked,state))
+        path.write_text('{"checkedAt":"2026-10-18T03:59:00","status":"ok"}',encoding='utf-8')
+        self.assertFalse(health.hermes_watching(self.now,path),'a time without zone is not trusted')
 
     def test_recovery_notification_failure_retries(self):
         success=lambda *_:{'accepted':True}

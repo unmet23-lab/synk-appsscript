@@ -820,3 +820,67 @@ test('SNS 응답 모양이 다르면 성공으로 저장하지 않는다', async
   assert.equal(report.snapshot.sns.refreshFailed, true);
   assert.equal(fs.existsSync(path.join(f.home, SNS_CACHE)), false);
 });
+
+const { argonStatusSource, argonRoles } = require('../tools/hermes-synk/overview.cjs');
+const SEVEN = { full: 'document_full_id_12345', 'yt-tt': 'document_yt_id_1234567', 'meta-brand': 'document_meta_id_12345', synkbrief: 'document_brief_id_1234',
+  'scan-lab': 'document_scan_lab_12345', 'scan-ai': 'document_scan_ai_123456', 'scan-platform': 'document_scan_plat_1234' };
+const argonRow = (role, documentId, extra = {}) => ({ role, status: 'complete', completedAt: '2026-10-18T07:59:00Z', modelMatches: true, documentId, sha256: 'c'.repeat(64),
+  timerActive: true, timerEnabled: true, serviceState: 'inactive', serviceResult: 'success', exitCode: 0, ...extra });
+
+test('Argon 역할은 docs.json에서만 읽는다 — 월요일 스캔 셋도 보이고 옛 네 역할 캐시·응답은 받지 않는다', async t => {
+  const f = fixture(t);
+  write(f.root, 'tools/argon-schedules/configuration/docs.json', SEVEN);
+  const offline = await readOverview(f.options);
+  assert.deepEqual(offline.snapshot.research.items.map(row => row.role), Object.keys(SEVEN));
+  assert.equal(offline.snapshot.research.complete, true);
+  assert.equal(offline.snapshot.research.items.find(row => row.role === 'scan-ai').title, '월요일 스캔 · AI');
+  const four = Object.keys(f.docs).map(role => argonRow(role, f.docs[role]));
+  const old = await readOverview({ ...f.options, remoteRefresh: true, readLedger: async () => ledger(), readArgonRemote: async () => ({ roles: four }) });
+  assert.equal(old.snapshot.research.refreshFailed, true, '네 역할만 돌려준 응답은 일곱 역할 목록과 맞지 않는다');
+  let asked = null;
+  const seven = Object.keys(SEVEN).map(role => argonRow(role, SEVEN[role], role === 'scan-lab' ? { status: 'failed', serviceState: 'failed', serviceResult: 'exit-code', errorCode: 'DOCS_CONFLICT' } : {}));
+  const fresh = await readOverview({ ...f.options, remoteRefresh: true, readLedger: async () => ledger(), readArgonRemote: async input => { asked = input.roles; return { roles: seven }; } });
+  assert.deepEqual(asked, Object.keys(SEVEN), '원격 조회에도 docs.json 역할을 그대로 넘긴다');
+  assert.equal(fresh.snapshot.research.stale, false);
+  assert.match(fresh.snapshot.research.coverage, /고정 서버 7역할/);
+  const scan = fresh.events.find(row => row.id === 'research-scan-lab');
+  assert.equal(scan.severity, 'error');
+  assert.equal(scan.needs_attention, true);
+  write(f.home, ARGON_CACHE, { version: 1, checkedAt: NOW.toISOString(), roles: four });
+  const stale = await readOverview(f.options);
+  assert.equal(stale.snapshot.research.remoteStatusAvailable, false, '옛 네 역할 캐시는 다음 조회 전까지 없는 것으로 본다');
+});
+
+test('원격 조회 스크립트에는 검사한 docs.json 역할만 들어간다', () => {
+  const roles = argonRoles(SEVEN);
+  const source = argonStatusSource(roles);
+  assert.match(source, /^for role in \["full","yt-tt","meta-brand","synkbrief","scan-lab","scan-ai","scan-platform"\]:$/m);
+  assert.doesNotMatch(source, /\$\{/);
+  assert.deepEqual(argonRoles({ full: 'a', "x';import os": 'b', Bad_Role: 'c' }), ['full']);
+  assert.deepEqual(argonRoles(['full']), []);
+  assert.deepEqual(argonRoles(Object.fromEntries(Array.from({ length: 21 }, (_, i) => ['role-' + i, 'x']))), []);
+});
+
+test('PC 백업은 백업 상태 도구가 실패로 치는 상태를 모두 알리고 대기·중지·준비 전은 알리지 않는다', async t => {
+  const f = fixture(t);
+  const failing = ['missed', 'interrupted', 'partial_failure', 'blocked', 'unconfigured', 'unknown'];
+  const quiet = ['pending', 'paused', 'not_ready', 'running', 'success'];
+  const component = (status, i) => ({ id: 'c' + i + status.replace(/_/g, '-'), label: '구성 ' + status, status, lastSuccessAt: '2026-10-17T01:00:00Z', codes: status === 'unknown' ? ['MONITOR_FAILED'] : [] });
+  const report = await readOverview({ ...f.options, backupHealthFile: backupFile(f, [...failing, ...quiet].map(component)) });
+  for (const [i, status] of [...failing, ...quiet].entries()) {
+    const row = report.events.find(event => event.id === 'backup-' + component(status, i).id);
+    assert.equal(row.needs_attention, failing.includes(status), status);
+  }
+  assert.match(report.events.find(event => event.id === 'backup-' + component('missed', 0).id).detail, /최신 백업 지연/);
+});
+
+test('문서 ID가 깨진 역할이 있어도 나머지 역할의 원격 상태는 받는다 — 원격은 docs.json 역할을 다 돌려준다', async t => {
+  const f = fixture(t);
+  write(f.root, 'tools/argon-schedules/configuration/docs.json', { ...SEVEN, 'scan-ai': 'short' });
+  const report = await readOverview({ ...f.options, remoteRefresh: true, readLedger: async () => ledger(),
+    readArgonRemote: async input => ({ roles: input.roles.map(role => argonRow(role, SEVEN[role], role === 'scan-ai' ? { status: 'missing' } : {})) }) });
+  assert.equal(report.snapshot.research.items.length, 6);
+  assert.equal(report.snapshot.research.complete, false);
+  assert.equal(report.snapshot.research.refreshFailed, false);
+  assert.equal(report.snapshot.research.items.every(row => row.current?.documentMatches), true);
+});

@@ -28,7 +28,11 @@ const SNS_LABEL = Object.freeze({ youtube: '유튜브', instagram: '인스타그
 const BACKUP_CACHE = 'runtime/synk-overview/backup-cache.json';
 const BACKUP_STALE_MS = 2 * 60 * 60_000;
 const BACKUP_GRACE_MS = Object.freeze({ onedrive: 2 * 60 * 60_000, github: 4 * 60 * 60_000 });
-const BACKUP_STATUS = Object.freeze({ healthy: '정상', running: '실행 중', attention: '주의', failed: '실패', unknown: '상태 미확인' });
+const BACKUP_STATUS = Object.freeze({ healthy: '정상', success: '정상', pending: '동기화 대기', running: '실행 중', paused: '의도적 중지', not_ready: '준비 전',
+  attention: '주의', failed: '실패', missed: '최신 백업 지연', interrupted: '실행 중단', partial_failure: '일부 실패', blocked: '준비 미완료',
+  unconfigured: '설정 안 됨', unknown: '상태 미확인' });
+// tools/backup-health.py의 BAD와 같은 목록이다(10-22). 이 감시가 알리는 동안 PC 알림은 띄우지 않으므로 하나라도 빠지면 아무도 모른다.
+const BACKUP_FAILING = new Set(['failed', 'attention', 'partial_failure', 'blocked', 'missed', 'interrupted', 'unconfigured', 'unknown']);
 const backupHealthDefault = () => process.env.SYNK_BACKUP_HEALTH || path.join(os.homedir(), 'Documents', 'SYNK_원본창고', 'backup-health.json');
 // 헤르메스 복구 작업(runtime/recover-gateway.ps1)이 점검마다 남기는 기록을 읽기만 한다. 재시작 뒤에도 새 패키지를 못 쓰거나
 // 바빠서 재시작을 30분 넘게 미룬 어긋남만 판단으로 올린다. 15분 넘게 새 기록이 없으면 절전·일시 중지일 수 있어 사건을 내지 않는다.
@@ -41,7 +45,15 @@ const GATEWAY_RECOVERY_SILENT_MS = 30 * 60_000;
 const GATEWAY_RECOVERY_LABEL = Object.freeze({ ok: '이상 없음', starting: '게이트웨이를 켜는 중', startFailed: '게이트웨이 켜기 실패 · 다음 점검에서 다시 켭니다',
   waiting: '새로 깔린 패키지를 반영하는 중', restarting: '다시 켜는 중', restartFailed: '다시 켜기 실패 · 다음 점검에서 다시 봅니다', recorded: '점검 기록 있음' });
 const MAX_TASKS = 300;
-const ROLES = Object.freeze({ full: '전체 조사', 'yt-tt': 'YouTube·TikTok', 'meta-brand': 'Meta·브랜드', synkbrief: 'synkbrief' });
+// 조사 역할 목록은 tools/argon-schedules/configuration/docs.json 한 곳에서만 읽는다(10-22). 여기 따로 적은 네 역할
+// 목록이 10-19에 더한 월요일 스캔 셋을 못 봤다. 이름만 여기 두고, 이름이 없는 새 역할은 역할 id로 보인다.
+const ROLE_TITLES = Object.freeze({ full: '전체 조사', 'yt-tt': 'YouTube·TikTok', 'meta-brand': 'Meta·브랜드', synkbrief: 'synkbrief',
+  'scan-lab': '월요일 스캔 · LAB', 'scan-ai': '월요일 스캔 · AI', 'scan-platform': '월요일 스캔 · 플랫폼' });
+const argonRoles = mappings => {
+  if (!mappings || typeof mappings !== 'object' || Array.isArray(mappings)) return [];
+  const roles = Object.keys(mappings).filter(role => /^[a-z][a-z0-9-]{1,30}$/.test(role));
+  return roles.length <= 20 ? roles : [];
+};
 const STATES = new Set(['preparing', 'launching', 'running', 'finalizing', 'unknown', 'launch_failed', 'exited', 'closed_by_user']);
 const DELIVERIES = new Set(['sent', 'sending', 'unconfirmed', 'waiting', 'not_recorded', 'suppressed_success']);
 const INTEGRATION_POLICY = 'auto_verified_v1';
@@ -242,8 +254,9 @@ function readArgonRecords({ root }) {
   catch { return { available: false, remoteVerified: false, items: [] }; }
   let proof = null;
   try { proof = readJson(root, 'tools/argon-schedules/verification/20261018.json', 100_000).firstProduction; } catch {}
-  const items = [];
-  for (const [role, title] of Object.entries(ROLES)) {
+  const items = [], roles = argonRoles(mappings);
+  for (const role of roles) {
+    const title = ROLE_TITLES[role] || role;
     const documentId = typeof mappings[role] === 'string' && /^[A-Za-z0-9_-]{15,100}$/.test(mappings[role]) ? mappings[role] : null;
     if (!documentId) continue;
     const verified = proof?.role === role && proof?.status === 'verified'
@@ -257,15 +270,15 @@ function readArgonRecords({ root }) {
       revisionFingerprint: verified ? proof.docs.sha256 : null,
     });
   }
-  return { available: items.length > 0, complete: items.length === 4, remoteVerified: false, items,
+  return { available: items.length > 0, complete: roles.length > 0 && items.length === roles.length, roles, remoteVerified: false, items,
     coverage: '기존 결과 문서 링크와 저장된 검증 기록만 · 원격 현재 실행·최신 본문·회사 가져오기 상태 미조회' };
 }
 
-function sanitizeArgon(payload) {
-  if (!payload || !Array.isArray(payload.roles) || payload.roles.length !== 4) throw new Error('ARGON_SHAPE');
+function sanitizeArgon(payload, expected) {
+  if (!Array.isArray(expected) || !expected.length || !payload || !Array.isArray(payload.roles) || payload.roles.length !== expected.length) throw new Error('ARGON_SHAPE');
   const seen = new Set();
   const roles = payload.roles.map(row => {
-    if (!row || !Object.hasOwn(ROLES, row.role) || seen.has(row.role)) throw new Error('ARGON_SHAPE');
+    if (!row || !expected.includes(row.role) || seen.has(row.role)) throw new Error('ARGON_SHAPE');
     seen.add(row.role);
     return { role: row.role, status: ['running', 'complete', 'no-change', 'failed', 'missing'].includes(row.status) ? row.status : 'unknown',
       startedAt: iso(row.startedAt), completedAt: iso(row.completedAt), modelMatches: row.modelMatches === true,
@@ -281,9 +294,39 @@ function sanitizeArgon(payload) {
   return roles.sort((a, b) => a.role.localeCompare(b.role));
 }
 
-async function refreshArgon({ root }) {
+// The remote read is a fixed script; only the validated docs.json role list is substituted into it.
+function argonStatusSource(roles) {
+  return String.raw`import json,pathlib,re,subprocess,datetime,urllib.request
+ROOT=pathlib.Path('/var/lib/synk-argon-77yuhbs/run-status')
+def meta(p):
+ return urllib.request.urlopen(urllib.request.Request('http://metadata.google.internal/computeMetadata/v1/'+p,headers={'Metadata-Flavor':'Google'}),timeout=3).read(200).decode()
+def props(unit):
+ try:
+  p=subprocess.run(['/usr/bin/systemctl','show',unit,'-p','ActiveState','-p','UnitFileState','-p','Result','-p','ExecMainStatus'],capture_output=True,text=True,timeout=3)
+  return dict(line.split('=',1) for line in p.stdout.splitlines() if '=' in line) if p.returncode==0 else {}
+ except Exception:return {}
+rows=[]
+for role in ${JSON.stringify(roles)}:
+ p=ROOT/(role+'.json');data={}
+ try:
+  if p.is_symlink() or not p.is_file() or p.stat().st_size>32000:raise ValueError()
+  data=json.loads(p.read_text())
+ except Exception:pass
+ service=props('synk-argon-ultra-'+role+'.service');timer=props('synk-argon-ultra-'+role+'.timer')
+ code=service.get('ExecMainStatus','')
+ rows.append({'role':role,'status':data.get('status','missing'),'startedAt':data.get('startedAt'),'completedAt':data.get('completedAt'),
+ 'modelMatches':data.get('model')=='gemini-4-argon-high','documentId':data.get('documentId'),'sha256':data.get('sha256'),
+ 'errorCode':data.get('error') if re.fullmatch('[A-Z][A-Z0-9_]{0,99}',str(data.get('error',''))) else None,
+ 'serviceState':service.get('ActiveState'),'serviceResult':service.get('Result'),'exitCode':int(code) if re.fullmatch('[0-9]{1,5}',code) else None,
+ 'timerActive':timer.get('ActiveState')=='active','timerEnabled':timer.get('UnitFileState')=='enabled'})
+print(json.dumps({'checkedAt':datetime.datetime.now(datetime.timezone.utc).isoformat(),'instanceId':meta('instance/id'),'project':meta('project/project-id'),'roles':rows}))
+`;
+}
+
+async function refreshArgon({ root, roles }) {
   // Reuse the canonical backup reader's pinned research-node identity and existing OAuth helper.
-  // Only Compute metadata and these four run-status files/systemd properties are read.
+  // Only Compute metadata and the run-status files/systemd properties of the docs.json roles are read.
+  if (!Array.isArray(roles) || !roles.length || roles.length > 20 || roles.some(role => !/^[a-z][a-z0-9-]{1,30}$/.test(role))) throw new Error('ARGON_SHAPE');
   const { NODES } = require('../server-backup/read-status.cjs');
   const policy = require('../모델정책.js');
   const project = 'synk-bake-unmet27';
@@ -299,31 +342,7 @@ async function refreshArgon({ root }) {
   if (instance.id !== node.id || instance.name !== node.name || instance.status !== 'RUNNING' || nic?.networkIP !== node.privateIp
     || nic.accessConfigs?.length !== 1 || !/^\d{1,3}(?:\.\d{1,3}){3}$/.test(address || '')) throw new Error('ARGON_IDENTITY');
   const known = path.join(os.tmpdir(), 'synk-argon-read-' + randomUUID());
-  const source = String.raw`import json,pathlib,re,subprocess,datetime,urllib.request
-ROOT=pathlib.Path('/var/lib/synk-argon-77yuhbs/run-status')
-def meta(p):
- return urllib.request.urlopen(urllib.request.Request('http://metadata.google.internal/computeMetadata/v1/'+p,headers={'Metadata-Flavor':'Google'}),timeout=3).read(200).decode()
-def props(unit):
- try:
-  p=subprocess.run(['/usr/bin/systemctl','show',unit,'-p','ActiveState','-p','UnitFileState','-p','Result','-p','ExecMainStatus'],capture_output=True,text=True,timeout=3)
-  return dict(line.split('=',1) for line in p.stdout.splitlines() if '=' in line) if p.returncode==0 else {}
- except Exception:return {}
-rows=[]
-for role in ['full','yt-tt','meta-brand','synkbrief']:
- p=ROOT/(role+'.json');data={}
- try:
-  if p.is_symlink() or not p.is_file() or p.stat().st_size>32000:raise ValueError()
-  data=json.loads(p.read_text())
- except Exception:pass
- service=props('synk-argon-ultra-'+role+'.service');timer=props('synk-argon-ultra-'+role+'.timer')
- code=service.get('ExecMainStatus','')
- rows.append({'role':role,'status':data.get('status','missing'),'startedAt':data.get('startedAt'),'completedAt':data.get('completedAt'),
- 'modelMatches':data.get('model')=='gemini-4-argon-high','documentId':data.get('documentId'),'sha256':data.get('sha256'),
- 'errorCode':data.get('error') if re.fullmatch('[A-Z][A-Z0-9_]{0,99}',str(data.get('error',''))) else None,
- 'serviceState':service.get('ActiveState'),'serviceResult':service.get('Result'),'exitCode':int(code) if re.fullmatch('[0-9]{1,5}',code) else None,
- 'timerActive':timer.get('ActiveState')=='active','timerEnabled':timer.get('UnitFileState')=='enabled'})
-print(json.dumps({'checkedAt':datetime.datetime.now(datetime.timezone.utc).isoformat(),'instanceId':meta('instance/id'),'project':meta('project/project-id'),'roles':rows}))
-`;
+  const source = argonStatusSource(roles);
   try {
     fs.writeFileSync(known, node.alias + ' ' + node.hostKey + '\n', { flag: 'wx', mode: 0o600 });
     const result = await new Promise((resolve, reject) => {
@@ -335,21 +354,23 @@ print(json.dumps({'checkedAt':datetime.datetime.now(datetime.timezone.utc).isofo
     });
     const payload = JSON.parse(result);
     if (payload.instanceId !== node.id || payload.project !== project) throw new Error('ARGON_IDENTITY');
-    return { roles: sanitizeArgon(payload) };
+    return { roles: sanitizeArgon(payload, roles) };
   } finally { try { fs.unlinkSync(known); } catch {} }
 }
 
 async function researchSnapshot({ root, hermesHome, now, remoteRefresh, readArgon, readArgonRemote }) {
   const base = await (readArgon || readArgonRecords)({ root, now });
+  // A cache or remote reply for another role list (e.g. the old four) does not count until the next refresh.
+  const roles = Array.isArray(base.roles) ? base.roles : base.items.map(row => row.role);
   let cached = null;
   try {
     const record = readJson(hermesHome, ARGON_CACHE, 30_000);
-    if (record.version === 1 && iso(record.checkedAt)) cached = { checkedAt: iso(record.checkedAt), roles: sanitizeArgon(record) };
+    if (record.version === 1 && iso(record.checkedAt)) cached = { checkedAt: iso(record.checkedAt), roles: sanitizeArgon(record, roles) };
   } catch {}
   let refreshFailed = false;
   if (remoteRefresh) {
     try {
-      cached = { checkedAt: now.toISOString(), roles: sanitizeArgon(await (readArgonRemote || refreshArgon)({ root, hermesHome, now })) };
+      cached = { checkedAt: now.toISOString(), roles: sanitizeArgon(await (readArgonRemote || refreshArgon)({ root, hermesHome, now, roles }), roles) };
       try { saveCache(hermesHome, 'argon-cache.json', cached); } catch {}
     } catch { refreshFailed = true; }
   }
@@ -363,7 +384,7 @@ async function researchSnapshot({ root, hermesHome, now, remoteRefresh, readArgo
       const { documentId, ...publicCurrent } = current;
       return { ...row, current: { ...publicCurrent, documentMatches: row.url === 'https://docs.google.com/document/d/' + documentId + '/edit' } };
     }),
-    coverage: available ? '고정 서버 4역할의 후처리 영수증·systemd 상태 조회 사본 · Docs 본문·인증값·실행 로그 미조회' : base.coverage,
+    coverage: available ? `고정 서버 ${roles.length}역할의 후처리 영수증·systemd 상태 조회 사본 · Docs 본문·인증값·실행 로그 미조회` : base.coverage,
   };
 }
 
@@ -395,8 +416,8 @@ function backupSnapshot({ hermesHome, now, backupHealthFile, uptimeSeconds, pers
   } catch {}
   const failing = {};
   const components = health.components.map(row => {
-    const sticky = !!row.lastSuccessAt && previous[row.id] === row.lastSuccessAt && row.status !== 'healthy';
-    const failed = ['failed', 'attention'].includes(row.status) || sticky;
+    const sticky = !!row.lastSuccessAt && previous[row.id] === row.lastSuccessAt && !['healthy', 'success'].includes(row.status);
+    const failed = BACKUP_FAILING.has(row.status) || sticky;
     if (failed && row.lastSuccessAt) failing[row.id] = row.lastSuccessAt;
     const sinceSuccess = row.lastSuccessAt ? now.getTime() - Date.parse(row.lastSuccessAt) : null;
     return { ...row, failing: failed, attention: failed && (sinceSuccess === null || sinceSuccess > (BACKUP_GRACE_MS[row.id] || 0)) };
@@ -864,7 +885,7 @@ async function main(args = process.argv.slice(2)) {
 }
 if (require.main === module) main().catch(() => { process.stderr.write('SYNK 오늘 조회를 확인하지 못했습니다. 원문·PC 연결을 확인해 주세요.\n'); process.exitCode = 1; });
 
-module.exports = { readOverview, formatOverview, sanitizeLedger, ledgerSnapshot, readLedgerCache, readTaskRecords, readArgonRecords, researchSnapshot, sanitizeArgon, refreshArgon, reconcileTips, buildEvents,
+module.exports = { readOverview, formatOverview, sanitizeLedger, ledgerSnapshot, readLedgerCache, readTaskRecords, readArgonRecords, researchSnapshot, sanitizeArgon, refreshArgon, argonStatusSource, argonRoles, reconcileTips, buildEvents,
   readBackupHealth, backupSnapshot, sanitizeSns, refreshSns, snsSnapshot, gatewayRecoverySnapshot,
   LEDGER_TTL_MS, LEDGER_CACHE, ARGON_TTL_MS, ARGON_CACHE, SNS_CACHE, SNS_REFRESH_MS, SNS_STALE_MS, BACKUP_CACHE, GATEWAY_RECOVERY_STATUS, GATEWAY_RECOVERY_STALE_MS,
   MONITOR_STATE, GATEWAY_RECOVERY_SILENT_MS };

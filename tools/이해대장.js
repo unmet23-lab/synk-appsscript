@@ -23,7 +23,7 @@
  *      유호님이 어제 적어 둔 「㉡2 보류」가 오늘 딴 칸을 가리킨다. 그래서 주소는 층 기호 + 열 순번이다.
  *
  * 쓰기: node tools/이해대장.js            → docs/이해대장.html 생성
- *      node tools/이해대장.js --바로가기  → 생성 + 바탕화면 「SYNK 방향」에 .lnk
+ *      (바탕화면 바로가기를 만들던 --바로가기는 운영자료.js와 함께 10-22에 없앴다 — docs/_ops/도구_보관목록.md)
  */
 'use strict';
 
@@ -488,7 +488,6 @@ function 먼저볼곳(이해) {
 }
 
 function main() {
-  const 바로가기 = process.argv.includes('--바로가기');
   if (!fs.existsSync(정본경로)) {
     console.error(`[이해대장] 판단 정본이 없다: ${정본경로} — 그릴 재료가 없다(워크트리면 정상).`);
     process.exit(1);
@@ -839,15 +838,6 @@ function 폴백(말, 끝) {
         + `${점수.미측정 ? ` · ⚠답이 온 회차 0 — 무응답 ${점수.현재.무응답}` : ''}`
         + `${점수.뒤에안온것 ? ` · ⚠뒤 ${점수.뒤에안온것}회차 무응답(점수 없음)` : ''})`
       : ' · 엔진 점수 아직 안 쟀다'));
-
-  if (바로가기) {
-    const { execFileSync } = require('node:child_process');
-    /* 운영자료 폴더 통로는 하나뿐이다(유호 상시 08-09) — 손 경로 금지.
-     * 갈래 = **방향**(08-20 재편 — 이해 대장은 판단 층이다. 유호 지시 08-17 재편에서 이 화면을 예시로 직접 들었다).
-     * ⚠ 옛 `--링크` 는 운영자료가 모르는 플래그였다 — 조용히 무시되고 기본 갈래로 떨어졌다. */
-    execFileSync(process.execPath,
-      [path.join(ROOT, 'tools', '운영자료.js'), 산출경로, '--갈래', '방향'], { stdio: 'inherit' });
-  }
 }
 
 if (require.main === module) process.exit(main() || 0);
