@@ -3,6 +3,7 @@
 // 색 변환은 입력의 표시를 읽어 고른다: Remotion JPEG 프레임(yuvj420p·bt470bg·pc)이면 601→709로 바꾸고(현장 노트 브라우저_게시 10-19),
 // 이미 709·tv인 마감본은 그대로 둔다. 10-21 음식 사진 편에서 옮긴 판이 709 마감본을 601·pc로 한 번 더 줄여 색이 바랬다(흰 235→217).
 // 2패스가 목표를 넘을 수 있어(10-19 +18%) 담은 뒤 재고, 넘으면 목표를 낮춰 한 번 더 담는다.
+// 소리는 128k로 다시 누르면 봉우리가 0.3dB쯤 솟아(10-22 lock-a −1.4 → −1.0 dBFS) 리미터 0.76(−2.4 dBFS)을 걸고 담는다 — 0.82로는 AAC 뒤 참 봉우리가 −1.1~−1.5로 흔들려 올리기 전 검사의 최대 −1.2 dBFS를 못 지켰다.
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -21,7 +22,7 @@ const log = path.join(os.tmpdir(), `upload-2pass-${path.basename(out, '.mp4')}`)
 console.log(JSON.stringify({ src, input: { pixFmt, range, space }, vf }));
 const pass = (kbps) => {
   execFileSync('ffmpeg', ['-y', '-v', 'error', '-i', src, '-vf', vf, '-c:v', 'libx264', '-preset', 'slow', '-b:v', `${kbps}k`, '-pass', '1', '-passlogfile', log, ...color, '-an', '-f', 'null', '-']);
-  execFileSync('ffmpeg', ['-y', '-v', 'error', '-i', src, '-vf', vf, '-c:v', 'libx264', '-preset', 'slow', '-b:v', `${kbps}k`, '-pass', '2', '-passlogfile', log, ...color, '-c:a', 'aac', '-b:a', '128k', '-ar', '48000', '-movflags', '+faststart', out]);
+  execFileSync('ffmpeg', ['-y', '-v', 'error', '-i', src, '-vf', vf, '-c:v', 'libx264', '-preset', 'slow', '-b:v', `${kbps}k`, '-pass', '2', '-passlogfile', log, ...color, '-af', 'alimiter=limit=0.76:level=false:attack=1:release=60', '-c:a', 'aac', '-b:a', '128k', '-ar', '48000', '-movflags', '+faststart', out]);
   return fs.statSync(out).size;
 };
 let kbps = Math.floor((Number(mib) * 1024 * 1024 * 8) / dur / 1000 - 128 - 8);

@@ -6,12 +6,42 @@
   "시한": null,
   "상태": "올릴 준비",
   "제목": "남이 보면 곤란한 ChatGPT 대화, 잠그는 법",
-  "최종본": ["docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/lock-a_master.mp4", "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/lock-b_master.mp4"],
+  "최종본": [
+    "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/lock-a_master.mp4",
+    "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/lock-b_master.mp4"
+  ],
   "판": [
-    { "계정": "synkbrief-instagram", "파일": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/lock-a_upload.mp4", "원본": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/lock-a_master.mp4", "표지": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/표지_A.jpg", "시각": "2026-10-23T21:00:00+09:00", "게시글": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/README.md", "AI표시": true },
-    { "계정": "synkbrief-youtube", "파일": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/lock-b_master.mp4", "표지": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/표지_B.jpg", "시각": "2026-10-23T21:00:00+09:00", "게시글": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/README.md", "AI표시": true, "아동용": false, "언어": "ko" },
-    { "계정": "shift-naverblog", "파일": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/blog/원고.md", "시각": "2026-10-23T21:10:00+09:00", "게시글": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/blog/원고.md" },
-    { "계정": "shift-tistory", "파일": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/blog/티스토리.md", "시각": "2026-10-23T21:20:00+09:00", "게시글": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/blog/티스토리.md" }
+    {
+      "계정": "synkbrief-instagram",
+      "파일": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/lock-a_upload.mp4",
+      "원본": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/lock-a_master.mp4",
+      "표지": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/표지_A.jpg",
+      "시각": "2026-10-23T21:00:00+09:00",
+      "게시글": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/README.md",
+      "AI표시": true
+    },
+    {
+      "계정": "synkbrief-youtube",
+      "파일": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/lock-b_master.mp4",
+      "표지": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/표지_B.jpg",
+      "시각": "2026-10-23T21:00:00+09:00",
+      "게시글": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/README.md",
+      "AI표시": true,
+      "아동용": false,
+      "언어": "ko"
+    },
+    {
+      "계정": "shift-naverblog",
+      "파일": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/blog/원고.md",
+      "시각": "2026-10-23T21:10:00+09:00",
+      "게시글": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/blog/원고.md"
+    },
+    {
+      "계정": "shift-tistory",
+      "파일": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/blog/티스토리.md",
+      "시각": "2026-10-23T21:20:00+09:00",
+      "게시글": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/blog/티스토리.md"
+    }
   ],
   "끝행동링크": null,
   "미룰편": [],
@@ -24,5 +54,61 @@
     "인스타 10MB판 lock-a_upload.mp4(B판 사본도)는 10-21 밤 다시 담았다 — 처음 판은 scripts/upload.mjs가 이미 709·tv인 마감본을 601·pc로 한 번 더 줄여 색이 바랬다(흰 235→217). 같은 날 AI 구독 편 검수에서 찾았다.",
     "티스토리 /5(10-22 21:20)는 아직 예약돼 있다 — 이 편 영상이 그보다 먼저 예약·공개되지 않으면 /3·/4처럼 예약을 풀고 영상 뒤에 다시 건다.",
     "10-21 「AI 구독」 편이 하루 밀려 슬롯을 10-22 → 10-23으로 옮겼다(그 편의 미룰편). 티스토리 /5는 아직 10-22 21:20 예약이라 영상(10-23 21:00)보다 하루 먼저 나간다 — 유호님 말씀 뒤 예약 시각을 10-23 21:20으로 옮긴다."
-  ]
+  ],
+  "검사": {
+    "도구": "tools/올리기전검사.js",
+    "시각": "2026-10-22T14:37:40+09:00",
+    "결과": "확인할 것",
+    "고칠것": [],
+    "확인할것": [
+      "준비.json · 「역할」(유입·육성·권위·전환)이 없다",
+      "게시/lock-a_master.mp4 · 소리 비트레이트가 319kbps입니다. 올림 기준은 스테레오 384kbps입니다.",
+      "게시/lock-a_master.mp4 · 끝 화면 6.5초(41.3초 컷부터) — v2 §2-4 「4초 안팎」",
+      "게시/lock-b_master.mp4 · 소리 비트레이트가 318kbps입니다. 올림 기준은 스테레오 384kbps입니다.",
+      "게시/lock-b_master.mp4 · 끝 화면 6.5초(41.3초 컷부터) — v2 §2-4 「4초 안팎」",
+      "영상 2개 · 오른쪽 단추 자리 23군데(게시/lock-a_master.mp4 11 · 게시/lock-b_master.mp4 12) — 1.5초 「2026.10.20 새 기능」 오른쪽 끝 931px(안전선 920) · 3.0초 「2026.10.20 새 기능」 오른쪽 끝 945px(안전선 920) · 장면표 .tmp/올리기전검사/synkbrief_ChatGPT대화잠그기_20261021/글자표_게시_lock-a_master.jpg · .tmp/올리기전검사/synkbrief_ChatGPT대화잠그기_20261021/글자표_게시_lock-b_master.jpg",
+      "영상 2개 · 왼쪽 가장자리 65군데(게시/lock-a_master.mp4 32 · 게시/lock-b_master.mp4 33) — 2.5초 「대화를 잠그면,」 왼쪽 끝 58px(안전선 65) · 2.5초 「학습에서도 빠질까?」 왼쪽 끝 56px(안전선 65) · 장면표 .tmp/올리기전검사/synkbrief_ChatGPT대화잠그기_20261021/글자표_게시_lock-a_master.jpg · .tmp/올리기전검사/synkbrief_ChatGPT대화잠그기_20261021/글자표_게시_lock-b_master.jpg",
+      "블로그 원고.md · 영상·게시글에 없는 수 50초 — 옛 숫자가 남았는지 본다(Fable 10-21 P1)",
+      "블로그 티스토리.md · 영상·게시글에 없는 수 50초 — 옛 숫자가 남았는지 본다(Fable 10-21 P1)",
+      "링크 · https://help.openai.com/en/articles/20001411-using-locked-chats-in-chatgpt 응답 403 — 봇을 막는 곳일 수 있어 브라우저로 한 번 연다",
+      "링크 · https://help.openai.com/en/articles/6825453-chatgpt-release-notes 응답 403 — 봇을 막는 곳일 수 있어 브라우저로 한 번 연다"
+    ],
+    "파일": [
+      {
+        "경로": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/lock-a_master.mp4",
+        "판": [
+          "synkbrief-instagram"
+        ],
+        "바이트": 72830032,
+        "수정": "2026-10-22T05:22:59.016Z",
+        "sha256": "b152bd5fcd29fcdc2e8a0159b01d143bbc455365a83131d88097167361ac8e54",
+        "길이": 47.8,
+        "해상도": "1080×1920",
+        "평균Mbps": 12.2,
+        "음량": -14.6,
+        "봉우리": -1.4,
+        "정지": "9% 통과",
+        "끝화면": 6.5,
+        "사전검사": ".tmp/올리기전검사/synkbrief_ChatGPT대화잠그기_20261021/영상사전검사_게시_lock-a_master/inspection-253f50a1-6e3a-47a1-b70e-57ab25bc02ad/검사.json"
+      },
+      {
+        "경로": "docs/마케팅/synkbrief_ChatGPT대화잠그기_20261021/게시/lock-b_master.mp4",
+        "판": [
+          "synkbrief-youtube"
+        ],
+        "바이트": 72828683,
+        "수정": "2026-10-22T05:23:03.544Z",
+        "sha256": "a6b533744f0994fed85929c3835d4a43c92dfdb1f328e063d616c0a53da453e6",
+        "길이": 47.8,
+        "해상도": "1080×1920",
+        "평균Mbps": 12.2,
+        "음량": -14.6,
+        "봉우리": -1.4,
+        "정지": "9% 통과",
+        "끝화면": 6.5,
+        "사전검사": ".tmp/올리기전검사/synkbrief_ChatGPT대화잠그기_20261021/영상사전검사_게시_lock-b_master/inspection-f9bb976c-0688-44f3-855b-223fe258c322/검사.json"
+      }
+    ],
+    "기록": ".tmp/올리기전검사/synkbrief_ChatGPT대화잠그기_20261021"
+  }
 }
