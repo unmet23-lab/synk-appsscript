@@ -262,6 +262,36 @@
 - 고침: 긴 라운드는 표준 입력으로 돌리고 로그는 파일로 받는다(`ego-browser nodejs < round.mjs > round.log 2>&1` — 출력이 끝에 한꺼번에 찍힐 때가 있어 진행은 `ego/<id>_보내기전 · 결과` 캡처와 받는 폴더로 본다). 실행기는 대화 주소를 `globalThis.LAST_CONVO`에 남기고, 라운드는 받기 실패(`no original url`)면 그 자리에서 대화 주소 모드(`JOB.convo`)로 다시 받는다 — 10-22 다시 받은 여섯 모두 21~23초에 원본(1792×2400)을 받았다. `goto`는 `ERR_ABORTED`면 about:blank를 거쳐 세 번까지 다시 한다(`gen.mjs`의 `go`). 대화를 목록에서 다시 찾지 않도록 주소는 그릴 때 로그에 남긴다.
 - 다시 확인: 라운드 로그 끝에 `BATCH DONE`과 장마다 「받음 … 200 …바이트」가 있다.
 
+### 10-22 `/images` 화면: 모드 단추는 「+」로 펼친 동안만 있고, 숨은 파일 칸이 없어 「파일 업로드」 메뉴로 올린다 (2026-10-22 Claude)
+- 증상: 「달리며 건너뛰는 한국」 v2(유호님 · 나노바나나 프로)를 굽는데 10-21 실행기가 ① 「모드 단추가 없음」 ② `input[type=file][accept="image/*"]` 0개로 멈췄다. 「+」(업로드 및 도구)를 누르면 입력창이 펼쳐져 「모드 선택 도구 열기, 현재 Pro 모드 사용 중」이 보이지만, 실행기가 이어서 누르던 Escape에 다시 접혀 모드 단추가 사라졌다.
+- 원인: 화면이 또 바뀌었다. 펼친 입력창의 「+」 메뉴는 「파일 업로드 · Drive에서 파일 추가 · 업로드 더보기 · 이미지/동영상/음악 만들기 · 도구 더보기」이고(처음엔 회색 뼈대로 2~3초 뒤에 글이 찬다), 파일 칸은 「파일 업로드」를 누를 때 만들어진다.
+- 고침: 「+」를 한 번 눌러 펼친 채로 모드를 읽고 고른다(Escape 하지 않음). 참조는 `page.waitForFileChooser()`를 먼저 걸고 메뉴 안 가장 안쪽 글 「파일 업로드」를 실제 클릭 → `chooser.setFiles([…])`(다섯 장 한 번에 됨). 실행기 `synk-vendor/korea-run-montage-20261021/ego/v2/gem_pro.mjs`(나노바나나 프로 = 모드 「3.1 Pro」).
+- 다시 확인: 보내기 전 첨부 미리보기 수 = 참조 수, 모드 aria-label에 「Pro」.
+
+### 지시문 글자 수를 입력창 innerText로 견주면 문단 줄바꿈만큼 어긋난다 (2026-10-22 Claude)
+- 증상: 문단을 빈 줄로 나눈 2,715자 지시문을 넣었더니 입력창 `innerText`가 2,736자라 「지시문 길이가 다름」으로 멈췄다(보내기 전이라 나간 것 없음).
+- 원인: 입력창이 문단을 `<p>`로 나눠 줄바꿈을 더 센다.
+- 고침: 공백을 모두 뺀 길이끼리 견준다(`replace(/\s+/g, "")`).
+- 다시 확인: 차이가 3자 안.
+
+### 보내는 순간 알림 권한 창이 떠 ego가 작업 공간을 유호님께 넘긴다 — 글은 이미 갔을 수 있다 (2026-10-22 Claude)
+- 증상: 첫 장 「보내기」를 누르자 「A browser permission prompt for notifications has appeared. The user now controls this task space」로 멈췄다.
+- 원인: Gemini가 그림 만들기를 시작할 때 알림 권한을 묻고, ego는 권한 창을 사람 몫으로 넘긴다(브라우저 게시 노트의 Business Suite 알림과 같은 결).
+- 고침: 우회하지 않고 유호님께 ego 창에서 그 창을 처리해 달라고 한 줄 부탁했다(10-22 「allow 눌렀어」 — 허용). 그 뒤 `listTaskSpaces()`로 그 공간(20번)의 `ownership`이 `agentDelegatedToUser`인 것을 보고 `takeOverTaskSpace(20)`. 글은 권한 창 직전에 이미 가 있었다 — 다시 보내기 전에 사이드바 맨 위 제목(「Jogakbo Denim Subway Selfie」)을 보고, 있으면 그 대화에서 원본만 받는다(`ego/take.mjs`).
+- 다시 확인: 다음 장부터 권한 창 없이 「sent」 기록이 남는지.
+
+### 세션이 다시 시작돼도 뒤에서 돌던 굽기 큐가 살아남아, 새로 건 큐와 같은 탭을 함께 쓰며 받은 그림이 뒤섞인다 (2026-10-22 Claude)
+- 증상: 「이어서」로 세션이 다시 시작된 뒤 앱은 큐(`run_v2.sh …`)를 「stopped」로 알렸는데, 실제로는 bash 고리가 남아 S12~S17을 계속 구웠다. 같은 시각 새로 건 큐와 한 탭을 함께 써서 ① S18을 기다리는 동안 S08이 보내지고 S18 파일에 S08(다랭이마을) 그림이 저장됐고 ② S16의 「보낸 대화 주소」가 다랭이마을 대화로 적혔다. `TaskStop`도 bash 자식 프로세스(ego nodejs)는 끄지 않았다.
+- 원인: 앱의 배경 작업 기록과 실제 프로세스가 따로 논다. 원본 받기가 그 탭의 네트워크에서 「300KB 넘는 그림 응답」을 잡는 방식이라, 같은 탭에서 남이 연 그림도 잡힌다.
+- 고침: 큐를 다시 걸기 전에 `Get-CimInstance Win32_Process`에서 명령줄에 `run_v2`·`gem_pro`·`take.mjs`가 든 것을 찾아 `taskkill /PID <bash> /T /F`로 끈다. 받은 파일은 크기(바이트)가 같은 짝이 없는지 보고, 대화 주소가 두 작업에 겹치면 둘 다 다시 굽는다. 굳은 탭은 같은 작업 공간 안에서 `page.close()` → `task.newPage()`로 갈고, 실행기는 `task.pages()`의 마지막 탭을 쓴다.
+- 다시 확인: 기록에서 한 작업의 「sent」와 「done」 사이에 다른 작업의 줄이 끼지 않았는지.
+
+### 다른 세션의 Blender 렌더가 GPU를 쓰면 `/images`가 뼈대만 그린 채 15초를 넘겨 evaluate가 끊긴다 (2026-10-22 Claude)
+- 증상: `page.evaluate timed out after 15000ms and the Page is still unresponsive` · `page.goto timed out … navigation committed`가 번갈아 났다. 화면은 회색 자리표시만 있었고 requestAnimationFrame 한 번이 150~800ms, GPU는 지유 광고 P9 블렌더 렌더로 70~91%였다(오르내림).
+- 원인: 위 「로컬 GPU가 100%면」 항목과 같은 결 — 남의 렌더가 그리기를 늦춘다.
+- 고침: `goto`의 시간 초과(navigation committed)는 넘어가고, 첫 화면 기다리기에서 evaluate가 끊겨도 넘어가며 90초까지 기다린다. 그래도 끊기면 GPU 사용률이 내려간 틈에 다시 돌린다(남의 렌더는 멈추지 않는다).
+- 다시 확인: 굽기 기록에 「sent」 다음 「done」이 남는지.
+
 ## 결과물
 
 ### 프로가 참조 얼굴에서 더 멀어진다
@@ -365,3 +395,27 @@
 - 원인: 대화 안 편집은 앞 그림의 구도를 지키려 한다(추정).
 - 고침: 층 추가·소품 바꾸기처럼 구도를 지키는 고침만 같은 대화에서 하고, 시점이 바뀌는 그림은 새 대화를 열어 앞 결과를 참조 1번으로 넣는다.
 - 다시 확인: 받은 그림을 앞 그림과 겹쳐 차이를 잰다(5 안팎이면 같은 그림).
+
+### 「열차 창에 붙인 폰이 녹화하는 시점」은 그림 대신 글로 답한다 — 「유리에 붙인 카메라로 찍은 사진」으로 쓴다 (2026-10-22 Claude)
+- 증상: 「달리며 건너뛰는 한국」 v2 폰 시점 컷을 「POINT OF VIEW OF THE SMARTPHONE TAPED INSIDE THE WINDOW OF A SEOUL SUBWAY TRAIN …」으로 보내자 그림 없이 「만들기 어렵다」는 글로 답했다. 2차 S18(유채 달리기)은 거절 문구 없이 글만 돌아왔다.
+- 원인: 숨겨 붙인 폰 · 녹화처럼 몰래 찍는 장치로 읽히는 글을 막는 것으로 보인다(추정). S18은 모름.
+- 고침: 「A PHOTO TAKEN THROUGH THE WINDOW OF A SEOUL SUBWAY CAR WITH THE CAMERA PRESSED FLAT AGAINST THE INSIDE OF THE GLASS」처럼 「유리에 붙인 카메라로 찍은 사진」으로 쓰자 그렸다. 까닭 없이 글만 온 것은 새 대화에서 같은 지시문을 한 번 더 보내자 됐다.
+- 다시 확인: 실행기 기록에 「done」이 남고 받은 파일이 생겼는지.
+
+### 옆으로 달리는 새 그림이 「화면 오른쪽으로」를 적어도 반대로 달린다 — 같은 카메라의 앞 컷을 편집해 순간만 바꾼다 (2026-10-22 Claude)
+- 증상: v2 S05(폰 시점 질주) 2차를 「toward the right side of the picture … seen exactly from his right side」와 오른쪽으로 달리는 자세 실루엣으로 새로 굽자 왼쪽으로 달렸다(왼쪽 옆얼굴). 「창틀 · 고무 테두리 없음」을 적었는데도 아래에 둥근 창 모서리 · 창턱이 나왔고 턱 · 목도 다른 컷보다 무거웠다. 같은 문장 · 같은 실루엣의 S04 · S07 · S18은 맞게 나왔다.
+- 원인: 모름(새 생성은 컷마다 방향 · 구도를 다시 짠다). 실루엣의 머리 쪽 윤곽이 어느 쪽을 보는지 흐릿했다.
+- 고침: 같은 고정 카메라의 앞 컷(S04)을 Image 1로 두고 「Edit the first attached photo (Image 1). … Keep exactly the same camera position, height and framing, the same edges … Change only the moment, one second later: …」에 「his nose, chest and leading knee point at the right edge of the picture」를 넣자 방향 · 가장자리 · 얼굴 · 자리(S04와 키 50% · 가로 47%)가 한 번에 맞았다. 같은 방법으로 「열차가 서 있던 몇 초 앞」 S03b도 다시 만들었다(기둥이 오른쪽에 멈춤 · 행인 없음). 얼굴 참고(B 정면 · 오른쪽 옆얼굴 사진)는 Image 2 · 3으로. 이어서 자세만 「전력 질주로」 바꾸는 편집을 한 번 더 하자 몸통이 카메라 쪽으로 돌며 재킷 앞판에 조각보가 번졌다(안 씀) — 자세를 크게 바꾸는 편집에는 옷 문장(앞판 민무늬)을 다시 적는다.
+- 다시 확인: 코 · 앞 무릎이 가리키는 쪽, 위 · 아래 가장자리의 띠, 앞 컷과 사람 상자 키 · 가로 자리 차(`fable_korea_run_v2sb/measure.py`).
+
+### 장소 참고 사진에 찍힌 사람을 그림에 따라 그린다 (2026-10-22 Claude)
+- 증상: v2 S07(진해 여좌천)에 「the dry stream bed below is empty — no people, ladders or objects in it」을 적었는데도 개울 바닥에 꽃다발을 든 남자가 쪼그려 있고 흰 사다리가 놓였다.
+- 원인: 장소 참고 사진(pexels 「Men Passing Flower over Canal」)에 그 사람과 사다리가 실제로 찍혀 있었다. 「recreate this real place faithfully」가 사람까지 옮긴다.
+- 고침: 받은 그림을 Image 1로 두고 「Keep this exact image exactly as it is … Change only one thing: the dry stream bed below the railing is empty — remove the man … and the white ladder-like object …, and fill those spots with the same stones, moss and small green plants」로 한 번에 비웠다(얼굴 · 자세 · 구도 그대로). 처음부터라면 참고 사진에서 사람 부분을 잘라 낸 사본을 넣는다.
+- 다시 확인: 참고 사진을 넣기 전에 사진 속 사람 · 물건을 보고, 받은 그림의 그 자리를 확대한다.
+
+### 「소매와 등판만 조각보」라고 써도 정면 가까운 컷에서 앞판으로 번지고, 참고에 없는 반지가 생긴다 (2026-10-22 Claude)
+- 증상: v2 2차 S03(정면 가슴 위)이 재킷 앞판까지 조각보로 덮었다. S02 · S03b · S04 오른손에 참고 사진에 없는 금반지가 생겼다.
+- 원인: 「two sleeves and back panel are patchwork」만으로는 앞판이 비어 있어 모델이 채우는 것으로 보인다(추정). 반지는 손이 크게 보이는 컷에서 장신구를 더하는 버릇으로 보인다(추정).
+- 고침: 「The front panels of the jacket are plain light-wash denim; only the two sleeves … and the whole back panel are jogakbo patchwork」처럼 남는 부분까지 적자 다시 구운 판에서 맞았다. 반지는 받은 그림을 Image 1로 「Change only one thing: remove the ring from his finger」 편집으로 뺐고(한 번에 됨, 다른 데는 그대로), 다음 굽기부터 몸 문장에 「no rings, no jewelry」를 넣는다.
+- 다시 확인: 손 · 재킷 앞판 확대.
