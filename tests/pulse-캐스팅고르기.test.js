@@ -101,10 +101,9 @@ test('브리프 추천: 1차 확장 업종(건강식품·생활/주방·육아·
   for (const w of ['카페 커피', '캔커피', '콜드브루', '동네 카페 홍보']) assert.ok(all(w).includes('F05'), `${w}에 소연`);
   assert.deepEqual(all('카페 커피').slice(0, 2), ['M01', 'F05']);
   assert.ok(!all('맥주').includes('F05') && !all('생수').includes('F05'), '카페 문구가 주류·음료 전체로 새지 않는다');
-  for (const c of ['F05', 'M04', 'F06', 'F07', 'M05']) {
-    const m = byCode(c);
-    assert.ok(m.tagline && m.roles.length && m.avoid.length, `${c} 한 줄 캐릭터·역할·피할 것`);
-  }
+  // 한 줄 캐릭터·맡는 역할·피할 것은 1기 일곱 명까지 모두(10-22 유호님), 한 줄은 서로 겹치지 않는다
+  for (const m of models) assert.ok(m.tagline && (m.roles || []).length && (m.avoid || []).length, `${m.code} 한 줄 캐릭터·역할·피할 것`);
+  assert.equal(new Set(models.map((m) => m.tagline)).size, models.length, '한 줄 캐릭터가 겹치지 않는다');
 });
 
 test('브리프 추천: 성별 조건과 빈 브리프', () => {
