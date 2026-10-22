@@ -142,7 +142,7 @@ test('erasing takes a confirmation, takes back its task and leaves only the row 
   assert.equal(f.store.count('websiteInquiries'),1);assert.equal(f.counts().message_tasks,1);
   f.at='2026-10-20T02:03:00.000Z';
   const done=f.service.erase(admin,row.id,{revision:current.revision,token:erasure.token});
-  assert.deepEqual(done,{erased:{id:row.id,erasedAt:'2026-10-20T02:03:00.000Z',task:'removed',storage:'clean'}});
+  assert.deepEqual(done,{erased:{id:row.id,erasedAt:'2026-10-20T02:03:00.000Z',task:'removed',wal:'truncated'}});
   assert.equal(f.store.count('websiteInquiries'),0);assert.deepEqual(f.counts(),{messages:0,message_tasks:0,message_send_requests:1},'the task message and its task are gone; the receipt keeps no text');
   assert.deepEqual(f.store.all(ERASED),[{id:row.id,erasedAt:'2026-10-20T02:03:00.000Z'}],'the erasure record is the row number and the time only');
   assert.doesNotMatch(JSON.stringify(f.store.db.prepare("SELECT kind,body FROM documents WHERE kind<>'users'").all()),PRIVATE,'no customer text, email, draft or response number is left in the company store');
@@ -161,7 +161,7 @@ test('an older draft freed by a later edit is zeroed at that edit, so an erase l
   const long='LONG-DRAFT-SECRET-0042 '.repeat(250);assert.ok(long.length<6000);
   row=f.service.update(admin,row.id,{revision:row.revision,replyDraft:long}).item;row=f.service.update(admin,row.id,{revision:row.revision,replyDraft:'짧은 초안'}).item;
   const {erasure}=await f.service.checkErase(admin,row.id,{revision:row.revision});
-  assert.equal(f.service.erase(admin,row.id,{revision:row.revision,token:erasure.token}).erased.storage,'clean');
+  assert.equal(f.service.erase(admin,row.id,{revision:row.revision,token:erasure.token}).erased.wal,'truncated');
   const file=readFileSync(join(f.store.directory,'company.sqlite'));
   assert.equal(file.includes(Buffer.from('LONG-DRAFT-SECRET-0042')),false,'the long draft of an earlier revision is not left in free pages');
   assert.equal(file.includes(Buffer.from('짧은 초안')),false);
@@ -173,12 +173,42 @@ test('a reader holding the WAL leaves the erase reported as pending, and the nex
   const {erasure}=await f.service.checkErase(admin,row.id,{revision:row.revision});
   const readerDb=new DatabaseSync(join(f.store.directory,'company.sqlite'),{readOnly:true});readerDb.exec('BEGIN');readerDb.prepare("SELECT COUNT(*) AS n FROM documents").get();
   try{
-    assert.equal(f.service.erase(admin,row.id,{revision:row.revision,token:erasure.token}).erased.storage,'pending');
+    assert.equal(f.service.erase(admin,row.id,{revision:row.revision,token:erasure.token}).erased.wal,'pending');
     assert.ok(statSync(join(f.store.directory,'company.sqlite-wal')).size>0,'the WAL still holds frames while the reader is open');
   }finally{readerDb.exec('COMMIT');readerDb.close();}
   for(let i=0;i<40&&statSync(join(f.store.directory,'company.sqlite-wal')).size>0;i++)await new Promise(done=>setTimeout(done,25));
   assert.equal(statSync(join(f.store.directory,'company.sqlite-wal')).size,0,'the retry truncates the WAL once the reader is gone');
   assert.equal(f.store.db.prepare('PRAGMA busy_timeout').get().timeout,5000);
+});
+
+test('a new erase starts the WAL retries again after an earlier run of tries was used up',async t=>{
+  // 아르곤 델타 검수 A1: the try counter used to stay at its end, so a later busy erase got no retry at all.
+  const f=await fixture(t),admin=f.users.admin,wal=()=>statSync(join(f.store.directory,'company.sqlite-wal')).size;
+  f.items=[sample(),sample({responseId:'synthetic-response-9',createdAt:'2026-10-20T01:30:00.000Z',submittedAt:'2026-10-20T01:30:00.000Z'})];
+  await f.enable();await f.service.tick({force:true});const [first,second]=f.service.workspace(admin).items;
+  const tokens=[];for(const row of [first,second])tokens.push((await f.service.checkErase(admin,row.id,{revision:row.revision})).erasure.token);
+  const readerDb=new DatabaseSync(join(f.store.directory,'company.sqlite'),{readOnly:true});readerDb.exec('BEGIN');readerDb.prepare('SELECT COUNT(*) AS n FROM documents').get();
+  try{
+    assert.equal(f.service.erase(admin,first.id,{revision:first.revision,token:tokens[0]}).erased.wal,'pending');
+    await new Promise(done=>setTimeout(done,250));assert.ok(wal()>0,'all three tries ran out while the reader stayed open');
+    assert.equal(f.service.erase(admin,second.id,{revision:second.revision,token:tokens[1]}).erased.wal,'pending');
+  }finally{readerDb.exec('COMMIT');readerDb.close();}
+  for(let i=0;i<40&&wal()>0;i++)await new Promise(done=>setTimeout(done,25));
+  assert.equal(wal(),0,'the later erase scheduled its own tries');
+});
+
+test('a reader that outlasts every listed wait still gets the WAL truncated once it closes, with no other erase',async t=>{
+  // GPT 델타 검수 GA1: past the last listed wait the tries used to stop for good.
+  const f=await fixture(t),admin=f.users.admin,row=await collected(f),wal=()=>statSync(join(f.store.directory,'company.sqlite-wal')).size;
+  const {erasure}=await f.service.checkErase(admin,row.id,{revision:row.revision});
+  const readerDb=new DatabaseSync(join(f.store.directory,'company.sqlite'),{readOnly:true});readerDb.exec('BEGIN');readerDb.prepare('SELECT COUNT(*) AS n FROM documents').get();
+  try{
+    assert.equal(f.service.erase(admin,row.id,{revision:row.revision,token:erasure.token}).erased.wal,'pending');
+    await new Promise(done=>setTimeout(done,300));assert.ok(wal()>0,'the reader outlasted the three listed waits');
+  }finally{readerDb.exec('COMMIT');readerDb.close();}
+  for(let i=0;i<40&&wal()>0;i++)await new Promise(done=>setTimeout(done,25));
+  assert.equal(wal(),0,'it keeps trying at the last wait until the reader is gone');
+  await f.service.close();await new Promise(done=>setTimeout(done,80));assert.equal(f.store.db.prepare('PRAGMA busy_timeout').get().timeout,5000);
 });
 
 test('an erased response never comes back — next run, full re-read or edit — while a new response from the same person does',async t=>{

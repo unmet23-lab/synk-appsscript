@@ -73,9 +73,12 @@ export function createWebsiteInquiryService({store,reader,tasks,origin='',clock=
     try{store.db.exec('PRAGMA busy_timeout=0');done=store.db.prepare('PRAGMA wal_checkpoint(TRUNCATE)').get()?.busy===0;}catch{}
     finally{store.db.exec('PRAGMA busy_timeout='+(Number.isInteger(wait)?wait:5000));}
     return done;}
-  function cleanWal(){
-    if(truncateWal()){walTries=0;return true;}
-    if(!walTimer&&!stopped&&walTries<walRetryMs.length){walTimer=setTimeout(()=>{walTimer=null;if(!stopped)cleanWal();},walRetryMs[walTries++]);walTimer.unref?.();}
+  function cleanWal(fresh=false){
+    if(truncateWal()){clearTimeout(walTimer);walTimer=null;walTries=0;return true;}
+    // A new erase starts the waits again from the shortest. Past the last listed wait it keeps trying at that wait
+    // until the reader is gone (a stop or restart ends it; closing the database checkpoints the WAL anyway).
+    if(fresh){clearTimeout(walTimer);walTimer=null;walTries=0;}
+    if(!walTimer&&!stopped&&walRetryMs.length){walTimer=setTimeout(()=>{walTimer=null;if(!stopped)cleanWal();},walRetryMs[Math.min(walTries++,walRetryMs.length-1)]);walTimer.unref?.();}
     return false;}
   // A personal room prevents customer information or even source references
   // from reaching unrelated crew through notification previews.
@@ -188,10 +191,11 @@ export function createWebsiteInquiryService({store,reader,tasks,origin='',clock=
       if(task==='removed'){try{const latest=store.get(ROWS,id);if(latest?.task)putRow(id,{...latest,task:{...latest.task,state:'unavailable'}});}catch{}}
       throw error;
     }
-    // 'pending' when a reader kept the -wal file from being truncated; cleanWal() tries again on its own.
-    const storage=cleanWal()?'clean':'pending';
+    // wal 'pending' when a reader kept the -wal file from being truncated; cleanWal() tries again on its own. It says
+    // nothing about free pages that versions before every write was zeroed may have left in the database file.
+    const wal=cleanWal(true)?'truncated':'pending';
     try{onChange();}catch{}
-    return {erased:{id,erasedAt,task,storage}};
+    return {erased:{id,erasedAt,task,wal}};
   }
   function importOne(raw){
     const data=normalize(raw),id=hash([WEBSITE_INQUIRY_FORM_ID,data.responseId]);
