@@ -2,23 +2,11 @@
   "설명": "wide-tests 기준선 — 여기 적힌 실패는 빨강으로 치지 않는다(tools/ci넓은시험.js). 고치면 줄이 빠진다(기준선줄이기). 손으로 늘리지 않는다.",
   "run": "39630428342",
   "묶음": {
-    "루트": [
-      {
-        "파일": "tests/atlas-dating-reconcile-export.test.mjs",
-        "시험": "tests/atlas-dating-reconcile-export.test.mjs",
-        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — test failed"
-      }
-    ],
+    "루트": [],
     "회사": [],
     "desktop": [],
-    "experiences": [
-      {
-        "파일": "experiences/20260909/pulse/qa/story-browser.test.cjs",
-        "시험": "experiences/20260909/pulse/qa/story-browser.test.cjs",
-        "까닭": "2026-10-21 첫 Linux 실행(run 39630428342)에서 이미 실패 — test failed"
-      }
-    ],
+    "experiences": [],
     "tools": []
   },
-  "줄인run": "39720010830"
+  "줄인run": "39723308324"
 }
