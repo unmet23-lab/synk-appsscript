@@ -1,0 +1,109 @@
+{
+  "메모": "「매진 임박」 정지컷 새 배역판(2026-10-22). 유호님: 강도는 유호님(얼굴이 보이게), 피해자 셋 — 통 큰 언니 통2 · 리액션 장인 리4 + 지유. 이 파일은 다시 굽는 열 컷만이다 — 지유 C04 · C13과 그림자 · 빈 거실 C01 · C06 · C10은 첫 판(정지컷.json) 그대로. 강도 컷은 장부 S24 고정 얼굴 세트(1 · 2 확정 얼굴 B · C 크롭, 3~5 실제 사진 pro02 · V181 · V204 — [새판]재촬영_v40/기준그림/얼굴세트/_올림/)에 세트(C01) 또는 고른 강도 컷(C02 · C11)을 여섯째로. 통2 · 리4 컷은 배역 참조 네 장(synk-vendor/…/배역/참조/<배역>/01_hero~04_fullbody)과 C01. 끝의 멍 컷은 셋(통2 C12 · 리4 C12b · 지유 C13)으로 0.67초씩. 풀기: node 풀기.mjs --파일 정지컷_v2.json → ego/jobs_정지컷_v2.json.",
+  "공통": {
+    "세트": "Cinematic film still from a Korean psychological thriller, 16:9 frame. Location: a small Seoul apartment living room late at night with the main lights off — a deep wine-red velvet sofa, a string of tiny warm-yellow fairy-light bulbs draped along the wall behind the sofa, three lit pillar candles on a low dark-wood coffee table, and a floor lamp with a red fabric shade washing the room in deep red light. Hard red key light from the left, warm flickering candlelight from below, deep black shadows, a faint haze in the air, natural film grain, shot on a cinema camera. No text, no logos, no watermarks.",
+    "세트_참조": "Image {n} shows the room and its lighting: use it only for the background, set dressing and light — not for the composition or framing.",
+    "유호_얼굴": "HIS FACE: he is the exact same Korean man as in Images 1 and 2 — keep exactly that face in every detail, at his best: well-rested, freshly groomed, clear healthy skin, bright eyes. Images 3 to 5 are his real photos, for identity only (ignore the short hair in Image 3 and all backgrounds and clothing). Do not change his features, do not make him look older or younger, and do not add glasses.",
+    "유호_옷": "HAIR, BODY AND WARDROBE: his thin cornrows (about ten rows) are mostly hidden under the hood, only the front rows show at his hairline. He is 180 cm tall with size 110 (XXL) tops — naturally broad shoulders and a fuller chest, not a bodybuilder. He wears a plain black hooded jacket with the hood pulled up over his head, and black leather gloves. No mask, no balaclava — his whole face is visible. No weapon is visible anywhere in the frame.",
+    "유호_장면참조": "Image 6 shows him in this same scene: keep the same hooded jacket, gloves, room, light and camera look as Image 6, but take his face only from Images 1 to 5.",
+    "사진남": "Photorealistic film still, documentary-plate realism: natural skin texture with visible pores, realistic hair, natural proportions, not airbrushed. He is the only person in the frame. No text, no logos, no watermarks.",
+    "통2_얼굴": "Use the four attached photos (Images 1 to 4) only as identity references for one Korean woman about 30 years old. Keep her face and body exactly the same: her full round face with soft cheeks and a soft double chin, thick straight dark eyebrows, her short tightly curled dark-brown permed bob, her plus-size figure (163 cm, Korean clothing size 88), and — when her teeth show — only a very narrow gap between her two front teeth (both front teeth fully there). Ignore the backgrounds, clothing and lighting of the reference photos. Do not add moles, freckles, marks, tattoos, text, logos or watermarks.",
+    "통2_옷": "She wears a lavender fleece pajama top with tiny white polka dots.",
+    "리4_얼굴": "Use the four attached photos (Images 1 to 4) only as identity references for one Korean woman about 27 years old. Keep her face exactly the same: her round face, her black bowl-cut bob with straight blunt bangs just above the eyebrows, her large round tortoiseshell glasses with clean clear lenses, and the small mole on her cheek exactly where it is in the reference photos. Ignore the backgrounds, clothing and lighting of the reference photos. Do not add other moles, freckles, marks, tattoos, text, logos or watermarks.",
+    "리4_옷": "She wears a sage-green knit sweater over a white collared shirt.",
+    "사진": "Photorealistic film still, natural skin texture with visible pores, realistic individual hair strands, natural proportions. She is the only person in the frame.",
+    "우는_연기": "This is a horror-film parody, so the crying is big and dramatic — but she must stay unmistakably the same woman as in Images 1 to 4."
+  },
+  "컷": [
+    {
+      "id": "C02",
+      "who": "yuho",
+      "refs": [
+        "유호x5",
+        "C01"
+      ],
+      "text": "{세트} {세트_참조:6} Medium close-up of the burglar from the chest up, standing in the dark living room and staring straight into the lens with cold, unblinking eyes, jaw set, lips closed. Red backlight rims his shoulders and hood; warm candlelight from below lights his face from beneath. His gloved hands are below the bottom edge of the frame. Low camera angle looking slightly up at him, 50mm, shallow depth of field with the fairy lights as soft bokeh behind him. {유호_얼굴} {유호_옷} {사진남}"
+    },
+    {
+      "id": "C05",
+      "who": "yuho",
+      "refs": [
+        "유호x5",
+        "C02"
+      ],
+      "text": "{세트} {유호_장면참조} Medium close-up from the chest up, the same framing as Image 6: he tilts his head about 20 degrees to one side, puzzled, like a confused dog — eyebrows slightly raised, lips closed. Red backlight, candlelight from below, 50mm, shallow depth of field. {유호_얼굴} {유호_옷} {사진남}"
+    },
+    {
+      "id": "C09",
+      "who": "yuho",
+      "refs": [
+        "유호x5",
+        "C02"
+      ],
+      "text": "{세트} {유호_장면참조} Medium shot from the chest up: he looks down at something small he holds in both gloved hands just below the bottom edge of the frame — we cannot see what it is — his head tilted with genuine curiosity, eyebrows raised. Red backlight, candlelight from below. 50mm, shallow depth of field. {유호_얼굴} {유호_옷} {사진남}"
+    },
+    {
+      "id": "C11",
+      "who": "yuho",
+      "refs": [
+        "유호x5",
+        "C02"
+      ],
+      "text": "{세트} {유호_장면참조} Medium close-up: he holds a black smartphone to his ear with his gloved right hand (on the left side of the picture); the phone screen's cold blue-white glow lights the side of his face. Red lamp light behind him. He looks off to the side, calm and strangely polite, like a man talking to a call center, lips slightly parted mid-word. 50mm, shallow depth of field. {유호_얼굴} {유호_옷} {사진남}"
+    },
+    {
+      "id": "C14",
+      "who": "yuho",
+      "refs": [
+        "유호x5",
+        "C11"
+      ],
+      "text": "{유호_장면참조} Close-up of his face from forehead to chin, the black hood framing it, the phone still at his ear — the cold blue-white phone glow from one side, red light behind him. Deadpan, completely polite and serious, as if ordering something on the phone. Shallow depth of field, 85mm. {유호_얼굴} {유호_옷} {사진남}"
+    },
+    {
+      "id": "C03",
+      "who": "리4",
+      "refs": [
+        "리4x4",
+        "C01"
+      ],
+      "text": "{세트} {세트_참조:5} Tight close-up: her head and the top of her shoulders fill the frame. She is huddled on the wine-red velvet sofa, terrified and sobbing hard behind her round glasses: big tears streaming down both cheeks, glossy wet red-rimmed eyes, eyebrows pulled up in fear, lips trembling. Red lamp light from the left and warm candlelight from below on her face; the fairy lights behind her are soft round bokeh. 85mm, shallow depth of field. {리4_얼굴} {리4_옷} {우는_연기} {사진}"
+    },
+    {
+      "id": "C07",
+      "who": "통2",
+      "refs": [
+        "통2x4",
+        "C01"
+      ],
+      "text": "{세트} {세트_참조:5} Waist-up shot: she sits on the edge of the wine-red velvet sofa leaning forward, both hands pressed together in front of her mouth in a desperate pleading gesture so that her hands cover her lips, crying, eyebrows raised, eyes wide with panic, looking up toward the upper right of the frame at someone standing over her off-screen. Red light from the left, candlelight from below. 50mm, shallow depth of field. {통2_얼굴} {통2_옷} {우는_연기} {사진}"
+    },
+    {
+      "id": "C08",
+      "who": "리4",
+      "refs": [
+        "리4x4",
+        "C01"
+      ],
+      "text": "{세트} {세트_참조:5} Tight close-up: she screams in terror — eyes squeezed shut behind her round glasses, mouth wide open, both hands pressed flat against her cheeks, shoulders hunched up. Red light from the left, candlelight from below, fairy-light bokeh behind her. 85mm, shallow depth of field. {리4_얼굴} {리4_옷} {우는_연기} {사진}"
+    },
+    {
+      "id": "C12",
+      "who": "통2",
+      "refs": [
+        "통2x4",
+        "C01"
+      ],
+      "text": "{세트} {세트_참조:5} Tight close-up: her head and the top of her shoulders fill the frame. She has stopped crying and stares, frozen and completely bewildered, at something off-screen to the right; tear tracks still wet on her cheeks, mouth slightly open, eyebrows slightly raised — pure confusion. Red light from the left, candlelight from below, fairy-light bokeh behind her. 85mm, shallow depth of field. {통2_얼굴} {통2_옷} {사진}"
+    },
+    {
+      "id": "C12b",
+      "who": "리4",
+      "refs": [
+        "리4x4",
+        "C01"
+      ],
+      "text": "{세트} {세트_참조:5} Tight close-up: her head and the top of her shoulders fill the frame. She has stopped crying and stares through her round glasses, frozen and completely bewildered, at something off-screen to the right; tear tracks still wet on her cheeks, mouth slightly open, eyebrows slightly raised — pure confusion. Red light from the left, candlelight from below, fairy-light bokeh behind her. 85mm, shallow depth of field. {리4_얼굴} {리4_옷} {사진}"
+    }
+  ]
+}

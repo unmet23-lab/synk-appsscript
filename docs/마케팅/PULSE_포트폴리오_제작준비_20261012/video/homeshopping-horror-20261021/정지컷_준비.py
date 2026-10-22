@@ -17,10 +17,13 @@ SRC = os.path.join(V, "정지컷")
 OUT = os.path.join(SRC, "색감")
 W, H = 1920, 1080
 FB = "C:/Windows/Fonts/malgunbd.ttf"
-CUTS = [c["id"] for c in json.load(open(os.path.join(HERE, "지시문", "정지컷.json"), encoding="utf-8"))["컷"]]
-DESC = {"C01": "빈 거실 · 벽에 칼 그림자", "C02": "강도 가슴 위", "C03": "하린 울음", "C04": "지유 입 가리고 울음", "C05": "강도 갸웃",
-        "C06": "그림자 칼 들림", "C07": "하린 빌기", "C08": "지유 비명", "C09": "강도 내려다봄", "C10": "그림자 칼 내려감",
-        "C11": "강도 휴대폰", "C12": "하린 멍", "C13": "지유 멍", "C14": "강도 눈 · 휴대폰 빛"}
+# 컷 목록 = 첫 판(정지컷.json) + 10-22 새 배역판(정지컷_v2.json)에만 있는 컷(C12b — 끝의 멍 컷 셋)
+_ids = lambda f: [c["id"] for c in json.load(open(os.path.join(HERE, "지시문", f), encoding="utf-8"))["컷"]]
+CUTS = _ids("정지컷.json")
+CUTS += [c for c in _ids("정지컷_v2.json") if c not in CUTS]
+DESC = {"C01": "빈 거실 · 벽에 칼 그림자", "C02": "강도(유호님) 가슴 위", "C03": "리4 울음", "C04": "지유 입 가리고 울음", "C05": "강도 갸웃",
+        "C06": "그림자 칼 들림", "C07": "통2 빌기", "C08": "리4 비명", "C09": "강도 내려다봄", "C10": "그림자 칼 내려감",
+        "C11": "강도 휴대폰", "C12": "통2 멍", "C12b": "리4 멍", "C13": "지유 멍", "C14": "강도 얼굴 · 휴대폰 빛"}
 
 
 def cover(im):

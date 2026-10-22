@@ -292,6 +292,12 @@
 - 고침: `goto`의 시간 초과(navigation committed)는 넘어가고, 첫 화면 기다리기에서 evaluate가 끊겨도 넘어가며 90초까지 기다린다. 그래도 끊기면 GPU 사용률이 내려간 틈에 다시 돌린다(남의 렌더는 멈추지 않는다).
 - 다시 확인: 굽기 기록에 「sent」 다음 「done」이 남는지.
 
+### 다른 세션이 같은 Gemini 계정 · ego 브라우저를 같이 쓰면 업로드 칸 0개 · 보내기 전 확인 실패 · 시간 초과가 쏟아진다 (2026-10-22 Claude)
+- 증상: 10-22 15:38~16:14 「매진 임박」 새 배역 컷을 돌리는 동안 다른 세션 둘(게시 작업 · 지하철 장면 사진)이 ego lite로 같은 77yuhbs Gemini를 썼다. 내 라운드 로그에 「창 minimized → normal」 · 「창 maximized → normal」이 끼고, 일곱 장 가운데 넷이 `setInputFiles … matched 0 elements`(업로드 칸 없음), 둘이 「보내기 전 확인 실패」, 받기는 `page.goto timed out after 15000ms` · `page.evaluate timed out … Page is still unresponsive`였다. 그 전후 같은 실행기는 장마다 받았다.
+- 원인: 같은 브라우저 창 · 같은 계정을 두 에이전트가 번갈아 앞으로 가져오며 쓰면, 내 쪽 페이지가 가려지거나 뒤로 가 그리기 · 메뉴가 멈추고(위 「최소화」 · 「GPU 100%」 항목과 같은 결) 계정 쪽 대화 목록도 섞인다. 「…could not be confirmed stopped」 같은 오류 글의 stop을 한도 멈춤으로 읽어 일괄이 서 버린 것도 겹쳤다.
+- 고침: 시작 전에 `Get-CimInstance Win32_Process -Filter "Name='ego-browser.exe'"`로 다른 실행이 없는 틈에 돌린다(남의 프로세스는 끄지 않는다). 실행기는 화면이 엉킨 오류(업로드 칸 0개 · 보내기 전 확인 실패 · 시간 초과 · ERR_ABORTED)면 그 장을 한 번 더 그리고, 한도 멈춤은 정확히 「Error: stop」 · sorry · 로봇일 때만 본다(`homeshopping-horror-20261021/ego/run-batch.mjs`). 오래 겹치면 둘째 Ultra 계정(unmet25, 크롬)으로 나눠 쓴다(메모 「Gemini Ultra 계정 둘」).
+- 다시 확인: 라운드 로그에 「창 … → normal」이 다시 끼면 다른 실행부터 본다.
+
 ## 결과물
 
 ### 프로가 참조 얼굴에서 더 멀어진다

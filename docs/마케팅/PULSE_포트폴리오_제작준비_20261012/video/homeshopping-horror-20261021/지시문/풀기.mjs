@@ -1,7 +1,9 @@
 // 정지컷.json을 컷별 작업(지시문 글 · 참조 그림 절대 경로 · 받을 자리)으로 푼다(2026-10-21).
 //   node 풀기.mjs            → synk-vendor/homeshopping-horror-20261021/ego/jobs.json (ego 실행기가 읽는다)
 //   node 풀기.mjs --보기 C03  → 그 컷의 지시문과 참조만 찍는다
-// 참조: F02x4 · F04x4 = 명세서 참조 4장(긴 변 1,400px JPEG로 줄인 사본), C01 같은 컷 이름 = 고른 정지컷(같은 크기로 줄인 사본).
+//   node 풀기.mjs --파일 정지컷_v2.json → ego/jobs_정지컷_v2.json(10-22 새 배역판, --보기와 같이 써도 된다)
+// 참조: F02x4 · F04x4 = 명세서 참조 4장, 통2x4 · 리4x4 = 배역 참조 4장(배역/참조/<배역>/), 유호x5 = 확정 얼굴 세트 5장(장부 S24 —
+// B · C 크롭 + 실제 사진 셋), C01 같은 컷 이름 = 고른 정지컷. 모두 긴 변 1,400px JPEG로 줄인 사본을 올린다.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -12,9 +14,17 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const V = path.join(os.homedir(), 'Documents', 'synk-vendor', 'homeshopping-horror-20261021');
 const REFS = path.join(V, 'ego', 'refs');
 const STILLS = path.join(V, '정지컷');   // 고른 판: <컷>.png(받은 원본을 고른 뒤 이 이름으로 둔다)
-const spec = JSON.parse(fs.readFileSync(path.join(HERE, '정지컷.json'), 'utf8'));
-const MODELS = { F02x4: 'F02_harin', F04x4: 'F04_jiyu' };
+const FILE = process.argv.includes('--파일') ? process.argv[process.argv.indexOf('--파일') + 1] : '정지컷.json';
+const spec = JSON.parse(fs.readFileSync(path.join(HERE, FILE), 'utf8'));
 const REF_NAMES = ['01_hero', '02_left90', '03_right45', '04_fullbody'];
+const MODELS = {
+  F02x4: REF_NAMES.map((n) => `C:/SYNK-LoRA/validation/F02_harin/refs/${n}.jpg`),
+  F04x4: REF_NAMES.map((n) => `C:/SYNK-LoRA/validation/F04_jiyu/refs/${n}.jpg`),
+  통2x4: REF_NAMES.map((n) => path.join(V, '배역', '참조', '통2', `${n}.jpg`)),
+  리4x4: REF_NAMES.map((n) => path.join(V, '배역', '참조', '리4', `${n}.jpg`)),
+  유호x5: ['1_B정면.jpg', '2_C정면.jpg', '3_실제_pro02.jpg', '4_실제_V181.jpg', '5_실제_V204.jpg']
+    .map((n) => `C:/Users/q1212/Videos/한강2126_새판_20261009/재촬영_v40/기준그림/얼굴세트/_올림/${n}`),
+};
 
 function small(src, dst) {   // 긴 변 1,400px JPEG(올리기가 빠르고 Gemini가 받는 크기로 충분 — 현장 노트 S24)
   if (fs.existsSync(dst) && fs.statSync(dst).mtimeMs >= fs.statSync(src).mtimeMs) return dst;
@@ -28,7 +38,10 @@ function refsOf(cut) {
   const out = [];
   for (const r of cut.refs) {
     if (MODELS[r]) {
-      for (const n of REF_NAMES) out.push(small(`C:/SYNK-LoRA/validation/${MODELS[r]}/refs/${n}.jpg`, path.join(REFS, `${r.slice(0, 3)}_${n}.jpg`)));
+      for (const src of MODELS[r]) {
+        if (!fs.existsSync(src)) { out.push(`(아직 없음) ${src}`); continue; }
+        out.push(small(src, path.join(REFS, `${r.replace(/x\d$/, '')}_${path.basename(src).replace(/\.\w+$/, '')}.jpg`)));
+      }
     } else {
       const src = path.join(STILLS, `${r}.png`);
       out.push(fs.existsSync(src) ? small(src, path.join(REFS, `${r}.jpg`)) : `(아직 없음) ${src}`);
@@ -56,7 +69,7 @@ for (const cut of spec.컷) {
 if (only) {
   console.log(JSON.stringify(jobs[only], null, 1));
 } else {
-  const out = path.join(V, 'ego', 'jobs.json');
+  const out = path.join(V, 'ego', FILE === '정지컷.json' ? 'jobs.json' : `jobs_${FILE.replace(/\.json$/, '')}.json`);
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, JSON.stringify(jobs, null, 1));
   for (const j of Object.values(jobs)) console.log(j.id, j.prompt.length + '자', '참조 ' + j.refs.length, j.refs.some((r) => r.startsWith('(')) ? '— 참조 기다림' : '');

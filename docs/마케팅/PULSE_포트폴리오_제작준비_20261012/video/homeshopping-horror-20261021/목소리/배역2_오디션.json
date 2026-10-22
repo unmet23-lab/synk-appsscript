@@ -1,0 +1,18 @@
+{
+  "메모": "「매진 임박」 새 배역 목소리 오디션(2026-10-22). 통 큰 언니 통2가 하린 자리의 V2 「이것도요! 구성 추가… 무이자 십 개월…!」를, 리액션 장인 리4가 비명(SCREAM, 첫 판은 지유 유라)을 맡는다. 모델끼리 같은 목소리 금지 · 해설 목소리(하나 · 혜리 · 소진 · 범수) 제외(모델 확장 로드맵 7절). 통2는 중년 · 대화형 셋, 리4는 젊은 · 게임 · 숏폼 둘을 같은 줄로 들어 보고, 길이(C07 13.1~15.5초 안) · 받아쓰기 · 음높이로 고른다. 출력: node tools/나레이션굽기.mjs <이 파일> --굽기 --출력 ~/Documents/synk-vendor/homeshopping-horror-20261021/목소리/오디션2",
+  "voices": {
+    "통2a": { "id": "tc_6a21054564d676539427427e", "name": "Hyejin" },
+    "통2b": { "id": "tc_6809c111e5e8c73f8a0237b2", "name": "Jain" },
+    "통2c": { "id": "tc_694b51e6dc12c8f4ec1a959c", "name": "Jungsook" },
+    "리4a": { "id": "tc_624ccc04adcd568510764d3f", "name": "Gahee" },
+    "리4b": { "id": "tc_66d00104bda076835c38ba68", "name": "Hyunji" }
+  },
+  "defaults": { "model": "ssfm-v30", "lang": "ko", "emotion": "normal", "intensity": 1, "tempo": 1, "seed": 1022, "lufs": -17 },
+  "lines": [
+    { "id": "V2_a", "role": "통2a", "text": "이것도요! 구성 추가... 무이자 십 개월...!", "emotion": "sad", "intensity": 1.6, "tempo": 1.12 },
+    { "id": "V2_b", "role": "통2b", "text": "이것도요! 구성 추가... 무이자 십 개월...!", "emotion": "sad", "intensity": 1.6, "tempo": 1.12 },
+    { "id": "V2_c", "role": "통2c", "text": "이것도요! 구성 추가... 무이자 십 개월...!", "emotion": "sad", "intensity": 1.6, "tempo": 1.12 },
+    { "id": "SCREAM_a", "role": "리4a", "text": "꺄아아아아아악!", "emotion": "angry", "intensity": 2 },
+    { "id": "SCREAM_b", "role": "리4b", "text": "꺄아아아아아악!", "emotion": "angry", "intensity": 2 }
+  ]
+}
