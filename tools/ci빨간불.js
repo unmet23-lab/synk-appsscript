@@ -36,6 +36,8 @@ const 다시알림ms = [3 * 3600e3, 12 * 3600e3]; // 처음 알린 뒤 3시간�
 const 빠른상태신선ms = 10 * 60e3;
 const 예약이름 = 'SYNK CI 빨간불 알림';
 const 예약간격분 = 10;
+const git한도ms = 60000; // 10-22 PC가 바쁠 때(git 16개) 10초 한도의 rev-parse가 넘쳐 회차가 「git 폴더를 못 찾았다」로 끝났다
+const 못읽음한도 = 6;    // 10분 회차로 약 1시간 내리 못 읽으면 감시가 멈춘 것을 한 번 알린다
 
 function 실행기(cwd = ROOT) {
   return (cmd, args, { timeout = 60000 } = {}) => {
@@ -48,20 +50,23 @@ function 실행기(cwd = ROOT) {
 
 /** origin 주소에서 owner/repo — GitHub가 아니면 null(임시 저장소·로컬 원격에서는 아무것도 묻지 않는다). */
 function 저장소이름(sh) {
-  const r = sh('git', ['remote', 'get-url', 'origin'], { timeout: 10000 });
+  const r = sh('git', ['remote', 'get-url', 'origin'], { timeout: git한도ms });
   if (!r.ok) return null;
   const m = r.out.trim().match(/github\.com[:/]+([^/\s]+)\/([^/\s]+?)(?:\.git)?\/?$/i);
   return m ? `${m[1]}/${m[2]}` : null;
 }
 
-function 공용git폴더(sh) {
-  const r = sh('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], { timeout: 10000 });
-  return r.ok ? r.out.trim() : null;
+/** 공용 git 폴더. git이 답을 못 하면(바쁜 PC의 시간 한도 등) 이 도구가 든 작업본의 `.git` 폴더를 쓴다 — 예약은 공용 작업본에서 돈다. */
+function 공용git폴더(sh, root = ROOT) {
+  const r = sh('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], { timeout: git한도ms });
+  if (r.ok) return r.out.trim();
+  const 곁 = path.join(root, '.git');
+  try { return fs.statSync(곁).isDirectory() ? 곁 : null; } catch { return null; }
 }
 
-function 상태파일(sh, 환경 = process.env) {
+function 상태파일(sh, 환경 = process.env, root = ROOT) {
   if (환경.SYNK_CI빨간불_상태) return 환경.SYNK_CI빨간불_상태;
-  const g = 공용git폴더(sh);
+  const g = 공용git폴더(sh, root);
   return g ? path.join(g, 'synk-ci빨간불', '상태.json') : null;
 }
 
@@ -284,20 +289,51 @@ function 알림계획(앞, 지금, 지금ms = Date.now()) {
   return { 글: 줄.length ? 줄.join('\n') : null, 새상태: { 판: 1, 확인시각: 지금.확인시각, 워크플로: 새 }, 빨개짐: 빨개짐.length, 계속: 계속.length, 풀림: 풀림.length };
 }
 
+/** 못 읽은 회차를 센다 — 못읽음한도(약 1시간)에 닿으면 「감시가 멈췄다」를 한 번 보낸다. 감시가 조용히 멈추는 것이 이 도구가 막으려던 꼴이다(10-22). */
+function 못읽음기록(파일, 이유, { 환경, 보내는일, 지금ms }) {
+  let 앞 = {};
+  try { 앞 = JSON.parse(fs.readFileSync(파일, 'utf8')); } catch { 앞 = {}; }
+  const 회수 = (앞.회수 || 0) + 1, 처음 = 앞.처음 || new Date(지금ms).toISOString();
+  let 알림 = Boolean(앞.알림);
+  if (회수 >= 못읽음한도 && !알림) {
+    const 글 = `⚠ CI 빨간불 알림이 ${회수}회(${동안(지금ms - Date.parse(처음))}) 내리 master CI 상태를 못 읽었습니다 — ${이유}\n`
+      + '그동안 CI가 빨개져도 알림이 가지 않습니다. 확인: node tools/ci빨간불.js · 회차 기록: <공용 작업본>/.git/synk-숨김실행/ci빨간불.log';
+    const r = (보내는일 || require('./텔레그램승인.js').보내기)(글, 환경);
+    알림 = Boolean(r && r.ok);
+  }
+  try {
+    fs.mkdirSync(path.dirname(파일), { recursive: true });
+    fs.writeFileSync(파일, JSON.stringify({ 처음, 회수, 마지막이유: 이유, 알림 }));
+  } catch { /* 셈을 못 남겨도 이번 회차 결과는 그대로 */ }
+  return { 회수, 알림 };
+}
+
 function 알림({ sh = 실행기(), 환경 = process.env, 보내는일 = null, 지금ms = Date.now(), 파일들 = 워크플로파일들() } = {}) {
   const 파일 = 상태파일(sh, 환경);
+  // 상태 폴더가 없으면 못 읽은 회차를 셀 곳도 없다 — .git이 파일인 워크트리에서 git이 답을 못 할 때뿐이고,
+  // 예약은 .git 폴더가 있는 공용 작업본에서 돌아 공용git폴더가 늘 찾는다(임시 폴더에 세면 다시 읽혀도 못 지운다).
   if (!파일) return { 결과: '모름', 이유: 'git 폴더를 못 찾았다' };
+  const 못읽음파일 = path.join(path.dirname(파일), '못읽음.json');
+  const 모름 = (이유) => ({ 결과: '모름', 이유, 못읽음: 못읽음기록(못읽음파일, 이유, { 환경, 보내는일, 지금ms }) });
   const 지금 = 지금읽기({ sh, 파일들 });
-  if (지금.상태 === '모름' && !지금.워크플로.length) return { 결과: '모름', 이유: 지금.이유 }; // 상태를 바꾸지 않는다
+  if (지금.상태 === '모름' && !지금.워크플로.length) return 모름(지금.이유); // 상태를 바꾸지 않는다
   const 앞 = 상태읽기(파일);
   const 계획 = 알림계획(앞, 지금, 지금ms);
+  // 못 읽다가 다시 읽히면 셈을 지우고, 「멈췄다」를 보냈었다면 다시 읽힌다는 한 줄을 붙인다.
+  let 못읽음 = null;
+  try { 못읽음 = JSON.parse(fs.readFileSync(못읽음파일, 'utf8')); } catch { 못읽음 = null; }
+  // 「내리」 셈은 읽힌 이 회차에서 끊는다 — 아래 보내기가 실패해도 다음에 못 읽으면 1회부터 센다(아르곤 10-22 P2).
+  // 「멈췄다」를 보냈었으면 「다시 읽습니다」가 나갈 때까지 셈 파일을 둔다(그동안 또 못 읽어도 「멈췄다」를 거듭 보내지 않는다).
+  if (못읽음 && !못읽음.알림) { fs.rmSync(못읽음파일, { force: true }); 못읽음 = null; }
+  const 글 = [계획.글, 못읽음 ? `✅ CI 빨간불 알림이 다시 master CI 상태를 읽습니다(${못읽음.회수}회 못 읽은 뒤).` : null].filter(Boolean).join('\n\n') || null;
   let 보냄 = null;
-  if (계획.글) {
-    보냄 = (보내는일 || require('./텔레그램승인.js').보내기)(계획.글, 환경);
-    if (!보냄.ok) return { 결과: '못 보냄', 이유: 보냄.error || '보내기 실패', 글: 계획.글 }; // 상태를 안 바꿔 다음 회차에 다시 보낸다
+  if (글) {
+    보냄 = (보내는일 || require('./텔레그램승인.js').보내기)(글, 환경);
+    if (!보냄.ok) return { 결과: '못 보냄', 이유: 보냄.error || '보내기 실패', 글 }; // 상태를 안 바꿔 다음 회차에 다시 보낸다
   }
   상태쓰기(파일, 계획.새상태);
-  return { 결과: 계획.글 ? '보냄' : '바뀐 것 없음', 글: 계획.글, 지금: 지금.상태, 상태파일: 파일, ...(보냄 ? { 방법: 보냄.method } : {}) };
+  if (못읽음) fs.rmSync(못읽음파일, { force: true });
+  return { 결과: 글 ? '보냄' : '바뀐 것 없음', 글, 지금: 지금.상태, 상태파일: 파일, ...(보냄 ? { 방법: 보냄.method } : {}) };
 }
 
 /** 바로올리기가 push 때 부른다 — 상태 파일이 10분 안이면 그대로, 아니면 run 목록 한 번만(로그는 안 받는다). 못 읽으면 null. */
@@ -388,4 +424,4 @@ function main(argv = process.argv.slice(2)) {
 
 if (require.main === module) process.exitCode = main();
 
-module.exports = { 판정하기, 실패읽기, 알림계획, 알림, 지금읽기, 빠른상태, 빠른경고글, 상태글, 저장소이름, 예약명령, 예약이름, 실행기 };
+module.exports = { 판정하기, 실패읽기, 알림계획, 알림, 지금읽기, 빠른상태, 빠른경고글, 상태글, 저장소이름, 공용git폴더, 예약명령, 예약이름, 실행기 };

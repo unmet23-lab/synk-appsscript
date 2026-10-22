@@ -244,3 +244,56 @@ test('재알림 — 창보다 길어진 빨강은 회수를 「적어도」로 �
   const 뒤 = ci.알림계획(처음.새상태, 빨강(60, false), t0 + 3 * 3600e3);
   assert.match(뒤.글, /적어도 50회 연속 빨강 — 첫 빨강 10-21 17:05 aaaaaaaaa/);
 });
+
+test('공용git폴더 — git이 답을 못 해도 도구가 든 작업본의 .git 폴더를 쓰고, .git이 파일(워크트리)이면 null(10-22 회차 실패)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-ci빨간불-'));
+  try {
+    const 막힘 = () => ({ ok: false, 사유: 'git 실행 불가 (ETIMEDOUT)' });
+    fs.mkdirSync(path.join(방, '공용', '.git'), { recursive: true });
+    assert.equal(ci.공용git폴더(막힘, path.join(방, '공용')), path.join(방, '공용', '.git'));
+    fs.mkdirSync(path.join(방, '워크트리'));
+    fs.writeFileSync(path.join(방, '워크트리', '.git'), 'gitdir: ../공용/.git/worktrees/x\n');
+    assert.equal(ci.공용git폴더(막힘, path.join(방, '워크트리')), null);
+    assert.equal(ci.공용git폴더(() => ({ ok: true, out: 'C:/x/.git\n' }), path.join(방, '워크트리')), 'C:/x/.git');
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
+
+test('알림 — 6회(약 1시간) 내리 못 읽으면 「감시가 멈췄다」를 한 번만 보내고, 다시 읽히면 「다시 읽는다」를 붙이고 셈을 지운다', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-ci빨간불-'));
+  try {
+    const 환경 = { SYNK_TG_DRYRUN_DIR: path.join(방, 'tg'), SYNK_CI빨간불_상태: path.join(방, '상태.json') };
+    const 보낸글 = () => (fs.existsSync(환경.SYNK_TG_DRYRUN_DIR) ? fs.readdirSync(환경.SYNK_TG_DRYRUN_DIR).sort().map((n) => fs.readFileSync(path.join(환경.SYNK_TG_DRYRUN_DIR, n), 'utf8')) : []);
+    const 막힘 = 가짜({ gh막힘: true }).sh;
+    const t0 = Date.parse('2026-10-22T03:40:00Z');
+    for (let k = 0; k < 5; k++) assert.equal(ci.알림({ sh: 막힘, 파일들: [], 환경, 지금ms: t0 + k * 600e3 }).결과, '모름');
+    assert.equal(보낸글().length, 0, '5회까지는 조용하다');
+    const 여섯 = ci.알림({ sh: 막힘, 파일들: [], 환경, 지금ms: t0 + 5 * 600e3 });
+    assert.deepEqual([여섯.못읽음.회수, 여섯.못읽음.알림], [6, true]);
+    assert.match(보낸글()[0], /6회\(50분\) 내리 master CI 상태를 못 읽었습니다 — gh로 run을 못 읽었다/);
+    ci.알림({ sh: 막힘, 파일들: [], 환경, 지금ms: t0 + 6 * 600e3 });
+    assert.equal(보낸글().length, 1, '한 번만 보낸다');
+    const 초록 = 가짜({ runs: [run(2, 'success', '2026-10-22T04:00:00Z')] }).sh;
+    const 다시 = ci.알림({ sh: 초록, 파일들: [], 환경, 지금ms: t0 + 7 * 600e3 });
+    assert.equal(다시.결과, '보냄');
+    assert.match(보낸글()[1], /다시 master CI 상태를 읽습니다\(7회 못 읽은 뒤\)/);
+    assert.equal(fs.existsSync(path.join(방, '못읽음.json')), false, '셈을 지운다');
+    assert.equal(ci.알림({ sh: 초록, 파일들: [], 환경, 지금ms: t0 + 8 * 600e3 }).결과, '바뀐 것 없음');
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
+
+test('알림 — 못 읽던 사이에 한 번 읽히면 그 회차의 보내기가 실패해도 「내리」 셈은 끊긴다(아르곤 10-22 P2)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-ci빨간불-'));
+  try {
+    const 환경 = { SYNK_TG_DRYRUN_DIR: path.join(방, 'tg'), SYNK_CI빨간불_상태: path.join(방, '상태.json') };
+    const 막힘 = 가짜({ gh막힘: true }).sh;
+    const 빨강 = 가짜({ runs: [run(3, 'failure', '2026-10-22T04:20:00Z'), run(1, 'success', '2026-10-22T04:00:00Z')] }).sh;
+    const t0 = Date.parse('2026-10-22T03:40:00Z');
+    for (let k = 0; k < 5; k++) ci.알림({ sh: 막힘, 파일들: [], 환경, 지금ms: t0 + k * 600e3 });
+    const 못보냄 = ci.알림({ sh: 빨강, 파일들: [], 환경, 지금ms: t0 + 5 * 600e3, 보내는일: () => ({ ok: false, error: '게이트웨이 꺼짐' }) });
+    assert.equal(못보냄.결과, '못 보냄');
+    assert.equal(fs.existsSync(path.join(방, '못읽음.json')), false, '읽혔으니 셈을 지운다');
+    const 한번 = ci.알림({ sh: 막힘, 파일들: [], 환경, 지금ms: t0 + 6 * 600e3 });
+    assert.deepEqual([한번.못읽음.회수, 한번.못읽음.알림], [1, false], '1회부터 다시 센다');
+    assert.equal(fs.existsSync(환경.SYNK_TG_DRYRUN_DIR), false, '「멈췄다」를 잘못 보내지 않는다');
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});

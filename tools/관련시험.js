@@ -389,8 +389,17 @@ function 돌리기({ root, 시험, 워크트리 = false, 한도ms = 15 * 60e3, �
   let 글 = '';
   try { 글 = fs.readFileSync(tap, 'utf8'); } catch { /* 아래 */ } finally { fs.rmSync(tap, { force: true }); }
   const 결과 = { ...tap읽기(글, root), 초: Math.round((Date.now() - 시작) / 1000), ...(잡음 ? { 자리: { 번호: 잡음.번호, 수: 잡음.수, 기다린초: 잡음.기다린초 } } : {}) };
-  if (r.error && r.error.code === 'ETIMEDOUT') return { ...결과, 통과함: false, 이유: `${Math.round(한도ms / 60e3)}분 안에 끝나지 않았다` };
+  if (r.error && r.error.code === 'ETIMEDOUT') {
+    // 끊기기 전까지의 결과는 TAP에 남는다 — 그때까지 깨진 것이 없으면 시간만넘김()이 참이다(바쁜 PC에서 느렸을 뿐일 수 있다).
+    const 한도글 = 한도ms >= 60e3 ? `${Math.round(한도ms / 60e3)}분` : `${Math.round(한도ms / 1000)}초`;
+    return { ...결과, 통과함: false, 시간넘김: true, 이유: `${한도글} 안에 끝나지 않았다` };
+  }
   return { ...결과, 통과함: r.status === 0 && 결과.실패수 === 0, ...(r.status !== 0 && !결과.실패수 ? { 이유: `node --test 종료 ${r.status}` } : {}) };
+}
+
+/** 한도만 넘기고 그때까지 깨진 시험은 없었나(돌리기 결과). 바로올리기는 이때 막지 않고 주의만 남긴다(10-22). */
+function 시간만넘김(r) {
+  return Boolean(r && r.시간넘김 && !(r.실패 || []).length);
 }
 
 /** 결과 줄에 붙일 자리 글 — 기다렸거나 못 잡았을 때만. */
@@ -431,11 +440,11 @@ function main(argv = process.argv.slice(2)) {
   const g = git(root, ['rev-parse', '--path-format=absolute', '--git-dir', '--git-common-dir']);
   const [gd, cd] = (g || '').trim().split('\n');
   const r = 돌리기({ root, 시험: 고름.시험, 워크트리: Boolean(gd && cd && path.resolve(gd) !== path.resolve(cd)) });
-  console.log(`${r.통과함 ? '통과' : '깨짐'} — ${r.통과}/${r.시험} · ${r.초}초${자리글(r.자리)}${r.이유 ? ` · ${r.이유}` : ''}`);
+  console.log(`${r.통과함 ? '통과' : 시간만넘김(r) ? '시간 넘김' : '깨짐'} — ${r.시간넘김 ? '끝까지 못 봄' : `${r.통과}/${r.시험}`} · ${r.초}초${자리글(r.자리)}${r.이유 ? ` · ${r.이유}` : ''}`);
   for (const x of r.실패) console.log(`  ✗ ${x.이름}${x.위치 ? ` (${x.위치})` : ''}`);
   return r.통과함 ? 0 : 1;
 }
 
 if (require.main === module) process.exitCode = main();
 
-module.exports = { 고르기, 돌리기, 자리잡기, 자리글, 지도만들기, 지도읽기, 지도받기, 기록전용인가, 기록경로판정, 기록시험목록, CI시험목록, CI시험무늬, tap읽기, git무늬, git무늬식, 읽나, 지도이름, 지도파일이름 };
+module.exports = { 고르기, 돌리기, 시간만넘김, 자리잡기, 자리글, 지도만들기, 지도읽기, 지도받기, 기록전용인가, 기록경로판정, 기록시험목록, CI시험목록, CI시험무늬, tap읽기, git무늬, git무늬식, 읽나, 지도이름, 지도파일이름 };

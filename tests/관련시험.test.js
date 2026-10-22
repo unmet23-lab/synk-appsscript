@@ -168,6 +168,20 @@ test('돌리기 — 고른 시험을 TAP으로 돌리고 깨진 시험 이름·�
   assert.deepEqual(관련.돌리기({ root, 시험: [] }), { 통과함: true, 시험: 0, 통과: 0, 실패수: 0, 실패: [], 초: 0 });
 });
 
+test('돌리기 — 한도를 넘기면 시간넘김을 남기고, 그때까지 깨진 것이 없을 때만 시간만넘김이다(10-22)', (t) => {
+  const root = 저장소(t, {
+    'tests/느림.test.js': "require('node:test')('오래 걸림', () => new Promise((r) => setTimeout(r, 20000)));\n",
+  });
+  const r = 관련.돌리기({ root, 시험: ['tests/느림.test.js'], 한도ms: 2000 });
+  assert.equal(r.통과함, false);
+  assert.equal(r.시간넘김, true);
+  assert.equal(r.이유, '2초 안에 끝나지 않았다');
+  assert.equal(관련.시간만넘김(r), true);
+  assert.equal(관련.시간만넘김({ ...r, 실패: [{ 이름: '먼저 깨짐', 위치: 'tests/느림.test.js:2', 파일: 'tests/느림.test.js' }] }), false, '끊기기 전에 깨진 것이 있으면 막는다');
+  assert.equal(관련.시간만넘김({ 통과함: false, 실패: [], 이유: 'node --test 종료 1' }), false, '시간 말고 다른 까닭은 그대로 깨짐');
+  assert.equal(관련.시간만넘김(null), false);
+});
+
 test('CI시험무늬 — syntax-check.yml의 node --test 줄에서 읽고, 없으면 tests/*.test.js', (t) => {
   const root = 저장소(t, {});
   assert.deepEqual(관련.CI시험무늬(root), ['tests/*.test.js']);
