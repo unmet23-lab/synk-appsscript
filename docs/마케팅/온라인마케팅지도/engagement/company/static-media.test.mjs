@@ -125,24 +125,8 @@ test('company allowlist exposes exactly the three M03 release files with Range p
       const probe=await fetch(base+media+name,{headers:{Range:'bytes=0-1'}});assert.equal(probe.status,206);assert.match(probe.headers.get('content-range'),/^bytes 0-1\/[1-9]\d*$/);assert.equal((await probe.arrayBuffer()).byteLength,2);
     }
   }
-  const existing=await fetch(base+media+'F02-ad-motion-5s-v1.mp4',{headers:{Range:'bytes=0-1'}});assert.equal(existing.status,206);await existing.arrayBuffer();
+  // 10-22 모델은 사진만: 하린 영상은 공개 목록에서 뺐다(파일은 그대로) — pulse-photos-films-server.test.mjs가 넷 모두 잰다.
+  const withdrawn=await fetch(base+media+'F02-ad-motion-5s-v1.mp4',{headers:{Range:'bytes=0-1'}});assert.equal(withdrawn.status,404);await withdrawn.arrayBuffer();
   const privateFile=await fetch(base+media+'unlisted.mp4',{headers:{Range:'bytes=0-1'}});assert.equal(privateFile.status,404);assert.equal(privateFile.headers.get('accept-ranges'),null);await privateFile.arrayBuffer();
 });
 
-// 10-20 하린 메인 광고 칸: 20초 아이스커피 광고와 포스터가 정확한 바이트 · 형식으로 열리고 영상은 Range로 끊어 받을 수 있다.
-test('company allowlist serves the Harin iced-coffee ad and its poster with exact bytes and Range playback',async t=>{
-  const directory=await mkdtemp(join(tmpdir(),'synk-f02-ad-public-'));let app;
-  t.after(async()=>{await app?.stop();await rm(directory,{recursive:true,force:true});});
-  app=createCompanyApp({dataDir:join(directory,'app'),port:0,allowTestHost:true,schedule:false});await app.start();
-  const base=`http://127.0.0.1:${app.server.address().port}`,media='/pulse-app/assets/casting/video/';
-  for(const [name,type,digest]of[
-    ['F02-ad-iced-coffee-20s-v1.mp4','video/mp4','b6b47293bcec453c111f75c71790f3705d9b7d09b31a4abf95500383c261f8f3'],
-    ['F02-ad-iced-coffee-20s-v1-poster.webp','image/webp','dc63a3a1542d42438743b5276db851c81eef4ce5d7069c6480c3f84320fb36ea'],
-  ].filter(([name])=>present(t,name))){
-    const response=await fetch(base+media+name);assert.equal(response.status,200,name);assert.equal(response.headers.get('content-type'),type,name);assert.equal(response.headers.get('x-content-type-options'),'nosniff');
-    assert.equal(createHash('sha256').update(Buffer.from(await response.arrayBuffer())).digest('hex'),digest,name);
-    if(name.endsWith('.mp4')){
-      const probe=await fetch(base+media+name,{headers:{Range:'bytes=0-1'}});assert.equal(probe.status,206);assert.match(probe.headers.get('content-range'),/^bytes 0-1\/12465839$/);assert.equal((await probe.arrayBuffer()).byteLength,2);
-    }
-  }
-});

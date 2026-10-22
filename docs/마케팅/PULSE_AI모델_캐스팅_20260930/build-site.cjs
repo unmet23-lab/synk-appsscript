@@ -95,14 +95,6 @@ for (const m of models) {
     return { label: v.label, note: v.note || VOICE_NOTE[v.voice] || '', text: v.text || '', src: mp3, say: v.engine === 'typecast' && !!v.voiceId };
   }).filter(Boolean);
 
-  const motion = [];
-  (extra.motion || []).forEach((v, i) => {
-    const src = path.join(root, v.src), rel = `video/${code}-${i + 1}.mp4`;
-    fs.mkdirSync(path.join(out, 'video'), { recursive: true });
-    if (fs.existsSync(src) && (!fs.existsSync(outRel(rel)) || fs.statSync(outRel(rel)).size !== fs.statSync(src).size)) fs.copyFileSync(src, outRel(rel));
-    if (fs.existsSync(outRel(rel))) motion.push({ src: rel, label: v.label, note: v.note || '' }); else missing.push(`${code} motion ${i + 1}`);
-  });
-
   // 보드에서 마우스를 올리면 도는 짧은 영상(loop/<코드>.mp4, 처음·끝 프레임이 대표 사진과 같다)
   let loop = null;
   if (extra.loop) {
@@ -132,7 +124,7 @@ for (const m of models) {
     tagline: m.tagline || '', roles: m.roles || [], // 한 줄 캐릭터·맡는 역할(로드맵 2절 4). avoid는 제작용이라 화면에 내지 않고 연출 「피하는」 문장으로 보인다
     height: m.height || null, weightKg: m.weightKg || null, build: m.build || '', sizes: m.sizes || {}, skin: m.skin || '', eyes: m.eyes || '', hairBase: m.hairBase || '',
     realPerson: !!m.realPerson, hair: m.hair.map((h) => ({ label: h.label })), looks: m.looks.map((l) => ({ label: l.label })),
-    hero: shots.hero || null, alt, shots, scenes, stand, body, colors, voices: vs, motion, loop, tagged,
+    hero: shots.hero || null, alt, shots, scenes, stand, body, colors, voices: vs, loop, tagged, // 10-22 모델별 참고 영상(움직임 탭·하린 5초 샘플)은 거뒀다 — 루프는 보드의 움직이는 사진
     face: extra.face || null, bodyNote: extra.bodyNote || '', direction: extra.direction || null, spec: !!spec && scenes.length > 0, // 「상세 프로필」 꼬리표: 명세서에 장면 사진까지 갖춘 모델
     script: mine.every((v) => v.text) ? '' : (mine[0] || {}).script || '',
   };

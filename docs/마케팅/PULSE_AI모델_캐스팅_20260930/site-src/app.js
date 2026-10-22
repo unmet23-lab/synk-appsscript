@@ -3,7 +3,7 @@
   // PULSE 모델 캐스팅북 2판(10-18). 한 페이지 안에서 주소 뒤 #으로 화면을 바꾼다.
   // 아티팩트 보기 링크에는 글자·숫자·. _ ~ - 만 넘어오므로 그 글자만 쓴다(1판의 #F02, #/m/F02도 연다).
   //   #board            모델 보드(광고 내용으로 순서 바꾸기·거르기)   #lineup  키 순서
-  //   #m-F02[-탭]       모델 북(북·디지털·장면·움직임·프로필)         #swipe   넘기며 고르기
+  //   #m-F02[-탭]       모델 북(북·디지털·장면·프로필 — 10-22 「움직임」 탭은 뺐다, 옛 #m-…-motion은 북으로)         #swipe   넘기며 고르기
   //   #pkg[-inq]        패키지(컴프 카드·나란히 비교·문의 글)        #p-F02.1.0~F04.0.2  공유받은 패키지
   const D = JSON.parse(document.getElementById('data').textContent);
   const L = window.CastingLogic;
@@ -312,7 +312,7 @@
   function renderBook(code, tab = 'book') {
     const m = byCode(code); if (!m) { go('#board'); return; }
     const book = bookOf(m), dig = digOf(m);
-    const tabs = [['book', '북', book.length], ['dig', '디지털', dig.length], m.scenes.length && ['scene', '장면', m.scenes.length], (m.motion.length || m.loop) && ['motion', '움직임', m.motion.length + (m.loop ? 1 : 0)], ['prof', '프로필', 0]].filter(Boolean);
+    const tabs = [['book', '북', book.length], ['dig', '디지털', dig.length], m.scenes.length && ['scene', '장면', m.scenes.length], ['prof', '프로필', 0]].filter(Boolean);
     if (!tabs.some(([k]) => k === tab)) tab = 'book';
     const s = selOf(m.code);
     view.innerHTML = `
@@ -363,11 +363,6 @@
       body.innerHTML = `<section class="panel pad"><p class="mt-help">장소·빛·옷을 바꿔 찍은 ${m.scenes.length}장이에요. 업종을 누르면 그 광고에 가까운 장면만 보여요.</p>
         <div class="shot-pick" role="group" aria-label="장면 업종"><button type="button" class="tg" data-act="scene-tag" data-v="" aria-pressed="true">전체</button>${tagIds.map((id) => `<button type="button" class="tg" data-act="scene-tag" data-v="${id}" aria-pressed="false">${E(indLabel(id))} <span class="num">${m.scenes.filter((s) => s.tags.includes(id)).length}</span></button>`).join('')}</div>
         <div class="scene-grid">${m.scenes.map((sc, i) => `<figure class="scene" data-tags="${E(sc.tags.join(' '))}"><button type="button" data-act="lb" data-i="${i}" aria-label="${E(sc.place)} 크게 보기"><img src="${E(sc.s)}" alt="${E(m.name + ' ' + sc.place + ' ' + sc.label)}" loading="lazy"></button><figcaption><b>${K(sc.place)}</b>${K(sc.label)}</figcaption></figure>`).join('')}</div></section>`;
-      return;
-    }
-    if (tab === 'motion') {
-      const vids = [...(m.loop ? [{ src: m.loop.src, label: '짧은 움직임', note: '보드에서 사진에 마우스를 올리면 도는 영상이에요' }] : []), ...m.motion];
-      body.innerHTML = `<section class="panel pad"><p class="mt-help">짧은 움직임 시안이에요. 소리는 들어 있지 않아요.</p><div class="motions">${vids.map((v) => `<figure><video src="${E(v.src)}" controls muted playsinline loop preload="metadata"></video><figcaption><b>${K(v.label)}</b>${v.note ? K(v.note) : ''}</figcaption></figure>`).join('')}</div></section>`;
       return;
     }
     // 프로필

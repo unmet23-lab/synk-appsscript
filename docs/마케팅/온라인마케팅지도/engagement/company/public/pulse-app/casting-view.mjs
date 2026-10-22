@@ -1,6 +1,6 @@
 import {esc} from './api.mjs';
 import {CASTING_MODELS} from './casting-catalog.mjs';
-import {PRODUCTION_PLANS,PRODUCTION_LIBRARY_URL} from './production-catalog.mjs';
+import {hasFinishedFilms} from './films-view.mjs';
 
 export const CASTING_OPTIONS={
   hair:{label:'헤어',values:{original:'대표 사진 그대로','look-2':'모델 헤어 2','look-3':'모델 헤어 3',short:'숏 헤어',bob:'단발', 'long-straight':'긴 생머리',wave:'웨이브',updo:'묶은 머리',custom:'직접 설명'}},
@@ -39,35 +39,20 @@ function optionsFor(selection,key){
   return [['','미정'],...entries];
 }
 function choices(selection,key){const o=CASTING_OPTIONS[key];return `<fieldset class="casting-options" data-casting-choice="${key}"><legend>${o.label}</legend><div class="casting-chips">${optionsFor(selection,key).map(([id,label])=>`<label><input type="radio" name="cast_${key}" value="${esc(id)}" ${(selection[key]||'')===id?'checked':''}><span>${esc(label)}</span></label>`).join('')}</div></fieldset>`;}
-function mediaCard(video){
-  // 아직 만들지 않은 영상은 빈 칸으로 두지 않는다(10-19 검수: 「영상 준비 중」 두 칸이 미완성처럼 보였다).
-  if(!video.src)return '';
-  // 표정 참고용(expression): 완성 광고지만 유호님 뜻대로 「표정 참고용 시안」으로 보인다(10-20 하린 아이스커피). 포스터는 작품 칸과 같은 규칙으로만 받는다.
-  const motionSample=video.sampleType==='motion',expression=video.sampleType==='expression',portrait=video.aspectRatio==='9:16',poster=workMedia(video.poster,'webp');
-  return `<article class="casting-video"><span class="eyebrow ko">${motionSample?'움직임 샘플':expression?'표정 참고용':video.kind==='ad'?'광고':'런웨이'}</span><h5>${esc(video.label)}</h5><video controls playsinline preload="none"${portrait?' data-aspect-ratio="9:16"':''}${poster?` poster="${esc(poster)}"`:''} src="${esc(video.src)}" aria-label="${esc(video.label)}"></video>${video.description?`<p class="casting-motion-note">${esc(video.description)}</p>`:''}${motionSample?'<p class="casting-motion-note">움직임을 보는 샘플이에요. 광고·런웨이 본편은 따로 만들 예정이에요.</p>':''}</article>`;
+// 모델은 사진만(2026-10-22 유호님 결정): 영상 칸·작품·광고 기획안을 거두고 그 모델의 사진 넉 장(전신·룩 둘·장면)만 보인다.
+// 누르면 앱의 이미지 대화상자로 크게 본다. 사진을 더 보려면 공개 캐스팅북의 그 모델 쪽(북·디지털·장면·프로필)으로 간다.
+export const CASTING_BOOK_URL='https://synk.im/pulse/casting/';
+const photoSource=value=>typeof value==='string'&&/^\.\/assets\/casting\/photos\/[a-z]\d\d-[a-z0-9-]+\.webp$/.test(value)?value:'';
+export function castingPhotos(selection={}){
+  const model=modelOf(selection);if(!model)return '<p class="small casting-photos-empty">모델을 고르면 그 모델의 사진을 볼 수 있어요.</p>';
+  const name=esc(model.name),photos=(Array.isArray(model.photos)?model.photos:[]).filter(photo=>photoSource(photo?.src));
+  return `<div class="casting-photos-head"><div><span class="eyebrow ko">사진</span><h4>${name}의 사진</h4></div><span class="tag">${esc(model.id)}</span></div>${photos.length?`<ul class="casting-photo-grid">${photos.map(photo=>{const label=esc(model.name+' · '+photo.label);return `<li><button type="button" class="casting-photo" data-action="image" data-src="${esc(photo.src)}" data-label="${label}" aria-label="${label} 크게 보기"><img src="${esc(photo.src)}" alt="${label}" width="540" height="720" loading="lazy" decoding="async"></button><span>${esc(photo.label)}</span></li>`;}).join('')}</ul>`:''}<a class="casting-photos-more" href="${CASTING_BOOK_URL}#m-${esc(model.id)}" target="_blank" rel="noopener noreferrer">캐스팅북에서 ${name} 사진 더 보기 <span aria-hidden="true">↗</span><span class="sr-only"> (새 탭)</span></a>`;
 }
-const WORK_LABELS={'music-video':'뮤직비디오'};
-const workMedia=(value,extension)=>typeof value==='string'&&new RegExp(`^\\./assets/casting/video/[A-Za-z0-9_-]+\\.${extension}$`).test(value)?value:'';
-function workCard(work){
-  const poster=workMedia(work?.poster,'webp'),excerpt=workMedia(work?.excerpt?.src,'mp4'),full=workMedia(work?.full?.src,'mp4');
-  if(!excerpt&&!full)return '';
-  const title=esc(work.title),excerptTime=esc(work.excerpt?.duration||''),fullTime=esc(work.full?.duration||'');
-  return `<article class="casting-video casting-work" aria-label="${title}"><span class="eyebrow ko">${WORK_LABELS[work.kind]||'작품'}</span><h5>${title}</h5>${excerpt?`<video controls playsinline preload="none"${poster?` poster="${esc(poster)}"`:''} src="${esc(excerpt)}" aria-label="${title} · ${excerptTime} 발췌"></video>`:''}${work.description?`<p class="casting-motion-note">${esc(work.description)}</p>`:''}${full?`<a class="casting-work-full" href="${esc(full)}" target="_blank" rel="noopener noreferrer">본편 보기${fullTime?' · '+fullTime:''} <span aria-hidden="true">↗</span><span class="sr-only"> (새 탭)</span></a>`:''}</article>`;
-}
-export function castingProductionPlan(modelId,plans=PRODUCTION_PLANS){
-  const model=CASTING_MODELS.find(item=>item.id===modelId),plan=Array.isArray(plans)?plans.find(item=>item?.modelId===modelId):null;
-  if(!model||!plan)return '';
-  const url=PRODUCTION_LIBRARY_URL+'?model='+encodeURIComponent(model.id);
-  const board=typeof plan.board==='string'&&/^\.\/assets\/production\/[A-Za-z0-9_-]+\.webp$/.test(plan.board)?plan.board:'';
-  const values=Array.isArray(plan.values)?plan.values:[];
-  return `<article class="casting-production-card${board?' has-board':''}" aria-label="${esc(model.name)} 광고 기획"><div class="casting-production-heading"><span class="eyebrow ko">제작 예시 · 기획안</span><span class="casting-production-state">${esc(plan.status||'기획 준비')}</span></div>${board?`<a class="casting-production-board" href="${esc(url)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(model.name)}의 이미지 콘티 크게 보기 (새 탭)"><img src="${esc(board)}" alt="${esc(model.name+' · '+plan.title)} 이미지 콘티" loading="lazy" decoding="async"></a>`:''}<div class="casting-production-copy"><h5>${esc(plan.title)}</h5>${plan.product?`<p class="casting-production-product">${esc(plan.product)}</p>`:''}${values.length?`<ul class="casting-production-values" aria-label="핵심 가치">${values.map(value=>`<li>${esc(value)}</li>`).join('')}</ul>`:''}${plan.memory?`<p class="casting-production-memory"><strong>기억에 남길 장치</strong>${esc(plan.memory)}</p>`:''}<a class="casting-production-open" href="${esc(url)}" target="_blank" rel="noopener noreferrer">광고 기획·콘티 보기 <span aria-hidden="true">↗</span><span class="sr-only"> (새 탭)</span></a></div></article>`;
-}
-export function castingPortfolio(selection={}){const model=modelOf(selection),works=Array.isArray(model?.works)?model.works.map(workCard).join(''):'',films=model?model.videos.map(mediaCard).join(''):'';return `<div class="casting-portfolio-head"><div><span class="eyebrow ko">포트폴리오</span><h4>${model?esc(model.name)+'의 포트폴리오':'모델을 고르면 포트폴리오를 볼 수 있어요.'}</h4><p class="small">모델의 표현을 살펴보는 예시예요. 지금 고른 의상·헤어가 합성된 미리보기는 아니에요.</p></div>${model?`<span class="tag">${esc(model.id)}</span>`:''}</div>${model?`${works}${films?`<div class="casting-video-grid">${films}</div>`:works?'':'<p class="small casting-media-note">이 모델의 광고·런웨이 영상은 만들고 있어요. 아래 기획안과 이미지 콘티로 표현을 먼저 볼 수 있어요.</p>'}${castingProductionPlan(model.id)}`:''}<a class="casting-production-library-link" href="${esc(PRODUCTION_LIBRARY_URL)}" target="_blank" rel="noopener noreferrer">7개 광고 기획 전체 보기 <span aria-hidden="true">↗</span><span class="sr-only"> (새 탭)</span></a>`;}
 export function castingVoices(selection={}){const model=modelOf(selection);return `<fieldset class="casting-voice-options" ${model?'':'disabled'}><legend>목소리 A · B · C</legend><p class="small">${model?`${esc(model.name)}의 ${model.voices.some(v=>v.src)?'샘플을 듣고 원하는 목소리를 골라 주세요.':'목소리 중 원하는 방향을 골라 주세요. 샘플 음원은 연결을 준비하고 있어요.'}`:'먼저 모델을 골라 주세요. 모델을 바꾸면 목소리는 다시 고르도록 비워져요.'}</p>${model?.voiceNote?`<p class="small">${esc(model.voiceNote)}</p>`:''}<div class="casting-voices">${(model?.voices||['A','B','C'].map(id=>({id,label:'목소리 '+id,src:''}))).map(v=>`<article><label><input type="radio" name="cast_voice" value="${v.id}" ${selection.voice===v.id?'checked':''}><span><strong>${v.id}</strong>${esc(v.label)}</span></label>${v.src?`<button type="button" class="voice-play" data-action="voice-play" aria-label="${esc(model.name+' 목소리 '+v.id+' 듣기')}">듣기</button><audio preload="none" src="${esc(v.src)}" hidden></audio>`:'<span class="casting-sample-state">음성 샘플 준비 중</span>'}</article>`).join('')}</div><label class="casting-undecided"><input type="radio" name="cast_voice" value="" ${selection.voice?'':'checked'}> 목소리는 나중에 정할게요</label></fieldset>`;}
 export function castingView(selection={}, {editable=true}={}){return `<section class="casting-configurator" aria-label="모델과 스타일 선택" data-choices-model="${esc(selection.modelId||'')}">
-  <div class="casting-intro"><span class="eyebrow ko">모델 · 스타일</span><h3>우리 광고에 어울리는 한 사람.</h3><p>모델과 스타일을 골라 원하는 장면을 그려 보세요. 정하지 않은 항목은 비워 둬도 괜찮아요.</p><p class="small">사진은 그 모델의 기준 이미지예요. 고른 스타일은 바라는 방향으로 남기고, 실제 모습은 담당자와 확인해요.</p></div>
+  <div class="casting-intro"><span class="eyebrow ko">모델 · 스타일</span><h3>우리 광고에 어울리는 한 사람.</h3><p>모델과 스타일을 골라 원하는 장면을 그려 보세요. 정하지 않은 항목은 비워 둬도 괜찮아요.</p><p class="small">사진은 그 모델의 기준 이미지예요. 고른 스타일은 바라는 방향으로 남기고, 실제 모습은 담당자와 확인해요.</p>${hasFinishedFilms()?'<p class="small casting-films-link">SYNK가 처음부터 끝까지 만든 광고는 「완성 광고」에서 볼 수 있어요. <button type="button" class="casting-films-button" data-action="tab" data-tab="films">완성 광고 보기 <span aria-hidden="true">→</span></button></p>':''}</div>
   <fieldset class="casting-models"><legend><span>01</span> 모델 선택 <small>7명</small></legend><div class="casting-model-grid">${CASTING_MODELS.map(m=>`<label class="casting-model-card"><input type="radio" name="cast_modelId" value="${m.id}" ${selection.modelId===m.id?'checked':''}><span class="casting-model-photo">${m.image?`<img src="${esc(m.image)}" alt="${esc(m.name)} 대표 사진" loading="lazy" width="240" height="320"><span class="casting-image-error" hidden>사진을 불러오지 못했어요.</span>`:`<span class="casting-photo-pending"><b>${esc(m.id)}</b>대표 사진 준비 중</span>`}<span class="casting-selected-mark" aria-hidden="true">✓</span></span><span class="casting-model-text"><strong>${esc(m.name)} <small>${esc(m.id)}</small></strong><span>${esc(m.description)}</span></span></label>`).join('')}</div><label class="casting-undecided"><input type="radio" name="cast_modelId" value="" ${selection.modelId?'':'checked'}> 모델은 나중에 정할게요</label></fieldset>
-  <div data-casting-portfolio class="casting-portfolio">${castingPortfolio(selection)}</div>
+  <div data-casting-photos class="casting-photos">${castingPhotos(selection)}</div>
   <section class="casting-step"><h4><span>02</span> 헤어 · 메이크업</h4><p class="small">헤어는 고른 모델에게 맞는 셋 중에서 고를 수 있어요.</p>${choices(selection,'hair')}${choices(selection,'makeup')}</section>
   <section class="casting-step"><h4><span>03</span> 의상</h4><p class="small">브랜드의 실제 의류를 쓰려면 ‘직접 설명’을 고르고 참고자료를 취향 보드에 추가해 주세요.</p>${choices(selection,'jacket')}${choices(selection,'top')}${choices(selection,'bottom')}</section>
   <section class="casting-step"><h4><span>04</span> 목소리</h4><div data-casting-voices>${castingVoices(selection)}</div><p class="small">모델을 바꿔도 다른 스타일 선택은 그대로예요. 목소리만 새 모델 기준으로 다시 골라 주세요.</p></section>
@@ -80,9 +65,11 @@ export function refreshCasting(form,{modelChanged=false}={}){
   let selection=castingFromForm(form);
   if(modelChanged){for(const key of ['hair','top','bottom']){const box=root.querySelector(`[data-casting-choice="${key}"]`);if(box)box.outerHTML=choices(selection,key);}if(root.dataset)root.dataset.choicesModel=selection.modelId||'';selection.voice='';root.querySelector('[data-casting-voices]').innerHTML=castingVoices(selection);const voice=form.querySelector('[name=cast_voice][value=""]');voice?.dispatchEvent(new Event('change',{bubbles:true}));}
   root.querySelector('[data-casting-summary]').innerHTML=castingSummary(selection);
-  const portfolio=root.querySelector('[data-casting-portfolio]');if(portfolio.dataset.model!==(selection.modelId||'')){portfolio.innerHTML=castingPortfolio(selection);portfolio.dataset.model=selection.modelId||'';}
+  const photos=root.querySelector('[data-casting-photos]');if(photos.dataset.model!==(selection.modelId||'')){photos.innerHTML=castingPhotos(selection);photos.dataset.model=selection.modelId||'';}
   const voices=root.querySelector('[data-casting-voices]');if(voices.dataset.model!==(selection.modelId||'')){voices.innerHTML=castingVoices(selection);voices.dataset.model=selection.modelId||'';}
   for(const img of root.querySelectorAll('.casting-model-photo img'))img.onerror=()=>{img.hidden=true;img.nextElementSibling.hidden=false;};
+  // 못 불러온 사진은 깨진 그림 대신 그 칸째 숨긴다.
+  for(const img of root.querySelectorAll('.casting-photo img'))img.onerror=()=>{const cell=img.closest('li');if(cell)cell.hidden=true;};
 }
 // 저장 전에 다른 모델을 고른 채로 화면을 다시 그리면(실시간 갱신·탭 이동) 헤어·상의·하의·목소리 칸이 저장한 모델 기준으로 그려져,
 // 그 칸에 없는 값(모델 없이 저장한 설계의 「헤어 2」 등)이 되살아나지 못하고 빠졌다. 초안 값으로 그 모델의 칸을 다시 만든다(10-19).

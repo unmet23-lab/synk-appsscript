@@ -220,11 +220,6 @@ b,strong{font-weight:600}
 .scene img{width:100%;aspect-ratio:3/4;object-fit:cover;background:var(--shade)}
 .scene figcaption{margin-top:8px;font-size:13px;color:var(--ink-3)}
 .scene figcaption b{display:block;font-size:14px;color:var(--ink);font-weight:600}
-.motions{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,260px));gap:16px;margin-top:22px}
-.motions video{width:100%;aspect-ratio:9/16;object-fit:cover;background:#111}
-.motions figure{margin:0}
-.motions figcaption{margin-top:8px;font-size:13px;color:var(--ink-3)}
-.motions figcaption b{display:block;font-size:14px;font-weight:600;color:var(--ink)}
 .prof{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px}
 .info{margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 24px}
 .info div{display:grid;grid-template-columns:5.5em minmax(0,1fr);gap:10px;padding:10px 0;border-bottom:1px solid var(--rule)}

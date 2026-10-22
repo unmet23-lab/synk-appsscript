@@ -1044,3 +1044,16 @@ body:has(.approval-card.is-floating) .notice{bottom:112px}
 }
 /* 한 칸 화면(1023px 이하)에서는 조용한 승인 카드도 한 칸에 둔다 — 둘째 칸을 만들어 영상이 좁아지지 않게(10-19, 태블릿 폭 캡처로 찾음, 운영판의 승인 뒤 카드도 같은 문제). */
 @media (max-width:1023px){.approval-card:not(.is-floating){grid-column:auto}}
+/* 2026-10-22 완성 광고: 제작 단계 아래의 따로 된 공간. SYNK가 끝까지 만든 작품만 카드 하나씩(발췌 재생 · 본편 새 탭) */
+.film-list{display:grid;gap:20px}
+.film-card{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);align-items:start;gap:22px;padding:20px;border-radius:var(--r-lg);background:var(--surface-1);box-shadow:var(--card-edge)}
+.film-media video{display:block;width:100%;aspect-ratio:16/9;border-radius:14px;background:#000;object-fit:cover}
+.film-copy{min-width:0;padding-top:4px}
+.film-copy h2{margin:8px 0 10px;font-size:var(--t-title);font-weight:var(--w-title);letter-spacing:var(--track-title)}
+.film-copy p{margin:0 0 14px;font-size:15.5px;line-height:1.65;color:var(--ink-2)}
+.film-facts{display:grid;margin:0 0 16px}
+.film-facts>div{display:flex;gap:12px;padding:8px 0;border-top:1px solid var(--line)}
+.film-facts dt{min-width:44px;font-size:var(--t-label);font-weight:var(--w-label);color:var(--ink-3)}
+.film-facts dd{margin:0;font-size:14px;color:var(--ink-2)}
+.film-full{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:0 18px;border-radius:999px;background:var(--ink);color:var(--on-ink);font-size:14px;font-weight:var(--w-strong);text-decoration:none}
+@media (max-width:860px){.film-card{grid-template-columns:minmax(0,1fr);gap:16px;padding:14px}.film-full{width:100%}}

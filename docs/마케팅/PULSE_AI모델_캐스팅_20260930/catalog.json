@@ -111,19 +111,7 @@
           { "id": "b15", "file": "32.jpg", "place": "스튜디오", "label": "검은 터틀넥 · 측광 근접", "tags": ["beauty"] },
           { "id": "b16", "file": "33.jpg", "place": "풀밭", "label": "맨투맨 · 누워서 웃음", "tags": ["beauty", "travel"] }
         ]
-      },
-      "motion": [
-        {
-          "src": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/video/F02-ad-motion-5s-v1.mp4",
-          "label": "커피잔 동작 · 5초",
-          "note": "손과 제품 움직임을 보는 접사예요. 얼굴과 대사 연기는 들어 있지 않아요."
-        },
-        {
-          "src": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/video/F02-runway-motion-5s-v1.mp4",
-          "label": "런웨이 · 5초",
-          "note": "걷는 자세와 옷의 움직임을 보는 샘플이에요."
-        }
-      ]
+      }
     },
     "F03": {
       "stand": { "src": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/fullbody/f03-fullbody-v1.webp", "top": 230, "feet": 2411 },

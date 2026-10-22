@@ -228,6 +228,18 @@ test('움직이는 사진: 명단의 모든 모델이 loop/<코드>.mp4를 가�
   for (const m of roster) assert.equal((catalog.models[m.code].loop || {}).src, `loop/${m.code}.mp4`, m.code);
 });
 
+// 10-22 모델은 사진만(유호님 「모델별 이런 참고영상은 지금 전부 기각」): 모델 북에 「움직임」 탭과 하린 5초 샘플을 두지 않는다.
+// 보드에서 도는 움직이는 사진(루프)은 10-22 공개 때 「루프는 지금 판 그대로」라 남긴다.
+test('모델 북은 사진만: 움직임 탭도, 모델별 참고 영상 자료도 없다', () => {
+  const fs = require('node:fs');
+  for (const m of roster) assert.equal('motion' in catalog.models[m.code], false, `${m.code}에 motion 자료가 없다`);
+  const app = fs.readFileSync(path.join(dir, 'site-src', 'app.js'), 'utf8'), build = fs.readFileSync(path.join(dir, 'build-site.cjs'), 'utf8');
+  assert.doesNotMatch(app, /\['motion', '움직임'|tab === 'motion'|m\.motion/);
+  assert.match(app, /if \(!tabs\.some\(\(\[k\]\) => k === tab\)\) tab = 'book';/, '옛 #m-…-motion 주소는 북 탭으로 연다');
+  assert.doesNotMatch(build, /extra\.motion|F02-(?:ad|runway)-motion/);
+  assert.doesNotMatch(fs.readFileSync(path.join(dir, 'site-src', 'style.css'), 'utf8'), /\.motions/);
+});
+
 test('문장 듣기 서버: 타입캐스트 목소리만 받고, 길이·빈 문장·없는 목소리를 막는다(타입캐스트는 부르지 않는다)', async () => {
   const say = require(path.join(dir, 'say-server.cjs'));
   const table = say.voiceTable();

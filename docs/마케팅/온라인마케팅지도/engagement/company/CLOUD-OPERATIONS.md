@@ -1,5 +1,18 @@
 # 회사 워크스페이스와 고객 상담의 상시 서버 운영
 
+<a id="next-company-release-pulse-photos-films-20261022"></a>
+## 다음 회사 릴리스 후보 — PULSE 모델은 사진만 · 완성 광고 공간 (2026-10-22 Claude 준비 · 운영 전, 순서 문서 「이력 29」 · 실제 사슬 30)
+
+유호님 10-22 「모델별 이런 참고영상은 지금 전부 기각하자. 그냥 모델은 모델 사진이랑 느낌만 볼수있게 사진으로 보여주고 모델 참고 영상은 우리가 지금 제대로 제작하고있는 광고영상 완성되면 볼수있는공간을 따로 만들자 (한강,갱스터뮤비,한국홍보영상,화성홍보영상 같은것)」([결정 표](../../../../_ops/결정.md) 10-22). 10-20 「하린 메인 광고 칸」(아래 운영 인수 절)을 거두는 판이다.
+
+- **바뀌는 것(화면 8·서버 1·새 파일 30, 지운 파일 0):** `public/pulse-app/` — `casting-catalog.mjs`(모델마다 영상·작품 칸을 지우고 사진 넉 장 `photos`), `casting-view.mjs`(영상·뮤비·기획안·「7개 광고 기획」 링크 대신 「○○의 사진」 — 사진 단추는 앱 이미지 대화상자, 캐스팅북 링크 새 탭, 칸 머리에 「완성 광고 보기」 한 줄), 새 `films-view.mjs`(완성 광고 목록 — 지금은 갱스터 뮤비 하나), `views.mjs`(왼쪽 레일 6단계 아래 「SYNK 작품 › 완성 광고」·휴대폰 머리·`films` 화면), `app.mjs`(재생 중인 완성 광고 발췌는 실시간 갱신을 기다림 `[data-film-player]`), `sw.js`(셸에 `films-view.mjs` 더하고 `production-catalog.mjs` 뺌, 캐시 `synk-pulse-shell-v21-photos-films-20261022`), `casting.css`·`app.css`, 사진 28장 `assets/casting/photos/<id>-<fullbody|look-1|look-2|context>.webp`(합계 536KB, git 추적). `server.mjs` 공개 목록 — 더함: `films-view.mjs`·사진 28장 · 뺌: 하린 영상 넷(5초 광고·5초 런웨이·20초 아이스커피 광고·포스터), 전신 기준 사진 7장, 기획 모음 쪽(`production-library/`·`library.js`·`library.css`)과 제작 그림 5장, `production-catalog.mjs`. **파일은 지우지 않는다**(저장소·이미지에 그대로, 목록에서만). 저장 스키마·API·환경 변수·`Dockerfile`·PC 앱은 그대로(PC 앱 PULSE 창은 `/pulse-app/` 안 탭이라 고칠 것 없음).
+- **시험:** PULSE 관련 59/59(`pulse-casting-client` 9 · 새 `pulse-casting-photos` 3 · 새 `pulse-films-client` 6 · 새 `pulse-photos-films-server` 3 · `static-media` · `pulse-casting-code` · 캐스팅북 17), 회사 폴더 전체 4,190개 실패 0(윈도 건너뜀 9 — 작업본에서 뺀 미디어 폴더 탓 6건은 되살려 32/32), 관련 루트 시험 100/100. 지운 시험 `casting-production.test.mjs`·`pulse-production-library.test.mjs`(거둔 기획안·기획 모음 쪽) — 남는 보장은 새 파일로 옮김.
+- **검수(반영 전):** 설계 검토 Fable 12건(반영 11 · 캐스팅북 링크는 판단으로 둠), 화면 아르곤 0건(A·B 끝까지 읽음) → Fable 최종 「그대로 운영 후보로」(P0·P1·P2 0 · P3 2 반영 2 — 캐스팅북 재공개에서 하린 샘플 두 파일 지움, 기록을 같은 커밋에), 백엔드(공개 목록) 아르곤 0 · GPT 0. 기록 `.tmp/검수/pulse-photos-films-20261022b/`·`.tmp/검수/pulse-photos-films-server-20261022/`.
+- **화면 묶음 바꿔 끼우기를 쓰지 않는 까닭:** `casting-catalog.mjs`는 서버가 import해 이미지 전용이고, 새 주소(사진·모듈)는 공개 목록 줄이 필요하다. 또 바꿔 끼운 파일이 남아 있는 동안 오르는 이미지 판은 배포 PUBLIC 탐침(`app.mjs`·`strategy-view.mjs`·`sw.js`·`casting-catalog.mjs`·`casting-view.mjs`·`casting.css`를 후보 바이트와 견줌)이 그 파일에서 어긋나, 이미 후보를 만든 사슬 24~29를 깨뜨린다.
+- **운영 판에 얹기:** 사슬 29 최종 후보 바이트 위에 이 판 커밋의 회사 폴더 diff를 3방향으로 얹는다(화면 8·서버 1·시험, 새 파일 30). 새 git 밖 미디어는 없다(사진은 git 추적, 뮤비 셋은 이미 운영 원문에 있다) — 새 층이 약 0.6MB라 델타 stage 한도 안이다. PUBLIC 탐침 여섯 중 다섯을 이 판이 바꾸므로 탐침은 후보 바이트로 뽑는다.
+- **반영:** 사슬 29(작업실 비밀번호 9자) 최종 사후 확인 passed·armed 뒤 회사 릴리스 절차대로(inert·stage·반영 전 백업·교체·공개 대조·가벼운 재무장). 그 전에는 원격 호출을 하지 않는다.
+- **반영 뒤 확인:** `https://workspace.synk.im/pulse-app/films-view.mjs` 200 · 사진 28장 200 `image/webp` · 하린 영상 넷·기획 모음 쪽·전신 사진 404 · 뮤비 셋 200·Range 206 · 체험판(`?demo=coffee`)에서 제작 설계 › 모델 고르기에 사진 넉 장, 레일 「완성 광고」에 뮤비 카드, 휴대폰 390 폭.
+
 <a id="next-company-release-password-min9-20261022"></a>
 ## 다음 회사 릴리스 후보 — 작업실 로그인 비밀번호 최소 9자 (2026-10-22 Claude 준비 · 운영 전, 순서 문서 「이력 28」 · 실제 사슬 29)
 
@@ -152,6 +165,7 @@
 - **새 백업·격리 복원·최종 HA:** [passed] 1회차(백업 generation `1792477790768469`, 15:30 업로드)는 격리 복원이 원격에서 passed였지만 이 PC의 SSH 연결이 29초 먼저 끊겨 `REMOTE_RESULT_UNCONFIRMED`로 남았고(원격 `RESULT.json`을 읽어 어댑터 원본 검증으로 묶음), 재무장 준비가 공용 작업본 변경·CPU 부족으로 밀리는 사이 운영의 로그인 세션 1·토큰 1이 만료돼 「최종 백업 뒤 계정 키 삭제 없음」 검사에 걸렸다(쓰기 0, 기록은 `rearm/held-cycle1-20261020-1735/`에 보존). 2회차를 짧게 다시 돌렸다 — 새 백업 generation `1792486783384445`·547,604,246B 업로드·MD5 확인(18:02), 예비 노드 격리 복원 568초 passed(원문 1,081개·원래 키·연결 정보·Drive 등록 보존, 보호 계정 표 9개 보존, 고객 미인증 401), 새 계정 기준 연결 680초, 정규 재무장 준비 214초 → 설치(`synk-ha-arm-compat-c3b8612c-5615-4c18-9b28-2564bbda77e0.service`) → installed-armed → 사후 확인. **18:31:11 KST armed:true**, A(`6695198820229895670`) 단일 writer·epoch 7, 복제 정상, 공개 HTTPS 200/ready/TLS, controller PID 356345·Invocation 18.7초 관찰·재시작 0, 새 판 `526eb41d…`, 배포 이력 14건(`rearm/contract-final-v1.json` `2e4cf97a…`, `rearm/arm-postcheck-final-v1.json` `5c0d2b93…`). [근거1](../../../../../.tmp/pulse-harin-ad-release-20261020/rearm/dr/restore-v1.json) [근거2](../../../../../.tmp/pulse-harin-ad-release-20261020/rearm/arm-postcheck-final-v1.json) [보류 기록](../../../../../.tmp/pulse-harin-ad-release-20261020/rearm/held-cycle1-20261020-1735/held.json)
 - **소스:** 공용 작업본 커밋 `b836f3c60`. 영상은 `.gitignore`(`*.mp4`)라 git 밖이고 운영 원문의 정본은 릴리스 폴더의 `candidate/`(manifest `526eb41d…`)다. 원본 최종본은 `Documents/synk-vendor/harin-iced-coffee-h3-20261017/가편집/`.
 - **다음 릴리스:** `.tmp/pulse-harin-ad-release-20261020`이 부모다(배포 이력 14→15, 통화 켜기 릴리스가 이어받음). 큰 미디어가 든 판은 stage를 처음부터 전체 이미지 중계로, 재무장은 백업에서 설치까지 한 스크립트로 짧게 돌린다.
+- **10-22 기각:** 유호님이 모델별 참고 영상을 모두 거두기로 해(결정 표 10-22) 이 칸은 [「모델은 사진만 · 완성 광고 공간」 판](#next-company-release-pulse-photos-films-20261022)에서 칸·공개 목록에서 뺀다. 영상 원본·최종본은 지우지 않는다.
 
 <a id="pulse-auto-reply-production-20261020"></a>
 ## PULSE 고객 문의 자동 안내 운영 인수 · 2026-10-20 (Claude)

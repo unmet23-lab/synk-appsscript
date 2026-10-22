@@ -159,7 +159,7 @@ test('the client room wires the box: save fills the casting form, submits it, an
   assert.match(view,/pick\('cast_modelId',item\.modelId\)&&pick\('cast_hair',item\.hair\)&&pick\('cast_voice',item\.voice\)/,'model first, then hair and voice, like a person would');
   assert.match(castingView({modelId:'F02'}),/data-choices-model="F02"/);assert.match(castingView({}),/data-choices-model=""/);
   assert.doesNotMatch(view.split('\n').filter(line=>!line.trim().startsWith('//')).join('\n'),/\(\?<[!=]/,'no regex lookbehind: Safari before 16.4 would fail to load the whole client room');
-  assert.match(readFileSync(new URL('sw.js',appDir),'utf8'),/const CACHE = 'synk-pulse-shell-v20-casting-code-20261019';/);
+  assert.match(readFileSync(new URL('sw.js',appDir),'utf8'),/const CACHE = 'synk-pulse-shell-v21-photos-films-20261022';/);
 });
 
 async function fixture(t){

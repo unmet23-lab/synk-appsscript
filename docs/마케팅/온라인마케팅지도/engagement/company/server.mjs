@@ -1745,24 +1745,17 @@ export function createCompanyApp(options={}) {
     files['/client-desk.css']=['public/client-desk.css','text/css; charset=utf-8'];files['/client-desk-pulse.webp']=['public/client-desk-pulse.webp','image/webp'];for(const stage of ['received','planning','producing','review','delivered','archived'])files['/client-desk-stage-'+stage+'.webp']=['public/client-desk-stage-'+stage+'.webp','image/webp'];
     files['/pulse-app/']=['public/pulse-app/index.html','text/html; charset=utf-8'];
     files['/pulse-app/index.html']=files['/pulse-app/'];
-    for(const file of ['production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','app.mjs','views.mjs','casting-view.mjs','casting-catalog.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','push-sw.js','sw.js'])files['/pulse-app/'+file]=['public/pulse-app/'+file,'text/javascript; charset=utf-8'];
+    for(const file of ['production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','app.mjs','views.mjs','casting-view.mjs','casting-catalog.mjs','films-view.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','push-sw.js','sw.js'])files['/pulse-app/'+file]=['public/pulse-app/'+file,'text/javascript; charset=utf-8'];
     for(const file of ['reference-warm.png','reference-bold.png','reference-calm.png','scene-1.png','scene-2.png','scene-3.png','scene-4.png','preview-v1.mp4','preview-v2.mp4'])files['/pulse-app/demo-assets/'+file]=['public/pulse-app/demo-assets/'+file,file.endsWith('.mp4')?'video/mp4':'image/png'];
     for(const file of ['production.css','preview.css'])files['/pulse-app/'+file]=['public/pulse-app/'+file,'text/css; charset=utf-8'];
     files['/pulse-app/app.css']=['public/pulse-app/app.css','text/css; charset=utf-8'];
     files['/pulse-app/casting.css']=['public/pulse-app/casting.css','text/css; charset=utf-8'];
     for(const id of ['m01','f01','f02','f03','m02','m03','f04'])files['/pulse-app/assets/casting/'+id+'.webp']=['public/pulse-app/assets/casting/'+id+'.webp','image/webp'];
     for(const id of ['M01','F01','F02','F03','M02','F04','M03'])for(const sample of [1,2,3])files['/pulse-app/assets/casting/voice/'+id+'-'+sample+'.mp3']=['public/pulse-app/assets/casting/voice/'+id+'-'+sample+'.mp3','audio/mpeg'];
-    for(const id of ['m01','f01','f02','f03','m02','f04','m03'])files['/pulse-app/assets/casting/fullbody/'+id+'-fullbody-v1.webp']=['public/pulse-app/assets/casting/fullbody/'+id+'-fullbody-v1.webp','image/webp'];
-    files['/pulse-app/assets/casting/video/F02-ad-motion-5s-v1.mp4']=['public/pulse-app/assets/casting/video/F02-ad-motion-5s-v1.mp4','video/mp4'];
-    files['/pulse-app/assets/casting/video/F02-runway-motion-5s-v1.mp4']=['public/pulse-app/assets/casting/video/F02-runway-motion-5s-v1.mp4','video/mp4'];
-    // 10-20 하린 메인 광고 칸: 20초 아이스커피 광고(표정 참고용)와 포스터.
-    for(const file of ['F02-ad-iced-coffee-20s-v1.mp4','F02-ad-iced-coffee-20s-v1-poster.webp'])files['/pulse-app/assets/casting/video/'+file]=['public/pulse-app/assets/casting/video/'+file,file.endsWith('.webp')?'image/webp':'video/mp4'];
+    // 10-22 모델은 사진만: 영상 칸·기획 모음(production-library)·하린 영상은 공개 목록에서 뺀다(파일은 저장소에 그대로). 모델마다 사진 넉 장.
+    for(const id of ['m01','f01','f02','f03','m02','f04','m03'])for(const shot of ['fullbody','look-1','look-2','context'])files['/pulse-app/assets/casting/photos/'+id+'-'+shot+'.webp']=['public/pulse-app/assets/casting/photos/'+id+'-'+shot+'.webp','image/webp'];
+    // 완성 광고(films-view.mjs): 갱스터 뮤직비디오.
     for(const file of ['M03-mv-happy-gangster-poster-v1.webp','M03-mv-happy-gangster-excerpt-20s-v1.mp4','M03-mv-happy-gangster-full-v1.mp4'])files['/pulse-app/assets/casting/video/'+file]=['public/pulse-app/assets/casting/video/'+file,file.endsWith('.webp')?'image/webp':'video/mp4'];
-    files['/pulse-app/production-catalog.mjs']=['public/pulse-app/production-catalog.mjs','text/javascript; charset=utf-8'];
-    files['/pulse-app/production-library/']=['public/pulse-app/production-library/index.html','text/html; charset=utf-8'];
-    files['/pulse-app/production-library/index.html']=files['/pulse-app/production-library/'];
-    for(const file of ['library.js','library.css'])files['/pulse-app/production-library/'+file]=['public/pulse-app/production-library/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
-    for(const file of ['01-harin-coffee-v3.webp','02-yuna-perfume.webp','03-taejun-tailoring.webp','04-runway-comparison-v2.webp','04-runway-comparison-proportion-v1.webp'])files['/pulse-app/assets/production/'+file]=['public/pulse-app/assets/production/'+file,'image/webp'];
     files['/pulse-app/manifest.webmanifest']=['public/pulse-app/manifest.webmanifest','application/manifest+json; charset=utf-8'];
     for(const file of ['scrapbook.css','brand-pulse.webp','thread-pulse.webp','SUIT.woff2','InterTight.woff2','SYNKLatin-Regular.woff2','SYNKLatin-SemiBold.woff2','SYNKLatin-Bold.woff2','DMMono.ttf','studio-camera.webp','sticker-check.webp'])files['/pulse-app/assets/'+file]=['public/pulse-app/assets/'+file,file.endsWith('.css')?'text/css; charset=utf-8':file.endsWith('.woff2')?'font/woff2':file.endsWith('.ttf')?'font/ttf':'image/webp'];
     for(const file of ['hero-camera','stage-strategy','stage-direction','stage-concepts','stage-storyboard','stage-review','stage-history'])files['/pulse-app/assets/stage/'+file+'.webp']=['public/pulse-app/assets/stage/'+file+'.webp','image/webp'];
