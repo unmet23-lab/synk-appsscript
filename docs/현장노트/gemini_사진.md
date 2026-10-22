@@ -425,3 +425,9 @@
 - 원인: 「two sleeves and back panel are patchwork」만으로는 앞판이 비어 있어 모델이 채우는 것으로 보인다(추정). 반지는 손이 크게 보이는 컷에서 장신구를 더하는 버릇으로 보인다(추정).
 - 고침: 「The front panels of the jacket are plain light-wash denim; only the two sleeves … and the whole back panel are jogakbo patchwork」처럼 남는 부분까지 적자 다시 구운 판에서 맞았다. 반지는 받은 그림을 Image 1로 「Change only one thing: remove the ring from his finger」 편집으로 뺐고(한 번에 됨, 다른 데는 그대로), 다음 굽기부터 몸 문장에 「no rings, no jewelry」를 넣는다.
 - 다시 확인: 손 · 재킷 앞판 확대.
+
+### 옆얼굴을 새로 구우면 컷마다 다른 사람이 된다 — 얼굴이 맞은 컷에서 장소만 바꾸고, 빛을 바꿀 땐 「얼굴은 다시 그리지 말 것」 (2026-10-22 Claude)
+- 증상: v2 S07(진해) · S18(유채 달리기)을 확정 얼굴 B · C + 실제 사진 + 실제 오른쪽 옆얼굴 사진으로 새로 굽자 Fable은 같은 사람으로 봤지만 유호님은 「진해랑 유채 달리기 이거는 내 얼굴이 아냐」. 같은 참고 · 같은 문장의 S04 · S05 옆얼굴은 짚지 않으셨다.
+- 원인: 새 생성은 옆얼굴을 컷마다 다시 짜서 닮음이 들쭉날쭉하다(추정). 얼굴 메모에도 각도 사진에 B · C 크롭을 앞에 넣으면 「약간은 다르다」였다는 기록이 있다.
+- 고침: 짚지 않으신 컷(S05)을 Image 1로 두고 「Edit the first attached photo (Image 1). Keep him exactly as he is in Image 1 — the same face, hair, clothes, running pose, size and position … Change only the place around him: …」 + 장소 실제 사진(Image 2) + 얼굴 참고(B 정면 · 실제 옆얼굴, Image 3 · 4)로 보내자 진해는 한 번에 S05와 같은 얼굴이 됐다(매치 컷도 정확). 유채는 햇빛으로 바꾸며 얼굴을 다시 그려 이가 보였다 — 빛 문장 뒤에 「Do not redraw his face: it stays exactly as in Image 1 — the same profile, nose, chin, eye and the same small closed-mouth smile with no teeth visible. Only adjust the light on him to the sunny day.」를 붙이자 맞았다. 같은 문장에서 얼굴 참고 두 장을 빼자 귀에 귀걸이가 생겼다. 받기 단계에서 `<img> intercepts pointer events`로 끊긴 판은 `ego/take.mjs`로 그 대화에서 받았다.
+- 다시 확인: 고친 판과 Image 1의 머리를 같은 상자로 잘라 나란히 놓고(입 · 코 · 턱 · 귀), 유호님 확인을 받는다.
