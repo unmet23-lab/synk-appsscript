@@ -1818,6 +1818,37 @@ test('인자 읽기: 명령마다 받는 인자만 받고 틀리면 사용법 �
   assert.throws(() => 도구.인자읽기(['a.md', '--조각', '공용.md']), /<경로>=<조각/);
 });
 
+test('공용 작업본: 체크박스 「[ ]」는 항목 열쇠가 아니다 — 서로 다른 할 일을 짝짓지 않고, 작업본이 지운 할 일을 origin이 고쳤으면 멈춘다(10차 GPT GA1)', async (t) => {
+  const g1 = '- [ ] 제품 소개 문서를 작성하고 신규 고객에게 발송한다', g2 = '- [ ] 서버 백업 보존 기간을 설정하고 복구 절차를 확인한다';
+  const h2 = '- [ ] 서버 백업 보존 기간을 30일로 설정하고 복구 절차를 확인한다';
+  const 판 = 새판(t, { 파일: { 'docs/메모.md': 한줄씩(g1, g2) } });
+  const B = 판.공용.머리();
+  판.남push({ 'docs/메모.md': 한줄씩(h2) }, '제품 소개 할 일을 지우고 백업 할 일을 고침');
+  const 작업본글 = 한줄씩(g1);   // 작업본은 백업 할 일을 지우는 중
+  판.공용.쓰기('docs/메모.md', 작업본글);
+  const r = await 도구.따라가기({ 저장소: 판.공용.폴더, 실행: true });
+  assert.equal(r.결과, '멈춤', JSON.stringify(r));
+  assert.equal(판.공용.머리(), B);
+  assert.equal(판.공용.읽기('docs/메모.md'), 작업본글);
+});
+
+test('공용 작업본: origin이 고친 판의 글이 B·작업본의 다른 줄에도 있어도 T에 늘어난 사본으로 지움·고침 겹침을 본다(10차 GPT GA2)', async (t) => {
+  const g = '- 상태: nightly release deployment is pending review', h = '- 상태: nightly release deployment is complete';
+  const a = '## 다음 절의 배포 기록을 보관하는 고유한 제목';
+  const 판 = 새판(t, { 파일: { 'docs/메모.md': 한줄씩(g, h, a) } });
+  const B = 판.공용.머리();
+  판.남push({ 'docs/메모.md': 한줄씩(h, a, h) }, 'g를 h로 고쳐 a 뒤로 옮김');
+  const 작업본글 = 한줄씩(h, a);   // 작업본은 g를 지우는 중
+  판.공용.쓰기('docs/메모.md', 작업본글);
+  const r = await 도구.따라가기({ 저장소: 판.공용.폴더, 실행: true });
+  if (r.결과 === '따라감') assert.equal(판.공용.읽기('docs/메모.md'), 작업본글, `작업본이 지운 줄의 고친 판이 되살아났다: ${판.공용.읽기('docs/메모.md')}`);
+  else {
+    assert.equal(r.결과, '멈춤', JSON.stringify(r));
+    assert.equal(판.공용.머리(), B);
+    assert.equal(판.공용.읽기('docs/메모.md'), 작업본글);
+  }
+});
+
 test('공용 작업본: 작업본이 받은 판이 읽는 이력 창 밖으로 밀리면 「쓰는 중」으로 잘못 멈추고, 창이 그 판까지 닿으면 받은 판으로 따라간다(10-22 저녁 WORLD TOPIK 줄 — 기본 창 400판)', (t) => {
   const v0 = 한줄씩('# 메모', '- 에이 줄 처음', '## 끝', '- 큐 줄 처음');
   const 판 = 새판(t, { 파일: { 'docs/메모.md': v0 } });

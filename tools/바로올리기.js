@@ -447,7 +447,8 @@ function 덩어리마다(ops, 할일) {
  */
 function 줄몸(글) {
   const s = 보이게(글).trim();
-  if (!s.startsWith('|')) return s.replace(/^(?:[-*+>]\s+|#+\s+|\d+[.)]\s+)+/, '');
+  // 체크박스(`[ ]`·`[x]`)도 목록 기호다 — 항목 열쇠로 보면 할 일끼리 빈 열쇠가 같아 서로 다른 할 일을 짝지었다(10-22 검수 10차)
+  if (!s.startsWith('|')) return s.replace(/^(?:[-*+>]\s+|#+\s+|\d+[.)]\s+)+(?:\[[ xX]\]\s+)?/, '');
   return s.split('|').map((x) => x.trim()).filter((x) => Array.from(x).length > 2 && !/^\d{2,4}(?:[-./]\d{1,2}){1,2}$/.test(x)).join(' | ');
 }
 
@@ -467,7 +468,8 @@ const 머리낱말 = (글) => (줄몸(글).split(/\s+/)[0] || '').replace(/^[*_`
 /** 항목 열쇠 — 몸 맨 앞의 `[…]` 꼬리표(링크 글자는 빼고)나 `**…**` 굵은 머리. 없으면 null. */
 function 항목열쇠(글) {
   const m = 줄몸(글).match(/^\[([^\]]{1,160})\](?!\()|^\*\*([^*]{1,200})\*\*/);
-  return m ? (m[1] ?? m[2]) : null;
+  const k = m ? (m[1] ?? m[2]) : null;
+  return k !== null && k.trim() ? k : null;
 }
 
 /**
@@ -807,7 +809,8 @@ function 받은것만바탕(c, { 경로, 판들, K, 바탕sha, 바탕바이트, 
     //  · 그 자리에 쓰는 중인 같은 줄의 판(이력에 없는 줄)이 있다 — origin도 그 줄을 고쳤거나 지웠다. 받은 판을 다시 고치는 중일 수도 있지만 가릴 수 없다.
     //  · 판이 없다(작업본이 지웠다) — 작업본에 없는 그 줄의 판(이력의 판이나 같은 줄의 판)이 T 어디에든 있으면 origin이 고쳐(옮겨) 두었다.
     const 쓰는줄 = (w) => 뚜렷한줄(w) && !b셈.has(w) && !이력.has(w);
-    const 남은T = [...t셈.keys()].filter((y) => !w셈.has(y) && !b셈.has(y) && 뚜렷한줄(y));
+    // T가 B와 작업본보다 사본을 더 가진 글 — origin이 새로 넣은 줄이다. 있는지만 보면 고친 판의 글이 B·작업본의 다른 줄에도 있을 때 놓쳤다(10-22 검수 10차)
+    const 남은T = [...t셈].filter(([y, n]) => n > Math.max(w셈.get(y) || 0, b셈.get(y) || 0) && 뚜렷한줄(y)).map(([y]) => y);
     for (let i = 0; i < B줄.length; i++) {
       const g = B글[i];
       if (!뚜렷한줄(g) || B남음.has(i)) continue;
