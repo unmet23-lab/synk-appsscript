@@ -17,14 +17,14 @@
 | 그중 WORLD 앱 | {{eok(ysum('기본',2027,(r) => r.pulse.world))}} | {{eok(ysum('기본',2028,(r) => r.pulse.world))}} | {{eok(ysum('기본',2029,(r) => r.pulse.world))}} |
 | 　WORLD 구독(학원 좌석 포함) | {{eok(ysum('기본',2027,(r) => r.pulse.worldB2C))}} | {{eok(ysum('기본',2028,(r) => r.pulse.worldB2C))}} | {{eok(ysum('기본',2029,(r) => r.pulse.worldB2C))}} |
 | 　접객 기업 좌석 | {{eok(ysum('기본',2027,(r) => r.pulse.worldCorporate))}} | {{eok(ysum('기본',2028,(r) => r.pulse.worldCorporate))}} | {{eok(ysum('기본',2029,(r) => r.pulse.worldCorporate))}} |
-| 광고 제작 이익(담당자 인건비 몫 뺀 뒤) | {{eok(ysum('기본',2027,(r) => r.pulse.ads - r.pulse.direct - r.pulse.people))}} | {{eok(ysum('기본',2028,(r) => r.pulse.ads - r.pulse.direct - r.pulse.people))}} | {{eok(ysum('기본',2029,(r) => r.pulse.ads - r.pulse.direct - r.pulse.people))}} |
+| 광고 제작 이익(담당자가 있으면 그 인건비 몫을 뺀 뒤) | {{eok(ysum('기본',2027,(r) => r.pulse.ads - r.pulse.direct - r.pulse.people))}} | {{eok(ysum('기본',2028,(r) => r.pulse.ads - r.pulse.direct - r.pulse.people))}} | {{eok(ysum('기본',2029,(r) => r.pulse.ads - r.pulse.direct - r.pulse.people))}} |
 | WORLD 이익(원가 뺀 뒤) | {{eok(ysum('기본',2027,(r) => r.pulse.world - r.pulse.worldCost))}} | {{eok(ysum('기본',2028,(r) => r.pulse.world - r.pulse.worldCost))}} | {{eok(ysum('기본',2029,(r) => r.pulse.world - r.pulse.worldCost))}} |
 | PULSE·WORLD 이익(기본) | {{eok(DY('기본',2027).pulse.profit)}} | {{eok(DY('기본',2028).pulse.profit)}} | {{eok(DY('기본',2029).pulse.profit)}} |
 | PULSE·WORLD 이익(보수 · 상방) | {{eok(DY('보수',2027).pulse.profit)}} · {{eok(DY('상방',2027).pulse.profit)}} | {{eok(DY('보수',2028).pulse.profit)}} · {{eok(DY('상방',2028).pulse.profit)}} | {{eok(DY('보수',2029).pulse.profit)}} · {{eok(DY('상방',2029).pulse.profit)}} |
 
 광고 제작은 계획한 고객 수의 절반(보수 25% · 상방 100%)만 셌다. WORLD는 BM 목록 6-2의 보수·기본·상방 매출 곡선이다.
 
-**광고 제작 줄 이익이 초반에 마이너스인 이유:** 한국 담당자(경력 PM, 월 450만원) 인건비와 전주 사무실(월 {{man(I.company.krLead.officeKRW)}}, 10-22부터)을 PULSE와 SHIFT가 일한 시간대로 나눠 지기 때문이다. 10-22부터는 담당자가 SHIFT 강의·강사 에이전시에 쓴 시간 몫을 SHIFT가 먼저 따로 지고 나머지를 나눈다. 그래서 PULSE 광고 이익이 10-19 판보다 커 보이지만 회사 전체 비용은 같다([06](06_SHIFT.md) 0절). PULSE를 빼면 회사 현금은 오히려 나빠진다. 담당자를 그대로 뽑은 채 PULSE만 0원이면 기본 가정의 2029 영업이익이 {{eok(DY('기본',2029).ebitda)}}에서 {{eok(sens('PULSE 광고만 0원').ebitda2029)}}이 된다. PULSE는 담당자 인건비를 SHIFT와 나눠 내는 사업이다.
+**담당자가 없으면 이주 뒤 광고 제작이 거의 멈춘다:** 10-22 유호님 결정으로 한국 담당자는 조건(PULSE 광고·SHIFT 석 달 월평균 {{man(I.company.krLead.gate.avgKRW)}} + 지원금 협약)이 채워질 때까지 뽑지 않는다. {{R.leadGate['기본'].leadFrom ? `계산에서 기본 가정은 ${R.leadGate['기본'].leadFrom}에 뽑는다.` : `계산에서는 2029-12까지 채워지지 않는다(석 달 월평균은 가장 높을 때 기본 ${man(R.leadGate['기본'].best)}).`}} 이주(2027-07) 뒤 유호님 시간은 고정 일로 거의 다 차서 광고 제작은 남는 시간이 생기는 달에만 돈다([06](06_SHIFT.md) 8절). 담당자를 2027-07에 뽑았다면(비교 판) 담당자 인건비와 전주 사무실(월 {{man(I.company.krLead.officeKRW)}})을 PULSE와 SHIFT가 일한 시간대로 나눠 져 광고 제작 줄이 초반에 마이너스이고, 2029 영업이익은 {{eok(R.withLead['기본'].years[2029].ebitda)}}(지금 {{eok(DY('기본',2029).ebitda)}}), PULSE 광고 이익은 2029년 {{eok(R.withLead['기본'].years[2029].pulseAdsProfit)}}(지금 {{eok(DY('기본',2029).pulseAds.profit)}})이다. PULSE 광고만 0원이면 2029 영업이익이 {{eok(sens('PULSE 광고만 0원').ebitda2029)}}이다.
 
 **가장 큰 손잡이는 월 정기 묶음이다.** 시험 묶음·전속 없이 입구 상품과 프로젝트만 하면 2029 영업이익이 {{eok(DY('기본',2029).ebitda - sens('PULSE 정기 묶음').ebitda2029)}} 준다.
 
@@ -74,7 +74,7 @@
 
 - 대표 몫은 일의 30%(연출·고객 소통)로 봤다. 나머지는 한국 프리랜서(2027-07 전)와 울란바토르 제작팀(2027-10~)에 맡긴다.
 - 일의 양: 시험 묶음 한 고객 월 20시간, 브랜드필름 한 건 30시간, 입구 상품 한 건 2.5시간.
-- 한국 담당자는 2027-07에 두 조건으로 뽑는다(README 14절 5): 2027-04~06 PULSE·SHIFT 매출 월평균 150만원(기본 가정 약 {{man(R.leadCheck['기본'])}}) + 2027 상반기 지원금 협약. 이주 뒤 PULSE·SHIFT는 담당자가 맡는다. 이 조건은 광고 제작·SHIFT 매출로만 잰다(WORLD는 빼고).
+- 한국 담당자는 조건이 채워질 때까지 뽑지 않는다(10-22 유호님, README 9절·13절): 2027-04~06부터 석 달씩 이어 재서 PULSE 광고·SHIFT 매출 월평균 {{man(I.company.krLead.gate.avgKRW)}}을 넘고 2027 상반기 지원금 협약이 됐으면 그다음 달에 뽑는다. 2027-04~06 월평균은 기본 가정 약 {{man(R.leadCheck['기본'])}}이다. 뽑기 전에는 PULSE를 유호님 남는 시간(대표 몫 30%)과 울란바토르 제작팀(맡길 수 있는 70%)으로만 하고, 뽑은 뒤에는 담당자가 맡는다. 이 조건은 광고 제작·SHIFT 매출로만 잰다(WORLD는 빼고).
 - WORLD 개발은 대표 시간의 고정 일(월 30~50시간)로 셌다.
 
 ## 6. WORLD 구독(#30)
@@ -116,7 +116,7 @@
 
 ## 10. 멈출 때
 
-- 2027-09까지 시험 묶음 정기 고객이 0곳이면, 정기 묶음 영업을 멈추고 입구 상품·프로젝트만 남긴다. 담당자 시간은 SHIFT 도입으로 돌린다.
+- 2027-09까지 시험 묶음 정기 고객이 0곳이면, 정기 묶음 영업을 멈추고 입구 상품·프로젝트만 남긴다. 담당자가 있으면 그 시간은 SHIFT 강의·자동화로 돌린다.
 - 무료 시안 → 계약 비율이 석 달 동안 10%를 못 넘으면 무료 시안을 멈추고 증거 사례를 하나 더 만든다.
 - 「같은 얼굴」이 깨진 납품이 한 번이라도 나오면 그 모델은 LoRA를 다시 검증하기 전에는 팔지 않는다.
 - WORLD 사용자 1명 AI 비용이 구독료의 40%를 넘으면 제공량을 고친다.
