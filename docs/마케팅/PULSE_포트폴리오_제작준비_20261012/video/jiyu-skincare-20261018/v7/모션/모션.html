@@ -15,6 +15,9 @@
 @font-face { font-family: 'SUIT'; src: url('../../../../../../브랜드_폰트/SUIT/SUIT-Medium.otf'); font-weight: 500; }
 @font-face { font-family: 'Inter Tight'; src: url('../../../../../../브랜드_폰트/InterTight/InterTight-Medium.ttf'); font-weight: 500; }
 @font-face { font-family: 'DM Mono'; src: url('../../../../../../브랜드_폰트/DM_Mono/DMMono-Regular.ttf'); font-weight: 400; }
+/* 서체 시안(10-22)용 — 이 PC에 깔린 가변 글꼴(SIL OFL) */
+@font-face { font-family: 'Noto Serif KR'; src: url('file:///C:/Windows/Fonts/NotoSerifKR-VF.ttf'); font-weight: 200 900; }
+@font-face { font-family: 'Noto Sans KR'; src: url('file:///C:/Windows/Fonts/NotoSansKR-VF.ttf'); font-weight: 100 900; }
 :root { --ink: #34342F; --paper: #F7F4EE; }
 html, body { margin: 0; background: transparent; }
 #stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; }
@@ -56,6 +59,19 @@ const fadeOut = (t, t1) => (t1 == null ? 1 : 1 - clamp((t - (t1 - OUT)) / OUT));
 const ink = c => (c === 'paper' ? '#F7F4EE' : '#34342F');
 const rise = (s, e) => { s.style.transform = `translateY(${(1 - e) * 105}%)`; };   // 가려진 줄 안에서 아래 → 제자리
 const lineOf = (parent, cls, txt) => { const l = el('div', 'line'), s = el('span', cls, txt); l.appendChild(s); parent.appendChild(l); return s; };
+// 서체 시안(10-22, 유호님 「폰트나 모델얼굴같은게 좀 많이 부족해보이는데」 → 「웅 폰트 시안부터 만들어줘」): ?type=<이름> 또는
+// window.M_TYPE(렌더.js --서체). 없으면 지금 판(SUIT) 그대로. 역할마다 글꼴 · 굵기 · 크기(px) · 자간(em)만 바꾼다 —
+// word 큰 단어(약산성 · 무향) · line 작은 줄(세안 뒤 첫 숨) · tag 로크업 문구 · pill AI 알약. 「맑음」 · MALGEUM은 병 라벨과 같은 로고라 그대로.
+const SERIF = "'Noto Serif KR'", SANS = "'Noto Sans KR'";
+const PILL = { f: SANS, w: 400, px: 26, bg: 0.72 };
+const TYPES = {
+  명조: { word: { f: SERIF, w: 300, px: 112, tr: 0.02 }, line: { f: SERIF, w: 400, px: 42, tr: 0.06 }, tag: { f: SERIF, w: 400, px: 34, tr: 0.08 }, pill: PILL },
+  고딕: { word: { f: SANS, w: 200, px: 104, tr: 0.06 }, line: { f: SANS, w: 300, px: 38, tr: 0.14 }, tag: { f: SANS, w: 300, px: 32, tr: 0.14 }, pill: PILL },
+  섞음: { word: { f: SERIF, w: 300, px: 112, tr: 0.02 }, line: { f: SANS, w: 300, px: 36, tr: 0.16 }, tag: { f: SANS, w: 300, px: 30, tr: 0.16 }, pill: PILL },
+};
+const TYPE = TYPES[Q.get('type') || window.M_TYPE] || null;
+const roleOf = c => (c.font === 'inter' ? 'mark' : (c.size || 36) >= 100 ? 'word' : 'line');
+const typeset = (node, r) => { if (r) Object.assign(node.style, { fontFamily: r.f, fontWeight: String(r.w), fontSize: r.px + 'px', letterSpacing: (r.tr || 0) + 'em' }); };
 
 // 빌더: 큐 하나의 뿌리(.cue)를 무대에 붙이고, 시각 t를 받아 그리는 함수를 돌려준다
 const builders = {
@@ -66,6 +82,7 @@ const builders = {
       letterSpacing: (c.track || 0) + 'em', lineHeight: '1.12' });
     if (c.align === 'center') Object.assign(box.style, { left: '0', right: '0', textAlign: 'center', paddingLeft: (c.track || 0) + 'em' });
     else box.style.left = c.x + 'px';
+    typeset(box, TYPE && TYPE[roleOf(c)]);
     const s = lineOf(box, null, c.text);
     root.appendChild(box);
     return t => {
@@ -78,6 +95,8 @@ const builders = {
     Object.assign(box.style, { position: 'absolute', left: (c.x ?? 65) + 'px', top: (c.y ?? 281) + 'px', padding: '10px 22px 11px',
       borderRadius: '999px', background: 'rgba(255,255,255,0.85)', color: '#3C3C3A', fontFamily: "'SUIT'", fontWeight: '500',
       fontSize: (c.size || 34) + 'px', whiteSpace: 'nowrap' });
+    const r = TYPE && TYPE.pill;
+    if (r) { typeset(box, r); Object.assign(box.style, { background: `rgba(255,255,255,${r.bg})`, padding: '8px 18px 9px' }); }
     root.appendChild(box);
     return t => { box.style.opacity = Math.min(clamp((t - c.t0) / 0.25), fadeOut(t, c.t1)); };
   },
@@ -139,6 +158,7 @@ const builders = {
     if (c.size) word.style.fontSize = c.size + 'px';
     const rule = el('div', 'rule'); rule.style.background = ink(c.color); box.appendChild(rule);
     const tag = lineOf(box, 'tag', c.tag || '세안 뒤 첫 숨, 맑게');
+    if (TYPE && TYPE.tag) { typeset(tag, TYPE.tag); tag.style.paddingLeft = TYPE.tag.tr + 'em'; }   // 자간만큼 왼쪽을 채워 가운데를 맞춘다
     root.appendChild(box);
     return t => {
       rise(word, outQuint((t - c.t0) / IN));
@@ -179,7 +199,11 @@ window.seek = t => {
     if (on) draw(t);
   }
 };
-document.fonts.ready.then(() => { window.seek(0); window.ready = true; });
+// 쓸 글꼴을 미리 다 불러 둔다 — 0초엔 글자가 없어 글꼴을 아직 안 부르고, 큰 가변 글꼴(명조 24MB)은 시각을 옮겨 찍을 때까지
+// 다 오지 않아 대체 글꼴로 찍혔다(10-22 서체 시안 첫 판)
+const fontsToLoad = ["600 100px 'SUIT'", "500 36px 'SUIT'", "500 30px 'Inter Tight'", ...(TYPE ? Object.values(TYPE).map(r => `${r.w} ${r.px}px ${r.f}`) : [])];
+Promise.all(fontsToLoad.map(f => document.fonts.load(f, '맑음 MALGEUM'))).then(() => document.fonts.ready)
+  .then(() => { window.seek(0); window.ready = true; });
 </script>
 </body>
 </html>

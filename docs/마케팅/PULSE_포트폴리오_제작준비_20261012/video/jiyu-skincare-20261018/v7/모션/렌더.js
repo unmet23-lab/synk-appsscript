@@ -2,6 +2,7 @@
 //   node 렌더.js <큐.json> <출력 폴더> [--초 15] [--보기 0.6,2.0,13.2 --bg <바탕 그림>]
 //   → <출력 폴더>/%04d.png (투명 바탕 1080×1920 · 24fps) — 편집에서 화면 위에 얹는다
 //   --보기: 그 시각들만 바탕 그림 위에 찍어 한 장(_보기.jpg)으로 모은다(모양 확인용, 프레임은 안 찍음)
+//   --서체 <시안>: 모션.html의 서체 시안(명조 · 고딕 · 섞음)으로 찍는다(없으면 지금 판 SUIT, 10-22)
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -30,6 +31,7 @@ fs.mkdirSync(outDir, { recursive: true });
   const browser = await chromium.launch({ channel: 'chrome', args: ['--allow-file-access-from-files', '--force-color-profile=srgb'] });
   const page = await browser.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1 });
   await page.addInitScript(d => { window.M_CUES = d; }, cues);
+  if (opt('--서체')) await page.addInitScript(d => { window.M_TYPE = d; }, opt('--서체'));
   page.on('console', m => { if (m.type() === 'error') console.log('페이지 오류:', m.text()); });
   const look = opt('--보기');
   const bg = opt('--bg');
