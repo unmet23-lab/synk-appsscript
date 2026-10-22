@@ -31,4 +31,14 @@ function 되살리지않는옛자료(rel, 왜) {
   return `이 체크아웃에 없다(빈 폴더 포함) — ${rel} (${왜} · 지운 옛 로컬 자료는 되살리지 않는다, 10-19)`;
 }
 
-module.exports = { CI인가, CI에없는로컬자료, 되살리지않는옛자료 };
+/** 이번 push로 처음 들어가는 파일(저장소 뿌리 기준) — 바로올리기가 push 전 시험(tools/관련시험.js·tools/짝검사.js)에
+ *  SYNK_새파일(JSON 배열)로 넘긴다. push 전 작업본에서 그 파일은 아직 추적 밖이라 `git ls-files` 로 훑는 검사가 못 본다
+ *  (10-21 지면폰트 ⑦ 빨강 두 번이 모두 새 지면이었다 — 작업본에서는 초록, CI 에서는 빨강). CI·평소 실행에서는 빈 목록이다. */
+function 이번push새파일() {
+  try {
+    const 값 = JSON.parse(process.env.SYNK_새파일 || '[]');
+    return Array.isArray(값) ? 값.filter((p) => typeof p === 'string' && p && !p.startsWith('..') && !path.isAbsolute(p)) : [];
+  } catch { return []; }
+}
+
+module.exports = { CI인가, CI에없는로컬자료, 되살리지않는옛자료, 이번push새파일 };

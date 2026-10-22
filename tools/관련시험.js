@@ -17,7 +17,8 @@
  *   ③ 글: 시험 글에 바꾼 경로나 파일 이름이 적혀 있으면(흔한 이름은 빼고) — 지도에 없는 새 시험과 지도를 못 받았을 때를 덮는다.
  *   기록 전용 경로(트랙·결정·현장노트 …)만 바꾼 push는 고르지 않는다 — CI도 그 push에는 무거운 검사를 안 띄운다(records-check가 돈다).
  * 돌리기: node --test --test-reporter=tap. 워크트리에서는 CI=1이다(git 밖 로컬 자료를 읽는 시험이 건너뛴다 — 현장노트 시험_화면확인).
- *   공용 작업본에서는 주지 않는다.
+ *   공용 작업본에서는 주지 않는다. 이번 push로 처음 들어가는 파일은 SYNK_새파일로 넘긴다(git ls-files로 훑는 시험이 보게, 10-22).
+ *   원천과 짝 파일(생성물·사본)이 어긋난 push는 이 시험이 아니라 tools/짝검사.js가 먼저 막는다(CI의 시험 밖 단계까지).
  * 지도는 공용 git 폴더 안(<git-common-dir>/synk-관련시험/지도.json)에 두어 저장소에는 안 들어간다. 경로는 모두 저장소 기준이다.
  */
 const { spawnSync } = require('node:child_process');
@@ -249,19 +250,22 @@ function 고르기({ root, 바뀐, 지도 = undefined, 받기 = true }) {
 
 // ── 돌리기 ────────────────────────────────────────────────────────────────────
 
-/** TAP 요약과 깨진 잎 시험(「부모 › 잎」 이름·위치) — tools/lib/tap실패.js. root 기준으로 위치를 줄인다. */
+/** TAP 요약과 깨진 잎 시험(「부모 › 잎」 이름·위치·시험이 찍은 → 안내) — tools/lib/tap실패.js. root 기준으로 위치를 줄인다. */
 function tap읽기(글, root = null) {
   const r = tap실패(글, { root });
-  return { 시험: r.시험, 통과: r.통과, 실패수: r.실패수, 취소: r.취소, 실패: r.실패.map((x) => ({ 이름: x.시험, 위치: x.위치, 파일: x.파일 })) };
+  return { 시험: r.시험, 통과: r.통과, 실패수: r.실패수, 취소: r.취소, 실패: r.실패.map((x) => ({ 이름: x.시험, 위치: x.위치, 파일: x.파일, ...(x.안내 && x.안내.length ? { 안내: x.안내 } : {}) })) };
 }
 
-function 돌리기({ root, 시험, 워크트리 = false, 한도ms = 15 * 60e3 }) {
+/** 새파일: 이번 push로 처음 들어가는 경로 — SYNK_새파일(JSON 배열)로 넘긴다. push 전 작업본에서는 아직 추적 밖이라
+ *  git ls-files로 훑는 시험이 못 본다(10-21 지면폰트 ⑦ 빨강 두 번이 모두 새 지면이었다 — tests/_git밖.js 이번push새파일). */
+function 돌리기({ root, 시험, 워크트리 = false, 한도ms = 15 * 60e3, 새파일 = [] }) {
   if (!시험.length) return { 통과함: true, 시험: 0, 통과: 0, 실패수: 0, 실패: [], 초: 0 };
   const tap = path.join(os.tmpdir(), `synk-관련시험-${process.pid}-${Date.now()}.tap`);
   const env = { ...process.env };
   // node --test 안에서 부르면(시험·훅) 부모 실행기의 표시가 따라와 자식이 TAP 파일 대신 부모에게 결과를 보낸다 — 0건으로 읽힌다.
   delete env.NODE_TEST_CONTEXT;
   if (워크트리) env.CI = '1';
+  if (새파일.length) env.SYNK_새파일 = JSON.stringify(새파일);
   const 시작 = Date.now();
   const r = spawnSync(process.execPath, ['--test', '--test-reporter=tap', `--test-reporter-destination=${tap}`, ...시험],
     { cwd: root, env, encoding: 'utf8', windowsHide: true, timeout: 한도ms, maxBuffer: 64 << 20 });

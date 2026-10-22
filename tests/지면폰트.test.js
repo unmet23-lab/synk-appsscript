@@ -40,13 +40,16 @@ const { execFileSync } = require('node:child_process');
 
 const 루트 = path.resolve(__dirname, '..');
 const 브랜드폰트 = require(path.join(루트, 'tools', 'lib', '브랜드폰트.js'));
-const { CI인가 } = require('./_git밖.js');
+const { CI인가, 이번push새파일 } = require('./_git밖.js');
 
-/** 추적 HTML 전량 = 분모. 작업본에만 있는 파일은 분모가 못 된다(다른 세션의 굽기 중간물이 섞인다). */
+/** 추적 HTML 전량 = 분모. 작업본에만 있는 파일은 분모가 못 된다(다른 세션의 굽기 중간물이 섞인다).
+ *  단, 바로올리기가 push 전에 돌릴 때는 이번 push로 처음 들어가는 지면을 더한다 — 아직 추적 밖이라 git ls-files 에 없다
+ *  (10-21 ⑦ 빨강 두 번이 모두 새 지면이었다 · tests/_git밖.js 이번push새파일). */
 function 추적HTML() {
-  return execFileSync('git', ['-C', 루트, 'ls-files', '-z', '--', '*.html'], { encoding: 'utf8', maxBuffer: 1 << 26 })
-    .split('\0').filter(Boolean)
-    .filter((p) => fs.existsSync(path.join(루트, p)));
+  const 추적 = execFileSync('git', ['-C', 루트, 'ls-files', '-z', '--', '*.html'], { encoding: 'utf8', maxBuffer: 1 << 26 })
+    .split('\0').filter(Boolean);
+  const 새것 = 이번push새파일().filter((p) => p.endsWith('.html'));
+  return [...new Set([...추적, ...새것])].filter((p) => fs.existsSync(path.join(루트, p)));
 }
 
 const 읽기 = (rel) => fs.readFileSync(path.join(루트, rel), 'utf8');
