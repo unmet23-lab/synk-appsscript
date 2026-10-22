@@ -1,8 +1,8 @@
 // Private node agent. Metadata identity; no public admin action or service-account key.
-import {readFile,stat} from 'node:fs/promises';
+import {readFile,stat,realpath} from 'node:fs/promises';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
-import {createServer} from 'node:http';
+import {createServer,request as httpRequest} from 'node:http';
 import {pathToFileURL} from 'node:url';
 import {setTimeout as delay} from 'node:timers/promises';
 import {validateRuntime,validateControlState} from './controller.mjs';
@@ -12,6 +12,10 @@ const check=(v,s)=>{if(!v)throw code(s);};
 const enc=encodeURIComponent;
 const safe=e=>typeof e?.code==='string'&&/^[A-Z0-9_]{1,100}$/.test(e.code)?e.code:e?.name==='TimeoutError'?'NODE_CHECK_TIMEOUT':'NODE_CHECK_FAILED';
 const retryStatus=new Set([408,429,500,502,503,504]);
+// A steady writer reuses its full host evidence (start guards, durable write and
+// SQLite probes, business DB locks, in-container application probe) at most this long.
+export const DEEP_HOST_MS=60000;
+const CONTAINERS=['synk-company-company-1','synk-company-https-1','synk-spaceship-spaceship-1'];
 const transportCodes=new Set(['UND_ERR_CONNECT_TIMEOUT','UND_ERR_HEADERS_TIMEOUT','UND_ERR_BODY_TIMEOUT','UND_ERR_SOCKET','ECONNRESET','ECONNREFUSED','ETIMEDOUT','EAI_AGAIN','ENETUNREACH','EHOSTUNREACH','EPIPE']);
 // The application checks its public Host before the authentication boundary.
 // Keep the connection local; a default loopback Host would return 403, not 401.
@@ -136,11 +140,87 @@ export function commandForNode(state,c,plan,now){
   check(!state.bootAllowed.includes(q.from)&&!state.readyAllowed.includes(q.from),'OLD_WRITER_NOT_REVOKED');return q;
 }
 export function bootAuthorized(state,c,plan){validateControlState(state,plan);check(c.activationAllowed&&state.bootAllowed.length===1&&state.bootAllowed[0]===c.nodeId,'WRITER_NOT_AUTHORIZED');if(state.operation&&state.operation.phase!=='COMPLETE')check(state.operation.to===c.nodeId&&['START_CANDIDATE','VERIFY_CANDIDATE','EXPOSE_CANDIDATE'].includes(state.operation.phase),'WRITER_PHASE');return state.operation?.to===c.nodeId?state.operation.activeEpoch:state.activeEpoch;}
-export function createNodeAgent({config:c,plan,google,host,now=Date.now,verifyPublic,verifyNetwork,cancelHost=async()=>{}}){
-  validateNodeConfig(c,plan);let state=null,lastRead=0,ready=false,alive=false,busy=false,reason='STARTING',epoch=0,guardsAccepted=false,lastRelease=null,stopFailed=false,closing=false,lastRecovery=null,needsRecovery=false;
+function boundedGet(options,limit,timeoutMs){
+  return new Promise((resolve,reject)=>{
+    let answered=false;
+    const req=httpRequest({...options,method:'GET',agent:false,signal:AbortSignal.timeout(timeoutMs)},res=>{
+      answered=true;const parts=[];let bytes=0;
+      res.on('data',part=>{bytes+=part.length;if(bytes>limit){reject(code('LIVE_RESPONSE_TOO_LARGE'));res.destroy();}else parts.push(part);});
+      res.on('error',reject);
+      res.on('close',()=>res.complete?resolve({status:res.statusCode,body:Buffer.concat(parts)}):reject(code('LIVE_RESPONSE_INCOMPLETE')));
+    });
+    // A 101 upgrade or a connection closed without any reply never leaves the probe waiting.
+    req.on('upgrade',(res,socket)=>{socket.destroy();reject(code('LIVE_UNEXPECTED_UPGRADE'));});
+    req.on('close',()=>{if(!answered)reject(code('LIVE_RESPONSE_INCOMPLETE'));});
+    req.on('error',reject);req.end();
+  });
+}
+const parsed=(body,failure)=>{try{return JSON.parse(body.toString('utf8'));}catch{throw code(failure);}};
+export async function dockerInspect(name,{socketPath='/var/run/docker.sock',timeoutMs=3000}={}){
+  const r=await boundedGet({socketPath,path:'/containers/'+enc(name)+'/json',headers:{Host:'docker',Accept:'application/json'}},1_048_576,timeoutMs);
+  check(r.status===200,'LIVE_CONTAINER_MISSING');return parsed(r.body,'LIVE_DOCKER_INVALID');
+}
+export async function appHealth({address,port,host},{timeoutMs=5000}={}){
+  const r=await boundedGet({host:address,port,path:'/api/health',headers:{Host:host,Accept:'application/json'}},4096,timeoutMs);
+  check(r.status===200,'LIVE_APP_NOT_READY');return parsed(r.body,'LIVE_APP_INVALID');
+}
+async function diskDevice(name){
+  const s=await stat(await realpath('/dev/disk/by-id/google-'+name),{bigint:true});check(s.isBlockDevice(),'LIVE_DISK_DEVICE');
+  // glibc major()/minor() for the kernel's 64-bit dev_t encoding.
+  return (((s.rdev&0xfff00n)>>8n)|((s.rdev&0xfffff00000000000n)>>32n))+':'+((s.rdev&0xffn)|((s.rdev&0xffffff00000n)>>12n));
+}
+const privateAddress=v=>{const m=/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(v??''),[a,b]=m?[Number(m[1]),Number(m[2])]:[];return !!m&&m.slice(1).every(x=>Number(x)<=255)&&(a===10||a===172&&b>=16&&b<=31||a===192&&b===168);};
+// Fresh per-tick observation without any child process: the mounted data disk, all
+// three containers read again from the Docker socket, and the application's own
+// readiness at the container address Caddy uses. It never grants authority, and a
+// failure is decided by the full node-host.py check in the same tick.
+export function createLiveProbe(c,{docker=dockerInspect,app=appHealth,mountInfo=()=>readFile('/proc/self/mountinfo','utf8'),device=diskDevice}={}){
+  const items=c.containers;
+  check(Array.isArray(items)&&items.length===CONTAINERS.length&&CONTAINERS.every(n=>items.filter(x=>x?.name===n).length===1)&&items.every(x=>/^sha256:[a-f0-9]{64}$/.test(x.imageId??'')),'LIVE_CONTAINER_CONTRACT');
+  check(c.mount==='/srv/synk'&&/^[a-z][a-z0-9-]{0,62}$/.test(c.diskName??''),'LIVE_MOUNT_CONTRACT');
+  return async function liveProbe(){
+    const [info,disk,...found]=await Promise.all([mountInfo(),device(c.diskName),...items.map(x=>docker(x.name))]);
+    // mountinfo: id parent major:minor root mount-point options [optional...] - type source super-options
+    const mounts=info.split('\n').map(line=>line.split(' ')).filter(row=>row[4]===c.mount);check(mounts.length===1,'LIVE_MOUNT_MISSING');
+    const row=mounts[0],dash=row.indexOf('-',6);check(dash>=6&&row.length===dash+4,'LIVE_MOUNT_SHAPE');
+    check(row[5].split(',').includes('rw')&&!row[dash+3].split(',').includes('ro'),'LIVE_MOUNT_READ_ONLY');check(row[2]===disk,'LIVE_MOUNT_DEVICE');
+    // The whole filesystem, never a bind mount of one of its directories (node-host.py check_mount).
+    check(row[3]==='/','LIVE_MOUNT_SUBTREE');
+    items.forEach((x,i)=>{
+      const v=found[i],s=v?.State??{},health=s.Health?.Status;
+      check(v?.Name==='/'+x.name&&v.Image===x.imageId,'LIVE_CONTAINER_IMAGE');check(v.HostConfig?.RestartPolicy?.Name==='no','LIVE_RESTART_BYPASS');
+      check(s.Running===true&&!s.Paused&&!s.Restarting&&!s.Dead&&(x.name===CONTAINERS[0]?health==='healthy':health===undefined||health==='healthy'),'LIVE_CONTAINER_NOT_READY');
+    });
+    // Same origin, port and readiness rule as node-host.py HEALTH_PROBE_JS, taken from
+    // the container's own environment. No other environment value is kept.
+    const company=found[items.findIndex(x=>x.name===CONTAINERS[0])],env={};
+    for(const entry of company.Config?.Env??[]){const key=/^(SYNK_COMPANY_ORIGIN|SYNK_COMPANY_PORT)=/.exec(entry)?.[1];if(key){check(!(key in env),'LIVE_APP_ORIGIN');env[key]=entry.slice(key.length+1);}}
+    let origin;try{origin=new URL(env.SYNK_COMPANY_ORIGIN);}catch{throw code('LIVE_APP_ORIGIN');}
+    const port=Number(env.SYNK_COMPANY_PORT||4191),networks=Object.values(company.NetworkSettings?.Networks??{});
+    check(['http:','https:'].includes(origin.protocol)&&!origin.username&&!origin.password&&origin.pathname==='/'&&!origin.search&&!origin.hash&&Number.isInteger(port)&&port>=1&&port<=65535,'LIVE_APP_ORIGIN');
+    check(networks.length===1&&privateAddress(networks[0]?.IPAddress),'LIVE_APP_ADDRESS');
+    check((await app({address:networks[0].IPAddress,port,host:origin.host}))?.ready===true,'LIVE_APP_NOT_READY');
+    return true;
+  };
+}
+export function createNodeAgent({config:c,plan,google,host,now=Date.now,clock=()=>performance.now(),verifyPublic,verifyNetwork,cancelHost=async()=>{},liveProbe=null,log=()=>{}}){
+  validateNodeConfig(c,plan);let state=null,lastRead=0,ready=false,alive=false,busy=false,reason='STARTING',epoch=0,guardsAccepted=false,lastRelease=null,stopFailed=false,closing=false,lastRecovery=null,needsRecovery=false,lastDeep=null,deepWall=null,deepShape=null,changes=0,lightCode=null;
   function status(){return {nodeId:c.nodeId,alive:alive&&now()-lastRead<=15000,ready:ready&&!closing&&!stopFailed&&now()-lastRead<=15000,activeEpoch:epoch,releaseSha256:c.releaseSha256,activationAllowed:c.activationAllowed,guardsAccepted,at:now(),reason,stopFailed};}
-  async function confirmedStop(){await host('stop');stopFailed=false;}
+  // Full host evidence never survives a stop, a start or a failed tick.
+  const changed=()=>{changes++;lastDeep=null;};
+  async function confirmedStop(){changed();await host('stop');stopFailed=false;}
+  async function startWriter(){changed();return host('start');}
   async function stopWriter(){if(!c.activationAllowed)return;needsRecovery=true;try{await confirmedStop();}catch{stopFailed=true;}}
+  // Only these fields grant or move write authority; lease renewals do not.
+  const authority=s=>JSON.stringify([s.activeId,s.activeEpoch,s.maintenanceUntil,s.bootAllowed,s.readyAllowed,s.operation,s.command]);
+  async function liveHealth(){
+    try{await liveProbe();if(lightCode!==null){log({event:'SYNK_HA_NODE_LIGHT',code:'LIGHT_RECOVERED'});lightCode=null;}}
+    catch(e){
+      const next=safe(e);if(lightCode!==next){log({event:'SYNK_HA_NODE_LIGHT',code:next});lightCode=next;}
+      // A light failure alone never restarts the writer: the full host check decides.
+      await host('health');
+    }
+  }
   async function refreshAuthority(q){
     const current=await google.readState();check(current,'CONTROL_STATE_MISSING');validateControlState(current.value,plan);
     const fields=['operationId','phase','generation','from','to','diskId','releaseSha256','activeEpoch','nonce','issuedAt'];
@@ -166,7 +246,19 @@ export function createNodeAgent({config:c,plan,google,host,now=Date.now,verifyPu
       // Every promotion host action independently verifies the full release.
       if(lastRelease===null||now()<lastRelease||now()-lastRelease>=60000){await host('release');lastRelease=now();}alive=true;
       if(!c.activationAllowed){ready=false;reason='OBSERVE_ONLY';return;}
-      guardsAccepted=(await host('guards')).guardsAccepted===true;check(guardsAccepted,'GUARDS_NOT_ACCEPTED');
+      // Write authority (control state, boot permission, disk attachment) is checked
+      // on every tick below. The full guards and durable health host path runs on
+      // the first tick, at least every DEEP_HOST_MS, and on every tick with changed
+      // authority, a command, a cloud API intent, a deployment record, an unfinished
+      // operation, maintenance, a pending recovery or an unconfirmed stop. In between,
+      // a steady writer is observed by a fresh light probe; nothing read from Docker
+      // is reused across ticks.
+      const t=now(),shape=authority(state),before=changes;
+      const steady=!state.command&&!state.api&&!state.deployment&&(!state.operation||state.operation.phase==='COMPLETE')&&state.maintenanceUntil<=t&&!needsRecovery&&!stopFailed;
+      // Evidence age is the larger of its monotonic and wall clock ages: neither a
+      // stepped wall clock nor a paused VM stretches it past DEEP_HOST_MS.
+      const deep=!liveProbe||!steady||lastDeep===null||t<deepWall||Math.max(clock()-lastDeep,t-deepWall)>=DEEP_HOST_MS||shape!==deepShape;
+      if(deep){guardsAccepted=(await host('guards')).guardsAccepted===true;check(guardsAccepted,'GUARDS_NOT_ACCEPTED');}
       const owns=state.bootAllowed.includes(c.nodeId);
       if(!owns){await confirmedStop();}
       else{bootAuthorized(state,c,plan);await google.diskOwnership();}
@@ -182,7 +274,7 @@ export function createNodeAgent({config:c,plan,google,host,now=Date.now,verifyPu
           await refreshAuthority(q);bootAuthorized(state,c,plan);await google.diskOwnership();
           await confirmedStop();check(!closing,'AGENT_STOPPING');
           await refreshAuthority(q);bootAuthorized(state,c,plan);await google.diskOwnership();
-          recoveredStart=await host('start');await refreshAuthority(q);check(!closing,'AGENT_STOPPING');
+          recoveredStart=await startWriter();await refreshAuthority(q);check(!closing,'AGENT_STOPPING');
           bootAuthorized(state,c,plan);await google.diskOwnership();await host('health');
           needsRecovery=false;
         }
@@ -191,7 +283,7 @@ export function createNodeAgent({config:c,plan,google,host,now=Date.now,verifyPu
           let evidence;
           if(q.phase==='FENCE_OLD_WRITER')evidence=await host('fence-proof');
           else if(q.phase==='ACCEPT_DATA'){await google.diskOwnership();evidence=await host('accept-data');}
-          else if(q.phase==='START_CANDIDATE'){bootAuthorized(state,c,plan);await google.diskOwnership();evidence={...(recoveredStart??await host('start')),onlyWriter:c.nodeId,activeGeneration:epoch};}
+          else if(q.phase==='START_CANDIDATE'){bootAuthorized(state,c,plan);await google.diskOwnership();evidence={...(recoveredStart??await startWriter()),onlyWriter:c.nodeId,activeGeneration:epoch};}
           else if(q.phase==='VERIFY_CANDIDATE'){bootAuthorized(state,c,plan);await google.diskOwnership();evidence={...await host('health'),...await verifyNetwork(),onlyWriter:c.nodeId,activeGeneration:epoch};}
           else if(q.phase==='EXPOSE_CANDIDATE'){
             bootAuthorized(state,c,plan);check(state.readyAllowed.includes(c.nodeId),'ROUTE_NOT_AUTHORIZED');await host('health');ready=true;
@@ -212,7 +304,7 @@ export function createNodeAgent({config:c,plan,google,host,now=Date.now,verifyPu
         }
       }
       if(owns&&state.readyAllowed.includes(c.nodeId)){
-        try{check(!stopFailed,'STOP_NOT_CONFIRMED');await host('health');}catch(e){
+        try{check(!stopFailed,'STOP_NOT_CONFIRMED');if(deep)await host('health');else await liveHealth();}catch(e){
           ready=false;
           // Recover an authorized owner after a transient control/API failure
           // stopped its stack. Never restart during maintenance or promotion.
@@ -220,13 +312,15 @@ export function createNodeAgent({config:c,plan,google,host,now=Date.now,verifyPu
           lastRecovery=now();await refreshAuthority(null);bootAuthorized(state,c,plan);await google.diskOwnership();
           await confirmedStop();check(!closing,'AGENT_STOPPING');
           await refreshAuthority(null);bootAuthorized(state,c,plan);await google.diskOwnership();
-          await host('start');await refreshAuthority(null);check(!closing,'AGENT_STOPPING');
+          await startWriter();await refreshAuthority(null);check(!closing,'AGENT_STOPPING');
           bootAuthorized(state,c,plan);await google.diskOwnership();await host('health');
         }
         needsRecovery=false;ready=true;
       }
       reason=ready?'READY':owns?'ACTIVE_NOT_EXPOSED':'STANDBY';
-    }catch(e){ready=false;alive=false;reason=safe(e);lastRelease=null;if(!closing)await stopWriter();}
+      // Only a steady tick whose full path passed without any stop or start renews it.
+      if(deep&&steady&&changes===before){lastDeep=clock();deepWall=now();deepShape=shape;}
+    }catch(e){ready=false;alive=false;reason=safe(e);lastRelease=null;lastDeep=null;if(!closing)await stopWriter();}
     finally{if(closing){ready=false;alive=false;}busy=false;finishTick();}
   }
   return {tick,status,shutdown};
@@ -252,7 +346,9 @@ async function main(){
   const localFetch=async()=>{const {stdout}=await exec('docker',['exec','synk-company-company-1','node','-e',LOCAL_AUTH_PROBE_JS],{timeout:12000});return JSON.parse(stdout);};
   const verifyNetwork=async()=>{check((await localFetch('/pulse/api/project')).status===401,'AUTH_BOUNDARY');for(const url of ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest','https://www.google.com/generate_204']){const r=await fetch(url,{redirect:'error',signal:AbortSignal.timeout(10000)});check(r.ok,'OUTBOUND_FAILED');await r.body?.cancel();}return {authBoundaryOk:true,outboundOk:true};};
   const verifyPublic=async()=>{const r=await fetch('https://workspace.synk.im/api/health',{redirect:'error',signal:AbortSignal.timeout(10000)});check(r.ok&&(await json(r)).ready===true,'PUBLIC_NOT_READY');return {publicHttpsReady:true,failbackDisabled:plan.automaticFailback===false};};
-  const agent=createNodeAgent({config:c,plan,google,host,verifyNetwork,verifyPublic,cancelHost});
+  // An unexpected container or mount contract keeps the full check on every tick.
+  let liveProbe=null;if(c.activationAllowed)try{liveProbe=createLiveProbe(c);}catch(e){console.log(JSON.stringify({event:'SYNK_HA_NODE_LIGHT',code:safe(e)}));}
+  const agent=createNodeAgent({config:c,plan,google,host,verifyNetwork,verifyPublic,cancelHost,liveProbe,log:value=>console.log(JSON.stringify(value))});
   const healthPublisher=createHealthPublisher({google,status:agent.status,log:value=>console.log(JSON.stringify(value))});
   const server=createServer((req,res)=>{if(req.method!=='GET'||!['/status','/ready'].includes(req.url)){res.writeHead(404);res.end();return;}const s=agent.status();res.writeHead(req.url==='/status'&&s.alive||req.url==='/ready'&&s.ready?200:503,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(s));});
   server.listen(4192,'0.0.0.0');let stopping=false,prior;
