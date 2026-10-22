@@ -48,7 +48,10 @@ export class Store {
     this.key=readFileSync(keyFile);
     if(this.key.length!==32) throw new Error('암호화 키 파일을 확인해 주세요.');
     this.db=new DatabaseSync(join(directory,'company.sqlite'));
-    this.db.exec('PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; PRAGMA foreign_keys=ON;');
+    // secure_delete=ON: every write zeroes the cells and the whole pages it frees, so a deleted row (an erased inquiry) leaves no copy
+    // on a page that a later merge frees. FAST would leave those pages as they were. A page rebuilt while balancing can still keep
+    // old bytes in its unused middle; only VACUUM clears those (deploy/free-space).
+    this.db.exec('PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; PRAGMA foreign_keys=ON; PRAGMA secure_delete=ON;');
     this.db.exec(`CREATE TABLE IF NOT EXISTS documents (kind TEXT NOT NULL, id TEXT NOT NULL, body TEXT NOT NULL, PRIMARY KEY(kind,id));
       CREATE TABLE IF NOT EXISTS credentials (id TEXT PRIMARY KEY, ciphertext TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS tokens (hash TEXT PRIMARY KEY, purpose TEXT NOT NULL, userId TEXT, body TEXT NOT NULL, expiresAt TEXT NOT NULL);

@@ -140,7 +140,7 @@ test('erasing takes a confirmation, takes back its task and leaves only the row 
   assert.throws(()=>f.service.erase(admin,row.id,{revision:current.revision,token:erasure.token,force:true}),{code:'INQUIRY_REVISION'});
   assert.throws(()=>f.service.erase(f.users.other,row.id,{revision:current.revision,token:erasure.token}),{status:403});
   assert.equal(f.store.count('websiteInquiries'),1);assert.equal(f.counts().message_tasks,1);
-  f.at='2026-10-20T02:03:00.000Z';
+  f.at='2026-10-20T02:03:00.000Z';f.store.db.exec('PRAGMA secure_delete=FAST');// the store sets ON; any other value must come back too
   const done=f.service.erase(admin,row.id,{revision:current.revision,token:erasure.token});
   assert.deepEqual(done,{erased:{id:row.id,erasedAt:'2026-10-20T02:03:00.000Z',task:'removed',wal:'truncated'}});
   assert.equal(f.store.count('websiteInquiries'),0);assert.deepEqual(f.counts(),{messages:0,message_tasks:0,message_send_requests:1},'the task message and its task are gone; the receipt keeps no text');
@@ -149,15 +149,16 @@ test('erasing takes a confirmation, takes back its task and leaves only the row 
   // Only the last revision ever held this draft: the erase zeroed that cell and truncated the WAL, so neither file keeps it.
   assert.equal(statSync(join(f.store.directory,'company.sqlite-wal')).size,0,'the erase truncates the WAL');
   assert.equal(readFileSync(join(f.store.directory,'company.sqlite')).includes(Buffer.from('검토한 답변 초안')),false,'the erased draft is not left in the database file');
-  assert.equal(f.store.db.prepare('PRAGMA secure_delete').get().secure_delete,0,'secure_delete goes back to its earlier value');assert.equal(f.store.db.prepare('PRAGMA busy_timeout').get().timeout,5000,'so does busy_timeout');
+  assert.equal(f.store.db.prepare('PRAGMA secure_delete').get().secure_delete,2,'secure_delete goes back to its earlier value');assert.equal(f.store.db.prepare('PRAGMA busy_timeout').get().timeout,5000,'so does busy_timeout');
   assert.throws(()=>f.service.get(admin,row.id),{status:404});assert.equal(f.service.workspace(admin).items.length,0);
   assert.deepEqual(f.service.erase(admin,row.id,{revision:current.revision,token:erasure.token}),{erased:{id:row.id,erasedAt:'2026-10-20T02:03:00.000Z',task:'none',repeated:true}},'a repeat answers from the record');
   await assert.rejects(f.service.checkErase(admin,row.id,{revision:current.revision}),{status:404});
 });
 
 test('an older draft freed by a later edit is zeroed at that edit, so an erase leaves no earlier revision in free pages',async t=>{
-  // GPT 2차 검수 GA1: a long draft spills into overflow pages; a shorter one frees them. Every row write zeroes what it frees.
-  const f=await fixture(t),admin=f.users.admin;let row=await collected(f);
+  // GPT 2차 검수 GA1: a long draft spills into overflow pages; a shorter one frees them. Every row write zeroes what it frees,
+  // by itself: here the connection has secure_delete off.
+  const f=await fixture(t),admin=f.users.admin;let row=await collected(f);f.store.db.exec('PRAGMA secure_delete=OFF');
   const long='LONG-DRAFT-SECRET-0042 '.repeat(250);assert.ok(long.length<6000);
   row=f.service.update(admin,row.id,{revision:row.revision,replyDraft:long}).item;row=f.service.update(admin,row.id,{revision:row.revision,replyDraft:'짧은 초안'}).item;
   const {erasure}=await f.service.checkErase(admin,row.id,{revision:row.revision});
@@ -266,7 +267,7 @@ test('a task that cannot be taken back keeps the inquiry whole; a pending task g
   assert.throws(()=>f.service.erase(admin,row.id,{revision:row.revision,token:erasure.token}),{code:'INQUIRY_TASK_REMOVE',status:409});
   assert.equal(f.store.count('websiteInquiries'),1);assert.equal(f.store.count(ERASED),0);assert.equal(f.counts().message_tasks,1);
   // The task goes, then the row's transaction fails: the row stays, marked so the screen shows no dead task link.
-  f.removeHook=null;const transaction=f.store.transaction;f.store.transaction=()=>{throw Object.assign(new Error('synthetic disk fault'),{code:'ERR_SQLITE_ERROR'});};
+  f.removeHook=null;f.store.db.exec('PRAGMA secure_delete=OFF');const transaction=f.store.transaction;f.store.transaction=()=>{throw Object.assign(new Error('synthetic disk fault'),{code:'ERR_SQLITE_ERROR'});};
   try{assert.throws(()=>f.service.erase(admin,row.id,{revision:row.revision,token:erasure.token}),{message:'synthetic disk fault'});}finally{f.store.transaction=transaction;}
   assert.equal(f.counts().message_tasks,0);assert.equal(f.service.get(admin,row.id).task.state,'unavailable');assert.equal(f.store.count(ERASED),0);
   assert.equal(f.store.db.prepare('PRAGMA secure_delete').get().secure_delete,0,'secure_delete is put back after a failure too');

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, rm, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { Store, hash } from './store.mjs';
@@ -58,6 +58,22 @@ test('a read scope skips repeated SQL reads yet returns fresh objects and forget
   assert.equal(seen,'done');store.readScope(()=>{store.get('fixture','one');direct('one',{sequence:9});});assert.equal(store.get('fixture','one').sequence,9,'the scope ends with the build');
   direct('one',{sequence:10});assert.equal(store.get('fixture','one').sequence,10,'outside a scope every read reaches SQLite');
   assert.equal(store.readScope(()=>store.readScope(()=>store.get('fixture','one').sequence)),10,'a nested scope just runs');
+});
+test('every write zeroes the cells and whole pages it frees, so deleted rows leave no copy on the pages a merge frees',async t=>{
+  // Kinds share one rowid-ordered table, so rows of one kind sit between rows of others. Deleting most of the others merges leaf
+  // pages, and a page a merge frees still held copies of the rows that moved on. FAST zeroes cells but leaves those pages as they were.
+  const store=await fixture(t),text=i=>'private-fixture-'+String(i).padStart(4,'0')+'-'+'p'.repeat(180);
+  assert.equal(store.db.prepare('PRAGMA secure_delete').get().secure_delete,1,'ON');
+  store.transaction(()=>{for(let i=0;i<1500;i++)store.put(i%5===2?'private':'fixture',String(i),{text:i%5===2?text(i):'o'.repeat(250)});});
+  store.db.prepare('PRAGMA wal_checkpoint(TRUNCATE)').get();
+  store.transaction(()=>{for(let i=0;i<1500;i++)if(i%5!==2&&i%10)store.remove('fixture',String(i));});
+  store.transaction(()=>{for(let i=2;i<1500;i+=5)store.remove('private',String(i));});
+  store.db.prepare('PRAGMA wal_checkpoint(TRUNCATE)').get();
+  const file=await readFile(join(store.directory,'company.sqlite')),size=store.db.prepare('PRAGMA page_size').get().page_size,page=n=>file.subarray((n-1)*size,n*size),pages=[];
+  for(let trunk=file.readUInt32BE(32);trunk;trunk=page(trunk).readUInt32BE(0)){pages.push(page(trunk));
+    for(let j=0;j<page(trunk).readUInt32BE(4);j++){const leaf=page(page(trunk).readUInt32BE(8+4*j));assert.ok(leaf.every(byte=>byte===0),'a freed page is all zeros');pages.push(leaf);}}
+  assert.equal(pages.length,file.readUInt32BE(36),'every free page was read');assert.ok(pages.length>=40,'the deletes merged leaf pages and freed some');
+  assert.equal(pages.some(free=>free.includes('private-fixture-')),false,'no deleted row is left on a free page');
 });
 test('a missing identifier reads as nothing instead of a SQLite binding error',async t=>{const store=await fixture(t);assert.equal(store.get('fixture',undefined),null);assert.equal(store.get('fixture',null),null);assert.doesNotThrow(()=>store.remove('fixture',undefined));store.readScope(()=>assert.equal(store.get('fixture',undefined),null));});
 
