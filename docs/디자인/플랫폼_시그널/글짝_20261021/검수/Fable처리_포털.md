@@ -30,3 +30,14 @@ platform-library-view.mjs의 summary()·nextStep()(총괄 P1 고침)은 손대�
 시험(전 → 후): 계정 영역 556 중 555 → 556 중 555(바탕부터의 world-memory 하나) · 뿌리+공개 준비 도구 459 중 459 → 459 중 459(13b·13c 뒤 관련 파일 66·15개 다시 통과) · PC 앱 335 중 334 → 335 중 334(혜택·내 성향 시험 126개 포함, 바탕부터의 설치 경로 하나). PATH VR 패키지 시험 7개 실패는 이 작업본에 큰 영상이 없어서(ENOENT)·다른 세션의 PATH 변경 때문이며 수첩 변경과 무관. tap: `reports\portal-r4*-tap.txt`.
 
 다시 묶을 것(총괄): `desktop/renderer/platform-continuity.mjs`(account-notebook·platform-library-view·platform-library-recovery 글이 들어감) — `check-account-bundles --build`.
+
+## 배포 뒤 검수(`Fable_포털_공개뒤.md`)의 P3 둘 — 2026-10-22 곁 세션
+
+공개본 계정 라이브러리 모듈 옮김의 검수 폴더: 공용 작업본 `.tmp/검수/library-modules-live-20261022/`(아르곤 1건(반영 1) · Fable 3건(반영 3), 재현되는 P0·P1 0). 기록·도구: [qa/library-modules-live-20261022](../../../../../experiences/synk-account/qa/library-modules-live-20261022/README.md).
+
+| 지적 | 처리 |
+|---|---|
+| [P3-4] 공개본 라이브러리의 즐겨찾기·「이어 쓸 앱」이 `PLATFORM_APP_IDS` 전부, 안내가 상태를 못 가름 | 반영 — 공개본의 자료·계정 노트·라이브러리 계정·보기 모듈을 master 판으로 옮겼다(공개본 `d1bd982`). 옛 판을 되살려 같은 충돌 환경에서 컴파일하면 공개본과 바이트까지 같은 것을 먼저 확인했고, 후보 바이트로 master 시험 110/110. 웹 기본값 시험 셋을 master 시험에 더했다(옛 판은 셋 다 실패). |
+| [P3-1] SYNK TOWN 줄에 입장 조건 없음 | 지금 안 붙임 — 마을 준비 확인(town-entry-r1)이 유호님 승인 대기라 새 입장이 공개 전이고, 앱의 잠금 글은 다리 설계가 둘로 나누기로 한 옛 글이다. 마을 준비 확인을 synk.im/world에 공개하는 차례에 그때 규칙을 같은 줄에 붙인다([결정](../../../../_ops/결정.md) 10-22, 트랙 싱크타운 ② 줄). |
+| [아르곤 A1, P1] 은퇴 앱(리허설·가족 앨범) 메모를 「수정」하면 「이어 쓸 앱」이 비고 저장이 막힘 | 반영 — 공개본·master 둘 다 실제 브라우저에서 재현(시험의 가짜 DOM은 목록에 없는 값도 받아 놓쳤다). 보기 `editorOptions()`가 고치는 메모의 앱을 한 칸 더(이름 없으면 「이전 앱의 메모」), 자료 `edit-note`가 제 앱 유지를 허용. PC 묶음도 다시 지어 다음 PC 판에 실린다. 시험 보기·자료 하나씩. |
+| [Fable F1, P2] 휴대폰 폭에서 「최근에 연 시각도 계정에 저장」 토글이 글자를 덮음(옛 판부터) | 반영 — 라이브러리 CSS 420px 규칙을 `input:where(:not([type=checkbox]))`로 좁히고 `width:auto` 되돌림을 지움. 웹 토글 390px 20 → 40px, PC 생성 CSS도 같이. |

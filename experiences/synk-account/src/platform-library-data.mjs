@@ -56,7 +56,8 @@ export function updatePlatformLibrary(value, action, now = Date.now(),appIds=ACT
   else if (action.type === 'remember') { next.rememberRecent=action.value; if (!action.value) next.recent=[]; }
   else if (action.type === 'clear-recent') next.recent=[];
   else if (action.type === 'note') { if(next.notes.length>=PLATFORM_NOTE_LIMIT)noteLimit();next.notes.unshift({id:globalThis.crypto.randomUUID(),appId:action.id,title:String(action.title||'').trim(),done:false,createdAt:now}); }
-  else if (action.type === 'edit-note') { const row=next.notes.find(row=>row.id===action.noteId);if(!row||!text(action.title,240)||!ACTIVE_PLATFORM_APP_IDS.includes(action.id)&&!(action.id==='partners'&&row.appId==='partners'))invalid();row.title=action.title.trim();row.appId=action.id; }
+  // An explicit edit may keep a note's own app after it left the catalogue (Partners, retired benefits); no note moves into one.
+  else if (action.type === 'edit-note') { const row=next.notes.find(row=>row.id===action.noteId);if(!row||!text(action.title,240)||!ACTIVE_PLATFORM_APP_IDS.includes(action.id)&&action.id!==row.appId)invalid();row.title=action.title.trim();row.appId=action.id; }
   else if (action.type === 'restore-note') { if(!note(action.note)||!Number.isSafeInteger(action.index)||action.index<0||action.index>next.notes.length||next.notes.some(row=>row.id===action.note.id))invalid();if(next.notes.length>=PLATFORM_NOTE_LIMIT)noteLimit();next.notes.splice(action.index,0,structuredClone(action.note)); }
   else if (action.type === 'toggle-note') { const row=next.notes.find(row=>row.id===action.noteId);if(!row)invalid();row.done=!row.done; }
   else if (action.type === 'remove-note') next.notes=next.notes.filter(row=>row.id!==action.noteId);

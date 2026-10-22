@@ -54,6 +54,13 @@ test('only an existing Partners note may retain the retired identifier during an
  assert.throws(()=>updatePlatformLibrary({...make(),notes:[{...note,appId:'world'}]},{type:'edit-note',noteId:'legacy',id:'partners',title:'수정'}));
  assert.equal(updatePlatformLibrary(doc,{type:'edit-note',noteId:'legacy',id:'pulse',title:'옮긴 검토'}).notes[0].appId,'pulse');
 });
+test('a note from a retired benefit keeps its own app during an explicit edit, and no note moves into a retired app',()=>{
+ const note={id:'album',appId:'family-album',title:'보관한 나의 메모',createdAt:1,done:false},doc={...make(),notes:[note]};
+ assert.deepEqual(updatePlatformLibrary(doc,{type:'edit-note',noteId:'album',id:'family-album',title:'고친 메모'}).notes,[{...note,title:'고친 메모'}]);
+ assert.equal(updatePlatformLibrary(doc,{type:'edit-note',noteId:'album',id:'world',title:'옮긴 메모'}).notes[0].appId,'world');
+ for(const id of ['rehearsal','partners'])assert.throws(()=>updatePlatformLibrary(doc,{type:'edit-note',noteId:'album',id,title:'다른 옛 앱'}));
+ assert.throws(()=>updatePlatformLibrary({...make(),notes:[{...note,appId:'world'}]},{type:'edit-note',noteId:'album',id:'family-album',title:'되돌림'}));
+});
 
 test('explicit PULSE shortcut actions fold historical duplicate selections while retaining notes',()=>{
  const note={id:'legacy',appId:'partners',title:'이전 검토',createdAt:1,done:false},doc={...make(),favorites:['partners','pulse','world'],recent:[{id:'partners',at:1,mode:'web'},{id:'pulse',at:2,mode:'client'}],notes:[note]};

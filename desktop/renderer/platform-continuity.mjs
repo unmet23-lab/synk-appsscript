@@ -2063,7 +2063,7 @@ function updatePlatformLibrary(value, action, now = Date.now(), appIds = ACTIVE_
     next.notes.unshift({ id: globalThis.crypto.randomUUID(), appId: action.id, title: String(action.title || "").trim(), done: false, createdAt: now });
   } else if (action.type === "edit-note") {
     const row = next.notes.find((row2) => row2.id === action.noteId);
-    if (!row || !text(action.title, 240) || !ACTIVE_PLATFORM_APP_IDS.includes(action.id) && !(action.id === "partners" && row.appId === "partners")) invalid();
+    if (!row || !text(action.title, 240) || !ACTIVE_PLATFORM_APP_IDS.includes(action.id) && action.id !== row.appId) invalid();
     row.title = action.title.trim();
     row.appId = action.id;
   } else if (action.type === "restore-note") {
@@ -2520,8 +2520,8 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
   function editorOptions(selected) {
     let ids3 = displayIds();
     if (selected === "teacher" && entryIds().includes("teacher")) ids3 = ids3.filter((id2) => id2 !== "messenger").concat("teacher");
-    if (editing?.appId === "partners") ids3 = ids3.concat("partners");
-    return ids3.map((id2) => '<option value="' + id2 + '" ' + (selected === id2 ? "selected" : "") + ">" + names[id2] + "</option>").join("");
+    if (editing && !ids3.includes(editing.appId)) ids3 = ids3.concat(editing.appId);
+    return ids3.map((id2) => '<option value="' + id2 + '" ' + (selected === id2 ? "selected" : "") + ">" + (names[id2] || "이전 앱의 메모") + "</option>").join("");
   }
   function favoriteSelected(id2) {
     return projectPlatformLibrary(doc, { appIds: entryIds() }).favorites.includes(id2);

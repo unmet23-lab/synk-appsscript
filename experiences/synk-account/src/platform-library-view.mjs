@@ -143,8 +143,9 @@ export function mountPlatformLibrary(root, { getHost, ensureReady = async () => 
   function editorOptions(selected) {
     let ids3 = displayIds();
     if (selected === "teacher" && entryIds().includes("teacher")) ids3 = ids3.filter((id2) => id2 !== "messenger").concat("teacher");
-    if (editing?.appId === "partners") ids3 = ids3.concat("partners");
-    return ids3.map((id2) => '<option value="' + id2 + '" ' + (selected === id2 ? "selected" : "") + ">" + names[id2] + "</option>").join("");
+    // 고치는 메모의 앱이 목록에 없으면(옛 Partners·서비스를 마친 앱) 그 앱을 그대로 둘 수 있게 한 칸 더 보인다.
+    if (editing && !ids3.includes(editing.appId)) ids3 = ids3.concat(editing.appId);
+    return ids3.map((id2) => '<option value="' + id2 + '" ' + (selected === id2 ? "selected" : "") + ">" + (names[id2] || "이전 앱의 메모") + "</option>").join("");
   }
   function favoriteSelected(id2) {
     return projectPlatformLibrary(doc, { appIds: entryIds() }).favorites.includes(id2);

@@ -668,3 +668,36 @@ test('retired shortcuts disappear while their existing note text remains editabl
  assert.equal(f.content.querySelector('[data-cloud="open"][data-id="family-album"]'),null);assert.equal(f.content.querySelector('[data-cloud="favorite"][data-id="rehearsal"]'),null);
  clickCloud(f,'remove-note','old');await until(()=>!f.view.hasPending());assert.equal(f.records.get('A').state.notes.length,0);
 });
+// 웹 플랫폼(PC 앱이 아님·앱 목록 기본값): 즐겨찾기와 「이어 쓸 앱」은 지금 쓰는 앱만, 교사는 Workspace로 묶고, 안내는 다음 한 걸음을 말한다.
+const WEB_APPS=[['world','WORLD'],['messenger','Workspace'],['path','PATH'],['pulse','PULSE'],['care','플레저'],['fortune','무료 운세']];
+const libraryDetail=f=>f.root.querySelector('[data-library-detail]').textContent;
+test('web defaults draw one favorite and editor choice per active app, folding teaching into Workspace',async t=>{
+ const f=await fixture(t,{native:false,records:new Map([['A',{revision:1,state:state()}]])});await f.connect();
+ const buttons=f.content.querySelectorAll('[data-cloud="favorite"]'),options=f.content.querySelector('select[name=appId]').querySelectorAll('option');
+ assert.deepEqual(buttons.map(b=>b.dataset.id),WEB_APPS.map(([id])=>id));assert.deepEqual(buttons.map(b=>b.textContent),WEB_APPS.map(([,name])=>'☆ '+name));
+ assert.deepEqual(options.map(o=>o.getAttribute('value')),WEB_APPS.map(([id])=>id));assert.deepEqual(options.map(o=>o.textContent),WEB_APPS.map(([,name])=>name));
+});
+test('saved teacher and Partners favorites show as Workspace and PULSE on the web without rewriting the account',async t=>{
+ const f=await fixture(t,{native:false,records:new Map([['A',{revision:1,state:state(['teacher','partners'])}]])});await f.connect();
+ assert.deepEqual(f.content.querySelectorAll('[data-cloud="favorite"]').filter(b=>b.getAttribute('aria-pressed')==='true').map(b=>b.dataset.id),['messenger','pulse']);
+ assert.deepEqual(f.view.projection().favorites,['messenger','pulse']);assert.equal(f.writes().length,0);assert.deepEqual(f.records.get('A').state.favorites,['teacher','partners']);
+});
+test('the library line names the next step: signed out, signed in before connecting, connected before saving, saving',async t=>{
+ const out=await fixture(t,{native:false,initial:{configured:true,status:'signed-out',signedIn:false,sessionGeneration:1}});out.view.render();
+ assert.equal(libraryDetail(out),'로그인하면 즐겨찾기와 할 일 메모를 계정에 저장해 다른 기기에서도 봐요.');
+ const before=await fixture(t,{native:false});before.view.render();
+ assert.equal(libraryDetail(before),'「계정 라이브러리 연결」을 누르면 즐겨찾기와 할 일 메모를 계정에 저장해 다른 기기에서도 봐요.');
+ const off=await fixture(t,{native:false});await off.connect();assert.ok(off.content.querySelector('[data-cloud="enable"]'));
+ assert.equal(libraryDetail(off),'「계정 저장 켜기」를 누르면 즐겨찾기와 최근 기록을 계정에 저장해 다른 기기에서도 봐요.');
+ off.cloud('enable');await until(()=>off.writes().length===1&&!off.view.hasPending());
+ assert.equal(libraryDetail(off),'다음에 할 일을 메모로 남기면 여기서 바로 이어 가요.');
+});
+test('a note from a retired app is edited in place: its app stays selected under a plain label and the save keeps it',async t=>{
+ const old=state(['care']);old.notes=[{...memo('old'),appId:'family-album',title:'보관한 나의 메모'}];
+ const f=await fixture(t,{native:false,records:new Map([['A',{revision:1,state:old}]])});await f.connect();
+ clickCloud(f,'edit-note','old');
+ const option=f.content.querySelector('select[name=appId]').querySelector('option[selected]');
+ assert.equal(option?.getAttribute('value'),'family-album');assert.equal(option.textContent,'이전 앱의 메모');
+ f.input('보관한 나의 메모(고침)');f.submit();await until(()=>f.writes().length===1&&!f.view.hasPending());
+ assert.deepEqual(f.records.get('A').state.notes.map(row=>[row.appId,row.title]),[['family-album','보관한 나의 메모(고침)']]);
+});
