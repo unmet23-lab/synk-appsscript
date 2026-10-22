@@ -148,6 +148,13 @@ if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
     if(command==='plan'){const result=await plan({commits:argument('commits').split(','),remote});const body=JSON.stringify(result,null,1)+'\n';writeFileSync(argument('out'),body,{flag:'wx'});return {plan:argument('out'),sha256:sha256(Buffer.from(body)),base:result.base,next:result.expectId,changed:result.changed,imageOnly:result.imageOnly,skipped:result.skipped};}
     if(command==='apply'){const body=readFileSync(argument('plan'));if(sha256(body)!==argument('sha256'))throw Error('PLAN_SHA_MISMATCH');return apply(JSON.parse(body),{remote});}
     if(command==='rollback'){const flipped=await remote({op:'flip',to:argument('to'),from:argument('from')},300000);return {flipped,verification:await checkPublic({changed:[],expectId:argument('to')})};}
+    // Retention: read the plan first, then remove exactly what that plan hash names (README 3절).
+    if(command==='prune-plan'||command==='prune'){
+      const keep=Number(argument('keep')||5);if(!Number.isInteger(keep)||keep<1)throw Error('KEEP_REQUIRED');
+      if(command==='prune-plan')return remote({op:'prune-plan',keep});
+      const planSha256=argument('plan-sha256');if(!/^[a-f0-9]{64}$/.test(planSha256||''))throw Error('PLAN_SHA256_REQUIRED');
+      return remote({op:'prune',planSha256,keep},300000);
+    }
     throw Error('EXPLICIT_COMMAND_REQUIRED');
   })().then(value=>console.log(JSON.stringify(value))).catch(error=>{console.error(JSON.stringify({error:error.message,...(error.verification?{verification:error.verification,rollback:error.rollback}:{})}));process.exitCode=1;});
 }

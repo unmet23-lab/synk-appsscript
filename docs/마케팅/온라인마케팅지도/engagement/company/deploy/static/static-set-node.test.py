@@ -167,6 +167,83 @@ class StaticSetNode(unittest.TestCase):
             with self.assertRaises(Refused):
                 validate({**good, **change})
 
+    def test_prune_keeps_the_current_set_and_the_newest_five_and_needs_the_same_plan(self):
+        self.node.ensure_root()
+        clock, ids = [1792560000], []
+        self.node.clock = lambda: clock[0]
+        rel = COMPANY + '/public/app.js'
+        for n in range(8):
+            clock[0] += 60
+            body = ('set %d' % n).encode()
+            set_id, created = self.node.write_set({rel: ((lambda b: (lambda dest: dest.write_bytes(b)))(body), None)}, None, {'kind': 'test'})
+            self.assertTrue(created)
+            ids.append(set_id)
+        main({'op': 'flip', 'to': ids[1]}, self.node)  # an old set is current: it always stays
+        leftover = self.node.sets() / '.work-0123456789ab'
+        leftover.mkdir()
+        (leftover / 'half').write_bytes(b'x')
+        plan = main({'op': 'prune-plan'}, self.node)
+        self.assertEqual(plan['kept'], [ids[1]] + list(reversed(ids[3:])))
+        self.assertEqual(sorted(r['id'] for r in plan['remove']), sorted([ids[0], ids[2], '.work-0123456789ab']))
+        manifests = sum((self.node.sets() / i / 'manifest.json').stat().st_size for i in (ids[0], ids[2]))
+        self.assertEqual(plan['freedBytes'], len(b'set 0') + len(b'set 2') + len(b'x') + manifests)  # files linked nowhere else
+        with self.assertRaises(Refused) as caught:
+            main({'op': 'prune', 'planSha256': '0' * 64}, self.node)
+        self.assertEqual(str(caught.exception), 'PRUNE_PLAN_CHANGED')
+        done = main({'op': 'prune', 'planSha256': plan['planSha256']}, self.node)
+        self.assertEqual(sorted(done['removed']), sorted([ids[0], ids[2], '.work-0123456789ab']))
+        self.assertEqual(sorted(p.name for p in self.node.sets().iterdir()), sorted([ids[1]] + ids[3:]))
+        self.node.verify(ids[1])
+        self.assertEqual(main({'op': 'prune-plan'}, self.node)['remove'], [])
+
+    def test_a_set_that_was_live_recently_outlives_newer_sets_that_never_were(self):
+        self.node.ensure_root()
+        clock, ids = [1792560000], []
+        self.node.clock = lambda: clock[0]
+        rel = COMPANY + '/public/app.js'
+        for n in range(7):
+            clock[0] += 60
+            ids.append(self.node.write_set({rel: ((lambda b: (lambda dest: dest.write_bytes(b)))(('s%d' % n).encode()), None)}, None, {'kind': 'test'})[0])
+        clock[0] += 60
+        main({'op': 'flip', 'to': ids[0]}, self.node)  # rollback to the oldest set
+        clock[0] += 60
+        main({'op': 'flip', 'to': ids[6], 'from': ids[0]}, self.node)  # then a new set goes live
+        plan = main({'op': 'prune-plan'}, self.node)
+        self.assertIn(ids[0], plan['kept'])  # the set to roll back to is still there
+        self.assertEqual([r['id'] for r in plan['remove']], [ids[1]])
+
+    def test_files_linked_only_between_removed_sets_count_as_freed(self):
+        self.node.ensure_root()
+        clock = [1792560000]
+        self.node.clock = lambda: clock[0]
+        a, b = COMPANY + '/public/a.js', COMPANY + '/public/b.js'
+        write = lambda body: (lambda dest: dest.write_bytes(body))
+        first = self.node.write_set({a: (write(b'AAAA'), None), b: (write(b'B1'), None)}, None, {'kind': 'test'})[0]
+        clock[0] += 60
+        source = self.node.sets() / first / 'docs' / '마케팅' / '온라인마케팅지도' / 'engagement' / 'company' / 'public' / 'a.js'
+        second = self.node.write_set({a: ((lambda dest: os.link(source, dest)), None), b: (write(b'B2'), None)}, None, {'kind': 'test'})[0]
+        for n in range(5):  # no current set here: the five newest stay, the two old ones go
+            clock[0] += 60
+            self.node.write_set({a: (write(('new %d' % n).encode()), None)}, None, {'kind': 'test'})
+        plan = main({'op': 'prune-plan'}, self.node)
+        self.assertEqual(sorted(r['id'] for r in plan['remove']), sorted([first, second]))
+        manifests = sum((self.node.sets() / i / 'manifest.json').stat().st_size for i in (first, second))
+        self.assertEqual(plan['freedBytes'], len(b'AAAA') + len(b'B1') + len(b'B2') + manifests)
+
+    def test_prune_plan_on_a_node_without_sets_is_empty_and_creates_nothing(self):
+        plan = main({'op': 'prune-plan'}, self.node)
+        self.assertEqual((plan['remove'], plan['kept']), ([], []))
+        self.assertRegex(plan['planSha256'], '^[a-f0-9]{64}$')
+        self.assertEqual(main({'op': 'prune', 'planSha256': plan['planSha256']}, self.node)['removed'], [])
+        self.assertFalse(self.node.root.exists())
+        for bad in ({'op': 'prune'}, {'op': 'prune', 'planSha256': 'x'}):
+            with self.assertRaises(Refused) as caught:
+                main(bad, self.node)
+            self.assertEqual(str(caught.exception), 'PRUNE_PLAN_REQUIRED')
+        with self.assertRaises(Refused) as caught:
+            main({'op': 'prune-plan', 'keep': 0}, self.node)
+        self.assertEqual(str(caught.exception), 'PRUNE_KEEP')
+
 
 if __name__ == '__main__':
     unittest.main()

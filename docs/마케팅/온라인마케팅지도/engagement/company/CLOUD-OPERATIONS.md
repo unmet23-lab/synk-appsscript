@@ -29,17 +29,17 @@
   - 검수: 아르곤 반영 전 검수 3회를 반영했다(1차 P0 1·P1 7, 2차 P0 1·P1 4 → 모두 반영). 고친 것은 복원 트리 전체 링크 금지, 배포 잠금은 `/proc/locks`로 읽기만, 컨테이너도 감시 아래 돌리고 남은 것 치우기, 증명 앞당김, 경보 우선순위·중복 막기다.
   - **첫 회차 09:37~09:47 KST(10분 45초) 통과:** 묶음 `synk-server-recovery-2026-10-21T14-27-17Z`(release `7f87621f…`, 백업 자료 14:26:36Z)를 network none으로 격리 복원했다. 세션 증명(재무장 기준만큼 엄격), 공개 포트 0, 운영 컨테이너·가드·HA 제어 그대로, 사본 정리, 경보 0을 확인했다. CPU 5분 3초. **이 증명은 10-29 23:26 KST까지 유효하다.**
   - PULSE 글 판의 예비 노드 inert는 이 회차가 끝날 때까지 `QA_BACKGROUND_OPERATION_BUSY`로 기다렸다가 09:49에 돌았다.
-- **가벼운 재무장이 연습 증명을 받는 겹(운영 전):** `.tmp/company-restore-drill-layer-20261022/`(6파일·편집 11).
-  - 부모 묶음과 연습 증명 가운데 백업이 더 새로운 쪽을 쓴다. 연습 증명은 배포 id 대신 백업 시각으로 사슬 줄을 고르고, 검수된 실행기 해시만 받는다.
-  - 사슬 21 도구 사본에 얹은 모의에서 재무장 Node 시험 117/117을 통과했다. 실제 첫 증명을 사슬 21 armed 계약에 대 `drillProofCode`로 판정해 통과했다(사슬 줄 19, 부모 증명 11:03Z보다 새로움).
-  - 아르곤 1차 「반영 불가」(실제 셋 반영, 오탐 둘 근거 기록) → 2차 「그대로 반영」.
-  - **10-29 20:03 KST 뒤 첫 판의 생성기 렌더에 들어 있어야 한다.** 이력 23 세션에 부탁했다.
+- **가벼운 재무장이 연습 증명을 받는 겹(운영 전):** `.tmp/company-restore-drill-layer-20261022/`. 두 부분을 같은 판에 함께 넣는다.
+  - ① 재무장 도구 겹 `layer.json`(6파일·편집 11): 부모 묶음과 연습 증명 가운데 백업이 더 새로운 쪽을 쓴다. 연습 증명은 배포 id 대신 백업 시각으로 사슬 줄을 고르고, 검수된 실행기 해시만 받는다. 사슬 21 도구 사본에 얹은 모의에서 재무장 Node 시험 117/117을 통과했다. 실제 첫 증명을 사슬 21 armed 계약에 대 `drillProofCode`로 판정해 통과했다(사슬 줄 19, 부모 증명 11:03Z보다 새로움). 아르곤 1차 「반영 불가」(실제 셋 반영, 오탐 둘 근거 기록) → 2차 「그대로 반영」.
+  - ② 생성기 편집 `generator-patch.json`(편집 2) + `parent-drill.cjs`: ①을 쓴 판 다음 판의 생성기가 부모 판의 연습 묶음 넷(읽은 기록·실행기 검수·결속·증명)을 다시 본다. 없으면 그 다음 판 생성이 `PARENT_DR_BUNDLE_FOLDER`로 멈춘다. 시험 5개(실제 증명 바이트로 만든 부모 판 폴더 포함), 사슬 22 생성기 꼴에 앵커 둘·문법 확인, 아르곤 「그대로 반영」(지적 0).
+  - **10-29 20:03 KST 뒤 첫 판의 생성기에 둘 다 들어 있어야 한다.** 넣는 것은 그 판 생성기를 만드는 세션 몫이다. 이력 23 세션에 부탁했고 [대기열 문서](../../../../../.tmp/company-ha-release-order-20261020.md)에도 적었다.
 - **회귀와 고침 — 정기 백업의 DR 캡처(10-22):**
   - 증상: 전환 판의 `/static` 마운트 때문에 03:41 KST 정기 백업이 DR 캡처(`/opt/synk/disaster-recovery/4d9200ac…/disaster-capture.py`, 회사 컨테이너 마운트를 정확히 `{/data, /backups}`로만 받음)에서 `UNSUPPORTED_CONTAINER_MOUNT`로 실패했다. 오프사이트 자료 백업은 끝났지만 DR 묶음이 없었고, failed 상태가 다음 판(PULSE 글)의 반영 전 백업을 막았다. 그 판 세션이 찾았다.
   - 고침: 두 노드의 그 파일만 고쳤다(81c9e288 → d846b6ee). 읽기 전용이고 원천이 /srv/synk/static인 `/static`만 받는다. 백업 훅(가드 파일)과 도우미 파일 목록은 그대로이고, 원본은 `/opt/synk/dr-capture-originals/`에 둔다. 아르곤 「그대로 반영」(지적 0).
   - **확인 백업 00:43:56~00:56:28 UTC(09:43~09:56 KST, 12분 32초) 통과:** `OFFSITE_BACKUP_COMPLETE`·`DISASTER_RECOVERY_BACKUP_COMPLETE`, 새 DR 묶음은 지금 판 `8211756493cb…`이다. 기록은 `.tmp/company-dr-capture-static-20261022/`에 있다.
-  - 남는 것: 도우미 폴더 이름(내용 해시)과 바이트가 달라졌다. 무거운 재무장 경로를 다시 쓸 때 `adapter.cjs` CURRENT_HELPER_BUNDLE·`infra_dr_contract.py` CAPTURE 고정값을 맞춰야 한다. 화면 묶음은 DR 묶음에 담기지 않는다(복원된 호스트는 이미지 사본을 냄, 설계대로).
-- **GPT 검수 범위(백엔드):** `226f9bb2f`·`78dd8fbda`·`41ea503b9`·`372f182cc`·`e7cf56266`과 이 커밋(회사 `static-set.mjs`·`server.mjs`, 메신저 `server.mjs`, `deploy/compose.yaml`, `deploy/static/`, `deploy/retention.py`), 그리고 `.tmp/light-release-21-release-20261021/successor-tools/`의 가벼운 재무장 겹(`adapt-21.py` 「가벼운 재무장」 절·`prepare-rearm.cjs`의 `LIGHT`·`make-release-root.py`·`adapt-parallel-fresh.py`). 운영 반영 완료.
+  - 남는 것: 도우미 폴더 이름(내용 해시)과 바이트가 달라졌다. 무거운 재무장 경로는 폴더 이름이 내용 해시(`helperRoot = sha(records)`)이고 capture 해시도 고정이라, 다시 쓰려면 고친 도우미를 새 내용 해시 폴더에 설치하고 백업 훅(가드 파일)을 옮기는 HA 작업이 필요하다 — `adapter.cjs` CURRENT_HELPER_BUNDLE·`infra_dr_contract.py` CAPTURE 고정값만 바꿔서는 안 된다. 화면 묶음은 DR 묶음에 담기지 않는다(복원된 호스트는 이미지 사본을 냄, 설계대로).
+- **화면 묶음 보존 도구(10-22, 운영 전):** `swap.mjs prune-plan`(읽기만) → `prune --plan-sha256 <계획 해시>`. 지금 묶음과 최근에 쓴 5개(바꿔 끼운 기록의 from/to 시각)를 남기고, 남은 작업 폴더도 치운다. 비는 바이트는 지우는 폴더 안에만 링크가 있는 파일만 센다. 잠금 안에서 계획을 다시 뽑아 해시가 같을 때만 지운다. 노드 시험 11/11·바꿔 끼우기 시험 8/8, 아르곤 「고친 뒤 반영」(최근에 쓴 묶음 순서·하드링크 셈·묶음 폴더가 없을 때·인자 검사) → 2차 「그대로 반영」. 운영에서 `prune-plan`을 뽑아 보니(10-22, 읽기만) 묶음 2개(지금 `a8270c62…`, 한 줄 시험 `e841d3ee…`)를 모두 남기고 지울 것 0이었다. `swap.mjs`가 부를 때마다 노드 도구를 실어 보내므로 노드에 따로 설치할 것은 없다. `deploy/SYSTEMD.md` 8행(화면 묶음만 Compose가 폴더를 만들고, 마운트를 바꾸면 DR 캡처 허용 목록도 고친다)도 같이 고쳤다.
+- **GPT 검수 범위(백엔드):** `226f9bb2f`·`78dd8fbda`·`41ea503b9`·`372f182cc`·`e7cf56266`과 이 커밋(회사 `static-set.mjs`·`server.mjs`, 메신저 `server.mjs`, `deploy/compose.yaml`, `deploy/static/`, `deploy/retention.py`), 그리고 `.tmp/light-release-21-release-20261021/successor-tools/`의 가벼운 재무장 겹(`adapt-21.py` 「가벼운 재무장」 절·`prepare-rearm.cjs`의 `LIGHT`·`make-release-root.py`·`adapt-parallel-fresh.py`). 운영 반영 완료. 10-22에 더한 것: `deploy/dr-drill/`(설치 완료), DR 캡처 고침(운영 반영 완료), 연습 겹 두 부분(`layer.json`·`parent-drill.cjs`·`generator-patch.json`, 운영 전), 화면 묶음 보존 도구(`static-set-node.py`·`swap.mjs`의 `prune-plan`·`prune`, 운영 전).
 
 <a id="workroom-copy-production-20261021"></a>
 ## 작업실 글(트렌드·레퍼런스·제작 데스크) · 2026-10-21 (이력 20)

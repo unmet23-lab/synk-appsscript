@@ -25,6 +25,7 @@ SHA256 = re.compile(r'^[a-f0-9]{64}$')
 COMMIT = re.compile(r'^[a-f0-9]{40}$')
 MAX_FILES = 10000
 MAX_SERVED_BYTES = 2_500_000  # base64 output must stay inside the 4 MiB SSH reply
+KEEP_SETS = 5  # besides the current set (README 3절 보존 표)
 
 
 class Refused(Exception):
@@ -270,6 +271,61 @@ class Node:
             out[rel] = {'from': source, 'release': release, 'base64': base64.b64encode(path.read_bytes()).decode('ascii')}
         return {'status': 'served', 'set': current, 'files': out}
 
+    # Retention: the current set and the `keep` most recently used other sets stay (rollback goes back to a set that
+    # was live, so a flip's `from` and `to` count as use, not only creation); older sets and leftovers of interrupted
+    # writes (`.work-*`) go. Plan and apply both run under the lock, and apply removes only what the same plan hash names.
+    def prune_plan(self, keep=KEEP_SETS):
+        require(isinstance(keep, int) and not isinstance(keep, bool) and keep >= 1, 'PRUNE_KEEP')
+        current, entries, used = self.current_id(), [], {}
+        for row in self.history():
+            if isinstance(row, dict) and isinstance(row.get('at'), int):
+                for key in ('from', 'to'):
+                    if isinstance(row.get(key), str):
+                        used[row[key]] = max(used.get(row[key], 0), row['at'])
+        for path in sorted(self.sets().iterdir()) if self.sets().exists() else []:
+            info = path.lstat()
+            require(stat.S_ISDIR(info.st_mode) and not stat.S_ISLNK(info.st_mode), 'STATIC_SET_ENTRY')
+            if SET_ID.match(path.name):
+                created = int(self.manifest(path.name).get('createdAt') or 0)
+                entries.append({'id': path.name, 'createdAt': created, 'lastUsedAt': max(created, used.get(path.name, 0)), 'leftover': False})
+            else:
+                require(path.name.startswith('.work-'), 'STATIC_SET_ENTRY')
+                entries.append({'id': path.name, 'createdAt': int(info.st_mtime), 'lastUsedAt': int(info.st_mtime), 'leftover': True})
+        sets = sorted((e for e in entries if not e['leftover'] and e['id'] != current), key=lambda e: (e['lastUsedAt'], e['createdAt'], e['id']), reverse=True)
+        kept = ([current] if current else []) + [e['id'] for e in sets[:keep]]
+        remove = sets[keep:] + [e for e in entries if e['leftover']]
+        # The disk gets a file back only when every link to it is in the removed folders (stage hard-links unchanged files).
+        links = {}
+        for row in remove:
+            for p in (self.sets() / row['id']).rglob('*'):
+                if p.is_file() and not p.is_symlink():
+                    info = p.stat()
+                    seen, nlink, size = links.get((info.st_dev, info.st_ino), (0, info.st_nlink, info.st_size))
+                    links[(info.st_dev, info.st_ino)] = (seen + 1, nlink, size)
+        body = json.dumps({'keep': keep, 'current': current, 'kept': kept, 'remove': [r['id'] for r in remove]}, sort_keys=True)
+        return {'status': 'prune-plan', 'current': current, 'keep': keep, 'kept': kept, 'remove': remove,
+                'freedBytes': sum(size for seen, nlink, size in links.values() if seen >= nlink), 'planSha256': hashlib.sha256(body.encode()).hexdigest()}
+
+    def prune(self, plan_sha256, keep=KEEP_SETS):
+        require(isinstance(plan_sha256, str) and re.fullmatch(r'[a-f0-9]{64}', plan_sha256), 'PRUNE_PLAN_REQUIRED')
+        self.owner()
+        if not self.sets().exists():  # nothing to remove, and nothing to create
+            plan = self.prune_plan(keep)
+            require(plan['planSha256'] == plan_sha256, 'PRUNE_PLAN_CHANGED')
+            return {'status': 'pruned', 'removed': [], 'kept': plan['kept'], 'freedBytes': 0}
+        with self.lock():
+            plan = self.prune_plan(keep)
+            require(plan['planSha256'] == plan_sha256, 'PRUNE_PLAN_CHANGED')
+            removed = []
+            for row in plan['remove']:
+                target = self.sets() / row['id']
+                require(row['id'] != self.current_id() and target.parent == self.sets() and not target.is_symlink(), 'PRUNE_PATH')
+                shutil.rmtree(target)  # unlinks links inside without following them
+                removed.append(row['id'])
+            if removed:
+                durable(self.sets(), directory=True)
+        return {'status': 'pruned', 'removed': removed, 'kept': plan['kept'], 'freedBytes': plan['freedBytes']}
+
     def status(self):
         if self.owner_check and not os.path.ismount(self.persistent):
             return {'status': 'not-owner'}
@@ -301,6 +357,14 @@ def main(request, node=None):
     if op == 'verify':
         manifest = node.verify(request['set'])
         return {'status': 'verified', 'set': manifest['id'], 'files': len(manifest['files'])}
+    if op == 'prune-plan':
+        node.owner()
+        if not node.sets().exists():  # an empty plan with a real hash; nothing is created
+            return node.prune_plan(request.get('keep', KEEP_SETS))
+        with node.lock():
+            return node.prune_plan(request.get('keep', KEEP_SETS))
+    if op == 'prune':
+        return node.prune(request.get('planSha256'), request.get('keep', KEEP_SETS))
     raise Refused('EXPLICIT_OPERATION_REQUIRED')
 
 
