@@ -76,6 +76,13 @@ T = {
     "band": 1.0,           # P1 · P6 훑는 빛 띠 세기
     "p1_key_w": 0.9,       # P1 키 폭(m) — 0.18은 맑은 부분에 칼같은 흰 막대 202, 0.9에서 126 · 폭 89px
     "p9_key_w": 0.35,      # P9 키 폭(m) — 좁은 키는 맑은 부분에 흰 막대
+    "soft_grow": 1.4,      # P1 키 반사판(soft_key) 크기 — 키의 1.4배(10-22 다듬기: 면광 키는 맑은 부분에 칼같은 칼날 · 유령을 비췄다)
+    "soft_sigma": 0.25,    # 그 판의 가로 가우스 폭(판 폭 대비) — 가장자리에서 0으로 녹는다
+    "soft_sigma_y": 0.25,  # 세로 가우스 폭(판 높이 대비), 가운데 위쪽 — 뚜껑 · 서리가 비치는 쪽
+    "soft_sigma_dn": 0.12, # 가운데 아래쪽 — 맑은 부분은 판 아래쪽만 비치고 그 끝을 돌 받침 앞 모서리가 칼같이 자른다(0.25에서 1 → 60이 4px)
+    "soft_gain": 1.65,     # 판 가운데 밝기(1.2 = 같은 키 면광과 같은 밝기, 진단 렌더) — 1.2는 뚜껑 평균 168 → 135로 어두웠다
+    "p6_ink_spec": 0.03,   # P6만 잉크 반광 — 0.06은 훑는 빛이 지날 때 「맑」이 49 → 63~75로 들떴다(Fable P3)
+    "p6_ink_dark": 0.42,   # P6만 잉크 바탕 — 들뜸은 반광보다 정면을 지나는 훑는 빛의 확산광 몫: 21장 「맑」 최소 67(반광만 줄이면 63) → 52
     "key_w": 0.18,         # 키 소프트박스 폭(m) — 0.45는 맑은 아랫부분에 넓은 흰 띠가 져 뿌옇게 보였다
     "fill": 1.6,
     "back": 1.0,
@@ -621,6 +628,35 @@ def card(name, size, loc, target, strength, rgb=(1.0, 0.97, 0.93)):
     return ob
 
 
+def soft_key(key):
+    """키(면광)의 반사 · 굴절을 맡는 그라데이션 반사판 — 제품 사진에서 소프트박스 가장자리를 녹이는 것(10-22 다듬기).
+    면광은 가장자리가 칼같아, 맑은 유리에 비친 키(겉면 반사 칼날 · 병 안에서 한 번 꺾여 나온 유령)가 칼같이 섰다(Fable P3).
+    같은 자리에 키의 soft_grow배 판을 두고 가운데에서 가우스로 0까지 빛나게 한다. 키는 확산만 남긴다 — 서리의 우윳빛은
+    키의 확산광이라 그대로다. 판은 화면 · 확산 · 그림자에 안 보이고 병만 비춘다. 돌려주는 값: 판, 세기(키 에너지를 움직이는 컷은 같이)."""
+    w, h = key.data.size * T["soft_grow"], key.data.size_y * T["soft_grow"]
+    m, n, l, out = new_mat(key.name + "_반사판")
+    tc, sep = obj_xyz(n, l)
+    gx = math_node(n, l, "DIVIDE", sep.outputs["X"], w * T["soft_sigma"])
+    up = math_node(n, l, "GREATER_THAN", sep.outputs["Y"], 0.0)   # 판 좌표 +Y = 위(look_at의 위 축)
+    sy = math_node(n, l, "ADD", h * T["soft_sigma_dn"], math_node(n, l, "MULTIPLY", up, h * (T["soft_sigma_y"] - T["soft_sigma_dn"])))
+    gy = math_node(n, l, "DIVIDE", sep.outputs["Y"], sy)
+    r2 = math_node(n, l, "ADD", math_node(n, l, "MULTIPLY", gx, gx), math_node(n, l, "MULTIPLY", gy, gy))
+    fall = math_node(n, l, "EXPONENT", math_node(n, l, "MULTIPLY", r2, -1.0))
+    em = n.new("ShaderNodeEmission")
+    em.inputs["Color"].default_value = (*key.data.color, 1)
+    k = n.new("ShaderNodeValue")
+    k.name = "세기"
+    k.outputs[0].default_value = T["soft_gain"] * key.data.energy / (key.data.size * key.data.size_y * math.pi)
+    l.new(math_node(n, l, "MULTIPLY", fall, k.outputs[0]), em.inputs["Strength"])
+    l.new(em.outputs[0], out.inputs["Surface"])
+    ob = plane(key.name + "_반사판", w, h, key.location.copy(), (0, 0, 0), m)
+    ob.rotation_euler = key.rotation_euler.copy()
+    ob.visible_camera = ob.visible_diffuse = ob.visible_shadow = False
+    ob.light_linking.receiver_collection = BOTTLE_ONLY
+    key.visible_glossy = key.visible_transmission = False
+    return ob, k.outputs[0]
+
+
 def box(name, size, loc, mat, bevel=0.0):
     bpy.ops.mesh.primitive_cube_add(size=1.0, location=loc)
     ob = bpy.context.active_object
@@ -938,6 +974,9 @@ def cut_p1():
     # 칼같은 흰 막대(202)로 비쳤다(Fable P1)
     key = area("키", T["p1_key_w"], (-0.39, -0.39, 0.12), (0, 0, 0.085), 30.0 * T["key"], warm, size_y=0.7)
     keys(key.data, "energy", [(1, 0.6 * T["key"]), (6, 0.6 * T["key"]), (33, 30.0 * T["key"])])
+    # 넓혀도 키의 반사 가장자리는 칼같았다(Fable 재확인 P3) → 반사 · 굴절은 같은 자리 그라데이션 판이 맡고 키와 같이 켜진다
+    _, sv = soft_key(key)
+    keys(sv, "default_value", [(1, sv.default_value * 0.02), (6, sv.default_value * 0.02), (33, sv.default_value)])
     only_bottle(*rims, top, key)
     # 카메라: 병 꼭대기 높이에서 수평(시프트로 병을 화면 가운데 · 높이 1080px) — 받침 윗면이 12° 비스듬히 보이고, 3% 밀어 들어간다
     cam = camera(100, (0, -0.795, 0.16), (0, 0, 0.16), fstop=8.0, focus=0.77, shift=(0.0, -0.278))
@@ -952,6 +991,9 @@ def cut_p6():
     """P6 라벨 접사(8.0–9.5초 · 36장): 「맑음」 초접사 — 도톰한 인쇄와 서리 결. 첫 0.35초에 초점이 들어오고(흐림 → 또렷),
     세로 빛 띠가 왼쪽 → 오른쪽으로 라벨을 훑는다. 글자는 얹지 않는다(인쇄가 주인공). 1.5% 밀기."""
     S.frame_start, S.frame_end = 1, 36
+    for k in ("ink_spec", "ink_dark"):   # 초접사에선 훑는 빛이 글자 위를 지난다 — 반광은 반으로, 바탕은 조금 짙게(10-22 다듬기)
+        if k not in SET_KEYS:
+            T[k] = T["p6_" + k]
     build_bottle(0.0)
     world(0.03, srgb((150, 140, 128)))
     wall = plane("벽", 1.6, 1.2, (0, 0.30, 0.30), (math.radians(90), 0, 0), plaster_mat("벽", srgb((176, 164, 150))))
@@ -1477,7 +1519,11 @@ def cut_p9():
             for nm, x, e in (("테두리_오른쪽", 0.30, 9.0), ("테두리_왼쪽", -0.30, 6.0))]
     # 받침 높이의 낮은 가로 띠(뒤 오른쪽): 두꺼운 유리 받침의 윗모서리 · 옆면에 밝은 선 — 30mm 받침이 얇은 아크릴 판으로 읽혔다(Fable P9)
     ped_rim = area("받침빛", 0.40, (0.18, 0.30, 0.035), (0, 0, 0.018), 6.0 * T["rim"], (1, 0.96, 0.91), size_y=0.02)
-    only_bottle(key, back, *rims, ped_rim)
+    only_bottle(key, back, *rims)
+    # 받침빛은 받침에만 — 병도 받게 두면 병 맑은 부분 너머로 이 띠가 칼같은 흰 사각으로 비쳤다(Fable 재확인 P3, 10-22 진단)
+    ped_only = bpy.data.collections.new("받침만")
+    ped_only.objects.link(p)
+    ped_rim.light_linking.receiver_collection = ped_only
     bright_room(0.6)
     world(0.35, srgb((236, 228, 216)))
     # 카메라: 0.13m 높이에서 수평 + 시프트 — 뚜껑 윗선 y≈820 · 받침 밑 y≈1750, 위쪽은 벽(글자 자리).

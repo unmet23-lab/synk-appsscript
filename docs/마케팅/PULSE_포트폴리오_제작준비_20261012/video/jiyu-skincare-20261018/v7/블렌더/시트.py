@@ -2,6 +2,7 @@
 #   python 시트.py 룩 [판1]   → synk-vendor/…/v7/블렌더/룩/<판>/_시안비교.jpg · _글자대조.jpg · _부분.jpg
 #   python 시트.py 컷 [판]    → synk-vendor/…/v7/블렌더/_컷시트_<판>.jpg (컷마다 콘티 정지컷 | 블렌더 가운데 장, 맨 앞에 A2 시안)
 #   python 시트.py 흐름       → synk-vendor/…/v7/블렌더/_흐름_<컷>.jpg (컷마다 처음 · 1/4 · 가운데 · 3/4 · 끝)
+#   python 시트.py 전후 [판3]  → synk-vendor/…/v7/블렌더/_전후_<판>.jpg (시험/<컷>_<판>_*/ 옛 판과 지금 판의 같은 장, 고친 자리만)
 # 룩: A2 시안과 정면 · 45도를 같은 높이로, 라벨 원고와 라벨 접사 렌더를 같은 배율로(원고 1px = LABEL_K mm, 접사 1mm = 25.93px),
 # 정면 스틸의 뚜껑 · 라벨 · 바닥을 100%로 잘라 붙인다.
 import glob
@@ -103,7 +104,24 @@ def flows():
         save(row(tiles, labels=[f"{c} {i + 1}/{len(frames)}" for i in idx]), os.path.join(V7, "블렌더", f"_흐름_{c}.jpg"))
 
 
+def before_after(tag):
+    """다듬기 전후(10-22): 옮겨 둔 옛 판(시험/<컷>_<tag>_*/)과 지금 판의 같은 장에서 고친 자리만 잘라 나란히 —
+    P1 32장 맑은 부분 · 뚜껑, P6 21장 훑는 빛이 정면을 지나는 라벨, P9 36장 맑은 부분 · 받침."""
+    spots = {"P1_공개": (32, (330, 400, 750, 1560)), "P6_라벨접사": (21, (0, 160, 1080, 1460)),
+             "P9_팩샷": (36, (330, 780, 760, 1800))}
+    pairs = []
+    for c, (f, box) in spots.items():
+        old = sorted(glob.glob(os.path.join(V7, "블렌더", "시험", f"{c}_{tag}_*")))
+        name = f"{c[:2]}_{f:04d}.png"
+        if not old or not os.path.exists(os.path.join(V7, "블렌더", c, name)):
+            continue
+        a = Image.open(os.path.join(old[0], name)).convert("RGB").crop(box)
+        b = Image.open(os.path.join(V7, "블렌더", c, name)).convert("RGB").crop(box)
+        pairs.append(row([fit_h(a, 900), fit_h(b, 900)], labels=[f"{c} {f}장 · 전", "후"]))
+    save(row(pairs, gap=24), os.path.join(V7, "블렌더", f"_전후_{tag}.jpg"))
+
+
 if __name__ == "__main__":
     mode = sys.argv[1] if len(sys.argv) > 1 else "룩"
     tag = sys.argv[2] if len(sys.argv) > 2 else "판1"
-    {"룩": lambda: look(tag), "컷": lambda: cuts(tag), "흐름": flows}[mode]()
+    {"룩": lambda: look(tag), "컷": lambda: cuts(tag), "흐름": flows, "전후": lambda: before_after(tag)}[mode]()
