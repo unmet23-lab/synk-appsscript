@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>정착 동행 시범 참고 자료 — SYNK PATH</title>
 <!--
-  원고: 전북도 협력 제안서의 참고 자료(운영 방식·정착 지표·개인정보·일정). 첫 메일에 제안서·한 장 요약과 함께 붙인다.
+  원고: 전북도 협력 제안서의 참고 자료(운영 방식·앱 화면 시안·가상 사례·정착 지표·근거·개인정보·일정). 첫 메일에 제안서·한 장 요약과 함께 붙인다.
   내용은 같은 폴더의 제안 초안(2절)·PATH 정착관리 계획(4절·8절)과 맞춘다. 고치면 node docs/PATH_정착관리/제안/굽기.cjs 로 다시 굽는다.
   [ ] 안은 보내기 전에 채울 자리표다.
 -->
@@ -24,6 +24,129 @@ table.kpi td:nth-child(4){ width:18%; }
 .fig figcaption{ margin-top:2.4mm; font-size:3.1mm; color:var(--ink-2); }
 table.case td:first-child{ width:17%; font-weight:600; color:var(--ink); }
 h2.np{ break-before:page; page-break-before:always; margin-top:0; }
+/* 4절 앱 화면 시안 — 플랫폼 시그널 밤 판(PATH 초록 포스터 + 펠트 물건, 1px 계기판, 흰 알약은 화면마다 하나).
+   휴대폰 360px·PC 1120px 판으로 짜고 zoom으로 줄여 찍는다(휴대폰 51mm, PC 169mm). */
+.apps{ display:flex; justify-content:space-between; margin-top:3.6mm; break-inside:avoid; page-break-inside:avoid; }
+.apps figure{ width:51mm; margin:0; }
+.desk{ margin:5.2mm 0 0; break-inside:avoid; page-break-inside:avoid; }
+.apps figcaption, .desk figcaption{ margin-top:2.4mm; font-size:2.95mm; line-height:1.55; color:var(--ink-2); }
+.apps figcaption b, .desk figcaption b{ color:var(--ink); font-weight:700; }
+.ph{ padding:1.1mm; border-radius:7mm; background:#1A1B20; box-shadow:0 0 0 .2mm #34353B, 0 1.4mm 3.6mm rgba(0,0,0,.16); }
+.pc{ padding:1.1mm; border-radius:3.4mm; background:#1A1B20; box-shadow:0 0 0 .2mm #34353B, 0 1.4mm 3.6mm rgba(0,0,0,.16); }
+.scr, .pcs{ position:relative; overflow:hidden; background:#060709; color:#FAFAF9; font-family:'Inter Tight','SUIT Variable',sans-serif;
+  font-weight:450; line-height:1.42; letter-spacing:-.005em; word-break:keep-all; }
+.scr{ zoom:.51233; width:360px; height:780px; border-radius:42px; font-size:14.5px; }
+.pcs{ zoom:.58652; width:1120px; height:404px; border-radius:16px; font-size:14px; }
+.scr svg, .pcs svg{ display:block; }
+.scr .sb{ display:flex; align-items:center; justify-content:space-between; height:40px; padding:4px 26px 0 32px; font-size:14px; font-weight:600; letter-spacing:.01em; }
+.scr .sb .ic{ display:flex; align-items:center; gap:6px; }
+.scr .ab, .pcs .ab{ display:flex; align-items:center; gap:9px; height:50px; padding:0 18px 0 20px; }
+.scr .ab .brand, .pcs .ab .brand{ font-weight:700; font-size:15px; letter-spacing:.04em; }
+.scr .ab .sep, .pcs .ab .sep{ width:1px; height:14px; background:rgba(255,255,255,.14); }
+.scr .ab .t, .pcs .ab .t{ font-size:14.5px; font-weight:600; color:rgba(250,250,249,.76); }
+.scr .ab .lang{ margin-left:auto; display:inline-flex; align-items:center; height:30px; padding:0 12px; border-radius:999px; background:#121317;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14); font-size:13px; font-weight:550; color:rgba(250,250,249,.76); }
+.scr .ab .back{ margin-left:-8px; width:28px; height:28px; display:grid; place-items:center; }
+.scr .ab svg, .pcs .ab svg, .scr .tab svg, .scr .lock svg, .pcs .lock svg, .scr .send svg{ fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.scr .pos, .pcs .pos{ position:relative; overflow:hidden; border-radius:26px; color:#FFFFFF;
+  background:radial-gradient(120% 85% at 28% -10%,rgba(255,255,255,.16),transparent 58%),linear-gradient(180deg,transparent 55%,rgba(0,0,0,.1)),#526956;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16); }
+.scr .pos{ height:176px; margin:2px 14px 0; }
+.scr .pos.band{ height:104px; }
+.scr .pos .lab, .pcs .pos .lab{ position:absolute; left:18px; top:16px; font-family:'DM Mono','SUIT Variable',monospace; font-size:11.5px; letter-spacing:.08em; color:rgba(255,255,255,.82); }
+.scr .pos .cut, .pcs .pos .cut{ position:absolute; right:14px; top:12px; height:76%; width:auto; transform:rotate(-3deg);
+  filter:drop-shadow(0 12px 14px rgba(0,0,0,.3)) drop-shadow(0 3px 4px rgba(0,0,0,.18)); }
+.scr .pos.band .cut{ height:90%; top:6px; right:18px; }
+.scr .pos .word, .pcs .pos .word{ position:absolute; left:16px; bottom:12px; font-family:'SUIT Variable',sans-serif; font-weight:900; font-size:62px;
+  line-height:.86; letter-spacing:-.055em; white-space:nowrap; }
+.scr .pos.band .word{ font-size:50px; bottom:11px; }
+.scr .pos .chip, .pcs .pos .chip{ position:absolute; right:14px; bottom:14px; display:inline-flex; align-items:center; gap:7px; height:28px; padding:0 12px 0 10px;
+  border-radius:999px; background:rgba(8,9,12,.62); color:#FFFFFF; font-size:13px; font-weight:600; }
+.scr .pos .chip::before, .pcs .pos .chip::before{ content:""; width:6px; height:6px; border-radius:50%; background:#7DB45A; box-shadow:0 0 0 3px rgba(125,180,90,.25); }
+.pcs .pos .chip.alert::before{ background:#F5C445; box-shadow:0 0 0 3px rgba(245,196,69,.22); }
+.scr .bd{ padding:0 14px; }
+.scr .dash, .pcs .dash{ display:grid; grid-template-columns:repeat(3,1fr); border-top:1px solid rgba(255,255,255,.14); border-bottom:1px solid rgba(255,255,255,.075); }
+.scr .dash{ margin:12px 2px 0; }
+.scr .dash div, .pcs .dash div{ padding:9px 0 8px 12px; border-left:1px solid rgba(255,255,255,.075); }
+.scr .dash div:first-child{ border-left:0; padding-left:2px; }
+.scr .dash b, .pcs .dash b{ display:block; font-weight:600; font-size:24px; line-height:1.15; letter-spacing:-.01em; }
+.scr .dash span, .pcs .dash span{ font-size:13px; color:rgba(250,250,249,.58); }
+.scr .sh, .pcs .sh{ display:flex; align-items:center; gap:8px; margin:14px 2px 8px; font-size:13px; font-weight:600; color:rgba(250,250,249,.76); }
+.scr .sh::after, .pcs .sh::after{ content:""; flex:1; height:1px; background:rgba(255,255,255,.075); }
+.scr .sh .k, .pcs .sh .k{ font-family:'DM Mono','SUIT Variable',monospace; font-size:11.5px; letter-spacing:.08em; color:#D3E8BE; }
+.scr .rows, .pcs .rows{ list-style:none; }
+.scr .rows li, .pcs .rows li{ display:flex; gap:12px; align-items:flex-start; padding:12px 14px; border-radius:18px; background:#121317; box-shadow:inset 0 0 0 1px rgba(255,255,255,.075); }
+.scr .rows li + li, .pcs .rows li + li{ margin-top:8px; }
+.scr .rows .txt > b, .pcs .rows .txt > b{ display:block; font-size:15.5px; font-weight:650; color:#FAFAF9; }
+.scr .rows .txt > span, .pcs .rows .txt > span{ display:block; margin-top:1px; font-size:13px; color:rgba(250,250,249,.58); }
+.scr .led, .pcs .led{ flex:none; width:8px; height:8px; margin-top:7px; border-radius:50%; background:#6B6C72; box-shadow:0 0 0 3px rgba(255,255,255,.06); }
+.scr .led.check, .pcs .led.check{ background:#F5C445; box-shadow:0 0 0 3px rgba(245,196,69,.22); }
+.scr .led.ok, .pcs .led.ok{ background:#7DB45A; box-shadow:0 0 0 3px rgba(125,180,90,.25); }
+.scr .led.alert, .pcs .led.alert{ background:#F96859; box-shadow:0 0 0 3px rgba(249,104,89,.24); }
+.scr .pill, .pcs .pill{ display:flex; align-items:center; justify-content:center; height:50px; border-radius:999px; background:#FAFAF9; color:#08090C; font-size:15.5px; font-weight:600; white-space:nowrap; }
+.scr .pill{ margin:16px 0 0; }
+.scr .pill.line, .pcs .pill.line{ background:transparent; color:#FAFAF9; box-shadow:inset 0 0 0 1px rgba(255,255,255,.14); font-weight:550; }
+.scr .tab{ position:absolute; left:14px; right:14px; bottom:14px; height:62px; display:flex; align-items:center; justify-content:space-around; padding:0 7px; border-radius:31px;
+  background:#15161A; box-shadow:inset 0 1px 0 rgba(255,255,255,.13),inset 0 0 0 1px rgba(255,255,255,.075),0 12px 32px rgba(0,0,0,.4); }
+.scr .tab span{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; width:76px; height:48px; border-radius:24px; font-size:13px; font-weight:550; color:rgba(250,250,249,.58); }
+.scr .tab span.on{ background:#2A2B31; color:#FAFAF9; }
+.scr .tab svg{ width:21px; height:21px; }
+.scr .chat{ display:flex; flex-direction:column; gap:10px; padding:14px 14px 0; }
+.scr .note-in{ align-self:center; max-width:86%; text-align:center; font-size:13px; line-height:1.45; color:rgba(250,250,249,.58); margin-bottom:2px; }
+.scr .msg{ max-width:82%; padding:10px 14px 11px; border-radius:20px; font-size:14.5px; line-height:1.45; }
+.scr .msg.me{ align-self:flex-end; background:#2A2B31; border-bottom-right-radius:6px; }
+.scr .msg.in{ align-self:flex-start; background:#121317; box-shadow:inset 0 0 0 1px rgba(255,255,255,.075); border-bottom-left-radius:6px; }
+.scr .who{ display:flex; align-items:center; gap:6px; margin-bottom:3px; font-size:13px; font-weight:650; color:#D3E8BE; }
+.scr .msg .more{ display:inline-flex; align-items:center; height:28px; margin-top:8px; padding:0 11px; border-radius:999px; box-shadow:inset 0 0 0 1px rgba(255,255,255,.14); font-size:13px; font-weight:550; color:rgba(250,250,249,.76); }
+.scr .sys{ align-self:center; display:inline-flex; align-items:center; gap:7px; height:28px; padding:0 12px 0 10px; border-radius:999px; background:#0E0F12;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.075); font-size:13px; color:rgba(250,250,249,.76); }
+.scr .sys::before{ content:""; width:6px; height:6px; border-radius:50%; background:#F5C445; box-shadow:0 0 0 3px rgba(245,196,69,.22); }
+.scr .quick{ display:flex; gap:8px; align-self:flex-start; }
+.scr .quick .pill{ height:40px; margin:0; padding:0 18px; font-size:14.5px; }
+.scr .compose{ position:absolute; left:14px; right:14px; bottom:16px; }
+.scr .lock, .pcs .lock{ display:flex; align-items:center; gap:6px; font-size:13px; color:rgba(250,250,249,.58); }
+.scr .lock{ justify-content:center; margin-bottom:9px; }
+.scr .lock svg, .pcs .lock svg{ width:14px; height:14px; }
+.scr .input{ display:flex; align-items:center; height:50px; padding:0 6px 0 18px; border-radius:25px; background:#121317; box-shadow:inset 0 0 0 1px rgba(255,255,255,.14); font-size:14.5px; color:rgba(250,250,249,.42); }
+.scr .send{ margin-left:auto; display:grid; place-items:center; width:38px; height:38px; border-radius:50%; background:#2A2B31; color:#FAFAF9; }
+.scr .send svg{ width:18px; height:18px; }
+.scr .game{ margin-top:12px; padding:14px 16px; border-radius:20px; background:#121317; box-shadow:inset 0 0 0 1px rgba(255,255,255,.075); }
+.scr .game .gw{ font-size:18px; font-weight:650; }
+.scr .game .gp{ margin-top:2px; font-size:13px; color:rgba(250,250,249,.58); }
+.scr .team{ display:flex; align-items:center; gap:9px; margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,.075); }
+.scr .team b{ font-size:14.5px; font-weight:650; }
+.scr .bib{ flex:none; width:12px; height:12px; border-radius:3px; }
+.scr .faces{ display:flex; margin-left:auto; padding-left:6px; }
+.scr .faces i{ display:grid; place-items:center; width:30px; height:30px; margin-left:-7px; border-radius:50%; box-shadow:0 0 0 2px #121317; font-style:normal; font-size:13px; font-weight:700; color:#08090C; }
+.scr .mix{ margin-top:7px; font-size:13px; color:rgba(250,250,249,.58); }
+.scr .rank{ list-style:none; }
+.scr .rank li{ display:grid; grid-template-columns:24px 20px 1fr auto; align-items:center; height:40px; border-bottom:1px solid rgba(255,255,255,.075); font-size:14.5px; }
+.scr .rank li.me{ color:#D3E8BE; font-weight:650; }
+.scr .rank .no{ font-weight:600; color:rgba(250,250,249,.58); }
+.scr .rank .pt{ font-weight:600; }
+.scr .hint{ margin-top:9px; font-size:13px; color:rgba(250,250,249,.58); }
+.pcs .ab{ height:56px; padding:0 22px; border-bottom:1px solid rgba(255,255,255,.075); }
+.pcs .ab .tag{ margin-left:6px; font-family:'DM Mono','SUIT Variable',monospace; font-size:11.5px; letter-spacing:.08em; color:rgba(250,250,249,.58); }
+.pcs .ab .lock{ margin-left:auto; }
+.pcs .grid{ display:grid; grid-template-columns:268px 1fr 300px; gap:18px; padding:18px 22px 0; }
+.pcs .pos{ height:318px; }
+.pcs .pos .cut{ height:auto; width:54%; top:34px; right:22px; }
+.pcs .pos .word{ font-size:76px; bottom:16px; left:20px; }
+.pcs .pos .chip{ left:20px; right:auto; top:auto; bottom:100px; }
+.pcs .sh{ margin:0 2px 10px; }
+.pcs .rows li{ align-items:center; padding:13px 14px 13px 16px; }
+.pcs .rows li .txt{ flex:1; }
+.pcs .rows .led{ margin-top:0; }
+.pcs .rows .pill{ height:38px; padding:0 16px; font-size:14px; }
+.pcs .dash{ grid-template-columns:1fr 1fr; }
+.pcs .dash div{ padding:12px 0 12px 14px; border-left:1px solid rgba(255,255,255,.075); border-top:1px solid rgba(255,255,255,.075); }
+.pcs .dash div:nth-child(odd){ border-left:0; padding-left:2px; }
+.pcs .dash div:nth-child(-n+2){ border-top:0; }
+.pcs .dash b{ font-size:28px; }
+.pcs .dash b small{ font-size:15px; font-weight:550; color:rgba(250,250,249,.58); }
+.pcs .agg{ display:flex; align-items:flex-start; gap:8px; margin-top:12px; padding:12px 14px; border-radius:14px; background:#0E0F12; box-shadow:inset 0 0 0 1px rgba(255,255,255,.075);
+  font-size:13px; line-height:1.5; color:rgba(250,250,249,.76); }
+.pcs .agg svg{ flex:none; width:14px; height:14px; margin-top:3px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
 </style>
 <!--@PAGED@-->
 </head>
@@ -120,7 +243,116 @@ h2.np{ break-before:page; page-break-before:always; margin-top:0; }
   </li>
 </ul>
 
-<h2 class="np"><span class="n">4</span>한 학생의 첫 30일 — 가상 사례</h2>
+<h2 class="np"><span class="n">4</span>앱 화면 시안 — 학생과 매니저가 보는 화면</h2>
+<p class="note">참여 학생과 매니저가 쓰는 앱의 화면 시안입니다. 화면 속 이름·숫자·일정은 예시이며, 실제 화면은 시범 전에 참여 학생과 함께 다듬습니다.</p>
+<div class="apps">
+  <figure>
+    <div class="ph"><div class="scr" role="img" aria-label="할 일 화면 시안">
+      <div class="sb"><span>08:30</span><span class="ic"><svg width="18" height="12" viewBox="0 0 18 12" fill="#FAFAF9"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg><svg width="27" height="13" viewBox="0 0 27 13"><rect x=".6" y=".6" width="22.8" height="11.8" rx="3.4" fill="none" stroke="rgba(250,250,249,.5)" stroke-width="1.2"/><rect x="2.5" y="2.5" width="15" height="8" rx="1.8" fill="#FAFAF9"/><rect x="24.6" y="4.4" width="1.8" height="4.2" rx=".9" fill="rgba(250,250,249,.5)"/></svg></span></div>
+      <div class="ab"><span class="brand">PATH</span><span class="sep"></span><span class="t">정착 동행</span><span class="lang">한국어 · Монгол</span></div>
+      <div class="pos"><span class="lab">DAY 07 / 30</span><img class="cut" src="그림/할일.webp" alt=""><span class="word">첫 30일</span></div>
+      <div class="bd">
+        <div class="dash"><div><b>2</b><span>끝남</span></div><div><b>2</b><span>오늘</span></div><div><b>23</b><span>남은 날</span></div></div>
+        <div class="sh"><span class="k">01</span>오늘</div>
+        <ul class="rows">
+          <li><i class="led check"></i><div class="txt"><b>외국인등록 신청</b><span>오전 10시 · 매니저가 같이 가요</span></div></li>
+          <li><i class="led check"></i><div class="txt"><b>계좌 개설</b><span>오후 · 여권으로 여는 은행을 찾아 뒀어요</span></div></li>
+        </ul>
+        <div class="sh"><span class="k">02</span>다음</div>
+        <ul class="rows">
+          <li><i class="led"></i><div class="txt"><b>건강보험료 자동이체</b><span>30일까지 · 외국인등록 뒤 고지서가 와요</span></div></li>
+        </ul>
+        <div class="pill">끝났다고 표시하기</div>
+      </div>
+      <div class="tab">
+        <span class="on"><svg viewBox="0 0 24 24"><rect x="4.5" y="3.5" width="15" height="17" rx="3"/><path d="M8.5 9.3l1.6 1.6 3.2-3.2M8.5 15.5h7"/></svg>할 일</span>
+        <span><svg viewBox="0 0 24 24"><path d="M5.5 5h13a2.5 2.5 0 0 1 2.5 2.5v7.5a2.5 2.5 0 0 1-2.5 2.5H11l-4.5 3.5V17.5h-1A2.5 2.5 0 0 1 3 15V7.5A2.5 2.5 0 0 1 5.5 5z"/></svg>상담</span>
+        <span><svg viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.6 14.3c2.5-.1 4.4 1.5 4.9 4.2"/></svg>모임</span>
+        <span><svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.6 7-5.6s6.2 2 7 5.6"/></svg>나</span>
+      </div>
+    </div></div>
+    <figcaption><b>① 할 일</b> — 첫 30일 할 일과 기한을 한눈에 보여 주고, 끝나면 본인이 표시합니다. 한국어가 서툴면 매니저가 같이 갑니다.</figcaption>
+  </figure>
+  <figure>
+    <div class="ph"><div class="scr" role="img" aria-label="상담 화면 시안">
+      <div class="sb"><span>19:42</span><span class="ic"><svg width="18" height="12" viewBox="0 0 18 12" fill="#FAFAF9"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg><svg width="27" height="13" viewBox="0 0 27 13"><rect x=".6" y=".6" width="22.8" height="11.8" rx="3.4" fill="none" stroke="rgba(250,250,249,.5)" stroke-width="1.2"/><rect x="2.5" y="2.5" width="12" height="8" rx="1.8" fill="#FAFAF9"/><rect x="24.6" y="4.4" width="1.8" height="4.2" rx=".9" fill="rgba(250,250,249,.5)"/></svg></span></div>
+      <div class="ab"><span class="back"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg></span><span class="brand">PATH</span><span class="sep"></span><span class="t">상담</span><span class="lang">한국어 · Монгол</span></div>
+      <div class="pos band"><span class="lab">AI + MANAGER</span><img class="cut" src="그림/상담.webp" alt=""><span class="word">상담</span></div>
+      <div class="chat">
+        <div class="note-in">AI가 먼저 답하고, 확인이 필요한 일은 매니저가 이어받아요</div>
+        <div class="msg me">토요일에 식당 아르바이트를 해도 돼요?</div>
+        <div class="msg in"><div class="who">AI · 바로 답</div>시간제 취업은 허가를 먼저 받아야 해요. 일할 수 있는 시간은 학생마다 달라서 매니저가 확인해 드릴게요.<br><span class="more">몽골어로 보기</span></div>
+        <div class="sys">매니저에게 넘겼어요 · 평일 24시간 안에 답해요</div>
+        <div class="msg in"><div class="who">매니저</div>통합지원체계 상담 창구로 연결해 드릴게요. 월요일 오후 2시 괜찮아요?</div>
+        <div class="quick"><span class="pill">좋아요</span><span class="pill line">다른 시간</span></div>
+      </div>
+      <div class="compose">
+        <div class="lock"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>이 대화를 읽는 사람은 담당 매니저뿐이에요</div>
+        <div class="input">메시지 쓰기<span class="send"><svg viewBox="0 0 24 24"><path d="M12 19V6M6.5 11.5L12 6l5.5 5.5"/></svg></span></div>
+      </div>
+    </div></div>
+    <figcaption><b>② 상담</b> — AI가 바로 답하고, 확인이 필요한 일은 매니저가 이어받아 통합지원체계 같은 기존 창구로 잇습니다. 대화를 읽는 사람은 담당 매니저뿐입니다.</figcaption>
+  </figure>
+  <figure>
+    <div class="ph"><div class="scr" role="img" aria-label="모임 화면 시안">
+      <div class="sb"><span>12:10</span><span class="ic"><svg width="18" height="12" viewBox="0 0 18 12" fill="#FAFAF9"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg><svg width="27" height="13" viewBox="0 0 27 13"><rect x=".6" y=".6" width="22.8" height="11.8" rx="3.4" fill="none" stroke="rgba(250,250,249,.5)" stroke-width="1.2"/><rect x="2.5" y="2.5" width="17" height="8" rx="1.8" fill="#FAFAF9"/><rect x="24.6" y="4.4" width="1.8" height="4.2" rx=".9" fill="rgba(250,250,249,.5)"/></svg></span></div>
+      <div class="ab"><span class="brand">PATH</span><span class="sep"></span><span class="t">함께하는 자리</span><span class="lang">한국어 · Монгол</span></div>
+      <div class="pos"><span class="lab">SEASON 1 · WEEK 03</span><img class="cut" src="그림/모임.webp" alt=""><span class="word">풋살</span><span class="chip">참석 12명</span></div>
+      <div class="bd">
+        <div class="game">
+          <div class="gw">토요일 오후 5시</div>
+          <div class="gp">대학 체육관 · 경기 뒤 같이 저녁</div>
+          <div class="team"><i class="bib" style="background:#7DB45A"></i><b>초록 조끼 팀</b><span class="faces"><i style="background:#D3E8BE">민</i><i style="background:#C5D6F5">바</i><i style="background:#FFE08A">서</i><i style="background:#F8C7DE">린</i><i style="background:#D3E8BE">준</i><i style="background:#C5D6F5">투</i></span></div>
+          <div class="mix">한국인 학생 3 · 유학생 3</div>
+        </div>
+        <div class="sh"><span class="k">01</span>순위</div>
+        <ul class="rank">
+          <li class="me"><span class="no">1</span><i class="bib" style="background:#7DB45A"></i><span>초록 조끼 · 우리 팀</span><span class="pt">9점</span></li>
+          <li><span class="no">2</span><i class="bib" style="background:#F5C445"></i><span>노랑 조끼</span><span class="pt">7점</span></li>
+          <li><span class="no">3</span><i class="bib" style="background:#3D6BC9"></i><span>파랑 조끼</span><span class="pt">4점</span></li>
+        </ul>
+        <div class="hint">팀은 시즌마다 다시 섞어요</div>
+        <div class="pill">참석할게요</div>
+      </div>
+      <div class="tab">
+        <span><svg viewBox="0 0 24 24"><rect x="4.5" y="3.5" width="15" height="17" rx="3"/><path d="M8.5 9.3l1.6 1.6 3.2-3.2M8.5 15.5h7"/></svg>할 일</span>
+        <span><svg viewBox="0 0 24 24"><path d="M5.5 5h13a2.5 2.5 0 0 1 2.5 2.5v7.5a2.5 2.5 0 0 1-2.5 2.5H11l-4.5 3.5V17.5h-1A2.5 2.5 0 0 1 3 15V7.5A2.5 2.5 0 0 1 5.5 5z"/></svg>상담</span>
+        <span class="on"><svg viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.6 14.3c2.5-.1 4.4 1.5 4.9 4.2"/></svg>모임</span>
+        <span><svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.6 7-5.6s6.2 2 7 5.6"/></svg>나</span>
+      </div>
+    </div></div>
+    <figcaption><b>③ 모임</b> — 한국인 학생과 한 팀으로 뛰는 격주 리그입니다. 순위표와 시즌 우승을 두고, 팀은 시즌마다 다시 섞습니다.</figcaption>
+  </figure>
+</div>
+<figure class="desk">
+  <div class="pc"><div class="pcs" role="img" aria-label="매니저 화면 시안">
+    <div class="ab"><span class="brand">PATH</span><span class="sep"></span><span class="t">매니저 화면</span><span class="tag">COHORT 2027-1 · 38</span><span class="lock"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>누가 열어 봤는지 기록이 남아요</span></div>
+    <div class="grid">
+      <div class="pos"><span class="lab">WEEK 03 · MON</span><img class="cut" src="그림/종.webp" alt=""><span class="chip alert">먼저 볼 사람 3</span><span class="word">오늘</span></div>
+      <div>
+        <div class="sh"><span class="k">01</span>먼저 볼 사람</div>
+        <ul class="rows">
+          <li><i class="led alert"></i><div class="txt"><b>바** · 학부 1학년</b><span>15일째 확인 무응답 · 지난 연락은 대화방</span></div><span class="pill">연락하기</span></li>
+          <li><i class="led check"></i><div class="txt"><b>응** · 대학원 1학기</b><span>임금이 덜 들어왔다는 상담 · AI가 넘김 · 1345 안내 전</span></div><span class="pill line">상담 열기</span></li>
+          <li><i class="led check"></i><div class="txt"><b>도** · 학부 1학년</b><span>첫 30일 안 외국인등록 · 3일 남음 · 동행 필요</span></div><span class="pill line">일정 잡기</span></li>
+        </ul>
+      </div>
+      <div>
+        <div class="sh"><span class="k">02</span>이번 주</div>
+        <div class="dash">
+          <div><b>29<small> / 38</small></b><span>첫 30일 필수 행정 끝남</span></div>
+          <div><b>9<small>건</small></b><span>AI가 사람에게 넘긴 상담</span></div>
+          <div><b>24<small>명</small></b><span>모임 참석 · 한국인 8</span></div>
+          <div><b>6<small>시간</small></b><span>사람 첫 응답(중앙값)</span></div>
+        </div>
+        <div class="agg"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>도·대학에는 이름 없이 이 숫자만 분기마다 가요</div>
+      </div>
+    </div>
+  </div></div>
+  <figcaption><b>④ 매니저 화면</b> — 반일 매니저 한 사람이 30~50명을 맡을 수 있게, 답이 끊긴 사람·넘어온 상담·다가온 기한부터 보여 줍니다. 위험 신호는 사람이 확인하고, 도·대학에는 개인을 알아볼 수 없는 숫자만 갑니다.</figcaption>
+</figure>
+
+<h2 class="np"><span class="n">5</span>한 학생의 첫 30일 — 가상 사례</h2>
 <p class="note">실제 인물이 아니라, 정착 동행이 어떻게 돌아가는지 보이려고 만든 예시입니다.</p>
 <table class="case">
   <tbody>
@@ -133,7 +365,7 @@ h2.np{ break-before:page; page-break-before:always; margin-top:0; }
   </tbody>
 </table>
 
-<h2><span class="n">5</span>분기 정착 지표 — 정의와 처음 목표</h2>
+<h2><span class="n">6</span>분기 정착 지표 — 정의와 처음 목표</h2>
 <table class="kpi">
   <thead><tr><th>지표</th><th>정의</th><th>자료</th><th>처음 목표(가설)</th></tr></thead>
   <tbody>
@@ -148,7 +380,7 @@ h2.np{ break-before:page; page-break-before:always; margin-top:0; }
 </table>
 <p class="note">모든 지표는 개인을 알아볼 수 없는 집계로만 드립니다. 목표는 시범에서 다시 정하는 가설입니다. 시범의 실측 지표는 도가 법무부 성과지표에 의견을 낼 때 쓸 수 있습니다.</p>
 
-<h2><span class="n">6</span>왜 이렇게 짜나 — 근거</h2>
+<h2 class="np"><span class="n">7</span>왜 이렇게 짜나 — 근거</h2>
 <ul class="dots">
   <li><b>같은 처지의 선배가 듣는다</b> — 같은 처지의 또래가 짧은 훈련을 받고 전하는 상담은 무작위 대조 시험에서 효과가 확인됐습니다(네덜란드의 시리아 난민, WHO 「PM+」 — 3개월 뒤 우울·불안 감소). 그래서 또래 리더를 두고, 정식 상담은 훈련과 전문가 감독을 갖춘 뒤에 시작합니다.</li>
   <li><b>한 팀으로 섞는다</b> — 같은 팀으로 섞여 뛰면 다른 집단과의 친구가 늘었고, 상대 팀으로만 만나면 오히려 서로 어울림이 줄었습니다(인도 크리켓 리그, 무작위 배정 현장 실험). 그래서 나라별 대항전이 아니라 한국인과 한 팀으로 뜁니다.</li>
@@ -156,7 +388,7 @@ h2.np{ break-before:page; page-break-before:always; margin-top:0; }
   <li><b>안내보다 확인</b> — 해외 정착 정책의 평가에서는 지원이 있어도 실제로 닿지 않은 것이 문제로 드러났습니다. 캐나다 대서양 이민 프로그램은 이용자 상당수가 무료 정착 서비스가 있는 줄 몰랐고, 네덜란드 새 통합법은 개인별 계획이 서기까지 반년 넘게 걸렸고 완료율도 옛 제도보다 낮았습니다(각 정부 평가). 그래서 30일 안에 할 일을 끝냈는지 한 사람씩 확인합니다.</li>
 </ul>
 
-<h2><span class="n">7</span>개인정보 — 어떻게 다루나</h2>
+<h2><span class="n">8</span>개인정보 — 어떻게 다루나</h2>
 <ul class="dots">
   <li><b>참여</b> — 본인 동의로만 합니다. 참여하지 않아도 대학·도의 다른 지원에 불이익이 없고, 언제든 그만둘 수 있습니다.</li>
   <li><b>받는 것</b> — 이름·연락처·체류자격·학교(학과)·필수 행정 진행 상황까지입니다. 외국인등록번호·여권번호는 받지 않습니다.</li>
@@ -166,7 +398,7 @@ h2.np{ break-before:page; page-break-before:always; margin-top:0; }
   <li><b>지우기</b> — 시범이 끝나고 1년 뒤, 또는 본인이 요청할 때 지웁니다.</li>
 </ul>
 
-<h2 class="np"><span class="n">8</span>일정·인력·비용</h2>
+<h2 class="np"><span class="n">9</span>일정·인력·비용</h2>
 <table class="when">
   <tbody>
     <tr><td>2026년 10월 말~11월</td><td>도와 실무 협의, 참여 대학·학과 협의 시작</td></tr>

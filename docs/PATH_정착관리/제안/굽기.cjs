@@ -6,6 +6,7 @@
  * 하는 일: 이 폴더의 `<이름>_원고.html` 마다 SUIT Variable(tools/lib/브랜드폰트.js)을 얹은 임시 원고를 만들고,
  * docs/tools/브랜드폰트_임베드.py 로 나머지 글꼴(Inter Tight·DM Mono·낫표)을 심어 `<이름>.pdf` 를 뽑는다.
  * 원고에 `<!--@공통CSS@-->` 가 있으면 같은 폴더의 `제안_공통.css` 를, `<!--@로고@-->` 가 있으면 `synk-로고.svg` 를 그 자리에 넣는다.
+ * `src="그림/…"` 은 같은 폴더 그림/ 의 파일을 데이터 주소로 심는다(참고 자료의 앱 화면 시안 펠트 물건).
  *
  * 왜 SUIT Variable을 따로 얹나(2026-10-22 실측): 임베드 도구가 싣는 정적 SUIT 서브셋에 공백 글리프가 빠져,
  * PDF의 공백 약 700개가 맑은 고딕으로 찍혔다(docs/발표물 PDF도 같은 모양). 가변 SUIT를 앞에 두면 공백까지 SUIT다.
@@ -53,6 +54,13 @@ for (const 이름 of 이름들) {
   const pdf = path.join(둘곳, `${이름}.pdf`);
   let 글 = fs.readFileSync(원고, 'utf8');
   for (const [표, 읽기] of Object.entries(붙일것)) if (글.includes(표)) 글 = 글.split(표).join(읽기());
+  // 원고의 그림(이 폴더의 그림/)은 데이터 주소로 심는다 — 임시 원고는 저장소 밖에서 구워져 상대 경로가 끊긴다.
+  글 = 글.replace(/src="(그림\/[^"]+)"/g, (_, 상대) => {
+    const 파일 = path.join(__dirname, 상대);
+    const 꼴 = { '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg' }[path.extname(파일).toLowerCase()];
+    if (!꼴 || !fs.existsSync(파일)) throw new Error(`${이름}: 심을 그림이 없다 — ${상대}`);
+    return `src="data:${꼴};base64,${fs.readFileSync(파일).toString('base64')}"`;
+  });
   if (채울값) {
     for (const [키, 값] of Object.entries(채울값)) 글 = 글.split(`<span class="hold">[${키}]</span>`).join(글로(값));
     const 남은 = [...글.matchAll(/<span class="hold">\[([^\]]+)\]<\/span>/g)].map((m) => m[1]);
