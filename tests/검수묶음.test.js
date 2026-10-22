@@ -308,3 +308,191 @@ test('가져온 캡처(--캡처): 전·후/<기기>/<이름>.png를 그대로 �
   assert.match(페, /\| 홈 \| 1280 \| `캡처-가져옴\/전\/1280\/홈\.png` \| `캡처-가져옴\/후\/1280\/홈\.png` \|/);
   assert.match(fs.readFileSync(path.join(폴더, 목록.묶음.at(-1).파일), 'utf8'), /화면 「홈」[\s\S]*-옛 글[\s\S]*\+새 글/);
 });
+
+// ── GPT 2차 검수(2026-10-22): 백엔드는 아르곤과 GPT가 같은 묶음을 함께 본다 ──
+const 답하기 = (지적 = []) => async ({ prompt }) => {
+  const 표식 = /자료 끝 표식: (\S+)\s*$/.exec(prompt)[1];
+  const seen = [...prompt.matchAll(/^### \[([^\]]+)\]/gm)].map(m => m[1]);
+  return { text: JSON.stringify({ findings: 지적, seen, coverage: { reviewed: '전부', limitations: '' }, endMarker: 표식 }) };
+};
+const 지적하나 = (location, grade = 'P1') => ({ grade, location, quote: 'b = 3', problem: '부르는 곳이 2를 기대한다', fix: '부르는 곳도 고친다' });
+
+test('GPT 보내기: 아르곤과 같은 묶음·대조로 GPT-<묶음>.json과 GA1… 지적을 남기고, 둘을 같이 돌려도 서로의 지적을 지우지 않는다', async t => {
+  const { 준비하기, 아르곤보내기, GPT보내기, 지적표읽기, 처리하기, 집계하기, 묶음상태들 } = await tool();
+  const r = 임시저장소(t, { 'src/app.js': 'export const b = 2;\n' });
+  r.쓰기('src/app.js', 'export const b = 3;\n');
+  const { 폴더, 목록 } = await 준비하기({ 이름: 'gpt', 폴더: r.출력, 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕 });
+  const 몫 = () => ({ 주간: 0.99 });
+  const 받은 = [];
+  const gpt = async a => { 받은.push(a); return 답하기([지적하나('src/app.js:1'), 지적하나('src/app.js:1', 'P2')])(a); };
+  // 둘을 함께 띄워도 지적표에 두 검수자 지적이 다 남는다
+  await Promise.all([아르곤보내기(폴더, 목록, { call: 답하기([지적하나('src/app.js:1')]), 몫 }), GPT보내기(폴더, 목록, { call: gpt, 몫 })]);
+  assert.equal(받은[0].thinking, null, '수준을 안 주면 본 계정 설정 그대로');
+  assert.equal(받은[0].prompt, fs.readFileSync(path.join(폴더, 목록.묶음[0].파일), 'utf8'), 'GPT도 아르곤과 같은 바이트');
+  assert.ok(fs.existsSync(path.join(폴더, `GPT-${목록.묶음[0].이름}.json`)));
+  const 표 = 지적표읽기(폴더);
+  assert.deepEqual(표.지적.map(x => `${x.출처}:${x.번호}`), ['아르곤:A1', 'GPT:GA1', 'GPT:GA2']);
+  assert.ok(fs.existsSync(path.join(폴더, 'GPT지적표.md')));
+  assert.deepEqual(묶음상태들(폴더, 목록, 'GPT').map(b => b.상태), ['읽음']);
+  처리하기(표, ['A1=반영', 'GA1=반영', 'GA2=재현안됨:2를 기대하는 곳이 없다']);
+  fs.writeFileSync(path.join(폴더, '지적표.json'), JSON.stringify(표));
+  const 결과 = JSON.parse(fs.readFileSync(path.join(폴더, `아르곤-${목록.묶음[0].이름}.json`), 'utf8'));
+  const G결과 = JSON.parse(fs.readFileSync(path.join(폴더, `GPT-${목록.묶음[0].이름}.json`), 'utf8'));
+  const s = 집계하기(목록, [결과], 지적표읽기(폴더), [G결과]);
+  assert.equal(s.한줄, '아르곤 1건(반영 1) · GPT 2건(반영 1)');
+  assert.equal(s.배포조건충족, true);
+  await assert.rejects(GPT보내기(폴더, 목록, { call: gpt, 몫, 수준: 'max', 다시: true }), /--수준은/);
+  // fable.md 2단계는 두 검수자의 지적표를 다 가리킨다
+  const { 페이블하기 } = await tool();
+  const 페 = fs.readFileSync(await 페이블하기(폴더, { 시험: false, 캡처: false }), 'utf8');
+  assert.match(페, /아르곤\(Gemini 4 Argon\)과 GPT\(다른 회사 모델\)이 먼저 본 뒤/);
+  assert.match(페, /아르곤지적표\.md`와 `.*GPT지적표\.md`를 읽고/);
+});
+
+test('집계(백엔드): 아르곤이 막혀도 GPT가 끝까지 읽었으면 충족, 둘 다 못 읽으면 Fable로 대신, GPT를 보냈는데 덜 읽혔으면 미충족', async () => {
+  const { 집계하기 } = await tool();
+  const 백 = { 종류: '백엔드', 묶음: [{ 이름: 'A', sha256: 's' }] };
+  const 읽음 = { 묶음: 'A', 상태: '읽음', 입력sha256: 's' }, 막힘 = { 묶음: 'A', 상태: '막힘', 입력sha256: 's' };
+  let s = 집계하기(백, [막힘], { 지적: [] }, [읽음]);
+  assert.equal(s.배포조건충족, true, '다른 회사 검수가 하나는 끝까지 읽었다');
+  assert.equal(s.한줄, '아르곤 막힘(한도·로그인) · GPT 0건(반영 0)');
+  s = 집계하기(백, [막힘], { 지적: [] }, [막힘]);
+  assert.ok(s.조건.some(x => /GPT도 끝까지 못 읽음\) Fable 검수로 대신/.test(x)));
+  assert.equal(s.한줄, '아르곤 막힘(한도·로그인) · GPT 막힘(한도·로그인)');
+  s = 집계하기(백, [읽음], { 지적: [] }, [{ ...읽음, 상태: '잘림' }]);
+  assert.ok(s.조건.some(x => /^GPT 묶음 A\(잘림\)/.test(x)), s.조건.join(' / '));
+  assert.equal(집계하기(백, [읽음], { 지적: [] }, [{ ...읽음, 입력sha256: '다름' }]).배포조건충족, false);
+  assert.equal(집계하기(백, [읽음], { 지적: [] }, [막힘]).배포조건충족, true, 'GPT가 막히면 아르곤만으로 간다');
+  assert.equal(집계하기(백, [읽음], { 지적: [] }).한줄, '아르곤 0건(반영 0)', 'GPT를 안 보냈으면 한 줄에 넣지 않는다(구독이 끝난 뒤)');
+  // 화면은 GPT가 읽어도 Fable 최종 검수가 관문이다
+  assert.ok(집계하기({ ...백, 종류: '화면' }, [막힘], { 지적: [] }, [읽음]).조건.some(x => /Fable 검수로 대신/.test(x)));
+  assert.ok(집계하기({ ...백, 종류: '화면' }, [읽음], { 지적: [] }, [읽음]).조건.includes('Fable 최종 검수 전'));
+});
+
+test('GPT 부르기: codex exec를 본 계정·읽기 전용·빈 폴더·답 꼴로 한 번 부르고, 한도·로그인 오류는 막힘으로 읽힌다', async t => {
+  const { GPT부르기, 답꼴 } = await tool();
+  const 뿌리 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-fake-codex-'));
+  t.after(() => fs.rmSync(뿌리, { recursive: true, force: true, maxRetries: 5 }));
+  const 가짜 = path.join(뿌리, 'codex.js'), 기록 = path.join(뿌리, 'args.json');
+  fs.writeFileSync(가짜, `
+const fs = require('fs');
+const a = process.argv.slice(2);
+let 입력 = '';
+process.stdin.on('data', d => { 입력 += d; });
+process.stdin.on('end', () => {
+  fs.writeFileSync(${JSON.stringify(기록)}, JSON.stringify({ a, home: process.env.CODEX_HOME || null, 입력, 꼴: JSON.parse(fs.readFileSync(a[a.indexOf('--output-schema') + 1], 'utf8')) }));
+  if (process.env.FAKE_CODEX === 'limit') { process.stderr.write("ERROR: You've hit your usage limit. Try again in 2 hours.\\n"); process.exit(1); }
+  if (process.env.FAKE_CODEX === 'login') { process.stderr.write('ERROR: Not logged in\\n'); process.exit(1); }
+  fs.writeFileSync(a[a.indexOf('-o') + 1], JSON.stringify({ findings: [], seen: ['D01-aaaa'], coverage: { reviewed: '전부', limitations: '' }, endMarker: 'END_X' }));
+  process.stdout.write(JSON.stringify({ type: 'turn.completed', usage: { input_tokens: 12, output_tokens: 3 } }) + '\\n');
+});`);
+  const 옛 = { bin: process.env.CODEX_BIN, home: process.env.CODEX_HOME, mode: process.env.FAKE_CODEX, conf: process.env.SYNK_CODEX_CONFIG };
+  t.after(() => { for (const [k, v] of [['CODEX_BIN', 옛.bin], ['CODEX_HOME', 옛.home], ['FAKE_CODEX', 옛.mode], ['SYNK_CODEX_CONFIG', 옛.conf]]) { if (v === undefined) delete process.env[k]; else process.env[k] = v; } });
+  const 본설정 = path.join(뿌리, 'config.toml');
+  fs.writeFileSync(본설정, 'model = "test-model"\nmodel_reasoning_effort = "xhigh"\n');
+  Object.assign(process.env, { CODEX_BIN: 가짜, CODEX_HOME: path.join(뿌리, '다른계정'), SYNK_CODEX_CONFIG: 본설정 });
+  delete process.env.FAKE_CODEX;
+  const 굽기계정 = { 이름: 'bake3', home: path.join(뿌리, 'bake3') };
+  const r = await GPT부르기({ prompt: '묶음 글\n자료 끝 표식: END_X\n', schema: 답꼴, thinking: 'high', timeoutMs: 60_000, 계정: 굽기계정 });
+  assert.equal(JSON.parse(r.text).endMarker, 'END_X');
+  assert.deepEqual(r.usage, { input_tokens: 12, output_tokens: 3 });
+  assert.equal(r.selectedModel, 'test-model-high · 굽기 장부 bake3');
+  const 본 = JSON.parse(fs.readFileSync(기록, 'utf8'));
+  assert.equal(본.home, 굽기계정.home, '고른 계정의 CODEX_HOME으로');
+  assert.equal(본.입력, '묶음 글\n자료 끝 표식: END_X\n', '묶음은 표준입력으로');
+  assert.deepEqual(본.꼴.required, 답꼴.required);
+  for (const 칸 of ['exec', '--ephemeral', '--skip-git-repo-check', 'read-only', '--json', 'test-model', 'model_reasoning_effort="high"']) assert.ok(본.a.includes(칸), 칸);
+  const 빈 = 본.a[본.a.indexOf('-C') + 1];
+  assert.match(빈, /synk-gpt-review-[^\\/]+[\\/]empty$/, '-C는 저장소가 아니라 빈 임시 폴더(읽기 전용 실행은 파일 읽기도 거절한다)');
+  assert.ok(!fs.existsSync(빈), '끝나면 임시 폴더를 지운다');
+  await GPT부르기({ prompt: 'x\n자료 끝 표식: END_X\n', schema: 답꼴, timeoutMs: 60_000 });
+  const 기본 = JSON.parse(fs.readFileSync(기록, 'utf8'));
+  assert.equal(기본.home, null, '계정을 안 주면 본 계정(~/.codex) — 밖의 CODEX_HOME을 따르지 않는다');
+  assert.ok(기본.a.includes('model_reasoning_effort="xhigh"'), '수준을 안 주면 본 설정의 추론 그대로');
+  process.env.FAKE_CODEX = 'limit';
+  await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, timeoutMs: 60_000 }), /quota/);
+  process.env.FAKE_CODEX = 'login';
+  await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, timeoutMs: 60_000 }), /login/);
+  await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, timeoutMs: 60_000, 계정: null }), /quota — 주간 90% 아래인 Pro 계정이 없다/);
+});
+
+test('GPT 계정 고르기: Pro이고 주간 90% 아래인 계정 가운데 가장 덜 쓴 것, 없으면 null', async () => {
+  const { GPT계정가리기 } = await tool();
+  const 계정 = (이름, 요금제, 주간사용) => ({ 이름, home: 이름, 요금제, 주간사용 });
+  assert.equal(GPT계정가리기([계정(null, 'pro', 90), 계정('bake1', 'plus', 0), 계정('bake3', 'pro', 1)]).이름, 'bake3', '본 계정이 90%면 넘기고 plus는 안 쓴다');
+  assert.equal(GPT계정가리기([계정(null, 'pro', 30), 계정('bake3', 'pro', 50)]).이름, null);
+  assert.equal(GPT계정가리기([계정(null, 'pro', 95), 계정('bake3', 'pro', null)]), null, '못 읽은 계정은 고르지 않는다');
+});
+
+test('보내는 중 표시·지적표 잠금: 답을 기다리는 묶음은 관문을 막고, 주인 없는 표시·잠금은 걷는다, GPT 0건이어도 GPT지적표.md', async t => {
+  const { 준비하기, GPT보내기, 결과들읽기, 묶음상태들, 집계하기, 지적표읽기, 지적표고치기 } = await tool();
+  const r = 임시저장소(t, { 'a.js': 'export const a = 1;\n' });
+  r.쓰기('a.js', 'export const a = 2;\n');
+  const { 폴더, 목록 } = await 준비하기({ 이름: '표시', 폴더: r.출력, 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕 });
+  const 묶음 = 목록.묶음[0].이름;
+  let 도중 = null;
+  await GPT보내기(폴더, 목록, { 몫: () => null, call: async a => { 도중 = 묶음상태들(폴더, 목록, 'GPT')[0].상태; return 답하기([])(a); } });
+  assert.equal(도중, '보내는 중', '답을 기다리는 동안');
+  assert.equal(묶음상태들(폴더, 목록, 'GPT')[0].상태, '읽음');
+  assert.ok(fs.existsSync(path.join(폴더, 'GPT지적표.md')), 'GPT가 0건이어도 fable.md가 가리키는 파일이 있다');
+  // 살아 있는 프로세스의 표시는 관문을 막고, 죽은 프로세스의 표시는 없는 셈
+  const 표시 = path.join(폴더, `GPT-${묶음}.보내는중.json`);
+  fs.writeFileSync(표시, JSON.stringify({ 묶음, pid: process.pid, 보낸때: new Date().toISOString() }));
+  const 아르곤읽음 = [{ 묶음, 상태: '읽음', 입력sha256: 목록.묶음[0].sha256 }];
+  let s = 집계하기(목록, 아르곤읽음, 지적표읽기(폴더), 결과들읽기(폴더, 목록, 'GPT'));
+  assert.equal(s.배포조건충족, false);
+  assert.ok(s.조건.some(x => new RegExp(`GPT ${묶음} 묶음을 보내는 중`).test(x)), s.조건.join(' / '));
+  fs.writeFileSync(표시, JSON.stringify({ 묶음, pid: 2 ** 22 + 12345, 보낸때: new Date().toISOString() }));
+  assert.equal(결과들읽기(폴더, 목록, 'GPT')[0].상태, '읽음');
+  // 남은 잠금은 저절로 걷지 않고(걷기 경합), 한계가 지나면 주인과 함께 알린다 — 주인이 죽었으면 그렇다고
+  const 잠금 = path.join(폴더, '지적표.lock');
+  fs.writeFileSync(잠금, `${2 ** 22 + 12345}-옛표`);
+  assert.throws(() => 지적표고치기(폴더, () => assert.fail('잠금을 못 얻었으면 고치지 않는다'), { 한계: 300 }), /잠금을 0초 동안 얻지 못했다.*이미 없다/);
+  fs.writeFileSync(잠금, `${process.ppid}-살아있는표`);
+  assert.throws(() => 지적표고치기(폴더, () => 0, { 한계: 300 }), e => /얻지 못했다/.test(e.message) && !/이미 없다/.test(e.message));
+  fs.rmSync(잠금);
+  assert.equal(지적표고치기(폴더, 표 => { 표.메모 = '고침'; return 7; }), 7);
+  assert.equal(지적표읽기(폴더).메모, '고침');
+  assert.ok(!fs.existsSync(잠금), '고친 뒤 잠금을 푼다');
+});
+
+test('2차 검수 고침: 표시는 결과·지적표를 다 쓴 뒤 지우고, 살아 있는 남의 표시 묶음은 겹쳐 보내지 않고, 보내는 중이면 앞 막힘과 상관없이 미충족, 낡은 잠금 걷기는 한쪽만', async t => {
+  const { 준비하기, GPT보내기, 결과들읽기, 집계하기, 지적표읽기, 풀기, GPT설정 } = await tool();
+  const r = 임시저장소(t, { 'a.js': 'export const a = 1;\n' });
+  r.쓰기('a.js', 'export const a = 2;\n');
+  const { 폴더, 목록 } = await 준비하기({ 이름: '고침', 폴더: r.출력, 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕 });
+  const 묶음 = 목록.묶음[0].이름, 표시 = path.join(폴더, `GPT-${묶음}.보내는중.json`);
+  // GA2: 답을 받은 뒤 몫을 다시 읽는 동안에도(결과·지적표를 쓰기 전) 표시가 남아 있다
+  let 뒤몫때표시 = null, 몫부름 = 0;
+  await GPT보내기(폴더, 목록, { 몫: () => { if (++몫부름 === 2) 뒤몫때표시 = fs.existsSync(표시); return null; }, call: 답하기([지적하나('a.js:1')]) });
+  assert.equal(뒤몫때표시, true);
+  assert.ok(!fs.existsSync(표시), '다 쓴 뒤에는 지운다');
+  assert.equal(지적표읽기(폴더).지적.length, 1);
+  // GA3: 살아 있는 다른 프로세스(부모)의 표시가 있으면 그 묶음은 보내지 않고 남의 표시도 지우지 않는다
+  fs.writeFileSync(표시, JSON.stringify({ 묶음, pid: process.ppid, 표: '남', 보낸때: '2026-10-22T00:00:00Z' }));
+  await GPT보내기(폴더, 목록, { 다시: true, 몫: () => null, call: async () => assert.fail('남이 보내는 묶음을 겹쳐 보내지 않는다') });
+  assert.equal(JSON.parse(fs.readFileSync(표시, 'utf8')).표, '남');
+  // GA4: 한 묶음이 보내는 중이면 다른 묶음의 앞 막힘 결과가 있어도 미충족
+  const 둘 = { ...목록, 묶음: [...목록.묶음, { ...목록.묶음[0], 이름: 'Q' }] };
+  const G = [...결과들읽기(폴더, 둘, 'GPT'), { 묶음: 'Q', 상태: '막힘', 입력sha256: 목록.묶음[0].sha256 }];
+  const 아르곤 = 둘.묶음.map(b => ({ 묶음: b.이름, 상태: '읽음', 입력sha256: b.sha256 }));
+  const s = 집계하기(둘, 아르곤, { 지적: [] }, G);
+  assert.equal(s.배포조건충족, false);
+  assert.ok(s.조건.some(x => new RegExp(`GPT ${묶음} 묶음을 보내는 중`).test(x)), s.조건.join(' / '));
+  fs.rmSync(표시);
+  // 주인이 죽은 표시는 잠금 안에서 덮어 잡고 보낸다
+  fs.writeFileSync(표시, JSON.stringify({ 묶음, pid: 2 ** 22 + 12345, 표: '죽은', 보낸때: '2026-10-22T00:00:00Z' }));
+  let 보냄 = 0;
+  await GPT보내기(폴더, 목록, { 다시: true, 몫: () => null, call: async a => { 보냄++; return 답하기([])(a); } });
+  assert.equal(보냄, 1);
+  assert.ok(!fs.existsSync(표시), '덮어 잡은 표시도 끝나면 지운다');
+  // 풀기는 제 표가 든 잠금만
+  const 잠금 = path.join(폴더, '시험.lock');
+  fs.writeFileSync(잠금, '새로-잡은-표');
+  풀기(잠금, '내-표');
+  assert.equal(fs.readFileSync(잠금, 'utf8'), '새로-잡은-표', '남이 잡은 잠금은 풀지 않는다');
+  // GA4(3차): 본 설정은 맨 위 칸과 고른 프로필에서, 작은따옴표도
+  assert.deepEqual(GPT설정("model = 'main-model'\nmodel_reasoning_effort = \"xhigh\"\n[profiles.old]\nmodel = \"old-model\"\n"), { 모델: 'main-model', 추론: 'xhigh' });
+  assert.deepEqual(GPT설정('profile = "fast"\nmodel = "main"\n[profiles.fast]\nmodel = "fast-model"\nmodel_reasoning_effort = \'low\'\n[plugins."x"]\nmodel = "nope"\n'), { 모델: 'fast-model', 추론: 'low' });
+  assert.deepEqual(GPT설정(''), { 모델: null, 추론: null });
+});

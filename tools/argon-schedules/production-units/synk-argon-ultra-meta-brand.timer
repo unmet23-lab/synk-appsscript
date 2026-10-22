@@ -5,7 +5,7 @@ Description=SYNK Meta and brand research schedule
 ConditionPathExists=/etc/synk-argon-77yuhbs/production-ready
 
 [Timer]
-OnCalendar=*-*-* 11,17,23:00:00 Asia/Seoul
+OnCalendar=*-*-* 23:00:00 Asia/Seoul
 Unit=synk-argon-ultra-meta-brand.service
 AccuracySec=1s
 RandomizedDelaySec=0

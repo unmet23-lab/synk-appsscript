@@ -1,11 +1,12 @@
 #!/usr/bin/env node
-// 화면·백엔드 검수 묶음(2026-10-21). docs/AI_운영원칙.md 「백엔드 검수」·「화면 검수」의 아르곤 → Fable 검수에 넘길 자료를 한 명령으로 묶고,
-// 받은 답을 입력 SHA·끝 표식·읽은 항목으로 대조해 지적표·Fable 요약·「아르곤 N건(반영 M) · Fable N건(반영 M)」 집계를 만든다.
-// 새 LLM 실행기가 아니다 — 아르곤은 tools/lib/제미나이구독호출.js의 부르기를 묶음마다 한 번 부르고(되풀이·다른 모델로 대체 없음,
-// 다시 보내기는 사람이 --다시로), Fable은 세션이 Agent 도구(model: fable)에 fable.md를 준다. 틀은 tools/topik-review.mjs를 본떴다.
+// 화면·백엔드 검수 묶음(2026-10-21). docs/AI_운영원칙.md 「백엔드 검수」·「화면 검수」의 아르곤(백엔드는 GPT도) → Fable 검수에 넘길 자료를 한 명령으로 묶고,
+// 받은 답을 입력 SHA·끝 표식·읽은 항목으로 대조해 지적표·Fable 요약·「아르곤 N건(반영 M) · GPT N건(반영 M) · Fable N건(반영 M)」 집계를 만든다.
+// 새 LLM 실행기가 아니다 — 아르곤은 tools/lib/제미나이구독호출.js의 부르기를, GPT는 공식 Codex CLI(`codex exec`, 주간 몫이 넉넉한 Pro 계정)를 묶음마다 한 번 부르고
+// (되풀이·다른 모델로 대체 없음, 다시 보내기는 사람이 --다시로), Fable은 세션이 Agent 도구(model: fable)에 fable.md를 준다. 틀은 tools/topik-review.mjs를 본떴다.
 //
 //   node tools/검수묶음.mjs 준비 <이름> --종류 화면|백엔드 --바탕 <커밋> [<경로…>] [준비 옵션]   아르곤 묶음·전후 캡처·시험 TAP·Fable 요약
 //   node tools/검수묶음.mjs 아르곤 <이름> [--수준 high|medium] [--묶음 A …] [--다시]       묶음마다 하나씩 보내고 입력 SHA·끝 표식·읽은 항목을 대조
+//   node tools/검수묶음.mjs GPT <이름> [--수준 high|xhigh…] [--묶음 A …] [--다시]          백엔드 2차 검수의 GPT 몫(2026-10-22) — 같은 묶음·같은 대조, 아르곤과 함께 돌려도 된다
 //   node tools/검수묶음.mjs 처리 <이름> <번호>=<반영|일부|안함|재현안됨|후속>[:<이유>] … [<번호>=재확인]   지적마다 Claude의 처리를 적는다
 //   node tools/검수묶음.mjs 페이블 <이름> [--시험안함] [--캡처안함]      고친 뒤 상태로 diff·시험·캡처를 다시 떠 fable.md를 쓴다
 //   node tools/검수묶음.mjs 페이블받기 <이름> [<답 파일>] [--새로]     Fable 답의 JSON 지적을 지적표에 F1…로 넣는다
@@ -20,7 +21,7 @@ import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { createRequire } from 'node:module';
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import * as 캡처도구 from './lib/검수캡처.mjs';
 
@@ -632,12 +633,150 @@ export function 몫읽기() {
 const 퍼 = v => (v == null ? '?' : `${(v * 100).toFixed(1)}%`);
 const 몫글 = m => (m?.앞 || m?.뒤 ? ` · 주간 몫 ${퍼(m.앞?.주간)} → ${퍼(m.뒤?.주간)}` : '');
 
-export async function 아르곤보내기(폴더, 목록, { 수준 = 기본수준[목록.종류], 고른 = null, 다시 = false, call, 몫 = 몫읽기, 알리기 = () => {} } = {}) {
-  if (!제한분[수준]) throw new Error(`--수준은 high·medium·low 가운데 하나(받음 ${수준})`);
-  const 결과들 = [];
+// ── GPT ────────────────────────────────────────────────────────────
+// 백엔드 2차 검수는 아르곤과 GPT가 함께 본다(2026-10-22 유호님, GPT 구독이 남은 동안). 모델·추론은 GPT 앱 본 설정(~/.codex/config.toml) 그대로이고,
+// 계정은 Pro 계정(본 계정 + 굽기 장부 ~/.codex-bake) 가운데 주간 몫이 가장 넉넉한 것이다 — 10-22 본 계정은 GPT 앱 백엔드 작업으로 주간 90%였고
+// 크레딧이 있어 한도를 넘기면 크레딧이 나갈 수 있었다. 그래서 주간 90% 넘게 쓴 계정은 고르지 않는다.
+// 묶음은 표준입력으로만 준다 — Windows 읽기 전용 실행은 파일 읽기도 거절해서(현장 노트 AI_CLI) -C는 빈 폴더다. 그래서 GPT도 아르곤과 같은 바이트만 본다.
+const require코덱스 = () => require('./codex계정.js');
+const 추론들 = ['minimal', 'low', 'medium', 'high', 'xhigh', 'ultra'];
+const GPT제한분 = 45;   // 10-20 아스트라 152KB 묶음이 10분 30초 — xhigh 큰 묶음의 여유
+const GPT주간한계 = 90;  // 주간 이만큼(%) 넘게 쓴 계정은 검수에 쓰지 않는다
+const 굽기뿌리 = () => process.env.CODEX_BAKE_DIR || path.join(os.homedir(), '.codex-bake');
+/** 후보 계정마다 요금제·주간 사용(app-server, 토큰 0). 이름 null = 본 계정(~/.codex). 메일은 남기지 않는다. */
+export async function GPT계정들읽기() {
+  const { 묻기 } = require코덱스();
+  const { codexWindows } = require('../desktop/src/ai-subscriptions.cjs');
+  let 장부 = [];
+  try { 장부 = JSON.parse(fs.readFileSync(path.join(굽기뿌리(), '계정.json'), 'utf8')).계정 || []; } catch { /* 장부 없음 */ }
+  const 목록 = [];
+  for (const 이름 of [null, ...장부.filter(a => !a.로그인필요).map(a => a.이름)]) {
+    const [a, r] = await 묻기(이름, [{ method: 'account/read', params: {} }, { method: 'account/rateLimits/read', params: {} }]);
+    const { weekly } = codexWindows(r?.rateLimits || Object.values(r?.rateLimitsByLimitId || {})[0] || {});
+    목록.push({ 이름, home: 이름 ? path.join(굽기뿌리(), 이름) : null, 요금제: a?.account?.planType || null, 계정: a?.account?.email ? sha(a.account.email).slice(0, 8) : null,
+      주간사용: Number.isFinite(weekly?.usedPercent) ? weekly.usedPercent : null, 주간초기화: weekly?.resetsAt ? new Date(weekly.resetsAt).toISOString() : null });
+  }
+  return 목록;
+}
+/** Pro이고 주간 90% 아래인 계정 가운데 가장 덜 쓴 것. 없으면 null(검수는 막힘으로 적힌다). */
+export function GPT계정가리기(목록) {
+  return 목록.filter(a => a.요금제 === 'pro' && a.주간사용 != null && a.주간사용 < GPT주간한계).sort((x, y) => x.주간사용 - y.주간사용)[0] || null;
+}
+const 계정말 = 계정 => (계정?.이름 ? `굽기 장부 ${계정.이름}` : '본 계정(~/.codex)');
+function codex명령(args) {
+  const 시험 = process.env.CODEX_BIN;
+  const { candidatePaths, commandFor } = require('../desktop/src/ai-subscriptions.cjs');
+  if (시험) return /\.[cm]?js$/i.test(시험) ? { command: process.execPath, argv: [시험, ...args], verbatim: false } : commandFor(시험, args, { platform: process.platform, env: process.env });
+  const 파일 = candidatePaths('codex', { platform: process.platform, env: process.env, home: os.homedir() }).find(p => fs.existsSync(p));
+  if (!파일) throw new Error('codex를 찾지 못했다 — Codex CLI 설치를 확인한다');
+  return commandFor(파일, args, { platform: process.platform, env: process.env });
+}
+/** GPT 앱 본 설정의 모델·추론 — 맨 위(표 머리 전) 칸에서 읽고, 맨 위 `profile`이 고른 [profiles.<이름>] 칸이 있으면 그 값이 앞선다.
+ *  문자열은 큰따옴표·작은따옴표 둘 다(3차 검수 GA4). 시험은 SYNK_CODEX_CONFIG로 다른 파일을 준다. */
+export function GPT설정(글 = null) {
+  if (글 == null) { const f = process.env.SYNK_CODEX_CONFIG || path.join(os.homedir(), '.codex', 'config.toml'); 글 = fs.existsSync(f) ? fs.readFileSync(f, 'utf8') : ''; }
+  const 칸들 = { '': {} };
+  let 지금 = '';
+  for (const 줄 of 글.split(/\r?\n/)) {
+    const 머리 = /^\s*\[([^\]]+)\]\s*(?:#.*)?$/.exec(줄);
+    if (머리) { 지금 = 머리[1].trim().replace(/\s*\.\s*/g, '.').replace(/"/g, ''); 칸들[지금] ||= {}; continue; }
+    const m = /^\s*([A-Za-z0-9_]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/.exec(줄);
+    if (m) 칸들[지금][m[1]] = m[2] ?? m[3];
+  }
+  const 맨위 = 칸들[''], 고른 = 맨위.profile ? 칸들[`profiles.${맨위.profile}`] || {} : {};
+  return { 모델: 고른.model || 맨위.model || null, 추론: 고른.model_reasoning_effort || 맨위.model_reasoning_effort || null };
+}
+/** codex exec 한 번(home null = 본 계정). 표준출력(--json 사건)·표준오류는 끝부분만 모으고, 시간 제한이면 나무째 끈다. */
+function codex실행(args, 입력, timeoutMs, home = null) {
+  return new Promise(resolve => {
+    const { command, argv, verbatim } = codex명령(args);
+    const env = { ...process.env };
+    if (home) env.CODEX_HOME = home; else delete env.CODEX_HOME;
+    const 끝 = { 출력: '', 오류: '' };
+    const 담기 = (곳, d) => { 끝[곳] = (끝[곳] + d).slice(-1 << 20); };
+    let 시간초과 = false;
+    const child = spawn(command, argv, { env, windowsVerbatimArguments: verbatim, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] });
+    const 시계 = setTimeout(() => {
+      시간초과 = true;
+      if (process.platform === 'win32') spawn('taskkill', ['/pid', String(child.pid), '/T', '/F'], { windowsHide: true, stdio: 'ignore' });
+      else child.kill();
+    }, timeoutMs);
+    child.stdout.on('data', d => 담기('출력', d));
+    child.stderr.on('data', d => 담기('오류', d));
+    child.on('error', e => { clearTimeout(시계); resolve({ code: -1, ...끝, 오류: `${끝.오류}\n${e}`, 시간초과 }); });
+    child.on('close', code => { clearTimeout(시계); resolve({ code, ...끝, 시간초과 }); });
+    child.stdin.on('error', () => {});
+    child.stdin.end(입력);
+  });
+}
+/** 아르곤 부르기와 같은 꼴: { prompt, schema, thinking, timeoutMs, 계정 } → { text, selectedModel, usage }. 한도·로그인은 막힘으로 읽히는 오류로 던진다.
+ *  모델·추론은 본 설정 값을 -m·-c로 넘긴다 — 굽기 장부 폴더의 config.toml은 만들 때 옮긴 옛 값이라서. */
+export async function GPT부르기({ prompt, schema, thinking = null, timeoutMs = GPT제한분 * 60_000, 계정 = { 이름: null, home: null } }) {
+  const { 코덱스오류, 한도문구, 로그인문구 } = require코덱스();
+  if (!계정) throw new Error(`GPT quota — 주간 ${GPT주간한계}% 아래인 Pro 계정이 없다`);
+  const 설정 = GPT설정();
+  const 추론 = thinking || 설정.추론;
+  const 임시 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-gpt-review-'));
+  try {
+    const 빈 = path.join(임시, 'empty'), 꼴파일 = path.join(임시, 'schema.json'), 답파일 = path.join(임시, 'answer.json');
+    fs.mkdirSync(빈);
+    fs.writeFileSync(꼴파일, JSON.stringify(schema));
+    const r = await codex실행(['exec', '--ephemeral', '--skip-git-repo-check', '-s', 'read-only', '-C', 빈, '--output-schema', 꼴파일, '-o', 답파일, '--json',
+      ...(설정.모델 ? ['-m', 설정.모델] : []), ...(추론 ? ['-c', `model_reasoning_effort="${추론}"`] : []), '-'], prompt, timeoutMs, 계정.home);
+    if (r.시간초과) throw new Error(`codex exec 시간 초과(${Math.round(timeoutMs / 60_000)}분)`);
+    const 오류 = 코덱스오류(r).pop();
+    if (r.code !== 0) {
+      if (오류 && 한도문구.test(오류)) throw new Error(`GPT 한도(quota) — ${오류}`);
+      if (오류 && 로그인문구.test(오류)) throw new Error(`GPT login 필요 — ${오류}`);
+      throw new Error(`codex exec 실패(종료 ${r.code}) — ${(오류 || r.오류.trim().split('\n').pop() || '').slice(0, 400)}`);
+    }
+    if (!fs.existsSync(답파일)) throw new Error('codex exec가 답 파일을 남기지 않았다');
+    let usage = null;
+    for (const 줄 of r.출력.split(/\r?\n/)) { if (!줄.startsWith('{')) continue; try { const e = JSON.parse(줄); if (e?.type === 'turn.completed' && e.usage) usage = e.usage; } catch { /* 사건 아님 */ } }
+    return { text: fs.readFileSync(답파일, 'utf8'), selectedModel: `${설정.모델 || 'codex'}-${추론 || '기본'} · ${계정말(계정)}`, usage };
+  } finally { fs.rmSync(임시, { recursive: true, force: true, maxRetries: 3 }); }
+}
+/** 그 계정의 주간·5시간 몫(app-server, 토큰 0). 남은 몫으로 아르곤과 같은 꼴. 못 읽으면 null. */
+export async function GPT몫읽기(계정 = { 이름: null }) {
+  try {
+    const { 묻기 } = require코덱스();
+    const { codexWindows } = require('../desktop/src/ai-subscriptions.cjs');
+    const [r] = await 묻기(계정?.이름 || null, [{ method: 'account/rateLimits/read', params: {} }]);
+    const { session, weekly } = codexWindows(r?.rateLimits || Object.values(r?.rateLimitsByLimitId || {})[0] || {});
+    const 남음 = w => (w && Number.isFinite(w.usedPercent) ? Math.max(0, 1 - w.usedPercent / 100) : null);
+    return { 때: new Date().toISOString(), 주간: 남음(weekly), 다섯시간: 남음(session), 주간초기화: weekly?.resetsAt ? new Date(weekly.resetsAt).toISOString() : null };
+  } catch { return null; }
+}
+
+// ── 보내기 ─────────────────────────────────────────────────────────
+// 검수자마다 결과 파일 앞머리·지적 번호 앞머리·모델·수준만 다르고, 묶음 고르기·입력 SHA·답 대조·앞 답 지키기·막히면 멈추기는 같다.
+export const 검수자들 = {
+  아르곤: { 출처: '아르곤', 번호앞: '', 모델: ARGON.model, 기본수준: 종류 => 기본수준[종류], 제한분: 수준 => 제한분[수준], 몫: 몫읽기,
+    수준검사: 수준 => { if (!제한분[수준]) throw new Error(`--수준은 high·medium·low 가운데 하나(받음 ${수준})`); },
+    막힘말: '아르곤이 한도·로그인으로 막혔다 — 남은 묶음은 보내지 않는다. 운영 원칙대로 다른 경로를 찾지 않는다 — 백엔드는 GPT가 끝까지 읽었으면 그것으로, 아니면 Fable 검수로 대신하고 끝 보고에 그렇게 적는다' },
+  GPT: { 출처: 'GPT', 번호앞: 'G', 모델: null, 기본수준: () => null, 제한분: () => GPT제한분, 몫: GPT몫읽기,
+    수준검사: 수준 => { if (수준 != null && !추론들.includes(수준)) throw new Error(`--수준은 ${추론들.join('·')} 가운데 하나(받음 ${수준}) — 빼면 본 계정 설정 그대로`); },
+    막힘말: 'GPT가 한도·로그인으로 막혔다 — 남은 묶음은 보내지 않는다. 아르곤이 끝까지 읽었으면 그것으로 가고(아르곤도 막히면 Fable), 끝 보고에 그렇게 적는다' },
+};
+
+export function 아르곤보내기(폴더, 목록, o = {}) { return 검수보내기('아르곤', 폴더, 목록, o); }
+export function GPT보내기(폴더, 목록, o = {}) { return 검수보내기('GPT', 폴더, 목록, o); }
+
+export async function 검수보내기(누구, 폴더, 목록, { 수준, 고른 = null, 다시 = false, call, 몫, 알리기 = () => {} } = {}) {
+  const 자 = 검수자들[누구];
+  if (!자) throw new Error(`모르는 검수자: ${누구}`);
+  수준 = 수준 === undefined ? 자.기본수준(목록.종류) : 수준;
+  자.수준검사(수준);
+  몫 ||= 자.몫;
+  const 결과들 = [], 내표시들 = [];
+  try {
   for (const 묶음 of 목록.묶음) {
     if (고른 && !고른.includes(묶음.이름)) continue;
-    const 파일 = path.join(폴더, `아르곤-${묶음.이름}.json`);
+    const 파일 = path.join(폴더, `${자.출처}-${묶음.이름}.json`);
+    // 같은 묶음을 다른 프로세스가 보내는 중이면 겹쳐 보내지 않는다(GPT 2차 검수 GA3)
+    const 표시 = 보내는중파일(폴더, 자.출처, 묶음.이름);
+    const 남의표시 = 살아있는표시(표시);
+    if (남의표시) { 알리기(`${자.출처} 묶음 ${묶음.이름}: 다른 프로세스(pid ${남의표시.pid})가 ${남의표시.보낸때}부터 보내는 중 — 건너뜀`); continue; }
     const 앞결과 = fs.existsSync(파일) ? readJson(파일) : null;
     // 결과가 있는 묶음은 사람이 고를 때만 다시 보낸다: 읽음은 --다시, 잘림·덜 읽음·실패는 --다시나 --묶음으로 고른 것만.
     // 결과가 없거나 막힘이면 보낸다(막힘 뒤 이어 보내기). 도구가 스스로 되풀이하지 않게.
@@ -649,20 +788,25 @@ export async function 아르곤보내기(폴더, 목록, { 수준 = 기본수준
     const 입력 = fs.readFileSync(path.join(폴더, 묶음.파일));
     const 입력sha = sha(입력);
     if (입력sha !== 묶음.sha256) throw new Error(`묶음 ${묶음.이름}이 준비 뒤 바뀌었다(입력 SHA ${입력sha.slice(0, 12)} ≠ ${묶음.sha256.slice(0, 12)}) — 새 이름으로 준비를 다시 한다`);
-    const 앞몫 = 몫();
+    // 답을 기다리는 동안 집계가 이 묶음을 「안 보냄」으로 보고 관문에서 빼지 않게 표시를 남긴다(GPT 검수 GA2).
+    // 몫을 읽기 전에 배타로 잡고, 결과 파일과 지적표에 다 넣은 뒤 바깥 finally에서 내 것만 지운다(2차 검수 아르곤 A1·GPT GA2·GA3).
     const 시작 = Date.now();
+    const 내표시 = { 묶음: 묶음.이름, pid: process.pid, 표: crypto.randomUUID(), 보낸때: new Date(시작).toISOString() };
+    if (!표시잡기(폴더, 표시, 내표시)) { 알리기(`${자.출처} 묶음 ${묶음.이름}: 그새 다른 프로세스가 보내기 시작했다 — 건너뜀`); continue; }
+    내표시들.push([표시, 내표시.표]);
+    const 앞몫 = await 몫();
     let 기록 = null, 오류 = null, 답 = null;
     if (앞몫?.주간 === 0) 오류 = `주간 몫이 다 찼다(초기화 ${앞몫.주간초기화 || '?'}) — limit remaining 0`;
     else {
-      알리기(`묶음 ${묶음.이름} 보냄 · ${수준} · ${Math.round(입력.length / 1024)}KB · 항목 ${묶음.항목.length}개${앞몫 ? ` · 주간 몫 ${퍼(앞몫.주간)}` : ''}`);
-      try { 기록 = await call({ model: ARGON.model, thinking: 수준, prompt: 입력.toString('utf8'), schema: 답꼴, timeoutMs: 제한분[수준] * 60_000 }); }
+      알리기(`${자.출처} 묶음 ${묶음.이름} 보냄 · ${수준 || '설정 그대로'} · ${Math.round(입력.length / 1024)}KB · 항목 ${묶음.항목.length}개${앞몫 ? ` · 주간 몫 ${퍼(앞몫.주간)}` : ''}`);
+      try { 기록 = await call({ model: 자.모델, thinking: 수준, prompt: 입력.toString('utf8'), schema: 답꼴, timeoutMs: 자.제한분(수준) * 60_000 }); }
       catch (e) { 오류 = e.message; }
       if (기록) { try { 답 = JSON.parse(기록.text); } catch { 오류 = '답이 JSON이 아니다'; } }
     }
     const 대조 = 답 ? 답대조(묶음, 답) : { 상태: 막힘인가(오류) ? '막힘' : '실패', 표식맞음: false, 빠진항목: [] };
-    const r = { 묶음: 묶음.이름, 입력sha256: 입력sha, 표식: 묶음.표식, 수준, 모델: 기록?.selectedModel || `${ARGON.model}-${수준}`, 보낸때: new Date(시작).toISOString(),
-      초: Math.round((Date.now() - 시작) / 1000), ...대조, 오류, usage: 기록?.usage ?? null, 몫: { 앞: 앞몫, 뒤: 기록 || 오류 ? 몫() : 앞몫 }, 답 };
-    알리기(`묶음 ${묶음.이름} · ${r.초}초 · ${r.상태}${r.빠진항목.length ? ` · 빠진 항목 ${r.빠진항목.join(',')}` : ''}${답 ? ` · 지적 ${답.findings.length}건` : ''}${오류 ? ` · ${오류.slice(0, 240)}` : ''}${몫글(r.몫)}`);
+    const r = { 묶음: 묶음.이름, 입력sha256: 입력sha, 표식: 묶음.표식, 수준, 모델: 기록?.selectedModel || (자.모델 ? `${자.모델}-${수준}` : 자.출처), 보낸때: new Date(시작).toISOString(),
+      초: Math.round((Date.now() - 시작) / 1000), ...대조, 오류, usage: 기록?.usage ?? null, 몫: { 앞: 앞몫, 뒤: 기록 || 오류 ? await 몫() : 앞몫 }, 답 };
+    알리기(`${자.출처} 묶음 ${묶음.이름} · ${r.초}초 · ${r.상태}${r.빠진항목.length ? ` · 빠진 항목 ${r.빠진항목.join(',')}` : ''}${답 ? ` · 지적 ${답.findings.length}건` : ''}${오류 ? ` · ${오류.slice(0, 240)}` : ''}${몫글(r.몫)}`);
     // 다시 보낸 답이 못 쓰는 것(잘림·실패·막힘)이면 앞의 쓸 만한 답과 그 지적을 그대로 두고 이번 시도만 실패들에 적는다
     // — 결과 파일과 지적표가 같은 답을 가리키게.
     if (!쓸만한가(r) && 쓸만한가(앞결과)) {
@@ -674,36 +818,98 @@ export async function 아르곤보내기(폴더, 목록, { 수준 = 기본수준
       writeJson(파일, r);
       결과들.push(r);
     }
-    if (r.상태 === '막힘') { 알리기('아르곤이 한도·로그인으로 막혔다 — 남은 묶음은 보내지 않는다. 운영 원칙대로 다른 경로를 찾지 않고 Fable 검수로 대신하고, 끝 보고에 그렇게 적는다'); break; }
+    if (r.상태 === '막힘') { 알리기(자.막힘말); break; }
   }
-  const 표 = 지적표읽기(폴더);
-  for (const r of 결과들) if (쓸만한가(r)) 아르곤지적넣기(표, r.묶음, r.답.findings);
-  지적표쓰기(폴더, 표);
+  // 아르곤과 GPT를 따로 띄워 함께 돌려도 되게, 지적표는 잠근 채 다시 읽어 그 검수자 몫만 갈아 끼운다(GPT 검수 GA1)
+  지적표고치기(폴더, 표 => { for (const r of 결과들) if (쓸만한가(r)) 검수자지적넣기(표, 자.출처, r.묶음, r.답.findings); });
+  } finally {
+    if (내표시들.length) 잠근채(폴더, () => { for (const [표시, 표] of 내표시들) { try { if (readJson(표시).표 === 표) fs.rmSync(표시, { force: true }); } catch { /* 이미 없음 */ } } });
+  }
   return 결과들;
 }
 const 쓸만한가 = r => Boolean(r?.답 && (r.상태 === '읽음' || r.상태 === '덜 읽음'));
+const 보내는중파일 = (폴더, 누구, 묶음) => path.join(폴더, `${누구}-${묶음}.보내는중.json`);
+const 살아있나 = pid => { try { process.kill(pid, 0); return true; } catch (e) { return e.code === 'EPERM'; } };
+/** 살아 있는 다른 프로세스의 보내는 중 표시(없거나 주인이 죽었으면 null). */
+function 살아있는표시(표시) {
+  try { const m = readJson(표시); return m.pid !== process.pid && 살아있나(m.pid) ? m : null; } catch { return null; }
+}
+/** 폴더 잠금 안에서 표시를 잡는다 — 주인이 살아 있으면 못 잡고, 주인이 죽은 표시는 덮어 잡는다(잠금 안이라 둘이 같이 덮지 않는다, 3차 검수 GA2). */
+function 표시잡기(폴더, 표시, 내표시) {
+  return 잠근채(폴더, () => {
+    if (fs.existsSync(표시) && 살아있는표시(표시)) return false;
+    writeJson(표시, 내표시);
+    return true;
+  });
+}
 /** 묶음마다 지금 결과 상태(이번에 보내지 않은 묶음까지). 다 「읽음」이어야 검수 끝. */
-export function 묶음상태들(폴더, 목록) {
-  const 결과들 = 결과들읽기(폴더, 목록);
+export function 묶음상태들(폴더, 목록, 누구 = '아르곤') {
+  const 결과들 = 결과들읽기(폴더, 목록, 누구);
   return 목록.묶음.map(b => ({ 이름: b.이름, 상태: 결과들.find(r => r.묶음 === b.이름)?.상태 ?? '안 보냄' }));
 }
-function 결과들읽기(폴더, 목록) {
-  return 목록.묶음.map(b => { const f = path.join(폴더, `아르곤-${b.이름}.json`); return fs.existsSync(f) ? readJson(f) : null; }).filter(Boolean);
+/** 묶음마다 결과. 보내는 프로세스가 살아 있으면(표시 파일) 「보내는 중」이다 — 끝까지 읽힌 것이 아니라 관문을 막는다. */
+export function 결과들읽기(폴더, 목록, 누구 = '아르곤') {
+  return 목록.묶음.map(b => {
+    const 표시 = 보내는중파일(폴더, 누구, b.이름);
+    if (fs.existsSync(표시)) { try { const m = readJson(표시); if (살아있나(m.pid)) return { 묶음: b.이름, 상태: '보내는 중', 입력sha256: b.sha256, 보낸때: m.보낸때 }; } catch { /* 깨진 표시는 없는 셈 */ } }
+    const f = path.join(폴더, `${누구}-${b.이름}.json`);
+    return fs.existsSync(f) ? readJson(f) : null;
+  }).filter(Boolean);
+}
+/** 지적표 읽기~고치기~쓰기를 폴더 잠금 안에서(아르곤·GPT·처리·페이블받기를 따로 띄워도 서로의 지적을 지우지 않게). */
+export function 지적표고치기(폴더, 고치기, o = {}) {
+  return 잠근채(폴더, () => {
+    const 지적표 = 지적표읽기(폴더);
+    const 값 = 고치기(지적표);
+    지적표쓰기(폴더, 지적표);
+    return 값;
+  }, o);
+}
+/** 폴더 잠금(`지적표.lock`) 안에서 fn을 돌린다 — 지적표 고치기, 보내는 중 표시 잡기·지우기, 집계 읽기가 모두 이 잠금을 쓴다(2·3차 검수 GA1·GA2). */
+export function 잠근채(폴더, fn, o = {}) {
+  const 잠금 = path.join(폴더, '지적표.lock');
+  const 표 = 잠그기(잠금, o);
+  try { return fn(); } finally { 풀기(잠금, 표); }
+}
+const 쉬기 = ms => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+/** 잠금 파일을 배타로 만들고 제 표(pid-uuid)를 넣는다. 낡은 잠금을 저절로 걷지는 않는다 — 둘이 같이 걷다 새 잠금을 지우는
+ *  경합이 걷기 쪽에서 생겨서(2·3차 검수 A2·GA1·GA3). 잠금은 프로세스가 죽을 때만 남으니, 한계가 지나면 주인과 함께 알린다. */
+export function 잠그기(잠금, { 한계 = 60_000 } = {}) {
+  const 표 = `${process.pid}-${crypto.randomUUID()}`;
+  const 끝 = Date.now() + 한계;
+  for (;;) {
+    try { fs.writeFileSync(잠금, 표, { flag: 'wx' }); return 표; }
+    catch (e) { if (e.code !== 'EEXIST') throw e; }
+    if (Date.now() > 끝) {
+      let 주인 = '?';
+      try { 주인 = fs.readFileSync(잠금, 'utf8'); } catch { /* 그새 풀림 */ }
+      const pid = Number(주인.split('-')[0]);
+      throw new Error(`잠금을 ${Math.round(한계 / 1000)}초 동안 얻지 못했다: ${잠금} (주인 ${주인}${pid && !살아있나(pid) ? ' — 이 프로세스는 이미 없다. 다른 검수 명령이 돌고 있지 않으면 이 파일을 지우고 다시 한다' : ''})`);
+    }
+    쉬기(100);
+  }
+}
+/** 제 표가 든 잠금만 푼다. */
+export function 풀기(잠금, 표) {
+  try { if (fs.readFileSync(잠금, 'utf8') === 표) fs.rmSync(잠금, { force: true }); } catch { /* 이미 없음 */ }
 }
 
 // ── 지적표 ─────────────────────────────────────────────────────────
-const 번호순 = (a, b) => (a.출처 === b.출처 ? (a.묶음 || '').localeCompare(b.묶음 || '') || Number(a.번호.replace(/^\D+/, '')) - Number(b.번호.replace(/^\D+/, '')) : a.출처 === '아르곤' ? -1 : 1);
+const 출처순 = { 아르곤: 0, GPT: 1, Fable: 2 };
+const 번호순 = (a, b) => (a.출처 === b.출처 ? (a.묶음 || '').localeCompare(b.묶음 || '') || Number(a.번호.replace(/^\D+/, '')) - Number(b.번호.replace(/^\D+/, '')) : (출처순[a.출처] ?? 9) - (출처순[b.출처] ?? 9));
 export function 지적표읽기(폴더) { const f = path.join(폴더, '지적표.json'); return fs.existsSync(f) ? readJson(f) : { 지적: [] }; }
-/** 그 묶음의 아르곤 지적을 갈아 끼운다(다시 보낸 묶음). 위치·인용이 같은 지적은 적어 둔 처리를 잇는다. */
-export function 아르곤지적넣기(표, 묶음, findings) {
-  const 옛 = 표.지적.filter(x => x.출처 === '아르곤' && x.묶음 === 묶음);
+/** 그 묶음의 그 검수자 지적을 갈아 끼운다(다시 보낸 묶음). 번호는 아르곤 A1…, GPT GA1…. 위치·인용이 같은 지적은 적어 둔 처리를 잇는다. */
+export function 검수자지적넣기(표, 출처, 묶음, findings) {
+  const 앞 = 검수자들[출처]?.번호앞 ?? '';
+  const 옛 = 표.지적.filter(x => x.출처 === 출처 && x.묶음 === 묶음);
   const 새 = findings.map((f, i) => {
     const 같은 = 옛.find(o => o.위치 === f.location && o.인용 === f.quote);
-    return { 번호: `${묶음}${i + 1}`, 출처: '아르곤', 묶음, 등급: f.grade, 위치: f.location, 인용: f.quote, 문제: f.problem, 방향: f.fix, 처리: 같은?.처리 ?? null, 이유: 같은?.이유 ?? '', 재확인: null };
+    return { 번호: `${앞}${묶음}${i + 1}`, 출처, 묶음, 등급: f.grade, 위치: f.location, 인용: f.quote, 문제: f.problem, 방향: f.fix, 처리: 같은?.처리 ?? null, 이유: 같은?.이유 ?? '', 재확인: null };
   });
-  표.지적 = [...표.지적.filter(x => !(x.출처 === '아르곤' && x.묶음 === 묶음)), ...새].sort(번호순);
+  표.지적 = [...표.지적.filter(x => !(x.출처 === 출처 && x.묶음 === 묶음)), ...새].sort(번호순);
   return 표;
 }
+export function 아르곤지적넣기(표, 묶음, findings) { return 검수자지적넣기(표, '아르곤', 묶음, findings); }
 const 처리말 = { 반영: '반영', 일부: '일부 반영', 일부반영: '일부 반영', 안함: '반영 안 함', 반영안함: '반영 안 함', 재현안됨: '재현 안 됨', 후속: '후속' };
 export function 처리하기(표, 토막들) {
   const 바뀜 = [];
@@ -741,7 +947,7 @@ export function 페이블지적넣기(표, 답, { 새로 = false, 때 = new Date
     표.지적.push(지적);
     더함.push(지적.번호);
   }
-  for (const r of 답.argonReview || []) { const a = 표.지적.find(x => x.출처 === '아르곤' && x.번호 === r.id); if (a) a.페이블의견 = { 동의: r.agree !== false, 메모: r.note || '' }; }
+  for (const r of 답.argonReview || []) { const a = 표.지적.find(x => (x.출처 === '아르곤' || x.출처 === 'GPT') && x.번호 === r.id); if (a) a.페이블의견 = { 동의: r.agree !== false, 메모: r.note || '' }; }
   표.페이블 = { 받은때: 때, 범위: 답.coverage || null, 회차: (표.페이블?.회차 || 0) + 1 };
   표.지적.sort(번호순);
   return 더함;
@@ -757,15 +963,21 @@ function 지적표쓰기(폴더, 표) {
   writeJson(path.join(폴더, '지적표.json'), 표);
   글쓰기(path.join(폴더, '지적표.md'), `# 지적표 — ${표.이름 || path.basename(폴더)}\n\n${지적표글(표)}\n`);
   글쓰기(path.join(폴더, '아르곤지적표.md'), `# 아르곤 지적과 Claude의 처리 — ${표.이름 || path.basename(폴더)}\n\n${지적표글(표, { 출처: '아르곤' })}\n`);
+  // GPT 결과가 하나라도 있으면 0건이어도 쓴다 — fable.md 2단계가 이 파일을 가리킨다(아르곤 검수 A1)
+  const G결과있음 = fs.existsSync(폴더) && fs.readdirSync(폴더).some(f => /^GPT-[^.]+\.json$/.test(f));
+  if (G결과있음 || 표.지적.some(x => x.출처 === 'GPT') || fs.existsSync(path.join(폴더, 'GPT지적표.md'))) 글쓰기(path.join(폴더, 'GPT지적표.md'), `# GPT 지적과 Claude의 처리 — ${표.이름 || path.basename(폴더)}\n\n${지적표글(표, { 출처: 'GPT' })}\n`);
 }
 
 // ── Fable ──────────────────────────────────────────────────────────
 function 페이블쓰기(폴더, 목록, 지금) {
   const 화면 = 목록.종류 === '화면';
   const 표 = 지적표읽기(폴더);
-  const 결과들 = 결과들읽기(폴더, 목록);
+  const 결과들 = 결과들읽기(폴더, 목록), G결과들 = 결과들읽기(폴더, 목록, 'GPT');
   const 막힘 = 결과들.some(r => r.상태 === '막힘');
-  const 끝말 = 목록.끝 === '작업본' ? `작업본(HEAD ${목록.머리커밋?.커밋?.slice(0, 9) || '?'} + 미커밋 변경)` : `${목록.끝.커밋.slice(0, 9)} (${목록.끝.제목})`;
+  // 먼저 본 다른 회사 검수자(쓸 만한 답이 있는 쪽). 아르곤이 막혔어도 GPT가 읽었으면 2단계에 GPT 지적이 간다.
+  const 앞검수 = [...(결과들.some(쓸만한가) ? [['아르곤', '아르곤지적표.md', 결과들]] : []), ...(G결과들.some(쓸만한가) ? [['GPT', 'GPT지적표.md', G결과들]] : [])];
+  const 앞이름 = 앞검수.map(([이름]) => (이름 === '아르곤' ? '아르곤(Gemini 4 Argon)' : 'GPT')).join('과 ');
+  const 끝말 =목록.끝 === '작업본' ? `작업본(HEAD ${목록.머리커밋?.커밋?.slice(0, 9) || '?'} + 미커밋 변경)` : `${목록.끝.커밋.slice(0, 9)} (${목록.끝.제목})`;
   const 캡처표 = 캡 => {
     if (!캡?.장들?.length) return [];
     const 줄 = ['| 화면 | 기기 | 전 | 후 | 차이 | 넘침(후) | 오류(후) |', '|---|---|---|---|---|---|---|'];
@@ -780,11 +992,10 @@ function 페이블쓰기(폴더, 목록, 지금) {
     return ['', `화면 캡처(경로는 \`${폴더}\` 기준 · 전 = 바탕 판, 후 = 지금 판 · ${캡.가져옴 ? `가져온 캡처, 기기 ${기기들.join('·')}` : '1440×900 / 390×844 · 전체 화면'}):`, '', ...줄];
   };
   const 시 = 지금.시험;
-  const 읽은묶음 = 결과들.filter(r => r.상태 === '읽음').length;
   const 줄 = [
     `# Fable 최종 검수 — ${목록.이름} (${목록.종류})`,
     '',
-    `너는 SYNK의 최종 ${목록.종류} 검수자(Fable)다. Claude(Opus)가 만든 변경을${막힘 ? ' — 아르곤(다른 회사 모델)이 한도·로그인으로 막혀 아르곤 대신 —' : ' 아르곤(Gemini 4 Argon, 다른 회사 모델)이 먼저 본 뒤 Claude가 고친'} 지금 상태로 다시 본다. 품질이 먼저라 범위를 줄이지 않는다 — 바뀐 파일 전체와 그 변경이 닿는 ${화면 ? '화면' : '코드 경로'} 전체를 본다. 아래 목록은 헤매지 않게 하려는 안내일 뿐 범위의 끝이 아니다. 저장소 파일은 직접 열어 읽어도 되지만 고치지는 않는다.`,
+    `너는 SYNK의 최종 ${목록.종류} 검수자(Fable)다. Claude(Opus)가 만든 변경을${앞검수.length ? ` ${앞이름}(다른 회사 모델)이 먼저 본 뒤 Claude가 고친` : 막힘 ? ' — 아르곤(다른 회사 모델)이 한도·로그인으로 막혀 아르곤 대신 —' : ' 아르곤(Gemini 4 Argon, 다른 회사 모델)이 먼저 본 뒤 Claude가 고친'} 지금 상태로 다시 본다. 품질이 먼저라 범위를 줄이지 않는다 — 바뀐 파일 전체와 그 변경이 닿는 ${화면 ? '화면' : '코드 경로'} 전체를 본다. 아래 목록은 헤매지 않게 하려는 안내일 뿐 범위의 끝이 아니다. 저장소 파일은 직접 열어 읽어도 되지만 고치지는 않는다.`,
     '',
     '## 1단계 — 네 검수를 먼저 쓴다',
     '',
@@ -806,9 +1017,9 @@ function 페이블쓰기(폴더, 목록, 지금) {
     '- 실제 문제만, 파일·줄(또는 화면)·깨지는 동작·재현 근거와 함께. 읽지 못한 범위는 밝히고 지적을 만들지 않는다. 취향 차이는 지적하지 않는다.',
     ...(화면 ? ['- 그림은 직접 열어 본다(전·후·차이). 휴대폰 폭의 넘침·겹침·잘림, 화면 글의 말투·이름 엇갈림, 콘솔 오류를 본다.'] : []),
     '',
-    ...(막힘 ? [] : ['1단계 답을 다 쓰기 전에는 아래 2단계 파일을 열지 않는다(먼저 본 의견에 끌리지 않으려고).', '',
-      '## 2단계 — 아르곤 지적과 Claude의 처리를 본다', '',
-      `\`${path.join(폴더, '아르곤지적표.md')}\`를 읽고, 지적마다 Claude의 처리(반영·일부 반영·반영 안 함·재현 안 됨·후속과 그 이유)가 맞는지 본다. 반영했다는 것은 지금 코드에서 확인하고, 처리가 틀렸으면 그 지적을 네 지적으로 다시 올린다. 아르곤은 묶음 ${목록.묶음.length}개 가운데 ${읽은묶음}개를 끝까지 읽었다.`, '']),
+    ...(막힘 && !앞검수.length ? [] : ['1단계 답을 다 쓰기 전에는 아래 2단계 파일을 열지 않는다(먼저 본 의견에 끌리지 않으려고).', '',
+      `## 2단계 — ${앞검수.length ? 앞검수.map(([이름]) => 이름).join('·') : '아르곤'} 지적과 Claude의 처리를 본다`, '',
+      `${(앞검수.length ? 앞검수 : [['아르곤', '아르곤지적표.md', 결과들]]).map(([, 파일]) => `\`${path.join(폴더, 파일)}\``).join('와 ')}를 읽고, 지적마다 Claude의 처리(반영·일부 반영·반영 안 함·재현 안 됨·후속과 그 이유)가 맞는지 본다. 반영했다는 것은 지금 코드에서 확인하고, 처리가 틀렸으면 그 지적을 네 지적으로 다시 올린다. ${(앞검수.length ? 앞검수 : [['아르곤', '', 결과들]]).map(([이름, , rs]) => `${이름 === 'GPT' ? 'GPT는' : `${이름}은`} 묶음 ${목록.묶음.length}개 가운데 ${rs.filter(r => r.상태 === '읽음').length}개를 끝까지 읽었다.`).join(' ')}`, '']),
     '## 답',
     '',
     `사람이 읽는 보고를 쓰고, 맨 끝에 아래 꼴의 JSON 블록을 하나 붙인다. 같은 JSON을 \`${path.join(폴더, '페이블-답.json')}\`에도 쓴다(Write 도구).`,
@@ -841,35 +1052,47 @@ export async function 페이블하기(폴더, { 시험 = true, 캡처 = true, �
 
 // ── 집계 ───────────────────────────────────────────────────────────
 const 닫힘 = new Set(['반영', '재현 안 됨']);
-export function 집계하기(목록, 결과들, 표) {
+export function 집계하기(목록, 결과들, 표, G결과들 = []) {
   const 셈 = 출처 => {
     const xs = 표.지적.filter(x => x.출처 === 출처), c = k => xs.filter(x => x.처리 === k).length;
     return { 건: xs.length, 반영: c('반영') + c('일부 반영'), 반영만: c('반영'), 일부: c('일부 반영'), 안함: c('반영 안 함'), 재현안됨: c('재현 안 됨'), 후속: c('후속'),
       미정: xs.filter(x => !x.처리).length, 등급: Object.fromEntries(['P0', 'P1', 'P2', 'P3'].map(g => [g, xs.filter(x => x.등급 === g).length])) };
   };
-  const 아 = 셈('아르곤'), 페 = 셈('Fable');
-  const 묶음상태 = 목록.묶음.map(b => { const r = 결과들.find(x => x.묶음 === b.이름); return { 이름: b.이름, 상태: r?.상태 ?? '안 보냄', 입력같음: r ? r.입력sha256 === b.sha256 : null, 초: r?.초 ?? null, 빠진항목: r?.빠진항목 || [] }; });
+  const 아 = 셈('아르곤'), 지 = 셈('GPT'), 페 = 셈('Fable');
+  const 상태표 = rs => 목록.묶음.map(b => { const r = rs.find(x => x.묶음 === b.이름); return { 이름: b.이름, 상태: r?.상태 ?? '안 보냄', 입력같음: r ? r.입력sha256 === b.sha256 : null, 초: r?.초 ?? null, 빠진항목: r?.빠진항목 || [] }; });
+  const 묶음상태 = 상태표(결과들), G묶음상태 = 상태표(G결과들);
+  const 덜읽음 = 상태 => 상태.filter(b => b.상태 !== '읽음' || b.입력같음 === false);
+  const 덜글목록 = 상태 => 덜읽음(상태).filter(b => b.상태 !== '보내는 중');
+  const 덜글 = 상태 => 덜글목록(상태).map(b => `${b.이름}(${b.입력같음 === false ? '입력 SHA 다름' : b.상태})`).join(', ');
   const 막힘 = 묶음상태.some(b => b.상태 === '막힘');
+  // GPT는 백엔드 2차 검수에 아르곤과 함께(2026-10-22). 보낸 적이 없으면 관문에 넣지 않고(구독이 끝나면 아르곤만), 보냈으면 아르곤처럼 끝까지 읽혀야 친다.
+  const G보냄 = G결과들.length > 0, G막힘 = G묶음상태.some(b => b.상태 === '막힘'), G다읽음 = G보냄 && !덜읽음(G묶음상태).length;
   const 페이블있음 = Boolean(표.페이블);
   const 열린 = 표.지적.filter(x => ['P0', 'P1'].includes(x.등급) && (!닫힘.has(x.처리) || (x.출처 === 'Fable' && x.처리 === '반영' && x.재확인 !== '통과')));
   const 조건 = [];
-  const 덜 = 묶음상태.filter(b => b.상태 !== '읽음' || b.입력같음 === false);
-  if (덜.length && !막힘) 조건.push(`아르곤 묶음 ${덜.map(b => `${b.이름}(${b.입력같음 === false ? '입력 SHA 다름' : b.상태})`).join(', ')} — 끝까지 읽힌 묶음만 검수로 친다(0건이어도)`);
-  if (막힘 && !페이블있음) 조건.push('아르곤이 막혀 Fable 검수로 대신해야 한다');
+  // 답을 기다리는 묶음이 있으면 앞의 막힘 결과와 상관없이 미충족이다(GPT 2차 검수 GA4)
+  const 보내는중 = [...묶음상태.filter(b => b.상태 === '보내는 중').map(b => `아르곤 ${b.이름}`), ...G묶음상태.filter(b => b.상태 === '보내는 중').map(b => `GPT ${b.이름}`)];
+  if (보내는중.length) 조건.push(`${보내는중.join(', ')} 묶음을 보내는 중 — 답을 받은 뒤 집계한다`);
+  if (덜글목록(묶음상태).length && !막힘) 조건.push(`아르곤 묶음 ${덜글(묶음상태)} — 끝까지 읽힌 묶음만 검수로 친다(0건이어도)`);
+  if (G보냄 && !G막힘 && 덜글목록(G묶음상태).length) 조건.push(`GPT 묶음 ${덜글(G묶음상태)} — 끝까지 읽힌 묶음만 검수로 친다(0건이어도)`);
+  // 아르곤이 막혀도 백엔드는 GPT가 끝까지 읽었으면 다른 회사 검수가 있는 셈이다. 둘 다 없으면 Fable로 대신한다.
+  if (막힘 && !페이블있음 && !(목록.종류 === '백엔드' && G다읽음)) 조건.push(`아르곤이 막혀${G보냄 && !G다읽음 ? '(GPT도 끝까지 못 읽음)' : ''} Fable 검수로 대신해야 한다`);
   else if (목록.종류 === '화면' && !페이블있음) 조건.push('Fable 최종 검수 전');
   for (const x of 열린) 조건.push(`${x.번호} ${x.등급} ${x.처리 ? (x.처리 === '반영' ? '반영 — 같은 Fable 재확인 전' : x.처리) : '처리 미정'}`);
-  const 한줄 = `아르곤 ${막힘 && !아.건 ? '막힘(한도·로그인)' : `${아.건}건(반영 ${아.반영})`}${페이블있음 || 페.건 ? ` · Fable ${페.건}건(반영 ${페.반영})` : ''}`;
-  return { 한줄, 아르곤: 아, 페이블: 페, 묶음상태, 막힘, 페이블있음, 열린, 조건, 배포조건충족: !조건.length,
+  const 한줄 = `아르곤 ${막힘 && !아.건 ? '막힘(한도·로그인)' : `${아.건}건(반영 ${아.반영})`}${G보냄 || 지.건 ? ` · GPT ${G막힘 && !지.건 ? '막힘(한도·로그인)' : `${지.건}건(반영 ${지.반영})`}` : ''}${페이블있음 || 페.건 ? ` · Fable ${페.건}건(반영 ${페.반영})` : ''}`;
+  return { 한줄, 아르곤: 아, GPT: 지, 페이블: 페, 묶음상태, G묶음상태, 막힘, G보냄, G막힘, 페이블있음, 열린, 조건, 배포조건충족: !조건.length,
     안함: 표.지적.filter(x => x.처리 && x.처리 !== '반영'), 미정: 표.지적.filter(x => !x.처리) };
 }
 function 집계글(목록, 결과들, 표, s) {
   const 셈글 = c => `P0 ${c.등급.P0}·P1 ${c.등급.P1}·P2 ${c.등급.P2}·P3 ${c.등급.P3} · 반영 ${c.반영만}·일부 ${c.일부}·안 함 ${c.안함}·재현 안 됨 ${c.재현안됨}·후속 ${c.후속}·미정 ${c.미정}`;
+  const 상태글 = 상태 => 상태.map(b => `${b.이름} ${b.상태}${b.입력같음 === false ? '(입력 SHA 다름)' : ''}${b.초 != null ? ` ${b.초}초` : ''}${b.빠진항목.length ? `(빠짐 ${b.빠진항목.length})` : ''}`).join(' · ');
   return [
     `# 검수 ${목록.이름} — ${목록.종류}`,
     '',
     `- ${s.한줄}`,
-    `- 바탕 ${목록.바탕.커밋.slice(0, 9)} → ${목록.끝 === '작업본' ? '작업본' : 목록.끝.커밋.slice(0, 9)} · 묶음 ${목록.묶음.length}개: ${s.묶음상태.map(b => `${b.이름} ${b.상태}${b.입력같음 === false ? '(입력 SHA 다름)' : ''}${b.초 != null ? ` ${b.초}초` : ''}${b.빠진항목.length ? `(빠짐 ${b.빠진항목.length})` : ''}`).join(' · ')}`,
+    `- 바탕 ${목록.바탕.커밋.slice(0, 9)} → ${목록.끝 === '작업본' ? '작업본' : 목록.끝.커밋.slice(0, 9)} · 묶음 ${목록.묶음.length}개: 아르곤 ${상태글(s.묶음상태)}${s.G보냄 ? ` / GPT ${상태글(s.G묶음상태)}` : ''}`,
     `- 아르곤: ${셈글(s.아르곤)}`,
+    ...(s.G보냄 || s.GPT.건 ? [`- GPT: ${셈글(s.GPT)}`] : []),
     ...(s.페이블있음 || s.페이블.건 ? [`- Fable: ${셈글(s.페이블)}${표.페이블 ? ` · ${표.페이블.회차}회 받음` : ''}`] : []),
     `- 배포 조건(재현되는 P0·P1 0건${목록.종류 === '화면' ? ' · Fable 최종 검수' : ''}): ${s.배포조건충족 ? '충족' : `미충족 — ${s.조건.join(' / ')}`}`,
     ...(s.안함.length ? ['', '## 반영하지 않은 것', '', ...s.안함.map(x => `- ${x.번호} ${x.등급} ${x.처리} — ${칸(x.이유)} (${칸(x.위치).slice(0, 80)})`)] : []),
@@ -906,7 +1129,8 @@ const 쓰는법 = () => {
 async function main(argv) {
   let o;
   try { o = 인자읽기(argv); } catch (e) { console.error(e.message); console.log(쓰는법()); return 2; }
-  if (!o.명령 || !o.이름 || !['준비', '아르곤', '처리', '페이블', '페이블받기', '집계'].includes(o.명령)) { console.log(쓰는법()); return 2; }
+  if (/^gpt$/i.test(o.명령 || '')) o.명령 = 'GPT';
+  if (!o.명령 || !o.이름 || !['준비', '아르곤', 'GPT', '처리', '페이블', '페이블받기', '집계'].includes(o.명령)) { console.log(쓰는법()); return 2; }
   const 알리기 = m => console.error(`… ${m}`);
   if (o.명령 === '준비') {
     const { 폴더, 목록 } = await 준비하기(o, { 알리기 });
@@ -928,15 +1152,24 @@ async function main(argv) {
     await 아르곤보내기(폴더, 목록, { 수준: o.수준 || 기본수준[목록.종류], 고른: o.묶음 || null, 다시: Boolean(o.다시), call: 부르기, 알리기 });
     const 표 = 지적표읽기(폴더), 상태들 = 묶음상태들(폴더, 목록);
     console.log(`아르곤 ${상태들.map(b => `${b.이름} ${b.상태}`).join(' · ')} · 지적 ${표.지적.filter(x => x.출처 === '아르곤').length}건 → ${path.join(폴더, '지적표.md')}`);
-    console.log(`다음: 재현되는 지적만 고치고 node tools/검수묶음.mjs 처리 ${목록.이름} A1=반영 "A2=재현안됨:<이유>" … → 페이블 ${목록.이름}`);
+    console.log(`다음: ${목록.종류 === '백엔드' ? `GPT ${목록.이름}(같이 돌려도 된다) → ` : ''}재현되는 지적만 고치고 node tools/검수묶음.mjs 처리 ${목록.이름} A1=반영 "A2=재현안됨:<이유>" … → ${목록.종류 === '백엔드' ? '집계' : '페이블'} ${목록.이름}`);
+    return 상태들.every(b => b.상태 === '읽음') ? 0 : 1;
+  }
+  if (o.명령 === 'GPT') {
+    const 계정들 = await GPT계정들읽기();
+    const 계정 = GPT계정가리기(계정들);
+    알리기(`GPT 계정: ${계정들.map(a => `${계정말(a)} ${a.요금제 || '?'} 주간 ${a.주간사용 ?? '?'}%`).join(' · ')} → ${계정 ? 계정말(계정) : `없음(주간 ${GPT주간한계}% 아래인 Pro 계정 없음 — 막힘으로 적는다)`}`);
+    await GPT보내기(폴더, 목록, { 수준: o.수준 || null, 고른: o.묶음 || null, 다시: Boolean(o.다시), call: a => GPT부르기({ ...a, 계정 }), 몫: () => (계정 ? GPT몫읽기(계정) : null), 알리기 });
+    const 표 = 지적표읽기(폴더), 상태들 = 묶음상태들(폴더, 목록, 'GPT');
+    console.log(`GPT ${상태들.map(b => `${b.이름} ${b.상태}`).join(' · ')} · 지적 ${표.지적.filter(x => x.출처 === 'GPT').length}건 → ${path.join(폴더, '지적표.md')}`);
+    console.log(`다음: 재현되는 지적만 고치고 node tools/검수묶음.mjs 처리 ${목록.이름} GA1=반영 "GA2=재현안됨:<이유>" … → 집계 ${목록.이름}`);
     return 상태들.every(b => b.상태 === '읽음') ? 0 : 1;
   }
   if (o.명령 === '처리') {
     if (!o.남은.length) { console.error('처리할 지적을 준다: <번호>=<반영|일부|안함|재현안됨|후속>[:<이유>] … 또는 <번호>=재확인'); return 2; }
-    const 표 = 지적표읽기(폴더);
-    const 바뀜 = 처리하기(표, o.남은);
-    지적표쓰기(폴더, 표);
-    console.log(`처리 ${바뀜.join(', ')} · 미정 ${표.지적.filter(x => !x.처리).length}건 → ${path.join(폴더, '지적표.md')}`);
+    let 미정 = 0;
+    const 바뀜 = 지적표고치기(폴더, 표 => { const b = 처리하기(표, o.남은); 미정 = 표.지적.filter(x => !x.처리).length; return b; });
+    console.log(`처리 ${바뀜.join(', ')} · 미정 ${미정}건 → ${path.join(폴더, '지적표.md')}`);
     return 0;
   }
   if (o.명령 === '페이블') {
@@ -947,14 +1180,16 @@ async function main(argv) {
   }
   if (o.명령 === '페이블받기') {
     const 답파일 = o.남은[0] ? path.resolve(o.남은[0]) : path.join(폴더, '페이블-답.json');
-    const 표 = 지적표읽기(폴더);
-    const 더함 = 페이블지적넣기(표, 페이블답읽기(fs.readFileSync(답파일, 'utf8')), { 새로: Boolean(o.새로) });
-    지적표쓰기(폴더, 표);
-    console.log(`Fable 지적 ${더함.length}건 더함(${더함.join(', ') || '없음'}) · Fable ${표.지적.filter(x => x.출처 === 'Fable').length}건 → ${path.join(폴더, '지적표.md')}`);
+    const 답 = 페이블답읽기(fs.readFileSync(답파일, 'utf8'));
+    let 페건 = 0;
+    const 더함 = 지적표고치기(폴더, 표 => { const d = 페이블지적넣기(표, 답, { 새로: Boolean(o.새로) }); 페건 = 표.지적.filter(x => x.출처 === 'Fable').length; return d; });
+    console.log(`Fable 지적 ${더함.length}건 더함(${더함.join(', ') || '없음'}) · Fable ${페건}건 → ${path.join(폴더, '지적표.md')}`);
     return 0;
   }
   if (o.명령 === '집계') {
-    const 표 = 지적표읽기(폴더), 결과들 = 결과들읽기(폴더, 목록), s = 집계하기(목록, 결과들, 표);
+    // 지적표·결과·표시를 한 잠금 안에서 읽는다 — 다른 프로세스가 결과와 지적표를 쓰는 사이에 읽으면 옛 지적표로 판정한다(3차 검수 GA1)
+    const { 표, 결과들, G결과들 } = 잠근채(폴더, () => ({ 표: 지적표읽기(폴더), 결과들: 결과들읽기(폴더, 목록), G결과들: 결과들읽기(폴더, 목록, 'GPT') }));
+    const s = 집계하기(목록, 결과들, 표, G결과들);
     const 글 = 집계글(목록, 결과들, 표, s);
     글쓰기(path.join(폴더, '보고.md'), 글);
     // 첫 덩이(한 줄 집계·묶음·셈·배포 조건)만 — 제목 다음부터 첫 빈 줄까지

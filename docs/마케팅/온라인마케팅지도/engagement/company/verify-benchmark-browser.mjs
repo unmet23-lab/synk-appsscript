@@ -169,7 +169,7 @@ try{
   await page.getByRole('button',{name:'이 구성으로 선택됨',exact:true}).waitFor();
   const exportResponse=await memberSession.context.request.get(app.origin+'/api/content-drafts/'+draft.id+'/export');
   assert.equal(exportResponse.status(),200);const markdown=await exportResponse.text();
-  for(const text of ['개인화 방향 검토','회사 참고 선정 기록','BM\\_FIXTURE\\_1','검증 선택','검증 다음 행동'])assert.ok(markdown.includes(text),`export missing ${text}`);
+  for(const text of ['개인화 점검','회사 참고 자료','BM\\_FIXTURE\\_1','검증 선택','검증 다음 행동'])assert.ok(markdown.includes(text),`export missing ${text}`);
   assert.ok(app.store.get('contentDrafts',draft.id).selectedIdeaId);
   mark('selected-idea-markdown-export-keeps-source-and-personalized-actions');
   await page.screenshot({path:join(artifacts,'benchmark-plan-fixture.png'),fullPage:false,animations:'disabled'});
