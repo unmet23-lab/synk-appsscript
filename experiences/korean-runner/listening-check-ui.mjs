@@ -68,6 +68,7 @@ export function mountListeningCheck({ coach, beforeOpen, onClose = () => {}, onF
   function question(plan) {
     recheckSource = plan.followup?.status === 'new' ? plan.followup.sourceAttemptId : null;
     const item = plan.item; index = plan.index; dialog.dataset.item = item.id; check.begin(item); $('check-count').textContent = `${index + 1} / ${round.total}`;
+    dialog.scrollTop = 0; // 앞 문항에서 단추까지 내린 판을 맨 위(머리 줄)부터 다시 보인다
     $('check-plan').textContent = plan.note;
     $('check-feedback').textContent = ''; $('check-next').hidden = true;
     $('check-choices').replaceChildren(...item.choices.map((label, choice) => {

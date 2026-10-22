@@ -8,6 +8,7 @@ export function mountUnderstanding({ transport, available }) {
   const clear = () => { epoch++; pid = null; pending = false; recheckSource = null; nextRecheck = null; dialog.close(); $('reading-passage').textContent = ''; $('reading-choices').replaceChildren(); $('reading-feedback').textContent = ''; };
   const paint = () => {
     const item = round[index]; dialog.dataset.item = item.id; submitted = false; pid = coach.present(readingMetadata(item));
+    dialog.scrollTop = 0; // 앞 문항에서 단추까지 내린 판을 맨 위(머리 줄)부터 다시 보인다
     recheckSource = nextRecheck?.itemId === item.id ? nextRecheck.sourceAttemptId : null; nextRecheck = null;
     $('reading-count').textContent = `${index + 1} / ${round.length}`; $('reading-passage').textContent = item.passage;
     $('reading-question').textContent = item.question; $('reading-feedback').textContent = ''; $('reading-next').hidden = true;
