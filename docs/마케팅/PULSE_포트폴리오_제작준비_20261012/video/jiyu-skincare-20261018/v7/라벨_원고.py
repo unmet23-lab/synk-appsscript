@@ -2,8 +2,10 @@
 # 붙여넣어서 병을 만든 느낌」 → 병 시안을 이미지 모델로 굽되, 글자는 우리 서체로 조판한 원고를 참고로 넣어 병에 인쇄된 것처럼
 # 입히게 한다(글자 모양을 모델이 지어내지 않게). 글꼴은 v5 로고 층과 같다(SUIT SemiBold · SUIT Medium · Inter Tight Medium).
 # 투명 PNG는 참고로 안 먹으므로(그림 굽기 현장 노트) 흰 바탕 JPEG로 낸다.
-#   python 라벨_원고.py   → synk-vendor/jiyu-skincare-20261018/v7/병시안/라벨/{A_투명한무게,B_조약돌,C_렌즈_뒷면,C_렌즈_앞면}.jpg
+#   python 라벨_원고.py   → synk-vendor/jiyu-skincare-20261018/v7/병시안/라벨/{A_투명한무게,B_조약돌,C_렌즈_뒷면,C_렌즈_앞면,A2_서리맑음}.jpg
+#   python 라벨_원고.py --인쇄판   → 같은 폴더 A2_인쇄판_4096.png(블렌더 병 장면의 실크스크린 층) · A2_인쇄판_4096_보기.png
 import os
+import sys
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -90,8 +92,35 @@ def label_a2():
     save(im, "A2_서리맑음")
 
 
+def label_a2_print(width=4096):
+    """A2 인쇄판(10-21 블렌더 제품 컷): label_a2와 같은 조판을 투명 바탕 큰 판으로 — 블렌더 병 장면(블렌더/병A2_장면.py)이
+    서리 유리 위 실크스크린 층으로 입힌다. 판 = R 숯색 잉크 덮임 · G 은색 잉크(가는 선) 덮임 · B 0(색 정보 없는 자료),
+    확인용 판은 잉크 색을 입힌 RGBA다. 1000 × 1400 원고 좌표를 width/1000배로 그대로 키운다."""
+    s = width / 1000
+    size = (width, round(1400 * s))
+    ink, silver = Image.new("L", size, 0), Image.new("L", size, 0)
+    di, ds = ImageDraw.Draw(ink), ImageDraw.Draw(silver)
+    cx = 500 * s
+    tracked(di, (cx, 250 * s), "MALGEUM", ImageFont.truetype(INTER_M, round(40 * s)), 255, 0.42)
+    ds.line([(cx - 60 * s, 318 * s), (cx + 60 * s, 318 * s)], fill=255, width=round(3 * s))
+    di.text((cx, 470 * s), "맑음", font=ImageFont.truetype(SUIT_SB, round(190 * s)), fill=255, anchor="mm")
+    di.text((cx, 640 * s), "약산성 토너   ·   150 ml", font=ImageFont.truetype(SUIT_M, round(40 * s)), fill=255, anchor="mm")
+    os.makedirs(OUT, exist_ok=True)
+    plate = Image.merge("RGB", (ink, silver, Image.new("L", size, 0)))
+    p = os.path.join(OUT, f"A2_인쇄판_{width}.png")
+    plate.save(p)
+    view = Image.new("RGBA", size, (0, 0, 0, 0))
+    view.paste(Image.new("RGBA", size, INK + (255,)), mask=ink)
+    view.paste(Image.new("RGBA", size, SILVER + (255,)), mask=silver)
+    view.save(os.path.join(OUT, f"A2_인쇄판_{width}_보기.png"))
+    print(p, size)
+
+
 if __name__ == "__main__":
-    label_a()
-    label_b()
-    label_c()
-    label_a2()
+    if "--인쇄판" in sys.argv:   # A2 인쇄판만(블렌더 제품 컷용)
+        label_a2_print()
+    else:
+        label_a()
+        label_b()
+        label_c()
+        label_a2()
