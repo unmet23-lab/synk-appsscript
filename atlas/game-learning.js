@@ -138,8 +138,10 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     for (const e of combined) if (e.type === 'feedback.given' && !known.has(e.completionId) || e.type === 'record.excluded' && !known.has(e.targetId) && types.get(e.targetId) === 'feedback.given') known.delete(e.id);
     settle([...settled, ...(stored.settled || [])], known);
     takeDropped(stored.dropped || [], order > 0);
-    const orphans = combined.filter(e => !known.has(e.id)); // on the server once sent: never taken for lost entries
-    if (folding?.remote && orphans.length) { for (const e of orphans) dropped.add(e.id); droppedVersion += 1; }
+    // Whatever this side drops in the merge (folded by the other side, or orphaned) is accounted for: a sync never takes
+    // it for lost, and lets go of one it still queued (learning-sync collect) instead of blocking.
+    const gone = [...mine, ...combined].filter(e => !known.has(e.id));
+    if (folding?.remote && gone.length) { for (const e of gone) dropped.add(e.id); droppedVersion += 1; }
     session = newSession(combined.filter(e => known.has(e.id)));
     // A presentation folded in another tab has ended here too.
     for (const pid of active.keys()) if (!known.has(pid)) active.delete(pid);

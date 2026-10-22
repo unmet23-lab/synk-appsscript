@@ -372,3 +372,23 @@ test('items fold whole down a chain: an older answer and its exclusion stay with
   assert.deepEqual(a.game.setFeedback(), [], 'the exclusion stays with its answer after the merge');
   assert.ok(a.game.events().some(e => e.id === 'older-app-exclusion'));
 });
+
+// Backend review 10-22, third round (GPT GA1).
+test('a queued response a merge removes with the set the other tab folded is accounted for among dropped entries', () => {
+  const shared = memory(), opts = { storageScope: 'account', accountKey: 'account-1', fold: { remote: true, max: 60, keep: 30, ageMs: 0 } };
+  const a = player({ storage: shared, ...opts });
+  for (let i = 0; i < 5; i += 1) practise(a);
+  const set = a.game.finishSet({ kind: 'short' });
+  a.game.syncPort.settle(a.game.syncPort.ids());
+  const late = copyOf(shared); // B's copy from before the response
+  a.tick(1000);
+  const response = a.game.feedback(set, 'helpful'); // still queued: not on the server
+  const b = player({ storage: late, ...opts }); b.at(a.now + 2 * DAY);
+  for (let i = 0; i < 80; i += 1) { practise(b); b.game.syncPort.settle(b.game.syncPort.ids()); }
+  assert.ok(!b.game.events().some(e => e.id === set.completionId), 'B folded the set it saw without a response');
+  for (const [k, v] of late.data) shared.setItem(k, v);
+  a.at(b.now + 1000);
+  assert.equal(a.game.summary().storage.available, true);
+  assert.ok(!a.game.events().some(e => e.id === response.id));
+  assert.ok(a.game.syncPort.dropped().includes(response.id), 'a sync lets it go instead of blocking on it');
+});

@@ -9936,9 +9936,9 @@ var require_game_learning = __commonJS({
         for (const e of combined) if (e.type === "feedback.given" && !known.has(e.completionId) || e.type === "record.excluded" && !known.has(e.targetId) && types.get(e.targetId) === "feedback.given") known.delete(e.id);
         settle([...settled, ...stored.settled || []], known);
         takeDropped(stored.dropped || [], order2 > 0);
-        const orphans = combined.filter((e) => !known.has(e.id));
-        if (folding?.remote && orphans.length) {
-          for (const e of orphans) dropped.add(e.id);
+        const gone = [...mine, ...combined].filter((e) => !known.has(e.id));
+        if (folding?.remote && gone.length) {
+          for (const e of gone) dropped.add(e.id);
           droppedVersion += 1;
         }
         session = newSession(combined.filter((e) => known.has(e.id)));
