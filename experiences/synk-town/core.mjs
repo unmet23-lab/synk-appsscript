@@ -235,16 +235,22 @@ function executionFor(state) {
   return { id, kind: pending.kind, plan, elapsedMs: pending.elapsedMs, durationMs: plan.totalMs };
 }
 function advanceUse(state, host) {
-  const pending = state.pendingUse;
-  if (!pending || host.canRun === false || state.phase !== 'ready') return;
-  if (host.surface === 'day' && !atDayPlace(state, 'cafe')) return;
-  pending.elapsedMs += host.elapsedMs || 0;
-  if (pending.elapsedMs < executionFor(state).durationMs) return;
-  state.pendingUse = null;
-  if (pending.kind === 'tea') {
-    completeSeat(state, pending.cause);
-    if (state.sign.slot && state.sign.target === state.placement) queueUse(state, 'sign', state.sign.placedId);
-  } else followSign(state);
+  // Time left after the tea is done goes on to the sign it queues, so the chunk size never
+  // changes when the sign finishes (F1).
+  let left = host.elapsedMs || 0;
+  for (;;) {
+    const pending = state.pendingUse;
+    if (!pending || host.canRun === false || state.phase !== 'ready') return;
+    if (host.surface === 'day' && !atDayPlace(state, 'cafe')) return;
+    const need = Math.max(0, executionFor(state).durationMs - pending.elapsedMs);
+    if (left < need) { pending.elapsedMs += left; return; }
+    left -= need;
+    state.pendingUse = null;
+    if (pending.kind === 'tea') {
+      completeSeat(state, pending.cause);
+      if (state.sign.slot && state.sign.target === state.placement) queueUse(state, 'sign', state.sign.placedId);
+    } else followSign(state);
+  }
 }
 function currentPlacementFact(state) {
   return [...state.events].reverse().find(e => e.type === 'life.fact' && e.factType === 'seat.placed')?.id;

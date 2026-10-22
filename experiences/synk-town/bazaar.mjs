@@ -148,28 +148,37 @@ function servePortion(state, e, id, facts) {
 export function advanceBazaar(state, input) {
   assertBazaar(state); const ctx = context(input), facts = [], e = state.episode;
   if (!ctx.canRun || ctx.cafeBusy || ctx.location !== 'cafe' || !e?.open) return facts;
-  state.uMs += ctx.elapsedMs ?? 0;
-  const ms = duration(e.stage);
-  if (!ms) return facts;
-  e.elapsedMs = Math.min(ms, e.elapsedMs + (ctx.elapsedMs ?? 0));
-  if (e.elapsedMs < ms) return facts;
-  if (e.stage === 'demonstration') { e.stage = 'awaitContinue'; e.elapsedMs = 0; }
-  else if (e.stage === 'rehearsal') { e.stage = 'awaitConfirm'; e.elapsedMs = 0; }
-  else if (e.stage === 'preparing') {
-    emit(state, facts, 'bazaar.storyPortion.prepared', `${e.id}:prepared:${e.part}`, [owner], [`${e.id}:reserved`]);
-    e.stage = 'serving'; e.elapsedMs = 0;
-  } else if (e.stage === 'serving') {
-    if (e.choice === 'together') { servePortion(state, e, 'reader', facts); servePortion(state, e, 'companion', facts); complete(state, e, facts); }
-    else if (e.part === 0) { servePortion(state, e, 'companion', facts); e.stage = 'awaitTea'; e.elapsedMs = 0; }
-    else { servePortion(state, e, 'reader', facts); complete(state, e, facts); }
-  } else if (e.stage === 'installing') {
-    emit(state, facts, 'bazaar.pictureMenu.installed', `${e.id}:installed`, [owner, workshop], [`${e.id}:accepted`]);
-    e.stage = 'looking'; e.elapsedMs = 0;
-  } else if (e.stage === 'looking') {
-    emit(state, facts, 'bazaar.pictureMenu.visitorViewed', `${e.id}:viewed`, [owner, workshop, reader], [`${e.id}:installed`]);
-    emit(state, facts, 'bazaar.readerWorkshop.firstConversation', `${e.id}:firstConversation`, [reader, workshop], [`${e.id}:viewed`]);
-    complete(state, e, facts);
+  // Time left when a stage ends goes on into the next timed stage, and each step is stamped
+  // with the U it happened at, so one long chunk and many short ones end the same (F1·F4).
+  const endU = state.uMs + (ctx.elapsedMs ?? 0);
+  let left = ctx.elapsedMs ?? 0;
+  for (;;) {
+    const ms = duration(e.stage), stage = e.stage;
+    if (!ms) break;
+    const step = Math.min(ms - e.elapsedMs, left);
+    e.elapsedMs += step; left -= step; state.uMs = endU - left;
+    if (e.elapsedMs < ms) break;
+    if (e.stage === 'demonstration') { e.stage = 'awaitContinue'; e.elapsedMs = 0; }
+    else if (e.stage === 'rehearsal') { e.stage = 'awaitConfirm'; e.elapsedMs = 0; }
+    else if (e.stage === 'preparing') {
+      emit(state, facts, 'bazaar.storyPortion.prepared', `${e.id}:prepared:${e.part}`, [owner], [`${e.id}:reserved`]);
+      e.stage = 'serving'; e.elapsedMs = 0;
+    } else if (e.stage === 'serving') {
+      if (e.choice === 'together') { servePortion(state, e, 'reader', facts); servePortion(state, e, 'companion', facts); complete(state, e, facts); }
+      else if (e.part === 0) { servePortion(state, e, 'companion', facts); e.stage = 'awaitTea'; e.elapsedMs = 0; }
+      else { servePortion(state, e, 'reader', facts); complete(state, e, facts); }
+    } else if (e.stage === 'installing') {
+      emit(state, facts, 'bazaar.pictureMenu.installed', `${e.id}:installed`, [owner, workshop], [`${e.id}:accepted`]);
+      e.stage = 'looking'; e.elapsedMs = 0;
+    } else if (e.stage === 'looking') {
+      emit(state, facts, 'bazaar.pictureMenu.visitorViewed', `${e.id}:viewed`, [owner, workshop, reader], [`${e.id}:installed`]);
+      emit(state, facts, 'bazaar.readerWorkshop.firstConversation', `${e.id}:firstConversation`, [reader, workshop], [`${e.id}:viewed`]);
+      complete(state, e, facts);
+    }
+    // The result stage only counts up to the moment it can be observed.
+    if (e.stage === stage) break;
   }
+  state.uMs = endU;
   assertBazaar(state); return facts;
 }
 

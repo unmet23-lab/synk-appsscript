@@ -103,12 +103,14 @@ function advanceRoutine(life, elapsedMs, facts) {
 }
 function advanceEpisode(life, elapsedMs, facts) {
   const e = life.episode;
+  // The U the work actually ended at, however long the chunk was (F4).
+  const endedU = life.uMs - Math.max(0, e.elapsedMs + elapsedMs - 6000);
   e.elapsedMs = Math.min(6000, e.elapsedMs + elapsedMs);
   if (e.elapsedMs >= 2000 && !e.tidyRecorded) { e.tidyRecorded = true; facts.push(fact('cafe.C1.tidied', `${e.id}:tidied`)); }
   if (e.elapsedMs < 6000) return;
   e.stage = 'result'; e.resultId = `${e.id}:result`;
   life.history.push({ resultId: e.resultId, role: e.role, direction: e.direction, worldRevision: e.worldRevision,
-    placement: e.placement, completedU: life.uMs, observedU: null });
+    placement: e.placement, completedU: endedU, observedU: null });
   if (e.role !== 'observer') life.currentAgreement = { resultId: e.resultId, role: e.role, direction: e.direction,
     worldRevision: e.worldRevision, placement: e.placement };
   facts.push(fact(`cafe.C1.${e.role}.executed`, e.resultId, [`${e.id}:tidied`]));

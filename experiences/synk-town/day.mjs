@@ -129,10 +129,10 @@ function reconcile(day, ctx, facts) {
     emit(day, facts, 'day.support.prepared', `${j.id}:prepared`, ['workshop-owner'], [`${j.id}:accepted`]);
   }
 }
-function complete(day, e, facts) {
+function complete(day, e, facts, atU = day.uMs) {
   e.stage = 'result'; e.resultId = `${e.id}:result`;
   const h = { resultId: e.resultId, kind: e.kind, role: e.role, choice: e.choice, support: e.support,
-    target: { ...e.target }, location: e.location, completedU: day.uMs, observedU: null, visit: day.visit,
+    target: { ...e.target }, location: e.location, completedU: atU, observedU: null, visit: day.visit,
     knownBy: members(e.kind), contribution: e.kind === 'help' && e.choice !== 'alone',
     ...(e.kind === 'help' ? { direction: e.direction } : {}) };
   day.history.push(h);
@@ -147,6 +147,8 @@ function advanceEpisode(day, elapsedMs, facts) {
   const e = day.episode;
   if (day.walk?.enabled && nearbyPlace(day.walk) !== e?.location) return;
   if (!e?.open || e.location !== day.location || !['demonstration', 'rehearsal', 'executing', 'explaining'].includes(e.stage)) return;
+  // The U the stage actually ended at, however long the chunk was (F4).
+  const endedU = day.uMs - Math.max(0, e.elapsedMs + elapsedMs - 4000);
   e.elapsedMs = Math.min(4000, e.elapsedMs + elapsedMs);
   if (e.stage === 'explaining') {
     if (e.elapsedMs >= 4000) {
@@ -166,7 +168,7 @@ function advanceEpisode(day, elapsedMs, facts) {
   emit(day, facts, `day.${e.kind}.action.used`, `${e.id}:acted`, members(e.kind),
     day.emitted.includes(`${e.id}:picture`) ? [`${e.id}:picture`] : []);
   if (e.kind === 'help') { e.stage = 'awaitFinish'; e.elapsedMs = 0; return; }
-  complete(day, e, facts);
+  complete(day, e, facts, endedU);
 }
 function advanceRoutine(day, elapsedMs, facts, ctx) {
   const r = day.routine;
