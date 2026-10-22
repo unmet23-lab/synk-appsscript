@@ -7,6 +7,8 @@
  *   node tools/공개.js 올리기 <항목…> -m "<메시지>" --실행 --계획 <해시>          커밋 → push → 공개 주소 바이트 대조 → 배포 점검
  *   node tools/공개.js 확인 <커밋> [--재실행]                                    올라간 커밋을 다시 대조하고 배포 점검을 기다린다(남의 공개도 된다)
  *   node tools/공개.js 채우기 [<공개경로 glob>…]                                 공개 뒤 비워진 CDN에 큰 영상을 한 번씩 받아 채운다(기본 PATH 면접 영상)
+ *   node tools/공개.js 기준 [--점검 <실행 id>] [<쪽 경로…> | --전부] [-m … --실행 --계획 <해시>]
+ *                                                                              배포 점검 한 회차의 캡처를 기준 이미지로 올린다(의도한 변경일 때만)
  *
  *   항목: <공개경로>=<로컬 파일·폴더> · 또는 --원본 <폴더> 아래의 <경로>(그 경로가 공개 경로다. --공개폴더 <앞>으로 앞을 붙인다)
  *   --지움 <공개경로>(폴더는 끝에 /) · --기준 <공개 커밋> · --기준폴더 <폴더> · --전부 · --줄끝도 · --토큰 <값> · --토큰안함
@@ -41,7 +43,10 @@
  *   다 같아지거나 --기다림(기본 12분)이 지날 때까지 --간격(20초)마다 다시 받는다. 그다음 gh로 배포 점검(site-check.yml)
  *   실행을 찾아 끝날 때까지(--점검기다림, 기본 25분) 기다린다. 뒤 push가 앞 실행을 취소하면 내 커밋을 품은 다음 실행으로 본다.
  *   실패하면 실패 단계를 보이고, --재실행이면 바이트가 다 같을 때 한 번만 실패 작업을 다시 돌린다.
+ *   끝난 회차의 결과 JSON(아티팩트 site-check-result)에서 기준 이미지와 달라진 쪽·새 접근성 위반을 받아 보인다(판정에는 안 쓴다).
  * 채우기 — 쿼리 없는 공개 주소를 한 번씩 받아(동시 4개) CDN 캐시를 채우고, 다시 물어 x-cache를 적는다.
+ * 기준 — 배포 점검 6단계(10-21)가 쪽마다 찍은 그림(아티팩트 site-check-shots)에서 고른 쪽을 .github/site-check/baseline/에 올린다.
+ *   쪽을 안 고르면 그 회차에 달라진 쪽만 보이고 멈춘다. 올리기와 같은 미리 보기·계획 해시·push를 타고, 3방향 기준은 그 회차의 커밋이다.
  *
  * 함정과 고친 기록: docs/현장노트/배포_공개.md 「synk.im(synk-policy)」. 시험: node --test tests/공개.test.js
  */
@@ -109,7 +114,7 @@ const 점검규칙사본 = {
   글: /\.(html|js|mjs|css|json|txt|xml|md|svg|webmanifest)$/i,
 };
 const 위치환경 = /^GIT_(DIR|WORK_TREE|INDEX_FILE|COMMON_DIR|OBJECT_DIRECTORY|ALTERNATE_OBJECT_DIRECTORIES|NAMESPACE|PREFIX)$/;
-const 좋은결과 = new Set(['미리 보기', '올릴 것 없음', '올림', '확인함', '채움']);
+const 좋은결과 = new Set(['미리 보기', '올릴 것 없음', '올림', '확인함', '채움', '고를 것']);
 
 class 멈춤 extends Error {
   constructor(이유, 덧 = {}) { super(이유); this.이유 = 이유; this.덧 = 덧; }
@@ -668,10 +673,12 @@ function 검사하기(항목들, 규칙, 옵션 = {}) {
   }
   if (요약.새바이트 > 한.합계경고) 알림.push({ 검사: '저장 용량', 이유: `새로 올릴 바이트가 ${바이트글(요약.새바이트)}다 — 큰 업로드 전 확인(현장 노트 백업_업로드)` });
   // 5) 공개 경로
+  const 기준그림 = 항목들.filter((x) => x.경로.startsWith('.github/site-check/baseline/'));
+  if (기준그림.length) 알림.push({ 검사: '공개 경로', 이유: `배포 점검의 기준 이미지 ${기준그림.length}개를 바꾼다(.github/site-check/baseline/ — 의도한 변경일 때만)` });
   for (const x of 항목들) {
     const p = x.경로;
     if (p.startsWith('.github/')) {
-      if (p.startsWith('.github/workflows/') || p.startsWith('.github/site-check/')) 알림.push({ 경로: p, 검사: '공개 경로', 이유: '배포 점검·워크플로 자체를 바꾼다' });
+      if ((p.startsWith('.github/workflows/') || p.startsWith('.github/site-check/')) && !p.startsWith('.github/site-check/baseline/')) 알림.push({ 경로: p, 검사: '공개 경로', 이유: '배포 점검·워크플로 자체를 바꾼다' });
       continue;
     }
     if (!x.버퍼) continue; // 지우는 것은 막지 않는다(잘못 올라간 밑줄 경로·제작 자료를 치울 수 있게)
@@ -1264,6 +1271,36 @@ function 실패단계읽기(gh, 저장소이름, 실행) {
   }
 }
 
+/** gh run download로 아티팩트 하나를 폴더에 받는다. 못 받으면 false. */
+function 아티팩트받기(gh, 저장소이름, 실행, 이름, 폴더) {
+  try {
+    gh(['run', 'download', String(실행), '-R', 저장소이름, '-n', 이름, '-D', 폴더]);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+/**
+ * 배포 점검이 남긴 결과 JSON(아티팩트 site-check-result, 10-21 6단계)에서 기준 이미지·접근성 부분을 읽는다.
+ * 못 받으면 null — 점검 통과·실패 판정과는 상관없다(6단계 전의 점검·아티팩트 만료·gh 오류).
+ */
+function 점검결과받기(gh, 저장소이름, 실행) {
+  if (!실행) return null;
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-site-result-'));
+  try {
+    if (!아티팩트받기(gh, 저장소이름, 실행, 'site-check-result', 방)) return null;
+    const 파일 = path.join(방, 'result.json');
+    if (!fs.existsSync(파일)) return null;
+    const j = JSON.parse(fs.readFileSync(파일, 'utf8'));
+    return { 실행, 기준이미지: j.visual || null, 접근성: j.a11y || null };
+  } catch (_) {
+    return null;
+  } finally {
+    fs.rmSync(방, { recursive: true, force: true, maxRetries: 3 });
+  }
+}
+
 // ── 명령 ────────────────────────────────────────────────────────────────────
 
 function 결과요약(후보) {
@@ -1371,6 +1408,11 @@ async function 올린뒤확인(git, 커밋, 대조대상, 옵션) {
       저장소이름: 옵션.저장소이름 || 기본저장소이름, 기다림ms: 분(옵션.점검기다림, 25), 간격ms: 옵션.gh ? 간격ms : Math.max(간격ms, 30000),
       재실행: Boolean(옵션.재실행), 바이트통과: 대조.통과, gh: 옵션.gh || gh실행, 알리기,
     });
+    // 끝난 회차면 기준 이미지·접근성 결과를 받아 보인다(판정에는 쓰지 않는다)
+    if (점검.실행 && ['통과', '실패'].includes(점검.결과)) {
+      const 세부 = 점검결과받기(옵션.gh || gh실행, 옵션.저장소이름 || 기본저장소이름, 점검.실행);
+      if (세부) 점검.세부 = 세부;
+    }
   }
   return { 통과: 대조.통과 && (!점검 || 점검.결과 === '통과'), 대조: { ...대조, ...(뒤.뒤바뀜.length ? { 뒤바뀜: 뒤.뒤바뀜, 뒤머리: 뒤.머리 } : {}) }, 점검 };
 }
@@ -1451,6 +1493,110 @@ async function 채우기(옵션 = {}) {
   }
 }
 
+// ── 기준 이미지 ──────────────────────────────────────────────────────────────
+
+const 기준폴더 = '.github/site-check/baseline';
+const 쪽다듬기 = (p) => { const s = `/${String(p).replace(/\\/g, '/').replace(/^\/+|\/+$/g, '')}/`; return s === '//' ? '/' : s; };
+/** Git 설치 폴더(MSYS 뿌리, 예: C:/Program Files/Git) — Windows가 아니거나 못 찾으면 null */
+function git설치뿌리() {
+  if (process.platform !== 'win32') return null;
+  const r = spawnSync('git', ['--exec-path'], { encoding: 'utf8', windowsHide: true });
+  const m = /^(.*?)\/(?:mingw32|mingw64|clangarm64|usr)\//i.exec(`${String(r.stdout || '').trim().replace(/\\/g, '/')}/`);
+  return m ? m[1] : null;
+}
+/**
+ * 쪽 경로 인자: Git Bash(MSYS)는 /로 시작하는 인자를 Git 설치 폴더 경로로 바꿔 넘긴다(/lab/ → C:/Program Files/Git/lab/, / → C:/Program Files/Git/,
+ * 10-22) — 그 앞을 떼어 되살린다. 앞 / 없이 준 쪽(lab/topik4)과 첫 쪽 이름 home도 받는다.
+ */
+function 쪽되살리기(값, 뿌리 = git설치뿌리()) {
+  let s = String(값).replace(/\\/g, '/');
+  if (뿌리 && (s.toLowerCase() === 뿌리.toLowerCase() || s.toLowerCase().startsWith(`${뿌리.toLowerCase()}/`))) s = s.slice(뿌리.length) || '/';
+  if (/^[A-Za-z]:\//.test(s)) throw new 사용법오류(`쪽 경로가 Windows 경로로 바뀌어 왔다: ${값} — Git Bash에서는 앞 /를 빼고(lab/topik4, 첫 쪽은 home) 준다`);
+  return s === 'home' || s === '홈' ? '/' : 쪽다듬기(s);
+}
+const 정렬객체 = (o) => Object.fromEntries(Object.keys(o).sort().map((k) => [k, o[k]]));
+
+/**
+ * 기준(10-21): 배포 점검 한 회차의 캡처(아티팩트 site-check-shots)에서 고른 쪽을 기준 그림(.github/site-check/baseline/)으로 올린다.
+ * 의도한 변경일 때만 쓴다 — 쪽을 안 고르면 그 회차에 기준과 달랐던 쪽만 보이고 멈춘다(「고를 것」). 올리기는 같은 올리기(미리 보기 →
+ * --실행 --계획)를 타고, 3방향 기준은 그 회차의 커밋이라 그사이 남이 같은 기준을 바꿨으면 멈춘다.
+ * 회차는 --점검 <실행 id>, 없으면 가장 늦게 끝난 회차(취소 뺌). 고르기: 쪽 경로(<항목…>·--쪽) 또는 --전부(흔들린 쪽은 옛 기준을 둔다).
+ */
+async function 기준(옵션 = {}) {
+  const gh = 옵션.gh || gh실행;
+  const 저장소이름 = 옵션.저장소이름 || 기본저장소이름;
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-baseline-'));
+  try {
+    let 회차;
+    try {
+      const 목록 = JSON.parse(gh(['run', 'list', '-R', 저장소이름, '--workflow', 'site-check.yml', '-L', '30', '--json', 'databaseId,headSha,status,conclusion,createdAt']));
+      회차 = 옵션.점검 ? 목록.find((r) => String(r.databaseId) === String(옵션.점검)) || { databaseId: Number(옵션.점검), headSha: null }
+        : 목록.find((r) => r.status === 'completed' && !['cancelled', 'skipped'].includes(r.conclusion));
+    } catch (e) { return { 결과: '멈춤', 이유: `배포 점검 회차를 못 읽었다 — ${e.이유 || e.message}` }; }
+    if (!회차) return { 결과: '멈춤', 이유: '끝난 배포 점검 회차가 없다' };
+    const 실행 = 회차.databaseId;
+    const 사진 = path.join(방, 'shots');
+    if (!아티팩트받기(gh, 저장소이름, 실행, 'site-check-shots', 사진) || !fs.existsSync(path.join(사진, 'manifest.json'))) {
+      return { 결과: '멈춤', 이유: `점검 ${실행}에 캡처 아티팩트(site-check-shots)가 없다 — 6단계 전의 점검이거나 30일이 지났다. 새 회차를 기다리거나 --점검으로 고른다`, 실행 };
+    }
+    const 읽기 = (f) => { try { return JSON.parse(fs.readFileSync(f, 'utf8')); } catch (_) { return null; } };
+    const 런 = 읽기(path.join(사진, 'manifest.json'));
+    if (!런 || !런.shots || typeof 런.shots !== 'object') return { 결과: '멈춤', 이유: `점검 ${실행}의 캡처 목록(manifest.json)을 못 읽었다`, 실행 };
+    const 런axe = 읽기(path.join(사진, 'axe.json')) || {};
+    const 옛 = 읽기(path.join(사진, 'baseline-before.json'));
+    const 옛axe = 읽기(path.join(사진, 'baseline-axe-before.json')) || {};
+    const 결과방 = path.join(방, 'result');
+    const 견줌 = 아티팩트받기(gh, 저장소이름, 실행, 'site-check-result', 결과방) ? (읽기(path.join(결과방, 'result.json')) || {}).visual || null : null;
+    const 커밋 = 회차.headSha || 런.commit;
+    const 요약 = { 실행, 커밋, 회차때: 회차.createdAt || 런.createdAt, 견줌 };
+    // --전부는 그 회차의 견줌 결과로 없어진 쪽·흔들린 쪽을 가른다 — 못 받았으면 지울 것이 달라지니 멈춘다(미리 보기와 실행의 계획도 엇갈린다)
+    if (옵션.전부 && 옛 && !견줌) return { 결과: '멈춤', 이유: `점검 ${실행}의 견줌 결과(site-check-result)를 못 받아 없어진 쪽·흔들린 쪽을 가를 수 없다 — 다시 해 보거나 쪽을 골라 올린다`, 실행 };
+    const 뿌리 = git설치뿌리();
+    const 고른 = [...new Set([...(옵션.쪽 || []), ...(옵션.항목 || [])].map((p) => 쪽되살리기(p, 뿌리)))];
+    if (!고른.length && !옵션.전부) return { 결과: '고를 것', ...요약, 쪽: Object.keys(런.shots || {}).sort() };
+    const 없는쪽 = 고른.filter((r) => !(런.shots || {})[r]);
+    if (없는쪽.length) throw new 사용법오류(`점검 ${실행}의 캡처에 없는 쪽: ${없는쪽.join(', ')} (흔들려 빠졌거나 없는 쪽 — 있는 쪽: ${Object.keys(런.shots || {}).sort().join(' ')})`);
+    // 새 목록: 옛 기준 위에 고른 쪽(--전부면 이 회차 그림 전부)을 얹는다. 흔들려 빠진 쪽·고르지 않은 쪽은 옛 기준을 두고,
+    // --전부일 때 그 회차가 「기준에만 있음」(없어진 쪽)으로 본 것만 지운다.
+    const 흔들림 = new Set(((견줌 && 견줌.unstable) || []).map((x) => `${x.route}|${x.device}`));
+    const 없어짐 = new Set(((견줌 && 견줌.removed) || []).map((x) => `${x.route}|${x.device}`));
+    const 대상 = 옵션.전부 ? Object.keys(런.shots) : 고른;
+    const 새 = { createdAt: 런.createdAt, commit: 런.commit, run: 런.run, env: 옵션.전부 || !옛 ? 런.env : 옛.env, shots: {} };
+    const 지움 = [];
+    for (const [쪽, 기기들] of Object.entries((옛 && 옛.shots) || {})) for (const [기기, x] of Object.entries(기기들)) {
+      if (대상.includes(쪽) && 런.shots[쪽] && 런.shots[쪽][기기]) continue;
+      if (옵션.전부 && 없어짐.has(`${쪽}|${기기}`) && !흔들림.has(`${쪽}|${기기}`)) { 지움.push(`${기준폴더}/${x.file}`); continue; }
+      (새.shots[쪽] = 새.shots[쪽] || {})[기기] = x;
+    }
+    const 항목 = [];
+    for (const 쪽 of 대상) for (const [기기, x] of Object.entries(런.shots[쪽])) {
+      (새.shots[쪽] = 새.shots[쪽] || {})[기기] = { ...x, run: 런.run };
+      항목.push(`${기준폴더}/${x.file}=${path.join(사진, ...x.file.split('/'))}`);
+    }
+    새.shots = 정렬객체(Object.fromEntries(Object.entries(새.shots).map(([k, v]) => [k, 정렬객체(v)])));
+    const 새axe = { ...옛axe };
+    if (옵션.전부) for (const k of Object.keys(새axe)) if (없어짐.has(k) && !흔들림.has(k)) delete 새axe[k];
+    // 그 회차에 axe가 안 돈 쪽(axe.json에 열쇠 없음 — 위반 0은 {})은 옛 기준을 둔다: 지우면 다음 점검이 옛 치명 위반까지 새것으로 센다
+    // axe는 그림이 흔들려 빠진 쪽에서도 돈다 — 고른 쪽(--전부면 모든 쪽)의 axe 결과는 그림 유무와 상관없이 그 회차 것으로
+    const axe못돎 = [];
+    const axe대상 = new Set([...대상.flatMap((쪽) => Object.keys(런.shots[쪽] || {}).map((기기) => `${쪽}|${기기}`)),
+      ...Object.keys(런axe).filter((k) => 옵션.전부 || 대상.includes(k.split('|')[0]))]);
+    for (const k of axe대상) {
+      if (Object.prototype.hasOwnProperty.call(런axe, k)) 새axe[k] = 런axe[k];
+      else axe못돎.push(k);
+    }
+    const 새방 = path.join(방, 'new');
+    fs.mkdirSync(새방, { recursive: true });
+    fs.writeFileSync(path.join(새방, 'manifest.json'), `${JSON.stringify(새, null, 1)}\n`);
+    fs.writeFileSync(path.join(새방, 'axe.json'), `${JSON.stringify(정렬객체(새axe), null, 1)}\n`);
+    항목.push(`${기준폴더}/manifest.json=${path.join(새방, 'manifest.json')}`, `${기준폴더}/axe.json=${path.join(새방, 'axe.json')}`);
+    const r = await 올리기({ ...옵션, 항목, 지움, 기준: 커밋 || undefined, 전부: false, 원본: undefined, 공개폴더: undefined });
+    return { ...r, 기준갱신: { ...요약, 쪽: 대상, 지운쪽: 지움.length, axe못돎 } };
+  } finally {
+    fs.rmSync(방, { recursive: true, force: true, maxRetries: 3 });
+  }
+}
+
 // ── 명령줄 ──────────────────────────────────────────────────────────────────
 
 const 사용법 = `사용법
@@ -1459,6 +1605,7 @@ const 사용법 = `사용법
   node tools/공개.js 올리기 <항목…> -m "<메시지>" --실행 --계획 <해시> [--재실행] [--기다림 <분>] [--점검기다림 <분>]
   node tools/공개.js 확인 <커밋> [--부터 <커밋>] [--재실행] [--기다림 <분>] [--점검기다림 <분>] [--점검안함] [--json]
   node tools/공개.js 채우기 [<공개경로 glob>…] [--json]
+  node tools/공개.js 기준 [--점검 <실행 id>] [<쪽 경로…> | --전부] [-m "<메시지>" --실행 --계획 <해시>] [--json]
   항목: <공개경로>=<로컬 파일·폴더>, 또는 --원본 아래 <경로>. 기본은 미리 보기다. --실행은 유호님이 승인한 범위에서만.
   공통: --사본 <bare 폴더> · --새사본 · --원격주소 <url> · --주소 <사이트> · --간격 <초> · --작성자 "이름 <메일>"
   자세한 설명은 파일 머리.`;
@@ -1466,8 +1613,8 @@ const 사용법 = `사용법
 function 인자읽기(argv) {
   const [명령, ...나머지] = argv;
   if (!명령 || ['--help', '-h', '도움말'].includes(명령)) return { 도움말: true };
-  if (!['올리기', '확인', '채우기'].includes(명령)) throw new 사용법오류(`모르는 명령: ${명령} (올리기 · 확인 · 채우기)`);
-  const 옵션 = { 명령, 항목: [], 지움: [], 허용: [], 만: [], 메시지: '', 실행: false, json: false };
+  if (!['올리기', '확인', '채우기', '기준'].includes(명령)) throw new 사용법오류(`모르는 명령: ${명령} (올리기 · 확인 · 채우기 · 기준)`);
+  const 옵션 = { 명령, 항목: [], 지움: [], 허용: [], 만: [], 쪽: [], 메시지: '', 실행: false, json: false };
   const 메시지 = [];
   for (let i = 0; i < 나머지.length; i++) {
     const a = 나머지[i];
@@ -1490,6 +1637,8 @@ function 인자읽기(argv) {
     else if (a === '--위에') 옵션.위에 = 값();
     else if (a === '--계획') 옵션.계획 = 값();
     else if (a === '--부터') 옵션.부터 = 값();
+    else if (a === '--점검') 옵션.점검 = 값();
+    else if (a === '--쪽') 옵션.쪽.push(값());
     else if (a === '--사본') 옵션.사본 = 값();
     else if (a === '--원격주소') 옵션.원격주소 = 값();
     else if (a === '--주소') 옵션.주소 = 값();
@@ -1650,9 +1799,63 @@ function 확인글(c) {
       줄.push(`배포 점검 실패 — 실행 ${p.실행} ${p.결론 || ''} · 실패 단계: ${(p.실패단계 || []).join(', ') || '모름'} · ${p.주소 || ''}${p.재실행 ? ' (다시 돌려도 실패)' : ''}`);
       if (p.재실행오류) 줄.push(`  다시 돌리지 못했다: ${p.재실행오류}`);
     } else 줄.push(`배포 점검 ${p.결과} — ${p.이유 || ''}${p.실행 ? ` (실행 ${p.실행} ${p.상태 || ''})` : ''}`);
+    if (p.세부) 줄.push(...점검세부글(p.세부));
   }
   if (c.오류) 줄.push(`확인 중 오류(push는 됐다): ${c.오류}`);
   return 줄;
+}
+
+const 기기말 = { desktop: '컴퓨터', mobile: '휴대폰' };
+const 쪽이름 = (x) => `${(x && x.route) || '?'} ${기기말[x && x.device] || (x && x.device) || ''}`.trim();
+/** 결과 JSON의 목록 칸 — 옛·부분 결과에 칸이 없어도 출력이 터지지 않게(push 뒤 출력이라 종료 코드가 깨진다) */
+const 목록칸 = (v) => (Array.isArray(v) ? v : []);
+/** 배포 점검 6단계(기준 이미지·접근성) 결과 줄 */
+function 점검세부글(s) {
+  const 줄 = [];
+  const v = s.기준이미지, a = s.접근성;
+  if (v) {
+    const 달라짐 = 목록칸(v.changed), 없음 = 목록칸(v.missing), 흔들림 = 목록칸(v.unstable);
+    if (!v.baseline) 줄.push(`  기준 이미지 — 아직 없다. 이 회차 캡처를 처음 기준으로: node tools/공개.js 기준 --점검 ${s.실행} --전부`);
+    else {
+      줄.push(`  기준 이미지 — 쪽 ${v.checked ?? '?'}장 · 같음 ${v.same ?? '?'} · 달라짐 ${달라짐.length} · 기준 없음 ${없음.length} · 흔들림 ${흔들림.length}${v.envChanged ? ` · 점검 환경 바뀜(${v.envChanged})` : ''}`);
+      for (const x of 달라짐.slice(0, 8)) 줄.push(`    달라짐 ${쪽이름(x)} ${Number(x.percent).toFixed(2)}%${x.rows ? ` (위에서 ${x.rows[0]}~${x.rows[1]}px)` : ''}`);
+      if (달라짐.length > 8) 줄.push(`    … 외 ${달라짐.length - 8}개`);
+      if (없음.length) 줄.push(`    기준 없음: ${없음.slice(0, 6).map(쪽이름).join(', ')}`);
+      if (달라짐.length || 없음.length) 줄.push(`    의도한 변경이면: node tools/공개.js 기준 --점검 ${s.실행} <쪽 경로…>   (차이 그림: 실행 ${s.실행}의 아티팩트 site-check-screens/visual/)`);
+    }
+    if (흔들림.length) 줄.push(`    흔들림(견주지 않음): ${흔들림.slice(0, 6).map(쪽이름).join(', ')}`);
+  }
+  if (a) {
+    const 새것 = 목록칸(a.fresh);
+    const 셈 = (k) => 새것.filter((x) => x && x.impact === k).length;
+    줄.push(`  접근성(axe) — ${a.baseline ? '기준에 없던 위반' : '기준 없음, 지금 위반'} 치명 ${셈('critical')} · 심각 ${셈('serious')} · 보통 ${셈('moderate')} · 가벼움 ${셈('minor')}`);
+    if (a.baseline) for (const x of 새것.slice(0, 6)) 줄.push(`    ${x.impact} ${x.id} ${String(x.key || '').replace('|', ' ')} ${x.was}→${x.count}곳`);
+  }
+  return 줄;
+}
+
+function 기준글(r, argv) {
+  const g = r.기준갱신 || r;
+  const 머리 = g.실행 ? `기준 이미지 — 배포 점검 ${g.실행}${g.커밋 ? ` (공개 커밋 ${짧게(g.커밋)})` : ''}의 캡처` : null;
+  if (r.결과 !== '고를 것') {
+    // 올리는 명령이 같은 회차를 잡게 --점검을 붙여 보인다(그사이 새 회차가 끝나면 계획이 달라진다)
+    const 새argv = argv && g.실행 && !argv.includes('--점검') ? [...argv, '--점검', String(g.실행)] : argv;
+    const 못돎 = 목록칸(r.기준갱신 && r.기준갱신.axe못돎);
+    return [머리, `${r.기준갱신 ? `올릴 쪽 ${r.기준갱신.쪽.length}개${r.기준갱신.지운쪽 ? ` · 지울 그림 ${r.기준갱신.지운쪽}개` : ''}` : ''}`,
+      못돎.length ? `  axe가 안 돈 쪽 ${못돎.length}개는 접근성 기준을 옛것으로 둔다: ${못돎.slice(0, 6).join(', ')}` : '', 올리기글(r, 새argv)].filter(Boolean).join('\n');
+  }
+  const 줄 = [머리, '[고를 것] 기준으로 올릴 쪽을 고른다 — 의도한 변경이 있는 쪽만(그 밖의 차이는 회귀일 수 있다)'];
+  const v = r.견줌;
+  if (!v) 줄.push('  그 회차의 견줌 결과(site-check-result)를 못 받았다 — 쪽 목록만 보인다');
+  else {
+    if (!v.baseline) 줄.push('  아직 기준이 없다 — 처음 한 번은 --전부');
+    for (const x of 목록칸(v.changed)) 줄.push(`  달라짐 ${쪽이름(x)} ${Number(x.percent).toFixed(2)}%${x.rows ? ` (위에서 ${x.rows[0]}~${x.rows[1]}px)` : ''}`);
+    if (목록칸(v.missing).length) 줄.push(`  기준 없음: ${목록칸(v.missing).map(쪽이름).join(', ')}`);
+    if (목록칸(v.unstable).length) 줄.push(`  흔들림(기준으로 못 올림): ${목록칸(v.unstable).map(쪽이름).join(', ')}`);
+  }
+  줄.push(`  찍힌 쪽 ${목록칸(r.쪽).length}개: ${목록칸(r.쪽).join(' ')}`);
+  줄.push(`  예: node tools/공개.js 기준 --점검 ${r.실행} lab/ home   (앞 /는 없어도 된다 · 첫 쪽은 home · 처음 한 번: node tools/공개.js 기준 --점검 ${r.실행} --전부)`);
+  return 줄.filter(Boolean).join('\n');
 }
 
 function 확인결과글(r) {
@@ -1683,19 +1886,19 @@ async function main(argv = process.argv.slice(2)) {
   if (!옵션.json) 옵션.알리기 = (글) => console.error(`… ${글}`);
   let r;
   try {
-    r = 옵션.명령 === '올리기' ? await 올리기(옵션) : 옵션.명령 === '확인' ? await 확인(옵션) : await 채우기(옵션);
+    r = 옵션.명령 === '올리기' ? await 올리기(옵션) : 옵션.명령 === '확인' ? await 확인(옵션) : 옵션.명령 === '기준' ? await 기준(옵션) : await 채우기(옵션);
   } catch (e) {
     if (e instanceof 사용법오류) { console.error(`${e.message}\n${사용법}`); return 2; }
     r = { 결과: '실패', 이유: e.message };
   }
   if (옵션.json) console.log(JSON.stringify(r, null, 2));
-  else console.log(옵션.명령 === '올리기' ? 올리기글(r, argv) : 옵션.명령 === '확인' ? 확인결과글(r) : 채우기글(r));
+  else console.log(옵션.명령 === '올리기' ? 올리기글(r, argv) : 옵션.명령 === '확인' ? 확인결과글(r) : 옵션.명령 === '기준' ? 기준글(r, argv) : 채우기글(r));
   return 좋은결과.has(r.결과) ? 0 : 1;
 }
 
 if (require.main === module) main().then((code) => { process.exitCode = code; });
 
 module.exports = {
-  올리기, 확인, 채우기, 인자읽기, main,
-  _시험: { 토큰고치기, 토큰값, 참조풀기, 점검규칙읽기, 검사하기, 더한줄, 계획해시, 바이트대조, 점검기다리기, 줄끝만다름, 공개경로, 올리기글, 확인결과글, glob식 },
+  올리기, 확인, 채우기, 기준, 인자읽기, main,
+  _시험: { 토큰고치기, 토큰값, 참조풀기, 점검규칙읽기, 검사하기, 더한줄, 계획해시, 바이트대조, 점검기다리기, 줄끝만다름, 공개경로, 올리기글, 확인결과글, 기준글, 점검결과받기, 쪽되살리기, glob식 },
 };

@@ -106,14 +106,21 @@ async function 공개서버(t) {
   return { 주소: `http://127.0.0.1:${서버.address().port}`, 파일, 요청 };
 }
 
-/** 가짜 gh: run list는 목록(부른 차례) 함수가, run view는 실패 단계 하나, rerun은 기록만(다시실패면 던진다) */
-function 가짜gh(목록, { 다시실패 = false } = {}) {
+/** 가짜 gh: run list는 목록(부른 차례) 함수가, run view는 실패 단계 하나, rerun은 기록만(다시실패면 던진다),
+ *  run download는 아티팩트[이름]의 파일들(경로 → 내용)을 -D 폴더에 쓴다(없으면 던진다 — 옛 점검·만료 흉내) */
+function 가짜gh(목록, { 다시실패 = false, 아티팩트 = {} } = {}) {
   const 부름 = [];
   const gh = (args) => {
     부름.push(args.join(' '));
     if (args[0] === 'run' && args[1] === 'list') return JSON.stringify(목록(부름.filter((a) => a.startsWith('run list')).length));
     if (args[0] === 'run' && args[1] === 'view') return JSON.stringify({ jobs: [{ steps: [{ name: '점검', conclusion: 'failure' }, { name: '준비', conclusion: 'success' }] }] });
     if (args[0] === 'run' && args[1] === 'rerun') { if (다시실패) throw Object.assign(new Error('rerun 거절'), { 이유: 'gh run rerun 실패 — 권한 없음' }); return ''; }
+    if (args[0] === 'run' && args[1] === 'download') {
+      const 이름 = args[args.indexOf('-n') + 1], 폴더 = args[args.indexOf('-D') + 1];
+      if (!아티팩트[이름]) throw Object.assign(new Error('no artifact'), { 이유: `gh run download 실패 — no artifact matches ${이름}` });
+      for (const [p, v] of Object.entries(아티팩트[이름])) 쓰기(폴더, p, v);
+      return '';
+    }
     throw new Error(`모르는 gh ${args.join(' ')}`);
   };
   gh.부름 = 부름;
@@ -1128,4 +1135,110 @@ test('도구 사본(256자 넘는 base64)은 OneDrive 문서 백업 검토 목�
   assert.equal(textPolicy('tools/공개.js', 원문), null,
     '점검규칙사본을 바꿨으면 값을 풀어 도구 이름 정규식인지 보고 tools/github-backup-reviewed-literals.json에 ' +
     '경로 tools/공개.js · 값 SHA-256 · kind encoded-text · 사유 한 줄을 더한다. 지금 긴 값 SHA: ' + 긴값.join(', '));
+});
+
+// ── 배포 점검 6단계(기준 이미지·접근성, 10-21) ───────────────────────────────
+
+const 견줌결과 = (덧 = {}) => ({ status: 'passed', problems: [], notes: [], visual: { baseline: { commit: 'abc1234', run: 3 }, run: 41, checked: 66, same: 64, tiny: [],
+  changed: [{ route: '/lab/', device: 'mobile', percent: 3.21, rows: [120, 860], height: [5000, 5100] }], layout: [], missing: [{ route: '/new/', device: 'desktop' }],
+  unstable: [], removed: [], errors: [], envChanged: null, ...덧 },
+  a11y: { baseline: true, checked: 66, fresh: [{ key: '/lab/|desktop', id: 'button-name', impact: 'critical', count: 1, was: 0, targets: ['#go'] }], known: 40, errors: [] } });
+
+test('배포 점검 결과: 끝난 회차의 site-check-result에서 기준 이미지·접근성 줄을 보이고, 못 받으면 판정은 그대로 둔다', async (t) => {
+  const 공 = 새공개본(t, { 'a.txt': '1\n' });
+  const 서버 = await 공개서버(t);
+  const 커밋 = 공.올림({ 'a.txt': '2\n' });
+  서버.파일.set('a.txt', 글('2\n'));
+  const 짧게 = { 커밋, 주소: 서버.주소, 기다림: 0.05, 간격: 0.05, 점검안함: false };
+  const gh = 가짜gh(() => [실행(41, 커밋, 'completed', 'success')], { 아티팩트: { 'site-check-result': { 'result.json': JSON.stringify(견줌결과()) } } });
+  const r = await 도구.확인(공.옵션({ ...짧게, gh }));
+  assert.equal(r.결과, '확인함');
+  assert.ok(gh.부름.some((a) => a.startsWith('run download 41') && a.includes('-n site-check-result')));
+  const 글줄 = 속.확인결과글(r);
+  assert.match(글줄, /기준 이미지 — 쪽 66장 · 같음 64 · 달라짐 1 · 기준 없음 1 · 흔들림 0/);
+  assert.match(글줄, /달라짐 \/lab\/ 휴대폰 3\.21% \(위에서 120~860px\)/);
+  assert.match(글줄, /node tools\/공개\.js 기준 --점검 41 <쪽 경로…>/);
+  assert.match(글줄, /접근성\(axe\) — 기준에 없던 위반 치명 1 · 심각 0/);
+  // 아티팩트가 없으면(6단계 전의 점검·만료) 세부 없이 그대로 통과
+  const 옛 = await 도구.확인(공.옵션({ ...짧게, gh: 가짜gh(() => [실행(41, 커밋, 'completed', 'success')]) }));
+  assert.equal(옛.결과, '확인함');
+  assert.equal(옛.점검.세부, undefined);
+  // 기준이 아직 없으면 처음 올리는 명령을 보인다
+  const 처음 = await 도구.확인(공.옵션({ ...짧게, gh: 가짜gh(() => [실행(42, 커밋, 'completed', 'success')], { 아티팩트: { 'site-check-result': { 'result.json': JSON.stringify(견줌결과({ baseline: null })) } } }) }));
+  assert.match(속.확인결과글(처음), /기준 이미지 — 아직 없다.*node tools\/공개\.js 기준 --점검 42 --전부/);
+});
+
+test('기준: 쪽을 안 고르면 달라진 쪽만 보이고, 고른 쪽만 옛 기준 위에 올리며(--점검 고정), --전부는 없어진 쪽 그림을 지운다', async (t) => {
+  const 옛목록 = { createdAt: '2026-10-21T00:00:00Z', commit: 'old', run: 3, env: { os: 'ubuntu24' }, shots: {
+    '/': { desktop: { file: 'desktop/home.jpg', sha256: 'h1', cssHeight: 900 } }, '/gone/': { desktop: { file: 'desktop/gone.jpg', sha256: 'g1', cssHeight: 900 } } } };
+  const 공 = 새공개본(t, { '.github/site-check/baseline/manifest.json': JSON.stringify(옛목록), '.github/site-check/baseline/desktop/home.jpg': '옛 첫 쪽',
+    '.github/site-check/baseline/desktop/gone.jpg': '없어진 쪽', '.github/site-check/baseline/axe.json': JSON.stringify({ '/|desktop': { region: { impact: 'moderate', count: 1 } } }) });
+  const 커밋 = 공.머리();
+  const 이번 = { createdAt: '2026-10-22T00:00:00Z', commit: 커밋, run: 77, env: { os: 'ubuntu24' }, shots: {
+    '/': { desktop: { file: 'desktop/home.jpg', sha256: 'h2', cssHeight: 950 }, mobile: { file: 'mobile/home.jpg', sha256: 'm2', cssHeight: 1800 } },
+    '/lab/': { desktop: { file: 'desktop/lab.jpg', sha256: 'l2', cssHeight: 4000 } } } };
+  const 아티팩트 = {
+    'site-check-shots': { 'manifest.json': JSON.stringify(이번), 'axe.json': JSON.stringify({ '/|desktop': {}, '/lab/|desktop': { 'color-contrast': { impact: 'serious', count: 2 } } }),
+      'baseline-before.json': JSON.stringify(옛목록), 'baseline-axe-before.json': JSON.stringify({ '/|desktop': { region: { impact: 'moderate', count: 1 } } }),
+      'desktop/home.jpg': '새 첫 쪽', 'mobile/home.jpg': '새 첫 쪽 휴대폰', 'desktop/lab.jpg': '새 랩' },
+    'site-check-result': { 'result.json': JSON.stringify(견줌결과({ changed: [{ route: '/', device: 'desktop', percent: 2.5 }], missing: [{ route: '/', device: 'mobile' }, { route: '/lab/', device: 'desktop' }],
+      removed: [{ route: '/gone/', device: 'desktop' }] })) },
+  };
+  const gh = () => 가짜gh(() => [실행(78, 'x', 'completed', 'cancelled'), 실행(77, 커밋, 'completed', 'success')], { 아티팩트 });
+
+  const 고를 = await 도구.기준(공.옵션({ gh: gh() }));
+  assert.equal(고를.결과, '고를 것');
+  assert.equal(고를.실행, 77, '취소된 회차는 건너뛴다');
+  assert.deepEqual(고를.쪽, ['/', '/lab/']);
+  assert.match(속.기준글(고를, ['기준']), /달라짐 \/ 컴퓨터 2\.50%[\s\S]*node tools\/공개\.js 기준 --점검 77 lab\/ home/);
+  // Git Bash가 바꿔 넘긴 쪽 경로(/lab/ → C:/Program Files/Git/lab/)를 되살리고, 앞 / 없는 쪽·home도 받는다
+  const 되살리기 = (p) => 속.쪽되살리기(p, 'C:/Program Files/Git');
+  assert.deepEqual(['C:/Program Files/Git/lab/topik4/', 'C:/Program Files/Git/', 'lab/topik4', 'home', '/en/'].map(되살리기), ['/lab/topik4/', '/', '/lab/topik4/', '/', '/en/']);
+  assert.throws(() => 되살리기('D:/somewhere/x'), /Windows 경로로 바뀌어 왔다/);
+  await assert.rejects(도구.기준(공.옵션({ gh: gh(), 항목: ['/없음/'] })), /캡처에 없는 쪽/);
+
+  const 전부 = await 도구.기준(공.옵션({ gh: gh(), 전부: true }));
+  assert.equal(전부.결과, '미리 보기', JSON.stringify(전부.걸림));
+  assert.equal(종류들(전부)['.github/site-check/baseline/desktop/gone.jpg'], '지움', '그 회차가 없어진 쪽으로 본 그림은 지운다');
+  assert.equal(종류들(전부)['.github/site-check/baseline/desktop/lab.jpg'], '새');
+
+  const 미리 = await 도구.기준(공.옵션({ gh: gh(), 항목: ['/'] }));
+  assert.equal(미리.결과, '미리 보기');
+  assert.deepEqual(Object.keys(종류들(미리)).sort(), ['.github/site-check/baseline/axe.json', '.github/site-check/baseline/desktop/home.jpg',
+    '.github/site-check/baseline/manifest.json', '.github/site-check/baseline/mobile/home.jpg']);
+  assert.deepEqual(미리.기준갱신.axe못돎, ['/|mobile'], '그 회차 axe에 열쇠가 없는 쪽은 옛 접근성 기준을 둔다(Fable F3)');
+  const 미리글 = 속.기준글(미리, ['기준', '/']);
+  assert.match(미리글, /axe가 안 돈 쪽 1개는 접근성 기준을 옛것으로 둔다: \/\|mobile/);
+  assert.match(미리글, /node tools\/공개\.js 기준 \/ --점검 77 -m "<메시지>" --실행 --계획 [0-9a-f]+/, '올리는 명령이 같은 회차를 잡는다');
+  assert.match(미리글, /알림 \[공개 경로\]\s+— 배포 점검의 기준 이미지 4개를 바꾼다/);
+  assert.ok(!/baseline\/desktop\/home\.jpg — 배포 점검·워크플로/.test(미리글), '기준 그림마다 알리지 않는다');
+  const 올림 = await 도구.기준(공.옵션({ gh: gh(), 항목: ['/'], 점검: '77', 실행: true, 계획: 미리.계획, 메시지: 'Site check baseline: home' }));
+  assert.match(올림.결과, /^올림/, JSON.stringify(올림));
+  assert.equal(공.파일('.github/site-check/baseline/desktop/home.jpg').toString(), '새 첫 쪽');
+  assert.equal(공.파일('.github/site-check/baseline/desktop/gone.jpg').toString(), '없어진 쪽', '고른 쪽만 바꾸고 나머지 옛 기준은 둔다');
+  const 새목록 = JSON.parse(공.파일('.github/site-check/baseline/manifest.json').toString());
+  assert.deepEqual(Object.keys(새목록.shots), ['/', '/gone/']);
+  assert.deepEqual({ ...새목록.shots['/'].desktop }, { file: 'desktop/home.jpg', sha256: 'h2', cssHeight: 950, run: 77 });
+  assert.deepEqual(JSON.parse(공.파일('.github/site-check/baseline/axe.json').toString()), { '/|desktop': {} }, '고른 쪽의 axe도 그 회차 것으로');
+});
+
+test('배포 점검 결과·기준: 칸이 빠진 결과 JSON도 출력이 터지지 않고, 목록을 못 읽거나 --전부에 견줌 결과가 없으면 기준은 멈춘다', async (t) => {
+  // 옛·부분 결과(목록 칸 없음)를 보여도 TypeError 없이 줄을 낸다 — push 뒤 출력이라 터지면 종료 코드가 깨진다
+  const 부분 = { 결과: '확인함', 커밋: 'a'.repeat(40), 요약: { 시각: 0, 제목: 't' }, main에있음: true, 빠짐: [], 대조: { 통과: true, 같음: 0, 전체: 0, 바퀴: 0, 초: 0 },
+    점검: { 결과: '통과', 실행: 5, 세부: { 실행: 5, 기준이미지: { baseline: { commit: 'x' } }, 접근성: { baseline: true, fresh: [{ impact: 'critical', id: 'x' }] } } } };
+  const 글줄 = 속.확인결과글(부분);
+  assert.match(글줄, /기준 이미지 — 쪽 \?장 · 같음 \? · 달라짐 0/);
+  assert.match(글줄, /치명 1/);
+  assert.match(속.기준글({ 결과: '고를 것', 실행: 5, 견줌: { baseline: null } }, ['기준']), /찍힌 쪽 0개/);
+
+  const 공 = 새공개본(t, { '.github/site-check/baseline/manifest.json': JSON.stringify({ shots: { '/': { desktop: { file: 'desktop/home.jpg', sha256: 'h1' } } } }) });
+  const 커밋 = 공.머리();
+  const 회차 = () => [실행(90, 커밋, 'completed', 'success')];
+  const 깨짐 = await 도구.기준(공.옵션({ gh: 가짜gh(회차, { 아티팩트: { 'site-check-shots': { 'manifest.json': '{깨진' } } }), 전부: true }));
+  assert.equal(깨짐.결과, '멈춤');
+  assert.match(깨짐.이유, /캡처 목록\(manifest\.json\)을 못 읽었다/);
+  const 이번 = { createdAt: '2026-10-22T00:00:00Z', commit: 커밋, run: 90, env: {}, shots: { '/': { desktop: { file: 'desktop/home.jpg', sha256: 'h2' } } } };
+  const 견줌없음 = await 도구.기준(공.옵션({ gh: 가짜gh(회차, { 아티팩트: { 'site-check-shots': { 'manifest.json': JSON.stringify(이번), 'baseline-before.json': JSON.stringify({ shots: { '/': { desktop: { file: 'desktop/home.jpg' } } } }), 'desktop/home.jpg': '새' } } }), 전부: true }));
+  assert.equal(견줌없음.결과, '멈춤');
+  assert.match(견줌없음.이유, /견줌 결과\(site-check-result\)를 못 받아/);
 });
