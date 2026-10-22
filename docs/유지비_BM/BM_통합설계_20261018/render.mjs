@@ -94,7 +94,9 @@ const pay = (s, m) => {
 const ysum = (s, y, f) => R.scenarios[s].rows.filter((r) => r.m.startsWith(String(y))).reduce((a, r) => a + (f(r) || 0), 0);
 const toKRW = (mntv) => mntv / I.fx.mntPerKrw;
 const hrs = (s, m) => Math.round(row(s, m).hours.total); // 그달 대표 시간
-const names = { R, I, man, eok, mnt, n0, n1, pct, pct1, DY, AY, core, Dm, Am, SC, row, sens, ad, deal, dl, gate, hit, move, B, CAP, LTV, SUB, pay, ysum, toKRW, hrs, PY, Pm, DP, FN, rooms, U, MK, PT, prow, pysum, pcore, PL, PN, CF, PU, cname, PLANS, jo, PC, PCL, pct2, HY, LY, OP, ON, OG, OGc };
+// [10-22] 한국 담당자(PULSE·SHIFT 한 명) 시간을 한 해 합으로: LH('기본', 2029).lecAg / LH('기본', 2029).cap
+const LH = (s, y) => { const rs = R.scenarios[s].rows.filter((r) => r.m.startsWith(String(y)) && r.capacity && r.capacity.lead); const S = (f) => rs.reduce((a, r) => a + f(r.capacity.lead), 0); const v = { months: rs.length, cap: S((l) => l.cap), pulse: S((l) => l.pulse), shift: S((l) => l.shift), lecAg: S((l) => l.lectureAgency) }; v.idle = Math.max(0, v.cap - v.pulse - v.shift - v.lecAg); return v; };
+const names = { R, I, man, eok, mnt, n0, n1, pct, pct1, DY, AY, core, Dm, Am, SC, row, sens, ad, deal, dl, gate, hit, move, B, CAP, LTV, SUB, pay, ysum, toKRW, hrs, PY, Pm, DP, FN, rooms, U, MK, PT, prow, pysum, pcore, PL, PN, CF, PU, cname, PLANS, jo, PC, PCL, pct2, HY, LY, OP, ON, OG, OGc, LH };
 const keys = Object.keys(names); const vals = Object.values(names);
 
 const tplRoot = path.join(here, '틀');
