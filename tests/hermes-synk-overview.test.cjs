@@ -953,6 +953,11 @@ test('운영 사본이 같은 까닭으로 30분 넘게 멈추거나 갱신 예�
   assert.match(sent[0].text, /운영 사본에 올리지 못한 기록/);
   assert.match(sent[0].text, /기록 1개가 6시간 넘게/);
 
+  // 예약 작업이 기록을 쓰는 중이라 미룬 것도 까닭이 남는다
+  record(176, { state: 'stopped', reasonKey: '기록 쓰는 중', reason: '예약 작업이 기록을 쓰는 중이라 이번 회차는 따라가지 않았다', paths: ['docs/_ops/게시성과.jsonl'], stoppedSince: at(176).toISOString() });
+  const writing = await readOverview({ ...f.options, opsStatusFile: file, now: at(178) });
+  assert.equal(writing.snapshot.ops.reasonKey, '기록 쓰는 중');
+
   // 모양이 다르거나 링크인 기록은 읽지 않는다
   write(f.directory, 'ops-status.json', { schemaVersion: 2, checkedAt: at(150).toISOString(), state: 'ok' });
   const odd = await readOverview({ ...f.options, opsStatusFile: file, now: at(150) });

@@ -33,7 +33,7 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 const 내커밋 = require('./내커밋.js');
 
-const { git도구, 조상인가, 멈춤, 사용법오류 } = 내커밋._도구;
+const { git도구, 조상인가, 멈춤, 사용법오류, 잠깐 } = 내커밋._도구;
 
 const 가리킴파일 = 'synk-ops-path';
 /** 운영 사본에서도 빼는 큰 미디어 폴더 — tools/바로올리기.js 가볍게와 같은 목록(예약 작업은 읽지 않는다) */
@@ -43,7 +43,8 @@ const 뺄폴더 = ['docs/캐릭터', 'docs/홍보물', 'docs/라디오'];
  * (따라가기가 3방향으로 지킨다) 올리지도 않는다 — 쓴 도구가 올린다. 이 밖의 파일이 바뀌었으면 누가 운영 사본을 고친 것으로 본다.
  */
 const 기록자리 = ['docs/_ops/', 'docs/마케팅/', 'docs/참고카드/'];
-const 잠금한도ms = 10 * 60_000;
+/** 갱신 잠금을 주인 없는 것으로 보는 나이 — 예약 「SYNK 운영 사본 갱신」의 실행 한도(20분)보다 길어야 살아 있는 갱신을 빼앗지 않는다 */
+const 잠금한도ms = 25 * 60_000;
 const 기본상태폴더 = () => process.env.SYNK_운영사본_상태
   || path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local'), 'synk', 'ops');
 
@@ -119,6 +120,16 @@ function 기록바뀜(git) {
     ...기록자리.map((p) => p.replace(/\/$/, ''))]));
 }
 
+/**
+ * 경로들 가운데 작업본 내용이 커밋 O의 판과 다른 것. 따라가기가 중간에 끊긴 자국(Windows가 연 파일 하나로 read-tree가 128로 멈추면 HEAD·인덱스는
+ * 옛 판인데 다른 파일은 이미 새 판으로 써져 있다)은 origin 판과 같아 여기서 빠진다 — 다음 따라가기가 3방향(작업본 = origin 판)으로 맞춘다
+ */
+function 판과다른(git, O, 경로들) {
+  if (!경로들.length) return [];
+  const 다름 = new Set(git(['--literal-pathspecs', 'diff', '--name-only', '-z', '--no-renames', O, '--', ...경로들]).toString('utf8').split('\0').filter(Boolean));
+  return 경로들.filter((p) => 다름.has(p));
+}
+
 const 최근ms = 10 * 60_000;
 function 최근에씀(파일) {
   try { return Date.now() - fs.statSync(파일).mtimeMs < 최근ms; } catch { return false; }
@@ -160,34 +171,60 @@ function 남은장부쓰기(상태폴더, 목록) {
   바꿔쓰기(path.join(상태폴더, '남은장부.json'), `${JSON.stringify({ paths: 목록 }, null, 2)}\n`);
 }
 
-/** 장부올리기·참고카드_커밋(운영 사본)이 부른다 — 올렸으면 그 경로를 지우고, 못 올렸으면 남긴다 */
-function 남은장부적기(경로들, 결과, 상태폴더 = 기본상태폴더()) {
-  const 지금 = 남은장부읽기(상태폴더);
-  const 됨 = ['올림', '올릴 것 없음'].includes(결과?.결과);
-  for (const p of 경로들) {
-    if (됨) delete 지금[p];
-    else 지금[p] = { 시각: 지금[p]?.시각 || new Date().toISOString(), 이유: String(결과?.이유 || 결과?.결과 || '').slice(0, 300) };
+/** 여러 도구가 같이 고치는 목록이라 짧은 잠금 안에서 읽고·고치고·쓴다 — 나중 쓰기가 앞선 항목을 지우지 않게. 잠금을 못 잡으면(6초) 그래도 쓴다 */
+function 남은장부고치기(상태폴더, 바꾸기) {
+  let 잠금 = null;
+  for (let 차례 = 0; 차례 < 40 && !잠금; 차례++) {
+    잠금 = 잠그기(상태폴더, '남은장부.lock', 60_000);
+    if (!잠금) 잠깐(50 * ((차례 % 5) + 1));
   }
-  남은장부쓰기(상태폴더, 지금);
+  try {
+    const 목록 = 남은장부읽기(상태폴더);
+    const 새 = 바꾸기(목록) || 목록;
+    남은장부쓰기(상태폴더, 새);
+    return 새;
+  } finally {
+    if (잠금) 잠금.풀기();
+  }
 }
 
-function 잠그기(상태폴더) {
+/** 장부올리기·참고카드_커밋(운영 사본)이 부른다 — 올렸으면 그 경로를 지우고, 못 올렸으면 남긴다 */
+function 남은장부적기(경로들, 결과, 상태폴더 = 기본상태폴더()) {
+  const 됨 = ['올림', '올릴 것 없음'].includes(결과?.결과);
+  return 남은장부고치기(상태폴더, (지금) => {
+    for (const p of 경로들) {
+      if (됨) delete 지금[p];
+      else 지금[p] = { 시각: 지금[p]?.시각 || new Date().toISOString(), 이유: String(결과?.이유 || 결과?.결과 || '').slice(0, 300) };
+    }
+    return 지금;
+  });
+}
+
+/** 잠금 파일(wx). 주인 프로세스가 없거나 한도보다 오래됐으면 주인 없는 잠금으로 치운다. 풀기는 제가 잡은 잠금(표)일 때만 지운다 */
+function 잠그기(상태폴더, 이름 = '갱신.lock', 한도 = 잠금한도ms) {
   fs.mkdirSync(상태폴더, { recursive: true });
-  const 파일 = path.join(상태폴더, '갱신.lock');
+  const 파일 = path.join(상태폴더, 이름);
+  const 표 = `${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
   for (let 차례 = 0; 차례 < 2; 차례++) {
     try {
       const fd = fs.openSync(파일, 'wx');
-      fs.writeFileSync(fd, JSON.stringify({ pid: process.pid, 시각: new Date().toISOString() }));
+      fs.writeFileSync(fd, JSON.stringify({ pid: process.pid, 시각: new Date().toISOString(), 표 }));
       fs.closeSync(fd);
-      return { 풀기: () => { try { fs.rmSync(파일, { force: true }); } catch {} } };
+      return {
+        풀기: () => {
+          try { if (JSON.parse(fs.readFileSync(파일, 'utf8')).표 === 표) fs.rmSync(파일, { force: true }); } catch {}
+        },
+      };
     } catch (e) {
       if (e.code !== 'EEXIST') throw e;
       let 주인 = null;
       try { 주인 = JSON.parse(fs.readFileSync(파일, 'utf8')); } catch {}
-      const 나이 = Date.now() - (Date.parse(주인?.시각) || fs.statSync(파일).mtimeMs);
+      let 나이 = 0;
+      try { 나이 = Date.now() - (Date.parse(주인?.시각) || fs.statSync(파일).mtimeMs); } catch { continue; }   // 그새 풀렸다
       let 살아있음 = false;
       try { if (Number.isSafeInteger(주인?.pid)) { process.kill(주인.pid, 0); 살아있음 = true; } } catch {}
-      if (살아있음 && 나이 < 잠금한도ms) return null;
+      if (살아있음 && 나이 < 한도) return null;
+      if (!주인 && 나이 < 5_000) return null;           // 막 만들어 아직 쓰는 중인 잠금
       fs.rmSync(파일, { force: true });                // 주인 없는 잠금
     }
   }
@@ -214,7 +251,7 @@ function 헤르메스판단(판, { 실행 = false, 직전 = null, 지금 = Date.
     return { 결과: '사람 확인', 다름: 판.differs,
       이유: `감시 검사기·플러그인이 바뀌어(${사람.join(', ')}) 저절로 다시 잡지 않았다 — 바꾼 세션이 확인하고 node tools/hermes-synk/install-automation.cjs --apply(플러그인은 install.cjs --apply와 게이트웨이 다시 켜기도)` };
   }
-  if (직전?.result === '다시 잡음' && 지금 - Date.parse(직전.at) < 30 * 60_000 && JSON.stringify(직전.differs || []) === JSON.stringify(판.differs)) {
+  if (직전?.lastApplyAt && 지금 - Date.parse(직전.lastApplyAt) < 30 * 60_000 && JSON.stringify(직전.lastApplyDiffers || []) === JSON.stringify(판.differs)) {
     return { 결과: '실패', 이유: '방금 다시 잡았는데도 계약이 맞지 않는다 — install-automation.cjs --확인으로 본다', 다름: 판.differs };
   }
   if (!실행) return { 결과: '다시 잡을 것', 다름: 판.differs };
@@ -252,8 +289,17 @@ async function 만들기(옵션 = {}) {
   const git = git도구(f.공용작업본);
   const 있는것 = 워크트리목록(git).find((w) => 같은곳(w.경로, 목표));
   if (있는것 && 같은곳(f.운영사본, 목표)) return { 결과: '이미 있음', 경로: 목표, 머리: 있는것.머리 };
+  if (있는것 && !f.운영사본 && 있는것.분리) {
+    // 되돌리기(예약옮기기.ps1 -Restore)가 가리킴만 지우고 남긴 운영 사본 — 다시 가리키고 갱신이 origin에 맞춘다
+    if (!옵션.실행) return { 결과: '미리 보기', 경로: 목표, 이유: '남아 있는 운영 사본을 다시 가리킨다' };
+    fs.writeFileSync(path.join(f.공용git, 가리킴파일), `${목표}\n`);
+    return { 결과: '다시 가리킴', 경로: 목표, 머리: 있는것.머리 };
+  }
   if (있는것) throw new 멈춤(`${목표}는 이미 다른 용도의 워크트리다`);
   if (fs.existsSync(목표)) throw new 멈춤(`${목표}에 이미 폴더가 있다 — 비우거나 --경로로 다른 곳을 준다`);
+  if (git.돌리기(['config', '--bool', '--get', 'extensions.worktreeConfig'], { 허용: null }).stdout.toString().trim() !== 'true') {
+    throw new 멈춤('extensions.worktreeConfig가 꺼져 있다 — 운영 사본만의 설정(줄끝·sparse)이 공용 .git/config에 들어간다. git config extensions.worktreeConfig true 뒤 다시');
+  }
   const O = 받기(git);
   const 무늬 = ['/*', ...뺄폴더.map((p) => `!/${p}/`)];
   const 공용모듈 = path.join(f.공용작업본, 'node_modules');
@@ -262,7 +308,8 @@ async function 만들기(옵션 = {}) {
   fs.mkdirSync(path.dirname(목표), { recursive: true });
   git(['worktree', 'add', '--no-checkout', '--detach', 목표, O]);
   const g = git도구(목표);
-  // 아무도 고치지 않는 사본이라 바이트 그대로 꺼낸다 — core.autocrlf=true면 CRLF가 든 blob이 유령 수정으로 보여 갱신이 멈춘다
+  // 아무도 고치지 않는 사본이라 바이트 그대로 꺼낸다 — core.autocrlf=true면 CRLF가 든 blob이 유령 수정으로 보여 갱신이 멈춘다.
+  // extensions.worktreeConfig가 꺼져 있으면 --worktree가 공용 설정에 써 버리므로 위(계획 전)에서 막았다
   g(['config', '--worktree', 'core.autocrlf', 'false']);
   // 빈 인덱스에서 무늬부터 걸고 꺼낸다 — 뺄 폴더를 한 번도 쓰지 않는다
   g(['sparse-checkout', 'set', '--no-cone', '--stdin'], { input: `${무늬.join('\n')}\n` });
@@ -307,7 +354,8 @@ async function 갱신(옵션 = {}) {
     const 멈춤값 = 값.결과 === '멈춤' || 값.결과 === '실패';
     // 같은 까닭으로 계속 멈춰 있으면 처음 본 시각을 이어 간다 — 감시가 30분 넘게 이어진 것만 알린다
     const 이어서 = 멈춤값 && 이전 && ['stopped', 'failed'].includes(이전.state) && 이전.reasonKey === 값.까닭;
-    const 안올림 = 값.안올림 || [];
+    // 안올림을 모르는 회차(fetch 실패 같은 예외)는 지난 목록·처음 본 시각을 이어 간다 — 6시간 알림 시계가 다시 0이 되지 않게
+    const 안올림 = 값.안올림 || 이전?.unpushed || [];
     const 헤 = 값.헤르메스;
     상태쓰기(상태폴더, {
       checkedAt: 지금, state: 멈춤값 ? (값.결과 === '멈춤' ? 'stopped' : 'failed') : 'ok',
@@ -315,8 +363,11 @@ async function 갱신(옵션 = {}) {
       stoppedSince: 멈춤값 ? (이어서 && 이전.stoppedSince ? 이전.stoppedSince : 지금) : null,
       reasonKey: 멈춤값 ? 값.까닭 : null, reason: 값.이유 || null, paths: (값.걸림 || []).slice(0, 10),
       // 운영 도구가 쓰고 아직 origin에 없는 기록 — 6시간 넘게 남으면 감시가 알린다
-      unpushedSince: 안올림.length ? (이전?.unpushedSince || 지금) : null, unpushed: 안올림.slice(0, 10),
-      hermes: 헤 ? { result: 헤.결과, reason: 헤.이유 || null, at: 헤.결과 === '맞음' ? (이전?.hermes?.at || null) : 지금, differs: (헤.다름 || []).slice(0, 30) }
+      unpushedSince: 안올림.length ? (이전?.unpushedSince || 지금) : null, unpushed: 안올림.slice(0, 50),
+      // 마지막으로 실제로 다시 잡은 때·어긋남은 다음 회차의 되풀이 막기가 본다 — 제한·실패 결과로 덮지 않고 이어 간다
+      hermes: 헤 ? { result: 헤.결과, reason: 헤.이유 || null, at: 지금, differs: (헤.다름 || []).slice(0, 30),
+        lastApplyAt: 헤.결과 === '다시 잡음' ? 지금 : (이전?.hermes?.lastApplyAt || null),
+        lastApplyDiffers: 헤.결과 === '다시 잡음' ? (헤.다름 || []).slice(0, 30) : (이전?.hermes?.lastApplyDiffers || []) }
         : (이전?.hermes || null),
       caller: 옵션.부른곳 || null,
       ...(값.마무리 ? { finishedInterruptedFollow: 값.마무리 } : {}),
@@ -339,7 +390,7 @@ async function 갱신(옵션 = {}) {
       if (마무리) B = 마무리;
     }
     const 기록 = 기록바뀜(git);
-    const 남의것 = 바뀐경로(git).filter((p) => !기록자리인가(p));
+    const 남의것 = 판과다른(git, O, 바뀐경로(git).filter((p) => !기록자리인가(p)));
     if (남의것.length) {
       return 남기기({ 결과: '멈춤', 까닭: '고친 파일', 걸림: 남의것, 머리: B, origin: O, 뒤짐: 뒤짐(), 안올림: 기록, 마무리,
         이유: `운영 사본에서 고친 파일이 ${남의것.length}개 있어 따라가지 않았다 — 운영 사본은 고치지 않는다. 고칠 것은 작업본에서 올리고 여기는 git -C "${f.운영사본}" checkout -- <파일>로 되돌린다` });
@@ -347,8 +398,11 @@ async function 갱신(옵션 = {}) {
     // 운영 도구가 올리려다 못 올린 기록만 다시 올린다. 쓰는 중일 수 있는 다른 기록은 건드리지 않는다(쓴 도구가 올린다)
     let 남은 = 남은장부읽기(상태폴더);
     if (옵션.실행 && Object.keys(남은).some((p) => !기록.includes(p))) {
-      남은 = Object.fromEntries(Object.entries(남은).filter(([p]) => 기록.includes(p)));   // 깨끗해진 것(누가 올림)은 지운다
-      남은장부쓰기(상태폴더, 남은);
+      // 깨끗해진 것(누가 올림)은 지운다 — 잠금 안에서 지금 상태를 다시 보고(그새 다른 도구가 적은 항목을 옛 목록으로 지우지 않게)
+      남은 = 남은장부고치기(상태폴더, (목록) => {
+        const 아직 = new Set(기록바뀜(git));
+        return Object.fromEntries(Object.entries(목록).filter(([p]) => 아직.has(p)));
+      });
     }
     const 다시올릴 = 기록.filter((p) => 남은[p]);
     let 장부 = null;
@@ -400,7 +454,12 @@ async function 밀린뒤(저장소, { 받지않음 = true } = {}) {
   let f;
   try { f = 찾기(저장소); } catch { return null; }
   if (!f.운영사본) return null;
-  if (같은곳(f.지금, f.운영사본)) return { 결과: '운영 사본', 헤르메스: 헤르메스맞추기(f.운영사본, { 실행: true, 직전: 상태읽기()?.hermes }) };
+  if (같은곳(f.지금, f.운영사본)) {
+    // 이미 따라갔으니 갱신은 헤르메스 계약만 맞추고 상태에 남긴다. 갱신 안에서 부른 것(못 올린 기록 다시 올리기)이면 잠금이 있어 「바쁨」 —
+    // 바깥 갱신이 이어서 맞춘다
+    const r = await 갱신({ 저장소, 실행: true, 받지않음, 부른곳: '바로올리기(운영 사본)' });
+    return { 결과: '운영 사본', 갱신: r.결과, ...(r.헤르메스 ? { 헤르메스: r.헤르메스 } : {}) };
+  }
   return 갱신({ 저장소, 실행: true, 받지않음, 부른곳: '바로올리기' });
 }
 
@@ -481,6 +540,6 @@ async function main(argv = process.argv.slice(2)) {
   return ['같음', '따라감', '만듦', '이미 있음', '있음', '미리 보기', '바쁨'].includes(r.결과) ? 0 : 1;
 }
 
-module.exports = { 찾기, 운영사본인가, 만들기, 갱신, 밀린뒤, 상태, 헤르메스맞추기, 기록자리인가, 남은장부읽기, 남은장부적기, 상태읽기, 같은곳, 인자읽기, main, 가리킴파일, 뺄폴더, 사람몫, 헤르메스판단 };
+module.exports = { 찾기, 운영사본인가, 만들기, 갱신, 밀린뒤, 상태, 헤르메스맞추기, 기록자리인가, 남은장부읽기, 남은장부적기, 잠그기, 상태읽기, 같은곳, 인자읽기, main, 가리킴파일, 뺄폴더, 사람몫, 헤르메스판단 };
 
 if (require.main === module) main().then((code) => { process.exitCode = code; });

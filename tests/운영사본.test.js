@@ -342,8 +342,10 @@ test('헤르메스판단: 판 올림·감시 검사기·플러그인 변경은 �
   assert.equal(판단(판).결과, '다시 잡을 것');
   assert.equal(판단(판, { 실행: true }).결과, '적용');
   const 지금 = Date.parse('2026-10-22T10:00:00Z');
-  const 직전 = { result: '다시 잡음', at: '2026-10-22T09:45:00Z', differs: ['tools/hermes-synk/overview.cjs'] };
+  // 마지막으로 실제로 다시 잡은 때(lastApplyAt)를 본다 — 그 뒤 「실패」 회차가 끼어도 30분 안이면 되풀이하지 않는다(GPT 10-22 P2)
+  const 직전 = { result: '실패', at: '2026-10-22T09:55:00Z', lastApplyAt: '2026-10-22T09:45:00Z', lastApplyDiffers: ['tools/hermes-synk/overview.cjs'] };
   assert.equal(판단(판, { 실행: true, 직전, 지금 }).결과, '실패');
+  assert.equal(판단(판, { 실행: true, 직전: { result: '다시 잡음', at: '2026-10-22T09:45:00Z', differs: 판.differs }, 지금 }).결과, '적용', 'lastApplyAt이 없는 옛 기록으로는 막지 않는다');
   assert.equal(판단(판, { 실행: true, 직전, 지금: 지금 + 20 * 60_000 }).결과, '적용', '30분 지나면 다시 잡는다');
   assert.equal(판단({ ...판, differs: ['tools/모델정책.js'] }, { 실행: true, 직전, 지금 }).결과, '적용', '다른 어긋남이면 다시 잡는다');
   const 이동 = { inSync: false, nativeChanged: false, differs: [], moved: true };
@@ -357,4 +359,77 @@ test('공용작업본: 운영 사본·세션 워크트리에서 돌아도 데이
   const { 공용작업본 } = require(path.join(REPO, 'tools', 'lib', '공용작업본.js'));
   for (const 곳 of [판.공용.폴더, 판.운영.폴더, 워.폴더]) assert.ok(도구.같은곳(공용작업본(곳), 판.공용.폴더), 곳);
   assert.equal(공용작업본(판.상태폴더), path.resolve(판.상태폴더));
+});
+
+test('갱신: 따라가기가 중간에 끊겨(Windows가 연 파일로 read-tree 128) 작업본에 origin 판 내용만 남은 파일은 고친 것으로 보지 않고 이어 따라간다', async (t) => {
+  const 판 = 새판(t, { 'tools/c.js': 'c1\n' });
+  await 판.만들기();
+  const O = 판.남push({ 'tools/a.js': 'a2\n', 'tools/c.js': 'c2\n' });
+  판.운영.g('fetch', '-q', 'origin');
+  판.운영.쓰기('tools/a.js', 'a2\n');                    // read-tree가 이 파일만 새 판으로 쓰고 멈춘 모양(HEAD·인덱스는 옛 판)
+  assert.deepEqual(판.운영.상태(), [' M tools/a.js']);
+  const r = await 도구.갱신({ 저장소: 판.공용.폴더, 상태폴더: 판.상태폴더, 실행: true, 헤르메스: () => ({ 결과: '맞음' }) });
+  assert.equal(r.결과, '따라감', JSON.stringify(r));
+  assert.equal(판.운영.머리(), O);
+  assert.deepEqual(판.운영.상태(), []);
+  assert.equal(판.운영.읽기('tools/c.js'), 'c2\n');
+  // origin 판과 다른 내용이면 여전히 누가 고친 것이다
+  판.운영.쓰기('tools/a.js', '운영 사본에서 고침\n');
+  const 멈춤 = await 도구.갱신({ 저장소: 판.공용.폴더, 상태폴더: 판.상태폴더, 실행: true, 헤르메스: () => ({ 결과: '맞음' }) });
+  assert.equal(멈춤.결과, '멈춤', JSON.stringify(멈춤));
+  assert.deepEqual(멈춤.걸림, ['tools/a.js']);
+});
+
+test('잠그기: 풀기는 제가 잡은 잠금만 지우고, 살아 있는 주인의 잠금은 한도 안이면 빼앗지 않는다', (t) => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-ops-lock-'));
+  t.after(() => fs.rmSync(방, { recursive: true, force: true }));
+  const 파일 = path.join(방, '시험.lock');
+  const 가 = 도구.잠그기(방, '시험.lock', 60_000);
+  assert.ok(가);
+  assert.equal(도구.잠그기(방, '시험.lock', 60_000), null, '살아 있는 주인(이 프로세스)의 잠금');
+  fs.writeFileSync(파일, JSON.stringify({ pid: process.pid, 시각: new Date().toISOString(), 표: '남의-잠금' }));
+  가.풀기();
+  assert.equal(fs.existsSync(파일), true, '그사이 남이 잡은 잠금은 지우지 않는다');
+  fs.writeFileSync(파일, JSON.stringify({ pid: process.pid, 시각: new Date(Date.now() - 120_000).toISOString(), 표: '오래된' }));
+  const 나 = 도구.잠그기(방, '시험.lock', 60_000);
+  assert.ok(나, '한도를 넘긴 잠금은 주인이 살아 있어도 치운다');
+  나.풀기();
+  assert.equal(fs.existsSync(파일), false);
+});
+
+test('만들기: extensions.worktreeConfig가 꺼진 저장소에서는 공용 설정을 건드리지 않고 멈춘다', async (t) => {
+  const 판 = 새판(t);
+  판.공용.g('config', 'extensions.worktreeConfig', 'false');
+  await assert.rejects(도구.만들기({ 저장소: 판.공용.폴더, 상태폴더: 판.상태폴더, 실행: true }), /worktreeConfig/);
+  assert.equal(판.공용.g('config', '--get', 'core.autocrlf').trim(), 'false', '공용 설정 그대로');
+  assert.equal(fs.existsSync(path.join(판.상태폴더, 'SYNK-appsscript')), false);
+});
+
+test('갱신: fetch가 실패한 회차(예외)도 못 올린 기록과 처음 본 시각을 이어 간다 — 6시간 알림 시계가 다시 0이 되지 않게', async (t) => {
+  const 판 = 새판(t);
+  await 판.만들기();
+  const 헤르메스 = () => ({ 결과: '맞음' });
+  const 장부 = path.join(판.운영.폴더, 'docs/_ops/장부.jsonl');
+  fs.appendFileSync(장부, '{"n":2}\n');
+  오래전(장부);
+  await 도구.갱신({ 저장소: 판.공용.폴더, 상태폴더: 판.상태폴더, 실행: true, 헤르메스 });
+  const 처음 = 판.상태();
+  assert.deepEqual(처음.unpushed, ['docs/_ops/장부.jsonl']);
+  판.공용.g('remote', 'set-url', 'origin', path.join(판.뿌리, '없는-원격.git'));
+  const r = await 도구.갱신({ 저장소: 판.공용.폴더, 상태폴더: 판.상태폴더, 실행: true, 헤르메스 });
+  assert.equal(r.결과, '실패', JSON.stringify(r));
+  const 뒤 = 판.상태();
+  assert.equal(뒤.state, 'failed');
+  assert.deepEqual(뒤.unpushed, ['docs/_ops/장부.jsonl']);
+  assert.equal(뒤.unpushedSince, 처음.unpushedSince);
+});
+
+test('만들기: 되돌리기가 가리킴만 지우고 남긴 운영 사본은 다시 가리킨다', async (t) => {
+  const 판 = 새판(t);
+  const r = await 판.만들기();
+  fs.rmSync(path.join(판.공용.폴더, '.git', 도구.가리킴파일));
+  assert.equal(도구.찾기(판.공용.폴더).운영사본, null);
+  const 다시 = await 도구.만들기({ 저장소: 판.공용.폴더, 상태폴더: 판.상태폴더, 실행: true });
+  assert.equal(다시.결과, '다시 가리킴', JSON.stringify(다시));
+  assert.ok(도구.같은곳(도구.찾기(판.공용.폴더).운영사본, r.경로));
 });

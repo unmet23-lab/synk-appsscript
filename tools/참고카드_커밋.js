@@ -201,7 +201,8 @@ function main() {
   if (!파일.length) { 출력({ 결과: '커밋할 것 없음' }); return; }
   if (꼬리없는원격()) {
     const 이유 = 막힘이유({ 분리허용: true });
-    if (이유) { 출력({ 결과: '멈춤', 이유 }); process.exitCode = 2; return; }
+    // 운영 사본이면 못 올린 카드로 적어 둔다 — 잠금이 풀리면 운영 사본 갱신이 다시 올린다
+    if (이유) { 운영사본에남기기(파일, { 결과: '멈춤', 이유 }); 출력({ 결과: '멈춤', 이유 }); process.exitCode = 2; return; }
     const r = 바로올리기로(메시지, 파일);
     출력(r);
     if (r.결과 === '실패') process.exitCode = 1;
@@ -210,7 +211,7 @@ function main() {
   }
   for (let 차례 = 1; 차례 <= 3; 차례++) {
     const 이유 = 막힘이유();
-    if (이유) { 출력({ 결과: '멈춤', 이유 }); process.exitCode = 2; return; }
+    if (이유) { 운영사본에남기기(파일, { 결과: '멈춤', 이유 }); 출력({ 결과: '멈춤', 이유 }); process.exitCode = 2; return; }
     const r = 한번(메시지);
     if (r.결과 !== '다시') {
       출력(r);
@@ -218,6 +219,7 @@ function main() {
       return;
     }
   }
+  운영사본에남기기(파일, { 결과: '멈춤', 이유: 'HEAD가 계속 움직였다' });
   출력({ 결과: '멈춤', 이유: 'HEAD가 계속 움직여 세 번 모두 커밋하지 못했다(카드는 작업본에 그대로)' });
   process.exitCode = 2;
 }

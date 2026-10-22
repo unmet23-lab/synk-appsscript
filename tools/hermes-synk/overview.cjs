@@ -50,7 +50,7 @@ const GATEWAY_RECOVERY_LABEL = Object.freeze({ ok: '이상 없음', starting: '�
 const opsStatusDefault = () => path.join(process.env.SYNK_운영사본_상태 || path.join(process.env.LOCALAPPDATA || os.homedir(), 'synk', 'ops'), '상태.json');
 const OPS_STALL_MS = 30 * 60_000;
 const OPS_UNPUSHED_MS = 6 * 60 * 60_000;
-const OPS_REASONS = new Set(['고친 파일', '갈라짐', '따라가기', '헤르메스', '폴더 없음', '오류']);
+const OPS_REASONS = new Set(['고친 파일', '기록 쓰는 중', '갈라짐', '따라가기', '헤르메스', '폴더 없음', '오류']);
 const MAX_TASKS = 300;
 // 조사 역할 목록은 tools/argon-schedules/configuration/docs.json 한 곳에서만 읽는다(10-22). 여기 따로 적은 네 역할
 // 목록이 10-19에 더한 월요일 스캔 셋을 못 봤다. 이름만 여기 두고, 이름이 없는 새 역할은 역할 id로 보인다.

@@ -925,3 +925,23 @@ test('the worktree listing runs in batches with a heartbeat after each, small wh
   assert.deepEqual([...partial.keys()], ['C:\\wt\\1', 'C:\\wt\\2', 'C:\\wt\\3']);
   assert.equal(backup.scanWorktrees([], { runScan: () => { throw new Error('not called'); } }), null);
 });
+
+test('the ops copy (tools/운영사본.js) is not walked whole — only its unpushed record files are preserved', t => {
+  const f = fixture(t), ops = path.join(f.temp, 'ops'), vault = path.join(f.temp, 'vault');
+  const { execFileSync } = require('node:child_process');
+  const git = (...args) => execFileSync('git', args, { cwd: f.root, windowsHide: true, stdio: 'pipe' });
+  git('init', '-q');
+  f.put(f.root, 'docs/_ops/ledger.jsonl', '{"n":1}\n'); f.put(f.root, 'tools/app.js', 'const v = 1;'); f.put(f.root, 'docs/guide.md', '# Guide');
+  git('add', '.'); git('-c', 'user.name=Backup Test', '-c', 'user.email=backup@example.invalid', 'commit', '-qm', 'fixture');
+  git('worktree', 'add', '-q', '--detach', ops);
+  f.put(ops, 'docs/_ops/ledger.jsonl', '{"n":1}\n{"n":2}\n');
+  f.put(ops, 'docs/마케팅/ep1/게시/작업실.json', '{"registered":"r1"}');
+  f.put(ops, 'tools/app.js', 'const v = 2;');            // outside the record places: the ops refresh stops on it, the backup ignores it
+  f.put(ops, 'docs/guide.md', '# Guide edited in the ops copy');
+  assert.deepEqual(backup.opsCopyRecords(ops).sort(), ['docs/_ops/ledger.jsonl', 'docs/마케팅/ep1/게시/작업실.json']);
+  const trees = [{ repository: 'SYNK-appsscript', primary: f.root, root: ops, merged: true, changedSources: backup.opsCopyRecords(ops), opsCopy: true }];
+  const report = backup.preserveWorktreeDocuments(f.root, vault, { trees });
+  assert.equal(report.sourceFiles, 2, JSON.stringify(report));
+  assert.equal(report.uniquePreserved, 2, 'only the two records — the edited docs/guide.md is not collected from the ops copy');
+  assert.deepEqual(backup.opsCopyRecords(path.join(f.temp, 'not-a-repository')), []);
+});

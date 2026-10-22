@@ -56,19 +56,40 @@ function writeChangedIndex(file, content, { cache = null, tags = {} } = {}) {
   }
   return changed;
 }
+/** 운영 사본의 기록 자리(docs/_ops·docs/마케팅·docs/참고카드)에서 바뀌었거나 새로 생긴 파일 — 예약 작업이 쓰고 못 올린 것 */
+function opsCopyRecords(directory) {
+  try {
+    const out = execFileSync('git', ['-c', 'core.quotepath=false', '--no-optional-locks', 'status', '--porcelain=v1', '-z', '--untracked-files=all', '--',
+      'docs/_ops', 'docs/마케팅', 'docs/참고카드'], { cwd: directory, encoding: 'utf8', windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+    const fields = out.split('\0'), paths = [];
+    for (let i = 0; i < fields.length; i++) {
+      if (!fields[i]) continue;
+      paths.push(fields[i].slice(3));
+      if (fields[i][0] === 'R' || fields[i][0] === 'C') i++;
+    }
+    return paths.filter(relative => fs.existsSync(path.join(directory, relative)));
+  } catch { return []; }
+}
+
 function worktrees(root) {
   const found = [];
   for (const scope of policy.systemScopes(root).filter(scope => scope.mode === 'repository')) {
     if (!fs.existsSync(scope.root)) continue;
     const data = execFileSync('git', ['--no-optional-locks', 'worktree', 'list', '--porcelain', '-z'],
       { cwd: scope.root, encoding: 'utf8', windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 8 << 20 });
-    // 운영 사본(tools/운영사본.js — 예약 작업이 도는 origin 판)은 지킬 미통합 문서가 없다 — 30분마다 훑지 않는다(10-22)
+    // 운영 사본(tools/운영사본.js — 예약 작업이 도는 origin 판, 2.3GB)은 30분마다 통째로 훑지 않는다. 예약 작업이 쓰고 아직 못 올린
+    // 기록(기록 자리의 수정·새 파일)만 지킨다 — push가 실패한 동안 그 기록은 운영 사본에만 있다(10-22, 아르곤 P2)
     let ops = null;
     try { ops = path.resolve(fs.readFileSync(path.join(scope.root, '.git', 'synk-ops-path'), 'utf8').trim()).toLowerCase(); } catch {}
     for (const field of data.split('\0').filter(value => value.startsWith('worktree '))) {
       const directory = path.resolve(field.slice(9));
-      if (directory.toLowerCase() !== path.resolve(scope.root).toLowerCase() && directory.toLowerCase() !== ops && fs.existsSync(directory))
-        found.push({ repository: scope.name, primary: scope.root, root: directory });
+      if (directory.toLowerCase() === path.resolve(scope.root).toLowerCase() || !fs.existsSync(directory)) continue;
+      if (directory.toLowerCase() === ops) {
+        const changed = opsCopyRecords(directory);
+        if (changed.length) found.push({ repository: scope.name, primary: scope.root, root: directory, merged: true, changedSources: changed, opsCopy: true });
+        continue;
+      }
+      found.push({ repository: scope.name, primary: scope.root, root: directory });
     }
   }
   return found;
@@ -324,7 +345,7 @@ function preserveWorktreeDocuments(root, vault, { dryRun = false, trees = worktr
   const lap = name => { const now = Date.now(); timings[name] = (timings[name] || 0) + now - mark; mark = now; };
   // 작업트리 목록(trees 기본값)을 만드는 데도 부하 속에서는 몇 분이 걸린다(10-20 13:30 실행). 나열 전에 한 번 진행을 알린다.
   onProgress();
-  const scans = cache ? scanWorktrees(trees, { onProgress }) : null;
+  const scans = cache ? scanWorktrees(trees.filter(tree => !tree.opsCopy), { onProgress }) : null;
   lap('scanMs');
   const merged = mergedWorktrees(trees, gitState);
   lap('mergedMs');
@@ -943,5 +964,5 @@ if (require.main === module) {
   }
   const result = run(options); console.log(JSON.stringify(result)); process.exitCode = result.exitCode;
 }
-module.exports = { worktrees, changedWorktreeSources, preserveWorktreeDocuments, preserveDriftedWorktreeVersions, copyRetryingDrift, classifyProvider, protectedPriorSources, protectedSourceInventory, encryptedProtectionCoverage, worktreePrimaryDrift, providerFocus, mergeProviderReport, providerStatus, scanWorktrees, run, readJson, writeJson,
+module.exports = { worktrees, opsCopyRecords, changedWorktreeSources, preserveWorktreeDocuments, preserveDriftedWorktreeVersions, copyRetryingDrift, classifyProvider, protectedPriorSources, protectedSourceInventory, encryptedProtectionCoverage, worktreePrimaryDrift, providerFocus, mergeProviderReport, providerStatus, scanWorktrees, run, readJson, writeJson,
   PROVIDER_SLOTS, PROVIDER_MAX_CARRY_MS };

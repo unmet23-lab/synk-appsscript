@@ -580,6 +580,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: `tools/운영사본.js` — 같은 저장소의 분리된 HEAD 워크트리(`%LOCALAPPDATA%\synk\ops\SYNK-appsscript`, 가볍게와 같은 sparse, node_modules는 공용 작업본 junction, `core.autocrlf=false`)를 두고, 바로올리기 push 뒤(같은 프로세스)와 5분 예약 「SYNK 운영 사본 갱신」이 origin/master로 따라간 뒤 헤르메스 계약을 다시 잡는다(헤르메스 판 올림·검사기 `automation.py`·플러그인 변경은 저절로 안 잡음). 예약 작업은 `tools/운영사본/예약옮기기.ps1`로 동작의 코드 경로만 옮겼다(작업마다 XML 백업, 백업 대상·볼트는 그대로). 데이터 뿌리(백업 대상·보존 점검·git 밖 영상·예약멈춤 편 폴더·헤르메스 작업 기록)는 `tools/lib/공용작업본.js`로 공용 작업본. 운영 사본에서 고친 코드가 보이면 따라가지 않고 `%LOCALAPPDATA%\synk\ops\상태.json`에 남기며 헤르메스가 30분 넘게 이어지면 알린다. 도구가 쓰는 기록 자리(docs/_ops·docs/마케팅·docs/참고카드)는 막지 않되, 10분 안에 쓴 기록이 있으면 그 회차 따라가기를 미루고(따라가기가 그 파일을 잠깐 바탕 판으로 되돌리는 사이 덧붙인 줄을 잃지 않게), 못 올린 기록(`남은장부.json`)은 다음 회차에 다시 올린다.
 - 다시 확인: `node tools/운영사본.js`(HEAD = origin · 마지막 갱신), `Get-ScheduledTask | % Actions`에 공용 작업본 `tools\` 경로가 없다, `%LOCALAPPDATA%\hermes\runtime\synk-automation\config.json`의 monitor가 운영 사본. 되돌리기는 `예약옮기기.ps1 -Restore <백업 폴더>`(가리킴 지우기·헤르메스를 공용 작업본에서 다시 잡기까지). 시험 `node --test tests/운영사본.test.js`. 운영 사본 폴더를 지울 때는 node_modules junction부터 끊는다(위 「junction이 든 워크트리」).
 
+### Windows에서 누가 연 파일 하나 때문에 `read-tree -m -u`가 128로 멈추면 다른 파일은 이미 새 판으로 남는다 — 운영 사본 갱신은 origin 판과 같은 파일을 고친 것으로 보지 않는다 (2026-10-22 Claude)
+- 증상: 연결 작업본에서 바뀔 추적 파일 하나를 다른 프로세스가 연 채로 `git read-tree -m -u B T`를 하면 종료 128 `error: unable to unlink old 'tools/b.js': Invalid argument`로 멈춘다. HEAD·인덱스는 B 그대로인데 다른 바뀐 파일은 이미 T 내용으로 써져 `git status`에 ` M`으로 남는다(표준 입력이 터미널이 아니면 다시 할지도 묻지 않는다). `git checkout --detach --force T`도 HEAD만 T로 가고 그 파일만 옛 내용으로 남았다(10-22 「감시 예약을 깨끗한 작업본에서」 세션이 임시 저장소로 재현).
+- 원인: Windows는 열린 파일을 지우거나 바꾸지 못한다. git은 파일을 하나씩 바꾸다 멈추고 이미 쓴 파일은 되돌리지 않는다. `tools/바로올리기.js` 따라가기의 되돌리기는 백업한 「고치던 파일」만 되돌린다. 그대로면 운영 사본 갱신이 그 자국을 「누가 고친 파일」로 보고 따라가기를 멈춘 채 스스로 못 푼다.
+- 고침: `tools/운영사본.js` 갱신의 「고친 파일」 판정은 작업본 내용이 origin 판과 다른 경로만 센다(`git diff --name-only <origin> -- <경로…>`). origin 판과 같은 자국은 다음 따라가기가 3방향(작업본 = origin 판)으로 그대로 맞춘다. 인덱스까지 새 판이고 HEAD만 옛 판인 끊김(시간 한도로 죽음)은 인덱스 트리와 같은 커밋으로 HEAD만 옮긴다(끊긴 따라가기 마무리).
+- 다시 확인: `node --test --test-name-pattern="중간에 끊겨|끊겼으면" tests/운영사본.test.js`.
+
 ## 이력 훑기
 
 ### 큰 blob을 거른 클론에서 `git log -S`·`--find-object`가 「could not fetch」로 끝난다
