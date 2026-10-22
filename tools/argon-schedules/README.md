@@ -10,9 +10,10 @@
   - 로그인은 77yuhbs HOME을 가린(`InaccessiblePaths`) `systemd-run --pty` 안에서 한다. 브라우저 승인과 코드 붙여넣기는 유호님이 한다(아래 「로그인」).
   - 두 settings.json의 `permissions`는 같다. deny에는 두 계정의 토큰·settings와 gws 폴더가 모두 들어 있다(`configuration/agy-settings.example.json`).
 - **고르기.** 7역할 service의 drop-in `production-dropins/60-agy-account.conf`가 `ExecStart`의 agy 앞에 `agy-account.py launch`를 끼운다. 회차를 시작할 때 다음 순서로 계정을 고르고, 같은 agy 명령을 HOME만 바꿔 exec한다.
-  1. 77yuhbs HOME에서 `agy -p /usage`(모델 토큰 0)로 몫을 본다. Gemini 주간·5시간 남은 몫이 둘 다 10% 이상이면 77yuhbs로 돈다.
-  2. 아니거나 확인이 실패하면 unmet25를 본다. 권한이 같고, 유료 크레딧이 꺼져 있고, 실제 로그인이 unmet25이고, 두 몫이 10% 이상일 때만 unmet25로 돈다.
+  1. 77yuhbs HOME에서 `agy -p /usage`(모델 토큰 0)로 몫을 본다. Gemini 주간 남은 몫(5시간 칸이 있으면 그것도)이 10% 이상이면 77yuhbs로 돈다.
+  2. 아니거나 확인이 실패하면 unmet25를 본다. 권한이 같고, 유료 크레딧이 꺼져 있고, 실제 로그인이 unmet25이고, 몫이 10% 이상이고, **`agy models`에 회차 모델(`gemini-4-argon-high`)이 있을 때만** unmet25로 돈다.
   3. 그 밖의 경우와 예외는 모두 77yuhbs다.
+- **unmet25에는 아직 Argon이 없다(10-22 확인).** 로그인 뒤 서버 agy에서 unmet25의 `agy models`는 gemini-3.8-flash(high·medium·low)·claude-sonnet-4-6·claude-opus-4-6-thinking·gpt-oss-120b뿐이었다. `/usage`도 주간 칸만 있었다(5시간 칸 없음). Ultra 가족 혜택이 공식 CLI에 아직 반영되지 않은 것인지, 가족 계정에는 따라오지 않는 것인지는 모른다. 그래서 위 2번의 모델 확인을 넣었다. 지금은 unmet25가 골라지지 않고(`*_UNMET25_NO_MODEL`), 목록에 Argon이 생기면 고치지 않아도 저절로 쓰인다. 다시 볼 때는 `status --usage`의 계정별 `runModelListed`를 본다.
 
   결정은 `run-status/ROLE.agy-account.json`과 stderr 한 줄, run-check 상태·영수증의 `agyAccount`에 남는다.
 - **바꾸는 명령(서버 root).** 모드는 다음 회차부터 적용되고 daemon-reload가 필요 없다.
@@ -25,12 +26,13 @@
   ```
 
   권한 줄을 바꾸면 `sync-settings`로 unmet25 settings에 같은 권한을 옮긴다(옮기기 전 사본은 같은 폴더의 `settings.json.bak-<UTC>`). 권한이 다르면 unmet25를 고르지 않는다. `status`·`sync-settings`는 root로 불러도 실행 사용자로 다시 돌아, root가 실행 사용자 폴더의 링크를 따라가지 않는다. 완전히 되돌릴 때는 7역할 `service.d/60-agy-account.conf`를 지우고 `systemctl daemon-reload`만 한다(timer는 재시작하지 않는다).
-- **로그인(다시 할 때도).** PC 터미널에서 `node tools/argon-schedules/agy-login.cjs unmet25`를 친다. 그러면 서버의 `agy-account.py login unmet25`가 그 계정 HOME에서만 도는 대화형 로그인 화면을 띄운다(77yuhbs HOME은 가림). 「1. Google OAuth」에서 Enter → 뜬 주소에서 unmet25로 허용 → 브라우저에 나온 코드를 붙여 넣고 Enter. 끝나면 Ctrl+D 두 번으로 나온다. `-p`로 띄우면 60초만 기다리므로 쓰지 않는다([현장 노트](../../docs/현장노트/AI_CLI.md)). 확인은 `status --usage`의 `lastSignedIn`·`usage`다.
+- **로그인(다시 할 때도).** 10-22 16:55 KST 무렵 unmet25로 로그인했다(`lastSignedIn` unmet25@gmail.com, 토큰 0600, 77yuhbs HOME은 가린 채). 다시 할 때는 PC 터미널에서 `node tools/argon-schedules/agy-login.cjs unmet25`를 친다. 그러면 서버의 `agy-account.py login unmet25`가 그 계정 HOME에서만 도는 대화형 로그인 화면을 띄운다(77yuhbs HOME은 가림). 「1. Google OAuth」에서 Enter → 뜬 주소에서 unmet25로 허용 → 브라우저에 나온 코드를 붙여 넣고 Enter. 끝나면 Ctrl+D 두 번으로 나온다. `-p`로 띄우면 60초만 기다리므로 쓰지 않는다([현장 노트](../../docs/현장노트/AI_CLI.md)). 유호님이 원격이라 앱 터미널이 안 보였던 10-22에는 다른 방법을 썼다. 로그인 화면을 서버 안 임시 unit에서 띄우고, PC 바탕화면의 「unmet25 로그인 코드」 창이 받은 코드를 ssh로 그 화면에 넣었다(코드는 Claude를 거치지 않음, 현장 노트 같은 항목). 확인은 `status --usage`의 `lastSignedIn`·`usage`·`runModelListed`다.
 - **설치·확인(10-22).**
   - 준비: 15:12 KST에 설정을 백업했다(`config-backups/20261022T061207Z-unmet25-login`). unmet25 HOME을 만들고 두 settings의 거절 목록을 맞췄으며, 이때 77yuhbs 토큰 파일은 그대로였다.
-  - 설치: 15:53 KST에 실행기와 run-check를 넣고, 16:01 KST에 3차 검수판으로 바꿨다(백업 `config-backups/20261022T065308Z-agy-account-install`·`20261022T070115Z-agy-account-install`, 해시 앞 16자리 agy-account.py `ee643d73cb9ecd5e`·run-check.py `6c88b7fc8cc07b15`). 모드는 auto이고, 7역할 drop-in을 넣었다. `systemd-analyze verify`는 경고 없이 통과했고 daemon-reload만 했다(timer NEXT 그대로). 서버 python 시험 18·18·24·9개가 통과했다.
+  - 설치: 15:53 KST에 실행기와 run-check를 넣었다. 16:01 KST에 3차 검수판, 17:03 KST에 모델 확인을 넣은 4차 판으로 바꿨다(백업 `config-backups/20261022T065308Z-…`·`070115Z-…`·`080249Z-agy-account-install`). 해시 앞 16자리는 agy-account.py `efaa3bafca4f7eea`·run-check.py `6c88b7fc8cc07b15`다. 모드는 auto이고, 7역할 drop-in을 넣었다. `systemd-analyze verify`는 경고 없이 통과했고 daemon-reload만 했다(timer NEXT 그대로). 서버 python 시험 20·18·24·9개가 통과했다.
+  - 로그인 뒤 확인(17:0x KST): `status --usage`에서 77yuhbs는 주간 14.4%·5시간 73.0%·`runModelListed` true, unmet25는 주간 100%·5시간 칸 없음·`runModelListed` false였다. `mode unmet25`로 잠시 고정하고 실제 명령 꼴(`--model gemini-4-argon-high`)로 끝까지 돌리자 `MODE_UNMET25_NO_MODEL` → 77yuhbs였다(stdout 0바이트). 그 뒤 auto로 되돌렸다. `run-status/full·synkbrief.agy-account.json`의 지금 값은 이 시험 기록이고, 다음 정규 회차가 덮어쓴다.
   - 끝까지 돌려 보기: 역할 service와 같은 격리의 임시 unit에서 `launch synk-argon-ultra-full -- agy --help`를 돌렸다. 77yuhbs(주간 15.3%·5시간 76.7%, 실제 로그인 77yuhbs)를 골랐고 stdout은 0바이트였으며, 결정 기록은 0600으로 남았다. Docs·모델 토큰은 쓰지 않았다.
-  - 검수: 아르곤·GPT 검수를 세 차례 거쳤다(`.tmp/검수/agy-unmet25-20261022*`). 1차는 아르곤 0건·GPT 3건(P0 1·P2 2, 반영 3)이었다. P0은 root로 돈 `sync-settings`가 실행 사용자 폴더의 링크를 따라 root 파일을 읽고 쓸 수 있던 것이다. 2차는 아르곤 0건·GPT 2건(P2, 반영 2), 3차(로그인 띄우기 추가)는 둘 다 0건이었다.
+  - 검수: 아르곤·GPT 검수를 세 차례 거쳤다(`.tmp/검수/agy-unmet25-20261022*`). 1차는 아르곤 0건·GPT 3건(P0 1·P2 2, 반영 3)이었다. P0은 root로 돈 `sync-settings`가 실행 사용자 폴더의 링크를 따라 root 파일을 읽고 쓸 수 있던 것이다. 2차는 아르곤 0건·GPT 2건(P2, 반영 2), 3차(로그인 띄우기 추가)는 둘 다 0건이었다. 4차(모델 확인·5시간 칸 선택)는 아르곤 0건·GPT 1건(P2 — 보이는 5시간 칸 값이 틀리면 확인 실패로, 반영)이었다.
 
 ## 2026-10-20 · 저장을 끝낸 뒤 연결이 끊긴 회차를 실패로 치던 것 고침
 

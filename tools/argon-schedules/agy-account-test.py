@@ -22,14 +22,23 @@ SPEC.loader.exec_module(agy)
 PERMISSIONS = {'allow': ['command(/usr/bin/date -u +%Y-%m-%dT%H:%M:%SZ)'],
                'deny': ['read_file(/var/lib/synk-argon-unmet25/.gemini/antigravity-cli/antigravity-oauth-token)']}
 INVOCATION = '0123456789abcdef' * 2
+ARGON_MODELS = ('gemini-4-argon-medium\tGemini 4 Argon (Medium)\ngemini-4-argon-high\tGemini 4 Argon (High)\n'
+                'gemini-3.8-flash-high\tGemini 3.8 Flash (High)\n')
+# What the server listed for unmet25 on 10-22: no Argon at all.
+NO_ARGON_MODELS = ('gemini-3.8-flash-high\tGemini 3.8 Flash (High)\nclaude-opus-4-6-thinking\tClaude Opus 4.6 (Thinking)\n'
+                   'gpt-oss-120b-medium\tGPT-OSS 120B (Medium)\n')
+
+
+NO_WINDOW = object()  # leave the 5-hour bucket out entirely (unmet25 on 10-22)
 
 
 def usage(weekly, five_hour, status='SUCCESS'):
+    gemini = [{'id': 'gemini-weekly', 'remaining_fraction': weekly}]
+    if five_hour is not NO_WINDOW:
+        gemini.append({'id': 'gemini-5h', 'remaining_fraction': five_hour})
     return json.dumps({'conversation_id': '', 'status': status, 'usage': {'total_tokens': 0},
                        'command': {'name': 'usage', 'data': {'groups': [
-                           {'name': 'Gemini Models', 'buckets': [
-                               {'id': 'gemini-weekly', 'remaining_fraction': weekly},
-                               {'id': 'gemini-5h', 'remaining_fraction': five_hour}]},
+                           {'name': 'Gemini Models', 'buckets': gemini},
                            {'name': 'Claude and GPT models', 'buckets': [
                                {'id': '3p-weekly', 'remaining_fraction': 1}, {'id': '3p-5h', 'remaining_fraction': 1}]}]}}})
 
@@ -50,7 +59,9 @@ class AgyAccountTest(unittest.TestCase):
         # account -> (stdout, signed-in email or None, exit code); exceptions are raised as-is
         self.answers = {'77yuhbs': (usage(0.5, 0.9), '77yuhbs@gmail.com', 0),
                         'unmet25': (usage(0.8, 0.95), 'unmet25@gmail.com', 0)}
-        self.calls = []
+        # account -> (`agy models` stdout, exit code)
+        self.model_lists = {name: (ARGON_MODELS, 0) for name in self.homes}
+        self.calls, self.model_calls = [], []
         accounts = {name: {'home': home, 'email': name + '@gmail.com'} for name, home in self.homes.items()}
         # The real mode file is root-owned; a test run owns its temp copy, whatever user runs it.
         owner = os.getuid() if os.name == 'posix' else 0
@@ -70,6 +81,10 @@ class AgyAccountTest(unittest.TestCase):
 
     def fake_run(self, args, **kwargs):
         account = next(name for name, home in self.homes.items() if kwargs['env']['HOME'] == str(home))
+        if args[1:] == ['models']:
+            self.model_calls.append(account)
+            stdout, code = self.model_lists[account]
+            return subprocess.CompletedProcess(args, code, stdout, 'Fetching available models...\n')
         self.calls.append((account, args, kwargs))
         answer = self.answers[account]
         if isinstance(answer, Exception):
@@ -148,6 +163,40 @@ class AgyAccountTest(unittest.TestCase):
         (self.homes['unmet25'] / '.gemini' / 'config' / 'user_config.json').write_text('{"use_ai_credits": true}')
         self.assertEqual(agy.choose('auto')[1], 'AUTO_UNMET25_SETTINGS_MISMATCH')
 
+    def test_spare_must_list_the_run_model(self):
+        # 10-22: unmet25 signed in fine but `agy models` had no Argon, so a scheduled run on it would fail.
+        self.answers['77yuhbs'] = (usage(0.05, 0.9), '77yuhbs@gmail.com', 0)
+        for listing, reason in (((NO_ARGON_MODELS, 0), 'AUTO_UNMET25_NO_MODEL'), (('', 1), 'AUTO_UNMET25_NO_MODEL'),
+                                ((ARGON_MODELS, 0), 'AUTO_SWITCH_UNMET25')):
+            with self.subTest(reason=reason, code=listing[1]):
+                self.model_lists['unmet25'] = listing
+                self.assertEqual(agy.choose('auto', 'gemini-4-argon-high')[1], reason)
+        self.model_lists['unmet25'] = (NO_ARGON_MODELS, 0)
+        self.assertEqual(agy.choose('unmet25', 'gemini-4-argon-high')[:2], ('77yuhbs', 'MODE_UNMET25_NO_MODEL'))
+        self.model_calls.clear()
+        self.answers['77yuhbs'] = (usage(0.5, 0.9), '77yuhbs@gmail.com', 0)
+        self.assertEqual(agy.choose('auto', 'gemini-4-argon-high')[0], '77yuhbs')
+        self.assertEqual(self.model_calls, [])  # a healthy 77yuhbs needs no model check
+
+    def test_five_hour_window_is_optional_but_weekly_is_not(self):
+        # unmet25's real 10-22 /usage had only the weekly window.
+        self.answers['77yuhbs'] = (usage(0.05, NO_WINDOW), '77yuhbs@gmail.com', 0)
+        self.answers['unmet25'] = (usage(1, NO_WINDOW), 'unmet25@gmail.com', 0)
+        self.assertEqual(agy.choose('auto', 'gemini-4-argon-high')[:2], ('unmet25', 'AUTO_SWITCH_UNMET25'))
+        self.answers['77yuhbs'] = (usage(0.5, NO_WINDOW), '77yuhbs@gmail.com', 0)
+        self.assertEqual(agy.choose('auto')[:2], ('77yuhbs', 'AUTO_77YUHBS_OK'))
+        no_weekly = json.dumps({'status': 'SUCCESS', 'command': {'name': 'usage', 'data': {'groups': [
+            {'buckets': [{'id': 'gemini-5h', 'remaining_fraction': 0.9}]}]}}})
+        with self.assertRaises(ValueError):
+            agy.remaining(no_weekly)
+        # GPT 4차 GA1: a 5-hour window that is shown but unreadable is a failed check, not "no window".
+        for bad in (None, 'x', 1.5, True):
+            with self.subTest(five_hour=bad):
+                with self.assertRaises(ValueError):
+                    agy.remaining(usage(0.5, bad))
+                self.answers['77yuhbs'] = (usage(0.5, bad), '77yuhbs@gmail.com', 0)
+                self.assertEqual(agy.probe('77yuhbs')['error'], 'USAGE_BUCKETS_INVALID')
+
     def test_mode_file(self):
         self.assertEqual(agy.read_mode(), ('auto', None))
         self.set_mode('{"mode": "77yuhbs"}')
@@ -205,9 +254,15 @@ class AgyAccountTest(unittest.TestCase):
         decision = json.loads(record.read_text())
         self.assertEqual((decision['role'], decision['account'], decision['invocationId']), ('full', 'unmet25', INVOCATION))
         self.assertEqual(decision['probes']['77yuhbs']['gemini-weekly'], 0.04)
+        self.assertIs(decision['probes']['unmet25']['model'], True)
         if os.name == 'posix':
             self.assertEqual(stat.S_IMODE(record.stat().st_mode), 0o600)
         self.assertEqual([p.name for p in self.status_dir.iterdir()], ['full.agy-account.json'])
+        # The same run with a spare that does not list the model stays on 77yuhbs.
+        self.model_lists['unmet25'] = (NO_ARGON_MODELS, 0)
+        _, execve, _, stderr = self.launch(['synk-argon-ultra-full', '--'] + command)
+        self.assertEqual(execve.call_args[0][2]['HOME'], str(self.homes['77yuhbs']))
+        self.assertIn('reason=AUTO_UNMET25_NO_MODEL', stderr)
 
     def test_launch_falls_back_to_default_when_the_chooser_breaks(self):
         with patch.object(agy, 'choose', side_effect=RuntimeError('boom')):

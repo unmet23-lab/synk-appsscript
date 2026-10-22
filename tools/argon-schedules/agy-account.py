@@ -43,7 +43,10 @@ MODE_FILE = Path('/etc/synk-argon-77yuhbs/agy-account.json')
 MODE_OWNER_UID = 0
 MODES = ('auto', DEFAULT, SPARE)
 # 2026-10-22 rule: move off 77yuhbs only when a Gemini window is under 10% or the check fails.
+# Every account shows the weekly window; the 5-hour one only on some plans (unmet25 had none on 10-22).
 MIN_REMAINING = {'gemini-weekly': 0.10, 'gemini-5h': 0.10}
+REQUIRED_WINDOWS = ('gemini-weekly',)
+RUN_MODEL = 'gemini-4-argon-high'  # the role services' --model; status shows whether each login lists it
 PROBE_TIMEOUT = 60
 AUTH = re.compile(r'authenticated successfully as ([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+)')
 
@@ -98,9 +101,10 @@ def remaining(stdout):
             if not isinstance(bucket, dict) or bucket.get('id') not in MIN_REMAINING:
                 continue
             fraction = bucket.get('remaining_fraction')
-            if type(fraction) in (int, float) and 0 <= fraction <= 1:
-                found[bucket['id']] = float(fraction)
-    if set(found) != set(MIN_REMAINING):
+            if not (type(fraction) in (int, float) and 0 <= fraction <= 1):
+                raise ValueError('USAGE_BUCKETS_INVALID')  # a window that is shown must be readable
+            found[bucket['id']] = float(fraction)
+    if any(key not in found for key in REQUIRED_WINDOWS):
         raise ValueError('USAGE_BUCKETS_MISSING')
     return found
 
@@ -130,8 +134,27 @@ def probe(account):
         result['error'] = str(exc) if str(exc).startswith('USAGE_') else 'USAGE_UNREADABLE'
         return result
     result['ok'] = True
-    result['healthy'] = all(result[key] >= floor for key, floor in MIN_REMAINING.items())
+    result['healthy'] = all(result[key] >= floor for key, floor in MIN_REMAINING.items() if key in result)
     return result
+
+
+def models(account):
+    """Model slugs `agy models` lists for that login (no tokens); None when the call fails.
+
+    A spare login can sign in fine yet not offer the run's model: on 10-22 unmet25 (Ultra family)
+    listed only Gemini 3.8 Flash, Claude 4.6 and GPT-OSS, so a run on it would fail at start.
+    """
+    home = ACCOUNTS[account]['home']
+    env = {'HOME': str(home), 'USER': RUN_USER, 'LOGNAME': RUN_USER, 'PATH': '/usr/local/bin:/usr/bin:/bin',
+           'LANG': 'C.UTF-8', 'TZ': os.environ.get('TZ', 'Asia/Seoul'), 'AGY_CLI_DISABLE_AUTO_UPDATE': 'true'}
+    try:
+        done = subprocess.run([AGY, 'models'], env=env, cwd=str(home), stdin=subprocess.DEVNULL,
+                              capture_output=True, text=True, timeout=PROBE_TIMEOUT, check=False)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if done.returncode != 0:
+        return None
+    return {line.split('\t', 1)[0].strip() for line in done.stdout.splitlines() if line.strip()}
 
 
 def spare_settings_ok():
@@ -153,8 +176,9 @@ def spare_settings_ok():
             and isinstance(base.get('permissions'), dict) and base.get('permissions') == spare.get('permissions'))
 
 
-def choose(mode):
-    """(account, reason, probes). Every doubt keeps the 77yuhbs default."""
+def choose(mode, model=None):
+    """(account, reason, probes). Every doubt keeps the 77yuhbs default. `model` is the run's --model,
+    which unmet25 must list before it can take the run."""
     probes = {}
     if mode == DEFAULT:
         return DEFAULT, 'MODE_77YUHBS', probes
@@ -168,6 +192,11 @@ def choose(mode):
     probes[SPARE] = spare = probe(SPARE)
     if not spare['ok'] or spare.get('email') != ACCOUNTS[SPARE]['email']:
         return DEFAULT, prefix + '_UNMET25_NOT_READY', probes
+    if model:
+        listed = models(SPARE)
+        spare['model'] = bool(listed and model in listed)
+        if not spare['model']:
+            return DEFAULT, prefix + '_UNMET25_NO_MODEL', probes
     if mode == SPARE:
         return SPARE, 'MODE_UNMET25', probes
     if spare['healthy']:
@@ -198,16 +227,17 @@ def launch(argv):
         print('agy-account: usage: launch synk-argon-ultra-ROLE -- ' + AGY + ' ...', file=sys.stderr)
         return 2
     role, command = argv[0][len(UNIT_PREFIX):], argv[2:]
+    model = command[command.index('--model') + 1] if '--model' in command[:-1] else None
     mode, account, reason, probes = DEFAULT, DEFAULT, 'LAUNCHER_ERROR', {}
     try:
         mode, issue = read_mode()
-        account, reason, probes = (DEFAULT, issue, {}) if issue else choose(mode)
+        account, reason, probes = (DEFAULT, issue, {}) if issue else choose(mode, model)
     except Exception:  # never block the run on the chooser; today's login is the fallback
         account = DEFAULT
     invocation = os.environ.get('INVOCATION_ID', '')
     decision = {'schemaVersion': 1, 'role': role, 'decidedAt': now(), 'mode': mode, 'account': account,
                 'reason': reason, 'probes': {name: {key: value for key, value in result.items()
-                                                    if key in ('ok', 'healthy', 'email', 'error', *MIN_REMAINING)}
+                                                    if key in ('ok', 'healthy', 'email', 'error', 'model', *MIN_REMAINING)}
                                              for name, result in probes.items()},
                 'invocationId': invocation if re.fullmatch(r'[a-f0-9]{32}', invocation) else None}
     try:
@@ -262,6 +292,8 @@ def status(argv):
             entry['permissionsSha256'] = None
         if '--usage' in argv:
             entry['usage'] = probe(name)
+            listed = models(name)
+            entry['runModelListed'] = None if listed is None else RUN_MODEL in listed
         out['accounts'][name] = entry
     for role in ROLES:
         try:
