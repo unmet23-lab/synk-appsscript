@@ -114,7 +114,7 @@ function observe(config){
         await run("document.getElementById('"+prefix+"-check').click()");
         await waitFor(contents,"document.getElementById('"+prefix+"').dataset.updateState==='current'&&!document.getElementById('"+prefix+"-check').disabled",view+'-update-current');
         const ui=await run("(()=>({version:document.getElementById('"+prefix+"-version').innerText,status:document.getElementById('"+prefix+"-status').innerText,downloadHidden:document.getElementById('"+prefix+"-download').hidden,installHidden:document.getElementById('"+prefix+"-install').hidden,rootHidden:document.getElementById('"+prefix+"').hidden}))()");
-        check(view+' manual update displays the current candidate',!ui.rootHidden&&ui.version==='현재 v'+config.version+' · Preview'&&ui.status.startsWith('최신 Preview 버전입니다.')&&ui.status.includes('사용 중에도')&&ui.downloadHidden&&ui.installHidden,ui);
+        check(view+' manual update displays the current candidate',!ui.rootHidden&&ui.version==='지금 v'+config.version+' · 시험판'&&ui.status.startsWith('최신 버전이에요.')&&ui.status.includes('쓰는 동안에도')&&ui.downloadHidden&&ui.installHidden,ui);
         await capture(created,'platform-update-'+view);
       }
       const events=await run('window.__qaUpdateOff();window.__qaUpdateStates');
