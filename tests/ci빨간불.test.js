@@ -202,6 +202,23 @@ test('예약명령 — 공용 작업본 경로의 숨김 실행기로 10분마�
   assert.match(m.ps, /-TaskName 'SYNK CI 빨간불 알림'/);
 });
 
+test('예약명령 — 운영 사본이 있으면(공용 git 폴더의 synk-ops-path) 그 경로의 도구로 건다', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-ci빨간불-운영-'));
+  try {
+    const 공용git = path.join(방, '공용', '.git');
+    const 운영 = path.join(방, '운영');
+    fs.mkdirSync(공용git, { recursive: true });
+    fs.mkdirSync(운영);
+    fs.writeFileSync(path.join(공용git, 'synk-ops-path'), `${운영}\n`);
+    const m = ci.예약명령({ sh: 가짜({ 공용: 공용git }).sh });
+    assert.equal(m.공용, 운영);
+    assert.ok(m.인자.includes(path.join(운영, 'tools', '숨김실행.py')));
+    assert.ok(m.ps.includes(`-WorkingDirectory '${운영}'`));
+    fs.rmSync(운영, { recursive: true });
+    assert.equal(ci.예약명령({ sh: 가짜({ 공용: 공용git }).sh }).공용, path.dirname(공용git), '가리킨 폴더가 없으면 공용 작업본');
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
+
 test('재알림 — 창이 밀려 첫 빨강이 바뀌어 보여도 처음 적어 둔 첫 빨강 커밋·시각을 쓰고, 상태에 커밋·제목·횟수를 남긴다(아르곤 10-22 P2)', () => {
   const t0 = Date.parse('2026-10-21T08:10:00Z');
   const 빨강 = (첫run, 시각, sha, 확실 = true) => ({ 상태: '빨강', 확인시각: '', 워크플로: [{ 워크플로: 'syntax-check', 상태: '빨강', 회수: 100, 첫빨강확실: 확실,
@@ -255,6 +272,12 @@ test('공용git폴더 — git이 답을 못 해도 도구가 든 작업본의 .g
     fs.writeFileSync(path.join(방, '워크트리', '.git'), 'gitdir: ../공용/.git/worktrees/x\n');
     assert.equal(ci.공용git폴더(막힘, path.join(방, '워크트리')), null);
     assert.equal(ci.공용git폴더(() => ({ ok: true, out: 'C:/x/.git\n' }), path.join(방, '워크트리')), 'C:/x/.git');
+    // 운영 사본처럼 제대로 이어진 워크트리는 commondir를 따라 공용 git 폴더를 찾는다(10-22)
+    fs.mkdirSync(path.join(방, '공용', '.git', 'worktrees', 'ops'), { recursive: true });
+    fs.writeFileSync(path.join(방, '공용', '.git', 'worktrees', 'ops', 'commondir'), '../..\n');
+    fs.mkdirSync(path.join(방, '운영'));
+    fs.writeFileSync(path.join(방, '운영', '.git'), `gitdir: ${path.join(방, '공용', '.git', 'worktrees', 'ops')}\n`);
+    assert.equal(ci.공용git폴더(막힘, path.join(방, '운영')), path.join(방, '공용', '.git'));
   } finally { fs.rmSync(방, { recursive: true, force: true }); }
 });
 

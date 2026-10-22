@@ -88,6 +88,8 @@ function fixture(t) {
     // 시험은 회사 서버·이 PC의 실제 백업 상태 파일에 닿지 않는다.
     readSnsRemote: async () => { throw new Error('OFFLINE_TEST'); },
     backupHealthFile: path.join(directory, 'no-backup-health.json'), uptimeSeconds: 0,
+    // 이 PC의 운영 사본 갱신 기록(%LOCALAPPDATA%\synk\ops\상태.json)도 읽지 않는다.
+    opsStatusFile: path.join(directory, 'no-ops-status.json'),
     readStatus: options => status.readStatus({ ...options, readClaude: UNAVAILABLE, readCodexStatus: UNAVAILABLE }) };
   return { directory, root, home, docs, options };
 }
@@ -883,4 +885,77 @@ test('문서 ID가 깨진 역할이 있어도 나머지 역할의 원격 상태�
   assert.equal(report.snapshot.research.complete, false);
   assert.equal(report.snapshot.research.refreshFailed, false);
   assert.equal(report.snapshot.research.items.every(row => row.current?.documentMatches), true);
+});
+
+test('운영 사본이 같은 까닭으로 30분 넘게 멈추거나 갱신 예약이 멈추거나 못 올린 기록이 6시간 넘으면 한 번 알리고, 풀리면 정보로 돌아간다', async t => {
+  const f = fixture(t);
+  const file = path.join(f.directory, 'ops-status.json');
+  const at = minutes => new Date(NOW.getTime() + minutes * 60_000);
+  const record = (minutes, extra = {}) => write(f.directory, 'ops-status.json',
+    { schemaVersion: 1, checkedAt: at(minutes).toISOString(), state: 'ok', head: 'a'.repeat(40), origin: 'a'.repeat(40), behind: 0,
+      stoppedSince: null, reasonKey: null, reason: null, paths: [], unpushedSince: null, unpushed: [], ...extra });
+  const row = (report, id) => report.events.find(item => item.id === id);
+  let state = null;
+  let report = null;
+  const poll = async (from, to = from) => {
+    const sent = [];
+    for (let minutes = from; minutes <= to; minutes += 6) {
+      // 헤르메스 복구 작업은 늘 제때 기록한다 — 이 시험은 운영 사본 판단만 본다
+      write(f.home, GATEWAY_RECOVERY_STATUS, { schemaVersion: 1, checkedAt: at(minutes).toISOString(), code: 0, drift: false, selected: null, since: null });
+      report = await readOverview({ ...f.options, opsStatusFile: file, now: at(minutes) });
+      const result = plan(state, report, at(minutes));
+      state = result.state;
+      write(f.home, MONITOR_STATE, state);
+      sent.push(...result.notifications);
+    }
+    return sent;
+  };
+
+  record(0);
+  await poll(0);
+  assert.equal(row(report, 'ops-copy').needs_attention, false);
+  assert.match(report.text, /운영 사본\(예약 작업이 실행하는 origin 판\) · origin과 같음/);
+  assert.equal(report.coverage.opsCopyStatusAvailable, true);
+
+  // 누가 운영 사본에서 코드를 고쳤다 — 30분이 되기 전에는(쓰는 중일 수도) 알리지 않는다
+  const stopped = { state: 'stopped', reasonKey: '고친 파일', reason: '운영 사본에서 고친 파일이 1개 있어 따라가지 않았다', paths: ['tools/a.js'], behind: 3 };
+  record(5, { ...stopped, stoppedSince: at(5).toISOString() });
+  assert.deepEqual(await poll(6), []);
+  assert.match(report.text, /따라가기 멈춤\(지켜보는 중\)/);
+  record(35, { ...stopped, stoppedSince: at(5).toISOString() });
+  let sent = await poll(36);
+  assert.equal(sent.length, 1);
+  assert.match(sent[0].text, /운영 사본이 origin을 못 따라감/);
+  assert.match(sent[0].text, /걸린 파일 1개 · 3커밋 뒤/);
+  assert.ok(!sent[0].text.includes('tools/a.js'), '경로는 글에 넣지 않는다');
+  record(41, { ...stopped, stoppedSince: at(5).toISOString() });
+  assert.deepEqual(await poll(42), [], '같은 멈춤은 다시 보내지 않는다');
+  record(47);
+  assert.deepEqual(await poll(48), []);
+  assert.equal(row(report, 'ops-copy').needs_attention, false, '풀리면 정보로');
+
+  // 갱신 기록이 끊겼다 — 감시가 끊김 없이 30분 넘게 도는 동안에만 갱신 예약 멈춤으로 본다
+  assert.deepEqual(await poll(54, 72), []);
+  assert.equal(row(report, 'ops-copy-task').needs_attention, false, '30분 전에는 단정하지 않는다');
+  sent = await poll(78);
+  assert.equal(sent.length, 1);
+  assert.match(sent[0].text, /운영 사본 갱신이 멈춤/);
+  assert.equal(row(report, 'ops-copy'), undefined, '오래된 기록으로는 따라가기 판단을 바꾸지 않는다');
+  assert.match(report.text, /기록이 오래됨/);
+
+  // 기록이 다시 쓰인다. 예약 작업이 쓰고 못 올린 기록은 6시간이 넘어야 알린다
+  record(80, { unpushed: ['docs/_ops/게시성과.jsonl'], unpushedSince: at(-200).toISOString() });
+  assert.deepEqual(await poll(84), []);
+  assert.equal(row(report, 'ops-copy-task').needs_attention, false);
+  record(170, { unpushed: ['docs/_ops/게시성과.jsonl'], unpushedSince: at(-200).toISOString() });
+  sent = await poll(174);
+  assert.equal(sent.length, 1);
+  assert.match(sent[0].text, /운영 사본에 올리지 못한 기록/);
+  assert.match(sent[0].text, /기록 1개가 6시간 넘게/);
+
+  // 모양이 다르거나 링크인 기록은 읽지 않는다
+  write(f.directory, 'ops-status.json', { schemaVersion: 2, checkedAt: at(150).toISOString(), state: 'ok' });
+  const odd = await readOverview({ ...f.options, opsStatusFile: file, now: at(150) });
+  assert.equal(odd.snapshot.ops.available, false);
+  assert.equal(odd.events.some(item => item.kind === 'ops'), false);
 });

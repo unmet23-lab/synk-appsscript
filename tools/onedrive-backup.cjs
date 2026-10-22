@@ -9,7 +9,9 @@ const policy = require('./이어하기꾸러미.js');
 const readCache = require('./onedrive-read-cache.cjs');
 const { preserveSafeMarkdown } = require('./onedrive-safe-markdown.cjs');
 const { replaceFile } = require('./GitHub백업.cjs');
-const ROOT = path.resolve(__dirname, '..');
+// 백업 대상은 공용 작업본이다 — 이 도구가 예약 작업이 도는 운영 사본(tools/운영사본.js)에서 돌아도 그 작업본의 문서·미통합 작업을
+// 보존하고 볼트는 그 옆 SYNK_원본창고다(10-22).
+const ROOT = require('./lib/공용작업본.js').공용작업본(path.resolve(__dirname, '..'));
 const hash = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const readJson = (file, fallback = null) => {
   try { return JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, '')); }
@@ -60,9 +62,12 @@ function worktrees(root) {
     if (!fs.existsSync(scope.root)) continue;
     const data = execFileSync('git', ['--no-optional-locks', 'worktree', 'list', '--porcelain', '-z'],
       { cwd: scope.root, encoding: 'utf8', windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 8 << 20 });
+    // 운영 사본(tools/운영사본.js — 예약 작업이 도는 origin 판)은 지킬 미통합 문서가 없다 — 30분마다 훑지 않는다(10-22)
+    let ops = null;
+    try { ops = path.resolve(fs.readFileSync(path.join(scope.root, '.git', 'synk-ops-path'), 'utf8').trim()).toLowerCase(); } catch {}
     for (const field of data.split('\0').filter(value => value.startsWith('worktree '))) {
       const directory = path.resolve(field.slice(9));
-      if (directory.toLowerCase() !== path.resolve(scope.root).toLowerCase() && fs.existsSync(directory))
+      if (directory.toLowerCase() !== path.resolve(scope.root).toLowerCase() && directory.toLowerCase() !== ops && fs.existsSync(directory))
         found.push({ repository: scope.name, primary: scope.root, root: directory });
     }
   }

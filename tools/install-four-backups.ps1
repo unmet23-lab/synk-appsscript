@@ -1,10 +1,16 @@
 param(
-    [string]$BackupRoot = (Join-Path (Split-Path $PSScriptRoot -Parent | Split-Path -Parent) 'SYNK_원본창고'),
-    [string]$EvidenceRoot = (Join-Path (Split-Path $PSScriptRoot -Parent) '.tmp/backup-four-20261018/schedules')
+    [string]$BackupRoot = '',
+    [string]$EvidenceRoot = ''
 )
 $ErrorActionPreference = 'Stop'
+# 백업 대상(작업 폴더)·볼트·증거는 공용 작업본 기준이다. 운영 사본(tools/운영사본.js)에서 돌려도 도구 경로만 그 사본이고
+# 대상은 공용 작업본 — 공용 git 폴더의 부모(10-22).
+$codeRepo = Split-Path $PSScriptRoot -Parent
+$common = & git -C $codeRepo rev-parse --path-format=absolute --git-common-dir 2>$null
+$repo = if ($LASTEXITCODE -eq 0 -and $common -and (Split-Path $common -Leaf) -eq '.git') { [IO.Path]::GetFullPath((Split-Path $common -Parent)) } else { $codeRepo }
+if (-not $BackupRoot) { $BackupRoot = Join-Path (Split-Path $repo -Parent) 'SYNK_원본창고' }
+if (-not $EvidenceRoot) { $EvidenceRoot = Join-Path $repo '.tmp/backup-four-20261018/schedules' }
 $root = [IO.Path]::GetFullPath($BackupRoot)
-$repo = Split-Path $PSScriptRoot -Parent
 $dailyName = 'SYNK 매일 백업'
 $daily = Get-ScheduledTask -TaskName $dailyName -ErrorAction SilentlyContinue
 $pythonw = if ($daily) { $daily.Actions[0].Execute } else { (Get-Command pythonw.exe -ErrorAction Stop).Source }

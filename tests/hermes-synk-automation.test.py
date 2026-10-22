@@ -19,7 +19,7 @@ spec.loader.exec_module(module)
 
 class DeliveryTests(unittest.TestCase):
     @contextmanager
-    def busy_fixture(self, *, elapsed=None):
+    def busy_fixture(self, *, elapsed=None, manifest=True):
         with tempfile.TemporaryDirectory() as temp:
             home=Path(temp)
             folder=home/'runtime/synk-automation'
@@ -40,11 +40,12 @@ class DeliveryTests(unittest.TestCase):
             transport=types.ModuleType('tools.send_message_tool')
             transport.send_message_tool=lambda args:messages.append(args) or {'success':True,'message_id':'fixture-ack'}
             result=subprocess.CompletedProcess([],0,json.dumps({'busy':True,'notifications':[]}),'')
+            self.manifest_ok=manifest
             with patch.dict(os.environ,{'HERMES_HOME':str(home),'TELEGRAM_ALLOWED_USERS':'123'}), \
                     patch.dict(sys.modules,{'hermes_cli.env_loader':loader,'tools.send_message_tool':transport}), \
                     patch.object(module.sys,'path',list(sys.path)), \
                     patch.object(module,'datetime',FixedDatetime), \
-                    patch.object(module,'check_manifest',return_value=True), \
+                    patch.object(module,'check_manifest',side_effect=lambda config: self.manifest_ok), \
                     patch.object(module.subprocess,'run',return_value=result) as run:
                 yield folder,clock,messages,run
 
@@ -154,6 +155,31 @@ class DeliveryTests(unittest.TestCase):
             module.main()
             next_incident=json.loads((folder/'health.json').read_text(encoding='utf-8'))
             self.assertEqual(next_incident['incidentAt'],clock['now'].isoformat())
+            self.assertEqual(messages,[])
+
+    def test_changed_contract_waits_one_round_then_alerts_once(self):
+        with self.busy_fixture(manifest=False) as (folder,clock,messages,run):
+            module.main()
+            self.assertEqual(json.loads((folder/'health.json').read_text(encoding='utf-8'))['status'],'source_contract_pending')
+            self.assertEqual(messages,[])
+            self.assertEqual(run.call_count,0,'changed code is never run')
+            clock['now']+=timedelta(minutes=5)
+            module.main()
+            self.assertEqual(len(messages),1)
+            self.assertIn('잠시 멈췄습니다',messages[0]['message'])
+            clock['now']+=timedelta(minutes=5)
+            module.main()
+            self.assertEqual(len(messages),1,'the same incident is not sent again')
+            self.assertEqual(run.call_count,0)
+
+    def test_contract_repinned_before_the_next_round_stays_quiet(self):
+        with self.busy_fixture(manifest=False) as (folder,clock,messages,run):
+            module.main()
+            self.manifest_ok=True
+            run.return_value=subprocess.CompletedProcess([],0,json.dumps({'notifications':[]}),'')
+            clock['now']+=timedelta(minutes=5)
+            module.main()
+            self.assertEqual(json.loads((folder/'health.json').read_text(encoding='utf-8'))['status'],'ok')
             self.assertEqual(messages,[])
 
 

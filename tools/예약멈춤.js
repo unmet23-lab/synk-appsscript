@@ -45,6 +45,8 @@ const os = require('node:os');
 const path = require('node:path');
 const 고르기 = require('../.claude/skills/이어서/세션고르기.cjs');
 
+const { 공용작업본 } = require('./lib/공용작업본.js');
+
 const ROOT = path.resolve(__dirname, '..');
 const 분 = 60e3;
 const 시간 = 60 * 분;
@@ -79,7 +81,8 @@ function 경로들(환경 = process.env) {
     실행중: 환경.SYNK_CLAUDE_REGISTRY || path.join(집, 'sessions'),
     지시문: path.join(집, 'scheduled-tasks'),
     승인: 환경.SYNK_APPROVAL_DIR || path.join(환경.LOCALAPPDATA || '', 'hermes', 'runtime', 'synk-approvals'),
-    마케팅: 환경.SYNK_예약멈춤_마케팅 || path.join(ROOT, 'docs', '마케팅'),
+    // 앱 예약 작업은 공용 작업본에서 편을 만든다 — 이 도구가 운영 사본(tools/운영사본.js)에서 돌아도 거기를 본다(10-22)
+    마케팅: 환경.SYNK_예약멈춤_마케팅 || path.join(공용작업본(ROOT), 'docs', '마케팅'),
   };
 }
 

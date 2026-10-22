@@ -83,12 +83,12 @@ module.exports = {
       '--output-format', 'stream-json', '--verbose', '--max-budget-usd', String(this.비용상한USD), '--no-session-persistence'];
   },
 
-  지시문(자료) {
+  지시문(자료, ctx = {}) {
     return `SYNK 팁 장부의 Claude 적용안을 쓴다. 한국어로 일한다.
 
 1. 먼저 ${문서} 를 끝까지 읽고 「지킬 것」「줄마다 하는 법」「텔레그램 형식」을 그대로 따른다.
    단 이 실행은 이미 Opus 5.5 · max 이므로 서브에이전트를 띄우지 않고 직접 쓴다.
-2. 작업 저장소는 C:/Users/q1212/Documents/SYNK-appsscript (지금 폴더)다. 카드 형식은 docs/참고카드/README.md 「카드 형식」이다.
+2. 작업 저장소는 ${String(ctx.루트 || path.resolve(__dirname, '..', '..')).split(path.sep).join('/')} (지금 폴더)다. 카드 형식은 docs/참고카드/README.md 「카드 형식」이다.
 3. 이번 실행에서 네가 쓰는 파일은 docs/참고카드/카드/ 아래 카드뿐이다. README 목록 다시 쓰기·장부 기록·커밋·텔레그램 발송·영상 지우기는
    실행기가 네 답을 받아 한다 — 직접 하지 않는다. 명령은 ffmpeg/ffprobe만 쓸 수 있고 새 폴더는 만들 수 없다.
    장면을 더 뽑을 때는 그 게시물 캐시 폴더(${캐시}/<게시물ID>/)에 more_%03d.jpg처럼 바로 둔다.

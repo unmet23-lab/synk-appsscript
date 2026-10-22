@@ -174,5 +174,8 @@ module.exports={plan,collect,kst,clean,writeJSON,readJSON,attentionDraft,suppres
 if(require.main===module) {
   const home=process.env.HERMES_HOME || path.join(process.env.LOCALAPPDATA,'hermes');
   const {readOverview}=require('./overview.cjs');
-  collect({home,root:path.resolve(__dirname,'../..'),readOverview}).then(x=>console.log(JSON.stringify(x))).catch(()=>{console.error('SYNK monitor could not read its current sources/state.');process.exitCode=1;});
+  // 코드는 운영 사본에서 돌아도 읽는 자료(트랙·카드·조사 역할·휴대폰 작업 기록의 repo_root)는 공용 작업본이다 — 작업 맡기기가 결과를
+  // 공용 작업본에 반영하고 기록에 그 경로를 남긴다(10-22).
+  const {공용작업본}=require('../lib/공용작업본.js');
+  collect({home,root:공용작업본(path.resolve(__dirname,'../..')),readOverview}).then(x=>console.log(JSON.stringify(x))).catch(()=>{console.error('SYNK monitor could not read its current sources/state.');process.exitCode=1;});
 }

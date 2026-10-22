@@ -545,6 +545,10 @@ async function main(argv) {
       const { 공용작업본인가 } = require('./lib/장부올리기.js');
       if (공용작업본인가(repo)) {
         try { await require('./바로올리기.js').따라가기({ 저장소: repo, 실행: true }); } catch { /* 따라가지 못해도 지금 판으로 판정한다 */ }
+      } else {
+        // 예약 작업이 도는 운영 사본은 갱신(잠금 안 — 다른 도구가 기록을 쓰는 중이면 미룬다)으로 최신에 맞춘다
+        const 운영 = require('./운영사본.js');
+        if (운영.운영사본인가(repo)) { try { await 운영.갱신({ 저장소: repo, 실행: true, 부른곳: '게시성과' }); } catch { /* 지금 판으로 판정한다 */ } }
       }
     }
     const report = await run(o);

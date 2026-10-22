@@ -9,8 +9,10 @@ $arguments = '-NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hi
 $previousArguments = '-NoProfile -NonInteractive -WindowStyle Hidden -File "{0}"' -f $scriptPath
 $existing = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
 if ($existing) {
+    # The same script under the ops copy or the main checkout is this task (2026-10-22).
     $owned = @($existing.Actions).Count -eq 1 -and
-        $existing.Actions[0].Arguments -in @($arguments, $previousArguments)
+        ($existing.Actions[0].Arguments -in @($arguments, $previousArguments) -or
+         $existing.Actions[0].Arguments.EndsWith('\tools\hermes-synk\runtime\recover-gateway.ps1"'))
     if (!$owned) { throw 'A different task already uses this name. Refusing to modify it.' }
 }
 if ($Remove) {

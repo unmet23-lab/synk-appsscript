@@ -44,6 +44,13 @@ const MONITOR_STATE = 'runtime/synk-automation/state.json';
 const GATEWAY_RECOVERY_SILENT_MS = 30 * 60_000;
 const GATEWAY_RECOVERY_LABEL = Object.freeze({ ok: '이상 없음', starting: '게이트웨이를 켜는 중', startFailed: '게이트웨이 켜기 실패 · 다음 점검에서 다시 켭니다',
   waiting: '새로 깔린 패키지를 반영하는 중', restarting: '다시 켜는 중', restartFailed: '다시 켜기 실패 · 다음 점검에서 다시 봅니다', recorded: '점검 기록 있음' });
+// 운영 사본(tools/운영사본.js — 예약 작업과 이 감시가 실행하는 origin 판 사본)의 갱신 기록을 읽기만 한다. 그 사본이 origin을 못 따라가면
+// 올린 고침이 운영에 안 들어가므로, 같은 까닭으로 30분 넘게 멈춰 있거나(누가 고침·따라가기 막힘·헤르메스 계약 실패) 감시가 끊김 없이
+// 30분 넘게 도는 동안 기록이 안 쓰이면(갱신 예약 멈춤) 판단으로 올린다. 예약 작업이 쓰고 못 올린 기록은 6시간 넘으면.
+const opsStatusDefault = () => path.join(process.env.SYNK_운영사본_상태 || path.join(process.env.LOCALAPPDATA || os.homedir(), 'synk', 'ops'), '상태.json');
+const OPS_STALL_MS = 30 * 60_000;
+const OPS_UNPUSHED_MS = 6 * 60 * 60_000;
+const OPS_REASONS = new Set(['고친 파일', '갈라짐', '따라가기', '헤르메스', '폴더 없음', '오류']);
 const MAX_TASKS = 300;
 // 조사 역할 목록은 tools/argon-schedules/configuration/docs.json 한 곳에서만 읽는다(10-22). 여기 따로 적은 네 역할
 // 목록이 10-19에 더한 월요일 스캔 셋을 못 봤다. 이름만 여기 두고, 이름이 없는 새 역할은 역할 id로 보인다.
@@ -452,6 +459,31 @@ function gatewayRecoverySnapshot({ hermesHome, now }) {
     selected: /^[a-f0-9]{32}$/.test(raw.selected || '') ? raw.selected : null, since: iso(raw.since) };
 }
 
+function opsCopySnapshot({ hermesHome, now, opsStatusFile }) {
+  // 감시 상태를 못 읽으면 깨어 있던 시간을 지금부터 센다 — 갱신 예약이 멈췄다고 단정하지 않는다.
+  let monitor = null;
+  try { monitor = readJson(hermesHome, MONITOR_STATE, 8_000_000); } catch {}
+  const awakeFor = now.getTime() - Date.parse(awakeSince(monitor, now));
+  let raw = null;
+  try {
+    const file = opsStatusFile || opsStatusDefault();
+    const stat = fs.lstatSync(file);
+    if (!stat.isSymbolicLink() && stat.isFile() && stat.size <= 100_000) raw = JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch {}
+  const checkedAt = iso(raw?.checkedAt);
+  if (raw?.schemaVersion !== 1 || !checkedAt || !['ok', 'stopped', 'failed'].includes(raw.state)) return { available: false };
+  const age = now.getTime() - Date.parse(checkedAt);
+  const stoppedSince = raw.state !== 'ok' ? iso(raw.stoppedSince) : null, unpushedSince = iso(raw.unpushedSince);
+  const count = value => Array.isArray(value) ? Math.min(value.length, 1000) : 0;
+  return { available: true, checkedAt, state: raw.state, stoppedSince, unpushedSince,
+    behind: Number.isSafeInteger(raw.behind) && raw.behind >= 0 ? raw.behind : null,
+    reasonKey: OPS_REASONS.has(raw.reasonKey) ? raw.reasonKey : null, reason: status.plain(raw.reason || '', 200),
+    paths: count(raw.paths), unpushed: count(raw.unpushed),
+    stoppedFor: stoppedSince ? now.getTime() - Date.parse(stoppedSince) : 0,
+    unpushedFor: count(raw.unpushed) && unpushedSince ? now.getTime() - Date.parse(unpushedSince) : 0,
+    stale: age > OPS_STALL_MS || age < -60_000, silent: age >= OPS_STALL_MS && awakeFor >= OPS_STALL_MS };
+}
+
 function sanitizeSns(payload) {
   if (!payload || typeof payload !== 'object' || typeof payload.appRunning !== 'boolean') throw new Error('SNS_SHAPE');
   const code = value => typeof value === 'string' && /^[A-Za-z0-9_.-]{1,80}$/.test(value) ? value : null;
@@ -672,6 +704,27 @@ function gatewayRecoveryTaskEvents(gateway) {
     { stopped: false }), false, { id: 'gateway-recovery-task', stopped: false })];
 }
 
+// 기록이 오래되면(절전·예약 멈춤) 아래 판단은 바꾸지 않는다. 갱신 예약이 멈춘 것은 감시가 깨어 30분 넘게 도는 동안 기록이 없을 때만.
+function opsCopyEvents(ops) {
+  if (!ops?.available) return [];
+  const rows = [];
+  if (ops.silent) rows.push(attention(event('ops-copy-task', 'ops', 'warning', '운영 사본 갱신이 멈춤',
+    `PC가 깨어 있는 동안 30분 넘게 갱신 기록이 없습니다 · 마지막 갱신 ${formatTime(ops.checkedAt)} · Windows 예약 「SYNK 운영 사본 갱신」이 도는지 봐 주세요 · 그동안 origin에 올린 고침이 예약 작업에 안 들어갑니다`,
+    { silent: true }), true, { id: 'ops-copy-task', silent: true }));
+  else if (!ops.stale) rows.push(attention(event('ops-copy-task', 'ops', 'info', '운영 사본 갱신', `마지막 갱신 ${formatTime(ops.checkedAt)}`, { silent: false }),
+    false, { id: 'ops-copy-task', silent: false }));
+  if (ops.stale) return rows;
+  const stalled = ops.state !== 'ok' && ops.stoppedFor >= OPS_STALL_MS;
+  const detail = ops.state === 'ok' ? `${ops.behind ? ops.behind + '커밋 뒤' : 'origin과 같음'} · 마지막 갱신 ${formatTime(ops.checkedAt)}`
+    : `${ops.reason || ops.reasonKey || '까닭 미확인'}${ops.paths ? ' · 걸린 파일 ' + ops.paths + '개' : ''}${ops.behind ? ' · ' + ops.behind + '커밋 뒤' : ''} · 처음 확인 ${formatTime(ops.stoppedSince)}`;
+  rows.push(attention(event('ops-copy', 'ops', stalled ? 'warning' : 'info', ops.state === 'ok' ? '운영 사본' : '운영 사본이 origin을 못 따라감', detail,
+    { state: ops.state, reasonKey: ops.reasonKey }), stalled, { id: 'ops-copy', state: ops.state, reasonKey: ops.reasonKey, since: ops.stoppedSince }));
+  if (ops.unpushedFor >= OPS_UNPUSHED_MS) rows.push(attention(event('ops-copy-records', 'ops', 'warning', '운영 사본에 올리지 못한 기록',
+    `예약 작업이 쓴 기록 ${ops.unpushed}개가 6시간 넘게 origin에 없습니다 · 처음 확인 ${formatTime(ops.unpushedSince)} · PC에서 node tools/운영사본.js 로 확인`,
+    { unpushed: true }), true, { id: 'ops-copy-records', since: ops.unpushedSince }));
+  return rows;
+}
+
 function snsEvents(sns, now) {
   if (!sns) return [];
   const rows = [];
@@ -714,7 +767,7 @@ function snsEvents(sns, now) {
   return rows;
 }
 
-function buildEvents({ track, tips, ledger, tasks, research, runtimes, now, backup, sns, gateway }) {
+function buildEvents({ track, tips, ledger, tasks, research, runtimes, now, backup, sns, gateway, ops }) {
   const events = [];
   if (!track.available || !track.complete) events.push(event('coverage-track', 'coverage', 'warning', '트랙 조회 범위 미완전', '읽지 못한 기록을 삭제·완료로 판정하지 않습니다.'));
   for (const row of track.items) events.push(event(row.id, 'track', 'info', row.title, row.summary, { text: row.fingerprint }));
@@ -788,7 +841,7 @@ function buildEvents({ track, tips, ledger, tasks, research, runtimes, now, back
   }
   for (const runtime of runtimes) events.push(event('runtime-' + runtime.source, 'runtime', 'info', runtime.source + ' 작업 조회', runtime.note,
     { connected: runtime.connected, stale: runtime.stale }));
-  events.push(...backupEvents(backup), ...snsEvents(sns, now), ...gatewayRecoveryEvents(gateway), ...gatewayRecoveryTaskEvents(gateway));
+  events.push(...backupEvents(backup), ...snsEvents(sns, now), ...gatewayRecoveryEvents(gateway), ...gatewayRecoveryTaskEvents(gateway), ...opsCopyEvents(ops));
   return events.sort((a, b) => a.id.localeCompare(b.id));
 }
 
@@ -830,6 +883,11 @@ function formatOverview(report) {
     const row = events.find(item => item.id === 'gateway-recovery');
     lines.push(`- 헤르메스 게이트웨이 복구 점검 · ${gateway.stopped ? '복구 작업이 멈춤 · 확인 필요' : gateway.stale ? '기록이 오래됨(절전·일시 중지일 수 있음)' : row?.needs_attention ? '확인 필요' : '확인할 문제 없음'} · 기록 ${formatTime(gateway.checkedAt || gateway.lastWrittenAt)}`);
   }
+  const ops = snapshot.ops;
+  if (ops?.available) {
+    const stuck = events.filter(item => item.kind === 'ops' && item.needs_attention).length;
+    lines.push(`- 운영 사본(예약 작업이 실행하는 origin 판) · ${stuck ? '확인 필요' : ops.state !== 'ok' ? '따라가기 멈춤(지켜보는 중)' : ops.behind ? ops.behind + '커밋 뒤' : 'origin과 같음'} · 갱신 ${formatTime(ops.checkedAt)}${ops.stale ? ' · 기록이 오래됨' : ''}`);
+  }
   lines.push(`- 트랙 ${snapshot.track.items.length}개 기록${snapshot.track.complete ? '' : ' · 일부 미확인'} · 문서 날짜로 마감을 추정하지 않습니다.`);
   for (const row of events.filter(item => item.kind === 'coverage' && item.severity !== 'info').slice(0, 3)) lines.push('- ' + row.title);
   lines.push('- PC 앱의 모든 작업·실패를 감시하는 기능은 아닙니다.');
@@ -841,7 +899,7 @@ function formatOverview(report) {
 
 async function readOverview({ root = ROOT, hermesHome = homeDefault(), now = new Date(), remoteRefresh = false,
   readStatus = status.readStatus, readLedger, readTasks = readTaskRecords, readArgon, readArgonRemote,
-  readSnsRemote, backupHealthFile, uptimeSeconds, persistState = false } = {}) {
+  readSnsRemote, backupHealthFile, uptimeSeconds, persistState = false, opsStatusFile } = {}) {
   const clock = new Date(now);
   if (!Number.isFinite(clock.getTime())) throw new Error('INVALID_TIME');
   const invoke = operation => Promise.resolve().then(operation);
@@ -854,6 +912,7 @@ async function readOverview({ root = ROOT, hermesHome = homeDefault(), now = new
   const backup = backupResult.status === 'fulfilled' ? backupResult.value : { available: false, checkedAt: null, stale: true, monitorStale: false, components: [] };
   const sns = snsResult.status === 'fulfilled' ? snsResult.value : { available: false, checkedAt: null, stale: true, refreshFailed: true, connections: [], inbox: [], jobs: null };
   const gateway = gatewayRecoverySnapshot({ hermesHome, now: clock });
+  const ops = opsCopySnapshot({ hermesHome, now: clock, opsStatusFile });
   const source = sourceResult.status === 'fulfilled' ? sourceResult.value : {};
   const ledger = ledgerResult.status === 'fulfilled' ? ledgerResult.value : { available: false, stale: true, checkedAt: null, rows: [] };
   const track = source.snapshot?.track || { available: false, complete: false, items: [] };
@@ -861,16 +920,16 @@ async function readOverview({ root = ROOT, hermesHome = homeDefault(), now = new
   const tips = reconcileTips(cards, ledger);
   const tasks = taskResult.status === 'fulfilled' ? taskResult.value : { available: false, complete: false, items: [] };
   const research = researchResult.status === 'fulfilled' ? researchResult.value : { available: false, remoteVerified: false, items: [] };
-  const events = buildEvents({ track, tips, ledger, tasks, research, runtimes: source.runtimes || [], now: clock, backup, sns, gateway });
+  const events = buildEvents({ track, tips, ledger, tasks, research, runtimes: source.runtimes || [], now: clock, backup, sns, gateway, ops });
   const report = { version: 1, checkedAt: clock.toISOString(), notification_policy: NOTIFICATION_POLICY, integration_policy: INTEGRATION_POLICY,
     fingerprint: hash(events.map(row => [row.id, row.fingerprint, row.needs_attention])), events,
-    snapshot: { track, tips, ledger, tasks, research, backup, sns, gateway },
+    snapshot: { track, tips, ledger, tasks, research, backup, sns, gateway, ops },
     coverage: { trackComplete: track.available && track.complete, cardsComplete: cards.available && cards.complete,
       tasksComplete: tasks.available && tasks.complete, ledgerAvailable: ledger.available, ledgerStale: ledger.stale,
       ledgerComplete: ledger.available && !ledger.limited, researchComplete: research.available && research.complete === true,
       argonRemoteVerified: false, argonStatusAvailable: research.remoteStatusAvailable === true, argonStatusStale: research.stale !== false,
       backupStatusAvailable: backup.available, snsStatusAvailable: sns.available, snsStatusStale: sns.stale !== false,
-      gatewayRecoveryStatusAvailable: gateway.available,
+      gatewayRecoveryStatusAvailable: gateway.available, opsCopyStatusAvailable: ops.available,
       desktopFailureCoverage: '이 연결의 공식 작업 영수증만 · 다른 데스크톱 작업 미감시',
       comparison: '미완전한 원문에서 사라진 항목은 삭제·완료로 판정하지 않음', noModelCalls: true, noRemoteWrites: true },
   };
@@ -886,6 +945,6 @@ async function main(args = process.argv.slice(2)) {
 if (require.main === module) main().catch(() => { process.stderr.write('SYNK 오늘 조회를 확인하지 못했습니다. 원문·PC 연결을 확인해 주세요.\n'); process.exitCode = 1; });
 
 module.exports = { readOverview, formatOverview, sanitizeLedger, ledgerSnapshot, readLedgerCache, readTaskRecords, readArgonRecords, researchSnapshot, sanitizeArgon, refreshArgon, argonStatusSource, argonRoles, reconcileTips, buildEvents,
-  readBackupHealth, backupSnapshot, sanitizeSns, refreshSns, snsSnapshot, gatewayRecoverySnapshot,
+  readBackupHealth, backupSnapshot, sanitizeSns, refreshSns, snsSnapshot, gatewayRecoverySnapshot, opsCopySnapshot, opsCopyEvents,
   LEDGER_TTL_MS, LEDGER_CACHE, ARGON_TTL_MS, ARGON_CACHE, SNS_CACHE, SNS_REFRESH_MS, SNS_STALE_MS, BACKUP_CACHE, GATEWAY_RECOVERY_STATUS, GATEWAY_RECOVERY_STALE_MS,
-  MONITOR_STATE, GATEWAY_RECOVERY_SILENT_MS };
+  MONITOR_STATE, GATEWAY_RECOVERY_SILENT_MS, OPS_STALL_MS, OPS_UNPUSHED_MS };

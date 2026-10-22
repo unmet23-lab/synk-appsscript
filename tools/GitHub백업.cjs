@@ -389,7 +389,8 @@ async function main(argv = process.argv.slice(2)) {
   if (apply) report.lastApply = { at: report.startedAt,
     heads: Object.fromEntries(report.repositories.map(repo => [repo.name, (repo.refs || []).map(row => row.sha)])) };
   else report.awaitingNextApply = deferNewSinceApply(report, report.lastApply);
-  report.protectedSources = await require('./보호소스보관.cjs').reconcile({ vault: path.dirname(state), root: path.resolve(__dirname, '..'), apply,
+  // 보호 소스 범위는 공용 작업본 — 운영 사본(tools/운영사본.js)에서 돌아도 기록된 sourceRoot와 같게(10-22)
+  report.protectedSources = await require('./보호소스보관.cjs').reconcile({ vault: path.dirname(state), root: require('./lib/공용작업본.js').공용작업본(path.resolve(__dirname, '..')), apply,
     appliedVersions: !apply && Array.isArray(report.lastApply?.protectedSources) ? new Set(report.lastApply.protectedSources) : null,
     onProgress() { report.heartbeatAt = report.checkedAt = new Date().toISOString(); atomicJson(state, report); } });
   if (apply) report.lastApply.protectedSources = (report.protectedSources.files || []).map(row => row.sourcePath + '\n' + row.sha256);

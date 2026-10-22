@@ -16,7 +16,9 @@ $pythonw = Join-Path $env:LOCALAPPDATA 'Python\pythoncore-3.14-64\pythonw.exe'
 $arguments = '-X utf8 -B "{0}"' -f $launcher
 $existing = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
 if ($existing) {
-    $owned = @($existing.Actions).Count -eq 1 -and $existing.Actions[0].Arguments -eq $arguments
+    # The same launcher folder under the ops copy (tools/<ops copy tool>) or the main checkout is this task (2026-10-22).
+    $tail = '\{0}\run-hidden.py"' -f (Split-Path $PSScriptRoot -Leaf)
+    $owned = @($existing.Actions).Count -eq 1 -and ($existing.Actions[0].Arguments -eq $arguments -or $existing.Actions[0].Arguments.EndsWith($tail))
     if (!$owned) { throw 'A different task already uses this name. Refusing to modify it.' }
 }
 if ($Remove) {

@@ -10,7 +10,7 @@
 
 > 도구를 쓰기 전에 여기와 목차만 읽고, 걸리는 절은 `rg -n "^###" docs/현장노트/AI_CLI.md`로 제목을 찾아 그 항목만 읽는다.
 
-- hermes-synk 감시 계약 파일을 공용 작업본에 저장하면 라이브 감시가 멈추고 유호님께 알림이 간다 → 새 판은 따로 두고 넣기와 `install-automation.cjs --apply`를 붙여서 ([자세히](#감시-계약-파일을-공용-작업본에서-저장하면-그-즉시-라이브-감시가-멈추고-유호님께-알림이-간다-2026-10-20-claude))
+- hermes-synk 감시는 10-22부터 운영 사본(origin 판)의 계약 파일을 고정한다 — 공용 작업본 저장으로는 안 멈추고, push 뒤 운영 사본 갱신이 다시 잡는다. 감시 검사기 `automation.py`·플러그인을 바꾼 push만 그 세션이 `install-automation.cjs --apply` ([자세히](#감시-계약-파일을-공용-작업본에서-저장하면-그-즉시-라이브-감시가-멈추고-유호님께-알림이-간다-2026-10-20-claude))
 - 구독 로그인 PC에서 `claude -p`에 API 키를 줘도 구독으로 청구된다 → `node tools/크레딧실행.js`(전용 `CLAUDE_CONFIG_DIR`)로 띄운다 ([자세히](#구독에-로그인된-pc에서-claude--p에-api-키를-줘도-구독으로-청구된다))
 - 새 키의 조직에 월 API 크레딧이 없으면 충전 잔액이 나간다 → 큰 작업 전 Console의 크레딧과 조직부터 본다 ([자세히](#새-키의-조직에-월-api-크레딧이-없어-충전-잔액이-나갔다))
 - 승인을 번호나 오래된 말로 받으면 자동 모드가 공개 push를 막는다 → 단추 문장에 대상과 행동을 적는다 ([자세히](#번호나-오래된-말로-승인하면-공개-push가-막힌다-2026-10-19-claude))
@@ -483,6 +483,7 @@
 - 원인: 설치본(`%LOCALAPPDATA%\hermes\runtime\synk-automation\config.json`)은 저장소 작업본의 계약 파일 23개와 설치된 스크립트의 SHA-256을 고정한다. `automation.py`가 회차마다 이를 대조해서, 하나라도 다르면 `source_contract_changed`로 멈추고 알린다. 감시는 저장소 작업본 경로를 그대로 읽기 때문에, 커밋 여부와 상관없이 파일을 저장하는 순간 어긋난다.
 - 고침: 승인을 기다리는 동안 overview.cjs를 고정된 판(HEAD 판, 해시 일치를 확인)으로 되돌려서 11:41부터 감시를 다시 돌렸다. 새 판은 따로 두었다(`.tmp/hermes-recovery-alert-20261020/swap-overview.cjs pinned|new`). 유호님 승인 뒤 새 판을 넣는 일과 `node tools/hermes-synk/install-automation.cjs --apply`(예약 그대로, `--enable` 없음)를 한 명령으로 붙여서 했다(11:59). 계약 파일(`install-automation.cjs`의 originals·shared 목록)을 고칠 때는 새 판을 따로 만들어 시험하고, 넣기와 재반영을 붙여서 한다. 감시가 다시 돌기 시작했다는 알림은 따로 없다.
 - 다시 확인: `%LOCALAPPDATA%\hermes\runtime\synk-automation\health.json`의 `status`가 `ok`인지 보고, config.json `files`의 SHA가 각 파일의 `Get-FileHash`와 모두 같은지 본다. `node tools/hermes-synk/install-automation.cjs`(인자 없음)는 미리 보기라 아무것도 바꾸지 않는다. 10-20 재반영 뒤 첫 회차(12:47, 절전에서 깬 직후)는 `ok`였다. 그때 복구 기록은 46분 묵어 있었고, 설계대로 사건을 내지 않았다.
+- 10-22 덧붙임(Claude): 감시는 이제 운영 사본(`tools/운영사본.js`, `%LOCALAPPDATA%\synk\ops\SYNK-appsscript`)의 파일을 고정한다. `install-automation.cjs`는 공용 작업본·워크트리에서 불려도 운영 사본 판으로 넘겨 잡고(`--여기서`는 그 작업본 그대로), `--확인`은 대조만 한다. push 뒤·5분마다 운영 사본이 따라간 뒤 내용이 바뀐 계약 파일만 다시 잡는다 — 헤르메스 판 올림·검사기 `automation.py`·플러그인 변경은 사람 몫으로 남긴다. 따라간 직후 몇 초 사이에 감시 회차가 돌아도 알리지 않게 검사기는 어긋남을 두 회차 이어 볼 때만 「잠시 멈췄습니다」를 보낸다.
 - 10-20 덧붙임(Claude): 다른 작업본에서 고쳐 커밋만 한 계약 파일(`tools/server-backup/read-status.cjs`, `4017c1c92` 13:53)은 감시 고정(13:50) 뒤 16:01 `master맞추기` 병합으로 공용 작업본에 들어온 순간 어긋났다. 병합은 그 파일을 CRLF로 다시 썼고, 고정 해시는 13:53 전 판이었다. 다음 회차 전(16:05:36)에 `node tools/hermes-synk/install-automation.cjs --apply`(예약 그대로)로 다시 잡아 16:06 회차는 `ok`로 넘겼고 알림은 나가지 않았다. 계약 파일을 고친 커밋이 공용 작업본에 들어오는 때(병합 직후)에 다시 잡아야 한다. 병합 뒤 계약 해시를 대조해 다시 잡는 일은 아직 `master맞추기.js`에 넣지 않았다.
 
 ### 복구 작업이 멈춘 것과 PC 절전은 `os.uptime`으로 가르지 못한다 — 감시 회차가 끊김 없이 이어진 시간을 깨어 있던 증거로 쓴다 (2026-10-20 Claude)

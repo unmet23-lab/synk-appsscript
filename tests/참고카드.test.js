@@ -152,3 +152,42 @@ test('카드 커밋: 꼬리 없는 작업본(HEAD가 origin/master의 조상)에
     fs.rmSync(뿌리, { recursive: true, force: true, maxRetries: 5 });
   }
 });
+
+test('카드 커밋: 예약 작업이 도는 운영 사본(분리된 HEAD 워크트리, origin/master의 조상)에서도 바로올리기로 카드만 올리고 따라간다', () => {
+  const 뿌리 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-cards-ops-test-'));
+  const 공용 = path.join(뿌리, '공용'), 운영 = path.join(뿌리, '운영'), 원격 = path.join(뿌리, 'origin.git');
+  const git = (곳, ...args) => execFileSync('git', ['-c', 'core.quotepath=false', ...args], { cwd: 곳, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
+  try {
+    fs.mkdirSync(path.join(공용, 'tools', 'lib'), { recursive: true });
+    for (const f of ['참고카드_커밋.js', '참고카드_목록.js', 'git잠금.js', '바로올리기.js', '내커밋.js', '공개검사.js', 'git-storage-check.cjs', 'git-storage-policy.json', '운영사본.js']) {
+      fs.copyFileSync(path.join(REPO, 'tools', f), path.join(공용, 'tools', f));
+    }
+    for (const f of ['장부올리기.js', '공용작업본.js']) fs.copyFileSync(path.join(REPO, 'tools', 'lib', f), path.join(공용, 'tools', 'lib', f));
+    fs.mkdirSync(path.join(공용, 'docs', '참고카드', '카드'), { recursive: true });
+    fs.writeFileSync(path.join(공용, 'docs', '참고카드', 'README.md'), '# 참고 카드\n');
+    git(공용, 'init', '-q', '-b', 'master');
+    git(공용, 'config', 'user.name', 'test');
+    git(공용, 'config', 'user.email', 'test@example.com');
+    git(공용, 'config', 'core.autocrlf', 'false');
+    git(공용, 'add', '-A');
+    git(공용, 'commit', '-q', '-m', 'base');
+    execFileSync('git', ['init', '-q', '--bare', '-b', 'master', 원격], { stdio: 'pipe' });
+    git(공용, 'remote', 'add', 'origin', 원격);
+    git(공용, 'push', '-q', 'origin', 'master');
+    git(공용, 'fetch', '-q', 'origin');
+    git(공용, 'worktree', 'add', '-q', '--detach', 운영, 'origin/master');
+
+    fs.mkdirSync(path.join(운영, 'docs', '참고카드', '카드'), { recursive: true });   // 빈 폴더는 git에 없다
+    fs.writeFileSync(path.join(운영, 'docs', '참고카드', '카드', '2026-10-22_운영.md'), 카드글({ 제목: '운영 사본에서 쓴 카드', 대상: 'WORLD 앱', 언제: '지금' }));
+    const 결과 = JSON.parse(execFileSync('node', [path.join(운영, 'tools', '참고카드_커밋.js'), '--커밋', '--json'], { cwd: 운영, encoding: 'utf8' }));
+    assert.strictEqual(결과.결과, '커밋함', JSON.stringify(결과));
+    assert.strictEqual(결과.올림, true);
+    assert.deepStrictEqual(결과.파일, ['docs/참고카드/카드/2026-10-22_운영.md']);
+    assert.strictEqual(execFileSync('git', ['--git-dir', 원격, 'rev-parse', 'master'], { encoding: 'utf8' }).trim(), 결과.커밋, 'origin에 올라갔다');
+    assert.strictEqual(git(운영, 'rev-parse', 'HEAD').trim(), 결과.커밋, '운영 사본은 올린 커밋으로 따라갔다');
+    assert.strictEqual(git(운영, 'rev-parse', '--abbrev-ref', 'HEAD').trim(), 'HEAD', '여전히 분리된 HEAD');
+    assert.strictEqual(git(운영, 'status', '--porcelain=v1').trim(), '');
+  } finally {
+    fs.rmSync(뿌리, { recursive: true, force: true, maxRetries: 5 });
+  }
+});

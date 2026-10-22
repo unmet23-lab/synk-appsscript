@@ -13,7 +13,7 @@ pwsh -NoProfile -File tools/hermes-synk/runtime/recover-gateway.ps1 -ReadOnly
 pwsh -NoProfile -File tools/hermes-synk/runtime/install-recovery.ps1 -Remove
 ```
 
-작업 이름은 `SYNK_Hermes_Gateway_Recovery`다. 사용자 로그아웃·PC 종료·절전 중에는 실행되지 않는다. 프로세스는 살아 있지만 응답하지 않는 경우에는 Hermes 자체 watchdog이 종료할 때까지 기다린다. 계획된 게이트웨이 중지나 유지보수 중에는 이 작업을 잠시 사용 중지하고 완료 후 다시 켠다.
+작업 이름은 `SYNK_Hermes_Gateway_Recovery`다. 2026-10-22부터 이 작업은 운영 사본(`tools/운영사본.js`)의 `recover-gateway.ps1`을 실행한다 — 설치 스크립트도 운영 사본에서 돌린다(공용 작업본·운영 사본 경로 판 모두 「자기 작업」으로 알아본다). 사용자 로그아웃·PC 종료·절전 중에는 실행되지 않는다. 프로세스는 살아 있지만 응답하지 않는 경우에는 Hermes 자체 watchdog이 종료할 때까지 기다린다. 계획된 게이트웨이 중지나 유지보수 중에는 이 작업을 잠시 사용 중지하고 완료 후 다시 켠다.
 
 ```powershell
 Disable-ScheduledTask -TaskName SYNK_Hermes_Gateway_Recovery

@@ -56,12 +56,22 @@ function 저장소이름(sh) {
   return m ? `${m[1]}/${m[2]}` : null;
 }
 
-/** 공용 git 폴더. git이 답을 못 하면(바쁜 PC의 시간 한도 등) 이 도구가 든 작업본의 `.git` 폴더를 쓴다 — 예약은 공용 작업본에서 돈다. */
+/**
+ * 공용 git 폴더. git이 답을 못 하면(바쁜 PC의 시간 한도 등) 이 도구가 든 작업본의 `.git`에서 찾는다 — 폴더면 그대로, 파일이면
+ * (예약이 도는 운영 사본 같은 연결 워크트리, 10-22) 가리키는 워크트리 git 폴더의 commondir를 따라간다.
+ */
 function 공용git폴더(sh, root = ROOT) {
   const r = sh('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], { timeout: git한도ms });
   if (r.ok) return r.out.trim();
   const 곁 = path.join(root, '.git');
-  try { return fs.statSync(곁).isDirectory() ? 곁 : null; } catch { return null; }
+  try {
+    if (fs.statSync(곁).isDirectory()) return 곁;
+    const m = /^gitdir:\s*(.+?)\s*$/m.exec(fs.readFileSync(곁, 'utf8'));
+    if (!m) return null;
+    const 작업 = path.resolve(root, m[1]);
+    const 공용 = path.resolve(작업, fs.readFileSync(path.join(작업, 'commondir'), 'utf8').trim());
+    return fs.statSync(공용).isDirectory() ? 공용 : null;
+  } catch { return null; }
 }
 
 function 상태파일(sh, 환경 = process.env, root = ROOT) {
@@ -364,11 +374,17 @@ function 빠른경고글(s) {
 
 // ── 예약 등록 ────────────────────────────────────────────────────────────────
 
-/** 공용 작업본 경로로 거는 예약의 PowerShell 명령(워크트리에서 돌려도 공용 작업본의 도구를 부른다). */
+/**
+ * 예약의 PowerShell 명령. 운영 사본(tools/운영사본.js — 공용 git 폴더의 synk-ops-path)이 있으면 그 경로로, 없으면 공용 작업본 경로로
+ * 건다(어느 작업본에서 돌려도 같다). 세션이 고치는 작업본의 코드를 예약이 실행하지 않게(10-22).
+ */
 function 예약명령({ sh = 실행기() } = {}) {
   const g = 공용git폴더(sh);
   if (!g) throw new Error('git 공용 폴더를 못 찾았다');
-  const 공용 = path.resolve(path.dirname(g)); // git은 C:/…로 준다 — 작업 스케줄러에는 이 PC의 꼴로 넣는다
+  let 운영 = null;
+  try { 운영 = fs.readFileSync(path.join(g, 'synk-ops-path'), 'utf8').trim() || null; } catch {}
+  // git은 C:/…로 준다 — 작업 스케줄러에는 이 PC의 꼴로 넣는다
+  const 공용 = path.resolve(운영 && fs.existsSync(운영) ? 운영 : path.dirname(g));
   const 파이썬 = path.join(process.env.LOCALAPPDATA || '', 'Python', 'pythoncore-3.14-64', 'pythonw.exe');
   const 따옴 = (s) => `'${String(s).replace(/'/g, "''")}'`;
   const 인자 = `-X utf8 -B "${path.join(공용, 'tools', '숨김실행.py')}" "${path.join(공용, 'tools', 'ci빨간불.js')}" --알림`;

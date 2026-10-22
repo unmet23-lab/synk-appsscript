@@ -87,6 +87,15 @@ def main():
     if not recipient.isdecimal() or recipient not in allowed:
         raise RuntimeError('SYNK recipient authorization unavailable')
     if not check_manifest(config):
+        # The ops copy (tools/운영사본.js) may have just moved to a new origin commit and be re-pinning this contract within
+        # seconds. Record the first mismatching round without running or alerting; alert only when the next round still differs.
+        try:
+            before = json.loads((folder / 'health.json').read_text(encoding='utf-8'))
+        except (OSError, ValueError):
+            before = {}
+        if before.get('status') not in ('source_contract_pending', 'source_contract_changed'):
+            save(folder / 'health.json', {'checkedAt': datetime.now(timezone.utc).isoformat(), 'status': 'source_contract_pending', 'noAgent': True})
+            return
         health_failure(folder, 'source_contract_changed', 'SYNK 자동 조회를 잠시 멈췄습니다. 연결 코드나 Hermes 버전이 바뀌어 호환 확인이 필요합니다. 기존 팁 봇과 작업 결과는 각 기존 경로에서 확인할 수 있습니다.', send_message_tool, recipient)
         return
     flags = getattr(subprocess, 'CREATE_NO_WINDOW', 0)

@@ -11,6 +11,7 @@
  */
 const fs = require('node:fs');
 const path = require('node:path');
+const { 공용작업본 } = require('./공용작업본.js');
 
 const TOOL_REPO = path.resolve(__dirname, '..', '..');
 const VIDEO = /\.(mp4|mov|m4v|webm)$/i;
@@ -49,18 +50,28 @@ function load(dirArg) {
   const file = path.join(dir, '게시', '준비.json');
   if (!fs.existsSync(file)) throw new Error(`게시/준비.json이 없습니다: ${dir}`);
   const repo = repoOf(dir);
-  return { dir, name: path.basename(dir), repo, file, prep: readJson(file), accounts: loadAccounts(repo) };
+  // git 밖 파일(영상 *.mp4는 .gitignore)은 편을 만든 공용 작업본에만 있다 — 예약 작업이 도는 운영 사본(tools/운영사본.js)이나 세션
+  // 워크트리에서 읽어도 거기서 찾는다(10-22, 운영 사본에서 영상이 없어 작업실 등록이 0건이 되지 않게).
+  const main = 공용작업본(repo);
+  return { dir, name: path.basename(dir), repo, ...(main !== repo ? { mediaRoot: main } : {}), file, prep: readJson(file), accounts: loadAccounts(repo) };
 }
 
-// 준비.json 경로는 저장소·편 폴더·게시 폴더 기준이 섞여 있다. 있는 것을 먼저 고른다.
+// 준비.json 경로는 저장소·편 폴더·게시 폴더 기준이 섞여 있다. 있는 것을 먼저 고른다 — 이 작업본에 없으면 공용 작업본(mediaRoot)에서.
 function resolve(bundle, p) {
   if (!p || typeof p !== 'string') return null;
-  const tries = path.isAbsolute(p) ? [p] : [path.join(bundle.repo, p), path.join(bundle.dir, p), path.join(bundle.dir, '게시', p)];
+  if (path.isAbsolute(p)) return p;
+  const 편 = path.relative(bundle.repo, bundle.dir);
+  const tries = [bundle.repo, ...(bundle.mediaRoot ? [bundle.mediaRoot] : [])]
+    .flatMap((base) => [path.join(base, p), path.join(base, 편, p), path.join(base, 편, '게시', p)]);
   return tries.find((f) => fs.existsSync(f)) || tries[0];
 }
 
+// 저장소 기준 경로(검사 기록과 맞추는 열쇠). 공용 작업본에서 찾은 파일은 그 뿌리 기준이라 같은 글이 된다.
 function rel(bundle, file) {
-  return file ? path.relative(bundle.repo, file).split(path.sep).join('/') : null;
+  if (!file) return null;
+  const inside = (base) => { const r = path.relative(base, file); return Boolean(r) && !r.startsWith('..') && !path.isAbsolute(r); };
+  const base = !inside(bundle.repo) && bundle.mediaRoot && inside(bundle.mediaRoot) ? bundle.mediaRoot : bundle.repo;
+  return path.relative(base, file).split(path.sep).join('/');
 }
 
 // 「@yuhobuilds」·「https://www.instagram.com/yuhobuilds/」·「facebook.com/synkworld」를 모두 「yuhobuilds」·「synkworld」로 — 작업실 채널과 맞출 때 쓴다.

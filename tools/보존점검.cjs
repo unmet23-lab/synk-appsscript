@@ -6,7 +6,9 @@ const path = require('node:path');
 const os = require('node:os');
 const crypto = require('node:crypto');
 const {createReadStream} = fs;
-const ROOT = path.resolve(__dirname, '..');
+// 만족 사례 장부의 미추적 원본은 공용 작업본에만 있고 볼트 보존규칙.py는 그 작업본의 보고서를 읽는다 — 운영 사본(tools/운영사본.js)에서
+// 돌아도 공용 작업본을 본다(10-22).
+const ROOT = require('./lib/공용작업본.js').공용작업본(path.resolve(__dirname, '..'));
 const LEDGER = 'docs/마케팅/제작양식/만족사례_장부.md';
 const REPORT = path.join(ROOT, '.tmp/preservation/latest.json');
 const LABELS = {first_run_pending:'첫 정기 실행 전',unconfigured:'첫 실행 기준 확인 필요',running:'백업 실행 중',success:'최근 백업 완료',partial_failure:'백업 일부 실패',failed:'백업 실패',paused:'백업 의도적 중지',blocked:'백업 준비 확인 필요',missed:'백업 실행 누락',interrupted:'백업 실행 중단',unknown:'백업 상태 확인 필요'};
