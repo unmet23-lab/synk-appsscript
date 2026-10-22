@@ -11,15 +11,14 @@ import { initialDay, assertDay, advanceDay, commandDay, viewDay, DayError } from
 import { initialBazaar, assertBazaar, advanceBazaar, commandBazaar, viewBazaar, BazaarError } from './bazaar.mjs';
 import { initialSupport, assertSupport, commandSupport, viewSupport, snapshotSupport, SupportError } from './support.mjs';
 import { nearbyPlace } from './walk.mjs';
+import { FT_SEATS, SIGN_SLOTS as SIGN_SPOTS } from './town/places.mjs';
 
 export const SCOPE = Object.freeze({ domain: 'LAB', workspace: 'synk-town', subject: 'preview-local' });
-export const SEATS = Object.freeze({
-  garden: { x: 65, y: 64, branch: 'outside' },
-  'garden-right': { x: 78, y: 68, branch: 'outside' },
-  'eaves-left': { x: 25, y: 54, branch: 'inside' },
-  'eaves-right': { x: 39, y: 54, branch: 'inside' },
-});
-export const SIGN_SLOTS = Object.freeze({ 'entrance-left': { x: 15, y: 72 }, 'entrance-right': { x: 42, y: 82 } });
+// FT10/FT51 keep their old 2D cafe-screen points; the spots live in town/data/places.json.
+export const SEATS = Object.freeze(Object.fromEntries(Object.entries(FT_SEATS)
+  .map(([id, seat]) => [id, { x: seat.legacy2d.x, y: seat.legacy2d.y, branch: seat.branch }])));
+export const SIGN_SLOTS = Object.freeze(Object.fromEntries(Object.entries(SIGN_SPOTS)
+  .map(([id, slot]) => [id, { x: slot.legacy2d.x, y: slot.legacy2d.y }])));
 const newSign = () => ({ picture: null, slot: null, target: null, draftPicture: null, draftSlot: null,
   placedId: null, currentUseId: null, goalId: null, delivered: true, returnActivity: 'seat' });
 const copy = value => structuredClone(value);

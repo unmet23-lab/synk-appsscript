@@ -8,12 +8,15 @@ import { buildTownEnvironment } from './day-environment.mjs';
 import { applyTownMaterials, TOWN_BRAND } from './day-materials.mjs';
 import { createTownRendering } from './day-rendering.mjs';
 import { WALK_BOUNDS } from './walk.mjs';
+import { PLACE_BY_ID, PLAYER_PLACES, FT_SEATS, SIGN_SLOTS } from './town/places.mjs';
 
 // Local art/interaction study derived from synk-world-home/scene.mjs.
 // The player retains the approved Mongle silhouette; residents have their own casts.
 const TAU = Math.PI * 2;
-const LOCATIONS = Object.freeze({ home: [-6, 0], cafe: [0, 0], workshop: [6, 0], greenhouse: [0, -6] });
-const LABELS = { home: '우리 집', cafe: '찻집', workshop: '공방', greenhouse: '온실' };
+const LOCATIONS = Object.freeze(Object.fromEntries(PLAYER_PLACES.map(id => [id, [PLACE_BY_ID[id].center.x, PLACE_BY_ID[id].center.z]])));
+const LABELS = Object.fromEntries(PLAYER_PLACES.map(id => [id, PLACE_BY_ID[id].labels.scene]));
+// Old 2D cafe-screen seat → [2D x, 2D y, 3D x, 3D z], the anchor for FT10/FT51 legacy actors.
+const LEGACY_SLOTS = Object.fromEntries(Object.entries(FT_SEATS).map(([id, seat]) => [id, [seat.legacy2d.x, seat.legacy2d.y, seat.at.x, seat.at.z]]));
 const ROLE_LABELS = { player: '나', 'cafe-owner': '찻집 주인', 'workshop-owner': '공방 주인', researcher: '연구원', 'visitor-tea-reader': '손님', 'book-guest': '책 읽는 손님', companion: '동행 손님' };
 const VISITORS = new Set(['visitor-tea-reader', 'book-guest', 'companion']);
 const clamp = THREE.MathUtils.clamp;
@@ -511,10 +514,10 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
     const active = !!data.legacy?.active; legacy.visible = active; actors.get('visitor-tea-reader').group.visible = active && (!!data.legacy?.guestSeated || !!data.legacyActors?.guest);
     actors.get('cafe-owner').label.position.y = active && (data.legacy?.guestSeated || data.legacyActors?.guest) ? 1.84 : actors.get('cafe-owner').height + .26;
     if (!active) return;
-    const slots = { garden: [65, 64, -.7, 2], 'garden-right': [78, 68, 1.2, 2], 'eaves-left': [25, 54, -1.2, .4], 'eaves-right': [39, 54, .8, .4] }, slot = slots[data.legacy.placement] || [50, 55, 0, 0];
+    const slot = LEGACY_SLOTS[data.legacy.placement] || [50, 55, 0, 0];
     cafeAnchor = { sourceX: slot[0], sourceY: slot[1], x: slot[2], z: slot[3] }; const pos = cafePoint({ x: slot[0], y: slot[1] });
     legacyChair.position.set(pos.x, .14, pos.z); legacyChair.visible = !!data.legacy.placement; legacyCanopy.position.set(pos.x, .12, pos.z); legacyCanopy.visible = !!data.legacy.canopyPlaced; canopyMaterial.color.set(data.legacy.color === 'yellow' ? '#dcbd76' : '#7d9b84');
-    const sign = data.legacy.signPreview || data.legacy.sign, signPoint = cafePoint(sign?.slot === 'entrance-right' ? { x: 42, y: 82 } : { x: 15, y: 72 });
+    const sign = data.legacy.signPreview || data.legacy.sign, signPoint = cafePoint(SIGN_SLOTS[sign?.slot === 'entrance-right' ? 'entrance-right' : 'entrance-left'].legacy2d);
     legacySign.visible = !!sign?.slot; legacySign.position.set(signPoint.x, .12, signPoint.z); signChairIcon.visible = sign?.picture === 'chair'; signTeaIcon.visible = sign?.picture === 'tea';
     const source = data.legacyActors || {}, fallbackGuest = { x: slot[0], y: slot[1], pose: data.legacy.guestSeated ? 'sit' : 'stand' };
     if (data.legacy.guestSeated || source.guest) setActor('visitor-tea-reader', cafePoint(source.guest || fallbackGuest), now, true);

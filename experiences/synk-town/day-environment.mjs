@@ -1,9 +1,10 @@
 import { TOWN_LAYOUT, layoutWorldPoint } from './town-layout.mjs';
+import { PLACE_BY_ID, PLAYER_PLACES } from './town/places.mjs';
 // The town's static, original 3D environment. Coordinates deliberately match
 // walk.mjs and the shared town-layout.mjs. Visual walls match the shared solids.
 // Three and the existing material library are injected by day-scene.mjs.
 const TAU = Math.PI * 2;
-const PLACES = { home: [-6, 0], cafe: [0, 0], workshop: [6, 0], greenhouse: [0, -6] };
+const PLACES = Object.fromEntries(PLAYER_PLACES.map(id => [id, [PLACE_BY_ID[id].center.x, PLACE_BY_ID[id].center.z]]));
 const random = seed => () => ((seed = (1664525 * seed + 1013904223) >>> 0) / 4294967296);
 
 export function buildTownEnvironment(THREE, world, m, helpers = {}) {

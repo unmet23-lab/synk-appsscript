@@ -1,5 +1,6 @@
 import { createTownTransport } from './linked-client.mjs';
 import { mountUnderstanding } from './understanding-ui.mjs';
+import { FT_SEATS, SIGN_SLOTS } from './town/places.mjs';
 const transport = createTownTransport();
 // This renderer consumes only the loopback preview service. It never grants
 // account access, awards inventory, or infers TOPIK proficiency in the browser.
@@ -7,9 +8,8 @@ const $ = id => document.getElementById(id);
 const nodes = {
   guest: $('actor-guest'), owner: $('actor-owner'), tea: $('actor-tea'),
 };
-const seats = { garden: { x: 65, y: 64 }, 'garden-right': { x: 78, y: 68 },
-  'eaves-left': { x: 25, y: 54 }, 'eaves-right': { x: 39, y: 54 } };
-const signSlots = { 'entrance-left': { x: 15, y: 72 }, 'entrance-right': { x: 42, y: 82 } };
+const seats = Object.fromEntries(Object.entries(FT_SEATS).map(([id, seat]) => [id, seat.legacy2d]));
+const signSlots = Object.fromEntries(Object.entries(SIGN_SLOTS).map(([id, slot]) => [id, slot.legacy2d]));
 const stepDescriptions = {
   'guest-walk-sign': '손님이 안내판으로 걸어와요.',
   'guest-read-sign': '손님이 안내판의 그림을 봐요.',

@@ -12,13 +12,15 @@
 // surfaces and the name labels all stay the approved v20 ones: the v20 meshes
 // are hidden, not removed. Textures may be WebP or KTX2 (KHR_texture_basisu).
 
+import { PLAYER_PLACES } from './town/places.mjs';
+
 export const BAKED_DISTRICTS = Object.freeze({
   cafe: Object.freeze({ placeId: 'cafe', bounds: Object.freeze({ minX: -3.0, maxX: 3.0, minZ: -3.4, maxZ: 5.35 }), groundTop: .25 }),
 });
 export const BAKED_SETS = Object.freeze({
-  town: Object.freeze({ bounds: Object.freeze({ minX: -13.6, maxX: 13.6, minZ: -12.2, maxZ: 8.7 }), groundTop: .25, places: Object.freeze(['home', 'cafe', 'workshop', 'greenhouse']) }),
+  town: Object.freeze({ bounds: Object.freeze({ minX: -13.6, maxX: 13.6, minZ: -12.2, maxZ: 8.7 }), groundTop: .25, places: PLAYER_PLACES }),
   // town-layout.mjs ground.flatBounds
-  townwide: Object.freeze({ bounds: Object.freeze({ minX: -13.6, maxX: 13.6, minZ: -12.2, maxZ: 8.7 }), outerBounds: Object.freeze({ minX: -22.6, maxX: 22.6, minZ: -25.4, maxZ: 9.6 }), groundTop: .25, places: Object.freeze(['home', 'cafe', 'workshop', 'greenhouse']), neighbours: true }),
+  townwide: Object.freeze({ bounds: Object.freeze({ minX: -13.6, maxX: 13.6, minZ: -12.2, maxZ: 8.7 }), outerBounds: Object.freeze({ minX: -22.6, maxX: 22.6, minZ: -25.4, maxZ: 9.6 }), groundTop: .25, places: PLAYER_PLACES, neighbours: true }),
 });
 
 // Inside WORLD (window.__SYNK_WORLD_TOWN__) the whole merged town is the default
