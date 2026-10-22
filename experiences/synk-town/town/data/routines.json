@@ -1,0 +1,119 @@
+{
+  "$comment": "Routine tables (vertical slice design §6-3, 〔initial values〕): resident × day kind × band → weighted pool. spot is a spot ID or a group from places.json. A cell with sameAs copies another day kind's cell. rainAlt swaps an outside spot while it rains; an activity whose spot has no alternative leaves the pool during rain (§6-2). chat waits for pair scheduling (W5) and is not chosen alone.",
+  "rainAlt": {
+    "cafe.seats": "cafe.eaves",
+    "cafe.outside": "cafe.eaves",
+    "cafe.front": "cafe.eaves",
+    "workshop.door": "workshop.inside",
+    "greenhouse.door": "greenhouse.bed"
+  },
+  "routines": [
+    { "npc": "cafe-owner", "dayKind": "weekday", "band": "morning", "pool": [
+      { "archetype": "prep-cups", "spot": "cafe.prep", "weight": 350 },
+      { "archetype": "brew", "spot": "cafe.counter", "weight": 250 },
+      { "archetype": "pick-leaves", "spot": "greenhouse.bed", "weight": 250 },
+      { "archetype": "wipe", "spot": "cafe.outside", "weight": 150 } ] },
+    { "npc": "cafe-owner", "dayKind": "weekday", "band": "day", "pool": [
+      { "archetype": "serve", "spot": "cafe.seats", "weight": 400 },
+      { "archetype": "brew", "spot": "cafe.counter", "weight": 300 },
+      { "archetype": "wipe", "spot": "cafe.seats", "weight": 150 },
+      { "archetype": "menu-note", "spot": "cafe.counter", "weight": 150 },
+      { "archetype": "eaves-tea", "spot": "cafe.eaves", "weight": 80 },
+      { "archetype": "pick-leaves", "spot": "greenhouse.bed", "weight": 100 } ] },
+    { "npc": "cafe-owner", "dayKind": "weekday", "band": "evening", "pool": [
+      { "archetype": "serve", "spot": "cafe.seats", "weight": 300 },
+      { "archetype": "prep-cups", "spot": "cafe.prep", "weight": 250 },
+      { "archetype": "eaves-tea", "spot": "cafe.eaves", "weight": 250 },
+      { "archetype": "deliver-tea", "spot": "workshop.door", "weight": 200 } ] },
+    { "npc": "cafe-owner", "dayKind": "weekday", "band": "night", "pool": [
+      { "archetype": "night-tea", "spot": "cafe.counter", "weight": 450 },
+      { "archetype": "menu-note", "spot": "cafe.counter", "weight": 300 },
+      { "archetype": "prep-cups", "spot": "cafe.prep", "weight": 250 } ] },
+    { "npc": "cafe-owner", "dayKind": "weekend", "band": "morning", "sameAs": "weekday" },
+    { "npc": "cafe-owner", "dayKind": "weekend", "band": "day", "pool": [
+      { "archetype": "serve", "spot": "cafe.seats", "weight": 500 },
+      { "archetype": "brew", "spot": "cafe.counter", "weight": 300 },
+      { "archetype": "wipe", "spot": "cafe.seats", "weight": 150 },
+      { "archetype": "menu-note", "spot": "cafe.counter", "weight": 150 },
+      { "archetype": "eaves-tea", "spot": "cafe.eaves", "weight": 80 },
+      { "archetype": "pick-leaves", "spot": "greenhouse.bed", "weight": 100 } ] },
+    { "npc": "cafe-owner", "dayKind": "weekend", "band": "evening", "sameAs": "weekday" },
+    { "npc": "cafe-owner", "dayKind": "weekend", "band": "night", "sameAs": "weekday" },
+
+    { "npc": "workshop-owner", "dayKind": "weekday", "band": "morning", "pool": [
+      { "archetype": "tool-care", "spot": "workshop.bench", "weight": 400 },
+      { "archetype": "craft", "spot": "workshop.bench", "weight": 350 },
+      { "archetype": "stroll", "spot": "lane.mid", "weight": 250 },
+      { "archetype": "quiet-rest", "spot": "workshop.rest", "weight": 100 } ] },
+    { "npc": "workshop-owner", "dayKind": "weekday", "band": "day", "pool": [
+      { "archetype": "craft", "spot": "workshop.bench", "weight": 400 },
+      { "archetype": "breeze-lunch", "spot": "workshop.door", "weight": 150 },
+      { "archetype": "breeze-lunch", "spot": "cafe.outside", "weight": 150 },
+      { "archetype": "fix-round", "spot": "cafe.front", "weight": 300 } ] },
+    { "npc": "workshop-owner", "dayKind": "weekday", "band": "evening", "pool": [
+      { "archetype": "fix-round", "spot": "greenhouse.bed", "weight": 300 },
+      { "archetype": "tool-care", "spot": "workshop.bench", "weight": 300 },
+      { "archetype": "quiet-rest", "spot": "workshop.rest", "weight": 400 } ] },
+    { "npc": "workshop-owner", "dayKind": "weekday", "band": "night", "pool": [
+      { "archetype": "tool-care", "spot": "workshop.bench", "weight": 700 },
+      { "archetype": "quiet-rest", "spot": "workshop.rest", "weight": 300 } ],
+      "habitPool": { "night": [
+        { "archetype": "night-carve", "spot": "workshop.bench", "weight": 600 },
+        { "archetype": "quiet-rest", "spot": "workshop.rest", "weight": 400 } ] } },
+    { "npc": "workshop-owner", "dayKind": "weekend", "band": "morning", "sameAs": "weekday" },
+    { "npc": "workshop-owner", "dayKind": "weekend", "band": "day", "pool": [
+      { "archetype": "craft", "spot": "workshop.bench", "weight": 250 },
+      { "archetype": "breeze-lunch", "spot": "workshop.door", "weight": 200 },
+      { "archetype": "breeze-lunch", "spot": "cafe.outside", "weight": 200 },
+      { "archetype": "fix-round", "spot": "cafe.front", "weight": 350 } ] },
+    { "npc": "workshop-owner", "dayKind": "weekend", "band": "evening", "sameAs": "weekday" },
+    { "npc": "workshop-owner", "dayKind": "weekend", "band": "night", "sameAs": "weekday" },
+    { "npc": "workshop-owner", "dayKind": "off", "band": "morning", "pool": [
+      { "archetype": "stroll", "spot": "lane.mid", "weight": 400 },
+      { "archetype": "quiet-rest", "spot": "workshop.rest", "weight": 300 },
+      { "archetype": "fix-round", "spot": "greenhouse.bed", "weight": 300 } ] },
+    { "npc": "workshop-owner", "dayKind": "off", "band": "day", "pool": [
+      { "archetype": "quiet-rest", "spot": "cafe.seats", "weight": 400 },
+      { "archetype": "fix-round", "spot": "greenhouse.bed", "weight": 300 },
+      { "archetype": "stroll", "spot": "lane.mid", "weight": 300 } ] },
+    { "npc": "workshop-owner", "dayKind": "off", "band": "evening", "pool": [
+      { "archetype": "fix-round", "spot": "greenhouse.bed", "weight": 300 },
+      { "archetype": "chat", "spot": "cafe.seats", "weight": 300 },
+      { "archetype": "quiet-rest", "spot": "workshop.rest", "weight": 400 } ] },
+    { "npc": "workshop-owner", "dayKind": "off", "band": "night", "sameAs": "weekday" },
+
+    { "npc": "researcher", "dayKind": "weekday", "band": "morning", "pool": [
+      { "archetype": "water", "spot": "greenhouse.bed", "weight": 350 },
+      { "archetype": "observe", "spot": "greenhouse.board", "weight": 350 },
+      { "archetype": "board-fold", "spot": "greenhouse.board", "weight": 300 },
+      { "archetype": "notes", "spot": "greenhouse.bench", "weight": 100 } ] },
+    { "npc": "researcher", "dayKind": "weekday", "band": "day", "pool": [
+      { "archetype": "observe", "spot": "cafe.front", "weight": 300 },
+      { "archetype": "show-drawing", "spot": "cafe.seats", "weight": 300 },
+      { "archetype": "notes", "spot": "greenhouse.bench", "weight": 200 },
+      { "archetype": "water", "spot": "greenhouse.bed", "weight": 200 } ] },
+    { "npc": "researcher", "dayKind": "weekday", "band": "evening", "pool": [
+      { "archetype": "notes", "spot": "cafe.eaves", "weight": 350 },
+      { "archetype": "show-drawing", "spot": "cafe.seats", "weight": 300 },
+      { "archetype": "board-fold", "spot": "greenhouse.board", "weight": 350 },
+      { "archetype": "observe", "spot": "workshop.door", "weight": 150 } ] },
+    { "npc": "researcher", "dayKind": "weekday", "band": "night", "pool": [
+      { "archetype": "star-watch", "spot": "greenhouse.door", "weight": 450 },
+      { "archetype": "notes", "spot": "greenhouse.bench", "weight": 300 },
+      { "archetype": "observe", "spot": "greenhouse.board", "weight": 250 } ] },
+    { "npc": "researcher", "dayKind": "weekend", "band": "morning", "sameAs": "weekday" },
+    { "npc": "researcher", "dayKind": "weekend", "band": "day", "sameAs": "weekday" },
+    { "npc": "researcher", "dayKind": "weekend", "band": "evening", "sameAs": "weekday" },
+    { "npc": "researcher", "dayKind": "weekend", "band": "night", "sameAs": "weekday" },
+    { "npc": "researcher", "dayKind": "off", "band": "morning", "pool": [
+      { "archetype": "notes", "spot": "cafe.eaves", "weight": 600 },
+      { "archetype": "quiet-rest", "spot": "cafe.eaves", "weight": 200 },
+      { "archetype": "observe", "spot": "cafe.front", "weight": 200 } ] },
+    { "npc": "researcher", "dayKind": "off", "band": "day", "pool": [
+      { "archetype": "quiet-rest", "spot": "cafe.eaves", "weight": 400 },
+      { "archetype": "stroll", "spot": "lane.mid", "weight": 300 },
+      { "archetype": "observe", "spot": "workshop.door", "weight": 300 } ] },
+    { "npc": "researcher", "dayKind": "off", "band": "evening", "sameAs": "weekday" },
+    { "npc": "researcher", "dayKind": "off", "band": "night", "sameAs": "weekday" }
+  ]
+}

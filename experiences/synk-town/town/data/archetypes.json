@@ -1,0 +1,30 @@
+{
+  "$comment": "Activity archetypes (vertical slice design §6-1, 〔initial values〕). length is minutes; energy·chores·social are the change when a resident finishes one; choresEvery 2 means the chores change applies every second finish. kind drives multipliers: rest is exempt from repetition, work halves when tired. wear: the resident object whose use count rises (§8-2). moves: the object this archetype leaves at a spot (§6-1 second table).",
+  "archetypes": [
+    { "id": "prep-cups", "label": "잔 데우기·정리", "kind": "work", "pose": "working", "length": [6, 10], "energy": -1, "chores": 0, "social": 0, "wear": "cafe-tray", "moves": { "object": "cafe-tray", "to": "cafe.prep" } },
+    { "id": "brew", "label": "차 우리기", "kind": "work", "pose": "working", "length": [5, 8], "energy": -1, "chores": 0, "social": 0, "wear": "leaf-jar" },
+    { "id": "serve", "label": "배경 손님 맞기", "kind": "carry", "pose": "holding", "length": [4, 6], "energy": -2, "chores": -1, "social": 2, "wear": "cafe-tray", "moves": { "object": "cafe-tray", "to": "spot" } },
+    { "id": "wipe", "label": "자리 닦기", "kind": "work", "pose": "working", "length": [4, 6], "energy": -1, "chores": 0, "social": 0 },
+    { "id": "bring-in", "label": "비품 들이기", "kind": "carry", "pose": "holding", "length": [3, 5], "energy": -1, "chores": 0, "social": 0, "moves": { "object": "cafe-tray", "to": "spot", "onlyFromOutside": true } },
+    { "id": "pick-leaves", "label": "잎 따기", "kind": "work", "pose": "working", "length": [8, 12], "energy": -1, "chores": 0, "social": 3 },
+    { "id": "eaves-tea", "label": "처마 밑 한 잔", "kind": "rest", "pose": "resting", "length": [6, 12], "energy": 8, "chores": 0, "social": 0 },
+    { "id": "deliver-tea", "label": "공방에 차 가져다주기", "kind": "carry", "pose": "holding", "length": [6, 8], "energy": -1, "chores": 0, "social": 10 },
+    { "id": "night-tea", "label": "밤 찻집", "kind": "work", "pose": "working", "length": [10, 20], "energy": -1, "chores": 0, "social": 0 },
+    { "id": "menu-note", "label": "차림표 손보기", "kind": "work", "pose": "working", "length": [8, 12], "energy": -1, "chores": 0, "social": 0 },
+    { "id": "tool-care", "label": "도구 손질", "kind": "work", "pose": "working", "length": [6, 10], "energy": -1, "chores": 0, "social": 0, "wear": "tools" },
+    { "id": "craft", "label": "주문 작업", "kind": "work", "pose": "working", "length": [10, 20], "energy": -2, "chores": -1, "choresEvery": 2, "social": 0, "wear": "tools" },
+    { "id": "fix-round", "label": "이웃 물건 살펴보기", "kind": "walk", "pose": "standing", "length": [6, 10], "energy": -1, "chores": 0, "social": 8 },
+    { "id": "quiet-rest", "label": "조용한 자리에서 쉬기", "kind": "rest", "pose": "resting", "length": [8, 15], "energy": 8, "chores": 0, "social": 0 },
+    { "id": "breeze-lunch", "label": "바람 통하는 점심", "kind": "rest", "pose": "resting", "length": [10, 15], "energy": 6, "chores": 0, "social": 0 },
+    { "id": "night-carve", "label": "밤에 조용히 깎기", "kind": "work", "pose": "working", "length": [15, 30], "energy": 0, "chores": 0, "social": 0 },
+    { "id": "water", "label": "물 주기", "kind": "work", "pose": "working", "length": [6, 10], "energy": -1, "chores": 0, "social": 0 },
+    { "id": "observe", "label": "잎 관찰", "kind": "show", "pose": "showing", "length": [8, 14], "energy": -1, "chores": 1, "choresEvery": 2, "social": 0 },
+    { "id": "board-fold", "label": "관찰판 정리", "kind": "work", "pose": "working", "length": [5, 8], "energy": -1, "chores": -1, "social": 0, "moves": { "object": "observation-board", "to": "greenhouse.board" } },
+    { "id": "show-drawing", "label": "그림 펼쳐 보이기", "kind": "show", "pose": "showing", "length": [6, 10], "energy": -1, "chores": 0, "social": 8, "wear": "workshop-support", "moves": { "object": "observation-board", "to": "spot" } },
+    { "id": "notes", "label": "관찰 기록 쓰기", "kind": "rest", "pose": "resting", "length": [8, 14], "energy": 4, "chores": -1, "social": 0 },
+    { "id": "star-watch", "label": "별·밤꽃 보기", "kind": "show", "pose": "showing", "length": [10, 20], "energy": -1, "chores": 1, "choresEvery": 2, "social": 0 },
+    { "id": "doze", "label": "꾸벅 졸기", "kind": "rest", "pose": "resting", "length": [6, 10], "energy": 12, "chores": 0, "social": 0 },
+    { "id": "stroll", "label": "골목 산책", "kind": "walk", "pose": "walking", "length": [4, 8], "energy": -1, "chores": 0, "social": 3 },
+    { "id": "chat", "label": "이웃과 이야기", "kind": "talk", "pose": "talking", "length": [6, 10], "energy": 1, "chores": 0, "social": 15 }
+  ]
+}

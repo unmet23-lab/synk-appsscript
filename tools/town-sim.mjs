@@ -6,8 +6,8 @@
  *   node tools/town-sim.mjs --hash               결과 해시만 낸다(시간대를 바꿔 돌려 견주는 데 쓴다, §15-3)
  *   --seeds N · --days N                         규모를 바꾼다(시험은 씨앗 12)
  *
- * 마을 씨앗 × 시간대 넷(UTC+9·+8·+7·−5) × 플레이어 모습 다섯을 돈다. 런타임 층(계획기·결산)은 묶음마다 runtime에
- * 붙는다(W3부터). 아직 잴 수 없는 지표는 「대기」로 남기고, 잴 수 있는 지표만 통과·실패를 가른다.
+ * 마을 씨앗 × 시간대 넷(UTC+9·+8·+7·−5) × 플레이어 모습 다섯을 돈다. 런타임은 묶음마다 자란다 — 지금(W3)은 계획기로
+ * 주민 일과를 짜서 두 주민·장소·반복·비 지표를 잰다. 아직 잴 수 없는 지표는 「대기」로 남긴다.
  * 시뮬레이션은 시각을 숫자(epoch ms)로만 다룬다. 기기 시간대·로캘을 읽지 않는다.
  */
 import crypto from 'node:crypto';
@@ -15,6 +15,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createRng } from '../experiences/synk-town/town/rng.mjs';
+import * as clock from '../experiences/synk-town/town/clock.mjs';
+import * as plan from '../experiences/synk-town/town/plan.mjs';
+import { SPOT_BY_ID } from '../experiences/synk-town/town/places.mjs';
+import { ROUTINES } from '../experiences/synk-town/town/data.gen.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const REPORT_DIR = path.join(ROOT, 'experiences/synk-town/qa/town-sim');
@@ -72,6 +76,96 @@ export const NULL_RUNTIME = Object.freeze({
   finish: village => ({ events: village.events.length }),
 });
 
+const percent = (n, d) => (d ? Math.round(n / d * 1000) / 10 : 0);
+const ROUTINE_SPAN_MIN = 120;
+
+/** 주민 일과(W3): 계획기로 30생활일을 짜고 지표에 쓸 것만 줄여 남긴다. 주민의 하루는 아직 플레이어와 상관없어
+ * (W5·W6에서 달라진다) 마을 씨앗 × 시간대마다 한 번 계산해 플레이어 모습끼리 나눠 쓴다. */
+function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days }) {
+  const result = { meetableShortMinutes: 0, placeDays: 0, placeShortDays: 0, repeats: 0, orderPairs: 0, sameOrder: 0, rainOutside: 0, segments: 0 };
+  let residents = {}, objects = { 'cafe-tray': { spot: 'cafe.prep' }, 'observation-board': { spot: 'greenhouse.board' } };
+  const lastOrder = new Map();
+  for (let day = 0; day < days; day++) {
+    const dayStartMs = startMs + day * clock.DAY, lifeDay = clock.lifeDayAt(tzOffsetMin, dayStartMs);
+    residents = Object.fromEntries(Object.entries(residents).map(([npc, r]) => [npc, { ...r, placesToday: [], firstOfDay: true }]));
+    const daySegments = [];
+    for (const w of clock.bandsBetween(tzOffsetMin, dayStartMs, dayStartMs + clock.DAY)) {
+      const out = plan.planBand({ villageSeed, lifeDay, band: w.band, startMs: w.startMs, endMs: w.endMs, dayStartMs, planCmdRev: 0,
+        weatherAt: ms => clock.weatherAt(villageSeed, ms), weatherTomorrow: clock.clockAt({ villageSeed, hostNowMs: w.startMs, tz: tzOffsetMin }).weatherTomorrow,
+        season: clock.clockAt({ villageSeed, hostNowMs: w.startMs, tz: tzOffsetMin }).season, residents, objects });
+      residents = out.residents; objects = out.objects;
+      daySegments.push(...out.segments);
+      for (const npc of plan.RESIDENT_IDS) {
+        const order = out.segments.filter(s => s.npc === npc).map(s => s.archetype).join(',');
+        const key = `${npc}|${w.band}`;
+        if (lastOrder.has(key) && order) { result.orderPairs++; if (lastOrder.get(key) === order) result.sameOrder++; }
+        lastOrder.set(key, order);
+      }
+    }
+    result.segments += daySegments.length;
+    // 만날 수 있는 시각 05:30~23:30(§4-2): 분마다 깨어 있는 주민 수.
+    const awake = new Uint8Array(24 * 60);
+    for (const npc of plan.RESIDENT_IDS) {
+      const mine = new Uint8Array(24 * 60);
+      for (const s of daySegments) if (s.npc === npc) {
+        for (let m = Math.max(0, Math.ceil((s.startMs - dayStartMs) / clock.MINUTE)); m < Math.min(24 * 60, Math.ceil((s.endMs - dayStartMs) / clock.MINUTE)); m++) mine[m] = 1;
+      }
+      for (let m = 0; m < 24 * 60; m++) awake[m] += mine[m];
+    }
+    for (let minute = 30; minute < 18 * 60 + 30; minute++) if (awake[minute] < 2) result.meetableShortMinutes++;
+    for (const npc of plan.RESIDENT_IDS) {
+      const mine = daySegments.filter(s => s.npc === npc);
+      result.placeDays++;
+      if (new Set(mine.map(s => SPOT_BY_ID[s.spot].place)).size < 3) result.placeShortDays++;
+      for (let i = 1; i < mine.length; i++) {
+        const kind = plan.ARCHETYPE_BY_ID[mine[i].archetype]?.kind;
+        // The same work at the same spot across a band edge, or moved under cover by rain, is one activity.
+        if (kind !== 'rest' && !mine[i].moved && mine[i].archetype === mine[i - 1].archetype && mine[i].startMs === mine[i - 1].endMs && mine[i].spot !== mine[i - 1].spot) result.repeats++;
+      }
+      for (const s of mine) if (!SPOT_BY_ID[s.spot].sheltered && s.arriveMs < s.endMs && clock.rainBetween(villageSeed, s.arriveMs, s.endMs)) result.rainOutside++;
+    }
+  }
+  return result;
+}
+
+/** 일과표 칸마다 활동 수(데이터 검사, §6-2). 깨어 있는 시간이 두 시간보다 짧은 칸(공방 주인의 밤 마무리 30분 같은)은 뺀다. */
+function routineVariety() {
+  const short = [];
+  for (const cell of ROUTINES) {
+    const resident = plan.RESIDENT_BY_ID[cell.npc], band = clock.BANDS.find(b => b.id === cell.band);
+    const wake = cell.dayKind === 'off' && resident.wake.off !== undefined ? resident.wake.off : resident.wake.default;
+    const awake = Math.min(band.to, resident.sleep) - Math.max(band.from, wake);
+    const kinds = new Set(cell.pool.map(item => item.archetype));
+    if (awake >= ROUTINE_SPAN_MIN && kinds.size < 3) short.push(`${cell.npc}|${cell.dayKind}|${cell.band}`);
+  }
+  return short;
+}
+
+export const TOWN_RUNTIME = Object.freeze({
+  name: 'town-w3',
+  cache: new Map(),
+  createVillage(args) {
+    const key = `${args.villageSeed}|${args.tzOffsetMin}|${args.startMs}|${args.days}`;
+    if (!this.cache.has(key)) this.cache.set(key, lifeOfVillage(args));
+    return { life: this.cache.get(key) };
+  },
+  visit: () => ({ changes: [] }),
+  finish: village => village.life,
+  measure(id, run) {
+    const lives = [...new Map(run.villages.map(v => [`${v.villageSeed}|${v.tzOffsetMin}`, v.result])).values()];
+    const sum = key => lives.reduce((n, life) => n + life[key], 0);
+    if (id === 'meetable-residents') return { status: sum('meetableShortMinutes') === 0 ? 'pass' : 'fail', value: `둘 미만인 분 ${sum('meetableShortMinutes')}` };
+    if (id === 'places-per-day') return { status: sum('placeShortDays') === 0 ? 'pass' : 'fail', value: `셋 미만 ${sum('placeShortDays')}/${sum('placeDays')}(${percent(sum('placeShortDays'), sum('placeDays'))}%)` };
+    if (id === 'routine-variety') { const short = routineVariety(); return { status: short.length ? 'fail' : 'pass', value: short.length ? short.join(' · ') : '모든 칸 셋 이상', detail: short.join(', ') }; }
+    if (id === 'repetition') {
+      const ok = sum('repeats') === 0 && sum('sameOrder') <= sum('orderPairs') * 0.1;
+      return { status: ok ? 'pass' : 'fail', value: `바로 이은 반복 ${sum('repeats')} · 이틀 같은 순서 ${percent(sum('sameOrder'), sum('orderPairs'))}%` };
+    }
+    if (id === 'rain-outside') return { status: sum('rainOutside') === 0 ? 'pass' : 'fail', value: `비 맞은 바깥 조각 ${sum('rainOutside')}` };
+    return undefined;
+  },
+});
+
 /** 지표(§15-1). 런타임이 runtime.measure(id, run) → { status: 'pass' | 'fail', value?, detail? }로 잰다.
  * 런타임이 아직 재지 못하는 지표는 「대기」다. */
 export const METRICS = Object.freeze([
@@ -96,7 +190,7 @@ export function canonicalJson(value) {
 }
 export const sha256 = text => crypto.createHash('sha256').update(text).digest('hex');
 
-export function runSimulation({ seeds = 100, days = 30, timezones = TIMEZONES, profiles = PROFILES, runtime = NULL_RUNTIME, startMs = SIM_START_MS } = {}) {
+export function runSimulation({ seeds = 100, days = 30, timezones = TIMEZONES, profiles = PROFILES, runtime = TOWN_RUNTIME, startMs = SIM_START_MS } = {}) {
   if (!Number.isSafeInteger(seeds) || seeds < 1 || !Number.isSafeInteger(days) || days < 1) throw new RangeError('seeds·days는 1 이상의 정수예요.');
   const villages = [];
   for (const villageSeed of villageSeeds(seeds)) for (const tzOffsetMin of timezones) for (const profile of profiles) {

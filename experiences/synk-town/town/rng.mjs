@@ -37,16 +37,17 @@ export function hashString(text) {
  * Weights are non-negative safe integers. Returns -1 when every weight is 0. */
 export function pickByWeight(u, weights) {
   if (!Number.isSafeInteger(u) || u < 0 || u > 0xffffffff) throw new RangeError('u is a 32-bit unsigned integer');
-  let total = 0n;
+  let total = 0;
   for (const weight of weights) {
     if (!Number.isSafeInteger(weight) || weight < 0) throw new RangeError('weights are non-negative integers');
-    total += BigInt(weight);
+    total += weight;
   }
-  if (total === 0n) return -1;
-  const target = (BigInt(u) * total) >> 32n;
-  let running = 0n;
+  if (total === 0) return -1;
+  // u < 2³² and total ≤ 2²¹ keep u × total below 2⁵³, so plain numbers are exact; beyond that use BigInt.
+  const target = total <= 0x1fffff ? Math.floor(u * total / 4294967296) : Number((BigInt(u) * BigInt(total)) >> 32n);
+  let running = 0;
   for (let i = 0; i < weights.length; i++) {
-    running += BigInt(weights[i]);
+    running += weights[i];
     if (target < running) return i;
   }
   return weights.length - 1;
@@ -73,7 +74,7 @@ export function createRng(...parts) {
     /** Integer in [0, n). */
     below(n) {
       if (!Number.isSafeInteger(n) || n <= 0 || n > 0xffffffff) throw new RangeError('below takes 1..2^32');
-      return Number((BigInt(next()) * BigInt(n)) >> 32n);
+      return n <= 0x1fffff ? Math.floor(next() * n / 4294967296) : Number((BigInt(next()) * BigInt(n)) >> 32n);
     },
     /** Integer in [lo, hi], both ends included. */
     between(lo, hi) {

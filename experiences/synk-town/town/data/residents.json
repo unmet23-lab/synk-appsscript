@@ -1,0 +1,11 @@
+{
+  "$comment": "Three residents (vertical slice design §3, §4-2). wake/sleep are minutes after the life day starts at my 05:00 (30 = 05:30, 1110 = 23:30, 1200 = 01:00 next morning). offWeekday: 0 = Monday … 6 = Sunday. habitSleep/habitWake apply only when the village keeps that visit-band habit (§10-3, W6). home is where the resident appears at waking and leaves at sleep. multipliers are per-mille personality multipliers on the base score (§3); crowdedRest applies to resting at a cafe seat while customers wait.",
+  "residents": [
+    { "id": "cafe-owner", "label": "찻집 주인", "home": "cafe.counter", "wake": { "default": 30 }, "sleep": 1110, "offWeekday": null,
+      "restThreshold": 25, "multipliers": { "serve": 1200, "doze": 0 } },
+    { "id": "workshop-owner", "label": "공방 주인", "home": "workshop.bench", "wake": { "default": 0 }, "sleep": 990, "habitSleep": { "night": 1080 }, "offWeekday": 2,
+      "restThreshold": 30, "multipliers": {}, "crowdedRest": 500 },
+    { "id": "researcher", "label": "연구원", "home": "greenhouse.bench", "wake": { "default": 180, "off": 300 }, "habitWake": { "morning": 90 }, "sleep": 1200, "habitSleep": { "night": 1260 }, "offWeekday": 6,
+      "restThreshold": 30, "multipliers": {} }
+  ]
+}

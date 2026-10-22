@@ -167,12 +167,21 @@ export function recordOffset(tzHistory, nowMs, offsetMin) {
 
 const kstDays = ms => floorDiv(ms + KST_OFFSET_MIN * MINUTE, DAY);
 
+// A pure function's memo: the planner asks about the same day many times.
+const weatherMemo = new Map();
+
 /** The day shape of a village on a Korean date (days since 1970-01-01). */
 export function weatherDayOf(villageSeed, kstDayNumber) {
   if (typeof villageSeed !== 'string' || !villageSeed) throw new TypeError('villageSeed is a non-empty string');
+  const key = `${villageSeed}\u001f${kstDayNumber}`;
+  const known = weatherMemo.get(key);
+  if (known) return known;
   const { month } = civilFromDays(kstDayNumber);
   const rng = createRng('weather', villageSeed, dateOfDays(kstDayNumber));
-  return WEATHER_ORDER[pickByWeight(rng.next(), WEATHER_WEIGHTS[seasonOfMonth(month)])];
+  const shape = WEATHER_ORDER[pickByWeight(rng.next(), WEATHER_WEIGHTS[seasonOfMonth(month)])];
+  if (weatherMemo.size >= 4096) weatherMemo.clear();
+  weatherMemo.set(key, shape);
+  return shape;
 }
 
 /** Rain windows as absolute [startMs, endMs) for one Korean date. */
