@@ -78,6 +78,11 @@ const 가볍게뺄 = ['docs/캐릭터', 'docs/홍보물', 'docs/라디오'];
 const 백업보관일 = 7;
 /** 따라가기가 짝을 찾아 볼 「이 가지에만 있는 커밋」 수. 넘으면 짝을 찾지 않고 멈춘다. */
 const 가지만한도 = 200;
+/**
+ * 3방향 바탕을 맞출 때 읽는 그 경로의 origin 판 수(새것부터). 60개로 자르니 반나절 막힌 공용 작업본(트랙 104판 뒤)에서 작업본이 받은 옛 판이 창
+ * 밖이라 「쓰는 중인 줄」로 보여 멈췄다(10-22 저녁 WORLD TOPIK 줄). 시험은 SYNK_이력판한도로 줄여 잰다.
+ */
+const 이력판한도 = Number(process.env.SYNK_이력판한도) || 400;
 const 좋은결과 = new Set(['미리 보기', '올림', '올릴 것 없음', '따라감', '이미 최신', '가볍게 함', '되살림']);
 /** 공용 작업본에 꼬리가 다시 생겼을 때(2026-10-20 정리 뒤 로컬 master에 커밋이 쌓임) 할 일 */
 const 꼬리안내 = '꼬리 커밋은 먼저 `node tools/내커밋.js 올리기 <커밋…> --실행`으로 origin에 올리고, docs/현장노트/git_줄끝_잠금.md 「공용 작업본 꼬리 정리」대로 master를 origin의 조상으로 되돌린다';
@@ -381,9 +386,12 @@ function 짝없는커밋(git, 커밋들, T) {
   return 내것.filter((x) => !원격.has(x.키)).map((x) => x.h);
 }
 
-/** B..T 사이에 이 경로를 바꾼 커밋들(최근 60개)의 origin 판 blob — 새것부터 커밋 차례 그대로(되돌려 같은 판이 되풀이돼도 둔다 — ③이 실제 전이를 본다). 그 경로가 없는 판은 뺀다. */
+/**
+ * B..T 사이에 이 경로를 바꾼 커밋들(최근 이력판한도개)의 origin 판 blob — 새것부터 커밋 차례 그대로(되돌려 같은 판이 되풀이돼도 둔다 — ③이 실제
+ * 전이를 본다). 그 경로가 없는 판은 뺀다.
+ */
 function origin판들(c, B, T, p) {
-  const 커밋들 = c.git.글(['rev-list', '--max-count=60', `${B}..${T}`, '--', p]).split('\n').filter(Boolean);
+  const 커밋들 = c.git.글(['rev-list', `--max-count=${이력판한도}`, `${B}..${T}`, '--', p]).split('\n').filter(Boolean);
   if (!커밋들.length) return [];
   const 답 = c.git.글(['cat-file', '--batch-check=%(objectname) %(objecttype)'], { input: `${커밋들.map((h) => `${h}:${p}`).join('\n')}\n` });
   return 답.split('\n').map((l) => l.split(' ')).filter((x) => x.length === 2 && x[1] === 'blob').map((x) => x[0]);
