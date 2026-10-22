@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { initialState, restoreState, reduceCommand, snapshot, TownError } from './core.mjs';
+import { initialState, restoreState, reduceCommand, snapshot, stepLiving, assertState, TownError } from './core.mjs';
 import { initialPresence, commandPresence, initialLease, pulseLease, boundaryPresence } from './presence.mjs';
 import { settle } from './town/settle.mjs';
 
@@ -102,7 +102,7 @@ export function createStore({ file, save, now = () => Date.now(), lifeEnabled = 
   /** The world settled to a lease, with the host stamp a pulse leaves; null when nothing changed. */
   function settledTo(next, { nowMs, canContact = false, touch = false }) {
     if (!living()) return null;
-    let { state: world, changed } = settle(state, next, { nowMs, canContact, touch });
+    let { state: world, changed } = settle(state, next, { step: stepLiving, check: assertState, nowMs, canContact, touch });
     const lifeHost = { lastForegroundAt: next.lastForegroundAt, fence: next.presence.fence };
     if (next.presence.at !== null && JSON.stringify(lifeHost) !== JSON.stringify(world.lifeHost ?? null)) {
       world = { ...world, lifeHost }; changed = true;

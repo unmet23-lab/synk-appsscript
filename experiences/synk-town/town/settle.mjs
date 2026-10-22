@@ -9,9 +9,9 @@
  * Two differences are rules, not drift: the ≤3-second tail of a pulse that ended a visit now
  * reaches every module before the visit ends (the old life module dropped it), and a stretch
  * walked in one settlement may group two timers that old pulses split differently (§D1).
+ * The step and the check come from the authority (core's stepLiving and assertState), so this
+ * module imports nothing and travels with the rest of the runtime layer.
  */
-import { stepLiving, assertState } from '../core.mjs';
-
 export const STEP_MS = 1000;
 
 /** The span a U was played under; before any pulse, nobody held the town. */
@@ -45,18 +45,19 @@ export function settleSteps(settledU, lease, { canContact = false, touch = false
   return steps;
 }
 
-/** settle(world, lease) → { state, changed }. The state is checked once, after the walk. */
-export function settle(previous, lease, { nowMs, canContact = false, touch = false } = {}) {
+/** settle(world, lease, { step, check }) → { state, changed }. The state is checked once, after the walk. */
+export function settle(previous, lease, { step: stepWorld, check, nowMs, canContact = false, touch = false } = {}) {
+  if (typeof stepWorld !== 'function' || typeof check !== 'function') throw new TypeError('settle needs the step and the check');
   const steps = settleSteps(previous.settledU ?? 0, lease, { canContact, touch });
   if (!steps.length) return { state: previous, changed: false };
   const state = structuredClone(previous);
   for (const step of steps) {
-    stepLiving(state, { enabled: true, elapsedMs: step.elapsedMs, nowMs, surfaceId: step.span.surfaceId,
+    stepWorld(state, { enabled: true, elapsedMs: step.elapsedMs, nowMs, surfaceId: step.span.surfaceId,
       fence: step.span.fence, surface: step.span.surface, canRun: step.span.canRun,
       canContact: step.canContact === true, visitEnded: step.visitEnded === true });
   }
   state.settledU = lease.uMs;
-  assertState(state);
+  check(state);
   const changed = state.settledU !== previous.settledU || JSON.stringify(state) !== JSON.stringify(previous);
   return { state, changed };
 }

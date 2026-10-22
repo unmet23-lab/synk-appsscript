@@ -12,6 +12,7 @@ import { initialBazaar, assertBazaar, advanceBazaar, commandBazaar, viewBazaar, 
 import { initialSupport, assertSupport, commandSupport, viewSupport, snapshotSupport, SupportError } from './support.mjs';
 import { nearbyPlace } from './walk.mjs';
 import { FT_SEATS, SIGN_SLOTS as SIGN_SPOTS } from './town/places.mjs';
+import { emptyIndex, admit, record, indexLog, isFact, projection } from './town/trail-index.mjs';
 
 export const SCOPE = Object.freeze({ domain: 'LAB', workspace: 'synk-town', subject: 'preview-local' });
 // FT10/FT51 keep their old 2D cafe-screen points; the spots live in town/data/places.json.
@@ -37,7 +38,7 @@ export function initialState({ scope = SCOPE, lifeEnabled = false } = {}) {
     canopyOwned: false, color: null, placement: null, previewSlot: null,
     materialsGranted: false, served: false, delivered: false, currentUseId: null,
     achievements: [], goals: { inside: null, outside: null }, resumePhase: null,
-    events: [], commands: [], resting: false, activity: 'seat', sign: newSign(),
+    events: [], trail: emptyIndex(), commands: [], resting: false, activity: 'seat', sign: newSign(),
     ...(lifeEnabled ? { life: initialLife(), lifeFactIds: {}, lifeSeatRevision: 0, day: initialDay(), bazaar: initialBazaar(), support: initialSupport() } : {}) };
 }
 // Existing FT10 saves gain only the new optional activity, preserving their log.
@@ -56,6 +57,11 @@ export function restoreState(saved, { lifeEnabled = false } = {}) {
   // Saves from before the two counters: every save so far was a write, and nothing is unsettled.
   if (state && !Object.hasOwn(state, 'writeSeq')) state.writeSeq = state.revision;
   if (state && !Object.hasOwn(state, 'settledU')) state.settledU = 0;
+  // The life log is read whole once, here; afterwards the world's index answers (W2 plan D7).
+  if (state?.schema === 1 && state.scope && Array.isArray(state.events)) {
+    const seq = Number.isSafeInteger(state.trail?.seq) && state.trail.seq >= 0 ? state.trail.seq : 0;
+    delete state.trail; state.trail = trailOf(state, { seq });
+  }
   return assertState(state);
 }
 export function assertState(state) {
@@ -77,8 +83,9 @@ export function assertState(state) {
   const outside = state.placement && SEATS[state.placement].branch === 'outside';
   ensure((state.canopyOwned ? state.inventory.canopy + Number(!!outside) === 1 : state.inventory.canopy === 0 && !outside)
     && (!state.canopyOwned || state.color !== null) && (!state.served || state.placement !== null), 'invalid-save', '체험 기록을 확인할 수 없어요.', 503);
-  ensure(Array.isArray(state.events) && state.events.every(event => canonical(event.scope) === canonical(state.scope)), 'invalid-save', '다른 사람의 체험 기록을 섞을 수 없어요.', 503);
-  const trail = Trail.summarize(state.events, { scope: state.scope });
+  ensure(Array.isArray(state.events), 'invalid-save', '체험 기록을 확인할 수 없어요.', 503);
+  const trail = trailOf(state);
+  ensure(Number.isSafeInteger(trail.seq) && trail.seq >= (state.events.at(-1)?.seq || 0), 'invalid-save', '체험 기록을 확인할 수 없어요.', 503);
   const sign = state.sign;
   ensure(['seat', 'sign'].includes(state.activity) && sign
     && [null, 'chair', 'tea'].includes(sign.picture) && [null, 'chair', 'tea'].includes(sign.draftPicture)
@@ -89,17 +96,17 @@ export function assertState(state) {
     && (!sign.target || sign.slot) && typeof sign.delivered === 'boolean'
     && ['seat', 'sign'].includes(sign.returnActivity)
     && [[sign.placedId, ['sign.placed', 'sign.retargeted']], [sign.currentUseId, ['sign.seat.used']], [sign.goalId, ['FT51.completed']]]
-      .every(([id, types]) => id === null || trail.facts.some(f => f.id === id && types.includes(f.factType))),
+      .every(([id, types]) => id === null || isFact(trail, id, types)),
     'invalid-save', '안내판 기록을 확인할 수 없어요.', 503);
   ensure(state.goals && ['inside', 'outside'].every(branch => state.goals[branch] === null
-    || trail.facts.some(f => f.id === state.goals[branch] && f.factType === `FT10.${branch}.completed`)),
+    || isFact(trail, state.goals[branch], [`FT10.${branch}.completed`])),
   'invalid-save', '체험 기록을 확인할 수 없어요.', 503);
-  ensure(!state.currentUseId || trail.facts.some(f => f.id === state.currentUseId && f.factType === 'tea.served'),
+  ensure(!state.currentUseId || isFact(trail, state.currentUseId, ['tea.served']),
     'invalid-save', '체험 기록을 확인할 수 없어요.', 503);
   if (Object.hasOwn(state, 'life')) {
     ensure(!!state.life, 'invalid-save', '이웃의 생활 기록을 확인할 수 없어요.', 503);
     ensure(state.scope.subject === 'preview-local' && state.lifeFactIds && typeof state.lifeFactIds === 'object'
-      && !Array.isArray(state.lifeFactIds) && Object.values(state.lifeFactIds).every(id => trail.facts.some(f => f.id === id)),
+      && !Array.isArray(state.lifeFactIds) && Object.values(state.lifeFactIds).every(id => isFact(trail, id)),
     'invalid-save', '이웃의 생활 기록을 확인할 수 없어요.', 503);
     try { assertLife(state.life); } catch { throw new TownError('invalid-save', '이웃의 생활 기록을 확인할 수 없어요.', 503); }
     ensure(Number.isSafeInteger(state.lifeSeatRevision) && state.lifeSeatRevision >= 0,
@@ -120,7 +127,7 @@ export function assertState(state) {
   const pending = state.pendingUse;
   if (pending) ensure(['tea', 'sign'].includes(pending.kind) && pending.worldRevision === state.worldRevision
     && pending.placement === state.placement && Number.isSafeInteger(pending.elapsedMs) && pending.elapsedMs >= 0
-    && trail.facts.some(row => row.id === pending.cause), 'invalid-save', '주민 이용 계획을 확인할 수 없어요.', 503);
+    && isFact(trail, pending.cause), 'invalid-save', '주민 이용 계획을 확인할 수 없어요.', 503);
   return state;
 }
 
@@ -178,7 +185,9 @@ export function livingContext(state, host = {}) {
 function projectLifeFacts(state, facts) {
   for (const item of facts) {
     if (item.sourceKey && Object.hasOwn(state.lifeFactIds, item.sourceKey)) continue;
-    const causes = (item.causes || []).map(key => state.lifeFactIds[key]).filter(Boolean);
+    const causes = (item.causes || []).map(key => state.lifeFactIds[key]);
+    // A cause the world does not know is an error, never silently dropped (F8).
+    ensure(causes.every(Boolean), 'life-cause-missing', '앞서 한 일을 먼저 확인해 주세요.', 503);
     const id = fact(state, item.factType, causes, item.knownBy || ['cafe-owner']);
     if (item.sourceKey) state.lifeFactIds[item.sourceKey] = id;
   }
@@ -209,10 +218,22 @@ export function advanceLivingState(previous, host) {
   assertState(state);
   return { state, changed };
 }
+/** The world's Trail index; a state made before the index (or by hand) gets one from its whole log. */
+function trailOf(state, { seq = 0 } = {}) {
+  if (state.trail) return state.trail;
+  ensure(state.events.every(event => canonical(event?.scope) === canonical(state.scope)), 'invalid-save', '다른 사람의 체험 기록을 섞을 수 없어요.', 503);
+  try { Trail.summarize(state.events, { scope: state.scope }); }
+  catch { throw new TownError('invalid-save', '체험 기록을 확인할 수 없어요.', 503); }
+  return indexLog(state.events, { seq });
+}
+/** Append to the life log, checked against the index in constant time (Trail.append's rules). */
 function append(state, type, fields) {
-  const seq = (state.events.at(-1)?.seq || 0) + 1;
-  const event = { schema: 1, id: `life:${seq}`, scope: { ...state.scope }, seq, type, ...fields };
-  state.events = Trail.append(state.events, event, { currentRevisions: { shelter: state.worldRevision } });
+  if (!state.trail) state.trail = trailOf(state);
+  const seq = state.trail.seq + 1;
+  const event = Trail.validate(copy({ schema: 1, id: `life:${seq}`, scope: { ...state.scope }, seq, type, ...fields }));
+  if (admit(state.trail, event, { currentRevisions: { shelter: state.worldRevision } }) === 'append') {
+    state.events.push(event); record(state.trail, event);
+  }
   return event.id;
 }
 function fact(state, factType, causes = [], knownBy = ['cafe-owner', 'guest']) {
@@ -267,7 +288,7 @@ function advanceUse(state, host) {
   }
 }
 function currentPlacementFact(state) {
-  return [...state.events].reverse().find(e => e.type === 'life.fact' && e.factType === 'seat.placed')?.id;
+  return trailOf(state).lastSeatPlaced ?? undefined;
 }
 function followSign(state) {
   ensure(state.placement && state.sign.target === state.placement && state.sign.placedId, 'missing-seat', '먼저 자리를 골라요.');
@@ -283,13 +304,14 @@ function signReaction(state, npcId = 'cafe-owner') {
   const sign = state.sign;
   if (!sign.currentUseId || sign.target !== state.placement || !state.placement) return { selected: null };
   const base = { requiredRevisions: { shelter: state.worldRevision }, conditions: { signReady: true }, actionRef: 'FT51.04' };
-  return Vellum.select({ scope: state.scope, trail: Trail.summarize(state.events, { scope: state.scope }), npcId,
-    currentRevisions: { shelter: state.worldRevision }, conditions: { signReady: true }, candidates: [
+  const candidates = [
       { ...base, id: `FT51.${state.worldRevision}.${state.visit}.first`, semanticKey: 'FT51:first', sourceIds: [sign.goalId],
         priority: 100, once: true, contentRef: 'FT51.05' },
       { ...base, id: `FT51.${state.worldRevision}.${state.visit}.daily`, semanticKey: 'FT51:daily-use', sourceIds: [sign.currentUseId],
         priority: 10, once: false, contentRef: 'FT51.revisit' },
-    ] });
+  ];
+  return Vellum.select({ scope: state.scope, trail: trailView(state, npcId, candidates), npcId,
+    currentRevisions: { shelter: state.worldRevision }, conditions: { signReady: true }, candidates });
 }
 function signPlan(state, reaction) {
   const from = { x: 4, y: 84 }, board = SIGN_SLOTS[state.sign.slot], seat = SEATS[state.placement];
@@ -312,6 +334,9 @@ function planFor(state, reaction) {
     { id: 'tea-place', actor: 'tea', from: beside, to: cup, durationMs: 350, pose: 'carried', endPose: 'placed', initialPose: 'hidden' },
   ] });
 }
+/** What Vellum reads of the Trail, from the index, for these candidates. */
+const trailView = (state, npcId, candidates) => projection(trailOf(state), { version: Trail.VERSION, scope: state.scope, npcId,
+  sourceIds: candidates.flatMap(candidate => candidate.sourceIds) });
 export function reactionFor(state, npcId = 'cafe-owner') {
   if (state.activity === 'sign') return signReaction(state, npcId);
   if (!state.placement || !state.currentUseId || !state.served) return { selected: null, eligible: [], rejected: [] };
@@ -322,7 +347,7 @@ export function reactionFor(state, npcId = 'cafe-owner') {
     priority: 100, once: true, contentRef: branch === 'outside' ? 'FT10.06A' : 'FT10.06B' };
   const daily = { ...base, id: `FT10.${state.worldRevision}.${state.visit}.daily`, semanticKey: 'FT10:daily-use',
     priority: 10, once: false, contentRef: 'FT10.revisit' };
-  return Vellum.select({ scope: state.scope, trail: Trail.summarize(state.events, { scope: state.scope }), npcId,
+  return Vellum.select({ scope: state.scope, trail: trailView(state, npcId, [first, daily]), npcId,
     currentRevisions: { shelter: state.worldRevision }, conditions: { seatPresent: !!state.placement, served: state.served }, candidates: [first, daily] });
 }
 const action = (type, label, payload = {}) => ({ type, label, payload });
@@ -547,6 +572,8 @@ export function reduceCommand(previous, command, host = {}) {
       const old = state; state = initialState({ scope: old.scope, lifeEnabled: !!old.life }); state.revision = old.revision; state.worldRevision = old.worldRevision + 1;
       // The counters and the settled play time go on: a reset never replays or rewinds time.
       state.writeSeq = old.writeSeq ?? old.revision; state.settledU = old.settledU ?? 0;
+      // Event ids go on too, so an id never names two different events (F7).
+      state.trail = emptyIndex(trailOf(old).seq);
       state.commands = old.commands; break;
     }
     default:
