@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="mn">
+<head>
+<meta charset="utf-8">
+<title>SYNK LAB · @synk.mn · 51·52번 빈칸 「이 답, 맞을까요?」(여러 장 6)</title>
+<!-- 2026-10-23 · 기획 ./기획.md · 몽골어는 ./검문/ 세 겹 검수를 거친 판만 올린다.
+     문항은 우리 창작 수업 자료(docs/온라인반_TOPIK4급/쓰기과제.md W1·W2)이고 기출이 아니다. 「맞음 · 반쯤 맞음 · 틀림」은 우리 첨삭 말(인정 · 부분 · 다시)이다.
+     실제 화면: 반 리허설 3배율 학생 「첨삭 보기」(시험 반) · WORLD 쓰기 연습 몽골어 화면(10-22 검수 캡처) → ./화면/. 끝 장은 유호님 10-23 「③ 무료 쓰기 연습은 ②의 끝 장에 합쳐 줘」. -->
+<link rel="stylesheet" href="../../디자인/SNS키트/kit.css">
+<style>
+  body{margin:0;background:#d9dbe0;display:flex;flex-wrap:wrap;gap:40px;padding:40px;align-items:flex-start}
+  .mn{font-family:var(--k-latin);font-weight:800;letter-spacing:-.035em}
+  .ko-s{margin:0;font:600 34px/1.35 var(--k-sans);letter-spacing:-.02em;color:var(--on-field-2)}
+  .k-paper .ko-s{color:var(--k-muted)}
+  .notice{background:#fff;color:var(--k-ink);border-radius:28px;padding:36px 40px;box-shadow:0 22px 40px -22px rgba(0,0,0,.45)}
+  .notice h3{margin:0 0 16px;font:800 38px/1.3 var(--k-sans);letter-spacing:-.02em}
+  .notice p{margin:0;font:500 35px/1.62 var(--k-sans);letter-spacing:-.02em;color:var(--k-muted)}
+  .notice .ans{display:block;margin-top:18px;padding:18px 22px;border-radius:18px;background:var(--acc-wash);color:var(--k-ink);font:700 37px/1.45 var(--k-sans);letter-spacing:-.02em}
+  .nw{white-space:nowrap}
+  .opts{display:flex;gap:16px;margin-top:36px}
+  .opts .k-chip{font:800 36px/1 var(--k-latin);padding:18px 30px}
+  .verdict{display:flex;align-items:center;gap:18px;margin:0}
+  .verdict .dot{width:34px;height:34px;border-radius:50%;background:#F2B53A;flex:none}
+  .verdict b{font:800 84px/1 var(--k-latin);letter-spacing:-.04em}
+  .why{margin:18px 0 0;font:700 36px/1.38 var(--k-latin);letter-spacing:-.02em}
+  .pair{display:grid;grid-template-columns:auto 1fr;gap:10px 18px;align-items:baseline;margin:22px 0 0;padding:20px 28px;border-radius:22px;background:#f4f5f7}
+  .pair .x{font:800 34px/1.2 var(--k-sans);color:#C8402F}
+  .pair .o{font:800 34px/1.2 var(--k-sans);color:#2E8B57}
+  .pair .t{font:600 36px/1.35 var(--k-sans);letter-spacing:-.02em}
+  .pair .t.bad{color:var(--k-muted);text-decoration:line-through;text-decoration-thickness:3px;text-decoration-color:#C8402F}
+  .shotbox{flex:none;margin:26px 0 0;border-radius:22px;overflow:hidden;background:#111317;box-shadow:0 0 0 2px var(--k-hair),0 18px 36px -18px rgba(0,0,0,.45)}
+  .shotbox img{display:block;width:100%;height:auto}
+  .cap{display:flex;flex-direction:column;gap:4px;margin-top:12px;font:600 26px/1.35 var(--k-latin);color:var(--k-muted)}
+  .cap .ko{font-family:var(--k-sans);font-weight:500;text-align:right}
+  .fine{margin:14px 0 0;font:700 30px/1.36 var(--k-latin);color:var(--k-ink);letter-spacing:-.01em}
+  .fine + .fine{margin-top:6px}
+  .map{list-style:none;margin:34px 0 0;padding:0;display:grid;gap:14px}
+  .map li{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:baseline;padding:18px 24px;border-radius:18px;background:#f4f5f7}
+  .map .w{font:700 34px/1.3 var(--k-latin);letter-spacing:-.02em}
+  .map .e{font:800 36px/1.2 var(--k-sans);color:var(--acc)}
+  .ex{margin:36px 0 0;padding:34px 38px;border-radius:24px;background:#f4f5f7;font:500 39px/1.62 var(--k-sans);letter-spacing:-.02em;color:var(--k-muted)}
+  .ex mark{background:var(--acc-wash);color:var(--k-ink);font-weight:800;padding:0 .12em;border-radius:6px}
+  .mail{margin:36px 0 0;padding:32px 36px;border-radius:24px;background:#f4f5f7;font:500 36px/1.58 var(--k-sans);letter-spacing:-.02em;color:var(--k-muted)}
+  .mail b{color:var(--k-ink)}
+  .row2{display:grid;grid-template-columns:1fr 330px;gap:34px;align-items:center}
+  .shot-tall{flex:none;width:330px;border-radius:20px;overflow:hidden;box-shadow:0 18px 36px -18px rgba(0,0,0,.45)}
+  .shot-tall img{display:block;width:100%;height:auto}
+  .chips{display:flex;flex-direction:column;align-items:flex-start;gap:14px;margin-top:34px}
+  .chips .k-chip{font:700 30px/1.2 var(--k-latin)}
+</style>
+</head>
+<body data-acc="lab">
+
+<!-- 1 맞혀 보기 -->
+<section class="k-slide k-field k-corners" data-fmt="feed34" data-name="1-맞혀보기">
+  <div class="k-head"><b>SYNK LAB</b><span>51-р даалгаврын төрөл</span></div>
+  <div class="k-in">
+    <p class="k-title l mn">Энэ хариулт зөв үү?</p>
+    <p class="ko-s" style="margin-top:18px">이 답, 맞을까요?</p>
+    <div class="notice" style="margin-top:40px">
+      <h3>기숙사 택배 보관 안내</h3>
+      <p>택배가 도착하면 문자 메시지로 알려 드립니다. 문자를 받은 학생은 <span class="nw">( ㉠ ).</span> 사무실은 평일 오전 9시부터 오후 6시까지 엽니다.</p>
+      <span class="ans">㉠ 학생증을 가지고 사무실에 와서 택배를 찾아가세요.</span>
+    </div>
+    <div class="opts"><span class="k-chip">Зөв</span><span class="k-chip">Хагас зөв</span><span class="k-chip">Буруу</span></div>
+    <p class="ko-s mn" style="margin-top:34px;font-weight:600">Хариултаа сэтгэгдэлд бичээрэй 👇</p>
+  </div>
+  <div class="k-foot"><span class="k-logo-tag"><img class="k-logo" src="../../디자인/SNS키트/assets/logo-lab.webp" alt="synk LAB"></span><span class="k-handle">@synk.mn</span></div>
+</section>
+
+<!-- 2 정답: 반쯤 맞음 + 실제 첨삭 화면 -->
+<section class="k-slide k-paper" data-fmt="feed34" data-name="2-정답">
+  <div class="k-head"><b>SYNK LAB</b><span class="k-count">02 / 06</span></div>
+  <div class="k-in">
+    <p class="verdict"><span class="dot" aria-hidden="true"></span><b>Хагас зөв</b></p>
+    <p class="why">Утга нь зөв, гэхдээ мэдэгдлийн бичвэр учраас <span class="nw">«-십시오»-оор</span> төгсгөнө.</p>
+    <div class="pair"><span class="x">✗</span><span class="t bad">찾아가세요.</span><span class="o">✓</span><span class="t">찾아가십시오.</span></div>
+    <figure class="shotbox" data-trend="screen" style="width:800px;margin-top:20px"><img src="화면/학생-첨삭보기-51-1.webp" alt="WORLD 첨삭 보기 — 51번 문제 1 ㉠ 부분 · 뜻은 맞아요. 안내문이라 「-십시오」로 끝내요.(연습 반)"></figure>
+    <p class="cap"><span>SYNK LAB · TOPIK 4-р түвшний туршилтын ангийн дэлгэцийн зураг</span></p>
+    <p class="fine">TOPIK-ийн 51, 52-р даалгаварт хоосон зайг тухайн бичвэрийн хэв маягаар нөхнө.</p>
+    <p class="fine" style="font-weight:600;color:var(--k-muted)">«Хагас зөв» нь албан ёсны оноо биш, манай багшийн зөвлөгөө. Дасгалыг бид зохиосон.</p>
+  </div>
+  <div class="k-foot"><span class="k-handle" style="font-size:26px">@synk.mn</span><span>SYNK LAB</span></div>
+</section>
+
+<!-- 3 규칙 1: 문체 따라가기 -->
+<section class="k-slide k-paper" data-fmt="feed34" data-name="3-규칙1-문체">
+  <div class="k-head"><b>SYNK LAB</b><span class="k-count">03 / 06</span></div>
+  <div class="k-in">
+    <p class="k-label">01</p>
+    <h2 class="k-title s mn" style="margin-top:14px">Дүрэм 1. Бичвэрийн хэв маягийг дагана</h2>
+    <ul class="map">
+      <li><span class="w">Мэдэгдэл, албан захидал</span><span class="e">-습니다 / -십시오</span></li>
+      <li><span class="w">52-р даалгавар</span><span class="e">-다</span></li>
+      <li><span class="w">Найздаа бичсэн захидал</span><span class="e">-아요</span></li>
+    </ul>
+    <div class="pair"><span class="x">✗</span><span class="t bad">찾아가세요.</span><span class="o">✓</span><span class="t">찾아가십시오.</span></div>
+    <div class="pair" style="margin-top:16px"><span class="x">✗</span><span class="t bad">잠을 충분히 자야 해요.</span><span class="o">✓</span><span class="t">잠을 충분히 자야 한다.</span></div>
+    <p class="ko-s" style="margin-top:22px;font-size:30px">안내문·공식 편지와 메일은 -습니다/-십시오, 52번 설명문은 -다</p>
+  </div>
+  <div class="k-foot"><span class="k-handle" style="font-size:26px">@synk.mn</span><span>SYNK LAB</span></div>
+</section>
+
+<!-- 4 규칙 2: 빈칸 뒤 문장이 힌트 -->
+<section class="k-slide k-paper" data-fmt="feed34" data-name="4-규칙2-뒤문장">
+  <div class="k-head"><b>SYNK LAB</b><span class="k-count">04 / 06</span></div>
+  <div class="k-in">
+    <p class="k-label">02</p>
+    <h2 class="k-title s mn" style="margin-top:14px">Дүрэм 2. Хоосон зайг нөхөхийн өмнө дараагийн өгүүлбэрийг уншина</h2>
+    <div class="ex">그래서 시험 전날 잠을 자지 않고 공부하면 <span class="nw">( ㉠ ).</span> 공부한 시간은 늘어나도 기억에 남는 내용은 오히려 줄어들 수 있기 <mark>때문이다</mark>.</div>
+    <div class="pair"><span class="o">✓</span><span class="t">㉠ 생각만큼 좋은 결과를 얻기 어렵다.</span></div>
+    <p class="why" style="font-size:40px;margin-top:34px">Хоосон зайн дараа «-기 때문이다» (учир нь) ирвэл ㉠-д тэр шалтгаанаас болж гарах үр дүнг бичнэ.</p>
+    <p class="ko-s" style="margin-top:18px;font-size:30px">빈칸 뒤에 「-기 때문이다」가 오면 ㉠은 그 이유로 생기는 결과</p>
+  </div>
+  <div class="k-foot"><span class="k-handle" style="font-size:26px">@synk.mn</span><span>SYNK LAB</span></div>
+</section>
+
+<!-- 5 규칙 3: 교수님께는 높임말 -->
+<section class="k-slide k-paper" data-fmt="feed34" data-name="5-규칙3-높임">
+  <div class="k-head"><b>SYNK LAB</b><span class="k-count">05 / 06</span></div>
+  <div class="k-in">
+    <p class="k-label">03</p>
+    <h2 class="k-title s mn" style="margin-top:14px">Дүрэм 3. Багш, профессортоо хүндэтгэлийн хэлбэрээр бичнэ</h2>
+    <div class="mail"><b>받는 사람: 김정민 교수님</b><br>저는 목요일 오전이나 금요일 오후에는 언제든지 괜찮습니다. 교수님께서 <span class="nw">( ㉡ ).</span></div>
+    <div class="pair"><span class="x">✗</span><span class="t bad">㉡ 편한 시간을 알려 주시면 그때 찾아가겠습니다.</span><span class="o">✓</span><span class="t">㉡ 편하신 시간을 알려 주시면 그 시간에 찾아뵙겠습니다.</span></div>
+    <p class="why" style="font-size:33px;margin-top:26px">찾아뵙다 — «очиж уулзах»-ын хүндэтгэлийн хэлбэр · 편하신 — «편한»-ий хүндэтгэлийн хэлбэр</p>
+    <p class="ko-s" style="margin-top:18px;font-size:30px">교수님께 보내는 메일은 높임말로</p>
+  </div>
+  <div class="k-foot"><span class="k-handle" style="font-size:26px">@synk.mn</span><span>SYNK LAB</span></div>
+</section>
+
+<!-- 6 끝: 무료 쓰기 연습(③ 합침) + 4급 반 -->
+<section class="k-slide k-field k-corners" data-fmt="feed34" data-name="6-끝-무료연습">
+  <div class="k-head"><b>SYNK LAB</b><span class="k-count">06 / 06</span></div>
+  <div class="k-in">
+    <div class="row2">
+      <div>
+        <p class="k-title s mn">Бичгийн дасгал дахиад хиймээр байна уу?</p>
+        <p class="ko-s" style="margin-top:18px">더 연습해 볼까요?</p>
+        <div class="chips">
+          <span class="k-chip">SYNK WORLD: бичгийн 20 дасгал — үнэгүй</span>
+          <span class="k-chip">Нэвтэрвэл өдөрт 3 удаа автомат зөвлөмж</span>
+        </div>
+      </div>
+      <figure class="shot-tall" data-trend="screen" style="margin:0"><img src="화면/world-쓰기목록-mn.webp" alt="SYNK WORLD 쓰기 연습 목록(몽골어 화면)"></figure>
+    </div>
+    <p class="ko-s mn" style="margin-top:30px;font-weight:700;font-size:38px;color:var(--on-field)">Дасгалын холбоос профайл дээр байгаа.</p>
+    <p class="ko-s mn" style="margin-top:16px;font-weight:600">TOPIK 4-р түвшний онлайн ангид бичвэрээ долоо хоног бүр багшаар засуулна.</p>
+    <p class="ko-s" style="margin-top:12px;font-size:30px">무료 쓰기 연습 · 4급 온라인 반 — 링크는 프로필에</p>
+  </div>
+  <div class="k-foot"><span class="k-logo-tag"><img class="k-logo" src="../../디자인/SNS키트/assets/logo-lab.webp" alt="synk LAB"></span><span class="k-handle">@synk.mn</span></div>
+</section>
+
+</body>
+</html>
