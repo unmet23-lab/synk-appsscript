@@ -67,7 +67,7 @@ async function fixture(t, { initial = null, reset = false, consent = false, prev
     clients: { platform: { clientId: 'synthetic-client', redirectUri } }, authorizationClients: [] }, sdk, preview, ...(defaultClock ? {} : { cooldownClock: time }), ...(accountResponse ? { accountFactory: () => ({ load: async () => { metrics.accountLoads++;return accountResponse; } }) } : {}) });
   await beforeMountComplete?.({ time, get, metrics, historyUrls, mounting, calls, events, replies, emit: (event, value) => { saved = value;listener(event, value); } });await mounting;
   return { get, calls, replies, time, receivers, events, destinations, historyUrls, metrics, notice: get('notice'), feedback: get('auth-submit').beforeNodes[0], consentFeedback: get('approve').beforeNodes[0],
-    mode: name => modes.find(button => button.dataset.view === name).onclick(), submit: () => get('auth-form').onsubmit({ preventDefault() {} }),
+    buttons: modes, mode: name => modes.find(button => button.dataset.view === name).onclick(), submit: () => get('auth-form').onsubmit({ preventDefault() {} }),
     emit: async (event, value) => { saved = value;listener(event, value);await settled(); }, emitNow: (event, value) => { saved = value;listener(event, value); } };
 }
 
@@ -874,4 +874,73 @@ test('the reset form refuses what Auth would cut: under 8 characters or over 72 
   assert.match(page.notice.textContent, /너무 길어요/);
   page.get('password').value = page.get('password-confirm').value = 'short';await page.submit();
   assert.match(page.notice.textContent, /8자 이상/);assert.equal(page.calls.filter(call => call.method === 'updateUser').length, 0);
+});
+
+// 2026-10-23: the e-mail-change mail's token-hash link (one per address) works in any browser, after a tap.
+const EMAIL_LINK = `view=security&token_hash=${TOKEN_HASH}&type=email_change`;
+const halfDone = { data: { session: null, user: { msg: 'Confirmation link accepted. Please proceed to confirm link sent to the other email', code: '200' } }, error: null };
+const changedTo = (page, id, email) => () => { page.emitNow('SIGNED_IN', member(id, email));return { data: { session: member(id, email), user: member(id, email).user }, error: null }; };
+
+test('an e-mail-change link leaves the address at once and is used only after a tap; the first address asks for the other', async t => {
+  const page = await fixture(t, { callbackQuery: EMAIL_LINK });
+  const address = new URL(location.href);
+  assert.equal(address.searchParams.has('token_hash'), false);assert.equal(address.searchParams.has('type'), false);assert.equal(address.searchParams.get('view'), 'security');
+  assert.equal(page.get('auth-panel').hidden, false);assert.equal(page.get('auth-submit').textContent, '이메일 변경 확인하기');assert.equal(page.get('auth-heading').textContent, '이메일 변경을 확인해요.');
+  assert.equal(page.get('password-label').hidden, true);assert.equal(page.get('password').required, false);assert.equal(page.get('email').hidden, true);assert.equal(page.get('email').required, false);
+  assert.equal(page.calls.length, 0);assert.match(page.notice.textContent, /「이메일 변경 확인하기」를 눌러 주세요/);
+  page.replies.verifyOtp = halfDone;await page.submit();await settled();
+  assert.deepEqual(page.calls[0], { method: 'verifyOtp', args: { type: 'email_change', token_hash: TOKEN_HASH } });
+  assert.equal(page.get('auth-submit').textContent, '로그인');assert.match(page.notice.textContent, /이 주소를 확인했어요\. 다른 주소로 간 메일/);assert.match(page.notice.textContent, /이 기기에서 로그인하지 않아도 돼요/);
+  assert.equal(page.notice.className, 'notice');
+});
+
+test('the second address changes the login e-mail and opens 「로그인과 보안」 with it', async t => {
+  const page = await fixture(t, { initial: member('owner', 'owner@example.test'), callbackQuery: EMAIL_LINK, accountResponse: syntheticAccount('owner') });
+  assert.equal(page.get('auth-panel').hidden, false);assert.equal(page.metrics.accountLoads, 0);
+  page.replies.verifyOtp = changedTo(page, 'owner', 'next@example.test');await page.submit();await settled();
+  assert.equal(page.get('account').hidden, false);assert.equal(page.get('security-email').textContent, 'next@example.test');assert.ok(page.get('account-security').scrollCount > 0);
+  assert.match(page.notice.textContent, /이메일 변경을 마쳤어요\. 앞으로는 next@example\.test 주소로 로그인해요\./);assert.doesNotMatch(page.notice.textContent, /대신/);
+});
+
+test('a finished change in a browser signed into another account says which account is now signed in', async t => {
+  const page = await fixture(t, { initial: member('other', 'other@example.test'), callbackQuery: EMAIL_LINK, accountResponse: syntheticAccount('owner') });
+  page.replies.verifyOtp = changedTo(page, 'owner', 'next@example.test');await page.submit();await settled();
+  assert.equal(page.get('security-email').textContent, 'next@example.test');assert.match(page.notice.textContent, /other@example\.test 계정 대신 이 계정으로 로그인했어요/);
+});
+
+test('a used or expired e-mail-change link points to the other mail first, without inviting a sign-in it does not need', async t => {
+  const out = await fixture(t, { callbackQuery: EMAIL_LINK });
+  out.replies.verifyOtp = expired;await out.submit();await settled();
+  assert.equal(out.get('auth-submit').textContent, '로그인');assert.match(out.notice.textContent, /이미 썼거나 만료됐어요\. 이 링크를 이미 눌렀다면 다른 주소로 간 메일/);
+  assert.doesNotMatch(out.notice.textContent, /로그인하지 않아도/);assert.equal(out.notice.className, 'notice error');
+});
+test('a used or expired e-mail-change link in a signed-in browser opens 「로그인과 보안」', async t => {
+  const signed = await fixture(t, { initial: member('owner', 'owner@example.test'), callbackQuery: EMAIL_LINK, accountResponse: syntheticAccount('owner') });
+  signed.replies.verifyOtp = expired;await signed.submit();await settled();
+  assert.equal(signed.get('account').hidden, false);assert.equal(signed.get('account-security').hidden, false);assert.ok(signed.get('account-security').scrollCount > 0);
+  assert.match(signed.notice.textContent, /로그인과 보안/);assert.equal(signed.notice.className, 'notice error');
+  assert.match(signed.notice.textContent, /이 브라우저에는 owner@example\.test 계정이 로그인돼 있어요/);assert.match(signed.notice.textContent, /다른 계정이면 로그아웃한 뒤/);
+  assert.doesNotMatch(signed.notice.textContent, /로그인한 뒤 「로그인과 보안」/);
+});
+
+test('a connection failure while confirming the e-mail change keeps the link for another tap', async t => {
+  const page = await fixture(t, { callbackQuery: EMAIL_LINK });
+  page.replies.verifyOtp = { data: { session: null }, error: { message: 'Failed to fetch' } };await page.submit();
+  assert.equal(page.get('auth-submit').textContent, '이메일 변경 확인하기');assert.match(page.notice.textContent, /인터넷 연결/);
+  page.replies.verifyOtp = halfDone;await page.submit();await settled();
+  assert.equal(page.calls.filter(call => call.method === 'verifyOtp').length, 2);assert.match(page.notice.textContent, /이 주소를 확인했어요/);
+});
+
+test('the e-mail-change step shows no other form', async t => {
+  const page = await fixture(t, { callbackQuery: EMAIL_LINK });
+  assert.ok(page.buttons.every(button => button.hidden));
+  page.replies.verifyOtp = halfDone;await page.submit();await settled();assert.ok(page.buttons.some(button => !button.hidden));
+});
+test('an e-mail-change link of the wrong shape is ignored, and still leaves the address', async t => {
+  const odd = await fixture(t, { callbackQuery: `view=security&token_hash=short&type=email_change` });
+  assert.equal(odd.get('auth-submit').textContent, '로그인');assert.equal(new URL(location.href).searchParams.has('token_hash'), false);
+});
+test('a recovery token on the security view does not start the e-mail-change step', async t => {
+  const other = await fixture(t, { callbackQuery: `view=security&token_hash=${TOKEN_HASH}&type=recovery` });
+  assert.equal(other.get('auth-submit').textContent, '로그인');assert.equal(other.calls.length, 0);
 });

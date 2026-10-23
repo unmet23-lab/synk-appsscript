@@ -16,6 +16,7 @@
 - 읽기는 새 `accountView`(같은 GET synk-account)다. `load`는 도는 동안 확인된 라이브러리를 비워 저장 대기열을 버린다. 이름을 바꾸면 본체가 응답의 account로 머리 이름을 바로 바꾼다.
 - SYNK ID 「로그인과 보안」(`experiences/synk-account/src/portal-security.mjs`, 로그인 뒤 계정 화면 위): 이 브라우저의 계정 이메일, 비밀번호 바꾸기(현재 비밀번호는 SDK 세션과 따로 `/auth/v1/token`으로 확인하고 그 임시 세션은 바로 끝냄 — 운영은 `require_current_password` 꺼짐이라 서버 강제가 아니라 자리 비운 브라우저 방지다), 현재 비밀번호를 모를 때·Google 전용 계정의 재설정 메일, 로그인 이메일 바꾸기(두 주소 확인). 비밀번호를 바꾼 뒤 계정 서버 「로그인한 곳」의 끊긴 세션을 정리한다.
 - 재설정 링크: 메일 단추를 `{{ .SiteURL }}/id/?view=reset&token_hash={{ .TokenHash }}&type=recovery`로 바꾼다(어느 브라우저·기기에서나). 포털은 토큰을 주소에서 바로 지우고, 메일 스캐너가 1회용 토큰을 쓰지 않게 「링크 확인하고 계속」을 누른 뒤 `verifyOtp`를 부르고, 어느 계정의 비밀번호인지(다른 계정이 로그인돼 있던 브라우저면 그것도) 보인다. 쓰였거나 만료된 링크는 로그아웃 상태면 비밀번호 찾기, 로그인 상태면 보안 카드로. 그냥 로그인된 브라우저의 `?view=reset`은 더 이상 현재 비밀번호 없는 새 비밀번호 칸을 열지 않는다.
+- 이메일 변경 확인 링크(10-23, Fable F1 후속): 같은 방식으로 `{{ .SiteURL }}/id/?view=security&token_hash={{ .TokenHash }}&type=email_change`. Auth는 두 주소의 메일에 각자 다른 token hash를 넣고, 첫 확인은 세션 없이 메시지만, 둘째 확인은 이메일을 바꾸고 그 계정 세션을 준다(supabase/auth `verifyPost`·`emailChangeVerify`). 포털은 「이메일 변경 확인하기」를 누른 뒤 `verifyOtp({ type: 'email_change' })`를 부르고, 첫 확인이면 다른 주소의 메일을, 둘째면 「로그인과 보안」의 새 이메일을 보인다. 이미 쓴 링크는 「다른 주소의 메일 먼저 → 다시 시작」 순서로 안내한다. 옛 메일(`?message=`·`?code=` 착지)도 그대로 받는다.
 - 하지 않은 것: 비밀번호·이메일 변경 **알림 메일**(운영 꺼짐, Auth 설정 변경이라 따로), `security_update_password_require_reauthentication` 켜기(서버 강제 — 접근을 바꾸는 보안 설정), 운영 계정 실메일 왕복 시험(운영 시험 계정 금지 — 127.0.0.1 합성 GoTrue로 진짜 supabase-js를 돌려 확인), 작업실 계정과 SYNK ID 합치기.
 
 <a id="pulse-legacy-tab-removed-20261020"></a>

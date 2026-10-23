@@ -24,6 +24,8 @@ const users = new Map([
   ['g', { id: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc', email: 'member-g@synthetic.test', password: 'synthetic-pass-g1', identities: ['google'], name: '합성 Google 회원' }],
 ]);
 const recoveryTokens = new Map([['pkce_' + 'a1'.repeat(28), 'a'], ['pkce_' + 'a3'.repeat(28), 'a']]);
+// E-mail change (secure change on): one token hash per address, as GoTrue puts in each address's mail; mails records them.
+const emailTokens = new Map(), mails = [];let emailChanges = 0;
 const sessions = new Map(), log = [];
 const userJson = key => { const u = users.get(key);return { id: u.id, aud: 'authenticated', role: 'authenticated', email: u.email, ...(u.newEmail ? { new_email: u.newEmail } : {}),
   created_at: '2026-10-01T00:00:00Z', app_metadata: { provider: u.identities[0], providers: u.identities }, user_metadata: {},
@@ -38,6 +40,13 @@ const auth = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://127.0.0.1');let body = '';for await (const chunk of req) body += chunk;const data = body ? JSON.parse(body) : {};
   const session = bearer(req);log.push({ method: req.method, path: url.pathname, query: Object.fromEntries(url.searchParams), body: data, token: session ? session.kind : null, user: session?.key || null });
   if (url.pathname === '/auth/v1/settings') return send(res, 200, { external: { email: true, google: false }, disable_signup: false });
+  if (url.pathname === '/auth/v1/verify' && req.method === 'POST' && data.type === 'email_change') {
+    const row = emailTokens.get(data.token_hash);if (!row) return fail(res, 403, 'otp_expired', 'Email link is invalid or has expired');
+    emailTokens.delete(data.token_hash);const u = users.get(row.key);
+    // The first address answers with a message and no session; the second changes the e-mail and signs in.
+    if ([...emailTokens.values()].some(other => other.change === row.change)) return send(res, 200, { msg: 'Confirmation link accepted. Please proceed to confirm link sent to the other email', code: '200' });
+    u.email = u.newEmail;delete u.newEmail;return send(res, 200, issue(row.key, 'email_change'));
+  }
   if (url.pathname === '/auth/v1/verify' && req.method === 'POST') {
     const key = recoveryTokens.get(data.token_hash);if (data.type !== 'recovery' || !key) return fail(res, 403, 'otp_expired', 'Email link is invalid or has expired');
     recoveryTokens.delete(data.token_hash);return send(res, 200, issue(key, 'recovery'));
@@ -58,7 +67,11 @@ const auth = http.createServer(async (req, res) => {
       if (data.password) { if (data.password === u.password) return fail(res, 422, 'same_password', 'New password should be different from the old password.');u.password = data.password;
         // GoTrue keeps only the session that asked (LogoutAllExceptMe).
         for (const [token, other] of sessions) if (other.key === session.key && token !== (req.headers.authorization || '').replace(/^Bearer /, '')) other.live = false; }
-      if (data.email) { if ([...users.values()].some(other => other.email === data.email)) return fail(res, 422, 'email_exists', 'A user with this email address has already been registered');u.newEmail = data.email; }
+      if (data.email) { if ([...users.values()].some(other => other.email === data.email)) return fail(res, 422, 'email_exists', 'A user with this email address has already been registered');u.newEmail = data.email;
+        for (const [token, row] of emailTokens) if (row.key === session.key) emailTokens.delete(token);
+        const change = ++emailChanges, current = 'pkce_' + crypto.randomBytes(28).toString('hex'), next = 'pkce_' + crypto.randomBytes(28).toString('hex');
+        emailTokens.set(current, { key: session.key, change });emailTokens.set(next, { key: session.key, change });
+        mails.push({ type: 'email_change', change, to: u.email, token_hash: current }, { type: 'email_change', change, to: data.email, token_hash: next }); }
     }
     return send(res, 200, userJson(session.key));
   }
@@ -172,6 +185,33 @@ try {
     check('a Google-only account gets 「비밀번호 만들기」 and a reset mail to its address', (await tab.textContent('#password-mail-heading')).trim() === '비밀번호 만들기' && recover?.body.email === 'member-g@synthetic.test' && /view=reset/.test(recover.query.redirect_to || ''),
       { errors, screenshot: await shot(tab, 'security-4-google-only') });
     await context.close(); }
+  // 6. An e-mail change confirmed from two other browsers by the token-hash links in the two mails (10-23).
+  { const asker = await page();await signIn(asker.tab, 'a');await asker.tab.goto(`${base}?view=security`, { waitUntil: 'networkidle' });await asker.tab.waitForSelector('#account-security:not([hidden])');
+    await asker.tab.fill('#new-email', 'member-a-new@synthetic.test');await asker.tab.click('#email-change-submit');await asker.tab.waitForSelector('#security-pending-email:not([hidden])');
+    const [toCurrent, toNew] = mails.filter(mail => mail.change === emailChanges);await asker.context.close();
+    const link = mail => `${base}?view=security&token_hash=${mail.token_hash}&type=email_change`;
+    // The phone's mail app: no session in this browser.
+    { const { context, tab, errors } = await page(390), before = log.length;await tab.goto(link(toCurrent), { waitUntil: 'networkidle' });
+      const address = new URL(tab.url());
+      check('e-mail-change link waits for a tap, token off the address', !address.searchParams.has('token_hash') && address.searchParams.get('view') === 'security' && (await tab.textContent('#auth-submit')).trim() === '이메일 변경 확인하기'
+        && await tab.isHidden('#password-label') && await tab.isHidden('#email') && !log.slice(before).some(row => row.path === '/auth/v1/verify'), { address: address.pathname + address.search, screenshot: await shot(tab, 'email-1-link-390') });
+      await tab.click('#auth-submit');await tab.waitForFunction(() => /이 주소를 확인했어요/.test(document.getElementById('notice').textContent));
+      check('the first address asks for the other mail, signed out', log.slice(before).some(row => row.path === '/auth/v1/verify' && row.body.type === 'email_change' && row.body.token_hash === toCurrent.token_hash)
+        && users.get('a').email === 'member-a@synthetic.test' && await tab.isHidden('#account') && (await tab.textContent('#auth-submit')).trim() === '로그인', { overflow: await overflow(tab), errors, screenshot: await shot(tab, 'email-2-first-390') });
+      await context.close(); }
+    // Another device: the new address's mail finishes the change and signs this browser in with it.
+    { const { context, tab, errors } = await page(), before = log.length;await tab.goto(link(toNew), { waitUntil: 'networkidle' });await tab.click('#auth-submit');await tab.waitForSelector('#account-security:not([hidden])');
+      const notice = await tab.textContent('#notice');
+      check('the second address changes the login e-mail and shows it in 「로그인과 보안」', users.get('a').email === 'member-a-new@synthetic.test' && (await tab.textContent('#security-email')).trim() === 'member-a-new@synthetic.test'
+        && notice.includes('이메일 변경을 마쳤어요') && log.slice(before).some(row => row.path === '/auth/v1/verify' && row.body.token_hash === toNew.token_hash), { notice, errors, screenshot: await shot(tab, 'email-3-done') });
+      await context.close(); }
+    // The same link again: used.
+    { const { context, tab, errors } = await page();await tab.goto(link(toNew), { waitUntil: 'networkidle' });await tab.click('#auth-submit');await tab.waitForSelector('#notice.error');
+      const notice = await tab.textContent('#notice');
+      check('a used e-mail-change link points to the other mail first', notice.includes('이미 썼거나 만료') && notice.includes('다른 주소로 간 메일') && !notice.includes('로그인하지 않아도'), { notice, errors, screenshot: await shot(tab, 'email-4-used') });
+      check('no page errors in the e-mail-change checks', !errors.length, { errors });
+      await context.close(); }
+    users.get('a').email = 'member-a@synthetic.test'; }
 } finally {
   await browser.close();auth.close();portal.close();
 }

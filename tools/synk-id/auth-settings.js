@@ -23,6 +23,8 @@ const foot = `<p style="${muted}">SYNK · <a href="https://synk.im/">synk.im</a>
 // the PKCE {{ .ConfirmationURL }} needed the browser that asked (10-22 「비번 까먹으면 아예 방법이 없네」).
 // The page uses the one-time token only after a tap, so a mail scanner opening links cannot spend it.
 const RECOVERY_LINK = '{{ .SiteURL }}/id/?view=reset&token_hash={{ .TokenHash }}&type=recovery';
+// The email-change mail does the same; Auth puts each address's own token hash in its mail (10-23, Fable F1).
+const EMAIL_CHANGE_LINK = '{{ .SiteURL }}/id/?view=security&token_hash={{ .TokenHash }}&type=email_change';
 const mail = (title, lines, button, english, mongolian, href = '{{ .ConfirmationURL }}') => `<div style="max-width:520px;color:#10131a;line-height:1.6;word-break:keep-all;overflow-wrap:break-word">\n`
   + `<h2 style="font-size:20px;line-height:1.4">${title}</h2>\n`
   + `${lines.map(line => `<p>${line}</p>`).join('\n')}\n`
@@ -45,7 +47,7 @@ const MAILS = {
   mailer_templates_email_change_content: mail('SYNK 이메일 변경을 확인해 주세요',
     ['SYNK 계정의 이메일을 {{ .Email }}에서 {{ .NewEmail }} 주소로 바꾸는 요청을 받았어요. 두 주소로 보낸 메일의 단추를 모두 누르면 바뀌어요.', '직접 요청하지 않았다면 이 메일은 무시하고 hello@synk.im으로 알려 주세요. 링크는 1시간 뒤 만료돼요.'],
     '변경 확인하기', 'Confirm the change of your SYNK email from {{ .Email }} to {{ .NewEmail }} with the button above; it completes once both addresses are confirmed. If you did not ask for this, ignore this email and let us know at hello@synk.im. The link expires in an hour.',
-    'SYNK бүртгэлийн имэйл хаягийг солих хүсэлт хүлээн авлаа: {{ .Email }} → {{ .NewEmail }}. Дээрх товчийг дарахаас гадна нөгөө хаяг руу илгээсэн имэйлийн товчийг ч дарсны дараа л хаяг солигдоно. Хэрэв та энэ хүсэлтийг гаргаагүй бол энэ имэйлийг үл тоомсорлож, hello@synk.im хаягаар бидэнд мэдэгдэнэ үү. Холбоос 1 цагийн дараа хүчингүй болно.'),
+    'SYNK бүртгэлийн имэйл хаягийг солих хүсэлт хүлээн авлаа: {{ .Email }} → {{ .NewEmail }}. Дээрх товчийг дарахаас гадна нөгөө хаяг руу илгээсэн имэйлийн товчийг ч дарсны дараа л хаяг солигдоно. Хэрэв та энэ хүсэлтийг гаргаагүй бол энэ имэйлийг үл тоомсорлож, hello@synk.im хаягаар бидэнд мэдэгдэнэ үү. Холбоос 1 цагийн дараа хүчингүй болно.', EMAIL_CHANGE_LINK),
 };
 
 async function main() {
