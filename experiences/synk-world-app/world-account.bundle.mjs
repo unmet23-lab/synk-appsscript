@@ -20658,6 +20658,9 @@ function createWorldAccount({
     get supportsTownCheck() {
       return !native || nativeTownCheck;
     },
+    get supportsTownPulse() {
+      return !native || nativeTownPulse;
+    },
     identity: () => ({ accountId: owner, generation: epoch }),
     assertActive() {
       guard(epoch);

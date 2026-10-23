@@ -152,7 +152,8 @@ function setBusy(value) {
   for (const b of document.querySelectorAll('[data-command], [data-destination], [data-mode], #life-open, #life-contact-open, #life-resume')) b.disabled = value || !available() || b.dataset.unavailable === 'true';
 }
 // state and command answer with the whole town; pulse and boundary with a few fields (vertical slice §14-3, F11).
-const answered = (path, result) => path === 'state' || path === 'command' ? !!(result?.state && result.view && result.capabilities?.day) : Number.isSafeInteger(result?.worldSeq);
+// The old heartbeat (presence) answers the whole town like a read — without worldSeq on an account's town.
+const answered = (path, result) => ['state', 'command', 'presence'].includes(path) ? !!(result?.state && result.view && result.capabilities?.day) : Number.isSafeInteger(result?.worldSeq);
 async function request(path, body) {
   if (worldHostRequested) {
     if (!worldHost) throw new Error('홈의 계정 연결을 확인하고 있어요.');

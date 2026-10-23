@@ -74,6 +74,14 @@ test('W3 town reads check the account on entry, then at most once a minute while
  clock+=60000;await f.client.request('town/state');assert.equal(loads-base,2,'again after a minute');
  await f.client.request('town/entry');await f.client.request('town/state');assert.equal(loads-base,3,'a new entry checks again');
 });
+test('W3 town host sends pulse·boundary only to an account bundle that routes them — an older cached bundle is an unknown operation, not offline',async()=>{
+ const calls=[];const client=account=>({snapshot:{accountId:A},generation:0,account,refresh:async()=>true,request:async path=>{calls.push(path);return {ok:true};}});
+ const old=createTownWorldHost(client({}));
+ for(const operation of ['pulse','boundary'])await assert.rejects(old.request(operation,{surfaceId:'w'}),{message:'Unknown town operation'});
+ await old.request('presence',{surfaceId:'w'});assert.deepEqual(calls,['town/presence'],'the old heartbeat still goes out');
+ const current=createTownWorldHost(client({supportsTownPulse:true}));await current.request('pulse',{surfaceId:'w'});assert.deepEqual(calls,['town/presence','town/pulse']);
+ const f=fixture();await f.client.restore();assert.equal(f.account.supportsTownPulse,true,'a browser account routes pulse');
+});
 test('Town iframe host exposes methods, never credentials, and rejects a command after logout',async()=>{
  const f=fixture();await f.client.restore();const host=createTownWorldHost(f.client);
  assert.deepEqual(Object.keys(host),['appearance','subscribe','refresh','request','placement','choosePlacement','dispose']);assert.equal(JSON.stringify(host).includes('token-a'),false);
