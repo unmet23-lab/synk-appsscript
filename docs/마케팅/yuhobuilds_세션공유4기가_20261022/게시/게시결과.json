@@ -15,7 +15,8 @@
       "시각": "2026-10-23T21:00:00+09:00",
       "주소": "https://youtube.com/shorts/GW19oJbMr9Q",
       "보류": "10-22 22시 유호님 「의미 없는 찍어내기 — 예약해 둔 것도 이런 식이면 싹 갈아엎어야」 지적 뒤 Claude가 보류. 같은 틀에 낱말·소재만 바꾼 편이라 새 방식(시청자 수요 조사 → 볼 이유 심사)으로 다시 판단하기 전에는 올리지 않는다.",
-      "방법": "ego 스튜디오 「유호 · AI와 회사 만들기」(채널 전환 뒤) → 보완판 remotion/out/session-v9b_final.mp4 · 제목 · 설명 원고.json과 글자 일치 · 표지 표지_1080x1920.jpg · 아동용 아님 · 변경/합성 예 → 비공개 저장 → 예약 2026. 10. 23. 오후 9:00(GMT+0900) → 「예약됨」. 고정 댓글은 공개 뒤 손으로(원고.json pinnedComment)."
+      "방법": "ego 스튜디오 「유호 · AI와 회사 만들기」(채널 전환 뒤) → 보완판 remotion/out/session-v9b_final.mp4 · 제목 · 설명 원고.json과 글자 일치 · 표지 표지_1080x1920.jpg · 아동용 아님 · 변경/합성 예 → 비공개 저장 → 예약 2026. 10. 23. 오후 9:00(GMT+0900) → 「예약됨」. 고정 댓글은 공개 뒤 손으로(원고.json pinnedComment).",
+      "후속": "10-23 21:5x 공개(oEmbed 200) 확인 뒤 ego로 www 활성 채널을 @yuhobuilds로 바꾸고 원고.json pinnedComment를 그 채널 이름으로 달아 고정 — 「@yuhobuilds님이 고정함」 확인, 댓글 하나. 끝나고 활성 채널을 SYNK LAB으로 되돌림. 스크립트 C:/Users/q1212/ego/publish-20261023/yt_pin.mjs."
     },
     {
       "계정": "shift-tistory",
