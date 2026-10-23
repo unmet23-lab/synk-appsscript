@@ -31,6 +31,7 @@ const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
 const { spawnSync } = require('child_process');
+const 헤르메스보내기 = require('./lib/헤르메스보내기.js');
 
 const 로컬 = process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local');
 const 헤르메스 = path.join(로컬, 'hermes', 'bin', 'hermes.exe');
@@ -224,7 +225,23 @@ function 알림만들기(기록, 두줄 = {}) {
   return { what, sentence, text: 줄.join('\n') };
 }
 
-function 보내기(글, 환경 = process.env) {
+/**
+ * hermes send 결과 → { ok, message_id, method, note } 또는 { ok: false, method, error }.
+ * 보내 놓고 끊겼거나 0이 아닌 코드로 끝났어도 「보냈다」고 찍었으면 보낸 것으로 친다 — 실패로 치면 다음 회차가 같은 글을 또
+ * 보낸다(tools/lib/헤르메스보내기.js · 현장노트 AI_CLI 「hermes send는 뜨는 데 40초쯤 걸려」).
+ */
+function 보낸결과(r) {
+  let j = null;
+  try { j = JSON.parse(r.stdout); } catch { /* 줄마다 다시 읽는 것은 헤르메스보내기.결과가 한다 */ }
+  if (r.status === 0 && j?.success === true && j.message_id) return { ok: true, message_id: String(j.message_id), method: 'hermes' };
+  const 판정 = 헤르메스보내기.결과(r);
+  if (판정.ok) return { ok: true, message_id: j?.message_id ? String(j.message_id) : null, method: 'hermes', note: 판정.note };
+  return { ok: false, method: 'hermes', error: 가리기(r.error?.message || j?.error || r.stderr || r.stdout || `종료 ${r.status}`).slice(0, 300) };
+}
+
+/** 한도ms: 승인 훅은 60초 안에 끝나야 해 기본은 45초다. 예약 회차(CI 빨간불·예약 멈춤)는 넉넉히 넘긴다 —
+ *  10-23 바쁜 PC(CPU 100%)에 텔레그램 연결 지연까지 겹쳐 hermes send가 45초를 넘기자 15:48부터 한 시간 넘게 알림이 한 통도 못 나갔다. */
+function 보내기(글, 환경 = process.env, { 한도ms = 45000 } = {}) {
   if (환경.SYNK_TG_DRYRUN_DIR) {
     fs.mkdirSync(환경.SYNK_TG_DRYRUN_DIR, { recursive: true });
     const message_id = `dryrun-${Date.now()}-${crypto.randomBytes(3).toString('hex')}`;
@@ -234,11 +251,7 @@ function 보내기(글, 환경 = process.env) {
   const 임시 = path.join(os.tmpdir(), `synk-tg-approval-${process.pid}-${Date.now()}.txt`);
   fs.writeFileSync(임시, 글, 'utf8');
   try {
-    const r = spawnSync(헤르메스, ['send', '--json', '-t', 텔레그램대상, '-f', 임시], { encoding: 'utf8', windowsHide: true, timeout: 45000 });
-    let j = null;
-    try { j = JSON.parse(r.stdout); } catch { /* 아래에서 실패로 남긴다 */ }
-    if (r.status === 0 && j?.success === true && j.message_id) return { ok: true, message_id: String(j.message_id), method: 'hermes' };
-    return { ok: false, method: 'hermes', error: 가리기(r.error?.message || j?.error || r.stderr || r.stdout || `종료 ${r.status}`).slice(0, 300) };
+    return 보낸결과(spawnSync(헤르메스, ['send', '--json', '-t', 텔레그램대상, '-f', 임시], { encoding: 'utf8', windowsHide: true, timeout: 한도ms }));
   } finally { fs.rmSync(임시, { force: true }); }
 }
 
@@ -361,7 +374,7 @@ function 오류남기기(e, 환경 = process.env) {
   } catch { /* 훅은 어떤 경우에도 Claude를 멈추지 않는다 */ }
 }
 
-module.exports = { 훅처리, 막힘남기기, 멈춤처리, 출처찾기, 두줄읽기, 대신짓기, 알림만들기, 다듬기, 보내기, 훅항목, 우리훅인가, 승인훅만, 켜기계획, 끄기계획, hooks말고같은가, 설정바꾸기, 목록, 보관함, 두줄요청 };
+module.exports = { 훅처리, 막힘남기기, 멈춤처리, 출처찾기, 두줄읽기, 대신짓기, 알림만들기, 다듬기, 보내기, 보낸결과, 훅항목, 우리훅인가, 승인훅만, 켜기계획, 끄기계획, hooks말고같은가, 설정바꾸기, 목록, 보관함, 두줄요청 };
 
 if (require.main === module) {
   const [명령, ...나머지] = process.argv.slice(2);

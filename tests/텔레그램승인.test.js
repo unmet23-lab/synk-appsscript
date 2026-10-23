@@ -144,6 +144,21 @@ test('보내기가 실패해도 Claude를 막지 않고 기록에 실패로 남�
   } finally { t.지우기(); }
 });
 
+test('보낸결과: 보내 놓고 한도에 끊겨도 「보냈다」고 찍었으면 보낸 것이다 — 아무것도 못 찍고 끊기거나 거절되면 실패(10-23)', () => {
+  const 끊김 = (stdout) => ({ status: null, error: Object.assign(new Error('spawnSync hermes.exe ETIMEDOUT'), { code: 'ETIMEDOUT' }), stdout, stderr: '' });
+  assert.deepEqual(승인.보낸결과({ status: 0, stdout: '{"success":true,"message_id":42}', stderr: '' }), { ok: true, message_id: '42', method: 'hermes' });
+  const 보내고끊김 = 승인.보낸결과(끊김('{"success":true,"message_id":7}\n'));
+  assert.equal(보내고끊김.ok, true, '실패로 치면 다음 회차가 같은 글을 또 보낸다');
+  assert.equal(보내고끊김.message_id, '7');
+  assert.match(보내고끊김.note, /ETIMEDOUT/);
+  const 못보내고끊김 = 승인.보낸결과(끊김(''));
+  assert.equal(못보내고끊김.ok, false);
+  assert.match(못보내고끊김.error, /ETIMEDOUT/);
+  const 거절 = 승인.보낸결과({ status: 1, stdout: '{"success":false,"error":"chat not found"}', stderr: '' });
+  assert.equal(거절.ok, false);
+  assert.match(거절.error, /chat not found/);
+});
+
 test('표시가 이상하거나 세션·기록 경로가 어긋나면 남기지 않는다', () => {
   const t = 방만들기();
   try {
