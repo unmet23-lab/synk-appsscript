@@ -1,0 +1,389 @@
+{
+  "date": "2026-10-23",
+  "method": "Whole-inventory static scan and targeted semantic review; no live app/server verification",
+  "candidateFiles": 12848,
+  "textFilesRead": 10086,
+  "sourceCandidates": 2391,
+  "sourceCandidatePhysicalLines": 447733,
+  "sourceCandidateStats": {
+    "SYNK-appsscript": {
+      "files": 1749,
+      "tracked": 1696,
+      "lines": 317931,
+      "over500": 122,
+      "over1000": 31
+    },
+    "SYNK-talk": {
+      "files": 523,
+      "tracked": 470,
+      "lines": 116455,
+      "over500": 64,
+      "over1000": 4
+    },
+    "SYNK-website": {
+      "files": 113,
+      "tracked": 109,
+      "lines": 11883,
+      "over500": 3,
+      "over1000": 2
+    },
+    "synk-tips": {
+      "files": 6,
+      "tracked": 6,
+      "lines": 1464,
+      "over500": 1,
+      "over1000": 0
+    }
+  },
+  "categories": {
+    "dev_configuration": {
+      "files": 147,
+      "lines": 72051
+    },
+    "third_party": {
+      "files": 91,
+      "lines": 701332
+    },
+    "source": {
+      "files": 2391,
+      "lines": 447733
+    },
+    "test": {
+      "files": 1693,
+      "lines": 266625
+    },
+    "generated_candidate": {
+      "files": 117,
+      "lines": 382179
+    },
+    "authoring_or_document": {
+      "files": 3346,
+      "lines": 426339
+    },
+    "evidence_or_archive": {
+      "files": 1680,
+      "lines": 187501
+    },
+    "build_output_or_snapshot": {
+      "files": 186,
+      "lines": 56723
+    },
+    "third_party_or_tool_snapshot": {
+      "files": 174,
+      "lines": 67125
+    },
+    "excluded_build_or_cache": {
+      "files": 2743,
+      "lines": 0
+    },
+    "synchronized_source_copy": {
+      "files": 22,
+      "lines": 4348
+    },
+    "unreadable": {
+      "files": 1,
+      "lines": 0
+    },
+    "binary_not_code": {
+      "files": 16,
+      "lines": 0
+    },
+    "published_or_build_candidate": {
+      "files": 21,
+      "lines": 8401
+    }
+  },
+  "supplemental": {
+    "files": 220,
+    "executionConfiguration": 216,
+    "additionalLanguage": 4
+  },
+  "baseline": [
+    {
+      "repo": "SYNK-appsscript",
+      "head": "4763f9b19e5dcb499374699606e993a6c0f5851b",
+      "trackedFiles": 29027,
+      "untrackedFiles": 3166,
+      "unstagedTrackedCount": 33
+    },
+    {
+      "repo": "SYNK-talk",
+      "head": "d82c82eb2189b780d824fcf716f27e095d9168d7",
+      "trackedFiles": 1339,
+      "untrackedFiles": 490,
+      "unstagedTrackedCount": 117
+    },
+    {
+      "repo": "SYNK-website",
+      "head": "3f9b431abdcba08ede2e2216bef2fefd974aeb6e",
+      "trackedFiles": 1978,
+      "untrackedFiles": 8591,
+      "unstagedTrackedCount": 19
+    },
+    {
+      "repo": "synk-policy",
+      "head": "9e2201dc152384e42b409cae2dae192363b6bfb4",
+      "trackedFiles": 0,
+      "untrackedFiles": 0,
+      "unstagedTrackedCount": 0
+    },
+    {
+      "repo": "synk-tips",
+      "head": "3d4daf1efd0a8da21f62d8ced491b078ed3b0f66",
+      "trackedFiles": 37,
+      "untrackedFiles": 0,
+      "unstagedTrackedCount": 0
+    }
+  ],
+  "findings": [
+    {
+      "id": "C01",
+      "severity": "P2",
+      "title": "메신저 HTTP 핸들러가 거의 모든 기능의 제어 흐름을 소유한다"
+    },
+    {
+      "id": "C02",
+      "severity": "P2",
+      "title": "스키마 소유권이 런타임 서비스 생성자 사이에 흩어져 있다"
+    },
+    {
+      "id": "C03",
+      "severity": "P2",
+      "title": "메시지와 할 일 직렬화가 재진입하고 날짜를 공유 변수로 전달한다"
+    },
+    {
+      "id": "C04",
+      "severity": "P2",
+      "title": "트랜잭션·커밋 후 알림 계약을 여러 플래그와 콜백으로 호출자에게 맡긴다"
+    },
+    {
+      "id": "C05",
+      "severity": "P2",
+      "title": "메신저 브라우저 원문 전체가 단일 공유 상태에 직접 연결된다"
+    },
+    {
+      "id": "C06",
+      "severity": "P2",
+      "title": "화면을 만든 뒤 여러 후처리 함수가 같은 DOM을 다시 옮기고 바꾼다"
+    },
+    {
+      "id": "C07",
+      "severity": "P2",
+      "title": "메신저 CSS 세 세대가 동시에 실리며 중요도 덮어쓰기로 경쟁한다"
+    },
+    {
+      "id": "C08",
+      "severity": "P2",
+      "title": "UI 시험이 공개 계약 대신 소스 문자열·전역 이름에 결합된다"
+    },
+    {
+      "id": "C09",
+      "severity": "P2",
+      "title": "AI 구독 서비스가 공급자 어댑터·저장·로그인·프로세스·스케줄을 한 closure에서 관리한다"
+    },
+    {
+      "id": "C10",
+      "severity": "P2",
+      "title": "구독 화면이 렌더러 내부에서 요금·소비 예측·추천 정책까지 계산한다"
+    },
+    {
+      "id": "C11",
+      "severity": "P2",
+      "title": "인증 서비스가 여러 제품의 응답 의미·스키마를 직접 판정한다"
+    },
+    {
+      "id": "C12",
+      "severity": "P2",
+      "title": "런처의 계정 전환이 각 화면의 내부 초기화와 재렌더 목록을 수동으로 안다"
+    },
+    {
+      "id": "C13",
+      "severity": "P2",
+      "title": "하위 릴리스 빌더가 상위 orchestration의 검증 helper를 역참조한다"
+    },
+    {
+      "id": "C14",
+      "severity": "P2",
+      "title": "설치 단계가 상태 코드가 아니라 한국어 표시 문구로 전달된다"
+    },
+    {
+      "id": "E01",
+      "severity": "P2",
+      "title": "WORLD app-shell이 화면·계정·학습 자원의 공통 수명주기를 직접 관리한다 — 우선순위 높음"
+    },
+    {
+      "id": "E02",
+      "severity": "P2",
+      "title": "소개팅 UI의 전체 재그리기와 여러 임시 원고가 하나의 전역 상태망에 묶였다 — 우선순위 높음"
+    },
+    {
+      "id": "E03",
+      "severity": "P2",
+      "title": "소개팅 서비스의 315줄 mutate가 서로 다른 업무의 검증과 부수효과를 한 트랜잭션 분기문에 모은다 — 우선순위 높음"
+    },
+    {
+      "id": "E04",
+      "severity": "P2",
+      "title": "소개팅 discovery의 replay가 사건 복원·후보 평가·설명 생성·호환 처리를 동시에 수행한다 — 우선순위 높음"
+    },
+    {
+      "id": "E05",
+      "severity": "P2",
+      "title": "PATH 여행 화면 파일이 일정 가능 여부를 계산하는 별도 도메인 계층이 됐다"
+    },
+    {
+      "id": "E06",
+      "severity": "P2",
+      "title": "여행 계정 화면이 서버용 전체 개인자료 검사 모듈을 다시 불러와 제품 간 의존 순환을 만든다 — 빠른 개선 후보"
+    },
+    {
+      "id": "E07",
+      "severity": "P2",
+      "title": "관계 수첩 app의 계정 교체가 대화·원고·녹음·카드·연락처·알림 UI의 초기화를 모두 알고 있다"
+    },
+    {
+      "id": "E08",
+      "severity": "P2",
+      "title": "레이싱 상태를 시험하기 위해 app 함수 원문을 잘라 가짜 전역을 주입한다 — 우선순위 높음"
+    },
+    {
+      "id": "E09",
+      "severity": "P2",
+      "title": "교사 앱의 인증 모드·권한 세대·학생 선택·작성 창이 같은 화면 파일을 함께 수정한다"
+    },
+    {
+      "id": "E10",
+      "severity": "P2",
+      "title": "TOWN day-app의 렌더 루프가 이동 패킷·접속 임대·관측 증거 전송을 한 상태망으로 묶는다"
+    },
+    {
+      "id": "E11",
+      "severity": "P2",
+      "title": "Atlas game-learning의 'thin host'가 저장·압축·동기화·평가 상태를 490줄 closure 하나에 소유한다"
+    },
+    {
+      "id": "E12",
+      "severity": "P2",
+      "title": "Flow의 런타임 안전 검사와 Temper 시뮬레이터가 양방향 의존한다 — 빠른 개선 후보"
+    },
+    {
+      "id": "S01",
+      "severity": "P2",
+      "title": "최우선 구조부채: personal 실행 번들을 원천에서 다시 만들 수 없다"
+    },
+    {
+      "id": "S02",
+      "severity": "P1",
+      "title": "계정 전환 뒤 이전 계정의 진행 응답이 새 계정 화면 상태를 덮는다"
+    },
+    {
+      "id": "S03",
+      "severity": "P2",
+      "title": "teach 함수 한 곳에 여섯 업무와 DB·AI 비용 처리가 모였다"
+    },
+    {
+      "id": "S04",
+      "severity": "P2",
+      "title": "말하기 화면이 오프라인 제출 작업의 수명을 소유한다"
+    },
+    {
+      "id": "S05",
+      "severity": "P2",
+      "title": "검수 화면의 한 항목 전환이 여러 effect의 수동 초기화에 의존한다"
+    },
+    {
+      "id": "S06",
+      "severity": "P2",
+      "title": "배포 조립 로직을 CLI끼리 역으로 가져와 의존성이 순환한다"
+    },
+    {
+      "id": "S07",
+      "severity": "P2",
+      "title": "배포 도구가 정규식 기반의 자체 CommonJS→ESM 변환기를 떠안는다"
+    },
+    {
+      "id": "S08",
+      "severity": "P2",
+      "title": "홈페이지 빌드가 옛 페이지를 완성한 뒤 새 페이지로 덮어쓴다"
+    },
+    {
+      "id": "S09",
+      "severity": "P2",
+      "title": "v10의 링크 정책 재사용이 모듈 import 대신 소스 문자열 절단에 의존한다"
+    },
+    {
+      "id": "S10",
+      "severity": "P2",
+      "title": "검수의 중요한 상태 전환 시험이 동작보다 소스 표기와 묶여 있다"
+    },
+    {
+      "id": "S11",
+      "severity": "P1",
+      "title": "Tips 검색은 첫 색인 요청 실패를 페이지 생명주기 동안 캐시한다"
+    },
+    {
+      "id": "R01",
+      "severity": "P2",
+      "title": "Strata의 살아 있는 문법 자료가 은퇴한 엔진 전체 파일에 묶였다"
+    },
+    {
+      "id": "R02",
+      "severity": "P2",
+      "title": "현재 Git 도구가 이전 CLI의 시험용·내부 exports를 공용 라이브러리로 쓴다"
+    },
+    {
+      "id": "R03",
+      "severity": "P2",
+      "title": "push·운영 갱신·밀린 장부 재시도가 서로를 다시 호출한다"
+    },
+    {
+      "id": "R04",
+      "severity": "P2",
+      "title": "백업의 기초 파일·잠금 도우미가 최상위 GitHub 백업 실행기에 들어 있다"
+    },
+    {
+      "id": "R05",
+      "severity": "P2",
+      "title": "운영 상태 읽기가 운영 홈 화면 서버를 역으로 의존한다"
+    },
+    {
+      "id": "R06",
+      "severity": "P2",
+      "title": "WORLD 공개 주소 두 개를 연결하는 안전 절차가 거의 통째로 복제됐다"
+    },
+    {
+      "id": "R07",
+      "severity": "P2",
+      "title": "공개 후보 생성 한 함수가 3방향 병합·참조 수집·캐시 토큰 갱신·검사를 공유 Map으로 연결한다"
+    },
+    {
+      "id": "X01",
+      "severity": "P2",
+      "title": "Hermes의 결과 수집·전달 경로가 새 정책과 기존 정책에 중복되어 있다"
+    },
+    {
+      "id": "X02",
+      "severity": "P2",
+      "title": "SNS publisher는 플랫폼 변경 지점이 인증·폼·확인·발행·패키지/승인 모델에 흩어져 있다"
+    },
+    {
+      "id": "X03",
+      "severity": "P2",
+      "title": "라디오 겹쳐송출의 실행·복구·정리 책임이 즉시 실행 스크립트에 묶여 있다"
+    }
+  ],
+  "severityCounts": {
+    "P1": 2,
+    "P2": 45
+  },
+  "changedSinceScan": [
+    "SYNK-appsscript/tools/수요스캔/스캔.js"
+  ],
+  "unreadable": [
+    {
+      "repo": "SYNK-talk",
+      "path": "tools/스키아패치.js",
+      "reason": "tracked but absent"
+    }
+  ]
+}

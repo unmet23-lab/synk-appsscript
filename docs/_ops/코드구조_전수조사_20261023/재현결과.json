@@ -1,0 +1,17 @@
+{
+  "scope": "Extracted current function bodies only; fake promises/fetch; no app/server/network execution",
+  "app_progress": {
+    "oldOwnerBeforeNewResponse": "synthetic_A",
+    "completionOrder": [
+      "synthetic_B",
+      "synthetic_A"
+    ],
+    "ownerAfterOldResponse": "synthetic_A",
+    "result": "stale A overwrites B"
+  },
+  "tips_search": {
+    "fetchCalls": 1,
+    "sameRejectedPromise": true,
+    "result": "second attempt cannot recover without page reload"
+  }
+}

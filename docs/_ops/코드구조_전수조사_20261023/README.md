@@ -1,0 +1,569 @@
+# 코드 구조 전수 조사 · 2026-10-23
+
+**확인한 항목은 47건이다. 최소 재현으로 확인한 기능 오류 2건(P1), 코드의 결합과 변경 부담을 확인한 구조 부채 45건(P2)이다.** 가장 먼저 해결할 구조 문제는 개인화 실행 번들을 원천에서 재생성하지 못하는 상태다. 메신저·WORLD·소개팅·운영 도구에서는 공유 상태, 서비스 역참조, 문자열로 연결한 계약이 반복된다.
+
+이 결과는 전수 **정적 탐색 + 위험 후보의 심층 코드 검토**다. 모든 파일의 모든 실행 경로를 수동 검증했다는 뜻은 아니다. 제품 코드·운영 설정·배포는 변경하지 않았다. 두 P1도 가짜 데이터로 현재 함수의 동작을 재현했으며, 실제 사용자 피해나 운영 사고 발생을 확인한 것은 아니다.
+
+## 조사 범위와 수치
+
+| 범위 | 자동 분류한 원천 후보 | 물리적 줄 수 | 의미 |
+|---|---:|---:|---|
+| SYNK-appsscript | 1,749 | 317,931 | Apps Script, 회사 서버, PC 앱, Atlas, 학습·생활 앱, 운영·제작 도구 등 |
+| SYNK-talk | 523 | 116,455 | 모바일 앱, 서버 함수, 마이그레이션, 배포 도구 |
+| SYNK-website | 113 | 11,883 | 홈페이지 원천·빌드 입력·생성 도구 |
+| synk-tips | 6 | 1,464 | 팁 사이트 빌드와 브라우저 코드 |
+| 합계 | **2,391** | **447,733** | 자료를 선언한 코드·과거 호환 코드도 포함한 후보 수. 전부 문제라는 뜻이 아니다 |
+
+- 코드·스타일 확장자 후보 **12,628개**를 목록화하고, 실행 설정·추가 언어 **220개**를 더 확인했다. 합계 **12,848개 후보**, 실제 텍스트를 읽은 것은 **10,086개**다. 220개는 실행 설정 216개와 Lua·Java·NSIS/시험 파일 4개다.
+- 생성물·외부 라이브러리·시험·제작 문서·검수 사본을 별도 분류했다. 코드로 오인되기 쉬운 MPEG `.ts` 16개, 빌드/캐시 제외 항목 2,743개, 없는 추적 파일 1개는 내용 감사에서 제외했다. 빈 파일 2개는 목록만 남겼다. JSON 문항/데이터 전체와 비밀 설정은 실행 코드의 의미 감사 대상이 아니다.
+- 원천 후보 중 JS/TS 계열 **1,829파일**과 인라인 스크립트 HTML **18파일**에서 AST를 분석했다. 긴 함수 415개(100줄 이상), 분기 표식이 많은 함수 328개(40개 이상)는 **심층 읽기 후보**로만 썼다. 함수 길이는 중첩 함수 본문을 포함할 수 있고, 분기 표식은 중첩 함수를 제외한 if/loop/catch/조건식/논리연산 수로 **표준 순환복잡도 점수가 아니다**.
+- 전체 분석 중 템플릿 치환 표식·외부 수집 HTML 때문에 AST 파싱이 안 된 항목이 7개 있었다. 이를 문법 버그로 세지 않았다. Python·SQL·C#·셸·CSS·추가 언어는 텍스트/구조 탐색과 선택한 구간의 직접 읽기이며 JS와 같은 AST 수치를 적용하지 않았다.
+- `synk-policy` 작업본에는 현재 코드가 없었다. 별도 공개용 bare 사본의 로컬 main/origin/main `c3436e1`, tree 9,050개를 읽어 배포 사본임을 확인했다. 독립 원천으로 중복 집계하지 않았으며 fetch·HTTP·운영 서버 대조는 하지 않았다.
+- 다른 백업·워크트리·벤더 저장소, 클라우드에만 있는 코드와 ignored 로컬 파일 전체는 조사 대상이 아니다. 저장소 지도에 연결된 현행 네 원천 저장소와 공개 사본을 이번 범위로 삼았다.
+
+기준 HEAD: appsscript `4763f9b`, talk `d82c82e`, website `3f9b431`, tips `3d4daf1`. 미커밋·미추적 코드도 읽은 작업본 기준이다. 자동 목록 뒤 원천/생성물 해시를 재대조했을 때 `tools/수요스캔/스캔.js` 한 파일이 동시 작업으로 바뀌었고, 그 파일은 아래 확정 지적에서 사용하지 않았다. 생성 여부 자동 분류는 완벽한 원천 목록이 아니며, 실제 지적에 쓴 파일은 생성기·머리말·소비 경로를 별도로 확인했다.
+
+## 먼저 볼 여덟 곳
+
+| 순서 | 위치 | 확인한 문제 | 먼저 할 일 |
+|---:|---|---|---|
+| 1 | [Talk App.js](../../../../SYNK-talk/App.js#L205), S02 | 계정 B 응답 뒤 늦은 A 응답이 화면 상태를 덮는다 | 계정 교체 시 초기화 + 요청 소유 계정/세대 검사 |
+| 2 | [Tips app.js](../../../../synk-tips/site/assets/app.js#L38), S11 | 첫 검색 실패 Promise를 계속 재사용해 회복 못 함 | 실패 Promise 해제와 재시도 상태 |
+| 3 | [personal 생성기](../../../../SYNK-talk/tools/synk-personal-build.js#L5), S01 | 번들에만 남은 패치를 원천에서 재생성 못 함 | 현행 동작을 보존하며 원천 복원·행동 대조 |
+| 4 | [메신저 server.mjs](../../../tools/company-messenger/server.mjs#L653), C01~04 | 653줄 요청 처리 + 스키마 분산 + 메시지/할 일 재진입 | 직렬화·스키마·트랜잭션 경계부터 고정 |
+| 5 | [메신저 app.js](../../../tools/company-messenger/public/app.js#L67), C05~08 | 86개 state 필드, DOM 후처리, CSS 덮어쓰기, 문자열 시험 | 세션/대화/전송/업무별 상태 소유권 |
+| 6 | [WORLD app-shell](../../../experiences/synk-world-app/app-shell.mjs#L38), E01 | 계정·패널·게임·학습 자원 생성/정리가 여러 종료 경로에 분산 | 계정에 묶인 자원 수명주기 |
+| 7 | [소개팅 서비스](../../../experiences/atlas-lab/dating-service.mjs#L794), E02~04 | UI 원고·315줄 mutation·335줄 replay에 독립 업무가 집중 | 공통 인증/트랜잭션 유지, 업무별 handler/reducer 추출 |
+| 8 | [홈페이지 legacy seed](../../../../SYNK-website/site-v10/legacy-seed.mjs#L1), S08~09 | 옛 페이지 완성 후 v10 덮어쓰기, 문자열로 정책 코드 삽입 | 실제 자산 준비와 최종 페이지 빌드 분리 |
+
+## 전체 목록
+
+P1은 재현된 기능 오류다. P2는 이번 조사에서 코드 결합·중복·변경 부담을 확인한 구조 부채다. 표의 정리 순서는 장애 등급과 별개이며, 같은 파일 안의 독립된 문제를 각각 한 건으로 센다. **47개 파일이 깨졌다는 의미가 아니다.**
+
+| ID | 등급 | 정리 순서 | 항목 |
+|---|---|---|---|
+| [C01](#c01) | P2 | 우선 정리 | 메신저 HTTP 핸들러가 거의 모든 기능의 제어 흐름을 소유한다 |
+| [C02](#c02) | P2 | 우선 정리 | 스키마 소유권이 런타임 서비스 생성자 사이에 흩어져 있다 |
+| [C03](#c03) | P2 | 우선 정리 | 메시지와 할 일 직렬화가 재진입하고 날짜를 공유 변수로 전달한다 |
+| [C04](#c04) | P2 | 우선 정리 | 트랜잭션·커밋 후 알림 계약을 여러 플래그와 콜백으로 호출자에게 맡긴다 |
+| [C05](#c05) | P2 | 우선 정리 | 메신저 브라우저 원문 전체가 단일 공유 상태에 직접 연결된다 |
+| [C06](#c06) | P2 | 후속 정리 | 화면을 만든 뒤 여러 후처리 함수가 같은 DOM을 다시 옮기고 바꾼다 |
+| [C07](#c07) | P2 | 후속 정리 | 메신저 CSS 세 세대가 동시에 실리며 중요도 덮어쓰기로 경쟁한다 |
+| [C08](#c08) | P2 | 후속 정리 | UI 시험이 공개 계약 대신 소스 문자열·전역 이름에 결합된다 |
+| [C09](#c09) | P2 | 우선 정리 | AI 구독 서비스가 공급자 어댑터·저장·로그인·프로세스·스케줄을 한 closure에서 관리한다 |
+| [C10](#c10) | P2 | 후속 정리 | 구독 화면이 렌더러 내부에서 요금·소비 예측·추천 정책까지 계산한다 |
+| [C11](#c11) | P2 | 우선 정리 | 인증 서비스가 여러 제품의 응답 의미·스키마를 직접 판정한다 |
+| [C12](#c12) | P2 | 후속 정리 | 런처의 계정 전환이 각 화면의 내부 초기화와 재렌더 목록을 수동으로 안다 |
+| [C13](#c13) | P2 | 후속 정리 | 하위 릴리스 빌더가 상위 orchestration의 검증 helper를 역참조한다 |
+| [C14](#c14) | P2 | 후속 정리 | 설치 단계가 상태 코드가 아니라 한국어 표시 문구로 전달된다 |
+| [E01](#e01) | P2 | 우선 정리 | WORLD app-shell이 화면·계정·학습 자원의 공통 수명주기를 직접 관리한다 |
+| [E02](#e02) | P2 | 우선 정리 | 소개팅 UI의 전체 재그리기와 여러 임시 원고가 하나의 전역 상태망에 묶였다 |
+| [E03](#e03) | P2 | 우선 정리 | 소개팅 서비스의 315줄 mutate가 서로 다른 업무의 검증과 부수효과를 한 트랜잭션 분기문에 모은다 |
+| [E04](#e04) | P2 | 우선 정리 | 소개팅 discovery의 replay가 사건 복원·후보 평가·설명 생성·호환 처리를 동시에 수행한다 |
+| [E05](#e05) | P2 | 후속 정리 | PATH 여행 화면 파일이 일정 가능 여부를 계산하는 별도 도메인 계층이 됐다 |
+| [E06](#e06) | P2 | 우선 정리 | 여행 계정 화면이 서버용 전체 개인자료 검사 모듈을 다시 불러와 제품 간 의존 순환을 만든다 |
+| [E07](#e07) | P2 | 후속 정리 | 관계 수첩 app의 계정 교체가 대화·원고·녹음·카드·연락처·알림 UI의 초기화를 모두 알고 있다 |
+| [E08](#e08) | P2 | 우선 정리 | 레이싱 상태를 시험하기 위해 app 함수 원문을 잘라 가짜 전역을 주입한다 |
+| [E09](#e09) | P2 | 후속 정리 | 교사 앱의 인증 모드·권한 세대·학생 선택·작성 창이 같은 화면 파일을 함께 수정한다 |
+| [E10](#e10) | P2 | 후속 정리 | TOWN day-app의 렌더 루프가 이동 패킷·접속 임대·관측 증거 전송을 한 상태망으로 묶는다 |
+| [E11](#e11) | P2 | 후속 정리 | Atlas game-learning의 'thin host'가 저장·압축·동기화·평가 상태를 490줄 closure 하나에 소유한다 |
+| [E12](#e12) | P2 | 후속 정리 | Flow의 런타임 안전 검사와 Temper 시뮬레이터가 양방향 의존한다 |
+| [S01](#s01) | P2 | 우선 정리 | 최우선 구조부채: personal 실행 번들을 원천에서 다시 만들 수 없다 |
+| [S02](#s02) | P1 | 먼저 수정 | 계정 전환 뒤 이전 계정의 진행 응답이 새 계정 화면 상태를 덮는다 |
+| [S03](#s03) | P2 | 우선 정리 | teach 함수 한 곳에 여섯 업무와 DB·AI 비용 처리가 모였다 |
+| [S04](#s04) | P2 | 우선 정리 | 말하기 화면이 오프라인 제출 작업의 수명을 소유한다 |
+| [S05](#s05) | P2 | 우선 정리 | 검수 화면의 한 항목 전환이 여러 effect의 수동 초기화에 의존한다 |
+| [S06](#s06) | P2 | 후속 정리 | 배포 조립 로직을 CLI끼리 역으로 가져와 의존성이 순환한다 |
+| [S07](#s07) | P2 | 후속 정리 | 배포 도구가 정규식 기반의 자체 CommonJS→ESM 변환기를 떠안는다 |
+| [S08](#s08) | P2 | 우선 정리 | 홈페이지 빌드가 옛 페이지를 완성한 뒤 새 페이지로 덮어쓴다 |
+| [S09](#s09) | P2 | 후속 정리 | v10의 링크 정책 재사용이 모듈 import 대신 소스 문자열 절단에 의존한다 |
+| [S10](#s10) | P2 | 후속 정리 | 검수의 중요한 상태 전환 시험이 동작보다 소스 표기와 묶여 있다 |
+| [S11](#s11) | P1 | 먼저 수정 | Tips 검색은 첫 색인 요청 실패를 페이지 생명주기 동안 캐시한다 |
+| [R01](#r01) | P2 | 후속 정리 | Strata의 살아 있는 문법 자료가 은퇴한 엔진 전체 파일에 묶였다 |
+| [R02](#r02) | P2 | 후속 정리 | 현재 Git 도구가 이전 CLI의 시험용·내부 exports를 공용 라이브러리로 쓴다 |
+| [R03](#r03) | P2 | 후속 정리 | push·운영 갱신·밀린 장부 재시도가 서로를 다시 호출한다 |
+| [R04](#r04) | P2 | 후속 정리 | 백업의 기초 파일·잠금 도우미가 최상위 GitHub 백업 실행기에 들어 있다 |
+| [R05](#r05) | P2 | 후속 정리 | 운영 상태 읽기가 운영 홈 화면 서버를 역으로 의존한다 |
+| [R06](#r06) | P2 | 후속 정리 | WORLD 공개 주소 두 개를 연결하는 안전 절차가 거의 통째로 복제됐다 |
+| [R07](#r07) | P2 | 후속 정리 | 공개 후보 생성 한 함수가 3방향 병합·참조 수집·캐시 토큰 갱신·검사를 공유 Map으로 연결한다 |
+| [X01](#x01) | P2 | 후속 정리 | Hermes의 결과 수집·전달 경로가 새 정책과 기존 정책에 중복되어 있다 |
+| [X02](#x02) | P2 | 후속 정리 | SNS publisher는 플랫폼 변경 지점이 인증·폼·확인·발행·패키지/승인 모델에 흩어져 있다 |
+| [X03](#x03) | P2 | 후속 정리 | 라디오 겹쳐송출의 실행·복구·정리 책임이 즉시 실행 스크립트에 묶여 있다 |
+
+## 형제 저장소 · 11건
+
+<a id="s01"></a>
+
+### S01 · P2 · 최우선 구조부채: personal 실행 번들을 원천에서 다시 만들 수 없다
+
+- 위치: `SYNK-talk/tools/synk-personal-build.js:5-24` (핵심 5-11, 20-24), `supabase/functions/_shared/synk-personal-runtime.js:1`.
+- 증거: 생성기 자체가 운영 v33~v43을 직전 운영 번들에 문자열 패치를 쌓은 결과라고 명시한다. 현행 pinned v45 SHA는 실제 작업본 정규화 SHA `303b620803e639009ee2a785ca21faf0f4276453096e2bcd77cd22c88d6647ae`와 일치했다. `--check`는 이 번들·server/auth 지문만 확인하고 `full source rebuild comparison skipped`로 종료하도록 구현되어 있다.
+- 영향: 고친 원천을 빌드해 현행 실행 코드를 재현하는 기본 전제가 깨졌다. 일반 빌드는 보호 장치로 멈추고, `--force`는 보존 번들에만 있는 기능을 지울 수 있다. generated 파일이 크다는 지적과 다르다.
+- 경계: 성향 해석기 등 번들에만 들어간 변경을 담당 원천으로 역복원하고, 기존 번들과 행동 대조를 한 뒤 고정을 해제해야 한다. 지금 `--force`로 덮어쓰는 것은 해결이 아니다. 운영 원격 판은 조회하지 않았다.
+
+<a id="s02"></a>
+
+### S02 · P1 · 계정 전환 뒤 이전 계정의 진행 응답이 새 계정 화면 상태를 덮는다
+
+- 위치: `SYNK-talk/App.js:205-214` (핵심 205-208), `App.js:345-347`, `App.js:371`, `src/어제의나.js:37-38`.
+- 증거: `견줌읽기`는 await 뒤에 무조건 `set견줌값`을 실행하고, 계정 세대·effect cleanup을 확인하지 않는다. 로그아웃은 세션/화면/캐릭터만 바꾸며 `견줌값`을 비우지 않는다. `진행받기`는 guard 없이 공통 통로를 부른다. 반대로 App.js:166-190 답장 갱신기는 세션마다 취소·초기화가 있다.
+- 순수 재현: 현행 콜백 몸통을 추출해 A 요청을 보류하고 B 응답을 먼저 완료한 뒤 A를 완료했다. setter 순서 `synthetic_B → synthetic_A`, 최종 상태 A를 확인했다. 새 B 응답 전에도 기존 A 값이 유지된다. 증거 `재현검사.cjs`·`재현결과.json`.
+- 영향: 공용 기기에서 학생을 바꿀 때 이전 학생의 견줌/오늘의목표가 새 학생 props로 전달될 수 있다. 실제 개인정보 사고 발생 여부는 확인하지 않았다.
+- 경계: 계정이 바뀌는 순간 진행 상태를 비우고, 요청 소유 계정/세대에 응답 적용을 묶는다. 세션별 상태를 한 생명주기로 묶으면 같은 누락을 줄일 수 있다.
+
+<a id="s03"></a>
+
+### S03 · P2 · teach 함수 한 곳에 여섯 업무와 DB·AI 비용 처리가 모였다
+
+- 위치: `SYNK-talk/supabase/functions/teach/index.ts:211-240`, `:387-406`, `:559`, `:838`, `:1220`, `:1506`, `:1707-1813`, `:1859`.
+- 증거: 15경로가 골든 판정, 나침반, 회고, 반 피드백, 관찰, 학생 기록을 한 파일에서 분기한다. 같은 파일이 권한 조회, SQL 트랜잭션 13곳, 관찰 AI 예산 예약/마감, 벤더 호출까지 직접 다룬다. 1,924행이라는 숫자보다 독립 변경 이유가 함께 있다는 점이 문제다.
+- 영향: 관찰 AI 공급자 변경에도 회고/골든의 HTTP 진입 파일이 변한다. 공통 인증 뒤의 업무별 권한·감사·트랜잭션 경계를 한 번에 추적해야 한다. `sql.begin`은 이미 존재하므로 트랜잭션 부재라고 지적하지 않는다.
+- 경계: 공통 인증/계약판/응답은 입구에 두고, 업무별 handler와 저장 쿼리·AI 어댑터를 분리한다. 라우트와 공개 계약은 유지한다.
+
+<a id="s04"></a>
+
+### S04 · P2 · 말하기 화면이 오프라인 제출 작업의 수명을 소유한다
+
+- 위치: `SYNK-talk/src/말하기화면.js:105-166`, `:178`, `:270-376`, `:417-454`.
+- 증거: 화면 컴포넌트 안에 로그 ref/state 이중 소유, 파일 읽기·압축·쓰기, 업로드 주소 보존, 발화 전송, 되듣기 사건 전송, 동의 막힘과 날짜 전환, 복귀 시 큐 재전송이 함께 있다. 업로드가 화면 밖에서 끝날 수 있다는 사실을 ref·별도 저장기·최신 파일 재읽기로 각 처리부가 방어한다.
+- 영향: 렌더·화면 진입 변경이 전송 재시도와 데이터 보존 순서를 바꿀 수 있다. 온라인/오프라인/날짜 전환/계정 전환의 조합을 UI 없이 검증하기 어렵다.
+- 경계: 현재 lib의 순수 규칙은 유지하고, 제출·로그·재시도를 소유하는 세션 단위 서비스/훅을 먼저 추출한다. 화면은 상태 표시와 사용자 행동 전달만 맡긴다. 현재 중복 업로드 사고가 났다고 단정하지 않는다.
+
+<a id="s05"></a>
+
+### S05 · P2 · 검수 화면의 한 항목 전환이 여러 effect의 수동 초기화에 의존한다
+
+- 위치: `SYNK-talk/src/검수화면.js:212-263`, `:337-432`, `:556`.
+- 증거: 26개 useState·11개 useEffect에 큐/반/조 필터, 수정 초안, 오디오 서명 캐시, 재생 계측, 열어봄 서버 통보, 재검수 만료가 분산되어 있다. 항목 변경 effect는 초안 5칸·재생 끝·폐기 열림을 비우고, 재검수에서는 계측을 보존하되 열어봄만 지우는 순서를 직접 구현한다. 별도 effect가 서명/재생기/열어봄을 다시 연결한다.
+- 영향: 새로운 검수 상태 하나를 넣을 때 초기화와 보존 규칙을 여러 effect에서 맞춰야 한다. `열어봤다알리기(...).then(() => set열어봄(true))`에는 그 응답이 어느 sid 소유인지 확인하는 단계도 없어, 항목 교체 시점 검증이 특히 중요하다. 이 부분은 실제 UI 재현을 하지 않았으므로 P1로 올리지 않았다.
+- 경계: 항목별 검수 세션 상태와 오디오 자원 수명을 묶고, 큐/필터와 편집 세션을 분리한다.
+
+<a id="s06"></a>
+
+### S06 · P2 · 배포 조립 로직을 CLI끼리 역으로 가져와 의존성이 순환한다
+
+- 위치: `SYNK-talk/tools/배포대조.js:59-60`, `tools/원격배포.js:31`, `:496`, `tools/배포빚.js:294-297`.
+- 증거: 대조 도구는 배포 CLI의 `배포묶음/마지막커밋`을 import하고, 배포 CLI는 배포빚을 import하며 실제 반영 직전 다시 대조 도구를 부른다. 배포빚 역시 나갈 경로 계산을 위해 배포 CLI를 지연 require한다.
+- 영향: 읽기 전용 판정·소스 조립·원격 쓰기·장부 기록의 의존 방향이 분리되지 않았다. CLI 초기화나 exports 재구성의 변경이 읽기 도구까지 파급된다. 지연 require 덕분에 현재 로딩 실패가 난다고 단정하지 않는다.
+- 경계: 소스 조립·함수 목록·배포 판정의 순수 부분을 하위 모듈로 내리고 세 CLI가 그것을 의존하도록 한다. 기존 보호 검사는 그대로 유지한다.
+
+<a id="s07"></a>
+
+### S07 · P2 · 배포 도구가 정규식 기반의 자체 CommonJS→ESM 변환기를 떠안는다
+
+- 위치: `SYNK-talk/tools/원격배포.js:94-118`, `:128-138`, `:219-236`.
+- 증거: 자체 REQUIRE문은 특정 `const/let/var ... = require('상대경로.js')` 문장을 정규식으로 찾고, 동봉표의 파일 basename으로 ESM 이름을 계산한다. JSON/Markdown/CJS 포장도 같은 배포 파일에 있다. 이 코드 변경은 배포될 실행 소스 자체를 바꾼다.
+- 영향: 같은 의미의 import 표기 변화·같은 basename의 경로 추가·모듈 형태 변경이 빌드 도구의 제한과 직접 충돌한다. 수동 동봉표·본체 import 검사·정규식 세 곳을 동시에 알아야 모듈을 안전하게 추가할 수 있다. 현재 모든 소스가 실패한다는 뜻은 아니다.
+- 경계: 실제 쓰는 변환 범위를 별도 빌드 어댑터로 떼고 표준 파서/번들러로 같은 산출물을 재현한 뒤, 배포 CLI는 검증된 바이트만 받도록 한다.
+
+<a id="s08"></a>
+
+### S08 · P2 · 홈페이지 빌드가 옛 페이지를 완성한 뒤 새 페이지로 덮어쓴다
+
+- 위치: `SYNK-website/package.json:7`, `site-v10/legacy-seed.mjs:1-12`, `compose-page.mjs:13-34`, `site-v10/knowledge.mjs:75-83`, `site-v10/build.mjs:629-639`.
+- 증거: npm build는 seed→다수 sync/compose→v10 knowledge→v10 페이지 순서다. legacy-seed는 옛 생성기가 기대하는 dist의 knowledge/engine/llms를 복원하고, 옛 단계 산출 페이지/안내는 마지막 v10이 모두 덮어쓴다고 코드가 명시한다. README 역시 예전 생성기의 글 수정은 공개 페이지·질문창에 들어가지 않는다고 설명한다.
+- 영향: 최종 페이지와 무관한 옛 마커/원고 오류가 전체 빌드를 막고, dist가 단계별 입력과 출력으로 쓰인다. 지금 화면 글의 원천과 체험·그림을 준비하는 원천이 섞여 있어 고친 파일이 마지막에 사라지는 경로를 이해해야 한다.
+- 경계: 살아 있는 자산·체험 sync만 명시적 준비 단계로 남기고 v10이 페이지/안내를 한 번 생성하게 한다. source↔dist↔policy 공개 사본 관계를 먼저 고정해야 한다. 이번에는 synk-policy 작업본이 없어 실제 공개 일치는 확인하지 않았다.
+
+<a id="s09"></a>
+
+### S09 · P2 · v10의 링크 정책 재사용이 모듈 import 대신 소스 문자열 절단에 의존한다
+
+- 위치: `SYNK-website/site-v10/build.mjs:601-617`, `src/public-actions.js:16-26`.
+- 증거: build는 public-actions.js에서 `const externalLinks`와 `export function appendPublicActions`의 문자 위치를 찾아 중간을 slice하고 export 한 구절을 치환해 site.js의 `/*@public-actions*/`에 넣는다. Worker 경로도 문자열 replace로 바꾼다.
+- 영향: public-actions의 의미는 같아도 선언 순서·함수 이름·내부 의존 위치를 바꾸면 v10 생성 코드가 달라진다. 실제 정책 모듈을 가져오는 대신 텍스트 배치를 계약으로 사용한다. 허용 URL 검사를 우회했다고 주장하지 않는다.
+- 경계: 링크 판정만 import 가능한 작은 모듈로 분리하고 명시적 bundling에서 v10과 기존 소비자가 같은 모듈을 사용하게 한다.
+
+<a id="s10"></a>
+
+### S10 · P2 · 검수의 중요한 상태 전환 시험이 동작보다 소스 표기와 묶여 있다
+
+- 위치: `SYNK-talk/tests/검수화면.test.js:146-180`.
+- 증거: 재검수 초기화는 `set열어봄(false)` 뒤 effect 끝과 정확한 dependency 목록을 정규식으로 확인한다. 계측 유지도 정해진 if/호출 표기, 확정 버튼도 200자 이내 표현, 열어봄은 호출 횟수 1을 검사한다.
+- 영향: 옳은 동작으로 reducer/훅을 추출해도 이런 시험이 먼저 깨지고, 반대로 비동기 응답이 다른 항목으로 넘어간 경우의 동작은 이 검사로 입증되지 않는다. 기존 순수 함수 시험까지 무의미하다는 지적은 아니다.
+- 경계: S05를 나누기 전에 항목 전환·재검수·늦게 도착한 재생 확인을 행동 시험으로 고정한다. 소스 계약 검사는 실제로 고정해야 하는 얇은 경계만 남긴다.
+
+<a id="s11"></a>
+
+### S11 · P1 · Tips 검색은 첫 색인 요청 실패를 페이지 생명주기 동안 캐시한다
+
+- 위치: `synk-tips/site/assets/app.js:38-43`, `:89-106`, `:111`.
+- 증거: 공용 `loading`에 fetch Promise를 넣고 실패 후 비우지 않는다. 다음 입력·재시도는 같은 rejected Promise를 반환한다. 검색 렌더 catch는 `…`만 보인다.
+- 순수 재현: 실제 load 함수 몸통과 가짜 fetch(1회 실패, 이후 성공)를 사용했다. 두 번 호출해도 fetchCalls=1, 같은 rejected Promise=true를 확인했다. 증거는 `재현결과.json`.
+- 영향: 일시 회선 오류 뒤 네트워크가 살아나도 새로고침 전 검색이 회복되지 않는다. 규모가 작은 팁 사이트 전체를 스파게티라고 볼 근거는 약하며, 이 공유 비동기 상태의 구체적 실패만 지적한다.
+- 경계: 실패 시 진행 Promise를 비우고 사용자에게 다시 시도할 수 있는 상태를 제공한다.
+
+## 회사 서버·PC 앱 · 14건
+
+아래 `server.mjs`, `public/…`, `collaboration-service.mjs`, `productivity-service.mjs`, `direct-task-service.mjs`, `tests/…`의 축약 경로는 별도 표시가 없으면 `tools/company-messenger/` 기준이다. `desktop/…`는 저장소 루트 기준이다.
+
+<a id="c01"></a>
+
+### C01 · P2 · 메신저 HTTP 핸들러가 거의 모든 기능의 제어 흐름을 소유한다
+
+- 위치: `tools/company-messenger/server.mjs:653-1305` (`handler`), 특히 675-695, 744-839, 850-1250.
+- 근거: 하나의 handler 안에서 세션/CSRF/읽기전용 예외, 로컬 가입, 통화, 직접 할 일, 협업 서비스, 초대, 프로젝트 생명주기, 메시지, 파일, Drive, SSE, 정적 파일 전송을 분기한다. `personalMutation`은 통화 서비스가 별도 파일이어도 서버가 endpoint regex를 다시 알아야 한다(677). `readBody`/`respond`의 재검증도 closure의 `auth`, `user`를 바꾼다(678-691).
+- 실제 변경 부담: 개인별 신규 통화 작업을 추가하면 통화 서비스뿐 아니라 이 공통 핸들러의 읽기전용 예외와 라우트 순서까지 바꿔야 한다. endpoint 누락을 모듈 단위로 검토하기 어렵다.
+- 완화 장치: 서비스 파일 분리, 재검증 함수, 공통 오류 처리는 이미 있다. 이를 유지하며 route metadata와 기능별 handler로 나누는 것이 적절하다.
+
+<a id="c02"></a>
+
+### C02 · P2 · 스키마 소유권이 런타임 서비스 생성자 사이에 흩어져 있다
+
+- 위치: `server.mjs:134-177`, `collaboration-service.mjs:11-27`, `productivity-service.mjs:15-52`.
+- 근거: 서버가 `messages`를 만들고 collaboration 생성자가 그 테이블에 `workspace_link`, `ack_required`를 추가한다. collaboration은 `message_tasks`를 만들고 productivity 생성자가 `stage`, `reviewer_id`, `result_message_id`를 더하고 기존 행을 변환한다. 서비스 생성 자체가 DDL과 데이터 변환을 수행한다.
+- 실제 변경 부담: tasks 스키마를 파악하려면 3개 생성자를 정해진 순서로 읽어야 한다. 도메인 서비스를 독립 시험/재사용할 때도 상위 생성자의 테이블 준비가 암묵적 선행조건이다.
+- 완화 장치: PRAGMA로 기존 열을 검사하여 중복 실행을 막는다. 독립적인 버전별 migration과 schema bootstrap으로 모으되 기존 호환성을 보존하면 된다.
+
+<a id="c03"></a>
+
+### C03 · P2 · 메시지와 할 일 직렬화가 재진입하고 날짜를 공유 변수로 전달한다
+
+- 위치: `server.mjs:450-455`, `collaboration-service.mjs:110-115`, `productivity-service.mjs:14,99-121`.
+- 근거: `messageShape → collaboration.messageExtras → productivity.taskShape → taskMessageShape → messageShape`. 중첩된 `taskShape`에는 `withMessage=false`여서 현재 무한 재귀는 아니다. 하지만 `taskMessageShape`가 `shapingWorkdayDate`를 덮었다가 finally로 복구하는 방식으로 재진입 호출에 날짜를 전달한다. 소스 주석도 재진입을 명시한다(100-101).
+- 실제 변경 부담: 메시지 변환을 비동기화하거나 task 포함 옵션을 바꾸면 날짜 문맥과 종료 조건이 함께 영향을 받는다. 단순 응답 필드 변경도 여러 계층의 호출 고리를 알아야 한다.
+- 완화 장치: finally 복구와 withMessage 기본값이 현재 순환을 제한한다. `baseMessage`, `taskSummary`, 조립 계층과 명시적 날짜 인자로 분리할 대상이다.
+
+<a id="c04"></a>
+
+### C04 · P2 · 트랜잭션·커밋 후 알림 계약을 여러 플래그와 콜백으로 호출자에게 맡긴다
+
+- 위치: `productivity-service.mjs:146-228` (`upsertTask`), `collaboration-service.mjs:93-107`, `direct-task-service.mjs:27-50`.
+- 근거: upsertTask는 권한·상태 전이·레거시 상태 호환·SQL·업무 이벤트·알림 저장·외부 publish까지 수행한다. 외부 트랜잭션에 참가할 때 호출자는 `atomic:true`와 `deferPublish`를 함께 전달해야 하며, direct-task는 effects 배열을 만들어 커밋 뒤 수동 실행한다. 내부는 db.isTransaction을 검사하지만 알림 지연 계약은 별도 인자다.
+- 실제 변경 부담: 새로운 묶음 작업마다 중첩 트랜잭션 회피와 커밋 후 publish 순서를 재조립해야 한다. 검토자 변경처럼 업무 규칙 하나를 고칠 때도 저장·이벤트 부작용을 같은 함수에서 읽어야 한다.
+- 완화 장치: 현재 direct-task 구현은 커밋 후 전송을 지키며 publish 실패도 따로 처리한다. 결함 주장보다 unit-of-work/afterCommit 계약과 순수 전이 검증 분리가 필요한 부분이다.
+
+<a id="c05"></a>
+
+### C05 · P2 · 메신저 브라우저 원문 전체가 단일 공유 상태에 직접 연결된다
+
+- 위치: `public/app.js:67-87`, `100-130`, `1253-1272`, `1336`, `1608-1653`, `1824-1831`.
+- 근거: 정규식 기준 함수 선언 282개, `state.*` 고유 필드 참조 86개. 대화·파일 전송·검색·프로젝트·업무·예약 알림·사용자 세션이 같은 state에 붙는다. `api`도 전송에 그치지 않고 401에서 SSE 종료, 업로드 abort, queue 초기화, modal 닫기, 로그인 렌더링을 수행한다(127). 업무 상태 초기화(1336)는 전송/로그인 초기화와 다른 곳에 있다.
+- 실제 변경 부담: 상태 필드 추가 시 로그인 만료·채널 이동·회사 iframe 복구·업무 패널 재조회마다 유지/초기화 여부를 추적해야 한다. 전송 계층 시험도 DOM과 global state를 준비한다(8번).
+- 완화 장치: loadSeq/epoch 계열 stale-response 방어와 voice 모듈 분리는 있다. 세션·대화·전송·업무 모델별 소유권을 세우는 것이 우선이다.
+
+<a id="c06"></a>
+
+### C06 · P2 · 화면을 만든 뒤 여러 후처리 함수가 같은 DOM을 다시 옮기고 바꾼다
+
+- 위치: `public/app.js:1011-1059` (`installMessengerDesign`, `enhanceConversationShell`), `1218-1225` (`installProductivityUI`).
+- 근거: enhance가 탭·네비게이션·서랍을 만들고, installMessengerDesign은 그 탭을 이동하며 기존 상단바를 제거하고 검색 버튼·전송 버튼을 재작성한다. embedded 모드에서는 다시 parent를 바꾼다(1020-1023). installDirectory/정책 UI도 뒤에서 붙인다.
+- 실제 변경 부담: 최종 화면 구조가 템플릿 한 곳에 없고 호출 순서·CSS 선택자·DOM 재배치의 합으로 정해진다. 탭이나 검색 영역 개편에 이미 생성/재배치/후속 이벤트 연결을 같이 추적해야 한다.
+- 완화 장치: 모드별 조건과 접근성 속성 처리가 있다. standalone/embedded 레이아웃을 명시하는 하나의 shell renderer로 합치면 된다.
+
+<a id="c07"></a>
+
+### C07 · P2 · 메신저 CSS 세 세대가 동시에 실리며 중요도 덮어쓰기로 경쟁한다
+
+- 위치: `public/index.html:9-11`; `styles.css:12-13`; `messenger-design.css:27,79,337`; `signal.css:27,99,187`.
+- 근거: styles → messenger-design → signal 순서로 로드한다. `.sidebar` 배경, `.main-header` 높이/패딩, `.button.primary` 색이 여러 파일에서 다시 정의되고 signal은 `:root body` 선택자와 !important로 우선한다. !important는 각각 5·9·64회다.
+- 실제 변경 부담: base 또는 design 파일의 속성을 바꿔도 최종 signal 규칙에 가려지며, responsive/embedded 규칙까지 함께 찾아야 한다. 단순한 파일 크기 지적이 아니라 동일 구성요소를 현재 로드되는 여러 테마에서 다시 소유하는 문제다.
+- 완화 장치: 순서가 고정되어 현 화면이 곧바로 깨진다는 의미는 아니다. 현재 채택된 스타일 기준으로 층을 정리하고 base 구조·토큰·컴포넌트 스타일의 책임을 나눌 대상이다.
+
+<a id="c08"></a>
+
+### C08 · P2 · UI 시험이 공개 계약 대신 소스 문자열·전역 이름에 결합된다
+
+- 위치: `tests/bootstrap-session-client.test.mjs:6-9,34`; `tests/task-detail-actions-client.test.mjs:8-23`; `tests/send-recovery-client.test.mjs:7-15`; `desktop/tests/renderer-auth.test.cjs:80-94`.
+- 근거: 함수 시작 문자열과 다음 함수 시작을 indexOf로 찾아 slice 후 VM 실행한다. 다른 시험은 boot 호출을 정규식으로 지우고 전체 app.js를 평가한 뒤 `api=…;renderMessages=…` 등 내부 global 함수를 치환한다. desktop 시험은 import 문을 정규식으로 교체하고 생성물 export를 문자열로 바꾼다.
+- 실제 변경 부담: 동작이 같은 함수 재배치/모듈 분리도 시험 harness를 고쳐야 한다. 구조 개선을 가로막는 결합이며 전체 시험이 무용하다는 주장은 아니다.
+- 완화 장치: 실제 API·복구·권한 사례 검증이 다수 존재한다. 모델/컨트롤러 factory와 의존성 주입으로 내부 이름을 줄여 단계적으로 살려야 한다.
+
+<a id="c09"></a>
+
+### C09 · P2 · AI 구독 서비스가 공급자 어댑터·저장·로그인·프로세스·스케줄을 한 closure에서 관리한다
+
+- 위치: `desktop/src/ai-subscriptions.cjs:194-988`; 구체적으로 `199`, `207-264`, `328-404`, `423-561`, `630-664`, `717-790`, `959-975`.
+- 근거: board/history/prices 파일 저장, OS별 command 실행, Claude/Codex/Gemini/Higgsfield/Typecast 읽기, 단일 login 상태, 콘솔/브라우저 인증, 계정 등록/삭제, 자동 갱신이 `createAiSubscriptions`에 들어 있다. 서비스별 선택은 readRow의 삼항식(560), startLogin의 명령/OS/서비스 분기(726-785)로 흩어진다.
+- 실제 변경 부담: 공급자 하나의 로그인 흐름을 고쳐도 공통 login 타이머·프로세스 종료·계정폴더·UI 상태 계약을 함께 검토해야 한다. 공급자 추가가 독립 파일 추가로 끝나지 않는다.
+- 완화 장치: usage 계산과 prices 검증은 이미 별도 파일이고, spawn/fetch/clock도 주입된다. 기존 공식 프로그램 사용 정책을 유지한 채 provider adapter와 저장소·로그인 coordinator를 분리할 대상이다.
+
+<a id="c10"></a>
+
+### C10 · P2 · 구독 화면이 렌더러 내부에서 요금·소비 예측·추천 정책까지 계산한다
+
+- 위치: `desktop/renderer/subscriptions.mjs:351-1287`; `676-818`, `880-1006`.
+- 근거: factory 내부 함수가 snapshot/UI closure를 읽어 가격 신선도·세금·충전일·사용량 급증·요금제 적합도·연간 절약 추천을 계산하고 같은 함수에서 HTML 문장을 만든다. `annualTips`(968-1003)는 12주 표본 검증, 금액 산출, 할인 기간 선택, 추천 설명 문안을 함께 반환한다.
+- 실제 변경 부담: 정책 기준이나 기간 계산만 독립 재사용/검증하려 해도 화면 factory와 snapshot 상태가 필요하다. 숫자 정책과 표현 변경의 리뷰 범위가 섞인다.
+- 완화 장치: 파일 앞부분의 nextBill/costSummary 등 순수 exported 함수와 backend ai-usage/ai-prices 분리는 이미 좋은 출발점이다. 남은 계산을 순수 view-model로 올리면 된다.
+
+<a id="c11"></a>
+
+### C11 · P2 · 인증 서비스가 여러 제품의 응답 의미·스키마를 직접 판정한다
+
+- 위치: `desktop/src/auth-service.cjs:131-163` (`accountRequest`); `desktop/src/account-requests.cjs:5-90`.
+- 근거: token refresh·세션 epoch 방어와 같은 함수 안에서 WORLD classroom의 AUTH_REQUIRED를 빈 목록으로 바꾸고, town/sharing·enrollment를 예외 처리하며, play/care/personal scope·accountId·resource를 검증한다(138-144). profile 수정의 로컬 캐시 갱신과 세션 철회도 여기서 결정한다(145-156).
+- 실제 변경 부담: 학습/돌봄/개인도구 API 응답 하나가 달라질 때 공통 로그인 계층을 수정해야 한다. 새 domain 오류가 세션 폐기와 어떻게 구별되는지 전체 분기를 검토해야 한다.
+- 완화 장치: requestSpec은 제품별 일부 모듈로 나뉘고, 교실 401의 정상 의미와 토큰 갱신 경쟁 방어를 이미 명시한다. 인증 transport와 제품별 response contract를 분리하되 그 방어는 유지해야 한다.
+
+<a id="c12"></a>
+
+### C12 · P2 · 런처의 계정 전환이 각 화면의 내부 초기화와 재렌더 목록을 수동으로 안다
+
+- 위치: `desktop/renderer/launcher.mjs:30-44`, `77-96` (`setAuth`), `112-122`.
+- 근거: setAuth가 library/개인화/검색/상세/대화상자/토스트/선택상태를 직접 변경하고, continuity/renderLibrary/renderSelected/renderDownloads/renderAuth/renderBenefits/convenience를 모두 호출한다. child callback 일부는 다른 UI 버튼의 click을 호출한다(37,39).
+- 실제 변경 부담: 새 계정별 화면을 추가할 때 그 모듈 외에 이 계정 전환 함수와 unsaved-draft 합성 목록을 동시에 갱신해야 한다. 화면 간 통신이 서비스 계약보다 실제 DOM 버튼에 묶인 부분도 있다.
+- 완화 장치: 각 controller와 ownerEpoch 가드는 이미 분리되어 있어 통째 재작성은 불필요하다. account lifecycle 구독/공통 draft registry와 명시적 action callback으로 이어서 줄일 대상이다.
+
+<a id="c13"></a>
+
+### C13 · P2 · 하위 릴리스 빌더가 상위 orchestration의 검증 helper를 역참조한다
+
+- 위치: `desktop/tools/build-platform-release.cjs:23,89-92`; `desktop/tools/build-child-release.cjs:45`.
+- 근거: platform의 buildTarget이 child builder를 require하고 child builder가 다시 platform 파일의 verifyArchive를 require한다. 실제 상대경로 의존 그래프에서 두 파일로 구성된 SCC 하나로 확인했다.
+- 현재 동작 구분: 두 require 모두 실행 함수 안의 lazy load다. 지금 CommonJS 초기화가 실패한다고 주장하지 않는다.
+- 실제 변경 부담: 자식 빌더를 독립 재사용/시험하는데 상위 entrypoint 모듈이 필요하고, 공통 검증 변경이 상·하위 구성 모두를 결합한다. archive 검증 helper를 공통 모듈로 옮기는 작은 구조 개선으로 끊을 수 있다.
+- 완화 장치: 불변 소스·해시·패키지 구성 검사와 CLI의 require.main guard가 있다.
+
+<a id="c14"></a>
+
+### C14 · P2 · 설치 단계가 상태 코드가 아니라 한국어 표시 문구로 전달된다
+
+- 위치: `desktop/installer/SignalWindow.cs:387-408,602-608`; `desktop/installer/InstallerEngine.cs:149,162,171,202`.
+- 근거: engine은 progress(title, detail, percentage) 문자열을 전달하고 UI의 StepOf는 title이 `설치를 준비`, `설치를 시작`, `product.ShortName + 를 설치`, `설치를 확인`으로 시작하는지로 1/2/3단계를 판정한다. UI 단계 색/제목/소요 시간 계산이 이 결과에 의존한다(402-415).
+- 실제 변경 부담: engine의 사용자 문구를 자연스럽게 고치거나 언어를 추가하면 단계 표시 로직까지 같이 수정해야 한다. 미인식 문구는 이전 단계 또는 1단계로 표시하는 fallback이다.
+- 완화 장치: 미인식 title을 그대로 표시하는 fallback이 있어 설치 자체가 실패한다는 의미는 아니다. typed progress stage + 표시용 title을 분리하면 된다.
+
+## 학습·생활 앱·Atlas · 12건
+
+<a id="e01"></a>
+
+### E01 · P2 · WORLD app-shell이 화면·계정·학습 자원의 공통 수명주기를 직접 관리한다 — 우선순위 높음
+
+- 근거: `experiences/synk-world-app/app-shell.mjs:38-58`의 계정·생활 학습·튜터·작성·패널·게임 상태, `:88`의 show, `:97`의 close, `:121-147`의 renderStatus, `:244-273`의 initializeLife, `:616-639`의 launchGame, `:680-688`의 pagehide/close 정리.
+- 결합: 계정의 `onChange → renderStatus → initializeLife → mountLifeLearning`이 화면 그리기 도중 저장 포트와 교육 UI를 폐기/재생성한다. 패널 이동, 계정 교체, pagehide, dialog close에 각각 자원 정리 목록이 있고, `lifeEpoch/client.generation/gameLaunch/screen/activeGameSession`이 비동기 결과를 가린다. 새 기능을 붙일 때 그 기능의 dispose뿐 아니라 여러 종료 경로를 모두 찾아 수정해야 한다.
+- 기존 보호: owner/generation 검사, `home.attachPanelResource`, `createWorldEntryGate`, tutor selection sync 및 entry-gate 시험이 있다. 보호가 없다는 지적이 아니다.
+- 작은 시작점: 이미 있는 `attachPanelResource`를 바탕으로 계정에 묶인 자원의 생성/폐기를 하나의 `WorldSessionResources` 경계로 모으고, `renderStatus`는 전달받은 상태를 그리게 한다. 먼저 교육/생활 포트 한 묶음만 이동하고 계정 교체·늦은 준비 완료·패널 닫기의 동등성을 확인한다.
+
+<a id="e02"></a>
+
+### E02 · P2 · 소개팅 UI의 전체 재그리기와 여러 임시 원고가 하나의 전역 상태망에 묶였다 — 우선순위 높음
+
+- 근거: `experiences/atlas-lab/dating-ui.mjs:82-105`의 mutable 상태와 여러 draft Map, `:119`의 clearPrivateDrafts, `:350-366`의 run/load, `:729-777`의 render, `:1540-1628`의 scheduleForm, `:1747-1790`의 polling/페이지 수명주기.
+- 결합: `render()`는 서버 view 외에도 선택한 탭, 프로필/온보딩/약속/회고 초안, 라이브 변경 대기와 입력 DOM을 함께 가지치기한 뒤 화면 전체를 다시 만든다. `scheduleForm` 등의 이벤트 핸들러가 외부 `view`, `generation`, draft Map을 직접 사용한다. 임시 원고를 새로 추가할 때 clear·prune·render·poll·beforeunload에 각각 등록해야 한다.
+- 기존 보호: delivery/checkpoint/live/각 draft basis가 이미 분리됐고, `tests/atlas-dating-page-lifecycle-smoke.mjs`는 페이지 복귀·임시 원고 보존용 브라우저 시험이다. 문제는 그 보호를 연결하는 화면 조정자가 여전히 모든 원고 종류를 알고 있는 점이다.
+- 작은 시작점: 약속 편집부터 `{mount, updateBasis, readDraft, hasDraft, dispose}`를 갖는 독립 편집기로 추출한다. 전역 draft 지우기 목록에 이름을 계속 추가하는 대신 현재 mount된 편집기의 계약을 호출한다.
+
+<a id="e03"></a>
+
+### E03 · P2 · 소개팅 서비스의 315줄 mutate가 서로 다른 업무의 검증과 부수효과를 한 트랜잭션 분기문에 모은다 — 우선순위 높음
+
+- 근거: `experiences/atlas-lab/dating-service.mjs:78-1219` createDatingService, `:789-793` actionFields, `:794-1108` mutate, `:1178-1208` 트랜잭션/중복요청/revision 처리.
+- 결합: 프로필, 공개 답, 성인 여부, 동의, 북마크, 신고·차단, 추천 반영, 경험 평가, 소개·정렬·약속이 동일 `doc/row/tx`와 closure의 helper들을 변경한다. 새 action은 허용 필드 표, 상태별 예외, 분기 본문, 최종 저장/receipt 계약을 함께 이해해야 한다. 동의 변경이 closePairs·추천·노출 삭제·경험 초기화까지 이어지는 교차 업무 영향은 `:806-817`에 드러난다.
+- 기존 보호: SQLite 트랜잭션, requestId/digest 멱등성, expectedRevision, 성인/중앙계정 검사가 있다. 분리하면서 이 공통 바깥 트랜잭션을 깨면 안 된다.
+- 작은 시작점: 프로필/공개 답 또는 북마크 handler만 순수 입력 검증과 `apply(tx, context, action)`으로 추출한다. 공통 인증·revision·receipt는 기존 handle에 남긴다. 새 중앙 서비스나 별도 엔진을 추가할 필요는 없다.
+
+<a id="e04"></a>
+
+### E04 · P2 · 소개팅 discovery의 replay가 사건 복원·후보 평가·설명 생성·호환 처리를 동시에 수행한다 — 우선순위 높음
+
+- 근거: `experiences/atlas-lab/discovery.mjs:414-748` replay(335줄), `:419-422`의 runtime 상태, `:449-458` 이벤트 종류/검사, `:680-726`의 제품 호환·선호 기록·설명 작성, `:749-780` appendRecord.
+- 결합: 과거 사건을 읽는 루프가 현 후보 풀에 대해 `evaluate/project`를 호출하고, 선호의 baseline/context, 조건부 허용, 질문/보류, 장면 응답, 노출, 재추천 설명까지 수정한다. appendRecord는 전 상태 replay, 작업별 추가 replay, 새 결과 replay를 한 번의 기록 과정에서 호출한다. 후보 규칙 변경이 과거 기록 복원의 판단에도 닿는다. 실제 지연 시간은 측정하지 않았으므로 성능 장애로 분류하지 않는다.
+- 기존 보호: 선언만 읽는 `declarationOnly`, 새 사건에만 엄격하게 적용하는 `strictEventId`, 공통 Personalization/Domain/Ask 재사용이 있다.
+- 작은 시작점: 이벤트별 형태 검증과 상태 변경 reducer를 분리하고, 과거 상태 복원 결과를 후보 평가 및 사용자 설명에 전달한다. 우선 `priorities` 또는 `regions` 이벤트 한 계열부터 현재 저장 기록의 replay 결과를 그대로 유지한다.
+
+<a id="e05"></a>
+
+### E05 · P2 · PATH 여행 화면 파일이 일정 가능 여부를 계산하는 별도 도메인 계층이 됐다
+
+- 근거: `experiences/path-travel/planner-ui.mjs:36-47` 상태, `:354-420` chooserWindow/pickOptions/pairFits/chooserPlan, `:993-1047` 클릭 분기, `:121-140` 계정 적용/복원; `experiences/path-travel/planner.mjs:1-9`의 별도 실제 planner.
+- 결합: UI가 DOM의 출발점, 현재 시각, 지도 routeLeg, 시간대, 체류시간과 운영 시각을 읽어 후보를 걸러 쌍별 경로를 탐색한다. 같은 파일이 화면 애니메이션, 실제 계획 요청, 파일 입출력, 동의/계정 전환도 관리한다. 장소·영업시간 정책을 바꿀 때 planner와 화면의 사전 가능 여부 판단을 함께 확인해야 하며, 이 계산만 DOM 없이 시험하기 어렵다.
+- 기존 보호: real-conditions와 estimateWalkingLeg 계산 자체는 재사용하고, account session도 별도로 있다. 완전한 복사 구현이라는 지적은 아니다.
+- 작은 시작점: chooser 계산을 `(query, picks, hours, places, routeLeg, now)` 입력의 순수 함수로 분리하고, DOM은 값을 읽고 결과를 표시한다. UI와 planner가 같은 제약식을 쓰는 경계를 먼저 고정한다.
+
+<a id="e06"></a>
+
+### E06 · P2 · 여행 계정 화면이 서버용 전체 개인자료 검사 모듈을 다시 불러와 제품 간 의존 순환을 만든다 — 빠른 개선 후보
+
+- 근거: `experiences/synk-account/src/personal-data.mjs:1-6` 및 `:34-35`; `experiences/path-travel/planner-account.mjs:38-45`; `experiences/synk-account/src/member-understanding-data.mjs:1-2`; `tests/account-bundle-scope.test.js:2-4,12-33`.
+- 확인한 경로: `personal-data → planner-account`는 정적 import, `planner-account.createTravelAccountNotebook → personal-data`는 함수 안 dynamic import다. 즉시 초기화 실패를 뜻하지는 않지만 실제 양방향 의존이다. 여행 notebook은 여행 하나만 검증하려고 5개 자원을 고르는 `validatePersonalState`를 쓰며, 이 모듈은 PATH VR/플랫폼/회원 활동/회원 성향과 ko1~9 파서를 모두 의존한다.
+- 변경 영향: 여행 브라우저의 계정 준비가 무관한 회원 문장 분석 모듈의 로딩/문법/빌드 변경까지 받는다. 실제 로드 시간·번들 증가분은 측정하지 않았다.
+- 기존 보호와 간극: account-notebook.mjs는 이미 제품별 `validateState` 주입 계약을 제공한다. `account-bundle-scope.test.js`도 바로 이 서버용 umbrella 의존을 PC/포털에서는 금지하지만 여행은 검사 대상이 아니다.
+- 작은 시작점: 여행의 `validateTravelAccountDocument`와 공통 `checkPersonalState`를 조합한 여행 전용 validator를 주입한다. 문서 계약 부분과 notebook factory를 나누면 양방향 경로도 사라진다. ko1~9의 의미 보존 계약은 바꾸지 않는다.
+
+<a id="e07"></a>
+
+### E07 · P2 · 관계 수첩 app의 계정 교체가 대화·원고·녹음·카드·연락처·알림 UI의 초기화를 모두 알고 있다
+
+- 근거: `experiences/relationship-care/app.mjs:23-37` 상태, `:222` render, `:528-539` replaceState, `:541-592` renderAccount, `:593-624` handleAccountStatus/startAccount.
+- 결합: 계정 상태 콜백은 replaceState를 거쳐 각 기능의 DOM과 객체 URL/오디오/초안을 직접 정리한다. render는 인물·작업·홈·이력·캡처·요약·계정·signal을 항상 묶어서 호출한다. 새 기능별 임시정보가 생기면 계정 잠금/교체/복원/그리기에서 각각 수동으로 포함해야 한다.
+- 기존 보호: authEpoch, account sync, 임시 장애 시 은닉, `guestSnapshot` 복원이 있다. 개인정보 유출을 발견했다는 뜻은 아니다. 보호 상태를 유지하는 변경 비용이 큰 구조다.
+- 작은 시작점: 먼저 녹음/초안 편집 세션을 `clearForOwnerChange`, `suspend`, `restore` 경계로 분리하고 `replaceState`가 개별 DOM id를 몰라도 되게 한다. 계정/동기화 오류 시험을 유지한다.
+
+<a id="e08"></a>
+
+### E08 · P2 · 레이싱 상태를 시험하기 위해 app 함수 원문을 잘라 가짜 전역을 주입한다 — 우선순위 높음
+
+- 근거: `experiences/korean-racing/app.js:1-5`의 함수 선언 위치/닫는 괄호 형식 요구, `:108-148`의 주행·튜토리얼·소리·차고 전역 상태, `:698` reset, `:776-795` pause/resume/finish, `:1021-1076` updateGame; `experiences/korean-racing/tests/coast-drive-integration.test.mjs:20-31,136-169`; `tests/graphics.test.mjs:41-42,79-81`(레이싱 폴더 기준).
+- 결합: 시험이 함수의 문자열 시작과 다음 줄 맨 앞 `}`를 찾아 VM에 다시 평가하며, 수십 개 전역 값과 no-op 함수를 직접 만든다. 실제 app의 함수 경계·변수 이름·선언 방식이 시험의 비공개 API가 돼 있다. 독립 기능을 모듈로 이동하거나 함수 표현식으로 바꾸는 구조 개선도 시험 파서를 고쳐야 한다.
+- 기존 보호: lobby/hud/results/screens/garage/world builder 등은 이미 잘 분리됐다. 회귀 시험이 없다는 문제가 아니라 남은 race controller가 공개 인터페이스로 시험되지 않는 문제다.
+- 작은 시작점: finish/완주 후 drive 상태 전이를 `createRaceSession` 또는 기존 coast-drive 인터페이스로 이동하고 상태/효과 의존성을 명시한다. 먼저 한 함수의 원문 추출을 정상 import 시험으로 대체한다.
+
+<a id="e09"></a>
+
+### E09 · P2 · 교사 앱의 인증 모드·권한 세대·학생 선택·작성 창이 같은 화면 파일을 함께 수정한다
+
+- 근거: `experiences/teacher-world/app.mjs:12-18` 상태, `:47-65` request의 parent account/local linked/demo 분기, `:203-219` 전역 클릭 분기, `:230-237` 제출 처리, `:240-262` parent 공유/선택·focus 이벤트.
+- 결합: 네트워크 request가 DOM/parent window/teacherToken/authEpoch/accessEpoch/workspaceReady를 직접 참조한다. 학생 선택과 공유 변경이 draft를 닫고 revision/세대를 바꾸며 재그린다. 권한 방식이나 작성 화면이 늘 때 요청 계층과 UI/후처리 모두 수정해야 한다.
+- 기존 보호: `sharing-fence.mjs`가 따로 있고 해당 시험은 공유 철회/동일 revision/다른 학생 정보 보존을 검사한다. origin/source 검증과 세대 확인도 있다. 이를 보안 결함으로 과장하지 않는다.
+- 작은 시작점: 이미 세 갈래인 request transport를 명시적 host 포트로 분리하고, 선택된 수업/학생과 draft 세대를 캡슐화한다. UI에는 선택 변경·권한 무효화 이벤트를 전달한다.
+
+<a id="e10"></a>
+
+### E10 · P2 · TOWN day-app의 렌더 루프가 이동 패킷·접속 임대·관측 증거 전송을 한 상태망으로 묶는다
+
+- 근거: `experiences/synk-town/day-app.mjs:31-44` 상태, `:81-96` flushWalk/interactWalk, `:98-132` walkFrame, `:167-206` flags/presence/command, `:364-401` observe/frame.
+- 결합: requestAnimationFrame마다 이동 예측과 표시가 실행되고, 같은 루프에서 시야·렌더 serial·Loom 샘플·입력/이동 여부를 검사해 ACK/DAY_OBSERVED/LIFE_ACK를 전송한다. 이동, 화면 효과, 보이는 시간의 판정과 서버 임대 fence가 동일 snapshot/presence/busy/queue를 공유한다. 렌더 변화가 학습/생활 사실 관측 시점에 닿기 때문에 시각 수정도 프로토콜을 이해해야 한다.
+- 기존 보호: walk/scene/controls 서버 모델이 이미 분리됐으며 표시 후 ACK·임대 신선도·패킷 상한·응답 직렬화가 구현돼 있다. 이 증거 기준은 보존해야 한다.
+- 작은 시작점: 이동 패킷 버퍼와 관측 ACK 누적기를 각각 순수 상태 기계로 추출한다. renderer는 `frameEvidence`를 보고하고 transport는 명시된 effects만 보낸다. 새 엔진을 만들지 않는다.
+
+<a id="e11"></a>
+
+### E11 · P2 · Atlas game-learning의 'thin host'가 저장·압축·동기화·평가 상태를 490줄 closure 하나에 소유한다
+
+- 근거: `atlas/game-learning.js:2` 설명과 실제 `:30-519` createGame, `:40-57` pages/epoch/ledger/settled/dropped/active 상태, `:110-210` refresh/compact/persist, `:270-329` syncPort, `:447-466` answer/exclude, `:499-516` reset/flow memory 연결.
+- 결합: 사용자 답변에서 읽기/쓰기 성공 여부가 assessable/independent에 직접 영향을 주며, 동기화 settle/drop·페이지 저장·ledger 압축과 현재 문제 session이 같은 closure를 변경한다. 저장 정책을 고칠 때 평가 자격과 답변 흐름까지 확인해야 한다. 이 연결 자체는 필요한 안전 계약이지만 메커니즘과 정책이 파일 안에서 명시 경계 없이 엉켜 있다.
+- 기존 보호: Trail/Learning/Temper 및 learning-sync/memory-sync/ledger/pages가 분리돼 있고 scope/owner/epoch 및 저장 실패의 보수적 판정이 있다. 코어 계산 전체가 엉켰다는 주장은 하지 않는다.
+- 작은 시작점: refresh/compact/persist/settle/drop를 기존 저장 모듈 경계로 묶어 `{events, epoch, durability, completeness}` snapshot을 제공하게 하고, 답변 판정은 그 상태를 입력으로 읽는다. 독립 수행 자격·기록 삭제·다중 탭 복원 시험은 필수 보존한다.
+
+<a id="e12"></a>
+
+### E12 · P2 · Flow의 런타임 안전 검사와 Temper 시뮬레이터가 양방향 의존한다 — 빠른 개선 후보
+
+- 근거: `atlas/flow.js:15-17,177-178,272`와 `atlas/temper-flow.js:12-14,21-37,139-155`.
+- 확인한 경로: Flow는 시작할 때 Temper의 check가 필요하다. 같은 temper-flow 모듈의 simulate가 다시 Flow.start/defineContent를 부른다. require를 함수로 늦추므로 당장 CommonJS 초기화 오류라고 볼 수는 없다. 다만 런타임 안전 레일을 불러오는 소비자가 가상 사람·시뮬레이션 코드까지 같은 모듈 계약으로 받는다.
+- 영향: 공통 런타임의 작은 검사 변경과 개발용 시뮬레이션 확장이 서로 의존 그래프를 연결한다. 브라우저 global 경로도 두 객체가 모두 준비돼야 start/simulate를 사용할 수 있다.
+- 작은 시작점: check/상수는 독립 안전 검사로 두고 시뮬레이션은 Flow와 안전 검사를 둘 다 소비하는 방향으로 분리한다. 기존 `SynkTemperFlow` 호환 표면과 Atlas 파일/줄 예산을 지키는 방법부터 정한다.
+
+## 운영·배포·자료 원천 · 10건
+
+<a id="r01"></a>
+
+### R01 · P2 · Strata의 살아 있는 문법 자료가 은퇴한 엔진 전체 파일에 묶였다
+
+- 위치: `엔진_콘텐츠AI.js:171-302`, `tools/lib/문법뱅크.js:24-39`, `tools/strata-build.js:19-37`, `.claspignore:1-8`.
+- 근거: 현재 배포 대상은 Code.js와 엔진_synkbrief.js뿐이다. 그런데 Strata는 5,809줄의 옛 엔진에서 `const GRAMMAR_BANK = [`와 `function grammarStageOf_` 사이를 문자열로 잘라 `new Function`으로 읽고, 자료뿐 아니라 파일 전체의 지문을 기록한다. 같은 파일에는 systemWatchdog, aiFeedbackBatch_, aiStudioBatch_ 등 배포하지 않는 옛 업무가 남아 있다.
+- 변경 부담: 문법 자료의 수정을 위해 은퇴한 엔진 파일의 코드 배치와 전체 지문까지 알아야 한다. 자료와 무관한 옛 코드/주석 수정도 자료 원천 지문을 바꾼다. 이 옛 엔진이 현재 운영 중인 거대 서버라는 주장은 하지 않는다.
+- 기존 보호: 뱅크 추출기를 한 곳에 모았고 표식 누락은 예외로 막는다. 원천 해시도 보존을 위한 장치다.
+- 시작점: 문법 뱅크와 급수 대응표를 명시적인 데이터 원천으로 옮기고, Strata 생성기·참조 경로·지문·해당 시험을 같은 변경으로 갱신한다. 옛 엔진 삭제를 먼저 할 일은 아니다.
+
+<a id="r02"></a>
+
+### R02 · P2 · 현재 Git 도구가 이전 CLI의 시험용·내부 exports를 공용 라이브러리로 쓴다
+
+- 위치: `tools/바로올리기.js:66-73`, `tools/내커밋.js:1582-1591`, `tools/바로올리기.js:1070-1207`.
+- 근거: 바로올리기는 내커밋의 `_시험`에서 쌓기·올릴판검사를, `_도구`에서 Git 실행·블롭·인덱스·잠금·3방향 합치기·오류 타입 등 수십 개를 가져온다. 운영사본도 내커밋을 불러온다. 공용 Git 코어가 독립 계층 대신 한 CLI의 내부 API에 자리 잡았다.
+- 변경 부담: 옛 CLI의 내부 구성이나 exports를 정리해도 현재 push·따라가기·운영 갱신까지 영향을 받는다. `_도구`는 주석에 명시된 공유 계약이지만 그 공통 코어가 CLI 안에 위치하고, 운영용 쌓기·검사가 `_시험` 경유로 노출되는 계층 결합이 남아 있다.
+- 기존 보호: 임시 인덱스, 저장 용량/공개 검사, 출처 보존과 겹침 방지는 이미 구현돼 있다.
+- 시작점: 바이트·Git 실행·합치기·검증 결과 타입을 하위 라이브러리로 옮기고 양쪽 CLI가 소비하게 한다. 동작/명령 표면을 유지하며 `_시험` 경유부터 없앤다.
+
+<a id="r03"></a>
+
+### R03 · P2 · push·운영 갱신·밀린 장부 재시도가 서로를 다시 호출한다
+
+- 위치: `tools/lib/장부올리기.js:38-65`, `tools/운영사본.js:405-437`, `tools/바로올리기.js:1192-1198,1251-1252`.
+- 확인한 경로: 장부올리기 → 바로올리기 → 운영사본 갱신, 운영사본 갱신 → 밀린 장부올리기 → 바로올리기, 운영사본 → 바로올리기.따라가기. `공용안따라감`·`운영안따라감`·`운영안맞춤`과 호출 장소 판정으로 재진입/후처리를 조절한다.
+- 변경 부담: push 성공 뒤 후처리와 예약 운영 갱신의 주체를 세 파일에 걸쳐 추적해야 한다. 새 후처리를 붙일 때 호출자가 어느 운영 단계인지에 따라 플래그를 맞춰야 한다. 현재 무한 재귀나 기록 손실을 재현한 것은 아니다.
+- 기존 보호: 지연 require, 운영 사본 식별, 갱신 잠금, 쓰는 중인 기록 확인, 결과와 후처리 실패의 분리가 있다. `tools/운영사본.js:453-463`은 같은 운영 사본 재진입 시 잠금으로 안쪽 갱신이 멈추고 바깥 갱신이 마무리하는 계약을 설명한다.
+- 시작점: Git 반영 결과를 반환하는 코어와 그 결과로 운영 사본/장부를 처리하는 조정 단계를 나눈다. 공통 상태/경로 판정은 순환 없는 하위 모듈로 옮긴다.
+
+<a id="r04"></a>
+
+### R04 · P2 · 백업의 기초 파일·잠금 도우미가 최상위 GitHub 백업 실행기에 들어 있다
+
+- 위치: `tools/GitHub백업.cjs:281,388-395,421`, `tools/Git보관묶음.cjs:8`, `tools/보호소스보관.cjs:5-8`, `tools/onedrive-backup.cjs:8-11`, `tools/onedrive-read-cache.cjs:16`.
+- 확인한 경로: `GitHub백업 ↔ Git보관묶음`과 `GitHub백업 → 보호소스보관 → onedrive-backup → onedrive-read-cache → GitHub백업`의 두 고리다. 하위 모듈은 주로 `replaceFile`, `acquireLock`, `parseRefs`, `remoteIdentity` 같은 기초 기능을 빌리려고 상위 실행기를 import한다.
+- 변경 부담: 파일 캐시/보존 기능만 시험하거나 재사용해도 GitHub 백업의 import와 초기화 범위에 연결된다. 백업 실행기 구조 정리가 보관·OneDrive까지 전파된다.
+- 기존 보호: 실제 보관 실행은 지연 require로 하고 CLI main 가드가 있어 import 자체가 백업을 시작한다는 뜻은 아니다. 잠금·검증·영수증은 유지할 계약이다.
+- 시작점: 잠금/원자 파일 교체와 Git 참조 처리 모듈을 아래로 추출한다. 각 백업은 그 모듈을 소비하고, 최상위 실행기만 하위 백업을 조립하게 한다.
+
+<a id="r05"></a>
+
+### R05 · P2 · 운영 상태 읽기가 운영 홈 화면 서버를 역으로 의존한다
+
+- 위치: `tools/hermes-synk/status.cjs:9-12`, `tools/운영홈.js:43-70,96-108`, `tools/hermes-synk/overview.cjs:11-13`, `tools/hermes-synk/monitor.cjs:173-180`.
+- 확인한 경로: overview → status → 운영홈 → overview. 상태 모듈은 트랙 파서와 캐시 경로를 얻으려고 운영홈을 가져오지만, 운영홈 자체는 상태 집계·HTTP 서버·이미지 모듈 로딩을 소유하고 다시 overview를 부른다. overview는 monitor의 시간 계산도 import하고 monitor CLI는 다시 overview를 조립한다.
+- 변경 부담: 읽기 전용 상태 집계의 시험/변경에 화면 서버의 모듈 그래프까지 들어온다. 실제 메인 가드와 함수 안 require가 있어 즉시 로딩 실패라고 보지는 않는다.
+- 기존 보호: 상태 읽기/수집 함수와 main 실행은 부분적으로 분리되어 있다.
+- 시작점: 트랙 파서·캐시 경로·시간 판정을 순수 하위 모듈로 옮기고 운영홈과 Hermes가 함께 소비하게 한다. 알림 정책이나 기존 감시 예약을 새로 만들 필요는 없다.
+
+<a id="r06"></a>
+
+### R06 · P2 · WORLD 공개 주소 두 개를 연결하는 안전 절차가 거의 통째로 복제됐다
+
+- 위치: `tools/synk-id/world-public-provision.cjs:20-160`, `tools/synk-id/world-app-public-provision.cjs:20-160`.
+- 근거: 두 파일의 `git diff --no-index`를 대조했다. 핵심 검증·원격 목록 지문·반영 전 장부 저장·미확인 결과 재시도 금지·반영 후 확인 절차는 같고, 콜백 URL, 함수명, publicWorld/publicWorldApp 장부 키와 출력 이름이 다르다. 두 핵심 provision 함수 모두 29-126행이다.
+- 변경 부담: 안전 규칙 하나를 보강해도 두 절차를 같이 고쳐야 한다. 주소가 다르다는 이유로 인증/보존 알고리즘 전체를 별도로 유지하고 있다.
+- 기존 보호: 각 파일의 CAS 성격의 지문 검사, persistent journal, explicit apply, 모호한 결과의 무조건 재시도 금지는 이미 있다. 이 절차를 간략화하라는 뜻은 아니다.
+- 시작점: 공통 콜백 추가 절차에 제품 계약(URL·장부 키·CLI 표시명)을 명시적으로 주입하고 두 CLI는 입력 선언만 맡긴다. 기존 두 시나리오 시험을 모두 유지한다.
+
+<a id="r07"></a>
+
+### R07 · P2 · 공개 후보 생성 한 함수가 3방향 병합·참조 수집·캐시 토큰 갱신·검사를 공유 Map으로 연결한다
+
+- 위치: `tools/공개.js:798-1054`, 특히 `:816-875`, `:932-1004`, `:1007-1044`.
+- 근거: 257줄의 후보만들기 함수가 Git blob 읽기/쓰기, 판 비교, 삭제 선정, 파일 참조 추론, ?v= 토큰 전파, 후보 검사 규칙 추출, import 엇갈림, 최근 변경 경고까지 처리한다. 중간 `항목`, `저장`, `부름`, `훑을받음`을 closure가 공유하고, `지금판`의 의미는 앞 단계가 Map을 어떻게 바꾸었는지에 달린다. 중첩 함수 제외 AST 분기 표식 124개다.
+- 변경 부담: 캐시 규칙이나 파일 판정 하나의 변경을 검토하려 해도 앞뒤 단계와 Map의 당시 상태를 추적해야 한다. 순수 계획 계산과 Git 객체 접근이 섞여 작은 규칙만 독립 확인하기 어렵다.
+- 기존 보호: 계획 해시, 3방향 충돌 방지, 바이트 대조, 배포 점검과 별도 import 검사 모듈이 있다. 배포 가드를 없애거나 다른 경로로 공개할 이유가 아니다.
+- 시작점: 판 읽기 → 차이/병합 계획 → 참조/토큰 계획 → 검증을 입력/출력 snapshot이 명시된 단계로 추출한다. CLI와 기존 계획 해시/검사는 유지한다.
+
+<a id="x01"></a>
+
+### X01 · P2 · Hermes의 결과 수집·전달 경로가 새 정책과 기존 정책에 중복되어 있다
+
+- 핵심 위치: `tools/hermes-synk/plugin/__init__.py:355-380` (`_native_capture`), `598-667` (`_deliver_auto_finished`), `670-764` (`_deliver_finished`).
+- 확인한 흐름: `_deliver_finished`는 `_auto_policy(record)`가 참이면 자동 마감 경로로 넘긴다(672-673). 자동 경로는 `_native_capture`를 사용한다(607). 일반 경로는 같은 `_durable_output → process_manage log fallback → stderr 마지막 60줄 → _native_result → Codex session ID가 없으면 head 재조회`를 686-712에서 다시 구현한다.
+- 전달 부분도 자동 경로 648-666과 일반 경로 679-684·723-758에서 `delivery.claim(O_EXCL)`, sending receipt, 메시지 전송, `sent/unconfirmed` 분류, receipt 저장을 각각 갖는다. 자동 경로에는 fsync가 들어 있고 일반 경로는 같은 방식으로 구현돼 있지 않다. 정책 차이(검증·통합, 성공 알림 억제)는 정당하지만 공통 전달 절차까지 중복돼 있다.
+- 실제 변경 부담: 로그 수집 한도·Codex session 찾기·텔레그램 전송 결과 계약을 고칠 때 양쪽 함수를 고쳐야 한다. 실패 중단/재개 계약도 한쪽만 변경하기 쉽다. 이것은 단순히 1,725줄이라서 생긴 지적이 아니라 거의 같은 저수준 절차가 두 경로에 있는 근거다.
+- 인접 결합: `_request:1155-1243`, `_continue_task:1492-1566`, `_continue_session:1569-1626`은 admission/intake, `launching→unknown|launch_failed|running`, request.json 저장, terminal dispatch, worker 시작을 각자 조립한다. task 이어가기는 결과 파일 archive/rollback까지 함께 처리한다. 전달 중복부터 줄인 뒤 공통 실행 접수 계약으로 다룰 후보다.
+- 기존 완화장치: mutex/admission, durable receipt, atomic claim, 전송 결과 미확인 시 무조건 재시도하지 않는 정책, 승인 알림 중복 억제는 실제 구현돼 있다. 삭제하거나 단순화해서는 안 된다.
+- 정리 방향: 결과 수집은 `_native_capture` 한 곳, 전달은 공통 claim/receipt/send 단계로 모으고 자동/일반 정책은 `무엇을 보내는가·보낼 것인가`만 결정하게 한다. 실행/모델 선택을 위한 새 하네스를 만들 필요가 없다.
+
+<a id="x02"></a>
+
+### X02 · P2 · SNS publisher는 플랫폼 변경 지점이 인증·폼·확인·발행·패키지/승인 모델에 흩어져 있다
+
+- 위치: `tools/lib/sns-publisher.js:138-199` (자격증명), `245-337` (패키지 작성), `442-505` (게시 hash/승인), `570-658` (플랫폼 연결 확인), `674-838` (브라우저·OAuth·HTML 연결 폼), `938-1273` (플랫폼별 발행), `1311-1360` (공통 발행 상태 저장), `1477-1528` (넓은 exports).
+- 직접 읽은 구체 사례: TikTok에 관한 credential fields는 790, 연결 확인은 647-655, 게시 dispatch는 1270, 실제 발행은 1211-1260으로 나뉜다. Threads/LinkedIn도 같은 구조다. `packageFromFolder`는 YouTube playlist·audioLanguage와 Instagram DM 조건을 직접 알고 있다(270-290,313-326). `openCredentialForm`은 필드 정의에서 HTML을 만들고 저장소 자격 쓰기와 HTTP 수명주기까지 수행한다(795-838).
+- 실제 변경 부담: 공급자 하나의 기능/인증 요구가 바뀌면 공급자별 파일 하나가 아니라 여러 공통 함수의 platform 분기를 함께 수정해야 한다. 플랫폼 어댑터와 콘텐츠/승인 계약, OS 자격 보관, 브라우저 UI가 하나의 라이브러리 API로 노출되어 있다. 이 파일은 일회성 생성기가 아니라 여러 플랫폼 발행과 후속 공개·수동 게시 확인에 재사용되는 운영 코드다.
+- 상태 결합의 예: `publishPlan`은 이전 partial/publishing이면 재시도 금지(1323-1326), 성공 상태 문자열 목록으로 건너뛰기(1336), 공급자가 보내는 onProgress를 결과 파일에 병합(1344-1348), error.partialResult로 부분 완료를 복구(1352-1355)한다. 공급자 어댑터를 나누더라도 이 내구성 계약을 명시적으로 보존해야 한다.
+- 기존 완화장치: fetch/credential 주입, 플랫폼별 named publish 함수, 공통 approval hash/의존 파일 검사, 발행 전 publishing receipt와 partial 재발행 차단이 있다. 게시 안전장치가 없다는 지적이 아니다.
+- 정리 방향: supplier별 adapter에 credential schema/check/publish를 모으고, 공통 패키지·승인·결과 저장 계층은 별도로 둔다. auth UI/Windows 자격 보관은 어댑터 내부 인증 수단으로 연결한다. 승인 검증과 불확실한 발행 재시도 금지는 유지한다.
+
+<a id="x03"></a>
+
+### X03 · P2 · 라디오 겹쳐송출의 실행·복구·정리 책임이 즉시 실행 스크립트에 묶여 있다
+
+- 위치: `bots/오버레이/겹쳐송출.js:71-105` (로드 시 설정 읽기), `119-184` (HTTP·Chromium·CDP), `284-349` (무한 채팅 감시), `424-437` (이벤트 HTTP), `441-566` (즉시 실행 연결부).
+- 확인한 흐름: 파일을 읽어 실행하면 IIFE가 지면 HTTP → Chromium → CDP → ffmpeg를 시작한다. 같은 함수 안에서 채팅·장면 감시를 시작하고, screenshot/프레임 송신/진척 watchdog/통계의 네 타이머를 등록한다(479,516,548,556). 마지막장·카운터·ffmpeg stdin·진척 객체를 이 연결부 closure가 함께 소유한다.
+- 수명주기 근거: 지면 HTTP와 사건 HTTP는 server 객체/종료 핸들을 반환하지 않는다(119-132,424-437). 타이머 handle도 보관하지 않는다. ffmpeg exit는 process.exit(462), watchdog은 자식 kill 후 process.exit(552-553), SIGINT는 별도 kill 후 process.exit(565), 초기화 실패는 바깥 catch의 process.exit(566)로 끝난다. 채팅감시는 abort/stop 인자 없이 `for (;;)`로 돈다(323-349).
+- 실제 변경 부담: CDP 연결만 다시 맺기, 입력 영상만 교체하기, 일부 감시기를 시험하기 같은 변경을 독립 lifecycle로 검증하기 어렵다. 생성된 자원의 소유·정리 경로를 여러 종료 분기에서 함께 따라가야 하며, 테스트에서 모듈을 import하면 송출 초기화까지 시작한다. 운영 종료 때 자원이 실제 누수됐다는 재현 주장은 아니다.
+- 기존 완화장치: CDP timeout/close pending 거절(176-183), 벽시계 기반 프레임 보정과 backpressure(515-527), 실제 out_time watchdog(548-554), 별도 `송출진척.js`·`현재곡.js` 추출은 좋은 구조다. systemd의 프로세스 단위 복구를 전제로 한 것도 읽힌다.
+- 정리 방향: 실행 진입점을 main guard로 감싸고 `start/stop` 자원 묶음을 만들며 HTTP/CDP/process/timer disposer를 한곳에서 관리한다. 캡처/송신 scheduler와 채팅 감시는 의존성(clock/send/fetch/abort)을 받아 개별 확인 가능하게 한다. 기존 운영 복구 방식을 재설계하거나 자동으로 바꿀 범위는 아니다.
+
+## 오탐에서 제외한 것과 남은 한계
+
+- game-learning 번들, account 묶음, PC continuity/care 모델, WORLD profile/core, Three/GLTF 계열, SQL 합본 등은 원천/생성 여부를 확인하고 큰 파일이라는 이유로 지적하지 않았다.
+- 회원 문장 파서 ko1~9의 동결 버전은 저장 당시 해석 의미를 지키는 계약이므로 단순 중복 삭제 대상으로 보지 않았다. 문제는 여행 화면이 불필요하게 이 전체를 의존하는 E06이다.
+- Atlas 파일/줄 예산 검사, 계정 묶음 경계 검사, 요청 epoch, 멱등성 receipt, SQLite 트랜잭션, 공개/배포 검사, 백업 영수증과 로그 보존 등 이미 있는 보호는 확인했다. 리팩터링 때 제거할 대상이 아니다.
+- Apps Script의 현재 라이브 범위는 작다. 5,809줄 엔진_콘텐츠AI.js를 운영 중인 거대 서버로 오인하지 않았고 자료 원천 결합만 R01로 기록했다.
+- Unity에는 WorldFlow/IWorldService와 Scene/UI 경계가 있다. synk-tips도 작은 정적 사이트다. 별도 확정 구조 문제를 만들 근거가 부족한 곳을 억지로 건수에 넣지 않았다. 이를 전체 무결함 인증으로 해석하면 안 된다.
+- DB 마이그레이션/RLS 전량의 실행 의미, 모든 통화·로그인·네이티브 앱 경로, 실제 브라우저·기기·운영 배포의 기능/성능은 검증하지 않았다. 이미지·오디오·영상·폰트·바이너리 내용은 대상이 아니다.
+
+## 재확인 자료와 조사 방식
+
+1. `rg --files`로 진입점/패키지/지역 지침을 찾고 Git tracked + non-ignored untracked 파일을 합쳐 목록화했다.
+2. 파일별 바이트·줄·SHA-256, JS/TS/인라인 스크립트의 함수 경계·분기·await, 문자열 상대 import/require를 분석했다. 함수 안 지연 require도 그래프에 포함했으므로 SCC만으로 초기화 오류를 선언하지 않았다.
+3. 분야별 코드 검토와 생성기/시험/계약 확인을 거쳐 후보를 확정했다. 각 항목에 직접 확인한 함수/줄과 기존 보호를 적었다. 정적 지표의 상위 파일 전체를 일괄 문제로 판정하지 않았다.
+4. 두 P1은 [재현검사.cjs](재현검사.cjs)에서 현행 함수 몸통만 가져와 가짜 Promise/fetch로 실행했다. [재현결과.json](재현결과.json)은 실제 계정·네트워크를 사용하지 않은 결과다. 이 검사는 감사용 증거이며 제품의 정식 회귀 시험을 대체하지 않는다.
+5. [조사범위.json](조사범위.json)에 기준 판·범주별 집계·47개 항목을 남겼다. 전체 로컬 탐색 목록과 파싱 결과는 저장소의 `.tmp/spaghetti-audit-20261023/`에 `classified-inventory.json`, `functions.json`, `imports.json`, `supplemental-inventory.json`으로 남겼다. 이 목록은 로컬 보조 증거이며 공개 커밋에는 원문/사본/미추적 파일의 전량 명세를 싣지 않았다.
+
+## 정리할 순서
+
+1. **작은 재현 오류부터:** S02, S11. 현재 실패를 행동 시험으로 고정한 뒤 소유 계정/요청 세대와 Promise 종료 처리를 고친다.
+2. **원천과 실행 코드부터 일치:** S01. 현행 번들 전용 코드를 원천으로 복원하고 동등한 결과를 확인한 다음 고정 번들을 해제한다. `--force`로 덮는 것부터 시작하지 않는다.
+3. **작게 끊을 수 있는 의존성:** E06, E12, C13, R02/R04/R05, R06. 기존 인터페이스와 안전 검사는 남기고 공통 계약을 아래로 옮긴다.
+4. **큰 제어부는 업무·수명주기로:** C01~05, C09/C11, E01~04, E07/E09~11, S03~05, X01~03. 파일 수만 늘리지 말고 상태의 주인과 입력/출력·부수효과 경계를 고정한다.
+5. **빌드·시험 경계 마무리:** S06~10, R03/R07, C06~08/C10/C12/C14, E05/E08. 생성 순서·소스 문자열 표기·사용자 문구에 기대는 계약을 명시적 인터페이스로 바꾼다.
+
+**이번 요청의 결과는 조사와 우선순위다. 수정·리팩터링·배포는 착수하지 않았다.** 큰 재작성 하나보다 기존 동작과 저장 의미를 보존하는 작은 변경을 순서대로 진행하는 것이 적절하다.
