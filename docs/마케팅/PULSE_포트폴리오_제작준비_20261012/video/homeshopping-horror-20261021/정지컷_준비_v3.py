@@ -71,8 +71,9 @@ def persp_coeffs(dst, src):
     return np.linalg.solve(np.array(m, dtype=float), np.array([c for p in src for c in p], dtype=float)).tolist()
 
 
-def put_tv(im, tv_path=TV):
-    q = tv_quad(im)
+def put_tv(im, tv_path=TV, q=None, quiet=False):
+    """q를 주면 그 모서리를 그대로 쓴다(영상은 첫 프레임에서 한 번 찾아 모든 프레임에 — 영상_색감.py)"""
+    q = q or tv_quad(im)
     if q is None or not os.path.exists(tv_path):
         print("  TV 합성 건너뜀", "(화면 못 찾음)" if q is None else f"({os.path.basename(tv_path)} 없음)")
         return im
@@ -85,7 +86,8 @@ def put_tv(im, tv_path=TV):
     mask = Image.new("L", im.size, 0)
     ImageDraw.Draw(mask).polygon(q, fill=int(255 * 0.85))
     out = Image.composite(warped, im, mask.filter(ImageFilter.GaussianBlur(1.2)))
-    print("  TV 합성", [tuple(map(int, p)) for p in q])
+    if not quiet:
+        print("  TV 합성", [tuple(map(int, p)) for p in q])
     return out
 
 

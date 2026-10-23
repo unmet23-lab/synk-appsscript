@@ -2,12 +2,13 @@
 // v2(Film.tsx)와 같은 원칙 — 하드컷만, 홈쇼핑 음악은 영상 시간과 같은 자리로 흐르다 홈쇼핑 칸에서만 들린다, 모든 소리에 MASTER 0.8.
 // 바뀐 것: 공포 컷마다 앵글 · 크기를 바꾼 v3 정지컷과 크롭 · 급줌, 홈쇼핑 칸은 쇼호스트 + 제품 · 가격판 멀티캠(hs/v3.tsx),
 // 공포 대사 자막(가는 명조 — 소리를 꺼도 읽히게), 끝은 쇼호스트가 강도에게 말을 걸고 첫 컷 구도로 돌아와 택배 상자 그림자(고리).
-import React from 'react';
-import { AbsoluteFill, Audio, Img, Sequence, interpolate, staticFile, useCurrentFrame } from 'remotion';
+import React, { useContext } from 'react';
+import { AbsoluteFill, Audio, Img, OffthreadVideo, Sequence, interpolate, staticFile, useCurrentFrame } from 'remotion';
 import { E1V3, E2V3, H1V3, H2V3, H3V3 } from '../hs/v3';
 import { P2V3, Product } from '../hs/product';
 import { FPS, sec } from '../hs/parts';
 import { EN, KO, SERIF } from '../lib/fonts';
+import { CLIPS_V3, VideoMode } from './clips';
 
 const MASTER = 0.8;
 export const FILM_V3_LEN = sec(39.2);
@@ -79,6 +80,8 @@ export const SUBS_V3: [number, number, string][] = [
 
 const StillCut: React.FC<{ c: Cut }> = ({ c }) => {
   const f = useCurrentFrame();
+  // 영상 판이면 고른 Omni 클립(clips.ts)을 같은 움직임 · 기울기 · 급줌으로 깐다 — 클립이 없는 컷은 정지컷 그대로
+  const clip = useContext(VideoMode) ? CLIPS_V3[c.id] : undefined;
   const len = sec(c.t1 - c.t0);
   const p = f / Math.max(1, len - 1);
   const [s0, s1] = c.move ?? [1, 1.03];
@@ -95,8 +98,14 @@ const StillCut: React.FC<{ c: Cut }> = ({ c }) => {
   const w = c.reveal ? interpolate(f, [sec(c.reveal[1]), sec(c.reveal[1] + c.reveal[2])], [0, 100], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }) : 100;
   return (
     <AbsoluteFill style={{ background: '#000', overflow: 'hidden' }}>
-      {c.reveal ? <Img src={staticFile(`stills/${c.reveal[0]}.jpg`)} style={{ ...tf, position: 'absolute' }} /> : null}
-      <Img src={staticFile(`stills/${c.still ?? c.id}.jpg`)} style={{ ...tf, position: 'absolute', clipPath: w < 100 ? `inset(0 ${100 - w}% 0 0)` : undefined }} />
+      {clip ? (
+        <OffthreadVideo src={staticFile(`clips/${clip.file}.mp4`)} trimBefore={sec(clip.from ?? 0)} playbackRate={clip.rate ?? 1} muted style={{ ...tf, position: 'absolute' }} />
+      ) : (
+        <>
+          {c.reveal ? <Img src={staticFile(`stills/${c.reveal[0]}.jpg`)} style={{ ...tf, position: 'absolute' }} /> : null}
+          <Img src={staticFile(`stills/${c.still ?? c.id}.jpg`)} style={{ ...tf, position: 'absolute', clipPath: w < 100 ? `inset(0 ${100 - w}% 0 0)` : undefined }} />
+        </>
+      )}
     </AbsoluteFill>
   );
 };
@@ -138,7 +147,8 @@ const SfxAt: React.FC<{ t: number; src: string; vol: number; len?: number; from?
   </Sequence>
 );
 
-export const FilmV3: React.FC<{ p?: Product; subs?: boolean }> = ({ p = P2V3, subs = true }) => (
+export const FilmV3: React.FC<{ p?: Product; subs?: boolean; video?: boolean }> = ({ p = P2V3, subs = true, video = false }) => (
+  <VideoMode.Provider value={video}>
   <AbsoluteFill style={{ background: '#000' }}>
     {CUTS_V3.map((c) => {
       const Scene = c.hs;
@@ -169,6 +179,7 @@ export const FilmV3: React.FC<{ p?: Product; subs?: boolean }> = ({ p = P2V3, su
     <SfxAt t={37.65} src="sfx/doorbell.wav" vol={0.6} />
     {VO.map(([n, t, v]) => <SfxAt key={n} t={t} src={`vo/${n}.wav`} vol={v} />)}
   </AbsoluteFill>
+  </VideoMode.Provider>
 );
 
 // 9:16 띠판: 가운데 16:9 띠 + 위 머리글(0초부터, 끝 고리 컷에서 「제품 광고 문의 / PULSE」) + 띠 밑 자막 · 면책
@@ -178,14 +189,14 @@ export const HEADS: Record<string, [string, string]> = {
   오도: ['진지한 공포 단편입니다', '(진짜로)'],
   이름표: ['K-홈쇼핑', '호러'],
 };
-export const Band916V3: React.FC<{ p?: Product; head?: string }> = ({ p = P2V3, head = '기본' }) => {
+export const Band916V3: React.FC<{ p?: Product; head?: string; video?: boolean }> = ({ p = P2V3, head = '기본', video = false }) => {
   const f = useCurrentFrame();
   const end = f >= sec(37.6);
   const lines = end ? ['제품 광고 문의', 'PULSE'] : HEADS[head] ?? HEADS.기본;
   return (
     <AbsoluteFill style={{ background: '#000' }}>
       <div style={{ position: 'absolute', left: 0, top: 656, width: 1920, height: 1080, transform: 'scale(0.5625)', transformOrigin: '0 0' }}>
-        <FilmV3 p={p} subs={false} />
+        <FilmV3 p={p} subs={false} video={video} />
       </div>
       <div style={{ position: 'absolute', left: 0, right: 0, top: 452, textAlign: 'center', fontFamily: "'SUIT', sans-serif", fontWeight: 700, fontSize: 54, lineHeight: 1.32, color: '#FFFFFF', letterSpacing: -0.5 }}>
         {lines.map((l) => <div key={l}>{l}</div>)}

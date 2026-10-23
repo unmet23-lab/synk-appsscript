@@ -41,6 +41,9 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="E1-3" component={E1V3} durationInFrames={LEN_V3.E1} {...HD} />
     <Composition id="E2-3" component={E2V3} durationInFrames={LEN_V3.E2} {...HD} />
     <Composition id="Film-3" component={FilmV3} durationInFrames={FILM_V3_LEN} {...HD} />
+    {/* 영상 판(10-23 Omni 1.1 Flash 클립 — film/clips.ts에 고른 클립만, 나머지 컷은 정지컷) */}
+    <Composition id="Film-3V" component={FilmV3} defaultProps={{ video: true }} durationInFrames={FILM_V3_LEN} {...HD} />
+    <Composition id="Band916-3V" component={Band916V3} defaultProps={{ head: '기본', video: true }} durationInFrames={FILM_V3_LEN} {...V916} />
     {/* 장면 이름에 한글을 못 써서(Remotion은 영문 · 숫자 · 한자만) 머리글 판 이름은 영문으로 */}
     {Object.keys(HEADS).map((h) => (
       <Composition key={h} id={`Band916-3${HEAD_ID[h] ?? ''}`} component={Band916V3} defaultProps={{ head: h }} durationInFrames={FILM_V3_LEN} {...V916} />

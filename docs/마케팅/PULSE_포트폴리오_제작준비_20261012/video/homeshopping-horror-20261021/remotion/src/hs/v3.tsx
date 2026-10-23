@@ -2,12 +2,13 @@
 // 쇼호스트 컷은 말 대신 미소 · 손짓만 하고, 말은 화면 밖 소리와 자막 띠로 간다. 제품은 블렌더 렌더에만 나온다(손에 들지 않는다).
 // 각 장면 안 프레임 기준(24fps). 칸 길이(10-22 Fable 설계 검토 뒤 v3.1 — 대사 실측에 맞췄다):
 // H1 2.3초(쇼호스트 1.0 + 제품 1.3) · H2 3.0초(1.0 × 3) · H3 4.6초(가격 1.4 + 도장 0.9 + 뚜껑만 1.7 + 굳은 미소 0.6) · E1 0.9초 · E2 2.4초.
-import React from 'react';
-import { AbsoluteFill, Img, Sequence, interpolate, staticFile, useCurrentFrame } from 'remotion';
+import React, { useContext } from 'react';
+import { AbsoluteFill, Img, OffthreadVideo, Sequence, interpolate, staticFile, useCurrentFrame } from 'remotion';
 import { HS, HS_EN } from '../lib/fonts';
 import { Band, Countdown, Disclaimer, LiveBug, OrderBar, OrderCounter, PriceStar, ProductName, Sfx, Sparkles, Stamp, Sticker, Turntable, ol, sec, shakeAt } from './parts';
 import { P2V3, Product } from './product';
 import { Frame } from './scenes';
+import { CLIPS_V3, VideoMode } from '../film/clips';
 
 export const LEN_V3 = { H1: sec(2.3), H2: sec(3), H3: sec(4.6), E1: sec(0.9), E2: sec(2.4) };
 type P = { p?: Product };
@@ -30,10 +31,15 @@ export const CaptionBar: React.FC<{ text: string; at?: number }> = ({ text, at =
 // 쇼호스트 컷: 밝은 스튜디오 정지컷 위에 LIVE · 마감 시계(또는 주문 수) · 아래 주문 띠만 얹는다(큰 값 · 딱지는 얼굴을 가리지 않게 빼고)
 const HostShot: React.FC<{ still: string; p: Product; clock?: number; every?: number; caption?: string; captionAt?: number; ticker?: string; push?: [number, number]; children?: React.ReactNode }> = ({ still, p, clock, every = 6, caption, captionAt = 2, ticker, push = [1.0, 1.03], children }) => {
   const f = useCurrentFrame();
+  const clip = useContext(VideoMode) ? CLIPS_V3[still] : undefined;   // 영상 판이면 쇼호스트 Omni 클립
   const s = interpolate(f, [0, 24], push, { extrapolateRight: 'clamp' });
   return (
     <AbsoluteFill style={{ background: '#000', overflow: 'hidden' }}>
-      <Img src={staticFile(`stills/${still}.jpg`)} style={{ width: 1920, height: 1080, transform: `scale(${s})`, transformOrigin: '50% 40%' }} />
+      {clip ? (
+        <OffthreadVideo src={staticFile(`clips/${clip.file}.mp4`)} trimBefore={sec(clip.from ?? 0)} playbackRate={clip.rate ?? 1} muted style={{ width: 1920, height: 1080, transform: `scale(${s})`, transformOrigin: '50% 40%' }} />
+      ) : (
+        <Img src={staticFile(`stills/${still}.jpg`)} style={{ width: 1920, height: 1080, transform: `scale(${s})`, transformOrigin: '50% 40%' }} />
+      )}
       <LiveBug />
       {clock !== undefined ? <Countdown from={clock} every={every} /> : null}
       {children}

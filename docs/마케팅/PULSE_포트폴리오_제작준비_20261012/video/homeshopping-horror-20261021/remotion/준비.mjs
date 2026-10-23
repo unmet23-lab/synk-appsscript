@@ -66,6 +66,10 @@ const 목록 = [
   [path.join(LIB, 'sonniss_gdc2026', '풀림', 'Sonik Sound Library - Spanish Crowds', 'CRWDCheer_Small Club, 50 People, Crowd, Spanish, Cheering and Applause-Surround_KSL_KS015.wav'), 'amb/cheer.wav'],
 ];
 
+// 영상 판 클립(영상_색감.py가 색감을 입힌 Omni 클립) — 폴더에 있는 것 전부
+const CLIPS = path.join(V, '영상', '색감');
+if (fs.existsSync(CLIPS)) for (const n of fs.readdirSync(CLIPS).filter((x) => x.endsWith('.mp4'))) 목록.push([path.join(CLIPS, n), `clips/${n}`]);
+
 let copied = 0, same = 0;
 const missing = [];
 for (const [src, to] of 목록) {
