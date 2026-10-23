@@ -1,9 +1,20 @@
 // A local synthetic account has one clock, regardless of the number of tabs.
 // Leases are process-local: a restart never replays time spent offline.
 export const PRESENCE_LEASE_MS = 3000;
-const VISIT_IDLE_MS = 30 * 60 * 1000;
+export const VISIT_IDLE_MS = 30 * 60 * 1000;
 export const initialPresence = () => ({ at: null, surfaces: {}, owner: null, fence: 0,
   lastActiveAt: null, idleClosed: false });
+
+/** The wall time the current visit ends at if nothing comes back (W3, Fable P1-1): 30 minutes after
+ * the last stretch of play the presence covers — a foreground window counts to its lease's end. The
+ * pulse that notices the end and every settlement use this one definition, so a visit ends at the
+ * same time however late either looks. null once the visit already ended (idleClosed) or never began. */
+export function visitEndAt(presence) {
+  if (!presence || presence.idleClosed) return null;
+  const active = Object.values(presence.surfaces || {}).filter(item => item.foreground);
+  const last = active.length ? Math.max(...active.map(item => item.at + PRESENCE_LEASE_MS)) : presence.lastActiveAt;
+  return last === null || last === undefined ? null : last + VISIT_IDLE_MS;
+}
 
 export function updatePresence(previous, input, now) {
   if (!input || typeof input.surfaceId !== 'string' || !/^[a-zA-Z0-9_-]{1,100}$/.test(input.surfaceId)
@@ -13,11 +24,13 @@ export function updatePresence(previous, input, now) {
   if (!Number.isSafeInteger(now) || now < 0) throw new TypeError('invalid-host-clock');
   const next = structuredClone(previous);
   now = Math.max(now, next.at ?? now);
+  const endAt = visitEndAt(previous);
   const active = Object.values(next.surfaces).filter(item => item.foreground);
   const coveredUntil = active.length ? Math.max(...active.map(item => item.at + PRESENCE_LEASE_MS)) : next.at;
   const elapsedMs = next.at === null ? 0 : Math.max(0, Math.min(now, coveredUntil ?? now) - next.at);
   if (elapsedMs) next.lastActiveAt = Math.min(now, coveredUntil);
-  const visitEnded = next.lastActiveAt !== null && now - next.lastActiveAt >= VISIT_IDLE_MS && !next.idleClosed;
+  // The same wall time a settlement reads (visitEndAt): a pulse only notices it.
+  const visitEnded = endAt !== null && now >= endAt;
   if (visitEnded) next.idleClosed = true;
   for (const [id, item] of Object.entries(next.surfaces)) if (now - item.at >= PRESENCE_LEASE_MS) delete next.surfaces[id];
   if (!Object.hasOwn(next.surfaces, input.surfaceId) && Object.keys(next.surfaces).length >= 16) throw new TypeError('too-many-surfaces');
@@ -27,7 +40,7 @@ export function updatePresence(previous, input, now) {
   if (owner !== next.owner) { next.owner = owner; next.fence++; }
   if (foreground.length) { next.lastActiveAt = now; next.idleClosed = false; }
   next.at = now;
-  return { next, elapsedMs, visitEnded, context: {
+  return { next, elapsedMs, visitEnded, endedAt: visitEnded ? endAt : null, context: {
     enabled: true, elapsedMs, nowMs: now, visitEnded, surfaceId: next.owner, fence: next.fence,
     surface: next.surfaces[owner]?.surface || 'classic',
     canRun: foreground.length > 0,
@@ -43,7 +56,7 @@ export function updatePresence(previous, input, now) {
  * spans or breaks (leaseFull), the store settles before it keeps the lease. */
 export const LEASE_ENTRIES = 16;
 export const initialLease = ({ uMs = 0, presence = initialPresence(), lastForegroundAt = null } = {}) =>
-  ({ presence, uMs, walkClock: null, spans: [], breaks: [], lastForegroundAt, boundaryAt: null });
+  ({ presence, uMs, walkClock: null, spans: [], breaks: [], breakAts: {}, lastForegroundAt, boundaryAt: null });
 
 const sameSpan = (a, b) => !!a && a.surfaceId === b.surfaceId && a.fence === b.fence && a.surface === b.surface && a.canRun === b.canRun;
 const settledSpans = (lease, settledU) => lease.spans.filter((span, i) => span.u > settledU || !(lease.spans[i + 1]?.u <= settledU));
@@ -51,12 +64,14 @@ const settledSpans = (lease, settledU) => lease.spans.filter((span, i) => span.u
  * at exactly the settled U is still to come: a rest that brought no play time ends the visit at the
  * U the world already stands on, and the next settlement ends it there. */
 export function pruneLease(lease, settledU) {
-  return { ...lease, spans: settledSpans(lease, settledU), breaks: lease.breaks.filter(u => u >= settledU) };
+  return { ...lease, spans: settledSpans(lease, settledU), breaks: lease.breaks.filter(u => u >= settledU), breakAts: breakAtsWhere(lease, u => u >= settledU) };
 }
+/** breakAts keeps, by the break's U, the wall time that visit ended at (W3) — beside breaks, never in it. */
+const breakAtsWhere = (lease, keep) => Object.fromEntries(Object.entries(lease.breakAts || {}).filter(([u]) => keep(Number(u))));
 /** The lease after the world settled to settledU and that settlement was saved: every break up to it
  * has ended its visit, so none is applied twice (a command at that U may open the next visit). */
 export function settledLease(lease, settledU) {
-  return { ...lease, spans: settledSpans(lease, settledU), breaks: lease.breaks.filter(u => u > settledU) };
+  return { ...lease, spans: settledSpans(lease, settledU), breaks: lease.breaks.filter(u => u > settledU), breakAts: breakAtsWhere(lease, u => u > settledU) };
 }
 /** More spans or breaks than a lease keeps: the store settles now instead of dropping unsettled play. */
 export const leaseFull = lease => lease.spans.length > LEASE_ENTRIES || lease.breaks.length > LEASE_ENTRIES;
@@ -71,7 +86,7 @@ export function pulseLease(previous, input, now, { away = false, settledU = 0 } 
   if (last?.u === span.u) next.spans = [...next.spans.slice(0, -1), span];
   else if (!sameSpan(last, span)) next.spans = [...next.spans, span];
   // A visit that ended in a long rest ends at this U: the time this pulse brought comes first.
-  if (pulse.visitEnded) next.breaks = [...next.breaks, next.uMs];
+  if (pulse.visitEnded) { next.breaks = [...next.breaks, next.uMs]; next.breakAts = { ...next.breakAts, [next.uMs]: pulse.endedAt }; }
   if (input.foreground === true && !away) next.lastForegroundAt = pulse.next.at;
   // A walk is timed only while the same window keeps holding the town without a gap.
   const previousOwner = before.surfaces[before.owner];

@@ -28,6 +28,8 @@ export const KINDS = Object.freeze({
   'item.granted': { grantId: id, itemId: id, qty: count, source: id, cause: id },
   'item.transferred': { itemId: id, qty: count, from: id, to: id },
   'item.consumed': { itemId: id, qty: count, source: id, cause: id },
+  // A resident finished sitting at a habit spot (§6-5): a residents-only line, never a Trail fact.
+  'habit.used': { npc: id, spot: id, archetype: id, lifeDay: Number.isSafeInteger, band: id },
 });
 
 /** The relationship fields of an event the player took part in, checked (§20-1). */

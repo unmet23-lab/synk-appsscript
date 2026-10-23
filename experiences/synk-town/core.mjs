@@ -20,6 +20,8 @@ import { initialConsents, changeConsent, validConsents } from './town/consent.mj
 import { eventProblem, FAMILIES } from './town/events.mjs';
 import { policyFor, DEFAULT_OPS, PARAMS_BY_VER, ARMS } from './town/params.mjs';
 import { forgettable, forget, forgottenBy, pruneForgotten, validForgotten } from './town/memory.mjs';
+import { initialVillage, validVillage, closeBands, closeOpen, holdResidents, keepHabitSpots, recordUse, promiseTomorrow, planOf, placeAt, caption, doing, awakeAt } from './town/village.mjs';
+import { agreementSpot, RESIDENT_BY_ID, ARCHETYPE_BY_ID } from './town/plan.mjs';
 
 export const SCOPE = Object.freeze({ domain: 'LAB', workspace: 'synk-town', subject: 'preview-local' });
 // FT10/FT51 keep their old 2D cafe-screen points; the spots live in town/data/places.json.
@@ -60,7 +62,7 @@ export function initialState({ scope = SCOPE, lifeEnabled = false } = {}) {
     materialsGranted: false, served: false, delivered: false, currentUseId: null,
     achievements: [], goals: { inside: null, outside: null }, resumePhase: null,
     events: [], trail: emptyIndex(), ...townFields(), commands: [], resting: false, activity: 'seat', sign: newSign(),
-    ...(lifeEnabled ? { life: initialLife(), lifeFactIds: {}, lifeSeatRevision: 0, day: initialDay(), bazaar: initialBazaar(), support: initialSupport() } : {}) };
+    ...(lifeEnabled ? { life: initialLife(), lifeFactIds: {}, lifeSeatRevision: 0, day: initialDay(), bazaar: initialBazaar(), support: initialSupport(), village: initialVillage() } : {}) };
 }
 // Existing FT10 saves gain only the new optional activity, preserving their log.
 export function restoreState(saved, { lifeEnabled = false } = {}) {
@@ -75,6 +77,9 @@ export function restoreState(saved, { lifeEnabled = false } = {}) {
   if (lifeEnabled && !Object.hasOwn(state, 'day')) state.day = initialDay();
   if (lifeEnabled && !Object.hasOwn(state, 'bazaar')) state.bazaar = initialBazaar();
   if (lifeEnabled && !Object.hasOwn(state, 'support')) state.support = initialSupport();
+  // The village (W3): a world with a first day gains it empty, and the old 14-second script leaves.
+  if (state?.day && !Object.hasOwn(state, 'village')) state.village = initialVillage();
+  if (state?.day && Object.hasOwn(state.day, 'routine')) delete state.day.routine;
   // Saves from before the two counters: every save so far was a write, and nothing is unsettled.
   if (state && !Object.hasOwn(state, 'writeSeq')) state.writeSeq = state.revision;
   if (state && !Object.hasOwn(state, 'settledU')) state.settledU = 0;
@@ -194,6 +199,7 @@ export function assertState(state) {
     ensure(state.scope.subject === 'preview-local' && !!state.day, 'invalid-save', '생활 기록의 주인을 확인해 주세요.', 503);
     try { validate(state[key]); } catch { throw new TownError('invalid-save', '생활 지원 기록을 확인할 수 없어요.', 503); }
   }
+  if (Object.hasOwn(state, 'village')) ensure(!!state.day && validVillage(state.village), 'invalid-save', '마을 기록을 확인할 수 없어요.', 503);
   const pending = state.pendingUse;
   if (pending) ensure(['tea', 'sign'].includes(pending.kind) && pending.worldRevision === state.worldRevision
     && pending.placement === state.placement && Number.isSafeInteger(pending.elapsedMs) && pending.elapsedMs >= 0
@@ -233,7 +239,6 @@ function bazaarContext(state, host = {}, requestedKind) {
     languageSupportBasis: state.support ? snapshotSupport(state.support) : undefined,
     cafeBusy: !!state.pendingUse || state.phase !== 'ready' || !state.placement
       || !(state.activity === 'sign' ? state.sign.delivered : state.delivered)
-      || !bazaarOwns(state) && state.day?.routine.returnMs < 2000
       || (requestedKind || state.bazaar?.episode?.kind) === 'pictureMenu' && state.day?.job?.status === 'preparing'
       || !!episode?.open && episode.location === 'cafe' && episode.stage !== 'invalid'
       || !!life && (life.stage === 'executing' || life.open && life.stage !== 'invalid') };
@@ -252,8 +257,7 @@ export function livingContext(state, host = {}) {
   const episode = state.day?.episode;
   const dayEpisodeOwns = !!episode && episode.location === state.day.location
     && episode.open && episode.stage !== 'invalid' && episode.kind === 'tea';
-  const dayOwns = bazaarOwns(state) || dayEpisodeOwns || host.surface === 'day' && (!atDayPlace(state, 'cafe')
-    || state.day?.routine.returnMs < 2000);
+  const dayOwns = bazaarOwns(state) || dayEpisodeOwns || host.surface === 'day' && !atDayPlace(state, 'cafe');
   return { surfaceId: state.life?.authority.surfaceId ?? null, fence: state.life?.authority.fence ?? 0,
     ...host, canRun: ready && host.canRun !== false && !dayOwns,
     canContact: ready && !dayOwns && !state.resting && !(host.surface === 'day' && state.day?.rest) && host.canContact === true,
@@ -276,12 +280,94 @@ function runLife(state, operation) {
     throw error;
   }
 }
+// ── The living village (W3; vertical slice §6-4·§6-5·§14-4) ─────────────────────
+const DAY_MEMBERS = Object.freeze({ tea: ['cafe-owner', 'researcher'], coordination: ['workshop-owner', 'researcher'], help: ['workshop-owner'] });
+/** The spot a scene holds each member at — two members never share a one-seat spot (Fable P2-6). */
+const HOLD_SPOTS = Object.freeze({ tea: { 'cafe-owner': 'cafe.counter', researcher: 'cafe.front' },
+  coordination: { cafe: { 'workshop-owner': 'cafe.front', researcher: 'cafe.front' }, greenhouse: { 'workshop-owner': 'greenhouse.door', researcher: 'greenhouse.board' } },
+  help: { 'workshop-owner': 'workshop.bench' } });
+const holdSpot = (kind, location, npc) => (HOLD_SPOTS[kind][location] || HOLD_SPOTS[kind])[npc] || RESIDENT_BY_ID[npc].home;
+/** The residents scenes hold now: { npc: { by, spot, seat?, toMs? } }, read only from what commands
+ * change (§6-4 P1) — FT10's phase and delivery are judged as a whole use, the job by its fixed end. */
+function heldNow(state) {
+  const held = {}, hold = (npc, by, spot, extra = {}) => { held[npc] ||= { by, spot, ...extra }; };
+  const e = state.day?.episode;
+  if (e?.open && e.location === state.day.location && e.stage !== 'invalid' && !(e.kind === 'help' && e.choice === 'alone'))
+    for (const npc of DAY_MEMBERS[e.kind]) hold(npc, e.id, holdSpot(e.kind, e.location, npc));
+  const b = state.bazaar?.episode;
+  if (b?.open && state.day?.location === 'cafe') {
+    hold('cafe-owner', b.id, 'cafe.counter');
+    if (b.kind === 'pictureMenu' && b.stage !== 'role') hold('workshop-owner', b.id, 'cafe.front');
+  }
+  if (state.life?.episode?.open) hold('cafe-owner', state.life.episode.id, 'cafe.front');
+  if (state.placement && state.phase === 'ready' && !(state.activity === 'sign' ? state.sign.delivered : state.delivered))
+    hold('cafe-owner', `FT:${state.worldRevision}`, 'cafe.counter', { seat: FT_SEATS[state.placement].spot });
+  const job = state.day?.job;
+  if (job?.status === 'preparing') hold('workshop-owner', job.id, 'workshop.bench', { toMs: job.readyAt });
+  return held;
+}
+/** Where a habit may form (§6-5): the player's seat (anyone) and the first day's agreed spot (the workshop owner). */
+function habitSpots(state) {
+  const agreed = agreementSpot(state.day?.agreement);
+  return [...(state.placement && FT_SEATS[state.placement] ? [{ spot: FT_SEATS[state.placement].spot }] : []),
+    ...(agreed ? [{ spot: agreed, npc: 'workshop-owner' }] : [])];
+}
+/** The settlement's close step (town/settle.mjs close): bands that ended by nowMs close and the next
+ * opens; habit uses become town events. The host gives the village seed, its offset and visitEnd. */
+export function closeLiving(state, nowMs, { seed = 'synk-town', offsetMin = null, visitEnd = null } = {}) {
+  if (!state.village) return state;
+  const candidates = habitSpots(state);
+  keepHabitSpots(state.village, candidates);
+  for (const use of closeBands(state.village, { nowMs, seed, offsetMin, revision: state.revision, visitEnd, candidates }))
+    townEvent(state, 'habit.used', { ...use, actors: [use.npc] });
+  return state;
+}
+/** A command's end, after its 0-second chain: holds follow the scenes (a new hold opens now, a released
+ * one ends now), and a new first-day agreement is its first use and tomorrow's promise (§6-5). */
+function settleVillage(state, host) {
+  const v = state.village;
+  if (!v?.band || !Number.isSafeInteger(host.nowMs)) return;
+  keepHabitSpots(v, habitSpots(state));
+  holdResidents(v, heldNow(state), host.nowMs, state.revision + 1);
+  const agreement = state.day?.agreement, spot = agreementSpot(agreement);
+  if ((agreement?.resultId ?? null) === v.agreement) return;
+  v.agreement = agreement?.resultId ?? null;
+  if (!spot) return;
+  const use = recordUse(v, { npc: 'workshop-owner', spot, archetype: 'quiet-rest' });
+  if (use) townEvent(state, 'habit.used', { ...use, actors: ['workshop-owner'] });
+  promiseTomorrow(v, { id: `P-${state.revision + 1}`, npc: 'workshop-owner', archetype: 'quiet-rest', spot, nowMs: host.nowMs });
+}
+/** A visit that ended stops its scenes (§14-3 P1): open episodes close as their close commands would,
+ * and holds end at the wall time the visit ended (the lease break's visitEndAt). */
+function endVisitScenes(state, endedAt) {
+  if (state.day?.episode?.open) state.day.episode.open = false;
+  const c1 = state.life?.episode;
+  if (c1?.open) { c1.open = false; if (c1.stage === 'result') c1.dismissed = true; }
+  if (state.bazaar?.episode?.open) state.bazaar.episode.open = false;
+  if (state.village) closeOpen(state.village, endedAt);
+}
+/** The village as a scene at the time the world last saw a window (old screens draw npcs as given; new
+ * ones interpolate scene.village.segments with the server's clock — §14-4). null before a band opens. */
+function villageScene(state) {
+  const v = state.village;
+  if (!v?.band) return null;
+  const nowMs = Math.min(v.band.endMs - 1, Math.max(v.band.startMs, state.lifeHost?.lastForegroundAt ?? v.band.startMs));
+  const segments = planOf(v).segments;
+  const startSpots = Object.fromEntries(Object.entries(v.band.residents).map(([npc, r]) => [npc, r.lastSpot]).filter(([, spot]) => spot));
+  const places = Object.fromEntries(Object.keys(RESIDENT_BY_ID).map(npc => [npc, placeAt(segments, npc, nowMs, startSpots)]));
+  return { nowMs, places, line: caption(places), startSpots,
+    goals: Object.fromEntries(Object.entries(places).map(([npc, at]) => [npc, at ? (at.walking ? '다음 자리로 걸어가기' : ARCHETYPE_BY_ID[at.archetype]?.label || '함께하는 일') : '잠자기'])),
+    awake: Object.fromEntries(Object.keys(RESIDENT_BY_ID).map(npc => [npc, awakeAt(v, npc, nowMs)])),
+    band: { band: v.band.band, startMs: v.band.startMs, endMs: v.band.endMs },
+    segments: segments.filter(seg => seg.endMs > nowMs).map(({ npc, startMs, arriveMs, endMs, archetype, spot }) => ({ npc, startMs, arriveMs, endMs, archetype, spot })) };
+}
 /** One step of the living modules on a state, in place: the chain one old pulse ran. Settlement
  * (town/settle.mjs) walks unsettled time in steps of this, checking the state once around them. */
 export function stepLiving(state, host) {
   ensure(state.life && host?.enabled === true, 'life-unavailable', '이 체험에서는 이웃 생활을 열 수 없어요.', 403);
   // A visit that ended in a long rest takes its version and arm with it; the next visit opens its own.
   if (host.visitEnded && state.policy) state.policy = null;
+  if (host.visitEnded) endVisitScenes(state, host.visitEndedAt ?? null);
   advanceUse(state, host);
   runLife(state, () => advanceLife(state.life, livingContext(state, host)));
   if (state.day) runLife(state, () => advanceDay(state.day, dayContext(state, host)));
@@ -491,8 +577,11 @@ export function viewFor(state) {
       }
     }
   }
+  const village = state.day ? villageScene(state) : null;
   if (state.life) {
-    view.life = viewLife(state.life, livingContext(state));
+    const owner = village?.places['cafe-owner'];
+    view.life = viewLife(state.life, { ...livingContext(state), ...(village ? { ownerAwake: village.awake['cafe-owner'],
+      ownerLine: owner ? `${RESIDENT_BY_ID['cafe-owner'].label}은 ${doing(owner)[1]}.` : '찻집 주인은 지금 자고 있어요.' } : {}) });
     view.notebook.push(...(view.life.memory || []));
   }
   if (state.pendingUse) {
@@ -501,7 +590,7 @@ export function viewFor(state) {
     view.line = state.pendingUse.kind === 'tea' ? '손님이 자리를 확인하고 있어요.' : '손님이 안내판을 따라가요.';
     view.actions = view.actions.filter(a => ['SIT', 'REARRANGE', 'REMOVE', 'LEAVE'].includes(a.type));
   }
-  if (state.day) view.day = viewDay(state.day, dayContext(state, { surface: 'day' }));
+  if (state.day) view.day = viewDay(state.day, { ...dayContext(state, { surface: 'day' }), village });
   if (state.bazaar) view.bazaar = viewBazaar(state.bazaar, bazaarContext(state, { surface: 'day' }));
   if (state.support) view.support = viewSupport(state.support, supportContext(state));
   return view;
@@ -788,6 +877,7 @@ export function reduceCommand(previous, command, host = {}) {
     dayContext(state, { ...host, elapsedMs: 0 })));
   if (state.bazaar && command.type !== 'RESET') runLife(state, () => advanceBazaar(state.bazaar,
     bazaarContext(state, { ...host, elapsedMs: 0 })));
+  if (state.village && command.type !== 'RESET') settleVillage(state, host);
   state.revision++;
   state.commands.push({ id: command.id, signature, revision: state.revision });
   assertState(state);

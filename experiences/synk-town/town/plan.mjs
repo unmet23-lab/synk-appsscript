@@ -13,7 +13,7 @@
  * input.params, or the first version.
  */
 import { ARCHETYPES, RESIDENTS, ROUTINES, RAIN_ALT } from './data.gen.mjs';
-import { SPOT_BY_ID, SPOT_GROUPS, FT_SEATS } from './places.mjs';
+import { PLACES, SPOT_BY_ID, SPOT_GROUPS, FT_SEATS } from './places.mjs';
 import { createRng, pickByWeight } from './rng.mjs';
 import { dayKindOf, weatherAt as clockWeatherAt, weatherChangesBetween, MINUTE } from './clock.mjs';
 import { paramsFor } from './params.mjs';
@@ -56,9 +56,44 @@ export function agreementSpot(agreement) {
 
 const spotList = name => SPOT_GROUPS[name] || [name];
 const placeOf = spotId => SPOT_BY_ID[spotId].place;
-const distance = (a, b) => (a && b ? Math.hypot(SPOT_BY_ID[a].at.x - SPOT_BY_ID[b].at.x, SPOT_BY_ID[a].at.z - SPOT_BY_ID[b].at.z) : 0);
-/** Walking time between spots; residents walk slower than the player (planner.residentSpeed, m/s). */
-export const travelMs = (from, to, planner = paramsFor().planner) => Math.ceil(distance(from, to) / planner.residentSpeed) * 1000;
+// Residents keep to the street between places (W3 P3): a straight line from the cafe to the
+// greenhouse would cross the cafe's back wall. Doors are the places' spawns (the lane's is lane.mid);
+// the alleys beside the cafe lead behind it. Every edge is checked against walk.mjs in tests.
+const PLACE = id => PLACES.find(p => p.id === id), between = (a, b) => (a + b) / 2;
+const ALLEY_EAST = between(PLACE('cafe').center.x, PLACE('workshop').center.x), ALLEY_WEST = between(PLACE('home').center.x, PLACE('cafe').center.x);
+const BEHIND = between(PLACE('cafe').center.z, PLACE('greenhouse').center.z);
+const DOORS = Object.freeze({ ...Object.fromEntries(PLACES.filter(p => p.spawn).map(p => [p.id, p.spawn])),
+  lane: SPOT_BY_ID['lane.mid'].at, 'east-alley': { x: ALLEY_EAST, z: BEHIND },
+  'west-alley': { x: ALLEY_WEST, z: PLACE('home').spawn.z }, 'west-alley-back': { x: ALLEY_WEST, z: BEHIND } });
+export const STREET_EDGES = Object.freeze([['home', 'cafe'], ['cafe', 'lane'], ['cafe', 'workshop'], ['lane', 'workshop'],
+  ['lane', 'east-alley'], ['east-alley', 'greenhouse'], ['home', 'west-alley'], ['west-alley', 'west-alley-back'], ['west-alley-back', 'greenhouse']]);
+const STREET = (() => {
+  const nodes = Object.keys(DOORS), gap = (a, b) => Math.hypot(DOORS[a].x - DOORS[b].x, DOORS[a].z - DOORS[b].z);
+  const out = {};
+  for (const start of nodes) {
+    const dist = { [start]: 0 }, via = {}, open = new Set(nodes);
+    while (open.size) {
+      const here = [...open].filter(n => n in dist).sort((a, b) => dist[a] - dist[b] || (a < b ? -1 : 1))[0];
+      if (!here) break;
+      open.delete(here);
+      for (const [a, b] of STREET_EDGES) {
+        const next = a === here ? b : b === here ? a : null;
+        if (next && open.has(next) && !(dist[next] <= dist[here] + gap(here, next))) { dist[next] = dist[here] + gap(here, next); via[next] = here; }
+      }
+    }
+    out[start] = Object.fromEntries(nodes.map(end => { const path = [end]; while (path[0] !== start && via[path[0]]) path.unshift(via[path[0]]); return [end, path.map(n => DOORS[n])]; }));
+  }
+  return out;
+})();
+/** The points a resident walks from one spot to another: straight inside a place, by the doors between places. */
+export function routeBetween(from, to) {
+  if (!from || !to) return [];
+  const a = SPOT_BY_ID[from], b = SPOT_BY_ID[to];
+  return a.place === b.place ? [a.at, b.at] : [a.at, ...STREET[a.place][b.place], b.at];
+}
+const routeLength = points => points.slice(1).reduce((sum, p, i) => sum + Math.hypot(p.x - points[i].x, p.z - points[i].z), 0);
+/** Walking time between spots along routeBetween; residents walk slower than the player (planner.residentSpeed, m/s). */
+export const travelMs = (from, to, planner = paramsFor().planner) => Math.ceil(routeLength(routeBetween(from, to)) / planner.residentSpeed) * 1000;
 const sheltered = name => spotList(name).every(id => SPOT_BY_ID[id].sheltered);
 
 /** Spots of a name a resident may take at t: capacity minus what others hold then (travel included). */
@@ -115,9 +150,14 @@ export function planBand(input) {
     const before = segments.filter(x => x.npc === npc && x.startMs < from).map(x => (x.endMs > from ? { ...x, endMs: from, arriveMs: Math.min(x.arriveMs, from) } : x));
     const others = segments.filter(x => x.npc !== npc);
     const prior = summarize(before, input.residents?.[npc], P);
-    const holding = { npc, startMs: from, arriveMs: from, endMs: to, archetype: 'reserved', spot: hold.spot ?? prior.lastSpot ?? RESIDENT_BY_ID[npc].home, cause: 'reservation', reservation: hold.id, base: null };
+    // A scene calls its residents to its own spot; one who was elsewhere walks over first (§11-3, G9).
+    const spot = hold.spot ?? prior.lastSpot ?? RESIDENT_BY_ID[npc].home;
+    const holding = { npc, startMs: from, arriveMs: Math.min(from + travelMs(prior.lastSpot ?? RESIDENT_BY_ID[npc].home, spot, P), to), endMs: to,
+      archetype: 'reserved', spot, cause: 'reservation', reservation: hold.id, base: null };
     const after = to < s.end ? planRange([npc], { [npc]: { ...s, t: to, prior: { ...prior, lastSpot: holding.spot } } }, [...fixed, ...others, ...before, holding], ctx,
-      () => createRng(villageSeed, 'replan', lifeDay, band, npc, planCmdRev, Math.floor((to - startMs) / MINUTE), hold.id)) : [];
+      () => createRng(villageSeed, 'replan', lifeDay, band, npc, planCmdRev, Math.floor((to - startMs) / MINUTE), hold.id),
+      // A promise already begun before the hold is not made up afterwards (§6-4; Fable P1-4).
+      (input.promises || []).filter(p => !before.some(x => x.promise === p.id))) : [];
     segments = [...others, ...before, holding, ...after];
   }
   segments.sort((a, b) => a.startMs - b.startMs || order(a.npc) - order(b.npc));
@@ -168,7 +208,7 @@ function scanRainStarts(weatherAt, startMs, endMs) {
 }
 
 /** Plan the given residents from their start times, in time order, around fixed segments. */
-function planRange(npcs, starts, fixed, ctx, rngFor) {
+function planRange(npcs, starts, fixed, ctx, rngFor, promises = ctx.input.promises || []) {
   const { input } = ctx;
   const people = {};
   for (const npc of npcs) {
@@ -176,7 +216,7 @@ function planRange(npcs, starts, fixed, ctx, rngFor) {
     if (!s) continue;
     const prior = s.prior || {};
     people[npc] = { t: s.t, end: s.end, rng: rngFor(npc), recent: [...(prior.recent || [])], placesToday: [...(prior.placesToday || [])],
-      lastSpot: prior.lastSpot ?? null, firstOfDay: prior.firstOfDay !== false, promises: (input.promises || []).filter(p => p.npc === npc) };
+      lastSpot: prior.lastSpot ?? null, firstOfDay: prior.firstOfDay !== false, promises: promises.filter(p => p.npc === npc) };
   }
   const objects = structuredClone(input.objects || {});
   const made = [], deferred = [];

@@ -3,13 +3,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { initialState, restoreState, reduceCommand, snapshot, stepLiving, assertState, foldWorld, FOLD_LIMITS, TownError } from './core.mjs';
-import { initialPresence, commandPresence, initialLease, pulseLease, boundaryPresence, pruneLease, settledLease, leaseFull, LEASE_ENTRIES } from './presence.mjs';
+import { initialState, restoreState, reduceCommand, snapshot, stepLiving, closeLiving, assertState, foldWorld, FOLD_LIMITS, TownError } from './core.mjs';
+import { initialPresence, commandPresence, initialLease, pulseLease, boundaryPresence, pruneLease, settledLease, leaseFull, LEASE_ENTRIES, visitEndAt, VISIT_IDLE_MS } from './presence.mjs';
 import { settle } from './town/settle.mjs';
 import { contentCatalog, recordSeen, clearSeen, validSeen } from './town/seen.mjs';
 import { writeVisit, visitLine, mayWrite } from './town/eval.mjs';
 import { branchPaths, atomicWrite, appendLines, readLines, truncateTo, removeFile } from './save.mjs';
-import { lifeDayAt, validOffset } from './town/clock.mjs';
+import { lifeDayAt, offsetAt, validOffset } from './town/clock.mjs';
 import { validateOps, DEFAULT_OPS } from './town/params.mjs';
 import { eventProblem } from './town/events.mjs';
 import { ITEMS } from './town/data.gen.mjs';
@@ -77,13 +77,18 @@ export function observationClock(observe, realNow = () => Date.now()) {
 const count = value => Number.isSafeInteger(value) && value >= 0, stamp = value => value === null || count(value);
 /** Whether a saved lease is whole enough to take its play time back (anything else falls back to the
  * world's host stamp). */
+/** Whether a settled world differs from the saved one only in what the village recomputes (W3). */
+const villageOnly = (world, saved) => JSON.stringify({ ...world, village: null, townEvents: null, townSeq: null })
+  === JSON.stringify({ ...saved, village: null, townEvents: null, townSeq: null });
 function validLease(lease) {
   return !!lease && count(lease.uMs) && stamp(lease.lastForegroundAt) && !!lease.presence && stamp(lease.presence.at)
     && stamp(lease.presence.lastActiveAt) && typeof lease.presence.idleClosed === 'boolean' && count(lease.presence.fence)
     && Array.isArray(lease.spans) && lease.spans.length <= LEASE_ENTRIES && lease.spans.every(span => count(span?.u)
       && (span.surfaceId === null || typeof span.surfaceId === 'string') && count(span.fence) && ['classic', 'day'].includes(span.surface)
       && typeof span.canRun === 'boolean')
-    && Array.isArray(lease.breaks) && lease.breaks.length <= LEASE_ENTRIES && lease.breaks.every(count);
+    && Array.isArray(lease.breaks) && lease.breaks.length <= LEASE_ENTRIES && lease.breaks.every(count)
+    && (lease.breakAts === undefined || !!lease.breakAts && typeof lease.breakAts === 'object' && !Array.isArray(lease.breakAts)
+      && Object.keys(lease.breakAts).length <= LEASE_ENTRIES && Object.entries(lease.breakAts).every(([u, at]) => /^\d+$/.test(u) && count(at)));
 }
 /** One process owns this developer fixture. Commit to durable storage before
  * publishing its new state. A bad save is blocked, never silently re-created.
@@ -194,8 +199,8 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
     else if (paths) for (const key of ['events', 'receipts', 'seen', 'eval', 'lease']) removeFile(paths[key]);
   } catch { loadError = new TownError('invalid-save', '저장 기록을 읽지 못했어요. 원본을 보존하고 확인해 주세요.', 503); }
   const persist = save || (file ? next => atomicWrite(file, JSON.stringify(next)) : null);
-  const current = () => {
-    const shown = snapshot(state);
+  const current = (world = state) => {
+    const shown = snapshot(world);
     shown.state.events = log.slice(); shown.state.commands = [...receipts.values()]; shown.state.townEvents = townLog.slice();
     return { ...shown, seen: { ...seen }, capabilities: { life: !!state.life && lifeEnabled, day: !!state.day && lifeEnabled } };
   };
@@ -262,10 +267,12 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
     const settledU = state.settledU ?? 0, host = state.lifeHost;
     if (!validLease(savedLease)) return initialLease({ uMs: settledU, lastForegroundAt: host?.lastForegroundAt ?? null,
       presence: { ...initialPresence(), lastActiveAt: host?.lastForegroundAt ?? null, fence: host?.fence || 0 } });
-    const p = savedLease.presence;
+    // No window survives a restart; the visit still ends when it would have (visitEndAt counts the last
+    // window's lease), so the restarted presence keeps that time as its last activity.
+    const p = savedLease.presence, endAt = visitEndAt(p);
     return pruneLease({ ...initialLease({ uMs: Math.max(savedLease.uMs, settledU), lastForegroundAt: savedLease.lastForegroundAt,
-      presence: { ...initialPresence(), at: p.at, lastActiveAt: p.lastActiveAt, idleClosed: p.idleClosed, fence: Math.max(p.fence, host?.fence || 0) } }),
-    spans: savedLease.spans, breaks: savedLease.breaks }, settledU);
+      presence: { ...initialPresence(), at: p.at, lastActiveAt: endAt === null ? p.lastActiveAt : endAt - VISIT_IDLE_MS, idleClosed: p.idleClosed, fence: Math.max(p.fence, host?.fence || 0) } }),
+    spans: savedLease.spans, breaks: savedLease.breaks, breakAts: savedLease.breakAts || {} }, settledU);
   }
   let lease = leaseAfterRestart();
   /** The lease file follows every lease change. It is a restart's aid, never the authority: a write
@@ -287,7 +294,11 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
   /** The world settled to a lease, with the host stamp a pulse leaves; null when nothing changed. */
   function settledTo(next, { nowMs, canContact = false, touch = false }) {
     if (!living()) return null;
-    let { state: world, changed } = settle(state, next, { step: stepLiving, check: assertState, nowMs, canContact, touch });
+    // The village closes its bands on every settlement (W3): its seed and offset come from the account, and a
+    // visit the lease shows ended (visitEndAt reached) ends the holds opened before it — read, not recorded.
+    const endAt = visitEndAt(next.presence), close = (world, at) => closeLiving(world, at, { seed: account.villageSeed,
+      offsetMin: offsetAt(tz, at), visitEnd: endAt !== null && endAt <= at ? endAt : null });
+    let { state: world, changed } = settle(state, next, { step: stepLiving, check: assertState, close, nowMs, canContact, touch });
     const lifeHost = { lastForegroundAt: next.lastForegroundAt, fence: next.presence.fence };
     if (next.presence.at !== null && JSON.stringify(lifeHost) !== JSON.stringify(world.lifeHost ?? null)) {
       world = { ...world, lifeHost }; changed = true;
@@ -313,6 +324,9 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
     read() {
       if (loadError) throw loadError;
       const world = settledTo(lease, { nowMs: hostNow() });
+      // A read that only moved the village's bands shows them without writing: the next settlement
+      // opens and closes them the same way (W3) — so reading never needs the disk.
+      if (world && villageOnly(world, state)) return current(world);
       if (world) { commit(world); lease = settledLease(lease, state.settledU); keepLease(); }
       return current();
     },

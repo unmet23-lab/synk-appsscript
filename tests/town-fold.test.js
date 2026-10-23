@@ -207,7 +207,8 @@ test('접기는 배열마다 읽는 쪽이 닿는 줄을 남긴다 — 가리키
   for (const id of ['DAY:5:tea:result', 'DAY:3:help:result', 'DAY:1:tea:result', 'DAY:2:tea:result', 'DAY:39:tea:result', 'DAY:38:tea:result']) assert.ok(ids.includes(id), id);
   assert.deepEqual(screenOf(day.history), screenOf(before.history), '지도·기억 표식이 같다');
   assert.deepEqual(day.roleEvidence.map(e => e.resultId), ['DAY:5:tea:result', 'DAY:2:tea:result'].filter(id => ids.includes(id)));
-  assert.deepEqual(day.emitted, ['DAY:routine:2:cafe-tidied', 'DAY:3:help:acted', 'DAY:398:move:cafe', 'DAY:399:move:cafe']);
+  // The 14-second script's keys are no longer live (W3: residents' own day is the village planner's).
+  assert.deepEqual(day.emitted, ['DAY:3:help:acted', 'DAY:398:move:cafe', 'DAY:399:move:cafe']);
   assert.equal(day.folded.emitted, before.emitted.length - day.emitted.length);
   assert.equal(Object.values(day.folded.history).reduce((a, b) => a + b, 0) + day.history.length, before.history.length);
   const life = { episode: { resultId: 'C1:episode:1:result' }, currentAgreement: { resultId: 'C1:episode:2:result' },

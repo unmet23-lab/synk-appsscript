@@ -118,14 +118,6 @@ function reconcileWorld(life, ctx) {
   if (life.episode && !sameWorld(life.episode, ctx) && !life.episode.resultId) life.episode.stage = 'invalid';
   for (const c of life.contacts) if (!sameWorld(c, ctx) && ['issued', 'delivered', 'detail'].includes(c.status)) c.status = 'cancelled';
 }
-function advanceRoutine(life, elapsedMs, facts) {
-  const r = life.routine;
-  r.elapsedMs = Math.min(6000, r.elapsedMs + elapsedMs);
-  r.phase = r.elapsedMs < 3000 ? 'tidying' : r.elapsedMs < 6000 ? 'walking' : 'resting';
-  const source = `C1:routine:${r.worldRevision}:${r.placement}`;
-  if (r.elapsedMs >= 3000 && !r.tidyRecorded) { r.tidyRecorded = true; facts.push(fact('cafe.C1.tidied', `${source}:tidied`)); }
-  if (r.elapsedMs >= 6000 && !r.useRecorded) { r.useRecorded = true; facts.push(fact('cafe.C1.rested', `${source}:rested`, [`${source}:tidied`])); }
-}
 function advanceEpisode(life, elapsedMs, facts) {
   const e = life.episode;
   // The U the work actually ended at, however long the chunk was (F4).
@@ -161,13 +153,9 @@ export function advanceLife(life, context) {
     if (c.issuedSurfaceId !== ctx.surfaceId || c.issuedFence !== ctx.fence) c.status = c.delivered ? 'passed' : 'deliveryUnknown';
     else if (life.uMs - c.issuedU >= 20000) c.status = c.delivered ? 'passed' : 'deliveryUnknown';
   }
-  if (ctx.canRun && ctx.placement && life.activeVisit) {
-    if (life.episode?.stage === 'executing') advanceEpisode(life, ctx.elapsedMs || 0, facts);
-    else {
-      // A completed interaction keeps its one actor in its actual final pose.
-      if (!life.episode?.resultId || !sameWorld(life.episode, ctx)) advanceRoutine(life, ctx.elapsedMs || 0, facts);
-    }
-  }
+  // The owner's own day is the village planner's (W3): the old tidy-and-rest loop no longer runs, and
+  // only a C1 scene moves the owner here.
+  if (ctx.canRun && ctx.placement && life.activeVisit && life.episode?.stage === 'executing') advanceEpisode(life, ctx.elapsedMs || 0, facts);
   const contactKey = ctx.placement ? descriptorKey(ctx) : null;
   const recent = life.contacts.filter(c => c.issuedU > life.uMs - 900000 && c.issuedU <= life.uMs);
   const last = life.contacts.at(-1);
@@ -300,14 +288,16 @@ export function viewLife(life, context = {}) {
   assertLife(life);
   const ctx = { ...life.environment, canRun: true, ...context };
   const e = life.episode, active = e && sameWorld(e, ctx);
-  const r = life.routine, seat = placements[ctx.placement] || { x: 25, y: 54 };
+  const seat = placements[ctx.placement] || { x: 25, y: 54 };
   const committedEpisode = active && ['executing', 'result'].includes(e.stage);
   const direction = committedEpisode && e.direction || life.currentAgreement?.direction || 'clear';
   const working = active && e.stage === 'executing';
+  // Only a C1 scene places the owner here; otherwise the owner is free and the village plan draws it (W3).
+  const holds = !!e && active && !e.dismissed && (e.open || committedEpisode);
   const phase = working ? e.elapsedMs < 2000 ? 'tidying' : e.elapsedMs < 4000 ? 'walking' : 'settling'
-    : active && e.resultId ? 'resting' : r.phase;
+    : active && e.resultId ? 'resting' : holds ? 'waiting' : 'free';
   const start = { x: 42, y: 60 }, destination = { x: Math.min(90, seat.x + (direction === 'near' ? 13 : 20)), y: seat.y + (direction === 'near' ? 2 : 9) };
-  const moveT = phase === 'walking' ? Math.min(1, Math.max(0, working ? (e.elapsedMs - 2000) / 2000 : (r.elapsedMs - 3000) / 3000)) : phase === 'resting' || phase === 'settling' ? 1 : 0;
+  const moveT = phase === 'walking' ? Math.min(1, Math.max(0, (e.elapsedMs - 2000) / 2000)) : phase === 'resting' || phase === 'settling' ? 1 : 0;
   const owner = { x: start.x + (destination.x - start.x) * moveT, y: start.y + (destination.y - start.y) * moveT,
     pose: phase === 'tidying' ? 'tidying' : phase === 'walking' ? 'walking' : phase === 'resting' || phase === 'settling' ? 'resting' : 'standing' };
   const prop = { x: phase === 'tidying' ? 46 : Math.min(92, seat.x + (direction === 'near' ? 10 : 22)),
@@ -341,8 +331,10 @@ export function viewLife(life, context = {}) {
     interaction = { id: e.id, stage: active ? e.stage : 'invalid', line, actions, resultId: e.resultId,
       role: e.role, direction: e.direction, delivered: e.delivered, open: e.open };
   }
-  return { mode: life.mode, canStart: ctx.canRun === true && !!ctx.placement, restGuard: life.restGuard,
-    background: { phase, owner, prop, line: phase === 'tidying' ? '주인이 자기 잔을 정리해요.' : phase === 'walking' ? '주인이 쉬는 자리로 가요.' : phase === 'resting' ? '주인이 잠깐 쉬어요.' : '주인이 자기 일을 하고 있어요.' },
+  return { mode: life.mode, canStart: ctx.canRun === true && !!ctx.placement && ctx.ownerAwake !== false, restGuard: life.restGuard,
+    background: { phase, ...(holds ? { owner, prop } : {}), inviting: owner.pose === 'inviting',
+      line: phase === 'tidying' ? '주인이 자기 잔을 정리해요.' : phase === 'walking' ? '주인이 쉬는 자리로 가요.' : phase === 'resting' ? '주인이 잠깐 쉬어요.'
+        : ctx.ownerLine || '주인이 자기 일을 하고 있어요.' },
     contact: contact ? { id: contact.id, label: '잔을 놓을 방향을 함께 볼까요?', state: contact.status,
       issuedSurfaceId: contact.issuedSurfaceId, issuedFence: contact.issuedFence, bodyWaiting: life.uMs - contact.issuedU < 8000 } : null,
     interaction, memory: life.history.slice(-6).map(memoryFor), currentAgreement: life.currentAgreement ? { ...life.currentAgreement } : null };

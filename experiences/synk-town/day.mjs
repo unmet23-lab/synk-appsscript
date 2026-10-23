@@ -5,6 +5,7 @@
  */
 import { WALK_SPAWNS, WALK_SPEED, isWalkable, nearbyPlace, movePoint, walkSegments } from './walk.mjs';
 import { PLACE_BY_ID, PLAYER_PLACES, FT_SEATS, HOME_SLOTS } from './town/places.mjs';
+import { doing } from './town/village.mjs';
 export class DayError extends Error {
   constructor(code, message, status = 400) { super(message); this.code = code; this.status = status; }
 }
@@ -25,6 +26,10 @@ const key = value => typeof value === 'string' && /^DAY:[a-zA-Z0-9_.:-]{1,130}$/
 const action = (type, label, payload = {}, primary = false) => ({ type, label, payload, primary });
 const members = kind => kind === 'tea' ? ['cafe-owner', 'researcher'] : kind === 'coordination' ? ['workshop-owner', 'researcher'] : ['workshop-owner'];
 const labelPlace = place => DAY_LOCATIONS[place].label;
+const RESIDENT_LABELS = Object.freeze({ 'cafe-owner': '찻집 주인', 'workshop-owner': '공방 주인', researcher: '연구원' });
+/** What a resident is doing now in the village plan (W3), or the old line before a band opens. */
+const residentLine = (ctx, npc, fallback) => !ctx.village ? fallback
+  : `${RESIDENT_LABELS[npc]}은 ${ctx.village.places[npc] ? doing(ctx.village.places[npc])[1] : '지금 자고 있어요'}.`;
 const validLanguageBasis = (value, mode) => value === undefined || value && value.mode === mode
   && ['default', 'explicit', 'accepted-proposal'].includes(value.source) && integer(value.revision)
   && (value.source === 'accepted-proposal' ? value.basis && typeof value.basis === 'object' : value.basis === null);
@@ -33,10 +38,9 @@ export function initialDay() {
   return { schema: 1, location: 'home', visit: 1, hasGoneOut: false, atHomeAfterOuting: false,
     home: { slot: 'window', previewSlot: null, exitTarget: null, revision: 0 }, support: 'demo', sequence: 0, uMs: 0,
     hostNowMs: 0, environment: { placement: null, seatRevision: 0, ftReady: false },
-    routine: newRoutine(1), emitted: [], episode: null, history: [], roleEvidence: [],
+    emitted: [], episode: null, history: [], roleEvidence: [],
     agreement: null, job: null, rest: false };
 }
-function newRoutine(visit) { return { elapsedMs: 0, visit, cafeMs: 0, workshopMs: 0, researcherMs: 0, pairMs: 0, returnMs: 0, habitResultId: null, habitMs: 0 }; }
 
 function assertTarget(t) {
   return t && enumValue(t.kind, ['base', 'seat']) && integer(t.seatRevision)
@@ -51,10 +55,6 @@ export function assertDay(day) {
     || !integer(day.home.revision) || !modes.includes(day.support) || !integer(day.sequence) || !integer(day.uMs) || !integer(day.hostNowMs)
     || !day.environment || !(day.environment.placement === null || seats.includes(day.environment.placement))
     || !integer(day.environment.seatRevision) || typeof day.environment.ftReady !== 'boolean'
-    || !day.routine || !integer(day.routine.elapsedMs) || day.routine.elapsedMs > 14000 || day.routine.visit !== day.visit
-    || !['cafeMs', 'workshopMs', 'researcherMs', 'pairMs', 'returnMs', 'habitMs'].every(k => integer(day.routine[k]))
-    || day.routine.cafeMs > 3000 || day.routine.workshopMs > 8000 || day.routine.researcherMs > 3000 || day.routine.pairMs > 4000 || day.routine.returnMs > 2000 || day.routine.habitMs > 4000
-    || !(day.routine.habitResultId === null || key(day.routine.habitResultId))
     || !Array.isArray(day.emitted) || !day.emitted.every(key) || new Set(day.emitted).size !== day.emitted.length
     || !Array.isArray(day.history) || !Array.isArray(day.roleEvidence)) throw bad();
   if (day.walk !== undefined && (!day.walk || typeof day.walk.enabled !== 'boolean' || !isWalkable(day.walk)
@@ -99,10 +99,11 @@ export function assertDay(day) {
     && Object.entries(day.folded.history).every(([k, n]) => kinds.includes(k) && integer(n)))) throw bad();
   return day;
 }
-/** The source keys the module can still name as a cause or emit again: this visit's routine, the
- * current episode, the job and the agreement. Other keys only grow (sequence, visit, home revision). */
+/** The source keys the module can still name as a cause or emit again: the current episode, the job
+ * and the agreement. Other keys only grow (sequence, visit, home revision). The residents' own day is
+ * the village planner's (W3) and emits no facts here. */
 export function liveSourceKey(day) {
-  const prefixes = [`DAY:routine:${day.visit}:`, day.episode && `${day.episode.id}:`, day.job && `${day.job.id}:`].filter(Boolean);
+  const prefixes = [day.episode && `${day.episode.id}:`, day.job && `${day.job.id}:`].filter(Boolean);
   const keys = new Set([day.agreement?.resultId, day.episode?.resultId].filter(Boolean));
   return k => keys.has(k) || prefixes.some(prefix => k.startsWith(prefix));
 }
@@ -214,37 +215,6 @@ function advanceEpisode(day, elapsedMs, facts) {
   if (e.kind === 'help') { e.stage = 'awaitFinish'; e.elapsedMs = 0; return; }
   complete(day, e, facts, endedU);
 }
-function advanceRoutine(day, elapsedMs, facts, ctx) {
-  const r = day.routine;
-  if (r.habitResultId !== (day.agreement?.resultId ?? null)) { r.habitResultId = day.agreement?.resultId ?? null; r.habitMs = 0; }
-  r.elapsedMs = Math.min(14000, r.elapsedMs + elapsedMs);
-  const prefix = `DAY:routine:${day.visit}`;
-  const reserved = reservedMembers(day);
-  if (ctx.cafeBusy) reserved.add('cafe-owner');
-  if (ctx.workshopBusy) reserved.add('workshop-owner');
-  if (day.job?.status === 'preparing') reserved.add('workshop-owner');
-  const beforeC = r.cafeMs, beforeW = r.workshopMs, beforePair = r.pairMs;
-  if (!reserved.has('cafe-owner')) r.cafeMs = Math.min(3000, r.cafeMs + elapsedMs);
-  // Wait at the workshop doorway while the cafe body is reserved by another scene.
-  if (!reserved.has('workshop-owner')) r.workshopMs = Math.max(r.workshopMs, Math.min(reserved.has('cafe-owner') ? 3000 : 8000, r.workshopMs + elapsedMs));
-  if (!reserved.has('researcher')) r.researcherMs = Math.min(3000, r.researcherMs + elapsedMs);
-  if (r.cafeMs >= 3000) emit(day, facts, 'day.cafe.own-tray.tidied', `${prefix}:cafe-tidied`, ['cafe-owner']);
-  if (r.workshopMs >= 3000) emit(day, facts, 'day.workshop.own-tools.stored', `${prefix}:tools-stored`, ['workshop-owner']);
-  if (r.researcherMs >= 3000) emit(day, facts, 'day.researcher.own-board.prepared', `${prefix}:board-prepared`, ['researcher']);
-  const pairAvailable = !reserved.has('cafe-owner') && !reserved.has('workshop-owner')
-    ? Math.max(0, Math.min(elapsedMs, beforeC + elapsedMs - 3000, beforeW + elapsedMs - 8000)) : 0;
-  r.pairMs = Math.min(4000, r.pairMs + pairAvailable);
-  if (r.pairMs >= 1000) emit(day, facts, 'day.pair.CW.needs.exchanged', `${prefix}:pair-needs`, ['cafe-owner', 'workshop-owner'], [`${prefix}:cafe-tidied`, `${prefix}:tools-stored`]);
-  if (r.pairMs >= 4000) emit(day, facts, 'day.pair.CW.support.checked', `${prefix}:pair-help`, ['cafe-owner', 'workshop-owner'], [`${prefix}:pair-needs`]);
-  if (!reserved.has('workshop-owner') && r.pairMs >= 4000) r.returnMs = Math.min(2000, r.returnMs + Math.max(0, beforePair + pairAvailable - 4000));
-  if (r.returnMs >= 2000 && !day.agreement) {
-    emit(day, facts, 'day.workshop.basic-seat.rested', `${prefix}:workshop-rested`, ['workshop-owner']);
-  }
-  if (r.pairMs >= 4000 && day.agreement && !reserved.has('workshop-owner') && !reserved.has('researcher')) {
-    r.habitMs = Math.min(4000, r.habitMs + Math.max(0, beforePair + pairAvailable - 4000));
-    if (r.habitMs >= 4000) emit(day, facts, 'day.coordination.agreed-use.revisited', `${prefix}:habit:${day.agreement.resultId}`, ['workshop-owner', 'researcher'], [day.agreement.resultId]);
-  }
-}
 export function advanceDay(day, context) {
   assertDay(day); const ctx = contextFor(context), facts = [];
   reconcile(day, ctx, facts);
@@ -252,7 +222,6 @@ export function advanceDay(day, context) {
     day.uMs += ctx.elapsedMs || 0;
     ensure(integer(day.uMs), 'invalid-day-time', '생활 시간을 다시 확인해 주세요.', 503);
     advanceEpisode(day, ctx.elapsedMs || 0, facts);
-    advanceRoutine(day, ctx.elapsedMs || 0, facts, ctx);
   }
   assertDay(day); return facts;
 }
@@ -279,7 +248,7 @@ function moveTo(day, location, facts) {
   day.location = location; day.rest = false; day.home.previewSlot = null; day.home.exitTarget = null;
   if (day.walk && !day.walk.enabled) Object.assign(day.walk, WALK_SPAWNS[location]);
   if (from === 'home' && location !== 'home') {
-    if (day.atHomeAfterOuting) { day.visit++; day.routine = newRoutine(day.visit); day.atHomeAfterOuting = false; }
+    if (day.atHomeAfterOuting) { day.visit++; day.atHomeAfterOuting = false; }
     day.hasGoneOut = true;
   }
   if (location === 'home' && day.hasGoneOut) day.atHomeAfterOuting = true;
@@ -473,17 +442,11 @@ function seatPoint(target) {
   return target?.kind === 'seat' ? { ...FT_SEATS[target.placement].at } : { x: .4, z: 1.8 };
 }
 function sceneFor(day, ctx) {
-  const r = day.routine, t = r.workshopMs, pairDone = day.emitted.includes(`DAY:routine:${day.visit}:pair-help`);
-  const cafe = actor('cafe-owner', -.6, -.3, r.cafeMs < 3000 ? 'working' : r.pairMs > 0 && !pairDone ? 'talking' : 'resting', r.cafeMs < 3000 ? '자기 쟁반 정리' : '찻집의 통로 살피기');
-  let workshop;
-  if (t < 3000) workshop = actor('workshop-owner', 6, .2, 'working', '자기 도구 보관');
-  else if (t < 8000) workshop = actor('workshop-owner', mix(6, .6, (t - 3000) / 5000), .2, 'walking', '찻집 받침을 보러 가기');
-  else if (!pairDone) workshop = actor('workshop-owner', .6, .2, 'talking', '찻집 주인과 받침 확인');
-  else if (r.returnMs < 2000) workshop = actor('workshop-owner', mix(.6, 5.4, r.returnMs / 2000), .6, 'walking', '공방 기본 자리로 돌아가기');
-  else workshop = actor('workshop-owner', 5.4, .6, 'resting', '자기 자리에서 쉬기');
-  if (day.job?.status === 'preparing') workshop = actor('workshop-owner', 6, .2, 'working', '부탁받은 받침 하나 준비');
-  const researcher = actor('researcher', .3, -6, r.researcherMs < 3000 ? 'working' : 'showing', '자기 관찰판 준비');
-  const npcs = [cafe, workshop, researcher];
+  // Residents stand where the village plan has them now (W3, §6-6); a scene moves only the ones it holds.
+  const v = ctx.village;
+  const npcs = ids.filter(id => v?.places?.[id]).map(id => actor(id, v.places[id].x, v.places[id].z, v.places[id].pose, v.goals[id]));
+  const workshop = npcs.find(n => n.id === 'workshop-owner');
+  if (workshop && day.job?.status === 'preparing') Object.assign(workshop, { pose: 'working', goal: '부탁받은 받침 하나 준비' });
   const props = [
     { id: 'home-cushion', kind: 'cushion', ...HOME_SLOTS[day.home.slot] },
     { id: 'cafe-tray', kind: 'tray', x: -.7, z: -.65 },
@@ -497,25 +460,18 @@ function sceneFor(day, ctx) {
     const pos = seatPoint({ kind: 'seat', placement: day.environment.placement });
     props.push({ id: 'ft-seat', kind: 'chair', ...pos });
   }
-  const a = day.agreement, reserved = reservedMembers(day);
-  if (a && pairDone && !reserved.has('workshop-owner') && !reserved.has('researcher')) {
-    const place = a.location === 'cafe' ? seatPoint(a.target) : DAY_LOCATIONS[a.location];
-    workshop.x = mix(.6, place.x - .8, r.habitMs / 4000); workshop.z = mix(.2, place.z + .2, r.habitMs / 4000);
-    workshop.pose = r.habitMs < 4000 ? 'walking' : 'resting'; workshop.goal = '지난 합의가 유효한 자리에서 조용히 쉬기';
-    if (['separate', 'silent'].includes(a.choice)) {
-      researcher.x = mix(.3, place.x + 1.8, r.habitMs / 4000); researcher.z = mix(-6, place.z - .3, r.habitMs / 4000);
-      researcher.pose = r.habitMs < 4000 ? 'walking' : 'showing'; researcher.goal = a.choice === 'silent' ? '말 없이 큰 그림만 펼치기' : '합의한 별도 그림 자리 이용';
-      if (r.habitMs >= 4000) Object.assign(props.find(p => p.id === 'researcher-board'), { x: place.x + 1.2, z: place.z - .3 });
-    } else { researcher.pose = 'resting'; researcher.goal = a.choice === 'rest' ? '설명을 먼저 열 때까지 기다리기' : '자기 온실에서 그림 보여 주기'; }
-  }
   const e = day.episode;
   if (e?.open && e.location === day.location && e.stage !== 'invalid') {
     const base = e.location === 'cafe' ? seatPoint(e.target) : DAY_LOCATIONS[e.location];
     const progress = ['executing', 'rehearsal'].includes(e.stage) ? e.elapsedMs / 2000 : 1;
     for (const id of members(e.kind)) {
       if (e.kind === 'help' && e.choice === 'alone') continue;
-      const n = npcs.find(row => row.id === id), index = members(e.kind).indexOf(id);
-      const targetX = base.x + (index ? 1 : -.8), targetZ = base.z + .3;
+      const index = members(e.kind).indexOf(id), targetX = base.x + (index ? 1 : -.8), targetZ = base.z + .3;
+      // A resident still walking over to the scene keeps the plan's walk (Fable P2-2); one the plan has
+      // asleep (a scene that ran past bedtime) stays at the scene.
+      if (v?.places?.[id]?.walking && v.places[id].archetype === 'reserved') continue;
+      let n = npcs.find(row => row.id === id);
+      if (!n) { n = actor(id, targetX, targetZ, 'standing', ''); npcs.push(n); }
       n.x = mix(n.x, targetX, progress); n.z = mix(n.z, targetZ, progress);
       n.pose = ['executing', 'rehearsal'].includes(e.stage) && e.elapsedMs < 2000 ? 'walking' : e.kind === 'help' ? 'holding' : id === 'researcher' ? 'showing' : 'resting';
       if (e.stage === 'demonstration') n.pose = 'showing';
@@ -546,15 +502,13 @@ function sceneFor(day, ctx) {
     const prop = props.find(p => p.id === shown);
     if (prop) Object.assign(prop, { x: here.x + (e.guideStep ? .8 : -.8), z: here.z + 1, preview: true });
   }
-  const cafeReserved = reservedMembers(day).has('cafe-owner') || r.returnMs < 2000;
-  const backgroundLine = day.job?.status === 'preparing' ? '공방 주인은 부탁받은 받침을 준비하고, 다른 주민은 자기 일을 해요.'
-    : r.pairMs >= 1000 && r.pairMs < 4000 ? '찻집 주인: “이 받침이 조금 흔들려요.” 공방 주인: “제 도구로 잠깐 확인할게요.”'
-      : r.pairMs >= 4000 ? '공방 주인이 찻집의 받침을 확인했어요. 연구원은 온실에서 자기 그림을 준비해요.'
-        : '찻집은 쟁반을 정리하고, 공방은 도구를 보관하고, 연구원은 그림 한 장을 준비해요.';
+  const cafeReserved = reservedMembers(day).has('cafe-owner');
+  const backgroundLine = day.job?.status === 'preparing' ? '공방 주인은 부탁받은 받침을 준비하고, 다른 주민은 자기 일을 해요.' : v?.line || '';
   return { location: day.location, player: day.walk?.enabled ? { x: day.walk.x, z: day.walk.z, headingX: day.walk.headingX, headingZ: day.walk.headingZ }
     : { x: here.x, z: day.location === 'home' && day.home.exitTarget ? 1.2 : here.z + 2.5 },
     npcs: ctx.cafeBusy && day.location === 'cafe' ? npcs.filter(n => n.id !== 'cafe-owner') : npcs, props,
-    cafeReserved, summary: backgroundLine, phase: e?.open ? e.stage : day.rest ? 'resting' : 'walking' };
+    cafeReserved, summary: backgroundLine, phase: e?.open ? e.stage : day.rest ? 'resting' : 'walking',
+    ...(v ? { village: { band: v.band, segments: v.segments, startSpots: v.startSpots } } : {}) };
 }
 function historySummary(h) {
   const role = h.role === 'planner' ? '함께 정함' : h.role === 'delegated' ? '분담을 맡김' : h.observedU === null ? '주민의 결과 준비됨 · 아직 관람 전' : '실제로 관람함';
@@ -605,8 +559,8 @@ export function viewDay(day, context) {
   assertDay(day); const ctx = contextFor(context);
   const loc = day.location, actions = [], e = day.episode;
   let line = loc === 'home' ? day.atHomeAfterOuting ? '다녀왔어요. 바꾼 방석과 오늘의 생활은 그대로 남아 있어요.' : '여기서 쉬어 볼까요? 방석은 창가나 탁자 곁에 둘 수 있어요.'
-    : loc === 'cafe' ? day.visit > 1 && day.history.length ? '다시 왔어요. 지난 선택은 수첩에 있고, 오늘 쓸 방식은 다시 고를 수 있어요.' : day.routine.cafeMs < 3000 ? '주인은 자기 쟁반을 정리하고 있어요. 준비한 자리에서 차와 그림을 만나 보세요.' : '주인의 쟁반이 정리됐어요. 준비한 자리에서 차와 그림을 만나 보세요.'
-      : loc === 'workshop' ? memoryLine(day, 'workshop-owner') : day.routine.researcherMs < 3000 ? '연구원이 관찰판에 놓을 그림을 준비하고 있어요.' : '연구원이 자기 관찰판을 접어 큰 그림 한 장을 준비했어요.';
+    : loc === 'cafe' ? day.visit > 1 && day.history.length ? '다시 왔어요. 지난 선택은 수첩에 있고, 오늘 쓸 방식은 다시 고를 수 있어요.' : `${residentLine(ctx, 'cafe-owner', '주인은 자기 일을 하고 있어요.')} 준비한 자리에서 차와 그림을 만나 보세요.`
+      : loc === 'workshop' ? memoryLine(day, 'workshop-owner') : residentLine(ctx, 'researcher', '연구원이 관찰판에 놓을 그림을 준비하고 있어요.');
   let speaker = loc === 'workshop' ? '공방 주인' : loc === 'greenhouse' ? '연구원' : loc === 'home' ? '우리 집' : '찻집';
   if (loc === 'home' && day.home.exitTarget) {
     line = `문 앞에 왔어요. ${labelPlace(day.home.exitTarget)} 쪽으로 나갈까요?`;
@@ -619,18 +573,21 @@ export function viewDay(day, context) {
       if (day.home.previewSlot) actions.push(action('DAY_HOME_CONFIRM', '여기에 놓기', {}, true), action('DAY_HOME_CANCEL', '취소하기'));
     }
     const canStart = !e || ['result', 'invalid'].includes(e.stage);
+    // A scene whose residents are asleep waits for the morning (design 2-7, default A until decided).
+    const sleeping = new Set(), up = npcs => { const asleep = npcs.filter(n => ctx.village?.awake?.[n] === false); asleep.forEach(n => sleeping.add(n)); return !asleep.length; };
     if (loc === 'cafe' && canStart) {
-      if (ctx.ftReady && ctx.placement && !ctx.cafeBusy) actions.push(action('DAY_START', '차와 그림 함께 놓기', { kind: 'tea' }, true));
-      if (day.job?.status !== 'preparing') actions.push(action('DAY_START', '쉬는 자리와 그림 조율하기', { kind: 'coordination' }));
+      if (ctx.ftReady && ctx.placement && !ctx.cafeBusy && up(members('tea'))) actions.push(action('DAY_START', '차와 그림 함께 놓기', { kind: 'tea' }, true));
+      if (day.job?.status !== 'preparing' && up(members('coordination'))) actions.push(action('DAY_START', '쉬는 자리와 그림 조율하기', { kind: 'coordination' }));
     }
-    if (loc === 'greenhouse' && canStart && day.job?.status !== 'preparing') actions.push(action('DAY_START', '그림과 조용한 쉼 조율하기', { kind: 'coordination' }));
+    if (loc === 'greenhouse' && canStart && day.job?.status !== 'preparing' && up(members('coordination'))) actions.push(action('DAY_START', '그림과 조용한 쉼 조율하기', { kind: 'coordination' }));
     if (loc === 'workshop') {
-      if (canStart && day.job?.status !== 'preparing') actions.push(action('DAY_START', '한쪽을 맡아 달라고 부탁하기', { kind: 'help' }, true));
-      if (!day.job) actions.push(action('DAY_JOB_START', '받침 하나 준비 부탁하기 · 30초'));
+      if (canStart && day.job?.status !== 'preparing' && up(members('help'))) actions.push(action('DAY_START', '한쪽을 맡아 달라고 부탁하기', { kind: 'help' }, true));
+      if (!day.job && up(['workshop-owner'])) actions.push(action('DAY_JOB_START', '받침 하나 준비 부탁하기 · 30초'));
       if (day.job?.status === 'ready') actions.push(action('DAY_JOB_COLLECT', '준비된 받침 확인하고 사용하기'));
     }
     if (e && (!e.open || e.location !== loc) && e.stage !== 'result' && !ctx.resumeBlocked) actions.push(action('DAY_RESUME', `${labelPlace(e.location)} 생활 이어 하기`));
     actions.push(action(day.rest ? 'DAY_WAKE' : 'DAY_REST', day.rest ? '다시 둘러볼게요' : '여기서 쉬기'));
+    if (sleeping.size) line = `${[...sleeping].map(n => RESIDENT_LABELS[n]).join('과 ')}은 벌써 잠들었어요. 아침에 다시 만나요.`;
   }
   if (day.walk?.enabled && nearbyPlace(day.walk) !== loc) { line = '마을을 걸으며 가까운 장소를 살펴보세요.'; actions.length = 0; }
   return { title: '싱크타운 · 첫 하루', line, speaker, location: loc, visit: day.visit, support: day.support,

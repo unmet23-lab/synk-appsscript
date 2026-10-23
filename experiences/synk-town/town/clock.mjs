@@ -136,6 +136,13 @@ export function bandAt(tz, ms) {
   return { band: band.id, startMs, endMs, lifeDay: lifeDayAt(list, ms) };
 }
 
+/** When the life day holding ms began (my 05:00 in the offset at ms) — the planner's dayStartMs. */
+export function lifeDayStartAt(tz, ms) {
+  const list = zones(tz);
+  ensureTime(ms);
+  return ms - mod(ms + list[zoneIndexAt(list, ms)].offsetMin * MINUTE - LIFE_DAY_START, DAY);
+}
+
 /** Band windows that overlap [fromMs, toMs), in order. */
 export function bandsBetween(tz, fromMs, toMs) {
   ensureTime(fromMs); ensureTime(toMs);

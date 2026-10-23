@@ -39,7 +39,7 @@ export function settleSteps(settledU, lease, { canContact = false, touch = false
   };
   for (const end of [...new Set(lease.breaks)].filter(b => b >= settledU && b <= lease.uMs).sort((a, b) => a - b)) {
     walkTo(end);
-    steps.push({ u, elapsedMs: 0, span: spanAt(lease, u), visitEnded: true });
+    steps.push({ u, elapsedMs: 0, span: spanAt(lease, u), visitEnded: true, endedAt: lease.breakAts?.[end] ?? null });
   }
   walkTo(lease.uMs);
   if ((canContact || touch) && !steps.length) steps.push({ u, elapsedMs: 0, span: spanAt(lease, u) });
@@ -47,18 +47,21 @@ export function settleSteps(settledU, lease, { canContact = false, touch = false
   return steps;
 }
 
-/** settle(world, lease, { step, check }) → { state, changed }. The state is checked once, after the walk. */
-export function settle(previous, lease, { step: stepWorld, check, nowMs, canContact = false, touch = false } = {}) {
+/** settle(world, lease, { step, check, close }) → { state, changed }. The state is checked once, after
+ * the walk. close(state, nowMs), when given, runs after the steps on every settlement — the village's
+ * bands follow the wall clock, not U, so they close even when no play time is unsettled (W3). */
+export function settle(previous, lease, { step: stepWorld, check, close, nowMs, canContact = false, touch = false } = {}) {
   if (typeof stepWorld !== 'function' || typeof check !== 'function') throw new TypeError('settle needs the step and the check');
   const steps = settleSteps(previous.settledU ?? 0, lease, { canContact, touch });
-  if (!steps.length) return { state: previous, changed: false };
+  if (!steps.length && !close) return { state: previous, changed: false };
   const state = structuredClone(previous);
   for (const step of steps) {
     stepWorld(state, { enabled: true, elapsedMs: step.elapsedMs, nowMs, surfaceId: step.span.surfaceId,
       fence: step.span.fence, surface: step.span.surface, canRun: step.span.canRun,
-      canContact: step.canContact === true, visitEnded: step.visitEnded === true });
+      canContact: step.canContact === true, visitEnded: step.visitEnded === true, visitEndedAt: step.endedAt ?? null });
   }
   state.settledU = lease.uMs;
+  if (close) close(state, nowMs);
   check(state);
   const changed = state.settledU !== previous.settledU || JSON.stringify(state) !== JSON.stringify(previous);
   return { state, changed };
