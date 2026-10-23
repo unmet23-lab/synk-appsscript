@@ -619,6 +619,12 @@
     },
     {
       "path": "tools/공개.js",
+      "sha256": "cac85f630fba0eb4112b0c287214b23d73b945ba6b2795a6391b17ca6269883e",
+      "kind": "encoded-text",
+      "reason": "Base64 copy of the public site deploy check's producer-name pattern (10-20 list, 452 characters). Decodes to 276 characters of plain regex text; no media, binary, or credential. Reviewed 2026-10-20. Keep this exact value for previously preserved OneDrive copies when the current list changes."
+    },
+    {
+      "path": "tools/공개.js",
       "sha256": "a3bab97897fce3fde7115c380ebee218fff4d21f5d690ab923b15a48d4ab5139",
       "kind": "encoded-text",
       "reason": "Base64 copy of the public site deploy check's producer-name pattern (10-23 list, 524 characters: the 10-20 list plus the review model names). Decodes to 309 characters of plain regex text; no media, binary, or credential. Reviewed 2026-10-23."

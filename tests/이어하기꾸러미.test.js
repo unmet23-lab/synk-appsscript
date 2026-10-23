@@ -342,6 +342,26 @@ test('검토한 긴 base64는 그 경로의 그 값만 내장 자료 검사에�
   assert.equal(plain.dependsOnIndex, undefined, '검토 값이 아닌 긴 base64는 색인을 보지 않는다');
 });
 
+test('공개 도구 목록을 갱신해도 이전 OneDrive 사본의 정확한 검토 값은 계속 인정한다(10-23)', () => {
+  const crypto = require('node:crypto');
+  const original = String.raw`suno|higgsfield|nano banana|midjourney|gpt[- ]image|edge[-_ ]tts|elevenlabs|typecast|gemini-[0-9][\w.-]*tts|ko-KR-[A-Za-z]+Neural|made with (suno|udio)|gpt[- ]?이미지|지피티|codex|seedance|\bkling|demucs|타입캐스트|힉스필드|나노 ?바나나|synk-vendor|(?<![\w.-])\.tmp[\\/]|(?<![가-힣])(?:클로드|제미나이|수노)`;
+  const current = original.replace('클로드|제미나이|수노)', '클로드|제미나이|수노|페이블|아르곤|아스트라)') + String.raw`|\b(?:fable|argon)\b`;
+  const versions = [
+    [original, 'cac85f630fba0eb4112b0c287214b23d73b945ba6b2795a6391b17ca6269883e'],
+    [current, 'a3bab97897fce3fde7115c380ebee218fff4d21f5d690ab923b15a48d4ab5139'],
+  ];
+  for (const [pattern, expected] of versions) {
+    const encoded = Buffer.from(pattern).toString('base64');
+    assert.equal(crypto.createHash('sha256').update(encoded).digest('hex'), expected, '검토한 실제 값 그대로 재현한다');
+    const code = Buffer.from("const pattern = '" + encoded + "';\n");
+    assert.equal(textPolicy('tools/공개.js', code), null, '새 목록과 이전 안전 사본 모두 인정한다');
+    assert.equal(textPolicy('tools/unreviewed-deploy.js', code), 'embedded-media-or-base64', '다른 경로는 인정하지 않는다');
+    const unreviewed = Buffer.from(pattern + '|unreviewed-producer').toString('base64');
+    assert.equal(textPolicy('tools/공개.js', Buffer.from("const pattern = '" + unreviewed + "';")), 'embedded-media-or-base64', '검토하지 않은 다른 값은 막는다');
+    assert.equal(textPolicy('tools/공개.js', Buffer.concat([code, Buffer.from("const api" + "Key = 'live-value-123456';")])), 'secret-literal', '비밀값 차단을 유지한다');
+  }
+});
+
 test('운영 사본에서도 공용 작업본의 보존 색인으로 정확히 검토한 경로와 값만 인정한다(10-23)', t => {
   const crypto = require('node:crypto');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-preserved-review-root-'));
