@@ -10,9 +10,9 @@ const C = require('./src/copy.js');
 const A = require('./src/app.js');
 
 const FORM_PAGE_OPTIONS = {
-  // 홈페이지 문의 구글 폼(2026-10-21 viewform에서 읽음 — 질문 번호 1425474537·1372278933·1000387687, 이메일은 응답자 입력)의 선택지 글.
+  // 홈페이지 문의 구글 폼(2026-10-23 현행 분류 — 질문 번호 1425474537·1372278933·1000387687, 이메일은 응답자 입력)의 최종 선택지 글.
   // 폼을 고치면 여기와 copy.js FORM·BRANCHES를 함께 고친다(experiences/lab-topik4/app.test.js와 같은 목록).
-  type: ['LAB · 한국어 교육', 'SHIFT · 기관 강의·기업 컨설팅·브랜딩', 'SHIFT · 유학·취업 연계', 'PULSE · 제작 협업·작품 이용·광고', '출시 소식 문의'],
+  type: ['LAB · 한국어 교육', 'SHIFT · 학교·기업·기관 AI 강의', 'SHIFT · AI 강사·진로 강사 에이전시', 'SHIFT · AI 업무 자동화', 'PATH · 유학·취업 연계', 'PULSE · 제작 협업·작품 이용·광고', '출시 소식 문의'],
   consent: ['위 안내를 읽고, 문의 답변을 위한 개인정보 수집·이용에 동의합니다.'],
 };
 // 회사 서버(문의 5분 수집)의 분류 함수 — 이 화면이 보낸 응답이 서버에서 어떻게 갈리는지 같은 코드로 본다.
@@ -42,12 +42,23 @@ test('회사 서버 분류: 상품별 관심 등록과 옛 SHIFT 유학의 PATH 
   assert.equal(consult.category, 'path-career');
   assert.equal(consult.label, '한국 유학 상담 관심 등록');
   assert.equal(academy.isTest, false);
+  assert.equal(classifyWebsiteInquiry({...row(full, 'consult'), type: 'SHIFT · 유학·취업 연계'}).category, 'path-career');
   // 종단 시험은 궁금한 점 칸에 시험 표식을 넣는다 — 두 응답 모두 고객 문의·실적에서 빠지고 할 일을 만들지 않는다.
   const probe = { ...full, note: `${TEST_MARK} [시험] 울란바토르 관심 등록 종단 확인` };
   for (const id of ['academy', 'consult']) {
     const c = classifyWebsiteInquiry(row(probe, id));
     assert.equal(c.category, 'test', id);
     assert.equal(c.isTest, true, id);
+  }
+});
+
+test('실제 등록 payload는 상품별 집계에 들어가고 질문 없는 정상 등록만 검토 없이 대기한다', async () => {
+  const { websiteInquiryRegistration } = await import(pathToFileURL(path.join(path.dirname(SERVER),'website-inquiry-registration.mjs')).href);
+  for (const [id,productId] of [['academy','ub-academy'],['consult','ub-consult']]) {
+    const parse=v=>{const p=A.buildPayload(v,id);return websiteInquiryRegistration({type:p.get(C.FORM.type),message:p.get(C.FORM.body)});};
+    assert.equal(parse(full).productId, productId);
+    assert.equal(parse(full).manualReviewRequired, true);
+    assert.equal(parse({...full,note:''}).waitlistOnly, true);
   }
 });
 
@@ -99,7 +110,7 @@ test('보낼 값(둘 다 고름): 갈래마다 문의 유형·첫 줄 표식이 
   const c = A.buildPayload(full, 'consult');
   assert.equal(a.get(C.FORM.email), 'bat@example.mn');
   assert.equal(a.get(C.FORM.type), 'LAB · 한국어 교육');
-  assert.equal(c.get(C.FORM.type), 'SHIFT · 유학·취업 연계');
+  assert.equal(c.get(C.FORM.type), 'PATH · 유학·취업 연계');
   assert.equal(a.get(C.FORM.consent), C.FORM.consentValue);
   const ab = a.get(C.FORM.body).split('\n');
   const cb = c.get(C.FORM.body).split('\n');

@@ -9,6 +9,28 @@
 :root .synk-workspace .mt .wi-sync[data-tone=alert]{padding:12px 14px;border-radius:16px;background:var(--mt-coral-wash)}
 :root .synk-workspace .mt .wi-sync[data-tone=alert] .mt-notice strong{color:var(--mt-coral-ink)}
 :root .synk-workspace .mt .wi-foot{margin-top:14px}
+/* 서버가 계산한 제품별 관심 등록. 상세·목록은 기존 문의 접수 판을 그대로 쓴다. */
+:root .synk-workspace .mt .wi-registrations{margin:0 0 22px;padding:16px;border:1px solid var(--mt-line);border-radius:18px;background:var(--mt-paper)}
+:root .synk-workspace .mt .wi-registration-heading{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;margin-bottom:8px}
+:root .synk-workspace .mt .wi-registrations h2{margin:0;font-size:17px;color:var(--mt-ink)}
+:root .synk-workspace .mt .wi-registration-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
+:root .synk-workspace .mt .wi-registration-card{min-width:0;padding:14px;border-radius:14px;background:var(--mt-surface)}
+:root .synk-workspace .mt .wi-registration-card h3{margin:0 0 12px;font-size:15px}
+:root .synk-workspace .mt .wi-registration-card h3 button{max-width:100%;padding:5px 8px;border:1px solid var(--mt-line);border-radius:10px;background:var(--mt-paper);color:var(--mt-ink);font:inherit;font-weight:var(--w-strong);text-align:left;white-space:normal;overflow-wrap:anywhere;cursor:pointer}
+:root .synk-workspace .mt .wi-registration-card h3 button[aria-pressed=true]{background:var(--mt-lapis-deep);border-color:var(--mt-lapis-deep);color:#fff}
+:root .synk-workspace .mt .wi-registration-card h3 button:focus-visible{outline:2px solid var(--mt-lapis);outline-offset:3px}
+:root .synk-workspace .mt .wi-registration-card dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 6px;margin:0}
+:root .synk-workspace .mt .wi-registration-card dt{font-size:12px;color:var(--mt-ink-3)}
+:root .synk-workspace .mt .wi-registration-card dd{margin:3px 0 0;font-size:21px;font-weight:var(--w-strong);color:var(--mt-ink)}
+:root .synk-workspace .mt .wi-registration-card dd small{margin-left:3px;font-size:12px;font-weight:var(--w-body)}
+:root .synk-workspace .mt .wi-sources{margin-top:14px;font-size:12px;color:var(--mt-ink-2)}
+:root .synk-workspace .mt .wi-sources summary{cursor:pointer}
+:root .synk-workspace .mt .wi-sources ul{margin:10px 0;padding:0;list-style:none}
+:root .synk-workspace .mt .wi-sources li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:3px 10px;padding:5px 0;overflow-wrap:anywhere}
+:root .synk-workspace .mt .wi-sources strong{max-width:100%;overflow-wrap:anywhere}
+:root .synk-workspace .mt .wi-sources .mt-note{font-size:12px}
+:root .synk-workspace .mt .wi-product-filter{margin:0 0 12px;font-size:13px;font-weight:var(--w-strong);color:var(--mt-lapis-deep);overflow-wrap:anywhere}
+:root .synk-workspace .mt .wi-registration-note{margin:0 0 12px;overflow-wrap:anywhere}
 :root .synk-workspace .mt .wi-item .mt-item-text{color:var(--mt-ink-3)}
 :root .synk-workspace .mt .wi-item[aria-current=true] .mt-item-text{color:rgba(255,255,255,.74)}
 /* 답변 초안: 메일이 아니라 초안이라는 띠를 위에 두고 옅은 청금석 판에 담는다. */
@@ -43,6 +65,10 @@
 :root .synk-workspace .mt .wi-erase .mt-link{white-space:normal}
 :root .synk-workspace .mt .wi-erase .mt-actions+.mt-note{margin-top:10px}
 @container mt (max-width:700px){
+  :root .synk-workspace .mt .wi-panel .mt-head.is-desk .mt-meter>*{min-width:0;padding-inline:8px}
+  :root .synk-workspace .mt .wi-panel .mt-head.is-desk .mt-meter>:first-child{padding-left:2px}
+  :root .synk-workspace .mt .wi-registrations{padding:12px}
+  :root .synk-workspace .mt .wi-registration-grid{grid-template-columns:1fr;gap:8px}
   :root .synk-workspace .mt .wi-sync{margin:-4px 0 16px}
   :root .synk-workspace .mt .wi-sync .mt-actions{width:100%}
   :root .synk-workspace .mt .wi-status{display:flex;width:100%}

@@ -9,8 +9,8 @@ const C = require('./src/copy.js');
 const A = require('./src/app.js');
 
 const FORM_PAGE_OPTIONS = {
-  // 홈페이지 문의 구글 폼(2026-10-21 공개 화면에서 읽음)의 선택지 글. 폼을 고치면 여기와 copy.js FORM을 함께 고친다.
-  type: ['LAB · 한국어 교육', 'SHIFT · 기관 강의·기업 컨설팅·브랜딩', 'SHIFT · 유학·취업 연계', 'PULSE · 제작 협업·작품 이용·광고', '출시 소식 문의'],
+  // 홈페이지 문의 구글 폼(2026-10-23 현행 분류)의 최종 선택지 글. 폼을 고치면 여기와 copy.js FORM을 함께 고친다.
+  type: ['LAB · 한국어 교육', 'SHIFT · 학교·기업·기관 AI 강의', 'SHIFT · AI 강사·진로 강사 에이전시', 'SHIFT · AI 업무 자동화', 'PATH · 유학·취업 연계', 'PULSE · 제작 협업·작품 이용·광고', '출시 소식 문의'],
   consent: ['위 안내를 읽고, 문의 답변을 위한 개인정보 수집·이용에 동의합니다.'],
 };
 

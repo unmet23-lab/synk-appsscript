@@ -4,12 +4,13 @@
 // (「모두」일 때 03 답변 완료 · 04 종결 · 05 기능 점검) / 오른쪽: 머리(분류 · 근거) → 「지금 할 일」 → 사실 칸 → 01 문의 내용 · 02 답변 초안(저장 · 복사) · 03 문의 지우기.
 // 서버 계약(/api/website-inquiries · data-wi-* · 상태 new/reviewing/replied/closed · 답변은 보내지 않음)은 그대로다. 서버가 준 글(분류 이름 · 근거 · 다음 할 일 · 오류)은 그대로 보인다.
 // 지우기는 두 번 부른다(10-22): …/erase-check가 Google 원본 상태 · 함께 지울 할 일과 10분짜리 확인 번호를 주고, …/erase가 그 번호로 지운다. 번호는 화면 메모리에만 둔다.
-const websiteInquiryState={identity:'',request:0,loading:false,saving:false,busyKind:'',attempted:false,data:null,error:'',selected:null,draft:null,dirty:false,query:'',scope:'open',picking:false,folds:{},copied:{},lastTarget:'',erasure:null,eraseError:null};
+const websiteInquiryState={identity:'',request:0,loading:false,saving:false,busyKind:'',attempted:false,data:null,error:'',selected:null,draft:null,dirty:false,query:'',scope:'open',product:'',registrationStale:true,picking:false,folds:{},copied:{},lastTarget:'',erasure:null,eraseError:null};
+const wiProducts=['topik4','ub-academy','ub-consult'];
 const wiStatus={new:'새 문의',reviewing:'검토 중',replied:'답변 완료',closed:'종결'};
 const wiTones={new:'wait',reviewing:'info',replied:'ok',closed:'off'};
 const wiRunStatus={'not-connected':'읽기 연결 필요',ready:'자동 수집 켜짐',paused:'자동 수집 꺼짐',running:'수집 중','catching-up':'지난 문의 수집 중',failed:'수집 멈춤'};
 function wiIdentity(){return state.user?[state.user.id,state.user.role||''].join(':'):'';}
-function websiteInquiriesReset(){Object.assign(websiteInquiryState,{identity:'',request:websiteInquiryState.request+1,loading:false,saving:false,busyKind:'',attempted:false,data:null,error:'',selected:null,draft:null,dirty:false,query:'',scope:'open',picking:false,folds:{},copied:{},lastTarget:'',erasure:null,eraseError:null});}
+function websiteInquiriesReset(){Object.assign(websiteInquiryState,{identity:'',request:websiteInquiryState.request+1,loading:false,saving:false,busyKind:'',attempted:false,data:null,error:'',selected:null,draft:null,dirty:false,query:'',scope:'open',product:'',registrationStale:true,picking:false,folds:{},copied:{},lastTarget:'',erasure:null,eraseError:null});}
 function wiActive(){return !!state.user&&state.tab==='workroom'&&typeof wr!=='undefined'&&wr.view==='tools'&&typeof makerTools!=='undefined'&&makerTools.view==='inquiries';}
 function websiteInquiriesEnsure(){
   const s=websiteInquiryState;
@@ -24,23 +25,23 @@ function wiTarget(){
   const s=websiteInquiryState,target=typeof location!=='undefined'?new URLSearchParams(location.search).get('inquiryId'):'';
   if(!target||target===s.lastTarget||!s.data)return false;
   const row=s.data.items.find(item=>item.id===target);if(!row||s.dirty&&s.selected!==target)return false;
-  s.lastTarget=target;if(s.selected!==target)wiSelect(target);if(!wiVisibleOpen(row))s.scope='all';s.picking=false;return true;
+  s.lastTarget=target;if(s.selected!==target)wiSelect(target);if(s.product&&!wiProductMatch(row,s.product))s.product='';if(!wiVisibleOpen(row))s.scope='all';s.picking=false;return true;
 }
 function wiRender(){if(wiActive())render();}
 async function wiLoad(){
   const s=websiteInquiryState,identity=wiIdentity(),request=++s.request;
-  if(!identity)return;s.loading=true;s.attempted=true;s.error='';wiRender();
+  if(!identity||!wiActive())return;s.loading=true;s.attempted=true;s.registrationStale=true;s.error='';wiRender();
   try{
     const data=await api('/api/website-inquiries');
-    if(identity!==wiIdentity()||request!==s.request)return;
+    if(identity!==wiIdentity()||request!==s.request||!wiActive())return;
     if(!Array.isArray(data?.items)||data.draftOnly!==true)throw new Error('받은 문의 접수함의 형식이 맞지 않아요. 새로 읽어 주세요.');
-    s.data=data;
+    s.data=data;s.registrationStale=false;
     wiTarget();
     if(s.selected&&!s.dirty)wiSelect(s.selected);
     // 첫 화면에 할 일이 오게: 고른 것이 없으면 새 문의 → 검토 중 첫 줄을 연다(기능 점검 응답은 고르지 않는다).
-    if(!s.selected){const first=wiOpenRows(data.items)[0];if(first)wiSelect(first.id);}
+    if(!s.selected){const rows=s.product?data.items.filter(row=>wiProductMatch(row,s.product)):wiOpenRows(data.items);if(rows[0])wiSelect(rows[0].id);}
   }catch(error){if(identity===wiIdentity()&&request===s.request){s.error=error.message;if([401,403].includes(error.status)){s.data=null;s.draft=null;s.selected=null;}}}
-  finally{if(identity===wiIdentity()&&request===s.request){s.loading=false;wiRender();}}
+  finally{if(identity===wiIdentity()&&request===s.request){s.loading=false;if(!wiActive())s.attempted=false;wiRender();}}
 }
 function wiSelect(id){
   const s=websiteInquiryState,row=s.data?.items.find(item=>item.id===id);
@@ -50,6 +51,24 @@ function wiSelect(id){
 }
 function wiCanLeave(){return !websiteInquiryState.dirty||confirm('저장하지 않은 답변 초안 변경을 버릴까요?');}
 const wiTest=row=>row?.classification?.isTest===true;
+const wiRegistration=row=>!wiTest(row)&&!['privacy','test'].includes(row?.classification?.category)&&wiProducts.includes(row?.registration?.productId)?row.registration:null;
+const wiProductMatch=(row,id)=>row.status!=='closed'&&wiRegistration(row)?.productId===id;
+// 집계는 서버 값만 쓴다. 연결·첫 전체 수집·최신 GET이 확인되기 전에는 0건으로 단정하지 않는다.
+function wiRegistrationProducts(){
+  const s=websiteInquiryState,data=s.data,products=data?.registrations?.products;
+  if(s.registrationStale||!data?.connection?.configured||!data.run?.lastSuccessAt||!Array.isArray(products)||products.length!==3)return null;
+  const count=value=>Number.isSafeInteger(value)&&value>=0,fields=['records','uniqueEmails','duplicateRecords','waitlistRecords','needsReviewRecords','resubmittedRecords'];
+  if(!wiProducts.every(id=>products.filter(p=>p?.id===id).length===1)||!products.every(p=>fields.every(key=>count(p[key]))&&Array.isArray(p.sources)&&p.sources.every(row=>typeof row.source==='string'&&count(row.records)&&count(row.uniqueEmails))))return null;
+  return wiProducts.map(id=>products.find(p=>p.id===id));
+}
+function wiRegistrations(){
+  const s=websiteInquiryState,products=wiRegistrationProducts(),busy=s.loading||s.saving;
+  const heading=`<div class="wi-registration-heading"><h2>관심 등록</h2><button type="button" class="btn small" data-wi-action="product" data-product="" aria-pressed="${!s.product}" ${busy?'disabled':''}>전체 문의 보기</button></div>`;
+  const intro='<p class="mt-note">종결 · 기능 점검 · 개인정보 문의는 빼요. 고유 이메일은 제품별로 세며 수강 확정 인원이 아니에요.</p>';
+  if(!products){const text=s.loading||s.saving?'관심 등록 집계를 새로 읽고 있어요.':!s.data?.connection?.configured?'읽기 연결 뒤 관심 등록 집계를 확인해요.':!s.data.run?.lastSuccessAt?'첫 전체 수집이 끝나면 관심 등록 집계를 확인해요.':'관심 등록 집계를 확인하지 못했어요. 새로 읽어 주세요.';return `<section class="wi-registrations" aria-label="관심 등록 집계">${heading}<p class="mt-note" role="status">${text}</p></section>`;}
+  const cards=products.map(p=>{const metrics=[['등록',p.records,'건'],['고유 이메일',p.uniqueEmails,'개'],['중복 등록',p.duplicateRecords,'건'],['답장 검토',p.needsReviewRecords,'건'],['대기만',p.waitlistRecords,'건'],['재등록',p.resubmittedRecords,'건']];return `<article class="wi-registration-card" data-wi-product-card="${p.id}"><h3><button type="button" data-wi-action="product" data-product="${p.id}" aria-pressed="${s.product===p.id}" ${busy?'disabled':''}>${escape(p.label)}</button></h3><dl>${metrics.map(([label,value,unit])=>`<div><dt>${label}</dt><dd>${mtNum(value)}<small>${unit}</small></dd></div>`).join('')}</dl><details class="wi-sources"><summary>유입별 등록 ${mtNum(p.sources.length)}곳</summary>${p.sources.length?`<ul>${p.sources.map(row=>`<li><strong>${escape(row.source)}</strong><span>등록 ${mtNum(row.records)}건 · 고유 이메일 ${mtNum(row.uniqueEmails)}개</span></li>`).join('')}</ul><p class="mt-note">같은 이메일이 여러 유입에 있으면 각각 세요. 유입별 고유 이메일 수를 더하지 않아요.</p>`:'<p class="mt-note">아직 등록된 유입이 없어요.</p>'}</details></article>`;}).join('');
+  return `<section class="wi-registrations" aria-label="관심 등록 집계">${heading}${intro}<div class="wi-registration-grid">${cards}</div></section>`;
+}
 // 「처리 중」 범위에 보이는 줄: 고객 문의의 새 문의 · 검토 중.
 const wiVisibleOpen=row=>!!row&&!wiTest(row)&&['new','reviewing'].includes(row.status);
 function wiCustomer(items){return (items||[]).filter(row=>!wiTest(row));}
@@ -97,7 +116,7 @@ function websiteInquiriesPanel(){
   if(s.identity!==wiIdentity())return '<p class="mt-loading" role="status">문의 접수함을 불러오고 있어요.</p>';
   const head=wiHead();
   if(!s.data)return `<div class="wi-panel" aria-busy="${s.loading}">${head}${s.error?mtError(s.error,wiButton('reload','다시 읽기',s.loading)):'<p class="mt-loading" role="status">문의 접수함을 불러오고 있어요.</p>'}</div>`;
-  return `<div class="wi-panel" aria-busy="${s.loading}">${head}${s.error?mtError(s.error):''}${wiSync()}<div class="mt-desk${s.picking?' is-picking':''}">${wiBand()}${wiList()}${wiDetail()}</div><p class="mt-note wi-foot">자동 수집은 분류 · 답변 초안 · 내 할 일까지만 만들어요. 고객에게 답하거나 홍보 목록에 넣지 않아요.</p></div>`;
+  return `<div class="wi-panel" aria-busy="${s.loading}">${head}${s.error?mtError(s.error):''}${wiSync()}${wiRegistrations()}<div class="mt-desk${s.picking?' is-picking':''}">${wiBand()}${wiList()}${wiDetail()}</div><p class="mt-note wi-foot">자동 수집은 분류 · 답변 초안 · 내 할 일까지만 만들어요. 질문 없는 관심 등록은 대기명단에 모아요. 고객에게 답하거나 홍보 목록에 넣지 않아요.</p></div>`;
 }
 // 휴대폰 띠: 고른 문의의 상태와 분류(위 계기판 숫자와 겹치지 않게). 목록보다 앞에 두어 「바꾸기」로 펼친 목록 위에 「닫기」가 남는다(넓은 화면에서는 숨는다).
 function wiBand(){
@@ -105,7 +124,7 @@ function wiBand(){
   return `<div class="mt-list-mobile"><span>${row?`<b>${escape(wiTest(row)?'기능 점검':wiStatus[row.status]||'상태 모름')}</b> · ${escape(wiTest(row)?'기능 점검 응답':row.classification?.label||row.email)}`:'고른 문의 없음'}</span>${s.data.items.length?`<button type="button" class="btn small" data-wi-action="pick" aria-expanded="${s.picking}">${s.picking?'닫기':'바꾸기'}</button>`:''}</div>`;
 }
 function wiList(){
-  const s=websiteInquiryState,data=s.data,items=data.items,counts=wiCounts(items),q=s.query.trim().toLowerCase(),hit=row=>!q||wiSearchText(row).includes(q);
+  const s=websiteInquiryState,data=s.data,items=s.product?data.items.filter(row=>wiProductMatch(row,s.product)):data.items,counts=wiCounts(items),q=s.query.trim().toLowerCase(),hit=row=>!q||wiSearchText(row).includes(q);
   const customers=wiCustomer(items),tests=items.filter(wiTest),all=s.scope==='all';
   const groups=[['new','새 문의',wiOldest(customers.filter(row=>row.status==='new'))],['reviewing','검토 중',wiOldest(customers.filter(row=>row.status==='reviewing'))],...(all?[['replied','답변 완료',customers.filter(row=>row.status==='replied')],['closed','종결',customers.filter(row=>row.status==='closed')],['test','기능 점검 응답',tests]]:[])].filter(([,,rows])=>rows.length);
   // 줄 하나: 첫 줄은 분류(무엇), 둘째 줄은 이메일 · 문의 첫 줄(누가 · 무엇이라고), 끝에 받은 때. 상태는 점 색과 묶음 이름으로 함께 보인다.
@@ -113,9 +132,10 @@ function wiList(){
   const html=groups.map(([key,title,rows],index)=>`<h2 class="mt-list-group" data-wi-group="${key}" ${rows.some(hit)?'':'hidden'}><span class="mt-num">${String(index+1).padStart(2,'0')}</span>${escape(title)} <b>${mtNum(rows.length)}</b></h2>${rows.map(row=>item(row,key)).join('')}`).join('');
   const tools=items.length?`<div class="mt-list-tools"><label class="mt-search">${mtIcon('search')}<input type="search" data-wi-search value="${escape(s.query)}" placeholder="이메일 · 유형 · 내용 찾기" aria-label="문의 찾기" autocomplete="off"></label><div class="mt-seg" role="group" aria-label="목록 범위">${[['open','처리 중',counts.open,!all],['all','모두',counts.all,all]].map(([id,label,count,on])=>`<button type="button" data-wi-action="scope" data-scope="${id}" aria-pressed="${on}">${label} <b>${mtNum(count)}</b></button>`).join('')}</div></div>`:'';
   const found=groups.some(([,,rows])=>rows.some(hit));
-  const empty=!items.length?`<p class="mt-list-empty">${!data.connection?.configured?'연결 전이라 비어 있어요.':data.run?.lastSuccessAt?`${escape(wiWhen(data.run.lastSuccessAt))} 수집 · 받은 문의가 없어요.`:'첫 수집 결과를 기다리고 있어요.'}</p>`:!groups.length?`<p class="mt-list-empty">처리할 문의가 없어요.</p>`:'';
+  const empty=!items.length?`<p class="mt-list-empty">${s.product?'이 제품의 진행 중인 관심 등록이 없어요.':!data.connection?.configured?'연결 전이라 비어 있어요.':data.run?.lastSuccessAt?`${escape(wiWhen(data.run.lastSuccessAt))} 수집 · 받은 문의가 없어요.`:'첫 수집 결과를 기다리고 있어요.'}</p>`:!groups.length?`<p class="mt-list-empty">처리할 문의가 없어요.</p>`:'';
   const foot=!all&&(counts.replied+counts.closed+counts.tests)?`<p class="mt-note mt-list-foot">답변 완료 · 종결${counts.tests?` · 기능 점검 응답 ${mtNum(counts.tests)}건`:''}은 「모두」에서 봐요.</p>`:'';
-  return `<aside class="mt-list" aria-label="문의 목록">${tools}${html}<p class="mt-list-empty" data-wi-none ${q&&groups.length&&!found?'':'hidden'}>찾는 문의가 없어요.</p>${empty}${foot}</aside>`;
+  const label=s.product?s.data.registrations?.products?.find(p=>p.id===s.product)?.label:'';
+  return `<aside class="mt-list" aria-label="문의 목록">${label?`<p class="wi-product-filter">${escape(label)} · 진행 중인 등록</p>`:''}${tools}${html}<p class="mt-list-empty" data-wi-none ${q&&groups.length&&!found?'':'hidden'}>찾는 문의가 없어요.</p>${empty}${foot}</aside>`;
 }
 function wiDetail(){
   const s=websiteInquiryState,data=s.data,row=data.items.find(item=>item.id===s.selected),draft=s.draft;
@@ -126,9 +146,10 @@ function wiDetail(){
     return `<div class="mt-detail"><div class="mt-detail-empty"><img src="${mtFelt('inquiries')}" alt="" width="120" height="117" decoding="async"><div><strong>${escape(title)}</strong><p>${escape(text)}</p></div>${more}</div></div>`;
   }
   const test=wiTest(row),c=row.classification||{},key=escape(row.id),lock=s.saving||s.loading?'disabled':'',tone=test?'off':wiTones[row.status]||'';
-  const href=wiTaskHref(row);
-  const chips=`${mtBadge(wiStatus[row.status]||'상태 모름',tone)}${test?mtBadge('기능 점검 · 고객 문의에서 빠짐','off'):''}${row.draftEdited?'<span>초안 고침</span>':''}`;
-  const task=href?`<div class="mt-actions"><a class="mt-link" href="${escape(href)}">내 할 일에서 열기</a></div>`:test?'':`<p class="mt-note">${row.task?.state==='unavailable'?'후속 할 일이 지워져 있어요. 자동으로 다시 만들지 않아요.':'후속 할 일을 잇는 중이에요. 다시 수집하면 겹치지 않게 이어요.'}</p>`;
+  const href=wiTaskHref(row),registration=wiRegistration(row);
+  const chips=`${mtBadge(wiStatus[row.status]||'상태 모름',tone)}${test?mtBadge('기능 점검 · 고객 문의에서 빠짐','off'):''}${registration?mtBadge(registration.waitlistOnly?'관심 등록 · 대기':'관심 등록 · 답장 검토',registration.waitlistOnly?'off':'info'):''}${registration?.resubmitted?mtBadge('재등록 · 수동 확인','info'):''}${row.draftEdited?'<span>초안 고침</span>':''}`;
+  const task=href?`<div class="mt-actions"><a class="mt-link" href="${escape(href)}">내 할 일에서 열기</a></div>`:test||registration?.waitlistOnly&&!row.task?'':`<p class="mt-note">${row.task?.state==='unavailable'?'후속 할 일이 지워져 있어요. 자동으로 다시 만들지 않아요.':'후속 할 일을 잇는 중이에요. 다시 수집하면 겹치지 않게 이어요.'}</p>`;
+  const registrationNote=registration?`<p class="mt-note wi-registration-note">${escape(registration.label)} · 유입 ${escape(registration.source)}${registration.resubmitted?' · 이메일이 바뀌었어도 자동으로 합치지 않아요. 원문을 보고 확인해요.':''}${row.status==='closed'?' · 종결되어 집계에서 빠져요.':''}</p>`:'';
   const head=`<div class="mt-detail-head is-plain"><div><div class="mt-chips">${chips}</div><h2>${escape(c.label||'분류 확인')}</h2>${c.reason?`<p>${escape(c.reason)}</p>`:''}${task}</div></div>`;
   const facts=`<dl class="mt-facts wi-facts" data-cols="3"><div><dt>답변받을 이메일</dt><dd class="wi-email">${escape(row.email)}</dd></div><div><dt>접수</dt><dd>${escape(wiTime(row.createdAt))}</dd></div><div><dt>고른 문의 유형</dt><dd>${escape(row.type||'—')}</dd></div></dl>`;
   const sec=(name,num,title,sum,body,open)=>mtSec({num,title,sum,open:s.folds[name]??open,body,attrs:`id="wi-sec-${name}-${key}" data-wi-fold="${name}"`});
@@ -138,7 +159,7 @@ function wiDetail(){
   const erasing=wiErasing(row);
   const body=`<fieldset class="wi-fields" ${lock}>${sec('message','01','문의 내용',wiShortText(row.message),`<pre class="wi-original">${escape(row.message)}</pre>`,true)}${sec('reply','02','답변 초안',draft.replyDraft?`${mtNum(draft.replyDraft.length)}자`:'비어 있어요',reply,true)}${sec('erase','03','문의 지우기',erasing?'지우기 전 확인 중':test?'기능 점검을 다 봤으면':'삭제 요청이 왔을 때',wiErase(row),erasing||s.eraseError?.id===row.id)}</fieldset>`;
   const foot=`<div class="mt-form-foot"><span class="mt-note" data-wi-dirty>${s.dirty?'저장하지 않은 변경이 있어요.':'고객 연락처는 관리자에게만 보여요.'}</span>${wiButton('copy','초안 복사',s.saving||!draft.replyDraft)}<button class="btn primary" type="submit" ${lock}>${wiBusy('save')?'저장 중…':'저장'}</button></div>`;
-  return `<form class="mt-detail wi-sheet" data-wi-form data-wi-detail="${key}">${head}${wiNow(row,draft)}${facts}${body}${foot}</form>`;
+  return `<form class="mt-detail wi-sheet" data-wi-form data-wi-detail="${key}">${head}${registrationNote}${wiNow(row,draft)}${facts}${body}${foot}</form>`;
 }
 function wiShortText(value){const text=value?String(value).replace(/\s+/g,' ').trim():'';return text?text.length>40?text.slice(0,40)+'…':text:'비어 있어요';}
 // 03 문의 지우기: 삭제 요청이 오거나 기수가 끝났을 때만 연다. 「지우기 전에 확인」 → 서버가 Google 원본 상태와 함께 지울 할 일을 알려 주면
@@ -162,6 +183,7 @@ function wiErase(row){
 function wiNow(row,draft){const s=websiteInquiryState,tool='inquiries',attrs='data-wi-now',c=row.classification||{},copied=s.copied[row.id],href=wiTaskHref(row),busy=s.saving||s.loading,empty=!String(draft.replyDraft||'').trim(),lock=busy||empty?'disabled':'',noDraft=busy||!draft.replyDraft?'disabled':'';
   const done=`<button type="button" class="mt-link" data-wi-action="replied" ${lock}>답변 완료로 표시</button>`;
   if(wiTest(row))return mtNow({tool,label:'기능 점검',title:'고객 문의가 아니에요',body:escape(c.nextAction||'기능 점검 응답이라 고객 문의 수에서 빠져요.'),tone:'quiet',attrs});
+  if(row.status!=='closed'&&wiRegistration(row)?.waitlistOnly)return mtNow({tool,label:'관심 등록',title:'안내를 기다리는 등록이에요',body:escape('질문이 없는 대기 등록이에요. 지금 답장할 필요는 없어요. 기존 처리 상태와 연결된 할 일은 그대로 둬요.'),tone:'quiet',attrs});
   if(['new','reviewing'].includes(row.status)&&copied)return mtNow({tool,label:'내 차례',title:'복사한 초안을 메일로 보냈나요?',body:escape(`${wiClock(copied)}에 초안을 복사했어요. 보냈으면 「답변 완료」로 표시해요.`),actions:`${mtPill('답변 완료로 표시',`data-wi-action="replied" ${lock}`)}<button type="button" class="mt-link" data-wi-action="copy" ${noDraft}>다시 복사</button>`,word:'문의',attrs});
   if(row.status==='new')return mtNow({tool,label:'내 차례',title:'답변 초안을 다듬어요',body:escape(c.nextAction||'문의 내용을 읽고 초안을 다듬어요.'),actions:`${mtPill('초안 다듬기','data-wi-action="draft"')}${done}`,word:'문의',attrs});
   if(row.status==='reviewing')return mtNow({tool,label:'내 차례',title:'다듬은 초안을 메일로 보내요',body:escape('초안을 복사해 메일로 보낸 뒤 「답변 완료로 표시」를 눌러요. 이 화면은 메일을 보내지 않아요.'),actions:`${mtPill('초안 복사',`data-wi-action="copy" ${noDraft}`)}${done}`,word:'문의',attrs});
@@ -192,12 +214,12 @@ function wiShowErase(){websiteInquiryState.folds.erase=true;wiReveal('[data-wi-e
 function wiBackToCheck(){websiteInquiryState.folds.erase=true;wiReveal('[data-wi-action="erase-check"]');}
 function wiEraseFailed(id){const s=websiteInquiryState;if(!s.data||s.selected!==id||!s.error){wiRender();return;}s.eraseError={id,text:s.error};s.error='';wiBackToCheck();}
 // 저장한 문의를 판에 바로 넣는다. 「처리 중」에서 끝낸 문의는 목록에서 사라지지 않게 「모두」로 넓힌다.
-function wiAccept(result){const s=websiteInquiryState,item=result?.item;if(!item?.id||!s.data)return;s.data.items=s.data.items.map(row=>row.id===item.id?item:row);if(s.selected!==item.id)return;wiSelect(item.id);if(s.scope==='open'&&!wiVisibleOpen(item))s.scope='all';}
+function wiAccept(result){const s=websiteInquiryState,item=result?.item;if(!item?.id||!s.data)return;s.data.items=s.data.items.map(row=>row.id===item.id?item:row);if(s.selected!==item.id)return;wiSelect(item.id);if(s.product&&!wiProductMatch(item,s.product))s.product='';if(s.scope==='open'&&!wiVisibleOpen(item))s.scope='all';}
 async function wiMutate(action,body,{keepDraft=false,kind='save'}={}){
-  const s=websiteInquiryState,identity=wiIdentity(),request=++s.request;s.saving=true;s.busyKind=kind;s.loading=false;s.error='';wiRender();
-  try{const result=await api('/api/website-inquiries/'+action,body);if(identity!==wiIdentity()||request!==s.request)return null;if(!keepDraft)s.dirty=false;return result||{};}
+  const s=websiteInquiryState,identity=wiIdentity(),selected=s.selected,draft=s.draft,request=++s.request;s.saving=true;s.busyKind=kind;s.loading=false;s.error='';wiRender();
+  try{const result=await api('/api/website-inquiries/'+action,body);if(identity!==wiIdentity()||request!==s.request)return null;if(!keepDraft&&s.selected===selected&&s.draft===draft)s.dirty=false;if(kind!=='erase-check')s.registrationStale=true;if(!wiActive())return null;return result||{};}
   catch(error){if(identity===wiIdentity()&&request===s.request){s.error=error.message;if([401,403].includes(error.status)){s.data=null;s.draft=null;s.selected=null;}}return null;}
-  finally{if(identity===wiIdentity()&&request===s.request){s.saving=false;s.busyKind='';wiRender();}}
+  finally{if(identity===wiIdentity()&&request===s.request){s.saving=false;s.busyKind='';if(!wiActive()){s.attempted=false;s.registrationStale=true;}wiRender();}}
 }
 document.addEventListener('input',event=>{
   if(event.target.matches?.('[data-wi-search]')){websiteInquiryState.query=event.target.value;wiFilterList();return;}
@@ -231,6 +253,7 @@ document.addEventListener('click',async event=>{
   // 복사해 메일로 보낸 뒤: 지금 고친 초안과 함께 「답변 완료」로 저장한다(버리는 게 아니라 저장이라 떠나기 확인을 거치지 않는다).
   if(action==='replied'){if(!s.selected||!s.draft||!String(s.draft.replyDraft||'').trim())return;const id=s.selected,body={revision:s.draft.revision,status:'replied',replyDraft:s.draft.replyDraft};const result=await wiMutate(encodeURIComponent(id),body);if(result){delete s.copied[id];wiAccept(result);notify('「답변 완료」로 바꿨어요.');await wiLoad();}return;}
   if(action==='scope'){s.scope=button.dataset.scope==='all'?'all':'open';if(button.hasAttribute?.('data-wi-pick'))s.picking=true;wiRender();return;}
+  if(action==='product'){const product=button.dataset.product;if(product&&!wiProducts.includes(product)||!wiCanLeave())return;s.product=product||'';s.scope='all';const rows=s.data.items.filter(row=>!s.product||wiProductMatch(row,s.product));if(!rows.some(row=>row.id===s.selected))wiSelect(rows[0]?.id);s.picking=true;wiRender();return;}
   // 지우기 확인은 쓰던 초안을 그대로 둔다(아직 아무것도 지우지 않았다). 지우면 초안도 문의와 함께 사라지니 떠나기 확인을 거치지 않는다.
   if(action==='erase-check'){const row=s.data?.items.find(item=>item.id===s.selected);if(!row)return;s.eraseError=null;const result=await wiMutate(encodeURIComponent(row.id)+'/erase-check',{revision:row.revision},{keepDraft:true,kind:'erase-check'});
     if(result?.erasure?.id===row.id&&s.selected===row.id){s.erasure=result.erasure;wiShowErase();}else if(!result)wiEraseFailed(row.id);return;}

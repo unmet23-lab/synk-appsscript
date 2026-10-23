@@ -1,11 +1,11 @@
 {
   "app.css": {
-    "bytes": 85172,
-    "sha256": "53a9138d684a8c1abefebd9b567b7a6df6dd7694ae931d012cae06f78ce19ce2"
+    "bytes": 85370,
+    "sha256": "1bfc15e839165c9b95f2b3d4999c4c68ef413a9577a0b2f7f6d3b9a92786330c"
   },
   "app.js": {
-    "bytes": 23528,
-    "sha256": "fb6313319263336f907b0da645c7b81abc580e85620fb2e205a6dbe9547d8324"
+    "bytes": 23967,
+    "sha256": "1f785c3adc51177cdfc8b74daa4c4b96ac6b4df1a4f26c0e854f59433ed378f9"
   },
   "assets/DMMono-400.woff2": {
     "bytes": 5896,
@@ -56,12 +56,12 @@
     "sha256": "bc36599de82539b7ddea7e75c4c114f2217b736ff0c41b07adc8d9165818cca8"
   },
   "copy.js": {
-    "bytes": 24053,
-    "sha256": "4430e9938d835f9e2d3f8d1a1924b4dbd45181914a92feca229f8fac65cbe66f"
+    "bytes": 24052,
+    "sha256": "c82550966128a143b606085fa4c193cc0086941964c2a09b6e0bc3462faf5ca7"
   },
   "index.html": {
     "bytes": 16304,
-    "sha256": "0a2e6d0e09ee856e566259b504ddf320ecb2f414e403eddced7dd9e5278ac39f"
+    "sha256": "f7e5c56f4646c6bd2f90ebc86b9af6fbbb00aa0207d2fba542c0115934108733"
   },
   "og.png": {
     "bytes": 351806,

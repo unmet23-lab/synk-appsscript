@@ -223,6 +223,81 @@ test('non-admin sessions never request the inquiry inbox',()=>{
   f.api.ensure();assert.equal(calls,0);
 });
 
+const registered=(id,productId='topik4',extra={})=>inquiry(id,'new',{replyDraft:'',registration:{productId,label:productId==='topik4'?'TOPIK 4급 온라인 반':productId==='ub-academy'?'울란바토르 한국어 학원':'한국 유학 상담',source:'direct',language:'ko',hasNote:false,resubmitted:false,waitlistOnly:true,manualReviewRequired:false},...extra});
+const registrations=(records=3)=>({products:[['topik4','TOPIK 4급 온라인 반'],['ub-academy','울란바토르 한국어 학원'],['ub-consult','한국 유학 상담']].map(([id,label],i)=>({id,label,records:i?0:records,uniqueEmails:i?0:Math.min(records,2),duplicateRecords:i?0:Math.max(0,records-2),waitlistRecords:i?0:records,needsReviewRecords:0,resubmittedRecords:0,sources:i||!records?[]:[{source:'direct',records,uniqueEmails:Math.min(records,2)}]}))});
+const registrationView=()=>({...ready(),registrations:registrations(),items:[registered('registration'),inquiry('ordinary','new')]});
+const settle=async()=>{for(let i=0;i<16;i++)await Promise.resolve();};
+const productClick=(f,product)=>f.listeners.click({target:{closest:selector=>selector==='[data-wi-action]'?{dataset:{wiAction:'product',product},disabled:false}:null}});
+
+test('registration counts remain unknown before a connection, first collection or complete summary, including failed refresh',async()=>{
+  for(const view of [{...data(),registrations:registrations(0)},{...registrationView(),run:{status:'ready',lastSuccessAt:null}},{...ready(),items:[]},{...registrationView(),registrations:{products:[registrations().products[0]]}}]){
+    const f=fixture();f.context.api=async()=>view;await f.api.load();const html=f.api.panel();
+    assert.doesNotMatch(html,/data-wi-product-card=/,'an incomplete or uncollected summary is not three zero cards');
+    assert.match(html,/집계를 확인/);
+  }
+  const f=fixture();f.context.api=async()=>registrationView();await f.api.load();assert.match(f.api.panel(),/data-wi-product-card="topik4"/);
+  f.context.api=async()=>{throw Error('조회 실패');};await f.api.load();assert.doesNotMatch(f.api.panel(),/data-wi-product-card=/);assert.match(f.api.panel(),/집계를 확인하지 못했어요/);
+});
+
+test('three registration cards use server totals, escape sources and filter only active matching registrations',async()=>{
+  const f=fixture(),view=registrationView();view.registrations.products[0].records=11;view.registrations.products[0].sources=[{source:'<img src=x onerror=alert(1)>',records:11,uniqueEmails:2}];
+  view.items.push(registered('finished','topik4',{status:'closed'}),registered('test','topik4',{classification:{isTest:true,category:'test'}}),registered('privacy','topik4',{classification:{category:'privacy'}}),registered('other-product','ub-consult'));
+  f.context.api=async()=>view;await f.api.load();let html=f.api.panel();assert.equal((html.match(/data-wi-product-card=/g)||[]).length,3);
+  assert.match(html,/<dt>등록<\/dt><dd>11<small>건/,'the UI does not recompute the server summary from visible rows');assert.match(html,/고유 이메일/);assert.match(html,/수강 확정 인원이 아니에요/);assert.match(html,/유입별 고유 이메일 수를 더하지 않아요/);
+  assert.doesNotMatch(html,/<img src=x/);assert.match(html,/&lt;img src=x/);
+  await productClick(f,'topik4');html=f.api.panel();assert.deepEqual([...html.matchAll(/data-wi-open="([^"]+)"/g)].map(m=>m[1]),['registration']);assert.equal(f.api.state.scope,'all');
+  f.api.state.dirty=true;f.context.confirm=()=>false;await productClick(f,'ub-consult');assert.equal(f.api.state.product,'topik4','changing products honors the unsaved draft confirmation');
+  f.api.state.dirty=false;await productClick(f,'');assert.equal(f.api.state.product,'');assert.match(f.api.panel(),/data-wi-open="ordinary"/);
+});
+
+test('waitlist details avoid false task promises, preserve existing tasks and identify resubmissions for manual review',async()=>{
+  const f=fixture(),view=registrationView();f.context.api=async()=>view;await f.api.load();let html=f.api.panel();
+  assert.match(html,/관심 등록 · 대기/);assert.match(html,/안내를 기다리는 등록이에요/);assert.doesNotMatch(html,/후속 할 일을 잇는 중이에요/);
+  view.items[0].task={state:'linked',href:'/?tab=messenger&panel=tasks&channelId=room&messageId=1'};html=f.api.panel();assert.match(html,/내 할 일에서 열기/);
+  Object.assign(view.items[0].registration,{resubmitted:true,waitlistOnly:false,manualReviewRequired:true});html=f.api.panel();assert.match(html,/재등록 · 수동 확인/);assert.match(html,/이메일이 바뀌었어도 자동으로 합치지 않아요/);assert.match(html,/관심 등록 · 답장 검토/);
+  view.items[0].status='closed';html=f.api.panel();assert.match(html,/종결되어 집계에서 빠져요/);assert.doesNotMatch(html,/안내를 기다리는 등록이에요/);
+});
+
+test('saving reloads registration totals and preserves a different draft edited while GET is pending',async()=>{
+  const f=fixture(),view=registrationView(),pending=[];f.context.api=async()=>view;await f.api.load();
+  f.context.FormData=class{get(key){return key==='status'?'reviewing':'새 초안';}};
+  f.context.api=(path,body)=>new Promise((resolve,reject)=>pending.push({path,body,resolve,reject}));
+  const saving=f.listeners.submit({target:{matches:()=>true},preventDefault(){}});await settle();assert.equal(pending[0].path,'/api/website-inquiries/registration');
+  pending.shift().resolve({item:{...view.items[0],status:'reviewing',replyDraft:'새 초안',revision:2}});await settle();assert.equal(pending[0].path,'/api/website-inquiries');assert.doesNotMatch(f.api.panel(),/data-wi-product-card=/,'old totals are hidden while GET refreshes');
+  f.api.select('ordinary');f.api.state.draft.replyDraft='다른 문의의 미저장 초안';f.api.state.dirty=true;
+  pending.shift().resolve({...view,registrations:registrations(7)});await saving;
+  assert.equal(f.api.state.selected,'ordinary');assert.equal(f.api.state.dirty,true);assert.equal(f.api.state.draft.replyDraft,'다른 문의의 미저장 초안');assert.match(f.api.panel(),/<dt>등록<\/dt><dd>7<small>건/);
+});
+
+test('closing and reopening a registration each refresh server totals and keep the saved inquiry visible',async()=>{
+  const f=fixture();let view=registrationView(),status='closed';const calls=[];f.context.api=async(path,body)=>{calls.push(path);if(body){view={...view,items:[{...view.items[0],status,revision:view.items[0].revision+1},view.items[1]],registrations:registrations(status==='closed'?0:1)};return {item:view.items[0]};}return view;};
+  f.context.FormData=class{get(key){return key==='status'?status:'';}};await f.api.load();await productClick(f,'topik4');
+  for(const value of ['closed','new']){status=value;await f.listeners.submit({target:{matches:()=>true},preventDefault(){}});assert.equal(calls.at(-1),'/api/website-inquiries');assert.equal(f.api.state.selected,'registration');assert.equal(f.api.state.draft.status,value);assert.equal(f.api.state.data.registrations.products[0].records,value==='closed'?0:1);}
+  assert.equal(f.api.state.product,'','closing clears the active-registration filter so the saved row remains visible');
+});
+
+test('late responses cannot replace registration totals after a view change or a newer request',async()=>{
+  const f=fixture(),pending=[];f.context.api=()=>new Promise(resolve=>pending.push(resolve));
+  const older=f.api.load(),newer=f.api.load();pending[1]({...registrationView(),registrations:registrations(8)});await newer;pending[0](registrationView());await older;assert.equal(f.api.state.data.registrations.products[0].records,8);
+  const leaving=f.api.load();f.context.makerTools.view='other';pending[2]({...registrationView(),registrations:registrations(1)});await leaving;assert.equal(f.api.state.data.registrations.products[0].records,8);assert.equal(f.api.state.attempted,false);
+  f.context.makerTools.view='inquiries';const saving=f.api.mutate('registration',{status:'closed'});f.context.state.user={id:'other',role:'admin'};pending[3]({item:{id:'registration',status:'closed'}});assert.equal(await saving,null);
+});
+
+test('erasing a registration refreshes the summary instead of subtracting locally',async()=>{
+  const f=fixture(),click=press(f);let view=registrationView();f.context.api=async(path)=>{if(path.endsWith('/erase-check'))return {erasure:confirmation({id:'registration',task:null})};if(path.endsWith('/erase')){view={...view,items:[view.items[1]],registrations:registrations(0)};return {erased:{id:'registration',task:'none'}};}return view;};
+  await f.api.load();await click('erase-check');await click('erase');assert.equal(f.api.state.data.registrations.products[0].records,0);assert.equal(f.api.state.registrationStale,false);assert.equal(f.api.state.selected,'ordinary');assert.doesNotMatch(f.api.panel(),/data-wi-open="registration"/);
+});
+
+test('returning after an off-screen save rereads server status and totals',async()=>{
+  const f=fixture(),view=registrationView(),pending=[];f.context.api=async()=>view;await f.api.load();
+  f.api.state.draft.status='closed';f.api.state.dirty=true;
+  f.context.api=(path)=>new Promise(resolve=>pending.push({path,resolve}));const saving=f.api.mutate('registration',{status:'closed'});
+  f.context.makerTools.view='other';const closed={...view.items[0],status:'closed',revision:2};pending.shift().resolve({item:closed});assert.equal(await saving,null);
+  assert.equal(f.api.state.attempted,false);assert.equal(f.api.state.registrationStale,true);
+  f.context.makerTools.view='inquiries';f.api.ensure();assert.equal(pending[0].path,'/api/website-inquiries');pending.shift().resolve({...view,items:[closed,view.items[1]],registrations:registrations(0)});await settle();
+  assert.equal(f.api.state.draft.status,'closed');assert.equal(f.api.state.draft.revision,2);assert.equal(f.api.state.dirty,false);assert.equal(f.api.state.data.registrations.products[0].records,0);assert.equal(f.api.state.registrationStale,false);
+});
+
 test('every sentence the inquiry screen writes itself is in the polite 해요 style',()=>{
   const f=fixture(),states=[data(),{...data(),settings:{enabled:false,revision:1,intervalMinutes:5},connection:{configured:true,formId:'form-id'},run:{status:'paused',lastSuccessAt:null}},{...data(),settings:{enabled:true,revision:1,intervalMinutes:5},connection:{configured:true,formId:'form-id'},run:{status:'ready',lastSuccessAt:'2026-10-21T01:05:00Z'}}];
   for(const status of ['new','reviewing','replied','closed'])states.push({...states[2],items:[inquiry('x-'+status,status)]});
