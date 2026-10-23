@@ -125,6 +125,11 @@ export function clock(ms) {
   return h ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}` : `${m}:${String(s).padStart(2, '0')}`;
 }
 
+export function doNotDisturbLabel(prefs) {
+  if (!prefs?.doNotDisturb) return '꺼짐';
+  return prefs.doNotDisturbUntil ? `${new Date(prefs.doNotDisturbUntil).toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' })}까지` : '직접 끌 때까지';
+}
+
 let sdkLoading = null;
 function loadSdk() { return sdkLoading ||= import(SDK_URL).catch(error => { sdkLoading = null; throw error; }); }
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -770,7 +775,7 @@ export function createVoice(deps) {
   }
   function preferencesDialog() {
     const prefs = v.prefs || { revision: 0, callNotifications: true, callSounds: true, doNotDisturb: false, doNotDisturbUntil: null };
-    const until = prefs.doNotDisturb ? (prefs.doNotDisturbUntil ? `${new Date(prefs.doNotDisturbUntil).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}까지` : '직접 끌 때까지') : '꺼짐';
+    const until = doNotDisturbLabel(prefs);
     openModal('통화 알림', `<form class="voice-prefs" id="voice-prefs"><label class="voice-toggle"><input type="checkbox" name="callNotifications" ${prefs.callNotifications ? 'checked' : ''}><span><strong>통화 초대 받기</strong><small>끄면 동료가 나를 통화로 부를 수 없어요. 직접 참가는 그대로 돼요.</small></span></label><label class="voice-toggle"><input type="checkbox" name="callSounds" ${prefs.callSounds ? 'checked' : ''}><span><strong>초대 소리</strong><small>끄면 소리 없이 화면에만 보여요. 이 경우 기기 푸시도 보내지 않아요.</small></span></label><fieldset class="voice-dnd"><legend>통화 방해 금지 <span class="voice-dnd-now">지금: ${esc(until)}</span></legend><p class="voice-modal-copy">켜 두는 동안 새 통화 초대를 받지 않아요. 이미 하고 있는 통화는 끊기지 않아요.</p><div class="voice-dnd-options">${[['off', '끄기'], ['30', '30분'], ['60', '1시간'], ['180', '3시간'], ['manual', '직접 끌 때까지']].map(([value, label]) => `<button type="button" class="button small${(value === 'off' && !prefs.doNotDisturb) || (value === 'manual' && prefs.doNotDisturb && !prefs.doNotDisturbUntil) ? ' primary' : ''}" data-voice-dnd="${value}">${label}</button>`).join('')}</div></fieldset><p class="form-error hidden" id="voice-prefs-error"></p></form>`);
     modal.classList.add('voice-modal');
     const form = modal.querySelector('#voice-prefs');

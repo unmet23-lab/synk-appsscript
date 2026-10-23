@@ -7,7 +7,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve, sep } from 'node:path';
 import { createMessenger } from '../server.mjs';
-import { VOICE_PROTOCOL, callParticipants, createVoice, e2eeProof, pendingIncoming, publishAllowed, roomCallSummary, voiceSupportProblem } from '../public/voice.js';
+import { VOICE_PROTOCOL, callParticipants, createVoice, doNotDisturbLabel, e2eeProof, pendingIncoming, publishAllowed, roomCallSummary, voiceSupportProblem } from '../public/voice.js';
 
 const ME = '11111111-1111-4111-8111-111111111111', PEER = '22222222-2222-4222-8222-222222222222', CHANNEL = 'c1';
 
@@ -37,6 +37,13 @@ test('room labels never turn a stale or failed provider lookup into an empty roo
   }
   assert.equal(roomCallSummary({ call: { sync: { status: 'current' }, reservations: seats, participants: [{ userId: PEER, state: 'connected' }] } }).label, '통화 중 1명');
   assert.equal(roomCallSummary({ call: { sync: { status: 'current' }, reservations: seats, participants: [] } }).label, '통화 연결 중 2명');
+});
+
+test('the do-not-disturb end reads like other messenger times, without dotted dates or two-digit hours', () => {
+  const until = doNotDisturbLabel({ doNotDisturb: true, doNotDisturbUntil: '2026-10-24T12:43:00Z' });
+  assert.match(until, /^10월 2[45]일 (오전|오후) \d{1,2}:\d{2}까지$/); assert.doesNotMatch(until, /\d\. |(오전|오후) 0\d:/);
+  assert.equal(doNotDisturbLabel({ doNotDisturb: true, doNotDisturbUntil: null }), '직접 끌 때까지');
+  assert.equal(doNotDisturbLabel({ doNotDisturb: false, doNotDisturbUntil: '2026-10-24T12:43:00Z' }), '꺼짐');
 });
 
 test('a seat or accepted invitation is not shown as a media connection until the provider observes it', () => {
