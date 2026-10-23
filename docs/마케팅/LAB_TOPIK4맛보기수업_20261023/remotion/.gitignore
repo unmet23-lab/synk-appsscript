@@ -1,0 +1,4 @@
+# 렌더 출력·소리·캡처·복사한 자산은 git 밖(다시 만들 수 있음 — 자산은 node 준비.mjs, 소리는 synk-vendor/typecast-cache, 캡처는 qa 도구).
+node_modules/
+out/
+public/
