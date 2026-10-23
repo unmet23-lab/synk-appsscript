@@ -277,3 +277,15 @@ test('밤 규칙: 가판 이어 하기는 시작이 아니다 — 공방 주인�
   g.send('BAZAAR_RESUME');
   assert.equal(g.read().state.bazaar.episode.open, true, '시작한 가판은 이어 한다');
 });
+
+test('예약 상한(재검수 GA1): 한 구간의 닫힌 예약은 상한까지 남고, 구간을 한 번에 닫든 나눠 결산하든 같은 결과다', async () => {
+  const v = await townFile('town/village.mjs');
+  const make = () => { const village = v.initialVillage(); v.closeBands(village, { nowMs: at(12), seed: 'acct-night', offsetMin: 540, revision: 1 }); return village; };
+  const hold = village => { for (let i = 0; i < 100; i++) v.holdResidents(village, { 'cafe-owner': { by: `E-${i}`, spot: 'cafe.counter' } }, at(12) + 1000 + i * 1000, 2 + i); };
+  const whole = make(), split = make(); hold(whole); hold(split);
+  assert.equal(whole.reservations.length, 100, '상한(128) 아래에서는 하나도 빠지지 않는다');
+  v.closeBands(split, { nowMs: at(15), seed: 'acct-night', offsetMin: 540, revision: 200 });
+  for (const village of [whole, split]) v.closeBands(village, { nowMs: at(17, 30), seed: 'acct-night', offsetMin: 540, revision: 200 });
+  assert.deepEqual(split.band, whole.band, '나눠 결산해도 다음 구간의 시작 상태가 같다');
+  assert.equal(v.validVillage(whole), true);
+});

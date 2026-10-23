@@ -14,7 +14,7 @@ export const ABSENCE_LIMIT_MS = 7 * DAY;
 /** The most promises or habit spots a village keeps. */
 export const VILLAGE_MAX = 32;
 /** The most reservations: a band (six hours) keeps the closed holds its plan is made from, and every open one. */
-export const RESERVATIONS_MAX = 64;
+export const RESERVATIONS_MAX = 128;
 const START_OBJECTS = Object.freeze({ 'cafe-tray': { spot: 'cafe.prep' }, 'observation-board': { spot: 'greenhouse.board' } });
 const USES_KEPT = 4;
 
@@ -192,9 +192,13 @@ export function holdResidents(v, held, nowMs, revision) {
     if (v.reservations.some(x => x.id === r.id)) continue;
     v.reservations.push(r);
   }
-  // Past the bound the oldest closed holds leave — never an open one (it still holds its resident).
-  for (let i = 0; v.reservations.length > RESERVATIONS_MAX && i < v.reservations.length;) {
-    if (v.reservations[i].toMs === null) i++; else v.reservations.splice(i, 1);
+  // Past the bound closed holds leave — first those over before this band began, then the oldest in it (a band's
+  // plan keeps its history up to the bound; more holds than that in six hours give up the earliest). Never an open one.
+  const over = r => r.toMs !== null && v.band && r.toMs <= v.band.startMs;
+  for (const leaves of [over, r => r.toMs !== null]) {
+    for (let i = 0; v.reservations.length > RESERVATIONS_MAX && i < v.reservations.length;) {
+      if (leaves(v.reservations[i])) v.reservations.splice(i, 1); else i++;
+    }
   }
 }
 
