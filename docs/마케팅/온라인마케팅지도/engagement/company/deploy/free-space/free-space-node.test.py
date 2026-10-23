@@ -1,4 +1,4 @@
-import importlib.util, io, pathlib, struct, subprocess, time, unittest
+import importlib.util, io, os, pathlib, sqlite3, struct, subprocess, sys, tempfile, time, unittest
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -175,6 +175,159 @@ class Scanner(unittest.TestCase):
         self.assertEqual((with_cells['draftLive'], with_cells['draftResidue']), (1, 0))
         without = node.count(buf, [(0, 4096, 2)], set(), {live_text})
         self.assertEqual(without['draftResidue'], 1, 'without the cell layout the overflow page number is glued on')
+
+
+class OwnerView(unittest.TestCase):
+    """운영 DB 폴더의 위가 root 전용이라, 재는 자식은 권한을 낮추기 전에 자기만의 마운트 이름공간에서 DB 폴더를 /mnt에 다시 붙인다.
+    붙이기는 그 이름공간의 전파가 private이 된 것을 본 뒤에만 한다(아니면 호스트 마운트 표로 퍼진다)."""
+
+    DB = '/srv/synk/recovery-final-20261008T133704Z/prepared/company/company.sqlite'
+
+    def view(self, codes=None, still=(), unshare_error=None):
+        calls = []
+
+        def fake_sh(args, **kw):
+            calls.append(args)
+            return done('', (codes or {}).get(args[1], 0))
+
+        def fake_unshare():
+            calls.append('unshare')
+            if unshare_error:
+                raise unshare_error
+
+        def fake_still():
+            calls.append('still')
+            return None if still is None else list(still)
+        with patch.object(node, 'sh', fake_sh), patch.object(node, 'unshare_mounts', fake_unshare), patch.object(node, 'shared_mounts', fake_still):
+            try:
+                return node.owner_view(self.DB), calls
+            except RuntimeError as error:
+                return str(error), calls
+
+    def test_binds_the_folder_only_after_the_namespace_is_private(self):
+        got, calls = self.view()
+        self.assertEqual(got, '/mnt/company.sqlite')
+        self.assertEqual(calls, ['unshare', ['mount', '--make-rprivate', '/'], 'still',
+                                 ['mount', '--bind', '/srv/synk/recovery-final-20261008T133704Z/prepared/company', '/mnt']])
+
+    def test_stops_before_binding_unless_propagation_is_private(self):
+        cases = [(dict(codes={'--make-rprivate': 1}), 'MOUNT_PRIVATE_FAILED'),
+                 (dict(still=['/']), 'MOUNT_STILL_SHARED'),
+                 (dict(still=['/mnt']), 'MOUNT_STILL_SHARED'),
+                 (dict(still=None), 'MOUNT_STILL_SHARED')]
+        for kwargs, code in cases:
+            with self.subTest(code=code, kwargs=kwargs):
+                got, calls = self.view(**kwargs)
+                self.assertEqual(got, code)
+                self.assertFalse(any(isinstance(c, list) and '--bind' in c for c in calls), 'nothing is bound')
+        got, calls = self.view(codes={'--bind': 32})
+        self.assertEqual(got, 'VIEW_BIND_FAILED')
+        with self.assertRaises(PermissionError):
+            self.view(unshare_error=PermissionError(1, 'Operation not permitted'))
+
+    def test_lists_every_mount_that_still_propagates(self):
+        def read(text):
+            return patch('builtins.open', lambda path, *a, **k: io.StringIO(text) if path == '/proc/self/mountinfo' else REAL_OPEN(path, *a, **k))
+        with read('27 1 8:1 / / rw,relatime shared:1 - ext4 /dev/sda1 rw\n22 27 0:21 / /proc rw shared:12 - proc proc rw\n'
+                  '40 27 8:17 / /mnt rw master:7 - ext4 /dev/sdb1 rw\n'):
+            self.assertEqual(node.shared_mounts(), ['/', '/proc', '/mnt'])
+        with read('27 1 8:1 / / rw,relatime - ext4 /dev/sda1 rw\n40 27 8:17 / /mnt rw shared:9 - ext4 /dev/sdb1 rw\n'):
+            self.assertEqual(node.shared_mounts(), ['/mnt'], 'a separately mounted /mnt is checked too, not only /')
+        with read('27 1 8:1 / / rw,relatime - ext4 /dev/sda1 rw\n22 27 0:21 / /proc rw - proc proc rw\n'):
+            self.assertEqual(node.shared_mounts(), [], 'all private: no optional fields')
+        with read(''):
+            self.assertIsNone(node.shared_mounts())
+        with read('not a mountinfo line\n'):
+            self.assertIsNone(node.shared_mounts(), 'nothing readable is unknown, not private')
+
+    def child(self, view_result):
+        """as_owner의 자식 갈래를 fork 없이 돈다(os.fork → 0, os._exit에서 멈춤) — 무엇을 어떤 차례로 하는지와 파이프로 보낸 결과.
+        view_result가 예외면 owner_view가 그 예외를 낸다."""
+        calls, exits = [], []
+        read_end, write_end = os.pipe()
+        real_close = os.close
+
+        class Exited(Exception):
+            pass
+
+        def leave(code):
+            exits.append(code)
+            raise Exited()
+
+        def view(db):
+            calls.append(('view', db))
+            if isinstance(view_result, BaseException):
+                raise view_result
+            return view_result
+
+        def scan(path):
+            calls.append(('scan', path))
+            return {'scanned': path}
+
+        def record(name):
+            return lambda *a: calls.append((name,) + a)
+        # 자식이 닫는 읽는 쪽은 이 시험이 읽어야 하므로 닫지 않고 둔다(진짜 fork에서는 부모의 사본이 따로 있다).
+        with patch.object(node.os, 'fork', lambda: 0, create=True), patch.object(node.os, 'pipe', lambda: (read_end, write_end)), \
+                patch.object(node.os, 'close', lambda fd: None if fd == read_end else real_close(fd)), \
+                patch.object(node.os, 'stat', lambda path: SimpleNamespace(st_uid=1000, st_gid=1000)), patch.object(node, 'owner_view', view), \
+                patch.object(node.os, 'setgroups', record('setgroups'), create=True), patch.object(node.os, 'setgid', record('setgid'), create=True), \
+                patch.object(node.os, 'setuid', record('setuid'), create=True), patch.object(node.os, '_exit', leave):
+            with self.assertRaises(Exited):
+                node.as_owner(scan, self.DB)
+        os.close(write_end)
+        out = b''
+        while True:
+            chunk = os.read(read_end, 1 << 16)
+            if not chunk:
+                break
+            out += chunk
+        os.close(read_end)
+        return calls, exits, node.json.loads(out)
+
+    def test_the_child_binds_while_root_then_drops_and_scans_the_bound_path(self):
+        calls, exits, sent = self.child('/mnt/company.sqlite')
+        self.assertEqual(calls, [('view', self.DB), ('setgroups', []), ('setgid', 1000), ('setuid', 1000), ('scan', '/mnt/company.sqlite')])
+        self.assertEqual((exits, sent), ([0], {'scanned': '/mnt/company.sqlite'}))
+
+    def test_a_failed_view_reports_its_code_and_never_drops_or_scans(self):
+        calls, exits, sent = self.child(RuntimeError('MOUNT_STILL_SHARED'))
+        self.assertEqual(calls, [('view', self.DB)])
+        self.assertEqual((exits, sent), ([1], {'error': 'SCAN_FAILED', 'type': 'RuntimeError', 'code': 'MOUNT_STILL_SHARED'}))
+        calls, exits, sent = self.child(PermissionError(1, 'Operation not permitted'))
+        self.assertEqual((calls, sent['code']), ([('view', self.DB)], 'EPERM'))
+        self.assertIsNone(node.failure_code(RuntimeError('a sentence with a /path')), 'only our own codes pass through')
+        self.assertIsNone(node.failure_code(ValueError('x')))
+
+    @unittest.skipUnless(sys.platform.startswith('linux') and os.geteuid() != 0, 'Linux, root가 아닌 사용자')
+    def test_why_an_open_folder_is_not_enough_sqlite_walks_the_full_path(self):
+        # 위 마디를 닫은(0) 폴더: 원래 경로로는 아무것도 안 보이고, 폴더를 열어 두고 fchdir하면 파이썬 파일 읽기는 되지만
+        # SQLite는 getcwd로 절대 경로를 만들어 마디마다 lstat해 열지 못한다 — 그래서 다시 붙이기(owner_view)를 쓴다.
+        top = tempfile.mkdtemp()
+        closed = os.path.join(top, 'closed')
+        folder = os.path.join(closed, 'company')
+        os.makedirs(folder)
+        db = os.path.join(folder, 'company.sqlite')
+        app = sqlite3.connect(db)
+        app.execute('PRAGMA journal_mode=WAL')
+        app.execute('CREATE TABLE documents (kind TEXT, id TEXT, body TEXT)')
+        app.commit()
+        fd, here = os.open(folder, os.O_RDONLY), os.getcwd()
+        os.chmod(closed, 0)
+        try:
+            self.assertFalse(os.path.exists(db + '-wal'))
+            os.fchdir(fd)
+            self.assertTrue(os.path.exists('company.sqlite-wal') and os.path.exists('company.sqlite-shm'))
+            with self.assertRaises(sqlite3.OperationalError):
+                sqlite3.connect('file:company.sqlite?mode=ro', uri=True).execute('PRAGMA page_count').fetchone()
+        finally:
+            os.chdir(here)
+            os.chmod(closed, 0o700)
+            os.close(fd)
+            app.close()
+
+    def test_without_fork_the_scan_reads_the_given_path(self):
+        with patch.object(node, 'os', SimpleNamespace(path=os.path)):
+            self.assertEqual(node.as_owner(lambda path: {'path': path}, self.DB), {'path': self.DB})
 
 
 class FakePopen:

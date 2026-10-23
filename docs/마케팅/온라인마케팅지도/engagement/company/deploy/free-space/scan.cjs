@@ -45,7 +45,7 @@ if(vacuum){const js=fs.readFileSync(path.join(__dirname,'vacuum.mjs'),'utf8');if
   // 덜 쓴 WAL 꼬리(walTorn)는 칸 경계를 믿을 수 없어, 빈 칸처럼 표식이 하나라도 있으면 깨끗하지 않다고 본다.
   const STRICT=['freelist','inPage','walTorn'];
   const parts=s=>Object.entries(s?.residue||{}).filter(([,x])=>x&&typeof x==='object');
-  const brief=s=>s&&{error:s.error,freePages:s.pragma?.freelist_count,pages:s.pragma?.page_count,dbBytes:s.files?.db,walBytes:s.files?.wal,inquiries:s.inquiries,
+  const brief=s=>s&&{error:s.error,code:s.code,freePages:s.pragma?.freelist_count,pages:s.pragma?.page_count,dbBytes:s.files?.db,walBytes:s.files?.wal,inquiries:s.inquiries,
     skipped:s.residue?.skipped,attempts:s.residue?.attempts,changedDuringScan:s.residue?.changedDuringScan,
     residue:Object.fromEntries(parts(s).map(([k,x])=>[k,{payloadResidue:x.payloadResidue,draftResidue:x.draftResidue,undecided:x.payloadShort+x.draftShort,
       ...(STRICT.includes(k)?{copies:x.payloadLive+x.draftLive,nonzeroBytes:x.nonzeroBytes}:{})}]))};

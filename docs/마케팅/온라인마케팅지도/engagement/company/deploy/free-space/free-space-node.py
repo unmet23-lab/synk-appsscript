@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """회사 DB 빈 칸 잔여 재기와 한 번 정리 — 쓰기 노드에서 root로 돈다(README).
 
-scan   : 읽기 전용. DB 주인(uid)으로 낮춘 자식 프로세스가 읽는다(root가 -wal·-shm을 만들지 않게).
+scan   : 읽기 전용. DB 주인(uid)으로 낮춘 자식 프로세스가 읽는다(root가 -wal·-shm을 만들지 않게). 자식은 권한을 낮추기 전에
+         자기만의 마운트 이름공간에서 DB 폴더를 /mnt에 다시 붙이고 그 경로로 읽는다 — 운영 DB 폴더의 위가 root 전용이다(owner_view).
          ① mode=ro 연결의 읽기 트랜잭션 하나에서 수·산 값·논리 스냅샷(serialize), ② 연결을 닫고 실제 DB·WAL 파일 바이트,
          ③ 새 연결에서 산 값 한 번 더. 빈 페이지·페이지 안 빈 칸·실제 파일의 페이지마다 문의 줄 표식("payload":" ·
          "replyDraft":")을 찾아 ①·③의 산 값과 대조한다. 숫자만 낸다(고객 글·초안·암호문·해시를 내지 않는다).
@@ -9,9 +10,11 @@ vacuum : 승인 뒤에만(scan.cjs가 승인 파일을 요구한다). 막는 조
          vacuum.mjs가 VACUUM 바로 앞에서 READY를 내면 잠금·서비스를 다시 보고 GO나 STOP을 보낸다. 앞뒤로 scan을 낸다.
 로컬: python3 free-space-node.py --db <company.sqlite>  (scan만, 호스트 정보·권한 낮추기 없이)
 """
-import json, os, re, sqlite3, struct, subprocess, sys, threading, time
+import errno, json, os, posixpath, re, sqlite3, struct, subprocess, sys, threading, time
 
 VACUUM_JS = None  # scan.cjs가 vacuum.mjs 내용으로 바꿔 보낸다
+VIEW = '/mnt'  # 재는 자식만의 마운트 이름공간에서 DB 폴더를 붙이는 자리(호스트의 /mnt는 그대로다)
+CLONE_NEWNS = 0x00020000
 RELEASE_LOCKS = ('/run/lock/synk-ha-deploy.lock', '/var/lib/synk-company-ops/operations.lock')
 BUSY = re.compile(r'backup|restore|dr|rearm|release|deploy|maintenance|disarm')
 ONLINE_LIMIT = 120 << 20  # 이보다 큰 DB는 온라인 VACUUM을 하지 않는다(vacuum 참고)
@@ -404,10 +407,68 @@ def scan(db, local=False):
     return out
 
 
+def shared_mounts():
+    """이 프로세스의 마운트 이름공간에서 전파 표시(shared:N·master:N)가 남은 마운트 자리. 모두 private이면 빈 목록, 못 읽으면 None.
+    / 하나만 보지 않는다 — /mnt가 따로 마운트된 호스트에서는 그 마운트의 전파가 붙인 자리를 호스트로 퍼뜨린다."""
+    try:
+        found, seen = [], False
+        for line in open('/proc/self/mountinfo'):
+            fields = line.split()
+            if len(fields) < 7 or '-' not in fields[6:]:
+                continue
+            seen = True
+            if any(mark.startswith(('shared:', 'master:')) for mark in fields[6:fields.index('-', 6)]):
+                found.append(fields[4])
+        return found if seen else None
+    except OSError:
+        return None
+
+
+def unshare_mounts():
+    """이 프로세스만의 마운트 이름공간을 만든다(root). 운영 노드의 파이썬 3.11에는 os.unshare가 없어 libc를 부른다."""
+    if hasattr(os, 'unshare'):
+        os.unshare(os.CLONE_NEWNS)
+        return
+    import ctypes
+    libc = ctypes.CDLL(None, use_errno=True)
+    if libc.unshare(CLONE_NEWNS) != 0:
+        code = ctypes.get_errno()
+        raise OSError(code, os.strerror(code))
+
+
+def owner_view(db):
+    """권한을 낮추기 전에(root) DB 폴더를 이 프로세스만의 마운트 이름공간에서 VIEW에 다시 붙이고, 낮춘 uid가 읽을 경로를 돌려준다.
+    운영 DB 폴더는 위 두 마디(/srv/synk/recovery-final-…/prepared)가 root 전용(0700)이라 낮춘 uid는 원래 경로를 지나지 못한다.
+    폴더를 열어 두고 fchdir로 상대 경로를 주는 것으로는 모자라다 — 파이썬 파일 읽기는 되지만 SQLite가 getcwd로 절대 경로를 만들어
+    마디마다 lstat하므로(os_unix.c unixFullPathname, 3.40.1) 같은 자리에서 막힌다. 전파가 private이 된 것을 본 뒤에만 붙여 호스트
+    마운트 표에는 아무것도 생기지 않고, 붙인 자리는 이 프로세스와 그 자식이 끝나면 이름공간과 함께 사라진다."""
+    unshare_mounts()
+    if sh(['mount', '--make-rprivate', '/']).returncode != 0:
+        raise RuntimeError('MOUNT_PRIVATE_FAILED')
+    # 한 마운트라도 아직 shared(또는 master)면 아래 bind가 호스트 이름공간으로 퍼지거나 받는다 — 붙이지 않고 멈춘다. 못 읽어도 멈춘다.
+    still = shared_mounts()
+    if still is None or still:
+        raise RuntimeError('MOUNT_STILL_SHARED')
+    # 노드의 리눅스 경로라 posixpath로 다룬다(윈도에서 도는 시험도 같은 값을 보게).
+    if sh(['mount', '--bind', posixpath.dirname(db), VIEW]).returncode != 0:
+        raise RuntimeError('VIEW_BIND_FAILED')
+    return posixpath.join(VIEW, posixpath.basename(db))
+
+
+def failure_code(error):
+    """자식이 실패한 까닭 — 이 파일이 정한 이름(MOUNT_PRIVATE_FAILED 등)이나 errno 이름만 낸다(경로·글은 내지 않는다)."""
+    if isinstance(error, RuntimeError) and error.args and re.fullmatch(r'[A-Z_]+', str(error.args[0])):
+        return error.args[0]
+    if isinstance(error, OSError) and error.errno:
+        return errno.errorcode.get(error.errno)
+    return None
+
+
 def as_owner(fn, db):
-    """fn을 DB 파일 주인(uid·gid)으로 낮춘 자식 프로세스에서 돌려 결과를 받는다. fork가 없으면(로컬) 그대로."""
+    """fn(경로)을 DB 파일 주인(uid·gid)으로 낮춘 자식 프로세스에서 돌려 결과를 받는다. 자식은 권한을 낮추기 전에 owner_view로
+    DB 폴더를 다시 붙이고 그 경로를 fn에 준다. fork가 없으면(로컬) fn(db) 그대로."""
     if not hasattr(os, 'fork'):
-        return fn()
+        return fn(db)
     st = os.stat(db)
     read_end, write_end = os.pipe()
     pid = os.fork()
@@ -415,12 +476,13 @@ def as_owner(fn, db):
         code = 0
         try:
             os.close(read_end)
+            view = owner_view(db)
             os.setgroups([])
             os.setgid(st.st_gid)
             os.setuid(st.st_uid)
-            payload = json.dumps(fn(), default=str).encode()
+            payload = json.dumps(fn(view), default=str).encode()
         except BaseException as error:
-            payload, code = json.dumps({'error': 'SCAN_FAILED', 'type': type(error).__name__}).encode(), 1
+            payload, code = json.dumps({'error': 'SCAN_FAILED', 'type': type(error).__name__, 'code': failure_code(error)}).encode(), 1
         view = memoryview(payload)
         while view:
             view = view[os.write(write_end, view):]
@@ -465,7 +527,7 @@ def vacuum(container, db):
         return {'error': 'NO_RECENT_BACKUP', 'facts': facts}
     if not container.get('running') or container.get('health') != 'healthy':
         return {'error': 'COMPANY_NOT_HEALTHY', 'container': container}
-    before = as_owner(lambda: scan(db), db)
+    before = as_owner(scan, db)
     if before.get('error') or not before.get('pragma'):
         return {'error': 'SCAN_BEFORE_FAILED', 'facts': facts, 'before': before}
     # 크기는 논리 크기(page_count × page_size)로 잰다 — 체크포인트가 막혀 새 페이지가 WAL에 쌓이면 DB 파일보다 크다.
@@ -500,7 +562,7 @@ def vacuum(container, db):
         result = {'error': 'VACUUM_TIMEOUT', 'exit': None}
     finally:
         guard.cancel()
-    return {'facts': facts, 'before': before, 'vacuum': result, 'after': as_owner(lambda: scan(db), db)}
+    return {'facts': facts, 'before': before, 'vacuum': result, 'after': as_owner(scan, db)}
 
 
 def main(argv):
@@ -515,7 +577,7 @@ def main(argv):
     if not db:
         return {'mode': mode, 'hasDb': False}
     if mode == 'scan':
-        return {'mode': mode, 'hasDb': True, 'container': container, 'facts': host_facts(db), **as_owner(lambda: scan(db), db)}
+        return {'mode': mode, 'hasDb': True, 'container': container, 'facts': host_facts(db), **as_owner(scan, db)}
     return {'mode': mode, 'hasDb': True, 'container': container, **vacuum(container, db)}
 
 
