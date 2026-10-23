@@ -274,7 +274,7 @@
     }
     const tiles = order.map((m) => { const r = recs.find((x) => x.model.code === m.code); return tileHTML(m, r, r ? recs.indexOf(r) + 1 : 0, recs.length && !r); }).join('');
     body.innerHTML = `<section class="board pad" aria-label="모델 보드">${tiles || ''}
-      <div class="slot"><h3>찾는 얼굴이 없나요?</h3><p>10대 모델은 준비하고 있어요. 원하는 나이·분위기를 알려 주시면 같은 방식으로 새 모델을 만들어 드려요.</p><button type="button" class="link" data-act="new-model">새 모델 문의 글 복사</button></div></section>`;
+      <div class="slot"><h2>찾는 얼굴이 없나요?</h2><p>10대 모델은 준비하고 있어요. 원하는 나이·분위기를 알려 주시면 같은 방식으로 새 모델을 만들어 드려요.</p><button type="button" class="link" data-act="new-model">새 모델 문의 글 복사</button></div></section>`;
     wireLoops(body);
   }
   // 움직이는 사진: 마우스를 올리면(휴대폰은 화면에 보이면) 짧게 돈다
@@ -534,11 +534,14 @@
   const topLevel = (() => { try { return window.top === window.self && /^https?:/.test(location.protocol); } catch { return false; } })();
   const shareBase = topLevel ? `${location.origin}${location.pathname}${location.search}` : (D.shareBase || '');
   const canShareLink = !!shareBase;
+  // 메신저 앱 안 브라우저(카카오톡·네이버·인스타그램·페이스북·라인 등)는 내려받기·복사·보내기가 막힐 때가 많다 — 이미지 저장 창에서 다른 브라우저로 열도록 알린다
+  const inAppBrowser = /KAKAOTALK|KAKAOSTORY|NAVER\(inapp|Instagram|Barcelona|FBAN|FBAV|\bLine\/|BAND\/|DaumApps|everytimeApp|MicroMessenger|Twitter/i.test(navigator.userAgent || '');
   let downloads = null;
   try { if (window.claude && typeof window.claude.use === 'function') window.claude.use('downloads').then((x) => { downloads = x; }, () => {}); } catch { /* 일반 브라우저 */ }
   function renderPkg(anchor = '', shared = null) {
     const items = shared || myItems();
     const n = items.length;
+    view.dataset.shared = shared ? shareCode(shared) : ''; // 빈 패키지 화면에서도 앞서 본 받은 패키지 표시를 지운다(문의 글이 그 조합으로 바뀌지 않게)
     if (!n) {
       view.innerHTML = `<section class="pk-head pad"><div><h1>패키지<sup class="num">0</sup></h1><p>마음에 드는 모델을 담으면 여기에서 한 장짜리 컴프 카드로 정리하고, 나란히 비교하고, 문의 글로 보낼 수 있어요.</p></div></section>
         <section class="empty pad"><h2>아직 담은 모델이 없어요</h2><p>보드에서 사진 위 「+ 패키지」를 누르거나, 한 명씩 넘기며 오른쪽으로 밀어 담아 보세요.</p><div class="pk-acts"><a class="btn ink" href="#swipe">넘기며 고르기</a><a class="btn line" href="#board">모델 보드</a></div></section>
@@ -563,7 +566,6 @@
       ${inqHTML(items)}`;
     watchLineups(view);
     wireInq(items);
-    view.dataset.shared = shared ? shareCode(shared) : '';
     if (anchor === 'inq') requestAnimationFrame(() => $('#inq')?.scrollIntoView({ block: 'start' }));
   }
   function inqHTML(items) {
@@ -695,8 +697,11 @@
     let canShare = false;
     try { canShare = topLevel && !!(navigator.canShare && navigator.canShare({ files: [new File([blob], file, { type: 'image/png' })] })); } catch { canShare = false; }
     const canCopy = typeof ClipboardItem === 'function' && !!(navigator.clipboard && navigator.clipboard.write);
-    d.innerHTML = `<div class="ex-top"><p>${downloads || topLevel ? '저장 단추가 안 되면 이미지를 길게 누르거나 오른쪽 클릭으로 저장해 주세요.' : '이미지를 길게 누르거나 오른쪽 클릭해서 저장해 주세요. 「이미지 복사」 뒤 메신저에 바로 붙여 넣어도 돼요.'}</p><span class="pk-acts">${canCopy ? '<button type="button" class="btn line sm" data-act="ex-copy">이미지 복사</button>' : ''}${canShare ? '<button type="button" class="btn line sm" data-act="ex-share">보내기</button>' : ''}${downloads ? '<button type="button" class="btn ink sm" data-act="ex-save">이미지 저장</button>' : topLevel ? `<a class="btn ink sm" href="${url}" download="${E(file)}">이미지 저장</a>` : ''}<button type="button" class="btn line sm" data-act="ex-close">닫기</button></span></div><img src="${url}" alt="${E(name)}">`;
-    d.dataset.file = file; d.dataset.url = url; exportCanvas.blob = blob;
+    // 메신저 앱 안에서는 다른 브라우저로 옮겨 가야 하는데, 패키지는 이 브라우저에만 저장돼 있다 — 조합이 담긴 공유 링크를 같이 준다(10-23)
+    const moveItems = inAppBrowser ? (view.dataset.shared ? readShare(view.dataset.shared) : myItems()) : [];
+    const moveLink = inAppBrowser && shareBase && moveItems.length ? `${shareBase}#p-${shareCode(moveItems)}` : '';
+    d.innerHTML = `<div class="ex-top"><p>${inAppBrowser ? (moveLink ? '메신저 앱 안에서는 저장이 막힐 수 있어요. 「링크 복사」로 이 패키지 링크를 복사해 Safari·Chrome 같은 다른 브라우저 주소창에 붙여 넣으면 그대로 열려요.' : '메신저 앱 안에서는 저장이 막힐 수 있어요. 메뉴나 공유 단추에서 Safari·Chrome 같은 다른 브라우저로 열어 저장해 주세요.') : downloads || topLevel ? '저장 단추가 안 되면 이미지를 길게 누르거나 오른쪽 클릭으로 저장해 주세요.' : '이미지를 길게 누르거나 오른쪽 클릭해서 저장해 주세요. 「이미지 복사」 뒤 메신저에 바로 붙여 넣어도 돼요.'}</p><span class="pk-acts">${moveLink ? '<button type="button" class="btn line sm" data-act="ex-link">링크 복사</button>' : ''}${canCopy ? '<button type="button" class="btn line sm" data-act="ex-copy">이미지 복사</button>' : ''}${canShare ? '<button type="button" class="btn line sm" data-act="ex-share">보내기</button>' : ''}${downloads ? '<button type="button" class="btn ink sm" data-act="ex-save">이미지 저장</button>' : topLevel ? `<a class="btn ink sm" href="${url}" download="${E(file)}">이미지 저장</a>` : ''}<button type="button" class="btn line sm" data-act="ex-close">닫기</button></span></div><img src="${url}" alt="${E(name)}">`;
+    d.dataset.file = file; d.dataset.url = url; d.dataset.link = moveLink; exportCanvas.blob = blob;
     d.setAttribute('aria-label', name);
   }
 
@@ -836,6 +841,7 @@
       case 'save-card': { const items = view.dataset.shared ? readShare(view.dataset.shared) : myItems(); const x = items.find((y) => y.code === code); const m = byCode(code); exportCanvas(() => drawCard(x), `PULSE_${m.code}_${m.name}_컴프카드`); break; }
       case 'save-sheet': { const items = view.dataset.shared ? readShare(view.dataset.shared) : myItems(); exportCanvas(() => drawSheet(items), `PULSE_모델패키지_${items.length}명`); break; }
       case 'ex-close': $('#export').close(); break;
+      case 'ex-link': copy($('#export').dataset.link, '패키지 링크를 복사했어요. 다른 브라우저 주소창에 붙여 넣어 주세요.'); break;
       case 'ex-save': {
         const f = $('#export').dataset.file;
         downloads.save({ filename: f, data: exportCanvas.blob }).then(() => toast('이미지를 저장했어요.'), (err) => {

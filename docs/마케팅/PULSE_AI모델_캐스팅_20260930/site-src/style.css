@@ -107,7 +107,7 @@ b,strong{font-weight:600}
 .tile.dim .cap{opacity:.55}
 .tile.dim:hover .ph,.tile.dim:hover .cap{opacity:1}
 .slot{display:flex;flex-direction:column;gap:12px;padding-top:6px;border-top:1.5px solid var(--ink)}
-.slot h3{font-size:20px;font-weight:650;letter-spacing:-.025em}
+.slot h2{font-size:20px;font-weight:650;letter-spacing:-.025em}
 .slot p{font-size:14px;color:var(--ink-2);max-width:22em}
 .swipe-cta{display:none}
 
