@@ -279,6 +279,41 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   if(!response.ok)throw Object.assign(Error(data?.code||'SPEAKING_UNAVAILABLE'),{code:data?.code||'SPEAKING_UNAVAILABLE',status:response.status});
   return data;
  }
+ // 「학습 알림 · 앱을 닫아도 받기」(SYNK-talk world-push 함수, 설계 qa/push-reminders-20261022). 웹만 — PC 앱 창은 푸시 서비스가 없다.
+ // pushRequest는 이 탭의 SYNK ID로(status·subscribe·sync·unsubscribe), pushAnonymous는 로그인 없이 공개 키만으로(알림 누름 · 주소 + 기기 식별자 끄기).
+ // 응답은 다른 계정 요청처럼 accountId가 있으면 이 계정과 같아야 쓴다. keepalive는 페이지를 떠날 때의 마지막 요약에만 쓴다.
+ const pushUrl=()=>{const url=new URL(config.accountApiUrl);url.pathname=url.pathname.replace(/\/$/,'').replace(/\/functions\/v1(?:\/synk-(?:account|world-v1|town))?$/,'')+'/functions/v1/world-push/api';url.search='';url.hash='';return url.href;};
+ const pushHeaders=token=>({apikey:config.supabasePublishableKey,Authorization:`Bearer ${token}`,'X-SYNK-Product':'world','X-SYNK-Contract':'1','X-SYNK-App-Version':'1.0.0','Content-Type':'application/json'});
+ async function pushRequest(action,body={},{keepalive=false}={}){
+  if(native)throw Object.assign(Error('PUSH_UNSUPPORTED'),{code:'PUSH_UNSUPPORTED'});
+  const expected=epoch;guard(expected);if(!owner||!session)throw Object.assign(Error('SYNK ID로 로그인해 주세요.'),{code:'AUTH_REQUIRED',status:401});
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);controllers.add(controller);
+  try{
+   if(session.expires_at<=now()+30000)await renew(expected);guard(expected);
+   for(let attempt=0;attempt<2;attempt++){
+    const response=await fetcher(pushUrl(),{method:'POST',credentials:'omit',cache:'no-store',redirect:'error',keepalive,signal:keepalive?undefined:controller.signal,
+     headers:pushHeaders(session.access_token),body:JSON.stringify({action,...body})});guard(expected);
+    if(response.status===401&&attempt===0&&session.refresh_token){await renew(expected);guard(expected);continue;}
+    const data=await response.json();guard(expected);
+    if(response.status===401||authErrors.has(data?.error?.code)){clear();forgetSession();}
+    if(!response.ok||data?.ok!==true)throw Object.assign(Error(data?.error?.code||'PUSH_UNAVAILABLE'),{code:data?.error?.code||'PUSH_UNAVAILABLE',status:response.status});
+    if(data.accountId!==undefined&&data.accountId!==owner)throw Object.assign(Error('다른 계정의 정보라서 반영하지 않았어요.'),{code:'ACCOUNT_MISMATCH'});
+    return data;
+   }
+   throw Object.assign(Error('AUTH_REQUIRED'),{code:'AUTH_REQUIRED',status:401});
+  }finally{clearTimeout(timer);controllers.delete(controller);}
+ }
+ async function pushAnonymous(action,body={},{keepalive=false}={}){
+  if(native||!['opened','unsubscribe'].includes(action))throw Object.assign(Error('PUSH_UNSUPPORTED'),{code:'PUSH_UNSUPPORTED'});
+  // 로그인 없는 길도 12초에서 끊는다 — 멈춘 연결에 로그아웃·켜기가 묶이지 않게(10-23 화면 검수). 떠날 때(keepalive)는 끊지 않는다.
+  const controller=new AbortController(),timer=keepalive?null:setTimeout(()=>controller.abort(),12000);
+  try{
+   const response=await fetcher(pushUrl(),{method:'POST',credentials:'omit',cache:'no-store',redirect:'error',keepalive,signal:keepalive?undefined:controller.signal,headers:pushHeaders(config.supabasePublishableKey),body:JSON.stringify({action,...body})});
+   const data=await response.json();
+   if(!response.ok||data?.ok!==true)throw Object.assign(Error(data?.error?.code||'PUSH_UNAVAILABLE'),{code:data?.error?.code||'PUSH_UNAVAILABLE',status:response.status});
+   return data;
+  }finally{clearTimeout(timer);}
+ }
  async function submitHomework(input){
   if(native&&!nativeHomework)throw Object.assign(Error('PC 앱에서는 아직 과제를 낼 수 없어요.'),{code:'HOMEWORK_UNSUPPORTED'});
   const response=await request('homework/submit',{method:'POST',body:JSON.stringify(homeworkSubmission(input))}),data=await response.json();
@@ -296,7 +331,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
    const response=await revokeFetch(new URL('/auth/v1/logout?scope=local',config.supabaseUrl).href,{method:'POST',credentials:'omit',cache:'no-store',headers:{apikey:config.supabasePublishableKey,Authorization:`Bearer ${captured.access_token}`}});serverRevoked=response.ok&&serverRevoked;
   }catch{}finally{clearTimeout(timer);}return {serverRevoked};
  }
- return Object.freeze({mode:'account',restore,signIn,request,logout,prepareGame,prepareLifeProgress,prepareHangulProgress,importDeviceLearning,topicAnswers,readClassrooms,readHomework,submitHomework,readHomeworkKey,courseRequest,writingRequest,speakingRequest,get supportsWriting(){return !native;},get supportsSpeaking(){return !native;},get supportsClassroom(){return !native||nativeClassroom;},get supportsHomework(){return !native||nativeHomework;},get supportsTownCheck(){return !native||nativeTownCheck;},identity:()=>({accountId:owner,generation:epoch}),assertActive(){guard(epoch);if(!owner)throw changed();},
+ return Object.freeze({mode:'account',restore,signIn,request,logout,prepareGame,prepareLifeProgress,prepareHangulProgress,importDeviceLearning,topicAnswers,readClassrooms,readHomework,submitHomework,readHomeworkKey,courseRequest,writingRequest,speakingRequest,pushRequest,pushAnonymous,get supportsPush(){return !native;},get supportsWriting(){return !native;},get supportsSpeaking(){return !native;},get supportsClassroom(){return !native||nativeClassroom;},get supportsHomework(){return !native||nativeHomework;},get supportsTownCheck(){return !native||nativeTownCheck;},identity:()=>({accountId:owner,generation:epoch}),assertActive(){guard(epoch);if(!owner)throw changed();},
   preferences(){const learning=currentAccount?.learning;return learning&&typeof learning.enabled==='boolean'&&Number.isSafeInteger(learning.revision)?{enabled:learning.enabled,revision:learning.revision}:null;},
   async setLearning(enabled,expectedRevision){const expected=epoch;guard(expected);if(!owner||typeof enabled!=='boolean'||!Number.isSafeInteger(expectedRevision)||expectedRevision<0)throw new TypeError('Invalid account learning preference');
    const client=clientFor(expected);

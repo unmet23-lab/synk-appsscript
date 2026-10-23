@@ -176,7 +176,8 @@ test('1판 표: 모든 줄에 ko·en·mn이 있고 값 자리가 같다',()=>{
 
 test('영어·몽골어 칸에는 한글이 없고, 몽골어는 키릴로 쓴다(브랜드·약어만 라틴)',()=>{
  // 「TOPIK I」·「TOPIK II」는 시험 이름이다(내 위치 판의 TOPIK I 16개 항목, 쓰기 연습의 TOPIK II). PBT·IBT는 시험 방식의 공식 약어다(학습 목표 창).
- const allowed=/\b(?:SYNK|ID|AI|WORLD|TOPIK(?: II| I)?|PBT|IBT|Google|Apple|Unity|PNG|O|X|3D)\b/g;
+ // iPhone·iPad는 Apple 제품 이름이다(학습 알림 2단의 아이폰 안내, 10-23).
+ const allowed=/\b(?:SYNK|ID|AI|WORLD|TOPIK(?: II| I)?|PBT|IBT|Google|Apple|iPhone|iPad|Unity|PNG|O|X|3D)\b/g;
  const problems=[];
  for(const [key,entry]of Object.entries(STRINGS)){
   for(const code of ['en','mn'])for(const text of forms(entry[code]))if(HANGUL.test(text))problems.push(`${key}: ${code}에 한글`);

@@ -20,7 +20,9 @@ const {createWorldV1Store}=require(path.join(talk,'lib/world-v1-store.js'));
 const {createWorldV1LocalDb}=require(path.join(talk,'tools/world-v1-local-db.js'));
 const mode=process.env.SYNK_WORLD_MODE||'rehearsal';
 if(!['rehearsal','account'].includes(mode))throw Error('SYNK_WORLD_MODE must be rehearsal or account');
-const publicConfig=publicWorldConfig(mode==='account'?{mode,basePath:process.env.SYNK_WORLD_BASE_PATH||'/',account:JSON.parse(fs.readFileSync(process.env.SYNK_WORLD_ACCOUNT_CONFIG,'utf8'))}:{mode,basePath:'/'},`http://127.0.0.1:${port}/`);
+// 미리 보기에서 켤 설정값(features): SYNK_WORLD_FEATURES=worldPush,worldFeedback(쉼표). publicWorldConfig가 아는 이름만 남는다 — 없으면 공개본처럼 칸이 없다.
+const features=Object.fromEntries((process.env.SYNK_WORLD_FEATURES||'').split(',').map(name=>name.trim()).filter(Boolean).map(name=>[name,true]));
+const publicConfig=publicWorldConfig({...(mode==='account'?{mode,basePath:process.env.SYNK_WORLD_BASE_PATH||'/',account:JSON.parse(fs.readFileSync(process.env.SYNK_WORLD_ACCOUNT_CONFIG,'utf8'))}:{mode,basePath:'/'}),features},`http://127.0.0.1:${port}/`);
 if(mode==='rehearsal')fs.mkdirSync(path.join(root,'.local'),{recursive:true});
 const dataDir=process.env.SYNK_WORLD_DATA_DIR||path.join(root,'.local/db-v1');
 const database=mode==='rehearsal'?await createWorldV1LocalDb({dataDir}):null;
@@ -99,7 +101,7 @@ const server=http.createServer(async(req,res)=>{
   else if(['/world-speaking-practice.mjs','/world-speaking-items.json','/world-speaking.css'].includes(pathname)||/^\/speaking-assets\/[a-z0-9-]+\.webp$/.test(pathname))base=root;
   // Preview-only route (10-14 redesign worktree): the games import ../social-conversion.mjs (shared trial tracking, in progress elsewhere).
   else if(pathname==='/social-conversion.mjs'){base=path.resolve(root,'..');}
-  else if(['/world-bootstrap.js','/app-shell.mjs','/app-shell.css','/world-client.mjs','/world-town-client.mjs','/world-account.bundle.mjs','/life-ui.mjs','/life-story.mjs','/life-ui.css','/life-content.mjs','/life-progress.mjs','/world-learning-ui.mjs','/world-learning-profile.mjs','/world-learning-profile-core.mjs','/tutor-selection-sync.mjs','/display-language-sync.mjs','/life-content-lang.mjs','/cafe-activity.mjs','/cafe-ui.mjs','/classroom-lessons.mjs','/classroom-homework.mjs','/topik4-homework.json','/world-writing-practice.mjs','/world-writing-check.mjs','/world-writing-items.json','/world-writing.css','/world-topik-items.json','/world-reminders.mjs','/world-reminder-device.mjs'].includes(pathname))base=root;
+  else if(['/world-bootstrap.js','/app-shell.mjs','/app-shell.css','/world-client.mjs','/world-town-client.mjs','/world-account.bundle.mjs','/life-ui.mjs','/life-story.mjs','/life-ui.css','/life-content.mjs','/life-progress.mjs','/world-learning-ui.mjs','/world-learning-profile.mjs','/world-learning-profile-core.mjs','/tutor-selection-sync.mjs','/display-language-sync.mjs','/life-content-lang.mjs','/cafe-activity.mjs','/cafe-ui.mjs','/classroom-lessons.mjs','/classroom-homework.mjs','/topik4-homework.json','/world-writing-practice.mjs','/world-writing-check.mjs','/world-writing-items.json','/world-writing.css','/world-topik-items.json','/world-reminders.mjs','/world-reminder-device.mjs','/world-push.mjs','/world-push-sw.js','/world-icon-192.png'].includes(pathname))base=root;
   else if(['/engine/loom-motion.js','/engine/loom-life.js'].includes(pathname)){base=path.resolve(root,'../../tools/lib');pathname='/'+path.basename(pathname);}
   else if(pathname.startsWith('/town/')){
    pathname=pathname.slice(5);base=town;

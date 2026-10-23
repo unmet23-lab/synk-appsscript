@@ -10,6 +10,7 @@ import {restoreTutorSelection,commitTutorSelection,tutorSelectionStatus,createWo
 import {createLifeExperience} from './life-ui.mjs';
 import {createWritingPractice,writingRow,loadWritingBank,writingReady,WRITING_CANDIDATES,readWritingSummary} from './world-writing-practice.mjs';
 import {createWorldReminders,createTrailTimes} from './world-reminder-device.mjs';
+import {createWorldPush} from './world-push.mjs';
 import {createTownWorldHost} from './world-town-client.mjs';
 import {WARDROBE_ITEMS} from '../synk-world-home/wardrobe-catalog.mjs';
 import {createWorkbenchStorage,thumbnailKey,wardrobeThumbnailCache} from '../synk-world-home/wardrobe-workbench.mjs';
@@ -76,6 +77,24 @@ async function restoreSession(){
 }
 const account=operating?createWorldAccount({config:connection.account,onInvalidate:()=>{sessionConfirmed=false;client?.invalidate();},onConnect:restoreConnectedHome}):null;
 client=new WorldClient({onChange:renderStatus,account});
+// 학습 알림 2단 · 앱을 닫아도 받기(world-push.mjs, 설계 qa/push-reminders-20261022): 설정값 worldPush가 켜졌을 때(기본 꺼짐), 계정 모드의 웹에서만
+// (PC 앱 창은 푸시 서비스가 없다). 꺼져 있으면 2단의 줄·안내·상태 읽기가 모두 없다. 서비스 워커는 WORLD 뿌리(/world/world-push-sw.js, 범위 /world/)다.
+// 계정 주인이 바뀌면 initializeLife가 setAccount로 알린다.
+const pushOn=connection.features?.worldPush===true;
+const worldPush=operating&&pushOn&&account?.supportsPush?createWorldPush({request:(action,body,options)=>account.pushRequest(action,body,options),
+ anonymous:(action,body,options)=>account.pushAnonymous(action,body,options),env:window,storage:(()=>{try{return localStorage;}catch{return null;}})(),
+ workerUrl:worldUrl('world-push-sw.js'),scopeUrl:worldUrl('')}):null;
+// 2단 상태가 바뀌면(다른 기기에서 켬·끔 등) 1단을 다시 잡는다 — 2단이 켜진 계정이면 1단은 쉰다(설계 §6).
+worldPush?.subscribe(()=>reminders?.schedule());
+// 2단 알림을 눌러 들어온 주소(world-push-sw.js): ?reminder=<종류>&ack=<토큰>. 주소에서 지우고 누름을 한 번 더 알린 뒤(워커가 못 알렸을 때 —
+// 서버는 토큰을 한 번만 쓴다), 그 자리는 이 탭에 30분 두었다가 입구가 끝나고 계정 학습이 준비되면 연다(openReminderLink). 로그인이 풀린 새 창이면
+// 로그인한 뒤에 연다(OAuth는 같은 탭으로 돌아온다).
+const REMINDER_LINK='synk.world.reminder.link';
+function storeReminderLink(kind){if(['review','plan','exam'].includes(kind))try{sessionStorage.setItem(REMINDER_LINK,JSON.stringify({kind,at:Date.now()}));}catch{}}
+{const url=new URL(location.href),kind=url.searchParams.get('reminder'),ack=url.searchParams.get('ack');
+ if(kind!==null||ack!==null){url.searchParams.delete('reminder');url.searchParams.delete('ack');history.replaceState(history.state,'',url.href);storeReminderLink(kind);if(ack)worldPush?.ack(ack);}}
+// 이미 열린 WORLD 창에서 알림을 누르면 워커가 그 창에 알린다.
+navigator.serviceWorker?.addEventListener?.('message',event=>{const data=event.data;if(data?.type!=='synk-world-reminder-open')return;storeReminderLink(data.kind);if(data.token)worldPush?.ack(data.token);openReminderLink();});
 const stateLine=document.createElement('div');stateLine.className='world-state';stateLine.setAttribute('role','status');
 if(!home.isMaru){
  $('.page-heading').after(stateLine);
@@ -245,6 +264,7 @@ function initializeLife(){
  const owner=client.snapshot?.accountId||'guest',generation=client.generation,epoch=++lifeEpoch;
  // 주인이 바뀌면(손님 ↔ 계정) 옛 주인의 보내지 않은 알림 예약을 지운다 — 그 주인으로 돌아온 순간 옛 예약이 또 뜨지 않게(같은 주인을 다시 세울 때는 그대로).
  if(lifeOwner&&lifeOwner!==owner)reminders?.forgetPending();
+ worldPush?.setAccount(owner==='guest'?null:owner);
  lifeOwner=owner;lifeGeneration=generation;tutorReady=false;education?.dispose();education=null;home.connectEducation?.(null);disposeReminders();localLearning?.dispose();localLearning=null;lifeUI?.dispose();lifeProgress?.stop();lifePort?.dispose();lifeUI=null;lifeProgress=null;lifePort=null;lifeRecoveryShown=false;
  const guard=()=>{if(epoch!==lifeEpoch||(client.snapshot?.accountId||'guest')!==owner||generation!==client.generation)throw Object.assign(Error('로그인한 계정이 바뀌었어요. 생활 한국어를 다시 열어 주세요.'),{code:'ACCOUNT_CHANGED'});};
  home.updateLearning?.({owner,completed:0,total:LESSONS.length,packs:PACKS,nextLesson:null,resume:false,dueCount:0,status:{phase:'loading'}});
@@ -269,6 +289,7 @@ function initializeLife(){
   window.__synkLife=lifeUI;
   tutorReady=true;restoreTutor();
   refreshLife();
+  openReminderLink();
  })().catch(error=>{if(epoch===lifeEpoch)home.toast(error.message||'생활 진도를 확인하지 못했어요.');});
  return lifeReady;
 }
@@ -307,7 +328,7 @@ function mountLifeLearning(){
   make:source=>source?source.createGame({gameId:'world-reminders'},worldLearning.engine.createGame,worldLearning.createLearningSync)
    :owner==='guest'?worldLearning.engine.createGame({gameId:'world-reminders',storage:localStorage}):null});
  reminders=createWorldReminders({owner,storage:localStorage,target:window,read:reminderInputs,open:openReminder,canMock:()=>typeof education?.mock==='function',
-  show:(title,html)=>show(title,html,'world-reminder'),toast:message=>home.toast(message),repaint:repaintReminderCard});
+  show:(title,html)=>show(title,html,'world-reminder'),toast:message=>home.toast(message),repaint:repaintReminderCard,push:owner==='guest'?null:worldPush,pushFeature:pushOn,close});
  home.connectReminders?.(reminders);window.__synkReminders=reminders;reminders.schedule();
 }
 function disposeReminders(){reminders?.dispose();reminders=null;home.connectReminders?.(null);reminderTrail?.dispose();reminderTrail=null;}
@@ -340,6 +361,16 @@ function openReminder(kind){
  if(kind==='plan')return run(()=>education?.plan?.());
  if(kind==='exam-start')return run(()=>typeof education?.mock==='function'?education.mock():education?.position?.({start:true}));
  return run(()=>openLife('review'));
+}
+// 2단 알림으로 들어온 자리를 연다: 입구가 끝나고(튜터 고르기 등) 그 주인의 학습이 준비된 뒤에만. 손님이면 한 번 로그인 안내만 하고 기다린다.
+function openReminderLink(){
+ let link=null;try{link=JSON.parse(sessionStorage.getItem(REMINDER_LINK)||'null');}catch{link=null;}
+ if(!link||!['review','plan','exam'].includes(link.kind))return;
+ if(!(Date.now()-Number(link.at)<=30*60000)){try{sessionStorage.removeItem(REMINDER_LINK);}catch{}return;}
+ if(!worldRequested||entryGate?.state().phase!=='ready'||!reminders||!tutorReady)return;
+ if(lifeOwner==='guest'){if(!link.told){home.toast(t('reminder.push.signin'));try{sessionStorage.setItem(REMINDER_LINK,JSON.stringify({...link,told:true}));}catch{}}return;}
+ try{sessionStorage.removeItem(REMINDER_LINK);}catch{}
+ reminders.openKind(link.kind);
 }
 // 묻는 카드에 답하면 배우기 판을 다시 그려 카드를 거둔다.
 function repaintReminderCard(){if(lifeUI&&document.querySelector('#world-panel[open] #panel-content .life-hub'))lifeUI.packs();}
@@ -655,9 +686,10 @@ const commands={
  'discard-pending':async()=>{try{await client.discardPending();wardrobe();}catch(e){home.toast(errorText(e));}},
  refresh:async()=>{try{await client.refresh();home.toast(t('account.reconnected'));}catch(e){home.toast(errorText(e));}},
  // 학습 알림 단추(world-reminder-device.mjs): 앱 안 묻기·멈춤 뒤 묻기·시험 점검 카드. 「알려 주세요」는 누른 그 자리에서 OS 권한을 청한다.
- ...Object.fromEntries(['reminder-yes','reminder-no','reminder-keep','reminder-stop','reminder-exam-start','reminder-exam-plan'].map(name=>[name,()=>reminders?.command(name)])),
+ // 2단(앱을 닫아도 받기): 휴대폰 묻는 카드 · 동의 상자의 「동의하고 켜기」(누른 그 동작 안에서 world-push가 권한을 청한다) · 「괜찮아요」.
+ ...Object.fromEntries(['reminder-yes','reminder-no','reminder-keep','reminder-stop','reminder-exam-start','reminder-exam-plan','reminder-push-ask','reminder-push-yes','reminder-push-no'].map(name=>[name,()=>reminders?.command(name)])),
  // 로그아웃: 이 뒤에 생긴 손님 기록만 다음 로그인에 옮길지 묻는다(device-records.mjs — 앞 사람의 손님 기록이 다음 사람에게 가지 않게).
- logout:async()=>{accountActionPending=true;entryGate?.invalidate();const leaving=client.snapshot?.accountId;try{await client.logout();const signedOutAt=Date.now();if(leaving)noteDeviceAccount(localStorage,leaving,signedOutAt);noteDeviceSignOut(localStorage,signedOutAt);sessionConfirmed=false;close();if(home.isMaru)await entryGate.start();else welcome();}catch(e){if(e.code==='STALE_RESPONSE')return;home.toast(t('account.logoutFailed'));if(home.isMaru)showEntryRecovery();else welcome();}finally{accountActionPending=false;}},
+ logout:async()=>{accountActionPending=true;entryGate?.invalidate();const leaving=client.snapshot?.accountId;try{try{await worldPush?.logout();}catch{/* 다음 열 때 상태가 다시 정리한다 */}await client.logout();const signedOutAt=Date.now();if(leaving)noteDeviceAccount(localStorage,leaving,signedOutAt);noteDeviceSignOut(localStorage,signedOutAt);sessionConfirmed=false;close();if(home.isMaru)await entryGate.start();else welcome();}catch(e){if(e.code==='STALE_RESPONSE')return;home.toast(t('account.logoutFailed'));if(home.isMaru)showEntryRecovery();else welcome();}finally{accountActionPending=false;}},
 };
 commands.speaking=openSpeaking;
 document.addEventListener('click',event=>{
@@ -677,7 +709,7 @@ document.addEventListener('click',event=>{
  }
 },true);
 document.addEventListener('change',event=>{const control=event.target;if(control.matches?.('[data-world-learning]')){control.disabled=true;const enabled=control.checked;void account.setLearning(enabled,Number(control.dataset.revision)).then(()=>{if(screen==='world-profile')profile();}).catch(error=>{control.checked=!enabled;home.toast(errorText(error));}).finally(()=>{control.disabled=false;});return;}if(!control.matches?.('[data-town-sharing]'))return;control.disabled=true;const enabled=control.checked,revision=Number(control.dataset.revision);void client.request('town/sharing',{method:'POST',body:{enabled,revision}}).then(()=>town()).catch(error=>{control.checked=!enabled;home.toast(errorText(error));}).finally(()=>{control.disabled=false;});});
-window.addEventListener('pagehide',()=>{writing?.dispose();speaking?.dispose();education?.dispose();disposeReminders();localLearning?.dispose();lifeEpoch++;lifeUI?.dispose();lifeProgress?.stop();lifePort?.dispose();townSession?.dispose();delete window.SYNKWorldTownHost;account?.stop();});
+window.addEventListener('pagehide',()=>{worldPush?.flush();writing?.dispose();speaking?.dispose();education?.dispose();disposeReminders();localLearning?.dispose();lifeEpoch++;lifeUI?.dispose();lifeProgress?.stop();lifePort?.dispose();townSession?.dispose();delete window.SYNKWorldTownHost;account?.stop();});
 window.addEventListener('online',()=>{if(client.snapshot)client.refresh().then(refreshTutorAccount).catch(()=>{});});
 // Switching between side-by-side web and desktop windows need not hide either
 // document. Refocus must also restore the latest selected companion.
@@ -740,6 +772,7 @@ entryGate=createWorldEntryGate({
    else if(new URLSearchParams(location.search).get('cafe')==='1')void openLife('cafe').catch(()=>home.toast('카페를 열지 못했어요. 우리 동네에서 카페를 다시 눌러 주세요.'));
    // 한 번만 도는 바로가기라 계정이 바뀌어 멈춘 것(코드 없는 오류)은 알리지 않는다 — 「다시 시도」할 일이 아니다.
    else if(examRequested)void openExamLink().catch(error=>{if(error?.code)home.toast(errorText(error));});
+   else openReminderLink();
   });
  },
  onError:showEntryRecovery

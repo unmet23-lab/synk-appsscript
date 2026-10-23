@@ -7,8 +7,10 @@
 // - 조용한 시간(밤 9시~아침 9시, 기기 시각)에는 잡지 않는다. 그날 이미 공부했으면 그날은 잡지 않는다.
 // - 문장은 학습 일만 말한다. 재촉·연속 기록·빠진 날·남은 횟수를 쓰지 않고, 잠금 화면 글에는 일의 종류·약점·급수·점수·이름이 없다.
 // - 열지 않은 알림이 이어서 셋이면 주 한 번으로 줄이고, 그 뒤 다시 셋이면 멈추고 앱 안에서 한 번 묻는다.
-// - 보낸 것·누른 것은 이 기기의 알림 기록(계획·보냄·누름)에 남기고 효과를 주장하지 않는다. 1단(기기 예약)이라 서버로 보내지 않는다 —
-//   서버 기록(새 어휘 notification.planned·opened)과 2단 푸시는 구현 명세 §2·§4-14의 사용자 확인 자리다.
+// - 보낸 것·누른 것은 이 기기의 알림 기록(계획·보냄·누름)에 남기고 효과를 주장하지 않는다.
+// - 2단(10-22, 앱을 닫아도 받기 — 서버 푸시, qa/push-reminders-20261022/설계.md): 이 파일을 SYNK-talk가 그대로 옮겨 쓴다
+//   (tools/build-world-reminders-talk.mjs → talk lib/world-reminders.js). 그래서 import 없이 순수 함수만 둔다. 기기는 계획기 입력을
+//   몇 칸짜리 요약(reminderDigest)으로 줄여 보내고, 서버는 그 요약을 되살려(digestInputs) 같은 planReminders·dueReminder를 돈다.
 
 const MINUTE=60000,HOUR=60*MINUTE,DAY=24*HOUR;
 export const REMINDER_POLICY=Object.freeze({version:'world-reminders-1',
@@ -23,6 +25,13 @@ export const REMINDER_POLICY=Object.freeze({version:'world-reminders-1',
  band:Object.freeze({days:28,minDays:3}),
  // 지금부터 이 시간 안의 때는 잡지 않는다(앱을 쓰는 중에 바로 울리지 않게).
  leadMs:10*MINUTE,
+ // 잡은 때보다 이만큼 넘게 늦은 알림은 띄우지 않는다(닫혀 있던 동안 지난 알림을 몰아서·밤에 울리지 않게 — 기기 tick과 서버 보내기가 같이 쓴다).
+ lateMs:45*MINUTE,
+ // 다른 쪽(기기 ↔ 서버)에서 온 시각의 시계 오차 여유: 이만큼 앞선 보낸 때·물러남 시작은 받아서 지금으로 줄여 넣는다(10-22 검수).
+ skewMs:DAY,
+ // 복습이 돌아오는 때는 15분 단위로 올려 센다(10-22). 보낼 자리(그 지역 정시)는 30·45분 시간대에서도 늘 15분의 배수라 자리 고르기는
+ // 그대로이고, 기기와 서버(요약도 15분 단위)가 같은 값으로 세게 된다.
+ reviewQuantumMs:15*MINUTE,
  // 시험일 점검: 2주 전·1주 전. 그날이 막히면(그날 공부함·이미 지남) 다음 날까지만 본다.
  examDays:Object.freeze([14,7]),examSlack:1,
  // 이번 주 계획의 연습: 마지막으로 공부한 날에서 이틀 뒤의 날부터, 그 주(월요일 0시, 한국 시각 — 시험 계획과 같은 주) 안에서 한 번.
@@ -32,7 +41,9 @@ export const REMINDER_POLICY=Object.freeze({version:'world-reminders-1',
  // 이 기기의 알림 기록: 12주 · 60줄까지.
  keepMs:84*DAY,keepRows:60,
  // 앱 안에서 묻기: 보인 날 사흘까지(답하지 않으면 그만 묻는다). 거절하면 다시 묻지 않고, 켜기는 설정에서 한다.
- askDays:3});
+ askDays:3,
+ // 2단 요약: 복습이 돌아오는 때는 「가장 늦게 돌아온 복습 하나 + 앞으로 돌아올 것」까지 60개. 켜고 끌 때 넘기는 보낸 줄은 최근 7일.
+ digest:Object.freeze({reviews:60,handoverMs:7*DAY})});
 export const REMINDER_KINDS=Object.freeze(['exam','review','plan']);
 // 잠금 화면 글(world-strings.mjs의 reminder.push.*): 한국어 틀이고, 한글 단계의 학생에게만 도움 언어 글을 쓴다(설계 §8-2).
 export const REMINDER_TEMPLATES=Object.freeze({exam:'reminder.push.exam',review:'reminder.push.review',plan:'reminder.push.plan'});
@@ -50,11 +61,15 @@ export const reminderDayKey=(at,offset=deviceOffset)=>new Date(localDay(at,offse
 // 그 지역 날의 hour시 정각을 UTC ms로. 서머타임이 바뀌는 날은 그 시각의 오프셋으로 한 번 더 맞춘다.
 function slotAt(day,hour,offset){const local=day*DAY+hour*HOUR;let at=local-offset(local)*MINUTE;at=local-offset(at)*MINUTE;return at;}
 const allowedHour=hour=>Number.isInteger(hour)&&hour>=REMINDER_POLICY.quiet.to&&hour<REMINDER_POLICY.quiet.from;
+// 복습이 돌아오는 때를 15분 단위로 올린 값. 보낼 자리는 15분의 배수라 「자리 ≥ 돌아온 때」가 올리기 전과 같다.
+const reviewTime=at=>Math.ceil(at/REMINDER_POLICY.reviewQuantumMs)*REMINDER_POLICY.reviewQuantumMs;
 
 // 보낼 시각: 학생이 고른 시각 → 확인된 공부 시간대 → 기본값(저녁 7시).
-export function reminderHour({hour=null,studyTimes=[],now,offset}={}){
+// studyHour: 이미 확인한 공부 시간대(2단 서버 — 기기가 공부 시각 목록 대신 이 결과만 보낸다). 기기는 넘기지 않고 studyTimes에서 센다.
+export function reminderHour({hour=null,studyTimes=[],now,offset,studyHour=null}={}){
  const policy=REMINDER_POLICY,off=offsetOf(offset);
  if(policy.hours.includes(hour))return {hour,source:'chosen'};
+ if(allowedHour(studyHour))return {hour:studyHour,source:'observed'};
  if(finite(now)){
   const since=now-policy.band.days*DAY,days=new Map();
   for(const at of Array.isArray(studyTimes)?studyTimes:[])if(finite(at)&&at>=since&&at<=now){const h=localHour(at,off);if(!days.has(h))days.set(h,new Set());days.get(h).add(localDay(at,off));}
@@ -79,17 +94,22 @@ export function backoffLevel({entries=[],now,since=null}={}){
  return level;
 }
 
-// 7일 창 검사: 정렬한 시각들에서 7일 안에 든 수의 최댓값(정확히 7일 떨어진 둘은 같은 창이 아니다).
-function windowMax(times){
- const sorted=[...times].sort((a,b)=>a-b);let best=0;
- for(let i=0,j=0;i<sorted.length;i++){while(sorted[i]-sorted[j]>=REMINDER_POLICY.windowMs)j++;best=Math.max(best,i-j+1);}
+// 7일 창 검사: 시각 t를 품는 7일 창들에서 센 수의 최댓값(정확히 7일 떨어진 둘은 같은 창이 아니다 — 창은 [s, s+7일)).
+// 새 알림 하나가 바꿀 수 있는 창은 그것을 품는 창뿐이라 그 창들만 센다. 지난 기록끼리의 창(주 두 번이던 때의 두 알림)을 지금 한도로
+// 다시 세면 주 한 번으로 줄인 뒤(직접·물러남) 12주 동안 새 알림이 하나도 잡히지 않는다(10-22 검수).
+function windowAt(times,t){
+ let best=0;
+ for(const s of times){if(!(s>t-REMINDER_POLICY.windowMs&&s<=t))continue;let n=0;for(const x of times)if(x>=s&&x<s+REMINDER_POLICY.windowMs)n++;best=Math.max(best,n);}
  return best;
 }
 
 // 앞으로 7일의 알림. settings: {enabled, frequency, hour, since}. entries: 이 기기의 알림 기록(보낸 것만 창에 센다).
 // reviews: 생활 복습이 돌아오는 때(ms, life-progress reviews[].dueAt). exam: 학생이 밝힌 시험({date}). examPlan: 이번 주 시험 계획(buildExamPlan).
 // studyTimes: 공부한 시각(Trail 첫 답·생활 답·쓰기 점검, ms). offset: 기기 시간대(분, 함수도 된다).
-export function planReminders({now,settings={},entries=[],reviews=[],exam=null,examPlan=null,studyTimes=[],offset}={}){
+// studyHour: 이미 확인한 공부 시간대(2단 서버만 — reminderHour). notBefore: 이때 전에는 잡지 않는다(2단 서버가 켠 날은 내일부터 — 설계 §6).
+// leadMs: 지금부터 이 시간 안의 때는 잡지 않는다(기본 10분 — 앱을 쓰는 중에 바로 울리지 않게). 2단 서버의 보내기 회차는 학생이 앱을 쓰는 중이
+// 아니라 0을 넘긴다(곧 보낼 자리를 다시 계획하다 버리지 않게).
+export function planReminders({now,settings={},entries=[],reviews=[],exam=null,examPlan=null,studyTimes=[],studyHour=null,notBefore=null,leadMs=REMINDER_POLICY.leadMs,offset}={}){
  if(!finite(now))throw TypeError('WORLD reminders need a time');
  const policy=REMINDER_POLICY,off=offsetOf(offset),base={policy:policy.version,learningEffectClaim:false};
  if(settings?.enabled!==true)return {...base,cap:0,level:0,items:[],notes:['off']};
@@ -99,9 +119,9 @@ export function planReminders({now,settings={},entries=[],reviews=[],exam=null,e
  const frequency=policy.frequencies.includes(settings.frequency)?settings.frequency:policy.defaultFrequency;
  const cap=level===1?1:frequency,notes=level===1?['reduced']:[];
  const times=(Array.isArray(studyTimes)?studyTimes:[]).filter(finite);
- const {hour,source}=reminderHour({hour:settings.hour??null,studyTimes:times,now,offset:off});
+ const {hour,source}=reminderHour({hour:settings.hour??null,studyTimes:times,now,offset:off,studyHour});
  const today=localDay(now,off),studiedToday=times.some(at=>at<=now&&localDay(at,off)===today);
- const earliest=now+policy.leadMs,horizon=now+policy.horizonMs;
+ const earliest=Math.max(now+(finite(leadMs)&&leadMs>=0?leadMs:policy.leadMs),finite(notBefore)?notBefore:-Infinity),horizon=now+policy.horizonMs;
  // 그 지역 날의 보낼 때: 오늘 공부했으면 오늘은 없고, 지난 때·범위(기본 7일) 밖도 없다.
  const slot=(day,limit=horizon)=>{if(day===today&&studiedToday)return null;const at=slotAt(day,hour,off);return at>=earliest&&at<=limit?at:null;};
  const slotsFrom=(from,until=horizon)=>{const list=[],start=Math.max(from,earliest),end=Math.min(until,horizon);for(let day=localDay(start,off);day<=localDay(end,off);day++){const at=slot(day);if(at!==null&&at>=start&&at<=end)list.push(at);}return list;};
@@ -120,7 +140,7 @@ export function planReminders({now,settings={},entries=[],reviews=[],exam=null,e
  }
  // ② 돌아온 복습: 지난 복습 알림 뒤에 돌아오는 복습이 있으면, 그것이 돌아온 뒤의 첫 때. 이미 알린 복습을 다시 알리지 않는다.
  const lastReview=sent.filter(row=>row.kind==='review').reduce((n,row)=>Math.max(n,row.deliveredAt),-Infinity);
- const fresh=(Array.isArray(reviews)?reviews:[]).filter(at=>finite(at)&&at>lastReview).sort((a,b)=>a-b);
+ const fresh=(Array.isArray(reviews)?reviews:[]).filter(finite).map(reviewTime).filter(at=>at>lastReview).sort((a,b)=>a-b);
  if(fresh.length){const list=slotsFrom(fresh[0]);if(list.length)candidates.push({kind:'review',ref:String(Math.floor(fresh[0]/MINUTE)),slots:list,extra:false});}
  // ③ 이번 주 계획에 준비된 연습: 시험 계획에 이번 주 남은 연습이 있을 때, 마지막으로 공부한 날의 이틀 뒤부터 그 주 안에서 한 번. 남은 수는 글에 쓰지 않는다.
  if(record(examPlan)&&record(examPlan.week)&&finite(examPlan.week.start)&&finite(examPlan.week.end)&&examPlan.phase!=='past'){
@@ -136,12 +156,13 @@ export function planReminders({now,settings={},entries=[],reviews=[],exam=null,e
  // 그리고 하루에 하나(두 알림이 한꺼번에 울리지 않게 — 겹치면 뒤의 것이 다음 날로 간다). 보낸 알림은 실제로 뜬 때가 아니라 잡았던 때로 센다
  // (앱이 잠깐 잠들어 몇 분 늦게 뜬 알림 때문에 정확히 한 주 간격인 두 점검 사이의 자리가 사라지지 않게).
  const placed=sent.map(row=>({at:row.at,extra:row.kind==='exam'}));
- const fits=list=>windowMax(list.map(row=>row.at))<=cap&&windowMax(list.filter(row=>!row.extra).map(row=>row.at))<=1;
+ // 새 자리(time)를 품는 창에서: 모두 cap 이하, 보통 알림이면 보통 알림도 하나 이하(시험 점검을 더해도 보통 알림 수는 그대로다).
+ const fits=(list,time,extra)=>windowAt(list.map(row=>row.at),time)<=cap&&(extra||windowAt(list.filter(row=>!row.extra).map(row=>row.at),time)<=1);
  const freeDay=time=>!placed.some(row=>localDay(row.at,off)===localDay(time,off));
  const items=[];let ordinary=false;
  for(const candidate of [...candidates.filter(row=>row.extra),...candidates.filter(row=>!row.extra)]){
   if(!candidate.extra&&ordinary)continue;
-  const at=candidate.slots.find(time=>freeDay(time)&&fits([...placed,{at:time,extra:candidate.extra}]));
+  const at=candidate.slots.find(time=>freeDay(time)&&fits([...placed,{at:time,extra:candidate.extra}],time,candidate.extra));
   if(at===undefined){notes.push(`cap.${candidate.kind}`);continue;}
   placed.push({at,extra:candidate.extra});if(!candidate.extra)ordinary=true;
   if(at>horizon)continue;
@@ -226,4 +247,87 @@ export function shouldAskReminders({state,now,offset,hasReturn=false,supported=f
 export function noteReminderAsked(state,now,offset){
  const current=readReminderState(state),today=reminderDayKey(now,offset);
  return current.asked.includes(today)?current:{...current,asked:[...current.asked,today].slice(-REMINDER_POLICY.askDays)};
+}
+
+// ── 지금 띄울 알림 하나(1단 기기 tick · 2단 서버 보내기가 같이 쓴다) ──
+// 보내지 않은 계획 중 때가 됐고 lateMs(45분) 넘게 늦지 않은 것. 꺼짐·조용한 시간(그 기기 시각)·그날 이미 공부함·그날 이미 보냄이면 없다
+// (하루 하나 — 계획기가 하루 하나로 잡지만 보내는 자리에서 한 번 더 막는다). skip은 까닭: off · quiet · none · studied · today.
+// studyTimes는 배열이나 그것을 돌려주는 함수다(때가 된 알림이 있을 때만 읽는다 — 기기는 학습 기록 읽기가 무겁다).
+export function dueReminder({state,now,offset,studyTimes=[],lateMs=REMINDER_POLICY.lateMs}={}){
+ if(!finite(now))throw TypeError('WORLD reminders need a time');
+ const current=readReminderState(state),off=offsetOf(offset);
+ if(!current.enabled)return {entry:null,skip:'off'};
+ if(!allowedHour(localHour(now,off)))return {entry:null,skip:'quiet'};
+ const due=current.entries.filter(row=>!finite(row.deliveredAt)&&row.at<=now&&now-row.at<=lateMs).sort((a,b)=>a.at-b.at);
+ if(!due.length)return {entry:null,skip:'none'};
+ const today=localDay(now,off),times=typeof studyTimes==='function'?studyTimes():studyTimes;
+ if((Array.isArray(times)?times:[]).some(at=>finite(at)&&at<=now&&localDay(at,off)===today))return {entry:null,skip:'studied'};
+ if(current.entries.some(row=>finite(row.deliveredAt)&&localDay(row.deliveredAt,off)===today))return {entry:null,skip:'today'};
+ // 보내는 그때의 물러남·한도를 다시 본다(10-22 검수): 잡은 뒤 안 연 알림이 하루를 넘겨 「줄임」·「멈춤」이 됐으면, 지금 단계로 세운 계획에
+ // 들 수 없는 알림은 띄우지 않는다(다음 다시 잡기가 지금 단계로 다른 때를 잡는다). 세는 법은 planReminders의 fits와 같다.
+ const entry=due[0],level=backoffLevel({entries:current.entries,now,since:current.since});
+ if(level===2)return {entry:null,skip:'paused'};
+ const cap=level===1?1:REMINDER_POLICY.frequencies.includes(current.frequency)?current.frequency:REMINDER_POLICY.defaultFrequency;
+ const placed=[...current.entries.filter(row=>finite(row.deliveredAt)&&REMINDER_KINDS.includes(row.kind)).map(row=>({at:row.at,extra:row.kind==='exam'})),{at:entry.at,extra:entry.kind==='exam'}];
+ const extra=entry.kind==='exam';
+ if(windowAt(placed.map(row=>row.at),entry.at)>cap||!extra&&windowAt(placed.filter(row=>!row.extra).map(row=>row.at),entry.at)>1)return {entry:null,skip:'cap'};
+ return {entry,skip:null};
+}
+
+// ── 1단 ↔ 2단을 오갈 때 보낸 기록 넘기기(설계 §6-2) ──
+// 2단을 켤 때 기기 → 서버, 마지막 기기에서 끌 때 서버 → 기기. 보낸 줄 전부(12주 안)를 넘겨야 7일 창 · 하루 하나 · 「이미 알린 복습」(지난 복습 알림
+// 시각) · 물러남(안 연 알림이 이어진 수)이 넘어간 쪽에서도 같다. 줄에는 id·종류·ref·때만 있다.
+export function handoverEntries(state,now){
+ const current=readReminderState(state);
+ return current.entries.filter(row=>finite(row.deliveredAt)&&row.deliveredAt<=now&&row.deliveredAt>now-REMINDER_POLICY.keepMs);
+}
+// 넘겨받은 보낸 줄을 넣는다. 같은 id의 보낸 줄이 있으면 그대로 두고 누른 때만 채우며, 같은 id의 보내지 않은 계획은 보낸 줄로 바꾼다.
+export function mergeReminderEntries(state,rows,now){
+ const current=readReminderState(state);if(!finite(now))return current;
+ const entries=[...current.entries];
+ for(const raw of (Array.isArray(rows)?rows:[]).slice(0,REMINDER_POLICY.keepRows)){
+  const read=entryOf(raw);
+  if(!read||!finite(read.deliveredAt)||read.deliveredAt>now+REMINDER_POLICY.skewMs||read.deliveredAt<=now-REMINDER_POLICY.keepMs)continue;
+  // 다른 쪽 시계가 조금 앞섰으면 보낸 때·누른 때를 지금으로 줄인다(앞선 채로 두면 「오늘 보냄」·물러남 셈이 어긋난다).
+  const row={...read,deliveredAt:Math.min(read.deliveredAt,now),...(finite(read.openedAt)?{openedAt:Math.min(read.openedAt,now)}:{})};
+  const index=entries.findIndex(item=>item.id===row.id);
+  if(index<0){entries.push(row);continue;}
+  const old=entries[index];
+  if(!finite(old.deliveredAt))entries[index]=row;
+  else if(!finite(old.openedAt)&&finite(row.openedAt))entries[index]={...old,openedAt:row.openedAt};
+ }
+ return {...current,entries:prune(entries,now)};
+}
+
+// ── 2단 요약: 계획기 입력을 서버에 보낼 몇 칸으로 줄인다(설계 §5-2) ──
+// reviews: 가장 늦게 돌아온(지금 이전) 복습 하나 + 앞으로 돌아올 복습(15분 단위로 올린 값, 합쳐 60개까지). 지난 복습 알림 뒤에 이미 돌아온
+//   복습이 있으면 그것이 어느 것이든 「지금부터 첫 때」를 고르므로, 이 목록으로 세운 계획의 때·종류는 전체 목록으로 세운 계획과 같다(ref 분 번호만 다를 수 있다).
+// examDate: 날까지 정한 시험일만. planWeek: 이번 주 계획에 남은 연습이 있을 때만 그 주(남은 수·영역은 싣지 않는다).
+// lastStudyDay: 마지막으로 공부한 날(그 기기 달력 — 계획기는 「그날 공부함」·「이틀 뒤부터」에 날짜만 쓴다). studyHour: 확인된 공부 시간대(reminderHour 'observed').
+// lang: 잠금 화면 글 언어(WORLD 화면 언어 ko·en·mn — world-lang.mjs LANGS). 배운 내용·점수·이름·글·공부한 시각은 싣지 않는다.
+const DIGEST_LANGS=Object.freeze(['ko','en','mn']);
+export function reminderDigest({reviews=[],exam=null,examPlan=null,studyTimes=[],lang='ko',timeZone=null}={},{now,offset}={}){
+ if(!finite(now))throw TypeError('WORLD reminders need a time');
+ const off=offsetOf(offset);
+ const all=[...new Set((Array.isArray(reviews)?reviews:[]).filter(finite).map(reviewTime))].sort((a,b)=>a-b);
+ const past=all.filter(at=>at<=now),kept=[...(past.length?[past[past.length-1]]:[]),...all.filter(at=>at>now)].slice(0,REMINDER_POLICY.digest.reviews);
+ // 시험일: 날까지 정한 것 중 오늘이나 그 뒤만(지난 시험의 점검 자리는 늘 지나 있어 빼도 계획이 같다 — 서버는 오래된 날을 받지 않는다, 10-22 검수).
+ const date=typeof exam?.date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(exam.date)&&exam.date>=reminderDayKey(now,off)?exam.date:null;
+ const left=record(examPlan)&&Array.isArray(examPlan.areas)?examPlan.areas.reduce((n,row)=>n+Math.max(0,Number(row?.remaining)||0),0):0;
+ const week=record(examPlan)&&record(examPlan.week)&&finite(examPlan.week.start)&&finite(examPlan.week.end)&&examPlan.phase!=='past'&&left>0?{start:examPlan.week.start,end:examPlan.week.end}:null;
+ const times=(Array.isArray(studyTimes)?studyTimes:[]).filter(at=>finite(at)&&at<=now);
+ const last=times.reduce((n,at)=>Math.max(n,at),-Infinity),band=reminderHour({studyTimes:times,now,offset:off});
+ return {reviews:kept,examDate:date,planWeek:week,lastStudyDay:finite(last)?reminderDayKey(last,off):null,studyHour:band.source==='observed'?band.hour:null,
+  lang:DIGEST_LANGS.includes(lang)?lang:'ko',...(typeof timeZone==='string'&&timeZone?{timeZone}:{})};
+}
+// 요약을 계획기 입력으로 되살린다(2단 서버가 planReminders·dueReminder에 넘긴다). 마지막으로 공부한 날은 그 지역 그날 0시로 둔다
+// (계획기는 그 날짜만 본다 — 오늘이면 0시는 늘 지금 이전이라 「그날 공부함」이 서고, 「이틀 뒤부터」도 같은 날에서 센다). 틀린 칸은 그 칸만 비운다.
+export function digestInputs(digest,{offset}={}){
+ const value=record(digest)?digest:{},off=offsetOf(offset);
+ const week=record(value.planWeek)&&finite(value.planWeek.start)&&finite(value.planWeek.end)&&value.planWeek.end>value.planWeek.start?value.planWeek:null;
+ const studied=typeof value.lastStudyDay==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value.lastStudyDay)?Date.parse(`${value.lastStudyDay}T00:00:00Z`):NaN;
+ return {reviews:(Array.isArray(value.reviews)?value.reviews:[]).filter(finite).slice(0,REMINDER_POLICY.digest.reviews),
+  exam:typeof value.examDate==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value.examDate)?{date:value.examDate}:null,
+  examPlan:week?{week:{start:week.start,end:week.end},phase:'current',areas:[{remaining:1}]}:null,
+  studyTimes:finite(studied)?[slotAt(Math.floor(studied/DAY),0,off)]:[],studyHour:allowedHour(value.studyHour)?value.studyHour:null};
 }

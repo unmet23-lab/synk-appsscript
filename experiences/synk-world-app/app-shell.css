@@ -72,6 +72,23 @@
 .reminder-settings .reminder-status{display:grid;gap:4px;margin:12px 0 18px}
 .reminder-settings .reminder-status-lead{font-size:14px;font-weight:var(--wt-strong);color:var(--w-ink-2)}
 .reminder-exam .world-notice{margin-top:4px}
+/* 학습 알림 2단 · 앱을 닫아도 받기(world-reminder-device.mjs): 설정 줄 아래 · 휴대폰 시트의 동의 상자. 본문은 짧게, 무엇을 두는지는 접어 둔다. */
+.reminder-settings .reminder-push-slot{margin:4px 0 6px}
+.reminder-push-consent{display:grid;gap:10px;margin:8px 0 0;padding:16px 18px 14px;border-radius:var(--w-r-lg);background:var(--w-s1);box-shadow:var(--w-card-edge);font-size:14px;line-height:1.6;color:var(--w-ink-3);text-align:left}
+.reminder-push-consent>strong{font-size:15.5px;line-height:1.4;font-weight:var(--wt-title);letter-spacing:var(--track-title);color:var(--w-ink)}
+.reminder-push-consent>p{margin:0}
+.reminder-push-more summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;cursor:pointer;list-style:none;font-weight:var(--wt-strong);color:var(--w-ink-2)}
+.reminder-push-more summary::-webkit-details-marker{display:none}
+.reminder-push-more summary::after{content:'';flex:none;width:16px;height:16px;background:var(--w-chevron) center/contain no-repeat;transition:transform .2s var(--w-ease)}
+.reminder-push-more[open] summary::after{transform:rotate(180deg)}
+.reminder-push-more summary:focus-visible{outline:2px solid var(--w-ink);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.reminder-push-more summary::after{transition:none}}
+.reminder-push-more ul{display:grid;gap:6px;margin:2px 0 10px;padding-left:18px}
+.reminder-push-more a{display:inline-flex;align-items:center;min-height:44px;color:var(--w-ink-2)}
+.reminder-push-consent .reminder-actions{padding-left:0;margin-top:2px}
+.reminder-push-consent .felt-button{width:auto;min-height:48px;padding:0 22px}
+.reminder-push-consent .felt-button[disabled]{opacity:.55;cursor:progress}
+.reminder-push-consent [data-push-message]:empty{display:none}
 .review-note{display:grid;gap:14px;font-size:15.5px;line-height:1.75;color:var(--w-ink-2);text-wrap:pretty}
 .review-note strong{font-weight:var(--wt-title);color:var(--w-ink)}
 

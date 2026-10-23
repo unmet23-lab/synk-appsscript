@@ -19876,7 +19876,7 @@ function homeworkSubmission({ classId, week, kind, requestId, expectedRevision, 
 }
 
 // experiences/synk-world-app/operating-mode.mjs
-var FEATURES = Object.freeze(["worldFeedback"]);
+var FEATURES = Object.freeze(["worldFeedback", "worldPush"]);
 function publicFeatures(value) {
   const on = FEATURES.filter((name) => value?.features?.[name] === true);
   return on.length ? { features: Object.fromEntries(on.map((name) => [name, true])) } : {};
@@ -20469,6 +20469,69 @@ function createWorldAccount({
     if (!response.ok) throw Object.assign(Error(data?.code || "SPEAKING_UNAVAILABLE"), { code: data?.code || "SPEAKING_UNAVAILABLE", status: response.status });
     return data;
   }
+  const pushUrl = () => {
+    const url = new URL(config.accountApiUrl);
+    url.pathname = url.pathname.replace(/\/$/, "").replace(/\/functions\/v1(?:\/synk-(?:account|world-v1|town))?$/, "") + "/functions/v1/world-push/api";
+    url.search = "";
+    url.hash = "";
+    return url.href;
+  };
+  const pushHeaders = (token2) => ({ apikey: config.supabasePublishableKey, Authorization: `Bearer ${token2}`, "X-SYNK-Product": "world", "X-SYNK-Contract": "1", "X-SYNK-App-Version": "1.0.0", "Content-Type": "application/json" });
+  async function pushRequest(action, body = {}, { keepalive = false } = {}) {
+    if (native) throw Object.assign(Error("PUSH_UNSUPPORTED"), { code: "PUSH_UNSUPPORTED" });
+    const expected = epoch;
+    guard(expected);
+    if (!owner || !session) throw Object.assign(Error("SYNK ID\uB85C \uB85C\uADF8\uC778\uD574 \uC8FC\uC138\uC694."), { code: "AUTH_REQUIRED", status: 401 });
+    const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 12e3);
+    controllers.add(controller);
+    try {
+      if (session.expires_at <= now() + 3e4) await renew(expected);
+      guard(expected);
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const response = await fetcher(pushUrl(), {
+          method: "POST",
+          credentials: "omit",
+          cache: "no-store",
+          redirect: "error",
+          keepalive,
+          signal: keepalive ? void 0 : controller.signal,
+          headers: pushHeaders(session.access_token),
+          body: JSON.stringify({ action, ...body })
+        });
+        guard(expected);
+        if (response.status === 401 && attempt === 0 && session.refresh_token) {
+          await renew(expected);
+          guard(expected);
+          continue;
+        }
+        const data = await response.json();
+        guard(expected);
+        if (response.status === 401 || authErrors.has(data?.error?.code)) {
+          clear();
+          forgetSession();
+        }
+        if (!response.ok || data?.ok !== true) throw Object.assign(Error(data?.error?.code || "PUSH_UNAVAILABLE"), { code: data?.error?.code || "PUSH_UNAVAILABLE", status: response.status });
+        if (data.accountId !== void 0 && data.accountId !== owner) throw Object.assign(Error("\uB2E4\uB978 \uACC4\uC815\uC758 \uC815\uBCF4\uB77C\uC11C \uBC18\uC601\uD558\uC9C0 \uC54A\uC558\uC5B4\uC694."), { code: "ACCOUNT_MISMATCH" });
+        return data;
+      }
+      throw Object.assign(Error("AUTH_REQUIRED"), { code: "AUTH_REQUIRED", status: 401 });
+    } finally {
+      clearTimeout(timer);
+      controllers.delete(controller);
+    }
+  }
+  async function pushAnonymous(action, body = {}, { keepalive = false } = {}) {
+    if (native || !["opened", "unsubscribe"].includes(action)) throw Object.assign(Error("PUSH_UNSUPPORTED"), { code: "PUSH_UNSUPPORTED" });
+    const controller = new AbortController(), timer = keepalive ? null : setTimeout(() => controller.abort(), 12e3);
+    try {
+      const response = await fetcher(pushUrl(), { method: "POST", credentials: "omit", cache: "no-store", redirect: "error", keepalive, signal: keepalive ? void 0 : controller.signal, headers: pushHeaders(config.supabasePublishableKey), body: JSON.stringify({ action, ...body }) });
+      const data = await response.json();
+      if (!response.ok || data?.ok !== true) throw Object.assign(Error(data?.error?.code || "PUSH_UNAVAILABLE"), { code: data?.error?.code || "PUSH_UNAVAILABLE", status: response.status });
+      return data;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
   async function submitHomework(input) {
     if (native && !nativeHomework) throw Object.assign(Error("PC \uC571\uC5D0\uC11C\uB294 \uC544\uC9C1 \uACFC\uC81C\uB97C \uB0BC \uC218 \uC5C6\uC5B4\uC694."), { code: "HOMEWORK_UNSUPPORTED" });
     const response = await request("homework/submit", { method: "POST", body: JSON.stringify(homeworkSubmission(input)) }), data = await response.json();
@@ -20523,6 +20586,11 @@ function createWorldAccount({
     courseRequest,
     writingRequest,
     speakingRequest,
+    pushRequest,
+    pushAnonymous,
+    get supportsPush() {
+      return !native;
+    },
     get supportsWriting() {
       return !native;
     },

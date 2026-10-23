@@ -1,7 +1,9 @@
 import {readConfig} from '../synk-account/src/core.mjs';
 // 켜고 끄는 기능(설정값): 이 판이 아는 이름이 참일 때만 넘긴다. 켜진 것이 없으면 칸을 쓰지 않는다(공개 설정 줄이 그대로).
 // worldFeedback: 연습 끝 화면의 학습자 응답과 「내 계정」의 응답 목록(WORLD 학습자 응답 설계 §6 — 처리방침 문장을 게시한 뒤 켠다).
-const FEATURES=Object.freeze(['worldFeedback']);
+// worldPush: 학습 알림 2단 「앱을 닫아도 받기」의 화면(설정 줄·동의 상자·손님·아이폰 안내)과 시작 때 상태 읽기(학습 알림 2단 설계 §8 —
+// 처리방침 문장을 게시하고 서버 스위치 SYNK_WORLD_PUSH_ENABLED를 켠 뒤 켠다. 서버 스위치는 그 뒤로도 비상 끄기로 남는다).
+const FEATURES=Object.freeze(['worldFeedback','worldPush']);
 function publicFeatures(value){
  const on=FEATURES.filter(name=>value?.features?.[name]===true);
  return on.length?{features:Object.fromEntries(on.map(name=>[name,true]))}:{};
