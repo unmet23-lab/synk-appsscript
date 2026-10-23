@@ -36,6 +36,8 @@ test('reselecting the open today tab keeps the row buttons opening their task wh
   assert.deepEqual([...(f.state.openedTasks||[])],['t1'],'the row opens its task before reselecting');
   f.tabs[0].onclick();
   assert.equal(f.requests.at(-1).path,'/api/workday');f.requests.at(-1).resolve(workday());await flush();
+  // 줄이 화면에 남아 있어야 한다 — 같은 자료면 다시 그리지 않으므로, 불러오는 표시로 덮으면 빈 화면이 된다
+  assert.ok(f.nodes.get('#personal-body').innerHTML.includes('시안 수정'),'the row stays on screen after reselecting the open tab');
   await f.nodes.get('#personal-body').onclick(rowButton);
   assert.deepEqual([...(f.state.openedTasks||[])],['t1','t1'],'the same row still opens its task after reselecting the open tab');
 });
