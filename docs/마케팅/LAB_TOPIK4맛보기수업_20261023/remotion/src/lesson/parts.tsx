@@ -129,14 +129,14 @@ export const Num: React.FC<{ n: number; p: number; s?: number; style?: React.CSS
 );
 
 /** 첨삭 기호 칩 〔체〕 — 신청 페이지 「표시한 곳」과 같은 글. 말 끝 위에 떠서 글자 자리를 밀지 않는다. outline = 잘 쓴 곳(〔+〕). */
-export const Chip: React.FC<{ code: string; p: number; outline?: boolean; size?: number; start?: boolean }> = ({ code, p, outline, size = 0.5, start }) => (
+export const Chip: React.FC<{ code: string; p: number; outline?: boolean; size?: number; start?: boolean }> = ({ code, p, outline, size = 0.72, start }) => (
   <span style={{ position: 'relative', display: 'inline-block', width: 0, height: '1em', verticalAlign: 'baseline' }}>
     {p > 0 ? (
       <span
         style={{
           position: 'absolute',
           left: start ? '0' : '-0.5em',
-          bottom: '1.02em',
+          bottom: '1.1em',
           padding: '0.06em 0.4em 0.1em',
           borderRadius: 999,
           fontFamily: KO,
@@ -162,11 +162,13 @@ export const Reveal: React.FC<{ p: number; children: React.ReactNode; style?: Re
   <div style={{ clipPath: `inset(-0.4em ${(1 - Math.max(0, Math.min(1, p))) * 100}% -0.6em 0)`, opacity: p > 0 ? 1 : 0, ...style }}>{children}</div>
 );
 
-/** 몽골어 자막 — 판 아래 책상 띠, 두 줄까지. */
+/** 몽골어 자막 — 판 아래 책상 띠, 두 줄까지. «…»(인용한 한국어)는 한 덩어리로 두고 한국어 낱말 가운데서 꺾지 않는다(Fable 10-23 02). */
 export const Sub: React.FC<{ text: string | null; o: number }> = ({ text, o }) =>
   text ? (
     <div style={{ position: 'absolute', left: 160, right: 160, top: SUB_TOP + 4, height: 160, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', opacity: o }}>
-      <div style={{ fontFamily: MN, fontWeight: 500, fontSize: 42, lineHeight: 1.3, color: TEXT, textAlign: 'center', textWrap: 'balance', maxWidth: 1580 }}>{text}</div>
+      <div style={{ fontFamily: MN, fontWeight: 500, fontSize: 42, lineHeight: 1.3, color: TEXT, textAlign: 'center', textWrap: 'balance', wordBreak: 'keep-all', maxWidth: 1580 }}>
+        {text.split(/(«[^»]*»)/).map((x, i) => (i % 2 ? <span key={i} style={{ whiteSpace: 'nowrap' }}>{x}</span> : x))}
+      </div>
     </div>
   ) : null;
 

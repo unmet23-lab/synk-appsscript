@@ -1,4 +1,4 @@
-// 구운 목소리의 줄 길이·낱말 시각을 src/lesson/vo.generated.ts로 옮긴다: node 음성시각.mjs [--폴더 범수|범수_견본]
+// 구운 목소리의 줄 길이·낱말 시각을 src/lesson/vo.generated.json으로 옮긴다: node 음성시각.mjs [--폴더 범수|범수_견본]
 // 줄 파일은 public/vo/<id>.wav로 복사한다(public/은 git 밖). 굽지 않은 줄은 time.ts가 음절 수로 어림한다.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -23,6 +23,5 @@ for (const folder of folders) {
     if (fs.existsSync(meta)) words[l.id] = (JSON.parse(fs.readFileSync(meta, 'utf8')).words || []).map((w) => [w.text, w.start, w.end]);
   }
 }
-const body = `// node 음성시각.mjs 가 만든다 — 손으로 고치지 않는다.\nexport const VO_DUR: Record<string, number> = ${JSON.stringify(dur)};\nexport const VO_WORDS: Record<string, [string, number, number][]> = ${JSON.stringify(words)};\n`;
-fs.writeFileSync(path.join(HERE, 'src', 'lesson', 'vo.generated.ts'), body);
-console.log(`줄 ${Object.keys(dur).length}개 → public/vo · src/lesson/vo.generated.ts`);
+fs.writeFileSync(path.join(HERE, 'src', 'lesson', 'vo.generated.json'), JSON.stringify({ note: 'node 음성시각.mjs 가 만든다 — 손으로 고치지 않는다.', dur, words }) + '\n');
+console.log(`줄 ${Object.keys(dur).length}개 → public/vo · src/lesson/vo.generated.json`);

@@ -3,8 +3,8 @@ import React from 'react';
 import { measureText } from '@remotion/layout-utils';
 import { KO, MN } from '../lib/fonts';
 import { prog } from '../lib/motion';
-import { ANSWER, type Seg } from './data';
-import { at, lineTime } from './time';
+import { ANSWER, L, type Seg } from './data';
+import { atw, lineTime } from './time';
 import { Circ, Reveal, U } from './parts';
 import { CORAL, CORAL_DEEP, INK, INK3, RULE } from './tokens';
 
@@ -30,20 +30,20 @@ export const revealOf = (g: number, i: number) => {
 };
 
 /** 밑줄·동그라미가 그어지는 자리(id → 줄, 그 줄 안의 자리). */
-export const MARK_AT: Record<string, [string, number]> = {
-  'e-target': ['e3', 0.04],
-  'e-survey': ['e3', 0.3],
-  'f-point': ['f2', 0.9],
-  'f-from': ['f5', 0.02],
-  'f-to': ['f5', 0.16],
-  'f-found': ['f5', 0.36],
-  'g-top': ['g3', 0.1],
-  'g-next': ['g3', 0.42],
-  'h-thus': ['h2', 0.02],
+export const MARK_AT: Record<string, [string, string, number]> = {
+  'e-target': ['e3', '사백', 0.04],
+  'e-survey': ['e3', '아르바이트에', 0.2],
+  'f-point': ['f2', '퍼센트포인트', 0.8],
+  'f-from': ['f5', '사십팔', 0.02],
+  'f-to': ['f5', '육십삼', 0.16],
+  'f-found': ['f5', '증가한', 0.36],
+  'g-top': ['g3', '높았으며', 0.21],
+  'g-next': ['g3', '뒤를', 0.42],
+  'h-thus': ['h2', '이처럼', 0.02],
 };
 const markP = (g: number, id: string) => {
-  const [line, frac] = MARK_AT[id];
-  return prog(g, at(line, frac), 14);
+  const [line, needle, frac] = MARK_AT[id];
+  return prog(g, atw(line, needle, frac), 14);
 };
 
 /** 펜 끝 — 지금 써지는 자리(방송 수업에서 선생님 펜 커서처럼). 줄 폭은 실제 서체로 잰다. */
@@ -86,8 +86,8 @@ export const SheetLines: React.FC<{ g: number; upto: number; x?: number; y?: num
 /** 문장 번호 띠(왼쪽 여백의 작은 ①②③④). */
 export const SheetTitle: React.FC = () => (
   <div style={{ position: 'absolute', left: 64, top: 46, display: 'flex', alignItems: 'baseline', gap: 14 }}>
-    <span style={{ fontFamily: KO, fontWeight: 700, fontSize: 26, color: CORAL_DEEP }}>답안 · 예시답 281자</span>
-    <span style={{ fontFamily: MN, fontWeight: 500, fontSize: 22, color: INK3 }}>Хариулт · жишээ 281 тэмдэгт</span>
+    <span style={{ fontFamily: KO, fontWeight: 700, fontSize: 26, color: CORAL_DEEP }}>{L('sheetTitle').ko}</span>
+    <span style={{ fontFamily: MN, fontWeight: 500, fontSize: 22, color: INK3 }}>{L('sheetTitle').mn}</span>
   </div>
 );
 
