@@ -1,0 +1,15 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — one scene of "Mongle" for the cover of an online TOPIK writing class post, needle-felted wool photography.
+
+Character: Mongle, the coral needle-felted wool ghost-shaped mascot in the attached reference photos (use them ONLY for its body shape, coral wool color #E8735F-ish, fuzzy texture, scalloped bottom hem with a cream running stitch, glossy black bead eyes). No arms, no legs, no hands, ever. Mongle stands upright and front-facing. Props stand or lie in front of the hem; Mongle never holds anything.
+
+The attached third image is an earlier version of this exact scene. Keep the same props and composition, but CHANGE THE FACE: it must not look angry, annoyed or grumpy. No slanted or V-shaped brows at all.
+
+Expression — CALM AND FOCUSED, FRIENDLY: two short black felt brows lying perfectly horizontal (or slightly raised in the middle), glossy black bead eyes looking down at the sheet in front of it, a small content closed-mouth smile (a gentle upward curve of black felt), round pink felt cheeks. It should read as "carefully reading my corrected writing, and happy to learn", warm and encouraging.
+
+Props (same as the reference): in front of the hem, slightly tilted toward the camera, a small pale butter-yellow felt sheet of Korean manuscript paper — a neat grid of small squares outlined in soft coral-brown stitches; a few squares hold short charcoal felt dashes (not letters); on top are two bold red felt circle marks and one red felt check-mark shape. A chunky red felt pencil lies diagonally across the lower corner of the sheet. Keep the sheet and pencil a little apart from the body so the outline stays clean.
+
+Layout: one landscape image with only this one scene, centered, the whole group filling about 70% of the image height, wide empty margins. Seamless pure white background (#FFFFFF), flat even studio light, no floor, no cast shadows, no reflections, no border lines. Absolutely no text, letters, numbers, logos or symbols anywhere. Nothing in the image is white or cream except the background and Mongle's thin hem stitch.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, soft and warm, cute but not babyish (for university students), saturated but soft colors that will read well when cut out and placed on a coral #F96859 background.

@@ -1,0 +1,13 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — two scenes of "Mongle" for a TOPIK writing tips post (fill-in-the-blank questions), needle-felted wool photography, one sheet.
+
+Character: Mongle, the coral needle-felted wool ghost-shaped mascot in the attached reference photos (use them ONLY for its body shape, coral wool color #E8735F-ish, fuzzy texture, scalloped bottom hem with a cream running stitch, glossy black bead eyes). No arms, no legs, no hands, ever. Mongle stands upright and front-facing in both cells, the same size in both. Props stand or lean beside the hem; Mongle never holds anything.
+
+Layout: one landscape image, 2 columns × 1 row, two cells of equal size. One scene per cell, centered, the whole group filling about 70% of the cell height, with wide empty margins so the two cells never touch. Seamless pure white background (#FFFFFF), flat even studio light, no floor, no cast shadows, no reflections, no border lines. Absolutely no text, letters, numbers, logos or symbols anywhere — not on cards, notebooks or tags. Nothing in the image is white or cream except the background and Mongle's thin hem stitch; every outer edge is a clear saturated color or charcoal.
+
+Cell 1 (left) — "IS THIS ANSWER RIGHT?": Mongle CURIOUS (big glossy bead eyes looking slightly toward the card, small pink felt cheeks, mouth closed, head tilted a little). Leaning against the right side of the hem stands a large felt magnifying glass (mustard-yellow felt rim and handle, pale blue felt lens). Beside it, a small lapis-blue felt card stands upright; on the card there are two short charcoal felt dash lines (not letters) and one empty rectangle outlined with dashed butter-yellow stitches — the blank to fill in. The magnifying-glass lens overlaps the empty rectangle from the front.
+
+Cell 2 (right) — "MORE WRITING PRACTICE": Mongle with a happy eye-smile (eyes closed as upward arcs, small smiling mouth, pink cheeks). In front of the hem lies an open felt notebook with a lapis-blue cover and mint-green pages; the pages carry a few short charcoal felt dash lines (not letters). A chunky butter-yellow felt pencil with a coral felt eraser leans against the notebook. Beside the notebook, a small stack of three felt practice sheets (mint, butter-yellow, lilac) sits slightly fanned out.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, soft and warm, cute but not babyish (for university students), consistent lighting in both cells, saturated but soft colors that will read well when cut out and placed on a coral #F96859 background.

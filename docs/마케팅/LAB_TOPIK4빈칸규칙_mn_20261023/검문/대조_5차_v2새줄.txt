@@ -1,0 +1,3 @@
+실행 오류: 글 API 키 파일이 없다: C:/Users/q1212/SYNK_보안/제미나이_무료.txt
+   만드는 법: aistudio.google.com/apikey → 「API 키 만들기」 → 열쇠 값을 그 파일에 한 줄로 붙여넣기(값은 유호님 손).
+   경로를 바꾸려면 env GEMINI_KEY_PATH_FREE.
