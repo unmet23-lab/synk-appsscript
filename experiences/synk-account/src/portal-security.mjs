@@ -149,7 +149,8 @@ export function createPortalSecurity({ config, sdk, bounded, notice, errorMessag
       if (result.error) throw result.error;
       if (result.data?.user?.id === user.id) user = result.data.user;
       $('new-email').value = '';render();
-      status(`${user.email}와 ${next} 두 주소로 확인 메일을 보냈어요. 두 메일의 「변경 확인하기」를 모두 눌러야 바뀌어요. 이 브라우저에서 열면 바로 반영돼요.`, 'success');
+      // The mails' token-hash links open on any device (10-23), each with one more tap on the page.
+      status(`${user.email}, ${next} 두 주소로 확인 메일을 보냈어요. 두 메일의 「변경 확인하기」를 모두 눌러야 바뀌어요. 메일은 어느 기기에서 열어도 되고, 열린 화면에서 「이메일 변경 확인하기」를 눌러 주세요.`, 'success');
     } catch (error) { if (!closed) status(message(error), 'error'); }
     finally { lock(false); }
   }

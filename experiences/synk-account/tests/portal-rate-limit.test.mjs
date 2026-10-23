@@ -834,6 +834,7 @@ test('a login e-mail change sends two confirmations, shows the wait and explains
   await submitForm(page, 'email-change-form');await settled();
   assert.deepEqual(page.calls.at(-1), { method: 'updateUser', args: [{ email: 'next@example.test' }, { emailRedirectTo: 'https://id.example.test/?view=security' }] });
   assert.equal(page.get('security-pending-email').hidden, false);assert.match(page.get('security-pending-email').textContent, /next@example\.test/);assert.match(page.get('security-status').textContent, /두 주소로 확인 메일/);
+  assert.match(page.get('security-status').textContent, /어느 기기에서 열어도 되고/);assert.doesNotMatch(page.get('security-status').textContent, /이 브라우저에서 열면/);
   page.get('new-email').value = 'taken@example.test';page.replies.updateUser = { data: { user: null }, error: { code: 'email_exists', status: 422 } };await submitForm(page, 'email-change-form');await settled();
   assert.match(page.get('security-status').textContent, /다른 SYNK 계정이 쓰는 이메일/);
 });
