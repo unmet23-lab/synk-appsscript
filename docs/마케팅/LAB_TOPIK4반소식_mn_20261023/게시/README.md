@@ -16,8 +16,8 @@
 
 8장과 캡션이 「холбоос профайл дээр байгаа」(링크는 프로필에)라고 말한다. 그래서 **10-24 21:00 전에** 프로필이 먼저 바뀌어 있어야 한다(유호님 휴대폰).
 
-1. 인스타 @synk.mn 프로필 링크 둘 — 첫째 «Урьдчилан бүртгүүлэх» `https://synk.im/lab/topik4/?from=ig-bio-mn&lang=mn`, 둘째 «Бичгийн дасгал» `https://synk.im/world/?exam=topik2&lang=mn`(② 6장이 이 이름을 말한다).
-2. 페이스북 SYNK(synkworld) 페이지 소개의 링크에도 신청 페이지를 건다(페북에서도 「프로필에」가 거짓이 안 되게).
+1. 인스타 @synk.mn 프로필 링크 둘(**앱에서만** — 웹은 「링크 수정은 모바일에서만」, Business Suite는 인스타 로그인 인증이 필요; 지금 링크 http://synk.im 자리를 신청 링크로) — 첫째 «Урьдчилан бүртгүүлэх» `https://synk.im/lab/topik4/?from=ig-bio-mn&lang=mn`, 둘째 «Бичгийн дасгал» `https://synk.im/world/?exam=topik2&lang=mn`(② 6장이 이 이름을 말한다).
+2. ~~페이스북 SYNK(synkworld) 페이지 소개의 링크에도 신청 페이지를 건다~~ — **끝(10-23, Claude · Business Suite)**: 웹사이트 맨 위 `https://synk.im/lab/topik4/?from=fb-page-mn&lang=mn`(synk.im은 그대로).
 3. 대조기(몽골어 1층)가 10-23 저녁 몫 한도로 v2 새 줄을 다 못 봤다 — 몫이 풀리면(10-24 낮) `검문/문안_6차_v2새줄.txt`를 돌리고 「정상」을 본 뒤 올린다.
 
 ## 올리는 순서(「올려」 뒤)
