@@ -4,7 +4,7 @@
 
 <a id="account-page-20261022"></a>
 
-## 2026-10-22 · 「내 계정」 — 다음 PC 판에 실림
+## 2026-10-22 · 「내 계정」 — 10-23 0.4.43으로 공개(synk-policy 61880dd, 이 PC 자동 업데이트 확인)
 
 머리 계정 단추·설정 「SYNK ID」 줄·라이브러리·내 홈·내 성향의 계정 입구가 로그인 상태면 「내 계정」(`renderer/account-page.mjs`)을 연다. 이름 바꾸기, 로그인 이메일·로그인 방법·가입일(본체 `identity` — 자기 토큰으로 `/auth/v1/user`를 읽어 추림), 소속, 로그인한 곳·모두 로그아웃, 학습 기록 연결, 기록 내려받기, 계정 지우기 요청·취소, 작업실 크루의 「작업실 비밀번호는 작업실 설정에서」 안내. 비밀번호·로그인 이메일·Google 연결은 본체 `synk:auth-security`가 기본 브라우저의 `https://synk.im/id/?view=security`를 연다(이 앱은 비밀번호를 받지 않는다). 읽기는 `accountView`(`load`와 달리 확인된 라이브러리를 비우지 않음), 허용 목록에 `cancelDeletion`(PC·WORLD·교사)을 더했다. 확인: `node --test tests/account-page.test.cjs tests/auth.test.cjs tests/renderer-auth.test.cjs`, 크롬 합성 브리지 `node tools/account-page-browser-qa.cjs <playwright 폴더> <출력>`(1440·390). 설계·벤치마킹은 [플랫폼 계정 원문](../docs/SYNK_플랫폼_계정과_연결_설계.md#member-info-20261022).
 
