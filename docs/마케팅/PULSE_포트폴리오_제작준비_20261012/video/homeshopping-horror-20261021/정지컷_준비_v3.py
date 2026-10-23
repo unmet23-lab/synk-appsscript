@@ -102,11 +102,10 @@ def shadow_mask(full, clean):
     return Image.fromarray(m).filter(ImageFilter.MaxFilter(5)).filter(ImageFilter.GaussianBlur(3))
 
 
-def room_plates(full, clean):
-    """① C01a_bg: 그림자 자리만 지운 판에서 가져온 바탕(그 밖은 C01a 픽셀 그대로 — 0.3초에 그림자만 쓸려 들어오게)
-    ② E3: 같은 바탕에 칼날을 지우고 상자를 쥔 그림자를 다시 드리운다(어둡기는 칼 그림자 속 실제 비율)"""
+def e3_shadow(full, clean):
+    """끝 고리 E3에 드리울 그림자: 칼 그림자 자리(mask)에서 칼날을 지우고 상자를 쥔 손(box_mask)과 그림자 속 실제 어둡기 비율.
+    정지컷(room_plates)과 영상 판(영상_색감.py — 거실 클립의 빈 방 프레임마다)이 같이 쓴다"""
     mask = shadow_mask(full, clean)
-    bg = Image.composite(clean, full, mask)
     a = np.asarray(full, dtype=np.float32)
     b = np.asarray(clean, dtype=np.float32) + 1
     core = np.asarray(mask) > 200
@@ -115,10 +114,21 @@ def room_plates(full, clean):
     d = ImageDraw.Draw(box_mask)
     d.polygon(BLADE, fill=0)
     d.polygon(BOX, fill=255)
-    box_mask = box_mask.filter(ImageFilter.GaussianBlur(2))
-    dark = Image.fromarray(np.clip(np.asarray(bg, dtype=np.float32) * ratio, 0, 255).astype(np.uint8))
-    e3 = Image.composite(dark, bg, box_mask)
-    print("  그림자 비율", np.round(ratio, 2), "· 그림자 면적", int(core.sum()))
+    return mask, box_mask.filter(ImageFilter.GaussianBlur(2)), ratio, int(core.sum())
+
+
+def drop_shadow(im, box_mask, ratio):
+    dark = Image.fromarray(np.clip(np.asarray(im, dtype=np.float32) * ratio, 0, 255).astype(np.uint8))
+    return Image.composite(dark, im, box_mask)
+
+
+def room_plates(full, clean):
+    """① C01a_bg: 그림자 자리만 지운 판에서 가져온 바탕(그 밖은 C01a 픽셀 그대로 — 0.3초에 그림자만 쓸려 들어오게)
+    ② E3: 같은 바탕에 칼날을 지우고 상자를 쥔 그림자를 다시 드리운다(어둡기는 칼 그림자 속 실제 비율)"""
+    mask, box_mask, ratio, core = e3_shadow(full, clean)
+    bg = Image.composite(clean, full, mask)
+    e3 = drop_shadow(bg, box_mask, ratio)
+    print("  그림자 비율", np.round(ratio, 2), "· 그림자 면적", core)
     return bg, e3
 
 

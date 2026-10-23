@@ -1,6 +1,7 @@
 # 「매진 임박」 콘티 v3.1 영상 클립 후반(2026-10-23): Flow에서 받은 Omni 720p 클립(synk-vendor/…/영상/omni/<클립>_<판>.mp4)에
 # 정지컷과 같은 손질을 프레임마다 입힌다 — 공포 클립은 색감 「붉은밤」(정지컷_준비_v3와 같은 grade), 거실 와이드(C01a)는 택배 상자 글자 흐리기 + TV에 홈쇼핑 화면,
-# 쇼호스트 클립(H1a · H2c · H3d · E2)은 방송 색 그대로. C06은 칼이 들리는 클립이라 거꾸로 돌린 판(C10)도 만든다. 소리는 버린다(가편집 소리를 쓴다).
+# 쇼호스트 클립(H1a · H2c · H3d · E2)은 방송 색 그대로. C06은 칼이 들리는 클립이라 거꾸로 돌린 판(C10)도 만들고, C01a는 그림자가 들어오기 전
+# 빈 방 프레임으로 끝 고리 판(E3 — 상자를 쥔 그림자, 촛불이 흔들린다)도 만든다. 소리는 버린다(가편집 소리를 쓴다).
 #   python -X utf8 영상_색감.py [클립id_판 …] [--일꾼 N]   (없으면 omni 폴더 전부) → synk-vendor/…/영상/색감/<클립>_<판>.mp4 (1920×1080 · 24fps · 소리 없음)
 #   한 판(96프레임)에 2분쯤 걸려 여러 판은 --일꾼으로 나눠 돌린다(판 하나에 메모리 약 1GB)
 import glob
@@ -53,10 +54,30 @@ def one(name):
     os.makedirs(OUT, exist_ok=True)
     write(os.path.join(OUT, f"{name}.mp4"), out)
     made = [name]
+    take = name.rsplit("_", 1)[1]
     if clip == "C06":   # 칼이 들리는 클립을 거꾸로 돌려 C10(칼이 내려간다)
-        write(os.path.join(OUT, f"C10_{name.rsplit('_', 1)[1]}.mp4"), out[::-1])
-        made.append(f"C10_{name.rsplit('_', 1)[1]}")
+        write(os.path.join(OUT, f"C10_{take}.mp4"), out[::-1])
+        made.append(f"C10_{take}")
+    if clip == "C01a":   # 끝 고리 E3: 칼 그림자가 들어오기 전 빈 방 프레임에 정지컷 E3와 같은 상자 그림자 · 「주문 완료」 TV
+        e3 = e3_frames(fs, quad)
+        write(os.path.join(OUT, f"E3_{take}.mp4"), e3)
+        made.append(f"E3_{take}({len(e3)}프레임)")
     print("색감", made, len(out), "프레임")
+
+
+def e3_frames(fs, quad):
+    full, clean = (준비.blur_boxes(준비.cover(Image.open(os.path.join(준비.SRC, f"{c}.png")).convert("RGB"))) for c in ("C01a", "C01a_clean"))
+    mask, box_mask, ratio, _ = 준비.e3_shadow(full, clean)
+    # 칼 그림자 자리가 첫 프레임보다 8% 넘게 어두워지면 그림자가 들어온 것 — 그 앞까지만 빈 방으로 쓴다
+    m = np.asarray(mask) > 128
+    base = fs[0][m].mean()
+    n = next((i for i, fr in enumerate(fs) if fr[m].mean() < base * 0.92), len(fs))
+    out = []
+    for fr in fs[:n]:
+        im = 준비.drop_shadow(준비.blur_boxes(Image.fromarray(fr)), box_mask, ratio)
+        im = 준비.put_tv(im, tv_path=준비.TV_E, q=quad, quiet=True)
+        out.append(np.asarray(준비.색감.grade(im, "붉은밤")))
+    return out
 
 
 def main():
