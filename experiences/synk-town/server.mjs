@@ -21,7 +21,8 @@ export const COMMAND_WINDOW = 32, WALK_RECEIPTS = 512;
 /** The keys a screen may report as seen (§20-2): what the content data knows — the cards and the
  * gathered items now; lines, pair steps, scenes and tea frames join with their content (W4~W9). */
 export const SEEN_CATALOG = contentCatalog({ items: ITEMS.map(item => item.id) });
-const hostOffset = () => { const offset = -new Date().getTimezoneOffset(); return validOffset(offset) ? offset : 540; };
+// `|| 0`: a UTC host gives -0, which a save's JSON round trip turns into 0, so a reopened world would differ.
+const hostOffset = () => { const offset = -new Date().getTimezoneOffset() || 0; return validOffset(offset) ? offset : 540; };
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(root, '../..');
