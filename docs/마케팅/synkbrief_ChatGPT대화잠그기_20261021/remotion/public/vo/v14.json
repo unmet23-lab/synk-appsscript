@@ -1,0 +1,78 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v14",
+ "text": "다시 볼 때는 프로젝트 안의 잠긴 대화 폴더에서 핀을 넣어요.",
+ "show": "다시 볼 때는 프로젝트 안의 잠긴 대화 폴더에서 PIN을 넣어요.",
+ "dur": 3.25,
+ "words": [
+  {
+   "text": "다시",
+   "start": 0.02,
+   "end": 0.206
+  },
+  {
+   "text": "볼",
+   "start": 0.249,
+   "end": 0.349
+  },
+  {
+   "text": "때는",
+   "start": 0.393,
+   "end": 0.664
+  },
+  {
+   "text": "프로젝트",
+   "start": 0.835,
+   "end": 1.221
+  },
+  {
+   "text": "안의",
+   "start": 1.278,
+   "end": 1.407
+  },
+  {
+   "text": "잠긴",
+   "start": 1.464,
+   "end": 1.807
+  },
+  {
+   "text": "대화",
+   "start": 1.864,
+   "end": 2.051
+  },
+  {
+   "text": "폴더에서",
+   "start": 2.107,
+   "end": 2.536
+  },
+  {
+   "text": "핀을",
+   "start": 2.594,
+   "end": 2.822
+  },
+  {
+   "text": "넣어요.",
+   "start": 2.865,
+   "end": 3.25
+  }
+ ],
+ "source": {
+  "key": "0df804746cd9431d27ee2226a7fe31c1",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 0.95,
+  "cut": null
+ }
+}

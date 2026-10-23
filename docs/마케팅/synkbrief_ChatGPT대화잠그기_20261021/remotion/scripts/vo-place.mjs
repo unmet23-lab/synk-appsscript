@@ -16,21 +16,18 @@ const beat = (k) => Math.round((FIRST + k * (60 / BPM)) * FPS);
 const B = Object.fromEntries([...read('src/full/time.ts').match(/export const B = \{([\s\S]*?)\}/)[1].matchAll(/(\w+): (\d+)/g)].map((m) => [m[1], Number(m[2])]));
 const VO = Object.fromEntries([...read('src/full/vo.ts').matchAll(/^\s+(\w+): \{ dur: ([\d.]+), speech: ([\d.]+)/gm)].map((m) => [m[1], { dur: Number(m[2]), speech: Number(m[3]) }]));
 
-// [줄(hook은 변형마다 a01·b01), 장면, 착지 박에서 몇 프레임 뒤, 왜]
+// [줄(end는 변형마다 a15·b15), 장면, 착지 박에서 몇 프레임 뒤, 왜] — v4(10-23 알아듣기 판) 다섯 장면
 const PLAN = [
-  ['hook', 'hook', 2, '훅 제목이 첫 프레임부터 보인다(0박 = 2프레임)'],
-  ['v02', 'what', 3, ''],
-  ['v03', 'how', 3, ''],
-  ['v04', 'relock', 3, ''],
-  ['v05', 'refresh', 3, '조용한 구간'],
-  ['v06', 'myth', 3, '64박 드롭이 줄 가운데'],
-  ['v07', 'warn', 3, '80박 드롭이 줄 가운데'],
-  ['v08', 'end', 3, '줄 끝이 92박 곡 끝맺음 위로'],
+  ['v11', 'hook', 2, '훅 제목이 첫 프레임부터 보인다(0박 = 2프레임)'],
+  ['v12', 'how', 3, ''],
+  ['v13', 'warn', 3, '경고가 앞 절반(약 9.4초)'],
+  ['v14', 'open', 3, ''],
+  ['end', 'end', -12, '끝 줄은 끝 장면이 밀려 들어올 때 먼저 시작(끝 화면 6초 안), 50박에서 곡 끝맺음'],
 ];
 
-const place = (hookId) => {
+const place = (endId) => {
   const clips = PLAN.map(([id, k, off]) => {
-    const line = id === 'hook' ? hookId : id;
+    const line = id === 'end' ? endId : id;
     const at = beat(B[k]) + off;
     const v = VO[line];
     if (!v) throw Error('vo.ts에 없는 줄: ' + line);
@@ -44,7 +41,7 @@ const place = (hookId) => {
   return clips;
 };
 
-const out = { A: place('a01'), B: place('b01') };
+const out = { A: place('a15'), B: place('b15') };
 fs.writeFileSync(path.join(ROOT, 'src/full/vo-place.json'), JSON.stringify(out, null, 1) + '\n');
 const sec = (f) => +(f / FPS).toFixed(3);
 fs.writeFileSync(path.join(ROOT, 'public/vo/place.json'), JSON.stringify(Object.fromEntries(Object.entries(out).map(([k, cs]) => [k, cs.map((c) => ({ id: c.id, start: sec(c.at), end: sec(c.speechEnd) }))])), null, 1) + '\n');

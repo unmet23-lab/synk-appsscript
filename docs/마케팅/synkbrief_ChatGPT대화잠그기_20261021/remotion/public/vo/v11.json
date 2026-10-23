@@ -1,0 +1,83 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v11",
+ "text": "남이 보면 곤란한 챗지피티 대화, 이제 핀으로 잠가서 숨길 수 있어요.",
+ "show": "남이 보면 곤란한 챗GPT 대화, 이제 PIN으로 잠가서 숨길 수 있어요.",
+ "dur": 4.132,
+ "words": [
+  {
+   "text": "남이",
+   "start": 0.02,
+   "end": 0.22
+  },
+  {
+   "text": "보면",
+   "start": 0.269,
+   "end": 0.536
+  },
+  {
+   "text": "곤란한",
+   "start": 0.636,
+   "end": 0.985
+  },
+  {
+   "text": "챗지피티",
+   "start": 1.035,
+   "end": 1.501
+  },
+  {
+   "text": "대화,",
+   "start": 1.552,
+   "end": 1.767
+  },
+  {
+   "text": "이제",
+   "start": 2.349,
+   "end": 2.483
+  },
+  {
+   "text": "핀으로",
+   "start": 2.549,
+   "end": 2.816
+  },
+  {
+   "text": "잠가서",
+   "start": 2.865,
+   "end": 3.232
+  },
+  {
+   "text": "숨길",
+   "start": 3.281,
+   "end": 3.515
+  },
+  {
+   "text": "수",
+   "start": 3.564,
+   "end": 3.631
+  },
+  {
+   "text": "있어요.",
+   "start": 3.681,
+   "end": 4.132
+  }
+ ],
+ "source": {
+  "key": "2f9fba6de2de3e32527b2f9641ba2a80",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 0.95,
+  "cut": null
+ }
+}

@@ -1,0 +1,13 @@
+{
+ "id": "01-synkbrief-instagram",
+ "brand": "synkbrief",
+ "platform": "instagram",
+ "account": "@synkbrief",
+ "format": "reels",
+ "language": "ko",
+ "audioLanguage": "ko",
+ "caption": "남이 보면 곤란한 ChatGPT 대화, 이제 PIN으로 잠가 숨길 수 있어요. 단, PIN을 잊어서 재설정하면 잠긴 대화가 전부 지워져요.\n\n[잠그는 법]\n1. 대화 옆 ••• (점 세 개)\n2. Lock chat(대화 잠그기) → 한 번 더 눌러 확인\n3. 숫자 4자리 PIN 입력(처음이면 PIN을 만들고 한 번 더 입력)\n잠근 대화는 대화 기록 · 고정한 대화 · 검색에서 안 보여요. 다시 볼 때는 왼쪽 메뉴 Projects(프로젝트) › Locked chats(잠긴 대화)에서 PIN을 넣어요. 지원 휴대폰은 Face ID · Touch ID · 기기 잠금으로도 열려요.\n※ 메뉴 이름은 OpenAI 도움말 표기예요. 한국어 화면은 조금 다를 수 있어요.\n\n[어디서 되나요]\n· 웹, iPhone · Android 앱, 새 ChatGPT 데스크톱 앱(macOS · Windows)\n· Free · Go · Plus · Pro에 차례로 열리는 중이라 아직 메뉴가 없을 수 있어요(Business · Enterprise · Edu도 지원)\n· Codex 대화는 잠글 수 없어요\n\n[언제 다시 잠기나요]\n· 휴대폰: 잠긴 대화나 잠긴 대화 목록에서 나오고 1분 뒤, 또는 앱을 내려 두고 1분 뒤\n· 웹 · 데스크톱 앱: PIN을 넣은 탭 · 창을 떠나 있으면 저절로, 웹은 새로고침하거나 탭을 닫아도\n· 바로 잠그려면 Lock now(지금 잠그기)\n· 잠근 직후엔 ChatGPT를 열어 둔 다른 기기도 새로고침하세요. 목록이 새로고침될 때까지 제목이 남을 수 있어요.\n\n[PIN 주의]\nPIN을 잊어서 재설정하면 잠긴 대화가 전부 지워지고, OpenAI 고객 지원도 되살리지 못해요. PIN은 만들 때 바로 비밀번호 관리 앱 같은 곳에 적어 두세요. PIN을 잊기만 해서는 지워지지 않아요 — 재설정할 때 지워져요.\n\n[잠가도 그대로인 것]\n· 암호화 금고가 아니에요(종단 간 암호화나 따로 잠긴 보관함을 만들지 않아요)\n· 보관 기간, 모델 개선(Improve the model for everyone) 설정, 잠그기 전에 이미 기억한 메모리는 그대로예요\n· 잠긴 대화를 열 수 있는 사람은 내용을 복사할 수 있어요\n잠금은 「숨기기」예요.\n\n출처: OpenAI 도움말 「Using locked chats in ChatGPT」 · ChatGPT 릴리스 노트(2026.10.20)\n\n여러분 화면엔 이 메뉴가 한국어로 뭐라고 떠요? 댓글로 알려 주세요.\n\n#챗GPT #ChatGPT #대화잠금 #AI기초 #AI활용",
+ "alteredContent": true,
+ "madeForKids": false,
+ "_비고": "올라가는 글의 정본(v4 알아듣기 판, 10-23). 사람이 읽는 판은 ../README.md. 영상 끝 말 「어디서 되는지, 언제 다시 잠기는지는 캡션에 정리해 뒀어요」 — 그 둘을 [어디서 되나요]·[언제 다시 잠기나요]에 둔다. 작업실(회사 서버)로 올라가는 판이라 첫 댓글은 없다 — 질문·해시태그 다섯은 캡션 끝. 사실은 기획.md 「정보 품질」(10-21 OpenAI 원문)에 있는 것만."
+}

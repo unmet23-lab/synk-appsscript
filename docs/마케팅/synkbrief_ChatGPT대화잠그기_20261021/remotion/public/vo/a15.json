@@ -1,0 +1,68 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "a15",
+ "text": "어디서 되는지, 언제 다시 잠기는지는 캡션에 정리해 뒀어요.",
+ "show": "어디서 되는지, 언제 다시 잠기는지는 캡션에 정리해 뒀어요.",
+ "dur": 3.776,
+ "words": [
+  {
+   "text": "어디서",
+   "start": 0.02,
+   "end": 0.279
+  },
+  {
+   "text": "되는지,",
+   "start": 0.327,
+   "end": 0.7
+  },
+  {
+   "text": "언제",
+   "start": 1.251,
+   "end": 1.461
+  },
+  {
+   "text": "다시",
+   "start": 1.509,
+   "end": 1.687
+  },
+  {
+   "text": "잠기는지는",
+   "start": 1.737,
+   "end": 2.417
+  },
+  {
+   "text": "캡션에",
+   "start": 2.514,
+   "end": 2.869
+  },
+  {
+   "text": "정리해",
+   "start": 2.918,
+   "end": 3.209
+  },
+  {
+   "text": "뒀어요.",
+   "start": 3.258,
+   "end": 3.776
+  }
+ ],
+ "source": {
+  "key": "bf26176e9e64408e8895277230f4d02e",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 0.95,
+  "cut": null
+ }
+}
