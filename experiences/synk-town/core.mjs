@@ -13,6 +13,13 @@ import { initialSupport, assertSupport, commandSupport, viewSupport, snapshotSup
 import { nearbyPlace } from './walk.mjs';
 import { FT_SEATS, SIGN_SLOTS as SIGN_SPOTS } from './town/places.mjs';
 import { emptyIndex, admit, record, indexLog, isFact, projection, validIndex, foldIndex } from './town/trail-index.mjs';
+import { emptyLedger, validLedger } from './town/ledger.mjs';
+import { initialPrefs, initialAsks, giveFeedback, removeFeedback, activeFeedback, setLessOften, setApproach, setTodayOther,
+  answerFamily, correctObserved, clearPersonal, validPrefs, validAsks, validUses } from './town/prefs.mjs';
+import { initialConsents, changeConsent, validConsents } from './town/consent.mjs';
+import { eventProblem, FAMILIES } from './town/events.mjs';
+import { policyFor, DEFAULT_OPS, PARAMS_BY_VER, ARMS } from './town/params.mjs';
+import { forgettable, forget, forgottenBy, pruneForgotten, validForgotten } from './town/memory.mjs';
 
 export const SCOPE = Object.freeze({ domain: 'LAB', workspace: 'synk-town', subject: 'preview-local' });
 // FT10/FT51 keep their old 2D cafe-screen points; the spots live in town/data/places.json.
@@ -29,6 +36,20 @@ export class TownError extends Error {
   constructor(code, message, status = 400) { super(message); this.code = code; this.status = status; }
 }
 const ensure = (condition, code, message, status) => { if (!condition) throw new TownError(code, message, status); };
+/** The §20 fields (vertical slice design §14-2·§20, W2 plan 5b), added to schema 1: the things ledger,
+ * what the player said about suggestions and the mascot's question budget, the uses behind an
+ * observation, the evaluation consent, this visit's version and arm, and what residents were asked to
+ * forget. Town events (the §20-1 kinds) wait in townEvents until the store moves them to the event
+ * branch; townSeq names them across a reset, as the Trail sequence does. */
+const TOWN_FIELDS = Object.freeze({ ledger: emptyLedger, prefs: initialPrefs, asks: initialAsks, recentLifeUse: () => [],
+  consents: initialConsents, policy: () => null, forgotten: () => [], townSeq: () => 0, townEvents: () => [] });
+const townFields = () => Object.fromEntries(Object.entries(TOWN_FIELDS).map(([key, make]) => [key, make()]));
+/** The most entries a person's own setting lists keep (less often, not approached first, today's others, responses). */
+export const PERSONAL_MAX = 64;
+const validPolicy = policy => policy === null || !!policy && Object.keys(policy).length === 3 && typeof policy.visitId === 'string'
+  && /^[A-Za-z0-9_.:-]{1,80}$/.test(policy.visitId) && Object.hasOwn(PARAMS_BY_VER, policy.paramsVer) && ARMS.includes(policy.arm);
+const townEventsValid = state => Number.isSafeInteger(state.townSeq) && state.townSeq >= 0 && Array.isArray(state.townEvents)
+  && state.townEvents.every(event => eventProblem(event) === null && /^E-\d+$/.test(event.id) && Number(event.id.slice(2)) <= state.townSeq);
 // Two counters (vertical slice §14-4, W2 plan D4): revision is the command revision — it rises only
 // when a command is confirmed, and commands compare against it; writeSeq rises on every save, so a
 // screen knows when to read again. settledU is the effective play time the world is settled to.
@@ -38,7 +59,7 @@ export function initialState({ scope = SCOPE, lifeEnabled = false } = {}) {
     canopyOwned: false, color: null, placement: null, previewSlot: null,
     materialsGranted: false, served: false, delivered: false, currentUseId: null,
     achievements: [], goals: { inside: null, outside: null }, resumePhase: null,
-    events: [], trail: emptyIndex(), commands: [], resting: false, activity: 'seat', sign: newSign(),
+    events: [], trail: emptyIndex(), ...townFields(), commands: [], resting: false, activity: 'seat', sign: newSign(),
     ...(lifeEnabled ? { life: initialLife(), lifeFactIds: {}, lifeSeatRevision: 0, day: initialDay(), bazaar: initialBazaar(), support: initialSupport() } : {}) };
 }
 // Existing FT10 saves gain only the new optional activity, preserving their log.
@@ -57,6 +78,8 @@ export function restoreState(saved, { lifeEnabled = false } = {}) {
   // Saves from before the two counters: every save so far was a write, and nothing is unsettled.
   if (state && !Object.hasOwn(state, 'writeSeq')) state.writeSeq = state.revision;
   if (state && !Object.hasOwn(state, 'settledU')) state.settledU = 0;
+  // Saves from before the §20 fields gain them empty.
+  if (state?.schema === 1 && state.scope) for (const [key, make] of Object.entries(TOWN_FIELDS)) if (!Object.hasOwn(state, key)) state[key] = make();
   // A log kept in the state (an old save, the linked teacher fixture, the old talk row) is read
   // whole once, here. A world whose log lives in the event branch carries none, and its index is
   // the record: it is trusted once its shape holds (W2 plan D7).
@@ -100,11 +123,15 @@ export function foldWorld(state, limits = FOLD_LIMITS) {
     world.sign.currentUseId, world.sign.goalId, world.pendingUse?.cause, trail.lastSeatPlaced].filter(Boolean));
   if (world.lifeFactIds) {
     const lifeKey = world.life ? lifeLiveKey(world.life) : () => false, dayKey = world.day ? dayLiveKey(world.day) : () => false;
+    // The results the screens still show as memories (the kept history rows) stay knowable, so the
+    // player can still ask a resident to forget them (§20-5).
+    const shown = new Set([...(world.life?.history || []), ...(world.day?.history || [])].map(row => row.resultId));
     world.lifeFactIds = Object.fromEntries(Object.entries(world.lifeFactIds)
-      .filter(([key]) => key.startsWith('BAZAAR:') || lifeKey(key) || dayKey(key)));
+      .filter(([key]) => key.startsWith('BAZAAR:') || lifeKey(key) || dayKey(key) || shown.has(key)));
     for (const id of Object.values(world.lifeFactIds)) live.add(id);
   }
   foldIndex(trail, live, { current: ['FT10', 'FT51'].map(kind => `${kind}:${world.worldRevision}:${world.visit}:delivery`) });
+  if (world.forgotten) world.forgotten = pruneForgotten(world.forgotten, trail);
   return assertState(world);
 }
 export function assertState(state) {
@@ -171,6 +198,13 @@ export function assertState(state) {
   if (pending) ensure(['tea', 'sign'].includes(pending.kind) && pending.worldRevision === state.worldRevision
     && pending.placement === state.placement && Number.isSafeInteger(pending.elapsedMs) && pending.elapsedMs >= 0
     && isFact(trail, pending.cause), 'invalid-save', '주민 이용 계획을 확인할 수 없어요.', 503);
+  // The §20 fields, each checked when present (restoreState gives every save all of them).
+  const has = key => Object.hasOwn(state, key);
+  ensure((!has('ledger') || validLedger(state.ledger)) && (!has('prefs') || validPrefs(state.prefs))
+    && (!has('asks') || validAsks(state.asks)) && (!has('recentLifeUse') || validUses(state.recentLifeUse))
+    && (!has('consents') || validConsents(state.consents)) && (!has('policy') || validPolicy(state.policy))
+    && (!has('forgotten') || validForgotten(state.forgotten)) && (!has('townSeq') && !has('townEvents') || townEventsValid(state)),
+  'invalid-save', '마을 기록을 확인할 수 없어요.', 503);
   return state;
 }
 
@@ -246,6 +280,8 @@ function runLife(state, operation) {
  * (town/settle.mjs) walks unsettled time in steps of this, checking the state once around them. */
 export function stepLiving(state, host) {
   ensure(state.life && host?.enabled === true, 'life-unavailable', '이 체험에서는 이웃 생활을 열 수 없어요.', 403);
+  // A visit that ended in a long rest takes its version and arm with it; the next visit opens its own.
+  if (host.visitEnded && state.policy) state.policy = null;
   advanceUse(state, host);
   runLife(state, () => advanceLife(state.life, livingContext(state, host)));
   if (state.day) runLife(state, () => advanceDay(state.day, dayContext(state, host)));
@@ -377,9 +413,10 @@ function planFor(state, reaction) {
     { id: 'tea-place', actor: 'tea', from: beside, to: cup, durationMs: 350, pose: 'carried', endPose: 'placed', initialPose: 'hidden' },
   ] });
 }
-/** What Vellum reads of the Trail, from the index, for these candidates. */
+/** What Vellum reads of the Trail, from the index, for these candidates — without what this resident
+ * was asked to forget (§20-5). */
 const trailView = (state, npcId, candidates) => projection(trailOf(state), { version: Trail.VERSION, scope: state.scope, npcId,
-  sourceIds: candidates.flatMap(candidate => candidate.sourceIds) });
+  sourceIds: candidates.flatMap(candidate => candidate.sourceIds), forgotten: forgottenBy(state.forgotten || [], npcId) });
 export function reactionFor(state, npcId = 'cafe-owner') {
   if (state.activity === 'sign') return signReaction(state, npcId);
   if (!state.placement || !state.currentUseId || !state.served) return { selected: null, eligible: [], rejected: [] };
@@ -471,6 +508,28 @@ export function viewFor(state) {
 }
 export function snapshot(state) { assertState(state); return { state: copy(state), view: viewFor(state) }; }
 
+/** Append a town event (§20-1 kinds) to the lines the store moves to the event branch, checked first. */
+function townEvent(state, kind, fields) {
+  const event = { id: `E-${state.townSeq + 1}`, kind, cmdRev: state.revision + 1, ...fields };
+  ensure(eventProblem(event) === null, 'invalid-event', '마을 기록을 남기지 못했어요.', 503);
+  state.townSeq++; state.townEvents.push(event);
+  return event.id;
+}
+/** This visit's version and arm, fixed when the first thing in the visit needs them (§20-6); the id is
+ * the command revision that opened it, so no two visits share one. */
+function openVisit(state, host) {
+  state.policy ||= { ...policyFor({ villageSeed: host.villageSeed ?? 'synk-town', visitId: `V-${state.revision + 1}`, ops: host.ops ?? DEFAULT_OPS }) };
+  return state.policy;
+}
+function preference(change) {
+  try { return change(); } catch { throw new TownError('invalid-preference', '설정을 다시 골라 주세요.'); }
+}
+const personalRoom = prefs => ensure(prefs.lessOften.length <= PERSONAL_MAX && prefs.approachOptOut.length <= PERSONAL_MAX
+  && prefs.todayOther.items.length <= PERSONAL_MAX, 'preference-full', '설정이 너무 많아요. 수첩에서 정리해 주세요.', 409);
+/** The §20 commands: the person's rights over what the town keeps, and the feedback and suggestion menus. */
+const TOWN_COMMANDS = new Set(['MEMORY_FORGET', 'FEEDBACK_REMOVE', 'OBSERVED_CORRECT', 'SEEN_CLEAR', 'MEMORY_CLEAR', 'EVAL_CONSENT',
+  'FEEDBACK_GIVE', 'PREF_LESS_OFTEN', 'PREF_TODAY_OTHER', 'PREF_APPROACH', 'PREF_FAMILY']);
+
 export function reduceCommand(previous, command, host = {}) {
   assertState(previous);
   ensure(command && typeof command.id === 'string' && /^[a-zA-Z0-9_.:-]{1,100}$/.test(command.id)
@@ -485,6 +544,7 @@ export function reduceCommand(previous, command, host = {}) {
   ensure(command.expectedRevision === previous.revision, 'stale-command', '다른 창에서 자리가 바뀌었어요. 다시 확인해 주세요.', 409);
   let state = copy(previous);
   const p = command.payload;
+  if (TOWN_COMMANDS.has(command.type)) for (const [key, make] of Object.entries(TOWN_FIELDS)) if (!Object.hasOwn(state, key)) state[key] = make();
   const ftMutation = ['CHOOSE', 'NEXT', 'COLOR', 'CRAFT', 'PREVIEW_SLOT', 'PLACE', 'CANCEL', 'REARRANGE', 'REMOVE', 'SIT',
     'SIGN_START', 'SIGN_NEXT', 'SIGN_PICTURE', 'SIGN_PREVIEW', 'SIGN_PLACE', 'SIGN_CANCEL', 'SIGN_REMOVE'].includes(command.type);
   if (ftMutation && (host.surface === 'day' || state.day?.walk?.enabled)) ensure(atDayPlace(state, 'cafe'),
@@ -551,6 +611,7 @@ export function reduceCommand(previous, command, host = {}) {
     case 'VISIT':
       inPhase('away'); state.phase = state.resumePhase || 'choose'; state.resumePhase = null;
       state.visit++; state.resting = false;
+      if (state.policy) state.policy = null;
       if (state.placement && state.phase === 'ready') {
         if (state.activity === 'sign') { if (state.sign.delivered) {
           if (host.surface === 'day') queueUse(state, 'sign', state.sign.placedId); else followSign(state);
@@ -562,7 +623,8 @@ export function reduceCommand(previous, command, host = {}) {
       break;
     case 'LEAVE':
       ensure(state.phase !== 'away', 'already-away', '다시 왔어요를 눌러 주세요.');
-      state.resumePhase = state.phase; state.phase = 'away'; break;
+      state.resumePhase = state.phase; state.phase = 'away';
+      if (state.policy) state.policy = null; break;
     case 'SIT': inPhase('ready'); state.resting = true; break;
     case 'SIGN_START':
       inPhase('ready'); ensure(state.placement && state.goals[SEATS[state.placement].branch], 'missing-seat', '먼저 자리를 골라요.');
@@ -617,8 +679,70 @@ export function reduceCommand(previous, command, host = {}) {
       state.writeSeq = old.writeSeq ?? old.revision; state.settledU = old.settledU ?? 0;
       // Event ids go on too, so an id never names two different events (F7).
       state.trail = emptyIndex(trailOf(old).seq);
+      // What the person said and chose stays theirs (§20-5): the consent, the settings and responses,
+      // the question budget and the uses behind an observation. The world's things, the visit and what
+      // was forgotten of the old world's facts start again; town event ids go on.
+      for (const key of ['prefs', 'asks', 'recentLifeUse', 'consents']) if (Object.hasOwn(old, key)) state[key] = old[key];
+      state.townSeq = old.townSeq ?? 0;
       state.commands = old.commands; break;
     }
+    // The person's own rights over what the town keeps (scope rights, §20-5): the notebook and the
+    // account screen use this one command path, so each change leaves its receipt, revision and event.
+    case 'MEMORY_FORGET': {
+      ensure(forgettable(trailOf(state), p.npc, p.eventId), 'memory-unavailable', '그 기억을 찾지 못했어요. 수첩을 다시 열어 주세요.', 409);
+      const next = forget(state.forgotten, { npc: p.npc, target: p.eventId });
+      if (next.added) { state.forgotten = next.forgotten; townEvent(state, 'memory.forgotten', { npc: p.npc, target: p.eventId }); }
+      break;
+    }
+    case 'FEEDBACK_REMOVE':
+      ensure(typeof p.eventId === 'string' && state.prefs.feedback.some(item => item.completionId === p.eventId),
+        'feedback-unavailable', '그 응답을 찾지 못했어요. 수첩을 다시 열어 주세요.', 409);
+      state.prefs = removeFeedback(state.prefs, p.eventId);
+      townEvent(state, 'feedback.removed', { completionId: p.eventId }); break;
+    case 'OBSERVED_CORRECT': {
+      ensure(FAMILIES.includes(p.family), 'invalid-preference', '설정을 다시 골라 주세요.');
+      const next = correctObserved(state.recentLifeUse, state.prefs, p.family);
+      state.recentLifeUse = next.uses; state.prefs = next.prefs; break;
+    }
+    // The seen ledger is the store's own branch; this command is how the store is told to empty it.
+    case 'SEEN_CLEAR': break;
+    case 'MEMORY_CLEAR': {
+      const next = clearPersonal({ prefs: state.prefs, uses: state.recentLifeUse });
+      state.prefs = next.prefs; state.recentLifeUse = next.uses; break;
+    }
+    case 'EVAL_CONSENT': {
+      // A linked (academy) world is never asked and cannot turn it on; withdrawing is always taken.
+      const academy = host.academy === true || state.scope.subject.startsWith('linked-');
+      try { state.consents = changeConsent(state.consents, { state: p.state, ver: p.ver, academy }); }
+      catch (error) {
+        if (error.code === 'eval-consent-academy') throw new TownError(error.code, '학원 소속 계정에는 이 기록을 쓰지 않아요.', 403);
+        if (error.code === 'eval-consent-version') throw new TownError(error.code, '동의 내용이 바뀌었어요. 다시 확인해 주세요.', 409);
+        throw new TownError('invalid-consent', '동의 상태를 다시 골라 주세요.');
+      }
+      townEvent(state, 'consent.changed', { consent: 'evalSignals', ...state.consents.evalSignals }); break;
+    }
+    // Feedback and the suggestion menus (scope base, §20-3).
+    case 'FEEDBACK_GIVE': {
+      ensure(Number.isSafeInteger(host.lifeDay) && host.lifeDay >= 0, 'feedback-unavailable', '지금은 응답을 남길 수 없어요.', 403);
+      const given = { completionId: p.completionId, value: p.value, canonicalActivityId: p.canonicalActivityId };
+      try { state.prefs = giveFeedback(state.prefs, { ...given, lifeDay: host.lifeDay }); }
+      catch { throw new TownError('invalid-feedback', '응답을 다시 골라 주세요.'); }
+      // Responses past the version's limit are no longer used, so the world keeps only the newest within it.
+      state.prefs.feedback = activeFeedback(state.prefs, host.lifeDay).slice(-PERSONAL_MAX);
+      townEvent(state, 'feedback.given', given); break;
+    }
+    case 'PREF_LESS_OFTEN':
+      ensure(typeof p.on === 'boolean', 'invalid-preference', '설정을 다시 골라 주세요.');
+      state.prefs = preference(() => setLessOften(state.prefs, p.activity, p.on)); personalRoom(state.prefs); break;
+    case 'PREF_APPROACH':
+      ensure(typeof p.optOut === 'boolean', 'invalid-preference', '설정을 다시 골라 주세요.');
+      state.prefs = preference(() => setApproach(state.prefs, p.activity, p.optOut)); personalRoom(state.prefs); break;
+    case 'PREF_TODAY_OTHER': {
+      const { visitId } = openVisit(state, host);
+      state.prefs = preference(() => setTodayOther(state.prefs, visitId, p.activity)); personalRoom(state.prefs); break;
+    }
+    case 'PREF_FAMILY':
+      state.prefs = preference(() => answerFamily(state.prefs, p.family, p.answer)); break;
     default:
       if (command.type.startsWith('SUPPORT_')) {
         ensure(state.support && host.enabled === true && host.surface === 'day', 'support-unavailable', '첫 하루에서 읽기 도움을 확인해 주세요.', 403);

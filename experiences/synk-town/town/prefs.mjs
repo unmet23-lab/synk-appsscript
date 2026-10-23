@@ -94,6 +94,12 @@ export function suggestionWeight(prefs, { activity, card = null, lifeDay, policy
  * what the player declared (less often, the family first, no approach, a no) stays. */
 export const clearPersonal = ({ prefs, uses }) => ({ prefs: { ...prefs, observed: null, feedback: [] }, uses: [] });
 
+/** Whether a stored question budget is whole: life days only, no clock. */
+export const validAsks = asks => !!asks && (asks.lastLifeDay === null || day(asks.lastLifeDay)) && !!asks.asked
+  && typeof asks.asked === 'object' && !Array.isArray(asks.asked) && Object.values(asks.asked).every(day);
+/** Whether stored uses are whole: the newest few, counted and never timed. */
+export const validUses = (uses, params = paramsFor()) => Array.isArray(uses) && uses.length <= params.observe.recentUses
+  && uses.every(use => unit(use?.useId) && unit(use.canonicalActivityId) && FAMILIES.includes(use.storyFamily) && typeof use.direct === 'boolean');
 /** Whether stored preferences are whole. */
 export function validPrefs(prefs) {
   return !!prefs && (prefs.preferredFamily === null || FAMILIES.includes(prefs.preferredFamily))

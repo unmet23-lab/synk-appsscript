@@ -7,10 +7,10 @@
  * deletes that account's lines at once.
  */
 import { paramsFor } from './params.mjs';
+import { CONSENT_VER, mayWrite } from './consent.mjs';
 
-export const CONSENT_VER = 'town-eval-signals-1';
-export const CONSENT_STATES = Object.freeze(['unasked', 'granted', 'declined', 'withdrawn']);
-export const initialConsents = () => ({ evalSignals: { state: 'unasked', ver: CONSENT_VER } });
+// The consent's state is the world's, so the authority reads it from town/consent.mjs and never this module.
+export { CONSENT_VER, CONSENT_STATES, initialConsents, changeConsent, mayWrite, validConsents } from './consent.mjs';
 /** Each field of the visit line pairs with one item of the consent wording (§20-4 「칸과 동의 문구는
  * 짝이다」); W6 moves this table into the consent contract file and the check reads it there. */
 export const CONSENT_ITEMS = Object.freeze({
@@ -25,15 +25,6 @@ const BANDS = ['morning', 'day', 'evening', 'night'], LENGTHS = ['under-10m', '1
 const id = value => typeof value === 'string' && /^[A-Za-z0-9_.:-]{1,80}$/.test(value);
 const n = value => Number.isSafeInteger(value) && value >= 0;
 const tally = value => !!value && typeof value === 'object' && !Array.isArray(value) && Object.entries(value).every(([key, count]) => id(key) && n(count));
-
-/** A consent change, checked: an academy account cannot grant; withdrawing is always taken. */
-export function changeConsent(consents, { state, ver = CONSENT_VER, academy = false }) {
-  if (!['granted', 'declined', 'withdrawn'].includes(state)) throw new TypeError('granted, declined or withdrawn');
-  if (state === 'granted' && academy) throw Object.assign(new Error('academy accounts are not asked'), { code: 'eval-consent-academy' });
-  if (state !== 'withdrawn' && ver !== CONSENT_VER) throw Object.assign(new Error('another consent version'), { code: 'eval-consent-version' });
-  return { ...consents, evalSignals: { state, ver: state === 'withdrawn' ? consents.evalSignals.ver : ver } };
-}
-export const mayWrite = consents => consents?.evalSignals?.state === 'granted' && consents.evalSignals.ver === CONSENT_VER;
 
 /** One visit's summary, checked: only the consented fields, no names, words or clock readings. */
 export function visitLine(fields) {
@@ -53,4 +44,3 @@ export const writeVisit = (lines, consents, fields) => mayWrite(consents) ? [...
 export const retainVisits = (lines, lifeDay, params = paramsFor()) => lines.filter(line => lifeDay - line.lifeDay < params.eval.retainLifeDays);
 /** Aggregates compare only groups of at least the minimum size. */
 export const comparable = (groupSize, params = paramsFor()) => groupSize >= params.eval.minGroup;
-export const validConsents = consents => !!consents?.evalSignals && CONSENT_STATES.includes(consents.evalSignals.state) && id(consents.evalSignals.ver);

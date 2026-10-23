@@ -6,11 +6,21 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { initialState, restoreState, reduceCommand, snapshot, stepLiving, assertState, foldWorld, FOLD_LIMITS, TownError } from './core.mjs';
 import { initialPresence, commandPresence, initialLease, pulseLease, boundaryPresence } from './presence.mjs';
 import { settle } from './town/settle.mjs';
+import { contentCatalog, recordSeen, clearSeen, validSeen } from './town/seen.mjs';
+import { writeVisit, visitLine } from './town/eval.mjs';
+import { lifeDayAt, validOffset } from './town/clock.mjs';
+import { validateOps, DEFAULT_OPS } from './town/params.mjs';
+import { eventProblem } from './town/events.mjs';
+import { ITEMS } from './town/data.gen.mjs';
 
 /** A screen may open a safe boundary at most once in this long (vertical slice §14-3). */
 export const BOUNDARY_GAP_MS = 20000;
 /** Receipts the world itself keeps, and the movement receipts the store keeps (talk's limits). */
 export const COMMAND_WINDOW = 32, WALK_RECEIPTS = 512;
+/** The keys a screen may report as seen (§20-2): what the content data knows — the cards and the
+ * gathered items now; lines, pair steps, scenes and tea frames join with their content (W4~W9). */
+export const SEEN_CATALOG = contentCatalog({ items: ITEMS.map(item => item.id) });
+const hostOffset = () => { const offset = -new Date().getTimezoneOffset(); return validOffset(offset) ? offset : 540; };
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(root, '../..');
@@ -78,10 +88,21 @@ function atomicSave(file, state) {
  * and folds the world to its limits (fold: false keeps every row — tests compare with it). An
  * older command still answers from its receipt. Until the branches have their own files (D9) the
  * save holds the world with this epoch's lines and every receipt inline, the old one-file shape;
- * answers show them as state.events and state.commands (F11). */
-export function createStore({ file, save, now = () => Date.now(), lifeEnabled = true, observe = null, fold = FOLD_LIMITS } = {}) {
-  let state = initialState({ lifeEnabled }), log = [], loadError = null;
+ * answers show them as state.events and state.commands (F11).
+ * The §20 branches sit beside them (W2 plan 5b): the town events a command left (answers show them
+ * as state.townEvents), the seen ledger (answers carry the device's copy as seen) and the
+ * evaluation-only lines, kept only under the consent and emptied the moment it is withdrawn. A screen
+ * reports what it really showed with a boundary or a command (outside the signed command, so a retry
+ * never counts twice). The account's own facts come from the host: academy (an academy-linked account
+ * is never asked for evaluation signals), tz (its offset in minutes, for the life day), ops (the
+ * operating line of §20-6) and villageSeed. */
+export function createStore({ file, save, now = () => Date.now(), lifeEnabled = true, observe = null, fold = FOLD_LIMITS,
+  academy = false, tz = hostOffset(), ops = DEFAULT_OPS, villageSeed = 'synk-town' } = {}) {
+  let state = initialState({ lifeEnabled }), log = [], townLog = [], seen = {}, evalLines = [], loadError = null;
   const receipts = new Map(), walks = [];
+  const account = { academy: academy === true, ops: validateOps(ops), villageSeed };
+  lifeDayAt(tz, 0); // the offset (or offset history) is checked once, here
+  const hostOf = at => ({ ...account, lifeDay: lifeDayAt(tz, at) });
   function remember(records) {
     for (const record of records) {
       if (receipts.has(record.id)) continue;
@@ -93,15 +114,20 @@ export function createStore({ file, save, now = () => Date.now(), lifeEnabled = 
   }
   if (file && fs.existsSync(file)) {
     try {
-      const saved = JSON.parse(fs.readFileSync(file, 'utf8'));
+      const { seen: savedSeen = {}, evalLines: savedEval = [], townEvents: savedTown = [], ...saved } = JSON.parse(fs.readFileSync(file, 'utf8'));
+      if (!validSeen(savedSeen) || !Array.isArray(savedEval) || !Array.isArray(savedTown)) throw new TypeError('branches');
+      for (const line of savedEval) visitLine(line);
       if (saved?.trail && Array.isArray(saved.events)) {
         // The index is the record; the lines beside it are the branch.
-        state = restoreState({ ...saved, events: [] }, { lifeEnabled });
+        state = restoreState({ ...saved, events: [], townEvents: [] }, { lifeEnabled });
         log = saved.events.filter(event => event?.seq > state.trail.archivedBelow && event.seq <= state.trail.seq);
       } else {
-        const restored = restoreState(saved, { lifeEnabled });
+        const restored = restoreState({ ...saved, townEvents: [] }, { lifeEnabled });
         log = restored.events; state = { ...restored, events: [] };
       }
+      // Town events past the world's sequence never committed with it.
+      townLog = savedTown.filter(event => eventProblem(event) === null && /^E-\d+$/.test(event.id) && Number(event.id.slice(2)) <= state.townSeq);
+      seen = savedSeen; evalLines = savedEval;
       remember(state.commands); state = { ...state, commands: state.commands.slice(-COMMAND_WINDOW) };
       if (fold) state = foldWorld(state, fold);
     } catch { loadError = new TownError('invalid-save', '저장 기록을 읽지 못했어요. 원본을 보존하고 확인해 주세요.', 503); }
@@ -109,18 +135,36 @@ export function createStore({ file, save, now = () => Date.now(), lifeEnabled = 
   const persist = save || (file ? next => atomicSave(file, next) : null);
   const current = () => {
     const shown = snapshot(state);
-    shown.state.events = log.slice(); shown.state.commands = [...receipts.values()];
-    return { ...shown, capabilities: { life: !!state.life && lifeEnabled, day: !!state.day && lifeEnabled } };
+    shown.state.events = log.slice(); shown.state.commands = [...receipts.values()]; shown.state.townEvents = townLog.slice();
+    return { ...shown, seen: { ...seen }, capabilities: { life: !!state.life && lifeEnabled, day: !!state.day && lifeEnabled } };
   };
-  function commit(next) {
-    let world = { ...next, events: [], commands: next.commands.slice(-COMMAND_WINDOW), writeSeq: (state.writeSeq ?? 0) + 1 };
+  /** Write the world with its branches; nothing is published unless the write held. The one-file
+   * shape carries the seen ledger and the evaluation lines only when they hold something. */
+  function write(world, branches) {
+    const extra = { ...(Object.keys(branches.seen).length ? { seen: branches.seen } : {}), ...(branches.evalLines.length ? { evalLines: branches.evalLines } : {}) };
+    try { if (persist) persist({ ...world, events: branches.log, townEvents: branches.town, commands: branches.receipts, ...extra }); }
+    catch { throw new TownError('save-failed', '저장하지 못했어요. 진행은 그대로예요. 다시 시도해 주세요.', 503); }
+  }
+  function commit(next, { seen: nextSeen = seen, evalLines: nextEval = evalLines } = {}) {
+    let world = { ...next, events: [], townEvents: [], commands: next.commands.slice(-COMMAND_WINDOW), writeSeq: (state.writeSeq ?? 0) + 1 };
     if (fold) world = foldWorld(world, fold);
     // A reset starts a new epoch: the branch's earlier lines are archived, never shown again.
-    const kept = world.trail.archivedBelow > state.trail.archivedBelow ? [] : log, lines = next.events;
+    const kept = world.trail.archivedBelow > state.trail.archivedBelow ? [] : log, lines = next.events, town = next.townEvents || [];
     const fresh = next.commands.filter(record => !receipts.has(record.id));
-    try { if (persist) persist({ ...world, events: [...kept, ...lines], commands: [...receipts.values(), ...fresh] }); }
-    catch { throw new TownError('save-failed', '저장하지 못했어요. 진행은 그대로예요. 다시 시도해 주세요.', 503); }
-    state = world; log = kept; log.push(...lines); remember(fresh);
+    write(world, { log: [...kept, ...lines], town: [...townLog, ...town], receipts: [...receipts.values(), ...fresh], seen: nextSeen, evalLines: nextEval });
+    state = world; log = kept; log.push(...lines); townLog.push(...town); remember(fresh); seen = nextSeen; evalLines = nextEval;
+  }
+  /** A branch changed while the world did not (a seen report, an evaluation line). */
+  function keep({ seen: nextSeen = seen, evalLines: nextEval = evalLines }) {
+    write(state, { log, town: townLog, receipts: [...receipts.values()], seen: nextSeen, evalLines: nextEval });
+    seen = nextSeen; evalLines = nextEval;
+  }
+  /** A screen's report of what it really showed: the next ledger, or null when nothing was added. */
+  function seenReport(keys) {
+    if (keys === undefined) return null;
+    if (!Array.isArray(keys) || !keys.every(key => typeof key === 'string')) throw new TownError('invalid-seen', '보인 것 기록을 다시 보내 주세요.');
+    const report = recordSeen(seen, keys, { known: SEEN_CATALOG });
+    return report.added.length ? report.seen : null;
   }
   // Only a host timestamp survives for the 30-minute logical-visit boundary;
   // foreground leases and unsettled play time never survive a restart.
@@ -149,8 +193,17 @@ export function createStore({ file, save, now = () => Date.now(), lifeEnabled = 
   const hostNow = () => Math.max(now(), lease.presence.at ?? 0);
   return {
     observation: observe,
-    /** Sizes for benches and tests: the world as saved, and the two branches beside it. */
-    stats() { return { worldBytes: Buffer.byteLength(JSON.stringify(state)), lines: log.length, receipts: receipts.size }; },
+    /** Sizes for benches and tests: the world as saved, and the branches beside it. */
+    stats() { return { worldBytes: Buffer.byteLength(JSON.stringify(state)), lines: log.length, receipts: receipts.size,
+      townEvents: townLog.length, seenKeys: Object.keys(seen).length, evalLines: evalLines.length }; },
+    /** The one server write of an evaluation-only visit line (§20-4, called from W6): kept only under the
+     * consent, overwritten by visit id. Returns how many lines the account has. */
+    writeVisit(fields) {
+      if (loadError) throw loadError;
+      const next = writeVisit(evalLines, state.consents, fields);
+      if (next !== evalLines) keep({ evalLines: next });
+      return evalLines.length;
+    },
     peek() { if (loadError) throw loadError; return current(); },
     read() {
       if (loadError) throw loadError;
@@ -169,9 +222,15 @@ export function createStore({ file, save, now = () => Date.now(), lifeEnabled = 
       if (!living()) throw new TownError('life-unavailable', '이웃 생활을 열 수 없어요.', 403);
       const at = hostNow(), holder = boundaryPresence(lease.presence, input, at);
       if (!holder) throw new TownError('stale-surface', '이 창의 연결 상태를 다시 확인해 주세요.', 409);
-      if (lease.boundaryAt !== null && at - lease.boundaryAt < BOUNDARY_GAP_MS) return { issued: null, throttled: true, worldSeq: state.writeSeq };
+      // What the screen showed is recorded even when the boundary itself is too soon to settle.
+      const report = seenReport(input.seen);
+      if (lease.boundaryAt !== null && at - lease.boundaryAt < BOUNDARY_GAP_MS) {
+        if (report) keep({ seen: report });
+        return { issued: null, throttled: true, worldSeq: state.writeSeq };
+      }
       const before = state.life.contacts.length, world = settledTo(lease, { nowMs: at, canContact: holder.canContact, touch: true });
-      if (world) commit(world);
+      if (world) commit(world, report ? { seen: report } : {});
+      else if (report) keep({ seen: report });
       lease = { ...lease, boundaryAt: at };
       const issued = state.life.contacts.length > before ? state.life.contacts.at(-1) : null;
       return { issued: issued && { id: issued.id, contactKey: issued.contactKey }, worldSeq: state.writeSeq };
@@ -185,9 +244,11 @@ export function createStore({ file, save, now = () => Date.now(), lifeEnabled = 
       lease = pulse.lease;
       return { ...current(), presence: pulse.receipt, worldSeq: state.writeSeq };
     },
-    execute(command) {
+    /** A command, with what the screen showed beside it ({ seen }: keys outside the signed command). */
+    execute(command, { seen: shown } = {}) {
       if (loadError) throw loadError;
       const at = hostNow(), presence = lease.presence;
+      if (shown !== undefined) seenReport(shown);
       let host = { enabled: lifeEnabled, canContact: false, elapsedMs: 0,
         surfaceId: presence.owner, fence: presence.fence, nowMs: at,
         surface: presence.surfaces[presence.owner]?.surface || 'classic' };
@@ -207,9 +268,14 @@ export function createStore({ file, save, now = () => Date.now(), lifeEnabled = 
         host.walkElapsedMs = elapsed >= 0 ? Math.min(250, elapsed) : 0;
       }
       // A command settles first and is saved with what the settlement changed (§14-3).
-      const result = reduceCommand((!recorded && settledTo(lease, { nowMs: at })) || base, command, host);
+      const result = reduceCommand((!recorded && settledTo(lease, { nowMs: at })) || base, command, { ...host, ...hostOf(at) });
       if (!result.duplicate) {
-        commit(result.state);
+        // Clearing empties the seen ledger (the keys sent with it are not counted); a consent that is no
+        // longer granted takes the account's evaluation lines with it at once.
+        const clears = ['SEEN_CLEAR', 'MEMORY_CLEAR'].includes(command.type);
+        const nextSeen = clears ? clearSeen() : seenReport(shown) || seen;
+        const nextEval = command.type === 'EVAL_CONSENT' && result.state.consents.evalSignals.state !== 'granted' ? [] : evalLines;
+        commit(result.state, { seen: nextSeen, evalLines: nextEval });
         if (['DAY_WALK_ENABLE', 'DAY_WALK'].includes(command.type)) lease = { ...lease, walkClock: { at: host.nowMs, surfaceId: host.surfaceId, fence: host.fence } };
         if (['DAY_WALK_DISABLE', 'RESET', 'LEAVE'].includes(command.type)) lease = { ...lease, walkClock: null };
         if (command.type === 'RESET') lease = initialLease({ uMs: state.settledU });
@@ -293,6 +359,11 @@ export function createServer({ previewEnabled = false, store = createStore({ fil
         }
         let command;
         try { command = JSON.parse(body); } catch { return json(res, 400, { error: 'invalid-json' }); }
+        // What the screen showed rides beside a command, never inside the signed request.
+        if (operation === 'execute' && command && typeof command === 'object' && Object.hasOwn(command, 'seen')) {
+          const { seen, ...signed } = command;
+          return json(res, 200, store.execute(signed, { seen }));
+        }
         return json(res, 200, store[operation](command));
       } catch (error) {
         let current = {};

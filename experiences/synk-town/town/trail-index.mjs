@@ -104,12 +104,13 @@ export function foldIndex(index, live, { current = [] } = {}) {
 }
 
 /** The part of a Trail summary Vellum reads, for one resident and the candidates' sources — the
- * same answers Trail.summarize gives for them, without building the whole summary. */
-export function projection(index, { version, scope, npcId, sourceIds }) {
+ * same answers Trail.summarize gives for them, without building the whole summary. What that resident
+ * was asked to forget (forgotten, a Set of fact ids — town/memory.mjs) is not in their knowledge. */
+export function projection(index, { version, scope, npcId, sourceIds, forgotten = new Set() }) {
   const sources = [...new Set(sourceIds)];
   return { version, status: 'ready', scope, sequence: index.seq,
     facts: sources.filter(id => Object.hasOwn(index.facts, id)).map(id => ({ id })),
-    knowledge: index.npcs.includes(npcId) ? { [npcId]: sources.filter(id => permitted(index, npcId, id)) } : {},
+    knowledge: index.npcs.includes(npcId) ? { [npcId]: sources.filter(id => permitted(index, npcId, id) && !forgotten.has(id)) } : {},
     deliveries: Object.values(index.deliveries).filter(item => item.npcId === npcId)
       .map(item => ({ npcId: item.npcId, semanticKey: item.semanticKey, sourceIds: [...item.sourceIds] })),
     invalidated: [], learningEffectClaim: false };

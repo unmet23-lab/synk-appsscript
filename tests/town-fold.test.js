@@ -37,9 +37,10 @@ async function monkey(seed, steps) {
   const { createStore } = await townFile('server.mjs');
   const { reactionFor } = await townFile('core.mjs');
   const { createRng } = await townModule('rng');
+  const { FAMILIES } = await townModule('events');
   const rng = createRng('town-fold', seed);
   let at = 100000, n = 0, receipt = null, seen, lines = 0;
-  const plain = createStore({ now: () => at, fold: false }), folded = createStore({ now: () => at, fold: TINY });
+  const plain = createStore({ now: () => at, fold: false, tz: 540 }), folded = createStore({ now: () => at, fold: TINY, tz: 540 });
   const both = (label, operate) => {
     const outcome = store => { try { return { value: operate(store) }; } catch (error) { if (!error.code) throw error; return { code: error.code }; } };
     const a = outcome(plain), b = outcome(folded);
@@ -55,6 +56,8 @@ async function monkey(seed, steps) {
     assert.equal(f.state.events.length, p.state.events.length, `${label}: 같은 사건 수`);
     assert.deepEqual(f.state.events.slice(lines), p.state.events.slice(lines), `${label}: 같은 사건 줄`);
     assert.deepEqual(f.state.commands.slice(-2), p.state.commands.slice(-2), `${label}: 같은 영수증`);
+    assert.deepEqual(f.state.townEvents, p.state.townEvents, `${label}: 같은 마을 사건`);
+    assert.deepEqual(f.seen, p.seen, `${label}: 같은 본 것`);
     lines = p.state.events.length;
     return a.value;
   };
@@ -86,6 +89,20 @@ async function monkey(seed, steps) {
     } else { add('SUPPORT_NEXT'); add('SUPPORT_NEXT'); add('SUPPORT_CLOSE'); }
     if (view.support?.proposal) add('SUPPORT_ACCEPT', { proposalId: view.support.proposal.id, kind: view.support.proposal.kind });
     return list;
+  };
+  // The notebook and the suggestion menus (§20), with what the screen showed riding beside them. Only
+  // the goals are forgotten: they stay in every index, so both stores can still name them.
+  const notebook = () => {
+    const { state } = seen, goal = state.goals.inside || state.goals.outside, id = `fold-${seed}-${++n}`;
+    const choices = [['PREF_LESS_OFTEN', { activity: rng.pick(['card.C1', 'card.C2']), on: rng.chance(500) }],
+      ['PREF_TODAY_OTHER', { activity: 'tea-order' }], ['PREF_FAMILY', { family: rng.pick(FAMILIES), answer: rng.pick(['yes', 'no', 'clear']) }],
+      ['PREF_APPROACH', { activity: 'card.C1', optOut: rng.chance(500) }], ['OBSERVED_CORRECT', { family: 'cafe-life' }],
+      ['SEEN_CLEAR', {}], ['MEMORY_CLEAR', {}], ['EVAL_CONSENT', { state: rng.pick(['granted', 'declined', 'withdrawn']) }],
+      ...(goal ? [['FEEDBACK_GIVE', { completionId: goal, value: rng.pick(['helpful', 'not_fit']), canonicalActivityId: 'ft10.seat' }],
+        ['MEMORY_FORGET', { npc: 'cafe-owner', eventId: goal }]] : []),
+      ...(state.prefs.feedback.length ? [['FEEDBACK_REMOVE', { eventId: state.prefs.feedback[0].completionId }]] : [])];
+    const [type, payload] = rng.pick(choices), shown = [rng.pick(['card:C1:self', 'gather:mint', 'card:R2:pair'])];
+    both(`${type} ${JSON.stringify(payload)}`, s => s.execute({ id, type, payload, expectedRevision: state.revision }, { seen: shown }));
   };
   const wait = seconds => { for (let i = 0; i < seconds; i++) presence(1000, true); };
   const ack = () => { const { state, view } = seen; if (view.reaction) send('ACK', { reactionId: view.reaction.id, semanticKey: view.reaction.semanticKey,
@@ -148,6 +165,7 @@ async function monkey(seed, steps) {
     else if (roll < 347) presence(31 * DAY_MS, true);
     else if (roll < 349) send('SUPPORT_SET', { mode: rng.pick(['plain', 'stepwise']) });
     else if (roll < 350) send(rng.chance(300) ? 'RESET' : 'SUPPORT_CLEAR');
+    else if (roll < 365) notebook();
     else { const [type, payload] = rng.pick(options()); send(type, payload); }
   }
   return { plain, folded };
@@ -159,6 +177,7 @@ test('접은 세계는 접지 않은 세계와 똑같이 읽힌다 — 같은 �
     const { plain, folded } = await monkey(seed, 600);
     const big = plain.peek().state, small = folded.peek().state;
     assert.ok(big.trail.seq > 150, `${seed}: 사건이 쌓였다(${big.trail.seq})`);
+    assert.ok(big.townEvents.length > 0, `${seed}: 수첩·제안 메뉴 명령도 섞였다(${big.townEvents.length})`);
     assert.ok(Object.keys(small.trail.facts).length < Object.keys(big.trail.facts).length, `${seed}: 색인이 작다`);
     assert.ok(folded.stats().worldBytes < plain.stats().worldBytes, `${seed}: 세계가 작다 ${folded.stats().worldBytes} < ${plain.stats().worldBytes}`);
     for (const [kind, n] of [['facts', Object.entries(small.trail.folded).filter(([type]) => type !== 'life.delivered').length],
