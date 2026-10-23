@@ -73,11 +73,12 @@ function duration(video) {
   return sec;
 }
 
-// 2초마다 한 장, 왼쪽 위에 초를 찍어 6칸씩 묶는다.
+// 2초마다 한 장, 왼쪽 위에 초를 찍어 6칸씩 묶는다. fps=1/2는 2초 칸의 끝 프레임을 골라 표시보다 약 1초 늦은 장면이
+// 찍혔다(10-23 yuhobuilds 보완 때) — 그래서 각 2초 지점의 첫 프레임을 select로 고르고, 표시는 그 프레임의 실제 시각이다.
 function makeSheet(video, out) {
-  const rows = Math.ceil(Math.ceil(duration(video) / 2) / 6);
+  const rows = Math.ceil((Math.floor(duration(video) / 2) + 1) / 6);
   const font = "C\\:/Windows/Fonts/arial.ttf";
-  const vf = `fps=1/2,scale=300:534,drawtext=fontfile='${font}':text='%{eif\\:t\\:d}s':x=8:y=8:fontsize=30:fontcolor=white:box=1:boxcolor=black@0.7:boxborderw=6,tile=6x${rows}:padding=6:color=white`;
+  const vf = `select='isnan(prev_selected_t)+gte(t-prev_selected_t\\,2)',scale=300:534,drawtext=fontfile='${font}':text='%{eif\\:t\\:d}s':x=8:y=8:fontsize=30:fontcolor=white:box=1:boxcolor=black@0.7:boxborderw=6,tile=6x${rows}:padding=6:color=white`;
   const r = spawnSync('ffmpeg', ['-y', '-v', 'error', '-i', video, '-vf', vf, '-frames:v', '1', '-q:v', '3', out],
     { encoding: 'utf8', windowsHide: true });
   if (r.status !== 0) throw new Error('ffmpeg 실패: ' + String(r.stderr || '').trim().split('\n').slice(-2).join(' '));

@@ -1,0 +1,102 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e1",
+ "text": "제 피씨에선 제가 만든 프로그램이 그랬어요. 한 시간에 사 점 삼 기가, 고치니까 구십사 메가.",
+ "dur": 4.676,
+ "words": [
+  {
+   "text": "제",
+   "start": 0.02,
+   "end": 0.104
+  },
+  {
+   "text": "피씨에선",
+   "start": 0.173,
+   "end": 0.619
+  },
+  {
+   "text": "제가",
+   "start": 0.66,
+   "end": 0.855
+  },
+  {
+   "text": "만든",
+   "start": 0.897,
+   "end": 1.12
+  },
+  {
+   "text": "프로그램이",
+   "start": 1.162,
+   "end": 1.551
+  },
+  {
+   "text": "그랬어요.",
+   "start": 1.593,
+   "end": 1.955
+  },
+  {
+   "text": "한",
+   "start": 2.331,
+   "end": 2.43
+  },
+  {
+   "text": "시간에",
+   "start": 2.47,
+   "end": 2.693
+  },
+  {
+   "text": "사",
+   "start": 2.735,
+   "end": 2.791
+  },
+  {
+   "text": "점",
+   "start": 2.847,
+   "end": 2.972
+  },
+  {
+   "text": "삼",
+   "start": 3.014,
+   "end": 3.126
+  },
+  {
+   "text": "기가,",
+   "start": 3.181,
+   "end": 3.349
+  },
+  {
+   "text": "고치니까",
+   "start": 3.543,
+   "end": 3.933
+  },
+  {
+   "text": "구십사",
+   "start": 4.003,
+   "end": 4.295
+  },
+  {
+   "text": "메가.",
+   "start": 4.365,
+   "end": 4.676
+  }
+ ],
+ "source": {
+  "key": "7b4d3bf7853e04dd608c854bc2c324b8",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

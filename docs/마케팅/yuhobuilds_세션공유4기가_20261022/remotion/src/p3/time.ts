@@ -1,13 +1,14 @@
 // 박자표(30fps). 목소리 줄은 차례대로 잇고, 줄 사이 숨은 BREATH(문단 끝은 더 길게). 장면은 낱말 시각에 붙인다.
+// 10-23 보완판 v9: 훅(h1) → 증거 한 마디(e1) → 찾는 법 다섯 단계(s1~s3) → 찾은 뒤(s4) → 질문 + 요약표(q) → 팔로우(fo).
 import { VOICE } from './vo.generated';
 
-export const ORDER = ['h1', 'h2', 'b1', 'b2', 'b3', 'b4', 'f1', 'f2', 'f3', 'b5', 'c0', 'q', 'cta', 'fo'] as const;
+export const ORDER = ['h1', 'e1', 's1', 's2', 's3', 's4', 'q', 'fo'] as const;
 export type Spoken = (typeof ORDER)[number];
 
-/** 이 줄 앞의 숨(프레임). 없으면 6(0.2초). 문단이 바뀌는 자리만 길게. */
-const BREATH: Partial<Record<Spoken, number>> = { h2: 6, b1: 9, b2: 7, b3: 7, b4: 10, f1: 10, f2: 7, f3: 7, b5: 9, c0: 10, q: 8, cta: 9 };
+/** 이 줄 앞의 숨(프레임). 없으면 6(0.2초). 문단이 바뀌는 자리만 길게. e1 「고치니까」가 배경음이 다시 터지는 16박(7.87초) 언저리에 온다. */
+const BREATH: Partial<Record<Spoken, number>> = { e1: 8, s1: 10, s2: 10, s3: 8, s4: 6, q: 10 };
 const FIRST = 3;
-const END_GAP = 12; // cta 끝 → 끝 카드
+const END_GAP = 12; // q 끝 → 끝 카드
 const FO_AFTER_END = 12; // 끝 카드 → 「팔로우하면」
 
 const dur = (id: Spoken) => Math.round(VOICE[id].dur * 30);

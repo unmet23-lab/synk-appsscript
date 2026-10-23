@@ -1,0 +1,97 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s4",
+ "text": "빨리 느는 게 그 프로그램이에요. 모르는 이름은 에이아이에게 물어보고, 안 쓰는 거면 꺼도 돼요.",
+ "dur": 4.615,
+ "words": [
+  {
+   "text": "빨리",
+   "start": 0.02,
+   "end": 0.19
+  },
+  {
+   "text": "느는",
+   "start": 0.242,
+   "end": 0.399
+  },
+  {
+   "text": "게",
+   "start": 0.438,
+   "end": 0.477
+  },
+  {
+   "text": "그",
+   "start": 0.53,
+   "end": 0.595
+  },
+  {
+   "text": "프로그램이에요.",
+   "start": 0.673,
+   "end": 1.223
+  },
+  {
+   "text": "모르는",
+   "start": 1.837,
+   "end": 2.098
+  },
+  {
+   "text": "이름은",
+   "start": 2.137,
+   "end": 2.347
+  },
+  {
+   "text": "에이아이에게",
+   "start": 2.399,
+   "end": 2.817
+  },
+  {
+   "text": "물어보고,",
+   "start": 2.856,
+   "end": 3.21
+  },
+  {
+   "text": "안",
+   "start": 3.602,
+   "end": 3.68
+  },
+  {
+   "text": "쓰는",
+   "start": 3.732,
+   "end": 3.903
+  },
+  {
+   "text": "거면",
+   "start": 3.942,
+   "end": 4.072
+  },
+  {
+   "text": "꺼도",
+   "start": 4.111,
+   "end": 4.269
+  },
+  {
+   "text": "돼요.",
+   "start": 4.308,
+   "end": 4.615
+  }
+ ],
+ "source": {
+  "key": "b4b27085d8465fa72f04fd8902df2a2d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

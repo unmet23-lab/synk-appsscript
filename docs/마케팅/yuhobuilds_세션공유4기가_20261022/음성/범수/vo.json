@@ -15,106 +15,61 @@
   "seed": 1017,
   "lufs": -17
  },
- "made": "2026-10-21T22:46:10.060Z",
+ "made": "2026-10-23T07:03:54.164Z",
  "lines": [
   {
    "id": "h1",
-   "text": "제가 나눠 드린 도구가, 디스크를 한 시간에 사 점 삼 기가씩 쓰고 있었어요.",
-   "dur": 3.756,
-   "syllablesPerSec": 7.72,
+   "text": "윈도우 피씨가 괜히 느리면, 뒤에서 계속 저장하는 프로그램을 찾아보세요.",
+   "dur": 3.618,
+   "syllablesPerSec": 8.29,
    "src": "h1.wav",
-   "key": "b60458a8f21f1e6c90b0d90de156a864",
-   "words": 13
-  },
-  {
-   "id": "h2",
-   "text": "어디서 샜는지, 내 피씨에서 이런 프로그램 찾는 법까지 드릴게요.",
-   "dur": 3.167,
-   "syllablesPerSec": 8.21,
-   "src": "h2.wav",
-   "key": "6ae6023dca2a198da815aa5795e89cfc",
+   "key": "8033c2ba21f7351c92be32a91b115d77",
    "words": 9
   },
   {
-   "id": "b1",
-   "text": "세션 기록이 바뀌면, 영 점 일오 초 안에 다른 폴더 스물여덟 곳에 복사했거든요.",
-   "dur": 4.161,
-   "syllablesPerSec": 7.45,
-   "src": "b1.wav",
-   "key": "c4b8e8a6c2195beb3e80c81865081c2c",
-   "words": 13
+   "id": "e1",
+   "text": "제 피씨에선 제가 만든 프로그램이 그랬어요. 한 시간에 사 점 삼 기가, 고치니까 구십사 메가.",
+   "dur": 4.676,
+   "syllablesPerSec": 7.7,
+   "src": "e1.wav",
+   "key": "7b4d3bf7853e04dd608c854bc2c324b8",
+   "words": 15
   },
   {
-   "id": "b2",
-   "text": "그런데 앱은 대화가 한 번 오갈 때마다, 그 기록을 통째로 다시 써요.",
-   "dur": 3.673,
-   "syllablesPerSec": 7.08,
-   "src": "b2.wav",
-   "key": "dadcfee47533bff8afc7d3d95d4ee31d",
+   "id": "s1",
+   "text": "찾는 법은 이래요. 컨트롤 시프트 이에스씨로 작업 관리자를 열고, 세부 정보로 가세요.",
+   "dur": 4.722,
+   "syllablesPerSec": 7.2,
+   "src": "s1.wav",
+   "key": "a5a08527f69df07f9f115bf1eaa178f2",
    "words": 12
   },
   {
-   "id": "b3",
-   "text": "그래서 한 시간에 복사만, 삼만 사천 번.",
-   "dur": 2.212,
-   "syllablesPerSec": 6.78,
-   "src": "b3.wav",
-   "key": "184f7b7cbc45c37a73d4e873fa2446d3",
-   "words": 7
+   "id": "s2",
+   "text": "표 맨 윗줄을 오른쪽 클릭, 열 선택에서 아이오 쓰기 바이트에 체크하세요. 실행된 뒤 저장한 양이에요.",
+   "dur": 5.153,
+   "syllablesPerSec": 7.76,
+   "src": "s2.wav",
+   "key": "00f91addae24c2279ea08ed0bc399348",
+   "words": 15
   },
   {
-   "id": "b4",
-   "text": "알고 보니, 앱은 로그인할 때만 목록을 읽더라고요.",
-   "dur": 2.626,
-   "syllablesPerSec": 7.62,
-   "src": "b4.wav",
-   "key": "7d066de1c3ed4937faa8968d63e824a9",
-   "words": 7
-  },
-  {
-   "id": "f1",
-   "text": "그래서 고친 건 셋. 하나, 고쳐 쓴 기록은 오 분씩 모아서 옮기기.",
-   "dur": 3.793,
-   "syllablesPerSec": 6.33,
-   "src": "f1.wav",
-   "key": "30e74a34d9f662a843fe10f009ead635",
-   "words": 12
-  },
-  {
-   "id": "f2",
-   "text": "둘, 앱이 로그아웃하면 그때 바로 맞추기.",
-   "dur": 2.522,
-   "syllablesPerSec": 6.34,
-   "src": "f2.wav",
-   "key": "0ede495ea988296b97519f046dc68d8d",
-   "words": 6
-  },
-  {
-   "id": "f3",
-   "text": "셋, 안 쓰는 폴더는 쉬게. 진짜 쓰는 곳은 일곱 곳뿐이었어요.",
-   "dur": 3.736,
-   "syllablesPerSec": 6.16,
-   "src": "f3.wav",
-   "key": "ce1ad3b312cca3f7158e145a14c808bd",
+   "id": "s3",
+   "text": "그 열 이름을 눌러 큰 순서로 놓고, 몇 초 지켜보세요.",
+   "dur": 3.145,
+   "syllablesPerSec": 6.36,
+   "src": "s3.wav",
+   "key": "f5393bf5b5a75e0fb216adbd70265176",
    "words": 10
   },
   {
-   "id": "b5",
-   "text": "한 시간에 사 점 삼 기가 쓰던 게, 구십사 메가가 됐어요.",
-   "dur": 2.97,
-   "syllablesPerSec": 7.07,
-   "src": "b5.wav",
-   "key": "70a62ae86407b9d7dee6e6d1cd849f31",
-   "words": 11
-  },
-  {
-   "id": "c0",
-   "text": "작업 관리자 세부 정보에서, 아이오 쓰기 바이트 열을 켜고 빨리 느는 걸 보세요.",
-   "dur": 3.661,
-   "syllablesPerSec": 8.47,
-   "src": "c0.wav",
-   "key": "8c50a0b928790238b08efa0df57643d8",
-   "words": 13
+   "id": "s4",
+   "text": "빨리 느는 게 그 프로그램이에요. 모르는 이름은 에이아이에게 물어보고, 안 쓰는 거면 꺼도 돼요.",
+   "dur": 4.615,
+   "syllablesPerSec": 8.23,
+   "src": "s4.wav",
+   "key": "b4b27085d8465fa72f04fd8902df2a2d",
+   "words": 14
   },
   {
    "id": "q",
@@ -124,15 +79,6 @@
    "src": "q.wav",
    "key": "6f9cdae0280ae2d098d4bf80cd934e25",
    "words": 8
-  },
-  {
-   "id": "cta",
-   "text": "도구 받으신 분은, 설치 한 줄만 다시 붙여 넣으면 새 판이에요.",
-   "dur": 2.952,
-   "syllablesPerSec": 8.13,
-   "src": "cta.wav",
-   "key": "108876b9eb0eebdf8f432280988c6585",
-   "words": 11
   },
   {
    "id": "fo",

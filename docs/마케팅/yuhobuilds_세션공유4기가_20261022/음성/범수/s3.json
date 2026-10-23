@@ -1,0 +1,77 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s3",
+ "text": "그 열 이름을 눌러 큰 순서로 놓고, 몇 초 지켜보세요.",
+ "dur": 3.145,
+ "words": [
+  {
+   "text": "그",
+   "start": 0.02,
+   "end": 0.083
+  },
+  {
+   "text": "열",
+   "start": 0.177,
+   "end": 0.318
+  },
+  {
+   "text": "이름을",
+   "start": 0.412,
+   "end": 0.663
+  },
+  {
+   "text": "눌러",
+   "start": 0.71,
+   "end": 0.929
+  },
+  {
+   "text": "큰",
+   "start": 1.149,
+   "end": 1.29
+  },
+  {
+   "text": "순서로",
+   "start": 1.336,
+   "end": 1.633
+  },
+  {
+   "text": "놓고,",
+   "start": 1.681,
+   "end": 1.885
+  },
+  {
+   "text": "몇",
+   "start": 2.37,
+   "end": 2.464
+  },
+  {
+   "text": "초",
+   "start": 2.527,
+   "end": 2.558
+  },
+  {
+   "text": "지켜보세요.",
+   "start": 2.605,
+   "end": 3.145
+  }
+ ],
+ "source": {
+  "key": "f5393bf5b5a75e0fb216adbd70265176",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

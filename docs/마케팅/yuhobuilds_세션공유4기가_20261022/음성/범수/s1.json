@@ -1,0 +1,87 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s1",
+ "text": "찾는 법은 이래요. 컨트롤 시프트 이에스씨로 작업 관리자를 열고, 세부 정보로 가세요.",
+ "dur": 4.722,
+ "words": [
+  {
+   "text": "찾는",
+   "start": 0.02,
+   "end": 0.271
+  },
+  {
+   "text": "법은",
+   "start": 0.315,
+   "end": 0.493
+  },
+  {
+   "text": "이래요.",
+   "start": 0.537,
+   "end": 0.745
+  },
+  {
+   "text": "컨트롤",
+   "start": 1.291,
+   "end": 1.587
+  },
+  {
+   "text": "시프트",
+   "start": 1.631,
+   "end": 1.883
+  },
+  {
+   "text": "이에스씨로",
+   "start": 1.927,
+   "end": 2.415
+  },
+  {
+   "text": "작업",
+   "start": 2.592,
+   "end": 2.799
+  },
+  {
+   "text": "관리자를",
+   "start": 2.844,
+   "end": 3.213
+  },
+  {
+   "text": "열고,",
+   "start": 3.257,
+   "end": 3.465
+  },
+  {
+   "text": "세부",
+   "start": 3.849,
+   "end": 4.041
+  },
+  {
+   "text": "정보로",
+   "start": 4.086,
+   "end": 4.322
+  },
+  {
+   "text": "가세요.",
+   "start": 4.367,
+   "end": 4.722
+  }
+ ],
+ "source": {
+  "key": "a5a08527f69df07f9f115bf1eaa178f2",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}
