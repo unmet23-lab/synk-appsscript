@@ -1,0 +1,68 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v06",
+ "text": "여러분은 에이아이가 지어낸 거, 그대로 낸 적 있으세요?",
+ "show": "여러분은 AI가 지어낸 거, 그대로 낸 적 있으세요?",
+ "dur": 2.658,
+ "words": [
+  {
+   "text": "여러분은",
+   "start": 0.01,
+   "end": 0.38
+  },
+  {
+   "text": "에이아이가",
+   "start": 0.448,
+   "end": 0.831
+  },
+  {
+   "text": "지어낸",
+   "start": 0.886,
+   "end": 1.228
+  },
+  {
+   "text": "거,",
+   "start": 1.269,
+   "end": 1.324
+  },
+  {
+   "text": "그대로",
+   "start": 1.666,
+   "end": 1.885
+  },
+  {
+   "text": "낸",
+   "start": 1.926,
+   "end": 2.022
+  },
+  {
+   "text": "적",
+   "start": 2.063,
+   "end": 2.159
+  },
+  {
+   "text": "있으세요?",
+   "start": 2.2,
+   "end": 2.658
+  }
+ ],
+ "source": {
+  "key": "4c523d9e70b519de108239b2df20e2ed",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

@@ -1,0 +1,73 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v04",
+ "text": "예산은 메모대로 팀장 확인 예정, 메모에 없는 프로그램은 미정.",
+ "show": "예산은 메모대로 팀장 확인 예정, 메모에 없는 프로그램은 미정.",
+ "dur": 3.444,
+ "words": [
+  {
+   "text": "예산은",
+   "start": 0.02,
+   "end": 0.305
+  },
+  {
+   "text": "메모대로",
+   "start": 0.347,
+   "end": 0.717
+  },
+  {
+   "text": "팀장",
+   "start": 0.774,
+   "end": 1.058
+  },
+  {
+   "text": "확인",
+   "start": 1.101,
+   "end": 1.328
+  },
+  {
+   "text": "예정,",
+   "start": 1.371,
+   "end": 1.613
+  },
+  {
+   "text": "메모에",
+   "start": 2.068,
+   "end": 2.324
+  },
+  {
+   "text": "없는",
+   "start": 2.381,
+   "end": 2.566
+  },
+  {
+   "text": "프로그램은",
+   "start": 2.608,
+   "end": 2.992
+  },
+  {
+   "text": "미정.",
+   "start": 3.035,
+   "end": 3.444
+  }
+ ],
+ "source": {
+  "key": "6f3433a78652f954f88c541f179fa425",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

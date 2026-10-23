@@ -1,0 +1,63 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v03",
+ "text": "이번엔 회의 메모를 붙여서, 똑같이 시켜 볼게요.",
+ "show": "이번엔 회의 메모를 붙여서, 똑같이 시켜 볼게요.",
+ "dur": 2.526,
+ "words": [
+  {
+   "text": "이번엔",
+   "start": 0.01,
+   "end": 0.273
+  },
+  {
+   "text": "회의",
+   "start": 0.346,
+   "end": 0.493
+  },
+  {
+   "text": "메모를",
+   "start": 0.537,
+   "end": 0.829
+  },
+  {
+   "text": "붙여서,",
+   "start": 0.873,
+   "end": 1.181
+  },
+  {
+   "text": "똑같이",
+   "start": 1.532,
+   "end": 1.839
+  },
+  {
+   "text": "시켜",
+   "start": 1.883,
+   "end": 2.044
+  },
+  {
+   "text": "볼게요.",
+   "start": 2.088,
+   "end": 2.526
+  }
+ ],
+ "source": {
+  "key": "06d70ec172e275fd83def6475cb28de3",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

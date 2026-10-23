@@ -1,0 +1,87 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../소리/나레이션.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1018,
+  "lufs": -17
+ },
+ "made": "2026-10-23T22:36:00.385Z",
+ "lines": [
+  {
+   "id": "v01",
+   "text": "에이아이한테 보고서 써 줘, 이렇게만 시키면, 없는 내용을 지어냅니다.",
+   "show": "AI한테 「보고서 써 줘」, 이렇게만 시키면 없는 내용을 지어냅니다.",
+   "scene": "1 훅",
+   "dur": 3.577,
+   "syllablesPerSec": 7.83,
+   "src": "v01.wav",
+   "key": "842d0ba755835dc94814ae5cfde29c78",
+   "words": 9
+  },
+  {
+   "id": "v02",
+   "text": "사은품 행사도, 예산 이백만 원도, 저는 말한 적이 없어요.",
+   "show": "사은품 행사도, 예산 200만 원도, 저는 말한 적이 없어요.",
+   "scene": "2 전",
+   "dur": 3.44,
+   "syllablesPerSec": 6.4,
+   "src": "v02.wav",
+   "key": "25f274b6b1f0e5dfdf1d3a1889288409",
+   "words": 9
+  },
+  {
+   "id": "v03",
+   "text": "이번엔 회의 메모를 붙여서, 똑같이 시켜 볼게요.",
+   "show": "이번엔 회의 메모를 붙여서, 똑같이 시켜 볼게요.",
+   "scene": "3 후 준비",
+   "dur": 2.526,
+   "syllablesPerSec": 7.52,
+   "src": "v03.wav",
+   "key": "06d70ec172e275fd83def6475cb28de3",
+   "words": 7
+  },
+  {
+   "id": "v04",
+   "text": "예산은 메모대로 팀장 확인 예정, 메모에 없는 프로그램은 미정.",
+   "show": "예산은 메모대로 팀장 확인 예정, 메모에 없는 프로그램은 미정.",
+   "scene": "4 후",
+   "dur": 3.444,
+   "syllablesPerSec": 7.26,
+   "src": "v04.wav",
+   "key": "6f3433a78652f954f88c541f179fa425",
+   "words": 9
+  },
+  {
+   "id": "v05",
+   "text": "보고서 시킬 땐, 써 줘 전에, 메모부터 붙이세요.",
+   "show": "보고서 시킬 땐, 「써 줘」 전에 메모부터 붙이세요.",
+   "scene": "5 정리",
+   "dur": 2.515,
+   "syllablesPerSec": 7.16,
+   "src": "v05.wav",
+   "key": "ecbae43ab96011b640abeb19a9d43077",
+   "words": 8
+  },
+  {
+   "id": "v06",
+   "text": "여러분은 에이아이가 지어낸 거, 그대로 낸 적 있으세요?",
+   "show": "여러분은 AI가 지어낸 거, 그대로 낸 적 있으세요?",
+   "scene": "6 끝",
+   "dur": 2.658,
+   "syllablesPerSec": 8.28,
+   "src": "v06.wav",
+   "key": "4c523d9e70b519de108239b2df20e2ed",
+   "words": 8
+  }
+ ]
+}

@@ -1,0 +1,73 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v02",
+ "text": "사은품 행사도, 예산 이백만 원도, 저는 말한 적이 없어요.",
+ "show": "사은품 행사도, 예산 200만 원도, 저는 말한 적이 없어요.",
+ "dur": 3.44,
+ "words": [
+  {
+   "text": "사은품",
+   "start": 0.02,
+   "end": 0.358
+  },
+  {
+   "text": "행사도,",
+   "start": 0.407,
+   "end": 0.729
+  },
+  {
+   "text": "예산",
+   "start": 0.954,
+   "end": 1.18
+  },
+  {
+   "text": "이백만",
+   "start": 1.228,
+   "end": 1.486
+  },
+  {
+   "text": "원도,",
+   "start": 1.534,
+   "end": 1.743
+  },
+  {
+   "text": "저는",
+   "start": 2.355,
+   "end": 2.549
+  },
+  {
+   "text": "말한",
+   "start": 2.597,
+   "end": 2.79
+  },
+  {
+   "text": "적이",
+   "start": 2.839,
+   "end": 2.951
+  },
+  {
+   "text": "없어요.",
+   "start": 3,
+   "end": 3.44
+  }
+ ],
+ "source": {
+  "key": "25f274b6b1f0e5dfdf1d3a1889288409",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

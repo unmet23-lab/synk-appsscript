@@ -1,0 +1,68 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v05",
+ "text": "보고서 시킬 땐, 써 줘 전에, 메모부터 붙이세요.",
+ "show": "보고서 시킬 땐, 「써 줘」 전에 메모부터 붙이세요.",
+ "dur": 2.515,
+ "words": [
+  {
+   "text": "보고서",
+   "start": 0.09,
+   "end": 0.381
+  },
+  {
+   "text": "시킬",
+   "start": 0.425,
+   "end": 0.614
+  },
+  {
+   "text": "땐,",
+   "start": 0.658,
+   "end": 0.832
+  },
+  {
+   "text": "써",
+   "start": 0.905,
+   "end": 1.036
+  },
+  {
+   "text": "줘",
+   "start": 1.094,
+   "end": 1.167
+  },
+  {
+   "text": "전에,",
+   "start": 1.21,
+   "end": 1.414
+  },
+  {
+   "text": "메모부터",
+   "start": 1.618,
+   "end": 1.981
+  },
+  {
+   "text": "붙이세요.",
+   "start": 2.025,
+   "end": 2.515
+  }
+ ],
+ "source": {
+  "key": "ecbae43ab96011b640abeb19a9d43077",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

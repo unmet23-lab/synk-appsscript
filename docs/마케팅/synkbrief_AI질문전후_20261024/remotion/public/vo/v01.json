@@ -1,0 +1,73 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v01",
+ "text": "에이아이한테 보고서 써 줘, 이렇게만 시키면, 없는 내용을 지어냅니다.",
+ "show": "AI한테 「보고서 써 줘」, 이렇게만 시키면 없는 내용을 지어냅니다.",
+ "dur": 3.577,
+ "words": [
+  {
+   "text": "에이아이한테",
+   "start": 0.02,
+   "end": 0.521
+  },
+  {
+   "text": "보고서",
+   "start": 0.578,
+   "end": 0.836
+  },
+  {
+   "text": "써",
+   "start": 0.893,
+   "end": 0.979
+  },
+  {
+   "text": "줘,",
+   "start": 1.05,
+   "end": 1.122
+  },
+  {
+   "text": "이렇게만",
+   "start": 1.522,
+   "end": 1.866
+  },
+  {
+   "text": "시키면,",
+   "start": 1.909,
+   "end": 2.281
+  },
+  {
+   "text": "없는",
+   "start": 2.481,
+   "end": 2.696
+  },
+  {
+   "text": "내용을",
+   "start": 2.738,
+   "end": 2.982
+  },
+  {
+   "text": "지어냅니다.",
+   "start": 3.039,
+   "end": 3.577
+  }
+ ],
+ "source": {
+  "key": "842d0ba755835dc94814ae5cfde29c78",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

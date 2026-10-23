@@ -1,0 +1,15 @@
+{
+ "id": "02-synkbrief-youtube",
+ "brand": "synkbrief",
+ "platform": "youtube",
+ "account": "SYNK 브리핑",
+ "format": "shorts",
+ "language": "ko",
+ "audioLanguage": "ko",
+ "title": "ChatGPT에 \"보고서 써 줘\"만 하면 지어냅니다 — 메모부터 붙이세요 #Shorts",
+ "caption": "AI한테 \"보고서 써 줘\"만 하면, 말하지도 않은 사은품 행사와 예산 200만 원을 지어 넣어요. 회의 메모를 먼저 붙이면 \"팀장 확인 예정\", \"미정\"으로 남겨요.\n\n그대로 붙여 쓰는 요청문\n아래 메모만 보고 보고서 초안을 써 줘. 메모에 없는 내용은 지어내지 말고 '미정'이라고 적어 줘.\n(그 아래에 내 메모를 붙여 넣기)\n같은 메모로 이 요청문을 직접 돌려 보니 행사명·목적·참석 대상까지 '미정'으로 비워 두고 \"메모에 있는 사실만 반영했다\"고 적었어요.\n\n영상 속 실제 결과\n· 메모 없이 \"11월 고객 행사 보고서 써 줘\": 작성 부서 \"영업팀 / 마케팅팀\", 행사 내용 \"사은품 증정, 특별 프로모션\", 예산 표(고객 사은품 100만 원 … 합계 200만 원)\n· 표 아래 \"상기 예산은 예시\"라는 줄은 표만 복사하면 빠져요. 사은품·할인 같은 행사 내용엔 예시 표시도 없었어요.\n· 메모를 붙이고 같은 한 줄: \"행사 예산: 팀장 확인 예정\", \"세부 프로그램 및 참석 규모: 미정\"\n\n알아 둘 것\n· 같은 질문도 매번 답이 조금씩 달라요.\n· 메모를 붙여도 \"제안 일정\"처럼 덧붙이는 게 있어요. 다 쓴 보고서는 메모와 한 줄씩 맞춰 보세요.\n· 화면은 휴대폰 크기로 띄운 ChatGPT 웹 임시 채팅(메모리·맞춤 지침 안 씀, 2026.10.24)이에요.\n\n출처(2026.10.24 확인)\n· OpenAI 도움말 「Does ChatGPT tell the truth?」: https://help.openai.com/en/articles/8313428-does-chatgpt-tell-the-truth\n· OpenAI 「Why language models hallucinate」(2025.09.05): https://openai.com/index/why-language-models-hallucinate/\n· Anthropic 문서 「Reduce hallucinations」(Claude 개발자 문서)\n내레이션은 AI 음성이에요. 화면은 실제 ChatGPT 화면 녹화예요.\n\n#챗GPT #ChatGPT #AI활용",
+ "pinnedComment": "영상에서 말한 요청문 — 그대로 복사해서 쓰세요\n\n아래 메모만 보고 보고서 초안을 써 줘. 메모에 없는 내용은 지어내지 말고 '미정'이라고 적어 줘.\n(그 아래에 내 메모를 붙여 넣기)\n\n같은 메모로 직접 돌려 보니 모르는 칸은 전부 '미정'으로 비워 뒀어요. 다 쓴 보고서는 메모와 한 줄씩 맞춰 보세요.\n여러분은 AI가 지어낸 거, 그대로 낸 적 있으세요?",
+ "alteredContent": true,
+ "madeForKids": false,
+ "_비고": "올라가는 글의 정본(B1, 10-24). 사람이 읽는 판은 ../README.md. 영상 끝 줄 「그대로 붙여 쓸 요청문은 고정 댓글에 있어요」 — pinnedComment를 게시 뒤 달고 고정해야 말과 맞는다(설명란에도 같은 요청문)."
+}
