@@ -132,7 +132,12 @@ function 판정하기(runs) {
     const 도는중 = 목록.filter((r) => r.status !== 'completed').length;
     if (!끝난.length) { 결과.push({ 워크플로, 상태: '모름', 도는중 }); continue; }
     const 최신 = 끝난[0];
-    if (!빨강결론.has(최신.conclusion)) { 결과.push({ 워크플로, 상태: '초록', 최신: 요약run(최신), 도는중 }); continue; }
+    if (!빨강결론.has(최신.conclusion)) {
+      // 다시 초록이 된 때는 지금 초록 줄의 맨 처음 run이다 — 보내기가 밀려 늦게 알려도 빨간 시간이 늘어나지 않게(10-23)
+      let 첫초록 = 최신;
+      for (const r of 끝난) { if (빨강결론.has(r.conclusion)) break; 첫초록 = r; }
+      결과.push({ 워크플로, 상태: '초록', 최신: 요약run(최신), 첫초록: 요약run(첫초록), 도는중 }); continue;
+    }
     let 회수 = 0, 첫 = null, 초록찾음 = false;
     for (const r of 끝난) {
       if (!빨강결론.has(r.conclusion)) { 초록찾음 = true; break; }
@@ -297,7 +302,10 @@ function 알림계획(앞, 지금, 지금ms = Date.now()) {
   }
   if (풀림.length) {
     if (줄.length) 줄.push('');
-    for (const { w, o } of 풀림) 줄.push(`✅ master ${w.워크플로} 다시 초록 — 빨간 시간 ${동안(Date.parse(w.최신.시각) - Date.parse(o.첫빨강시각))} (${때(o.첫빨강시각)} → ${때(w.최신.시각)})`);
+    for (const { w, o } of 풀림) {
+      const 풀린때 = (w.첫초록 || w.최신).시각;
+      줄.push(`✅ master ${w.워크플로} 다시 초록 — 빨간 시간 ${동안(Date.parse(풀린때) - Date.parse(o.첫빨강시각))} (${때(o.첫빨강시각)} → ${때(풀린때)})`);
+    }
   }
   return { 글: 줄.length ? 줄.join('\n') : null, 새상태: { 판: 1, 확인시각: 지금.확인시각, 워크플로: 새 }, 빨개짐: 빨개짐.length, 계속: 계속.length, 풀림: 풀림.length };
 }
