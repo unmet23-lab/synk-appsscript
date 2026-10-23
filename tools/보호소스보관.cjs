@@ -19,11 +19,12 @@ function authorizedRoots(root) {
   return values;
 }
 function sourceLocation(row, roots) {
-  const previousMedia = row.reason === 'embedded-media-or-base64' && row.priorOneDriveCopy &&
+  const largeReceipt = row.reason === 'over-10MiB' && policy.largeBackupReceipt(row.sourceScope, row.source, row.bytes);
+  const previousMedia = (row.reason === 'embedded-media-or-base64' || largeReceipt) && row.priorOneDriveCopy &&
     SHA.test(row.priorOneDriveCopy.sha256) && Number.isSafeInteger(row.priorOneDriveCopy.bytes) && row.priorOneDriveCopy.bytes >= 0 && row.priorOneDriveCopy.bytes <= policy.MAX_TEXT_BYTES &&
     typeof row.priorOneDriveCopy.target === 'string' && path.isAbsolute(row.priorOneDriveCopy.target);
   if ((!['secret-literal', 'secret-signature'].includes(row.reason) && !previousMedia) || !SHA.test(row.sha256) ||
-      !Number.isSafeInteger(row.bytes) || row.bytes < 0 || row.bytes > policy.MAX_TEXT_BYTES ||
+      !Number.isSafeInteger(row.bytes) || row.bytes < 0 || (row.bytes > policy.MAX_TEXT_BYTES && !largeReceipt) ||
       typeof row.source !== 'string' || row.source.includes(':') || path.isAbsolute(row.source) || /(^|[\\/])\.\.([\\/]|$)/.test(row.source))
     throw new Error('PROTECTED_SOURCE_INVENTORY_INVALID');
   const root = roots.find(value => value.scope === row.sourceScope && folded(value.root) === folded(row.sourceRoot));
@@ -55,19 +56,19 @@ function priorCopies(vault) {
   };
 }
 function priorLinks(rows, manifest) {
-  const targets = rows.filter(row => row.reason === 'embedded-media-or-base64' && typeof row.priorOneDriveCopy?.target === 'string')
+  const targets = rows.filter(row => ['embedded-media-or-base64', 'over-10MiB'].includes(row.reason) && typeof row.priorOneDriveCopy?.target === 'string')
     .map(row => row.priorOneDriveCopy.target);
   if (!targets.length || typeof manifest.oneDriveRoot !== 'string' || !path.isAbsolute(manifest.oneDriveRoot)) return null;
   return { root: manifest.oneDriveRoot, targets: new Set(targets.map(folded)),
     linked: policy.linkPaths(targets, { cloudDestinationRoot: manifest.oneDriveRoot }) };
 }
 function verifyPriorMedia(row, vault, prior = null) {
-  if (row.reason !== 'embedded-media-or-base64') return;
+  if (!['embedded-media-or-base64', 'over-10MiB'].includes(row.reason)) return;
   const manifest = prior ? prior.copies() : JSON.parse(fs.readFileSync(path.join(vault, '상태/OneDrive/copy-manifest.json'), 'utf8'));
   const previous = manifest.files;
   const proof = row.priorOneDriveCopy;
   if (!proof || !previous.some(file => file.source && folded(file.source) === folded(row.sourcePath) &&
-    file.protectedSource === 'embedded-media-or-base64' && folded(file.target) === folded(proof.target) &&
+    file.protectedSource === row.reason && folded(file.target) === folded(proof.target) &&
     file.expectedBytes === proof.bytes && file.sha256 === proof.sha256)) throw new Error('PROTECTED_SOURCE_PRIOR_COPY_UNCONFIRMED');
   if (typeof manifest.oneDriveRoot !== 'string' || !path.isAbsolute(manifest.oneDriveRoot)) throw new Error('PROTECTED_SOURCE_PRIOR_ROOT_INVALID');
   const relative = path.relative(path.resolve(manifest.oneDriveRoot), path.resolve(proof.target));
@@ -144,11 +145,14 @@ async function preserveSource(row, { vault, roots, linked, cryptoTool, apply = f
 // 더는 보호 대상이 아니면(다음 OneDrive 실행이 평문 사본으로 넘긴다) null, 읽는 동안 바뀌면 그대로 실패한다(10-19).
 function refreshedRow(row) {
   const before = fs.statSync(row.sourcePath);
-  if (!before.isFile() || before.size > policy.MAX_TEXT_BYTES) return null;
+  if (!before.isFile()) return null;
+  if (before.size > policy.MAX_TEXT_BYTES && !(row.reason === 'over-10MiB' && policy.largeBackupReceipt(row.sourceScope, row.source, before.size)))
+    throw new Error('PROTECTED_SOURCE_SIZE_LIMIT');
   const data = fs.readFileSync(row.sourcePath);
   if (!stable(before, fs.statSync(row.sourcePath))) throw new Error('PROTECTED_SOURCE_INVENTORY_STALE');
   const reason = policy.textPolicy(row.source, data);
-  if (!['secret-literal', 'secret-signature'].includes(reason) && !(reason === 'embedded-media-or-base64' && row.priorOneDriveCopy)) return null;
+  if (!['secret-literal', 'secret-signature'].includes(reason) &&
+      !((reason === 'embedded-media-or-base64' || (reason === 'over-10MiB' && policy.largeBackupReceipt(row.sourceScope, row.source, data.length))) && row.priorOneDriveCopy)) return null;
   return { ...row, reason, bytes: data.length, sha256: crypto.createHash('sha256').update(data).digest('hex'), inventorySha256: row.sha256 };
 }
 // 절전이나 핫스팟 멈춤(10-21 10:12~)으로 OneDrive 실행이 3시간 넘게 없다가 두 예약이 같이 시작하면, 이 단계가 OneDrive의 새 목록보다
@@ -204,7 +208,7 @@ async function reconcile({ vault, root, apply, onProgress = () => {}, roots: sup
     const inventory = await currentInventory(inventoryFile, vault, inventoryWait);
     const roots = suppliedRoots || authorizedRoots(root);
     const prior = { copies: priorCopies(vault) };
-    if (inventory.files.some(row => row.reason === 'embedded-media-or-base64')) prior.links = priorLinks(inventory.files, prior.copies());
+    if (inventory.files.some(row => ['embedded-media-or-base64', 'over-10MiB'].includes(row.reason))) prior.links = priorLinks(inventory.files, prior.copies());
     for (const row of inventory.files) verifyPriorMedia(row, vault, prior);
     // 목록 뒤에 원본이나 그 범위 폴더가 통째로 지워진 줄. 읽을 것이 없으므로 그 줄만 source-disappeared로 남긴다.
     // 범위 폴더는 작업트리이거나, Documents 바로 아래에 만든 임시 작업트리처럼 자기 이름의 저장소 범위로 잡힌 폴더다(10-19 talk-wt-path).
@@ -273,7 +277,7 @@ async function reconcile({ vault, root, apply, onProgress = () => {}, roots: sup
     // 미디어 줄의 이전 OneDrive 사본도 줄마다가 아니라 끝에서 한 번 더 묶어 본다(위 prior).
     if (prior.links) {
       const after = priorLinks(inventory.files, prior.copies());
-      for (const row of inventory.files) if (row.reason === 'embedded-media-or-base64' && (!after || after.linked(row.priorOneDriveCopy.target)))
+      for (const row of inventory.files) if (['embedded-media-or-base64', 'over-10MiB'].includes(row.reason) && (!after || after.linked(row.priorOneDriveCopy.target)))
         report.issues.push({ code: 'PROTECTED_SOURCE_PRIOR_COPY_ESCAPE', source: row.source });
     }
     report.status = report.issues.length ? 'attention' : 'success';

@@ -665,12 +665,16 @@ function protectedPriorSources(root, scopes, rejected, previousFiles) {
 function protectedSourceInventory(root, vault, scopes, rejected, protectedPrior = [], { cache = null } = {}) {
   const roots = new Map(scopes.map(scope => [scope.name, scope.root])); roots.set('SYNK-appsscript', root);
   const secretReason = reason => ['secret-literal', 'secret-signature'].includes(reason);
-  const priorMedia = new Map(protectedPrior.filter(row => row.protectedSource === 'embedded-media-or-base64' && row.source && row.target && /^[a-f0-9]{64}$/.test(row.sha256) && Number.isSafeInteger(row.expectedBytes))
+  const priorMedia = new Map(protectedPrior.filter(row => ['embedded-media-or-base64', 'over-10MiB'].includes(row.protectedSource) && row.source && row.target && /^[a-f0-9]{64}$/.test(row.sha256) && Number.isSafeInteger(row.expectedBytes))
     .map(row => [path.resolve(row.source).toLowerCase(), { target: row.target, bytes: row.expectedBytes, sha256: row.sha256 }]));
-  const accepted = (reason, file) => secretReason(reason) || (reason === 'embedded-media-or-base64' && priorMedia.has(path.resolve(file).toLowerCase()));
+  const largeReceipt = (row, bytes) => row.reason === 'over-10MiB' &&
+    path.resolve(row.sourceRoot) === path.resolve(vault) && policy.largeBackupReceipt(row.sourceScope, row.source, bytes);
+  const accepted = (reason, file, row, bytes = policy.MAX_TEXT_BYTES + 1) => secretReason(reason) ||
+    (priorMedia.has(path.resolve(file).toLowerCase()) &&
+      (reason === 'embedded-media-or-base64' || (reason === 'over-10MiB' && largeReceipt(row, bytes))));
   const candidates = rejected.filter(row => roots.has(row.sourceScope) && policy.문서인가(row.source))
     .map(row => ({ ...row, sourceRoot: roots.get(row.sourceScope), sourcePath: path.resolve(roots.get(row.sourceScope), row.source) }))
-    .filter(row => accepted(row.reason, row.sourcePath));
+    .filter(row => accepted(row.reason, row.sourcePath, row));
   const worktreeExcluded = readJson(path.join(vault, '작업문서_미통합_자동/excluded-protected-manifest.json'), { rejected: [] });
   for (const row of worktreeExcluded.rejected.filter(row => secretReason(row.reason)))
     candidates.push({ sourceScope: row.repository, source: row.relativePath, sourceRoot: row.worktree,
@@ -685,7 +689,9 @@ function protectedSourceInventory(root, vault, scopes, rejected, protectedPrior 
     let before, content = null, after, known = null;
     try {
       before = fs.statSync(row.sourcePath, { bigint: true });
-      if (!before.isFile() || before.size > BigInt(policy.MAX_TEXT_BYTES)) throw new Error('protected-source-type-changed');
+      if (!before.isFile()) throw new Error('protected-source-type-changed');
+      if (before.size > BigInt(policy.MAX_TEXT_BYTES) && !largeReceipt(row, Number(before.size)))
+        throw new Error('protected-source-size-limit');
       // 목록 단계에서 읽어 분류한 그대로면(stat 동일) 다시 읽지 않는다(10-19).
       known = cache && cache.lookup(row.sourcePath, before, row.source);
       if (!known) { content = fs.readFileSync(row.sourcePath); after = fs.statSync(row.sourcePath, { bigint: true }); }
@@ -701,12 +707,12 @@ function protectedSourceInventory(root, vault, scopes, rejected, protectedPrior 
       if (cache) cache.remember(row.sourcePath, before, after, digest, bytes, row.source, reason, info);
       if (!sameContentStat(before, after)) throw new Error('protected-source-changed-during-read');
     }
-    if (!accepted(reason, row.sourcePath)) continue;
+    if (!accepted(reason, row.sourcePath, row, bytes)) continue;
     const safe = safeCopies.find(item => path.resolve(item.sourcePath || item.source).toLowerCase() === row.sourcePath.toLowerCase() &&
       item.originalSha256 === digest && fs.existsSync(item.safeCopyPath || item.safeCopy) && hash(fs.readFileSync(item.safeCopyPath || item.safeCopy)) === item.safeCopySha256);
     files.push({ sourceScope: row.sourceScope, sourceRoot: path.resolve(row.sourceRoot), sourcePath: row.sourcePath,
       source: row.source, bytes, sha256: digest, reason, ...(row.worktree ? { worktree: true } : {}),
-      ...(reason === 'embedded-media-or-base64' ? { priorOneDriveCopy: priorMedia.get(row.sourcePath.toLowerCase()) } : {}),
+      ...(['embedded-media-or-base64', 'over-10MiB'].includes(reason) ? { priorOneDriveCopy: priorMedia.get(row.sourcePath.toLowerCase()) } : {}),
       ...(safe ? { safeCopyPath: safe.safeCopyPath || safe.safeCopy, safeCopySha256: safe.safeCopySha256 } : {}) });
   }
   return { schemaVersion: 1, checkedAt: new Date().toISOString(), status: 'success', files };
@@ -721,7 +727,9 @@ function encryptedProtectionCoverage(vault, files) {
     const result = { source: row.source, reason: row.protectedSource, preservedBy: 'unconfirmed' };
     if (linked(row.source)) return { ...result, error: 'source-link' };
     const before = fs.statSync(row.source);
-    if (!before.isFile() || before.size > policy.MAX_TEXT_BYTES) return { ...result, error: 'source-type-changed' };
+    const relative = path.relative(vault, row.source).split(path.sep).join('/');
+    const largeReceipt = row.protectedSource === 'over-10MiB' && policy.largeBackupReceipt('SYNK_원본창고', relative, before.size);
+    if (!before.isFile() || (before.size > policy.MAX_TEXT_BYTES && !largeReceipt)) return { ...result, error: 'source-type-changed' };
     const current = fs.readFileSync(row.source), after = fs.statSync(row.source);
     if (before.size !== after.size || before.mtimeMs !== after.mtimeMs) return { ...result, error: 'source-changed-during-read' };
     result.sha256 = hash(current); result.bytes = current.length;

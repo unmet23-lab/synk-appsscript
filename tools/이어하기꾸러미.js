@@ -54,6 +54,13 @@ const descriptiveMarkdown = p => /\.md$/i.test(p) && !/비밀번호|password|백
 // auth.js/key-management.ts 같은 구현 코드는 내용 검사로 판단한다. 실제 키 파일은 항상 차단한다.
 const 금지인가 = p => forbidden.some(re => re.test(p)) || (!sourceCode.test(p) && !descriptiveMarkdown(p) && credentialName.test(p));
 const MAX_TEXT_BYTES = 10 * 1024 * 1024;
+// 평문 사본 한도는 그대로다. 이미 사본이 있는 창고 업로드 영수증만 암호문으로 이어 보존한다.
+const MAX_ENCRYPTED_RECEIPT_BYTES = 64 * 1024 * 1024;
+function largeBackupReceipt(scope, source, bytes) {
+  return scope === 'SYNK_원본창고' && typeof source === 'string' &&
+    /^상태\/(?:Videos|Documents|SYNK-LoRA|SYNK-appsscript|SYNK-talk|작업트리-미디어|Git-보관)\/upload-done\.jsonl$/.test(source) &&
+    Number.isSafeInteger(bytes) && bytes > MAX_TEXT_BYTES && bytes <= MAX_ENCRYPTED_RECEIPT_BYTES;
+}
 const 문서인가 = p => /\.(?:md|txt|js|cjs|mjs|jsx|ts|tsx|gs|cs|csproj|sln|xaml|asmdef|asmref|unity|prefab|meta|lua|nsh|manifest|webmanifest|uss|uxml|uproject|shader|hlsl|patch|srt|vtt|ass|ffconcat|ipynb|css|scss|sass|less|html?|jsonl?|ya?ml|toml|ini|conf|cfg|service|timer|slice|logrotate|xml|csv|tsv|py|ps1|sh|bat|cmd|sql|graphql|gql|vue|svelte|gitignore|gitattributes|editorconfig)$/i.test(p) ||
   /(?:^|[\\/])(?:Dockerfile|Makefile|Caddyfile|CNAME|LICENSE|NOTICE|\.prettierrc|\.dockerignore|\.claspignore)$/i.test(p) ||
   /(?:^|[\\/])\.githooks[\\/]pre-commit$/i.test(p) ||
@@ -689,4 +696,4 @@ const policyFingerprint = () => crypto.createHash('sha256').update(JSON.stringif
   [...forbidden, sourceCode, credentialName, excluded, generatedDirectory].map(String), MAX_TEXT_BYTES,
   reviewedDocumentExamples, reviewedSourceLiterals, reviewedExactSources])).digest('hex');
 const POLICY_FINGERPRINT = policyFingerprint();
-module.exports = { 금지인가, 문서인가, within, rowRoot, 목록, 시스템목록, systemScopes, writeSafeRecoveryIndex, workTextFiles, creationSources, excludedPath, oneDrivePlan, textPolicy, linkPaths, cloudDestinationAllows, copy, payload, MAX_TEXT_BYTES, POLICY_FINGERPRINT, policyFingerprint, GENERATED_DIRECTORY: generatedDirectory };
+module.exports = { 금지인가, 문서인가, within, rowRoot, 목록, 시스템목록, systemScopes, writeSafeRecoveryIndex, workTextFiles, creationSources, excludedPath, oneDrivePlan, textPolicy, linkPaths, cloudDestinationAllows, copy, payload, MAX_TEXT_BYTES, MAX_ENCRYPTED_RECEIPT_BYTES, largeBackupReceipt, POLICY_FINGERPRINT, policyFingerprint, GENERATED_DIRECTORY: generatedDirectory };
