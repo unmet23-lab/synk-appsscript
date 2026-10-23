@@ -15,9 +15,12 @@ import {join} from 'node:path';
 
 const dir=process.env.SYNK_FREE_SPACE_DIR||process.env.SYNK_COMPANY_DATA;
 const file=join(dir||'','company.sqlite');
-// 예산은 시험만 줄인다(SYNK_FREE_SPACE_LOCK_WAIT_MS·SYNK_FREE_SPACE_BUDGET_MS). 운영에서 부르는 쪽은 넘기지 않는다.
+// 예산은 시험만 줄인다(SYNK_FREE_SPACE_LOCK_WAIT_MS·SYNK_FREE_SPACE_BUDGET_MS·SYNK_FREE_SPACE_AFTER_MS). 운영에서 부르는 쪽은 넘기지 않는다.
 const budget=(name,fallback)=>{const value=Number(process.env[name]);return Number.isInteger(value)&&value>=0&&value<=fallback?value:fallback;};
-const LOCK_WAIT_MS=budget('SYNK_FREE_SPACE_LOCK_WAIT_MS',1000),WORK_MS=budget('SYNK_FREE_SPACE_BUDGET_MS',3000);
+const LOCK_WAIT_MS=budget('SYNK_FREE_SPACE_LOCK_WAIT_MS',1000),WORK_MS=budget('SYNK_FREE_SPACE_BUDGET_MS',3000),AFTER_MS=budget('SYNK_FREE_SPACE_AFTER_MS',120000);
+// 부르는 쪽(free-space-node.py)이 명령줄 끝에 붙인 이번 한 번의 표식. 자식에게도 넘긴다 — 부모가 먼저 죽어도 호스트가
+// 자식을 표식으로 찾아 끝낸 뒤에 잠금을 놓게(10-23 GPT 다섯째 GA1). 자식이 받았는지는 READY에 실어 보낸다.
+const MARK=/^synk-free-space-vacuum-[0-9a-f]{32}$/.test(process.argv[1]||'')?process.argv[1]:null;
 const size=p=>{try{return statSync(p).size;}catch{return null;}};
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const emit=value=>process.stdout.write(JSON.stringify(value)+'\n');
@@ -59,7 +62,7 @@ function child(){
   function snapshot(){db.exec('BEGIN');try{return {dataVersion:one('PRAGMA data_version').data_version,fingerprint:fingerprint()};}finally{db.exec('COMMIT');}}
   let before;
   try{before=snapshot();}catch(error){send({type:'error',code:error.code||'SNAPSHOT_FAILED'});db.close();return;}
-  send({type:'ready'});
+  send({type:'ready',mark:process.argv[3]||null});
   let input='';
   process.stdin.on('data',chunk=>{
     input+=chunk;
@@ -70,6 +73,9 @@ function child(){
       const started=performance.now();
       db.exec('VACUUM');
       send({type:'vacuumed',vacuumMs:Math.round(performance.now()-started)});
+      // 시험만: 뒤 지문 앞에서 멎은 자식을 흉내 낸다(SYNK_FREE_SPACE_STALL_MS). 운영에서 부르는 쪽은 넘기지 않는다.
+      const stall=Number(process.env.SYNK_FREE_SPACE_STALL_MS);
+      if(Number.isInteger(stall)&&stall>0&&stall<=600000)Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,stall);
       send({type:'done',before,after:snapshot()});
     }catch(error){send({type:'error',code:error.code||error.errcode||'VACUUM_FAILED'});}
     finally{db.close();}
@@ -104,19 +110,21 @@ async function main(){
     // 부른 쪽이 준 상한을 WAL을 비운 뒤(논리 크기 그대로) 다시 본다 — 예산 안에 끝난다고 볼 수 없는 크기면 시작하지 않는다.
     const maxBytes=Number(process.env.SYNK_FREE_SPACE_MAX_BYTES)||0,logicalBytes=one('PRAGMA page_count').page_count*one('PRAGMA page_size').page_size;
     if(maxBytes&&logicalBytes>maxBytes)return [{error:'TOO_LARGE_FOR_ONLINE_VACUUM',logicalBytes,maxBytes,before,preCheckpoint},6];
-    worker=spawn(process.execPath,['-e',`(${child})()`,file,String(LOCK_WAIT_MS)],{stdio:['pipe','pipe','inherit']});
+    worker=spawn(process.execPath,['-e',`(${child})()`,file,String(LOCK_WAIT_MS),...(MARK?[MARK]:[])],{stdio:['pipe','pipe','inherit']});
     const exited=new Promise(resolve=>worker.once('exit',(code,signal)=>resolve({code,signal})));
+    // 자식이 끝나기를 기다리되 ms 안에 안 끝나면 SIGKILL — 어느 기다림도 끝없이 이어지지 않게(10-23 GPT GA3).
+    const finish=ms=>new Promise(resolve=>{const timer=setTimeout(()=>worker.kill('SIGKILL'),ms);exited.then(value=>{clearTimeout(timer);resolve(value);});});
     const messages=lineQueue(worker.stdout);
     const read=async ms=>{const line=await messages.next(ms);try{return line==null?{type:'gone'}:JSON.parse(line);}catch{return {type:'garbled'};}};
     const ready=await read(60000);
     if(ready.type!=='ready'){worker.kill('SIGKILL');return [{error:ready.code||'CHILD_NOT_READY',before,preCheckpoint},6];}
-    // 부른 쪽이 이 줄을 받고 릴리스 잠금·서비스를 다시 본 뒤 GO나 STOP을 보낸다.
-    emit({ready:true,before});
+    // 부른 쪽이 이 줄을 받고 릴리스 잠금·서비스를 다시 본 뒤 GO나 STOP을 보낸다. childMark가 참이 아니면 부른 쪽은 STOP한다.
+    emit({ready:true,before,childMark:MARK!==null&&ready.mark===MARK});
     const answers=lineQueue(process.stdin);
     const answer=String(await answers.next(30000)||'').trim();
     answers.close();process.stdin.destroy();
     if(answer!=='GO'){
-      worker.stdin.end('STOP\n');await read(10000);await exited;
+      worker.stdin.end('STOP\n');await read(10000);await finish(10000);
       return [{error:'STOPPED',answer:answer.slice(0,20),before,preCheckpoint},5];
     }
     worker.stdin.end('GO\n');
@@ -126,13 +134,18 @@ async function main(){
     const vacuumed=await read(LOCK_WAIT_MS+WORK_MS+60000);
     clearTimeout(watchdog);
     if(overBudget||vacuumed.type!=='vacuumed'){
-      await exited;
+      await finish(10000);
       return [{error:overBudget?'VACUUM_OVER_BUDGET':vacuumed.code||'VACUUM_FAILED',budgetMs:LOCK_WAIT_MS+WORK_MS,before,preCheckpoint,
         after:state(),quickCheck:one('PRAGMA quick_check').quick_check},overBudget?3:6];
     }
-    const done=await read(120000);
-    await exited;
-    if(done.type!=='done')return [{error:done.code||'FINGERPRINT_FAILED',before,preCheckpoint,vacuumMs:vacuumed.vacuumMs},6];
+    // 뒤 지문을 기다리는 데에도 끝을 둔다. 자식이 멎으면 끝내고(VACUUM은 이미 커밋됐다) WAL을 비운 뒤 실패로 낸다 — 판정할 지문이 없다.
+    const done=await read(AFTER_MS);
+    await finish(done.type==='done'?10000:0);
+    if(done.type!=='done'){
+      const postCheckpoint=await truncate(40,500);
+      return [{error:done.code||'FINGERPRINT_FAILED',before,preCheckpoint,vacuumMs:vacuumed.vacuumMs,postCheckpoint,walTruncated:postCheckpoint.busy===0,
+        after:state(),quickCheck:one('PRAGMA quick_check').quick_check},6];
+    }
     const walAfterVacuum=size(file+'-wal');
     // VACUUM이 쓴 새 페이지는 아직 WAL에 있고, 옛 페이지는 DB 파일에 남아 있다. TRUNCATE까지 끝나야 정리가 끝난다.
     const postCheckpoint=await truncate(40,500);

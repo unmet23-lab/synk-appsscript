@@ -333,8 +333,8 @@ class OwnerView(unittest.TestCase):
 class FakePopen:
     """vacuum.mjs 대신: READY 한 줄, 받은 답(GO/STOP)에 맞는 결과 한 줄."""
 
-    def __init__(self, ready=True):
-        self.ready, self.written, self.args, self.returncode = ready, [], None, None
+    def __init__(self, ready=True, child_mark=True):
+        self.ready, self.child_mark, self.written, self.args, self.returncode = ready, child_mark, [], None, None
         self.stdin = SimpleNamespace(write=self.written.append, flush=lambda: None, close=lambda: None)
         self.stderr = io.StringIO('')
 
@@ -347,7 +347,7 @@ class FakePopen:
         if not self.ready:
             yield '{"error":"WAL_BUSY_BEFORE"}\n'
             return
-        yield '{"ready":true}\n'
+        yield '{"ready":true,"childMark":true}\n' if self.child_mark else '{"ready":true}\n'
         yield '{"quickCheck":"ok","walTruncated":true}\n' if self.written == ['GO\n'] else '{"error":"STOPPED"}\n'
 
     def wait(self, timeout=None):
@@ -363,11 +363,24 @@ class VacuumGates(unittest.TestCase):
 
     SCANNED = {'pragma': {'page_count': 7030, 'page_size': 4096}}
 
-    def attempt(self, host, container=HEALTHY, db_bytes=29 << 20, script='// vacuum', recheck=([], []), ready=True, scanned=None):
-        fake = FakePopen(ready)
+    def attempt(self, host, container=HEALTHY, db_bytes=29 << 20, script='// vacuum', quiet=(None, ['deploy-fd', 'ops-fd']), ready=True, scanned=None, left=(),
+                child_mark=True):
+        fake, self.released, self.order = FakePopen(ready, child_mark), [], []
+
+        def release(held):
+            self.released.append(held)
+            self.order.append('release')
+
+        def stop(token, wait_s=30, step_s=0.2, known=None):
+            self.order.append(('stop', token, wait_s, known))
+            return dict(left) if wait_s is not None else {}
+        def moment():
+            self.order.append('quiet')
+            return quiet
         with patch.object(node, 'VACUUM_JS', script), patch.object(node, 'host_facts', lambda db: host), \
                 patch.object(node, 'size', lambda path: db_bytes), patch.object(node, 'as_owner', lambda fn, db: scanned or self.SCANNED), \
-                patch.object(node, 'held_locks', lambda: recheck[0]), patch.object(node, 'busy_services', lambda: recheck[1]), \
+                patch.object(node, 'take_quiet_moment', moment), patch.object(node, 'release_locks', release), \
+                patch.object(node, 'stop_inside', stop), patch.object(node.signal, 'signal', lambda *a: None), \
                 patch.object(node.subprocess, 'Popen', fake):
             return node.vacuum(container, '/srv/company/company.sqlite'), fake
 
@@ -399,24 +412,223 @@ class VacuumGates(unittest.TestCase):
     def test_go_only_after_the_release_check_right_before_vacuum(self):
         result, fake = self.attempt(host=facts())
         self.assertNotIn('error', result)
-        self.assertEqual(fake.args, ['docker', 'exec', '-i', '-u', 'node', '-e', 'SYNK_FREE_SPACE_MAX_BYTES=' + str(120 << 20), 'synk-company-company-1',
-                                     'node', '--input-type=module', '-e', '// vacuum'])
+        self.assertEqual(fake.args[:-1], ['docker', 'exec', '-i', '-u', 'node', '-e', 'SYNK_FREE_SPACE_MAX_BYTES=' + str(120 << 20), 'synk-company-company-1',
+                                          'node', '--input-type=module', '-e', '// vacuum'])
+        self.assertRegex(fake.args[-1], r'^synk-free-space-vacuum-[0-9a-f]{32}$', 'a one-off mark to find the job inside the container again')
+        self.assertEqual(self.order, ['quiet', ('stop', fake.args[-1], 30, None), 'release'], 'the job inside is seen gone before the locks are let go')
         self.assertEqual(fake.written, ['GO\n'])
-        self.assertEqual((result['vacuum']['exit'], result['vacuum']['stoppedBy'], result['vacuum']['walTruncated']), (0, None, True))
+        self.assertEqual((result['vacuum']['exit'], result['vacuum']['stoppedBy'], result['vacuum']['walTruncated'], result['vacuum']['heldLocks']), (0, None, True, True))
         self.assertEqual(result['after'], self.SCANNED)
+        self.assertEqual(self.released, [['deploy-fd', 'ops-fd']], 'the locks are let go only after the result came back')
 
     def test_stop_when_a_release_or_backup_starts_meanwhile(self):
-        for recheck, code in (((['synk-ha-deploy.lock'], []), 'RELEASE_LOCK_HELD'), (([], ['synk-company-backup.service']), 'BACKGROUND_OPERATION_BUSY'),
-                              ((None, []), 'RELEASE_LOCK_HELD')):
+        for code in ('RELEASE_LOCK_HELD', 'BACKGROUND_OPERATION_BUSY'):
             with self.subTest(code=code):
-                result, fake = self.attempt(host=facts(), recheck=recheck)
+                result, fake = self.attempt(host=facts(), quiet=(code, None))
                 self.assertEqual(fake.written, ['STOP\n'])
-                self.assertEqual((result['vacuum']['stoppedBy'], result['vacuum']['exit']), (code, 5))
+                self.assertEqual((result['vacuum']['stoppedBy'], result['vacuum']['exit'], result['vacuum']['heldLocks']), (code, 5, False))
+                self.assertEqual(self.released, [None])
 
     def test_no_answer_without_a_ready_line(self):
         result, fake = self.attempt(host=facts(), ready=False)
         self.assertEqual(fake.written, [])
         self.assertEqual((result['vacuum']['error'], result['vacuum']['exit']), ('WAL_BUSY_BEFORE', 2))
+        self.assertEqual(self.released, [None], 'nothing was held')
+
+    def test_a_job_that_outlives_the_cli_keeps_the_locks_until_it_is_gone(self):
+        # 넷째 GA1: 30초 뒤에도 남으면(D 상태) 기록만 하고 놓지 않는다 — 없어질 때까지 기다린 뒤에 놓는다.
+        result, fake = self.attempt(host=facts(), left={4242: 77})
+        self.assertEqual((result['vacuum']['error'], result['vacuum']['leftAfter30s']), ('VACUUM_OUTLIVED_CLI', 1))
+        self.assertIsInstance(result['vacuum']['waitedS'], int)
+        tok = fake.args[-1]
+        self.assertEqual(self.order, ['quiet', ('stop', tok, 30, None), ('stop', tok, None, {4242: 77}), 'release'],
+                         'the second stop waits without a deadline, following what the first one found, and only then the locks go')
+
+    def test_no_go_unless_the_vacuum_child_carries_the_mark(self):
+        # 다섯째 GA1: 실제 VACUUM을 하는 자식이 표식을 받지 못했으면 부모가 먼저 죽을 때 그 자식을 못 찾는다 — 잠금도 잡지 않고 STOP.
+        result, fake = self.attempt(host=facts(), child_mark=False)
+        self.assertEqual(fake.written, ['STOP\n'])
+        self.assertEqual((result['vacuum']['stoppedBy'], result['vacuum']['heldLocks']), ('CHILD_NOT_MARKED', False))
+        self.assertNotIn('quiet', self.order)
+
+
+class InsideJob(unittest.TestCase):
+    """docker CLI가 끝나도 컨테이너 안 작업은 남을 수 있어, 표식으로 호스트 /proc에서 그 작업과 자식을 찾는다(10-23 GPT 둘째 GA1)."""
+
+    TOK = 'synk-free-space-vacuum-' + 'a' * 32
+
+    def write_proc(self, root, pid, comm, state, ppid, argv, start=None):
+        """stat 줄: pid (comm) 상태 ppid … 22번째 칸 starttime(기본 1000+pid)."""
+        os.makedirs(os.path.join(root, str(pid)), exist_ok=True)
+        fields = [state, str(ppid)] + ['0'] * 17 + [str(1000 + pid if start is None else start)] + ['0'] * 5
+        with open(os.path.join(root, str(pid), 'stat'), 'wb') as f:
+            f.write(f'{pid} ({comm}) {" ".join(fields)}'.encode())
+        with open(os.path.join(root, str(pid), 'cmdline'), 'wb') as f:
+            f.write(b'\0'.join(a.encode() for a in argv) + b'\0')
+
+    def fake_proc(self, rows):
+        root = tempfile.mkdtemp()
+        for row in rows:
+            self.write_proc(root, *row)
+        os.makedirs(os.path.join(root, 'self'))
+        return root
+
+    def test_finds_the_marked_job_and_its_children_but_not_zombies_or_others(self):
+        tok = 'synk-free-space-vacuum-' + 'a' * 32
+        root = self.fake_proc([
+            (100, 'docker', 'S', 50, ['docker', 'exec', '-i', 'synk-company-company-1', 'node', '-e', 'js', tok]),
+            (200, 'node', 'S', 150, ['node', '--input-type=module', '-e', 'js', tok]),
+            (201, 'node', 'R', 200, ['node', '-e', '(function child(){})()', '/data/company.sqlite', '1000']),
+            (202, 'odd (name) x', 'S', 201, ['sh']),
+            (210, 'node', 'Z', 200, []),
+            (300, 'node', 'S', 1, ['node', 'server.mjs']),
+            (301, 'node', 'S', 1, ['node', '-e', 'js', tok + 'x']),
+        ])
+        self.assertEqual(sorted(node.inside_processes(tok, proc=root)), [100, 200, 201, 202])
+        self.assertEqual(node.inside_processes(tok, proc=root)[201], 1201, 'each pid comes with its start time')
+        self.assertEqual(node.inside_processes('synk-free-space-vacuum-' + 'b' * 32, proc=root), {})
+
+    def test_a_child_left_behind_by_its_dead_parent_is_still_followed(self):
+        # 셋째 GA1: 부모(표식 200)가 먼저 죽고 자식 201(VACUUM 자식, I/O 대기)은 init(1)에게 넘어간다 — 표식으로는 다시 못 찾는다.
+        root = self.fake_proc([(200, 'node', 'S', 150, ['node', '--input-type=module', '-e', 'js', self.TOK]),
+                               (201, 'node', 'D', 200, ['node', '-e', '(function child(){})()', '/data/company.sqlite', '1000']),
+                               (300, 'node', 'S', 1, ['node', 'server.mjs'])])
+        hits, now, real = {}, [0.0], node.inside_processes
+
+        def kill(pid, sig):
+            hits[pid] = hits.get(pid, 0) + 1
+            if pid == 200:
+                import shutil
+                shutil.rmtree(os.path.join(root, '200'))
+                self.write_proc(root, 201, 'node', 'D', 1, ['node', '-e', '(function child(){})()', '/data/company.sqlite', '1000'])
+            elif pid == 201 and hits[201] >= 3:  # I/O가 끝나야 사라진다
+                import shutil
+                shutil.rmtree(os.path.join(root, '201'))
+        with patch.object(node, 'inside_processes', lambda token, known=None: real(token, known, proc=root)), patch.object(node.os, 'kill', kill), \
+                patch.object(node.time, 'time', lambda: now[0]), patch.object(node.time, 'sleep', lambda s: now.__setitem__(0, now[0] + s)):
+            self.assertEqual(node.stop_inside(self.TOK, wait_s=5), {})
+        self.assertEqual((hits.get(200), hits.get(201)), (1, 3), 'the orphaned child is killed until it is gone')
+        self.assertNotIn(300, hits, 'the app itself is never touched')
+
+    def test_a_reused_pid_is_not_taken_for_ours(self):
+        root = self.fake_proc([(201, 'node', 'S', 1, ['node', 'other.mjs'], 5555)])
+        self.assertEqual(node.inside_processes(self.TOK, {201: 1201}, proc=root), {}, 'same pid, different start time: someone else')
+        self.assertEqual(node.inside_processes(self.TOK, {201: 5555}, proc=root), {201: 5555})
+
+    def test_stop_kills_until_gone_and_reports_what_is_left(self):
+        rounds, killed, now = [{200: 1, 201: 2}, {201: 2}, {}], [], [0.0]
+        with patch.object(node, 'inside_processes', lambda token, known=None: rounds.pop(0) if rounds else {}), \
+                patch.object(node.os, 'kill', lambda pid, sig: killed.append(pid)), patch.object(node.time, 'time', lambda: now[0]), \
+                patch.object(node.time, 'sleep', lambda s: now.__setitem__(0, now[0] + s)):
+            self.assertEqual(node.stop_inside('t', wait_s=5), {})
+        self.assertEqual(killed, [200, 201, 201])
+        with patch.object(node, 'inside_processes', lambda token, known=None: {999: 1}), patch.object(node.os, 'kill', lambda pid, sig: None), \
+                patch.object(node.time, 'time', lambda: now[0]), patch.object(node.time, 'sleep', lambda s: now.__setitem__(0, now[0] + s)):
+            self.assertEqual(node.stop_inside('t', wait_s=1), {999: 1}, 'what is still there after the wait is reported')
+
+    def test_without_a_deadline_it_waits_until_gone_following_what_was_found(self):
+        seen, now = [], [0.0]
+
+        def lookup(token, known=None):
+            seen.append(dict(known or {}))
+            return {7: 70} if len(seen) < 200 else {}  # 200회(≈ 200초) 남았다가 사라진다 — 기한이 있으면 30초에서 멈췄을 것
+        with patch.object(node, 'inside_processes', lookup), patch.object(node.os, 'kill', lambda pid, sig: None), \
+                patch.object(node.time, 'time', lambda: now[0]), patch.object(node.time, 'sleep', lambda s: now.__setitem__(0, now[0] + s)):
+            self.assertEqual(node.stop_inside('t', wait_s=None, step_s=1, known={7: 70}), {})
+        self.assertEqual((len(seen), seen[0]), (200, {7: 70}), 'it starts from what the first stop found')
+
+    def test_fragment_bytes_between_cells_are_counted(self):
+        # 셋째 GA2: 셀 사이 1~3바이트 조각은 gap·freeblock에 안 든다 — 페이지 머리 7번째 바이트의 합으로 센다.
+        page = 512
+        data = bytearray(page * 2)  # 1쪽은 b-tree가 아니게 두고 2쪽만 잎 페이지
+        data[page] = 13
+        data[page + 1:page + 7] = struct.pack('>HHH', 0, 0, page)
+        data[page + 7] = 3
+        free_pages, free_regions, in_page, fragments = node.free_and_inpage(bytes(data), page)
+        self.assertEqual((fragments, len(in_page)), (3, 1))
+
+
+class QuietMoment(unittest.TestCase):
+    """READY 뒤: 남의 잠금·서비스가 없으면 잠금을 쥔 채 한 번 더 보고 GO(10-23 GPT GA1). 짧은 점검이면 다시 본다."""
+
+    def run_moment(self, polls, holds, services_after=None):
+        """polls: 회차마다 (held_locks, busy_services), holds: 회차마다 hold_release_locks가 낼 값."""
+        polls, holds, calls, now = list(polls), list(holds), [], [0.0]
+
+        def held():
+            calls.append('look')
+            return polls[0][0]
+
+        def busy():
+            if calls[-1] == 'look':  # 남의 잠금을 본 바로 다음 — 이 회차의 서비스
+                calls.append('busy')
+                return polls.pop(0)[1]
+            return services_after.pop(0) if services_after else []  # 잠금을 쥔 뒤 한 번 더
+
+        def hold():
+            calls.append('hold')
+            return holds.pop(0)
+
+        def sleep(s):
+            calls.append('sleep')
+            now[0] += s
+        with patch.object(node, 'held_locks', held), patch.object(node, 'busy_services', busy), patch.object(node, 'hold_release_locks', hold), \
+                patch.object(node, 'release_locks', lambda h: calls.append(('release', h))), patch.object(node.time, 'time', lambda: now[0]), \
+                patch.object(node.time, 'sleep', sleep):
+            return node.take_quiet_moment(wait_s=2, step_s=0.5), calls
+
+    def test_holds_at_once_when_quiet(self):
+        got, calls = self.run_moment([([], [])], [['d', 'o']])
+        self.assertEqual(got, (None, ['d', 'o']))
+        self.assertEqual(calls, ['look', 'busy', 'hold'])
+
+    def test_waits_out_a_short_check_then_holds(self):
+        got, calls = self.run_moment([(['operations.lock'], []), (['operations.lock'], []), ([], [])], [['d', 'o']])
+        self.assertEqual(got, (None, ['d', 'o']))
+        self.assertEqual(calls.count('sleep'), 2)
+
+    def test_gives_up_at_the_deadline_without_holding(self):
+        got, calls = self.run_moment([(['synk-ha-deploy.lock'], [])] * 10, [])
+        self.assertEqual(got, ('RELEASE_LOCK_HELD', None))
+        self.assertNotIn('hold', calls)
+        got, calls = self.run_moment([([], [])] * 10, [None] * 10)
+        self.assertEqual(got, ('RELEASE_LOCK_HELD', None), 'locks that cannot be taken stop it too')
+
+    def test_a_service_seen_after_holding_lets_the_locks_go(self):
+        got, calls = self.run_moment([([], [])] * 10, [['d', 'o']] * 10, services_after=[['synk-company-backup.service']] * 10)
+        self.assertEqual(got, ('BACKGROUND_OPERATION_BUSY', None))
+        releases = [c for c in calls if isinstance(c, tuple)]
+        self.assertEqual(len(releases), calls.count('hold'), 'every hold is let go again')
+        self.assertTrue(releases and all(r == ('release', ['d', 'o']) for r in releases))
+
+    @unittest.skipUnless(hasattr(os, 'fork') and sys.platform.startswith('linux'), 'flock — 리눅스')
+    def test_real_locks_match_the_health_check_shape(self):
+        import fcntl
+        folder = tempfile.mkdtemp()
+        deploy, ops = os.path.join(folder, 'synk-ha-deploy.lock'), os.path.join(folder, 'operations.lock')
+        for path in (deploy, ops):
+            open(path, 'w').close()
+        with patch.object(node, 'RELEASE_LOCKS', (deploy, ops)):
+            other = os.open(ops, os.O_RDONLY)
+            fcntl.flock(other, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            self.assertIsNone(node.hold_release_locks(), 'a running operation keeps it from holding')
+            os.close(other)
+            held = node.hold_release_locks()
+            self.assertEqual(len(held), 2)
+            probe = os.open(deploy, os.O_RDONLY)
+            fcntl.flock(probe, fcntl.LOCK_SH | fcntl.LOCK_NB)  # 상태 점검의 공유 잠금은 함께 잡힌다
+            fcntl.flock(probe, fcntl.LOCK_UN)
+            with self.assertRaises(OSError):
+                fcntl.flock(probe, fcntl.LOCK_EX | fcntl.LOCK_NB)  # 릴리스 PREPARE의 배타 잠금은 못 잡는다
+            os.close(probe)
+            probe = os.open(ops, os.O_RDONLY)
+            with self.assertRaises(OSError):
+                fcntl.flock(probe, fcntl.LOCK_EX | fcntl.LOCK_NB)  # 백업·점검의 운영 잠금도
+            node.release_locks(held)
+            fcntl.flock(probe, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            os.close(probe)
+        with patch.object(node, 'RELEASE_LOCKS', (os.path.join(folder, 'missing.lock'), ops)):
+            self.assertIsNone(node.hold_release_locks(), 'it does not create lock files')
 
 
 if __name__ == '__main__':

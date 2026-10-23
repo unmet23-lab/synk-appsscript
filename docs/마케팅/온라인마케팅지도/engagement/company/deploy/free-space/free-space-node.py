@@ -10,7 +10,7 @@ vacuum : 승인 뒤에만(scan.cjs가 승인 파일을 요구한다). 막는 조
          vacuum.mjs가 VACUUM 바로 앞에서 READY를 내면 잠금·서비스를 다시 보고 GO나 STOP을 보낸다. 앞뒤로 scan을 낸다.
 로컬: python3 free-space-node.py --db <company.sqlite>  (scan만, 호스트 정보·권한 낮추기 없이)
 """
-import errno, json, os, posixpath, re, sqlite3, struct, subprocess, sys, threading, time
+import errno, json, os, posixpath, re, signal, sqlite3, struct, subprocess, sys, threading, time, uuid
 
 VACUUM_JS = None  # scan.cjs가 vacuum.mjs 내용으로 바꿔 보낸다
 VIEW = '/mnt'  # 재는 자식만의 마운트 이름공간에서 DB 폴더를 붙이는 자리(호스트의 /mnt는 그대로다)
@@ -160,6 +160,50 @@ def release_busy(locks, services):
     return None
 
 
+def hold_release_locks():
+    """VACUUM 동안 1분 상태 점검과 같은 꼴로 잠금을 쥔다 — 배포 잠금은 공유(릴리스 PREPARE의 LOCK_EX|LOCK_NB가 실패해 앱을
+    띄우기 전에 되돌린다), 운영 잠금은 배타(cloud-common.sh lock_operations: 정기 백업은 120초까지 기다리고, 상태 점검·백업
+    점검은 그 회차를 건너뛴다). 기다리지 않는다 — 하나라도 못 잡으면 잡은 것을 놓고 None, 잡으면 fd 목록(release_locks로 놓는다).
+    파일은 만들지 않고 연다(없으면 None)."""
+    import fcntl
+    held = []
+    try:
+        for path, mode in zip(RELEASE_LOCKS, (fcntl.LOCK_SH, fcntl.LOCK_EX)):
+            fd = os.open(path, os.O_RDONLY | os.O_CLOEXEC)
+            held.append(fd)
+            fcntl.flock(fd, mode | fcntl.LOCK_NB)
+        return held
+    except OSError:
+        release_locks(held)
+        return None
+
+
+def release_locks(held):
+    for fd in held or []:
+        try:
+            os.close(fd)
+        except OSError:
+            pass
+
+
+def take_quiet_moment(wait_s=20, step_s=0.5):
+    """VACUUM 바로 앞(READY): 남이 쥔 잠금·도는 서비스가 없으면 잠금을 쥔 채 서비스를 한 번 더 본다. 그 뒤로는 릴리스가 시작하지
+    못하고 정기 백업은 기다린다(10-23 GPT GA1 — 보기만 하면 본 직후 시작하는 것을 막지 못했다). 1분 상태 점검처럼 짧게 잡힌
+    잠금이면 wait_s까지 다시 본다. (멈출 까닭 또는 None, 쥔 잠금 fd 목록 또는 None)."""
+    deadline = time.time() + wait_s
+    while True:
+        stop, held = release_busy(held_locks(), busy_services()), None
+        if not stop:
+            held = hold_release_locks()
+            stop = 'RELEASE_LOCK_HELD' if held is None else release_busy([], busy_services())
+            if stop:
+                release_locks(held)
+                held = None
+        if not stop or time.time() >= deadline:
+            return stop, held
+        time.sleep(step_s)
+
+
 def string_end(seg, start):
     """start에서 시작한 JSON 문자열 값의 닫는 따옴표 자리. 역슬래시 다음 글자는 건너뛴다. 구역 안에 없으면(잘린 값) -1.
     길이 한도를 두지 않는다 — 초안은 6,000자(한글이면 18KB)까지라, 한도에서 끊으면 닫힌 값을 앞부분으로만 견주게 된다."""
@@ -303,7 +347,9 @@ def live_values(con):
 
 
 def free_and_inpage(data, page):
-    """논리 스냅샷에서 빈 목록 페이지(트렁크의 남는 칸 + 잎 페이지 전체)와 b-tree 페이지 안 빈 칸(gap·freeblock)."""
+    """논리 스냅샷에서 빈 목록 페이지(트렁크의 남는 칸 + 잎 페이지 전체)와 b-tree 페이지 안 빈 칸(gap·freeblock), 그리고 셀 사이
+    1~3바이트 조각(fragment)의 바이트 수. 조각의 자리는 셀을 다 풀어야 알아 페이지 머리 7번째 바이트(조각 바이트 수)를 더하기만
+    한다 — 표식을 볼 수 없으니 정리 뒤에는 0이어야 깨끗하다(10-23 GPT 셋째 GA2)."""
     pages = len(data) // page
     free_pages, free_regions, trunk, guard = set(), [], struct.unpack('>I', data[32:36])[0], 0
     while trunk and guard <= pages and 1 <= trunk <= pages:
@@ -318,7 +364,7 @@ def free_and_inpage(data, page):
                 free_pages.add(leaf)
                 free_regions.append(((leaf - 1) * page, leaf * page))
         trunk, guard = nxt, guard + 1
-    in_page = []
+    in_page, fragments = [], 0
     for number in range(1, pages + 1):
         if number in free_pages:
             continue
@@ -328,6 +374,7 @@ def free_and_inpage(data, page):
         if kind not in (2, 5, 10, 13):  # b-tree 페이지만(넘침 페이지는 산 칸의 일부)
             continue
         block, cells, content = struct.unpack('>HHH', data[head + 1:head + 7])
+        fragments += data[head + 7]
         gap = (head + (12 if kind in (2, 5) else 8) + 2 * cells, off + (content or 65536))
         if gap[1] > gap[0]:
             in_page.append(gap)
@@ -337,7 +384,7 @@ def free_and_inpage(data, page):
             if length > 4 and block + length <= page:
                 in_page.append((off + block + 4, off + block + length))
             block, seen = nxt, seen + 1
-    return free_pages, free_regions, in_page
+    return free_pages, free_regions, in_page, fragments
 
 
 def scan(db, local=False):
@@ -392,11 +439,12 @@ def scan(db, local=False):
     page = struct.unpack('>H', data[16:18])[0]
     page = 65536 if page == 1 else page
     usable = page - data[20]
-    free_pages, free_regions, in_page = free_and_inpage(data, page)
+    free_pages, free_regions, in_page, fragments = free_and_inpage(data, page)
     # 논리 스냅샷의 구역은 그때(앞)의 산 값과, 실제 파일은 읽은 다음(뒤)의 산 값과 견준다.
     # freelist·inPage(빈 칸)의 Live는 산 줄의 사본이다 — 그 줄을 지우면 잔여가 된다. logical·dbFile·walFile은 페이지마다 잘라
     # 셈하고(넘침으로 이어지는 산 초안이 다른 페이지 바이트와 붙지 않게), Live는 산 칸 자체다.
-    out['residue'] = {'pageSize': page, 'pages': len(data) // page, 'freePages': len(free_pages), 'attempts': attempt, 'changedDuringScan': not quiet,
+    out['residue'] = {'pageSize': page, 'pages': len(data) // page, 'freePages': len(free_pages), 'fragmentBytes': fragments,
+                      'attempts': attempt, 'changedDuringScan': not quiet,
                       'freelist': count(data, free_regions, *live),
                       'inPage': count(data, in_page, *live),
                       'logical': count(data, page_regions(len(data), page), *live, usable),
@@ -502,6 +550,66 @@ def as_owner(fn, db):
         return {'error': 'SCAN_OUTPUT_UNREADABLE'}
 
 
+def proc_state(pid, proc='/proc'):
+    """/proc/<pid>/stat의 (상태, ppid, 시작 시각). 없으면 None. 이름(comm)에 빈칸·괄호가 있어도 마지막 ')' 뒤로 읽는다."""
+    try:
+        with open(os.path.join(proc, str(pid), 'stat'), 'rb') as f:
+            stat = f.read()
+        fields = stat[stat.rindex(b')') + 2:].split()  # [0]=상태(3번째 칸) · [1]=ppid · [19]=starttime(22번째 칸)
+        return fields[0], int(fields[1]), int(fields[19])
+    except (OSError, ValueError, IndexError):
+        return None
+
+
+def inside_processes(token, known=None, proc='/proc'):
+    """이 정리 한 번의 컨테이너 안 node 작업(명령줄 낱말에 token)과, 그것이나 known(앞 회차에 찾은 {pid: 시작 시각})의 자손 —
+    살아 있는 것만 {pid: 시작 시각}(좀비는 끝난 것으로 뺀다).
+    docker exec는 부른 쪽(docker CLI)이 끝나도 컨테이너 안 작업을 끝내지 않는다(10-23 GPT 둘째 GA1) — 잠금을 놓기 전에 이것으로
+    남은 것을 찾는다. known을 이어 받는 까닭: 부모가 먼저 죽으면 자식은 다른 부모에게 넘어가 표식으로는 다시 못 찾는다(셋째 GA1).
+    시작 시각이 같아야 같은 프로세스로 본다(pid 재사용). 명령줄에 token이 든 호스트의 docker CLI도 잡힌다(끝내도 된다)."""
+    table = {}
+    for name in os.listdir(proc):
+        if name.isdigit():
+            state = proc_state(int(name), proc)
+            if state and state[0] not in (b'Z', b'X'):
+                table[int(name)] = state
+    found = {}
+    for pid, (_, _, start) in table.items():
+        try:
+            with open(os.path.join(proc, str(pid), 'cmdline'), 'rb') as f:
+                if token.encode() in f.read().split(b'\0'):
+                    found[pid] = start
+        except OSError:
+            continue
+    for pid, start in (known or {}).items():
+        if pid in table and table[pid][2] == start:
+            found[pid] = start
+    grew = True
+    while grew:
+        grew = False
+        for pid, (_, ppid, start) in table.items():
+            if ppid in found and pid not in found:
+                found[pid] = start
+                grew = True
+    return found
+
+
+def stop_inside(token, wait_s=30, step_s=0.2, known=None):
+    """남은 컨테이너 안 작업을 SIGKILL로 끝내고 없어질 때까지 wait_s까지 본다(None이면 없어질 때까지) — 한 번 찾은 것은 표식이
+    없어져도 끝까지 쫓는다(known으로 앞에서 찾은 것을 이어 받는다). 끝내 남은 {pid: 시작 시각}(보통 빈 것)."""
+    deadline, alive = (None if wait_s is None else time.time() + wait_s), dict(known or {})
+    while True:
+        alive = inside_processes(token, alive)
+        for pid in alive:
+            try:
+                os.kill(pid, getattr(signal, 'SIGKILL', 9))  # 윈도에서 도는 시험에는 SIGKILL 이름이 없다(리눅스 값 9)
+            except OSError:
+                pass
+        if not alive or (deadline is not None and time.time() >= deadline):
+            return alive
+        time.sleep(step_s)
+
+
 def json_line(stream):
     """'{'로 시작하는 다음 줄을 JSON으로. 끝이면 None."""
     for line in stream:
@@ -538,17 +646,24 @@ def vacuum(container, db):
     if (facts['disk']['data'] or {}).get('free', 0) < 3 * need + (64 << 20) or facts['mem'].get('MemAvailable', 0) < 4 * need + (256 << 20):
         return {'error': 'SPACE_LOW', 'facts': facts, 'needBytes': need}
     # vacuum.mjs도 앞 WAL을 비운 뒤(DB 파일이 논리 크기로 자란 뒤) 같은 상한을 다시 본다.
+    # 컨테이너 안 작업을 다시 찾을 표식을 명령줄 끝에 붙인다(vacuum.mjs는 읽지 않는다). SSH가 끊겨도(SIGHUP) 잠금을 쥔 채 끝까지 간다 —
+    # 이 프로세스가 죽으면 잠금이 풀리는데 컨테이너 안 VACUUM은 계속 돌 수 있다.
+    token = 'synk-free-space-vacuum-' + uuid.uuid4().hex
+    if hasattr(signal, 'SIGHUP'):
+        signal.signal(signal.SIGHUP, signal.SIG_IGN)
     proc = subprocess.Popen(['docker', 'exec', '-i', '-u', 'node', '-e', 'SYNK_FREE_SPACE_MAX_BYTES=' + str(ONLINE_LIMIT), container['name'],
-                             'node', '--input-type=module', '-e', VACUUM_JS],
+                             'node', '--input-type=module', '-e', VACUUM_JS, token],
                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     guard = threading.Timer(300, proc.kill)  # vacuum.mjs 자신이 단계마다 끝을 두지만, 부르는 쪽도 끝없이 기다리지 않는다
     guard.start()
+    held, result = None, None
     try:
         ready = json_line(proc.stdout)
         stop = None
         if ready and ready.get('ready'):
-            # VACUUM 바로 앞에서 다시 본다 — 이 사이에 릴리스·백업이 시작했으면 STOP.
-            stop = release_busy(held_locks(), busy_services())
+            # VACUUM 바로 앞: 이 사이에 릴리스·백업이 시작했으면 STOP, 아니면 잠금을 쥐고 GO — 결과를 받고 놓는다.
+            # 실제 VACUUM을 하는 자식이 표식을 받았을 때만 간다 — 없으면 부모가 먼저 죽었을 때 그 자식을 못 찾는다(다섯째 GA1).
+            stop, held = ('CHILD_NOT_MARKED', None) if ready.get('childMark') is not True else take_quiet_moment()
             proc.stdin.write('STOP\n' if stop else 'GO\n')
             proc.stdin.flush()
             result = json_line(proc.stdout) or {'error': 'NO_RESULT'}
@@ -556,12 +671,23 @@ def vacuum(container, db):
             result = ready or {'error': 'NO_READY'}
         proc.stdin.close()
         proc.wait(timeout=60)
-        result = {**result, 'exit': proc.returncode, 'stoppedBy': stop, 'stderr': proc.stderr.read()[-300:]}
+        result = {**result, 'exit': proc.returncode, 'stoppedBy': stop, 'heldLocks': held is not None, 'stderr': proc.stderr.read()[-300:]}
     except subprocess.TimeoutExpired:
         proc.kill()
         result = {'error': 'VACUUM_TIMEOUT', 'exit': None}
     finally:
         guard.cancel()
+        # docker CLI가 끝나거나 끊겨도 컨테이너 안 작업은 남을 수 있다 — 끝난 것을 본 뒤에만 잠금을 놓는다(10-23 GPT 둘째 GA1).
+        # SIGKILL을 받고도 30초 넘게 남으면(디스크 I/O에 묶인 D 상태) 그 수를 남기고, 없어질 때까지 잠금을 쥔 채 기다린다 — 놓으면
+        # 뒤 릴리스·백업이 겹친다(넷째 GA1). 그동안 정기 백업은 120초 뒤 실패로 드러나고 릴리스는 시작하지 못한다. SIGHUP은
+        # 무시하므로 부른 쪽(scan.cjs·SSH)이 먼저 끝나도 이 프로세스가 끝까지 쥔다.
+        left = stop_inside(token)
+        if left:
+            waited = time.time()
+            stop_inside(token, wait_s=None, step_s=1, known=left)
+            result = {**(result or {}), 'error': (result or {}).get('error') or 'VACUUM_OUTLIVED_CLI', 'leftAfter30s': len(left),
+                      'waitedS': round(time.time() - waited)}
+        release_locks(held)
     return {'facts': facts, 'before': before, 'vacuum': result, 'after': as_owner(scan, db)}
 
 

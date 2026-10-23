@@ -9,9 +9,11 @@ import {join} from 'node:path';
 import {tmpdir} from 'node:os';
 import {randomBytes} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
+import {createRequire} from 'node:module';
 
 const here=fileURLToPath(new URL('.',import.meta.url));
 const VACUUM=join(here,'vacuum.mjs'),NODE_SCAN=join(here,'free-space-node.py');
+const {clean}=createRequire(import.meta.url)(join(here,'scan.cjs'));
 const base=mkdtempSync(join(tmpdir(),'synk-free-space-'));
 test.after(()=>rmSync(base,{recursive:true,force:true}));
 
@@ -73,6 +75,7 @@ test('옛 판 잔여는 새 판 지우기 뒤에도 남고, vacuum.mjs(GO) 뒤�
   const run=runVacuum(dir);
   assert.equal(run.status,0,run.stderr);
   assert.equal(run.ready.ready,true);
+  assert.equal(run.ready.childMark,false,'표식 없이 띄우면 자식도 표식이 없다(부르는 쪽은 이때 STOP한다)');
   assert.equal(run.result.quickCheck,'ok');
   assert.equal(run.result.logical,'same','다른 연결이 쓰지 않았으니 논리 내용 지문이 같다(WITHOUT ROWID 표 포함)');
   assert.equal(run.result.after.freePages,0);
@@ -149,6 +152,51 @@ test('free-space-node.py가 정리 전 잔여를 세고 정리 뒤 0으로 센�
   assert.equal(after.residue.freelist.payloadLive+after.residue.inPage.payloadLive+after.residue.inPage.draftLive,0,'빈 칸에 산 줄 사본도 없다');
   assert.equal(after.residue.logical.payloadLive,1);
   assert.equal(JSON.stringify(after).includes(MARK.live),false,'결과에 글이 나오지 않는다');
+  // 표식 없는 옛 바이트도 정리 대상이다 — VACUUM 뒤에는 빈 칸에 0 아닌 바이트가 없고, scan.cjs의 끝 판정도 그것까지 본다(GPT GA2).
+  assert.ok(before.residue.inPage.nonzeroBytes>0);
+  assert.equal(after.residue.freelist.nonzeroBytes+after.residue.inPage.nonzeroBytes,0,'VACUUM 뒤 빈 칸의 옛 바이트 0');
+  assert.equal(after.residue.fragmentBytes,0,'VACUUM 뒤 셀 사이 조각도 0');
+  assert.equal(clean(before),false);
+  assert.equal(clean(after),true);
+});
+
+test('scan.cjs 끝 판정은 표식 없는 빈 칸 바이트가 남으면 깨끗하다고 하지 않는다', ()=>{
+  const part=change=>({payloadResidue:0,draftResidue:0,payloadLive:0,draftLive:0,payloadShort:0,draftShort:0,nonzeroBytes:0,...change});
+  const scan=inPage=>({pragma:{freelist_count:0},residue:{attempts:1,changedDuringScan:false,fragmentBytes:0,freelist:part(),inPage:part(inPage),walTorn:part(),
+    logical:part({payloadLive:5,draftLive:78,nonzeroBytes:34848907}),dbFile:part({payloadLive:5,nonzeroBytes:34803252})}});
+  assert.equal(clean(scan({})),true,'산 줄이 있는 논리 스냅샷·DB 파일의 0 아닌 바이트는 상관없다');
+  assert.equal(clean(scan({nonzeroBytes:6510000})),false,'GPT GA2의 예 — 표식 모두 0, 빈 칸 바이트 6.51MB');
+  assert.equal(clean(scan({draftLive:11})),false,'빈 칸의 산 줄 사본');
+  assert.equal(clean(scan({nonzeroBytes:undefined})),false,'세지 못한 칸은 깨끗하지 않다');
+  assert.equal(clean({...scan({}),pragma:{freelist_count:3}}),false);
+  assert.equal(clean({...scan({}),residue:{...scan({}).residue,changedDuringScan:true}}),false,'판정 못 한 재기');
+  assert.equal(clean({...scan({}),residue:{...scan({}).residue,fragmentBytes:2}}),false,'셀 사이 조각 바이트(셋째 GA2)');
+  assert.equal(clean({...scan({}),residue:{...scan({}).residue,fragmentBytes:undefined}}),false,'조각 수가 없는 옛 결과');
+});
+
+test('운영처럼 -e로 표식을 붙여 띄우면 실제 VACUUM을 하는 자식도 그 표식을 받는다 — 부모가 먼저 죽어도 호스트가 찾게(다섯째 GA1)', ()=>{
+  const dir=join(base,'mark');oldVersionThenNewErase(dir).close();
+  const mark='synk-free-space-vacuum-'+'c'.repeat(32);
+  const p=spawnSync(process.execPath,['--input-type=module','-e',readFileSync(VACUUM,'utf8'),mark],{encoding:'utf8',timeout:60000,input:'GO\n',env:{...process.env,SYNK_FREE_SPACE_DIR:dir}});
+  const lines=p.stdout.trim().split('\n').filter(line=>line.startsWith('{')).map(line=>JSON.parse(line));
+  assert.equal(p.status,0,p.stderr);
+  assert.equal(lines[0].childMark,true);
+  assert.equal(lines.at(-1).quickCheck,'ok');
+  const wrong=spawnSync(process.execPath,['--input-type=module','-e',readFileSync(VACUUM,'utf8'),'not-a-mark'],{encoding:'utf8',timeout:60000,input:'STOP\n',env:{...process.env,SYNK_FREE_SPACE_DIR:dir}});
+  assert.equal(JSON.parse(wrong.stdout.trim().split('\n')[0]).childMark,false,'꼴이 다른 낱말은 표식으로 넘기지 않는다');
+});
+
+test('뒤 지문에서 자식이 멎으면 끝없이 기다리지 않고 끊은 뒤 WAL을 비우고 실패로 낸다 — VACUUM은 커밋된 채', ()=>{
+  const dir=join(base,'stall');oldVersionThenNewErase(dir).close();
+  const started=Date.now();
+  const run=runVacuum(dir,{env:{SYNK_FREE_SPACE_STALL_MS:'30000',SYNK_FREE_SPACE_AFTER_MS:'300'}});
+  assert.ok(Date.now()-started<20000,'멎은 자식을 끊는다 — 30초를 기다리지 않는다(GPT GA3)');
+  assert.equal(run.status,6,JSON.stringify(run.result));
+  assert.equal(run.result.error,'FINGERPRINT_FAILED');
+  assert.equal(run.result.walTruncated,true);
+  assert.equal(run.result.quickCheck,'ok');
+  assert.equal(pragma(dir,'freelist_count'),0,'VACUUM은 끊기기 전에 커밋됐다');
+  assert.equal(pragma(dir,'quick_check'),'ok');
 });
 
 test('free-space-node.py는 체크포인트 전 실제 DB 파일의 옛 페이지를 세고, 넘침으로 이어지는 산 긴 초안은 잔여로 세지 않는다', {skip:!python&&'python 3.11+ 없음'}, ()=>{
