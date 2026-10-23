@@ -39,17 +39,27 @@ export function updatePresence(previous, input, now) {
  * much effective play time (U) the account has had. A pulse reads and writes only this — never
  * the world. spans keep the context each stretch of U was played under (the owner after the pulse
  * that brought it, as the old pulse gave it); breaks keep the U where a 30-minute rest ended a
- * visit. Both drop what the world has already settled, and keep at most 16 entries. */
+ * visit. A pulse never drops what the world has not settled: once a lease holds more than 16
+ * spans or breaks (leaseFull), the store settles before it keeps the lease. */
 export const LEASE_ENTRIES = 16;
 export const initialLease = ({ uMs = 0, presence = initialPresence(), lastForegroundAt = null } = {}) =>
   ({ presence, uMs, walkClock: null, spans: [], breaks: [], lastForegroundAt, boundaryAt: null });
 
 const sameSpan = (a, b) => !!a && a.surfaceId === b.surfaceId && a.fence === b.fence && a.surface === b.surface && a.canRun === b.canRun;
-/** Spans and breaks the world has not settled yet (the span the settled U falls in stays). */
+const settledSpans = (lease, settledU) => lease.spans.filter((span, i) => span.u > settledU || !(lease.spans[i + 1]?.u <= settledU));
+/** Spans and breaks the world has not settled yet (the span the settled U falls in stays). A break
+ * at exactly the settled U is still to come: a rest that brought no play time ends the visit at the
+ * U the world already stands on, and the next settlement ends it there. */
 export function pruneLease(lease, settledU) {
-  const spans = lease.spans.filter((span, i) => span.u > settledU || !(lease.spans[i + 1]?.u <= settledU));
-  return { ...lease, spans, breaks: lease.breaks.filter(u => u > settledU) };
+  return { ...lease, spans: settledSpans(lease, settledU), breaks: lease.breaks.filter(u => u >= settledU) };
 }
+/** The lease after the world settled to settledU and that settlement was saved: every break up to it
+ * has ended its visit, so none is applied twice (a command at that U may open the next visit). */
+export function settledLease(lease, settledU) {
+  return { ...lease, spans: settledSpans(lease, settledU), breaks: lease.breaks.filter(u => u > settledU) };
+}
+/** More spans or breaks than a lease keeps: the store settles now instead of dropping unsettled play. */
+export const leaseFull = lease => lease.spans.length > LEASE_ENTRIES || lease.breaks.length > LEASE_ENTRIES;
 
 export function pulseLease(previous, input, now, { away = false, settledU = 0 } = {}) {
   const pulse = updatePresence(previous.presence, { ...input, foreground: input.foreground === true && !away }, now);
@@ -59,9 +69,9 @@ export function pulseLease(previous, input, now, { away = false, settledU = 0 } 
     surface: pulse.context.surface, canRun: pulse.context.canRun };
   const last = next.spans.at(-1);
   if (last?.u === span.u) next.spans = [...next.spans.slice(0, -1), span];
-  else if (!sameSpan(last, span)) next.spans = [...next.spans, span].slice(-LEASE_ENTRIES);
+  else if (!sameSpan(last, span)) next.spans = [...next.spans, span];
   // A visit that ended in a long rest ends at this U: the time this pulse brought comes first.
-  if (pulse.visitEnded) next.breaks = [...next.breaks, next.uMs].slice(-LEASE_ENTRIES);
+  if (pulse.visitEnded) next.breaks = [...next.breaks, next.uMs];
   if (input.foreground === true && !away) next.lastForegroundAt = pulse.next.at;
   // A walk is timed only while the same window keeps holding the town without a gap.
   const previousOwner = before.surfaces[before.owner];

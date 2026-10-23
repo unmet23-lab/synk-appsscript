@@ -45,32 +45,33 @@ export function grant(ledger, { accountId, causeId, itemId, qty, source = 'gathe
   return { ledger: next, events: [{ id, kind: 'item.granted', grantId: id, itemId, qty, source, cause: causeId }] };
 }
 
-/** Take qty out of the player's lines, oldest first; an emptied line goes. */
-function take(ledger, itemId, qty) {
-  if (held(ledger, itemId) < quantity(qty)) fail('not-enough', `not enough ${itemId}`);
-  const next = structuredClone(ledger), sources = [];
-  let left = qty;
-  for (const line of next.inventory) {
-    if (line.itemId !== itemId || !left) continue;
-    const used = Math.min(line.qty, left);
-    line.qty -= used; left -= used; sources.push(line.source);
-  }
-  next.inventory = next.inventory.filter(line => line.qty > 0);
-  return { next, source: sources[0] };
+/** Take qty out of one line: lines from different sources never merge, so one event names one
+ * source. Without a source the oldest line that holds enough gives; a quantity only several sources
+ * together hold is refused (the caller takes it source by source, one event each). An emptied line goes. */
+function take(ledger, itemId, qty, source) {
+  quantity(qty);
+  if (held(ledger, itemId) < qty) fail('not-enough', `not enough ${itemId}`);
+  const next = structuredClone(ledger);
+  const line = next.inventory.find(row => row.itemId === itemId && (source === undefined ? row.qty >= qty : row.source === source));
+  if (!line) source === undefined ? fail('mixed-sources', `${itemId} is held under more than one source`) : fail('not-enough', `no ${itemId} from ${source}`);
+  if (line.qty < qty) fail('not-enough', `not enough ${itemId} from ${source}`);
+  line.qty -= qty;
+  next.inventory = next.inventory.filter(row => row.qty > 0);
+  return { next, source: line.source };
 }
 
 /** Giving moves things, never copies them (to a world object such as the cafe's leaf tin). */
-export function transfer(ledger, { eventId, itemId, qty, to }) {
+export function transfer(ledger, { eventId, itemId, qty, to, source }) {
   item(itemId);
   if (typeof to !== 'string' || !to) fail('invalid-target', 'a transfer names where it goes');
-  const { next, source } = take(ledger, itemId, qty);
-  return { ledger: next, events: [{ id: eventId, kind: 'item.transferred', itemId, qty, from: source, to }] };
+  const taken = take(ledger, itemId, qty, source);
+  return { ledger: taken.next, events: [{ id: eventId, kind: 'item.transferred', itemId, qty, from: taken.source, to }] };
 }
 
-export function consume(ledger, { eventId, itemId, qty, causeId }) {
+export function consume(ledger, { eventId, itemId, qty, causeId, source }) {
   item(itemId);
-  const { next, source } = take(ledger, itemId, qty);
-  return { ledger: next, events: [{ id: eventId, kind: 'item.consumed', itemId, qty, source, cause: causeId }] };
+  const taken = take(ledger, itemId, qty, source);
+  return { ledger: taken.next, events: [{ id: eventId, kind: 'item.consumed', itemId, qty, source: taken.source, cause: causeId }] };
 }
 
 /** Whether a stored ledger is whole. */

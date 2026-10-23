@@ -179,17 +179,47 @@ test('판 둘: 맥박·결산은 명령 판(revision)을 올리지 않고, 쓸 �
 
 test('30분 쉬면 방문 끝 도장이 남고, 결산이 그 U까지 걸은 뒤 방문을 한 번 닫는다', async () => {
   const { settleSteps } = await townFile('town/settle.mjs');
-  const { initialLease } = await townFile('presence.mjs');
+  const { initialLease, settledLease } = await townFile('presence.mjs');
   const span = { u: 0, surfaceId: 'a', fence: 1, surface: 'classic', canRun: true };
   const lease = { ...initialLease({ uMs: 4500 }), spans: [span], breaks: [2500] };
   const steps = settleSteps(0, lease);
   assert.deepEqual(steps.map(s => [s.u, s.elapsedMs, !!s.visitEnded]), [[0, 1000, false], [1000, 1000, false], [2000, 500, false], [2500, 0, true], [2500, 1000, false], [3500, 1000, false]]);
-  assert.deepEqual(settleSteps(2500, lease).filter(s => s.visitEnded), [], '이미 결산한 도장은 다시 쓰지 않는다');
+  assert.deepEqual(settleSteps(2500, settledLease(lease, 2500)).filter(s => s.visitEnded), [], '저장한 결산이 쓴 도장은 임대에서 빠져 다시 쓰지 않는다');
+  assert.deepEqual(settleSteps(3000, settledLease(lease, 3000)).filter(s => s.visitEnded), []);
   const make = await storeFixture();
   const f = make(); f.old(); f.old(1000);
   const visit = f.store.peek().state.life.visitIndex;
   f.old(31 * 60000); f.old(1000);
   assert.equal(f.store.peek().state.life.visitIndex, visit + 1, '쉰 뒤 새 방문');
+});
+
+test('쉬는 동안 놀이 시간이 늘지 않아 방문 끝 도장이 이미 결산한 U에 서도 방문은 한 번 닫히고, 그 뒤 연 방문은 다시 닫지 않는다(검수 A1)', async () => {
+  const { settleSteps } = await townFile('town/settle.mjs');
+  const { initialLease, settledLease, pruneLease } = await townFile('presence.mjs');
+  const lease = { ...initialLease({ uMs: 2500 }), spans: [{ u: 0, surfaceId: 'a', fence: 1, surface: 'classic', canRun: true }], breaks: [2500] };
+  assert.deepEqual(settleSteps(2500, lease).map(s => [s.u, s.elapsedMs, !!s.visitEnded]), [[2500, 0, true]], '결산한 U와 같은 도장도 방문을 닫는다');
+  assert.deepEqual(pruneLease(lease, 2500).breaks, [2500], '맥박의 정리는 아직 안 쓴 도장을 남긴다');
+  assert.deepEqual(settledLease(lease, 2500).breaks, [], '저장한 결산 뒤에는 뺀다');
+  // 옛 맥박(presence): 화면을 떠나며 배경 맥박 → 31분 쉼 → 배경으로 돌아온 맥박은 U를 더하지 않는다.
+  const make = await storeFixture();
+  const f = make(); f.old(); f.old(1000);
+  const visit = f.store.peek().state.life.visitIndex;
+  f.old(500, { foreground: false }); f.old(31 * 60000, { foreground: false });
+  assert.equal(f.store.peek().state.life.activeVisit, false, '방문이 닫혔다');
+  f.old(1000);
+  assert.equal(f.store.peek().state.life.activeVisit, true); assert.equal(f.store.peek().state.life.visitIndex, visit + 1, '새 방문');
+  f.old(1000); f.send('PREF_LESS_OFTEN', { activity: 'tea-order', on: true });
+  assert.equal(f.store.peek().state.life.activeVisit, true, '지난 도장이 새 방문을 닫지 않는다');
+  assert.equal(f.store.peek().state.life.visitIndex, visit + 1);
+});
+
+test('결산 전 맥락이 임대 상한(16)을 넘어도 놀이 시간을 버리지 않는다 — 맥박이 먼저 결산한다(검수 GA1)', async () => {
+  const make = await storeFixture();
+  const { LEASE_ENTRIES } = await townFile('presence.mjs');
+  const lean = placed(make, 'pulse'), old = placed(make, 'old');
+  // 창의 종류를 맥박마다 바꿔 결산 전 맥락(span)이 맥박마다 하나씩 는다.
+  for (let i = 0; i < 3 * LEASE_ENTRIES; i++) { const extra = { surface: i % 2 ? 'classic' : 'day' }; lean.pulse(1000, extra); old.old(1000, extra); }
+  assert.deepEqual(worldOf(lean.store.read()), worldOf(old.store.peek()), '맥락마다 결산한 세계와 같다');
 });
 
 test('경계 신호: 결산 뒤 안전하면 먼저 말 걸기를 낸다 · 화면이 부르는 것은 20초에 한 번 · 주인 창만', async () => {

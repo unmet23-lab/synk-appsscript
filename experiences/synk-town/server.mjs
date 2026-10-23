@@ -4,7 +4,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { initialState, restoreState, reduceCommand, snapshot, stepLiving, assertState, foldWorld, FOLD_LIMITS, TownError } from './core.mjs';
-import { initialPresence, commandPresence, initialLease, pulseLease, boundaryPresence, pruneLease, LEASE_ENTRIES } from './presence.mjs';
+import { initialPresence, commandPresence, initialLease, pulseLease, boundaryPresence, pruneLease, settledLease, leaseFull, LEASE_ENTRIES } from './presence.mjs';
 import { settle } from './town/settle.mjs';
 import { contentCatalog, recordSeen, clearSeen, validSeen } from './town/seen.mjs';
 import { writeVisit, visitLine, mayWrite } from './town/eval.mjs';
@@ -313,13 +313,16 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
     read() {
       if (loadError) throw loadError;
       const world = settledTo(lease, { nowMs: hostNow() });
-      if (world) commit(world);
+      if (world) { commit(world); lease = settledLease(lease, state.settledU); keepLease(); }
       return current();
     },
     pulse(input) {
       requireLife(input);
       const at = now(), pulse = pulseOf(input, at);
-      lease = pulse.lease; keepLease();
+      lease = pulse.lease;
+      // A pulse never drops unsettled play: a lease that would hold more than it keeps settles now.
+      if (leaseFull(lease)) { const world = settledTo(lease, { nowMs: at }); if (world) commit(world); lease = settledLease(lease, state.settledU); }
+      keepLease();
       return { presence: pulse.receipt, serverNow: at, worldSeq: state.writeSeq };
     },
     boundary(input) {
@@ -334,9 +337,9 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
         return { issued: null, throttled: true, worldSeq: state.writeSeq };
       }
       const before = state.life.contacts.length, world = settledTo(lease, { nowMs: at, canContact: holder.canContact, touch: true });
-      if (world) commit(world, report ? { seen: report } : {});
+      if (world) { commit(world, report ? { seen: report } : {}); lease = settledLease(lease, state.settledU); }
       else if (report) keep({ seen: report });
-      lease = { ...lease, boundaryAt: at };
+      lease = { ...lease, boundaryAt: at }; keepLease();
       const issued = state.life.contacts.length > before ? state.life.contacts.at(-1) : null;
       return { issued: issued && { id: issued.id, contactKey: issued.contactKey }, worldSeq: state.writeSeq };
     },
@@ -346,7 +349,7 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
       // Clock, delivery owner and world facts publish together after durability.
       const world = settledTo(pulse.lease, { nowMs: at, canContact: pulse.context.canContact, touch: true });
       if (world) commit(world);
-      lease = pulse.lease; keepLease();
+      lease = world ? settledLease(pulse.lease, state.settledU) : pulse.lease; keepLease();
       return { ...current(), presence: pulse.receipt, worldSeq: state.writeSeq };
     },
     /** A command, with what the screen showed beside it ({ seen }: keys outside the signed command). */
@@ -382,12 +385,13 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
         const nextEval = command.type === 'EVAL_CONSENT' && result.state.consents.evalSignals.state !== 'granted' ? [] : evalLines;
         commit(result.state, { seen: nextSeen, evalLines: nextEval });
         const before = lease;
+        lease = settledLease(lease, state.settledU);
         if (['DAY_WALK_ENABLE', 'DAY_WALK'].includes(command.type)) lease = { ...lease, walkClock: { at: host.nowMs, surfaceId: host.surfaceId, fence: host.fence } };
         if (['DAY_WALK_DISABLE', 'RESET', 'LEAVE'].includes(command.type)) lease = { ...lease, walkClock: null };
         if (command.type === 'RESET') lease = initialLease({ uMs: state.settledU });
         else if (command.type === 'LEAVE') lease = { ...lease, presence: { ...lease.presence, at: Math.max(now(), lease.presence.at ?? 0),
           surfaces: {}, owner: null, fence: lease.presence.fence + 1 } };
-        if (lease !== before) keepLease();
+        if (JSON.stringify(lease) !== JSON.stringify(before)) keepLease();
       }
       return { ...current(), duplicate: result.duplicate };
     },

@@ -31,6 +31,9 @@ test('「덜 추천」은 순위만 낮추고 두 회차 모두 지킨다 · 피
   const notFit = p.giveFeedback(p.initialPrefs(), { completionId: 'E-1', value: 'not_fit', canonicalActivityId: 'tea-order', lifeDay: 1 });
   assert.equal(p.suggestionWeight(notFit, { activity: 'tea-order', lifeDay: 2, policy: adapted }).weight, knobs.notFitMultiplier);
   assert.equal(p.suggestionWeight(notFit, { activity: 'tea-order', lifeDay: 2, policy: baseline }).weight, 1000, '기본 회차는 응답 순위를 끈다');
+  const tea = p.setLessOften(p.initialPrefs(), 'tea-order', true);
+  assert.equal(p.suggestionWeight(tea, { activity: 'tea-order', card: 'card.C1', lifeDay: 1, policy: adapted }).weight, knobs.lessOftenMultiplier, '카드로 권해도 활동의 덜 추천을 지킨다(검수 GA2)');
+  assert.equal(p.suggestionWeight(less, { activity: 'tea-order', card: 'card.C2', lifeDay: 1, policy: adapted }).weight, knobs.lessOftenMultiplier, '카드의 덜 추천도');
   const helpful = p.giveFeedback(p.initialPrefs(), { completionId: 'E-1', value: 'helpful', canonicalActivityId: 'tea-order', lifeDay: 1 });
   assert.equal(p.suggestionWeight(helpful, { activity: 'tea-order', lifeDay: 2, policy: adapted }).ahead, true);
 });
@@ -59,6 +62,11 @@ test('관측은 최근 직접 이용으로 세고, 묻기 한 번 뒤 「아니�
   assert.equal(p.observedFamily(indirect, p.initialPrefs(), { policy: adapted }), null, '직접 연 이용만');
   const no = p.answerFamily(p.initialPrefs(), 'cafe-life', 'no');
   assert.equal(p.observedFamily(uses, no, { policy: adapted }), null, '「아니요」 뒤에는 시간이 지나도 묻지 않는다');
+  // 묻지 않는 갈래가 가장 많아도 기준을 넘은 다른 갈래를 가리지 않는다(검수 A3) — 창이 넓은 판에서.
+  const wide = { ...paramsFor(), observe: { ...observe, window: 6, needed: 3, recentUses: 20 } };
+  let mixed = [];
+  for (const [i, family] of ['cafe-life', 'cafe-life', 'cafe-life', 'gather', 'gather', 'gather'].entries()) mixed = p.recordUse(mixed, use(i, family), wide);
+  assert.equal(p.observedFamily(mixed, no, { policy: adapted }, wide), 'gather');
   const yes = p.answerFamily(p.initialPrefs(), 'cafe-life', 'yes');
   assert.equal(yes.preferredFamily, 'cafe-life');
   const corrected = p.correctObserved(uses, { ...p.initialPrefs(), observed: 'cafe-life' }, 'cafe-life');

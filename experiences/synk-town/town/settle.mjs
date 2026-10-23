@@ -4,7 +4,9 @@
  * second — each step is the chain one old pulse ran, under the context that stretch was played
  * in (the lease's spans) — so pulses a second or less apart leave the same world as before at
  * every command boundary. A 30-minute rest (a lease break) ends the visit once, after the steps
- * up to it. settledU always moves to the lease's U, even when no module took the time (F2).
+ * up to it — also a break at exactly the settled U (a rest that brought no play time); the store
+ * drops the breaks a saved settlement has applied (presence.mjs settledLease), so none ends a visit
+ * twice. settledU always moves to the lease's U, even when no module took the time (F2).
  * Contacts are issued only where canContact is given: in the last step, as the old safe pulse did.
  * Two differences are rules, not drift: the ≤3-second tail of a pulse that ended a visit now
  * reaches every module before the visit ends (the old life module dropped it), and a stretch
@@ -35,7 +37,7 @@ export function settleSteps(settledU, lease, { canContact = false, touch = false
       u += elapsedMs;
     }
   };
-  for (const end of [...new Set(lease.breaks)].filter(b => b > settledU && b <= lease.uMs).sort((a, b) => a - b)) {
+  for (const end of [...new Set(lease.breaks)].filter(b => b >= settledU && b <= lease.uMs).sort((a, b) => a - b)) {
     walkTo(end);
     steps.push({ u, elapsedMs: 0, span: spanAt(lease, u), visitEnded: true });
   }

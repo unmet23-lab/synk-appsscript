@@ -59,9 +59,10 @@ export function observedFamily(uses, prefs, { policy, firstFamily = null } = {},
   const recent = uses.filter(use => use.direct).slice(-params.observe.window);
   const counts = new Map();
   for (const use of recent) counts.set(use.storyFamily, (counts.get(use.storyFamily) || 0) + 1);
-  const [family, n] = [...counts].sort((a, b) => b[1] - a[1])[0] || [];
-  if (!family || n < params.observe.needed || family === prefs.preferredFamily || family === firstFamily || prefs.denied.includes(family)) return null;
-  return family;
+  // A family that is never asked about steps aside first, so it cannot hide another that qualifies.
+  const asked = [...counts].filter(([family]) => family !== prefs.preferredFamily && family !== firstFamily && !prefs.denied.includes(family));
+  const [family, n] = asked.sort((a, b) => b[1] - a[1])[0] || [];
+  return family && n >= params.observe.needed ? family : null;
 }
 /** "I only did that then": the family's uses leave the observation and the candidate goes. */
 export const correctObserved = (uses, prefs, family) => ({ uses: uses.filter(use => use.storyFamily !== family),
@@ -84,7 +85,8 @@ export const firstAsk = kinds => ASK_ORDER.find(kind => kinds.includes(kind)) ||
  * directly is never blocked. */
 export function suggestionWeight(prefs, { activity, card = null, lifeDay, policy }, params = paramsFor()) {
   let weight = 1000;
-  if (prefs.lessOften.includes(card || activity)) weight = weight * params.prefs.lessOftenMultiplier / 1000;
+  // Less often set on the activity or on the card offering it counts once.
+  if (prefs.lessOften.includes(activity) || card !== null && prefs.lessOften.includes(card)) weight = weight * params.prefs.lessOftenMultiplier / 1000;
   const last = adaptedOn(policy) ? activeFeedback(prefs, lifeDay, params).filter(item => item.canonicalActivityId === activity).at(-1) : null;
   if (last?.value === 'not_fit') weight = weight * params.prefs.notFitMultiplier / 1000;
   return { weight: Math.round(weight), ahead: last?.value === 'helpful' };

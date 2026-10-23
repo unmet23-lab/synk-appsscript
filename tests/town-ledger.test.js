@@ -50,3 +50,14 @@ test('드리기는 옮김이지 복제가 아니다 · 모자라면 거절', asy
   const used = l.consume(moved.ledger, { eventId: 'E-4', itemId: 'leaf-young', qty: 1, causeId: 'E-3' });
   assert.deepEqual(used.ledger.inventory, [], '다 쓴 줄은 빠진다');
 });
+
+test('한 사건은 한 출처에서만 꺼낸다 — 출처가 다른 줄에 걸친 수량은 거절하고 출처를 고르면 그 줄에서(검수 A2)', async () => {
+  const l = await townModule('ledger');
+  const line = source => ({ itemId: 'mint', source, qty: 1, costBasis: 0, saleAllowed: false });
+  const ledger = { inventory: [line('gather'), line('market')], discoveries: {}, grants: [] };
+  assert.throws(() => l.transfer(ledger, { eventId: 'E-1', itemId: 'mint', qty: 2, to: 'cafe-leaf-tin' }), error => error.code === 'mixed-sources');
+  assert.equal(l.transfer(ledger, { eventId: 'E-2', itemId: 'mint', qty: 1, to: 'cafe-leaf-tin' }).events[0].from, 'gather', '골라 주지 않으면 먼저 받은 줄');
+  const picked = l.consume(ledger, { eventId: 'E-3', itemId: 'mint', qty: 1, causeId: 'E-0', source: 'market' });
+  assert.equal(picked.events[0].source, 'market'); assert.deepEqual(picked.ledger.inventory, [line('gather')]);
+  assert.throws(() => l.consume(ledger, { eventId: 'E-4', itemId: 'mint', qty: 1, causeId: 'E-0', source: 'shop' }), error => error.code === 'not-enough');
+});
