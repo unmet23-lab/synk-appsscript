@@ -5,11 +5,12 @@ import {createStore} from '../synk-town/server.mjs';
 // It does not grant TOPIK access or join the independent 4288 developer fixture.
 // Each account keeps its own folder of branch files; an account's old one-file save beside it is the
 // folder's read-only source, moved over once (vertical slice §14-6, W2 plan D9·F17).
+// The residents keep their nights here as in an account's town (the night rule, §4-2 A — W3).
 export function createAccountTownHost({directory,create=createStore}={}) {
   const stores=new Map();
   function forAccount(accountId) {
     if(!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(accountId||''))throw Object.assign(Error('AUTH_REQUIRED'),{status:401});
-    if(!stores.has(accountId))stores.set(accountId,create({dir:path.join(directory,accountId),file:path.join(directory,`${accountId}.json`)}));
+    if(!stores.has(accountId))stores.set(accountId,create({dir:path.join(directory,accountId),file:path.join(directory,`${accountId}.json`),sleeps:true}));
     return stores.get(accountId);
   }
   return {
@@ -19,6 +20,8 @@ export function createAccountTownHost({directory,create=createStore}={}) {
         let result;
         if(operation==='state'&&method==='GET')result=store.read();
         else if(operation==='presence'&&method==='POST')result=store.presence(input);
+        else if(operation==='pulse'&&method==='POST')result=store.pulse(input);
+        else if(operation==='boundary'&&method==='POST')result=store.boundary(input);
         else if(operation==='command'&&method==='POST')result=store.execute(input);
         else return {status:405,body:{error:'METHOD_NOT_ALLOWED'}};
         return {status:200,body:{...result,rehearsal:true,accountScoped:true}};

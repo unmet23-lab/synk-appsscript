@@ -25,7 +25,7 @@ const changed=()=>Object.assign(Error('로그인한 계정이 바뀌었어요.')
 const authErrors=new Set(['AUTH_REQUIRED','AUTH_SESSION_MISSING','SESSION_REVOKED','UNAUTHORIZED','ACCOUNT_UNAVAILABLE','PRODUCT_FORBIDDEN','PLATFORM_ACCOUNT_MISMATCH']);
 // 반 연결(classId)이 붙지 않는 타운 경로: 입장 조회·입장 확인·첫 장면 배치는 계정 하나의 일이다.
 const TOWN_ACCOUNT_ROUTES=new Set(['town/entry','town/check','town/placement']);
-const routes=new Map([['bootstrap','GET'],['play/start','POST'],['play/complete','POST'],['avatar/outfit','PUT'],['wardrobe/looks','PUT'],['town/entry','GET'],['town/state','GET'],['town/sharing','POST'],['town/command','POST'],['town/presence','POST'],['town/check','POST'],['town/placement','POST'],['enrollment/preview','POST'],['enrollment/claim','POST'],['homework','GET'],['homework/submit','POST'],['homework/key','POST'],['writing','POST'],['speaking','POST']]);
+const routes=new Map([['bootstrap','GET'],['play/start','POST'],['play/complete','POST'],['avatar/outfit','PUT'],['wardrobe/looks','PUT'],['town/entry','GET'],['town/state','GET'],['town/sharing','POST'],['town/command','POST'],['town/presence','POST'],['town/pulse','POST'],['town/boundary','POST'],['town/check','POST'],['town/placement','POST'],['enrollment/preview','POST'],['enrollment/claim','POST'],['homework','GET'],['homework/submit','POST'],['homework/key','POST'],['writing','POST'],['speaking','POST']]);
 
 // Credentials are owned by the WORLD entry. A game receives only scoped methods.
 export function createWorldAccount({config:raw,storage=globalThis.sessionStorage,fetcher=(...args)=>globalThis.fetch(...args),
@@ -36,7 +36,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
  const binding=[config.supabaseUrl,config.accountApiUrl,config.clients.world.clientId,config.clients.world.redirectUri].join('|');
  const entry=createPlatformEntry({clientKey:'world',getUrl,replaceUrl});
  let session=null,rawSession=null,owner=null,currentSessionId=null,currentAccount=null,epoch=0,closed=false,refreshing=null,pendingExchange=null,townBinding=null,townStateRevision=-1,verifiedClient=null,gameHost=null,gameLaunch=0,lifeHost=null,lifeLaunch=0,verification=0;
- let nativeIdentity=null,nativeAccountId=null,nativeGeneration=-1,signedOutGeneration=-1,nativeEvents=0,nativeReady=null,unsubscribe=null,nativeClassroom=false,nativeHomework=false,nativeTownCheck=false,hangulHost=null,hangulLaunch=0;
+ let nativeIdentity=null,nativeAccountId=null,nativeGeneration=-1,signedOutGeneration=-1,nativeEvents=0,nativeReady=null,unsubscribe=null,nativeClassroom=false,nativeHomework=false,nativeTownCheck=false,nativeTownPulse=false,hangulHost=null,hangulLaunch=0;
  const controllers=new Set();
  const guard=expected=>{if(closed||expected!==epoch)throw changed();if(!native&&session&&storage.getItem(key)!==rawSession){clear();throw changed();}};
  const forgetSession=()=>{if(!native)storage.removeItem(key);};
@@ -72,6 +72,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
    nativeHomework=Array.isArray(environment.worldRoutes)&&['homework','homework/submit'].every(route=>environment.worldRoutes.includes(route));
    // 「마을 준비 확인」(입장 확인·첫 장면 배치)도 본체가 두 경로를 알릴 때만. 옛 PC 앱은 웹에서 확인을 마치면 여기서도 열린다고 알린다.
    nativeTownCheck=Array.isArray(environment.worldRoutes)&&['town/check','town/placement'].every(route=>environment.worldRoutes.includes(route));
+   nativeTownPulse=Array.isArray(environment.worldRoutes)&&['town/pulse','town/boundary'].every(route=>environment.worldRoutes.includes(route));
    unsubscribe=bridge.onAuthChanged(state=>{
     const before=nativeIdentity;nativeEvents++;
     if(nativeStatus(state)&&nativeIdentity!==before){const identity=nativeIdentity;queueMicrotask(()=>{if(!closed&&nativeIdentity===identity)onConnect();});}
@@ -200,6 +201,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   if(path==='town/entry'){townBinding=null;townStateRevision=-1;}
   if(path==='town/sharing'&&!townBinding?.classId)throw Object.assign(Error('CLASSROOM_FORBIDDEN'),{code:'CLASSROOM_FORBIDDEN',status:403});
   if((path==='town/check'||path==='town/placement')&&native&&!nativeTownCheck)throw Object.assign(Error('PC 앱에서는 아직 마을 준비 확인을 열 수 없어요.'),{code:'TOWN_CHECK_UNSUPPORTED'});
+  if((path==='town/pulse'||path==='town/boundary')&&native&&!nativeTownPulse)throw Object.assign(Error('PC 앱에서는 아직 이 마을 화면을 열 수 없어요. 브라우저의 SYNK WORLD에서 열어 주세요.'),{code:'TOWN_PULSE_UNSUPPORTED'});
   const accept=(data,ok,status)=>{
    guard(expected);
    if(status===401||authErrors.has(data?.error?.code)){clear();forgetSession();}

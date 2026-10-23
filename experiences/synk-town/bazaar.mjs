@@ -350,12 +350,17 @@ export function viewBazaar(state, input) {
   let line = '두 손님의 현재 요청을 듣거나 음식 없는 그림 메뉴 가판을 준비할 수 있어요.', speaker = '찻집 주인', actions = [];
   const here = ctx.location === 'cafe';
   if (!e?.open) {
-    if (here && !ctx.cafeBusy) {
-      if (e && e.stage !== 'result') actions.push(action('BAZAAR_RESUME', '하던 손님 맞이 이어 하기', {}, true));
-      else for (const kind of kinds) if (!state.history.some(h => h.kind === kind)) actions.push(action('BAZAAR_START', kind === 'requests' ? '두 손님의 요청 듣기' : '그림 메뉴 가판 함께 열기 · 음식 없음', { kind }));
-      if (e?.stage === 'result') actions.push(action('BAZAAR_RESUME', '방금 마친 모습 다시 보기'));
+    // The night rule (§4-2 A): a closed cafe greets no guest until its owner is up (the view's time).
+    if (ctx.ownerAsleep) line = '찻집 주인은 벌써 잠들었어요. 손님 맞이는 아침에 함께해요.';
+    else {
+      if (here && !ctx.cafeBusy) {
+        if (e && e.stage !== 'result') actions.push(action('BAZAAR_RESUME', '하던 손님 맞이 이어 하기', {}, true));
+        else for (const kind of kinds) if (!state.history.some(h => h.kind === kind) && !(kind === 'pictureMenu' && ctx.workshopAsleep))
+          actions.push(action('BAZAAR_START', kind === 'requests' ? '두 손님의 요청 듣기' : '그림 메뉴 가판 함께 열기 · 음식 없음', { kind }));
+        if (e?.stage === 'result') actions.push(action('BAZAAR_RESUME', '방금 마친 모습 다시 보기'));
+      }
+      if (ctx.cafeBusy) line = '찻집 주인은 지금 하던 일을 마치고 손님 맞이를 함께할 수 있어요.';
     }
-    if (ctx.cafeBusy) line = '찻집 주인은 지금 하던 일을 마치고 손님 맞이를 함께할 수 있어요.';
   } else if (!here) line = '찻집에서 하던 손님 맞이는 그대로 남아 있어요.';
   else if (e.stage === 'role') {
     line = e.kind === 'requests' ? '책을 가져온 손님이 동행자와 왔어요. 오늘 어떤 것을 원하는지 직접 물어볼까요?' : '음식을 내지 않는 작은 그림 가판이에요. 주인은 안내하고 공방 주인은 동의한 받침 준비를 맡아요.';

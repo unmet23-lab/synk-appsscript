@@ -20,8 +20,8 @@ import { initialConsents, changeConsent, validConsents } from './town/consent.mj
 import { eventProblem, FAMILIES } from './town/events.mjs';
 import { policyFor, DEFAULT_OPS, PARAMS_BY_VER, ARMS } from './town/params.mjs';
 import { forgettable, forget, forgottenBy, pruneForgotten, validForgotten } from './town/memory.mjs';
-import { initialVillage, validVillage, closeBands, closeOpen, holdResidents, keepHabitSpots, recordUse, promiseTomorrow, planOf, placeAt, caption, doing, awakeAt } from './town/village.mjs';
-import { agreementSpot, RESIDENT_BY_ID, ARCHETYPE_BY_ID } from './town/plan.mjs';
+import { initialVillage, validVillage, closeBands, closeOpen, holdResidents, keepHabitSpots, recordUse, promiseTomorrow, planOf, placeAt, caption, doing, upFor, goalOf } from './town/village.mjs';
+import { agreementSpot, RESIDENT_BY_ID } from './town/plan.mjs';
 
 export const SCOPE = Object.freeze({ domain: 'LAB', workspace: 'synk-town', subject: 'preview-local' });
 // FT10/FT51 keep their old 2D cafe-screen points; the spots live in town/data/places.json.
@@ -260,7 +260,9 @@ export function livingContext(state, host = {}) {
   const dayOwns = bazaarOwns(state) || dayEpisodeOwns || host.surface === 'day' && !atDayPlace(state, 'cafe');
   return { surfaceId: state.life?.authority.surfaceId ?? null, fence: state.life?.authority.fence ?? 0,
     ...host, canRun: ready && host.canRun !== false && !dayOwns,
-    canContact: ready && !dayOwns && !state.resting && !(host.surface === 'day' && state.day?.rest) && host.canContact === true,
+    // The owner who invites is up (the night rule): no contact is issued while it sleeps.
+    canContact: ready && !dayOwns && !state.resting && !(host.surface === 'day' && state.day?.rest) && host.canContact === true
+      && upFor(state.village, 'cafe-owner', host.nowMs),
     worldRevision: state.lifeSeatRevision ?? state.worldRevision, placement: state.placement };
 }
 function projectLifeFacts(state, facts) {
@@ -313,12 +315,13 @@ function habitSpots(state) {
     ...(agreed ? [{ spot: agreed, npc: 'workshop-owner' }] : [])];
 }
 /** The settlement's close step (town/settle.mjs close): bands that ended by nowMs close and the next
- * opens; habit uses become town events. The host gives the village seed, its offset and visitEnd. */
-export function closeLiving(state, nowMs, { seed = 'synk-town', offsetMin = null, visitEnd = null } = {}) {
+ * opens; habit uses become town events. The host gives the village seed, its offset and visitEnd, and
+ * sleeps when it keeps the residents' nights (an account's town; village.mjs upFor). */
+export function closeLiving(state, nowMs, { seed = 'synk-town', offsetMin = null, visitEnd = null, sleeps = false } = {}) {
   if (!state.village) return state;
   const candidates = habitSpots(state);
   keepHabitSpots(state.village, candidates);
-  for (const use of closeBands(state.village, { nowMs, seed, offsetMin, revision: state.revision, visitEnd, candidates }))
+  for (const use of closeBands(state.village, { nowMs, seed, offsetMin, revision: state.revision, visitEnd, candidates, sleeps }))
     townEvent(state, 'habit.used', { ...use, actors: [use.npc] });
   return state;
 }
@@ -347,7 +350,9 @@ function endVisitScenes(state, endedAt) {
   if (state.village) closeOpen(state.village, endedAt);
 }
 /** The village as a scene at the time the world last saw a window (old screens draw npcs as given; new
- * ones interpolate scene.village.segments with the server's clock — §14-4). null before a band opens. */
+ * ones interpolate scene.village.segments with the server's clock — §14-4). null before a band opens.
+ * The segments are the ones not yet over at nowMs, and startSpots is where each resident's remaining
+ * plan begins (the spot its last finished segment left it at), so placeAt walks from the right place. */
 function villageScene(state) {
   const v = state.village;
   if (!v?.band) return null;
@@ -355,9 +360,12 @@ function villageScene(state) {
   const segments = planOf(v).segments;
   const startSpots = Object.fromEntries(Object.entries(v.band.residents).map(([npc, r]) => [npc, r.lastSpot]).filter(([, spot]) => spot));
   const places = Object.fromEntries(Object.keys(RESIDENT_BY_ID).map(npc => [npc, placeAt(segments, npc, nowMs, startSpots)]));
-  return { nowMs, places, line: caption(places), startSpots,
-    goals: Object.fromEntries(Object.entries(places).map(([npc, at]) => [npc, at ? (at.walking ? '다음 자리로 걸어가기' : ARCHETYPE_BY_ID[at.archetype]?.label || '함께하는 일') : '잠자기'])),
-    awake: Object.fromEntries(Object.keys(RESIDENT_BY_ID).map(npc => [npc, awakeAt(v, npc, nowMs)])),
+  const fromSpots = { ...startSpots };
+  for (const seg of segments) if (seg.endMs <= nowMs) fromSpots[seg.npc] = seg.spot;
+  return { nowMs, places, line: caption(places), startSpots: fromSpots, ...(v.sleeps ? { sleeps: true } : {}),
+    goals: Object.fromEntries(Object.entries(places).map(([npc, at]) => [npc, goalOf(at)])),
+    // Whether a scene may begin with each resident now (the night rule; always true without sleeps).
+    awake: Object.fromEntries(Object.keys(RESIDENT_BY_ID).map(npc => [npc, upFor(v, npc, nowMs)])),
     band: { band: v.band.band, startMs: v.band.startMs, endMs: v.band.endMs },
     segments: segments.filter(seg => seg.endMs > nowMs).map(({ npc, startMs, arriveMs, endMs, archetype, spot }) => ({ npc, startMs, arriveMs, endMs, archetype, spot })) };
 }
@@ -442,6 +450,9 @@ function advanceUse(state, host) {
     const pending = state.pendingUse;
     if (!pending || host.canRun === false || state.phase !== 'ready') return;
     if (host.surface === 'day' && !atDayPlace(state, 'cafe')) return;
+    // A guest comes when the cafe owner is up to serve (the night rule): a use not yet begun waits for the
+    // morning; the U step judges at the settlement's one wall time (host.nowMs, §D1).
+    if (pending.elapsedMs === 0 && !upFor(state.village, 'cafe-owner', host.nowMs)) return;
     const need = Math.max(0, executionFor(state).durationMs - pending.elapsedMs);
     if (left < need) { pending.elapsedMs += left; return; }
     left -= need;
@@ -526,6 +537,10 @@ export function viewFor(state) {
       sign: state.sign.slot ? { picture: state.sign.picture, slot: state.sign.slot, target: state.sign.target, active: !!state.sign.target } : null,
       signPreview: state.phase === 'sign-place' ? { picture: state.sign.draftPicture, slot: state.sign.draftSlot, target: state.placement, active: true } : null },
     engine: { trail: Trail.VERSION, vellum: Vellum.VERSION, loom: Loom.VERSION, learningEffectClaim: false } };
+  const village = state.day ? villageScene(state) : null;
+  // The night rule (§4-2 A): a guest comes to the seat when the cafe owner is up to serve it.
+  const ownerUp = village?.awake['cafe-owner'] !== false;
+  const morningGuest = activity => `찻집 주인이 잠든 밤이에요. 손님은 아침에 ${activity === 'sign' ? '안내판을 보고' : '이 자리에'} 와요.`;
   if (state.phase === 'choose') view.actions = [action('CHOOSE', '밖이 좋아요', { branch: 'outside' }), action('CHOOSE', '안이 좋아요', { branch: 'inside' }),
     state.placement ? action('CANCEL', '지금이 좋아요') : action('LEAVE', '나중에요')];
   if (state.phase === 'outside-preview') {
@@ -567,7 +582,8 @@ export function viewFor(state) {
       ...(view.scene.canopyPlaced ? [action('REMOVE', '지붕 챙기기')] : []), action('LEAVE', '나가기')];
     if (!(state.activity === 'sign' ? state.sign.delivered : state.delivered)) {
       const selected = reactionFor(state).selected;
-      if (selected) {
+      if (selected && !ownerUp) view.line = morningGuest(state.activity);
+      else if (selected) {
         view.reaction = selected; view.plan = state.activity === 'sign' ? signPlan(state, selected) : planFor(state, selected);
         view.committedStepIds = view.plan.steps.map(step => step.id);
         view.line = state.activity === 'sign' ? (selected.contentRef === 'FT51.05' ? '그림을 보고 왔어요' : '이 그림을 보고 왔어요')
@@ -577,7 +593,6 @@ export function viewFor(state) {
       }
     }
   }
-  const village = state.day ? villageScene(state) : null;
   if (state.life) {
     const owner = village?.places['cafe-owner'];
     view.life = viewLife(state.life, { ...livingContext(state), ...(village ? { ownerAwake: village.awake['cafe-owner'],
@@ -585,13 +600,16 @@ export function viewFor(state) {
     view.notebook.push(...(view.life.memory || []));
   }
   if (state.pendingUse) {
-    view.execution = executionFor(state);
+    // A use not yet begun waits for the morning with the owner (advanceUse); one begun goes on.
+    const waiting = state.pendingUse.elapsedMs === 0 && !ownerUp;
+    view.execution = waiting ? null : executionFor(state);
     view.plan = null; view.reaction = null; view.committedStepIds = [];
-    view.line = state.pendingUse.kind === 'tea' ? '손님이 자리를 확인하고 있어요.' : '손님이 안내판을 따라가요.';
+    view.line = waiting ? morningGuest(state.pendingUse.kind) : state.pendingUse.kind === 'tea' ? '손님이 자리를 확인하고 있어요.' : '손님이 안내판을 따라가요.';
     view.actions = view.actions.filter(a => ['SIT', 'REARRANGE', 'REMOVE', 'LEAVE'].includes(a.type));
   }
   if (state.day) view.day = viewDay(state.day, { ...dayContext(state, { surface: 'day' }), village });
-  if (state.bazaar) view.bazaar = viewBazaar(state.bazaar, bazaarContext(state, { surface: 'day' }));
+  if (state.bazaar) view.bazaar = viewBazaar(state.bazaar, { ...bazaarContext(state, { surface: 'day' }),
+    ownerAsleep: !ownerUp, workshopAsleep: village?.awake['workshop-owner'] === false });
   if (state.support) view.support = viewSupport(state.support, supportContext(state));
   return view;
 }

@@ -30,7 +30,8 @@ function validResidents(residents) {
     && (r.lastSpot === null || spotId(r.lastSpot)) && typeof r.firstOfDay === 'boolean');
 }
 export function validVillage(v) {
-  if (!plain(v) || !(v.agreement === null || v.agreement === undefined || id(v.agreement)) || !(v.seed === null || typeof v.seed === 'string' && v.seed.length > 0 && v.seed.length <= 120)) return false;
+  if (!plain(v) || !(v.agreement === null || v.agreement === undefined || id(v.agreement)) || !(v.seed === null || typeof v.seed === 'string' && v.seed.length > 0 && v.seed.length <= 120)
+    || !(v.sleeps === undefined || v.sleeps === true)) return false;
   if (!Array.isArray(v.tz) || v.tz.length > 4 || v.tz.some((z, i) => !plain(z) || !Number.isSafeInteger(z.fromMs) || !validOffset(z.offsetMin)
     || i > 0 && z.fromMs <= v.tz[i - 1].fromMs)) return false;
   const b = v.band;
@@ -133,9 +134,10 @@ export function keepHabitSpots(v, candidates) {
 
  * time the current visit ended at when it has (visitEndAt reached, read only). Returns the habit uses the
  * closed bands made, for the caller to record as town events. */
-export function closeBands(v, { nowMs, seed, offsetMin, revision, visitEnd = null, candidates = [] }) {
+export function closeBands(v, { nowMs, seed, offsetMin, revision, visitEnd = null, candidates = [], sleeps = false }) {
   if (!integer(nowMs) || !integer(revision)) throw new TypeError('closeBands needs the clock and the command revision');
   if (v.seed === null) v.seed = seed;
+  if (sleeps === true) v.sleeps = true; else delete v.sleeps;
   if (validOffset(offsetMin)) v.tz = v.tz.length ? recordOffset(v.tz, nowMs, offsetMin) : [{ fromMs: 0, offsetMin }];
   else if (!v.tz.length) v.tz = [{ fromMs: 0, offsetMin: 540 }];
   if (!v.band) openBand(v, nowMs, revision, null);
@@ -160,6 +162,13 @@ export function awakeAt(v, npc, ms) {
   if (!v.tz.length) return true;
   const w = bandAt(v.tz, ms), { wakeMs, sleepMs } = awakeWindow(npc, w.lifeDay, lifeDayStartAt(v.tz, ms));
   return wakeMs <= ms && ms < sleepMs;
+}
+/** Whether a scene may begin with a resident at ms (the night rule, §4-2 · 10-23 「밤 첫 방문 A」): a
+ * village whose host keeps the residents' nights (sleeps) starts no scene with one asleep — it waits for
+ * the morning. A village without it (a fixture store: its clock sits near 0, often UTC midnight) keeps
+ * every scene open, so its tests never turn on the hour. A scene already begun finishes past bedtime. */
+export function upFor(v, npc, ms) {
+  return !v?.sleeps || !Number.isSafeInteger(ms) || awakeAt(v, npc, ms);
 }
 
 /** An accepted promise for the next life day's day band (§6-5 다음 날로 잇기). */
@@ -223,6 +232,10 @@ const DOING = Object.freeze({
 });
 const toward = place => { const word = PLACE_BY_ID[place]?.labels.text || '골목', code = word.charCodeAt(word.length - 1) - 0xac00, last = code >= 0 && code < 11172 ? code % 28 : 0;
   return `${word}${last === 0 || last === 8 ? '로' : '으로'}`; };
+/** A resident's goal in a few words, from placeAt (null = asleep) — the text alternative's line. */
+export function goalOf(at) {
+  return at ? (at.walking ? '다음 자리로 걸어가기' : ARCHETYPE_BY_ID[at.archetype]?.label || '함께하는 일') : '잠자기';
+}
 /** One resident's line in two forms, from placeAt (null = asleep). */
 export function doing(at) {
   if (!at) return ['자고', '자요'];

@@ -30,6 +30,18 @@ test('rejected commands cannot change revision or another account',()=>{
   assert.ok(failed.status>=400);assert.deepEqual(host.handle(A,'state','GET').body.state,before);
   assert.equal(host.handle(A,'state','POST').status,405);
 });
+// The town screen's heartbeat since W3 (vertical slice §14-3): pulse keeps the lease, boundary may settle at a safe point.
+test('town host answers pulse and boundary for the account fixture',()=>{
+  const seq=host.handle(A,'state','GET').body.state.writeSeq;
+  const pulse=host.handle(A,'pulse','POST',{surfaceId:'day-w',surface:'day',foreground:true,safe:true});
+  assert.equal(pulse.status,200);assert.ok(Number.isSafeInteger(pulse.body.serverNow));assert.equal(pulse.body.worldSeq,seq,'a pulse writes no world');
+  assert.equal(pulse.body.presence.surfaceId,'day-w');assert.equal(pulse.body.state,undefined,'no whole town in a pulse');
+  const boundary=host.handle(A,'boundary','POST',{surfaceId:'day-w',fence:pulse.body.presence.fence});
+  assert.equal(boundary.status,200);assert.ok(Number.isSafeInteger(boundary.body.worldSeq));
+  assert.equal(host.handle(A,'boundary','POST',{surfaceId:'other',fence:0}).status,409);
+  assert.equal(host.handle(A,'pulse','GET').status,405);
+  assert.equal(host.handle(A,'state','GET').body.state.village.sleeps,true,'the residents keep their nights here');
+});
 test('appearance only renders known slots with server-returned ownership',()=>{
   const base={accountId:A,revision:4,inventory:[{itemId:'mongle-apron-starter'}],avatar:{slots:{body:'mongle-apron-starter',neck:'mongle-scarf-first-steps'}}};
   assert.equal(confirmedAppearance(base).outfit,'apron');

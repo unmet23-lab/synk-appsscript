@@ -16,6 +16,8 @@ const ROUTES=Object.freeze({
   'town/state':['GET','synk-town/state'],
   'town/command':['POST','synk-town/command'],
   'town/presence':['POST','synk-town/presence'],
+  'town/pulse':['POST','synk-town/pulse'],
+  'town/boundary':['POST','synk-town/boundary'],
   'town/sharing':['POST','synk-classroom/api/world/town/sharing'],
   'enrollment/preview':['POST','synk-classroom/api/enrollment/preview'],
   'enrollment/claim':['POST','synk-classroom/api/enrollment/claim'],
@@ -57,7 +59,9 @@ function validateBody(route,body){
     case 'avatar/outfit':keys(body,['slots','dyes','expectedRevision','requestId'],['slots','expectedRevision','requestId']);slots(body.slots);dyes(body.dyes);if(!revision(body.expectedRevision)||!uuid(body.requestId))invalid();break;
     case 'wardrobe/looks':keys(body,['looks','expectedRevision','requestId']);if(!revision(body.expectedRevision)||!uuid(body.requestId)||!Array.isArray(body.looks)||body.looks.length>24)invalid();for(const look of body.looks){keys(look,['id','name','slots','dyes'],['id','name','slots']);if(!id(look.id)||typeof look.name!=='string'||look.name.length>120)invalid();slots(look.slots);dyes(look.dyes);}break;
     case 'town/command':keys(body,['id','type','payload','expectedRevision']);if(!id(body.id)||!id(body.type)||!record(body.payload)||!revision(body.expectedRevision))invalid();break;
-    case 'town/presence':keys(body,['surfaceId','surface','foreground','safe']);if(!id(body.surfaceId)||!id(body.surface)||typeof body.foreground!=='boolean'||typeof body.safe!=='boolean')invalid();break;
+    case 'town/presence':case 'town/pulse':keys(body,['surfaceId','surface','foreground','safe']);if(!id(body.surfaceId)||!id(body.surface)||typeof body.foreground!=='boolean'||typeof body.safe!=='boolean')invalid();break;
+    // A safe point (at most every 20 seconds) may carry what the screen showed: short ids only.
+    case 'town/boundary':keys(body,['surfaceId','fence','seen'],['surfaceId','fence']);if(!id(body.surfaceId)||!revision(body.fence)||body.seen!==undefined&&(!Array.isArray(body.seen)||body.seen.length>64||!body.seen.every(key=>typeof key==='string'&&key.length<=120)))invalid();break;
     case 'town/sharing':keys(body,['enabled','revision']);if(typeof body.enabled!=='boolean'||!revision(body.revision))invalid();break;
     case 'homework/submit':keys(body,['classId','week','kind','requestId','expectedRevision','contentVersion','answers','retry'],['classId','week','kind','requestId','expectedRevision','contentVersion','answers']);
       if(!uuid(body.classId)||!Number.isInteger(body.week)||body.week<1||body.week>12||!['reading','writing'].includes(body.kind)||!uuid(body.requestId)||!revision(body.expectedRevision)
@@ -71,7 +75,7 @@ function worldRequestSpec(params,product,clientKey){
   if(product!=='world'||clientKey!=='world')invalid();keys(params,['route','body','classId'],['route']);
   const {route,body,classId}=params;if(typeof route!=='string'||!Object.hasOwn(ROUTES,route))invalid();
   const [method,endpoint]=ROUTES[route];let path=endpoint;
-  if(classId!==undefined){if(!uuid(classId)||!['town/state','town/command','town/presence','town/sharing','homework/submit','homework/key'].includes(route))invalid();path+='?classId='+encodeURIComponent(classId);}
+  if(classId!==undefined){if(!uuid(classId)||!['town/state','town/command','town/presence','town/pulse','town/boundary','town/sharing','homework/submit','homework/key'].includes(route))invalid();path+='?classId='+encodeURIComponent(classId);}
   if((route==='town/sharing'||route==='homework/submit'||route==='homework/key')&&classId===undefined)invalid();
   if((route==='homework/submit'||route==='homework/key')&&body?.classId!==classId)invalid();
   if(method==='GET'){if(body!==undefined)invalid();return route==='classroom'?{path,contractVer:CLASSROOM_CONTRACT_VER}:{path};}

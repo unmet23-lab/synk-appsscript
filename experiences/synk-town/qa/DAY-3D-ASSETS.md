@@ -31,7 +31,7 @@ scene.dispose();
 
 `scene` 입력은 `location`, `player:{x,z}`, `npcs:[{id,x,z,pose}]`, `props:[{id,kind,x,z,preview,orientation}]`다. 위치는 집(-6,0), 찻집(0,0), 공방(6,0), 온실(0,-6). 클릭은 목적지 요청만 전달하며 의뢰 수락·수확·재료 소비를 실행하지 않는다. 도착·완료·보상·기억은 서버 규칙이 결정한다. 받은 위치 사이의 최대 260ms 보간과 자세 흔들기는 표시일 뿐 저장 사실을 만들지 않는다.
 
-첫 자리 연출은 `legacy:{...view.scene,active:true}`, `legacyActors:Loom.sample(...).actors`를 전달한다. `%` 좌표를 찻집 내부 3D 좌표로 변환해 동일 찻집 주인·손님·찻잔을 보여 준다. C1은 `lifeRoutine:view.life.background`로 같은 주인의 자세와 정리할 잔을 표현한다. 첫 자리 연출 중에는 C1 위치를 보내지 않는다. 찻집 주인은 복제하지 않는다. 해당 연출의 전달 ACK는 소비 UI가 실제 노출과 완료한 단계를 확인해야 한다.
+첫 자리 연출은 `legacy:{...view.scene,active:true}`, `legacyActors:Loom.sample(...).actors`를 전달한다. `%` 좌표를 찻집 내부 3D 좌표로 변환해 동일 찻집 주인·손님·찻잔을 보여 준다. C1은 자기 장면이 주인을 붙잡는 동안만 `lifeHold:view.life.background`(owner·prop)로 같은 주인의 자세와 정리할 잔을 표현한다(2026-10-23 W3 — 그 밖에는 마을 계획이 주인을 그린다). 첫 자리 연출 중에는 C1 위치를 보내지 않는다. 찻집 주인은 복제하지 않는다. 해당 연출의 전달 ACK는 소비 UI가 실제 노출과 완료한 단계를 확인해야 한다.
 
 WebGL 초기화 실패는 예외, 실행 중 context loss는 `onError`로 알린다. 소비 UI는 생활 현황·버튼을 유지하며 텍스트 대안을 명시한다. 대안을 3D 성공으로 보고하지 않는다.
 

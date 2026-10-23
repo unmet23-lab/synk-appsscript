@@ -11,6 +11,9 @@ export function confirmedAppearance(snapshot) {
   return {avatarId:'mongle',renderVersion:3,slots,dyes,outfit:outfitForSlots(slots),verified:!!snapshot?.accountId,revision:snapshot?.revision??null};
 }
 
+// The town's requests (vertical slice §14-3; the screen uses pulse·boundary since W3, presence stays for old screens).
+const TOWN_OPERATIONS=Object.freeze(['state','command','presence','pulse','boundary']);
+
 // Same-origin iframe shares the current tab namespace, never a token in a URL.
 // Broadcasts are only invalidations; the recipient re-reads authoritative state.
 export async function connectTownWorld({onAppearance=()=>{},onError=()=>{},client=new WorldClient({broadcastAppearance:false})}={}) {
@@ -73,7 +76,7 @@ export async function connectTownWorld({onAppearance=()=>{},onError=()=>{},clien
     refresh:sync,
     async request(operation,body){
       if(!sessionValid()||!client.snapshot)throw authError();
-      if(!['state','command','presence'].includes(operation))throw Error('Unknown town operation');
+      if(!TOWN_OPERATIONS.includes(operation))throw Error('Unknown town operation');
       const generation=authGeneration;
       try{
         const result=await client.request(`town/${operation}`,body?{method:'POST',body}:{method:'GET'});
@@ -99,7 +102,7 @@ export function createTownWorldHost(client,{placement=null}={}) {
   globalThis.addEventListener?.('synk-world-session',notify);
   return Object.freeze({appearance,subscribe(fn){listeners.add(fn);fn(appearance());return()=>listeners.delete(fn);},
     async refresh(){guard();const result=await client.refresh();guard();publish();return result;},
-    async request(operation,body){guard();if(!['state','command','presence'].includes(operation))throw new TypeError('Unknown town operation');const result=await client.request(`town/${operation}`,body?{method:'POST',body}:{method:'GET'});guard();return result;},
+    async request(operation,body){guard();if(!TOWN_OPERATIONS.includes(operation))throw new TypeError('Unknown town operation');const result=await client.request(`town/${operation}`,body?{method:'POST',body}:{method:'GET'});guard();return result;},
     placement(){guard();if(!placement)return {suggested:{reading:'L1',listening:'L1'},chosen,ask:false};const {reading,listening}=placement.suggest();const suggested={reading,listening};return {suggested,chosen,ask:placement.ask({suggested,chosen})};},
     // answer: 'keep'(이대로) · 'easier'(더 쉬운 말로 — 두 자리 모두 한 단계 아래). 고른 값은 서버(town/placement)에 남고 입장 조회가 돌려준다.
     async choosePlacement(answer){guard();if(!placement)throw new TypeError('Town placement unavailable');const {reading,listening}=placement.suggest(),suggested={reading,listening};

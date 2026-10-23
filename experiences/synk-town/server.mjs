@@ -108,7 +108,8 @@ function validLease(lease) {
  * with a boundary or a command (outside the signed command, so a retry never counts twice). The
  * account's own facts come from the host: academy (an academy-linked account is never asked for
  * evaluation signals), tz (its offset in minutes, for the life day), ops (the operating line of
- * §20-6) and villageSeed.
+ * §20-6), villageSeed and sleeps (the residents keep their nights: no scene begins with one asleep —
+ * a real account's town and this preview; fixture stores leave it off so their clocks never matter).
  * Where it is kept (W2 plan D9·F21):
  *   dir   the account's folder of branch files (save.mjs). A commit appends its lines and receipts,
  *         then replaces the world — the commit point; a load cuts whatever lies past the world. The
@@ -119,7 +120,7 @@ function validLease(lease) {
  *         §20 branches inline), kept for the stores its tests open.
  *   save  a function given that one-file shape at every commit (tests). */
 export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabled = true, observe = null, fold = FOLD_LIMITS,
-  academy = false, tz = hostOffset(), ops = DEFAULT_OPS, villageSeed = 'synk-town' } = {}) {
+  academy = false, tz = hostOffset(), ops = DEFAULT_OPS, villageSeed = 'synk-town', sleeps = false } = {}) {
   let state = initialState({ lifeEnabled }), log = [], townLog = [], seen = {}, evalLines = [], loadError = null, savedLease = null;
   const receipts = new Map(), walks = [];
   const paths = dir ? branchPaths(dir) : null, sizes = { events: 0, receipts: 0, receiptLines: 0 };
@@ -298,7 +299,7 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
     // The village closes its bands on every settlement (W3): its seed and offset come from the account, and a
     // visit the lease shows ended (visitEndAt reached) ends the holds opened before it — read, not recorded.
     const endAt = visitEndAt(next.presence), close = (world, at) => closeLiving(world, at, { seed: account.villageSeed,
-      offsetMin: offsetAt(tz, at), visitEnd: endAt !== null && endAt <= at ? endAt : null });
+      offsetMin: offsetAt(tz, at), visitEnd: endAt !== null && endAt <= at ? endAt : null, sleeps: sleeps === true });
     let { state: world, changed } = settle(state, next, { step: stepLiving, check: assertState, close, nowMs, canContact, touch });
     const lifeHost = { lastForegroundAt: next.lastForegroundAt, fence: next.presence.fence };
     if (next.presence.at !== null && JSON.stringify(lifeHost) !== JSON.stringify(world.lifeHost ?? null)) {
@@ -514,7 +515,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
   try { observe = parseObservation(process.argv.slice(2)); }
   catch (error) { console.error(`관찰 스위치: ${error.message}`); process.exit(2); }
   if (observe.active && !previewEnabled) { console.error('관찰 스위치는 --preview와 함께만 써요.'); process.exit(2); }
-  const store = createStore({ dir: defaultSaveDir(observe), file: defaultSavePath(observe), now: observationClock(observe), observe });
+  const store = createStore({ dir: defaultSaveDir(observe), file: defaultSavePath(observe), now: observationClock(observe), observe, sleeps: true });
   const server = createServer({ previewEnabled, store });
   server.on('error', error => { console.error(`Town server: ${error.code || 'unavailable'}`); process.exitCode = 1; });
   server.listen(port, '127.0.0.1', () => {

@@ -4,7 +4,7 @@
  * There is no new approach budget, economy, friendship score or language assessment.
  */
 import { WALK_SPAWNS, WALK_SPEED, isWalkable, nearbyPlace, movePoint, walkSegments } from './walk.mjs';
-import { PLACE_BY_ID, PLAYER_PLACES, FT_SEATS, HOME_SLOTS } from './town/places.mjs';
+import { PLACE_BY_ID, PLAYER_PLACES, FT_SEATS, HOME_SLOTS, SPOT_BY_ID } from './town/places.mjs';
 import { doing } from './town/village.mjs';
 export class DayError extends Error {
   constructor(code, message, status = 400) { super(message); this.code = code; this.status = status; }
@@ -443,10 +443,16 @@ function seatPoint(target) {
 }
 function sceneFor(day, ctx) {
   // Residents stand where the village plan has them now (W3, §6-6); a scene moves only the ones it holds.
-  const v = ctx.village;
+  // holds is where each held resident stands once it has walked over: a screen with the server's clock
+  // draws the plan's walk until then (review P2-2). npcs is the scene at ctx.village's time (old screens).
+  const v = ctx.village, holds = {};
   const npcs = ids.filter(id => v?.places?.[id]).map(id => actor(id, v.places[id].x, v.places[id].z, v.places[id].pose, v.goals[id]));
-  const workshop = npcs.find(n => n.id === 'workshop-owner');
-  if (workshop && day.job?.status === 'preparing') Object.assign(workshop, { pose: 'working', goal: '부탁받은 받침 하나 준비' });
+  const walkingIn = id => !!v?.places?.[id]?.walking && v.places[id].archetype === 'reserved';
+  if (day.job?.status === 'preparing') {
+    const at = v?.places?.['workshop-owner'], workshop = walkingIn('workshop-owner')
+      ? actor('workshop-owner', SPOT_BY_ID[at.spot].at.x, SPOT_BY_ID[at.spot].at.z, 'working', '') : npcs.find(n => n.id === 'workshop-owner');
+    if (workshop) holds['workshop-owner'] = Object.assign(workshop, { pose: 'working', goal: '부탁받은 받침 하나 준비' });
+  }
   const props = [
     { id: 'home-cushion', kind: 'cushion', ...HOME_SLOTS[day.home.slot] },
     { id: 'cafe-tray', kind: 'tray', x: -.7, z: -.65 },
@@ -467,11 +473,11 @@ function sceneFor(day, ctx) {
     for (const id of members(e.kind)) {
       if (e.kind === 'help' && e.choice === 'alone') continue;
       const index = members(e.kind).indexOf(id), targetX = base.x + (index ? 1 : -.8), targetZ = base.z + .3;
-      // A resident still walking over to the scene keeps the plan's walk (review P2-2); one the plan has
-      // asleep (a scene that ran past bedtime) stays at the scene.
-      if (v?.places?.[id]?.walking && v.places[id].archetype === 'reserved') continue;
-      let n = npcs.find(row => row.id === id);
-      if (!n) { n = actor(id, targetX, targetZ, 'standing', ''); npcs.push(n); }
+      // A resident still walking over to the scene keeps the plan's walk in npcs (review P2-2) and is held
+      // where it will stand; one the plan has asleep (a scene that ran past bedtime) stays at the scene.
+      let n = walkingIn(id) ? null : npcs.find(row => row.id === id);
+      if (!n) { n = actor(id, targetX, targetZ, 'standing', ''); if (!walkingIn(id)) npcs.push(n); }
+      holds[id] = n;
       n.x = mix(n.x, targetX, progress); n.z = mix(n.z, targetZ, progress);
       n.pose = ['executing', 'rehearsal'].includes(e.stage) && e.elapsedMs < 2000 ? 'walking' : e.kind === 'help' ? 'holding' : id === 'researcher' ? 'showing' : 'resting';
       if (e.stage === 'demonstration') n.pose = 'showing';
@@ -487,7 +493,7 @@ function sceneFor(day, ctx) {
         if (showBoard) Object.assign(props.find(p => p.id === 'researcher-board'), { x: base.x + (e.choice === 'separate' ? 1.2 : 0), z: base.z, preview });
         if (showTea) Object.assign(props.find(p => p.id === 'cafe-tray'), { x: base.x - (e.choice === 'separate' ? .9 : 0), z: base.z, preview });
       } else if (e.kind === 'coordination') {
-        const r = npcs.find(n => n.id === 'researcher');
+        const r = holds.researcher;
         if (e.choice === 'delegate') { r.x = .3; r.z = -6; r.goal = '온실에서 자기 그림 보여 주기'; }
         else if (e.choice === 'rest' && !e.explanationDone && e.stage !== 'explaining') r.pose = 'resting';
         else Object.assign(props.find(p => p.id === 'researcher-board'), { x: base.x + (e.choice === 'separate' ? 1.8 : .4), z: base.z - .3, preview });
@@ -498,17 +504,19 @@ function sceneFor(day, ctx) {
   if (e?.open && e.location === day.location && e.guideStep != null) {
     const shown = e.kind === 'help' ? 'workshop-support' : e.guideStep === 0 ? 'researcher-board' : e.kind === 'tea' ? 'cafe-tray' : 'guide-rest-seat';
     if (shown === 'guide-rest-seat') props.push({ id: shown, kind: 'chair', x: here.x + .8, z: here.z + 1, preview: true });
-    for (const n of npcs) if (members(e.kind).includes(n.id)) { n.pose = 'showing'; n.goal = e.guideStep === 0 ? '첫 물건을 보여 주고 기다리기' : '다음 물건을 보여 주고 기다리기'; }
+    for (const id of members(e.kind)) if (holds[id]) Object.assign(holds[id], { pose: 'showing', goal: e.guideStep === 0 ? '첫 물건을 보여 주고 기다리기' : '다음 물건을 보여 주고 기다리기' });
     const prop = props.find(p => p.id === shown);
     if (prop) Object.assign(prop, { x: here.x + (e.guideStep ? .8 : -.8), z: here.z + 1, preview: true });
   }
   const cafeReserved = reservedMembers(day).has('cafe-owner');
   const backgroundLine = day.job?.status === 'preparing' ? '공방 주인은 부탁받은 받침을 준비하고, 다른 주민은 자기 일을 해요.' : v?.line || '';
+  // The cafe owner of a busy cafe is drawn by the cafe's own scene (FT10, the bazaar, C1), not the plan.
+  const hidden = ctx.cafeBusy && day.location === 'cafe' ? ['cafe-owner'] : [];
   return { location: day.location, player: day.walk?.enabled ? { x: day.walk.x, z: day.walk.z, headingX: day.walk.headingX, headingZ: day.walk.headingZ }
     : { x: here.x, z: day.location === 'home' && day.home.exitTarget ? 1.2 : here.z + 2.5 },
-    npcs: ctx.cafeBusy && day.location === 'cafe' ? npcs.filter(n => n.id !== 'cafe-owner') : npcs, props,
+    npcs: npcs.filter(n => !hidden.includes(n.id)), props,
     cafeReserved, summary: backgroundLine, phase: e?.open ? e.stage : day.rest ? 'resting' : 'walking',
-    ...(v ? { village: { band: v.band, segments: v.segments, startSpots: v.startSpots } } : {}) };
+    ...(v ? { village: { nowMs: v.nowMs, band: v.band, segments: v.segments, startSpots: v.startSpots, holds, hidden, ...(v.sleeps ? { sleeps: true } : {}) } } : {}) };
 }
 function historySummary(h) {
   const role = h.role === 'planner' ? '함께 정함' : h.role === 'delegated' ? '분담을 맡김' : h.observedU === null ? '주민의 결과 준비됨 · 아직 관람 전' : '실제로 관람함';
@@ -576,6 +584,7 @@ export function viewDay(day, context) {
     // A scene whose residents are asleep waits for the morning (design 2-7, default A until decided).
     const sleeping = new Set(), up = npcs => { const asleep = npcs.filter(n => ctx.village?.awake?.[n] === false); asleep.forEach(n => sleeping.add(n)); return !asleep.length; };
     if (loc === 'cafe' && canStart) {
+      up(['cafe-owner']); // the cafe's own resident is named first when the cafe sleeps
       if (ctx.ftReady && ctx.placement && !ctx.cafeBusy && up(members('tea'))) actions.push(action('DAY_START', '차와 그림 함께 놓기', { kind: 'tea' }, true));
       if (day.job?.status !== 'preparing' && up(members('coordination'))) actions.push(action('DAY_START', '쉬는 자리와 그림 조율하기', { kind: 'coordination' }));
     }
@@ -587,7 +596,9 @@ export function viewDay(day, context) {
     }
     if (e && (!e.open || e.location !== loc) && e.stage !== 'result' && !ctx.resumeBlocked) actions.push(action('DAY_RESUME', `${labelPlace(e.location)} 생활 이어 하기`));
     actions.push(action(day.rest ? 'DAY_WAKE' : 'DAY_REST', day.rest ? '다시 둘러볼게요' : '여기서 쉬기'));
-    if (sleeping.size) line = `${[...sleeping].map(n => RESIDENT_LABELS[n]).join('과 ')}은 벌써 잠들었어요. 아침에 다시 만나요.`;
+    const asleep = [...sleeping].map(n => RESIDENT_LABELS[n]);
+    if (asleep.length) line = asleep.length === ids.length ? '주민들은 모두 잠들었어요. 아침에 다시 만나요.'
+      : `${asleep.length > 1 ? `${asleep.slice(0, -1).join(', ')}과 ${asleep.at(-1)}` : asleep[0]}은 벌써 잠들었어요. 아침에 다시 만나요.`;
   }
   if (day.walk?.enabled && nearbyPlace(day.walk) !== loc) { line = '마을을 걸으며 가까운 장소를 살펴보세요.'; actions.length = 0; }
   return { title: '싱크타운 · 첫 하루', line, speaker, location: loc, visit: day.visit, support: day.support,
