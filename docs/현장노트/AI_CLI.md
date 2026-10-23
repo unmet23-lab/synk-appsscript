@@ -690,6 +690,8 @@
 - 원인: 데스크톱 앱은 이 로그인 파일을 쓰지 않는다. 앱 안에 따로 로그인해 두고, 세션의 API 요청을 앱 쪽 통로(`ANTHROPIC_BASE_URL`)로 보낸다. 세션에는 `CLAUDE_CODE_USER_EMAIL`·`CLAUDE_CODE_ACCOUNT_UUID`만 오고 `CLAUDE_CODE_OAUTH_TOKEN`은 없다. 홈 `~/.claude.json`의 oauthAccount는 앱 계정을 따라가고, `~/.claude/.credentials.json`은 터미널 `claude` 로그인이라 둘이 다른 계정일 수 있다(10-20에는 서로 다른 Max 계정이었다).
 - 고침: 로그인 파일의 계정은 설정 파일이 아니라 토큰으로 묻는다(`/api/oauth/profile`, `anthropic-beta: oauth-2025-04-20`, 토큰은 출력하지 않는다). 앱 계정의 한도는 세션 안에서 `mcp__ccd_session_mgmt__get_usage`로 보고, 밖에서 읽으려면 그 계정으로 `CLAUDE_CONFIG_DIR=<폴더> claude auth login`을 한 번 해 둔 폴더를 쓴다. 계정판은 기본 로그인을 profile로 확인해 읽고, 앱 계정을 어느 폴더도 못 읽으면 `claude-app` 「못 읽음」 줄을 띄운다.
 - 다시 확인: `node ~/.ai-accounts/read-usage.mjs --only=claude`의 `folder: "claude"` 줄 이메일이 터미널 `claude auth status`의 계정과 같고, 세션의 `echo $CLAUDE_CODE_USER_EMAIL`과는 다를 수 있다.
+- 10-23 GPT 확인: 사용자가 검수할 Claude 계정을 지정하면 SYNK Desktop 계정판의 기존 `AiSubscriptions/accounts/claude-…` 프로필도 먼저 확인한다(`desktop/src/ai-subscriptions.cjs`의 `CLAUDE_CONFIG_DIR` 경로). 검수 자식 프로세스에만 그 경로를 주고 공식 `claude auth status --json`의 실제 이메일을 대조하면 기본 로그인·다른 세션을 바꾸지 않고 기존 구독으로 실행할 수 있다. 프로필에 모델 설정이 없으면 사용자의 기존 모델·추론 설정을 실행 인자로 보존한다. 자격 파일의 토큰은 열거나 출력하지 않는다.
+- 같은 날 도구를 끈 검수 답변에도 「직접 파일을 읽고 시험했다」는 설명이 섞였다. 실행 기록과 맞지 않는 설명은 증거로 쓰지 않고, 실제 시험 TAP·파일 SHA와 코드 지적을 따로 대조한다. 후속 검수에는 제공된 입력만 읽는다는 점과 입력 SHA·끝 표식·답 길이를 명시한다.
 
 ### 아스트라 검수를 `--ephemeral`로 돌리면 하위 협업 스레드 띄우기가 한 번 실패한다 — 본 답은 끝난다 (2026-10-20 Claude)
 - 증상: 10-20 WORLD TOPIK 검수 3차를 `node tools/codex계정.js exec -m gpt-6-astra -s read-only --skip-git-repo-check --ephemeral -C <빈 폴더> -o <답 파일> -`와 표준입력 묶음(152,701바이트)으로 돌렸다. 시작 14초 뒤 stderr에 `collab spawn failed … no rollout found for thread id`가 한 번 찍혔다.

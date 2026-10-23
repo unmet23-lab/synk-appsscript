@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import net from 'node:net';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
@@ -208,4 +208,78 @@ test('첫 인자(명령·편 폴더)가 빠지지 않고, 명령 이름은 NFC·
   assert.match(out, /모르는 명령이거나 없는 편 폴더다/);
   assert.match(out, /credential/);
   assert.doesNotMatch(out, /자격이 없습니다/);
+});
+
+function queueCli(t, { records = {}, ready = false } = {}) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'workspace-queue-cli-'));
+  const linkDir = path.join(root, 'links'), callsFile = path.join(root, 'calls.jsonl');
+  fs.mkdirSync(path.join(root, 'tools'));
+  fs.mkdirSync(path.join(root, 'docs', '마케팅'), { recursive: true });
+  fs.mkdirSync(linkDir);
+  for (const [name, record] of Object.entries(records)) fs.writeFileSync(path.join(linkDir, name + '.json'), JSON.stringify(record));
+  if (ready) {
+    const posting = path.join(root, 'docs', '마케팅', 'ready', '게시');
+    fs.mkdirSync(posting, { recursive: true });
+    fs.writeFileSync(path.join(posting, '준비.json'), JSON.stringify({ 작업실등록: true, 상태: '올릴 준비', 검사: { 결과: '확인할 것' } }));
+  }
+  // 자격 보관소·네트워크·실제 텔레그램에 닿기 전에 모두 대역으로 바꾼다.
+  const preload = path.join(root, 'guards.cjs');
+  fs.writeFileSync(preload, `
+    const fs = require('node:fs');
+    const record = (kind) => fs.appendFileSync(${JSON.stringify(callsFile)}, JSON.stringify({ kind }) + '\\n');
+    require('node:child_process').spawnSync = () => { record('credential'); return { status: 1, stderr: 'CREDENTIAL_BLOCKED_BY_TEST' }; };
+    global.fetch = async () => { record('fetch'); throw new Error('NETWORK_BLOCKED_BY_TEST'); };
+    require(${JSON.stringify(path.join(here, '..', 'tools', 'lib', '헤르메스보내기.js'))}).보내기 = () => { record('telegram'); return { ok: true }; };
+  `);
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  return {
+    linkDir,
+    run: (argv) => spawnSync(process.execPath, ['--require', preload, path.join(here, '..', 'tools', '작업실예약.js'), ...argv], {
+      cwd: root, encoding: 'utf8', timeout: 10000, windowsHide: true,
+      env: { ...process.env, SYNK_WORKSPACE_SESSION: '', SYNK_WORKSPACE_LINK_DIR: linkDir },
+    }),
+    calls: () => fs.existsSync(callsFile) ? fs.readFileSync(callsFile, 'utf8').trim().split('\n').map((line) => JSON.parse(line).kind) : [],
+  };
+}
+
+const pendingLink = (extra = {}) => ({ 편: 'fixture', 링크: 'https://example.test/review', 판: [], 만료: new Date(Date.now() + 86400000).toISOString(), 보냄: false, ...extra });
+
+test('빈 대기열은 자격을 읽거나 서버에 로그인하지 않고 정상 종료한다', (t) => {
+  const f = queueCli(t);
+  const r = f.run(['--대기열', '--실행', '--텔레그램']);
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /등록할 편이 없다/);
+  assert.deepEqual(f.calls(), []);
+});
+
+test('빈 대기열도 미발송 검토 링크를 이어 보내고, 보낸 링크·만료 링크는 다시 보내지 않는다', (t) => {
+  const f = queueCli(t, { records: { pending: pendingLink(), sent: pendingLink({ 보냄: true }), expired: pendingLink({ 만료: '2000-01-01T00:00:00Z' }) } });
+  const r = f.run(['--대기열', '--실행', '--텔레그램']);
+  assert.equal(r.status, 0, r.stderr);
+  assert.deepEqual(f.calls(), ['telegram']);
+  const record = JSON.parse(fs.readFileSync(path.join(f.linkDir, 'pending.json'), 'utf8'));
+  assert.equal(record.보냄, true);
+  assert.ok(Number.isFinite(Date.parse(record.보낸때)));
+  const again = f.run(['--대기열', '--실행', '--텔레그램']);
+  assert.equal(again.status, 0, again.stderr);
+  assert.deepEqual(f.calls(), ['telegram'], '같은 링크를 다음 회차에 다시 보내지 않는다');
+});
+
+test('빈 대기열 미리보기는 미발송 링크도 보내거나 고치지 않는다', (t) => {
+  const f = queueCli(t, { records: { pending: pendingLink() } });
+  const file = path.join(f.linkDir, 'pending.json'), before = fs.readFileSync(file);
+  const r = f.run(['--대기열', '--텔레그램']);
+  assert.equal(r.status, 0, r.stderr);
+  assert.deepEqual(f.calls(), []);
+  assert.deepEqual(fs.readFileSync(file), before);
+});
+
+test('등록할 편이 있으면 인증 실패를 빈 대기열 성공으로 숨기지 않는다', (t) => {
+  const f = queueCli(t, { ready: true, records: { pending: pendingLink() } });
+  const r = f.run(['--대기열', '--실행', '--텔레그램']);
+  assert.equal(r.status, process.platform === 'win32' ? 1 : 3, r.stderr);
+  assert.doesNotMatch(r.stdout, /등록할 편이 없다/);
+  assert.deepEqual(f.calls(), process.platform === 'win32' ? ['credential'] : []);
+  if (process.platform === 'win32') assert.match(r.stderr, /CREDENTIAL_BLOCKED_BY_TEST/);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(f.linkDir, 'pending.json'), 'utf8')).보냄, false);
 });

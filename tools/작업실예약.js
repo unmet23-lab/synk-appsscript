@@ -515,6 +515,14 @@ async function main() {
   if (!o.queue && o.rest[0] && !['상태', '취소'].includes(명령) && !fs.existsSync(o.rest[0])) {
     throw Object.assign(new Error(`모르는 명령이거나 없는 편 폴더다: ${JSON.stringify(o.rest[0])} (${코드포인트(o.rest[0])}) — 자격은 \`node tools/작업실예약.js credential\``), { code: 'USAGE' });
   }
+  // 등록할 편이 없는 회차는 자격·서버를 읽지 않는다. 이미 등록했으나 못 보낸 검토 링크는 그대로 이어 보낸다.
+  const queueDirs = o.queue && !['상태', '취소'].includes(명령)
+    ? readyFolders(path.join(묶음.repoOf(process.cwd()), 'docs', '마케팅')) : null;
+  if (queueDirs && !queueDirs.length) {
+    if (o.run && o.telegram) await resendPending();
+    console.log('등록할 편이 없다');
+    return;
+  }
   const ws = await connect({ origin: o.origin });
   if (명령 === '상태') {
     const bundle = 묶음.load(o.rest[1]);
