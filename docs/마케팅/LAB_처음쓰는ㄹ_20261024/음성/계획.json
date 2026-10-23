@@ -1,0 +1,98 @@
+{
+  "note": "LAB E5 「처음 쓰는 ㄹ」 나레이션 — LAB 낱말 편 목소리 하나(관용구 퀴즈와 같은 목소리), 영어 줄 + 한국어 낱말 한 줄(리을). 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_처음쓰는ㄹ_20261024/음성/계획.json --굽기",
+  "voice": {
+    "id": "tc_61659cc118732016a95fe7c6",
+    "name": "하나"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "en",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1024,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    {
+      "id": "h1",
+      "text": "Writing this for the first time...",
+      "emotion": "smart",
+      "prev": "A beginner opens a Korean handwriting notebook and picks up a pencil.",
+      "next": "That's a two."
+    },
+    {
+      "id": "a1",
+      "text": "That's a two.",
+      "emotion": "smart",
+      "prev": "Writing this for the first time... The letter came out looking like the number two.",
+      "next": "Now it's a Z."
+    },
+    {
+      "id": "a2",
+      "text": "Now it's a Z.",
+      "emotion": "smart",
+      "prev": "That's a two.",
+      "next": "A snake?!"
+    },
+    {
+      "id": "a3",
+      "text": "A snake?!",
+      "emotion": "happy",
+      "intensity": 1.2
+    },
+    {
+      "id": "f1",
+      "text": "Easy fix: three strokes.",
+      "emotion": "smart",
+      "prev": "A snake?! Okay, here is the trick every Korean kid learns.",
+      "next": "One. Two. Three."
+    },
+    {
+      "id": "n1",
+      "text": "One.",
+      "emotion": "normal"
+    },
+    {
+      "id": "n2",
+      "text": "Two.",
+      "emotion": "normal"
+    },
+    {
+      "id": "n3",
+      "text": "Three.",
+      "emotion": "normal"
+    },
+    {
+      "id": "k1",
+      "text": "리을!",
+      "lang": "ko",
+      "emotion": "happy",
+      "intensity": 1
+    },
+    {
+      "id": "k1b",
+      "text": "리을.",
+      "lang": "ko",
+      "emotion": "normal",
+      "intensity": 1,
+      "tempo": 0.9
+    },
+    {
+      "id": "k1c",
+      "text": "이건 리을이에요.",
+      "lang": "ko",
+      "emotion": "normal",
+      "intensity": 1,
+      "tempo": 0.95
+    },
+    {
+      "id": "e1",
+      "text": "Rate mine, one to ten!",
+      "emotion": "happy",
+      "intensity": 1.1
+    }
+  ]
+}

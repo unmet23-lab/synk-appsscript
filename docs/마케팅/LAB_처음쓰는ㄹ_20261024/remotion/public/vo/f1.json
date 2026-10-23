@@ -1,0 +1,49 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "f1",
+ "text": "Easy fix: three strokes.",
+ "dur": 1.915,
+ "words": [
+  {
+   "text": "Easy",
+   "start": 0.04,
+   "end": 0.323
+  },
+  {
+   "text": "fix:",
+   "start": 0.444,
+   "end": 0.686
+  },
+  {
+   "text": "three",
+   "start": 0.989,
+   "end": 1.232
+  },
+  {
+   "text": "strokes.",
+   "start": 1.292,
+   "end": 1.898
+  }
+ ],
+ "source": {
+  "key": "b61a40192b7a80b51e48d15ea8cf8bfb",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1024,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6",
+   "prev": "A snake?! Okay, here is the trick every Korean kid learns.",
+   "next": "One. Two. Three."
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

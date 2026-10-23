@@ -1,0 +1,32 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "k1",
+ "text": "리을!",
+ "dur": 1.074,
+ "words": [
+  {
+   "text": "리을!",
+   "start": 0.02,
+   "end": 1.074
+  }
+ ],
+ "source": {
+  "key": "9d97d0057a480c52967832a17caf8a19",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1024,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

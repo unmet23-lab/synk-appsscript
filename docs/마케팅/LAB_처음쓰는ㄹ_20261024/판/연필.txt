@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — one pencil, product cut-out photo, square image.
+
+A single classic yellow hexagonal HB school pencil with a natural light-wood sharpened cone and a dark graphite point, a pink eraser and a silver metal ferrule at the other end. Shot from directly above, lying flat. The pencil runs diagonally across the square image: the sharpened graphite point is in the lower-left area at about 12% from the left edge and 88% from the top, and the eraser end is in the upper-right area, near the top-right corner but fully inside the frame with a margin.
+
+Seamless pure white background (#FFFFFF), flat even studio light, NO cast shadow, no reflection, no floor texture. The pencil is sharp and crisp with a clean outline. Absolutely no text, brand names, letters, numbers or logos printed on the pencil or anywhere else.

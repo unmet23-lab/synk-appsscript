@@ -1,0 +1,49 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "a2",
+ "text": "Now it's a Z.",
+ "dur": 1.61,
+ "words": [
+  {
+   "text": "Now",
+   "start": 0.02,
+   "end": 0.302
+  },
+  {
+   "text": "it's",
+   "start": 0.462,
+   "end": 0.643
+  },
+  {
+   "text": "a",
+   "start": 0.764,
+   "end": 0.784
+  },
+  {
+   "text": "Z.",
+   "start": 1.026,
+   "end": 1.609
+  }
+ ],
+ "source": {
+  "key": "0d0a9f681aaaeba746c004b569c86a2f",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1024,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6",
+   "prev": "That's a two.",
+   "next": "A snake?!"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

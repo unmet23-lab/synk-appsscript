@@ -1,0 +1,20 @@
+{
+ "id": "01-youtube-en",
+ "brand": "LAB",
+ "platform": "youtube",
+ "account": "@synkkorean",
+ "format": "shorts",
+ "language": "en",
+ "audioLanguage": "en",
+ "title": "POV: my first Korean ㄹ came out as a 2, a Z… and a snake 🐍 (3-stroke fix) #learnkorean",
+ "caption": "First time writing ㄹ (rieul)? If yours turned into a 2, a Z or a snake 🐍, you're not alone.\n\nThe fix: ㄹ = ㄱ + a line + ㄴ. Three strokes, top to bottom.\n1. ㄱ: across, then down\n2. a short line across the middle, left to right\n3. ㄴ: down, then across (make the bottom line a little longer)\nLift your pencil between strokes. Fast handwriting joins them later. Start with three.\n\nRate my new ㄹ 1–10 in the comments 👇 What did your first one look like?\n\n🎮 Korean listening & reading mini games: https://synk.im/try/learning-hub/\n\nSYNK LAB\n#learnkorean #hangul #koreanhandwriting #koreanlanguage",
+ "pinnedComment": "Your first ㄹ: a 2, a Z or a snake? 🐍 Tell me 👇 (and rate my new one 1–10!)\n🎮 New to Korean? Listening & reading mini games → https://synk.im/try/learning-hub/",
+ "alt": [
+  "Top-down view of a Korean handwriting practice notebook. A pencil copies the gray model letter ㄹ three times and it comes out like the number 2, a Z, and a snake with a tongue. After a page turn, the pencil writes ㄹ again in three numbered strokes (ㄱ, a middle line, ㄴ); the pieces pull apart and snap back, and the equation ㄱ + line + ㄴ = ㄹ stays under the box."
+ ],
+ "madeForKids": false,
+ "alteredContent": false,
+ "category": "Education",
+ "_비고": "video.mp4 = rieul-en v6(18.0초, 렌더 → 음량마감 −14.6 LUFS → CBR 10M 다시 담기). 표지 cover.png = 6.53초(196프레임 — 시도 셋과 이름표 a 2? · a Z? · a snake?, 연필이 빠진 뒤). 어린이 전용 아님(점수 댓글이 필요). 합성 표시: 필수 아님 — 배경 빈 공책 · 연필 사진은 GPT 이미지로 구웠지만 사람 · 장소 · 사건이 아닌 소품이고, 목소리는 특정인이 아닌 TTS(퀴즈 편과 같은 판단). 동영상 언어 en, 제목 · 설명 en. 자동 더빙 끔.",
+ "version": "rieul-en-v6"
+}

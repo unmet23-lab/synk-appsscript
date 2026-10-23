@@ -1,0 +1,129 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_61659cc118732016a95fe7c6",
+  "name": "하나"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "en",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1024,
+  "lufs": -17
+ },
+ "made": "2026-10-23T22:27:04.205Z",
+ "lines": [
+  {
+   "id": "h1",
+   "text": "Writing this for the first time...",
+   "dur": 2.101,
+   "syllablesPerSec": null,
+   "src": "h1.wav",
+   "key": "cdf1f12c682cce5335bdb7bc0c66c6f9",
+   "words": 6
+  },
+  {
+   "id": "a1",
+   "text": "That's a two.",
+   "dur": 1.5,
+   "syllablesPerSec": null,
+   "src": "a1.wav",
+   "key": "6427e45c20f855f2c0b35359d332667b",
+   "words": 3
+  },
+  {
+   "id": "a2",
+   "text": "Now it's a Z.",
+   "dur": 1.61,
+   "syllablesPerSec": null,
+   "src": "a2.wav",
+   "key": "0d0a9f681aaaeba746c004b569c86a2f",
+   "words": 4
+  },
+  {
+   "id": "a3",
+   "text": "A snake?!",
+   "dur": 1.226,
+   "syllablesPerSec": null,
+   "src": "a3.wav",
+   "key": "e3f4275962445ba89e3b448653c118b2",
+   "words": 2
+  },
+  {
+   "id": "f1",
+   "text": "Easy fix: three strokes.",
+   "dur": 1.915,
+   "syllablesPerSec": null,
+   "src": "f1.wav",
+   "key": "b61a40192b7a80b51e48d15ea8cf8bfb",
+   "words": 4
+  },
+  {
+   "id": "n1",
+   "text": "One.",
+   "dur": 0.516,
+   "syllablesPerSec": null,
+   "src": "n1.wav",
+   "key": "5a5f6931b44dfbc085213e44c2f0b44b",
+   "words": 1
+  },
+  {
+   "id": "n2",
+   "text": "Two.",
+   "dur": 0.591,
+   "syllablesPerSec": null,
+   "src": "n2.wav",
+   "key": "b0995e7e887f109a5a7dbf4664ec0e6c",
+   "words": 1
+  },
+  {
+   "id": "n3",
+   "text": "Three.",
+   "dur": 0.52,
+   "syllablesPerSec": null,
+   "src": "n3.wav",
+   "key": "5f5eeba06964b585e4601139a3bdc4c6",
+   "words": 1
+  },
+  {
+   "id": "k1",
+   "text": "리을!",
+   "dur": 1.074,
+   "syllablesPerSec": 1.86,
+   "src": "k1.wav",
+   "key": "9d97d0057a480c52967832a17caf8a19",
+   "words": 1
+  },
+  {
+   "id": "k1b",
+   "text": "리을.",
+   "dur": 0.634,
+   "syllablesPerSec": 3.15,
+   "src": "k1b.wav",
+   "key": "c8bdf68510631d9b634df4e08aef4f90",
+   "words": 1
+  },
+  {
+   "id": "k1c",
+   "text": "이건 리을이에요.",
+   "dur": 1.484,
+   "syllablesPerSec": 4.72,
+   "src": "k1c.wav",
+   "key": "e2cbe72b2fae8c4ab8fd38b1d8762c47",
+   "words": 2
+  },
+  {
+   "id": "e1",
+   "text": "Rate mine, one to ten!",
+   "dur": 2.041,
+   "syllablesPerSec": null,
+   "src": "e1.wav",
+   "key": "a9010ffdd607eba0ac06af9072af5930",
+   "words": 5
+  }
+ ]
+}

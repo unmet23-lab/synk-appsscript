@@ -1,0 +1,44 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "a1",
+ "text": "That's a two.",
+ "dur": 1.5,
+ "words": [
+  {
+   "text": "That's",
+   "start": 0.16,
+   "end": 0.444
+  },
+  {
+   "text": "a",
+   "start": 0.525,
+   "end": 0.545
+  },
+  {
+   "text": "two.",
+   "start": 0.788,
+   "end": 1.5
+  }
+ ],
+ "source": {
+  "key": "6427e45c20f855f2c0b35359d332667b",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1024,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6",
+   "prev": "Writing this for the first time... The letter came out looking like the number two.",
+   "next": "Now it's a Z."
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

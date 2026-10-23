@@ -1,0 +1,59 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h1",
+ "text": "Writing this for the first time...",
+ "dur": 2.101,
+ "words": [
+  {
+   "text": "Writing",
+   "start": 0.04,
+   "end": 0.444
+  },
+  {
+   "text": "this",
+   "start": 0.504,
+   "end": 0.766
+  },
+  {
+   "text": "for",
+   "start": 0.887,
+   "end": 1.008
+  },
+  {
+   "text": "the",
+   "start": 1.069,
+   "end": 1.17
+  },
+  {
+   "text": "first",
+   "start": 1.23,
+   "end": 1.553
+  },
+  {
+   "text": "time...",
+   "start": 1.634,
+   "end": 2.101
+  }
+ ],
+ "source": {
+  "key": "cdf1f12c682cce5335bdb7bc0c66c6f9",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1024,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6",
+   "prev": "A beginner opens a Korean handwriting notebook and picks up a pencil.",
+   "next": "That's a two."
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

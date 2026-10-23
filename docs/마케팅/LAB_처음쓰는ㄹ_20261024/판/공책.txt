@@ -1,0 +1,13 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — overhead photo background for a vertical (9:16) short video about a beginner practicing Korean handwriting.
+
+A real top-down photograph, shot straight down from above (no perspective tilt). An open, completely blank school notebook lies perfectly flat and square to the frame on a light natural oak desk. The notebook's right-hand page fills almost the whole frame: the page spans from about 5% to 95% of the image width and from about 9% to 93% of the image height. Only a thin strip of the wooden desk shows around the page edges, and the left page is not visible except a sliver of the soft center fold along the left edge.
+
+The page is plain warm-white paper (very light cream, close to #F7F3EA) with a very subtle natural paper grain. The page is EMPTY: no ruled lines, no grid, no margin line, no holes, no printing, no writing, no doodles, no stains.
+
+Lighting: soft window daylight from the upper left, very gentle and even across the page, a faint soft shadow where the page meets the desk, no hard shadows on the page itself, no glare.
+
+At the very bottom edge of the frame, on the desk strip below the page, lies a yellow hexagonal pencil horizontally, partly cut off by the frame edge.
+
+Absolutely no text, letters, numbers, logos, symbols or watermarks anywhere in the image. Photorealistic, natural colors, calm and clean.

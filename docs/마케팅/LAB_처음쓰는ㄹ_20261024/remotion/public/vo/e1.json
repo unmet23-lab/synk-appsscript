@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e1",
+ "text": "Rate mine, one to ten!",
+ "dur": 2.041,
+ "words": [
+  {
+   "text": "Rate",
+   "start": 0.04,
+   "end": 0.383
+  },
+  {
+   "text": "mine,",
+   "start": 0.524,
+   "end": 0.967
+  },
+  {
+   "text": "one",
+   "start": 1.149,
+   "end": 1.31
+  },
+  {
+   "text": "to",
+   "start": 1.371,
+   "end": 1.451
+  },
+  {
+   "text": "ten!",
+   "start": 1.552,
+   "end": 2.041
+  }
+ ],
+ "source": {
+  "key": "a9010ffdd607eba0ac06af9072af5930",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "happy",
+   "intensity": 1.1,
+   "tempo": 1,
+   "seed": 1024,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}
