@@ -601,6 +601,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 우회하지 않는다. 지울 작업트리 이름·크기·근거(깨끗함·origin에 같은 커밋·쓰는 도구 없음)를 유호님께 한 번에 보이고 「지워」를 받은 뒤, junction부터 끊고 `git worktree remove`(위 junction 항목). 앱 작업트리는 `clean_up_worktrees`·`discard_kept_worktree`(카드)로 지운다. 고르기 전 그 경로를 박아 둔 도구를 `rg`로 찾는다 — `.tmp/sns-health-upgrade-20261020/make-package.cjs`가 `SYNK-worktrees/sns-aggregation-upgrade-20261020`을 WORKTREE로 쓰고 있어 후보에서 뺐다.
 - 다시 확인: 후보마다 `git -C <경로> status --porcelain`이 비고, `git -C <경로> log origin/master..HEAD`의 제목이 origin 기록에 있다. 10-21 유호님 「지워」 뒤에는 같은 `git worktree remove`가 통과했다. 하나는 안을 다 지우고도 폴더만 「Permission denied」로 남았는데, 다른 프로세스가 그 빈 폴더를 열어 둔 것이었다(`[System.IO.Directory]::Delete`도 「being used by another process」). 등록은 풀렸고 0바이트라 그대로 둔다.
 - 놓친 것(10-21 저녁, 효율 점검 세션): 지운 넷 중 `ci-backup-incremental`은 보관 전인 「CI·백업은 바뀐 것만」 세션이 20:56 기록을 올리려 남겨 둔 자리였고, 「다른 프로세스가 연 빈 폴더」는 그 세션 셸의 자리였다(커밋은 origin에 있어 잃은 것은 없고, 그 세션은 origin 최신에서 새 가지로 옮겼다). 깨끗함·origin 커밋만으로는 「아직 쓰는 중」을 가르지 못한다. 세션이 손으로 만든 작업트리(`git worktree add -b <가지> .claude/worktrees/<이름>`)는 앱이 주인을 모르니, 고르기 전에 `search_session_transcripts`로 그 이름을 찾는다 — `git worktree list` 출력에만 나온 세션은 빼고, 보관 전 세션이 그 경로에서 일한 흔적(`cd`·`-C <경로>`·cwd)이 있으면 후보에서 빼거나 그 세션에 먼저 묻는다. 손으로 만든 세션은 다 쓰면 그 자리에서 지운다.
+- 10-23 덧붙임: `platform-copy-audit-20261021`(8GB)은 깨끗하고 커밋도 origin에 있었지만, 그 작업트리의 git 무시 `.tmp/platform-copy-pc-release-20261022`·`.tmp/pub-20261022/`를 지금 도는 회사 릴리스 세션 셋이 경로로 쓰고 있어 유호님 승인 뒤에도 뺐다 — `search_session_transcripts`로 작업트리 이름을 찾아서 알았다. 승인이 있어도 지우기 직전에 이 검색을 한 번 더 한다.
 
 ### 「가볍게」로 미디어 폴더를 뺀 워크트리는 앱 바탕 맞추기가 「sparse checkout이라 합치지 않는다」로 거절한다 — 내 커밋이 다 올라갔으면 fast-forward로 (2026-10-22 Claude)
 - 증상: 기존 게임 문항 고침 67 마감에서 트랙·결정을 고치기 전에 origin을 받으려고 `sync_with_base_branch`(base master)를 부르자 「The worktree is a sparse checkout … so the app won't merge into it. Merge yourself」로 거절됐다.
@@ -625,6 +626,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 되살림은 받은 경로마다 `/<경로>/`(끝 빗금 = 폴더에만 맞는 무늬)를 `git sparse-checkout add --stdin`에 넣는다. 파일 경로는 그 무늬에 맞지 않는다(쓰는 법도 「<폴더…>」다).
 - 고침: 파일 하나면 끝 빗금 없는 무늬를 stdin으로 직접 넣는다 — `printf '/docs/캐릭터/소개글_정본.json\n' | git sparse-checkout add --stdin`(Git Bash는 「/docs/…」 인자를 프로그램 폴더 경로로 바꾼다). 폴더째 되살려도 되지만 `docs/캐릭터`는 크다.
 - 다시 확인: `git ls-files -t <파일>`이 `S`(건너뜀)가 아니라 `H`이고 파일이 작업본에 있다. 먼저 더해진 폴더 무늬 줄은 해가 없다.
+
+### `.tmp` 릴리스 묶음은 뒤 판이 앞 판을 경로로 가리키는 사슬이라 참조 검사로는 거의 다 남는다 — 앞 판에서 끌어 쓰는 것은 `native-update`뿐이다 (2026-10-23 Claude)
+- 증상: 10-23 공간 정리에서 `.tmp`(79GB)의 끝난 릴리스·후보 묶음을 치우려 하자, 최근 폴더·저장소 파일이 경로로 쓰는 폴더를 빼는 검사(`tools/tmp정리목록.js`와 같은 식)가 후보 100여 곳 가운데 26곳·1.7GB만 남겼다.
+- 원인: 릴리스 도구가 앞 판 폴더를 부모로 가리킨다(`prepare-local.cjs`의 `../<앞 판>/native-update`, `retarget.cjs`의 `previousDir`, 회사 릴리스의 부모 판). 그래서 가장 새 판에서 맨 처음 판까지 사슬로 다 「쓰는 중」이 된다. 그런데 실제로 앞 판에서 읽는 것은 `native-update/`(도우미·`common.cjs`)와 기록 json뿐이고, PC 릴리스마다 큰 몫인 `downloads`(설치 파일)·`ranges`(나눠 받기 확인 `.bin`) 약 1.6GB는 아무도 다시 읽지 않는다.
+- 고침: 폴더째가 아니라 공개 확인(`public-verification.json`의 ok)이 끝나고 하루 넘게 그대로인 PC 릴리스의 `downloads`·`ranges`에서 기록 파일 밖만 지웠다(16곳 19.1GB, 원본은 GitHub 공개 릴리스). 그 뒤로는 공간 지킴이(`../SYNK_원본창고/공간지킴이.py`, 30분 예약)가 이어서 하고 지우기 전에 `상태/공간지킴이/지운목록.jsonl`에 적는다. 지운 폴더에는 `_정리됨.txt`가 있다.
+- 다시 확인: 새 릴리스 도구가 앞 판의 다른 폴더를 읽게 되면 `.tmp`에서 `rg -g '*.cjs' "(release|candidate)[^/\\]*[/\\](downloads|ranges|native-update)"`에 잡힌다 — 10-23에는 `native-update`만 나왔다.
 
 ## 이력 훑기
 
