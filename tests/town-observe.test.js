@@ -34,11 +34,15 @@ test('카드 스위치는 열여덟 장의 ID만 받는다', async () => {
 });
 
 test('관찰 실행은 따로 저장하고, 평소 서버는 그대로다', async () => {
-  const { parseObservation, defaultSavePath, createStore } = await server();
+  const { parseObservation, defaultSavePath, defaultSaveDir, createStore } = await server();
   const observe = parseObservation(['--card', 'C4']);
   assert.notEqual(defaultSavePath(observe), defaultSavePath());
   assert.match(defaultSavePath(observe), /ft10-observe\.json$/);
   assert.match(defaultSavePath(), /ft10-v1\.json$/);
+  // 갈래 폴더(W2 D9)는 옛 저장 옆에 따로 — 옛 파일은 그 폴더의 읽기 전용 원본이다.
+  assert.match(defaultSaveDir(observe), /ft10-observe$/);
+  assert.match(defaultSaveDir(), /ft10-v1$/);
+  assert.notEqual(defaultSaveDir(observe), defaultSaveDir());
   assert.equal(createStore({ observe }).observation.cards[0], 'C4');
   assert.equal(createStore().observation, null);
 });

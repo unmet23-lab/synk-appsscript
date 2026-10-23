@@ -4,10 +4,11 @@ import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { initialState, restoreState, reduceCommand, snapshot, stepLiving, assertState, foldWorld, FOLD_LIMITS, TownError } from './core.mjs';
-import { initialPresence, commandPresence, initialLease, pulseLease, boundaryPresence } from './presence.mjs';
+import { initialPresence, commandPresence, initialLease, pulseLease, boundaryPresence, pruneLease, LEASE_ENTRIES } from './presence.mjs';
 import { settle } from './town/settle.mjs';
 import { contentCatalog, recordSeen, clearSeen, validSeen } from './town/seen.mjs';
-import { writeVisit, visitLine } from './town/eval.mjs';
+import { writeVisit, visitLine, mayWrite } from './town/eval.mjs';
+import { branchPaths, atomicWrite, appendLines, readLines, truncateTo, removeFile } from './save.mjs';
 import { lifeDayAt, validOffset } from './town/clock.mjs';
 import { validateOps, DEFAULT_OPS } from './town/params.mjs';
 import { eventProblem } from './town/events.mjs';
@@ -28,6 +29,10 @@ const repo = path.resolve(root, '../..');
 // future presence stamps in the everyday developer save.
 export function defaultSavePath(observe = null) {
   return path.join(process.env.LOCALAPPDATA || os.tmpdir(), 'SYNK', 'town-preview', observe?.active ? 'ft10-observe.json' : 'ft10-v1.json');
+}
+/** The folder of branch files beside that old save, which is its read-only source (W2 plan D9). */
+export function defaultSaveDir(observe = null) {
+  return defaultSavePath(observe).replace(/\.json$/, '');
 }
 /** Observation switches for playtests (vertical slice design §15-6). Local
  * preview only; the talk runtime has no such input.
@@ -69,13 +74,16 @@ export function observationClock(observe, realNow = () => Date.now()) {
   if (clock.offsetMs !== undefined) return () => realNow() + clock.offsetMs;
   return () => clock.atMs + Math.max(0, realNow() - clock.startedAtMs);
 }
-function atomicSave(file, state) {
-  fs.mkdirSync(path.dirname(file), { recursive: true });
-  const temporary = `${file}.${process.pid}.tmp`;
-  const fd = fs.openSync(temporary, 'w');
-  try { fs.writeFileSync(fd, JSON.stringify(state)); fs.fsyncSync(fd); }
-  finally { fs.closeSync(fd); }
-  fs.renameSync(temporary, file);
+const count = value => Number.isSafeInteger(value) && value >= 0, stamp = value => value === null || count(value);
+/** Whether a saved lease is whole enough to take its play time back (anything else falls back to the
+ * world's host stamp). */
+function validLease(lease) {
+  return !!lease && count(lease.uMs) && stamp(lease.lastForegroundAt) && !!lease.presence && stamp(lease.presence.at)
+    && stamp(lease.presence.lastActiveAt) && typeof lease.presence.idleClosed === 'boolean' && count(lease.presence.fence)
+    && Array.isArray(lease.spans) && lease.spans.length <= LEASE_ENTRIES && lease.spans.every(span => count(span?.u)
+      && (span.surfaceId === null || typeof span.surfaceId === 'string') && count(span.fence) && ['classic', 'day'].includes(span.surface)
+      && typeof span.canRun === 'boolean')
+    && Array.isArray(lease.breaks) && lease.breaks.length <= LEASE_ENTRIES && lease.breaks.every(count);
 }
 /** One process owns this developer fixture. Commit to durable storage before
  * publishing its new state. A bad save is blocked, never silently re-created.
@@ -86,20 +94,29 @@ function atomicSave(file, state) {
  * The world keeps no log and only the newest command receipts (W2 plan D7, talk's rule): a commit
  * moves the lines a step appended to the event branch and every receipt to the store's receipts,
  * and folds the world to its limits (fold: false keeps every row — tests compare with it). An
- * older command still answers from its receipt. Until the branches have their own files (D9) the
- * save holds the world with this epoch's lines and every receipt inline, the old one-file shape;
- * answers show them as state.events and state.commands (F11).
- * The §20 branches sit beside them (W2 plan 5b): the town events a command left (answers show them
- * as state.townEvents), the seen ledger (answers carry the device's copy as seen) and the
- * evaluation-only lines, kept only under the consent and emptied the moment it is withdrawn. A screen
- * reports what it really showed with a boundary or a command (outside the signed command, so a retry
- * never counts twice). The account's own facts come from the host: academy (an academy-linked account
- * is never asked for evaluation signals), tz (its offset in minutes, for the life day), ops (the
- * operating line of §20-6) and villageSeed. */
-export function createStore({ file, save, now = () => Date.now(), lifeEnabled = true, observe = null, fold = FOLD_LIMITS,
+ * older command still answers from its receipt. Answers show the branches as state.events (this
+ * epoch's lines), state.commands and state.townEvents (F11).
+ * The §20 branches sit beside them (W2 plan 5b): the town events a command left, the seen ledger
+ * (answers carry the device's copy as seen) and the evaluation-only lines, kept only under the
+ * consent and emptied the moment it is no longer granted. A screen reports what it really showed
+ * with a boundary or a command (outside the signed command, so a retry never counts twice). The
+ * account's own facts come from the host: academy (an academy-linked account is never asked for
+ * evaluation signals), tz (its offset in minutes, for the life day), ops (the operating line of
+ * §20-6) and villageSeed.
+ * Where it is kept (W2 plan D9·F21):
+ *   dir   the account's folder of branch files (save.mjs). A commit appends its lines and receipts,
+ *         then replaces the world — the commit point; a load cuts whatever lies past the world. The
+ *         lease is written at every pulse, so play time survives a restart and only the windows do
+ *         not. With file beside it, an old one-file save is the folder's read-only source: the folder
+ *         is made from it once and the file is never written again (§14-6).
+ *   file  the old one-file shape alone (the world with this epoch's lines, every receipt and the
+ *         §20 branches inline), kept for the stores its tests open.
+ *   save  a function given that one-file shape at every commit (tests). */
+export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabled = true, observe = null, fold = FOLD_LIMITS,
   academy = false, tz = hostOffset(), ops = DEFAULT_OPS, villageSeed = 'synk-town' } = {}) {
-  let state = initialState({ lifeEnabled }), log = [], townLog = [], seen = {}, evalLines = [], loadError = null;
+  let state = initialState({ lifeEnabled }), log = [], townLog = [], seen = {}, evalLines = [], loadError = null, savedLease = null;
   const receipts = new Map(), walks = [];
+  const paths = dir ? branchPaths(dir) : null, sizes = { events: 0, receipts: 0, receiptLines: 0 };
   const account = { academy: academy === true, ops: validateOps(ops), villageSeed };
   lifeDayAt(tz, 0); // the offset (or offset history) is checked once, here
   const hostOf = at => ({ ...account, lifeDay: lifeDayAt(tz, at) });
@@ -112,51 +129,122 @@ export function createStore({ file, save, now = () => Date.now(), lifeEnabled = 
       if (/"type":"DAY_WALK/.test(record.signature) && walks.push(record.id) > WALK_RECEIPTS) receipts.delete(walks.shift());
     }
   }
-  if (file && fs.existsSync(file)) {
-    try {
-      const { seen: savedSeen = {}, evalLines: savedEval = [], townEvents: savedTown = [], ...saved } = JSON.parse(fs.readFileSync(file, 'utf8'));
-      if (!validSeen(savedSeen) || !Array.isArray(savedEval) || !Array.isArray(savedTown)) throw new TypeError('branches');
-      for (const line of savedEval) visitLine(line);
-      if (saved?.trail && Array.isArray(saved.events)) {
-        // The index is the record; the lines beside it are the branch.
-        state = restoreState({ ...saved, events: [], townEvents: [] }, { lifeEnabled });
-        log = saved.events.filter(event => event?.seq > state.trail.archivedBelow && event.seq <= state.trail.seq);
-      } else {
-        const restored = restoreState({ ...saved, townEvents: [] }, { lifeEnabled });
-        log = restored.events; state = { ...restored, events: [] };
-      }
-      // Town events past the world's sequence never committed with it.
-      townLog = savedTown.filter(event => eventProblem(event) === null && /^E-\d+$/.test(event.id) && Number(event.id.slice(2)) <= state.townSeq);
-      seen = savedSeen; evalLines = savedEval;
-      remember(state.commands); state = { ...state, commands: state.commands.slice(-COMMAND_WINDOW) };
-      if (fold) state = foldWorld(state, fold);
-    } catch { loadError = new TownError('invalid-save', '저장 기록을 읽지 못했어요. 원본을 보존하고 확인해 주세요.', 503); }
+  /** An old one-file save: the world with this epoch's lines, every receipt and the §20 branches inline. */
+  function readOneFile(source) {
+    const { seen: savedSeen = {}, evalLines: savedEval = [], townEvents: savedTown = [], ...saved } = JSON.parse(fs.readFileSync(source, 'utf8'));
+    if (!validSeen(savedSeen) || !Array.isArray(savedEval) || !Array.isArray(savedTown)) throw new TypeError('branches');
+    if (saved?.trail && Array.isArray(saved.events)) {
+      // The index is the record; the lines beside it are the branch.
+      const world = restoreState({ ...saved, events: [], townEvents: [] }, { lifeEnabled });
+      return { world, lines: saved.events.filter(event => event?.seq > world.trail.archivedBelow && event.seq <= world.trail.seq),
+        townLines: savedTown, receiptLines: world.commands, seen: savedSeen, evalLines: savedEval };
+    }
+    const restored = restoreState({ ...saved, townEvents: [] }, { lifeEnabled });
+    return { world: { ...restored, events: [] }, lines: restored.events, townLines: savedTown, receiptLines: restored.commands,
+      seen: savedSeen, evalLines: savedEval };
   }
-  const persist = save || (file ? next => atomicSave(file, next) : null);
+  /** The account's folder, cut back to its world: lines and receipts past it never committed (F21). */
+  function readBranches() {
+    const world = restoreState({ ...JSON.parse(fs.readFileSync(paths.world, 'utf8')), events: [], townEvents: [] }, { lifeEnabled });
+    const events = readLines(paths.events, line => {
+      if (Number.isSafeInteger(line?.seq)) return line.seq > world.trail.seq ? 'beyond' : 'line';
+      if (typeof line?.kind === 'string' && /^E-\d+$/.test(line.id)) return Number(line.id.slice(2)) > world.townSeq ? 'beyond' : 'line';
+      throw new TypeError('an event line');
+    });
+    const written = readLines(paths.receipts, line => {
+      if (typeof line?.id !== 'string' || typeof line.signature !== 'string' || !Number.isSafeInteger(line.revision)) throw new TypeError('a receipt');
+      return line.revision > world.revision ? 'beyond' : 'line';
+    });
+    const savedSeen = fs.existsSync(paths.seen) ? JSON.parse(fs.readFileSync(paths.seen, 'utf8')) : {};
+    if (!validSeen(savedSeen)) throw new TypeError('seen');
+    let lease = null;
+    try { lease = fs.existsSync(paths.lease) ? JSON.parse(fs.readFileSync(paths.lease, 'utf8')) : null; } catch { lease = null; }
+    truncateTo(paths.events, events.committed); truncateTo(paths.receipts, written.committed);
+    sizes.events = events.committed; sizes.receipts = written.committed; sizes.receiptLines = written.lines.length;
+    return { world, lines: events.lines.filter(line => Number.isSafeInteger(line.seq) && line.seq > world.trail.archivedBelow),
+      townLines: events.lines.filter(line => !Number.isSafeInteger(line.seq)), receiptLines: written.lines,
+      seen: savedSeen, evalLines: readLines(paths.eval, () => 'line').lines, lease };
+  }
+  function adopt(loaded) {
+    for (const line of loaded.evalLines) visitLine(line);
+    state = loaded.world; log = loaded.lines;
+    // Town events past the world's sequence never committed with it.
+    townLog = loaded.townLines.filter(event => eventProblem(event) === null && /^E-\d+$/.test(event.id) && Number(event.id.slice(2)) <= state.townSeq);
+    // Evaluation lines live only under the consent: a withdrawal whose deletion was cut short finishes here.
+    seen = loaded.seen; evalLines = mayWrite(state.consents) ? loaded.evalLines : [];
+    if (paths && loaded.evalLines.length && !evalLines.length) removeFile(paths.eval);
+    remember(loaded.receiptLines); remember(state.commands); state = { ...state, commands: state.commands.slice(-COMMAND_WINDOW) };
+    if (fold) state = foldWorld(state, fold);
+    savedLease = loaded.lease ?? null;
+  }
+  const writeEval = lines => lines.length ? atomicWrite(paths.eval, lines.map(line => `${JSON.stringify(line)}\n`).join('')) : removeFile(paths.eval);
+  /** Make the folder from the old one-file save, the world last: a migration cut short leaves no
+   * world.json and runs again from the untouched old file. */
+  function migrate() {
+    for (const key of ['events', 'receipts', 'seen', 'eval', 'lease']) removeFile(paths[key]);
+    sizes.events = appendLines(paths.events, 0, [...log, ...townLog]);
+    sizes.receipts = appendLines(paths.receipts, 0, [...receipts.values()]); sizes.receiptLines = receipts.size;
+    if (Object.keys(seen).length) atomicWrite(paths.seen, JSON.stringify(seen));
+    writeEval(evalLines);
+    atomicWrite(paths.world, JSON.stringify(state));
+  }
+  try {
+    if (paths && fs.existsSync(paths.world)) adopt(readBranches());
+    else if (file && fs.existsSync(file)) { adopt(readOneFile(file)); if (paths) migrate(); }
+    else if (paths) for (const key of ['events', 'receipts', 'seen', 'eval', 'lease']) removeFile(paths[key]);
+  } catch { loadError = new TownError('invalid-save', '저장 기록을 읽지 못했어요. 원본을 보존하고 확인해 주세요.', 503); }
+  const persist = save || (file ? next => atomicWrite(file, JSON.stringify(next)) : null);
   const current = () => {
     const shown = snapshot(state);
     shown.state.events = log.slice(); shown.state.commands = [...receipts.values()]; shown.state.townEvents = townLog.slice();
     return { ...shown, seen: { ...seen }, capabilities: { life: !!state.life && lifeEnabled, day: !!state.day && lifeEnabled } };
   };
-  /** Write the world with its branches; nothing is published unless the write held. The one-file
-   * shape carries the seen ledger and the evaluation lines only when they hold something. */
-  function write(world, branches) {
-    const extra = { ...(Object.keys(branches.seen).length ? { seen: branches.seen } : {}), ...(branches.evalLines.length ? { evalLines: branches.evalLines } : {}) };
-    try { if (persist) persist({ ...world, events: branches.log, townEvents: branches.town, commands: branches.receipts, ...extra }); }
-    catch { throw new TownError('save-failed', '저장하지 못했어요. 진행은 그대로예요. 다시 시도해 주세요.', 503); }
+  /** The old one-file shape; it carries the seen ledger and the evaluation lines only when they hold something. */
+  const oneFile = (world, change) => ({ ...world, events: [...change.kept, ...change.lines], townEvents: [...townLog, ...change.town],
+    commands: [...receipts.values(), ...change.fresh], ...(Object.keys(change.seen).length ? { seen: change.seen } : {}),
+    ...(change.evalLines.length ? { evalLines: change.evalLines } : {}) });
+  const failed = () => new TownError('save-failed', '저장하지 못했어요. 진행은 그대로예요. 다시 시도해 주세요.', 503);
+  /** The §20 branches that changed beside a commit or alone. */
+  function writeSide(change) {
+    if (change.seen !== seen) atomicWrite(paths.seen, JSON.stringify(change.seen));
+    if (change.evalLines !== evalLines) writeEval(change.evalLines);
   }
+  /** Write a commit; nothing is published unless the write held. The folder takes the lines and the
+   * receipts first and the world last; a line or receipt of an attempt that failed is cut by the next. */
+  function persistCommit(world, change) {
+    try {
+      if (paths) {
+        const events = appendLines(paths.events, sizes.events, [...change.lines, ...change.town]);
+        const written = appendLines(paths.receipts, sizes.receipts, change.fresh);
+        writeSide(change);
+        atomicWrite(paths.world, JSON.stringify(world));
+        sizes.events = events; sizes.receipts = written; sizes.receiptLines += change.fresh.length;
+      } else if (persist) persist(oneFile(world, change));
+    } catch { throw failed(); }
+  }
+  /** Retired movement receipts leave the receipt file once it holds far more lines than the store keeps. */
+  function compactReceipts() {
+    if (!paths || sizes.receiptLines <= 2 * receipts.size + 256) return;
+    const text = [...receipts.values()].map(record => `${JSON.stringify(record)}\n`).join('');
+    try { atomicWrite(paths.receipts, text); sizes.receipts = Buffer.byteLength(text); sizes.receiptLines = receipts.size; }
+    catch { /* The longer file is still whole; the next commit tries again. */ }
+  }
+  compactReceipts();
   function commit(next, { seen: nextSeen = seen, evalLines: nextEval = evalLines } = {}) {
     let world = { ...next, events: [], townEvents: [], commands: next.commands.slice(-COMMAND_WINDOW), writeSeq: (state.writeSeq ?? 0) + 1 };
     if (fold) world = foldWorld(world, fold);
     // A reset starts a new epoch: the branch's earlier lines are archived, never shown again.
     const kept = world.trail.archivedBelow > state.trail.archivedBelow ? [] : log, lines = next.events, town = next.townEvents || [];
     const fresh = next.commands.filter(record => !receipts.has(record.id));
-    write(world, { log: [...kept, ...lines], town: [...townLog, ...town], receipts: [...receipts.values(), ...fresh], seen: nextSeen, evalLines: nextEval });
+    persistCommit(world, { kept, lines, town, fresh, seen: nextSeen, evalLines: nextEval });
     state = world; log = kept; log.push(...lines); townLog.push(...town); remember(fresh); seen = nextSeen; evalLines = nextEval;
+    compactReceipts();
   }
   /** A branch changed while the world did not (a seen report, an evaluation line). */
   function keep({ seen: nextSeen = seen, evalLines: nextEval = evalLines }) {
-    write(state, { log, town: townLog, receipts: [...receipts.values()], seen: nextSeen, evalLines: nextEval });
+    const change = { kept: log, lines: [], town: [], fresh: [], seen: nextSeen, evalLines: nextEval };
+    try { if (paths) writeSide(change); else if (persist) persist(oneFile(state, change)); }
+    catch { throw failed(); }
     seen = nextSeen; evalLines = nextEval;
   }
   /** A screen's report of what it really showed: the next ledger, or null when nothing was added. */
@@ -166,10 +254,26 @@ export function createStore({ file, save, now = () => Date.now(), lifeEnabled = 
     const report = recordSeen(seen, keys, { known: SEEN_CATALOG });
     return report.added.length ? report.seen : null;
   }
-  // Only a host timestamp survives for the 30-minute logical-visit boundary;
-  // foreground leases and unsettled play time never survive a restart.
-  let lease = initialLease({ uMs: state.settledU ?? 0, lastForegroundAt: state.lifeHost?.lastForegroundAt ?? null,
-    presence: { ...initialPresence(), lastActiveAt: state.lifeHost?.lastForegroundAt ?? null, fence: state.lifeHost?.fence || 0 } });
+  /** The lease after a restart. Without a saved lease only the world's host stamp survives for the
+   * 30-minute logical-visit boundary. A saved lease keeps the play time a pulse recorded, but no
+   * window: nobody holds the town until a window pulses again, which moves the fence, so an old
+   * invitation never reaches a new window and offline hours never become play time. */
+  function leaseAfterRestart() {
+    const settledU = state.settledU ?? 0, host = state.lifeHost;
+    if (!validLease(savedLease)) return initialLease({ uMs: settledU, lastForegroundAt: host?.lastForegroundAt ?? null,
+      presence: { ...initialPresence(), lastActiveAt: host?.lastForegroundAt ?? null, fence: host?.fence || 0 } });
+    const p = savedLease.presence;
+    return pruneLease({ ...initialLease({ uMs: Math.max(savedLease.uMs, settledU), lastForegroundAt: savedLease.lastForegroundAt,
+      presence: { ...initialPresence(), at: p.at, lastActiveAt: p.lastActiveAt, idleClosed: p.idleClosed, fence: Math.max(p.fence, host?.fence || 0) } }),
+    spans: savedLease.spans, breaks: savedLease.breaks }, settledU);
+  }
+  let lease = leaseAfterRestart();
+  /** The lease file follows every lease change. It is a restart's aid, never the authority: a write
+   * that fails keeps the process going on the lease in memory (a restart then falls back to the world). */
+  function keepLease() {
+    if (!paths) return;
+    try { atomicWrite(paths.lease, JSON.stringify(lease)); } catch { /* the lease in memory goes on */ }
+  }
   const living = () => !!state.life && lifeEnabled;
   function requireLife(input) {
     if (loadError) throw loadError;
@@ -195,7 +299,8 @@ export function createStore({ file, save, now = () => Date.now(), lifeEnabled = 
     observation: observe,
     /** Sizes for benches and tests: the world as saved, and the branches beside it. */
     stats() { return { worldBytes: Buffer.byteLength(JSON.stringify(state)), lines: log.length, receipts: receipts.size,
-      townEvents: townLog.length, seenKeys: Object.keys(seen).length, evalLines: evalLines.length }; },
+      townEvents: townLog.length, seenKeys: Object.keys(seen).length, evalLines: evalLines.length,
+      ...(paths ? { eventBytes: sizes.events, receiptBytes: sizes.receipts } : {}) }; },
     /** The one server write of an evaluation-only visit line (§20-4, called from W6): kept only under the
      * consent, overwritten by visit id. Returns how many lines the account has. */
     writeVisit(fields) {
@@ -214,7 +319,7 @@ export function createStore({ file, save, now = () => Date.now(), lifeEnabled = 
     pulse(input) {
       requireLife(input);
       const at = now(), pulse = pulseOf(input, at);
-      lease = pulse.lease;
+      lease = pulse.lease; keepLease();
       return { presence: pulse.receipt, serverNow: at, worldSeq: state.writeSeq };
     },
     boundary(input) {
@@ -241,7 +346,7 @@ export function createStore({ file, save, now = () => Date.now(), lifeEnabled = 
       // Clock, delivery owner and world facts publish together after durability.
       const world = settledTo(pulse.lease, { nowMs: at, canContact: pulse.context.canContact, touch: true });
       if (world) commit(world);
-      lease = pulse.lease;
+      lease = pulse.lease; keepLease();
       return { ...current(), presence: pulse.receipt, worldSeq: state.writeSeq };
     },
     /** A command, with what the screen showed beside it ({ seen }: keys outside the signed command). */
@@ -276,11 +381,13 @@ export function createStore({ file, save, now = () => Date.now(), lifeEnabled = 
         const nextSeen = clears ? clearSeen() : seenReport(shown) || seen;
         const nextEval = command.type === 'EVAL_CONSENT' && result.state.consents.evalSignals.state !== 'granted' ? [] : evalLines;
         commit(result.state, { seen: nextSeen, evalLines: nextEval });
+        const before = lease;
         if (['DAY_WALK_ENABLE', 'DAY_WALK'].includes(command.type)) lease = { ...lease, walkClock: { at: host.nowMs, surfaceId: host.surfaceId, fence: host.fence } };
         if (['DAY_WALK_DISABLE', 'RESET', 'LEAVE'].includes(command.type)) lease = { ...lease, walkClock: null };
         if (command.type === 'RESET') lease = initialLease({ uMs: state.settledU });
         else if (command.type === 'LEAVE') lease = { ...lease, presence: { ...lease.presence, at: Math.max(now(), lease.presence.at ?? 0),
           surfaces: {}, owner: null, fence: lease.presence.fence + 1 } };
+        if (lease !== before) keepLease();
       }
       return { ...current(), duplicate: result.duplicate };
     },
@@ -317,7 +424,7 @@ function fileFor(route, previewEnabled) {
   return null;
 }
 function json(res, status, value) { res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(value)); }
-export function createServer({ previewEnabled = false, store = createStore({ file: defaultSavePath() }) } = {}) {
+export function createServer({ previewEnabled = false, store = createStore({ dir: defaultSaveDir(), file: defaultSavePath() }) } = {}) {
   return http.createServer(async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -388,11 +495,11 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
   try { observe = parseObservation(process.argv.slice(2)); }
   catch (error) { console.error(`관찰 스위치: ${error.message}`); process.exit(2); }
   if (observe.active && !previewEnabled) { console.error('관찰 스위치는 --preview와 함께만 써요.'); process.exit(2); }
-  const store = createStore({ file: defaultSavePath(observe), now: observationClock(observe), observe });
+  const store = createStore({ dir: defaultSaveDir(observe), file: defaultSavePath(observe), now: observationClock(observe), observe });
   const server = createServer({ previewEnabled, store });
   server.on('error', error => { console.error(`Town server: ${error.code || 'unavailable'}`); process.exitCode = 1; });
   server.listen(port, '127.0.0.1', () => {
     console.log(`SYNK TOWN ${previewEnabled ? 'developer fixture' : 'locked entry'}: http://127.0.0.1:${port}${previewEnabled ? '/day.html' : '/'}`);
-    if (observe.active) console.log(`관찰 스위치: ${observe.label} · 저장 ${defaultSavePath(observe)}`);
+    if (observe.active) console.log(`관찰 스위치: ${observe.label} · 저장 ${defaultSaveDir(observe)}`);
   });
 }

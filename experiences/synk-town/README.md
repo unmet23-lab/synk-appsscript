@@ -163,7 +163,7 @@ node experiences/synk-town/server.mjs --preview
 
 Node.js만 사용한다. 유료 호출·외부 모델 요청·추가 패키지가 없다. 기본 포트는 4288(`SYNK_TOWN_PORT`로 변경). `--preview`를 빼면 일반 입구만 제공하며 체험 API는 닫힌다. 일반 입구는 개발 모드에서도 잠겨 있다.
 
-**위 독립 preview 서버에서는 가상 기록 한 개**를 `%LOCALAPPDATA%/SYNK/town-preview/ft10-v1.json`에 저장한다. 브라우저 새로고침과 서버 재시작 뒤에도 복원하며 동일 서버의 여러 창이 이 가상 기록을 공유한다. 실제 학생 계정, 개인별 클라우드 저장, 다른 기기 동기화 기능은 아니다. 같은 저장 파일을 여러 프로세스에서 열지 않는다. 개발 체험 안내에서 가상 기록만 초기화할 수 있다.
+**위 독립 preview 서버에서는 가상 기록 한 개**를 `%LOCALAPPDATA%/SYNK/town-preview/ft10-v1/` 폴더에 갈래 파일로 저장한다 — `world.json`(세계, 확정점) · `events.jsonl`(사건 줄) · `receipts.jsonl`(명령 영수증) · `lease.json`(임대, 맥박마다) · `seen.json`(본 것) · `eval.jsonl`(평가 줄, 동의했을 때만). 그 전의 한 파일 저장 `ft10-v1.json`은 처음 열 때 폴더로 한 번 옮기고 지우거나 덮지 않는다(읽기 전용 원본, [server.mjs](server.mjs)·[save.mjs](save.mjs)). 브라우저 새로고침과 서버 재시작 뒤에도 복원하며(재시작 전에 논 시간은 남고 창과 전달 fence는 남지 않는다) 동일 서버의 여러 창이 이 가상 기록을 공유한다. 실제 학생 계정, 개인별 클라우드 저장, 다른 기기 동기화 기능은 아니다. 같은 저장 파일을 여러 프로세스에서 열지 않는다. 개발 체험 안내에서 가상 기록만 초기화할 수 있다.
 
 ## 개발용 WORLD 연결과 읽기 목표
 

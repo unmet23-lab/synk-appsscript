@@ -3,11 +3,13 @@ import {createStore} from '../synk-town/server.mjs';
 
 // This host only runs behind the local WORLD synthetic-account authentication.
 // It does not grant TOPIK access or join the independent 4288 developer fixture.
+// Each account keeps its own folder of branch files; an account's old one-file save beside it is the
+// folder's read-only source, moved over once (vertical slice §14-6, W2 plan D9·F17).
 export function createAccountTownHost({directory,create=createStore}={}) {
   const stores=new Map();
   function forAccount(accountId) {
     if(!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(accountId||''))throw Object.assign(Error('AUTH_REQUIRED'),{status:401});
-    if(!stores.has(accountId))stores.set(accountId,create({file:path.join(directory,`${accountId}.json`)}));
+    if(!stores.has(accountId))stores.set(accountId,create({dir:path.join(directory,accountId),file:path.join(directory,`${accountId}.json`)}));
     return stores.get(accountId);
   }
   return {
@@ -21,7 +23,8 @@ export function createAccountTownHost({directory,create=createStore}={}) {
         else return {status:405,body:{error:'METHOD_NOT_ALLOWED'}};
         return {status:200,body:{...result,rehearsal:true,accountScoped:true}};
       } catch(error) {
-        let current={};try{current=store.read();}catch{}
+        // An error answer shows the town as it is; it never settles or saves.
+        let current={};try{current=store.peek();}catch{}
         return {status:error.status||503,body:{...current,error:error.code||'TOWN_UNAVAILABLE',message:error.status?error.message:'동네 기록을 확인하지 못했어요.',rehearsal:true}};
       }
     }
