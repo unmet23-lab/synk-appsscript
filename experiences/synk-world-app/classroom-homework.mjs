@@ -157,7 +157,7 @@ export function mountClassroomHomework({container,load,submit,loadContent,loadKe
  root.append(head,node('p','ws-hw-lead',T.lead),status,alert,body,node('p','ws-hw-note',T.note));
  container.append(root);
 
- const model={phase:'loading',seen:false,classes:[],content:null,key:null,keyState:'idle',open:null,editing:new Set(),notice:new Map(),busy:null,requests:new Map(),skew:0};
+ const model={phase:'loading',seen:false,classes:[],content:null,key:null,keyState:'idle',open:null,editing:new Set(),notice:new Map(),busy:null,requests:new Map(),skew:0,examples:new Set()};
  let disposed=false,generation=0;
  const assignmentOf=(kind,week)=>(kind==='reading'?'R':'W')+week;
  const taskKey=(classId,week,kind)=>`${classId}:${week}:${kind}`;
@@ -474,7 +474,9 @@ export function mountClassroomHomework({container,load,submit,loadContent,loadKe
    }
    const k=model.key?.writing?.[part.key];
    if(k?.model){
-    const details=node('details','ws-hw-model'),summary=node('summary','',T.model);details.append(summary);
+    // 펼친 예시답은 반·주·문항 열쇠로 남겨 칸을 다시 그려도(탭 복귀·정답 도착·새로고침) 펼친 채로 둔다.
+    const shown=`${c.classId}:${week}:${part.key}`,details=node('details','ws-hw-model'),summary=node('summary','',T.model);summary.dataset.homeworkKey=`model:${shown}`;details.append(summary);
+    details.open=model.examples.has(shown);details.addEventListener('toggle',()=>{if(details.open)model.examples.add(shown);else model.examples.delete(shown);});
     for(const field of part.fields){const m=k.model[field.id];if(m===undefined)continue;
      if(Array.isArray(m)){for(const [r,row] of m.entries())details.append(node('p','',`${field.rows[r]} · ${row.join(' / ')}`));}
      else for(const paragraph of m.split('\n\n'))details.append(node('p','',(part.fields.length>1&&field.kind==='line'?`${field.label} `:'')+paragraph));}

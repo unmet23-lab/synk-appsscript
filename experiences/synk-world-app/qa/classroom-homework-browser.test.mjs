@@ -340,6 +340,19 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
    assert.equal(fb.model,true);assert.match(fb.modelText,/^한빛대학교 언어교육원에서 2022년과 2026년에 외국인 유학생 각 400명을/);
    assert.match(fb.summary,/첨삭이 왔어요 · 3월 26일 \(금\)/);
    await record(tag,'feedback');
+   // 펼친 예시답은 칸을 다시 그려도(탭 복귀의 조용한 다시 묻기·새로고침) 그 문항만 펼친 채로 남고, 접으면 접힌 채로 남는다(10-23 실제 계정 한 바퀴).
+   const model=()=>card.locator('.ws-hw-feedback .ws-hw-model').first();
+   const repaint=async()=>{
+    await model().evaluate(el=>{el.dataset.painted='before';});
+    await page.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));
+    await page.waitForFunction(()=>{const el=document.querySelector('#world-classroom-homework .ws-hw-feedback .ws-hw-model');return el&&el.dataset.painted!=='before';});
+   };
+   await repaint();assert.equal(await model().evaluate(el=>el.open),true,'다시 그린 뒤에도 펼친 예시답');
+   assert.equal(await page.evaluate(()=>document.activeElement?.dataset.homeworkKey),`model:${C}:3:W3-1`,'초점도 예시답 줄로 돌아온다');
+   await press('refresh');await settle('ready');await open(3,'writing');await model().waitFor();
+   assert.equal(await model().evaluate(el=>el.open),true,'새로고침 뒤 첨삭을 다시 열어도 펼친 예시답');
+   await model().locator('summary').click();await repaint();assert.equal(await model().evaluate(el=>el.open),false,'접은 예시답은 다시 그려도 접힌 채');
+   checks[`${tag}-model-open-kept`]=true;
    // 6) 2주차 쓰기 첨삭: 빈칸·바꿔 쓰기 판정(인정·부분·다시)
    await open(3,'writing');await card.locator(`[data-homework-key="past:${C}:3"]`).click();
    await card.locator(`[data-homework-key="past:${C}:2"]`).click();await open(2,'writing');await card.locator('.ws-hw-feedback').waitFor();

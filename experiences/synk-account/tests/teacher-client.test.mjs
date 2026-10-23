@@ -114,6 +114,76 @@ test('incomplete sharing metadata never asks the frame to keep a withdrawn scope
   assert.equal(applied.length,0);assert.notEqual(page.windowObject.SYNKClassroomHost,old);assert.equal(page.notices.length,0);
 });
 
+// 학생이 「내 반 연결」로 이어지기만 하고 학습 공유는 아직 끈 때: 공유 판은 그대로이고 연결·철회 표시만 바뀐다(10-23 실제 계정 한 바퀴).
+// 운영 줄처럼 마을 공유 판은 계정이 붙거나 떨어질 때 하나씩 오른다.
+const rosterLearner=(id,connected,town=connected?2:1)=>({id,name:id,accountConnected:connected,revoked:!connected,sharing:{revision:1,enabled:false},activity:{town:{sharing:{revision:town,enabled:false}}},skills:[]});
+test('a student who just connected reaches the open frame before the overview poll, without a page reload',async t=>{
+  const page=classroom(t),before=rosterLearner('student-a',false),after=rosterLearner('student-a',true);page.learners({a:[before]});page.snapshots({a:[before]});await page.workspace.load();
+  const host=page.windowObject.SYNKClassroomHost;page.learners({a:[after]});page.snapshots({a:[after]});
+  assert.equal((await host.request('/api/workspace')).classes[0].learners[0].accountConnected,true);
+  assert.equal(page.windowObject.SYNKClassroomHost,host);assert.equal(page.notices.length,0);
+  assert.equal((await host.request('/api/workspace')).classes[0].learners[0].accountConnected,true);
+});
+test('after the overview poll catches up, the frame reload no longer repeats the sharing-changed error',async t=>{
+  const page=classroom(t),before=rosterLearner('student-a',false),after=rosterLearner('student-a',true);page.learners({a:[before]});page.snapshots({a:[before]});await page.workspace.load();
+  const host=page.windowObject.SYNKClassroomHost;page.learners({a:[after]});page.snapshots({a:[after]});await page.workspace.load();
+  assert.equal(page.windowObject.SYNKClassroomHost,host);assert.equal((await host.request('/api/workspace')).classes[0].learners[0].accountConnected,true);
+});
+test('a student added to the roster after the last overview is confirmed by a fresh overview',async t=>{
+  const page=classroom(t),a=rosterLearner('student-a',true),b=rosterLearner('student-b',false);page.learners({a:[a]});page.snapshots({a:[a]});await page.workspace.load();
+  const host=page.windowObject.SYNKClassroomHost;page.learners({a:[a,b]});page.snapshots({a:[a,b]});
+  assert.deepEqual((await host.request('/api/workspace')).classes[0].learners.map(row=>row.id),['student-a','student-b']);
+});
+test('a held snapshot from before a disconnection is still rejected after the overview is fetched again',async t=>{
+  const page=classroom(t),connected=rosterLearner('student-a',true),gone=rosterLearner('student-a',false,3);page.learners({a:[connected]});page.snapshots({a:[connected]});await page.workspace.load();
+  const host=page.windowObject.SYNKClassroomHost,pending=deferred();page.workspaceHold(pending);const stale=host.request('/api/workspace');
+  page.learners({a:[gone]});page.snapshots({a:[gone]});await page.workspace.load();const calls=page.calls.length;
+  pending.resolve({mode:'account-linked',classes:[{id:'a',learners:[connected]}]});await assert.rejects(stale,{code:'CLASSROOM_SNAPSHOT_CHANGED'});
+  assert.equal(page.calls.slice(calls).filter(([operation])=>operation==='teacherOverview').length,1);
+  assert.equal((await host.request('/api/workspace')).classes[0].learners[0].accountConnected,false);
+});
+const pickClass=async(page,value)=>{const select=page.root.children[0].children[0].children[0];select.value=value;select.onchange();await settle();};
+test('opening the class right after a student connected is confirmed by a fresh overview instead of failing',async t=>{
+  const page=classroom(t),before=rosterLearner('student-a',false),after=rosterLearner('student-a',true);page.learners({a:[before]});page.snapshots({a:[before]});await page.workspace.load();
+  await pickClass(page,'');assert.equal(page.windowObject.SYNKClassroomHost,undefined);
+  page.learners({a:[after]});page.snapshots({a:[after]});await pickClass(page,'a');
+  assert.equal(page.windowObject.SYNKClassroomHost?.classId,'a');assert.equal(page.root.children[3].children.length,1);assert.equal(page.notices.length,0);
+  assert.equal((await page.windowObject.SYNKClassroomHost.request('/api/workspace')).classes[0].learners[0].accountConnected,true);
+});
+test('switching class while a snapshot waits for the fresh overview drops that snapshot instead of attaching it',async t=>{
+  const page=classroom(t),rows=[{id:'a',name:'A',role:'teacher'},{id:'b',name:'B',role:'teacher'}],before=rosterLearner('student-a',false),after=rosterLearner('student-a',true);
+  page.rows(rows);page.learners({a:[before],b:[]});page.snapshots({a:[before],b:[]});await page.workspace.load();await pickClass(page,'a');const old=page.windowObject.SYNKClassroomHost;
+  page.learners({a:[after],b:[]});page.snapshots({a:[after],b:[]});const gate=deferred();page.hold(gate);const pending=old.request('/api/workspace');await settle();
+  await pickClass(page,'b');assert.equal(page.windowObject.SYNKClassroomHost.classId,'b');
+  page.hold(null);gate.resolve({mode:'account-linked',classes:rows});await assert.rejects(pending,{code:'ACCOUNT_CHANGED'});
+  assert.equal(page.windowObject.SYNKClassroomHost.classId,'b');assert.equal(page.root.children[3].children.length,1);
+});
+test('a class withdrawn from the teacher while it is being opened ends on the class-less status, not on the permission check',async t=>{
+  const page=classroom(t),before=rosterLearner('student-a',false),after=rosterLearner('student-a',true);page.learners({a:[before]});page.snapshots({a:[before]});await page.workspace.load();
+  await pickClass(page,'');page.snapshots({a:[after]});const gate=deferred();page.hold(gate);await pickClass(page,'a');
+  page.rows([]);page.hold(null);gate.resolve({mode:'account-linked',classes:[]});await settle();
+  assert.equal(page.windowObject.SYNKClassroomHost,undefined);assert.equal(page.root.children[3].children.length,0);assert.equal(page.notices.length,0);
+  assert.match(page.root.children[1].textContent,/기관에서 담당 반을 등록하면 여기에 보여요/);
+});
+test('a class whose snapshot still disagrees with a fresh overview stays closed, after a single overview refresh',async t=>{
+  const page=classroom(t),before=rosterLearner('student-a',false),after=rosterLearner('student-a',true);page.learners({a:[before]});page.snapshots({a:[before]});await page.workspace.load();
+  await pickClass(page,'');page.snapshots({a:[after]});const calls=page.calls.length;await pickClass(page,'a');
+  assert.equal(page.windowObject.SYNKClassroomHost,undefined);assert.equal(page.root.children[3].children.length,0);assert.match(page.notices.at(-1)[0],/공유 상태가 바뀌었어요/);
+  assert.equal(page.calls.slice(calls).filter(([operation])=>operation==='teacherOverview').length,1);
+});
+test('a held snapshot that still lists a student who left the class is rejected after the overview is fetched again',async t=>{
+  const page=classroom(t),a=privacyLearner('student-a'),b=privacyLearner('student-b');page.learners({a:[a,b]});page.snapshots({a:[a,b]});await page.workspace.load();
+  const host=page.windowObject.SYNKClassroomHost,pending=deferred();page.workspaceHold(pending);const stale=host.request('/api/workspace');
+  page.learners({a:[a]});page.snapshots({a:[a]});await page.workspace.load();
+  pending.resolve({mode:'account-linked',classes:[{id:'a',learners:[a,b]}]});await assert.rejects(stale,{code:'CLASSROOM_SNAPSHOT_CHANGED'});
+});
+test('an overview that still lags behind a withdrawal the frame already applied cannot vouch for an older snapshot',async t=>{
+  const page=classroom(t),before=privacyLearner('student-a'),after=privacyLearner('student-a',3,false);page.learners({a:[before]});page.snapshots({a:[before]});await page.workspace.load();
+  const host=page.windowObject.SYNKClassroomHost;page.snapshots({a:[after]});assert.equal((await host.request('/api/workspace')).classes[0].learners[0].sharing.revision,3);
+  const pending=deferred();page.workspaceHold(pending);const stale=host.request('/api/workspace');
+  pending.resolve({mode:'account-linked',classes:[{id:'a',learners:[before]}]});await assert.rejects(stale,{code:'CLASSROOM_SNAPSHOT_CHANGED'});
+});
+
 test('two real sixteen-member classes open together and selecting one student preserves a single class-scoped detail',async t=>{
   const page=classroom(t),rows=[{id:'a',name:'오전반',role:'teacher'},{id:'b',name:'오후반',role:'teacher'}];page.rows(rows);
   page.learners(Object.fromEntries(rows.map(row=>[row.id,Array.from({length:16},(_,index)=>({id:row.id+'-'+index,name:'학생 '+index,accountConnected:true,sharing:{enabled:true,revision:1},skills:[]}))])));

@@ -1,6 +1,6 @@
 {
   "ok": true,
-  "date": "2026-10-20T22:52:40.714Z",
+  "date": "2026-10-23T06:00:17.683Z",
   "syntheticAccount": true,
   "syntheticClass": true,
   "syntheticStudentText": true,
@@ -36,6 +36,7 @@
     "390-writing-resubmit": true,
     "390-lost-reply": true,
     "390-kept-rewrite": true,
+    "390-model-open-kept": true,
     "390-old-version-key": true,
     "390-read-only-refused": true,
     "390-late": true,
@@ -50,6 +51,7 @@
     "1280-writing-resubmit": true,
     "1280-lost-reply": true,
     "1280-kept-rewrite": true,
+    "1280-model-open-kept": true,
     "1280-old-version-key": true,
     "1280-read-only-refused": true,
     "1280-late": true,
@@ -227,7 +229,7 @@
       "docOverflow": 0,
       "panelOverflow": 0,
       "cardWidth": 350,
-      "cardHeight": 2911,
+      "cardHeight": 2861,
       "overflowing": [],
       "tableOverflow": 0,
       "small": [],
@@ -559,7 +561,7 @@
       "docOverflow": 0,
       "panelOverflow": 0,
       "cardWidth": 624,
-      "cardHeight": 2675,
+      "cardHeight": 2645,
       "overflowing": [],
       "tableOverflow": 0,
       "small": [],
@@ -761,8 +763,8 @@
     "1280-key-stale.png",
     "1280-sheet.png"
   ],
-  "homeworkRequests": 69,
-  "keyRequests": 126,
+  "homeworkRequests": 75,
+  "keyRequests": 120,
   "contentLoads": 21,
   "requestShape": {
     "get": {
@@ -784,7 +786,7 @@
         "classId": "22222222-2222-4222-8222-222222222222",
         "week": 4,
         "kind": "reading",
-        "requestId": "67f01b45-5695-4d57-9a30-c6ce938ab087",
+        "requestId": "9ce6624b-a70b-437b-8db6-44dbe2877ad1",
         "expectedRevision": 0,
         "contentVersion": "v1-53795e0997f6",
         "answers": "(합성)"

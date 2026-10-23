@@ -3,7 +3,7 @@ import {createTeacherOverview,compareTeacherRows} from '../../teacher-world/work
 
 // All server-approved classes are visible; individual work uses one scoped host.
 export function createTeacherWorkspace({root,transport,guard,notice,documentObject=document,windowObject=window,locationHref=location.href,pollMs=15000}){
-  let stopped=false,epoch=0,requestVersion=0,selected=null,selectedLearnerId=null,frame=null,host=null,timer=null,classes=[],online=true,overviewData=null,framePermissions=new Map();
+  let stopped=false,epoch=0,requestVersion=0,overviewVersion=0,selected=null,selectedLearnerId=null,frame=null,host=null,timer=null,classes=[],online=true,overviewData=null,framePermissions=new Map();
   const make=(tag,text)=>{const element=documentObject.createElement(tag);if(text)element.textContent=text;return element;};
   const controls=make('div'),label=make('label','담당 반'),select=make('select'),refresh=make('button','반 목록 새로고침'),status=make('p'),overviewRoot=make('section'),mount=make('div');
   controls.className='teacher-class-controls';select.setAttribute('aria-label','담당 반');refresh.type='button';refresh.className='plain';status.className='small';mount.className='teacher-class-mount';
@@ -17,11 +17,25 @@ export function createTeacherWorkspace({root,transport,guard,notice,documentObje
   const permissionChanged=(previous,next)=>{if(!previous)return false;if(!next)return true;if(Number.isSafeInteger(previous.revision)&&Number.isSafeInteger(next.revision)){if(next.revision<previous.revision)return false;if(next.revision>previous.revision)return true;}return previous.enabled===true&&next.enabled===false||previous.connected===true&&next.connected===false||!previous.revoked&&next.revoked;};
   const townPermissionChanged=(previous,next)=>{if(!previous||!next)return false;if(Number.isSafeInteger(previous.townRevision)&&Number.isSafeInteger(next.townRevision)){if(next.townRevision<previous.townRevision)return false;if(next.townRevision>previous.townRevision)return true;}return previous.townEnabled===true&&next.townEnabled===false;};
   function rememberPermissions(data,classId){framePermissions=new Map((data.classes?.find(row=>row.id===classId)?.learners||[]).map(row=>[row.id,permission(row)]));}
-  function assertCurrentSnapshot(data,classId){
-    const known=overviewData?.classes?.find(row=>row.id===classId);if(!known)return;
+  const sharingChanged=()=>Object.assign(new Error('학생의 공유 상태가 바뀌었어요. 다시 불러와 주세요.'),{code:'CLASSROOM_SNAPSHOT_CHANGED',status:409});
+  // 응답을 받은 뒤 새로 받은 개요가 그 줄과 같은 판·같은 상태라는 보증. iframe이 이미 본 판보다 개요가 뒤처졌으면 보증하지 못한다.
+  const vouches=(fresh,next,seen)=>!!fresh&&Number.isSafeInteger(next.revision)&&['revision','enabled','connected','revoked','townRevision','townEnabled'].every(key=>fresh[key]===next[key])&&!(seen?.revision>fresh.revision)&&!(seen?.townRevision>fresh.townRevision);
+  // confirmed는 응답 뒤에 새로 받은 개요와 견줄 때다. 그 개요가 보증한 줄은 iframe이 그보다 앞서 본 상태(예: 연결 전)와 다시 견주지 않는다.
+  function assertCurrentSnapshot(data,classId,confirmed=false){
+    const known=overviewData?.classes?.find(row=>row.id===classId);if(!known){if(confirmed)throw sharingChanged();return;}
     const latest=new Map((known.learners||[]).map(row=>[row.id,permission(row)]));
     for(const row of data.classes?.find(row=>row.id===classId)?.learners||[]){
-      if(permissionChanged(permission(row),latest.get(row.id))||townPermissionChanged(permission(row),latest.get(row.id))||framePermissions.has(row.id)&&(permissionChanged(permission(row),framePermissions.get(row.id))||townPermissionChanged(permission(row),framePermissions.get(row.id))))throw Object.assign(new Error('학생의 공유 상태가 바뀌었어요. 다시 불러와 주세요.'),{code:'CLASSROOM_SNAPSHOT_CHANGED',status:409});
+      const next=permission(row),fresh=latest.get(row.id),seen=framePermissions.get(row.id);
+      if(permissionChanged(next,fresh)||townPermissionChanged(next,fresh)||seen&&!(confirmed&&vouches(fresh,next,seen))&&(permissionChanged(next,seen)||townPermissionChanged(next,seen)))throw sharingChanged();
+    }
+  }
+  // 공유 판이 그대로인 채 바뀐 줄(학생이 반에 막 연결함·명부에 새로 든 학생)은 아직 안 갱신된 개요나 iframe이 본 상태와 어긋난다.
+  // 그때는 개요를 새로 받아 다시 견준다. 철회·공유 끔 전의 낡은 응답은 새 개요와도 어긋나 그대로 막힌다.
+  async function acceptSnapshot(data,classId,check,reselect){
+    try{assertCurrentSnapshot(data,classId);}catch(error){
+      if(error.code!=='CLASSROOM_SNAPSHOT_CHANGED')throw error;
+      const since=requestVersion;await load({reselect});check();if(overviewVersion<=since)throw error;
+      assertCurrentSnapshot(data,classId,true);
     }
   }
   // 고른 반 학생 모두의 확인된 공유 상태. 한 줄이라도 비면 null이다(iframe이 그 자리에서 거를 수 없다).
@@ -61,10 +75,12 @@ export function createTeacherWorkspace({root,transport,guard,notice,documentObje
     const check=()=>{current(version);if(!online)throw Object.assign(new Error('연결을 다시 확인하고 있어요. 잠시 뒤 다시 해 주세요.'),{code:'NETWORK_ERROR'});};
     const client=createClassroomClient({transport,classId:row.id,guard:check});
     let snapshotRequestSeq=0,snapshotAppliedSeq=0;
+    const newerApplied=()=>Object.assign(new Error('그사이 새 기록이 들어왔어요. 다시 불러와 주세요.'),{code:'CLASSROOM_SNAPSHOT_CHANGED',status:409});
     const workspace=await client.request('/api/workspace');check();
     if(workspace.mode!=='account-linked'||!workspace.classes?.some(classroom=>classroom.id===row.id))throw new Error('이 반을 열지 못했어요. 「반 목록 새로고침」을 눌러 주세요.');
-    assertCurrentSnapshot(workspace,row.id);rememberPermissions(workspace,row.id);
-    host=Object.freeze({mode:'account-linked',classId:row.id,focusWorkspace:()=>{check();frame?.scrollIntoView({block:'start',behavior:'instant'});},request:(path,body)=>{check();const snapshotSeq=path==='/api/workspace'?++snapshotRequestSeq:0,pending=client.request(path,body);return pending.then(result=>{check();if(path==='/api/workspace'){if(snapshotSeq<snapshotAppliedSeq)throw Object.assign(new Error('그사이 새 기록이 들어왔어요. 다시 불러와 주세요.'),{code:'CLASSROOM_SNAPSHOT_CHANGED',status:409});assertCurrentSnapshot(result,row.id);rememberPermissions(result,row.id);snapshotAppliedSeq=snapshotSeq;}if(body!==undefined)void load().catch(report);return result;});}});
+    // 여는 중에는 개요만 새로 받는다(반을 다시 열면 이 열기를 되풀이한다).
+    await acceptSnapshot(workspace,row.id,check,false);check();rememberPermissions(workspace,row.id);
+    host=Object.freeze({mode:'account-linked',classId:row.id,focusWorkspace:()=>{check();frame?.scrollIntoView({block:'start',behavior:'instant'});},request:(path,body)=>{check();const snapshotSeq=path==='/api/workspace'?++snapshotRequestSeq:0,pending=client.request(path,body);return pending.then(async result=>{check();if(path==='/api/workspace'){if(snapshotSeq<snapshotAppliedSeq)throw newerApplied();await acceptSnapshot(result,row.id,check,true);check();if(snapshotSeq<snapshotAppliedSeq)throw newerApplied();rememberPermissions(result,row.id);snapshotAppliedSeq=snapshotSeq;}if(body!==undefined)void load().catch(report);return result;});}});
     windowObject.SYNKClassroomHost=host;windowObject.SYNKClassroomSelection={classId:row.id,learnerId};
     frame=make('iframe');frame.title=row.name+' · 학생별 기록과 과제';frame.src=new URL('../teacher-world/?account=1',locationHref).href;mount.append(frame);status.textContent='학생이 공유한 학습 기록으로 다음 수업과 과제를 준비해요.';
     if(userInitiated)mount.scrollIntoView({block:'start',behavior:'instant'});
@@ -82,7 +98,7 @@ export function createTeacherWorkspace({root,transport,guard,notice,documentObje
     const scopedClasses=(data.classes||[]).filter(row=>allowed.has(row.id)),learnerIds=new Set(scopedClasses.flatMap(row=>(row.learners||[]).map(learner=>learner.id)));
     return {...data,classes:scopedClasses,care:(data.care||[]).filter(row=>allowed.has(row.classId)),assignments:(data.assignments||[]).filter(row=>allowed.has(row.classId)),observations:(data.observations||[]).filter(row=>row.classId?allowed.has(row.classId):learnerIds.has(row.learnerId)),careAssignees:(data.careAssignees||[]).filter(row=>!Array.isArray(row.classIds)||row.classIds.some(id=>allowed.has(id)))};
   }
-  async function load(){
+  async function load({reselect=true}={}){
     active();const version=++requestVersion,reconnecting=!online;let data,rows;
     try{
       const result=await transport('classes');active();if(version!==requestVersion)return;
@@ -100,8 +116,10 @@ export function createTeacherWorkspace({root,transport,guard,notice,documentObje
       if(error.status===401||error.status===403||error.code==='INVALID_CLASSROOM_RESPONSE'){clearFrame();selected=null;selectedLearnerId=null;classes=[];overviewData=null;picker();}
       renderOverview();status.textContent='반 목록을 불러오지 못했어요. 연결되면 「반 목록 새로고침」을 눌러 주세요.';throw error;
     }
-    const allowed=new Set(rows.map(row=>row.id));overviewData=restrictOverview({...data,classes:data.classes.map(row=>({...row,name:row.name||rows.find(member=>member.id===row.id)?.name,learners:Array.isArray(row.learners)?row.learners:[]}))},allowed);
+    const allowed=new Set(rows.map(row=>row.id));overviewData=restrictOverview({...data,classes:data.classes.map(row=>({...row,name:row.name||rows.find(member=>member.id===row.id)?.name,learners:Array.isArray(row.learners)?row.learners:[]}))},allowed);overviewVersion=version;
     const visible=new Set(overviewData.classes.map(row=>row.id));classes=rows.filter(row=>visible.has(row.id));
+    // 담당이 풀려 고른 반이 지워졌으면 아래 길로 내려가 상태 줄까지 맞춘다(여는 중이던 열기는 epoch가 바뀌어 끝난다).
+    if(!reselect&&selected){picker();renderOverview();return;}
     const prior=selected&&classes.find(row=>row.id===selected.id),row=prior||(classes.length===1?classes[0]:null);
     if(prior&&frame){
       publishPermissions();
