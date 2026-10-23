@@ -25,6 +25,13 @@ const MODELS = {
   유호x5: ['1_B정면.jpg', '2_C정면.jpg', '3_실제_pro02.jpg', '4_실제_V181.jpg', '5_실제_V204.jpg']
     .map((n) => `C:/Users/q1212/Videos/한강2126_새판_20261009/재촬영_v40/기준그림/얼굴세트/_올림/${n}`),
 };
+// v4: 셋이 한 화면에 드는 컷은 한 사람에 참조 한두 장씩(정면 · 오른쪽 45° 또는 전신)
+const REF_DIR = { F04: 'C:/SYNK-LoRA/validation/F04_jiyu/refs', 통2: path.join(V, '배역', '참조', '통2'), 리4: path.join(V, '배역', '참조', '리4') };
+for (const [who, dir] of Object.entries(REF_DIR)) {
+  MODELS[`${who}x2`] = ['01_hero', '03_right45'].map((n) => `${dir}/${n}.jpg`);
+  MODELS[`${who}정면`] = [`${dir}/01_hero.jpg`];
+  MODELS[`${who}전신`] = [`${dir}/04_fullbody.jpg`];
+}
 
 function small(src, dst) {   // 긴 변 1,400px JPEG(올리기가 빠르고 Gemini가 받는 크기로 충분 — 현장 노트 S24)
   if (fs.existsSync(dst) && fs.statSync(dst).mtimeMs >= fs.statSync(src).mtimeMs) return dst;
@@ -37,7 +44,10 @@ function small(src, dst) {   // 긴 변 1,400px JPEG(올리기가 빠르고 Gemi
 function refsOf(cut) {
   const out = [];
   for (const r of cut.refs) {
-    if (MODELS[r]) {
+    if (r.startsWith('배치:')) {   // v4: 사람을 지운 배치도 · 실루엣(synk-vendor/…/콘티/v4/배치/<이름>.png — 원본 프레임은 넣지 않는다)
+      const src = path.join(V, '콘티', 'v4', '배치', `${r.slice(3)}.png`);
+      out.push(fs.existsSync(src) ? small(src, path.join(REFS, 'v4배치', `${r.slice(3)}.jpg`)) : `(아직 없음) ${src}`);
+    } else if (MODELS[r]) {
       for (const src of MODELS[r]) {
         if (!fs.existsSync(src)) { out.push(`(아직 없음) ${src}`); continue; }
         out.push(small(src, path.join(REFS, `${r.replace(/x\d$/, '')}_${path.basename(src).replace(/\.\w+$/, '')}.jpg`)));
@@ -51,11 +61,16 @@ function refsOf(cut) {
 }
 
 function textOf(cut) {
-  return cut.text.replace(/\{([^}:]+)(?::(\d+))?\}/g, (_, k, n) => {
-    const v = spec.공통[k];
-    if (v === undefined) throw Error(`${cut.id}: 모르는 칸 ${k}`);
-    return n ? v.replace('{n}', n) : v;
-  }).replace(/\s+/g, ' ').trim();
+  // 칸 안에 칸을 넣을 수 있다(v4 셋_전신 안의 옷 칸) — 세 번까지 풀어 준다
+  let t = cut.text;
+  for (let i = 0; i < 3 && /\{[^}:\s]+(?::\d+)?\}/.test(t); i++) {
+    t = t.replace(/\{([^}:\s]+)(?::(\d+))?\}/g, (_, k, n) => {
+      const v = spec.공통[k];
+      if (v === undefined) throw Error(`${cut.id}: 모르는 칸 ${k}`);
+      return n ? v.replaceAll('{n}', n) : v;
+    });
+  }
+  return t.replace(/\s+/g, ' ').trim();
 }
 
 const only = process.argv.includes('--보기') ? process.argv[process.argv.indexOf('--보기') + 1] : null;
@@ -64,7 +79,8 @@ for (const cut of spec.컷) {
   if (only && cut.id !== only) continue;
   const prompt = textOf(cut);
   if (prompt.length > 4300) throw Error(`${cut.id}: 지시문 ${prompt.length}자 — 4,300자 안으로(현장 노트)`);
-  jobs[cut.id] = { id: cut.id, who: cut.who, ratio: '16:9', prompt, refs: refsOf(cut) };
+  if (/video/i.test(prompt)) throw Error(`${cut.id}: 지시문에 video — Gemini가 영상을 만들기 시작한다(현장 노트 10-23)`);
+  jobs[cut.id] = { id: cut.id, who: cut.who, ratio: cut.ratio || '16:9', prompt, refs: refsOf(cut) };
 }
 if (only) {
   console.log(JSON.stringify(jobs[only], null, 1));

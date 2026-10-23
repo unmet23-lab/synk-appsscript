@@ -22,6 +22,7 @@
 - 로컬 GPU · CPU가 꽉 차면 크롬 그리기가 멈춰 메뉴가 안 뜨고 보내기가 늦게 두 번 간다 → 시작 전 requestAnimationFrame 한 번이 100ms 아래인지 잰다 ([자세히](#로컬-gpu가-100밤샘-학습면-크롬-그리기가-멈춰-메뉴--업로드--보내기가-늦게-먹는다--그리기-주기부터-잰다))
 - ego lite로 구울 때는 원본 받기에 다운로드 이벤트가 안 온다 → 네트워크의 원본 주소를 `page.fetch`로 받고, 창이 최소화돼 있으면 먼저 띄운다 ([자세히](#ego-lite에서-원본-크기-이미지-다운로드를-눌러도-다운로드-이벤트가-안-온다--네트워크에서-원본-주소를-잡아-받는다-2026-10-21-claude))
 - ego로 여러 장을 한 라운드에 돌릴 때는 → 표준 입력으로 돌리고(`-e` import는 중간에 끝남), 받기가 빠지면 그 자리에서 대화 주소로 다시 받는다 ([자세히](#ego로-여러-장을-한-라운드에-돌리면---e-import는-중간에-끝나고-막-그린-페이지-받기는-빠지고-다음-장-이동이-끊긴다-2026-10-22-claude))
+- 원본 영상 컷을 옮길 때 「클로즈업」이 넓게 나온다 → 「얼굴이 화면 높이의 2/3 · 정수리가 위 가장자리에 잘림」처럼 화면 안 경계로 쓰고, 남는 차이는 원본 첫 프레임의 얼굴 자리로 잘라 맞춘다 ([자세히](#원본-영상-컷을-옮길-때-클로즈업은-화면-안-경계로-쓰고-남는-차이는-원본-첫-프레임의-얼굴-자리--크기로-잘라-맞춘다-2026-10-23-claude))
 
 ## 목차
 
@@ -303,12 +304,19 @@
 - 덧붙임(10-22 18시): 기다렸다 시작한 35차는 `ego-browser nodejs`가 3분 반 만에 돌아왔는데 기록에 ego 출력이 한 줄도 없었다(같은 시각 다른 세션이 새 ego 실행을 시작했다). 그런데 스크립트는 ego 안에서 계속 돌아 3분 뒤 둘째 장(C11)을 `받음/`에 저장했다. 덧붙이기 리디렉션(`>>`)은 원인이 아니다(작은 시험에서 `>` · `>>` 모두 출력이 남았다). 라운드가 끝났는지는 기록의 `BATCH DONE` 줄로 보고, 그 줄 없이 끝났으면 `받음/` 폴더를 시각순으로 몇 분 더 본다 — 「멈췄다」고 적기 전에.
 - 덧붙임(10-22 23시 53분): 블렌더를 먼저 굽으려고 다음 라운드의 대기 스크립트를 `TaskStop`으로 멈췄는데, 그 bash 고리는 살아 있어 20초 뒤 라운드를 시작했다(블렌더 GPU 렌더와 1분 겹침). 대기 스크립트를 멈추려면 `Get-CimInstance Win32_Process`에서 명령줄에 `run_round`가 든 bash를 찾아 `taskkill /PID <pid> /T /F`로 끄고, 멈췄는지 다시 본다. 아니면 처음부터 블렌더를 라운드 사이가 아니라 라운드 전후로 둔다.
 - 덧붙임(10-23 18시, 한결 후보 넷): 「매진 임박」 세션이 6장짜리 라운드를 사슬(`run_chain.sh`, 10초 간격 세 번 연속 0개면 다음 라운드)로 몇 시간째 잇는 동안, 「10초 간격 여섯 번 연속 0개」를 기다린 내 대기는 저쪽이 20~30초 만에 다음 라운드를 띄워 한 번도 들어가지 못했다(끝까지 기다리면 사슬이 다 끝날 때까지). 대기를 **2초 간격 세 번 연속 0개**로 바꾸자 저쪽 라운드가 끝난 5초 뒤 내 라운드가 들어갔고, 저쪽 사슬은 내 실행기 1개를 보고 기다렸다가 내 라운드가 끝난 1분 남짓 뒤 다음 라운드를 이었다(내 4장은 화면 엉킴 없이 장마다 1분 40초쯤에 받음). 저쪽 사슬은 「라운드 사이에 다른 세션도 ego를 쓰게」 일부러 틈을 두므로, 몇 장 안 되는 일은 이렇게 틈에 끼운다. 실행기 `C:\SYNK-LoRA\casting\wave2_20261023\ego\run_wait.sh`. 계정 확인은 aria-label에 `@`가 든 요소의 글로 했다 — 「Google 계정: 이름」 다음 줄에 메일이 있어 한 줄만 보면 메일이 안 보인다.
+- 덧붙임(10-23 17시): 위 35차처럼 실행기(nodejs)가 먼저 끝났는데 다음 라운드를 「실행기 0개」만 보고 띄우자, 앞 라운드 스크립트가 ego 안에서 계속 돌며 같은 탭(p1)을 둘 · 셋이 함께 만졌다 — 숨은 파일 칸 없음 · 보내기가 안 먹음 · 「this Page is already waiting for a file chooser」가 줄줄이 나 44~46차 열여덟 장이 다 실패했다. 고침: ① 라운드 끝은 프로세스 끝이 아니라 단계 기록 파일의 「끝」 줄로 본다(`homeshopping-horror-20261021/ego/run_chain.sh` — run-batch가 맨 앞 「시작」 · 장마다 「받음 · 실패」 · 맨 끝 「끝」을 바로 쓴다) ② 남은 스크립트는 그 작업 공간의 탭을 닫아 멈춘다 — 새 스크립트에서 `task.newPage()`로 새 탭을 먼저 열고 옛 탭을 `close()`하면 남은 스크립트가 「page p1 was closed」로 끝 줄을 쓰고 멈췄다(`ego/정리-50.mjs`). 그 뒤 실행기는 `task.pages()`의 마지막 탭을 쓴다 ③ 파일 선택기 기다림(`waitForFileChooser`)은 누를 메뉴 항목을 찾은 뒤에만 건다 — 못 찾은 채 남기면 같은 탭의 다음 장이 모두 끊긴다.
 
 ### PC가 바쁘면(CPU 90%+) 결과 그림 받기가 「element is not visible in the viewport」로 끊긴다 — 그 대화에서 `take.mjs`로 받는다 (2026-10-22 Claude)
 - 증상: 10-22 18~19시 「달리며 건너뛰는 한국」 v2 시험 컷마다 그림은 만들어졌는데(기록에 「sent」) 받기에서 `page.click … element is not visible in the viewport`, `CDP request timed out: Runtime.callFunctionOn`, `page.evaluate timed out … Page is still unresponsive`로 끊겼다. CPU는 89~99%로, Windows 보안(MsMpEng)이 3~9코어어치를 쓰고 다른 세션의 python · git도 돌았다. requestAnimationFrame 한 번이 1.4초였다.
 - 원인: 위 「로컬 GPU가 100%면」 · 「다른 세션이 같은 Gemini 계정 · ego 브라우저를 같이 쓰면」과 같은 결 — 그리기가 늦어 단추가 화면 밖에 있다고 읽히거나 응답이 끊긴다. 보안 검사는 여러 세션이 그림 · 영상 · 저장소 파일을 한꺼번에 쓸 때 몰린다(끄지 않는다 — 10-22 유호님이 「windows 보안 끌까?」 물었을 때 끄지 말자고 했다).
 - 고침: 큐 앞에 CPU 평균(`Get-Counter '\Processor(_Total)\% Processor Time'` 3번 평균 — `.ps1`은 `-ExecutionPolicy Bypass`로 불러야 값이 나온다)이 70% 밑으로 내려갈 때까지 기다리고, 받기가 끊긴 장은 기록의 마지막 「sent」 대화 주소로 `ego/take.mjs`를 돌려 받는다(이렇게 다섯 번 모두 받았다). 이 순서를 묶은 실행 꼴은 `Documents/synk-vendor/korea-run-montage-20261021/ego/v2/run_k.sh`(waitcpu · winup · bake → 실패 시 회수, CPU 재기는 같은 폴더 `cpu.ps1`).
 - 다시 확인: 장마다 기록에 「done」이 있거나, 없으면 회수 결과 `ok:true`가 남는지.
+
+### 대화 주소로 처음 연 페이지에서는 받기 첫 누름이 원본을 안 받는다 — 16초 · 32초에 한 번 더 누른다 (2026-10-23 Claude)
+- 증상: 「매진 임박」 38 · 40 · 41차에서 장마다 그린 뒤 대화 주소 모드로 받을 때, 첫 시도는 「원본 크기 이미지 다운로드」를 실제로 눌러도 80초 동안 `rd-gg` 원본 요청이 성능 기록에 안 생겨 「원본 주소를 못 찾음」으로 끝났고, 대화를 다시 연 둘째 시도는 8초 만에 받았다. 장마다 1분 반이 더 들었다(한 장 3분 반).
+- 원인: 모름(대화를 처음 연 페이지에서 첫 누름은 받기를 일으키지 않는다 — 마우스 올림이 늦게 먹는 것으로 보인다).
+- 고침: `homeshopping-horror-20261021/ego/gen.mjs` 받기 기다림 고리에서 16초 · 32초에 원본 주소가 아직 없으면 그림에 마우스를 다시 올리고 단추를 한 번 더 누른다. 43차부터 장마다 「받기 단추 다시 누름」 뒤 9초 안에 받았다(한 장 2분).
+- 다시 확인: 단계 기록에 「받기 단추 다시 누름」 → 「받음」이 이어지는지, 받은 JPEG가 16:9 2752×1536인지.
 
 ## 결과물
 
@@ -464,3 +472,9 @@
 - 원인: 「smartphone video」 · 「frame from a … video」를 영상 요청으로 읽었다(추정 — 10-23 무렵 /images 화면에도 영상 만들기가 붙었다).
 - 고침: 「대답 생성 중지」를 눌러 멈추고(영상 몫을 쓰지 않게), 지시문 맨 앞에 「Create one still photograph.」, FINISH를 「a single still photograph taken with a smartphone」으로 바꾸자 그림이 나왔다. 「not a video」처럼 video 낱말을 넣는 부정문도 빼서 낱말 자체를 없앴다.
 - 다시 확인: 보내기 전 지시문에 `video`가 없는지(`'video' in prompt.lower()`).
+
+### 원본 영상 컷을 옮길 때 클로즈업은 「화면 안 경계」로 쓰고, 남는 차이는 원본 첫 프레임의 얼굴 자리 · 크기로 잘라 맞춘다 (2026-10-23 Claude)
+- 증상: 「매진 임박」 콘티 v4(원본 릴스 31컷 그대로) 이미지 콘티에서 「Close-up: her face sits right of the center of the frame, from the top of her head to her collarbones」 + 사람 자리만 검은 실루엣으로 바꾼 배치도를 줬는데, #7이 옆 사람 등 너머로 본 미디엄(얼굴이 화면 높이의 16%)으로 나왔다. 「옆 사람의 깅엄 끈이 왼쪽 가장자리에」를 적은 것이 등 전체가 됐다. #10 「셋 미디엄 · 오른쪽에서」는 두 번 다 정면에 떨어져 앉은 넓은 컷이었고, 강도 미디엄도 원본보다 작게 가운데 섰다.
+- 원인: 위 「어깨 위」 항목과 같은 결 — 크기 낱말보다 장면 구성을 따르고 사람을 가운데에 세운다. 실루엣 배치도는 자세(칼 든 팔 방향)는 따라오지만 크기 · 자리는 약하게만 따른다.
+- 고침: ① 클로즈업은 화면 안 경계로 쓴다 — 「TIGHT CLOSE-UP: her face fills the frame — from her eyebrows to her chin her face takes up about two-thirds of the frame height; the top of her head is cut off by the top edge of the frame and her shoulders are cut off by the bottom edge. No other face or body is in the frame.」 옆 사람 손이 필요하면 「The only other thing in the frame is one hand of a person outside the frame, coming in from the left edge」. 강도는 「The camera is close to him, about one meter away and very low … the frame cuts him at the hips」. 이렇게 쓰자 #7 · #8이 원본 크기 가까이 나왔다. ② 남는 차이는 다시 굽지 않고 잘라 맞춘다 — OpenCV YuNet 얼굴 상자(강도는 사람 마스크 머리 폭)를 원본 첫 프레임의 상자와 같은 자리 · 같은 폭이 되게 16:9 창을 자르고, 빛은 원본 첫 프레임의 Lab 평균 · 퍼짐으로 옮긴다(밝기 0.8 · 색 1.0). 창이 받은 그림 폭의 45%보다 작아야 맞으면 다시 굽는다(`docs/마케팅/PULSE_포트폴리오_제작준비_20261012/video/homeshopping-horror-20261021/이미지콘티_v4_맞춤.py`). ③ 닮음은 SFace 코사인으로 잰다(참조 사진끼리 0.55~0.6, 같은 사람 기준선 0.363 — 같은 폴더 `이미지콘티_v4_닮음.py`). OpenCV 5.0에는 Haar가 없고, 한글 경로의 ONNX를 못 읽어 YuNet · SFace 모델은 영문 경로 사본(`%USERPROFILE%/.rembg/models/yunet/`)을 쓴다.
+- 다시 확인: 맞춤 기록(`synk-vendor/…/콘티/v4/컷/_맞춤기록.json`)의 창 폭, 원본 첫 프레임과 나란히 놓은 보드, 닮음 점수.
