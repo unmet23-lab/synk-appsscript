@@ -106,13 +106,17 @@ export function createPositionView({t,has=()=>true,formatDate=null,lang=()=>'ko'
  // response: {kind:'short'|'diagnostic'|'mock', value: 고른 값(없으면 null), failed: 남기지 못했으면 참}. 없으면(손님·기능 꺼짐) 그리지 않는다.
  // 고른 뒤에는 「내 계정」에서 보고 뺄 수 있다고 알리고, 짧은 연습에서 길이를 바꾸는 둘(많았어요·더 하고 싶어요)만 그 효과를 한 줄 더 말한다.
  const RESPONSE_VALUES=Object.freeze(['helpful','not_fit','too_much','want_more']);
+ // 줄의 글 둘(묻기·상태)과 고른 값. 고른 뒤에는 화면 쪽이 이 글만 바꿔 넣는다 — role=status 문단을 새로 넣으면 보조기기가 바뀐 글을 읽지 않는다.
+ function setResponseText(response){
+  const chosen=RESPONSE_VALUES.includes(response?.value)?response.value:null;
+  const effect=response?.kind!=='short'||response?.failed?null:chosen==='too_much'?'response.shorter':chosen==='want_more'?'response.longer':null;
+  return {chosen,ask:t(chosen&&!response?.failed?'response.thanks':'response.ask'),status:response?.failed?t('response.failed'):effect?t(effect):''};
+ }
  function renderSetResponse(response){
   if(!response||!['short','diagnostic','mock'].includes(response.kind))return '';
-  const chosen=RESPONSE_VALUES.includes(response.value)?response.value:null;
-  const effect=response.kind!=='short'||response.failed?null:chosen==='too_much'?'response.shorter':chosen==='want_more'?'response.longer':null;
-  const status=response.failed?t('response.failed'):effect?t(effect):'';
+  const {chosen,ask,status}=setResponseText(response);
   const pills=RESPONSE_VALUES.map(value=>`<button class="wpos-response-choice" type="button" data-set-response="${value}" aria-pressed="${value===chosen?'true':'false'}">${posEscape(t(`response.value.${value}`))}</button>`).join('');
-  return `<section class="wpos-response" data-set-response-box data-kind="${posEscape(response.kind)}"><p class="wpos-response-ask" id="wpos-response-ask" role="status">${posEscape(t(chosen&&!response.failed?'response.thanks':'response.ask'))}</p><div class="wpos-response-choices" role="group" aria-labelledby="wpos-response-ask">${pills}</div><p class="wpos-note" data-set-response-status role="status">${posEscape(status)}</p></section>`;
+  return `<section class="wpos-response" data-set-response-box data-kind="${posEscape(response.kind)}"><p class="wpos-response-ask" id="wpos-response-ask" role="status">${posEscape(ask)}</p><div class="wpos-response-choices" role="group" aria-labelledby="wpos-response-ask">${pills}</div><p class="wpos-note" data-set-response-status role="status">${posEscape(status)}</p></section>`;
  }
  const poster=(word,sub,{print='position',label='MY POSITION'}={})=>`<div class="life-poster wpos-poster"><span class="w-print wpos-print" data-print="${print}" aria-hidden="true"><i></i></span><small class="life-poster-label">${label}</small><strong class="life-poster-word">${posEscape(word)}</strong><p class="life-poster-sub">${posEscape(sub)}</p></div>`;
 
@@ -398,6 +402,6 @@ export function createPositionView({t,has=()=>true,formatDate=null,lang=()=>'ko'
    +`<section class="wplan-reach"><p class="life-section-label">SO FAR</p>${['listening','reading'].filter(area=>plan.progress?.[area]).map(area=>`<p class="wpos-progress" data-plan-progress="${area}"><span>${posEscape(t(`plan.area.${area}`))}${bridged.includes(area)?` · ${posEscape(t('goal.exam.type.topik1'))}`:''} · ${posEscape(t('position.progress',{checked:plan.progress[area].checked,total:plan.progress[area].total}))}</span><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(plan.progress[area].checked,plan.progress[area].total)}%"></i></span></p>`).join('')}<p class="wpos-intro">${posEscape(t('plan.reach.line',{confirmed:reach.confirmed,total:reach.total,evidence:reach.evidence}))}</p><p class="wpos-note">${posEscape(t('plan.reach.note'))}</p>${bridged.length?`<p class="wpos-note" data-plan-reach-basis>${posEscape(t(bridged.length>1?'plan.reach.topik1Basis':bridged[0]==='listening'?'plan.reach.topik1Basis.listening':'plan.reach.topik1Basis.reading'))}</p>`:''}</section>`
    +`<button class="quiet-button" type="button" data-view="study">${posEscape(t('plan.week.change'))}</button></div>`;
  }
- return Object.freeze({skillName,itemSource,noteText,explainText,renderPositionBoard,renderHangulBoard,renderDiagnosticItem,renderDiagnosticDone,renderTownCheckWait,renderTownCheckDone,renderPracticeItem,renderPracticeDone,renderSetResponse,
+ return Object.freeze({skillName,itemSource,noteText,explainText,renderPositionBoard,renderHangulBoard,renderDiagnosticItem,renderDiagnosticDone,renderTownCheckWait,renderTownCheckDone,renderPracticeItem,renderPracticeDone,renderSetResponse,setResponseText,
   renderMockIntro,renderMockItem,renderMockBetween,renderMockDone,mockClock,renderExamPlan});
 }

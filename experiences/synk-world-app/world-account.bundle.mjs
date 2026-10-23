@@ -18722,13 +18722,16 @@ function createPositionView({ t, has = () => true, formatDate = null, lang = () 
   const examSwitch = (exam, exams) => Array.isArray(exams) && exams.length > 1 ? `<div class="wpos-exam" role="group" aria-label="${posEscape(t("position.exam.label"))}">${exams.map((id) => `<button class="wpos-exam-pill" type="button" data-position-exam="${posEscape(id)}" aria-pressed="${id === exam ? "true" : "false"}">${posEscape(t(`goal.exam.type.${id}`))}</button>`).join("")}</div>` : "";
   const progressLine = (row) => row ? `<p class="wpos-progress"><span>${posEscape(t("position.progress", { checked: row.checked, total: row.total }))}</span><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(row.checked, row.total)}%"></i></span></p>` : "";
   const RESPONSE_VALUES = Object.freeze(["helpful", "not_fit", "too_much", "want_more"]);
+  function setResponseText(response) {
+    const chosen = RESPONSE_VALUES.includes(response?.value) ? response.value : null;
+    const effect = response?.kind !== "short" || response?.failed ? null : chosen === "too_much" ? "response.shorter" : chosen === "want_more" ? "response.longer" : null;
+    return { chosen, ask: t(chosen && !response?.failed ? "response.thanks" : "response.ask"), status: response?.failed ? t("response.failed") : effect ? t(effect) : "" };
+  }
   function renderSetResponse(response) {
     if (!response || !["short", "diagnostic", "mock"].includes(response.kind)) return "";
-    const chosen = RESPONSE_VALUES.includes(response.value) ? response.value : null;
-    const effect = response.kind !== "short" || response.failed ? null : chosen === "too_much" ? "response.shorter" : chosen === "want_more" ? "response.longer" : null;
-    const status = response.failed ? t("response.failed") : effect ? t(effect) : "";
+    const { chosen, ask, status } = setResponseText(response);
     const pills = RESPONSE_VALUES.map((value) => `<button class="wpos-response-choice" type="button" data-set-response="${value}" aria-pressed="${value === chosen ? "true" : "false"}">${posEscape(t(`response.value.${value}`))}</button>`).join("");
-    return `<section class="wpos-response" data-set-response-box data-kind="${posEscape(response.kind)}"><p class="wpos-response-ask" id="wpos-response-ask" role="status">${posEscape(t(chosen && !response.failed ? "response.thanks" : "response.ask"))}</p><div class="wpos-response-choices" role="group" aria-labelledby="wpos-response-ask">${pills}</div><p class="wpos-note" data-set-response-status role="status">${posEscape(status)}</p></section>`;
+    return `<section class="wpos-response" data-set-response-box data-kind="${posEscape(response.kind)}"><p class="wpos-response-ask" id="wpos-response-ask" role="status">${posEscape(ask)}</p><div class="wpos-response-choices" role="group" aria-labelledby="wpos-response-ask">${pills}</div><p class="wpos-note" data-set-response-status role="status">${posEscape(status)}</p></section>`;
   }
   const poster = (word, sub, { print = "position", label = "MY POSITION" } = {}) => `<div class="life-poster wpos-poster"><span class="w-print wpos-print" data-print="${print}" aria-hidden="true"><i></i></span><small class="life-poster-label">${label}</small><strong class="life-poster-word">${posEscape(word)}</strong><p class="life-poster-sub">${posEscape(sub)}</p></div>`;
   function renderPositionBoard({ map, plan = null, gate = null, mock = null, catalog = null, diagnosed = false, scope = null, practice = null, exams = null, writing = false, bridged = [] } = {}) {
@@ -18959,6 +18962,7 @@ function createPositionView({ t, has = () => true, formatDate = null, lang = () 
     renderPracticeItem,
     renderPracticeDone,
     renderSetResponse,
+    setResponseText,
     renderMockIntro,
     renderMockItem,
     renderMockBetween,

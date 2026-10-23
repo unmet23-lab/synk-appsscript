@@ -84,8 +84,11 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
    const value=button.dataset.setResponse;let failed=false;
    try{check();coachNow.feedback(set,value);chosen=value;}catch{failed=true;}
    const node=box.querySelector('[data-set-response-box]');if(!node)return;
-   node.outerHTML=view.renderSetResponse({kind,value:chosen,failed});
-   box.querySelector(`[data-set-response="${value}"]`)?.focus?.({preventScroll:true});
+   // 글과 눌림만 바꾼다(줄을 새로 그리면 role=status 안내가 보조기기에 안 읽힌다). 옛 묶음이면 줄을 새로 그린다.
+   const text=typeof view.setResponseText==='function'?view.setResponseText({kind,value:chosen,failed}):null;
+   const ask=node.querySelector?.('#wpos-response-ask'),status=node.querySelector?.('[data-set-response-status]');
+   if(text&&ask&&status){ask.textContent=text.ask;status.textContent=text.status;for(const pill of node.querySelectorAll('[data-set-response]'))pill.setAttribute('aria-pressed',pill.dataset.setResponse===chosen?'true':'false');}
+   else{node.outerHTML=view.renderSetResponse({kind,value:chosen,failed});box.querySelector(`[data-set-response="${value}"]`)?.focus?.({preventScroll:true});}
    const again=kind==='short'?box.querySelector('[data-practice-again]'):null;
    if(again)again.innerHTML=`${escape(t('practice.again',{n:Math.min(more,practiceLength())}))} <span aria-hidden="true">→</span>`;
   });

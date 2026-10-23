@@ -184,6 +184,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 다시 만든 생성물이 origin 판과 내용이 같은지(CR을 뗀 sha) 확인한 뒤 `--짝검사건너뜀 "<까닭>"`으로 올린다. 까닭에 「원천이 그 묶음에 들어가지 않고, 다시 만든 결과가 origin과 내용이 같다(줄끝만 다름)」를 적는다. 내용이 다르면 건너뛰지 말고 생성물을 경로에 더해 같이 올린다.
 - 다시 확인: `node tools/build-messenger-teaching.cjs` 뒤 `git diff --ignore-cr-at-eol --stat -- docs/마케팅/온라인마케팅지도/engagement/company/public/teaching-host.js`가 비고, CI의 `npm run check:account-bundles`(Linux, LF 체크아웃)는 그대로 통과한다.
 
+### 짝 검사가 줄끝만 다른 생성물을 「작업본에서만 통과」로 막는다 — 내용이 같으면 그 파일을 되돌리고 다시 올린다 (2026-10-22 Claude)
+- 증상: 바로올리기가 「✗ WORLD life bundle — 통과(작업본에서만) … 이 검사가 보는 파일이 작업본에서 바뀌었는데 이번 push에 없다: experiences/synk-world-app/world-learning-profile-core.mjs」로 두 번 멈췄다. 그 파일을 경로에 넣어도 올라갈 커밋 목록에 안 나왔다.
+- 원인: 빌더가 그 생성물을 LF로 다시 썼는데 HEAD 판은 CRLF로 풀려 있어 `git status`만 M이고 내용 차이는 없다(`git diff`가 빔). 도구는 내용 차이가 없는 경로를 커밋에서 빼지만, 짝 검사는 작업본 파일이 바뀌었다고 본다.
+- 고침: `git diff --quiet -- <파일>`이 참이면 `git checkout -- <파일>`로 되돌리고 그 빌더의 `--check`가 「current」인지 본 뒤 다시 올린다(올리기 전에 상태의 ` M` 파일마다 이 확인을 한 번 돌리면 된다).
+- 다시 확인: `git -c core.quotepath=false status --porcelain`에 내용 차이 없는 생성물이 남지 않고, 바로올리기 짝 검사가 「통과」.
+
 ## index.lock
 
 ### 주인 없는 0바이트 `.git/index.lock`이 남는다

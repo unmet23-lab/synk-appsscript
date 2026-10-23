@@ -28,7 +28,15 @@ function stage(){
   querySelector(selector){
    if(!has(selector))return null;
    const node={focus(){},textContent:'',addEventListener:(type,fn)=>{if(type==='click')once.set(selector,fn);}};
-   if(selector==='[data-set-response-box]')Object.defineProperty(node,'outerHTML',{set:html=>{box.html=box.html.replace(/<section class="wpos-response"[\s\S]*?<\/section>/,html);}});
+   if(selector==='[data-set-response-box]'){
+    Object.defineProperty(node,'outerHTML',{set:html=>{box.html=box.html.replace(/<section class="wpos-response"[\s\S]*?<\/section>/,html);}});
+    // 글만 바꾸기(묻기·상태 문단의 글, 알약의 aria-pressed)도 HTML 글에 그대로 옮긴다.
+    const text=pattern=>({set textContent(value){box.html=box.html.replace(pattern,(_,open,close)=>`${open}${value}${close}`);}});
+    node.querySelector=inner=>inner==='#wpos-response-ask'?text(/(<p class="wpos-response-ask" id="wpos-response-ask" role="status">)[\s\S]*?(<\/p>)/)
+     :inner==='[data-set-response-status]'?text(/(<p class="wpos-note" data-set-response-status role="status">)[\s\S]*?(<\/p>)/):null;
+    node.querySelectorAll=()=>[...box.html.matchAll(/data-set-response="([a-z_]+)"/g)].map(([,value])=>({dataset:{setResponse:value},
+     setAttribute:(name,v)=>{box.html=box.html.replace(new RegExp(`data-set-response="${value}" ${name}="[a-z]+"`),`data-set-response="${value}" ${name}="${v}"`);}}));
+   }
    if(selector==='[data-practice-again]')Object.defineProperty(node,'innerHTML',{set:html=>{box.html=box.html.replace(/(<button[^>]*data-practice-again[^>]*>)[\s\S]*?(<\/button>)/,`$1${html}$2`);}});
    return node;
   }};

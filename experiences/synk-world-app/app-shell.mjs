@@ -512,7 +512,7 @@ function responsesSection(){
  let local=false;try{local=account?.preferences?.()?.enabled===false;}catch{local=false;}
  const name=row=>[t(`response.kind.${row.kind}`),t(`response.value.${row.value}`)];
  const item=(row,index)=>{const [kind,value]=name(row);return `<li${index>=RESPONSE_PAGE?' data-response-later hidden':''}><span>${escape(kind)} · ${escape(value)}</span><button class="quiet-button" type="button" data-response-remove="${escape(row.id)}" aria-label="${escape(t('response.removeLabel',{kind,value}))}">${escape(t('response.remove'))}</button></li>`;};
- return `<section class="ws-responses" data-world-responses data-label="RESPONSES" aria-labelledby="ws-responses-title"><h3 id="ws-responses-title">${escape(t('response.mine'))}</h3><p class="ws-responses-note">${escape(t('response.note30'))}</p><ul>${rows.map(item).join('')}</ul>${rows.length>RESPONSE_PAGE?`<button class="quiet-button ws-responses-more" type="button" data-responses-more>${escape(t('life.more'))}</button>`:''}<p class="ws-responses-note">${escape(t('response.removeNote'))}${local?` ${escape(t('response.deviceOnly'))}`:''}</p></section>`;
+ return `<section class="ws-responses" data-world-responses data-label="RESPONSES" aria-labelledby="ws-responses-title"><h3 id="ws-responses-title" tabindex="-1">${escape(t('response.mine'))}</h3><p class="ws-responses-note">${escape(t('response.note30'))}</p><ul>${rows.map(item).join('')}</ul>${rows.length>RESPONSE_PAGE?`<button class="quiet-button ws-responses-more" type="button" data-responses-more>${escape(t('life.more'))}</button>`:''}<p class="ws-responses-note">${escape(t(local?'response.removeNoteDevice':'response.removeNote'))}</p></section>`;
 }
 function mountResponses(){
  const box=$('#panel-content [data-world-responses]');if(!box)return;
@@ -525,7 +525,8 @@ function mountResponses(){
   home.toast(t(removed?'response.removed':'response.removeFailed'));
   // 목록을 다시 그리고 초점을 같은 자리(없으면 제목)로 옮긴다. 펼친 「더 보기」는 펼친 채로 둔다.
   const open=!box.querySelector('[data-responses-more]'),html=responsesSection();
-  if(!html){box.remove();return;}
+  // 마지막 응답을 뺐으면 카드가 사라지므로 초점을 바로 위 학습 기록 연결(없으면 시트의 첫 단추)로 옮긴다.
+  if(!html){const near=$('#panel-content [data-world-learning]')||$('#panel-content .world-actions button');box.remove();near?.focus?.({preventScroll:true});return;}
   box.outerHTML=html;mountResponses();
   const next=$('#panel-content [data-world-responses]');if(!next)return;
   if(open){for(const row of next.querySelectorAll('[data-response-later]'))row.hidden=false;next.querySelector('[data-responses-more]')?.remove();}
