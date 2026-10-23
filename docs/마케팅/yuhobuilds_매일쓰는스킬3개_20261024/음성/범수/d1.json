@@ -1,0 +1,92 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "d1",
+ "text": "하나, 다른눈. 다 했다고 하면, 새 클로드를 불러 처음 보는 눈으로 다시 확인해요.",
+ "dur": 4.14,
+ "words": [
+  {
+   "text": "하나,",
+   "start": 0.02,
+   "end": 0.191
+  },
+  {
+   "text": "다른눈.",
+   "start": 0.364,
+   "end": 0.734
+  },
+  {
+   "text": "다",
+   "start": 1.078,
+   "end": 1.144
+  },
+  {
+   "text": "했다고",
+   "start": 1.184,
+   "end": 1.462
+  },
+  {
+   "text": "하면,",
+   "start": 1.501,
+   "end": 1.779
+  },
+  {
+   "text": "새",
+   "start": 1.925,
+   "end": 1.99
+  },
+  {
+   "text": "클로드를",
+   "start": 2.07,
+   "end": 2.388
+  },
+  {
+   "text": "불러",
+   "start": 2.428,
+   "end": 2.612
+  },
+  {
+   "text": "처음",
+   "start": 2.666,
+   "end": 2.877
+  },
+  {
+   "text": "보는",
+   "start": 2.916,
+   "end": 3.089
+  },
+  {
+   "text": "눈으로",
+   "start": 3.129,
+   "end": 3.34
+  },
+  {
+   "text": "다시",
+   "start": 3.38,
+   "end": 3.578
+  },
+  {
+   "text": "확인해요.",
+   "start": 3.63,
+   "end": 4.14
+  }
+ ],
+ "source": {
+  "key": "c11494a6f5df73d6a1efe8373c17262b",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

@@ -1,0 +1,87 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n1",
+ "text": "둘, 실수노트. 막힌 건 노트 파일에 적어 두고, 다음엔 그 노트부터 읽어요.",
+ "dur": 4.396,
+ "words": [
+  {
+   "text": "둘,",
+   "start": 0.06,
+   "end": 0.231
+  },
+  {
+   "text": "실수노트.",
+   "start": 0.366,
+   "end": 0.861
+  },
+  {
+   "text": "막힌",
+   "start": 1.3,
+   "end": 1.549
+  },
+  {
+   "text": "건",
+   "start": 1.606,
+   "end": 1.701
+  },
+  {
+   "text": "노트",
+   "start": 1.758,
+   "end": 1.949
+  },
+  {
+   "text": "파일에",
+   "start": 2.006,
+   "end": 2.216
+  },
+  {
+   "text": "적어",
+   "start": 2.273,
+   "end": 2.426
+  },
+  {
+   "text": "두고,",
+   "start": 2.483,
+   "end": 2.616
+  },
+  {
+   "text": "다음엔",
+   "start": 2.998,
+   "end": 3.342
+  },
+  {
+   "text": "그",
+   "start": 3.418,
+   "end": 3.475
+  },
+  {
+   "text": "노트부터",
+   "start": 3.532,
+   "end": 3.914
+  },
+  {
+   "text": "읽어요.",
+   "start": 3.971,
+   "end": 4.396
+  }
+ ],
+ "source": {
+  "key": "e253728e6e8cbf8baa362fe3338563a0",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

@@ -1,0 +1,87 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h2",
+ "text": "그래서 제가 매일 넣어 쓰는 일 설명서, 스킬 세 개를 파일째 드릴게요.",
+ "dur": 3.476,
+ "words": [
+  {
+   "text": "그래서",
+   "start": 0.02,
+   "end": 0.233
+  },
+  {
+   "text": "제가",
+   "start": 0.283,
+   "end": 0.496
+  },
+  {
+   "text": "매일",
+   "start": 0.622,
+   "end": 0.81
+  },
+  {
+   "text": "넣어",
+   "start": 0.872,
+   "end": 0.998
+  },
+  {
+   "text": "쓰는",
+   "start": 1.036,
+   "end": 1.25
+  },
+  {
+   "text": "일",
+   "start": 1.287,
+   "end": 1.325
+  },
+  {
+   "text": "설명서,",
+   "start": 1.362,
+   "end": 1.713
+  },
+  {
+   "text": "스킬",
+   "start": 2.103,
+   "end": 2.29
+  },
+  {
+   "text": "세",
+   "start": 2.329,
+   "end": 2.391
+  },
+  {
+   "text": "개를",
+   "start": 2.441,
+   "end": 2.592
+  },
+  {
+   "text": "파일째",
+   "start": 2.63,
+   "end": 2.93
+  },
+  {
+   "text": "드릴게요.",
+   "start": 2.969,
+   "end": 3.476
+  }
+ ],
+ "source": {
+  "key": "9d6507f4cb7da545f406135436e4683d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

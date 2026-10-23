@@ -1,0 +1,82 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "yt",
+ "text": "고정 댓글 링크의 글을 클로드에 붙여 넣으면, 세 개가 바로 깔려요.",
+ "dur": 3.451,
+ "words": [
+  {
+   "text": "고정",
+   "start": 0.06,
+   "end": 0.265
+  },
+  {
+   "text": "댓글",
+   "start": 0.303,
+   "end": 0.508
+  },
+  {
+   "text": "링크의",
+   "start": 0.546,
+   "end": 0.828
+  },
+  {
+   "text": "글을",
+   "start": 0.891,
+   "end": 1.07
+  },
+  {
+   "text": "클로드에",
+   "start": 1.134,
+   "end": 1.454
+  },
+  {
+   "text": "붙여",
+   "start": 1.518,
+   "end": 1.71
+  },
+  {
+   "text": "넣으면,",
+   "start": 1.748,
+   "end": 2.093
+  },
+  {
+   "text": "세",
+   "start": 2.426,
+   "end": 2.49
+  },
+  {
+   "text": "개가",
+   "start": 2.553,
+   "end": 2.707
+  },
+  {
+   "text": "바로",
+   "start": 2.758,
+   "end": 2.925
+  },
+  {
+   "text": "깔려요.",
+   "start": 2.963,
+   "end": 3.451
+  }
+ ],
+ "source": {
+  "key": "d8a749f2f002c3069ba7a84eea612365",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

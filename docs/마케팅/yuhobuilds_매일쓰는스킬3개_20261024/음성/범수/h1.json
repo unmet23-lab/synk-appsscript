@@ -1,0 +1,62 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h1",
+ "text": "클로드가 다 했다는데, 틀려 있던 적 있죠?",
+ "dur": 2.107,
+ "words": [
+  {
+   "text": "클로드가",
+   "start": 0.02,
+   "end": 0.321
+  },
+  {
+   "text": "다",
+   "start": 0.357,
+   "end": 0.441
+  },
+  {
+   "text": "했다는데,",
+   "start": 0.477,
+   "end": 0.863
+  },
+  {
+   "text": "틀려",
+   "start": 1.236,
+   "end": 1.417
+  },
+  {
+   "text": "있던",
+   "start": 1.453,
+   "end": 1.598
+  },
+  {
+   "text": "적",
+   "start": 1.634,
+   "end": 1.73
+  },
+  {
+   "text": "있죠?",
+   "start": 1.767,
+   "end": 2.107
+  }
+ ],
+ "source": {
+  "key": "76984fa43e0827446acfad0c2178cea9",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

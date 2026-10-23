@@ -1,0 +1,97 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "ig",
+ "text": "댓글에 스킬이라고 남겨 주시면, 설치 글 링크를 보내 드려요. 클로드에 붙여 넣기만 하면 돼요.",
+ "dur": 4.7,
+ "words": [
+  {
+   "text": "댓글에",
+   "start": 0.08,
+   "end": 0.348
+  },
+  {
+   "text": "스킬이라고",
+   "start": 0.411,
+   "end": 0.819
+  },
+  {
+   "text": "남겨",
+   "start": 0.857,
+   "end": 1.074
+  },
+  {
+   "text": "주시면,",
+   "start": 1.112,
+   "end": 1.469
+  },
+  {
+   "text": "설치",
+   "start": 1.648,
+   "end": 1.902
+  },
+  {
+   "text": "글",
+   "start": 1.941,
+   "end": 2.03
+  },
+  {
+   "text": "링크를",
+   "start": 2.068,
+   "end": 2.374
+  },
+  {
+   "text": "보내",
+   "start": 2.412,
+   "end": 2.565
+  },
+  {
+   "text": "드려요.",
+   "start": 2.603,
+   "end": 2.858
+  },
+  {
+   "text": "클로드에",
+   "start": 3.317,
+   "end": 3.661
+  },
+  {
+   "text": "붙여",
+   "start": 3.725,
+   "end": 3.903
+  },
+  {
+   "text": "넣기만",
+   "start": 3.941,
+   "end": 4.222
+  },
+  {
+   "text": "하면",
+   "start": 4.26,
+   "end": 4.4
+  },
+  {
+   "text": "돼요.",
+   "start": 4.438,
+   "end": 4.7
+  }
+ ],
+ "source": {
+  "key": "925b07d145a1a35181d77738e99c4f4d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

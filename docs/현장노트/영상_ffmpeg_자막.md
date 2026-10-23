@@ -266,6 +266,18 @@
 - 고침: `<filter filterUnits="userSpaceOnUse" x="0" y="0" width="1080" height="1920">`로 화면 전체를 필터 영역으로 준다. 보기 `docs/마케팅/LAB_처음쓰는ㄹ_20261024/remotion/src/film/Film.tsx`의 `PencilDefs`.
 - 다시 확인: 가로 직선 하나에 필터를 건 정지컷에서 획 굵기가 strokeWidth대로 보인다.
 
+### 다른 편 `node_modules`에 연결(junction)하면 그 편도 연결이라 끝이 빈 폴더일 수 있다 — `.bin\remotion.cmd`가 있는 실제 폴더에 건다 (2026-10-24 Claude)
+- 증상: 10-24 yuhobuilds 스킬 편에서 멈춘시간재기 편의 `node_modules`에 연결을 걸었더니 `npx remotion render`가 「npm error could not determine executable to run」로 1초 만에 끝났다.
+- 원인: 그 편의 `node_modules`부터가 자동DM말투 편으로 가는 연결이었고, 끝 폴더는 비어 있었다(끝난 편의 node_modules는 공간 지킴이가 지운다). 연결의 연결이 빈 자리를 가리켰다.
+- 고침: 내 연결만 끊고(PowerShell `[System.IO.Directory]::Delete(<연결>)` — 안쪽은 안 지운다) 실제 폴더가 있는 편(그날은 yuhobuilds_세션공유4기가)에 다시 걸었다.
+- 다시 확인: 걸 곳의 `(Get-Item <편>\remotion\node_modules -Force).LinkType`이 비어 있고 `Test-Path <편>\remotion\node_modules\.bin\remotion.cmd`가 True다.
+
+### Remotion 편 폴더에서 `npx tsc`가 타입 검사 대신 엉뚱한 `tsc` 패키지를 받는다 (2026-10-24 Claude)
+- 증상: `npx tsc --noEmit -p .`가 「This is not the tsc command you are looking for」를 띄우고 끝났다(npm이 `tsc@2.0.4`를 받아 왔다).
+- 원인: 연결해 쓰는 편들의 `node_modules`에 typescript가 없다. npx는 없는 명령을 같은 이름의 패키지에서 찾는다.
+- 고침: 막다른 길 — 타입 검사는 건너뛰고 렌더(번들러가 문법 오류에서 멈춘다)와 정지컷 묶음으로 확인했다. typescript를 받아 돌리는 길은 해 보지 않았다.
+- 다시 확인: `Test-Path node_modules\typescript`가 False면 `npx tsc`를 치지 않는다.
+
 ## 목소리·받아쓰기
 
 ### Gemini TTS가 영어 지시문을 소리로 읽거나 없는 말을 지어낸다
