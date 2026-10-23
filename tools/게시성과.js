@@ -6,6 +6,7 @@
  *   24·72시간 = 게시 성과 등록의 체크포인트(작업실 「게시 주소로 추가」·자동 등록), 7일 = 서버가 하루 한 번 모으는 게시물 숫자.
  * 판정 규칙은 lib/게시성과판정.js(제작 방식 v2 §6 · 서버 publication-learning과 같은 「계정 안 상위 25%」), 평소 대비 배수는 lib/평소배수.js.
  * 화면에서만 읽히는 칸은 「화면 필요」로 모아 두고, 주 1회(금요일) 읽은 값을 --적기로 넣으면 72시간·7일 판정에 더한다.
+ * 준비.json에 "시험" 칸이 있는 편은 요약의 「2주 시험」 표에도 든다(lib/게시성과시험.js — 평소의 2배·3초 유지 30%·3편 단위, 시청자수요조사 6-9).
  *
  *   node tools/게시성과.js                     미리 보기 — 서버를 읽고 판정해 바뀔 것만 보인다(아무것도 쓰지 않는다)
  *   node tools/게시성과.js --실행              편 폴더(게시/성과.json · 기획.md 끝 묶음)·장부·요약에 쓰고, 공용 작업본이면 그 경로만 origin에 올린다
@@ -26,6 +27,7 @@ const { spawnSync } = require('node:child_process');
 const 판정 = require('./lib/게시성과판정.js');
 const 편 = require('./lib/게시성과편.js');
 const 배수 = require('./lib/평소배수.js');
+const 시험 = require('./lib/게시성과시험.js');
 
 const REPO_DEFAULT = path.resolve(__dirname, '..');
 const LEDGER = 'docs/_ops/게시성과.jsonl';
@@ -125,11 +127,13 @@ function ledgerLine(item, j, meta, at) {
   for (const f of j.facts) if (f.comparison.standing) standing[f.metric] = { label: f.comparison.standing.label, n: f.comparison.standing.sampleCount };
   const metrics = {};
   for (const f of j.facts) metrics[f.metric] = f.value;
+  // 기존 판정이 비교에서 뺀 서버 값(측정 창 밖 관측·출처 없음 등) — 2주 시험이 같은 값만 쓰게 남긴다. 없으면 칸을 두지 않는다(옛 줄 모양 그대로)
+  const invalidMetrics = j.facts.filter(f => !f.screen && f.comparison.status === 'unavailable').map(f => f.metric);
   return {
     at, kind: '판정', post: r.postKey, point: j.point, url: r.url, channel: 채널이름(r.platform, item.channel), platform: r.platform, format: r.format,
     account: meta.account, brand: meta.brand, folder: meta.folder, role: meta.role, hook: meta.hook, hookSlot: meta.hookSlot,
     publishedAt: r.publishedAt, observedAt: j.observedAt === null ? null : new Date(j.observedAt).toISOString(), daily: j.daily,
-    metrics, screenMetrics: j.facts.filter(f => f.screen).map(f => f.metric), standing,
+    metrics, screenMetrics: j.facts.filter(f => f.screen).map(f => f.metric), ...(invalidMetrics.length ? { invalidMetrics } : {}), standing,
     multiple: j.multiple ? { value: j.multiple.value, median: j.multiple.median === null ? null : Math.round(j.multiple.median * 10) / 10, n: j.multiple.n } : null,
     verdict: j.verdict.label, next: j.verdict.next, reason: j.verdict.reason, line: 판정.judgmentLine(j),
     screenNeeded: item.screenNeeded,
@@ -246,9 +250,108 @@ function planLines(items) {
   return out;
 }
 
+// ── 2주 시험(시청자수요조사 6-9 — 판정은 lib/게시성과시험.js) ─────────────────
+
+const 퍼센트 = v => 판정.valueText('stayedToWatchPct', v);
+const 폴더글 = folder => (folder ? `[${folder}](${encodeURI(folder)}/)` : '편 폴더 못 찾음');
+
+/** 곳 하나의 셈 — 「인스타 2/3(아직 1)」 = 그 곳을 준비.json에 잡은 편 3 가운데 기준을 넘은 편 2 */
+function 시험셈글(d) {
+  const more = [d.아직 ? `아직 ${d.아직}` : null, d.부족 ? `자료 부족 ${d.부족}` : null].filter(Boolean);
+  return `${d.이름} ${d.넘음}/${d.n}${more.length ? `(${more.join(' · ')})` : ''}`;
+}
+
+function 시험판정글(v) {
+  if (v.값 === '계속' || v.값 === '멈춤') return `**${v.값}**`;
+  if (v.값 === '엇갈림') return '엇갈림(판단 안 함)';
+  return `${v.값}${v.까닭 ? `(${v.까닭})` : ''}`;
+}
+
+/** 「07시 제작이 먼저 볼 것」의 한 줄 */
+function 시험먼저(t) {
+  const head = '- **2주 시험 갈래**(시청자수요조사 6-9 — 멈춘 갈래는 그 표의 「떨어지면」 칸대로)';
+  if (!t.갈래들.length) {
+    return `${head}: ${t.판정없는편.length ? `시험 편 ${t.판정없는편.length}개에 셀 판이 없다(아래 「2주 시험」)` : '「시험」 칸이 붙은 편이 아직 없다'}`;
+  }
+  const of = 값 => t.갈래들.filter(g => g.판정.값 === 값).map(g => `${g.계정.shown} ${g.갈래}(${g.dims.map(d => `${d.이름} ${d.넘음}/${d.n}`).join(' · ')})`);
+  const rest = {};
+  for (const g of t.갈래들) if (g.판정.값 !== '계속' && g.판정.값 !== '멈춤') rest[g.판정.값] = (rest[g.판정.값] || 0) + 1;
+  const restN = Object.values(rest).reduce((a, b) => a + b, 0);
+  return `${head}: 계속 — ${of('계속').join(' · ') || '없음'} / 멈춤 — ${of('멈춤').join(' · ') || '없음'}`
+    + (restN ? ` / 그 밖 ${restN}갈래(${Object.entries(rest).map(([k, n]) => `${k} ${n}`).join(' · ')})` : '');
+}
+
+/** 「2주 시험」 절 — 갈래 표 + 편 표 */
+function 시험절(t) {
+  const 기준 = 시험.기준;
+  const 창 = Object.entries(기준.창).map(([이름, w]) => `「${이름}」 ${w.시작.slice(5)} ~ ${w.끝.slice(5)}`).join(' · ');
+  const 여러시험 = new Set(t.판들.map(x => x.시험.이름)).size > 1;
+  const 편칸 = g => `${g.게시편수}${g.편수 > g.게시편수 ? `(+예정 ${g.편수 - g.게시편수})` : ''}${g.표만수 ? ` · 앞 ${g.센편수}편만 셈` : ''}`;
+  const 갈래줄 = t.갈래들.map(g => `| ${cell(g.시험)} | ${cell(`${g.계정.shown}(${g.platforms.map(p => 판정.PLATFORM_LABEL[p] || p).join('·')})`)} | ${cell(g.갈래)} | ${편칸(g)} | ${cell(g.dims.map(시험셈글).join(' · '))} | ${g.방향} | ${cell(시험판정글(g.판정))} | ${cell(g.목표 || '—')} |`);
+  const 편줄 = t.판들.map(x => {
+    const v = x.조회.값;
+    const 조회 = v === null ? (x.빈판 || x.판정 === '아직' ? '—' : '못 받음')
+      : x.조회.상태 === '씀' ? `${수(v)}회 · ${x.multiple ? `${배글(x.multiple.value)}(최근 ${x.multiple.n}편 중앙값 ${수(Math.round(x.multiple.median))})` : '평소 대비 못 잼'}`
+        : x.조회.상태 === '화면' ? `${수(v)}회(화면) · 평소 대비 못 잼` : `${수(v)}회 · 안 씀`;
+    let 삼초 = '—';
+    if (x.platform === 'instagram' && !x.빈판) {
+      const 표 = x.삼초 ? [x.삼초.추정 ? '추정' : null, x.삼초.때 === '72시간' ? '72시간 값' : x.삼초.때 === '화면' ? '화면' : null].filter(Boolean) : [];
+      삼초 = x.삼초 ? `${퍼센트(x.삼초.value)}${표.length ? `(${표.join(' · ')})` : ''}` : x.판정 === '아직' ? '—' : '없음';
+    }
+    let 본 = '—';
+    if (x.platform === 'youtube') {
+      const b = x.본비율;
+      const 값글 = b.value === null ? null : `${퍼센트(b.value)}(화면)`;
+      const 뒤 = { 첫편: '첫 편이라 판정에서 뺌', '72시간 전': '72시간 전이라 아직', '72시간 뒤 다시 읽기': '72시간 전에 읽은 값 — 다시 읽기', '견줄 지난 편 없음': '견줄 지난 편 없음' };
+      if (b.상태 === '첫 편') 본 = [값글, 뒤.첫편].filter(Boolean).join(' · ');
+      else if (b.상태 === '화면 필요') 본 = '화면 필요';
+      else if (b.상태 === '위' || b.상태 === '아래') 본 = `${값글} · 지난 ${b.n}편 중앙 ${퍼센트(b.median)}보다 ${b.상태}`;
+      else if (뒤[b.상태] && 값글) 본 = `${값글} · ${뒤[b.상태]}`;
+    }
+    const 안셈 = x.창밖 ? ' · 창 밖이라 갈래에 안 셈' : x.따로 ? ' · 준비.json 판에 없어 갈래에 안 셈' : x.표만 ? ' · 넷째 편부터라 갈래에 안 셈' : '';
+    const 판 = `${x.판정 === '기준 넘음' || x.판정 === '못 넘음' ? `**${x.판정}**` : x.판정}${x.까닭 ? `(${x.까닭})` : ''}${안셈}`;
+    const 게시 = x.publishedAt ? `${kst(x.publishedAt)}${x.예정 ? ' 예정' : ''}` : '—';
+    return `| ${게시} | ${폴더글(x.folder)} | ${cell(x.channel)} | ${cell(여러시험 ? `${x.시험.이름} · ${x.시험.갈래}` : x.시험.갈래)} | ${cell(조회)} | ${cell(삼초)} | ${cell(본)} | ${cell(판)} |`;
+  });
+  return [
+    '## 2주 시험',
+    '',
+    `편 폴더 \`게시/준비.json\`에 \`"시험": {"이름": "2주 시험 10-26", "갈래": "A 장치형"}\`이 붙은 편만 본다(${창}, [시청자수요조사](시청자수요조사_20261022.md) 6-5·6-9). 위의 「상위·하위 25%」(이전 4편부터)와 따로, 첫 편부터 닿는 기준으로 빨리 판단한다. **기준 숫자는 가설이다 — 첫 주 숫자로 다시 정한다.**`,
+    '',
+    `- **판:** 그 편 준비.json 「판」의 계정 가운데 서버가 받는 유튜브·인스타·틱톡·페북이다 — 장부에 아직 줄이 없는 판도 「올리기 전」·「판정 줄 기다림」으로 들고, 그 판의 때(게시 → 예정 시각 → 같은 편 첫 게시 → 슬롯) 뒤 72시간 창이 닫혀도 안 오면 자료 부족이다. 준비.json에 없는 판은 표에만 보이고, sns-계정.json에 없는 계정 키는 「계정 키 확인」으로 적고 그 편이 든 갈래를 정하지 않는다.`,
+    `- **판정:** 72시간 조회가 평소(같은 계정·형식 최근 12편 조회 중앙값 — 판정 줄의 「평소 대비」)의 ${기준.배수}배 이상이면 기준 넘음. 기존 판정이 비교에 쓴 값만 쓴다(측정 창 밖에서 관측한 값은 「안 씀」). 인스타 판은 3초 유지율(24시간, 못 쓰면 72시간 값)도 ${기준.삼초유지}% 이상이어야 한다(「추정」은 서버가 어림한 값이라 평균 시청과 함께 본다). 유튜브 본 비율은 게시 72시간 뒤에 화면에서 읽은 값(\`--적기 <주소> 본비율=…\`)을 지난 편들 중앙값과 견준다 — 장부에 앞선 편이 없는 채널 첫 편은 견줄 수 없어 판정에서 뺀다.`,
+    `- **갈래(같은 시험·계정·갈래):** 실제로 올린 편을 게시 순으로 앞 ${기준.편수}편만 센다(예정 편은 기다림일 뿐이고, 넷째 편부터는 표에만). 올린 편이 ${기준.편수}편이 안 되면 아직이다. 곳마다 그 곳을 고른 편 가운데 ${기준.넘을편수}편이 넘으면 「계속」, 남은 판이 다 넘어도 못 미치면 「멈춤」(재진 판이 ${기준.넘을편수}편은 있어야 한다 — 창이 닫혀 값이 끝내 없는 판은 기다리지 않는다). 두 플랫폼에 올린 계정은 두 곳이, 유튜브 하나인 계정은 조회와 본 비율이 같은 방향일 때만 판정하고 다르면 「엇갈림」이다(6-5). 계정은 채널 핸들(페북 교차 게시는 따로)이고, 목표(우리 최고 편)는 보이기만 한다.`,
+    '',
+    '| 시험 | 계정 | 갈래 | 편 | 기준 넘은 편 | 방향 | 판정 | 목표(우리 최고 편) |',
+    '|---|---|---|---|---|---|---|---|',
+    ...(갈래줄.length ? 갈래줄 : ['| 아직 없음 | — | — | — | — | — | — | — |']),
+    '',
+    '| 게시(KST) | 편 | 판 | 갈래 | 72시간 조회 · 평소 대비 | 3초 유지(인스타) | 본 비율(유튜브) | 판정 |',
+    '|---|---|---|---|---|---|---|---|',
+    ...(편줄.length ? 편줄 : ['| — | — | — | — | — | — | — | 아직 없음 |']),
+    '',
+    ...(t.판정없는편.length ? [`- 셀 판을 못 찾은 시험 편(준비.json 「판」이 서버가 받는 계정으로 이어지지 않고 판정 줄도 없다 — 판 계정 키와 sns-계정.json을 본다): ${t.판정없는편.map(x => `${폴더글(x.folder)}(${x.시험.갈래})`).join(' · ')}`, ''] : []),
+    ...(t.칸오류.length ? [`- 「시험」 칸을 읽지 못한 편: ${t.칸오류.map(x => `${폴더글(x.folder)} — ${x.오류}`).join(' · ')}`, ''] : []),
+    ...(t.키확인.length ? [`- 계정 키 확인(준비.json 「판」의 계정 키를 sns-계정.json에서 못 찾아 어느 판인지 모른다 — 그 편이 든 갈래는 정하지 않는다): ${t.키확인.map(x => `${폴더글(x.folder)} ${x.key}(${x.까닭})`).join(' · ')}`, ''] : []),
+    ...(Object.keys(t.안셈).length ? [`- 서버가 받지 않아 세지 않는 판: ${Object.entries(t.안셈).map(([pl, n]) => `${안셈이름[pl] || pl} ${n}`).join(' · ')}`, ''] : []),
+  ];
+}
+
+/** 서버가 게시 성과를 받지 않는 플랫폼의 이름(sns-계정.json platform → 보일 이름) — 없으면 그 값 그대로 */
+const 안셈이름 = Object.freeze({ 'naver-blog': '네이버 블로그', tistory: '티스토리', 'naver-clip': '네이버 클립', xiaohongshu: '샤오훙수', threads: '스레드', x: 'X', linkedin: '링크드인', telegram: '텔레그램' });
+
+/** 미리 보기 한 줄 — 「시험 편 N · 판 N · 갈래 N(계속 1 · 아직 2)」 */
+function 시험요약글(t) {
+  const by = {};
+  for (const g of t.갈래들) by[g.판정.값] = (by[g.판정.값] || 0) + 1;
+  const 편수 = new Set([...t.판들.map(x => x.folder), ...t.판정없는편.map(x => x.folder)]).size;
+  return `시험 편 ${편수} · 판 ${t.판들.length} · 갈래 ${t.갈래들.length}${t.갈래들.length ? `(${Object.entries(by).map(([k, n]) => `${k} ${n}`).join(' · ')})` : ''}`
+    + (t.칸오류.length ? ` · 시험 칸 오류 ${t.칸오류.length}` : '') + (t.키확인.length ? ` · 계정 키 확인 ${t.키확인.length}` : '');
+}
+
 // ── 요약 ──────────────────────────────────────────────────────────────────
 
-function summarize({ ledger, now, unregistered = [], unmapped = [] }) {
+function summarize({ ledger, now, unregistered = [], unmapped = [], index = null, accounts = [] }) {
   const latest = [...latestJudgments(ledger).values()];
   const recentCut = now - RECENT_DAYS * 86_400_000;
   const byPost = new Map();
@@ -290,6 +393,7 @@ function summarize({ ledger, now, unregistered = [], unmapped = [] }) {
   const screenRows = main.filter(l => l.folder && l.screenNeeded && l.screenNeeded.length && Date.parse(l.publishedAt) >= recentCut)
     .sort((a, b) => String(a.publishedAt).localeCompare(String(b.publishedAt)));
   const lastAt = ledger.map(l => l.at).filter(Boolean).sort().pop();
+  const test = 시험.시험판정({ ledger, screens: screensOf(ledger), index, accounts, now });
 
   const lines = [
     '# 게시 성과 판정',
@@ -300,11 +404,13 @@ function summarize({ ledger, now, unregistered = [], unmapped = [] }) {
     '',
     '## 07시 제작이 먼저 볼 것',
     '',
+    시험먼저(test),
     `- **이긴 편(최근 ${RECENT_DAYS}일 상위 25%)** → 같은 형식으로 세 편 더 · 다른 씨앗·국가 계정에 현지어판 · 맞춤 프로그램 편 설정: ${wins.length ? wins.map(l => `${nameOf(l)} ${l.channel} ${POINT_LABEL[l.point]}${l.hook ? `(훅 ${l.hook})` : ''}`).join(' · ') : '없음'}`,
     `- **하위 25%** → 훅을 바꾼 판을 다른 씨앗 계정에서 시험하거나 접기(같은 계정 재게시·본문 고치기 없음): ${losses.length ? losses.map(l => `${nameOf(l)} ${l.channel}${l.hook ? `(훅 ${l.hook})` : ''}`).join(' · ') : '없음'}`,
     `- **평소 대비 3배 넘은 편**(판정과 별개로 소재·훅을 다시 볼 편): ${hot.length ? hot.map(l => `${nameOf(l)} ${l.channel} ${POINT_LABEL[l.point]} ${배글(l.multiple.value)}`).join(' · ') : '없음'}`,
     `- **훅 이름표:** ${hooks.filter(h => h.m72n >= 2).length ? hooks.filter(h => h.m72n >= 2).map(h => `${h.key} ${배글(h.m72)}(${h.m72n}판)`).join(' · ') : '72시간 배수가 둘 이상 쌓인 이름표가 아직 없다'} — 판이 적은 이름표는 우연일 수 있다. 이름표·역할 없는 판 ${noHook}·${noRole}(10-21 전 편은 첫 줄에 이름표가 없다).`,
     '',
+    ...시험절(test),
     '## 훅 이름표별',
     '',
     '| 이름표 | 판 | 72시간 배수 중앙값 | 7일 배수 중앙값 | 상위·보통·하위·그 밖 | 브랜드 |',
@@ -425,7 +531,7 @@ async function run(o, { now = Date.now(), shorts = null, data = null } = {}) {
   const report = { 결과: '미리 보기', 새판정: [], 편쓰기: [], 건너뜀: [], 올리기: null };
 
   if (o.요약) {
-    const text = summarize({ ledger, now });
+    const text = summarize({ ledger, now, index: 편.buildIndex(path.join(repo, 'docs', '마케팅')), accounts: loadAccounts(repo) });
     if (o.실행) writeSummary(summaryFile, text + '\n');
     report.결과 = o.실행 ? '요약 다시 만듦' : '미리 보기';
     report.요약 = text;
@@ -485,6 +591,9 @@ async function run(o, { now = Date.now(), shorts = null, data = null } = {}) {
   const registeredKeys = new Set(judged.map(x => x.record.postKey));
   const unregistered = unregisteredOf(index, registeredKeys, now);
   report.미등록 = unregistered.map(u => `${u.folder} ${u.url}`);
+  // 2주 시험 — 이번 판정 줄까지 들어간 장부로(미리 보기도 쓸 때와 같은 표)
+  const ledgerAfter = [...ledger, ...newLines];
+  report.시험 = 시험요약글(시험.시험판정({ ledger: ledgerAfter, screens: screensOf(ledgerAfter), index, accounts, now }));
   if (!o.실행) return report;
 
   // 쓰기 — 장부(바뀐 판정만) → 편 폴더 → 요약 → 올리기
@@ -511,7 +620,7 @@ async function run(o, { now = Date.now(), shorts = null, data = null } = {}) {
       if (r.changed) { written.add(relPlan); report.편쓰기.push(relPlan); } else if (r.skipped) report.건너뜀.push(`${relPlan}: ${r.skipped}`);
     } else report.건너뜀.push(`${relPlan}: 남의 미커밋이 있어 다음에 쓴다`);
   }
-  if (writeSummary(summaryFile, summarize({ ledger, now, unregistered, unmapped }) + '\n')) written.add(SUMMARY);
+  if (writeSummary(summaryFile, summarize({ ledger, now, unregistered, unmapped, index, accounts }) + '\n')) written.add(SUMMARY);
   report.결과 = written.size ? '씀' : '바뀐 것 없음';
   report.쓴파일 = [...written];
   if (written.size) {
@@ -525,7 +634,7 @@ async function run(o, { now = Date.now(), shorts = null, data = null } = {}) {
 /** 공용 작업본이면 먼저 origin을 따라간다(실패해도 이어서 한다). 잠금으로 두 번 겹쳐 돌지 않는다. */
 async function main(argv) {
   const o = 인자(argv);
-  if (o.도움) { console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(2, 22).join('\n')); return; }
+  if (o.도움) { console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(2, 23).join('\n')); return; }
   const repo = path.resolve(o.저장소 || REPO_DEFAULT);
   const lockDir = path.join(repo, 'output', '게시성과');
   const lock = path.join(lockDir, '잠금');
@@ -565,6 +674,7 @@ async function main(argv) {
     console.log(`게시 성과 판정 · ${report.결과}`);
     if (report.화면줄) console.log(`  화면 값${o.실행 ? ' 적음' : '(미리 보기)'}: ${report.화면줄.post} ${JSON.stringify(report.화면줄.metrics)} · 게시 ${report.화면줄.ageHours}시간 뒤`);
     for (const l of report.새판정) console.log(`  + ${l}`);
+    if (report.시험) console.log(`  2주 시험: ${report.시험}`);
     for (const f of report.편쓰기) console.log(`  쓴 곳: ${f}`);
     for (const s of report.건너뜀) console.log(`  건너뜀: ${s}`);
     for (const u of report.미등록 || []) console.log(`  ! 서버 미등록: ${u}`);

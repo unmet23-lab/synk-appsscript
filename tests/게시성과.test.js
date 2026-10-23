@@ -338,3 +338,513 @@ test('서버 응답 다듬기 — 모르는 채널의 기록·게시물은 버�
   // 원격 스크립트의 매개는 숫자로만 들어간다
   assert.match(읽기.파이썬({ days: '7;import os', perChannel: 3 }), /DAYS=21;PER=3/);
 });
+
+// ── 2주 시험(시청자수요조사 6-9) ─────────────────────────────────────────────
+// 장부 줄·편 색인은 합성이다. 시각은 시험 창(10-26 ~ 11-07 KST) 안에 둔다.
+
+const 시험 = require('../tools/lib/게시성과시험.js');
+const S0 = Date.parse('2026-10-27T21:00:00+09:00');
+const sday = n => S0 + n * 24 * H;
+const 판종류 = {
+  yt: { platform: 'youtube', format: 'youtube-shorts', label: '유튜브' },
+  ig: { platform: 'instagram', format: 'instagram-reels', label: '인스타' },
+  tt: { platform: 'tiktok', format: 'tiktok-video', label: '틱톡' },
+  fb: { platform: 'facebook', format: 'facebook-reels', label: '페북' },
+};
+
+/**
+ * 시험 판 하나의 장부 줄 — 24시간 줄, v72가 있으면 72시간 줄(m72 = 평소 대비 배수, null이면 못 잼). r24·r72는 인스타 3초 유지율.
+ * 관측은 목표 1분 뒤(늦게72 = 72시간 줄을 목표 몇 시간 뒤에 관측했나), 못씀72 = 기존 판정이 비교에서 뺀 72시간 지표(invalidMetrics)
+ */
+function 시험판(folder, kind, handle, publishedMs, { v72, m72, r24, r72, 추정 = true, 늦게72 = 0, 못씀72 = null } = {}) {
+  const k = 판종류[kind];
+  const base = { kind: '판정', post: `${k.platform}:${folder}-${kind}`, url: `https://example.invalid/${kind}/${encodeURIComponent(folder)}`,
+    channel: `${k.label} @${handle}`, platform: k.platform, format: k.format, folder, publishedAt: iso(publishedMs), screenMetrics: [], verdict: '자료 부족' };
+  const 줄 = (point, hours, metrics, multiple, late = 0, invalid = null) => ({ ...base, at: iso(publishedMs + hours * H + late + 60_000), point,
+    observedAt: iso(publishedMs + hours * H + late + 60_000), metrics, multiple, ...(invalid ? { invalidMetrics: invalid } : {}),
+    line: `${Object.entries(metrics).map(([m, v]) => `${판정.METRICS[m].label} ${판정.valueText(m, v)}${m === 'earlyRetention3sPct' && 추정 ? '(추정)' : ''}`).join(' · ')} → **자료 부족**` });
+  const out = [줄('24h', 24, { views: 50, ...(r24 === undefined ? {} : { earlyRetention3sPct: r24 }) }, { value: 1, median: 50, n: 3 })];
+  if (v72 !== undefined) out.push(줄('72h', 72, { views: v72, ...(r72 === undefined ? {} : { earlyRetention3sPct: r72 }) }, m72 === null ? null : { value: m72, median: Math.round(v72 / m72), n: 12 }, 늦게72, 못씀72));
+  return out;
+}
+
+/** 편 폴더 → 준비.json "시험" 칸(undefined면 시험 밖 편) — 판 목록 없이(장부 줄로 판을 정하는 꼴) */
+function 시험색인(map) {
+  return { folders: new Map(Object.entries(map).map(([folder, 칸]) => [folder, { folder, prep: { 브랜드: '시험', ...(칸 === undefined ? {} : { 시험: 칸 }) } }])) };
+}
+
+/**
+ * 편 폴더 → { 칸: 시험 칸, 판: [[계정, 예정 시각]] (준비.json 판 — 시각을 빼면 그 판에 「시각」 칸이 없다), 올림: [[계정, 시각]] (게시결과.json 「게시됨」),
+ *             슬롯: 'YYYY-MM-DD' (준비.json 슬롯) }
+ */
+function 계획색인(spec) {
+  return { folders: new Map(Object.entries(spec).map(([folder, s]) => [folder, { folder,
+    prep: { 브랜드: '시험', 시험: s.칸, ...(s.슬롯 ? { 슬롯: s.슬롯 } : {}), 판: (s.판 || []).map(([계정, at]) => ({ 계정, ...(at === undefined ? {} : { 시각: iso(at) }) })) },
+    result: s.올림 ? { 판: s.올림.map(([계정, at]) => ({ 계정, 상태: '게시됨', 시각: iso(at), 주소: `https://example.invalid/${계정}/${encodeURIComponent(folder)}` })) } : null }])) };
+}
+
+/** sns-계정.json에서 읽는 꼴(loadAccounts) — 서버가 받지 않는 네이버 블로그도 섞어 둔다 */
+const 시험계정 = [
+  { key: 'synkbrief-instagram', platform: 'instagram', handle: '@synkbrief' },
+  { key: 'synkbrief-youtube', platform: 'youtube', handle: '@synkbrief' },
+  { key: 'shift-naverblog', platform: 'naver-blog', handle: 'synkshift' },
+  { key: 'lab-instagram', platform: 'instagram', handle: '@synk.mn' },
+  { key: 'lab-facebook', platform: 'facebook', handle: 'facebook.com/synkworld' },
+];
+
+test('2주 시험 판 — 72시간 전·값 기다림은 아직, 72시간 창이 닫히면 자료 부족', () => {
+  const index = 시험색인({ A편: { 이름: '2주 시험 10-26', 갈래: 'A 장치형' } });
+  // 앞편(시험 밖) — 장부에 앞선 편이 있어야 본 비율을 견줄 수 있다(없으면 채널 첫 편이라 본 비율을 판정에서 뺀다)
+  const ledger = [...시험판('앞편', 'yt', 'synkkorean', S0 - 5 * 24 * H, { v72: 150, m72: 0.9 }), ...시험판('A편', 'yt', 'synkkorean', S0, {})];
+  const at = h => 시험.시험판정({ ledger, index, now: S0 + h * H }).판들[0];
+  assert.deepEqual([at(48).판정, at(48).까닭], ['아직', '72시간 전']);
+  assert.deepEqual([at(75).판정, at(75).까닭], ['아직', '72시간 값 기다림']);
+  assert.deepEqual([at(80).판정, at(80).까닭], ['자료 부족', '72시간 값 없음']);
+  // 본 비율은 72시간 전에는 읽을 때가 아니고, 지나면 화면 필요
+  assert.equal(at(48).본비율.상태, '72시간 전');
+  assert.equal(at(80).본비율.상태, '화면 필요');
+});
+
+test('2주 시험 판 — 평소의 2배부터 넘음, 인스타는 3초 유지 30%도 넘어야 하고 「추정」·72시간 값·화면 값을 가린다', () => {
+  const 칸 = { 이름: '2주 시험 10-26', 갈래: '화면 글' };
+  const index = 시험색인(Object.fromEntries(['B', 'C', 'D', 'E', 'F', 'G', 'K', 'L'].map(f => [f, 칸])));
+  const ledger = [
+    ...시험판('B', 'yt', 'synkkorean', S0, { v72: 400, m72: 2 }),
+    ...시험판('C', 'yt', 'synkkorean', S0, { v72: 300, m72: 1.4 }),
+    ...시험판('D', 'ig', 'synk.mn', S0, { v72: 500, m72: 3.1, r24: 33.2 }),
+    ...시험판('E', 'ig', 'synk.mn', S0, { v72: 500, m72: 3.1, r24: 22.1 }),
+    ...시험판('F', 'ig', 'synk.mn', S0, { v72: 500, m72: 3.1 }),
+    ...시험판('G', 'ig', 'synk.mn', S0, { v72: 500, m72: 3.1, r72: 41.7, 추정: false }),
+    ...시험판('K', 'yt', 'synkkorean', S0, { v72: 120, m72: null }),
+    ...시험판('L', 'ig', 'synk.mn', S0, { v72: 120, m72: null, r24: 18 }),
+  ];
+  const by = Object.fromEntries(시험.시험판정({ ledger, index, now: sday(5) }).판들.map(x => [x.folder, x]));
+  assert.deepEqual([by.L.판정, by.L.까닭], ['못 넘음', '3초 유지 18%'], '평소 대비를 못 재도 3초 유지가 모자라면 못 넘음');
+  assert.equal(by.B.판정, '기준 넘음', '딱 2배도 넘음');
+  assert.deepEqual([by.C.판정, by.C.까닭], ['못 넘음', '조회 1.4배']);
+  assert.equal(by.D.판정, '기준 넘음');
+  assert.deepEqual(by.D.삼초, { value: 33.2, 때: '24시간', 추정: true });
+  assert.deepEqual([by.E.판정, by.E.까닭], ['못 넘음', '3초 유지 22.1%'], '조회가 넘어도 3초 유지가 모자라면 못 넘음');
+  assert.deepEqual([by.F.판정, by.F.까닭], ['자료 부족', '3초 유지율 없음']);
+  assert.deepEqual([by.G.판정, by.G.삼초], ['기준 넘음', { value: 41.7, 때: '72시간', 추정: false }], '24시간 값이 없으면 72시간 값');
+  assert.deepEqual([by.K.판정, by.K.까닭], ['자료 부족', '평소 대비 못 잼']);
+  // 서버 값이 없을 때만 화면에서 읽은 3초 유지율(--적기 3초유지율=)을 쓴다
+  const screens = new Map([['instagram:F-ig', { metrics: { earlyRetention3sPct: 35 } }], ['instagram:E-ig', { metrics: { earlyRetention3sPct: 90 } }]]);
+  const withScreen = Object.fromEntries(시험.시험판정({ ledger, index, now: sday(5), screens }).판들.map(x => [x.folder, x]));
+  assert.deepEqual([withScreen.F.판정, withScreen.F.삼초.때], ['기준 넘음', '화면']);
+  assert.equal(withScreen.E.판정, '못 넘음');
+  // 「추정」은 장부 줄의 판정 글로 읽는다
+  assert.equal(시험.추정인가({ metrics: { earlyRetention3sPct: 33.2 }, line: '조회 9 · 3초 유지율 33.2%(추정) · 평균 시청 4초' }, 'earlyRetention3sPct'), true);
+  assert.equal(시험.추정인가({ metrics: { earlyRetention3sPct: 33.2 }, line: '조회 9 · 3초 유지율 33.2% · 평균 시청 4초' }, 'earlyRetention3sPct'), false);
+});
+
+test('2주 시험 갈래 — 두 플랫폼 계정은 두 곳이 같은 방향일 때만 계속·멈춤, 다르면 엇갈림', () => {
+  const 칸 = { 이름: '2주 시험 10-26', 갈래: '지금 막힌 것' };
+  const index = 시험색인({ 편1: 칸, 편2: 칸, 편3: 칸 });
+  const 판들 = (ig, yt) => ['편1', '편2', '편3'].flatMap((f, i) => [
+    ...시험판(f, 'ig', 'synkbrief', sday(i * 2), { v72: 500, m72: ig[i] ? 3 : 1, r24: 35 }),
+    ...시험판(f, 'yt', 'synkbrief', sday(i * 2), { v72: 500, m72: yt[i] ? 3 : 1 }),
+  ]);
+  const 갈래 = (ig, yt) => 시험.시험판정({ ledger: 판들(ig, yt), index, now: sday(20) }).갈래들;
+  const [mixed, ...rest] = 갈래([1, 1, 0], [1, 0, 0]);
+  assert.equal(rest.length, 0, '인스타·유튜브가 같은 핸들이면 한 계정');
+  assert.equal(mixed.계정.shown, '@synkbrief');
+  assert.deepEqual(mixed.platforms, ['youtube', 'instagram']);
+  assert.deepEqual(mixed.dims.map(d => [d.이름, d.넘음, d.n, d.상태]), [['유튜브', 1, 3, '멈춤'], ['인스타', 2, 3, '계속']]);
+  assert.deepEqual([mixed.방향, mixed.판정.값], ['엇갈림', '엇갈림']);
+  const [same] = 갈래([1, 1, 0], [0, 1, 1]);
+  assert.deepEqual([same.방향, same.판정.값], ['같음', '계속']);
+  const [down] = 갈래([0, 0, 1], [0, 0, 0]);
+  assert.deepEqual([down.방향, down.판정.값], ['같음', '멈춤']);
+  // 3편이 쌓였으면 남은 편이 어떻게 나와도 바뀌지 않는 판정은 바로 낸다(2편이 이미 넘음) — 아니면 아직
+  const 앞둘 = r => ['편1', '편2'].flatMap((f, i) => [
+    ...시험판(f, 'ig', 'synkbrief', sday(i * 2), { v72: 500, m72: r[i] ? 3 : 1, r24: 35 }),
+    ...시험판(f, 'yt', 'synkbrief', sday(i * 2), { v72: 500, m72: r[i] ? 3 : 1 }),
+  ]);
+  const 셋째 = [...시험판('편3', 'ig', 'synkbrief', sday(4), {}), ...시험판('편3', 'yt', 'synkbrief', sday(4), {})];
+  const [early] = 시험.시험판정({ ledger: [...앞둘([1, 1]), ...셋째], index, now: sday(4) + 30 * H }).갈래들;
+  assert.deepEqual([early.방향, early.판정.값], ['같음', '계속']);
+  const [wait] = 시험.시험판정({ ledger: [...앞둘([1, 0]), ...셋째], index, now: sday(4) + 30 * H }).갈래들;
+  assert.equal(wait.판정.값, '아직');
+  assert.equal(wait.판정.까닭, '유튜브 72시간 전 1 · 인스타 72시간 전 1');
+});
+
+test('2주 시험 갈래 — 유튜브 하나인 계정은 조회와 본 비율을 따로 세고, 같은 방향일 때만 판정한다', () => {
+  const 칸 = { 이름: '2주 시험 10-26', 갈래: 'A 장치형' };
+  const index = 시험색인({ 앞편: undefined, T1: 칸, T2: 칸, T3: 칸 });
+  const ledger = [
+    ...시험판('앞편', 'yt', 'synkkorean', sday(-3), { v72: 150, m72: 0.9 }), // 시험 밖 지난 편 — 본 비율 견줄 값
+    ...시험판('T1', 'yt', 'synkkorean', sday(0), { v72: 500, m72: 2.9 }),
+    ...시험판('T2', 'yt', 'synkkorean', sday(2), { v72: 500, m72: 2.4 }),
+    ...시험판('T3', 'yt', 'synkkorean', sday(4), { v72: 200, m72: 1.1 }),
+  ];
+  const 본 = values => new Map(Object.entries({ 앞편: 30, ...values }).map(([f, v]) => [`youtube:${f}-yt`, { metrics: { stayedToWatchPct: v } }]));
+  const 판정해 = values => 시험.시험판정({ ledger, index, now: sday(20), screens: 본(values) });
+  // 본 비율 41(지난 30보다 위) · 25(지난 41·30 중앙 35.5보다 아래) · 45(지난 25·41·30 중앙 30보다 위) → 2/3, 조회도 2/3
+  const same = 판정해({ T1: 41, T2: 25, T3: 45 });
+  assert.deepEqual(same.판들.find(x => x.folder === 'T2').본비율, { value: 25, median: 35.5, n: 2, 상태: '아래' });
+  assert.equal(same.판들.some(x => x.folder === '앞편'), false, '시험 칸이 없는 편은 표에 안 든다');
+  const [g] = same.갈래들;
+  assert.equal(g.목표, 시험.기준.목표.synkkorean);
+  assert.deepEqual(g.dims.map(d => [d.이름, d.넘음, d.상태]), [['조회', 2, '계속'], ['본 비율', 2, '계속']]);
+  assert.deepEqual([g.방향, g.판정.값], ['같음', '계속']);
+  // 조회는 2/3인데 본 비율이 다 지난 편보다 낮으면 엇갈림
+  const [crossed] = 판정해({ T1: 25, T2: 20, T3: 22 }).갈래들;
+  assert.deepEqual(crossed.dims.map(d => d.상태), ['계속', '멈춤']);
+  assert.deepEqual([crossed.방향, crossed.판정.값], ['엇갈림', '엇갈림']);
+  // 본 비율을 아직 화면에서 안 읽었으면 아직
+  const [pending] = 판정해({ T1: 41 }).갈래들;
+  assert.equal(pending.판정.값, '아직');
+  assert.match(pending.판정.까닭, /본 비율 화면 필요 2/);
+  // 장부에 앞선 편이 하나도 없는 채널 첫 편은 위·아래를 가르지 않고 판정에서 뺀다(재확인 A2)
+  const 첫편 = 시험.시험판정({ ledger: 시험판('T1', 'yt', 'synkkorean', sday(0), { v72: 500, m72: 2.9 }), index, now: sday(20), screens: new Map([['youtube:T1-yt', { metrics: { stayedToWatchPct: 41 } }]]) });
+  assert.deepEqual([첫편.판들[0].본비율.상태, 첫편.판들[0].본비율.뺌], ['첫 편', true]);
+});
+
+test('2주 시험 — 3편 미만은 아직, 창 밖 편은 표에만 보이고, 판정 줄이 없는 편·시험 칸 모양 오류를 알린다', () => {
+  const 칸 = { 이름: '2주 시험 10-26', 갈래: '실물 주기' };
+  const index = 시험색인({ 둘1: 칸, 둘2: 칸, 이른편: 칸, 아직없음: 칸, 틀린칸: 'A 장치형', 빈갈래: { 이름: '2주 시험 10-26', 갈래: ' ' } });
+  const ledger = [
+    ...시험판('둘1', 'ig', 'yuhobuilds', sday(0), { v72: 900, m72: 3, r24: 40 }),
+    ...시험판('둘2', 'ig', 'yuhobuilds', sday(2), { v72: 900, m72: 3, r24: 40 }),
+    ...시험판('이른편', 'ig', 'yuhobuilds', Date.parse('2026-10-25T23:59:00+09:00'), { v72: 900, m72: 3, r24: 40 }),
+  ];
+  const r = 시험.시험판정({ ledger, index, now: sday(20) });
+  assert.equal(r.판들.find(x => x.folder === '이른편').창밖, true);
+  assert.equal(r.판들.find(x => x.folder === '둘1').창밖, false);
+  assert.equal(r.갈래들.length, 1);
+  const [g] = r.갈래들;
+  assert.deepEqual([g.편수, g.판정.값, g.판정.까닭], [2, '아직', '2편 — 3편 미만'], '2편이 다 넘어도 3편 전에는 판단하지 않는다');
+  assert.equal(g.목표, 시험.기준.목표.yuhobuilds);
+  assert.deepEqual(r.판정없는편.map(x => x.folder), ['아직없음']);
+  assert.deepEqual(r.칸오류.map(x => x.folder).sort(), ['빈갈래', '틀린칸']);
+  // 창 첫날 0시(KST)부터 센다
+  const 첫날 = 시험.시험판정({ ledger: 시험판('둘1', 'ig', 'yuhobuilds', Date.parse('2026-10-26T00:00:00+09:00'), {}), index, now: sday(20) });
+  assert.equal(첫날.판들[0].창밖, false);
+  // 시험 칸이 없는 편만 있으면 아무것도 없다
+  assert.deepEqual(시험.시험판정({ ledger, index: 시험색인({ 둘1: undefined }), now: sday(20) }), { 판들: [], 갈래들: [], 판정없는편: [], 칸오류: [], 키확인: [], 안셈: {} });
+});
+
+test('시험 칸이 붙은 편이 없으면 요약의 2주 시험 절은 비어 있다 · 판정 줄이 없는 시험 편과 칸 오류는 알린다', () => {
+  const text = 도구.summarize({ ledger: [], now: S0, index: null });
+  assert.match(text, /- \*\*2주 시험 갈래\*\*[^\n]*: 「시험」 칸이 붙은 편이 아직 없다/);
+  assert.match(text, /## 2주 시험\n[\s\S]*\| 아직 없음 \| — \| — \| — \| — \| — \| — \| — \|[\s\S]*\| — \| — \| — \| — \| — \| — \| — \| 아직 없음 \|[\s\S]*## 훅 이름표별/);
+  const waiting = 도구.summarize({ ledger: [], now: S0, index: 시험색인({ LAB_새편_20261027: { 이름: '2주 시험 10-26', 갈래: 'A 장치형' }, LAB_틀린편_20261027: { 갈래: 'A 장치형' } }) });
+  assert.match(waiting, /- \*\*2주 시험 갈래\*\*[^\n]*: 시험 편 1개에 셀 판이 없다/);
+  assert.match(waiting, /- 셀 판을 못 찾은 시험 편\([^\n]*\): \[LAB_새편_20261027\]\([^)]+\)\(A 장치형\)\n/);
+  assert.match(waiting, /- 「시험」 칸을 읽지 못한 편: \[LAB_틀린편_20261027\]\([^)]+\) — "이름"과 "갈래"가 빈칸 아닌 글자여야 한다\n/);
+});
+
+test('2주 시험 — --실행 요약에 갈래 표·편 표(추정 표시)와 「먼저 볼 것」 한 줄이 생기고, --적기 본 비율이 들어가며, --요약도 같은 표를 낸다', async t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-post-test-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const git = args => { const r = spawnSync('git', args, { cwd: dir, encoding: 'utf8', windowsHide: true }); assert.equal(r.status, 0, r.stderr); };
+  git(['init', '-q']);
+  git(['config', 'user.email', 't@example.invalid']);
+  git(['config', 'user.name', 't']);
+  git(['config', 'core.autocrlf', 'false']);
+  const IG = 'https://www.instagram.com/reel/TESTIG1x/', YTU = 'https://www.youtube.com/shorts/TESTYT00001';
+  const folder = path.join(dir, 'docs', '마케팅', 'synkbrief_시험편_20261027');
+  fs.mkdirSync(path.join(folder, '게시'), { recursive: true });
+  fs.writeFileSync(path.join(folder, '기획.md'), '1일 1편 · synkbrief · 2026-10-27\n\n# 시험편\n');
+  fs.writeFileSync(path.join(folder, '게시', '준비.json'), JSON.stringify({ 브랜드: 'synkbrief', 시험: { 이름: '2주 시험 10-26', 갈래: '지금 막힌 것' },
+    판: [{ 계정: 'synkbrief-instagram' }, { 계정: 'synkbrief-youtube' }] }));
+  fs.writeFileSync(path.join(folder, '게시', '게시결과.json'), JSON.stringify({ 판: [
+    { 계정: 'synkbrief-instagram', 상태: '게시됨', 시각: iso(S0), 주소: IG }, { 계정: 'synkbrief-youtube', 상태: '게시됨', 시각: iso(S0), 주소: YTU }] }));
+  git(['add', '-A']);
+  git(['commit', '-q', '-m', 'init']);
+  // 체크포인트 — 지표 단위는 서버와 같게, 3초 유지율은 서버가 어림한 값(estimated)
+  const 점 = (hours, metrics, source, estimated = []) => {
+    const due = S0 + hours * H, observedAt = iso(due + 2 * 60_000);
+    const metricProvenance = Object.fromEntries(Object.keys(metrics).map(k => [k, { source, observedAt, unit: 판정.METRICS[k].unit, timing: 'on-time',
+      measurementWindowMissed: false, ...(estimated.includes(k) ? { estimated: true } : {}) }]));
+    return { hours, status: 'recorded', dueAt: iso(due), closesAt: iso(due + 6 * H), observedAt, source, metrics, metricProvenance };
+  };
+  // 인스타 평소 = 이전 네 편이 그 시각 100회 → 이 편 400회는 4배. 유튜브는 견줄 편이 없어 1배
+  const peers = [1, 2, 3, 4].map(n => ({ id: `c-ig:P${n}`, channelId: 'c-ig', url: `https://www.instagram.com/reel/PEER${n}x/`, publishedAt: iso(S0 - n * 24 * H), publicationFormat: 'instagram-reels' }));
+  const server = {
+    checkedAt: iso(S0 + 80 * H),
+    channels: [{ id: 'c-ig', platform: 'instagram', handle: 'synkbrief', name: 'IG' }, { id: 'c-yt', platform: 'youtube', handle: 'synkbrief', externalId: YT, name: 'YT' }],
+    entries: [
+      { id: 'e-ig', channelId: 'c-ig', platform: 'instagram', url: IG, publishedAt: iso(S0), publicationFormat: 'instagram-reels', origin: 'auto',
+        checkpoints: [점(24, { views: 150, earlyRetention3sPct: 33.2 }, 'api:instagram-graph', ['earlyRetention3sPct']), 점(72, { views: 400 }, 'api:instagram-graph')] },
+      { id: 'e-yt', channelId: 'c-yt', platform: 'youtube', url: YTU, publishedAt: iso(S0), publicationFormat: 'youtube-shorts', origin: 'auto',
+        checkpoints: [점(24, { views: 120 }, 'api:youtube-data-api-v3'), 점(72, { views: 200 }, 'api:youtube-data-api-v3')] },
+    ],
+    posts: peers,
+    snapshots: peers.map(p => [p.id, S0 + 71 * H, 100]),
+  };
+  const now = S0 + 80 * H;
+  const first = await 도구.run({ 실행: true, 저장소: dir, 값들: [] }, { now, data: server, shorts: new Map() });
+  assert.equal(first.시험, '시험 편 1 · 판 2 · 갈래 1(아직 1)');
+  const summaryFile = path.join(dir, 'docs', '마케팅', '게시성과.md');
+  const summary = fs.readFileSync(summaryFile, 'utf8');
+  const 갈래줄 = '| 2주 시험 10-26 | @synkbrief(유튜브·인스타) | 지금 막힌 것 | 1 | 유튜브 0/1 · 인스타 1/1 | — | 아직(1편 — 3편 미만) | — |';
+  assert.ok(summary.includes(갈래줄), summary);
+  assert.match(summary, /\| \[synkbrief_시험편_20261027\]\([^)]+\) \| 인스타 @synkbrief \| 지금 막힌 것 \| 400회 · 4\.0배\(최근 5편 중앙값 100\) \| 33\.2%\(추정\) \| — \| \*\*기준 넘음\*\* \|/);
+  // 유튜브 판은 이 채널의 장부 첫 편이라 본 비율을 견줄 지난 편이 없다 — 판정에서 빼고 표에만 적는다(재확인 A2)
+  assert.match(summary, /\| 유튜브 @synkbrief \| 지금 막힌 것 \| 200회 · 1\.0배\(최근 1편 중앙값 200\) \| — \| 첫 편이라 판정에서 뺌 \| \*\*못 넘음\*\*\(조회 1\.0배\) \|/);
+  assert.match(summary, /- \*\*2주 시험 갈래\*\*[^\n]*: 계속 — 없음 \/ 멈춤 — 없음 \/ 그 밖 1갈래\(아직 1\)/);
+  // 기존 판정 줄은 그대로 — 이전 편이 모자라 「자료 부족」
+  assert.match(summary, /인스타 @synkbrief \| 72시간 \| [^\n]*→ \*\*자료 부족\*\*/);
+  // 화면에서 읽은 본 비율을 적으면 편 표에 들어간다(첫 편이라 판정에서는 뺀다)
+  await 도구.run({ 실행: true, 저장소: dir, 적기: YTU, 값들: ['본비율=41'] }, { now, data: server, shorts: new Map() });
+  assert.match(fs.readFileSync(summaryFile, 'utf8'), /\| 41%\(화면\) · 첫 편이라 판정에서 뺌 \| \*\*못 넘음\*\*\(조회 1\.0배\) \|/);
+  // 서버를 읽지 않는 --요약도 장부만으로 같은 표를 낸다
+  const again = await 도구.run({ 요약: true, 저장소: dir, 값들: [] }, { now });
+  assert.ok(again.요약.includes(갈래줄));
+  assert.match(again.요약, /\| 41%\(화면\) · 첫 편이라 판정에서 뺌 \|/);
+});
+
+// ── 2주 시험 2차 검수(10-23 아르곤·GPT) 재현 ────────────────────────────────
+
+test('2주 시험 갈래 — 플랫폼은 그 편들의 준비.json 판으로 정한다: 장부에 아직 없는 판은 아직·자료 부족으로 남아 「한 곳」 계속이 나지 않는다(A2·GA1)', () => {
+  const 칸 = { 이름: '2주 시험 10-26', 갈래: '지금 막힌 것' };
+  const 판 = at => [['synkbrief-instagram', at], ['synkbrief-youtube', at], ['shift-naverblog', at]];
+  const 유튜브올림 = [['synkbrief-youtube', sday(5)]];
+  const index = 계획색인({ 편1: { 칸, 판: 판(sday(0)), 올림: 유튜브올림 }, 편2: { 칸, 판: 판(sday(2)), 올림: 유튜브올림 }, 편3: { 칸, 판: 판(sday(4)), 올림: 유튜브올림 } });
+  // 인스타 세 편은 조회 4배 · 3초 유지 40%로 다 넘었다. 유튜브는 늦게(11-01) 올려 아직 판정 줄이 없다
+  const ledger = ['편1', '편2', '편3'].flatMap((f, i) => 시험판(f, 'ig', 'synkbrief', sday(i * 2), { v72: 900, m72: 4, r24: 40 }));
+  const 판정해 = now => 시험.시험판정({ ledger, index, accounts: 시험계정, now });
+  const [g] = 판정해(sday(5) + 10 * H).갈래들;
+  assert.deepEqual(g.platforms, ['youtube', 'instagram'], '서버가 받지 않는 네이버 블로그는 셈에 안 든다');
+  assert.deepEqual(g.dims.map(d => [d.이름, d.넘음, d.n, d.상태]), [['유튜브', 0, 3, '아직'], ['인스타', 3, 3, '계속']]);
+  assert.deepEqual([g.방향, g.판정.값], ['—', '아직']);
+  assert.match(g.판정.까닭, /유튜브 판정 줄 기다림 3/);
+  // 창이 다 닫혀도 유튜브 값이 끝내 안 오면 자료 부족 — 인스타 하나로 계속이 나지 않는다
+  const late = 판정해(sday(30));
+  assert.deepEqual([late.갈래들[0].방향, late.갈래들[0].판정.값], ['—', '자료 부족']);
+  const 빈판 = late.판들.filter(x => x.platform === 'youtube');
+  assert.equal(빈판.length, 3, '편 표에 빈 판도 보인다');
+  assert.ok(빈판.every(x => x.빈판 && x.판정 === '자료 부족' && /판정 줄 없음/.test(x.까닭)), JSON.stringify(빈판.map(x => x.까닭)));
+  // 아직 안 올린 판은 예정 시각 뒤 72시간 창이 닫힐 때까지 「올리기 전」
+  const plan = 시험.시험판정({ ledger, index: 계획색인({ 편1: { 칸, 판: 판(sday(0)) } }), accounts: 시험계정, now: sday(0) + 10 * H }).판들;
+  assert.ok(plan.some(x => x.platform === 'youtube' && x.판정 === '아직' && x.까닭 === '올리기 전'));
+});
+
+test('2주 시험 갈래 — 페북 교차 게시 계정은 따로 묶이고, 같은 편이라도 준비.json에 없는 판은 표에만 보인다', () => {
+  const 칸 = { 이름: '2주 시험 10-26', 갈래: '화면 글' };
+  const index = 계획색인({ 몽1: { 칸, 판: [['lab-instagram', sday(0)], ['lab-facebook', sday(0)]] } });
+  const ledger = [
+    ...시험판('몽1', 'ig', 'synk.mn', sday(0), { v72: 300, m72: 2.5, r24: 35 }),
+    ...시험판('몽1', 'fb', 'synkworld', sday(0), { v72: 40, m72: 1 }),
+    ...시험판('몽1', 'tt', 'synklab.mm', sday(0), { v72: 900, m72: 5 }),
+  ];
+  const r = 시험.시험판정({ ledger, index, accounts: 시험계정, now: sday(20) });
+  assert.deepEqual(r.갈래들.map(g => [g.계정.shown, g.platforms.join('·')]), [['@synk.mn', 'instagram'], ['@synkworld', 'facebook']]);
+  const 틱톡 = r.판들.find(x => x.platform === 'tiktok');
+  assert.deepEqual([틱톡.따로, 틱톡.판정], [true, '기준 넘음'], '판정은 보이되 갈래에는 안 센다');
+});
+
+test('2주 시험 갈래 — 일찍 정하기는 플랫폼마다 준비.json에 잡힌 판 수까지 보고, 남은 판이 어떻게 나와도 안 바뀔 때만(A1)', () => {
+  const 칸 = { 이름: '2주 시험 10-26', 갈래: '지금 막힌 것' };
+  const 둘 = at => [['synkbrief-instagram', at], ['synkbrief-youtube', at]];
+  // 편마다 인스타·유튜브 줄 — 1 넘음 · 0 못 넘음 · null 72시간 전(24시간 줄만) · undefined 줄 없음
+  const 줄 = (f, d, ig, yt) => [ig, yt].flatMap((v, i) => (v === undefined ? [] : 시험판(f, i ? 'yt' : 'ig', 'synkbrief', sday(d),
+    v === null ? { r24: 35 } : { v72: 500, m72: v ? 3 : 1, r24: 35 })));
+  // ① 유튜브를 세 편 다 잡았고 셋째가 아직이면: 1/2 넘음은 셋째에 따라 갈리니 아직, 0/2는 셋째가 넘어도 1/3이라 멈춤
+  const index = 계획색인({ 편1: { 칸, 판: 둘(sday(0)) }, 편2: { 칸, 판: 둘(sday(2)) }, 편3: { 칸, 판: 둘(sday(4)) } });
+  const 판정해 = (ledger, now, idx = index) => 시험.시험판정({ ledger, index: idx, accounts: 시험계정, now }).갈래들[0];
+  const now = sday(4) + 30 * H;
+  const half = 판정해([...줄('편1', 0, 1, 1), ...줄('편2', 2, 1, 0), ...줄('편3', 4, null, null)], now);
+  assert.deepEqual(half.dims.map(d => [d.이름, d.넘음, d.n, d.상태]), [['유튜브', 1, 3, '아직'], ['인스타', 2, 3, '계속']]);
+  assert.equal(half.판정.값, '아직');
+  const none = 판정해([...줄('편1', 0, 1, 0), ...줄('편2', 2, 1, 0), ...줄('편3', 4, null, null)], now);
+  assert.deepEqual([none.dims.map(d => d.상태), none.판정.값], [['멈춤', '계속'], '엇갈림']);
+  // ② 준비.json이 유튜브를 두 편에만 잡았으면 더 올라올 유튜브 판이 없다 — 셋째를 기다리지 않고 그 두 편으로 정한다
+  const index2 = 계획색인({ 편1: { 칸, 판: 둘(sday(0)) }, 편2: { 칸, 판: 둘(sday(2)) }, 편3: { 칸, 판: [['synkbrief-instagram', sday(4)]] } });
+  const two = 판정해([...줄('편1', 0, 1, 1), ...줄('편2', 2, 1, 0), ...줄('편3', 4, 1)], sday(20), index2);
+  assert.deepEqual(two.dims.map(d => [d.이름, d.넘음, d.n, d.상태]), [['유튜브', 1, 2, '멈춤'], ['인스타', 3, 3, '계속']]);
+  assert.equal(two.판정.값, '엇갈림');
+});
+
+test('2주 시험 갈래 — 게시 순 앞 3편만 세고 넷째부터는 표에만, 창이 닫혀 값이 끝내 안 온 판은 기다리지 않는다(A3)', () => {
+  const 칸 = { 이름: '2주 시험 10-26', 갈래: '화면 글' };
+  const index = 시험색인({ T1: 칸, T2: 칸, T3: 칸, T4: 칸 });
+  const 넘 = (f, d) => 시험판(f, 'ig', 'synk.mn', sday(d), { v72: 500, m72: 3, r24: 35 });
+  const 못 = (f, d) => 시험판(f, 'ig', 'synk.mn', sday(d), { v72: 200, m72: 1, r24: 35 });
+  const 빈 = (f, d) => 시험판(f, 'ig', 'synk.mn', sday(d), { r24: 35 }); // 72시간 값이 끝내 안 왔다
+  const 판정해 = ledger => 시험.시험판정({ ledger, index, now: sday(20) });
+  // ① 앞 3편이 1/3이라 멈춤 — 넷째가 넘어도 바뀌지 않는다(값을 보고 편을 더해 판정을 돌리지 않게)
+  const r = 판정해([...넘('T1', 0), ...못('T2', 2), ...못('T3', 4), ...넘('T4', 6)]);
+  assert.deepEqual([r.갈래들[0].편수, r.갈래들[0].센편수, r.갈래들[0].판정.값], [4, 3, '멈춤']);
+  assert.equal(r.판들.find(x => x.folder === 'T4').표만, true);
+  assert.equal(r.판들.find(x => x.folder === 'T3').표만, undefined);
+  // ② 앞 3편 가운데 하나가 자료 부족(창이 닫힘)이어도 재진 두 편이 1/2면 멈춤 — 자료 부족에 머물지 않는다
+  assert.equal(판정해([...빈('T1', 0), ...넘('T2', 2), ...못('T3', 4), ...못('T4', 6)]).갈래들[0].판정.값, '멈춤');
+  // ③ 재진 판이 둘보다 적으면 멈춤으로 보지 않는다 — 값이 거의 없는 갈래를 접지 않게
+  assert.equal(판정해([...빈('T1', 0), ...빈('T2', 2), ...넘('T3', 4)]).갈래들[0].판정.값, '자료 부족');
+});
+
+test('2주 시험 판 — 기존 판정이 비교에서 뺀 72시간 값(측정 창 밖 관측 · invalidMetrics)은 쓰지 않는다(GA2)', () => {
+  const 칸 = { 이름: '2주 시험 10-26', 갈래: '화면 글' };
+  const index = 시험색인({ 늦음: 칸, 뺌: 칸, 제때: 칸, 늦은3초: 칸 });
+  const ledger = [
+    ...시험판('늦음', 'ig', 'synk.mn', sday(0), { v72: 400, m72: 4, r24: 40, 늦게72: 7 * H }),
+    ...시험판('뺌', 'ig', 'synk.mn', sday(1), { v72: 400, m72: 4, r24: 40, 못씀72: ['views'] }),
+    ...시험판('제때', 'ig', 'synk.mn', sday(2), { v72: 400, m72: 4, r24: 40 }),
+    ...시험판('늦은3초', 'ig', 'synk.mn', sday(3), { v72: 400, m72: 4, r24: 40, r72: 25 }),
+  ];
+  // 24시간 줄을 측정 창(목표 + 6시간) 밖에서 관측했다 → 그 3초 유지율 대신 72시간 값(25%)
+  const l24 = ledger.find(l => l.folder === '늦은3초' && l.point === '24h');
+  l24.observedAt = iso(sday(3) + 31 * H);
+  const by = Object.fromEntries(시험.시험판정({ ledger, index, now: sday(20) }).판들.map(x => [x.folder, x]));
+  assert.deepEqual([by.늦음.판정, by.늦음.까닭, by.늦음.multiple], ['자료 부족', '72시간 값이 측정 창 밖', null]);
+  assert.deepEqual([by.뺌.판정, by.뺌.까닭], ['자료 부족', '72시간 조회를 기존 판정이 비교에서 뺐다']);
+  assert.equal(by.제때.판정, '기준 넘음');
+  assert.deepEqual([by.늦은3초.판정, by.늦은3초.삼초.때, by.늦은3초.까닭], ['못 넘음', '72시간', '3초 유지 25%']);
+});
+
+test('2주 시험 — 실제 판정 경로에서 72시간 목표보다 7시간 늦게 관측한 조회는 장부에 invalidMetrics로 남고 시험 판정에 안 들어간다(GA2)', async t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-post-test-late-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const git = args => { const r = spawnSync('git', args, { cwd: dir, encoding: 'utf8', windowsHide: true }); assert.equal(r.status, 0, r.stderr); };
+  git(['init', '-q']);
+  git(['config', 'user.email', 't@example.invalid']);
+  git(['config', 'user.name', 't']);
+  git(['config', 'core.autocrlf', 'false']);
+  const IG = 'https://www.instagram.com/reel/LATEIG1x/';
+  const folder = path.join(dir, 'docs', '마케팅', 'synkbrief_늦은관측_20261027');
+  fs.mkdirSync(path.join(folder, '게시'), { recursive: true });
+  fs.writeFileSync(path.join(folder, '기획.md'), '1일 1편 · synkbrief · 2026-10-27\n\n# 늦은 관측\n');
+  fs.writeFileSync(path.join(folder, '게시', '준비.json'), JSON.stringify({ 브랜드: 'synkbrief', 시험: { 이름: '2주 시험 10-26', 갈래: '지금 막힌 것' }, 판: [{ 계정: 'synkbrief-instagram' }] }));
+  fs.writeFileSync(path.join(folder, '게시', '게시결과.json'), JSON.stringify({ 판: [{ 계정: 'synkbrief-instagram', 상태: '게시됨', 시각: iso(S0), 주소: IG }] }));
+  git(['add', '-A']);
+  git(['commit', '-q', '-m', 'init']);
+  const 점 = (hours, metrics, late = 2 * 60_000, estimated = []) => {
+    const due = S0 + hours * H, observedAt = iso(due + late);
+    const metricProvenance = Object.fromEntries(Object.keys(metrics).map(k => [k, { source: 'api:instagram-graph', observedAt, unit: 판정.METRICS[k].unit,
+      timing: 'on-time', measurementWindowMissed: false, ...(estimated.includes(k) ? { estimated: true } : {}) }]));
+    return { hours, status: 'recorded', dueAt: iso(due), closesAt: iso(due + 6 * H), observedAt, source: 'api:instagram-graph', metrics, metricProvenance };
+  };
+  const peers = [1, 2, 3, 4].map(n => ({ id: `c-ig:P${n}`, channelId: 'c-ig', url: `https://www.instagram.com/reel/PEER${n}x/`, publishedAt: iso(S0 - n * 24 * H), publicationFormat: 'instagram-reels' }));
+  const server = {
+    checkedAt: iso(S0 + 90 * H),
+    channels: [{ id: 'c-ig', platform: 'instagram', handle: 'synkbrief', name: 'IG' }],
+    entries: [{ id: 'e-ig', channelId: 'c-ig', platform: 'instagram', url: IG, publishedAt: iso(S0), publicationFormat: 'instagram-reels', origin: 'auto',
+      checkpoints: [점(24, { views: 150, earlyRetention3sPct: 40 }, 2 * 60_000, ['earlyRetention3sPct']), 점(72, { views: 400 }, 7 * H)] }],
+    posts: peers,
+    snapshots: peers.map(p => [p.id, S0 + 71 * H, 100]),
+  };
+  const now = S0 + 90 * H;
+  await 도구.run({ 실행: true, 저장소: dir, 값들: [] }, { now, data: server, shorts: new Map() });
+  const line = 도구.readLedger(path.join(dir, 'docs', '_ops', '게시성과.jsonl')).find(l => l.kind === '판정' && l.point === '72h');
+  assert.equal(line.multiple.value, 4, '기존 판정 줄의 배수는 그대로 둔다');
+  assert.ok(line.invalidMetrics.includes('views'), '기존 판정이 비교에서 뺀 지표를 장부에 남긴다');
+  assert.equal(line.verdict, '자료 부족');
+  const summary = fs.readFileSync(path.join(dir, 'docs', '마케팅', '게시성과.md'), 'utf8');
+  assert.match(summary, /\| 인스타 @synkbrief \| 지금 막힌 것 \| 400회 · 안 씀 \| 40%\(추정\) \| — \| 자료 부족\(72시간 값이 측정 창 밖\) \|/);
+  // 제때 관측한 판정 줄에는 invalidMetrics 칸이 없다(장부 줄 모양이 그대로라 옛 판정이 다시 덧붙지 않는다)
+  assert.equal(도구.readLedger(path.join(dir, 'docs', '_ops', '게시성과.jsonl')).find(l => l.kind === '판정' && l.point === '24h').invalidMetrics, undefined);
+});
+
+// ── 2주 시험 재확인 검수(10-23 아르곤 A1·A2 · GPT GA1~GA4) 재현 ─────────────
+
+test('2주 시험 판 — 준비.json 판에 시각이 없어도 안 올린 판이 아직에 갇히지 않는다: 같은 편의 첫 실제 게시, 없으면 슬롯 날짜로 잰다(재확인 A1)', () => {
+  const 칸 = { 이름: '2주 시험 10-26', 갈래: '지금 막힌 것' };
+  const 판 = [['synkbrief-instagram'], ['synkbrief-youtube']]; // 「시각」 칸 없음
+  // 인스타만 올렸고(장부에 있다) 유튜브는 끝내 안 올렸다
+  const index = 계획색인({ 편1: { 칸, 판 } });
+  const ledger = 시험판('편1', 'ig', 'synkbrief', sday(0), { v72: 900, m72: 4, r24: 40 });
+  const yt = now => 시험.시험판정({ ledger, index, accounts: 시험계정, now }).판들.find(x => x.platform === 'youtube');
+  assert.deepEqual([yt(sday(0) + 50 * H).판정, yt(sday(0) + 50 * H).까닭], ['아직', '올리기 전']);
+  assert.deepEqual([yt(sday(20)).판정, yt(sday(20)).까닭], ['자료 부족', '올린 기록 없음']);
+  // 아무 판도 안 올렸으면 슬롯 날짜(그날 끝, KST)부터 잰다
+  const index2 = 계획색인({ 편2: { 칸, 판, 슬롯: '2026-10-28' } });
+  const 빈 = now => 시험.시험판정({ ledger: [], index: index2, accounts: 시험계정, now }).판들;
+  assert.equal(빈(Date.parse('2026-10-30T12:00:00+09:00')).filter(x => x.판정 === '아직' && x.까닭 === '올리기 전').length, 2);
+  assert.equal(빈(Date.parse('2026-11-01T12:00:00+09:00')).filter(x => x.판정 === '자료 부족' && x.까닭 === '올린 기록 없음').length, 2);
+});
+
+test('2주 시험 갈래 — 채널 첫 편(장부에 그보다 앞선 같은 계정·형식 편이 없다)의 본 비율은 끝내 견줄 수 없어 판정에서 빼고 표에만 적는다(재확인 A2)', () => {
+  const 칸 = { 이름: '2주 시험 10-26', 갈래: 'A 장치형' };
+  const index = 시험색인({ 앞편: undefined, T1: 칸, T2: 칸, T3: 칸 });
+  const 줄 = 앞편도 => [
+    ...(앞편도 ? 시험판('앞편', 'yt', 'newtube', sday(-5), { v72: 150, m72: 0.9 }) : []),
+    ...시험판('T1', 'yt', 'newtube', sday(0), { v72: 500, m72: 3 }),
+    ...시험판('T2', 'yt', 'newtube', sday(2), { v72: 500, m72: 3 }),
+    ...시험판('T3', 'yt', 'newtube', sday(4), { v72: 200, m72: 1 }),
+  ];
+  const 읽음 = { T1: 41, T2: 25, T3: 45 };
+  const screens = new Map(Object.entries(읽음).map(([f, v]) => [`youtube:${f}-yt`, { metrics: { stayedToWatchPct: v } }]));
+  const r = 시험.시험판정({ ledger: 줄(false), index, now: sday(20), screens });
+  const t1 = r.판들.find(x => x.folder === 'T1');
+  assert.deepEqual([t1.본비율.value, t1.본비율.상태, t1.본비율.뺌], [41, '첫 편', true]);
+  // 본 비율은 T2(25 < 41)·T3(45 > 33) 두 편으로 센다 — 1/2라 멈춤이고 조회 2/3 계속과 엇갈린다(전에는 T1을 기다려 영영 아직이었다)
+  const [g] = r.갈래들;
+  assert.deepEqual(g.dims.map(d => [d.이름, d.넘음, d.n, d.상태]), [['조회', 2, 3, '계속'], ['본 비율', 1, 2, '멈춤']]);
+  assert.equal(g.판정.값, '엇갈림');
+  // 장부에 앞선 편이 있는데 그 편 본 비율만 안 읽었으면 영구가 아니다 — 그 편을 화면에서 읽으면 정해진다
+  const t1b = 시험.시험판정({ ledger: 줄(true), index, now: sday(20), screens }).판들.find(x => x.folder === 'T1');
+  assert.deepEqual([t1b.본비율.상태, t1b.본비율.뺌], ['견줄 지난 편 없음', undefined]);
+  // 요약 표에는 첫 편 값이 그대로 적힌다
+  const 화면줄 = Object.entries(읽음).map(([f, v]) => ({ at: iso(sday(10)), kind: '화면', post: `youtube:${f}-yt`, url: 'https://example.invalid/', ageHours: 100, metrics: { stayedToWatchPct: v } }));
+  const text = 도구.summarize({ ledger: [...줄(false), ...화면줄], now: sday(20), index });
+  assert.match(text, /\| \[T1\]\([^)]+\) \| 유튜브 @newtube \| A 장치형 \| [^|]+ \| — \| 41%\(화면\) · 첫 편이라 판정에서 뺌 \|/);
+});
+
+test('2주 시험 갈래 — 3편 조건은 실제로 올린 편으로 센다: 예정 편은 기다림일 뿐이라 두 편만 올렸으면 아직(재확인 GA1)', () => {
+  const 칸 = { 이름: '2주 시험 10-26', 갈래: '지금 막힌 것' };
+  const ig = at => [['synkbrief-instagram', at]];
+  const index = 계획색인({ 편1: { 칸, 판: ig(sday(-1)) }, 편2: { 칸, 판: ig(sday(0)) }, 편3: { 칸, 판: ig(sday(7)) } });
+  const ledger = [...시험판('편1', 'ig', 'synkbrief', sday(-1), { v72: 900, m72: 4, r24: 40 }), ...시험판('편2', 'ig', 'synkbrief', sday(0), { v72: 900, m72: 4, r24: 40 })];
+  const [g] = 시험.시험판정({ ledger, index, accounts: 시험계정, now: sday(4) }).갈래들;
+  assert.deepEqual([g.편수, g.게시편수, g.판정.값], [3, 2, '아직']);
+  assert.equal(g.판정.까닭, '2편 게시(예정 1편) — 3편 미만');
+  // 셋째를 올리면(판정 줄 전이라도) 3편이 쌓였고 2편이 이미 넘었으니 계속
+  const 올림 = 계획색인({ 편1: { 칸, 판: ig(sday(-1)) }, 편2: { 칸, 판: ig(sday(0)) }, 편3: { 칸, 판: ig(sday(3)), 올림: [['synkbrief-instagram', sday(3)]] } });
+  assert.equal(시험.시험판정({ ledger, index: 올림, accounts: 시험계정, now: sday(4) }).갈래들[0].판정.값, '계속');
+});
+
+test('2주 시험 판 — 본 비율은 72시간 전에는 화면 값이 있어도 아직이고, 72시간 전에 읽은 값은 다시 읽는다(재확인 GA2)', () => {
+  const 칸 = { 이름: '2주 시험 10-26', 갈래: 'A 장치형' };
+  const index = 시험색인({ 앞편: undefined, T1: 칸, T2: 칸, T3: 칸 });
+  const now = sday(10);
+  // 게시 나이 126·78·30시간 — 앞 두 편은 조회를 넘었고 본 비율은 지난 30%에 20·40·50%
+  const ledger = [
+    ...시험판('앞편', 'yt', 'synkkorean', now - 300 * H, { v72: 150, m72: 0.9 }),
+    ...시험판('T1', 'yt', 'synkkorean', now - 126 * H, { v72: 500, m72: 3 }),
+    ...시험판('T2', 'yt', 'synkkorean', now - 78 * H, { v72: 500, m72: 3 }),
+    ...시험판('T3', 'yt', 'synkkorean', now - 30 * H, {}),
+  ];
+  const 본 = (extra = {}) => new Map(Object.entries({ 앞편: 30, T1: 20, T2: 40, T3: 50 }).map(([f, v]) => [`youtube:${f}-yt`, { metrics: { stayedToWatchPct: v }, ...(extra[f] || {}) }]));
+  const r = 시험.시험판정({ ledger, index, now, screens: 본() });
+  assert.equal(r.판들.find(x => x.folder === 'T3').본비율.상태, '72시간 전');
+  const [g] = r.갈래들;
+  assert.deepEqual(g.dims.map(d => [d.이름, d.상태]), [['조회', '계속'], ['본 비율', '아직']]);
+  assert.equal(g.판정.값, '아직');
+  // 72시간 전에 읽은 화면 값은 72시간이 지나도 쓰지 않는다(다시 읽는다)
+  const early = 시험.시험판정({ ledger, index, now, screens: 본({ T2: { ageHours: 30 } }) });
+  assert.equal(early.판들.find(x => x.folder === 'T2').본비율.상태, '72시간 뒤 다시 읽기');
+});
+
+test('2주 시험 — 창은 편의 첫 실제 게시로 잰다: 올린 판이 있으면 안 올린 판의 지난 예정 시각을 섞지 않는다(재확인 GA3)', () => {
+  const 칸 = { 이름: '2주 시험 10-26', 갈래: '지금 막힌 것' };
+  const 실제 = Date.parse('2026-10-27T21:00:00+09:00'), 지난예정 = Date.parse('2026-10-25T21:00:00+09:00');
+  const index = 계획색인({ 편1: { 칸, 판: [['synkbrief-instagram', 실제], ['synkbrief-youtube', 지난예정]] } });
+  const ledger = 시험판('편1', 'ig', 'synkbrief', 실제, { v72: 900, m72: 4, r24: 40 });
+  const r = 시험.시험판정({ ledger, index, accounts: 시험계정, now: sday(3) });
+  assert.deepEqual(r.판들.map(x => [x.platform, x.창밖]), [['youtube', false], ['instagram', false]]);
+  assert.equal(r.갈래들.length, 1);
+  // 아무 판도 안 올렸으면 예정 시각으로 잰다 — 가장 이른 예정(10-25)이 창 밖이면 창 밖
+  assert.ok(시험.시험판정({ ledger: [], index, accounts: 시험계정, now: sday(3) }).판들.every(x => x.창밖));
+});
+
+test('2주 시험 갈래 — 계정표에서 못 찾은 판 계정 키는 「계정 키 확인」으로 남기고 그 갈래를 정하지 않으며, 서버가 안 받는 플랫폼은 세지 않는다고 적는다(재확인 GA4)', () => {
+  const 칸 = { 이름: '2주 시험 10-26', 갈래: '지금 막힌 것' };
+  const 판 = at => [['synkbrief-instagram', at], ['synkbrief-youtbe', at], ['shift-naverblog', at]]; // 유튜브 키 오타
+  const index = 계획색인({ 편1: { 칸, 판: 판(sday(0)) }, 편2: { 칸, 판: 판(sday(2)) }, 편3: { 칸, 판: 판(sday(4)) } });
+  const ledger = ['편1', '편2', '편3'].flatMap((f, i) => 시험판(f, 'ig', 'synkbrief', sday(i * 2), { v72: 900, m72: 4, r24: 40 }));
+  const r = 시험.시험판정({ ledger, index, accounts: 시험계정, now: sday(20) });
+  const [g] = r.갈래들;
+  assert.deepEqual(g.키확인, ['synkbrief-youtbe']);
+  assert.equal(g.판정.값, '아직', '인스타 하나로 계속이 나지 않는다');
+  assert.match(g.판정.까닭, /계정 키 확인 — synkbrief-youtbe/);
+  assert.deepEqual(r.키확인.map(x => [x.folder, x.key]), [['편1', 'synkbrief-youtbe'], ['편2', 'synkbrief-youtbe'], ['편3', 'synkbrief-youtbe']]);
+  assert.deepEqual(r.안셈, { 'naver-blog': 3 });
+  // 요약에도 남는다
+  const text = 도구.summarize({ ledger, now: sday(20), index, accounts: 시험계정 });
+  assert.match(text, /\| @synkbrief\(인스타\) \| 지금 막힌 것 \| 3 \| [^|]+ \| 한 곳 \| 아직\(계정 키 확인 — synkbrief-youtbe\) \|/);
+  assert.match(text, /- 계정 키 확인\([^\n]*\): \[편1\]\([^)]+\) synkbrief-youtbe/);
+  assert.match(text, /- 서버가 받지 않아 세지 않는 판: 네이버 블로그 3/);
+});
