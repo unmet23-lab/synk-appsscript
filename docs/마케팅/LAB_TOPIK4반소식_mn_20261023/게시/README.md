@@ -19,6 +19,7 @@
 1. 인스타 @synk.mn 프로필 링크 둘(**앱에서만** — 웹은 「링크 수정은 모바일에서만」, Business Suite는 인스타 로그인 인증이 필요; 지금 링크 http://synk.im 자리를 신청 링크로) — 첫째 «Урьдчилан бүртгүүлэх» `https://synk.im/lab/topik4/?from=ig-bio-mn&lang=mn`, 둘째 «Бичгийн дасгал» `https://synk.im/world/?exam=topik2&lang=mn`(② 6장이 이 이름을 말한다).
 2. ~~페이스북 SYNK(synkworld) 페이지 소개의 링크에도 신청 페이지를 건다~~ — **끝(10-23, Claude · Business Suite)**: 웹사이트 맨 위 `https://synk.im/lab/topik4/?from=fb-page-mn&lang=mn`(synk.im은 그대로).
 3. ~~대조기(몽골어 1층)를 10-24 낮에 돌린다~~ — **끝(10-23 21시, Vertex Gemini 3.1 Pro)**: 두 편 몽골어 전부 8묶음 문법 「정상」 · 맞춤법 의심 0 · 역번역 뜻 일치(`검문/대조_7차_vertex_*.txt`).
+4. 아르곤 대조(유호님 「아르곤으로도 한번 검수해볼래?」) — 10-24 12:06 KST에 agy 몫이 풀리면 `검문/문안_7차_vertex_1~5`를 `--구독`으로 돌려 「정상」을 본다(Vertex 3.1 Pro 7차는 이미 「정상」). 몫이 안 풀렸으면 Vertex 결과로 건다.
 
 ## 올리는 순서(「올려」 뒤)
 
