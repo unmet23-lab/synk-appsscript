@@ -386,6 +386,12 @@
 - 고침: 보관 전에 `git status --porcelain --ignored`로 무시 파일을 보고, 남길 산출물은 공용 작업본의 같은 경로로 옮긴다(같은 드라이브라 이름 바꾸기로 끝난다 — 대상이 있으면 덮지 말고 해시로 대조). PC 0.4.37 세션이 한 방식이다(README에 적고 `ranges/` 내려받기 조각만 뺐다). 같은 경로라 기록이 가리키는 상대 경로(`docs/_ops/보관/트랙_2026-10.md`의 `.tmp/…/README.md`)와 도구 기본 경로가 공용 작업본에서도 맞고, 공용 작업본에서도 `!!`(무시)로 보여 남의 미커밋으로 잡히지 않는다. 이번엔 워크트리에만 있던 `.tmp` 세 폴더(197개)와 qa 산출물 열 곳을 바이트 그대로 옮겼다. `.claude/` 장부·`launch.json`은 공용 작업본과 같거나 공용 쪽이 새것인 사본이라 두었다. 지우기는 되돌리기 어려운 삭제라 하지 않는다 — 공용 작업본에 같은 바이트가 있는 사본과 주인이 뺀 `ranges/`는 두면 풀이 치운다.
 - 다시 확인: 새 워크트리 세션을 시작하면 `git status --porcelain --ignored`에 내 것 아닌 `.tmp`·qa 산출물이 있는지 보고, 보관 직전 같은 명령에 내 무시 산출물이 남지 않았는지 본다.
 
+### 앱이 다시 켜지면 백그라운드 명령이 「멈춤」으로 오지만 node 프로세스는 살아남아 알림 없이 돈다 — 다시 걸기 전에 남은 프로세스부터 끈다 (2026-10-23 Claude)
+- 증상: 10-22~23 회사 HA 「이력 26」 세션이 `run_in_background`로 건 읽기 전용 감시(`.tmp/workroom-copy-26-release-20261022/local/watch-chain.cjs`)가 앱 재시작·`/이어서` 때마다 「Background shell command didn't finish before the previous session ended」(stopped)로 왔다. 그대로 새로 걸면 같은 로그에 「시작」 줄이 둘 찍히며 감시가 둘 돌았고, 살아남은 옛 감시가 armed를 잡아 끝나도 이 세션은 깨어나지 않았다. 밤사이 하나는 종료 코드 4(스크립트에 없는 코드)로 사라졌다.
+- 원인: 앱 재시작이 세션의 작업 추적만 끊고 자식 node 프로세스는 남겨 두는 때가 있다. 추적이 끊긴 프로세스는 끝나도 새 세션에 알림을 주지 않는다.
+- 고침: 다시 걸기 전에 PowerShell로 그 스크립트 이름이 든 node 프로세스를 찾아 끈다 — `Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Where-Object { $_.CommandLine -like '*watch-chain.cjs*' } | ForEach-Object { Stop-Process -Id $_.ProcessId }`. 감시는 「시작 뒤 파일 시각」으로 다시 훑는 꼴로 짜고, 새로 걸 때 이전과 같은 `--after`를 줘서 끊긴 사이의 사건을 놓치지 않는다.
+- 다시 확인: 10-23 재시작마다 남은 감시 하나씩을 끄고 다시 걸어 사슬 24·25·26 armed를 모두 받았다(`local/watch.log`).
+
 ## Claude 서브에이전트
 
 ### 병렬 서브에이전트가 같은 scratchpad에 같은 이름의 보조 파일을 써서 남의 묶음 글을 읽는다 (2026-10-19 Claude)
