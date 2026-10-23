@@ -26,8 +26,9 @@ description: SYNK Apps Script를 고친 작업의 마감으로 검증·커밋·p
    - 루트 Apps Script `.js`에 `node --check`를 실행하고 `appsscript.json`을 JSON으로 파싱한다.
    - `node tools/test-ci.js`와 `node tools/deploy-security-check.js`를 실행한다. 전체 저장소의 기존 실패와 이번 변경 때문에 생긴 실패를 나눠 보고, 이번 변경의 관련 실패나 P0·P1은 해결 전 배포하지 않는다.
    - `node tools/보안검토과녁.js`로 미커밋과 미배포 범위를 확인한다. 데이터·인증·익명 웹앱·소급 불가 변경은 현재 사용 가능한 공식/네이티브 검토 통로로 판단 검토까지 한다. 실행하지 못한 검토를 통과로 쓰지 않는다.
-   - 필요한 검토는 현재 공식 앱·CLI에서 한다. 역할은 `docs/AI_운영원칙.md`를 따르며 별도 실행기·검수 장부를 요구하지 않는다.
-   - **배포 전 아르곤·GPT 검수(2026-10-21, 10-22 GPT 더함):** 위 검사를 통과한 최종 diff를 clasp push 전에 아르곤과 GPT에게 받는다 — `node tools/검수묶음.mjs 준비 <이름> --종류 백엔드 --바탕 <커밋>` 뒤 `아르곤 <이름>`·`GPT <이름>`(함께 돌려도 된다, [운영 원칙 「백엔드 검수」](../../../docs/AI_운영원칙.md)). 어느 쪽이든 재현되는 P0·P1은 고친 뒤 위 검사를 다시 돌린다. 한쪽이 한도·로그인으로 막히면 끝까지 읽은 다른 쪽만으로, 둘 다 막히면 Fable 검수로 대신하며, 완료 보고에 「아르곤 N건(반영 M) · GPT N건(반영 M)」을 적는다. GPT 구독이 끝나면 아르곤만 받는다.
+   - 필요한 검토는 현재 공식 앱·CLI에서 한다. 역할은 `docs/AI_운영원칙.md`를 따르고 기존 `검수묶음`에 원문·완독 범위·입력 해시를 남긴다.
+   - **최종 배포 후보를 먼저 고정한다(2026-10-23):** `node tools/deploy-security-check.js --후보 .tmp/<이름>-후보`로 실제 clasp 파일과 두 설정 파일의 후보를 만든다. 미검수 상태에서도 이 준비는 가능하다. `node tools/검수묶음.mjs 준비 <이름> --종류 백엔드 --작성자 <Claude|GPT> --바탕 <커밋> --배포후보 .tmp/<이름>-후보`로 최종 diff와 후보를 함께 검수한다. 같은 이름의 기존 후보 폴더를 덮어쓰지 않는다.
+   - **배포 전 검수:** Claude 작성은 아르곤·GPT, GPT 작성은 GPT·Claude 검수를 받는다([운영 원칙 「백엔드 검수」](../../../docs/AI_운영원칙.md)). 한도·로그인 대체는 원칙에서 허용한 정책과 사유를 증거에 기록해야 하며, 단순 실패나 응답 누락은 통과가 아니다. 재현되는 P0·P1은 고친 뒤 관련 검사와 검수 증거를 갱신한다. 최종 `node tools/검수묶음.mjs 확인 <이름>`이 통과해야 반영한다. 소규모·내부 화면의 후검수 예외는 명시 정책·사유·대상을 갖춘 증거에만 적용하며, Apps Script 백엔드에 그 화면 예외를 가져오지 않는다. 예외도 후보 내용 일치 검사를 생략하지 않는다.
 
 3. **이력과 GitHub**
    - 2단계에서 채번했으면 `node tools/bump-version.js --check`로 대조한다.
@@ -35,21 +36,16 @@ description: SYNK Apps Script를 고친 작업의 마감으로 검증·커밋·p
    - `node tools/원격ci.js <올린 머리>`로 대상 커밋의 원격 상태를 확인한다. 인자를 빼면 로컬 HEAD를 보므로, 올리기가 커밋을 다시 쌓았으면 출력의 새 커밋(원래 → 새)을 준다. 기존의 관련 없는 적색은 그대로 밝혀 구분하고, 이번 배포 대상의 관련 실패는 라이브 전에 막는다.
 
 4. **라이브 반영과 대조**
-   - `clasp`는 PATH에서 먼저 찾고, Windows에서 없으면 공식 설치 위치를 확인한다.
+   - 메인 checkout에서 검수한 파일·설정이 origin/master와 같은지 확인한 뒤, 다음 명령 하나로 반영한다. 검수 이름 또는 폴더와 **기존 고정 deployment ID**를 필수로 준다. ID는 `clasp deployments --json`이나 `node tools/배포판점검.js --라이브`로 확인한다.
 
      ```powershell
      Set-Location C:\Users\q1212\Documents\SYNK-appsscript
-     $claspCommand = Get-Command clasp.cmd -ErrorAction SilentlyContinue
-     $claspBin = if ($claspCommand) { $claspCommand.Source } else { Join-Path $env:APPDATA 'npm\clasp.cmd' }
-     if (-not (Test-Path -LiteralPath $claspBin)) { throw 'clasp 실행 파일을 찾지 못했습니다.' }
-     git diff --quiet origin/master -- tools/deploy-security-check.js .clasp.json .claspignore appsscript.json Code.js 엔진_synkbrief.js && node tools/deploy-security-check.js && & $claspBin push --force
+     node tools/deploy-security-check.js --push --검수 "<이름·폴더>" --deployment "<기존ID>" --description "<설명>"
      ```
 
-   - push 줄은 사슬이다. 먼저 보안 검사 스크립트와, clasp가 올리는 세 파일·그 범위를 정하는 `.clasp.json`·`.claspignore`가 origin/master와 같은지 본다. 그다음 배포 표면 검사(`deploy-security-check.js`)가 통과해야 push까지 간다. 그래서 내 변경을 먼저 origin에 올려야 하고, 남의 미커밋이 그 파일들에 섞여 있으면 push하지 않는다.
-   - 자동 모드 판정기는 도구 결과를 못 보기 때문에, 통과 여부를 이 사슬로 가르게 미리 허락해 두었다(2026-10-21 검수 반영). 이 꼴 그대로 쓴다. 경로 철자가 틀리면 `git diff`가 조용히 통과하니 고쳐 쓰지 않는다.
-
-   - `node tools/배포판점검.js --라이브`로 실제 라이브를 읽는다. 고정 버전 배포가 낡았으면 도구가 제시한 **기존 deployment ID**를 `clasp deploy -i <기존ID> --description "<설명> #fp:<지문>"`로 갱신한다. ID 없이 새 배포를 만들지 않는다.
-   - 다시 `clasp deployments`와 `node tools/배포판점검.js --라이브`를 실행해 배포 개수, 내용 지문, 도장을 확인한다.
+   - 명령은 검수 원문과 최종 소스·후보의 해시, `.claspignore` 명시 범위와 `.clasp.json`의 현재 폴더 rootDir, origin/master 일치, 배포 표면과 임시 runner 배포 잔존을 확인한다. 무관한 HEAD 이동은 허용하지만 검수한 파일·설정·모드가 바뀌면 멈춘다. 다른 작업의 미커밋이 배포 파일에 섞이면 먼저 해결한다.
+   - 검증한 바이트를 독립 임시 snapshot에 쓰고 다시 해시를 맞춘 뒤 공식 clasp로 push한다. 이어 불변 버전 N을 만들고, 기존 `배포판점검.라이브대조`로 **그 N의 코드·manifest 전체**를 snapshot과 대조한다. 일치할 때만 기존 ID에 `--versionNumber N`을 지정해 반영하고, 사후 ID의 버전도 N인지 확인한다. 버전 번호 없는 수동 `clasp deploy`나 직접 `clasp push`로 이 경로를 우회하지 않는다.
+   - 원격 경합이나 대조 실패가 나면 이후 반영을 멈춘다. HEAD push·버전 생성·deployment 갱신 중 어디까지 되었는지 오류의 진행 상태로 보고한다. 필요하면 `node tools/배포판점검.js --라이브`로 실제 라이브 내용을 다시 확인한다. 작업본에 `clasp pull`을 하지 않는다.
 
 ## 완료 보고
 

@@ -107,10 +107,10 @@ test('묶음글·답대조: 끝 표식은 맨 끝, 읽은 항목 번호(해시�
   assert.match(표식, /^END_OF_REVIEW_A_[0-9a-f]{12}$/);
   assert.ok(글.trimEnd().endsWith(`자료 끝 표식: ${표식}`));
   const 묶음 = { 표식, 항목: 항목들.map(x => x.id) };
-  assert.equal(답대조(묶음, { endMarker: 표식, seen: ['[D01-ab12]', 'd02-cd34'] }).상태, '읽음');
-  assert.deepEqual(답대조(묶음, { endMarker: 표식, seen: ['D01-ab12', 'D02'] }).빠진항목, ['D02-cd34'], '해시 없이 번호만 적으면 읽은 것으로 치지 않는다');
-  assert.equal(답대조(묶음, { endMarker: 'truncated', seen: ['D01-ab12'] }).상태, '잘림');
-  assert.equal(답대조(묶음, { endMarker: 표식, seen: ['D01-ab12', 'D02-cd34', 'truncated'] }).상태, '잘림');
+  assert.equal(답대조(묶음, { findings: [], coverage: { reviewed: '전부', limitations: '', complete: true, missing: [] }, endMarker: 표식, seen: ['[D01-ab12]', 'd02-cd34'] }).상태, '읽음');
+  assert.deepEqual(답대조(묶음, { findings: [], coverage: { reviewed: '전부', limitations: '', complete: true, missing: [] }, endMarker: 표식, seen: ['D01-ab12', 'D02'] }).빠진항목, ['D02-cd34'], '해시 없이 번호만 적으면 읽은 것으로 치지 않는다');
+  assert.equal(답대조(묶음, { findings: [], coverage: { reviewed: '전부', limitations: '', complete: true, missing: [] }, endMarker: 'truncated', seen: ['D01-ab12'] }).상태, '잘림');
+  assert.equal(답대조(묶음, { findings: [], coverage: { reviewed: '전부', limitations: '', complete: true, missing: [] }, endMarker: 표식, seen: ['D01-ab12', 'D02-cd34', 'truncated'] }).상태, '잘림');
 });
 
 test('처리: 줄임말을 받고, 반영 말고는 이유가 있어야 하고, 재확인은 반영한 지적에만', async () => {
@@ -128,10 +128,10 @@ test('처리: 줄임말을 받고, 반영 말고는 이유가 있어야 하고, 
 
 test('Fable 답: 보고 끝의 json 블록을 읽고 F1…로 더하며(같은 지적은 한 번), 아르곤 지적에 의견을 붙인다', async () => {
   const { 페이블답읽기, 페이블지적넣기 } = await tool();
-  const 답 = 페이블답읽기('보고 글\n```json\n{"findings":[{"grade":"P1","location":"a.js:3","quote":"x","problem":"깨짐","fix":"고침"}],"argonReview":[{"id":"A1","agree":false,"note":"아직 넘침"}],"coverage":{"reviewed":"전부","limitations":"없음"}}\n```\n');
+  const 답 = 페이블답읽기('보고 글\n```json\n{"findings":[{"grade":"P1","location":"a.js:3","quote":"x","problem":"깨짐","fix":"고침"}],"argonReview":[{"id":"A1","agree":false,"note":"아직 넘침"}],"coverage":{"reviewed":"전부","limitations":"없음","complete":true,"missing":[]},"seen":[]}\n```\n');
   const 표 = { 지적: [{ 번호: 'A1', 출처: '아르곤', 묶음: 'A', 등급: 'P2', 위치: 'b.js:1', 인용: '' }] };
   assert.deepEqual(페이블지적넣기(표, 답), ['F1']);
-  assert.deepEqual(페이블지적넣기(표, 답), [], '같은 위치·인용은 다시 넣지 않는다');
+  assert.deepEqual(페이블지적넣기(표, 답), [], '같은 위치·인용·문제는 다시 넣지 않는다');
   assert.equal(표.지적.find(x => x.번호 === 'A1').페이블의견.동의, false);
   assert.equal(표.페이블.회차, 2);
   assert.throws(() => 페이블답읽기('JSON 없음'), /JSON을 못 찾았다/);
@@ -193,7 +193,7 @@ test('준비 → 아르곤(가짜) → 처리 → 집계: 생성물은 빼고, �
     assert.ok(schema.required.includes('endMarker'));
     const 표식 = /자료 끝 표식: (\S+)\s*$/.exec(prompt)[1];
     const seen = [...prompt.matchAll(/^### \[([^\]]+)\]/gm)].map(m => m[1]);
-    return { text: JSON.stringify({ findings: [{ grade: 'P1', location: 'src/app.js:2', quote: 'b = 3', problem: '부르는 곳이 2를 기대한다', fix: '부르는 곳도 고친다' }], seen, coverage: { reviewed: '전부', limitations: '' }, endMarker: 표식 }), selectedModel: 'gemini-4-argon-medium', usage: { input_tokens: 10 } };
+    return { text: JSON.stringify({ findings: [{ grade: 'P1', location: 'src/app.js:2', quote: 'b = 3', problem: '부르는 곳이 2를 기대한다', fix: '부르는 곳도 고친다' }], seen, coverage: { reviewed: '전부', limitations: '', complete: true, missing: [] }, endMarker: 표식 }), selectedModel: 'gemini-4-argon-medium', usage: { input_tokens: 10 } };
   };
   const 몫 = () => ({ 주간: 0.25, 다섯시간: 0.8 });
   const 결과 = await 아르곤보내기(폴더, 목록, { call: 잘읽음, 몫 });
@@ -207,8 +207,8 @@ test('준비 → 아르곤(가짜) → 처리 → 집계: 생성물은 빼고, �
   처리하기(표, ['A1=반영']);
   fs.writeFileSync(path.join(폴더, '지적표.json'), JSON.stringify(표));
   const s = 집계하기(목록, 결과, 지적표읽기(폴더));
-  assert.equal(s.한줄, `아르곤 ${목록.묶음.length}건(반영 1)`.replace(/\d+건/, `${표.지적.length}건`));
-  assert.equal(s.배포조건충족, true);
+  assert.equal(s.한줄, `아르곤 ${표.지적.length}건(반영 1) · GPT 미실행`);
+  assert.equal(s.배포조건충족, false, '새 판은 필수 GPT 미실행을 막는다');
 
   // 다시 보낸 답이 잘렸으면 앞의 읽은 답과 지적을 그대로 두고 그 시도만 실패들에 적는다
   const 잘린답 = async ({ prompt }) => ({ text: JSON.stringify({ findings: [], seen: [], coverage: { reviewed: '', limitations: '' }, endMarker: 'truncated' }) });
@@ -313,9 +313,197 @@ test('가져온 캡처(--캡처): 전·후/<기기>/<이름>.png를 그대로 �
 const 답하기 = (지적 = []) => async ({ prompt }) => {
   const 표식 = /자료 끝 표식: (\S+)\s*$/.exec(prompt)[1];
   const seen = [...prompt.matchAll(/^### \[([^\]]+)\]/gm)].map(m => m[1]);
-  return { text: JSON.stringify({ findings: 지적, seen, coverage: { reviewed: '전부', limitations: '' }, endMarker: 표식 }) };
+  return { text: JSON.stringify({ findings: 지적, seen, coverage: { reviewed: '전부', limitations: '', complete: true, missing: [] }, endMarker: 표식 }) };
 };
 const 지적하나 = (location, grade = 'P1') => ({ grade, location, quote: 'b = 3', problem: '부르는 곳이 2를 기대한다', fix: '부르는 곳도 고친다' });
+
+const 몫충분 = () => ({ 주간: 0.9 });
+const final답 = 증명 => JSON.stringify({ findings: [], argonReview: [], coverage: { reviewed: '요구 파일 전체와 영향 범위', limitations: '', complete: true, missing: [] }, seen: 증명.항목, reviewInputHash: 증명.검토입력해시, endMarker: 증명.표식 });
+
+test('입력 전문: 긴 추가·삭제·곁자료와 큰 diff는 생략 없이 조각으로 보낸다', async t => {
+  const { 준비하기, 낱말줄이기 } = await tool();
+  const old = '옛'.repeat(5000) + '삭제가운데표식' + '끝'.repeat(5000), fresh = '새'.repeat(5000) + '추가가운데표식' + '끝'.repeat(5000);
+  const changed = 낱말줄이기(`@@ -1 +1 @@\n-${old}\n+${fresh}\n~`, { 파일이름: 'a.js' }).join('\n');
+  assert.ok(changed.includes(old) && changed.includes(fresh));
+  const r = 임시저장소(t, { 'src/a.js': 'export const a=1;\n', 'dep.txt': '곁자료\n' });
+  r.쓰기('src/a.js', `export const a=${JSON.stringify(fresh.repeat(8))};\n`); r.쓰기('dep.txt', old);
+  const { 폴더, 목록 } = await 준비하기({ 이름: 'full', 폴더: r.출력, 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕, 경로: ['src/a.js'], 곁: ['dep.txt'], 크기: 40000 });
+  assert.ok(목록.묶음.length > 3);
+  const all = 목록.묶음.map(b => fs.readFileSync(path.join(폴더, b.파일), 'utf8')).join('\n');
+  assert.ok(all.includes('추가가운데표식') && all.includes('삭제가운데표식'));
+  assert.ok(!/\(\d+자 줄임\)/.test(all)); assert.ok(목록.묶음.every(b => b.바이트 <= 40000));
+});
+
+test('현재 증명: 필수 검수·원문·소스·의존 파일을 검사하고 무관한 HEAD 이동은 허용', async t => {
+  const api = await tool(), r = 임시저장소(t, { 'src/a.js': 'a=1\n', 'dep.txt': 'dep\n' }); r.쓰기('src/a.js', 'a=2\n');
+  const { 폴더, 목록 } = await api.준비하기({ 이름: 'proof', 폴더: r.출력, 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕, 경로: ['src/a.js'], 곁: ['dep.txt'] });
+  await api.아르곤보내기(폴더, 목록, { call: 답하기(), 몫: 몫충분 });
+  assert.equal(api.검수확인(폴더).통과, false, 'GPT 미실행');
+  await api.GPT보내기(폴더, 목록, { call: 답하기(), 몫: 몫충분 }); assert.deepEqual(api.검수확인(폴더).사유, []);
+  fs.writeFileSync(path.join(폴더, '묶음.json'), JSON.stringify({ ...목록, 묶음: [] }));
+  assert.equal(api.검수확인(폴더).통과, false, '비어 있는 묶음으로 완독을 만들지 않는다');
+  fs.writeFileSync(path.join(폴더, '묶음.json'), JSON.stringify(목록));
+  r.쓰기('unrelated.txt', '무관\n'); r.g('add', 'unrelated.txt'); r.g('commit', '-qm', '무관');
+  assert.equal(api.검수확인(폴더).통과, true);
+  r.쓰기('src/a.js', 'a=3\n'); assert.match(api.검수확인(폴더).사유.join(' '), /검수 뒤 파일 변경: src\/a.js/);
+  r.쓰기('src/a.js', 'a=2\r\n'); assert.equal(api.검수확인(폴더).통과, true, 'Git LF와 Windows CRLF는 같은 원천');
+  r.쓰기('dep.txt', 'changed\n'); assert.match(api.검수확인(폴더).사유.join(' '), /dep.txt/); r.쓰기('dep.txt', 'dep\n');
+  const f = path.join(폴더, `GPT-${목록.묶음[0].이름}.json`), result = JSON.parse(fs.readFileSync(f)); result.원문 = '{}'; result.상태 = '읽음'; fs.writeFileSync(f, JSON.stringify(result));
+  assert.equal(api.검수확인(폴더).통과, false, '저장된 상태 읽음을 믿지 않는다');
+  fs.writeFileSync(path.join(폴더, '묶음.json'), JSON.stringify({ ...목록, 판: 1 })); assert.equal(api.검수확인(폴더).통과, false);
+});
+
+test('응답 completeness: 빈 객체·누락·추가 seen은 실패, 정상 0건은 유효', async () => {
+  const { 답대조, 페이블지적넣기 } = await tool(), expected = { 항목: ['D1-hash'], 표식: 'END' };
+  const good = { findings: [], seen: ['D1-hash'], endMarker: 'END', coverage: { reviewed: '전부', limitations: '', complete: true, missing: [] } };
+  assert.equal(답대조(expected, good).상태, '읽음');
+  for (const bad of [{}, { ...good, seen: [] }, { ...good, seen: ['D1-hash', 'extra'] }, { ...good, coverage: { ...good.coverage, complete: false, missing: ['D1-hash'] } }]) assert.notEqual(답대조(expected, bad).상태, '읽음');
+  assert.throws(() => 페이블지적넣기({ 지적: [] }, {}), /응답 검증 실패/);
+});
+
+test('화면 아르곤 A→수정→Fable B는 정상, B 이후 수정·낡은 Fable 답은 실패', async t => {
+  const api = await tool(), r = 임시저장소(t, { 'view.txt': 'a\n' }); r.쓰기('view.txt', 'b\n');
+  const { 폴더, 목록 } = await api.준비하기({ 이름: 'screen', 폴더: r.출력, 저장소: r.저장소, 종류: '화면', 바탕: r.바탕 });
+  await api.아르곤보내기(폴더, 목록, { call: 답하기(), 몫: 몫충분 });
+  const old = JSON.parse(fs.readFileSync(path.join(폴더, '페이블자료.json'))).증명;
+  r.쓰기('view.txt', 'c\n'); await api.페이블하기(폴더, { 시험: false, 캡처: false });
+  assert.throws(() => api.페이블받기(폴더, final답(old)), /최종 검토 입력 해시/);
+  const now = JSON.parse(fs.readFileSync(path.join(폴더, '페이블자료.json'))).증명; api.페이블받기(폴더, final답(now)); assert.deepEqual(api.검수확인(폴더).사유, []);
+  r.쓰기('view.txt', 'd\n'); assert.equal(api.검수확인(폴더).통과, false);
+});
+
+test('Fable 재검수: 위치·인용이 같아도 문제 문장이 바뀌면 새 지적을 처리해야 한다', async t => {
+  const api = await tool(), r = 임시저장소(t, { 'view.txt': 'a\n' }); r.쓰기('view.txt', 'b\n');
+  const { 폴더, 목록 } = await api.준비하기({ 이름: 'fable-repeat', 폴더: r.출력, 저장소: r.저장소, 종류: '화면', 바탕: r.바탕 });
+  await api.아르곤보내기(폴더, 목록, { call: 답하기(), 몫: 몫충분 });
+  const 증명 = JSON.parse(fs.readFileSync(path.join(폴더, '페이블자료.json'))).증명;
+  const reply = problem => JSON.stringify({ ...JSON.parse(final답(증명)), findings: [{ grade: 'P1', location: 'view.txt:1', quote: 'b', problem, fix: '표시 조건 확인' }] });
+  assert.deepEqual(api.페이블받기(폴더, reply('표시가 빠진다')), ['F1']);
+  api.지적표고치기(폴더, 표 => api.처리하기(표, ['F1=재현 안 됨:해당 조건에서 표시 확인']));
+  assert.equal(api.검수확인(폴더).통과, true);
+  assert.deepEqual(api.페이블받기(폴더, reply('특정 순서에서 표시가 빠진다')), ['F2']);
+  const 표 = api.지적표읽기(폴더);
+  assert.equal(표.지적.length, 2); assert.equal(표.지적.find(x => x.번호 === 'F1').처리, '재현 안 됨');
+  assert.equal(표.지적.find(x => x.번호 === 'F2').처리, null);
+  assert.match(api.검수확인(폴더).사유.join(' / '), /F2 P1 미해결/);
+  api.지적표고치기(폴더, current => api.처리하기(current, ['F2=재현 안 됨:지정 순서에서도 표시 확인']));
+  assert.deepEqual(api.검수확인(폴더).사유, []);
+});
+
+test('검수자 재검수: 같은 위치·인용의 새 문제에 옛 재현 안 됨 처리를 잇지 않는다', async t => {
+  const api = await tool(), r = 임시저장소(t, { 'a.js': 'a=1\n' }); r.쓰기('a.js', 'a=2\n');
+  const { 폴더, 목록 } = await api.준비하기({ 이름: 'reviewer-repeat', 폴더: r.출력, 저장소: r.저장소, 종류: '백엔드', 작성자: 'GPT', 바탕: r.바탕 });
+  const b = 목록.묶음[0], prompt = fs.readFileSync(path.join(폴더, b.파일), 'utf8');
+  for (const who of ['아르곤', 'GPT', 'Claude']) api.검수받기(폴더, who, b.이름, (await 답하기()({ prompt })).text);
+  for (const who of ['아르곤', 'GPT', 'Claude']) {
+    const first = (await 답하기([{ ...지적하나('a.js:1'), problem: '처음 문제' }])({ prompt })).text;
+    api.검수받기(폴더, who, b.이름, first);
+    const id = api.지적표읽기(폴더).지적.find(x => x.출처 === who).번호;
+    api.지적표고치기(폴더, 표 => api.처리하기(표, [`${id}=재현 안 됨:처음 조건에서 확인`]));
+    api.검수받기(폴더, who, b.이름, first);
+    assert.equal(api.지적표읽기(폴더).지적.find(x => x.번호 === id).처리, '재현 안 됨', `${who}: 같은 문제의 처리는 유지`);
+    assert.equal(api.검수확인(폴더).통과, true);
+    api.검수받기(폴더, who, b.이름, (await 답하기([{ ...지적하나('a.js:1'), problem: '새 조건의 다른 문제' }])({ prompt })).text);
+    const fresh = api.지적표읽기(폴더).지적.find(x => x.번호 === id);
+    assert.equal(fresh.처리, null); assert.equal(fresh.이유, '');
+    assert.equal(api.검수확인(폴더).통과, false, `${who}: 새 P1은 다시 처리해야 한다`);
+    api.지적표고치기(폴더, 표 => api.처리하기(표, [`${id}=재현 안 됨:새 조건에서도 확인`]));
+    assert.equal(api.검수확인(폴더).통과, true);
+  }
+});
+
+test('몫 0 경계: 사전 0이면 호출하지 않고, 정상 답을 받은 뒤 0이어도 읽음을 유지한다', async t => {
+  const api = await tool(), r = 임시저장소(t, { 'a.js': 'a=1\n' }); r.쓰기('a.js', 'a=2\n');
+  const { 폴더, 목록 } = await api.준비하기({ 이름: 'quota-boundary', 폴더: r.출력, 저장소: r.저장소, 종류: '백엔드', 작성자: 'GPT', 바탕: r.바탕 });
+  const blocked = await api.GPT보내기(폴더, 목록, { 몫: () => ({ 주간: 0 }), call: async () => assert.fail('사전 몫 0에서 모델을 호출할 수 없다') });
+  assert.equal(blocked[0].상태, '막힘'); assert.equal(blocked[0].원문, null); assert.ok(blocked[0].차단증거);
+  let quotaReads = 0;
+  const answered = await api.GPT보내기(폴더, 목록, { 몫: () => ({ 주간: quotaReads++ ? 0 : 0.5 }), call: 답하기() });
+  assert.equal(answered[0].상태, '읽음'); assert.equal(answered[0].차단증거, null); assert.equal(answered[0].몫.뒤.주간, 0);
+  for (const b of 목록.묶음) api.검수받기(폴더, 'Claude', b.이름, (await 답하기()({ prompt: fs.readFileSync(path.join(폴더, b.파일), 'utf8') })).text);
+  assert.deepEqual(api.검수확인(폴더).사유, []);
+});
+
+test('GPT 작성은 외부 Claude 응답 필요, 한도 실패 원문만 대체 사유', async t => {
+  const api = await tool(), r = 임시저장소(t, { 'a.js': 'a=1\n' }); r.쓰기('a.js', 'a=2\n');
+  const { 폴더, 목록 } = await api.준비하기({ 이름: 'gpt-owner', 폴더: r.출력, 저장소: r.저장소, 종류: '백엔드', 작성자: 'GPT', 바탕: r.바탕 });
+  await api.GPT보내기(폴더, 목록, { call: 답하기(), 몫: 몫충분 }); assert.equal(api.검수확인(폴더).통과, false);
+  const missing = api.집계하기(목록, [], api.지적표읽기(폴더), api.결과들읽기(폴더, 목록, 'GPT'));
+  assert.equal(missing.한줄, 'GPT 0건(반영 0) · Claude 미실행'); assert.equal(missing.배포조건충족, false);
+  for (const b of 목록.묶음) api.검수받기(폴더, 'Claude', b.이름, (await 답하기([지적하나('a.js:1', 'P2')])({ prompt: fs.readFileSync(path.join(폴더, b.파일), 'utf8') })).text);
+  assert.deepEqual(api.검수확인(폴더).사유, []);
+  execFileSync(process.execPath, [path.join(root, 'tools/검수묶음.mjs'), '집계', 폴더], { encoding: 'utf8' });
+  const report = fs.readFileSync(path.join(폴더, '보고.md'), 'utf8');
+  assert.match(report, /GPT 0건\(반영 0\) · Claude 1건\(반영 0\)/); assert.match(report, /필수 검수: GPT · Claude/);
+  assert.match(report, /Claude A 읽음/); assert.match(report, /Claude: P0 0·P1 0·P2 1/); assert.doesNotMatch(report, /아르곤 0건/);
+  const other = await api.준비하기({ 이름: 'blocked', 폴더: path.join(r.뿌리, 'blocked'), 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕 });
+  await api.아르곤보내기(other.폴더, other.목록, { call: async () => { throw new Error('RESOURCE_EXHAUSTED quota'); }, 몫: 몫충분 });
+  await api.GPT보내기(other.폴더, other.목록, { call: 답하기(), 몫: 몫충분 }); assert.deepEqual(api.검수확인(other.폴더).사유, []);
+  const f = path.join(other.폴더, '아르곤-A.json'), v = JSON.parse(fs.readFileSync(f)); v.실패원문 = 'socket timeout; quota may be available'; fs.writeFileSync(f, JSON.stringify(v));
+  assert.equal(api.검수확인(other.폴더).통과, false);
+});
+
+test('최종 검수: 소스를 바꾼 뒤 시험안함으로 옛 통과 TAP를 다시 붙이지 않는다', async t => {
+  const api = await tool(), r = 임시저장소(t, { 'value.txt': 'before\n', 'value.test.js': "const test = require('node:test'); const assert = require('node:assert/strict'); test('value', () => assert.equal(require('node:fs').readFileSync('value.txt', 'utf8'), 'good\\n'));\n" });
+  r.쓰기('value.txt', 'good\n');
+  const { 폴더, 목록 } = await api.준비하기({ 이름: 'tap-reuse', 폴더: r.출력, 저장소: r.저장소, 종류: '화면', 바탕: r.바탕, 시험: ['value.test.js'] });
+  assert.equal(목록.시험.통과, 1); assert.equal(목록.시험.실패, 0);
+  await api.페이블하기(폴더, { 시험: false, 캡처: false });
+  const before = fs.readFileSync(path.join(폴더, '페이블자료.json'), 'utf8');
+  r.쓰기('value.txt', 'bad\n');
+  await assert.rejects(api.페이블하기(폴더, { 시험: false, 캡처: false }), /옛 TAP.*재사용할 수 없다/);
+  assert.equal(fs.readFileSync(path.join(폴더, '페이블자료.json'), 'utf8'), before, '실패한 갱신은 새 최종 증명을 쓰지 않는다');
+  await api.페이블하기(폴더, { 시험: true, 캡처: false });
+  const current = JSON.parse(fs.readFileSync(path.join(폴더, '페이블자료.json'), 'utf8'));
+  assert.equal(current.시험.실패, 1); assert.equal(current.시험.종료, 1, '시험을 다시 돌리면 현재 실패를 그대로 보고한다');
+});
+
+test('최종 검수: 현재 판 TAP 명시 수신은 새 소스와 TAP 해시에 묶고 자동 재사용·시험안함 혼용은 막는다', async t => {
+  const api = await tool(), r = 임시저장소(t, { 'view.txt': 'a\n' }); r.쓰기('view.txt', 'b\n');
+  const oldTap = path.join(r.뿌리, 'old.tap'), newTap = path.join(r.뿌리, 'current.tap');
+  fs.writeFileSync(oldTap, 'TAP version 13\nok 1 - initial\n1..1\n# tests 1\n# pass 1\n# fail 0\n');
+  fs.writeFileSync(newTap, 'TAP version 13\nok 1 - current\nok 2 - additional\n1..2\n# tests 2\n# pass 2\n# fail 0\n');
+  const { 폴더, 목록 } = await api.준비하기({ 이름: 'tap-receive', 폴더: r.출력, 저장소: r.저장소, 종류: '화면', 바탕: r.바탕, 시험결과: oldTap });
+  await api.아르곤보내기(폴더, 목록, { call: 답하기(), 몫: 몫충분 });
+  const oldProof = JSON.parse(fs.readFileSync(path.join(폴더, '페이블자료.json'))).증명;
+  api.페이블받기(폴더, final답(oldProof)); assert.equal(api.검수확인(폴더).통과, true);
+  r.쓰기('view.txt', 'c\n');
+  await assert.rejects(api.페이블하기(폴더, { 캡처: false }), /옛 TAP.*재사용할 수 없다/);
+  await assert.rejects(api.페이블하기(폴더, { 시험: false, 시험결과: newTap, 캡처: false }), /시험안함과 --시험결과는 함께 쓸 수 없다/);
+  execFileSync(process.execPath, [path.join(root, 'tools/검수묶음.mjs'), '페이블', 폴더, '--시험결과', newTap, '--캡처안함'], { encoding: 'utf8' });
+  const current = JSON.parse(fs.readFileSync(path.join(폴더, '페이블자료.json')));
+  assert.equal(current.시험.통과, 2); assert.match(current.시험.명령, /현재 판으로 명시 수신한 TAP current.tap/);
+  assert.equal(current.증명.파일.find(x => x.경로 === 'view.txt').sha256, crypto.createHash('sha256').update('c\n').digest('hex'));
+  assert.equal(current.증명.보조파일.find(x => x.경로 === '시험.tap').sha256, crypto.createHash('sha256').update(fs.readFileSync(newTap)).digest('hex'));
+  assert.throws(() => api.페이블받기(폴더, final답(oldProof)), /최종 검토 입력 해시/);
+  api.페이블받기(폴더, final답(current.증명)); assert.equal(api.검수확인(폴더).통과, true);
+  fs.appendFileSync(path.join(폴더, '시험.tap'), '# changed\n');
+  assert.match(api.검수확인(폴더).사유.join(' / '), /캡처·시험 자료 변경/);
+});
+
+test('준비 중 시험이 소스를 바꾸면 다른 판의 diff와 snapshot을 묶지 않는다', async t => {
+  const { 준비하기 } = await tool(), r = 임시저장소(t, { 'a.js': 'a=1\n' }); r.쓰기('a.js', 'a=2\n');
+  r.쓰기('race.test.js', "require('node:fs').writeFileSync('a.js','a=3\\n');\n");
+  await assert.rejects(준비하기({ 이름: 'race', 폴더: r.출력, 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕, 시험: ['race.test.js'] }), /준비 중.*바뀌었다/);
+});
+
+test('배포 후보의 raw bytes·종류·모드와 정책은 검수 입력에 묶인다', async t => {
+  const api = await tool(), r = 임시저장소(t, { 'a.js': 'a=1\n', 'memo.md': 'a\n' }); r.쓰기('a.js', 'a=2\n');
+  const 배포후보 = path.join(r.뿌리, 'candidate'); fs.mkdirSync(배포후보);
+  const body = 'function run(){return 2}\n', manifest = { 판: 1, 종류: 'apps-script', 항목: [{ 경로: 'Code.js', sha256: crypto.createHash('sha256').update(body).digest('hex'), 모드: '100644', 종류: '바꿈' }] };
+  fs.writeFileSync(path.join(배포후보, 'Code.js'), body); fs.writeFileSync(path.join(배포후보, '후보.json'), JSON.stringify(manifest));
+  const { 폴더, 목록 } = await api.준비하기({ 이름: 'candidate', 폴더: r.출력, 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕, 배포후보 });
+  await api.아르곤보내기(폴더, 목록, { call: 답하기(), 몫: 몫충분 }); await api.GPT보내기(폴더, 목록, { call: 답하기(), 몫: 몫충분 });
+  assert.deepEqual(api.검수확인(폴더).사유, []);
+  fs.appendFileSync(path.join(배포후보, 'Code.js'), '// changed'); assert.equal(api.검수확인(폴더).통과, false);
+  fs.writeFileSync(path.join(배포후보, 'Code.js'), body); manifest.항목[0].모드 = '100755'; fs.writeFileSync(path.join(배포후보, '후보.json'), JSON.stringify(manifest));
+  assert.match(api.검수확인(폴더).사유.join(' '), /배포 후보 변경/);
+  const { 정책만들기 } = await import(pathToFileURL(path.join(root, 'tools/lib/검수증명.mjs')));
+  assert.throws(() => 정책만들기({ 종류: '백엔드', 예외: '내부', 대상: 'a.js', 사유: '내부' }, [{ 경로: 'a.js' }]), /내부 화면/);
+  assert.throws(() => 정책만들기({ 종류: '화면', 작성자: 'GPT' }, []), /Claude 담당/);
+  assert.throws(() => 정책만들기({ 종류: '백엔드', 저장소: r.저장소, 배포후보, 예외: '콘텐츠', 대상: 'memo.md,Code.js', 사유: '글' }, [{ 경로: 'memo.md' }]), /코드·설정/);
+  assert.throws(() => 정책만들기({ 종류: '백엔드', 예외: '콘텐츠', 대상: 'other.md', 사유: '글' }, [{ 경로: 'memo.md' }]), /대상/);
+});
 
 test('GPT 보내기: 아르곤과 같은 묶음·대조로 GPT-<묶음>.json과 GA1… 지적을 남기고, 둘을 같이 돌려도 서로의 지적을 지우지 않는다', async t => {
   const { 준비하기, 아르곤보내기, GPT보내기, 지적표읽기, 처리하기, 집계하기, 묶음상태들 } = await tool();
@@ -383,7 +571,7 @@ process.stdin.on('end', () => {
   fs.writeFileSync(${JSON.stringify(기록)}, JSON.stringify({ a, home: process.env.CODEX_HOME || null, 입력, 꼴: JSON.parse(fs.readFileSync(a[a.indexOf('--output-schema') + 1], 'utf8')) }));
   if (process.env.FAKE_CODEX === 'limit') { process.stderr.write("ERROR: You've hit your usage limit. Try again in 2 hours.\\n"); process.exit(1); }
   if (process.env.FAKE_CODEX === 'login') { process.stderr.write('ERROR: Not logged in\\n'); process.exit(1); }
-  fs.writeFileSync(a[a.indexOf('-o') + 1], JSON.stringify({ findings: [], seen: ['D01-aaaa'], coverage: { reviewed: '전부', limitations: '' }, endMarker: 'END_X' }));
+  fs.writeFileSync(a[a.indexOf('-o') + 1], JSON.stringify({ findings: [], seen: ['D01-aaaa'], coverage: { reviewed: '전부', limitations: '', complete: true, missing: [] }, endMarker: 'END_X' }));
   process.stdout.write(JSON.stringify({ type: 'turn.completed', usage: { input_tokens: 12, output_tokens: 3 } }) + '\\n');
 });`);
   const 옛 = { bin: process.env.CODEX_BIN, home: process.env.CODEX_HOME, mode: process.env.FAKE_CODEX, conf: process.env.SYNK_CODEX_CONFIG };

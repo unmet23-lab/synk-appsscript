@@ -7,7 +7,7 @@
 ## 파일별 확인
 
 - Apps Script 배포 대상은 `Code.js`·`엔진_synkbrief.js`다. 전역 이름공간을 공유하므로 함수·전역 충돌을 확인한다. 익명 웹앱의 `doGet`은 HtmlService를 반환하지 않는다. `엔진_콘텐츠AI.js`는 Strata의 저장소 원천이다.
-- Apps Script를 고친 작업은 검증을 통과하면 [deploy 스킬](.claude/skills/deploy/SKILL.md) 절차로 라이브까지 묻지 않고 반영한다(2026-10-21, 아래 배포·공개 줄). clasp push는 그 스킬의 가드 꼴로만 한다 — 배포 표면 검사를 통과하고 clasp가 올리는 파일이 origin/master와 같을 때만 나간다. `clasp pull`로 작업본을 덮어쓰지 않는다. 관련 시험은 `node --test tests/<파일>`로 실행한다.
+- Apps Script를 고친 작업은 검증을 통과하면 [deploy 스킬](.claude/skills/deploy/SKILL.md) 절차로 라이브까지 묻지 않고 반영한다(2026-10-21, 아래 배포·공개 줄). 실제 반영은 `deploy-security-check.js --push --검수 <ID>` 경로로만 한다 — 필수 검수·배포 표면·origin/master·검수한 후보의 일치를 확인한 스냅샷을 올리고, 그 내용과 대조한 고정 버전 번호로 기존 deployment를 갱신한다(2026-10-23). `clasp pull`로 작업본을 덮어쓰지 않는다. 관련 시험은 `node --test tests/<파일>`로 실행한다.
 - Atlas 작업은 [8개 담당 엔진의 원문·코드](docs/엔진8종_상향설계_v3.md#engine-owner-sources)에서 시작한다. [Atlas 정의](docs/아틀라스_설계.md#atlas-engine-ownership)를 따르며 별도 LLM 하네스·선택기를 만들지 않는다.
 - AI 영상·이미지(얼굴·장면·톤·전환)는 [만족 사례 장부](docs/마케팅/제작양식/만족사례_장부.md)에서 가장 가까운 사례의 방법으로 시작하고, 유호님이 분명하게 만족을 말한 순간만 그 자리에서 장부에 올린다. 새 영상과 기존 영상의 도구 범위는 [제작 도구 선택](docs/마케팅/콘텐츠_제작방식_v2_20261002.md#video-tool-selection)을 따른다. 광고·홍보영상은 [AI 광고영상 제작 규칙](docs/마케팅/제작양식/AI광고영상_제작규칙.md)을 따른다.
 - 디자인·자산·생성기는 [DESIGN](DESIGN.md), SNS 제작은 [제작 절차](docs/마케팅/기획장부/제작절차.md) 한 장에서 시작하고(배경은 [제작 방식](docs/마케팅/콘텐츠_제작방식_v2_20261002.md)), 표지·자막은 [SNS 키트](docs/디자인/SNS키트/README.md)에서 찾는다. 자산 경로는 `tools/lib/마스코트자산.js`, 자립형 HTML 폰트는 `tools/lib/브랜드폰트.js`를 재사용한다. 발표물은 `_src_*.html`이 원고이고 `tools/발표물빌드.js`가 출력을 만든다.

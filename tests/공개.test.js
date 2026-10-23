@@ -13,7 +13,21 @@ const crypto = require('node:crypto');
 const { execFileSync } = require('node:child_process');
 
 const REPO = path.resolve(__dirname, '..');
-const 도구 = require(path.join(REPO, 'tools', '공개.js'));
+const 원도구 = require(path.join(REPO, 'tools', '공개.js'));
+const { 검수증거 } = require('./lib/검수증명.js');
+// 기존 배포 시나리오도 실제 증거를 만든다. 생산 코드에는 시험용 검수 우회가 없다.
+async function 증거있는실행(명령, 옵션) {
+  const { _검수시험, ...실제 } = 옵션;
+  if (실제.실행 && 실제.계획 && 실제.메시지 && !실제.위에 && !실제.검수 && _검수시험) {
+    const 폴더 = path.join(_검수시험.뿌리, `검수-${crypto.randomBytes(4).toString('hex')}`);
+    const 후보 = path.join(폴더, 'candidate');
+    const 미리 = await 원도구[명령]({ ...실제, 실행: false, 후보폴더: 후보 });
+    실제.검수 = 미리.결과 === '미리 보기'
+      ? await 검수증거({ ..._검수시험, 배포후보: 후보, 폴더: path.join(폴더, 'review') }) : '미리보기에서-차단';
+  }
+  return 원도구[명령](실제);
+}
+const 도구 = { ...원도구, 올리기: o => 증거있는실행('올리기', o), 기준: o => 증거있는실행('기준', o) };
 const 속 = 도구._시험;
 const 엇 = require(path.join(REPO, 'tools', 'lib', 'import엇갈림.js'));
 
@@ -85,7 +99,8 @@ function 새공개본(t, 파일 = {}) {
     /** 로컬 폴더(빌드 출력 흉내) */
     로컬: (이름, 파일들) => { const d = path.join(뿌리, 이름); fs.mkdirSync(d, { recursive: true }); for (const [p, v] of Object.entries(파일들)) 쓰기(d, p, v); return d; },
     후보폴더: () => path.join(뿌리, `후보-${crypto.randomBytes(3).toString('hex')}`),
-    옵션: (덧 = {}) => ({ 사본, 원격주소, 주소: 'http://127.0.0.1:9', 점검안함: true, ...덧 }),
+    옵션: (덧 = {}) => ({ 사본, 원격주소, 주소: 'http://127.0.0.1:9', 점검안함: true, 검수저장소: 작업,
+      _검수시험: { 저장소: 작업, 바탕, 뿌리 }, ...덧 }),
   };
 }
 
@@ -701,7 +716,7 @@ test('import 이름 엇갈림: 세 짝을 세고 ③은 걸림(--허용이면 �
   const 글줄 = 속.올리기글(r, argv);
   assert.match(글줄, /import 이름\(캐시 10분\) — ① 2짝 · ② 1짝 · ③ 0짝/);
   assert.match(글줄, /--만 world\/old-panel\.mjs --만 world\/report\.mjs --만 world\/world-account\.bundle\.mjs\n/);
-  assert.match(글줄, /한 번에 올리려면\(위 import ①·② 엇갈림을 알고도/);
+  assert.match(글줄, /한 번에 올리려면\(위 import ①·② 영향과 최종 후보 검수를 확인한 뒤/);
   // 1단계 명령은 미리 보기다 — 받은 명령의 --실행·--계획·메시지는 빼고, 미리 보기가 아닌 결과에는 나눔을 안 보인다
   const 실행글 = 속.올리기글(r, [...argv, '-m', '한 번에', '--실행', '--계획', '0123456789ab', '--json']);
   const 단계줄 = 실행글.split('\n').find((l) => l.includes('--만 world/old-panel.mjs'));
@@ -754,11 +769,83 @@ test('import 이름 엇갈림 0: 10-20 화면 언어 1판처럼 새 모듈을 �
   assert.deepEqual([r.엇갈림.셈, r.엇갈림.짝, r.엇갈림.나눔, r.엇갈림.모듈.바뀐], [{ '①': 0, '②': 0, '③': 0 }, [], null, 7]);
   const 글줄 = 속.올리기글(r, ['올리기']);
   assert.match(글줄, /import 이름\(캐시 10분\) — ① 0짝 · ② 0짝 · ③ 0짝 · 바뀐 모듈 7개/);
-  assert.match(글줄, /\n올리려면\(유호님이 이 계획을 승인한 뒤에만\):/);
+  assert.match(글줄, /\n검사와 최종 후보 검수를 마친 뒤 올리기:/);
   assert.doesNotMatch(글줄, /나눠 올린다/);
 });
 
 // ── 실행 ────────────────────────────────────────────────────────────────────
+
+test('검수 관문: 미검수 미리보기는 되고 실행은 ID 없이 원격 변경 전에 멈춘다', async t => {
+  const 공 = 새공개본(t, { 'a.txt': '옛\n' });
+  const 입력 = 공.옵션({ 원본: 공.로컬('build', { 'a.txt': '새\n' }), 항목: ['a.txt'] });
+  const 미리 = await 원도구.올리기(입력);
+  assert.equal(미리.결과, '미리 보기');
+  await assert.rejects(원도구.올리기({ ...입력, 실행: true, 계획: 미리.계획, 메시지: 'x' }), /--검수/);
+  const 없음 = await 원도구.올리기({ ...입력, 실행: true, 계획: 미리.계획, 메시지: 'x', 검수: path.join(공.뿌리, '없는검수') });
+  assert.equal(없음.결과, '멈춤');
+  assert.equal(공.머리(), 공.바탕);
+});
+
+test('검수 관문: 고객 index.html을 내부라고 적어 검수를 생략할 수 없고 정상 화면 증거는 반영한다', async t => {
+  const 공 = 새공개본(t, { 'index.html': '<main>시작</main>\n' });
+  const 새 = '<main><h1>학습 시작</h1><a href="/join/">가입하고 계속</a></main>\n';
+  const 후보 = 공.후보폴더();
+  const 입력 = 공.옵션({ 원본: 공.로컬('build', { 'index.html': 새 }), 항목: ['index.html'], 후보폴더: 후보 });
+  const 미리 = await 원도구.올리기(입력);
+  const { 준비하기, 검수확인 } = await import(require('node:url').pathToFileURL(path.join(REPO, 'tools/검수묶음.mjs')));
+  const 내부 = path.join(공.뿌리, 'internal-review');
+  await 준비하기({ 이름: 'internal-review', 저장소: 공.작업, 바탕: 공.바탕, 배포후보: 후보, 폴더: 내부,
+    종류: '화면', 예외: '내부', 대상: 'index.html', 사유: '운영 확인' });
+  assert.equal(검수확인(내부, { 저장소: 공.작업 }).통과, true, '내부 도구용 공통 후검수 정책 자체는 유지한다');
+  const 실행 = { ...입력, 실행: true, 계획: 미리.계획, 메시지: 'Publish learning entry' };
+  const 막힘 = await 원도구.올리기({ ...실행, 검수: 내부 });
+  assert.equal(막힘.결과, '멈춤');
+  assert.match(막힘.이유, /synk\.im 공개 후보에는 내부 예외/);
+  assert.equal(공.머리(), 공.바탕, '검수자 응답 없는 내부 표기로는 공개 저장소를 바꾸지 않는다');
+  const 정상 = await 검수증거({ 저장소: 공.작업, 바탕: 공.바탕, 배포후보: 후보, 폴더: path.join(공.뿌리, 'screen-review') });
+  const 반영 = await 원도구.올리기({ ...실행, 검수: 정상, 받기: async () => ({ 상태: 200, 버퍼: Buffer.from(새), 머리: '' }) });
+  assert.equal(반영.결과, '올림', '실제 Argon→Fable 응답 schema와 입력 증명을 갖춘 정상 경로는 통과한다');
+  assert.equal(공.파일('index.html').toString(), 새);
+});
+
+test('검수 관문: 검수한 소스 변경과 새 계획의 후보 바이트 변경을 각각 막는다', async t => {
+  const 공 = 새공개본(t, { 'source.txt': '원천 옛\n', 'a.txt': '옛\n' });
+  쓰기(공.작업, 'source.txt', '검수할 원천\n');
+  const 빌드 = 공.로컬('build', { 'a.txt': '새\n' });
+  const 후보 = 공.후보폴더();
+  const 입력 = 공.옵션({ 원본: 빌드, 항목: ['a.txt'], 후보폴더: 후보 });
+  const 미리 = await 원도구.올리기(입력);
+  const 검수 = await 검수증거({ 저장소: 공.작업, 바탕: 공.바탕, 배포후보: 후보, 폴더: path.join(공.뿌리, 'review') });
+  쓰기(공.작업, 'source.txt', '검수 뒤 소스 변경\n');
+  const 소스 = await 원도구.올리기({ ...입력, 실행: true, 계획: 미리.계획, 메시지: 'x', 검수 });
+  assert.equal(소스.결과, '멈춤');
+  쓰기(공.작업, 'source.txt', '검수할 원천\n');
+  쓰기(빌드, 'a.txt', '다른 최종 바이트\n');
+  const 새계획 = await 원도구.올리기({ ...입력, 후보폴더: undefined });
+  const 다름 = await 원도구.올리기({ ...입력, 실행: true, 계획: 새계획.계획, 메시지: 'x', 검수 });
+  assert.equal(다름.결과, '멈춤');
+  assert.match(다름.이유, /최종 바이트/);
+  assert.equal(공.머리(), 공.바탕);
+});
+
+test('검수 관문: 자동 토큰 파일·삭제·모드를 포함한 최종 후보 전체가 검수에 있어야 한다', async t => {
+  const 공 = 새공개본(t, { 'app.css': 'a{}\n', 'index.html': '<link href="app.css?v=1111">\n', 'gone.txt': '없앨 것\n' });
+  const 후보 = 공.후보폴더();
+  const 입력 = 공.옵션({ 원본: 공.로컬('build', { 'app.css': 'a{color:red}\n' }), 항목: ['app.css'], 지움: ['gone.txt'], 후보폴더: 후보 });
+  const 미리 = await 원도구.올리기(입력);
+  const manifest = JSON.parse(fs.readFileSync(path.join(후보, '후보.json')));
+  assert.equal(manifest.종류, 'synk.im');
+  assert.deepEqual(manifest.항목.find(x => x.경로 === 'gone.txt'), { 경로: 'gone.txt', 종류: '지움', sha256: null, 모드: null });
+  assert.equal(manifest.항목.find(x => x.경로 === 'index.html').모드, '100644');
+  // 불완전한 후보를 검수한 경우: 검수 자체가 정상 완료돼도 실제 공개 범위와 다르다.
+  manifest.항목 = manifest.항목.filter(x => x.경로 !== 'index.html');
+  fs.writeFileSync(path.join(후보, '후보.json'), JSON.stringify(manifest));
+  const 검수 = await 검수증거({ 저장소: 공.작업, 바탕: 공.바탕, 배포후보: 후보, 폴더: path.join(공.뿌리, 'review') });
+  const r = await 원도구.올리기({ ...입력, 실행: true, 계획: 미리.계획, 메시지: 'x', 검수 });
+  assert.equal(r.결과, '멈춤');
+  assert.match(r.이유, /최종 바이트/);
+  assert.equal(공.머리(), 공.바탕);
+});
 
 test('--실행: 계획이 같을 때만 별도 인덱스로 커밋·push하고, 공개 주소 바이트와 배포 점검까지 본다', async (t) => {
   const 옛 = 'a{}\n';
@@ -1246,7 +1333,7 @@ test('기준: 쪽을 안 고르면 달라진 쪽만 보이고, 고른 쪽만 옛
   assert.deepEqual(미리.기준갱신.axe못돎, ['/|mobile'], '그 회차 axe에 열쇠가 없는 쪽은 옛 접근성 기준을 둔다(Fable F3)');
   const 미리글 = 속.기준글(미리, ['기준', '/']);
   assert.match(미리글, /axe가 안 돈 쪽 1개는 접근성 기준을 옛것으로 둔다: \/\|mobile/);
-  assert.match(미리글, /node tools\/공개\.js 기준 \/ --점검 77 -m "<메시지>" --실행 --계획 [0-9a-f]+/, '올리는 명령이 같은 회차를 잡는다');
+  assert.match(미리글, /node tools\/공개\.js 기준 \/ --점검 77 -m "<메시지>" --검수 "<이름·폴더>" --실행 --계획 [0-9a-f]+/, '올리는 명령이 같은 회차와 검수 증거를 잡는다');
   assert.match(미리글, /알림 \[공개 경로\]\s+— 배포 점검의 기준 이미지 4개를 바꾼다/);
   assert.ok(!/baseline\/desktop\/home\.jpg — 배포 점검·워크플로/.test(미리글), '기준 그림마다 알리지 않는다');
   const 올림 = await 도구.기준(공.옵션({ gh: gh(), 항목: ['/'], 점검: '77', 실행: true, 계획: 미리.계획, 메시지: 'Site check baseline: home' }));
