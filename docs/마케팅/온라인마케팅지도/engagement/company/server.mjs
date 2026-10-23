@@ -214,6 +214,9 @@ export function createCompanyApp(options={}) {
   const loginIp=createAttemptLimiter({limit:30,windowMs:15*60000,now:loginNow});
   const loginAccount=createAttemptLimiter({limit:50,windowMs:15*60000,now:loginNow});
   const loginGlobal=createAttemptLimiter({limit:120,windowMs:60000,maxEntries:1,now:loginNow});
+  // Password-reset links (2026-10-23): an unknown or used link counts against the address like a failed login.
+  const resetIp=createAttemptLimiter({limit:30,windowMs:15*60000,now:loginNow});
+  const RESET_LINK_MINUTES=60,RESET_LINK_EXPIRED='이 재설정 링크는 만료됐거나 이미 썼어요. 관리자에게 새 링크를 부탁해 주세요.';
   const pulseAttempts=createAttemptLimiter({limit:30,windowMs:15*60000,now:loginNow});
   const clock=()=>options.clock?.()||now();
   const content=createContentService({store,clock,fetchImpl:options.contentFetch,isConnected:hasConnection});
@@ -936,7 +939,7 @@ export function createCompanyApp(options={}) {
     if(method==='GET'&&path==='/api/static-set')return send(res,200,staticSet.status());
     let auth=identityControl?rawSession(req):session(req),user=auth?.user;
     if(method==='GET'&&path==='/api/synk-id/status')return send(res,200,synkIdentity.status(auth));
-    if(method==='GET'&&path==='/api/me')return send(res,200,{user:publicUser(user),csrfToken:auth?.body.csrfToken,synkUserId:auth?.body.synkIdentity||null,needsSetup:store.all('users').length===0,platformUrl});
+    if(method==='GET'&&path==='/api/me')return send(res,200,{user:publicUser(user),csrfToken:auth?.body.csrfToken,synkUserId:auth?.body.synkIdentity||null,passwordSet:Boolean(user?.passwordHash),needsSetup:store.all('users').length===0,platformUrl});
     if(path.startsWith('/api/social/')){await socialRoutes(req,res,{url,demoRequest});return;}
     if(path==='/api/client-search'){
       if(!auth)throw httpError('먼저 로그인해 주세요.',401);
@@ -1160,7 +1163,7 @@ export function createCompanyApp(options={}) {
     }
     if(method==='POST'){
       if(req.headers.origin!==origin)throw httpError('회사 프로그램 화면에서 요청해 주세요.',403);
-      const unauth=['/api/setup','/api/login','/api/join','/api/launch'];
+      const unauth=['/api/setup','/api/login','/api/join','/api/launch','/api/password-reset/inspect','/api/password-reset'];
       if(!unauth.includes(path)&&(!auth||req.headers['x-csrf-token']!==auth.body.csrfToken))throw httpError('로그인 상태를 다시 확인해 주세요.',403);
       const studioUpload=path.match(/^\/api\/studio-productions\/([^/]+)\/media$/);
       const clientUpload=path.match(/^\/api\/client-projects\/([^/]+)\/media$/);
@@ -1334,6 +1337,26 @@ export function createCompanyApp(options={}) {
         const invitation=store.readToken(input.token,'invite');if(!invitation)throw httpError('초대 링크가 만료됐거나 이미 사용됐습니다.',403);
         const checkedHash=await passwordHashAsync(input.password);const result=store.transaction(()=>{const inv=store.readToken(input.token,'invite');if(!inv)throw httpError('이미 사용된 초대입니다.',403);teamFor(inv.body.teamId);const u=store.createUser({email:inv.body.email,name:input.name||inv.body.name,role:inv.body.role||'member',teamId:inv.body.teamId||null});store.put('users',u.id,{...u,passwordHash:checkedHash});store.db.prepare('DELETE FROM tokens WHERE hash=?').run(hash(input.token));return store.get('users',u.id);});return send(res,201,setSession(res,result));
       }
+      if(path==='/api/password-reset/inspect'||path==='/api/password-reset'){
+        // Opening a link only shows whose account it is; the new password (POST) is the one use, so link previews cannot spend it.
+        const release=reserveAttempts([[resetIp,clientAddress(req)],[loginGlobal,'all']]);
+        try{
+          // The link is read before any hashing: an unknown link costs no scrypt work.
+          const link=store.readToken(input.token,'password-reset'),target=link&&store.get('users',link.userId);
+          if(!target?.active)throw httpError(RESET_LINK_EXPIRED,403);
+          if(path==='/api/password-reset/inspect'){release();return send(res,200,{name:target.name,loginId:target.email,expiresAt:link.expiresAt});}
+          const checkedHash=await passwordHashAsync(input.password);
+          const changed=store.transaction(()=>{
+            const current=store.readToken(input.token,'password-reset'),latest=current&&store.get('users',current.userId);
+            if(!latest?.active||latest.id!==target.id)throw httpError(RESET_LINK_EXPIRED,403);
+            const updated={...latest,passwordHash:checkedHash};store.put('users',latest.id,updated);
+            // Every session and every unused link of this person ends here. No session is issued: the new password signs in as usual.
+            store.revokeUser(latest.id);audit(latest,'password-reset',latest.id,{issuedBy:current.body.issuedBy||null,via:current.body.via||'admin-link'});
+            return updated;
+          });
+          release();return send(res,200,{ok:true,loginId:changed.email});
+        }catch(error){if(error.status!==403)release();throw error;}
+      }
       if(!user)throw httpError('먼저 로그인해 주세요.',401);
       if(path==='/api/computer-interpretation/delete'){
         if(url.search)throw httpError('본인의 서버 응답 인용만 삭제할 수 있어요.');
@@ -1363,7 +1386,10 @@ export function createCompanyApp(options={}) {
         if(user.passwordHash&&!await passwordMatches(input.oldPassword,user.passwordHash))throw httpError('현재 비밀번호가 맞지 않아요.',403);
         const checkedHash=await passwordHashAsync(input.password),latest=session(req);
         if(!latest||latest.hash!==auth.hash||latest.user.id!==user.id||latest.user.passwordHash!==user.passwordHash||req.headers['x-csrf-token']!==latest.body.csrfToken)throw httpError('로그인 상태를 다시 확인해 주세요.',401);
-        const changed={...latest.user,passwordHash:checkedHash};store.put('users',user.id,changed);store.revokeUser(user.id);return send(res,200,setSession(res,changed));
+        const changed={...latest.user,passwordHash:checkedHash};
+        // This signed-in session stays as it is (a SYNK ID session stays one, so the desktop renewal keeps working); other sessions and unused reset links end.
+        store.transaction(()=>{store.put('users',user.id,changed);store.db.prepare('DELETE FROM tokens WHERE userId=? AND hash<>?').run(user.id,auth.hash);audit(user,'password-changed',user.id,{firstPassword:!user.passwordHash});});
+        return send(res,200,{user:publicUser(changed),csrfToken:latest.body.csrfToken});
       }
       if(path==='/api/studio-productions'){const result=studio.saveProduction(user,input);audit(user,'studio-production-created',result.production.id);return send(res,201,result);}
       if(path==='/api/research-production'){
@@ -1489,6 +1515,17 @@ export function createCompanyApp(options={}) {
       }
       if(path==='/api/collect'){const results=[];const q=new URLSearchParams();if(input.scope)q.set('scope',input.scope);if(input.teamId)q.set('teamId',input.teamId);for(const c of scopedChannels(user,q).filter(c=>canWriteChannel(user,c)&&c.active&&hasConnection(c)))results.push(enqueueCollection(user,c));return send(res,202,{runs:results});}
       if(path==='/api/members/invite'){admin(user);const email=text(input.email,254).toLowerCase(),name=text(input.name,80),role=input.role||'member',teamId=input.teamId||null;if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||!name)throw httpError('크루의 이름과 이메일을 적어 주세요.');if(!['manager','member','viewer'].includes(role))throw httpError('초대할 역할을 골라 주세요.');teamFor(teamId);if(role==='manager'&&!teamId)throw httpError('팀장은 팀을 꼭 골라야 해요.');if(store.all('users').some(u=>u.email===email))throw httpError('이미 등록된 크루예요.');const value=store.mint('invite',null,{email,name,role,teamId,invitedBy:user.id},3*24*60);audit(user,'invite',email,{role,teamId});return send(res,201,{inviteUrl:origin+'/#invite='+value,expiresInDays:3,delivery:'copy-link'});}
+      const passwordReset=path.match(/^\/api\/members\/([^/]+)\/password-reset$/);
+      if(passwordReset){
+        admin(user);const target=store.get('users',passwordReset[1]);
+        if(!target)throw httpError('크루를 찾지 못했어요. 새로고침해 주세요.',404);
+        if(target.role==='admin')throw httpError('관리자 계정의 비밀번호는 여기서 다시 정할 수 없어요.',403);
+        if(target.active===false)throw httpError('이용을 멈춘 크루예요. 먼저 이용을 다시 허용해 주세요.',409);
+        // A new link replaces the previous unused one. The crew's sessions stay until the link is used.
+        // Everything about the new link is read inside the same write: another issuer (the operator command) may replace it right after.
+        const {value,expiresAt}=store.transaction(()=>{store.revokeTokens(target.id,'password-reset');const value=store.mint('password-reset',target.id,{issuedBy:user.id,via:'admin-link'},RESET_LINK_MINUTES),expiresAt=store.readToken(value,'password-reset').expiresAt;audit(user,'password-reset-link',target.id,{expiresAt});return {value,expiresAt};});
+        return send(res,201,{resetUrl:origin+'/#reset='+value,expiresAt,name:target.name,loginId:target.email,delivery:'copy-link'});
+      }
       const member=path.match(/^\/api\/members\/([^/]+)\/status$/);
       if(member){admin(user);const target=store.get('users',member[1]);if(!target||target.id===user.id||target.role==='admin')throw httpError('이 크루의 이용 상태는 바꿀 수 없어요.');store.put('users',target.id,{...target,active:input.active===true});store.revokeUser(target.id);if(input.active!==true)for(const c of store.all('channels'))if(connection(c)?.connectedBy===target.id)disconnectChannel(c);audit(user,'member-status',target.id);return send(res,200,{ok:true});}
       if(path==='/api/settings'){admin(user);const hour=Number(input.hourKst);if(!Number.isInteger(hour)||hour<0||hour>23)throw httpError('수집 시각은 0~23시 가운데서 골라 주세요.');store.put('settings','company',{...store.get('settings','company'),hourKst:hour,enabled:input.enabled===true,companyName:text(input.companyName,80)||store.get('settings','company').companyName});return send(res,200,{ok:true});}

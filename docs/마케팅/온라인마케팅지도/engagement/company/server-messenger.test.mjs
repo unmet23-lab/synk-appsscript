@@ -686,3 +686,20 @@ test('legacy standalone credentials cannot open company team history after the i
     assert.equal((await (await fetch(url + '/api/storage', { headers: { Cookie: cookie } })).json()).messageCount, fx.previous.counts.messages);
   } finally { await standalone.close(); }
 });
+
+test('a reset link gives a linked legacy account its own password, after which only the email signs in', async t => {
+  const fx = await fixture(t, { legacy: true });
+  const current = fx.app.store.get('users', fx.users.admin.id);
+  fx.app.store.put('users', current.id, { ...current, passwordHash: null });
+  const legacy = await fx.client(null);
+  assert.equal((await legacy.json('/api/login', { method: 'POST', body: { username: 'legacyowner', password } })).user.id, fx.users.admin.id);
+  // Minted the way the operator command does: links made in the workspace never target an administrator.
+  const token = fx.app.store.mint('password-reset', fx.users.admin.id, { issuedBy: null, via: 'operator' }, 30);
+  const visitor = await fx.client(null);
+  assert.equal((await visitor.json('/api/password-reset/inspect', { method: 'POST', body: { token } })).loginId, fx.users.admin.email);
+  const replacement = 'reset-company-password-only';
+  assert.deepEqual(await visitor.json('/api/password-reset', { method: 'POST', body: { token, password: replacement } }), { ok: true, loginId: fx.users.admin.email });
+  assert.equal((await legacy.json('/api/me')).user, null);
+  await visitor.denied('/api/login', { method: 'POST', body: { username: 'legacyowner', password } }, 401);
+  assert.equal((await visitor.json('/api/login', { method: 'POST', body: { email: fx.users.admin.email, password: replacement } })).user.id, fx.users.admin.id);
+});

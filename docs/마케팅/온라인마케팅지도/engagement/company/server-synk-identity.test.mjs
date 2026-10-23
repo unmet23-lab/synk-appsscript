@@ -412,3 +412,25 @@ test('logout body completed during shutdown still deletes credentials and cannot
     const device=f.app.store.db.prepare('SELECT enabled,endpoint FROM web_push_subscriptions WHERE id=?').get(registered.data.subscription.id);assert.equal(device.enabled,0);assert.equal(device.endpoint,null);
   });
 });
+// 2026-10-23 로그인 되찾기: 비밀번호를 바꿔도 지금 SYNK 세션은 그대로(데스크톱 갱신이 이어진다), 재설정 링크는 SYNK 연결을 남긴다.
+test('saving a password in a SYNK ID session keeps that same SYNK session, so desktop renewal goes on',async t=>{
+  const f=await fixture(t),c=f.client();await c.link();const cookie=c.jar.get('synk_company_session'),csrf=c.csrf,other=f.client();await other.login();
+  const saved=await c.request('/api/account/password',{body:{oldPassword:password,password:'synk-session-new-password'}});
+  assert.equal(saved.status,200);assert.equal(c.jar.get('synk_company_session'),cookie);assert.equal(c.csrf,csrf);
+  const status=(await c.request('/api/synk-id/status')).data;assert.equal(status.session,'synk');assert.equal(status.linked,true);
+  assert.equal((await c.request('/api/synk-id/renew',{token:access.one,body:{}})).status,200);assert.equal((await c.request('/messenger/api/bootstrap')).status,200);
+  assert.equal((await other.request('/api/me')).data.user,null);assert.equal((await f.client().login()).status,401);
+});
+test('a reset link keeps the SYNK ID link, ends the SYNK session too, and Google·SYNK ID still signs in',async t=>{
+  const f=await fixture(t),c=f.client();await c.link();const a=f.client();await a.login(f.admin);
+  const made=await a.request(`/api/members/${f.staff.id}/password-reset`,{body:{}});assert.equal(made.status,201);
+  const token=new URL(made.data.resetUrl).hash.slice('#reset='.length);
+  assert.equal((await f.client().request('/api/password-reset',{body:{token,password:'after-reset-password'}})).status,200);
+  assert.equal((await c.request('/api/me')).data.user,null);
+  const next=f.client(),begin=await next.challenge();assert.equal((await next.exchange(begin.data.challenge)).data.user.id,f.staff.id);assert.equal((await next.request('/api/synk-id/status')).data.linked,true);
+});
+test('after a restart a restored SYNK session without a password still sets the first password and stays a SYNK session',async t=>{
+  const f=await fixture(t),c=f.client();await c.link();f.app.store.put('users',f.staff.id,{...f.app.store.get('users',f.staff.id),passwordHash:null});
+  await f.restart();assert.equal((await c.request('/api/account/password',{body:{password:'first-after-restart'}})).status,200);assert.equal((await c.request('/api/synk-id/status')).data.session,'synk');
+  assert.equal((await f.client().request('/api/login',{body:{email:f.staff.email,password:'first-after-restart'}})).status,200);
+});

@@ -467,6 +467,27 @@
 :root .auth-form-card .auth-submit:disabled{opacity:.55;cursor:progress;transform:none}
 :root .auth-form-card .auth-form-footer{margin-top:22px;padding-top:18px;border-top:1px solid rgba(255,255,255,.08);color:var(--sg-frame-ink-3);font-size:12.5px;line-height:1.7;word-break:keep-all}
 :root .auth-form-card .auth-form-footer .text-button{margin-top:8px;padding:0;color:var(--sg-lapis-light);font-size:13px;font-weight:700;text-decoration:underline;text-decoration-color:rgba(197,214,245,.4);text-underline-offset:3px}
+/* 로그인 되찾기(10-23): 로그인 단추 아래 글 단추 · 재설정 뒤 초록 안내 · 도움 판(옅은 유리 칸 셋) · 재설정 화면의 아이디 표 */
+:root .auth-form-card .auth-help-link{justify-self:center;margin-top:2px;padding:6px 4px;color:var(--sg-frame-ink-2);font-size:13px;font-weight:650;text-decoration:underline;text-decoration-color:rgba(250,250,249,.28);text-underline-offset:4px}
+:root .auth-form-card .auth-help-link:hover{color:var(--sg-frame-ink)}
+:root .auth-form-card .auth-help-link:focus-visible,:root .auth-form-card .auth-form-footer .text-button:focus-visible{outline:2px solid var(--sg-lapis-light);outline-offset:3px;border-radius:6px}
+:root .auth-form-card h2:focus{outline:0}
+:root .auth-form-card .auth-notice{display:flex;align-items:flex-start;gap:9px;margin:0;padding:11px 14px;border-radius:12px;background:rgba(111,211,155,.1);box-shadow:inset 0 0 0 1px rgba(111,211,155,.28);color:var(--sg-frame-ink);font-size:13px;line-height:1.6;word-break:keep-all}
+:root .auth-form-card .auth-notice::before{content:'';flex:none;width:6px;height:6px;margin-top:7px;border-radius:50%;background:#6FD39B;box-shadow:0 0 8px rgba(111,211,155,.6)}
+:root .auth-help{display:grid;gap:12px}
+:root .auth-help-way{display:grid;gap:8px;padding:16px 18px;border-radius:16px;background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+:root .auth-help-way h3{margin:0;font-size:14.5px;font-weight:750;letter-spacing:-.01em;color:var(--sg-frame-ink);word-break:keep-all}
+:root .auth-help-way p{margin:0;font-size:13px;line-height:1.65;color:var(--sg-frame-ink-2);word-break:keep-all}
+:root .auth-help .synk-login-entry{margin-top:4px}
+:root .auth-help .synk-login-entry::after{content:none}
+:root .auth-help-admin{margin:2px 4px 0;font-size:12.5px;line-height:1.6;color:var(--sg-frame-ink-3);word-break:keep-all}
+:root .auth-help .auth-form-footer{margin-top:4px}
+:root .auth-reset-wait{margin:0;color:var(--sg-frame-ink-2);font-size:14px}
+:root .auth-account{margin:0 0 18px;border-radius:14px;background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+:root .auth-account>div{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:12px 16px}
+:root .auth-account>div+div{border-top:1px solid rgba(255,255,255,.07)}
+:root .auth-account dt{flex:none;color:var(--sg-frame-ink-3);font-size:12.5px;font-weight:600}
+:root .auth-account dd{margin:0;min-width:0;color:var(--sg-frame-ink);font-size:14px;font-weight:650;text-align:right;overflow-wrap:anywhere}
 @media(prefers-reduced-motion:reduce){:root .auth-form-card .auth-submit,:root .auth-form-card .auth-submit .icon{transition:none}:root .auth-form-card .auth-submit:hover .icon,:root .auth-form-card .auth-submit:active{transform:none}}
 
 /* 중간 폭(PC 워크스페이스 창·좁은 브라우저): 세로 포스터(2:3, 로그인 높이와 비슷하게) + 로그인. 계기판·캡션은 걷는다 */
@@ -557,9 +578,19 @@
 :root .workspace-settings-link[data-tab="members"]{--sg-settings-icon:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2308090C' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='9' cy='8' r='3.5'/%3E%3Cpath d='M2.5 20a6.5 6.5 0 0 1 13 0'/%3E%3Cpath d='M16 4.6a3.5 3.5 0 0 1 0 6.8M21.5 20a6.5 6.5 0 0 0-4-6'/%3E%3C/svg%3E")}
 :root .workspace-settings-link[data-tab="settings"]{--sg-settings-icon:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2308090C' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 7h10M18 7h2M4 17h2M10 17h10'/%3E%3Ccircle cx='16' cy='7' r='2.2'/%3E%3Ccircle cx='8' cy='17' r='2.2'/%3E%3C/svg%3E")}
 :root .workspace-settings-link[data-action="synk-id-account"]{--sg-settings-icon:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2308090C' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='14' rx='3'/%3E%3Ccircle cx='9' cy='11' r='2.2'/%3E%3Cpath d='M5.8 16a3.4 3.4 0 0 1 6.4 0M14.5 10h4M14.5 13.5h3'/%3E%3C/svg%3E")}
+:root .workspace-settings-link[data-action="account-login-info"]{--sg-settings-icon:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2308090C' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8' cy='15' r='4'/%3E%3Cpath d='M10.9 12.1 20 3M16.5 6.5l2 2M14 9l2 2'/%3E%3C/svg%3E")}
 :root .workspace-settings-link strong{font-size:15px;font-weight:750;letter-spacing:-.02em;color:var(--sg-ink)}
 :root .workspace-settings-link small{font-size:12.5px;color:var(--sg-ink-3)}
 :root .workspace-settings-footer{border-top:1px solid var(--sg-line);margin-top:8px;padding-top:12px}
+/* 팀·크루 줄(10-23): 관리자가 아닌 크루 줄은 단추가 셋(팀·역할 · 비밀번호 재설정 링크 · 이용 멈추기)이라 칸 안에서 아래 줄로 접는다 — 넘쳐 「이용 중」을 덮거나 목록 상자에 잘리지 않게 */
+:root .person-actions{flex-wrap:wrap;row-gap:6px}
+/* 로그인 정보 창(10-23): 아이디 · 비밀번호 · SYNK ID 세 줄 */
+:root #overlay .login-info{margin:0 0 18px;border:1px solid var(--sg-line);border-radius:14px}
+:root #overlay .login-info>div{display:grid;grid-template-columns:minmax(104px,auto) 1fr;gap:12px;padding:12px 14px}
+:root #overlay .login-info>div+div{border-top:1px solid var(--sg-line)}
+:root #overlay .login-info dt{color:var(--sg-ink-3);font-size:12.5px;font-weight:600}
+:root #overlay .login-info dd{margin:0;color:var(--sg-ink);font-size:14px;font-weight:600;line-height:1.55;overflow-wrap:anywhere;word-break:keep-all}
+@media(max-width:480px){:root #overlay .login-info>div{grid-template-columns:1fr;gap:2px}}
 
 /* ── 겹창 바탕과 빠른 검색(어두운 유리 HUD) ─────────── */
 :root .modal-backdrop{background:rgba(6,7,9,.52)!important;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}

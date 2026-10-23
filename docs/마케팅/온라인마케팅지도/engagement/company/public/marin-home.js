@@ -97,7 +97,7 @@ async function dispatchMarinAction(entryIndex,actionIndex){
 function marinAccountDialog(){
   const descriptions={handbook:'직원 안내 · 학생 복지 · 수업 · 상담',members:'크루와 팀 관리',settings:'회사 정보와 수집 설정'};
   const entry=(label,description,action,view)=>`<button type="button" class="workspace-settings-link" data-action="${action}" ${action==='command-tab'?`data-tab="${view}"`:''}>${workspaceFeltIcon(view)}<span><strong>${escape(label)}</strong><small>${escape(description)}</small></span>${icon('right')}</button>`;
-  modal('설정',escape(state.user?.name||''),`<nav class="workspace-settings-list" aria-label="워크스페이스 설정">${workspaceUtilityTabs().map(([id,label])=>entry(id==='settings'?'워크스페이스 관리':label,descriptions[id],'command-tab',id)).join('')}${entry('SYNK ID','계정 연결과 로그인 관리','synk-id-account','settings')}</nav><div class="workspace-settings-footer">${button('로그아웃','logout','logout','quiet')}</div>`);
+  modal('설정',escape(state.user?.name||''),`<nav class="workspace-settings-list" aria-label="워크스페이스 설정">${workspaceUtilityTabs().map(([id,label])=>entry(id==='settings'?'워크스페이스 관리':label,descriptions[id],'command-tab',id)).join('')}${entry('로그인 정보','내 아이디 확인과 비밀번호','account-login-info','settings')}${entry('SYNK ID','계정 연결과 로그인 관리','synk-id-account','settings')}</nav><div class="workspace-settings-footer">${button('로그아웃','logout','logout','quiet')}</div>`);
 }
 document.addEventListener('input',event=>{if(event.target.id!=='marin-input')return;marinHome.draft=event.target.value;saveMarinSession();resizeMarinInput(event.target);const send=document.getElementById('marin-send');if(send)send.disabled=marinHome.pending||!marinHome.draft.trim();});
 window.addEventListener('resize',()=>{if(typeof state!=='undefined'&&state.tab==='home')resizeMarinInput();});

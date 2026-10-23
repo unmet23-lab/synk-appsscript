@@ -100,6 +100,8 @@ export class Store {
   readToken(value,purpose) {if(typeof value!=='string'||value.length>200)return null;const row=this.#statement('SELECT * FROM tokens WHERE hash=? AND purpose=? AND expiresAt>?').get(hash(value),purpose,now());return row?{...row,body:JSON.parse(row.body)}:null;}
   consume(value,purpose) {return this.transaction(()=>{const row=this.readToken(value,purpose);if(row)this.#statement('DELETE FROM tokens WHERE hash=?').run(hash(value));return row;});}
   revokeUser(userId) {this.#statement('DELETE FROM tokens WHERE userId=?').run(userId);}
+  // One purpose only, e.g. the unused password-reset links of a user, leaving that user's sessions alone.
+  revokeTokens(userId,purpose) {this.#statement('DELETE FROM tokens WHERE userId=? AND purpose=?').run(userId,purpose);}
   createUser({email,name,role='member',password,teamId=null}) {
     email=String(email||'').trim().toLowerCase();name=String(name||'').trim();
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.length>254||!name||name.length>80)throw inputError('이름과 이메일을 확인해 주세요.');

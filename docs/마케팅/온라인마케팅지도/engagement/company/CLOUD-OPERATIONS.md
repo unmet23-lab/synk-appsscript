@@ -1,5 +1,18 @@
 # 회사 워크스페이스와 고객 상담의 상시 서버 운영
 
+<a id="next-company-release-login-recovery-20261023"></a>
+## 다음 회사 릴리스 후보 — 로그인 되찾기: 아이디·비밀번호 찾기 (2026-10-23 Claude 준비 · 운영 전)
+
+유호님 10-23 「여기서 로그인 막히면 답도없어. 비번찾기나 아이디찾기 왜 이런거 안만들어놨어.」 설계·API·벤치마킹은 [WORKSPACE.md 「로그인 되찾기」](WORKSPACE.md#login-recovery-20261023). 메일 없이 셋 — Google·SYNK ID로 들어오기, 관리자가 만든 60분 1회 재설정 링크, 관리자용 운영 명령 30분 링크.
+
+- **바뀌는 것(원문 6 · 시험 4 · 브라우저 확인 1, 지운 파일 0):** `server.mjs`(재설정 세 경로 `/api/members/:id/password-reset`·`/api/password-reset/inspect`·`/api/password-reset`, 요청 제한 `resetIp`, `/api/account/password`는 지금 세션을 남기고 다른 세션·남은 링크만 끝냄, `/api/me` `passwordSet`), `store.mjs`(`revokeTokens` 한 줄), `admin.mjs`(`reset-link`), `public/app.js`(로그인 도움 판·재설정 화면·재설정 뒤 아이디 채운 로그인·팀·크루 단추와 링크 창·「로그인 정보」 창·비밀번호 양식), `public/marin-home.js`(설정 창 항목 한 줄), `public/signal.css`. 새 시험 `server-login-recovery.test.mjs`·`login-recovery-client.test.mjs`, 더한 시험 `server-synk-identity.test.mjs` 3·`server-messenger.test.mjs` 1, 브라우저 확인 `qa/verify-login-recovery.mjs`. 새 URL(정적)·의존·환경 변수·`Dockerfile`·정적 공개 목록·저장 스키마 그대로(토큰은 기존 `tokens` 표의 새 purpose `password-reset`).
+- **운영 판에 얹기:** 사슬 26 후보(지금 운영) 바이트와 master를 대조했다 — `app.js`·`store.mjs`·`admin.mjs`는 같고, `signal.css`·`marin-home.js`는 줄끝(CRLF)만 다르고, `server.mjs`는 다른 줄이 SNS 문의·보관 정리·PULSE 공개 목록뿐이라 이 diff의 인증 구역은 같다. 그래서 부모 후보 바이트에 이 커밋 diff를 3방향으로(줄끝 보존) 얹는다. 사슬 27이 바꾸는 `server.mjs` 공개 목록 줄과도 겹치지 않는다(후보를 만들 때 다시 본다). `synk-id.js`는 운영 판이 master와 달라(Google 글) 고치지 않고 부르기만 한다.
+- **시험(로컬):** 관련 서버 114/114, 관련 화면·정적 287/287, 브라우저 확인 74/74(1440·390 흐름 + 팀·크루 줄 1920·1440·1180·1000·390 실측 + 링크 확인 429 흉내), 회사 폴더 전체 4,261개 중 실패 5 — 모두 워크트리에 없는 git 밖 영상(화성 세 편·M03·F02 — 후보에는 운영 원문에 있다)과 저장소 뿌리 기준 경로 시험(뿌리에서 25/25), 윈도 건너뜀 9.
+- **검수(반영 전):** 설계 검토 Fable 8건(반영 8 — 데스크톱 SYNK 세션 멈춤 P1·예전 메신저 아이디 안내 P1·10분 예외 삭제·자동 로그인 삭제·플랫폼 입구보다 먼저·링크 60분·도움 판 단추·운영 명령)과 글 제안 2(반영 2). 아르곤은 주간 몫 0%(10-24 12:06 KST 초기화)로 막혀(도구에 막힘 기록) 백엔드는 GPT만 — GPT 1건(P2 발급 직후 다른 발급자와의 경합, 반영 1) → 고친 뒤 새 묶음 GPT 0건, 집계 「배포 조건 충족」. 화면은 바로 Fable 최종 — Fable 5건(P1 팀·크루 줄 단추 넘침 · P2 관리자 안내·이름 「SYNK ID」 통일·링크 확인 429/끊김 다시 확인·초점, 반영 5) → 같은 Fable 2판 0건 「그대로 배포 후보로」, 집계 「배포 조건 충족」(참고 둘 — 데스크톱 줄 높이·`loginInfoModal`의 설정 창 알아내기 — 은 지적 아님, 그대로 둠). 기록 `.tmp/검수/login-recovery-backend-20261023/`·`login-recovery-backend-fix-20261023/`·`login-recovery-screen-20261023/`.
+- **반영:** 사슬 27(PULSE 사진만 + 교사 넷 + SNS 8 + 기획 엔진 글) 최종 사후 확인 passed·armed 뒤 회사 릴리스 절차대로(inert·stage·반영 전 백업·교체·공개 대조·가벼운 재무장). 순서표 `.tmp/company-ha-release-order-20261020.md` 「이력 30」 절. 그 전에는 원격 호출을 하지 않는다.
+- **반영 뒤 확인(운영 자료를 바꾸지 않는 것만):** 공개 `app.js`에 「아이디·비밀번호를 잊었어요」·`auth-reset-form`, 모르는 토큰으로 `POST /api/password-reset/inspect` 403·「만료됐거나 이미 썼어요」, 로그인 없이 `/api/members/x/password-reset` 403. 운영에서 시험 계정을 만들거나 남의 비밀번호를 바꾸지 않는다.
+- **관리자 복구 링크(운영 명령) 쓰는 법:** HA 주 노드의 회사 앱 컨테이너(compose 서비스 `company`, 이름은 `docker ps --format '{{.Names}}'`로 확인) 안에서 `node docs/마케팅/온라인마케팅지도/engagement/company/admin.mjs reset-link <로그인 이메일>`. 켜진 서버와 같은 SQLite에 쓰고(WAL·busy_timeout), 그 사람의 이전 링크를 지우고, 30분·1회 링크와 만료 시각을 출력한다(감사 `password-reset-link`·`by:'operator'`). 링크는 그 본인에게만 전한다. 운영 DB에 쓰는 일이라 Claude가 할 때는 유호님의 「행동 + 대상」 한 줄 허락을 받는다.
+
 <a id="next-company-release-pulse-photos-films-20261022"></a>
 ## 다음 회사 릴리스 후보 — PULSE 모델은 사진만 · 완성 광고 공간 (2026-10-22 Claude 준비 · 운영 전, 순서 문서 「이력 29」 · 실제 사슬 27 — 10-23 순서 바뀜)
 

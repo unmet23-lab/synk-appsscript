@@ -915,6 +915,32 @@ Studio의 사내 제작 기능은 기존 제작 데스크와 제작 도구에서
 
 개발용 생성 명령은 `node docs/마케팅/온라인마케팅지도/engagement/company/demo-service.mjs --data-dir docs/마케팅/온라인마케팅지도/engagement/company/data/demo`입니다. 기존 파일이 있으면 덮어쓰지 않습니다. 향후 삭제 요청을 받으면 이 데모 파일만 별도로 처리하며 실제 회사·메신저 DB는 대상이 아닙니다.
 
+<a id="login-recovery-20261023"></a>
+## 로그인 되찾기 — 아이디·비밀번호 찾기 · 2026-10-23 로컬 완료(운영 반영 전)
+
+유호님 10-23 「여기서 로그인 막히면 답도없어. 비번찾기나 아이디찾기 왜 이런거 안만들어놨어.」 로그인 화면에 찾기가 없었고, 「내 로그인 비밀번호」 칸이 관리자 설정 화면에만 있어 일반 팀원은 웹에서 비밀번호를 바꿀 수도 없었다. 메일·문자 발송은 두지 않는다(SMTP를 들이지 않는다 — SYNK-talk L0 §4-5 「분실 복구 = 재발급」과 같은 판단). 그래서 메일 없이 되찾는 길 셋으로 만들었다.
+
+- **SYNK ID로 들어오기(혼자):** SYNK ID(Google로 가입한 SYNK ID 포함)를 연결했으면 비밀번호 없이 들어온다. 화면 글은 기존 이름 「SYNK ID」로 맞췄다(운영 로그인 단추는 「Google · SYNK ID로 로그인」). 들어와서 비밀번호가 아직 없으면 설정 → 로그인 정보에서 바로 정한다. Google 계정 자체의 분실 복구는 Google이 맡는다.
+- **관리자가 만든 재설정 링크(관리자 한 번):** 팀·크루 → 관리자가 아닌 이용 중 크루 줄 → 「비밀번호 재설정 링크」. 60분 동안 한 번 쓸 수 있고, 새로 만들면 전 링크는 무효다. 링크를 열면 로그인 아이디가 보이고(아이디 찾기), 새 비밀번호를 두 번 넣으면 그 사람의 모든 로그인과 남은 링크가 끝난다. 자동으로 로그인하지 않고 아이디를 채운 로그인 화면으로 돌아간다(OWASP). 초대 링크처럼 관리자가 직접 전한다.
+- **관리자 복구 링크(운영 명령, 마지막 길):** Google로도 못 들어오는 관리자는 서버 운영 담당이 회사 컨테이너 안에서 `node docs/마케팅/온라인마케팅지도/engagement/company/admin.mjs reset-link <로그인 이메일>`을 돌려 30분짜리 같은 링크를 받는다(관리자 포함, 감사 `by:'operator'`). 서버 열쇠를 쥔 사람만 할 수 있다 — 절차는 [운영 기록](CLOUD-OPERATIONS.md#next-company-release-login-recovery-20261023).
+- **아이디:** 아이디는 초대받을 때 쓴 이메일이다. 예전 메신저 아이디는 회사 비밀번호를 정하기 전까지만 쓴다(정한 뒤에는 401 — 기존 계약). 로그인 화면에서 이름·이메일로 계정을 찾아 주는 조회는 만들지 않는다(공개 주소에서 팀원 이메일·계정 존재가 새지 않게, OWASP). 대신 도움 판·재설정 화면·설정 → 「로그인 정보」(모든 팀원, 아이디·비밀번호 상태·SYNK ID 연결 상태와 비밀번호 양식)에서 본다.
+- **비밀번호 바꾸기:** 지금 세션은 그대로 두고 다른 기기의 로그인과 남은 재설정 링크만 끝낸다. 예전에는 새 세션을 발급해 SYNK 표시가 빠지면서 데스크톱 앱이 「플랫폼과 같은 회사 계정을 확인하지 못했어요」로 가려진 채 멈출 수 있었다(Fable 설계 검토 P1).
+- **넣지 않은 것:** 「Google로 들어오면 10분 동안 현재 비밀번호 없이 바꾸기」. 회사 세션의 로그인 시각은 데스크톱 자동 진입·중앙 세션 재사용으로 실제 Google 인증 없이 새로 찍히고, [SYNK ID 연결](SYNK_ID.md)의 「연결·해제 때 현재 비밀번호 확인」을 우회하게 된다(Fable 설계 검토).
+
+| 요청 | 동작 |
+|---|---|
+| `POST /api/members/:id/password-reset` | 관리자·CSRF·Origin. 대상이 있고 이용 중이고 관리자가 아니면 그 사람의 쓰지 않은 링크를 지우고 60분 `password-reset` 토큰을 만든다. `{resetUrl, expiresAt, name, loginId, delivery:'copy-link'}`. 대상의 세션은 링크가 쓰일 때까지 그대로 |
+| `POST /api/password-reset/inspect` | 로그인 없이·Origin. `{token}` → `{name, loginId, expiresAt}` 또는 403. 소비하지 않는다(링크 미리 보기·메일 검사기가 써 버리지 않게) |
+| `POST /api/password-reset` | 로그인 없이·Origin. 토큰을 해시 전에 읽고(모르는 링크는 scrypt를 안 돌림) 거래 안에서 다시 확인 → 해시 저장 → 그 사람의 모든 토큰 삭제 → `{ok, loginId}`. 세션은 주지 않는다 |
+| `POST /api/account/password` | 비밀번호가 있으면 현재 비밀번호 확인. 지금 세션·CSRF는 그대로, 다른 세션과 남은 링크만 삭제 |
+| `GET /api/me` | `passwordSet` 불리언을 더했다(해시는 계속 안 보냄) |
+
+요청 제한은 재설정 두 경로가 함께 주소당 15분 30회(모르는·쓴 링크만 몫을 씀)와 기존 로그인 전체 몫(1분 120회)을 쓴다. 토큰은 32바이트 난수이고 DB에는 sha256만, 주소의 `#` 뒤라 서버 기록·Referer로 나가지 않으며 화면이 읽자마자 주소에서 지운다. 역할 변경·이용 멈춤·비밀번호 변경도 남은 링크를 지운다.
+
+**벤치마킹(10-23, 공식 도움말 원문·커뮤니티 글 직접 열람, Reddit은 못 봄):** 메일 없는 복구는 관리자 재설정(Google Workspace·MS 365·Atlassian·Zoom·NAVER WORKS·Flow) 아니면 비밀번호 없는 로그인(Linear·Slack 기본)뿐이었다. 관리자 재설정 뒤 세션은 Atlassian 10분·NAVER WORKS 5분·Zoom 즉시 로그아웃, Google·MS는 따로 해야 한다 → 한 동작으로 묶었다. MS는 임시 비밀번호 메일 발송을 2024-08 없앴고 Entra 임시 비밀번호는 무기한, NAVER WORKS는 30일 → 관리자가 비밀번호를 모르는 짧은 1회 링크로. 1회 링크를 메일 검사기가 먼저 써 버리는 사례(Supabase) → 여는 것은 소비하지 않는다. 단독 관리자 잠김은 어디서나 벤더 지원에 며칠~몇 주(MS 7~14영업일, Google 슈퍼관리자 6일째 잠김 글, Atlassian 유일 관리자 상실 글) → 운영 명령 링크가 그 자리를 메운다. 아이디는 NAVER WORKS 가입 완료 화면·MS 관리자 조회·Flow 본인 확인 뒤 안내 → 공개 찾기 없이 관리자 화면·재설정 화면에서. 주요 출처: [OWASP Forgot Password](https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html) · [Google Workspace 관리자 재설정](https://knowledge.workspace.google.com/admin/users/reset-a-users-password) · [MS 365 재설정](https://learn.microsoft.com/en-us/microsoft-365/admin/add-users/reset-passwords) · [Atlassian 관리 계정](https://support.atlassian.com/user-management/docs/make-changes-to-a-managed-user-account/) · [Zoom](https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0066204) · [NAVER WORKS 구성원 정보](https://help.worksmobile.com/ko/admin-guides/manage-members/members/update-member-information/) · [Linear 로그인 방식](https://linear.app/docs/login-methods) · [Supabase OTP 만료(검사기)](https://supabase.com/docs/guides/troubleshooting/otp-verification-failures-token-has-expired-or-otp_expired-errors-5ee4d0) · [MS 단독 관리자 잠김](https://learn.microsoft.com/en-us/answers/questions/5698697/microsoft-365-tenant-locked-out-no-global-admin-ac) · [GitHub sudo 모드](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/sudo-mode)(확인일 10-23).
+
+**확인(로컬):** 서버 새 시험 `server-login-recovery.test.mjs` 11개(다른 발급자가 막 쓴 링크를 바로 바꿔도 응답·감사가 맞음 포함) + `server-synk-identity.test.mjs` 3개(SYNK 세션에서 비밀번호 저장 뒤 같은 쿠키·CSRF·renew, 재설정 뒤 SYNK 연결·로그인, 재시작 뒤 첫 비밀번호) + `server-messenger.test.mjs` 1개(예전 메신저 아이디) — 관련 서버 114/114. 화면 시험 `login-recovery-client.test.mjs` 6개(재설정 링크가 플랫폼·SYNK 입구보다 먼저 열림, 429·연결 끊김은 다시 확인 등) — 관련 화면·정적 287/287. 브라우저 확인 `qa/verify-login-recovery.mjs`(합성 SQLite·바깥 요청 차단, 1440·390, 팀·크루 줄은 1920·1440·1180·1000·390 실측) 74개. 회사 폴더 전체 4,261개 중 실패 5는 모두 워크트리에 없는 git 밖 영상(화성 세 편·M03·F02)과 저장소 뿌리 기준 경로 시험(뿌리에서 25/25)이다. 검수와 운영 반영은 [운영 기록](CLOUD-OPERATIONS.md#next-company-release-login-recovery-20261023).
+
 ## 계정과 자료 보존
 
 - 회사의 크루 ID·활성 상태·역할이 공통 인증 기준입니다. 조회 전용 크루는 채팅도 읽기 전용입니다.
