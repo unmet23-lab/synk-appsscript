@@ -1,0 +1,1 @@
+실행 오류: 구독 통로 실패(종료 2) — 확인 불가: 제미나이 구독 호출 실패 — agy 상태 ERROR: Individual quota reached. Please upgrade your subscription to increase your limits. Resets in 4h5m43s.

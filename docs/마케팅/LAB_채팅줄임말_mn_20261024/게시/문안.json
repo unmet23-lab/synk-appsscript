@@ -1,0 +1,13 @@
+{
+ "_설명": "M2 「한국 친구와 채팅할 때」 게시글 정본(10-24). 화면 글 정본은 ../remotion/src/chat/data.ts. 몽골어는 세 겹 검수(../검문/, 기획.md). 첫 댓글은 퀴즈 #5에서 검수한 학습 허브 줄 그대로(10-24 응답 200).",
+ "_ko": {
+  "caption": "한국 친구가 「ㅋㅋ」라고 쓰면 무슨 뜻일까요? 🤔\n한국 사람들은 채팅할 때 낱말을 이렇게 줄여요: 음절마다 첫 글자만 써요.\n\nㅋㅋ = 크크 — 하하\nㅇㅇ = 응응 — 그래 그래\nㄱㅅ = 감사 — 고마워요\nㅇㅋ = 오케(이) — 그래 / OK\n\n⚠️ 이건 친구와 채팅할 때만 쓰세요. 선생님이나 어른께는 ㄱㅅ 말고 「감사합니다」처럼 줄이지 않고 다 쓰세요.\n\n또 어떤 줄임말을 알아요? 댓글로 써 주세요 👇\n\n우리는 SYNK LAB — 몽골 학생들에게 한국어를 가르치는 팀이에요.",
+  "comment": "🎮 한국어 듣기·읽기 게임(영어·한국어로): synk.im/try/learning-hub/"
+ },
+ "mn": {
+  "account": "Instagram @synk.mn · Facebook synkworld",
+  "caption": "Солонгос найз чинь «ㅋㅋ» гэж бичвэл юу гэсэн үг вэ? 🤔\nСолонгосчууд чатлахдаа үгээ ингэж товчилдог: үе бүрийн эхний үсгийг л бичдэг.\n\nㅋㅋ = 크크 (кы кы) — Хаха\nㅇㅇ = 응응 (ын ын) — Тийм тийм\nㄱㅅ = 감사 (гамса) — Баярлалаа\nㅇㅋ = 오케(이) (окей) — За / OK\n\n⚠️ Эдгээрийг зөвхөн найзуудтайгаа чатлахдаа л хэрэглээрэй. Багш болон ахмад хүмүүст ㄱㅅ биш, «감사합니다» (гамсахамнида) гэж бүтнээр нь бичээрэй.\n\nӨөр ямар товчлол мэддэг вэ? Сэтгэгдэлд бичээрэй 👇\n\nБид SYNK LAB — монгол оюутнуудад солонгос хэл заадаг баг.\n#солонгосхэл #한국어 #learnkorean #mongolia",
+  "comment": "🎮 Солонгос хэлний сонсгол, уншлагын тоглоом (англи, солонгос хэлээр): synk.im/try/learning-hub/",
+  "alt": "A felt mascot and a phone chat: a Korean friend replies ㅋㅋ, ㅇㅇ and ㄱㅅ. Cards show each abbreviation = full word (크크, 응응, 감사) with its first letters above the syllables, the Mongolian Cyrillic reading and the Mongolian meaning; the last card asks which other abbreviations you know"
+ }
+}
