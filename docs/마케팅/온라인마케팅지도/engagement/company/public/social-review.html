@@ -2,36 +2,58 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="robots" content="noindex,nofollow">
   <meta name="referrer" content="no-referrer">
-  <title>SNS 게시물 검토 · SYNK</title>
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#060709">
+  <title>게시물 검토 · SYNK</title>
+  <link rel="icon" href="/brand-logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/social-review.css">
   <script src="/social-review.js" defer></script>
 </head>
 <body>
-  <main class="review-shell">
-    <header class="review-header"><span class="brand">SYNK</span><h1>SNS 게시물 검토</h1><p>공유받은 게시 버전의 문구·파일·일정을 확인하고 의견을 남겨 주세요.</p></header>
-    <p id="review-notice" class="notice">검토 링크를 확인하고 있어요.</p>
-    <p id="review-error" class="error" role="alert" hidden></p>
-    <section id="review-content" aria-label="검토할 게시물" hidden></section>
-    <section id="review-feedback" aria-label="검토 의견" hidden></section>
-    <form id="review-form" hidden>
-      <h2>이 버전에 대한 의견</h2>
-      <label for="review-name">이름 <span>(선택 · 본인 확인 없이 그대로 보여요)</span></label>
-      <input id="review-name" maxlength="80" autocomplete="name" placeholder="검토자 이름">
-      <label for="review-comment">검토 의견 <span>(의견 등록·수정 요청 시 필수)</span></label>
-      <textarea id="review-comment" rows="5" maxlength="3000" placeholder="수정할 부분이나 승인 의견을 적어 주세요."></textarea>
-      <p class="hint">고객 검토 승인이 내부 발행 승인을 대신하지는 않아요. 문구·계정·파일·일정이 바뀌면 새 링크로 다시 검토하게 돼요.</p>
-      <div class="actions">
-        <button type="submit" name="decision" value="comment">의견 남기기</button>
-        <button type="submit" name="decision" value="reject">수정 요청</button>
-        <button class="primary" type="submit" name="decision" value="approve">이 버전 검토 승인</button>
+  <div class="shell">
+    <header class="bar">
+      <span class="bead"><img src="/brand-logo.svg" alt="SYNK" width="54" height="38"></span>
+      <span class="crumb">Post review</span>
+    </header>
+    <main>
+      <div class="head">
+        <h1 id="review-heading">게시물 검토</h1>
+        <p id="review-notice" class="lede">검토 링크를 확인하고 있어요.</p>
+        <p id="review-lede" class="lede" hidden></p>
+        <ul id="review-facts" class="facts" aria-label="검토 정보" hidden></ul>
+        <p id="review-error" class="closed" role="alert" hidden></p>
       </div>
-      <button id="review-retry" type="button" hidden>결과를 확인하고 다시 보내기</button>
-      <p id="review-result" role="status" aria-live="polite"></p>
-    </form>
-    <footer>이 링크를 가진 사람만 이 게시 버전을 검토할 수 있어요. 링크는 필요한 분에게만 전달해 주세요.</footer>
-  </main>
+      <div class="layout">
+        <section id="review-content" class="content" aria-labelledby="review-heading" hidden></section>
+        <section id="review-feedback" class="sheet thread" aria-label="주고받은 의견" hidden></section>
+        <form id="review-form" class="sheet compose" aria-label="답하기" hidden>
+            <h2>답하기</h2>
+            <label for="review-comment">의견 <span>수정 요청과 의견에는 꼭 적어 주세요</span></label>
+            <textarea id="review-comment" rows="4" maxlength="3000" placeholder="바꿀 곳이나 좋았던 점을 적어 주세요."></textarea>
+            <label for="review-name">이름 <span>선택 · 확인 없이 그대로 보여요</span></label>
+            <input id="review-name" maxlength="80" autocomplete="name" placeholder="예: 김지은">
+            <p id="review-form-error" class="form-error" role="alert" hidden></p>
+            <div class="actions">
+              <button type="submit" name="decision" value="comment">의견만 남기기</button>
+              <button type="submit" name="decision" value="reject">수정 요청하기</button>
+              <button class="primary" type="submit" name="decision" value="approve">승인하기</button>
+            </div>
+            <button id="review-retry" class="retry" type="button" hidden>다시 보내기</button>
+            <p id="review-result" class="result" role="status" aria-live="polite"></p>
+            <p class="fine">문구·계정·파일·일정이 바뀌면 새 링크로 다시 검토해요.</p>
+            <p id="review-fine" class="fine"></p>
+        </form>
+      </div>
+      <div id="review-dock" class="dock" hidden>
+        <span class="dock-state">검토 전</span>
+        <button id="review-dock-write" type="button">의견 쓰기</button>
+        <button id="review-dock-approve" class="primary" type="submit" form="review-form" name="decision" value="approve">승인하기</button>
+      </div>
+    </main>
+    <footer class="foot">검토 링크는 필요한 분에게만 전해 주세요.</footer>
+  </div>
 </body>
 </html>
