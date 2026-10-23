@@ -289,3 +289,56 @@ test('예약 상한(재검수 GA1): 한 구간의 닫힌 예약은 상한까지 
   assert.deepEqual(split.band, whole.band, '나눠 결산해도 다음 구간의 시작 상태가 같다');
   assert.equal(v.validVillage(whole), true);
 });
+test('밤 규칙: 자리가 바뀐 장면을 다시 정하는 것은 시작이다 — 잠든 주민이 있으면 DAY_RETRY는 409, 뷰는 다시 정하기 대신 아침 안내(Fable 최종 P1)', async () => {
+  const f = await fixture(at(14), { sleeps: true });
+  f.go('cafe'); f.place(); play(f, 20); f.ack();
+  f.send('DAY_START', { kind: 'tea' }); f.send('DAY_CLOSE');
+  f.send('REARRANGE'); f.send('CHOOSE', { branch: 'inside' }); f.send('NEXT'); f.send('PLACE', { slot: 'eaves-right' });
+  play(f, 20); f.ack();
+  assert.equal(f.read().state.day.episode.stage, 'invalid', '자리를 옮기면 닫아 둔 장면은 다시 정할 차례');
+  f.set(at(26, 10)); f.pulse(); // 다음 날 02:10
+  f.send('DAY_RESUME'); // 이어 하기는 시작이 아니다
+  let { state, view } = f.read();
+  assert.ok(state.day.episode.open && state.day.episode.stage === 'invalid');
+  assert.ok(!view.day.actions.some(a => a.type === 'DAY_RETRY'), '잠든 밤에는 다시 정하기를 내지 않는다');
+  assert.equal(view.day.speaker, '생활 수첩');
+  assert.match(view.day.line, /찻집 주인과 연구원이 잠든 밤이라, 지금 자리로 다시 정하는 일은 아침에 함께해요\./);
+  assert.throws(() => f.send('DAY_RETRY'), error => error.code === 'resident-asleep' && error.status === 409);
+  ({ state, view } = f.read());
+  assert.equal(state.day.episode.stage, 'invalid');
+  assert.deepEqual(Object.keys(view.day.scene.village.holds), [], '잠든 주민을 붙잡지 않는다');
+  // 아침 09:00 — 방문이 끝나 닫힌 장면을 이어 하면, 두 주민이 일어나 있어 다시 정할 수 있다.
+  f.set(at(33)); f.pulse();
+  if (!f.read().state.day.episode.open) f.send('DAY_RESUME');
+  ({ view } = f.read());
+  assert.ok(view.day.actions.some(a => a.type === 'DAY_RETRY'), view.day.line);
+  f.send('DAY_RETRY');
+  assert.equal(f.read().state.day.episode.stage, 'role');
+});
+
+test('밤 규칙: 취침 전에 시작해 닫아 둔 가판은 밤에도 화면에서 이어 할 수 있다 — 명령·하루 장면과 같은 규칙, 새 가판만 아침에(Fable 최종 P2)', async () => {
+  const f = await fixture(at(23, 20), { sleeps: true });
+  f.go('cafe'); f.place(); play(f, 20); f.ack();
+  f.send('BAZAAR_START', { kind: 'requests' }); f.send('BAZAAR_ROLE', { role: 'planner' }); f.send('BAZAAR_ASK');
+  f.send('BAZAAR_CLOSE');
+  f.set(at(23, 40)); f.pulse();
+  let { view } = f.read();
+  assert.deepEqual(view.bazaar.actions.map(a => a.type), ['BAZAAR_RESUME'], '시작한 가판은 이어 하기만, 새 가판 시작은 없다');
+  assert.match(view.bazaar.line, /하던 손님 맞이는 이어 할 수 있어요\. 새 손님 맞이는 찻집 주인이 일어나는 아침에 함께해요\./);
+  f.send('BAZAAR_RESUME');
+  ({ view } = f.read());
+  assert.equal(f.read().state.bazaar.episode.open, true);
+  assert.ok(view.bazaar.scene.npcs.some(n => n.id === 'cafe-owner'), '다시 연 가판은 찻집 주인과 함께 그린다');
+});
+
+test('밤 규칙: 요청 회차를 마치고 그림 메뉴만 남았는데 공방 주인이 잠들었으면, 다시 보기 단추가 남아도 그렇게 말한다(Fable 최종 P3)', async () => {
+  const f = await fixture(at(22), { sleeps: true });
+  f.go('cafe'); f.place(); play(f, 20); f.ack();
+  f.send('BAZAAR_START', { kind: 'requests' }); f.send('BAZAAR_ROLE', { role: 'delegated' }); f.send('BAZAAR_ASK');
+  play(f, 3); f.send('BAZAAR_CONTINUE'); f.send('BAZAAR_CONFIRM'); play(f, 7);
+  assert.equal(f.read().state.bazaar.episode.stage, 'result');
+  f.send('BAZAAR_CLOSE');
+  const { view } = f.read();
+  assert.deepEqual(view.bazaar.actions.map(a => a.label), ['방금 마친 모습 다시 보기']);
+  assert.equal(view.bazaar.line, '공방 주인은 벌써 잠들었어요. 그림 메뉴 가판은 아침에 함께해요.');
+});

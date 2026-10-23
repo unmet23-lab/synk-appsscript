@@ -27,6 +27,8 @@ const action = (type, label, payload = {}, primary = false) => ({ type, label, p
 const members = kind => kind === 'tea' ? ['cafe-owner', 'researcher'] : kind === 'coordination' ? ['workshop-owner', 'researcher'] : ['workshop-owner'];
 const labelPlace = place => DAY_LOCATIONS[place].label;
 const RESIDENT_LABELS = Object.freeze({ 'cafe-owner': '찻집 주인', 'workshop-owner': '공방 주인', researcher: '연구원' });
+/** 「찻집 주인, 공방 주인과 연구원」 — every label ends in a final consonant, so 과·은·이 follow. */
+const nameList = labels => labels.length > 1 ? `${labels.slice(0, -1).join(', ')}과 ${labels.at(-1)}` : labels[0];
 /** What a resident is doing now in the village plan (W3), or the old line before a band opens. */
 const residentLine = (ctx, npc, fallback) => !ctx.village ? fallback
   : `${RESIDENT_LABELS[npc]}은 ${ctx.village.places[npc] ? doing(ctx.village.places[npc])[1] : '지금 자고 있어요'}.`;
@@ -525,7 +527,7 @@ function historySummary(h) {
   const outcome = { sequence: '그림 뒤 차', separate: '두 자리로 나눔', rest: '먼저 조용히 쉼', silent: '말 없는 그림', delegate: '각자의 공간 사용', hold: '받침 고정 도움', prepare: '쉬는 자리 준비', alone: '혼자 자리 마침' }[h.choice];
   return `${role} · ${outcome}${h.kind === 'help' && h.direction ? h.direction === 'near' ? ' · 내 쪽 가까이' : ' · 통로를 넓게' : ''}`;
 }
-function episodeView(day, e) {
+function episodeView(day, e, ctx) {
   let line = '', actions = [], speaker = e.kind === 'help' ? '공방 주인' : '연구원';
   if (day.location !== e.location) return { line: `${labelPlace(e.location)}에서 하던 생활은 그대로 남아 있어요.`, speaker: '생활 수첩', actions: [action('DAY_RESUME', '하던 곳으로 돌아가기')] };
   if (e.guideStep != null) {
@@ -554,7 +556,12 @@ function episodeView(day, e) {
   else if (e.stage === 'awaitFinish') {
     line = e.choice === 'alone' ? '쉬기 좋은 방향을 직접 골라 마쳐 주세요.' : '이제 놓아도 괜찮아요. 방향은 직접 정해 주세요.';
     actions = [action('DAY_HELP_DIRECTION', '자리 쪽으로', { direction: 'near' }), action('DAY_HELP_DIRECTION', '통로를 비워', { direction: 'clear' }), action('DAY_HELP_FINISH', '이대로 둘게요', {}, true)];
-  } else if (e.stage === 'invalid') { line = '사용하던 자리가 바뀌었어요. 끝낸 일은 남겨 두고 지금 자리를 다시 볼게요.'; actions = [action('DAY_RETRY', '현재 자리로 다시 정하기')]; }
+  } else if (e.stage === 'invalid') {
+    // A retry begins the scene again, so its residents asleep wait for the morning (the night rule, §4-2 A).
+    const asleep = members(e.kind).filter(n => ctx.village?.awake?.[n] === false).map(n => RESIDENT_LABELS[n]);
+    if (asleep.length) { speaker = '생활 수첩'; line = `사용하던 자리가 바뀌었어요. ${nameList(asleep)}이 잠든 밤이라, 지금 자리로 다시 정하는 일은 아침에 함께해요.`; }
+    else { line = '사용하던 자리가 바뀌었어요. 끝낸 일은 남겨 두고 지금 자리를 다시 볼게요.'; actions = [action('DAY_RETRY', '현재 자리로 다시 정하기')]; }
+  }
   else if (e.stage === 'result') {
     const h = day.history.find(row => row.resultId === e.resultId);
     line = h.role === 'planner' ? `${historySummary(h)}. 고른 방식대로 준비했어요.` : h.role === 'delegated' ? '맡기신 생활은 이렇게 준비했어요. 각자 쓸 자리를 나눴어요.' : h.observedU === null ? '주민들이 준비한 결과예요. 지금 볼 수 있어요.' : '함께 본 장면이 수첩에 남았어요.';
@@ -576,7 +583,7 @@ export function viewDay(day, context) {
     line = `문 앞에 왔어요. ${labelPlace(day.home.exitTarget)} 쪽으로 나갈까요?`;
     actions.push(action('DAY_EXIT', '밖으로 나가기', {}, true), action('DAY_HOME_STAY', '집에 더 있을게요'));
   } else if (e?.open && e.location === loc) {
-    const current = episodeView(day, e); line = current.line; speaker = current.speaker; actions.push(...current.actions);
+    const current = episodeView(day, e, ctx); line = current.line; speaker = current.speaker; actions.push(...current.actions);
   } else {
     if (loc === 'home') {
       actions.push(action('DAY_HOME_PREVIEW', '창가에 미리 놓기', { slot: 'window' }), action('DAY_HOME_PREVIEW', '탁자 곁에 미리 놓기', { slot: 'table' }));
@@ -605,7 +612,7 @@ export function viewDay(day, context) {
     const begins = actions.some(a => a.type === 'DAY_START' || a.type === 'DAY_JOB_START');
     const asleep = ids.filter(n => sleeping.has(n)).map(n => RESIDENT_LABELS[n]);
     if (asleep.length && (!begins || own && ctx.village?.awake?.[own] === false && !ownAtWork)) line = asleep.length === ids.length ? '주민들은 모두 잠들었어요. 아침에 다시 만나요.'
-      : `${asleep.length > 1 ? `${asleep.slice(0, -1).join(', ')}과 ${asleep.at(-1)}` : asleep[0]}은 벌써 잠들었어요. 아침에 다시 만나요.`;
+      : `${nameList(asleep)}은 벌써 잠들었어요. 아침에 다시 만나요.`;
   }
   if (day.walk?.enabled && nearbyPlace(day.walk) !== loc) { line = '마을을 걸으며 가까운 장소를 살펴보세요.'; actions.length = 0; }
   return { title: '싱크타운 · 첫 하루', line, speaker, location: loc, visit: day.visit, support: day.support,

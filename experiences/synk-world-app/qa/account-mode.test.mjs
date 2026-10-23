@@ -17,7 +17,7 @@ function fixture(options={}){
  let client,invalidations=0;
  const account=createWorldAccount({config,storage:tab,getUrl:()=>options.url||'https://world.example.test/world/',replaceUrl:options.replaceUrl||(()=>{}),navigate:options.navigate||(()=>{}),
   accountFactory:options.accountFactory||(({getAccessToken})=>({load:async()=>({ok:true,account:{synk_user_id:A,status:'active'},sessions:[{id:'session-a',current:true,revoked:false}]}),revokeSession:async()=>{calls.push({revokeToken:getAccessToken()});return {refreshRevoked:true};}})),
-  requestToken:options.requestToken,
+  requestToken:options.requestToken,now:options.now,
   onInvalidate:()=>{invalidations++;client?.invalidate();},fetcher:async(url,init)=>{calls.push({url,init});if(options.fetcher)return options.fetcher(url,init);return reply(snapshot());}});
  client=new WorldClient({account,storage:cache,tabStorage:tab,broadcastAppearance:false});
  return {account,client,tab,cache,calls,invalidations:()=>invalidations};
@@ -64,6 +64,15 @@ test('Town commands pin actual academy class and reject sharing/membership metad
  await f.client.request('town/state');await f.client.request('town/command',{method:'POST',body:{id:'fixed-id',type:'DAY_MOVE',payload:{location:'cafe'},expectedRevision:1}});
  const command=f.calls.find(c=>c.url.includes('/synk-town/command'));assert.equal(new URL(command.url).searchParams.get('classId'),A);
  revision=2;await assert.rejects(f.client.request('town/state'),{code:'TOWN_SNAPSHOT_CHANGED'});assert.equal(f.client.snapshot.accountId,A);
+});
+test('W3 town reads check the account on entry, then at most once a minute while the town reads itself again',async()=>{
+ let loads=0,clock=Date.now();
+ const f=fixture({now:()=>clock,accountFactory:()=>({load:async()=>{loads++;return {ok:true,account:{synk_user_id:A,status:'active'},sessions:[{id:'session-a',current:true,revoked:false}]};}}),
+  fetcher:async url=>url.includes('synk-town')?reply({...snapshot(),state:{revision:1}}):reply(snapshot())});
+ await f.client.restore();const base=loads;
+ await f.client.request('town/state');await f.client.request('town/state');assert.equal(loads-base,1,'two reads within a minute check once');
+ clock+=60000;await f.client.request('town/state');assert.equal(loads-base,2,'again after a minute');
+ await f.client.request('town/entry');await f.client.request('town/state');assert.equal(loads-base,3,'a new entry checks again');
 });
 test('Town iframe host exposes methods, never credentials, and rejects a command after logout',async()=>{
  const f=fixture();await f.client.restore();const host=createTownWorldHost(f.client);

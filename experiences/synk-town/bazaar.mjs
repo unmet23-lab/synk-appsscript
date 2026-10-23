@@ -350,17 +350,21 @@ export function viewBazaar(state, input) {
   let line = '두 손님의 현재 요청을 듣거나 음식 없는 그림 메뉴 가판을 준비할 수 있어요.', speaker = '찻집 주인', actions = [];
   const here = ctx.location === 'cafe';
   if (!e?.open) {
-    // The night rule (§4-2 A): a closed cafe greets no guest until its owner is up (the view's time).
-    if (ctx.ownerAsleep) line = '찻집 주인은 벌써 잠들었어요. 손님 맞이는 아침에 함께해요.';
+    // The night rule (§4-2 A, the view's time): a stall begun goes on and a finished one may be seen again at any
+    // hour, as the commands allow; only a new stall waits for its residents to be up.
+    const begun = !!e && e.stage !== 'result', open = here && !ctx.cafeBusy;
+    if (open) {
+      if (begun) actions.push(action('BAZAAR_RESUME', '하던 손님 맞이 이어 하기', {}, true));
+      else if (!ctx.ownerAsleep) for (const kind of kinds) if (!state.history.some(h => h.kind === kind) && !(kind === 'pictureMenu' && ctx.workshopAsleep))
+        actions.push(action('BAZAAR_START', kind === 'requests' ? '두 손님의 요청 듣기' : '그림 메뉴 가판 함께 열기 · 음식 없음', { kind }));
+      if (e?.stage === 'result') actions.push(action('BAZAAR_RESUME', '방금 마친 모습 다시 보기'));
+    }
+    if (ctx.ownerAsleep) line = begun && open ? '하던 손님 맞이는 이어 할 수 있어요. 새 손님 맞이는 찻집 주인이 일어나는 아침에 함께해요.'
+      : '찻집 주인은 벌써 잠들었어요. 새 손님 맞이는 아침에 함께해요.';
     else {
-      if (here && !ctx.cafeBusy) {
-        if (e && e.stage !== 'result') actions.push(action('BAZAAR_RESUME', '하던 손님 맞이 이어 하기', {}, true));
-        else for (const kind of kinds) if (!state.history.some(h => h.kind === kind) && !(kind === 'pictureMenu' && ctx.workshopAsleep))
-          actions.push(action('BAZAAR_START', kind === 'requests' ? '두 손님의 요청 듣기' : '그림 메뉴 가판 함께 열기 · 음식 없음', { kind }));
-        if (e?.stage === 'result') actions.push(action('BAZAAR_RESUME', '방금 마친 모습 다시 보기'));
-        // Only the picture-menu stall is left and its workshop owner sleeps: say so instead of offering it.
-        if (!actions.length && ctx.workshopAsleep) line = '공방 주인은 벌써 잠들었어요. 그림 메뉴 가판은 아침에 함께해요.';
-      }
+      // Only the picture-menu stall is left and its workshop owner sleeps: say so instead of offering it.
+      if (open && !begun && ctx.workshopAsleep && !actions.some(a => a.type === 'BAZAAR_START') && !state.history.some(h => h.kind === 'pictureMenu'))
+        line = '공방 주인은 벌써 잠들었어요. 그림 메뉴 가판은 아침에 함께해요.';
       if (ctx.cafeBusy) line = '찻집 주인은 지금 하던 일을 마치고 손님 맞이를 함께할 수 있어요.';
     }
   } else if (!here) line = '찻집에서 하던 손님 맞이는 그대로 남아 있어요.';

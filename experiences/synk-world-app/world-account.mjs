@@ -35,7 +35,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
  const config=readConfig(raw,getUrl()),key='synk.oauth.session.world';
  const binding=[config.supabaseUrl,config.accountApiUrl,config.clients.world.clientId,config.clients.world.redirectUri].join('|');
  const entry=createPlatformEntry({clientKey:'world',getUrl,replaceUrl});
- let session=null,rawSession=null,owner=null,currentSessionId=null,currentAccount=null,epoch=0,closed=false,refreshing=null,pendingExchange=null,townBinding=null,townStateRevision=-1,verifiedClient=null,gameHost=null,gameLaunch=0,lifeHost=null,lifeLaunch=0,verification=0;
+ let session=null,rawSession=null,owner=null,currentSessionId=null,currentAccount=null,epoch=0,closed=false,refreshing=null,pendingExchange=null,townBinding=null,townStateRevision=-1,townVerifiedAt=-Infinity,verifiedClient=null,gameHost=null,gameLaunch=0,lifeHost=null,lifeLaunch=0,verification=0;
  let nativeIdentity=null,nativeAccountId=null,nativeGeneration=-1,signedOutGeneration=-1,nativeEvents=0,nativeReady=null,unsubscribe=null,nativeClassroom=false,nativeHomework=false,nativeTownCheck=false,nativeTownPulse=false,hangulHost=null,hangulLaunch=0;
  const controllers=new Set();
  const guard=expected=>{if(closed||expected!==epoch)throw changed();if(!native&&session&&storage.getItem(key)!==rawSession){clear();throw changed();}};
@@ -43,7 +43,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
  const clientFor=expected=>native?createDesktopAccountClient({bridge,product:'world',guard:()=>guard(expected)}):accountFactory({url:config.accountApiUrl,anonKey:config.supabasePublishableKey,product:'world',getAccessToken:()=>session?.access_token,refresh:()=>renew(expected),guard:()=>guard(expected),fetch:fetcher});
  const gameBinding=data=>JSON.stringify([data?.account?.synk_user_id,data?.account?.status,data?.learning?.enabled,data?.learning?.revision,data?.capabilities?.learningSync]);
  function stopGames(){gameHost?.dispose();gameHost=null;}
- function clear(){epoch++;gameLaunch++;lifeLaunch++;hangulLaunch++;verification++;stopGames();lifeHost?.dispose();lifeHost=null;hangulHost?.dispose();hangulHost=null;session=null;owner=null;currentSessionId=null;currentAccount=null;verifiedClient=null;townBinding=null;townStateRevision=-1;nativeIdentity=null;nativeAccountId=null;for(const c of controllers)c.abort();onInvalidate();}
+ function clear(){epoch++;gameLaunch++;lifeLaunch++;hangulLaunch++;verification++;stopGames();lifeHost?.dispose();lifeHost=null;hangulHost?.dispose();hangulHost=null;session=null;owner=null;currentSessionId=null;currentAccount=null;verifiedClient=null;townBinding=null;townStateRevision=-1;townVerifiedAt=-Infinity;nativeIdentity=null;nativeAccountId=null;for(const c of controllers)c.abort();onInvalidate();}
  function nativeStatus(state){
   if(closed)return false;
   const generation=state?.sessionGeneration,id=state?.account?.synk_user_id;
@@ -196,9 +196,10 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
  async function request(path,options={}){
   if(!routes.has(path)||(options.method||'GET')!==routes.get(path))throw new TypeError('Unsupported WORLD request');
   const expected=epoch;guard(expected);if(!owner||!session)throw Object.assign(Error('SYNK ID로 로그인해 주세요.'),{code:'AUTH_REQUIRED',status:401});
-  // Recheck account revocation before entering a long-lived town from another surface.
-  if(path==='town/state')await verify(expected);
-  if(path==='town/entry'){townBinding=null;townStateRevision=-1;}
+  // Recheck account revocation before entering a long-lived town from another surface — then at most once a minute,
+  // as the town reads itself again during timed scenes and at due times (W3).
+  if(path==='town/state'&&now()-townVerifiedAt>=60000){await verify(expected);townVerifiedAt=now();}
+  if(path==='town/entry'){townBinding=null;townStateRevision=-1;townVerifiedAt=-Infinity;}
   if(path==='town/sharing'&&!townBinding?.classId)throw Object.assign(Error('CLASSROOM_FORBIDDEN'),{code:'CLASSROOM_FORBIDDEN',status:403});
   if((path==='town/check'||path==='town/placement')&&native&&!nativeTownCheck)throw Object.assign(Error('PC 앱에서는 아직 마을 준비 확인을 열 수 없어요.'),{code:'TOWN_CHECK_UNSUPPORTED'});
   if((path==='town/pulse'||path==='town/boundary')&&native&&!nativeTownPulse)throw Object.assign(Error('PC 앱에서는 아직 이 마을 화면을 열 수 없어요. 브라우저의 SYNK WORLD에서 열어 주세요.'),{code:'TOWN_PULSE_UNSUPPORTED'});

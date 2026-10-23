@@ -19968,7 +19968,7 @@ function createWorldAccount({
   const config = readConfig(raw, getUrl()), key = "synk.oauth.session.world";
   const binding = [config.supabaseUrl, config.accountApiUrl, config.clients.world.clientId, config.clients.world.redirectUri].join("|");
   const entry = createPlatformEntry({ clientKey: "world", getUrl, replaceUrl });
-  let session = null, rawSession = null, owner = null, currentSessionId = null, currentAccount = null, epoch = 0, closed = false, refreshing = null, pendingExchange = null, townBinding = null, townStateRevision = -1, verifiedClient = null, gameHost = null, gameLaunch = 0, lifeHost = null, lifeLaunch = 0, verification = 0;
+  let session = null, rawSession = null, owner = null, currentSessionId = null, currentAccount = null, epoch = 0, closed = false, refreshing = null, pendingExchange = null, townBinding = null, townStateRevision = -1, townVerifiedAt = -Infinity, verifiedClient = null, gameHost = null, gameLaunch = 0, lifeHost = null, lifeLaunch = 0, verification = 0;
   let nativeIdentity = null, nativeAccountId = null, nativeGeneration = -1, signedOutGeneration = -1, nativeEvents = 0, nativeReady = null, unsubscribe = null, nativeClassroom = false, nativeHomework = false, nativeTownCheck = false, nativeTownPulse = false, hangulHost = null, hangulLaunch = 0;
   const controllers = /* @__PURE__ */ new Set();
   const guard = (expected) => {
@@ -20005,6 +20005,7 @@ function createWorldAccount({
     verifiedClient = null;
     townBinding = null;
     townStateRevision = -1;
+    townVerifiedAt = -Infinity;
     nativeIdentity = null;
     nativeAccountId = null;
     for (const c of controllers) c.abort();
@@ -20374,10 +20375,14 @@ function createWorldAccount({
     const expected = epoch;
     guard(expected);
     if (!owner || !session) throw Object.assign(Error("SYNK ID\uB85C \uB85C\uADF8\uC778\uD574 \uC8FC\uC138\uC694."), { code: "AUTH_REQUIRED", status: 401 });
-    if (path === "town/state") await verify(expected);
+    if (path === "town/state" && now() - townVerifiedAt >= 6e4) {
+      await verify(expected);
+      townVerifiedAt = now();
+    }
     if (path === "town/entry") {
       townBinding = null;
       townStateRevision = -1;
+      townVerifiedAt = -Infinity;
     }
     if (path === "town/sharing" && !townBinding?.classId) throw Object.assign(Error("CLASSROOM_FORBIDDEN"), { code: "CLASSROOM_FORBIDDEN", status: 403 });
     if ((path === "town/check" || path === "town/placement") && native && !nativeTownCheck) throw Object.assign(Error("PC \uC571\uC5D0\uC11C\uB294 \uC544\uC9C1 \uB9C8\uC744 \uC900\uBE44 \uD655\uC778\uC744 \uC5F4 \uC218 \uC5C6\uC5B4\uC694."), { code: "TOWN_CHECK_UNSUPPORTED" });

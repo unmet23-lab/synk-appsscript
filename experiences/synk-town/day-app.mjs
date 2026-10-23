@@ -43,6 +43,10 @@ const signatures = new Map();
 const RESIDENT_IDS = ['cafe-owner', 'workshop-owner', 'researcher'], BOUNDARY_GAP_MS = 20000;
 let clockOffset = null, villageLive = { ids: new Set(), signature: '' };
 let reading = false, bounding = false, lastBoundary = 0, dueReadAt = 0;
+// A WORLD page opened before the town learned pulse·boundary keeps an older host that answers only presence, and
+// a PC app released before those routes says so by its code: this window then falls back to the old heartbeat
+// (a presence each second, the whole town each time).
+let legacyHost = false;
 const walkWanted = new URLSearchParams(location.search).get('controls') !== 'classic';
 let walkControls = null, walkPoint = null, walkPanel = false, walkHeading = 0, walkMoving = false, walkInputActive = false, walkFrameAt = null;
 let walkPending = [], walkPacket = null, walkFlushing = null, walkSentAt = 0, walkInputMode = matchMedia('(pointer: coarse)').matches ? 'touch' : 'keyboard';
@@ -181,7 +185,17 @@ async function pulseNow() {
   // The host lease starts when the request is processed, not when a slow GPU
   // frame/network finally lets the browser consume the response.
   const requestedAt = performance.now();
-  const data = await request('pulse', flags()); lastPulse = requestedAt;
+  if (legacyHost) {
+    const data = await request('presence', flags()); lastPulse = requestedAt;
+    syncClock(data.serverNow, requestedAt, performance.now()); accept(data); return;
+  }
+  let data;
+  try { data = await request('pulse', flags()); }
+  catch (error) {
+    if (error?.code === 'TOWN_PULSE_UNSUPPORTED' || /Unknown town operation/.test(error?.message || '')) { legacyHost = true; return pulseNow(); }
+    throw error;
+  }
+  lastPulse = requestedAt;
   syncClock(data.serverNow, requestedAt, performance.now());
   if (data.presence?.surfaceId === surfaceId) presence = data.presence;
   // A pulse only keeps the lease (F11): the town is read again only when the world was written.
@@ -208,7 +222,7 @@ function read() {
 /** The window holding the town says it is at a safe point, at most every 20 seconds (§14-3): the world
  * settles there and may issue a contact. Another window holding the town is no error here. */
 function boundary() {
-  if (bounding || !presence?.owner) return;
+  if (bounding || legacyHost || !presence?.owner) return;
   bounding = true; lastBoundary = performance.now();
   queue(async () => {
     const data = await request('boundary', { surfaceId, fence: presence.fence });
@@ -249,7 +263,8 @@ function dueAt() {
 function tick() {
   if (!snapshot?.capabilities?.day || !connected) return;
   pulse();
-  if (document.hidden) return; // a hidden window keeps its lease; it reads again when it is shown
+  // A hidden window keeps its lease and reads again when it is shown; an older host's presence brings the whole town.
+  if (document.hidden || legacyHost) return;
   const now = performance.now(), t = serverNow(), due = dueAt();
   if (timed()) read();
   else if (due !== null && t !== null && t >= due && now >= dueReadAt) { dueReadAt = now + 2000; read(); }
@@ -535,7 +550,7 @@ function villageFrame() {
   if (!v || !connected) return;
   const village = villageRows(v);
   if (village.signature !== villageLive.signature) { renderScene(); return; }
-  if (renderer && villageLive.ids.size) renderer.setResidents(village.rows.filter(r => villageLive.ids.has(r.id)));
+  if (renderer && villageLive.ids.size) renderer.setResidents?.(village.rows.filter(r => villageLive.ids.has(r.id)));
 }
 function frame(now) { walkFrame(now); observe(now); villageFrame(); raf = requestAnimationFrame(frame); }
 async function load() {
@@ -595,7 +610,7 @@ window.addEventListener('blur', () => { if (walking()) { pauseWalkInput(); pulse
 window.addEventListener('pagehide', () => {
   if (raf !== null) cancelAnimationFrame(raf); walkControls?.dispose(); renderer?.dispose();
   const stopped = { surfaceId, surface: 'day', foreground: false, safe: false };
-  if (worldHostRequested) { worldHost?.request('pulse', stopped).catch(() => {}); worldHost?.dispose(); }
+  if (worldHostRequested) { worldHost?.request(legacyHost ? 'presence' : 'pulse', stopped).catch(() => {}); worldHost?.dispose(); }
   else fetch('/api/preview/pulse', { method: 'POST', headers: { 'Content-Type': 'application/json' }, keepalive: true, body: JSON.stringify(stopped) }).catch(() => {});
 });
 window.addEventListener('pageshow', event => { if (event.persisted) location.reload(); });

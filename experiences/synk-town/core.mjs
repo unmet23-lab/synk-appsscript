@@ -309,11 +309,13 @@ function heldNow(state) {
   return held;
 }
 /** The night rule at a command (host.nowMs, §4-2 A): the residents a scene would begin with must be up. A scene already
- * begun goes on (resuming one is not a beginning); without the host's sleeps every scene stays open. */
+ * begun goes on (resuming one is not a beginning) — a retry after its seat moved begins it again; without the host's
+ * sleeps every scene stays open. */
 function sleepersFor(state, command, p, nowMs) {
   const v = state.village;
   if (!v?.sleeps) return [];
-  const needs = command.type === 'DAY_START' ? DAY_MEMBERS[p.kind] || [] : command.type === 'DAY_JOB_START' ? ['workshop-owner']
+  const needs = command.type === 'DAY_START' ? DAY_MEMBERS[p.kind] || [] : command.type === 'DAY_RETRY' ? DAY_MEMBERS[state.day?.episode?.kind] || []
+    : command.type === 'DAY_JOB_START' ? ['workshop-owner']
     : command.type === 'BAZAAR_START' ? ['cafe-owner', ...(p.kind === 'pictureMenu' ? ['workshop-owner'] : [])]
       : command.type === 'LIFE_OPEN' ? ['cafe-owner'] : [];
   return needs.filter(npc => !upFor(v, npc, nowMs));
