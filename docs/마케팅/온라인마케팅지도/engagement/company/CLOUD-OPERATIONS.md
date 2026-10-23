@@ -14,6 +14,24 @@
 - **반영:** 사슬 26 합본(「이력 25」 문의 지우기 + 「이력 26」 작업실 글 2 + 「이력 28」 비밀번호 9자, `.tmp/inquiry-erase-26-release-20261022/`) 최종 사후 확인 passed·armed 뒤 회사 릴리스 절차대로(inert·stage·반영 전 백업·교체·공개 대조·가벼운 재무장). 그 전에는 원격 호출을 하지 않는다. 이 판 = 실제 사슬 27, 폴더 `.tmp/pulse-photos-films-27-release-20261023/` — 뒤 판 「이력 27」 1일 1편 게시 길(GPT, 실제 사슬 28)이 이 폴더의 `rearm/arm-postcheck-final*.json`을 본다. 10-23 판 합치기(유호님 「합칠수있는판은 합치는게 좋다… 지금 너무 속도가 느리다」)로 비밀번호 9자 판이 사슬 26에 실렸고, 이 판은 맨 위 세션의 기술 판단으로 GPT 판 앞으로 옮겼다(배포 파일 겹침 0 · GPT 판 멈춤) — 순서표 끝 절 「순서 바뀜」, 유호님이 다르게 답하시면 그 답이 우선.
 - **반영 뒤 확인:** `https://workspace.synk.im/pulse-app/films-view.mjs` 200 · 사진 28장 200 `image/webp` · 하린 영상 넷·기획 모음 쪽·전신 사진 404 · 뮤비 셋 200·Range 206 · 화성 세 편 포스터 셋 200 `image/webp`·본편 셋 200 `video/mp4`·Range 206(바이트 sha가 시험 값과 같음) · 체험판(`?demo=coffee`)에서 제작 설계 › 모델 고르기에 사진 넉 장, 레일 「완성 광고」에 카드 넷(화성 셋 — 숏폼은 세로 카드 — 과 뮤비), 휴대폰 390 폭.
 
+<a id="inquiry-erase-26-production-20261023"></a>
+## 「문의 접수」 문의 한 건 지우기 + Store 연결 secure_delete=ON · 2026-10-23 운영 반영 (순서 문서 「이력 25」 · 실제 사슬 26 합본)
+
+부모 세션 「사업 준비 개선 방안」이 맡긴 판이다 — TOPIK 4급 관심 등록 페이지가 약속한 「삭제 요청: hello@synk.im」을 회사 서버에서 처리할 길. 같은 사슬 26에 아래 [「이력 26」 작업실 글 2](#workroom-copy-2-production-20261023)와 [「이력 28」 비밀번호 최소 9자](#next-company-release-password-min9-20261022)를 함께 실었다(유호님 10-23 「합칠수있는판은 합치는게 좋다고 생각해. 부작용이 없다면 말이야. 지금 너무 속도가 느리다.」). 배포는 AGENTS.md(10-21) 「배포·공개는 묻지 않는다」대로 했고, 이 판 승인은 셋이다.
+- 문의 한 건 지우기(10-22 12:2x): 「… 「문의 접수」 문의 한 건 지우기 … 회사 릴리스 절차대로 반영하고(운영 읽기, 후보·도구 준비, 반영 전 백업·교체·공개 대조·HA 재무장), 운영 확인으로 10-21 종단 시험 줄 하나를 문의 접수에서 지워 봐. 교체 중 약 4분 끊겨도 괜찮아.」
+- Store 연결(10-22 17시대): 「진행해. 회사 서버 store.mjs에서 DB 연결 전체를 secure_delete=FAST로 두는 한 줄(과 시험 단언)을 고치고 아르곤·GPT 검수 뒤 이력 25(문의 한 건 지우기)에 같이 실어 …」 — 다시 재 보니 FAST는 병합으로 빈 페이지에 사본을 남겨, 승인 앞 보고에서 미리 말한 대로 ON으로 실었다.
+- 합본(10-23 13:1x): 「진행해. 회사 Workspace 운영 서버(HA 세 대)에 사슬 26 합본 — 「이력 25」 문의 한 건 지우기(+Store 연결 secure_delete=ON), 「이력 28」 작업실 로그인 비밀번호 최소 9자, 「이력 26」 작업실 글 2 — 을 사슬 25 뒤 한 판으로 …」
+
+실행 기록 `.tmp/inquiry-erase-26-release-20261022/README.md`, 승인 `approval-26.md`, 도구 계보 `successor-tools/BUILD-NOTES.md`, 묶음·흉내·운영 확인 도구 `.tmp/inquiry-erase-20261022/`.
+
+- **바뀐 것(이 판 몫 — 합본 전체 19파일):**
+  - 문의 한 건 지우기 — `a5875f784` + 검수 고침 `c9131369d`·`70c0fe285`·`a595a2bcb`. 회사 `website-inquiry-service.mjs`(확인 → 지우기 두 단계, 다시 수집되지 않게 하는 지운 기록 `websiteInquiryErasures` {줄 번호, 시각}, 지울 때만 WAL TRUNCATE), `website-inquiry-google.mjs`(그 응답이 Google에 남았는지 — responseId만), `server.mjs`(관리자 POST `/api/website-inquiries/<줄 번호>/erase-check`·`/erase`, 감사 `website-inquiry-erased`), `public/website-inquiries.js`·`.css`(상세 끝 03 「문의 지우기」 — 「지우기 전에 확인」 → 확인 판 → 「지우기」/「Google 원본은 두고 지우기」·「그만두기」), 메신저 `removeTaskForCompanyUser`(그 문의의 「홈페이지 문의 답변 검토」 할 일), 시험.
+  - Store 연결 전체 `secure_delete=ON` — `218a28d6f`(`store.mjs` 한 줄, `store-performance.test.mjs`·`website-inquiry.test.mjs`). 다른 종류 쓰기가 페이지를 나누거나 합칠 때 지운 문의 칸 사본이 남던 틈(곁 세션 `bc742c9be`가 찾음)을 막는다.
+- **검수(반영 전):** 아르곤 1·2차 0건, 화면 Fable 「보여도 됨」(P2 4·P3 4 반영), 백엔드 2차 아르곤 2(반영 2)·GPT 5(반영 4, 후속 1 → 운영 측정 잔여 0·연결 ON으로 반영). Store 연결 아르곤 0·GPT 0. 합본 미리 보기 아르곤 0·GPT P2 3(안함)·Fable 「그대로 운영 후보로」(변이 84/84), 판 도구 아르곤·GPT 네 번(w26-tools·-fix·-fix2·-fix3) 뒤 Fable 최종 「그대로 운영 후보로」. 기록 `.tmp/검수/inquiry-erase-25*`·`.tmp/검수/w26-*`.
+- **운영 결과(10-23 KST):** 부모 사슬 25 armed(17:30) 뒤 — 예비 노드 inert(이미지 `sha256:4d740b1b…`, 리눅스 선택 시험 2,948/2,948 · 호환 2/2) → stage(두 노드 `staged-immutable`, 델타 전송) → 반영 전 백업(18:25~18:39) → 교체 18:45:59~19:01:36(감싸개 `deploy-quiet` — 서버 백업 점검 뒤 조용한 틈에 dispatch, 운영 검증 passed, **공개 끊김 18:55:19~19:00:42 약 5분 24초**) → 공개 225/225 · 메신저 12/12 · 통화 켜짐 → 가벼운 재무장 19:39:44~19:45:16 **passed·armed**(release `f3af73691aab…`, 요청 `1027c38e-4fe6-4a62-b819-52df5682e0ee`, 계약 `synk-ha-arm-after-inquiry-erase-26/v1` 사슬 26줄, 연습 증명 백업 10-21T14:26:36Z → 시한 10-29 23:26). HA 자동 장애 전환이 꺼져 있던 시간 18:46~19:45. 공개 `website-inquiries.js`·`.css` = 후보 바이트.
+- **운영 확인(19:52):** 관리자 페이지 API로 10-21 종단 시험 줄 하나를 확인 → 지우기 — 확인 판 Google 원본 「있음」(원본은 두고 회사 서버 줄만), 할 일 없음, 시험 줄 맞음 → 지움(WAL truncated), 목록 5 → 4줄. 읽기 전용 DB 조회로 지운 기록 {줄 번호, 시각} 1건·감사 1줄(키 action·at·id·subject·userId)·고객 문의 줄 0 그대로, 다음 수집(19:53:52) 뒤에도 돌아오지 않았다. 처리 절차는 [`experiences/lab-topik4/README.md`](../../../../../experiences/lab-topik4/README.md) 「신청 운영」 4.
+- **남은 것:** 지운 뒤 빈 칸 잔여 다시 재기 — `deploy/free-space/scan.cjs`가 `WAL_SIDECARS_MISSING`으로 판정하지 못했다. 재는 자식이 DB 주인 uid(1000)로 권한을 낮추는데 운영 DB가 든 호스트 경로 `/srv/synk/recovery-final-20261008T133704Z/`가 root 전용이라, 그 uid로는 DB·-wal·-shm이 하나도 안 보인다(root로는 셋 다 있음 — 읽기 전용 확인 `.tmp/inquiry-erase-26-release-20261022/checks/erase/`). 운영 데이터 변화는 없다. 도구가 권한을 낮추기 전에 폴더를 열어 두고 그 안에서 읽게 고친 뒤 다시 잰다.
+
 <a id="workroom-copy-2-production-20261023"></a>
 ## 작업실 글 2: GPT v7 「이번 주 제작 묶음」 글 · 2026-10-23 운영 반영 (순서 문서 「이력 26」 → 사슬 26 합본)
 

@@ -507,6 +507,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 백업 폴더 `파일/0`(`목록.json`의 경로)이 바꾸기 전 공용 파일이다. 줄끝을 LF로 맞춰 `git show <B>:<경로>`와 견주면 남의 미커밋만 보인다(이번에는 한 줄). 지금 작업 파일이 T 판 그대로인지(`git hash-object` = `git rev-parse HEAD:<경로>`) 본 뒤 `git merge-file -p <T 판> <B 판> <백업>`으로 얹고, 원래 줄끝(CRLF)으로 같은 폴더 임시 파일에 써서 바꿔 넣었다. 같은 날 도구도 고쳤다 — `tools/lib/git-publish-core.cjs`의 `바꿔쓰기()`가 공통 `replaceFile`(`tools/lib/backup-primitives.cjs`, EPERM·EACCES·EBUSY면 최대 20번 · 약 9.5초)로 다시 하고, 끝내 못 쓰면 쓰려던 3방향 결과를 백업 `결과/<차례>`에 남겨 「주의」에 「파일이 풀리면 <그 파일>을 그 자리에 복사한다」를 보인다(지금 파일은 origin 판이라는 것도 함께).
 - 다시 확인: 되살린 뒤 공용 작업본 `git diff -- <경로>`가 그 세션의 줄뿐이고, 줄끝을 빼면 내용이 「T 판 + 백업의 B → 백업 차이」와 같다. `주의:`에 「미커밋을 얹은 결과를 쓰지 못했다」가 보이면 그 자리에서 안내된 `결과/<차례>`를 복사하고 이 확인을 한다. 도구 쪽은 `node --test --test-name-pattern="EPERM|끝내 못 쓰면" tests/바로올리기.test.js`(잠깐 EPERM이면 다시 해서 지킴 · 끝내 못 쓰면 결과를 남기고 알림 — 둘 다 고치기 전 도구에서 실패).
 
+### 공용 작업본 HEAD가 내 앞 커밋보다 뒤에 있으면 `바로올리기`가 그 커밋까지 내 변경으로 보고 「원격 판과 N곳이 겹친다」로 멈춘다 (2026-10-22 Claude)
+- 증상: 10-22 문의 지우기 델타 고침(2파일)을 `node tools/바로올리기.js <두 경로> -m … --실행`하니 「[멈춤] origin 위에 얹지 못한 경로가 있다 — 아무것도 올리지 않았다 … 원격 판과 2곳이 겹친다」. 그 두 파일을 origin에서 고친 남은 없었다(`git log c9131369d..origin/master -- <경로>` 빈 결과).
+- 원인: 공용 작업본 HEAD(`a60538dba`)가 내가 바로 앞에 올린 `c9131369d`보다 앞선 판이었다. 그 push 뒤 따라가기가 남의 미커밋(PATH 문서·결정·트랙·마을 설계)과 origin 변경이 겹쳐 아무것도 옮기지 못했다(`따라가기` 미리 보기도 같은 멈춤). 도구는 HEAD 대비 차이를 내 변경으로 보므로, 이미 origin에 있는 내 앞 커밋까지 다시 얹으려다 겹쳤다.
+- 고침: 공용 인덱스·HEAD는 그대로 두고 임시 인덱스로 origin 위에 내 경로만 얹었다 — `GIT_INDEX_FILE=<임시> git read-tree origin/master` → 경로마다 `git hash-object -w --path=<경로> <경로>`(줄끝 정규화 — 이 저장소 blob은 LF라 `--no-filters`로 넣으면 작업본 CRLF가 그대로 들어가 파일 전체가 바뀐 커밋이 된다, 첫 시도 +927/−893) → `git update-index --cacheinfo 100644,<blob>,<경로>` → `write-tree` → `commit-tree -p origin/master -F <메시지>` → `node tools/공개검사.js --바탕 <O> --머리 <C>` · `node tools/git-storage-check.cjs --base <O> --head <C>` → `git push origin <C>:refs/heads/master`(거절되면 다시 받아 다시 만든다, 그 사이 내 경로를 남이 고쳤으면 멈춘다).
+- 다시 확인: `git diff --stat <O> <C>`가 내 줄 수만(+43/−9), 새 blob의 CRLF 0, `git merge-base --is-ancestor <C> origin/master`(10-22 `70c0fe285`).
+
 ## 워크트리·연결 폴더·공간 정리
 
 ### junction이 든 워크트리를 통째로 지우면 공용 node_modules가 지워질 수 있다
