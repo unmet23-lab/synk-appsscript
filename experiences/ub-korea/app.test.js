@@ -32,15 +32,15 @@ test('폼 고정 값은 구글 폼 선택지 글과 한 글자도 다르지 않�
   for (const m of marks) assert.match(m, /^\[울란바토르 관심 등록 · .+\]$/);
 });
 
-test('회사 서버 분류: 학원은 「한국어 교육」, 유학 상담은 「유학·취업 연계」, 시험 표식이면 둘 다 「기능 점검」으로 빠진다', async () => {
+test('회사 서버 분류: 상품별 관심 등록과 옛 SHIFT 유학의 PATH 분류를 지키고, 시험 표식은 기능 점검으로 빠진다', async () => {
   const { classifyWebsiteInquiry } = await import(pathToFileURL(SERVER).href);
   const row = (v, id) => { const p = A.buildPayload(v, id); return { type: p.get(C.FORM.type), message: p.get(C.FORM.body) }; };
   const academy = classifyWebsiteInquiry(row(full, 'academy'));
   const consult = classifyWebsiteInquiry(row(full, 'consult'));
   assert.equal(academy.category, 'lab');
-  assert.equal(academy.label, '한국어 교육');
-  assert.equal(consult.category, 'shift-career');
-  assert.equal(consult.label, '유학·취업 연계');
+  assert.equal(academy.label, '울란바토르 한국어 학원 관심 등록');
+  assert.equal(consult.category, 'path-career');
+  assert.equal(consult.label, '한국 유학 상담 관심 등록');
   assert.equal(academy.isTest, false);
   // 종단 시험은 궁금한 점 칸에 시험 표식을 넣는다 — 두 응답 모두 고객 문의·실적에서 빠지고 할 일을 만들지 않는다.
   const probe = { ...full, note: `${TEST_MARK} [시험] 울란바토르 관심 등록 종단 확인` };
