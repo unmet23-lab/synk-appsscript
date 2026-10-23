@@ -87,11 +87,14 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 
 - 10-23 덧붙임(GPT): 생성 뒤 `git status`는 M인데 `git diff --numstat`는 비어 있고, 짝 검사가 「통과(작업본에서만)」로 막히는 파일 3개가 있었다. LF 생성 바이트와 CRLF 체크아웃의 크기·줄끝 표시가 남은 경우였다. 먼저 해당 파일의 `git hash-object --path=<경로> --stdin` 결과와 `git rev-parse HEAD:<경로>`·`git rev-parse :<경로>`가 모두 같은지 확인했다. 세 값이 같은 파일만 명시해 `git add -- <경로…>`로 인덱스의 파일 정보를 갱신하고, 전후 인덱스 blob 동일·`git diff --cached` 빈 결과를 확인했다. 내용이 다르거나 남의 스테이징이 있으면 이 방법을 쓰지 않는다. 다시 확인: 세 파일의 M 표시가 사라졌고, 생성물 검사는 생략하지 않았다.
 
+- 10-24 덧붙임(Claude): git 밖 공용 문서(`.tmp/company-ha-release-order-20261020.md`, 세션마다 줄끝이 다른 줄을 덧붙임)에 줄을 끼우는 node 스크립트가 `split(/\r?\n/)` 뒤 한 가지 줄끝으로 `join`해, 남이 쓴 줄까지 통째로 바꿨다(10-23 22:1x 전부 LF, 10-24 00:0x 전부 CRLF — 「CR이 하나라도 있으면 CRLF」로 고른 탓). 고침: `split(/(?<=\n)/)`로 줄끝을 품은 채 나누고 넣는 줄만 바로 위 줄의 줄끝을 따른다. 쓰기 전후로 줄끝 수(위 덧붙임처럼 node로)를 견준다.
+
 ### CR 개수를 `grep -c $'\r'`로 세면 모든 줄이 나온다
 - 증상: LF뿐인 파일에서도 `grep -c $'\r' AGENTS.md`가 줄 수(21)를 그대로 낸다.
 - 원인: Git Bash의 grep이 CR 한 글자짜리 패턴을 빈 패턴처럼 다룬다(`grep -c ''`과 같은 수가 나온다). 더 깊은 까닭은 캐지 않았다.
 - 고침: `tr -cd '\r' < <파일> | wc -c`로 센다.
 - 다시 확인: LF 파일에서 `grep -c $'\r'`이 줄 수, `tr -cd '\r' | wc -c`가 0이다(10-17 재현, CR 한 줄 + LF 한 줄 파일에서도 grep은 2, tr은 1).
+- 10-24 덧붙임(Claude): Git Bash의 awk도 줄 끝 CR을 떼고 읽는다 — `awk '/\r$/{c++}'`가 411줄 전부 CRLF인 순서 문서에서 0을 냈다(그래서 10-23 밤 「전부 LF」라고 잘못 봤다). 줄마다 줄끝을 볼 때는 `node -e`로 `split('\n')` 뒤 `endsWith('\r')`를 센다.
 
 ### 파이썬이 git에 넘긴 입력 끝에 `\r`이 붙는다
 - 증상: `git update-ref --stdin`이 「extra input」으로 거절한다. `Path.write_text`로 쓴 `objects/info/alternates`에서 「object directory …? does not exist」가 난다(10-17).
