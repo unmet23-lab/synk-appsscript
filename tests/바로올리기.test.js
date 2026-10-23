@@ -519,6 +519,79 @@ test('따라가기: 가지를 옮긴 뒤 3방향 결과를 쓰기 직전에 남�
   assert.ok(fs.existsSync(path.join(r.백업, '목록.json')), '내 고침은 백업에 있다');
 });
 
+// 가지를 옮긴 뒤 3방향 결과를 쓰는 rename이 EPERM으로 지면(편집기·색인·백신이 그 파일을 잡음) 작업본 미커밋이 빠진다(10-23 공용 작업본 트랙 한 줄).
+function rename막기(t, 이름, 몇번, { 기다리는사이 = null } = {}) {
+  const 원래 = fs.renameSync, 원래기다림 = Atomics.wait;
+  const 막음 = { 진: 0 };
+  const 풀기 = () => { fs.renameSync = 원래; Atomics.wait = 원래기다림; };
+  t.after(풀기);
+  막음.걸기 = () => {
+    // 다시 하기 사이 기다림(최대 약 9.5초)을 시험에서는 건너뛰고, 기다리는사이가 있으면 첫 기다림에 한 번 부른다(그사이 남이 저장)
+    Atomics.wait = () => { const f = 기다리는사이; 기다리는사이 = null; if (f) f(); return 'timed-out'; };
+    fs.renameSync = (from, to) => {
+      if (path.basename(String(to)) === 이름 && 막음.진 < 몇번) { 막음.진++; throw Object.assign(new Error(`EPERM: operation not permitted, rename '${from}' -> '${to}'`), { code: 'EPERM' }); }
+      return 원래(from, to);
+    };
+  };
+  막음.풀기 = 풀기;
+  return 막음;
+}
+
+test('따라가기: 3방향 결과를 쓰는 rename이 잠깐 EPERM이면 다시 해서 작업본 미커밋을 지킨다', async (t) => {
+  const 판 = 새판(t, { 파일: { 'b.txt': 'b1\nb2\nb3\n' } });
+  const 워 = 판.워크트리('wt');
+  워.쓰기('b.txt', 'b1 내 것\nb2\nb3\n');
+  const O = 판.남push({ 'b.txt': 'b1\nb2\nb3 원격\n' });
+  const 막음 = rename막기(t, 'b.txt', 3);
+  const r = await 도구.따라가기({ 저장소: 워.폴더, 실행: true, 시험고리: { 따라가기쓰기직전: 막음.걸기 } });
+  막음.풀기();
+  assert.equal(r.결과, '따라감', JSON.stringify(r));
+  assert.equal(막음.진, 3, '세 번 진 뒤 네 번째에 썼다');
+  assert.equal(r.주의, undefined, JSON.stringify(r));
+  assert.equal(워.머리(), O);
+  assert.equal(워.읽기('b.txt'), 'b1 내 것\nb2\nb3 원격\n', '미커밋을 얹은 3방향 결과');
+  assert.deepEqual(fs.readdirSync(워.폴더).filter((n) => n.includes('.baro-')), [], '임시 파일이 남지 않는다');
+});
+
+test('따라가기: 3방향 결과를 끝내 못 쓰면 쓰려던 판을 백업 결과/에 남기고 복사할 곳을 알린다(지금 파일은 origin 판)', async (t) => {
+  const 판 = 새판(t, { 파일: { 'b.txt': 'b1\nb2\nb3\n' } });
+  const 워 = 판.워크트리('wt');
+  워.쓰기('b.txt', 'b1 내 것\nb2\nb3\n');
+  const O = 판.남push({ 'b.txt': 'b1\nb2\nb3 원격\n' });
+  const 막음 = rename막기(t, 'b.txt', Infinity);
+  const r = await 도구.따라가기({ 저장소: 워.폴더, 실행: true, 시험고리: { 따라가기쓰기직전: 막음.걸기 } });
+  막음.풀기();
+  assert.equal(r.결과, '따라감', JSON.stringify(r));
+  assert.equal(막음.진, 20, '공통 replaceFile의 한도만큼 다시 했다');
+  assert.equal(워.머리(), O);
+  assert.equal(워.읽기('b.txt'), 'b1\nb2\nb3 원격\n', '지금 파일은 read-tree가 쓴 origin 판');
+  const 남김 = path.join(r.백업, '결과', '0');
+  assert.match(r.주의, /b\.txt: 미커밋을 얹은 결과를 쓰지 못했다\(EPERM\) — 지금 파일은 origin 판이라 그 미커밋이 빠졌다/);
+  assert.ok(r.주의.includes(남김), r.주의);
+  assert.equal(fs.readFileSync(남김, 'utf8'), 'b1 내 것\nb2\nb3 원격\n', '남긴 판을 복사하면 미커밋이 돌아온다');
+  assert.deepEqual(fs.readdirSync(워.폴더).filter((n) => n.includes('.baro-')), [], '임시 파일이 남지 않는다');
+});
+
+test('따라가기: rename이 EPERM이라 다시 하기를 기다리는 사이 남이 그 파일을 저장하면 덮지 않고 쓰려던 판을 남긴다(GPT GA1)', async (t) => {
+  const 판 = 새판(t, { 파일: { 'b.txt': 'b1\nb2\nb3\n' } });
+  const 워 = 판.워크트리('wt');
+  워.쓰기('b.txt', 'b1 내 것\nb2\nb3\n');
+  const O = 판.남push({ 'b.txt': 'b1\nb2\nb3 원격\n' });
+  // 편집기가 파일을 잡고 있다가(첫 rename EPERM) 저장하며 놓는다 — 다음 rename은 될 테지만 그 저장을 덮으면 안 된다
+  const 막음 = rename막기(t, 'b.txt', 1, { 기다리는사이: () => 워.쓰기('b.txt', '편집기가 잡고 있다 저장\n') });
+  const r = await 도구.따라가기({ 저장소: 워.폴더, 실행: true, 시험고리: { 따라가기쓰기직전: 막음.걸기 } });
+  막음.풀기();
+  assert.equal(r.결과, '따라감', JSON.stringify(r));
+  assert.equal(막음.진, 1, '한 번 지고, 기다리는 사이 바뀐 것을 보고 더 하지 않았다');
+  assert.equal(워.머리(), O);
+  assert.equal(워.읽기('b.txt'), '편집기가 잡고 있다 저장\n', '남이 저장한 판을 덮지 않는다');
+  const 남김 = path.join(r.백업, '결과', '0');
+  assert.match(r.주의, /b\.txt: 그사이 누가 써서 3방향 결과를 쓰지 않았다 — 쓰려던 판은 /);
+  assert.ok(r.주의.includes(남김), r.주의);
+  assert.equal(fs.readFileSync(남김, 'utf8'), 'b1 내 것\nb2\nb3 원격\n');
+  assert.deepEqual(fs.readdirSync(워.폴더).filter((n) => n.includes('.baro-')), [], '임시 파일이 남지 않는다');
+});
+
 test('따라가기: origin이 새로 넣는 경로에 다른 미추적 파일이 있거나 폴더·파일이 부딪히면 아무것도 바꾸지 않는다', async (t) => {
   const 판 = 새판(t, { 파일: { 'a.txt': '1\n' } });
   const 워 = 판.워크트리('wt');

@@ -177,3 +177,18 @@ test('a receipt rename that Windows refuses for a moment is retried, while other
   assert.equal(calls, 3); assert.equal(fs.readFileSync(file, 'utf8'), 'new'); assert.equal(fs.existsSync(temp), false);
   assert.throws(() => replaceFile(path.join(dir, 'missing.tmp'), file), error => error.code === 'ENOENT');
 });
+test('a refused retry stops before overwriting a target that another process wrote while it held the lock (10-23)', t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'receipt-rename-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const temp = path.join(dir, 'b.txt.tmp'), file = path.join(dir, 'b.txt');
+  fs.writeFileSync(file, 'old'); fs.writeFileSync(temp, 'new');
+  const original = fs.renameSync; let calls = 0, asked = 0;
+  const mocked = t.mock.method(fs, 'renameSync', function (...args) {
+    // 편집기가 파일을 잡고 있다가 저장하며 놓는다 — 첫 rename은 거절, 다음은 될 테지만 그 저장을 덮으면 안 된다.
+    if (++calls === 1) { fs.writeFileSync(file, 'editor'); throw Object.assign(new Error('EPERM: operation not permitted, rename'), { code: 'EPERM' }); }
+    return original.apply(this, args);
+  });
+  assert.throws(() => replaceFile(temp, file, { beforeRetry: () => { asked++; return fs.readFileSync(file, 'utf8') === 'old'; } }), error => error.code === 'REPLACE_TARGET_CHANGED' && error.cause?.code === 'EPERM');
+  mocked.mock.restore();
+  assert.equal(calls, 1); assert.equal(asked, 1); assert.equal(fs.readFileSync(file, 'utf8'), 'editor'); assert.equal(fs.readFileSync(temp, 'utf8'), 'new', 'the caller decides what to do with the staged bytes');
+});

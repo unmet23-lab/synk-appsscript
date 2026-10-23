@@ -15,12 +15,14 @@ function parseRefs(buffer) {
     return { sha, ref };
   });
 }
-function replaceFile(temp, file) {
+function replaceFile(temp, file, { beforeRetry = null } = {}) {
   for (let attempt = 1; ; attempt++) {
     try { return fs.renameSync(temp, file); }
     catch (error) {
       if (!['EPERM', 'EACCES', 'EBUSY'].includes(error.code) || attempt >= 20) throw error;
       Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 50 * attempt);
+      // The caller may refuse a retry, e.g. when another process wrote the target while it held the lock.
+      if (beforeRetry && !beforeRetry()) throw Object.assign(new Error(`REPLACE_TARGET_CHANGED: ${file}`), { code: 'REPLACE_TARGET_CHANGED', cause: error });
     }
   }
 }

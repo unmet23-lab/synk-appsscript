@@ -13,6 +13,7 @@ const ci빨간불 = 있으면('../ci빨간불.js');
 
 const { 조각만들기, 고름읽기, 조각얹기, 줄끝맞추기, 줄나누기, 줄잇기, 줄차이, 공용문서인가 } = require('./git-commit-core.cjs');
 const { 쌓기, 올릴판검사, 세판합치기, 검사멈춤이유 } = require('./git-commit-plan.cjs');
+const { replaceFile } = require('./backup-primitives.cjs');
 const {
   git도구, 저장소찾기, 경로맞추기, 잠깐, 별도인덱스, 날차이읽기, 블롭, 블롭쓰기, 글아닌경로, 조상인가, git버전확인,
   잠금기다리기, 줄바꿈채우기, 줄셈, 뚜렷한줄, 글로, 바이트로, 보이게, 이진인가, 멈춤, 사용법오류,
@@ -794,16 +795,32 @@ function 백업정리(폴더) {
   }
 }
 
-function 바꿔쓰기(파일, 바이트) {
+/** 그대로인가가 있으면 다시 하기 전마다 묻고, 거짓이면(기다리는 사이 남이 그 파일을 새로 썼다) 덮지 않고 REPLACE_TARGET_CHANGED로 멈춘다. */
+function 바꿔쓰기(파일, 바이트, 그대로인가 = null) {
   fs.mkdirSync(path.dirname(파일), { recursive: true });
   const 임시 = `${파일}.baro-${process.pid}.tmp`;
   try {
     fs.writeFileSync(임시, 바이트);
-    fs.renameSync(임시, 파일);
+    // 편집기·색인·백신·다른 세션 도구가 그 파일을 잠깐 잡으면 rename이 EPERM·EACCES·EBUSY로 진다 — replaceFile이 약 9.5초까지 다시 한다
+    // (10-23 따라가기가 가지를 옮긴 뒤 EPERM 한 번에 공용 작업본 트랙의 남의 미커밋 한 줄이 빠졌다).
+    replaceFile(임시, 파일, { beforeRetry: 그대로인가 });
   } catch (e) {
     fs.rmSync(임시, { force: true });
     throw e;
   }
+}
+
+/** 가지를 옮긴 뒤라 되돌리지 않는다 — 쓰려던 3방향 결과(작업본 미커밋을 얹은 판)를 백업의 `결과/<차례>`에 남기고 할 일을 알린다. */
+function 결과못씀(백업, 차례, x, e, 바이트) {
+  let 남김 = null;
+  if (바이트) {
+    const 파일 = path.join(백업, '결과', String(차례));
+    try { fs.mkdirSync(path.dirname(파일), { recursive: true }); fs.writeFileSync(파일, 바이트); 남김 = 파일; } catch (_) {}
+  }
+  const 판 = 남김 ? `쓰려던 판은 ${남김}` : '바꾸기 전 파일은 백업의 목록.json에 있다';
+  if (e.code === 'REPLACE_TARGET_CHANGED') return `${x.경로}: 그사이 누가 써서 3방향 결과를 쓰지 않았다 — ${판}(백업 ${백업})`;
+  if (x.sha === null) return `${x.경로}: 지울 파일을 지우지 못했다(${e.code || e.message})(백업 ${백업})`;
+  return `${x.경로}: 미커밋을 얹은 결과를 쓰지 못했다(${e.code || e.message}) — 지금 파일은 origin 판이라 그 미커밋이 빠졌다. ${남김 ? `파일이 풀리면 ${남김}을 그 자리에 복사한다` : 판}(백업 ${백업})`;
 }
 
 function 되돌리기(c, 계획, 백업목록) {
@@ -890,24 +907,33 @@ function 따라가기실행(c, 계획) {
   // 3방향 결과·지움 쓰기. read-tree가 쓴 T 판이 그대로일 때만 덮는다.
   const 주의 = [];
   const T항 = 트리항목들(git, T, 계획.고침.map((x) => x.경로));
-  for (const x of 계획.고침) {
+  for (const [차례, x] of 계획.고침.entries()) {
     const 파일 = path.join(c.저장소, x.경로);
     const th = T항.get(x.경로) || null;
     if (x.sha === (th ? th.sha : null)) continue;              // T 판 그대로가 결과다
-    const 지금 = 파일읽기(파일);
     const 기대 = th ? 꺼낸바이트(c, th.sha, x.경로) : null;
-    const 그대로 = 기대 === null ? Boolean(지금.없음) : Boolean(지금.바이트 && 지금.바이트.equals(기대));
-    if (!그대로) { 주의.push(`${x.경로}: 그사이 누가 써서 3방향 결과를 쓰지 않았다(백업 ${백업})`); continue; }
+    // 쓰기 전과, 잠긴 파일을 다시 쓰기 전마다 본다 — 그사이 남이 쓴 판은 덮지 않는다(다시 하기를 기다리는 동안 저장된 편집기 판 포함).
+    const 그대로인가 = () => { const 지금 = 파일읽기(파일); return 기대 === null ? Boolean(지금.없음) : Boolean(지금.바이트 && 지금.바이트.equals(기대)); };
+    let 결과 = null;
     try {
+      if (x.sha !== null) 결과 = 꺼낸바이트(c, x.sha, x.경로);
+      if (!그대로인가()) throw Object.assign(new Error('그사이 바뀜'), { code: 'REPLACE_TARGET_CHANGED' });
       if (x.sha === null) fs.rmSync(파일, { force: true });
-      else 바꿔쓰기(파일, 꺼낸바이트(c, x.sha, x.경로));
-    } catch (e) { 주의.push(`${x.경로}: ${e.message}(백업 ${백업})`); }
+      else 바꿔쓰기(파일, 결과, 그대로인가);
+    } catch (e) { 주의.push(결과못씀(백업, 차례, x, e, 결과)); }
   }
-  // 비켜 둔 파일(인덱스에서 지운 채 작업본에 남긴 판)을 제자리에
-  for (const v of 비킬파일) {
+  // 비켜 둔 파일(인덱스에서 지운 채 작업본에 남긴 판)을 제자리에 — 백업 목록에서 계획.고침 뒤 차례다
+  for (const [j, v] of 비킬파일.entries()) {
     const 파일 = path.join(c.저장소, v.경로);
-    if (!파일읽기(파일).없음) { 주의.push(`${v.경로}: 그사이 그 자리에 파일이 생겨 비켜 둔 판을 되돌리지 않았다(백업 ${백업})`); continue; }
-    try { 바꿔쓰기(파일, v.바이트); } catch (e) { 주의.push(`${v.경로}: ${e.message}(백업 ${백업})`); }
+    const 비었나 = () => Boolean(파일읽기(파일).없음);
+    try {
+      if (!비었나()) throw Object.assign(new Error('그사이 생김'), { code: 'REPLACE_TARGET_CHANGED' });
+      바꿔쓰기(파일, v.바이트, 비었나);
+    } catch (e) {
+      주의.push(e.code === 'REPLACE_TARGET_CHANGED'
+        ? `${v.경로}: 그사이 그 자리에 파일이 생겨 비켜 둔 판을 되돌리지 않았다(백업 ${백업})`
+        : `${v.경로}: 비켜 둔 판을 되돌리지 못했다(${e.code || e.message}) — 그 판은 ${path.join(백업, '파일', String(계획.고침.length + j))}에 있다`);
+    }
   }
   const r = {
     결과: '따라감', B, T, 경로: 계획.경로.length, 새판: 계획.새판.length,

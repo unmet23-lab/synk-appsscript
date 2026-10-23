@@ -114,7 +114,7 @@ test('카드 커밋: 꼬리 없는 작업본(HEAD가 origin/master의 조상)에
     for (const f of ['참고카드_커밋.js', '참고카드_목록.js', 'git잠금.js', '바로올리기.js', '내커밋.js', '공개검사.js', 'git-storage-check.cjs', 'git-storage-policy.json']) {
       fs.copyFileSync(path.join(REPO, 'tools', f), path.join(작업본, 'tools', f));
       fs.mkdirSync(path.join(작업본, 'tools', 'lib'), { recursive: true });
-      for (const helper of ['git-commit-core.cjs', 'git-commit-plan.cjs', 'git-publish-core.cjs']) fs.copyFileSync(path.join(REPO, 'tools', 'lib', helper), path.join(작업본, 'tools', 'lib', helper));
+      for (const helper of ['git-commit-core.cjs', 'git-commit-plan.cjs', 'git-publish-core.cjs', 'backup-primitives.cjs']) fs.copyFileSync(path.join(REPO, 'tools', 'lib', helper), path.join(작업본, 'tools', 'lib', helper));
     }
     fs.mkdirSync(path.join(작업본, 'docs', '참고카드', '카드'), { recursive: true });
     fs.writeFileSync(path.join(작업본, 'docs', '참고카드', 'README.md'), '# 참고 카드\n');
@@ -164,7 +164,7 @@ test('카드 커밋: 예약 작업이 도는 운영 사본(분리된 HEAD 워크
     for (const f of ['참고카드_커밋.js', '참고카드_목록.js', 'git잠금.js', '바로올리기.js', '내커밋.js', '공개검사.js', 'git-storage-check.cjs', 'git-storage-policy.json', '운영사본.js']) {
       fs.copyFileSync(path.join(REPO, 'tools', f), path.join(공용, 'tools', f));
       fs.mkdirSync(path.join(공용, 'tools', 'lib'), { recursive: true });
-      for (const helper of ['git-commit-core.cjs', 'git-commit-plan.cjs', 'git-publish-core.cjs']) fs.copyFileSync(path.join(REPO, 'tools', 'lib', helper), path.join(공용, 'tools', 'lib', helper));
+      for (const helper of ['git-commit-core.cjs', 'git-commit-plan.cjs', 'git-publish-core.cjs', 'backup-primitives.cjs']) fs.copyFileSync(path.join(REPO, 'tools', 'lib', helper), path.join(공용, 'tools', 'lib', helper));
     }
     for (const f of ['장부올리기.js', '공용작업본.js']) fs.copyFileSync(path.join(REPO, 'tools', 'lib', f), path.join(공용, 'tools', 'lib', f));
     fs.mkdirSync(path.join(공용, 'docs', '참고카드', '카드'), { recursive: true });
