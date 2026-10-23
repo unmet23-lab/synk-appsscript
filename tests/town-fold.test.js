@@ -8,7 +8,7 @@ const path = require('node:path');
 const fs = require('node:fs');
 const os = require('node:os');
 const { pathToFileURL } = require('node:url');
-const { ROOT, townModule } = require('./lib/town.js');
+const { ROOT, townModule, runUnderTimezone } = require('./lib/town.js');
 
 const townFile = name => import(pathToFileURL(path.join(ROOT, 'experiences/synk-town', name)).href);
 // 거의 매번 접히는 문턱. 화면이 읽는 몫(삶의 기억 여섯, 추천의 바로 앞 넷)은 접기 함수가 스스로 지킨다.
@@ -251,6 +251,27 @@ test('사건 갈래: 세계는 로그를 들지 않고 응답은 이번 판의 �
   const after = store.read();
   assert.ok(after.state.events.length > 0 && after.state.events.every(e => e.seq > seq), '새 판의 줄만');
   assert.deepEqual(createStore({ file, now: () => at }).read().state.events, after.state.events);
+});
+
+test('UTC 호스트의 기본 시간대는 저장 뒤 다시 열어도 같은 0이다', () => {
+  const result = runUnderTimezone(['--input-type=module', '-e', `
+    import assert from 'node:assert/strict';
+    import fs from 'node:fs';
+    import os from 'node:os';
+    import path from 'node:path';
+    import { createStore } from './experiences/synk-town/server.mjs';
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-town-utc-roundtrip-'));
+    try {
+      const file = path.join(dir, 'save.json'), now = () => 100000;
+      const store = createStore({ file, now });
+      store.presence({ surfaceId: 'utc', surface: 'day', foreground: true, safe: true });
+      const before = store.read(), restored = createStore({ file, now }).read();
+      assert.deepEqual(restored, before, 'UTC 기본 시간대의 실제 저장/복원 결과');
+      assert.equal(before.state.village.tz[0].offsetMin, 0, 'JSON 왕복 전에도 정규 0');
+      console.log(JSON.stringify({ offsetMin: before.state.village.tz[0].offsetMin, roundTripSame: true }));
+    } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+  `], 'UTC');
+  assert.deepEqual(result, { offsetMin: 0, roundTripSame: true });
 });
 
 test('사건이 수천 개 쌓여도 세계는 내용 수에 묶이고(64KB 안) 한 바퀴 비용은 늘지 않는다 — 1만 개는 tools/town-bench.mjs', async () => {
