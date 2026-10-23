@@ -1,9 +1,11 @@
 import React from 'react';
 import { DataComponent, DataTable, Filters, Section, SortableItem, SortableRegion, useDataApp, useDashboardTabs } from '../../data-app-public.jsx';
 import './marketing-map.css';
-const tabs = [
+// The shell keeps a saved tab label unless it is listed in previousLabels, so every generated country-count label is listed.
+const countryTabLabels = ['LAB · 국가별', ...Array.from({ length: 200 }, (_, n) => `LAB · ${n + 1}개국`)];
+const baseTabs = [
   { id: 'overview', label: '회사·브랜드', filterIds: [] },
-  { id: 'countries', label: 'LAB · 23개국', filterIds: ['country'], focusFields: ['countryCode'] },
+  { id: 'countries', label: 'LAB · 국가별', filterIds: ['country'], focusFields: ['countryCode'], previousLabels: countryTabLabels },
   { id: 'channels', label: '전체 채널', filterIds: ['brand', 'channelCountry', 'channelScope', 'platform'], focusFields: ['channelId'] },
   { id: 'content', label: '콘텐츠 제작', filterIds: ['contentBrand'] },
   { id: 'accounts', label: '로그인·권한', filterIds: [] }
@@ -18,6 +20,17 @@ function LinkCell(value, row) {
     ? <a className="mm-public-link" href={row.publicUrl} target="_blank" rel="noreferrer">{value || '공개 프로필'}</a>
     : <span>{value || '미정'}</span>;
 }
+// Scope counts come from the reviewed summary rows so the notes follow each rebuild of build-map.mjs.
+const koDate = value => value ? new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(value)) : '미확인';
+function scopeCounts(summary, lab, countryCount) {
+  const value = id => Number(summary.find(row => row.id === id)?.value) || 0;
+  const secured = value('lab-secured');
+  const pending = value('lab-pending');
+  const prioritySlots = Number(lab?.plannedSlots) || countryCount * 2;
+  const mongoliaExtra = Math.max(0, (Number(lab?.ownedCount) || 0) - (countryCount ? prioritySlots / countryCount : 0));
+  return { existing: value('existing'), secured, pending, expansionSlots: secured + pending, countries: value('lab-world') || countryCount,
+    prioritySlots, mongoliaOwned: Number(lab?.ownedCount) || 0, mongoliaExtra, totalSlots: prioritySlots + mongoliaExtra };
+}
 const status = (field, label) => ({ field, label, renderCell: value => String(value || '').length > 32 ? <span className="mm-status-detail">{value}</span> : <Badge>{value}</Badge> });
 function EvidenceTable({ id, queryId, title, rows, columns, onRowSelect, rowActionLabel, selectedRowKey, searchable = true }) {
   const readableColumns = columns.map(column => column.renderCell || !['title','nextAction','currentUse','proposedRole','scopeOwner','state','role','contentStatus','appStatus','existingLabel'].includes(column.field) ? column : {...column, renderCell: value => <span className="mm-cell-detail">{value}</span>});
@@ -27,6 +40,8 @@ function EvidenceTable({ id, queryId, title, rows, columns, onRowSelect, rowActi
 }
 export function DashboardContent() {
   const { snapshot, queries, reviewedRows, filters, setFilter, exploreDashboard, viewFocus, setDashboardFocus } = useDataApp();
+  const countryCount = queries.countries?.rows?.length || 0;
+  const tabs = React.useMemo(() => baseTabs.map(item => item.id === 'countries' && countryCount ? { ...item, label: `LAB · ${countryCount}개국` } : item), [countryCount]);
   const { activeTabId } = useDashboardTabs(tabs);
   const tab = tabs.find(item => item.id === activeTabId) || tabs[0];
   const rows = id => queries[id] ? reviewedRows(id) : [];
@@ -38,10 +53,17 @@ export function DashboardContent() {
   const selectedCountry = countries.find(row => row.code === viewFocus?.countryCode) || countries.find(row => row.country === countrySelection) || countries.find(row => row.code === 'MN') || countries[0];
   const countryChannels = selectedCountry ? allChannels.filter(row => row.country === selectedCountry.country && row.brand === 'LAB') : [];
   const selectedChannel = channelRows.find(row => row.id === viewFocus?.channelId);
+  const scope = scopeCounts(queries.summary?.rows || [], (queries.brands?.rows || []).find(row => row.id === 'LAB'), countryCount);
+  const evidenceTimes = allChannels.map(row => Date.parse(row.lastEvidenceAt)).filter(Number.isFinite);
+  const latestAccountEvidence = evidenceTimes.length ? Math.max(...evidenceTimes) : null;
+  const allContents = queries.contents?.rows || [];
+  const contentLineCount = allContents.filter(row => /^CL-/.test(row.id)).length;
+  const reviewVideoCount = allContents.filter(row => /^(YB|SB)-/.test(row.id)).length;
+  const firstPlanCount = allContents.length - contentLineCount - reviewVideoCount;
   return <div className="mm-page">
     <Filters sticky filters={(snapshot.filters || []).filter(filter => tab.filterIds.includes(filter.id))} queries={queries} values={filters} onChange={setFilter}/>
     {tab.id === 'overview' && <>
-      <div className="mm-note" data-editable-id="map-scope-note" data-editable-narrative="true">LAB 23개국 계획의 확장 44자리 중 24곳은 계정 확인, 20곳은 개설·생성 확인이 남았습니다. 몽골 기존 5개는 유지합니다. 계정 확인은 콘텐츠 게시를 뜻하지 않습니다.</div>
+      <div className="mm-note" data-editable-id="map-scope-note" data-editable-narrative="true">LAB {scope.countries}개국 계획의 확장 {scope.expansionSlots}자리 중 {scope.secured}곳은 계정 확인, {scope.pending}곳은 개설·생성 확인이 남았습니다. 몽골 기존 {scope.mongoliaOwned}개는 유지합니다. 계정 확인은 콘텐츠 게시를 뜻하지 않습니다.</div>
       <p className="mm-record-link"><a className="mm-action" href="http://127.0.0.1:4188/" target="_blank" rel="noreferrer">게시물·좋아요·댓글·공유 기록 열기 ↗</a><span>게시 후 날짜별 수치를 직접 입력하는 로컬 기록장</span></p>
       <DataComponent id="map-totals" queryId="summary" title="운영 범위" kind="custom" variant="plain" displayRows={rows('summary')} sourceRows={rows('summary')}>
         <div className="mm-totals" data-reviewed-rows>{rows('summary').map(item => <div key={item.id}><span>{item.label}</span><strong>{item.value}<small>{item.unit}</small></strong><p>{item.note}</p></div>)}</div>
@@ -54,7 +76,7 @@ export function DashboardContent() {
                 <p className="mm-role">{brand.role}</p><p className="mm-muted">{brand.market}</p>
                 <div className="mm-brand-count"><strong>{brand.ownedCount}</strong><span>기존 운영 대상</span>{brand.securedExpansionCount > 0 && <span>· 확장 확보 {brand.securedExpansionCount}곳</span>}{brand.sharedCount > 0 && <span>· 공유 채널 {brand.sharedCount}곳</span>}</div>
                 <p>{brand.channelPolicy}</p><p className="mm-next"><span>다음 할 일</span>{brand.nextAction}</p>
-                <button className="mm-action" onClick={() => brand.id === 'LAB' ? exploreDashboard('countries', {}) : brand.id === 'PULSE' ? exploreDashboard('channels', {filters:{brand:'LAB',channelScope:'기존 운영'},focus:{channelId:'lab-youtube'}}) : brand.id === 'PATH' ? exploreDashboard('accounts', {}) : exploreDashboard('channels', {filters:{brand:brand.id}})}>{brand.id === 'LAB' ? '23개국 준비 상황 보기' : brand.id === 'PULSE' ? '공유 YouTube 확인하기' : brand.id === 'PATH' ? '홈페이지 연결 보기' : '채널 확인하기'} →</button>
+                <button className="mm-action" onClick={() => brand.id === 'LAB' ? exploreDashboard('countries', {}) : brand.id === 'PULSE' ? exploreDashboard('channels', {filters:{brand:'LAB',channelScope:'기존 운영'},focus:{channelId:'lab-youtube'}}) : brand.id === 'PATH' ? exploreDashboard('accounts', {}) : exploreDashboard('channels', {filters:{brand:brand.id}})}>{brand.id === 'LAB' ? `${scope.countries}개국 준비 상황 보기` : brand.id === 'PULSE' ? '공유 YouTube 확인하기' : brand.id === 'PATH' ? '홈페이지 연결 보기' : '채널 확인하기'} →</button>
               </div>
             </DataComponent>
           </SortableItem>)}
@@ -63,12 +85,12 @@ export function DashboardContent() {
       <Section id="next-actions-heading" title="이어서 할 일">
         <EvidenceTable id="next-actions" queryId="tasks" title="작업 대기 목록" rows={rows('tasks')} columns={[{field:'brand',label:'구분'},{field:'country',label:'국가·범위'},{field:'title',label:'작업'},status('state','상태'),{field:'nextAction',label:'다음 행동'}]}/>
       </Section>
-      <p className="mm-footnote">로컬 기록 갱신: 2026년 9월 23일 · 계정 원장 최신 기록은 9월 21일, 영상 제작 기록은 9월 23일까지입니다. 이번 갱신에서 SNS 실시간 조회는 하지 않았습니다.</p>
+      <p className="mm-footnote">지도 자료 갱신: {koDate(snapshot.generatedAt)} · 계정 기록의 가장 최근 근거는 {koDate(latestAccountEvidence)}입니다. 이번 갱신에서 SNS 실시간 조회는 하지 않았습니다.</p>
     </>}
     {tab.id === 'countries' && <>
-      <div className="mm-note" data-editable-id="lab-country-scope" data-editable-narrative="true">23개국 우선 플랫폼 46자리 + 몽골 추가 3개 = LAB 전체 49자리입니다. 몽골 외 44자리 중 24곳을 확보했고 20곳은 미확인입니다. 국가 순서는 수요 순위가 아닙니다.</div>
+      <div className="mm-note" data-editable-id="lab-country-scope" data-editable-narrative="true">{scope.countries}개국 우선 플랫폼 {scope.prioritySlots}자리 + 몽골 추가 {scope.mongoliaExtra}개 = LAB 전체 {scope.totalSlots}자리입니다. 몽골 외 {scope.expansionSlots}자리 중 {scope.secured}곳을 확보했고 {scope.pending}곳은 미확인입니다. 국가 순서는 수요 순위가 아닙니다.</div>
       <Section id="country-roster-heading" title="LAB 국가별 준비 상황" spacing="content">
-        <EvidenceTable id="lab-country-roster" queryId="countries" title="23개국 운영 계획" rows={countries} selectedRowKey={selectedCountry?.id} onRowSelect={row => setDashboardFocus({countryCode:row.code})} rowActionLabel={row => `${row.country}의 계정과 진행 상황 보기`} columns={[
+        <EvidenceTable id="lab-country-roster" queryId="countries" title={`${scope.countries}개국 운영 계획`} rows={countries} selectedRowKey={selectedCountry?.id} onRowSelect={row => setDashboardFocus({countryCode:row.code})} rowActionLabel={row => `${row.country}의 계정과 진행 상황 보기`} columns={[
           {field:'country',label:'국가'}, {field:'platformsLabel',label:'우선 플랫폼 2개'}, status('setupStatus','계정 세팅'), {field:'contentStatus',label:'콘텐츠'}, {field:'appStatus',label:'앱 출시'}
         ]}/>
       </Section>
@@ -84,7 +106,7 @@ export function DashboardContent() {
       </Section>}
     </>}
     {tab.id === 'channels' && <>
-      <div className="mm-note" data-editable-id="channel-scope-note" data-editable-narrative="true">기존 운영 23곳, 확장 확보 24곳, 확장 미확인 20곳과 보류·제외를 구분합니다. LAB·PULSE 공유 YouTube와 공통 Substack은 중복 계산하지 않습니다.</div>
+      <div className="mm-note" data-editable-id="channel-scope-note" data-editable-narrative="true">기존 운영 {scope.existing}곳, 확장 확보 {scope.secured}곳, 확장 미확인 {scope.pending}곳과 보류·제외를 구분합니다. LAB·PULSE 공유 YouTube와 공통 Substack은 중복 계산하지 않습니다.</div>
       <Section id="channel-roster-heading" title="채널별 진행 상황" spacing="content">
         <EvidenceTable id="channel-roster" queryId="channels" title="계정·프로필·게시 현황" rows={channelRows} selectedRowKey={selectedChannel?.id} onRowSelect={row => setDashboardFocus({channelId:row.id})} rowActionLabel={row => `${row.handle || row.id} 상세 보기`} columns={[
           {field:'brand',label:'브랜드·트랙'},{field:'country',label:'국가·범위'},{field:'platform',label:'플랫폼'},{field:'handle',label:'계정',renderCell:LinkCell},status('channelScope','운영 분류'),status('profileStatus','소개'),status('publishStatus','콘텐츠 게시'),{field:'nextAction',label:'다음 행동'}
@@ -97,7 +119,7 @@ export function DashboardContent() {
       </Section>}
     </>}
     {tab.id === 'content' && <>
-      <div className="mm-note" data-editable-id="content-flow-note" data-editable-narrative="true">기존 첫 콘텐츠 계획 14건에 yuhobuilds·synkbrief 최신 영상 검토본 2건을 더했습니다. 영상 파일 제작·검수와 사용자 최종 승인·SNS 게시는 각각 다른 상태입니다.</div>
+      <div className="mm-note" data-editable-id="content-flow-note" data-editable-narrative="true">기존 첫 콘텐츠 계획 {firstPlanCount}건, yuhobuilds·synkbrief 영상 검토본 {reviewVideoCount}건, 콘텐츠 라인 {contentLineCount}건을 함께 둡니다. 영상 파일 제작·검수와 사용자 최종 승인·SNS 게시는 각각 다른 상태입니다.</div>
       <p className="mm-record-link"><a className="mm-action" href="http://127.0.0.1:4188/" target="_blank" rel="noreferrer">게시 성과 기록 열기 ↗</a><span>실제 게시물 주소를 등록한 뒤 날짜별 반응을 입력합니다.</span></p>
       <Section id="content-roster-heading" title="콘텐츠별 제작 진행" spacing="content">
         <EvidenceTable id="content-roster" queryId="contents" title="원고·제작·발행" rows={rows('contents')} columns={[

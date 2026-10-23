@@ -4,7 +4,7 @@
   "source": "2026-09-20 현재 대화의 사용자 결정 및 docs/마케팅_정본.md",
   "brands": [
     {"id":"SYNK","name":"SYNK","role":"회사 소개와 협업","market":"한국어·글로벌 공통","channelPolicy":"기존 회사 채널 유지","nextAction":"회사 소개와 실제 결과물 연결","legalEntity":"법인 구분이 아닌 회사·브랜드 운영 분류"},
-    {"id":"LAB","name":"SYNK LAB","role":"10대 중후반을 중심으로 한 한국어 학습","market":"23개국 확장 계획 · 몽골 기존 기반","channelPolicy":"국가당 우선 플랫폼 2개 · 기존 몽골 추가 채널 보존","nextAction":"한국어 L2 한 편 완성 → 번역·현지 검수 → 플랫폼별 제작","legalEntity":"브랜드"},
+    {"id":"LAB","name":"SYNK LAB","role":"10대 중후반을 중심으로 한 한국어 학습","market":"25개국 확장 계획 · 몽골 기존 기반","channelPolicy":"국가당 우선 플랫폼 2개 · 기존 몽골 추가 채널 보존","nextAction":"한국어 L2 한 편 완성 → 번역·현지 검수 → 플랫폼별 제작","legalEntity":"브랜드"},
     {"id":"SHIFT","name":"SYNK SHIFT","role":"AI 활용·기업 교육·컨설팅·브랜딩","market":"기존 한국어 채널 중심 · 국가 확장 미정","channelPolicy":"유호·정보 브리핑 및 기존 업무 채널 유지","nextAction":"얼굴 없는 콘텐츠 제작과 출연 영상 별도 세션 연결","legalEntity":"브랜드"},
     {"id":"PULSE","name":"SYNK PULSE","role":"음악·영상·캐릭터·IP","market":"글로벌 공통 · 국가별 분리 미정","channelPolicy":"LAB YouTube 재사용 자리와 독립 계정 구분","nextAction":"음악·영상 제작 상태와 발행 근거 연결","legalEntity":"브랜드"},
     {"id":"PATH","name":"SYNK PATH","role":"외국인의 한국 유학·취업 준비","market":"국가별 범위 미정","channelPolicy":"독립 마케팅 채널을 만들지 않는 기존 결정 유지","nextAction":"LAB·SHIFT와의 연결 콘텐츠 범위 정리","legalEntity":"브랜드"}
