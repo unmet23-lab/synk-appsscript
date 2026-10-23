@@ -14,9 +14,23 @@
       "계정": "synkbrief-instagram",
       "상태": "예약됨",
       "시각": "2026-10-22T21:00+09:00",
-      "주소": null,
+      "주소": "https://www.instagram.com/p/Dey7uSLhqbl/",
       "방법": "유호님 10-22 14시 게시 세션 「올려」(오늘 편 셋 — 아는 단어·AI 구독·트렌디하게, 티스토리 /5는 10-23 21:20으로) → 인스타 웹(ego) @synkbrief로 계정 전환 → 만들기 → 원본 subs-a_master.mp4(음량 고친 14:22판) · 자르기 「원본」 · 커버 표지_A.jpg · 캡션 README A(848자, 원문 일치) · AI 레이블 켬 · 페이스북 공유 끔 · 콘텐츠 예약 Thu Oct 22 2026 09:00 PM → 「릴스가 예약되었습니다」, scheduled_content 9:00 PM 확인. 요금 세 곳은 14:27 다시 열어 영상 값과 같음",
-      "후속": "공개 뒤 첫 댓글(README A 「고정 댓글」 한 줄 — 인스타 웹은 고정 불가, 고정은 휴대폰 앱)"
+      "후속": "공개 뒤 첫 댓글(README A 「고정 댓글」 한 줄 — 인스타 웹은 고정 불가, 고정은 휴대폰 앱)",
+      "편ID": "synkbrief_AI구독하나고르기_20261021",
+      "플랫폼": "instagram",
+      "게시물ID": "Dey7uSLhqbl",
+      "성과구분": "콘텐츠",
+      "연결근거": [
+        {
+          "path": "docs/_ops/qa/게시성과연결_20261023/서버관측.json",
+          "sha256": "1dc5a14a54874a24c897cc82fe1e48e5ce449f1947a6c889ff566f216c669908"
+        },
+        {
+          "path": "docs/마케팅/synkbrief_AI구독하나고르기_20261021/게시/README.md",
+          "sha256": "cac9c35330085d4fbf625bc859b165bec1d370405b4670c07153e501b056bb28"
+        }
+      ]
     },
     {
       "계정": "synkbrief-youtube",

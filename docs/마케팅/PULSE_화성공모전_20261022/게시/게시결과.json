@@ -1,0 +1,53 @@
+{
+  "판": [],
+  "추가게시": [
+    {
+      "계정": "yuhobuilds-youtube",
+      "상태": "공개 확인 필요",
+      "시각": "2026-10-21T06:36:35.000Z",
+      "주소": "https://www.youtube.com/watch?v=dIittvXfdIE",
+      "편ID": "PULSE_화성공모전_20261022",
+      "플랫폼": "youtube",
+      "게시물ID": "dIittvXfdIE",
+      "성과구분": "작품",
+      "연결근거": [
+        {
+          "path": "docs/_ops/qa/게시성과연결_20261023/서버관측.json",
+          "sha256": "1dc5a14a54874a24c897cc82fe1e48e5ce449f1947a6c889ff566f216c669908"
+        }
+      ]
+    },
+    {
+      "계정": "yuhobuilds-youtube",
+      "상태": "공개 확인 필요",
+      "시각": "2026-10-21T06:37:41.000Z",
+      "주소": "https://www.youtube.com/watch?v=6C9mDfdP81k",
+      "편ID": "PULSE_화성공모전_20261022",
+      "플랫폼": "youtube",
+      "게시물ID": "6C9mDfdP81k",
+      "성과구분": "작품",
+      "연결근거": [
+        {
+          "path": "docs/_ops/qa/게시성과연결_20261023/서버관측.json",
+          "sha256": "1dc5a14a54874a24c897cc82fe1e48e5ce449f1947a6c889ff566f216c669908"
+        }
+      ]
+    },
+    {
+      "계정": "yuhobuilds-youtube",
+      "상태": "공개 확인 필요",
+      "시각": "2026-10-21T06:37:12.000Z",
+      "주소": "https://www.youtube.com/watch?v=vtME2kBAK2Y",
+      "편ID": "PULSE_화성공모전_20261022",
+      "플랫폼": "youtube",
+      "게시물ID": "vtME2kBAK2Y",
+      "성과구분": "작품",
+      "연결근거": [
+        {
+          "path": "docs/_ops/qa/게시성과연결_20261023/서버관측.json",
+          "sha256": "1dc5a14a54874a24c897cc82fe1e48e5ce449f1947a6c889ff566f216c669908"
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 import {createHash,createHmac,randomUUID,timingSafeEqual} from 'node:crypto';
 import {WEBSITE_INQUIRY_FORM_ID} from './website-inquiry-google.mjs';
+import {websiteInquiryRegistration,summarizeWebsiteRegistrations} from './website-inquiry-registration.mjs';
 
 const ROWS='websiteInquiries',STATE='websiteInquiryState',CONFIG='websiteInquiryConfig',ERASED='websiteInquiryErasures',CONFIRM_MINUTES=10;
 const fail=(code,message,status=400)=>Object.assign(new Error(message),{code,status});
@@ -8,8 +9,11 @@ const iso=value=>typeof value==='string'&&Number.isFinite(Date.parse(value));
 const STATES=new Set(['new','reviewing','replied','closed']);
 const CATEGORIES=[
   {id:'lab',selected:'LAB · 한국어 교육',label:'한국어 교육',next:'학습 목표 · 지금 수준 · 원하는 수업 방식을 보고 초안을 다듬어요.',draft:'한국어 교육 문의를 남겨 주셔서 감사합니다. 원하시는 학습 목표, 현재 한국어 수준, 수업이나 프로그램 이용 희망 방식을 알려 주시면 안내를 준비하는 데 도움이 됩니다.'},
-  {id:'shift-business',selected:'SHIFT · 기관 강의·기업 컨설팅·브랜딩',label:'기관·기업 협업',next:'협업 목적 · 대상 · 원하는 일정 · 범위를 보고 초안을 다듬어요.',draft:'협업 문의를 남겨 주셔서 감사합니다. 진행 목적, 대상, 희망 일정과 범위를 알려 주시면 요청에 맞는 진행 가능 여부를 확인하겠습니다.'},
-  {id:'shift-career',selected:'SHIFT · 유학·취업 연계',label:'유학·취업 연계',next:'관심 과정 · 나라 · 원하는 시기를 보고, 확정된 안내만 초안에 넣어요.',draft:'유학·취업 연계에 관해 문의해 주셔서 감사합니다. 관심 있는 과정이나 국가, 희망 시기를 알려 주시면 확인 가능한 안내를 준비하겠습니다.'},
+  {id:'shift-lecture',selected:'SHIFT · 학교·기업·기관 AI 강의',label:'학교·기업·기관 AI 강의',next:'강의 대상 · 주제 · 원하는 일정과 시간을 보고 초안을 다듬어요.',draft:'AI 강의 문의를 남겨 주셔서 감사합니다. 강의 대상, 원하시는 주제와 일정, 시간을 확인해 안내를 준비하겠습니다.'},
+  {id:'shift-agency',selected:'SHIFT · AI 강사·진로 강사 에이전시',label:'AI 강사·진로 강사 에이전시',next:'강사 요청 분야 · 대상 · 일정 · 지역을 보고 초안을 다듬어요.',draft:'강사 연결 문의를 남겨 주셔서 감사합니다. 요청하신 분야, 대상, 일정과 지역을 확인해 안내를 준비하겠습니다.'},
+  {id:'shift-automation',selected:'SHIFT · AI 업무 자동화',label:'AI 업무 자동화',next:'반복하는 업무 · 지금 쓰는 도구 · 원하는 결과를 보고 초안을 다듬어요.',draft:'AI 업무 자동화 문의를 남겨 주셔서 감사합니다. 반복하는 업무와 지금 쓰는 도구, 원하시는 결과를 확인해 안내를 준비하겠습니다.'},
+  {id:'path-career',selected:'PATH · 유학·취업 연계',aliases:['SHIFT · 유학·취업 연계'],label:'유학·취업 연계',next:'관심 과정 · 나라 · 원하는 시기를 보고, 확정된 안내만 초안에 넣어요.',draft:'유학·취업 연계에 관해 문의해 주셔서 감사합니다. 관심 있는 과정이나 국가, 희망 시기를 알려 주시면 확인 가능한 안내를 준비하겠습니다.'},
+  {id:'shift-business',selected:'SHIFT · 기관 강의·기업 컨설팅·브랜딩',label:'SHIFT · 기존 기관·기업 문의',next:'이전 문의 유형이에요. 원문에서 강의 · 컨설팅 · 브랜딩 가운데 어떤 요청인지 먼저 확인해요.',draft:'협업 문의를 남겨 주셔서 감사합니다. 진행 목적, 대상, 희망 일정과 범위를 알려 주시면 요청에 맞는 진행 가능 여부를 확인하겠습니다.'},
   {id:'pulse',selected:'PULSE · 제작 협업·작품 이용·광고',label:'제작·작품 이용',next:'제작물 · 이용 범위 · 매체 · 일정을 보고 권리와 견적을 정해요.',draft:'제작·작품 이용에 관해 문의해 주셔서 감사합니다. 원하시는 제작물 또는 작품, 이용 매체와 범위, 희망 일정을 알려 주시면 확인 후 안내하겠습니다.'},
   {id:'release',selected:'출시 소식 문의',label:'출시 소식',next:'관심 제품과 연락받고 싶은 까닭을 봐요. 홍보 목록에 저절로 넣지 않아요.',draft:'출시 소식에 관심을 보내 주셔서 감사합니다. 소식을 받고 싶은 제품을 알려 주시면, 요청하신 내용에 대해 확인 가능한 사항을 안내하겠습니다.'},
 ];
@@ -28,13 +32,15 @@ function normalize(input){
     createdAt:new Date(input.createdAt).toISOString(),submittedAt:new Date(input.submittedAt).toISOString()};
 }
 export function classifyWebsiteInquiry(input){
-  const category=CATEGORIES.find(row=>row.selected===input.type);
+  const category=CATEGORIES.find(row=>row.selected===input.type||row.aliases?.includes(input.type));
   const privacy=/개인정보.{0,12}(삭제|열람|철회)|동의.{0,8}철회/.test(input.message);
   const test=/\[SYNK 기능 점검\s*[·-]\s*실제 문의 아님\]/.test(input.message);
   if(test)return {category:'test',label:'합성 기능 점검',reason:'문의 내용에 기능 점검 표식이 있어요.',nextAction:'기능 점검 응답이라 고객 문의와 실적에서 빠져요.',draft:'',isTest:true};
   if(privacy)return {category:'privacy',label:'개인정보 요청',reason:'문의 내용에 개인정보 삭제 · 열람이나 동의 철회 표현이 있어요. 원문을 직접 읽어 봐야 해요.',nextAction:'원문에서 요청 범위와 본인 확인 방법을 보고 답을 정해요. 자동으로 지우거나 답하지 않아요.',draft:'개인정보 관련 요청을 보내 주셔서 감사합니다. 요청 범위와 필요한 확인 절차를 검토한 뒤 안내드리겠습니다.',isTest:false};
   if(!category)return {category:'other',label:'분류 확인',reason:'등록된 문의 유형과 맞지 않아요. 직접 읽고 분류해야 해요.',nextAction:'원문과 고른 유형을 읽고 초안을 써요.',draft:'문의해 주셔서 감사합니다. 보내 주신 내용을 확인한 뒤 안내드리겠습니다.',isTest:false};
-  return {category:category.id,label:category.label,reason:'문의 양식에서 「'+category.selected+'」 유형을 직접 골랐어요.',nextAction:category.next,draft:category.draft,isTest:false};
+  const registration=websiteInquiryRegistration(input);
+  if(registration)return {category:category.id,label:registration.label+' 관심 등록',reason:'관심 등록 페이지의 표식과 문의 유형이 맞아요.',nextAction:registration.waitlistOnly?'대기 명단에 모아 두어요. 확인 메일은 따로 보내지 않아요.':registration.resubmitted?'다시 등록한 응답이에요. 앞 등록과 같은 분인지 원문을 확인해요. 자동으로 합치거나 지우지 않아요.':'등록에 적힌 내용이나 질문을 읽고 필요한 답장만 검토해요.',draft:'',isTest:false};
+  return {category:category.id,label:category.label,reason:'문의 양식에서 「'+input.type+'」 유형을 직접 골랐어요.',nextAction:category.next,draft:category.draft,isTest:false};
 }
 // 10-21 관리자 화면 글을 해요체로 바꾸기 전에 저장된 분류 글(근거 · 다음 할 일)은 보일 때만 새 글로 바꾼다. 분류(category · isTest)와 고객용 초안은 저장된 그대로다.
 const CLASSIFICATION_COPY_20261021=new Map([["학습 목표·현재 수준·희망 방식을 확인하고 답변을 검토해 주세요.", "학습 목표 · 지금 수준 · 원하는 수업 방식을 보고 초안을 다듬어요."], ["협업 목적·대상·희망 일정·범위를 확인하고 답변을 검토해 주세요.", "협업 목적 · 대상 · 원하는 일정 · 범위를 보고 초안을 다듬어요."], ["관심 과정·국가·희망 시기를 확인하고 확정된 안내만 답변에 넣어 주세요.", "관심 과정 · 나라 · 원하는 시기를 보고, 확정된 안내만 초안에 넣어요."], ["제작물·이용 범위·매체·일정 확인 후 권리와 견적을 검토해 주세요.", "제작물 · 이용 범위 · 매체 · 일정을 보고 권리와 견적을 정해요."], ["관심 제품과 후속 연락 목적을 확인해 주세요. 자동 홍보 목록에는 추가하지 않습니다.", "관심 제품과 연락받고 싶은 까닭을 봐요. 홍보 목록에 저절로 넣지 않아요."], ["문의 내용에 기존 기능 점검 표식이 있습니다.", "문의 내용에 기능 점검 표식이 있어요."], ["기능 점검 응답입니다. 고객 문의나 실적으로 집계하지 않습니다.", "기능 점검 응답이라 고객 문의와 실적에서 빠져요."], ["문의 내용에 개인정보 삭제·열람 또는 동의 철회 표현이 있습니다. 운영자가 원문을 확인해야 합니다.", "문의 내용에 개인정보 삭제 · 열람이나 동의 철회 표현이 있어요. 원문을 직접 읽어 봐야 해요."], ["원문의 요청 범위와 본인 확인 방법을 검토해 주세요. 자동 삭제·외부 답변은 수행하지 않습니다.", "원문에서 요청 범위와 본인 확인 방법을 보고 답을 정해요. 자동으로 지우거나 답하지 않아요."], ["등록된 문의 유형과 일치하지 않습니다. 운영자의 확인이 필요합니다.", "등록된 문의 유형과 맞지 않아요. 직접 읽고 분류해야 해요."], ["문의 원문과 유형을 확인한 뒤 답변을 작성해 주세요.", "원문과 고른 유형을 읽고 초안을 써요."]]);
@@ -91,15 +97,19 @@ export function createWebsiteInquiryService({store,reader,tasks,origin='',clock=
   }
   function snapshot(row){
     const data=store.decrypt(row.payload);
-    return {id:row.id,revision:row.revision,...data,status:row.status,classification:websiteInquiryClassificationView(row.classification),replyDraft:row.replyDraft,draftEdited:row.draftEdited===true,
+    // Interpret historic types at read time. Stored status, tasks and operator drafts never migrate here.
+    const classification=websiteInquiryClassificationView(row.classification?.isTest||['test','privacy'].includes(row.classification?.category)?row.classification:classifyWebsiteInquiry(data));
+    const registration=websiteInquiryRegistration({...data,classification});
+    return {id:row.id,revision:row.revision,...data,status:row.status,classification,registration,replyDraft:row.replyDraft,draftEdited:row.draftEdited===true,
       importedAt:row.importedAt,updatedAt:row.updatedAt,sourceHref:sourceHref(row.id),task:row.task?.state==='linked'?{state:'linked',href:taskHref(row.task.roomId,row.task.messageId),id:row.task.taskId}:row.task?{state:row.task.state}:null};
   }
   function workspace(user,context={}){
     user=current(user,context);
     const settings=config(),run=state();
     const rows=store.all(ROWS).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt));
+    const items=rows.map(snapshot);
     return {settings,connection:{configured:reader.configured?.()===true,formId:WEBSITE_INQUIRY_FORM_ID,adminUrl:'https://docs.google.com/forms/d/'+WEBSITE_INQUIRY_FORM_ID+'/edit#responses'},
-      run,items:rows.map(snapshot),draftOnly:true,categories:CATEGORIES.map(row=>({id:row.id,label:row.label})),canConfigure:true};
+      run,items,registrations:summarizeWebsiteRegistrations(items),draftOnly:true,categories:CATEGORIES.map(row=>({id:row.id,label:row.label})),canConfigure:true};
   }
   function get(user,id,context={}){current(user,context);const row=store.get(ROWS,id);if(!row)throw fail('INQUIRY_NOT_FOUND','문의 기록을 찾지 못했어요. 새로 읽어 주세요.',404);return snapshot(row);}
   async function verify(user,context={}){
@@ -212,6 +222,8 @@ export function createWebsiteInquiryService({store,reader,tasks,origin='',clock=
   }
   function linkTask(row,user){
     if(row.classification.isTest)return;
+    // Existing tasks and pending receipts keep their lifecycle. Only a new, plain registration skips a task.
+    if(!row.task&&websiteInquiryRegistration({...store.decrypt(row.payload),classification:row.classification})?.waitlistOnly)return;
     user=current(user);
     if(row.task?.state==='linked'||row.task?.state==='unavailable')return;
     let task=row.task;

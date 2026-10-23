@@ -12,6 +12,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { postIdOf } = require('./게시성과판정.js');
+const { resultRows } = require('./게시성과연결.js');
 
 const ROLES = ['유입', '육성', '권위', '전환'];
 const BLOCK_START = '<!-- 게시성과:시작 — tools/게시성과.js가 다시 쓴다. 손으로 고치지 않는다 -->';
@@ -80,7 +81,7 @@ function hookFor(info, { account, platform }) {
 }
 
 /** docs/마케팅 아래 편 폴더를 훑어 주소 → 편 색인을 만든다 */
-function buildIndex(root) {
+function buildIndex(root, connections = new Map()) {
   const folders = new Map();
   const hits = new Map(); // postKey → [{folder, strength, account}]
   const hit = (key, folder, strength, account = null) => {
@@ -97,7 +98,7 @@ function buildIndex(root) {
     if (!hasPub && !fs.existsSync(plan)) continue;
     const info = readFolder(dir);
     folders.set(d.name, info);
-    for (const p of (info.result && Array.isArray(info.result.판) ? info.result.판 : [])) {
+    for (const p of resultRows(info.result)) {
       const id = p && postIdOf(p.주소);
       if (id) hit(id.key, d.name, 3, typeof p.계정 === 'string' ? p.계정 : null);
     }
@@ -120,6 +121,8 @@ function buildIndex(root) {
   }
   /** postKey → {info, account} | null(못 찾음·여러 폴더) */
   function resolve(postKey) {
+    const explicit = connections.get(postKey);
+    if (explicit?.folder && folders.has(explicit.folder)) return { info: folders.get(explicit.folder), account: explicit.account };
     const list = hits.get(postKey);
     if (!list || !list.length) return null;
     const top = Math.max(...list.map(h => h.strength));

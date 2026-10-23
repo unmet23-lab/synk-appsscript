@@ -14,6 +14,7 @@
  *                                             화면에서 읽은 값을 장부에 적는다(이름: 본비율 3초유지율 평균시청 평균조회율 완주율 공유 저장 도달 조회 팔로우 구독증가 맞춤도구)
  *   node tools/게시성과.js --화면목록 [--json]  주 1회 읽을 칸 목록(요약의 「화면 필요」와 같다)
  *   node tools/게시성과.js --요약              장부만으로 요약을 다시 만든다(서버를 읽지 않는다)
+ *   node tools/게시성과.js --연결목록 <json> [--실행]  주소·편·계정·구분·근거·이유를 확인해 기존 장부/게시결과에 잇는다(게시 안 함)
  *   공통: --json · --캐시 <서버 읽기 JSON>(시험·다시 보기) · --저장소 <폴더>(기본: 이 도구가 든 저장소) · --쇼츠안읽음
  *
  * 장부 = docs/_ops/게시성과.jsonl (한 줄 = 판정 하나 또는 화면 읽기 하나 · 바뀐 판정만 덧붙인다 · 고치지 않는다)
@@ -28,6 +29,7 @@ const 판정 = require('./lib/게시성과판정.js');
 const 편 = require('./lib/게시성과편.js');
 const 배수 = require('./lib/평소배수.js');
 const 시험 = require('./lib/게시성과시험.js');
+const 연결 = require('./lib/게시성과연결.js');
 
 const REPO_DEFAULT = path.resolve(__dirname, '..');
 const LEDGER = 'docs/_ops/게시성과.jsonl';
@@ -352,7 +354,13 @@ function 시험요약글(t) {
 // ── 요약 ──────────────────────────────────────────────────────────────────
 
 function summarize({ ledger, now, unregistered = [], unmapped = [], index = null, accounts = [] }) {
-  const latest = [...latestJudgments(ledger).values()];
+  const connections = 연결.latest(ledger);
+  const excluded = [...connections.values()].filter(l => l.group !== '콘텐츠');
+  const usableLedger = ledger.filter(l => !connections.has(l.post) || connections.get(l.post).group === '콘텐츠');
+  const latest = [...latestJudgments(usableLedger).values()].map(l => {
+    const found = index?.resolve?.(l.post);
+    return found?.info ? { ...l, folder: found.info.folder, account: found.account || l.account, brand: found.info.brand || l.brand } : l;
+  });
   const recentCut = now - RECENT_DAYS * 86_400_000;
   const byPost = new Map();
   for (const l of latest) {
@@ -393,7 +401,7 @@ function summarize({ ledger, now, unregistered = [], unmapped = [], index = null
   const screenRows = main.filter(l => l.folder && l.screenNeeded && l.screenNeeded.length && Date.parse(l.publishedAt) >= recentCut)
     .sort((a, b) => String(a.publishedAt).localeCompare(String(b.publishedAt)));
   const lastAt = ledger.map(l => l.at).filter(Boolean).sort().pop();
-  const test = 시험.시험판정({ ledger, screens: screensOf(ledger), index, accounts, now });
+  const test = 시험.시험판정({ ledger: usableLedger, screens: screensOf(usableLedger), index, accounts, now });
 
   const lines = [
     '# 게시 성과 판정',
@@ -455,8 +463,10 @@ function summarize({ ledger, now, unregistered = [], unmapped = [], index = null
     '',
     ...(unregistered.length ? unregistered.map(u => `- ${kst(u.at)} ${u.folder} · ${u.account || '계정 모름'} · ${u.url}`) : ['- 없음']),
     '',
-    ...(unmapped.length ? ['## 편 폴더를 못 찾은 등록', '', '서버 등록은 있는데 어느 편인지 못 찾았다(게시결과.json 판[].주소에 이 주소를 적으면 이어진다).', '',
+    ...(unmapped.length ? ['## 편 폴더를 못 찾은 등록', '', '서버 등록은 있는데 어느 편인지 못 찾았다. 계정·원고·공개 주소를 대조한 뒤 --연결목록으로 기록한다. 시각만 비슷한 게시물은 잇지 않는다.', '',
       ...unmapped.map(u => `- ${kst(u.publishedAt)} ${u.channel} · ${u.url}${u.ambiguous ? ` (여러 폴더: ${u.ambiguous.join(', ')})` : ''}`), ''] : []),
+    ...(excluded.length ? ['## 콘텐츠 비교에서 따로 둔 게시', '', '운영 시험·작품·공개 확인 대기는 일반 콘텐츠의 비교 표본과 기획 판정에서 뺀다. 원래 관측 숫자는 장부에 보존하고, 공개·삭제 상태를 바꾸지 않는다.', '',
+      ...excluded.map(l => `- ${cell(l.group)} · ${l.folder || '운영 시험'} · ${l.account} · ${l.url} — ${cell(l.reason)}`), ''] : []),
   ];
   return lines.join('\n');
 }
@@ -465,7 +475,7 @@ function summarize({ ledger, now, unregistered = [], unmapped = [], index = null
 function unregisteredOf(index, registeredKeys, now) {
   const out = [];
   for (const info of index.folders.values()) {
-    for (const p of (info.result && Array.isArray(info.result.판) ? info.result.판 : [])) {
+    for (const p of 연결.resultRows(info.result)) {
       if (!p || p.상태 !== '게시됨') continue;
       const id = 판정.postIdOf(p.주소);
       if (!id || registeredKeys.has(id.key)) continue;
@@ -487,6 +497,7 @@ function 인자(argv) {
     else if (a === '--json') o.json = true;
     else if (a === '--캐시') o.캐시 = argv[++i];
     else if (a === '--저장소') o.저장소 = argv[++i];
+    else if (a === '--연결목록') o.연결목록 = argv[++i];
     else if (a === '--적기') o.적기 = argv[++i];
     else if (a === '--화면목록') o.화면목록 = true;
     else if (a === '--요약') o.요약 = true;
@@ -531,21 +542,30 @@ async function run(o, { now = Date.now(), shorts = null, data = null } = {}) {
   const report = { 결과: '미리 보기', 새판정: [], 편쓰기: [], 건너뜀: [], 올리기: null };
 
   if (o.요약) {
-    const text = summarize({ ledger, now, index: 편.buildIndex(path.join(repo, 'docs', '마케팅')), accounts: loadAccounts(repo) });
+    const text = summarize({ ledger, now, index: 편.buildIndex(path.join(repo, 'docs', '마케팅'), 연결.latest(ledger)), accounts: loadAccounts(repo) });
     if (o.실행) writeSummary(summaryFile, text + '\n');
     report.결과 = o.실행 ? '요약 다시 만듦' : '미리 보기';
     report.요약 = text;
     return report;
   }
 
-  const server = data || await 서버읽기(o);
+  const source = data || await 서버읽기(o);
+  const accounts = loadAccounts(repo);
+  const requests = o.연결목록 ? JSON.parse(fs.readFileSync(path.resolve(o.연결목록), 'utf8').replace(/^\uFEFF/, '')) : [];
+  const linkPlans = 연결.prepare(repo, requests, source, accounts, ledger, now);
+  const linkLines = linkPlans.filter(p => p.changed).map(p => p.line);
+  report.연결 = linkPlans.map(p => ({ post: p.line.post, 편: p.line.folder, 계정: p.line.account, 구분: p.line.group, 변경: p.changed }));
+  // 미리 보기에도 같은 연결을 적용하되 파일·장부는 --실행에서만 쓴다.
+  const connections = 연결.latest([...ledger, ...linkLines]);
+  const server = 연결.filterServer(source, connections);
   const shortsByChannel = shorts || await shortsLists(server, { skip: o.쇼츠안읽음 });
   let screens = screensOf(ledger);
 
   if (o.적기) {
     const id = 판정.postIdOf(o.적기);
     if (!id) throw new Error('게시 주소를 읽지 못했다(유튜브·인스타·페북·틱톡)');
-    const entry = server.entries.find(e => 판정.postIdOf(e.url)?.key === id.key);
+    // 비교 제외와 원본 관측 기록은 별개다. 작품·운영시험도 읽은 화면 값은 남길 수 있다.
+    const entry = source.entries.find(e => 판정.postIdOf(e.url)?.key === id.key);
     if (!entry) throw new Error('서버에 등록되지 않은 게시물이다 — 작업실 「게시 주소로 추가」로 먼저 등록한다');
     const ageHours = Number.isFinite(o.나이) ? o.나이 : Math.round((now - Date.parse(entry.publishedAt)) / 3_600_000);
     const line = { at: new Date(now).toISOString(), kind: '화면', post: id.key, url: entry.url, ageHours, metrics: 화면값(o.값들) };
@@ -557,8 +577,7 @@ async function run(o, { now = Date.now(), shorts = null, data = null } = {}) {
   }
 
   const judged = 판정.judgeAll(server, { now, shortsByChannel, screens });
-  const index = 편.buildIndex(path.join(repo, 'docs', '마케팅'));
-  const accounts = loadAccounts(repo);
+  const index = 편.buildIndex(path.join(repo, 'docs', '마케팅'), connections);
   const latest = latestJudgments(ledger);
   const at = new Date(now).toISOString();
   const byFolder = new Map();
@@ -588,16 +607,25 @@ async function run(o, { now = Date.now(), shorts = null, data = null } = {}) {
   }
   report.새판정 = newLines.map(l => `${l.channel} ${POINT_LABEL[l.point]} ${l.folder || '(편 폴더 없음)'}: ${l.verdict}${l.multiple?.value != null ? ` · ${배글(l.multiple.value)}` : ''}`);
   report.화면목록 = screenList.sort((a, b) => String(a.게시).localeCompare(String(b.게시)));
-  const registeredKeys = new Set(judged.map(x => x.record.postKey));
+  const registeredKeys = new Set([...source.entries, ...source.posts].map(p => 판정.postIdOf(p.url)?.key).filter(Boolean));
   const unregistered = unregisteredOf(index, registeredKeys, now);
   report.미등록 = unregistered.map(u => `${u.folder} ${u.url}`);
   // 2주 시험 — 이번 판정 줄까지 들어간 장부로(미리 보기도 쓸 때와 같은 표)
-  const ledgerAfter = [...ledger, ...newLines];
-  report.시험 = 시험요약글(시험.시험판정({ ledger: ledgerAfter, screens: screensOf(ledgerAfter), index, accounts, now }));
+  const ledgerAfter = [...ledger, ...linkLines, ...newLines];
+  report.미연결 = unmapped;
+  report.별도분류 = [...connections.values()].filter(l => l.group !== '콘텐츠').length;
+  const studyLedger = ledgerAfter.filter(l => !connections.has(l.post) || connections.get(l.post).group === '콘텐츠');
+  report.시험 = 시험요약글(시험.시험판정({ ledger: studyLedger, screens: screensOf(studyLedger), index, accounts, now }));
   if (!o.실행) return report;
 
   // 쓰기 — 장부(바뀐 판정만) → 편 폴더 → 요약 → 올리기
   const written = new Set();
+  for (const rel of 연결.writeResults(repo, linkPlans)) written.add(rel);
+  if (linkLines.length) {
+    appendLines(ledgerFile, linkLines);
+    ledger.push(...linkLines);
+    written.add(LEDGER);
+  }
   if (newLines.length) {
     appendLines(ledgerFile, newLines);
     ledger.push(...newLines);
@@ -678,6 +706,8 @@ async function main(argv) {
     for (const f of report.편쓰기) console.log(`  쓴 곳: ${f}`);
     for (const s of report.건너뜀) console.log(`  건너뜀: ${s}`);
     for (const u of report.미등록 || []) console.log(`  ! 서버 미등록: ${u}`);
+    for (const u of report.미연결 || []) console.log(`  ! 편 연결 필요: ${u.channel} ${u.url} (계정·원고 확인 뒤 --연결목록)`);
+    if (report.연결?.length) console.log(`  편 연결 ${report.연결.length}건${o.실행 ? ' 확인·기록' : ' 미리 보기'}`);
     if (report.올리기) console.log(`  ${report.올리기}`);
     if (!o.실행 && report.새판정.length) console.log('  (미리 보기 — --실행을 붙이면 쓴다)');
     const logFile = path.join(lockDir, '마지막실행.json');

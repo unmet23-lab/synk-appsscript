@@ -7,10 +7,10 @@ import {createCompanyApp} from './server.mjs';
 
 async function fixture(t){
   const root=await mkdtemp(join(tmpdir(),'synk-inquiry-http-'));
-  let readHook=null;
+  let readHook=null,message='SYNTHETIC_HTTP_PRIVATE';
   const reader={configured:()=>true,verify:async()=>({connected:true,verifiedAt:new Date().toISOString()}),async readPage(){
     await readHook?.();return {items:[{responseId:'synthetic-http-response',email:'synthetic@example.test',type:'LAB · 한국어 교육',
-      message:'SYNTHETIC_HTTP_PRIVATE',consent:'위 안내를 읽고, 문의 답변을 위한 개인정보 수집·이용에 동의합니다.',
+      message,consent:'위 안내를 읽고, 문의 답변을 위한 개인정보 수집·이용에 동의합니다.',
       createdAt:'2026-10-20T01:00:00Z',submittedAt:'2026-10-20T01:00:00Z'}],nextPageToken:null};
   },responseState:async()=>'deleted'};
   const app=createCompanyApp({dataDir:root,port:0,allowTestHost:true,schedule:false,websiteInquiryReader:reader});
@@ -27,8 +27,17 @@ async function fixture(t){
       ...(body===undefined?{}:{body:JSON.stringify(body)})});
     return {status:response.status,data:await response.json()};
   }
-  return {app,users,request,base,set readHook(value){readHook=value;}};
+  return {app,users,request,base,set readHook(value){readHook=value;},set message(value){message=value;}};
 }
+test('existing inbox route exposes registration metadata and email-free totals only to the current admin',async t=>{
+  const f=await fixture(t);f.message='[TOPIK 4급 온라인 반 관심 등록]\n이름: 합성\n지금 급수: 3급\n4급이 필요한 때: 내년\n토요일 시간: 오후\n들어온 곳: http-test · 화면 언어 한국어';
+  await f.request('/api/website-inquiries/configure',{body:{enabled:true,revision:0}});await f.request('/api/website-inquiries/collect',{body:{}});
+  const {data,status}=await f.request('/api/website-inquiries');assert.equal(status,200);assert.equal(data.items[0].registration.productId,'topik4');assert.equal(data.items[0].task,null);
+  assert.equal(data.registrations.products[0].uniqueEmails,1);assert.doesNotMatch(JSON.stringify(data.registrations),/synthetic@example|합성/);
+  for(const user of ['member','viewer'])assert.equal((await f.request('/api/website-inquiries',{user})).status,403);
+  f.app.store.put('users',f.users.admin.id,{...f.users.admin,role:'member'});
+  assert.equal((await f.request('/api/website-inquiries')).status,403,'existing session loses access after role revocation');
+});
 test('company HTTP routes enforce admin, CSRF and live sessions while collection links a single task',async t=>{
   const f=await fixture(t);
   assert.equal((await f.request('/api/website-inquiries',{user:null})).status,401);

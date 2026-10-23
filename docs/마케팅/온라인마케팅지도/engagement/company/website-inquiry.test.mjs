@@ -14,6 +14,7 @@ import {connectWebsiteInquiry} from './website-inquiry-connect.mjs';
 const consent='위 안내를 읽고, 문의 답변을 위한 개인정보 수집·이용에 동의합니다.';
 const form={formId:WEBSITE_INQUIRY_FORM_ID,settings:{emailCollectionType:'RESPONDER_INPUT'},items:[['type','문의 유형'],['message','문의 내용'],['consent','개인정보 수집·이용 동의']].map(([id,title])=>({title,questionItem:{question:{questionId:id}}}))};
 const sample=(patch={})=>({responseId:'synthetic-response-1',email:'synthetic@example.test',type:'LAB · 한국어 교육',message:'SYNTHETIC_PRIVATE_CONTENT',consent,createdAt:'2026-10-20T01:00:00.000Z',submittedAt:'2026-10-20T01:00:00.000Z',...patch});
+const registrationMessage='[TOPIK 4급 온라인 반 관심 등록]\n이름: 합성 학생\n지금 급수: 3급\n4급이 필요한 때: 내년\n토요일 시간: 오후\n들어온 곳: univ-test · 화면 언어 몽골어';
 async function fixture(t){
   const directory=await mkdtemp(join(tmpdir(),'synk-website-inquiry-')),store=new Store(join(directory,'company'));
   const users={admin:{id:'admin',role:'admin',name:'합성 관리자',active:true},other:{id:'other',role:'member',name:'합성 직원',active:true}};
@@ -106,6 +107,56 @@ test('synthetic checks stay separate, unknown types require review and privacy r
   assert.equal(f.service.update(f.users.admin,row.id,{revision:row.revision,status:'closed',replyDraft:''}).item.status,'closed');
   const health=f.service.health(f.users.admin);assert.equal(health.configured,true);assert.equal(health.status,'ready');
   assert.doesNotMatch(JSON.stringify(health),/synthetic@example|기능 점검|continuation|pageToken/);
+});
+
+test('current form choices separate SHIFT services while historical broad inquiries are not relabeled as lectures',()=>{
+  const choices=[['SHIFT · 학교·기업·기관 AI 강의','shift-lecture'],['SHIFT · AI 강사·진로 강사 에이전시','shift-agency'],['SHIFT · AI 업무 자동화','shift-automation'],['PATH · 유학·취업 연계','path-career'],['SHIFT · 유학·취업 연계','path-career'],['SHIFT · 기관 강의·기업 컨설팅·브랜딩','shift-business']];
+  for(const [type,category]of choices)assert.equal(classifyWebsiteInquiry(sample({type})).category,category);
+  const old=classifyWebsiteInquiry(sample({type:choices.at(-1)[0]}));assert.equal(old.label,'SHIFT · 기존 기관·기업 문의');assert.match(old.nextAction,/원문/);
+});
+
+test('plain interest registration creates no reply task; notes and corrected emails remain review work',async t=>{
+  const f=await fixture(t);f.items=[sample({message:registrationMessage}),sample({responseId:'note',message:registrationMessage+'\n쓰기에서 어려운 점: 단어가 잘 떠오르지 않아요'}),sample({responseId:'resubmit',message:registrationMessage+'\n다시 등록: 이메일을 고쳐 다시 보냄'})];
+  await f.enable();await f.service.tick({force:true});f.restart();await f.service.tick({force:true});
+  const view=f.service.workspace(f.users.admin),plain=view.items.find(row=>row.responseId==='synthetic-response-1');
+  assert.equal(plain.registration.waitlistOnly,true);assert.equal(plain.task,null);assert.equal(plain.replyDraft,'');assert.equal(plain.status,'new');
+  assert.equal(f.counts().message_tasks,2);assert.equal(view.registrations.products[0].records,3);assert.equal(view.registrations.products[0].uniqueEmails,1);
+  const note=view.items.find(row=>row.responseId==='note');assert.equal(note.registration.hasNote,true);assert.equal(note.task.state,'linked');
+  const closed=f.service.update(f.users.admin,plain.id,{revision:plain.revision,status:'closed'}).item;
+  assert.equal(closed.registration.productId,'topik4');assert.equal(f.service.workspace(f.users.admin).registrations.products[0].records,2);
+  assert.throws(()=>f.service.workspace(f.users.other),{status:403});
+});
+
+test('historic categories and registrations project without writing stored rows or replacing existing tasks and drafts',async t=>{
+  const f=await fixture(t);f.items=[sample({type:'SHIFT · 유학·취업 연계'})];await f.enable();await f.service.tick({force:true});
+  let raw=f.store.all('websiteInquiries')[0];
+  const old={...raw,classification:{...raw.classification,category:'shift-career',label:'옛 분류'},status:'reviewing',replyDraft:'직접 검토한 초안',draftEdited:true};
+  f.store.put('websiteInquiries',raw.id,old);
+  const before=JSON.stringify(f.store.all('websiteInquiries')),view=f.service.get(f.users.admin,raw.id);
+  assert.equal(view.classification.category,'path-career');assert.equal(view.replyDraft,'직접 검토한 초안');assert.equal(view.status,'reviewing');assert.equal(view.task.state,'linked');
+  assert.equal(JSON.stringify(f.store.all('websiteInquiries')),before,'reading never migrates old data');
+  const data={...f.store.decrypt(old.payload),type:'LAB · 한국어 교육',message:registrationMessage};
+  f.store.put('websiteInquiries',raw.id,{...old,payload:f.store.encrypt(data),classification:classifyWebsiteInquiry(data)});
+  raw=f.store.all('websiteInquiries')[0];const saved=JSON.stringify(raw);
+  const projected=f.service.workspace(f.users.admin).items[0];assert.equal(projected.registration.waitlistOnly,true);assert.equal(projected.task.state,'linked');assert.equal(projected.replyDraft,'직접 검토한 초안');
+  f.items=[];await f.service.tick({force:true});assert.equal(JSON.stringify(f.store.get('websiteInquiries',raw.id)),saved);assert.equal(f.counts().message_tasks,1);
+});
+
+test('a registration that later adds a concern creates one task and removing the concern preserves its reviewed draft and status',async t=>{
+  const f=await fixture(t);f.items=[sample({message:registrationMessage})];await f.enable();await f.service.tick({force:true});assert.equal(f.counts().message_tasks,0);
+  f.items=[sample({message:registrationMessage+'\n쓰기에서 어려운 점: 논리적인 글을 쓰기 어려워요',submittedAt:'2026-10-20T02:05:00Z'})];
+  await f.service.tick({force:true});let row=f.service.workspace(f.users.admin).items[0];assert.equal(f.counts().message_tasks,1);assert.equal(row.registration.hasNote,true);
+  f.service.update(f.users.admin,row.id,{revision:row.revision,status:'reviewing',replyDraft:'담당자가 검토한 답장'});
+  f.items=[sample({message:registrationMessage,submittedAt:'2026-10-20T02:06:00Z'})];await f.service.tick({force:true});f.restart();await f.service.tick({force:true});
+  row=f.service.workspace(f.users.admin).items[0];assert.equal(row.registration.waitlistOnly,true);assert.equal(row.replyDraft,'담당자가 검토한 답장');assert.equal(row.status,'reviewing');assert.equal(row.task.state,'linked');assert.equal(f.counts().message_tasks,1);
+});
+
+test('a pending task receipt is repaired even when its registration no longer needs a new reply task',async t=>{
+  const f=await fixture(t);f.items=[sample({message:registrationMessage+'\n쓰기에서 어려운 점: 긴 글이 어려워요'})];await f.enable();f.taskHook=()=>{throw new Error('lost synthetic task result');};
+  await assert.rejects(f.service.tick({force:true}));const row=f.store.all('websiteInquiries')[0];assert.equal(row.task.state,'pending');assert.equal(f.counts().message_tasks,1);
+  f.store.put('websiteInquiries',row.id,{...row,payload:f.store.encrypt({...f.store.decrypt(row.payload),message:registrationMessage})});
+  f.taskHook=null;f.items=[];f.restart();await f.service.tick({force:true});
+  assert.equal(f.service.get(f.users.admin,row.id).registration.waitlistOnly,true);assert.equal(f.service.get(f.users.admin,row.id).task.state,'linked');assert.equal(f.counts().message_tasks,1);
 });
 
 test('invalid consent or malformed page rejects the entire page before storage or cursor advancement',async t=>{
@@ -395,7 +446,7 @@ const COPY_PAIRS_20261021={
   ],
   [
    "협업 목적·대상·희망 일정·범위를 확인하고 답변을 검토해 주세요.",
-   "협업 목적 · 대상 · 원하는 일정 · 범위를 보고 초안을 다듬어요."
+   "이전 문의 유형이에요. 원문에서 강의 · 컨설팅 · 브랜딩 가운데 어떤 요청인지 먼저 확인해요."
   ],
   [
    "관심 과정·국가·희망 시기를 확인하고 확정된 안내만 답변에 넣어 주세요.",

@@ -250,14 +250,33 @@ const STATUS = (job) => (job.status === 'scheduled' && job.reviewWaiting ? '승�
 // 게시결과.json의 그 계정 줄만 바꾼다(크롬으로 올린 다른 판 줄은 그대로).
 function mergeResults(bundle, rows) {
   const file = path.join(bundle.dir, '게시', '게시결과.json');
-  let result = {};
-  try { result = 묶음.readJson(file); } catch { /* 처음 */ }
+  const raw = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : null;
+  const result = raw === null ? {} : JSON.parse(raw.replace(/^\uFEFF/, ''));
+  if (!result || typeof result !== 'object' || Array.isArray(result) || (result.판 != null && !Array.isArray(result.판)) || (result.추가게시 != null && !Array.isArray(result.추가게시))) throw new Error('게시결과.json 모양이 달라 건드리지 않았다');
   const list = Array.isArray(result.판) ? result.판 : [];
-  for (const row of rows) {
-    const at = list.findIndex((p) => p.계정 === row.계정);
-    if (at > -1) list[at] = { ...list[at], ...row }; else list.push(row);
+  const { postIdOf } = require('./lib/게시성과판정.js');
+  const keyOf = p => postIdOf(p.주소)?.key || p.주소 || null;
+  for (const value of rows) {
+    const row = require('./lib/게시성과연결.js').identity(bundle.name, value);
+    const all = [list, result.추가게시 || []].flatMap(rows => rows.map((p, i) => ({ p, i, rows })));
+    const sameJob = all.filter(({ p }) => p.계정 === row.계정 && row.작업 && p.작업 === row.작업);
+    const samePost = all.filter(({ p }) => p.계정 === row.계정 && keyOf(row) && keyOf(p) === keyOf(row));
+    if (samePost.some(({ p }) => p.작업 && row.작업 && p.작업 !== row.작업)) throw new Error('같은 게시 주소의 작업ID가 달라 건드리지 않았다');
+    // 추가게시도 같은 게시물로 찾는다. 주소·작업ID가 모두 빈 계획 줄만 마지막 대안이다.
+    const candidates = sameJob.length ? sameJob : samePost.length ? samePost : all.filter(({ p, rows }) => rows === list && p.계정 === row.계정 && !p.주소 && !p.작업);
+    if (candidates.length > 1) throw new Error('같은 계정의 여러 게시 결과가 있어 작업ID로 하나를 확인해야 한다');
+    const hit = candidates[0];
+    if (hit) {
+      if (keyOf(hit.p) && keyOf(row) && keyOf(hit.p) !== keyOf(row)) throw new Error('같은 작업ID의 게시 주소가 달라 건드리지 않았다');
+      hit.rows[hit.i] = require('./lib/게시성과연결.js').identity(bundle.name, { ...hit.p, ...row });
+    } else list.push(row);
   }
-  writeJson(file, { ...result, 판: list });
+  const next = JSON.stringify({ ...result, 판: list }, null, 2) + '\n';
+  if (raw !== null && raw.replace(/\r\n/g, '\n') === next) return;
+  if ((fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : null) !== raw) throw new Error('게시결과가 바뀌어 상태 쓰기를 멈췄다');
+  const temp = file + `.상태-${process.pid}.tmp`;
+  fs.writeFileSync(temp, next.replace(/\n/g, /\r\n/.test(raw || '') ? '\r\n' : '\n'), { flag: 'wx' });
+  fs.renameSync(temp, file);
 }
 
 async function sendTelegram(text) {
@@ -350,6 +369,7 @@ async function status(bundle, ws, { save = true, jobs = null } = {}) {
   const rows = (state.판 || []).map((p) => {
     const job = (detail.jobs || []).find((j) => j.id === p.작업) || (!jobs && (detail.jobs || []).find((j) => j.channelId === p.채널));
     return { 계정: p.계정, 상태: job ? STATUS(job) : '작업 없음', 시각: job?.scheduledAt ? new Date(job.scheduledAt).toISOString() : p.시각, 방법: '작업실', 작업: job?.id || p.작업,
+      원고ID: state.postId, ...(job?.publishedAt ? { 게시관측시각: job.publishedAt } : {}),
       ...(job?.publicationUrl ? { 주소: job.publicationUrl } : {}), ...(job?.message ? { 서버: String(job.message).slice(0, 200) } : {}) };
   });
   if (save) mergeResults(bundle, rows);
@@ -527,4 +547,4 @@ async function main() {
 
 if (require.main === module) main().catch((error) => { console.error(error.message); process.exitCode = error.code === 'NO_CREDENTIAL' ? 3 : error.code === 'USAGE' ? 2 : 1; });
 
-module.exports = { Workspace, connect, planBundle, register, status, cancel, matchChannel, checkedFile, readyFolders, cachedJobs, sendLink, resendPending, 명령이름, STATUS, LOCAL_DIR };
+module.exports = { Workspace, connect, planBundle, register, status, cancel, matchChannel, checkedFile, readyFolders, cachedJobs, sendLink, resendPending, 명령이름, STATUS, LOCAL_DIR, mergeResults };
