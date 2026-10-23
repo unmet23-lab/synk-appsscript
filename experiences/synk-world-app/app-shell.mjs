@@ -509,7 +509,8 @@ function responsesSection(){
  if(!responsesOn||typeof education?.responses!=='function'||education.metrics?.().owner!==client.snapshot?.accountId)return '';
  let rows=null;try{rows=education.responses();}catch{rows=null;}
  if(!Array.isArray(rows)||!rows.length)return '';
- let local=false;try{local=account?.preferences?.()?.enabled===false;}catch{local=false;}
+ // 기록이 이 기기에만 있는지: 학습 호스트가 기기 열쇠(local:)로 저장하면 참(저장 꺼짐이거나 계정이 학습 동기화를 못 함). 호스트가 아직 없으면 저장 설정으로.
+ let local=false;try{const key=window.SYNKLearningHost?.status?.()?.accountKey;local=typeof key==='string'?key.startsWith('local:'):account?.preferences?.()?.enabled===false;}catch{local=false;}
  const name=row=>[t(`response.kind.${row.kind}`),t(`response.value.${row.value}`)];
  const item=(row,index)=>{const [kind,value]=name(row);return `<li${index>=RESPONSE_PAGE?' data-response-later hidden':''}><span>${escape(kind)} · ${escape(value)}</span><button class="quiet-button" type="button" data-response-remove="${escape(row.id)}" aria-label="${escape(t('response.removeLabel',{kind,value}))}">${escape(t('response.remove'))}</button></li>`;};
  return `<section class="ws-responses" data-world-responses data-label="RESPONSES" aria-labelledby="ws-responses-title"><h3 id="ws-responses-title" tabindex="-1">${escape(t('response.mine'))}</h3><p class="ws-responses-note">${escape(t('response.note30'))}</p><ul>${rows.map(item).join('')}</ul>${rows.length>RESPONSE_PAGE?`<button class="quiet-button ws-responses-more" type="button" data-responses-more>${escape(t('life.more'))}</button>`:''}<p class="ws-responses-note">${escape(t(local?'response.removeNoteDevice':'response.removeNote'))}</p></section>`;
