@@ -234,7 +234,8 @@ const homeHtml = withData(`<!doctype html>\n<html lang="ko"><head><meta charset=
 // 공개 페이지라 글 전체에서 만든 도구 이름·작업 자리 경로를 한 번 더 본다(공개 도구·배포 점검도 보지만 빌드에서 먼저 멈춘다)
 const homeLeak = homeHtml.match(/claude|chat ?gpt|\bgpt|codex|openai|gemini|typecast|타입캐스트|higgsfield|힉스필드|fable|페이블|아르곤|\bargon|\blora\b|comfy|minimax|seedance|\bkling|nano ?banana|지피티|클로드|제미나이|synk-vendor|\.tmp\/|SYNK-LoRA|[A-Z]:[\\/]Users/i);
 if (homeLeak) throw Error('홈페이지판에 만든 도구 이름·작업 경로가 있다: ' + homeLeak[0]);
-fs.writeFileSync(path.join(out, 'index.html'), homeHtml);
+// 줄끝은 LF로 — 공개본(synk-policy)이 LF라, Windows 작업본의 CRLF 원고를 그대로 쓰면 다시 올릴 때마다 파일 전체가 바뀐 것으로 잡힌다(10-23 Fable P3)
+fs.writeFileSync(path.join(out, 'index.html'), homeHtml.replace(/\r\n/g, '\n'));
 const size = (p) => (fs.statSync(path.join(out, p)).size / 1024 / 1024).toFixed(2) + 'MB';
 console.log('모델', data.models.map((m) => `${m.code} ${m.name} 컷${m.shotCount} 장면${m.scenes.length} 목소리${m.voices.length}${m.voices.some((v) => v.say) ? '(문장 듣기)' : ''}${m.loop ? ' 움직임' : ''}${m.spec ? ' 명세서' : ''}`).join(' / '));
 if (homeApi) console.log('문장 듣기 서버', homeApi);

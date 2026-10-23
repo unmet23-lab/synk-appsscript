@@ -104,6 +104,11 @@ test('브리프 추천: 1차 확장 업종(건강식품·생활/주방·육아·
   // 한 줄 캐릭터·맡는 역할·피할 것은 1기 일곱 명까지 모두(10-22 유호님), 한 줄은 서로 겹치지 않는다
   for (const m of models) assert.ok(m.tagline && (m.roles || []).length && (m.avoid || []).length, `${m.code} 한 줄 캐릭터·역할·피할 것`);
   assert.equal(new Set(models.map((m) => m.tagline)).size, models.length, '한 줄 캐릭터가 겹치지 않는다');
+  // 유호 인상 「힙한 · 4차원」(10-23 유호님): 분위기는 개성·힙만 — 지적·친근 설명에서는 빠지고 「4차원」 설명에서는 앞선다
+  assert.deepEqual(byCode('M03').moods, ['unique']);
+  assert.ok(!all('지적인 금융 앱 광고').includes('M03') && !all('친근하고 편안한 일상 브이로그').includes('M03'));
+  assert.equal(all('4차원 캐릭터 광고')[0], 'M03');
+  assert.equal(all('사차원 캐릭터 광고')[0], 'M03', '한글로 적은 「사차원」도 알아듣는다');
 });
 
 test('브리프 추천: 성별 조건과 빈 브리프', () => {
