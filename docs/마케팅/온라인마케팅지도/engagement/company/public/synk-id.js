@@ -6,6 +6,18 @@ let synkPlatformEntry;
 let synkNativeVerifiedAccount=null,synkNativeGateFailure=false,synkNativeMask=null;
 let synkNativeVerifiedGeneration=null,synkNativeNeedsRecheck=false,synkRenewTask=null,synkNativeRecovery=null,synkNativeConfigured=false,synkNativeRestorePending=false;
 let synkNativeObserverInstalled=false,synkNativeEventSequence=0,synkNativeLatestEvent=null;
+// A platform check can fail or never answer. The masked page keeps checking on its own, cuts off each of its
+// requests, and after a while says why and offers a reconnect instead of checking forever (2026-10-22).
+const SYNK_CHECK_REQUEST_MS=15_000,SYNK_CHECK_HELP_MS=20_000,SYNK_CHECK_RETRY_MS=[5_000,10_000,20_000,30_000];
+const synkCheckSignal=()=>globalThis.AbortSignal?.timeout?.(SYNK_CHECK_REQUEST_MS);
+const synkCheckUnanswered=()=>Object.assign(new Error('회사 서버가 답하지 않아 SYNK ID 연결을 확인하지 못했어요.'),{code:'SYNK_PLATFORM_ENTRY'});
+const synkCheckMe=()=>api('/api/me',undefined,'GET',{signal:synkCheckSignal()}).catch(error=>{throw ['TimeoutError','AbortError','TypeError'].includes(error?.name)?synkCheckUnanswered():error;});
+const synkCheckTimer=(fn,ms)=>{const timer=setTimeout(fn,ms);timer?.unref?.();return timer;};
+// The Workspace window shows no prompt for unsaved work: a beforeunload guard silently cancels leaving the page.
+// Only after the masked page said so and the crew chose 「저장하지 않고 다시 열기」 does this let the page go.
+// The event is kept: after dispatch its defaultPrevented tells whether a guard really cancelled leaving.
+let synkLeaveWithoutSaving=false,synkUnloadEvent=null;
+window.addEventListener?.('beforeunload',event=>{synkUnloadEvent=event;if(synkLeaveWithoutSaving)event.stopImmediatePropagation();},true);
 function installNativeSynkObserver(){
   const desktop=getSynkDesktopBridge();if(!desktop?.onAuthChanged||synkNativeObserverInstalled)return;
   synkNativeObserverInstalled=true;
@@ -69,13 +81,13 @@ async function prepareNativeSynkCompanyEntry(){
     if(!auth.signedIn||!auth.account?.synk_user_id){renderAuth();return false;}
     const id=auth.account.synk_user_id,generation=auth.sessionGeneration;
     const current=async()=>{const latest=await currentNativeSynkStatus();if(!latest.signedIn||latest.account?.synk_user_id!==id||latest.sessionGeneration!==generation)throw Object.assign(new Error('플랫폼 계정 연결이 바뀌었어요. 다시 연결해 주세요.'),{code:'SYNK_PLATFORM_ENTRY'});};
-    let me=await api('/api/me');await current();
+    let me=await synkCheckMe();await current();
     if(me.synkUserId!==id){
       const status=await synkCompanyRequest('status');await current();
       if(!status.enabled)throw new Error('회사 SYNK ID 연결을 준비하고 있어요.');
       const challenge=await synkCompanyRequest('challenge',{action:'login'});await current();
       await synkCompanyRequest('exchange',{challenge:challenge.challenge,confirm:true});await current();
-      me=await api('/api/me');await current();
+      me=await synkCheckMe();await current();
     }
     if(!me.user||me.synkUserId!==id)throw new Error('플랫폼과 같은 SYNK ID로 회사 연결을 확인하지 못했어요.');
     synkNativeVerifiedAccount=id;synkNativeVerifiedGeneration=generation;synkNativeNeedsRecheck=false;synkNativeGateFailure=false;maskNativeSynkCompany(false);return {me,nativeStamp:{sequence:synkNativeEventSequence,accountId:id,generation}};
@@ -85,10 +97,46 @@ async function prepareNativeSynkCompanyEntry(){
 function maskNativeSynkCompany(mask){
   const content=document.querySelector('#app');if(!content?.style)return;
   if(mask&&!synkNativeMask){
-    const note=document.createElement('p');note.className='initial-loading';note.setAttribute('role','status');note.textContent='플랫폼의 SYNK ID 연결을 확인하고 있어요.';content.before(note);
+    const note=document.createElement('div');note.className='initial-loading';note.style.padding='0 16px';note.setAttribute('role','status');note.setAttribute('aria-live','polite');
+    const logo=document.createElement('img');logo.className='brand-logo';logo.src='/wordmark.svg';logo.alt='싱ㅋ';
+    const text=document.createElement('p');text.textContent='플랫폼의 SYNK ID 연결을 확인하고 있어요.';
+    const line=document.createElement('span');line.className='loading-line';note.append(logo,text,line);content.before(note);
     const nodes=['#app','#overlay','#toast','#workspace-messenger','#workspace-teaching'].map(selector=>document.querySelector(selector)).filter(node=>node?.style).map(node=>({node,display:node.style.display,inert:node.inert}));
-    synkNativeMask={note,nodes};for(const {node}of nodes){node.style.display='none';node.inert=true;}
-  }else if(!mask&&synkNativeMask){for(const {node,display,inert}of synkNativeMask.nodes){node.style.display=display;node.inert=inert;}synkNativeMask.note.remove();synkNativeMask=null;}
+    synkNativeMask={note,nodes,logo,help:false,failures:0,attempt:0,lastError:'',reason:null,action:null,reconnecting:false,blocked:false,reopenPending:false,retryTimer:null,helpTimer:null};for(const {node}of nodes){node.style.display='none';node.inert=true;}
+    synkNativeMask.helpTimer=synkCheckTimer(showNativeSynkHelp,SYNK_CHECK_HELP_MS);scheduleNativeSynkCheck();
+  }else if(!mask&&synkNativeMask){clearTimeout(synkNativeMask.retryTimer);clearTimeout(synkNativeMask.helpTimer);for(const {node,display,inert}of synkNativeMask.nodes){node.style.display=display;node.inert=inert;}synkNativeMask.note.remove();synkNativeMask=null;}
+}
+// While masked, nothing else may trigger a check: the chat frame held focus, so no focus event comes back.
+function scheduleNativeSynkCheck(){
+  const mask=synkNativeMask;if(!mask)return;clearTimeout(mask.retryTimer);
+  mask.retryTimer=synkCheckTimer(()=>{if(synkNativeMask!==mask||synkPageClosed)return;if(!document.hidden)void renewSynkCompanySession().catch(()=>{});scheduleNativeSynkCheck();},SYNK_CHECK_RETRY_MS[Math.min(mask.attempt++,SYNK_CHECK_RETRY_MS.length-1)]);
+}
+function noteNativeSynkFailure(message){
+  const mask=synkNativeMask;if(!mask)return;mask.failures++;mask.lastError=typeof message==='string'?message:'';
+  if(mask.failures>=3)showNativeSynkHelp();else updateNativeSynkReason();
+}
+function updateNativeSynkReason(){const mask=synkNativeMask;if(mask?.reason)mask.reason.textContent=mask.blocked?'저장하지 않은 작업이 있어 다시 열지 못했어요. 연결이 돌아오면 그대로 이어지고, 지금 다시 열면 그 작업은 사라져요.':mask.reopenPending?'회사 서버가 답하지 않아 아직 다시 열지 못했어요.':mask.lastError||'플랫폼에서 SYNK ID 로그인 상태를 아직 받지 못했어요.';}
+function showNativeSynkHelp(){
+  const mask=synkNativeMask;if(!mask||mask.help)return updateNativeSynkReason();
+  mask.help=true;clearTimeout(mask.helpTimer);
+  const card=document.createElement('div');card.className='empty';card.style.wordBreak='keep-all';
+  const title=document.createElement('h3');title.textContent='SYNK ID 연결을 아직 확인하지 못했어요';
+  const reason=document.createElement('p'),hint=document.createElement('p');hint.textContent='자동으로 계속 확인하고 있어요. 다시 연결해도 안 되면 플랫폼에서 SYNK Workspace를 다시 열어 주세요.';
+  const action=document.createElement('button');action.type='button';action.className='btn primary';action.textContent='다시 연결';action.onclick=()=>void reconnectNativeSynkCompany();
+  card.append(title,reason,hint,action);mask.note.textContent='';mask.note.append(mask.logo,card);Object.assign(mask,{reason,action});updateNativeSynkReason();
+}
+async function reconnectNativeSynkCompany(){
+  const mask=synkNativeMask;if(!mask||mask.reconnecting)return;mask.reconnecting=true;
+  if(mask.action){mask.action.disabled=true;mask.action.textContent=mask.blocked?'다시 여는 중…':'연결하는 중…';}
+  if(!mask.blocked){
+    let timer;await Promise.race([renewSynkCompanySession().catch(()=>{}),new Promise(resolve=>{timer=synkCheckTimer(resolve,SYNK_CHECK_REQUEST_MS);})]);clearTimeout(timer);
+    if(synkNativeMask!==mask||synkPageClosed)return;
+  }
+  // The check still failed. Open the workspace again the way the platform does; it verifies before showing anything.
+  synkUnloadEvent=null;synkLeaveWithoutSaving=mask.blocked;location.replace('/?tab=messenger');
+  // Still here after 3 seconds: a guard for unsaved work cancelled leaving (only then offer to leave without
+  // saving), or the server has not answered the reopen yet.
+  synkCheckTimer(()=>{synkLeaveWithoutSaving=false;if(synkNativeMask!==mask)return;mask.reconnecting=false;mask.blocked=synkUnloadEvent?.defaultPrevented===true;mask.reopenPending=!mask.blocked;if(mask.action){mask.action.disabled=false;mask.action.textContent=mask.blocked?'저장하지 않고 다시 열기':'다시 연결';}updateNativeSynkReason();},3_000);
 }
 function resetNativeSynkCompanyView(){
   if(state.user)return;
@@ -140,7 +188,7 @@ async function recoverNativeSynkCompanySession(auth,current){
   synkNativeNeedsRecheck=true;synkNativeRestorePending=true;maskNativeSynkCompany(true);
   const changed=()=>Object.assign(new Error('플랫폼과 같은 회사 계정을 확인하지 못했어요. 다시 연결해 주세요.'),{code:'SYNK_RECOVERY_REQUIRED'});
   const guard=async()=>{const sequence=synkNativeEventSequence,latest=await currentNativeSynkStatus();if(!current()||sequence!==synkNativeEventSequence||!latest.signedIn||latest.account?.synk_user_id!==id||latest.sessionGeneration!==generation)throw changed();return sequence;};
-  const request=async(path,body)=>{const response=await fetch(path,{credentials:'same-origin',...(body?{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':csrf},body:JSON.stringify(body)}:{})}),data=await response.json();await guard();if(!response.ok)throw changed();return data;};
+  const request=async(path,body)=>{let response,data;try{response=await fetch(path,{credentials:'same-origin',signal:synkCheckSignal(),...(body?{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':csrf},body:JSON.stringify(body)}:{})});data=await response.json();}catch{throw synkCheckUnanswered();}await guard();if(!response.ok)throw changed();return data;};
   try{
     if(!auth.signedIn||auth.account?.synk_user_id!==id||!Number.isSafeInteger(verifiedGeneration)||verifiedGeneration<0||!Number.isSafeInteger(generation)||generation<verifiedGeneration)throw changed();
     await guard();let me=await request('/api/me');
@@ -160,7 +208,8 @@ async function renewSynkCompanySession(){
   try{return await task;}finally{if(synkRenewTask===task)synkRenewTask=null;}
 }
 async function performSynkCompanyRenewal(){
-  if(!getSynkDesktopBridge()||synkRenewPending||synkConnectionPending||synkLogoutPending||synkPageClosed||document.hidden||!document.hasFocus()||!state.user)return;
+  // A masked window is checked even before it is clicked; content stays hidden until the check passes.
+  if(!getSynkDesktopBridge()||synkRenewPending||synkConnectionPending||synkLogoutPending||synkPageClosed||document.hidden||!document.hasFocus()&&!synkNativeMask||!state.user)return;
   const userId=state.user.id,csrf=state.csrf,current=()=>!synkPageClosed&&!synkLogoutPending&&state.user?.id===userId&&state.csrf===csrf;
   synkRenewPending=true;
   try{
@@ -181,7 +230,7 @@ async function performSynkCompanyRenewal(){
     if(['SYNK_ACCOUNT_CHANGED','SYNK_IDENTITY_REJECTED','AUTH_REQUIRED','AUTH_CHANGED','SYNK_CSRF'].includes(error.code)){
       await synkCompanyRequest('logout',{csrfToken:csrf}).catch(()=>{});if(current())location.replace('/?tab=messenger');return;
     }
-    if(synkNativeVerifiedAccount){synkNativeNeedsRecheck=true;maskNativeSynkCompany(true);}
+    if(synkNativeVerifiedAccount){synkNativeNeedsRecheck=true;maskNativeSynkCompany(true);noteNativeSynkFailure(error.message);}
     notify(error.message); // A temporary outage retains the session and retries at the next tick.
   }finally{synkRenewPending=false;}
 }
@@ -206,13 +255,13 @@ async function logoutSynkCompany(){
 }
 function syncSynkRenewLoop(){
   clearInterval(synkRenewTimer);synkRenewTimer=null;
-  if(getSynkDesktopBridge()&&!synkPageClosed&&!document.hidden&&document.hasFocus()){void renewSynkCompanySession();synkRenewTimer=setInterval(()=>void renewSynkCompanySession(),20_000);}
+  if(getSynkDesktopBridge()&&!synkPageClosed&&!document.hidden&&document.hasFocus()){void renewSynkCompanySession();synkRenewTimer=setInterval(()=>{if(document.hidden||!document.hasFocus()){synkNativeNeedsRecheck=true;return;}void renewSynkCompanySession();},20_000);}
 }
 async function installSynkLogin(){
   const form=document.querySelector('#auth-form');if(!form||document.querySelector('#synk-id-login'))return;
-  const section=document.createElement('section');section.className='synk-login-entry';section.innerHTML='<button type="button" class="btn synk-id-button" id="synk-id-login" disabled>SYNK ID로 로그인</button><p class="table-foot" id="synk-id-login-note" role="status">연결 상태를 확인하고 있어요.</p>';form.before(section);
+  const section=document.createElement('section');section.className='synk-login-entry';section.innerHTML='<button type="button" class="btn synk-id-button" id="synk-id-login" aria-describedby="synk-id-login-note" disabled>Google · SYNK ID로 로그인</button><p class="table-foot" id="synk-id-login-note" role="status">연결 상태를 확인하고 있어요.</p>';form.before(section);
   const button=section.querySelector('button'),note=section.querySelector('p');
-  try{synkCompanyStatus=await synkCompanyRequest('status');if(!section.isConnected)return;button.disabled=!synkCompanyStatus.enabled||(!getSynkDesktopBridge()&&!synkCompanyStatus.browserEnabled);note.textContent=button.disabled?'SYNK ID 로그인은 연결 준비 중이에요. 아래 회사 계정을 이용해 주세요.':'회사 계정에 연결한 SYNK ID로 들어가요. 처음에는 회사 계정에서 연결해 주세요.';button.onclick=()=>beginSynkCompany('login',{},button,note);}
+  try{synkCompanyStatus=await synkCompanyRequest('status');if(!section.isConnected)return;button.disabled=!synkCompanyStatus.enabled||(!getSynkDesktopBridge()&&!synkCompanyStatus.browserEnabled);note.textContent=button.disabled?'Google · SYNK ID 로그인은 연결 준비 중이에요. 아래 회사 계정을 이용해 주세요.':'Google로 가입했다면 이 버튼을 누른 뒤 Google로 계속해 주세요. 회사 계정에 연결한 SYNK ID로 들어가요. 처음에는 회사 초대를 받고 계정을 연결해 주세요.';button.onclick=()=>beginSynkCompany('login',{},button,note);}
   catch(error){if(note.isConnected)note.textContent=error.message;}
   void automaticallyEnterSynkCompany();
 }
@@ -244,7 +293,7 @@ async function beginSynkCompany(action,params={},button,note){
   try{
     const values={action,...params,csrfToken:state.csrf,confirm:true};
     if(!getSynkDesktopBridge()){if(action==='login'){const intent=readSynkPlatformEntry();if(intent){intent.attempted=true;sessionStorage.setItem(synkPlatformEntryKey,JSON.stringify(intent));values.expectedAccountId=intent.accountId;}}const result=await synkCompanyRequest('start',values);location.assign(result.authorizationUrl);return;}
-    const challenge=await synkCompanyRequest('challenge',values);if(note){note.textContent='열린 브라우저에서 SYNK ID 로그인을 완료해 주세요.';const cancel=document.createElement('button');cancel.type='button';cancel.className='text-button';cancel.textContent='로그인 취소';cancel.onclick=()=>{void getSynkDesktopBridge().authCancelSignIn();cancel.remove();};note.append(document.createTextNode(' '),cancel);}
+    const challenge=await synkCompanyRequest('challenge',values);if(note){note.textContent='열린 브라우저에서 Google 또는 기존 SYNK ID로 로그인해 주세요.';const cancel=document.createElement('button');cancel.type='button';cancel.className='text-button';cancel.textContent='로그인 취소';cancel.onclick=()=>{void getSynkDesktopBridge().authCancelSignIn();cancel.remove();};note.append(document.createTextNode(' '),cancel);}
     const account=await waitForNativeSynk();
     if(action!=='login'){
       const title=action==='link'?'이 SYNK ID를 연결할까요?':'이 SYNK ID 연결을 해제할까요?';
@@ -272,7 +321,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   if(failure||connected){params.delete('synkError');params.delete('synkConnected');history.replaceState(null,'',location.pathname+(params.size?'?'+params.toString():'')+location.hash);notify(failure?'SYNK ID 연결을 완료하지 못했어요. 기존 회사 계정에서 다시 확인해 주세요.':'SYNK ID 연결을 완료했어요.');}
   if(getSynkDesktopBridge()){
     installNativeSynkObserver();
-    syncSynkRenewLoop();window.addEventListener('focus',syncSynkRenewLoop);window.addEventListener('blur',()=>{synkNativeNeedsRecheck=true;clearInterval(synkRenewTimer);synkRenewTimer=null;});document.addEventListener('visibilitychange',()=>{if(document.hidden)synkNativeNeedsRecheck=true;syncSynkRenewLoop();});
+    // Clicking into the chat frame blurs this window while the document keeps focus; only leaving the window stops renewals.
+    syncSynkRenewLoop();window.addEventListener('focus',syncSynkRenewLoop);window.addEventListener('blur',()=>setTimeout(()=>{if(document.hasFocus()&&!document.hidden)return;synkNativeNeedsRecheck=true;clearInterval(synkRenewTimer);synkRenewTimer=null;},0));document.addEventListener('visibilitychange',()=>{if(document.hidden)synkNativeNeedsRecheck=true;syncSynkRenewLoop();});
     window.addEventListener('pagehide',()=>{synkPageClosed=true;clearInterval(synkRenewTimer);synkRenewTimer=null;});
   }
 });

@@ -36,7 +36,7 @@ test('native session renewal is single-flight and uses the current company CSRF'
 
 test('native identity loss immediately masks the persistent classroom outside the company app tree',()=>{
   const f=fixture(),nodes=new Map(['#app','#overlay','#toast','#workspace-messenger','#workspace-teaching'].map(key=>[key,{style:{display:''},inert:false,before(){}}]));
-  f.document.querySelector=selector=>nodes.get(selector)||null;f.document.createElement=()=>({className:'',setAttribute(){},remove(){}});
+  f.document.querySelector=selector=>nodes.get(selector)||null;f.document.createElement=()=>({className:'',style:{},setAttribute(){},append(){},remove(){}});
   let changed;f.desktop.onAuthChanged=callback=>{changed=callback;};
   f.run("synkNativeVerifiedAccount='teacher-a';synkConnectionPending=true;installNativeSynkObserver()");
   changed({signedIn:false,status:'signed-out',sessionGeneration:2});
