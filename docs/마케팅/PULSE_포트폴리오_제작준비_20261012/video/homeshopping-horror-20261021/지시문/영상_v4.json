@@ -1,0 +1,34 @@
+{
+ "메모": "「매진 임박」 콘티 v4 영상 지시문(2026-10-23). 유호님 10-23 「맘에 들어. b안으로 일단 테스트해보자.」 — B안(얼굴 없는 강도 컷은 Veo 3.1 Quality 한 판, 피해자 컷은 Omni 1.1 Flash 두 판)을 대표 컷 넷으로 먼저 시험한다. 시작 그림은 이미지 콘티 v4의 고른 판을 원본 첫 프레임 자리 · 빛에 맞춘 1920×1080(synk-vendor/…/영상/시작_v4/<id>.jpg). 넣는 글 = prompt + 한 칸 + 공통. 원본 컷 길이는 1초 안팎이라 시작 1초 안에 원본 움직임이 나오게 쓰고, 쓸 구간은 받은 뒤 고른다. 광고 카드 넷은 영상 모델에 넣지 않는다(제품이 AI로 다시 그려진다 — Remotion).",
+ "공통": "Keep every face, outfit, hairstyle, the room and the warm tungsten lamp light exactly as in the start image. Handheld camera with a natural, slight shake, like a real horror-comedy short film shot on a cinema camera. No text, no letters, no logos, no watermarks appear. One continuous shot, no cuts.",
+ "클립": [
+  {
+   "id": "S02",
+   "모델": "Veo 3.1 Quality",
+   "판": 1,
+   "쓰는 곳": "#2 0.54–1.38초(0.83초) — 강도 「가진 거 다 내놔!」",
+   "prompt": "Low-angle medium shot of a scene from a comedy horror short film. A masked man in a black knit balaclava and a black t-shirt, turned three-quarters toward the right, jabs a kitchen knife (a harmless film prop) up toward the right and shouts at people out of frame, then holds his open left hand out, palm up, demanding that they hand it over. Quick, aggressive movement right from the first second; his lips move through the mouth hole of the balaclava. Behind him the white shelf with a candle and the white door stay as they are."
+  },
+  {
+   "id": "S31",
+   "모델": "Veo 3.1 Quality",
+   "판": 1,
+   "쓰는 곳": "#31 70.79–72.62초(1.83초) — 끝, 말 없음",
+   "prompt": "Low-angle medium shot of a scene from a comedy horror short film. The masked man stands still, facing the camera, and stares straight into the lens through the eye holes, deadpan. In his right hand, at chest height, he holds a small clear food container tied with a cream satin ribbon, letting it dangle and sway gently from the long ribbon ends wound around his fingers. He does not speak and does not move otherwise. The container, its lid, its ribbon and the food inside keep exactly their shape and colors from the start image."
+  },
+  {
+   "id": "S07",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#7 8.17–9.08초(0.92초) — A 「이게 전부예요!」",
+   "prompt": "Close-up, handheld and slightly shaky, from the height of a man standing over her. The young Korean woman in the white lace veil looks up toward the upper left of the frame at the man out of frame and pleads, speaking fast — her lips move with the words, her eyes are wet and wide, her eyebrows pinched together. The fairy-light bokeh behind her stays soft."
+  },
+  {
+   "id": "S10",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#10 11.42–14.04초(2.62초) — A 「안 돼 안 돼 안 돼 안 돼!」 + C 흐느낌",
+   "prompt": "Handheld three-shot, slightly shaky. The three women pressed together on the sofa all stare up toward the upper left of the frame at the intruder out of frame. The woman on the right in the white lace veil talks fast, pleading — her mouth keeps moving; the curly-haired woman on the left in the flower crown covers her mouth with her hand, sobbing; the woman in the middle with glasses stays frozen, lips closed, breathing fast. None of them looks at the camera."
+  }
+ ]
+}
