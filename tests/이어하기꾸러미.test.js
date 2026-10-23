@@ -316,6 +316,8 @@ test('검토한 긴 base64는 그 경로의 그 값만 내장 자료 검사에�
   fs.writeFileSync(path.join(dir, 'github-backup-reviewed-literals.json'), JSON.stringify(listed));
   fs.copyFileSync(path.join(tools, 'onedrive-reviewed-literals.json'), path.join(dir, 'onedrive-reviewed-literals.json'));
   fs.copyFileSync(path.join(tools, '이어하기꾸러미.js'), path.join(dir, 'policy.js'));
+  fs.mkdirSync(path.join(dir, 'lib'));
+  fs.copyFileSync(path.join(tools, 'lib/공용작업본.js'), path.join(dir, 'lib/공용작업본.js'));
   const reviewed = require(path.join(dir, 'policy.js')).textPolicy;
   const code = "const list = '" + encoded + "';\n";
   const flipped = encoded.slice(0, 100) + (encoded[100] === 'A' ? 'B' : 'A') + encoded.slice(101);
@@ -338,6 +340,46 @@ test('검토한 긴 base64는 그 경로의 그 값만 내장 자료 검사에�
   const plain = {};
   assert.equal(reviewed('tools/other.js', Buffer.from("const list = '" + 'QUJD'.repeat(70) + "';\n"), plain), 'embedded-media-or-base64');
   assert.equal(plain.dependsOnIndex, undefined, '검토 값이 아닌 긴 base64는 색인을 보지 않는다');
+});
+
+test('운영 사본에서도 공용 작업본의 보존 색인으로 정확히 검토한 경로와 값만 인정한다(10-23)', t => {
+  const crypto = require('node:crypto');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-preserved-review-root-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const main = path.join(dir, 'Documents/SYNK-appsscript');
+  const worktree = path.join(dir, 'ops/SYNK-appsscript');
+  const gitdir = path.join(main, '.git/worktrees/ops');
+  const vault = path.join(dir, 'Documents/SYNK_원본창고/작업문서_미통합_자동');
+  const encoded = Buffer.from(Array.from({ length: 48 }, (_, i) => 'reviewedWord' + i).join('|')).toString('base64');
+  const code = Buffer.from("const list = '" + encoded + "';\n");
+  const digest = data => crypto.createHash('sha256').update(data).digest('hex');
+  const preservedFile = 'files/' + digest(code) + '.js';
+  fs.mkdirSync(gitdir, { recursive: true });
+  fs.writeFileSync(path.join(gitdir, 'commondir'), '../..\n');
+  fs.mkdirSync(path.join(worktree, 'tools/lib'), { recursive: true });
+  fs.writeFileSync(path.join(worktree, '.git'), 'gitdir: ' + gitdir + '\n');
+  fs.mkdirSync(path.join(vault, 'sources'), { recursive: true });
+  fs.writeFileSync(path.join(vault, 'index.json'), JSON.stringify({ manifests: [] }));
+  const identity = path.join(vault, 'sources/ab.json');
+  fs.writeFileSync(identity, JSON.stringify({ files: { [preservedFile]: [{ relativePath: 'tools/reviewed.js' }] } }));
+  const tools = path.join(__dirname, '../tools');
+  for (const name of ['이어하기꾸러미.js', 'onedrive-reviewed-literals.json', 'lib/공용작업본.js'])
+    fs.copyFileSync(path.join(tools, name), path.join(worktree, 'tools', name));
+  fs.writeFileSync(path.join(worktree, 'tools/github-backup-reviewed-literals.json'), JSON.stringify({ entries: [
+    { path: 'tools/reviewed.js', sha256: digest(encoded), kind: 'encoded-text', reason: 'Synthetic reviewed text.' },
+  ] }));
+  const file = path.join(worktree, 'tools/이어하기꾸러미.js');
+  const load = () => { delete require.cache[require.resolve(file)]; return require(file).textPolicy; };
+  const reviewed = load(), relative = '작업문서_미통합_자동/' + preservedFile, info = {};
+  assert.equal(reviewed(relative, code, info), null, '운영 사본 옆에는 창고가 없어도 본진의 정확한 색인을 읽는다');
+  assert.equal(info.dependsOnIndex, true);
+  assert.equal(reviewed('tools/elsewhere.js', code), 'embedded-media-or-base64');
+  assert.equal(reviewed(relative, Buffer.concat([code, Buffer.from('// changed')])), 'embedded-media-or-base64', '색인이 있어도 파일 내용 SHA가 다르면 거절한다');
+  assert.equal(reviewed('tools/reviewed.js', Buffer.concat([code, Buffer.from("const api" + "Key = 'live-value-123456';\n")])), 'secret-literal');
+  fs.writeFileSync(identity, JSON.stringify({ files: { [preservedFile]: [{ relativePath: 'tools/elsewhere.js' }] } }));
+  assert.equal(load()(relative, code), 'embedded-media-or-base64', '검토하지 않은 원래 경로는 예외가 아니다');
+  fs.writeFileSync(identity, '{broken');
+  assert.equal(load()(relative, code), 'embedded-media-or-base64', '색인 오류는 계속 차단한다');
 });
 
 test('검토한 문서 예제 예외는 정확한 경로와 원문 SHA에만 적용한다', t => {
@@ -502,6 +544,8 @@ test('도움말과 잘못된 옵션은 공유 사본을 쓰지 않는다', t => 
   });
   const tool = path.join(dir, 'tool.js');
   fs.copyFileSync(path.join(__dirname, '../tools/이어하기꾸러미.js'), tool);
+  fs.mkdirSync(path.join(dir, 'lib'));
+  fs.copyFileSync(path.join(__dirname, '../tools/lib/공용작업본.js'), path.join(dir, 'lib/공용작업본.js'));
   for (const name of ['github-backup-reviewed-literals.json', 'onedrive-reviewed-literals.json'])
     fs.copyFileSync(path.join(__dirname, '../tools', name), path.join(dir, name));
   const marker = path.join(dir, 'side-effect.txt');

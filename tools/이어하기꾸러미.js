@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { execFileSync } = require('node:child_process');
+const { 공용작업본 } = require('./lib/공용작업본.js');
 const ROOT = path.resolve(__dirname, '..');
 const reviewedSourceLiterals = require('./github-backup-reviewed-literals.json').entries;
 const reviewedExactSources = require('./onedrive-reviewed-literals.json').entries;
@@ -17,7 +18,8 @@ function originalReviewPaths(source, data) {
   if (!match || crypto.createHash('sha256').update(data).digest('hex') !== match[2]) return [];
   if (!preservedReviewPaths) {
     preservedReviewPaths = new Map();
-    const base = path.resolve(ROOT, '../SYNK_원본창고/작업문서_미통합_자동');
+    // 운영 사본·세션 작업본에서도 보존 색인은 공용 작업본 옆의 같은 창고에 있다.
+    const base = path.resolve(공용작업본(ROOT), '../SYNK_원본창고/작업문서_미통합_자동');
     try {
       const index = JSON.parse(fs.readFileSync(path.join(base, 'index.json'), 'utf8'));
       for (const shard of index.manifests || []) {

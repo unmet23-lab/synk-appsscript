@@ -732,6 +732,8 @@ test('the read-cache fingerprint follows the classification code, not unrelated 
     const dir = path.join(f.temp, name), original = fs.readFileSync(path.join(tools, '이어하기꾸러미.js'), 'utf8'), changed = edit(original);
     if (edit !== same) assert.notEqual(changed, original, name + ' edit must apply');
     fs.mkdirSync(dir);
+    fs.mkdirSync(path.join(dir, 'lib'));
+    fs.copyFileSync(path.join(tools, 'lib/공용작업본.js'), path.join(dir, 'lib/공용작업본.js'));
     for (const file of ['github-backup-reviewed-literals.json', 'onedrive-reviewed-literals.json']) fs.copyFileSync(path.join(tools, file), path.join(dir, file));
     fs.writeFileSync(path.join(dir, 'policy.js'), changed);
     return require(path.join(dir, 'policy.js')).POLICY_FINGERPRINT;
