@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createTravelMemory } from '../experiences/path-travel/planner-storage.mjs';
-import { createTravelAccount, travelAccountDocument, travelDeviceState, TRAVEL_ACCOUNT_CONTRACT } from '../experiences/path-travel/planner-account.mjs';
+import { createTravelAccount, travelAccountDocument, travelDeviceState, validateTravelAccountState, TRAVEL_ACCOUNT_CONTRACT } from '../experiences/path-travel/planner-account.mjs';
 import { PERSONAL_LIMITS, validatePersonalState, parsePersonalState, personalWriteRequest, personalDeleteRequest, pathAccountState, validatePersonalResponse } from '../experiences/synk-account/src/personal-data.mjs';
 import { initialState } from '../experiences/path-vr/model.mjs';
 import { readConfig } from '../experiences/synk-account/src/core.mjs';
@@ -37,6 +37,26 @@ test('account documents cannot grant device storage permission or accept device 
   for (const consent of [true, false, 'yes']) assert.throws(() => validatePersonalState('path-travel', { ...trip, consent }));
   assert.throws(() => validatePersonalState('path-travel', { ...trip, accountId: 'other-account' }));
   assert.equal(TRAVEL_ACCOUNT_CONTRACT.productionRegistered, true);
+});
+
+test('the travel notebook and server preserve identical JSON, size, product and consent validation', () => {
+  const outcome = validate => value => {
+    try { return { state: validate(value) }; }
+    catch (error) { return { name: error.name, code: error.code, message: error.message }; }
+  };
+  const notebook = outcome(validateTravelAccountState), server = outcome(value => validatePersonalState('path-travel', value));
+  const cycle = {}; cycle.self = cycle;
+  const accessor = {}; Object.defineProperty(accessor, 'value', { enumerable: true, get() { throw new Error('getter must not execute'); } });
+  for (const value of [document(), { ...document(), consent: true }, pathAccountState(initialState()), null,
+    { extra: undefined }, { extra: NaN }, { extra: '\uD800' }, { extra: '가'.repeat(TRAVEL_ACCOUNT_CONTRACT.maxBytes) },
+    cycle, accessor, new Date(at), { list: new Array(2) }]) {
+    assert.deepEqual(notebook(value), server(value));
+  }
+  const trip = document(), checked = validateTravelAccountState(trip);
+  checked.query.budget = 1;
+  assert.notEqual(trip.query.budget, checked.query.budget, 'validated data does not alias the editor');
+  assert.equal(notebook({ extra: 'a'.repeat(TRAVEL_ACCOUNT_CONTRACT.maxBytes) }).code, 'PERSONAL_DATA_TOO_LARGE');
+  assert.equal(notebook(accessor).code, 'PERSONAL_DATA_INVALID');
 });
 
 test('the official product client uses a travel-only session and fixed travel resource for load/save/delete', async () => {

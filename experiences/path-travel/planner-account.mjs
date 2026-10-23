@@ -1,4 +1,5 @@
 import { validateTravelMemory, createTravelMemory, TRAVEL_MAX_BYTES } from './planner-storage.mjs';
+import { checkPersonalState } from '../synk-account/src/personal-state.mjs';
 
 /** The existing `path` resource is PATH VR; travel always has its own contract. */
 export const TRAVEL_ACCOUNT_CONTRACT = Object.freeze({ resource: 'path-travel', clientKey: 'path-travel',
@@ -21,6 +22,11 @@ export function validateTravelAccountDocument(value, options) {
   return travelAccountDocument(travelDeviceState(value, options), options);
 }
 
+/** The notebook checks only travel records, through the shared JSON boundary. */
+export function validateTravelAccountState(value) {
+  return checkPersonalState(value, TRAVEL_ACCOUNT_CONTRACT.maxBytes, validateTravelAccountDocument);
+}
+
 /** Fixed product identity; a caller cannot accidentally write a trip into PATH VR. */
 function travelAccountOptions(options) {
   return { ...options, clientKey: 'path-travel', resource: 'path-travel',
@@ -38,11 +44,10 @@ export async function createTravelAccount(options = {}) {
 export async function createTravelAccountNotebook(options = {}) {
   const { createAccountNotebook } = await import('../synk-account/src/account-notebook.mjs');
   const { createProductAccount } = await import('../synk-account/src/product-account.mjs');
-  const { validatePersonalState } = await import('../synk-account/src/personal-data.mjs');
   return createAccountNotebook({ description: '여행 조건·일정·직접 확인한 취향·방문 의견을 내 계정에 보관해요. 로그인을 누르면 로그인 전 여행과 입력을 이 탭에 30분 동안 임시 보관해요. 기기 보관 동의나 계정으로 옮기기는 별도입니다.',
     deleteLabel: '계정의 여행 기록 모두 삭제',
     deleteConfirmation: '이 계정의 여행 조건·일정·취향·방문 의견을 모두 삭제할까요? 다른 기기에서도 다시 불러올 수 없어요. 필요한 기록은 먼저 여행 파일로 내보내 주세요.',
-    ...options, resource: 'path-travel', validateState: value => validatePersonalState('path-travel', value), toDocument: travelAccountDocument,
+    ...options, resource: 'path-travel', validateState: validateTravelAccountState, toDocument: travelAccountDocument,
     // Notebook's second argument is a guarded transport, not device consent.
     fromDocument: document => travelDeviceState(document),
     emptyDocument: emptyTravelAccountDocument, accountFactory: settings => {

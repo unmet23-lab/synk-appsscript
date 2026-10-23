@@ -79,6 +79,8 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 10-20 덧붙임(Claude): 워크트리(`core.autocrlf=false`)에서 Claude Edit 도구로 두 줄만 고친 LF 문서 `tools/company-messenger/API.md`가 통째로 CRLF가 돼 `git diff --stat`이 782줄이었다(Fable 검수가 짚음). 같은 파일 사본을 scratchpad에서 한 번·나란히 두 번 고쳐 봤지만 LF 그대로라 원인은 찾지 못했다. Edit 뒤에도 위 CR 개수 대조를 하고, 다르면 `tr -d '\r' < 파일 > 임시 && mv 임시 파일`(HEAD가 LF 전용일 때만)로 되돌린다. `tools/내커밋.js 커밋`은 줄끝을 바탕 판에 맞춰 올리지만, 다른 도구나 손으로 커밋하면 그대로 들어간다.
 - 10-21 덧붙임(Claude): 앱이 로컬 master에서 띄운 워크트리(`compassionate-sutherland-db3c5a`)는 `git ls-files --eol`에 `i/lf w/crlf`가 213개(따라가기 뒤에도 158개) 있었다. 그 워크트리의 `core.autocrlf`는 `false`(config.worktree)인데 시스템은 `true`라, 워크트리를 처음 풀 때 시스템 설정대로 CRLF로 쓰인 것으로 보인다(확인 안 함 — 따라가기로 새로 쓰인 파일은 LF였다). 크기·시각 캐시가 맞아 `git status`는 깨끗하다가 그 파일을 고치는 순간 `git diff --stat`이 통째로 잡힌다(회사 `server.mjs` 1,754줄·`social-workspace.js` 549줄). 고치기 전에 `git ls-files --eol -- <파일>`이 `w/crlf`면 내용은 두고 LF로 바꾼 뒤 고친다(`바로올리기.js`·`내커밋.js`는 바탕 판 줄끝으로 올리니 커밋은 괜찮다).
 
+- 10-23 덧붙임(GPT): 생성 뒤 `git status`는 M인데 `git diff --numstat`는 비어 있고, 짝 검사가 「통과(작업본에서만)」로 막히는 파일 3개가 있었다. LF 생성 바이트와 CRLF 체크아웃의 크기·줄끝 표시가 남은 경우였다. 먼저 해당 파일의 `git hash-object --path=<경로> --stdin` 결과와 `git rev-parse HEAD:<경로>`·`git rev-parse :<경로>`가 모두 같은지 확인했다. 세 값이 같은 파일만 명시해 `git add -- <경로…>`로 인덱스의 파일 정보를 갱신하고, 전후 인덱스 blob 동일·`git diff --cached` 빈 결과를 확인했다. 내용이 다르거나 남의 스테이징이 있으면 이 방법을 쓰지 않는다. 다시 확인: 세 파일의 M 표시가 사라졌고, 생성물 검사는 생략하지 않았다.
+
 ### CR 개수를 `grep -c $'\r'`로 세면 모든 줄이 나온다
 - 증상: LF뿐인 파일에서도 `grep -c $'\r' AGENTS.md`가 줄 수(21)를 그대로 낸다.
 - 원인: Git Bash의 grep이 CR 한 글자짜리 패턴을 빈 패턴처럼 다룬다(`grep -c ''`과 같은 수가 나온다). 더 깊은 까닭은 캐지 않았다.

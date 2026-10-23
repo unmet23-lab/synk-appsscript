@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 'use strict';
 // Plants known defects in a temporary copy of the moment-level challenge and checks that the tests
-// catch every one. Run after changing atlas/flow.js, temper-flow.js, vellum-flow.js, ask.js or
-// game-flow.js (or the WORLD host's guard). The working tree is never modified.
+// catch every one. Run after changing atlas/flow.js, temper.js (the guard), temper-flow.js, vellum-flow.js,
+// ask.js or game-flow.js (or the WORLD host's guard). The working tree is never modified.
 // Usage: node tools/flow-mutation-check.js
 const fs = require('node:fs');
 const os = require('node:os');
@@ -16,9 +16,9 @@ const MUTATIONS = [
   ['atlas/flow.js', "assisted ? 0 : Infinity)", "Infinity)", 'help on a hard item lifts the estimate'],
   ['atlas/flow.js', "const raise = !calm && outcome === 'success' && !assisted", "const raise = !calm && outcome === 'success'", 'a raise right after an assisted success'],
   ['atlas/flow.js', "const raise = !calm && outcome === 'success' && !assisted", "const raise = !calm && outcome !== 'timeout' && !assisted", 'a missed answer raises the other part'],
-  ['atlas/temper-flow.js', "if (live.some(c => c.step === step)) return { ok: false, rail: 'one-change-per-response' };", '', 'two changes in one response'],
-  ['atlas/temper-flow.js', "if (to > from && live.some(c => c.direction > 0 && step - c.step <= COOL_DOWN)) return { ok: false, rail: 'cool-down' };", '', 'no pause after a raise'],
-  ['atlas/temper-flow.js', '|| Math.abs(to - from) !== 1) return', ') return', 'jumps of several steps'],
+  ['atlas/temper.js', "if (live.some(c => c.step === step)) return { ok: false, rail: 'one-change-per-response' };", '', 'two changes in one response'],
+  ['atlas/temper.js', "if (to > from && live.some(c => c.direction > 0 && step - c.step <= COOL_DOWN)) return { ok: false, rail: 'cool-down' };", '', 'no pause after a raise'],
+  ['atlas/temper.js', '|| Math.abs(to - from) !== 1) return', ') return', 'jumps of several steps'],
   ['atlas/flow.js', "const locked = knob => Object.hasOwn(locks, knob.id) || knob.follows === 'declared';", 'const locked = knob => false;', 'declared choices ignored'],
   ['atlas/flow.js', "Object.keys(options).some(key => !START.includes(key))", 'false', 'unlisted inputs such as demographics accepted'],
   ['atlas/flow.js', "if (outcome === 'timeout') learn('pace', 0, 1);", "if (outcome === 'timeout') learn('content', 0, 1);", 'a timeout blamed on content'],

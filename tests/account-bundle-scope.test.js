@@ -29,3 +29,22 @@ test('계정 포털 platform 묶음에도 자원 고르기 검사와 PATH 여행
   // 회원 검사는 생성 사본 하나뿐이다 — 원천 사본이 같이 끌려오면 이름 번호가 붙은 정의가 하나 더 생긴다.
   for (const name of ['validateMemberUnderstanding', 'validateMemberActivity']) assert.equal((text.match(new RegExp(`function ${name}\\d*\\(`, 'g')) || []).length, 1, name);
 });
+
+test('여행 notebook의 import graph는 서버의 전체 자원 검사로 돌아가지 않는다', () => {
+  const seen = new Set();
+  function visit(file) {
+    file = path.resolve(file);
+    if (seen.has(file)) return;
+    seen.add(file);
+    const source = fs.readFileSync(file, 'utf8');
+    // All product imports are literal relative paths, including lazy notebook imports.
+    const imports = /\b(?:import\s*\(\s*|(?:import|export)\s+(?:[^;'"\n]*?\s+from\s*)?|require\s*\(\s*)['"](\.[^'"]+)['"]/g;
+    for (const [, specifier] of source.matchAll(imports)) visit(path.resolve(path.dirname(file), specifier.split(/[?#]/)[0]));
+  }
+  visit(path.join(root, 'experiences/path-travel/planner-account.mjs'));
+  const modules = [...seen].map(file => path.relative(root, file).replace(/\\/g, '/'));
+  assert.ok(modules.includes('experiences/synk-account/src/account-notebook.mjs'));
+  assert.ok(modules.includes('experiences/synk-account/src/personal-state.mjs'));
+  assert.deepEqual(modules.filter(file => /\/(?:personal-data|personal-contract|member-[^/]*|platform-library-data)\.(?:mjs|js)$/.test(file)), []);
+  assert.deepEqual(modules.filter(file => file.startsWith('experiences/path-vr/')), []);
+});

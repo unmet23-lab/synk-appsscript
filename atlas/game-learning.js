@@ -20,28 +20,26 @@ const KEY = 'synk.atlas.learning.v1';
 const SET_KINDS = ['short', 'diagnostic', 'mock'], RESPONSES = ['helpful', 'not_fit', 'too_much', 'want_more'], SET_OPEN_MS = 86400000, RESPONSE_MS = 30 * 86400000;
 const identifier = value => typeof value === 'string' && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
 const uid = () => `l${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+// Earlier entries keep new ones in time order, but another device's clock running ahead
+// must not pin this one: a time beyond this device's own clock (plus a margin) is not adopted.
+const AHEAD_MS = 5 * 60000;
 /* `fold`: the store keeps its recent entries in full and folds older, finished items into a
  * ledger (learning-ledger.js), so a long history stays small and quick to write. On by default
  * for a device store; a host turns it on for an account store. `{ max, keep, ageMs }` tunes
  * it: once more than `max` entries are kept, fold items idle for `ageMs` (10 minutes) down to
  * `keep`, in batches. An item still unanswered in this tab never folds.
  * `{ remote: true }` is for a synchronised store: only entries the server holds and has sent
- * back (syncPort.settle) fold, items stay for a day, and unanswered ones for 30 days. */
-function createGame({ gameId, map, storage = null, learnerKey = 'device', clock = () => new Date().toISOString(), historyComplete = true,
-  storageScope = 'device', accountKey = null, fold = null, memoryOwner = null } = {}) {
-  if (!identifier(gameId) || !identifier(learnerKey) || typeof map?.allNodes !== 'function') throw new TypeError('Atlas: game, local scope and Strata map required');
-  if (!['device', 'account'].includes(storageScope) || storageScope === 'account' && (!identifier(accountKey) || learnerKey !== 'device')) throw new TypeError('Atlas: account identity and isolated host storage required');
-  // An authenticated host may keep personal memory apart from a class's evidence log. The
-  // owner stays inside the host; a frame receives neither its storage nor this private port.
-  if (memoryOwner != null && (storageScope !== 'account' || memoryOwner.scope !== 'account' || !identifier(memoryOwner.accountKey)
-    || !memoryOwner.flow || ['today', 'setToday', 'presentation', 'setPresentation', 'epoch', 'memories', 'save', 'decline', 'state', 'merge', 'subscribe'].some(name => typeof memoryOwner.flow[name] !== 'function'))) throw new TypeError('Atlas: a verified personal memory owner is required');
-  const scope = { domain: 'LAB', workspace: 'learning', subject: learnerKey };
-  const key = `${KEY}.${learnerKey}`;
+ * back (syncPort.settle) fold, items stay for a day, and unanswered ones for 30 days.
+ * openHistory is the one owner of what is saved: the epoch, the kept log (an Atlas session), the
+ * ledger, the settled/dropped marks and whether the history was read, written and complete. Only
+ * its refresh (join another tab's write), compact, persist, reset, flush and the synchroniser's port
+ * change them; the game reads `state()`, a frozen snapshot, appends through its session and persists.
+ * `held(now)` names the entries the game still holds open: they never fold. `release(gone)` tells the
+ * game, as it happens, what it may no longer hold: everything (gone = null) at a new epoch, or the
+ * entries `gone(id)` names that a merge or a fold took out of the kept log. */
+function openHistory({ storage, key, scope, storageScope, accountKey, historyComplete, fold, clock, held, release }) {
   const pages = storageScope === 'account' && storage ? createPages(storage, key, ['events', 'settled', 'dropped']) : null;
-  let paged = false;
-  // Core's moment-level challenge keeps one small memory per content beside this log (game-flow.js).
-  let flowPort = null;
-  let epoch = null, session, readable = true, writable = !!storage, complete = historyComplete, warning = null, ledger = null;
+  let paged = false, epoch = null, session, readable = true, writable = !!storage, complete = historyComplete, warning = null, ledger = null;
   const folding = fold === false || (fold == null && storageScope !== 'device') ? null
     : { max: 600, keep: 400, ageMs: fold?.remote ? 86400000 : 600000, remote: false, ...(fold && typeof fold === 'object' ? fold : {}) };
   // Entries of a synchronised store that the server has sent back (only these may fold).
@@ -52,22 +50,17 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
   const dropped = new Set();
   let droppedVersion = 0;
   const UNCHANGED = Symbol('unchanged-history');
-  let lastStoredRaw = Symbol('unread-history');
-  let lastTime = 0;
-  const active = new Map(), sets = new Map(); // sets: finished here in the last day (decision → time), still open to a response
+  let lastStoredRaw = Symbol('unread-history'), lastTime = 0;
   const listeners = new Set();
   const notify = (kind, code) => { for (const listener of listeners) { try { listener({ kind, ...(code ? { code } : {}) }); } catch { /* Host notifications cannot corrupt learning events. */ } } };
   const monotonicClock = () => { const value = Date.parse(clock()); if (!Number.isFinite(value)) throw new TypeError('Atlas: invalid clock'); lastTime = Math.max(value, lastTime); return new Date(lastTime).toISOString(); };
-  // Earlier entries keep new ones in time order, but another device's clock running ahead
-  // must not pin this one: a time beyond this device's own clock (plus a margin) is not adopted.
-  const AHEAD_MS = 5 * 60000;
   const newSession = events => {
     const own = Date.parse(clock());
     for (const e of events) { const at = Date.parse(e.at); if (Number.isFinite(at) && (!Number.isFinite(own) || at <= own + AHEAD_MS) && at > lastTime) lastTime = at; }
     return Atlas.createSession({ scope, events, clock: monotonicClock });
   };
   // The session's frozen entries themselves (no copy). Older sessions only offer copies.
-  const log = () => session.snapshot ? session.snapshot() : session.events();
+  const log = (of = session) => of.snapshot ? of.snapshot() : of.events();
   const decode = raw => {
     if (raw == null) return null;
     const value = pages ? pages.decode(raw) : JSON.parse(raw);
@@ -112,7 +105,7 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     const stored = readStored();
     if (!stored || stored === UNCHANGED) return;
     if (stored.epoch !== epoch) {
-      epoch = stored.epoch; ledger = stored.ledger || null; session = newSession(stored.events); active.clear(); sets.clear();
+      epoch = stored.epoch; ledger = stored.ledger || null; session = newSession(stored.events); release(null);
       settled.clear(); settledVersion += 1; settle(stored.settled || [], new Set(stored.events.map(e => e.id)));
       takeDropped(stored.dropped || [], false); return;
     }
@@ -143,15 +136,14 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     const gone = [...mine, ...combined].filter(e => !known.has(e.id));
     if (folding?.remote && gone.length) { for (const e of gone) dropped.add(e.id); droppedVersion += 1; }
     session = newSession(combined.filter(e => known.has(e.id)));
-    // A presentation folded in another tab has ended here too.
-    for (const pid of active.keys()) if (!known.has(pid)) active.delete(pid);
+    release(id => !known.has(id));
   }
   // Byte-identical to JSON.stringify({ version, epoch, events, owner }). Log entries are
   // frozen, so each is serialised once, and since the log only grows within one session
   // object the joined text is extended rather than rebuilt on every write.
   const serialised = new WeakMap();
   const entryJson = e => { let json = serialised.get(e); if (json === undefined) { json = JSON.stringify(e); if (Object.isFrozen(e)) serialised.set(e, json); } return json; };
-  let body = null;
+  let body = null, ledgerJson = null, settledJson = null, droppedJson = null, retryFold = null;
   const snapshot = events => {
     if (!(body && body.session === session && body.count <= events.length && (body.count === 0 || events[body.count - 1] === body.last))) body = { session, count: 0, last: null, text: '' };
     for (; body.count < events.length; body.count += 1) body.text += (body.count ? ',' : '') + entryJson(events[body.count]);
@@ -162,7 +154,6 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     return `{"version":1,"epoch":${JSON.stringify(epoch)},"events":[${body.text}]${ledgerJson.text}${settledJson.text}${droppedJson.text}`
       + `${storageScope === 'account' ? `,"owner":${JSON.stringify(accountKey)}` : ''}}`;
   };
-  let ledgerJson = null, settledJson = null, droppedJson = null, retryFold = null;
   // Fold older, finished items once the kept log grows past the limit (see `fold`).
   function compact() {
     // A large server restore keeps its complete causal log in durable pages. In
@@ -173,11 +164,9 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     // Nothing could fold a moment ago: try again after a minute or once more entries settle.
     if (retryFold && retryFold.settled === settledVersion && now < retryFold.at) return;
     // An item idle for `ageMs` is finished; a late call on it ends like a reset presentation.
-    // An item still unanswered in this tab stays. A synchronised store also keeps every item
-    // the server has not sent back yet, and unanswered items for 30 days: their answer may
-    // still come from another device.
-    const open = [...active].filter(([, item]) => !item.results.length).map(([pid]) => pid);
-    for (const [id, at] of sets) if (now - at < SET_OPEN_MS) open.push(id); else sets.delete(id);
+    // What the game holds open stays. A synchronised store also keeps every item the server has
+    // not sent back yet, and unanswered items for 30 days: their answer may still come from another device.
+    const open = held(now);
     if (folding.remote) for (const e of events) if (!settled.has(e.id)) open.push(e.id);
     const planned = Ledger.plan(events, { keep: folding.keep, olderThan: now - folding.ageMs, open,
       unfinishedBefore: folding.remote ? now - 30 * 86400000 : now - folding.ageMs, respondedBefore: now - RESPONSE_MS - SET_OPEN_MS });
@@ -187,8 +176,8 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     retryFold = null;
     ledger = Ledger.fold(ledger, planned.folded, { scope, log: events, local: !folding.remote });
     session = newSession(planned.kept);
-    for (const e of planned.folded) { if (e.type === 'practice.presented') active.delete(e.id); settled.delete(e.id); }
-    settledVersion += 1;
+    for (const e of planned.folded) settled.delete(e.id);
+    settledVersion += 1; release(id => planned.folded.some(e => e.id === id));
     if (folding.remote) { for (const e of planned.folded) dropped.add(e.id); droppedVersion += 1; }
   }
   function persist(kind = 'append', { quiet = false } = {}) {
@@ -208,32 +197,119 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
   }
   // Initialize one shared epoch before a second game/tab opens it.
   if (!initial && readable && storage) persist();
-  const practiceSession = { practice: (...args) => session.practice(...args) };
+  const requireDurable = () => { refresh(); if (!readable || !writable) throw Object.assign(new Error('Atlas: local history is not durable'), { code: 'STORAGE_ERROR' }); };
+  const port = Object.freeze({
+    scope: storageScope, accountKey,
+    // The kept entries. A synchronised store's folded entries are on the server; whether this
+    // history can be sent at all is partial().
+    events() { requireDurable(); return session.events(); },
+    // The kept entries' ids, without copying the entries: a WORLD host compares them around a
+    // game call to find what the call added (account/world-learning-host.js).
+    ids() { requireDurable(); return log().map(e => e.id); },
+    // True when this store folded entries no server has received (it was not synchronised then):
+    // its history can never be sent whole, so a synchroniser must not send it.
+    partial() { refresh(); return !!ledger?.local; },
+    // The sync calls this after a complete pull with every entry id the server has sent:
+    // those entries may fold here. Saved quietly (it is not a new learning entry).
+    settle(ids) {
+      if (!folding?.remote || !Array.isArray(ids)) return false;
+      refresh(); if (!readable) return false;
+      const version = settledVersion;
+      settle([...settled, ...ids], new Set(log().map(e => e.id)));
+      return settledVersion === version || persist('settle', { quiet: true });
+    },
+    // Ids this store folded away since the synchroniser last took them (always on the server).
+    dropped() { refresh(); return [...dropped]; },
+    // The synchroniser has taken these (saved in its own outbox first).
+    forget(ids) {
+      refresh(); if (!readable || !Array.isArray(ids)) return false;
+      const version = droppedVersion;
+      for (const id of ids) if (dropped.delete(id)) droppedVersion = version + 1;
+      return droppedVersion === version || persist('forget', { quiet: true });
+    },
+    subscribe(listener) { if (typeof listener !== 'function') throw new TypeError('Atlas: listener required');listeners.add(listener);return () => listeners.delete(listener); },
+    markComplete(value) { complete = value === true; },
+    importEvents(incoming) {
+      refresh();
+      if (!readable) throw Object.assign(new Error('Atlas: local history is unreadable'), { code: 'STORAGE_ERROR' });
+      if (ledger?.local) throw Object.assign(new Error('Atlas: a folded history is kept on this device only'), { code: 'HISTORY_FOLDED' });
+      if (!Array.isArray(incoming)) throw new TypeError('Atlas: imported events must be an array');
+      const combined = log().slice(), previousLength = combined.length, known = new Map(combined.map(event => [event.id, event])), late = [], gone = [], skipped = [];
+      for (const event of incoming) {
+        if (known.has(event?.id)) {
+          if (!sameEvent(known.get(event.id), event)) throw Object.assign(new Error('Atlas: conflicting imported event'), { code: 'EVENT_CONFLICT' });
+        // Another device's entry for an item this store already folded stays on the server.
+        } else if (ledger && Ledger.stray(event, known)) { skipped.push(event.id); if (event.type === 'record.excluded') gone.push(event.targetId); continue; }
+        else { known.set(event?.id, event); combined.push(event); if (Ledger.folded(ledger, event)) late.push(event); }
+      }
+      // Identical durable history needs neither replay nor another disk write.
+      // A previous storage failure must still retry persistence below.
+      if (combined.length === previousLength && !skipped.length && writable && (paged || snapshot(combined) === lastStoredRaw)) return { added: 0, skipped };
+      // Construct before replacing: wrong scope, parent links, schema or IDs
+      // reject the entire incoming batch without changing the local log.
+      const imported = newSession(combined); session = imported;
+      if (late.length || skipped.length) ledger = Ledger.demote(ledger, { late, excluded: gone, strays: skipped.length }, id => known.get(id));
+      if (!persist('import')) throw Object.assign(new Error('Atlas: imported history could not be saved'), { code: 'STORAGE_ERROR' });
+      return { added: combined.length - previousLength, skipped };
+    },
+  });
+  return Object.freeze({ port, refresh, clock: monotonicClock,
+    // What is saved now. `session` is the log the game appends to (only this owner replaces it);
+    // `available`: it can be read and written; `durable`: also complete, so only then is an answer independent.
+    state() { const of = session; return Object.freeze({ epoch, session: of, get log() { return log(of); }, ledger, available: readable && writable, durable: complete && readable && writable, warning }); },
+    persist: () => persist(),
+    // Before a tab closes or hides: another tab may have written an older history over this
+    // one's entries in the meantime (tabs see each other's writes late), so join and write again.
+    flush() { refresh(); return !!storage && readable && writable && (snapshot(log()) === lastStoredRaw || persist('flush', { quiet: true })); },
+    reset() { epoch = uid(); ledger = null; settled.clear(); settledVersion += 1; takeDropped([], false); session = newSession([]); release(null); readable = true; writable = !!storage; complete = historyComplete; warning = null; persist(); },
+  });
+}
+function createGame({ gameId, map, storage = null, learnerKey = 'device', clock = () => new Date().toISOString(), historyComplete = true,
+  storageScope = 'device', accountKey = null, fold = null, memoryOwner = null } = {}) {
+  if (!identifier(gameId) || !identifier(learnerKey) || typeof map?.allNodes !== 'function') throw new TypeError('Atlas: game, local scope and Strata map required');
+  if (!['device', 'account'].includes(storageScope) || storageScope === 'account' && (!identifier(accountKey) || learnerKey !== 'device')) throw new TypeError('Atlas: account identity and isolated host storage required');
+  // An authenticated host may keep personal memory apart from a class's evidence log. The
+  // owner stays inside the host; a frame receives neither its storage nor this private port.
+  if (memoryOwner != null && (storageScope !== 'account' || memoryOwner.scope !== 'account' || !identifier(memoryOwner.accountKey)
+    || !memoryOwner.flow || ['today', 'setToday', 'presentation', 'setPresentation', 'epoch', 'memories', 'save', 'decline', 'state', 'merge', 'subscribe'].some(name => typeof memoryOwner.flow[name] !== 'function'))) throw new TypeError('Atlas: a verified personal memory owner is required');
+  const scope = { domain: 'LAB', workspace: 'learning', subject: learnerKey };
+  const key = `${KEY}.${learnerKey}`;
+  // Core's moment-level challenge keeps one small memory per content beside this log (game-flow.js).
+  let flowPort = null;
+  const active = new Map(), sets = new Map(); // sets: finished here in the last day (decision → time), still open to a response
+  // Held open here, so never folded: an item not answered in this tab, a set still taking a response.
+  // An epoch change (a reset here or in another tab) ends all of them, a fold or a merge what it took.
+  const history = openHistory({ storage, key, scope, storageScope, accountKey, historyComplete, fold, clock,
+    held: now => { const open = [...active].filter(([, item]) => !item.results.length).map(([pid]) => pid); for (const [id, at] of sets) if (now - at < SET_OPEN_MS) open.push(id); else sets.delete(id); return open; },
+    release: gone => { if (!gone) { active.clear(); sets.clear(); } else for (const pid of active.keys()) if (gone(pid)) active.delete(pid); } });
+  const monotonicClock = history.clock;
+  const current = () => { history.refresh(); return history.state(); };
+  const practiceSession = { practice: (...args) => history.state().session.practice(...args) };
   // Derived views are rebuilt only when the log changes; the frozen snapshot is the log
   // itself, so the same array means nothing was added. Policy windows (7/30 days) move
   // with time, so a view is not reused for long even when nothing was added.
   const VIEW_MS = 60000;
   let cached = null, met = null;
-  function view() {
-    const events = log(), asOf = monotonicClock(), now = Date.parse(asOf);
+  function view(saved) {
+    const events = saved.log, asOf = monotonicClock(), now = Date.parse(asOf);
     if (cached?.events === events && now - cached.now < VIEW_MS) return cached.summary;
-    cached = { events, now, summary: Trail.summarize(events, { scope, asOf, prior: ledger }), profiles: new Map(), counts: null };
+    cached = { events, now, summary: Trail.summarize(events, { scope, asOf, prior: saved.ledger }), profiles: new Map(), counts: null };
     return cached.summary;
   }
-  function profileOf(observed) {
-    const ok = complete && readable && writable, flag = String(ok);
+  function profileOf(observed, { durable, ledger }) {
+    const flag = String(durable);
     if (cached?.summary === observed && cached.profiles.has(flag)) return cached.profiles.get(flag);
-    const profile = { ...Learning.summarizeLearning({ summary: observed, map, complete: ok, prior: ledger }),
-      concepts: Learning.summarizeConcepts({ summary: observed, map, complete: ok, prior: ledger }) };
+    const profile = { ...Learning.summarizeLearning({ summary: observed, map, complete: durable, prior: ledger }),
+      concepts: Learning.summarizeConcepts({ summary: observed, map, complete: durable, prior: ledger }) };
     if (cached?.summary === observed) cached.profiles.set(flag, profile);
     return profile;
   }
   // Trail's provenance, kept current entry by entry. The log only grows within one
   // session object, so new entries are folded in; a replaced session is read again.
   // Rows are grouped by skill, difficulty and response format, as summarizeLearning() does.
-  function provenance() {
-    const events = log();
-    if (!met || met.session !== session) met = { session, done: 0, index: Trail.createIndex({ scope, prior: ledger }), buckets: new Map() };
+  function provenance(saved) {
+    const events = saved.log;
+    if (!met || met.session !== saved.session) met = { session: saved.session, done: 0, index: Trail.createIndex({ scope, prior: saved.ledger }), buckets: new Map() };
     for (; met.done < events.length; met.done += 1) {
       const row = met.index.add(events[met.done]);
       if (!row?.measure) continue;
@@ -245,108 +321,46 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
   }
   // The learning state of one skill/difficulty/format: identical to the same cell of
   // summarizeLearning(), read from the index unless the log arrived out of time order.
-  function basisOf(measure) {
-    const known = provenance();
-    if (!known.index.exact) return profileOf(view()).skills.find(s => s.id === measure.skillId).levels[measure.difficulty].formats[measure.responseFormat];
-    const key = `${measure.skillId}|${measure.difficulty}|${measure.responseFormat}`, cell = Ledger.cellOf(ledger, key);
+  function basisOf(measure, saved) {
+    const known = provenance(saved);
+    if (!known.index.exact) return profileOf(view(saved), saved).skills.find(s => s.id === measure.skillId).levels[measure.difficulty].formats[measure.responseFormat];
+    const key = `${measure.skillId}|${measure.difficulty}|${measure.responseFormat}`, cell = Ledger.cellOf(saved.ledger, key);
     const rows = (known.buckets.get(key) || []).filter(row => !row.omitted);
-    return Learning.formatEvidence(rows, { now: Date.parse(monotonicClock()), complete: complete && readable && writable,
+    return Learning.formatEvidence(rows, { now: Date.parse(monotonicClock()), complete: saved.durable,
       difficulty: measure.difficulty, responseFormat: measure.responseFormat, base: cell ? Ledger.rows(cell) : null });
   }
-  function summary() {
-    refresh(); const observed = view();
+  function report(saved) {
+    const observed = view(saved), { ledger } = saved;
     const measured = () => Temper.combine(ledger?.counts || null, Temper.measure(observed));
     if (cached?.summary === observed && !cached.counts) cached.counts = measured();
     // `folded`/`adjusted`: entries kept only as a summary, and other devices' late entries that
     // summary took in approximately (learning-ledger.js).
-    return { ...profileOf(observed), storage: { available: readable && writable, scope: storageScope, warning,
+    return { ...profileOf(observed, saved), storage: { available: saved.available, scope: storageScope, warning: saved.warning,
       ...(ledger ? { folded: ledger.folded, adjusted: ledger.adjusted || 0 } : {}) },
       counts: cached?.summary === observed ? cached.counts : measured() };
   }
   function requireActive(pid) {
-    refresh(); const item = active.get(pid); if (!item) throw new Error('Atlas: presentation ended or local record reset'); return item;
+    const saved = current(), item = active.get(pid); if (!item) throw new Error('Atlas: presentation ended or local record reset'); return [item, saved];
   }
   const api = {
-    syncPort: Object.freeze({
-      scope: storageScope, accountKey,
-      // The kept entries. A synchronised store's folded entries are on the server; whether this
-      // history can be sent at all is partial().
-      events() {
-        refresh(); if (!readable || !writable) throw Object.assign(new Error('Atlas: local history is not durable'), { code: 'STORAGE_ERROR' });
-        return session.events();
-      },
-      // The kept entries' ids, without copying the entries: a WORLD host compares them around a
-      // game call to find what the call added (account/world-learning-host.js).
-      ids() {
-        refresh(); if (!readable || !writable) throw Object.assign(new Error('Atlas: local history is not durable'), { code: 'STORAGE_ERROR' });
-        return log().map(e => e.id);
-      },
-      // True when this store folded entries no server has received (it was not synchronised then):
-      // its history can never be sent whole, so a synchroniser must not send it.
-      partial() { refresh(); return !!ledger?.local; },
-      // The sync calls this after a complete pull with every entry id the server has sent:
-      // those entries may fold here. Saved quietly (it is not a new learning entry).
-      settle(ids) {
-        if (!folding?.remote || !Array.isArray(ids)) return false;
-        refresh(); if (!readable) return false;
-        const version = settledVersion;
-        settle([...settled, ...ids], new Set(log().map(e => e.id)));
-        return settledVersion === version || persist('settle', { quiet: true });
-      },
-      // Ids this store folded away since the synchroniser last took them (always on the server).
-      dropped() { refresh(); return [...dropped]; },
-      // The synchroniser has taken these (saved in its own outbox first).
-      forget(ids) {
-        refresh(); if (!readable || !Array.isArray(ids)) return false;
-        const version = droppedVersion;
-        for (const id of ids) if (dropped.delete(id)) droppedVersion = version + 1;
-        return droppedVersion === version || persist('forget', { quiet: true });
-      },
-      subscribe(listener) { if (typeof listener !== 'function') throw new TypeError('Atlas: listener required');listeners.add(listener);return () => listeners.delete(listener); },
-      markComplete(value) { complete = value === true; },
-      importEvents(incoming) {
-        refresh();
-        if (!readable) throw Object.assign(new Error('Atlas: local history is unreadable'), { code: 'STORAGE_ERROR' });
-        if (ledger?.local) throw Object.assign(new Error('Atlas: a folded history is kept on this device only'), { code: 'HISTORY_FOLDED' });
-        if (!Array.isArray(incoming)) throw new TypeError('Atlas: imported events must be an array');
-        const combined = log().slice(), previousLength = combined.length, known = new Map(combined.map(event => [event.id, event])), late = [], gone = [], skipped = [];
-        for (const event of incoming) {
-          if (known.has(event?.id)) {
-            if (!sameEvent(known.get(event.id), event)) throw Object.assign(new Error('Atlas: conflicting imported event'), { code: 'EVENT_CONFLICT' });
-          // Another device's entry for an item this store already folded stays on the server.
-          } else if (ledger && Ledger.stray(event, known)) { skipped.push(event.id); if (event.type === 'record.excluded') gone.push(event.targetId); continue; }
-          else { known.set(event?.id, event); combined.push(event); if (Ledger.folded(ledger, event)) late.push(event); }
-        }
-        // Identical durable history needs neither replay nor another disk write.
-        // A previous storage failure must still retry persistence below.
-        if (combined.length === previousLength && !skipped.length && writable && (paged || snapshot(combined) === lastStoredRaw)) return { added: 0, skipped };
-        // Construct before replacing: wrong scope, parent links, schema or IDs
-        // reject the entire incoming batch without changing the local log.
-        const imported = newSession(combined); session = imported;
-        if (late.length || skipped.length) ledger = Ledger.demote(ledger, { late, excluded: gone, strays: skipped.length }, id => known.get(id));
-        if (!persist('import')) throw Object.assign(new Error('Atlas: imported history could not be saved'), { code: 'STORAGE_ERROR' });
-        return { added: combined.length - previousLength, skipped };
-      },
-    }),
-    summary,
+    syncPort: history.port,
+    summary: () => report(current()),
     recommend(candidates, options = {}) {
-      const profile = summary();
-      return { ...Learning.recommend({ profile, candidates, presentations: view().presentations, prior: ledger, ...options }), storage: profile.storage };
+      const saved = current(), profile = report(saved);
+      return { ...Learning.recommend({ profile, candidates, presentations: view(saved).presentations, prior: saved.ledger, ...options }), storage: profile.storage };
     },
     recommendActivities(candidates, options = {}) {
-      const profile = summary();
-      return { ...Learning.recommendActivities({ ...options, profile, candidates, presentations: view().presentations, prior: ledger }), storage: profile.storage };
+      const saved = current(), profile = report(saved);
+      return { ...Learning.recommendActivities({ ...options, profile, candidates, presentations: view(saved).presentations, prior: saved.ledger }), storage: profile.storage };
     },
     // Display exposure is stricter than independent-attempt qualification: an item
     // shown without an answer is still not a never-shown item. Both include folded history.
     exposure(item) {
       if (!identifier(item?.itemKey) || !identifier(item.familyKey || item.itemKey)) throw new TypeError('Atlas: invalid exposure item');
-      refresh();
-      const family = item.familyKey || item.itemKey;
-      const shown = log().some(e => e.type === 'practice.presented' && (e.itemKey === item.itemKey || (e.measure?.familyKey || e.itemKey) === family))
-        || (ledger?.presented || []).some(([_task, priorItem, priorFamily]) => priorItem === item.itemKey || priorFamily === family);
-      return { seen: shown || provenance().index.met(item.itemKey, family) ? true
-        : complete && readable && writable ? false : null };
+      const saved = current(), family = item.familyKey || item.itemKey;
+      const shown = saved.log.some(e => e.type === 'practice.presented' && (e.itemKey === item.itemKey || (e.measure?.familyKey || e.itemKey) === family))
+        || (saved.ledger?.presented || []).some(([_task, priorItem, priorFamily]) => priorItem === item.itemKey || priorFamily === family);
+      return { seen: shown || provenance(saved).index.met(item.itemKey, family) ? true : saved.durable ? false : null };
     },
     // A consumer supplies the two attempts it deliberately joined in this round.
     // This reads recent full events only: no durable lineage, profile update or causal claim.
@@ -354,9 +368,10 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
       if (![sourceAttemptId, targetAttemptId].every(identifier)) throw new TypeError('Atlas: invalid recheck attempt IDs');
       const result = { sourceAttemptId, targetAttemptId, correctionObserved: false, correctionEventIds: [], learningEffectClaim: false };
       const unavailable = reason => ({ ...result, status: 'unavailable', line: '새 문항 확인 결과를 판단할 기록이 충분하지 않아요.', reason });
-      try { refresh(); } catch { return unavailable('incomplete-history'); }
-      if (!complete || !readable || !writable || ledger?.adjusted) return unavailable('incomplete-history');
-      const events = log(), positions = new Map(events.map((event, index) => [event.id, index]));
+      let saved;
+      try { saved = current(); } catch { return unavailable('incomplete-history'); }
+      if (!saved.durable || saved.ledger?.adjusted) return unavailable('incomplete-history');
+      const events = saved.log, positions = new Map(events.map((event, index) => [event.id, index]));
       const byId = new Map(events.map(event => [event.id, event]));
       const sourceEvent = byId.get(sourceAttemptId), targetEvent = byId.get(targetAttemptId);
       if (sourceEvent?.type !== 'practice.attempted' || targetEvent?.type !== 'practice.attempted') return unavailable('missing-attempt');
@@ -391,8 +406,8 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
       const priorPresentation = events.some(event => event.type === 'practice.presented' && event.id !== targetPresentation.id
         && (positions.get(event.id) < positions.get(targetPresentation.id) || Date.parse(event.at) < Date.parse(targetPresentation.at))
         && (event.itemKey === targetPresentation.itemKey || (event.measure?.familyKey || event.itemKey) === b.familyKey));
-      if (priorPresentation || (ledger?.presented || []).some(([_task, item, family]) => item === targetPresentation.itemKey || family === b.familyKey)) return unavailable('previously-presented');
-      const observed = view(), source = observed.attempts.find(row => row.eventId === sourceAttemptId), target = observed.attempts.find(row => row.eventId === targetAttemptId);
+      if (priorPresentation || (saved.ledger?.presented || []).some(([_task, item, family]) => item === targetPresentation.itemKey || family === b.familyKey)) return unavailable('previously-presented');
+      const observed = view(saved), source = observed.attempts.find(row => row.eventId === sourceAttemptId), target = observed.attempts.find(row => row.eventId === targetAttemptId);
       if (!source || !target || source.exclusionReason || target.exclusionReason
         || !['correct', 'incorrect'].includes(source.verdict) || !['correct', 'incorrect'].includes(target.verdict)) return unavailable('unassessable');
       if (source.verdict === 'correct' && source.assisted !== true) return unavailable('source-not-recheck');
@@ -408,7 +423,7 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
         target: { verdict: target.verdict, assisted: target.assisted, independent: target.independent } };
     },
     present(item, context = {}) {
-      refresh();
+      const saved = current();
       if (!context || typeof context !== 'object' || Object.keys(context).some(k => k !== 'flow') || (context.flow != null && (typeof context.flow !== 'object' || Array.isArray(context.flow)))) throw new TypeError('Atlas: invalid presentation context');
       const node = map.getNode(item?.skillId);
       if (!node || node.domain !== item.modality || !identifier(item.id) || !identifier(item.itemKey)
@@ -418,10 +433,10 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
         responseFormat: item.responseFormat ?? 'unknown',
         familyKey: item.familyKey || item.itemKey, audioRequired: item.audioRequired ?? item.modality === 'listening', confounded: !!item.confounded };
       // Analytical exclusion cannot erase exposure to an item or its answer.
-      const seen = provenance().index.met(item.itemKey, measure.familyKey);
-      const basis = basisOf(measure);
+      const seen = provenance(saved).index.met(item.itemKey, measure.familyKey);
+      const basis = basisOf(measure, saved);
       // Snapshot the actual Core state used at delivery so the choice is reviewable.
-      const decision = session.plan(gameId, [{ id: item.id, minutes: 3, pace: 'standard',
+      const decision = saved.session.plan(gameId, [{ id: item.id, minutes: 3, pace: 'standard',
         learning: { policy: Learning.POLICY.version, skillId: item.skillId, difficulty: item.difficulty, responseFormat: measure.responseFormat,
           state: basis.status, evidence: basis.evidence }, ...(context.flow ? { flow: JSON.parse(JSON.stringify(context.flow)) } : {}) }]);
       // Content the item uses (words, grammar) comes after its ability; never another ability.
@@ -431,80 +446,75 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
       const task = { id: item.id, version: map.map_ver, itemKey: item.itemKey, concepts: [item.skillId, ...content], tags: [], measure };
       const practice = Core.createPractice({ session: practiceSession, decision, map, task,
         assess: result => ({ verdict: result.assessable === false ? 'unassessed' : result.correct == null ? 'skipped' : result.correct ? 'correct' : 'incorrect', errorTags: [] }),
-        firstExposure: seen ? false : complete && readable && writable ? true : null });
-      active.set(practice.presentation.id, { practice, measure, decision, audio: 'pending', results: [] }); persist();
+        firstExposure: seen ? false : saved.durable ? true : null });
+      active.set(practice.presentation.id, { practice, measure, decision, audio: 'pending', results: [] }); history.persist();
       return practice.presentation.id;
     },
     help(pid, kind) {
-      const p = requireActive(pid);
+      const [p] = requireActive(pid);
       if (!['text', 'hint', 'answer', 'replay'].includes(kind)) throw new TypeError('Atlas: invalid help kind');
-      const result = p.practice.delivered({ id: kind, level: kind === 'answer' ? 'answer' : 'cue', contentRef: `${gameId}.${kind}` }); persist(); return result;
+      const result = p.practice.delivered({ id: kind, level: kind === 'answer' ? 'answer' : 'cue', contentRef: `${gameId}.${kind}` }); history.persist(); return result;
     },
     delivery(pid, { audio }) {
-      const p = requireActive(pid); p.audio = audio;
-      const result = session.practice('delivery', { presentationId: pid, audio }); persist(); return result;
+      const [p, saved] = requireActive(pid); p.audio = audio;
+      const result = saved.session.practice('delivery', { presentationId: pid, audio }); history.persist(); return result;
     },
     answer(pid, result) {
-      const p = requireActive(pid);
+      const [p, saved] = requireActive(pid);
       if (!result || ![true, false, null].includes(result.correct) || typeof result.assessable !== 'boolean') throw new TypeError('Atlas: answer must identify assessability');
       const choice = Object.hasOwn(result, 'choice') ? Trail.choiceRecord(result.choice) : null;
       const attemptNo = result.attemptNo ?? 1;
       if (!Number.isInteger(attemptNo) || attemptNo < 1 || attemptNo > p.results.length + 1) throw new TypeError('Atlas: attempts must be consecutive');
-      if (p.results[attemptNo - 1]) { const saved = p.results[attemptNo - 1]; return { ...saved, ...(saved.choice ? { choice: { ...saved.choice } } : {}) }; }
+      if (p.results[attemptNo - 1]) { const earlier = p.results[attemptNo - 1]; return { ...earlier, ...(earlier.choice ? { choice: { ...earlier.choice } } : {}) }; }
       const reason = p.measure.confounded ? (result.reason || 'visual') : p.measure.audioRequired && p.audio !== 'completed' ? 'audio'
-        : !readable || !writable ? 'storage' : result.reason;
-      const assessable = result.assessable && !p.measure.confounded && (!p.measure.audioRequired || p.audio === 'completed') && readable && writable;
+        : !saved.available ? 'storage' : result.reason;
+      const assessable = result.assessable && !p.measure.confounded && (!p.measure.audioRequired || p.audio === 'completed') && saved.available;
       const attempt = p.practice.submit({ ...result, assessable }, { reason: reason || null, ...(choice ? { choice } : {}) });
-      session.complete(p.decision); persist();
+      saved.session.complete(p.decision); history.persist();
+      // Independence is read after the write: an answer the store could not keep never counts.
       // The row summarize() would give this answer, read from the index when it is exact.
-      const known = provenance(), row = known.index.attempt(attempt.eventId);
-      const actual = known.index.exact ? (row && !row.omitted ? row : undefined) : view().attempts.find(a => a.eventId === attempt.eventId);
-      const recorded = { ...attempt, independent: !!actual?.independent && complete && writable, reason: reason || null,
+      const after = history.state(), known = provenance(after), row = known.index.attempt(attempt.eventId);
+      const actual = known.index.exact ? (row && !row.omitted ? row : undefined) : view(after).attempts.find(a => a.eventId === attempt.eventId);
+      const recorded = { ...attempt, independent: !!actual?.independent && after.durable, reason: reason || null,
         assisted: actual?.assisted ?? null, exposure: actual?.exposure ?? null };
       p.results.push(recorded); return { ...recorded, ...(recorded.choice ? { choice: { ...recorded.choice } } : {}) };
     },
-    exclude(eventId) { refresh(); const event = session.exclude(eventId); persist(); return event; },
+    exclude(eventId) { const event = current().session.exclude(eventId); history.persist(); return event; },
     // A practice set ended (short practice, quick check, exam-form practice): a `<gameId>.set` decision and completion, so a
     // response is about the set, not its last item. One 5-minute candidate, so a short-time setting never blocks it.
+    // Both entries are written together, once.
     finishSet({ kind } = {}) {
-      refresh(); if (!SET_KINDS.includes(kind)) throw new TypeError('Atlas: invalid practice set');
+      const { session } = current(); if (!SET_KINDS.includes(kind)) throw new TypeError('Atlas: invalid practice set');
       const decision = session.plan(`${gameId}.set`, [{ id: kind, minutes: 5, pace: 'standard' }]);
       if (decision.status !== 'ready') throw new Error('Atlas: practice set could not be recorded');
-      const completion = session.complete(decision); sets.set(decision.id, Date.parse(completion.at)); persist();
+      const completion = session.complete(decision); sets.set(decision.id, Date.parse(completion.at)); history.persist();
       return { decisionId: decision.id, completionId: completion.id };
     },
     // A response to a finished set. It names the set's decision too, so a store folding by the older reference() keeps the
     // set with it. The same value again adds nothing; another value replaces it.
     feedback(set, value) {
-      refresh(); if (!RESPONSES.includes(value) || !identifier(set?.completionId) || !identifier(set?.decisionId)) throw new TypeError('Atlas: invalid set response');
-      const done = log().find(e => e.id === set.completionId);
+      const saved = current(); if (!RESPONSES.includes(value) || !identifier(set?.completionId) || !identifier(set?.decisionId)) throw new TypeError('Atlas: invalid set response');
+      const done = saved.log.find(e => e.id === set.completionId);
       if (done?.type !== 'experience.completed' || done.experienceId !== `${gameId}.set` || done.decisionId !== set.decisionId
         || Date.parse(monotonicClock()) - Date.parse(done.at) > SET_OPEN_MS) throw Object.assign(new Error('Atlas: this practice set no longer takes a response'), { code: 'SET_UNAVAILABLE' });
-      if (session.state().feedback.find(f => f.completionId === done.id)?.value === value) return null;
-      const event = session.feedback(done.id, value, done.decisionId); persist(); return event;
+      if (saved.session.state().feedback.find(f => f.completionId === done.id)?.value === value) return null;
+      const event = saved.session.feedback(done.id, value, done.decisionId); history.persist(); return event;
     },
     // Responses to this game's sets that Core still reads (30 days, not excluded), oldest first.
     setFeedback() {
-      refresh(); return session.state().feedback.filter(f => f.experienceId === `${gameId}.set`)
+      return current().session.state().feedback.filter(f => f.experienceId === `${gameId}.set`)
         .map(f => ({ id: f.id, completionId: f.completionId, decisionId: f.decisionId ?? null, value: f.value, kind: f.variant, at: f.at }));
     },
-    events() { refresh(); return session.events(); },
-    // Before a tab closes or hides: another tab may have written an older history over this
-    // one's entries in the meantime (tabs see each other's writes late), so join and write again.
-    flush() {
-      refresh();
-      if (!storage || !readable || !writable) return false;
-      return snapshot(log()) === lastStoredRaw || persist('flush', { quiet: true });
-    },
+    events() { return current().session.events(); },
+    flush: () => history.flush(),
     reset() {
       if (storageScope === 'account') throw Object.assign(new Error('Atlas: account deletion requires the host consent/reset API; local reset cannot delete server records'), { code: 'ACCOUNT_RESET_REQUIRED' });
-      epoch = uid(); ledger = null; settled.clear(); settledVersion += 1; takeDropped([], false); session = newSession([]); active.clear(); sets.clear(); readable = true; writable = !!storage; complete = historyComplete; warning = null; persist();
-      flowPort.clear();
-      return summary();
+      history.reset(); flowPort.clear();
+      return api.summary();
     },
   };
   // The flow memory follows the log's epoch, so a reset in another tab is not undone from here.
-  flowPort = memoryOwner?.flow || createFlowPort({ storage, key, clock: monotonicClock, epoch: () => { try { refresh(); } catch { /* the log reports its own error */ } return epoch; } });
+  flowPort = memoryOwner?.flow || createFlowPort({ storage, key, clock: monotonicClock, epoch: () => { try { history.refresh(); } catch { /* the log reports its own error */ } return history.state().epoch; } });
   api.today = flowPort.today;
   api.setToday = flowPort.setToday;
   api.presentation = flowPort.presentation;

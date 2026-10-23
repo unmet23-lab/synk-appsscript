@@ -134,7 +134,7 @@ function runAll({ root, check = true, local = false, talkRoot = path.resolve(roo
     results.push({ label, command: ['node', ...args], exitCode: result.status, output: (result.stdout + result.stderr).trim() });
     if (result.status !== 0) problems.push(`${label}: ${result.error?.message || (result.stderr || result.stdout).trim()}`);
   };
-  run('learning: 9 games', ['tools/build-game-learning.js', ...(check ? ['--check'] : [])]);
+  run(`learning: ${GAMES.length} games`, ['tools/build-game-learning.js', ...(check ? ['--check'] : [])]);
   run('learning: Hangul', ['tools/build-hangul-stage.js', ...(check ? ['--check'] : [])]);
   for (const bundle of WORLD_BUNDLES) run(bundle.label, [bundle.build, ...(check ? ['--check'] : [])]);
   // Avoid copying stale bundles when a producer could not rebuild.
@@ -145,7 +145,7 @@ function runAll({ root, check = true, local = false, talkRoot = path.resolve(roo
     run('Talk app and server', ['tools/sync-atlas.js', '--consumer', 'talk', ...(check ? ['--check'] : [])], { SYNK_TALK_ROOT: talkRoot });
     run('Strata source map', ['tools/strata-build.js', '--check', '--talk-root', talkRoot]);
   }
-  return { ok: problems.length === 0, scope: local ? 'local' : 'local+talk+website-staging', generatedBundles: 10 + WORLD_BUNDLES.length, rawCopies: raw.copies, problems, results,
+  return { ok: problems.length === 0, scope: local ? 'local' : 'local+talk+website-staging', generatedBundles: GAMES.length + 1 + WORLD_BUNDLES.length, rawCopies: raw.copies, problems, results,
     excluded: ['historical QA/release archives', 'retired website letter', ...(local ? ['Talk checkout', 'website staging', 'Strata sibling source validation'] : []), 'deployed servers and public pages'] };
 }
 module.exports = { GAMES, TOOL_OUTPUTS, WEBSITE_GAMES, WORLD_BUNDLES, PRODUCT_OWNED, rawCopies, ownedFiles, unknownCopies, syncRaw, runAll };

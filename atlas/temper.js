@@ -4,6 +4,8 @@
  * same inputs, for example two implementations; it is not a learning measure.
  * `groups` reads the two arms of one comparison per evaluation-only group.
  * None is a significance test, a policy promotion gate or a cohort learner.
+ * `check` is the guard of Core's moment-level challenge (flow.js reads it; the simulation
+ * in temper-flow.js re-exports it). It depends on nothing, so neither depends on the other.
  */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
@@ -143,5 +145,30 @@
     return { version: VERSION, arms: { baseline, candidate }, minimum, tolerance, cells: report, worse: named('worse'), waiting: named('waiting'),
       unit: 'person-mean-of-new-item-independent-accuracy', learningEffectClaim: false, causalClaim: false, significanceTested: false };
   }
-  return Object.freeze({ VERSION, MINIMUM_PER_CELL, measure, combine, compare, groups });
+  /* The last word on every knob change (Atlas design §7-2, implementation spec §6-3): one knob, one
+   * step, inside bounds, never a declared-only knob, at most one change per response, and a knob just
+   * eased is not raised again for two responses (easing right after a raise is always allowed:
+   * comfort first). `frozen` is the stop switch: defaults for everyone. */
+  // A knob just eased is not raised again within this many responses.
+  const FLIP_WINDOW = 2;
+  // After any raise, the person meets the new level at least this many times before another raise.
+  const COOL_DOWN = 2;
+  function check({ spec, knob, from, to, step, phase = 'response', history = [], frozen = false } = {}) {
+    if (frozen) return { ok: false, rail: 'hold' };
+    const k = spec?.knobs?.find(x => x.id === knob);
+    if (!k) return { ok: false, rail: 'unknown-knob' };
+    if (!Number.isInteger(from) || !Number.isInteger(to) || Math.abs(to - from) !== 1) return { ok: false, rail: 'one-step' };
+    if (to < 0 || to >= k.values.length) return { ok: false, rail: 'bounds' };
+    if (k.follows === 'declared') return { ok: false, rail: 'declared-only' };
+    if (!['opening', 'response', 'accepted'].includes(phase) || !Number.isInteger(step) || !Array.isArray(history)) return { ok: false, rail: 'invalid' };
+    if (phase !== 'opening') {
+      const live = history.filter(c => c.phase !== 'opening');
+      if (live.some(c => c.step === step)) return { ok: false, rail: 'one-change-per-response' };
+      const recent = live.filter(c => c.knob === knob && step - c.step <= FLIP_WINDOW).at(-1);
+      if (recent && to > from && recent.to < recent.from) return { ok: false, rail: 'no-bounce' };
+      if (to > from && live.some(c => c.direction > 0 && step - c.step <= COOL_DOWN)) return { ok: false, rail: 'cool-down' };
+    }
+    return { ok: true, rail: null };
+  }
+  return Object.freeze({ VERSION, MINIMUM_PER_CELL, measure, combine, compare, groups, FLIP_WINDOW, COOL_DOWN, check });
 });

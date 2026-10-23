@@ -1,11 +1,11 @@
 {
-  "map_ver": "strata-ko-1-b91f23e62ef678cb",
+  "map_ver": "strata-ko-1-a860ccaaae7fc4c2",
   "schema_ver": 1,
   "subject": "ko",
   "sources": {
     "grammar_bank": {
-      "path": "SYNK-appsscript/엔진_콘텐츠AI.js",
-      "sha256": "8a0ee27e40f43771fe8d3e432aebfb7954b89e7ce0224abd89d68ea5176207cc",
+      "path": "SYNK-appsscript/strata/grammar-bank.json",
+      "sha256": "19eef2cafe1d4f16bd80975b65b296b037ec05703857dba5491c19086bea2335",
       "hash_format": "sha256-utf8-lf"
     },
     "skills": {

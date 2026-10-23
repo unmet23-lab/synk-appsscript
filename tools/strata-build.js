@@ -7,7 +7,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { createRequire } = require('node:module');
-const { 뱅크읽기 } = require('./lib/문법뱅크');
+const { 뱅크읽기, 원천파일 } = require('./lib/문법뱅크');
 const { validateMap } = require('../strata');
 const ROOT = path.resolve(__dirname, '..');
 const OUTPUT = path.join(ROOT, 'strata', 'maps', 'ko.json');
@@ -18,7 +18,7 @@ const reference = (source, selector) => ({ source, selector });
 
 function loadSources({ root = ROOT, talkRoot = path.resolve(ROOT, '..', 'SYNK-talk') } = {}) {
   const specs = {
-    grammar_bank: [path.join(root, '엔진_콘텐츠AI.js'), 'SYNK-appsscript/엔진_콘텐츠AI.js'],
+    grammar_bank: [path.join(root, 원천파일), 'SYNK-appsscript/' + 원천파일],
     skills: [path.join(talkRoot, 'contents', '토픽퀴즈문항.js'), 'SYNK-talk/contents/토픽퀴즈문항.js'],
     error_tags: [path.join(root, '계약', '수집_교정_계약.json'), 'SYNK-appsscript/계약/수집_교정_계약.json'],
     tag_links: [path.join(talkRoot, 'lib', '태그기술표.js'), 'SYNK-talk/lib/태그기술표.js'],

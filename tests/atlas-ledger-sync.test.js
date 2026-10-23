@@ -370,3 +370,25 @@ test('a history folded without a server is never sent, even once sharing is turn
   const kept = off.events();
   assert.equal(Ledger.fold(stored(storage).ledger, kept, { scope, log: kept }).local, true);
 });
+
+// An epoch change ends everything a tab held (game-learning.js openHistory release). Entries are
+// ids, not owners: the server may send this tab's old entries back into the new epoch, and an item
+// presented under the old one must still not take an answer or help.
+test('a new account epoch ends what this tab held, even when the server sends the same entries back into it', async () => {
+  const s = server(), time = timeline(), a = device(s, time.clock);
+  time.set(T0 + 1000);
+  const pid = a.game.present(script(7, 1, T0, 'held')[0].item);
+  await synced(a.sync);
+  const sent = copy(s.log);
+  assert.ok(sent.some(e => e.id === pid));
+  // Another context writes a new epoch over this account store (a reset or a replaced store elsewhere).
+  const other = memory();
+  createGame({ gameId: 'other', map, storage: other, storageScope: 'account', accountKey: ACCOUNT, clock: time.clock }).present(script(8, 1, T0, 'other')[0].item);
+  a.storage.setItem(`${KEY}.device`, other.getItem(`${KEY}.device`));
+  time.set(T0 + 2000);
+  assert.ok(a.game.syncPort.importEvents(sent).added > 0);
+  assert.ok(a.game.events().some(e => e.id === pid), 'the presentation is back in the new log');
+  assert.throws(() => a.game.answer(pid, { correct: true, assessable: true }), /presentation ended or local record reset/);
+  assert.throws(() => a.game.help(pid, 'hint'), /presentation ended or local record reset/);
+  a.sync.stop();
+});

@@ -137,3 +137,23 @@ test('a guest device history still stops at 20,000 events without overwriting ea
   assert.equal(game.summary().storage.available, false);
   assert.equal(storage.getItem(eventKey), original, 'Reaching capacity preserves all previous durable records');
 });
+
+// Independence is read after the answer's own write (game-learning.js answer): a failed write
+// never counts, and the recorded answer keeps that verdict when the same attempt is sent again.
+test('an answer whose write fails is never independent, and replaying it after storage recovers keeps that verdict', () => {
+  const values = new Map(); let failing = false;
+  const storage = { getItem: k => values.get(k) ?? null, setItem: (k, v) => { if (failing) throw new Error('Synthetic quota'); values.set(k, v); }, removeItem: k => values.delete(k) };
+  const game = createGame({ gameId: 'synthetic-reading', map, storage, clock: () => '2026-10-02T01:00:00Z' });
+  const first = present(game);
+  failing = true;
+  const answer = game.answer(first, { correct: true, assessable: true });
+  assert.equal(answer.independent, false);
+  assert.equal(answer.reason, null, 'the store was available when the answer came; only its write failed');
+  failing = false;
+  assert.deepEqual(game.answer(first, { correct: true, assessable: true }), answer);
+  // The history is incomplete from that write on: a new item is not a first exposure for certain either.
+  const second = game.present({ id: 'synthetic-other', itemKey: 'synthetic-other', familyKey: 'synthetic-other', skillId: 'ko.reading.detail',
+    difficulty: 1, modality: 'reading', responseFormat: 'single-choice' });
+  assert.equal(game.answer(second, { correct: true, assessable: true }).independent, false);
+  assert.equal(game.summary().storage.available, true);
+});

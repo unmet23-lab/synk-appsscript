@@ -131,7 +131,10 @@ test('계획 화면의 상대 import와 로그인 연결은 브라우저에서 �
     }
   }
   assert.ok(seen.has(base + '/synk-account/src/account-notebook.mjs'), '계정 화면의 동적 import도 검사한다');
-  assert.ok(seen.has(base + '/synk-account/src/personal-data.mjs'), '계정 자료 계약까지 검사한다');
+  // Travel records are checked through the shared JSON boundary and the travel
+  // validator only; the server's umbrella personal-data check stays out of the page.
+  assert.ok(seen.has(base + '/synk-account/src/personal-state.mjs'), '계정 자료 계약(공유 JSON 경계)까지 검사한다');
+  assert.equal(seen.has(base + '/synk-account/src/personal-data.mjs'), false, '서버 전체 개인 자료 검사는 여행 화면의 의존이 아니다');
   assert.ok(seen.has(base + '/question-worker.mjs'), '확인 질문 워커와 그 의존 모듈도 검사한다');
   assert.deepEqual(failures, [], '여행 화면에서 실제 요청하는 모듈이 모두 JavaScript로 제공되어야 한다');
 });

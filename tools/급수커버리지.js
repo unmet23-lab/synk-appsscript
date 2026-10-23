@@ -58,7 +58,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const 뱅크파일 = path.join(ROOT, '엔진_콘텐츠AI.js');
+const { 뱅크읽기: 원천뱅크읽기 } = require('./lib/문법뱅크.js');
 const 커리큘럼파일 = path.join(ROOT, 'docs', '커리큘럼_정본_v1.md');
 
 /* 우리 과정 상한은 5급이다(커리큘럼 정본 v1.2 ⓪ 「6급 반은 열지 않는다」). 6급은 참조 절로만 산다. */
@@ -131,35 +131,12 @@ function 슬래시전개(문형) {
   return 조각들.map((x, i) => (i === 조각들.length - 1 ? x : x + 꼬리));
 }
 
-/* ══════════════════════════════════ ① 뱅크 읽기
- * `엔진_콘텐츠AI.js` 는 Apps Script 소스라 require 로 못 읽는다(전역 스코프·GAS 전용 심볼).
- * 그래서 `GRAMMAR_BANK` 배열 리터럴만 원문에서 떼어 판다 — 실행하지 않는다. */
+/* ══════════════════════════════════ ① 뱅크 읽기 */
 function 뱅크읽기() {
-  let src;
-  try { src = fs.readFileSync(뱅크파일, 'utf8'); }
-  catch (e) { throw 확인불가(`문법 뱅크를 못 읽었다(${뱅크파일}) — ${e.message}`); }
-
-  const 시작 = src.indexOf('const GRAMMAR_BANK = [');
-  if (시작 < 0) throw 확인불가('`const GRAMMAR_BANK = [` 를 못 찾았다 — 뱅크가 옮겨졌거나 이름이 바뀌었다');
-
-  /* 한 줄 = 한 항목이라는 규격에 기댄다(뱅크 머리 주석의 칸 규격 그대로).
-   * [id, 이름, 설명, 도입급, 재출현급, 근거] — 뒤 칸이 늘어도 앞 여섯만 읽어 안 깨진다. */
-  const 줄정규식 = /^\s*\['(G\d+)',\s*'((?:[^'\\]|\\.)*)',\s*'((?:[^'\\]|\\.)*)',\s*(\d+),\s*(null|\d+),\s*'([^']*)'/;
-  const 항목들 = [];
-  const 줄들 = src.slice(시작).split('\n');
-  for (const 줄 of 줄들) {
-    if (/^\s*\];/.test(줄)) break;            // 배열이 닫혔다
-    const m = 줄정규식.exec(줄);
-    if (!m) continue;
-    항목들.push({
-      id: m[1],
-      이름: 정규화(m[2].replace(/\\'/g, "'")),
-      설명: 정규화(m[3].replace(/\\'/g, "'")),
-      도입급: Number(m[4]),
-      재출현급: m[5] === 'null' ? null : Number(m[5]),
-      근거: m[6],
-    });
-  }
+  let bank;
+  try { bank = 원천뱅크읽기(); }
+  catch (e) { throw 확인불가('문법 뱅크를 못 읽었다 — ' + e.message); }
+  const 항목들 = bank.GRAMMAR_BANK.map(g => ({ id: g[0], 이름: 정규화(g[1]), 설명: 정규화(g[2]), 도입급: g[3], 재출현급: g[4], 근거: g[5] }));
 
   /* ── 대조군 ── */
   if (항목들.length < 60) {

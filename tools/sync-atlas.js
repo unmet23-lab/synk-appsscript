@@ -13,7 +13,7 @@
  * default. --consumer website is only for an older checkout that still owns sync-letter-copy.mjs;
  * that checkout's generator recomputes its letter page's cache keys (`?v=`) after a copy changes.
  * --check changes nothing and lists every difference at once (exit 1 when there is any).
- * --all includes 10 learning bundles, the 3 WORLD bundles, PATH/launcher/tools, Talk and current
+ * --all includes the learning bundles registered in atlas-copies, the 3 WORLD bundles, PATH/launcher/tools, Talk and current
  * website staging. Product modules that only look like copies
  * (PRODUCT_OWNED in lib/atlas-copies.js) are listed there, never deleted or overwritten.
  * --all --local checks/builds only this repository (CI); omitted siblings are explicit.

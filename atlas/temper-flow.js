@@ -1,42 +1,23 @@
-/* SYNK Temper: the checking side of Core's moment-level challenge (flow.js).
- * `check` is the last word on every knob change (Atlas design §7-2, implementation spec §6-3):
- * one knob, one step, inside bounds, never a declared-only knob, at most one change per
- * response, and a knob just eased is not raised again for two responses (easing right after
- * a raise is always allowed: comfort first). `frozen` is the stop switch: defaults for everyone.
- * `simulate` runs virtual people through the real Flow controller and the same content with
- * fixed defaults (design §7-1). Virtual people are described by behaviour only, never by age,
- * gender or nationality. Their results check the implementation; they are not evidence of
- * learning, satisfaction or effect.
+/* SYNK Temper: virtual people for Core's moment-level challenge (flow.js). `simulate` runs them
+ * through the real Flow controller and the same content with fixed defaults (design §7-1).
+ * `check`, FLIP_WINDOW and COOL_DOWN, the guard Flow itself reads, live in temper.js and are
+ * re-exported here: Flow -> guard, simulation -> Flow and guard, never back. Virtual people are
+ * described by behaviour only, never by age, gender or nationality. Their results check the
+ * implementation; they are not evidence of learning, satisfaction or effect.
  */
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory(() => require('./flow'));
-  else root.SynkTemperFlow = factory(() => root.SynkFlow);
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (getFlow) {
-  'use strict';
-  const VERSION = 'temper-flow-1';
-  // A knob just eased is not raised again within this many responses.
-  const FLIP_WINDOW = 2;
-  // After any raise, the person meets the new level at least this many times before another raise.
-  const COOL_DOWN = 2;
-  function check({ spec, knob, from, to, step, phase = 'response', history = [], frozen = false } = {}) {
-    if (frozen) return { ok: false, rail: 'hold' };
-    const k = spec?.knobs?.find(x => x.id === knob);
-    if (!k) return { ok: false, rail: 'unknown-knob' };
-    if (!Number.isInteger(from) || !Number.isInteger(to) || Math.abs(to - from) !== 1) return { ok: false, rail: 'one-step' };
-    if (to < 0 || to >= k.values.length) return { ok: false, rail: 'bounds' };
-    if (k.follows === 'declared') return { ok: false, rail: 'declared-only' };
-    if (!['opening', 'response', 'accepted'].includes(phase) || !Number.isInteger(step) || !Array.isArray(history)) return { ok: false, rail: 'invalid' };
-    if (phase !== 'opening') {
-      const live = history.filter(c => c.phase !== 'opening');
-      if (live.some(c => c.step === step)) return { ok: false, rail: 'one-change-per-response' };
-      const recent = live.filter(c => c.knob === knob && step - c.step <= FLIP_WINDOW).at(-1);
-      if (recent && to > from && recent.to < recent.from) return { ok: false, rail: 'no-bounce' };
-      if (to > from && live.some(c => c.direction > 0 && step - c.step <= COOL_DOWN)) return { ok: false, rail: 'cool-down' };
-    }
-    return { ok: true, rail: null };
+  if (typeof module === 'object' && module.exports) { const Flow = require('./flow'); module.exports = factory(require('./temper'), () => Flow); }
+  // Plain scripts: temper.js, flow.js and this file load in any order. The global is built at its first
+  // use, once the guard is there; until then reading it names the file it needs.
+  else {
+    const keep = value => Object.defineProperty(root, 'SynkTemperFlow', { value, writable: true, enumerable: true, configurable: true });
+    Object.defineProperty(root, 'SynkTemperFlow', { enumerable: true, configurable: true, set: keep, get: () => keep(factory(root.SynkTemper, () => root.SynkFlow)).SynkTemperFlow });
   }
-
-  // ---- Simulation ------------------------------------------------------------------------
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (guard, getFlow) {
+  'use strict';
+  if (!guard || typeof guard.check !== 'function') throw new Error('Temper: load temper.js (the guard) before using temper-flow.js');
+  const VERSION = 'temper-flow-1';
+  const { FLIP_WINDOW, COOL_DOWN, check } = guard;
   const seeded = seed => {
     let h = 2166136261;
     for (let i = 0; i < seed.length; i += 1) { h ^= seed.charCodeAt(i); h = Math.imul(h, 16777619); }

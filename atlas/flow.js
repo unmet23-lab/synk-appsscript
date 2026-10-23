@@ -9,11 +9,11 @@
  * Only the person's own declared choices and responses move the knobs. There is no
  * field for age, gender, nationality or any demographic, and none is accepted.
  * Help never raises the challenge, and less help is offered and accepted, never imposed.
- * Temper's guard (temper-flow.js) has the last word on every change.
+ * Temper's guard (temper.js check) has the last word on every change; the guard never loads Flow.
  */
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory(() => require('./temper-flow'));
-  else root.SynkFlow = factory(() => root.SynkTemperFlow);
+  if (typeof module === 'object' && module.exports) { const guard = require('./temper'); module.exports = factory(() => guard); }
+  else root.SynkFlow = factory(() => root.SynkTemper);
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (getGuard) {
   'use strict';
   const VERSION = 'flow-1';

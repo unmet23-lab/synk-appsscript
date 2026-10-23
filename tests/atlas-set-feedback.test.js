@@ -392,3 +392,25 @@ test('a queued response a merge removes with the set the other tab folded is acc
   assert.ok(!a.game.events().some(e => e.id === response.id));
   assert.ok(a.game.syncPort.dropped().includes(response.id), 'a sync lets it go instead of blocking on it');
 });
+
+test('finishSet writes its decision and completion together: one write holds both, a failed write neither', () => {
+  const base = memory(), writes = []; let failing = false;
+  const storage = { ...base, setItem: (k, v) => { if (failing) throw new Error('quota'); writes.push(v); base.setItem(k, v); } };
+  const p = player({ storage }), key = 'synk.atlas.learning.v1.device';
+  practise(p);
+  writes.length = 0;
+  const set = p.game.finishSet({ kind: 'short' });
+  assert.equal(writes.length, 1);
+  const ids = raw => JSON.parse(raw).events.map(e => e.id);
+  assert.ok(ids(writes[0]).includes(set.decisionId) && ids(writes[0]).includes(set.completionId));
+  const before = storage.getItem(key);
+  failing = true;
+  const lost = p.game.finishSet({ kind: 'diagnostic' });
+  failing = false;
+  assert.equal(storage.getItem(key), before, 'neither entry reached the disk');
+  assert.equal(p.game.summary().storage.available, false);
+  // The next write that succeeds carries both, never one without the other.
+  practise(p);
+  assert.ok(ids(storage.getItem(key)).includes(lost.decisionId) && ids(storage.getItem(key)).includes(lost.completionId));
+  assert.equal(p.game.summary().storage.available, true);
+});
