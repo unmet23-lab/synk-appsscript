@@ -20,6 +20,8 @@ const credentialFailure=error=>error?.retryable===true?fail('CREDENTIAL_REFRESH_
 // YouTube는 하루 할당량·요청 한도도 403으로 알린다. 이를 「재연결 필요」로 읽지 않는다(10-20).
 const QUOTA_REASONS=new Set(['quotaExceeded','rateLimitExceeded','userRateLimitExceeded','dailyLimitExceeded','uploadLimitExceeded']);
 const channelId=value=>typeof value==='string'&&/^UC[A-Za-z0-9_-]{22}$/.test(value);
+// 언어 코드는 BCP-47 꼴만: 하위 태그 글자 수는 정규식, 종류·순서·중복은 Intl이 거른다('ko-12'·'en-US-US'·'ko-KR-Hans', 10-23 GPT 검수).
+const languageTag=value=>{if(typeof value!=='string'||!/^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$/.test(value))return false;try{return Intl.getCanonicalLocales(value).length===1;}catch{return false;}};
 const videoId=value=>typeof value==='string'&&/^[A-Za-z0-9_-]{11}$/.test(value);
 const scopes=credentials=>new Set(String(credentials?.scope||'').split(/[ ,]+/).filter(Boolean));
 const credentialFingerprint=credentials=>hash(['authType','accountId','accessToken','refreshToken','scope','expiresAt','refreshExpiresAt','permissionsVerifiedAt'].map(key=>credentials?.[key]??null));
@@ -62,7 +64,7 @@ export function createSocialDirectYouTube({store,fetchImpl=globalThis.fetch,cloc
     if(typeof title!=='string'||!title.trim()||[...title].length>100||/[<>]/.test(title))throw fail('YOUTUBE_TITLE_REQUIRED','YouTube 제목을 1~100자로 입력하고 꺾쇠 문자를 빼 주세요.');
     if(!['public','unlisted','private'].includes(options.privacy)||typeof options.madeForKids!=='boolean')throw fail('YOUTUBE_DECLARATION_REQUIRED','공개 범위와 아동용 콘텐츠 여부를 직접 선택해 주세요.');
     for(const key of ['madeWithAi','notifySubscribers'])if(options[key]!==undefined&&typeof options[key]!=='boolean')throw fail('INVALID_OPTIONS','YouTube 게시 옵션을 확인해 주세요.');
-    for(const key of ['language','audioLanguage'])if(options[key]!==undefined&&(typeof options[key]!=='string'||!/^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$/.test(options[key])))throw fail('INVALID_OPTIONS','YouTube 언어 코드를 확인해 주세요.');
+    for(const key of ['language','audioLanguage'])if(options[key]!==undefined&&!languageTag(options[key]))throw fail('INVALID_OPTIONS','YouTube 언어 코드를 확인해 주세요.');
     if(options.categoryId!==undefined&&(typeof options.categoryId!=='string'||!/^[1-9]\d{0,2}$/.test(options.categoryId)))throw fail('INVALID_OPTIONS','YouTube 카테고리 ID를 확인해 주세요.');
     const tags=options.hashtags;if(tags!==undefined&&typeof tags!=='string'&&(!Array.isArray(tags)||tags.some(value=>typeof value!=='string')))throw fail('INVALID_HASHTAGS','해시태그를 글자나 글자 목록으로 입력해 주세요.');
     const description=String(variant.text??post.body??'')+(filled(tags)?'\n\n'+(Array.isArray(tags)?tags.join(' '):tags):'');

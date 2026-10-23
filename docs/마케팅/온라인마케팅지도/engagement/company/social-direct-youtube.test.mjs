@@ -48,7 +48,8 @@ test('제목·설명 언어·영상 언어·카테고리는 넣은 판만 업로
   const plain=fixture();await plain.adapter.publish(plain.input);
   const bare=JSON.parse(plain.requests.find(r=>r.method==='POST').body);
   assert.deepEqual(['defaultLanguage','defaultAudioLanguage','categoryId'].filter(key=>key in bare.snippet),[]);
-  for(const bad of [{language:'Korean'},{audioLanguage:1},{categoryId:'x'}]){const input=structuredClone(plain.input);Object.assign(input.variant.options,bad);assert.equal(plain.adapter.preflight(input).valid,false,JSON.stringify(bad));}
+  for(const bad of [{language:'Korean'},{audioLanguage:1},{categoryId:'x'},{language:'ko-12'},{language:'en-US-US'},{audioLanguage:'ko-KR-Hans'}]){const input=structuredClone(plain.input);Object.assign(input.variant.options,bad);assert.equal(plain.adapter.preflight(input).valid,false,JSON.stringify(bad));}
+  for(const good of ['en-US','zh-Hant','es-419']){const input=structuredClone(plain.input);Object.assign(input.variant.options,{language:good,audioLanguage:good});assert.equal(plain.adapter.preflight(input).valid,true,good);}
 });
 test('Shorts requires measured square or portrait media of at most three minutes',()=>{
   const f=fixture();for(const format of ['shorts','youtube-shorts']){

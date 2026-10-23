@@ -29,6 +29,9 @@ test('YouTube 제목·설명 언어·영상 언어·카테고리 옵션은 언�
   assert.deepEqual([post.variants[0].options.language,post.variants[0].options.audioLanguage,post.variants[0].options.categoryId],['ko','en','22']);
   assert.equal(f.create(yt({categoryId:27})).variants[0].options.categoryId,'27','숫자로 와도 글자 ID로 둔다');
   for(const bad of [{language:'Korean'},{audioLanguage:'ko_KR'},{categoryId:'abc'},{categoryId:'0'}])assert.throws(()=>f.create(yt(bad)),{status:400},JSON.stringify(bad));
+  // 글자 수만 맞고 하위 태그 종류·순서가 틀린 꼴(숫자 두 자리 지역 · 지역 중복 · 지역 뒤 문자 체계)도 막는다(10-23 GPT 검수).
+  for(const bad of ['ko-12','en-US-US','ko-KR-Hans'])for(const key of ['language','audioLanguage'])assert.throws(()=>f.create(yt({[key]:bad})),{status:400},key+' '+bad);
+  for(const good of ['en-US','zh-Hant','zh-Hans-CN','es-419','sr-Latn'])assert.equal(f.create(yt({language:good})).variants[0].options.language,good,good);
 });
 
 test('new drafts canonicalize omitted performance formats and preserve explicit package detail on edits',async t=>{
