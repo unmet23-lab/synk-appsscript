@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>정착 동행 시범 참고 자료 — SYNK PATH</title>
 <!--
-  원고: 전북도 협력 제안서의 참고 자료(운영 방식·앱 화면 시안·위기 대응·가상 사례·정착 지표·효과 증명·근거·개인정보·일정). 첫 메일에 제안서·한 장 요약과 함께 붙인다.
+  원고: 전북도 협력 제안서의 참고 자료(보태는 자리·여정·운영 방식·위기 대응·앱 화면 시안·가상 사례·정착 지표·효과 증명·근거·개인정보·일정·인력·비용). 첫 메일에 제안서·한 장 요약과 함께 붙인다.
   내용은 같은 폴더의 제안 초안(2절)·PATH 정착관리 계획(4절·8절)과 맞춘다. 고치면 node docs/PATH_정착관리/제안/굽기.cjs 로 다시 굽는다.
   [ ] 안은 보내기 전에 채울 자리표다.
 -->
@@ -24,8 +24,9 @@ table.kpi td:nth-child(4){ width:18%; }
 .fig figcaption{ margin-top:2.4mm; font-size:3.1mm; color:var(--ink-2); }
 table.case td:first-child{ width:17%; font-weight:600; color:var(--ink); }
 h2.np{ break-before:page; page-break-before:always; margin-top:0; }
+table.cont{ break-before:page; page-break-before:always; }  /* 쪽 경계에서 나눈 표의 뒤쪽 — 머리글을 다시 둔다 */
 ul.dots > li{ break-inside:avoid; page-break-inside:avoid; }
-/* 4절 앱 화면 시안 — 플랫폼 시그널 밤 판(PATH 초록 포스터 + 펠트 물건, 1px 계기판, 흰 알약은 화면마다 하나).
+/* 5절 앱 화면 시안 — 플랫폼 시그널 밤 판(PATH 초록 포스터 + 펠트 물건, 1px 계기판, 흰 알약은 화면마다 하나).
    휴대폰 360px·PC 1120px 판으로 짜고 zoom으로 줄여 찍는다(휴대폰 51mm, PC 169mm). */
 .apps{ display:flex; justify-content:space-between; margin-top:3.6mm; break-inside:avoid; page-break-inside:avoid; }
 .apps figure{ width:51mm; margin:0; }
@@ -166,16 +167,7 @@ ul.dots > li{ break-inside:avoid; page-break-inside:avoid; }
   <div class="rule"></div>
 </section>
 
-<h2><span class="n">0</span>신청서에 옮기실 다섯 줄</h2>
-<table class="when">
-  <tbody>
-    <tr><td>과제명</td><td>광역형 비자 외국인 첫 30일 정착 동행</td></tr>
-    <tr><td>운영</td><td>SYNK PATH(2027년 1월 법인 설립 예정) — 대학·시군 외국인지원센터·「외국인 유학생 통합지원체계」와 연계(협의 예정)</td></tr>
-    <tr><td>대상·규모</td><td>전북 소재 대학의 광역형 비자 유학생과 전환 예정자 30~50명</td></tr>
-    <tr><td>일정</td><td>2027년 1~2월 준비, 3~8월 운영, 9월 결과 보고</td></tr>
-    <tr><td>예산·성과</td><td>2027년 시범은 도 예산 0원(SYNK 부담), 2028년 운영은 도의 정식 절차로 따로 협의. 정착 지표는 분기마다 집계로 보고</td></tr>
-  </tbody>
-</table>
+<p class="note">신청서에 옮기실 다섯 줄과 심사 내용별로 맞닿는 곳은 붙임 「신청서 문안」에 따로 담았습니다.</p>
 
 <h2><span class="n">1</span>무엇을 보태나 — 알려 주는 일은 기존 기관이, 끝까지 확인하는 일은 정착 동행이</h2>
 <figure class="fig">
@@ -214,7 +206,7 @@ ul.dots > li{ break-inside:avoid; page-break-inside:avoid; }
 <figcaption>기존 기관이 알려 주고 상담하는 자리는 그대로 두고, 정착 동행은 그 사이를 채웁니다. 할 일을 끝냈는지 끝까지 확인하고, 큰 행사와 교내 모임 사이를 한국인과 한 팀으로 뛰는 정기 모임으로 잇고, 결과를 분기마다 숫자로 드립니다.</figcaption>
 </figure>
 
-<h2 class="np"><span class="n">2</span>한 사람의 여정 — 언제 무엇을 하나</h2>
+<h2><span class="n">2</span>한 사람의 여정 — 언제 무엇을 하나</h2>
 <table class="road">
   <thead><tr><th>시기</th><th>하는 일</th><th>함께할 곳</th></tr></thead>
   <tbody>
@@ -222,6 +214,11 @@ ul.dots > li{ break-inside:avoid; page-break-inside:avoid; }
     <tr><td>첫 72시간</td><td>쉬운 한국어 오리엔테이션 — 생활 규칙·법·노동권·긴급 연락. 휴대폰·교통 안내</td><td>대학 국제처</td></tr>
     <tr><td>첫 30일</td><td>외국인등록·계좌 개설·건강보험료 납부를 안내하고 필요하면 함께 갑니다. 30일 안에 끝났는지 한 사람씩 확인하고, 숙소 계약 내용을 쉽게 설명하고, 첫 함께하는 자리에 초대합니다. 공고의 경과 규정으로 시범 입학생의 시간제 취업 조건이 바뀔 수 있어, 도·법무부가 확정하는 내용을 개인별로 알립니다</td><td>시·군 외국인지원센터, 대학</td></tr>
     <tr><td>첫 90일</td><td>주 1회 → 월 1회 확인, 사회통합프로그램 등록 안내, 함께하는 자리에 꾸준히 참여</td><td>사회통합프로그램 운영기관</td></tr>
+  </tbody>
+</table>
+<table class="road cont">
+  <thead><tr><th>시기</th><th>하는 일</th><th>함께할 곳</th></tr></thead>
+  <tbody>
     <tr><td>학기 중</td><td>월 1회 확인(앱 + 사람). 연락 끊김·임금·집·학업 같은 신호를 살피고, 취업 준비와 가족 정착 안내를 합니다</td><td>대학, 도·시군</td></tr>
     <tr><td>졸업·전환</td><td>구직·체류자격 전환 준비와 기한 알림. 서류 작성·제출은 등록 행정사에게 연결합니다</td><td>도·대학의 취업 지원</td></tr>
   </tbody>
@@ -229,28 +226,35 @@ ul.dots > li{ break-inside:avoid; page-break-inside:avoid; }
 
 <h2><span class="n">3</span>프로그램별 운영 방식</h2>
 <ul class="dots">
-  <li><b>첫 응답과 연결</b> — 한국 전담 매니저 1명과 AI 다국어 1차 응답(24시간)이 함께 맡습니다. 사람은 평일 24시간 안에 답하고, 위험 신호는 AI가 판단하지 않고 사람이 확인합니다. 비자·행정·법률 상담이 필요한 일은 「외국인 유학생 통합지원체계」·시군 외국인지원센터 같은 기존 창구로 바로 잇습니다.</li>
+  <li><b>첫 응답과 연결</b> — 사람이 붙는 동행 참여자(30~50명)는 전담 매니저 1명과 AI 다국어 1차 응답(24시간)이 함께 맡습니다. 앱만 쓰는 광역형 학생(최대 200명)은 AI가 먼저 답하고, 사람이 필요한 일은 매니저가 기존 창구를 안내하는 데까지 합니다. 사람의 응답 시간 약속은 사람이 붙는 동행 참여자에게 적용합니다. 사람은 평일 24시간 안에 답하고, 위험 신호는 AI가 판단하지 않고 사람이 확인합니다. 비자·행정·법률 상담이 필요한 일은 「외국인 유학생 통합지원체계」·시군 외국인지원센터 같은 기존 창구로 바로 잇습니다.</li>
   <li><b>할 일·기한 알림</b> — 외국인등록·건강보험료 납부·체류 기간 같은 할 일과 기한을 앱으로 알리고, 끝났는지는 본인이 표시합니다.</li>
-  <li><b>한국어·사회통합 동행</b> — 온라인 TOPIK 준비(SYNK WORLD)로 진도를 돕고, 사회통합프로그램 등록을 안내해 도내 운영기관에 연결합니다.</li>
+  <li><b>한국어·사회통합 동행</b> — 온라인 TOPIK 준비(SYNK의 한국어 학습 앱)로 진도를 돕고, 사회통합프로그램 등록을 안내해 도내 운영기관에 연결합니다.</li>
   <li><b>취업 준비</b> — 이력서 점검과 면접 연습을 하고, 도·대학의 인턴십·현장실습 참여를 돕습니다. 직접 알선은 하지 않습니다.</li>
   <li><b>가족 정착 안내</b> — 보육·학교 진학 절차를 안내해 교육지원청·가족센터에 연결하고, 배우자의 한국어·취업 준비를 안내합니다.</li>
   <li><b>함께하는 자리</b> — 유학생과 한국인 학생·주민이 한 팀으로 섞여 뛰는 시즌 리그(풋살 등, 격주)와 요리·언어 교환 모임입니다.
     <ul class="sub">
       <li>순위표와 시즌 우승을 두고, 팀은 시즌마다 다시 섞습니다. 대학 동아리·동네 동호회와 함께 열어 한국인도 자기 모임으로 옵니다.</li>
-      <li>세계인 축제·축구대회 같은 큰 행사 사이를 잇는 정기 모임이라, 격식 있는 순서 없이 바로 경기와 식사로 시작합니다. 모임 뒤 식사에는 술을 두지 않습니다.</li>
+      <li>세계인 축제·축구대회 같은 큰 행사 사이를 잇는 정기 모임이라, 격식 있는 순서 없이 바로 경기와 식사로 시작합니다. 모임 뒤 식사는 술 없이 합니다 — 학생과 주민이 부담 없이 오고, 생활 이야기를 나누기 쉽게.</li>
       <li>먼저 자리 잡은 선배 유학생(또래 리더 — 가능하면 같은 나라 출신)이 생활 고민을 듣고, 필요하면 매니저와 전문 상담 기관에 연결합니다. 또래 리더는 비밀 유지 서약을 합니다.</li>
       <li>성과는 참석 인원이 아니라 다시 온 비율과 한국인 참여 비율로 잽니다.</li>
     </ul>
   </li>
 </ul>
 
-<h2 class="np"><span class="n">4</span>앱 화면 시안 — 학생과 매니저가 보는 화면</h2>
+<h2><span class="n">4</span>밤·주말 위기 대응 — 생명·안전이 걸린 일</h2>
+<ul class="dots">
+  <li><b>바로 거는 번호</b> — 앱에서 언제든 112·119와 자살예방 상담 109(24시간, 한국어)로 바로 걸 수 있게 두고, 외국인종합안내센터 1345(평일 09~22시, 여러 언어는 18시까지)는 낮 상담으로 잇습니다. 밤·주말에 한국어가 서툰 학생의 창구는 비상 연락 당번입니다.</li>
+  <li><b>AI와 또래 리더는 넘기기만</b> — 정해 둔 위험 표현이 보이면 AI는 가리지 않고 모두 긴급 번호를 먼저 알린 뒤 비상 연락 당번에게 넘깁니다. 위험한지는 사람이 판단하고, 당번 편성은 시범 전에 확정합니다. 또래 리더도 생명·안전이 걸린 일은 비밀 유지의 예외로 곧바로 매니저에게 넘깁니다.</li>
+  <li><b>기관 연계</b> — 생명·안전이 급할 때는 112·119와 대학 담당 부서에 먼저 알리고 본인에게 뒤에 설명합니다. 시·군 정신건강복지센터 같은 전문 기관과 연계·감독을 협의합니다(협의 예정).</li>
+</ul>
+
+<h2 class="np"><span class="n">5</span>앱 화면 시안 — 학생과 매니저가 보는 화면</h2>
 <p class="note">참여 학생과 매니저가 쓰는 앱의 화면 시안입니다. 화면 속 이름·숫자·일정은 예시이며, 실제 화면은 시범 전에 참여 학생과 함께 다듬습니다.</p>
 <div class="apps">
   <figure>
     <div class="ph"><div class="scr" role="img" aria-label="할 일 화면 시안">
       <div class="sb"><span>08:30</span><span class="ic"><svg width="18" height="12" viewBox="0 0 18 12" fill="#FAFAF9"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg><svg width="27" height="13" viewBox="0 0 27 13"><rect x=".6" y=".6" width="22.8" height="11.8" rx="3.4" fill="none" stroke="rgba(250,250,249,.5)" stroke-width="1.2"/><rect x="2.5" y="2.5" width="15" height="8" rx="1.8" fill="#FAFAF9"/><rect x="24.6" y="4.4" width="1.8" height="4.2" rx=".9" fill="rgba(250,250,249,.5)"/></svg></span></div>
-      <div class="ab"><span class="brand">PATH</span><span class="sep"></span><span class="t">정착 동행</span><span class="lang">한국어 · Монгол</span></div>
+      <div class="ab"><span class="brand">PATH</span><span class="sep"></span><span class="t">정착 동행</span><span class="lang">한국어 · Tiếng Việt</span></div>
       <div class="pos"><span class="lab">DAY 07 / 30</span><img class="cut" src="그림/할일.webp" alt=""><span class="word">첫 30일</span></div>
       <div class="bd">
         <div class="dash"><div><b>2</b><span>끝남</span></div><div><b>2</b><span>오늘</span></div><div><b>23</b><span>남은 날</span></div></div>
@@ -277,12 +281,12 @@ ul.dots > li{ break-inside:avoid; page-break-inside:avoid; }
   <figure>
     <div class="ph"><div class="scr" role="img" aria-label="상담 화면 시안">
       <div class="sb"><span>19:42</span><span class="ic"><svg width="18" height="12" viewBox="0 0 18 12" fill="#FAFAF9"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg><svg width="27" height="13" viewBox="0 0 27 13"><rect x=".6" y=".6" width="22.8" height="11.8" rx="3.4" fill="none" stroke="rgba(250,250,249,.5)" stroke-width="1.2"/><rect x="2.5" y="2.5" width="12" height="8" rx="1.8" fill="#FAFAF9"/><rect x="24.6" y="4.4" width="1.8" height="4.2" rx=".9" fill="rgba(250,250,249,.5)"/></svg></span></div>
-      <div class="ab"><span class="back"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg></span><span class="brand">PATH</span><span class="sep"></span><span class="t">상담</span><span class="lang">한국어 · Монгол</span></div>
+      <div class="ab"><span class="back"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg></span><span class="brand">PATH</span><span class="sep"></span><span class="t">상담</span><span class="lang">한국어 · Tiếng Việt</span></div>
       <div class="pos band"><span class="lab">AI + MANAGER</span><img class="cut" src="그림/상담.webp" alt=""><span class="word">상담</span></div>
       <div class="chat">
         <div class="note-in">AI가 먼저 답하고, 확인이 필요한 일은 매니저가 이어받아요</div>
         <div class="msg me">토요일에 식당 아르바이트를 해도 돼요?</div>
-        <div class="msg in"><div class="who">AI · 바로 답</div>시간제 취업은 허가를 먼저 받아야 해요. 일할 수 있는 시간은 학생마다 달라서 매니저가 확인해 드릴게요.<br><span class="more">몽골어로 보기</span></div>
+        <div class="msg in"><div class="who">AI · 바로 답</div>시간제 취업은 허가를 먼저 받아야 해요. 일할 수 있는 시간은 학생마다 달라서 매니저가 확인해 드릴게요.<br><span class="more">베트남어로 보기</span></div>
         <div class="sys">매니저에게 넘겼어요 · 평일 24시간 안에 답해요</div>
         <div class="msg in"><div class="who">매니저</div>통합지원체계 상담 창구로 연결해 드릴게요. 월요일 오후 2시 괜찮아요?</div>
         <div class="quick"><span class="pill">좋아요</span><span class="pill line">다른 시간</span></div>
@@ -297,7 +301,7 @@ ul.dots > li{ break-inside:avoid; page-break-inside:avoid; }
   <figure>
     <div class="ph"><div class="scr" role="img" aria-label="모임 화면 시안">
       <div class="sb"><span>12:10</span><span class="ic"><svg width="18" height="12" viewBox="0 0 18 12" fill="#FAFAF9"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg><svg width="27" height="13" viewBox="0 0 27 13"><rect x=".6" y=".6" width="22.8" height="11.8" rx="3.4" fill="none" stroke="rgba(250,250,249,.5)" stroke-width="1.2"/><rect x="2.5" y="2.5" width="17" height="8" rx="1.8" fill="#FAFAF9"/><rect x="24.6" y="4.4" width="1.8" height="4.2" rx=".9" fill="rgba(250,250,249,.5)"/></svg></span></div>
-      <div class="ab"><span class="brand">PATH</span><span class="sep"></span><span class="t">함께하는 자리</span><span class="lang">한국어 · Монгол</span></div>
+      <div class="ab"><span class="brand">PATH</span><span class="sep"></span><span class="t">함께하는 자리</span><span class="lang">한국어 · Tiếng Việt</span></div>
       <div class="pos"><span class="lab">SEASON 1 · WEEK 03</span><img class="cut" src="그림/모임.webp" alt=""><span class="word">풋살</span><span class="chip">참석 12명</span></div>
       <div class="bd">
         <div class="game">
@@ -353,12 +357,12 @@ ul.dots > li{ break-inside:avoid; page-break-inside:avoid; }
   <figcaption><b>④ 매니저 화면</b> — 반일 매니저 한 사람이 30~50명을 맡을 수 있게, 답이 끊긴 사람·넘어온 상담·다가온 기한부터 보여 줍니다. 위험 신호는 사람이 확인하고, 도·대학에는 개인을 알아볼 수 없는 숫자만 갑니다.</figcaption>
 </figure>
 
-<h2 class="np"><span class="n">5</span>한 학생의 첫 30일 — 가상 사례</h2>
+<h2 class="np"><span class="n">6</span>한 학생의 첫 30일 — 가상 사례</h2>
 <p class="note">실제 인물이 아니라, 정착 동행이 어떻게 돌아가는지 보이려고 만든 예시입니다.</p>
 <table class="case">
   <tbody>
     <tr><td>입국 2주 전</td><td>참여에 동의하면 앱에 할 일 목록이 생기고(외국인등록 예약, 숙소 계약서 확인), 매니저가 같은 학교 선배인 또래 리더를 대화방에서 소개합니다.</td></tr>
-    <tr><td>1일</td><td>숙소에 들어가 쉬운 한국어 오리엔테이션을 받습니다 — 생활 규칙, 긴급 연락, 「택배만 받아 주면 큰돈」 같은 아르바이트 주의.</td></tr>
+    <tr><td>1일</td><td>숙소에 들어가 쉬운 한국어 오리엔테이션을 받습니다 — 생활 규칙, 긴급 연락, 시간제 취업 규칙과 위험한 아르바이트 주의.</td></tr>
     <tr><td>7일</td><td>외국인등록 신청과 계좌 개설(여권만으로 열어 주는 은행을 미리 확인). 한국어가 서툴면 매니저가 함께 갑니다.</td></tr>
     <tr><td>14일</td><td>첫 함께하는 자리 — 한국인 학생과 같은 팀으로 풋살을 하고 같이 저녁을 먹습니다. 「아르바이트를 구하고 싶다」는 말에 또래 리더가 시간제 취업 규칙을 알려 주고, 확인이 필요한 부분은 매니저가 통합지원체계 상담으로 잇습니다.</td></tr>
     <tr><td>30일</td><td>할 일 확인에서 건강보험료 자동이체 신청이 빠진 것을 찾아 그 주에 마칩니다(유학생은 외국인등록과 함께 건강보험에 자동 가입되지만, 보험료가 밀리면 체류 기간 연장에 불이익이 있습니다). 「첫 30일 필수 행정 완료」로 집계됩니다.</td></tr>
@@ -366,7 +370,7 @@ ul.dots > li{ break-inside:avoid; page-break-inside:avoid; }
   </tbody>
 </table>
 
-<h2><span class="n">6</span>분기 정착 지표 — 정의와 처음 목표</h2>
+<h2><span class="n">7</span>분기 정착 지표 — 정의와 처음 목표</h2>
 <table class="kpi">
   <thead><tr><th>지표</th><th>정의</th><th>자료</th><th>처음 목표(가설)</th></tr></thead>
   <tbody>
@@ -379,9 +383,10 @@ ul.dots > li{ break-inside:avoid; page-break-inside:avoid; }
     <tr><td>지역 정주 의향</td><td>졸업·전환 예정자 가운데 「전북에 남겠다」고 답한 비율</td><td>학기 말 익명 설문</td><td>시범 처음보다 오르게</td></tr>
   </tbody>
 </table>
-<p class="note">모든 지표는 개인을 알아볼 수 없는 집계로만 드립니다. 목표는 시범에서 다시 정하는 가설입니다. 시범의 실측 지표는 도가 법무부 성과지표에 의견을 낼 때 쓸 수 있습니다.</p>
+<p class="note">모든 지표는 개인을 알아볼 수 없는 집계로만 드립니다. 목표는 시범에서 다시 정하는 가설입니다.</p>
 
-<h2 class="np"><span class="n">7</span>효과를 어떻게 보이나 — 비교군과 기준선</h2>
+
+<h2 class="np"><span class="n">8</span>효과를 어떻게 보이나 — 비교군과 기준선</h2>
 <table class="when">
   <tbody>
     <tr><td>무엇과 견주나</td><td>같은 대학에 같은 해에 들어온 유학생 가운데 참여하지 않은 학생(비교군)입니다. 개인 자료는 받지 않고, 대학이 이미 관리하는 숫자를 참여·비참여로 나눈 집계만 받습니다. 참여 안내와 접수는 대학과 함께 하므로 대학은 참여자를 알고, 저희가 대학에 이름 명단을 드리는 일은 없습니다</td></tr>
@@ -393,26 +398,19 @@ ul.dots > li{ break-inside:avoid; page-break-inside:avoid; }
 </table>
 <p class="note">참고 숫자 출처 — 유학생 비자 불법체류 비율: 법무부 통계를 인용한 보도(한국경제, 2026-01-27). 인증제 기본요건: 교육부 교육국제화역량 인증제 4주기 기준.</p>
 
-<h2><span class="n">8</span>왜 이렇게 짜나 — 근거</h2>
+<h2><span class="n">9</span>왜 이렇게 짜나 — 근거</h2>
 <ul class="dots">
-  <li><b>같은 처지의 선배가 듣는다</b> — 같은 처지의 또래가 짧은 훈련을 받고 전하는 상담은 무작위 대조 시험에서 효과가 확인됐습니다(네덜란드의 시리아 난민, WHO 「PM+」 — 3개월 뒤 우울·불안 감소). 그래서 또래 리더를 두고, 정식 상담은 훈련과 전문가 감독을 갖춘 뒤에 시작합니다.</li>
+  <li><b>같은 처지의 선배가 듣는다</b> — 같은 처지의 또래가 짧은 훈련을 받고 전하는 상담은 무작위 대조 시험에서 효과가 확인됐습니다(WHO 「PM+」, 네덜란드에 정착한 이주민 대상 — 3개월 뒤 우울·불안 감소). 그래서 또래 리더를 두고, 정식 상담은 훈련과 전문가 감독을 갖춘 뒤에 시작합니다.</li>
   <li><b>한 팀으로 섞는다</b> — 같은 팀으로 섞여 뛰면 다른 집단과의 친구가 늘었고, 상대 팀으로만 만나면 오히려 서로 어울림이 줄었습니다(인도 크리켓 리그, 무작위 배정 현장 실험). 그래서 나라별 대항전이 아니라 한국인과 한 팀으로 뜁니다.</li>
   <li><b>모임에 생활 이야기를 붙인다</b> — 운동만 하는 프로그램은 술·담배 같은 위험 행동을 막는 효과가 거의 없었고, 생활 기술(거절·스트레스 다루기)을 함께 다룬 쪽에서 작지만 효과가 났습니다(스포츠 예방 프로그램 25개 연구 고찰). 그래서 경기 뒤 술 없는 식사 자리에서 또래 리더가 생활 고민을 듣고 필요한 정보를 나눕니다.</li>
   <li><b>안내보다 확인</b> — 해외 정착 정책의 평가에서는 지원이 있어도 실제로 닿지 않은 것이 문제로 드러났습니다. 캐나다 대서양 이민 프로그램은 이용자 상당수가 무료 정착 서비스가 있는 줄 몰랐고, 네덜란드 새 통합법은 개인별 계획이 서기까지 반년 넘게 걸렸고 완료율도 옛 제도보다 낮았습니다(각 정부 평가). 그래서 30일 안에 할 일을 끝냈는지 한 사람씩 확인합니다.</li>
 </ul>
 
-<h2><span class="n">9</span>밤·주말 위기 대응 — 생명·안전이 걸린 일</h2>
-<ul class="dots">
-  <li><b>바로 거는 번호</b> — 앱에서 언제든 112·119와 자살예방 상담 109(24시간, 한국어)로 바로 걸 수 있게 두고, 외국인종합안내센터 1345(평일 09~22시, 여러 언어는 18시까지)는 낮 상담으로 잇습니다. 밤·주말에 한국어가 서툰 학생의 창구는 비상 연락 당번입니다.</li>
-  <li><b>AI와 또래 리더는 넘기기만</b> — 정해 둔 위험 표현이 보이면 AI는 가리지 않고 모두 긴급 번호를 먼저 알린 뒤 비상 연락 당번에게 넘깁니다. 위험한지는 사람이 판단하고, 당번 편성은 시범 전에 확정합니다. 또래 리더도 생명·안전이 걸린 일은 비밀 유지의 예외로 곧바로 매니저에게 넘깁니다.</li>
-  <li><b>기관 연계</b> — 생명·안전이 급할 때는 112·119와 대학 담당 부서에 먼저 알리고 본인에게 뒤에 설명합니다. 시·군 정신건강복지센터 같은 전문 기관과 연계·감독을 협의합니다(협의 예정).</li>
-</ul>
-
 <h2><span class="n">10</span>개인정보 — 어떻게 다루나</h2>
 <ul class="dots">
   <li><b>참여</b> — 본인 동의로만 합니다. 참여하지 않아도 대학·도의 다른 지원에 불이익이 없고, 언제든 그만둘 수 있습니다.</li>
-  <li><b>받는 것</b> — 이름·연락처·체류자격·학교(학과)·필수 행정 진행 상황까지입니다. 외국인등록번호·여권번호는 받지 않습니다.</li>
-  <li><b>보관과 접근</b> — 기록 보관은 한국 서버에 둡니다. AI 다국어 1차 응답에는 이름·연락처 같은 식별 정보를 넣지 않고, 처리 위탁 사항은 참여 동의서에 밝힙니다. 몽골어 원격 상담을 시작할 때는 본인 동의를 받은 뒤 열람만 합니다. 담당 매니저만 보고, 누가 봤는지 기록을 남깁니다.</li>
+  <li><b>받는 것</b> — 이름·연락처·체류자격·학교(학과)·필수 행정 진행 상황까지입니다. 외국인등록번호·여권번호는 받지 않습니다. 앱만 쓰는 학생도 같은 동의로 쓰고, 받는 정보는 이 범위 안입니다.</li>
+  <li><b>보관과 접근</b> — 기록 보관은 한국 서버에 둡니다. AI 다국어 1차 응답에는 이름·연락처 같은 식별 정보를 넣지 않고, 처리 위탁 사항은 참여 동의서에 밝힙니다. 해외에서 원격 상담을 더하게 되면 본인 동의를 받은 뒤 열람만 합니다. 담당 매니저만 보고, 누가 봤는지 기록을 남깁니다.</li>
   <li><b>도·대학에 드리는 것</b> — 개인을 알아볼 수 없는 집계만입니다. 예외는 둘입니다 — 오래 연락이 끊겨 대학의 법정 신고 기한이 걸릴 때 이름과 마지막 연락일, 생명·안전이 급할 때 112·119와 대학 담당 부서에 필요한 만큼 먼저 알리고 본인에게 뒤에 설명합니다.</li>
   <li><b>상담 내용</b> — 건강·가족·고민은 단속 자료로 쓰지 않습니다. 대학·고용주의 법정 신고는 그 기관이 하고, 저희는 기한을 놓치지 않게 알리되 신고 전에 본인에게 먼저 연락합니다.</li>
   <li><b>지우기</b> — 시범이 끝나고 1년 뒤, 또는 본인이 요청할 때 지웁니다.</li>
@@ -422,11 +420,14 @@ ul.dots > li{ break-inside:avoid; page-break-inside:avoid; }
 <table class="when">
   <tbody>
     <tr><td>2026년 10월 말~11월</td><td>도와 실무 협의, 참여 대학·학과 협의 시작</td></tr>
-    <tr><td>2027년 1~2월</td><td>SYNK 법인 설립(1월, 전주) — 협약·채용은 법인 명의로. 오리엔테이션 자료(쉬운 한국어·몽골어)와 참여 동의서 확정, 앱 준비(2월 공개 목표), 전담 매니저 채용(3월 근무 시작)</td></tr>
-    <tr><td>2027년 3~8월</td><td>시범 운영(30~50명), 6월 말 1차 분기 지표</td></tr>
+    <tr><td>2027년 1~2월</td><td>SYNK 법인 설립(1월, 전주) — 협약·채용은 법인 명의로. 오리엔테이션 자료(쉬운 한국어와 참여자가 많은 나라 말)와 참여 동의서 확정(참여 대학의 국적에 맞춰 번역), 앱 준비(2월 공개 목표), 전담 매니저 채용(3월 근무 시작)</td></tr>
+    <tr><td>2027년 3~8월</td><td>시범 운영 — 사람이 붙는 동행 30~50명, 앱 알림·AI 1차 응답은 원하는 광역형 학생 최대 200명(앱 공개 뒤). 3~6월 학기 중에 집중하고, 7~8월 방학에는 남는 학생 중심으로 월 1~2회 모임과 앱 확인. 6월 말 1차 분기 지표</td></tr>
     <tr><td>2027년 9월</td><td>1학기 결과 보고서, 2028년 운영 협의</td></tr>
-    <tr><td>인력</td><td>한국 전담 매니저 1명(반일 근무 — 한국에서 자리 잡은 유학 졸업생, 한국어·몽골어), 또래 리더 2명(참여자가 많은 나라 출신 선배 유학생), AI 다국어 1차 응답</td></tr>
-    <tr><td>시범 비용</td><td>약 1,500만 원 — SYNK가 부담합니다(전담 매니저 인건비, 또래 리더 활동비, 모임 식사·상해보험·용품, 동행 교통·안내 자료)</td></tr>
+    <tr><td>분기 보고</td><td>6월 말(1차)과 9월 말(결과)에 지표마다 참여자 실측·비교군(대학 집계)·처음 목표·다음 분기에 할 일을 적어 두 쪽 안에 드립니다. 도가 법무부 이행현황 점검 자료에 그대로 붙이시고, 성과지표에 의견을 내실 때 쓰실 수 있습니다</td></tr>
+    <tr><td>인력</td><td>전담 매니저 1명(반일 근무, 전주 현장 책임 — 한국에서 자리 잡은 유학 졸업생으로, 쉬운 한국어로 상담하고 참여자가 많은 나라 말을 하면 우대), 또래 리더 2명(참여자가 많은 나라 출신 선배 유학생), 대표(운영 총괄과 주 1회 점검), AI 다국어 1차 응답. 비상 연락 당번 편성은 시범 전에 확정합니다</td></tr>
+    <tr><td>시범 비용</td><td>약 1,500만 원 — SYNK가 부담합니다. 전담 매니저 인건비 약 860만 원(반일 6개월, 사업주 보험료 포함), 또래 리더 활동비 약 180만 원(2명, 6개월), 모임 식사·상해보험·용품 약 350만 원(격주 13회 안팎), 동행 교통·안내 자료 약 110만 원</td></tr>
+    <tr><td>일정이 밀리면</td><td>앱이 2월에 나오지 않으면 앱 없이 시작하고, 상담 기록은 한국 서버의 표에만 남깁니다. 1월 말까지 법인이 서지 않으면 시범을 9월 학기로 옮기고, 그때 도에 서면으로 알립니다. 시범을 열 수 있는지는 1월 말을 기준으로 서면으로 알려 드립니다. 참여자가 30명에 못 미치면 한 대학·한 학과로 줄여 엽니다</td></tr>
+    <tr><td>2028년</td><td>9월 결과 보고를 보고 도가 정하십니다 — 도내 비영리·공공 기관의 운영 파트너로, 또는 도·대학의 정식 절차(공모·용역·협약)로</td></tr>
     <tr><td>도·대학에 부탁드리는 것</td><td>비용은 없습니다. 참여 대학·학과 연결과 모임 장소(대학·시군 체육 시설) 협조를 부탁드립니다</td></tr>
   </tbody>
 </table>
