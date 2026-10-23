@@ -1,7 +1,7 @@
 # 현장 노트 · LoRA 학습·검증
 
 > 판: `C:\SYNK-LoRA` · AI-Toolkit 0.13.26(화면 localhost:8675) · ComfyUI 0.41.0 · Z-Image Turbo + training adapter v2(qfloat8, low_vram) · Z-Image Turbo Fun ControlNet Union 2.1 lite(자세 안내) · MediaPipe 1.1.1(측정 도구) · RTX 5090 Laptop 24GB
-> 마지막 확인: 2026-10-23(유호 v3 이어 학습 1,800스텝 · 자세 안내로 전신 그리기)
+> 마지막 확인: 2026-10-23(유호 v3 이어 학습 1,800스텝 · 자세 안내로 전신 그리기 · 밤 한결 학습 서버 다시 띄우기)
 > 쓴 AI: Claude Code(Claude Opus 5.5)
 
 실행 방법은 `C:\SYNK-LoRA\먼저 읽기.md`, 무엇을 학습할지는 [AI 광고영상 제작 규칙](../마케팅/제작양식/AI광고영상_제작규칙.md)과 모델 명세서(예: [하린](../마케팅/PULSE_AI모델_캐스팅_20260930/명세서/F02_하린.md))를 본다. 틀은 [README](README.md)를 따른다.
@@ -50,6 +50,13 @@
 - 고침: `AI-Toolkit_실행.cmd`로 화면을 띄운 뒤, 남은 pid가 정말 없는지 보고 `/api/jobs/<id>/mark_stopped` → `/api/jobs/<id>/start` → `/api/queue/0/start`. 학습은 마지막 저장점(250스텝마다)과 `optimizer.pt`에서 이어 간다(서진은 1,250부터, 잃은 것 71스텝). 학습 사슬(`학습_사슬.py <지금 작업 이름>`)도 다시 띄운다.
 - 다시 확인: `outputs/<이름>/log.txt` 끝의 진행 막대가 마지막 저장점 바로 뒤 숫자(1252/3300 등)에서 다시 시작하는지.
 - 10-19 19:10 재부팅(태준 1,286스텝)도 같은 순서로 되살렸다: `AI-Toolkit_실행.cmd`를 최소화 창으로 띄우고(17초 뒤 응답), run.py가 없는 것을 본 뒤 mark_stopped → start → queue start, 사슬은 `학습_사슬.py m02_taejun_v2`(기록 `학습_사슬.log.new3`). 다시 켜진 학습은 처음 몇 분 동안 모델을 불러 양자화하느라 CPU가 100%이고 GPU는 1%다 — 이때 크롬·Gemini 화면도 같이 느려진다. 5분쯤 뒤 GPU 99%, 스텝당 2.5초로 돌아왔다.
+
+### 학습을 넣자마자 「Job process did not report a pid」로 error — 다른 세션이 띄운 AI-Toolkit 서버를 다시 띄운다 (2026-10-23 Claude)
+- 증상: 10-23 21:47 한결(m06_hangyeol_v2) 학습을 `train.py … launch`로 넣자 바로 `error · Error launching job: Job process did not report a pid`(0스텝, 로그 한 줄). mark_stopped → start → queue start로 다시 넣어도 같았다. 같은 서버(15:36에 다른 세션이 띄움)가 15:40 무렵 유호 v3 이어 학습은 잘 띄웠다.
+- 원인: 서버의 작업자가 학습을 띄우는 중계(`node -e <relay>` → `pythonw run.py`)가 `.job_pid`를 남기지 못하고 끝났다(`ui/cron/actions/startJob.ts` readRelayPid). 같은 중계 스크립트와 venv `pythonw.exe`를 손으로 돌리면 pid를 정상으로 썼다 — 그 서버 프로세스의 실행 환경 쪽 문제로 보인다(정확한 까닭은 못 찾음).
+- 고침: 대기열이 비고 running 작업이 없는 것을 본 뒤 서버 트리(concurrently)를 끄고 `C:\SYNK-LoRA\AI-Toolkit_실행.cmd`를 최소화 창으로 다시 띄웠다(6초 뒤 응답) → mark_stopped → start → queue start로 바로 running이 됐다. 다른 세션이 같은 서버로 학습 중이면 끄지 않는다.
+- 함께: `학습_사슬.py`는 error도 「끝남」으로 보고 바로 끝난다(21:48 「보류가 비어 끝」) — 사슬은 학습이 running이 된 것을 본 뒤에 띄운다(`casting\wave2_20261023\학습_다시넣기.sh`). 학습을 멈출 때 `/api/jobs/<id>/stop` 뒤에도 모델을 올리던 run.py가 몇십 초 VRAM을 쥐다가 「Job stopped」로 내려갔다 — 다른 일에 GPU를 넘기기 전에 run.py가 없어졌는지 본다.
+- 다시 확인: 작업 상태가 running이고 `outputs/<이름>/log.txt`에 진행 막대가 찍히는지.
 
 ### 트리거 없는 「a young Korean woman」에도 학습한 얼굴이 샌다
 - 증상: 학습 중 샘플에서 트리거 없이 쓴 「a young Korean woman …」도 250스텝부터 앞머리·갈색 단발로 바뀌었다(10-17 하린 v2).
