@@ -313,9 +313,8 @@ function heldNow(state) {
 function sleepersFor(state, command, p, nowMs) {
   const v = state.village;
   if (!v?.sleeps) return [];
-  const pictureMenu = (command.type === 'BAZAAR_START' ? p.kind : state.bazaar?.episode?.kind) === 'pictureMenu';
   const needs = command.type === 'DAY_START' ? DAY_MEMBERS[p.kind] || [] : command.type === 'DAY_JOB_START' ? ['workshop-owner']
-    : ['BAZAAR_START', 'BAZAAR_RESUME'].includes(command.type) ? ['cafe-owner', ...(pictureMenu ? ['workshop-owner'] : [])]
+    : command.type === 'BAZAAR_START' ? ['cafe-owner', ...(p.kind === 'pictureMenu' ? ['workshop-owner'] : [])]
       : command.type === 'LIFE_OPEN' ? ['cafe-owner'] : [];
   return needs.filter(npc => !upFor(v, npc, nowMs));
 }

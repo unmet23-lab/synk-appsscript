@@ -358,6 +358,8 @@ export function viewBazaar(state, input) {
         else for (const kind of kinds) if (!state.history.some(h => h.kind === kind) && !(kind === 'pictureMenu' && ctx.workshopAsleep))
           actions.push(action('BAZAAR_START', kind === 'requests' ? '두 손님의 요청 듣기' : '그림 메뉴 가판 함께 열기 · 음식 없음', { kind }));
         if (e?.stage === 'result') actions.push(action('BAZAAR_RESUME', '방금 마친 모습 다시 보기'));
+        // Only the picture-menu stall is left and its workshop owner sleeps: say so instead of offering it.
+        if (!actions.length && ctx.workshopAsleep) line = '공방 주인은 벌써 잠들었어요. 그림 메뉴 가판은 아침에 함께해요.';
       }
       if (ctx.cafeBusy) line = '찻집 주인은 지금 하던 일을 마치고 손님 맞이를 함께할 수 있어요.';
     }

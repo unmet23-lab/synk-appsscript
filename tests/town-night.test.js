@@ -263,3 +263,17 @@ test('W3 화면: 다른 곳에 있던 주민은 장면 자리로 걸어온 뒤 �
   }
   assert.ok(seen.has('walking') && seen.has('held'), [...seen].join());
 });
+
+test('밤 규칙: 가판 이어 하기는 시작이 아니다 — 공방 주인이 잠든 뒤엔 그림 메뉴 가판 시작만 막고, 준비 중인 공방 주인을 잠들었다고 하지 않는다(화면 검수 A1·A2)', async () => {
+  const f = await fixture(at(21, 29) + 45_000, { sleeps: true });
+  f.go('workshop'); f.send('DAY_JOB_START');
+  f.set(at(21, 30) + 5000); f.pulse();
+  assert.doesNotMatch(f.read().view.day.line, /잠들었어요/, '준비가 이어지는 동안');
+  const g = await fixture(at(21, 31), { sleeps: true });
+  g.go('cafe'); g.place(); play(g, 20); g.ack();
+  assert.throws(() => g.send('BAZAAR_START', { kind: 'pictureMenu' }), error => error.code === 'resident-asleep' && /공방 주인/.test(error.message));
+  g.send('BAZAAR_START', { kind: 'requests' });
+  g.send('BAZAAR_CLOSE');
+  g.send('BAZAAR_RESUME');
+  assert.equal(g.read().state.bazaar.episode.open, true, '시작한 가판은 이어 한다');
+});

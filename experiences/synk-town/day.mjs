@@ -600,10 +600,11 @@ export function viewDay(day, context) {
     // The place's own resident asleep, or sleep shutting every scene here, makes the line say so — not a
     // scene that is still open next to one that waits for the morning.
     const own = { cafe: 'cafe-owner', workshop: 'workshop-owner', greenhouse: 'researcher' }[loc];
-    if (own && ctx.village?.awake?.[own] === false) sleeping.add(own);
+    const ownAtWork = loc === 'workshop' && day.job?.status === 'preparing'; // a job begun before bedtime goes on
+    if (own && ctx.village?.awake?.[own] === false && !ownAtWork) sleeping.add(own);
     const begins = actions.some(a => a.type === 'DAY_START' || a.type === 'DAY_JOB_START');
     const asleep = ids.filter(n => sleeping.has(n)).map(n => RESIDENT_LABELS[n]);
-    if (asleep.length && (!begins || own && ctx.village?.awake?.[own] === false)) line = asleep.length === ids.length ? '주민들은 모두 잠들었어요. 아침에 다시 만나요.'
+    if (asleep.length && (!begins || own && ctx.village?.awake?.[own] === false && !ownAtWork)) line = asleep.length === ids.length ? '주민들은 모두 잠들었어요. 아침에 다시 만나요.'
       : `${asleep.length > 1 ? `${asleep.slice(0, -1).join(', ')}과 ${asleep.at(-1)}` : asleep[0]}은 벌써 잠들었어요. 아침에 다시 만나요.`;
   }
   if (day.walk?.enabled && nearbyPlace(day.walk) !== loc) { line = '마을을 걸으며 가까운 장소를 살펴보세요.'; actions.length = 0; }

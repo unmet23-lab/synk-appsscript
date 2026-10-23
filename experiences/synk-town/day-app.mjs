@@ -341,7 +341,9 @@ function villageRows(v) {
     if (row.live && !row.walking) for (let i = 0; i < 3 && placed.some(p => Math.hypot(p.x - row.x, p.z - row.z) < .35); i++) row.x += .55;
     placed.push(row);
   }
-  const signature = rows.map(r => `${r.id}:${r.held ? 'held' : r.asleep ? 'asleep' : `${r.archetype}:${r.walking}`}`).join('|');
+  // Every resident's plan state is in it — one the cafe's own scene draws (hidden) still turns the captions.
+  const signature = RESIDENT_IDS.map(id => { const row = rows.find(r => r.id === id), at = places[id];
+    return `${id}:${!row ? 'hidden' : row.held ? 'held' : row.asleep ? 'asleep' : 'live'}:${at ? `${at.archetype}:${at.walking}` : 'asleep'}`; }).join('|');
   return { t, rows, places, signature };
 }
 /** The cafe owner's line in the life panel: C1's own while it holds the owner, else the plan's now. */
@@ -358,8 +360,9 @@ function currentScene() {
   if (village) {
     scene.npcs = [...(scene.npcs || []).filter(n => !RESIDENT_IDS.includes(n.id)), ...village.rows.filter(r => !r.asleep)];
     if (snapshot.state.day?.job?.status !== 'preparing') scene.summary = caption(village.places);
-    // The cafe's own scene never draws an owner the plan has asleep (the night rule, §4-2 A).
-    scene.ownerAsleep = scene.village.sleeps === true && !village.places['cafe-owner'];
+    // The cafe's own scene never draws an owner the plan has asleep (the night rule, §4-2 A) — unless a guest's
+    // use or reaction begun before bedtime is playing: a scene begun goes on.
+    scene.ownerAsleep = scene.village.sleeps === true && !village.places['cafe-owner'] && !executionSample && !planSample;
     scene.villageSignature = village.signature; scene.ownerLine = ownerLine(village.places);
   }
   if (walking() && walkPoint) { scene.player = { ...walkPoint, heading: walkHeading, pose: walkMoving ? 'walking' : 'standing' }; scene.freeWalk = true; }
