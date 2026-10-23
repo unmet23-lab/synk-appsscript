@@ -43,7 +43,8 @@ const signatures = new Map();
 const RESIDENT_IDS = ['cafe-owner', 'workshop-owner', 'researcher'], BOUNDARY_GAP_MS = 20000;
 let clockOffset = null, villageLive = { ids: new Set(), signature: '' };
 let reading = false, bounding = false, lastBoundary = 0, dueReadAt = 0;
-// A WORLD page opened before the town learned pulse·boundary keeps an older host that answers only presence, and
+// A WORLD page opened before the town learned pulse·boundary keeps an older host that answers only presence — its
+// town client or its account bundle refuses the operation (either may still come from the 10-minute cache) — and
 // a PC app released before those routes says so by its code: this window then falls back to the old heartbeat
 // (a presence each second, the whole town each time).
 let legacyHost = false;
@@ -192,7 +193,7 @@ async function pulseNow() {
   let data;
   try { data = await request('pulse', flags()); }
   catch (error) {
-    if (error?.code === 'TOWN_PULSE_UNSUPPORTED' || /Unknown town operation/.test(error?.message || '')) { legacyHost = true; return pulseNow(); }
+    if (error?.code === 'TOWN_PULSE_UNSUPPORTED' || /Unknown town operation|Unsupported WORLD request/.test(error?.message || '')) { legacyHost = true; return pulseNow(); }
     throw error;
   }
   lastPulse = requestedAt;
