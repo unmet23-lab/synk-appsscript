@@ -5,7 +5,7 @@
 const fs = require('node:fs'), path = require('node:path'), os = require('node:os'), crypto = require('node:crypto');
 const { spawn, execFileSync } = require('node:child_process');
 const { Transform } = require('node:stream');
-const { acquireLock, parseRefs, remoteIdentity, replaceFile, PREFIX } = require('./GitHub백업.cjs');
+const { acquireLock, parseRefs, remoteIdentity, replaceFile, PREFIX } = require('./lib/backup-primitives.cjs');
 const OID = /^[0-9a-f]{40}$/;
 function gitReader(repo) {
   return (args, input) => {

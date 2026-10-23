@@ -10,6 +10,7 @@ on:
       - 'tests/_git밖.js'
       - 'tools/prism래칫.js'
       - 'tools/lib/sns-publisher.js'
+      - 'tools/lib/sns-adapters/*.cjs'
       - 'tools/lib/sns-dm.js'
       - 'tools/sns-자격.ps1'
       - '.github/workflows/windows-check.yml'
@@ -39,6 +40,7 @@ jobs:
             /tests/_git밖.js
             /tools/prism래칫.js
             /tools/lib/sns-publisher.js
+            /tools/lib/sns-adapters/*.cjs
             /tools/lib/sns-dm.js
             /tools/sns-자격.ps1
       - uses: actions/setup-node@v5

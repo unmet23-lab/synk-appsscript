@@ -595,6 +595,33 @@ def _auto_outcome(record: dict, snapshot: dict, parsed: dict, stop: threading.Ev
     return outcome
 
 
+def _claim_delivery(directory: Path) -> bool:
+    """Durable O_EXCL claim shared by both policies; uncertainty never clears it."""
+    try:
+        fd = os.open(directory / "delivery.claim", os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8") as claimed:
+            claimed.write(_now())
+            claimed.flush()
+            os.fsync(claimed.fileno())
+        return True
+    except FileExistsError:
+        return False
+
+
+def _send_delivery(record: dict, message: str, receipt: dict) -> bool:
+    """Send an already claimed/persisted attempt and record only confirmed success."""
+    try:
+        response = _send_native_message(record["route"], message)
+    except Exception:
+        response = {}
+    if isinstance(response, dict) and response.get("success") is True and response.get("message_id"):
+        receipt.update(status="sent", sent_at=_now(), message_id=str(response["message_id"]))
+    else:
+        receipt.update(status="unconfirmed", reason="send_result_not_confirmed; no automatic retry")
+    _write_json(_task_directory(record) / "delivery.json", receipt)
+    return receipt["status"] == "sent"
+
+
 def _deliver_auto_finished(ctx, record: dict, snapshot: dict, stop: threading.Event | None) -> bool:
     """Deterministic checks/integration, then at most one attention notification."""
     if stop is not None and stop.is_set():
@@ -644,27 +671,12 @@ def _deliver_auto_finished(ctx, record: dict, snapshot: dict, stop: threading.Ev
             return True
         if stop is not None and stop.is_set():
             return False
-        try:
-            fd = os.open(directory / "delivery.claim", os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
-            with os.fdopen(fd, "w", encoding="utf-8") as claimed:
-                claimed.write(_now())
-                claimed.flush()
-                os.fsync(claimed.fileno())
-        except FileExistsError:
+        if not _claim_delivery(directory):
             return False
         receipt.update(status="sending", attempted_at=_now(), reason_code=reason)
         _write_json(directory / "delivery.json", receipt)
-        try:
-            message = full_text if len(full_text) <= 3500 else full_text[:3400] + f"\n\nPC 결과: runtime/synk-tasks/{record['id']}/result.txt"
-            response = _send_native_message(record["route"], message)
-        except Exception:
-            response = {}
-        if isinstance(response, dict) and response.get("success") is True and response.get("message_id"):
-            receipt.update(status="sent", sent_at=_now(), message_id=str(response["message_id"]))
-        else:
-            receipt.update(status="unconfirmed", reason="send_result_not_confirmed; no automatic retry")
-        _write_json(directory / "delivery.json", receipt)
-        return receipt["status"] == "sent"
+        message = full_text if len(full_text) <= 3500 else full_text[:3400] + f"\n\nPC 결과: runtime/synk-tasks/{record['id']}/result.txt"
+        return _send_delivery(record, message, receipt)
 
 
 def _deliver_finished(ctx, record: dict, snapshot: dict, stop: threading.Event | None = None) -> bool:
@@ -675,41 +687,10 @@ def _deliver_finished(ctx, record: dict, snapshot: dict, stop: threading.Event |
         return False
     directory = _task_directory(record)
     snapshot = _durable_snapshot(record) or snapshot
-    try:
-        # Persisted O_EXCL also deduplicates workers across hot reload / restarts.
-        fd = os.open(directory / "delivery.claim", os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
-        with os.fdopen(fd, "w", encoding="utf-8") as claimed:
-            claimed.write(_now())
-    except FileExistsError:
+    if not _claim_delivery(directory):
         return False
     try:
-        raw = _durable_output(record)
-        if not raw:
-            try:
-                output = _dispatch(ctx, "process_manage", {"action": "log", "session_id": record["process_id"],
-                                   "limit": 2000}, record.get("hermes_session_id", ""))
-                raw = str(output.get("output") or "")
-            except Exception:
-                raw = ""
-        try:
-            with _checked_spool_path(directory / "native.stderr.log").open(encoding="utf-8", errors="replace") as source:
-                stderr = "".join(deque(source, maxlen=60))
-        except OSError:
-            stderr = ""
-        parsed = _native_result(record, raw, snapshot, stderr)
-        if record.get("engine") == "codex" and not parsed.get("native_session_id"):
-            try:
-                # The final answer lives in the tail; only the independent thread
-                # reference may need a small head lookup on a long execution.
-                head_text = _durable_output(record, head=True)
-                if not head_text:
-                    head = _dispatch(ctx, "process_manage", {"action": "log", "session_id": record["process_id"],
-                                     "offset": 0, "limit": 20}, record.get("hermes_session_id", ""))
-                    head_text = str(head.get("output") or "")
-                reference = _native_result(record, head_text, snapshot)
-                parsed["native_session_id"] = reference.get("native_session_id", "")
-            except Exception:
-                pass
+        parsed = _native_capture(ctx, record, snapshot)
         full_text = _result_text(record, parsed)
         _checked_spool_path(directory / "result.txt").write_text(full_text, encoding="utf-8", newline="\n")
         # This is a sanitized receipt, not an execution/resume instruction.
@@ -745,18 +726,7 @@ def _deliver_finished(ctx, record: dict, snapshot: dict, stop: threading.Event |
             receipt["reason"] = "plugin_unloaded_before_send; no automatic retry"
             _write_json(directory / "delivery.json", receipt)
             return False
-        try:
-            response = _send_native_message(record["route"], message)
-        except Exception:
-            response = {}
-        if isinstance(response, dict) and response.get("success") is True and response.get("message_id"):
-            receipt.update(status="sent", sent_at=_now(), message_id=str(response["message_id"]))
-        else:
-            # Timeout might mean Telegram accepted it. Keep the claim so a restart
-            # cannot emit a duplicate; /synk_tasks <ID> still exposes the saved result.
-            receipt.update(status="unconfirmed", reason="send_result_not_confirmed; no automatic retry")
-        _write_json(directory / "delivery.json", receipt)
-        return receipt["status"] == "sent"
+        return _send_delivery(record, message, receipt)
     except Exception:
         # Keep the claim after any side-effect uncertainty, with no raw error output.
         _write_json(directory / "delivery.json", {"version": 1, "mode": DELIVERY_MODE,

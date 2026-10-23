@@ -23,6 +23,7 @@
  */
 const path = require('path');
 const { spawnSync } = require('child_process');
+const { holdResult } = require('./ledger-publish-policy.cjs');
 
 const 뿌리 = path.resolve(__dirname, '..', '..');
 
@@ -46,10 +47,8 @@ function 운영사본인가(저장소) {
  * 또는 {결과:'건너뜀'|'미룸'|'실패', 이유}. 던지지 않는다.
  */
 async function 장부올리기(경로들, 메시지, { 저장소, 환경 = process.env } = {}) {
-  const 손잡이 = String(환경.SYNK_장부올리기 || '').trim();
-  if (손잡이 === '끔') return { 결과: '건너뜀', 이유: 'SYNK_장부올리기=끔' };
-  if (손잡이 === '나중') return { 결과: '미룸', 이유: '부른 묶음 실행기가 끝에 한 번 올린다' };
-  if (!저장소 && 환경.NODE_TEST_CONTEXT) return { 결과: '건너뜀', 이유: '시험 안' };
+  const 보류 = holdResult(환경, Boolean(저장소));
+  if (보류) return 보류;
   const 곳 = 저장소 || 뿌리;
   let 운영;
   try { 운영 = !공용작업본인가(곳) && 운영사본인가(곳); } catch (e) { return { 결과: '실패', 이유: `운영 사본인지 가리지 못했다 — ${e.message}` }; }

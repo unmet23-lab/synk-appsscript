@@ -13,7 +13,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
-const { replaceFile } = require('./GitHub백업.cjs');
+const { replaceFile } = require('./lib/backup-primitives.cjs');
 const SCHEMA = 1, SLOTS = 48, SLOT_MS = 30 * 60 * 1000, KEEP_DAYS = 3;
 const digits = value => typeof value === 'string' && /^\d{1,30}$/.test(value);
 const isSha = value => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
@@ -182,7 +182,7 @@ function open(file, { fingerprint, now = Date.now(), slots = SLOTS } = {}) {
       const savedAt = new Date(now).toISOString(), text = JSON.stringify({ schemaVersion: SCHEMA, policyFingerprint: fingerprint, savedAt, entries, memos });
       const temp = file + '.' + process.pid + '.tmp';
       fs.writeFileSync(temp, text);
-      // 백신·색인기가 여는 순간의 짧은 거절(EPERM·EACCES·EBUSY)은 GitHub백업.cjs의 replaceFile이 다시 한다.
+      // 백신·색인기가 여는 순간의 짧은 거절(EPERM·EACCES·EBUSY)은 lib/backup-primitives.cjs의 replaceFile이 다시 한다.
       replaceFile(temp, file);
       // 새 바탕을 쓴 뒤에 덧붙인 줄을 비운다. 그 사이 끊겨도 남은 줄은 바탕 시각이 달라 다음에 읽히지 않는다.
       try { fs.unlinkSync(journal); } catch (error) { if (error.code !== 'ENOENT') throw error; }

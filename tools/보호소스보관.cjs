@@ -4,7 +4,7 @@
 const fs = require('node:fs'), path = require('node:path'), crypto = require('node:crypto');
 const policy = require('./이어하기꾸러미.js');
 const { worktrees } = require('./onedrive-backup.cjs');
-const { acquireLock, replaceFile } = require('./GitHub백업.cjs');
+const { acquireLock, replaceFile } = require('./lib/backup-primitives.cjs');
 const { fileDigest, verifyDriveCoverage } = require('./Git보관묶음.cjs');
 const SHA = /^[0-9a-f]{64}$/;
 const folded = file => path.resolve(file).toLowerCase();

@@ -30,82 +30,24 @@
  *   --마스코트크기 0.32 --마스코트자리 중하 --마스코트바닥 2.5   층의 인형 크기(화면 폭 몫)·자리·발밑 여백(vh)
  *   --부스 1                              DJ 부스(09-08 · 기본 켬 · 층이 전자 결에서만 세운다) · 끄려면 0
  */
-const http = require('http');
-const fs = require('fs');
-const os = require('os');
 const path = require('path');
-const { spawn, execFileSync } = require('child_process');
 const 송출진척 = require('./송출진척.js');
 
-const 인자 = process.argv.slice(2);
-const 값 = (이름, 기본) => { const i = 인자.indexOf(이름); return i > -1 && 인자[i + 1] ? 인자[i + 1] : 기본; };
-const 있나 = (이름) => 인자.includes(이름);
+const 설정 = require('./송출설정.js');
+const 수명도구 = require('./송출수명.js');
 
-/* 🔴 path.resolve 로 «정규화»한다(09-07 실측 · 윈도) — 슬래시로 준 뿌리와 path.join 이 만든 역슬래시 경로가 startsWith 에서
-   안 맞아 모든 파일이 403 「밖」으로 떨어졌다(층이 통째로 빈 채 방송에 나갔다). 리눅스에선 같은 값이라 해가 없다. */
-const 지면뿌리 = path.resolve(값('--지면뿌리', path.resolve(__dirname, '..', '..')));
-const 팩폴더 = 값('--팩', '/opt/synk-radio/팩');
-const 층 = 값('--층', '마스코트,전광판');   // 09-07 · 무대만 팩으로 가면서 기본값이 뒤집혔다(옛 팩이면 --층 전광판)
-const 마스코트크기 = 값('--마스코트크기', '0.32');   // 옛 팩의 인형 폭 410/1280 (라디오배경굽기.js 지면())
-const 마스코트자리 = 값('--마스코트자리', '중하');
-const 마스코트바닥 = 값('--마스코트바닥', '2.5');   // vh · 앉는 선 0.885 에 발이 닿는 값(몽글 액자 기준)
-/* 🆕 09-08 DJ 부스 — 마스코트 앞의 조작대(유호 지시 09-08). 층에 `부스=1` 로 넘기면 층이 «전자 결에서만» 세운다
-   (마스코트.html 부스결 표). 끄려면 --부스 0. */
-const 부스 = 값('--부스', '1');
-
-/* 🆕 🔴 2026-09-08 «조율 파일» — 유닛 파일을 안 고치고 무게를 바꾼다.
-   ■ 왜 있나
-     서비스 유닛(`radio-live.service`)의 ExecStart 가 `--프레임 20 --뜨기 10` 을 «못 박아» 준다.
-     그 파일은 root 것이라 고치려면 sudo 가 필요한데, 이 저장소는 sudo 가 상시 금지다.
-     그래서 기계가 밀릴 때 무게를 못 낮추는 자리가 생겼다 — 09-08 밤에 실제로 그 자리에 걸렸다.
-   ■ 무엇을 하나
-     `<열쇠파일과 같은 폴더>/조율.json` 이 있으면 그 값이 **명령줄보다 앞선다**(그 파일은 synk 것이라 sudo 없이 쓴다).
-       { "프레임": 15, "뜨기": 6 }
-     없으면 아무 일도 안 일어난다. 못 읽거나 망가졌으면 한 줄 알리고 그냥 지나간다 — 방송이 먼저다.
-   ■ 왜 이 둘인가 (09-08 실측)
-     살아 있는 배경(무대가 정지 그림 → 60초 영상)으로 바뀌면서 ffmpeg 이 41.7% → **69.1%** 로 무거워졌다.
-     크로미움까지 더하면 코어 둘(200%) 중 131% 라, 30분쯤 버티다 유튜브가 굶어 연결을 끊는다.
-     · `뜨기`(층을 초당 몇 장 흘리나) — 크로미움이 실제로 그리는 것은 초당 4.5장뿐이라 10장은 **같은 장을 두 번 미는 낭비**다.
-       줄이면 크로미움의 PNG 만들기와 ffmpeg 의 PNG 풀기가 같이 준다. 눈에 보이는 손해는 거의 없다.
-     · `프레임`(내보내는 초당 장 수) — 줄이면 인코딩이 준다. 유호 지시 09-06 「프레임 좀 낮아도 좋으니 라이브로」의 그 자리다. */
-const 조율파일 = path.join(path.dirname(값('--열쇠', '/opt/synk-radio/송출/.env')), '조율.json');
-let 조율 = {};
-try {
-  if (fs.existsSync(조율파일)) 조율 = JSON.parse(fs.readFileSync(조율파일, 'utf8')) || {};
-} catch (e) { console.log(`[겹쳐송출] 조율 파일을 못 읽었다(그냥 간다): ${조율파일} — ${e.message}`); }
-const 조율수 = (이름, 기본) => {
-  const v = Number(조율[이름]);
-  return Number.isFinite(v) && v > 0 ? v : 기본;
-};
-const 프레임 = 조율수('프레임', Number(값('--프레임', '20')));
-const 뜨기 = 조율수('뜨기', Number(값('--뜨기', '10')));
-/* 🆕 09-08 «장면 따로 돌리기» — 셋이 다 있어야 켜진다(하나라도 없으면 옛 차림 그대로 곡 팩을 쓴다).
-     소리목록  = 곡 aac 들의 concat 목록      · 조율.json 의 「소리목록」 으로도 준다
-     무대목록  = 무대 되풀이 영상들의 concat 목록(한 무대가 <장면분>분어치)
-     장면분    = 한 무대가 서 있는 시간(분) — 결 신호를 이 시계로 던진다 */
-const 소리목록 = 조율['소리목록'] || 값('--소리목록', '');
-const 무대목록 = 조율['무대목록'] || 값('--무대목록', '');
-// 무손실 루프를 연속 인코딩하여 AAC를 매 바퀴 다시 시작할 때 생기는 패딩 틈을 없앤다.
-const 연속소리 = 조율['연속소리'] === true || 있나('--연속소리');
-const 장면분 = 조율수('장면분', Number(값('--장면분', '20')));
-const 장면차례 = String(조율['장면차례'] || 값('--장면차례', '추석보름달마당,전자네온물가,거울수면과문,반딧불노을들판'))
-  .split(',').map((s) => s.trim()).filter(Boolean);
-const 보존장면 = new Set(['추석보름달마당', '전자네온물가', '거울수면과문', '반딧불노을들판']);
-const 삭제장면 = 장면차례.filter((결) => !보존장면.has(결));
-if (삭제장면.length) throw new Error('삭제되었거나 모르는 장면: ' + 삭제장면.join(' · ') + ' — 장면차례를 보존 목록으로 명시해 주세요.');
-const 지면포트 = Number(값('--지면포트', '8765'));
-const 사건포트 = Number(값('--사건포트', '8790'));
-const 크롬포트 = Number(값('--크롬포트', '9222'));
-const 열쇠파일 = 값('--열쇠', '/opt/synk-radio/송출/.env');
-const 크롬 = 값('--크롬', '/usr/bin/chromium');
-/* 🔴 2026-10-20 실측 — 프로필 자리를 안 주면 크로미움이 띄울 때마다 임시 프로필(scoped_dir*, 90~117MB)을 새로 만든다.
-   멎음 지킴이처럼 정리할 틈 없이 끝나면 그 폴더가 남아, 09-16~10-20에 ~/.config/chromium-headless 에 217개·17GB가
-   쌓였다(디스크 30G 중 89%). 그래서 자리 하나를 띄울 때마다 비우고 다시 쓴다. */
-const 크롬프로필 = 값('--크롬프로필', path.join(os.homedir(), '.cache', 'synk-radio-chromium'));
-const 시늉파일 = 있나('--시늉') ? 값('--시늉', '/tmp/겹쳐맛보기.mp4') : null;
-const 시늉초 = Number(값('--시늉초', '20'));
-
-const 잠깐 = (ms) => new Promise((r) => setTimeout(r, ms));
+function 만들기(인자 = [], 주입 = {}) {
+const fs = 주입.fs || require('node:fs');
+const http = 주입.http || require('node:http');
+const spawn = 주입.spawn || require('node:child_process').spawn;
+const execFileSync = 주입.execFileSync || require('node:child_process').execFileSync;
+const WebSocket = 주입.WebSocket || globalThis.WebSocket;
+const timers = 주입.timers || globalThis;
+const 수명 = 수명도구.만들기({ timers });
+const fetch = (url, options = {}) => (주입.fetch || globalThis.fetch)(url, { ...options, signal: 수명.signal });
+const { 값, 지면뿌리, 팩폴더, 층, 마스코트크기, 마스코트자리, 마스코트바닥, 부스, 조율파일, 조율, 프레임, 뜨기, 소리목록, 무대목록, 연속소리, 장면분, 장면차례, 지면포트, 사건포트, 크롬포트, 열쇠파일, 크롬, 크롬프로필, 시늉파일, 시늉초 } = 설정.읽기(인자, { fs });
+const setInterval = 수명.interval;
+const 잠깐 = 수명.wait;
 const 때 = () => new Date().toISOString().slice(11, 19);
 const 말 = (...x) => console.log(`[겹쳐송출 ${때()}]`, ...x);
 
@@ -117,8 +59,8 @@ const 확장자 = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript
   '.avif': 'image/avif', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.woff2': 'font/woff2' };
 
 function 지면서버세우기() {
-  return new Promise((맞다) => {
-    http.createServer((req, res) => {
+  return new Promise((맞다, 아니다) => {
+    const server = http.createServer((req, res) => {
       const 길 = decodeURIComponent(req.url.split('?')[0]);
       const 자리 = path.join(지면뿌리, 길);
       /* 뿌리 밖으로 못 나가게 — 지면이 서버의 다른 파일을 읽는 길을 내지 않는다 */
@@ -128,7 +70,10 @@ function 지면서버세우기() {
         res.writeHead(200, { 'content-type': 확장자[path.extname(자리).toLowerCase()] || 'application/octet-stream' });
         res.end(몸);
       });
-    }).listen(지면포트, '127.0.0.1', () => { 말(`지면 서버 ${지면포트} · 뿌리 ${지면뿌리}`); 맞다(); });
+    });
+    서버소유(server);
+    server.once('error', 아니다);
+    server.listen(지면포트, '127.0.0.1', () => { 말(`지면 서버 ${지면포트} · 뿌리 ${지면뿌리}`); 맞다(server); });
   });
 }
 
@@ -144,7 +89,7 @@ function 크롬띄우기(주소) {
        그건 90ms 만에 답이 온다(같은 날 같은 기계에서 나란히 재봤다). */
     `--remote-debugging-port=${크롬포트}`, '--remote-allow-origins=*',
     '--window-size=1920,1080', 주소];
-  const p = spawn(크롬, 옵션, { stdio: ['ignore', 'ignore', 'pipe'] });
+  const p = 프로세스소유(spawn(크롬, 옵션, { stdio: ['ignore', 'ignore', 'pipe'] }));
   p.stderr.on('data', (d) => { const s = String(d).trim(); if (/error|fail/i.test(s)) 말('크로미움:', s.slice(0, 200)); });
   return p;
 }
@@ -163,25 +108,9 @@ async function 문찾기() {
 }
 
 async function 붙기(ws주소) {
-  const ws = new WebSocket(ws주소);
-  await new Promise((맞다, 아니다) => { ws.onopen = () => 맞다(); ws.onerror = (e) => 아니다(new Error('문 열기 실패')); });
-  let 번호 = 0; const 기다리는것 = new Map();
-  ws.onmessage = (e) => {
-    const m = JSON.parse(e.data);
-    if (m.id && 기다리는것.has(m.id)) {
-      const { 맞다, 아니다 } = 기다리는것.get(m.id); 기다리는것.delete(m.id);
-      m.error ? 아니다(new Error(m.error.message)) : 맞다(m.result);
-    }
-  };
-  /* 🔴 09-06 실측 — 제한을 안 걸면 «답이 영영 안 오는» 한 번이 그리기를 통째로 멈춘다.
-     그날 첫 판이 그렇게 죽었다(60초 동안 0장 · 건너뛴 것 597). 그래서 부르기마다 시한을 둔다. */
-  const 부르기 = (수단, 짐, 제한 = 10000) => new Promise((맞다, 아니다) => {
-    const id = ++번호; 기다리는것.set(id, { 맞다, 아니다 });
-    ws.send(JSON.stringify({ id, method: 수단, params: 짐 || {} }));
-    setTimeout(() => { if (기다리는것.has(id)) { 기다리는것.delete(id); 아니다(new Error(`${수단} 이 ${제한 / 1000}초 안에 답이 없다`)); } }, 제한);
-  });
-  ws.onclose = () => { for (const [id, w] of 기다리는것) { 기다리는것.delete(id); w.아니다(new Error('문이 닫혔다')); } };
-  return { ws, 부르기 };
+  const 연결 = await require('./송출연결.js').붙기(ws주소, { WebSocket, timers, signal: 수명.signal });
+  수명.own(() => 연결.close());
+  return 연결;
 }
 
 /* ── ③ ffmpeg — 팩과 층을 겹쳐 인코딩해 내보낸다 ──────────────────────────────── */
@@ -239,7 +168,7 @@ function ffmpeg띄우기() {
     ? ['-t', String(시늉초), '-y', 시늉파일]
     : ['-rw_timeout', '15000000', '-f', 'flv', `rtmp://a.rtmp.youtube.com/live2/${열쇠읽기()}`];
   말(시늉파일 ? `시늉 — ${시늉초}초를 ${시늉파일} 로 뽑는다` : '유튜브로 민다(열쇠는 안 찍는다)');
-  const p = spawn('ffmpeg', 앞.concat(뒤), { stdio: ['pipe', 'ignore', 'pipe'] });
+  const p = 프로세스소유(spawn('ffmpeg', 앞.concat(뒤), { stdio: ['pipe', 'ignore', 'pipe'] }), true);
   /* 🆕 2026-09-07 «뒤처짐을 재는 자» — 유튜브가 `videoIngestionStarved`(영상이 모자라게 들어온다)를
      냈는데 우리 일지는 「실패 0」만 찍고 있었다. 뜨는 쪽과 흘려보내는 쪽만 세고, **ffmpeg 이 실시간을
      따라가는지는 아무도 안 재고 있었다.** 그래서 `-progress` 로 그 수를 받아 둔다.
@@ -320,7 +249,7 @@ async function 채팅감시(사건넣기) {
     return 산것.snippet.liveChatId;
   };
 
-  for (;;) {
+  while (!수명.signal.aborted) {
     try {
       if (!채팅id) { 채팅id = await 채팅찾기(); 쪽표 = null; 첫바퀴 = true; }
       if (!채팅id) { await 잠깐(60000); continue; }
@@ -342,6 +271,7 @@ async function 채팅감시(사건넣기) {
       첫바퀴 = false;
       await 잠깐(Math.max(최소간격, Number(답.pollingIntervalMillis) || 0));
     } catch (e) {
+      if (수명.signal.aborted) return;
       말('채팅 감시 헛돌았다:', e.message);
       if (/liveChatNotFound|forbidden|404|403/i.test(e.message)) 채팅id = null;
       await 잠깐(30000);
@@ -422,7 +352,7 @@ async function 결신호(사건넣기) {
 
 /* ── ④ 사건 문 — 봇이 여기로 던지면 층이 받는다 ──────────────────────────────── */
 function 사건문세우기(사건넣기) {
-  http.createServer((req, res) => {
+  const server = http.createServer((req, res) => {
     if (req.method === 'GET') { res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8' }); return res.end('겹쳐송출 돌고 있다\n'); }
     let 몸 = '';
     req.on('data', (c) => { 몸 += c; if (몸.length > 4096) req.destroy(); });
@@ -434,12 +364,39 @@ function 사건문세우기(사건넣기) {
         res.writeHead(200); res.end('받았다');
       } catch (e) { 말('사건 실패:', e.message); res.writeHead(500); res.end(e.message); }
     });
-  }).listen(사건포트, '127.0.0.1', () => 말(`사건 문 ${사건포트}`));
+  });
+  서버소유(server);
+  return new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(사건포트, '127.0.0.1', () => { 말(`사건 문 ${사건포트}`); resolve(server); });
+  });
 }
 
 /* ── ⑤ 이어 붙이기 ─────────────────────────────────────────────────────────── */
-(async () => {
+function 서버소유(server) {
+  수명.own(() => new Promise((resolve) => {
+    server.close(() => resolve());
+    server.closeAllConnections?.();
+  }));
+  server.on('error', (error) => { void 수명.stop({ code: 1, error }); });
+}
+function 프로세스소유(child, encoder = false) {
+  수명.own((result) => {
+    // SIGINT만 보내면 image2pipe의 read가 EOF를 기다리며 인코더가 남을 수 있다.
+    if (encoder) child.stdin?.destroy();
+    if (child.exitCode == null && !child.killed) child.kill(encoder ? (result.force ? 'SIGKILL' : 'SIGINT') : 'SIGTERM');
+  });
+  child.on('error', (error) => { void 수명.stop({ code: 1, error }); });
+  return child;
+}
+let 시작됨 = false;
+async function 시작() {
+  if (시작됨) throw Error('송출은 한 번만 시작할 수 있습니다');
+  시작됨 = true;
+  try {
+  수명.check();
   await 지면서버세우기();
+  수명.check();
   const 주소 = `http://127.0.0.1:${지면포트}/bots/오버레이/방송층.html?층=${encodeURIComponent(층)}`
     + `&크기=${encodeURIComponent(마스코트크기)}&자리=${encodeURIComponent(마스코트자리)}&바닥=${encodeURIComponent(마스코트바닥)}`
     + `&부스=${encodeURIComponent(부스)}`;
@@ -459,72 +416,24 @@ function 사건문세우기(사건넣기) {
   await 잠깐(1500);   // 층이 그려질 틈
 
   const ff = ffmpeg띄우기();
-  ff.on('exit', (코드) => { 말('ffmpeg 끝 · 코드', 코드); process.exit(코드 || 0); });
+  ff.on('exit', (코드) => { 말('ffmpeg 끝 · 코드', 코드); void 수명.stop({ code: 코드 || 0 }); });
 
   /* 사건은 «한 문»으로만 들어간다 — 사람이 손으로 던지든, 채팅 감시가 스스로 던지든 같은 길이다. */
   const 사건넣기 = (사건) => 부르기('Runtime.evaluate', {
     expression: `(() => { const 문 = new BroadcastChannel('라디오오버레이');`
       + ` 문.postMessage(${JSON.stringify(사건)}); setTimeout(() => 문.close(), 1000); })()`,
   });
-  try { require('./현재곡.js').시작({ playlist: 소리목록, progress: 진척, send: 사건넣기, log: 말 }); }
+  try {
+    const timer = (주입.현재곡 || require('./현재곡.js')).시작({ playlist: 소리목록, progress: 진척, send: 사건넣기, log: 말 });
+    if (timer) 수명.own(() => timers.clearInterval(timer));
+  }
   catch (e) { 말('곡 시간표 오류:', e.message); }
-  사건문세우기(사건넣기);
-  채팅감시(사건넣기).catch((e) => 말('채팅 감시가 죽었다:', e.message));
-  결신호(사건넣기).catch((e) => 말('결 신호가 죽었다:', e.message));
+  await 사건문세우기(사건넣기);
+  수명.check();
+  채팅감시(사건넣기).catch((e) => { if (!수명.signal.aborted) 말('채팅 감시가 죽었다:', e.message); });
+  결신호(사건넣기).catch((e) => { if (!수명.signal.aborted) 말('결 신호가 죽었다:', e.message); });
 
-  let 뜨는중 = false, 센것 = 0, 다시쓴것 = 0, 거른것 = 0, 불린것 = 0, 실패 = 0, 마지막장 = null;
-  ff.stdin.on('error', () => { /* ffmpeg 가 먼저 끝나면 여기로 온다 — exit 가 처리한다 */ });
-
-  /* ⓐ 뜨는 쪽 — 되는 만큼 뜬다. 한 번이 늦어도 박자를 안 무너뜨린다. */
-  setInterval(async () => {
-    if (뜨는중) return;
-    뜨는중 = true;
-    try {
-      const r = await 부르기('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false }, 5000);
-      마지막장 = Buffer.from(r.data, 'base64');
-      if (센것 === 0) 말(`첫 장이 떴다 — ${Math.round(마지막장.length / 1024)}KB`);
-      센것++; 실패 = 0;
-    } catch (e) {
-      실패++;
-      if (실패 === 1 || 실패 % 20 === 0) 말(`뜨기 실패 ${실패}번째:`, e.message);
-    }
-    뜨는중 = false;
-  }, Math.round(1000 / 뜨기));
-
-  /* ⓑ 흘려보내는 쪽 — «정확히» 초당 뜨기장. 못 뜬 순간은 직전 장을 다시 쓴다.
-     이 박자가 곧 층의 시각이라, 어긋나면 인사가 엉뚱한 때에 뜬다(09-06 실측).
-
-     🔴 2026-09-07 저녁 실측 — 옛 판은 `write()` 가 false 를 내면 그 박자를 «건너뛰었다». 그런데 한 장이
-        216KB 라 Node 의 기본 물그릇(16~64KB)을 늘 넘겨서 **모든 write 가 false** 였다. 그래서 비우는 데
-        100ms 를 조금만 넘겨도 한 박자(100ms)를 통째로 잃었고, 초당 10장 약속에 8.0장만 들어갔다
-        (18분 내내 480장/분 · ±2). ffmpeg 에는 `-framerate 10` 이라 «한 장 = 0.1초»로 일러 뒀으니
-        층의 시계가 0.80배로 흘렀고, 유튜브가 굶었다(실측 실시간대비 0.805x = 8.0÷10 · 세 자리가 맞다).
-     🔑 그래서 «false» 가 아니라 «쌓인 양»으로 판정한다 — 여덟 장(0.8초)까지는 그냥 쓰고, 그 위로 쌓일
-        때만 거른다. 잠깐의 늦음은 더 이상 박자를 못 먹고, 진짜 막히면 램은 1.7MB 언저리에 묶인다.
-     ⚠ 거른 박자는 아래 1분 보고가 센다 — 0 이 아니면 그때는 정말 못 삼키고 있다는 뜻이다.
-
-     🔴 2026-09-07 11:25 재실측 — 위 고침만으로는 «안 나았다». 여전히 초당 8.0장이고 실시간대비 0.807 인데
-        **거른 박자가 0** 이었다. 이 둘이 같이 서면 답은 하나뿐이다 — write 가 막힌 게 아니라
-        **타이머가 분당 600번이 아니라 480번만 불린다.** 100ms 로 맡긴 박자가 실제로는 125ms 마다 온다.
-        까닭은 기계다. e2-medium 은 코어를 나눠 쓰는 값싼 차림이고, 크로미움 81.7% + ffmpeg 41.7% 로
-        200% 중 123% 가 차 있어 «일감이 CPU 를 기다리는 비율»(/proc/pressure/cpu some)이 33% 였다.
-        타이머 지연 25% 와 그 33% 가 같은 곳을 가리킨다.
-     🔑 그래서 «틱 한 번 = 한 장»을 버리고 **벽시계가 장 수를 정하게** 한다. 늦게 불려도 그 사이 흘러간
-        시각만큼 몰아 쓰니, 타이머가 흔들려도 초당 장 수는 안 흔들린다. 기계가 진짜 모자라면
-        쌓인 양 상한에 걸려 «거른 박자»가 오르므로, 그때는 그 수가 알려 준다. */
-  let 흘린시작 = 0;
-  setInterval(() => {
-    if (!마지막장 || ff.stdin.destroyed) return;
-    if (!흘린시작) 흘린시작 = Date.now();   // 첫 장이 뜬 때부터 센다(그 전의 빈 시간은 빚으로 안 잡는다)
-    불린것++;
-    let 모자란것 = Math.floor(((Date.now() - 흘린시작) / 1000) * 뜨기) - 다시쓴것;
-    if (모자란것 > 뜨기) 모자란것 = 뜨기;   // 오래 멎었다 돌아왔을 때 한꺼번에 밀어 넣지 않는다(1초치까지)
-    while (모자란것-- > 0) {
-      if (ff.stdin.writableLength > 마지막장.length * 8) { 거른것++; break; }
-      ff.stdin.write(마지막장);
-      다시쓴것++;
-    }
-  }, Math.round(1000 / 뜨기));
+  const 프레임상태 = require('./송출프레임.js').시작({ 부르기, ff, 뜨기, 말, interval: 수명.interval, now: 주입.now || Date.now });
 
   /* 🆕 09-07 — 보고에 «실시간을 따라가나»를 같이 싣는다. 앞의 두 수(뜬 것·내보낸 것)는 우리 쪽만 세므로
      유튜브가 굶고 있어도 「실패 0」이 나온다(09-07 실측 · 그 거짓 초록 때문에 20시간을 못 봤다).
@@ -549,11 +458,11 @@ function 사건문세우기(사건넣기) {
     const 상태 = 진척읽기.확인();
     if (!상태.재시작) return;
     말(`🔴 방송 시각이 ${Math.round(상태.멎은ms / 1000)}초째 제자리다(${상태.out_time}) — 기존 자동 복구로 다시 연결한다.`);
-    try { 크롬프로.kill(); ff.kill('SIGKILL'); } catch { /* 이미 갔다 */ }
-    process.exit(1);
+    void 수명.stop({ code: 1, force: true });
   }, 10000);
   let 앞수 = { 센것: 0, 다시쓴것: 0, 불린것: 0 };
   setInterval(() => {
+    const { 센것, 다시쓴것, 거른것, 불린것, 실패 } = 프레임상태.상태();
     const 뜬속 = ((센것 - 앞수.센것) / 60).toFixed(1);
     const 낸속 = ((다시쓴것 - 앞수.다시쓴것) / 60).toFixed(1);
     const 불린속 = ((불린것 - 앞수.불린것) / 60).toFixed(1);
@@ -562,5 +471,33 @@ function 사건문세우기(사건넣기) {
       + ` · 불린 박자 초당 ${불린속}/${뜨기} · 거른 박자 ${거른것}`
       + ` · 실시간대비 ${진척.speed} · 버린장 ${진척.drop_frames} · 겹친장 ${진척.dup_frames} · 방송시각 ${진척.out_time}`);
   }, 60000);
-  process.on('SIGINT', () => { try { 크롬프로.kill(); ff.kill('SIGINT'); } catch {} process.exit(0); });
-})().catch((e) => { console.error('🔴 ' + e.message); process.exit(1); });
+  return api;
+  } catch (error) {
+    await 수명.stop({ code: 수명.signal.aborted ? 0 : 1, error });
+    if (error.name === 'AbortError') return api;
+    throw error;
+  }
+}
+const api = { start: 시작, stop: 수명.stop, done: 수명.done };
+return api;
+}
+
+async function main(argv = process.argv.slice(2)) {
+  const runtime = 만들기(argv);
+  const stop = () => { void runtime.stop({ code: 0 }); };
+  process.once('SIGINT', stop);
+  process.once('SIGTERM', stop);
+  try {
+    await runtime.start();
+    const result = await runtime.done;
+    if (result.error) console.error('🔴 ' + result.error.message);
+    process.exitCode = result.code;
+    return result.code;
+  } finally {
+    process.removeListener('SIGINT', stop);
+    process.removeListener('SIGTERM', stop);
+  }
+}
+module.exports = { 만들기, main };
+// CLI는 자원 정리 뒤 종료를 보장해 기존 systemd 프로세스 복구 계약을 유지한다.
+if (require.main === module) main().then((code) => process.exit(code)).catch((e) => { console.error('🔴 ' + e.message); process.exit(1); });

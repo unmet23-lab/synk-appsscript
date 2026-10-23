@@ -17,9 +17,9 @@
  * 갱신 — tools/바로올리기.js가 push한 뒤(같은 프로세스)와 Windows 예약 「SYNK 운영 사본 갱신」(5분)이 부른다.
  *   1. 잠금(상태 폴더의 갱신.lock — 10분 넘었거나 주인 프로세스가 없으면 주인 없는 잠금).
  *   2. 추적 파일이 바뀌어 있으면: 운영 도구가 기록을 쓰는 자리(기록자리 — 장부·편 기록·팁 카드)는 쓰는 중일 수 있어 막지 않고,
- *      그 가운데 도구가 올리려다 못 올린 것(남은장부.json)만 다시 올린다. 그 밖의 파일이 바뀌었으면 「누가 운영 사본을 고쳤다」로 보고
+ *      그 가운데 도구가 올리려다 못 올린 것(남은장부.json)만 Git 코어로 다시 올린다. 그 밖의 파일이 바뀌었으면 「누가 운영 사본을 고쳤다」로 보고
  *      따라가지 않는다. 처음 본 시각을 상태에 남기고 헤르메스 감시가 30분 넘게 이어지면 알린다(못 올린 기록은 6시간).
- *   3. tools/바로올리기.js 따라가기로 origin/master에 맞춘다(이 사본에만 있는 커밋이 있으면 멈춘다).
+ *   3. tools/lib/git-publish-core.cjs 따라가기로 origin/master에 맞춘다(이 사본에만 있는 커밋이 있으면 멈춘다).
  *   4. 헤르메스 감시 계약(install-automation.cjs --확인)이 이 사본 파일과 다르면 --apply로 다시 잡는다. 헤르메스 쪽 파일이 바뀐 것
  *      (헤르메스 판 올림)은 다시 잡지 않는다 — 감시가 「호환 확인 필요」로 멈춰 사람이 보게 둔다.
  *   5. 상태 폴더의 상태.json에 남긴다. 헤르메스 감시(tools/hermes-synk/overview.cjs)가 읽는다.
@@ -31,9 +31,8 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
-const 내커밋 = require('./내커밋.js');
 
-const { git도구, 조상인가, 멈춤, 사용법오류, 잠깐 } = 내커밋._도구;
+const { git도구, 조상인가, 멈춤, 사용법오류, 잠깐 } = require('./lib/git-commit-core.cjs');
 
 const 가리킴파일 = 'synk-ops-path';
 /** 운영 사본에서도 빼는 큰 미디어 폴더 — tools/바로올리기.js 가볍게와 같은 목록(예약 작업은 읽지 않는다) */
@@ -407,8 +406,12 @@ async function 갱신(옵션 = {}) {
     const 다시올릴 = 기록.filter((p) => 남은[p]);
     let 장부 = null;
     if (다시올릴.length && 옵션.실행) {
-      const { 장부올리기 } = require('./lib/장부올리기.js');
-      const r = await 장부올리기(다시올릴, 'chore(장부): 운영 사본에서 못 올렸던 기록', { 저장소: f.운영사본 });
+      // 이미 운영 사본 잠금을 소유한다. Git 코어만 불러 후속 운영 갱신의 재진입을 없앤다.
+      let r = require('./lib/ledger-publish-policy.cjs').holdResult(process.env, true);
+      if (!r) {
+        try { r = await require('./lib/git-publish-core.cjs').올리기({ 저장소: f.운영사본, 경로들: 다시올릴, 메시지: 'chore(장부): 운영 사본에서 못 올렸던 기록', 실행: true, 공용안따라감: true }); }
+        catch (e) { r = { 결과: '실패', 이유: e.이유 || e.message }; }
+      }
       장부 = { 결과: r.결과, 이유: r.이유 || null };
       남은장부적기(다시올릴, r, 상태폴더);
       // 올렸으면 그 커밋이 새 origin이고 이 사본도 이미 그리로 따라갔다
@@ -428,7 +431,7 @@ async function 갱신(옵션 = {}) {
         return 남기기({ 결과: '멈춤', 까닭: '기록 쓰는 중', 걸림: 쓰는중, 머리: B, origin: O, 뒤짐: 뒤짐(), 안올림: 기록바뀜(git), 마무리,
           이유: `예약 작업이 기록을 쓰는 중이라(10분 안에 바뀐 파일 ${쓰는중.length}개) 이번 회차는 따라가지 않았다 — 그 도구가 올리면 바로 따라간다` });
       }
-      따라 = await require('./바로올리기.js').따라가기({ 저장소: f.운영사본, 실행: true, 운영안맞춤: true });
+      따라 = await require('./lib/git-publish-core.cjs').따라가기({ 저장소: f.운영사본, 실행: true });
       if (따라.결과 !== '따라감' && 따라.결과 !== '이미 최신') {
         return 남기기({ 결과: '멈춤', 까닭: '따라가기', 이유: `따라가지 못했다 — ${따라.결과}${따라.이유 ? `: ${따라.이유}` : ''}`, 걸림: (따라.걸림 || []).map((x) => x.경로 || x.커밋), 머리: B, origin: O, 뒤짐: 뒤짐(), 안올림: 기록바뀜(git), 마무리 });
       }

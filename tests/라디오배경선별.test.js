@@ -87,9 +87,10 @@ test('팩 재굽기는 삭제된 드림 실내 영상과 밤도시 원본을 선
 });
 
 test('편성 기본 목록과 선택 검수 버튼에 삭제 장면이 남지 않는다', () => {
-  const sender = read('bots/오버레이/겹쳐송출.js');
-  assert.match(sender, /값\('--장면차례', '추석보름달마당,전자네온물가,거울수면과문,반딧불노을들판'\)/);
-  assert.match(sender, /if \(삭제장면\.length\) throw new Error/);
+  const { 읽기 } = require('../bots/오버레이/송출설정.js');
+  const io = { fs: { existsSync: () => false } };
+  assert.deepEqual(읽기([], io).장면차례, 송출결);
+  assert.throws(() => 읽기(['--장면차례', '전자밤도시'], io), /삭제되었거나 모르는 장면/);
   const names = constant('bots/오버레이/겹쳐송출.js', '결이름');
   assert.deepEqual([...new Set(Object.values(names))].sort(), 송출결.slice().sort());
   for (const file of ['tools/라디오차림검수보기.cjs', 'tools/라디오차림브라우저검수.cjs']) {

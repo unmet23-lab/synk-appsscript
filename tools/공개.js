@@ -795,17 +795,15 @@ function 최근공개(git, 위, 경로들, 개수 = 80) {
 }
 
 /** 후보를 만든다(커밋하지 않는다). c: {git, 옵션, 입력, 위, 저장} */
-function 후보만들기(c) {
+function 후보원천읽기(c) {
   const { git, 옵션, 입력, 위 } = c;
   const 저장 = c.저장 || new Map();
   const 공개트리 = 트리읽기(git, 위);
   const 기준 = 기준읽기(git, 옵션, 저장);
   const 토큰다룸 = !옵션.토큰안함;
-  const 항목 = new Map();   // 경로 → {경로, 종류, 전, 후, 모드, 버퍼, 방법, 출처, 토큰}
   const 건너뜀 = [];
   const 걸림 = [];
   const 알림 = [];
-  const 더하기 = (x) => 항목.set(x.경로, x);
   // 기준 없이 폴더를 주면 목록만 보이고 멈춘다(남이 공개본을 직접 고친 파일을 덮지 않게)
   const 폴더멈춤 = Boolean(입력.폴더.length && !기준 && !옵션.전부);
   // --만: 항목(올릴·지울) 가운데 그 경로만 — import 엇갈림을 나눠 올리는 1단계. 기준폴더의 지울 것은 고르기 전 목록으로 가린다.
@@ -831,6 +829,13 @@ function 후보만들기(c) {
   }
   블롭읽기(git, 저장, 필요);
 
+  return { git, 옵션, 입력, 위, 저장, 공개트리, 기준, 토큰다룸, 내것, 만, 폴더멈춤, 건너뜀, 걸림, 알림 };
+}
+
+function 후보차이계획(원천) {
+  const { git, 옵션, 입력, 위, 저장, 공개트리, 기준, 토큰다룸, 내것, 만, 폴더멈춤 } = 원천;
+  const 항목 = new Map(), 건너뜀 = [...원천.건너뜀], 걸림 = [...원천.걸림], 알림 = [...원천.알림];
+  const 더하기 = x => 항목.set(x.경로, x);
   // 3) 경로마다 고른다
   for (const [p, m] of 내것) {
     if (만 && !만.has(p)) continue;
@@ -919,6 +924,14 @@ function 후보만들기(c) {
     }
   }
 
+  return { ...원천, 항목, 건너뜀, 걸림, 알림 };
+}
+
+function 후보토큰계획(차이) {
+  const { git, 옵션, 입력, 위, 저장, 공개트리, 기준, 토큰다룸, 내것, 만, 폴더멈춤 } = 차이;
+  // This stage owns a new plan. Token changes never rewrite the diff-stage snapshot.
+  const 항목 = new Map([...차이.항목].map(([p, x]) => [p, { ...x }])), 알림 = [...차이.알림];
+  const 더하기 = x => 항목.set(x.경로, x);
   // 6) ?v= 토큰 갱신
   const 있는경로 = new Set(공개트리.keys());
   for (const x of 항목.values()) { if (x.후) 있는경로.add(x.경로); else 있는경로.delete(x.경로); }
@@ -1004,6 +1017,13 @@ function 후보만들기(c) {
     }
   }
 
+  return { ...차이, 항목, 알림, 토큰기록, 참조: { 공개판, 지금판, 호스트들, 있나, 꼬리들, 부르는가 } };
+}
+
+function 후보검사(계획) {
+  const { git, 옵션, 입력, 위, 저장, 공개트리, 기준, 토큰다룸, 내것, 만, 폴더멈춤, 항목, 건너뜀, 토큰기록 } = 계획;
+  const { 공개판, 지금판, 호스트들, 있나, 꼬리들, 부르는가 } = 계획.참조;
+  const 걸림 = [...계획.걸림], 알림 = [...계획.알림];
   // 7) 검사(배포 점검 규칙은 후보 판의 check.mjs에서 읽는다)
   const 점검글 = (() => {
     const 판 = 지금판('.github/site-check/check.mjs');
@@ -1051,6 +1071,14 @@ function 후보만들기(c) {
     기준: 기준 ? (기준.종류 === '커밋' ? { 커밋: 기준.커밋 } : { 폴더: 기준.폴더 }) : null,
     폴더멈춤, 계획: 계획해시(목록들), 저장,
   };
+}
+
+/** Source IO → merge/deletion plan → reference/token plan → validation. Each stage owns its candidate snapshot. */
+function 후보만들기(c) {
+  const 원천 = 후보원천읽기(c);
+  const 차이 = 후보차이계획(원천);
+  const 토큰 = 후보토큰계획(차이);
+  return 후보검사(토큰);
 }
 
 /** 커밋에 넣을 새 blob을 사본에 쓴다(미리 보기에서는 쓰지 않는다). */

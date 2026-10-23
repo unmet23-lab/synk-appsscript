@@ -8,7 +8,7 @@ const { execFileSync } = require('node:child_process');
 const policy = require('./이어하기꾸러미.js');
 const readCache = require('./onedrive-read-cache.cjs');
 const { preserveSafeMarkdown } = require('./onedrive-safe-markdown.cjs');
-const { replaceFile } = require('./GitHub백업.cjs');
+const { replaceFile } = require('./lib/backup-primitives.cjs');
 // 백업 대상은 공용 작업본이다 — 이 도구가 예약 작업이 도는 운영 사본(tools/운영사본.js)에서 돌아도 그 작업본의 문서·미통합 작업을
 // 보존하고 볼트는 그 옆 SYNK_원본창고다(10-22).
 const ROOT = require('./lib/공용작업본.js').공용작업본(path.resolve(__dirname, '..'));
@@ -18,7 +18,7 @@ const readJson = (file, fallback = null) => {
   catch (error) { if (error.code === 'ENOENT') return fallback; throw error; }
 };
 // 감시 도구·백신이 영수증을 여는 순간 Windows는 이름 바꾸기를 EPERM·EACCES·EBUSY로 잠깐 거절한다.
-// 영수증·색인 교체는 GitHub백업.cjs의 replaceFile(그 세 오류만 최대 20번, 약 9.5초 기다리며 다시)을 같이 쓴다(10-19).
+// 영수증·색인 교체는 lib/backup-primitives.cjs의 replaceFile(그 세 오류만 최대 20번, 약 9.5초 기다리며 다시)을 같이 쓴다(10-19).
 function writeJson(file, value) {
   fs.mkdirSync(path.dirname(file), { recursive: true });
   const temp = file + '.' + process.pid + '.tmp';
