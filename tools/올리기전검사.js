@@ -320,7 +320,7 @@ async function run(dir, opts = {}) {
   const slotOk = /^\d{4}-\d{2}-\d{2}$/.test(prep.슬롯 || '');
   if (!slotOk) add(FIX, 'slot', '준비.json', '「슬롯」(올릴 날 YYYY-MM-DD)이 없다');
   if (prep.시한 && slotOk && prep.슬롯 > prep.시한) add(FIX, 'deadline', '준비.json', `슬롯 ${prep.슬롯}이 시한 ${prep.시한}을 넘는다`);
-  if (!prep.역할) add(LOOK, 'role', '준비.json', '「역할」(유입·육성·권위·전환)이 없다');
+  if (!prep.기획) add(LOOK, 'pitch', '준비.json', '「기획」(기획 장부 줄 — 10-23부터 고른 기획만 만든다)이 없다');
   if (!(prep.판 || []).length) add(FIX, 'plates', '준비.json', '「판」이 비었다');
 
   const plates = 묶음.plates(bundle);

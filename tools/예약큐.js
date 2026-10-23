@@ -7,11 +7,12 @@
  *
  *   node tools/예약큐.js [--일수 5] [--json] [--폴더 <편 폴더들이 있는 곳, 기본 docs/마케팅>] [--오늘 YYYY-MM-DD(시험용)]
  *   node tools/예약큐.js --서버읽기 [--알림]   회사 서버를 읽기 전용으로 읽어 캐시에 두고 대조한다(AI 없는 정기 작업이 부른다).
- *                                           --알림이면 비축 2일 아래 브랜드나 대조 문제가 있을 때 텔레그램 한 통(같은 날 같은 내용은 한 번)
+ *                                           --알림이면 대조 경고·작업실 승인 대기 계정·검사 「고칠 것」 편이 있을 때만 텔레그램 한 통
+ *                                           (같은 날 같은 내용은 한 번)
  *   공통: --서버캐시 <파일>(기본 %LOCALAPPDATA%\synk\예약큐\서버.json)
  *
  * 준비.json(편 폴더 게시/): {"브랜드","날짜"(만든 날),"슬롯"(올릴 날 YYYY-MM-DD),"성격":"시의성"|"상시",
- *   "역할":"유입"|"육성"|"권위"|"전환"(10-21~),"시한"(시의성이면 늦어도 올릴 날),"상태","제목","판":[{"계정","파일","시각"}],
+ *   "역할"(10-21~22 옛 편에만 — 편 줄에 보이기만 한다),"시한"(시의성이면 늦어도 올릴 날),"상태","제목","판":[{"계정","파일","시각"}],
  *   "검사":{"결과","파일":[{"경로","바이트","수정"}]}(tools/올리기전검사.js가 남긴다)}
  * 게시결과.json(같은 폴더): {"판":[{"계정","상태":"승인 대기"|"예약됨"|"게시됨"|"실패"|"보류","시각","주소","방법":"작업실"?,"작업"?}]}
  * 한 편은 판이 모두 예약됨·게시됨이면 「채움」, 일부만이면 「일부」, 하나도 없으면 「승인 대기」다. 작업실 판의 「승인 대기」(유호님이 검토 링크를
@@ -20,10 +21,9 @@
  * 서버 대조(10-21): 작업실(회사 서버) 캐시가 있으면 ① 작업실로 건 판은 서버 예약 작업의 실제 상태(승인 대기·예약됨·게시됨·실패)로 바꿔 보고,
  * 게시결과에는 있는데 서버에 그 작업이 없으면 「예약됨인데 서버에 없음」 ② 크롬으로 건 판은 슬롯 시각 2시간 뒤에도 채널 수집기가 본 공개 게시물
  * (그 계정 채널, 시각 ±6시간)이 없으면 「슬롯이 지났는데 나가지 않음」을 띄운다. 크롬 예약은 공개 전에는 API로 볼 수 없어 슬롯 전에는 대조하지 않는다.
- * 역할(10-21, 가설 — v2 §6 「한 주 역할」 · 팁 장부 21행): 브랜드마다 이번 주·다음 주(월~일 슬롯)의 역할 수를 한 주 목표
- * 유입 3 · 육성 1 · 권위 2 · 전환 1과 견줘 빈 역할과 그 주에 남은 빈 날(오늘부터 보류 아닌 편이 없는 날)을 보인다.
- * 보류 편은 세지 않고, SHIFT는 synkbrief·yuhobuilds 편을 푼 블로그 글이라 따로 세지 않는다. 역할이 없거나 넷 밖의 값이면 「역할 없음」으로 센다.
- * --json의 roles.<브랜드>는 [이번 주, 다음 주]다.
+ * 10-23 한 주 역할 · 비축 목표 없앰(결정 10-23): 고른 기획만 만들고 고른 게 없으면 그날은 비우므로(v2 §6) 역할 수를 한 주 목표(옛 3-1-2-1)와
+ * 견주지 않고, 비축이 모자란다고 알리지 않는다. 비축 칸은 보이기만 하고, 옛 편 준비.json의 「역할」은 편 줄에 그대로 보인다.
+ * --json에서 roleGoal·roles·roleIssues는 빠졌다(저장소 안에서 읽는 곳 없음, 10-23 확인).
  */
 const fs = require('node:fs');
 const os = require('node:os');
@@ -34,16 +34,12 @@ const argValue = (name) => { const i = process.argv.indexOf(name); return i > -1
 const ROOT = argValue('--폴더') ? path.resolve(argValue('--폴더')) : path.join(REPO, 'docs', '마케팅');
 const BRANDS = ['LAB', 'synkbrief', 'yuhobuilds', 'SHIFT'];
 const DONE = new Set(['예약됨', '게시됨']);
-const ROLE_GOAL = { 유입: 3, 육성: 1, 권위: 2, 전환: 1 };
-const ROLES = Object.keys(ROLE_GOAL);
-const ROLE_BRANDS = ['LAB', 'synkbrief', 'yuhobuilds'];
 const STATE_DIR = process.env.SYNK_QUEUE_DIR || path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local'), 'synk', '예약큐');
 // --폴더로 다른 곳(시험 등)을 보면 이 PC의 작업실 캐시는 그 편들과 상관없으니, --서버캐시를 따로 줄 때만 읽는다.
 const CACHE = argValue('--서버캐시') ? path.resolve(argValue('--서버캐시')) : argValue('--폴더') ? null : path.join(STATE_DIR, '서버.json');
 const GRACE_MS = 2 * 3600000;
 const WINDOW_MS = 6 * 3600000;
 const LOOKBACK_DAYS = 3;
-const LOW_RESERVE = 2;
 // 시험은 SYNK_HERMES_EXE=file:<경로>로 보내는 대신 파일에 적는다.
 const HERMES = process.env.SYNK_HERMES_EXE || path.join(process.env.LOCALAPPDATA || '', 'hermes', 'bin', 'hermes.exe');
 const TELEGRAM = 'telegram:6017495834';
@@ -62,10 +58,6 @@ function isDay(s) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(s || '')) return false;
   const d = new Date(s + 'T00:00:00Z');
   return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
-}
-
-function mondayOf(day) {
-  return addDays(day, -((new Date(day + 'T00:00:00Z').getUTCDay() + 6) % 7));
 }
 
 function readJson(file) {
@@ -167,17 +159,6 @@ function collect(server, accounts, now) {
   return items;
 }
 
-function roleWeek(items, brand, from, today) {
-  const to = addDays(from, 6);
-  const mine = items.filter((x) => x.brand === brand && x.slot && x.slot >= from && x.slot <= to && x.state !== '보류');
-  const count = Object.fromEntries(ROLES.map((r) => [r, mine.filter((x) => x.role === r).length]));
-  const short = Object.fromEntries(ROLES.filter((r) => count[r] < ROLE_GOAL[r]).map((r) => [r, ROLE_GOAL[r] - count[r]]));
-  const over = Object.fromEntries(ROLES.filter((r) => count[r] > ROLE_GOAL[r]).map((r) => [r, count[r] - ROLE_GOAL[r]]));
-  let open = 0;
-  for (let d = today > from ? today : from; d <= to; d = addDays(d, 1)) if (!mine.some((x) => x.slot === d)) open += 1;
-  return { from, to, count, none: mine.filter((x) => !ROLES.includes(x.role)).length, short, over, open };
-}
-
 const fixNeeded = (x) => x.state !== '채움' && ['고칠 것', '다시 검사'].includes(x.check);
 
 // 계정별: 판 계정마다 그 날 판이 예약·게시됐는지. 비축은 브랜드와 같은 셈.
@@ -218,10 +199,6 @@ function build(today, days, server, accounts, now) {
   const range = Array.from({ length: days }, (_, k) => addDays(today, k));
   const items = collect(server, accounts, now);
   const report = { today, range, brands: {}, unslotted: items.filter((x) => !x.slot) };
-  const monday = mondayOf(today);
-  report.roleGoal = ROLE_GOAL;
-  report.roles = Object.fromEntries(ROLE_BRANDS.map((b) => [b, [roleWeek(items, b, monday, today), roleWeek(items, b, addDays(monday, 7), today)]]));
-  report.roleIssues = items.filter((x) => ROLE_BRANDS.includes(x.brand) && x.role && !ROLES.includes(x.role));
   for (const brand of BRANDS) {
     const mine = items.filter((x) => x.brand === brand && x.slot);
     const byDay = Object.fromEntries(range.map((d) => [d, mine.filter((x) => x.slot === d)]));
@@ -233,7 +210,8 @@ function build(today, days, server, accounts, now) {
     report.brands[brand] = { reserve, byDay, late };
   }
   report.accounts = accountRows(items, range);
-  report.fix = items.filter((x) => fixNeeded(x) && x.slot && x.slot >= today);
+  // 보류 편은 나가지 않으니 검사가 「고칠 것」이어도 세지 않는다(10-23 — 알림이 고칠 것 하나만으로도 나가게 되면서).
+  report.fix = items.filter((x) => fixNeeded(x) && x.state !== '보류' && x.slot && x.slot >= today);
   report.warnings = [...new Set(items.flatMap((x) => x.warnings))];
   report.server = server ? { checkedAt: server.checkedAt, ageHours: server.checkedAt ? Math.round((now - Date.parse(server.checkedAt)) / 360000) / 10 : null } : null;
   return report;
@@ -268,15 +246,6 @@ function print(report) {
     console.log(`계정별 · ● 예약·게시  ○ 승인 대기·준비  ✗ 고칠 것  · 빔`);
     for (const row of report.accounts) console.log(row.account.slice(0, 22).padEnd(23) + range.map((d) => accountMark(row.byDay[d]).padEnd(5)).join('  ') + `  ${row.reserve}일`);
   }
-  const roleText = (c) => ROLES.map((r) => `${r} ${c[r]}`).join(' · ');
-  console.log(`역할 · 한 주 목표 ${roleText(ROLE_GOAL)}(가설, v2 §6 「한 주 역할」) · 빈 날 = 오늘부터 그 주에 보류 아닌 편이 없는 날`);
-  for (const brand of ROLE_BRANDS) report.roles[brand].forEach((w, k) => {
-    const short = Object.entries(w.short).map(([r, n]) => `${r} ${n}`).join(' · ');
-    const over = Object.entries(w.over).map(([r, n]) => `${r} +${n}`).join(' · ');
-    console.log((k ? '' : brand).padEnd(12) + `${k ? '다음 주' : '이번 주'} ${w.from.slice(5)}~${w.to.slice(5)}  ${roleText(w.count)}`
-      + `${w.none ? ` · 역할 없음 ${w.none}` : ''} · 빈 날 ${w.open}  → ${short ? `빈 역할 ${short}` : '빈 역할 없음'}`
-      + `${w.none && short ? `(역할 없음 ${w.none}편을 빼기 전)` : ''}${over ? ` · 넘침 ${over}` : ''}`);
-  });
   for (const brand of BRANDS) {
     for (const d of range) for (const x of report.brands[brand].byDay[d]) {
       const plates = x.plates.filter((p) => p.method === '작업실' || p.state === '승인 대기' || p.state === '서버에 없음');
@@ -286,29 +255,31 @@ function print(report) {
     for (const x of report.brands[brand].late) console.log(`  ! ${brand} 시한 넘김: ${x.title}(시한 ${x.deadline}, 슬롯 ${x.slot})`);
   }
   for (const x of report.unslotted) console.log(`  ? 슬롯 없음: ${x.brand} · ${x.title} · ${x.folder}`);
-  for (const x of report.roleIssues) console.log(`  ? 역할 값 확인: ${x.brand} · ${x.title} · 「${x.role}」(유입·육성·권위·전환 가운데 하나) · ${x.folder}`);
   for (const w of report.warnings) console.log(`  ! ${w}`);
   console.log(report.server ? `서버 대조: ${report.server.checkedAt ? report.server.checkedAt.replace('T', ' ').slice(0, 16) + 'Z' : '시각 모름'} 읽음(${report.server.ageHours}시간 전)`
     : '서버 대조 없음 — 작업실 캐시가 없다(정기 작업 「SYNK 예약큐」가 node tools/예약큐.js --서버읽기 --알림으로 채운다)');
 }
 
-// 비축 2일 아래 브랜드·대조 문제를 텔레그램으로. 같은 날 같은 내용은 다시 보내지 않는다(AI 없음).
+// 대조 경고·작업실 승인 대기 계정·검사 「고칠 것」 편이 있을 때만 텔레그램으로. 같은 날 같은 내용은 다시 보내지 않는다(AI 없음).
+// 비축이 모자란 것은 알리지 않는다 — 10-23부터 고른 기획이 없으면 그날은 비운다(결정 10-23).
 function alert(report) {
-  const low = ROLE_BRANDS.filter((b) => report.brands[b].reserve < LOW_RESERVE);
-  if (!low.length && !report.warnings.length) return { sent: false, reason: 'nothing' };
   const waiting = report.accounts.filter((row) => Object.values(row.byDay).flat().some((p) => p.state === '승인 대기')).map((row) => row.account);
+  // SHIFT 판을 품은 편은 브랜드 줄과 SHIFT 줄 두 번 나오니 폴더로 한 번만 적는다.
+  const fix = [...new Set(report.fix.map((x) => x.folder))];
+  if (!report.warnings.length && !waiting.length && !fix.length) return { sent: false, reason: 'nothing' };
   const lines = [
-    `[예약 비축] ${report.today} · ${ROLE_BRANDS.map((b) => `${b} ${report.brands[b].reserve}일`).join(' · ')} (목표 4일)`,
-    ...(low.length ? [`비축 부족: ${low.join(' · ')}`] : []),
+    `[게시 큐] ${report.today}`,
     ...(waiting.length ? [`작업실 승인 대기 계정: ${waiting.join(' · ')} — 텔레그램으로 받은 검토 링크를 누르면 예약이 걸려요`] : []),
     ...report.warnings.slice(0, 8).map((w) => `! ${w}`),
-    ...(report.fix.length ? [`검사 「고칠 것」 편: ${report.fix.map((x) => x.folder).join(' · ')}`] : []),
+    ...(fix.length ? [`검사 「고칠 것」 편: ${fix.join(' · ')}`] : []),
   ];
   const text = lines.join('\n');
   const stateFile = path.join(STATE_DIR, '알림.json');
   const last = readJson(stateFile) || {};
   const key = `${report.today}|${text}`;
-  if (last.key === key) return { sent: false, reason: 'same-today' };
+  // 그날 보낸 내용을 모두 기억한다 — 마지막 하나만 두면 A → A·B → A처럼 내용이 바뀌었다 돌아올 때 A가 다시 나간다(10-23 GPT 검수).
+  const sentToday = last.day === report.today && Array.isArray(last.keys) ? last.keys : (last.key ? [last.key] : []);
+  if (sentToday.includes(key)) return { sent: false, reason: 'same-today' };
   if (HERMES.startsWith('file:')) fs.appendFileSync(HERMES.slice(5), text + '\n---\n');
   else {
     const r = 헤르메스.보내기(HERMES, TELEGRAM, text);
@@ -316,7 +287,8 @@ function alert(report) {
     if (r.note) console.error(r.note);
   }
   fs.mkdirSync(STATE_DIR, { recursive: true });
-  fs.writeFileSync(stateFile, JSON.stringify({ key, sentAt: new Date().toISOString() }));
+  const keys = [...sentToday.filter((k) => k.startsWith(`${report.today}|`)), key];
+  fs.writeFileSync(stateFile, JSON.stringify({ day: report.today, key, keys, sentAt: new Date().toISOString() }));
   return { sent: true, text };
 }
 

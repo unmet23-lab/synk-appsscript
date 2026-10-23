@@ -1,5 +1,6 @@
 'use strict';
-// 1일 1편 예약 큐의 한 주 역할 세기(10-21, v2 §6 「한 주 역할」)를 본다. 임시 폴더의 가짜 편 폴더만 읽고 docs/마케팅은 건드리지 않는다.
+// 1일 1편 예약 큐(tools/예약큐.js)의 표·편 줄·서버 대조·알림을 본다 — 10-23 한 주 역할 · 비축 목표를 없앤 뒤의 동작(결정 10-23).
+// 임시 폴더의 가짜 편 폴더만 읽고 docs/마케팅은 건드리지 않는다. 알림은 SYNK_HERMES_EXE=file:로 파일에만 적는다.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -31,77 +32,49 @@ function 큐(...args) {
 
 const 판 = (brand, slot, 역할) => ({ 브랜드: brand, 슬롯: slot, 성격: '상시', 역할, 제목: `${brand} ${slot}`,
   판: [{ 계정: `${brand.toLowerCase()}-youtube`, 시각: `${slot}T21:00+09:00` }] });
-// LAB 이번 주(10-19~10-25): 권위(게시됨) · 유입 · 권위 · 전환(보류) · 역할 없음 · 넷 밖의 값, 다음 주: 육성
+// 10-21~22에 만든 옛 편처럼 준비.json에 「역할」이 남아 있다 — 넷 안의 값 · 없음 · 넷 밖의 값. 10-23부터 세지 않고 편 줄에 보이기만 한다.
 편('lab-a', 판('LAB', '2026-10-20', '권위'), { 판: [{ 계정: 'lab-youtube', 상태: '게시됨' }] });
 편('lab-b', 판('LAB', '2026-10-21', '유입'));
 편('lab-c', 판('LAB', '2026-10-22', '권위'));
 편('lab-e', 판('LAB', '2026-10-23', '전환'), { 판: [{ 계정: 'lab-youtube', 상태: '보류' }] });
 편('lab-d', 판('LAB', '2026-10-24'));
 편('lab-g', 판('LAB', '2026-10-25', '유입편'));
-편('lab-f', 판('LAB', '2026-10-27', '육성'));
-// synkbrief 편은 SHIFT 블로그 판을 함께 품는다 — 역할은 synkbrief에서만 센다
+// synkbrief 편은 SHIFT 블로그 판을 함께 품는다 — synkbrief 줄과 SHIFT 줄 둘로 나온다
 편('brief-a', { ...판('synkbrief', '2026-10-21', '전환'), 판: [{ 계정: 'synkbrief-instagram' }, { 계정: 'shift-naverblog' }] });
-// yuhobuilds 이번 주는 권위가 하나 넘치고 전환이 비고, 다음 주는 목표 그대로다
-['유입', '유입', '유입', '육성', '권위', '권위', '권위'].forEach((r, k) => 편(`yuho-${k}`, 판('yuhobuilds', `2026-10-${19 + k}`, r)));
-const 다음주 = ['2026-10-26', '2026-10-27', '2026-10-28', '2026-10-29', '2026-10-30', '2026-10-31', '2026-11-01'];
-['유입', '유입', '유입', '육성', '권위', '권위', '전환'].forEach((r, k) => 편(`yuho-next-${k}`, 판('yuhobuilds', 다음주[k], r)));
-// 연말 주(12-28~01-03): 한 날 두 편(하나는 판 하나만 예약된 「일부」), 해를 넘긴 슬롯, 슬롯 없는 편
+// 연말: 한 날 두 편(하나는 판 하나만 예약된 「일부」), 해를 넘긴 슬롯, 슬롯 없는 편
 편('a', { ...판('LAB', '2026-12-30', '유입'), 판: [{ 계정: 'lab-youtube' }, { 계정: 'lab-instagram' }] },
   { 판: [{ 계정: 'lab-youtube', 상태: '예약됨' }] }, 연말);
 편('b', 판('LAB', '2026-12-30', '권위'), null, 연말);
 편('c', 판('LAB', '2027-01-02', '전환'), null, 연말);
 편('d', { 브랜드: 'LAB', 성격: '상시', 역할: '육성', 제목: '슬롯 없음', 판: [{ 계정: 'lab-youtube' }] }, null, 연말);
 
-test('이번 주·다음 주(월~일 슬롯) 역할 수와 빈 역할·빈 날을 센다 — 보류 편은 빼고 역할 없음은 따로', () => {
+test('--json에 한 주 역할 칸(roleGoal·roles·roleIssues)이 없고, 옛 편 준비.json의 역할은 편마다 그대로 남는다', () => {
   const r = JSON.parse(큐('--오늘', '2026-10-21', '--json'));
-  assert.deepEqual(r.roleGoal, { 유입: 3, 육성: 1, 권위: 2, 전환: 1 });
-  const [이번, 다음] = r.roles.LAB;
-  assert.deepEqual([이번.from, 이번.to, 다음.from, 다음.to], ['2026-10-19', '2026-10-25', '2026-10-26', '2026-11-01']);
-  assert.deepEqual(이번.count, { 유입: 1, 육성: 0, 권위: 2, 전환: 0 });
-  assert.equal(이번.none, 2);
-  assert.deepEqual(이번.short, { 유입: 2, 육성: 1, 전환: 1 });
-  assert.deepEqual(이번.over, {});
-  assert.equal(이번.open, 1, '10-21~10-25 가운데 보류 편만 있는 10-23');
-  assert.deepEqual(다음.count, { 유입: 0, 육성: 1, 권위: 0, 전환: 0 });
-  assert.equal(다음.open, 6);
-  assert.deepEqual(r.roles.synkbrief[0].count, { 유입: 0, 육성: 0, 권위: 0, 전환: 1 });
-  assert.equal(Object.hasOwn(r.roles, 'SHIFT'), false);
-  assert.deepEqual(r.roleIssues.map((x) => [x.brand, x.role]), [['LAB', '유입편']]);
-  assert.deepEqual(r.roles.yuhobuilds[0].short, { 전환: 1 });
-  assert.deepEqual(r.roles.yuhobuilds[0].over, { 권위: 1 });
-  assert.deepEqual([r.roles.yuhobuilds[1].short, r.roles.yuhobuilds[1].over, r.roles.yuhobuilds[1].open], [{}, {}, 0]);
+  for (const key of ['roleGoal', 'roles', 'roleIssues']) assert.equal(Object.hasOwn(r, key), false, key);
+  const roles = (brand) => Object.fromEntries(Object.values(r.brands[brand].byDay).flat().map((x) => [x.folder, x.role]));
+  assert.deepEqual(roles('LAB'), { 'lab-b': '유입', 'lab-c': '권위', 'lab-e': '전환', 'lab-d': null, 'lab-g': '유입편' });
+  assert.deepEqual([roles('synkbrief'), roles('SHIFT')], [{ 'brief-a': '전환' }, { 'brief-a': '전환' }]);
 });
 
-test('글 출력에 브랜드별 이번 주·다음 주 줄, 편 줄의 역할, 역할 값 확인이 나온다', () => {
+test('글 출력에 한 주 목표·이번 주·다음 주·빈 역할·역할 값 확인 줄이 없고, 편 줄은 준비.json의 역할을 그대로 보인다', () => {
   const out = 큐('--오늘', '2026-10-21');
-  assert.match(out, /^역할 · 한 주 목표 유입 3 · 육성 1 · 권위 2 · 전환 1/m);
-  assert.match(out, /^LAB {9}이번 주 10-19~10-25 {2}유입 1 · 육성 0 · 권위 2 · 전환 0 · 역할 없음 2 · 빈 날 1 {2}→ 빈 역할 유입 2 · 육성 1 · 전환 1\(역할 없음 2편을 빼기 전\)$/m);
-  assert.match(out, /^ {12}다음 주 10-26~11-01 {2}유입 0 · 육성 1 · 권위 0 · 전환 0 · 빈 날 6 {2}→ 빈 역할 유입 3 · 권위 2 · 전환 1$/m);
-  assert.match(out, /^yuhobuilds {2}이번 주 .* → 빈 역할 전환 1 · 넘침 권위 \+1$/m);
-  assert.match(out, /다음 주 10-26~11-01 {2}유입 3 · 육성 1 · 권위 2 · 전환 1 · 빈 날 0 {2}→ 빈 역할 없음$/m);
+  assert.doesNotMatch(out, /목표|이번 주|다음 주|빈 역할|역할 없음|역할 값 확인/);
+  assert.match(out, /^브랜드 +10-21 {2}10-22 {2}10-23 {2}10-24 {2}10-25 {2}비축$/m);
   assert.match(out, /2026-10-21 LAB 승인 대기 · LAB 2026-10-21 · 상시 · 역할 유입 · lab-b/);
   assert.match(out, /2026-10-24 LAB 승인 대기 · LAB 2026-10-24 · 상시 · lab-d/);
-  assert.match(out, /\? 역할 값 확인: LAB · LAB 2026-10-25 · 「유입편」/);
-  assert.doesNotMatch(out, /^SHIFT +이번 주/m);
+  assert.match(out, /2026-10-25 LAB 승인 대기 · LAB 2026-10-25 · 상시 · 역할 유입편 · lab-g/);
 });
 
-test('일요일까지가 이번 주이고 월요일에 다음 주로 넘어간다', () => {
-  const 일 = JSON.parse(큐('--오늘', '2026-10-25', '--json')).roles.LAB;
-  assert.deepEqual([일[0].from, 일[0].to, 일[0].open, 일[1].from], ['2026-10-19', '2026-10-25', 0, '2026-10-26']);
-  const 월 = JSON.parse(큐('--오늘', '2026-10-26', '--json')).roles.LAB;
-  assert.deepEqual([월[0].from, 월[0].open, 월[1].from, 월[1].open], ['2026-10-26', 6, '2026-11-02', 7]);
-});
-
-test('해를 넘기는 주, 한 날 두 편, 「일부」 편을 세고 슬롯 없는 편은 역할 수에 넣지 않는다', () => {
-  const r = 돌리기(연말, '--오늘', '2026-12-31', '--json');
+test('해를 넘기는 날짜, 한 날 두 편(「일부」 하나), 슬롯 없는 편', () => {
+  const r = 돌리기(연말, '--오늘', '2026-12-29', '--json');
   assert.equal(r.status, 0, r.stderr);
   const j = JSON.parse(r.stdout);
-  const [이번, 다음] = j.roles.LAB;
-  assert.deepEqual([이번.from, 이번.to, 다음.from], ['2026-12-28', '2027-01-03', '2027-01-04']);
-  assert.deepEqual(이번.count, { 유입: 1, 육성: 0, 권위: 1, 전환: 1 });
-  assert.equal(이번.open, 3, '12-31 · 01-01 · 01-03');
-  assert.deepEqual(j.unslotted.map((x) => x.title), ['슬롯 없음']);
+  assert.deepEqual(j.range, ['2026-12-29', '2026-12-30', '2026-12-31', '2027-01-01', '2027-01-02']);
+  assert.deepEqual(j.brands.LAB.byDay['2026-12-30'].map((x) => x.state).sort(), ['승인 대기', '일부']);
   assert.equal(j.brands.LAB.byDay['2027-01-02'].length, 1);
+  assert.equal(j.brands.LAB.reserve, 0, '12-30은 「일부」라 채움이 아니다');
+  assert.deepEqual(j.unslotted.map((x) => x.title), ['슬롯 없음']);
+  assert.match(돌리기(연말, '--오늘', '2026-12-29').stdout, /^LAB {9}· {6}◐ {6}· {6}· {6}○ {6}0일$/m);
 });
 
 test('비축 일수는 그대로 내일부터 이어진 「채움」만 센다', () => {
@@ -177,19 +150,74 @@ test('계정별 줄·검사 「고칠 것」 표시', () => {
   assert.match(out, /! 예약됨인데 서버에 없음/);
 });
 
-test('--알림은 비축 2일 아래·대조 문제를 텔레그램 한 통으로, 같은 날 같은 내용은 다시 보내지 않는다', () => {
+test('--알림은 대조 경고·작업실 승인 대기·검사 「고칠 것」을 비축 목표 없이 한 통으로, 같은 날 같은 내용은 다시 보내지 않는다', () => {
   const sentFile = path.join(대조, '보낸글.txt');
   fs.rmSync(sentFile, { force: true });
   fs.rmSync(path.join(대조, '상태'), { recursive: true, force: true });
   const first = JSON.parse(대조큐('--json', '--알림'));
   assert.equal(first.alert.sent, true);
   const text = fs.readFileSync(sentFile, 'utf8');
-  // 브랜드 비축은 그 편의 판이 모두 예약돼야 센다 — 10-22 yuhobuilds는 인스타가 유호님 승인 전이라 0일
-  assert.match(text, /^\[예약 비축\] 2026-10-21 · LAB 0일 · synkbrief 0일 · yuhobuilds 0일 \(목표 4일\)/);
-  assert.match(text, /비축 부족: LAB · synkbrief · yuhobuilds/);
-  assert.match(text, /작업실 승인 대기 계정: yuhobuilds-instagram/);
-  assert.match(text, /! 예약됨인데 서버에 없음/);
+  assert.match(text, /^\[게시 큐\] 2026-10-21\n/);
+  assert.doesNotMatch(text, /비축|목표/);
+  assert.match(text, /^작업실 승인 대기 계정: yuhobuilds-instagram — /m);
+  assert.match(text, /^! 예약됨인데 서버에 없음: yuhobuilds-youtube · yuho-gone$/m);
+  assert.match(text, /^! 슬롯이 지났는데 나가지 않음: lab-youtube · 2026-10-20 · lab-missing$/m);
+  assert.match(text, /^검사 「고칠 것」 편: lab-fix$/m);
   const again = JSON.parse(대조큐('--json', '--알림'));
   assert.deepEqual(again.alert, { sent: false, reason: 'same-today' });
   assert.equal(fs.readFileSync(sentFile, 'utf8').split('---').length, 2, '한 통만');
+});
+
+// ── 비축 목표 없앰(10-23): 비축이 0일이어도 알릴 것이 없으면 보내지 않는다. 서버 캐시 없이(--폴더만) 돌린다. ──
+const 조용 = fs.mkdtempSync(path.join(os.tmpdir(), '예약큐-조용-'));
+test.after(() => fs.rmSync(조용, { recursive: true, force: true }));
+
+function 알림만(base, today) {
+  const sentFile = path.join(base, '보낸글.txt');
+  const r = spawnSync(process.execPath, [tool, '--폴더', base, '--오늘', today, '--json', '--알림'],
+    { encoding: 'utf8', env: { ...process.env, SYNK_QUEUE_DIR: path.join(base, '상태'), SYNK_HERMES_EXE: 'file:' + sentFile } });
+  assert.equal(r.status, 0, r.stderr);
+  return { report: JSON.parse(r.stdout), sent: fs.existsSync(sentFile) ? fs.readFileSync(sentFile, 'utf8') : null };
+}
+
+test('--알림은 비축이 0일이어도 경고·승인 대기·고칠 것이 없으면 보내지 않고, 경고가 생기면 보낸다 — 보류 편은 검사가 「고칠 것」이어도 세지 않는다', () => {
+  const base = path.join(조용, '비축0');
+  // 슬롯이 아직 안 온 LAB 편(게시결과 없음, 옛 역할 칸 그대로) · 보류한 synkbrief 편(검사 「고칠 것」)
+  편('quiet-lab', 판('LAB', '2026-10-20', '유입'), null, base);
+  편('quiet-held', { ...판('synkbrief', '2026-10-21'), 검사: { 결과: '고칠 것', 파일: [] } }, { 판: [{ 계정: 'synkbrief-youtube', 상태: '보류' }] }, base);
+  const quiet = 알림만(base, '2026-10-19');
+  assert.deepEqual(['LAB', 'synkbrief', 'yuhobuilds'].map((b) => quiet.report.brands[b].reserve), [0, 0, 0]);
+  assert.deepEqual([quiet.report.warnings, quiet.report.fix, quiet.report.alert], [[], [], { sent: false, reason: 'nothing' }]);
+  assert.equal(quiet.sent, null, '보내지 않았다');
+  // 이틀 뒤에는 10-20 슬롯이 지났는데 예약도 게시도 안 된 LAB 편이 경고가 된다(보류한 편은 경고도 고칠 것도 아니다)
+  const late = 알림만(base, '2026-10-21');
+  assert.equal(late.report.alert.sent, true);
+  assert.equal(late.sent, '[게시 큐] 2026-10-21\n! 슬롯이 지났는데 예약도 게시도 안 됨: lab-youtube · 2026-10-20 · quiet-lab\n---\n');
+});
+
+test('--알림은 작업실 승인 대기나 검사 「고칠 것」 하나만 있어도 보낸다', () => {
+  const wait = path.join(조용, '승인대기');
+  편('wait', 판('yuhobuilds', '2026-10-22'), { 판: [{ 계정: 'yuhobuilds-youtube', 상태: '승인 대기', 방법: '작업실', 작업: 'job-1' }] }, wait);
+  assert.equal(알림만(wait, '2026-10-21').sent,
+    '[게시 큐] 2026-10-21\n작업실 승인 대기 계정: yuhobuilds-youtube — 텔레그램으로 받은 검토 링크를 누르면 예약이 걸려요\n---\n');
+  // 고칠 것 편이 SHIFT 블로그 판을 품으면 synkbrief 줄과 SHIFT 줄 둘로 잡히지만 알림에는 한 번만 적는다
+  const fix = path.join(조용, '고칠것');
+  편('fix', { ...판('synkbrief', '2026-10-22'), 판: [{ 계정: 'synkbrief-instagram' }, { 계정: 'shift-naverblog' }], 검사: { 결과: '고칠 것', 파일: [] } }, null, fix);
+  const r = 알림만(fix, '2026-10-21');
+  assert.deepEqual(r.report.fix.map((x) => x.brand).sort(), ['SHIFT', 'synkbrief']);
+  assert.equal(r.sent, '[게시 큐] 2026-10-21\n검사 「고칠 것」 편: fix\n---\n');
+});
+
+test('--알림은 같은 날 내용이 A → A·B → A로 바뀌었다 돌아와도 A를 다시 보내지 않는다(10-23 GPT 검수)', () => {
+  const base = path.join(조용, '되돌아옴');
+  편('late-a', 판('LAB', '2026-10-20'), null, base);
+  assert.equal(알림만(base, '2026-10-21').report.alert.sent, true, 'A 처음');
+  편('late-b', 판('yuhobuilds', '2026-10-20'), null, base);
+  assert.equal(알림만(base, '2026-10-21').report.alert.sent, true, 'A·B 처음');
+  fs.rmSync(path.join(base, 'late-b'), { recursive: true, force: true });
+  const back = 알림만(base, '2026-10-21');
+  assert.deepEqual(back.report.alert, { sent: false, reason: 'same-today' }, 'A로 돌아온 같은 날');
+  assert.equal(back.sent.split('\n---\n').filter(Boolean).length, 2, '보낸 글은 두 통');
+  // 다음 날에는 같은 A도 새로 보낸다
+  assert.equal(알림만(base, '2026-10-22').report.alert.sent, true, '다음 날 A');
 });
