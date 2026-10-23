@@ -8,6 +8,8 @@ export const HS = "'Black Han Sans', 'SUIT', sans-serif";
 export const HS_EN = "'Anton', 'Black Han Sans', sans-serif";
 export const KO = "'SUIT', 'Inter Tight', sans-serif";
 export const EN = "'Inter Tight', 'SUIT', sans-serif";
+// 콘티 v3 공포 대사 자막 — 가는 명조(Noto Serif KR, SIL OFL · 지유 광고 서체 시안에서 유호님 「여기에는 명조가 낫네」)
+export const SERIF = "'Noto Serif KR', serif";
 
 const handle = delayRender('fonts');
 Promise.all([
@@ -16,6 +18,7 @@ Promise.all([
   loadFont({ family: 'SUIT', url: staticFile('fonts/SUIT-Variable.woff2'), weight: '100 900', display: 'block' }),
   loadFont({ family: 'Inter Tight', url: staticFile('fonts/InterTight-SemiBold.ttf'), weight: '600', display: 'block' }),
   loadFont({ family: 'Inter Tight', url: staticFile('fonts/InterTight-Bold.ttf'), weight: '700 900', display: 'block' }),
+  loadFont({ family: 'Noto Serif KR', url: staticFile('fonts/NotoSerifKR-VF.ttf'), weight: '200 900', display: 'block' }),
 ])
   .then(() => continueRender(handle))
   .catch((e) => {

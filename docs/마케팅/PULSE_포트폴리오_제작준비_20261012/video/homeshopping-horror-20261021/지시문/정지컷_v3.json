@@ -1,0 +1,182 @@
+{
+  "메모": "「매진 임박」 콘티 v3 정지컷 지시문(2026-10-22 — 반응 조사 반영, 03_콘티_v3.md). v2 판을 덮지 않도록 v2와 이름이 겹치는 컷은 v3를 붙인다(C02v3 · C03v3 · C05v3 · C07v3). 장면 참조는 고른 v2 정지컷(C01 · C02 · C03 · C07 · C14). 쇼호스트(하린)는 H1a를 먼저 구워 고른 뒤 H2c · H3d · E2의 다섯째 장으로 잇는다. E3는 고른 C01a를 편집한다. 풀기: node 풀기.mjs --파일 정지컷_v3.json → ego/jobs_정지컷_v3.json, 받은 그림은 받음/v3/.",
+  "공통": {
+    "세트": "Cinematic film still from a Korean psychological thriller, 16:9 frame. Location: a small Seoul apartment living room late at night with the main lights off — a deep wine-red velvet sofa, a string of tiny warm-yellow fairy-light bulbs draped along the wall behind the sofa, three lit pillar candles on a low dark-wood coffee table, and a floor lamp with a red fabric shade washing the room in deep red light. Hard red key light from the left, warm flickering candlelight from below, deep black shadows, a faint haze in the air, natural film grain, shot on a cinema camera. No text, no logos, no watermarks.",
+    "세트_참조": "Image {n} shows the room and its lighting: use it only for the background, set dressing and light — not for the composition or framing.",
+    "유호_얼굴": "HIS FACE: he is the exact same Korean man as in Images 1 and 2 — keep exactly that face in every detail, at his best: well-rested, freshly groomed, clear healthy skin, bright eyes. Images 3 to 5 are his real photos, for identity only (ignore the short hair in Image 3 and all backgrounds and clothing). Do not change his features, do not make him look older or younger, and do not add glasses.",
+    "유호_옷": "HAIR, BODY AND WARDROBE: his thin cornrows (about ten rows) are mostly hidden under the hood, only the front rows show at his hairline. He is 180 cm tall with size 110 (XXL) tops — naturally broad shoulders and a fuller chest, not a bodybuilder. He wears a plain black hooded jacket with the hood pulled up over his head, and black leather gloves. No mask, no balaclava — his whole face is visible. No weapon is visible anywhere in the frame.",
+    "유호_장면참조": "Image 6 shows him in this same scene: keep the same hooded jacket, gloves, room, light and camera look as Image 6, but take his face only from Images 1 to 5.",
+    "사진남": "Photorealistic film still, documentary-plate realism: natural skin texture with visible pores, realistic hair, natural proportions, not airbrushed. He is the only person in the frame. No text, no logos, no watermarks.",
+    "통2_얼굴": "Use the four attached photos (Images 1 to 4) only as identity references for one Korean woman about 30 years old. Keep her face and body exactly the same: her full round face with soft cheeks and a soft double chin, thick straight dark eyebrows, her short tightly curled dark-brown permed bob, her plus-size figure (163 cm, Korean clothing size 88), and — when her teeth show — only a very narrow gap between her two front teeth (both front teeth fully there). Ignore the backgrounds, clothing and lighting of the reference photos. Do not add moles, freckles, marks, tattoos, text, logos or watermarks.",
+    "통2_옷": "She wears a lavender fleece pajama top with tiny white polka dots.",
+    "리4_얼굴": "Use the four attached photos (Images 1 to 4) only as identity references for one Korean woman about 27 years old. Keep her face exactly the same: her round face, her black bowl-cut bob with straight blunt bangs just above the eyebrows, her large round tortoiseshell glasses with clean clear lenses, and the small mole on her cheek exactly where it is in the reference photos. Ignore the backgrounds, clothing and lighting of the reference photos. Do not add other moles, freckles, marks, tattoos, text, logos or watermarks.",
+    "리4_옷": "She wears a sage-green knit sweater over a white collared shirt.",
+    "사진": "Photorealistic film still, natural skin texture with visible pores, realistic individual hair strands, natural proportions. She is the only person in the frame.",
+    "우는_연기": "This is a horror-film parody, so the crying is big and dramatic — but she must stay unmistakably the same woman as in Images 1 to 4.",
+    "통2_장면참조": "Image 5 shows her in this same room a moment earlier: keep exactly her short, tightly curled dark-brown permed bob (tight springy curls, no loose waves, no visible side parting), her lavender polka-dot pajama top and the light as in Image 5 — but not its pose or framing.",
+    "하린_얼굴": "Use the four attached photos (Images 1 to 4) only as identity references for one young Korean woman in her early twenties. Keep her face exactly the same in every detail: soft round face with a small chin, dark brown double-lidded eyes with aegyo-sal, small rounded nose tip, natural coral-orange lips (not red), light warm-toned skin with a faint peach blush on the cheeks, and her shoulder-length layered hair with wispy see-through bangs. Her hair color is a warm medium chestnut brown (close to #5C3D1F) exactly like in the reference photos, not light beige, not golden blonde, not ash, and it stays this shade even under red light. Ignore the backgrounds, clothing and lighting of the reference photos. Do not add moles, freckles, marks, tattoos, text, logos or watermarks.",
+    "세트_더함": "In the corner of the room an old flat-screen TV sits on a low dark cabinet; it is switched on and its screen glows a plain, soft blue-white light with no picture on it. A few plain brown cardboard delivery boxes are stacked against the wall (no labels, no printing).",
+    "장면참조5": "Image 5 shows her in this same room a moment earlier: keep her clothes, glasses, hair and the light as in Image 5 — but not its pose or framing.",
+    "스튜디오": "Cinematic still from a live Korean TV home-shopping broadcast, 16:9 frame. A bright, glossy studio set: clean high-key lighting with soft even frontal light and no harsh shadows, soft pastel pink and white set panels, a blurred LED wall behind her glowing in warm pastel colours, the look of a sharp, evenly lit, slightly saturated broadcast TV camera. No text, no letters, no numbers, no logos anywhere on the set, the screens or her clothes, no products in the frame, no watermarks.",
+    "쇼호스트_옷": "She is a polished TV home-shopping host: a fitted coral-pink tweed jacket over a white silk blouse, a tiny black clip-on lavalier microphone on her lapel, neat broadcast makeup, her hair smooth and glossy in the same cut and colour as in the reference photos.",
+    "쇼호스트_장면참조": "Image 5 shows her in this same studio a moment earlier: keep exactly the same jacket, blouse, microphone, hair, studio set and lighting as in Image 5 — but not its pose or framing.",
+    "사진여": "Photorealistic, natural skin texture with visible pores, realistic individual hair strands, natural proportions. She is the only person in the frame."
+  },
+  "컷": [
+    {
+      "id": "C01a",
+      "who": "방",
+      "refs": [
+        "C01"
+      ],
+      "text": "{세트} {세트_참조:1} {세트_더함} Wide shot from very low, the camera about 35 cm above the floor at the corner of the room, 24mm lens: the wine-red sofa across the middle, the three candles on the low coffee table in the foreground, the fairy lights on the wall, the glowing TV in the far corner on the right. Nobody is in the room. On the wall above the sofa the red lamp throws the long, sharp shadow of a man's arm holding a kitchen knife, sweeping in from the left edge of the frame — the man himself is outside the frame; only his shadow is on the wall. Eerie, still, silent. No text, no logos, no watermarks.",
+      "메모": "v3 훅(0~1초). 0.3초에 그림자가 왼쪽에서 들어오는 움직임은 영상 단계. TV 화면은 비워 두고 후반에서 홈쇼핑을 합성한다."
+    },
+    {
+      "id": "C02v3",
+      "who": "yuho",
+      "refs": [
+        "유호x5",
+        "C02"
+      ],
+      "text": "{세트} {유호_장면참조} Low-angle medium close-up from the chest up: the camera sits about 15 degrees below his eye line, at the eye level of someone seated on the sofa, looking up at him. He stands over the lens and stares straight down into it with cold, unblinking eyes, jaw set, lips closed. Candlelight from below lights his face from beneath, red backlight rims the hood and his shoulders, the fairy lights are soft round bokeh above and behind him. His gloved hands are below the bottom edge of the frame. 35mm, shallow depth of field. {유호_얼굴} {유호_옷} {사진남}",
+      "메모": "v3 강도 등장(1.6~3.4) — 위협은 로우(조사 §5). 대사 없음."
+    },
+    {
+      "id": "C03v3",
+      "who": "리4",
+      "refs": [
+        "리4x4",
+        "C03"
+      ],
+      "text": "{세트} {장면참조5} High-angle close-up from the point of view of the intruder standing over her: the camera is about 20 degrees above her eye line, looking down. She is huddled low on the wine-red velvet sofa and looks straight up into the lens, terrified and sobbing behind her round glasses: big tears on both cheeks, glossy red-rimmed eyes, eyebrows pulled up in fear, lips trembling. Red lamp light from the left and warm candlelight from below; the sofa cushions fill the background. 50mm, shallow depth of field. {리4_얼굴} {리4_옷} {우는_연기} {사진}",
+      "메모": "v3 강도 시점 하이 — R1은 화면 밖 목소리로 이 컷 위에."
+    },
+    {
+      "id": "C05v3",
+      "who": "yuho",
+      "refs": [
+        "유호x5",
+        "C02"
+      ],
+      "text": "{세트} {유호_장면참조} Extreme close-up of only his eyes and brows: the frame runs from the bridge of his nose up to just above his eyebrows, the edge of the black hood across the top of the frame. Dutch angle — the whole camera is tilted about 12 degrees, and he tilts his head the same way, puzzled, eyebrows slightly raised, eyes darting to the side as if he just heard something absurd. Red light from the left, faint candle glow from below. Macro lens, very shallow depth of field. {유호_얼굴} {유호_옷} {사진남}",
+      "메모": "v3 더치 접사 갸웃(9.7~10.9)."
+    },
+    {
+      "id": "C07v3",
+      "who": "통2",
+      "refs": [
+        "통2x4",
+        "C07"
+      ],
+      "text": "{세트} {통2_장면참조} High-angle medium close-up from the point of view of the intruder standing over her: the camera is about 25 degrees above her eye line, looking down. She sits on the edge of the wine-red velvet sofa and looks straight up into the lens, both hands pressed together in front of her mouth in a desperate pleading gesture so that her hands cover her lips, crying, eyebrows raised, eyes wide. Red light from the left, candlelight from below. 50mm, slight handheld feel, shallow depth of field. {통2_얼굴} {통2_옷} {우는_연기} {사진}",
+      "메모": "v3 강도 시점 하이 — V2는 모은 손에 입이 가린다."
+    },
+    {
+      "id": "C09a",
+      "who": "yuho",
+      "refs": [
+        "유호x5",
+        "C02"
+      ],
+      "text": "{세트} {유호_장면참조} Overhead shot from directly above him, the camera looking straight down: we see the top of his black hood and his broad shoulders as he bows his head to look down at something he holds in both hands. His face is almost hidden under the hood from this angle — only the tip of his nose and the front rows of his cornrows show — and his gloved hands and whatever they hold are hidden in the shadow below the hood and his shoulders. Below him, the worn rug and the edge of the dark coffee table with candles; candlelight glows up around him, red light from the side. 24mm, sharp. He is the same man as in Images 1 to 6. {유호_옷} {사진남}",
+      "메모": "v3 정수리(19.1~20.6) — R3 「…이게, 얼만데.」 입이 안 보인다. 손에 든 물건은 그리지 않는다(다음 컷 블렌더)."
+    },
+    {
+      "id": "C11a",
+      "who": "yuho",
+      "refs": [
+        "유호x5",
+        "C14"
+      ],
+      "text": "{세트} {유호_장면참조} Over-the-shoulder rear three-quarter medium close-up from behind his right shoulder: the back and side of his black hood fill the right part of the frame. He holds a black smartphone to his right ear with his gloved right hand. We see his face only in lost profile — the line of his cheekbone, the side of his nose and his eyelashes — and his mouth is hidden behind his gloved hand and the phone. A cold blue-white glow from a TV screen outside the frame on the left lights the side of his face; the red lamp glows at the edges of the dark room. 50mm, shallow depth of field. {유호_얼굴} {유호_옷} {사진남}",
+      "메모": "v3 뒤쪽 3/4 통화(26.9~28.5) — R4 앞부분, 입이 가린다. TV는 화면 밖, 빛만."
+    },
+    {
+      "id": "C11b",
+      "who": "손",
+      "refs": [
+        "C14"
+      ],
+      "text": "Cinematic film still, 16:9. Extreme close-up of a black leather-gloved hand holding a black smartphone at night, the gloved thumb hovering over the screen. The phone screen glows a plain bright white-blue light — no digits, no letters, no icons, no interface, nothing on it but light — and the glow catches the creases of the leather. The background is a dark living room in deep red light and soft fairy-light bokeh. Image 1 shows the same glove and phone in this scene: keep the same black leather glove and phone. Only the gloved hand is visible — no face, no other person. No text, no logos, no watermarks.",
+      "메모": "v3 폰 접사(28.5~29.2) — R4 뒷부분. 화면 속은 비운다."
+    },
+    {
+      "id": "H1a",
+      "who": "하린",
+      "refs": [
+        "F02x4"
+      ],
+      "text": "{스튜디오} Medium close-up from the chest up, eye level, straight on to the broadcast camera: she smiles a wide, bright, perfectly professional home-shopping smile straight into the lens and opens one hand, palm up, toward something just outside the frame on the right, as if presenting a product there. 70mm broadcast lens, everything in focus. {하린_얼굴} {쇼호스트_옷} {사진여}",
+      "메모": "v3 쇼호스트(하린) 첫 컷 — 다른 쇼호스트 컷의 장면 참조가 된다. 손에 제품은 없다."
+    },
+    {
+      "id": "H2c",
+      "who": "하린",
+      "refs": [
+        "F02x4",
+        "H1a"
+      ],
+      "text": "{스튜디오} {쇼호스트_장면참조} Medium close-up from the chest up, eye level, straight on to the broadcast camera: with the same bright, unbreakable professional smile she points her index finger straight at the lens, energetic, eyebrows lifted, leaning slightly toward the camera as if telling the viewer to call right now. 70mm broadcast lens, everything in focus. {하린_얼굴} {쇼호스트_옷} {사진여}",
+      "메모": "v3 H2c — 「지금 바로 전화!」 렌즈를 가리킨다(말은 화면 밖 소리 · 자막 띠)."
+    },
+    {
+      "id": "H3d",
+      "who": "하린",
+      "refs": [
+        "F02x4",
+        "H1a"
+      ],
+      "text": "{스튜디오} {쇼호스트_장면참조} Medium close-up from the chest up, eye level: she holds up a thumbs-up next to her face and keeps the same bright professional smile frozen on her face — but it is a little too wide and too stiff, a forced smile held a beat too long, with the faintest strain at one corner of her mouth, her eyes still sparkling for the camera. Comic but subtle, not a grimace. 70mm broadcast lens, everything in focus. {하린_얼굴} {쇼호스트_옷} {사진여}",
+      "메모": "v3 H3d — 값이 무너진 뒤에도 미소를 풀지 않는 「자본주의 미소」(02_반응조사 §2)."
+    },
+    {
+      "id": "E2",
+      "who": "하린",
+      "refs": [
+        "F02x4",
+        "H1a"
+      ],
+      "text": "{스튜디오} {쇼호스트_장면참조} Medium close-up from the chest up, eye level, looking straight into the lens as if at one specific viewer at home: a warm, knowing, delighted smile, one hand placed lightly on her chest, her head starting a small polite bow of thanks. 70mm broadcast lens, everything in focus. {하린_얼굴} {쇼호스트_옷} {사진여}",
+      "메모": "v3 E2 — 「후드 쓰신 고객님~ 주문 감사합니다!」 렌즈 너머의 강도에게. 입모양은 영상 단계에서 소리에 맞춘다."
+    },
+    {
+      "id": "C09v3",
+      "who": "yuho",
+      "refs": [
+        "유호x5",
+        "C02"
+      ],
+      "text": "{세트} {유호_장면참조} Slightly high-angle medium close-up from just above and in front of him: he leans forward over the low dark coffee table and looks down at something on the table just below the bottom edge of the frame, his whole face clearly visible, head tilted with genuine curiosity, eyebrows raised, lips closed — a dangerous man suddenly very interested in a price. Warm candlelight from the table below lights his face from beneath, red lamp light from the left, fairy-light bokeh behind him. 50mm, shallow depth of field. {유호_얼굴} {유호_옷} {사진남}",
+      "메모": "v3.1 — Fable 설계 검토 P1: 정수리 C09a는 강도 얼굴을 지웠다 → 얼굴이 보이게. 탁자 위 것을 내려다본다(다음 컷 C09b가 탁자 위 용기, P3-3)."
+    },
+    {
+      "id": "C05v3cu",
+      "who": "yuho",
+      "refs": [
+        "유호x5",
+        "C02"
+      ],
+      "text": "{세트} {유호_장면참조} Close-up of his face from the top of the hood to the chin: he tilts his head about 20 degrees to one side, puzzled, eyebrows slightly raised, eyes darting to the side as if he just heard something absurd, lips closed. Red light from the left, faint candle glow from below, fairy-light bokeh. 85mm, shallow depth of field. {유호_얼굴} {유호_옷} {사진남}",
+      "메모": "v3.1 — Fable P3-2: 눈 접사는 얼굴 세트로 닮음을 가릴 수 없다 → CU로 굽고 후반에서 크롭 · 더치."
+    },
+    {
+      "id": "C01a_clean",
+      "who": "방",
+      "refs": [
+        "C01a"
+      ],
+      "text": "Create one new still photograph (not a video) from Image 1. Keep everything exactly the same — the same room, sofa, candles, fairy lights, glowing TV, boxes, red light, colours and the same low camera framing — and remove only the dark shadow of the arm and the knife from the wall, so the wall behind the sofa is plain, with the same texture and the same red light where the shadow was. Nobody is visible. No text, no logos, no watermarks.",
+      "메모": "v3.1 — Fable P2-5: 그림자만 지운 판. 칼 그림자(0.3초에 쓸려 들어옴)와 끝 고리의 택배 상자 그림자는 후반에서 겹친다(정지컷_준비_v3.py)."
+    },
+    {
+      "id": "E3",
+      "who": "방",
+      "refs": [
+        "C01a"
+      ],
+      "text": "Create one new still photograph (not a video) from Image 1. Keep everything exactly the same — the same room, sofa, candles, fairy lights, glowing TV, boxes, red light and the same low camera framing — and change only the shadow on the wall: the man's shadow no longer holds a knife; instead his shadow holds a cardboard delivery box up in both hands, the box's silhouette sharp against the wall. Nobody is visible in the frame — only the shadow. No text, no logos, no watermarks.",
+      "메모": "v3 끝 고리(34.8~36.0) — 첫 컷 구도로 돌아와 칼 그림자 자리에 택배 상자 그림자."
+    }
+  ]
+}

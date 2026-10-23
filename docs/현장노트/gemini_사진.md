@@ -301,6 +301,7 @@
 - 다시 확인: 라운드 로그에 「창 … → normal」이 다시 끼면 다른 실행부터 본다.
 - 덧붙임(10-22 17시): 다른 세션은 라운드를 잇달아 돌려(TOPIK 장면 round-48 등) 0개인 틈이 몇 초뿐일 때가 있다. 그래서 대기 스크립트를 배경으로 걸어 10초마다 개수를 보고 **세 번 연속 0개**일 때 시작한다(bash 고리에서 `powershell -NoProfile -Command "@(Get-Process ego-browser -ErrorAction SilentlyContinue).Count"`가 0인 횟수를 세고, 라운드 기록 첫 줄에 몇 번째 확인에서 시작했는지 남긴다). 세션이 다시 시작되면 이 대기 스크립트는 시작 전에 사라질 수 있다 — 다시 시작한 뒤에는 라운드 기록 파일(`ego/round-NN.log`)이 생겼는지부터 보고, 없으면 시작도 안 한 것이니 다시 건다.
 - 덧붙임(10-22 18시): 기다렸다 시작한 35차는 `ego-browser nodejs`가 3분 반 만에 돌아왔는데 기록에 ego 출력이 한 줄도 없었다(같은 시각 다른 세션이 새 ego 실행을 시작했다). 그런데 스크립트는 ego 안에서 계속 돌아 3분 뒤 둘째 장(C11)을 `받음/`에 저장했다. 덧붙이기 리디렉션(`>>`)은 원인이 아니다(작은 시험에서 `>` · `>>` 모두 출력이 남았다). 라운드가 끝났는지는 기록의 `BATCH DONE` 줄로 보고, 그 줄 없이 끝났으면 `받음/` 폴더를 시각순으로 몇 분 더 본다 — 「멈췄다」고 적기 전에.
+- 덧붙임(10-22 23시 53분): 블렌더를 먼저 굽으려고 다음 라운드의 대기 스크립트를 `TaskStop`으로 멈췄는데, 그 bash 고리는 살아 있어 20초 뒤 라운드를 시작했다(블렌더 GPU 렌더와 1분 겹침). 대기 스크립트를 멈추려면 `Get-CimInstance Win32_Process`에서 명령줄에 `run_round`가 든 bash를 찾아 `taskkill /PID <pid> /T /F`로 끄고, 멈췄는지 다시 본다. 아니면 처음부터 블렌더를 라운드 사이가 아니라 라운드 전후로 둔다.
 
 ### PC가 바쁘면(CPU 90%+) 결과 그림 받기가 「element is not visible in the viewport」로 끊긴다 — 그 대화에서 `take.mjs`로 받는다 (2026-10-22 Claude)
 - 증상: 10-22 18~19시 「달리며 건너뛰는 한국」 v2 시험 컷마다 그림은 만들어졌는데(기록에 「sent」) 받기에서 `page.click … element is not visible in the viewport`, `CDP request timed out: Runtime.callFunctionOn`, `page.evaluate timed out … Page is still unresponsive`로 끊겼다. CPU는 89~99%로, Windows 보안(MsMpEng)이 3~9코어어치를 쓰고 다른 세션의 python · git도 돌았다. requestAnimationFrame 한 번이 1.4초였다.

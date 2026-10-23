@@ -200,7 +200,8 @@ const starPath = (R: number, r: number, n: number) => {
   return `M${pts.join(' L')} Z`;
 };
 
-export const PriceStar: React.FC<{ at: number; x: number; y: number; R?: number; price: string; label?: string; tone?: 'gold' | 'yellow' | 'white'; struck?: number; wobble?: boolean }> = ({ at, x, y, R = 250, price, label, tone = 'gold', struck, wobble = true }) => {
+// big이 있으면(콘티 v3) 숫자 대신 한글 큰 글(「9만원대!」)을 쓰고 price는 그 밑에 작게 — 없으면 v2 그대로
+export const PriceStar: React.FC<{ at: number; x: number; y: number; R?: number; price: string; label?: string; tone?: 'gold' | 'yellow' | 'white'; struck?: number; wobble?: boolean; big?: string }> = ({ at, x, y, R = 250, price, label, tone = 'gold', struck, wobble = true, big }) => {
   const f = useCurrentFrame();
   const p = usePop(at, 8);
   if (f < at) return null;
@@ -225,9 +226,19 @@ export const PriceStar: React.FC<{ at: number; x: number; y: number; R?: number;
       </svg>
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0 }}>
         {label ? <div style={{ fontFamily: HS, fontSize: R * 0.17, color: '#0B1A4A', marginBottom: -6 }}>{label}</div> : null}
-        <div style={{ display: 'flex', alignItems: 'baseline', position: 'relative' }}>
-          <span style={{ fontFamily: HS_EN, fontSize: fs, color: '#E4001B', textShadow: ol('#FFFFFF', 6), letterSpacing: -1 }}>{digits}</span>
-          <span style={{ fontFamily: HS, fontSize: fs * 0.48, color: '#E4001B', textShadow: ol('#FFFFFF', 5), marginLeft: 4 }}>원</span>
+        <div style={{ display: 'flex', flexDirection: big ? 'column' : 'row', alignItems: big ? 'center' : 'baseline', position: 'relative' }}>
+          {big ? (
+            <>
+              <span style={{ fontFamily: HS, fontSize: Math.min(R * 0.42, (R * 1.5) / Math.max(3, big.length * 0.92)), lineHeight: 1.05, color: '#E4001B', textShadow: ol('#FFFFFF', 6), letterSpacing: -1 }}>{big}</span>
+              {/* 작은 값도 9:16 띠에서 읽히게(Fable 설계 검토 P3-4 — 16:9에서 56px 아래면 폰에서 안 읽힌다) */}
+              <span style={{ fontFamily: HS_EN, fontSize: Math.max(52, R * 0.24), color: '#0B1A4A', marginTop: 2 }}>{price}</span>
+            </>
+          ) : (
+            <>
+              <span style={{ fontFamily: HS_EN, fontSize: fs, color: '#E4001B', textShadow: ol('#FFFFFF', 6), letterSpacing: -1 }}>{digits}</span>
+              <span style={{ fontFamily: HS, fontSize: fs * 0.48, color: '#E4001B', textShadow: ol('#FFFFFF', 5), marginLeft: 4 }}>원</span>
+            </>
+          )}
           {strike > 0 ? (
             <div style={{ position: 'absolute', left: -12, right: -12, top: '52%', height: 16, background: '#111', transform: `rotate(-9deg) scaleX(${strike})`, transformOrigin: 'left center', borderRadius: 8, boxShadow: '0 0 0 4px #FFFFFF' }} />
           ) : null}
@@ -238,7 +249,8 @@ export const PriceStar: React.FC<{ at: number; x: number; y: number; R?: number;
 };
 
 // ── 딱지(동그라미 · 둥근 네모 · 터짐) ────────────────────────────────────────
-export const Sticker: React.FC<{ at: number; x: number; y: number; text: string; shape?: 'circle' | 'pill' | 'burst'; bg?: string; fg?: string; size?: number; rot?: number; w?: number }> = ({ at, x, y, text, shape = 'pill', bg = '#FFE14A', fg = '#E4001B', size = 54, rot = -6, w }) => {
+// font: 숫자에 쉼표가 든 딱지(콘티 v3 「월 27,500원」)는 HS_EN — Black Han Sans의 쉼표는 마침표처럼 보였다. 한글은 Black Han Sans로 넘어간다
+export const Sticker: React.FC<{ at: number; x: number; y: number; text: string; shape?: 'circle' | 'pill' | 'burst'; bg?: string; fg?: string; size?: number; rot?: number; w?: number; font?: string }> = ({ at, x, y, text, shape = 'pill', bg = '#FFE14A', fg = '#E4001B', size = 54, rot = -6, w, font = HS }) => {
   const f = useCurrentFrame();
   const p = usePop(at, 7);
   if (f < at) return null;
@@ -251,7 +263,7 @@ export const Sticker: React.FC<{ at: number; x: number; y: number; text: string;
           <path d={starPath(R, R * 0.74, 14)} fill="#FFFFFF" />
           <path d={starPath(R * 0.9, R * 0.66, 14)} fill={bg} stroke="#0B1A4A" strokeWidth={6} strokeLinejoin="round" />
         </svg>
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: HS, fontSize: size, lineHeight: 1.0, color: fg, textAlign: 'center', textShadow: ol('#FFFFFF', 4) }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: font, fontSize: size, lineHeight: 1.0, color: fg, textAlign: 'center', textShadow: ol('#FFFFFF', 4) }}>
           {lines.map((l, i) => <div key={i}>{l}</div>)}
         </div>
       </div>
@@ -261,7 +273,7 @@ export const Sticker: React.FC<{ at: number; x: number; y: number; text: string;
   const D = w ?? 230;
   return (
     <div style={{ position: 'absolute', left: x, top: y, transform: `translate(-50%, -50%) scale(${p}) rotate(${rot}deg)` }}>
-      <div style={{ background: bg, color: fg, fontFamily: HS, fontSize: size, lineHeight: 1.0, textAlign: 'center', border: '7px solid #FFFFFF', boxShadow: '0 0 0 5px #0B1A4A, 0 12px 0 rgba(0,0,0,0.3)', borderRadius: round ? D : 22, width: round ? D : undefined, height: round ? D : undefined, padding: round ? 0 : '14px 30px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', whiteSpace: 'nowrap' }}>
+      <div style={{ background: bg, color: fg, fontFamily: font, fontSize: size, lineHeight: 1.0, textAlign: 'center', border: '7px solid #FFFFFF', boxShadow: '0 0 0 5px #0B1A4A, 0 12px 0 rgba(0,0,0,0.3)', borderRadius: round ? D : 22, width: round ? D : undefined, height: round ? D : undefined, padding: round ? 0 : '14px 30px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', whiteSpace: 'nowrap' }}>
         {lines.map((l, i) => <div key={i}>{l}</div>)}
       </div>
     </div>
@@ -299,9 +311,9 @@ export const shakeAt = (f: number, at: number, amp = 18) => {
 };
 
 // ── 아래 주문 띠(전화번호 + 흐르는 글) ────────────────────────────────────────
-export const OrderBar: React.FC<{ phone?: string }> = ({ phone = P1.phone }) => {
+// ticker가 없으면 v2 흐르는 글 그대로(콘티 v3의 H2 · H3는 「주문 폭주! 상담원 연결이 어렵습니다」)
+export const OrderBar: React.FC<{ phone?: string; ticker?: string }> = ({ phone = P1.phone, ticker = '  ARS 주문 시 추가 할인  ·  무이자 10개월  ·  지금 이 구성 마지막  ·  방송 중 주문 폭주  ·  ARS 주문 시 추가 할인  ·  무이자 10개월  ·  지금 이 구성 마지막  ·  방송 중 주문 폭주  ·' }) => {
   const f = useCurrentFrame();
-  const ticker = '  ARS 주문 시 추가 할인  ·  무이자 10개월  ·  지금 이 구성 마지막  ·  방송 중 주문 폭주  ·  ARS 주문 시 추가 할인  ·  무이자 10개월  ·  지금 이 구성 마지막  ·  방송 중 주문 폭주  ·';
   return (
     <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 104, background: 'linear-gradient(#13286E, #08143D)', borderTop: '6px solid #FFE14A', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
       <div style={{ zIndex: 2, height: '100%', display: 'flex', alignItems: 'center', gap: 18, padding: '0 34px', background: '#E4001B', boxShadow: '10px 0 20px rgba(0,0,0,0.4)' }}>

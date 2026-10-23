@@ -14,13 +14,13 @@ export type SceneProps = { p?: Product };
 const mid = (len: number, n: number) => Math.round((n + 1) / 2 - len / 2);
 const SPARK: [number, number, number][] = [[1050, 330, 26], [1500, 280, 34], [1560, 600, 22], [1010, 640, 18], [1430, 860, 24], [1110, 480, 14]];
 
-const Frame: React.FC<{ palette: 'sky' | 'pop' | 'fire' | 'gold'; phone: string; children: React.ReactNode; shake?: { x: number; y: number } }> = ({ palette, phone, children, shake }) => (
+export const Frame: React.FC<{ palette: 'sky' | 'pop' | 'fire' | 'gold'; phone: string; children: React.ReactNode; shake?: { x: number; y: number }; ticker?: string }> = ({ palette, phone, children, shake, ticker }) => (
   <AbsoluteFill style={{ overflow: 'hidden', background: '#000' }}>
     <AbsoluteFill style={{ transform: shake ? `translate(${shake.x}px, ${shake.y}px)` : undefined }}>
       <Sunburst palette={palette} />
       {children}
       <LiveBug />
-      <OrderBar phone={phone} />
+      <OrderBar phone={phone} ticker={ticker} />
       <Disclaimer />
     </AbsoluteFill>
   </AbsoluteFill>

@@ -48,6 +48,22 @@ const 목록 = [
   [path.join(LIB, 'sonniss_gdc2026', '풀림', '344 Audio - Haunting Ambiences Vol. 5', "FIRECrkl_Fire Crackling, Popping, Witch's Cauldron_344 Audio_Haunting Ambiences Vol 5.wav"), 'amb/candle.wav'],
   [path.join(LIB, 'fairlight', 'Media Files', 'Cell phone taps.M.wav'), 'amb/phone.wav'],
   [path.join(LIB, 'fairlight', 'Media Files', 'Metal Hit.M.wav'), 'amb/knife.wav'],
+  // ── 콘티 v3(10-22 반응 조사, 03_콘티_v3.md) ──
+  // 공포 대사 자막 서체 — 가는 명조 Noto Serif KR(SIL OFL, 윈도우 글꼴 폴더의 가변 글꼴)
+  ['C:/Windows/Fonts/NotoSerifKR-VF.ttf', 'fonts/NotoSerifKR-VF.ttf'],
+  // 정지컷 v3(정지컷_준비_v3.py — 공포 컷은 붉은밤, 쇼호스트 컷은 방송 색 그대로, C09b는 블렌더 렌더)
+  ...['C01a', 'C01a_bg', 'C02v3', 'C03v3', 'C05v3', 'C05v3cu', 'C07v3', 'C09v3', 'C09b', 'C11b', 'E3', 'H1a', 'H2c', 'H3d', 'E2'].map((c) => [path.join(V, '정지컷', '색감', `${c}.jpg`), `stills/${c}.jpg`]),
+  // 꽉 뚜껑 잠금 접사(블렌더/밀폐용기.py --latch) — 24장
+  ...Array.from({ length: 24 }, (_, i) => {
+    const n = `latch_${String(i + 1).padStart(4, '0')}.png`;
+    return [path.join(V, '블렌더', '2안', 'latch', n), `kkwak/${n}`];
+  }),
+  // 새로 구운 목소리(목소리/계획_v3.json → vo_v3 — 굽기 도구는 출력 폴더에서 「계획에 없는 지난 줄」을 지우니 v2 줄과 폴더를 나눈다)와 합성 효과음(소리_v3.py)
+  ...['HS1v3', 'HS3cv3', 'E2', 'ARS', 'R6'].map((n) => [path.join(V, '목소리', 'vo_v3', `${n}.wav`), `vo/${n}.wav`]),
+  ...['heartbeat', 'ringback', 'ringback_short', 'doorbell'].map((n) => [path.join(V, '소리_v3', `${n}.wav`), `sfx/${n}.wav`]),
+  // 칼날 스치는 소리(C01b) · 스튜디오 관객 환호(홈쇼핑 칸) — Sonniss GDC 2026
+  [path.join(LIB, 'sonniss_gdc2026', '풀림', 'David Dumais Audio - Melee Weapons Sound Effects Pack 2', 'METLFric_SWING SCRAPE Swift Melee Weapon Swing With A Long Blade 14_DDUMAIS_MWP2.wav'), 'amb/blade.wav'],
+  [path.join(LIB, 'sonniss_gdc2026', '풀림', 'Sonik Sound Library - Spanish Crowds', 'CRWDCheer_Small Club, 50 People, Crowd, Spanish, Cheering and Applause-Surround_KSL_KS015.wav'), 'amb/cheer.wav'],
 ];
 
 let copied = 0, same = 0;
@@ -64,8 +80,16 @@ const groups = {};
 for (const m of missing) { const g = m.split('/')[0]; groups[g] = (groups[g] || 0) + 1; }
 // 폰 진동 소리는 원본 피크가 −32.8dBFS라 들리지 않았다(Fable P2) — −6dBFS로 맞춘 사본을 만든다
 const phone = path.join(OUT, 'amb', 'phone.wav');
+const { execFileSync } = await import('node:child_process');
 if (fs.existsSync(phone)) {
-  const { execFileSync } = await import('node:child_process');
   execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', phone, '-af', 'volume=26.8dB,alimiter=limit=0.5:level=false', path.join(OUT, 'amb', 'phone_n.wav')]);
 }
+// 콘티 v3: 관객 환호는 5.1채널 · 칼날은 96kHz 원본이라 가편집용 스테레오 48kHz 사본을 만든다(환호는 앞 10초만)
+for (const [src, dst, extra] of [['cheer.wav', 'cheer2.wav', ['-t', '10']], ['blade.wav', 'blade48.wav', []]]) {
+  const s = path.join(OUT, 'amb', src);
+  if (fs.existsSync(s)) execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', s, ...extra, '-ac', '2', '-ar', '48000', path.join(OUT, 'amb', dst)]);
+}
+// ARS 안내는 휴대폰에서 새는 소리로 — 전화 대역(300~3400Hz)만 남기고 살짝 찌그러뜨린 사본(vo/ARS_tel.wav)
+const ars = path.join(OUT, 'vo', 'ARS.wav');
+if (fs.existsSync(ars)) execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', ars, '-af', 'highpass=f=300,lowpass=f=3400,acompressor=threshold=0.1:ratio=6,volume=-4dB', path.join(OUT, 'vo', 'ARS_tel.wav')]);
 console.log(`public/: 새로 ${copied} · 그대로 ${same} · 없음 ${missing.length}`, Object.keys(groups).length ? groups : '');

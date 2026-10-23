@@ -16,6 +16,14 @@ export type Product = {
   // solo가 없으면 받침만 크게 + main을 아주 작게(1안 미니 병), 있으면 받침째 렌더한 그 프레임 열 하나(2안 뚜껑, shadow는 그림자 진하기)
   h3: { big: string; small: string; sticker: string; arrowTo: [number, number]; solo?: { seq: Seq; h: number; shadow?: number } };
   he: { big: string; small: string };
+  v3?: V3Text; // 콘티 v3(10-22 반응 조사)에서만 — 없으면 v2 화면 그대로
+};
+
+// 콘티 v3의 값 · 띠 글(03_콘티_v3.md 「홈쇼핑 화면 글」): 값은 실제 홈쇼핑 표기 「N만원대」(큰 글)와 정확한 값(작은 글)
+export type V3Text = {
+  price: { h1: [string, string]; h2: [string, string]; h3: [string, string]; after: [string, string] };
+  muija: { h2: string; h3: string };
+  ticker: string; // H2 · H3 아래 빨간 흐르는 띠
 };
 
 // 1안 · 맑음 MALGEUM 토너(지유 v7 블렌더 병 A2, 블렌더/돌림판.py) — 120장 −60°→+60°
@@ -58,4 +66,14 @@ export const P2: Product = {
   // 흰 받침 위 흰 뚜껑이라 그림자를 진하게(0.38 → 0.55, Fable P2)
   h3: { big: '꽉 밀폐용기', small: '뚜껑만 1개', sticker: '뚜껑만!', arrowTo: [1440, 735], solo: { seq: LID, h: 360, shadow: 0.55 } },
   he: { big: '꽉 KKWAK', small: '진공 밀폐용기 3종' },
+};
+
+// 콘티 v3 · 2안 — 「4만원대 = 49,900원」 류 표기를 끝까지 비튼다(9,900원도 「9천원대」), 무이자는 10 → 360개월(02_반응조사 §2)
+export const P2V3: Product = {
+  ...P2,
+  v3: {
+    price: { h1: ['9만원대!', '99,000원'], h2: ['99만원대!', '990,000원'], h3: ['990만원대!', '9,900,000원'], after: ['9천원대!', '9,900원'] },
+    muija: { h2: '무이자 10개월', h3: '무이자 360개월' },
+    ticker: '  주문 폭주! 상담원 연결이 어렵습니다  ·  자동주문 전화를 이용해 주세요  ·  ARS 주문 시 추가 할인  ·  주문 폭주! 상담원 연결이 어렵습니다  ·  자동주문 전화를 이용해 주세요  ·',
+  },
 };

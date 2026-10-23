@@ -5,6 +5,9 @@
 #   python -X utf8 꽉_라벨.py   (먼저 한 번 — 뚜껑 인쇄 · 앞면 라벨 PNG)
 #   blender -b --python 밀폐용기.py -- --what stack|lid --out <폴더> [--frames 1-96] [--quality preview|mid|final]
 #   → <폴더>/<what>_0001.png … (RGBA 1080², −45°→+45°, 96장 = 4초 · 가운데 48~49장에서 정면)
+# 콘티 v3(10-22 반응 조사, 03_콘티_v3.md)에서 더한 둘 — 회전 받침 없이:
+#   --what latch  → latch_0001~0024.png(RGBA 1920×1080, 1초): 앞 잠금 날개가 9~11장에 「꽉」 내려가고 12~15장에 진공 단추가 들어간다(H2b 접사)
+#   --what horror → horror_0001.png(RGB 1920×1080 한 장): 붉은 빛과 촛불빛 속 어두운 탁자 위 용기 하나(C09b — 홈쇼핑이 공포 화면에 먼저 새어 든다)
 import math
 import os
 import sys
@@ -286,12 +289,43 @@ def bright_reflections(strength):
     nt.links.new(mix.outputs[0], out.inputs["Surface"])
 
 
+def horror_lights():
+    """C09b: 거실 공포 컷과 같은 빛 — 왼쪽 붉은 키, 앞 아래 촛불빛, 아주 어두운 세계"""
+    area = G["area"]
+    # 첫 시험(키 90 · 촛불 6 · 노출 -1.0)은 탁자까지 주황으로 밝아 공포 컷과 따로 놀았다 — 줄이고 어둡게
+    area("붉은_키", 0.3, (-0.6, 0.12, 0.28), (0, 0, 0.05), 45.0, (1.0, 0.10, 0.07), size_y=0.3)   # 옆뒤에서 — 앞면은 촛불빛만, 나머지는 그늘
+    bpy.ops.object.light_add(type="POINT", location=(0.12, -0.32, 0.03))
+    candle = bpy.context.active_object
+    candle.data.energy = 2.5
+    candle.data.color = (1.0, 0.62, 0.30)
+    candle.data.shadow_soft_size = 0.02
+    area("뒤_테두리", 0.2, (0.25, 0.45, 0.3), (0, 0, 0.05), 25.0, (1.0, 0.35, 0.25))
+    G["world"](0.02, (0.25, 0.06, 0.05))
+
+
+def latch_only(root, mats):
+    """앞 잠금 날개를 위 가장자리 경첩에 걸어 연 자리(-105°)에서 닫힌 자리(0°)로, 그 뒤 진공 단추를 누른다. 날개 · 단추를 돌려준다"""
+    w, d, h = SIZES["M"]
+    container("M", 0.0, root, mats, carrots)
+    flap = bpy.data.objects["날개_M_1"]   # 앞면(-y) 날개
+    hinge = G["link"](bpy.data.objects.new("앞날개_경첩", None))
+    hinge.location = (0, -d / 2 - 0.005, h + 0.008)
+    hinge.parent = root
+    bpy.context.view_layer.update()
+    mw = flap.matrix_world.copy()
+    flap.parent = hinge
+    flap.matrix_world = mw
+    return hinge, bpy.data.objects["진공단추_M"], h
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     mats = {"clear": mat_clear(), "white": mat_plastic("뚜껑_흰", WHITE, 0.3, 0.4), "mint": mat_plastic("날개_민트", MINT, 0.35, 0.3),
             "button": mat_plastic("단추_실리콘", MINT_DARK, 0.6, 0.0), "decal": mat_decal(), "label": mat_decal(LABEL, "앞라벨"),
             "tomato": mat_plastic("방울토마토", (0.75, 0.05, 0.03), 0.18, 0.6), "carrot": mat_plastic("당근", (0.85, 0.28, 0.02), 0.45, 0.1),   # 0.95 · 0.42 · 0.06은 살구색 막대로 보였다(Fable P3)
             "berry": mat_plastic("블루베리", (0.10, 0.12, 0.30), 0.35, 0.2)}
+    if WHAT in ("latch", "horror"):
+        return main_v3(mats)
     pedestal()
     root = G["link"](bpy.data.objects.new("용기_묶음", None))
     if WHAT == "stack":
@@ -337,6 +371,63 @@ def main():
         fr += list(range(int(a), int(b or a) + 1))
     for f in fr:
         root.rotation_euler.z = math.radians(A0 + (A1 - A0) * (f - 1) / (N_FR - 1))
+        S.frame_set(f)
+        S.render.filepath = os.path.join(OUT, f"{WHAT}_{f:04d}.png")
+        bpy.ops.render.render(write_still=True)
+        print("RENDERED", S.render.filepath, flush=True)
+
+
+def main_v3(mats):
+    root = G["link"](bpy.data.objects.new("용기_묶음", None))
+    w, d, h = SIZES["M"]
+    if WHAT == "latch":
+        hinge, btn, top = latch_only(root, mats)
+        lights()
+        # 앞 오른쪽 위에서 날개 · 뚜껑 앞 가장자리 · 진공 단추가 한 화면에 — 100mm 접사(가로 약 12cm)
+        tgt = (0.0, -0.035, top + 0.004)
+        ang, az, dist = math.radians(24), math.radians(-22), 0.34
+        G["camera"](100, (tgt[0] + dist * math.cos(ang) * math.sin(-az), tgt[1] - dist * math.cos(ang) * math.cos(az), tgt[2] + dist * math.sin(ang)), tgt, res=(1920, 1080))
+        G["setup_render"]()
+        S.render.film_transparent = True
+        S.cycles.film_transparent_glass = True
+        S.cycles.film_transparent_roughness = 0.1
+        S.render.image_settings.color_mode = "RGBA"
+        S.view_settings.exposure = -2.2
+    else:   # horror — 어두운 나무 탁자 위 용기 하나, 공포 컷 빛
+        container("M", 0.0008, root, mats, carrots)
+        bpy.ops.mesh.primitive_plane_add(size=3.0, location=(0, 0, 0))
+        table = bpy.context.active_object
+        table.data.materials.append(mat_plastic("어두운_탁자", (0.012, 0.006, 0.004), 0.75, 0.0))
+        horror_lights()
+        tgt = (0.0, 0.0, h * 0.5)
+        ang, dist = math.radians(12), 0.62   # 0.95는 용기가 화면의 5분의 1로 작았다 — 접사답게 가까이
+        G["camera"](85, (0.03, -dist * math.cos(ang), tgt[2] + dist * math.sin(ang)), tgt, res=(1920, 1080))
+        G["setup_render"]()
+        S.render.film_transparent = False
+        S.render.image_settings.color_mode = "RGB"
+        S.view_settings.exposure = -2.4
+    if QUALITY == "mid":
+        S.cycles.samples = 224
+    fr = []
+    for part in (FRAMES if WHAT == "latch" else "1").split(","):
+        a, _, b = part.partition("-")
+        fr += list(range(int(a), int(b or a) + 1))
+    for f in fr:
+        if WHAT == "latch":
+            # 1~8장 열린 채(-105°) → 9~11장 「꽉」 닫힘(가속) → 12장 살짝 튐 → 13장부터 닫힌 채. 단추는 12~15장에 3mm 들어간다
+            if f <= 8:
+                a_deg = -105.0
+            elif f <= 11:
+                k = (f - 8) / 3
+                a_deg = -105.0 * (1 - k * k)
+            elif f == 12:
+                a_deg = -6.0
+            else:
+                a_deg = 0.0
+            hinge.rotation_euler.x = math.radians(a_deg)   # X축 -105°면 날개 아래 끝이 바깥(-y) · 위로 젖혀진다 → 0°에서 벽에 붙는다
+            p = min(1.0, max(0.0, (f - 11) / 4))
+            btn.scale.z = 1.0 - 0.45 * p
+            btn.location.z = top + LID_T + 0.0025 - 0.003 * p
         S.frame_set(f)
         S.render.filepath = os.path.join(OUT, f"{WHAT}_{f:04d}.png")
         bpy.ops.render.render(write_still=True)
