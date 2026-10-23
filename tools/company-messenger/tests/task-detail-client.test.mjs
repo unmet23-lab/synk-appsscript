@@ -70,7 +70,7 @@ test('missing reviewer and deadline are disclosed and completion stays aligned w
 
 test('a departed reviewer is shown as unavailable by name before review and the assignee asks for reassignment',()=>{
   const f=fixture();f.context.message=message();f.run("message.task.stage='doing';message.task.reviewerUnavailable=true;message.task.canReassignReviewer=false;message.task.allowedStages=[]");const html=f.run('taskDetailHtml(message)'),action=nextAction(html);assert.ok(html.includes('검토자 바꿔야 함'));assert.ok(f.run('workdayTaskHtml(message.task,0,"2026-10-09")').includes('<b>검토자 바꿔야 함</b>'));assert.match(action,/요청한 사람이나 관리자에게 새 검토자/);assert.ok(!action.includes('검토 맡기기'));
-  f.run("state.user=state.members.find(person=>person.id==='u3');message.task.canReassignReviewer=true");assert.match(nextAction(f.run('taskDetailHtml(message)')),/‘검토자 정하기’를 눌러 새 검토자/);assert.match(f.run('workdayTaskHtml(message.task,0,"2026-10-09")'),/>정하기</);
+  f.run("state.user=state.members.find(person=>person.id==='u3');message.task.canReassignReviewer=true");assert.match(nextAction(f.run('taskDetailHtml(message)')),/‘검토자 다시 정하기’를 눌러 새 검토자/);assert.match(f.run('workdayTaskHtml(message.task,0,"2026-10-09")'),/>정하기</);
 });
 
 for(const stage of ['requested','review','done']){

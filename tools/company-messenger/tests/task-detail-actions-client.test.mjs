@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 
 // 할 일 상세 3판(2026-10-20 유호님 A안): 단계마다 주 단추 하나, 수락·시작·완료는 같은 revision으로 바로 PATCH,
-// 수정 요청은 한 번 더 확인한 뒤 답글 쓰기로, 검토 맡기기·다시 열기·검토자 정하기는 바꾸기 양식을 연다.
+// 수정 요청은 한 번 더 확인한 뒤 답글 쓰기로, 검토 맡기기·다시 열기·검토자 다시 정하기는 바꾸기 양식을 연다.
 const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8').replace(/\bboot\(\);\s*$/,'');
 const text=html=>String(html).replace(/<[^>]*>/g,'');
 function fixture(userId='u1'){
@@ -38,7 +38,7 @@ test('each stage and role offers at most one primary action that the server woul
     [{stage:'review',assignee:{id:'u3',name:'하윤'},reviewer:{id:'u1',name:'담당'},reviewerId:'u1',resultMessageId:'2',allowedStages:['changes','done']},'u1',['*완료','수정 요청']],
     [{stage:'review',reviewer:{id:'u2',name:'검토'},reviewerId:'u2',resultMessageId:'2',allowedStages:[]},'u1',[]],
     [{stage:'done',allowedStages:['doing']},'u1',['다시 열기']],
-    [{stage:'doing',reviewer:null,reviewerId:'former',reviewerUnavailable:true,canReassignReviewer:true,assignee:{id:'u2',name:'검토'},allowedStages:[]},'u3',['*검토자 정하기']],
+    [{stage:'doing',reviewer:null,reviewerId:'former',reviewerUnavailable:true,canReassignReviewer:true,assignee:{id:'u2',name:'검토'},allowedStages:[]},'u3',['*검토자 다시 정하기']],
     [{stage:'doing',reviewer:null,reviewerId:'former',reviewerUnavailable:true,allowedStages:[]},'u1',[]],
     [{stage:'requested',canManage:false,allowedStages:[]},'u2',[]],
   ];
@@ -51,7 +51,9 @@ test('the detail puts the request above one black action and folds the reasons',
   assert.equal(f.state.testTitle,'할 일 · 가을 캠페인');assert.ok(html.indexOf('썸네일 3안 부탁해요')<html.indexOf('id="task-actions"'),'the request comes before the action bar');
   const bar=html.slice(html.indexOf('id="task-actions"'),html.indexOf('</div>',html.indexOf('id="task-actions"')));assert.equal((bar.match(/class="button primary"/g)||[]).length,1);assert.match(bar,/data-task-action="stage" data-task-stage="accepted">수락하기</);assert.match(bar,/data-task-manage-entry[^>]*>바꾸기</);
   assert.match(html,/<details class="task-management" id="task-management">/);assert.match(html,/<summary>.*왜 오늘 할 일인가요\?/);assert.match(html,/아직 수락하지 않은 요청이라 기한과 상관없이 오늘 봐야 해요/);assert.match(html,/언제 끝나나요\?/);
-  assert.match(html,/<span>요청<\/span><strong>하윤<\/strong>/,'the people block names the requester');assert.match(text(html),/하윤 · 10월 19일 오전 10:12 · 범위가 애매하면/);assert.match(html,/<div class="is-me"><span>담당<\/span><strong>나<\/strong>/);assert.match(html,/data-source-message="1"/);assert.match(html,/id="task-add-reply">답글 쓰기</);
+  assert.match(html,/<span>요청<\/span><strong>하윤<\/strong>/,'the people block names the requester');assert.match(html,/<p class="td-who">하윤 · 10월 19일 오전 10:12<\/p>/,'the request names who asked and when on its own line');assert.doesNotMatch(html,/<p class="td-who">범위가 애매하면/,'before accepting, the next steps already say where to ask');assert.match(html,/<div class="is-me"><span>담당<\/span><strong>나<\/strong>/);assert.match(html,/data-source-message="1"/);assert.match(html,/id="task-add-reply">답글 쓰기</);
+  f.context.message=message({stage:'doing',status:'doing',allowedStages:['review','done']});f.run('taskDialog(message)');assert.match(f.state.testModal,/<p class="td-who">범위가 애매하면 원래 대화에 답글로 물어봐 주세요\.<\/p>/,'while working, the assignee sees where to ask');
+  f.run("state.user=state.members.find(person=>person.id==='u3');taskDialog(message)");assert.doesNotMatch(f.state.testModal,/범위가 애매하면/,'the requester is not told to ask about their own request');
 });
 
 test('review puts the submitted result above complete and changes, and a viewer-less task shows no form',()=>{

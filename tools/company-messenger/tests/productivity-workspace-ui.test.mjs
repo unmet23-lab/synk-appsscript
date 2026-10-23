@@ -136,7 +136,7 @@ test('unsafe customer notification links are neither read nor opened',async()=>{
 });
 
 test('deadline notifications with no chat message open their task collection after read',async()=>{
-  const f=fixture();f.run("state.personalTab='notifications';showDeadlineDigest=item=>state.openedDigest=item.digest");f.context.item={id:'due:1',kind:'due_digest',createdAt:'2026-10-08T00:00:00Z',message:null,digest:{date:'2026-10-08',taskCount:1,overdueCount:1,tasks:[task]}};assert.ok(f.run('personalItemHtml(item,0,"notifications")').includes('마감 업무 1개'));const opening=f.run('openPersonalNotification(item)');assert.equal(f.requests[0].path,'/api/notifications/due%3A1/read');f.requests[0].resolve({ok:true});await opening;assert.equal(f.state.openedDigest.tasks[0].messageId,'1');
+  const f=fixture();f.run("state.personalTab='notifications';showDeadlineDigest=item=>state.openedDigest=item.digest");f.context.item={id:'due:1',kind:'due_digest',createdAt:'2026-10-08T00:00:00Z',message:null,digest:{date:'2026-10-08',taskCount:1,overdueCount:1,tasks:[task]}};assert.ok(f.run('personalItemHtml(item,0,"notifications")').includes('10월 8일 마감할 일 1개'));const opening=f.run('openPersonalNotification(item)');assert.equal(f.requests[0].path,'/api/notifications/due%3A1/read');f.requests[0].resolve({ok:true});await opening;assert.equal(f.state.openedDigest.tasks[0].messageId,'1');
 });
 
 test('notification badge ignores an older unread response arriving after a newer one',async()=>{
