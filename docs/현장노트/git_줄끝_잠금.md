@@ -62,6 +62,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 
 도구 밖에서 커밋하면 `npm run check:storage`(별도 인덱스면 같은 `GIT_INDEX_FILE`과 `-- --base $BASE`)도 직접 돌린다.
 
+### 공용 작업본에서 파일을 잠깐 바꿨다가 사본으로 되돌리면, 그사이 따라가기가 쓴 새 판을 옛 판으로 덮는다 (2026-10-23 Claude)
+- 증상: 시험이 회귀를 잡는지 보려고 공용 작업본의 `tools/공개.js`를 scratchpad에 복사해 두고 정규식 한 칸을 뺐다가 사본으로 되돌렸다. 되돌린 뒤 `git status`에 그 파일이 52줄 바뀐 것으로 나왔다 — 그사이 다른 세션의 push로 공용 작업본이 `64dd5d25a`(`--검수` 추가)를 따라갔고, 내 사본(그 전 판)이 새 판을 옛 판으로 덮었다.
+- 원인: 공용 작업본은 push가 있을 때마다 따라가기로 깨끗한 파일을 새 판으로 바꾼다. 「복사 → 고침 → 사본으로 되돌림」 사이에 따라가기가 끼면 사본이 낡는다. 바꾸는 동안에는 그 파일이 「고치는 중」으로 보여 따라가기가 3방향으로 지키려 하지만, 사본 되돌리기는 그 결과를 통째로 덮는다.
+- 고침: 되돌릴 때는 사본이 아니라 `git checkout HEAD -- <파일>`로(그 파일에 남의 미커밋이 없을 때만 — 바꾸기 전 `git status`에 없던 파일인지 본다). 변형 시험(일부러 규칙을 빼 보기)은 공용 작업본에서 하지 말고 origin 최신판 임시 작업본(`git worktree add --no-checkout --detach` + sparse)에서 한다. 이번에는 작업본 파일이 바로 앞 판(`514c709f5`)과 바이트가 같은 것을 확인한 뒤 `git checkout HEAD -- tools/공개.js`로 새 판을 되살렸다.
+- 다시 확인: 되돌린 뒤 `git status --short -- <파일>`이 비고, 작업본 파일이 `git show HEAD:<파일>`과 같다(CR을 빼고 `git hash-object`로 대조).
+
 ## 줄끝(CRLF·LF)
 
 ### 작업본이 CRLF인 문서로 「HEAD 판 + 내 줄」을 만들면 제목 비교가 전부 어긋난다
@@ -185,6 +191,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 짝 검사는 `experiences/synk-account/src/**` 어느 파일이든 바뀌면 교사 연결 묶음까지 대조하고, `tools/build-messenger-teaching.cjs --check`는 생성 결과(LF)와 작업본 파일을 바이트 그대로 견준다. `core.autocrlf=true` 작업본에서 `git checkout`으로 되돌린 생성물은 CRLF라 「낡음」이고, 다시 만들면 LF라 git이 「바뀜」으로 보지만 정규화하면 diff가 없어 커밋에 실리지 않는다. 어느 쪽이든 막힌다.
 - 고침: 다시 만든 생성물이 origin 판과 내용이 같은지(CR을 뗀 sha) 확인한 뒤 `--짝검사건너뜀 "<까닭>"`으로 올린다. 까닭에 「원천이 그 묶음에 들어가지 않고, 다시 만든 결과가 origin과 내용이 같다(줄끝만 다름)」를 적는다. 내용이 다르면 건너뛰지 말고 생성물을 경로에 더해 같이 올린다.
 - 다시 확인: `node tools/build-messenger-teaching.cjs` 뒤 `git diff --ignore-cr-at-eol --stat -- docs/마케팅/온라인마케팅지도/engagement/company/public/teaching-host.js`가 비고, CI의 `npm run check:account-bundles`(Linux, LF 체크아웃)는 그대로 통과한다.
+- 10-23 덧붙임(공용 작업본, Claude): `desktop/renderer/member-insight.css` 주석 한 줄을 고치고 `--build`로 다시 만든 뒤, 줄끝만 바뀐 `teaching-host.js`를 `git checkout`으로 되돌리자 같은 「낡음」으로 멈췄다. 다시 `--build`하고 도구가 보인 결과물 경로(`preview.html`·`build-manifest.json`·`member-insight.css`·`teaching-host.js`)를 그대로 올릴 경로에 넣으니 짝 검사가 막지 않고 「주의 — 결과물이 작업본에서 바뀐 채 이번 push에 없다」만 남기고 통과했다(내용이 같아 커밋에는 안 실린다). 지금 판에서는 건너뛰기 없이 이 길로 올린다 — 되돌리지 않는다.
 
 ### 짝 검사가 줄끝만 다른 생성물을 「작업본에서만 통과」로 막는다 — 내용이 같으면 그 파일을 되돌리고 다시 올린다 (2026-10-22 Claude)
 - 증상: 바로올리기가 「✗ WORLD life bundle — 통과(작업본에서만) … 이 검사가 보는 파일이 작업본에서 바뀌었는데 이번 push에 없다: experiences/synk-world-app/world-learning-profile-core.mjs」로 두 번 멈췄다. 그 파일을 경로에 넣어도 올라갈 커밋 목록에 안 나왔다.

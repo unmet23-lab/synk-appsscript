@@ -426,9 +426,10 @@ test('검수 AI 이름(10-23): 더한 줄의 Fable·아르곤·아스트라·arg
     ['ub/app.js', '  // 줄바꿈이 다른 칸처럼 보이지 않게(10-21 아르곤 검수)\n'],
     ['a/astra.js', '// 백엔드 검수(아스트라 재확인) 반영\n'],
     ['a/argon.json', '{"stage": "argon"}\n'],
-    ['a/opus.js', '// 문항 1차는 Opus 5.5, 하위 일은 sonnet-5-5\n'],
+    ['a/opus.js', '// 문항 1차는 Opus 5.5\n'],
+    ['a/sonnet.js', '// 하위 일은 sonnet-5-5\n'],
   ]);
-  assert.deepEqual(걸린(샌), ['a/argon.json AI 이름', 'a/astra.js AI 이름', 'a/opus.js AI 이름', 'ub/app.js AI 이름',
+  assert.deepEqual(걸린(샌), ['a/argon.json AI 이름', 'a/astra.js AI 이름', 'a/opus.js AI 이름', 'a/sonnet.js AI 이름', 'ub/app.js AI 이름',
     'world/app-shell.mjs AI 이름', 'world/world-speaking-practice.mjs AI 이름']);
   // 공개본(7340f37)의 거짓 경보 후보 — WORLD 녹음 코덱, 받아쓰기 모델 어휘, 이름이 붙은 다른 낱말·한글 낱말 속
   const 흔한 = 검사([
