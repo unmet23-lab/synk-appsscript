@@ -1,0 +1,113 @@
+#!/usr/bin/env node
+'use strict';
+/* 낯선 사람 이해 시험 재료 (2026-10-23). 영상은 읽기만 하고 재료는 .tmp에 만든다.
+ *
+ * 10-23 유호님 「synkbrief랑 yuhobuilds가 뭘 말하려는건지 도저히 이해가 안가」 — 두 편 모두 사실 검수는 통과했었다.
+ * 같은 날 「synk lab은 훌륭해」라고 하신 관용구 퀴즈 #5와 견주어 본 차이는 알아듣기였다. 영상을 2초마다 한 장씩
+ * 초를 찍어 묶고 들리는 말을 초와 함께 적은 뒤, 이 대화 맥락이 없는 새 하위 에이전트에게 줄 질문(그 계정의
+ * 시청자 한 사람 역할)을 만든다. 판정은 답을 받은 세션이 한 장 기획의 「한 문장」과 견줘서 한다
+ * (docs/마케팅/기획장부/제작절차.md §3 「낯선 사람 이해 시험」).
+ *
+ *   node tools/낯선이시험.js <영상.mp4> --말 <말.txt|.srt> --브랜드 <lab-en|lab-mn|synkbrief|yuhobuilds> [--밖 <폴더>]
+ *
+ * 만드는 것: <밖>/정지컷_2초마다.jpg · <밖>/말.txt · <밖>/질문.md(하위 에이전트에 그대로 줄 글).
+ * 말.txt는 줄마다 「12.3s  들리는 말」 꼴이 좋다. .srt를 주면 그 꼴로 바꾼다.
+ */
+const fs = require('node:fs');
+const path = require('node:path');
+const { spawnSync } = require('node:child_process');
+
+const ROOT = path.resolve(__dirname, '..');
+
+const 시청자 = {
+  'lab-en': { 곳: '유튜브 쇼츠', 사람: '한국어를 이제 막 배우기 시작한 영어 사용자' },
+  'lab-mn': { 곳: '인스타 릴스', 사람: '한국어를 이제 막 배우기 시작한 몽골 사람(몽골어로 생각한다)' },
+  synkbrief: { 곳: '인스타 릴스', 사람: 'AI 도구를 가끔 쓰는 30대 한국인 직장인' },
+  yuhobuilds: { 곳: '인스타 릴스', 사람: 'AI 도구를 일에 자주 쓰지만 개발자는 아닌 30대 한국인 직장인·1인 사업가' },
+};
+
+// .srt를 「12.3s  말」 줄로 바꾼다. 번호·시각 줄만 있는 블록은 건너뛴다.
+function srtToLines(text) {
+  return String(text).replace(/\r\n/g, '\n').trim().split(/\n\s*\n+/).map((block) => {
+    const lines = block.split('\n');
+    const timeAt = lines.findIndex((line) => line.includes('-->'));
+    if (timeAt < 0) return null;
+    const m = lines[timeAt].match(/(\d+):(\d+):(\d+)[,.](\d+)/);
+    if (!m) return null;
+    const sec = Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]) + Number(`0.${m[4]}`);
+    const words = lines.slice(timeAt + 1).join(' ').trim();
+    return words ? `${sec.toFixed(1)}s  ${words}` : null;
+  }).filter(Boolean);
+}
+
+function readSpeech(file) {
+  const text = fs.readFileSync(file, 'utf8');
+  if (/\.srt$/i.test(file)) return srtToLines(text).join('\n') + '\n';
+  return text.replace(/\r\n/g, '\n').trimEnd() + '\n';
+}
+
+function buildPrompt({ brand, sheet, speech }) {
+  const who = 시청자[brand];
+  if (!who) throw new Error(`브랜드는 ${Object.keys(시청자).join(' · ')} 가운데 하나다: ${brand}`);
+  return [
+    `너는 ${who.곳}를 넘기다가 이 영상을 처음 본 사람이다. ${who.사람}이고, 이 계정도 만든 사람도 이 영상의 배경도 모른다. 아래 두 파일만 Read 도구로 열어 보고 답해라. 다른 파일·폴더·인터넷은 보지 마라.`,
+    '',
+    `- 정지컷 묶음(그림): ${sheet} — 2초마다 한 장, 각 칸 왼쪽 위 숫자가 영상의 초다. 왼쪽에서 오른쪽, 위에서 아래 순서.`,
+    `- 들리는 말: ${speech} — 줄 앞 숫자는 그 말이 시작하는 초. 배경음악은 따로 깔려 있다.`,
+    '',
+    '한국어로, 아래 양식 그대로 답해라(전체 500자 안팎). 겉치레 칭찬은 하지 말고, 모르는 것은 모른다고 써라.',
+    '1. 이 영상이 말하려는 것 — 친구에게 전하듯 한 문장.',
+    '2. 보고 나서 내가 바로 할 수 있게 된 것 — 없으면 「없음」.',
+    '3. 무슨 말인지 모르겠던 낱말·장면 — 초와 함께 전부. 없으면 「없음」.',
+    '4. 넘겼을 것 같은 초와 까닭 — 끝까지 봤을 것 같으면 「끝까지」와 까닭.',
+    '5. 이해 점수 1~5(5 = 한 번 보고 다 알겠다)와 한 줄 까닭.',
+    '',
+  ].join('\n');
+}
+
+function duration(video) {
+  const r = spawnSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', video],
+    { encoding: 'utf8', windowsHide: true });
+  const sec = Number(String(r.stdout).trim());
+  if (r.status !== 0 || !(sec > 0)) throw new Error('ffprobe로 길이를 못 읽었다: ' + String(r.stderr || '').trim());
+  return sec;
+}
+
+// 2초마다 한 장, 왼쪽 위에 초를 찍어 6칸씩 묶는다.
+function makeSheet(video, out) {
+  const rows = Math.ceil(Math.ceil(duration(video) / 2) / 6);
+  const font = "C\\:/Windows/Fonts/arial.ttf";
+  const vf = `fps=1/2,scale=300:534,drawtext=fontfile='${font}':text='%{eif\\:t\\:d}s':x=8:y=8:fontsize=30:fontcolor=white:box=1:boxcolor=black@0.7:boxborderw=6,tile=6x${rows}:padding=6:color=white`;
+  const r = spawnSync('ffmpeg', ['-y', '-v', 'error', '-i', video, '-vf', vf, '-frames:v', '1', '-q:v', '3', out],
+    { encoding: 'utf8', windowsHide: true });
+  if (r.status !== 0) throw new Error('ffmpeg 실패: ' + String(r.stderr || '').trim().split('\n').slice(-2).join(' '));
+}
+
+function main(argv) {
+  const args = { _: [] };
+  for (let i = 0; i < argv.length; i += 1) {
+    if (argv[i].startsWith('--')) args[argv[i].slice(2)] = argv[i + 1], i += 1;
+    else args._.push(argv[i]);
+  }
+  const video = args._[0];
+  if (!video || !args['말'] || !args['브랜드']) {
+    console.error('쓰는 법: node tools/낯선이시험.js <영상.mp4> --말 <말.txt|.srt> --브랜드 <lab-en|lab-mn|synkbrief|yuhobuilds> [--밖 <폴더>]');
+    return 2;
+  }
+  const stamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 13);
+  const out = path.resolve(args['밖'] || path.join(ROOT, '.tmp', '낯선이시험', `${path.basename(video, path.extname(video))}-${stamp}`));
+  fs.mkdirSync(out, { recursive: true });
+  const sheet = path.join(out, '정지컷_2초마다.jpg');
+  const speech = path.join(out, '말.txt');
+  makeSheet(path.resolve(video), sheet);
+  fs.writeFileSync(speech, readSpeech(path.resolve(args['말'])));
+  const prompt = buildPrompt({ brand: args['브랜드'], sheet, speech });
+  fs.writeFileSync(path.join(out, '질문.md'), prompt);
+  console.log(`재료: ${out}`);
+  console.log('다음: 질문.md를 이 대화 맥락이 없는 새 하위 에이전트(Agent model sonnet)에 그대로 주고, 답을 한 장 기획의 「한 문장」과 견준다(제작절차 §3).');
+  return 0;
+}
+
+if (require.main === module) process.exitCode = main(process.argv.slice(2));
+
+module.exports = { srtToLines, readSpeech, buildPrompt, 시청자 };
