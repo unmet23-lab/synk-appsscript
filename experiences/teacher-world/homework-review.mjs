@@ -11,6 +11,9 @@ export const REVIEW_TEXT=Object.freeze({
  unavailable:'과제 첨삭은 서버 준비가 끝나면 열려요. 그전에는 학생 WORLD에도 과제가 보이지 않아요.',
  unsupported:'이 연결은 아직 과제 첨삭을 지원하지 않아요. 워크스페이스가 새 판으로 바뀌면 열려요.',
  contentError:'과제 문제를 불러오지 못했어요. 새로고침을 눌러 주세요.',keyLoading:'정답·예시답을 불러오고 있어요.',
+ keyMismatch:'예시답·채점 기준의 판이 지금 문제와 달라 보여 드리지 않아요. 화면을 닫았다 다시 열어도 그대로면 관리자에게 알려 주세요. 첨삭은 그대로 쓸 수 있어요.',
+ keyFailed:'예시답·채점 기준을 불러오지 못했어요. 새로고침을 누르면 다시 불러와요. 첨삭은 그대로 쓸 수 있어요.',
+ keyMismatchShort:'정답 판이 문제와 달라 맞힌 수를 세지 못했어요',keyFailedShort:'정답을 불러오지 못해 맞힌 수를 세지 못했어요',
  planNone:'과제 계획 없음',planLead:'TOPIK II 4급 온라인 반이면 반 시작일을 정해 학생 WORLD의 「이번 주 과제」를 열어요. 다른 과정의 반에는 열지 않아요.',
  planStart:'반 시작일 · 1주차 토요일',planWeeks:'주 수',planOpen:'과제 열기',planSave:'계획 저장',planEdit:'계획 바꾸기',planCancel:'그만두기',
  planNotSaturday:'토요일이 아니에요. 토요일 수업 → 수요일 마감 흐름이면 1주차 토요일을 골라 주세요.',
@@ -214,7 +217,7 @@ const fetchJson=async name=>{const response=await fetch(new URL(name,import.meta
 
 export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./topik4-homework.json'),loadKey=()=>request('/api/teacher/homework/key').then(result=>result.key),now=Date.now,confirmLeave=text=>root.ownerDocument.defaultView?.confirm?.(text)!==false,onCount=()=>{}}){
  const doc=root.ownerDocument;
- const s={classId:null,phase:'idle',error:null,data:null,loadedAt:null,content:null,contentState:'idle',key:null,week:null,learnerId:null,editor:null,planOpen:false,planNotice:null,notice:null,busy:null,generation:0,selection:null,barPointer:0,stopped:false};
+ const s={classId:null,phase:'idle',error:null,data:null,loadedAt:null,content:null,contentState:'idle',key:null,keyState:null,week:null,learnerId:null,editor:null,planOpen:false,planNotice:null,notice:null,busy:null,generation:0,selection:null,barPointer:0,stopped:false};
  const node=(tag,className,value)=>{const el=doc.createElement(tag);if(className)el.className=className;if(value!==undefined&&value!==null)el.textContent=value;return el;};
  const led=tone=>{const el=node('i','hr-led');el.dataset.tone=tone;el.setAttribute('aria-hidden','true');return el;};
  const chip=(tone,text,className='hr-chip')=>{const el=node('span',className);el.append(led(tone),doc.createTextNode(text));return el;};
@@ -257,7 +260,20 @@ export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./t
  }
  function needKey(){
   if(s.key||s.keyLoading||!s.content)return;s.keyLoading=true;const classId=s.classId,generation=s.generation;
-  Promise.resolve().then(loadKey).then(key=>{if(!s.stopped&&s.classId===classId&&s.generation===generation&&key?.version===s.content.version){s.key=key;paint();}},()=>{}).finally(()=>{s.keyLoading=false;});
+  const current=()=>!s.stopped&&s.classId===classId&&s.generation===generation;
+  // 판이 다르거나 읽지 못하면 말없이 빼지 않고 이번 주 숫자판 아래·읽기 줄에 알린다(keyState). 다음 불러오기 때 다시 읽는다.
+  const settle=state=>{const was=s.keyState;s.keyState=state;if(state!==was)paint();};
+  let dropped=false;
+  Promise.resolve().then(loadKey).then(key=>{
+   if(!current()){dropped=true;return;}
+   if(!key||typeof key!=='object')settle('failed');
+   else if(key.version===s.content.version){s.key=key;s.keyState=null;paint();}
+   else settle('mismatch');
+  },()=>{if(current())settle('failed');else dropped=true;}).finally(()=>{
+   s.keyLoading=false;
+   // 받는 사이 다시 불러오면(새로고침·저장) 그 답은 버리고 지금 판으로 한 번 더 읽는다 — 「불러오고 있어요」에 머물지 않게.
+   if(dropped&&!s.stopped&&s.classId===classId&&s.phase==='ready')needKey();
+  });
  }
  async function load({quiet=false}={}){
   const gen=++s.generation,classId=s.classId;if(!classId)return;
@@ -274,7 +290,7 @@ export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./t
   }catch(error){
    if(s.stopped||gen!==s.generation||classId!==s.classId)return;
    const code=homeworkErrorCode(error);
-   if(['SESSION_CHANGED','ACCOUNT_CHANGED','AUTH_REQUIRED','FORBIDDEN'].includes(code)){s.data=null;s.editor=null;s.key=null;s.phase='error';s.error=ERROR_TEXT.FORBIDDEN;paint();return;}
+   if(['SESSION_CHANGED','ACCOUNT_CHANGED','AUTH_REQUIRED','FORBIDDEN'].includes(code)){s.data=null;s.editor=null;s.key=null;s.keyState=null;s.phase='error';s.error=ERROR_TEXT.FORBIDDEN;paint();return;}
    if(code==='HOMEWORK_UNAVAILABLE'||code==='ROUTE_UNSUPPORTED'){s.phase=code==='ROUTE_UNSUPPORTED'?'unsupported':'unavailable';s.data=null;s.editor=null;}
    else if(code==='CONTENT_UNAVAILABLE'){s.phase='error';s.error=T.contentError;}
    else if(s.data){s.notice={tone:'alert',text:T.refreshError};}
@@ -471,7 +487,10 @@ export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./t
    node('p','hr-week-meta',`${homeworkDate(win.start,{time:false})} 열림 · 마감 ${homeworkDate(win.due)} · 읽기 ${content.reading.title}`));
   head.append(title,chip(stage[0],stage[1]));
   const grid=node('div','hr-grid');grid.append(listView(list),editorView());
-  sec.append(head,boardView(list),grid);
+  sec.append(head,boardView(list));
+  // 학생을 고르지 않아도 보이는 자리 — 목록의 맞힌 수·문항별 맞힌 학생·예시답이 빠진 까닭을 여기서 한 번 말한다.
+  if(!s.key&&s.keyState)sec.append(message('check',s.keyState==='mismatch'?T.keyMismatch:T.keyFailed,'hr-message hr-key-notice'));
+  sec.append(grid);
   const reading=readingItemsView(list);if(reading)sec.append(reading);
   return sec;
  }
@@ -533,7 +552,7 @@ export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./t
  function readingLine(row){
   const content=weekContent(s.week).reading;
   if(!row.reading)return message('idle',`읽기 ${content.id} · 아직 안 냄`,'hr-message hr-reading-line');
-  if(!row.score)return message('idle',`읽기 ${content.id} · 냄 · ${T.keyLoading}`,'hr-message hr-reading-line');
+  if(!row.score)return message(s.keyState?'check':'idle',`읽기 ${content.id} · 냄 · ${s.keyState==='mismatch'?T.keyMismatchShort:s.keyState==='failed'?T.keyFailedShort:T.keyLoading}`,'hr-message hr-reading-line');
   const circled=n=>['①','②','③','④'][n-1]||'—',line=message(row.score.missed.length?'info':'ok',`읽기 ${content.id} · ${row.score.total}문항 중 ${row.score.right}문항 맞힘${row.reading.late?' · 늦게 냄':''}`,'hr-message hr-reading-line');
   if(row.score.missed.length){const text=node('span');text.append(doc.createTextNode(line.lastChild.textContent+' · 틀린 문항 '));row.score.missed.forEach((m,i)=>{if(i)text.append(doc.createTextNode(', '));text.append(node('span','hr-nowrap',`${m.id}(고른 ${circled(m.chosen)}, 정답 ${circled(m.answer)})`));});line.lastChild.replaceWith(text);}
   return line;
@@ -763,7 +782,7 @@ export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./t
   const where=placement(sel);s.selection=where.error?{error:where.error}:{...sel,earlier:where.earlier};renderBar();
  }
  doc.addEventListener('selectionchange',onSelection);
- function switchClass(classId){s.classId=classId;s.generation++;Object.assign(s,{phase:'idle',error:null,data:null,key:null,keyLoading:false,loadedAt:null,week:null,learnerId:null,editor:null,planOpen:false,planNotice:null,notice:null,selection:null,busy:null});}
+ function switchClass(classId){s.classId=classId;s.generation++;Object.assign(s,{phase:'idle',error:null,data:null,key:null,keyState:null,keyLoading:false,loadedAt:null,week:null,learnerId:null,editor:null,planOpen:false,planNotice:null,notice:null,selection:null,busy:null});}
  const stale=()=>s.phase==='ready'&&!s.busy&&!s.selection&&!dirty()&&clock()-(s.loadedAt||0)>120000;
 
  return Object.freeze({
@@ -783,7 +802,7 @@ export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./t
   },
   refresh:()=>load(),
   hasDraft:()=>dirty(),
-  reset(){s.generation++;Object.assign(s,{classId:null,phase:'idle',error:null,data:null,key:null,keyLoading:false,loadedAt:null,week:null,learnerId:null,editor:null,planOpen:false,planNotice:null,notice:null,selection:null,busy:null});root.replaceChildren();},
+  reset(){s.generation++;Object.assign(s,{classId:null,phase:'idle',error:null,data:null,key:null,keyState:null,keyLoading:false,loadedAt:null,week:null,learnerId:null,editor:null,planOpen:false,planNotice:null,notice:null,selection:null,busy:null});root.replaceChildren();},
   stop(){s.stopped=true;s.generation++;doc.removeEventListener('selectionchange',onSelection);root.replaceChildren();},
  });
 }

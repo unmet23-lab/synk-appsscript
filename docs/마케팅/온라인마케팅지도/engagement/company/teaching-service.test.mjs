@@ -17,6 +17,8 @@ async function fixture(t,{enabled=true}={}){
   const token=(overrides={})=>{const payload={iss:issuer+'/auth/v1',client_id:clientId,exp:Math.floor((stamp+3600000)/1000),...overrides};return 'synthetic.'+Buffer.from(JSON.stringify(payload)).toString('base64url')+'.signature-'+(++tokenIndex);};
   async function fetcher(target,options={}){
     const url=new URL(target),headers=options.headers||{};calls.push({url:url.href,headers,method:options.method||'GET',body:options.body});
+    // Functions are pinned next to the ap-southeast-1 database; the auth server is not a function and gets no region.
+    assert.equal(headers['x-region'],url.pathname.startsWith('/functions/v1/')?'ap-southeast-1':undefined,url.pathname);
     if(url.pathname==='/auth/v1/oauth/token'){
       if(holdAt==='token'){const wait=hold;holdAt=null;await wait.promise;}
       const access=token();tokenValues.push(access);return response({access_token:access,refresh_token:'synthetic-refresh-credential-'+tokenIndex,token_type:'Bearer'});

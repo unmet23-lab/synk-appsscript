@@ -7,6 +7,10 @@ const PREFIX='/api/teaching',CALLBACK=PREFIX+'/callback',PRODUCT='world';
 const SESSION_COOKIE='synk_teaching_session',FLOW_COOKIE='synk_teaching_flow',BROWSER_COOKIE='synk_teaching_browser';
 const FLOW_MS=300000,SESSION_MS=28800000,REFRESH_MS=60000,MAX=1000;
 const BOOTSTRAP_MS=60000,BOOTSTRAP_MAX=60;
+// Supabase runs a function near its caller (Seoul for this server) while both projects' databases are in
+// ap-southeast-1, so every query inside synk-account/synk-classroom crossed the sea (about 2s per account check).
+// Pin function calls to the database region; /auth/v1 is not a function and is left alone.
+const FUNCTION_REGION='ap-southeast-1';
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const random=()=>randomBytes(32).toString('base64url');
 const hash=value=>createHash('sha256').update(value).digest('hex');
@@ -68,9 +72,10 @@ export function createTeachingService({store,origin,config=null,fetch:fetcher=gl
   function csrf(req){requireOrigin(req);prune();const entry=sessions.get(sessionHash(req)),browserKey=cookie(req,BROWSER_COOKIE),bootstrap=browserKey&&browsers.get(hash(browserKey)),expected=current(entry)?entry.csrfToken:bootstrap?.csrfToken;if(!equal(req.headers?.['x-csrf-token'],expected))throw fail(403,'CSRF','내 수업의 로그인 상태를 다시 확인해 주세요.');return {entry:current(entry)?entry:null,bootstrap};}
   function rate(req){prune();const key=clientAddress(req);let row=attempts.get(key);if(!row){if(attempts.size>=MAX)throw fail(429,'BUSY','로그인 요청이 몰렸어요. 잠시 뒤 다시 해 주세요.');row={count:0,expiresAt:now()+FLOW_MS};attempts.set(key,row);}if(++row.count>30)throw fail(429,'RATE_LIMITED','로그인을 너무 자주 시도했어요. 잠시 뒤 다시 해 주세요.');}
   const upstreamHeaders=access=>({Authorization:'Bearer '+access,apikey:config.publishableKey,'X-SYNK-Product':PRODUCT,'X-SYNK-Contract':'1','X-SYNK-App-Version':'1.0.0'});
+  const functionHeaders=access=>({...upstreamHeaders(access),'x-region':FUNCTION_REGION});
   async function remote(url,options){try{return await fetcher(url,{...options,redirect:'error',signal:AbortSignal.timeout(8000)});}catch{throw unavailable();}}
   async function verify(access){
-    if(!credential(access))throw rejected();const response=await remote(config.accountApiUrl,{headers:upstreamHeaders(access)});if(!response.ok)throw [401,403].includes(response.status)?rejected():unavailable();let data;try{data=await response.json();}catch{throw unavailable();}
+    if(!credential(access))throw rejected();const response=await remote(config.accountApiUrl,{headers:functionHeaders(access)});if(!response.ok)throw [401,403].includes(response.status)?rejected():unavailable();let data;try{data=await response.json();}catch{throw unavailable();}
     const token=claims(access),active=Array.isArray(data.sessions)?data.sessions.filter(row=>row.current===true&&row.revoked===false&&row.product===PRODUCT):[];
     if(data.ok!==true||data.account?.status!=='active'||!UUID.test(data.account?.synk_user_id||'')||active.length!==1||!UUID.test(active[0].id||'')||token?.iss!==config.issuer+'/auth/v1'||token?.client_id!==config.clientId||!Number.isSafeInteger(token?.exp)||token.exp*1000<=now())throw rejected();
     return {synkUserId:data.account.synk_user_id,expiresAt:token.exp*1000,currentSessionId:active[0].id};
@@ -127,7 +132,7 @@ export function createTeachingService({store,origin,config=null,fetch:fetcher=gl
     if(!key||!existing.get(key)){setCookie(res,SESSION_COOKIE,'',0);setCookie(res,FLOW_COOKIE,'',0);return {ok:true,localSignedOut:true,serverRevoked:true};}
     const {entry}=csrf(req);cancel(req,res);if(entry)entry.revoking=true;remove(sessionHash(req));setCookie(res,SESSION_COOKIE,'',0);if(!entry)return {ok:true,localSignedOut:true,serverRevoked:false};if(entry.checking)await entry.checking.catch(()=>{});
     const access=entry.logoutAccessToken||entry.pendingAccessToken||entry.accessToken;let accountRevoked=false,refreshRevoked=false;
-    try{const response=await remote(config.accountApiUrl,{method:'POST',headers:{...upstreamHeaders(access),'Content-Type':'application/json'},body:JSON.stringify({action:'revoke-session',session_id:entry.currentSessionId})});accountRevoked=response.status===404||response.ok&&(await response.json()).ok===true;}catch{}
+    try{const response=await remote(config.accountApiUrl,{method:'POST',headers:{...functionHeaders(access),'Content-Type':'application/json'},body:JSON.stringify({action:'revoke-session',session_id:entry.currentSessionId})});accountRevoked=response.status===404||response.ok&&(await response.json()).ok===true;}catch{}
     try{const response=await remote(new URL('/auth/v1/logout?scope=local',config.issuer),{method:'POST',headers:upstreamHeaders(access)});refreshRevoked=response.ok||response.status===404||response.status===401&&accountRevoked;}catch{}
     return {ok:true,localSignedOut:true,serverRevoked:accountRevoked&&refreshRevoked};
   }
@@ -139,7 +144,7 @@ export function createTeachingService({store,origin,config=null,fetch:fetcher=gl
     const unscoped=['classes','teacherOverview'].includes(operation);
     if(unscoped&&(classId!==undefined||body!==undefined)||!unscoped&&(typeof classId!=='string'||!classId||classId.length>120)||route[1]&&(!body||typeof body!=='object'||Array.isArray(body))||!route[1]&&body!==undefined||body?.classId&&body.classId!==classId)throw fail(400,'CLASS_SCOPE','담당 수업의 요청 범위를 확인해 주세요.');
     const guard=()=>{if(!current(entry))throw rejected();if(closing||entry.blocked)throw unavailable();};
-    async function call(path,method='GET',payload){guard();const target=new URL(config.accountApiUrl);target.pathname='/functions/v1/synk-classroom'+path;if(classId&&path!=='/api/classes')target.searchParams.set('classId',classId);const response=await remote(target,{method,headers:{...upstreamHeaders(entry.accessToken),...(method==='POST'?{'Content-Type':'application/json'}:{})},...(method==='POST'?{body:JSON.stringify(payload)}:{})});guard();let data;try{data=await response.json();}catch{throw unavailable();}guard();if(!response.ok||data?.ok===false){if(response.status===401)remove(entry.hash);throw fail([400,401,403,404,409,429].includes(response.status)?response.status:503,'CLASSROOM',data?.error?.message||'담당 수업을 확인하지 못했어요.',response.status>=500);}return data;}
+    async function call(path,method='GET',payload){guard();const target=new URL(config.accountApiUrl);target.pathname='/functions/v1/synk-classroom'+path;if(classId&&path!=='/api/classes')target.searchParams.set('classId',classId);const response=await remote(target,{method,headers:{...functionHeaders(entry.accessToken),...(method==='POST'?{'Content-Type':'application/json'}:{})},...(method==='POST'?{body:JSON.stringify(payload)}:{})});guard();let data;try{data=await response.json();}catch{throw unavailable();}guard();if(!response.ok||data?.ok===false){if(response.status===401)remove(entry.hash);throw fail([400,401,403,404,409,429].includes(response.status)?response.status:503,'CLASSROOM',data?.error?.message||'담당 수업을 확인하지 못했어요.',response.status>=500);}return data;}
     if(operation==='teacherOverview')return call(route[0]);
     const memberships=await call('/api/classes');if(memberships?.mode!=='account-linked'||!Array.isArray(memberships.classes)||memberships.classes.some(row=>typeof row.id!=='string'||typeof row.name!=='string'||!['teacher','learner'].includes(row.role)))throw unavailable();
     const teacherClasses=memberships.classes.filter(row=>row.role==='teacher');if(operation==='classes')return {...memberships,classes:teacherClasses};
