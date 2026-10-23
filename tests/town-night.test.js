@@ -129,3 +129,137 @@ test('W3 화면: 장면이 붙잡은 주민의 자리는 holds에 — 걸어오�
   }
   assert.ok(seen.has('held'), [...seen].join());
 });
+
+// ── 검수 반영(10-23 W3 엔진 검수) ──────────────────────────────────────────
+test('밤 규칙: 명령도 뷰와 같다 — sleeps면 잠든 주민이 필요한 장면 시작을 409로 거절하고, sleeps 없으면 그대로 연다', async () => {
+  for (const sleeps of [true, false]) {
+    const f = await fixture(at(2), { sleeps });
+    f.go('workshop');
+    const asleep = error => error.code === 'resident-asleep' && /공방 주인은 지금 자고 있어요/.test(error.message);
+    if (sleeps) {
+      assert.throws(() => f.send('DAY_JOB_START'), asleep);
+      assert.throws(() => f.send('DAY_START', { kind: 'help' }), asleep);
+      f.go('cafe');
+      assert.throws(() => f.send('LIFE_OPEN', { source: 'direct' }), error => error.code === 'resident-asleep');
+      assert.throws(() => f.send('BAZAAR_START', { kind: 'requests' }), error => error.code === 'resident-asleep');
+      assert.equal(f.read().state.day.job, null, '거절한 명령은 아무것도 남기지 않는다');
+    } else {
+      f.send('DAY_JOB_START');
+      assert.equal(f.read().state.day.job.status, 'preparing', 'sleeps 없음: 시각과 상관없이 연다');
+      f.go('cafe');
+      assert.throws(() => f.send('LIFE_OPEN', { source: 'direct' }), error => error.code !== 'resident-asleep');
+    }
+  }
+});
+
+test('계획기: 열고 닫은 시각이 같은(길이 0) 예약은 구간을 자르거나 다시 짜지 않는다', async () => {
+  const { planBand } = await townFile('town/plan.mjs');
+  const { bandInput } = await townFile('town/village.mjs');
+  const f = await fixture(at(14));
+  const v = f.read().state.village, input = bandInput(v);
+  const mid = Math.floor((v.band.startMs + v.band.endMs) / 2);
+  const plain = planBand(input), zero = planBand({ ...input, reservations: [{ id: 'R-zero', npc: 'cafe-owner', fromMs: mid, toMs: mid, spot: 'cafe.counter' }] });
+  assert.deepEqual(zero.segments, plain.segments);
+  assert.ok(plain.segments.every(s => s.startMs <= s.endMs));
+});
+
+test('구간만 옮긴 읽기: 쓰지 않아도 그 구간을 닫으며 생긴 마을 사건은 답에 보이고, 다음 쓰기가 같은 사건을 저장한다', async () => {
+  const f = await fixture(at(12));
+  f.go('greenhouse');
+  f.send('DAY_START', { kind: 'coordination' }); f.send('DAY_ROLE', { role: 'planner' }); f.send('DAY_CHOICE', { choice: 'silent' });
+  play(f, 2); f.send('DAY_CONTINUE'); f.send('DAY_CONFIRM'); play(f, 4); f.send('DAY_CLOSE');
+  const saved = f.store.peek().state;
+  assert.equal(saved.townEvents.filter(e => e.kind === 'habit.used').length, 1, '합의의 첫 이용');
+  f.set(at(12) + 30 * 60 * MIN); // 다음 날 18시 — 맥박 없이 읽는다: 바뀐 것은 마을 구간뿐
+  const shown = f.read().state;
+  assert.equal(f.store.peek().state.writeSeq, saved.writeSeq, '쓰지 않았다');
+  const used = shown.townEvents.filter(e => e.kind === 'habit.used');
+  assert.equal(used.length, 2, '약속을 지킨 둘째 이용이 답에 보인다');
+  assert.equal(shown.townSeq, used.at(-1).id.slice(2) * 1, '사건 번호와 목록이 맞는다');
+  f.pulse(); f.send('DAY_REST');
+  const kept = f.store.peek().state.townEvents.filter(e => e.kind === 'habit.used');
+  assert.deepEqual(kept.map(e => e.id), used.map(e => e.id), '다음 쓰기가 같은 번호로 저장한다');
+});
+
+test('밤 규칙: 안내 줄은 그 자리 주민이 잠들었거나 잠 때문에 여기서 열 장면이 하나도 없을 때만 — 잠든 사이 이어지는 준비의 공방 주인은 작업대에 남는다', async () => {
+  const f = await fixture(at(22), { sleeps: true });
+  f.go('cafe'); f.place(); play(f, 20); f.ack();
+  const cafe = f.read().view.day;
+  assert.ok(cafe.actions.some(a => a.type === 'DAY_START' && a.payload.kind === 'tea'), '22시: 찻집 주인·연구원은 깨어 있다');
+  assert.ok(!/잠들었어요/.test(cafe.line), '열 수 있는 장면 옆에 잠든 안내를 덮지 않는다');
+  f.go('workshop');
+  assert.match(f.read().view.day.line, /^공방 주인은 벌써 잠들었어요/, '그 자리 주민(21:30 취침)이 잠들었다');
+  const g = await fixture(at(21, 29) + 45_000, { sleeps: true }); // 준비 끝은 21:30:15, 공방 주인 취침은 21:30
+  g.go('workshop'); g.send('DAY_JOB_START');
+  g.set(at(21, 30) + 5000); g.pulse();
+  const scene = g.read().view.day.scene;
+  assert.equal(g.read().state.day.job.status, 'preparing');
+  assert.equal(scene.village.holds['workshop-owner']?.pose, 'working', '준비가 끝날 때까지 작업대');
+  assert.ok(scene.npcs.some(n => n.id === 'workshop-owner'), '옛 화면에도 보인다');
+});
+
+test('방문 끝 벽시계: 결산 없이 같은 U에서 방문이 두 번 끝나도 첫 방문 끝 시각을 지킨다(GPT 검수 GA1)', async () => {
+  const { initialLease, pulseLease, VISIT_IDLE_MS } = await townFile('presence.mjs');
+  let lease = initialLease();
+  const pulse = (ms, foreground) => { lease = pulseLease(lease, { surfaceId: 'w', surface: 'day', foreground, safe: false }, ms).lease; };
+  pulse(0, true); pulse(3000 + VISIT_IDLE_MS, true); pulse(3000 + VISIT_IDLE_MS, false); pulse(3000 + 2 * VISIT_IDLE_MS, true);
+  assert.equal(lease.breaks.length, 1, '같은 U의 도장은 하나');
+  assert.equal(lease.breakAts[lease.breaks[0]], 3000 + VISIT_IDLE_MS, '첫 방문 끝 = 마지막 전경 + 3초 + 30분');
+});
+
+test('예약 상한: 넘치면 오래된 닫힌 예약부터 빠지고, 아직 붙잡고 있는 예약은 남는다(GPT 검수 GA3)', async () => {
+  const v = await townFile('town/village.mjs');
+  const village = v.initialVillage();
+  v.closeBands(village, { nowMs: at(12), seed: 'acct-night', offsetMin: 540, revision: 1 });
+  const long = { by: 'E-long', spot: 'greenhouse.board' };
+  v.holdResidents(village, { researcher: long }, at(12) + 1000, 2);
+  for (let i = 0; i < 80; i++) v.holdResidents(village, { researcher: long, 'cafe-owner': { by: `E-${i}`, spot: 'cafe.counter' } }, at(12) + 2000 + i * 1000, 3 + i);
+  assert.ok(village.reservations.length <= v.RESERVATIONS_MAX, String(village.reservations.length));
+  assert.ok(village.reservations.some(r => r.by === 'E-long' && r.toMs === null), '오래 붙잡은 예약이 남는다');
+  assert.ok(village.reservations.some(r => r.by === 'E-79' && r.toMs === null), '지금 붙잡은 예약도 남는다');
+  assert.equal(v.validVillage(village), true);
+});
+
+test('재시작: 창 항목이 온전하지 않은 임대 파일은 버리고 세계의 도장으로 연다 — 저장소는 멈추지 않는다(GPT 검수 GA4)', async () => {
+  const fs = require('node:fs'), os = require('node:os');
+  const { createStore } = await townFile('server.mjs');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-town-lease-'));
+  try {
+    const now = () => at(12), save = path.join(dir, 'save');
+    const first = createStore({ dir: save, now, tz: 540 });
+    first.pulse({ surfaceId: 'w', surface: 'day', foreground: true, safe: true });
+    const revision = first.read().state.revision, file = path.join(save, 'lease.json');
+    const lease = JSON.parse(fs.readFileSync(file, 'utf8')); lease.presence.surfaces = { w: null }; fs.writeFileSync(file, JSON.stringify(lease));
+    const again = createStore({ dir: save, now, tz: 540 });
+    assert.equal(again.read().state.revision, revision);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('밤 규칙: 취침 전에 시작한 장면은 취침 시각을 넘겨도 이어 간다(GPT 검수 GB1)', async () => {
+  const f = await fixture(at(23, 28), { sleeps: true });
+  f.go('cafe'); f.place(); play(f, 20); f.ack();
+  f.send('DAY_START', { kind: 'tea' });
+  f.set(at(23, 31)); f.pulse();
+  assert.throws(() => f.send('LIFE_OPEN', { source: 'direct' }), error => error.code === 'resident-asleep', '새 장면은 막힌다');
+  f.send('DAY_ROLE', { role: 'planner' });
+  const e = f.read().state.day.episode;
+  assert.ok(e.open && e.stage === 'choice', JSON.stringify({ open: e.open, stage: e.stage }));
+});
+
+test('W3 화면: 다른 곳에 있던 주민은 장면 자리로 걸어온 뒤 붙잡힌다 — 걸음과 붙잡힘을 둘 다 본다(GPT 검수 GB3)', async () => {
+  const { placeAt, planOf } = await townFile('town/village.mjs');
+  const f = await fixture(at(10));
+  // 공방 주인이 공방 밖에 머무는 때를 계획에서 찾아 그 시각에 도움을 청한다.
+  const v = f.read().state.village, segments = planOf(v).segments, start = Object.fromEntries(Object.entries(v.band.residents).map(([npc, r]) => [npc, r.lastSpot]).filter(([, s]) => s));
+  let when = null;
+  for (let t = at(10); t < v.band.endMs - 10 * MIN && when === null; t += MIN) { const p = placeAt(segments, 'workshop-owner', t, start); if (p && !p.walking && p.to !== 'workshop') when = t; }
+  assert.ok(when, '공방 밖의 공방 주인');
+  f.set(when); f.pulse(); f.go('workshop'); f.send('DAY_START', { kind: 'help' });
+  const seen = new Set();
+  for (let i = 0; i < 60; i++) {
+    const v2 = f.read().view.day.scene.village, here = placeAt(v2.segments, 'workshop-owner', v2.nowMs, v2.startSpots);
+    seen.add(here?.walking && here.archetype === 'reserved' ? 'walking' : v2.holds['workshop-owner'] ? 'held' : 'other');
+    f.pulse(1000);
+  }
+  assert.ok(seen.has('walking') && seen.has('held'), [...seen].join());
+});

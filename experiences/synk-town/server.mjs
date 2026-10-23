@@ -81,9 +81,14 @@ const count = value => Number.isSafeInteger(value) && value >= 0, stamp = value 
 /** Whether a settled world differs from the saved one only in what the village recomputes (W3). */
 const villageOnly = (world, saved) => JSON.stringify({ ...world, village: null, townEvents: null, townSeq: null })
   === JSON.stringify({ ...saved, village: null, townEvents: null, townSeq: null });
+/** The windows of a saved lease, each whole (the restart reads their times — visitEndAt). */
+const validSurfaces = surfaces => !!surfaces && typeof surfaces === 'object' && !Array.isArray(surfaces) && Object.keys(surfaces).length <= 16
+  && Object.values(surfaces).every(item => !!item && typeof item === 'object' && count(item.at) && typeof item.foreground === 'boolean'
+    && (item.safe === undefined || typeof item.safe === 'boolean') && ['classic', 'day'].includes(item.surface));
 function validLease(lease) {
   return !!lease && count(lease.uMs) && stamp(lease.lastForegroundAt) && !!lease.presence && stamp(lease.presence.at)
     && stamp(lease.presence.lastActiveAt) && typeof lease.presence.idleClosed === 'boolean' && count(lease.presence.fence)
+    && (lease.presence.owner === null || typeof lease.presence.owner === 'string') && validSurfaces(lease.presence.surfaces)
     && Array.isArray(lease.spans) && lease.spans.length <= LEASE_ENTRIES && lease.spans.every(span => count(span?.u)
       && (span.surfaceId === null || typeof span.surfaceId === 'string') && count(span.fence) && ['classic', 'day'].includes(span.surface)
       && typeof span.canRun === 'boolean')
@@ -203,7 +208,7 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
   const persist = save || (file ? next => atomicWrite(file, JSON.stringify(next)) : null);
   const current = (world = state) => {
     const shown = snapshot(world);
-    shown.state.events = log.slice(); shown.state.commands = [...receipts.values()]; shown.state.townEvents = townLog.slice();
+    shown.state.events = log.slice(); shown.state.commands = [...receipts.values()]; shown.state.townEvents = [...townLog, ...(world.townEvents || [])];
     return { ...shown, seen: { ...seen }, capabilities: { life: !!state.life && lifeEnabled, day: !!state.day && lifeEnabled } };
   };
   /** The old one-file shape; it carries the seen ledger and the evaluation lines only when they hold something. */
@@ -327,8 +332,9 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
       if (loadError) throw loadError;
       const world = settledTo(lease, { nowMs: hostNow() });
       // A read that only moved the village's bands shows them without writing: the next settlement
-      // opens and closes them the same way (W3) — so reading never needs the disk.
-      if (world && villageOnly(world, state)) return current(world);
+      // opens and closes them the same way (W3) — so reading never needs the disk. A visit end the lease
+      // recorded is applied once and saved (its break leaves the lease), however little it changed.
+      if (world && !lease.breaks.length && villageOnly(world, state)) return current(world);
       if (world) { commit(world); lease = settledLease(lease, state.settledU); keepLease(); }
       return current();
     },

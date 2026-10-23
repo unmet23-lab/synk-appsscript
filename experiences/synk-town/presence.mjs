@@ -86,7 +86,9 @@ export function pulseLease(previous, input, now, { away = false, settledU = 0 } 
   if (last?.u === span.u) next.spans = [...next.spans.slice(0, -1), span];
   else if (!sameSpan(last, span)) next.spans = [...next.spans, span];
   // A visit that ended in a long rest ends at this U: the time this pulse brought comes first.
-  if (pulse.visitEnded) { next.breaks = [...next.breaks, next.uMs]; next.breakAts = { ...next.breakAts, [next.uMs]: pulse.endedAt }; }
+  // Two visit ends at one U (no play between them) keep the first one's wall time: the holds the first visit
+  // opened end there, as they would had the world settled right after it.
+  if (pulse.visitEnded && !next.breaks.includes(next.uMs)) { next.breaks = [...next.breaks, next.uMs]; next.breakAts = { ...next.breakAts, [next.uMs]: pulse.endedAt }; }
   if (input.foreground === true && !away) next.lastForegroundAt = pulse.next.at;
   // A walk is timed only while the same window keeps holding the town without a gap.
   const previousOwner = before.surfaces[before.owner];

@@ -146,7 +146,7 @@ export function planBand(input) {
     const npc = hold.npc, s = starts[npc];
     if (!s || hold.fromMs >= s.end) continue;
     const from = Math.max(hold.fromMs, s.t), to = hold.toMs === null || hold.toMs === undefined ? s.end : Math.min(hold.toMs, s.end);
-    if (to <= s.t) continue;
+    if (to <= from) continue; // a hold of no length (opened and closed at one instant) leaves the band as it was
     const before = segments.filter(x => x.npc === npc && x.startMs < from).map(x => (x.endMs > from ? { ...x, endMs: from, arriveMs: Math.min(x.arriveMs, from) } : x));
     const others = segments.filter(x => x.npc !== npc);
     const prior = summarize(before, input.residents?.[npc], P);

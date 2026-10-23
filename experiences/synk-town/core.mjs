@@ -308,6 +308,17 @@ function heldNow(state) {
   if (job?.status === 'preparing') hold('workshop-owner', job.id, 'workshop.bench', { toMs: job.readyAt });
   return held;
 }
+/** The night rule at a command (host.nowMs, §4-2 A): the residents a scene would begin with must be up. A scene already
+ * begun goes on (resuming one is not a beginning); without the host's sleeps every scene stays open. */
+function sleepersFor(state, command, p, nowMs) {
+  const v = state.village;
+  if (!v?.sleeps) return [];
+  const pictureMenu = (command.type === 'BAZAAR_START' ? p.kind : state.bazaar?.episode?.kind) === 'pictureMenu';
+  const needs = command.type === 'DAY_START' ? DAY_MEMBERS[p.kind] || [] : command.type === 'DAY_JOB_START' ? ['workshop-owner']
+    : ['BAZAAR_START', 'BAZAAR_RESUME'].includes(command.type) ? ['cafe-owner', ...(pictureMenu ? ['workshop-owner'] : [])]
+      : command.type === 'LIFE_OPEN' ? ['cafe-owner'] : [];
+  return needs.filter(npc => !upFor(v, npc, nowMs));
+}
 /** Where a habit may form (§6-5): the player's seat (anyone) and the first day's agreed spot (the workshop owner). */
 function habitSpots(state) {
   const agreed = agreementSpot(state.day?.agreement);
@@ -850,7 +861,9 @@ export function reduceCommand(previous, command, host = {}) {
     }
     case 'PREF_FAMILY':
       state.prefs = preference(() => answerFamily(state.prefs, p.family, p.answer)); break;
-    default:
+    default: {
+      const asleep = sleepersFor(state, command, p, host.nowMs);
+      ensure(!asleep.length, 'resident-asleep', `${asleep.map(npc => RESIDENT_BY_ID[npc].label).join('과 ')}은 지금 자고 있어요. 아침에 다시 만나요.`, 409);
       if (command.type.startsWith('SUPPORT_')) {
         ensure(state.support && host.enabled === true && host.surface === 'day', 'support-unavailable', '첫 하루에서 읽기 도움을 확인해 주세요.', 403);
         runLife(state, () => { commandSupport(state.support, command.type, p, supportContext(state, host)); return []; });
@@ -884,6 +897,7 @@ export function reduceCommand(previous, command, host = {}) {
       if (['LIFE_OPEN', 'LIFE_RESUME'].includes(command.type)) state.resting = false;
       runLife(state, () => commandLife(state.life, command.type, p, livingContext(state, host)));
       break;
+    }
   }
   if (state.pendingUse && (state.pendingUse.worldRevision !== state.worldRevision || state.pendingUse.placement !== state.placement)) state.pendingUse = null;
   if (state.life && command.type !== 'RESET' && previous.placement !== state.placement) state.lifeSeatRevision++;

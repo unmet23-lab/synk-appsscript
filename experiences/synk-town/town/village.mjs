@@ -11,8 +11,10 @@ import { PLACE_BY_ID, SPOT_BY_ID } from './places.mjs';
 
 /** An absence longer than this starts again this far back (§10-1; W6 replaces the plain cut). */
 export const ABSENCE_LIMIT_MS = 7 * DAY;
-/** The most reservations, promises or habit spots a village keeps. */
+/** The most promises or habit spots a village keeps. */
 export const VILLAGE_MAX = 32;
+/** The most reservations: a band (six hours) keeps the closed holds its plan is made from, and every open one. */
+export const RESERVATIONS_MAX = 64;
 const START_OBJECTS = Object.freeze({ 'cafe-tray': { spot: 'cafe.prep' }, 'observation-board': { spot: 'greenhouse.board' } });
 const USES_KEPT = 4;
 
@@ -38,7 +40,7 @@ export function validVillage(v) {
   if (b !== null && !(plain(b) && time(b.lifeDay) && BAND_IDS.includes(b.band) && time(b.startMs) && time(b.endMs) && b.endMs > b.startMs
     && time(b.dayStartMs) && b.dayStartMs <= b.startMs && integer(b.planCmdRev) && validResidents(b.residents)
     && plain(b.objects) && Object.values(b.objects).every(o => plain(o) && spotId(o.spot)))) return false;
-  if (!Array.isArray(v.reservations) || v.reservations.length > VILLAGE_MAX || !v.reservations.every(r => plain(r) && id(r.id) && npcId(r.npc)
+  if (!Array.isArray(v.reservations) || v.reservations.length > RESERVATIONS_MAX || !v.reservations.every(r => plain(r) && id(r.id) && npcId(r.npc)
     && integer(r.fromMs) && (r.toMs === null || integer(r.toMs) && r.toMs >= r.fromMs) && id(r.by) && spotId(r.spot)
     && (r.seat === undefined || spotId(r.seat)))) return false;
   if (new Set(v.reservations.map(r => r.id)).size !== v.reservations.length) return false;
@@ -190,7 +192,10 @@ export function holdResidents(v, held, nowMs, revision) {
     if (v.reservations.some(x => x.id === r.id)) continue;
     v.reservations.push(r);
   }
-  if (v.reservations.length > VILLAGE_MAX) v.reservations = v.reservations.slice(-VILLAGE_MAX);
+  // Past the bound the oldest closed holds leave — never an open one (it still holds its resident).
+  for (let i = 0; v.reservations.length > RESERVATIONS_MAX && i < v.reservations.length;) {
+    if (v.reservations[i].toMs === null) i++; else v.reservations.splice(i, 1);
+  }
 }
 
 /** Where a resident is at ms in a planned band (§14-4 — the screen runs the same function with the

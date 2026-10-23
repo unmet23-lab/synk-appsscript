@@ -230,6 +230,9 @@ function dueAt() {
   const v = snapshot?.view.day?.scene?.village, times = [];
   if (v) {
     times.push(v.band.endMs);
+    // The place's line says what its own resident is doing (the cafe owner, the researcher): read when that turns.
+    const named = { cafe: 'cafe-owner', greenhouse: 'researcher' }[snapshot.view.day.location];
+    for (const seg of named ? v.segments.filter(s => s.npc === named) : []) for (const at of [seg.startMs, seg.arriveMs, seg.endMs]) if (at > v.nowMs) times.push(at);
     for (const id of RESIDENT_IDS) {
       const mine = v.segments.filter(s => s.npc === id), up = mine.some(s => s.startMs <= v.nowMs);
       const next = up ? Math.max(...mine.map(s => s.endMs)) : Math.min(...mine.map(s => s.startMs));
@@ -330,6 +333,13 @@ function villageRows(v) {
       const point = at.walking && still ? SPOT_BY_ID[at.spot].at : at;
       rows.push({ id, x: point.x, z: point.z, pose: at.walking && still ? 'standing' : at.pose, goal: goalOf(at), live: true, archetype: at.archetype, walking: at.walking });
     }
+  }
+  // Two residents on one spot (a two-seat spot, or a plan spot under a scene's) stand apart; a walker passes through.
+  const placed = [];
+  for (const row of rows) {
+    if (row.asleep) continue;
+    if (row.live && !row.walking) for (let i = 0; i < 3 && placed.some(p => Math.hypot(p.x - row.x, p.z - row.z) < .35); i++) row.x += .55;
+    placed.push(row);
   }
   const signature = rows.map(r => `${r.id}:${r.held ? 'held' : r.asleep ? 'asleep' : `${r.archetype}:${r.walking}`}`).join('|');
   return { t, rows, places, signature };
@@ -527,7 +537,8 @@ function villageFrame() {
 function frame(now) { walkFrame(now); observe(now); villageFrame(); raf = requestAnimationFrame(frame); }
 async function load() {
   setBusy(true);
-  try { await queue(async () => { walkPacket = null; walkPending = []; accept(await request('state')); clearError(); await pulseNow(); }); }
+  // The window's first pulse records a visit that ended while it was away; the second read shows the town after it.
+  try { await queue(async () => { walkPacket = null; walkPending = []; accept(await request('state')); clearError(); await pulseNow(); accept(await request('state')); }); }
   catch (error) { showError(error.message); }
   finally { setBusy(false); }
   // A failed first walk-enable has no saved walking state. Retry must finish

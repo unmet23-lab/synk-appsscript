@@ -56,8 +56,10 @@ test('예약: 받침 준비는 처음부터 끝이 정해진다(시작 + 30초) 
   f.send('DAY_JOB_START');
   const job = f.read().state.day.job, r = f.read().state.village.reservations.find(x => x.npc === 'workshop-owner');
   assert.equal(r.toMs, job.readyAt);
+  assert.equal(job.readyAt, job.startedAt + 30_000, '준비 끝은 시작 + 30초');
   assert.ok(r.toMs >= started + 30_000 - 1);
   f.pulse(40_000); f.send('DAY_REST');
+  assert.equal(f.read().state.day.job.status, 'ready', '40초 뒤 준비 완료(GPT 검수 GB2)');
   assert.equal(f.read().state.village.reservations.find(x => x.id === r.id).toMs, job.readyAt);
 });
 
