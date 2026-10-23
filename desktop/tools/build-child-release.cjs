@@ -4,6 +4,7 @@
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const {inventory,audit}=require('./freeze-platform-release.cjs');
 const {sourceHash}=require('./source-hash.cjs');
+const {verifyArchive}=require('./archive-verification.cjs');
 const assert=(value,message)=>{if(!value)throw Error(message);};
 const json=(file,value)=>{fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,JSON.stringify(value,null,2)+'\n');};
 const PRODUCTS={world:{name:'SYNK WORLD Preview',executable:'SYNKWorldPreview',stem:'SYNK-WORLD',category:'public.app-category.education'},messenger:{name:'SYNK Workspace Preview',executable:'SYNKMessengerPreview',stem:'SYNK-Workspace',category:'public.app-category.productivity'}};
@@ -42,7 +43,7 @@ async function buildChild({child,baseline,root,out,builder,platform,arch,version
   }
   const {build,Platform,Arch}=deps('electron-builder');const built=await build({projectDir:builder,targets:(platform==='win32'?Platform.WINDOWS:Platform.MAC).createTarget(platform==='win32'?'dir':'dmg',arch==='arm64'?Arch.arm64:Arch.x64),config,publish:'never'});
   const app=platform==='win32'?path.join(dist,'win-unpacked'):path.join(dist,arch==='arm64'?'mac-arm64':'mac',product.executable+'.app'),res=platform==='win32'?path.join(app,'resources'):path.join(app,'Contents/Resources'),archive=path.join(res,'app.asar'),executable=platform==='win32'?path.join(app,product.executable+'.exe'):path.join(app,'Contents/MacOS',product.executable);
-  require('./build-platform-release.cjs').verifyArchive(asar,stage,archive);
+  verifyArchive(asar,stage,archive);
   assert(JSON.stringify(JSON.parse(fs.readFileSync(path.join(res,'synk-install.json'))))===JSON.stringify(metadata),'Child metadata differs');
   let artifact;
   if(platform==='win32'){

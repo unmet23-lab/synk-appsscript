@@ -1,9 +1,8 @@
 'use strict';
 const http=require('node:http'),crypto=require('node:crypto');
-const {requestSpec,redactAccountResponse}=require('./account-requests.cjs');
+const {requestSpec}=require('./account-requests.cjs');
+const {accountResponseContract,missingAsset}=require('./account-response-contract.cjs');
 const {projectLibrary}=require('./library-access.cjs');
-const {RESOURCES,PERSONAL_OPERATIONS,PLATFORM_OPERATIONS,LIMITS,uuid}=require('./personal-requests.cjs');
-const missingAsset=error=>['ASSET_NOT_FOUND','ASSET_NOT_CONFIRMED'].includes(error?.code)&&uuid(error?.assetId)?{assetId:error.assetId}:{};
 const MESSAGES={AUTH_CONFIG:'로그인 설정을 찾지 못해 로그인할 수 없어요. synk.im에서 PC 앱을 다시 받아 설치해 주세요.',AUTH_REQUIRED:'SYNK ID로 다시 로그인해 주세요.',AUTH_CANCELLED:'로그인을 취소했어요.',AUTH_TIMEOUT:'로그인 시간이 지났어요. 다시 시작해 주세요.',CALLBACK_UNAVAILABLE:'로그인 창과 연결하지 못했어요. 잠시 뒤 다시 해 주세요.',AUTH_FAILED:'로그인을 마치지 못했어요. 다시 해 주세요.',AUTH_CHANGED:'로그인 상태가 바뀌었어요.',SECURE_STORAGE_UNAVAILABLE:'이 PC의 암호화 저장소를 쓸 수 없어 로그인을 저장하지 못했어요.',NETWORK:'서버에 연결하지 못했어요. 잠시 뒤 다시 시도해 주세요.',INVALID_REQUEST:'요청을 처리하지 못했어요. 다시 해 주세요.',AUTH_SERVER_UNAVAILABLE:'로그인 서버에 연결하지 못했어요. 잠시 뒤 다시 해 주세요.'};
 MESSAGES.PLATFORM_AUTH_REQUIRED='SYNK Platform에서 로그인하면 이 앱도 같은 계정으로 연결돼요.';
 MESSAGES.PLATFORM_ACCOUNT_MISMATCH='브라우저의 SYNK ID가 플랫폼 계정과 달라요. 브라우저의 SYNK ID에서 로그아웃한 뒤 플랫폼과 같은 계정으로 다시 로그인해 주세요.';
@@ -128,20 +127,18 @@ function createAuthService({config,store,openExternal,fetcher=globalThis.fetch,a
     }
     return {ok:!localError,status:snapshot(),serverRevoked:serverSessionRevoked&&refreshRevoked,serverSessionRevoked,refreshRevoked,...(localError?{error:publicError(fault('AUTH_FAILED'))}:{})};
   }
-  async function accountRequest(operation,params){let spec,loadSequence,requestEpoch,requestToken;try{if(config?.product==='messenger'&&!['load','revokeSession'].includes(operation))throw fault('INVALID_REQUEST');if(config?.clientKey==='care'&&!['load','careLoad','careSave','careDelete'].includes(operation))throw fault('INVALID_REQUEST');if(RESOURCES.includes(config?.clientKey)&&!['load',...PERSONAL_OPERATIONS].includes(operation))throw fault('INVALID_REQUEST');spec=requestSpec(operation,params,appVersion,config?.product,config?.clientKey);const expected=epoch;requestEpoch=expected;if(operation==='load'){loadSequence=++accountLoadSequence;librarySource=null;emit();}let token=await getAccessToken();check(expected);const ownerId=account?.synk_user_id;
-      const personalResource=Object.hasOwn(PLATFORM_OPERATIONS,operation)?PLATFORM_OPERATIONS[operation]:PERSONAL_OPERATIONS.includes(operation)?config.clientKey:null;
-      const send=t=>{requestToken=t;return json(config.accountApiUrl+'/functions/v1/'+spec.path,{method:spec.method||(spec.body===undefined?'GET':'POST'),headers:{...headers(t),...(spec.contractVer?{'X-Contract-Ver':spec.contractVer}:{}),...(spec.body===undefined?{}:{'Content-Type':'application/json'})},...(spec.body===undefined?{}:{body:JSON.stringify(spec.body)})},personalResource?LIMITS[personalResource]+32768:33554432);};
-      // 「우리 반 수업」 reads the student classroom directory, not an account resource (no accountId).
-      // Its own 401 AUTH_REQUIRED means this SYNK ID is on no class roster: an empty list, never a
-      // sign-out. Only a gateway 401 (no envelope code) renews the token, once; any other classroom
-      // failure fails this read alone. Session validity stays with refresh and synk-account.
-      const lessons=operation==='worldRequest'&&params.route==='classroom',lessonCode=r=>lessons&&r.data?.ok===false&&typeof r.data.error?.code==='string'?r.data.error.code:null;
-      let result=await send(token);check(expected);requireBindingAccess();if(result.response.status===401&&!lessonCode(result)){if(session.accessToken===token)token=await refresh();else token=session.accessToken;check(expected);requireBindingAccess();result=await send(token);check(expected);requireBindingAccess();}
-      if(lessons){const code=lessonCode(result);if(result.response.status===401&&code==='AUTH_REQUIRED')return {ok:true,classes:[],empty_reason:'NO_LEARNER'};
-        if(!result.response.ok||result.data?.ok!==true)return {ok:false,error:{code:code&&/^[A-Z_]{1,80}$/.test(code)?code:result.response.status===401?'AUTH_EXPIRED':'CLASSROOM_UNAVAILABLE',message:'수업 목록을 불러오지 못했어요.',retryable:result.response.status>=500||result.response.status===429,status:result.response.status}};
-        return redactAccountResponse(result.data,operation,params);}
-      if(!result.response.ok||result.data?.ok!==true){if(session?.accessToken!==token)throw fault('AUTH_CHANGED');const code=typeof result.data?.error?.code==='string'&&/^[A-Z_]{1,80}$/.test(result.data.error.code)?result.data.error.code:result.response.status===401?'AUTH_REQUIRED':result.response.status===429||result.response.status>=500?'SERVICE_UNAVAILABLE':'ACCOUNT_UNAVAILABLE';if(['AUTH_REQUIRED','SESSION_REVOKED','AUTH_SESSION_MISSING'].includes(code))await discard('AUTH_REQUIRED');else if(loadSequence===accountLoadSequence){librarySource=null;emit();}return {ok:false,error:{code,message:'계정 요청을 완료하지 못했어요.',retryable:result.response.status>=500||result.response.status===429,status:result.response.status,...(PERSONAL_OPERATIONS.includes(operation)?missingAsset(result.data?.error):{})},...(Number.isSafeInteger(result.data?.revision)?{revision:result.data.revision}:{})};}
-      const data=redactAccountResponse(result.data,operation,params);if((operation==='worldRequest'&&!['town/sharing','enrollment/preview','enrollment/claim'].includes(params.route)&&(typeof ownerId!=='string'||data.accountId!==ownerId))||(['playLoad','playMutate'].includes(operation)&&(data.scope!=='synk-play'||typeof ownerId!=='string'||data.accountId!==ownerId))||(['careLoad','careSave','careDelete'].includes(operation)&&(data.scope!=='synk-care'||typeof ownerId!=='string'||data.accountId!==ownerId))||(personalResource&&(data.scope!=='synk-personal'||data.resource!==personalResource||typeof ownerId!=='string'||data.accountId!==ownerId))){await discard('AUTH_REQUIRED');return {ok:false,error:publicError(fault('AUTH_REQUIRED'))};}
+  async function accountRequest(operation,params){let spec,loadSequence,requestEpoch,requestToken;try{const contract=accountResponseContract(operation,params,config,fault);spec=requestSpec(operation,params,appVersion,config?.product,config?.clientKey);const expected=epoch;requestEpoch=expected;if(operation==='load'){loadSequence=++accountLoadSequence;librarySource=null;emit();}let token=await getAccessToken();check(expected);const ownerId=account?.synk_user_id;
+      const send=t=>{requestToken=t;return json(config.accountApiUrl+'/functions/v1/'+spec.path,{method:spec.method||(spec.body===undefined?'GET':'POST'),headers:{...headers(t),...(spec.contractVer?{'X-Contract-Ver':spec.contractVer}:{}),...(spec.body===undefined?{}:{'Content-Type':'application/json'})},...(spec.body===undefined?{}:{body:JSON.stringify(spec.body)})},contract.maxBytes);};
+      let result=await send(token);check(expected);requireBindingAccess();if(contract.shouldRefresh(result)){if(session.accessToken===token)token=await refresh();else token=session.accessToken;check(expected);requireBindingAccess();result=await send(token);check(expected);requireBindingAccess();}
+      const decoded=contract.decode(result,ownerId);
+      if(decoded.kind==='classroom')return decoded.data;
+      if(decoded.kind==='error'){
+        if(session?.accessToken!==token)throw fault('AUTH_CHANGED');
+        if(decoded.discard)await discard('AUTH_REQUIRED');else if(loadSequence===accountLoadSequence){librarySource=null;emit();}
+        return decoded.data;
+      }
+      const data=decoded.data;
+      if(decoded.mismatch){await discard('AUTH_REQUIRED');return {ok:false,error:publicError(fault('AUTH_REQUIRED'))};}
       if(operation==='load'&&loadSequence===accountLoadSequence){
         if(typeof data.account?.synk_user_id!=='string'||data.account.synk_user_id!==ownerId){await discard('AUTH_REQUIRED');return {ok:false,error:publicError(fault('AUTH_REQUIRED'))};}
         // A same-account refresh temporarily clears identity while verifying its new token.

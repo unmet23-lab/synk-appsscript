@@ -786,41 +786,51 @@ export function createDatingService({ store, mode = store?.mode, accountConfig, 
       onboarding: onboardingView(row),
       limitations: [adultRequired ? '서버의 성인 확인 결과만 적용해요. 실제 인증 업체 연결은 아직 운영하지 않아요.' : '성인 여부는 본인 진술이며 인증되지 않았어요.', '현재 이 서비스는 로컬 호스트에서만 동작해요. 외부 초대·이메일·푸시는 보내지 않아요.'] };
   }
-  const actionFields = { onboard: ['profile', 'declared', 'consents'], profile: ['profile'], 'public-answer': ['field', 'value', 'required', 'until'],
-    'bookmark-save': ['targetAccountId'], 'bookmark-remove': ['bookmarkId'], preferences: ['preferences'], consents: ['consents'], adult: ['declared'], pause: ['paused'],
-    block: ['targetAccountId'], unblock: ['targetAccountId'], report: ['targetAccountId', 'reason', 'details'],
-    'admin-report': ['reportId', 'status', 'decision', 'note'], delete: [], discovery: ['action'], connect: ['targetAccountId'],
-    'apply-preview': ['preview'], 'publish-baseline': ['fields'], experience: ['action'], introduction: ['pairId', 'expectedIntroductionRevision', 'action'], appointment: ['pairId', 'expectedPairRevision', 'action'], alignment: ['pairId', 'expectedAlignmentRevision', 'action'] };
-  function mutate(tx, row, action, requestId, at, isOperator) {
-    requireThat(plain(action) && own(actionFields, action.kind) && exact(action, ['kind', ...actionFields[action.kind]])
-      && actionFields[action.kind].every(key => own(action, key)));
-    if (row.status === 'deleted') fail(410, 'account-deleted');
-    if (centralBlocked(row)) fail(403, 'account-unavailable');
-    const retractExperience = action.kind === 'experience' && plain(action.action) &&
-       (action.action.kind === 'evaluation-consent' && action.action.enabled === false || ['respond', 'comfort', 'goal', 'followup', 'criterion', 'allowance-review'].includes(action.action.kind) && action.action.value === null);
-    if (row.status === 'suspended' && !['delete', 'report', 'pause', 'consents', 'block', 'bookmark-remove'].includes(action.kind) && !retractExperience) fail(403, 'account-suspended');
-    const doc = clone(row.document); let result = {};
-    // Fix the legacy interpretation before this write adds another setup step.
-    // Otherwise an old profile-only row could appear consent-confirmed merely
-    // because the following individual adult declaration completes its basics.
-    if (!doc.onboardingState) doc.onboardingState = { consentsConfirmed: onboardingView(row).steps.consents };
-    syncDateGates(tx, row.id, at);
-    function applyConsents(next) {
-      requireThat(exact(next, ['profilePublic', 'receiveInvitations', 'storePreferences']) && Object.keys(next).length === 3 && Object.values(next).every(value => typeof value === 'boolean'));
-      if ((next.profilePublic || next.receiveInvitations) && (!doc.adult.selfDeclared || !doc.profile.nickname)) fail(403, 'onboarding-required');
-      if ((next.profilePublic || next.receiveInvitations) && !adultVerified(row)) fail(403, 'adult-verification-required');
-      if (doc.consents.profilePublic && !next.profilePublic || doc.consents.receiveInvitations && !next.receiveInvitations) closePairs(tx, row.id, null, false, at);
-      doc.consents = clone(next); doc.onboardingState = { consentsConfirmed: true };
-      if (adultRequired && row.status === 'active' && !centralBlocked(row) && (next.profilePublic || next.receiveInvitations) && doc.adultVerification) doc.adultVerification.resumeRequired = false;
-      if (row.status === 'active' && (next.profilePublic || next.receiveInvitations)) tx.resumeCentralAvailability(row.id);
-      if (!doc.consents.storePreferences) { doc.preferences = {}; doc.discovery = null; doc.discoveryEpoch = null; delete doc.legacyDiscovery; delete doc.discoveryMigration; delete doc.bookmarks; doc.experience = experience.create(); tx.eraseExposures(row.id); }
+  // The transaction owns authorization, revisions and persistence. Each action
+  // owns its allowed input fields and explicit draft/transaction effects.
+  function applyConsents(tx, row, doc, next, at) {
+    requireThat(exact(next, ['profilePublic', 'receiveInvitations', 'storePreferences']) && Object.keys(next).length === 3 && Object.values(next).every(value => typeof value === 'boolean'));
+    if ((next.profilePublic || next.receiveInvitations) && (!doc.adult.selfDeclared || !doc.profile.nickname)) fail(403, 'onboarding-required');
+    if ((next.profilePublic || next.receiveInvitations) && !adultVerified(row)) fail(403, 'adult-verification-required');
+    if (doc.consents.profilePublic && !next.profilePublic || doc.consents.receiveInvitations && !next.receiveInvitations) closePairs(tx, row.id, null, false, at);
+    doc.consents = clone(next); doc.onboardingState = { consentsConfirmed: true };
+    if (adultRequired && row.status === 'active' && !centralBlocked(row) && (next.profilePublic || next.receiveInvitations) && doc.adultVerification) doc.adultVerification.resumeRequired = false;
+    if (row.status === 'active' && (next.profilePublic || next.receiveInvitations)) tx.resumeCentralAvailability(row.id);
+    if (!doc.consents.storePreferences) { doc.preferences = {}; doc.discovery = null; doc.discoveryEpoch = null; delete doc.legacyDiscovery; delete doc.discoveryMigration; delete doc.bookmarks; doc.experience = experience.create(); tx.eraseExposures(row.id); }
+  }
+  function applyTargetAction({ tx, row, doc, action, requestId, at }) {
+    let result = {};
+    requireThat(id(action.targetAccountId) && action.targetAccountId !== row.id, 'invalid-target');
+    const target = tx.account(action.targetAccountId);
+    if (!target || target.status === 'deleted') fail(404, 'target-unavailable');
+    if (action.kind === 'block') { doc.blocks = [...new Set([...doc.blocks, target.id])]; closePairs(tx, row.id, target.id, false, at); }
+    else if (action.kind === 'unblock') doc.blocks = doc.blocks.filter(value => value !== target.id);
+    else if (action.kind === 'report') {
+      requireThat(['safety', 'harassment', 'impersonation', 'other'].includes(action.reason) && finiteText(action.details, 1000));
+      const reportId = randomUUID(); tx.addReport({ id: reportId, reporter: row.id, target: target.id, reason: action.reason, details: action.details.trim(), at }); result = { reportId };
+    } else {
+      if (!connectedAllowed(row, target)) fail(403, 'connection-unavailable');
+      if (!doc.discovery || !discoveryFor(tx, row, at).inspect(doc.discovery, { at }).candidates.some(candidate => candidate.id === target.id && candidate.status === 'eligible')) fail(403, 'matching-confirmation-required');
+      if(!currentIntroductionCompatible(tx,row,target,at))fail(403,'matching-confirmation-required');
+      let pair = tx.pairFor(row.id, target.id);
+      if (!pair) { const pairId = randomUUID(); const state = appointmentsAdapter.create({ pairId, people: [{ id: row.id, label: doc.profile.nickname }, { id: target.id, label: target.document.profile.nickname }], at });
+        pair = tx.putPair({ id: pairId, a: row.id, b: target.id, revision: state.revision, document: state }); }
+      const intro = introRecord(tx, row.id, target.id, { kind: 'send', actor: row.id, requestId, pairId: pair.id, at });
+      tx.clearAlignment(pair.id);
+      recordExplicitExposure(tx, row, doc, [target.id], at);
+      captureMeetingCriteria(tx, row, doc, pair.id, at);
+      result = { pairId: pair.id, introductionId: introductions.inspect(intro, { viewer: row.id, at }).current.id };
     }
-    if (action.kind === 'onboard') {
+    return { result };
+  }
+  const actionHandlers = {
+    'onboard': { fields: ['profile', 'declared', 'consents'], apply({ tx, row, doc, action, at }) {
       requireThat(exact(action.profile, ['nickname', 'region', 'intro']) && action.declared === true);
       doc.profile = { ...doc.profile, ...profileBasics(action.profile) };
       doc.adult = { selfDeclared: true, verified: false, at };
-      applyConsents(action.consents);
-    } else if (action.kind === 'profile') {
+      applyConsents(tx, row, doc, action.consents, at);
+    } },
+    'profile': { fields: ['profile'], apply({ doc, action, at }) {
       const p = action.profile;
       requireThat(exact(p, ['nickname', 'region', 'intro', 'values', 'required', 'expirations']));
       const basics = profileBasics(p);
@@ -828,7 +838,9 @@ export function createDatingService({ store, mode = store?.mode, accountConfig, 
       requireThat(Array.isArray(required) && new Set(required).size === required.length && required.every(key => key.startsWith('wants.') && own(values, key)));
       const expirations = normalizePublicExpirations(p.expirations,{values,previousValues:doc.profile.values,previousExpirations:doc.profile.expirations||{},at});
       doc.profile = { ...basics, values, required: clone(required), ...(Object.keys(expirations).length ? {expirations} : {}) };
-    } else if (action.kind === 'public-answer') {
+    } },
+    'public-answer': { fields: ['field', 'value', 'required', 'until'], apply({ doc, action, at }) {
+      let result = {};
       const field = fields.get(action.field);
       requireThat(!!field && action.field !== 'consent' && typeof action.required === 'boolean'
         && (!action.required || field.kind === 'wants'), 'invalid-public-values');
@@ -846,7 +858,10 @@ export function createDatingService({ store, mode = store?.mode, accountConfig, 
       }
       doc.profile = { ...doc.profile, values, required, expirations };
       result = { field: action.field, withdrawn: action.value === null };
-    } else if (action.kind === 'bookmark-save') {
+      return { result };
+    } },
+    'bookmark-save': { fields: ['targetAccountId'], apply({ tx, row, doc, action, at }) {
+      let result = {};
       requireThat(id(action.targetAccountId) && action.targetAccountId !== row.id, 'invalid-target');
       if (!publicAccount(row) || !doc.consents.storePreferences) fail(403, 'discovery-unavailable');
       const current = discoverySnapshot(tx, row, at);
@@ -858,13 +873,19 @@ export function createDatingService({ store, mode = store?.mode, accountConfig, 
         const bookmark = { id: randomUUID(), targetAccountId: action.targetAccountId, savedAt: at };
         doc.bookmarks = [...bookmarks, bookmark]; result = { bookmarkId: bookmark.id, alreadySaved: false };
       }
-    } else if (action.kind === 'bookmark-remove') {
+      return { result };
+    } },
+    'bookmark-remove': { fields: ['bookmarkId'], apply({ doc, action }) {
+      let result = {};
       requireThat(uuid(action.bookmarkId), 'invalid-bookmark');
       const bookmarks = doc.bookmarks || [];
       if (!bookmarks.some(item => item.id === action.bookmarkId)) fail(404, 'bookmark-unavailable');
       doc.bookmarks = bookmarks.filter(item => item.id !== action.bookmarkId);
       result = { bookmarkId: action.bookmarkId, removed: true };
-    } else if (action.kind === 'publish-baseline') {
+      return { result };
+    } },
+    'publish-baseline': { fields: ['fields'], apply({ tx, row, doc, action, at }) {
+      let result = {};
       if (!doc.consents.storePreferences || !doc.discovery) fail(403, 'preference-storage-consent-required');
       requireThat(Array.isArray(action.fields) && action.fields.length > 0 && action.fields.length <= DISCOVERY_FIELDS.length
         && new Set(action.fields).size === action.fields.length && action.fields.every(field => typeof field === 'string' && field.startsWith('self.') && fields.has(field) && !fields.get(field).legacy), 'invalid-public-values');
@@ -877,39 +898,27 @@ export function createDatingService({ store, mode = store?.mode, accountConfig, 
       }
       doc.profile.values = { ...doc.profile.values, ...choices(published, { publicValues: true }) };
       result = { publishedFields: clone(action.fields) };
-    } else if (action.kind === 'preferences') {
+      return { result };
+    } },
+    'preferences': { fields: ['preferences'], apply({ doc, action }) {
       if (!doc.consents.storePreferences) fail(403, 'preference-storage-consent-required');
       doc.preferences = choices(action.preferences);
-    } else if (action.kind === 'consents') {
-      applyConsents(action.consents);
-    } else if (action.kind === 'adult') {
+    } },
+    'consents': { fields: ['consents'], apply({ tx, row, doc, action, at }) {
+      applyConsents(tx, row, doc, action.consents, at);
+    } },
+    'adult': { fields: ['declared'], apply({ tx, row, doc, action, at }) {
       requireThat(typeof action.declared === 'boolean'); doc.adult = { selfDeclared: action.declared, verified: false, at };
       if (!action.declared) { doc.consents.profilePublic = false; doc.consents.receiveInvitations = false; closePairs(tx, row.id, null, false, at); }
-    } else if (action.kind === 'pause') {
+    } },
+    'pause': { fields: ['paused'], apply({ doc, action }) {
       requireThat(typeof action.paused === 'boolean'); doc.paused = action.paused;
-    } else if (['block', 'unblock', 'report', 'connect'].includes(action.kind)) {
-      requireThat(id(action.targetAccountId) && action.targetAccountId !== row.id, 'invalid-target');
-      const target = tx.account(action.targetAccountId);
-      if (!target || target.status === 'deleted') fail(404, 'target-unavailable');
-      if (action.kind === 'block') { doc.blocks = [...new Set([...doc.blocks, target.id])]; closePairs(tx, row.id, target.id, false, at); }
-      else if (action.kind === 'unblock') doc.blocks = doc.blocks.filter(value => value !== target.id);
-      else if (action.kind === 'report') {
-        requireThat(['safety', 'harassment', 'impersonation', 'other'].includes(action.reason) && finiteText(action.details, 1000));
-        const reportId = randomUUID(); tx.addReport({ id: reportId, reporter: row.id, target: target.id, reason: action.reason, details: action.details.trim(), at }); result = { reportId };
-      } else {
-        if (!connectedAllowed(row, target)) fail(403, 'connection-unavailable');
-        if (!doc.discovery || !discoveryFor(tx, row, at).inspect(doc.discovery, { at }).candidates.some(candidate => candidate.id === target.id && candidate.status === 'eligible')) fail(403, 'matching-confirmation-required');
-        if(!currentIntroductionCompatible(tx,row,target,at))fail(403,'matching-confirmation-required');
-        let pair = tx.pairFor(row.id, target.id);
-        if (!pair) { const pairId = randomUUID(); const state = appointmentsAdapter.create({ pairId, people: [{ id: row.id, label: doc.profile.nickname }, { id: target.id, label: target.document.profile.nickname }], at });
-          pair = tx.putPair({ id: pairId, a: row.id, b: target.id, revision: state.revision, document: state }); }
-        const intro = introRecord(tx, row.id, target.id, { kind: 'send', actor: row.id, requestId, pairId: pair.id, at });
-        tx.clearAlignment(pair.id);
-        recordExplicitExposure(tx, row, doc, [target.id], at);
-        captureMeetingCriteria(tx, row, doc, pair.id, at);
-        result = { pairId: pair.id, introductionId: introductions.inspect(intro, { viewer: row.id, at }).current.id };
-      }
-    } else if (action.kind === 'admin-report') {
+    } },
+    'block': { fields: ['targetAccountId'], apply: applyTargetAction },
+    'unblock': { fields: ['targetAccountId'], apply: applyTargetAction },
+    'report': { fields: ['targetAccountId', 'reason', 'details'], apply: applyTargetAction },
+    'connect': { fields: ['targetAccountId'], apply: applyTargetAction },
+    'admin-report': { fields: ['reportId', 'status', 'decision', 'note'], apply({ tx, action, at, isOperator }) {
       if (!isOperator) fail(403, 'operator-required');
       requireThat(uuid(action.reportId) && ['reviewing', 'resolved', 'dismissed'].includes(action.status) && ['none', 'suspend-target', 'restore-target'].includes(action.decision) && finiteText(action.note, 1000));
       const report = tx.report(action.reportId); if (!report) fail(404, 'report-unavailable');
@@ -919,9 +928,12 @@ export function createDatingService({ store, mode = store?.mode, accountConfig, 
         if (action.decision === 'suspend-target') closePairs(tx, target.id, null, false, at);
       }
       tx.updateReport(report.id, { status: action.status, decision: action.decision, note: action.note.trim(), at });
-    } else if (action.kind === 'delete') {
+    } },
+    'delete': { fields: [], apply({ tx, row, at }) {
       return { row: deleteDatingAccount(tx, row, at), result: { deleted: true } };
-    } else if (action.kind === 'apply-preview') {
+    } },
+    'apply-preview': { fields: ['preview'], apply({ tx, row, doc, action, at }) {
+      let result = {};
       const saved = ownedToken(previews, action.preview, row.id, at), current = discoverySnapshot(tx, row, at);
       if (saved.revision !== row.revision || saved.binding !== current.binding) fail(409, 'preview-stale');
       if (saved.criterionReview) criterionAction(tx, row, saved.criterionReview, current, at);
@@ -966,7 +978,10 @@ export function createDatingService({ store, mode = store?.mode, accountConfig, 
         }
       }
       if (saved.restoreDecisionId) doc.experience = experience.restored(doc.experience, saved.restoreDecisionId, at, visibleKeys(current.projected));
-    } else if (action.kind === 'experience') {
+      return { at, result };
+    } },
+    'experience': { fields: ['action'], apply({ tx, row, doc, action, at }) {
+      let result = {};
       if (!doc.consents.storePreferences) fail(403, 'preference-storage-consent-required');
       const event = action.action; requireThat(plain(event));
       let state = doc.experience || experience.create();
@@ -1031,7 +1046,9 @@ export function createDatingService({ store, mode = store?.mode, accountConfig, 
         }
       } else fail(400, 'invalid-experience-action');
       doc.experience = state;
-    } else if (action.kind === 'discovery') {
+      return { result };
+    } },
+    'discovery': { fields: ['action'], apply({ tx, row, doc, action, at }) {
       if (!doc.adult.selfDeclared || doc.paused || !doc.consents.storePreferences) fail(403, 'discovery-unavailable');
       requireThat(plain(action.action) && !['at', 'id', 'actor', 'person'].some(key => own(action.action, key)));
       const adapter = discoveryFor(tx, row, at), state = doc.discovery || adapter.create('first', { at });
@@ -1041,7 +1058,9 @@ export function createDatingService({ store, mode = store?.mode, accountConfig, 
         const current = adapter.inspect(doc.discovery, { at });
         for (const candidate of action.action.candidateIds) tx.expose(row.id, `${doc.discoveryEpoch}:${current.context.id}`, candidate);
       }
-    } else if (action.kind === 'introduction') {
+    } },
+    'introduction': { fields: ['pairId', 'expectedIntroductionRevision', 'action'], apply({ tx, row, doc, action, requestId, at }) {
+      let result = {};
       requireThat(id(action.pairId) && Number.isSafeInteger(action.expectedIntroductionRevision) && action.expectedIntroductionRevision >= 0 && plain(action.action)
         && ['respond', 'withdraw', 'reopen'].includes(action.action.kind) && !['actor', 'at', 'requestId', 'expectedRevision'].some(key => own(action.action, key)));
       const pair = tx.pair(action.pairId);
@@ -1069,7 +1088,10 @@ export function createDatingService({ store, mode = store?.mode, accountConfig, 
       introRecord(tx, pair.a, pair.b, { ...action.action, actor: row.id, requestId, at }); result = { pairId: pair.id };
       if (['withdraw', 'reopen'].includes(action.action.kind) || action.action.value === 'decline') tx.clearAlignment(pair.id);
       if (action.action.kind === 'respond' && action.action.value === 'accept') captureMeetingCriteria(tx, row, doc, pair.id, at);
-    } else if (action.kind === 'alignment') {
+      return { result };
+    } },
+    'alignment': { fields: ['pairId', 'expectedAlignmentRevision', 'action'], apply({ tx, row, action, at }) {
+      let result = {};
       const alignmentActionFields = !action.action?.kind ? ['key', 'value']
         : action.action.kind === 'propose-option' ? ['key', 'kind', 'optionId']
         : action.action.kind === 'cancel-option' ? ['key', 'kind'] : [];
@@ -1080,7 +1102,10 @@ export function createDatingService({ store, mode = store?.mode, accountConfig, 
       const state = alignmentState(tx, pair), context = alignmentContext(tx, pair, at);
       const next = alignment.record(state, context, { ...action.action, actor: row.id, at, expectedRevision: action.expectedAlignmentRevision });
       tx.putAlignment(pair.id, next, state.revision); result = { pairId: pair.id };
-    } else if (action.kind === 'appointment') {
+      return { result };
+    } },
+    'appointment': { fields: ['pairId', 'expectedPairRevision', 'action'], apply({ tx, row, action, requestId, at }) {
+      let result = {};
       requireThat(id(action.pairId) && Number.isSafeInteger(action.expectedPairRevision) && action.expectedPairRevision >= 0 && plain(action.action)
         && !['actor', 'person', 'at', 'id', 'requestId', 'expectedRevision'].some(key => own(action.action, key)));
       const pair = tx.pair(action.pairId);
@@ -1092,7 +1117,26 @@ export function createDatingService({ store, mode = store?.mode, accountConfig, 
       if (pair.revision !== action.expectedPairRevision) fail(409, 'pair-revision-conflict');
       const state = appointmentsAdapter.record(pair.document, { ...clone(action.action), actor: row.id, at, requestId, expectedRevision: pair.revision });
       tx.updatePair(pair, state); result = { pairId: pair.id };
-    }
+      return { result };
+    } }
+  };
+  function mutate(tx, row, action, requestId, at, isOperator) {
+    const handler = plain(action) && own(actionHandlers, action.kind) ? actionHandlers[action.kind] : null;
+    requireThat(handler && exact(action, ['kind', ...handler.fields]) && handler.fields.every(key => own(action, key)));
+    if (row.status === 'deleted') fail(410, 'account-deleted');
+    if (centralBlocked(row)) fail(403, 'account-unavailable');
+    const retractExperience = action.kind === 'experience' && plain(action.action) &&
+       (action.action.kind === 'evaluation-consent' && action.action.enabled === false || ['respond', 'comfort', 'goal', 'followup', 'criterion', 'allowance-review'].includes(action.action.kind) && action.action.value === null);
+    if (row.status === 'suspended' && !['delete', 'report', 'pause', 'consents', 'block', 'bookmark-remove'].includes(action.kind) && !retractExperience) fail(403, 'account-suspended');
+    const doc = clone(row.document);
+    // Fix the legacy interpretation before this write adds another setup step.
+    // Otherwise an old profile-only row could appear consent-confirmed merely
+    // because the following individual adult declaration completes its basics.
+    if (!doc.onboardingState) doc.onboardingState = { consentsConfirmed: onboardingView(row).steps.consents };
+    syncDateGates(tx, row.id, at);
+    const outcome = handler.apply({ tx, row, doc, action, requestId, at, isOperator }) || {};
+    if (own(outcome, 'row')) return outcome; // Deletion owns its erase transaction.
+    if (own(outcome, 'at')) at = outcome.at;
     const publicBasisChanged = alignmentFields.some(field => doc.profile.values[field] !== row.document.profile.values[field]
       || (doc.profile.expirations?.[field]||null)!==(row.document.profile.expirations?.[field]||null));
     const accessChanged = doc.paused !== row.document.paused || doc.adult.selfDeclared !== row.document.adult.selfDeclared
@@ -1104,7 +1148,7 @@ export function createDatingService({ store, mode = store?.mode, accountConfig, 
       doc.alignmentGeneration = (row.document.alignmentGeneration || 0) + 1;
       for (const pair of tx.pairs(row.id)) tx.clearAlignment(pair.id);
     }
-    doc.updatedAt = at; return { row: tx.updateAccount(row, doc), result };
+    doc.updatedAt = at; return { row: tx.updateAccount(row, doc), result: outcome.result || {} };
   }
   function respond(res, status, value) {
     if (res.destroyed || res.writableEnded) return;

@@ -254,6 +254,26 @@ test('atomic revision CAS, idempotency and actor isolation work across two SQLit
   assert.equal(separate.status, 200); assert.equal(separate.data.replayed, false);
 });
 
+test('failed onboarding drafts no profile or adult state and leaves its request available for one corrected commit', async t => {
+  const f = await fixture(t), actor = await f.login('adult-a');
+  const before = f.store.transaction(tx => tx.account(actor.accountId));
+  const requestId = randomUUID(), request = { requestId, expectedRevision: before.revision,
+    action: { kind: 'onboard', profile: { nickname: '가상 새 이름', region: '가상 지역', intro: '공개 소개' }, declared: true,
+      consents: { profilePublic: true, receiveInvitations: true, storePreferences: 'invalid' } } };
+  const failed = await f.call('/action', { token: actor.token, json: request });
+  assert.equal(failed.status, 400); assert.equal(failed.data.error.code, 'invalid-action');
+  assert.deepEqual(f.store.transaction(tx => tx.account(actor.accountId)), before);
+  assert.equal(f.store.transaction(tx => tx.receipt(actor.accountId, requestId)), undefined);
+  const corrected = { ...request, action: { ...request.action, consents: consents() } };
+  const saved = await f.call('/action', { token: actor.token, json: corrected });
+  assert.equal(saved.status, 200); assert.deepEqual(saved.data.result, {});
+  assert.equal(saved.data.view.revision, before.revision + 1);
+  assert.equal(saved.data.view.profile.nickname, '가상 새 이름'); assert.equal(saved.data.view.adult.selfDeclared, true);
+  const replay = await f.call('/action', { token: actor.token, json: corrected });
+  assert.equal(replay.status, 200); assert.equal(replay.data.replayed, true);
+  assert.equal(replay.data.view.revision, saved.data.view.revision);
+});
+
 test('appointment revisions and participant-private reflection are persisted and inbox is viewer-specific', async t => {
   const f = await fixture(t), { a, b, pairId } = await f.connected();
   const proposed = await f.appointment(a.token, pairId, { kind: 'propose', schedule: schedule() }), p = proposed.view.pairs.find(p => p.pairId === pairId);

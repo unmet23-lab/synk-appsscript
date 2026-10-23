@@ -102,7 +102,7 @@ test('CLI accepts exactly documented inputs and preserves all three report paths
 });
 test('published unified tools load the shipped validator from source/src without a development checkout',t=>{
   const f=fixture(t),published=path.join(f.root,'public-unified'),tools=path.join(published,'tools');fs.mkdirSync(tools,{recursive:true});fs.mkdirSync(path.join(published,'source/src'),{recursive:true});
-  for(const name of ['assemble-platform-release.cjs','build-platform-release.cjs','freeze-platform-release.cjs','source-hash.cjs'])fs.copyFileSync(path.join(__dirname,'../tools',name),path.join(tools,name));
+  for(const name of ['assemble-platform-release.cjs','build-platform-release.cjs','archive-verification.cjs','freeze-platform-release.cjs','source-hash.cjs'])fs.copyFileSync(path.join(__dirname,'../tools',name),path.join(tools,name));
   fs.copyFileSync(path.join(__dirname,'../src/platform-update.cjs'),path.join(published,'source/src/platform-update.cjs'));
   const run=require('node:child_process').spawnSync(process.execPath,['-e','require(process.argv[1]); process.stdout.write("loaded")',path.join(tools,'assemble-platform-release.cjs')],{encoding:'utf8',windowsHide:true});
   assert.equal(run.status,0,run.stderr);assert.equal(run.stdout,'loaded');

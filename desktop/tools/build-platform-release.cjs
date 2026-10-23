@@ -5,6 +5,7 @@
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),cp=require('node:child_process');
 const {createRequire}=require('node:module');
 const {sourceHash}=require('./source-hash.cjs');
+const {verifyArchive}=require('./archive-verification.cjs');
 const {inventory,audit}=require('./freeze-platform-release.cjs');
 const assert=(value,message)=>{if(!value)throw Error(message);};
 const sha=file=>{const hash=crypto.createHash('sha256'),buffer=Buffer.allocUnsafe(8<<20),fd=fs.openSync(file,'r');try{let count;while((count=fs.readSync(fd,buffer,0,buffer.length,null))>0)hash.update(buffer.subarray(0,count));}finally{fs.closeSync(fd);}return hash.digest('hex');};
@@ -20,7 +21,7 @@ function removeRetiredAuthClients(auth){
 }
 function command(exe,args,options={}){const result=cp.spawnSync(exe,args,{encoding:'utf8',windowsHide:true,maxBuffer:16<<20,timeout:600000,...options});assert(result.status===0,'Command failed: '+exe+' '+(result.error?.message||result.stderr||result.stdout));return result.stdout;}
 function validateSnapshot(root){const spec=JSON.parse(fs.readFileSync(path.join(root,'release-input.json'))),source=path.join(root,'source');assert(spec.schemaVersion===1&&spec.product==='platform'&&spec.channel==='preview','Unsupported release');assert(spec.releaseId==='platform-preview-'+spec.version&&/^\d+\.\d+\.\d+$/.test(spec.version)&&/^\d{8}\.\d+$/.test(spec.buildId),'Invalid release identity');assert(JSON.stringify(inventory(source))===JSON.stringify(spec.sourceFiles),'Frozen source changed');audit(source,spec.sourceFiles);assert(sourceHash(source)===spec.sourceHash,'Frozen source hash changed');return spec;}
-function verifyArchive(asar,source,archive){const expected=inventory(source).filter(row=>row.path!=='synk-install.json');asar.uncache(archive);const actual=asar.listPackage(archive).map(file=>file.replaceAll('\\','/').replace(/^\//,'')).filter(file=>!asar.statFile(archive,path.normalize(file)).files).sort();assert(actual.join('\n')===expected.map(row=>row.path).sort().join('\n'),'Archive membership differs');for(const row of expected)assert(crypto.createHash('sha256').update(asar.extractFile(archive,path.normalize(row.path))).digest('hex')===row.sha256,'Archive source differs: '+row.path);return expected.length;}
+
 function verifySignalPackage({signalOut,version,pin,files,payload}){
   const read=(name)=>{const file=path.join(signalOut,name);assert(fs.existsSync(file)&&fs.lstatSync(file).isFile(),'Signal success evidence missing: '+name);try{return JSON.parse(fs.readFileSync(file,'utf8'));}catch{throw Error('Signal success evidence invalid: '+name);}};
   const report=read('windows-signal-package.json'),spec=read('install.json'),name='SYNK-Platform-Preview-'+version+'-Signal-win-x64.exe',artifact=path.join(signalOut,name),backend=path.join(signalOut,'backend/signal-backend.exe');
